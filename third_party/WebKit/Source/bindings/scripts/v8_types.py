@@ -383,7 +383,7 @@ def includes_for_type(idl_type):
 
 IdlType.includes_for_type = property(includes_for_type)
 IdlUnionType.includes_for_type = property(
-    lambda self: set.union(*[includes_for_type(member_type)
+    lambda self: set.union(*[member_type.includes_for_type
                              for member_type in self.member_types]))
 IdlArrayOrSequenceType.includes_for_type = property(
     lambda self: self.element_type.includes_for_type)
@@ -801,7 +801,10 @@ def cpp_type_has_null_value(idl_type):
     #   i.e. one for which String::isNull() returns true.
     # - Wrapper types (raw pointer or RefPtr/PassRefPtr) represent null as
     #   a null pointer.
-    return idl_type.is_string_type or idl_type.is_wrapper_type
+    # - Dictionary types represent null as a null pointer. They are garbage
+    #   collected so their type is raw pointer.
+    return (idl_type.is_string_type or idl_type.is_wrapper_type or
+            idl_type.is_dictionary)
 
 IdlTypeBase.cpp_type_has_null_value = property(cpp_type_has_null_value)
 

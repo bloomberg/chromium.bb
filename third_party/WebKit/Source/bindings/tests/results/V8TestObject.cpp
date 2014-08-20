@@ -6535,6 +6535,83 @@ static void nullableLongSequenceMethodMethodCallback(const v8::FunctionCallbackI
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
+static void testInterfaceGarbageCollectedOrDOMStringMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestObject* impl = V8TestObject::toNative(info.Holder());
+    RawPtr<TestInterfaceGarbageCollected> result0 = nullptr;
+    String result1;
+    impl->testInterfaceGarbageCollectedOrDOMStringMethod(result0, result1);
+    if (result0) {
+        v8SetReturnValue(info, result0.release());
+        return;
+    }
+    if (!result1.isNull()) {
+        v8SetReturnValueString(info, result1, info.GetIsolate());
+        return;
+    }
+    v8SetReturnValueNull(info);
+}
+
+static void testInterfaceGarbageCollectedOrDOMStringMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    TestObjectV8Internal::testInterfaceGarbageCollectedOrDOMStringMethodMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
+static void testInterfaceWillBeGarbageCollectedOrTestDictionaryMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestObject* impl = V8TestObject::toNative(info.Holder());
+    RefPtrWillBeRawPtr<TestInterfaceWillBeGarbageCollected> result0 = nullptr;
+    TestDictionary* result1 = nullptr;
+    impl->testInterfaceWillBeGarbageCollectedOrTestDictionaryMethod(result0, result1);
+    if (result0) {
+        v8SetReturnValue(info, result0.release());
+        return;
+    }
+    if (result1) {
+        v8SetReturnValue(info, result1);
+        return;
+    }
+    v8SetReturnValueNull(info);
+}
+
+static void testInterfaceWillBeGarbageCollectedOrTestDictionaryMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    TestObjectV8Internal::testInterfaceWillBeGarbageCollectedOrTestDictionaryMethodMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
+static void longSequenceOrDOMStringArrayOrUnrestrictedDoubleMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestObject* impl = V8TestObject::toNative(info.Holder());
+    Nullable<Vector<int> > result0;
+    Nullable<Vector<String> > result1;
+    Nullable<double> result2;
+    impl->longSequenceOrDOMStringArrayOrUnrestrictedDoubleMethod(result0, result1, result2);
+    if (result0) {
+        v8SetReturnValue(info, v8Array(result0.get(), info.Holder(), info.GetIsolate()));
+        return;
+    }
+    if (result1) {
+        v8SetReturnValue(info, v8Array(result1.get(), info.Holder(), info.GetIsolate()));
+        return;
+    }
+    if (result2) {
+        v8SetReturnValue(info, result2.get());
+        return;
+    }
+    v8SetReturnValueNull(info);
+}
+
+static void longSequenceOrDOMStringArrayOrUnrestrictedDoubleMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    TestObjectV8Internal::longSequenceOrDOMStringArrayOrUnrestrictedDoubleMethodMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
 static void voidMethodTestInterfaceEmptyOrNullArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
@@ -10472,6 +10549,9 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectMethods[] = {
     {"nullableStringMethod", TestObjectV8Internal::nullableStringMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
     {"nullableTestInterfaceMethod", TestObjectV8Internal::nullableTestInterfaceMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
     {"nullableLongSequenceMethod", TestObjectV8Internal::nullableLongSequenceMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
+    {"testInterfaceGarbageCollectedOrDOMStringMethod", TestObjectV8Internal::testInterfaceGarbageCollectedOrDOMStringMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
+    {"testInterfaceWillBeGarbageCollectedOrTestDictionaryMethod", TestObjectV8Internal::testInterfaceWillBeGarbageCollectedOrTestDictionaryMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
+    {"longSequenceOrDOMStringArrayOrUnrestrictedDoubleMethod", TestObjectV8Internal::longSequenceOrDOMStringArrayOrUnrestrictedDoubleMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
     {"voidMethodTestInterfaceEmptyOrNullArg", TestObjectV8Internal::voidMethodTestInterfaceEmptyOrNullArgMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},
     {"voidMethodTestCallbackInterfaceArg", TestObjectV8Internal::voidMethodTestCallbackInterfaceArgMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},
     {"voidMethodOptionalTestCallbackInterfaceArg", TestObjectV8Internal::voidMethodOptionalTestCallbackInterfaceArgMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
