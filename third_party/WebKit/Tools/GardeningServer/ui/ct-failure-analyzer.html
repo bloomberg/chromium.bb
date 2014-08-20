@@ -39,8 +39,8 @@ found in the LICENSE file.
         if (tree === undefined)
           tree = 'chromium';
 
-        var rev_a = a[0].firstFailingRevisions;
-        var rev_b = b[0].firstFailingRevisions;
+        var rev_a = a.failures[0].firstFailingRevisions;
+        var rev_b = b.failures[0].firstFailingRevisions;
 
         // Handle missing revision.
         if (!rev_a) {
