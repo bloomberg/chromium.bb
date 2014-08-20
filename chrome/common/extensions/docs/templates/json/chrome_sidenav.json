@@ -71,8 +71,8 @@
             "href": "/devtools/docs/javascript-debugging"
           },
           {
-            "title": "Mobile Emulation",
-            "href": "/devtools/docs/mobile-emulation"
+            "title": "Device Mode & Mobile Emulation",
+            "href": "/devtools/docs/device-mode"
           },
           {
             "title": "Remote Debugging on Android",
