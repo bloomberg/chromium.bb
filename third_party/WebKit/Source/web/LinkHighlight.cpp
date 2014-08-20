@@ -179,25 +179,19 @@ static void addQuadToPath(const FloatQuad& quad, Path& path)
     path.closeSubpath();
 }
 
-void LinkHighlight::computeQuads(Node* node, Vector<FloatQuad>& outQuads) const
+void LinkHighlight::computeQuads(RenderObject& renderer, Vector<FloatQuad>& outQuads) const
 {
-    if (!node || !node->renderer())
-        return;
-
-    RenderObject* renderer = node->renderer();
-
     // For inline elements, absoluteQuads will return a line box based on the line-height
     // and font metrics, which is technically incorrect as replaced elements like images
     // should use their intristic height and expand the linebox  as needed. To get an
     // appropriately sized highlight we descend into the children and have them add their
     // boxes.
-    if (renderer->isRenderInline()) {
-        for (Node* child = node->firstChild(); child; child = child->nextSibling())
-            computeQuads(child, outQuads);
+    if (renderer.isRenderInline()) {
+        for (RenderObject* child = renderer.slowFirstChild(); child; child = child->nextSibling())
+            computeQuads(*child, outQuads);
     } else {
-        renderer->absoluteQuads(outQuads);
+        renderer.absoluteQuads(outQuads);
     }
-
 }
 
 bool LinkHighlight::computeHighlightLayerPathAndPosition(RenderLayer* compositingLayer)
@@ -209,7 +203,7 @@ bool LinkHighlight::computeHighlightLayerPathAndPosition(RenderLayer* compositin
 
     // Get quads for node in absolute coordinates.
     Vector<FloatQuad> quads;
-    computeQuads(m_node.get(), quads);
+    computeQuads(*m_node->renderer(), quads);
     ASSERT(quads.size());
 
     // Adjust for offset between target graphics layer and the node's renderer.

@@ -75,7 +75,7 @@ private:
     LinkHighlight(Node*, WebViewImpl*);
 
     void releaseResources();
-    void computeQuads(Node*, WTF::Vector<FloatQuad>&) const;
+    void computeQuads(RenderObject&, WTF::Vector<FloatQuad>&) const;
 
     RenderLayer* computeEnclosingCompositingLayer();
     void clearGraphicsLayerLinkHighlightPointer();

@@ -1049,7 +1049,7 @@ WebRect WebViewImpl::computeBlockBounds(const WebRect& rect, bool ignoreClipping
 
     // Find the block type node based on the hit node.
     while (node && (!node->renderer() || node->renderer()->isInline()))
-        node = node->parentNode();
+        node = NodeRenderingTraversal::parent(node);
 
     // Return the bounding box in the window coordinate system.
     if (node) {
@@ -1173,7 +1173,7 @@ static Node* findCursorDefiningAncestor(Node* node, LocalFrame* frame)
             if (cursor != CURSOR_AUTO || frame->eventHandler().useHandCursor(node, node->isLink()))
                 break;
         }
-        node = node->parentNode();
+        node = NodeRenderingTraversal::parent(node);
     }
 
     return node;
@@ -1204,7 +1204,7 @@ Node* WebViewImpl::bestTapNode(const PlatformGestureEvent& tapEvent)
     // We might hit something like an image map that has no renderer on it
     // Walk up the tree until we have a node with an attached renderer
     while (bestTouchNode && !bestTouchNode->renderer())
-        bestTouchNode = bestTouchNode->parentNode();
+        bestTouchNode = NodeRenderingTraversal::parent(bestTouchNode);
 
     Node* cursorDefiningAncestor =
         findCursorDefiningAncestor(bestTouchNode, m_page->deprecatedLocalMainFrame());
