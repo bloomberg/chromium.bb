@@ -5881,7 +5881,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Enterprise.EnrollmentRecovery" enum="EnterpriseEnrollmentType">
   <owner>tnagel@chromium.org</owner>
-  <summary>Events related to Chrome OS enterprise enrollment recovery.</summary>
+  <summary>
+    Events related to Chrome OS enterprise enrollment recovery.  Note that this
+    only covers cases in which prior to recovery, the &quot;private owner&quot;
+    of the device had UMA stats enabled.
+  </summary>
 </histogram>
 
 <histogram name="Enterprise.IOSPolicies">
