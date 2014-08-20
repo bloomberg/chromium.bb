@@ -57,8 +57,6 @@ public:
     static void derefObject(ScriptWrappableBase* internalPointer);
     static const WrapperTypeInfo wrapperTypeInfo;
     static const int internalFieldCount = v8DefaultWrapperInternalFieldCount;
-    static void installPerContextEnabledProperties(v8::Handle<v8::Object>, ArrayBuffer*, v8::Isolate*) { }
-    static void installPerContextEnabledMethods(v8::Handle<v8::Object>, v8::Isolate*) { }
 
     static inline ScriptWrappableBase* toInternalPointer(ArrayBuffer* impl)
     {

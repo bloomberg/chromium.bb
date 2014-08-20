@@ -57,11 +57,12 @@ typedef void (*DerefObjectFunction)(ScriptWrappableBase* internalPointer);
 typedef ActiveDOMObject* (*ToActiveDOMObjectFunction)(v8::Handle<v8::Object>);
 typedef EventTarget* (*ToEventTargetFunction)(v8::Handle<v8::Object>);
 typedef void (*ResolveWrapperReachabilityFunction)(ScriptWrappableBase* internalPointer, const v8::Persistent<v8::Object>&, v8::Isolate*);
-typedef void (*InstallPerContextEnabledPrototypePropertiesFunction)(v8::Handle<v8::Object>, v8::Isolate*);
+typedef void (*InstallConditionallyEnabledMethodsFunction)(v8::Handle<v8::Object>, v8::Isolate*);
+typedef void (*InstallConditionallyEnabledPropertiesFunction)(v8::Handle<v8::Object>, v8::Isolate*);
 
 enum WrapperTypePrototype {
     WrapperTypeObjectPrototype,
-    WrapperTypeExceptionPrototype
+    WrapperTypeExceptionPrototype,
 };
 
 enum GCType {
@@ -106,10 +107,16 @@ struct WrapperTypeInfo {
         return domTemplateFunction(isolate);
     }
 
-    void installPerContextEnabledMethods(v8::Handle<v8::Object> prototypeTemplate, v8::Isolate* isolate) const
+    void installConditionallyEnabledMethods(v8::Handle<v8::Object> prototypeTemplate, v8::Isolate* isolate) const
     {
-        if (installPerContextEnabledMethodsFunction)
-            installPerContextEnabledMethodsFunction(prototypeTemplate, isolate);
+        if (installConditionallyEnabledMethodsFunction)
+            installConditionallyEnabledMethodsFunction(prototypeTemplate, isolate);
+    }
+
+    void installConditionallyEnabledProperties(v8::Handle<v8::Object> prototypeTemplate, v8::Isolate* isolate) const
+    {
+        if (installConditionallyEnabledPropertiesFunction)
+            installConditionallyEnabledPropertiesFunction(prototypeTemplate, isolate);
     }
 
     ActiveDOMObject* toActiveDOMObject(v8::Handle<v8::Object> object) const
@@ -142,7 +149,8 @@ struct WrapperTypeInfo {
     const ToActiveDOMObjectFunction toActiveDOMObjectFunction;
     const ToEventTargetFunction toEventTargetFunction;
     const ResolveWrapperReachabilityFunction visitDOMWrapperFunction;
-    const InstallPerContextEnabledPrototypePropertiesFunction installPerContextEnabledMethodsFunction;
+    const InstallConditionallyEnabledMethodsFunction installConditionallyEnabledMethodsFunction;
+    const InstallConditionallyEnabledPropertiesFunction installConditionallyEnabledPropertiesFunction;
     const WrapperTypeInfo* parentClass;
     const WrapperTypePrototype wrapperTypePrototype;
     const GCType gcType;

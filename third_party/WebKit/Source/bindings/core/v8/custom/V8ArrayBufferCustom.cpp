@@ -48,7 +48,7 @@ V8ArrayBufferDeallocationObserver* V8ArrayBufferDeallocationObserver::instanceTe
 const WrapperTypeInfo V8ArrayBuffer::wrapperTypeInfo = {
     gin::kEmbedderBlink,
     0, V8ArrayBuffer::derefObject,
-    0, 0, 0, 0, 0, WrapperTypeObjectPrototype, RefCountedObject
+    0, 0, 0, 0, 0, 0, WrapperTypeObjectPrototype, RefCountedObject
 };
 
 bool V8ArrayBuffer::hasInstance(v8::Handle<v8::Value> value, v8::Isolate*)

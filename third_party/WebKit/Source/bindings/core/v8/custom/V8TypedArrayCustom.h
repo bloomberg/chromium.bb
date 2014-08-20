@@ -185,7 +185,7 @@ template <typename TypedArray>
 const WrapperTypeInfo V8TypedArray<TypedArray>::wrapperTypeInfo = {
     gin::kEmbedderBlink,
     0, V8TypedArray<TypedArray>::derefObject,
-    0, 0, 0, 0, 0, WrapperTypeObjectPrototype, RefCountedObject
+    0, 0, 0, 0, 0, 0, WrapperTypeObjectPrototype, RefCountedObject
 };
 
 template <typename TypedArray>

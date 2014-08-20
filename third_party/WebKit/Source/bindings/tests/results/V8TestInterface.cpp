@@ -50,7 +50,7 @@ void webCoreInitializeScriptWrappableForInterface(blink::TestInterfaceImplementa
 }
 
 namespace blink {
-const WrapperTypeInfo V8TestInterface::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterface::domTemplate, V8TestInterface::derefObject, V8TestInterface::toActiveDOMObject, 0, V8TestInterface::visitDOMWrapper, V8TestInterface::installConditionallyEnabledMethods, &V8TestInterfaceEmpty::wrapperTypeInfo, WrapperTypeObjectPrototype, RefCountedObject };
+const WrapperTypeInfo V8TestInterface::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterface::domTemplate, V8TestInterface::derefObject, V8TestInterface::toActiveDOMObject, 0, V8TestInterface::visitDOMWrapper, V8TestInterface::installConditionallyEnabledMethods, V8TestInterface::installConditionallyEnabledProperties, &V8TestInterfaceEmpty::wrapperTypeInfo, WrapperTypeObjectPrototype, RefCountedObject };
 
 namespace TestInterfaceImplementationV8Internal {
 
