@@ -1,0 +1,28 @@
+<!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<script>
+// Schedule a repeated action with requestAnimationFrame to avoid doing work
+// when the tab is hidden.
+function CTScheduledUpdater(callback, interval) {
+  this.callback = callback;
+  this._isScheduled = false;
+  this._intervalId = setInterval(this._schedule.bind(this), interval);
+}
+
+CTScheduledUpdater.prototype._schedule = function() {
+  if (this._isScheduled)
+    return;
+
+  this._isScheduled = true;
+  requestAnimationFrame(this._do.bind(this));
+}
+
+CTScheduledUpdater.prototype._do = function() {
+  this._isScheduled = false;
+  this.callback();
+}
+</script>

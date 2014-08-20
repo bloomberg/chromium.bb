@@ -1,0 +1,30 @@
+<!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<link rel="import" href="../ct-scheduled-updater.html">
+
+<script>
+
+(function () {
+
+var assert = chai.assert;
+
+describe('ct-scheduled-updater', function() {
+  it('basic update', function(done) {
+    var onUpdate = function() {
+      // Clear the interval so  we don't keep running this code during other tests.
+      clearInterval(updater._intervalId);
+      assert(true);
+      done();
+    };
+
+    var updater = new CTScheduledUpdater(onUpdate, 0);
+  });
+});
+
+})();
+
+</script>

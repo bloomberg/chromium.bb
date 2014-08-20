@@ -32,14 +32,14 @@ THE POSSIBILITY OF SUCH DAMAGE.
 var assert = chai.assert;
 
 describe('net', function() {
-    it('parseJSONP', function() {
-        assert.deepEqual(net._parseJSONP(""), {});
-        assert.deepEqual(net._parseJSONP('p({"key": "value"})'), {"key": "value"});
-        assert.deepEqual(net._parseJSONP('ADD_RESULTS({"dummy":"data"});'), {"dummy":"data"});
-        assert.deepEqual(net._parseJSONP('{"dummy":"data"}'), {"dummy":"data"});
-        assert.deepEqual(net._parseJSONP('ADD_RESULTS({"builder(1)":"data"});'), {"builder(1)":"data"});
-        assert.deepEqual(net._parseJSONP('{"builder(1)":"data"}'), {"builder(1)":"data"});
-    });
+  it('parseJSONP', function() {
+    assert.deepEqual(net._parseJSONP(""), {});
+    assert.deepEqual(net._parseJSONP('p({"key": "value"})'), {"key": "value"});
+    assert.deepEqual(net._parseJSONP('ADD_RESULTS({"dummy":"data"});'), {"dummy":"data"});
+    assert.deepEqual(net._parseJSONP('{"dummy":"data"}'), {"dummy":"data"});
+    assert.deepEqual(net._parseJSONP('ADD_RESULTS({"builder(1)":"data"});'), {"builder(1)":"data"});
+    assert.deepEqual(net._parseJSONP('{"builder(1)":"data"}'), {"builder(1)":"data"});
+  });
 });
 
 })();
