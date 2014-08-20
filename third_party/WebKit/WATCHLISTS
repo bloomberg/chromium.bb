@@ -396,6 +396,7 @@
                          'ojan@chromium.org',
                          'leviw@chromium.org',
                          'michaelpg@chromium.org',
+                         'cbiesinger@chromium.org',
                          'teravest@chromium.org' ],
     'spellcheck' : [ 'groby+blinkspell@chromium.org' ],
     'device_orientation': [ 'timvolodine@chromium.org', 'mvanouwerkerk+watch@chromium.org', 'ch.dumez@samsung.com' ],
