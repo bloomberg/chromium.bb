@@ -2504,10 +2504,14 @@ double Instance::CalculateZoom(uint32 control_id) const {
 }
 
 pp::ImageData Instance::CreateResourceImage(PP_ResourceImage image_id) {
-  if (hidpi_enabled_)
-    return pp::PDF::GetResourceImageForScale(this, image_id, device_scale_);
+  pp::ImageData resource_data;
+  if (hidpi_enabled_) {
+    resource_data =
+        pp::PDF::GetResourceImageForScale(this, image_id, device_scale_);
+  }
 
-  return pp::PDF::GetResourceImage(this, image_id);
+  return resource_data.data() ? resource_data
+                              : pp::PDF::GetResourceImage(this, image_id);
 }
 
 std::string Instance::GetLocalizedString(PP_ResourceString id) {
