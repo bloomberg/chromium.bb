@@ -113,9 +113,6 @@ FrameView::FrameView(LocalFrame* frame)
     , m_safeToPropagateScrollToParent(true)
     , m_isTrackingPaintInvalidations(false)
     , m_scrollCorner(nullptr)
-    , m_shouldAutoSize(false)
-    , m_inAutoSize(false)
-    , m_didRunAutosize(false)
     , m_hasSoftwareFilters(false)
     , m_visibleContentScaleFactor(1)
     , m_inputEventsScaleFactorForEmulation(1)
@@ -858,7 +855,8 @@ void FrameView::layout(bool allowSubtree)
             }
         }
         updateCounters();
-        autoSizeIfEnabled();
+        if (m_autoSizeInfo)
+            m_autoSizeInfo->autoSizeIfNeeded();
 
         ScrollbarMode hMode;
         ScrollbarMode vMode;
@@ -1671,7 +1669,8 @@ void FrameView::handleLoadCompleted()
 {
     // Once loading has completed, allow autoSize one last opportunity to
     // reduce the size of the frame.
-    autoSizeIfEnabled();
+    if (m_autoSizeInfo)
+        m_autoSizeInfo->autoSizeIfNeeded();
 }
 
 void FrameView::scheduleRelayout()
@@ -2026,108 +2025,6 @@ void FrameView::updateCounters()
 
         toRenderCounter(renderer)->updateCounter();
     }
-}
-
-void FrameView::autoSizeIfEnabled()
-{
-    if (!m_shouldAutoSize)
-        return;
-
-    if (m_inAutoSize)
-        return;
-
-    TemporaryChange<bool> changeInAutoSize(m_inAutoSize, true);
-
-    Document* document = frame().document();
-    if (!document || !document->isActive())
-        return;
-
-    Element* documentElement = document->documentElement();
-    if (!documentElement)
-        return;
-
-    // If this is the first time we run autosize, start from small height and
-    // allow it to grow.
-    if (!m_didRunAutosize)
-        resize(frameRect().width(), m_minAutoSize.height());
-
-    IntSize size = frameRect().size();
-
-    // Do the resizing twice. The first time is basically a rough calculation using the preferred width
-    // which may result in a height change during the second iteration.
-    for (int i = 0; i < 2; i++) {
-        // Update various sizes including contentsSize, scrollHeight, etc.
-        document->updateLayoutIgnorePendingStylesheets();
-
-        RenderView* renderView = document->renderView();
-        if (!renderView)
-            return;
-
-        int width = renderView->minPreferredLogicalWidth();
-
-        RenderBox* documentRenderBox = documentElement->renderBox();
-        if (!documentRenderBox)
-            return;
-
-        int height = documentRenderBox->scrollHeight();
-        IntSize newSize(width, height);
-
-        // Check to see if a scrollbar is needed for a given dimension and
-        // if so, increase the other dimension to account for the scrollbar.
-        // Since the dimensions are only for the view rectangle, once a
-        // dimension exceeds the maximum, there is no need to increase it further.
-        if (newSize.width() > m_maxAutoSize.width()) {
-            RefPtr<Scrollbar> localHorizontalScrollbar = horizontalScrollbar();
-            if (!localHorizontalScrollbar)
-                localHorizontalScrollbar = createScrollbar(HorizontalScrollbar);
-            if (!localHorizontalScrollbar->isOverlayScrollbar())
-                newSize.setHeight(newSize.height() + localHorizontalScrollbar->height());
-
-            // Don't bother checking for a vertical scrollbar because the width is at
-            // already greater the maximum.
-        } else if (newSize.height() > m_maxAutoSize.height()) {
-            RefPtr<Scrollbar> localVerticalScrollbar = verticalScrollbar();
-            if (!localVerticalScrollbar)
-                localVerticalScrollbar = createScrollbar(VerticalScrollbar);
-            if (!localVerticalScrollbar->isOverlayScrollbar())
-                newSize.setWidth(newSize.width() + localVerticalScrollbar->width());
-
-            // Don't bother checking for a horizontal scrollbar because the height is
-            // already greater the maximum.
-        }
-
-        // Ensure the size is at least the min bounds.
-        newSize = newSize.expandedTo(m_minAutoSize);
-
-        // Bound the dimensions by the max bounds and determine what scrollbars to show.
-        ScrollbarMode horizonalScrollbarMode = ScrollbarAlwaysOff;
-        if (newSize.width() > m_maxAutoSize.width()) {
-            newSize.setWidth(m_maxAutoSize.width());
-            horizonalScrollbarMode = ScrollbarAlwaysOn;
-        }
-        ScrollbarMode verticalScrollbarMode = ScrollbarAlwaysOff;
-        if (newSize.height() > m_maxAutoSize.height()) {
-            newSize.setHeight(m_maxAutoSize.height());
-            verticalScrollbarMode = ScrollbarAlwaysOn;
-        }
-
-        if (newSize == size)
-            continue;
-
-        // While loading only allow the size to increase (to avoid twitching during intermediate smaller states)
-        // unless autoresize has just been turned on or the maximum size is smaller than the current size.
-        if (m_didRunAutosize && size.height() <= m_maxAutoSize.height() && size.width() <= m_maxAutoSize.width()
-            && !m_frame->document()->loadEventFinished() && (newSize.height() < size.height() || newSize.width() < size.width()))
-            break;
-
-        resize(newSize.width(), newSize.height());
-        // Force the scrollbar state to avoid the scrollbar code adding them and causing them to be needed. For example,
-        // a vertical scrollbar may cause text to wrap and thus increase the height (which is the only reason the scollbar is needed).
-        setVerticalScrollbarLock(false);
-        setHorizontalScrollbarLock(false);
-        setScrollbarModes(horizonalScrollbarMode, verticalScrollbarMode, true, true);
-    }
-    m_didRunAutosize = true;
 }
 
 void FrameView::updateOverflowStatus(bool horizontalOverflow, bool verticalOverflow)
@@ -2741,31 +2638,12 @@ void FrameView::invalidateTreeIfNeededRecursive()
     }
 }
 
-void FrameView::enableAutoSizeMode(bool enable, const IntSize& minSize, const IntSize& maxSize)
+void FrameView::enableAutoSizeMode(const IntSize& minSize, const IntSize& maxSize)
 {
-    ASSERT(!enable || !minSize.isEmpty());
-    ASSERT(minSize.width() <= maxSize.width());
-    ASSERT(minSize.height() <= maxSize.height());
+    if (!m_autoSizeInfo)
+        m_autoSizeInfo = adoptPtr(new FrameViewAutoSizeInfo(this));
 
-    if (m_shouldAutoSize == enable && m_minAutoSize == minSize && m_maxAutoSize == maxSize)
-        return;
-
-
-    m_shouldAutoSize = enable;
-    m_minAutoSize = minSize;
-    m_maxAutoSize = maxSize;
-    m_didRunAutosize = false;
-
-    setLayoutSizeFixedToFrameSize(enable);
-    setNeedsLayout();
-    scheduleRelayout();
-    if (m_shouldAutoSize)
-        return;
-
-    // Since autosize mode forces the scrollbar mode, change them to being auto.
-    setVerticalScrollbarLock(false);
-    setHorizontalScrollbarLock(false);
-    setScrollbarModes(ScrollbarAuto, ScrollbarAuto);
+    m_autoSizeInfo->configureAutoSizeMode(minSize, maxSize);
 }
 
 void FrameView::forceLayout(bool allowSubtree)

@@ -25,6 +25,7 @@
 #ifndef FrameView_h
 #define FrameView_h
 
+#include "core/frame/FrameViewAutoSizeInfo.h"
 #include "core/rendering/PaintPhase.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/geometry/LayoutRect.h"
@@ -217,7 +218,8 @@ public:
     void incrementVisuallyNonEmptyCharacterCount(unsigned);
     void incrementVisuallyNonEmptyPixelCount(const IntSize&);
     void setIsVisuallyNonEmpty() { m_isVisuallyNonEmpty = true; }
-    void enableAutoSizeMode(bool enable, const IntSize& minSize, const IntSize& maxSize);
+    void enableAutoSizeMode(const IntSize& minSize, const IntSize& maxSize);
+    void disableAutoSizeMode() { m_autoSizeInfo = 0; }
 
     void forceLayout(bool allowSubtree = false);
     void forceLayoutForPagination(const FloatSize& pageSize, const FloatSize& originalPageSize, float maximumShrinkFactor);
@@ -345,7 +347,6 @@ private:
     void updateOverflowStatus(bool horizontalOverflow, bool verticalOverflow);
 
     void updateCounters();
-    void autoSizeIfEnabled();
     void forceLayoutParentViewIfNeeded();
     void performPreLayoutTasks();
     void performLayout(RenderObject* rootForThisLayout, bool inSubtreeLayout);
@@ -472,19 +473,10 @@ private:
     // Renderer to hold our custom scroll corner.
     RawPtrWillBePersistent<RenderScrollbarPart> m_scrollCorner;
 
-    // If true, automatically resize the frame view around its content.
-    bool m_shouldAutoSize;
-    bool m_inAutoSize;
-    // True if autosize has been run since m_shouldAutoSize was set.
-    bool m_didRunAutosize;
-    // The lower bound on the size when autosizing.
-    IntSize m_minAutoSize;
-    // The upper bound on the size when autosizing.
-    IntSize m_maxAutoSize;
-
     OwnPtr<ScrollableAreaSet> m_scrollableAreas;
     OwnPtr<ResizerAreaSet> m_resizerAreas;
     OwnPtr<ViewportConstrainedObjectSet> m_viewportConstrainedObjects;
+    OwnPtr<FrameViewAutoSizeInfo> m_autoSizeInfo;
 
     bool m_hasSoftwareFilters;
 

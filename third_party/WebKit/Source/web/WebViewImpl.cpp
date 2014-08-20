@@ -3484,7 +3484,10 @@ void WebViewImpl::configureAutoResizeMode()
     if (!mainFrameImpl() || !mainFrameImpl()->frame() || !mainFrameImpl()->frame()->view())
         return;
 
-    mainFrameImpl()->frame()->view()->enableAutoSizeMode(m_shouldAutoResize, m_minAutoSize, m_maxAutoSize);
+    if (m_shouldAutoResize)
+        mainFrameImpl()->frame()->view()->enableAutoSizeMode(m_minAutoSize, m_maxAutoSize);
+    else
+        mainFrameImpl()->frame()->view()->disableAutoSizeMode();
 }
 
 unsigned long WebViewImpl::createUniqueIdentifierForRequest()

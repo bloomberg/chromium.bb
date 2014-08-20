@@ -1176,6 +1176,7 @@
             'frame/FrameHost.h',
             'frame/FrameOwner.h',
             'frame/FrameView.cpp',
+            'frame/FrameViewAutoSizeInfo.cpp',
             'frame/History.cpp',
             'frame/History.h',
             'frame/ImageBitmap.cpp',

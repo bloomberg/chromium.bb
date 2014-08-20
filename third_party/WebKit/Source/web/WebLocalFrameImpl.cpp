@@ -1636,7 +1636,7 @@ void WebLocalFrameImpl::createFrameView()
 
     frame()->createView(webView->size(), webView->baseBackgroundColor(), webView->isTransparent());
     if (webView->shouldAutoResize() && isLocalRoot)
-        frame()->view()->enableAutoSizeMode(true, webView->minAutoSize(), webView->maxAutoSize());
+        frame()->view()->enableAutoSizeMode(webView->minAutoSize(), webView->maxAutoSize());
 
     frame()->view()->setInputEventsTransformForEmulation(m_inputEventsOffsetForEmulation, m_inputEventsScaleFactorForEmulation);
 
