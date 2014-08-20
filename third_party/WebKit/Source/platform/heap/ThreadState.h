@@ -720,7 +720,7 @@ public:
     virtual void checkAndMarkPointer(Visitor*, Address) = 0;
     virtual bool contains(Address) = 0;
 
-#if ENABLE(GC_TRACING)
+#if ENABLE(GC_PROFILE_MARKING)
     virtual const GCInfo* findGCInfo(Address) = 0;
 #endif
 
