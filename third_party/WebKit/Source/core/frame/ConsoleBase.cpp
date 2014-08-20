@@ -125,11 +125,13 @@ void ConsoleBase::time(const String& title)
 {
     InspectorInstrumentation::consoleTime(context(), title);
     TRACE_EVENT_COPY_ASYNC_BEGIN0("blink.console", title.utf8().data(), this);
+    TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "ConsoleTime", "data", InspectorConsoleTimeEvent::data(context(), title));
 }
 
 void ConsoleBase::timeEnd(ScriptState* scriptState, const String& title)
 {
     TRACE_EVENT_COPY_ASYNC_END0("blink.console", title.utf8().data(), this);
+    TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "ConsoleTimeEnd", "data", InspectorConsoleTimeEvent::data(context(), title));
     InspectorInstrumentation::consoleTimeEnd(context(), title, scriptState);
 }
 
