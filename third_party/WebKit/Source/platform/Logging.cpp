@@ -67,7 +67,6 @@ WTFLogChannel LogWebAudio =           { WTFLogChannelOff };
 WTFLogChannel LogCompositing =        { WTFLogChannelOff };
 WTFLogChannel LogGamepad =            { WTFLogChannelOff };
 
-WTFLogChannel LogScriptedAnimationController = { WTFLogChannelOff };
 
 WTFLogChannel* getChannelFromName(const String& channelName)
 {
@@ -148,9 +147,6 @@ WTFLogChannel* getChannelFromName(const String& channelName)
 
     if (equalIgnoringCase(channelName, String("Gamepad")))
         return &LogGamepad;
-
-    if (equalIgnoringCase(channelName, String("ScriptedAnimationController")))
-        return &LogScriptedAnimationController;
 
     return 0;
 }

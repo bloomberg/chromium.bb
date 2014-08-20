@@ -64,7 +64,6 @@ PLATFORM_EXPORT extern WTFLogChannel LogFileAPI;
 PLATFORM_EXPORT extern WTFLogChannel LogWebAudio;
 PLATFORM_EXPORT extern WTFLogChannel LogCompositing;
 PLATFORM_EXPORT extern WTFLogChannel LogGamepad;
-PLATFORM_EXPORT extern WTFLogChannel LogScriptedAnimationController;
 
 PLATFORM_EXPORT WTFLogChannel* getChannelFromName(const String& channelName);
 
