@@ -40,3 +40,4 @@ IPC_MESSAGE_CONTROL5(PeerConnectionTrackerHost_GetUserMedia,
 
 // Messages sent to PeerConnectionTracker.
 IPC_MESSAGE_CONTROL0(PeerConnectionTracker_GetAllStats)
+IPC_MESSAGE_CONTROL0(PeerConnectionTracker_OnSuspend)

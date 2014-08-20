@@ -278,6 +278,7 @@ bool PeerConnectionTracker::OnControlMessageReceived(
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PeerConnectionTracker, message)
     IPC_MESSAGE_HANDLER(PeerConnectionTracker_GetAllStats, OnGetAllStats)
+    IPC_MESSAGE_HANDLER(PeerConnectionTracker_OnSuspend, OnSuspend)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -294,6 +295,13 @@ void PeerConnectionTracker::OnGetAllStats() {
         observer,
         NULL,
         webrtc::PeerConnectionInterface::kStatsOutputLevelDebug);
+  }
+}
+
+void PeerConnectionTracker::OnSuspend() {
+  for (PeerConnectionIdMap::iterator it = peer_connection_id_map_.begin();
+       it != peer_connection_id_map_.end(); ++it) {
+    it->first->stop();
   }
 }
 
