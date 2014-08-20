@@ -203,6 +203,8 @@ class VIEWS_EXPORT HWNDMessageHandler :
     use_system_default_icon_ = use_system_default_icon;
   }
 
+  void SetFullscreen(bool fullscreen);
+
  private:
   typedef std::set<DWORD> TouchIDs;
 
@@ -483,6 +485,9 @@ class VIEWS_EXPORT HWNDMessageHandler :
                                  int message_time,
                                  LPARAM l_param);
 
+  // Provides functionality to transition a frame to DWM.
+  void PerformDwmTransition();
+
   HWNDMessageHandlerDelegate* delegate_;
 
   scoped_ptr<FullscreenHandler> fullscreen_handler_;
@@ -611,6 +616,14 @@ class VIEWS_EXPORT HWNDMessageHandler :
   // Time the last WM_MOUSEHWHEEL message is received. Please refer to the
   // HandleMouseEventInternal function as to why this is needed.
   long last_mouse_hwheel_time_;
+
+  // On Windows Vista and beyond, if we are transitioning from custom frame
+  // to Aero(glass) we delay setting the DWM related properties in full
+  // screen mode as DWM is not supported in full screen windows. We perform
+  // the DWM related operations when the window comes out of fullscreen mode.
+  // This member variable is set to true if the window is transitioning to
+  // glass. Defaults to false.
+  bool dwm_transition_desired_;
 
   DISALLOW_COPY_AND_ASSIGN(HWNDMessageHandler);
 };

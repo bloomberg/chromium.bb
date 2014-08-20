@@ -359,7 +359,8 @@ HWNDMessageHandler::HWNDMessageHandler(HWNDMessageHandlerDelegate* delegate)
       in_size_loop_(false),
       touch_down_contexts_(0),
       last_mouse_hwheel_time_(0),
-      msg_handled_(FALSE) {
+      msg_handled_(FALSE),
+      dwm_transition_desired_(false) {
 }
 
 HWNDMessageHandler::~HWNDMessageHandler() {
@@ -794,33 +795,18 @@ void HWNDMessageHandler::SetCursor(HCURSOR cursor) {
 }
 
 void HWNDMessageHandler::FrameTypeChanged() {
-  // Called when the frame type could possibly be changing (theme change or
-  // DWM composition change).
-  UpdateDwmNcRenderingPolicy();
-
-  // Don't redraw the window here, because we need to hide and show the window
-  // which will also trigger a redraw.
-  ResetWindowRegion(true, false);
-
-  // The non-client view needs to update too.
-  delegate_->HandleFrameChanged();
-
-  if (IsVisible() && !delegate_->IsUsingCustomFrame()) {
-    // For some reason, we need to hide the window after we change from a custom
-    // frame to a native frame.  If we don't, the client area will be filled
-    // with black.  This seems to be related to an interaction between DWM and
-    // SetWindowRgn, but the details aren't clear. Additionally, we need to
-    // specify SWP_NOZORDER here, otherwise if you have multiple chrome windows
-    // open they will re-appear with a non-deterministic Z-order.
-    UINT flags = SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER;
-    SetWindowPos(hwnd(), NULL, 0, 0, 0, 0, flags | SWP_HIDEWINDOW);
-    SetWindowPos(hwnd(), NULL, 0, 0, 0, 0, flags | SWP_SHOWWINDOW);
+  if (base::win::GetVersion() < base::win::VERSION_VISTA) {
+    // Don't redraw the window here, because we invalidate the window later.
+    ResetWindowRegion(true, false);
+    // The non-client view needs to update too.
+    delegate_->HandleFrameChanged();
+    InvalidateRect(hwnd(), NULL, FALSE);
+  } else {
+    if (!custom_window_region_ && !delegate_->IsUsingCustomFrame())
+      dwm_transition_desired_ = true;
+    if (!dwm_transition_desired_ || !fullscreen_handler_->fullscreen())
+      PerformDwmTransition();
   }
-
-  // WM_DWMCOMPOSITIONCHANGED is only sent to top level windows, however we want
-  // to notify our children too, since we can have MDI child windows who need to
-  // update their appearance.
-  EnumChildWindows(hwnd(), &SendDwmCompositionChanged, NULL);
 }
 
 void HWNDMessageHandler::SchedulePaintInRect(const gfx::Rect& rect) {
@@ -873,6 +859,14 @@ void HWNDMessageHandler::SetWindowIcons(const gfx::ImageSkia& window_icon,
     if (old_icon)
       DestroyIcon(old_icon);
   }
+}
+
+void HWNDMessageHandler::SetFullscreen(bool fullscreen) {
+  fullscreen_handler()->SetFullscreen(fullscreen);
+  // If we are out of fullscreen and there was a pending DWM transition for the
+  // window, then go ahead and do it now.
+  if (!fullscreen && dwm_transition_desired_)
+    PerformDwmTransition();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1151,6 +1145,9 @@ void HWNDMessageHandler::ResetWindowRegion(bool force, bool redraw) {
 
 void HWNDMessageHandler::UpdateDwmNcRenderingPolicy() {
   if (base::win::GetVersion() < base::win::VERSION_VISTA)
+    return;
+
+  if (fullscreen_handler_->fullscreen())
     return;
 
   DWMNCRENDERINGPOLICY policy =
@@ -2441,6 +2438,33 @@ bool HWNDMessageHandler::IsSynthesizedMouseMessage(unsigned int message,
     return true;
   }
   return false;
+}
+
+void HWNDMessageHandler::PerformDwmTransition() {
+  dwm_transition_desired_ = false;
+
+  UpdateDwmNcRenderingPolicy();
+  // Don't redraw the window here, because we need to hide and show the window
+  // which will also trigger a redraw.
+  ResetWindowRegion(true, false);
+  // The non-client view needs to update too.
+  delegate_->HandleFrameChanged();
+
+  if (IsVisible() && !delegate_->IsUsingCustomFrame()) {
+    // For some reason, we need to hide the window after we change from a custom
+    // frame to a native frame.  If we don't, the client area will be filled
+    // with black.  This seems to be related to an interaction between DWM and
+    // SetWindowRgn, but the details aren't clear. Additionally, we need to
+    // specify SWP_NOZORDER here, otherwise if you have multiple chrome windows
+    // open they will re-appear with a non-deterministic Z-order.
+    UINT flags = SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER;
+    SetWindowPos(hwnd(), NULL, 0, 0, 0, 0, flags | SWP_HIDEWINDOW);
+    SetWindowPos(hwnd(), NULL, 0, 0, 0, 0, flags | SWP_SHOWWINDOW);
+  }
+  // WM_DWMCOMPOSITIONCHANGED is only sent to top level windows, however we want
+  // to notify our children too, since we can have MDI child windows who need to
+  // update their appearance.
+  EnumChildWindows(hwnd(), &SendDwmCompositionChanged, NULL);
 }
 
 }  // namespace views
