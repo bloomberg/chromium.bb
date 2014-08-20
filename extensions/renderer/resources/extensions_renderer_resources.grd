@@ -11,6 +11,7 @@
       <!-- Extension libraries. -->
       <include name="IDR_ASYNC_WAITER_JS" file="async_waiter.js" type="BINDATA" />
       <include name="IDR_DATA_RECEIVER_JS" file="data_receiver.js" type="BINDATA" />
+      <include name="IDR_DATA_SENDER_JS" file="data_sender.js" type="BINDATA" />
       <include name="IDR_DATA_STREAM_MOJOM_JS" file="${mojom_root}\device\serial\data_stream.mojom.js" use_base_dir="false" type="BINDATA" />
       <include name="IDR_ENTRY_ID_MANAGER" file="entry_id_manager.js" type="BINDATA" />
       <include name="IDR_EVENT_BINDINGS_JS" file="event.js" type="BINDATA" />
