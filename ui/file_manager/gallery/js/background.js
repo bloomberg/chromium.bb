@@ -203,13 +203,14 @@ chrome.app.runtime.onLaunched.addListener(function(launchData) {
 // If is is run in the browser test, wait for the test resources are installed
 // as a component extension, and then load the test resources.
 if (chrome.test) {
+  window.testExtensionId = 'ejhcmmdhhpdhhgmifplfmjobgegbibkn';
   chrome.runtime.onMessageExternal.addListener(function(message) {
     if (message.name !== 'testResourceLoaded')
       return;
     var script = document.createElement('script');
     script.src =
-        'chrome-extension://ejhcmmdhhpdhhgmifplfmjobgegbibkn' +
-        '/gallery/test_loader.js';
+        'chrome-extension://' + window.testExtensionId +
+        '/common/test_loader.js';
     document.documentElement.appendChild(script);
   });
 }

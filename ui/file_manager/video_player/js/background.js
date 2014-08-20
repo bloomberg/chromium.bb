@@ -68,21 +68,42 @@ function onLaunched(launchData) {
 /**
  * Opens player window.
  * @param {Array.<Object>} videos List of videos to play.
+ * @param {Promise} Promise to be fulfilled on success, or rejected on error.
  */
 function open(videos) {
-  chrome.app.window.create('video_player.html', {
-    id: 'video',
-    frame: 'none',
-    singleton: false,
-    minWidth: 480,
-    minHeight: 270
-  },
-  function(createdWindow) {
+  return new Promise(function(fulfill, reject) {
+    chrome.app.window.create('video_player.html', {
+      id: 'video',
+      frame: 'none',
+      singleton: false,
+      minWidth: 480,
+      minHeight: 270
+    },
+    fulfill);
+  }).then(function(createdWindow) {
     // Stores the window for test purpose.
     appWindowsForTest[videos[0].entry.name] = createdWindow;
 
     createdWindow.setIcon('images/icon/video-player-64.png');
     createdWindow.contentWindow.videos = videos;
     chrome.runtime.sendMessage({ready: true}, function() {});
-  }.wrap());
+  }).catch(function(error) {
+    console.error('Launch failed', error.stack || error);
+    return Promise.reject(error);
+  });
+}
+
+// If is is run in the browser test, wait for the test resources are installed
+// as a component extension, and then load the test resources.
+if (chrome.test) {
+  window.testExtensionId = 'ljoplibgfehghmibaoaepfagnmbbfiga';
+  chrome.runtime.onMessageExternal.addListener(function(message) {
+    if (message.name !== 'testResourceLoaded')
+      return;
+    var script = document.createElement('script');
+    script.src =
+        'chrome-extension://' + window.testExtensionId +
+        '/common/test_loader.js';
+    document.documentElement.appendChild(script);
+  });
 }

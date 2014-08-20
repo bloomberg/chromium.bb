@@ -1267,6 +1267,7 @@ class GalleryBrowserTestBase : public FileManagerBrowserTestBase {
 
  protected:
   virtual void SetUp() OVERRIDE {
+    AddScript("common/test_util_common.js");
     AddScript("gallery/test_util.js");
     FileManagerBrowserTestBase::SetUp();
   }
@@ -1455,6 +1456,69 @@ IN_PROC_BROWSER_TEST_F(GalleryBrowserTestInGuestMode,
 IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, ExposureImageOnDrive) {
   AddScript("gallery/photo_editor.js");
   set_test_case_name("exposureImageOnDrive");
+  StartTest();
+}
+
+template<GuestMode M>
+class VideoPlayerBrowserTestBase : public FileManagerBrowserTestBase {
+ public:
+  virtual GuestMode GetGuestModeParam() const OVERRIDE { return M; }
+  virtual const char* GetTestCaseNameParam() const OVERRIDE {
+    return test_case_name_.c_str();
+  }
+
+ protected:
+  virtual void SetUp() OVERRIDE {
+    AddScript("common/test_util_common.js");
+    AddScript("video_player/test_util.js");
+    FileManagerBrowserTestBase::SetUp();
+  }
+
+  virtual std::string OnMessage(const std::string& name,
+                                const base::Value* value) OVERRIDE;
+
+  virtual const char* GetTestManifestName() const OVERRIDE {
+    return "video_player_test_manifest.json";
+  }
+
+  void AddScript(const std::string& name) {
+    scripts_.AppendString(
+        "chrome-extension://ljoplibgfehghmibaoaepfagnmbbfiga/" + name);
+  }
+
+  void set_test_case_name(const std::string& name) {
+    test_case_name_ = name;
+  }
+
+ private:
+  base::ListValue scripts_;
+  std::string test_case_name_;
+};
+
+template<GuestMode M>
+std::string VideoPlayerBrowserTestBase<M>::OnMessage(const std::string& name,
+                                                     const base::Value* value) {
+  if (name == "getScripts") {
+    std::string jsonString;
+    base::JSONWriter::Write(&scripts_, &jsonString);
+    return jsonString;
+  }
+  return FileManagerBrowserTestBase::OnMessage(name, value);
+}
+
+typedef VideoPlayerBrowserTestBase<NOT_IN_GUEST_MODE> VideoPlayerBrowserTest;
+typedef VideoPlayerBrowserTestBase<IN_GUEST_MODE>
+    VideoPlayerBrowserTestInGuestMode;
+
+IN_PROC_BROWSER_TEST_F(VideoPlayerBrowserTest, OpenSingleVideoOnDownloads) {
+  AddScript("video_player/open_video_files.js");
+  set_test_case_name("openSingleVideoOnDownloads");
+  StartTest();
+}
+
+IN_PROC_BROWSER_TEST_F(VideoPlayerBrowserTest, OpenSingleVideoOnDrive) {
+  AddScript("video_player/open_video_files.js");
+  set_test_case_name("openSingleVideoOnDrive");
   StartTest();
 }
 

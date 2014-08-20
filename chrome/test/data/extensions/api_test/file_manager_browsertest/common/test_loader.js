@@ -22,7 +22,7 @@ function loadScript(url) {
 }
 
 var testUtilPromise = loadScript(
-    'chrome-extension:///ejhcmmdhhpdhhgmifplfmjobgegbibkn/test_util.js');
+    'chrome-extension:///' + window.testExtensionId + '/test_util.js');
 
 testUtilPromise.then(function() {
   var inGuestModePromise = sendTestMessage({name: 'isInGuestMode'});
