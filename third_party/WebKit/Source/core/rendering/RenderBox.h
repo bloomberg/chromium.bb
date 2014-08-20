@@ -748,6 +748,8 @@ private:
     // min/max.
     mutable LayoutUnit m_intrinsicContentLogicalHeight;
 
+    void inflatePaintInvalidationRectForReflectionAndFilter(LayoutRect&) const;
+
 protected:
     LayoutBoxExtent m_marginBox;
 

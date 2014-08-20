@@ -1987,6 +1987,11 @@ void RenderBox::mapRectToPaintInvalidationBacking(const RenderLayerModelObject* 
 
     EPosition position = styleToUse->position();
 
+    // We need to inflate the paint invalidation rect before we use paintInvalidationState,
+    // else we would forget to inflate it for the current renderer. FIXME: If these were
+    // included into the visual overflow for repaint, we wouldn't have this issue.
+    inflatePaintInvalidationRectForReflectionAndFilter(rect);
+
     if (paintInvalidationState && paintInvalidationState->canMapToContainer(paintInvalidationContainer) && position != FixedPosition) {
         if (layer() && layer()->transform())
             rect = layer()->transform()->mapRect(pixelSnappedIntRect(rect));
@@ -2001,9 +2006,6 @@ void RenderBox::mapRectToPaintInvalidationBacking(const RenderLayerModelObject* 
             rect.intersect(paintInvalidationState->clipRect());
         return;
     }
-
-    if (hasReflection())
-        rect.unite(reflectedRect(rect));
 
     if (paintInvalidationContainer == this) {
         if (paintInvalidationContainer->style()->isFlippedBlocksWritingMode())
@@ -2066,6 +2068,15 @@ void RenderBox::mapRectToPaintInvalidationBacking(const RenderLayerModelObject* 
 
     ViewportConstrainedPosition viewportConstraint = position == FixedPosition ? IsFixedPosition : IsNotFixedPosition;
     o->mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, viewportConstraint, paintInvalidationState);
+}
+
+void RenderBox::inflatePaintInvalidationRectForReflectionAndFilter(LayoutRect& paintInvalidationRect) const
+{
+    if (hasReflection())
+        paintInvalidationRect.unite(reflectedRect(paintInvalidationRect));
+
+    if (style()->hasFilter())
+        style()->filterOutsets().expandRect(paintInvalidationRect);
 }
 
 void RenderBox::invalidatePaintForOverhangingFloats(bool)

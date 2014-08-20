@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<style>
+.green {
+  background-color: green;
+}
+.box {
+  width: 200px;
+  height: 200px;
+}
+.drop-shadowed {
+  -webkit-filter: drop-shadow(100px 100px 10px red);
+}
+.blurry {
+  -webkit-filter: blur(10px);
+  -webkit-transform: translateZ(0);
+}
+</style>
+<!--
+    This test checks that we correctly invalidate filters along with a paint invalidation container change.
+    There should be no red below.
+-->
+<div class="green drop-shadowed box" id="box"></div>
+<script src="resources/text-based-repaint.js"></script>
+<script>
+window.testIsAsync = true;
+
+function repaintTest() {
+    var box = document.getElementById('box');
+    box.classList.toggle('drop-shadowed');
+    box.classList.toggle('blurry');
+
+    if (window.testRunner) {
+        finishRepaintTest();
+        testRunner.notifyDone();
+    }
+}
+runRepaintTest();
+</script>

@@ -142,7 +142,6 @@ void RenderLayerRepainter::setFilterBackendNeedsPaintInvalidationInRect(const La
     if (rect.isEmpty())
         return;
     LayoutRect rectForPaintInvalidation = rect;
-    m_renderer.style()->filterOutsets().expandRect(rectForPaintInvalidation);
 
     ASSERT(m_renderer.layer()->filterInfo());
 

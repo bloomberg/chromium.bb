@@ -1452,12 +1452,6 @@ const RenderLayerModelObject* RenderObject::enclosingCompositedContainer() const
 
 const RenderLayerModelObject* RenderObject::adjustCompositedContainerForSpecialAncestors(const RenderLayerModelObject* paintInvalidationContainer) const
 {
-
-    if (document().view()->hasSoftwareFilters()) {
-        if (RenderLayer* enclosingFilterLayer = enclosingLayer()->enclosingFilterLayer())
-            return enclosingFilterLayer->renderer();
-    }
-
     // If we have a flow thread, then we need to do individual paint invalidations within the RenderRegions instead.
     // Return the flow thread as a paint invalidation container in order to create a chokepoint that allows us to change
     // paint invalidation to do individual region paint invalidations.
