@@ -28,6 +28,7 @@
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/DOMImplementation.h"
+#include "core/dom/DocumentParser.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/XMLDocument.h"
 #include "core/editing/markup.h"
@@ -210,11 +211,9 @@ ScriptString XMLHttpRequest::responseJSONSource()
 
 void XMLHttpRequest::initResponseDocument()
 {
-    AtomicString mimeType = finalResponseMIMETypeWithFallback();
-    bool isHTML = equalIgnoringCase(mimeType, "text/html");
-
     // The W3C spec requires the final MIME type to be some valid XML type, or text/html.
     // If it is text/html, then the responseType of "document" must have been supplied explicitly.
+    bool isHTML = responseIsHTML();
     if ((m_response.isHTTP() && !responseIsXML() && !isHTML)
         || (isHTML && m_responseTypeCode == ResponseTypeDefault)
         || executionContext()->isWorkerGlobalScope()) {
@@ -231,7 +230,7 @@ void XMLHttpRequest::initResponseDocument()
     // FIXME: Set Last-Modified.
     m_responseDocument->setSecurityOrigin(securityOrigin());
     m_responseDocument->setContextFeatures(document()->contextFeatures());
-    m_responseDocument->setMimeType(mimeType);
+    m_responseDocument->setMimeType(finalResponseMIMETypeWithFallback());
 }
 
 Document* XMLHttpRequest::responseXML(ExceptionState& exceptionState)
@@ -972,6 +971,7 @@ void XMLHttpRequest::clearResponse()
 
     m_parsedResponse = false;
     m_responseDocument = nullptr;
+    m_responseDocumentParser = nullptr;
 
     m_responseBlob = nullptr;
     m_downloadedBlobLength = 0;
@@ -1205,6 +1205,11 @@ bool XMLHttpRequest::responseIsXML() const
     return DOMImplementation::isXMLMIMEType(finalResponseMIMETypeWithFallback());
 }
 
+bool XMLHttpRequest::responseIsHTML() const
+{
+    return equalIgnoringCase(finalResponseMIMEType(), "text/html");
+}
+
 int XMLHttpRequest::status() const
 {
     if (m_state == UNSENT || m_state == OPENED || m_error)
@@ -1269,8 +1274,19 @@ void XMLHttpRequest::didFinishLoading(unsigned long identifier, double)
     if (m_state < HEADERS_RECEIVED)
         changeState(HEADERS_RECEIVED);
 
-    if (m_decoder)
+    if (m_responseDocumentParser) {
+        m_responseDocumentParser->finish();
+        m_responseDocumentParser = nullptr;
+
+        m_responseDocument->implicitClose();
+
+        if (!m_responseDocument->wellFormed())
+            m_responseDocument = nullptr;
+
+        m_parsedResponse = true;
+    } else if (m_decoder) {
         m_responseText = m_responseText.concatenateWith(m_decoder->flush());
+    }
 
     if (m_responseLegacyStream)
         m_responseLegacyStream->finalize();
@@ -1319,6 +1335,24 @@ void XMLHttpRequest::didReceiveResponse(unsigned long identifier, const Resource
         m_finalResponseCharset = response.textEncodingName();
 }
 
+void XMLHttpRequest::parseDocumentChunk(const char* data, int len)
+{
+    if (!m_responseDocumentParser) {
+        ASSERT(!m_responseDocument);
+        initResponseDocument();
+        if (!m_responseDocument)
+            return;
+
+        m_responseDocumentParser = m_responseDocument->implicitOpen();
+    }
+    ASSERT(m_responseDocumentParser);
+
+    if (m_responseDocumentParser->needsDecoder())
+        m_responseDocumentParser->setDecoder(createDecoder());
+
+    m_responseDocumentParser->appendBytes(data, len);
+}
+
 PassOwnPtr<TextResourceDecoder> XMLHttpRequest::createDecoder() const
 {
     if (m_responseTypeCode == ResponseTypeJSON)
@@ -1338,7 +1372,7 @@ PassOwnPtr<TextResourceDecoder> XMLHttpRequest::createDecoder() const
         return decoder.release();
     }
 
-    if (equalIgnoringCase(finalResponseMIMEType(), "text/html"))
+    if (responseIsHTML())
         return TextResourceDecoder::create("text/html", "UTF-8");
 
     return TextResourceDecoder::create("text/plain", "UTF-8");
@@ -1360,8 +1394,9 @@ void XMLHttpRequest::didReceiveData(const char* data, int len)
     if (len == -1)
         len = strlen(data);
 
-    bool useDecoder = m_responseTypeCode == ResponseTypeDefault || m_responseTypeCode == ResponseTypeText || m_responseTypeCode == ResponseTypeJSON || m_responseTypeCode == ResponseTypeDocument;
-    if (useDecoder) {
+    if (m_responseTypeCode == ResponseTypeDocument && responseIsHTML()) {
+        parseDocumentChunk(data, len);
+    } else if (m_responseTypeCode == ResponseTypeDefault || m_responseTypeCode == ResponseTypeText || m_responseTypeCode == ResponseTypeJSON || m_responseTypeCode == ResponseTypeDocument) {
         if (!m_decoder)
             m_decoder = createDecoder();
 

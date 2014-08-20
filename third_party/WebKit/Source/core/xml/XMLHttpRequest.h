@@ -42,6 +42,7 @@ namespace blink {
 class Blob;
 class DOMFormData;
 class Document;
+class DocumentParser;
 class ExceptionState;
 class ResourceRequest;
 class SecurityOrigin;
@@ -177,10 +178,13 @@ private:
     // finalResponseMIMEType() returns an empty string.
     AtomicString finalResponseMIMETypeWithFallback() const;
     bool responseIsXML() const;
+    bool responseIsHTML() const;
 
     PassOwnPtr<TextResourceDecoder> createDecoder() const;
 
     void initResponseDocument();
+    void parseDocumentChunk(const char* data, int dataLength);
+
     bool areMethodAndURLValidForSend();
 
     bool initSend(ExceptionState&);
@@ -248,6 +252,7 @@ private:
 
     ScriptString m_responseText;
     RefPtrWillBeMember<Document> m_responseDocument;
+    RefPtrWillBeMember<DocumentParser> m_responseDocumentParser;
 
     RefPtr<SharedBuffer> m_binaryResponseBuilder;
     long long m_downloadedBlobLength;
