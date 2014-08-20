@@ -326,7 +326,8 @@ void TouchEmulator::CancelTouch() {
       WebInputEvent::TouchCancel,
       (base::TimeTicks::Now() - base::TimeTicks()).InSecondsF(),
       &touch_event_);
-  if (gesture_provider_.OnTouchEvent(MotionEventWeb(touch_event_)))
+  if (gesture_provider_.GetCurrentDownEvent() &&
+      gesture_provider_.OnTouchEvent(MotionEventWeb(touch_event_)))
     ForwardTouchEventToClient();
 }
 

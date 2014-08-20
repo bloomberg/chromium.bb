@@ -175,6 +175,10 @@ class TouchEventQueueTest : public testing::Test,
     touch_event_.timeStampSeconds += seconds;
   }
 
+  void ResetTouchEvent() {
+    touch_event_ = SyntheticWebTouchEvent();
+  }
+
   size_t GetAndResetAckedEventCount() {
     size_t count = acked_event_count_;
     acked_event_count_ = 0;
@@ -1518,6 +1522,22 @@ TEST_F(TouchEventQueueTest, NoTouchMoveSuppressionAfterTouchConsumed) {
   EXPECT_EQ(0U, GetAndResetAckedEventCount());
 }
 
+// Tests that even very small TouchMove's are not suppressed when suppression is
+// disabled.
+TEST_F(TouchEventQueueTest, NoTouchMoveSuppressionIfDisabled) {
+  // Queue a TouchStart.
+  PressTouchPoint(0, 0);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  ASSERT_EQ(1U, GetAndResetSentEventCount());
+  ASSERT_EQ(1U, GetAndResetAckedEventCount());
+
+  // Small TouchMove's should not be suppressed.
+  MoveTouchPoint(0, 0.001f, 0.001f);
+  EXPECT_EQ(1U, queued_event_count());
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
+  EXPECT_EQ(0U, GetAndResetAckedEventCount());
+}
+
 // Tests that TouchMove's are not dropped due to incorrect handling of DPI
 // scaling.
 TEST_F(TouchEventQueueTest, TouchMoveSuppressionWithDIPScaling) {
@@ -2064,6 +2084,47 @@ TEST_F(TouchEventQueueTest, AsyncTouchWithTouchCancelAfterAck) {
   EXPECT_EQ(WebInputEvent::TouchCancel, acked_event().type);
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
   EXPECT_EQ(0U, GetAndResetSentEventCount());
+}
+
+// Ensure that the async touch is fully reset if the touch sequence restarts
+// without properly terminating.
+TEST_F(TouchEventQueueTest, AsyncTouchWithHardTouchStartReset) {
+  SetTouchScrollingMode(TouchEventQueue::TOUCH_SCROLLING_MODE_ASYNC_TOUCHMOVE);
+
+  PressTouchPoint(0, 0);
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_EQ(1U, GetAndResetAckedEventCount());
+
+  // Trigger async touchmove dispatch.
+  MoveTouchPoint(0, 1, 1);
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
+  WebGestureEvent followup_scroll;
+  followup_scroll.type = WebInputEvent::GestureScrollBegin;
+  SetFollowupEvent(followup_scroll);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_EQ(1U, GetAndResetAckedEventCount());
+  EXPECT_EQ(0U, queued_event_count());
+  SendGestureEvent(WebInputEvent::GestureScrollUpdate);
+
+  // The async touchmove should be immediately ack'ed but delivery is deferred.
+  MoveTouchPoint(0, 2, 2);
+  EXPECT_EQ(0U, GetAndResetSentEventCount());
+  EXPECT_EQ(1U, GetAndResetAckedEventCount());
+  EXPECT_EQ(0U, queued_event_count());
+  EXPECT_EQ(WebInputEvent::TouchMove, acked_event().type);
+
+  // The queue should be robust to hard touch restarts with a new touch
+  // sequence. In this case, the deferred async touch should not be flushed
+  // by the new touch sequence.
+  SendGestureEvent(WebInputEvent::GestureScrollEnd);
+  ResetTouchEvent();
+
+  PressTouchPoint(0, 0);
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
+  EXPECT_EQ(WebInputEvent::TouchStart, sent_event().type);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_EQ(1U, GetAndResetAckedEventCount());
 }
 
 TEST_F(TouchEventQueueTest, TouchAbsorptionWithConsumedFirstMove) {

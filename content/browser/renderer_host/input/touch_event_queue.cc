@@ -192,10 +192,18 @@ class TouchEventQueue::TouchTimeoutHandler {
 // has exceeded the slop region, removing duplicated slop determination logic.
 class TouchEventQueue::TouchMoveSlopSuppressor {
  public:
-  TouchMoveSlopSuppressor(double slop_suppression_length_dips)
-      : slop_suppression_length_dips_squared_(slop_suppression_length_dips *
-                                              slop_suppression_length_dips),
-        suppressing_touchmoves_(false) {}
+  TouchMoveSlopSuppressor(double slop_suppression_length_dips,
+                          double slop_suppression_region_includes_boundary)
+      : slop_suppression_length_dips_squared_(0),
+        suppressing_touchmoves_(false) {
+    if (slop_suppression_length_dips) {
+      slop_suppression_length_dips += slop_suppression_region_includes_boundary
+                                          ? kSlopEpsilon
+                                          : -kSlopEpsilon;
+      slop_suppression_length_dips_squared_ =
+          slop_suppression_length_dips * slop_suppression_length_dips;
+    }
+  }
 
   bool FilterEvent(const WebTouchEvent& event) {
     if (WebTouchEventTraits::IsTouchSequenceStart(event)) {
@@ -342,14 +350,12 @@ TouchEventQueue::TouchEventQueue(TouchEventQueueClient* client,
       touch_filtering_state_(TOUCH_FILTERING_STATE_DEFAULT),
       ack_timeout_enabled_(config.touch_ack_timeout_supported),
       touchmove_slop_suppressor_(new TouchMoveSlopSuppressor(
-          config.touchmove_slop_suppression_length_dips +
-          (config.touchmove_slop_suppression_region_includes_boundary
-               ? kSlopEpsilon
-               : -kSlopEpsilon))),
+          config.touchmove_slop_suppression_length_dips,
+          config.touchmove_slop_suppression_region_includes_boundary)),
       send_touch_events_async_(false),
       needs_async_touchmove_for_outer_slop_region_(false),
       last_sent_touch_timestamp_sec_(0),
-  touch_scrolling_mode_(config.touch_scrolling_mode) {
+      touch_scrolling_mode_(config.touch_scrolling_mode) {
   DCHECK(client);
   if (ack_timeout_enabled_) {
     timeout_handler_.reset(
@@ -455,6 +461,7 @@ void TouchEventQueue::ForwardNextEventToRenderer() {
                              : FORWARD_ALL_TOUCHES;
     touch_ack_states_.clear();
     send_touch_events_async_ = false;
+    pending_async_touchmove_.reset();
     touch_sequence_start_position_ =
         gfx::PointF(touch.event.touches[0].position);
   }
