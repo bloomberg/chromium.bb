@@ -108,7 +108,6 @@ PASS: canGet('targetWindow.Image') should be 'false' and is.
 PASS: canGet('targetWindow.MutationEvent') should be 'false' and is.
 PASS: canGet('targetWindow.Node') should be 'false' and is.
 PASS: canGet('targetWindow.NodeFilter') should be 'false' and is.
-PASS: canGet('targetWindow.Notation') should be 'false' and is.
 PASS: canGet('targetWindow.Option') should be 'false' and is.
 PASS: canGet('targetWindow.ProcessingInstruction') should be 'false' and is.
 PASS: canGet('targetWindow.Range') should be 'false' and is.

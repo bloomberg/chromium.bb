@@ -43,7 +43,6 @@
 #include "bindings/core/v8/V8Element.h"
 #include "bindings/core/v8/V8EventListener.h"
 #include "bindings/core/v8/V8HTMLElement.h"
-#include "bindings/core/v8/V8Notation.h"
 #include "bindings/core/v8/V8ProcessingInstruction.h"
 #include "bindings/core/v8/V8SVGElement.h"
 #include "bindings/core/v8/V8ShadowRoot.h"

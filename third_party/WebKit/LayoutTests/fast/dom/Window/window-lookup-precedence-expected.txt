@@ -244,8 +244,6 @@ PASS 'function NodeFilter() { [native code] }' is 'function NodeFilter() { [nati
 PASS 'function NodeFilter() { [native code] }' is 'function NodeFilter() { [native code] }'
 PASS 'function NodeList() { [native code] }' is 'function NodeList() { [native code] }'
 PASS 'function NodeList() { [native code] }' is 'function NodeList() { [native code] }'
-PASS 'function Notation() { [native code] }' is 'function Notation() { [native code] }'
-PASS 'function Notation() { [native code] }' is 'function Notation() { [native code] }'
 PASS 'function OverflowEvent() { [native code] }' is 'function OverflowEvent() { [native code] }'
 PASS 'function OverflowEvent() { [native code] }' is 'function OverflowEvent() { [native code] }'
 PASS 'function ProcessingInstruction() { [native code] }' is 'function ProcessingInstruction() { [native code] }'

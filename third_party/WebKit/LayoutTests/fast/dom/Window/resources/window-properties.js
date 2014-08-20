@@ -121,7 +121,6 @@ var propertyInfo = [
     ["Node", "object"],
     ["NodeFilter", "object"],
     ["NodeList", "object"],
-    ["Notation", "object"],
     ["OverflowEvent", "object"],
     ["ProcessingInstruction", "object"],
     ["ProgressEvent", "object"],

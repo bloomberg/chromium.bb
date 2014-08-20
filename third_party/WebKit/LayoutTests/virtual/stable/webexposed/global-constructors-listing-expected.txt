@@ -230,7 +230,6 @@ Node
 NodeFilter
 NodeIterator
 NodeList
-Notation
 Notification
 Number
 Object

@@ -74,7 +74,6 @@ ALERT: PASS: window.HTMLUListElement should be 'function HTMLUListElement() { [n
 ALERT: PASS: window.MutationEvent should be 'function MutationEvent() { [native code] }' and is.
 ALERT: PASS: window.Node should be 'function Node() { [native code] }' and is.
 ALERT: PASS: window.NodeFilter should be 'function NodeFilter() { [native code] }' and is.
-ALERT: PASS: window.Notation should be 'function Notation() { [native code] }' and is.
 ALERT: PASS: window.ProcessingInstruction should be 'function ProcessingInstruction() { [native code] }' and is.
 ALERT: PASS: window.Range should be 'function Range() { [native code] }' and is.
 ALERT: PASS: window.RangeError should be 'function RangeError() { [native code] }' and is.
@@ -264,7 +263,6 @@ PASS: Unable to set property HTMLUListElement: SecurityError: Blocked a frame wi
 PASS: Unable to set property MutationEvent: SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.
 PASS: Unable to set property Node: SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.
 PASS: Unable to set property NodeFilter: SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.
-PASS: Unable to set property Notation: SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.
 PASS: Unable to set property ProcessingInstruction: SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.
 PASS: Unable to set property Range: SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.
 PASS: Unable to set property RangeError: SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.
