@@ -72,7 +72,6 @@ class BenchmarkRasterTask : public Task {
           base::TimeDelta::FromMillisecondsD(timer.MsPerLap());
       if (duration < best_time_)
         best_time_ = duration;
-
     }
   }
 
@@ -88,6 +87,57 @@ class BenchmarkRasterTask : public Task {
   size_t repeat_count_;
   bool is_solid_color_;
   base::TimeDelta best_time_;
+};
+
+class FixedInvalidationPictureLayerTilingClient
+    : public PictureLayerTilingClient {
+ public:
+  FixedInvalidationPictureLayerTilingClient(
+      PictureLayerTilingClient* base_client,
+      const Region invalidation)
+      : base_client_(base_client), invalidation_(invalidation) {}
+
+  virtual scoped_refptr<Tile> CreateTile(
+      PictureLayerTiling* tiling,
+      const gfx::Rect& content_rect) OVERRIDE {
+    return base_client_->CreateTile(tiling, content_rect);
+  }
+
+  virtual PicturePileImpl* GetPile() OVERRIDE {
+    return base_client_->GetPile();
+  }
+
+  virtual gfx::Size CalculateTileSize(
+      const gfx::Size& content_bounds) const OVERRIDE {
+    return base_client_->CalculateTileSize(content_bounds);
+  }
+
+  // This is the only function that returns something different from the base
+  // client.
+  virtual const Region* GetInvalidation() OVERRIDE { return &invalidation_; }
+
+  virtual const PictureLayerTiling* GetTwinTiling(
+      const PictureLayerTiling* tiling) const OVERRIDE {
+    return base_client_->GetTwinTiling(tiling);
+  }
+
+  virtual size_t GetMaxTilesForInterestArea() const OVERRIDE {
+    return base_client_->GetMaxTilesForInterestArea();
+  }
+
+  virtual float GetSkewportTargetTimeInSeconds() const OVERRIDE {
+    return base_client_->GetSkewportTargetTimeInSeconds();
+  }
+
+  virtual int GetSkewportExtrapolationLimitInContentPixels() const OVERRIDE {
+    return base_client_->GetSkewportExtrapolationLimitInContentPixels();
+  }
+
+  virtual WhichTree GetTree() const OVERRIDE { return base_client_->GetTree(); }
+
+ private:
+  PictureLayerTilingClient* base_client_;
+  Region invalidation_;
 };
 
 }  // namespace
@@ -157,7 +207,9 @@ void RasterizeAndRecordBenchmarkImpl::RunOnLayer(PictureLayerImpl* layer) {
   if (!task_namespace_.IsValid())
     task_namespace_ = task_graph_runner->GetNamespaceToken();
 
-  PictureLayerTilingSet tiling_set(layer, layer->content_bounds());
+  FixedInvalidationPictureLayerTilingClient client(
+      layer, gfx::Rect(layer->content_bounds()));
+  PictureLayerTilingSet tiling_set(&client, layer->content_bounds());
 
   PictureLayerTiling* tiling = tiling_set.AddTiling(layer->contents_scale_x());
   tiling->CreateAllTilesForTesting();

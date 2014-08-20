@@ -67,6 +67,9 @@ class CC_EXPORT Tile : public RefCountedManaged<Tile> {
 
   bool is_occluded(WhichTree tree) const { return is_occluded_[tree]; }
 
+  void set_shared(bool is_shared) { is_shared_ = is_shared; }
+  bool is_shared() const { return is_shared_; }
+
   bool is_occluded_for_tree_priority(TreePriority tree_priority) const {
     switch (tree_priority) {
       case SMOOTHNESS_TAKES_PRIORITY:
@@ -189,6 +192,7 @@ class CC_EXPORT Tile : public RefCountedManaged<Tile> {
   int layer_id_;
   int source_frame_number_;
   int flags_;
+  bool is_shared_;
 
   Id id_;
   static Id s_next_id_;

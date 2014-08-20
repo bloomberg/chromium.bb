@@ -57,6 +57,7 @@ void ReleaseTile(Tile* tile, WhichTree tree) {
   // Reset priority as tile is ref-counted and might still be used
   // even though we no longer hold a reference to it here anymore.
   tile->SetPriority(tree, TilePriority());
+  tile->set_shared(false);
 }
 
 }  // namespace
@@ -126,6 +127,8 @@ Tile* PictureLayerTiling::CreateTile(int i,
       gfx::Rect rect =
           gfx::ScaleToEnclosingRect(paint_rect, 1.0f / contents_scale_);
       if (!client_->GetInvalidation()->Intersects(rect)) {
+        DCHECK(!candidate_tile->is_shared());
+        candidate_tile->set_shared(true);
         tiles_[key] = candidate_tile;
         return candidate_tile;
       }
@@ -134,8 +137,10 @@ Tile* PictureLayerTiling::CreateTile(int i,
 
   // Create a new tile because our twin didn't have a valid one.
   scoped_refptr<Tile> tile = client_->CreateTile(this, tile_rect);
-  if (tile.get())
+  if (tile.get()) {
+    DCHECK(!tile->is_shared());
     tiles_[key] = tile;
+  }
   return tile.get();
 }
 

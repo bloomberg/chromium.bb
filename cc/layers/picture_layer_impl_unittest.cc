@@ -1658,9 +1658,13 @@ TEST_F(PictureLayerImplTest, ShareTilesOnSync) {
     EXPECT_TRUE(pending_tiling->TileAt(1, 1));
 
     EXPECT_EQ(active_tiling->TileAt(0, 0), pending_tiling->TileAt(0, 0));
+    EXPECT_TRUE(active_tiling->TileAt(0, 0)->is_shared());
     EXPECT_EQ(active_tiling->TileAt(1, 0), pending_tiling->TileAt(1, 0));
+    EXPECT_TRUE(active_tiling->TileAt(1, 0)->is_shared());
     EXPECT_EQ(active_tiling->TileAt(0, 1), pending_tiling->TileAt(0, 1));
+    EXPECT_TRUE(active_tiling->TileAt(0, 1)->is_shared());
     EXPECT_EQ(active_tiling->TileAt(1, 1), pending_tiling->TileAt(1, 1));
+    EXPECT_TRUE(active_tiling->TileAt(1, 1)->is_shared());
   }
 }
 
@@ -1700,9 +1704,13 @@ TEST_F(PictureLayerImplTest, ShareInvalidActiveTreeTilesOnSync) {
     EXPECT_TRUE(pending_tiling->TileAt(1, 1));
 
     EXPECT_EQ(active_tiling->TileAt(0, 0), pending_tiling->TileAt(0, 0));
+    EXPECT_TRUE(active_tiling->TileAt(0, 0)->is_shared());
     EXPECT_EQ(active_tiling->TileAt(1, 0), pending_tiling->TileAt(1, 0));
+    EXPECT_TRUE(active_tiling->TileAt(1, 0)->is_shared());
     EXPECT_EQ(active_tiling->TileAt(0, 1), pending_tiling->TileAt(0, 1));
+    EXPECT_TRUE(active_tiling->TileAt(0, 1)->is_shared());
     EXPECT_EQ(active_tiling->TileAt(1, 1), pending_tiling->TileAt(1, 1));
+    EXPECT_TRUE(active_tiling->TileAt(1, 1)->is_shared());
   }
 }
 
@@ -1745,9 +1753,14 @@ TEST_F(PictureLayerImplTest, RemoveInvalidPendingTreeTilesOnSync) {
     EXPECT_TRUE(pending_tiling->TileAt(1, 1));
 
     EXPECT_NE(active_tiling->TileAt(0, 0), pending_tiling->TileAt(0, 0));
+    EXPECT_FALSE(active_tiling->TileAt(0, 0)->is_shared());
+    EXPECT_FALSE(pending_tiling->TileAt(0, 0)->is_shared());
     EXPECT_EQ(active_tiling->TileAt(1, 0), pending_tiling->TileAt(1, 0));
+    EXPECT_TRUE(active_tiling->TileAt(1, 0)->is_shared());
     EXPECT_EQ(active_tiling->TileAt(0, 1), pending_tiling->TileAt(0, 1));
+    EXPECT_TRUE(active_tiling->TileAt(1, 1)->is_shared());
     EXPECT_EQ(active_tiling->TileAt(1, 1), pending_tiling->TileAt(1, 1));
+    EXPECT_TRUE(active_tiling->TileAt(1, 1)->is_shared());
   }
 }
 

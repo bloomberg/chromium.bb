@@ -34,6 +34,7 @@ Tile::Tile(TileManager* tile_manager,
       layer_id_(layer_id),
       source_frame_number_(source_frame_number),
       flags_(flags),
+      is_shared_(false),
       id_(s_next_id_++) {
   set_picture_pile(picture_pile);
   for (int i = 0; i < NUM_TREES; i++)
