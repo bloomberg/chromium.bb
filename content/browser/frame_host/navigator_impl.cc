@@ -381,7 +381,21 @@ bool NavigatorImpl::NavigateToEntry(
     delegate_->AboutToNavigateRenderFrame(dest_render_frame_host);
 
   // Navigate in the desired RenderFrameHost.
-  dest_render_frame_host->Navigate(navigate_params);
+  // We can skip this step in the rare case that this is a transfer navigation
+  // which began in the chosen RenderFrameHost, since the request has already
+  // been issued.  In that case, simply resume the response.
+  bool is_transfer_to_same =
+      navigate_params.transferred_request_child_id != -1 &&
+      navigate_params.transferred_request_child_id ==
+          dest_render_frame_host->GetProcess()->GetID();
+  if (!is_transfer_to_same) {
+    dest_render_frame_host->Navigate(navigate_params);
+  } else {
+    // No need to navigate again.  Just resume the deferred request.
+    dest_render_frame_host->GetProcess()->ResumeDeferredNavigation(
+        GlobalRequestID(navigate_params.transferred_request_child_id,
+                        navigate_params.transferred_request_request_id));
+  }
 
   // Make sure no code called via RFH::Navigate clears the pending entry.
   CHECK_EQ(controller_->GetPendingEntry(), &entry);

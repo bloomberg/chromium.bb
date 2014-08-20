@@ -245,10 +245,6 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
   // Resume navigation paused after receiving response headers.
   void ResumeResponseDeferredAtStart();
 
-  // The RenderFrameHost has been swapped out, so we should resume the pending
-  // network response and allow the pending RenderFrameHost to commit.
-  void SwappedOut(RenderFrameHostImpl* render_frame_host);
-
   // Called when a renderer's frame navigates.
   void DidNavigateFrame(RenderFrameHostImpl* render_frame_host);
 
@@ -304,11 +300,6 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
   RenderFrameProxyHost* GetRenderFrameProxyHost(
       SiteInstance* instance) const;
 
-  // Runs the unload handler in the current page, when we know that a pending
-  // cross-process navigation is going to commit.  We may initiate a transfer
-  // to a new process after this completes or times out.
-  void SwapOutOldPage();
-
   // Deletes a RenderFrameHost that was pending shutdown.
   void ClearPendingShutdownRFHForSiteInstance(int32 site_instance_id,
                                               RenderFrameHostImpl* rfh);
@@ -345,51 +336,6 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
 
   FRIEND_TEST_ALL_PREFIXES(CrossProcessFrameTreeBrowserTest,
                            CreateCrossProcessSubframeProxies);
-
-  // Tracks information about a navigation while a cross-process transition is
-  // in progress, in case we need to transfer it to a new RenderFrameHost.
-  // When a request is being transferred, deleting the PendingNavigationParams,
-  // and thus |cross_site_transferring_request|, will cancel the request being
-  // transferred, unless its ReleaseRequest method has been called.
-  struct PendingNavigationParams {
-    PendingNavigationParams(
-        const GlobalRequestID& global_request_id,
-        scoped_ptr<CrossSiteTransferringRequest>
-            cross_site_transferring_request,
-        const std::vector<GURL>& transfer_url,
-        Referrer referrer,
-        PageTransition page_transition,
-        int render_frame_id,
-        bool should_replace_current_entry);
-    ~PendingNavigationParams();
-
-    // The child ID and request ID for the pending navigation.  Present whether
-    // |request_transfer| is NULL or not.
-    GlobalRequestID global_request_id;
-
-    // If a pending request needs to be transferred to another process, this
-    // owns the request until it's transferred to the new process, so it will be
-    // cleaned up if the navigation is cancelled.  Otherwise, this is NULL.
-    scoped_ptr<CrossSiteTransferringRequest> cross_site_transferring_request;
-
-    // If |request_transfer| is non-NULL, the values below are all set.
-
-    // The first entry is the original request URL, and the last entry is the
-    // destination URL to request in the new process.
-    std::vector<GURL> transfer_url_chain;
-
-    // This is the referrer to use for the request in the new process.
-    Referrer referrer;
-
-    // This is the transition type for the original navigation.
-    PageTransition page_transition;
-
-    // This is the frame routing ID to use in RequestTransferURL.
-    int render_frame_id;
-
-    // This is whether the navigation should replace the current history entry.
-    bool should_replace_current_entry;
-  };
 
   // Returns the current navigation request (used in the PlzNavigate navigation
   // logic refactoring project).
@@ -489,6 +435,10 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
   // since there could be Web UI switching as well. Call this for every commit.
   void CommitPending();
 
+  // Runs the unload handler in the current page, after the new page has
+  // committed.
+  void SwapOutOldPage(RenderFrameHostImpl* old_render_frame_host);
+
   // Shutdown all RenderFrameProxyHosts in a SiteInstance. This is called to
   // shutdown frames when all the frames in a SiteInstance are confirmed to be
   // swapped out.
@@ -550,8 +500,10 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
   // associated with the navigation.
   scoped_ptr<RenderFrameHostImpl> pending_render_frame_host_;
 
-  // Tracks information about any current pending cross-process navigation.
-  scoped_ptr<PendingNavigationParams> pending_nav_params_;
+  // If a pending request needs to be transferred to another process, this
+  // owns the request until it's transferred to the new process, so it will be
+  // cleaned up if the navigation is cancelled.  Otherwise, this is NULL.
+  scoped_ptr<CrossSiteTransferringRequest> cross_site_transferring_request_;
 
   // Tracks information about any navigation paused after receiving response
   // headers.

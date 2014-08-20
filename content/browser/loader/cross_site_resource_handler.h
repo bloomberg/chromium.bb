@@ -19,11 +19,11 @@ namespace content {
 
 struct TransitionLayerData;
 
-// Ensures that cross-site responses are delayed until the onunload handler of
-// the previous page is allowed to run.  This handler wraps an
-// AsyncEventHandler, and it sits inside SafeBrowsing and Buffered event
-// handlers.  This is important, so that it can intercept OnResponseStarted
-// after we determine that a response is safe and not a download.
+// Ensures that responses are delayed for navigations that must be transferred
+// to a different process.  This handler wraps an AsyncEventHandler, and it sits
+// inside SafeBrowsing and Buffered event handlers.  This is important, so that
+// it can intercept OnResponseStarted after we determine that a response is safe
+// and not a download.
 class CrossSiteResourceHandler : public LayeredResourceHandler {
  public:
   CrossSiteResourceHandler(scoped_ptr<ResourceHandler> next_handler,
@@ -60,10 +60,9 @@ class CrossSiteResourceHandler : public LayeredResourceHandler {
   bool did_defer_for_testing() const { return did_defer_; }
 
  private:
-  // Prepare to render the cross-site response in a new RenderViewHost, by
-  // telling the old RenderViewHost to run its onunload handler.
-  void StartCrossSiteTransition(ResourceResponse* response,
-                                bool should_transfer);
+  // Prepare to transfer the cross-site response to a new RenderFrameHost, by
+  // asking it to issue an identical request (on the UI thread).
+  void StartCrossSiteTransition(ResourceResponse* response);
 
   // Defer the navigation to the UI thread to check whether transfer is required
   // or not. Currently only used in --site-per-process.

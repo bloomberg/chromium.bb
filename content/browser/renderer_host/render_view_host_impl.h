@@ -96,13 +96,6 @@ class CONTENT_EXPORT RenderViewHostImpl
     // The standard state for a RVH handling the communication with a
     // RenderView.
     STATE_DEFAULT = 0,
-    // The RVH has sent the SwapOut request to the renderer, but has not
-    // received the SwapOutACK yet. The new page has not been committed yet
-    // either.
-    STATE_WAITING_FOR_UNLOAD_ACK,
-    // The RVH received the SwapOutACK from the RenderView, but the new page has
-    // not been committed yet.
-    STATE_WAITING_FOR_COMMIT,
     // The RVH is waiting for the CloseACK from the RenderView.
     STATE_WAITING_FOR_CLOSE,
     // The RVH has not received the SwapOutACK yet, but the new page has
@@ -276,12 +269,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   // Called when either the SwapOut request has been acknowledged or has timed
   // out.
   void OnSwappedOut(bool timed_out);
-
-  // Called when the RenderFrameHostManager has swapped in a new
-  // RenderFrameHost. Should |this| RVH switch to the pending shutdown state,
-  // |pending_delete_on_swap_out| will be executed upon reception of the
-  // SwapOutACK, or when the unload timer times out.
-  void WasSwappedOut(const base::Closure& pending_delete_on_swap_out);
 
   // Set |this| as pending shutdown. |on_swap_out| will be called
   // when the SwapOutACK is received, or when the unload timer times out.

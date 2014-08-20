@@ -618,10 +618,6 @@ IPC_MESSAGE_ROUTED2(ViewMsg_WasShown,
                     bool /* needs_repainting */,
                     ui::LatencyInfo /* latency_info */)
 
-// Sent to inform the view that it was swapped out.  This allows the process to
-// exit if no other views are using it.
-IPC_MESSAGE_ROUTED0(ViewMsg_WasSwappedOut)
-
 // Tells the renderer to focus the first (last if reverse is true) focusable
 // node.
 IPC_MESSAGE_ROUTED1(ViewMsg_SetInitialFocus,

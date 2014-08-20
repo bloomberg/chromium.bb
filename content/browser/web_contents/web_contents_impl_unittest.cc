@@ -1172,64 +1172,6 @@ TEST_F(WebContentsImplTest, CrossSiteNotPreemptedDuringBeforeUnload) {
   EXPECT_EQ(pending_rfh, contents()->GetMainFrame());
 }
 
-// Test that the original renderer cannot preempt a cross-site navigation once
-// the unload request has been made.  At this point, the cross-site navigation
-// is almost ready to be displayed, and the original renderer is only given a
-// short chance to run an unload handler.  Prevents regression of bug 23942.
-TEST_F(WebContentsImplTest, CrossSiteCantPreemptAfterUnload) {
-  TestRenderFrameHost* orig_rfh = contents()->GetMainFrame();
-  SiteInstance* instance1 = contents()->GetSiteInstance();
-
-  // Navigate to URL.  First URL should use first RenderViewHost.
-  const GURL url("http://www.google.com");
-  controller().LoadURL(
-      url, Referrer(), PAGE_TRANSITION_TYPED, std::string());
-  contents()->TestDidNavigate(orig_rfh, 1, url, PAGE_TRANSITION_TYPED);
-  EXPECT_FALSE(contents()->cross_navigation_pending());
-  EXPECT_EQ(orig_rfh, contents()->GetMainFrame());
-
-  // Navigate to new site, simulating an onbeforeunload approval.
-  const GURL url2("http://www.yahoo.com");
-  controller().LoadURL(
-      url2, Referrer(), PAGE_TRANSITION_TYPED, std::string());
-  base::TimeTicks now = base::TimeTicks::Now();
-  orig_rfh->OnMessageReceived(
-      FrameHostMsg_BeforeUnload_ACK(0, true, now, now));
-  EXPECT_TRUE(contents()->cross_navigation_pending());
-  TestRenderFrameHost* pending_rfh = contents()->GetPendingMainFrame();
-
-  // Simulate the pending renderer's response, which leads to an unload request
-  // being sent to orig_rfh.
-  std::vector<GURL> url_chain;
-  url_chain.push_back(GURL());
-  contents()->GetRenderManagerForTesting()->OnCrossSiteResponse(
-      contents()->GetRenderManagerForTesting()->pending_frame_host(),
-      GlobalRequestID(0, 0), scoped_ptr<CrossSiteTransferringRequest>(),
-      url_chain, Referrer(), PAGE_TRANSITION_TYPED, false);
-
-  // Suppose the original renderer navigates now, while the unload request is in
-  // flight.  We should ignore it, wait for the unload ack, and let the pending
-  // request continue.  Otherwise, the contents may close spontaneously or stop
-  // responding to navigation requests.  (See bug 23942.)
-  FrameHostMsg_DidCommitProvisionalLoad_Params params1a;
-  InitNavigateParams(&params1a, 2, GURL("http://www.google.com/foo"),
-                     PAGE_TRANSITION_TYPED);
-  orig_rfh->SendNavigate(2, GURL("http://www.google.com/foo"));
-
-  // Verify that the pending navigation is still in progress.
-  EXPECT_TRUE(contents()->cross_navigation_pending());
-  EXPECT_TRUE(contents()->GetPendingMainFrame() != NULL);
-
-  // DidNavigate from the pending page should commit it.
-  contents()->TestDidNavigate(
-      pending_rfh, 1, url2, PAGE_TRANSITION_TYPED);
-  SiteInstance* instance2 = contents()->GetSiteInstance();
-  EXPECT_FALSE(contents()->cross_navigation_pending());
-  EXPECT_EQ(pending_rfh, contents()->GetMainFrame());
-  EXPECT_NE(instance1, instance2);
-  EXPECT_TRUE(contents()->GetPendingMainFrame() == NULL);
-}
-
 // Test that a cross-site navigation that doesn't commit after the unload
 // handler doesn't leave the contents in a stuck state.  http://crbug.com/88562
 TEST_F(WebContentsImplTest, CrossSiteNavigationCanceled) {

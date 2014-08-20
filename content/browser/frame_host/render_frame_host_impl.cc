@@ -15,7 +15,6 @@
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
 #include "content/browser/child_process_security_policy_impl.h"
-#include "content/browser/cross_site_request_manager.h"
 #include "content/browser/frame_host/cross_process_frame_connector.h"
 #include "content/browser/frame_host/cross_site_transferring_request.h"
 #include "content/browser/frame_host/frame_tree.h"
@@ -193,9 +192,6 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
   GetProcess()->RemoveRoute(routing_id_);
   g_routing_id_frame_map.Get().erase(
       RenderFrameHostID(GetProcess()->GetID(), routing_id_));
-  // Clean up any leftover state from cross-site requests.
-  CrossSiteRequestManager::GetInstance()->SetHasPendingCrossSiteRequest(
-      GetProcess()->GetID(), routing_id_, false);
 
   if (delegate_)
     delegate_->RenderFrameDeleted(this);
@@ -686,7 +682,7 @@ void RenderFrameHostImpl::SwapOut(RenderFrameProxyHost* proxy) {
       return;
 
     render_view_host_->SetState(
-        RenderViewHostImpl::STATE_WAITING_FOR_UNLOAD_ACK);
+        RenderViewHostImpl::STATE_PENDING_SWAP_OUT);
     render_view_host_->unload_event_monitor_timeout_->Start(
         base::TimeDelta::FromMilliseconds(
             RenderViewHostImpl::kUnloadTimeoutMS));
@@ -699,9 +695,8 @@ void RenderFrameHostImpl::SwapOut(RenderFrameProxyHost* proxy) {
 
   if (!GetParent())
     delegate_->SwappedOut(this);
-
-  // Allow the navigation to proceed.
-  frame_tree_node_->render_manager()->SwappedOut(this);
+  else
+    set_swapped_out(true);
 }
 
 void RenderFrameHostImpl::OnBeforeUnloadACK(
@@ -784,11 +779,8 @@ void RenderFrameHostImpl::OnSwapOutACK() {
 
 void RenderFrameHostImpl::OnSwappedOut(bool timed_out) {
   // For now, we only need to update the RVH state machine for top-level swaps.
-  // Subframe swaps (in --site-per-process) can just continue via RFHM.
   if (!GetParent())
     render_view_host_->OnSwappedOut(timed_out);
-  else
-    frame_tree_node_->render_manager()->SwappedOut(this);
 }
 
 void RenderFrameHostImpl::OnContextMenu(const ContextMenuParams& params) {
@@ -1164,17 +1156,6 @@ void RenderFrameHostImpl::JavaScriptDialogClosed(
 
 void RenderFrameHostImpl::NotificationClosed(int notification_id) {
   cancel_notification_callbacks_.erase(notification_id);
-}
-
-bool RenderFrameHostImpl::HasPendingCrossSiteRequest() {
-  return CrossSiteRequestManager::GetInstance()->HasPendingCrossSiteRequest(
-      GetProcess()->GetID(), routing_id_);
-}
-
-void RenderFrameHostImpl::SetHasPendingCrossSiteRequest(
-    bool has_pending_request) {
-  CrossSiteRequestManager::GetInstance()->SetHasPendingCrossSiteRequest(
-      GetProcess()->GetID(), routing_id_, has_pending_request);
 }
 
 void RenderFrameHostImpl::PlatformNotificationPermissionRequestDone(

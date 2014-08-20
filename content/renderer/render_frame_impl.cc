@@ -1000,8 +1000,8 @@ void RenderFrameImpl::OnSwapOut(int proxy_routing_id) {
   if (!is_swapped_out_ || !render_view_->is_swapped_out_) {
     // Swap this RenderFrame out so the frame can navigate to a page rendered by
     // a different process.  This involves running the unload handler and
-    // clearing the page.  Once WasSwappedOut is called, we also allow this
-    // process to exit if there are no other active RenderFrames in it.
+    // clearing the page.  We also allow this process to exit if there are no
+    // other active RenderFrames in it.
 
     // Send an UpdateState message before we get swapped out. Create the
     // RenderFrameProxy as well so its routing id is registered for receiving
@@ -1074,6 +1074,10 @@ void RenderFrameImpl::OnSwapOut(int proxy_routing_id) {
       set_render_frame_proxy(proxy);
     }
   }
+
+  // Safe to exit if no one else is using the process.
+  if (!frame_->parent())
+    render_view_->WasSwappedOut();
 }
 
 void RenderFrameImpl::OnContextMenuClosed(

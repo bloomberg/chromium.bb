@@ -512,11 +512,18 @@ void RenderWidget::SetSwappedOut(bool is_swapped_out) {
 
   // If we are swapping out, we will call ReleaseProcess, allowing the process
   // to exit if all of its RenderViews are swapped out.  We wait until the
-  // WasSwappedOut call to do this, to avoid showing the sad tab.
+  // WasSwappedOut call to do this, to allow the unload handler to finish.
   // If we are swapping in, we call AddRefProcess to prevent the process from
   // exiting.
-  if (!is_swapped_out)
+  if (!is_swapped_out_)
     RenderProcess::current()->AddRefProcess();
+}
+
+void RenderWidget::WasSwappedOut() {
+  // If we have been swapped out and no one else is using this process,
+  // it's safe to exit now.
+  CHECK(is_swapped_out_);
+  RenderProcess::current()->ReleaseProcess();
 }
 
 void RenderWidget::EnableScreenMetricsEmulation(
@@ -598,7 +605,6 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_ChangeResizeRect, OnChangeResizeRect)
     IPC_MESSAGE_HANDLER(ViewMsg_WasHidden, OnWasHidden)
     IPC_MESSAGE_HANDLER(ViewMsg_WasShown, OnWasShown)
-    IPC_MESSAGE_HANDLER(ViewMsg_WasSwappedOut, OnWasSwappedOut)
     IPC_MESSAGE_HANDLER(ViewMsg_SetInputMethodActive, OnSetInputMethodActive)
     IPC_MESSAGE_HANDLER(ViewMsg_CandidateWindowShown, OnCandidateWindowShown)
     IPC_MESSAGE_HANDLER(ViewMsg_CandidateWindowUpdated,
@@ -802,14 +808,6 @@ void RenderWidget::OnWasShown(bool needs_repainting,
     compositor_->SetNeedsForcedRedraw();
   }
   scheduleComposite();
-}
-
-void RenderWidget::OnWasSwappedOut() {
-  // If we have been swapped out and no one else is using this process,
-  // it's safe to exit now.  If we get swapped back in, we will call
-  // AddRefProcess in SetSwappedOut.
-  if (is_swapped_out_)
-    RenderProcess::current()->ReleaseProcess();
 }
 
 void RenderWidget::OnRequestMoveAck() {

@@ -1408,12 +1408,9 @@ void ResourceDispatcherHostImpl::CancelTransferringNavigation(
 void ResourceDispatcherHostImpl::ResumeDeferredNavigation(
     const GlobalRequestID& id) {
   ResourceLoader* loader = GetLoader(id);
-  if (loader) {
-    // The response we were meant to resume could have already been canceled.
-    ResourceRequestInfoImpl* info = loader->GetRequestInfo();
-    if (info->cross_site_handler())
-      info->cross_site_handler()->ResumeResponse();
-  }
+  // The response we were meant to resume could have already been canceled.
+  if (loader)
+    loader->CompleteTransfer();
 }
 
 // The object died, so cancel and detach all requests associated with it except

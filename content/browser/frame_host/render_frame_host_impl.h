@@ -267,17 +267,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   gfx::NativeViewAccessible GetParentNativeViewAccessible() const;
 #endif
 
-  // Returns whether this RenderFrameHost has an outstanding cross-site request.
-  // Cleared when we hear the response and start to swap out the old
-  // RenderFrameHost, or if we hear a commit here without a network request.
-  bool HasPendingCrossSiteRequest();
-
-  // Sets whether this RenderFrameHost has an outstanding cross-site request,
-  // for which another renderer will need to run an onunload event handler.
-  // This is called before the first navigation event for this RenderFrameHost,
-  // and cleared when we hear the response or commit.
-  void SetHasPendingCrossSiteRequest(bool has_pending_request);
-
  protected:
   friend class RenderFrameHostFactory;
 

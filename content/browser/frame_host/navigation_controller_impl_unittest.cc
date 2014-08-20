@@ -1096,14 +1096,10 @@ TEST_F(NavigationControllerTest, LoadURL_WithBindings) {
       increment_active_view_count();
 
   // Navigate to a second URL, simulate the beforeunload ack for the cross-site
-  // transition, run the unload handler, and set bindings on the pending
-  // RenderViewHost to simulate a privileged url.
+  // transition, and set bindings on the pending RenderViewHost to simulate a
+  // privileged url.
   controller.LoadURL(url2, Referrer(), PAGE_TRANSITION_TYPED, std::string());
   orig_rfh->GetRenderViewHost()->SendBeforeUnloadACK(true);
-  contents()->GetRenderManagerForTesting()->OnCrossSiteResponse(
-      contents()->GetPendingMainFrame(),
-      GlobalRequestID(0, 0), scoped_ptr<CrossSiteTransferringRequest>(),
-      url_chain, Referrer(), PAGE_TRANSITION_TYPED, false);
   TestRenderFrameHost* new_rfh = contents()->GetPendingMainFrame();
   new_rfh->GetRenderViewHost()->AllowBindings(1);
   new_rfh->SendNavigate(1, url2);
@@ -1118,10 +1114,6 @@ TEST_F(NavigationControllerTest, LoadURL_WithBindings) {
   // Going back, the first entry should still appear unprivileged.
   controller.GoBack();
   new_rfh->GetRenderViewHost()->SendBeforeUnloadACK(true);
-  contents()->GetRenderManagerForTesting()->OnCrossSiteResponse(
-      contents()->GetPendingMainFrame(),
-      GlobalRequestID(0, 0), scoped_ptr<CrossSiteTransferringRequest>(),
-      url_chain, Referrer(), PAGE_TRANSITION_TYPED, false);
   orig_rfh->SendNavigate(0, url1);
   EXPECT_EQ(0, controller.GetLastCommittedEntryIndex());
   EXPECT_EQ(0, NavigationEntryImpl::FromNavigationEntry(

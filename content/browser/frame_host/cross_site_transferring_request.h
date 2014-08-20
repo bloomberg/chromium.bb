@@ -26,6 +26,8 @@ class CONTENT_EXPORT CrossSiteTransferringRequest {
   // control of it.
   void ReleaseRequest();
 
+  GlobalRequestID request_id() const { return global_request_id_; }
+
  private:
   // No need for a weak pointer here - nothing should have ownership of the
   // cross site request until after |this| is deleted, or ReleaseRequest is

@@ -33,6 +33,7 @@
 #include "content/renderer/accessibility/renderer_accessibility_focus_only.h"
 #include "content/renderer/history_controller.h"
 #include "content/renderer/history_serialization.h"
+#include "content/renderer/render_process.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_browser_context.h"
@@ -496,6 +497,9 @@ TEST_F(RenderViewImplTest, DecideNavigationPolicyForWebUI) {
 TEST_F(RenderViewImplTest, SendSwapOutACK) {
   LoadHTML("<div>Page A</div>");
   int initial_page_id = view_page_id();
+
+  // Increment the ref count so that we don't exit when swapping out.
+  RenderProcess::current()->AddRefProcess();
 
   // Respond to a swap out request.
   view()->main_render_frame()->OnSwapOut(kProxyRoutingId);

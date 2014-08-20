@@ -139,8 +139,6 @@ const int RenderViewHostImpl::kUnloadTimeoutMS = 1000;
 // static
 bool RenderViewHostImpl::IsRVHStateActive(RenderViewHostImplState rvh_state) {
   if (rvh_state == STATE_DEFAULT ||
-      rvh_state == STATE_WAITING_FOR_UNLOAD_ACK ||
-      rvh_state == STATE_WAITING_FOR_COMMIT ||
       rvh_state == STATE_WAITING_FOR_CLOSE)
     return true;
   return false;
@@ -539,9 +537,6 @@ void RenderViewHostImpl::OnSwappedOut(bool timed_out) {
   }
 
   switch (rvh_state_) {
-    case STATE_WAITING_FOR_UNLOAD_ACK:
-      SetState(STATE_WAITING_FOR_COMMIT);
-      break;
     case STATE_PENDING_SWAP_OUT:
       SetState(STATE_SWAPPED_OUT);
       break;
@@ -551,26 +546,6 @@ void RenderViewHostImpl::OnSwappedOut(bool timed_out) {
       break;
     default:
       NOTREACHED();
-  }
-}
-
-void RenderViewHostImpl::WasSwappedOut(
-    const base::Closure& pending_delete_on_swap_out) {
-  Send(new ViewMsg_WasSwappedOut(GetRoutingID()));
-  if (rvh_state_ == STATE_WAITING_FOR_UNLOAD_ACK) {
-    SetState(STATE_PENDING_SWAP_OUT);
-    if (!instance_->active_view_count())
-      SetPendingShutdown(pending_delete_on_swap_out);
-  } else if (rvh_state_ == STATE_WAITING_FOR_COMMIT) {
-    SetState(STATE_SWAPPED_OUT);
-  } else if (rvh_state_ == STATE_DEFAULT) {
-    // When the RenderView is not live, the RenderFrameHostManager will call
-    // CommitPending directly, without calling SwapOut on the old RVH. This will
-    // cause WasSwappedOut to be called directly on the live old RVH.
-    DCHECK(!IsRenderViewLive());
-    SetState(STATE_SWAPPED_OUT);
-  } else {
-    NOTREACHED();
   }
 }
 
@@ -1357,8 +1332,7 @@ void RenderViewHostImpl::DidCancelPopupMenu() {
 #endif
 
 bool RenderViewHostImpl::IsWaitingForUnloadACK() const {
-  return rvh_state_ == STATE_WAITING_FOR_UNLOAD_ACK ||
-         rvh_state_ == STATE_WAITING_FOR_CLOSE ||
+  return rvh_state_ == STATE_WAITING_FOR_CLOSE ||
          rvh_state_ == STATE_PENDING_SHUTDOWN ||
          rvh_state_ == STATE_PENDING_SWAP_OUT;
 }
