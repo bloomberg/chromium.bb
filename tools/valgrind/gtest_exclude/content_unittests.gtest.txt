@@ -5,3 +5,6 @@ CompositingIOSurfaceTransformerTest.*
 # False positive, according to crbug.com/386080
 WebLayerImplFixedBoundsTest.CompareToWebLayerImplComplex
 WebLayerImplFixedBoundsTest.CompareToWebLayerImplSimple
+
+# Flaky and crashy, http://crbug.com/405481
+WebContentsAudioInputStreamTest.*
