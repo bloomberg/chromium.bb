@@ -12,13 +12,7 @@ using extensions::Extension;
 // it can be imported correctly.  We use InstallExtension otherwise so the loads
 // happen through the CRX installer which validates imports.
 
-#if defined(OS_WIN)
-// Timing out on Win7 Tests bot. See http://crbug.com/395796 .
-#define MAYBE_SharedModule DISABLED_SharedModule
-#else
-#define MAYBE_SharedModule SharedModule
-#endif
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_SharedModule) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, SharedModule) {
   // import_pass depends on this shared module.
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("shared_module").AppendASCII("shared")));
@@ -43,13 +37,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, SharedModuleWhitelist) {
           .AppendASCII("import_not_in_whitelist"), 0));
 }
 
-#if defined(OS_WIN)
-// Timing out on Win7 Tests bot. See http://crbug.com/395796 .
-#define MAYBE_SharedModuleInstallEvent DISALBED_SharedModuleInstallEvent
-#else
-#define MAYBE_SharedModuleInstallEvent SharedModuleInstallEvent
-#endif
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_SharedModuleInstallEvent) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, SharedModuleInstallEvent) {
   ExtensionTestMessageListener listener1("ready", false);
 
   const Extension* extension = LoadExtension(
