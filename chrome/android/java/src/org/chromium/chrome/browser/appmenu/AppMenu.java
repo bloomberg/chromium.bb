@@ -46,7 +46,7 @@ public class AppMenu implements OnItemClickListener, OnKeyListener {
     private final int mItemRowHeight;
     private final int mItemDividerHeight;
     private final int mVerticalFadeDistance;
-    private final int mAdditionalVerticalOffset;
+    private final int mNegativeSoftwareVerticalOffset;
     private ListPopupWindow mPopup;
     private AppMenuAdapter mAdapter;
     private AppMenuHandler mHandler;
@@ -73,8 +73,8 @@ public class AppMenu implements OnItemClickListener, OnKeyListener {
         mItemDividerHeight = itemDividerHeight;
         assert mItemDividerHeight >= 0;
 
-        mAdditionalVerticalOffset =
-                res.getDimensionPixelSize(R.dimen.menu_software_vertical_offset);
+        mNegativeSoftwareVerticalOffset =
+                res.getDimensionPixelSize(R.dimen.menu_negative_software_vertical_offset);
         mVerticalFadeDistance = res.getDimensionPixelSize(R.dimen.menu_vertical_fade_distance);
     }
 
@@ -207,7 +207,7 @@ public class AppMenu implements OnItemClickListener, OnKeyListener {
         } else {
             // The menu is displayed over and below the anchored view, so shift the menu up by the
             // height of the anchor view.
-            popup.setVerticalOffset(mAdditionalVerticalOffset - anchorHeight);
+            popup.setVerticalOffset(-mNegativeSoftwareVerticalOffset - anchorHeight);
         }
     }
 
