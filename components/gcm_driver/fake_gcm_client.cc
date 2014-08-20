@@ -119,6 +119,13 @@ void FakeGCMClient::SetAccountsForCheckin(
     const std::map<std::string, std::string>& account_tokens) {
 }
 
+void FakeGCMClient::UpdateAccountMapping(
+    const AccountMapping& account_mapping) {
+}
+
+void FakeGCMClient::RemoveAccountMapping(const std::string& account_id) {
+}
+
 void FakeGCMClient::PerformDelayedLoading() {
   DCHECK(ui_thread_->RunsTasksOnCurrentThread());
 

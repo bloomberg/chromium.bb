@@ -21,8 +21,6 @@ class FakeGCMDriver : public GCMDriver {
   virtual void AddAppHandler(const std::string& app_id,
                              GCMAppHandler* handler) OVERRIDE;
   virtual void RemoveAppHandler(const std::string& app_id) OVERRIDE;
-
-  // GCMDriver implementation:
   virtual void OnSignedIn() OVERRIDE;
   virtual void Purge() OVERRIDE;
   virtual void Enable() OVERRIDE;
@@ -34,6 +32,9 @@ class FakeGCMDriver : public GCMDriver {
                                 bool clear_logs) OVERRIDE;
   virtual void SetGCMRecording(const GetGCMStatisticsCallback& callback,
                                bool recording) OVERRIDE;
+  virtual void UpdateAccountMapping(
+      const AccountMapping& account_mapping) OVERRIDE;
+  virtual void RemoveAccountMapping(const std::string& account_id) OVERRIDE;
 
  protected:
   // GCMDriver implementation:

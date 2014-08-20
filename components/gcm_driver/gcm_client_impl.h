@@ -105,6 +105,9 @@ class GCMClientImpl
   virtual GCMStatistics GetStatistics() const OVERRIDE;
   virtual void SetAccountsForCheckin(
       const std::map<std::string, std::string>& account_tokens) OVERRIDE;
+  virtual void UpdateAccountMapping(
+      const AccountMapping& account_mapping) OVERRIDE;
+  virtual void RemoveAccountMapping(const std::string& account_id) OVERRIDE;
 
   // GCMStatsRecorder::Delegate implemenation.
   virtual void OnActivityRecorded() OVERRIDE;
@@ -221,6 +224,10 @@ class GCMClientImpl
 
   // Callback for persisting registration info in the |gcm_store_|.
   void UpdateRegistrationCallback(bool success);
+
+  // Callback for all store operations that do not try to recover, if write in
+  // |gcm_store_| fails.
+  void DefaultStoreCallback(bool success);
 
   // Completes the registration request.
   void OnRegisterCompleted(const std::string& app_id,

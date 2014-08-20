@@ -30,6 +30,7 @@ class URLRequestContextGetter;
 namespace gcm {
 
 class Encryptor;
+struct AccountMapping;
 
 // Interface that encapsulates the network communications with the Google Cloud
 // Messaging server. This interface is not supposed to be thread-safe.
@@ -276,6 +277,13 @@ class GCMClient {
   // |account_tokens| maps email addresses to OAuth2 access tokens.
   virtual void SetAccountsForCheckin(
       const std::map<std::string, std::string>& account_tokens) = 0;
+
+  // Persists the |account_mapping| in the store.
+  virtual void UpdateAccountMapping(const AccountMapping& account_mapping) = 0;
+
+  // Removes the account mapping related to |account_id| from the persistent
+  // store.
+  virtual void RemoveAccountMapping(const std::string& account_id) = 0;
 };
 
 }  // namespace gcm

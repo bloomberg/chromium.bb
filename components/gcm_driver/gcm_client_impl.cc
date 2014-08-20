@@ -469,6 +469,20 @@ void GCMClientImpl::SetAccountsForCheckin(
   }
 }
 
+void GCMClientImpl::UpdateAccountMapping(
+    const AccountMapping& account_mapping) {
+  gcm_store_->AddAccountMapping(account_mapping,
+                                base::Bind(&GCMClientImpl::DefaultStoreCallback,
+                                           weak_ptr_factory_.GetWeakPtr()));
+}
+
+void GCMClientImpl::RemoveAccountMapping(const std::string& account_id) {
+  gcm_store_->RemoveAccountMapping(
+      account_id,
+      base::Bind(&GCMClientImpl::DefaultStoreCallback,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
 void GCMClientImpl::StartCheckin() {
   // Make sure no checkin is in progress.
   if (checkin_request_.get())
@@ -581,6 +595,10 @@ void GCMClientImpl::SetDeviceCredentialsCallback(bool success) {
 
 void GCMClientImpl::UpdateRegistrationCallback(bool success) {
   // TODO(fgorski): This is one of the signals that store needs a rebuild.
+  DCHECK(success);
+}
+
+void GCMClientImpl::DefaultStoreCallback(bool success) {
   DCHECK(success);
 }
 

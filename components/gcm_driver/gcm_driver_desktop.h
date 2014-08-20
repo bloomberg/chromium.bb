@@ -64,6 +64,9 @@ class GCMDriverDesktop : public GCMDriver {
                                 bool clear_logs) OVERRIDE;
   virtual void SetGCMRecording(const GetGCMStatisticsCallback& callback,
                                bool recording) OVERRIDE;
+  virtual void UpdateAccountMapping(
+      const AccountMapping& account_mapping) OVERRIDE;
+  virtual void RemoveAccountMapping(const std::string& account_id) OVERRIDE;
 
   // GCMDriverDesktop specific implementation.
   // Sets a list of accounts with OAuth2 tokens for the next checkin.

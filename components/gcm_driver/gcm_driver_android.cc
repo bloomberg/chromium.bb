@@ -129,6 +129,13 @@ void GCMDriverAndroid::SetGCMRecording(const GetGCMStatisticsCallback& callback,
   NOTIMPLEMENTED();
 }
 
+void GCMDriverAndroid::UpdateAccountMapping(
+    const AccountMapping& account_mapping) {
+}
+
+void GCMDriverAndroid::RemoveAccountMapping(const std::string& account_id) {
+}
+
 GCMClient::Result GCMDriverAndroid::EnsureStarted() {
   // TODO(johnme): Maybe we should check if GMS is available?
   return GCMClient::SUCCESS;

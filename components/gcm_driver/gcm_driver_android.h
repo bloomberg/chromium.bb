@@ -55,6 +55,9 @@ class GCMDriverAndroid : public GCMDriver {
                                 bool clear_logs) OVERRIDE;
   virtual void SetGCMRecording(const GetGCMStatisticsCallback& callback,
                                bool recording) OVERRIDE;
+  virtual void UpdateAccountMapping(
+      const AccountMapping& account_mapping) OVERRIDE;
+  virtual void RemoveAccountMapping(const std::string& account_id) OVERRIDE;
 
  protected:
   // GCMDriver implementation:
