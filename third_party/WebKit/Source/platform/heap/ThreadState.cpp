@@ -301,11 +301,22 @@ ThreadState::ThreadState()
 
     m_stats.clear();
     m_statsAfterLastGC.clear();
-    // First allocate the general heap, second iterate through to
-    // allocate the type specific heaps
+
+    // Allocate the general heap in both finalized and non-finalized
+    // version.
     m_heaps[GeneralHeap] = new ThreadHeap<FinalizedHeapObjectHeader>(this, GeneralHeap);
-    for (int i = GeneralHeap + 1; i < NumberOfHeaps; i++)
-        m_heaps[i] = new ThreadHeap<HeapObjectHeader>(this, i);
+    m_heaps[GeneralHeapNonFinalized] = new ThreadHeap<FinalizedHeapObjectHeader>(this, GeneralHeapNonFinalized);
+
+    // Allocate the type-specific heaps in finalized and non-finalized versions.
+    for (int i = 1; i < NumberOfFinalizedHeaps; i++) {
+        int heapIndex = FirstFinalizedHeap + i;
+        m_heaps[heapIndex] = new ThreadHeap<HeapObjectHeader>(this, heapIndex);
+    }
+    for (int i = 1; i < NumberOfNonFinalizedHeaps; i++) {
+        int heapIndex = FirstNonFinalizedHeap + i;
+        m_heaps[heapIndex] = new ThreadHeap<HeapObjectHeader>(this, heapIndex);
+    }
+
 
     CallbackStack::init(&m_weakCallbackStack);
 }
@@ -602,12 +613,16 @@ void ThreadState::snapshot()
     SnapshotInfo info(this);
     RefPtr<TracedValue> json = TracedValue::create();
 
-#define SNAPSHOT_HEAP(HeapType)                                         \
-    {                                                                   \
-        json->beginDictionary();                                        \
-        json->setString("name", #HeapType);                             \
-        m_heaps[HeapType##Heap]->snapshot(json.get(), &info);          \
-        json->endDictionary();                                          \
+#define SNAPSHOT_HEAP(HeapType)                                           \
+    {                                                                     \
+        json->beginDictionary();                                          \
+        json->setString("name", #HeapType);                               \
+        m_heaps[HeapType##Heap]->snapshot(json.get(), &info);             \
+        json->endDictionary();                                            \
+        json->beginDictionary();                                          \
+        json->setString("name", #HeapType##NonFinalized);                 \
+        m_heaps[HeapType##HeapNonFinalized]->snapshot(json.get(), &info); \
+        json->endDictionary();                                            \
     }
     json->beginArray("heaps");
     SNAPSHOT_HEAP(General);
@@ -995,8 +1010,14 @@ void ThreadState::performPendingSweep()
     // Perform sweeping and finalization.
     size_t objectSpaceBeforeSweep = m_stats.totalObjectSpace();
     m_stats.clear(); // Sweeping will recalculate the stats
-    for (int i = 0; i < NumberOfHeaps; i++)
-        m_heaps[i]->sweep();
+    // Sweep non-finalized heaps first. Finalized heap objects can allocate
+    // non-finalized heap objects during finalizers. Sweeping non-finalized
+    // pages first ensures that we do not needlessly have to allocate
+    // extra pages for such allocations.
+    for (int i = 0; i < NumberOfNonFinalizedHeaps; i++)
+        m_heaps[FirstNonFinalizedHeap + i]->sweep();
+    for (int i = 0; i < NumberOfFinalizedHeaps; i++)
+        m_heaps[FirstFinalizedHeap + i]->sweep();
     for (int i = 0; i < NumberOfHeaps; i++)
         m_heaps[i]->postSweepProcessing();
     getStats(m_statsAfterLastGC);

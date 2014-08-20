@@ -138,11 +138,20 @@ template<typename U> class ThreadingTrait<const U> : public ThreadingTrait<U> { 
     H(Node)
 
 #define TypedHeapEnumName(Type) Type##Heap,
+#define TypedHeapEnumNameNonFinalized(Type) Type##HeapNonFinalized,
 
 enum TypedHeaps {
-    GeneralHeap,
+    GeneralHeap = 0,
     FOR_EACH_TYPED_HEAP(TypedHeapEnumName)
-    NumberOfHeaps
+    GeneralHeapNonFinalized,
+    FOR_EACH_TYPED_HEAP(TypedHeapEnumNameNonFinalized)
+    // Values used for iteration of heap segments.
+    NumberOfHeaps,
+    FirstFinalizedHeap = GeneralHeap,
+    FirstNonFinalizedHeap = GeneralHeapNonFinalized,
+    NumberOfFinalizedHeaps = GeneralHeapNonFinalized,
+    NumberOfNonFinalizedHeaps = NumberOfHeaps - NumberOfFinalizedHeaps,
+    NonFinalizedHeapOffset = FirstNonFinalizedHeap
 };
 
 // Trait to give an index in the thread state to all the
@@ -151,16 +160,27 @@ enum TypedHeaps {
 // by the TypedHeaps enum above.
 template<typename T>
 struct HeapTrait {
-    static const int index = GeneralHeap;
     typedef ThreadHeap<FinalizedHeapObjectHeader> HeapType;
+    static int index(bool isFinalized)
+    {
+        return finalizedHeapIndex + (isFinalized ? 0 : NonFinalizedHeapOffset);
+    }
+private:
+    static const int finalizedHeapIndex = GeneralHeap;
+
 };
 
-#define DEFINE_HEAP_INDEX_TRAIT(Type)                  \
-    class Type;                                        \
-    template<>                                         \
-    struct HeapTrait<class Type> {                     \
-        static const int index = Type##Heap;           \
-        typedef ThreadHeap<HeapObjectHeader> HeapType; \
+#define DEFINE_HEAP_INDEX_TRAIT(Type)                                               \
+    class Type;                                                                     \
+    template<>                                                                      \
+    struct HeapTrait<class Type> {                                                  \
+        static int index(bool isFinalized)                                          \
+        {                                                                           \
+            return finalizedHeapIndex + (isFinalized ? 0 : NonFinalizedHeapOffset); \
+        }                                                                           \
+        typedef ThreadHeap<HeapObjectHeader> HeapType;                              \
+    private:                                                                        \
+        static const int finalizedHeapIndex = Type##Heap;                           \
     };
 
 FOR_EACH_TYPED_HEAP(DEFINE_HEAP_INDEX_TRAIT)

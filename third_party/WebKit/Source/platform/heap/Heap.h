@@ -1478,10 +1478,10 @@ Address Heap::allocate(size_t size)
 {
     ThreadState* state = ThreadStateFor<ThreadingTrait<T>::Affinity>::state();
     ASSERT(state->isAllocationAllowed());
-    BaseHeap* heap = state->heap(HeapTrait<T>::index);
-    Address addr =
-        static_cast<typename HeapTrait<T>::HeapType*>(heap)->allocate(size, GCInfoTrait<T>::get());
-    return addr;
+    const GCInfo* gcInfo = GCInfoTrait<T>::get();
+    int heapIndex = HeapTrait<T>::index(gcInfo->hasFinalizer());
+    BaseHeap* heap = state->heap(heapIndex);
+    return static_cast<typename HeapTrait<T>::HeapType*>(heap)->allocate(size, gcInfo);
 }
 
 // FIXME: Allocate objects that do not need finalization separately
@@ -1497,19 +1497,21 @@ Address Heap::reallocate(void* previous, size_t size)
     }
     ThreadState* state = ThreadStateFor<ThreadingTrait<T>::Affinity>::state();
     ASSERT(state->isAllocationAllowed());
+    const GCInfo* gcInfo = GCInfoTrait<T>::get();
+    int heapIndex = HeapTrait<T>::index(gcInfo->hasFinalizer());
     // FIXME: Currently only supports raw allocation on the
     // GeneralHeap. Hence we assume the header is a
     // FinalizedHeapObjectHeader.
-    ASSERT(HeapTrait<T>::index == GeneralHeap);
-    BaseHeap* heap = state->heap(HeapTrait<T>::index);
-    Address address = static_cast<typename HeapTrait<T>::HeapType*>(heap)->allocate(size, GCInfoTrait<T>::get());
+    ASSERT(heapIndex == GeneralHeap || heapIndex == GeneralHeapNonFinalized);
+    BaseHeap* heap = state->heap(heapIndex);
+    Address address = static_cast<typename HeapTrait<T>::HeapType*>(heap)->allocate(size, gcInfo);
     if (!previous) {
         // This is equivalent to malloc(size).
         return address;
     }
     FinalizedHeapObjectHeader* previousHeader = FinalizedHeapObjectHeader::fromPayload(previous);
     ASSERT(!previousHeader->hasFinalizer());
-    ASSERT(previousHeader->gcInfo() == GCInfoTrait<T>::get());
+    ASSERT(previousHeader->gcInfo() == gcInfo);
     size_t copySize = previousHeader->payloadSize();
     if (copySize > size)
         copySize = size;
