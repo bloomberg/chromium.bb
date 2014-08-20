@@ -119,7 +119,7 @@ deps = {
 
   "src/third_party/WebKit/LayoutTests/w3c/web-platform-tests":
     Var("chromium_git") +
-    "/external/w3c/web-platform-tests.git@fd608375f09b02b54ccba4e99be8365769be43c5",
+    "/external/w3c/web-platform-tests.git@3e0f28376857901b2d3eefda82a3b622bbcabd41",
 
   "src/third_party/WebKit/LayoutTests/w3c/csswg-test":
     Var("chromium_git") +
