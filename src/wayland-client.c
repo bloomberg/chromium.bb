@@ -891,15 +891,16 @@ static const struct wl_callback_listener sync_listener = {
 /** Block until all pending request are processed by the server
  *
  * \param display The display context object
+ * \param queue The queue on which to run the roundtrip
  * \return The number of dispatched events on success or -1 on failure
  *
  * Blocks until the server process all currently issued requests and
- * sends out pending events on all event queues.
+ * sends out pending events on the event queue.
  *
  * \memberof wl_display
  */
 WL_EXPORT int
-wl_display_roundtrip(struct wl_display *display)
+wl_display_roundtrip_queue(struct wl_display *display, struct wl_event_queue *queue)
 {
 	struct wl_callback *callback;
 	int done, ret = 0;
@@ -908,14 +909,31 @@ wl_display_roundtrip(struct wl_display *display)
 	callback = wl_display_sync(display);
 	if (callback == NULL)
 		return -1;
+	wl_proxy_set_queue((struct wl_proxy *) callback, queue);
 	wl_callback_add_listener(callback, &sync_listener, &done);
 	while (!done && ret >= 0)
-		ret = wl_display_dispatch(display);
+		ret = wl_display_dispatch_queue(display, queue);
 
 	if (ret == -1 && !done)
 		wl_callback_destroy(callback);
 
 	return ret;
+}
+
+/** Block until all pending request are processed by the server
+ *
+ * \param display The display context object
+ * \return The number of dispatched events on success or -1 on failure
+ *
+ * Blocks until the server process all currently issued requests and
+ * sends out pending events on the default event queue.
+ *
+ * \memberof wl_display
+ */
+WL_EXPORT int
+wl_display_roundtrip(struct wl_display *display)
+{
+	return wl_display_roundtrip_queue(display, &display->default_queue);
 }
 
 static int
