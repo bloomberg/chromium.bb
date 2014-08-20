@@ -652,4 +652,23 @@ TEST_F(TouchSelectionControllerTest, TemporarilyHidden) {
   EXPECT_TRUE(GetAndResetNeedsAnimate());
 }
 
+TEST_F(TouchSelectionControllerTest, SelectionClearOnTap) {
+  gfx::RectF start_rect(5, 5, 0, 10);
+  gfx::RectF end_rect(50, 5, 0, 10);
+  bool visible = true;
+
+  controller().OnLongPressEvent();
+  ChangeSelection(start_rect, visible, end_rect, visible);
+
+  // Selection should not be cleared if the selection bounds have not changed.
+  controller().OnTapEvent();
+  EXPECT_EQ(SELECTION_SHOWN, GetLastEventType());
+  EXPECT_EQ(start_rect.bottom_left(), GetLastEventAnchor());
+
+  controller().OnTapEvent();
+  ClearSelection();
+  EXPECT_EQ(SELECTION_CLEARED, GetLastEventType());
+  EXPECT_EQ(gfx::PointF(), GetLastEventAnchor());
+}
+
 }  // namespace content

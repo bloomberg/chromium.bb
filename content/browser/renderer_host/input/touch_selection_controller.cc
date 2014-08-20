@@ -137,8 +137,6 @@ void TouchSelectionController::OnLongPressEvent() {
 
 void TouchSelectionController::OnTapEvent() {
   response_pending_input_event_ = TAP;
-  activate_selection_automatically_ = false;
-  DeactivateSelection();
   ShowInsertionHandleAutomatically();
   if (selection_empty_)
     DeactivateInsertion();
