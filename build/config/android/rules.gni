@@ -595,6 +595,12 @@ template("android_apk") {
 #     resource dependencies of the apk.
 #   unittests_dep: This should be the label of the gtest native target. This
 #     target must be defined previously in the same file.
+#   unittests_binary: The name of the binary produced by the unittests_dep
+#     target, relative to the root build directory. If unspecified, it assumes
+#     the name of the unittests_dep target (which will be correct unless that
+#     target specifies an "output_name".
+#     TODO(brettw) make this automatic by allowing get_target_outputs to
+#     support executables.
 #
 # Example
 #   unittest_apk("foo_unittests_apk") {
@@ -602,7 +608,16 @@ template("android_apk") {
 #     unittests_dep = ":foo_unittests"
 #   }
 template("unittest_apk") {
+  assert(defined(invoker.unittests_dep), "Need unittests_dep for $target_name")
+
   test_suite_name = get_label_info(invoker.unittests_dep, "name")
+
+  if (defined(invoker.unittests_binary)) {
+    unittests_binary = root_out_dir + "/" + invoker.unittests_binary
+  } else {
+    unittests_binary = root_out_dir + "/" + test_suite_name
+  }
+
   android_apk(target_name) {
     apk_name = test_suite_name
     final_apk_path = "$root_build_dir/${apk_name}_apk/${apk_name}-debug.apk"
@@ -610,7 +625,7 @@ template("unittest_apk") {
       "//testing/android/java/src/org/chromium/native_test/ChromeNativeTestActivity.java"
     ]
     android_manifest = "//testing/android/java/AndroidManifest.xml"
-    unittests_outputs = get_target_outputs(invoker.unittests_dep)
+    unittests_outputs = [ unittests_binary ]
     native_libs = [unittests_outputs[0]]
     if (defined(invoker.deps)) {
       deps = invoker.deps

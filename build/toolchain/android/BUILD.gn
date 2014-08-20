@@ -49,10 +49,17 @@ template("android_gcc_toolchain") {
     toolchain_os = "android"
     toolchain_cpu_arch = invoker.toolchain_cpu_arch
 
+    # We make the assumption that the gcc_toolchain will produce a soname with
+    # the following definition.
+    soname = "{{target_output_name}}{{output_extension}}"
+
+    stripped_soname = "lib.stripped/${soname}.tmp"
+    temp_stripped_soname = "${stripped_soname}.tmp"
+
     android_strip = "${tool_prefix}strip"
     mkdir_command = "mkdir -p lib.stripped"
-    strip_command = "$android_strip --strip-unneeded -o lib.stripped/\$soname.tmp \$lib"
-    replace_command = "if ! cmp -s lib.stripped/\${soname}.tmp lib.stripped/\${soname}; then mv lib.stripped/\${soname}.tmp lib.stripped/\${soname}; fi"
+    strip_command = "$android_strip --strip-unneeded -o $temp_stripped_soname $soname"
+    replace_command = "if ! cmp -s $temp_stripped_soname $stripped_soname; then mv $temp_stripped_soname $stripped_soname; fi"
     postsolink = "$mkdir_command && $strip_command && $replace_command"
   }
 }

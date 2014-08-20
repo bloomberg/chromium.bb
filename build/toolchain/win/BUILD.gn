@@ -18,137 +18,148 @@ gyp_win_tool_path = rebase_path("//tools/gyp/pylib/gyp/win_tool.py",
 exec_script("setup_toolchain.py",
             [ visual_studio_path, gyp_win_tool_path, windows_sdk_path ])
 
-stamp_command = "$python_path gyp-win-tool stamp \$out"
-copy_command = "$python_path gyp-win-tool recursive-mirror \$in \$out"
+# Parameters:
+#  cpu_arch: cpu_arch to pass as a build arg
+#  environment: File name of environment file.
+#  force_win64 (optional): value for this build arg.
+template("msvc_toolchain") {
+  env = invoker.environment
 
-# MSVC can't share PDB files between compilers compiling C and C++ files, so
-# we construct different names for each type.
-c_pdb_suffix = " /Fd\${target_out_dir}/\${target_name}_c.pdb"
-cc_pdb_suffix = " /Fd\${target_out_dir}/\${target_name}_cc.pdb"
+  toolchain(target_name) {
+    # Make these apply to all tools below.
+    lib_switch = ""
+    lib_dir_switch="/LIBPATH:"
 
-# 32-bit toolchain -------------------------------------------------------------
+    tool("cc") {
+      rspfile = "{{output}}.rsp"
+      pdbname = "{{target_out_dir}}/{{target_output_name}}_c.pdb"
+      command = "ninja -t msvc -e $env -- cl.exe /nologo /showIncludes /FC @$rspfile /c {{source}} /Fo{{output}} /Fd$pdbname"
+      depsformat = "msvc"
+      description = "CC {{output}}"
+      outputs = [
+        "{{source_out_dir}}/{{target_output_name}}.{{source_name_part}}.obj",
+      ]
+      rspfile_content = "{{defines}} {{include_dirs}} {{cflags}} {{cflags_c}}"
+    }
 
-toolchain("32") {
-  # Make these apply to all tools below.
-  lib_prefix = ""
-  lib_dir_prefix="/LIBPATH:"
+    tool("cxx") {
+      rspfile = "{{output}}.rsp"
+      # The PDB name needs to be different between C and C++ compiled files.
+      pdbname = "{{target_out_dir}}/{{target_output_name}}_cc.pdb"
+      command = "ninja -t msvc -e $env -- cl.exe /nologo /showIncludes /FC @$rspfile /c {{source}} /Fo{{output}} /Fd$pdbname"
+      depsformat = "msvc"
+      description = "CXX {{output}}"
+      outputs = [
+        "{{source_out_dir}}/{{target_output_name}}.{{source_name_part}}.obj",
+      ]
+      rspfile_content = "{{defines}} {{include_dirs}} {{cflags}} {{cflags_c}}"
+    }
 
-  cc_command = "ninja -t msvc -e environment.x86 -- cl.exe /nologo /showIncludes /FC @\$out.rsp /c \$in /Fo\$out"
-  tool("cc") {
-    command = cc_command + c_pdb_suffix
-    description = "CC \$out"
-    rspfile = "\$out.rsp"
-    rspfile_content = "\$defines \$includes \$cflags \$cflags_c"
-    depsformat = "msvc"
-  }
-  tool("cxx") {
-    command = cc_command + cc_pdb_suffix
-    description = "CXX \$out"
-    rspfile = "\$out.rsp"
-    rspfile_content = "\$defines \$includes \$cflags \$cflags_cc"
-    depsformat = "msvc"
-  }
-  tool("rc") {
-    command = "$python_path gyp-win-tool rc-wrapper environment.x86 rc.exe \$defines \$includes \$rcflags /fo\$out \$in"
-    description = "RC \$in"
-  }
-  tool("asm") {
-    command = "$python_path gyp-win-tool asm-wrapper environment.x86 ml.exe \$defines \$includes /c /Fo \$out \$in"
-    description = "ASM \$in"
-  }
-  tool("alink") {
-    command = "$python_path gyp-win-tool link-wrapper environment.x86 False lib.exe /nologo /ignore:4221 /OUT:\$out @\$out.rsp"
-    description = "LIB \$out"
-    rspfile = "\$out.rsp"
-    rspfile_content = "\$in_newline \$libflags"
-  }
-  tool("solink") {
-    command = "cmd /c $python_path gyp-win-tool link-wrapper environment.x86 False link.exe /nologo \$implibflag /DLL /OUT:\$dll /PDB:\$dll.pdb @\$dll.rsp && $python_path gyp-win-tool manifest-wrapper environment.x86 mt.exe -nologo -manifest \$manifests -out:\$dll.manifest"
-    description = "LINK(DLL) \$dll"
-    restat = "1"
-    rspfile = "\$dll.rsp"
-    rspfile_content = "\$libs \$in_newline \$ldflags"
-  }
-  tool("link") {
-    command = "cmd /c $python_path gyp-win-tool link-wrapper environment.x86 False link.exe /nologo /OUT:\$out /PDB:\$out.pdb @\$out.rsp && $python_path gyp-win-tool manifest-wrapper environment.x86 mt.exe -nologo -manifest \$manifests -out:\$out.manifest"
-    description = "LINK \$out"
-    rspfile = "\$out.rsp"
-    rspfile_content = "\$in_newline \$libs \$ldflags"
-  }
-  tool("stamp") {
-    command = stamp_command
-    description = "STAMP \$out"
-  }
-  tool("copy") {
-    command = copy_command
-    description = "COPY \$in \$out"
+    tool("rc") {
+      command = "$python_path gyp-win-tool rc-wrapper $env rc.exe {{defines}} {{include_dirs}} /fo{{output}} {{source}}"
+      outputs = [
+        "{{source_out_dir}}/{{target_output_name}}.{{source_name_part}}.res",
+      ]
+      description = "RC {{output}}"
+    }
+
+    tool("asm") {
+      command = "$python_path gyp-win-tool asm-wrapper $env ml.exe {{defines}} {{include_dirs}} /c /Fo {{output}} {{source}}"
+      description = "ASM {{output}}"
+      outputs = [
+        "{{source_out_dir}}/{{target_output_name}}.{{source_name_part}}.obj",
+      ]
+    }
+
+    tool("alink") {
+      rspfile = "{{output}}.rsp"
+      command = "$python_path gyp-win-tool link-wrapper $env False lib.exe /nologo /ignore:4221 /OUT:{{output}} @$rspfile"
+      description = "LIB {{output}}"
+      outputs = [
+        # Ignore {{output_extension}} and always use .lib, there's no reason to
+        # allow targets to override this extension on Windows.
+        "{{target_out_dir}}/{{target_output_name}}.lib",
+      ]
+      default_output_extension = ".lib"
+      # The use of inputs_newline is to work around a fixed per-line buffer
+      # size in the linker.
+      rspfile_content = "{{inputs_newline}}"
+    }
+
+    tool("solink") {
+      dllname = "{{target_output_name}}{{output_extension}}"  # e.g. foo.dll
+      libname = "{{target_output_name}}{{output_extension}}.lib"  # e.g. foo.dll.lib
+      rspfile = "${dllname}.rsp"
+
+      link_command = "$python_path gyp-win-tool link-wrapper $env False link.exe /nologo /IMPLIB:$libname /DLL /OUT:$dllname /PDB:${dllname}.pdb @$rspfile"
+
+      # TODO(brettw) support manifests
+      #manifest_command = "$python_path gyp-win-tool manifest-wrapper $env mt.exe -nologo -manifest $manifests -out:${dllname}.manifest"
+      #command = "cmd /c $link_command && $manifest_command"
+      command = link_command
+
+      default_output_extension = ".dll"
+      description = "LINK(DLL) {{output}}"
+      outputs = [
+        dllname,
+        libname,
+      ]
+      # The use of inputs_newline is to work around a fixed per-line buffer
+      # size in the linker.
+      rspfile_content = "{{libs}} {{solibs}} {{inputs_newline}} {{ldflags}}"
+    }
+
+    tool("link") {
+      rspfile = "{{output}}.rsp"
+
+      link_command = "$python_path gyp-win-tool link-wrapper $env False link.exe /nologo /OUT:{{output}} /PDB:{{output}}.pdb @$rspfile"
+
+      # TODO(brettw) support manifests
+      #manifest_command = "$python_path gyp-win-tool manifest-wrapper $env mt.exe -nologo -manifest $manifests -out:{{output}}.manifest"
+      #command = "cmd /c $link_command && $manifest_command"
+      command = link_command
+
+      default_output_extension = ".exe"
+      description = "LINK {{output}}"
+      outputs = [
+        "{{target_output_name}}{{output_extension}}",
+      ]
+      # The use of inputs_newline is to work around a fixed per-line buffer
+      # size in the linker.
+      rspfile_content = "{{inputs_newline}} {{libs}} {{solibs}} {{ldflags}}"
+    }
+
+    tool("stamp") {
+      command = "$python_path gyp-win-tool stamp {{output}}"
+      description = "STAMP {{output}}"
+    }
+
+    tool("copy") {
+      command =  "$python_path gyp-win-tool recursive-mirror {{source}} {{output}}"
+      description = "COPY {{source}} {{output}}"
+    }
+
+    # When invoking this toolchain not as the default one, these args will be
+    # passed to the build. They are ignored when this is the default toolchain.
+    toolchain_args() {
+      cpu_arch = invoker.cpu_arch
+
+      # Normally the build config resets the CPU architecture to 32-bits. Setting
+      # this flag overrides that behavior.
+      if (defined(invoker.force_win64)) {
+        force_win64 = invoker.force_win64
+      }
+    }
   }
 }
 
-# 64-bit toolchain -------------------------------------------------------------
+msvc_toolchain("32") {
+  environment = "environment.x86"
+  cpu_arch = "x64"
+}
 
-toolchain("64") {
-  # Make these apply to all tools below.
-  lib_prefix = ""
-  lib_dir_prefix="/LIBPATH:"
-
-  cc_command = "ninja -t msvc -e environment.x64 -- cl.exe /nologo /showIncludes /FC @\$out.rsp /c \$in /Fo\$out"
-  tool("cc") {
-    command = cc_command + c_pdb_suffix
-    description = "CC \$out"
-    rspfile = "\$out.rsp"
-    rspfile_content = "\$defines \$includes \$cflags \$cflags_c"
-    depsformat = "msvc"
-  }
-  tool("cxx") {
-    command = cc_command + cc_pdb_suffix
-    description = "CXX \$out"
-    rspfile = "\$out.rsp"
-    rspfile_content = "\$defines \$includes \$cflags \$cflags_cc"
-    depsformat = "msvc"
-  }
-  tool("rc") {
-    command = "$python_path gyp-win-tool rc-wrapper environment.x64 rc.exe \$defines \$includes \$rcflags /fo\$out \$in"
-    description = "RC \$in"
-  }
-  tool("asm") {
-    command = "$python_path gyp-win-tool asm-wrapper environment.x64 ml.exe \$defines \$includes /c /Fo \$out \$in"
-    description = "ASM \$in"
-  }
-  tool("alink") {
-    command = "$python_path gyp-win-tool link-wrapper environment.x64 False lib.exe /nologo /ignore:4221 /OUT:\$out @\$out.rsp"
-    description = "LIB \$out"
-    rspfile = "\$out.rsp"
-    rspfile_content = "\$in_newline \$libflags"
-  }
-  tool("solink") {
-    command = "cmd /c $python_path gyp-win-tool link-wrapper environment.x64 False link.exe /nologo \$implibflag /DLL /OUT:\$dll /PDB:\$dll.pdb @\$dll.rsp && $python_path gyp-win-tool manifest-wrapper environment.x64 mt.exe -nologo -manifest \$manifests -out:\$dll.manifest"
-    description = "LINK(DLL) \$dll"
-    restat = "1"
-    rspfile = "\$dll.rsp"
-    rspfile_content = "\$libs \$in_newline \$ldflags"
-  }
-  tool("link") {
-    command = "cmd /c $python_path gyp-win-tool link-wrapper environment.x64 False link.exe /nologo /OUT:\$out /PDB:\$out.pdb @\$out.rsp && $python_path gyp-win-tool manifest-wrapper environment.x64 mt.exe -nologo -manifest \$manifests -out:\$out.manifest"
-    description = "LINK \$out"
-    rspfile = "\$out.rsp"
-    rspfile_content = "\$in_newline \$libs \$ldflags"
-  }
-  tool("stamp") {
-    command = stamp_command
-    description = "STAMP \$out"
-  }
-  tool("copy") {
-    command = copy_command
-    description = "COPY \$in \$out"
-  }
-
-  # When invoking this toolchain not as the default one, these args will be
-  # passed to the build. They are ignored when this is the default toolchain.
-  toolchain_args() {
-    cpu_arch = "x64"
-    # Normally the build config resets the CPU architecture to 32-bits. Setting
-    # this flag overrides that behavior.
-    force_win64 = true
-  }
+msvc_toolchain("64") {
+  environment = "environment.x64"
+  cpu_arch = "x64"
+  force_win64 = true
 }

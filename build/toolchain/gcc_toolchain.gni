@@ -75,64 +75,114 @@ template("gcc_toolchain") {
       solink_libs_section_postfix = ""
     }
 
-    # Make these apply to all tools below.
-    lib_prefix = "-l"
-    lib_dir_prefix="-L"
+    # These library switches can apply to all tools below.
+    lib_switch = "-l"
+    lib_dir_switch = "-L"
 
     tool("cc") {
-      # cflags_pch_c
-      command = "$cc -MMD -MF \$out.d \$defines \$includes \$cflags \$cflags_c -c \$in -o \$out"
-      description = "CC \$out"
-      depfile = "\$out.d"
+      depfile = "{{output}}.d"
+      command = "$cc -MMD -MF $depfile {{defines}} {{include_dirs}} {{cflags}} {{cflags_c}} -c {{source}} -o {{output}}"
       depsformat = "gcc"
+      description = "CC {{output}}"
+      outputs = [
+        "{{source_out_dir}}/{{target_output_name}}.{{source_name_part}}.o",
+      ]
     }
+
     tool("cxx") {
-      # cflags_pch_cc
-      command = "$cxx -MMD -MF \$out.d \$defines \$includes \$cflags \$cflags_cc -c \$in -o \$out"
-      description = "CXX \$out"
-      depfile = "\$out.d"
+      depfile = "{{output}}.d"
+      command = "$cxx -MMD -MF $depfile {{defines}} {{include_dirs}} {{cflags}} {{cflags_cc}} -c {{source}} -o {{output}}"
       depsformat = "gcc"
+      description = "CXX {{output}}"
+      outputs = [
+        "{{source_out_dir}}/{{target_output_name}}.{{source_name_part}}.o",
+      ]
     }
+
+    tool("asm") {
+      # For GCC we can just use the C compiler to compile assembly.
+      depfile = "{{output}}.d"
+      command = "$cc -MMD -MF $depfile {{defines}} {{include_dirs}} {{cflags}} {{cflags_c}} -c {{source}} -o {{output}}"
+      depsformat = "gcc"
+      description = "ASM {{output}}"
+      outputs = [
+        "{{source_out_dir}}/{{target_output_name}}.{{source_name_part}}.o",
+      ]
+    }
+
     tool("alink") {
-      command = "rm -f \$out && $ar rcs \$out @\$rspfile"
-      description = "AR \$out"
-      rspfile = "\$out.rsp"
-      rspfile_content = "\$in"
+      rspfile = "{{output}}.rsp"
+      command = "rm -f {{output}} && $ar rcs {{output}} @$rspfile"
+      description = "AR {{output}}"
+      rspfile_content = "{{inputs}}"
+      outputs = [
+        "{{target_out_dir}}/{{target_output_name}}{{output_extension}}"
+      ]
+      default_output_extension = ".a"
+      output_prefix = "lib"
     }
+
     tool("solink") {
-      rspfile = "\$out.rsp"
-      rspfile_content = "-Wl,--whole-archive \$in \$solibs -Wl,--no-whole-archive $solink_libs_section_prefix \$libs $solink_libs_section_postfix"
+      soname = "{{target_output_name}}{{output_extension}}"  # e.g. "libfoo.so".
+      rspfile = soname + ".rsp"
 
-      # TODO(cjhopman): There needs to be a way for gn to correctly figure out
-      # the outputs of a solink command.
+      # These variables are not built into GN but are helpers that implement
+      # (1) linking to produce a .so, (2) extracting the symbols from that file
+      # to a temporary file, (3) if the temporary file has differences from the
+      # existing .TOC file, overwrite it, otherwise, don't change it.
+      tocname = soname + ".TOC"
+      temporary_tocname = soname + ".tmp"
+      link_command = "$ld -shared {{ldflags}} -o $soname -Wl,-soname=$soname @$rspfile"
+      toc_command = "{ readelf -d $soname | grep SONAME ; nm -gD -f p $soname | cut -f1-2 -d' '; } > $temporary_tocname"
+      replace_command = "if ! cmp -s $temporary_tocname $tocname; then mv $temporary_tocname $tocname; fi"
 
-      link_command = "$ld -shared \$ldflags -o \$lib -Wl,-soname=\$soname @\$rspfile"
-      toc_command = "{ readelf -d \${lib} | grep SONAME ; nm -gD -f p \${lib} | cut -f1-2 -d' '; } > \${lib}.tmp"
-      replace_command = "if ! cmp -s \${lib}.tmp \${lib}.TOC; then mv \${lib}.tmp \${lib}.TOC; fi"
       command = "$link_command && $toc_command && $replace_command"
-
       if (defined(invoker.postsolink)) {
         command += " && " + invoker.postsolink
       }
+      rspfile_content = "-Wl,--whole-archive {{inputs}} {{solibs}} -Wl,--no-whole-archive $solink_libs_section_prefix {{libs}} $solink_libs_section_postfix"
 
-      description = "SOLINK \$lib"
-      #pool = "link_pool"
-      restat = "1"
+      description = "SOLINK $soname"
+
+      # Use this for {{output_extension}} expansions unless a target manually
+      # overrides it (in which case {{output_extension}} will be what the target
+      # specifies).
+      default_output_extension = ".so"
+
+      output_prefix = "lib"
+
+      # Since the above commands only updates the .TOC file when it changes, ask
+      # Ninja to check if the timestamp actually changed to know if downstream
+      # dependencies should be recompiled.
+      restat = true
+
+      # Tell GN about the output files. It will link to the soname but use the
+      # tocname for dependency management.
+      outputs = [
+        soname,
+        tocname,
+      ]
+      link_output = soname
+      depend_output = tocname
     }
+
     tool("link") {
-      command = "$ld \$ldflags -o \$out -Wl,--start-group @\$rspfile \$solibs -Wl,--end-group $libs_section_prefix \$libs $libs_section_postfix"
-      description = "LINK \$out"
-      rspfile = "\$out.rsp"
-      rspfile_content = "\$in"
-      #pool = "link_pool"
+      outfile = "{{target_output_name}}{{output_extension}}"
+      rspfile = "$outfile.rsp"
+      command = "$ld {{ldflags}} -o $outfile -Wl,--start-group @$rspfile {{solibs}} -Wl,--end-group $libs_section_prefix {{libs}} $libs_section_postfix"
+      description = "LINK $outfile"
+      rspfile_content = "{{inputs}}"
+      outputs = [ outfile ]
     }
+
     tool("stamp") {
-      command = "\${postbuilds}touch \$out"
-      description = "STAMP \$out"
+      command = "touch {{output}}"
+      description = "STAMP {{output}}"
     }
+
     tool("copy") {
-      command = "ln -f \$in \$out 2>/dev/null || (rm -rf \$out && cp -af \$in \$out)"
-      description = "COPY \$in \$out"
+      command = "ln -f {{source}} {{output}} 2>/dev/null || (rm -rf {{output}} && cp -af {{source}} {{output}})"
+      description = "COPY {{source}} {{output}}"
     }
 
     # When invoking this toolchain not as the default one, these args will be
