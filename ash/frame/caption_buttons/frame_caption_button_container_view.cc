@@ -340,7 +340,7 @@ void FrameCaptionButtonContainerView::ButtonPressed(views::Button* sender,
     frame_->Minimize();
   } else if (sender == size_button_) {
     if (frame_->IsFullscreen()) {  // Can be clicked in immersive fullscreen.
-      frame_->SetFullscreen(false);
+      frame_->Restore();
       action = ash::UMA_WINDOW_MAXIMIZE_BUTTON_CLICK_EXIT_FULLSCREEN;
     } else if (frame_->IsMaximized()) {
       frame_->Restore();

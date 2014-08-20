@@ -106,12 +106,7 @@ void DefaultHeaderPainter::Init(
       IDR_AURA_WINDOW_CONTROL_ICON_MINIMIZE_I,
       IDR_AURA_WINDOW_CONTROL_BACKGROUND_H,
       IDR_AURA_WINDOW_CONTROL_BACKGROUND_P);
-  caption_button_container_->SetButtonImages(
-      CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE,
-      IDR_AURA_WINDOW_CONTROL_ICON_SIZE,
-      IDR_AURA_WINDOW_CONTROL_ICON_SIZE_I,
-      IDR_AURA_WINDOW_CONTROL_BACKGROUND_H,
-      IDR_AURA_WINDOW_CONTROL_BACKGROUND_P);
+  UpdateSizeButtonImages();
   caption_button_container_->SetButtonImages(
       CAPTION_BUTTON_ICON_CLOSE,
       IDR_AURA_WINDOW_CONTROL_ICON_CLOSE,
@@ -186,6 +181,7 @@ void DefaultHeaderPainter::PaintHeader(gfx::Canvas* canvas, Mode mode) {
 }
 
 void DefaultHeaderPainter::LayoutHeader() {
+  UpdateSizeButtonImages();
   caption_button_container_->Layout();
 
   gfx::Size caption_button_container_size =
@@ -307,6 +303,24 @@ void DefaultHeaderPainter::LayoutLeftHeaderView() {
     left_header_view_->SetBounds(
         left_view_x_inset_, icon_offset_y, size.width(), size.height());
   }
+}
+
+void DefaultHeaderPainter::UpdateSizeButtonImages() {
+  int icon_id = 0;
+  int inactive_icon_id = 0;
+  if (frame_->IsMaximized() || frame_->IsFullscreen()) {
+    icon_id = IDR_AURA_WINDOW_CONTROL_ICON_RESTORE;
+    inactive_icon_id = IDR_AURA_WINDOW_CONTROL_ICON_RESTORE_I;
+  } else {
+    icon_id = IDR_AURA_WINDOW_CONTROL_ICON_MAXIMIZE;
+    inactive_icon_id = IDR_AURA_WINDOW_CONTROL_ICON_MAXIMIZE_I;
+  }
+  caption_button_container_->SetButtonImages(
+      CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE,
+      icon_id,
+      inactive_icon_id,
+      IDR_AURA_WINDOW_CONTROL_BACKGROUND_H,
+      IDR_AURA_WINDOW_CONTROL_BACKGROUND_P);
 }
 
 gfx::Rect DefaultHeaderPainter::GetLocalBounds() const {

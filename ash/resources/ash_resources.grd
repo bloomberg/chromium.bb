@@ -194,11 +194,13 @@
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_CONTROL_ICON_CLOSE" file="common/window_control_icon_close.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_CONTROL_ICON_CLOSE_I" file="common/window_control_icon_close_inactive.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_CONTROL_ICON_LEFT_SNAPPED" file="common/window_control_icon_left_snapped.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_CONTROL_ICON_MAXIMIZE" file="common/window_control_icon_maximize.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_CONTROL_ICON_MAXIMIZE_I" file="common/window_control_icon_maximize_inactive.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_CONTROL_ICON_MINIMIZE" file="common/window_control_icon_minimize.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_CONTROL_ICON_MINIMIZE_I" file="common/window_control_icon_minimize_inactive.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_CONTROL_ICON_RESTORE" file="common/window_control_icon_restore.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_CONTROL_ICON_RESTORE_I" file="common/window_control_icon_restore_inactive.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_CONTROL_ICON_RIGHT_SNAPPED" file="common/window_control_icon_right_snapped.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_CONTROL_ICON_SIZE" file="common/window_control_icon_size.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_CONTROL_ICON_SIZE_I" file="common/window_control_icon_size_inactive.png" />
 
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_HEADER_SHADE_INACTIVE_BOTTOM" file="common/window_header_shade_bottom_inactive.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_HEADER_SHADE_INACTIVE_LEFT" file="common/window_header_shade_left_inactive.png" />

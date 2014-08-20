@@ -409,12 +409,19 @@ void BrowserHeaderPainterAsh::UpdateCaptionButtonImages() {
       IDR_ASH_BROWSER_WINDOW_CONTROL_ICON_MINIMIZE,
       hover_background_id,
       pressed_background_id);
+
+  int size_icon_id = 0;
+  if (frame_->IsMaximized() || frame_->IsFullscreen())
+    size_icon_id = IDR_ASH_BROWSER_WINDOW_CONTROL_ICON_RESTORE;
+  else
+    size_icon_id = IDR_ASH_BROWSER_WINDOW_CONTROL_ICON_MAXIMIZE;
   caption_button_container_->SetButtonImages(
       ash::CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE,
-      IDR_ASH_BROWSER_WINDOW_CONTROL_ICON_SIZE,
-      IDR_ASH_BROWSER_WINDOW_CONTROL_ICON_SIZE,
+      size_icon_id,
+      size_icon_id,
       hover_background_id,
       pressed_background_id);
+
   caption_button_container_->SetButtonImages(
       ash::CAPTION_BUTTON_ICON_CLOSE,
       IDR_ASH_BROWSER_WINDOW_CONTROL_ICON_CLOSE,

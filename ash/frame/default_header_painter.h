@@ -70,6 +70,9 @@ class ASH_EXPORT DefaultHeaderPainter : public HeaderPainter,
   // Layout the left header view.
   void LayoutLeftHeaderView();
 
+  // Updates the size button's images.
+  void UpdateSizeButtonImages();
+
   // Returns the header bounds in the coordinates of |view_|. The header is
   // assumed to be positioned at the top left corner of |view_| and to have the
   // same width as |view_|.
