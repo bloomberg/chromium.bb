@@ -33,6 +33,8 @@ class ServiceWorkerRegistrationHandle
       ServiceWorkerRegistration* registration);
   virtual ~ServiceWorkerRegistrationHandle();
 
+  ServiceWorkerRegistrationObjectInfo GetObjectInfo();
+
   bool HasNoRefCount() const { return ref_count_ <= 0; }
   void IncrementRefCount();
   void DecrementRefCount();

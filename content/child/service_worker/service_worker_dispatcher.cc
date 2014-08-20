@@ -205,21 +205,20 @@ WebServiceWorkerImpl* ServiceWorkerDispatcher::GetServiceWorker(
 
 WebServiceWorkerRegistrationImpl*
 ServiceWorkerDispatcher::GetServiceWorkerRegistration(
-    int registration_handle_id,
-    const ServiceWorkerObjectInfo& info,
+    const ServiceWorkerRegistrationObjectInfo& info,
     bool adopt_handle) {
-  if (registration_handle_id == kInvalidServiceWorkerRegistrationHandleId)
+  if (info.handle_id == kInvalidServiceWorkerRegistrationHandleId)
     return NULL;
 
   RegistrationObjectMap::iterator existing_registration =
-      registrations_.find(registration_handle_id);
+      registrations_.find(info.handle_id);
 
   if (existing_registration != registrations_.end()) {
     if (adopt_handle) {
       // We are instructed to adopt a handle but we already have one, so
       // adopt and destroy a handle ref.
       ServiceWorkerRegistrationHandleReference::Adopt(
-          registration_handle_id, info, thread_safe_sender_);
+          info, thread_safe_sender_);
     }
     return existing_registration->second;
   }
@@ -227,9 +226,9 @@ ServiceWorkerDispatcher::GetServiceWorkerRegistration(
   scoped_ptr<ServiceWorkerRegistrationHandleReference> handle_ref =
       adopt_handle
           ? ServiceWorkerRegistrationHandleReference::Adopt(
-              registration_handle_id, info, thread_safe_sender_)
+              info, thread_safe_sender_)
           : ServiceWorkerRegistrationHandleReference::Create(
-              registration_handle_id, info, thread_safe_sender_);
+              info, thread_safe_sender_);
 
   // WebServiceWorkerRegistrationImpl constructor calls
   // AddServiceWorkerRegistration.
@@ -239,21 +238,14 @@ ServiceWorkerDispatcher::GetServiceWorkerRegistration(
 void ServiceWorkerDispatcher::OnRegistered(
     int thread_id,
     int request_id,
-    int registration_handle_id,
-    const ServiceWorkerObjectInfo& info) {
+    const ServiceWorkerRegistrationObjectInfo& info) {
   WebServiceWorkerRegistrationCallbacks* callbacks =
       pending_callbacks_.Lookup(request_id);
   DCHECK(callbacks);
   if (!callbacks)
     return;
 
-  callbacks->onSuccess(GetServiceWorkerRegistration(
-      registration_handle_id, info, true));
-
-  // The handle ref is unused, so adopt and destroy it.
-  // TODO(nhiroki): ServiceWorkerDispatcherHost don't have to pass a handle ref.
-  ServiceWorkerHandleReference::Adopt(info, thread_safe_sender_);
-
+  callbacks->onSuccess(GetServiceWorkerRegistration(info, true));
   pending_callbacks_.Remove(request_id);
 }
 

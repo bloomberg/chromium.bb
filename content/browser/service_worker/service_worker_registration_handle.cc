@@ -37,6 +37,14 @@ ServiceWorkerRegistrationHandle::~ServiceWorkerRegistrationHandle() {
   registration_->RemoveListener(this);
 }
 
+ServiceWorkerRegistrationObjectInfo
+ServiceWorkerRegistrationHandle::GetObjectInfo() {
+  ServiceWorkerRegistrationObjectInfo info;
+  info.handle_id = handle_id_;
+  info.scope = registration_->pattern();
+  return info;
+}
+
 void ServiceWorkerRegistrationHandle::IncrementRefCount() {
   DCHECK_GT(ref_count_, 0);
   ++ref_count_;

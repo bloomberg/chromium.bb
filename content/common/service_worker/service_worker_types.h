@@ -86,6 +86,12 @@ struct CONTENT_EXPORT ServiceWorkerObjectInfo {
   blink::WebServiceWorkerState state;
 };
 
+struct ServiceWorkerRegistrationObjectInfo {
+  ServiceWorkerRegistrationObjectInfo();
+  int handle_id;
+  GURL scope;
+};
+
 struct ServiceWorkerVersionAttributes {
   ServiceWorkerObjectInfo installing;
   ServiceWorkerObjectInfo waiting;

@@ -81,10 +81,8 @@ void ServiceWorkerMessageFilter::OnStaleMessageReceived(
 void ServiceWorkerMessageFilter::OnStaleRegistered(
     int thread_id,
     int request_id,
-    int registration_handle_id,
-    const ServiceWorkerObjectInfo& info) {
-  SendServiceWorkerObjectDestroyed(thread_safe_sender_, info.handle_id);
-  SendRegistrationObjectDestroyed(thread_safe_sender_, registration_handle_id);
+    const ServiceWorkerRegistrationObjectInfo& info) {
+  SendRegistrationObjectDestroyed(thread_safe_sender_, info.handle_id);
 }
 
 void ServiceWorkerMessageFilter::OnStaleSetVersionAttributes(

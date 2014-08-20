@@ -34,6 +34,7 @@ class ThreadSafeSender;
 class WebServiceWorkerImpl;
 class WebServiceWorkerRegistrationImpl;
 struct ServiceWorkerObjectInfo;
+struct ServiceWorkerRegistrationObjectInfo;
 struct ServiceWorkerVersionAttributes;
 
 // This class manages communication with the browser process about
@@ -98,8 +99,7 @@ class ServiceWorkerDispatcher : public WorkerTaskRunner::Observer {
   // |adopt_handle| is true, a ServiceWorkerRegistrationHandleReference will be
   // adopted for the specified registration.
   WebServiceWorkerRegistrationImpl* GetServiceWorkerRegistration(
-      int registration_handle_id,
-      const ServiceWorkerObjectInfo& info,
+      const ServiceWorkerRegistrationObjectInfo& info,
       bool adopt_handle);
 
   // |thread_safe_sender| needs to be passed in because if the call leads to
@@ -129,8 +129,7 @@ class ServiceWorkerDispatcher : public WorkerTaskRunner::Observer {
 
   void OnRegistered(int thread_id,
                     int request_id,
-                    int registration_handle_id,
-                    const ServiceWorkerObjectInfo& info);
+                    const ServiceWorkerRegistrationObjectInfo& info);
   void OnUnregistered(int thread_id,
                       int request_id);
   void OnRegistrationError(int thread_id,

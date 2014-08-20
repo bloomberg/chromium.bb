@@ -6,49 +6,44 @@
 
 #include "content/child/thread_safe_sender.h"
 #include "content/common/service_worker/service_worker_messages.h"
-#include "content/common/service_worker/service_worker_types.h"
 
 namespace content {
 
 scoped_ptr<ServiceWorkerRegistrationHandleReference>
 ServiceWorkerRegistrationHandleReference::Create(
-    int registration_handle_id,
-    const ServiceWorkerObjectInfo& info,
+    const ServiceWorkerRegistrationObjectInfo& info,
     ThreadSafeSender* sender) {
   return make_scoped_ptr(new ServiceWorkerRegistrationHandleReference(
-      registration_handle_id, info, sender, true));
+      info, sender, true));
 }
 
 scoped_ptr<ServiceWorkerRegistrationHandleReference>
 ServiceWorkerRegistrationHandleReference::Adopt(
-    int registration_handle_id,
-    const ServiceWorkerObjectInfo& info,
+    const ServiceWorkerRegistrationObjectInfo& info,
     ThreadSafeSender* sender) {
   return make_scoped_ptr(new ServiceWorkerRegistrationHandleReference(
-      registration_handle_id, info, sender, false));
+      info, sender, false));
 }
 
 ServiceWorkerRegistrationHandleReference::
 ServiceWorkerRegistrationHandleReference(
-    int registration_handle_id,
-    const ServiceWorkerObjectInfo& info,
+    const ServiceWorkerRegistrationObjectInfo& info,
     ThreadSafeSender* sender,
     bool increment_ref_in_ctor)
-    : handle_id_(registration_handle_id),
-      scope_(info.scope),
+    : info_(info),
       sender_(sender) {
-  DCHECK_NE(kInvalidServiceWorkerRegistrationHandleId, handle_id_);
+  DCHECK_NE(kInvalidServiceWorkerRegistrationHandleId, info_.handle_id);
   DCHECK(sender_);
   if (increment_ref_in_ctor)
     return;
   sender_->Send(
-      new ServiceWorkerHostMsg_IncrementRegistrationRefCount(handle_id_));
+      new ServiceWorkerHostMsg_IncrementRegistrationRefCount(info_.handle_id));
 }
 
 ServiceWorkerRegistrationHandleReference::
 ~ServiceWorkerRegistrationHandleReference() {
   sender_->Send(
-      new ServiceWorkerHostMsg_DecrementRegistrationRefCount(handle_id_));
+      new ServiceWorkerHostMsg_DecrementRegistrationRefCount(info_.handle_id));
 }
 
 }  // namespace content
