@@ -47,7 +47,7 @@ ResultChecker.prototype = {
 };
 
 TEST_F('NetInternalsTest',
-       'netInternalsChromeOSViewStoreDebugLogs',
+       'DISABLED_netInternalsChromeOSViewStoreDebugLogs',
        function() {
   if (!cr.isChromeOS)
     testDone();
