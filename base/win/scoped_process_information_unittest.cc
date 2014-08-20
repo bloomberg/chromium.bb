@@ -50,8 +50,7 @@ void ScopedProcessInformationTest::DoCreateProcess(
   STARTUPINFO startup_info = {};
   startup_info.cb = sizeof(startup_info);
 
-  EXPECT_TRUE(::CreateProcess(NULL,
-                              const_cast<wchar_t*>(cmd_line.c_str()),
+  EXPECT_TRUE(::CreateProcess(NULL, &cmd_line[0],
                               NULL, NULL, false, 0, NULL, NULL,
                               &startup_info, process_handle));
 }

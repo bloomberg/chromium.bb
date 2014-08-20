@@ -399,7 +399,7 @@ HRESULT CommandExecuteImpl::LaunchDesktopChrome() {
 
   PROCESS_INFORMATION temp_process_info = {};
   BOOL ret = CreateProcess(chrome_exe_.value().c_str(),
-                           const_cast<LPWSTR>(command_line.c_str()),
+                           &command_line[0],
                            NULL, NULL, FALSE, 0, NULL, NULL, &start_info_,
                            &temp_process_info);
   if (ret) {

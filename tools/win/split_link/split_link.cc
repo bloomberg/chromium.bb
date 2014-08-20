@@ -135,8 +135,7 @@ static void RunLinker(const vector<wstring>& prefix, const wchar_t* msg) {
     fflush(stdout);
   }
   if (!CreateProcess(NULL,
-                     reinterpret_cast<LPWSTR>(const_cast<wchar_t *>(
-                             cmd.c_str())),
+                     &cmd[0],
                      NULL,
                      NULL,
                      TRUE,

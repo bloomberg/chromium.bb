@@ -76,8 +76,10 @@ bool LaunchProcess(const CommandLine& cmdline,
   startup_info.wShowWindow = SW_SHOW;
 
   PROCESS_INFORMATION temp_process_info = {};
+  base::FilePath::StringType writable_cmdline_str(
+      cmdline.GetCommandLineString());
   if (!CreateProcess(NULL,
-      const_cast<wchar_t*>(cmdline.GetCommandLineString().c_str()), NULL, NULL,
+      &writable_cmdline_str[0], NULL, NULL,
       FALSE, 0, NULL, NULL, &startup_info, &temp_process_info)) {
     return false;
   }

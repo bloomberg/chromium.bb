@@ -74,7 +74,7 @@ static DWORD RunExe(const tstring& exe_name) {
   }
 
   if (!CreateProcess(NULL,  // lpApplicationName
-                     const_cast<TCHAR*>(cmdline.c_str()),
+                     &cmdline[0],
                      NULL,  // lpProcessAttributes
                      NULL,  // lpThreadAttributes
                      TRUE,  // bInheritHandles

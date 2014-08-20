@@ -189,8 +189,9 @@ TEST_F(DeleteTreeWorkItemTest, DeleteTreeInUse) {
   // Run the key path file to keep it in use.
   STARTUPINFOW si = {sizeof(si)};
   PROCESS_INFORMATION pi = {0};
+  base::FilePath::StringType writable_key_path = key_path.value();
   ASSERT_TRUE(
-      ::CreateProcessW(NULL, const_cast<wchar_t*>(key_path.value().c_str()),
+      ::CreateProcessW(NULL, &writable_key_path[0],
                        NULL, NULL, FALSE, CREATE_NO_WINDOW | CREATE_SUSPENDED,
                        NULL, NULL, &si, &pi));
 

@@ -177,6 +177,7 @@ bool LaunchProcess(const string16& cmdline,
 
   PROCESS_INFORMATION temp_process_info = {};
 
+  string16 writable_cmdline(cmdline);
   if (options.as_user) {
     flags |= CREATE_UNICODE_ENVIRONMENT;
     void* enviroment_block = NULL;
@@ -188,7 +189,7 @@ bool LaunchProcess(const string16& cmdline,
 
     BOOL launched =
         CreateProcessAsUser(options.as_user, NULL,
-                            const_cast<wchar_t*>(cmdline.c_str()),
+                            &writable_cmdline[0],
                             NULL, NULL, inherit_handles, flags,
                             enviroment_block, NULL, startup_info,
                             &temp_process_info);
@@ -200,7 +201,7 @@ bool LaunchProcess(const string16& cmdline,
     }
   } else {
     if (!CreateProcess(NULL,
-                       const_cast<wchar_t*>(cmdline.c_str()), NULL, NULL,
+                       &writable_cmdline[0], NULL, NULL,
                        inherit_handles, flags, NULL, NULL,
                        startup_info, &temp_process_info)) {
       DPLOG(ERROR) << "Command line:" << std::endl << UTF16ToUTF8(cmdline)
