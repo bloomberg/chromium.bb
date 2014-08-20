@@ -62,8 +62,8 @@ class ASH_EXPORT MaximizeModeController
   MaximizeModeController();
   virtual ~MaximizeModeController();
 
-  bool in_set_screen_rotation() const {
-    return in_set_screen_rotation_;
+  bool ignore_display_configuration_updates() const {
+    return ignore_display_configuration_updates_;
   }
 
   // True if |rotation_lock_| has been set, and OnAccelerometerUpdated will not
@@ -164,6 +164,10 @@ class ASH_EXPORT MaximizeModeController
   // Record UMA stats tracking touchview usage.
   void RecordTouchViewStateTransition();
 
+  // Checks DisplayManager for registered rotation lock, and rotation,
+  // preferences. These are then applied.
+  void LoadDisplayRotationProperties();
+
   // The maximized window manager (if enabled).
   scoped_ptr<MaximizeModeWindowManager> maximize_mode_window_manager_;
 
@@ -180,8 +184,14 @@ class ASH_EXPORT MaximizeModeController
   // Whether we have ever seen accelerometer data.
   bool have_seen_accelerometer_data_;
 
-  // True when the screen's orientation is being changed.
-  bool in_set_screen_rotation_;
+  // True when changes being applied cause OnDisplayConfigurationChanged() to be
+  // called, and for which these changes should be ignored.
+  bool ignore_display_configuration_updates_;
+
+  // True when Shutdown has been called. When shutting down the non maximize
+  // mode state should be restored, however user preferences should not be
+  // altered.
+  bool shutting_down_;
 
   // The rotation of the display set by the user. This rotation will be
   // restored upon exiting maximize mode.

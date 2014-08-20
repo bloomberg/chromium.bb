@@ -142,6 +142,14 @@ class DisplayPreferencesTest : public ash::test::AshTestBase {
     pref_data->Set(name, property);
   }
 
+  void StoreDisplayRotationPrefsForTest(bool rotation_lock,
+                                        gfx::Display::Rotation rotation) {
+    DictionaryPrefUpdate update(local_state(), prefs::kDisplayRotationLock);
+    base::DictionaryValue* pref_data = update.Get();
+    pref_data->SetBoolean("lock", rotation_lock);
+    pref_data->SetInteger("orientation", static_cast<int>(rotation));
+  }
+
   std::string GetRegisteredDisplayLayoutStr(int64 id1, int64 id2) {
     ash::DisplayIdPair pair;
     pair.first = id1;
@@ -673,6 +681,181 @@ TEST_F(DisplayPreferencesTest, DontSaveMaximizeModeControllerRotations) {
   int rotation = -1;
   EXPECT_TRUE(property->GetInteger("rotation", &rotation));
   EXPECT_EQ(gfx::Display::ROTATE_0, rotation);
+}
+
+// Tests that the rotation state is saved without a user being logged in.
+TEST_F(DisplayPreferencesTest, StoreRotationStateNoLogin) {
+  gfx::Display::SetInternalDisplayId(
+            gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().id());
+  EXPECT_FALSE(local_state()->HasPrefPath(prefs::kDisplayRotationLock));
+
+  bool current_rotation_lock =
+      ash::Shell::GetInstance()->maximize_mode_controller()->rotation_locked();
+  StoreDisplayRotationPrefs(current_rotation_lock);
+  EXPECT_TRUE(local_state()->HasPrefPath(prefs::kDisplayRotationLock));
+
+  const base::DictionaryValue* properties =
+      local_state()->GetDictionary(prefs::kDisplayRotationLock);
+  bool rotation_lock;
+  EXPECT_TRUE(properties->GetBoolean("lock", &rotation_lock));
+  EXPECT_EQ(current_rotation_lock, rotation_lock);
+
+  int orientation;
+  gfx::Display::Rotation current_rotation = ash::Shell::GetInstance()->
+      display_manager()->
+          GetDisplayInfo(gfx::Display::InternalDisplayId()).rotation();
+  EXPECT_TRUE(properties->GetInteger("orientation", &orientation));
+  EXPECT_EQ(current_rotation, orientation);
+}
+
+// Tests that the rotation state is saved when a guest is logged in.
+TEST_F(DisplayPreferencesTest, StoreRotationStateGuest) {
+  gfx::Display::SetInternalDisplayId(
+      gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().id());
+  EXPECT_FALSE(local_state()->HasPrefPath(prefs::kDisplayRotationLock));
+  LoggedInAsGuest();
+
+  bool current_rotation_lock =
+      ash::Shell::GetInstance()->maximize_mode_controller()->rotation_locked();
+  StoreDisplayRotationPrefs(current_rotation_lock);
+  EXPECT_TRUE(local_state()->HasPrefPath(prefs::kDisplayRotationLock));
+
+  const base::DictionaryValue* properties =
+      local_state()->GetDictionary(prefs::kDisplayRotationLock);
+  bool rotation_lock;
+  EXPECT_TRUE(properties->GetBoolean("lock", &rotation_lock));
+  EXPECT_EQ(current_rotation_lock, rotation_lock);
+
+  int orientation;
+  gfx::Display::Rotation current_rotation = ash::Shell::GetInstance()->
+      display_manager()->
+          GetDisplayInfo(gfx::Display::InternalDisplayId()).rotation();
+  EXPECT_TRUE(properties->GetInteger("orientation", &orientation));
+  EXPECT_EQ(current_rotation, orientation);
+}
+
+// Tests that the rotation state is saved when a normal user is logged in.
+TEST_F(DisplayPreferencesTest, StoreRotationStateNormalUser) {
+  gfx::Display::SetInternalDisplayId(
+      gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().id());
+  EXPECT_FALSE(local_state()->HasPrefPath(prefs::kDisplayRotationLock));
+  LoggedInAsGuest();
+
+  bool current_rotation_lock =
+      ash::Shell::GetInstance()->maximize_mode_controller()->rotation_locked();
+  StoreDisplayRotationPrefs(current_rotation_lock);
+  EXPECT_TRUE(local_state()->HasPrefPath(prefs::kDisplayRotationLock));
+
+  const base::DictionaryValue* properties =
+      local_state()->GetDictionary(prefs::kDisplayRotationLock);
+  bool rotation_lock;
+  EXPECT_TRUE(properties->GetBoolean("lock", &rotation_lock));
+  EXPECT_EQ(current_rotation_lock, rotation_lock);
+
+  int orientation;
+  gfx::Display::Rotation current_rotation = ash::Shell::GetInstance()->
+      display_manager()->
+          GetDisplayInfo(gfx::Display::InternalDisplayId()).rotation();
+  EXPECT_TRUE(properties->GetInteger("orientation", &orientation));
+  EXPECT_EQ(current_rotation, orientation);
+}
+
+// Tests that rotation state is loaded without a user being logged in, and that
+// entering maximize mode applies the state.
+TEST_F(DisplayPreferencesTest, LoadRotationNoLogin) {
+  gfx::Display::SetInternalDisplayId(
+      gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().id());
+  ASSERT_FALSE(local_state()->HasPrefPath(prefs::kDisplayRotationLock));
+
+  ash::Shell* shell = ash::Shell::GetInstance();
+  ash::MaximizeModeController* maximize_mode_controller =
+      shell->maximize_mode_controller();
+  bool initial_rotation_lock = maximize_mode_controller->rotation_locked();
+  ASSERT_FALSE(initial_rotation_lock);
+  ash::DisplayManager* display_manager = shell->display_manager();
+  gfx::Display::Rotation initial_rotation = display_manager->
+      GetDisplayInfo(gfx::Display::InternalDisplayId()).rotation();
+  ASSERT_EQ(gfx::Display::ROTATE_0, initial_rotation);
+
+  StoreDisplayRotationPrefs(initial_rotation_lock);
+  ASSERT_TRUE(local_state()->HasPrefPath(prefs::kDisplayRotationLock));
+
+  StoreDisplayRotationPrefsForTest(true, gfx::Display::ROTATE_90);
+  LoadDisplayPreferences(false);
+
+  bool display_rotation_lock =
+      display_manager->registered_internal_display_rotation_lock();
+  bool display_rotation =
+      display_manager->registered_internal_display_rotation();
+  EXPECT_TRUE(display_rotation_lock);
+  EXPECT_EQ(gfx::Display::ROTATE_90, display_rotation);
+
+  bool rotation_lock = maximize_mode_controller->rotation_locked();
+  gfx::Display::Rotation before_maximize_mode_rotation = display_manager->
+      GetDisplayInfo(gfx::Display::InternalDisplayId()).rotation();
+
+  // Settings should not be applied until maximize mode activates
+  EXPECT_FALSE(rotation_lock);
+  EXPECT_EQ(gfx::Display::ROTATE_0, before_maximize_mode_rotation);
+
+  // Open up 270 degrees to trigger maximize mode
+  maximize_mode_controller->
+      OnAccelerometerUpdated(gfx::Vector3dF(0.0f, 0.0f, -1.0f),
+                             gfx::Vector3dF(-1.0f, 0.0f, 0.0f));
+  EXPECT_TRUE(maximize_mode_controller->IsMaximizeModeWindowManagerEnabled());
+  bool maximize_mode_rotation_lock =
+      maximize_mode_controller->rotation_locked();
+  gfx::Display::Rotation maximize_mode_rotation = display_manager->
+      GetDisplayInfo(gfx::Display::InternalDisplayId()).rotation();
+  EXPECT_TRUE(maximize_mode_rotation_lock);
+  EXPECT_EQ(gfx::Display::ROTATE_90, maximize_mode_rotation);
+}
+
+// Tests that loaded rotation state is ignored if the device starts in normal
+// mode, and that they are not applied upon first entering maximize mode.
+TEST_F(DisplayPreferencesTest, LoadRotationIgnoredInNormalMode) {
+  gfx::Display::SetInternalDisplayId(
+      gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().id());
+  ASSERT_FALSE(local_state()->HasPrefPath(prefs::kDisplayRotationLock));
+  StoreDisplayRotationPrefs(false /* rotation_lock*/);
+  ASSERT_TRUE(local_state()->HasPrefPath(prefs::kDisplayRotationLock));
+
+  StoreDisplayRotationPrefsForTest(true, gfx::Display::ROTATE_90);
+  LoadDisplayPreferences(false);
+
+  ash::MaximizeModeController* maximize_mode_controller =
+      ash::Shell::GetInstance()->maximize_mode_controller();
+  // Lid open to 90 degrees
+  maximize_mode_controller->
+      OnAccelerometerUpdated(gfx::Vector3dF(0.0f, 0.0f, 1.0f),
+                             gfx::Vector3dF(-1.0f, 0.0f, 0.0f));
+  EXPECT_FALSE(maximize_mode_controller->IsMaximizeModeWindowManagerEnabled());
+  EXPECT_FALSE(maximize_mode_controller->rotation_locked());
+
+  // Open up 270 degrees to trigger maximize mode
+  maximize_mode_controller->
+      OnAccelerometerUpdated(gfx::Vector3dF(0.0f, 0.0f, -1.0f),
+                             gfx::Vector3dF(-1.0f, 0.0f, 0.0f));
+  EXPECT_TRUE(maximize_mode_controller->IsMaximizeModeWindowManagerEnabled());
+  EXPECT_FALSE(maximize_mode_controller->rotation_locked());
+}
+
+// Tests that rotation lock being set causes the rotation state to be saved.
+TEST_F(DisplayPreferencesTest, RotationLockTriggersStore) {
+  gfx::Display::SetInternalDisplayId(
+    gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().id());
+  ASSERT_FALSE(local_state()->HasPrefPath(prefs::kDisplayRotationLock));
+
+  ash::MaximizeModeController* maximize_mode_controller =
+      ash::Shell::GetInstance()->maximize_mode_controller();
+  maximize_mode_controller->SetRotationLocked(true);
+
+  EXPECT_TRUE(local_state()->HasPrefPath(prefs::kDisplayRotationLock));
+
+  const base::DictionaryValue* properties =
+      local_state()->GetDictionary(prefs::kDisplayRotationLock);
+  bool rotation_lock;
+  EXPECT_TRUE(properties->GetBoolean("lock", &rotation_lock));
 }
 
 }  // namespace chromeos

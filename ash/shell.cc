@@ -485,7 +485,8 @@ void Shell::RemoveShellObserver(ShellObserver* observer) {
 #if defined(OS_CHROMEOS)
 bool Shell::ShouldSaveDisplaySettings() {
   return !((maximize_mode_controller_->IsMaximizeModeWindowManagerEnabled() &&
-            maximize_mode_controller_->in_set_screen_rotation()) ||
+            maximize_mode_controller_->
+                ignore_display_configuration_updates()) ||
            resolution_notification_controller_->DoesNotificationTimeout());
 }
 #endif

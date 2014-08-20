@@ -29,6 +29,10 @@ void RegisterDisplayLocalStatePrefs(PrefRegistrySimple* registry);
 // dispay layout).
 void StoreDisplayPrefs();
 
+// If there is an internal display, stores |rotation_lock| along with the
+// current rotation of the internal display. Otherwise no data is stored.
+void StoreDisplayRotationPrefs(bool rotation_lock);
+
 // Sets the display layout for the current displays.
 void SetCurrentDisplayLayout(const ash::DisplayLayout& layout);
 

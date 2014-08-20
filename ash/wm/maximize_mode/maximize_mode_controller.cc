@@ -156,7 +156,8 @@ void ScreenshotActionHandler::OnKeyEvent(ui::KeyEvent* event) {
 MaximizeModeController::MaximizeModeController()
     : rotation_locked_(false),
       have_seen_accelerometer_data_(false),
-      in_set_screen_rotation_(false),
+      ignore_display_configuration_updates_(false),
+      shutting_down_(false),
       user_rotation_(gfx::Display::ROTATE_0),
       last_touchview_transition_time_(base::Time::Now()),
       tick_clock_(new base::DefaultTickClock()),
@@ -181,7 +182,11 @@ MaximizeModeController::~MaximizeModeController() {
 void MaximizeModeController::SetRotationLocked(bool rotation_locked) {
   if (rotation_locked_ == rotation_locked)
     return;
+  base::AutoReset<bool> auto_ignore_display_configuration_updates(
+      &ignore_display_configuration_updates_, true);
   rotation_locked_ = rotation_locked;
+  Shell::GetInstance()->display_manager()->
+      RegisterDisplayRotationProperties(rotation_locked_, current_rotation_);
   FOR_EACH_OBSERVER(Observer, observers_,
                     OnRotationLockChanged(rotation_locked_));
 }
@@ -226,13 +231,14 @@ void MaximizeModeController::AddWindow(aura::Window* window) {
 }
 
 void MaximizeModeController::Shutdown() {
-  maximize_mode_window_manager_.reset();
-  Shell::GetInstance()->OnMaximizeModeEnded();
+  shutting_down_ = true;
+  LeaveMaximizeMode();
 }
 
 void MaximizeModeController::OnAccelerometerUpdated(
     const gfx::Vector3dF& base,
     const gfx::Vector3dF& lid) {
+  bool first_accelerometer_update = !have_seen_accelerometer_data_;
   have_seen_accelerometer_data_ = true;
 
   // Ignore the reading if it appears unstable. The reading is considered
@@ -250,10 +256,18 @@ void MaximizeModeController::OnAccelerometerUpdated(
   // affects screen rotation, so we handle hinge rotation first.
   HandleHingeRotation(base, lid);
   HandleScreenRotation(lid);
+
+  if (first_accelerometer_update) {
+    // On the first accelerometer update we will know if we have entered
+    // maximize mode or not. Update the preferences to reflect the current
+    // state.
+    Shell::GetInstance()->display_manager()->
+        RegisterDisplayRotationProperties(rotation_locked_, current_rotation_);
+  }
 }
 
 void MaximizeModeController::OnDisplayConfigurationChanged() {
-  if (in_set_screen_rotation_)
+  if (ignore_display_configuration_updates_)
     return;
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
   gfx::Display::Rotation user_rotation = display_manager->
@@ -398,8 +412,8 @@ void MaximizeModeController::HandleScreenRotation(const gfx::Vector3dF& lid) {
 void MaximizeModeController::SetDisplayRotation(
     DisplayManager* display_manager,
     gfx::Display::Rotation rotation) {
-  base::AutoReset<bool> auto_in_set_screen_rotation(
-      &in_set_screen_rotation_, true);
+  base::AutoReset<bool> auto_ignore_display_configuration_updates(
+      &ignore_display_configuration_updates_, true);
   current_rotation_ = rotation;
   display_manager->SetDisplayRotation(gfx::Display::InternalDisplayId(),
                                       rotation);
@@ -409,8 +423,11 @@ void MaximizeModeController::EnterMaximizeMode() {
   if (IsMaximizeModeWindowManagerEnabled())
     return;
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  current_rotation_ = user_rotation_ = display_manager->
-      GetDisplayInfo(gfx::Display::InternalDisplayId()).rotation();
+  if (display_manager->HasInternalDisplay()) {
+    current_rotation_ = user_rotation_ = display_manager->
+        GetDisplayInfo(gfx::Display::InternalDisplayId()).rotation();
+    LoadDisplayRotationProperties();
+  }
   EnableMaximizeModeWindowManager(true);
 #if defined(USE_X11)
   event_blocker_.reset(new ScopedDisableInternalMouseAndKeyboardX11);
@@ -425,11 +442,14 @@ void MaximizeModeController::LeaveMaximizeMode() {
   if (!IsMaximizeModeWindowManagerEnabled())
     return;
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  gfx::Display::Rotation current_rotation = display_manager->
-      GetDisplayInfo(gfx::Display::InternalDisplayId()).rotation();
-  if (current_rotation != user_rotation_)
-    SetDisplayRotation(display_manager, user_rotation_);
-  rotation_locked_ = false;
+  if (display_manager->HasInternalDisplay()) {
+    gfx::Display::Rotation current_rotation = display_manager->
+        GetDisplayInfo(gfx::Display::InternalDisplayId()).rotation();
+    if (current_rotation != user_rotation_)
+      SetDisplayRotation(display_manager, user_rotation_);
+  }
+  if (!shutting_down_)
+    SetRotationLocked(false);
   EnableMaximizeModeWindowManager(false);
   event_blocker_.reset();
   event_handler_.reset();
@@ -460,6 +480,16 @@ void MaximizeModeController::RecordTouchViewStateTransition() {
     }
     last_touchview_transition_time_ = current_time;
   }
+}
+
+void MaximizeModeController::LoadDisplayRotationProperties() {
+  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
+  if (!display_manager->registered_internal_display_rotation_lock())
+    return;
+
+  SetDisplayRotation(display_manager,
+                     display_manager->registered_internal_display_rotation());
+  SetRotationLocked(true);
 }
 
 void MaximizeModeController::OnAppTerminating() {

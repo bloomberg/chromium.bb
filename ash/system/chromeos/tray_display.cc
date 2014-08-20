@@ -381,7 +381,7 @@ void TrayDisplay::CreateOrUpdateNotification(
   // Don't display notifications for accelerometer triggered screen rotations.
   // See http://crbug.com/364949
   if (Shell::GetInstance()->maximize_mode_controller()->
-      in_set_screen_rotation()) {
+      ignore_display_configuration_updates()) {
     return;
   }
 

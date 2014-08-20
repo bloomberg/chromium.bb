@@ -185,6 +185,22 @@ class ASH_EXPORT DisplayManager
                                float device_scale_factor,
                                ui::ColorCalibrationProfile color_profile);
 
+  // Register stored rotation properties for the internal display.
+  void RegisterDisplayRotationProperties(bool rotation_lock,
+                                         gfx::Display::Rotation rotation);
+
+  // Returns the stored rotation lock preference if it has been loaded,
+  // otherwise false.
+  bool registered_internal_display_rotation_lock() const {
+    return registered_internal_display_rotation_lock_;
+  }
+
+  // Returns the stored rotation preference for the internal display if it has
+  // been loaded, otherwise |gfx::Display::Rotate_0|.
+  gfx::Display::Rotation registered_internal_display_rotation() const {
+    return registered_internal_display_rotation_;
+  }
+
   // Returns the display mode of |display_id| which is currently used.
   DisplayMode GetActiveModeForDisplayId(int64 display_id) const;
 
@@ -374,6 +390,12 @@ private:
   SecondDisplayMode second_display_mode_;
   int64 mirrored_display_id_;
   gfx::Display non_desktop_display_;
+
+  // User preference for rotation lock of the internal display.
+  bool registered_internal_display_rotation_lock_;
+
+  // User preference for the rotation of the internal display.
+  gfx::Display::Rotation registered_internal_display_rotation_;
 
   DISALLOW_COPY_AND_ASSIGN(DisplayManager);
 };

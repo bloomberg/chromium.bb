@@ -161,7 +161,9 @@ DisplayManager::DisplayManager()
       force_bounds_changed_(false),
       change_display_upon_host_resize_(false),
       second_display_mode_(EXTENDED),
-      mirrored_display_id_(gfx::Display::kInvalidDisplayID) {
+      mirrored_display_id_(gfx::Display::kInvalidDisplayID),
+      registered_internal_display_rotation_lock_(false),
+      registered_internal_display_rotation_(gfx::Display::ROTATE_0) {
 #if defined(OS_CHROMEOS)
   change_display_upon_host_resize_ = !base::SysInfo::IsRunningOnChromeOS();
 #endif
@@ -579,6 +581,16 @@ DisplayMode DisplayManager::GetActiveModeForDisplayId(int64 display_id) const {
     }
   }
   return selected_mode;
+}
+
+void DisplayManager::RegisterDisplayRotationProperties(bool rotation_lock,
+    gfx::Display::Rotation rotation) {
+  if (delegate_)
+    delegate_->PreDisplayConfigurationChange(false);
+  registered_internal_display_rotation_lock_ = rotation_lock;
+  registered_internal_display_rotation_ = rotation;
+  if (delegate_)
+    delegate_->PostDisplayConfigurationChange();
 }
 
 bool DisplayManager::GetSelectedModeForDisplayId(int64 id,
