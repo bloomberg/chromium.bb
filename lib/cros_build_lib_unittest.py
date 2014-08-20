@@ -19,6 +19,7 @@ import itertools
 import logging
 import mox
 import signal
+import socket
 import StringIO
 import time
 import __builtin__
@@ -1241,6 +1242,35 @@ qlen 1000
 
     cros_build_lib.GetIPv4Address(global_ip=True)
     self.rc.assertCommandContains(['ip', 'addr', 'show', 'scope', 'global'])
+
+
+class TestGetHostname(cros_test_lib.MockTestCase):
+  """Tests GetHostName & GetHostDomain functionality."""
+
+  def setUp(self):
+    self.gethostname_mock = self.PatchObject(
+        socket, 'gethostname', return_value='m!!n')
+    self.gethostbyaddr_mock = self.PatchObject(
+        socket, 'gethostbyaddr', return_value=(
+            'm!!n.google.com', ('cow', 'bar',), ('127.0.0.1.a',)))
+
+  def testGetHostNameNonQualified(self):
+    """Verify non-qualified behavior"""
+    self.assertEqual(cros_build_lib.GetHostName(), 'm!!n')
+
+  def testGetHostNameFullyQualified(self):
+    """Verify fully qualified behavior"""
+    self.assertEqual(cros_build_lib.GetHostName(fully_qualified=True),
+                     'm!!n.google.com')
+
+  def testGetHostNameBadDns(self):
+    """Do not fail when the user's dns is bad"""
+    self.gethostbyaddr_mock.side_effect = socket.gaierror('should be caught')
+    self.assertEqual(cros_build_lib.GetHostName(), 'm!!n')
+
+  def testGetHostDomain(self):
+    """Verify basic behavior"""
+    self.assertEqual(cros_build_lib.GetHostDomain(), 'google.com')
 
 
 class TestGetChrootVersion(cros_test_lib.MockTestCase):

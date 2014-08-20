@@ -743,7 +743,12 @@ def GetChromeosVersion(str_obj):
 
 def GetHostName(fully_qualified=False):
   """Return hostname of current machine, with domain if |fully_qualified|."""
-  hostname = socket.gethostbyaddr(socket.gethostname())[0]
+  hostname = socket.gethostname()
+  try:
+    hostname = socket.gethostbyaddr(hostname)[0]
+  except socket.gaierror as e:
+    Warning('please check your /etc/hosts file; resolving your hostname '
+            '(%s) failed: %s', hostname, e)
 
   if fully_qualified:
     return hostname
