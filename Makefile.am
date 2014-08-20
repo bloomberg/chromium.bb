@@ -476,7 +476,10 @@ weston_image_SOURCES = clients/image.c
 weston_image_LDADD = libtoytoolkit.la
 weston_image_CFLAGS = $(AM_CFLAGS) $(CLIENT_CFLAGS)
 
-weston_cliptest_SOURCES = clients/cliptest.c src/vertex-clipping.c
+weston_cliptest_SOURCES =				\
+	clients/cliptest.c				\
+	src/vertex-clipping.c				\
+	src/vertex-clipping.h
 weston_cliptest_CFLAGS = $(AM_CFLAGS) $(CLIENT_CFLAGS)
 weston_cliptest_LDADD = libtoytoolkit.la
 
