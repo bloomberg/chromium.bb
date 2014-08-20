@@ -16,6 +16,7 @@
 #include "base/values.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
+#include "content/grit/content_resources.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/gpu_data_manager_observer.h"
 #include "content/public/browser/web_contents.h"
@@ -27,7 +28,6 @@
 #include "content/public/common/url_constants.h"
 #include "gpu/config/gpu_feature_type.h"
 #include "gpu/config/gpu_info.h"
-#include "grit/content_resources.h"
 #include "third_party/angle/src/common/version.h"
 
 #if defined(OS_WIN)

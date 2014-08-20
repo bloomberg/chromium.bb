@@ -38,6 +38,7 @@ if (is_component_build) {
 
 grit("resources") {
   source = "content_resources.grd"
+  use_qualified_include = true
   outputs = [
     "grit/content_resources.h",
     "content_resources.pak",

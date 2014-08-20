@@ -5,11 +5,11 @@
 #include "content/browser/media/webrtc_internals_ui.h"
 
 #include "content/browser/media/webrtc_internals_message_handler.h"
+#include "content/grit/content_resources.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/common/url_constants.h"
-#include "grit/content_resources.h"
 
 namespace content {
 namespace {

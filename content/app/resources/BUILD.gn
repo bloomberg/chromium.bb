@@ -6,6 +6,7 @@ import("//tools/grit/grit_rule.gni")
 
 grit("resources") {
   source = "content_resources.grd"
+  use_qualified_include = true
   outputs = [
     "grit/content_resources.h",
     "content_resources_100_percent.pak",

@@ -6,12 +6,12 @@
 
 #include "base/command_line.h"
 #include "content/browser/media/media_internals_handler.h"
+#include "content/grit/content_resources.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
-#include "grit/content_resources.h"
 
 namespace content {
 namespace {

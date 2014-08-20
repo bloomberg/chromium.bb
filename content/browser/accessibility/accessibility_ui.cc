@@ -17,6 +17,7 @@
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/view_message_enums.h"
+#include "content/grit/content_resources.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_process_host.h"
@@ -26,7 +27,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/common/url_constants.h"
-#include "grit/content_resources.h"
 #include "net/base/escape.h"
 
 static const char kDataFile[] = "targets-data.json";

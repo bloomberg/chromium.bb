@@ -5,6 +5,7 @@ include_rules = [
   # directories in content/ so we disallow all of them.
   "-content",
   "+content/common",
+  "+content/grit",
   "+content/public/common",
   "+content/public/test",
   "+content/shell",  # for content_browsertests
@@ -26,7 +27,6 @@ include_rules = [
 
   "+crypto",
   "+grit/blink_resources.h",
-  "+grit/content_resources.h",
   "+grit/content_strings.h",
   "+grit/ui_strings.h",
   "+grit/webkit_resources.h",
