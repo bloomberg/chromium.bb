@@ -21,6 +21,7 @@
 #include "base/metrics/histogram.h"
 #include "base/metrics/stats_table.h"
 #include "base/path_service.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_tokenizer.h"
@@ -91,6 +92,7 @@
 #include "content/renderer/render_process_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/renderer_webkitplatformsupport_impl.h"
+#include "content/renderer/scheduler_proxy_task_runner.h"
 #include "content/renderer/service_worker/embedded_worker_context_message_filter.h"
 #include "content/renderer/service_worker/embedded_worker_dispatcher.h"
 #include "content/renderer/shared_worker/embedded_shared_worker_stub.h"
@@ -106,6 +108,7 @@
 #include "net/base/net_util.h"
 #include "skia/ext/event_tracer_impl.h"
 #include "third_party/WebKit/public/platform/WebString.h"
+#include "third_party/WebKit/public/platform/WebThread.h"
 #include "third_party/WebKit/public/web/WebColorName.h"
 #include "third_party/WebKit/public/web/WebDatabase.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
@@ -657,6 +660,9 @@ void RenderThreadImpl::Shutdown() {
   // hold pointers to V8 objects (e.g., via pending requests).
   main_thread_indexed_db_dispatcher_.reset();
 
+  main_thread_compositor_task_runner_ = NULL;
+  main_thread_input_task_runner_ = NULL;
+
   if (webkit_platform_support_)
     blink::shutdown();
 
@@ -839,6 +845,11 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
 
   webkit_platform_support_.reset(new RendererWebKitPlatformSupportImpl);
   blink::initialize(webkit_platform_support_.get());
+  main_thread_compositor_task_runner_ =
+      make_scoped_refptr(new SchedulerProxyTaskRunner<
+          &blink::WebSchedulerProxy::postCompositorTask>());
+  main_thread_input_task_runner_ = make_scoped_refptr(
+      new SchedulerProxyTaskRunner<&blink::WebSchedulerProxy::postInputTask>());
 
   v8::Isolate* isolate = blink::mainThreadIsolate();
 
@@ -878,8 +889,8 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
     }
 #endif
     if (!input_handler_manager_client) {
-      input_event_filter_ =
-          new InputEventFilter(this, compositor_message_loop_proxy_);
+      input_event_filter_ = new InputEventFilter(
+          this, main_thread_input_task_runner_, compositor_message_loop_proxy_);
       AddFilter(input_event_filter_.get());
       input_handler_manager_client = input_event_filter_.get();
     }

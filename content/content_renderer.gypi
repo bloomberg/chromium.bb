@@ -384,6 +384,7 @@
       'renderer/sad_plugin.h',
       'renderer/savable_resources.cc',
       'renderer/savable_resources.h',
+      'renderer/scheduler_proxy_task_runner.h',
       'renderer/screen_orientation/screen_orientation_dispatcher.cc',
       'renderer/screen_orientation/screen_orientation_dispatcher.h',
       'renderer/screen_orientation/screen_orientation_observer.cc',
