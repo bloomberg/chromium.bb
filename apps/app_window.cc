@@ -15,7 +15,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/invalidate_type.h"
@@ -326,16 +325,17 @@ void AppWindow::Init(const GURL& url,
                  extensions::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
                  content::Source<content::BrowserContext>(
                      client->GetOriginalContext(browser_context_)));
-  // Close when the browser process is exiting.
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_APP_TERMINATING,
-                 content::NotificationService::AllSources());
   // Update the app menu if an ephemeral app becomes installed.
   registrar_.Add(
       this,
       extensions::NOTIFICATION_EXTENSION_WILL_BE_INSTALLED_DEPRECATED,
       content::Source<content::BrowserContext>(
           client->GetOriginalContext(browser_context_)));
+
+  // Close when the browser process is exiting.
+  app_delegate_->SetTerminatingCallback(
+      base::Bind(&NativeAppWindow::Close,
+                 base::Unretained(native_app_window_.get())));
 
   app_window_contents_->LoadContents(new_params.creator_process_id);
 
@@ -352,9 +352,8 @@ void AppWindow::Init(const GURL& url,
 }
 
 AppWindow::~AppWindow() {
-  // Unregister now to prevent getting NOTIFICATION_APP_TERMINATING if we're the
-  // last window open.
-  registrar_.RemoveAll();
+  // Unregister now to prevent getting notified if we're the last window open.
+  app_delegate_->SetTerminatingCallback(base::Closure());
 
   // Remove shutdown prevention.
   AppsClient::Get()->DecrementKeepAliveCount();
@@ -962,9 +961,6 @@ void AppWindow::Observe(int type,
         native_app_window_->UpdateShelfMenu();
       break;
     }
-    case chrome::NOTIFICATION_APP_TERMINATING:
-      native_app_window_->Close();
-      break;
     default:
       NOTREACHED() << "Received unexpected notification";
   }

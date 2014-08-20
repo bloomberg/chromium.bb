@@ -5,7 +5,10 @@
 #ifndef CHROME_BROWSER_UI_APPS_CHROME_APP_DELEGATE_H_
 #define CHROME_BROWSER_UI_APPS_CHROME_APP_DELEGATE_H_
 
+#include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/app_window/app_delegate.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/rect.h"
@@ -15,7 +18,8 @@ class BrowserContext;
 class WebContents;
 }
 
-class ChromeAppDelegate : public extensions::AppDelegate {
+class ChromeAppDelegate : public extensions::AppDelegate,
+                          public content::NotificationObserver {
  public:
   ChromeAppDelegate();
   virtual ~ChromeAppDelegate();
@@ -54,8 +58,16 @@ class ChromeAppDelegate : public extensions::AppDelegate {
                                      bool blocked) OVERRIDE;
   virtual bool IsWebContentsVisible(
       content::WebContents* web_contents) OVERRIDE;
+  virtual void SetTerminatingCallback(const base::Closure& callback) OVERRIDE;
+
+  // content::NotificationObserver:
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   scoped_ptr<NewWindowContentsDelegate> new_window_contents_delegate_;
+  base::Closure terminating_callback_;
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeAppDelegate);
 };

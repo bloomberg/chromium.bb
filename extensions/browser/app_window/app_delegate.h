@@ -5,6 +5,7 @@
 #ifndef EXTENSIONS_BROWSER_APP_WINDOW_APP_DELEGATE_H_
 #define EXTENSIONS_BROWSER_APP_WINDOW_APP_DELEGATE_H_
 
+#include "base/callback_forward.h"
 #include "content/public/common/media_stream_request.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/window_open_disposition.h"
@@ -65,6 +66,9 @@ class AppDelegate {
   virtual void SetWebContentsBlocked(content::WebContents* web_contents,
                                      bool blocked) = 0;
   virtual bool IsWebContentsVisible(content::WebContents* web_contents) = 0;
+
+  // |callback| will be called when the process is about to terminate.
+  virtual void SetTerminatingCallback(const base::Closure& callback) = 0;
 };
 
 }  // namespace extensions
