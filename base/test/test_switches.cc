@@ -4,10 +4,6 @@
 
 #include "base/test/test_switches.h"
 
-// Time (in milliseconds) that the tests should wait before timing out.
-// TODO(phajdan.jr): Clean up the switch names.
-const char switches::kTestLargeTimeout[] = "test-large-timeout";
-
 // Maximum number of tests to run in a single batch.
 const char switches::kTestLauncherBatchLimit[] = "test-launcher-batch-limit";
 

@@ -71,7 +71,6 @@ int TestTimeouts::action_max_timeout_ms_ = 45000;
 #else
 int TestTimeouts::action_max_timeout_ms_ = 30000;
 #endif  // NDEBUG
-int TestTimeouts::large_test_timeout_ms_ = 10 * 60 * 1000;
 
 int TestTimeouts::test_launcher_timeout_ms_ = 45000;
 
@@ -97,8 +96,6 @@ void TestTimeouts::Initialize() {
                     &action_timeout_ms_);
   InitializeTimeout(switches::kUiTestActionMaxTimeout, action_timeout_ms_,
                     &action_max_timeout_ms_);
-  InitializeTimeout(switches::kTestLargeTimeout, action_max_timeout_ms_,
-                    &large_test_timeout_ms_);
 
   // Test launcher timeout is independent from anything above action timeout.
   InitializeTimeout(switches::kTestLauncherTimeout, action_timeout_ms_,
@@ -107,7 +104,6 @@ void TestTimeouts::Initialize() {
   // The timeout values should be increasing in the right order.
   CHECK(tiny_timeout_ms_ <= action_timeout_ms_);
   CHECK(action_timeout_ms_ <= action_max_timeout_ms_);
-  CHECK(action_max_timeout_ms_ <= large_test_timeout_ms_);
 
   CHECK(action_timeout_ms_ <= test_launcher_timeout_ms_);
 }
