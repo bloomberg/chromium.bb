@@ -19,6 +19,7 @@
 #include "net/quic/quic_crypto_stream.h"
 #include "net/quic/quic_data_reader.h"
 #include "net/quic/quic_protocol.h"
+#include "net/tools/quic/quic_dispatcher.h"
 #include "net/tools/quic/quic_in_memory_cache.h"
 #include "net/tools/quic/quic_socket_utils.h"
 

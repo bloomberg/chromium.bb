@@ -210,9 +210,8 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   // threshold and will return 0.
   QuicByteCount GetSlowStartThreshold() const;
 
-  // Enables pacing if it has not already been enabled, and if
-  // FLAGS_enable_quic_pacing is set.
-  void MaybeEnablePacing();
+  // Enables pacing if it has not already been enabled.
+  void EnablePacing();
 
   bool using_pacing() const { return using_pacing_; }
 
@@ -362,8 +361,8 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   size_t consecutive_tlp_count_;
   // Number of times the crypto handshake has been retransmitted.
   size_t consecutive_crypto_retransmission_count_;
-  // Whether a tlp packet can be sent even if the send algorithm says not to.
-  bool pending_tlp_transmission_;
+  // Number of pending transmissions of TLP or crypto packets.
+  size_t pending_timer_transmission_count_;
   // Maximum number of tail loss probes to send before firing an RTO.
   size_t max_tail_loss_probes_;
   bool using_pacing_;

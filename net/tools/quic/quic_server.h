@@ -15,7 +15,6 @@
 #include "net/quic/quic_config.h"
 #include "net/quic/quic_framer.h"
 #include "net/tools/epoll_server/epoll_server.h"
-#include "net/tools/quic/quic_dispatcher.h"
 
 namespace net {
 
@@ -25,6 +24,7 @@ namespace test {
 class QuicServerPeer;
 }  // namespace test
 
+class ProcessPacketInterface;
 class QuicDispatcher;
 
 class QuicServer : public EpollCallbackInterface {

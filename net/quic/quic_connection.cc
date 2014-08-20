@@ -1620,6 +1620,13 @@ void QuicConnection::OnRetransmissionTimeout() {
 
   sent_packet_manager_.OnRetransmissionTimeout();
   WriteIfNotBlocked();
+
+  // A write failure can result in the connection being closed, don't attempt to
+  // write further packets, or to set alarms.
+  if (!connected_) {
+    return;
+  }
+
   // In the TLP case, the SentPacketManager gives the connection the opportunity
   // to send new data before retransmitting.
   if (sent_packet_manager_.MaybeRetransmitTailLossProbe()) {

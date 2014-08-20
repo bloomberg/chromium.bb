@@ -25,7 +25,6 @@ namespace test {
 class QuicServerPeer;
 }  // namespace test
 
-class QuicConnectionHelperInterface;
 class QuicDispatcher;
 class UDPServerSocket;
 

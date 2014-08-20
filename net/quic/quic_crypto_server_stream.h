@@ -51,7 +51,6 @@ class NET_EXPORT_PRIVATE QuicCryptoServerStream : public QuicCryptoStream {
  public:
   QuicCryptoServerStream(const QuicCryptoServerConfig& crypto_config,
                          QuicSession* session);
-  explicit QuicCryptoServerStream(QuicSession* session);
   virtual ~QuicCryptoServerStream();
 
   // Cancel any outstanding callbacks, such as asynchronous validation of client

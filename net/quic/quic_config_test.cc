@@ -31,7 +31,6 @@ class QuicConfigTest : public ::testing::Test {
 };
 
 TEST_F(QuicConfigTest, ToHandshakeMessage) {
-  ValueRestore<bool> old_flag(&FLAGS_enable_quic_pacing, false);
   config_.SetDefaults();
   config_.SetInitialFlowControlWindowToSend(
       kInitialSessionFlowControlWindowForTest);
@@ -76,20 +75,6 @@ TEST_F(QuicConfigTest, ToHandshakeMessage) {
   error = msg.GetTaglist(kCGST, &out, &out_len);
   EXPECT_EQ(1u, out_len);
   EXPECT_EQ(kQBIC, *out);
-}
-
-TEST_F(QuicConfigTest, ToHandshakeMessageWithPacing) {
-  ValueRestore<bool> old_flag(&FLAGS_enable_quic_pacing, true);
-
-  config_.SetDefaults();
-  CryptoHandshakeMessage msg;
-  config_.ToHandshakeMessage(&msg);
-
-  const QuicTag* out;
-  size_t out_len;
-  EXPECT_EQ(QUIC_NO_ERROR, msg.GetTaglist(kCGST, &out, &out_len));
-  EXPECT_EQ(1u, out_len);
-  EXPECT_EQ(kQBIC, out[0]);
 }
 
 TEST_F(QuicConfigTest, ProcessClientHello) {

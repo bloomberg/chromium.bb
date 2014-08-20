@@ -194,7 +194,6 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
     client_supported_versions_ = GetParam().client_supported_versions;
     server_supported_versions_ = GetParam().server_supported_versions;
     negotiated_version_ = GetParam().negotiated_version;
-    FLAGS_enable_quic_pacing = GetParam().use_pacing;
     FLAGS_enable_quic_fec = GetParam().use_fec;
 
     VLOG(1) << "Using Configuration: " << GetParam();
@@ -664,9 +663,7 @@ TEST_P(EndToEndTest, LargePostNoPacketLossWithDelayAndReordering) {
   EXPECT_EQ(kFooResponseBody, client_->SendCustomSynchronousRequest(request));
 }
 
-// TODO(rtenneti): rch is investigating the root cause. Will enable after we
-// find the bug.
-TEST_P(EndToEndTest, DISABLED_LargePostZeroRTTFailure) {
+TEST_P(EndToEndTest, LargePostZeroRTTFailure) {
   // Have the server accept 0-RTT without waiting a startup period.
   strike_register_no_startup_period_ = true;
 
@@ -965,10 +962,8 @@ TEST_P(EndToEndTest, DISABLED_LimitCongestionWindowAndRTT) {
   EXPECT_EQ(kMaxInitialWindow * kDefaultTCPMSS,
             server_sent_packet_manager.GetCongestionWindow());
 
-  EXPECT_EQ(FLAGS_enable_quic_pacing,
-            server_sent_packet_manager.using_pacing());
-  EXPECT_EQ(FLAGS_enable_quic_pacing,
-            client_sent_packet_manager.using_pacing());
+  EXPECT_EQ(GetParam().use_pacing, server_sent_packet_manager.using_pacing());
+  EXPECT_EQ(GetParam().use_pacing, client_sent_packet_manager.using_pacing());
 
   EXPECT_EQ(100000u,
             client_sent_packet_manager.GetRttStats()->initial_rtt_us());

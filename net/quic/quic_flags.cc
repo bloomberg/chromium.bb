@@ -12,13 +12,6 @@
 // other transmissions.
 bool FLAGS_track_retransmission_history = false;
 
-// Do not remove this flag until the Finch-trials described in b/11706275
-// are complete.
-// If true, QUIC connections will support the use of a pacing algorithm when
-// sending packets, in an attempt to reduce packet loss.  The client must also
-// request pacing for the server to enable it.
-bool FLAGS_enable_quic_pacing = true;
-
 bool FLAGS_quic_allow_oversized_packets_for_test = false;
 
 // When true, the use time based loss detection instead of nack.

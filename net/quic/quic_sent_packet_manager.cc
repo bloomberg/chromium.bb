@@ -83,7 +83,7 @@ QuicSentPacketManager::QuicSentPacketManager(
       consecutive_rto_count_(0),
       consecutive_tlp_count_(0),
       consecutive_crypto_retransmission_count_(0),
-      pending_tlp_transmission_(false),
+      pending_timer_transmission_count_(0),
       max_tail_loss_probes_(kDefaultMaxTailLossProbes),
       using_pacing_(false),
       handshake_confirmed_(false) {
@@ -115,7 +115,7 @@ void QuicSentPacketManager::SetFromConfig(const QuicConfig& config) {
   }
   if (config.HasReceivedConnectionOptions() &&
       ContainsQuicTag(config.ReceivedConnectionOptions(), kPACE)) {
-    MaybeEnablePacing();
+    EnablePacing();
   }
   // TODO(ianswett): Remove the "HasReceivedLossDetection" branch once
   // the ConnectionOptions code is live everywhere.
@@ -502,7 +502,9 @@ bool QuicSentPacketManager::OnPacketSent(
     HasRetransmittableData has_retransmittable_data) {
   DCHECK_LT(0u, sequence_number);
   LOG_IF(DFATAL, bytes == 0) << "Cannot send empty packets.";
-  pending_tlp_transmission_ = false;
+  if (pending_timer_transmission_count_ > 0) {
+    --pending_timer_transmission_count_;
+  }
   // In rare circumstances, the packet could be serialized, sent, and then acked
   // before OnPacketSent is called.
   if (!unacked_packets_.IsUnacked(sequence_number)) {
@@ -536,7 +538,7 @@ bool QuicSentPacketManager::OnPacketSent(
 
 void QuicSentPacketManager::OnRetransmissionTimeout() {
   DCHECK(unacked_packets_.HasInFlightPackets());
-  DCHECK(!pending_tlp_transmission_);
+  DCHECK_EQ(0u, pending_timer_transmission_count_);
   // Handshake retransmission, timer based loss detection, TLP, and RTO are
   // implemented with a single alarm. The handshake alarm is set when the
   // handshake has not completed, the loss alarm is set when the loss detection
@@ -559,7 +561,7 @@ void QuicSentPacketManager::OnRetransmissionTimeout() {
       // packets, execute a conventional RTO to abandon old packets.
       ++stats_->tlp_count;
       ++consecutive_tlp_count_;
-      pending_tlp_transmission_ = true;
+      pending_timer_transmission_count_ = 1;
       // TLPs prefer sending new data instead of retransmitting data, so
       // give the connection a chance to write before completing the TLP.
       return;
@@ -588,12 +590,13 @@ void QuicSentPacketManager::RetransmitCryptoPackets() {
     }
     packet_retransmitted = true;
     MarkForRetransmission(sequence_number, HANDSHAKE_RETRANSMISSION);
+    ++pending_timer_transmission_count_;
   }
   DCHECK(packet_retransmitted) << "No crypto packets found to retransmit.";
 }
 
 bool QuicSentPacketManager::MaybeRetransmitTailLossProbe() {
-  if (!pending_tlp_transmission_) {
+  if (pending_timer_transmission_count_ == 0) {
     return false;
   }
   for (QuicUnackedPacketMap::const_iterator it = unacked_packets_.begin();
@@ -730,7 +733,7 @@ QuicTime::Delta QuicSentPacketManager::TimeUntilSend(
     HasRetransmittableData retransmittable) {
   // The TLP logic is entirely contained within QuicSentPacketManager, so the
   // send algorithm does not need to be consulted.
-  if (pending_tlp_transmission_) {
+  if (pending_timer_transmission_count_ > 0) {
     return QuicTime::Delta::Zero();
   }
   return send_algorithm_->TimeUntilSend(
@@ -752,14 +755,15 @@ QuicTime::Delta QuicSentPacketManager::TimeUntilSend(
 // any benefits, but if the delayed ack becomes a significant source
 // of (likely, tail) latency, then consider such a mechanism.
 const QuicTime::Delta QuicSentPacketManager::DelayedAckTime() const {
-  return QuicTime::Delta::FromMilliseconds(min(kMaxDelayedAckTime,
+  return QuicTime::Delta::FromMilliseconds(min(kMaxDelayedAckTimeMs,
                                                kMinRetransmissionTimeMs/2));
 }
 
 const QuicTime QuicSentPacketManager::GetRetransmissionTime() const {
   // Don't set the timer if there are no packets in flight or we've already
   // queued a tlp transmission and it hasn't been sent yet.
-  if (!unacked_packets_.HasInFlightPackets() || pending_tlp_transmission_) {
+  if (!unacked_packets_.HasInFlightPackets() ||
+      pending_timer_transmission_count_ > 0) {
     return QuicTime::Zero();
   }
   switch (GetRetransmissionMode()) {
@@ -855,11 +859,7 @@ QuicByteCount QuicSentPacketManager::GetSlowStartThreshold() const {
   return send_algorithm_->GetSlowStartThreshold();
 }
 
-void QuicSentPacketManager::MaybeEnablePacing() {
-  if (!FLAGS_enable_quic_pacing) {
-    return;
-  }
-
+void QuicSentPacketManager::EnablePacing() {
   if (using_pacing_) {
     return;
   }

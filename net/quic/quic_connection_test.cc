@@ -884,7 +884,7 @@ class QuicConnectionTest : public ::testing::TestWithParam<QuicVersion> {
   }
 
   QuicTime::Delta DefaultDelayedAckTime() {
-    return QuicTime::Delta::FromMilliseconds(kMaxDelayedAckTime);
+    return QuicTime::Delta::FromMilliseconds(kMaxDelayedAckTimeMs);
   }
 
   // Initialize a frame acknowledging all packets up to largest_observed.
@@ -3922,8 +3922,6 @@ TEST_P(QuicConnectionTest, OnPacketHeaderDebugVisitor) {
 }
 
 TEST_P(QuicConnectionTest, Pacing) {
-  ValueRestore<bool> old_flag(&FLAGS_enable_quic_pacing, true);
-
   TestConnection server(connection_id_, IPEndPoint(), helper_.get(),
                         writer_.get(), true, version());
   TestConnection client(connection_id_, IPEndPoint(), helper_.get(),

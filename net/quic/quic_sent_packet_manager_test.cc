@@ -915,6 +915,8 @@ TEST_F(QuicSentPacketManagerTest, CryptoHandshakeTimeout) {
 
   // The first retransmits 2 packets.
   manager_.OnRetransmissionTimeout();
+  EXPECT_EQ(QuicTime::Delta::Zero(),
+            manager_.TimeUntilSend(clock_.Now(), HAS_RETRANSMITTABLE_DATA));
   RetransmitNextPacket(6);
   RetransmitNextPacket(7);
   EXPECT_FALSE(manager_.HasPendingRetransmissions());
@@ -922,6 +924,8 @@ TEST_F(QuicSentPacketManagerTest, CryptoHandshakeTimeout) {
 
   // The second retransmits 2 packets.
   manager_.OnRetransmissionTimeout();
+  EXPECT_EQ(QuicTime::Delta::Zero(),
+            manager_.TimeUntilSend(clock_.Now(), HAS_RETRANSMITTABLE_DATA));
   RetransmitNextPacket(8);
   RetransmitNextPacket(9);
   EXPECT_FALSE(manager_.HasPendingRetransmissions());
@@ -1416,7 +1420,6 @@ TEST_F(QuicSentPacketManagerTest, NegotiateCongestionControlFromOptions) {
 }
 
 TEST_F(QuicSentPacketManagerTest, NegotiatePacingFromOptions) {
-  ValueRestore<bool> old_flag(&FLAGS_enable_quic_pacing, true);
   EXPECT_FALSE(manager_.using_pacing());
 
   QuicConfig config;

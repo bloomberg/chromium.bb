@@ -105,7 +105,7 @@ const QuicStreamId kCryptoStreamId = 1;
 const QuicStreamId kHeadersStreamId = 3;
 
 // Maximum delayed ack time, in ms.
-const int kMaxDelayedAckTime = 25;
+const int kMaxDelayedAckTimeMs = 25;
 
 // This is the default network timeout a for connection till the crypto
 // handshake succeeds and the negotiated timeout from the handshake is received.
