@@ -1100,7 +1100,7 @@
 	attempt to use it after that point.
 
 	The callback_data passed in the callback is the current time, in
-	milliseconds.
+	milliseconds, with an undefined base.
       </description>
 
       <arg name="callback" type="new_id" interface="wl_callback"/>
