@@ -983,7 +983,8 @@ bool RendererOverridesHandler::HandleMouseEvent(
   if (color_picker_frame_.drawsNothing())
     return true;
 
-  if (event.button == blink::WebMouseEvent::ButtonLeft) {
+  if (event.button == blink::WebMouseEvent::ButtonLeft &&
+      event.type == blink::WebInputEvent::MouseDown) {
     if (last_cursor_x_ < 0 || last_cursor_x_ >= color_picker_frame_.width() ||
         last_cursor_y_ < 0 || last_cursor_y_ >= color_picker_frame_.height()) {
       return true;
@@ -1047,6 +1048,7 @@ void RendererOverridesHandler::UpdateColorPickerCursor() {
       kCursorSize * device_scale_factor,
       kCursorSize * device_scale_factor));
   canvas->scale(device_scale_factor, device_scale_factor);
+  canvas->translate(0.5f, 0.5f);
 
   SkPaint paint;
 
