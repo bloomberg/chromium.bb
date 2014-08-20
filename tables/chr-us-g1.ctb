@@ -10,12 +10,9 @@
 # Foundation.  Please see the file COPYING for details.
 #
 
-include chardefs.cti
-
 #include text_nabcc.dis All display opcodes
 
-include en-ueb-chardefs.uti All character definition opcodes
-include en-ueb-g2.ctb
+include en-ueb-g1.ctb
 
 # letsign 456 ink letter sign
 

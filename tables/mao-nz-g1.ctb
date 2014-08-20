@@ -10,11 +10,8 @@
 # Foundation.  Please see the file COPYING for details.
 #
 
-include chardefs.cti
-
 #include text_nabcc.dis All display opcodes
 
-include ukchardefs.cti All character definition opcodes
 include en-ueb-g1.ctb
 
 # Maori specific
@@ -26,4 +23,3 @@ uplow	Ēē	456-15
 uplow	Īī	456-24
 uplow	Ōō	456-135
 uplow	Ūū	456-136
-

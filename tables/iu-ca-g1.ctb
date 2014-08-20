@@ -1,3 +1,4 @@
+#iut##1#Inuktitut Uncontracted#
 # liblouis: Inuktitut Braille Table
 #
 # Copyright (C) 2012, maintained by Greg Kearney, gkearney@gmail.com
@@ -9,12 +10,9 @@
 # Foundation.  Please see the file COPYING for details.
 #
 
-include chardefs.cti
-
 #include text_nabcc.dis All display opcodes
 
-include ukchardefs.cti All character definition opcodes
-include UEBC-g1.utb
+include en-ueb-g1.ctb
 
 letsign 456 ink letter sign
 
@@ -205,6 +203,3 @@ always		\x157C\x1406		135-125-16		CANADIAN SYLLABICS HOO
 always		\x157C\x140A		246-125-1		CANADIAN SYLLABICS HA
 always		\x157C\x140B		246-125-16		CANADIAN SYLLABICS HAA
 letter		'					125				CANADIAN SYLLABICS H
-
-
-

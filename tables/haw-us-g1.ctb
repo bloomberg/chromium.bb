@@ -10,12 +10,9 @@
 # Foundation.  Please see the file COPYING for details.
 #
 
-include chardefs.cti
-
 #include text_nabcc.dis All display opcodes
 
-include ukchardefs.cti All character definition opcodes
-include UEBC-g1.utb
+include en-ueb-g1.ctb
 
 uplow	Āā	456-1
 uplow	Ēē	456-15
