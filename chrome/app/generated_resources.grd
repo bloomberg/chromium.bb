@@ -10291,19 +10291,19 @@ Chrome ran out of memory.
 
         <!-- Reset Profile Settings strings -->
         <message name="IDS_RESET_PROFILE_SETTINGS_SECTION_TITLE" desc="The title of the section in chrome://settings that allows resetting some settings in a profile">
-          Reset browser settings
+          Reset settings
         </message>
         <message name="IDS_RESET_PROFILE_SETTINGS_DESCRIPTION" desc="A label describing the purpose of the 'reset profile settings' feature">
-          Restore browser settings to their original defaults.
+          Restore settings to their original defaults.
         </message>
         <message name="IDS_RESET_PROFILE_SETTINGS_EXPLANATION" desc="A label describing the consequences of the 'reset profile settings' feature">
-          Your browser settings will be restored to their original defaults. This will reset your homepage, new tab page and search engine, disable your extensions and unpin all tabs. It will also clear other temporary and cached data, such as cookies, content and site data.
+          Your settings will be restored to their original defaults. This will reset your homepage, new tab page and search engine, disable your extensions, and unpin all tabs. It will also clear other temporary and cached data, such as cookies, content and site data.
         </message>
         <message name="IDS_RESET_PROFILE_SETTINGS_BUTTON" desc="The text on the button in chrome://settings that allows resetting some settings in a profile">
-          Reset browser settings
+          Reset settings
         </message>
         <message name="IDS_RESET_PROFILE_SETTINGS_TITLE" desc="Dialog title">
-          Reset browser settings
+          Reset settings
         </message>
         <message name="IDS_RESET_PROFILE_SETTINGS_COMMIT_BUTTON" desc="Reset button of the Reset Profile Settings dialog">
           Reset
@@ -10358,11 +10358,11 @@ Chrome ran out of memory.
         </message>
 
         <!-- Automatic Settings Reset strings -->
-        <message name="IDS_AUTOMATIC_SETTINGS_RESET_BANNER_TEXT" desc="The text to show in a banner at the top of the chrome://settings page. The banner is displayed when Chrome detects that its settings have been tampered with and then resets them to factory defaults.">
-          Chrome detected that some of your browser settings were recently corrupted by another program and reset them to their original defaults.
+        <message name="IDS_AUTOMATIC_SETTINGS_RESET_BANNER_TEXT" desc="The text to show in a banner at the top of the chrome://settings page. The banner is displayed when Chrome detects that some settings have been tampered with and were reset to factory defaults.">
+          Chrome detected that some of your settings were corrupted by another program and reset them to their original defaults.
         </message>
         <message name="IDS_AUTOMATIC_SETTINGS_RESET_BANNER_RESET_BUTTON_TEXT" desc="The text on the reset button in the Automatic Settings Reset Banner suggesting to reset ALL settings after an automatic reset of SOME settings.">
-          Reset all browser settings
+          Reset all settings
         </message>
       </if>
 
