@@ -46,6 +46,7 @@
       'gc_profile_heap%': 0,
       'gc_profile_marking%': 0,
       'blink_asserts_always_on%': 0,
+      'blink_logging_always_on%': 0,
     },
     'conditions': [
       ['use_concatenated_impulse_responses==1', {
@@ -103,6 +104,11 @@
       ['blink_asserts_always_on==1', {
         'feature_defines': [
           'ENABLE_ASSERT=1',
+        ],
+      }],
+      ['blink_logging_always_on==1', {
+        'feature_defines': [
+          'LOG_DISABLED=0',
         ],
       }],
     ],
