@@ -329,6 +329,9 @@ class IndexedDBBackingStoreTest : public testing::Test {
   }
 
  protected:
+  // Must be initialized before url_request_context_
+  content::TestBrowserThreadBundle thread_bundle_;
+
   base::ScopedTempDir temp_dir_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   scoped_refptr<MockSpecialStoragePolicy> special_storage_policy_;
@@ -348,8 +351,6 @@ class IndexedDBBackingStoreTest : public testing::Test {
   std::vector<IndexedDBBlobInfo> m_blob_info;
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
-
   DISALLOW_COPY_AND_ASSIGN(IndexedDBBackingStoreTest);
 };
 
