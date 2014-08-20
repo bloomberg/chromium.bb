@@ -390,8 +390,7 @@ bool TypingCommand::makeEditableRootEmpty()
         return false;
 
     if (root->firstChild() == root->lastChild()) {
-        Element* firstElementChild = ElementTraversal::firstWithin(*root);
-        if (isHTMLBRElement(firstElementChild)) {
+        if (isHTMLBRElement(root->firstChild())) {
             // If there is a single child and it could be a placeholder, leave it alone.
             if (root->renderer() && root->renderer()->isRenderBlockFlow())
                 return false;
