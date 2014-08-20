@@ -254,13 +254,6 @@ void DevToolsAgent::disableDeviceEmulation() {
   impl->DisableScreenMetricsEmulation();
 }
 
-void DevToolsAgent::setTouchEventEmulationEnabled(
-    bool enabled, bool allow_pinch) {
-  RenderViewImpl* impl = static_cast<RenderViewImpl*>(render_view());
-  impl->Send(new ViewHostMsg_SetTouchEventEmulationEnabled(
-      impl->routing_id(), enabled, allow_pinch));
-}
-
 #if defined(USE_TCMALLOC) && !defined(OS_WIN)
 static void AllocationVisitor(void* data, const void* ptr) {
     typedef blink::WebDevToolsAgentClient::AllocatedObjectVisitor Visitor;

@@ -46,7 +46,6 @@ class CONTENT_EXPORT RendererOverridesHandler
   void OnVisibilityChanged(bool visible);
   void SetRenderViewHost(RenderViewHostImpl* host);
   void ClearRenderViewHost();
-  bool OnSetTouchEventEmulationEnabled();
 
  private:
   void InnerSwapCompositorFrame();
@@ -76,6 +75,8 @@ class CONTENT_EXPORT RendererOverridesHandler
   scoped_refptr<DevToolsProtocol::Response> PageGetNavigationHistory(
       scoped_refptr<DevToolsProtocol::Command> command);
   scoped_refptr<DevToolsProtocol::Response> PageNavigateToHistoryEntry(
+      scoped_refptr<DevToolsProtocol::Command> command);
+  scoped_refptr<DevToolsProtocol::Response> PageSetTouchEmulationEnabled(
       scoped_refptr<DevToolsProtocol::Command> command);
   scoped_refptr<DevToolsProtocol::Response> PageCaptureScreenshot(
       scoped_refptr<DevToolsProtocol::Command> command);
@@ -118,12 +119,15 @@ class CONTENT_EXPORT RendererOverridesHandler
   scoped_refptr<DevToolsProtocol::Response> InputEmulateTouchFromMouseEvent(
       scoped_refptr<DevToolsProtocol::Command> command);
 
+  void UpdateTouchEventEmulationState();
+
   RenderViewHostImpl* host_;
   scoped_refptr<DevToolsProtocol::Command> screencast_command_;
   bool has_last_compositor_frame_metadata_;
   cc::CompositorFrameMetadata last_compositor_frame_metadata_;
   base::TimeTicks last_frame_time_;
   int capture_retry_count_;
+  bool touch_emulation_enabled_;
   bool color_picker_enabled_;
   SkBitmap color_picker_frame_;
   int last_cursor_x_;

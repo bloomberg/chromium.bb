@@ -74,6 +74,7 @@ static int kCaptureRetryLimit = 2;
 RendererOverridesHandler::RendererOverridesHandler()
     : has_last_compositor_frame_metadata_(false),
       capture_retry_count_(0),
+      touch_emulation_enabled_(false),
       color_picker_enabled_(false),
       last_cursor_x_(-1),
       last_cursor_y_(-1),
@@ -133,6 +134,11 @@ RendererOverridesHandler::RendererOverridesHandler()
           &RendererOverridesHandler::PageCaptureScreenshot,
           base::Unretained(this)));
   RegisterCommandHandler(
+      devtools::Page::setTouchEmulationEnabled::kName,
+      base::Bind(
+          &RendererOverridesHandler::PageSetTouchEmulationEnabled,
+          base::Unretained(this)));
+  RegisterCommandHandler(
       devtools::Page::canScreencast::kName,
       base::Bind(
           &RendererOverridesHandler::PageCanScreencast,
@@ -170,9 +176,9 @@ RendererOverridesHandler::RendererOverridesHandler()
 RendererOverridesHandler::~RendererOverridesHandler() {}
 
 void RendererOverridesHandler::OnClientDetached() {
-  if (screencast_command_ && host_)
-    host_->SetTouchEventEmulationEnabled(false, false);
+  touch_emulation_enabled_ = false;
   screencast_command_ = NULL;
+  UpdateTouchEventEmulationState();
   SetColorPickerEnabled(false);
 }
 
@@ -198,8 +204,7 @@ void RendererOverridesHandler::SetRenderViewHost(
   host_ = host;
   if (!host)
     return;
-  if (screencast_command_)
-    host->SetTouchEventEmulationEnabled(true, true);
+  UpdateTouchEventEmulationState();
   if (color_picker_enabled_)
     host->AddMouseEventCallback(mouse_event_callback_);
 }
@@ -209,10 +214,6 @@ void RendererOverridesHandler::ClearRenderViewHost() {
     host_->RemoveMouseEventCallback(mouse_event_callback_);
   host_ = NULL;
   ResetColorPickerFrame();
-}
-
-bool RendererOverridesHandler::OnSetTouchEventEmulationEnabled() {
-  return screencast_command_.get() != NULL;
 }
 
 void RendererOverridesHandler::InnerSwapCompositorFrame() {
@@ -346,9 +347,7 @@ RendererOverridesHandler::ClearBrowserCookies(
 scoped_refptr<DevToolsProtocol::Response>
 RendererOverridesHandler::PageDisable(
     scoped_refptr<DevToolsProtocol::Command> command) {
-  if (screencast_command_ && host_)
-    host_->SetTouchEventEmulationEnabled(false, false);
-  screencast_command_ = NULL;
+  OnClientDetached();
   return NULL;
 }
 
@@ -526,6 +525,25 @@ void RendererOverridesHandler::ScreenshotCaptured(
 }
 
 scoped_refptr<DevToolsProtocol::Response>
+RendererOverridesHandler::PageSetTouchEmulationEnabled(
+    scoped_refptr<DevToolsProtocol::Command> command) {
+  base::DictionaryValue* params = command->params();
+  bool enabled = false;
+  if (!params || !params->GetBoolean(
+      devtools::Page::setTouchEmulationEnabled::kParamEnabled,
+      &enabled)) {
+    // Pass to renderer.
+    return NULL;
+  }
+
+  touch_emulation_enabled_ = enabled;
+  UpdateTouchEventEmulationState();
+
+  // Pass to renderer.
+  return NULL;
+}
+
+scoped_refptr<DevToolsProtocol::Response>
 RendererOverridesHandler::PageCanScreencast(
     scoped_refptr<DevToolsProtocol::Command> command) {
   base::DictionaryValue* result = new base::DictionaryValue();
@@ -541,9 +559,9 @@ scoped_refptr<DevToolsProtocol::Response>
 RendererOverridesHandler::PageStartScreencast(
     scoped_refptr<DevToolsProtocol::Command> command) {
   screencast_command_ = command;
+  UpdateTouchEventEmulationState();
   if (!host_)
     return command->InternalErrorResponse("Could not connect to view");
-  host_->SetTouchEventEmulationEnabled(true, true);
   bool visible = !host_->is_hidden();
   NotifyScreencastVisibility(visible);
   if (visible) {
@@ -560,8 +578,7 @@ RendererOverridesHandler::PageStopScreencast(
     scoped_refptr<DevToolsProtocol::Command> command) {
   last_frame_time_ = base::TimeTicks();
   screencast_command_ = NULL;
-  if (host_)
-    host_->SetTouchEventEmulationEnabled(false, false);
+  UpdateTouchEventEmulationState();
   return command->SuccessResponse(NULL);
 }
 
@@ -1249,6 +1266,17 @@ RendererOverridesHandler::InputEmulateTouchFromMouseEvent(
   else
     host_->ForwardMouseEvent(mouse_event);
   return command->SuccessResponse(NULL);
+}
+
+void RendererOverridesHandler::UpdateTouchEventEmulationState() {
+  if (!host_)
+    return;
+  bool enabled = touch_emulation_enabled_ || screencast_command_;
+  host_->SetTouchEventEmulationEnabled(enabled);
+  WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
+      WebContents::FromRenderViewHost(host_));
+  if (web_contents)
+    web_contents->SetForceDisableOverscrollContent(enabled);
 }
 
 }  // namespace content

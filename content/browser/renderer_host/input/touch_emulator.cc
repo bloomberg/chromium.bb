@@ -47,7 +47,6 @@ TouchEmulator::TouchEmulator(TouchEmulatorClient* client)
     : client_(client),
       gesture_provider_(GetGestureProviderConfig(), this),
       enabled_(false),
-      allow_pinch_(false),
       emulated_stream_active_sequence_count_(0),
       native_stream_active_sequence_count_(0) {
   DCHECK(client_);
@@ -92,12 +91,11 @@ void TouchEmulator::ResetState() {
   pinch_gesture_active_ = false;
 }
 
-void TouchEmulator::Enable(bool allow_pinch) {
+void TouchEmulator::Enable() {
   if (!enabled_) {
     enabled_ = true;
     ResetState();
   }
-  allow_pinch_ = allow_pinch;
   UpdateCursor();
 }
 
@@ -436,7 +434,7 @@ bool TouchEmulator::FillTouchEventAndPoint(const WebMouseEvent& mouse_event) {
 }
 
 bool TouchEmulator::InPinchGestureMode() const {
-  return shift_pressed_ && allow_pinch_;
+  return shift_pressed_;
 }
 
 }  // namespace content

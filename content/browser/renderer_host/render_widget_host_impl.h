@@ -276,7 +276,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
       const ui::LatencyInfo& ui_latency);
 
   // Enables/disables touch emulation using mouse event. See TouchEmulator.
-  void SetTouchEventEmulationEnabled(bool enabled, bool allow_pinch);
+  void SetTouchEventEmulationEnabled(bool enabled);
 
   // TouchEmulatorClient implementation.
   virtual void ForwardGestureEvent(
@@ -599,7 +599,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   virtual void OnFocus();
   virtual void OnBlur();
   void OnSetCursor(const WebCursor& cursor);
-  void OnSetTouchEventEmulationEnabled(bool enabled, bool allow_pinch);
   void OnTextInputStateChanged(
       const ViewHostMsg_TextInputState_Params& params);
 

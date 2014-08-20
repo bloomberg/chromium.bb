@@ -75,8 +75,6 @@ class DevToolsAgent : public RenderViewObserver,
   virtual void enableDeviceEmulation(
       const blink::WebDeviceEmulationParams& params) OVERRIDE;
   virtual void disableDeviceEmulation() OVERRIDE;
-  virtual void setTouchEventEmulationEnabled(bool enabled,
-                                             bool allow_pinch) OVERRIDE;
 
   void OnAttach(const std::string& host_id);
   void OnReattach(const std::string& host_id,

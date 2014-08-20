@@ -53,7 +53,7 @@ class TouchEmulatorTest : public testing::Test,
 #endif
 
     emulator_.reset(new TouchEmulator(this));
-    emulator_->Enable(true /* allow_pinch */);
+    emulator_->Enable();
   }
 
   virtual void TearDown() OVERRIDE {
@@ -346,7 +346,7 @@ TEST_F(TouchEmulatorTest, DisableAndReenable) {
   MouseMove(300, 300);
   EXPECT_EQ("", ExpectedEvents());
 
-  emulator()->Enable(true /* allow_pinch */);
+  emulator()->Enable();
   MouseDown(300, 300);
   EXPECT_EQ("TouchStart GestureTapDown", ExpectedEvents());
   MouseDrag(300, 400);
@@ -406,7 +406,7 @@ TEST_F(TouchEmulatorTest, MouseWheel) {
   emulator()->Disable();
   EXPECT_EQ("TouchCancel GestureTapCancel", ExpectedEvents());
   EXPECT_TRUE(SendMouseWheelEvent());
-  emulator()->Enable(true /* allow_pinch */);
+  emulator()->Enable();
   EXPECT_TRUE(SendMouseWheelEvent());
 }
 
@@ -432,7 +432,7 @@ TEST_F(TouchEmulatorTest, MultipleTouchStreams) {
   EXPECT_EQ("", ExpectedEvents());
   // Re-enabling in the middle of a touch sequence should not affect this.
   emulator()->Disable();
-  emulator()->Enable(true);
+  emulator()->Enable();
   MouseDrag(300, 300);
   EXPECT_EQ("", ExpectedEvents());
   MouseUp(300, 300);
@@ -447,7 +447,7 @@ TEST_F(TouchEmulatorTest, MultipleTouchStreams) {
   EXPECT_TRUE(TouchEnd(20, 20, false));
   EXPECT_TRUE(TouchStart(30, 30, false));
   AckOldestTouchEvent(); // TouchStart.
-  emulator()->Enable(true);
+  emulator()->Enable();
   AckOldestTouchEvent(); // TouchMove.
   AckOldestTouchEvent(); // TouchEnd.
   MouseDown(300, 200);

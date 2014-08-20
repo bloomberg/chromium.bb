@@ -540,7 +540,6 @@ class CONTENT_EXPORT WebContentsImpl
   virtual bool HandleGestureEvent(
       const blink::WebGestureEvent& event) OVERRIDE;
   virtual void DidSendScreenRects(RenderWidgetHostImpl* rwh) OVERRIDE;
-  virtual void OnTouchEmulationEnabled(bool enabled) OVERRIDE;
   virtual BrowserAccessibilityManager* GetRootBrowserAccessibilityManager()
       OVERRIDE;
   virtual BrowserAccessibilityManager*
@@ -666,6 +665,9 @@ class CONTENT_EXPORT WebContentsImpl
   // Notifies the main frame that it can continue navigation (if it was deferred
   // immediately at first response).
   void ResumeResponseDeferredAtStart();
+
+  // Forces overscroll to be disabled (used by touch emulation).
+  void SetForceDisableOverscrollContent(bool force_disable);
 
  private:
   friend class TestNavigationObserver;
@@ -1182,8 +1184,8 @@ class CONTENT_EXPORT WebContentsImpl
   // different process from its parent page.
   bool is_subframe_;
 
-  // Whether touch emulation is enabled in RenderWidgetHost.
-  bool touch_emulation_enabled_;
+  // Whether overscroll should be unconditionally disabled.
+  bool force_disable_overscroll_content_;
 
   // Whether the last JavaScript dialog shown was suppressed. Used for testing.
   bool last_dialog_suppressed_;

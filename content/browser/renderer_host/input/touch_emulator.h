@@ -20,7 +20,7 @@ class CONTENT_EXPORT TouchEmulator : public ui::GestureProviderClient {
   explicit TouchEmulator(TouchEmulatorClient* client);
   virtual ~TouchEmulator();
 
-  void Enable(bool allow_pinch);
+  void Enable();
   void Disable();
 
   // Note that TouchEmulator should always listen to touch events and their acks
@@ -74,7 +74,6 @@ class CONTENT_EXPORT TouchEmulator : public ui::GestureProviderClient {
   // Disabled emulator does only process touch acks left from previous
   // emulation. It does not intercept any events.
   bool enabled_;
-  bool allow_pinch_;
 
   // While emulation is on, default cursor is touch. Pressing shift changes
   // cursor to the pinch one.

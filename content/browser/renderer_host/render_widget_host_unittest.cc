@@ -1032,8 +1032,7 @@ TEST_F(RenderWidgetHostTest, TouchEmulator) {
   simulated_event_time_delta_seconds_ = 0.1;
   // Immediately ack all touches instead of sending them to the renderer.
   host_->OnMessageReceived(ViewHostMsg_HasTouchEventHandlers(0, false));
-  host_->OnMessageReceived(
-      ViewHostMsg_SetTouchEventEmulationEnabled(0, true, true));
+  host_->SetTouchEventEmulationEnabled(true);
   process_->sink().ClearMessages();
   view_->set_bounds(gfx::Rect(0, 0, 400, 200));
   view_->Show();
@@ -1132,8 +1131,7 @@ TEST_F(RenderWidgetHostTest, TouchEmulator) {
   EXPECT_EQ(0U, process_->sink().message_count());
 
   // Turn off emulation during a pinch.
-  host_->OnMessageReceived(
-      ViewHostMsg_SetTouchEventEmulationEnabled(0, false, false));
+  host_->SetTouchEventEmulationEnabled(false);
   EXPECT_EQ(WebInputEvent::TouchCancel, host_->acked_touch_event_type());
   EXPECT_EQ("GesturePinchEnd GestureScrollEnd",
             GetInputMessageTypes(process_));
@@ -1148,8 +1146,7 @@ TEST_F(RenderWidgetHostTest, TouchEmulator) {
   EXPECT_EQ(0U, process_->sink().message_count());
 
   // Turn on emulation.
-  host_->OnMessageReceived(
-      ViewHostMsg_SetTouchEventEmulationEnabled(0, true, true));
+  host_->SetTouchEventEmulationEnabled(true);
   EXPECT_EQ(0U, process_->sink().message_count());
 
   // Another touch.
@@ -1168,8 +1165,7 @@ TEST_F(RenderWidgetHostTest, TouchEmulator) {
                     INPUT_EVENT_ACK_STATE_CONSUMED);
 
   // Turn off emulation during a scroll.
-  host_->OnMessageReceived(
-      ViewHostMsg_SetTouchEventEmulationEnabled(0, false, false));
+  host_->SetTouchEventEmulationEnabled(false);
   EXPECT_EQ(WebInputEvent::TouchCancel, host_->acked_touch_event_type());
 
   EXPECT_EQ("GestureScrollEnd", GetInputMessageTypes(process_));

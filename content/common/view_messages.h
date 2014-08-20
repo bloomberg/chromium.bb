@@ -1171,12 +1171,6 @@ IPC_MESSAGE_ROUTED1(ViewHostMsg_FocusedNodeChanged,
 
 IPC_MESSAGE_ROUTED1(ViewHostMsg_SetCursor, content::WebCursor)
 
-// Message sent from renderer requesting touch emulation using mouse.
-// Shift-scrolling should be converted to pinch, if |allow_pinch| is true.
-IPC_MESSAGE_ROUTED2(ViewHostMsg_SetTouchEventEmulationEnabled,
-                    bool /* enabled */,
-                    bool /* allow_pinch */)
-
 // Used to set a cookie. The cookie is set asynchronously, but will be
 // available to a subsequent ViewHostMsg_GetCookies request.
 IPC_MESSAGE_CONTROL4(ViewHostMsg_SetCookie,

@@ -373,7 +373,7 @@ WebContentsImpl::WebContentsImpl(
       fullscreen_widget_routing_id_(MSG_ROUTING_NONE),
       fullscreen_widget_had_focus_at_shutdown_(false),
       is_subframe_(false),
-      touch_emulation_enabled_(false),
+      force_disable_overscroll_content_(false),
       last_dialog_suppressed_(false),
       accessibility_mode_(
           BrowserAccessibilityStateImpl::GetInstance()->accessibility_mode()) {
@@ -1797,12 +1797,6 @@ void WebContentsImpl::DidSendScreenRects(RenderWidgetHostImpl* rwh) {
     browser_plugin_embedder_->DidSendScreenRects();
 }
 
-void WebContentsImpl::OnTouchEmulationEnabled(bool enabled) {
-  touch_emulation_enabled_ = enabled;
-  if (view_)
-    view_->SetOverscrollControllerEnabled(CanOverscrollContent());
-}
-
 BrowserAccessibilityManager*
     WebContentsImpl::GetRootBrowserAccessibilityManager() {
   RenderFrameHostImpl* rfh = static_cast<RenderFrameHostImpl*>(GetMainFrame());
@@ -2595,7 +2589,7 @@ void WebContentsImpl::SetMainFrameMimeType(const std::string& mime_type) {
 
 bool WebContentsImpl::CanOverscrollContent() const {
   // Disable overscroll when touch emulation is on. See crbug.com/369938.
-  if (touch_emulation_enabled_)
+  if (force_disable_overscroll_content_)
     return false;
 
   if (delegate_)
@@ -4242,6 +4236,12 @@ void WebContentsImpl::OnPreferredSizeChanged(const gfx::Size& old_size) {
 void WebContentsImpl::ResumeResponseDeferredAtStart() {
   FrameTreeNode* node = frame_tree_.root();
   node->render_manager()->ResumeResponseDeferredAtStart();
+}
+
+void WebContentsImpl::SetForceDisableOverscrollContent(bool force_disable) {
+  force_disable_overscroll_content_ = force_disable;
+  if (view_)
+    view_->SetOverscrollControllerEnabled(CanOverscrollContent());
 }
 
 }  // namespace content

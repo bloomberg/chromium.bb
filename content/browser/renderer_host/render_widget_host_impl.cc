@@ -449,8 +449,6 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_Focus, OnFocus)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Blur, OnBlur)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SetCursor, OnSetCursor)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_SetTouchEventEmulationEnabled,
-                        OnSetTouchEventEmulationEnabled)
     IPC_MESSAGE_HANDLER(ViewHostMsg_TextInputStateChanged,
                         OnTextInputStateChanged)
     IPC_MESSAGE_HANDLER(ViewHostMsg_LockMouse, OnLockMouse)
@@ -1603,20 +1601,11 @@ void RenderWidgetHostImpl::OnSetCursor(const WebCursor& cursor) {
   SetCursor(cursor);
 }
 
-void RenderWidgetHostImpl::OnSetTouchEventEmulationEnabled(
-    bool enabled, bool allow_pinch) {
-  SetTouchEventEmulationEnabled(enabled, allow_pinch);
-}
-
-void RenderWidgetHostImpl::SetTouchEventEmulationEnabled(
-    bool enabled, bool allow_pinch) {
-  if (delegate_)
-    delegate_->OnTouchEmulationEnabled(enabled);
-
+void RenderWidgetHostImpl::SetTouchEventEmulationEnabled(bool enabled) {
   if (enabled) {
     if (!touch_emulator_)
       touch_emulator_.reset(new TouchEmulator(this));
-    touch_emulator_->Enable(allow_pinch);
+    touch_emulator_->Enable();
   } else {
     if (touch_emulator_)
       touch_emulator_->Disable();
