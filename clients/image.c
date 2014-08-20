@@ -373,7 +373,6 @@ image_create(struct display *display, const char *filename,
 	image->image = load_cairo_surface(filename);
 
 	if (!image->image) {
-		fprintf(stderr, "could not find the image %s!\n", b);
 		free(image->filename);
 		free(image);
 		return NULL;
