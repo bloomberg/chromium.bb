@@ -80,8 +80,6 @@ public:
     // Implementations of HTMLInputElement::stepUp() and stepDown().
     void stepUp(int, ExceptionState&);
     void stepDown(int, ExceptionState&);
-    void stepUp(ExceptionState& exceptionState) { stepUp(1, exceptionState); }
-    void stepDown(ExceptionState& exceptionState) { stepDown(1, exceptionState); }
     // stepUp()/stepDown() for user-interaction.
     bool isSteppable() const;
 
