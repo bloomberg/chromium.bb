@@ -91,7 +91,8 @@ bool PrintMsg_Print_Params_IsValid(const PrintMsg_Print_Params& params) {
   return !params.content_size.IsEmpty() && !params.page_size.IsEmpty() &&
          !params.printable_area.IsEmpty() && params.document_cookie &&
          params.desired_dpi && params.max_shrink && params.min_shrink &&
-         params.dpi && (params.margin_top >= 0) && (params.margin_left >= 0);
+         params.dpi && (params.margin_top >= 0) && (params.margin_left >= 0) &&
+         params.dpi > kMinDpi && params.document_cookie != 0;
 }
 
 PrintMsg_Print_Params GetCssPrintParams(
@@ -1426,13 +1427,6 @@ bool PrintWebViewHelper::InitPrintSettings(bool fit_to_paper_size) {
   if (!PrintMsg_Print_Params_IsValid(settings.params))
     result = false;
 
-  if (result &&
-      (settings.params.dpi < kMinDpi || settings.params.document_cookie == 0)) {
-    // Invalid print page settings.
-    NOTREACHED();
-    result = false;
-  }
-
   // Reset to default values.
   ignore_css_margins_ = false;
   settings.pages.clear();
@@ -1444,7 +1438,7 @@ bool PrintWebViewHelper::InitPrintSettings(bool fit_to_paper_size) {
         blink::WebPrintScalingOptionFitToPrintableArea;
   }
 
-  print_pages_params_.reset(new PrintMsg_PrintPages_Params(settings));
+  SetPrintPagesParams(settings);
   return result;
 }
 
@@ -1463,8 +1457,6 @@ bool PrintWebViewHelper::CalculateNumberOfPages(blink::WebLocalFrame* frame,
   PrepareFrameAndViewForPrint prepare(params, frame, node, ignore_css_margins_);
   prepare.StartPrinting();
 
-  Send(new PrintHostMsg_DidGetDocumentCookie(routing_id(),
-                                             params.document_cookie));
   *number_of_pages = prepare.GetExpectedPageCount();
   return true;
 }
@@ -1512,23 +1504,8 @@ bool PrintWebViewHelper::UpdatePrintSettings(
   int cookie = print_pages_params_ ?
       print_pages_params_->params.document_cookie : 0;
   PrintMsg_PrintPages_Params settings;
-  Send(new PrintHostMsg_UpdatePrintSettings(routing_id(), cookie, *job_settings,
-                                            &settings));
-  print_pages_params_.reset(new PrintMsg_PrintPages_Params(settings));
-
-  if (!PrintMsg_Print_Params_IsValid(settings.params)) {
-    if (!print_for_preview_)
-      print_preview_context_.set_error(PREVIEW_ERROR_INVALID_PRINTER_SETTINGS);
-    else
-      Send(new PrintHostMsg_ShowInvalidPrinterSettingsError(routing_id()));
-
-    return false;
-  }
-
-  if (settings.params.dpi < kMinDpi || !settings.params.document_cookie) {
-    print_preview_context_.set_error(PREVIEW_ERROR_UPDATING_PRINT_SETTINGS);
-    return false;
-  }
+  Send(new PrintHostMsg_UpdatePrintSettings(
+      routing_id(), cookie, *job_settings, &settings));
 
   if (!job_settings->GetInteger(kPreviewUIID, &settings.params.preview_ui_id)) {
     NOTREACHED();
@@ -1564,9 +1541,16 @@ bool PrintWebViewHelper::UpdatePrintSettings(
     }
   }
 
-  print_pages_params_.reset(new PrintMsg_PrintPages_Params(settings));
-  Send(new PrintHostMsg_DidGetDocumentCookie(routing_id(),
-                                             settings.params.document_cookie));
+  SetPrintPagesParams(settings);
+
+  if (!PrintMsg_Print_Params_IsValid(settings.params)) {
+    if (!print_for_preview_)
+      print_preview_context_.set_error(PREVIEW_ERROR_INVALID_PRINTER_SETTINGS);
+    else
+      Send(new PrintHostMsg_ShowInvalidPrinterSettingsError(routing_id()));
+
+    return false;
+  }
 
   return true;
 }
@@ -1597,9 +1581,8 @@ bool PrintWebViewHelper::GetPrintSettingsFromUser(blink::WebFrame* frame,
       new PrintHostMsg_ScriptedPrint(routing_id(), params, &print_settings);
   msg->EnableMessagePumping();
   Send(msg);
-  print_pages_params_.reset(new PrintMsg_PrintPages_Params(print_settings));
-
-  print_pages_params_->params.print_scaling_option = scaling_option;
+  print_settings.params.print_scaling_option = scaling_option;
+  SetPrintPagesParams(print_settings);
   return (print_settings.params.dpi && print_settings.params.document_cookie);
 }
 
@@ -2061,6 +2044,13 @@ void PrintWebViewHelper::PrintPreviewContext::ClearContext() {
   metafile_.reset();
   pages_to_render_.clear();
   error_ = PREVIEW_ERROR_NONE;
+}
+
+void PrintWebViewHelper::SetPrintPagesParams(
+    const PrintMsg_PrintPages_Params& settings) {
+  print_pages_params_.reset(new PrintMsg_PrintPages_Params(settings));
+  Send(new PrintHostMsg_DidGetDocumentCookie(routing_id(),
+                                             settings.params.document_cookie));
 }
 
 }  // namespace printing

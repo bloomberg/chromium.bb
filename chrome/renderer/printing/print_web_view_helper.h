@@ -101,7 +101,6 @@ class PrintWebViewHelper
     PREVIEW_ERROR_ZERO_PAGES,
     PREVIEW_ERROR_MAC_DRAFT_METAFILE_INIT_FAILED,
     PREVIEW_ERROR_PAGE_RENDERED_WITHOUT_METAFILE,
-    PREVIEW_ERROR_UPDATING_PRINT_SETTINGS,
     PREVIEW_ERROR_INVALID_PRINTER_SETTINGS,
     PREVIEW_ERROR_LAST_ENUM  // Always last.
   };
@@ -321,6 +320,8 @@ class PrintWebViewHelper
   // |metafile| is the rendered page. Otherwise |metafile| is NULL.
   // Returns true if print preview should continue, false on failure.
   bool PreviewPageRendered(int page_number, Metafile* metafile);
+
+  void SetPrintPagesParams(const PrintMsg_PrintPages_Params& settings);
 
   // WebView used only to print the selection.
   scoped_ptr<PrepareFrameAndViewForPrint> prep_frame_view_;
