@@ -8,7 +8,7 @@ module_LTLIBRARIES =
 noinst_LTLIBRARIES =
 BUILT_SOURCES =
 
-DISTCHECK_CONFIGURE_FLAGS = --disable-setuid-install
+AM_DISTCHECK_CONFIGURE_FLAGS = --disable-setuid-install
 
 EXTRA_DIST = weston.ini.in
 
