@@ -9,6 +9,11 @@ found in the LICENSE file.
 
 <polymer-element name="ct-builder-grid" attributes="failures">
   <template>
+    <style>
+      ct-builder {
+        display: block;
+      }
+    </style>
     <template repeat="{{ builder in _builders }}">
       <ct-builder builder="{{ builder }}"></ct-builder>
     </template>

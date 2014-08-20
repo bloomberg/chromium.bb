@@ -5,17 +5,8 @@ found in the LICENSE file.
 -->
 
 <polymer-element name="ct-builder" attributes="builder" noscript>
+  <!-- FIXME: This element doens't really provide value anymore. -->
   <template>
-    <style>
-      a {
-        display: inline-block;
-        font-size: 11px;
-        margin-bottom: 2px;
-        padding: 1px;
-        text-decoration: none;
-      }
-
-    </style>
     <a href="{{ builder.buildUrl }}">
       <span>{{ builder.builder }}</span>
     </a>
