@@ -11,3 +11,7 @@ a {
   text-overflow: ellipsis; /* Can be overridden in JS. */
   white-space: nowrap;
 }
+
+a:focus {
+  outline: none;  /* Remove outline from tabIndex = -1. */
+}

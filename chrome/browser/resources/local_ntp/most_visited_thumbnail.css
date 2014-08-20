@@ -12,6 +12,10 @@ a {
   width: 100%;
 }
 
+a:focus {
+  outline: none;  /* Remove outline from tabIndex = -1. */
+}
+
 div {
   bottom: 24px;
   margin: 0 7px;

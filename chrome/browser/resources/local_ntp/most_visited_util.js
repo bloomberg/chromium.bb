@@ -156,9 +156,6 @@ function createMostVisitedLink(params, href, title, text, direction, provider) {
     }
     // Else follow <a> normally, so transition type would be LINK.
   });
-  link.addEventListener('mousedown', function(e) {
-    e.preventDefault();  // Prevent drag-select.
-  });
 
   return link;
 }
