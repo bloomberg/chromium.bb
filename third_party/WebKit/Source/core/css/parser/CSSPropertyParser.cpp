@@ -3783,18 +3783,24 @@ bool CSSPropertyParser::parseGridTrackRepeatFunction(CSSValueList& list)
     if (currentValue && currentValue->unit == CSSParserValue::ValueList)
         parseGridLineNames(*arguments, *repeatedValues);
 
+    bool seenTrackSize = false;
     while (arguments->current()) {
         RefPtrWillBeRawPtr<CSSValue> trackSize = parseGridTrackSize(*arguments);
         if (!trackSize)
             return false;
 
         repeatedValues->append(trackSize);
+        seenTrackSize = true;
 
         // This takes care of any trailing <ident>* in the grammar.
         currentValue = arguments->current();
         if (currentValue && currentValue->unit == CSSParserValue::ValueList)
             parseGridLineNames(*arguments, *repeatedValues);
     }
+
+    // We should have found at least one <track-size> or else it is not a valid <track-list>.
+    if (!seenTrackSize)
+        return false;
 
     for (size_t i = 0; i < repetitions; ++i) {
         for (size_t j = 0; j < repeatedValues->length(); ++j)
