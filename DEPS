@@ -205,7 +205,7 @@ deps = {
 
   "src/third_party/webgl/src":
     Var("chromium_git") +
-    "/external/khronosgroup/webgl.git@c81b6b214549bfeb475c25bf1de7bd3096c5d1c3",
+    "/external/khronosgroup/webgl.git@e44dae1d413514e3a632838449fe317713b6f0af",
 
   "src/third_party/swig/Lib":
     "/trunk/deps/third_party/swig/Lib@" + Var("swig_revision"),
