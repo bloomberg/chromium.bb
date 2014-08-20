@@ -44,8 +44,9 @@ void PrintingContext::ResetSettings() {
 }
 
 PrintingContext::Result PrintingContext::OnError() {
+  Result result = abort_printing_ ? CANCEL : FAILED;
   ResetSettings();
-  return abort_printing_ ? CANCEL : FAILED;
+  return result;
 }
 
 PrintingContext::Result PrintingContext::UsePdfSettings() {
