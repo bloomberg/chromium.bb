@@ -247,8 +247,6 @@ void ChromeExtensionsClient::RegisterAPISchemaResources(
   api->RegisterSchemaResource("inputMethodPrivate",
                               IDR_EXTENSION_API_JSON_INPUTMETHODPRIVATE);
   api->RegisterSchemaResource("pageAction", IDR_EXTENSION_API_JSON_PAGEACTION);
-  api->RegisterSchemaResource("pageActions",
-                              IDR_EXTENSION_API_JSON_PAGEACTIONS);
   api->RegisterSchemaResource("privacy", IDR_EXTENSION_API_JSON_PRIVACY);
   api->RegisterSchemaResource("processes", IDR_EXTENSION_API_JSON_PROCESSES);
   api->RegisterSchemaResource("proxy", IDR_EXTENSION_API_JSON_PROXY);

@@ -72,9 +72,6 @@ const char kBrowserActionVisible[] = "browser_action_visible";
 const char kNoExtensionActionError[] =
     "This extension has no action specified.";
 const char kNoTabError[] = "No tab with id: *.";
-const char kNoPageActionError[] =
-    "This extension has no page action specified.";
-const char kUrlNotActiveError[] = "This url is no longer active: *.";
 const char kOpenPopupError[] =
     "Failed to show popup either because there is an existing popup or another "
     "error occurred.";
@@ -259,8 +256,6 @@ ExtensionActionAPI::ExtensionActionAPI(content::BrowserContext* context)
   registry->RegisterFunction<BrowserActionOpenPopupFunction>();
 
   // Page Actions
-  registry->RegisterFunction<EnablePageActionsFunction>();
-  registry->RegisterFunction<DisablePageActionsFunction>();
   registry->RegisterFunction<PageActionShowFunction>();
   registry->RegisterFunction<PageActionHideFunction>();
   registry->RegisterFunction<PageActionSetIconFunction>();
@@ -309,7 +304,7 @@ void ExtensionActionAPI::SetBrowserActionVisibility(
                              kBrowserActionVisible,
                              new base::FundamentalValue(visible));
   content::NotificationService::current()->Notify(
-      extensions::NOTIFICATION_EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED,
+      NOTIFICATION_EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED,
       content::Source<ExtensionPrefs>(prefs),
       content::Details<const std::string>(&extension_id));
 }
@@ -335,7 +330,7 @@ void ExtensionActionAPI::PageActionExecuted(content::BrowserContext* context,
                              url,
                              button);
   WebContents* web_contents = NULL;
-  if (!extensions::ExtensionTabUtil::GetTabById(
+  if (!ExtensionTabUtil::GetTabById(
            tab_id,
            Profile::FromBrowserContext(context),
            context->IsOffTheRecord(),
@@ -354,7 +349,7 @@ void ExtensionActionAPI::DispatchEventToExtension(
     const std::string& extension_id,
     const std::string& event_name,
     scoped_ptr<base::ListValue> event_args) {
-  if (!extensions::EventRouter::Get(context))
+  if (!EventRouter::Get(context))
     return;
 
   scoped_ptr<Event> event(new Event(event_name, event_args.Pass()));
@@ -406,7 +401,7 @@ void ExtensionActionAPI::ExtensionActionExecuted(
   if (event_name) {
     scoped_ptr<base::ListValue> args(new base::ListValue());
     base::DictionaryValue* tab_value =
-        extensions::ExtensionTabUtil::CreateTabValue(web_contents);
+        ExtensionTabUtil::CreateTabValue(web_contents);
     args->Append(tab_value);
 
     DispatchEventToExtension(
@@ -796,7 +791,7 @@ bool BrowserActionOpenPopupFunction::RunAsync() {
   }
 
   registrar_.Add(this,
-                 extensions::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
+                 NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
                  content::Source<Profile>(GetProfile()));
 
   // Set a timeout for waiting for the notification that the popup is loaded.
@@ -824,7 +819,7 @@ void BrowserActionOpenPopupFunction::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  DCHECK_EQ(extensions::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING, type);
+  DCHECK_EQ(NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING, type);
   if (response_sent_)
     return;
 
@@ -839,74 +834,3 @@ void BrowserActionOpenPopupFunction::Observe(
 }
 
 }  // namespace extensions
-
-//
-// PageActionsFunction (deprecated)
-//
-
-PageActionsFunction::PageActionsFunction() {
-}
-
-PageActionsFunction::~PageActionsFunction() {
-}
-
-bool PageActionsFunction::SetPageActionEnabled(bool enable) {
-  std::string extension_action_id;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &extension_action_id));
-  base::DictionaryValue* action = NULL;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(1, &action));
-
-  int tab_id;
-  EXTENSION_FUNCTION_VALIDATE(action->GetInteger(
-      page_actions_keys::kTabIdKey, &tab_id));
-  std::string url;
-  EXTENSION_FUNCTION_VALIDATE(action->GetString(
-      page_actions_keys::kUrlKey, &url));
-
-  std::string title;
-  if (enable) {
-    if (action->HasKey(page_actions_keys::kTitleKey))
-      EXTENSION_FUNCTION_VALIDATE(action->GetString(
-          page_actions_keys::kTitleKey, &title));
-  }
-
-  ExtensionAction* page_action = extensions::ExtensionActionManager::Get(
-                                     GetProfile())->GetPageAction(*extension());
-  if (!page_action) {
-    error_ = extensions::kNoPageActionError;
-    return false;
-  }
-
-  // Find the WebContents that contains this tab id.
-  WebContents* contents = NULL;
-  bool result = extensions::ExtensionTabUtil::GetTabById(
-      tab_id, GetProfile(), include_incognito(), NULL, NULL, &contents, NULL);
-  if (!result || !contents) {
-    error_ = extensions::ErrorUtils::FormatErrorMessage(
-        extensions::kNoTabError, base::IntToString(tab_id));
-    return false;
-  }
-
-  // Make sure the URL hasn't changed.
-  content::NavigationEntry* entry = contents->GetController().GetVisibleEntry();
-  if (!entry || url != entry->GetURL().spec()) {
-    error_ = extensions::ErrorUtils::FormatErrorMessage(
-        extensions::kUrlNotActiveError, url);
-    return false;
-  }
-
-  // Set visibility and broadcast notifications that the UI should be updated.
-  page_action->SetIsVisible(tab_id, enable);
-  page_action->SetTitle(tab_id, title);
-  extensions::LocationBarController::NotifyChange(contents);
-
-  return true;
-}
-
-bool EnablePageActionsFunction::RunSync() {
-  return SetPageActionEnabled(true);
-}
-
-bool DisablePageActionsFunction::RunSync() {
-  return SetPageActionEnabled(false);
-}

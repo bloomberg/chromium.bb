@@ -159,34 +159,6 @@ IN_PROC_BROWSER_TEST_F(PageActionApiTest, RemovePopup) {
       << "Page action popup should have been removed.";
 }
 
-// Tests old-style pageActions API that is deprecated but we don't want to
-// break.
-IN_PROC_BROWSER_TEST_F(PageActionApiTest, OldPageActions) {
-  ASSERT_TRUE(RunExtensionTestAllowOldManifestVersion("page_action/old_api")) <<
-      message_;
-  const Extension* extension = GetSingleLoadedExtension();
-  ASSERT_TRUE(extension) << message_;
-
-  // Have the extension enable the page action.
-  {
-    ResultCatcher catcher;
-    ui_test_utils::NavigateToURL(browser(),
-        GURL(extension->GetResourceURL("page.html")));
-    ASSERT_TRUE(catcher.GetNextResult());
-  }
-
-  // Simulate the page action being clicked.
-  {
-    ResultCatcher catcher;
-    int tab_id = ExtensionTabUtil::GetTabId(
-        browser()->tab_strip_model()->GetActiveWebContents());
-    ExtensionAction* page_action = GetPageAction(*extension);
-    ExtensionActionAPI::PageActionExecuted(
-        browser()->profile(), *page_action, tab_id, std::string(), 1);
-    EXPECT_TRUE(catcher.GetNextResult());
-  }
-}
-
 // Tests popups in page actions.
 // Flaky on the trybots. See http://crbug.com/96725.
 IN_PROC_BROWSER_TEST_F(PageActionApiTest, DISABLED_ShowPageActionPopup) {

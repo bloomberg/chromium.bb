@@ -40130,7 +40130,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="119" label="IDLE_QUERYSTATE"/>
   <int value="120" label="DELETED_EXPERIMENTAL_RLZ_GETACCESSPOINTRLZ"/>
   <int value="121" label="WEBSTOREPRIVATE_SETSTORELOGIN"/>
-  <int value="122" label="PAGEACTIONS_ENABLEFORTAB"/>
+  <int value="122" label="DELETED_PAGEACTIONS_ENABLEFORTAB"/>
   <int value="123" label="COOKIES_SET"/>
   <int value="124" label="CONTENTSETTINGS_SET"/>
   <int value="125" label="CONTEXTMENUS_REMOVEALL"/>
@@ -40281,7 +40281,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="269" label="WINDOWS_REMOVE"/>
   <int value="270" label="WALLPAPERPRIVATE_GETOFFLINEWALLPAPERLIST"/>
   <int value="271" label="BROWSERACTION_GETBADGEBACKGROUNDCOLOR"/>
-  <int value="272" label="PAGEACTIONS_DISABLEFORTAB"/>
+  <int value="272" label="DELETED_PAGEACTIONS_DISABLEFORTAB"/>
   <int value="273" label="DEVELOPERPRIVATE_ALLOWFILEACCESS"/>
   <int value="274" label="FILEBROWSERPRIVATE_REMOVEMOUNT"/>
   <int value="275" label="DELETED_BLUETOOTH_CONNECT"/>

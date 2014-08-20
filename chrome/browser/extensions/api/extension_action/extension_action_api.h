@@ -480,38 +480,4 @@ class PageActionGetPopupFunction
   virtual ~PageActionGetPopupFunction() {}
 };
 
-// Base class for deprecated page actions APIs
-class PageActionsFunction : public ChromeSyncExtensionFunction {
- protected:
-  PageActionsFunction();
-  virtual ~PageActionsFunction();
-  bool SetPageActionEnabled(bool enable);
-};
-
-// Implement chrome.pageActions.enableForTab().
-class EnablePageActionsFunction : public PageActionsFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("pageActions.enableForTab",
-                             PAGEACTIONS_ENABLEFORTAB)
-
- protected:
-  virtual ~EnablePageActionsFunction() {}
-
-  // ExtensionFunction:
-  virtual bool RunSync() OVERRIDE;
-};
-
-// Implement chrome.pageActions.disableForTab().
-class DisablePageActionsFunction : public PageActionsFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("pageActions.disableForTab",
-                             PAGEACTIONS_DISABLEFORTAB)
-
- protected:
-  virtual ~DisablePageActionsFunction() {}
-
-  // ExtensionFunction:
-  virtual bool RunSync() OVERRIDE;
-};
-
 #endif  // CHROME_BROWSER_EXTENSIONS_API_EXTENSION_ACTION_EXTENSION_ACTION_API_H_
