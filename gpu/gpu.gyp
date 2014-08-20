@@ -246,6 +246,8 @@
         'command_buffer/service/gles2_cmd_decoder_unittest_base.h',
         'command_buffer/service/gles2_cmd_decoder_unittest_context_state.cc',
         'command_buffer/service/gles2_cmd_decoder_unittest_drawing.cc',
+        'command_buffer/service/gles2_cmd_decoder_unittest_extensions.cc',
+        'command_buffer/service/gles2_cmd_decoder_unittest_extensions_autogen.h',
         'command_buffer/service/gles2_cmd_decoder_unittest_framebuffers.cc',
         'command_buffer/service/gles2_cmd_decoder_unittest_programs.cc',
         'command_buffer/service/gles2_cmd_decoder_unittest_textures.cc',

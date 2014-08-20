@@ -643,10 +643,6 @@ TEST_P(GLES2DecoderTest2, ViewportInvalidArgs3_0) {
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
 }
-// TODO(gman): BlitFramebufferCHROMIUM
-// TODO(gman): RenderbufferStorageMultisampleCHROMIUM
-// TODO(gman): RenderbufferStorageMultisampleEXT
-// TODO(gman): FramebufferTexture2DMultisampleEXT
 // TODO(gman): TexStorage2DEXT
 // TODO(gman): GenQueriesEXTImmediate
 // TODO(gman): DeleteQueriesEXTImmediate
@@ -715,7 +711,6 @@ TEST_P(GLES2DecoderTest2, PopGroupMarkerEXTValidArgs) {
 
 // TODO(gman): WaitAllAsyncTexImage2DCHROMIUM
 
-// TODO(gman): DiscardFramebufferEXTImmediate
 // TODO(gman): LoseContextCHROMIUM
 // TODO(gman): InsertSyncPointCHROMIUM
 
