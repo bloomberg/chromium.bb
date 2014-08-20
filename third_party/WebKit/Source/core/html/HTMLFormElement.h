@@ -56,7 +56,7 @@ public:
     void getNamedElements(const AtomicString&, WillBeHeapVector<RefPtrWillBeMember<Element> >&);
 
     unsigned length() const;
-    Element* item(unsigned index);
+    HTMLElement* item(unsigned index);
 
     String enctype() const { return m_attributes.encodingType(); }
     void setEnctype(const AtomicString&);

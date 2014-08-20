@@ -26,11 +26,11 @@
 
 #include "core/html/FormAssociatedElement.h"
 #include "core/html/HTMLCollection.h"
+#include "core/html/HTMLElement.h"
 #include "core/html/RadioNodeList.h"
 
 namespace blink {
 
-class HTMLElement;
 class HTMLImageElement;
 class QualifiedName;
 
@@ -43,7 +43,9 @@ public:
 
     virtual ~HTMLFormControlsCollection();
 
-    virtual Element* namedItem(const AtomicString& name) const OVERRIDE;
+    HTMLElement* item(unsigned offset) const { return toHTMLElement(HTMLCollection::item(offset)); }
+
+    virtual HTMLElement* namedItem(const AtomicString& name) const OVERRIDE;
     void namedGetter(const AtomicString& name, RefPtrWillBeRawPtr<RadioNodeList>&, RefPtrWillBeRawPtr<Element>&);
 
     virtual void trace(Visitor*) OVERRIDE;
@@ -56,10 +58,10 @@ private:
 
     const FormAssociatedElement::List& formControlElements() const;
     const WillBeHeapVector<RawPtrWillBeMember<HTMLImageElement> >& formImageElements() const;
-    virtual Element* virtualItemAfter(Element*) const OVERRIDE;
+    virtual HTMLElement* virtualItemAfter(Element*) const OVERRIDE;
     virtual void invalidateCache(Document* oldDocument = 0) const OVERRIDE;
 
-    mutable RawPtrWillBeMember<Element> m_cachedElement;
+    mutable RawPtrWillBeMember<HTMLElement> m_cachedElement;
     mutable unsigned m_cachedElementOffsetInArray;
 };
 DEFINE_TYPE_CASTS(HTMLFormControlsCollection, LiveNodeListBase, collection, collection->type() == FormControls, collection.type() == FormControls);

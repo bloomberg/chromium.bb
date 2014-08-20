@@ -81,7 +81,7 @@ static unsigned findFormAssociatedElement(const FormAssociatedElement::List& ass
     return i;
 }
 
-Element* HTMLFormControlsCollection::virtualItemAfter(Element* previous) const
+HTMLElement* HTMLFormControlsCollection::virtualItemAfter(Element* previous) const
 {
     const FormAssociatedElement::List& associatedElements = formControlElements();
     unsigned offset;
@@ -135,7 +135,7 @@ static HTMLElement* firstNamedItem(const FormAssociatedElement::List& elementsAr
     return 0;
 }
 
-Element* HTMLFormControlsCollection::namedItem(const AtomicString& name) const
+HTMLElement* HTMLFormControlsCollection::namedItem(const AtomicString& name) const
 {
     // http://msdn.microsoft.com/workshop/author/dhtml/reference/methods/nameditem.asp
     // This method first searches for an object with a matching id
@@ -219,7 +219,7 @@ void HTMLFormControlsCollection::supportedPropertyNames(Vector<String>& names)
     HashSet<AtomicString> existingNames;
     unsigned length = this->length();
     for (unsigned i = 0; i < length; ++i) {
-        Element* element = item(i);
+        HTMLElement* element = item(i);
         ASSERT(element);
         const AtomicString& idAttribute = element->getIdAttribute();
         if (!idAttribute.isEmpty()) {
