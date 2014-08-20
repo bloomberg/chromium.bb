@@ -11,9 +11,10 @@
 #include "base/message_loop/message_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
-#include "content/browser/browser_thread_impl.h"
 #include "content/browser/media/capture/audio_mirroring_manager.h"
 #include "content/browser/media/capture/web_contents_tracker.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "media/audio/simple_sources.h"
 #include "media/audio/virtual_audio_input_stream.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -177,8 +178,8 @@ class MockAudioInputCallback : public AudioInputStream::AudioInputCallback {
 class WebContentsAudioInputStreamTest : public testing::Test {
  public:
   WebContentsAudioInputStreamTest()
-      : audio_thread_("Audio thread"),
-        io_thread_(BrowserThread::IO),
+      : thread_bundle_(TestBrowserThreadBundle::REAL_IO_THREAD),
+        audio_thread_("Audio thread"),
         mock_mirroring_manager_(new MockAudioMirroringManager()),
         mock_tracker_(new MockWebContentsTracker()),
         mock_vais_(NULL),
@@ -188,12 +189,10 @@ class WebContentsAudioInputStreamTest : public testing::Test {
         current_render_view_id_(kRenderViewId),
         on_data_event_(false, false) {
     audio_thread_.Start();
-    io_thread_.Start();
   }
 
   virtual ~WebContentsAudioInputStreamTest() {
     audio_thread_.Stop();
-    io_thread_.Stop();
 
     DCHECK(!mock_vais_);
     DCHECK(!wcais_);
@@ -369,8 +368,8 @@ class WebContentsAudioInputStreamTest : public testing::Test {
   }
 
  private:
+  TestBrowserThreadBundle thread_bundle_;
   base::Thread audio_thread_;
-  BrowserThreadImpl io_thread_;
 
   scoped_ptr<MockAudioMirroringManager> mock_mirroring_manager_;
   scoped_refptr<MockWebContentsTracker> mock_tracker_;
