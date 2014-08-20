@@ -69,7 +69,8 @@ class AppShimHost : public IPC::Listener,
   virtual void OnAppLaunchComplete(apps::AppShimLaunchResult result) OVERRIDE;
   virtual void OnAppClosed() OVERRIDE;
   virtual void OnAppHide() OVERRIDE;
-  virtual void OnAppRequestUserAttention() OVERRIDE;
+  virtual void OnAppRequestUserAttention(
+      apps::AppShimAttentionType type) OVERRIDE;
   virtual base::FilePath GetProfilePath() const OVERRIDE;
   virtual std::string GetAppId() const OVERRIDE;
 

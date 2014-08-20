@@ -221,6 +221,17 @@ function testShow() {
   ]);
 }
 
+function testDrawAttention() {
+  chrome.test.runTests([
+    function drawThenClearAttention() {
+      chrome.app.window.create('test.html', {}, callbackPass(function(win) {
+        win.drawAttention();
+        win.clearAttention();
+      }));
+    }
+  ]);
+}
+
 chrome.app.runtime.onLaunched.addListener(function() {
   chrome.test.sendMessage('Launched', function(reply) {
     window[reply]();

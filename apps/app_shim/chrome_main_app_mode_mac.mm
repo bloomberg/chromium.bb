@@ -131,6 +131,7 @@ class AppShimController : public IPC::Listener {
 
   // Requests user attention.
   void OnRequestUserAttention();
+  void OnSetUserAttention(apps::AppShimAttentionType attention_type);
 
   // Terminates the app shim process.
   void Close();
@@ -140,6 +141,7 @@ class AppShimController : public IPC::Listener {
   base::scoped_nsobject<AppShimDelegate> delegate_;
   bool launch_app_done_;
   bool ping_chrome_reply_received_;
+  NSInteger attention_request_id_;
 
   DISALLOW_COPY_AND_ASSIGN(AppShimController);
 };
@@ -147,7 +149,8 @@ class AppShimController : public IPC::Listener {
 AppShimController::AppShimController()
     : delegate_([[AppShimDelegate alloc] init]),
       launch_app_done_(false),
-      ping_chrome_reply_received_(false) {
+      ping_chrome_reply_received_(false),
+      attention_request_id_(0) {
   // Since AppShimController is created before the main message loop starts,
   // NSApp will not be set, so use sharedApplication.
   [[NSApplication sharedApplication] setDelegate:delegate_];
@@ -282,6 +285,7 @@ bool AppShimController::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(AppShimMsg_LaunchApp_Done, OnLaunchAppDone)
     IPC_MESSAGE_HANDLER(AppShimMsg_Hide, OnHide)
     IPC_MESSAGE_HANDLER(AppShimMsg_RequestUserAttention, OnRequestUserAttention)
+    IPC_MESSAGE_HANDLER(AppShimMsg_SetUserAttention, OnSetUserAttention)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -310,7 +314,26 @@ void AppShimController::OnHide() {
 }
 
 void AppShimController::OnRequestUserAttention() {
-  [NSApp requestUserAttention:NSInformationalRequest];
+  OnSetUserAttention(apps::APP_SHIM_ATTENTION_INFORMATIONAL);
+}
+
+void AppShimController::OnSetUserAttention(
+    apps::AppShimAttentionType attention_type) {
+  switch (attention_type) {
+    case apps::APP_SHIM_ATTENTION_CANCEL:
+      [NSApp cancelUserAttentionRequest:attention_request_id_];
+      attention_request_id_ = 0;
+      break;
+    case apps::APP_SHIM_ATTENTION_CRITICAL:
+      attention_request_id_ = [NSApp requestUserAttention:NSCriticalRequest];
+      break;
+    case apps::APP_SHIM_ATTENTION_INFORMATIONAL:
+      attention_request_id_ =
+          [NSApp requestUserAttention:NSInformationalRequest];
+      break;
+    case apps::APP_SHIM_ATTENTION_NUM_TYPES:
+      NOTREACHED();
+  }
 }
 
 void AppShimController::Close() {

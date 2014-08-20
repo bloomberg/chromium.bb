@@ -26,7 +26,7 @@ class AppShimHandler {
     // Invoked when the app should be hidden.
     virtual void OnAppHide() = 0;
     // Invoked when the app is requesting user attention.
-    virtual void OnAppRequestUserAttention() = 0;
+    virtual void OnAppRequestUserAttention(AppShimAttentionType type) = 0;
 
     // Allows the handler to determine which app this host corresponds to.
     virtual base::FilePath GetProfilePath() const = 0;

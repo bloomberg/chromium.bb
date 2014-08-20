@@ -209,7 +209,6 @@ class NativeAppWindowCocoa : public apps::NativeAppWindow,
   SkColor inactive_frame_color_;
 
   base::scoped_nsobject<NativeAppWindowController> window_controller_;
-  NSInteger attention_request_id_;  // identifier from requestUserAttention
 
   // For system drag, the whole window is draggable and the non-draggable areas
   // have to been explicitly excluded.

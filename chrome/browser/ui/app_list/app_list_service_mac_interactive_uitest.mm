@@ -43,7 +43,8 @@ class AppListServiceMacInteractiveTest : public InProcessBrowserTest,
     NOTREACHED();
   }
   virtual void OnAppHide() OVERRIDE {}
-  virtual void OnAppRequestUserAttention() OVERRIDE {}
+  virtual void OnAppRequestUserAttention(
+      apps::AppShimAttentionType type) OVERRIDE {}
   virtual base::FilePath GetProfilePath() const OVERRIDE {
     NOTREACHED();  // Currently unused in this test.
     return base::FilePath();

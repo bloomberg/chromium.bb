@@ -21,6 +21,12 @@ IPC_ENUM_TRAITS_MAX_VALUE(apps::AppShimLaunchResult,
                           apps::APP_SHIM_LAUNCH_NUM_RESULTS - 1)
 IPC_ENUM_TRAITS_MAX_VALUE(apps::AppShimFocusType,
                           apps::APP_SHIM_FOCUS_NUM_TYPES - 1)
+IPC_ENUM_TRAITS_MAX_VALUE(apps::AppShimAttentionType,
+                          apps::APP_SHIM_ATTENTION_NUM_TYPES - 1)
+
+// IMPORTANT: Since app shims could be running a newer framework version to the
+// currently running Chrome, any changes to these IPCs must maintain the same
+// order and format. I.e. Only add to the bottom, don't delete any.
 
 // Signals that a previous LaunchApp message has been processed, and lets the
 // app shim process know whether it was registered successfully.
@@ -30,10 +36,10 @@ IPC_MESSAGE_CONTROL1(AppShimMsg_LaunchApp_Done,
 // Instructs the shim to hide the app.
 IPC_MESSAGE_CONTROL0(AppShimMsg_Hide)
 
-// Instructs the shim to request user attention.
+// Deprecated. Do not delete.
 IPC_MESSAGE_CONTROL0(AppShimMsg_RequestUserAttention)
 
-// Signals to the main Chrome process that a shim has started indicating the
+// Signals to the main Chrome process that a shim has started. Indicates the
 // profile and app_id that the shim should be associated with and whether to
 // launch the app immediately.
 IPC_MESSAGE_CONTROL4(AppShimHostMsg_LaunchApp,
@@ -59,3 +65,7 @@ IPC_MESSAGE_CONTROL1(AppShimHostMsg_SetAppHidden,
 // closes the channel. The shim process then completes the terminate request
 // and exits.
 IPC_MESSAGE_CONTROL0(AppShimHostMsg_QuitApp)
+
+// Instructs the shim to request or cancel user attention.
+IPC_MESSAGE_CONTROL1(AppShimMsg_SetUserAttention,
+                     apps::AppShimAttentionType /* attention_type */)

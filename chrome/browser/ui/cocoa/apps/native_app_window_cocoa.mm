@@ -337,8 +337,7 @@ NativeAppWindowCocoa::NativeAppWindowCocoa(
       shows_fullscreen_controls_(true),
       has_frame_color_(params.has_frame_color),
       active_frame_color_(params.active_frame_color),
-      inactive_frame_color_(params.inactive_frame_color),
-      attention_request_id_(0) {
+      inactive_frame_color_(params.inactive_frame_color) {
   Observe(WebContents());
 
   base::scoped_nsobject<NSWindow> window;
@@ -565,7 +564,7 @@ void NativeAppWindowCocoa::Show() {
   if (is_hidden_with_app_) {
     // If there is a shim to gently request attention, return here. Otherwise
     // show the window as usual.
-    if (apps::ExtensionAppShimHandler::RequestUserAttentionForWindow(
+    if (apps::ExtensionAppShimHandler::ActivateAndRequestUserAttentionForWindow(
             app_window_)) {
       return;
     }
@@ -724,12 +723,10 @@ void NativeAppWindowCocoa::UpdateDraggableRegionViews() {
 }
 
 void NativeAppWindowCocoa::FlashFrame(bool flash) {
-  if (flash) {
-    attention_request_id_ = [NSApp requestUserAttention:NSInformationalRequest];
-  } else {
-    [NSApp cancelUserAttentionRequest:attention_request_id_];
-    attention_request_id_ = 0;
-  }
+  apps::ExtensionAppShimHandler::RequestUserAttentionForWindow(
+      app_window_,
+      flash ? apps::APP_SHIM_ATTENTION_CRITICAL
+            : apps::APP_SHIM_ATTENTION_CANCEL);
 }
 
 bool NativeAppWindowCocoa::IsAlwaysOnTop() const {

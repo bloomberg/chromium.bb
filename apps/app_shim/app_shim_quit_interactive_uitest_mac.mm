@@ -41,7 +41,7 @@ class FakeHost : public apps::AppShimHandler::Host {
     handler_->OnShimClose(this);
   }
   virtual void OnAppHide() OVERRIDE {}
-  virtual void OnAppRequestUserAttention() OVERRIDE {}
+  virtual void OnAppRequestUserAttention(AppShimAttentionType type) OVERRIDE {}
   virtual base::FilePath GetProfilePath() const OVERRIDE {
     return profile_path_;
   }

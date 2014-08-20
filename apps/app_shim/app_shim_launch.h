@@ -41,6 +41,17 @@ enum AppShimFocusType {
   APP_SHIM_FOCUS_NUM_TYPES
 };
 
+enum AppShimAttentionType {
+  // Removes any active attention request.
+  APP_SHIM_ATTENTION_CANCEL = 0,
+  // Bounces the shim in the dock briefly.
+  APP_SHIM_ATTENTION_INFORMATIONAL,
+  // Bounces the shim in the dock continuously.
+  APP_SHIM_ATTENTION_CRITICAL,
+  // Counter and end marker.
+  APP_SHIM_ATTENTION_NUM_TYPES
+};
+
 }  // namespace apps
 
 #endif  // APPS_APP_SHIM_APP_SHIM_LAUNCH_H_

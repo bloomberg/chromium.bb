@@ -439,3 +439,7 @@ IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest, MAYBE_TestCreate) {
 IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest, MAYBE_TestShow) {
   ASSERT_TRUE(RunAppWindowInteractiveTest("testShow")) << message_;
 }
+
+IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest, TestDrawAttention) {
+  ASSERT_TRUE(RunAppWindowInteractiveTest("testDrawAttention")) << message_;
+}

@@ -267,7 +267,7 @@ void ExtensionAppShimHandler::FocusAppForWindow(AppWindow* app_window) {
 }
 
 // static
-bool ExtensionAppShimHandler::RequestUserAttentionForWindow(
+bool ExtensionAppShimHandler::ActivateAndRequestUserAttentionForWindow(
     AppWindow* app_window) {
   ExtensionAppShimHandler* handler = GetInstance();
   Profile* profile = Profile::FromBrowserContext(app_window->browser_context());
@@ -275,13 +275,24 @@ bool ExtensionAppShimHandler::RequestUserAttentionForWindow(
   if (host) {
     // Bring the window to the front without showing it.
     AppWindowRegistry::Get(profile)->AppWindowActivated(app_window);
-    host->OnAppRequestUserAttention();
+    host->OnAppRequestUserAttention(APP_SHIM_ATTENTION_INFORMATIONAL);
     return true;
   } else {
     // Just show the app.
     SetAppHidden(profile, app_window->extension_id(), false);
     return false;
   }
+}
+
+// static
+void ExtensionAppShimHandler::RequestUserAttentionForWindow(
+    AppWindow* app_window,
+    AppShimAttentionType attention_type) {
+  ExtensionAppShimHandler* handler = GetInstance();
+  Profile* profile = Profile::FromBrowserContext(app_window->browser_context());
+  Host* host = handler->FindHost(profile, app_window->extension_id());
+  if (host)
+    host->OnAppRequestUserAttention(attention_type);
 }
 
 // static

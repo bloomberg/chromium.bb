@@ -80,8 +80,14 @@ class ExtensionAppShimHandler : public AppShimHandler,
   static void FocusAppForWindow(AppWindow* app_window);
 
   // Brings the window to the front without showing it and instructs the shim to
-  // request user attention. Returns false if there is no shim for this window.
-  static bool RequestUserAttentionForWindow(AppWindow* app_window);
+  // request user attention. If there is no shim, show the app and return false.
+  static bool ActivateAndRequestUserAttentionForWindow(AppWindow* app_window);
+
+  // Instructs the shim to request user attention. Returns false if there is no
+  // shim for this window.
+  static void RequestUserAttentionForWindow(
+      AppWindow* app_window,
+      AppShimAttentionType attention_type);
 
   // Called by AppControllerMac when Chrome hides.
   static void OnChromeWillHide();

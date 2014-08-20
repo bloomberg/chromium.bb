@@ -120,8 +120,8 @@ void AppShimHost::OnAppHide() {
   Send(new AppShimMsg_Hide);
 }
 
-void AppShimHost::OnAppRequestUserAttention() {
-  Send(new AppShimMsg_RequestUserAttention);
+void AppShimHost::OnAppRequestUserAttention(apps::AppShimAttentionType type) {
+  Send(new AppShimMsg_SetUserAttention(type));
 }
 
 void AppShimHost::Close() {
