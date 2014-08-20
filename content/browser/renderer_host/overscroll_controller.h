@@ -91,8 +91,9 @@ class OverscrollController {
 
   // Processes horizontal overscroll. This can update both the overscroll mode
   // and the over scroll amount (i.e. |overscroll_mode_|, |overscroll_delta_x_|
-  // and |overscroll_delta_y_|).
-  void ProcessOverscroll(float delta_x,
+  // and |overscroll_delta_y_|). Returns true if overscroll was handled by the
+  // delegate.
+  bool ProcessOverscroll(float delta_x,
                          float delta_y,
                          blink::WebInputEvent::Type event_type);
 

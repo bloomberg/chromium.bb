@@ -18,7 +18,10 @@
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/web_contents/web_contents_view.h"
+#include "content/common/input/synthetic_web_input_event_builders.h"
+#include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
+#include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/content_switches.h"
@@ -32,8 +35,25 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/events/event_processor.h"
+#include "ui/events/event_switches.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/test/event_generator.h"
+
+namespace {
+
+// TODO(tdresser): Find a way to avoid sleeping like this. See crbug.com/405282
+// for details.
+void GiveItSomeTime() {
+  base::RunLoop run_loop;
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      run_loop.QuitClosure(),
+      base::TimeDelta::FromMillisecondsD(10));
+  run_loop.Run();
+}
+
+}  //namespace
+
 
 namespace content {
 
@@ -127,6 +147,55 @@ class NavigationWatcher : public WebContentsObserver {
   DISALLOW_COPY_AND_ASSIGN(NavigationWatcher);
 };
 
+class InputEventMessageFilterWaitsForAcks : public BrowserMessageFilter {
+ public:
+  InputEventMessageFilterWaitsForAcks()
+      : BrowserMessageFilter(InputMsgStart),
+        type_(blink::WebInputEvent::Undefined),
+        state_(INPUT_EVENT_ACK_STATE_UNKNOWN) {}
+
+  void WaitForAck(blink::WebInputEvent::Type type) {
+    base::RunLoop run_loop;
+    base::AutoReset<base::Closure> reset_quit(&quit_, run_loop.QuitClosure());
+    base::AutoReset<blink::WebInputEvent::Type> reset_type(&type_, type);
+    run_loop.Run();
+  }
+
+  InputEventAckState last_ack_state() const { return state_; }
+
+ protected:
+  virtual ~InputEventMessageFilterWaitsForAcks() {}
+
+ private:
+  void ReceivedEventAck(blink::WebInputEvent::Type type,
+                        InputEventAckState state) {
+    if (type_ == type) {
+      state_ = state;
+      quit_.Run();
+    }
+  }
+
+  // BrowserMessageFilter:
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
+    if (message.type() == InputHostMsg_HandleInputEvent_ACK::ID) {
+      InputHostMsg_HandleInputEvent_ACK::Param params;
+      InputHostMsg_HandleInputEvent_ACK::Read(&message, &params);
+      blink::WebInputEvent::Type type = params.a.type;
+      InputEventAckState ack = params.a.state;
+      BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+          base::Bind(&InputEventMessageFilterWaitsForAcks::ReceivedEventAck,
+                     this, type, ack));
+    }
+    return false;
+  }
+
+  base::Closure quit_;
+  blink::WebInputEvent::Type type_;
+  InputEventAckState state_;
+
+  DISALLOW_COPY_AND_ASSIGN(InputEventMessageFilterWaitsForAcks);
+};
+
 class WebContentsViewAuraTest : public ContentBrowserTest {
  public:
   WebContentsViewAuraTest()
@@ -154,6 +223,11 @@ class WebContentsViewAuraTest : public ContentBrowserTest {
 
     screenshot_manager_ = new ScreenshotTracker(controller);
     controller->SetScreenshotManager(screenshot_manager_);
+  }
+
+  virtual void SetUpCommandLine(CommandLine* cmd) OVERRIDE {
+    cmd->AppendSwitchASCII(switches::kTouchEvents,
+                           switches::kTouchEventsEnabled);
   }
 
   void TestOverscrollNavigation(bool touch_handler) {
@@ -256,14 +330,62 @@ class WebContentsViewAuraTest : public ContentBrowserTest {
     return index;
   }
 
+  int ExecuteScriptAndExtractInt(const std::string& script) {
+    int value = 0;
+    EXPECT_TRUE(content::ExecuteScriptAndExtractInt(
+        shell()->web_contents(),
+        "domAutomationController.send(" + script + ")",
+        &value));
+    return value;
+  }
+
+  RenderViewHost* GetRenderViewHost() const {
+    RenderViewHost* const rvh = shell()->web_contents()->GetRenderViewHost();
+    CHECK(rvh);
+    return rvh;
+  }
+
+  RenderWidgetHostImpl* GetRenderWidgetHost() const {
+    RenderWidgetHostImpl* const rwh =
+        RenderWidgetHostImpl::From(shell()
+                                       ->web_contents()
+                                       ->GetRenderWidgetHostView()
+                                       ->GetRenderWidgetHost());
+    CHECK(rwh);
+    return rwh;
+  }
+
+  RenderWidgetHostViewBase* GetRenderWidgetHostView() const {
+    return static_cast<RenderWidgetHostViewBase*>(
+        GetRenderViewHost()->GetView());
+  }
+
+  InputEventMessageFilterWaitsForAcks* filter() {
+    return filter_.get();
+  }
+
+  void WaitAFrame() {
+    uint32 frame = GetRenderWidgetHostView()->RendererFrameNumber();
+    while (!GetRenderWidgetHost()->ScheduleComposite())
+      GiveItSomeTime();
+    while (GetRenderWidgetHostView()->RendererFrameNumber() == frame)
+      GiveItSomeTime();
+  }
+
  protected:
   ScreenshotTracker* screenshot_manager() { return screenshot_manager_; }
   void set_min_screenshot_interval(int interval_ms) {
     screenshot_manager_->SetScreenshotInterval(interval_ms);
   }
 
+  void AddInputEventMessageFilter() {
+    filter_ = new InputEventMessageFilterWaitsForAcks();
+    GetRenderWidgetHost()->GetProcess()->AddFilter(filter_);
+  }
+
  private:
   ScreenshotTracker* screenshot_manager_;
+  scoped_refptr<InputEventMessageFilterWaitsForAcks> filter_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsViewAuraTest);
 };
@@ -745,6 +867,102 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, WebContentsViewReparent) {
   EXPECT_FALSE(rwhva->has_snapped_to_boundary());
   window->AddChild(shell()->web_contents()->GetNativeView());
   EXPECT_TRUE(rwhva->has_snapped_to_boundary());
+}
+
+// Flaky on Windows, likely for the same reason as other flaky overscroll tests.
+// http://crbug.com/305722
+#if defined(OS_WIN)
+#define MAYBE_OverscrollNavigationTouchThrottling \
+        DISABLED_OverscrollNavigationTouchThrottling
+#else
+#define MAYBE_OverscrollNavigationTouchThrottling \
+        OverscrollNavigationTouchThrottling
+#endif
+
+// Tests that touch moves are not throttled when performing a scroll gesture on
+// a non-scrollable area, except during gesture-nav.
+IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
+                       MAYBE_OverscrollNavigationTouchThrottling) {
+  ASSERT_NO_FATAL_FAILURE(
+      StartTestWithPage("files/overscroll_navigation.html"));
+
+  AddInputEventMessageFilter();
+
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  aura::Window* content = web_contents->GetContentNativeView();
+  gfx::Rect bounds = content->GetBoundsInRootWindow();
+  const int dx = 20;
+
+  ExecuteSyncJSFunction(web_contents->GetMainFrame(),
+                        "install_touchmove_handler()");
+
+  WaitAFrame();
+
+  for (int navigated = 0; navigated <= 1; ++navigated) {
+    if (navigated) {
+      ExecuteSyncJSFunction(web_contents->GetMainFrame(), "navigate_next()");
+      ExecuteSyncJSFunction(web_contents->GetMainFrame(),
+                            "reset_touchmove_count()");
+    }
+    // Send touch press.
+    SyntheticWebTouchEvent touch;
+    touch.PressPoint(bounds.x() + 2, bounds.y() + 10);
+    GetRenderWidgetHost()->ForwardTouchEventWithLatencyInfo(touch,
+                                                            ui::LatencyInfo());
+    filter()->WaitForAck(blink::WebInputEvent::TouchStart);
+    // Assert on the ack, because we'll end up waiting for acks that will never
+    // come if this is not true.
+    ASSERT_EQ(INPUT_EVENT_ACK_STATE_NOT_CONSUMED, filter()->last_ack_state());
+
+    // Send first touch move, and then a scroll begin.
+    touch.MovePoint(0, bounds.x() + 20 + 1 * dx, bounds.y() + 100);
+    GetRenderWidgetHost()->ForwardTouchEventWithLatencyInfo(touch,
+                                                            ui::LatencyInfo());
+    filter()->WaitForAck(blink::WebInputEvent::TouchMove);
+    ASSERT_EQ(INPUT_EVENT_ACK_STATE_NOT_CONSUMED, filter()->last_ack_state());
+
+    blink::WebGestureEvent scroll_begin =
+        SyntheticWebGestureEventBuilder::BuildScrollBegin(1, 1);
+    GetRenderWidgetHost()->ForwardGestureEventWithLatencyInfo(
+        scroll_begin, ui::LatencyInfo());
+    // Scroll begin ignores ack disposition, so don't wait for the ack.
+    //    GiveItSomeTime();
+    WaitAFrame();
+
+    // First touchmove already sent, start at 2.
+    for (int i = 2; i <= 10; ++i) {
+      // Send a touch move, followed by a scroll update
+      touch.MovePoint(0, bounds.x() + 20 + i * dx, bounds.y() + 100);
+      GetRenderWidgetHost()->ForwardTouchEventWithLatencyInfo(
+          touch, ui::LatencyInfo());
+      WaitAFrame();
+
+      blink::WebGestureEvent scroll_update =
+          SyntheticWebGestureEventBuilder::BuildScrollUpdate(dx, 5, 0);
+
+      GetRenderWidgetHost()->ForwardGestureEventWithLatencyInfo(
+          scroll_update, ui::LatencyInfo());
+
+      WaitAFrame();
+    }
+
+    touch.ReleasePoint(0);
+    GetRenderWidgetHost()->ForwardTouchEventWithLatencyInfo(touch,
+                                                            ui::LatencyInfo());
+    WaitAFrame();
+
+    blink::WebGestureEvent scroll_end;
+    scroll_end.type = blink::WebInputEvent::GestureScrollEnd;
+    GetRenderWidgetHost()->ForwardGestureEventWithLatencyInfo(
+        scroll_end, ui::LatencyInfo());
+    WaitAFrame();
+
+    if (!navigated)
+      EXPECT_EQ(10, ExecuteScriptAndExtractInt("touchmoveCount"));
+    else
+      EXPECT_GT(10, ExecuteScriptAndExtractInt("touchmoveCount"));
+  }
 }
 
 }  // namespace content

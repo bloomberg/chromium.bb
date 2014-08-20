@@ -23,8 +23,9 @@ class OverscrollControllerDelegate {
   // events will only be processed if the visible bounds are non-empty.
   virtual gfx::Rect GetVisibleBounds() const = 0;
 
-  // This is called for each update in the overscroll amount.
-  virtual void OnOverscrollUpdate(float delta_x, float delta_y) = 0;
+  // This is called for each update in the overscroll amount. Returns true if
+  // the delegate consumed the event.
+  virtual bool OnOverscrollUpdate(float delta_x, float delta_y) = 0;
 
   // This is called when the overscroll completes.
   virtual void OnOverscrollComplete(OverscrollMode overscroll_mode) = 0;

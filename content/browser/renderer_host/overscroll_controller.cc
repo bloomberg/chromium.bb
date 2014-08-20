@@ -212,20 +212,18 @@ bool OverscrollController::ProcessEventForOverscroll(
           static_cast<const blink::WebMouseWheelEvent&>(event);
       if (!wheel.hasPreciseScrollingDeltas)
         break;
-
-      ProcessOverscroll(wheel.deltaX * wheel.accelerationRatioX,
-                        wheel.deltaY * wheel.accelerationRatioY,
-                        wheel.type);
-      event_processed = true;
+      event_processed =
+          ProcessOverscroll(wheel.deltaX * wheel.accelerationRatioX,
+                            wheel.deltaY * wheel.accelerationRatioY,
+                            wheel.type);
       break;
     }
     case blink::WebInputEvent::GestureScrollUpdate: {
       const blink::WebGestureEvent& gesture =
           static_cast<const blink::WebGestureEvent&>(event);
-      ProcessOverscroll(gesture.data.scrollUpdate.deltaX,
-                        gesture.data.scrollUpdate.deltaY,
-                        gesture.type);
-      event_processed = true;
+      event_processed = ProcessOverscroll(gesture.data.scrollUpdate.deltaX,
+                                          gesture.data.scrollUpdate.deltaY,
+                                          gesture.type);
       break;
     }
     case blink::WebInputEvent::GestureFlingStart: {
@@ -263,7 +261,7 @@ bool OverscrollController::ProcessEventForOverscroll(
   return event_processed;
 }
 
-void OverscrollController::ProcessOverscroll(float delta_x,
+bool OverscrollController::ProcessOverscroll(float delta_x,
                                              float delta_y,
                                              blink::WebInputEvent::Type type) {
   if (scroll_state_ != STATE_CONTENT_SCROLLING)
@@ -279,7 +277,7 @@ void OverscrollController::ProcessOverscroll(float delta_x,
   if (fabs(overscroll_delta_x_) <= horiz_threshold &&
       fabs(overscroll_delta_y_) <= vert_threshold) {
     SetOverscrollMode(OVERSCROLL_NONE);
-    return;
+    return true;
   }
 
   // Compute the current overscroll direction. If the direction is different
@@ -306,7 +304,7 @@ void OverscrollController::ProcessOverscroll(float delta_x,
     SetOverscrollMode(OVERSCROLL_NONE);
 
   if (overscroll_mode_ == OVERSCROLL_NONE)
-    return;
+    return false;
 
   // Tell the delegate about the overscroll update so that it can update
   // the display accordingly (e.g. show history preview etc.).
@@ -332,8 +330,9 @@ void OverscrollController::ProcessOverscroll(float delta_x,
     } else {
       delegate_delta_y = 0.f;
     }
-    delegate_->OnOverscrollUpdate(delegate_delta_x, delegate_delta_y);
+    return delegate_->OnOverscrollUpdate(delegate_delta_x, delegate_delta_y);
   }
+  return false;
 }
 
 void OverscrollController::CompleteAction() {

@@ -145,9 +145,9 @@ void GestureNavSimple::CompleteGestureAnimation() {
   ApplyEffectsAndDestroy(arrow_->transform(), 0.f);
 }
 
-void GestureNavSimple::ApplyEffectsForDelta(float delta_x) {
+bool GestureNavSimple::ApplyEffectsForDelta(float delta_x) {
   if (!arrow_)
-    return;
+    return false;
   CHECK_GT(completion_threshold_, 0.f);
   CHECK_GE(delta_x, 0.f);
   double complete = std::min(1.f, delta_x / completion_threshold_);
@@ -157,14 +157,15 @@ void GestureNavSimple::ApplyEffectsForDelta(float delta_x) {
                       0.f);
   arrow_->SetTransform(transform);
   arrow_->SetOpacity(gfx::Tween::FloatValueBetween(complete, kMinOpacity, 1.f));
+  return true;
 }
 
 gfx::Rect GestureNavSimple::GetVisibleBounds() const {
   return web_contents_->GetNativeView()->bounds();
 }
 
-void GestureNavSimple::OnOverscrollUpdate(float delta_x, float delta_y) {
-  ApplyEffectsForDelta(std::abs(delta_x) + 50.f);
+bool GestureNavSimple::OnOverscrollUpdate(float delta_x, float delta_y) {
+  return ApplyEffectsForDelta(std::abs(delta_x) + 50.f);
 }
 
 void GestureNavSimple::OnOverscrollComplete(OverscrollMode overscroll_mode) {

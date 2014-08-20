@@ -1281,9 +1281,9 @@ gfx::Rect WebContentsViewAura::GetVisibleBounds() const {
   return rwhv->GetViewBounds();
 }
 
-void WebContentsViewAura::OnOverscrollUpdate(float delta_x, float delta_y) {
+bool WebContentsViewAura::OnOverscrollUpdate(float delta_x, float delta_y) {
   if (current_overscroll_gesture_ == OVERSCROLL_NONE)
-    return;
+    return false;
 
   aura::Window* target = GetWindowToAnimateForOverscroll();
   gfx::Vector2d translate = GetTranslationForOverscroll(delta_x, delta_y);
@@ -1298,6 +1298,7 @@ void WebContentsViewAura::OnOverscrollUpdate(float delta_x, float delta_y) {
   }
 
   OverscrollUpdateForWebContentsDelegate(translate.y());
+  return !translate.IsZero();
 }
 
 void WebContentsViewAura::OnOverscrollComplete(OverscrollMode mode) {
