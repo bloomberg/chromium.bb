@@ -83,16 +83,16 @@ struct Quad {
   int32 shared_quad_state_index;
 
   // Only one of the following will be set, depending on the material.
-  CheckerboardQuadState checkerboard_quad_state;
-  DebugBorderQuadState debug_border_quad_state;
-  IoSurfaceContentQuadState io_surface_quad_state;
-  RenderPassQuadState render_pass_quad_state;
-  SolidColorQuadState solid_color_quad_state;
-  SurfaceQuadState surface_quad_state;
-  TextureQuadState texture_quad_state;
-  TiledContentQuadState tiled_content_quad_state;
-  StreamVideoQuadState stream_video_quad_state;
-  YUVVideoQuadState yuv_video_quad_state;
+  CheckerboardQuadState? checkerboard_quad_state;
+  DebugBorderQuadState? debug_border_quad_state;
+  IoSurfaceContentQuadState? io_surface_quad_state;
+  RenderPassQuadState? render_pass_quad_state;
+  SolidColorQuadState? solid_color_quad_state;
+  SurfaceQuadState? surface_quad_state;
+  TextureQuadState? texture_quad_state;
+  TiledContentQuadState? tiled_content_quad_state;
+  StreamVideoQuadState? stream_video_quad_state;
+  YUVVideoQuadState? yuv_video_quad_state;
 };
 
 enum SkXfermode {
