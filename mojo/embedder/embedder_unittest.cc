@@ -113,7 +113,7 @@ class EmbedderTest : public testing::Test {
 };
 
 TEST_F(EmbedderTest, ChannelsBasic) {
-  Init();
+  mojo::embedder::test::InitWithSimplePlatformSupport();
 
   {
     PlatformChannelPair channel_pair;
@@ -170,7 +170,7 @@ TEST_F(EmbedderTest, ChannelsBasic) {
 }
 
 TEST_F(EmbedderTest, ChannelsHandlePassing) {
-  Init();
+  mojo::embedder::test::InitWithSimplePlatformSupport();
 
   {
     PlatformChannelPair channel_pair;
@@ -331,7 +331,7 @@ TEST_F(EmbedderTest, ChannelsHandlePassing) {
 //  11.                                      (wait/cl.)
 //  12.                                                  (wait/cl.)
 TEST_F(EmbedderTest, MultiprocessChannels) {
-  Init();
+  mojo::embedder::test::InitWithSimplePlatformSupport();
   mojo::test::MultiprocessTestHelper multiprocess_test_helper;
   multiprocess_test_helper.StartChild("MultiprocessChannelsClient");
 
@@ -462,7 +462,7 @@ MOJO_MULTIPROCESS_TEST_CHILD_TEST(MultiprocessChannelsClient) {
 
   system::test::TestIOThread test_io_thread(
       system::test::TestIOThread::kAutoStart);
-  Init();
+  mojo::embedder::test::InitWithSimplePlatformSupport();
 
   {
     ScopedTestChannel client_channel(test_io_thread.task_runner(),

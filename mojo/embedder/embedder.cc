@@ -8,6 +8,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "mojo/embedder/platform_support.h"
 #include "mojo/system/channel.h"
 #include "mojo/system/core.h"
 #include "mojo/system/entrypoints.h"
@@ -98,8 +99,8 @@ void CreateChannelHelper(
 
 }  // namespace
 
-void Init() {
-  system::entrypoints::SetCore(new system::Core());
+void Init(scoped_ptr<PlatformSupport> platform_support) {
+  system::entrypoints::SetCore(new system::Core(platform_support.Pass()));
 }
 
 // TODO(vtl): Write tests for this.

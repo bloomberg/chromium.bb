@@ -10,7 +10,6 @@
 #include "base/time/time.h"
 #include "mojo/embedder/platform_shared_buffer.h"
 #include "mojo/embedder/platform_support.h"
-#include "mojo/embedder/simple_platform_support.h"  // TODO(vtl): Remove this.
 #include "mojo/public/c/system/macros.h"
 #include "mojo/system/constants.h"
 #include "mojo/system/data_pipe.h"
@@ -77,7 +76,8 @@ namespace system {
 //      held.
 
 // TODO(vtl): This should take a |scoped_ptr<PlatformSupport>| as a parameter.
-Core::Core() : platform_support_(new embedder::SimplePlatformSupport()) {
+Core::Core(scoped_ptr<embedder::PlatformSupport> platform_support)
+    : platform_support_(platform_support.Pass()) {
 }
 
 Core::~Core() {

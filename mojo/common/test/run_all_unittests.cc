@@ -6,7 +6,7 @@
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/test_suite.h"
 #include "mojo/common/test/test_support_impl.h"
-#include "mojo/embedder/embedder.h"
+#include "mojo/embedder/test_embedder.h"
 #include "mojo/public/tests/test_support_private.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -17,7 +17,7 @@ int main(int argc, char** argv) {
 
   base::TestSuite test_suite(argc, argv);
 
-  mojo::embedder::Init();
+  mojo::embedder::test::InitWithSimplePlatformSupport();
   mojo::test::TestSupport::Init(new mojo::test::TestSupportImpl());
 
   return base::LaunchUnitTests(

@@ -12,6 +12,7 @@
 #include "mojo/dbus/dbus_external_service.h"
 #include "mojo/embedder/channel_init.h"
 #include "mojo/embedder/embedder.h"
+#include "mojo/embedder/simple_platform_support.h"
 #include "mojo/public/cpp/environment/environment.h"
 #include "mojo/services/dbus_echo/echo.mojom.h"
 
@@ -45,7 +46,8 @@ int main(int argc, char** argv) {
                        false,    // Timestamp
                        false);   // Tick count
 
-  mojo::embedder::Init();
+  mojo::embedder::Init(scoped_ptr<mojo::embedder::PlatformSupport>(
+      new mojo::embedder::SimplePlatformSupport()));
 
   base::MessageLoopForIO message_loop;
   base::RunLoop run_loop;

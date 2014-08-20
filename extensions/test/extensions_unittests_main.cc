@@ -13,7 +13,7 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_paths.h"
 #include "extensions/test/test_extensions_client.h"
-#include "mojo/embedder/embedder.h"
+#include "mojo/embedder/test_embedder.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace {
@@ -98,7 +98,7 @@ void ExtensionsTestSuite::Shutdown() {
 int main(int argc, char** argv) {
   content::UnitTestTestSuite test_suite(new ExtensionsTestSuite(argc, argv));
 
-  mojo::embedder::Init();
+  mojo::embedder::test::InitWithSimplePlatformSupport();
   return base::LaunchUnitTests(argc,
                                argv,
                                base::Bind(&content::UnitTestTestSuite::Run,

@@ -6,6 +6,9 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
+#include "mojo/embedder/embedder.h"
+#include "mojo/embedder/simple_platform_support.h"
 #include "mojo/system/core.h"
 #include "mojo/system/entrypoints.h"
 #include "mojo/system/handle_table.h"
@@ -37,6 +40,10 @@ bool ShutdownCheckNoLeaks(Core* core_impl) {
 
 namespace embedder {
 namespace test {
+
+void InitWithSimplePlatformSupport() {
+  Init(scoped_ptr<PlatformSupport>(new SimplePlatformSupport()));
+}
 
 bool Shutdown() {
   system::Core* core = system::entrypoints::GetCore();

@@ -10,9 +10,11 @@
 #include "base/android/library_loader/library_loader_hooks.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/bind.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "jni/CoreImpl_jni.h"
 #include "mojo/embedder/embedder.h"
+#include "mojo/embedder/simple_platform_support.h"
 #include "mojo/public/c/environment/async_waiter.h"
 #include "mojo/public/c/system/core.h"
 #include "mojo/public/cpp/environment/environment.h"
@@ -50,7 +52,8 @@ namespace mojo {
 namespace android {
 
 static void Constructor(JNIEnv* env, jobject jcaller) {
-  mojo::embedder::Init();
+  embedder::Init(scoped_ptr<embedder::PlatformSupport>(
+      new embedder::SimplePlatformSupport()));
 }
 
 static jlong GetTimeTicksNow(JNIEnv* env, jobject jcaller) {
@@ -343,7 +346,7 @@ static jobject AsyncWait(JNIEnv* env,
       new AsyncWaitCallbackData(env, jcaller, callback);
   MojoAsyncWaitID cancel_id;
   if (static_cast<MojoHandle>(mojo_handle) != MOJO_HANDLE_INVALID) {
-    cancel_id = mojo::Environment::GetDefaultAsyncWaiter()->AsyncWait(
+    cancel_id = Environment::GetDefaultAsyncWaiter()->AsyncWait(
         mojo_handle, signals, deadline, AsyncWaitCallback, callback_data);
   } else {
     cancel_id = kInvalidHandleCancelID;
@@ -371,7 +374,7 @@ static void CancelAsyncWait(JNIEnv* env,
   }
   scoped_ptr<AsyncWaitCallbackData> deleter(
       reinterpret_cast<AsyncWaitCallbackData*>(data_ptr));
-  mojo::Environment::GetDefaultAsyncWaiter()->CancelWait(id);
+  Environment::GetDefaultAsyncWaiter()->CancelWait(id);
 }
 
 bool RegisterCoreImpl(JNIEnv* env) {

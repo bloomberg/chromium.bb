@@ -38,7 +38,7 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
   // ---------------------------------------------------------------------------
 
   // These methods are only to be used by via the embedder API (and internally):
-  Core();
+  explicit Core(scoped_ptr<embedder::PlatformSupport> platform_support);
   virtual ~Core();
 
   // Adds |dispatcher| to the handle table, returning the handle for it. Returns

@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/task_runner.h"
 #include "mojo/embedder/scoped_platform_handle.h"
 #include "mojo/public/cpp/system/core.h"
@@ -15,8 +16,10 @@
 namespace mojo {
 namespace embedder {
 
+class PlatformSupport;
+
 // Must be called first to initialize the (global, singleton) system.
-MOJO_SYSTEM_IMPL_EXPORT void Init();
+MOJO_SYSTEM_IMPL_EXPORT void Init(scoped_ptr<PlatformSupport> platform_support);
 
 // A "channel" is a connection on top of an OS "pipe", on top of which Mojo
 // message pipes (etc.) can be multiplexed. It must "live" on some I/O thread.

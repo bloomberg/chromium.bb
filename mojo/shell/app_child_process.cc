@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/scoped_native_library.h"
 #include "base/single_thread_task_runner.h"
@@ -19,6 +20,7 @@
 #include "base/threading/thread_checker.h"
 #include "mojo/common/message_pump_mojo.h"
 #include "mojo/embedder/embedder.h"
+#include "mojo/embedder/simple_platform_support.h"
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/shell/app_child_process.mojom.h"
 
@@ -93,7 +95,8 @@ class AppContext {
 
   void Init() {
     // Initialize Mojo before starting any threads.
-    embedder::Init();
+    embedder::Init(scoped_ptr<mojo::embedder::PlatformSupport>(
+        new mojo::embedder::SimplePlatformSupport()));
 
     // Create and start our I/O thread.
     base::Thread::Options io_thread_options(base::MessageLoop::TYPE_IO, 0);

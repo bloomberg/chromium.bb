@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/strings/string_split.h"
 #include "build/build_config.h"
@@ -15,6 +16,7 @@
 #include "mojo/application_manager/application_manager.h"
 #include "mojo/application_manager/background_shell_application_loader.h"
 #include "mojo/embedder/embedder.h"
+#include "mojo/embedder/simple_platform_support.h"
 #include "mojo/public/cpp/application/application_connection.h"
 #include "mojo/public/cpp/application/application_delegate.h"
 #include "mojo/public/cpp/application/application_impl.h"
@@ -52,7 +54,8 @@ const char* kLocalMojoURLs[] = {
 class Setup {
  public:
   Setup() {
-    embedder::Init();
+    embedder::Init(scoped_ptr<mojo::embedder::PlatformSupport>(
+        new mojo::embedder::SimplePlatformSupport()));
   }
 
   ~Setup() {

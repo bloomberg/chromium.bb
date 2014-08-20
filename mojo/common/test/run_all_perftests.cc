@@ -4,11 +4,11 @@
 
 #include "base/test/perf_test_suite.h"
 #include "mojo/common/test/test_support_impl.h"
-#include "mojo/embedder/embedder.h"
+#include "mojo/embedder/test_embedder.h"
 #include "mojo/public/tests/test_support_private.h"
 
 int main(int argc, char** argv) {
-  mojo::embedder::Init();
+  mojo::embedder::test::InitWithSimplePlatformSupport();
   mojo::test::TestSupport::Init(new mojo::test::TestSupportImpl());
   return base::PerfTestSuite(argc, argv).Run();
 }
