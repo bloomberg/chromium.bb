@@ -82,6 +82,7 @@ FcRuleDestroy (FcRule *rule)
     case FcRuleEdit:
 	FcEditDestroy (rule->u.edit);
 	break;
+    case FcRuleUnknown:
     default:
 	break;
     }
@@ -612,6 +613,7 @@ FcTypeName (FcType type)
 	return "langset";
     case FcTypeRange:
 	return "range";
+    case FcTypeUnknown:
     default:
 	return "unknown";
     }
@@ -809,6 +811,7 @@ FcRuleCreate (FcRuleType type,
     case FcRuleEdit:
 	r->u.edit = (FcEdit *) p;
 	break;
+    case FcRuleUnknown:
     default:
 	free (r);
 	r = NULL;
