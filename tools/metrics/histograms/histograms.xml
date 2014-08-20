@@ -27468,14 +27468,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SBClientPhishing.DOMFeatureChunkTime" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gab@chromium.org</owner>
   <summary>
     The time that an individual chunk of DOM feature extraction work took.
   </summary>
 </histogram>
 
 <histogram name="SBClientPhishing.DOMFeatureFrameRemoved">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gab@chromium.org</owner>
   <summary>
     The number of times that DOM feature extraction finished early because the
     active WebDocument's frame was removed during traversal.
@@ -27483,14 +27483,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SBClientPhishing.DOMFeatureIterations">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gab@chromium.org</owner>
   <summary>
     The number of iterations that the DOM feature extractor took to finish.
   </summary>
 </histogram>
 
 <histogram name="SBClientPhishing.DOMFeatureResumeTime" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gab@chromium.org</owner>
   <summary>
     The time that it took to resume DOM feature extraction for the phishing
     classifier.  Longer times may indicate that the page DOM changed between
@@ -27500,7 +27500,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SBClientPhishing.DOMFeatureTimeout">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gab@chromium.org</owner>
   <summary>
     The number of phishing classifications that were aborted because DOM feature
     extraction took too long.
@@ -27508,7 +27508,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SBClientPhishing.DOMFeatureTotalTime" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>gab@chromium.org</owner>
   <summary>
     The time that the DOM feature extarctor took to finish, summed across all
     chunks of work.
