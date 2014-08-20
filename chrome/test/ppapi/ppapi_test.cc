@@ -285,20 +285,26 @@ PPAPITest::PPAPITest() : in_process_(true) {
 void PPAPITest::SetUpCommandLine(base::CommandLine* command_line) {
   PPAPITestBase::SetUpCommandLine(command_line);
 
-  // Append the switch to register the pepper plugin.
-  // library name = <out dir>/<test_name>.<library_extension>
-  // MIME type = application/x-ppapi-<test_name>
   base::FilePath plugin_dir;
   EXPECT_TRUE(PathService::Get(base::DIR_MODULE, &plugin_dir));
 
   base::FilePath plugin_lib = plugin_dir.Append(ppapi::GetTestLibraryName());
   EXPECT_TRUE(base::PathExists(plugin_lib));
+
+  // Append the switch to register the pepper plugin.
+  // library path = <out dir>/<test_name>.<library_extension>
+  // library name = "PPAPI Tests"
+  // version = "1.2.3"
+  // MIME type = application/x-ppapi-<test_name>
   base::FilePath::StringType pepper_plugin = plugin_lib.value();
+  pepper_plugin.append(FILE_PATH_LITERAL("#PPAPI Tests"));
+  pepper_plugin.append(FILE_PATH_LITERAL("#"));  // No description.
+  pepper_plugin.append(FILE_PATH_LITERAL("#1.2.3"));
   pepper_plugin.append(FILE_PATH_LITERAL(";application/x-ppapi-tests"));
   command_line->AppendSwitchNative(switches::kRegisterPepperPlugins,
                                    pepper_plugin);
-  command_line->AppendSwitchASCII(switches::kAllowNaClSocketAPI, "127.0.0.1");
 
+  command_line->AppendSwitchASCII(switches::kAllowNaClSocketAPI, "127.0.0.1");
   if (in_process_)
     command_line->AppendSwitch(switches::kPpapiInProcess);
 }

@@ -78,7 +78,7 @@ void PpapiUnittest::SetUp() {
   message_loop_.reset(new base::MessageLoop());
 
   // Initialize the mock module.
-  module_ = new PluginModule("Mock plugin", base::FilePath(),
+  module_ = new PluginModule("Mock plugin", "1.0", base::FilePath(),
                              ppapi::PpapiPermissions());
   ppapi::PpapiGlobals::Get()->ResetMainThreadMessageLoopForTesting();
   PepperPluginInfo::EntryPoints entry_points;

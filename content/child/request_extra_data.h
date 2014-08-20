@@ -90,11 +90,16 @@ class CONTENT_EXPORT RequestExtraData
   // override and an empty string to indicate that there should be no user
   // agent.
   const blink::WebString& custom_user_agent() const {
-      return custom_user_agent_;
+    return custom_user_agent_;
   }
-  void set_custom_user_agent(
-      const blink::WebString& custom_user_agent) {
+  void set_custom_user_agent(const blink::WebString& custom_user_agent) {
     custom_user_agent_ = custom_user_agent;
+  }
+  const blink::WebString& requested_with() const {
+    return requested_with_;
+  }
+  void set_requested_with(const blink::WebString& requested_with) {
+    requested_with_ = requested_with;
   }
 
  private:
@@ -111,6 +116,7 @@ class CONTENT_EXPORT RequestExtraData
   int transferred_request_request_id_;
   int service_worker_provider_id_;
   blink::WebString custom_user_agent_;
+  blink::WebString requested_with_;
 
   DISALLOW_COPY_AND_ASSIGN(RequestExtraData);
 };

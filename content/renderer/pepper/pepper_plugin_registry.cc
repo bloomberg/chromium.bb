@@ -117,6 +117,7 @@ void PepperPluginRegistry::Initialize() {
 
     scoped_refptr<PluginModule> module =
         new PluginModule(current.name,
+                         current.version,
                          current.path,
                          ppapi::PpapiPermissions(current.permissions));
     AddLiveModule(current.path, module.get());

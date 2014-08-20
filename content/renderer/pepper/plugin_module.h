@@ -70,6 +70,7 @@ class CONTENT_EXPORT PluginModule : public base::RefCounted<PluginModule>,
   // all plugin modules. In practice it will be a global singleton that
   // tracks which modules are alive.
   PluginModule(const std::string& name,
+               const std::string& version,
                const base::FilePath& path,
                const ppapi::PpapiPermissions& perms);
 
@@ -134,6 +135,7 @@ class CONTENT_EXPORT PluginModule : public base::RefCounted<PluginModule>,
   PP_Module pp_module() const { return pp_module_; }
 
   const std::string& name() const { return name_; }
+  const std::string& version() const { return version_; }
   const base::FilePath& path() const { return path_; }
   const ppapi::PpapiPermissions& permissions() const { return permissions_; }
 
@@ -256,8 +258,9 @@ class CONTENT_EXPORT PluginModule : public base::RefCounted<PluginModule>,
   // presence of the host_dispatcher_wrapper_ value.
   PepperPluginInfo::EntryPoints entry_points_;
 
-  // The name and file location of the module.
+  // The name, version, and file location of the module.
   const std::string name_;
+  const std::string version_;
   const base::FilePath path_;
 
   ppapi::PpapiPermissions permissions_;

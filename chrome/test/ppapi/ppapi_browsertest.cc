@@ -448,11 +448,14 @@ TEST_PPAPI_NACL(HostResolverPrivate_ResolveIPv4)
   )
 
 // Note: we do not support Trusted APIs in NaCl, so these will be skipped.
+// XRequestedWithHeader isn't trusted per-se, but the header isn't provided
+// for NaCl and thus must be skipped.
 #define RUN_URLLOADER_TRUSTED_SUBTESTS \
   RunTestViaHTTP( \
       LIST_TEST(URLLoader_TrustedSameOriginRestriction) \
       LIST_TEST(URLLoader_TrustedCrossOriginRequest) \
       LIST_TEST(URLLoader_TrustedHttpRequests) \
+      LIST_TEST(URLLoader_XRequestedWithHeader) \
   )
 
 IN_PROC_BROWSER_TEST_F(PPAPITest, URLLoader0) {

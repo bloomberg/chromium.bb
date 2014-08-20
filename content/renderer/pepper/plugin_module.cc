@@ -395,6 +395,7 @@ void CreateHostForInProcessModule(RenderFrameImpl* render_frame,
 // PluginModule ----------------------------------------------------------------
 
 PluginModule::PluginModule(const std::string& name,
+                           const std::string& version,
                            const base::FilePath& path,
                            const ppapi::PpapiPermissions& perms)
     : callback_tracker_(new ppapi::CallbackTracker),
@@ -403,6 +404,7 @@ PluginModule::PluginModule(const std::string& name,
       broker_(NULL),
       library_(NULL),
       name_(name),
+      version_(version),
       path_(path),
       permissions_(ppapi::PpapiPermissions::GetForCommandLine(perms.GetBits())),
       reserve_instance_id_(NULL) {
@@ -495,7 +497,7 @@ PluginModule::CreateModuleForExternalPluginInstance() {
   // Create a new module, but don't set the lifetime delegate. This isn't a
   // plugin in the usual sense, so it isn't tracked by the browser.
   scoped_refptr<PluginModule> external_plugin_module(
-      new PluginModule(name_, path_, permissions_));
+      new PluginModule(name_, version_, path_, permissions_));
   return external_plugin_module;
 }
 
@@ -709,7 +711,7 @@ scoped_refptr<PluginModule> PluginModule::Create(
 
   // AddLiveModule must be called before any early returns since the
   // module's destructor will remove itself.
-  module = new PluginModule(info->name, path, permissions);
+  module = new PluginModule(info->name, info->version, path, permissions);
   PepperPluginRegistry::GetInstance()->AddLiveModule(path, module.get());
 
   if (!module->CreateOutOfProcessModule(render_frame,

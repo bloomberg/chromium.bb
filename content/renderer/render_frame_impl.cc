@@ -2526,19 +2526,29 @@ void RenderFrameImpl::willSendRequest(
 
   // The request's extra data may indicate that we should set a custom user
   // agent. This needs to be done here, after WebKit is through with setting the
-  // user agent on its own.
+  // user agent on its own. Similarly, it may indicate that we should set an
+  // X-Requested-With header. This must be done here to avoid breaking CORS
+  // checks.
   WebString custom_user_agent;
+  WebString requested_with;
   if (request.extraData()) {
     RequestExtraData* old_extra_data =
-        static_cast<RequestExtraData*>(
-            request.extraData());
-    custom_user_agent = old_extra_data->custom_user_agent();
+        static_cast<RequestExtraData*>(request.extraData());
 
+    custom_user_agent = old_extra_data->custom_user_agent();
     if (!custom_user_agent.isNull()) {
       if (custom_user_agent.isEmpty())
         request.clearHTTPHeaderField("User-Agent");
       else
         request.setHTTPHeaderField("User-Agent", custom_user_agent);
+    }
+
+    requested_with = old_extra_data->requested_with();
+    if (!requested_with.isNull()) {
+      if (requested_with.isEmpty())
+        request.clearHTTPHeaderField("X-Requested-With");
+      else
+        request.setHTTPHeaderField("X-Requested-With", requested_with);
     }
   }
 
@@ -2602,6 +2612,7 @@ void RenderFrameImpl::willSendRequest(
   RequestExtraData* extra_data = new RequestExtraData();
   extra_data->set_visibility_state(render_view_->visibilityState());
   extra_data->set_custom_user_agent(custom_user_agent);
+  extra_data->set_requested_with(requested_with);
   extra_data->set_render_frame_id(routing_id_);
   extra_data->set_is_main_frame(frame == top_frame);
   extra_data->set_frame_origin(

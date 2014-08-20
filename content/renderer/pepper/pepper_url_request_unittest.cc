@@ -53,7 +53,9 @@ namespace content {
 
 class URLRequestInfoTest : public RenderViewTest {
  public:
-  URLRequestInfoTest() : pp_instance_(1234) {}
+  // Note: using -1 as the instance value allows code in
+  // url_request_info_util.cc to detect that this is a test instance.
+  URLRequestInfoTest() : pp_instance_(-1) {}
 
   virtual void SetUp() OVERRIDE {
     RenderViewTest::SetUp();

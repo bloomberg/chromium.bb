@@ -103,6 +103,42 @@ bool ValidateURLRequestData(const URLRequestInfoData& data) {
   return true;
 }
 
+std::string FilterStringForXRequestedWithValue(const std::string& s) {
+  std::string rv;
+  rv.reserve(s.length());
+  for (size_t i = 0; i < s.length(); i++) {
+    char c = s[i];
+    // Allow ASCII digits, letters, periods, commas, and underscores. (Ignore
+    // all other characters.)
+    if ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z') ||
+        (c >= 'a' && c <= 'z') || (c == '.') || (c == ',') || (c == '_'))
+      rv.push_back(c);
+  }
+  return rv;
+}
+
+// Returns an appropriate value for the X-Requested-With header for plugins that
+// present an X-Requested-With header. Returns a blank string for other plugins.
+// We produce a user-agent-like string (eating spaces and other undesired
+// characters) like "ShockwaveFlash/11.5.31.135" from the plugin name and
+// version.
+std::string MakeXRequestedWithValue(const std::string& name,
+                                    const std::string& version) {
+  std::string rv = FilterStringForXRequestedWithValue(name);
+  if (rv.empty())
+    return std::string();
+
+  // Apply to a narrow list of plugins only.
+  if (rv != "ShockwaveFlash" && rv != "PPAPITests")
+    return std::string();
+
+  std::string filtered_version = FilterStringForXRequestedWithValue(version);
+  if (!filtered_version.empty())
+    rv += "/" + filtered_version;
+
+  return rv;
+}
+
 }  // namespace
 
 bool CreateWebURLRequest(PP_Instance instance,
@@ -114,6 +150,21 @@ bool CreateWebURLRequest(PP_Instance instance,
   // sure it's not being malicious by checking everything for consistency.
   if (!ValidateURLRequestData(*data))
     return false;
+
+   std::string name_version;
+
+   // Allow instance to be 0 or -1 for testing purposes.
+   if (instance && instance != -1) {
+     PepperPluginInstanceImpl* instance_impl =
+         HostGlobals::Get()->GetInstance(instance);
+     if (instance_impl) {
+       name_version = MakeXRequestedWithValue(
+           instance_impl->module()->name(),
+           instance_impl->module()->version());
+     }
+   } else {
+     name_version = "internal_testing_only";
+   }
 
   dest->initialize();
   dest->setURL(frame->document().completeURL(WebString::fromUTF8(data->url)));
@@ -171,10 +222,15 @@ bool CreateWebURLRequest(PP_Instance instance,
         WebString::fromUTF8(data->custom_content_transfer_encoding));
   }
 
-  if (data->has_custom_user_agent) {
+  if (data->has_custom_user_agent || !name_version.empty()) {
     RequestExtraData* extra_data = new RequestExtraData();
-    extra_data->set_custom_user_agent(
-        WebString::fromUTF8(data->custom_user_agent));
+    if (data->has_custom_user_agent) {
+      extra_data->set_custom_user_agent(
+          WebString::fromUTF8(data->custom_user_agent));
+    }
+    if (!name_version.empty()) {
+      extra_data->set_requested_with(WebString::fromUTF8(name_version));
+    }
     dest->setExtraData(extra_data);
   }
 

@@ -72,6 +72,7 @@ class TestURLLoader : public TestCase {
   std::string TestAbortCalls();
   std::string TestUntendedLoad();
   std::string TestPrefetchBufferThreshold();
+  std::string TestXRequestedWithHeader();
 
   const PPB_FileIO_Private* file_io_private_interface_;
   const PPB_URLLoaderTrusted* url_loader_trusted_interface_;
