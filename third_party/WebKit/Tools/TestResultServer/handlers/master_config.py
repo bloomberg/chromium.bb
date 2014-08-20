@@ -54,18 +54,25 @@ _master_name_to_url_name = dict((v['name'], k) for k, v in _masters.items())
 
 
 def getMaster(url_name):
-    result = _masters.get(url_name)
-    if result:
-        # Note: we copy off result['groups'] to ensure a full deep copy of the data.
-        return { 'name': result['name'], 'url_name': url_name, 'groups': result['groups'][:] }
-    return None
+  result = _masters.get(url_name)
+  if result:
+    # Note: we copy off result['groups'] to ensure a full deep copy of the
+    # data.
+    return {
+      'name': result['name'],
+      'url_name': url_name,
+      'groups': result['groups'][:]
+    }
+  return None
+
 
 def getMasterByMasterName(master_name):
-    url_name = _master_name_to_url_name.get(master_name)
-    if url_name:
-        return getMaster(url_name)
-    return None
+  url_name = _master_name_to_url_name.get(master_name)
+  if url_name:
+    return getMaster(url_name)
+  return None
+
 
 def getAllMasters():
-    for master in _masters:
-        yield getMaster(master)
+  for master in _masters:
+    yield getMaster(master)

@@ -47,25 +47,26 @@ menu = [
 ]
 
 
-class Menu(webapp2.RequestHandler):
-    def get(self):
-        user = users.get_current_user()
-        if user:
-            user_email = user.email()
-            login_text = "Sign out"
-            login_url = users.create_logout_url(self.request.uri)
-        else:
-            user_email = ""
-            login_text = "Sign in"
-            login_url = users.create_login_url(self.request.uri)
+class Menu(webapp2.RequestHandler):  # pylint: disable=W0232
 
-        template_values = {
-            "user_email": user_email,
-            "login_text": login_text,
-            "login_url": login_url,
-            "menu": menu,
-            "dashboards": dashboards,
-        }
+  def get(self):
+    user = users.get_current_user()
+    if user:
+      user_email = user.email()
+      login_text = "Sign out"
+      login_url = users.create_logout_url(self.request.uri)
+    else:
+      user_email = ""
+      login_text = "Sign in"
+      login_url = users.create_login_url(self.request.uri)
 
-        self.response.out.write(
-            template.render("templates/menu.html", template_values))
+    template_values = {
+        "user_email": user_email,
+        "login_text": login_text,
+        "login_url": login_url,
+        "menu": menu,
+        "dashboards": dashboards,
+    }
+
+    self.response.out.write(
+        template.render("templates/menu.html", template_values))

@@ -26,95 +26,106 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import datastorefile
-import time
-import testfile
+from model import datastorefile
+from model import testfile
 import unittest
 
-from datetime import datetime
-
 from google.appengine.datastore import datastore_stub_util
-from google.appengine.ext import db
 from google.appengine.ext import testbed
 
 TEST_DATA = [
     # master, builder, test_type, build_number, name, data; order matters.
-    ['ChromiumWebKit', 'WebKit Linux', 'layout-tests', 1, 'webkit_linux_results.json', 'a'],
-    ['ChromiumWebKit', 'WebKit Win7', 'layout-tests', 2, 'webkit_win7_results.json', 'b'],
-    ['ChromiumWin', 'Win7 (Dbg)', 'unittests', 3, 'win7_dbg_unittests.json', 'c'],
+    ['ChromiumWebKit', 'WebKit Linux', 'layout-tests',
+     1, 'webkit_linux_results.json', 'a'],
+    ['ChromiumWebKit', 'WebKit Win7', 'layout-tests',
+     2, 'webkit_win7_results.json', 'b'],
+    ['ChromiumWin', 'Win7 (Dbg)', 'unittests', 3,
+     'win7_dbg_unittests.json', 'c'],
 ]
 
 
+# FIXME: Is this the wrong name?
 class DataStoreFileTest(unittest.TestCase):
-    def setUp(self):
-        self.testbed = testbed.Testbed()
-        self.testbed.activate()
 
-        self.policy = datastore_stub_util.PseudoRandomHRConsistencyPolicy(probability=1)
-        self.testbed.init_datastore_v3_stub(consistency_policy=self.policy)
+  def setUp(self):
+    self.testbed = testbed.Testbed()
+    self.testbed.activate()
 
-        test_file = testfile.TestFile()
+    self.policy = datastore_stub_util.PseudoRandomHRConsistencyPolicy(
+        probability=1)
+    self.testbed.init_datastore_v3_stub(consistency_policy=self.policy)
 
-    def _getAllFiles(self):
-        return testfile.TestFile.get_files(None, None, None, None, None, limit=None)
+  @staticmethod
+  def _getAllFiles():
+    return testfile.TestFile.get_files(None, None, None, None, None, limit=None)
 
-    def _assertFileMatchesData(self, expected_data, actual_file):
-        actual_fields = [actual_file.master, actual_file.builder, actual_file.test_type, actual_file.build_number, actual_file.name, actual_file.data]
-        self.assertEqual(expected_data, actual_fields, 'Mismatch between expected fields in file and actual file.')
+  def _assertFileMatchesData(self, expected_data, actual_file):
+    actual_fields = [actual_file.master, actual_file.builder,
+        actual_file.test_type, actual_file.build_number,
+        actual_file.name, actual_file.data]
+    self.assertEqual(expected_data, actual_fields,
+        'Mismatch between expected fields in file and actual file.')
 
-    def _addFileAndAssert(self, file_data):
-        _, code = testfile.TestFile.add_file(*file_data)
-        self.assertEqual(200, code, 'Unable to create file with data: %s' % file_data)
+  def _addFileAndAssert(self, file_data):
+    _, code = testfile.TestFile.add_file(*file_data)
+    self.assertEqual(
+        200, code, 'Unable to create file with data: %s' % file_data)
 
-    def testSaveFile(self):
-        file_data = TEST_DATA[0][:]
-        self._addFileAndAssert(file_data)
+  def testSaveFile(self):
+    file_data = TEST_DATA[0][:]
+    self._addFileAndAssert(file_data)
 
-        files = self._getAllFiles()
-        self.assertEqual(1, len(files))
-        self._assertFileMatchesData(file_data, files[0])
+    files = self._getAllFiles()
+    self.assertEqual(1, len(files))
+    self._assertFileMatchesData(file_data, files[0])
 
-        _, code = testfile.TestFile.save_file(files[0], None)
-        self.assertEqual(500, code, 'Expected empty file not to have been saved.')
+    _, code = testfile.TestFile.save_file(files[0], None)
+    self.assertEqual(500, code, 'Expected empty file not to have been saved.')
 
-        files = self._getAllFiles()
-        self.assertEqual(1, len(files), 'Expected exactly one file to be present.')
-        self._assertFileMatchesData(file_data, files[0])
+    files = self._getAllFiles()
+    self.assertEqual(1, len(files), 'Expected exactly one file to be present.')
+    self._assertFileMatchesData(file_data, files[0])
 
-    def testAddAndGetFile(self):
-        for file_data in TEST_DATA:
-            self._addFileAndAssert(file_data)
+  def testAddAndGetFile(self):
+    for file_data in TEST_DATA:
+      self._addFileAndAssert(file_data)
 
-        files = self._getAllFiles()
-        self.assertEqual(len(TEST_DATA), len(files), 'Mismatch between number of test records and number of files in db.')
+    files = self._getAllFiles()
+    self.assertEqual(len(TEST_DATA), len(files),
+        'Mismatch between number of test records and number of files in db.')
 
-        for f in files:
-            fields = [f.master, f.builder, f.test_type, f.build_number, f.name, f.data]
-            self.assertIn(fields, TEST_DATA)
+    for f in files:
+      fields = [f.master, f.builder, f.test_type,
+                f.build_number, f.name, f.data]
+      self.assertIn(fields, TEST_DATA)
 
-    def testDeleteFile(self):
-        file_contents = 'x' * datastorefile.MAX_ENTRY_LEN * 2
-        file_data = ['ChromiumWebKit', 'WebKit Linux', 'layout-tests', 1, 'results.json', file_contents]
-        self._addFileAndAssert(file_data)
+  def testDeleteFile(self):
+    file_contents = 'x' * datastorefile.MAX_ENTRY_LEN * 2
+    file_data = ['ChromiumWebKit', 'WebKit Linux',
+                 'layout-tests', 1, 'results.json', file_contents]
+    self._addFileAndAssert(file_data)
 
-        ndeleted = testfile.TestFile.delete_file(None, 'ChromiumWebKit', 'WebKit Linux', 'layout-tests', 1, 'results.json', None, None)
-        self.assertEqual(1, ndeleted, 'Expected exactly one file to have been deleted.')
+    ndeleted = testfile.TestFile.delete_file(None, 'ChromiumWebKit',
+        'WebKit Linux', 'layout-tests', 1, 'results.json', None, None)
+    self.assertEqual(
+        1, ndeleted, 'Expected exactly one file to have been deleted.')
 
-        nfiles = testfile.TestFile.all().count()
-        self.assertEqual(0, nfiles, 'Expected exactly zero files to be present in db.')
+    nfiles = testfile.TestFile.all().count()
+    self.assertEqual(
+        0, nfiles, 'Expected exactly zero files to be present in db.')
 
-    def testDeleteAll(self):
-        for file_data in TEST_DATA:
-            self._addFileAndAssert(file_data)
+  def testDeleteAll(self):
+    for file_data in TEST_DATA:
+      self._addFileAndAssert(file_data)
 
-        files = self._getAllFiles()
-        self.assertEqual(len(TEST_DATA), len(files))
+    files = self._getAllFiles()
+    self.assertEqual(len(TEST_DATA), len(files))
 
-        files[0]._delete_all()
+    files[0].delete_all()
 
-        files = self._getAllFiles()
-        self.assertEqual(len(TEST_DATA) - 1, len(files))
+    files = self._getAllFiles()
+    self.assertEqual(len(TEST_DATA) - 1, len(files))
 
 
 if __name__ == '__main__':
-    unittest.main()
+  unittest.main()

@@ -26,145 +26,158 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import buildershandler
-import json
+from handlers import buildershandler
 import logging
-import pprint
 import unittest
 
+# pylint: disable=C0301
+
+
 class BuildersHandlerTest(unittest.TestCase):
-    def test_fetch_buildbot_data(self):
-        try:
-            fetched_urls = []
 
-            def fake_fetch_json(url):
-                fetched_urls.append(url)
+  def test_fetch_buildbot_data(self):
+    try:
+      fetched_urls = []
 
-                if url == 'http://chrome-build-extract.appspot.com/get_master/chromium.webkit':
-                    return {
-                        'builders': {
-                            'WebKit Win': None, 'WebKit Linux': None, 'WebKit Mac': None, 'WebKit Empty': None,
-                        }
-                    }
+      def fake_fetch_json(url):
+        fetched_urls.append(url)
 
-                if url == 'http://chrome-build-extract.appspot.com/get_builds?builder=WebKit%20Linux&master=chromium.webkit&num_builds=1':
-                    return {
-                        'builds': [
-                            {'steps': [{'name': 'foo_tests_only'}, {'name': 'webkit_tests'}, {'name': 'browser_tests'}, {'name': 'mini_installer_test'}, {'name': 'archive_test_results'}, {'name': 'compile'}]},
-                        ],
-                    }
+        if url == 'http://chrome-build-extract.appspot.com/get_master/chromium.webkit':
+          return {
+              'builders': {
+                  'WebKit Win': None, 'WebKit Linux': None, 'WebKit Mac': None,
+                  'WebKit Empty': None,
+              }
+          }
 
-                if url == 'http://chrome-build-extract.appspot.com/get_builds?builder=WebKit%20Win&master=chromium.webkit&num_builds=1':
-                    return {
-                        'builds': [
-                            {'steps': [{'name': 'foo_tests_ignore'}, {'name': 'webkit_tests'}, {'name': 'mini_installer_test'}, {'name': 'archive_test_results'}, {'name': 'compile'}]},
-                        ],
-                    }
+        if url == 'http://chrome-build-extract.appspot.com/get_builds?builder=WebKit%20Linux&master=chromium.webkit&num_builds=1':
+          return {
+              'builds': [
+                  {'steps': [{'name': 'foo_tests_only'},
+                             {'name': 'webkit_tests'},
+                             {'name': 'browser_tests'},
+                             {'name': 'mini_installer_test'},
+                             {'name': 'archive_test_results'},
+                             {'name': 'compile'}
+                            ]
+                  },
+              ],
+          }
 
-                if url == 'http://chrome-build-extract.appspot.com/get_builds?builder=WebKit%20Mac&master=chromium.webkit&num_builds=1':
-                    return {
-                        'builds': [
-                            {'steps': [{'name': 'foo_tests_perf'}, {'name': 'browser_tests'}, {'name': 'mini_installer_test'}, {'name': 'archive_test_results'}, {'name': 'compile'}]},
-                        ],
-                    }
+        if url == 'http://chrome-build-extract.appspot.com/get_builds?builder=WebKit%20Win&master=chromium.webkit&num_builds=1':
+          return {
+              'builds': [
+                  {'steps': [{'name': 'foo_tests_ignore'}, {'name': 'webkit_tests'}, {
+                      'name': 'mini_installer_test'}, {'name': 'archive_test_results'}, {'name': 'compile'}]},
+              ],
+          }
 
-                if url == 'http://chrome-build-extract.appspot.com/get_builds?builder=WebKit%20Empty&master=chromium.webkit&num_builds=1':
-                    return {'builds': []}
+        if url == 'http://chrome-build-extract.appspot.com/get_builds?builder=WebKit%20Mac&master=chromium.webkit&num_builds=1':
+          return {
+              'builds': [
+                  {'steps': [{'name': 'foo_tests_perf'}, {'name': 'browser_tests'}, {
+                      'name': 'mini_installer_test'}, {'name': 'archive_test_results'}, {'name': 'compile'}]},
+              ],
+          }
 
-                logging.error('Cannot fetch fake url: %s' % url)
+        if url == 'http://chrome-build-extract.appspot.com/get_builds?builder=WebKit%20Empty&master=chromium.webkit&num_builds=1':
+          return {'builds': []}
 
-            old_fetch_json = buildershandler.fetch_json
-            buildershandler.fetch_json = fake_fetch_json
+        logging.error('Cannot fetch fake url: %s' % url)
 
-            masters = [
-                {'name': 'ChromiumWebkit', 'url_name': 'chromium.webkit'},
-            ]
+      old_fetch_json = buildershandler.fetch_json
+      buildershandler.fetch_json = fake_fetch_json
 
-            buildbot_data = buildershandler.fetch_buildbot_data([m['url_name'] for m in masters])
+      masters = [
+          {'name': 'ChromiumWebkit', 'url_name': 'chromium.webkit'},
+      ]
 
-            expected_fetched_urls = [
-                'http://chrome-build-extract.appspot.com/get_master/chromium.webkit',
-                'http://chrome-build-extract.appspot.com/get_builds?builder=WebKit%20Win&master=chromium.webkit&num_builds=1',
-                'http://chrome-build-extract.appspot.com/get_builds?builder=WebKit%20Mac&master=chromium.webkit&num_builds=1',
-                'http://chrome-build-extract.appspot.com/get_builds?builder=WebKit%20Empty&master=chromium.webkit&num_builds=1',
-                'http://chrome-build-extract.appspot.com/get_builds?builder=WebKit%20Linux&master=chromium.webkit&num_builds=1',
-            ]
-            self.assertEqual(set(fetched_urls), set(expected_fetched_urls))
+      buildbot_data = buildershandler.fetch_buildbot_data(
+          [m['url_name'] for m in masters])
 
-            expected_masters = {
-                'masters': [{
-                    'tests': {
-                        'browser_tests': {'builders': ['WebKit Linux', 'WebKit Mac']},
-                        'mini_installer_test': {'builders': ['WebKit Linux', 'WebKit Mac', 'WebKit Win']},
-                        'layout-tests': {'builders': ['WebKit Linux', 'WebKit Win']}},
-                    'name': 'ChromiumWebkit',
-                    'url_name': 'chromium.webkit',
-                    'groups': ['@ToT Chromium', '@ToT Blink'],
-                }],
-                "no_upload_test_types": buildershandler.TEST_STEPS_THAT_DO_NOT_UPLOAD_YET,
-            }
-            expected_json = buildershandler.dump_json(expected_masters)
+      expected_fetched_urls = [
+          'http://chrome-build-extract.appspot.com/get_master/chromium.webkit',
+          'http://chrome-build-extract.appspot.com/get_builds?builder=WebKit%20Win&master=chromium.webkit&num_builds=1',
+          'http://chrome-build-extract.appspot.com/get_builds?builder=WebKit%20Mac&master=chromium.webkit&num_builds=1',
+          'http://chrome-build-extract.appspot.com/get_builds?builder=WebKit%20Empty&master=chromium.webkit&num_builds=1',
+          'http://chrome-build-extract.appspot.com/get_builds?builder=WebKit%20Linux&master=chromium.webkit&num_builds=1',
+      ]
+      self.assertEqual(set(fetched_urls), set(expected_fetched_urls))
 
-            self.assertEqual(buildbot_data, expected_json)
-        finally:
-            buildershandler.fetch_json = old_fetch_json
+      expected_masters = {
+          'masters': [{
+              'tests': {
+                  'browser_tests': {'builders': ['WebKit Linux', 'WebKit Mac']},
+                  'mini_installer_test': {'builders': ['WebKit Linux', 'WebKit Mac', 'WebKit Win']},
+                  'layout-tests': {'builders': ['WebKit Linux', 'WebKit Win']}},
+              'name': 'ChromiumWebkit',
+              'url_name': 'chromium.webkit',
+              'groups': ['@ToT Chromium', '@ToT Blink'],
+          }],
+          "no_upload_test_types": buildershandler.TEST_STEPS_THAT_DO_NOT_UPLOAD_YET,
+      }
+      expected_json = buildershandler.dump_json(expected_masters)
 
-    def test_fetch_buildbot_data_failure(self):
-        try:
-            fetched_urls = []
+      self.assertEqual(buildbot_data, expected_json)
+    finally:
+      buildershandler.fetch_json = old_fetch_json
 
-            def fake_fetch_json(url):
-                fetched_urls.append(url)
+  def test_fetch_buildbot_data_failure(self):
+    try:
+      fetched_urls = []
 
-                if url == 'http://chrome-build-extract.appspot.com/get_master/chromium.webkit':
-                    return None
+      def fake_fetch_json(url):
+        fetched_urls.append(url)
 
-                if url == 'http://chrome-build-extract.appspot.com/get_master/chromium.gpu':
-                    return {
-                        'builders': {
-                            'Win GPU': None, 'Win Empty': None,
-                        }
-                    }
+        if url == 'http://chrome-build-extract.appspot.com/get_master/chromium.webkit':
+          return None
 
-                if url == 'http://chrome-build-extract.appspot.com/get_master/chromium.fyi':
-                    return {
-                        'builders': {
-                            'Mac FYI': None,
-                        }
-                    }
+        if url == 'http://chrome-build-extract.appspot.com/get_master/chromium.gpu':
+          return {
+              'builders': {
+                  'Win GPU': None, 'Win Empty': None,
+              }
+          }
 
-                if (url == 'http://chrome-build-extract.appspot.com/get_builds?builder=Win%20Empty&master=chromium.gpu&num_builds=1'
-                    or url == 'http://chrome-build-extract.appspot.com/get_builds?builder=Win%20GPU&master=chromium.gpu&num_builds=1'):
-                    return {
-                        'builds': [
-                            {'steps': []},
-                        ],
-                    }
+        if url == 'http://chrome-build-extract.appspot.com/get_master/chromium.fyi':
+          return {
+              'builders': {
+                  'Mac FYI': None,
+              }
+          }
 
-                logging.error('Cannot fetch fake url: %s' % url)
+        if (url == 'http://chrome-build-extract.appspot.com/get_builds?builder=Win%20Empty&master=chromium.gpu&num_builds=1'
+                or url == 'http://chrome-build-extract.appspot.com/get_builds?builder=Win%20GPU&master=chromium.gpu&num_builds=1'):
+          return {
+              'builds': [
+                  {'steps': []},
+              ],
+          }
 
-            old_fetch_json = buildershandler.fetch_json
-            buildershandler.fetch_json = fake_fetch_json
+        logging.error('Cannot fetch fake url: %s' % url)
 
-            masters = [
-                {'name': 'ChromiumGPU', 'url_name': 'chromium.gpu'},
-                {'name': 'ChromiumWebkit', 'url_name': 'chromium.webkit'},
-                {'name': 'ChromiumFYI', 'url_name': 'chromium.fyi'},
-            ]
+      old_fetch_json = buildershandler.fetch_json
+      buildershandler.fetch_json = fake_fetch_json
 
-            expected_fetched_urls = [
-                'http://chrome-build-extract.appspot.com/get_master/chromium.webkit',
-                'http://chrome-build-extract.appspot.com/get_master/chromium.gpu',
-                'http://chrome-build-extract.appspot.com/get_builds?builder=Win%20GPU&master=chromium.gpu&num_builds=1',
-                'http://chrome-build-extract.appspot.com/get_builds?builder=Win%20Empty&master=chromium.gpu&num_builds=1',
-            ]
-            with self.assertRaises(buildershandler.FetchBuildersException):
-                buildbot_data = buildershandler.fetch_buildbot_data([m['url_name'] for m in masters])
-            self.assertEqual(set(expected_fetched_urls), set(fetched_urls))
+      masters = [
+          {'name': 'ChromiumGPU', 'url_name': 'chromium.gpu'},
+          {'name': 'ChromiumWebkit', 'url_name': 'chromium.webkit'},
+          {'name': 'ChromiumFYI', 'url_name': 'chromium.fyi'},
+      ]
 
-        finally:
-            buildershandler.fetch_json = old_fetch_json
+      expected_fetched_urls = [
+          'http://chrome-build-extract.appspot.com/get_master/chromium.webkit',
+          'http://chrome-build-extract.appspot.com/get_master/chromium.gpu',
+          'http://chrome-build-extract.appspot.com/get_builds?builder=Win%20GPU&master=chromium.gpu&num_builds=1',
+          'http://chrome-build-extract.appspot.com/get_builds?builder=Win%20Empty&master=chromium.gpu&num_builds=1',
+      ]
+      with self.assertRaises(buildershandler.FetchBuildersException):
+        buildershandler.fetch_buildbot_data([m['url_name'] for m in masters])
+      self.assertEqual(set(expected_fetched_urls), set(fetched_urls))
+
+    finally:
+      buildershandler.fetch_json = old_fetch_json
 
 
 if __name__ == '__main__':
-    unittest.main()
+  unittest.main()

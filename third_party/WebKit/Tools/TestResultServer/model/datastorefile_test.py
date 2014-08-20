@@ -28,89 +28,97 @@
 
 import unittest
 
-import datastorefile
+from model import datastorefile
 
-from google.appengine.ext import db
 from google.appengine.ext import testbed
 
 
+# Allow this unittest to access _members.
+# pylint: disable=W0212
+
+
 class DataStoreFileTest(unittest.TestCase):
-    def setUp(self):
-        self.testbed = testbed.Testbed()
-        self.testbed.activate()
-        self.testbed.init_datastore_v3_stub()
 
-        self.test_file = datastorefile.DataStoreFile()
+  def setUp(self):
+    self.testbed = testbed.Testbed()
+    self.testbed.activate()
+    self.testbed.init_datastore_v3_stub()
 
-    def tearDown(self):
-        self.testbed.deactivate()
+    self.test_file = datastorefile.DataStoreFile()
 
-    def testSaveLoadDeleteData(self):
-        test_data = 'x' * datastorefile.MAX_ENTRY_LEN * 3
+  def tearDown(self):
+    self.testbed.deactivate()
 
-        self.assertTrue(self.test_file.save_data(test_data))
-        self.assertEqual(test_data, self.test_file.data)
+  def testSaveLoadDeleteData(self):
+    test_data = 'x' * datastorefile.MAX_ENTRY_LEN * 3
 
-        self.assertEqual(test_data, self.test_file.load_data())
-        self.assertEqual(test_data, self.test_file.data)
+    self.assertTrue(self.test_file.save_data(test_data))
+    self.assertEqual(test_data, self.test_file.data)
 
-        self.test_file.delete_data()
-        self.assertFalse(self.test_file.load_data())
+    self.assertEqual(test_data, self.test_file.load_data())
+    self.assertEqual(test_data, self.test_file.data)
 
-    def testLoadDataInvalidKey(self):
-        test_data = 'x' * datastorefile.MAX_ENTRY_LEN * 3
+    self.test_file.delete_data()
+    self.assertFalse(self.test_file.load_data())
 
-        self.assertTrue(self.test_file.save_data(test_data))
-        self.assertEqual(test_data, self.test_file.data)
+  def testLoadDataInvalidKey(self):
+    test_data = 'x' * datastorefile.MAX_ENTRY_LEN * 3
 
-        self.test_file.delete_data()
-        self.assertEqual('', self.test_file.load_data())
+    self.assertTrue(self.test_file.save_data(test_data))
+    self.assertEqual(test_data, self.test_file.data)
 
-    def testLoadDataNoKeys(self):
-        # This should never happen.
-        self.assertEqual(None, self.test_file.load_data())
+    self.test_file.delete_data()
+    self.assertEqual('', self.test_file.load_data())
 
-    def testSaveData(self):
-        self.assertFalse(self.test_file.save_data(None))
+  def testLoadDataNoKeys(self):
+    # This should never happen.
+    self.assertEqual(None, self.test_file.load_data())
 
-        too_big_data = 'x' * (datastorefile.MAX_DATA_ENTRY_PER_FILE * datastorefile.MAX_ENTRY_LEN + 1)
-        self.assertFalse(self.test_file.save_data(too_big_data))
+  def testSaveData(self):
+    self.assertFalse(self.test_file.save_data(None))
 
-        test_data = 'x' * datastorefile.MAX_ENTRY_LEN * 5
-        self.assertTrue(self.test_file.save_data(test_data))
-        nchunks = datastorefile.DataEntry.all().count()
-        nkeys = len(self.test_file.data_keys) + len(self.test_file.new_data_keys)
-        self.assertEqual(nkeys, nchunks)
+    too_big_data = 'x' * \
+        (datastorefile.MAX_DATA_ENTRY_PER_FILE *
+         datastorefile.MAX_ENTRY_LEN + 1)
+    self.assertFalse(self.test_file.save_data(too_big_data))
 
-    def testSaveDataKeyReuse(self):
-        test_data = 'x' * datastorefile.MAX_ENTRY_LEN * 5
-        self.assertTrue(self.test_file.save_data(test_data))
-        nchunks = datastorefile.DataEntry.all().count()
-        nkeys = len(self.test_file.data_keys) + len(self.test_file.new_data_keys)
-        self.assertEqual(nkeys, nchunks)
+    test_data = 'x' * datastorefile.MAX_ENTRY_LEN * 5
+    self.assertTrue(self.test_file.save_data(test_data))
+    nchunks = datastorefile.DataEntry.all().count()
+    nkeys = len(self.test_file.data_keys) + len(self.test_file.new_data_keys)
+    self.assertEqual(nkeys, nchunks)
 
-        smaller_data = 'x' * datastorefile.MAX_ENTRY_LEN * 3
-        self.assertTrue(self.test_file.save_data(smaller_data))
-        nchunks = datastorefile.DataEntry.all().count()
-        nkeys_before = len(self.test_file.data_keys) + len(self.test_file.new_data_keys)
-        self.assertEqual(nkeys_before, nchunks)
+  def testSaveDataKeyReuse(self):
+    test_data = 'x' * datastorefile.MAX_ENTRY_LEN * 5
+    self.assertTrue(self.test_file.save_data(test_data))
+    nchunks = datastorefile.DataEntry.all().count()
+    nkeys = len(self.test_file.data_keys) + len(self.test_file.new_data_keys)
+    self.assertEqual(nkeys, nchunks)
 
-        self.assertTrue(self.test_file.save_data(smaller_data))
-        nchunks = datastorefile.DataEntry.all().count()
-        nkeys_after = len(self.test_file.data_keys) + len(self.test_file.new_data_keys)
-        self.assertEqual(nkeys_after, nchunks)
-        self.assertNotEqual(nkeys_before, nkeys_after)
+    smaller_data = 'x' * datastorefile.MAX_ENTRY_LEN * 3
+    self.assertTrue(self.test_file.save_data(smaller_data))
+    nchunks = datastorefile.DataEntry.all().count()
+    nkeys_before = len(self.test_file.data_keys) + \
+        len(self.test_file.new_data_keys)
+    self.assertEqual(nkeys_before, nchunks)
 
-    def testGetChunkIndices(self):
-        data_length = datastorefile.MAX_ENTRY_LEN * 3
-        chunk_indices = self.test_file._get_chunk_indices(data_length)
-        self.assertEqual(len(chunk_indices), 3)
-        self.assertNotEqual(chunk_indices[0], chunk_indices[-1])
+    self.assertTrue(self.test_file.save_data(smaller_data))
+    nchunks = datastorefile.DataEntry.all().count()
+    nkeys_after = len(self.test_file.data_keys) + \
+        len(self.test_file.new_data_keys)
+    self.assertEqual(nkeys_after, nchunks)
+    self.assertNotEqual(nkeys_before, nkeys_after)
 
-        data_length += 1
-        chunk_indices = self.test_file._get_chunk_indices(data_length)
-        self.assertEqual(len(chunk_indices), 4)
+  def testGetChunkIndices(self):
+    data_length = datastorefile.MAX_ENTRY_LEN * 3
+    chunk_indices = self.test_file._get_chunk_indices(data_length)
+    self.assertEqual(len(chunk_indices), 3)
+    self.assertNotEqual(chunk_indices[0], chunk_indices[-1])
+
+    data_length += 1
+    chunk_indices = self.test_file._get_chunk_indices(data_length)
+    self.assertEqual(len(chunk_indices), 4)
 
 
 if __name__ == '__main__':
-    unittest.main()
+  unittest.main()
