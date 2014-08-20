@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,10 +20,19 @@
 namespace {
 const char kTestJniClassPath[] = "org/chromium/TestJni";
 const char kInfoBarClassPath[] = "org/chromium/TestJni$InfoBar";
+#if __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-function"
+#endif
 // Leaking this jclass as we cannot use LazyInstance from some threads.
 jclass g_TestJni_clazz = NULL;
+jclass TestJni_clazz(JNIEnv*) { return g_TestJni_clazz; }
 // Leaking this jclass as we cannot use LazyInstance from some threads.
 jclass g_InfoBar_clazz = NULL;
+jclass InfoBar_clazz(JNIEnv*) { return g_InfoBar_clazz; }
+#if __clang__
+#pragma clang diagnostic pop
+#endif
 
 }  // namespace
 
@@ -39,11 +48,11 @@ static base::android::ScopedJavaLocalRef<jobject>
     jobject icon) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
-      g_TestJni_clazz, NULL);
+      TestJni_clazz(env), NULL);
   jmethodID method_id =
       base::android::MethodID::LazyGet<
       base::android::MethodID::TYPE_INSTANCE>(
-      env, g_TestJni_clazz,
+      env, TestJni_clazz(env),
       "showConfirmInfoBar",
 
 "("
@@ -73,11 +82,11 @@ static base::android::ScopedJavaLocalRef<jobject>
     jstring args) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
-      g_TestJni_clazz, NULL);
+      TestJni_clazz(env), NULL);
   jmethodID method_id =
       base::android::MethodID::LazyGet<
       base::android::MethodID::TYPE_INSTANCE>(
-      env, g_TestJni_clazz,
+      env, TestJni_clazz(env),
       "showAutoLoginInfoBar",
 
 "("
@@ -100,11 +109,11 @@ static base::subtle::AtomicWord g_InfoBar_dismiss = 0;
 static void Java_InfoBar_dismiss(JNIEnv* env, jobject obj) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
-      g_InfoBar_clazz);
+      InfoBar_clazz(env));
   jmethodID method_id =
       base::android::MethodID::LazyGet<
       base::android::MethodID::TYPE_INSTANCE>(
-      env, g_InfoBar_clazz,
+      env, InfoBar_clazz(env),
       "dismiss",
 
 "("
@@ -124,12 +133,12 @@ static jboolean Java_TestJni_shouldShowAutoLogin(JNIEnv* env, jobject view,
     jstring account,
     jstring args) {
   /* Must call RegisterNativesImpl()  */
-  CHECK_CLAZZ(env, g_TestJni_clazz,
-      g_TestJni_clazz, false);
+  CHECK_CLAZZ(env, TestJni_clazz(env),
+      TestJni_clazz(env), false);
   jmethodID method_id =
       base::android::MethodID::LazyGet<
       base::android::MethodID::TYPE_STATIC>(
-      env, g_TestJni_clazz,
+      env, TestJni_clazz(env),
       "shouldShowAutoLogin",
 
 "("
@@ -142,7 +151,7 @@ static jboolean Java_TestJni_shouldShowAutoLogin(JNIEnv* env, jobject view,
       &g_TestJni_shouldShowAutoLogin);
 
   jboolean ret =
-      env->CallStaticBooleanMethod(g_TestJni_clazz,
+      env->CallStaticBooleanMethod(TestJni_clazz(env),
           method_id, view, realm, account, args);
   jni_generator::CheckException(env);
   return ret;
@@ -152,12 +161,12 @@ static base::subtle::AtomicWord g_TestJni_openUrl = 0;
 static base::android::ScopedJavaLocalRef<jobject> Java_TestJni_openUrl(JNIEnv*
     env, jstring url) {
   /* Must call RegisterNativesImpl()  */
-  CHECK_CLAZZ(env, g_TestJni_clazz,
-      g_TestJni_clazz, NULL);
+  CHECK_CLAZZ(env, TestJni_clazz(env),
+      TestJni_clazz(env), NULL);
   jmethodID method_id =
       base::android::MethodID::LazyGet<
       base::android::MethodID::TYPE_STATIC>(
-      env, g_TestJni_clazz,
+      env, TestJni_clazz(env),
       "openUrl",
 
 "("
@@ -167,7 +176,7 @@ static base::android::ScopedJavaLocalRef<jobject> Java_TestJni_openUrl(JNIEnv*
       &g_TestJni_openUrl);
 
   jobject ret =
-      env->CallStaticObjectMethod(g_TestJni_clazz,
+      env->CallStaticObjectMethod(TestJni_clazz(env),
           method_id, url);
   jni_generator::CheckException(env);
   return base::android::ScopedJavaLocalRef<jobject>(env, ret);
@@ -182,11 +191,11 @@ static void Java_TestJni_activateHardwareAcceleration(JNIEnv* env, jobject obj,
     JniIntWrapper iSecondaryID) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
-      g_TestJni_clazz);
+      TestJni_clazz(env));
   jmethodID method_id =
       base::android::MethodID::LazyGet<
       base::android::MethodID::TYPE_INSTANCE>(
-      env, g_TestJni_clazz,
+      env, TestJni_clazz(env),
       "activateHardwareAcceleration",
 
 "("
@@ -211,11 +220,11 @@ static void Java_TestJni_uncheckedCall(JNIEnv* env, jobject obj, JniIntWrapper
     iParam) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
-      g_TestJni_clazz);
+      TestJni_clazz(env));
   jmethodID method_id =
       base::android::MethodID::LazyGet<
       base::android::MethodID::TYPE_INSTANCE>(
-      env, g_TestJni_clazz,
+      env, TestJni_clazz(env),
       "uncheckedCall",
 
 "("
@@ -234,11 +243,11 @@ static base::android::ScopedJavaLocalRef<jbyteArray>
     Java_TestJni_returnByteArray(JNIEnv* env, jobject obj) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
-      g_TestJni_clazz, NULL);
+      TestJni_clazz(env), NULL);
   jmethodID method_id =
       base::android::MethodID::LazyGet<
       base::android::MethodID::TYPE_INSTANCE>(
-      env, g_TestJni_clazz,
+      env, TestJni_clazz(env),
       "returnByteArray",
 
 "("
@@ -258,11 +267,11 @@ static base::android::ScopedJavaLocalRef<jbooleanArray>
     Java_TestJni_returnBooleanArray(JNIEnv* env, jobject obj) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
-      g_TestJni_clazz, NULL);
+      TestJni_clazz(env), NULL);
   jmethodID method_id =
       base::android::MethodID::LazyGet<
       base::android::MethodID::TYPE_INSTANCE>(
-      env, g_TestJni_clazz,
+      env, TestJni_clazz(env),
       "returnBooleanArray",
 
 "("
@@ -282,11 +291,11 @@ static base::android::ScopedJavaLocalRef<jcharArray>
     Java_TestJni_returnCharArray(JNIEnv* env, jobject obj) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
-      g_TestJni_clazz, NULL);
+      TestJni_clazz(env), NULL);
   jmethodID method_id =
       base::android::MethodID::LazyGet<
       base::android::MethodID::TYPE_INSTANCE>(
-      env, g_TestJni_clazz,
+      env, TestJni_clazz(env),
       "returnCharArray",
 
 "("
@@ -306,11 +315,11 @@ static base::android::ScopedJavaLocalRef<jshortArray>
     Java_TestJni_returnShortArray(JNIEnv* env, jobject obj) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
-      g_TestJni_clazz, NULL);
+      TestJni_clazz(env), NULL);
   jmethodID method_id =
       base::android::MethodID::LazyGet<
       base::android::MethodID::TYPE_INSTANCE>(
-      env, g_TestJni_clazz,
+      env, TestJni_clazz(env),
       "returnShortArray",
 
 "("
@@ -330,11 +339,11 @@ static base::android::ScopedJavaLocalRef<jintArray>
     Java_TestJni_returnIntArray(JNIEnv* env, jobject obj) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
-      g_TestJni_clazz, NULL);
+      TestJni_clazz(env), NULL);
   jmethodID method_id =
       base::android::MethodID::LazyGet<
       base::android::MethodID::TYPE_INSTANCE>(
-      env, g_TestJni_clazz,
+      env, TestJni_clazz(env),
       "returnIntArray",
 
 "("
@@ -354,11 +363,11 @@ static base::android::ScopedJavaLocalRef<jlongArray>
     Java_TestJni_returnLongArray(JNIEnv* env, jobject obj) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
-      g_TestJni_clazz, NULL);
+      TestJni_clazz(env), NULL);
   jmethodID method_id =
       base::android::MethodID::LazyGet<
       base::android::MethodID::TYPE_INSTANCE>(
-      env, g_TestJni_clazz,
+      env, TestJni_clazz(env),
       "returnLongArray",
 
 "("
@@ -378,11 +387,11 @@ static base::android::ScopedJavaLocalRef<jdoubleArray>
     Java_TestJni_returnDoubleArray(JNIEnv* env, jobject obj) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
-      g_TestJni_clazz, NULL);
+      TestJni_clazz(env), NULL);
   jmethodID method_id =
       base::android::MethodID::LazyGet<
       base::android::MethodID::TYPE_INSTANCE>(
-      env, g_TestJni_clazz,
+      env, TestJni_clazz(env),
       "returnDoubleArray",
 
 "("
@@ -402,11 +411,11 @@ static base::android::ScopedJavaLocalRef<jobjectArray>
     Java_TestJni_returnObjectArray(JNIEnv* env, jobject obj) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
-      g_TestJni_clazz, NULL);
+      TestJni_clazz(env), NULL);
   jmethodID method_id =
       base::android::MethodID::LazyGet<
       base::android::MethodID::TYPE_INSTANCE>(
-      env, g_TestJni_clazz,
+      env, TestJni_clazz(env),
       "returnObjectArray",
 
 "("
@@ -426,11 +435,11 @@ static base::android::ScopedJavaLocalRef<jobjectArray>
     Java_TestJni_returnArrayOfByteArray(JNIEnv* env, jobject obj) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
-      g_TestJni_clazz, NULL);
+      TestJni_clazz(env), NULL);
   jmethodID method_id =
       base::android::MethodID::LazyGet<
       base::android::MethodID::TYPE_INSTANCE>(
-      env, g_TestJni_clazz,
+      env, TestJni_clazz(env),
       "returnArrayOfByteArray",
 
 "("
@@ -450,11 +459,11 @@ static base::android::ScopedJavaLocalRef<jobject>
     Java_TestJni_getCompressFormat(JNIEnv* env, jobject obj) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
-      g_TestJni_clazz, NULL);
+      TestJni_clazz(env), NULL);
   jmethodID method_id =
       base::android::MethodID::LazyGet<
       base::android::MethodID::TYPE_INSTANCE>(
-      env, g_TestJni_clazz,
+      env, TestJni_clazz(env),
       "getCompressFormat",
 
 "("
@@ -474,11 +483,11 @@ static base::android::ScopedJavaLocalRef<jobject>
     Java_TestJni_getCompressFormatList(JNIEnv* env, jobject obj) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
-      g_TestJni_clazz, NULL);
+      TestJni_clazz(env), NULL);
   jmethodID method_id =
       base::android::MethodID::LazyGet<
       base::android::MethodID::TYPE_INSTANCE>(
-      env, g_TestJni_clazz,
+      env, TestJni_clazz(env),
       "getCompressFormatList",
 
 "("

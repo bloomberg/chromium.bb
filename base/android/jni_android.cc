@@ -8,6 +8,7 @@
 
 #include "base/android/build_info.h"
 #include "base/android/jni_string.h"
+#include "base/android/jni_utils.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 
@@ -21,6 +22,9 @@ JavaVM* g_jvm = NULL;
 // that may still be running at shutdown. There is no harm in doing this.
 base::LazyInstance<base::android::ScopedJavaGlobalRef<jobject> >::Leaky
     g_application_context = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<base::android::ScopedJavaGlobalRef<jobject> >::Leaky
+    g_class_loader = LAZY_INSTANCE_INITIALIZER;
+jmethodID g_class_loader_load_class_method_id = 0;
 
 std::string GetJavaExceptionInfo(JNIEnv* env, jthrowable java_throwable) {
   ScopedJavaLocalRef<jclass> throwable_clazz =
@@ -118,15 +122,66 @@ void InitApplicationContext(JNIEnv* env, const JavaRef<jobject>& context) {
   g_application_context.Get().Reset(context);
 }
 
+void InitReplacementClassLoader(JNIEnv* env,
+                                const JavaRef<jobject>& class_loader) {
+  DCHECK(g_class_loader.Get().is_null());
+  DCHECK(!class_loader.is_null());
+
+  ScopedJavaLocalRef<jclass> class_loader_clazz =
+      GetClass(env, "java/lang/ClassLoader");
+  CHECK(!ClearException(env));
+  g_class_loader_load_class_method_id =
+      env->GetMethodID(class_loader_clazz.obj(),
+                       "loadClass",
+                       "(Ljava/lang/String;)Ljava/lang/Class;");
+  CHECK(!ClearException(env));
+
+  DCHECK(env->IsInstanceOf(class_loader.obj(), class_loader_clazz.obj()));
+  g_class_loader.Get().Reset(class_loader);
+}
+
 const jobject GetApplicationContext() {
   DCHECK(!g_application_context.Get().is_null());
   return g_application_context.Get().obj();
 }
 
 ScopedJavaLocalRef<jclass> GetClass(JNIEnv* env, const char* class_name) {
-  jclass clazz = env->FindClass(class_name);
+  jclass clazz;
+  if (!g_class_loader.Get().is_null()) {
+    clazz = static_cast<jclass>(
+        env->CallObjectMethod(g_class_loader.Get().obj(),
+                              g_class_loader_load_class_method_id,
+                              ConvertUTF8ToJavaString(env, class_name).obj()));
+  } else {
+    clazz = env->FindClass(class_name);
+  }
   CHECK(!ClearException(env) && clazz) << "Failed to find class " << class_name;
   return ScopedJavaLocalRef<jclass>(env, clazz);
+}
+
+jclass LazyGetClass(
+    JNIEnv* env,
+    const char* class_name,
+    base::subtle::AtomicWord* atomic_class_id) {
+  COMPILE_ASSERT(sizeof(subtle::AtomicWord) >= sizeof(jclass),
+                 AtomicWord_SmallerThan_jMethodID);
+  subtle::AtomicWord value = base::subtle::Acquire_Load(atomic_class_id);
+  if (value)
+    return reinterpret_cast<jclass>(value);
+  ScopedJavaGlobalRef<jclass> clazz;
+  clazz.Reset(GetClass(env, class_name));
+  subtle::AtomicWord null_aw = reinterpret_cast<subtle::AtomicWord>(NULL);
+  subtle::AtomicWord cas_result = base::subtle::Release_CompareAndSwap(
+      atomic_class_id,
+      null_aw,
+      reinterpret_cast<subtle::AtomicWord>(clazz.obj()));
+  if (cas_result == null_aw) {
+    // We intentionally leak the global ref since we now storing it as a raw
+    // pointer in |atomic_class_id|.
+    return clazz.Release();
+  } else {
+    return reinterpret_cast<jclass>(cas_result);
+  }
 }
 
 template<MethodID::Type type>

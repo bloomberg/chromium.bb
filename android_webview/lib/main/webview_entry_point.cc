@@ -6,6 +6,7 @@
 #include "android_webview/native/android_webview_jni_registrar.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
+#include "base/android/jni_utils.h"
 #include "base/android/library_loader/library_loader_hooks.h"
 #include "components/navigation_interception/component_jni_registrar.h"
 #include "components/web_contents_delegate_android/component_jni_registrar.h"
@@ -46,6 +47,9 @@ JNI_EXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) {
 
   if (!android_webview::RegisterJni(env))
     return -1;
+
+  base::android::InitReplacementClassLoader(env,
+                                            base::android::GetClassLoader(env));
 
   content::SetContentMainDelegate(new android_webview::AwMainDelegate());
 

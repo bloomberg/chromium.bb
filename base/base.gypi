@@ -55,6 +55,8 @@
           'android/jni_registrar.h',
           'android/jni_string.cc',
           'android/jni_string.h',
+          'android/jni_utils.cc',
+          'android/jni_utils.h',
           'android/jni_weak_ref.cc',
           'android/jni_weak_ref.h',
           'android/library_loader/library_loader_hooks.cc',
