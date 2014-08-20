@@ -23,6 +23,7 @@
 
 #include "config.h"
 
+#include <errno.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -374,12 +375,18 @@ load_image(const char *filename)
 	FILE *fp;
 	unsigned int i;
 
-	fp = fopen(filename, "rb");
-	if (fp == NULL)
+	if (!filename || !*filename)
 		return NULL;
+
+	fp = fopen(filename, "rb");
+	if (!fp) {
+		fprintf(stderr, "%s: %s\n", filename, strerror(errno));
+		return NULL;
+	}
 
 	if (fread(header, sizeof header, 1, fp) != 1) {
 		fclose(fp);
+		fprintf(stderr, "%s: unable to read file header\n", filename);
 		return NULL;
 	}
 
@@ -395,10 +402,13 @@ load_image(const char *filename)
 	fclose(fp);
 
 	if (i == ARRAY_LENGTH(loaders)) {
-		fprintf(stderr, "unrecognized file header for %s: "
+		fprintf(stderr, "%s: unrecognized file header "
 			"0x%02x 0x%02x 0x%02x 0x%02x\n",
 			filename, header[0], header[1], header[2], header[3]);
 		image = NULL;
+	} else if (!image) {
+		/* load probably printed something, but just in case */
+		fprintf(stderr, "%s: error reading image\n", filename);
 	}
 
 	return image;
