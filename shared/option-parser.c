@@ -30,53 +30,94 @@
 
 #include "config-parser.h"
 
-static void
+static int
 handle_option(const struct weston_option *option, char *value)
 {
+	char* p;
+
 	switch (option->type) {
 	case WESTON_OPTION_INTEGER:
-		* (int32_t *) option->data = strtol(value, NULL, 0);
-		return;
+		* (int32_t *) option->data = strtol(value, &p, 0);
+		return *value && !*p;
 	case WESTON_OPTION_UNSIGNED_INTEGER:
-		* (uint32_t *) option->data = strtoul(value, NULL, 0);
-		return;
+		* (uint32_t *) option->data = strtoul(value, &p, 0);
+		return *value && !*p;
 	case WESTON_OPTION_STRING:
 		* (char **) option->data = strdup(value);
-		return;
-	case WESTON_OPTION_BOOLEAN:
-		* (int32_t *) option->data = 1;
-		return;
+		return 1;
 	default:
 		assert(0);
 	}
+}
+
+static int
+long_option(const struct weston_option *options, int count, char *arg)
+{
+	int k, len;
+
+	for (k = 0; k < count; k++) {
+		if (!options[k].name)
+			continue;
+
+		len = strlen(options[k].name);
+		if (strncmp(options[k].name, arg + 2, len) != 0)
+			continue;
+
+		if (options[k].type == WESTON_OPTION_BOOLEAN) {
+			if (!arg[len + 2]) {
+				* (int32_t *) options[k].data = 1;
+
+				return 1;
+			}
+		} else if (arg[len+2] == '=') {
+			return handle_option(options + k, arg + len + 3);
+		}
+	}
+
+	return 0;
+}
+
+static int
+short_option(const struct weston_option *options, int count, char *arg)
+{
+	int k;
+
+	if (!arg[1])
+		return 0;
+
+	for (k = 0; k < count; k++) {
+		if (options[k].short_name != arg[1])
+			continue;
+
+		if (options[k].type == WESTON_OPTION_BOOLEAN) {
+			if (!arg[2]) {
+				* (int32_t *) options[k].data = 1;
+
+				return 1;
+			}
+		} else {
+			return handle_option(options + k, arg + 2);
+		}
+	}
+
+	return 0;
 }
 
 int
 parse_options(const struct weston_option *options,
 	      int count, int *argc, char *argv[])
 {
-	int i, j, k, len = 0;
+	int i, j;
 
 	for (i = 1, j = 1; i < *argc; i++) {
-		for (k = 0; k < count; k++) {
-			if (options[k].name)
-				len = strlen(options[k].name);
-			if (options[k].name &&
-			    argv[i][0] == '-' &&
-			    argv[i][1] == '-' &&
-			    strncmp(options[k].name, &argv[i][2], len) == 0 &&
-			    (argv[i][len + 2] == '=' || argv[i][len + 2] == '\0')) {
-				handle_option(&options[k], &argv[i][len + 3]);
-				break;
-			} else if (options[k].short_name &&
-				   argv[i][0] == '-' &&
-				   options[k].short_name == argv[i][1]) {
-				handle_option(&options[k], &argv[i][2]);
-				break;
-			}
+		if (argv[i][0] == '-') {
+			if (argv[i][1] == '-') {
+				if (long_option(options, count, argv[i]))
+					continue;
+			} else if (short_option(options, count, argv[i]))
+				continue;
 		}
-		if (k == count)
-			argv[j++] = argv[i];
+		argv[j++] = argv[i];
 	}
 	argv[j] = NULL;
 	*argc = j;
