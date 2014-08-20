@@ -163,7 +163,7 @@ private:
     };
 
     static void extractInvalidationSetFeature(const CSSSelector&, InvalidationSetFeatures&);
-    const CSSSelector* extractInvalidationSetFeatures(const CSSSelector&, InvalidationSetFeatures&);
+    const CSSSelector* extractInvalidationSetFeatures(const CSSSelector&, InvalidationSetFeatures&, bool negated);
     void addFeaturesToInvalidationSets(const CSSSelector&, InvalidationSetFeatures&);
 
     void addClassToInvalidationSet(const AtomicString& className, Element&);

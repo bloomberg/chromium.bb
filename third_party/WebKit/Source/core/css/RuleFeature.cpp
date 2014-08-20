@@ -132,9 +132,12 @@ RuleFeatureSet::InvalidationSetMode RuleFeatureSet::invalidationSetModeForSelect
                 // We have found an invalidation set feature in the rightmost compound selector.
                 foundIdent = true;
             }
-        } else if (component->pseudoType() == CSSSelector::PseudoHost || component->pseudoType() == CSSSelector::PseudoAny) {
+        } else if (component->pseudoType() == CSSSelector::PseudoNot
+            || component->pseudoType() == CSSSelector::PseudoHost
+            || component->pseudoType() == CSSSelector::PseudoAny) {
             if (const CSSSelectorList* selectorList = component->selectorList()) {
-                bool foundUniversal = false;
+                // Features inside :not() are not added to the feature set, so consider it a universal selector.
+                bool foundUniversal = component->pseudoType() == CSSSelector::PseudoNot;
                 for (const CSSSelector* selector = selectorList->first(); selector; selector = CSSSelectorList::next(*selector)) {
                     // Find the invalidation set mode for each of the selectors in the selector list
                     // of a :not(), :host(), etc. For instance, ".x :-webkit-any(.a, .b)" yields an
@@ -229,21 +232,22 @@ RuleFeatureSet::InvalidationSetMode RuleFeatureSet::updateInvalidationSets(const
         return mode;
 
     InvalidationSetFeatures features;
-    if (const CSSSelector* current = extractInvalidationSetFeatures(selector, features))
+    if (const CSSSelector* current = extractInvalidationSetFeatures(selector, features, false))
         addFeaturesToInvalidationSets(*current, features);
     return AddFeatures;
 }
 
-const CSSSelector* RuleFeatureSet::extractInvalidationSetFeatures(const CSSSelector& selector, InvalidationSetFeatures& features)
+const CSSSelector* RuleFeatureSet::extractInvalidationSetFeatures(const CSSSelector& selector, InvalidationSetFeatures& features, bool negated)
 {
     for (const CSSSelector* current = &selector; current; current = current->tagHistory()) {
-        extractInvalidationSetFeature(*current, features);
+        if (!negated)
+            extractInvalidationSetFeature(*current, features);
         // Initialize the entry in the invalidation set map, if supported.
         invalidationSetForSelector(*current);
-        if (current->pseudoType() == CSSSelector::PseudoHost || current->pseudoType() == CSSSelector::PseudoAny) {
+        if (current->pseudoType() == CSSSelector::PseudoHost || current->pseudoType() == CSSSelector::PseudoAny || current->pseudoType() == CSSSelector::PseudoNot) {
             if (const CSSSelectorList* selectorList = current->selectorList()) {
                 for (const CSSSelector* selector = selectorList->first(); selector; selector = CSSSelectorList::next(*selector))
-                    extractInvalidationSetFeatures(*selector, features);
+                    extractInvalidationSetFeatures(*selector, features, current->pseudoType() == CSSSelector::PseudoNot);
             }
         }
 
@@ -297,10 +301,11 @@ void RuleFeatureSet::addFeaturesToInvalidationSets(const CSSSelector& selector, 
                 if (features.customPseudoElement)
                     invalidationSet->setCustomPseudoInvalid();
             }
-        } else if (current->pseudoType() == CSSSelector::PseudoHost || current->pseudoType() == CSSSelector::PseudoAny) {
+        } else {
             if (current->pseudoType() == CSSSelector::PseudoHost)
                 features.treeBoundaryCrossing = true;
             if (const CSSSelectorList* selectorList = current->selectorList()) {
+                ASSERT(current->pseudoType() == CSSSelector::PseudoHost || current->pseudoType() == CSSSelector::PseudoAny || current->pseudoType() == CSSSelector::PseudoNot);
                 for (const CSSSelector* selector = selectorList->first(); selector; selector = CSSSelectorList::next(*selector))
                     addFeaturesToInvalidationSets(*selector, features);
             }

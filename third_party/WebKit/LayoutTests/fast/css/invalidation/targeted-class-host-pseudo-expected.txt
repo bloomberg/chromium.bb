@@ -11,7 +11,7 @@ PASS internals.updateStyleAndReturnAffectedElementCount() is 1
 PASS getComputedStyle(host1, null).backgroundColor is green
 PASS internals.updateStyleAndReturnAffectedElementCount() is 2
 PASS getComputedStyle(inner, null).backgroundColor is green
-PASS internals.updateStyleAndReturnAffectedElementCount() is 6
+PASS internals.updateStyleAndReturnAffectedElementCount() is 1
 PASS getComputedStyle(host3, null).backgroundColor is green
 PASS internals.updateStyleAndReturnAffectedElementCount() is 1
 PASS getComputedStyle(host4, null).backgroundColor is green

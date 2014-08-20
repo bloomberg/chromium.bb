@@ -49,7 +49,7 @@ document.body.offsetLeft; // force style recalc.
 
 host3.className = "";
 if (window.internals)
-    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "6");
+    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "1");
 shouldBe("getComputedStyle(host3, null).backgroundColor", "green");
 
 document.body.offsetLeft; // force style recalc.
