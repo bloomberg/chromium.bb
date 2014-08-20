@@ -55,10 +55,14 @@
             // Remove the iframe.
             document.body.removeChild(document.getElementById("iframe"));
 
+            // Force layout now so that the childAtIndex calls below
+            // reflect the new render tree.
+            document.body.offsetTop;
+
             window.newRoot = accessibilityController.rootElement;
             window.newBody = newRoot.childAtIndex(0);
             window.newBefore = newBody.childAtIndex(0).childAtIndex(0);
-            window.newAfter = newBody.childAtIndex(2).childAtIndex(0);
+            window.newAfter = newBody.childAtIndex(1).childAtIndex(0);
 
             document.getElementById("console").innerText += "\nAfter:\n";
             buildAccessibilityTree(newRoot, 0);
