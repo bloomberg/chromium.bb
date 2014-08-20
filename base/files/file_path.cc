@@ -692,8 +692,10 @@ int FilePath::CompareIgnoreCase(const StringType& string1,
   StringType::const_iterator string1end = string1.end();
   StringType::const_iterator string2end = string2.end();
   for ( ; i1 != string1end && i2 != string2end; ++i1, ++i2) {
-    wchar_t c1 = (wchar_t)LOWORD(::CharUpperW((LPWSTR)MAKELONG(*i1, 0)));
-    wchar_t c2 = (wchar_t)LOWORD(::CharUpperW((LPWSTR)MAKELONG(*i2, 0)));
+    wchar_t c1 =
+        (wchar_t)LOWORD(::CharUpperW((LPWSTR)(DWORD_PTR)MAKELONG(*i1, 0)));
+    wchar_t c2 =
+        (wchar_t)LOWORD(::CharUpperW((LPWSTR)(DWORD_PTR)MAKELONG(*i2, 0)));
     if (c1 < c2)
       return -1;
     if (c1 > c2)
