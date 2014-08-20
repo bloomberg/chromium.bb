@@ -35,6 +35,7 @@
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/loader/DocumentLoader.h"
+#include "platform/Logging.h"
 
 namespace blink {
 
@@ -67,6 +68,7 @@ void ScriptedAnimationController::trace(Visitor* visitor)
 void ScriptedAnimationController::suspend()
 {
     ++m_suspendCount;
+    WTF_LOG(ScriptedAnimationController, "suspend: count = %d", m_suspendCount);
 }
 
 void ScriptedAnimationController::resume()
@@ -75,12 +77,14 @@ void ScriptedAnimationController::resume()
     // even when suspend hasn't (if a tab was created in the background).
     if (m_suspendCount > 0)
         --m_suspendCount;
+    WTF_LOG(ScriptedAnimationController, "resume: count = %d", m_suspendCount);
     scheduleAnimationIfNeeded();
 }
 
 ScriptedAnimationController::CallbackId ScriptedAnimationController::registerCallback(PassOwnPtr<RequestAnimationFrameCallback> callback)
 {
     ScriptedAnimationController::CallbackId id = ++m_nextCallbackId;
+    WTF_LOG(ScriptedAnimationController, "registerCallback: id = %d", id);
     callback->m_cancelled = false;
     callback->m_id = id;
     m_callbacks.append(callback);
@@ -96,6 +100,7 @@ ScriptedAnimationController::CallbackId ScriptedAnimationController::registerCal
 
 void ScriptedAnimationController::cancelCallback(CallbackId id)
 {
+    WTF_LOG(ScriptedAnimationController, "cancelCallback: id = %d", id);
     for (size_t i = 0; i < m_callbacks.size(); ++i) {
         if (m_callbacks[i]->m_id == id) {
             TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "CancelAnimationFrame", "data", InspectorAnimationFrameEvent::data(m_document, id));
@@ -184,6 +189,8 @@ void ScriptedAnimationController::callMediaQueryListListeners()
 
 void ScriptedAnimationController::serviceScriptedAnimations(double monotonicTimeNow)
 {
+    WTF_LOG(ScriptedAnimationController, "serviceScriptedAnimations: #callbacks = %lu, #events = %lu, #mediaQueryListListeners =%u, count = %d",
+        m_callbacks.size(), m_eventQueue.size(), m_mediaQueryListListeners.size(), m_suspendCount);
     if (!m_callbacks.size() && !m_eventQueue.size() && !m_mediaQueryListListeners.size())
         return;
 
@@ -201,6 +208,7 @@ void ScriptedAnimationController::serviceScriptedAnimations(double monotonicTime
 
 void ScriptedAnimationController::enqueueEvent(PassRefPtrWillBeRawPtr<Event> event)
 {
+    WTF_LOG(ScriptedAnimationController, "enqueueEvent");
     InspectorInstrumentation::didEnqueueEvent(event->target(), event.get());
     m_eventQueue.append(event);
     scheduleAnimationIfNeeded();
@@ -215,6 +223,7 @@ void ScriptedAnimationController::enqueuePerFrameEvent(PassRefPtrWillBeRawPtr<Ev
 
 void ScriptedAnimationController::enqueueMediaQueryChangeListeners(WillBeHeapVector<RefPtrWillBeMember<MediaQueryListListener> >& listeners)
 {
+    WTF_LOG(ScriptedAnimationController, "enqueueMediaQueryChangeListeners");
     for (size_t i = 0; i < listeners.size(); ++i) {
         m_mediaQueryListListeners.add(listeners[i]);
     }
@@ -223,6 +232,8 @@ void ScriptedAnimationController::enqueueMediaQueryChangeListeners(WillBeHeapVec
 
 void ScriptedAnimationController::scheduleAnimationIfNeeded()
 {
+    WTF_LOG(ScriptedAnimationController, "scheduleAnimationIfNeeded: document = %d, count = %d, #callbacks = %lu, #events = %lu, #mediaQueryListListeners =%u, frameView = %d",
+        m_document ? 1 : 0, m_suspendCount, m_callbacks.size(), m_eventQueue.size(), m_mediaQueryListListeners.size(), m_document && m_document->view() ? 1 : 0);
     if (!m_document)
         return;
 
