@@ -3549,10 +3549,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     if (this.autocompleteSuggestionsBusy_)
       return;
 
-    // The autocomplete list should be resized and repositioned here as the
-    // search box is resized when it's focused.
-    this.autocompleteList_.syncWidthAndPositionToInput();
-
     if (!query) {
       this.autocompleteList_.suggestions = [];
       return;
@@ -3565,6 +3561,10 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     else
       // Updates only the head item to prevent a flickering on typing.
       this.autocompleteList_.dataModel.splice(0, 1, headerItem);
+
+    // The autocomplete list should be resized and repositioned here as the
+    // search box is resized when it's focused.
+    this.autocompleteList_.syncWidthAndPositionToInput();
 
     this.autocompleteSuggestionsBusy_ = true;
 
