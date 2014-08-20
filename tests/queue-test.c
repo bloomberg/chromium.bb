@@ -158,6 +158,75 @@ client_test_multiple_queues(void)
 }
 
 static void
+sync_callback_roundtrip(void *data, struct wl_callback *callback, uint32_t serial)
+{
+	bool *done = data;
+	*done = true;
+}
+
+static const struct wl_callback_listener sync_listener_roundtrip = {
+	sync_callback_roundtrip
+};
+
+/* Test that doing a roundtrip on a queue only the events on that
+ * queue get dispatched. */
+static int
+client_test_queue_roundtrip(void)
+{
+	struct wl_event_queue *queue;
+	struct wl_callback *callback1;
+	struct wl_callback *callback2;
+	struct wl_display *display;
+	bool done1 = false;
+	bool done2 = false;
+
+	display = wl_display_connect(SOCKET_NAME);
+	client_assert(display);
+
+	/* Make the current thread the display thread. This is because
+	 * wl_display_dispatch_queue() will only read the display fd if
+	 * the main display thread has been set. */
+	wl_display_dispatch_pending(display);
+
+	queue = wl_display_create_queue(display);
+	client_assert(queue);
+
+	/* arm a callback on the default queue */
+	callback1 = wl_display_sync(display);
+	assert(callback1 != NULL);
+	wl_callback_add_listener(callback1, &sync_listener_roundtrip, &done1);
+
+	/* arm a callback on the other queue */
+	callback2 = wl_display_sync(display);
+	assert(callback2 != NULL);
+	wl_callback_add_listener(callback2, &sync_listener_roundtrip, &done2);
+	wl_proxy_set_queue((struct wl_proxy *) callback2, queue);
+
+	/* roundtrip on default queue must not dispatch the other queue. */
+	wl_display_roundtrip(display);
+	client_assert(done1 == true);
+	client_assert(done2 == false);
+
+	/* re-arm the sync callback on the default queue, so we see that
+	 * wl_display_roundtrip_queue() does not dispatch the default queue. */
+	wl_callback_destroy(callback1);
+	done1 = false;
+	callback1 = wl_display_sync(display);
+	assert(callback1 != NULL);
+	wl_callback_add_listener(callback1, &sync_listener_roundtrip, &done1);
+
+	wl_display_roundtrip_queue(display, queue);
+	client_assert(done1 == false);
+	client_assert(done2 == true);
+
+	wl_callback_destroy(callback1);
+	wl_callback_destroy(callback2);
+	wl_display_disconnect(display);
+
+	return 0;
+}
+
+static void
 client_alarm_handler(int sig)
 {
 	fprintf(stderr, "Received SIGALRM signal, aborting.\n");
@@ -196,6 +265,11 @@ client_main(int fd)
 
 	if (client_test_multiple_queues() != 0) {
 		fprintf(stderr, "multiple proxy test failed\n");
+		return EXIT_FAILURE;
+	}
+
+	if (client_test_queue_roundtrip() != 0) {
+		fprintf(stderr, "queue rountrip test failed\n");
 		return EXIT_FAILURE;
 	}
 
