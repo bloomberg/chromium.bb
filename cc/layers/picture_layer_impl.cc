@@ -265,6 +265,12 @@ void PictureLayerImpl::AppendQuads(
   // unused can be considered for removal.
   std::vector<PictureLayerTiling*> seen_tilings;
 
+  // Ignore missing tiles outside of viewport for tile priority. This is
+  // normally the same as draw viewport but can be independently overridden by
+  // embedders like Android WebView with SetExternalDrawConstraints.
+  gfx::Rect scaled_viewport_for_tile_priority = gfx::ScaleToEnclosingRect(
+      GetViewportForTilePriorityInContentSpace(), max_contents_scale);
+
   size_t missing_tile_count = 0u;
   size_t on_demand_missing_tile_count = 0u;
   for (PictureLayerTilingSet::CoverageIterator iter(tilings_.get(),
@@ -291,8 +297,10 @@ void PictureLayerImpl::AppendQuads(
           gfx::Rect opaque_rect = iter->opaque_rect();
           opaque_rect.Intersect(geometry_rect);
 
-          if (iter->contents_scale() != ideal_contents_scale_)
+          if (iter->contents_scale() != ideal_contents_scale_ &&
+              geometry_rect.Intersects(scaled_viewport_for_tile_priority)) {
             append_quads_data->num_incomplete_tiles++;
+          }
 
           TileDrawQuad* quad =
               render_pass->CreateAndAppendDrawQuad<TileDrawQuad>();
@@ -365,10 +373,12 @@ void PictureLayerImpl::AppendQuads(
                      false);
       }
 
-      append_quads_data->num_missing_tiles++;
+      if (geometry_rect.Intersects(scaled_viewport_for_tile_priority)) {
+        append_quads_data->num_missing_tiles++;
+        ++missing_tile_count;
+      }
       append_quads_data->approximated_visible_content_area +=
           visible_geometry_rect.width() * visible_geometry_rect.height();
-      ++missing_tile_count;
       continue;
     }
 
@@ -473,6 +483,28 @@ void PictureLayerImpl::UpdateTilePriorities(
   if (!tiling_needs_update)
     return;
 
+  gfx::Rect visible_rect_in_content_space(
+      GetViewportForTilePriorityInContentSpace());
+  visible_rect_in_content_space.Intersect(visible_content_rect());
+  gfx::Rect visible_layer_rect = gfx::ScaleToEnclosingRect(
+      visible_rect_in_content_space, 1.f / contents_scale_x());
+  WhichTree tree =
+      layer_tree_impl()->IsActiveTree() ? ACTIVE_TREE : PENDING_TREE;
+  for (size_t i = 0; i < tilings_->num_tilings(); ++i) {
+    tilings_->tiling_at(i)->UpdateTilePriorities(tree,
+                                                 visible_layer_rect,
+                                                 ideal_contents_scale_,
+                                                 current_frame_time_in_seconds,
+                                                 occlusion_tracker,
+                                                 render_target(),
+                                                 draw_transform());
+  }
+
+  // Tile priorities were modified.
+  layer_tree_impl()->DidModifyTilePriorities();
+}
+
+gfx::Rect PictureLayerImpl::GetViewportForTilePriorityInContentSpace() const {
   // If visible_rect_for_tile_priority_ is empty or
   // viewport_rect_for_tile_priority_ is set to be different from the device
   // viewport, try to inverse project the viewport into layer space and use
@@ -493,22 +525,7 @@ void PictureLayerImpl::UpdateTilePriorities(
     }
   }
 
-  gfx::Rect visible_layer_rect = gfx::ScaleToEnclosingRect(
-      visible_rect_in_content_space, 1.f / contents_scale_x());
-  WhichTree tree =
-      layer_tree_impl()->IsActiveTree() ? ACTIVE_TREE : PENDING_TREE;
-  for (size_t i = 0; i < tilings_->num_tilings(); ++i) {
-    tilings_->tiling_at(i)->UpdateTilePriorities(tree,
-                                                 visible_layer_rect,
-                                                 ideal_contents_scale_,
-                                                 current_frame_time_in_seconds,
-                                                 occlusion_tracker,
-                                                 render_target(),
-                                                 draw_transform());
-  }
-
-  // Tile priorities were modified.
-  layer_tree_impl()->DidModifyTilePriorities();
+  return visible_rect_in_content_space;
 }
 
 void PictureLayerImpl::NotifyTileStateChanged(const Tile* tile) {
@@ -765,6 +782,12 @@ void PictureLayerImpl::MarkVisibleResourcesAsRequired() const {
     return;
 
   gfx::Rect rect(visible_content_rect());
+
+  // Only mark tiles inside the viewport for tile priority as required for
+  // activation. This viewport is normally the same as the draw viewport but
+  // can be independently overridden by embedders like Android WebView with
+  // SetExternalDrawConstraints.
+  rect.Intersect(GetViewportForTilePriorityInContentSpace());
 
   float min_acceptable_scale =
       std::min(raster_contents_scale_, ideal_contents_scale_);

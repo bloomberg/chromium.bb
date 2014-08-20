@@ -1457,6 +1457,99 @@ TEST_F(PictureLayerImplTest, MarkRequiredOffscreenTiles) {
   EXPECT_GT(num_offscreen, 0);
 }
 
+TEST_F(PictureLayerImplTest, TileOutsideOfViewportForTilePriorityNotRequired) {
+  base::TimeTicks time_ticks;
+  time_ticks += base::TimeDelta::FromMilliseconds(1);
+  host_impl_.SetCurrentBeginFrameArgs(
+      CreateBeginFrameArgsForTesting(time_ticks));
+
+  gfx::Size tile_size(100, 100);
+  gfx::Size layer_bounds(400, 400);
+  gfx::Rect external_viewport_for_tile_priority(400, 200);
+  gfx::Rect visible_content_rect(200, 400);
+
+  scoped_refptr<FakePicturePileImpl> active_pile =
+      FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
+  scoped_refptr<FakePicturePileImpl> pending_pile =
+      FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
+  SetupTrees(pending_pile, active_pile);
+
+  active_layer_->set_fixed_tile_size(tile_size);
+  pending_layer_->set_fixed_tile_size(tile_size);
+  ASSERT_TRUE(pending_layer_->CanHaveTilings());
+  PictureLayerTiling* tiling = pending_layer_->AddTiling(1.f);
+
+  // Set external viewport for tile priority.
+  gfx::Rect viewport = gfx::Rect(layer_bounds);
+  gfx::Transform transform;
+  gfx::Transform transform_for_tile_priority;
+  bool resourceless_software_draw = false;
+  host_impl_.SetExternalDrawConstraints(transform,
+                                        viewport,
+                                        viewport,
+                                        external_viewport_for_tile_priority,
+                                        transform_for_tile_priority,
+                                        resourceless_software_draw);
+  host_impl_.pending_tree()->UpdateDrawProperties();
+
+  // Set visible content rect that is different from
+  // external_viewport_for_tile_priority.
+  pending_layer_->draw_properties().visible_content_rect = visible_content_rect;
+  time_ticks += base::TimeDelta::FromMilliseconds(200);
+  host_impl_.SetCurrentBeginFrameArgs(
+      CreateBeginFrameArgsForTesting(time_ticks));
+  pending_layer_->UpdateTiles(NULL);
+
+  pending_layer_->MarkVisibleResourcesAsRequired();
+
+  // Intersect the two rects. Any tile outside should not be required for
+  // activation.
+  gfx::Rect viewport_for_tile_priority =
+      pending_layer_->GetViewportForTilePriorityInContentSpace();
+  viewport_for_tile_priority.Intersect(pending_layer_->visible_content_rect());
+
+  int num_inside = 0;
+  int num_outside = 0;
+  for (PictureLayerTiling::CoverageIterator iter(
+           tiling, pending_layer_->contents_scale_x(), gfx::Rect(layer_bounds));
+       iter;
+       ++iter) {
+    if (!*iter)
+      continue;
+    Tile* tile = *iter;
+    if (viewport_for_tile_priority.Intersects(iter.geometry_rect())) {
+      num_inside++;
+      // Mark everything in viewport for tile priority as ready to draw.
+      ManagedTileState::TileVersion& tile_version =
+          tile->GetTileVersionForTesting(
+              tile->DetermineRasterModeForTree(PENDING_TREE));
+      tile_version.SetSolidColorForTesting(SK_ColorRED);
+    } else {
+      num_outside++;
+      EXPECT_FALSE(tile->required_for_activation());
+    }
+  }
+
+  EXPECT_GT(num_inside, 0);
+  EXPECT_GT(num_outside, 0);
+
+  // Activate and draw active layer.
+  host_impl_.ActivateSyncTree();
+  host_impl_.active_tree()->UpdateDrawProperties();
+  active_layer_->draw_properties().visible_content_rect = visible_content_rect;
+
+  MockOcclusionTracker<LayerImpl> occlusion_tracker;
+  scoped_ptr<RenderPass> render_pass = RenderPass::Create();
+  AppendQuadsData data;
+  active_layer_->WillDraw(DRAW_MODE_SOFTWARE, NULL);
+  active_layer_->AppendQuads(render_pass.get(), occlusion_tracker, &data);
+  active_layer_->DidDraw(NULL);
+
+  // All tiles in activation rect is ready to draw.
+  EXPECT_EQ(0u, data.num_missing_tiles);
+  EXPECT_EQ(0u, data.num_incomplete_tiles);
+}
+
 TEST_F(PictureLayerImplTest, HighResRequiredWhenUnsharedActiveAllReady) {
   gfx::Size layer_bounds(400, 400);
   gfx::Size tile_size(100, 100);

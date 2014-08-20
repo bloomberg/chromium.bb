@@ -172,6 +172,7 @@ class CC_EXPORT PictureLayerImpl
       float contents_scale,
       const gfx::Rect& rect,
       const Region& missing_region) const;
+  gfx::Rect GetViewportForTilePriorityInContentSpace() const;
 
   void DoPostCommitInitializationIfNeeded() {
     if (needs_post_commit_initialization_)
