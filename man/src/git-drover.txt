@@ -1,0 +1,30 @@
+git-drover(1)
+=============
+
+NAME
+----
+git-drover -
+include::_git-drover_desc.helper.txt[]
+
+SYNOPSIS
+--------
+[verse]
+'git drover'
+
+DESCRIPTION
+-----------
+
+`git drover` is NOT IMPLEMENTED yet. See the EXAMPLE section for the equivalent
+sequence of commands to run.
+
+EXAMPLE
+-------
+demo:1[]
+
+SEE ALSO
+--------
+linkgit:git-cherry-pick[1]
+
+include::_footer.txt[]
+
+// vim: ft=asciidoc:
