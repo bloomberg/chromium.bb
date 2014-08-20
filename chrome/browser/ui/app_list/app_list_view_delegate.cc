@@ -121,8 +121,6 @@ void GetCustomLauncherPageUrls(content::BrowserContext* browser_context,
     if (custom_launcher_page_url.SchemeIs(extensions::kExtensionScheme)) {
       urls->push_back(custom_launcher_page_url);
     } else {
-      // TODO(mgiuca): Add a proper manifest parser to catch this error properly
-      // and display it on the extensions page.
       LOG(ERROR) << "Invalid custom launcher page URL: "
                  << custom_launcher_page_url.possibly_invalid_spec();
     }
@@ -143,6 +141,8 @@ void GetCustomLauncherPageUrls(content::BrowserContext* browser_context,
     std::string launcher_page_page;
     if (!manifest->GetString(extensions::manifest_keys::kLauncherPagePage,
                              &launcher_page_page)) {
+      // TODO(mgiuca): Add a proper manifest parser to catch this error properly
+      // and display it on the extensions page.
       LOG(ERROR) << "Extension " << extension->id() << ": "
                  << extensions::manifest_keys::kLauncherPage
                  << " has no 'page' attribute; will be ignored.";
