@@ -172,12 +172,9 @@ bool AutoEnrollmentCheckScreen::UpdateCaptivePortalStatus(
       ShowErrorScreen(ErrorScreen::ERROR_STATE_PROXY);
       return true;
     case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_COUNT:
-      // Trigger NOTREACHED() below.
-      break;
+      NOTREACHED() << "Bad status: CAPTIVE_PORTAL_STATUS_COUNT";
+      return false;
   }
-
-  NOTREACHED() << "Bad status " << new_captive_portal_status;
-  return false;
 }
 
 bool AutoEnrollmentCheckScreen::UpdateAutoEnrollmentState(
@@ -196,9 +193,6 @@ bool AutoEnrollmentCheckScreen::UpdateAutoEnrollmentState(
       ShowErrorScreen(ErrorScreen::ERROR_STATE_OFFLINE);
       return true;
   }
-
-  NOTREACHED() << "bad state " << new_auto_enrollment_state;
-  return false;
 }
 
 void AutoEnrollmentCheckScreen::ShowErrorScreen(

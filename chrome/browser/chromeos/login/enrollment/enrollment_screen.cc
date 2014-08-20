@@ -94,9 +94,6 @@ void EnrollmentScreen::OnLoginDone(const std::string& user) {
 }
 
 void EnrollmentScreen::OnAuthError(const GoogleServiceAuthError& error) {
-  enrollment_failed_once_ = true;
-  actor_->ShowAuthError(error);
-
   switch (error.state()) {
     case GoogleServiceAuthError::NONE:
     case GoogleServiceAuthError::CAPTCHA_REQUIRED:
@@ -108,24 +105,25 @@ void EnrollmentScreen::OnAuthError(const GoogleServiceAuthError& error) {
     case GoogleServiceAuthError::SERVICE_ERROR:
       UMAFailure(policy::kMetricEnrollmentLoginFailed);
       LOG(ERROR) << "Auth error " << error.state();
-      return;
+      break;
     case GoogleServiceAuthError::USER_NOT_SIGNED_UP:
     case GoogleServiceAuthError::ACCOUNT_DELETED:
     case GoogleServiceAuthError::ACCOUNT_DISABLED:
       UMAFailure(policy::kMetricEnrollmentNotSupported);
       LOG(ERROR) << "Account error " << error.state();
-      return;
+      break;
     case GoogleServiceAuthError::CONNECTION_FAILED:
     case GoogleServiceAuthError::SERVICE_UNAVAILABLE:
       UMAFailure(policy::kMetricEnrollmentNetworkFailed);
       LOG(WARNING) << "Network error " << error.state();
-      return;
+      break;
     case GoogleServiceAuthError::NUM_STATES:
+      NOTREACHED();
       break;
   }
 
-  NOTREACHED();
-  UMAFailure(policy::kMetricEnrollmentOtherFailed);
+  enrollment_failed_once_ = true;
+  actor_->ShowAuthError(error);
 }
 
 void EnrollmentScreen::OnOAuthTokenAvailable(const std::string& token) {
@@ -219,20 +217,15 @@ void EnrollmentScreen::ShowEnrollmentStatusOnSuccess(
 }
 
 void EnrollmentScreen::ReportEnrollmentStatus(policy::EnrollmentStatus status) {
-  if (status.status() == policy::EnrollmentStatus::STATUS_SUCCESS) {
-    StartupUtils::MarkDeviceRegistered(
-        base::Bind(&EnrollmentScreen::ShowEnrollmentStatusOnSuccess,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   status));
-    UMA(is_auto_enrollment() ? policy::kMetricEnrollmentAutoOK
-                             : policy::kMetricEnrollmentOK);
-    return;
-  } else {
-    enrollment_failed_once_ = true;
-  }
-  actor_->ShowEnrollmentStatus(status);
-
   switch (status.status()) {
+    case policy::EnrollmentStatus::STATUS_SUCCESS:
+      StartupUtils::MarkDeviceRegistered(
+          base::Bind(&EnrollmentScreen::ShowEnrollmentStatusOnSuccess,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     status));
+      UMA(is_auto_enrollment() ? policy::kMetricEnrollmentAutoOK
+                               : policy::kMetricEnrollmentOK);
+      return;
     case policy::EnrollmentStatus::STATUS_REGISTRATION_FAILED:
     case policy::EnrollmentStatus::STATUS_POLICY_FETCH_FAILED:
       switch (status.client_status()) {
@@ -244,72 +237,70 @@ void EnrollmentScreen::ReportEnrollmentStatus(policy::EnrollmentStatus status) {
         case policy::DM_STATUS_SERVICE_DEVICE_ID_CONFLICT:
         case policy::DM_STATUS_SERVICE_POLICY_NOT_FOUND:
           UMAFailure(policy::kMetricEnrollmentOtherFailed);
-          return;
+          break;
         case policy::DM_STATUS_REQUEST_FAILED:
         case policy::DM_STATUS_TEMPORARY_UNAVAILABLE:
         case policy::DM_STATUS_HTTP_STATUS_ERROR:
         case policy::DM_STATUS_RESPONSE_DECODING_ERROR:
           UMAFailure(policy::kMetricEnrollmentNetworkFailed);
-          return;
+          break;
         case policy::DM_STATUS_SERVICE_MANAGEMENT_NOT_SUPPORTED:
           UMAFailure(policy::kMetricEnrollmentNotSupported);
-          return;
+          break;
         case policy::DM_STATUS_SERVICE_INVALID_SERIAL_NUMBER:
           UMAFailure(policy::kMetricEnrollmentInvalidSerialNumber);
-          return;
+          break;
         case policy::DM_STATUS_SERVICE_MISSING_LICENSES:
           UMAFailure(policy::kMetricMissingLicensesError);
-          return;
+          break;
         case policy::DM_STATUS_SERVICE_DEPROVISIONED:
           UMAFailure(policy::kMetricEnrollmentDeprovisioned);
-          return;
+          break;
         case policy::DM_STATUS_SERVICE_DOMAIN_MISMATCH:
           UMAFailure(policy::kMetricEnrollmentDomainMismatch);
-          return;
+          break;
       }
       break;
     case policy::EnrollmentStatus::STATUS_REGISTRATION_BAD_MODE:
       UMAFailure(policy::kMetricEnrollmentInvalidEnrollmentMode);
-      return;
+      break;
     case policy::EnrollmentStatus::STATUS_LOCK_TIMEOUT:
       UMAFailure(policy::kMetricLockboxTimeoutError);
-      return;
+      break;
     case policy::EnrollmentStatus::STATUS_LOCK_WRONG_USER:
       UMAFailure(policy::kMetricEnrollmentWrongUserError);
-      return;
+      break;
     case policy::EnrollmentStatus::STATUS_NO_STATE_KEYS:
       UMAFailure(policy::kMetricEnrollmentNoStateKeys);
-      return;
+      break;
     case policy::EnrollmentStatus::STATUS_VALIDATION_FAILED:
       UMAFailure(policy::kMetricEnrollmentPolicyValidationFailed);
-      return;
+      break;
     case policy::EnrollmentStatus::STATUS_STORE_ERROR:
       UMAFailure(policy::kMetricEnrollmentCloudPolicyStoreError);
-      return;
+      break;
     case policy::EnrollmentStatus::STATUS_LOCK_ERROR:
       UMAFailure(policy::kMetricEnrollmentLockBackendError);
-      return;
+      break;
     case policy::EnrollmentStatus::STATUS_ROBOT_AUTH_FETCH_FAILED:
       UMAFailure(policy::kMetricEnrollmentRobotAuthCodeFetchFailed);
-      return;
+      break;
     case policy::EnrollmentStatus::STATUS_ROBOT_REFRESH_FETCH_FAILED:
       UMAFailure(policy::kMetricEnrollmentRobotRefreshTokenFetchFailed);
-      return;
+      break;
     case policy::EnrollmentStatus::STATUS_ROBOT_REFRESH_STORE_FAILED:
       UMAFailure(policy::kMetricEnrollmentRobotRefreshTokenStoreFailed);
-      return;
+      break;
     case policy::EnrollmentStatus::STATUS_STORE_TOKEN_AND_ID_FAILED:
-      // This error should not happen for enterprise enrollment.
+      // This error should not happen for enterprise enrollment, it only affects
+      // consumer enrollment.
       UMAFailure(policy::kMetricEnrollmentStoreTokenAndIdFailed);
       NOTREACHED();
-      return;
-    case policy::EnrollmentStatus::STATUS_SUCCESS:
-      NOTREACHED();
-      return;
+      break;
   }
 
-  NOTREACHED();
-  UMAFailure(policy::kMetricEnrollmentOtherFailed);
+  enrollment_failed_once_ = true;
+  actor_->ShowEnrollmentStatus(status);
 }
 
 void EnrollmentScreen::UMA(policy::MetricEnrollment sample) {
