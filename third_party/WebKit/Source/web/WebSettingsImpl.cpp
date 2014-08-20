@@ -469,7 +469,7 @@ void WebSettingsImpl::setDeferredFiltersEnabled(bool enabled)
 
 void WebSettingsImpl::setPreferCompositingToLCDTextEnabled(bool enabled)
 {
-    m_settings->setPreferCompositingToLCDTextEnabled(enabled);
+    m_inspectorController->setPreferCompositingToLCDTextEnabled(enabled);
 }
 
 void WebSettingsImpl::setMinimumAccelerated2dCanvasSize(int numPixels)

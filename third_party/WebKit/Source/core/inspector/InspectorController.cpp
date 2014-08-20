@@ -162,6 +162,11 @@ void InspectorController::setDeviceScaleAdjustment(float deviceScaleAdjustment)
     m_pageAgent->setDeviceScaleAdjustment(deviceScaleAdjustment);
 }
 
+void InspectorController::setPreferCompositingToLCDTextEnabled(bool enabled)
+{
+    m_pageAgent->setPreferCompositingToLCDTextEnabled(enabled);
+}
+
 void InspectorController::initializeDeferredAgents()
 {
     if (m_deferredAgentsInitialized)

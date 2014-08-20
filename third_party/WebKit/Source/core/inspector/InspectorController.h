@@ -83,6 +83,7 @@ public:
     // Settings overrides.
     void setTextAutosizingEnabled(bool);
     void setDeviceScaleAdjustment(float);
+    void setPreferCompositingToLCDTextEnabled(bool);
 
     void willBeDestroyed();
     void registerModuleAgent(PassOwnPtrWillBeRawPtr<InspectorAgent>);

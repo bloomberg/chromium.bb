@@ -410,6 +410,7 @@ InspectorPageAgent::InspectorPageAgent(Page* page, InjectedScriptManager* inject
     , m_originalMaxTouchPoints(0)
     , m_embedderTextAutosizingEnabled(m_page->settings().textAutosizingEnabled())
     , m_embedderFontScaleFactor(m_page->settings().deviceScaleAdjustment())
+    , m_embedderPreferCompositingToLCDTextEnabled(m_page->settings().preferCompositingToLCDTextEnabled())
 {
 }
 
@@ -427,6 +428,14 @@ void InspectorPageAgent::setDeviceScaleAdjustment(float deviceScaleAdjustment)
     bool emulateMobileEnabled = m_enabled && m_deviceMetricsOverridden && m_emulateMobileEnabled;
     if (!emulateMobileEnabled)
         m_page->settings().setDeviceScaleAdjustment(deviceScaleAdjustment);
+}
+
+void InspectorPageAgent::setPreferCompositingToLCDTextEnabled(bool enabled)
+{
+    m_embedderPreferCompositingToLCDTextEnabled = enabled;
+    bool emulateMobileEnabled = m_enabled && m_deviceMetricsOverridden && m_emulateMobileEnabled;
+    if (!emulateMobileEnabled)
+        m_page->settings().setPreferCompositingToLCDTextEnabled(enabled);
 }
 
 void InspectorPageAgent::setFrontend(InspectorFrontend* frontend)
@@ -1316,9 +1325,11 @@ void InspectorPageAgent::updateViewMetrics(bool enabled, int width, int height, 
 
     if (m_deviceMetricsOverridden) {
         m_page->settings().setTextAutosizingEnabled(mobile);
+        m_page->settings().setPreferCompositingToLCDTextEnabled(mobile);
         m_page->settings().setDeviceScaleAdjustment(calculateFontScaleFactor(width, height, static_cast<float>(deviceScaleFactor)));
     } else {
         m_page->settings().setTextAutosizingEnabled(m_embedderTextAutosizingEnabled);
+        m_page->settings().setPreferCompositingToLCDTextEnabled(m_embedderPreferCompositingToLCDTextEnabled);
         m_page->settings().setDeviceScaleAdjustment(m_embedderFontScaleFactor);
     }
 
