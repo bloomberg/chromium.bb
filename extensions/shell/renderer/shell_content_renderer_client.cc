@@ -14,7 +14,6 @@
 #include "extensions/shell/common/shell_extensions_client.h"
 #include "extensions/shell/renderer/shell_dispatcher_delegate.h"
 #include "extensions/shell/renderer/shell_extensions_renderer_client.h"
-#include "extensions/shell/renderer/shell_renderer_main_delegate.h"
 
 #if !defined(DISABLE_NACL)
 #include "components/nacl/common/nacl_constants.h"
@@ -68,9 +67,7 @@ void ShellFrameHelper::WillReleaseScriptContext(v8::Handle<v8::Context> context,
 
 }  // namespace
 
-ShellContentRendererClient::ShellContentRendererClient(
-    scoped_ptr<ShellRendererMainDelegate> delegate)
-    : delegate_(delegate.Pass()) {
+ShellContentRendererClient::ShellContentRendererClient() {
 }
 
 ShellContentRendererClient::~ShellContentRendererClient() {
@@ -94,8 +91,6 @@ void ShellContentRendererClient::RenderThreadStarted() {
 
   // TODO(jamescook): Init WebSecurityPolicy for chrome-extension: schemes.
   // See ChromeContentRendererClient for details.
-  if (delegate_)
-    delegate_->OnThreadStarted(thread);
 }
 
 void ShellContentRendererClient::RenderFrameCreated(
@@ -114,8 +109,6 @@ void ShellContentRendererClient::RenderFrameCreated(
 void ShellContentRendererClient::RenderViewCreated(
     content::RenderView* render_view) {
   new ExtensionHelper(render_view, extension_dispatcher_.get());
-  if (delegate_)
-    delegate_->OnViewCreated(render_view);
 }
 
 bool ShellContentRendererClient::OverrideCreatePlugin(

@@ -21,8 +21,7 @@ class ShellRendererMainDelegate;
 // Renderer initialization and runtime support for app_shell.
 class ShellContentRendererClient : public content::ContentRendererClient {
  public:
-  explicit ShellContentRendererClient(
-      scoped_ptr<ShellRendererMainDelegate> delegate);
+  ShellContentRendererClient();
   virtual ~ShellContentRendererClient();
 
   // content::ContentRendererClient implementation:
@@ -51,7 +50,6 @@ class ShellContentRendererClient : public content::ContentRendererClient {
   virtual bool ShouldEnableSiteIsolationPolicy() const OVERRIDE;
 
  private:
-  scoped_ptr<ShellRendererMainDelegate> delegate_;
   scoped_ptr<ShellExtensionsClient> extensions_client_;
   scoped_ptr<ShellExtensionsRendererClient> extensions_renderer_client_;
   scoped_ptr<DispatcherDelegate> extension_dispatcher_delegate_;

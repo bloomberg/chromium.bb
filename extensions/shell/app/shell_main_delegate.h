@@ -18,7 +18,6 @@ class ContentRendererClient;
 
 namespace extensions {
 class ShellBrowserMainDelegate;
-class ShellRendererMainDelegate;
 
 class ShellMainDelegate : public content::ContentMainDelegate {
  public:
@@ -36,11 +35,9 @@ class ShellMainDelegate : public content::ContentMainDelegate {
 
  protected:
   // The created object is owned by this object.
+  virtual content::ContentClient* CreateContentClient();
   virtual content::ContentBrowserClient* CreateShellContentBrowserClient();
-
-  // The returned object is owned by ShellContentRendererClient.
-  virtual scoped_ptr<ShellRendererMainDelegate>
-      CreateShellRendererMainDelegate();
+  virtual content::ContentRendererClient* CreateShellContentRendererClient();
 
   // Initializes the resource bundle and resources.pak.
   virtual void InitializeResourceBundle();

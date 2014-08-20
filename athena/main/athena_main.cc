@@ -16,7 +16,6 @@
 #include "extensions/shell/browser/shell_desktop_controller.h"
 #include "extensions/shell/browser/shell_extension_system.h"
 #include "extensions/shell/common/switches.h"
-#include "extensions/shell/renderer/shell_renderer_main_delegate.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/wm/core/visibility_controller.h"
@@ -107,22 +106,6 @@ class AthenaContentBrowserClient
   DISALLOW_COPY_AND_ASSIGN(AthenaContentBrowserClient);
 };
 
-class AthenaRendererMainDelegate
-    : public extensions::ShellRendererMainDelegate {
- public:
-  AthenaRendererMainDelegate() {}
-  virtual ~AthenaRendererMainDelegate() {}
-
- private:
-  // extensions::ShellRendererMainDelegate:
-  virtual void OnThreadStarted(content::RenderThread* thread) OVERRIDE {}
-
-  virtual void OnViewCreated(content::RenderView* render_view) OVERRIDE {
-  }
-
-  DISALLOW_COPY_AND_ASSIGN(AthenaRendererMainDelegate);
-};
-
 class AthenaMainDelegate : public extensions::ShellMainDelegate {
  public:
   AthenaMainDelegate() {}
@@ -133,12 +116,6 @@ class AthenaMainDelegate : public extensions::ShellMainDelegate {
   virtual content::ContentBrowserClient* CreateShellContentBrowserClient()
       OVERRIDE {
     return new AthenaContentBrowserClient();
-  }
-
-  virtual scoped_ptr<extensions::ShellRendererMainDelegate>
-  CreateShellRendererMainDelegate() OVERRIDE {
-    return scoped_ptr<extensions::ShellRendererMainDelegate>(
-        new AthenaRendererMainDelegate());
   }
 
   virtual void InitializeResourceBundle() OVERRIDE {

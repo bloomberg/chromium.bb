@@ -15,7 +15,6 @@
 #include "extensions/shell/browser/shell_content_browser_client.h"
 #include "extensions/shell/common/shell_content_client.h"
 #include "extensions/shell/renderer/shell_content_renderer_client.h"
-#include "extensions/shell/renderer/shell_renderer_main_delegate.h"
 #include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_CHROMEOS)
@@ -54,7 +53,7 @@ ShellMainDelegate::~ShellMainDelegate() {
 
 bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
   InitLogging();
-  content_client_.reset(new ShellContentClient);
+  content_client_.reset(CreateContentClient());
   SetContentClient(content_client_.get());
 
 #if defined(OS_CHROMEOS)
@@ -80,15 +79,9 @@ content::ContentBrowserClient* ShellMainDelegate::CreateContentBrowserClient() {
   return browser_client_.get();
 }
 
-content::ContentBrowserClient*
-ShellMainDelegate::CreateShellContentBrowserClient() {
-  return new ShellContentBrowserClient(new DefaultShellBrowserMainDelegate());
-}
-
 content::ContentRendererClient*
 ShellMainDelegate::CreateContentRendererClient() {
-  renderer_client_.reset(
-      new ShellContentRendererClient(CreateShellRendererMainDelegate()));
+  renderer_client_.reset(CreateShellContentRendererClient());
   return renderer_client_.get();
 }
 
@@ -99,9 +92,18 @@ void ShellMainDelegate::ZygoteStarting(
 #endif
 }
 
-scoped_ptr<ShellRendererMainDelegate>
-ShellMainDelegate::CreateShellRendererMainDelegate() {
-  return scoped_ptr<ShellRendererMainDelegate>();
+content::ContentClient* ShellMainDelegate::CreateContentClient() {
+  return new ShellContentClient();
+}
+
+content::ContentBrowserClient*
+ShellMainDelegate::CreateShellContentBrowserClient() {
+  return new ShellContentBrowserClient(new DefaultShellBrowserMainDelegate());
+}
+
+content::ContentRendererClient*
+ShellMainDelegate::CreateShellContentRendererClient() {
+  return new ShellContentRendererClient();
 }
 
 void ShellMainDelegate::InitializeResourceBundle() {
