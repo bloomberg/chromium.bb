@@ -640,6 +640,13 @@ name=http://code.google.com/p/dynamorio/issues/detail?id=1443
 dynamorio.dll!*
 
 UNADDRESSABLE ACCESS
+name=http://crbug.com/400495
+aura.dll!aura::Window::Contains
+aura.dll!aura::WindowEventDispatcher::OnWindowHidden
+aura.dll!aura::WindowEventDispatcher::OnPostNotifiedWindowDestroying
+aura.dll!aura::Window::~Window
+
+UNADDRESSABLE ACCESS
 name=http://crbug.com/400511
 content.dll!content::WebThreadBase::TaskObserverAdapter::WillProcessTask
 base.dll!base::MessageLoop::RunTask
