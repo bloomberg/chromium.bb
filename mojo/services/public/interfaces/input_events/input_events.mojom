@@ -30,10 +30,10 @@ struct Event {
   EventType action;
   EventFlags flags;
   int64 time_stamp;
-  LocationData location_data;
-  KeyData key_data;
-  TouchData touch_data;
-  MouseWheelData wheel_data;
+  LocationData? location_data;
+  KeyData? key_data;
+  TouchData? touch_data;
+  MouseWheelData? wheel_data;
 };
 
 }

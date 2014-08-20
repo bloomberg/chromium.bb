@@ -17,15 +17,15 @@ struct EchoArgs {
   double double_val;
   double double_inf;
   double double_nan;
-  string name;
-  string[] string_array;
-  handle<message_pipe> message_handle;
-  handle<data_pipe_consumer> data_handle;
+  string? name;
+  string[]? string_array;
+  handle<message_pipe>? message_handle;
+  handle<data_pipe_consumer>? data_handle;
 };
 
 struct EchoArgsList {
-  EchoArgsList next;
-  EchoArgs item;
+  EchoArgsList? next;
+  EchoArgs? item;
 };
 
 // Note: For messages which control test flow, pick numbers that are unlikely

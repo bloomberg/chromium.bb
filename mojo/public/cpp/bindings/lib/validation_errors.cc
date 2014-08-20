@@ -86,7 +86,8 @@ SerializationWarningObserverForTesting::
 }
 
 bool IsNonNullableValidationEnabled() {
-  return g_validation_error_observer || g_serialization_warning_observer;
+  // TODO(yzshen): Remove this function and all call sites.
+  return true;
 }
 
 }  // namespace internal

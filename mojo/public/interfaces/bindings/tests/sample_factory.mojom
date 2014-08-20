@@ -12,16 +12,16 @@ module sample {
 
 struct Request {
   int32 x;
-  handle<message_pipe> pipe;
-  handle<message_pipe>[] more_pipes;
+  handle<message_pipe>? pipe;
+  handle<message_pipe>[]? more_pipes;
 
   // Interfaces can be used as members.
-  imported.ImportedInterface obj;
+  imported.ImportedInterface? obj;
 };
 
 struct Response {
   int32 x;
-  handle<message_pipe> pipe;
+  handle<message_pipe>? pipe;
 };
 
 interface NamedObject {
@@ -31,7 +31,7 @@ interface NamedObject {
 
 [Client=FactoryClient]
 interface Factory {
-  DoStuff(Request request, handle<message_pipe> pipe);
+  DoStuff(Request request, handle<message_pipe>? pipe);
   DoStuff2(handle<data_pipe_consumer> pipe);
   CreateNamedObject(NamedObject& obj);
   RequestImportedInterface(

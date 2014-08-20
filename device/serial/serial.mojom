@@ -5,12 +5,12 @@
 module device.serial {
 
 struct DeviceInfo {
-  string path;
+  string? path;
   uint16 vendor_id;
   bool has_vendor_id = false;
   uint16 product_id;
   bool has_product_id = false;
-  string display_name;
+  string? display_name;
 };
 
 enum SendError {
@@ -92,7 +92,7 @@ interface SerialService {
 };
 
 interface Connection {
-  GetInfo() => (ConnectionInfo info);
+  GetInfo() => (ConnectionInfo? info);
   SetOptions(ConnectionOptions options) => (bool success);
   SetControlSignals(HostControlSignals signals) => (bool success);
   GetControlSignals() => (DeviceControlSignals signals);

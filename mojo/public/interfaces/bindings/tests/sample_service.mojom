@@ -33,15 +33,15 @@ struct Foo {
   bool a@2 = true;
   bool b@3;
   bool c@4;
-  Bar bar@5;
-  Bar[] extra_bars@7;
-  uint8[] data@6;
-  handle<message_pipe> source@9;
-  handle<data_pipe_consumer>[] input_streams@10;
-  handle<data_pipe_producer>[] output_streams@11;
-  bool[][] array_of_array_of_bools@12;
-  string[][][] multi_array_of_strings@13;
-  bool[] array_of_bools@14;
+  Bar? bar@5;
+  Bar[]? extra_bars@7;
+  uint8[]? data@6;
+  handle<message_pipe>? source@9;
+  handle<data_pipe_consumer>[]? input_streams@10;
+  handle<data_pipe_producer>[]? output_streams@11;
+  bool[][]? array_of_array_of_bools@12;
+  string[][][]? multi_array_of_strings@13;
+  bool[]? array_of_bools@14;
 };
 
 struct DefaultsTest {
@@ -96,7 +96,7 @@ interface Service {
     EXTRA
   };
   const uint8 kFavoriteBaz = 1;
-  Frobinate@0(Foo foo@0, BazOptions baz@1, Port port@2);
+  Frobinate@0(Foo? foo@0, BazOptions baz@1, Port? port@2);
   GetPort@1(Port& port @0);
 };
 

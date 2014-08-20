@@ -34,7 +34,7 @@ interface ViewManagerInitService {
   // typically referred to as the "window manager", and will have a specific
   // definition of where within its View hierarchy to embed an unparented URL.
   // See ViewManagerService below for more details about |service_provider|.
-  Embed(string url, ServiceProvider service_provider) => (bool success);
+  Embed(string url, ServiceProvider? service_provider) => (bool success);
 };
 
 // Views are identified by a uint32. The upper 16 bits are the connection id,
@@ -136,7 +136,7 @@ interface ViewManagerService {
   // any services it provided are not broken and continue to be valid.
   Embed(string url,
         uint32 view_id,
-        ServiceProvider service_provider) => (bool success);
+        ServiceProvider? service_provider) => (bool success);
 
   // TODO(sky): move these to a separate interface when FIFO works.
 
@@ -154,7 +154,7 @@ interface ViewManagerClient {
   OnEmbed(uint16 connection_id,
           string embedder_url,
           ViewData root,
-          ServiceProvider& service_provider);
+          ServiceProvider&? service_provider);
 
   // Invoked when a view's bounds have changed.
   OnViewBoundsChanged(uint32 view, mojo.Rect old_bounds, mojo.Rect new_bounds);
@@ -188,7 +188,7 @@ interface ViewManagerClient {
   //            once support for derived FIFOs is landed.
 
   // Requests the window manager create a "top level" view embedding |url|.
-  Embed(string url, ServiceProvider& service_provider);
+  Embed(string url, ServiceProvider&? service_provider);
 
   // Requests the view manager dispatch the event.
   DispatchOnViewInputEvent(mojo.Event event);
