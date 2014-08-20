@@ -150,8 +150,8 @@ def read_gclient_solution():
   try:
     env = {}
     execfile(GCLIENT_CONFIG, env, env)
-    for sol in env['solutions']:
-      if sol['name'] == 'src':
+    for sol in (env.get('solutions') or []):
+      if sol.get('name') == 'src':
         return sol.get('url'), sol.get('deps_file'), sol.get('managed')
     return None, None, None
   except Exception:
@@ -353,6 +353,9 @@ def check_git_config(conf, report_url, verbose):
 
 def check_gclient_config(conf):
   """Shows warning if gclient solution is not properly configured for git."""
+  # Ignore configs that do not have 'src' solution at all.
+  if not conf['gclient_url']:
+    return
   current = {
     'name': 'src',
     'deps_file': conf['gclient_deps'],
