@@ -197,8 +197,6 @@ class ServiceRuntime {
   int exit_status();  // const, but grabs mutex etc.
   void set_exit_status(int exit_status);
 
-  nacl::string GetCrashLogOutput();
-
   bool main_service_runtime() const { return main_service_runtime_; }
 
  private:

@@ -411,8 +411,13 @@ void LaunchSelLdr(PP_Instance instance,
   DCHECK(load_manager);
   if (!load_manager) {
     PostPPCompletionCallback(callback, PP_ERROR_FAILED);
+    base::SharedMemory::CloseHandle(launch_result.crash_info_shmem_handle);
     return;
   }
+
+  // Store the crash information shared memory handle.
+  load_manager->set_crash_info_shmem_handle(
+      launch_result.crash_info_shmem_handle);
 
   // Create the trusted plugin channel.
   if (IsValidChannelHandle(launch_result.trusted_ipc_channel_handle)) {
@@ -755,10 +760,10 @@ void ReportLoadAbort(PP_Instance instance) {
     load_manager->ReportLoadAbort();
 }
 
-void NexeDidCrash(PP_Instance instance, const char* crash_log) {
+void NexeDidCrash(PP_Instance instance) {
   NexeLoadManager* load_manager = GetNexeLoadManager(instance);
   if (load_manager)
-    load_manager->NexeDidCrash(crash_log);
+    load_manager->NexeDidCrash();
 }
 
 void InstanceCreated(PP_Instance instance) {

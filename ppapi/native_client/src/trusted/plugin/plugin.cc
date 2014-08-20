@@ -361,10 +361,7 @@ void Plugin::NexeFileDidOpenContinuation(int32_t pp_error) {
 void Plugin::NexeDidCrash(int32_t pp_error) {
   PLUGIN_PRINTF(("Plugin::NexeDidCrash (pp_error=%" NACL_PRId32 ")\n",
                  pp_error));
-
-  std::string crash_log =
-      main_subprocess_.service_runtime()->GetCrashLogOutput();
-  nacl_interface_->NexeDidCrash(pp_instance(), crash_log.c_str());
+  nacl_interface_->NexeDidCrash(pp_instance());
 }
 
 void Plugin::BitcodeDidTranslate(int32_t pp_error) {

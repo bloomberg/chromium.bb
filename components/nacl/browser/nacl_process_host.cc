@@ -474,6 +474,10 @@ void NaClProcessHost::Launch(
     SetCloseOnExec(pair[1]);
   }
 
+  // Create a shared memory region that the renderer and plugin share for
+  // reporting crash information.
+  crash_info_shmem_.CreateAnonymous(kNaClCrashInfoShmemSize);
+
   // Launch the process
   if (!LaunchSelLdr()) {
     delete this;
@@ -736,15 +740,27 @@ bool NaClProcessHost::ReplyToRenderer(
 #endif
 
   const ChildProcessData& data = process_->GetData();
+  base::SharedMemoryHandle crash_info_shmem_renderer_handle;
+  if (!crash_info_shmem_.ShareToProcess(nacl_host_message_filter_->PeerHandle(),
+                                        &crash_info_shmem_renderer_handle)) {
+    SendErrorToRenderer("ShareToProcess() failed");
+    return false;
+  }
+
   SendMessageToRenderer(
       NaClLaunchResult(imc_handle_for_renderer,
                        ppapi_channel_handle,
                        trusted_channel_handle,
                        manifest_service_channel_handle,
                        base::GetProcId(data.handle),
-                       data.id),
+                       data.id,
+                       crash_info_shmem_renderer_handle),
       std::string() /* error_message */);
   internal_->socket_for_renderer = NACL_INVALID_HANDLE;
+
+  // Now that the crash information shmem handles have been shared with the
+  // plugin and the renderer, the browser can close its handle.
+  crash_info_shmem_.Close();
   return true;
 }
 
@@ -899,6 +915,11 @@ bool NaClProcessHost::StartNaClExecution() {
 
   params.nexe_file = IPC::TakeFileHandleForProcess(nexe_file_.Pass(),
                                                    process_->GetData().handle);
+  if (!crash_info_shmem_.ShareToProcess(process_->GetData().handle,
+                                        &params.crash_info_shmem_handle)) {
+    DLOG(ERROR) << "Failed to ShareToProcess() a shared memory buffer";
+    return false;
+  }
 
   process_->Send(new NaClProcessMsg_Start(params));
   return true;

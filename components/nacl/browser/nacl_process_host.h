@@ -11,6 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util_proxy.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/shared_memory.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/process/process.h"
@@ -247,6 +248,10 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
 
   // Throttling time in milliseconds for PpapiHostMsg_Keepalive IPCs.
   static unsigned keepalive_throttle_interval_milliseconds_;
+
+  // Shared memory provided to the plugin and renderer for
+  // reporting crash information.
+  base::SharedMemory crash_info_shmem_;
 
   DISALLOW_COPY_AND_ASSIGN(NaClProcessHost);
 };

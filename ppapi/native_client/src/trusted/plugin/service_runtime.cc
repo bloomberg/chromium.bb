@@ -588,12 +588,4 @@ void ServiceRuntime::set_exit_status(int exit_status) {
     plugin_->set_exit_status(exit_status & 0xff);
 }
 
-nacl::string ServiceRuntime::GetCrashLogOutput() {
-  if (NULL != subprocess_.get()) {
-    return subprocess_->GetCrashLogOutput();
-  } else {
-    return std::string();
-  }
-}
-
 }  // namespace plugin

@@ -16,7 +16,8 @@ NaClStartParams::NaClStartParams()
       enable_debug_stub(false),
       enable_ipc_proxy(false),
       uses_irt(false),
-      enable_dyncode_syscalls(false) {
+      enable_dyncode_syscalls(false),
+      crash_info_shmem_handle(base::SharedMemory::NULLHandle()) {
 }
 
 NaClStartParams::~NaClStartParams() {
@@ -67,7 +68,8 @@ NaClLaunchResult::NaClLaunchResult()
       ppapi_ipc_channel_handle(),
       trusted_ipc_channel_handle(),
       plugin_pid(base::kNullProcessId),
-      plugin_child_id(0) {
+      plugin_child_id(0),
+      crash_info_shmem_handle(base::SharedMemory::NULLHandle()) {
 }
 
 NaClLaunchResult::NaClLaunchResult(
@@ -76,13 +78,15 @@ NaClLaunchResult::NaClLaunchResult(
     const IPC::ChannelHandle& trusted_ipc_channel_handle,
     const IPC::ChannelHandle& manifest_service_ipc_channel_handle,
     base::ProcessId plugin_pid,
-    int plugin_child_id)
+    int plugin_child_id,
+    base::SharedMemoryHandle crash_info_shmem_handle)
     : imc_channel_handle(imc_channel_handle),
       ppapi_ipc_channel_handle(ppapi_ipc_channel_handle),
       trusted_ipc_channel_handle(trusted_ipc_channel_handle),
       manifest_service_ipc_channel_handle(manifest_service_ipc_channel_handle),
       plugin_pid(plugin_pid),
-      plugin_child_id(plugin_child_id) {
+      plugin_child_id(plugin_child_id),
+      crash_info_shmem_handle(crash_info_shmem_handle) {
 }
 
 NaClLaunchResult::~NaClLaunchResult() {

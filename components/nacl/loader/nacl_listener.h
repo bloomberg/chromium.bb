@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/shared_memory.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "components/nacl/common/nacl_types.h"
@@ -45,6 +46,8 @@ class NaClListener : public IPC::Listener {
   }
 #endif
 
+  void* crash_info_shmem_memory() const { return crash_info_shmem_->memory(); }
+
  private:
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
 
@@ -70,6 +73,8 @@ class NaClListener : public IPC::Listener {
   // NaClChromeMainArgs object.
   int number_of_cores_;
 #endif
+
+  scoped_ptr<base::SharedMemory> crash_info_shmem_;
 
   scoped_refptr<NaClTrustedListener> trusted_listener_;
 

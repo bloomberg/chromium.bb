@@ -7,6 +7,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <stdlib.h>
+#include <string.h>
 
 #if defined(OS_POSIX)
 #include <unistd.h>
@@ -46,6 +47,24 @@
 #endif
 
 namespace {
+
+NaClListener* g_listener;
+
+void FatalLogHandler(const char* data, size_t bytes) {
+  // We use uint32_t rather than size_t for the case when the browser and NaCl
+  // processes are a mix of 32-bit and 64-bit processes.
+  uint32_t copy_bytes = std::min<uint32_t>(static_cast<uint32_t>(bytes),
+                                           nacl::kNaClCrashInfoMaxLogSize);
+
+  // We copy the length of the crash data to the start of the shared memory
+  // segment so we know how much to copy.
+  memcpy(g_listener->crash_info_shmem_memory(), &copy_bytes, sizeof(uint32_t));
+
+  memcpy((char*)g_listener->crash_info_shmem_memory() + sizeof(uint32_t),
+         data,
+         copy_bytes);
+}
+
 #if defined(OS_MACOSX)
 
 // On Mac OS X, shm_open() works in the sandbox but does not give us
@@ -85,9 +104,6 @@ int CreateMemoryObject(size_t size, int executable) {
 }
 
 #elif defined(OS_WIN)
-
-NaClListener* g_listener;
-
 // We wrap the function to convert the bool return value to an int.
 int BrokerDuplicateHandle(NaClHandle source_handle,
                           uint32_t process_id,
@@ -213,18 +229,14 @@ NaClListener::NaClListener() : shutdown_event_(true, false),
                                main_loop_(NULL) {
   io_thread_.StartWithOptions(
       base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
-#if defined(OS_WIN)
   DCHECK(g_listener == NULL);
   g_listener = this;
-#endif
 }
 
 NaClListener::~NaClListener() {
   NOTREACHED();
   shutdown_event_.Signal();
-#if defined(OS_WIN)
   g_listener = NULL;
-#endif
 }
 
 bool NaClListener::Send(IPC::Message* msg) {
@@ -269,9 +281,14 @@ void NaClListener::OnStart(const nacl::NaClStartParams& params) {
   }
   NaClChromeMainSetUrandomFd(urandom_fd);
 #endif
-
   struct NaClApp* nap = NULL;
   NaClChromeMainInit();
+
+  crash_info_shmem_.reset(new base::SharedMemory(params.crash_info_shmem_handle,
+                                                 false));
+  CHECK(crash_info_shmem_->Map(nacl::kNaClCrashInfoShmemSize));
+  NaClSetFatalErrorCallback(&FatalLogHandler);
+
   nap = NaClAppCreate();
   if (nap == NULL) {
     LOG(ERROR) << "NaClAppCreate() failed";
