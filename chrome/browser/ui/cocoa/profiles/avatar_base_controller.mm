@@ -139,9 +139,9 @@ class ProfileInfoUpdateObserver : public ProfileInfoCacheObserver,
   return button_.get();
 }
 
-- (void)showAvatarBubble:(NSView*)anchor
-                withMode:(BrowserWindow::AvatarBubbleMode)mode
-         withServiceType:(signin::GAIAServiceType)serviceType {
+- (void)showAvatarBubbleAnchoredAt:(NSView*)anchor
+                          withMode:(BrowserWindow::AvatarBubbleMode)mode
+                   withServiceType:(signin::GAIAServiceType)serviceType {
   if (menuController_) {
     if (switches::IsNewAvatarMenu()) {
       profiles::BubbleViewMode viewMode;
@@ -207,10 +207,9 @@ class ProfileInfoUpdateObserver : public ProfileInfoCacheObserver,
 }
 
 - (IBAction)buttonClicked:(id)sender {
-  DCHECK_EQ(sender, button_.get());
-  [self showAvatarBubble:button_
-                withMode:BrowserWindow::AVATAR_BUBBLE_MODE_DEFAULT
-         withServiceType:signin::GAIA_SERVICE_TYPE_NONE];
+  [self showAvatarBubbleAnchoredAt:button_
+                          withMode:BrowserWindow::AVATAR_BUBBLE_MODE_DEFAULT
+                   withServiceType:signin::GAIA_SERVICE_TYPE_NONE];
 }
 
 - (void)bubbleWillClose:(NSNotification*)notif {

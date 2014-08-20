@@ -715,9 +715,9 @@ void BrowserWindowCocoa::ShowAvatarBubbleFromAvatarButton(
   NSView* anchor = [controller buttonView];
   if ([anchor isHiddenOrHasHiddenAncestor])
     anchor = [[controller_ toolbarController] wrenchButton];
-  [controller showAvatarBubble:anchor
-                      withMode:mode
-               withServiceType:manage_accounts_params.service_type];
+  [controller showAvatarBubbleAnchoredAt:anchor
+                                withMode:mode
+                         withServiceType:manage_accounts_params.service_type];
 }
 
 void BrowserWindowCocoa::ShowPasswordGenerationBubble(
