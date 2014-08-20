@@ -41,3 +41,5 @@ Local Modifications:
 - Implement LEB128 decoding more efficiently.
 
 - Add support for unpacking relative relocations with addends, for arm64.
+
+- Fix phdr_table_get_dynamic_section() call in ElfView::InitUnmapped().

@@ -29,7 +29,7 @@ bool ElfView::InitUnmapped(ELF::Addr load_address,
   // Extract the dynamic table information.
   phdr_table_get_dynamic_section(phdr,
                                  phdr_count,
-                                 load_address,
+                                 load_bias_,
                                  &dynamic_,
                                  &dynamic_count_,
                                  &dynamic_flags_);
