@@ -3262,8 +3262,15 @@ bool EventHandler::tryStartDrag(const MouseEventWithHitTestResults& event)
     DragController& dragController = m_frame->page()->dragController();
     if (!dragController.populateDragDataTransfer(m_frame, dragState(), m_mouseDownPos))
         return false;
+
+    // If dispatching dragstart brings about another mouse down -- one way
+    // this will happen is if a DevTools user breaks within a dragstart
+    // handler and then clicks on the suspended page -- the drag state is
+    // reset. Hence, need to check if this particular drag operation can
+    // continue even if dispatchEvent() indicates no (direct) cancellation.
+    // Do that by checking if m_dragSrc is still set.
     m_mouseDownMayStartDrag = dispatchDragSrcEvent(EventTypeNames::dragstart, m_mouseDown)
-        && !m_frame->selection().isInPasswordField();
+        && !m_frame->selection().isInPasswordField() && dragState().m_dragSrc;
 
     // Invalidate clipboard here against anymore pasteboard writing for security. The drag
     // image can still be changed as we drag, but not the pasteboard data.
