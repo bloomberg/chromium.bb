@@ -1524,9 +1524,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DownloadDirectory) {
   EXPECT_FALSE(base::PathExists(initial_dir.path().Append(file)));
 }
 
-// Flaky: http://crbug.com/388340
-IN_PROC_BROWSER_TEST_F(PolicyTest,
-                       DISABLED_ExtensionInstallBlacklistSelective) {
+IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallBlacklistSelective) {
   // Verifies that blacklisted extensions can't be installed.
   ExtensionService* service = extension_service();
   ASSERT_FALSE(service->GetExtensionById(kGoodCrxId, true));
