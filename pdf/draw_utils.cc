@@ -146,7 +146,9 @@ void CopyImage(const pp::ImageData& src, const pp::Rect& src_rc,
                pp::ImageData* dest, const pp::Rect& dest_rc,
                bool stretch) {
   DCHECK(src_rc.width() <= dest_rc.width() &&
-      src_rc.height() <= dest_rc.height());
+         src_rc.height() <= dest_rc.height());
+  if (src_rc.IsEmpty())
+    return;
 
   const uint32_t* src_origin_pixel = src.GetAddr32(src_rc.point());
   uint32_t* dest_origin_pixel = dest->GetAddr32(dest_rc.point());
