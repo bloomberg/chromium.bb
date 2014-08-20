@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "content/shell/common/test_runner/test_preferences.h"
+#include "content/shell/renderer/binding_helpers.h"
 #include "content/shell/renderer/test_runner/WebTestDelegate.h"
 #include "content/shell/renderer/test_runner/mock_web_push_client.h"
 #include "content/shell/renderer/test_runner/mock_web_speech_recognizer.h"
@@ -313,22 +314,11 @@ gin::WrapperInfo TestRunnerBindings::kWrapperInfo = {
 // static
 void TestRunnerBindings::Install(base::WeakPtr<TestRunner> runner,
                                  WebFrame* frame) {
-  v8::Isolate* isolate = blink::mainThreadIsolate();
-  v8::HandleScope handle_scope(isolate);
-  v8::Handle<v8::Context> context = frame->mainWorldScriptContext();
-  if (context.IsEmpty())
-    return;
-
-  v8::Context::Scope context_scope(context);
-
-  gin::Handle<TestRunnerBindings> bindings =
-      gin::CreateHandle(isolate, new TestRunnerBindings(runner));
-  if (bindings.IsEmpty())
-    return;
-  v8::Handle<v8::Object> global = context->Global();
-  v8::Handle<v8::Value> v8_bindings = bindings.ToV8();
-  global->Set(gin::StringToV8(isolate, "testRunner"), v8_bindings);
-  global->Set(gin::StringToV8(isolate, "layoutTestController"), v8_bindings);
+  std::vector<std::string> names;
+  names.push_back("testRunner");
+  names.push_back("layoutTestController");
+  return InstallAsWindowProperties(
+      new TestRunnerBindings(runner), frame, names);
 }
 
 TestRunnerBindings::TestRunnerBindings(base::WeakPtr<TestRunner> runner)

@@ -28,6 +28,9 @@ const char kCrashOnFailure[] = "crash-on-failure";
 // Request pages to be dumped as text once they finished loading.
 const char kDumpRenderTree[] = "dump-render-tree";
 
+// Expose window.ipcTester object for testing
+const char kExposeIpcEcho[] = "expose-ipc-echo";
+
 // Enable accelerated 2D canvas.
 const char kEnableAccelerated2DCanvas[] = "enable-accelerated-2d-canvas";
 

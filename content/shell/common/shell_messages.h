@@ -113,6 +113,14 @@ IPC_MESSAGE_ROUTED1(ShellViewHostMsg_SetDeviceScaleFactor,
 IPC_MESSAGE_ROUTED0(ShellViewHostMsg_CaptureSessionHistory)
 IPC_MESSAGE_ROUTED0(ShellViewHostMsg_CloseRemainingWindows)
 
+IPC_MESSAGE_CONTROL3(ShellViewHostMsg_EchoPing,
+                     int /* routing_id */,
+                     int /* id */,
+                     std::string /* body */)
+IPC_MESSAGE_ROUTED2(ShellViewMsg_EchoPong,
+                    int /* id */,
+                    std::string /* body */)
+
 IPC_STRUCT_TRAITS_BEGIN(content::LeakDetectionResult)
 IPC_STRUCT_TRAITS_MEMBER(leaked)
 IPC_STRUCT_TRAITS_MEMBER(detail)

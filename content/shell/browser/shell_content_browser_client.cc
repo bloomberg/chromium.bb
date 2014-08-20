@@ -16,6 +16,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/web_preferences.h"
+#include "content/shell/browser/ipc_echo_message_filter.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_browser_context.h"
 #include "content/shell/browser/shell_browser_main_parts.h"
@@ -170,6 +171,8 @@ BrowserMainParts* ShellContentBrowserClient::CreateBrowserMainParts(
 
 void ShellContentBrowserClient::RenderProcessWillLaunch(
     RenderProcessHost* host) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kExposeIpcEcho))
+    host->AddFilter(new IPCEchoMessageFilter());
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
     return;
   host->AddFilter(new ShellMessageFilter(
@@ -240,6 +243,9 @@ void ShellContentBrowserClient::AppendExtraCommandLineSwitches(
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kExposeInternalsForTesting))
     command_line->AppendSwitch(switches::kExposeInternalsForTesting);
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kExposeIpcEcho))
+    command_line->AppendSwitch(switches::kExposeIpcEcho);
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kStableReleaseMode))
     command_line->AppendSwitch(switches::kStableReleaseMode);
   if (CommandLine::ForCurrentProcess()->HasSwitch(
