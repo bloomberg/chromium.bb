@@ -1363,16 +1363,6 @@ PassRefPtrWillBeRawPtr<StaticNodeList> Internals::nodesFromRect(Document* docume
     return StaticNodeList::adopt(matches);
 }
 
-void Internals::emitInspectorDidBeginFrame(int frameId)
-{
-    contextDocument()->page()->inspectorController().didBeginFrame(frameId);
-}
-
-void Internals::emitInspectorDidCancelFrame()
-{
-    contextDocument()->page()->inspectorController().didCancelFrame();
-}
-
 bool Internals::hasSpellingMarker(Document* document, int from, int length)
 {
     ASSERT(document);

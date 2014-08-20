@@ -139,9 +139,6 @@
         unsigned long topPadding, unsigned long rightPadding, unsigned long bottomPadding, unsigned long leftPadding,
         boolean ignoreClipping, boolean allowChildFrameContent);
 
-    void emitInspectorDidBeginFrame(optional long frameId);
-    void emitInspectorDidCancelFrame();
-
     [TypeChecking=Interface] boolean hasSpellingMarker(Document document, long from, long length);
     [TypeChecking=Interface] boolean hasGrammarMarker(Document document, long from, long length);
     void setContinuousSpellCheckingEnabled(boolean enabled);

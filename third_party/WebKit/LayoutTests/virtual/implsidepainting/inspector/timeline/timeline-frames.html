@@ -1,0 +1,65 @@
+<html>
+<head>
+<script src="../../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../../http/tests/inspector/timeline-test.js"></script>
+<script>
+
+function performActions(callback)
+{
+    var skipUpdateFrameNumber = 2;
+    var lastFrame = 4;
+    var frameCount = 0;
+
+    requestAnimationFrame(onFrame);
+    function onFrame()
+    {
+        ++frameCount;
+        console.timeStamp("FRAME " + frameCount);
+        // Do not update doc for one of the frames
+        if (frameCount !== skipUpdateFrameNumber) {
+            output("invalidating document");
+        }
+        if (frameCount === lastFrame)
+            testRunner.displayAsyncThen(callback);
+        else
+            requestAnimationFrame(onFrame);
+    }
+}
+
+function test()
+{
+    InspectorTest.invokeAsyncWithTimeline("performActions", finish);
+
+    function finish()
+    {
+        // Filter timestamp records
+        var timeStampRecords = [];
+        InspectorTest.printTimestampRecords(null, appendRecord);
+        function appendRecord(record)
+        {
+            timeStampRecords.push(record);
+        }
+
+        var frames = InspectorTest.timelineFrameModel().frames();
+        var recordIndex = 0;
+
+        for (var frameIndex = 0; frameIndex < frames.length; ++frameIndex) {
+            InspectorTest.addResult("Frame " + frameIndex);
+            var nextFrameStartTime = frameIndex + 1 < frames.length ? frames[frameIndex + 1].startTime : Infinity;
+            for (;recordIndex < timeStampRecords.length && timeStampRecords[recordIndex].startTime() < nextFrameStartTime; ++recordIndex)
+                InspectorTest.dumpTimelineRecord(timeStampRecords[recordIndex]);
+        }
+        InspectorTest.completeTest();
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests reporting and canceling of didBeginFrame events in Timeline
+</p>
+
+</body>
+</html>

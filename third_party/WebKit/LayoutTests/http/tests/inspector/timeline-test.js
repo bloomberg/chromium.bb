@@ -38,6 +38,11 @@ InspectorTest.timelineModel = function()
     return WebInspector.panels.timeline._model;
 }
 
+InspectorTest.timelineFrameModel = function()
+{
+    return WebInspector.panels.timeline._frameModel();
+}
+
 InspectorTest.startTimeline = function(callback)
 {
     var panel = WebInspector.inspectorView.panel("timeline");
