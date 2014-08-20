@@ -1,0 +1,68 @@
+<html>
+<head>
+<script src="../inspector-test.js"></script>
+<script src="../network-test.js"></script>
+<script type="text/javascript">
+function sendXHR(callback)
+{
+    var xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function()
+    {
+        if (xhr.readyState === XMLHttpRequest.DONE)
+            callback();
+    };
+    xhr.open("POST", "http://localhost:8000/inspector/network/resources/cors.cgi");
+    xhr.setRequestHeader("Content-Type", "application/xml");
+    xhr.send("<xml></xml>");
+}
+
+
+function step1()
+{
+    sendXHR(step2); // Should issue OPTIONS and POST requests.
+}
+
+function step2()
+{
+    sendXHR(step3); // Should issue OPTIONS and POST requests.
+}
+
+function step3()
+{
+    console.log("Done.");
+}
+
+function test()
+{
+    NetworkAgent.setCacheDisabled(true, step0);
+
+    function step0()
+    {
+        InspectorTest.recordNetwork();
+        InspectorTest.addConsoleSniffer(step4);
+        InspectorTest.evaluateInPage("step1();");
+    }
+
+    function step4()
+    {
+        NetworkAgent.setCacheDisabled(false, step5);
+    }
+
+    function step5()
+    {
+        var requests = InspectorTest.networkRequests();
+        for (var i = 0; i < requests.length; ++i) {
+            var request = requests[i];
+            var method = request.requestMethod;
+            if (method === "OPTIONS" || method === "POST")
+                InspectorTest.addResult(method + ": " + request.url);
+        }
+        InspectorTest.completeTest();
+    }
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests that preflight OPTIONS is always sent if 'Disable cache' is checked.</p>
+</body>
+</html>

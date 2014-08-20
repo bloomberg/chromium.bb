@@ -518,6 +518,9 @@ interface InspectorOverrides {
 
     [Worker, Inline=FastReturn]
     bool shouldPauseDedicatedWorkerOnStart(ExecutionContext* context);
+
+    [Resource, Inline=FastReturn]
+    bool shouldForceCORSPreflight(Document*);
 }
 
 

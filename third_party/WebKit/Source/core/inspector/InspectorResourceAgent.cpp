@@ -881,4 +881,9 @@ InspectorResourceAgent::InspectorResourceAgent(InspectorPageAgent* pageAgent)
 {
 }
 
+bool InspectorResourceAgent::shouldForceCORSPreflight()
+{
+    return m_state->getBoolean(ResourceAgentState::cacheDisabled);
+}
+
 } // namespace blink
