@@ -56,7 +56,6 @@ public:
     PassRefPtrWillBeRawPtr<HTMLElement> createTBody();
     PassRefPtrWillBeRawPtr<HTMLElement> createCaption();
     void deleteCaption();
-    PassRefPtrWillBeRawPtr<HTMLElement> insertRow(ExceptionState&);
     PassRefPtrWillBeRawPtr<HTMLElement> insertRow(int index, ExceptionState&);
     void deleteRow(int index, ExceptionState&);
 

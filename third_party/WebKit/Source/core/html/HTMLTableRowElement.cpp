@@ -114,12 +114,6 @@ int HTMLTableRowElement::sectionRowIndex() const
     return rIndex;
 }
 
-PassRefPtrWillBeRawPtr<HTMLElement> HTMLTableRowElement::insertCell(ExceptionState& exceptionState)
-{
-    // The default 'index' argument value is -1.
-    return insertCell(-1, exceptionState);
-}
-
 PassRefPtrWillBeRawPtr<HTMLElement> HTMLTableRowElement::insertCell(int index, ExceptionState& exceptionState)
 {
     RefPtrWillBeRawPtr<HTMLCollection> children = cells();

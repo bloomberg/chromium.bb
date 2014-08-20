@@ -168,12 +168,6 @@ HTMLTableSectionElement* HTMLTableElement::lastBody() const
     return toHTMLTableSectionElement(Traversal<HTMLElement>::lastChild(*this, HasHTMLTagName(tbodyTag)));
 }
 
-PassRefPtrWillBeRawPtr<HTMLElement> HTMLTableElement::insertRow(ExceptionState& exceptionState)
-{
-    // The default 'index' argument value is -1.
-    return insertRow(-1, exceptionState);
-}
-
 PassRefPtrWillBeRawPtr<HTMLElement> HTMLTableElement::insertRow(int index, ExceptionState& exceptionState)
 {
     if (index < -1) {

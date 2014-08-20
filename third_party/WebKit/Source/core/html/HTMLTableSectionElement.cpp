@@ -53,12 +53,6 @@ const StylePropertySet* HTMLTableSectionElement::additionalPresentationAttribute
     return 0;
 }
 
-PassRefPtrWillBeRawPtr<HTMLElement> HTMLTableSectionElement::insertRow(ExceptionState& exceptionState)
-{
-    // The default 'index' argument value is -1.
-    return insertRow(-1, exceptionState);
-}
-
 // these functions are rather slow, since we need to get the row at
 // the index... but they aren't used during usual HTML parsing anyway
 PassRefPtrWillBeRawPtr<HTMLElement> HTMLTableSectionElement::insertRow(int index, ExceptionState& exceptionState)

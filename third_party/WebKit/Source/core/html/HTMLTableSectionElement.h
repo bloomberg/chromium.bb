@@ -36,7 +36,6 @@ class HTMLTableSectionElement FINAL : public HTMLTablePartElement {
 public:
     DECLARE_ELEMENT_FACTORY_WITH_TAGNAME(HTMLTableSectionElement);
 
-    PassRefPtrWillBeRawPtr<HTMLElement> insertRow(ExceptionState&);
     PassRefPtrWillBeRawPtr<HTMLElement> insertRow(int index, ExceptionState&);
     void deleteRow(int index, ExceptionState&);
 
