@@ -67,6 +67,9 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver {
   // operation, if there's any.
   void SystemDragEnded();
 
+  // Used to handle special keyboard events.
+  bool HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
+
  private:
   explicit BrowserPluginEmbedder(WebContentsImpl* web_contents);
 
@@ -76,8 +79,7 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver {
 
   bool SetZoomLevelCallback(double level, WebContents* guest_web_contents);
 
-  bool UnlockMouseIfNecessaryCallback(const NativeWebKeyboardEvent& event,
-                                      WebContents* guest);
+  bool UnlockMouseIfNecessaryCallback(bool* mouse_unlocked, WebContents* guest);
 
   // Called by the content embedder when a guest exists with the provided
   // |instance_id|.

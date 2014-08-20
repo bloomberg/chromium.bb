@@ -105,6 +105,9 @@ class CONTENT_EXPORT BrowserPluginGuest : public WebContentsObserver {
   // the mouse has been successfully locked.
   bool LockMouse(bool allowed);
 
+  // Return true if the mouse is locked.
+  bool mouse_locked() const { return mouse_locked_; }
+
   // Called when the embedder WebContents changes visibility.
   void EmbedderVisibilityChanged(bool visible);
 

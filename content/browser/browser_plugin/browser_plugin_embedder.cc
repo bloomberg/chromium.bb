@@ -140,4 +140,30 @@ void BrowserPluginEmbedder::OnAttach(
                  &extra_params));
 }
 
+bool BrowserPluginEmbedder::HandleKeyboardEvent(
+    const NativeWebKeyboardEvent& event) {
+  if (event.windowsKeyCode != ui::VKEY_ESCAPE)
+    return false;
+
+  bool event_consumed = false;
+  GetBrowserPluginGuestManager()->ForEachGuest(
+      GetWebContents(),
+      base::Bind(&BrowserPluginEmbedder::UnlockMouseIfNecessaryCallback,
+                 base::Unretained(this),
+                 &event_consumed));
+
+  return event_consumed;
+}
+
+bool BrowserPluginEmbedder::UnlockMouseIfNecessaryCallback(bool* mouse_unlocked,
+                                                           WebContents* guest) {
+  *mouse_unlocked |= static_cast<WebContentsImpl*>(guest)
+                         ->GetBrowserPluginGuest()
+                         ->mouse_locked();
+  guest->GotResponseToLockMouseRequest(false);
+
+  // Returns false to iterate over all guests.
+  return false;
+}
+
 }  // namespace content
