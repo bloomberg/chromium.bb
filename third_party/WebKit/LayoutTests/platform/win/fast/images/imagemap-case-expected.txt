@@ -6,6 +6,7 @@ layer at (0,0) size 800x268
       RenderBlock (anonymous) at (0,0) size 784x216
         RenderInline {MAP} at (0,0) size 0x0
           RenderText {#text} at (0,0) size 0x0
+          RenderInline {AREA} at (0,0) size 0x0
           RenderText {#text} at (0,0) size 0x0
         RenderText {#text} at (0,0) size 0x0
         RenderImage {IMG} at (0,0) size 104x104 [border: (2px solid #000000)]
@@ -14,6 +15,7 @@ layer at (0,0) size 800x268
         RenderBR {BR} at (0,0) size 0x0
         RenderInline {MAP} at (0,0) size 0x0
           RenderText {#text} at (0,0) size 0x0
+          RenderInline {AREA} at (0,0) size 0x0
           RenderText {#text} at (0,0) size 0x0
         RenderText {#text} at (0,0) size 0x0
         RenderImage {IMG} at (0,108) size 104x104 [border: (2px solid #000000)]

@@ -11,6 +11,7 @@ layer at (0,0) size 800x600
       RenderBlock (anonymous) at (0,70) size 784x128
         RenderInline {MAP} at (0,0) size 0x0
           RenderText {#text} at (0,0) size 0x0
+          RenderInline {AREA} at (0,0) size 0x0
           RenderText {#text} at (0,0) size 0x0
         RenderText {#text} at (0,0) size 0x0
         RenderImage {IMG} at (0,0) size 128x128

@@ -9,6 +9,7 @@ layer at (0,0) size 800x600
         text run at (0,218) width 376: "the <area> in the imagemap to the right. "
       RenderInline {MAP} at (0,0) size 0x0
         RenderText {#text} at (0,0) size 0x0
+        RenderInline {AREA} at (0,0) size 0x0
         RenderText {#text} at (0,0) size 0x0
       RenderText {#text} at (0,0) size 0x0
       RenderImage {IMG} at (376,54) size 184.31x184.31
