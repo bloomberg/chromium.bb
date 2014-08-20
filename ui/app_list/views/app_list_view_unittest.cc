@@ -336,7 +336,7 @@ void AppListViewTestContext::RunStartPageTest() {
     model->results()->Add(new TestTileSearchResult());
     start_page_view->UpdateForTesting();
     EXPECT_EQ(1u, GetVisibleTileItemViews(start_page_view->tile_views()));
-    model->results()->RemoveAll();
+    model->results()->DeleteAll();
     start_page_view->UpdateForTesting();
     EXPECT_EQ(0u, GetVisibleTileItemViews(start_page_view->tile_views()));
   } else {
