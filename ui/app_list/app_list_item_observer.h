@@ -12,19 +12,22 @@ namespace app_list {
 class APP_LIST_EXPORT AppListItemObserver {
  public:
   // Invoked after item's icon is changed.
-  virtual void ItemIconChanged() = 0;
+  virtual void ItemIconChanged() {}
 
   // Invoked after item's name is changed.
-  virtual void ItemNameChanged() = 0;
+  virtual void ItemNameChanged() {}
 
   // Invoked after item's highlighted state is changed.
-  virtual void ItemHighlightedChanged() = 0;
+  virtual void ItemHighlightedChanged() {}
 
   // Invoked after item begins or finishes installing.
-  virtual void ItemIsInstallingChanged() = 0;
+  virtual void ItemIsInstallingChanged() {}
 
   // Invoked after item's download percentage changes.
-  virtual void ItemPercentDownloadedChanged() = 0;
+  virtual void ItemPercentDownloadedChanged() {}
+
+  // Invoked when the item is about to be destroyed.
+  virtual void ItemBeingDestroyed() {}
 
  protected:
   virtual ~AppListItemObserver() {}

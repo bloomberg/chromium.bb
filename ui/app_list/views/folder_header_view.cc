@@ -222,20 +222,8 @@ void FolderHeaderView::ButtonPressed(views::Button* sender,
   delegate_->NavigateBack(folder_item_, event);
 }
 
-void FolderHeaderView::ItemIconChanged() {
-}
-
 void FolderHeaderView::ItemNameChanged() {
   Update();
-}
-
-void FolderHeaderView::ItemHighlightedChanged() {
-}
-
-void FolderHeaderView::ItemIsInstallingChanged() {
-}
-
-void FolderHeaderView::ItemPercentDownloadedChanged() {
 }
 
 }  // namespace app_list

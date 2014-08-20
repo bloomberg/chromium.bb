@@ -95,10 +95,6 @@ class AppListMainView::IconLoader : public AppListItemObserver {
     owner_->OnItemIconLoaded(this);
     // Note that IconLoader is released here.
   }
-  virtual void ItemNameChanged() OVERRIDE {}
-  virtual void ItemHighlightedChanged() OVERRIDE {}
-  virtual void ItemIsInstallingChanged() OVERRIDE {}
-  virtual void ItemPercentDownloadedChanged() OVERRIDE {}
 
   AppListMainView* owner_;
   AppListItem* item_;

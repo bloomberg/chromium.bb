@@ -78,13 +78,17 @@ const char AppListItemView::kViewClassName[] = "ui/app_list/AppListItemView";
 AppListItemView::AppListItemView(AppsGridView* apps_grid_view,
                                  AppListItem* item)
     : CustomButton(apps_grid_view),
-      item_(item),
+      is_folder_(item->GetItemType() == AppListFolderItem::kItemType),
+      is_in_folder_(item->IsInFolder()),
+      item_weak_(item),
       apps_grid_view_(apps_grid_view),
       icon_(new views::ImageView),
       title_(new CachedLabel),
       progress_bar_(new ProgressBarView),
       ui_state_(UI_STATE_NORMAL),
-      touch_dragging_(false) {
+      touch_dragging_(false),
+      is_installing_(false),
+      is_highlighted_(false) {
   icon_->set_interactive(false);
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
@@ -94,7 +98,6 @@ AppListItemView::AppListItemView(AppsGridView* apps_grid_view,
   title_->SetFontList(
       rb.GetFontList(kItemTextFontStyle).DeriveWithSizeDelta(kFontSizeDelta));
   title_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  title_->SetVisible(!item_->is_installing());
   title_->Invalidate();
   SetTitleSubpixelAA();
 
@@ -102,10 +105,12 @@ AppListItemView::AppListItemView(AppsGridView* apps_grid_view,
   AddChildView(title_);
   AddChildView(progress_bar_);
 
-  ItemIconChanged();
-  ItemNameChanged();
-  ItemIsInstallingChanged();
-  item_->AddObserver(this);
+  SetIcon(item->icon(), item->has_shadow());
+  SetItemName(base::UTF8ToUTF16(item->GetDisplayName()),
+              base::UTF8ToUTF16(item->name()));
+  SetItemIsInstalling(item->is_installing());
+  SetItemIsHighlighted(item->highlighted());
+  item->AddObserver(this);
 
   set_context_menu_controller(this);
   set_request_focus_on_press(false);
@@ -114,11 +119,11 @@ AppListItemView::AppListItemView(AppsGridView* apps_grid_view,
 }
 
 AppListItemView::~AppListItemView() {
-  item_->RemoveObserver(this);
+  if (item_weak_)
+    item_weak_->RemoveObserver(this);
 }
 
-void AppListItemView::UpdateIcon() {
-  gfx::ImageSkia icon = item_->icon();
+void AppListItemView::SetIcon(const gfx::ImageSkia& icon, bool has_shadow) {
   // Clear icon and bail out if item icon is empty.
   if (icon.isNull()) {
     icon_->SetImage(NULL);
@@ -129,7 +134,7 @@ void AppListItemView::UpdateIcon() {
       icon,
       skia::ImageOperations::RESIZE_BEST,
       gfx::Size(kGridIconDimension, kGridIconDimension)));
-  if (item_->has_shadow()) {
+  if (has_shadow) {
     gfx::ImageSkia shadow(gfx::ImageSkiaOperations::CreateImageWithDropShadow(
         resized, GetIconShadows()));
     icon_->SetImage(shadow);
@@ -137,12 +142,6 @@ void AppListItemView::UpdateIcon() {
   }
 
   icon_->SetImage(resized);
-}
-
-void AppListItemView::UpdateTooltip() {
-  std::string display_name = item_->GetDisplayName();
-  title_->SetTooltipText(display_name == item_->name() ? base::string16()
-                         : base::UTF8ToUTF16(item_->name()));
 }
 
 void AppListItemView::SetUIState(UIState state) {
@@ -153,8 +152,8 @@ void AppListItemView::SetUIState(UIState state) {
 
   switch (ui_state_) {
     case UI_STATE_NORMAL:
-      title_->SetVisible(!item_->is_installing());
-      progress_bar_->SetVisible(item_->is_installing());
+      title_->SetVisible(!is_installing_);
+      progress_bar_->SetVisible(is_installing_);
       break;
     case UI_STATE_DRAGGING:
       title_->SetVisible(false);
@@ -200,9 +199,8 @@ void AppListItemView::OnMouseDragTimer() {
 void AppListItemView::SetTitleSubpixelAA() {
   // TODO(tapted): Enable AA for folders as well, taking care to play nice with
   // the folder bubble animation.
-  bool enable_aa = !item_->IsInFolder() && ui_state_ == UI_STATE_NORMAL &&
-                   !item_->highlighted() &&
-                   !apps_grid_view_->IsSelectedView(this) &&
+  bool enable_aa = !is_in_folder_ && ui_state_ == UI_STATE_NORMAL &&
+                   !is_highlighted_ && !apps_grid_view_->IsSelectedView(this) &&
                    !apps_grid_view_->IsAnimatingView(this);
 
   bool currently_enabled = title_->background() != NULL;
@@ -253,43 +251,47 @@ void AppListItemView::SetAsAttemptedFolderTarget(bool is_target_folder) {
     SetUIState(UI_STATE_NORMAL);
 }
 
-void AppListItemView::ItemIconChanged() {
-  UpdateIcon();
-}
-
-void AppListItemView::ItemNameChanged() {
-  title_->SetText(base::UTF8ToUTF16(item_->GetDisplayName()));
+void AppListItemView::SetItemName(const base::string16& display_name,
+                                  const base::string16& full_name) {
+  title_->SetText(display_name);
   title_->Invalidate();
-  UpdateTooltip();
+
+  title_->SetTooltipText(display_name == full_name ? base::string16()
+                                                   : full_name);
+
   // Use full name for accessibility.
-  SetAccessibleName(item_->GetItemType() == AppListFolderItem::kItemType
-                        ? l10n_util::GetStringFUTF16(
-                              IDS_APP_LIST_FOLDER_BUTTON_ACCESSIBILE_NAME,
-                              base::UTF8ToUTF16(item_->name()))
-                        : base::UTF8ToUTF16(item_->name()));
+  SetAccessibleName(
+      is_folder_ ? l10n_util::GetStringFUTF16(
+                       IDS_APP_LIST_FOLDER_BUTTON_ACCESSIBILE_NAME, full_name)
+                 : full_name);
   Layout();
 }
 
-void AppListItemView::ItemHighlightedChanged() {
+void AppListItemView::SetItemIsHighlighted(bool is_highlighted) {
+  is_highlighted_ = is_highlighted;
   apps_grid_view_->EnsureViewVisible(this);
   SchedulePaint();
 }
 
-void AppListItemView::ItemIsInstallingChanged() {
-  if (item_->is_installing())
+void AppListItemView::SetItemIsInstalling(bool is_installing) {
+  is_installing_ = is_installing;
+  if (is_installing_)
     apps_grid_view_->EnsureViewVisible(this);
-  title_->SetVisible(!item_->is_installing());
-  progress_bar_->SetVisible(item_->is_installing());
+
+  if (ui_state_ == UI_STATE_NORMAL) {
+    title_->SetVisible(!is_installing);
+    progress_bar_->SetVisible(is_installing);
+  }
   SchedulePaint();
 }
 
-void AppListItemView::ItemPercentDownloadedChanged() {
+void AppListItemView::SetItemPercentDownloaded(int percent_downloaded) {
   // A percent_downloaded() of -1 can mean it's not known how much percent is
   // completed, or the download hasn't been marked complete, as is the case
   // while an extension is being installed after being downloaded.
-  if (item_->percent_downloaded() == -1)
+  if (percent_downloaded == -1)
     return;
-  progress_bar_->SetValue(item_->percent_downloaded() / 100.0);
+  progress_bar_->SetValue(percent_downloaded / 100.0);
 }
 
 const char* AppListItemView::GetClassName() const {
@@ -330,7 +332,7 @@ void AppListItemView::OnPaint(gfx::Canvas* canvas) {
     return;
 
   gfx::Rect rect(GetContentsBounds());
-  if (item_->highlighted() && !item_->is_installing()) {
+  if (is_highlighted_ && !is_installing_) {
     canvas->FillRect(rect, kHighlightedColor);
     return;
   }
@@ -354,7 +356,8 @@ void AppListItemView::OnPaint(gfx::Canvas* canvas) {
 void AppListItemView::ShowContextMenuForView(views::View* source,
                                              const gfx::Point& point,
                                              ui::MenuSourceType source_type) {
-  ui::MenuModel* menu_model = item_->GetContextMenuModel();
+  ui::MenuModel* menu_model =
+      item_weak_ ? item_weak_->GetContextMenuModel() : NULL;
   if (!menu_model)
     return;
 
@@ -382,7 +385,9 @@ void AppListItemView::StateChanged() {
   } else {
     if (!is_folder_ui_enabled)
       apps_grid_view_->ClearSelectedView(this);
-    item_->SetHighlighted(false);
+    is_highlighted_ = false;
+    if (item_weak_)
+      item_weak_->SetHighlighted(false);
     title_->SetEnabledColor(kGridTitleColor);
   }
   title_->Invalidate();
@@ -522,6 +527,33 @@ gfx::Rect AppListItemView::GetIconBoundsForTargetViewBounds(
   gfx::Rect icon_bounds(rect.x(), rect.y(), rect.width(), kGridIconDimension);
   icon_bounds.Inset(gfx::ShadowValue::GetMargin(GetIconShadows()));
   return icon_bounds;
+}
+
+void AppListItemView::ItemIconChanged() {
+  SetIcon(item_weak_->icon(), item_weak_->has_shadow());
+}
+
+void AppListItemView::ItemNameChanged() {
+  SetItemName(base::UTF8ToUTF16(item_weak_->GetDisplayName()),
+              base::UTF8ToUTF16(item_weak_->name()));
+}
+
+void AppListItemView::ItemHighlightedChanged() {
+  SetItemIsHighlighted(item_weak_->highlighted());
+}
+
+void AppListItemView::ItemIsInstallingChanged() {
+  SetItemIsInstalling(item_weak_->is_installing());
+}
+
+void AppListItemView::ItemPercentDownloadedChanged() {
+  SetItemPercentDownloaded(item_weak_->percent_downloaded());
+}
+
+void AppListItemView::ItemBeingDestroyed() {
+  DCHECK(item_weak_);
+  item_weak_->RemoveObserver(this);
+  item_weak_ = NULL;
 }
 
 }  // namespace app_list

@@ -18,6 +18,7 @@ AppListItem::AppListItem(const std::string& id)
 }
 
 AppListItem::~AppListItem() {
+  FOR_EACH_OBSERVER(AppListItemObserver, observers_, ItemBeingDestroyed());
 }
 
 void AppListItem::SetIcon(const gfx::ImageSkia& icon, bool has_shadow) {

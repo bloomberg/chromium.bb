@@ -74,11 +74,7 @@ class APP_LIST_EXPORT FolderHeaderView : public views::View,
                              const ui::Event& event) OVERRIDE;
 
   // AppListItemObserver overrides:
-  virtual void ItemIconChanged() OVERRIDE;
   virtual void ItemNameChanged() OVERRIDE;
-  virtual void ItemHighlightedChanged() OVERRIDE;
-  virtual void ItemIsInstallingChanged() OVERRIDE;
-  virtual void ItemPercentDownloadedChanged() OVERRIDE;
 
   AppListFolderItem* folder_item_;  // Not owned.
 

@@ -78,10 +78,6 @@ class APP_LIST_EXPORT AppListFolderItem : public AppListItem,
  private:
   // AppListItemObserver
   virtual void ItemIconChanged() OVERRIDE;
-  virtual void ItemNameChanged() OVERRIDE;
-  virtual void ItemHighlightedChanged() OVERRIDE;
-  virtual void ItemIsInstallingChanged() OVERRIDE;
-  virtual void ItemPercentDownloadedChanged() OVERRIDE;
 
   // AppListItemListObserver
   virtual void OnListItemAdded(size_t index, AppListItem* item) OVERRIDE;

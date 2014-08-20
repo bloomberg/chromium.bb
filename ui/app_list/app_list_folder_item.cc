@@ -210,18 +210,6 @@ void AppListFolderItem::ItemIconChanged() {
   UpdateIcon();
 }
 
-void AppListFolderItem::ItemNameChanged() {
-}
-
-void AppListFolderItem::ItemHighlightedChanged() {
-}
-
-void AppListFolderItem::ItemIsInstallingChanged() {
-}
-
-void AppListFolderItem::ItemPercentDownloadedChanged() {
-}
-
 void AppListFolderItem::OnListItemAdded(size_t index,
                                         AppListItem* item) {
   if (index <= kNumFolderTopItems)
