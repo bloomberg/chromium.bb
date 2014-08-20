@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/weak_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -179,6 +180,7 @@ class SimpleHttpServer : base::NonThreadSafe {
     scoped_refptr<net::GrowableIOBuffer> output_buffer_;
     int bytes_to_write_;
     bool read_closed_;
+    base::WeakPtrFactory<Connection> weak_factory_;
 
     DISALLOW_COPY_AND_ASSIGN(Connection);
   };
@@ -189,6 +191,7 @@ class SimpleHttpServer : base::NonThreadSafe {
   ParserFactory factory_;
   scoped_ptr<net::TCPServerSocket> socket_;
   scoped_ptr<net::StreamSocket> client_socket_;
+  base::WeakPtrFactory<SimpleHttpServer> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SimpleHttpServer);
 };
@@ -196,7 +199,8 @@ class SimpleHttpServer : base::NonThreadSafe {
 SimpleHttpServer::SimpleHttpServer(const ParserFactory& factory,
                                    net::IPEndPoint endpoint)
     : factory_(factory),
-      socket_(new net::TCPServerSocket(NULL, net::NetLog::Source())) {
+      socket_(new net::TCPServerSocket(NULL, net::NetLog::Source())),
+      weak_factory_(this) {
   socket_->Listen(endpoint, 5);
   AcceptConnection();
 }
@@ -212,7 +216,8 @@ SimpleHttpServer::Connection::Connection(net::StreamSocket* socket,
       input_buffer_(new net::GrowableIOBuffer()),
       output_buffer_(new net::GrowableIOBuffer()),
       bytes_to_write_(0),
-      read_closed_(false) {
+      read_closed_(false),
+      weak_factory_(this) {
   input_buffer_->SetCapacity(kBufferSize);
   ReadData();
 }
@@ -287,7 +292,7 @@ void SimpleHttpServer::Connection::OnDataRead(int count) {
   // Posting to avoid deep recursion in case of synchronous IO
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
-      base::Bind(&Connection::ReadData, base::Unretained(this)));
+      base::Bind(&Connection::ReadData, weak_factory_.GetWeakPtr()));
 }
 
 void SimpleHttpServer::Connection::WriteData() {
@@ -321,7 +326,7 @@ void SimpleHttpServer::Connection::OnDataWritten(int count) {
     // Posting to avoid deep recursion in case of synchronous IO
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
-        base::Bind(&Connection::WriteData, base::Unretained(this)));
+        base::Bind(&Connection::WriteData, weak_factory_.GetWeakPtr()));
   else if (read_closed_)
     delete this;
 }
@@ -336,7 +341,7 @@ void SimpleHttpServer::AcceptConnection() {
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&SimpleHttpServer::OnAccepted,
-                   base::Unretained(this),
+                   weak_factory_.GetWeakPtr(),
                    accept_result));
 }
 
