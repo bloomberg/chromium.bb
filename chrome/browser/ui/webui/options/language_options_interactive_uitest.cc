@@ -115,7 +115,9 @@ IN_PROC_BROWSER_TEST_F(LanguageOptionsWebUITest, TestAvailableLanguages) {
 // the keyboard.
 // This test must be updated if the tab order of the elements on this page
 // is chagned.
-IN_PROC_BROWSER_TEST_F(LanguageOptionsWebUITest, TestListTabAccessibility) {
+// flaky: http://crbug.com/405711
+IN_PROC_BROWSER_TEST_F(LanguageOptionsWebUITest,
+                       DISABLED_TestListTabAccessibility) {
   // Verify that the language list is focused by default.
   std::string original_id = GetActiveElementId();
   EXPECT_EQ("language-options-list", original_id);
