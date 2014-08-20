@@ -2303,6 +2303,9 @@ def CMDtry(parser, args):
     parser.error('Need to upload first')
 
   props = cl.GetIssueProperties()
+  if props.get('closed'):
+    parser.error('Cannot send tryjobs for a closed CL')
+
   if props.get('private'):
     parser.error('Cannot use trybots with private issue')
 
