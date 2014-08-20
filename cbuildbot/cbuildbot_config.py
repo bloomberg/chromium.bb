@@ -1615,13 +1615,24 @@ compile_only_pre_cq = pre_cq.derive(
   unittests=False,
 )
 
+# The Pre-CQ tests 5 platforms. Because we test so many platforms in parallel,
+# it is important to delay the launch of some builds in order to conserve RAM.
+# We build rambi and daisy in parallel first. When daisy finishes BuildPackages,
+# the remaining boards start BuildPackages. Because Rambi runs VMTest and this
+# takes a long time, the remaining boards still finish well before Rambi
+# finishes.
 # TODO(davidjames): Add peach_pit, nyan, and beaglebone to pre-cq.
 _config.add_group(constants.PRE_CQ_BUILDER_NAME,
-  # amd64 w/kernel 3.10.
+  # amd64 w/kernel 3.10. This builder runs VMTest so it's going to be
+  # the slowest one.
   pre_cq.add_config('rambi-pre-cq', boards=['rambi']),
-  # daisy w/kernel 3.8.
+
+  # daisy w/kernel 3.8. We set build_packages_in_background=False here, so
+  # that subsequent boards (lumpy, parrot) don't get launched until after
+  # daisy finishes BuildPackages.
   pre_cq.add_config('daisy_spring-pre-cq', non_testable_builder,
-                    boards=['daisy_spring']),
+                    boards=['daisy_spring'],
+                    build_packages_in_background=False),
 
   # lumpy w/kernel 3.8.
   compile_only_pre_cq.add_config('lumpy-pre-cq', non_testable_builder,
