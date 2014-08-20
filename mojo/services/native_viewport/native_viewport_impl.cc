@@ -4,6 +4,7 @@
 
 #include "mojo/services/native_viewport/native_viewport_impl.h"
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
@@ -38,7 +39,6 @@ NativeViewportImpl::~NativeViewportImpl() {
 void NativeViewportImpl::Create(RectPtr bounds) {
   platform_viewport_ = PlatformViewport::Create(this);
   platform_viewport_->Init(bounds.To<gfx::Rect>());
-  client()->OnCreated();
   OnBoundsChanged(bounds.To<gfx::Rect>());
 }
 
@@ -51,7 +51,6 @@ void NativeViewportImpl::Hide() {
 }
 
 void NativeViewportImpl::Close() {
-  command_buffer_.reset();
   DCHECK(platform_viewport_);
   platform_viewport_->Close();
 }
@@ -60,25 +59,15 @@ void NativeViewportImpl::SetBounds(RectPtr bounds) {
   platform_viewport_->SetBounds(bounds.To<gfx::Rect>());
 }
 
-void NativeViewportImpl::CreateGLES2Context(
-    InterfaceRequest<CommandBuffer> command_buffer_request) {
-  if (command_buffer_ || command_buffer_request_.is_pending()) {
-    LOG(ERROR) << "Can't create multiple contexts on a NativeViewport";
-    return;
-  }
-  command_buffer_request_ = command_buffer_request.Pass();
-  CreateCommandBufferIfNeeded();
-}
-
 void NativeViewportImpl::OnBoundsChanged(const gfx::Rect& bounds) {
-  CreateCommandBufferIfNeeded();
   client()->OnBoundsChanged(Rect::From(bounds));
 }
 
 void NativeViewportImpl::OnAcceleratedWidgetAvailable(
     gfx::AcceleratedWidget widget) {
   widget_ = widget;
-  CreateCommandBufferIfNeeded();
+  uintptr_t widget_ptr = bit_cast<uintptr_t>(widget);
+  client()->OnCreated(static_cast<uint64_t>(widget_ptr));
 }
 
 bool NativeViewportImpl::OnEvent(ui::Event* ui_event) {
@@ -108,30 +97,11 @@ bool NativeViewportImpl::OnEvent(ui::Event* ui_event) {
 }
 
 void NativeViewportImpl::OnDestroyed() {
-  client()->OnDestroyed(base::Bind(&NativeViewportImpl::AckDestroyed,
-                                   base::Unretained(this)));
+  client()->OnDestroyed();
 }
 
 void NativeViewportImpl::AckEvent() {
   waiting_for_event_ack_ = false;
-}
-
-void NativeViewportImpl::CreateCommandBufferIfNeeded() {
-  if (!command_buffer_request_.is_pending())
-    return;
-  DCHECK(!command_buffer_.get());
-  if (widget_ == gfx::kNullAcceleratedWidget)
-    return;
-  gfx::Size size = platform_viewport_->GetSize();
-  if (size.IsEmpty())
-    return;
-  command_buffer_.reset(
-      new CommandBufferImpl(widget_, platform_viewport_->GetSize()));
-  WeakBindToRequest(command_buffer_.get(), &command_buffer_request_);
-}
-
-void NativeViewportImpl::AckDestroyed() {
-  command_buffer_.reset();
 }
 
 }  // namespace mojo

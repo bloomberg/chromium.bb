@@ -18,10 +18,13 @@ class GpuScheduler;
 class GpuControlService;
 namespace gles2 {
 class GLES2Decoder;
+class MailboxManager;
 }
 }
 
 namespace gfx {
+class GLContext;
+class GLShareGroup;
 class GLSurface;
 }
 
@@ -29,8 +32,14 @@ namespace mojo {
 
 class CommandBufferImpl : public InterfaceImpl<CommandBuffer> {
  public:
+  // Offscreen.
+  CommandBufferImpl(gfx::GLShareGroup* share_group,
+                    gpu::gles2::MailboxManager* mailbox_manager);
+  // Onscreen.
   CommandBufferImpl(gfx::AcceleratedWidget widget,
-                    const gfx::Size& size);
+                    const gfx::Size& size,
+                    gfx::GLShareGroup* share_group,
+                    gpu::gles2::MailboxManager* mailbox_manager);
   virtual ~CommandBufferImpl();
 
   virtual void Initialize(CommandBufferSyncClientPtr sync_client,
@@ -59,7 +68,10 @@ class CommandBufferImpl : public InterfaceImpl<CommandBuffer> {
   scoped_ptr<gpu::CommandBufferService> command_buffer_;
   scoped_ptr<gpu::gles2::GLES2Decoder> decoder_;
   scoped_ptr<gpu::GpuScheduler> scheduler_;
+  scoped_refptr<gfx::GLContext> context_;
   scoped_refptr<gfx::GLSurface> surface_;
+  scoped_refptr<gfx::GLShareGroup> share_group_;
+  scoped_refptr<gpu::gles2::MailboxManager> mailbox_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(CommandBufferImpl);
 };

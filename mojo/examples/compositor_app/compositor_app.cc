@@ -11,6 +11,7 @@
 #include "mojo/public/cpp/application/application_impl.h"
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/services/public/cpp/geometry/geometry_type_converters.h"
+#include "mojo/services/public/interfaces/gpu/gpu.mojom.h"
 #include "mojo/services/public/interfaces/native_viewport/native_viewport.mojom.h"
 #include "ui/gfx/rect.h"
 
@@ -28,22 +29,22 @@ class SampleApp : public ApplicationDelegate, public NativeViewportClient {
     viewport_->Create(Rect::From(gfx::Rect(10, 10, 800, 600)));
     viewport_->Show();
 
-    MessagePipe pipe;
-    viewport_->CreateGLES2Context(
-        MakeRequest<CommandBuffer>(pipe.handle0.Pass()));
-    host_.reset(new CompositorHost(pipe.handle1.Pass()));
+    // TODO(jamesr): Should be mojo:mojo_gpu_service
+    app->ConnectToService("mojo:mojo_native_viewport_service", &gpu_service_);
   }
 
-  virtual void OnCreated() OVERRIDE {
+  virtual void OnCreated(uint64_t native_viewport_id) OVERRIDE {
+    CommandBufferPtr cb;
+    gpu_service_->CreateOnscreenGLES2Context(
+        native_viewport_id, Size::From(gfx::Size(800, 600)), Get(&cb));
+    host_.reset(new CompositorHost(cb.PassMessagePipe()));
   }
 
-  virtual void OnDestroyed(const mojo::Callback<void()>& callback) OVERRIDE {
-    base::MessageLoop::current()->Quit();
-    callback.Run();
-  }
+  virtual void OnDestroyed() OVERRIDE { base::MessageLoop::current()->Quit(); }
 
   virtual void OnBoundsChanged(RectPtr bounds) OVERRIDE {
-    host_->SetSize(gfx::Size(bounds->width, bounds->height));
+    if (host_)
+      host_->SetSize(gfx::Size(bounds->width, bounds->height));
   }
 
   virtual void OnEvent(EventPtr event,
@@ -53,6 +54,7 @@ class SampleApp : public ApplicationDelegate, public NativeViewportClient {
 
  private:
   NativeViewportPtr viewport_;
+  GpuPtr gpu_service_;
   scoped_ptr<CompositorHost> host_;
   DISALLOW_COPY_AND_ASSIGN(SampleApp);
 };

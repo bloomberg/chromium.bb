@@ -12,6 +12,7 @@
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/public/cpp/system/macros.h"
 #include "mojo/public/cpp/utility/run_loop.h"
+#include "mojo/services/public/interfaces/gpu/gpu.mojom.h"
 #include "mojo/services/public/interfaces/native_viewport/native_viewport.mojom.h"
 
 namespace examples {
@@ -30,6 +31,9 @@ class SampleApp : public mojo::ApplicationDelegate,
     app->ConnectToService("mojo:mojo_native_viewport_service", &viewport_);
     viewport_.set_client(this);
 
+    // TODO(jamesr): Should be mojo:mojo_gpu_service
+    app->ConnectToService("mojo:mojo_native_viewport_service", &gpu_service_);
+
     mojo::RectPtr rect(mojo::Rect::New());
     rect->x = 10;
     rect->y = 10;
@@ -37,27 +41,27 @@ class SampleApp : public mojo::ApplicationDelegate,
     rect->height = 600;
     viewport_->Create(rect.Pass());
     viewport_->Show();
+  }
 
+  virtual void OnCreated(uint64_t native_viewport_id) MOJO_OVERRIDE {
+    mojo::SizePtr size = mojo::Size::New();
+    size->width = 800;
+    size->height = 600;
     mojo::CommandBufferPtr command_buffer;
-    viewport_->CreateGLES2Context(Get(&command_buffer));
+    gpu_service_->CreateOnscreenGLES2Context(
+        native_viewport_id, size.Pass(), Get(&command_buffer));
     gles2_client_.reset(new GLES2ClientImpl(command_buffer.Pass()));
   }
 
-  virtual void OnCreated() MOJO_OVERRIDE {
-  }
-
-  virtual void OnDestroyed(
-      const mojo::Callback<void()>& callback) MOJO_OVERRIDE {
-    mojo::RunLoop::current()->Quit();
-    callback.Run();
-  }
+  virtual void OnDestroyed() MOJO_OVERRIDE { mojo::RunLoop::current()->Quit(); }
 
   virtual void OnBoundsChanged(mojo::RectPtr bounds) MOJO_OVERRIDE {
     assert(bounds);
     mojo::SizePtr size(mojo::Size::New());
     size->width = bounds->width;
     size->height = bounds->height;
-    gles2_client_->SetSize(*size);
+    if (gles2_client_)
+      gles2_client_->SetSize(*size);
   }
 
   virtual void OnEvent(mojo::EventPtr event,
@@ -71,6 +75,7 @@ class SampleApp : public mojo::ApplicationDelegate,
  private:
   scoped_ptr<GLES2ClientImpl> gles2_client_;
   mojo::NativeViewportPtr viewport_;
+  mojo::GpuPtr gpu_service_;
 
   DISALLOW_COPY_AND_ASSIGN(SampleApp);
 };

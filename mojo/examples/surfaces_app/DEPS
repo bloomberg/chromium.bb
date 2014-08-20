@@ -1,7 +1,9 @@
 include_rules = [
   "+cc",
   "-cc/blink",
+  "+gpu/GLES2",
   "+gpu/command_buffer/client",
+  "+third_party/khronos/GLES2",
   "+third_party/skia/include",
   "+ui/gfx",
 ]

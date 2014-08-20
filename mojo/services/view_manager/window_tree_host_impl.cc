@@ -67,29 +67,21 @@ void RootLayoutManager::SetChildBounds(aura::Window* child,
 
 WindowTreeHostImpl::WindowTreeHostImpl(
     NativeViewportPtr viewport,
+    GpuPtr gpu_service,
     const gfx::Rect& bounds,
     const Callback<void()>& compositor_created_callback,
     const Callback<void()>& native_viewport_closed_callback,
     const Callback<void(EventPtr)>& event_received_callback)
     : native_viewport_(viewport.Pass()),
+      gpu_service_(gpu_service.Pass()),
+      widget_(gfx::kNullAcceleratedWidget),
       compositor_created_callback_(compositor_created_callback),
       native_viewport_closed_callback_(native_viewport_closed_callback),
       event_received_callback_(event_received_callback),
       bounds_(bounds) {
   native_viewport_.set_client(this);
   native_viewport_->Create(Rect::From(bounds));
-
-  MessagePipe pipe;
-  native_viewport_->CreateGLES2Context(
-      MakeRequest<CommandBuffer>(pipe.handle0.Pass()));
-
-  // The ContextFactory must exist before any Compositors are created.
-  if (context_factory_) {
-    delete context_factory_;
-    context_factory_ = NULL;
-  }
-  context_factory_ = new ContextFactoryImpl(pipe.handle1.Pass());
-  aura::Env::GetInstance()->set_context_factory(context_factory_);
+  native_viewport_->Show();
 
   window()->SetLayoutManager(new RootLayoutManager());
 }
@@ -107,13 +99,11 @@ ui::EventSource* WindowTreeHostImpl::GetEventSource() {
 }
 
 gfx::AcceleratedWidget WindowTreeHostImpl::GetAcceleratedWidget() {
-  NOTIMPLEMENTED() << "GetAcceleratedWidget";
-  return gfx::kNullAcceleratedWidget;
+  return widget_;
 }
 
 void WindowTreeHostImpl::Show() {
   window()->Show();
-  native_viewport_->Show();
 }
 
 void WindowTreeHostImpl::Hide() {
@@ -168,21 +158,36 @@ ui::EventProcessor* WindowTreeHostImpl::GetEventProcessor() {
 ////////////////////////////////////////////////////////////////////////////////
 // WindowTreeHostImpl, NativeViewportClient implementation:
 
-void WindowTreeHostImpl::OnCreated() {
-  CreateCompositor(GetAcceleratedWidget());
+void WindowTreeHostImpl::OnCreated(uint64_t native_viewport_id) {
+  LOG(ERROR) << "OnCreated " << native_viewport_id;
+  CommandBufferPtr cb;
+  gpu_service_->CreateOnscreenGLES2Context(
+      native_viewport_id, Size::From(bounds_.size()), Get(&cb));
+  widget_ = bit_cast<gfx::AcceleratedWidget>(
+      static_cast<uintptr_t>(native_viewport_id));
+
+  // The ContextFactory must exist before any Compositors are created.
+  if (context_factory_) {
+    delete context_factory_;
+    context_factory_ = NULL;
+  }
+  context_factory_ = new ContextFactoryImpl(cb.PassMessagePipe());
+  aura::Env::GetInstance()->set_context_factory(context_factory_);
+
+  CreateCompositor(gfx::kNullAcceleratedWidget);
   compositor_created_callback_.Run();
 }
 
 void WindowTreeHostImpl::OnBoundsChanged(RectPtr bounds) {
   bounds_ = bounds.To<gfx::Rect>();
-  OnHostResized(bounds_.size());
+  if (context_factory_)
+    OnHostResized(bounds_.size());
 }
 
-void WindowTreeHostImpl::OnDestroyed(const mojo::Callback<void()>& callback) {
+void WindowTreeHostImpl::OnDestroyed() {
   DestroyCompositor();
   native_viewport_closed_callback_.Run();
   // TODO(beng): quit the message loop once we are on our own thread.
-  callback.Run();
 }
 
 void WindowTreeHostImpl::OnEvent(EventPtr event,

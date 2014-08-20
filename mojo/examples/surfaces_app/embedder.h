@@ -31,7 +31,7 @@ class Embedder {
                     cc::SurfaceId child_two,
                     const gfx::Size& child_size,
                     const gfx::Size& size,
-                    double rotation_degrees);
+                    int offset);
 
  private:
   cc::SurfaceId id_;

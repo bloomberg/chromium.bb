@@ -25,6 +25,8 @@ static_library("native_viewport") {
   ]
 
   sources = [
+    "gpu_impl.cc",
+    "gpu_impl.h",
     "native_viewport_impl.cc",
     "native_viewport_impl.h",
     "platform_viewport.h",

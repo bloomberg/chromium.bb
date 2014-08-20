@@ -9,6 +9,7 @@
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "mojo/gles2/gles2_context.h"
+#include "mojo/gles2/gles2_impl_export.h"
 
 using mojo::gles2::GLES2Context;
 

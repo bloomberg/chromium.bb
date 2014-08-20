@@ -219,6 +219,23 @@
       ],
     },
     {
+      # GN version: //mojo/services/public/interfaces/gpu
+      'target_name': 'mojo_gpu_bindings',
+      'type': 'static_library',
+      'sources': [
+        'services/public/interfaces/gpu/gpu.mojom',
+      ],
+      'includes': [ 'public/tools/bindings/mojom_bindings_generator.gypi' ],
+      'export_dependent_settings': [
+        'mojo_base.gyp:mojo_cpp_bindings',
+      ],
+      'dependencies': [
+        'mojo_base.gyp:mojo_cpp_bindings',
+        'mojo_base.gyp:mojo_gles2_bindings',
+        'mojo_geometry_bindings',
+      ],
+    },
+    {
       # GN version: //mojo/services/public/interfaces/native_viewport
       'target_name': 'mojo_native_viewport_bindings',
       'type': 'static_library',
@@ -247,16 +264,19 @@
         '../ui/events/events.gyp:events',
         '../ui/gfx/gfx.gyp:gfx',
         '../ui/gfx/gfx.gyp:gfx_geometry',
+        'mojo_base.gyp:mojo_application_chromium',
         'mojo_base.gyp:mojo_common_lib',
         'mojo_base.gyp:mojo_environment_chromium',
-        'mojo_base.gyp:mojo_application_chromium',
         'mojo_geometry_bindings',
         'mojo_geometry_lib',
         'mojo_gles2_service',
+        'mojo_gpu_bindings',
         'mojo_input_events_lib',
         'mojo_native_viewport_bindings',
       ],
       'sources': [
+        'services/native_viewport/gpu_impl.cc',
+        'services/native_viewport/gpu_impl.h',
         'services/native_viewport/native_viewport_impl.cc',
         'services/native_viewport/native_viewport_impl.h',
         'services/native_viewport/platform_viewport.h',
@@ -403,6 +423,7 @@
         'mojo_cc_support',
         'mojo_geometry_bindings',
         'mojo_geometry_lib',
+        'mojo_gpu_bindings',
         'mojo_surfaces_bindings',
         'mojo_surfaces_lib',
         '<(mojo_gles2_for_loadable_module)',
@@ -677,6 +698,7 @@
             'mojo_native_viewport_bindings',
             'mojo_view_manager_bindings',
             'mojo_view_manager_common',
+            'mojo_gpu_bindings',
             '<(mojo_gles2_for_component)',
             '<(mojo_system_for_component)',
           ],
