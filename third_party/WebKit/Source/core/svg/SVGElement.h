@@ -148,9 +148,6 @@ public:
 
     void invalidateRelativeLengthClients(SubtreeLayoutScope* = 0);
 
-    bool isContextElement() const { return m_isContextElement; }
-    void setContextElement() { m_isContextElement = true; }
-
     void addToPropertyMap(PassRefPtr<SVGAnimatedPropertyBase>);
 
     SVGAnimatedString* className() { return m_className.get(); }

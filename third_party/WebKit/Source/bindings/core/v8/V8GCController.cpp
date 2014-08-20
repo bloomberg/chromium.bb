@@ -146,8 +146,10 @@ public:
             // See https://code.google.com/p/chromium/issues/detail?id=164882
             if (isHTMLImageElement(*node) && toHTMLImageElement(*node).hasPendingActivity())
                 return;
-            // FIXME: Remove the special handling for SVG context elements.
-            if (node->isSVGElement() && toSVGElement(node)->isContextElement())
+            // FIXME: Remove the special handling for SVG elements.
+            // We currently can't collect SVG Elements from minor gc, as we have
+            // strong references from SVG property tear-offs keeping context SVG element alive.
+            if (node->isSVGElement())
                 return;
 
             m_nodesInNewSpace.append(node);

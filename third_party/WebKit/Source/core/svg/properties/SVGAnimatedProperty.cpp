@@ -43,9 +43,6 @@ SVGAnimatedPropertyBase::SVGAnimatedPropertyBase(AnimatedPropertyType type, SVGE
 {
     ASSERT(m_contextElement);
     ASSERT(m_attributeName != QualifiedName::null());
-    // FIXME: setContextElement should be delayed until V8 wrapper is created.
-    // FIXME: oilpan: or we can remove this backref ptr hack in oilpan.
-    m_contextElement->setContextElement();
 }
 
 SVGAnimatedPropertyBase::~SVGAnimatedPropertyBase()

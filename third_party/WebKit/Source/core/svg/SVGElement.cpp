@@ -61,8 +61,6 @@ SVGElement::SVGElement(const QualifiedName& tagName, Document& document, Constru
 #if ENABLE(ASSERT)
     , m_inRelativeLengthClientsInvalidation(false)
 #endif
-    // |m_isContextElement| must be initialized before |m_className|, as SVGAnimatedString tear-off c-tor currently set this to true.
-    , m_isContextElement(false)
     , m_SVGRareData(nullptr)
     , m_className(SVGAnimatedString::create(this, HTMLNames::classAttr, SVGString::create()))
 {
