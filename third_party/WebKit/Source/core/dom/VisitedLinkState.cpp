@@ -63,9 +63,9 @@ void VisitedLinkState::invalidateStyleForAllLinks()
 {
     if (m_linksCheckedForVisitedState.isEmpty())
         return;
-    for (Element* element = ElementTraversal::firstWithin(document()); element; element = ElementTraversal::next(*element)) {
-        if (element->isLink())
-            element->setNeedsStyleRecalc(SubtreeStyleChange);
+    for (Node* node = document().firstChild(); node; node = NodeTraversal::next(*node)) {
+        if (node->isLink())
+            node->setNeedsStyleRecalc(SubtreeStyleChange);
     }
 }
 
@@ -73,9 +73,9 @@ void VisitedLinkState::invalidateStyleForLink(LinkHash linkHash)
 {
     if (!m_linksCheckedForVisitedState.contains(linkHash))
         return;
-    for (Element* element = ElementTraversal::firstWithin(document()); element; element = ElementTraversal::next(*element)) {
-        if (element->isLink() && linkHashForElement(*element) == linkHash)
-            element->setNeedsStyleRecalc(SubtreeStyleChange);
+    for (Node* node = document().firstChild(); node; node = NodeTraversal::next(*node)) {
+        if (node->isLink() && linkHashForElement(toElement(*node)) == linkHash)
+            node->setNeedsStyleRecalc(SubtreeStyleChange);
     }
 }
 
