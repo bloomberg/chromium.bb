@@ -398,8 +398,10 @@ void ShillToONCTranslator::TranslateAndAddNestedObject(
     const base::DictionaryValue& dictionary) {
   const OncFieldSignature* field_signature =
       GetFieldSignature(*onc_signature_, onc_field_name);
-  DCHECK(field_signature) << "Unable to find signature for field "
-                          << onc_field_name << ".";
+  if (!field_signature) {
+    NOTREACHED() << "Unable to find signature for field: " << onc_field_name;
+    return;
+  }
   ShillToONCTranslator nested_translator(dictionary,
                                          *field_signature->value_signature);
   scoped_ptr<base::DictionaryValue> nested_object =
