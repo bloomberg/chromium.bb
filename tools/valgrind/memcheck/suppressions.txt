@@ -6201,6 +6201,37 @@
    fun:_ZNK2cc*LayerImpl11AsValueIntoEPN4base5debug11TracedValueE
 }
 {
+   bug_402257_a
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZN10extensions11ApiTestBase15RegisterModulesEv
+   fun:_ZN10extensions11ApiTestBase5SetUpEv
+   fun:_ZN10extensions16DataReceiverTest5SetUpEv
+}
+{
+   bug_402257_b
+   Memcheck:Leak
+   ...
+   fun:_ZN10extensions12_GLOBAL__N_111TestNatives24GetObjectTemplateBuilderEPN2v87IsolateE
+   fun:_ZN3gin13WrappableBase14GetWrapperImplEPN2v87IsolateEPNS_11WrapperInfoE
+   fun:_ZN3gin9WrappableIN10extensions12_GLOBAL__N_111TestNativesEE10GetWrapperEPN2v87IsolateE
+   fun:_ZN3gin12CreateHandleIN10extensions12_GLOBAL__N_111TestNativesEEENS_6HandleIT_EEPN2v87IsolateEPS5_
+   fun:_ZN10extensions12_GLOBAL__N_111TestNatives6CreateEPN2v87IsolateERKN4base8CallbackIFvvEEE
+   fun:_ZN10extensions11ApiTestBase7RunTestERKSsS2_
+   fun:_ZN10extensions29DataReceiverTest_Receive_Test8TestBodyEv
+}
+{
+   bug_402257_c
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN3gin13HandleWrapper6CreateEPN2v87IsolateEj
+   fun:_ZN3gin9ConverterIN4mojo6HandleEvE4ToV8EPN2v87IsolateERKS2_
+   fun:_ZN3gin11ConvertToV8IN4mojo6HandleEEEN2v86HandleINS3_5ValueEEEPNS3_7IsolateET_
+   fun:_ZN3gin10Dictionary3SetIN4mojo6HandleEEEbRKSsT_
+   fun:_ZN4mojo2js12_GLOBAL__N_114CreateDataPipeERKN3gin9ArgumentsE
+}
+{
    bug_403774
    Memcheck:Leak
    fun:_Znw*
