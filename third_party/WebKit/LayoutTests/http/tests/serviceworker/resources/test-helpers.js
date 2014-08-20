@@ -5,7 +5,10 @@
 // unregister.
 // FIXME: Use getRegistration() when implemented.
 function service_worker_unregister_and_register(test, url, scope) {
-  var options = scope ? { scope: scope } : {};
+  if (!scope || scope.length == 0)
+    return Promise.reject(new Error('tests must define a scope'));
+
+  var options = { scope: scope };
   return navigator.serviceWorker.register(url, options)
       .then(function(registration) {
           return registration.unregister();

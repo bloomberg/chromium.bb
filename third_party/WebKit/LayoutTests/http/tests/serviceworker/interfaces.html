@@ -17,11 +17,19 @@ test(function() {
 
 async_test(function(t) {
     var EVENT_HANDLER = 'object';
-    service_worker_unregister_and_register(t, 'resources/empty-worker.js')
-      .then(function(registration) {
+    var scope = 'scope/interfaces-and-attributes';
+    var registration;
+
+    service_worker_unregister_and_register(
+        t, 'resources/empty-worker.js', scope)
+      .then(function(r) {
+          registration = r;
           verifyInterface(
             'ServiceWorkerRegistration', registration,
             {
+              installing: 'object',
+              waiting: 'object',
+              active: 'object',
               scope: 'string',
               unregister: 'function',
               onupdatefound: EVENT_HANDLER
@@ -36,6 +44,9 @@ async_test(function(t) {
               state: 'string',
               onstatechange: EVENT_HANDLER
             });
+          return registration.unregister();
+        })
+      .then(function() {
           t.done();
         })
       .catch(unreached_rejection(t));

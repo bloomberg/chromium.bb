@@ -15,25 +15,17 @@ function scope_test(name, scope) {
       }
 
       var registration;
-      service_worker_unregister_and_register(
-          t, 'resources/serviceworkerglobalscope-scope-worker.js', scope)
+      var script = 'resources/serviceworkerglobalscope-scope-worker.js';
+      var options = scope ? { scope: scope } : {};
+      navigator.serviceWorker.unregister(scope)
+        .then(function() {
+            return navigator.serviceWorker.register(script, options);
+          })
         .then(function(r) {
             registration = r;
-            assert_equals(registration.waiting, null,
-                          'registration.waiting should be null');
-            assert_equals(registration.active, null,
-                          'registration.active should be null');
-            assert_equals(registration.installing, null,
-                          'registration.installing should be null');
             return wait_for_update(t, registration);
           })
         .then(function(worker) {
-            assert_equals(registration.waiting, null,
-                          'registration.waiting should be null');
-            assert_equals(registration.active, null,
-                          'registration.active should be null');
-            assert_equals(registration.installing, worker,
-                          'registration.installing should not be null');
             return new Promise(function(resolve) {
                 var messageChannel = new MessageChannel();
                 messageChannel.port1.onmessage = resolve;
@@ -46,7 +38,10 @@ function scope_test(name, scope) {
                           'Worker should see the scope on eval.');
             assert_equals(message.currentScope, expectedScope,
                           'Worker scope should not change.');
-            service_worker_unregister_and_done(t, scope);
+            return registration.unregister();
+          })
+        .then(function() {
+            t.done();
           })
         .catch(unreached_rejection(t));
     });
