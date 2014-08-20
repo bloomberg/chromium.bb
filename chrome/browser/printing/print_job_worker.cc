@@ -105,6 +105,8 @@ void PrintJobWorker::GetSettings(
                               document_page_count,
                               has_selection)));
   } else {
+    BrowserThread::DeleteSoon(
+        BrowserThread::UI, FROM_HERE, web_contents_observer.release());
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::Bind(&HoldRefCallback, make_scoped_refptr(owner_),

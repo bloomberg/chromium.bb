@@ -14,6 +14,7 @@
 class PrintingUIWebContentsObserver : public content::WebContentsObserver {
  public:
   explicit PrintingUIWebContentsObserver(content::WebContents* web_contents);
+  virtual ~PrintingUIWebContentsObserver();
 
   // Return the parent NativeView of the observed WebContents.
   gfx::NativeView GetParentView();
