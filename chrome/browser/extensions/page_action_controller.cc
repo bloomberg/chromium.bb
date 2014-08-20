@@ -92,10 +92,12 @@ void PageActionController::OnNavigated() {
   LocationBarController::NotifyChange(web_contents_);
 }
 
-void PageActionController::OnPageActionUpdated(
+void PageActionController::OnExtensionActionUpdated(
     ExtensionAction* extension_action,
-    content::WebContents* web_contents) {
-  if (web_contents == web_contents_)
+    content::WebContents* web_contents,
+    content::BrowserContext* browser_context) {
+  if (web_contents == web_contents_ &&
+      extension_action->action_type() == ActionInfo::TYPE_PAGE)
     LocationBarController::NotifyChange(web_contents_);
 }
 

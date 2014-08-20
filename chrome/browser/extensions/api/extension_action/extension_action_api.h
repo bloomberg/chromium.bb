@@ -35,8 +35,20 @@ class ExtensionActionAPI : public BrowserContextKeyedAPI {
  public:
   class Observer {
    public:
-    virtual void OnPageActionUpdated(ExtensionAction* extension_action,
-                                     content::WebContents* web_contents) = 0;
+    // Called when there is a change to the given |extension_action|.
+    // |web_contents| is the web contents that was affected, and
+    // |browser_context| is the associated BrowserContext. (The latter is
+    // included because ExtensionActionAPI is shared between normal and
+    // incognito contexts, so |browser_context| may not equal
+    // |browser_context_|.)
+    virtual void OnExtensionActionUpdated(
+        ExtensionAction* extension_action,
+        content::WebContents* web_contents,
+        content::BrowserContext* browser_context) = 0;
+
+    // Called when the ExtensionActionAPI is shutting down, giving observers a
+    // chance to unregister themselves if there is not a definitive lifecycle.
+    virtual void OnExtensionActionAPIShuttingDown() {}
 
    protected:
     virtual ~Observer() {}
@@ -75,7 +87,8 @@ class ExtensionActionAPI : public BrowserContextKeyedAPI {
   void RemoveObserver(Observer* observer);
 
   void NotifyChange(ExtensionAction* extension_action,
-                    content::WebContents* web_contents);
+                    content::WebContents* web_contents,
+                    content::BrowserContext* browser_context);
 
  private:
   friend class BrowserContextKeyedAPIFactory<ExtensionActionAPI>;
@@ -103,13 +116,9 @@ class ExtensionActionAPI : public BrowserContextKeyedAPI {
                                       content::WebContents* web_contents);
 
   // BrowserContextKeyedAPI implementation.
+  virtual void Shutdown() OVERRIDE;
   static const char* service_name() { return "ExtensionActionAPI"; }
   static const bool kServiceRedirectedInIncognito = true;
-
-  // Notify of extension action changes.
-  // TODO(devlin): Migrate these over to Observer notifications.
-  void NotifyBrowserActionChange(ExtensionAction* extension_action);
-  void NotifySystemIndicatorChange(ExtensionAction* extension_action);
 
   ObserverList<Observer> observers_;
 
@@ -120,7 +129,7 @@ class ExtensionActionAPI : public BrowserContextKeyedAPI {
 
 // This class manages reading and writing browser action values from storage.
 class ExtensionActionStorageManager
-    : public content::NotificationObserver,
+    : public ExtensionActionAPI::Observer,
       public ExtensionRegistryObserver,
       public base::SupportsWeakPtr<ExtensionActionStorageManager> {
  public:
@@ -128,10 +137,12 @@ class ExtensionActionStorageManager
   virtual ~ExtensionActionStorageManager();
 
  private:
-  // NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+  // ExtensionActionAPI::Observer:
+  virtual void OnExtensionActionUpdated(
+      ExtensionAction* extension_action,
+      content::WebContents* web_contents,
+      content::BrowserContext* browser_context) OVERRIDE;
+  virtual void OnExtensionActionAPIShuttingDown() OVERRIDE;
 
   // ExtensionRegistryObserver:
   virtual void OnExtensionLoaded(content::BrowserContext* browser_context,
@@ -143,7 +154,9 @@ class ExtensionActionStorageManager
       const std::string& extension_id, scoped_ptr<base::Value> value);
 
   Profile* profile_;
-  content::NotificationRegistrar registrar_;
+
+  ScopedObserver<ExtensionActionAPI, ExtensionActionAPI::Observer>
+      extension_action_observer_;
 
   // Listen to extension loaded notification.
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>

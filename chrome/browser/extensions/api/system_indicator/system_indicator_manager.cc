@@ -7,18 +7,14 @@
 #include "base/memory/linked_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_action.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/status_icons/status_icon.h"
 #include "chrome/browser/status_icons/status_icon_observer.h"
 #include "chrome/browser/status_icons/status_tray.h"
 #include "chrome/common/extensions/api/system_indicator.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_source.h"
+#include "content/public/browser/web_contents.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_registry.h"
-#include "extensions/browser/extension_system.h"
-#include "extensions/browser/notification_types.h"
 #include "extensions/common/extension.h"
 #include "ui/gfx/image/image.h"
 
@@ -124,12 +120,10 @@ SystemIndicatorManager::SystemIndicatorManager(Profile* profile,
                                                StatusTray* status_tray)
     : profile_(profile),
       status_tray_(status_tray),
+      extension_action_observer_(this),
       extension_registry_observer_(this) {
   extension_registry_observer_.Add(ExtensionRegistry::Get(profile_));
-
-  registrar_.Add(this,
-                 extensions::NOTIFICATION_EXTENSION_SYSTEM_INDICATOR_UPDATED,
-                 content::Source<Profile>(profile_->GetOriginalProfile()));
+  extension_action_observer_.Add(ExtensionActionAPI::Get(profile_));
 }
 
 SystemIndicatorManager::~SystemIndicatorManager() {
@@ -147,27 +141,21 @@ void SystemIndicatorManager::OnExtensionUnloaded(
   RemoveIndicator(extension->id());
 }
 
-void SystemIndicatorManager::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
+void SystemIndicatorManager::OnExtensionActionUpdated(
+    ExtensionAction* extension_action,
+    content::WebContents* web_contents,
+    content::BrowserContext* browser_context) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK_EQ(type, extensions::NOTIFICATION_EXTENSION_SYSTEM_INDICATOR_UPDATED);
+  if (profile_->GetOriginalProfile() != browser_context ||
+      extension_action->action_type() != ActionInfo::TYPE_SYSTEM_INDICATOR)
+    return;
 
-  OnSystemIndicatorChanged(content::Details<ExtensionAction>(details).ptr());
-}
-
-void SystemIndicatorManager::OnSystemIndicatorChanged(
-    const ExtensionAction* extension_action) {
-  DCHECK(thread_checker_.CalledOnValidThread());
   std::string extension_id = extension_action->extension_id();
-  ExtensionService* service =
-      ExtensionSystem::Get(profile_)->extension_service();
-
   if (extension_action->GetIsVisible(ExtensionAction::kDefaultTabId)) {
-    const Extension* extension =
-        service->GetExtensionById(extension_id, false);
-    CreateOrUpdateIndicator(extension, extension_action);
+    CreateOrUpdateIndicator(
+        ExtensionRegistry::Get(profile_)->enabled_extensions().GetByID(
+            extension_id),
+        extension_action);
   } else {
     RemoveIndicator(extension_id);
   }

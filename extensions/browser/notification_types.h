@@ -116,11 +116,6 @@ enum NotificationType {
   // Sent when a background page is ready so other components can load.
   NOTIFICATION_EXTENSION_BACKGROUND_PAGE_READY,
 
-  // Sent when a browser action's state has changed. The source is the
-  // ExtensionAction* that changed. The details are the BrowserContext* that the
-  // browser action belongs to.
-  NOTIFICATION_EXTENSION_BROWSER_ACTION_UPDATED,
-
   // Sent when the count of page actions has changed. Note that some of them
   // may not apply to the current page. The source is a LocationBar*. There
   // are no details.
@@ -134,11 +129,6 @@ enum NotificationType {
   // Sent when a page action's visibility has changed. The source is the
   // ExtensionAction* that changed. The details are a WebContents*.
   NOTIFICATION_EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED,
-
-  // Sent when a system indicator action's state has changed. The source is the
-  // BrowserContext* that the browser action belongs to. The details are the
-  // ExtensionAction* that changed.
-  NOTIFICATION_EXTENSION_SYSTEM_INDICATOR_UPDATED,
 
   // Sent when an extension command has been removed. The source is the
   // BrowserContext* and the details is a std::pair of two std::string objects

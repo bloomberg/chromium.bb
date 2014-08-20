@@ -13,6 +13,7 @@
 #include "chrome/browser/extensions/activity_log/activity_log.h"
 #include "chrome/browser/extensions/api/declarative/rules_registry_service.h"
 #include "chrome/browser/extensions/api/declarative_content/content_rules_registry.h"
+#include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/api/webstore/webstore_api.h"
 #include "chrome/browser/extensions/bookmark_app_helper.h"
 #include "chrome/browser/extensions/error_console/error_console.h"
@@ -252,6 +253,7 @@ void TabHelper::DidNavigateMainFrame(
 
   ExtensionActionManager* extension_action_manager =
       ExtensionActionManager::Get(Profile::FromBrowserContext(context));
+  ExtensionActionAPI* extension_action_api = ExtensionActionAPI::Get(context);
   for (ExtensionSet::const_iterator it = enabled_extensions.begin();
        it != enabled_extensions.end();
        ++it) {
@@ -260,10 +262,8 @@ void TabHelper::DidNavigateMainFrame(
     if (browser_action) {
       browser_action->ClearAllValuesForTab(
           SessionTabHelper::IdForTab(web_contents()));
-      content::NotificationService::current()->Notify(
-          extensions::NOTIFICATION_EXTENSION_BROWSER_ACTION_UPDATED,
-          content::Source<ExtensionAction>(browser_action),
-          content::NotificationService::NoDetails());
+      extension_action_api->NotifyChange(
+          browser_action, web_contents(), profile_);
     }
   }
 }

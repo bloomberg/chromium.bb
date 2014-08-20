@@ -28,27 +28,12 @@ class BrowserActionsContainerTest : public ExtensionBrowserTest {
   virtual ~BrowserActionsContainerTest() {}
 
   virtual void SetUpOnMainThread() OVERRIDE {
+    ExtensionBrowserTest::SetUpOnMainThread();
     browser_actions_bar_.reset(new BrowserActionTestUtil(browser()));
   }
 
   BrowserActionTestUtil* browser_actions_bar() {
     return browser_actions_bar_.get();
-  }
-
-  // Make sure extension with index |extension_index| has an icon.
-  void EnsureExtensionHasIcon(int extension_index) {
-    if (!browser_actions_bar_->HasIcon(extension_index)) {
-      // The icon is loaded asynchronously and a notification is then sent to
-      // observers. So we wait on it.
-      ExtensionAction* browser_action =
-          browser_actions_bar_->GetExtensionAction(extension_index);
-
-      content::WindowedNotificationObserver observer(
-          extensions::NOTIFICATION_EXTENSION_BROWSER_ACTION_UPDATED,
-          content::Source<ExtensionAction>(browser_action));
-      observer.Wait();
-    }
-    EXPECT_TRUE(browser_actions_bar()->HasIcon(extension_index));
   }
 
  private:
@@ -76,7 +61,8 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, Basic) {
                                           .AppendASCII("browser_action")
                                           .AppendASCII("basics")));
   EXPECT_EQ(1, browser_actions_bar()->NumberOfBrowserActions());
-  EnsureExtensionHasIcon(0);
+  EXPECT_TRUE(browser_actions_bar()->HasIcon(0));
+
 
   // Unload the extension.
   std::string id = browser_actions_bar()->GetExtensionId(0);
@@ -146,7 +132,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, Visibility) {
                                           .AppendASCII("browser_action")
                                           .AppendASCII("basics")));
   EXPECT_EQ(1, browser_actions_bar()->NumberOfBrowserActions());
-  EnsureExtensionHasIcon(0);
+  EXPECT_TRUE(browser_actions_bar()->HasIcon(0));
   EXPECT_EQ(1, browser_actions_bar()->VisibleBrowserActions());
   std::string idA = browser_actions_bar()->GetExtensionId(0);
 
@@ -155,7 +141,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, Visibility) {
                                           .AppendASCII("browser_action")
                                           .AppendASCII("add_popup")));
   EXPECT_EQ(2, browser_actions_bar()->NumberOfBrowserActions());
-  EnsureExtensionHasIcon(0);
+  EXPECT_TRUE(browser_actions_bar()->HasIcon(0));
   EXPECT_EQ(2, browser_actions_bar()->VisibleBrowserActions());
   std::string idB = browser_actions_bar()->GetExtensionId(1);
 
@@ -166,7 +152,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, Visibility) {
                                           .AppendASCII("browser_action")
                                           .AppendASCII("remove_popup")));
   EXPECT_EQ(3, browser_actions_bar()->NumberOfBrowserActions());
-  EnsureExtensionHasIcon(2);
+  EXPECT_TRUE(browser_actions_bar()->HasIcon(2));
   EXPECT_EQ(3, browser_actions_bar()->VisibleBrowserActions());
   std::string idC = browser_actions_bar()->GetExtensionId(2);
 
@@ -237,7 +223,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, ForceHide) {
                                           .AppendASCII("browser_action")
                                           .AppendASCII("basics")));
   EXPECT_EQ(1, browser_actions_bar()->NumberOfBrowserActions());
-  EnsureExtensionHasIcon(0);
+  EXPECT_TRUE(browser_actions_bar()->HasIcon(0));
   EXPECT_EQ(1, browser_actions_bar()->VisibleBrowserActions());
   std::string idA = browser_actions_bar()->GetExtensionId(0);
 

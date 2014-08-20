@@ -9,6 +9,7 @@
 #include "base/observer_list.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "base/scoped_observer.h"
+#include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/notification_observer.h"
@@ -27,6 +28,7 @@ class ExtensionSet;
 
 // Model for the browser actions toolbar.
 class ExtensionToolbarModel : public content::NotificationObserver,
+                              public ExtensionActionAPI::Observer,
                               public ExtensionRegistryObserver,
                               public KeyedService {
  public:
@@ -51,6 +53,10 @@ class ExtensionToolbarModel : public content::NotificationObserver,
     // should be at |index|).
     virtual void ToolbarExtensionMoved(const Extension* extension,
                                        int index) = 0;
+
+    // Signals that the browser action for the given |extension| has been
+    // updated.
+    virtual void ToolbarExtensionUpdated(const Extension* extension) = 0;
 
     // Signal the |extension| to show the popup now in the active window.
     // Returns true if a popup was slated to be shown.
@@ -139,7 +145,7 @@ class ExtensionToolbarModel : public content::NotificationObserver,
   void StopHighlighting();
 
  private:
-  // content::NotificationObserver implementation.
+  // content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
@@ -147,7 +153,7 @@ class ExtensionToolbarModel : public content::NotificationObserver,
   // Callback when extensions are ready.
   void OnReady();
 
-  // ExtensionRegistryObserver implementation.
+  // ExtensionRegistryObserver:
   virtual void OnExtensionLoaded(content::BrowserContext* browser_context,
                                  const Extension* extension) OVERRIDE;
   virtual void OnExtensionUnloaded(
@@ -158,6 +164,12 @@ class ExtensionToolbarModel : public content::NotificationObserver,
       content::BrowserContext* browser_context,
       const Extension* extension,
       extensions::UninstallReason reason) OVERRIDE;
+
+  // ExtensionActionAPI::Observer:
+  virtual void OnExtensionActionUpdated(
+      ExtensionAction* extension_action,
+      content::WebContents* web_contents,
+      content::BrowserContext* browser_context) OVERRIDE;
 
   // To be called after the extension service is ready; gets loaded extensions
   // from the extension service and their saved order from the pref service
@@ -218,6 +230,9 @@ class ExtensionToolbarModel : public content::NotificationObserver,
   int visible_icon_count_;
 
   content::NotificationRegistrar registrar_;
+
+  ScopedObserver<ExtensionActionAPI, ExtensionActionAPI::Observer>
+      extension_action_observer_;
 
   // Listen to extension load, unloaded notifications.
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>

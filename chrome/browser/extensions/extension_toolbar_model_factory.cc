@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/extension_toolbar_model_factory.h"
 
+#include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -30,6 +31,7 @@ ExtensionToolbarModelFactory::ExtensionToolbarModelFactory()
         "ExtensionToolbarModel",
         BrowserContextDependencyManager::GetInstance()) {
   DependsOn(ExtensionPrefsFactory::GetInstance());
+  DependsOn(ExtensionActionAPI::GetFactoryInstance());
 }
 
 ExtensionToolbarModelFactory::~ExtensionToolbarModelFactory() {}

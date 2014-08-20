@@ -423,36 +423,16 @@ void ExtensionActionAPI::RemoveObserver(Observer* observer) {
 }
 
 void ExtensionActionAPI::NotifyChange(ExtensionAction* extension_action,
-                                      content::WebContents* web_contents) {
-  switch (extension_action->action_type()) {
-    case ActionInfo::TYPE_BROWSER:
-      NotifyBrowserActionChange(extension_action);
-      break;
-    case ActionInfo::TYPE_PAGE:
-      FOR_EACH_OBSERVER(Observer,
-                        observers_,
-                        OnPageActionUpdated(extension_action, web_contents));
-      break;
-    case ActionInfo::TYPE_SYSTEM_INDICATOR:
-      NotifySystemIndicatorChange(extension_action);
-      return;
-  }
+                                      content::WebContents* web_contents,
+                                      content::BrowserContext* context) {
+  FOR_EACH_OBSERVER(
+      Observer,
+      observers_,
+      OnExtensionActionUpdated(extension_action, web_contents, context));
 }
 
-void ExtensionActionAPI::NotifyBrowserActionChange(
-    ExtensionAction* extension_action) {
-  content::NotificationService::current()->Notify(
-      extensions::NOTIFICATION_EXTENSION_BROWSER_ACTION_UPDATED,
-      content::Source<ExtensionAction>(extension_action),
-      content::Details<Profile>(Profile::FromBrowserContext(browser_context_)));
-}
-
-void ExtensionActionAPI::NotifySystemIndicatorChange(
-    ExtensionAction* extension_action) {
-  content::NotificationService::current()->Notify(
-      extensions::NOTIFICATION_EXTENSION_SYSTEM_INDICATOR_UPDATED,
-      content::Source<Profile>(Profile::FromBrowserContext(browser_context_)),
-      content::Details<ExtensionAction>(extension_action));
+void ExtensionActionAPI::Shutdown() {
+  FOR_EACH_OBSERVER(Observer, observers_, OnExtensionActionAPIShuttingDown());
 }
 
 //
@@ -460,11 +440,11 @@ void ExtensionActionAPI::NotifySystemIndicatorChange(
 //
 
 ExtensionActionStorageManager::ExtensionActionStorageManager(Profile* profile)
-    : profile_(profile), extension_registry_observer_(this) {
+    : profile_(profile),
+      extension_action_observer_(this),
+      extension_registry_observer_(this) {
+  extension_action_observer_.Add(ExtensionActionAPI::Get(profile_));
   extension_registry_observer_.Add(ExtensionRegistry::Get(profile_));
-  registrar_.Add(this,
-                 extensions::NOTIFICATION_EXTENSION_BROWSER_ACTION_UPDATED,
-                 content::NotificationService::AllBrowserContextsAndSources());
 
   StateStore* storage = ExtensionSystem::Get(profile_)->state_store();
   if (storage)
@@ -477,9 +457,8 @@ ExtensionActionStorageManager::~ExtensionActionStorageManager() {
 void ExtensionActionStorageManager::OnExtensionLoaded(
     content::BrowserContext* browser_context,
     const Extension* extension) {
-  if (!ExtensionActionManager::Get(profile_)->GetBrowserAction(*extension)) {
+  if (!ExtensionActionManager::Get(profile_)->GetBrowserAction(*extension))
     return;
-  }
 
   StateStore* storage = ExtensionSystem::Get(profile_)->state_store();
   if (storage) {
@@ -492,18 +471,17 @@ void ExtensionActionStorageManager::OnExtensionLoaded(
   }
 }
 
-void ExtensionActionStorageManager::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK_EQ(type, extensions::NOTIFICATION_EXTENSION_BROWSER_ACTION_UPDATED);
-  ExtensionAction* extension_action =
-      content::Source<ExtensionAction>(source).ptr();
-  Profile* profile = content::Details<Profile>(details).ptr();
-  if (profile != profile_)
-    return;
+void ExtensionActionStorageManager::OnExtensionActionUpdated(
+    ExtensionAction* extension_action,
+    content::WebContents* web_contents,
+    content::BrowserContext* browser_context) {
+  if (profile_ == browser_context &&
+      extension_action->action_type() == ActionInfo::TYPE_BROWSER)
+    WriteToStorage(extension_action);
+}
 
-  WriteToStorage(extension_action);
+void ExtensionActionStorageManager::OnExtensionActionAPIShuttingDown() {
+  extension_action_observer_.RemoveAll();
 }
 
 void ExtensionActionStorageManager::WriteToStorage(
@@ -650,8 +628,8 @@ bool ExtensionActionFunction::ExtractDataFromArguments() {
 }
 
 void ExtensionActionFunction::NotifyChange() {
-  ExtensionActionAPI::Get(GetProfile())->NotifyChange(extension_action_,
-                                                      contents_);
+  ExtensionActionAPI::Get(GetProfile())->NotifyChange(
+      extension_action_, contents_, GetProfile());
 }
 
 bool ExtensionActionFunction::SetVisible(bool visible) {

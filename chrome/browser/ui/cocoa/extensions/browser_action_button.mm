@@ -9,15 +9,11 @@
 
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_icon_factory.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/cocoa/extensions/extension_action_context_menu_controller.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/notification_source.h"
 #include "extensions/common/extension.h"
 #include "grit/theme_resources.h"
 #include "skia/ext/skia_utils_mac.h"
@@ -42,8 +38,7 @@ static const CGFloat kMinimumDragDistance = 5;
 // A helper class to bridge the asynchronous Skia bitmap loading mechanism to
 // the extension's button.
 class ExtensionActionIconFactoryBridge
-    : public content::NotificationObserver,
-      public ExtensionActionIconFactory::Observer {
+    : public ExtensionActionIconFactory::Observer {
  public:
   ExtensionActionIconFactoryBridge(BrowserActionButton* owner,
                                    Profile* profile,
@@ -51,9 +46,6 @@ class ExtensionActionIconFactoryBridge
       : owner_(owner),
         browser_action_([[owner cell] extensionAction]),
         icon_factory_(profile, extension, browser_action_, this) {
-    registrar_.Add(this,
-                   extensions::NOTIFICATION_EXTENSION_BROWSER_ACTION_UPDATED,
-                   content::Source<ExtensionAction>(browser_action_));
   }
 
   virtual ~ExtensionActionIconFactoryBridge() {}
@@ -61,17 +53,6 @@ class ExtensionActionIconFactoryBridge
   // ExtensionActionIconFactory::Observer implementation.
   virtual void OnIconUpdated() OVERRIDE {
     [owner_ updateState];
-  }
-
-  // Overridden from content::NotificationObserver.
-  virtual void Observe(
-      int type,
-      const content::NotificationSource& source,
-      const content::NotificationDetails& details) OVERRIDE {
-    if (type == extensions::NOTIFICATION_EXTENSION_BROWSER_ACTION_UPDATED)
-      [owner_ updateState];
-    else
-      NOTREACHED();
   }
 
   gfx::Image GetIcon(int tabId) {
@@ -90,9 +71,6 @@ class ExtensionActionIconFactoryBridge
   // returned by the factory will be transparent), so we have to observe it for
   // updates to the icon.
   ExtensionActionIconFactory icon_factory_;
-
-  // Used for registering to receive notifications and automatic clean up.
-  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionActionIconFactoryBridge);
 };

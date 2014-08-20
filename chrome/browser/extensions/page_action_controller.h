@@ -33,8 +33,10 @@ class PageActionController : public LocationBarController::ActionProvider,
 
  private:
   // ExtensionActionAPI::Observer implementation.
-  virtual void OnPageActionUpdated(ExtensionAction* extension_action,
-                                   content::WebContents* web_contents) OVERRIDE;
+  virtual void OnExtensionActionUpdated(
+      ExtensionAction* extension_action,
+      content::WebContents* web_contents,
+      content::BrowserContext* browser_context) OVERRIDE;
 
   // Returns the associated Profile.
   Profile* GetProfile();

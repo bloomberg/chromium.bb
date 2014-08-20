@@ -68,7 +68,7 @@ class ShowPageAction : public ContentAction {
     ExtensionAction* action = GetPageAction(apply_info->profile, extension_id);
     action->DeclarativeShow(ExtensionTabUtil::GetTabId(apply_info->tab));
     ExtensionActionAPI::Get(apply_info->profile)->NotifyChange(
-        action, apply_info->tab);
+        action, apply_info->tab, apply_info->profile);
   }
   virtual void Revert(const std::string& extension_id,
                       const base::Time& extension_install_time,
@@ -77,7 +77,7 @@ class ShowPageAction : public ContentAction {
             GetPageAction(apply_info->profile, extension_id)) {
       action->UndoDeclarativeShow(ExtensionTabUtil::GetTabId(apply_info->tab));
       ExtensionActionAPI::Get(apply_info->profile)->NotifyChange(
-          action, apply_info->tab);
+          action, apply_info->tab, apply_info->profile);
     }
   }
 

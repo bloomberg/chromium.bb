@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/extension_toolbar_model.h"
 
+#include <algorithm>
 #include <string>
 
 #include "base/metrics/histogram.h"
@@ -43,6 +44,7 @@ ExtensionToolbarModel::ExtensionToolbarModel(Profile* profile,
       include_all_extensions_(
           FeatureSwitch::extension_action_redesign()->IsEnabled()),
       is_highlighting_(false),
+      extension_action_observer_(this),
       extension_registry_observer_(this),
       weak_ptr_factory_(this) {
   ExtensionSystem::Get(profile_)->ready().Post(
@@ -163,6 +165,22 @@ void ExtensionToolbarModel::SetVisibleIconCount(int count) {
     prefs_->SetInteger(pref_names::kToolbarSize, visible_icon_count_);
 }
 
+void ExtensionToolbarModel::OnExtensionActionUpdated(
+    ExtensionAction* extension_action,
+    content::WebContents* web_contents,
+    content::BrowserContext* browser_context) {
+  const Extension* extension =
+      ExtensionRegistry::Get(profile_)->enabled_extensions().GetByID(
+          extension_action->extension_id());
+  // Notify observers if the extension exists and is in the model.
+  if (extension &&
+      std::find(toolbar_items_.begin(),
+                toolbar_items_.end(),
+                extension) != toolbar_items_.end()) {
+    FOR_EACH_OBSERVER(Observer, observers_, ToolbarExtensionUpdated(extension));
+  }
+}
+
 void ExtensionToolbarModel::OnExtensionLoaded(
     content::BrowserContext* browser_context,
     const Extension* extension) {
@@ -225,6 +243,7 @@ void ExtensionToolbarModel::OnReady() {
   // changes so that the toolbar buttons can be shown in their stable ordering
   // taken from prefs.
   extension_registry_observer_.Add(registry);
+  extension_action_observer_.Add(ExtensionActionAPI::Get(profile_));
   registrar_.Add(
       this,
       extensions::NOTIFICATION_EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED,

@@ -71,6 +71,9 @@ class ExtensionToolbarModelTestObserver
     ++moved_count_;
   }
 
+  virtual void ToolbarExtensionUpdated(const Extension* extension) OVERRIDE {
+  }
+
   virtual bool ShowExtensionActionPopup(const Extension* extension) OVERRIDE {
     return false;
   }

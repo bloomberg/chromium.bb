@@ -236,6 +236,12 @@ class ExtensionServiceObserverBridge
                                      int index) OVERRIDE {
   }
 
+  virtual void ToolbarExtensionUpdated(const Extension* extension) OVERRIDE {
+    BrowserActionButton* button = [owner_ buttonForExtension:extension];
+    if (button)
+      [button updateState];
+  }
+
   virtual bool ShowExtensionActionPopup(const Extension* extension) OVERRIDE {
     // Do not override other popups and only show in active window.
     ExtensionPopupController* popup = [ExtensionPopupController popup];

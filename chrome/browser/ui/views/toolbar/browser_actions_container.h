@@ -231,7 +231,6 @@ class BrowserActionsContainer
 
   // Overridden from BrowserActionView::Delegate:
   virtual content::WebContents* GetCurrentWebContents() OVERRIDE;
-  virtual void OnBrowserActionVisibilityChanged() OVERRIDE;
   virtual bool ShownInsideMenu() const OVERRIDE;
   virtual void OnBrowserActionViewDragDone() OVERRIDE;
   virtual views::View* GetOverflowReferenceView() OVERRIDE;
@@ -296,12 +295,17 @@ class BrowserActionsContainer
       const extensions::Extension* extension) OVERRIDE;
   virtual void ToolbarExtensionMoved(const extensions::Extension* extension,
                                      int index) OVERRIDE;
+  virtual void ToolbarExtensionUpdated(
+      const extensions::Extension* extension) OVERRIDE;
   virtual bool ShowExtensionActionPopup(
       const extensions::Extension* extension) OVERRIDE;
   virtual void ToolbarVisibleCountChanged() OVERRIDE;
   virtual void ToolbarHighlightModeChanged(bool is_highlighting) OVERRIDE;
 
   void LoadImages();
+
+  // Called when a browser action's visibility may have changed.
+  void OnBrowserActionVisibilityChanged();
 
   // Sets the initial container width.
   void SetContainerWidth();
@@ -347,6 +351,11 @@ class BrowserActionsContainer
 
   // Return the index of the first visible icon.
   size_t GetFirstVisibleIconIndex() const;
+
+  // Returns the BrowserActionView* associated with the given |extension|, or
+  // NULL if none exists.
+  BrowserActionView* GetViewForExtension(
+      const extensions::Extension* extension);
 
   // Whether this container is in overflow mode (as opposed to in 'main'
   // mode). See class comments for details on the difference.

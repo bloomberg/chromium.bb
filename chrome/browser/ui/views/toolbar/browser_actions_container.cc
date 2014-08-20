@@ -658,14 +658,6 @@ content::WebContents* BrowserActionsContainer::GetCurrentWebContents() {
   return browser_->tab_strip_model()->GetActiveWebContents();
 }
 
-void BrowserActionsContainer::OnBrowserActionVisibilityChanged() {
-  SetVisible(!browser_action_views_.empty());
-  if (owner_view_) {
-    owner_view_->Layout();
-    owner_view_->SchedulePaint();
-  }
-}
-
 extensions::ActiveTabPermissionGranter*
     BrowserActionsContainer::GetActiveTabPermissionGranter() {
   content::WebContents* web_contents =
@@ -901,6 +893,13 @@ void BrowserActionsContainer::ToolbarExtensionMoved(const Extension* extension,
   SchedulePaint();
 }
 
+void BrowserActionsContainer::ToolbarExtensionUpdated(
+    const Extension* extension) {
+  BrowserActionView* view = GetViewForExtension(extension);
+  if (view)
+    view->UpdateState();
+}
+
 bool BrowserActionsContainer::ShowExtensionActionPopup(
     const Extension* extension) {
   return ShowPopupForExtension(extension, false, false);
@@ -931,6 +930,14 @@ void BrowserActionsContainer::LoadImages() {
 
   const int kImages[] = IMAGE_GRID(IDR_DEVELOPER_MODE_HIGHLIGHT);
   highlight_painter_.reset(views::Painter::CreateImageGridPainter(kImages));
+}
+
+void BrowserActionsContainer::OnBrowserActionVisibilityChanged() {
+  SetVisible(!browser_action_views_.empty());
+  if (owner_view_) {
+    owner_view_->Layout();
+    owner_view_->SchedulePaint();
+  }
 }
 
 void BrowserActionsContainer::SetContainerWidth() {
@@ -1065,12 +1072,18 @@ bool BrowserActionsContainer::ShowPopupForExtension(
     return false;
   }
 
-  for (BrowserActionViews::iterator iter = browser_action_views_.begin();
-       iter != browser_action_views_.end(); ++iter) {
-    BrowserActionView* view = (*iter);
-    if (view->extension() == extension)
-      return view->view_controller()->ExecuteAction(
-          ExtensionPopup::SHOW, grant_tab_permissions);
+  BrowserActionView* view = GetViewForExtension(extension);
+  return view ? view->view_controller()->ExecuteAction(
+                    ExtensionPopup::SHOW, grant_tab_permissions) : false;
+}
+
+BrowserActionView* BrowserActionsContainer::GetViewForExtension(
+    const Extension* extension) {
+  for (BrowserActionViews::iterator view = browser_action_views_.begin();
+       view != browser_action_views_.end(); ++view) {
+    if ((*view)->extension() == extension)
+      return *view;
   }
-  return false;
+
+  return NULL;
 }

@@ -65,9 +65,6 @@ BrowserActionView::BrowserActionView(const Extension* extension,
   content::NotificationSource notification_source =
       content::Source<Profile>(browser->profile()->GetOriginalProfile());
   registrar_.Add(this,
-                 extensions::NOTIFICATION_EXTENSION_BROWSER_ACTION_UPDATED,
-                 content::Source<ExtensionAction>(extension_action));
-  registrar_.Add(this,
                  extensions::NOTIFICATION_EXTENSION_COMMAND_ADDED,
                  notification_source);
   registrar_.Add(this,
@@ -174,12 +171,6 @@ void BrowserActionView::Observe(int type,
                                 const content::NotificationSource& source,
                                 const content::NotificationDetails& details) {
   switch (type) {
-    case extensions::NOTIFICATION_EXTENSION_BROWSER_ACTION_UPDATED:
-      UpdateState();
-      // The browser action may have become visible/hidden so we need to make
-      // sure the state gets updated.
-      delegate_->OnBrowserActionVisibilityChanged();
-      break;
     case extensions::NOTIFICATION_EXTENSION_COMMAND_ADDED:
     case extensions::NOTIFICATION_EXTENSION_COMMAND_REMOVED: {
       std::pair<const std::string, const std::string>* payload =
