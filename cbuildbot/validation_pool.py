@@ -1963,7 +1963,7 @@ class ValidationPool(object):
     return bool(self.changes)
 
   @staticmethod
-  def Load(filename, metadata=None, record_patches=True):
+  def Load(filename, metadata=None):
     """Loads the validation pool from the file.
 
     Args:
@@ -1971,20 +1971,10 @@ class ValidationPool(object):
       metadata: Optional CBuildbotInstance to use as metadata object
                 for loaded pool (as metadata instances do not survive
                 pickle/unpickle)
-      record_patches: Optional, defaults to True. If True, patches
-                      picked up in this pool will be recorded in
-                      metadata.
     """
     with open(filename, 'rb') as p_file:
       pool = cPickle.load(p_file)
       pool._metadata = metadata
-      # Because metadata is currently not surviving cbuildbot re-execution,
-      # re-record that patches were picked up in the non-skipped run of
-      # CommitQueueSync.
-      # TODO(akeshet): Remove this code once metadata is being pickled and
-      # passed across re-executions. See crbug.com/356930
-      if record_patches:
-        pool.RecordPatchesInMetadata()
       return pool
 
   def Save(self, filename):

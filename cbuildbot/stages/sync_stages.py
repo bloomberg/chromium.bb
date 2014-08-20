@@ -689,7 +689,7 @@ class CommitQueueSyncStage(MasterSlaveLKGMSyncStage):
     filename = self._run.options.validation_pool
     if filename:
       self.pool = validation_pool.ValidationPool.Load(filename,
-          metadata=self._run.attrs.metadata, record_patches=False)
+          metadata=self._run.attrs.metadata)
     else:
       self._SetPoolFromManifest(self.manifest_manager.GetLocalManifest())
 
