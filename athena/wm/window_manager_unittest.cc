@@ -179,6 +179,8 @@ TEST_F(WindowManagerTest, TitleDragSwitchBetweenWindows) {
   EXPECT_TRUE(wm::IsActiveWindow(second.get()));
   EXPECT_EQ(second.get(),
             wm_api.window_list_provider()->GetWindowList().back());
+  EXPECT_TRUE(second->IsVisible());
+  EXPECT_FALSE(third->IsVisible());
 
   // Performing the same gesture again will switch back to |third|.
   generator.GestureScrollSequence(gfx::Point(20, 10),
@@ -187,6 +189,18 @@ TEST_F(WindowManagerTest, TitleDragSwitchBetweenWindows) {
                                   5);
   EXPECT_TRUE(wm::IsActiveWindow(third.get()));
   EXPECT_EQ(third.get(), wm_api.window_list_provider()->GetWindowList().back());
+  EXPECT_FALSE(second->IsVisible());
+  EXPECT_TRUE(third->IsVisible());
+
+  // Perform a swipe that doesn't go enough to perform the window switch.
+  generator.GestureScrollSequence(gfx::Point(20, 10),
+                                  gfx::Point(20, 90),
+                                  base::TimeDelta::FromMilliseconds(20),
+                                  5);
+  EXPECT_TRUE(wm::IsActiveWindow(third.get()));
+  EXPECT_EQ(third.get(), wm_api.window_list_provider()->GetWindowList().back());
+  EXPECT_FALSE(second->IsVisible());
+  EXPECT_TRUE(third->IsVisible());
 }
 
 TEST_F(WindowManagerTest, TitleDragSwitchBetweenWindowsInSplitViewMode) {

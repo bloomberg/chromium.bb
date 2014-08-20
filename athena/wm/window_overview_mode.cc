@@ -198,13 +198,9 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
           window->layer()->GetAnimator();
 
       // Unset any in-progress animation.
-      {
-        ui::ScopedLayerAnimationSettings settings(animator);
-        settings.SetPreemptionStrategy(
-            ui::LayerAnimator::IMMEDIATELY_SET_NEW_TARGET);
-        window->Show();
-        window->SetTransform(gfx::Transform());
-      }
+      animator->AbortAllAnimations();
+      window->Show();
+      window->SetTransform(gfx::Transform());
       // Setup the animation.
       {
         ui::ScopedLayerAnimationSettings settings(animator);

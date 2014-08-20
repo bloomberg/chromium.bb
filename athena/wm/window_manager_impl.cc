@@ -14,9 +14,12 @@
 #include "athena/wm/title_drag_controller.h"
 #include "athena/wm/window_list_provider_impl.h"
 #include "athena/wm/window_overview_mode.h"
+#include "base/bind.h"
 #include "base/logging.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window.h"
+#include "ui/compositor/closure_animation_observer.h"
+#include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
 #include "ui/wm/core/shadow_controller.h"
@@ -28,6 +31,14 @@
 namespace athena {
 namespace {
 class WindowManagerImpl* instance = NULL;
+
+void SetWindowState(aura::Window* window,
+                    const gfx::Rect& bounds,
+                    const gfx::Transform& transform) {
+  window->SetBounds(bounds);
+  window->SetTransform(transform);
+}
+
 }  // namespace
 
 class AthenaContainerLayoutManager : public aura::LayoutManager {
@@ -171,8 +182,8 @@ void WindowManagerImpl::SetInOverview(bool active) {
       active ? NULL : split_view_controller_.get());
   if (active) {
     split_view_controller_->DeactivateSplitMode();
-    FOR_EACH_OBSERVER(WindowManagerObserver, observers_,
-                      OnOverviewModeEnter());
+    FOR_EACH_OBSERVER(WindowManagerObserver, observers_, OnOverviewModeEnter());
+
     // Re-stack all windows in the order defined by window_list_provider_.
     aura::Window::Windows window_list = window_list_provider_->GetWindowList();
     aura::Window::Windows::iterator it;
@@ -183,8 +194,7 @@ void WindowManagerImpl::SetInOverview(bool active) {
   } else {
     CHECK(!split_view_controller_->IsSplitViewModeActive());
     overview_.reset();
-    FOR_EACH_OBSERVER(WindowManagerObserver, observers_,
-                      OnOverviewModeExit());
+    FOR_EACH_OBSERVER(WindowManagerObserver, observers_, OnOverviewModeExit());
   }
 }
 
@@ -286,11 +296,18 @@ void WindowManagerImpl::OnTitleDragStarted(aura::Window* window) {
   aura::Window* next_window = GetWindowBehind(window);
   if (!next_window)
     return;
-  // Make sure |window| is active. Also make sure that |next_window| is visible,
-  // and positioned to match the top-left edge of |window|.
+  // Make sure |window| is active.
   wm::ActivateWindow(window);
+
+  // Make sure |next_window| is visibile.
   next_window->Show();
+
+  // Position |next_window| correctly (left aligned if it's larger than
+  // |window|, and center aligned otherwise).
   int dx = window->bounds().x() - next_window->bounds().x();
+  if (next_window->bounds().width() < window->bounds().width())
+    dx -= (next_window->bounds().width() - window->bounds().width()) / 2;
+
   if (dx) {
     gfx::Transform transform;
     transform.Translate(dx, 0);
@@ -302,11 +319,27 @@ void WindowManagerImpl::OnTitleDragCompleted(aura::Window* window) {
   aura::Window* next_window = GetWindowBehind(window);
   if (!next_window)
     return;
-  if (split_view_controller_->IsSplitViewModeActive())
+  if (split_view_controller_->IsSplitViewModeActive()) {
     split_view_controller_->ReplaceWindow(window, next_window);
-  else
+    wm::ActivateWindow(next_window);
+  } else {
+    ui::ScopedLayerAnimationSettings
+        settings(next_window->layer()->GetAnimator());
+    settings.AddObserver(new ui::ClosureAnimationObserver(
+        base::Bind(&SetWindowState,
+                   base::Unretained(next_window),
+                   window->bounds(),
+                   gfx::Transform())));
+
+    gfx::Transform transform;
+    transform.Scale(window->bounds().width() / next_window->bounds().width(),
+                    window->bounds().height() / next_window->bounds().height());
+    transform.Translate(window->bounds().x() - next_window->bounds().x(), 0);
+    next_window->SetTransform(transform);
+
     OnSelectWindow(next_window);
-  wm::ActivateWindow(next_window);
+  }
+  window->Hide();
 }
 
 void WindowManagerImpl::OnTitleDragCanceled(aura::Window* window) {
@@ -314,6 +347,7 @@ void WindowManagerImpl::OnTitleDragCanceled(aura::Window* window) {
   if (!next_window)
     return;
   next_window->SetTransform(gfx::Transform());
+  next_window->Hide();
 }
 
 // static
