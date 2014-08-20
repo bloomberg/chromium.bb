@@ -142,6 +142,7 @@ public:
     // WebView methods:
     virtual void setMainFrame(WebFrame*) OVERRIDE;
     virtual void setAutofillClient(WebAutofillClient*) OVERRIDE;
+    virtual void setCredentialManagerClient(WebCredentialManagerClient*) OVERRIDE;
     virtual void setDevToolsAgentClient(WebDevToolsAgentClient*) OVERRIDE;
     virtual void setPrerendererClient(WebPrerendererClient*) OVERRIDE;
     virtual void setSpellCheckClient(WebSpellCheckClient*) OVERRIDE;

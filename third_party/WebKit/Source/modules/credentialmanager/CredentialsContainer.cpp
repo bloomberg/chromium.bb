@@ -15,7 +15,7 @@
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCredential.h"
-#include "public/platform/WebCredentialManager.h"
+#include "public/platform/WebCredentialManagerClient.h"
 #include "public/platform/WebCredentialManagerError.h"
 
 namespace blink {
@@ -34,7 +34,7 @@ static void rejectDueToCredentialManagerError(PassRefPtr<ScriptPromiseResolver> 
     }
 }
 
-class NotificationCallbacks : public WebCredentialManager::NotificationCallbacks {
+class NotificationCallbacks : public WebCredentialManagerClient::NotificationCallbacks {
     WTF_MAKE_NONCOPYABLE(NotificationCallbacks);
 public:
     explicit NotificationCallbacks(PassRefPtr<ScriptPromiseResolver> resolver) : m_resolver(resolver) { }
@@ -54,7 +54,7 @@ private:
     const RefPtr<ScriptPromiseResolver> m_resolver;
 };
 
-class RequestCallbacks : public WebCredentialManager::RequestCallbacks {
+class RequestCallbacks : public WebCredentialManagerClient::RequestCallbacks {
     WTF_MAKE_NONCOPYABLE(RequestCallbacks);
 public:
     explicit RequestCallbacks(PassRefPtr<ScriptPromiseResolver> resolver) : m_resolver(resolver) { }

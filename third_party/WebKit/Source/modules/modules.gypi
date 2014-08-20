@@ -307,6 +307,8 @@
       'beacon/NavigatorBeacon.h',
       'credentialmanager/Credential.cpp',
       'credentialmanager/Credential.h',
+      'credentialmanager/CredentialManagerClient.cpp',
+      'credentialmanager/CredentialManagerClient.h',
       'credentialmanager/CredentialsContainer.cpp',
       'credentialmanager/CredentialsContainer.h',
       'credentialmanager/FederatedCredential.cpp',

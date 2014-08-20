@@ -66,7 +66,6 @@ class WebClipboard;
 class WebCompositorSupport;
 class WebConvertableToTraceFormat;
 class WebCookieJar;
-class WebCredentialManager;
 class WebCrypto;
 class WebDatabaseObserver;
 class WebDiscardableMemory;
@@ -170,10 +169,6 @@ public:
 
     // Must return non-null.
     virtual WebBlobRegistry* blobRegistry() { return 0; }
-
-    // Credential Management -----------------------------------------------
-
-    virtual WebCredentialManager* credentialManager() { return 0; }
 
     // Database ------------------------------------------------------------
 
