@@ -75,6 +75,9 @@ std::string ConvertRestoreMode(
     case em::DeviceStateRetrievalResponse::RESTORE_MODE_REENROLLMENT_ENFORCED:
       return kDeviceStateRestoreModeReEnrollmentEnforced;
   }
+
+  NOTREACHED() << "Bad restore mode " << restore_mode;
+  return std::string();
 }
 
 }  // namespace
