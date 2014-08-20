@@ -22,9 +22,8 @@ class GpuMemoryBufferFactoryImpl : public GpuMemoryBufferFactory {
       unsigned usage) OVERRIDE {
     switch (handle.type) {
       case gfx::OZONE_NATIVE_BUFFER:
-        return ui::GpuMemoryBufferFactoryOzoneNativeBuffer::GetInstance()
-                       ->CreateGpuMemoryBuffer(
-                           handle.global_id, size, internalformat, usage)
+        return ozone_buffer_factory.CreateGpuMemoryBuffer(
+                   handle.global_id, size, internalformat, usage)
                    ? handle
                    : gfx::GpuMemoryBufferHandle();
       default:
@@ -36,8 +35,7 @@ class GpuMemoryBufferFactoryImpl : public GpuMemoryBufferFactory {
       const gfx::GpuMemoryBufferHandle& handle) OVERRIDE {
     switch (handle.type) {
       case gfx::OZONE_NATIVE_BUFFER:
-        ui::GpuMemoryBufferFactoryOzoneNativeBuffer::GetInstance()
-            ->DestroyGpuMemoryBuffer(handle.global_id);
+        ozone_buffer_factory.DestroyGpuMemoryBuffer(handle.global_id);
         break;
       default:
         NOTREACHED();
@@ -63,14 +61,16 @@ class GpuMemoryBufferFactoryImpl : public GpuMemoryBufferFactory {
         if (handle.global_id.secondary_id != client_id)
           return scoped_refptr<gfx::GLImage>();
 
-        return ui::GpuMemoryBufferFactoryOzoneNativeBuffer::GetInstance()
-            ->CreateImageForGpuMemoryBuffer(
-                handle.global_id, size, internalformat);
+        return ozone_buffer_factory.CreateImageForGpuMemoryBuffer(
+            handle.global_id, size, internalformat);
       default:
         NOTREACHED();
         return scoped_refptr<gfx::GLImage>();
     }
   }
+
+ private:
+  ui::GpuMemoryBufferFactoryOzoneNativeBuffer ozone_buffer_factory;
 };
 
 }  // namespace
