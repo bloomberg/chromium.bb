@@ -295,7 +295,8 @@ public class ChromePass extends AbstractPostOrderCallback implements CompilerPas
                     !parent.isFunction()) {
                 if (parent.isVar()) {
                     if (parent.getParent() == this.namespaceBlock) {
-                        // It's a top-level exported variable definition.
+                        // It's a top-level exported variable definition (maybe without an
+                        // assignment).
                         // Change
                         //
                         //   var enum = { 'one': 1, 'two': 2 };
@@ -304,10 +305,14 @@ public class ChromePass extends AbstractPostOrderCallback implements CompilerPas
                         //
                         //   my.namespace.name.enum = { 'one': 1, 'two': 2 };
                         Node varContent = n.removeFirstChild();
-                        Node exprResult = IR.exprResult(
-                                    IR.assign(buildQualifiedName(n), varContent).srcref(parent)
-                                ).srcref(parent);
-
+                        Node exprResult;
+                        if (varContent == null) {
+                            exprResult = IR.exprResult(buildQualifiedName(n)).srcref(parent);
+                        } else {
+                            exprResult = IR.exprResult(
+                                        IR.assign(buildQualifiedName(n), varContent).srcref(parent)
+                                    ).srcref(parent);
+                        }
                         if (parent.getJSDocInfo() != null) {
                             exprResult.getFirstChild().setJSDocInfo(parent.getJSDocInfo().clone());
                         }

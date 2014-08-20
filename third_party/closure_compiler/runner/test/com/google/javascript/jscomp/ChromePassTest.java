@@ -76,7 +76,7 @@ public class ChromePassTest extends CompilerTestCase {
             "});");
     }
 
-    public void testCrDefineReassignsExportedFunctionByQualifiedName() throws Exception {
+    public void testCrDefineReassignsExportedVarByQualifiedName() throws Exception {
         test(
             "cr.define('namespace', function() {\n" +
             "  var internalStaticMethod = function() {\n" +
@@ -95,6 +95,42 @@ public class ChromePassTest extends CompilerTestCase {
             "    externalStaticMethod: namespace.externalStaticMethod\n" +
             "  };\n" +
             "});");
+    }
+
+    public void testCrDefineExportsVarsWithoutAssignment() throws Exception {
+        test(
+            "cr.define('namespace', function() {\n" +
+            "  var a;\n" +
+            "  return {\n" +
+            "    a: a\n" +
+            "  };\n" +
+            "});\n",
+            "var namespace = namespace || {};\n" +
+            "cr.define('namespace', function() {\n" +
+            "  namespace.a;\n" +
+            "  return {\n" +
+            "    a: namespace.a\n" +
+            "  };\n" +
+            "});\n");
+    }
+
+    public void testCrDefineExportsVarsWithoutAssignmentWithJSDoc() throws Exception {
+        test(
+            "cr.define('namespace', function() {\n" +
+            "  /** @type {number} */\n" +
+            "  var a;\n" +
+            "  return {\n" +
+            "    a: a\n" +
+            "  };\n" +
+            "});\n",
+            "var namespace = namespace || {};\n" +
+            "cr.define('namespace', function() {\n" +
+            "  /** @type {number} */\n" +
+            "  namespace.a;\n" +
+            "  return {\n" +
+            "    a: namespace.a\n" +
+            "  };\n" +
+            "});\n");
     }
 
     public void testCrDefineCopiesJSDocForExportedVariable() throws Exception {
@@ -135,6 +171,25 @@ public class ChromePassTest extends CompilerTestCase {
             "  }\n" +
             "  return {};\n" +
             "});");
+    }
+
+    public void testCrDefineDoesNothingWithNonExportedVar() throws Exception {
+        test(
+            "cr.define('namespace', function() {\n" +
+            "  var a;\n" +
+            "  var b;\n" +
+            "  return {\n" +
+            "    a: a\n" +
+            "  };\n" +
+            "});\n",
+            "var namespace = namespace || {};\n" +
+            "cr.define('namespace', function() {\n" +
+            "  namespace.a;\n" +
+            "  var b;\n" +
+            "  return {\n" +
+            "    a: namespace.a\n" +
+            "  };\n" +
+            "});\n");
     }
 
     public void testCrDefineChangesReferenceToExportedFunction() throws Exception {
@@ -257,7 +312,7 @@ public class ChromePassTest extends CompilerTestCase {
         test(
             "cr.define('a.b.c.d', function() {\n" +
             "  return {};\n" +
-            "});" +
+            "});\n" +
             "cr.define('a.b.e.f', function() {\n" +
             "  return {};\n" +
             "});",
@@ -267,7 +322,7 @@ public class ChromePassTest extends CompilerTestCase {
             "a.b.c.d = a.b.c.d || {};\n" +
             "cr.define('a.b.c.d', function() {\n" +
             "  return {};\n" +
-            "});" +
+            "});\n" +
             "a.b.e = a.b.e || {};\n" +
             "a.b.e.f = a.b.e.f || {};\n" +
             "cr.define('a.b.e.f', function() {\n" +
