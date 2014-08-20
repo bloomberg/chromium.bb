@@ -4,6 +4,87 @@
 
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
+import("//chrome/version.gni")
+
+# TODO(GYP) for Windows need to the the reorder-imports step which probably
+# means adding another target and renaming this to chrome_initial like in GYP.
+#executable("chrome") {  # TODO(GYP) enable once this links.
+source_set("chrome") {
+  # Because the sources list varies so significantly per-platform, generally
+  # each platform lists its own files rather than relying on filtering or
+  # removing unused files.
+  sources = [
+    "app/chrome_exe_resource.h",
+    "//content/public/common/content_switches.cc",
+  ]
+  deps = []
+
+  # TODO(GYP) mac_bundle_resources, xcode_settings
+
+  # TODO(GYP) order_profiling, order_text_section
+
+  if (is_win) {
+    sources += [
+      "app/chrome_exe_main_win.cc",
+      "app/client_util.cc",
+      "app/client_util.h",
+      "app/signature_validator_win.cc",
+      "app/signature_validator_win.h",
+      "//content/app/startup_helper_win.cc",
+    ]
+    deps += [ "//ui/gfx" ]
+  } else if (use_aura) {
+    # Non-Windows aura entrypoint.
+    sources += [ "app/chrome_exe_main_aura.cc" ]
+  }
+
+  if (is_linux) {
+    # TODO(GYP) manpage action
+
+    sources += [
+      "app/chrome_dll_resource.h",
+      "app/chrome_main.cc",
+      "app/chrome_main_delegate.cc",
+      "app/chrome_main_delegate.h",
+    ]
+
+    deps += [
+      # On Linux, link the dependencies (libraries) that make up actual
+      # Chromium functionality directly into the executable.
+      ":browser_dependencies",
+      ":child_dependencies",
+
+      "//base/allocator",
+      # Needed to use the master_preferences functions
+      "//chrome/installer/util",
+      "//content/app:both",
+    ]
+
+    # Needed for chrome_main.cc initialization of libraries.
+    configs += [ "//build/config/linux:pangocairo" ]
+
+    # TODO(GYP) ['profiling==0 and linux_disable_pie==0', {
+    #   'ldflags': [
+    #      '-pie',
+    #   ],
+    #}],
+
+    if (use_x11) {
+      configs += [
+        "//build/config/linux:x11",
+        "//build/config/linux:xext",
+      ]
+    }
+  }
+
+  if (is_mac) {
+    sources += [
+      "app/chrome_exe_main_mac.cc",
+    ]
+  }
+  # TODO(GYP) is_mac
+
+}
 
 shared_library("main_dll") {
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
@@ -125,6 +206,18 @@ group("child_dependencies") {
       "//content/ppapi_plugin",
       "//third_party/WebKit/public:blink_devtools_frontend_resources",
     ]
+  }
+}
+
+if (is_win) {
+  # TODO(brettw) this duplicates "//chrome/common:version" which applies to
+  # Linux.
+  process_version("version_header") {
+    visibility = ":*"
+    source = "version.h.in"
+    # TODO(brettw) this should move to $target_gen_dir/version.h and
+    # source files including it should reference it via "chrome/version.h"
+    output = "$root_gen_dir/version.h"
   }
 }
 

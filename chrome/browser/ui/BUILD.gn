@@ -82,9 +82,11 @@ static_library("ui") {
     sources += rebase_path(gypi_values.chrome_browser_ui_non_ios_sources,
                            ".", "//chrome")
     deps += [
+      "//chrome/browser/devtools",
       "//chrome/browser/performance_monitor",
       "//chrome/browser/ui/webui/omnibox:mojo_bindings",
       "//chrome/common/extensions/api:api",
+      "//chrome/installer/util",
       "//components/autofill/content/browser:risk_proto",
       "//device/bluetooth",
       "//device/nfc",
@@ -106,8 +108,6 @@ static_library("ui") {
       "//webkit/common",
       "//webkit/common:storage",
       "//webkit/glue/resources",
-      #'debugger',  TODO(GYP)
-      #'installer_util',  TODO(GYP)
       #'../third_party/libjingle/libjingle.gyp:libjingle',  TODO(GYP)
     ]
     # TODO(GYP)
@@ -310,13 +310,13 @@ static_library("ui") {
     sources += rebase_path(gypi_values.chrome_browser_ui_win_sources,
                            ".", "//chrome")
     deps += [
+      "//chrome/browser/installer/util:strings",
       "//third_party/wtl",
       "//third_party/iaccessible2",
       "//third_party/isimpledom",
       "//ui/app_list",
       "//ui/views",
       "//ui/views/controls/webview",
-      #'installer_util_strings',  TODO(GYP)
       #'metro_utils',  TODO(GYP)
       #'../google_update/google_update.gyp:google_update',  TODO(GYP)
     ]

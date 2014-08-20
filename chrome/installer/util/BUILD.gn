@@ -1,0 +1,53 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+static_library("util") {
+  deps = [
+    "//base",
+    "//chrome:resources",
+    "//chrome:strings",
+  ]
+
+  if (is_win) {
+    # TODO(GYP) installer_util on Windows.
+    # This is a bit tricky. It seems that what's currently called
+    # installer_util_nacl_win64 should be a different target with a different
+    # name ("installer_util_minimal"?) since it's not strictly the 64-bit build
+    # of that target.
+  } else {
+    sources = [
+      "google_update_experiment_util.cc",
+      "google_update_experiment_util.h",
+      "master_preferences.cc",
+      "master_preferences.h",
+      "master_preferences_constants.cc",
+      "master_preferences_constants.h",
+    ]
+  }
+}
+
+action("strings") {
+  script = "prebuild/create_string_rc.py"
+
+  if (is_chrome_branded) {
+    grdfile = "//chrome/app/google_chrome_strings.grd"
+  } else {
+    grdfile = "//chrome/app/chromium_strings.grd"
+  }
+
+  inputs = [ grdfile ]
+
+  # TODO(brettw) move to target_gen_dir
+  outdir = "$root_gen_dir/installer_util_strings"
+  outputs = [
+    "$outdir/installer_util_strings.h",
+    "$outdir/installer_util_strings.rc",
+  ]
+
+  args = [
+    "-i", rebase_path(grdfile, root_build_dir) + ":resources",
+    "-n", "installer_util_strings",
+    "-o", rebase_path(outdir, root_build_dir),
+  ]
+}

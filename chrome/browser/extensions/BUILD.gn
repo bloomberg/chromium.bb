@@ -35,18 +35,24 @@ static_library("extensions") {
     "//chrome:strings",
     "//chrome/app/resources:platform_locale_settings",
     "//chrome/app/theme:theme_resources",
+    "//chrome/browser/devtools",
     "//chrome/browser/history:in_memory_url_index_cache_proto",
     "//chrome/common",
     "//chrome/common/extensions/api",
     "//chrome/common/net",
     "//chrome/common/safe_browsing:proto",
+    "//chrome/installer/util",
     "//components/copresence",
+    "//components/omaha_query_params",
     "//components/onc",
     "//components/strings",
     "//components/url_matcher",
     "//content/public/browser",
     "//content/public/common",
     "//crypto",
+    "//device/bluetooth",
+    "//device/hid",
+    "//extensions/browser",
     "//extensions/common/api",
     "//extensions/strings",
     "//net",
@@ -67,12 +73,6 @@ static_library("extensions") {
     "//webkit/browser:storage",
     "//webkit/common:storage",
     "//webkit/glue/resources",
-    #"debugger",  TODO(GYP)
-    #"installer_util",  TODO(GYP)
-    #"../components/components.gyp:omaha_query_params",  TODO(GYP)
-    #'../device/bluetooth/bluetooth.gyp:device_bluetooth',  TODO(GYP)
-    #"../device/hid/hid.gyp:device_hid",  TODO(GYP)
-    #"../extensions/extensions.gyp:extensions_browser",  TODO(GYP)
     #"../third_party/webrtc/modules/modules.gyp:desktop_capture",  TODO(GYP)
   ]
 

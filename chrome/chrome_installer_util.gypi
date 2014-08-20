@@ -209,6 +209,7 @@
     ['OS!="win"', {
       'targets': [
         {
+          # GN version: //chrome/installer/util
           'target_name': 'installer_util',
           'type': 'static_library',
           'dependencies': [
@@ -217,6 +218,7 @@
             '<(DEPTH)/chrome/chrome_resources.gyp:chrome_strings',
           ],
           'sources': [
+            # Note: sources list duplicated in GN build.
             'installer/util/google_update_experiment_util.cc',
             'installer/util/google_update_experiment_util.h',
             'installer/util/master_preferences.cc',

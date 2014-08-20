@@ -150,6 +150,7 @@
           'msvs_disabled_warnings': [ 4267, ],
         },
         {
+          # GN version: //chrome/installer/util:strings
           'target_name': 'installer_util_strings',
           'type': 'none',
           'actions': [

@@ -36,6 +36,7 @@ static_library("renderer") {
     "//chrome:resources",
     "//chrome:strings",
     "//components/autofill/content/renderer",
+    "//components/cdm/renderer",
     "//components/data_reduction_proxy/common",
     "//components/plugins/renderer",
     "//components/startup_metric_utils",
@@ -45,6 +46,9 @@ static_library("renderer") {
     "//content/app/strings",
     "//content/public/renderer",
     "//extensions:extensions_resources",
+    "//extensions/renderer",
+    "//media/cast:net",
+    "//media/cast:sender",
     "//media/cast/logging/proto",
     "//net",
     "//skia",
@@ -59,10 +63,6 @@ static_library("renderer") {
     "//webkit/child",
     "//webkit/common",
     "//webkit/glue/resources",
-    #"../components/components.gyp:cdm_renderer",  TODO(GYP)
-    #"../extensions/extensions.gyp:extensions_renderer",  TODO(GYP)
-    #"../media/cast/cast.gyp:cast_sender",  TODO(GYP)
-    #"../media/cast/cast.gyp:cast_transport",  TODO(GYP)
   ]
 
   if (enable_nacl) {

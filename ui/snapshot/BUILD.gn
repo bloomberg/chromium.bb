@@ -42,7 +42,7 @@ component("snapshot") {
 
   if (use_aura) {
     deps += [
-      #"//ui/aura",  TODO(GYP)
+      "//ui/aura",
       "//ui/compositor",
     ]
   } else {
@@ -52,35 +52,36 @@ component("snapshot") {
   }
 }
 
-# TODO(GYP) enable this when all targets are converted and it links
-#test("snapshot_unittests") {
-#  sources = [
-#    "snapshot_aura_unittest.cc",
-#    "snapshot_mac_unittest.mm",
-#    "test/run_all_unittests.cc",
-#  ]
-#
-#  deps = [
-#    "//base",
-#    "//base/allocator",
-#    "//base/test:test_support",
-#    "//skia",
-#    "//testing/gtest",
-#    "//ui/base",
-#    "//ui/gfx",
-#    "//ui/gfx/geometry",
-#  ]
-#
-#  if (use_aura) {
-#    deps += [
-#      #"//ui/aura:test_support",  TODO(GYP)
-#      "//ui/compositor",
-#      "//ui/compositor:test_support",
-#    ]
-#  } else {
-#    sources -= [ "snapshot_aura_unittest.cc" ]
-#  }
-#}
+test("snapshot_unittests") {
+  sources = [
+    "snapshot_aura_unittest.cc",
+    "snapshot_mac_unittest.mm",
+    "test/run_all_unittests.cc",
+  ]
+
+  deps = [
+    ":snapshot",
+    "//base",
+    "//base/allocator",
+    "//base/test:test_support",
+    "//skia",
+    "//testing/gtest",
+    "//ui/base",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
+  ]
+
+  if (use_aura) {
+    deps += [
+      "//ui/aura:test_support",
+      "//ui/compositor",
+      "//ui/compositor:test_support",
+      "//ui/wm",
+    ]
+  } else {
+    sources -= [ "snapshot_aura_unittest.cc" ]
+  }
+}
 
 if (is_win) {
   source_set("test_support") {

@@ -480,6 +480,7 @@
           ],
         },
         {
+          # GN version: //chrome:version_header
           'target_name': 'chrome_version_header',
           'type': 'none',
           'hard_dependency': 1,

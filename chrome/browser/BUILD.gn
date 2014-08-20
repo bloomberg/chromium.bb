@@ -138,11 +138,17 @@ static_library("browser") {
 
     deps += [
       "//cc",
+      "//chrome/browser/devtools",
       "//chrome/browser/performance_monitor",
       "//chrome/common/extensions/api:api",
+      "//chrome/installer/util",
       "//components/autofill/content/browser",
       "//components/dom_distiller/content",
       "//components/keyed_service/content",
+      "//components/navigation_interception",
+      "//components/password_manager/content/browser",
+      "//components/precache/content",
+      "//components/sessions",
       "//components/storage_monitor",
       "//components/translate/content/browser",
       "//components/url_matcher",
@@ -150,6 +156,8 @@ static_library("browser") {
       "//components/visitedlink/browser",
       "//components/visitedlink/common",
       "//components/web_modal",
+      "//media",
+      "//media/cast:net",
       "//mojo/environment:chromium",
       "//mojo/public/cpp/bindings",
       "//mojo/public/js/bindings",
@@ -172,20 +180,11 @@ static_library("browser") {
       "//webkit/common",
       "//webkit/common:storage",
       "//webkit/glue/resources",
-      # TODO(GYP)
-      #"apps",
-      #"debugger",
-      #"installer_util",
-      #"../components/components.gyp:navigation_interception",
-      #"../components/components.gyp:password_manager_content_browser",
-      #"../components/components.gyp:precache_content",
-      #"../components/components.gyp:sessions",
-      #"../media/cast/cast.gyp:cast_transport",
-      #"../media/media.gyp:media",
+      #"apps",  TODO(GYP)
       ## TODO(tonyg): Remove this dependency (crbug.com/280157).
-      #"../testing/perf/perf_test.gyp:*",
+      #"../testing/perf/perf_test.gyp:*",  TODO(GYP)
       # Note: for this one also remove the webrtc_stub_config
-      #"../third_party/webrtc/modules/modules.gyp:desktop_capture",
+      #"../third_party/webrtc/modules/modules.gyp:desktop_capture",  TODO(GYP)
     ]
   } else {  # iOS
     sources += rebase_path(gypi_values.chrome_browser_ios_sources,
@@ -387,8 +386,8 @@ static_library("browser") {
       "//chrome/app/chrome_breakpad_client.h",
     ]
     deps += [
-      #"../components/components.gyp:breakpad_component",  TODO(GYP)
-      #"../components/components.gyp:breakpad_host",  TODO(GYP)
+      "//components/breakpad/app",
+      "//components/breakpad/browser",
     ]
   }
   if (use_nss_certs) {
@@ -414,7 +413,7 @@ static_library("browser") {
     sources += rebase_path(gypi_values.chrome_browser_basic_printing_sources,
                            ".", "//chrome")
     deps += [
-      #"../printing/printing.gyp:printing",  TODO(GYP)
+      "//printing",
     ]
     if (is_win && win_pdf_metafile_for_printing) {
       sources += rebase_path(gypi_values.chrome_browser_printing_emf_sources,
@@ -454,7 +453,7 @@ static_library("browser") {
     sources += rebase_path(gypi_values.chrome_browser_android_sources,
                            ".", "//chrome")
     deps += [
-      #"../components/components.gyp:cdm_browser",  TODO(GYP)
+      "//components/cdm/browser",
       #"../components/components.gyp:web_contents_delegate_android",  TODO(GYP)
       #"chrome_browser_jni_headers",  TODO(GYP)
     ]
@@ -505,24 +504,24 @@ static_library("browser") {
     sources += rebase_path(gypi_values.chrome_browser_win_sources,
                            ".", "//chrome")
     deps += [
+      "//chrome:version_header",
+      "//chrome/installer/util:strings",
+      "//third_party/iaccessible2",
+      "//third_party/isimpledom",
       "//third_party/wtl",
+      "//ui/views",
+      "//ui/views/controls/webview",
       #"chrome_process_finder",  TODO(GYP)
-      #"installer_util_strings",  TODO(GYP)
-      #"../chrome/chrome.gyp:chrome_version_header",  TODO(GYP)
       #"../chrome_elf/chrome_elf.gyp:chrome_elf",  TODO(GYP)
       #"../chrome_elf/chrome_elf.gyp:chrome_elf_constants",  TODO(GYP)
       #"../chrome_elf/chrome_elf.gyp:dll_hash",  TODO(GYP)
       #"../google_update/google_update.gyp:google_update",  TODO(GYP)
-      #"../third_party/iaccessible2/iaccessible2.gyp:iaccessible2",  TODO(GYP)
-      #"../third_party/isimpledom/isimpledom.gyp:isimpledom",  TODO(GYP)
       #"../ui/metro_viewer/metro_viewer.gyp:metro_viewer_messages",  TODO(GYP)
-      #"../ui/views/controls/webview/webview.gyp:webview",  TODO(GYP)
-      #"../ui/views/views.gyp:views",  TODO(GYP)
       #"../win8/win8.gyp:metro_viewer",  TODO(GYP)
     ]
     forward_dependent_configs_from += [
-      #"../ui/views/controls/webview/webview.gyp:webview",  TODO(GYP)
-      #"../ui/views/views.gyp:views",  TODO(GYP)
+      "//ui/views",
+      "//ui/views/controls/webview",
     ]
   } else {
     # Non-Windows.
@@ -530,8 +529,8 @@ static_library("browser") {
                            ".", "//chrome")
     if (toolkit_views) {
       deps += [
-        #"../ui/views/controls/webview/webview.gyp:webview",  TODO(GYP)
-        #"../ui/views/views.gyp:views",  TODO(GYP)
+      "//ui/views",
+      "//ui/views/controls/webview",
       ]
       # TODO(GYP) why is this needed? Very susicious.
       #  "include_dirs": [
@@ -569,7 +568,7 @@ static_library("browser") {
   }
   if (enable_app_list) {
     deps += [
-      #"../ui/app_list/app_list.gyp:app_list",  TODO(GYP)
+      "//ui/app_list",
     ]
   }
   if (enable_managed_users) {

@@ -47,6 +47,7 @@
       ],
     },
     {
+      # GN version: //chrome
       'target_name': 'chrome_initial',
       'type': 'executable',
       # Name the exe chrome.exe, not chrome_initial.exe.

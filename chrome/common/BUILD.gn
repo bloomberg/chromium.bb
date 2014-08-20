@@ -52,6 +52,7 @@ static_library("common") {
     "//chrome/common:constants",
     "//chrome/common/net",
     "//chrome/common/safe_browsing:proto",
+    "//chrome/installer/util",
     "//components/cloud_devices/common",
     "//components/content_settings/core/common",
     "//components/json_schema",
@@ -63,6 +64,7 @@ static_library("common") {
     "//crypto",
     "//extensions:extensions_resources",
     "//extensions/strings",
+    "//media/cast:net",
     "//net",
     "//skia",
     "//third_party/icu",
@@ -71,8 +73,6 @@ static_library("common") {
     "//third_party/zlib:zip",
     "//ui/resources:resources",
     "//url",
-    #":installer_util",  TODO(GYP)
-    #"//media/cast/cast.gyp:cast_transport",  TODO(GYP)
   ]
 
   if (is_ios) {
@@ -90,12 +90,12 @@ static_library("common") {
       "//components/password_manager/core/common",
       "//components/signin/core/common",
       "//components/translate/content/common",
+      "//extensions/common",
       "//extensions/common/api",
       "//ipc",
       "//third_party/adobe/flash:flapper_version_h",
       "//third_party/re2",
       "//third_party/widevine/cdm:version_h",
-      #'<(DEPTH)/extensions/extensions.gyp:extensions_common',  TODO(GYP)
     ]
   }
 
@@ -232,36 +232,13 @@ static_library("common") {
 }
 
 if (is_linux) {
-  action("version") {
+  # TODO(brettw) this duplicates "//chrome/common:version" which applies to
+  # Windows.
+  import("//chrome/version.gni")
+  process_version("version") {
     visibility = ":common"
-    script = "//build/util/version.py"
-
-    lastchange_path = "//build/util/LASTCHANGE"
-    version_path = "//chrome/VERSION"
-    template_input_path = "chrome_version_info_posix.h.version"
-    if (is_chrome_branded) {
-      branding_path = "//chrome/app/theme/google_chrome/BRANDING"
-    } else {
-      branding_path = "//chrome/app/theme/chromium/BRANDING"
-    }
-
-    inputs = [
-      version_path,
-      template_input_path,
-      lastchange_path,
-      branding_path,
-    ]
-
-    outfile = "$target_gen_dir/chrome_version_info_posix.h"
-    outputs = [ outfile ]
-
-    args = [
-      "-f", rebase_path(version_path, root_build_dir),
-      "-f", rebase_path(branding_path, root_build_dir),
-      "-f", rebase_path(lastchange_path, root_build_dir),
-      rebase_path(template_input_path, root_build_dir),
-      rebase_path(outfile, root_build_dir),
-    ]
+    source = "chrome_version_info_posix.h.version"
+    output = "$target_gen_dir/chrome_version_info_posix.h"
   }
 } else {
   # Other platforms have a different way to do versioning.

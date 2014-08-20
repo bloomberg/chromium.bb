@@ -87,7 +87,7 @@ component("printing") {
   ]
 
   if (use_aura) {
-    # deps += [ "//ui/aura" ]  TODO(GYP)
+    deps += [ "//ui/aura" ]
   }
 
   if (is_mac) {
