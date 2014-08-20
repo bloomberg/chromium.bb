@@ -55,8 +55,6 @@ ValidationErrorObserverForTesting::ValidationErrorObserverForTesting()
     : last_error_(VALIDATION_ERROR_NONE) {
   MOJO_DCHECK(!g_validation_error_observer);
   g_validation_error_observer = this;
-  MOJO_LOG(WARNING) << "Non-nullable validation is turned on for testing but "
-                    << "not for production code yet!";
 }
 
 ValidationErrorObserverForTesting::~ValidationErrorObserverForTesting() {
@@ -83,11 +81,6 @@ SerializationWarningObserverForTesting::
 ~SerializationWarningObserverForTesting() {
   MOJO_DCHECK(g_serialization_warning_observer == this);
   g_serialization_warning_observer = NULL;
-}
-
-bool IsNonNullableValidationEnabled() {
-  // TODO(yzshen): Remove this function and all call sites.
-  return true;
 }
 
 }  // namespace internal

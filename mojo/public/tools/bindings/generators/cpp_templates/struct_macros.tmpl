@@ -17,8 +17,7 @@
 {%-     if kind|is_object_kind %}
 {%-       set wrapper_type = kind|cpp_wrapper_type %}
 {%-       if not kind|is_nullable_kind %}
-  if (mojo::internal::IsNonNullableValidationEnabled() &&
-      !object->{{name}}.offset) {
+  if (!object->{{name}}.offset) {
     ReportValidationError(
         mojo::internal::VALIDATION_ERROR_UNEXPECTED_NULL_POINTER);
     return false;
@@ -42,8 +41,7 @@
   }
 {%-     elif kind|is_any_handle_kind %}
 {%-       if not kind|is_nullable_kind %}
-  if (mojo::internal::IsNonNullableValidationEnabled() &&
-      object->{{name}}.value() == mojo::internal::kEncodedInvalidHandleValue) {
+  if (object->{{name}}.value() == mojo::internal::kEncodedInvalidHandleValue) {
     ReportValidationError(
         mojo::internal::VALIDATION_ERROR_UNEXPECTED_INVALID_HANDLE);
     return false;

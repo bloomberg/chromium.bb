@@ -60,8 +60,7 @@ params->{{param.name}}
 {%-       endif %}
 {%-       if not param.kind|is_nullable_kind %}
   MOJO_INTERNAL_DLOG_SERIALIZATION_WARNING(
-      mojo::internal::IsNonNullableValidationEnabled() &&
-          !params->{{param.name}}.ptr,
+      !params->{{param.name}}.ptr,
       mojo::internal::VALIDATION_ERROR_UNEXPECTED_NULL_POINTER);
 {%-       endif %}
 {%-     elif param.kind|is_any_handle_kind %}
@@ -74,8 +73,7 @@ params->{{param.name}}
 {%-       endif %}
 {%-       if not param.kind|is_nullable_kind %}
   MOJO_INTERNAL_DLOG_SERIALIZATION_WARNING(
-      mojo::internal::IsNonNullableValidationEnabled() &&
-          !params->{{param.name}}.is_valid(),
+      !params->{{param.name}}.is_valid(),
       mojo::internal::VALIDATION_ERROR_UNEXPECTED_INVALID_HANDLE);
 {%-       endif %}
 {%-     else %}

@@ -23,8 +23,7 @@ void Serialize_({{struct.name}}Ptr input, mojo::internal::Buffer* buf,
 {%-     endif %}
 {%-     if not pf.field.kind|is_nullable_kind %}
     MOJO_INTERNAL_DLOG_SERIALIZATION_WARNING(
-        mojo::internal::IsNonNullableValidationEnabled() &&
-            !result->{{pf.field.name}}.ptr,
+        !result->{{pf.field.name}}.ptr,
         mojo::internal::VALIDATION_ERROR_UNEXPECTED_NULL_POINTER);
 {%-     endif %}
 {%-   elif pf.field.kind|is_any_handle_kind %}
@@ -35,8 +34,7 @@ void Serialize_({{struct.name}}Ptr input, mojo::internal::Buffer* buf,
 {%-     endif %}
 {%-     if not pf.field.kind|is_nullable_kind %}
     MOJO_INTERNAL_DLOG_SERIALIZATION_WARNING(
-        mojo::internal::IsNonNullableValidationEnabled() &&
-            !result->{{pf.field.name}}.is_valid(),
+        !result->{{pf.field.name}}.is_valid(),
         mojo::internal::VALIDATION_ERROR_UNEXPECTED_INVALID_HANDLE);
 {%-     endif %}
 {%-   else %}

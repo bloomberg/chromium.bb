@@ -102,8 +102,7 @@ template <typename H> struct ArraySerializer<ScopedHandleBase<H>, H, true> {
     for (size_t i = 0; i < input.size(); ++i) {
       output->at(i) = input[i].release();  // Transfer ownership of the handle.
       MOJO_INTERNAL_DLOG_SERIALIZATION_WARNING(
-          IsNonNullableValidationEnabled() && !element_is_nullable &&
-              !output->at(i).is_valid(),
+          !element_is_nullable && !output->at(i).is_valid(),
           VALIDATION_ERROR_UNEXPECTED_INVALID_HANDLE);
     }
   }
@@ -134,7 +133,7 @@ template <typename S> struct ArraySerializer<S, typename S::Data_*, true> {
           input[i].Pass(), buf, &element);
       output->at(i) = element;
       MOJO_INTERNAL_DLOG_SERIALIZATION_WARNING(
-          IsNonNullableValidationEnabled() && !element_is_nullable && !element,
+          !element_is_nullable && !element,
           VALIDATION_ERROR_UNEXPECTED_NULL_POINTER);
     }
   }
@@ -193,7 +192,7 @@ template <> struct ArraySerializer<String, String_Data*, false> {
       Serialize_(input[i], buf, &element);
       output->at(i) = element;
       MOJO_INTERNAL_DLOG_SERIALIZATION_WARNING(
-          IsNonNullableValidationEnabled() && !element_is_nullable && !element,
+          !element_is_nullable && !element,
           VALIDATION_ERROR_UNEXPECTED_NULL_POINTER);
     }
   }

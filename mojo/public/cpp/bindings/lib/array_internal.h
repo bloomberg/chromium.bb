@@ -206,7 +206,7 @@ struct ArraySerializationHelper<Handle, true> {
         Handle_type_should_not_have_array_validate_params);
 
     for (uint32_t i = 0; i < header->num_elements; ++i) {
-      if (IsNonNullableValidationEnabled() && !element_is_nullable &&
+      if (!element_is_nullable &&
           elements[i].value() == kEncodedInvalidHandleValue) {
         ReportValidationError(VALIDATION_ERROR_UNEXPECTED_INVALID_HANDLE);
         return false;
@@ -271,8 +271,7 @@ struct ArraySerializationHelper<P*, false> {
                                const ElementType* elements,
                                BoundsChecker* bounds_checker) {
     for (uint32_t i = 0; i < header->num_elements; ++i) {
-      if (IsNonNullableValidationEnabled() && !element_is_nullable &&
-          !elements[i].offset) {
+      if (!element_is_nullable && !elements[i].offset) {
         ReportValidationError(VALIDATION_ERROR_UNEXPECTED_NULL_POINTER);
         return false;
       }

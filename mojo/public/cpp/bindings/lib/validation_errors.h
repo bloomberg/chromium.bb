@@ -88,12 +88,6 @@ class SerializationWarningObserverForTesting {
   MOJO_DISALLOW_COPY_AND_ASSIGN(SerializationWarningObserverForTesting);
 };
 
-// Currently it only returns true during validation and serialization tests.
-//
-// TODO(yzshen): Remove this function and enable non-nullable validation by
-// default.
-bool IsNonNullableValidationEnabled();
-
 }  // namespace internal
 }  // namespace mojo
 
