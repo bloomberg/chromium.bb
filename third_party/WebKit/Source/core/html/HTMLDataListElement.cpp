@@ -36,6 +36,7 @@
 #include "core/dom/IdTargetObserverRegistry.h"
 #include "core/dom/NodeListsNodeData.h"
 #include "core/frame/UseCounter.h"
+#include "core/html/HTMLDataListOptionsCollection.h"
 
 namespace blink {
 
@@ -51,9 +52,9 @@ PassRefPtrWillBeRawPtr<HTMLDataListElement> HTMLDataListElement::create(Document
     return adoptRefWillBeNoop(new HTMLDataListElement(document));
 }
 
-PassRefPtrWillBeRawPtr<HTMLCollection> HTMLDataListElement::options()
+PassRefPtrWillBeRawPtr<HTMLDataListOptionsCollection> HTMLDataListElement::options()
 {
-    return ensureCachedCollection<HTMLCollection>(DataListOptions);
+    return ensureCachedCollection<HTMLDataListOptionsCollection>(DataListOptions);
 }
 
 void HTMLDataListElement::childrenChanged(const ChildrenChange& change)

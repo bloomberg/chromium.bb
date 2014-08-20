@@ -341,6 +341,7 @@ INCLUDES_FOR_TYPE = {
                            'core/dom/ClassCollection.h',
                            'core/dom/TagCollection.h',
                            'core/html/HTMLCollection.h',
+                           'core/html/HTMLDataListOptionsCollection.h',
                            'core/html/HTMLFormControlsCollection.h',
                            'core/html/HTMLTableRowsCollection.h']),
     'MediaQueryListListener': set(['core/css/MediaQueryListListener.h']),

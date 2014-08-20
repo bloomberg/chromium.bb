@@ -29,6 +29,7 @@
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/NodeRareData.h"
 #include "core/html/DocumentNameCollection.h"
+#include "core/html/HTMLDataListOptionsCollection.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLObjectElement.h"
 #include "core/html/HTMLOptionElement.h"
@@ -223,12 +224,7 @@ static inline bool isMatchingHTMLElement(const HTMLCollection& htmlCollection, c
     case SelectedOptions:
         return isHTMLOptionElement(element) && toHTMLOptionElement(element).selected();
     case DataListOptions:
-        if (isHTMLOptionElement(element)) {
-            const HTMLOptionElement& option = toHTMLOptionElement(element);
-            if (!option.isDisabledFormControl() && !option.value().isEmpty())
-                return true;
-        }
-        return false;
+        return toHTMLDataListOptionsCollection(htmlCollection).elementMatches(element);
     case MapAreas:
         return element.hasTagName(areaTag);
     case DocApplets:

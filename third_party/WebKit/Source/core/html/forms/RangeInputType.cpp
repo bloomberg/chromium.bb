@@ -44,6 +44,7 @@
 #include "core/dom/TouchList.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/HTMLDataListElement.h"
+#include "core/html/HTMLDataListOptionsCollection.h"
 #include "core/html/HTMLDivElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLOptionElement.h"
@@ -346,11 +347,10 @@ void RangeInputType::updateTickMarkValues()
     HTMLDataListElement* dataList = element().dataList();
     if (!dataList)
         return;
-    RefPtrWillBeRawPtr<HTMLCollection> options = dataList->options();
+    RefPtrWillBeRawPtr<HTMLDataListOptionsCollection> options = dataList->options();
     m_tickMarkValues.reserveCapacity(options->length());
     for (unsigned i = 0; i < options->length(); ++i) {
-        Element* element = options->item(i);
-        HTMLOptionElement* optionElement = toHTMLOptionElement(element);
+        HTMLOptionElement* optionElement = options->item(i);
         String optionValue = optionElement->value();
         if (!this->element().isValidValue(optionValue))
             continue;
