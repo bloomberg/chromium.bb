@@ -46,9 +46,7 @@
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/switches.h"
-#include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkRegion.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/screen.h"
 
 #if !defined(OS_MACOSX)
@@ -811,10 +809,6 @@ void AppWindow::UpdateExtensionAppIcon() {
   // Avoid using any previous app icons were being downloaded.
   image_loader_ptr_factory_.InvalidateWeakPtrs();
 
-  const gfx::ImageSkia& default_icon =
-      *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-          IDR_APP_DEFAULT_ICON);
-
   const extensions::Extension* extension = GetExtension();
   if (!extension)
     return;
@@ -824,7 +818,7 @@ void AppWindow::UpdateExtensionAppIcon() {
                                 extension,
                                 extensions::IconsInfo::GetIcons(extension),
                                 app_delegate_->PreferredIconSize(),
-                                default_icon,
+                                app_delegate_->GetAppDefaultIcon(),
                                 this));
 
   // Triggers actual image loading with 1x resources. The 2x resource will

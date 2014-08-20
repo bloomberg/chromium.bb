@@ -49,6 +49,7 @@ class ChromeAppDelegate : public apps::AppDelegate {
       const content::MediaResponseCallback& callback,
       const extensions::Extension* extension) OVERRIDE;
   virtual int PreferredIconSize() OVERRIDE;
+  virtual gfx::ImageSkia GetAppDefaultIcon() OVERRIDE;
   virtual void SetWebContentsBlocked(content::WebContents* web_contents,
                                      bool blocked) OVERRIDE;
   virtual bool IsWebContentsVisible(

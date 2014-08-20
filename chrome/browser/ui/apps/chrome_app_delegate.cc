@@ -24,6 +24,8 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "extensions/common/constants.h"
+#include "grit/theme_resources.h"
+#include "ui/base/resource/resource_bundle.h"
 
 #if defined(USE_ASH)
 #include "ash/shelf/shelf_constants.h"
@@ -232,6 +234,11 @@ int ChromeAppDelegate::PreferredIconSize() {
 #else
   return extension_misc::EXTENSION_ICON_SMALL;
 #endif
+}
+
+gfx::ImageSkia ChromeAppDelegate::GetAppDefaultIcon() {
+  return *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+      IDR_APP_DEFAULT_ICON);
 }
 
 void ChromeAppDelegate::SetWebContentsBlocked(
