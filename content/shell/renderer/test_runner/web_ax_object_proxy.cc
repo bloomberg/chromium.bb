@@ -556,7 +556,7 @@ WebAXObjectProxy::GetObjectTemplateBuilder(v8::Isolate* isolate) {
 }
 
 v8::Handle<v8::Object> WebAXObjectProxy::GetChildAtIndex(unsigned index) {
-  return factory_->GetOrCreate(accessibility_object().childAt(index));
+  return factory_->GetOrCreate(accessibility_object_.childAt(index));
 }
 
 bool WebAXObjectProxy::IsRoot() const {
@@ -564,7 +564,7 @@ bool WebAXObjectProxy::IsRoot() const {
 }
 
 bool WebAXObjectProxy::IsEqualToObject(const blink::WebAXObject& other) {
-  return accessibility_object().equals(other);
+  return accessibility_object_.equals(other);
 }
 
 void WebAXObjectProxy::NotificationReceived(
@@ -596,189 +596,226 @@ void WebAXObjectProxy::Reset()  {
 }
 
 std::string WebAXObjectProxy::Role() {
-  return GetRole(accessibility_object());
+  accessibility_object_.updateLayoutAndCheckValidity();
+  return GetRole(accessibility_object_);
 }
 
 std::string WebAXObjectProxy::Title() {
-  return GetTitle(accessibility_object());
+  accessibility_object_.updateLayoutAndCheckValidity();
+  return GetTitle(accessibility_object_);
 }
 
 std::string WebAXObjectProxy::Description() {
-  return GetDescription(accessibility_object());
+  accessibility_object_.updateLayoutAndCheckValidity();
+  return GetDescription(accessibility_object_);
 }
 
 std::string WebAXObjectProxy::HelpText() {
-  return GetHelpText(accessibility_object());
+  accessibility_object_.updateLayoutAndCheckValidity();
+  return GetHelpText(accessibility_object_);
 }
 
 std::string WebAXObjectProxy::StringValue() {
-  return GetStringValue(accessibility_object());
+  accessibility_object_.updateLayoutAndCheckValidity();
+  return GetStringValue(accessibility_object_);
 }
 
 int WebAXObjectProxy::X() {
-  accessibility_object_.updateBackingStoreAndCheckValidity();
-  return accessibility_object().boundingBoxRect().x;
+  accessibility_object_.updateLayoutAndCheckValidity();
+  return accessibility_object_.boundingBoxRect().x;
 }
 
 int WebAXObjectProxy::Y() {
-  accessibility_object_.updateBackingStoreAndCheckValidity();
-  return accessibility_object().boundingBoxRect().y;
+  accessibility_object_.updateLayoutAndCheckValidity();
+  return accessibility_object_.boundingBoxRect().y;
 }
 
 int WebAXObjectProxy::Width() {
-  accessibility_object_.updateBackingStoreAndCheckValidity();
-  return accessibility_object().boundingBoxRect().width;
+  accessibility_object_.updateLayoutAndCheckValidity();
+  return accessibility_object_.boundingBoxRect().width;
 }
 
 int WebAXObjectProxy::Height() {
-  accessibility_object_.updateBackingStoreAndCheckValidity();
-  return accessibility_object().boundingBoxRect().height;
+  accessibility_object_.updateLayoutAndCheckValidity();
+  return accessibility_object_.boundingBoxRect().height;
 }
 
 int WebAXObjectProxy::IntValue() {
-  if (accessibility_object().supportsRangeValue())
-    return accessibility_object().valueForRange();
-  else if (accessibility_object().role() == blink::WebAXRoleHeading)
-    return accessibility_object().headingLevel();
+  accessibility_object_.updateLayoutAndCheckValidity();
+  if (accessibility_object_.supportsRangeValue())
+    return accessibility_object_.valueForRange();
+  else if (accessibility_object_.role() == blink::WebAXRoleHeading)
+    return accessibility_object_.headingLevel();
   else
-    return atoi(accessibility_object().stringValue().utf8().data());
+    return atoi(accessibility_object_.stringValue().utf8().data());
 }
 
 int WebAXObjectProxy::MinValue() {
-  return accessibility_object().minValueForRange();
+  accessibility_object_.updateLayoutAndCheckValidity();
+  return accessibility_object_.minValueForRange();
 }
 
 int WebAXObjectProxy::MaxValue() {
-  return accessibility_object().maxValueForRange();
+  accessibility_object_.updateLayoutAndCheckValidity();
+  return accessibility_object_.maxValueForRange();
 }
 
 std::string WebAXObjectProxy::ValueDescription() {
-  return GetValueDescription(accessibility_object());
+  accessibility_object_.updateLayoutAndCheckValidity();
+  return GetValueDescription(accessibility_object_);
 }
 
 int WebAXObjectProxy::ChildrenCount() {
+  accessibility_object_.updateLayoutAndCheckValidity();
   int count = 1; // Root object always has only one child, the WebView.
   if (!IsRoot())
-    count = accessibility_object().childCount();
+    count = accessibility_object_.childCount();
   return count;
 }
 
 int WebAXObjectProxy::InsertionPointLineNumber() {
-  if (!accessibility_object().isFocused())
+  accessibility_object_.updateLayoutAndCheckValidity();
+  if (!accessibility_object_.isFocused())
     return -1;
-  return accessibility_object().selectionEndLineNumber();
+  return accessibility_object_.selectionEndLineNumber();
 }
 
 std::string WebAXObjectProxy::SelectedTextRange() {
-  unsigned selection_start = accessibility_object().selectionStart();
-  unsigned selection_end = accessibility_object().selectionEnd();
+  accessibility_object_.updateLayoutAndCheckValidity();
+  unsigned selection_start = accessibility_object_.selectionStart();
+  unsigned selection_end = accessibility_object_.selectionEnd();
   return base::StringPrintf("{%d, %d}",
                             selection_start, selection_end - selection_start);
 }
 
 bool WebAXObjectProxy::IsEnabled() {
-  return accessibility_object().isEnabled();
+  accessibility_object_.updateLayoutAndCheckValidity();
+  return accessibility_object_.isEnabled();
 }
 
 bool WebAXObjectProxy::IsRequired() {
-  return accessibility_object().isRequired();
+  accessibility_object_.updateLayoutAndCheckValidity();
+  return accessibility_object_.isRequired();
 }
 
 bool WebAXObjectProxy::IsFocused() {
-  return accessibility_object().isFocused();
+  accessibility_object_.updateLayoutAndCheckValidity();
+  return accessibility_object_.isFocused();
 }
 
 bool WebAXObjectProxy::IsFocusable() {
-  return accessibility_object().canSetFocusAttribute();
+  accessibility_object_.updateLayoutAndCheckValidity();
+  return accessibility_object_.canSetFocusAttribute();
 }
 
 bool WebAXObjectProxy::IsSelected() {
-  return accessibility_object().isSelected();
+  accessibility_object_.updateLayoutAndCheckValidity();
+  return accessibility_object_.isSelected();
 }
 
 bool WebAXObjectProxy::IsSelectable() {
-  return accessibility_object().canSetSelectedAttribute();
+  accessibility_object_.updateLayoutAndCheckValidity();
+  return accessibility_object_.canSetSelectedAttribute();
 }
 
 bool WebAXObjectProxy::IsMultiSelectable() {
-  return accessibility_object().isMultiSelectable();
+  accessibility_object_.updateLayoutAndCheckValidity();
+  return accessibility_object_.isMultiSelectable();
 }
 
 bool WebAXObjectProxy::IsSelectedOptionActive() {
-  return accessibility_object().isSelectedOptionActive();
+  accessibility_object_.updateLayoutAndCheckValidity();
+  return accessibility_object_.isSelectedOptionActive();
 }
 
 bool WebAXObjectProxy::IsExpanded() {
-  return !accessibility_object().isCollapsed();
+  accessibility_object_.updateLayoutAndCheckValidity();
+  return !accessibility_object_.isCollapsed();
 }
 
 bool WebAXObjectProxy::IsChecked() {
-  return accessibility_object().isChecked();
+  accessibility_object_.updateLayoutAndCheckValidity();
+  return accessibility_object_.isChecked();
 }
 
 bool WebAXObjectProxy::IsVisible() {
-  return accessibility_object().isVisible();
+  accessibility_object_.updateLayoutAndCheckValidity();
+  return accessibility_object_.isVisible();
 }
 
 bool WebAXObjectProxy::IsOffScreen() {
-  return accessibility_object().isOffScreen();
+  accessibility_object_.updateLayoutAndCheckValidity();
+  return accessibility_object_.isOffScreen();
 }
 
 bool WebAXObjectProxy::IsCollapsed() {
-  return accessibility_object().isCollapsed();
+  accessibility_object_.updateLayoutAndCheckValidity();
+  return accessibility_object_.isCollapsed();
 }
 
 bool WebAXObjectProxy::HasPopup() {
-  return accessibility_object().ariaHasPopup();
+  accessibility_object_.updateLayoutAndCheckValidity();
+  return accessibility_object_.ariaHasPopup();
 }
 
 bool WebAXObjectProxy::IsValid() {
-  return !accessibility_object().isDetached();
+  accessibility_object_.updateLayoutAndCheckValidity();
+  return !accessibility_object_.isDetached();
 }
 
 bool WebAXObjectProxy::IsReadOnly() {
-  return accessibility_object().isReadOnly();
+  accessibility_object_.updateLayoutAndCheckValidity();
+  return accessibility_object_.isReadOnly();
 }
 
 std::string WebAXObjectProxy::Orientation() {
-  return GetOrientation(accessibility_object());
+  accessibility_object_.updateLayoutAndCheckValidity();
+  return GetOrientation(accessibility_object_);
 }
 
 int WebAXObjectProxy::ClickPointX() {
-  return accessibility_object().clickPoint().x;
+  accessibility_object_.updateLayoutAndCheckValidity();
+  return accessibility_object_.clickPoint().x;
 }
 
 int WebAXObjectProxy::ClickPointY() {
-  return accessibility_object().clickPoint().y;
+  accessibility_object_.updateLayoutAndCheckValidity();
+  return accessibility_object_.clickPoint().y;
 }
 
 int32_t WebAXObjectProxy::RowCount() {
-  return static_cast<int32_t>(accessibility_object().rowCount());
+  accessibility_object_.updateLayoutAndCheckValidity();
+  return static_cast<int32_t>(accessibility_object_.rowCount());
 }
 
 int32_t WebAXObjectProxy::ColumnCount() {
-  return static_cast<int32_t>(accessibility_object().columnCount());
+  accessibility_object_.updateLayoutAndCheckValidity();
+  return static_cast<int32_t>(accessibility_object_.columnCount());
 }
 
 bool WebAXObjectProxy::IsClickable() {
-  return accessibility_object().isClickable();
+  accessibility_object_.updateLayoutAndCheckValidity();
+  return accessibility_object_.isClickable();
 }
 
 std::string WebAXObjectProxy::AllAttributes() {
-  return GetAttributes(accessibility_object());
+  accessibility_object_.updateLayoutAndCheckValidity();
+  return GetAttributes(accessibility_object_);
 }
 
 std::string WebAXObjectProxy::AttributesOfChildren() {
+  accessibility_object_.updateLayoutAndCheckValidity();
   AttributesCollector collector;
-  unsigned size = accessibility_object().childCount();
+  unsigned size = accessibility_object_.childCount();
   for (unsigned i = 0; i < size; ++i)
-    collector.CollectAttributes(accessibility_object().childAt(i));
+    collector.CollectAttributes(accessibility_object_.childAt(i));
   return collector.attributes();
 }
 
 int WebAXObjectProxy::LineForIndex(int index) {
+  accessibility_object_.updateLayoutAndCheckValidity();
   blink::WebVector<int> line_breaks;
-  accessibility_object().lineBreaks(line_breaks);
+  accessibility_object_.lineBreaks(line_breaks);
   int line = 0;
   int vector_size = static_cast<int>(line_breaks.size());
   while (line < vector_size && line_breaks[line] <= index)
@@ -787,19 +824,20 @@ int WebAXObjectProxy::LineForIndex(int index) {
 }
 
 std::string WebAXObjectProxy::BoundsForRange(int start, int end) {
-  if (accessibility_object().role() != blink::WebAXRoleStaticText)
+  accessibility_object_.updateLayoutAndCheckValidity();
+  if (accessibility_object_.role() != blink::WebAXRoleStaticText)
     return std::string();
 
-  if (!accessibility_object_.updateBackingStoreAndCheckValidity())
+  if (!accessibility_object_.updateLayoutAndCheckValidity())
     return std::string();
 
   int len = end - start;
 
   // Get the bounds for each character and union them into one large rectangle.
   // This is just for testing so it doesn't need to be efficient.
-  blink::WebRect bounds = BoundsForCharacter(accessibility_object(), start);
+  blink::WebRect bounds = BoundsForCharacter(accessibility_object_, start);
   for (int i = 1; i < len; i++) {
-    blink::WebRect next = BoundsForCharacter(accessibility_object(), start + i);
+    blink::WebRect next = BoundsForCharacter(accessibility_object_, start + i);
     int right = std::max(bounds.x + bounds.width, next.x + next.width);
     int bottom = std::max(bounds.y + bounds.height, next.y + next.height);
     bounds.x = std::min(bounds.x, next.x);
@@ -813,12 +851,14 @@ std::string WebAXObjectProxy::BoundsForRange(int start, int end) {
 }
 
 v8::Handle<v8::Object> WebAXObjectProxy::ChildAtIndex(int index) {
+  accessibility_object_.updateLayoutAndCheckValidity();
   return GetChildAtIndex(index);
 }
 
 v8::Handle<v8::Object> WebAXObjectProxy::ElementAtPoint(int x, int y) {
+  accessibility_object_.updateLayoutAndCheckValidity();
   blink::WebPoint point(x, y);
-  blink::WebAXObject obj = accessibility_object().hitTest(point);
+  blink::WebAXObject obj = accessibility_object_.hitTest(point);
   if (obj.isNull())
     return v8::Handle<v8::Object>();
 
@@ -826,7 +866,8 @@ v8::Handle<v8::Object> WebAXObjectProxy::ElementAtPoint(int x, int y) {
 }
 
 v8::Handle<v8::Object> WebAXObjectProxy::TableHeader() {
-  blink::WebAXObject obj = accessibility_object().headerContainerObject();
+  accessibility_object_.updateLayoutAndCheckValidity();
+  blink::WebAXObject obj = accessibility_object_.headerContainerObject();
   if (obj.isNull())
     return v8::Handle<v8::Object>();
 
@@ -834,21 +875,24 @@ v8::Handle<v8::Object> WebAXObjectProxy::TableHeader() {
 }
 
 std::string WebAXObjectProxy::RowIndexRange() {
-  unsigned row_index = accessibility_object().cellRowIndex();
-  unsigned row_span = accessibility_object().cellRowSpan();
+  accessibility_object_.updateLayoutAndCheckValidity();
+  unsigned row_index = accessibility_object_.cellRowIndex();
+  unsigned row_span = accessibility_object_.cellRowSpan();
   return base::StringPrintf("{%d, %d}", row_index, row_span);
 }
 
 std::string WebAXObjectProxy::ColumnIndexRange() {
-  unsigned column_index = accessibility_object().cellColumnIndex();
-  unsigned column_span = accessibility_object().cellColumnSpan();
+  accessibility_object_.updateLayoutAndCheckValidity();
+  unsigned column_index = accessibility_object_.cellColumnIndex();
+  unsigned column_span = accessibility_object_.cellColumnSpan();
   return base::StringPrintf("{%d, %d}", column_index, column_span);
 }
 
 v8::Handle<v8::Object> WebAXObjectProxy::CellForColumnAndRow(
     int column, int row) {
+  accessibility_object_.updateLayoutAndCheckValidity();
   blink::WebAXObject obj =
-      accessibility_object().cellForColumnAndRow(column, row);
+      accessibility_object_.cellForColumnAndRow(column, row);
   if (obj.isNull())
     return v8::Handle<v8::Object>();
 
@@ -856,7 +900,8 @@ v8::Handle<v8::Object> WebAXObjectProxy::CellForColumnAndRow(
 }
 
 v8::Handle<v8::Object> WebAXObjectProxy::TitleUIElement() {
-  blink::WebAXObject obj = accessibility_object().titleUIElement();
+  accessibility_object_.updateLayoutAndCheckValidity();
+  blink::WebAXObject obj = accessibility_object_.titleUIElement();
   if (obj.isNull())
     return v8::Handle<v8::Object>();
 
@@ -865,49 +910,58 @@ v8::Handle<v8::Object> WebAXObjectProxy::TitleUIElement() {
 
 void WebAXObjectProxy::SetSelectedTextRange(int selection_start,
                                             int length) {
-  accessibility_object().setSelectedTextRange(selection_start,
+  accessibility_object_.updateLayoutAndCheckValidity();
+  accessibility_object_.setSelectedTextRange(selection_start,
                                               selection_start + length);
 }
 
 bool WebAXObjectProxy::IsAttributeSettable(const std::string& attribute) {
+  accessibility_object_.updateLayoutAndCheckValidity();
   bool settable = false;
   if (attribute == "AXValue")
-    settable = accessibility_object().canSetValueAttribute();
+    settable = accessibility_object_.canSetValueAttribute();
   return settable;
 }
 
 bool WebAXObjectProxy::IsPressActionSupported() {
-  return accessibility_object().canPress();
+  accessibility_object_.updateLayoutAndCheckValidity();
+  return accessibility_object_.canPress();
 }
 
 bool WebAXObjectProxy::IsIncrementActionSupported() {
-  return accessibility_object().canIncrement();
+  accessibility_object_.updateLayoutAndCheckValidity();
+  return accessibility_object_.canIncrement();
 }
 
 bool WebAXObjectProxy::IsDecrementActionSupported() {
-  return accessibility_object().canDecrement();
+  accessibility_object_.updateLayoutAndCheckValidity();
+  return accessibility_object_.canDecrement();
 }
 
 v8::Handle<v8::Object> WebAXObjectProxy::ParentElement() {
-  blink::WebAXObject parent_object = accessibility_object().parentObject();
+  accessibility_object_.updateLayoutAndCheckValidity();
+  blink::WebAXObject parent_object = accessibility_object_.parentObject();
   while (parent_object.accessibilityIsIgnored())
     parent_object = parent_object.parentObject();
   return factory_->GetOrCreate(parent_object);
 }
 
 void WebAXObjectProxy::Increment() {
-  accessibility_object().increment();
+  accessibility_object_.updateLayoutAndCheckValidity();
+  accessibility_object_.increment();
 }
 
 void WebAXObjectProxy::Decrement() {
-  accessibility_object().decrement();
+  accessibility_object_.updateLayoutAndCheckValidity();
+  accessibility_object_.decrement();
 }
 
 void WebAXObjectProxy::ShowMenu() {
 }
 
 void WebAXObjectProxy::Press() {
-  accessibility_object().press();
+  accessibility_object_.updateLayoutAndCheckValidity();
+  accessibility_object_.press();
 }
 
 bool WebAXObjectProxy::IsEqual(v8::Handle<v8::Object> proxy) {
@@ -928,39 +982,45 @@ void WebAXObjectProxy::UnsetNotificationListener() {
 }
 
 void WebAXObjectProxy::TakeFocus() {
-  accessibility_object().setFocused(true);
+  accessibility_object_.updateLayoutAndCheckValidity();
+  accessibility_object_.setFocused(true);
 }
 
 void WebAXObjectProxy::ScrollToMakeVisible() {
-  accessibility_object().scrollToMakeVisible();
+  accessibility_object_.updateLayoutAndCheckValidity();
+  accessibility_object_.scrollToMakeVisible();
 }
 
 void WebAXObjectProxy::ScrollToMakeVisibleWithSubFocus(int x, int y,
                                                        int width, int height) {
-  accessibility_object().scrollToMakeVisibleWithSubFocus(
+  accessibility_object_.updateLayoutAndCheckValidity();
+  accessibility_object_.scrollToMakeVisibleWithSubFocus(
       blink::WebRect(x, y, width, height));
 }
 
 void WebAXObjectProxy::ScrollToGlobalPoint(int x, int y) {
-  accessibility_object().scrollToGlobalPoint(blink::WebPoint(x, y));
+  accessibility_object_.updateLayoutAndCheckValidity();
+  accessibility_object_.scrollToGlobalPoint(blink::WebPoint(x, y));
 }
 
 int WebAXObjectProxy::WordStart(int character_index) {
-  if (accessibility_object().role() != blink::WebAXRoleStaticText)
+  accessibility_object_.updateLayoutAndCheckValidity();
+  if (accessibility_object_.role() != blink::WebAXRoleStaticText)
     return -1;
 
   int word_start, word_end;
-  GetBoundariesForOneWord(accessibility_object(), character_index,
+  GetBoundariesForOneWord(accessibility_object_, character_index,
                           word_start, word_end);
   return word_start;
 }
 
 int WebAXObjectProxy::WordEnd(int character_index) {
-  if (accessibility_object().role() != blink::WebAXRoleStaticText)
+  accessibility_object_.updateLayoutAndCheckValidity();
+  if (accessibility_object_.role() != blink::WebAXRoleStaticText)
     return -1;
 
   int word_start, word_end;
-  GetBoundariesForOneWord(accessibility_object(), character_index,
+  GetBoundariesForOneWord(accessibility_object_, character_index,
                           word_start, word_end);
   return word_end;
 }
