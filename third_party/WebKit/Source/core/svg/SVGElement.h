@@ -248,7 +248,6 @@ private:
 #if ENABLE(ASSERT)
     bool m_inRelativeLengthClientsInvalidation;
 #endif
-    unsigned m_isContextElement : 1;
 
     OwnPtrWillBeMember<SVGElementRareData> m_SVGRareData;
     RefPtr<SVGAnimatedString> m_className;
