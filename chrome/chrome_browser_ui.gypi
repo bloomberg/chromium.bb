@@ -983,8 +983,6 @@
       'browser/ui/webui/chromeos/login/screenlock_icon_provider.h',
       'browser/ui/webui/chromeos/login/screenlock_icon_source.cc',
       'browser/ui/webui/chromeos/login/screenlock_icon_source.h',
-      'browser/ui/webui/chromeos/login/screen_manager_handler.cc',
-      'browser/ui/webui/chromeos/login/screen_manager_handler.h',
       'browser/ui/webui/chromeos/login/signin_screen_handler.cc',
       'browser/ui/webui/chromeos/login/signin_screen_handler.h',
       'browser/ui/webui/chromeos/login/supervised_user_creation_screen_handler.cc',

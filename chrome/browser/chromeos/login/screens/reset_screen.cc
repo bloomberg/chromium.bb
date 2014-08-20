@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/login/screens/reset_screen.h"
 
 #include "base/logging.h"
-#include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/login/screens/screen_observer.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 
