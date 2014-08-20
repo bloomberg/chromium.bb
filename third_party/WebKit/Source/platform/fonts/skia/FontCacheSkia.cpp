@@ -175,11 +175,11 @@ static inline SkFontStyle fontStyle(const FontDescription& fontDescription)
     return SkFontStyle(weight, width, slant);
 }
 
-COMPILE_ASSERT(FontStretchUltraCondensed == SkFontStyle::kUltraCondensed_Width,
+COMPILE_ASSERT(static_cast<int>(FontStretchUltraCondensed) == static_cast<int>(SkFontStyle::kUltraCondensed_Width),
     FontStretchUltraCondensedMapsTokUltraCondensed_Width);
-COMPILE_ASSERT(FontStretchNormal == SkFontStyle::kNormal_Width,
+COMPILE_ASSERT(static_cast<int>(FontStretchNormal) == static_cast<int>(SkFontStyle::kNormal_Width),
     FontStretchNormalMapsTokNormal_Width);
-COMPILE_ASSERT(FontStretchUltraExpanded == SkFontStyle::kUltaExpanded_Width,
+COMPILE_ASSERT(static_cast<int>(FontStretchUltraExpanded) == static_cast<int>(SkFontStyle::kUltaExpanded_Width),
     FontStretchUltraExpandedMapsTokUltaExpanded_Width);
 #endif
 
