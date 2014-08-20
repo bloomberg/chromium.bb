@@ -162,7 +162,6 @@ MetricsStateManager::CreateEntropyProvider() {
   if (IsMetricsReportingEnabled()) {
     if (entropy_source_returned_ == ENTROPY_SOURCE_NONE)
       entropy_source_returned_ = ENTROPY_SOURCE_HIGH;
-    DCHECK_EQ(ENTROPY_SOURCE_HIGH, entropy_source_returned_);
     const std::string high_entropy_source =
         client_id_ + base::IntToString(low_entropy_source_value);
     return scoped_ptr<const base::FieldTrial::EntropyProvider>(
@@ -171,7 +170,6 @@ MetricsStateManager::CreateEntropyProvider() {
 
   if (entropy_source_returned_ == ENTROPY_SOURCE_NONE)
     entropy_source_returned_ = ENTROPY_SOURCE_LOW;
-  DCHECK_EQ(ENTROPY_SOURCE_LOW, entropy_source_returned_);
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
   return scoped_ptr<const base::FieldTrial::EntropyProvider>(
