@@ -37,18 +37,17 @@ namespace gpu {
 
 namespace {
 
-const int32 kCommandBufferSize = 1024 * 1024;
-// TODO(kbr): make the transfer buffer size configurable via context
-// creation attributes.
-const size_t kStartTransferBufferSize = 4 * 1024 * 1024;
-const size_t kMinTransferBufferSize = 1 * 256 * 1024;
-const size_t kMaxTransferBufferSize = 16 * 1024 * 1024;
+const int32 kDefaultCommandBufferSize = 1024 * 1024;
+const unsigned int kDefaultStartTransferBufferSize = 4 * 1024 * 1024;
+const unsigned int kDefaultMinTransferBufferSize = 1 * 256 * 1024;
+const unsigned int kDefaultMaxTransferBufferSize = 16 * 1024 * 1024;
 
 class GLInProcessContextImpl
     : public GLInProcessContext,
       public base::SupportsWeakPtr<GLInProcessContextImpl> {
  public:
-  explicit GLInProcessContextImpl();
+  explicit GLInProcessContextImpl(
+      const GLInProcessContextSharedMemoryLimits& mem_limits);
   virtual ~GLInProcessContextImpl();
 
   bool Initialize(
@@ -65,6 +64,7 @@ class GLInProcessContextImpl
   // GLInProcessContext implementation:
   virtual void SetContextLostCallback(const base::Closure& callback) OVERRIDE;
   virtual gles2::GLES2Implementation* GetImplementation() OVERRIDE;
+  virtual size_t GetMappedMemoryLimit() OVERRIDE;
 
 #if defined(OS_ANDROID)
   virtual scoped_refptr<gfx::SurfaceTexture> GetSurfaceTexture(
@@ -81,6 +81,7 @@ class GLInProcessContextImpl
   scoped_ptr<gles2::GLES2Implementation> gles2_implementation_;
   scoped_ptr<InProcessCommandBuffer> command_buffer_;
 
+  const GLInProcessContextSharedMemoryLimits mem_limits_;
   bool context_lost_;
   base::Closure context_lost_callback_;
 
@@ -92,8 +93,10 @@ base::LazyInstance<base::Lock> g_all_shared_contexts_lock =
 base::LazyInstance<std::set<GLInProcessContextImpl*> > g_all_shared_contexts =
     LAZY_INSTANCE_INITIALIZER;
 
-GLInProcessContextImpl::GLInProcessContextImpl()
-    : context_lost_(false) {}
+GLInProcessContextImpl::GLInProcessContextImpl(
+    const GLInProcessContextSharedMemoryLimits& mem_limits)
+    : mem_limits_(mem_limits), context_lost_(false) {
+}
 
 GLInProcessContextImpl::~GLInProcessContextImpl() {
   {
@@ -105,6 +108,10 @@ GLInProcessContextImpl::~GLInProcessContextImpl() {
 
 gles2::GLES2Implementation* GLInProcessContextImpl::GetImplementation() {
   return gles2_implementation_.get();
+}
+
+size_t GLInProcessContextImpl::GetMappedMemoryLimit() {
+  return mem_limits_.mapped_memory_reclaim_limit;
 }
 
 void GLInProcessContextImpl::SetContextLostCallback(
@@ -181,7 +188,7 @@ bool GLInProcessContextImpl::Initialize(
 
   // Create the GLES2 helper, which writes the command buffer protocol.
   gles2_helper_.reset(new gles2::GLES2CmdHelper(command_buffer_.get()));
-  if (!gles2_helper_->Initialize(kCommandBufferSize)) {
+  if (!gles2_helper_->Initialize(mem_limits_.command_buffer_size)) {
     LOG(ERROR) << "Failed to initialize GLES2CmdHelper";
     Destroy();
     return false;
@@ -209,10 +216,10 @@ bool GLInProcessContextImpl::Initialize(
   }
 
   if (!gles2_implementation_->Initialize(
-      kStartTransferBufferSize,
-      kMinTransferBufferSize,
-      kMaxTransferBufferSize,
-      gles2::GLES2Implementation::kNoLimit)) {
+          mem_limits_.start_transfer_buffer_size,
+          mem_limits_.min_transfer_buffer_size,
+          mem_limits_.max_transfer_buffer_size,
+          mem_limits_.mapped_memory_reclaim_limit)) {
     return false;
   }
 
@@ -245,6 +252,15 @@ GLInProcessContextImpl::GetSurfaceTexture(uint32 stream_id) {
 
 }  // anonymous namespace
 
+GLInProcessContextSharedMemoryLimits::GLInProcessContextSharedMemoryLimits()
+    : command_buffer_size(kDefaultCommandBufferSize),
+      start_transfer_buffer_size(kDefaultStartTransferBufferSize),
+      min_transfer_buffer_size(kDefaultMinTransferBufferSize),
+      max_transfer_buffer_size(kDefaultMaxTransferBufferSize),
+      mapped_memory_reclaim_limit(gles2::GLES2Implementation::kNoLimit) {
+}
+
+// static
 GLInProcessContext* GLInProcessContext::Create(
     scoped_refptr<gpu::InProcessCommandBuffer::Service> service,
     scoped_refptr<gfx::GLSurface> surface,
@@ -254,7 +270,8 @@ GLInProcessContext* GLInProcessContext::Create(
     GLInProcessContext* share_context,
     bool use_global_share_group,
     const ::gpu::gles2::ContextCreationAttribHelper& attribs,
-    gfx::GpuPreference gpu_preference) {
+    gfx::GpuPreference gpu_preference,
+    const GLInProcessContextSharedMemoryLimits& memory_limits) {
   DCHECK(!use_global_share_group || !share_context);
   if (surface.get()) {
     DCHECK_EQ(surface->IsOffscreen(), is_offscreen);
@@ -262,7 +279,8 @@ GLInProcessContext* GLInProcessContext::Create(
     DCHECK_EQ(gfx::kNullAcceleratedWidget, window);
   }
 
-  scoped_ptr<GLInProcessContextImpl> context(new GLInProcessContextImpl());
+  scoped_ptr<GLInProcessContextImpl> context(
+      new GLInProcessContextImpl(memory_limits));
   if (!context->Initialize(surface,
                            is_offscreen,
                            use_global_share_group,

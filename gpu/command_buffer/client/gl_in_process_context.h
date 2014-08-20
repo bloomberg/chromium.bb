@@ -30,6 +30,16 @@ namespace gles2 {
 class GLES2Implementation;
 }
 
+struct GL_IN_PROCESS_CONTEXT_EXPORT GLInProcessContextSharedMemoryLimits {
+  GLInProcessContextSharedMemoryLimits();
+
+  int32 command_buffer_size;
+  unsigned int start_transfer_buffer_size;
+  unsigned int min_transfer_buffer_size;
+  unsigned int max_transfer_buffer_size;
+  unsigned int mapped_memory_reclaim_limit;
+};
+
 class GL_IN_PROCESS_CONTEXT_EXPORT GLInProcessContext {
  public:
   virtual ~GLInProcessContext() {}
@@ -53,13 +63,16 @@ class GL_IN_PROCESS_CONTEXT_EXPORT GLInProcessContext {
       GLInProcessContext* share_context,
       bool use_global_share_group,
       const gpu::gles2::ContextCreationAttribHelper& attribs,
-      gfx::GpuPreference gpu_preference);
+      gfx::GpuPreference gpu_preference,
+      const GLInProcessContextSharedMemoryLimits& memory_limits);
 
   virtual void SetContextLostCallback(const base::Closure& callback) = 0;
 
   // Allows direct access to the GLES2 implementation so a GLInProcessContext
   // can be used without making it current.
   virtual gles2::GLES2Implementation* GetImplementation() = 0;
+
+  virtual size_t GetMappedMemoryLimit() = 0;
 
 #if defined(OS_ANDROID)
   virtual scoped_refptr<gfx::SurfaceTexture> GetSurfaceTexture(

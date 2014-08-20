@@ -36,6 +36,10 @@ namespace gpu {
 class WEBKIT_GPU_EXPORT WebGraphicsContext3DInProcessCommandBufferImpl
     : public WebGraphicsContext3DImpl {
  public:
+  enum MappedMemoryReclaimLimit {
+    kNoLimit = 0,
+  };
+
   static scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl>
       CreateViewContext(
           const blink::WebGraphicsContext3D::Attributes& attributes,
@@ -53,6 +57,8 @@ class WEBKIT_GPU_EXPORT WebGraphicsContext3DInProcessCommandBufferImpl
           const blink::WebGraphicsContext3D::Attributes& attributes);
 
   virtual ~WebGraphicsContext3DInProcessCommandBufferImpl();
+
+  size_t GetMappedMemoryLimit();
 
   //----------------------------------------------------------------------
   // WebGraphicsContext3D methods

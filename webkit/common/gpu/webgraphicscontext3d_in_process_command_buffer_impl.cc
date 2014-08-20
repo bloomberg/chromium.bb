@@ -118,6 +118,10 @@ WebGraphicsContext3DInProcessCommandBufferImpl::
     ~WebGraphicsContext3DInProcessCommandBufferImpl() {
 }
 
+size_t WebGraphicsContext3DInProcessCommandBufferImpl::GetMappedMemoryLimit() {
+  return context_->GetMappedMemoryLimit();
+}
+
 bool WebGraphicsContext3DInProcessCommandBufferImpl::MaybeInitializeGL() {
   if (initialized_)
     return true;
@@ -135,15 +139,17 @@ bool WebGraphicsContext3DInProcessCommandBufferImpl::MaybeInitializeGL() {
     // will need to be lost either when the first context requesting the
     // discrete GPU is created, or the last one is destroyed.
     gfx::GpuPreference gpu_preference = gfx::PreferDiscreteGpu;
-    context_.reset(GLInProcessContext::Create(NULL, /* service */
-                                              NULL, /* surface */
-                                              is_offscreen_,
-                                              window_,
-                                              gfx::Size(1, 1),
-                                              NULL, /* share_context */
-                                              share_resources_,
-                                              attribs_,
-                                              gpu_preference));
+    context_.reset(GLInProcessContext::Create(
+        NULL, /* service */
+        NULL, /* surface */
+        is_offscreen_,
+        window_,
+        gfx::Size(1, 1),
+        NULL, /* share_context */
+        share_resources_,
+        attribs_,
+        gpu_preference,
+        ::gpu::GLInProcessContextSharedMemoryLimits()));
   }
 
   if (context_) {

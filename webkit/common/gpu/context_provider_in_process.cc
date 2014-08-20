@@ -110,6 +110,13 @@ bool ContextProviderInProcess::BindToCurrentThread() {
 
 void ContextProviderInProcess::InitializeCapabilities() {
   capabilities_.gpu = context3d_->GetImplementation()->capabilities();
+
+  size_t mapped_memory_limit = context3d_->GetMappedMemoryLimit();
+  capabilities_.max_transfer_buffer_usage_bytes =
+      mapped_memory_limit ==
+              WebGraphicsContext3DInProcessCommandBufferImpl::kNoLimit
+          ? std::numeric_limits<size_t>::max()
+          : mapped_memory_limit;
 }
 
 cc::ContextProvider::Capabilities
