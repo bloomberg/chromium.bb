@@ -298,7 +298,7 @@ FileTable.decorate = function(self, metadataCache, volumeManager, fullPage) {
   self.setRenderFunction(self.renderTableRow_.bind(self,
       self.getRenderFunction()));
 
-  self.scrollBar_ = MainPanelScrollBar();
+  self.scrollBar_ = new MainPanelScrollBar();
   self.scrollBar_.initialize(self, self.list);
   // Keep focus on the file list when clicking on the header.
   self.header.addEventListener('mousedown', function(e) {
