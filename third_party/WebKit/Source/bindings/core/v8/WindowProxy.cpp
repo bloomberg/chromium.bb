@@ -430,7 +430,7 @@ static v8::Handle<v8::Value> getNamedProperty(HTMLDocument* htmlDocument, const 
             return toV8(frame->domWindow(), creationContext, isolate);
         return toV8(element, creationContext, isolate);
     }
-    return toV8(items.release(), creationContext, isolate);
+    return toV8(PassRefPtrWillBeRawPtr<HTMLCollection>(items.release()), creationContext, isolate);
 }
 
 static void getter(v8::Local<v8::String> property, const v8::PropertyCallbackInfo<v8::Value>& info)
