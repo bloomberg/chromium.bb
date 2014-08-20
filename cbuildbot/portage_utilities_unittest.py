@@ -519,7 +519,7 @@ class FindOverlaysTest(cros_test_lib.MoxTestCase):
     """Verify that the boards are examined in the right order"""
     overlays = self.overlays[self.MARIO][self.PUBLIC]
     self.mox.StubOutWithMock(osutils, 'ReadFile')
-    for overlay in overlays:
+    for overlay in reversed(overlays):
       osutils.ReadFile(os.path.join(overlay, 'test')).AndRaise(
           IOError(os.errno.ENOENT, 'ENOENT'))
     self.mox.ReplayAll()

@@ -50,7 +50,8 @@ _blank_or_eapi_re = re.compile(r'^\s*(?:#|EAPI=|$)')
 def _ListOverlays(board=None, buildroot=constants.SOURCE_ROOT):
   """Return the list of overlays to use for a given buildbot.
 
-  Always returns all overlays, and does not perform any filtering.
+  Always returns all overlays in parent -> child order, and does not
+  perform any filtering.
 
   Args:
     board: Board to look at.
@@ -78,6 +79,8 @@ def _ListOverlays(board=None, buildroot=constants.SOURCE_ROOT):
 def FindOverlays(overlay_type, board=None, buildroot=constants.SOURCE_ROOT):
   """Return the list of overlays to use for a given buildbot.
 
+  The returned list of overlays will be in parent -> child order.
+
   Args:
     overlay_type: A string describing which overlays you want.
       'private': Just the private overlays.
@@ -103,6 +106,9 @@ def ReadOverlayFile(filename, overlay_type='both', board=None,
                     buildroot=constants.SOURCE_ROOT):
   """Attempt to open a file in the overlay directories.
 
+  Searches through this board's overlays for the specified file. The
+  overlays are searched in child -> parent order.
+
   Args:
     filename: Path to open inside the overlay.
     overlay_type: A string describing which overlays you want.
@@ -115,7 +121,7 @@ def ReadOverlayFile(filename, overlay_type='both', board=None,
   Returns:
     The contents of the file, or None if no files could be opened.
   """
-  for overlay in FindOverlays(overlay_type, board, buildroot):
+  for overlay in reversed(FindOverlays(overlay_type, board, buildroot)):
     try:
       return osutils.ReadFile(os.path.join(overlay, filename))
     except IOError as e:
