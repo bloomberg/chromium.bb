@@ -346,23 +346,13 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorEventDispatchEvent::da
     return value;
 }
 
-static PassRefPtr<TraceEvent::ConvertableToTraceFormat> genericTimeEventData(ExecutionContext* context, const String& message)
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorTimeStampEvent::data(ExecutionContext* context, const String& message)
 {
     RefPtr<TracedValue> value = TracedValue::create();
     value->setString("message", message);
     if (LocalFrame* frame = frameForExecutionContext(context))
         value->setString("frame", toHexString(frame));
     return value;
-}
-
-PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorTimeStampEvent::data(ExecutionContext* context, const String& message)
-{
-    return genericTimeEventData(context, message);
-}
-
-PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorConsoleTimeEvent::data(ExecutionContext* context, const String& message)
-{
-    return genericTimeEventData(context, message);
 }
 
 }

@@ -149,11 +149,6 @@ public:
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(ExecutionContext*, const String& message);
 };
 
-class InspectorConsoleTimeEvent {
-public:
-    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(ExecutionContext*, const String& message);
-};
-
 } // namespace blink
 
 

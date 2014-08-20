@@ -486,7 +486,7 @@ class ConsoleMessage;
     [Console]
     void consoleCount(ExecutionContext* context, ScriptState* state, PassRefPtrWillBeRawPtr<ScriptArguments> arguments);
 
-    [Console, Timeline]
+    [Timeline, Console]
     void consoleTime([Keep] ExecutionContext* context, const String& title);
 
     [Console, Timeline]
