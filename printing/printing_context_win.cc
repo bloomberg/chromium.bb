@@ -4,19 +4,12 @@
 
 #include "printing/printing_context_win.h"
 
-#include <winspool.h>
-
 #include <algorithm>
 
-#include "base/message_loop/message_loop.h"
-#include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/values.h"
 #include "printing/backend/print_backend.h"
-#include "printing/backend/printing_info_win.h"
 #include "printing/backend/win_helper.h"
-#include "printing/print_job_constants.h"
 #include "printing/print_settings_initializer_win.h"
 #include "printing/printed_document.h"
 #include "printing/printing_utils.h"
@@ -26,7 +19,6 @@
 #if defined(USE_AURA)
 #include "ui/aura/remote_window_tree_host_win.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_event_dispatcher.h"
 #endif
 
 namespace {
@@ -51,107 +43,6 @@ HWND GetRootWindow(gfx::NativeView view) {
 }  // anonymous namespace
 
 namespace printing {
-
-class PrintingContextWin::CallbackHandler : public IPrintDialogCallback,
-                                            public IObjectWithSite {
- public:
-  CallbackHandler(PrintingContextWin& owner, HWND owner_hwnd)
-      : owner_(owner),
-        owner_hwnd_(owner_hwnd),
-        services_(NULL) {
-  }
-
-  ~CallbackHandler() {
-    if (services_)
-      services_->Release();
-  }
-
-  IUnknown* ToIUnknown() {
-    return static_cast<IUnknown*>(static_cast<IPrintDialogCallback*>(this));
-  }
-
-  // IUnknown
-  virtual HRESULT WINAPI QueryInterface(REFIID riid, void**object) {
-    if (riid == IID_IUnknown) {
-      *object = ToIUnknown();
-    } else if (riid == IID_IPrintDialogCallback) {
-      *object = static_cast<IPrintDialogCallback*>(this);
-    } else if (riid == IID_IObjectWithSite) {
-      *object = static_cast<IObjectWithSite*>(this);
-    } else {
-      return E_NOINTERFACE;
-    }
-    return S_OK;
-  }
-
-  // No real ref counting.
-  virtual ULONG WINAPI AddRef() {
-    return 1;
-  }
-  virtual ULONG WINAPI Release() {
-    return 1;
-  }
-
-  // IPrintDialogCallback methods
-  virtual HRESULT WINAPI InitDone() {
-    return S_OK;
-  }
-
-  virtual HRESULT WINAPI SelectionChange() {
-    if (services_) {
-      // TODO(maruel): Get the devmode for the new printer with
-      // services_->GetCurrentDevMode(&devmode, &size), send that information
-      // back to our client and continue. The client needs to recalculate the
-      // number of rendered pages and send back this information here.
-    }
-    return S_OK;
-  }
-
-  virtual HRESULT WINAPI HandleMessage(HWND dialog,
-                                       UINT message,
-                                       WPARAM wparam,
-                                       LPARAM lparam,
-                                       LRESULT* result) {
-    // Cheap way to retrieve the window handle.
-    if (!owner_.dialog_box_) {
-      // The handle we receive is the one of the groupbox in the General tab. We
-      // need to get the grand-father to get the dialog box handle.
-      owner_.dialog_box_ = GetAncestor(dialog, GA_ROOT);
-      // Trick to enable the owner window. This can cause issues with navigation
-      // events so it may have to be disabled if we don't fix the side-effects.
-      EnableWindow(owner_hwnd_, TRUE);
-    }
-    return S_FALSE;
-  }
-
-  virtual HRESULT WINAPI SetSite(IUnknown* site) {
-    if (!site) {
-      DCHECK(services_);
-      services_->Release();
-      services_ = NULL;
-      // The dialog box is destroying, PrintJob::Worker don't need the handle
-      // anymore.
-      owner_.dialog_box_ = NULL;
-    } else {
-      DCHECK(services_ == NULL);
-      HRESULT hr = site->QueryInterface(IID_IPrintDialogServices,
-                                        reinterpret_cast<void**>(&services_));
-      DCHECK(SUCCEEDED(hr));
-    }
-    return S_OK;
-  }
-
-  virtual HRESULT WINAPI GetSite(REFIID riid, void** site) {
-    return E_NOTIMPL;
-  }
-
- private:
-  PrintingContextWin& owner_;
-  HWND owner_hwnd_;
-  IPrintDialogServices* services_;
-
-  DISALLOW_COPY_AND_ASSIGN(CallbackHandler);
-};
 
 // static
 PrintingContext* PrintingContext::Create(const std::string& app_locale) {
