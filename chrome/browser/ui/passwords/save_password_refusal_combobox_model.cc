@@ -2,16 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/passwords/save_password_refusal_combobox_model.h"
+#include "chrome/browser/ui/passwords/save_password_refusal_combobox_model.h"
 
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 SavePasswordRefusalComboboxModel::SavePasswordRefusalComboboxModel() {
+#if !defined(OS_ANDROID)
   items_.push_back(
       l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_CANCEL_BUTTON));
   items_.push_back(
       l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_BLACKLIST_BUTTON));
+#endif
 }
 
 SavePasswordRefusalComboboxModel::~SavePasswordRefusalComboboxModel() {}

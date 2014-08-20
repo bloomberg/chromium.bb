@@ -7,16 +7,17 @@
 #include "base/logging.h"
 #include "base/strings/string16.h"
 #include "base/strings/sys_string_conversions.h"
+#import "chrome/browser/ui/cocoa/passwords/manage_passwords_bubble_content_view_controller.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 #include "skia/ext/skia_utils_mac.h"
-#include "ui/native_theme/native_theme.h"
+#include "ui/native_theme/common_theme.h"
 #include "ui/views/layout/layout_constants.h"
+
+using namespace password_manager::mac::ui;
 
 namespace {
 
-// TODO(dconnelly): Figure out how to share all these constants.
 static const CGFloat kBorderWidth = 1;
-static const CGFloat kFramePadding = 16;
 
 void InitLabel(NSTextField* textField, const base::string16& text) {
   [textField setStringValue:base::SysUTF16ToNSString(text)];
@@ -137,9 +138,10 @@ NSSecureTextField* PasswordLabel(const base::string16& text) {
                                  views::kRelatedControlVerticalSpacing)];
 
   // Add the borders, which go along the entire view.
-  CGColorRef borderColor =
-      gfx::CGColorCreateFromSkColor(ui::NativeTheme::instance()->GetSystemColor(
-          ui::NativeTheme::kColorId_EnabledMenuButtonBorderColor));
+  SkColor borderSkColor;
+  ui::CommonThemeGetSystemColor(
+      ui::NativeTheme::kColorId_EnabledMenuButtonBorderColor, &borderSkColor);
+  CGColorRef borderColor = gfx::CGColorCreateFromSkColor(borderSkColor);
 
   // Mac views don't have backing layers by default.
   base::scoped_nsobject<CALayer> rootLayer([[CALayer alloc] init]);

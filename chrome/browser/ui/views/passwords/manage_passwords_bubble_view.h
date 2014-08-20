@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble.h"
-#include "chrome/browser/ui/views/passwords/save_password_refusal_combobox_model.h"
+#include "chrome/browser/ui/passwords/save_password_refusal_combobox_model.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/combobox/combobox.h"
