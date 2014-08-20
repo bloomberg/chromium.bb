@@ -119,7 +119,6 @@ FrameLoader::FrameLoader(LocalFrame* frame)
     , m_loadType(FrameLoadTypeStandard)
     , m_fetchContext(FrameFetchContext::create(frame))
     , m_inStopAllLoaders(false)
-    , m_isComplete(false)
     , m_checkTimer(this, &FrameLoader::checkTimerFired)
     , m_didAccessInitialDocument(false)
     , m_didAccessInitialDocumentTimer(this, &FrameLoader::didAccessInitialDocumentTimerFired)
@@ -169,8 +168,6 @@ void FrameLoader::setDefersLoading(bool defers)
 
 void FrameLoader::stopLoading()
 {
-    m_isComplete = true; // to avoid calling completed() in finishedParsing()
-
     if (m_frame->document() && m_frame->document()->parsing()) {
         finishedParsing();
         m_frame->document()->setParsing(false);
@@ -233,8 +230,6 @@ bool FrameLoader::closeURL()
 
 void FrameLoader::didExplicitOpen()
 {
-    m_isComplete = false;
-
     // Calling document.open counts as committing the first real document load.
     if (!m_stateMachine.committedFirstRealDocumentLoad())
         m_stateMachine.advanceTo(FrameLoaderStateMachine::CommittedFirstRealLoad);
@@ -348,7 +343,6 @@ static void didFailContentSecurityPolicyCheck(FrameLoader* loader)
 
 void FrameLoader::didBeginDocument(bool dispatch)
 {
-    m_isComplete = false;
     m_frame->document()->setReadyState(Document::Loading);
 
     if (m_provisionalItem && m_loadType == FrameLoadTypeBackForward)
@@ -421,7 +415,10 @@ void FrameLoader::loadDone()
 bool FrameLoader::allChildrenAreComplete() const
 {
     for (Frame* child = m_frame->tree().firstChild(); child; child = child->tree().nextSibling()) {
-        if (child->isLocalFrame() && !toLocalFrame(child)->loader().m_isComplete)
+        if (!child->isLocalFrame())
+            continue;
+        LocalFrame* frame = toLocalFrame(child);
+        if (!frame->document()->isLoadCompleted() || frame->loader().m_provisionalDocumentLoader)
             return false;
     }
     return true;
@@ -443,8 +440,7 @@ void FrameLoader::checkCompleted()
     if (m_frame->view())
         m_frame->view()->handleLoadCompleted();
 
-    // Have we completed before?
-    if (m_isComplete)
+    if (m_frame->document()->isLoadCompleted() && m_stateMachine.committedFirstRealDocumentLoad())
         return;
 
     // Are we still parsing?
@@ -468,7 +464,6 @@ void FrameLoader::checkCompleted()
         return;
 
     // OK, completed.
-    m_isComplete = true;
     m_frame->document()->setReadyState(Document::Complete);
     if (m_frame->document()->loadEventStillNeeded())
         m_frame->document()->implicitClose();
@@ -572,15 +567,9 @@ void FrameLoader::loadInSameDocument(const KURL& url, PassRefPtr<SerializedScrip
 
     m_frame->view()->setWasScrolledByUser(false);
 
-    // It's important to model this as a load that starts and immediately finishes.
-    // Otherwise, the parent frame may think we never finished loading.
-    started();
-
     // We need to scroll to the fragment whether or not a hash change occurred, since
     // the user might have scrolled since the previous navigation.
     scrollToFragmentWithParentBoundary(url);
-
-    m_isComplete = false;
     checkCompleted();
 
     m_frame->domWindow()->statePopped(stateObject ? stateObject : SerializedScriptValue::nullValue());
@@ -601,14 +590,6 @@ void FrameLoader::completed()
 
     if (m_frame->view())
         m_frame->view()->maintainScrollPositionAtAnchor(0);
-}
-
-void FrameLoader::started()
-{
-    for (Frame* frame = m_frame; frame; frame = frame->tree().parent()) {
-        if (frame->isLocalFrame())
-            toLocalFrame(frame)->loader().m_isComplete = false;
-    }
 }
 
 void FrameLoader::setReferrerForFrameRequest(ResourceRequest& request, ShouldSendReferrer shouldSendReferrer, Document* originDocument)
@@ -942,7 +923,6 @@ void FrameLoader::commitProvisionalLoad()
         window->setStatus(String());
         window->setDefaultStatus(String());
     }
-    started();
 }
 
 bool FrameLoader::isLoadingMainFrame() const
@@ -999,6 +979,7 @@ bool FrameLoader::checkLoadCompleteForThisFrame()
         m_provisionalDocumentLoader = nullptr;
         m_progressTracker->progressCompleted();
         m_state = FrameStateComplete;
+        checkCompleted();
         return true;
     }
 
@@ -1318,6 +1299,7 @@ void FrameLoader::loadWithNavigationAction(const NavigationAction& action, Frame
     if ((!m_policyDocumentLoader->shouldContinueForNavigationPolicy(request, shouldCheckMainWorldContentSecurityPolicy, isTransitionNavigation) || !shouldClose()) && m_policyDocumentLoader) {
         m_policyDocumentLoader->detachFromFrame();
         m_policyDocumentLoader = nullptr;
+        checkCompleted();
         return;
     }
 

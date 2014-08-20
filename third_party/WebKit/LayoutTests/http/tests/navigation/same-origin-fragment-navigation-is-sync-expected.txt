@@ -4,8 +4,8 @@ frame "<!--framePath //<!--frame0-->-->" - didCommitLoadForFrame
 frame "<!--framePath //<!--frame0-->-->" - didFinishDocumentLoadForFrame
 frame "<!--framePath //<!--frame0-->-->" - didCommitLoadForFrame
 frame "<!--framePath //<!--frame0-->-->" - didReceiveTitle: 
-main frame - didHandleOnloadEventsForFrame
 frame "<!--framePath //<!--frame0-->-->" - didHandleOnloadEventsForFrame
+main frame - didHandleOnloadEventsForFrame
 frame "<!--framePath //<!--frame0-->-->" - didFinishLoadForFrame
 main frame - didFinishLoadForFrame
 ALERT: PASS: scheduled postMessage() before hashchange triggered.

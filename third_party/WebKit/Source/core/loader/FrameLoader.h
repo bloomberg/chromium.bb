@@ -178,8 +178,6 @@ public:
 
     bool shouldClose();
 
-    void started();
-
     bool allowPlugins(ReasonForCallingAllowPlugins);
 
     void updateForSameDocumentNavigation(const KURL&, SameDocumentNavigationSource, PassRefPtr<SerializedScriptValue>, FrameLoadType);
@@ -267,9 +265,6 @@ private:
     DeferredHistoryLoad m_deferredHistoryLoad;
 
     bool m_inStopAllLoaders;
-
-    // FIXME: This is only used in checkCompleted(). Figure out a way to disentangle it.
-    bool m_isComplete;
 
     Timer<FrameLoader> m_checkTimer;
 

@@ -240,40 +240,7 @@ bool HTMLFrameOwnerElement::loadOrRedirectSubframe(const KURL& url, const Atomic
         return false;
 
     String referrer = SecurityPolicy::generateReferrerHeader(document().referrerPolicy(), url, document().outgoingReferrer());
-    RefPtr<LocalFrame> childFrame = parentFrame->loader().client()->createFrame(url, frameName, Referrer(referrer, document().referrerPolicy()), this);
-
-    if (!childFrame)  {
-        parentFrame->loader().checkCompleted();
-        return false;
-    }
-
-    // All new frames will have m_isComplete set to true at this point due to synchronously loading
-    // an empty document in FrameLoader::init(). But many frames will now be starting an
-    // asynchronous load of url, so we set m_isComplete to false and then check if the load is
-    // actually completed below. (Note that we set m_isComplete to false even for synchronous
-    // loads, so that checkCompleted() below won't bail early.)
-    // FIXME: Can we remove this entirely? m_isComplete normally gets set to false when a load is committed.
-    childFrame->loader().started();
-
-    FrameView* view = childFrame->view();
-    RenderObject* renderObject = renderer();
-    // We need to test the existence of renderObject and its widget-ness, as
-    // failing to do so causes problems.
-    if (renderObject && renderObject->isWidget() && view)
-        setWidget(view);
-
-    // Some loads are performed synchronously (e.g., about:blank and loads
-    // cancelled by returning a null ResourceRequest from requestFromDelegate).
-    // In these cases, the synchronous load would have finished
-    // before we could connect the signals, so make sure to send the
-    // completed() signal for the child by hand and mark the load as being
-    // complete.
-    // FIXME: In this case the LocalFrame will have finished loading before
-    // it's being added to the child list. It would be a good idea to
-    // create the child first, then invoke the loader separately.
-    if (childFrame->loader().state() == FrameStateComplete && !childFrame->loader().policyDocumentLoader())
-        childFrame->loader().checkCompleted();
-    return true;
+    return parentFrame->loader().client()->createFrame(url, frameName, Referrer(referrer, document().referrerPolicy()), this);
 }
 
 
