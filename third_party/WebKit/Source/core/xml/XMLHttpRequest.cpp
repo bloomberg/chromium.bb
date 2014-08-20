@@ -1508,6 +1508,7 @@ void XMLHttpRequest::trace(Visitor* visitor)
     visitor->trace(m_responseStream);
     visitor->trace(m_streamSource);
     visitor->trace(m_responseDocument);
+    visitor->trace(m_responseDocumentParser);
     visitor->trace(m_progressEventThrottle);
     visitor->trace(m_upload);
     XMLHttpRequestEventTarget::trace(visitor);
