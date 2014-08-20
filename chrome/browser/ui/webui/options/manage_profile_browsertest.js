@@ -341,7 +341,14 @@ TEST_F('ManageProfileUITest', 'NoCreateConfirmationOnError', function() {
 });
 
 // The name and email should be inserted into the confirmation dialog.
-TEST_F('ManageProfileUITest', 'CreateConfirmationText', function() {
+// Disbaled because of flakiness on Mac: crbug.com/405709
+GEN('#if defined(OS_MACOSX)');
+GEN('#define MAYBE_CreateConfirmationText \\');
+GEN('    DISABLED_CreateConfirmationText');
+GEN('#else');
+GEN('#define MAYBE_CreateConfirmationText CreateConfirmationText');
+GEN('#endif');
+TEST_F('ManageProfileUITest', 'MAYBE_CreateConfirmationText', function() {
   var self = this;
   var custodianEmail = 'foo@example.com';
 
