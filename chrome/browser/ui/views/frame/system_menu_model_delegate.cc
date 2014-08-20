@@ -37,7 +37,24 @@ bool SystemMenuModelDelegate::IsCommandIdChecked(int command_id) const {
 }
 
 bool SystemMenuModelDelegate::IsCommandIdEnabled(int command_id) const {
-  return chrome::IsCommandEnabled(browser_, command_id);
+  if (!chrome::IsCommandEnabled(browser_, command_id))
+    return false;
+
+  if (command_id != IDC_RESTORE_TAB)
+    return true;
+
+  // chrome::IsCommandEnabled(IDC_RESTORE_TAB) returns true if TabRestoreService
+  // hasn't been loaded yet. Return false if this is the case as we don't have
+  // a good way to dynamically update the menu when TabRestoreService finishes
+  // loading.
+  // TODO(sky): add a way to update menu.
+  TabRestoreService* trs =
+      TabRestoreServiceFactory::GetForProfile(browser_->profile());
+  if (!trs->IsLoaded()) {
+    trs->LoadTabsFromLastSession();
+    return false;
+  }
+  return true;
 }
 
 bool SystemMenuModelDelegate::GetAcceleratorForCommandId(int command_id,
@@ -57,7 +74,9 @@ base::string16 SystemMenuModelDelegate::GetLabelForCommandId(
   if (IsCommandIdEnabled(command_id)) {
     TabRestoreService* trs =
         TabRestoreServiceFactory::GetForProfile(browser_->profile());
-    if (trs && trs->entries().front()->type == TabRestoreService::WINDOW)
+    trs->LoadTabsFromLastSession();
+    if (trs && !trs->entries().empty() &&
+        trs->entries().front()->type == TabRestoreService::WINDOW)
       string_id = IDS_RESTORE_WINDOW;
   }
   return l10n_util::GetStringUTF16(string_id);
