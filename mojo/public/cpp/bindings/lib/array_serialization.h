@@ -227,10 +227,12 @@ inline void SerializeArray_(Array<E> input, internal::Buffer* buf,
 
     internal::Array_Data<F>* result =
         internal::Array_Data<F>::New(input.size(), buf);
-    internal::ArraySerializer<E, F>::template SerializeElements<
-        ValidateParams::element_is_nullable,
-        typename ValidateParams::ElementValidateParams>(
-            internal::Forward(input), buf, result);
+    if (result) {
+      internal::ArraySerializer<E, F>::template SerializeElements<
+          ValidateParams::element_is_nullable,
+          typename ValidateParams::ElementValidateParams>(
+              internal::Forward(input), buf, result);
+    }
     *output = result;
   } else {
     *output = NULL;
