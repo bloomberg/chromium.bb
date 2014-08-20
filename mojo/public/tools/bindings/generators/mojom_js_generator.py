@@ -36,11 +36,17 @@ _kind_to_javascript_default_value = {
 }
 
 
+def JavaScriptType(kind):
+  if kind.imported_from:
+    return kind.imported_from["unique_name"] + "." + kind.name
+  return kind.name
+
+
 def JavaScriptDefaultValue(field):
   if field.default:
     if mojom.IsStructKind(field.kind):
       assert field.default == "default"
-      return "new %s()" % JavascriptType(field.kind)
+      return "new %s()" % JavaScriptType(field.kind)
     return ExpressionToText(field.default)
   if field.kind in mojom.PRIMITIVES:
     return _kind_to_javascript_default_value[field.kind]
@@ -96,7 +102,7 @@ def CodecType(kind):
   if kind in mojom.PRIMITIVES:
     return _kind_to_codec_type[kind]
   if mojom.IsStructKind(kind):
-    return "new codec.PointerTo(%s)" % CodecType(kind.name)
+    return "new codec.PointerTo(%s)" % JavaScriptType(kind)
   if mojom.IsAnyArrayKind(kind) and mojom.IsBoolKind(kind.kind):
     return "new codec.ArrayOf(codec.PackedBool)"
   if mojom.IsAnyArrayKind(kind):
@@ -112,7 +118,7 @@ def JavaScriptDecodeSnippet(kind):
   if kind in mojom.PRIMITIVES:
     return "decodeStruct(%s)" % CodecType(kind)
   if mojom.IsStructKind(kind):
-    return "decodeStructPointer(%s)" % CodecType(kind.name)
+    return "decodeStructPointer(%s)" % JavaScriptType(kind)
   if mojom.IsAnyArrayKind(kind) and mojom.IsBoolKind(kind.kind):
     return "decodeArrayPointer(codec.PackedBool)"
   if mojom.IsAnyArrayKind(kind):
@@ -127,7 +133,7 @@ def JavaScriptEncodeSnippet(kind):
   if kind in mojom.PRIMITIVES:
     return "encodeStruct(%s, " % CodecType(kind)
   if mojom.IsStructKind(kind):
-    return "encodeStructPointer(%s, " % CodecType(kind.name)
+    return "encodeStructPointer(%s, " % JavaScriptType(kind)
   if mojom.IsAnyArrayKind(kind) and mojom.IsBoolKind(kind.kind):
     return "encodeArrayPointer(codec.PackedBool, ";
   if mojom.IsAnyArrayKind(kind):
@@ -151,7 +157,8 @@ def JavaScriptValidateArrayParams(pf):
     (JavaScriptFieldOffset(pf), elementSize, elementCount, elementType)
 
 def JavaScriptValidateStructParams(pf):
-  return "%s, %s" % (JavaScriptFieldOffset(pf), pf.field.kind.name)
+  structType = JavaScriptType(pf.field.kind)
+  return "%s, %s" % (JavaScriptFieldOffset(pf), structType)
 
 
 def TranslateConstants(token):
@@ -173,11 +180,6 @@ def TranslateConstants(token):
 def ExpressionToText(value):
   return TranslateConstants(value)
 
-
-def JavascriptType(kind):
-  if kind.imported_from:
-    return kind.imported_from["unique_name"] + "." + kind.name
-  return kind.name
 
 def IsArrayPointerField(field):
   return mojom.IsAnyArrayKind(field.kind)
@@ -206,7 +208,7 @@ class Generator(generator.Generator):
     "is_struct_pointer_field": IsStructPointerField,
     "is_string_pointer_field": IsStringPointerField,
     "is_handle_field": IsHandleField,
-    "js_type": JavascriptType,
+    "js_type": JavaScriptType,
     "stylize_method": generator.StudlyCapsToCamel,
     "validate_array_params": JavaScriptValidateArrayParams,
     "validate_struct_params": JavaScriptValidateStructParams,

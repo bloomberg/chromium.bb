@@ -7,6 +7,7 @@ import("//mojo/public/tools/bindings/mojom.gni")
 mojom("test_interfaces") {
   sources = [
     "math_calculator.mojom",
+    "rect.mojom",
     "sample_factory.mojom",
     "sample_import.mojom",
     "sample_import2.mojom",
