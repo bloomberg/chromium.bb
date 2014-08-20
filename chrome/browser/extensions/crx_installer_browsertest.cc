@@ -231,12 +231,10 @@ class ExtensionCrxInstallerTest : public ExtensionBrowserTest {
   }
 };
 
-#if defined(OS_CHROMEOS)
-#define MAYBE_Whitelisting DISABLED_Whitelisting
-#else
-#define MAYBE_Whitelisting Whitelisting
-#endif
-IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, MAYBE_Whitelisting) {
+// This test is skipped on ChromeOS because it requires the NPAPI,
+// which is not available on that platform.
+#if !defined(OS_CHROMEOS)
+IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, Whitelisting) {
   std::string id = "hdgllgikmikobbofgnabhfimcfoopgnd";
   ExtensionService* service = extensions::ExtensionSystem::Get(
       browser()->profile())->extension_service();
@@ -248,6 +246,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, MAYBE_Whitelisting) {
   EXPECT_FALSE(mock_prompt->confirmation_requested());
   EXPECT_TRUE(service->GetExtensionById(id, false));
 }
+#endif
 
 IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest,
                        GalleryInstallGetsExperimental) {
@@ -275,14 +274,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, PlatformAppCrx) {
       test_data_dir_.AppendASCII("minimal_platform_app.crx"), 1));
 }
 
-// http://crbug.com/136397
-#if defined(OS_CHROMEOS)
-#define MAYBE_PackAndInstallExtension DISABLED_PackAndInstallExtension
-#else
-#define MAYBE_PackAndInstallExtension PackAndInstallExtension
-#endif
-IN_PROC_BROWSER_TEST_F(
-    ExtensionCrxInstallerTest, MAYBE_PackAndInstallExtension) {
+IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, PackAndInstallExtension) {
   if (!FeatureSwitch::easy_off_store_install()->IsEnabled())
     return;
 
@@ -336,14 +328,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, DoNotGrantScopes) {
                                                           false));
 }
 
-// Off-store install cannot yet be disabled on Aura.
-#if defined(USE_AURA)
-#define MAYBE_AllowOffStore DISABLED_AllowOffStore
-#else
-#define MAYBE_AllowOffStore AllowOffStore
-#endif
-// Crashy: http://crbug.com/140893
-IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, DISABLED_AllowOffStore) {
+IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, AllowOffStore) {
   ExtensionService* service = extensions::ExtensionSystem::Get(
       browser()->profile())->extension_service();
   const bool kTestData[] = {false, true};
@@ -363,8 +348,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, DISABLED_AllowOffStore) {
     }
 
     crx_installer->InstallCrx(test_data_dir_.AppendASCII("good.crx"));
-    EXPECT_EQ(kTestData[i],
-              WaitForExtensionInstall()) << kTestData[i];
+    // The |mock_prompt| will quit running the loop once the |crx_installer|
+    // is done.
+    content::RunMessageLoop();
     EXPECT_EQ(kTestData[i], mock_prompt->did_succeed());
     EXPECT_EQ(kTestData[i], mock_prompt->confirmation_requested()) <<
         kTestData[i];
