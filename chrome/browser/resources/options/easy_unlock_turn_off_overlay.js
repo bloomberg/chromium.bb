@@ -92,6 +92,13 @@ cr.define('options', function() {
       chrome.send('easyUnlockTurnOffOverlayDismissed');
     },
 
+    /** @override */
+    handleCancel: function() {
+      // Make sure keyboard dismiss uses the word around as well.
+      // TODO(xiyuan): Remove the workaround. See http://crbug.com/405250
+      EasyUnlockTurnOffOverlay.dismiss();
+    },
+
     /**
      * Returns the button strip element.
      * @return {HTMLDivElement} The container div of action buttons.
@@ -175,7 +182,12 @@ cr.define('options', function() {
    * Closes the Easy unlock turn off overlay.
    */
   EasyUnlockTurnOffOverlay.dismiss = function() {
-    PageManager.closeOverlay();
+    // TODO(xiyuan): Remove the workaround and call closeOverly directly.
+    // See http://crbug.com/405250
+    $('easy-unlock-turn-off-spinner').hidden = true;
+    window.setTimeout(function() {
+      PageManager.closeOverlay();
+    }, 100);
   };
 
   /**
