@@ -2344,7 +2344,7 @@ bool GLES2DecoderImpl::Initialize(
   DCHECK(!context_.get());
 
   set_initialized();
-  gpu_tracer_ = GPUTracer::Create(this);
+  gpu_tracer_.reset(new GPUTracer(this));
   gpu_state_tracer_ = GPUStateTracer::Create(&state_);
   // TODO(vmiura): Enable changing gpu_trace_level_ at runtime
   gpu_trace_level_ = 2;
