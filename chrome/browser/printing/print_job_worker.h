@@ -52,9 +52,9 @@ class PrintJobWorker {
       bool has_selection,
       MarginType margin_type);
 
-  // Set the new print settings. This function takes ownership of
-  // |new_settings|.
-  void SetSettings(const base::DictionaryValue* const new_settings);
+  // Set the new print settings.
+  void SetSettings(
+      scoped_ptr<base::DictionaryValue> new_settings);
 
   // Starts the printing loop. Every pages are printed as soon as the data is
   // available. Makes sure the new_document is the right one.
@@ -122,9 +122,8 @@ class PrintJobWorker {
   // back into the IO thread for GetSettingsDone().
   void GetSettingsWithUIDone(PrintingContext::Result result);
 
-  // Called on the UI thread to update the print settings. This function takes
-  // the ownership of |new_settings|.
-  void UpdatePrintSettings(const base::DictionaryValue* const new_settings);
+  // Called on the UI thread to update the print settings.
+  void UpdatePrintSettings(scoped_ptr<base::DictionaryValue> new_settings);
 
   // Reports settings back to owner_.
   void GetSettingsDone(PrintingContext::Result result);

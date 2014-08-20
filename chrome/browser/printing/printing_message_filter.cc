@@ -427,6 +427,8 @@ void PrintingMessageFilter::UpdateFileDescriptor(int render_view_id, int fd) {
 void PrintingMessageFilter::OnUpdatePrintSettings(
     int document_cookie, const base::DictionaryValue& job_settings,
     IPC::Message* reply_msg) {
+  scoped_ptr<base::DictionaryValue> new_settings(job_settings.DeepCopy());
+
   scoped_refptr<printing::PrinterQuery> printer_query;
   if (!profile_io_data_->printing_enabled()->GetValue()) {
     // Reply with NULL query.
@@ -437,7 +439,7 @@ void PrintingMessageFilter::OnUpdatePrintSettings(
   if (!printer_query)
     printer_query = queue_->CreatePrinterQuery();
   printer_query->SetSettings(
-      job_settings,
+      new_settings.Pass(),
       base::Bind(&PrintingMessageFilter::OnUpdatePrintSettingsReply, this,
                  printer_query, reply_msg));
 }

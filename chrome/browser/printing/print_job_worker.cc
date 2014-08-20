@@ -116,7 +116,7 @@ void PrintJobWorker::GetSettings(
 }
 
 void PrintJobWorker::SetSettings(
-    const base::DictionaryValue* const new_settings) {
+    scoped_ptr<base::DictionaryValue> new_settings) {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
 
   BrowserThread::PostTask(
@@ -126,11 +126,11 @@ void PrintJobWorker::SetSettings(
                  make_scoped_refptr(owner_),
                  base::Bind(&PrintJobWorker::UpdatePrintSettings,
                             base::Unretained(this),
-                            base::Owned(new_settings))));
+                            base::Passed(&new_settings))));
 }
 
 void PrintJobWorker::UpdatePrintSettings(
-    const base::DictionaryValue* const new_settings) {
+    scoped_ptr<base::DictionaryValue> new_settings) {
   PrintingContext::Result result =
       printing_context_->UpdatePrintSettings(*new_settings);
   GetSettingsDone(result);

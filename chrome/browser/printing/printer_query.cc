@@ -88,14 +88,14 @@ void PrinterQuery::GetSettings(
                                margin_type));
 }
 
-void PrinterQuery::SetSettings(const base::DictionaryValue& new_settings,
+void PrinterQuery::SetSettings(scoped_ptr<base::DictionaryValue> new_settings,
                                const base::Closure& callback) {
   StartWorker(callback);
 
   worker_->PostTask(FROM_HERE,
                     base::Bind(&PrintJobWorker::SetSettings,
                                base::Unretained(worker_.get()),
-                               new_settings.DeepCopy()));
+                               base::Passed(&new_settings)));
 }
 
 void PrinterQuery::SetWorkerDestination(

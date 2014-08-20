@@ -53,7 +53,7 @@ class PrinterQuery : public PrintJobWorkerOwner {
       const base::Closure& callback);
 
   // Updates the current settings with |new_settings| dictionary values.
-  void SetSettings(const base::DictionaryValue& new_settings,
+  void SetSettings(scoped_ptr<base::DictionaryValue> new_settings,
                    const base::Closure& callback);
 
   // Set a destination for the worker.
