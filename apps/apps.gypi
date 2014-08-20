@@ -65,7 +65,6 @@
         'switches.h',
         'ui/apps_client.cc',
         'ui/apps_client.h',
-        'ui/native_app_window.h',
         'ui/views/app_window_frame_view.cc',
         'ui/views/app_window_frame_view.h',
         'ui/views/native_app_window_views.cc',

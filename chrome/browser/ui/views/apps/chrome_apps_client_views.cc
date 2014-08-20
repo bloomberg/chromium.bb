@@ -7,7 +7,7 @@
 #include "chrome/browser/ui/views/apps/chrome_native_app_window_views.h"
 
 // static
-apps::NativeAppWindow* ChromeAppsClient::CreateNativeAppWindowImpl(
+extensions::NativeAppWindow* ChromeAppsClient::CreateNativeAppWindowImpl(
     apps::AppWindow* app_window,
     const apps::AppWindow::CreateParams& params) {
   ChromeNativeAppWindowViews* window = new ChromeNativeAppWindowViews;

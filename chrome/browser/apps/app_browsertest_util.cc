@@ -6,7 +6,6 @@
 
 #include "apps/app_window_contents.h"
 #include "apps/app_window_registry.h"
-#include "apps/ui/native_app_window.h"
 #include "base/command_line.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/api/tabs/tabs_api.h"
@@ -18,6 +17,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/common/switches.h"
 
 using apps::AppWindow;

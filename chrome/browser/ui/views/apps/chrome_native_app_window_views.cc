@@ -124,7 +124,7 @@ class NativeAppWindowStateDelegate : public ash::wm::WindowStateDelegate,
                                      public aura::WindowObserver {
  public:
   NativeAppWindowStateDelegate(AppWindow* app_window,
-                               apps::NativeAppWindow* native_app_window)
+                               extensions::NativeAppWindow* native_app_window)
       : app_window_(app_window),
         window_state_(
             ash::wm::GetWindowState(native_app_window->GetNativeWindow())) {

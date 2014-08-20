@@ -1,17 +1,25 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APPS_UI_NATIVE_APP_WINDOW_H_
-#define APPS_UI_NATIVE_APP_WINDOW_H_
+#ifndef EXTENSIONS_BROWSER_APP_WINDOW_NATIVE_APP_WINDOW_H_
+#define EXTENSIONS_BROWSER_APP_WINDOW_NATIVE_APP_WINDOW_H_
 
-#include "apps/app_window.h"
+#include <vector>
+
+#include "base/memory/scoped_ptr.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/base_window.h"
 #include "ui/gfx/insets.h"
 
-namespace apps {
+namespace content {
+struct NativeWebKeyboardEvent;
+}
+
+namespace extensions {
+
+struct DraggableRegion;
 
 // This is an interface to a native implementation of a app window, used for
 // new-style packaged apps. App windows contain a web contents, but no tabs
@@ -37,7 +45,7 @@ class NativeAppWindow : public ui::BaseWindow,
 
   // Called when the draggable regions are changed.
   virtual void UpdateDraggableRegions(
-      const std::vector<extensions::DraggableRegion>& regions) = 0;
+      const std::vector<DraggableRegion>& regions) = 0;
 
   // Returns the region used by frameless windows for dragging. May return NULL.
   virtual SkRegion* GetDraggableRegion() = 0;
@@ -91,6 +99,6 @@ class NativeAppWindow : public ui::BaseWindow,
   virtual ~NativeAppWindow() {}
 };
 
-}  // namespace apps
+}  // namespace extensions
 
-#endif  // APPS_UI_NATIVE_APP_WINDOW_H_
+#endif  // EXTENSIONS_BROWSER_APP_WINDOW_NATIVE_APP_WINDOW_H_

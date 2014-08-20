@@ -5,12 +5,12 @@
 #include "chrome/browser/ui/ash/launcher/multi_profile_app_window_launcher_controller.h"
 
 #include "apps/app_window.h"
-#include "apps/ui/native_app_window.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
 #include "chrome/browser/ui/host_desktop.h"
+#include "extensions/browser/app_window/native_app_window.h"
 #include "ui/aura/window.h"
 
 namespace {

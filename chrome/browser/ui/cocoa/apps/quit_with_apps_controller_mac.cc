@@ -6,7 +6,6 @@
 
 #include "apps/app_window.h"
 #include "apps/app_window_registry.h"
-#include "apps/ui/native_app_window.h"
 #include "base/command_line.h"
 #include "base/i18n/number_formatting.h"
 #include "base/prefs/pref_registry_simple.h"
@@ -20,6 +19,7 @@
 #include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/common/extension.h"
 #include "grit/chrome_unscaled_resources.h"
 #include "grit/chromium_strings.h"

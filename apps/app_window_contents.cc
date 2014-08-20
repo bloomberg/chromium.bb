@@ -4,10 +4,9 @@
 
 #include "apps/app_window_contents.h"
 
-#include <utility>
 #include <string>
+#include <utility>
 
-#include "apps/ui/native_app_window.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/common/extensions/api/app_window.h"
 #include "content/public/browser/browser_context.h"
@@ -18,6 +17,7 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/renderer_preferences.h"
+#include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/common/extension_messages.h"
 
 namespace app_window = extensions::api::app_window;
@@ -65,7 +65,7 @@ void AppWindowContentsImpl::LoadContents(int32 creator_process_id) {
 }
 
 void AppWindowContentsImpl::NativeWindowChanged(
-    NativeAppWindow* native_app_window) {
+    extensions::NativeAppWindow* native_app_window) {
   base::ListValue args;
   base::DictionaryValue* dictionary = new base::DictionaryValue();
   args.Append(dictionary);

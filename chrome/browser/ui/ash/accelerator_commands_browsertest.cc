@@ -5,7 +5,6 @@
 #include "ash/accelerators/accelerator_commands.h"
 
 #include "apps/app_window.h"
-#include "apps/ui/native_app_window.h"
 #include "ash/ash_switches.h"
 #include "ash/shell.h"
 #include "ash/wm/window_state.h"
@@ -18,6 +17,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/test_switches.h"
+#include "extensions/browser/app_window/native_app_window.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -281,7 +281,8 @@ IN_PROC_BROWSER_TEST_P(AcceleratorCommandsPlatformAppFullscreenBrowserTest,
     apps::AppWindow::CreateParams params;
     params.frame = apps::AppWindow::FRAME_CHROME;
     apps::AppWindow* app_window = CreateAppWindowFromParams(extension, params);
-    apps::NativeAppWindow* native_app_window = app_window->GetBaseWindow();
+    extensions::NativeAppWindow* native_app_window =
+        app_window->GetBaseWindow();
     SetToInitialShowState(app_window);
     ASSERT_TRUE(app_window->GetBaseWindow()->IsActive());
     EXPECT_TRUE(IsInitialShowState(app_window));
@@ -304,7 +305,8 @@ IN_PROC_BROWSER_TEST_P(AcceleratorCommandsPlatformAppFullscreenBrowserTest,
     apps::AppWindow::CreateParams params;
     params.frame = apps::AppWindow::FRAME_NONE;
     apps::AppWindow* app_window = CreateAppWindowFromParams(extension, params);
-    apps::NativeAppWindow* native_app_window = app_window->GetBaseWindow();
+    extensions::NativeAppWindow* native_app_window =
+        app_window->GetBaseWindow();
     ASSERT_TRUE(app_window->GetBaseWindow()->IsActive());
     SetToInitialShowState(app_window);
     EXPECT_TRUE(IsInitialShowState(app_window));

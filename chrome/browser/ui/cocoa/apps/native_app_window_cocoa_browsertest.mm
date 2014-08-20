@@ -56,11 +56,11 @@ IN_PROC_BROWSER_TEST_F(NativeAppWindowCocoaBrowserTest, HideShowWithApp) {
       apps::AppWindowRegistry::Get(profile())->app_windows();
 
   apps::AppWindow* app_window = windows.front();
-  apps::NativeAppWindow* native_window = app_window->GetBaseWindow();
+  extensions::NativeAppWindow* native_window = app_window->GetBaseWindow();
   NSWindow* ns_window = native_window->GetNativeWindow();
 
   apps::AppWindow* other_app_window = windows.back();
-  apps::NativeAppWindow* other_native_window =
+  extensions::NativeAppWindow* other_native_window =
       other_app_window->GetBaseWindow();
   NSWindow* other_ns_window = other_native_window->GetNativeWindow();
 
@@ -171,7 +171,7 @@ IN_PROC_BROWSER_TEST_F(NativeAppWindowCocoaBrowserTest, Fullscreen) {
 
   SetUpAppWithWindows(1);
   apps::AppWindow* app_window = GetFirstAppWindow();
-  apps::NativeAppWindow* window = app_window->GetBaseWindow();
+  extensions::NativeAppWindow* window = app_window->GetBaseWindow();
   NSWindow* ns_window = app_window->GetNativeWindow();
   base::scoped_nsobject<ScopedNotificationWatcher> watcher;
 

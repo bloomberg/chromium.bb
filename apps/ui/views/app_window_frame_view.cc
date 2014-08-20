@@ -4,8 +4,8 @@
 
 #include "apps/ui/views/app_window_frame_view.h"
 
-#include "apps/ui/native_app_window.h"
 #include "base/strings/utf_string_conversions.h"
+#include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/common/draggable_region.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_strings.h"  // Accessibility names
@@ -38,7 +38,7 @@ const char AppWindowFrameView::kViewClassName[] =
     "browser/ui/views/extensions/AppWindowFrameView";
 
 AppWindowFrameView::AppWindowFrameView(views::Widget* widget,
-                                       NativeAppWindow* window,
+                                       extensions::NativeAppWindow* window,
                                        bool draw_frame,
                                        const SkColor& active_frame_color,
                                        const SkColor& inactive_frame_color)

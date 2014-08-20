@@ -49,7 +49,6 @@
 #if defined(OS_CHROMEOS)
 #include "apps/app_window_contents.h"
 #include "apps/app_window_registry.h"
-#include "apps/ui/native_app_window.h"
 #include "ash/test/test_session_state_delegate.h"
 #include "ash/test/test_shell_delegate.h"
 #include "chrome/browser/chromeos/login/users/fake_user_manager.h"
@@ -66,6 +65,7 @@
 #include "chrome/test/base/testing_profile_manager.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/browser/app_window/native_app_window.h"
 #include "ui/aura/window.h"
 #endif
 

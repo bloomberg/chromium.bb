@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/cocoa/apps/quit_with_apps_controller_mac.h"
 
 #include "apps/app_window_registry.h"
-#include "apps/ui/native_app_window.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
@@ -22,6 +21,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/common/extension.h"
 #include "ui/message_center/message_center.h"
 

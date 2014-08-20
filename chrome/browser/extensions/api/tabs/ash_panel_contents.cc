@@ -4,7 +4,6 @@
 
 #include "chrome/browser/extensions/api/tabs/ash_panel_contents.h"
 
-#include "apps/ui/native_app_window.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"
@@ -17,12 +16,13 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_messages.h"
 #include "ui/gfx/image/image.h"
 
 using apps::AppWindow;
-using apps::NativeAppWindow;
+using extensions::NativeAppWindow;
 
 // AshPanelWindowController ----------------------------------------------------
 

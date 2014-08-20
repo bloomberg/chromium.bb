@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "apps/ui/native_app_window.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
+#include "extensions/browser/app_window/native_app_window.h"
 
 using extensions::Extension;
+using extensions::NativeAppWindow;
 
 namespace apps {
 

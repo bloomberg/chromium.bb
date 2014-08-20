@@ -4,7 +4,6 @@
 
 #include "apps/app_window.h"
 #include "apps/app_window_registry.h"
-#include "apps/ui/native_app_window.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
@@ -12,6 +11,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/extensions/features/feature_channel.h"
 #include "chrome/test/base/testing_profile.h"
+#include "extensions/browser/app_window/native_app_window.h"
 #include "ui/base/base_window.h"
 #include "ui/gfx/rect.h"
 

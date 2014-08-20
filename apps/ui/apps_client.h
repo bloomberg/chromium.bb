@@ -15,11 +15,10 @@ class BrowserContext;
 
 namespace extensions {
 class Extension;
+class NativeAppWindow;
 }
 
 namespace apps {
-
-class NativeAppWindow;
 
 // Sets up global state for the apps system. Should be Set() once in each
 // process. This should be implemented by the client of the apps system.
@@ -34,8 +33,8 @@ class AppsClient {
       content::BrowserContext* context,
       const extensions::Extension* extension) = 0;
 
-  // Creates a new apps::NativeAppWindow for |window|.
-  virtual NativeAppWindow* CreateNativeAppWindow(
+  // Creates a new extensions::NativeAppWindow for |window|.
+  virtual extensions::NativeAppWindow* CreateNativeAppWindow(
       AppWindow* window,
       const AppWindow::CreateParams& params) = 0;
 

@@ -160,10 +160,10 @@
 #if !defined(OS_MACOSX)
 #include "apps/app_window.h"
 #include "apps/app_window_registry.h"
-#include "apps/ui/native_app_window.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
+#include "extensions/browser/app_window/native_app_window.h"
 #include "ui/base/window_open_disposition.h"
 #endif
 

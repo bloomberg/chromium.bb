@@ -10,7 +10,6 @@
 
 #include "apps/app_window.h"
 #include "apps/app_window_registry.h"
-#include "apps/ui/native_app_window.h"
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -76,6 +75,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
+#include "extensions/browser/app_window/native_app_window.h"
 #include "grit/chromium_strings.h"
 #include "grit/component_scaled_resources.h"
 #include "grit/components_strings.h"

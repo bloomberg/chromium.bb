@@ -38,7 +38,8 @@ class AppWindowContentsImpl
   virtual void Initialize(content::BrowserContext* context,
                           const GURL& url) OVERRIDE;
   virtual void LoadContents(int32 creator_process_id) OVERRIDE;
-  virtual void NativeWindowChanged(NativeAppWindow* native_app_window) OVERRIDE;
+  virtual void NativeWindowChanged(
+      extensions::NativeAppWindow* native_app_window) OVERRIDE;
   virtual void NativeWindowClosed() OVERRIDE;
   virtual void DispatchWindowShownForTests() const OVERRIDE;
   virtual content::WebContents* GetWebContents() const OVERRIDE;

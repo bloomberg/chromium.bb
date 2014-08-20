@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/ash/chrome_new_window_delegate_chromeos.h"
 
 #include "apps/app_window_registry.h"
-#include "apps/ui/native_app_window.h"
 #include "ash/keyboard_overlay/keyboard_overlay_view.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/extensions/api/terminal/terminal_extension_helper.h"
@@ -19,6 +18,7 @@
 #include "chrome/browser/ui/webui/chrome_web_contents_handler.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/browser/extension_system.h"
 
 ChromeNewWindowDelegateChromeos::ChromeNewWindowDelegateChromeos() {}

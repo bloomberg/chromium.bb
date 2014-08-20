@@ -36,6 +36,7 @@ class WebContents;
 
 namespace extensions {
 class Extension;
+class NativeAppWindow;
 class PlatformAppBrowserTest;
 class WindowController;
 
@@ -50,7 +51,6 @@ namespace apps {
 
 class AppDelegate;
 class AppWebContentsHelper;
-class NativeAppWindow;
 
 // Manages the web contents for app windows. The implementation for this
 // class should create and maintain the WebContents for the window, and handle
@@ -69,7 +69,8 @@ class AppWindowContents {
   virtual void LoadContents(int32 creator_process_id) = 0;
 
   // Called when the native window changes.
-  virtual void NativeWindowChanged(NativeAppWindow* native_app_window) = 0;
+  virtual void NativeWindowChanged(
+      extensions::NativeAppWindow* native_app_window) = 0;
 
   // Called when the native window closes.
   virtual void NativeWindowClosed() = 0;
@@ -232,7 +233,7 @@ class AppWindow : public content::NotificationObserver,
   bool is_hidden() const { return is_hidden_; }
 
   const extensions::Extension* GetExtension() const;
-  NativeAppWindow* GetBaseWindow();
+  extensions::NativeAppWindow* GetBaseWindow();
   gfx::NativeWindow GetNativeWindow();
 
   // Returns the bounds that should be reported to the renderer.
@@ -500,7 +501,7 @@ class AppWindow : public content::NotificationObserver,
   // An object to load the badge as an extension resource.
   scoped_ptr<extensions::IconImage> badge_icon_image_;
 
-  scoped_ptr<NativeAppWindow> native_app_window_;
+  scoped_ptr<extensions::NativeAppWindow> native_app_window_;
   scoped_ptr<AppWindowContents> app_window_contents_;
   scoped_ptr<AppDelegate> app_delegate_;
   scoped_ptr<AppWebContentsHelper> helper_;

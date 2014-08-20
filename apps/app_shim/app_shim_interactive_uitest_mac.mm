@@ -9,7 +9,6 @@
 #include "apps/app_shim/app_shim_host_manager_mac.h"
 #include "apps/app_shim/extension_app_shim_handler_mac.h"
 #include "apps/switches.h"
-#include "apps/ui/native_app_window.h"
 #include "base/auto_reset.h"
 #include "base/callback.h"
 #include "base/files/file_path_watcher.h"
@@ -30,6 +29,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/mac/app_mode_common.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/browser/extension_registry.h"
 #import "ui/events/test/cocoa_test_event_utils.h"
 

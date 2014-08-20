@@ -30,14 +30,14 @@ class ChromeAppsClient : public apps::AppsClient {
   virtual apps::AppWindow* CreateAppWindow(
       content::BrowserContext* context,
       const extensions::Extension* extension) OVERRIDE;
-  virtual apps::NativeAppWindow* CreateNativeAppWindow(
+  virtual extensions::NativeAppWindow* CreateNativeAppWindow(
       apps::AppWindow* window,
       const apps::AppWindow::CreateParams& params) OVERRIDE;
   virtual void IncrementKeepAliveCount() OVERRIDE;
   virtual void DecrementKeepAliveCount() OVERRIDE;
 
   // Implemented in platform specific code.
-  static apps::NativeAppWindow* CreateNativeAppWindowImpl(
+  static extensions::NativeAppWindow* CreateNativeAppWindowImpl(
       apps::AppWindow* window,
       const apps::AppWindow::CreateParams& params);
 

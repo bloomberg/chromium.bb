@@ -7,7 +7,6 @@
 #import <Cocoa/Cocoa.h>
 
 #include "apps/app_window_registry.h"
-#include "apps/ui/native_app_window.h"
 #include "base/command_line.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
@@ -18,6 +17,7 @@
 #include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_switches.h"
+#include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/browser/uninstall_reason.h"
 #include "extensions/common/extension.h"
 

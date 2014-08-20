@@ -16,6 +16,10 @@
 
 class SkRegion;
 
+namespace extensions {
+class NativeAppWindow;
+}
+
 namespace gfx {
 class Canvas;
 class Point;
@@ -32,8 +36,6 @@ class Widget;
 
 namespace apps {
 
-class NativeAppWindow;
-
 // A frameless or non-Ash, non-panel NonClientFrameView for app windows.
 class AppWindowFrameView : public views::NonClientFrameView,
                            public views::ButtonListener {
@@ -49,7 +51,7 @@ class AppWindowFrameView : public views::NonClientFrameView,
   // TODO(benwells): Refactor this to split out frameless and colored frame
   // views. See http://crbug.com/359432.
   AppWindowFrameView(views::Widget* widget,
-                     NativeAppWindow* window,
+                     extensions::NativeAppWindow* window,
                      bool draw_frame,
                      const SkColor& active_frame_color,
                      const SkColor& inactive_frame_color);
@@ -96,7 +98,7 @@ class AppWindowFrameView : public views::NonClientFrameView,
   SkColor CurrentFrameColor();
 
   views::Widget* widget_;
-  NativeAppWindow* window_;
+  extensions::NativeAppWindow* window_;
   bool draw_frame_;
   SkColor active_frame_color_;
   SkColor inactive_frame_color_;

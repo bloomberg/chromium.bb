@@ -1,6 +1,7 @@
 include_rules = [
   "+components/keyed_service",
   "+components/pref_registry",
+  "+components/web_modal",
   "+content/public/browser",
   "+grit/extensions_strings.h",
   "+net",

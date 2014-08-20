@@ -6,7 +6,6 @@
 
 #include "apps/app_window.h"
 #include "apps/app_window_registry.h"
-#include "apps/ui/native_app_window.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
@@ -34,6 +33,7 @@
 #include "chrome/browser/ui/views/extensions/extension_dialog.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/browser/extension_system.h"
 #include "ui/base/base_window.h"
 #include "ui/shell_dialogs/selected_file_info.h"

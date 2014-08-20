@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "apps/ui/native_app_window.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/test/base/interactive_test_utils.h"
+#include "extensions/browser/app_window/native_app_window.h"
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
 #include "base/mac/mac_util.h"
@@ -20,7 +20,7 @@
 #include "ui/views/win/hwnd_util.h"
 #endif
 
-using apps::NativeAppWindow;
+using extensions::NativeAppWindow;
 
 // Helper class that has to be created in the stack to check if the fullscreen
 // setting of a NativeWindow has changed since the creation of the object.

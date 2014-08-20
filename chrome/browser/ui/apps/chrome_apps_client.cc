@@ -47,7 +47,7 @@ apps::AppWindow* ChromeAppsClient::CreateAppWindow(
 #endif
 }
 
-apps::NativeAppWindow* ChromeAppsClient::CreateNativeAppWindow(
+extensions::NativeAppWindow* ChromeAppsClient::CreateNativeAppWindow(
     apps::AppWindow* window,
     const apps::AppWindow::CreateParams& params) {
 #if defined(OS_ANDROID)

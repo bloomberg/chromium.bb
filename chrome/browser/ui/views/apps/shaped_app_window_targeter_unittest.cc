@@ -23,7 +23,7 @@ class ShapedAppWindowTargeterTest : public aura::test::AuraTestBase {
 
   views::Widget* widget() { return widget_.get(); }
 
-  apps::NativeAppWindow* app_window() { return &app_window_; }
+  extensions::NativeAppWindow* app_window() { return &app_window_; }
   ChromeNativeAppWindowViews* app_window_views() { return &app_window_; }
 
  protected:

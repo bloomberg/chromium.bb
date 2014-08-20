@@ -7,7 +7,7 @@
 #import "chrome/browser/ui/cocoa/apps/native_app_window_cocoa.h"
 
 // static
-apps::NativeAppWindow* ChromeAppsClient::CreateNativeAppWindowImpl(
+extensions::NativeAppWindow* ChromeAppsClient::CreateNativeAppWindowImpl(
     apps::AppWindow* app_window,
     const apps::AppWindow::CreateParams& params) {
   return new NativeAppWindowCocoa(app_window, params);

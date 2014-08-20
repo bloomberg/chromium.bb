@@ -13,7 +13,6 @@
 #include "apps/app_window_geometry_cache.h"
 #include "apps/app_window_registry.h"
 #include "apps/ui/apps_client.h"
-#include "apps/ui/native_app_window.h"
 #include "apps/ui/web_contents_sizer.h"
 #include "base/command_line.h"
 #include "base/strings/string_util.h"
@@ -33,6 +32,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/media_stream_request.h"
+#include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/browser/app_window/size_constraints.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -58,6 +58,7 @@ using content::BrowserContext;
 using content::ConsoleMessageLevel;
 using content::WebContents;
 using extensions::APIPermission;
+using extensions::NativeAppWindow;
 using web_modal::WebContentsModalDialogHost;
 using web_modal::WebContentsModalDialogManager;
 

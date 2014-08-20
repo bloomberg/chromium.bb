@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/apps/glass_app_window_frame_view_win.h"
 
-#include "apps/ui/native_app_window.h"
+#include "extensions/browser/app_window/native_app_window.h"
 #include "ui/base/hit_test.h"
 #include "ui/gfx/win/dpi.h"
 #include "ui/views/widget/widget.h"
@@ -20,7 +20,7 @@ const char GlassAppWindowFrameViewWin::kViewClassName[] =
     "ui/views/apps/GlassAppWindowFrameViewWin";
 
 GlassAppWindowFrameViewWin::GlassAppWindowFrameViewWin(
-    apps::NativeAppWindow* window,
+    extensions::NativeAppWindow* window,
     views::Widget* widget)
     : window_(window), widget_(widget) {
 }
