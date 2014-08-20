@@ -35,4 +35,24 @@ bool etc1_encode_image(const unsigned char* pIn, unsigned int width, unsigned in
          unsigned int pixelSize, unsigned int stride, unsigned char* pOut, unsigned int outWidth,
          unsigned int outHeight);
 
+// Size of a PKM header, in bytes.
+
+#define ETC_PKM_HEADER_SIZE 16
+
+// Format a PKM header
+
+void etc1_pkm_format_header(unsigned char* pHeader, unsigned int width, unsigned int height);
+
+// Check if a PKM header is correctly formatted.
+
+bool etc1_pkm_is_valid(const unsigned char* pHeader);
+
+// Read the image width from a PKM header
+
+unsigned int etc1_pkm_get_width(const unsigned char* pHeader);
+
+// Read the image height from a PKM header
+
+unsigned int etc1_pkm_get_height(const unsigned char* pHeader);
+
 #endif // THIRD_PARTY_ANDROID_OPENGL_ETC1_ETC1_H_

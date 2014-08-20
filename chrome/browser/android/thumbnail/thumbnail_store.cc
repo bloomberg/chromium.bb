@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <cmath>
 
+#include "base/big_endian.h"
 #include "base/file_util.h"
 #include "base/files/file.h"
 #include "base/files/file_enumerator.h"
@@ -22,6 +23,7 @@
 #include "third_party/skia/include/core/SkData.h"
 #include "third_party/skia/include/core/SkMallocPixelRef.h"
 #include "third_party/skia/include/core/SkPixelRef.h"
+#include "ui/gfx/android/device_display_info.h"
 #include "ui/gfx/geometry/size_conversions.h"
 
 namespace {
@@ -31,6 +33,7 @@ const base::TimeDelta kCaptureMinRequestTimeMs(
     base::TimeDelta::FromMilliseconds(1000));
 
 const int kCompressedKey = 0xABABABAB;
+const int kCurrentExtraVersion = 1;
 
 // Indicates whether we prefer to have more free CPU memory over GPU memory.
 const bool kPreferCPUMemory = true;
@@ -51,6 +54,53 @@ gfx::Size GetEncodedSize(const gfx::Size& bitmap_size) {
   DCHECK(!bitmap_size.IsEmpty());
   return gfx::Size(NextPowerOfTwo(bitmap_size.width()),
                    NextPowerOfTwo(bitmap_size.height()));
+}
+
+template<typename T>
+bool ReadBigEndianFromFile(base::File& file, T* out) {
+  char buffer[sizeof(T)];
+  if (file.ReadAtCurrentPos(buffer, sizeof(T)) != sizeof(T))
+    return false;
+  base::ReadBigEndian(buffer, out);
+  return true;
+}
+
+template<typename T>
+bool WriteBigEndianToFile(base::File& file, T val) {
+  char buffer[sizeof(T)];
+  base::WriteBigEndian(buffer, val);
+  return file.WriteAtCurrentPos(buffer, sizeof(T)) == sizeof(T);
+}
+
+bool ReadBigEndianFloatFromFile(base::File& file, float* out) {
+  char buffer[sizeof(float)];
+  if (file.ReadAtCurrentPos(buffer, sizeof(buffer)) != sizeof(buffer))
+    return false;
+
+#if defined(ARCH_CPU_LITTLE_ENDIAN)
+  for (size_t i = 0; i < sizeof(float) / 2; i++) {
+    char tmp = buffer[i];
+    buffer[i] = buffer[sizeof(float) - 1 - i];
+    buffer[sizeof(float) - 1 - i] = tmp;
+  }
+#endif
+  memcpy(out, buffer, sizeof(buffer));
+
+  return true;
+}
+
+bool WriteBigEndianFloatToFile(base::File& file, float val) {
+  char buffer[sizeof(float)];
+  memcpy(buffer, &val, sizeof(buffer));
+
+#if defined(ARCH_CPU_LITTLE_ENDIAN)
+  for (size_t i = 0; i < sizeof(float) / 2; i++) {
+    char tmp = buffer[i];
+    buffer[i] = buffer[sizeof(float) - 1 - i];
+    buffer[sizeof(float) - 1 - i] = tmp;
+  }
+#endif
+  return file.WriteAtCurrentPos(buffer, sizeof(buffer)) == sizeof(buffer);
 }
 
 }  // anonymous namespace
@@ -406,6 +456,59 @@ base::FilePath ThumbnailStore::GetFilePath(TabId tab_id) const {
   return disk_cache_path_.Append(base::IntToString(tab_id));
 }
 
+namespace {
+
+bool WriteToFile(base::File& file,
+                 const gfx::Size& content_size,
+                 const float scale,
+                 skia::RefPtr<SkPixelRef> compressed_data) {
+  if (!file.IsValid())
+    return false;
+
+  if (!WriteBigEndianToFile(file, kCompressedKey))
+    return false;
+
+  if (!WriteBigEndianToFile(file, content_size.width()))
+    return false;
+
+  if (!WriteBigEndianToFile(file, content_size.height()))
+    return false;
+
+  // Write ETC1 header.
+  compressed_data->lockPixels();
+
+  unsigned char etc1_buffer[ETC_PKM_HEADER_SIZE];
+  etc1_pkm_format_header(etc1_buffer,
+                         compressed_data->info().width(),
+                         compressed_data->info().height());
+
+  int header_bytes_written = file.WriteAtCurrentPos(
+      reinterpret_cast<char*>(etc1_buffer), ETC_PKM_HEADER_SIZE);
+  if (header_bytes_written != ETC_PKM_HEADER_SIZE)
+    return false;
+
+  int data_size = etc1_get_encoded_data_size(
+      compressed_data->info().width(),
+      compressed_data->info().height());
+  int pixel_bytes_written = file.WriteAtCurrentPos(
+      reinterpret_cast<char*>(compressed_data->pixels()),
+      data_size);
+  if (pixel_bytes_written != data_size)
+    return false;
+
+  compressed_data->unlockPixels();
+
+  if (!WriteBigEndianToFile(file, kCurrentExtraVersion))
+    return false;
+
+  if (!WriteBigEndianFloatToFile(file, 1.f / scale))
+    return false;
+
+  return true;
+}
+
+}  // anonymous namespace
+
 void ThumbnailStore::WriteTask(const base::FilePath& file_path,
                                skia::RefPtr<SkPixelRef> compressed_data,
                                float scale,
@@ -415,36 +518,11 @@ void ThumbnailStore::WriteTask(const base::FilePath& file_path,
 
   base::File file(file_path,
                   base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
-  DCHECK(file.IsValid());
 
-  compressed_data->lockPixels();
-  bool success = true;
-  int content_width = content_size.width();
-  int content_height = content_size.height();
-  int data_width = compressed_data->info().width();
-  int data_height = compressed_data->info().height();
-
-  if (file.WriteAtCurrentPos(reinterpret_cast<const char*>(&kCompressedKey),
-                             sizeof(int)) < 0 ||
-      file.WriteAtCurrentPos(reinterpret_cast<const char*>(&content_width),
-                             sizeof(int)) < 0 ||
-      file.WriteAtCurrentPos(reinterpret_cast<const char*>(&content_height),
-                             sizeof(int)) < 0 ||
-      file.WriteAtCurrentPos(reinterpret_cast<const char*>(&data_width),
-                             sizeof(int)) < 0 ||
-      file.WriteAtCurrentPos(reinterpret_cast<const char*>(&data_height),
-                             sizeof(int)) < 0 ||
-      file.WriteAtCurrentPos(reinterpret_cast<const char*>(&scale),
-                             sizeof(float)) < 0) {
-    success = false;
-  }
-
-  size_t compressed_bytes = etc1_get_encoded_data_size(data_width, data_height);
-  if (file.WriteAtCurrentPos(reinterpret_cast<char*>(compressed_data->pixels()),
-                             compressed_bytes) < 0)
-    success = false;
-
-  compressed_data->unlockPixels();
+  bool success = WriteToFile(file,
+                             content_size,
+                             scale,
+                             compressed_data);
 
   file.Close();
 
@@ -531,69 +609,137 @@ void ThumbnailStore::PostCompressionTask(
   WriteThumbnailIfNecessary(tab_id, compressed_data, scale, content_size);
 }
 
+namespace {
+
+bool ReadFromFile(base::File& file,
+                  gfx::Size* out_content_size,
+                  float* out_scale,
+                  skia::RefPtr<SkPixelRef>* out_pixels) {
+  if (!file.IsValid())
+    return false;
+
+  int key = 0;
+  if (!ReadBigEndianFromFile(file, &key))
+    return false;
+
+  if (key != kCompressedKey)
+    return false;
+
+  int content_width = 0;
+  if (!ReadBigEndianFromFile(file, &content_width) || content_width <= 0)
+    return false;
+
+  int content_height = 0;
+  if (!ReadBigEndianFromFile(file, &content_height) || content_height <= 0)
+    return false;
+
+  out_content_size->SetSize(content_width, content_height);
+
+  // Read ETC1 header.
+  int header_bytes_read = 0;
+  unsigned char etc1_buffer[ETC_PKM_HEADER_SIZE];
+  header_bytes_read = file.ReadAtCurrentPos(
+      reinterpret_cast<char*>(etc1_buffer),
+      ETC_PKM_HEADER_SIZE);
+  if (header_bytes_read != ETC_PKM_HEADER_SIZE)
+    return false;
+
+  if (!etc1_pkm_is_valid(etc1_buffer))
+    return false;
+
+  int raw_width = 0;
+  raw_width = etc1_pkm_get_width(etc1_buffer);
+  if (raw_width <= 0)
+    return false;
+
+  int raw_height = 0;
+  raw_height = etc1_pkm_get_height(etc1_buffer);
+  if (raw_height <= 0)
+    return false;
+
+  // Do some simple sanity check validation.  We can't have thumbnails larger
+  // than the max display size of the screen.  We also can't have etc1 texture
+  // data larger than the next power of 2 up from that.
+  gfx::DeviceDisplayInfo display_info;
+  int max_dimension = std::max(display_info.GetDisplayWidth(),
+                               display_info.GetDisplayHeight());
+
+  if (content_width > max_dimension
+      || content_height > max_dimension
+      || static_cast<size_t>(raw_width) > NextPowerOfTwo(max_dimension)
+      || static_cast<size_t>(raw_height) > NextPowerOfTwo(max_dimension)) {
+    return false;
+  }
+
+  skia::RefPtr<SkData> etc1_pixel_data;
+  int data_size = etc1_get_encoded_data_size(raw_width, raw_height);
+  scoped_ptr<uint8_t[]> raw_data =
+      scoped_ptr<uint8_t[]>(new uint8_t[data_size]);
+
+  int pixel_bytes_read = file.ReadAtCurrentPos(
+      reinterpret_cast<char*>(raw_data.get()),
+      data_size);
+
+  if (pixel_bytes_read != data_size)
+    return false;
+
+  SkImageInfo info = {raw_width,
+                      raw_height,
+                      kUnknown_SkColorType,
+                      kUnpremul_SkAlphaType};
+
+  etc1_pixel_data = skia::AdoptRef(
+      SkData::NewFromMalloc(raw_data.release(), data_size));
+
+  *out_pixels = skia::AdoptRef(
+      SkMallocPixelRef::NewWithData(info,
+                                    0,
+                                    NULL,
+                                    etc1_pixel_data.get()));
+
+  int extra_data_version = 0;
+  if (!ReadBigEndianFromFile(file, &extra_data_version))
+    return false;
+
+  *out_scale = 1.f;
+  if (extra_data_version == 1) {
+    if (!ReadBigEndianFloatFromFile(file, out_scale))
+      return false;
+
+    if (*out_scale == 0.f)
+      return false;
+
+    *out_scale = 1.f / *out_scale;
+  }
+
+  return true;
+}
+
+}// anonymous namespace
+
 void ThumbnailStore::ReadTask(
     const base::FilePath& file_path,
     const base::Callback<
         void(skia::RefPtr<SkPixelRef>, float, const gfx::Size&)>&
         post_read_task) {
-  skia::RefPtr<SkPixelRef> compressed_data;
-  float scale = 0.f;
   gfx::Size content_size;
+  float scale = 0.f;
+  skia::RefPtr<SkPixelRef> compressed_data;
 
   if (base::PathExists(file_path)) {
     base::File file(file_path, base::File::FLAG_OPEN | base::File::FLAG_READ);
-    DCHECK(file.IsValid());
 
-    int key;
-    bool success = true;
-    if (file.ReadAtCurrentPos(reinterpret_cast<char*>(&key), sizeof(int)) < 0 ||
-        key != kCompressedKey)
-      success = false;
-
-    int width = 0;
-    int height = 0;
-    if (file.ReadAtCurrentPos(reinterpret_cast<char*>(&width), sizeof(int)) <
-            0 ||
-        file.ReadAtCurrentPos(reinterpret_cast<char*>(&height), sizeof(int)) <
-            0)
-      success = false;
-
-    content_size = gfx::Size(width, height);
-    if (file.ReadAtCurrentPos(reinterpret_cast<char*>(&width), sizeof(int)) <
-            0 ||
-        file.ReadAtCurrentPos(reinterpret_cast<char*>(&height), sizeof(int)) <
-            0)
-      success = false;
-
-    gfx::Size data_size(width, height);
-    if (file.ReadAtCurrentPos(reinterpret_cast<char*>(&scale), sizeof(float)) <
-        0)
-      success = false;
-
-    size_t compressed_bytes =
-        etc1_get_encoded_data_size(data_size.width(), data_size.height());
-    SkImageInfo info = {data_size.width(),
-                        data_size.height(),
-                        kUnknown_SkColorType,
-                        kUnpremul_SkAlphaType};
-
-    scoped_ptr<uint8_t[]> data(new uint8_t[compressed_bytes]);
-    if (file.ReadAtCurrentPos(reinterpret_cast<char*>(data.get()),
-                              compressed_bytes) < 0)
-      success = false;
-
+    bool valid_contents = ReadFromFile(file,
+                                       &content_size,
+                                       &scale,
+                                       &compressed_data);
     file.Close();
 
-    skia::RefPtr<SkData> etc1_pixel_data =
-        skia::AdoptRef(SkData::NewFromMalloc(data.release(), compressed_bytes));
-    compressed_data = skia::AdoptRef(
-        SkMallocPixelRef::NewWithData(info, 0, NULL, etc1_pixel_data.get()));
-
-    if (!success) {
-      compressed_data.clear();
-      content_size = gfx::Size();
-      scale = 0.f;
-      base::DeleteFile(file_path, false);
+    if (!valid_contents) {
+      content_size.SetSize(0, 0);
+            scale = 0.f;
+            compressed_data.clear();
+            base::DeleteFile(file_path, false);
     }
   }
 
