@@ -97,7 +97,7 @@ public:
     void setLength(unsigned, ExceptionState&);
 
     Element* namedItem(const AtomicString& name);
-    Element* item(unsigned index);
+    HTMLOptionElement* item(unsigned index);
 
     void scrollToSelection();
     void scrollTo(int listIndex);

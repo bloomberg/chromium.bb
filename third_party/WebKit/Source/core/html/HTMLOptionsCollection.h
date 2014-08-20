@@ -25,16 +25,17 @@
 #define HTMLOptionsCollection_h
 
 #include "core/html/HTMLCollection.h"
+#include "core/html/HTMLOptionElement.h"
 
 namespace blink {
 
 class ExceptionState;
-class HTMLOptionElement;
-class HTMLSelectElement;
 
 class HTMLOptionsCollection FINAL : public HTMLCollection {
 public:
     static PassRefPtrWillBeRawPtr<HTMLOptionsCollection> create(ContainerNode&, CollectionType);
+
+    HTMLOptionElement* item(unsigned offset) const { return toHTMLOptionElement(HTMLCollection::item(offset)); }
 
     void add(PassRefPtrWillBeRawPtr<HTMLOptionElement>, ExceptionState&);
     void add(PassRefPtrWillBeRawPtr<HTMLOptionElement>, int index, ExceptionState&);
@@ -47,6 +48,8 @@ public:
     void namedGetter(const AtomicString& name, RefPtrWillBeRawPtr<NodeList>&, RefPtrWillBeRawPtr<Element>&);
     bool anonymousIndexedSetter(unsigned, PassRefPtrWillBeRawPtr<HTMLOptionElement>, ExceptionState&);
 
+    bool elementMatches(const HTMLElement&) const;
+
 private:
     explicit HTMLOptionsCollection(ContainerNode&);
 
@@ -54,6 +57,11 @@ private:
 };
 
 DEFINE_TYPE_CASTS(HTMLOptionsCollection, LiveNodeListBase, collection, collection->type() == SelectOptions, collection.type() == SelectOptions);
+
+inline bool HTMLOptionsCollection::elementMatches(const HTMLElement& element) const
+{
+    return isHTMLOptionElement(element);
+}
 
 } //namespace
 

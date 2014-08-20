@@ -33,6 +33,7 @@
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLObjectElement.h"
 #include "core/html/HTMLOptionElement.h"
+#include "core/html/HTMLOptionsCollection.h"
 #include "core/html/HTMLTagCollection.h"
 #include "core/html/WindowNameCollection.h"
 #include "wtf/HashSet.h"
@@ -220,7 +221,7 @@ static inline bool isMatchingHTMLElement(const HTMLCollection& htmlCollection, c
     case TSectionRows:
         return element.hasTagName(trTag);
     case SelectOptions:
-        return element.hasTagName(optionTag);
+        return toHTMLOptionsCollection(htmlCollection).elementMatches(element);
     case SelectedOptions:
         return isHTMLOptionElement(element) && toHTMLOptionElement(element).selected();
     case DataListOptions:

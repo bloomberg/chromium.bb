@@ -225,7 +225,7 @@ void HTMLSelectElement::add(HTMLElement* element, HTMLElement* before, Exception
 
 void HTMLSelectElement::addBeforeOptionAtIndex(HTMLElement* element, int beforeIndex, ExceptionState& exceptionState)
 {
-    HTMLElement* beforeElement = toHTMLElement(options()->item(beforeIndex));
+    HTMLOptionElement* beforeElement = options()->item(beforeIndex);
     add(element, beforeElement, exceptionState);
 }
 
@@ -452,7 +452,7 @@ Element* HTMLSelectElement::namedItem(const AtomicString& name)
     return options()->namedItem(name);
 }
 
-Element* HTMLSelectElement::item(unsigned index)
+HTMLOptionElement* HTMLSelectElement::item(unsigned index)
 {
     return options()->item(index);
 }
@@ -462,13 +462,13 @@ void HTMLSelectElement::setOption(unsigned index, HTMLOptionElement* option, Exc
     if (index > maxSelectItems - 1)
         index = maxSelectItems - 1;
     int diff = index - length();
-    RefPtrWillBeRawPtr<HTMLElement> before = nullptr;
+    RefPtrWillBeRawPtr<HTMLOptionElement> before = nullptr;
     // Out of array bounds? First insert empty dummies.
     if (diff > 0) {
         setLength(index, exceptionState);
         // Replace an existing entry?
     } else if (diff < 0) {
-        before = toHTMLElement(options()->item(index+1));
+        before = options()->item(index + 1);
         remove(index);
     }
     // Finally add the new element.
