@@ -27,12 +27,32 @@
 
 namespace blink {
 
-    class SpaceSplitStringData : public RefCounted<SpaceSplitStringData> {
-    public:
-        static PassRefPtr<SpaceSplitStringData> create(const AtomicString&);
-        static PassRefPtr<SpaceSplitStringData> createUnique(const SpaceSplitStringData&);
+class SpaceSplitString {
+public:
+    SpaceSplitString() { }
+    SpaceSplitString(const AtomicString& string, bool shouldFoldCase) { set(string, shouldFoldCase); }
 
-        ~SpaceSplitStringData();
+    bool operator!=(const SpaceSplitString& other) const { return m_data != other.m_data; }
+
+    void set(const AtomicString&, bool shouldFoldCase);
+    void clear() { m_data.clear(); }
+
+    bool contains(const AtomicString& string) const { return m_data && m_data->contains(string); }
+    bool containsAll(const SpaceSplitString& names) const { return !names.m_data || (m_data && m_data->containsAll(*names.m_data)); }
+    void add(const AtomicString&);
+    bool remove(const AtomicString&);
+
+    size_t size() const { return m_data ? m_data->size() : 0; }
+    bool isNull() const { return !m_data; }
+    const AtomicString& operator[](size_t i) const { ASSERT_WITH_SECURITY_IMPLICATION(i < size()); return (*m_data)[i]; }
+
+private:
+    class Data : public RefCounted<Data> {
+    public:
+        static PassRefPtr<Data> create(const AtomicString&);
+        static PassRefPtr<Data> createUnique(const Data&);
+
+        ~Data();
 
         bool contains(const AtomicString& string)
         {
@@ -44,7 +64,7 @@ namespace blink {
             return false;
         }
 
-        bool containsAll(SpaceSplitStringData&);
+        bool containsAll(Data&);
 
         void add(const AtomicString&);
         void remove(unsigned index);
@@ -54,8 +74,8 @@ namespace blink {
         const AtomicString& operator[](size_t i) { ASSERT_WITH_SECURITY_IMPLICATION(i < size()); return m_vector[i]; }
 
     private:
-        explicit SpaceSplitStringData(const AtomicString&);
-        explicit SpaceSplitStringData(const SpaceSplitStringData&);
+        explicit Data(const AtomicString&);
+        explicit Data(const Data&);
 
         void createVector(const String&);
         template <typename CharacterType>
@@ -64,35 +84,18 @@ namespace blink {
         AtomicString m_keyString;
         Vector<AtomicString, 4> m_vector;
     };
+    typedef HashMap<AtomicString, Data*> DataMap;
 
-    class SpaceSplitString {
-    public:
-        SpaceSplitString() { }
-        SpaceSplitString(const AtomicString& string, bool shouldFoldCase) { set(string, shouldFoldCase); }
+    static DataMap& sharedDataMap();
 
-        bool operator!=(const SpaceSplitString& other) const { return m_data != other.m_data; }
+    void ensureUnique()
+    {
+        if (m_data && !m_data->isUnique())
+            m_data = Data::createUnique(*m_data);
+    }
 
-        void set(const AtomicString&, bool shouldFoldCase);
-        void clear() { m_data.clear(); }
-
-        bool contains(const AtomicString& string) const { return m_data && m_data->contains(string); }
-        bool containsAll(const SpaceSplitString& names) const { return !names.m_data || (m_data && m_data->containsAll(*names.m_data)); }
-        void add(const AtomicString&);
-        bool remove(const AtomicString&);
-
-        size_t size() const { return m_data ? m_data->size() : 0; }
-        bool isNull() const { return !m_data; }
-        const AtomicString& operator[](size_t i) const { ASSERT_WITH_SECURITY_IMPLICATION(i < size()); return (*m_data)[i]; }
-
-    private:
-        void ensureUnique()
-        {
-            if (m_data && !m_data->isUnique())
-                m_data = SpaceSplitStringData::createUnique(*m_data);
-        }
-
-        RefPtr<SpaceSplitStringData> m_data;
-    };
+    RefPtr<Data> m_data;
+};
 
 } // namespace blink
 

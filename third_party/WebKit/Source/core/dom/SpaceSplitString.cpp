@@ -53,7 +53,7 @@ static inline bool hasNonASCIIOrUpper(const String& string)
 }
 
 template <typename CharacterType>
-inline void SpaceSplitStringData::createVector(const CharacterType* characters, unsigned length)
+inline void SpaceSplitString::Data::createVector(const CharacterType* characters, unsigned length)
 {
     unsigned start = 0;
     while (true) {
@@ -71,7 +71,7 @@ inline void SpaceSplitStringData::createVector(const CharacterType* characters, 
     }
 }
 
-void SpaceSplitStringData::createVector(const String& string)
+void SpaceSplitString::Data::createVector(const String& string)
 {
     unsigned length = string.length();
 
@@ -83,7 +83,7 @@ void SpaceSplitStringData::createVector(const String& string)
     createVector(string.characters16(), length);
 }
 
-bool SpaceSplitStringData::containsAll(SpaceSplitStringData& other)
+bool SpaceSplitString::Data::containsAll(Data& other)
 {
     if (this == &other)
         return true;
@@ -103,14 +103,14 @@ bool SpaceSplitStringData::containsAll(SpaceSplitStringData& other)
     return true;
 }
 
-void SpaceSplitStringData::add(const AtomicString& string)
+void SpaceSplitString::Data::add(const AtomicString& string)
 {
     ASSERT(hasOneRef());
     ASSERT(!contains(string));
     m_vector.append(string);
 }
 
-void SpaceSplitStringData::remove(unsigned index)
+void SpaceSplitString::Data::remove(unsigned index)
 {
     ASSERT(hasOneRef());
     m_vector.remove(index);
@@ -145,11 +145,9 @@ bool SpaceSplitString::remove(const AtomicString& string)
     return changed;
 }
 
-typedef HashMap<AtomicString, SpaceSplitStringData*> SpaceSplitStringDataMap;
-
-static SpaceSplitStringDataMap& sharedDataMap()
+SpaceSplitString::DataMap& SpaceSplitString::sharedDataMap()
 {
-    DEFINE_STATIC_LOCAL(SpaceSplitStringDataMap, map, ());
+    DEFINE_STATIC_LOCAL(DataMap, map, ());
     return map;
 }
 
@@ -164,39 +162,39 @@ void SpaceSplitString::set(const AtomicString& inputString, bool shouldFoldCase)
     if (shouldFoldCase && hasNonASCIIOrUpper(string))
         string = string.foldCase();
 
-    m_data = SpaceSplitStringData::create(AtomicString(string));
+    m_data = Data::create(AtomicString(string));
 }
 
-SpaceSplitStringData::~SpaceSplitStringData()
+SpaceSplitString::Data::~Data()
 {
     if (!m_keyString.isNull())
         sharedDataMap().remove(m_keyString);
 }
 
-PassRefPtr<SpaceSplitStringData> SpaceSplitStringData::create(const AtomicString& string)
+PassRefPtr<SpaceSplitString::Data> SpaceSplitString::Data::create(const AtomicString& string)
 {
-    SpaceSplitStringData*& data = sharedDataMap().add(string, 0).storedValue->value;
+    Data*& data = sharedDataMap().add(string, 0).storedValue->value;
     if (!data) {
-        data = new SpaceSplitStringData(string);
+        data = new Data(string);
         return adoptRef(data);
     }
     return data;
 }
 
-PassRefPtr<SpaceSplitStringData> SpaceSplitStringData::createUnique(const SpaceSplitStringData& other)
+PassRefPtr<SpaceSplitString::Data> SpaceSplitString::Data::createUnique(const Data& other)
 {
-    return adoptRef(new SpaceSplitStringData(other));
+    return adoptRef(new SpaceSplitString::Data(other));
 }
 
-SpaceSplitStringData::SpaceSplitStringData(const AtomicString& string)
+SpaceSplitString::Data::Data(const AtomicString& string)
     : m_keyString(string)
 {
     ASSERT(!string.isNull());
     createVector(string);
 }
 
-SpaceSplitStringData::SpaceSplitStringData(const SpaceSplitStringData& other)
-    : RefCounted<SpaceSplitStringData>()
+SpaceSplitString::Data::Data(const SpaceSplitString::Data& other)
+    : RefCounted<Data>()
     , m_vector(other.m_vector)
 {
     // Note that we don't copy m_keyString to indicate to the destructor that there's nothing
