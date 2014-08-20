@@ -118,6 +118,7 @@ FrameView::FrameView(LocalFrame* frame)
     , m_inputEventsScaleFactorForEmulation(1)
     , m_layoutSizeFixedToFrameSize(true)
     , m_didScrollTimer(this, &FrameView::didScrollTimerFired)
+    , m_needsUpdateWidgetPositions(false)
 {
     ASSERT(m_frame);
     init();
@@ -2545,12 +2546,24 @@ void FrameView::paintOverhangAreas(GraphicsContext* context, const IntRect& hori
     ScrollView::paintOverhangAreas(context, horizontalOverhangArea, verticalOverhangArea, dirtyRect);
 }
 
+void FrameView::updateWidgetPositionsIfNeeded()
+{
+    if (!m_needsUpdateWidgetPositions)
+        return;
+
+    m_needsUpdateWidgetPositions = false;
+
+    updateWidgetPositions();
+}
+
 void FrameView::updateLayoutAndStyleForPainting()
 {
     // Updating layout can run script, which can tear down the FrameView.
     RefPtr<FrameView> protector(this);
 
     updateLayoutAndStyleIfNeededRecursive();
+
+    updateWidgetPositionsIfNeeded();
 
     if (RenderView* view = renderView()) {
         TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "UpdateLayerTree", "frame", m_frame.get());

@@ -366,10 +366,7 @@ void RenderLayerScrollableArea::setScrollOffset(const IntPoint& newScrollOffset)
         box().setPreviousPaintInvalidationRect(box().boundsRectForPaintInvalidation(paintInvalidationContainer));
         // Update regions, scrolling may change the clip of a particular region.
         frameView->updateAnnotatedRegions();
-        // FIXME: We shouldn't call updateWidgetPositions() here since it might tear down the render tree,
-        // for now we just crash to avoid allowing an attacker to use after free.
-        frameView->updateWidgetPositions();
-        RELEASE_ASSERT(frameView->renderView());
+        frameView->setNeedsUpdateWidgetPositions();
         updateCompositingLayersAfterScroll();
     }
 
