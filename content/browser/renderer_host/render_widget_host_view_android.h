@@ -58,6 +58,29 @@ class RenderWidgetHostImpl;
 struct DidOverscrollParams;
 struct NativeWebKeyboardEvent;
 
+class ReadbackRequest {
+ public:
+  explicit ReadbackRequest(
+      float scale,
+      SkColorType color_type,
+      gfx::Rect src_subrect,
+      const base::Callback<void(bool, const SkBitmap&)>& result_callback);
+  ~ReadbackRequest();
+  float GetScale() { return scale_; }
+  SkColorType GetColorFormat() { return color_type_; }
+  const gfx::Rect GetCaptureRect() { return src_subrect_; }
+  const base::Callback<void(bool, const SkBitmap&)>& GetResultCallback() {
+    return result_callback_;
+  }
+
+ private:
+  ReadbackRequest();
+  float scale_;
+  SkColorType color_type_;
+  gfx::Rect src_subrect_;
+  base::Callback<void(bool, const SkBitmap&)> result_callback_;
+};
+
 // -----------------------------------------------------------------------------
 // See comments in render_widget_host_view.h about this class and its members.
 // -----------------------------------------------------------------------------
@@ -316,6 +339,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
 
   float GetDpiScale() const;
 
+  // Handles all unprocessed and pending readback requests.
+  void AbortPendingReadbackRequests();
+
   // The model object.
   RenderWidgetHostImpl* host_;
 
@@ -391,6 +417,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   scoped_ptr<LastFrameInfo> last_frame_info_;
 
   TextSurroundingSelectionCallback text_surrounding_selection_callback_;
+
+  // List of readbackrequests waiting for arrival of a valid frame.
+  std::queue<ReadbackRequest> readbacks_waiting_for_frame_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewAndroid);
 };
