@@ -2125,8 +2125,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, URLBlacklist) {
   }
 }
 
-// This test is flaky on all platforms; see http://crbug.com/339240
-IN_PROC_BROWSER_TEST_F(PolicyTest, DISABLED_FileURLBlacklist) {
+IN_PROC_BROWSER_TEST_F(PolicyTest, FileURLBlacklist) {
   // Check that FileURLs can be blacklisted and DisabledSchemes works together
   // with URLblacklisting and URLwhitelisting.
 
