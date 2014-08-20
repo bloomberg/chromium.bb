@@ -80,6 +80,7 @@ class DocumentFragment;
 class DocumentLifecycleNotifier;
 class DocumentLoader;
 class DocumentMarkerController;
+class DocumentNameCollection;
 class DocumentParser;
 class DocumentState;
 class DocumentType;
@@ -363,7 +364,7 @@ public:
     PassRefPtrWillBeRawPtr<HTMLAllCollection> all();
 
     PassRefPtrWillBeRawPtr<HTMLCollection> windowNamedItems(const AtomicString& name);
-    PassRefPtrWillBeRawPtr<HTMLCollection> documentNamedItems(const AtomicString& name);
+    PassRefPtrWillBeRawPtr<DocumentNameCollection> documentNamedItems(const AtomicString& name);
 
     bool isHTMLDocument() const { return m_documentClasses & HTMLDocumentClass; }
     bool isXHTMLDocument() const { return m_documentClasses & XHTMLDocumentClass; }

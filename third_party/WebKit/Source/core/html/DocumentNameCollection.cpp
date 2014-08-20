@@ -16,7 +16,7 @@ DocumentNameCollection::DocumentNameCollection(ContainerNode& document, const At
 {
 }
 
-bool DocumentNameCollection::elementMatches(const Element& element) const
+bool DocumentNameCollection::elementMatches(const HTMLElement& element) const
 {
     // Match images, forms, applets, embeds, objects and iframes by name,
     // applets and object by id, and images by id but only if they have

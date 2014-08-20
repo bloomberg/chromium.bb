@@ -4611,7 +4611,7 @@ PassRefPtrWillBeRawPtr<HTMLCollection> Document::windowNamedItems(const AtomicSt
     return ensureCachedCollection<WindowNameCollection>(WindowNamedItems, name);
 }
 
-PassRefPtrWillBeRawPtr<HTMLCollection> Document::documentNamedItems(const AtomicString& name)
+PassRefPtrWillBeRawPtr<DocumentNameCollection> Document::documentNamedItems(const AtomicString& name)
 {
     return ensureCachedCollection<DocumentNameCollection>(DocumentNamedItems, name);
 }

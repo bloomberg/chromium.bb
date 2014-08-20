@@ -5,6 +5,7 @@
 #ifndef DocumentNameCollection_h
 #define DocumentNameCollection_h
 
+#include "core/html/HTMLElement.h"
 #include "core/html/HTMLNameCollection.h"
 
 namespace blink {
@@ -17,7 +18,9 @@ public:
         return adoptRefWillBeNoop(new DocumentNameCollection(document, name));
     }
 
-    bool elementMatches(const Element&) const;
+    HTMLElement* item(unsigned offset) const { return toHTMLElement(HTMLNameCollection::item(offset)); }
+
+    bool elementMatches(const HTMLElement&) const;
 
 private:
     DocumentNameCollection(ContainerNode& document, const AtomicString& name);

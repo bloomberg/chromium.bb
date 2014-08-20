@@ -210,6 +210,8 @@ static inline bool isMatchingHTMLElement(const HTMLCollection& htmlCollection, c
         return element.hasTagName(scriptTag);
     case DocForms:
         return element.hasTagName(formTag);
+    case DocumentNamedItems:
+        return toDocumentNameCollection(htmlCollection).elementMatches(element);
     case TableTBodies:
         return element.hasTagName(tbodyTag);
     case TRCells:
@@ -243,7 +245,6 @@ static inline bool isMatchingHTMLElement(const HTMLCollection& htmlCollection, c
     case DocAll:
     case NodeChildren:
     case FormControls:
-    case DocumentNamedItems:
     case TableRows:
     case WindowNamedItems:
     case NameNodeListType:
@@ -268,8 +269,6 @@ inline bool HTMLCollection::elementMatches(const Element& element) const
         return toTagCollection(*this).elementMatches(element);
     case HTMLTagCollectionType:
         return toHTMLTagCollection(*this).elementMatches(element);
-    case DocumentNamedItems:
-        return toDocumentNameCollection(*this).elementMatches(element);
     case WindowNamedItems:
         return toWindowNameCollection(*this).elementMatches(element);
     default:
