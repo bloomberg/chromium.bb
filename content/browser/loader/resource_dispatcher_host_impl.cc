@@ -1116,7 +1116,8 @@ void ResourceDispatcherHostImpl::BeginRequest(
       GetBlobStorageContext(filter_),
       child_id,
       request_data.service_worker_provider_id,
-      request_data.resource_type);
+      request_data.resource_type,
+      request_data.request_body);
 
   // Have the appcache associate its extra info with the request.
   AppCacheInterceptor::SetExtraRequestInfo(

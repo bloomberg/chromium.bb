@@ -25,6 +25,7 @@ class BlobStorageContext;
 
 namespace content {
 
+class ResourceRequestBody;
 class ServiceWorkerContextCore;
 class ServiceWorkerContextWrapper;
 class ServiceWorkerProviderHost;
@@ -46,7 +47,8 @@ class CONTENT_EXPORT ServiceWorkerRequestHandler
       webkit_blob::BlobStorageContext* blob_storage_context,
       int process_id,
       int provider_id,
-      ResourceType resource_type);
+      ResourceType resource_type,
+      scoped_refptr<ResourceRequestBody> body);
 
   // Returns the handler attached to |request|. This may return NULL
   // if no handler is attached.

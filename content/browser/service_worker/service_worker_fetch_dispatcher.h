@@ -11,10 +11,6 @@
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "content/common/service_worker/service_worker_types.h"
 
-namespace net {
-class URLRequest;
-}
-
 namespace content {
 
 class ServiceWorkerVersion;
@@ -26,10 +22,9 @@ class ServiceWorkerFetchDispatcher {
                               ServiceWorkerFetchEventResult,
                               const ServiceWorkerResponse&)> FetchCallback;
 
-  ServiceWorkerFetchDispatcher(
-      net::URLRequest* request,
-      ServiceWorkerVersion* version,
-      const FetchCallback& callback);
+  ServiceWorkerFetchDispatcher(scoped_ptr<ServiceWorkerFetchRequest> request,
+                               ServiceWorkerVersion* version,
+                               const FetchCallback& callback);
   ~ServiceWorkerFetchDispatcher();
 
   // Dispatches a fetch event to the |version| given in ctor, and fires
@@ -46,7 +41,7 @@ class ServiceWorkerFetchDispatcher {
 
   scoped_refptr<ServiceWorkerVersion> version_;
   FetchCallback callback_;
-  ServiceWorkerFetchRequest request_;
+  scoped_ptr<ServiceWorkerFetchRequest> request_;
   base::WeakPtrFactory<ServiceWorkerFetchDispatcher> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerFetchDispatcher);

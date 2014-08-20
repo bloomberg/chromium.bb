@@ -12,6 +12,7 @@
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_url_request_job.h"
 #include "content/browser/service_worker/service_worker_utils.h"
+#include "content/common/resource_request_body.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_interceptor.h"
@@ -50,7 +51,8 @@ void ServiceWorkerRequestHandler::InitializeHandler(
     webkit_blob::BlobStorageContext* blob_storage_context,
     int process_id,
     int provider_id,
-    ResourceType resource_type) {
+    ResourceType resource_type,
+    scoped_refptr<ResourceRequestBody> body) {
   if (!request->url().SchemeIsHTTPOrHTTPS())
     return;
 
@@ -65,8 +67,8 @@ void ServiceWorkerRequestHandler::InitializeHandler(
     return;
 
   scoped_ptr<ServiceWorkerRequestHandler> handler(
-      provider_host->CreateRequestHandler(resource_type,
-                                          blob_storage_context->AsWeakPtr()));
+      provider_host->CreateRequestHandler(
+          resource_type, blob_storage_context->AsWeakPtr(), body));
   if (!handler)
     return;
 

@@ -42,8 +42,6 @@ enum ServiceWorkerFetchEventResult {
 };
 
 // To dispatch fetch request from browser to child process.
-// TODO(kinuko): This struct will definitely need more fields and
-// we'll probably want to have response struct/class too.
 struct CONTENT_EXPORT ServiceWorkerFetchRequest {
   ServiceWorkerFetchRequest();
   ServiceWorkerFetchRequest(const GURL& url,
@@ -56,6 +54,8 @@ struct CONTENT_EXPORT ServiceWorkerFetchRequest {
   GURL url;
   std::string method;
   std::map<std::string, std::string> headers;
+  std::string blob_uuid;
+  uint64 blob_size;
   GURL referrer;
   bool is_reload;
 };

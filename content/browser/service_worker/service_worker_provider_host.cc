@@ -14,6 +14,7 @@
 #include "content/browser/service_worker/service_worker_registration_handle.h"
 #include "content/browser/service_worker/service_worker_utils.h"
 #include "content/browser/service_worker/service_worker_version.h"
+#include "content/common/resource_request_body.h"
 #include "content/common/service_worker/service_worker_messages.h"
 
 namespace content {
@@ -186,7 +187,8 @@ void ServiceWorkerProviderHost::UnassociateRegistration() {
 scoped_ptr<ServiceWorkerRequestHandler>
 ServiceWorkerProviderHost::CreateRequestHandler(
     ResourceType resource_type,
-    base::WeakPtr<webkit_blob::BlobStorageContext> blob_storage_context) {
+    base::WeakPtr<webkit_blob::BlobStorageContext> blob_storage_context,
+    scoped_refptr<ResourceRequestBody> body) {
   if (IsHostToRunningServiceWorker()) {
     return scoped_ptr<ServiceWorkerRequestHandler>(
         new ServiceWorkerContextRequestHandler(
@@ -196,7 +198,7 @@ ServiceWorkerProviderHost::CreateRequestHandler(
       active_version()) {
     return scoped_ptr<ServiceWorkerRequestHandler>(
         new ServiceWorkerControlleeRequestHandler(
-            context_, AsWeakPtr(), blob_storage_context, resource_type));
+            context_, AsWeakPtr(), blob_storage_context, resource_type, body));
   }
   return scoped_ptr<ServiceWorkerRequestHandler>();
 }

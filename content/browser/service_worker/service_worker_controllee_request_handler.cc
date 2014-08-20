@@ -10,6 +10,7 @@
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_url_request_job.h"
 #include "content/browser/service_worker/service_worker_utils.h"
+#include "content/common/resource_request_body.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_util.h"
@@ -21,13 +22,15 @@ ServiceWorkerControlleeRequestHandler::ServiceWorkerControlleeRequestHandler(
     base::WeakPtr<ServiceWorkerContextCore> context,
     base::WeakPtr<ServiceWorkerProviderHost> provider_host,
     base::WeakPtr<webkit_blob::BlobStorageContext> blob_storage_context,
-    ResourceType resource_type)
+    ResourceType resource_type,
+    scoped_refptr<ResourceRequestBody> body)
     : ServiceWorkerRequestHandler(context,
                                   provider_host,
                                   blob_storage_context,
                                   resource_type),
       is_main_resource_load_(
           ServiceWorkerUtils::IsMainResourceType(resource_type)),
+      body_(body),
       weak_factory_(this) {
 }
 
@@ -79,7 +82,7 @@ net::URLRequestJob* ServiceWorkerControlleeRequestHandler::MaybeCreateJob(
   DCHECK(!job_.get() || job_->ShouldForwardToServiceWorker());
 
   job_ = new ServiceWorkerURLRequestJob(
-      request, network_delegate, provider_host_, blob_storage_context_);
+      request, network_delegate, provider_host_, blob_storage_context_, body_);
   if (is_main_resource_load_)
     PrepareForMainResource(request->url());
   else

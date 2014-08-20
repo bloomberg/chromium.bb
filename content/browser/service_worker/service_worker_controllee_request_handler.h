@@ -15,6 +15,7 @@ class URLRequest;
 
 namespace content {
 
+class ResourceRequestBody;
 class ServiceWorkerRegistration;
 class ServiceWorkerURLRequestJob;
 class ServiceWorkerVersion;
@@ -28,7 +29,8 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler
       base::WeakPtr<ServiceWorkerContextCore> context,
       base::WeakPtr<ServiceWorkerProviderHost> provider_host,
       base::WeakPtr<webkit_blob::BlobStorageContext> blob_storage_context,
-      ResourceType resource_type);
+      ResourceType resource_type,
+      scoped_refptr<ResourceRequestBody> body);
   virtual ~ServiceWorkerControlleeRequestHandler();
 
   // Called via custom URLRequestJobFactory.
@@ -59,6 +61,7 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler
 
   bool is_main_resource_load_;
   scoped_refptr<ServiceWorkerURLRequestJob> job_;
+  scoped_refptr<ResourceRequestBody> body_;
   base::WeakPtrFactory<ServiceWorkerControlleeRequestHandler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerControlleeRequestHandler);

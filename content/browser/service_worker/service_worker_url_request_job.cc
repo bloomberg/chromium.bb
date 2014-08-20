@@ -9,9 +9,15 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/guid.h"
 #include "base/strings/stringprintf.h"
 #include "content/browser/service_worker/service_worker_fetch_dispatcher.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
+#include "content/common/resource_request_body.h"
+#include "content/common/service_worker/service_worker_types.h"
+#include "content/public/browser/blob_handle.h"
+#include "content/public/browser/resource_request_info.h"
+#include "content/public/common/page_transition_types.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
@@ -26,12 +32,14 @@ ServiceWorkerURLRequestJob::ServiceWorkerURLRequestJob(
     net::URLRequest* request,
     net::NetworkDelegate* network_delegate,
     base::WeakPtr<ServiceWorkerProviderHost> provider_host,
-    base::WeakPtr<webkit_blob::BlobStorageContext> blob_storage_context)
+    base::WeakPtr<webkit_blob::BlobStorageContext> blob_storage_context,
+    scoped_refptr<ResourceRequestBody> body)
     : net::URLRequestJob(request, network_delegate),
       provider_host_(provider_host),
       response_type_(NOT_DETERMINED),
       is_started_(false),
       blob_storage_context_(blob_storage_context),
+      body_(body),
       weak_factory_(this) {
 }
 
@@ -216,11 +224,11 @@ void ServiceWorkerURLRequestJob::StartRequest() {
     case FORWARD_TO_SERVICE_WORKER:
       DCHECK(provider_host_ && provider_host_->active_version());
       DCHECK(!fetch_dispatcher_);
-
       // Send a fetch event to the ServiceWorker associated to the
       // provider_host.
       fetch_dispatcher_.reset(new ServiceWorkerFetchDispatcher(
-          request(), provider_host_->active_version(),
+          CreateFetchRequest(),
+          provider_host_->active_version(),
           base::Bind(&ServiceWorkerURLRequestJob::DidDispatchFetchEvent,
                      weak_factory_.GetWeakPtr())));
       fetch_dispatcher_->Run();
@@ -228,6 +236,90 @@ void ServiceWorkerURLRequestJob::StartRequest() {
   }
 
   NOTREACHED();
+}
+
+scoped_ptr<ServiceWorkerFetchRequest>
+ServiceWorkerURLRequestJob::CreateFetchRequest() {
+  std::string blob_uuid;
+  uint64 blob_size = 0;
+  CreateRequestBodyBlob(&blob_uuid, &blob_size);
+  scoped_ptr<ServiceWorkerFetchRequest> request(
+      new ServiceWorkerFetchRequest());
+
+  request->url = request_->url();
+  request->method = request_->method();
+  const net::HttpRequestHeaders& headers = request_->extra_request_headers();
+  for (net::HttpRequestHeaders::Iterator it(headers); it.GetNext();)
+    request->headers[it.name()] = it.value();
+  request->blob_uuid = blob_uuid;
+  request->blob_size = blob_size;
+  request->referrer = GURL(request_->referrer());
+  const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request_);
+  if (info) {
+    request->is_reload = PageTransitionCoreTypeIs(info->GetPageTransition(),
+                                                  PAGE_TRANSITION_RELOAD);
+  }
+  return request.Pass();
+}
+
+bool ServiceWorkerURLRequestJob::CreateRequestBodyBlob(std::string* blob_uuid,
+                                                       uint64* blob_size) {
+  if (!body_ || !blob_storage_context_)
+    return false;
+  const std::string uuid(base::GenerateGUID());
+  uint64 size = 0;
+  std::vector<const ResourceRequestBody::Element*> resolved_elements;
+  for (size_t i = 0; i < body_->elements()->size(); ++i) {
+    const ResourceRequestBody::Element& element = (*body_->elements())[i];
+    if (element.type() != ResourceRequestBody::Element::TYPE_BLOB) {
+      resolved_elements.push_back(&element);
+      continue;
+    }
+    scoped_ptr<webkit_blob::BlobDataHandle> handle =
+        blob_storage_context_->GetBlobDataFromUUID(element.blob_uuid());
+    if (handle->data()->items().empty())
+      continue;
+    for (size_t i = 0; i < handle->data()->items().size(); ++i) {
+      const webkit_blob::BlobData::Item& item = handle->data()->items().at(i);
+      DCHECK_NE(webkit_blob::BlobData::Item::TYPE_BLOB, item.type());
+      resolved_elements.push_back(&item);
+    }
+  }
+  scoped_refptr<webkit_blob::BlobData> blob_data =
+      new webkit_blob::BlobData(uuid);
+  for (size_t i = 0; i < resolved_elements.size(); ++i) {
+    const ResourceRequestBody::Element& element = *resolved_elements[i];
+    size += element.length();
+    switch (element.type()) {
+      case ResourceRequestBody::Element::TYPE_BYTES:
+        blob_data->AppendData(element.bytes(), element.length());
+        break;
+      case ResourceRequestBody::Element::TYPE_FILE:
+        blob_data->AppendFile(element.path(),
+                              element.offset(),
+                              element.length(),
+                              element.expected_modification_time());
+        break;
+      case ResourceRequestBody::Element::TYPE_BLOB:
+        // Blob elements should be resolved beforehand.
+        NOTREACHED();
+        break;
+      case ResourceRequestBody::Element::TYPE_FILE_FILESYSTEM:
+        blob_data->AppendFileSystemFile(element.filesystem_url(),
+                                        element.offset(),
+                                        element.length(),
+                                        element.expected_modification_time());
+        break;
+      default:
+        NOTIMPLEMENTED();
+    }
+  }
+
+  request_body_blob_data_handle_ =
+      blob_storage_context_->AddFinishedBlob(blob_data.get());
+  *blob_uuid = uuid;
+  *blob_size = size;
+  return true;
 }
 
 void ServiceWorkerURLRequestJob::DidDispatchFetchEvent(

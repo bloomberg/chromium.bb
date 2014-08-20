@@ -149,6 +149,10 @@ void ServiceWorkerScriptContext::OnFetchEvent(
     webRequest.setHeader(blink::WebString::fromUTF8(it->first),
                          blink::WebString::fromUTF8(it->second));
   }
+  if (!request.blob_uuid.empty()) {
+    webRequest.setBlob(blink::WebString::fromUTF8(request.blob_uuid),
+                       request.blob_size);
+  }
   webRequest.setReferrer(blink::WebString::fromUTF8(request.referrer.spec()),
                          blink::WebReferrerPolicyDefault);
   webRequest.setIsReload(request.is_reload);

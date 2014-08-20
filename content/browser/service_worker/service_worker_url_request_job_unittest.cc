@@ -17,6 +17,7 @@
 #include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/browser/service_worker/service_worker_url_request_job.h"
 #include "content/browser/service_worker/service_worker_version.h"
+#include "content/common/resource_request_body.h"
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/public/browser/blob_handle.h"
 #include "content/public/test/test_browser_context.h"
@@ -56,8 +57,12 @@ class MockHttpProtocolHandler
   virtual net::URLRequestJob* MaybeCreateJob(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) const OVERRIDE {
-    ServiceWorkerURLRequestJob* job = new ServiceWorkerURLRequestJob(
-        request, network_delegate, provider_host_, blob_storage_context_);
+    ServiceWorkerURLRequestJob* job =
+        new ServiceWorkerURLRequestJob(request,
+                                       network_delegate,
+                                       provider_host_,
+                                       blob_storage_context_,
+                                       scoped_refptr<ResourceRequestBody>());
     job->ForwardToServiceWorker();
     return job;
   }

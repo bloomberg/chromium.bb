@@ -25,6 +25,7 @@ class BlobStorageContext;
 
 namespace content {
 
+class ResourceRequestBody;
 class ServiceWorkerContextCore;
 class ServiceWorkerDispatcherHost;
 class ServiceWorkerRequestHandler;
@@ -92,7 +93,8 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // the request doesn't require special handling.
   scoped_ptr<ServiceWorkerRequestHandler> CreateRequestHandler(
       ResourceType resource_type,
-      base::WeakPtr<webkit_blob::BlobStorageContext> blob_storage_context);
+      base::WeakPtr<webkit_blob::BlobStorageContext> blob_storage_context,
+      scoped_refptr<ResourceRequestBody> body);
 
   // Returns true if |registration| can be associated with this provider.
   bool CanAssociateRegistration(ServiceWorkerRegistration* registration);
