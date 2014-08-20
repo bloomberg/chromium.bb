@@ -450,7 +450,7 @@ Viewport.prototype = {
 
   /**
    * Go to the given page index.
-   * @param {number} page the index of the page to go to.
+   * @param {number} page the index of the page to go to. zero-based.
    */
   goToPage: function(page) {
     this.mightZoom_(function() {

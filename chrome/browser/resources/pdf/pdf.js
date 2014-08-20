@@ -287,8 +287,10 @@ PDFViewer.prototype = {
     // Order is important as later actions can override the effects
     // of previous actions.
     if ('page' in paramsDictionary) {
-      // value is 1-based.
-      this.viewport_.goToPage(paramsDictionary['page'] - 1);
+      // |pageNumber| is 1-based, but goToPage() take a zero-based page number.
+      var pageNumber = parseInt(paramsDictionary['page']);
+      if (!isNaN(pageNumber))
+        this.viewport_.goToPage(pageNumber - 1);
     }
   },
 
