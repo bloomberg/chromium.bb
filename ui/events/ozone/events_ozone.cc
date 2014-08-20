@@ -144,11 +144,17 @@ bool GetFlingData(const base::NativeEvent& native_event,
   const ui::ScrollEvent* event =
       static_cast<const ui::ScrollEvent*>(native_event);
   DCHECK(event->IsScrollEvent());
-  *vx = event->x_offset();
-  *vy = event->y_offset();
-  *vx_ordinal = event->x_offset_ordinal();
-  *vy_ordinal = event->y_offset_ordinal();
-  *is_cancel = event->type() == ET_SCROLL_FLING_CANCEL;
+  if (vx)
+    *vx = event->x_offset();
+  if (vy)
+    *vy = event->y_offset();
+  if (vx_ordinal)
+    *vx_ordinal = event->x_offset_ordinal();
+  if (vy_ordinal)
+    *vy_ordinal = event->y_offset_ordinal();
+  if (is_cancel)
+    *is_cancel = event->type() == ET_SCROLL_FLING_CANCEL;
+
   return true;
 }
 
