@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,16 +19,8 @@
 // Step 1: forward declarations.
 namespace {
 const char kHashSetClassPath[] = "java/util/HashSet";
-#if __clang__
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunused-function"
-#endif
 // Leaking this jclass as we cannot use LazyInstance from some threads.
 jclass g_HashSet_clazz = NULL;
-jclass HashSet_clazz(JNIEnv*) { return g_HashSet_clazz; }
-#if __clang__
-#pragma clang diagnostic pop
-#endif
 
 }  // namespace
 
@@ -42,11 +34,11 @@ static void Java_HashSet_dummy(JNIEnv* env, jobject obj) __attribute__
 static void Java_HashSet_dummy(JNIEnv* env, jobject obj) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
-      HashSet_clazz(env));
+      g_HashSet_clazz);
   jmethodID method_id =
       base::android::MethodID::LazyGet<
       base::android::MethodID::TYPE_INSTANCE>(
-      env, HashSet_clazz(env),
+      env, g_HashSet_clazz,
       "dummy",
       "()V",
       &g_HashSet_dummy);
