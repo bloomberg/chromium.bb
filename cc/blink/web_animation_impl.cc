@@ -11,7 +11,7 @@
 #include "cc/blink/web_float_animation_curve_impl.h"
 #include "cc/blink/web_scroll_offset_animation_curve_impl.h"
 #include "cc/blink/web_transform_animation_curve_impl.h"
-#include "third_party/WebKit/public/platform/WebCompositorAnimation.h"
+#include "third_party/WebKit/public/platform/WebCompositorAnimationCurve.h"
 
 using cc::Animation;
 using cc::AnimationIdProvider;

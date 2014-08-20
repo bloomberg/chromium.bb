@@ -8,7 +8,10 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "cc/animation/animation_delegate.h"
-#include "third_party/WebKit/public/platform/WebCompositorAnimationDelegate.h"
+
+namespace blink {
+class WebCompositorAnimationDelegate;
+}
 
 namespace cc_blink {
 

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "cc/blink/web_to_cc_animation_delegate_adapter.h"
+#include "third_party/WebKit/public/platform/WebCompositorAnimationDelegate.h"
 
 namespace cc_blink {
 

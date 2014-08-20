@@ -8,10 +8,13 @@
 #include "base/memory/scoped_ptr.h"
 #include "cc/blink/cc_blink_export.h"
 #include "third_party/WebKit/public/platform/WebCompositorAnimation.h"
-#include "third_party/WebKit/public/platform/WebCompositorAnimationCurve.h"
 
 namespace cc {
 class Animation;
+}
+
+namespace blink {
+class WebCompositorAnimationCurve;
 }
 
 namespace cc_blink {
