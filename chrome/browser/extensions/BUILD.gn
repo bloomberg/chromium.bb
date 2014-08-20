@@ -40,6 +40,7 @@ static_library("extensions") {
     "//chrome/common/extensions/api",
     "//chrome/common/net",
     "//chrome/common/safe_browsing:proto",
+    "//components/copresence",
     "//components/onc",
     "//components/strings",
     "//components/url_matcher",

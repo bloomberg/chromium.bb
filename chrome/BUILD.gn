@@ -3,6 +3,130 @@
 # found in the LICENSE file.
 
 import("//build/config/features.gni")
+import("//build/config/ui.gni")
+
+shared_library("main_dll") {
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
+
+  deps = [
+    ":browser_dependencies",
+    "//base/allocator",
+  ]
+  if (is_win) {
+    output_name = "chrome"
+
+    sources = [
+      "app/chrome_command_ids.h",
+      "app/chrome_dll.rc",
+      "app/chrome_dll_resource.h",
+      "app/chrome_main.cc",
+      "app/chrome_main_delegate.cc",
+      "app/chrome_main_delegate.h",
+      "app/delay_load_hook_win.cc",
+      "app/delay_load_hook_win.h",
+      "//base/win/dllmain.cc",
+    ]
+
+    deps += [
+      # On Windows, link the dependencies (libraries) that make up actual
+      # Chromium functionality into this .dll.
+      #'chrome_version_resources',  TODO(GYP)
+      "//chrome/app/theme:chrome_unscaled_resources",
+      "//crypto",
+      "//net:resources",
+      "//third_party/wtl",
+      "//ui/views",
+      "//webkit/glue/resources",
+      #'<(DEPTH)/chrome_elf/chrome_elf.gyp:chrome_elf' ]  TODO(GYP)
+    ]
+    if (enable_configuration_policy) {
+      deps += [ "//components/policy" ]
+    }
+    if (cpu_arch == "x86") {
+      # Add a dependency to custom import library for user32 delay imports only
+      # in x86 builds.
+      #deps += [ 'chrome_user32_delay_imports' ]  TODO(GYP)
+    }
+
+    # TODO(GYP) incremental linking flags in debug builds
+    #'LinkIncremental': '<(msvs_large_module_debug_link_mode)',
+
+    # TODO(GYP) Lots of VCLinkerTool stuff on Windows.
+
+    # TODO(GYP) chrome_pgo_phase on Windows.
+  }
+
+  if (use_aura) {
+    deps += [ "//ui/compositor" ]
+  }
+
+  #TODO(GYP) add chrome_multiple_dll support
+  if (false) {  #chrome_multiple_dll) {
+    defines = [ "CHROME_MULTIPLE_DLL_BROWSER" ]
+    deps += [
+      "//content/app:browser",
+    ]
+  } else {
+    deps += [
+      ":child_dependencies",
+      "//content/app:both",
+    ]
+  }
+
+  if (cld_version == 0 || cld_version == 2) {
+    deps += [
+      "//third_party/cld_2",
+    ]
+  }
+
+  if (is_mac) {
+    #['OS=="mac" and component!="shared_library"', {  TODO(GYP)
+    #  'includes': [ 'chrome_dll_bundle.gypi' ],
+    #}],
+
+    # TODO(GYP) Lots of other stuff in the OS=="mac" block.
+  }
+}
+
+# GYP version: chromium_browser_dependencies variable in chrome.gyp
+group("browser_dependencies") {
+  deps = [
+    "//chrome/browser",
+    "//chrome/common",
+    "//sync",
+  ]
+  if (!is_ios) {
+    deps += [
+      "//ppapi:ppapi_host",
+    ]
+  }
+
+  if (printing_mode != 0) {
+    deps += [ "//printing" ]
+    if (printing_mode == 1) {
+      deps += [ "//chrome/service" ]
+    }
+  }
+}
+
+# GYP version: chromium_child_dependencies variable in chrome.gyp
+group("child_dependencies") {
+  deps = [
+    "//chrome/common",
+    "//sync",
+  ]
+  if (!is_ios) {
+    deps += [
+      "//chrome/browser/devtools",
+      "//chrome/plugin",
+      "//chrome/renderer",
+      "//chrome/utility",
+      "//content/gpu",
+      "//content/ppapi_plugin",
+      "//third_party/WebKit/public:blink_devtools_frontend_resources",
+    ]
+  }
+}
 
 # GYP version: chrome/chrome_resources.gyp:chrome_resources
 group("resources") {

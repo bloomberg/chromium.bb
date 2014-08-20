@@ -71,6 +71,7 @@
           ]
         },
         {
+          # GN version: //chrome:main_dll
           'target_name': 'chrome_main_dll',
           'type': 'shared_library',
           'variables': {

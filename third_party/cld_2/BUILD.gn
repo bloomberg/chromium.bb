@@ -51,24 +51,6 @@ core_files = [
   "src/public/encodings.h",
 ]
 
-data_files = [
-  "src/internal/cld2_generated_cjk_compatible.cc",
-  "src/internal/cld2_generated_deltaoctachrome0122.cc",
-  "src/internal/cld2_generated_distinctoctachrome0122.cc",
-  "src/internal/cld_generated_cjk_delta_bi_4.cc",
-  "src/internal/cld_generated_cjk_uni_prop_80.cc",
-  "src/internal/cld_generated_score_quad_octa_0122_2.cc",
-  "src/internal/generated_distinct_bi_0.cc",
-]
-
-if (cld2_table_size == 0) {
-  data_files += [ "src/internal/cld2_generated_quadchrome0122_16.cc" ]
-} else if (cld2_table_size == 1) {
-  data_files += [ "src/internal/cld2_generated_quadchrome0122_19.cc" ]
-} else if (cld2_table_size == 2) {
-  data_files += [ "src/internal/cld2_generated_quadchrome0122_2.cc" ]
-}
-
 data_loader_files = [
   "src/internal/cld2_dynamic_data.h",
   "src/internal/cld2_dynamic_data.cc",
@@ -77,7 +59,22 @@ data_loader_files = [
 ]
 
 source_set("cld2_data") {
-  sources = data_files
+  sources = [
+    "src/internal/cld2_generated_cjk_compatible.cc",
+    "src/internal/cld2_generated_deltaoctachrome0122.cc",
+    "src/internal/cld2_generated_distinctoctachrome0122.cc",
+    "src/internal/cld_generated_cjk_delta_bi_4.cc",
+    "src/internal/cld_generated_cjk_uni_prop_80.cc",
+    "src/internal/cld_generated_score_quad_octa_0122_2.cc",
+  ]
+  if (cld2_table_size == 0) {
+    sources += [ "src/internal/cld2_generated_quadchrome0122_16.cc" ]
+  } else if (cld2_table_size == 1) {
+    sources += [ "src/internal/cld2_generated_quadchrome0122_19.cc" ]
+  } else if (cld2_table_size == 2) {
+    sources += [ "src/internal/cld2_generated_quadchrome0122_2.cc" ]
+  }
+
   include_dirs = [
     "src/internal",
     "src/public",

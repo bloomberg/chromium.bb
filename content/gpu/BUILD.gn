@@ -10,7 +10,10 @@ import("//content/content.gni")
 need_d3dcompiler = (is_win && cpu_arch == "x86" && directxsdk_exists)
 
 source_set("gpu") {
-  visibility = "//content/*"
+  # TODO(brettw) it seems like this should be only visible to content like
+  # the other non-public content directories are. But this is depended on by
+  # the chrome target.
+
   sources = [
     "gpu_main.cc",
     "gpu_process.cc",
