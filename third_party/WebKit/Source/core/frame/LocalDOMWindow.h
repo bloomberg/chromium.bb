@@ -93,7 +93,7 @@ enum PageshowEventPersistence {
 
     class LocalDOMWindow FINAL : public RefCountedWillBeGarbageCollectedFinalized<LocalDOMWindow>, public EventTargetWithInlineData, public DOMWindowBase64, public FrameDestructionObserver, public WillBeHeapSupplementable<LocalDOMWindow>, public LifecycleContext<LocalDOMWindow> {
         WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(LocalDOMWindow);
-        DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCounted<LocalDOMWindow>);
+        REFCOUNTED_EVENT_TARGET(LocalDOMWindow);
     public:
         static PassRefPtrWillBeRawPtr<Document> createDocument(const String& mimeType, const DocumentInit&, bool forceXHTML);
         static PassRefPtrWillBeRawPtr<LocalDOMWindow> create(LocalFrame& frame)
