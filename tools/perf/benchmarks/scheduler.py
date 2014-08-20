@@ -18,7 +18,7 @@ class SchedulerToughSchedulingCases(benchmark.Benchmark):
 
 
 # Pepper plugin is not supported on android.
-@benchmark.Disabled('android', 'win')  # crbug.com/384733
+@benchmark.Disabled('android', 'win', 'mac')  # crbug.com/384733
 class SchedulerToughPepperCases(benchmark.Benchmark):
   """Measures rendering statistics while interacting with pages that have
   pepper plugins"""
