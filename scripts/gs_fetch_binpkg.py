@@ -43,7 +43,7 @@ def Copy(ctx, uri, filename):
 def main(argv):
   parser = GetParser()
   options = parser.parse_args(argv)
-  ctx = gs.GSContext(retries=0)
+  ctx = gs.GSContext()
   try:
     Copy(ctx, options.uri, options.filename)
   except gs.GSContextException as ex:
