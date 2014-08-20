@@ -22,16 +22,16 @@ This just checks for npm and bower, and then runs:
 
 sheriff-o-matic must be run from a server in order to handle polymer imports correctly.
 
-    $ cd Tools
+    $ cd Tools/GardeningServer
     $ python -m SimpleHTTPServer
 
-Then load: http://localhost:8000/GardeningServer/sheriff-o-matic.html
+Then load: http://localhost:8000/sheriff-o-matic.html
 
 # TESTING
 
 The tests can be run in the browser or from the command line.
 
-In the browser: http://localhost:8000/GardeningServer/test/run-unit-tests.html
+In the browser: http://localhost:8000/test/run-unit-tests.html
 
 From the command line:
 
