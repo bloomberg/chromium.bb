@@ -209,7 +209,7 @@ LinkResource* HTMLLinkElement::linkResourceToProcess()
     }
 
     if (!m_link) {
-        if (m_relAttribute.isImport() && RuntimeEnabledFeatures::htmlImportsEnabled()) {
+        if (m_relAttribute.isImport()) {
             m_link = LinkImport::create(this);
         } else if (m_relAttribute.isManifest() && RuntimeEnabledFeatures::manifestEnabled()) {
             m_link = LinkManifest::create(this);
