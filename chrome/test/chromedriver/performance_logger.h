@@ -14,6 +14,7 @@
 #include "chrome/test/chromedriver/command_listener.h"
 
 class Log;
+struct Session;
 
 // Translates DevTools profiler events into Log messages with info level.
 //
@@ -22,30 +23,69 @@ class Log;
 //    "webview": <originating WebView ID>,
 //    "message": { "method": "...", "params": { ... }}  // DevTools message.
 // }
+//
+// Also translates buffered trace events into Log messages of info level with
+// the same structure if tracing categories are specified.
+
 class PerformanceLogger : public DevToolsEventListener, public CommandListener {
  public:
   // Creates a |PerformanceLogger| with default preferences that creates entries
   // in the given Log object. The log is owned elsewhere and must not be null.
-  explicit PerformanceLogger(Log* log);
+  PerformanceLogger(Log* log, const Session* session);
 
   // Creates a |PerformanceLogger| with specific preferences.
-  PerformanceLogger(Log* log, const PerfLoggingPrefs& prefs);
-
-  // Enables Page,Network,Timeline events for client, which must not be null.
-  virtual Status OnConnected(DevToolsClient* client) OVERRIDE;
-  // Translates an event into a log entry.
-  virtual Status OnEvent(DevToolsClient* client,
-                         const std::string& method,
-                         const base::DictionaryValue& params) OVERRIDE;
-
-  virtual Status BeforeCommand(const std::string& command_name) OVERRIDE;
+  PerformanceLogger(Log* log,
+                    const Session* session,
+                    const PerfLoggingPrefs& prefs);
 
   // PerformanceLogger subscribes to browser-wide |DevToolsClient| for tracing.
   virtual bool subscribes_to_browser() OVERRIDE;
 
+  // For browser-wide client: enables tracing if trace categories are specified,
+  // sets |browser_client_|. For other clients: calls EnableInspectorDomains.
+  virtual Status OnConnected(DevToolsClient* client) OVERRIDE;
+
+  // Calls HandleInspectorEvents or HandleTraceEvents depending on client type.
+  virtual Status OnEvent(DevToolsClient* client,
+                         const std::string& method,
+                         const base::DictionaryValue& params) OVERRIDE;
+
+  // Before whitelisted commands, if tracing enabled, calls CollectTraceEvents.
+  virtual Status BeforeCommand(const std::string& command_name) OVERRIDE;
+
  private:
+  void AddLogEntry(Log::Level level,
+                   const std::string& webview,
+                   const std::string& method,
+                   const base::DictionaryValue& params);
+
+  void AddLogEntry(const std::string& webview,
+                   const std::string& method,
+                   const base::DictionaryValue& params);
+
+  // Enables Network, Page and Timeline domains according to |PerfLoggingPrefs|.
+  Status EnableInspectorDomains(DevToolsClient* client);
+
+  // Logs Network, Page, and Timeline events.
+  Status HandleInspectorEvents(DevToolsClient* client,
+                               const std::string& method,
+                               const base::DictionaryValue& params);
+
+  // Logs trace events and monitors trace buffer usage.
+  Status HandleTraceEvents(DevToolsClient* client,
+                           const std::string& method,
+                           const base::DictionaryValue& params);
+
+  bool ShouldReportTracingError();
+  Status StartTrace();  // Must not call before browser-wide client connects.
+  Status CollectTraceEvents();  // Ditto.
+  Status IsTraceDone(bool* trace_done) const; // True if trace is not buffering.
+
   Log* log_;  // The log where to create entries.
+  const Session* session_;
   PerfLoggingPrefs prefs_;
+  DevToolsClient* browser_client_; // Pointer to browser-wide |DevToolsClient|.
+  bool trace_buffering_;  // True unless trace stopped and all events received.
 
   DISALLOW_COPY_AND_ASSIGN(PerformanceLogger);
 };

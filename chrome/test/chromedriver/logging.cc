@@ -239,6 +239,7 @@ bool InitLogging() {
 }
 
 Status CreateLogs(const Capabilities& capabilities,
+                  const Session* session,
                   ScopedVector<WebDriverLog>* out_logs,
                   ScopedVector<DevToolsEventListener>* out_devtools_listeners,
                   ScopedVector<CommandListener>* out_command_listeners) {
@@ -258,7 +259,8 @@ Status CreateLogs(const Capabilities& capabilities,
         WebDriverLog* log = new WebDriverLog(type, Log::kAll);
         logs.push_back(log);
         PerformanceLogger* perf_log =
-            new PerformanceLogger(log, capabilities.perf_logging_prefs);
+            new PerformanceLogger(log, session,
+                                  capabilities.perf_logging_prefs);
         // We use a proxy for |perf_log|'s |CommandListener| interface.
         // Otherwise, |perf_log| would be owned by both session->chrome and
         // |session|, which would lead to memory errors on destruction.

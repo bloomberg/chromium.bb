@@ -365,7 +365,7 @@ TEST(ParseCapabilities, PerfLoggingPrefsInspectorDomainStatus) {
             capabilities.perf_logging_prefs.timeline);
 }
 
-TEST(ParseCapabilities, PerfLoggingPrefsTraceCategories) {
+TEST(ParseCapabilities, PerfLoggingPrefsTracing) {
   Capabilities capabilities;
   // Perf log must be enabled if performance log preferences are specified.
   base::DictionaryValue logging_prefs;
@@ -374,13 +374,32 @@ TEST(ParseCapabilities, PerfLoggingPrefsTraceCategories) {
   desired_caps.Set("loggingPrefs", logging_prefs.DeepCopy());
   ASSERT_EQ("", capabilities.perf_logging_prefs.trace_categories);
   base::DictionaryValue perf_logging_prefs;
-  perf_logging_prefs.SetString("traceCategories", "benchmark,webkit.console");
+  perf_logging_prefs.SetString("traceCategories", "benchmark,blink.console");
+  perf_logging_prefs.SetInteger("bufferUsageReportingInterval", 1234);
   desired_caps.Set("chromeOptions.perfLoggingPrefs",
                    perf_logging_prefs.DeepCopy());
   Status status = capabilities.Parse(desired_caps);
   ASSERT_TRUE(status.IsOk());
-  ASSERT_EQ("benchmark,webkit.console",
+  ASSERT_EQ("benchmark,blink.console",
             capabilities.perf_logging_prefs.trace_categories);
+  ASSERT_EQ(1234,
+            capabilities.perf_logging_prefs.buffer_usage_reporting_interval);
+}
+
+TEST(ParseCapabilities, PerfLoggingPrefsInvalidInterval) {
+  Capabilities capabilities;
+  // Perf log must be enabled if performance log preferences are specified.
+  base::DictionaryValue logging_prefs;
+  logging_prefs.SetString(WebDriverLog::kPerformanceType, "INFO");
+  base::DictionaryValue desired_caps;
+  desired_caps.Set("loggingPrefs", logging_prefs.DeepCopy());
+  base::DictionaryValue perf_logging_prefs;
+  // A bufferUsageReportingInterval interval <= 0 will cause DevTools errors.
+  perf_logging_prefs.SetInteger("bufferUsageReportingInterval", 0);
+  desired_caps.Set("chromeOptions.perfLoggingPrefs",
+                   perf_logging_prefs.DeepCopy());
+  Status status = capabilities.Parse(desired_caps);
+  ASSERT_FALSE(status.IsOk());
 }
 
 TEST(ParseCapabilities, PerfLoggingPrefsNotDict) {

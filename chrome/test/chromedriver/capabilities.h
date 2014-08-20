@@ -79,6 +79,7 @@ struct PerfLoggingPrefs {
   InspectorDomainStatus timeline;
 
   std::string trace_categories;  // Non-empty string enables tracing.
+  int buffer_usage_reporting_interval;  // ms between trace buffer usage events.
 };
 
 struct Capabilities {

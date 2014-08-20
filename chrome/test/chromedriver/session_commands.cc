@@ -129,6 +129,7 @@ Status InitSessionHelper(
   ScopedVector<DevToolsEventListener> devtools_event_listeners;
   ScopedVector<CommandListener> command_listeners;
   status = CreateLogs(capabilities,
+                      session,
                       &session->devtools_logs,
                       &devtools_event_listeners,
                       &command_listeners);

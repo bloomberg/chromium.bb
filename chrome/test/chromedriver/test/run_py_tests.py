@@ -895,6 +895,45 @@ class ChromeDriverLogTest(unittest.TestCase):
       self.assertTrue(self.LOG_MESSAGE in f.read())
 
 
+class PerformanceLoggerTest(ChromeDriverBaseTest):
+  """Tests chromedriver tracing support and Inspector event collection."""
+
+  def testPerformanceLogger(self):
+    driver = self.CreateDriver(
+        experimental_options={'perfLoggingPrefs': {
+            'enableTimeline': True,
+            'traceCategories': 'webkit.console,blink.console'
+          }}, performance_log_level='ALL')
+    driver.Load(
+        ChromeDriverTest._http_server.GetUrl() + '/chromedriver/empty.html')
+    # Mark the timeline; later we will verify the marks appear in the trace.
+    driver.ExecuteScript('console.time("foobar")')
+    driver.ExecuteScript('console.timeEnd("foobar")')
+    logs = driver.GetLog('performance')
+    driver.Quit()
+
+    marked_timeline_events = []
+    seen_log_domains = {}
+    for entry in logs:
+      devtools_message = json.loads(entry['message'])['message']
+      method = devtools_message['method']
+      domain = method[:method.find('.')]
+      seen_log_domains[domain] = True
+      if method != 'Tracing.dataCollected':
+        continue
+      self.assertTrue('params' in devtools_message)
+      self.assertTrue(isinstance(devtools_message['params'], dict))
+      cat = devtools_message['params'].get('cat', '')
+      # Depending on Chrome version, the events may occur for the webkit.console
+      # or blink.console category. They will only occur for one of them.
+      if (cat == 'blink.console' or cat == 'webkit.console'):
+        self.assertTrue(devtools_message['params']['name'] == 'foobar')
+        marked_timeline_events.append(devtools_message)
+    self.assertEquals(2, len(marked_timeline_events))
+    self.assertEquals({'Network', 'Page', 'Timeline', 'Tracing'},
+                      set(seen_log_domains.keys()))
+
+
 class SessionHandlingTest(ChromeDriverBaseTest):
   """Tests for session operations."""
   def testQuitASessionMoreThanOnce(self):

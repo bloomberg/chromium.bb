@@ -9,6 +9,7 @@
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/command_listener.h"
 #include "chrome/test/chromedriver/logging.h"
+#include "chrome/test/chromedriver/session.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -99,13 +100,14 @@ TEST(WebDriverLog, All) {
 
 TEST(Logging, CreatePerformanceLog) {
   Capabilities capabilities;
+  Session session("test");
   capabilities.logging_prefs["performance"] = Log::kInfo;
   capabilities.logging_prefs["browser"] = Log::kInfo;
 
   ScopedVector<DevToolsEventListener> devtools_listeners;
   ScopedVector<WebDriverLog> logs;
   ScopedVector<CommandListener> command_listeners;
-  Status status = CreateLogs(capabilities, &logs, &devtools_listeners,
+  Status status = CreateLogs(capabilities, &session, &logs, &devtools_listeners,
                              &command_listeners);
   ASSERT_TRUE(status.IsOk());
   ASSERT_EQ(2u, logs.size());
@@ -117,12 +119,13 @@ TEST(Logging, CreatePerformanceLog) {
 
 TEST(Logging, IgnoreUnknownLogType) {
   Capabilities capabilities;
+  Session session("test");
   capabilities.logging_prefs["gaga"] = Log::kInfo;
 
   ScopedVector<DevToolsEventListener> devtools_listeners;
   ScopedVector<WebDriverLog> logs;
   ScopedVector<CommandListener> command_listeners;
-  Status status = CreateLogs(capabilities, &logs, &devtools_listeners,
+  Status status = CreateLogs(capabilities, &session, &logs, &devtools_listeners,
                              &command_listeners);
   EXPECT_TRUE(status.IsOk());
   ASSERT_EQ(1u, logs.size());
@@ -133,11 +136,12 @@ TEST(Logging, IgnoreUnknownLogType) {
 
 TEST(Logging, DefaultLogs) {
   Capabilities capabilities;
+  Session session("test");
 
   ScopedVector<DevToolsEventListener> devtools_listeners;
   ScopedVector<WebDriverLog> logs;
   ScopedVector<CommandListener> command_listeners;
-  Status status = CreateLogs(capabilities, &logs, &devtools_listeners,
+  Status status = CreateLogs(capabilities, &session, &logs, &devtools_listeners,
                              &command_listeners);
   EXPECT_TRUE(status.IsOk());
   ASSERT_EQ(1u, logs.size());

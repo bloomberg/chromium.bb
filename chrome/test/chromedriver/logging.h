@@ -17,6 +17,7 @@ struct Capabilities;
 class CommandListener;
 class DevToolsEventListener;
 class ListValue;
+struct Session;
 class Status;
 
 // Accumulates WebDriver Logging API entries of a given type and minimum level.
@@ -68,6 +69,7 @@ bool InitLogging();
 // Creates |Log|s, |DevToolsEventListener|s, and |CommandListener|s based on
 // logging preferences.
 Status CreateLogs(const Capabilities& capabilities,
+                  const Session* session,
                   ScopedVector<WebDriverLog>* out_logs,
                   ScopedVector<DevToolsEventListener>* out_devtools_listeners,
                   ScopedVector<CommandListener>* out_command_listeners);

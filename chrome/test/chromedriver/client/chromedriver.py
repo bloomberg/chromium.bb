@@ -65,7 +65,8 @@ class ChromeDriver(object):
                android_use_running_app=None, chrome_switches=None,
                chrome_extensions=None, chrome_log_path=None,
                debugger_address=None, browser_log_level=None,
-               mobile_emulation=None, experimental_options=None):
+               performance_log_level=None, mobile_emulation=None,
+               experimental_options=None):
     self._executor = command_executor.CommandExecutor(server_url)
 
     options = {}
@@ -110,6 +111,9 @@ class ChromeDriver(object):
     if browser_log_level:
       assert browser_log_level in log_levels
       logging_prefs['browser'] = browser_log_level
+    if performance_log_level:
+      assert performance_log_level in log_levels
+      logging_prefs['performance'] = performance_log_level
 
     params = {
       'desiredCapabilities': {
