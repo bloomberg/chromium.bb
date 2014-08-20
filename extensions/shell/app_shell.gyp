@@ -200,6 +200,13 @@
         '../test/extensions_unittests_main.cc',
         'browser/shell_nacl_browser_delegate_unittest.cc',
       ],
+      'conditions': [
+        ['disable_nacl==1', {
+          'sources!': [
+            'browser/shell_nacl_browser_delegate_unittest.cc',
+          ],
+        }],
+      ],
     },
     {
       'target_name': 'app_shell_version_header',
