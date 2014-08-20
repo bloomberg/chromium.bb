@@ -12,31 +12,32 @@
  */
 
 var binding = require('binding').Binding.create('serial');
+var context = requireNative('v8_context');
+var utils = require('utils');
 
-function createAsyncProxy(targetPromise, functionNames) {
-  var functionProxies = {};
-  $Array.forEach(functionNames, function(name) {
-    functionProxies[name] = function() {
-      var args = arguments;
-      return targetPromise.then(function(target) {
-        return $Function.apply(target[name], target, args);
-      });
-    };
+var serialServicePromise = function() {
+  // getBackgroundPage is not available in unit tests so fall back to the
+  // current page's serial_service module.
+  if (!chrome.runtime.getBackgroundPage)
+    return requireAsync('serial_service');
+
+  // Load the serial_service module from the background page if one exists. This
+  // is necessary for serial connections created in one window to be usable
+  // after that window is closed. This is necessary because the Mojo async
+  // waiter only functions while the v8 context remains.
+  return utils.promise(chrome.runtime.getBackgroundPage).then(function(bgPage) {
+    return context.GetModuleSystem(bgPage).requireAsync('serial_service');
+  }).catch(function() {
+    return requireAsync('serial_service');
   });
-  return functionProxies;
-}
-
-var serialService = createAsyncProxy(requireAsync('serial_service'), [
-  'getDevices',
-  'createConnection',
-  'getConnection',
-  'getConnections',
-]);
+}();
 
 function forwardToConnection(methodName) {
   return function(connectionId) {
     var args = $Array.slice(arguments, 1);
-    return serialService.getConnection(connectionId).then(function(connection) {
+    return serialServicePromise.then(function(serialService) {
+      return serialService.getConnection(connectionId);
+    }).then(function(connection) {
       return $Function.apply(connection[methodName], connection, args);
     });
   };
@@ -44,11 +45,16 @@ function forwardToConnection(methodName) {
 
 binding.registerCustomHook(function(bindingsAPI) {
   var apiFunctions = bindingsAPI.apiFunctions;
-  apiFunctions.setHandleRequestWithPromise('getDevices',
-                                           serialService.getDevices);
+  apiFunctions.setHandleRequestWithPromise('getDevices', function() {
+    return serialServicePromise.then(function(serialService) {
+      return serialService.getDevices();
+    })
+  });
 
   apiFunctions.setHandleRequestWithPromise('connect', function(path, options) {
-    return serialService.createConnection(path, options).then(function(result) {
+    return serialServicePromise.then(function(serialService) {
+      return serialService.createConnection(path, options);
+    }).then(function(result) {
       return result.info;
     }).catch (function(e) {
       throw new Error('Failed to connect to the port.');
@@ -71,7 +77,9 @@ binding.registerCustomHook(function(bindingsAPI) {
       'setPaused', forwardToConnection('setPaused'));
 
   apiFunctions.setHandleRequestWithPromise('getConnections', function() {
-    return serialService.getConnections().then(function(connections) {
+    return serialServicePromise.then(function(serialService) {
+      return serialService.getConnections();
+    }).then(function(connections) {
       var promises = [];
       for (var id in connections) {
         promises.push(connections[id].getInfo());

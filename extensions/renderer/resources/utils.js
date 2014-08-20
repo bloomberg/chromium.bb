@@ -6,6 +6,7 @@ var createClassWrapper = requireNative('utils').createClassWrapper;
 var nativeDeepCopy = requireNative('utils').deepCopy;
 var schemaRegistry = requireNative('schema_registry');
 var CHECK = requireNative('logging').CHECK;
+var DCHECK = requireNative('logging').DCHECK;
 var WARNING = requireNative('logging').WARNING;
 
 /**
@@ -133,8 +134,41 @@ function deepCopy(value) {
   return nativeDeepCopy(value);
 }
 
+/**
+ * Wrap an asynchronous API call to a function |func| in a promise. The
+ * remaining arguments will be passed to |func|. Returns a promise that will be
+ * resolved to the result passed to the callback or rejected if an error occurs
+ * (if chrome.runtime.lastError is set). If there are multiple results, the
+ * promise will be resolved with an array containing those results.
+ *
+ * For example,
+ * promise(chrome.storage.get, 'a').then(function(result) {
+ *   // Use result.
+ * }).catch(function(error) {
+ *   // Report error.message.
+ * });
+ */
+function promise(func) {
+  var args = $Array.slice(arguments, 1);
+  DCHECK(typeof func == 'function');
+  return new Promise(function(resolve, reject) {
+    args.push(function() {
+      if (chrome.runtime.lastError) {
+        reject(new Error(chrome.runtime.lastError));
+        return;
+      }
+      if (arguments.length <= 1)
+        resolve(arguments[0]);
+      else
+        resolve($Array.slice(arguments));
+    });
+    $Function.apply(func, null, args);
+  });
+}
+
 exports.forEach = forEach;
 exports.loadTypeSchema = loadTypeSchema;
 exports.lookup = lookup;
 exports.expose = expose;
 exports.deepCopy = deepCopy;
+exports.promise = promise;
