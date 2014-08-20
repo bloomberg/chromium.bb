@@ -35,6 +35,7 @@
       "ash_unittests",
       "compositor_unittests",
       "events_unittests",
+      "sync_integration_tests",
       {"test": "browser_tests", "shard_index": 1, "total_shards": 3}
     ]
   },
@@ -91,6 +92,7 @@
       "ash_unittests",
       "compositor_unittests",
       "events_unittests",
+      "sync_integration_tests",
       {"test": "browser_tests", "shard_index": 1, "total_shards": 3}
     ]
   },
@@ -143,6 +145,7 @@
       "sbox_unittests",
       "sbox_integration_tests",
       "sbox_validation_tests",
+      "sync_integration_tests",
       {"test": "browser_tests", "shard_index": 0, "total_shards": 3},
       "content_browsertests",
       "installer_util_unittests"
@@ -222,6 +225,7 @@
       "chrome_elf_unittests",
       "net_unittests",
       "app_list_unittests",
+      "sync_integration_tests",
       {"test": "browser_tests", "shard_index": 1, "total_shards": 3}
     ]
   },
@@ -276,6 +280,7 @@
       "compositor_unittests",
       "events_unittests",
       "ipc_tests",
+      "sync_integration_tests",
       "sync_unit_tests",
       "unit_tests",
       "sql_unittests",
