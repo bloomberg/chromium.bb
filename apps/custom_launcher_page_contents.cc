@@ -6,21 +6,21 @@
 
 #include <string>
 
-#include "apps/app_delegate.h"
-#include "apps/app_web_contents_helper.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/renderer_preferences.h"
+#include "extensions/browser/app_window/app_delegate.h"
+#include "extensions/browser/app_window/app_web_contents_helper.h"
 #include "extensions/browser/view_type_utils.h"
 #include "extensions/common/extension_messages.h"
 
 namespace apps {
 
 CustomLauncherPageContents::CustomLauncherPageContents(
-    scoped_ptr<AppDelegate> app_delegate,
+    scoped_ptr<extensions::AppDelegate> app_delegate,
     const std::string& extension_id)
     : app_delegate_(app_delegate.Pass()), extension_id_(extension_id) {
 }
@@ -42,7 +42,7 @@ void CustomLauncherPageContents::Initialize(content::BrowserContext* context,
       ->browser_handles_all_top_level_requests = true;
   web_contents_->GetRenderViewHost()->SyncRendererPrefs();
 
-  helper_.reset(new AppWebContentsHelper(
+  helper_.reset(new extensions::AppWebContentsHelper(
       context, extension_id_, web_contents_.get(), app_delegate_.get()));
   web_contents_->SetDelegate(this);
 
@@ -94,7 +94,7 @@ bool CustomLauncherPageContents::ShouldSuppressDialogs() {
 bool CustomLauncherPageContents::PreHandleGestureEvent(
     content::WebContents* source,
     const blink::WebGestureEvent& event) {
-  return AppWebContentsHelper::ShouldSuppressGestureEvent(event);
+  return extensions::AppWebContentsHelper::ShouldSuppressGestureEvent(event);
 }
 
 content::ColorChooser* CustomLauncherPageContents::OpenColorChooser(

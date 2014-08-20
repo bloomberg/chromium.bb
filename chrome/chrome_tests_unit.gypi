@@ -515,7 +515,6 @@
       'sources': [
         '../apps/app_shim/app_shim_host_mac_unittest.cc',
         '../apps/app_shim/extension_app_shim_handler_mac_unittest.cc',
-        '../apps/app_window_geometry_cache_unittest.cc',
         '../apps/saved_files_service_unittest.cc',
         '../components/autofill/content/renderer/test_password_autofill_agent.cc',
         '../components/autofill/content/renderer/test_password_autofill_agent.h',
@@ -534,6 +533,7 @@
         '../extensions/browser/api/storage/settings_test_util.h',
         '../extensions/browser/api/storage/storage_api_unittest.cc',
         '../extensions/browser/api/storage/storage_frontend_unittest.cc',
+        '../extensions/browser/app_window/app_window_geometry_cache_unittest.cc',
         '../extensions/browser/error_map_unittest.cc',
         '../extensions/browser/extension_error_test_util.cc',
         '../extensions/browser/extension_error_test_util.h',

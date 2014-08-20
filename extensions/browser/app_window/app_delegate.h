@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APPS_APP_DELEGATE_H_
-#define APPS_APP_DELEGATE_H_
+#ifndef EXTENSIONS_BROWSER_APP_WINDOW_APP_DELEGATE_H_
+#define EXTENSIONS_BROWSER_APP_WINDOW_APP_DELEGATE_H_
 
 #include "content/public/common/media_stream_request.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -18,15 +18,13 @@ struct OpenURLParams;
 class WebContents;
 }
 
-namespace extensions {
-class Extension;
-}
-
 namespace gfx {
 class Rect;
 }
 
-namespace apps {
+namespace extensions {
+
+class Extension;
 
 // Interface to give packaged apps access to services in the browser, for things
 // like handling links and showing UI prompts to the user.
@@ -59,7 +57,7 @@ class AppDelegate {
       content::WebContents* web_contents,
       const content::MediaStreamRequest& request,
       const content::MediaResponseCallback& callback,
-      const extensions::Extension* extension) = 0;
+      const Extension* extension) = 0;
   virtual int PreferredIconSize() = 0;
   virtual gfx::ImageSkia GetAppDefaultIcon() = 0;
 
@@ -69,6 +67,6 @@ class AppDelegate {
   virtual bool IsWebContentsVisible(content::WebContents* web_contents) = 0;
 };
 
-}  // namespace apps
+}  // namespace extensions
 
-#endif  // APPS_APP_DELEGATE_H_
+#endif  // EXTENSIONS_BROWSER_APP_WINDOW_APP_DELEGATE_H_

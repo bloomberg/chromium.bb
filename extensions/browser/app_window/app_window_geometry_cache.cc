@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "apps/app_window_geometry_cache.h"
+#include "extensions/browser/app_window/app_window_geometry_cache.h"
 
 #include "base/bind.h"
 #include "base/stl_util.h"
@@ -22,15 +22,14 @@ const int kSyncTimeoutMilliseconds = 1000;
 
 }  // namespace
 
-namespace apps {
+namespace extensions {
 
-AppWindowGeometryCache::AppWindowGeometryCache(
-    content::BrowserContext* context,
-    extensions::ExtensionPrefs* prefs)
+AppWindowGeometryCache::AppWindowGeometryCache(content::BrowserContext* context,
+                                               ExtensionPrefs* prefs)
     : prefs_(prefs),
       sync_delay_(base::TimeDelta::FromMilliseconds(kSyncTimeoutMilliseconds)),
       extension_registry_observer_(this) {
-  extension_registry_observer_.Add(extensions::ExtensionRegistry::Get(context));
+  extension_registry_observer_.Add(ExtensionRegistry::Get(context));
 }
 
 AppWindowGeometryCache::~AppWindowGeometryCache() {}
@@ -186,14 +185,14 @@ AppWindowGeometryCache::WindowData::~WindowData() {}
 
 void AppWindowGeometryCache::OnExtensionLoaded(
     content::BrowserContext* browser_context,
-    const extensions::Extension* extension) {
+    const Extension* extension) {
   LoadGeometryFromStorage(extension->id());
 }
 
 void AppWindowGeometryCache::OnExtensionUnloaded(
     content::BrowserContext* browser_context,
-    const extensions::Extension* extension,
-    extensions::UnloadedExtensionInfo::Reason reason) {
+    const Extension* extension,
+    UnloadedExtensionInfo::Reason reason) {
   SyncToStorage();
   cache_.erase(extension->id());
 }
@@ -275,15 +274,14 @@ AppWindowGeometryCache::Factory::Factory()
     : BrowserContextKeyedServiceFactory(
           "AppWindowGeometryCache",
           BrowserContextDependencyManager::GetInstance()) {
-  DependsOn(extensions::ExtensionPrefsFactory::GetInstance());
+  DependsOn(ExtensionPrefsFactory::GetInstance());
 }
 
 AppWindowGeometryCache::Factory::~Factory() {}
 
 KeyedService* AppWindowGeometryCache::Factory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  return new AppWindowGeometryCache(context,
-                                    extensions::ExtensionPrefs::Get(context));
+  return new AppWindowGeometryCache(context, ExtensionPrefs::Get(context));
 }
 
 bool AppWindowGeometryCache::Factory::ServiceIsNULLWhileTesting() const {
@@ -293,8 +291,7 @@ bool AppWindowGeometryCache::Factory::ServiceIsNULLWhileTesting() const {
 content::BrowserContext*
 AppWindowGeometryCache::Factory::GetBrowserContextToUse(
     content::BrowserContext* context) const {
-  return extensions::ExtensionsBrowserClient::Get()->GetOriginalContext(
-      context);
+  return ExtensionsBrowserClient::Get()->GetOriginalContext(context);
 }
 
 void AppWindowGeometryCache::AddObserver(Observer* observer) {
@@ -305,4 +302,4 @@ void AppWindowGeometryCache::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-}  // namespace apps
+}  // namespace extensions

@@ -32,6 +32,7 @@ specific_include_rules = {
     "+chrome/browser/extensions/extension_service.h",
     "+chrome/browser/extensions/extension_service_test_base.h",
     "+chrome/browser/extensions/test_extension_dir.h",
+    "+chrome/browser/extensions/test_extension_prefs.h",
     "+chrome/browser/extensions/test_extension_system.h",
     "+chrome/browser/ui/browser.h",
     "+chrome/common/chrome_paths.h",

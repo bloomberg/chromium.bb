@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_UI_APPS_CHROME_APP_DELEGATE_H_
 #define CHROME_BROWSER_UI_APPS_CHROME_APP_DELEGATE_H_
 
-#include "apps/app_delegate.h"
 #include "base/memory/scoped_ptr.h"
+#include "extensions/browser/app_window/app_delegate.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/rect.h"
 
@@ -15,7 +15,7 @@ class BrowserContext;
 class WebContents;
 }
 
-class ChromeAppDelegate : public apps::AppDelegate {
+class ChromeAppDelegate : public extensions::AppDelegate {
  public:
   ChromeAppDelegate();
   virtual ~ChromeAppDelegate();
@@ -25,7 +25,7 @@ class ChromeAppDelegate : public apps::AppDelegate {
  private:
   class NewWindowContentsDelegate;
 
-  // apps::AppDelegate:
+  // extensions::AppDelegate:
   virtual void InitWebContents(content::WebContents* web_contents) OVERRIDE;
   virtual content::WebContents* OpenURLFromTab(
       content::BrowserContext* context,

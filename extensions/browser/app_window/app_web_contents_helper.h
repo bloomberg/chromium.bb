@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APPS_APP_WEB_CONTENTS_HELPER_H_
-#define APPS_APP_WEB_CONTENTS_HELPER_H_
+#ifndef EXTENSIONS_BROWSER_APP_WINDOW_APP_WEB_CONTENTS_HELPER_H_
+#define EXTENSIONS_BROWSER_APP_WINDOW_APP_WEB_CONTENTS_HELPER_H_
 
 #include "content/public/common/console_message_level.h"
 #include "content/public/common/media_stream_request.h"
@@ -19,12 +19,9 @@ class WebContents;
 }
 
 namespace extensions {
-class Extension;
-}
-
-namespace apps {
 
 class AppDelegate;
+class Extension;
 
 // Provides common functionality for apps and launcher pages to respond to
 // messages from a WebContents.
@@ -52,7 +49,7 @@ class AppWebContentsHelper {
       const content::MediaResponseCallback& callback) const;
 
  private:
-  const extensions::Extension* GetExtension() const;
+  const Extension* GetExtension() const;
 
   // Helper method to add a message to the renderer's DevTools console.
   void AddMessageToDevToolsConsole(content::ConsoleMessageLevel level,
@@ -71,6 +68,6 @@ class AppWebContentsHelper {
   DISALLOW_COPY_AND_ASSIGN(AppWebContentsHelper);
 };
 
-}  // namespace apps
+}  // namespace extensions
 
-#endif  // APPS_APP_WEB_CONTENTS_HELPER_H_
+#endif  // EXTENSIONS_BROWSER_APP_WINDOW_APP_WEB_CONTENTS_HELPER_H_

@@ -206,7 +206,8 @@ AppListViewDelegate::AppListViewDelegate(Profile* profile,
     std::string extension_id = it->host();
     apps::CustomLauncherPageContents* page_contents =
         new apps::CustomLauncherPageContents(
-            scoped_ptr<apps::AppDelegate>(new ChromeAppDelegate), extension_id);
+            scoped_ptr<extensions::AppDelegate>(new ChromeAppDelegate),
+            extension_id);
     page_contents->Initialize(profile, *it);
     custom_page_contents_.push_back(page_contents);
   }

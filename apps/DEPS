@@ -47,7 +47,6 @@ specific_include_rules = {
     "+chrome/browser/extensions/extension_browsertest.h",
     "+chrome/browser/extensions/extension_test_message_listener.h",
     "+chrome/browser/extensions/test_extension_environment.h",
-    "+chrome/browser/extensions/test_extension_prefs.h",
     "+chrome/browser/ui/browser.h",
     "+chrome/test/base/in_process_browser_test.h",
     "+chrome/test/base/interactive_test_utils.h",

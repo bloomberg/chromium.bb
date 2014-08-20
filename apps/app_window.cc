@@ -8,9 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "apps/app_delegate.h"
-#include "apps/app_web_contents_helper.h"
-#include "apps/app_window_geometry_cache.h"
 #include "apps/app_window_registry.h"
 #include "apps/ui/apps_client.h"
 #include "apps/ui/web_contents_sizer.h"
@@ -32,6 +29,9 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/media_stream_request.h"
+#include "extensions/browser/app_window/app_delegate.h"
+#include "extensions/browser/app_window/app_web_contents_helper.h"
+#include "extensions/browser/app_window/app_window_geometry_cache.h"
 #include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/browser/app_window/size_constraints.h"
 #include "extensions/browser/extension_registry.h"
@@ -228,7 +228,7 @@ gfx::Size AppWindow::CreateParams::GetWindowMaximumSize(
 // AppWindow
 
 AppWindow::AppWindow(BrowserContext* context,
-                     AppDelegate* app_delegate,
+                     extensions::AppDelegate* app_delegate,
                      const extensions::Extension* extension)
     : browser_context_(context),
       extension_id_(extension->id()),
@@ -285,7 +285,7 @@ void AppWindow::Init(const GURL& url,
   native_app_window_.reset(
       apps_client->CreateNativeAppWindow(this, new_params));
 
-  helper_.reset(new AppWebContentsHelper(
+  helper_.reset(new extensions::AppWebContentsHelper(
       browser_context_, extension_id_, web_contents, app_delegate_.get()));
 
   popup_manager_.reset(
@@ -440,7 +440,7 @@ void AppWindow::RequestToLockMouse(WebContents* web_contents,
 
 bool AppWindow::PreHandleGestureEvent(WebContents* source,
                                       const blink::WebGestureEvent& event) {
-  return AppWebContentsHelper::ShouldSuppressGestureEvent(event);
+  return extensions::AppWebContentsHelper::ShouldSuppressGestureEvent(event);
 }
 
 void AppWindow::DidFirstVisuallyNonEmptyPaint() {
@@ -989,8 +989,8 @@ void AppWindow::SaveWindowPosition() {
   if (!native_app_window_)
     return;
 
-  AppWindowGeometryCache* cache =
-      AppWindowGeometryCache::Get(browser_context());
+  extensions::AppWindowGeometryCache* cache =
+      extensions::AppWindowGeometryCache::Get(browser_context());
 
   gfx::Rect bounds = native_app_window_->GetRestoredBounds();
   gfx::Rect screen_bounds =
@@ -1047,8 +1047,8 @@ AppWindow::CreateParams AppWindow::LoadDefaults(CreateParams params)
 
   // Load cached state if it exists.
   if (!params.window_key.empty()) {
-    AppWindowGeometryCache* cache =
-        AppWindowGeometryCache::Get(browser_context());
+    extensions::AppWindowGeometryCache* cache =
+        extensions::AppWindowGeometryCache::Get(browser_context());
 
     gfx::Rect cached_bounds;
     gfx::Rect cached_screen_bounds;

@@ -16,10 +16,12 @@ namespace content {
 class BrowserContext;
 }
 
-namespace apps {
-
+namespace extensions {
 class AppDelegate;
 class AppWebContentsHelper;
+}
+
+namespace apps {
 
 // Manages the web contents for extension-hosted launcher pages. The
 // implementation for this class should create and maintain the WebContents for
@@ -30,7 +32,7 @@ class CustomLauncherPageContents
       public content::WebContentsObserver,
       public extensions::ExtensionFunctionDispatcher::Delegate {
  public:
-  CustomLauncherPageContents(scoped_ptr<AppDelegate> app_delegate,
+  CustomLauncherPageContents(scoped_ptr<extensions::AppDelegate> app_delegate,
                              const std::string& extension_id);
   virtual ~CustomLauncherPageContents();
 
@@ -84,8 +86,8 @@ class CustomLauncherPageContents
   scoped_ptr<content::WebContents> web_contents_;
   scoped_ptr<extensions::ExtensionFunctionDispatcher>
       extension_function_dispatcher_;
-  scoped_ptr<AppDelegate> app_delegate_;
-  scoped_ptr<AppWebContentsHelper> helper_;
+  scoped_ptr<extensions::AppDelegate> app_delegate_;
+  scoped_ptr<extensions::AppWebContentsHelper> helper_;
 
   std::string extension_id_;
 

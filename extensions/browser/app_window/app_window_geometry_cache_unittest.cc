@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "apps/app_window_geometry_cache.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/mock_pref_change_callback.h"
 #include "base/strings/string_number_conversions.h"
@@ -10,6 +9,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/browser/app_window/app_window_geometry_cache.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/value_builder.h"
@@ -17,16 +17,16 @@
 
 using content::BrowserThread;
 
-namespace apps {
+namespace extensions {
 
 namespace {
 const char kWindowId[] = "windowid";
 const char kWindowId2[] = "windowid2";
 
 // Create a very simple extension with id.
-scoped_refptr<extensions::Extension> CreateExtension(const std::string& id) {
-  return extensions::ExtensionBuilder()
-      .SetManifest(extensions::DictionaryBuilder().Set("name", "test").Set(
+scoped_refptr<Extension> CreateExtension(const std::string& id) {
+  return ExtensionBuilder()
+      .SetManifest(DictionaryBuilder().Set("name", "test").Set(
           "version", "0.1"))
       .SetID(id)
       .Build();
@@ -40,7 +40,7 @@ class AppWindowGeometryCacheTest : public testing::Test {
   AppWindowGeometryCacheTest()
       : profile_(new TestingProfile),
         ui_thread_(BrowserThread::UI, &ui_message_loop_) {
-    prefs_.reset(new extensions::TestExtensionPrefs(
+    prefs_.reset(new TestExtensionPrefs(
         ui_message_loop_.message_loop_proxy().get()));
     cache_.reset(new AppWindowGeometryCache(profile_.get(), prefs_->prefs()));
     cache_->SetSyncDelayForTests(0);
@@ -63,7 +63,7 @@ class AppWindowGeometryCacheTest : public testing::Test {
   scoped_ptr<TestingProfile> profile_;
   base::MessageLoopForUI ui_message_loop_;
   content::TestBrowserThread ui_thread_;
-  scoped_ptr<extensions::TestExtensionPrefs> prefs_;
+  scoped_ptr<TestExtensionPrefs> prefs_;
   scoped_ptr<AppWindowGeometryCache> cache_;
 };
 
@@ -101,12 +101,11 @@ void AppWindowGeometryCacheTest::LoadExtension(
 
 void AppWindowGeometryCacheTest::UnloadExtension(
     const std::string& extension_id) {
-  scoped_refptr<extensions::Extension> extension =
-      CreateExtension(extension_id);
+  scoped_refptr<Extension> extension = CreateExtension(extension_id);
   cache_->OnExtensionUnloaded(
       profile_.get(),
       extension.get(),
-      extensions::UnloadedExtensionInfo::REASON_DISABLE);
+      UnloadedExtensionInfo::REASON_DISABLE);
   WaitForSync();
 }
 
@@ -362,4 +361,4 @@ TEST_F(AppWindowGeometryCacheTest, MaxWindows) {
   }
 }
 
-}  // namespace apps
+}  // namespace extensions

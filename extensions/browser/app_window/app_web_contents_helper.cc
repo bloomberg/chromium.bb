@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "apps/app_web_contents_helper.h"
+#include "extensions/browser/app_window/app_web_contents_helper.h"
 
-#include "apps/app_delegate.h"
 #include "base/strings/stringprintf.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/app_window/app_delegate.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/suggest_permission_util.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/permissions/api_permission.h"
 
-namespace apps {
+namespace extensions {
 
 AppWebContentsHelper::AppWebContentsHelper(
     content::BrowserContext* browser_context,
@@ -74,12 +74,12 @@ content::WebContents* AppWebContentsHelper::OpenURLFromTab(
 }
 
 void AppWebContentsHelper::RequestToLockMouse() const {
-  const extensions::Extension* extension = GetExtension();
+  const Extension* extension = GetExtension();
   if (!extension)
     return;
 
   bool has_permission = IsExtensionWithPermissionOrSuggestInConsole(
-      extensions::APIPermission::kPointerLock,
+      APIPermission::kPointerLock,
       extension,
       web_contents_->GetRenderViewHost());
 
@@ -89,7 +89,7 @@ void AppWebContentsHelper::RequestToLockMouse() const {
 void AppWebContentsHelper::RequestMediaAccessPermission(
     const content::MediaStreamRequest& request,
     const content::MediaResponseCallback& callback) const {
-  const extensions::Extension* extension = GetExtension();
+  const Extension* extension = GetExtension();
   if (!extension)
     return;
 
@@ -97,8 +97,8 @@ void AppWebContentsHelper::RequestMediaAccessPermission(
       web_contents_, request, callback, extension);
 }
 
-const extensions::Extension* AppWebContentsHelper::GetExtension() const {
-  return extensions::ExtensionRegistry::Get(browser_context_)
+const Extension* AppWebContentsHelper::GetExtension() const {
+  return ExtensionRegistry::Get(browser_context_)
       ->enabled_extensions()
       .GetByID(extension_id_);
 }
@@ -111,4 +111,4 @@ void AppWebContentsHelper::AddMessageToDevToolsConsole(
       rvh->GetRoutingID(), level, message));
 }
 
-}  // namespace apps
+}  // namespace extensions

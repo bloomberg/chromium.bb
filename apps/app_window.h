@@ -35,6 +35,8 @@ class WebContents;
 }
 
 namespace extensions {
+class AppDelegate;
+class AppWebContentsHelper;
 class Extension;
 class NativeAppWindow;
 class PlatformAppBrowserTest;
@@ -48,9 +50,6 @@ class BaseWindow;
 }
 
 namespace apps {
-
-class AppDelegate;
-class AppWebContentsHelper;
 
 // Manages the web contents for app windows. The implementation for this
 // class should create and maintain the WebContents for the window, and handle
@@ -207,7 +206,7 @@ class AppWindow : public content::NotificationObserver,
   // Normally AppWindow::Create should be used.
   // Takes ownership of |app_delegate| and |delegate|.
   AppWindow(content::BrowserContext* context,
-            AppDelegate* app_delegate,
+            extensions::AppDelegate* app_delegate,
             const extensions::Extension* extension);
 
   // Initializes the render interface, web contents, and native window.
@@ -503,8 +502,8 @@ class AppWindow : public content::NotificationObserver,
 
   scoped_ptr<extensions::NativeAppWindow> native_app_window_;
   scoped_ptr<AppWindowContents> app_window_contents_;
-  scoped_ptr<AppDelegate> app_delegate_;
-  scoped_ptr<AppWebContentsHelper> helper_;
+  scoped_ptr<extensions::AppDelegate> app_delegate_;
+  scoped_ptr<extensions::AppWebContentsHelper> helper_;
 
   // Manages popup windows (bubbles, tab-modals) visible overlapping the
   // app window.

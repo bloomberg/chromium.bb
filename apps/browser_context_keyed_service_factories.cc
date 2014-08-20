@@ -6,14 +6,14 @@
 
 #include "apps/app_load_service_factory.h"
 #include "apps/app_restore_service_factory.h"
-#include "apps/app_window_geometry_cache.h"
+#include "extensions/browser/app_window/app_window_geometry_cache.h"
 
 namespace apps {
 
 void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   apps::AppLoadServiceFactory::GetInstance();
   apps::AppRestoreServiceFactory::GetInstance();
-  apps::AppWindowGeometryCache::Factory::GetInstance();
+  extensions::AppWindowGeometryCache::Factory::GetInstance();
 }
 
 }  // namespace apps

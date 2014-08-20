@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APPS_APP_WINDOW_GEOMETRY_CACHE_H_
-#define APPS_APP_WINDOW_GEOMETRY_CACHE_H_
+#ifndef EXTENSIONS_BROWSER_APP_WINDOW_APP_WINDOW_GEOMETRY_CACHE_H_
+#define EXTENSIONS_BROWSER_APP_WINDOW_APP_WINDOW_GEOMETRY_CACHE_H_
 
 #include <map>
 #include <set>
@@ -23,17 +23,15 @@
 #include "ui/gfx/rect.h"
 
 namespace extensions {
+
 class ExtensionPrefs;
 class ExtensionRegistry;
-}
-
-namespace apps {
 
 // A cache for persisted geometry of app windows, both to not have to wait
 // for IO when creating a new window, and to not cause IO on every window
 // geometry change.
 class AppWindowGeometryCache : public KeyedService,
-                               public extensions::ExtensionRegistryObserver {
+                               public ExtensionRegistryObserver {
  public:
   class Factory : public BrowserContextKeyedServiceFactory {
    public:
@@ -68,7 +66,7 @@ class AppWindowGeometryCache : public KeyedService,
   };
 
   AppWindowGeometryCache(content::BrowserContext* context,
-                         extensions::ExtensionPrefs* prefs);
+                         ExtensionPrefs* prefs);
 
   virtual ~AppWindowGeometryCache();
 
@@ -123,19 +121,18 @@ class AppWindowGeometryCache : public KeyedService,
   typedef std::map<std::string, WindowData> ExtensionData;
 
   // ExtensionRegistryObserver implementation.
-  virtual void OnExtensionLoaded(
-      content::BrowserContext* browser_context,
-      const extensions::Extension* extension) OVERRIDE;
+  virtual void OnExtensionLoaded(content::BrowserContext* browser_context,
+                                 const Extension* extension) OVERRIDE;
   virtual void OnExtensionUnloaded(
       content::BrowserContext* browser_context,
-      const extensions::Extension* extension,
-      extensions::UnloadedExtensionInfo::Reason reason) OVERRIDE;
+      const Extension* extension,
+      UnloadedExtensionInfo::Reason reason) OVERRIDE;
 
   void LoadGeometryFromStorage(const std::string& extension_id);
   void SyncToStorage();
 
   // Preferences storage.
-  extensions::ExtensionPrefs* prefs_;
+  ExtensionPrefs* prefs_;
 
   // Cached data.
   std::map<std::string, ExtensionData> cache_;
@@ -150,13 +147,12 @@ class AppWindowGeometryCache : public KeyedService,
   base::TimeDelta sync_delay_;
 
   // Listen to extension load, unloaded notifications.
-  ScopedObserver<extensions::ExtensionRegistry,
-                 extensions::ExtensionRegistryObserver>
+  ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
       extension_registry_observer_;
 
   ObserverList<Observer> observers_;
 };
 
-}  // namespace apps
+}  // namespace extensions
 
-#endif  // APPS_APP_WINDOW_GEOMETRY_CACHE_H_
+#endif  // EXTENSIONS_BROWSER_APP_WINDOW_APP_WINDOW_GEOMETRY_CACHE_H_
