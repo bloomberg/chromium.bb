@@ -56,6 +56,7 @@ class SharedWorkerHost {
                         unsigned long long document_id);
 
   void WorkerContextClosed();
+  void WorkerReadyForInspection();
   void WorkerScriptLoaded();
   void WorkerScriptLoadFailed();
   void WorkerConnected(int message_port_id);

@@ -61,6 +61,8 @@ class CONTENT_EXPORT SharedWorkerServiceImpl
                            SharedWorkerMessageFilter* filter);
   void WorkerContextDestroyed(int worker_route_id,
                               SharedWorkerMessageFilter* filter);
+  void WorkerReadyForInspection(int worker_route_id,
+                                SharedWorkerMessageFilter* filter);
   void WorkerScriptLoaded(int worker_route_id,
                           SharedWorkerMessageFilter* filter);
   void WorkerScriptLoadFailed(int worker_route_id,

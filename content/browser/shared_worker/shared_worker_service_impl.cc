@@ -357,6 +357,13 @@ void SharedWorkerServiceImpl::WorkerContextDestroyed(
   host->WorkerContextDestroyed();
 }
 
+void SharedWorkerServiceImpl::WorkerReadyForInspection(
+    int worker_route_id,
+    SharedWorkerMessageFilter* filter) {
+  if (SharedWorkerHost* host = FindSharedWorkerHost(filter, worker_route_id))
+    host->WorkerReadyForInspection();
+}
+
 void SharedWorkerServiceImpl::WorkerScriptLoaded(
     int worker_route_id,
     SharedWorkerMessageFilter* filter) {

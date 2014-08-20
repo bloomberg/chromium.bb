@@ -48,6 +48,8 @@ class CONTENT_EXPORT SharedWorkerMessageFilter : public BrowserMessageFilter {
   void OnDocumentDetached(unsigned long long document_id);
   void OnWorkerContextClosed(int worker_route_id);
   void OnWorkerContextDestroyed(int worker_route_id);
+
+  void OnWorkerReadyForInspection(int worker_route_id);
   void OnWorkerScriptLoaded(int worker_route_id);
   void OnWorkerScriptLoadFailed(int worker_route_id);
   void OnWorkerConnected(int message_port_id, int worker_route_id);

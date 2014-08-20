@@ -29,6 +29,20 @@ struct SecondGreater {
   }
 };
 
+void NotifyWorkerReadyForInspection(int worker_process_id,
+                                    int worker_route_id) {
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    BrowserThread::PostTask(BrowserThread::UI,
+                            FROM_HERE,
+                            base::Bind(NotifyWorkerReadyForInspection,
+                                       worker_process_id,
+                                       worker_route_id));
+    return;
+  }
+  EmbeddedWorkerDevToolsManager::GetInstance()->WorkerReadyForInspection(
+      worker_process_id, worker_route_id);
+}
+
 void NotifyWorkerContextStarted(int worker_process_id, int worker_route_id) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(
@@ -252,6 +266,12 @@ void EmbeddedWorkerInstance::SendStartWorker(
   params->worker_devtools_agent_route_id = worker_devtools_agent_route_id;
   params->wait_for_debugger = wait_for_debugger;
   registry_->SendStartWorker(params.Pass(), callback, process_id_);
+}
+
+void EmbeddedWorkerInstance::OnReadyForInspection() {
+  if (worker_devtools_agent_route_id_ != MSG_ROUTING_NONE)
+    NotifyWorkerReadyForInspection(process_id_,
+                                   worker_devtools_agent_route_id_);
 }
 
 void EmbeddedWorkerInstance::OnScriptLoaded() {

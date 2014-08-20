@@ -53,6 +53,8 @@ bool SharedWorkerMessageFilter::OnMessageReceived(const IPC::Message& message) {
                         OnWorkerContextClosed)
     IPC_MESSAGE_HANDLER(WorkerHostMsg_WorkerContextDestroyed,
                         OnWorkerContextDestroyed)
+    IPC_MESSAGE_HANDLER(WorkerHostMsg_WorkerReadyForInspection,
+                        OnWorkerReadyForInspection)
     IPC_MESSAGE_HANDLER(WorkerHostMsg_WorkerScriptLoaded,
                         OnWorkerScriptLoaded)
     IPC_MESSAGE_HANDLER(WorkerHostMsg_WorkerScriptLoadFailed,
@@ -107,6 +109,12 @@ void SharedWorkerMessageFilter::OnWorkerContextDestroyed(int worker_route_id) {
   SharedWorkerServiceImpl::GetInstance()->WorkerContextDestroyed(
       worker_route_id,
       this);
+}
+
+void SharedWorkerMessageFilter::OnWorkerReadyForInspection(
+    int worker_route_id) {
+  SharedWorkerServiceImpl::GetInstance()->WorkerReadyForInspection(
+      worker_route_id, this);
 }
 
 void SharedWorkerMessageFilter::OnWorkerScriptLoaded(int worker_route_id) {

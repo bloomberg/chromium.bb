@@ -48,6 +48,7 @@ class EmbeddedSharedWorkerStub : public IPC::Listener,
   // blink::WebSharedWorkerClient implementation.
   virtual void workerContextClosed() OVERRIDE;
   virtual void workerContextDestroyed() OVERRIDE;
+  virtual void workerReadyForInspection() OVERRIDE;
   virtual void workerScriptLoaded() OVERRIDE;
   virtual void workerScriptLoadFailed() OVERRIDE;
   virtual void selectAppCacheID(long long) OVERRIDE;

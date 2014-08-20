@@ -138,6 +138,10 @@ void EmbeddedWorkerContextClient::getClients(
   script_context_->GetClientDocuments(callbacks);
 }
 
+void EmbeddedWorkerContextClient::workerReadyForInspection() {
+  Send(new EmbeddedWorkerHostMsg_WorkerReadyForInspection(embedded_worker_id_));
+}
+
 void EmbeddedWorkerContextClient::workerContextFailedToStart() {
   DCHECK(main_thread_proxy_->RunsTasksOnCurrentThread());
   DCHECK(!script_context_);

@@ -56,6 +56,11 @@ IPC_MESSAGE_CONTROL1(EmbeddedWorkerMsg_StopWorker,
 IPC_MESSAGE_CONTROL1(EmbeddedWorkerHostMsg_DidPauseAfterDownload,
                      int /* embedded_worker_id */)
 
+// Renderer -> Browser message to indicate that the worker is ready for
+// inspection.
+IPC_MESSAGE_CONTROL1(EmbeddedWorkerHostMsg_WorkerReadyForInspection,
+                     int /* embedded_worker_id */)
+
 // Renderer -> Browser message to indicate that the worker has loadedd the
 // script.
 IPC_MESSAGE_CONTROL1(EmbeddedWorkerHostMsg_WorkerScriptLoaded,

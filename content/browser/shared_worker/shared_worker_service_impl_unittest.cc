@@ -436,6 +436,12 @@ TEST_F(SharedWorkerServiceImplTest, BasicTest) {
   connector->SendSendQueuedMessages(empty_messages);
   EXPECT_EQ(0U, renderer_host->QueuedMessageCount());
 
+  // SharedWorker sends WorkerHostMsg_WorkerReadyForInspection in
+  // EmbeddedSharedWorkerStub::WorkerReadyForInspection().
+  EXPECT_TRUE(renderer_host->OnMessageReceived(
+      new WorkerHostMsg_WorkerReadyForInspection(worker_route_id)));
+  EXPECT_EQ(0U, renderer_host->QueuedMessageCount());
+
   // SharedWorker sends WorkerHostMsg_WorkerScriptLoaded in
   // EmbeddedSharedWorkerStub::workerScriptLoaded().
   EXPECT_TRUE(renderer_host->OnMessageReceived(
@@ -525,6 +531,12 @@ TEST_F(SharedWorkerServiceImplTest, TwoRendererTest) {
   // sends MessagePortHostMsg_SendQueuedMessages.
   std::vector<QueuedMessage> empty_messages;
   connector0->SendSendQueuedMessages(empty_messages);
+  EXPECT_EQ(0U, renderer_host0->QueuedMessageCount());
+
+  // SharedWorker sends WorkerHostMsg_WorkerReadyForInspection in
+  // EmbeddedSharedWorkerStub::WorkerReadyForInspection().
+  EXPECT_TRUE(renderer_host0->OnMessageReceived(
+      new WorkerHostMsg_WorkerReadyForInspection(worker_route_id)));
   EXPECT_EQ(0U, renderer_host0->QueuedMessageCount());
 
   // SharedWorker sends WorkerHostMsg_WorkerScriptLoaded in

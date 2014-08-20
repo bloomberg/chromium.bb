@@ -97,12 +97,17 @@ IPC_MESSAGE_ROUTED0(WorkerMsg_WorkerObjectDestroyed)
 
 //-----------------------------------------------------------------------------
 // WorkerHost messages
-// These are messages sent from the worker process to the renderer process.
-// WorkerMsg_PostMessage is also sent here.
+// These are messages sent from the worker (renderer process) to the worker
+// host (browser process).
 IPC_MESSAGE_CONTROL1(WorkerHostMsg_WorkerContextClosed,
                      int /* worker_route_id */)
 
 IPC_MESSAGE_CONTROL1(WorkerHostMsg_WorkerContextDestroyed,
+                     int /* worker_route_id */)
+
+// Renderer -> Browser message to indicate that the worker is ready for
+// inspection.
+IPC_MESSAGE_CONTROL1(WorkerHostMsg_WorkerReadyForInspection,
                      int /* worker_route_id */)
 
 IPC_MESSAGE_CONTROL1(WorkerHostMsg_WorkerScriptLoaded,

@@ -96,6 +96,10 @@ void EmbeddedSharedWorkerStub::OnChannelError() {
   OnTerminateWorkerContext();
 }
 
+void EmbeddedSharedWorkerStub::workerReadyForInspection() {
+  Send(new WorkerHostMsg_WorkerReadyForInspection(route_id_));
+}
+
 void EmbeddedSharedWorkerStub::workerScriptLoaded() {
   Send(new WorkerHostMsg_WorkerScriptLoaded(route_id_));
   runing_ = true;

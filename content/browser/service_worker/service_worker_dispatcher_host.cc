@@ -118,6 +118,8 @@ bool ServiceWorkerDispatcherHost::OnMessageReceived(
                         OnSetHostedVersionId)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_PostMessageToWorker,
                         OnPostMessageToWorker)
+    IPC_MESSAGE_HANDLER(EmbeddedWorkerHostMsg_WorkerReadyForInspection,
+                        OnWorkerReadyForInspection)
     IPC_MESSAGE_HANDLER(EmbeddedWorkerHostMsg_WorkerScriptLoaded,
                         OnWorkerScriptLoaded)
     IPC_MESSAGE_HANDLER(EmbeddedWorkerHostMsg_WorkerScriptLoadFailed,
@@ -379,6 +381,16 @@ void ServiceWorkerDispatcherHost::RegistrationComplete(
 
   Send(new ServiceWorkerMsg_ServiceWorkerRegistered(
       thread_id, request_id, info));
+}
+
+void ServiceWorkerDispatcherHost::OnWorkerReadyForInspection(
+    int embedded_worker_id) {
+  if (!GetContext())
+    return;
+  EmbeddedWorkerRegistry* registry = GetContext()->embedded_worker_registry();
+  if (!registry->CanHandle(embedded_worker_id))
+    return;
+  registry->OnWorkerReadyForInspection(render_process_id_, embedded_worker_id);
 }
 
 void ServiceWorkerDispatcherHost::OnWorkerScriptLoaded(int embedded_worker_id) {

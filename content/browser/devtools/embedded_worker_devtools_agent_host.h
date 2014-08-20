@@ -39,6 +39,7 @@ class EmbeddedWorkerDevToolsAgentHost : public IPCDevToolsAgentHost,
   // IPC::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
 
+  void WorkerReadyForInspection();
   void WorkerContextStarted();
   void WorkerRestarted(WorkerId worker_id);
   void WorkerDestroyed();

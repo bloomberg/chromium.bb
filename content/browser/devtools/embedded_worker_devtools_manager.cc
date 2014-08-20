@@ -137,6 +137,16 @@ void EmbeddedWorkerDevToolsManager::WorkerDestroyed(int worker_process_id,
   it->second->WorkerDestroyed();
 }
 
+void EmbeddedWorkerDevToolsManager::WorkerReadyForInspection(
+    int worker_process_id,
+    int worker_route_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  const WorkerId id(worker_process_id, worker_route_id);
+  AgentHostMap::iterator it = workers_.find(id);
+  DCHECK(it != workers_.end());
+  it->second->WorkerReadyForInspection();
+}
+
 void EmbeddedWorkerDevToolsManager::WorkerContextStarted(int worker_process_id,
                                                          int worker_route_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

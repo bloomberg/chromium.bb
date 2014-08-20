@@ -143,6 +143,10 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
                        bool wait_for_debugger);
 
   // Called back from Registry when the worker instance has ack'ed that
+  // it is ready for inspection.
+  void OnReadyForInspection();
+
+  // Called back from Registry when the worker instance has ack'ed that
   // it finished loading the script.
   void OnScriptLoaded();
 

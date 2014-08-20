@@ -90,11 +90,13 @@ void EmbeddedWorkerTestHelper::OnStartWorker(
     SimulatePausedAfterDownload(embedded_worker_id);
     return;
   }
+  SimulateWorkerReadyForInspection(embedded_worker_id);
   SimulateWorkerScriptLoaded(embedded_worker_id);
   SimulateWorkerStarted(next_thread_id_++, embedded_worker_id);
 }
 
 void EmbeddedWorkerTestHelper::OnResumeAfterDownload(int embedded_worker_id) {
+  SimulateWorkerReadyForInspection(embedded_worker_id);
   SimulateWorkerScriptLoaded(embedded_worker_id);
   SimulateWorkerStarted(next_thread_id_++, embedded_worker_id);
 }
@@ -159,6 +161,14 @@ void EmbeddedWorkerTestHelper::SimulatePausedAfterDownload(
   EmbeddedWorkerInstance* worker = registry()->GetWorker(embedded_worker_id);
   ASSERT_TRUE(worker != NULL);
   registry()->OnPausedAfterDownload(worker->process_id(), embedded_worker_id);
+}
+
+void EmbeddedWorkerTestHelper::SimulateWorkerReadyForInspection(
+    int embedded_worker_id) {
+  EmbeddedWorkerInstance* worker = registry()->GetWorker(embedded_worker_id);
+  ASSERT_TRUE(worker != NULL);
+  registry()->OnWorkerReadyForInspection(worker->process_id(),
+                                         embedded_worker_id);
 }
 
 void EmbeddedWorkerTestHelper::SimulateWorkerScriptLoaded(
