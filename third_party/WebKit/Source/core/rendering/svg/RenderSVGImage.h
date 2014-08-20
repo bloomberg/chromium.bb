@@ -35,6 +35,7 @@ class RenderSVGImage FINAL : public RenderSVGModelObject {
 public:
     explicit RenderSVGImage(SVGImageElement*);
     virtual ~RenderSVGImage();
+    virtual void destroy() OVERRIDE;
 
     bool updateImageViewport();
     virtual void setNeedsBoundariesUpdate() OVERRIDE { m_needsBoundariesUpdate = true; }

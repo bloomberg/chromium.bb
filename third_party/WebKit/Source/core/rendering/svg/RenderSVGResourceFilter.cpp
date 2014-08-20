@@ -46,7 +46,12 @@ RenderSVGResourceFilter::RenderSVGResourceFilter(SVGFilterElement* node)
 
 RenderSVGResourceFilter::~RenderSVGResourceFilter()
 {
+}
+
+void RenderSVGResourceFilter::destroy()
+{
     m_filter.clear();
+    RenderSVGResourceContainer::destroy();
 }
 
 bool RenderSVGResourceFilter::isChildAllowed(RenderObject* child, RenderStyle*) const

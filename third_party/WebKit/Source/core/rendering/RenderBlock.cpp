@@ -216,7 +216,7 @@ static void appendImagesFromStyle(Vector<ImageResource*>& images, RenderStyle& b
         appendImageIfNotNull(images, blockStyle.shapeOutside()->image());
 }
 
-RenderBlock::~RenderBlock()
+void RenderBlock::removeFromGlobalMaps()
 {
     if (hasColumns())
         gColumnInfoMap->take(this);
@@ -224,6 +224,22 @@ RenderBlock::~RenderBlock()
         removeBlockFromDescendantAndContainerMaps(this, gPercentHeightDescendantsMap, gPercentHeightContainerMap);
     if (gPositionedDescendantsMap)
         removeBlockFromDescendantAndContainerMaps(this, gPositionedDescendantsMap, gPositionedContainerMap);
+}
+
+RenderBlock::~RenderBlock()
+{
+#if !ENABLE(OILPAN)
+    removeFromGlobalMaps();
+#endif
+}
+
+void RenderBlock::destroy()
+{
+    RenderBox::destroy();
+#if ENABLE(OILPAN)
+    // RenderObject::removeChild called in destory() depends on gColumnInfoMap.
+    removeFromGlobalMaps();
+#endif
 }
 
 void RenderBlock::willBeDestroyed()

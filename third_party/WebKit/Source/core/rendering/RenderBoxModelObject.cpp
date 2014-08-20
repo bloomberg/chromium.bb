@@ -113,11 +113,12 @@ RenderBoxModelObject::RenderBoxModelObject(ContainerNode* node)
 
 RenderBoxModelObject::~RenderBoxModelObject()
 {
-    ImageQualityController::remove(this);
 }
 
 void RenderBoxModelObject::willBeDestroyed()
 {
+    ImageQualityController::remove(this);
+
     // A continuation of this RenderObject should be destroyed at subclasses.
     ASSERT(!continuation());
 
