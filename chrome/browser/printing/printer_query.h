@@ -11,8 +11,6 @@
 #include "chrome/browser/printing/print_job_worker_owner.h"
 #include "printing/print_job_constants.h"
 
-class PrintingUIWebContentsObserver;
-
 namespace base {
 class DictionaryValue;
 }
@@ -21,6 +19,7 @@ namespace printing {
 
 class PrintDestinationInterface;
 class PrintJobWorker;
+class PrintingUIWebContentsObserver;
 
 // Query the printer for settings.
 class PrinterQuery : public PrintJobWorkerOwner {

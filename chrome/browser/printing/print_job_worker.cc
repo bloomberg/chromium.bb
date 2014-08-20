@@ -25,6 +25,8 @@
 
 using content::BrowserThread;
 
+namespace printing {
+
 namespace {
 
 // Helper function to ensure |owner| is valid until at least |callback| returns.
@@ -34,8 +36,6 @@ void HoldRefCallback(const scoped_refptr<printing::PrintJobWorkerOwner>& owner,
 }
 
 }  // namespace
-
-namespace printing {
 
 void NotificationCallback(PrintJobWorkerOwner* print_job,
                           JobEventDetails::Type detail_type,

@@ -14,18 +14,17 @@
 #include "printing/printing_context.h"
 #include "printing/print_job_constants.h"
 
-class PrintingUIWebContentsObserver;
-
 namespace base {
 class DictionaryValue;
 }
 
 namespace printing {
 
-class PrintedDocument;
-class PrintedPage;
 class PrintJob;
 class PrintJobWorkerOwner;
+class PrintedDocument;
+class PrintedPage;
+class PrintingUIWebContentsObserver;
 
 // Worker thread code. It manages the PrintingContext, which can be blocking
 // and/or run a message loop. This is the object that generates most

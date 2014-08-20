@@ -802,7 +802,7 @@ void ChromeContentBrowserClient::RenderProcessWillLaunch(
 #endif
   host->AddFilter(new cast::CastTransportHostFilter);
 #if defined(ENABLE_PRINTING)
-  host->AddFilter(new PrintingMessageFilter(id, profile));
+  host->AddFilter(new printing::PrintingMessageFilter(id, profile));
 #endif
   host->AddFilter(new SearchProviderInstallStateMessageFilter(id, profile));
 #if defined(ENABLE_SPELLCHECK)
