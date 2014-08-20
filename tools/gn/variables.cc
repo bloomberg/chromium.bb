@@ -872,6 +872,7 @@ const VariableInfoMap& GetTargetVariables() {
     INSERT_VARIABLE(Configs)
     INSERT_VARIABLE(Data)
     INSERT_VARIABLE(Datadeps)
+    INSERT_VARIABLE(Defines)
     INSERT_VARIABLE(Depfile)
     INSERT_VARIABLE(Deps)
     INSERT_VARIABLE(DirectDependentConfigs)
