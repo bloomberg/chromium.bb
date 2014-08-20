@@ -182,7 +182,12 @@ TEST_F(GeolocationWifiDataProviderCommonTest, IntermittentWifi){
   main_message_loop_.Run();
 }
 
-TEST_F(GeolocationWifiDataProviderCommonTest, DoAnEmptyScan) {
+#if defined(OS_MACOSX)
+#define MAYBE_DoAnEmptyScan DISABLED_DoAnEmptyScan
+#else
+#define MAYBE_DoAnEmptyScan DoAnEmptyScan
+#endif
+TEST_F(GeolocationWifiDataProviderCommonTest, MAYBE_DoAnEmptyScan) {
   EXPECT_CALL(*wlan_api_, GetAccessPointData(_))
       .Times(AtLeast(1));
   EXPECT_CALL(*polling_policy_, PollingInterval())
@@ -195,7 +200,12 @@ TEST_F(GeolocationWifiDataProviderCommonTest, DoAnEmptyScan) {
   EXPECT_EQ(0, static_cast<int>(data.access_point_data.size()));
 }
 
-TEST_F(GeolocationWifiDataProviderCommonTest, DoScanWithResults) {
+#if defined(OS_MACOSX)
+#define MAYBE_DoScanWithResults DISABLED_DoScanWithResults
+#else
+#define MAYBE_DoScanWithResults DoScanWithResults
+#endif
+TEST_F(GeolocationWifiDataProviderCommonTest, MAYBE_DoScanWithResults) {
   EXPECT_CALL(*wlan_api_, GetAccessPointData(_))
       .Times(AtLeast(1));
   EXPECT_CALL(*polling_policy_, PollingInterval())
