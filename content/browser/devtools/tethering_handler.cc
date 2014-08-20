@@ -110,8 +110,10 @@ class SocketPump : public net::StreamListenSocket::Delegate {
   }
 
   void OnClientWrite(int result) {
-    if (result < 0)
+    if (result < 0) {
       SelfDestruct();
+      return;
+    }
 
     wire_buffer_->set_offset(wire_buffer_->offset() + result);
 
