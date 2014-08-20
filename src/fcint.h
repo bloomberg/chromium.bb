@@ -96,11 +96,6 @@ extern pfnSHGetFolderPathA pSHGetFolderPathA;
 #define FC_MAX(a,b) ((a) > (b) ? (a) : (b))
 #define FC_ABS(a)   ((a) < 0 ? -(a) : (a))
 
-#define FcDoubleIsZero(a)	(fabs ((a)) <= DBL_EPSILON)
-#define FcDoubleCmpEQ(a,b)	(fabs ((a) - (b)) <= DBL_EPSILON)
-#define FcDoubleCmpGE(a,b)	(FcDoubleCmpEQ (a, b) || (a) > (b))
-#define FcDoubleCmpLE(a,b)	(FcDoubleCmpEQ (a, b) || (a) < (b))
-
 /* slim_internal.h */
 #if (__GNUC__ > 3 || (__GNUC__ == 3 && __GNUC_MINOR__ >= 3)) && defined(__ELF__) && !defined(__sun)
 #define FcPrivate		__attribute__((__visibility__("hidden")))
@@ -252,21 +247,9 @@ typedef struct _FcExprName {
   FcMatchKind	kind;
 } FcExprName;
 
-typedef struct _FcRangeInt {
-    FcChar32 begin;
-    FcChar32 end;
-} FcRangeInt;
-typedef struct _FcRangeDouble {
+struct _FcRange {
     double begin;
     double end;
-} FcRangeDouble;
-struct _FcRange {
-    FcBool is_double;
-    FcBool is_inclusive;
-    union {
-	FcRangeInt i;
-	FcRangeDouble d;
-    } u;
 };
 
 
@@ -1083,14 +1066,8 @@ FcMatrixFree (FcMatrix *mat);
 
 /* fcrange.c */
 
-FcPrivate FcRange
-FcRangeCanonicalize (const FcRange *range);
-
 FcPrivate FcRange *
 FcRangePromote (double v, FcValuePromotionBuffer *vbuf);
-
-FcPrivate FcBool
-FcRangeIsZero (const FcRange *r);
 
 FcPrivate FcBool
 FcRangeIsInRange (const FcRange *a, const FcRange *b);

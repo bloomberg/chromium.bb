@@ -1261,7 +1261,6 @@ FcParseBlank (FcConfigParse *parse)
 {
     int		n = FcVStackElements (parse);
     FcChar32	i, begin, end;
-    FcRange	r;
 
     while (n-- > 0)
     {
@@ -1278,9 +1277,8 @@ FcParseBlank (FcConfigParse *parse)
 		goto bail;
 	    break;
 	case FcVStackRange:
-	    r = FcRangeCanonicalize (v->u.range);
-	    begin = (FcChar32)r.u.d.begin;
-	    end = (FcChar32)r.u.d.end;
+	    begin = (FcChar32) v->u.range->begin;
+	    end = (FcChar32) v->u.range->end;
 	    if (begin <= end)
 	    {
 	      for (i = begin; i <= end; i++)
@@ -1593,7 +1591,6 @@ FcParseCharSet (FcConfigParse *parse)
     FcVStack	*vstack;
     FcCharSet	*charset = FcCharSetCreate ();
     FcChar32	i, begin, end;
-    FcRange	r;
     int n = 0;
 
     while ((vstack = FcVStackPeek (parse)))
@@ -1608,9 +1605,8 @@ FcParseCharSet (FcConfigParse *parse)
 		n++;
 	    break;
 	case FcVStackRange:
-	    r = FcRangeCanonicalize (vstack->u.range);
-	    begin = (FcChar32)r.u.d.begin;
-	    end = (FcChar32)r.u.d.end;
+	    begin = (FcChar32) vstack->u.range->begin;
+	    end = (FcChar32) vstack->u.range->end;
 
 	    if (begin <= end)
 	    {
