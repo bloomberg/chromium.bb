@@ -741,6 +741,7 @@
         'common/api/api.gyp:extensions_api',
         'extensions_browser',
         'extensions_common',
+        'extensions_resources.gyp:extensions_resources',
       ],
       'include_dirs': [
         '..',
@@ -769,6 +770,12 @@
         'common/value_builder.h',
         'renderer/test_extensions_renderer_client.cc',
         'renderer/test_extensions_renderer_client.h',
+        'test/test_extensions_client.cc',
+        'test/test_extensions_client.h',
+        'test/test_permission_message_provider.cc',
+        'test/test_permission_message_provider.h',
+        'test/test_permissions_provider.cc',
+        'test/test_permissions_provider.h',
       ],
       # Disable c4267 warnings until we fix size_t to int truncations.
       'msvs_disabled_warnings': [ 4267, ],
@@ -906,12 +913,6 @@
         'renderer/script_context_set_unittest.cc',
         'renderer/utils_unittest.cc',
         'test/extensions_unittests_main.cc',
-        'test/test_extensions_client.cc',
-        'test/test_extensions_client.h',
-        'test/test_permission_message_provider.cc',
-        'test/test_permission_message_provider.h',
-        'test/test_permissions_provider.cc',
-        'test/test_permissions_provider.h',
       ],
       # Disable c4267 warnings until we fix size_t to int truncations.
       'msvs_disabled_warnings': [ 4267, ],

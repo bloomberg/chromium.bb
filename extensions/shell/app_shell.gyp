@@ -184,6 +184,24 @@
       ],
     },
     {
+      'target_name': 'app_shell_unittests',
+      'type': 'executable',
+      'dependencies': [
+        'app_shell_lib',
+        '<(DEPTH)/base/base.gyp:base',
+        '<(DEPTH)/base/base.gyp:test_support_base',
+        '<(DEPTH)/content/content.gyp:content_app_both',
+        '<(DEPTH)/content/content_shell_and_tests.gyp:test_support_content',
+        '<(DEPTH)/extensions/extensions.gyp:extensions_shell_and_test_pak',
+        '<(DEPTH)/extensions/extensions.gyp:extensions_test_support',
+        '<(DEPTH)/testing/gtest.gyp:gtest',
+      ],
+      'sources': [
+        '../test/extensions_unittests_main.cc',
+        'browser/shell_nacl_browser_delegate_unittest.cc',
+      ],
+    },
+    {
       'target_name': 'app_shell_version_header',
       'type': 'none',
       'direct_dependent_settings': {
