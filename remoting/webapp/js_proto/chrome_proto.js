@@ -241,6 +241,20 @@ OnClickData.prototype.checked;
 
 
 /** @type {Object} */
+chrome.fileSystem = {
+  /**
+   * @param {Object.<string>?} options
+   * @param {function(Entry, Array.<FileEntry>):void} callback
+   */
+  chooseEntry: function(options, callback) {},
+  /**
+   * @param {FileEntry} fileEntry
+   * @param {function(string):void} callback
+   */
+  getDisplayPath: function(fileEntry, callback) {}
+};
+
+/** @type {Object} */
 chrome.identity = {
   /**
    * @param {Object.<string>} parameters
@@ -507,4 +521,3 @@ chrome.cast.initialize =
  */
 chrome.cast.requestSession =
     function(successCallback, errorCallback) {};
-

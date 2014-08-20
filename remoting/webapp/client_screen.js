@@ -371,6 +371,9 @@ remoting.onConnected = function(clientSession) {
  * @return {boolean} Return true if the extension message was recognized.
  */
 remoting.onExtensionMessage = function(type, data) {
+  if (remoting.clientSession) {
+    return remoting.clientSession.handleExtensionMessage(type, data);
+  }
   return false;
 };
 

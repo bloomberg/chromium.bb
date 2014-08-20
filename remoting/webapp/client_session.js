@@ -176,6 +176,9 @@ remoting.ClientSession = function(container, hostDisplayName, accessCode,
   /** @type {remoting.CastExtensionHandler} @private */
   this.castExtensionHandler_ = null;
 
+  /** @type {remoting.VideoFrameRecorder} @private */
+  this.videoFrameRecorder_ = null;
+
   if (this.mode_ == remoting.ClientSession.Mode.IT2ME) {
     // Resize-to-client is not supported for IT2Me hosts.
     this.resizeToClientButton_.hidden = true;
@@ -185,6 +188,7 @@ remoting.ClientSession = function(container, hostDisplayName, accessCode,
 
   this.fullScreenButton_.addEventListener(
       'click', this.callToggleFullScreen_, false);
+
   this.defineEvents(Object.keys(remoting.ClientSession.Events));
 };
 
@@ -1054,6 +1058,10 @@ remoting.ClientSession.prototype.onSetCapabilities_ = function(capabilities) {
                                         clientArea.height,
                                         window.devicePixelRatio);
   }
+  if (this.hasCapability_(
+      remoting.ClientSession.Capability.VIDEO_RECORDER)) {
+    this.videoFrameRecorder_ = new remoting.VideoFrameRecorder(this.plugin_);
+  }
 };
 
 /**
@@ -1593,3 +1601,44 @@ remoting.ClientSession.prototype.createCastExtensionHandler_ = function() {
   }
 };
 
+/**
+ * Returns true if the ClientSession can record video frames to a file.
+ * @return {boolean}
+ */
+remoting.ClientSession.prototype.canRecordVideo = function() {
+  return !!this.videoFrameRecorder_;
+}
+
+/**
+ * Returns true if the ClientSession is currently recording video frames.
+ * @return {boolean}
+ */
+remoting.ClientSession.prototype.isRecordingVideo = function() {
+  if (!this.videoFrameRecorder_) {
+    return false;
+  }
+  return this.videoFrameRecorder_.isRecording();
+}
+
+/**
+ * Starts or stops recording of video frames.
+ */
+remoting.ClientSession.prototype.startStopRecording = function() {
+  if (this.videoFrameRecorder_) {
+    this.videoFrameRecorder_.startStopRecording();
+  }
+}
+
+/**
+ * Handles protocol extension messages.
+ * @param {string} type Type of extension message.
+ * @param {string} data Contents of the extension message.
+ * @return {boolean} True if the message was recognized, false otherwise.
+ */
+remoting.ClientSession.prototype.handleExtensionMessage =
+    function(type, data) {
+  if (this.videoFrameRecorder_) {
+    return this.videoFrameRecorder_.handleMessage(type, data);
+  }
+  return false;
+}

@@ -50,6 +50,7 @@
       'webapp/media_source_renderer.js',
       'webapp/session_connector.js',
       'webapp/smart_reconnector.js',
+      'webapp/video_frame_recorder.js',
     ],
     # Remoting core JavaScript files.
     'remoting_webapp_js_core_files': [

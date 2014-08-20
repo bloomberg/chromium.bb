@@ -52,7 +52,8 @@ remoting.Toolbar = function(toolbar) {
       document.getElementById('screen-resize-to-client'),
       document.getElementById('screen-shrink-to-fit'),
       document.getElementById('new-connection'),
-      document.getElementById('toggle-full-screen'));
+      document.getElementById('toggle-full-screen'),
+      null);
 
   window.addEventListener('mousemove', remoting.Toolbar.onMouseMove, false);
   window.addEventListener('resize', this.center.bind(this), false);

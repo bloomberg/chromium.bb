@@ -47,7 +47,8 @@ remoting.WindowFrame = function(titleBar) {
       titleBar.querySelector('.menu-resize-to-client'),
       titleBar.querySelector('.menu-shrink-to-fit'),
       titleBar.querySelector('.menu-new-connection'),
-      null);
+      null,
+      titleBar.querySelector('.menu-start-stop-recording'));
 
   /**
    * @type {HTMLElement}

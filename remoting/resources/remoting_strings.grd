@@ -716,6 +716,12 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
       <message desc="Label for button to reconnect to the previous Me2Me host. This button appears on the 'session-finished' page." name="IDS_RECONNECT">
         Reconnect
       </message>
+      <message desc="Button for starting video frame recording, to capture frame sequences for debugging purposes." name="IDS_START_RECORDING">
+        Start Recording
+      </message>
+      <message desc="Button for stopping recording of video frames." name="IDS_STOP_RECORDING">
+        Stop Recording
+      </message>
       <message desc="Button for enabling or disabling the 'resize-to-client' functionality, whereby the host desktop is resized to match the client size as closely as possible." name="IDS_RESIZE_TO_CLIENT">
         Resize desktop to fit
       </message>
