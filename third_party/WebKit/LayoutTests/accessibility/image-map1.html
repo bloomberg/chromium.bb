@@ -28,14 +28,14 @@
             document.getElementById("body").focus();
 
             var body = accessibilityController.focusedElement;
-            shouldBe("body.childAtIndex(0).role", "'AXRole: AXLink'");
-            shouldBe("body.childAtIndex(0).title", "'AXTitle: Link1'");
+            shouldBe("body.childAtIndex(3).role", "'AXRole: AXLink'");
+            shouldBe("body.childAtIndex(3).title", "'AXTitle: Link1'");
 
-            shouldBe("body.childAtIndex(1).role", "'AXRole: AXLink'");
-            shouldBe("body.childAtIndex(1).title", "'AXTitle: Link2'");
+            shouldBe("body.childAtIndex(4).role", "'AXRole: AXLink'");
+            shouldBe("body.childAtIndex(4).title", "'AXTitle: Link2'");
 
-            shouldBe("body.childAtIndex(2).role", "'AXRole: AXLink'");
-            shouldBe("body.childAtIndex(2).title", "'AXTitle: Link3'");
+            shouldBe("body.childAtIndex(5).role", "'AXRole: AXLink'");
+            shouldBe("body.childAtIndex(5).title", "'AXTitle: Link3'");
         }
 </script>
 

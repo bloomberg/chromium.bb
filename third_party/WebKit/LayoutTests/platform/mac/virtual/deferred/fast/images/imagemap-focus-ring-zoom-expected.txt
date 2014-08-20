@@ -9,6 +9,7 @@ layer at (0,0) size 800x600
         text run at (0,216) width 515: "drawn around the <area> in the imagemap to the right. "
       RenderInline {MAP} at (0,0) size 0x0
         RenderText {#text} at (0,0) size 0x0
+        RenderInline {AREA} at (0,0) size 0x0
         RenderText {#text} at (0,0) size 0x0
       RenderText {#text} at (0,0) size 0x0
       RenderImage {IMG} at (515,52) size 184.31x184.31

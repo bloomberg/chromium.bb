@@ -650,7 +650,11 @@ datalist {
     display: none
 }
 
-area, param {
+area {
+    display: inline
+}
+
+param {
     display: none
 }
 
