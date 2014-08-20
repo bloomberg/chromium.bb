@@ -30,7 +30,7 @@ class TestDiscardableShader : public SkShader {
     CreateBitmap(gfx::Size(50, 50), "discardable", &bitmap_);
   }
 
-  TestDiscardableShader(SkReadBuffer& buffer) : SkShader(buffer) {
+  TestDiscardableShader(SkReadBuffer& buffer) {
     CreateBitmap(gfx::Size(50, 50), "discardable", &bitmap_);
   }
 
@@ -47,11 +47,19 @@ class TestDiscardableShader : public SkShader {
     return sizeof(SkShader::Context);
   }
 
+  virtual void flatten(SkWriteBuffer&) const OVERRIDE {}
+
   SK_DECLARE_PUBLIC_FLATTENABLE_DESERIALIZATION_PROCS(TestDiscardableShader);
 
  private:
   SkBitmap bitmap_;
 };
+
+#ifdef SK_SUPPORT_LEGACY_DEEPFLATTENING
+SkFlattenable* TestDiscardableShader::CreateProc(SkReadBuffer&) {
+  return new TestDiscardableShader;
+}
+#endif
 
 void CreateBitmap(gfx::Size size, const char* uri, SkBitmap* bitmap) {
   bitmap->allocN32Pixels(size.width(), size.height());
