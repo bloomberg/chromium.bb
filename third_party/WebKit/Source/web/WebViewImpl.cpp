@@ -1226,7 +1226,8 @@ Node* WebViewImpl::bestTapNode(const PlatformGestureEvent& tapEvent)
     // has hand cursor set.
     do {
         bestTouchNode = cursorDefiningAncestor;
-        cursorDefiningAncestor = findCursorDefiningAncestor(bestTouchNode->parentNode(), m_page->deprecatedLocalMainFrame());
+        cursorDefiningAncestor = findCursorDefiningAncestor(NodeRenderingTraversal::parent(bestTouchNode),
+            m_page->deprecatedLocalMainFrame());
     } while (cursorDefiningAncestor && showsHandCursor(cursorDefiningAncestor, m_page->deprecatedLocalMainFrame()));
 
     return bestTouchNode;
