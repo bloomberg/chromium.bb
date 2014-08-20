@@ -7,6 +7,7 @@
 
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "modules/serviceworkers/FetchBodyStream.h"
 #include "modules/serviceworkers/FetchRequestData.h"
 #include "modules/serviceworkers/Headers.h"
 #include "platform/heap/Handle.h"
@@ -40,7 +41,7 @@ public:
     String method() const;
     String url() const;
     PassRefPtrWillBeRawPtr<Headers> headers() const { return m_headers; }
-    // FIXME: Support body.
+    PassRefPtrWillBeRawPtr<FetchBodyStream> body(ExecutionContext*);
     String referrer() const;
     String mode() const;
     String credentials() const;
@@ -53,6 +54,7 @@ private:
 
     RefPtrWillBeMember<FetchRequestData> m_request;
     RefPtrWillBeMember<Headers> m_headers;
+    RefPtrWillBeMember<FetchBodyStream> m_fetchBodyStream;
 };
 
 } // namespace blink

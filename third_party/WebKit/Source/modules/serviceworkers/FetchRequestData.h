@@ -16,6 +16,7 @@
 
 namespace blink {
 
+class BlobDataHandle;
 class ExecutionContext;
 class FetchHeaderList;
 struct ResourceLoaderOptions;
@@ -81,6 +82,7 @@ public:
     void setResponseTainting(Tainting tainting) { m_responseTainting = tainting; }
     Tainting tainting() const { return m_responseTainting; }
     FetchHeaderList* headerList() { return m_headerList.get(); }
+    PassRefPtr<BlobDataHandle> blobDataHandle() const { return m_blobDataHandle; }
 
     void trace(Visitor*);
 
@@ -92,8 +94,8 @@ private:
     AtomicString m_method;
     KURL m_url;
     RefPtrWillBeMember<FetchHeaderList> m_headerList;
+    RefPtr<BlobDataHandle> m_blobDataHandle;
     bool m_unsafeRequestFlag;
-    // FIXME: Support body.
     // FIXME: Support m_skipServiceWorkerFlag;
     Context m_context;
     RefPtr<SecurityOrigin> m_origin;

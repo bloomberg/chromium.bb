@@ -149,5 +149,51 @@ async_test(function(t) {
         }))
       .catch(unreached_rejection(t));
   }, 'Service Worker fetches other file in fetch event');
+
+async_test(function(t) {
+    var scope = 'resources/simple.html?form-post';
+    var frame_name = 'xhr-post-frame';
+    service_worker_unregister_and_register(t, worker, scope)
+      .then(function(registration) {
+          return wait_for_update(t, registration);
+        })
+      .then(t.step_func(function(sw) {
+          return wait_for_state(t, sw, 'activated');
+        }))
+      .then(t.step_func(function(sw) {
+         return new Promise(function(resolve) {
+            var frame = document.createElement('iframe');
+            frame.name = frame_name;
+            document.body.appendChild(frame);
+            var form = document.createElement('form');
+            form.target = frame_name;
+            form.action = scope;
+            form.method = 'post';
+            var input1 = document.createElement('input');
+            input1.type = 'text';
+            input1.value = 'testValue1';
+            input1.name = 'testName1'
+            form.appendChild(input1);
+            var input2 = document.createElement('input');
+            input2.type = 'text';
+            input2.value = 'testValue2';
+            input2.name = 'testName2'
+            form.appendChild(input2);
+            document.body.appendChild(form);
+            frame.onload = function() {
+              document.body.removeChild(form);
+              resolve(frame);
+            };
+            form.submit();
+          });
+        }))
+      .then(t.step_func(function(frame) {
+          assert_equals(frame.contentDocument.body.textContent,
+                        'POST:testName1=testValue1&testName2=testValue2');
+          document.body.removeChild(frame);
+          return service_worker_unregister_and_done(t, scope);
+        }))
+      .catch(unreached_rejection(t));
+  }, 'Service Worker responds to fetch event with POST form');
 </script>
 </body>

@@ -37,6 +37,7 @@ PassRefPtrWillBeRawPtr<FetchRequestData> FetchRequestData::create(const WebServi
     request->m_method = webRequest.method();
     for (HTTPHeaderMap::const_iterator it = webRequest.headers().begin(); it != webRequest.headers().end(); ++it)
         request->m_headerList->append(it->key, it->value);
+    request->m_blobDataHandle = webRequest.blobDataHandle();
     request->m_referrer.setURL(webRequest.referrer());
     return request.release();
 }

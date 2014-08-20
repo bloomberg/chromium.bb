@@ -19,12 +19,12 @@ enum RequestCredentials { "omit", "same-origin", "include" };
     readonly attribute ByteString method;
     readonly attribute ScalarValueString url;
     readonly attribute Headers headers;
+    [CallWith=ExecutionContext] readonly attribute FetchBodyStream body;
 
     readonly attribute DOMString referrer;
     readonly attribute RequestMode mode;
     readonly attribute RequestCredentials credentials;
 
     // FIXME: Implement the following:
-    // readonly attribute FetchBodyStream body;
     // readonly attribute RequestContext context;
 };
