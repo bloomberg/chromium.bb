@@ -55,7 +55,7 @@ class UnderlyingSource;
 typedef int ExceptionCode;
 
 class XMLHttpRequest FINAL
-    : public RefCountedWillBeRefCountedGarbageCollected<XMLHttpRequest>
+    : public RefCountedWillBeGarbageCollectedFinalized<XMLHttpRequest>
     , public XMLHttpRequestEventTarget
     , private ThreadableLoaderClient
     , public ActiveDOMObject {

@@ -233,7 +233,7 @@ PassRefPtrWillBeRawPtr<ServiceWorker> ServiceWorker::getOrCreate(ExecutionContex
         return existingServiceWorker;
     }
 
-    RefPtrWillBeRawPtr<ServiceWorker> worker = adoptRefWillBeRefCountedGarbageCollected(new ServiceWorker(executionContext, adoptPtr(outerWorker)));
+    RefPtrWillBeRawPtr<ServiceWorker> worker = adoptRefWillBeNoop(new ServiceWorker(executionContext, adoptPtr(outerWorker)));
     worker->suspendIfNeeded();
     return worker.release();
 }

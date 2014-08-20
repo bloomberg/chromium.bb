@@ -49,7 +49,7 @@ class TextTrack : public TrackBase, public EventTargetWithInlineData {
 public:
     static PassRefPtrWillBeRawPtr<TextTrack> create(const AtomicString& kind, const AtomicString& label, const AtomicString& language)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new TextTrack(kind, label, language, emptyAtom, AddTrack));
+        return adoptRefWillBeNoop(new TextTrack(kind, label, language, emptyAtom, AddTrack));
     }
     virtual ~TextTrack();
 

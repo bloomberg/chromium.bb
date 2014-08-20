@@ -62,7 +62,7 @@ PassRefPtrWillBeRawPtr<Worker> Worker::create(ExecutionContext* context, const S
     WorkerGlobalScopeProxyProvider* proxyProvider = WorkerGlobalScopeProxyProvider::from(*document->page());
     ASSERT(proxyProvider);
 
-    RefPtrWillBeRawPtr<Worker> worker = adoptRefWillBeRefCountedGarbageCollected(new Worker(context));
+    RefPtrWillBeRawPtr<Worker> worker = adoptRefWillBeNoop(new Worker(context));
 
     worker->suspendIfNeeded();
 

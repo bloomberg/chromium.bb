@@ -40,7 +40,7 @@ class LoadableTextTrack FINAL : public TextTrack, private TextTrackLoaderClient 
 public:
     static PassRefPtrWillBeRawPtr<LoadableTextTrack> create(HTMLTrackElement* track)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new LoadableTextTrack(track));
+        return adoptRefWillBeNoop(new LoadableTextTrack(track));
     }
     virtual ~LoadableTextTrack();
 

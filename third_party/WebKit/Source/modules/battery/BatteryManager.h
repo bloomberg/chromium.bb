@@ -16,7 +16,7 @@ namespace blink {
 
 class BatteryStatus;
 
-class BatteryManager FINAL : public RefCountedWillBeRefCountedGarbageCollected<BatteryManager>, public ActiveDOMObject, public PlatformEventController, public EventTargetWithInlineData {
+class BatteryManager FINAL : public RefCountedWillBeGarbageCollectedFinalized<BatteryManager>, public ActiveDOMObject, public PlatformEventController, public EventTargetWithInlineData {
     REFCOUNTED_EVENT_TARGET(BatteryManager);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(BatteryManager);
 public:

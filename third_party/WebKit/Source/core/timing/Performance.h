@@ -55,13 +55,13 @@ class UserTiming;
 
 typedef WillBeHeapVector<RefPtrWillBeMember<PerformanceEntry> > PerformanceEntryVector;
 
-class Performance FINAL : public RefCountedWillBeRefCountedGarbageCollected<Performance>, public DOMWindowProperty, public EventTargetWithInlineData {
+class Performance FINAL : public RefCountedWillBeGarbageCollectedFinalized<Performance>, public DOMWindowProperty, public EventTargetWithInlineData {
     REFCOUNTED_EVENT_TARGET(Performance);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(Performance);
 public:
     static PassRefPtrWillBeRawPtr<Performance> create(LocalFrame* frame)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new Performance(frame));
+        return adoptRefWillBeNoop(new Performance(frame));
     }
     virtual ~Performance();
 

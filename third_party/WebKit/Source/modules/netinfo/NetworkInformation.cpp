@@ -41,7 +41,7 @@ namespace blink {
 
 PassRefPtrWillBeRawPtr<NetworkInformation> NetworkInformation::create(ExecutionContext* context)
 {
-    RefPtrWillBeRawPtr<NetworkInformation> connection(adoptRefWillBeRefCountedGarbageCollected(new NetworkInformation(context)));
+    RefPtrWillBeRawPtr<NetworkInformation> connection = adoptRefWillBeNoop(new NetworkInformation(context));
     connection->suspendIfNeeded();
     return connection.release();
 }

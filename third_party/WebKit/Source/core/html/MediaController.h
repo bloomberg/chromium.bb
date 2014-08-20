@@ -39,7 +39,7 @@ class ExceptionState;
 class ExecutionContext;
 class GenericEventQueue;
 
-class MediaController FINAL : public RefCountedWillBeRefCountedGarbageCollected<MediaController>, public EventTargetWithInlineData {
+class MediaController FINAL : public RefCountedWillBeGarbageCollectedFinalized<MediaController>, public EventTargetWithInlineData {
     REFCOUNTED_EVENT_TARGET(MediaController);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MediaController);
 public:

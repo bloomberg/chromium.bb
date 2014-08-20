@@ -64,7 +64,7 @@ class VTTCue FINAL : public TextTrackCue {
 public:
     static PassRefPtrWillBeRawPtr<VTTCue> create(Document& document, double startTime, double endTime, const String& text)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new VTTCue(document, startTime, endTime, text));
+        return adoptRefWillBeNoop(new VTTCue(document, startTime, endTime, text));
     }
 
     virtual ~VTTCue();

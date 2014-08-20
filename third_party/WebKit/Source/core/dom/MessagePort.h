@@ -53,7 +53,7 @@ typedef WillBeHeapVector<RefPtrWillBeMember<MessagePort>, 1> MessagePortArray;
 // Not to be confused with WebMessagePortChannelArray; this one uses Vector and OwnPtr instead of WebVector and raw pointers.
 typedef Vector<OwnPtr<WebMessagePortChannel>, 1> MessagePortChannelArray;
 
-class MessagePort FINAL : public RefCountedWillBeRefCountedGarbageCollected<MessagePort>
+class MessagePort FINAL : public RefCountedWillBeGarbageCollectedFinalized<MessagePort>
     , public ActiveDOMObject
     , public EventTargetWithInlineData
     , public WebMessagePortChannelClient {

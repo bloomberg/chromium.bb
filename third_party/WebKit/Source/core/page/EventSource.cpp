@@ -99,7 +99,7 @@ PassRefPtrWillBeRawPtr<EventSource> EventSource::create(ExecutionContext* contex
         return nullptr;
     }
 
-    RefPtrWillBeRawPtr<EventSource> source = adoptRefWillBeRefCountedGarbageCollected(new EventSource(context, fullURL, eventSourceInit));
+    RefPtrWillBeRawPtr<EventSource> source = adoptRefWillBeNoop(new EventSource(context, fullURL, eventSourceInit));
 
     source->scheduleInitialConnect();
     source->suspendIfNeeded();

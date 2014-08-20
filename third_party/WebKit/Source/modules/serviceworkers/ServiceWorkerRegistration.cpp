@@ -133,7 +133,7 @@ PassRefPtrWillBeRawPtr<ServiceWorkerRegistration> ServiceWorkerRegistration::get
         }
     }
 
-    RefPtrWillBeRawPtr<ServiceWorkerRegistration> registration = adoptRefWillBeRefCountedGarbageCollected(new ServiceWorkerRegistration(executionContext, adoptPtr(outerRegistration)));
+    RefPtrWillBeRawPtr<ServiceWorkerRegistration> registration = adoptRefWillBeNoop(new ServiceWorkerRegistration(executionContext, adoptPtr(outerRegistration)));
     registration->suspendIfNeeded();
     return registration.release();
 }

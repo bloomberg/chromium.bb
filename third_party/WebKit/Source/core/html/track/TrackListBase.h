@@ -13,7 +13,7 @@
 namespace blink {
 
 template<class T>
-class TrackListBase : public RefCountedWillBeRefCountedGarbageCollected<TrackListBase<T> >, public EventTargetWithInlineData {
+class TrackListBase : public RefCountedWillBeGarbageCollectedFinalized<TrackListBase<T> >, public EventTargetWithInlineData {
     REFCOUNTED_EVENT_TARGET(TrackListBase);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(TrackListBase);
 public:

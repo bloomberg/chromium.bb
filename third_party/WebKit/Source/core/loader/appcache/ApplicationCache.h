@@ -40,13 +40,13 @@ class ExceptionState;
 class LocalFrame;
 class KURL;
 
-class ApplicationCache FINAL : public RefCountedWillBeRefCountedGarbageCollected<ApplicationCache>, public EventTargetWithInlineData, public DOMWindowProperty {
+class ApplicationCache FINAL : public RefCountedWillBeGarbageCollectedFinalized<ApplicationCache>, public EventTargetWithInlineData, public DOMWindowProperty {
     REFCOUNTED_EVENT_TARGET(ApplicationCache);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ApplicationCache);
 public:
     static PassRefPtrWillBeRawPtr<ApplicationCache> create(LocalFrame* frame)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new ApplicationCache(frame));
+        return adoptRefWillBeNoop(new ApplicationCache(frame));
     }
     virtual ~ApplicationCache() { ASSERT(!m_frame); }
 

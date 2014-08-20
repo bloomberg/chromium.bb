@@ -40,13 +40,13 @@ namespace blink {
 class GenericEventQueue;
 class TextTrack;
 
-class TextTrackList FINAL : public RefCountedWillBeRefCountedGarbageCollected<TextTrackList>, public EventTargetWithInlineData {
+class TextTrackList FINAL : public RefCountedWillBeGarbageCollectedFinalized<TextTrackList>, public EventTargetWithInlineData {
     REFCOUNTED_EVENT_TARGET(TextTrackList);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(TextTrackList);
 public:
     static PassRefPtrWillBeRawPtr<TextTrackList> create(HTMLMediaElement* owner)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new TextTrackList(owner));
+        return adoptRefWillBeNoop(new TextTrackList(owner));
     }
     virtual ~TextTrackList();
 

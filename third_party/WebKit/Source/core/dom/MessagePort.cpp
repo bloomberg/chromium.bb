@@ -44,7 +44,7 @@ namespace blink {
 
 PassRefPtrWillBeRawPtr<MessagePort> MessagePort::create(ExecutionContext& executionContext)
 {
-    RefPtrWillBeRawPtr<MessagePort> port = adoptRefWillBeRefCountedGarbageCollected(new MessagePort(executionContext));
+    RefPtrWillBeRawPtr<MessagePort> port = adoptRefWillBeNoop(new MessagePort(executionContext));
     port->suspendIfNeeded();
     return port.release();
 }

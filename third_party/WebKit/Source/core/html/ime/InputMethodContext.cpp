@@ -41,7 +41,7 @@ namespace blink {
 
 PassOwnPtrWillBeRawPtr<InputMethodContext> InputMethodContext::create(HTMLElement* element)
 {
-    return adoptPtrWillBeRefCountedGarbageCollected(new InputMethodContext(element));
+    return adoptPtrWillBeNoop(new InputMethodContext(element));
 }
 
 InputMethodContext::InputMethodContext(HTMLElement* element)

@@ -14,7 +14,7 @@ class AudioTrack FINAL : public TrackBase, public ScriptWrappable {
 public:
     static PassRefPtrWillBeRawPtr<AudioTrack> create(const String& id, const AtomicString& kind, const AtomicString& label, const AtomicString& language, bool enabled)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new AudioTrack(id, kind, label, language, enabled));
+        return adoptRefWillBeNoop(new AudioTrack(id, kind, label, language, enabled));
     }
     virtual ~AudioTrack();
 

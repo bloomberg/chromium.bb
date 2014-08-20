@@ -41,12 +41,12 @@ namespace blink {
 class ExecutionContext;
 class XMLHttpRequest;
 
-class XMLHttpRequestUpload FINAL : public NoBaseWillBeRefCountedGarbageCollected<XMLHttpRequestUpload>, public XMLHttpRequestEventTarget {
+class XMLHttpRequestUpload FINAL : public NoBaseWillBeGarbageCollectedFinalized<XMLHttpRequestUpload>, public XMLHttpRequestEventTarget {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(XMLHttpRequestUpload);
 public:
     static PassOwnPtrWillBeRawPtr<XMLHttpRequestUpload> create(XMLHttpRequest* xmlHttpRequest)
     {
-        return adoptPtrWillBeRefCountedGarbageCollected(new XMLHttpRequestUpload(xmlHttpRequest));
+        return adoptPtrWillBeNoop(new XMLHttpRequestUpload(xmlHttpRequest));
     }
 
 #if !ENABLE(OILPAN)

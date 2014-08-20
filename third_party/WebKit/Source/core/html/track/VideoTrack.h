@@ -14,7 +14,7 @@ class VideoTrack FINAL : public TrackBase, public ScriptWrappable {
 public:
     static PassRefPtrWillBeRawPtr<VideoTrack> create(const String& id, const AtomicString& kind, const AtomicString& label, const AtomicString& language, bool selected)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new VideoTrack(id, kind, label, language, selected));
+        return adoptRefWillBeNoop(new VideoTrack(id, kind, label, language, selected));
     }
     virtual ~VideoTrack();
 

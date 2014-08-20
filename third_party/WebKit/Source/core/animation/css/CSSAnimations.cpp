@@ -310,7 +310,7 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
     DisableCompositingQueryAsserts disabler;
 
     for (Vector<AtomicString>::const_iterator iter = update->cancelledAnimationNames().begin(); iter != update->cancelledAnimationNames().end(); ++iter) {
-        RefPtr<AnimationPlayer> player = m_animations.take(*iter);
+        RefPtrWillBeRawPtr<AnimationPlayer> player = m_animations.take(*iter);
         player->cancel();
         player->update(TimingUpdateOnDemand);
     }

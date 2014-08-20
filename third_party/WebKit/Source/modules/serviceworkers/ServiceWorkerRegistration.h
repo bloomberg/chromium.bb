@@ -23,7 +23,7 @@ class ScriptState;
 class WebServiceWorkerProvider;
 
 class ServiceWorkerRegistration FINAL
-    : public RefCountedWillBeRefCountedGarbageCollected<ServiceWorkerRegistration>
+    : public RefCountedWillBeGarbageCollectedFinalized<ServiceWorkerRegistration>
     , public ActiveDOMObject
     , public EventTargetWithInlineData
     , public WebServiceWorkerRegistrationProxy {

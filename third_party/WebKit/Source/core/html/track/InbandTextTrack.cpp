@@ -41,7 +41,7 @@ namespace blink {
 
 PassRefPtrWillBeRawPtr<InbandTextTrack> InbandTextTrack::create(WebInbandTextTrack* webTrack)
 {
-    return adoptRefWillBeRefCountedGarbageCollected(new InbandTextTrack(webTrack));
+    return adoptRefWillBeNoop(new InbandTextTrack(webTrack));
 }
 
 InbandTextTrack::InbandTextTrack(WebInbandTextTrack* webTrack)

@@ -36,7 +36,7 @@
 
 namespace blink {
 
-struct SameSizeAsStyleRuleBase : public RefCountedWillBeRefCountedGarbageCollected<SameSizeAsStyleRuleBase> {
+struct SameSizeAsStyleRuleBase : public RefCountedWillBeGarbageCollectedFinalized<SameSizeAsStyleRuleBase> {
     unsigned bitfields;
 };
 

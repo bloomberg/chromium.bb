@@ -62,7 +62,7 @@ PassRefPtrWillBeRawPtr<SharedWorker> SharedWorker::create(ExecutionContext* cont
 
     UseCounter::count(context, UseCounter::SharedWorkerStart);
 
-    RefPtrWillBeRawPtr<SharedWorker> worker = adoptRefWillBeRefCountedGarbageCollected(new SharedWorker(context));
+    RefPtrWillBeRawPtr<SharedWorker> worker = adoptRefWillBeNoop(new SharedWorker(context));
 
     RefPtrWillBeRawPtr<MessageChannel> channel = MessageChannel::create(context);
     worker->m_port = channel->port1();

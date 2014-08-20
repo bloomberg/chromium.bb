@@ -51,7 +51,7 @@ static unsigned nextSequenceNumber()
 
 PassRefPtrWillBeRawPtr<AnimationPlayer> AnimationPlayer::create(ExecutionContext* executionContext, AnimationTimeline& timeline, AnimationNode* content)
 {
-    RefPtrWillBeRawPtr<AnimationPlayer> player = adoptRefWillBeRefCountedGarbageCollected(new AnimationPlayer(executionContext, timeline, content));
+    RefPtrWillBeRawPtr<AnimationPlayer> player = adoptRefWillBeNoop(new AnimationPlayer(executionContext, timeline, content));
     player->suspendIfNeeded();
     return player.release();
 }

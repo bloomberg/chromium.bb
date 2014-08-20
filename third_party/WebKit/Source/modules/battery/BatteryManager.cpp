@@ -15,7 +15,7 @@ namespace blink {
 
 PassRefPtrWillBeRawPtr<BatteryManager> BatteryManager::create(ExecutionContext* context)
 {
-    RefPtrWillBeRawPtr<BatteryManager> batteryManager(adoptRefWillBeRefCountedGarbageCollected(new BatteryManager(context)));
+    RefPtrWillBeRawPtr<BatteryManager> batteryManager = adoptRefWillBeNoop(new BatteryManager(context));
     batteryManager->suspendIfNeeded();
     return batteryManager.release();
 }

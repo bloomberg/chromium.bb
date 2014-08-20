@@ -268,6 +268,6 @@ private: \
 // Use this macro if your EventTarget subclass is also a subclass of WTF::RefCounted.
 // A ref-counted class that uses a different method of refcounting should use DEFINE_EVENT_TARGET_REFCOUNTING directly.
 // Both of these macros are meant to be placed just before the "public:" section of the class declaration.
-#define REFCOUNTED_EVENT_TARGET(className) DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedWillBeRefCountedGarbageCollected<className>)
+#define REFCOUNTED_EVENT_TARGET(className) DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCounted<className>)
 
 #endif // EventTarget_h
