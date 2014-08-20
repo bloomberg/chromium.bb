@@ -691,9 +691,7 @@ void FeatureInfo::InitializeFeatures() {
     validators_.texture_parameter.AddValue(GL_TEXTURE_USAGE_ANGLE);
   }
 
-  if (extensions.Contains("GL_EXT_texture_storage") ||
-      extensions.Contains("GL_ARB_texture_storage") ||
-      is_es3) {
+  if (extensions.Contains("GL_EXT_texture_storage")) {
     feature_flags_.ext_texture_storage = true;
     AddExtensionString("GL_EXT_texture_storage");
     validators_.texture_parameter.AddValue(GL_TEXTURE_IMMUTABLE_FORMAT_EXT);
