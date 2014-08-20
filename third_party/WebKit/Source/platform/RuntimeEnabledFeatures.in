@@ -93,7 +93,6 @@ OrientationEvent
 // Only enabled on Android, and for certain layout tests on Linux.
 OverlayFullscreenVideo
 PagePopup status=stable
-Path2D status=stable
 PathOpsSVGClipping status=stable
 PeerConnection depends_on=MediaStream, status=stable
 PreciseMemoryInfo

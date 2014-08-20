@@ -32,7 +32,6 @@
     Constructor,
     Constructor(Path2D path),
     Constructor(DOMString text),
-    RuntimeEnabled=Path2D,
     WillBeGarbageCollected,
 ] interface Path2D {
 

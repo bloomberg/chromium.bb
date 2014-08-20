@@ -89,20 +89,20 @@ enum CanvasFillRule { "nonzero", "evenodd" };
     // path API (see also CanvasPathMethods)
     void beginPath();
     void fill(optional CanvasFillRule winding);
-    [RuntimeEnabled=Path2D] void fill(Path2D path, optional CanvasFillRule winding);
+    void fill(Path2D path, optional CanvasFillRule winding);
     void stroke();
-    [RuntimeEnabled=Path2D] void stroke(Path2D path);
+    void stroke(Path2D path);
     // Focus rings
     void drawFocusIfNeeded(Element element);
-    [RuntimeEnabled=Path2D] void drawFocusIfNeeded(Path2D path, Element element);
+    void drawFocusIfNeeded(Path2D path, Element element);
 
     [RuntimeEnabled=ExperimentalCanvasFeatures] void scrollPathIntoView(optional Path2D path);
     void clip(optional CanvasFillRule winding);
-    [RuntimeEnabled=Path2D] void clip(Path2D path, optional CanvasFillRule winding);
+    void clip(Path2D path, optional CanvasFillRule winding);
     boolean isPointInPath(unrestricted float x, unrestricted float y, optional CanvasFillRule winding);
-    [RuntimeEnabled=Path2D] boolean isPointInPath(Path2D path, unrestricted float x, unrestricted float y, optional CanvasFillRule winding);
+    boolean isPointInPath(Path2D path, unrestricted float x, unrestricted float y, optional CanvasFillRule winding);
     boolean isPointInStroke(unrestricted float x, unrestricted float y);
-    [RuntimeEnabled=Path2D] boolean isPointInStroke(Path2D path, unrestricted float x, unrestricted float y);
+    boolean isPointInStroke(Path2D path, unrestricted float x, unrestricted float y);
 
     // text (see also the CanvasDrawingStyles interface)
     void fillText(DOMString text, unrestricted float x, unrestricted float y, optional unrestricted float maxWidth);
