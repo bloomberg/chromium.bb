@@ -21,8 +21,7 @@
  * OF THIS SOFTWARE.
  */
 
-/* cliptest: for debugging calculate_edges() function, which is copied
- * from compositor.c.
+/* cliptest: for debugging calculate_edges() function.
  * controls:
  *	clip box position: mouse left drag, keys: w a s d
  *	clip box size: mouse right drag, keys: i j k l
@@ -63,7 +62,7 @@ struct geometry {
 	float phi;
 };
 
-struct weston_surface {
+struct weston_view {
 	struct {
 		int enabled;
 	} transform;
@@ -72,19 +71,21 @@ struct weston_surface {
 };
 
 static void
-weston_surface_to_global_float(struct weston_surface *surface,
-			       GLfloat sx, GLfloat sy, GLfloat *x, GLfloat *y)
+weston_view_to_global_float(struct weston_view *view,
+			    float sx, float sy, float *x, float *y)
 {
-	struct geometry *g = surface->geometry;
+	struct geometry *g = view->geometry;
 
 	/* pure rotation around origin by sine and cosine */
 	*x = g->c * sx + g->s * sy;
 	*y = -g->s * sx + g->c * sy;
 }
 
+/* ---------------------- copied begins -----------------------*/
+/* Keep this in sync with what is in gl-renderer.c! */
+
 #define max(a, b) (((a) > (b)) ? (a) : (b))
 #define min(a, b) (((a) > (b)) ? (b) : (a))
-#define clip(x, a, b)  min(max(x, a), b)
 
 /*
  * Compute the boundary vertices of the intersection of the global coordinate
@@ -96,11 +97,12 @@ weston_surface_to_global_float(struct weston_surface *surface,
  * polygon area.
  */
 static int
-calculate_edges(struct weston_surface *es, pixman_box32_t *rect,
+calculate_edges(struct weston_view *ev, pixman_box32_t *rect,
 		pixman_box32_t *surf_rect, GLfloat *ex, GLfloat *ey)
 {
+
 	struct clip_context ctx;
-	int i;
+	int i, n;
 	GLfloat min_x, max_x, min_y, max_y;
 	struct polygon8 surf = {
 		{ surf_rect->x1, surf_rect->x2, surf_rect->x2, surf_rect->x1 },
@@ -115,8 +117,8 @@ calculate_edges(struct weston_surface *es, pixman_box32_t *rect,
 
 	/* transform surface to screen space: */
 	for (i = 0; i < surf.n; i++)
-		weston_surface_to_global_float(es, surf.x[i], surf.y[i],
-					       &surf.x[i], &surf.y[i]);
+		weston_view_to_global_float(ev, surf.x[i], surf.y[i],
+					    &surf.x[i], &surf.y[i]);
 
 	/* find bounding box: */
 	min_x = max_x = surf.x[0];
@@ -140,13 +142,8 @@ calculate_edges(struct weston_surface *es, pixman_box32_t *rect,
 	 * there will be only four edges.  We just need to clip the surface
 	 * vertices to the clip rect bounds:
 	 */
-	if (!es->transform.enabled) {
-		for (i = 0; i < surf.n; i++) {
-			ex[i] = clip(surf.x[i], ctx.clip.x1, ctx.clip.x2);
-			ey[i] = clip(surf.y[i], ctx.clip.y1, ctx.clip.y2);
-		}
-		return surf.n;
-	}
+	if (!ev->transform.enabled)
+		return clip_simple(&ctx, &surf, ex, ey);
 
 	/* Transformed case: use a general polygon clipping algorithm to
 	 * clip the surface rectangle with each side of 'rect'.
@@ -154,7 +151,12 @@ calculate_edges(struct weston_surface *es, pixman_box32_t *rect,
 	 * http://www.codeguru.com/cpp/misc/misc/graphics/article.php/c8965/Polygon-Clipping.htm
 	 * but without looking at any of that code.
 	 */
-	return clip_transformed(&ctx, &surf, ex, ey);
+	n = clip_transformed(&ctx, &surf, ex, ey);
+
+	if (n < 3)
+		return 0;
+
+	return n;
 }
 
 
@@ -201,7 +203,7 @@ struct cliptest {
 	struct ui_state ui;
 
 	struct geometry geometry;
-	struct weston_surface surface;
+	struct weston_view view;
 };
 
 static void
@@ -244,15 +246,15 @@ draw_coordinates(cairo_t *cr, double ox, double oy, GLfloat *x, GLfloat *y, int 
 }
 
 static void
-draw_box(cairo_t *cr, pixman_box32_t *box, struct weston_surface *surface)
+draw_box(cairo_t *cr, pixman_box32_t *box, struct weston_view *view)
 {
 	GLfloat x[4], y[4];
 
-	if (surface) {
-		weston_surface_to_global_float(surface, box->x1, box->y1, &x[0], &y[0]);
-		weston_surface_to_global_float(surface, box->x2, box->y1, &x[1], &y[1]);
-		weston_surface_to_global_float(surface, box->x2, box->y2, &x[2], &y[2]);
-		weston_surface_to_global_float(surface, box->x1, box->y2, &x[3], &y[3]);
+	if (view) {
+		weston_view_to_global_float(view, box->x1, box->y1, &x[0], &y[0]);
+		weston_view_to_global_float(view, box->x2, box->y1, &x[1], &y[1]);
+		weston_view_to_global_float(view, box->x2, box->y2, &x[2], &y[2]);
+		weston_view_to_global_float(view, box->x1, box->y2, &x[3], &y[3]);
 	} else {
 		x[0] = box->x1; y[0] = box->y1;
 		x[1] = box->x2; y[1] = box->y1;
@@ -264,18 +266,18 @@ draw_box(cairo_t *cr, pixman_box32_t *box, struct weston_surface *surface)
 }
 
 static void
-draw_geometry(cairo_t *cr, struct weston_surface *surface,
+draw_geometry(cairo_t *cr, struct weston_view *view,
 	      GLfloat *ex, GLfloat *ey, int n)
 {
-	struct geometry *g = surface->geometry;
-	GLfloat cx, cy;
+	struct geometry *g = view->geometry;
+	float cx, cy;
 
-	draw_box(cr, &g->surf, surface);
+	draw_box(cr, &g->surf, view);
 	cairo_set_source_rgba(cr, 1.0, 0.0, 0.0, 0.4);
 	cairo_fill(cr);
-	weston_surface_to_global_float(surface, g->surf.x1 - 4, g->surf.y1 - 4, &cx, &cy);
+	weston_view_to_global_float(view, g->surf.x1 - 4, g->surf.y1 - 4, &cx, &cy);
 	cairo_arc(cr, cx, cy, 1.5, 0.0, 2.0 * M_PI);
-	if (surface->transform.enabled == 0)
+	if (view->transform.enabled == 0)
 		cairo_set_source_rgba(cr, 1.0, 0.0, 0.0, 0.8);
 	cairo_fill(cr);
 
@@ -297,7 +299,7 @@ static void
 redraw_handler(struct widget *widget, void *data)
 {
 	struct cliptest *cliptest = data;
-	struct geometry *g = cliptest->surface.geometry;
+	struct geometry *g = cliptest->view.geometry;
 	struct rectangle allocation;
 	cairo_t *cr;
 	cairo_surface_t *surface;
@@ -305,7 +307,7 @@ redraw_handler(struct widget *widget, void *data)
 	GLfloat ey[8];
 	int n;
 
-	n = calculate_edges(&cliptest->surface, &g->clip, &g->surf, ex, ey);
+	n = calculate_edges(&cliptest->view, &g->clip, &g->surf, ex, ey);
 
 	widget_get_allocation(cliptest->widget, &allocation);
 
@@ -339,7 +341,7 @@ redraw_handler(struct widget *widget, void *data)
 		cairo_select_font_face(cr, "Sans", CAIRO_FONT_SLANT_NORMAL,
 				       CAIRO_FONT_WEIGHT_BOLD);
 		cairo_set_font_size(cr, 5.0);
-		draw_geometry(cr, &cliptest->surface, ex, ey, n);
+		draw_geometry(cr, &cliptest->view, ex, ey, n);
 	cairo_pop_group_to_source(cr);
 	cairo_paint(cr);
 
@@ -418,7 +420,7 @@ axis_handler(struct widget *widget, struct input *input, uint32_t time,
 
 	geometry_set_phi(geom, geom->phi +
 				(M_PI / 12.0) * wl_fixed_to_double(value));
-	cliptest->surface.transform.enabled = 1;
+	cliptest->view.transform.enabled = 1;
 
 	widget_schedule_redraw(cliptest->widget);
 }
@@ -468,15 +470,15 @@ key_handler(struct window *window, struct input *input, uint32_t time,
 		break;
 	case XKB_KEY_n:
 		geometry_set_phi(g, g->phi + (M_PI / 24.0));
-		cliptest->surface.transform.enabled = 1;
+		cliptest->view.transform.enabled = 1;
 		break;
 	case XKB_KEY_m:
 		geometry_set_phi(g, g->phi - (M_PI / 24.0));
-		cliptest->surface.transform.enabled = 1;
+		cliptest->view.transform.enabled = 1;
 		break;
 	case XKB_KEY_r:
 		geometry_set_phi(g, 0.0);
-		cliptest->surface.transform.enabled = 0;
+		cliptest->view.transform.enabled = 0;
 		break;
 	default:
 		return;
@@ -509,8 +511,8 @@ cliptest_create(struct display *display)
 	struct cliptest *cliptest;
 
 	cliptest = xzalloc(sizeof *cliptest);
-	cliptest->surface.geometry = &cliptest->geometry;
-	cliptest->surface.transform.enabled = 0;
+	cliptest->view.geometry = &cliptest->geometry;
+	cliptest->view.transform.enabled = 0;
 	geometry_init(&cliptest->geometry);
 	geometry_init(&cliptest->ui.geometry);
 
@@ -560,7 +562,7 @@ read_timer(void)
 static int
 benchmark(void)
 {
-	struct weston_surface surface;
+	struct weston_view view;
 	struct geometry geom;
 	GLfloat ex[8], ey[8];
 	int i;
@@ -579,13 +581,13 @@ benchmark(void)
 
 	geometry_set_phi(&geom, 0.0);
 
-	surface.transform.enabled = 1;
-	surface.geometry = &geom;
+	view.transform.enabled = 1;
+	view.geometry = &geom;
 
 	reset_timer();
 	for (i = 0; i < N; i++) {
 		geometry_set_phi(&geom, (float)i / 360.0f);
-		calculate_edges(&surface, &geom.clip, &geom.surf, ex, ey);
+		calculate_edges(&view, &geom.clip, &geom.surf, ex, ey);
 	}
 	t = read_timer();
 
