@@ -142,8 +142,10 @@ template<typename U> class ThreadingTrait<const U> : public ThreadingTrait<U> { 
 
 enum TypedHeaps {
     GeneralHeap = 0,
+    CollectionBackingHeap,
     FOR_EACH_TYPED_HEAP(TypedHeapEnumName)
     GeneralHeapNonFinalized,
+    CollectionBackingHeapNonFinalized,
     FOR_EACH_TYPED_HEAP(TypedHeapEnumNameNonFinalized)
     // Values used for iteration of heap segments.
     NumberOfHeaps,
@@ -154,36 +156,56 @@ enum TypedHeaps {
     NonFinalizedHeapOffset = FirstNonFinalizedHeap
 };
 
-// Trait to give an index in the thread state to all the
-// type-specialized heaps. The general heap is at index 0 in the
-// thread state. The index for other type-specialized heaps are given
-// by the TypedHeaps enum above.
-template<typename T>
-struct HeapTrait {
+// Base implementation for HeapIndexTrait found below.
+template<int heapIndex>
+struct HeapIndexTraitBase {
     typedef ThreadHeap<FinalizedHeapObjectHeader> HeapType;
+    static const int finalizedIndex = heapIndex;
+    static const int nonFinalizedIndex = heapIndex + NonFinalizedHeapOffset;
     static int index(bool isFinalized)
     {
-        return finalizedHeapIndex + (isFinalized ? 0 : NonFinalizedHeapOffset);
+        return isFinalized ? finalizedIndex : nonFinalizedIndex;
     }
-private:
-    static const int finalizedHeapIndex = GeneralHeap;
-
 };
 
-#define DEFINE_HEAP_INDEX_TRAIT(Type)                                               \
-    class Type;                                                                     \
-    template<>                                                                      \
-    struct HeapTrait<class Type> {                                                  \
-        static int index(bool isFinalized)                                          \
-        {                                                                           \
-            return finalizedHeapIndex + (isFinalized ? 0 : NonFinalizedHeapOffset); \
-        }                                                                           \
-        typedef ThreadHeap<HeapObjectHeader> HeapType;                              \
-    private:                                                                        \
-        static const int finalizedHeapIndex = Type##Heap;                           \
-    };
+// HeapIndexTrait defines properties for each heap in the TypesHeaps enum.
+template<int index>
+struct HeapIndexTrait;
 
-FOR_EACH_TYPED_HEAP(DEFINE_HEAP_INDEX_TRAIT)
+template<>
+struct HeapIndexTrait<GeneralHeap> : public HeapIndexTraitBase<GeneralHeap> { };
+template<>
+struct HeapIndexTrait<GeneralHeapNonFinalized> : public HeapIndexTrait<GeneralHeap> { };
+
+template<>
+struct HeapIndexTrait<CollectionBackingHeap> : public HeapIndexTraitBase<CollectionBackingHeap> { };
+template<>
+struct HeapIndexTrait<CollectionBackingHeapNonFinalized> : public HeapIndexTrait<CollectionBackingHeap> { };
+
+#define DEFINE_TYPED_HEAP_INDEX_TRAIT(Type)                                     \
+    template<>                                                                  \
+    struct HeapIndexTrait<Type##Heap> : public HeapIndexTraitBase<Type##Heap> { \
+        typedef ThreadHeap<HeapObjectHeader> HeapType;                          \
+    };                                                                          \
+    template<>                                                                  \
+    struct HeapIndexTrait<Type##HeapNonFinalized> : public HeapIndexTrait<Type##Heap> { };
+FOR_EACH_TYPED_HEAP(DEFINE_TYPED_HEAP_INDEX_TRAIT)
+#undef DEFINE_TYPED_HEAP_INDEX_TRAIT
+
+// HeapTypeTrait defines which heap to use for particular types.
+// By default objects are allocated in the GeneralHeap.
+template<typename T>
+struct HeapTypeTrait : public HeapIndexTrait<GeneralHeap> { };
+
+// We don't have any type-based mappings to the CollectionBackingHeap.
+
+// Each typed-heap maps the respective type to its heap.
+#define DEFINE_TYPED_HEAP_TRAIT(Type)                                   \
+    class Type;                                                         \
+    template<>                                                          \
+    struct HeapTypeTrait<class Type> : public HeapIndexTrait<Type##Heap> { };
+FOR_EACH_TYPED_HEAP(DEFINE_TYPED_HEAP_TRAIT)
+#undef DEFINE_TYPED_HEAP_TRAIT
 
 // A HeapStats structure keeps track of the amount of memory allocated
 // for a Blink heap and how much of that memory is used for actual
@@ -492,7 +514,7 @@ public:
     //
     // The heap is split into multiple heap parts based on object
     // types. To get the index for a given type, use
-    // HeapTrait<Type>::index.
+    // HeapTypeTrait<Type>::index.
     BaseHeap* heap(int index) const { return m_heaps[index]; }
 
     // Infrastructure to determine if an address is within one of the

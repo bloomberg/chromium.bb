@@ -275,6 +275,20 @@ BaseHeapPage::BaseHeapPage(PageMemory* storage, const GCInfo* gcInfo, ThreadStat
     ASSERT(isPageHeaderAddress(reinterpret_cast<Address>(this)));
 }
 
+// Statically unfold the heap initialization loop so the compiler statically
+// knows the heap index when using HeapIndexTrait.
+template<int num> struct InitializeHeaps {
+    static const int index = num - 1;
+    static void init(BaseHeap** heaps, ThreadState* state)
+    {
+        InitializeHeaps<index>::init(heaps, state);
+        heaps[index] = new typename HeapIndexTrait<index>::HeapType(state, index);
+    }
+};
+template<> struct InitializeHeaps<0> {
+    static void init(BaseHeap** heaps, ThreadState* state) { }
+};
+
 ThreadState::ThreadState()
     : m_thread(currentThread())
     , m_persistents(adoptPtr(new PersistentAnchor()))
@@ -302,22 +316,7 @@ ThreadState::ThreadState()
     m_stats.clear();
     m_statsAfterLastGC.clear();
 
-    // Allocate the general heap in both finalized and non-finalized
-    // version.
-    m_heaps[GeneralHeap] = new ThreadHeap<FinalizedHeapObjectHeader>(this, GeneralHeap);
-    m_heaps[GeneralHeapNonFinalized] = new ThreadHeap<FinalizedHeapObjectHeader>(this, GeneralHeapNonFinalized);
-
-    // Allocate the type-specific heaps in finalized and non-finalized versions.
-    for (int i = 1; i < NumberOfFinalizedHeaps; i++) {
-        int heapIndex = FirstFinalizedHeap + i;
-        m_heaps[heapIndex] = new ThreadHeap<HeapObjectHeader>(this, heapIndex);
-    }
-    for (int i = 1; i < NumberOfNonFinalizedHeaps; i++) {
-        int heapIndex = FirstNonFinalizedHeap + i;
-        m_heaps[heapIndex] = new ThreadHeap<HeapObjectHeader>(this, heapIndex);
-    }
-
-
+    InitializeHeaps<NumberOfHeaps>::init(m_heaps, this);
     CallbackStack::init(&m_weakCallbackStack);
 }
 
@@ -325,7 +324,7 @@ ThreadState::~ThreadState()
 {
     checkThread();
     CallbackStack::shutdown(&m_weakCallbackStack);
-    for (int i = GeneralHeap; i < NumberOfHeaps; i++)
+    for (int i = 0; i < NumberOfHeaps; i++)
         delete m_heaps[i];
     deleteAllValues(m_interruptors);
     **s_threadSpecific = 0;
@@ -397,7 +396,7 @@ void ThreadState::attach()
 
 void ThreadState::cleanupPages()
 {
-    for (int i = GeneralHeap; i < NumberOfHeaps; ++i)
+    for (int i = 0; i < NumberOfHeaps; ++i)
         m_heaps[i]->cleanupPages();
 }
 

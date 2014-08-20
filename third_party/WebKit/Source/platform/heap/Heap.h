@@ -1023,7 +1023,7 @@ public:
     static bool weakTableRegistered(const void*);
 #endif
 
-    template<typename T> static Address allocate(size_t);
+    template<typename T, typename HeapTraits = HeapTypeTrait<T> > static Address allocate(size_t);
     template<typename T> static Address reallocate(void* previous, size_t);
 
     static void collectGarbage(ThreadState::StackState);
@@ -1473,15 +1473,15 @@ Address ThreadHeap<Header>::allocate(size_t size, const GCInfo* gcInfo)
 
 // FIXME: Allocate objects that do not need finalization separately
 // and use separate sweeping to not have to check for finalizers.
-template<typename T>
+template<typename T, typename HeapTraits>
 Address Heap::allocate(size_t size)
 {
     ThreadState* state = ThreadStateFor<ThreadingTrait<T>::Affinity>::state();
     ASSERT(state->isAllocationAllowed());
     const GCInfo* gcInfo = GCInfoTrait<T>::get();
-    int heapIndex = HeapTrait<T>::index(gcInfo->hasFinalizer());
+    int heapIndex = HeapTraits::index(gcInfo->hasFinalizer());
     BaseHeap* heap = state->heap(heapIndex);
-    return static_cast<typename HeapTrait<T>::HeapType*>(heap)->allocate(size, gcInfo);
+    return static_cast<typename HeapTraits::HeapType*>(heap)->allocate(size, gcInfo);
 }
 
 // FIXME: Allocate objects that do not need finalization separately
@@ -1498,13 +1498,13 @@ Address Heap::reallocate(void* previous, size_t size)
     ThreadState* state = ThreadStateFor<ThreadingTrait<T>::Affinity>::state();
     ASSERT(state->isAllocationAllowed());
     const GCInfo* gcInfo = GCInfoTrait<T>::get();
-    int heapIndex = HeapTrait<T>::index(gcInfo->hasFinalizer());
+    int heapIndex = HeapTypeTrait<T>::index(gcInfo->hasFinalizer());
     // FIXME: Currently only supports raw allocation on the
     // GeneralHeap. Hence we assume the header is a
     // FinalizedHeapObjectHeader.
     ASSERT(heapIndex == GeneralHeap || heapIndex == GeneralHeapNonFinalized);
     BaseHeap* heap = state->heap(heapIndex);
-    Address address = static_cast<typename HeapTrait<T>::HeapType*>(heap)->allocate(size, gcInfo);
+    Address address = static_cast<typename HeapTypeTrait<T>::HeapType*>(heap)->allocate(size, gcInfo);
     if (!previous) {
         // This is equivalent to malloc(size).
         return address;
@@ -1525,7 +1525,7 @@ public:
     static size_t quantizedSize(size_t count)
     {
         RELEASE_ASSERT(count <= kMaxUnquantizedAllocation / sizeof(T));
-        return HeapTrait<T>::HeapType::roundedAllocationSize(count * sizeof(T));
+        return HeapIndexTrait<CollectionBackingHeap>::HeapType::roundedAllocationSize(count * sizeof(T));
     }
     static const size_t kMaxUnquantizedAllocation = maxHeapObjectSize;
 };
@@ -1541,12 +1541,12 @@ public:
     template <typename Return, typename Metadata>
     static Return backingMalloc(size_t size)
     {
-        return malloc<Return, Metadata>(size);
+        return reinterpret_cast<Return>(Heap::allocate<Metadata, HeapIndexTrait<CollectionBackingHeap> >(size));
     }
     template <typename Return, typename Metadata>
     static Return zeroedBackingMalloc(size_t size)
     {
-        return malloc<Return, Metadata>(size);
+        return backingMalloc<Return, Metadata>(size);
     }
     template <typename Return, typename Metadata>
     static Return malloc(size_t size)
