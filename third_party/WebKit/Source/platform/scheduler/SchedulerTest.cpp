@@ -290,4 +290,42 @@ TEST_F(SchedulerTest, TestRentrantCompositorTaskDuringShutdown)
     EXPECT_THAT(m_reentrantOrder, testing::ElementsAre(0, 1, 2, 3, 4));
 }
 
+bool s_shouldContinue;
+void reentrantInputTask(Scheduler* scheduler)
+{
+    if (s_shouldContinue)
+        scheduler->postInputTask(FROM_HERE, WTF::bind(&reentrantInputTask, scheduler));
+}
+
+void reentrantCompositorTask(Scheduler* scheduler)
+{
+    if (s_shouldContinue)
+        scheduler->postCompositorTask(FROM_HERE, WTF::bind(&reentrantCompositorTask, scheduler));
+}
+
+void stopReentrantTask()
+{
+    s_shouldContinue = false;
+}
+
+TEST_F(SchedulerTest, TestRentrantInputTaskDoesNotStarveOutLowPriorityTask)
+{
+    s_shouldContinue = true;
+    m_scheduler->postInputTask(FROM_HERE, WTF::bind(&reentrantInputTask, m_scheduler));
+    m_scheduler->postTask(FROM_HERE, WTF::bind(&stopReentrantTask));
+
+    // If starvation occurs then this will never exit.
+    runPendingTasks();
+}
+
+TEST_F(SchedulerTest, TestRentrantCompositorTaskDoesNotStarveOutLowPriorityTask)
+{
+    s_shouldContinue = true;
+    m_scheduler->postInputTask(FROM_HERE, WTF::bind(&reentrantCompositorTask, m_scheduler));
+    m_scheduler->postTask(FROM_HERE, WTF::bind(&stopReentrantTask));
+
+    // If starvation occurs then this will never exit.
+    runPendingTasks();
+}
+
 } // namespace
