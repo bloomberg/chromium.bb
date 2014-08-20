@@ -207,8 +207,8 @@ TEST_F(UserCloudPolicyStoreTest, LoadImmediatelyWithInvalidFile) {
   EXPECT_TRUE(store_->policy_map().empty());
 }
 
-// Load file from cache with no key data, then migrate to have a key.
-TEST_F(UserCloudPolicyStoreTest, Migration) {
+// Load file from cache with no key data - should give us a validation error.
+TEST_F(UserCloudPolicyStoreTest, ShouldFailToLoadUnsignedPolicy) {
   UserPolicyBuilder unsigned_builder;
   unsigned_builder.UnsetSigningKey();
   InitPolicyPayload(&unsigned_builder.payload());
@@ -223,21 +223,10 @@ TEST_F(UserCloudPolicyStoreTest, Migration) {
   int size = data.size();
   ASSERT_EQ(size, base::WriteFile(policy_file(), data.c_str(), size));
 
-  // Now make sure the data can get loaded.
-  Sequence s;
-  EXPECT_CALL(*external_data_manager_, OnPolicyStoreLoaded()).InSequence(s);
-  EXPECT_CALL(observer_, OnStoreLoaded(store_.get())).InSequence(s);
+  // Now make sure the data generates a validation error.
+  ExpectError(store_.get(), CloudPolicyStore::STATUS_VALIDATION_ERROR);
   store_->LoadImmediately();  // Should load without running the message loop.
-  Mock::VerifyAndClearExpectations(external_data_manager_.get());
   Mock::VerifyAndClearExpectations(&observer_);
-
-  ASSERT_TRUE(store_->policy());
-  EXPECT_EQ(unsigned_builder.policy_data().SerializeAsString(),
-            store_->policy()->SerializeAsString());
-  VerifyPolicyMap(store_.get());
-  EXPECT_EQ(CloudPolicyStore::STATUS_OK, store_->status());
-  EXPECT_TRUE(store_->policy_key().empty());
-  EXPECT_FALSE(base::PathExists(key_file()));
 
   // Now mimic a new policy coming down - this should result in a new key
   // being installed.

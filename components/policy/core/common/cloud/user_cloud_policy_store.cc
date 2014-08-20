@@ -339,9 +339,6 @@ void UserCloudPolicyStore::Validate(
     const std::string& verification_key,
     bool validate_in_background,
     const UserCloudPolicyValidator::CompletionCallback& callback) {
-
-  const bool signed_policy = policy->has_policy_data_signature();
-
   // Configure the validator.
   scoped_ptr<UserCloudPolicyValidator> validator = CreateValidator(
       policy.Pass(),
@@ -368,8 +365,8 @@ void UserCloudPolicyStore::Validate(
   // There are 4 cases:
   //
   // 1) Validation after loading from cache with no cached key.
-  // Action: Don't validate signature (migration from previously cached
-  // unsigned blob).
+  // Action: Just validate signature with an empty key - this will result in
+  // a failed validation and the cached policy will be rejected.
   //
   // 2) Validation after loading from cache with a cached key
   // Action: Validate signature on policy blob but don't allow key rotation.
@@ -381,27 +378,25 @@ void UserCloudPolicyStore::Validate(
   // 4) Validation after loading new policy from the server with a cached key
   // Action: Validate as normal, and allow key rotation.
   if (cached_key) {
+    // Case #1/#2 - loading from cache. Validate the cached key (if no key,
+    // then the validation will fail), then do normal policy data signature
+    // validation using the cached key.
+
     // Loading from cache should not change the cached keys.
     DCHECK(policy_key_.empty() || policy_key_ == cached_key->signing_key());
-    if (!signed_policy || !cached_key->has_signing_key()) {
-      // Case #1 - loading from cache with no signing key.
-      // TODO(atwilson): Reject policy with no cached key once
-      // kMetricPolicyHasVerifiedCachedKey rises to a high enough level.
-      DLOG(WARNING) << "Allowing unsigned cached blob for migration";
-    } else {
-      // Case #2 - loading from cache with a cached key - validate the cached
-      // key, then do normal policy data signature validation using the cached
-      // key. We're loading from cache so don't allow key rotation.
-      validator->ValidateCachedKey(cached_key->signing_key(),
-                                   cached_key->signing_key_signature(),
-                                   verification_key,
-                                   owning_domain);
-      const bool no_rotation = false;
-      validator->ValidateSignature(cached_key->signing_key(),
-                                   verification_key,
-                                   owning_domain,
-                                   no_rotation);
-    }
+    DLOG_IF(WARNING, !cached_key->has_signing_key()) <<
+        "Unsigned policy blob detected";
+
+    validator->ValidateCachedKey(cached_key->signing_key(),
+                                 cached_key->signing_key_signature(),
+                                 verification_key,
+                                 owning_domain);
+    // Loading from cache, so don't allow key rotation.
+    const bool no_rotation = false;
+    validator->ValidateSignature(cached_key->signing_key(),
+                                 verification_key,
+                                 owning_domain,
+                                 no_rotation);
   } else {
     // No passed cached_key - this is not validating the initial policy load
     // from cache, but rather an update from the server.
