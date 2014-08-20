@@ -78,3 +78,4 @@ crbug.com/402743 http/tests/xmlhttprequest/xmlhttprequest-sync-vs-async-assertio
 crbug.com/402743 http/tests/xmlhttprequest/xmlhttprequest-leaks-on-multiple-send.html [ Leak ]
 crbug.com/403987 fast/dom/element-attribute-js-null.html [ Leak ]
 crbug.com/403363 http/tests/security/mixedContent/insecure-audio-video-in-main-frame.html [ Leak ]
+crbug.com/405125 media/media-controls-clone-crash.html [ Leak Pass ]
