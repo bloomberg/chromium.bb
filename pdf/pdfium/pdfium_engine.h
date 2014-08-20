@@ -236,13 +236,21 @@ class PDFiumEngine : public PDFEngine,
   bool OnKeyUp(const pp::KeyboardInputEvent& event);
   bool OnChar(const pp::KeyboardInputEvent& event);
 
+  FPDF_DOCUMENT CreateSinglePageRasterPdf(
+      double source_page_width,
+      double source_page_height,
+      const PP_PrintSettings_Dev& print_settings,
+      PDFiumPage* page_to_print);
+
   pp::Buffer_Dev PrintPagesAsRasterPDF(
       const PP_PrintPageNumberRange_Dev* page_ranges,
       uint32_t page_range_count,
       const PP_PrintSettings_Dev& print_settings);
+
   pp::Buffer_Dev PrintPagesAsPDF(const PP_PrintPageNumberRange_Dev* page_ranges,
                                  uint32_t page_range_count,
                                  const PP_PrintSettings_Dev& print_settings);
+
   pp::Buffer_Dev GetFlattenedPrintData(const FPDF_DOCUMENT& doc);
   void FitContentsToPrintableAreaIfRequired(
       const FPDF_DOCUMENT& doc,

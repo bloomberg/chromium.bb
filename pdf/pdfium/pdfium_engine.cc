@@ -982,6 +982,66 @@ pp::Resource PDFiumEngine::PrintPages(
   return pp::Resource();
 }
 
+FPDF_DOCUMENT PDFiumEngine::CreateSinglePageRasterPdf(
+    double source_page_width,
+    double source_page_height,
+    const PP_PrintSettings_Dev& print_settings,
+    PDFiumPage* page_to_print) {
+  FPDF_DOCUMENT temp_doc = FPDF_CreateNewDocument();
+  if (!temp_doc)
+    return temp_doc;
+
+  const pp::Size& bitmap_size(page_to_print->rect().size());
+
+  FPDF_PAGE temp_page =
+      FPDFPage_New(temp_doc, 0, source_page_width, source_page_height);
+
+  pp::ImageData image = pp::ImageData(client_->GetPluginInstance(),
+                                      PP_IMAGEDATAFORMAT_BGRA_PREMUL,
+                                      bitmap_size,
+                                      false);
+
+  FPDF_BITMAP bitmap = FPDFBitmap_CreateEx(bitmap_size.width(),
+                                           bitmap_size.height(),
+                                           FPDFBitmap_BGRx,
+                                           image.data(),
+                                           image.stride());
+
+  // Clear the bitmap
+  FPDFBitmap_FillRect(
+      bitmap, 0, 0, bitmap_size.width(), bitmap_size.height(), 0xFFFFFFFF);
+
+  pp::Rect page_rect = page_to_print->rect();
+  FPDF_RenderPageBitmap(bitmap,
+                        page_to_print->GetPrintPage(),
+                        page_rect.x(),
+                        page_rect.y(),
+                        page_rect.width(),
+                        page_rect.height(),
+                        print_settings.orientation,
+                        FPDF_ANNOT | FPDF_PRINTING | FPDF_NO_CATCH);
+
+  double ratio_x = (static_cast<double>(bitmap_size.width()) * kPointsPerInch) /
+                   print_settings.dpi;
+  double ratio_y =
+      (static_cast<double>(bitmap_size.height()) * kPointsPerInch) /
+      print_settings.dpi;
+
+  // Add the bitmap to an image object and add the image object to the output
+  // page.
+  FPDF_PAGEOBJECT temp_img = FPDFPageObj_NewImgeObj(temp_doc);
+  FPDFImageObj_SetBitmap(&temp_page, 1, temp_img, bitmap);
+  FPDFImageObj_SetMatrix(temp_img, ratio_x, 0, 0, ratio_y, 0, 0);
+  FPDFPage_InsertObject(temp_page, temp_img);
+  FPDFPage_GenerateContent(temp_page);
+  FPDF_ClosePage(temp_page);
+
+  page_to_print->ClosePrintPage();
+  FPDFBitmap_Destroy(bitmap);
+
+  return temp_doc;
+}
+
 pp::Buffer_Dev PDFiumEngine::PrintPagesAsRasterPDF(
     const PP_PrintPageNumberRange_Dev* page_ranges, uint32_t page_range_count,
     const PP_PrintSettings_Dev& print_settings) {
@@ -1032,62 +1092,21 @@ pp::Buffer_Dev PDFiumEngine::PrintPagesAsRasterPDF(
   for (; i < pages_to_print.size(); ++i) {
     double source_page_width = source_page_sizes[i].first;
     double source_page_height = source_page_sizes[i].second;
-    const pp::Size& bitmap_size(pages_to_print[i].rect().size());
 
     // Use temp_doc to compress image by saving PDF to buffer.
-    FPDF_DOCUMENT temp_doc = FPDF_CreateNewDocument();
+    FPDF_DOCUMENT temp_doc = CreateSinglePageRasterPdf(source_page_width,
+                                                       source_page_height,
+                                                       print_settings,
+                                                       &pages_to_print[i]);
+
     if (!temp_doc)
       break;
-
-    FPDF_PAGE output_page = FPDFPage_New(temp_doc, 0, source_page_width,
-                                         source_page_height);
-
-    pp::ImageData image = pp::ImageData(client_->GetPluginInstance(),
-                                        PP_IMAGEDATAFORMAT_BGRA_PREMUL,
-                                        bitmap_size,
-                                        false);
-
-    FPDF_BITMAP bitmap = FPDFBitmap_CreateEx(bitmap_size.width(),
-                                             bitmap_size.height(),
-                                             FPDFBitmap_BGRx,
-                                             image.data(),
-                                             image.stride());
-
-    // Clear the bitmap
-    FPDFBitmap_FillRect(bitmap, 0, 0, bitmap_size.width(),
-                        bitmap_size.height(), 0xFFFFFFFF);
-
-    pp::Rect page_rect = pages_to_print[i].rect();
-    FPDF_RenderPageBitmap(bitmap, pages_to_print[i].GetPrintPage(),
-                          page_rect.x(), page_rect.y(),
-                          page_rect.width(), page_rect.height(),
-                          print_settings.orientation,
-                          FPDF_ANNOT | FPDF_PRINTING | FPDF_NO_CATCH);
-
-    double ratio_x = (static_cast<double>(bitmap_size.width()) *
-                          kPointsPerInch) / print_settings.dpi;
-    double ratio_y = (static_cast<double>(bitmap_size.height()) *
-                         kPointsPerInch) / print_settings.dpi;
-
-    // Add the bitmap to an image object and add the image object to the output
-    // page.
-    FPDF_PAGEOBJECT img_obj = FPDFPageObj_NewImgeObj(output_doc);
-    FPDFImageObj_SetBitmap(&output_page, 1, img_obj, bitmap);
-    FPDFImageObj_SetMatrix(img_obj, ratio_x, 0, 0, ratio_y, 0, 0);
-    FPDFPage_InsertObject(output_page, img_obj);
-    FPDFPage_GenerateContent(output_page);
-    FPDF_ClosePage(output_page);
-
-    pages_to_print[i].ClosePrintPage();
-    FPDFBitmap_Destroy(bitmap);
 
     pp::Buffer_Dev buffer = GetFlattenedPrintData(temp_doc);
     FPDF_CloseDocument(temp_doc);
 
     PDFiumMemBufferFileRead file_read(buffer.data(), buffer.size());
     temp_doc = FPDF_LoadCustomDocument(&file_read, NULL);
-    if (!temp_doc)
-      break;
 
     FPDF_BOOL imported = FPDF_ImportPages(output_doc, temp_doc, "1", i);
     FPDF_CloseDocument(temp_doc);
