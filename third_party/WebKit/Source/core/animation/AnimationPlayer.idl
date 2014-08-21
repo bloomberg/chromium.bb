@@ -29,7 +29,6 @@
  */
 
 [
-    RuntimeEnabled=WebAnimationsElementAnimate,
     NoInterfaceObject,
     WillBeGarbageCollected,
     ActiveDOMObject,

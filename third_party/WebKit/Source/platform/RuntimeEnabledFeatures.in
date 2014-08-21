@@ -143,8 +143,7 @@ TouchIconLoading
 ThreadedParserDataReceiver status=experimental
 UserSelectAll status=experimental
 WebAnimationsSVG
-WebAnimationsElementAnimate status=stable
-WebAnimationsAPI status=experimental, depends_on=WebAnimationsElementAnimate
+WebAnimationsAPI status=experimental
 WebAudio condition=WEB_AUDIO, status=stable
 WebGLDraftExtensions status=experimental
 WebGLImageChromium
