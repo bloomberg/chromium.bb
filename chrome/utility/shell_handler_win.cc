@@ -11,6 +11,7 @@
 #include "chrome/common/chrome_utility_messages.h"
 #include "content/public/utility/utility_thread.h"
 #include "ui/base/win/open_file_name_win.h"
+#include "ui/base/win/shell.h"
 
 ShellHandler::ShellHandler() {}
 ShellHandler::~ShellHandler() {}
@@ -18,11 +19,17 @@ ShellHandler::~ShellHandler() {}
 bool ShellHandler::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ShellHandler, message)
+    IPC_MESSAGE_HANDLER(ChromeUtilityMsg_OpenItemViaShell,
+                        OnOpenItemViaShell)
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_GetOpenFileName,
                         OnGetOpenFileName)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
+}
+
+void ShellHandler::OnOpenItemViaShell(const base::FilePath& full_path) {
+  ui::win::OpenItemViaShell(full_path);
 }
 
 void ShellHandler::OnGetOpenFileName(

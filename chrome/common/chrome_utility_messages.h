@@ -91,6 +91,9 @@ IPC_MESSAGE_CONTROL1(ChromeUtilityMsg_AnalyzeZipFileForDownloadProtection,
 #endif
 
 #if defined(OS_WIN)
+IPC_MESSAGE_CONTROL1(ChromeUtilityMsg_OpenItemViaShell,
+                     base::FilePath /* full_path */)
+
 // A vector of filters, each being a Tuple2a display string (i.e. "Text Files")
 // and a filter pattern (i.e. "*.txt")..
 typedef std::vector<Tuple2<base::string16, base::string16> >

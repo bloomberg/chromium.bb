@@ -13,6 +13,7 @@
 #include "base/bind_helpers.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/metrics/field_trial.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/registry.h"
@@ -21,7 +22,9 @@
 #include "base/win/windows_version.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/ui/host_desktop.h"
+#include "chrome/common/chrome_utility_messages.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/utility_process_host.h"
 #include "ui/base/win/shell.h"
 #include "ui/gfx/native_widget_types.h"
 #include "url/gurl.h"
@@ -155,6 +158,13 @@ void OpenExternalOnFileThread(const GURL& url) {
   }
 }
 
+void OpenItemViaShellInUtilityProcess(const base::FilePath& full_path) {
+  base::WeakPtr<content::UtilityProcessHost> utility_process_host(
+      content::UtilityProcessHost::Create(NULL, NULL)->AsWeakPtr());
+  utility_process_host->DisableSandbox();
+  utility_process_host->Send(new ChromeUtilityMsg_OpenItemViaShell(full_path));
+}
+
 }  // namespace
 
 namespace platform_util {
@@ -175,9 +185,18 @@ void OpenItem(Profile* profile, const base::FilePath& full_path) {
   if (chrome::GetActiveDesktop() == chrome::HOST_DESKTOP_TYPE_ASH)
     chrome::ActivateDesktopHelper(chrome::ASH_KEEP_RUNNING);
 
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(base::IgnoreResult(&ui::win::OpenItemViaShell), full_path));
+  if (base::FieldTrialList::FindFullName("IsolateShellOperations") ==
+      "Enabled") {
+    BrowserThread::PostTask(
+        BrowserThread::IO,
+        FROM_HERE,
+        base::Bind(&OpenItemViaShellInUtilityProcess, full_path));
+  } else {
+    BrowserThread::PostTask(
+        BrowserThread::FILE,
+        FROM_HERE,
+        base::Bind(base::IgnoreResult(&ui::win::OpenItemViaShell), full_path));
+  }
 }
 
 void OpenExternal(Profile* profile, const GURL& url) {
