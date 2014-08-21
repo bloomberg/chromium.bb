@@ -8,14 +8,21 @@
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_util.h"
+#include "chrome/browser/extensions/permissions_updater.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/ui/webui/extensions/extension_settings_handler.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/crx_file/id_util.h"
 #include "content/public/test/test_browser_thread.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/management_policy.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_builder.h"
+#include "extensions/common/feature_switch.h"
+#include "extensions/common/value_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_CHROMEOS)
@@ -25,6 +32,10 @@
 #endif
 
 namespace extensions {
+
+namespace {
+const char kAllHostsPermission[] = "*://*/*";
+}
 
 class ExtensionUITest : public testing::Test {
  public:
@@ -63,6 +74,26 @@ class ExtensionUITest : public testing::Test {
     value = serializer.Deserialize(NULL, error);
 
     return static_cast<base::DictionaryValue*>(value);
+  }
+
+  const Extension* CreateExtension(const std::string& name,
+                                   ListBuilder& permissions) {
+    const std::string kId = crx_file::id_util::GenerateId(name);
+    scoped_refptr<const Extension> extension =
+        ExtensionBuilder().SetManifest(
+                               DictionaryBuilder()
+                                   .Set("name", name)
+                                   .Set("description", "an extension")
+                                   .Set("manifest_version", 2)
+                                   .Set("version", "1.0.0")
+                                   .Set("permissions", permissions))
+                          .SetLocation(Manifest::INTERNAL)
+                          .SetID(kId)
+                          .Build();
+
+    ExtensionRegistry::Get(profile())->AddEnabled(extension);
+    PermissionsUpdater(profile()).InitializePermissions(extension);
+    return extension;
   }
 
   base::DictionaryValue* CreateExtensionDetailViewFromPath(
@@ -115,6 +146,9 @@ class ExtensionUITest : public testing::Test {
           paths_details;
     }
   }
+
+  Profile* profile() { return profile_.get(); }
+  ExtensionSettingsHandler* handler() { return handler_.get(); }
 
   base::MessageLoop message_loop_;
   content::TestBrowserThread ui_thread_;
@@ -276,6 +310,80 @@ TEST_F(ExtensionUITest, PathPropagation) {
 
   EXPECT_TRUE(extension_details->GetString("path", &ui_path));
   EXPECT_EQ(extension_path, base::FilePath(ui_path));
+}
+
+// Test that the all_urls checkbox only shows up for extensions that want all
+// urls, and only when the switch is on.
+TEST_F(ExtensionUITest, ExtensionUIAllUrlsCheckbox) {
+  // Start with the switch enabled.
+  scoped_ptr<FeatureSwitch::ScopedOverride> enable_scripts_switch(
+      new FeatureSwitch::ScopedOverride(
+          FeatureSwitch::scripts_require_action(), true));
+  // Two extensions - one with all urls, one without.
+  const Extension* all_urls_extension =
+      CreateExtension("all_urls",
+                      ListBuilder().Append(kAllHostsPermission).Pass());
+  const Extension* no_urls_extension =
+      CreateExtension("no urls", ListBuilder().Pass());
+
+  scoped_ptr<base::DictionaryValue> value(
+      handler()->CreateExtensionDetailValue(
+          all_urls_extension, std::vector<ExtensionPage>(), NULL));
+  bool result = false;
+  const std::string kWantsAllUrls = "wantsAllUrls";
+  const std::string kAllowAllUrls = "allowAllUrls";
+
+  // The extension should want all urls, but not currently have it.
+  EXPECT_TRUE(value->GetBoolean(kWantsAllUrls, &result));
+  EXPECT_TRUE(result);
+  EXPECT_TRUE(value->GetBoolean(kAllowAllUrls, &result));
+  EXPECT_FALSE(result);
+
+  // Give the extension all urls.
+  util::SetAllowedScriptingOnAllUrls(
+      all_urls_extension->id(), profile(), true);
+
+  // Now the extension should both want and have all urls.
+  value.reset(handler()->CreateExtensionDetailValue(
+      all_urls_extension, std::vector<ExtensionPage>(), NULL));
+  EXPECT_TRUE(value->GetBoolean(kWantsAllUrls, &result));
+  EXPECT_TRUE(result);
+  EXPECT_TRUE(value->GetBoolean(kAllowAllUrls, &result));
+  EXPECT_TRUE(result);
+
+  // The other extension should neither want nor have all urls.
+  value.reset(handler()->CreateExtensionDetailValue(
+      no_urls_extension, std::vector<ExtensionPage>(), NULL));
+  EXPECT_TRUE(value->GetBoolean(kWantsAllUrls, &result));
+  EXPECT_FALSE(result);
+  EXPECT_TRUE(value->GetBoolean(kAllowAllUrls, &result));
+  EXPECT_FALSE(result);
+
+  // Turn off the switch and load another extension (so permissions are
+  // re-initialized).
+  enable_scripts_switch.reset();
+
+  // Even though the extension has the all urls preference, the checkbox
+  // shouldn't show up with the switch off.
+  value.reset(handler()->CreateExtensionDetailValue(
+      all_urls_extension, std::vector<ExtensionPage>(), NULL));
+  EXPECT_TRUE(value->GetBoolean(kWantsAllUrls, &result));
+  EXPECT_FALSE(result);
+  EXPECT_TRUE(value->GetBoolean(kAllowAllUrls, &result));
+  EXPECT_TRUE(result);
+
+  // Load another extension with all urls (so permissions get re-init'd).
+  all_urls_extension = CreateExtension(
+      "all_urls_II", ListBuilder().Append(kAllHostsPermission).Pass());
+
+  // Even though the extension has all_urls permission, the checkbox shouldn't
+  // show up without the switch.
+  value.reset(handler()->CreateExtensionDetailValue(
+      all_urls_extension, std::vector<ExtensionPage>(), NULL));
+  EXPECT_TRUE(value->GetBoolean(kWantsAllUrls, &result));
+  EXPECT_FALSE(result);
+  EXPECT_TRUE(value->GetBoolean(kAllowAllUrls, &result));
+  EXPECT_FALSE(result);
 }
 
 }  // namespace extensions
