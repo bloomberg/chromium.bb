@@ -6,6 +6,9 @@
 
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
+#if defined(OS_MACOSX)
+#include "base/metrics/field_trial.h"
+#endif
 #include "base/metrics/histogram.h"
 #include "content/public/common/content_switches.h"
 #include "content/renderer/media/media_stream_audio_processor_options.h"
@@ -414,6 +417,10 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
     config.Set<webrtc::DelayCorrection>(new webrtc::DelayCorrection(true));
   if (goog_experimental_ns)
     config.Set<webrtc::ExperimentalNs>(new webrtc::ExperimentalNs(true));
+#if defined(OS_MACOSX)
+  if (base::FieldTrialList::FindFullName("NoReportedDelayOnMac") == "Enabled")
+    config.Set<webrtc::ReportedDelay>(new webrtc::ReportedDelay(false));
+#endif
 
   // Create and configure the webrtc::AudioProcessing.
   audio_processing_.reset(webrtc::AudioProcessing::Create(config));
