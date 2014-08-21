@@ -129,7 +129,7 @@ void CreateTestTextureDrawQuad(const gfx::Rect& rect,
   ResourceProvider::ResourceId resource =
       resource_provider->CreateResource(rect.size(),
                                         GL_CLAMP_TO_EDGE,
-                                        ResourceProvider::TextureUsageAny,
+                                        ResourceProvider::TextureHintImmutable,
                                         RGBA_8888);
   resource_provider->SetPixels(
       resource,
@@ -1217,7 +1217,7 @@ TYPED_TEST(RendererPixelTest, RenderPassAndMaskWithPartialQuad) {
       this->resource_provider_->CreateResource(
           mask_rect.size(),
           GL_CLAMP_TO_EDGE,
-          ResourceProvider::TextureUsageAny,
+          ResourceProvider::TextureHintImmutable,
           RGBA_8888);
   {
     SkAutoLockPixels lock(bitmap);
@@ -2176,7 +2176,7 @@ TYPED_TEST(RendererPixelTest, WrapModeRepeat) {
       this->resource_provider_->CreateResource(
           texture_rect.size(),
           GL_REPEAT,
-          ResourceProvider::TextureUsageAny,
+          ResourceProvider::TextureHintImmutable,
           RGBA_8888);
   this->resource_provider_->SetPixels(
       resource,

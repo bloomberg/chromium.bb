@@ -899,11 +899,9 @@ scoped_ptr<ScopedResource> GLRenderer::GetBackgroundWithFilters(
 
   scoped_ptr<ScopedResource> device_background_texture =
       ScopedResource::Create(resource_provider_);
-  // The TextureUsageFramebuffer hint makes ResourceProvider avoid immutable
-  // storage allocation (texStorage2DEXT) for this texture. copyTexImage2D fails
-  // when called on a texture having immutable storage.
+  // CopyTexImage2D fails when called on a texture having immutable storage.
   device_background_texture->Allocate(
-      window_rect.size(), ResourceProvider::TextureUsageFramebuffer, RGBA_8888);
+      window_rect.size(), ResourceProvider::TextureHintDefault, RGBA_8888);
   {
     ResourceProvider::ScopedWriteLockGL lock(resource_provider_,
                                              device_background_texture->id());
@@ -941,7 +939,9 @@ scoped_ptr<ScopedResource> GLRenderer::GetBackgroundWithFilters(
   scoped_ptr<ScopedResource> background_texture =
       ScopedResource::Create(resource_provider_);
   background_texture->Allocate(
-      quad->rect.size(), ResourceProvider::TextureUsageFramebuffer, RGBA_8888);
+      quad->rect.size(),
+      ResourceProvider::TextureHintImmutableFramebuffer,
+      RGBA_8888);
 
   const RenderPass* target_render_pass = frame->current_render_pass;
   bool using_background_texture =
@@ -1929,13 +1929,13 @@ void GLRenderer::DrawPictureQuad(const DrawingFrame* frame,
     if (on_demand_tile_raster_resource_id_)
       resource_provider_->DeleteResource(on_demand_tile_raster_resource_id_);
 
-    on_demand_tile_raster_resource_id_ =
-        resource_provider_->CreateGLTexture(quad->texture_size,
-                                            GL_TEXTURE_2D,
-                                            GL_TEXTURE_POOL_UNMANAGED_CHROMIUM,
-                                            GL_CLAMP_TO_EDGE,
-                                            ResourceProvider::TextureUsageAny,
-                                            quad->texture_format);
+    on_demand_tile_raster_resource_id_ = resource_provider_->CreateGLTexture(
+        quad->texture_size,
+        GL_TEXTURE_2D,
+        GL_TEXTURE_POOL_UNMANAGED_CHROMIUM,
+        GL_CLAMP_TO_EDGE,
+        ResourceProvider::TextureHintImmutable,
+        quad->texture_format);
   }
 
   // Create and run on-demand raster task for tile.

@@ -16,7 +16,7 @@ ScopedResource::~ScopedResource() {
 }
 
 void ScopedResource::Allocate(const gfx::Size& size,
-                              ResourceProvider::TextureUsageHint hint,
+                              ResourceProvider::TextureHint hint,
                               ResourceFormat format) {
   DCHECK(!id());
   DCHECK(!size.IsEmpty());
@@ -41,7 +41,7 @@ void ScopedResource::AllocateManaged(const gfx::Size& size,
       size,
       target,
       GL_CLAMP_TO_EDGE,
-      ResourceProvider::TextureUsageAny,
+      ResourceProvider::TextureHintImmutable,
       format));
 
 #if DCHECK_IS_ON

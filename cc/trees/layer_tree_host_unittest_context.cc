@@ -724,7 +724,7 @@ class LayerTreeHostContextTestDontUseLostResources
         child_resource_provider_->CreateResource(
             gfx::Size(4, 4),
             GL_CLAMP_TO_EDGE,
-            ResourceProvider::TextureUsageAny,
+            ResourceProvider::TextureHintImmutable,
             RGBA_8888);
     ResourceProvider::ScopedWriteLockGL lock(child_resource_provider_.get(),
                                              resource);

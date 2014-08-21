@@ -455,7 +455,7 @@ PrioritizedResource::Backing* PrioritizedResourceManager::CreateBacking(
           size,
           GL_TEXTURE_2D,
           GL_CLAMP_TO_EDGE,
-          ResourceProvider::TextureUsageAny,
+          ResourceProvider::TextureHintImmutable,
           format);
   PrioritizedResource::Backing* backing = new PrioritizedResource::Backing(
       resource_id, resource_provider, size, format);

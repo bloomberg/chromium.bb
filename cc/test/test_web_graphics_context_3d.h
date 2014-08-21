@@ -307,6 +307,9 @@ class TestWebGraphicsContext3D {
   void set_support_texture_storage(bool support) {
     test_capabilities_.gpu.texture_storage = support;
   }
+  void set_support_texture_usage(bool support) {
+    test_capabilities_.gpu.texture_usage = support;
+  }
   void set_support_sync_query(bool support) {
     test_capabilities_.gpu.sync_query = support;
   }

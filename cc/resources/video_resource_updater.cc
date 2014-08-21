@@ -193,11 +193,11 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
     if (resource_id == 0) {
       // TODO(danakj): Abstract out hw/sw resource create/delete from
       // ResourceProvider and stop using ResourceProvider in this class.
-      resource_id =
-          resource_provider_->CreateResource(output_plane_resource_size,
-                                             GL_CLAMP_TO_EDGE,
-                                             ResourceProvider::TextureUsageAny,
-                                             output_resource_format);
+      resource_id = resource_provider_->CreateResource(
+          output_plane_resource_size,
+          GL_CLAMP_TO_EDGE,
+          ResourceProvider::TextureHintImmutable,
+          output_resource_format);
 
       DCHECK(mailbox.IsZero());
 

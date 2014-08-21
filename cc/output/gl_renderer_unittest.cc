@@ -1273,7 +1273,7 @@ TEST_F(GLRendererShaderTest, DrawRenderPassQuadShaderPermutations) {
   ResourceProvider::ResourceId mask = resource_provider_->CreateResource(
       gfx::Size(20, 12),
       GL_CLAMP_TO_EDGE,
-      ResourceProvider::TextureUsageAny,
+      ResourceProvider::TextureHintImmutable,
       resource_provider_->best_texture_format());
   resource_provider_->AllocateForTesting(mask);
 

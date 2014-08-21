@@ -180,7 +180,8 @@ class RasterWorkerPoolPerfTestBase {
     for (unsigned i = 0; i < num_raster_tasks; ++i) {
       scoped_ptr<ScopedResource> resource(
           ScopedResource::Create(resource_provider_.get()));
-      resource->Allocate(size, ResourceProvider::TextureUsageAny, RGBA_8888);
+      resource->Allocate(
+          size, ResourceProvider::TextureHintImmutable, RGBA_8888);
 
       ImageDecodeTask::Vector dependencies = image_decode_tasks;
       raster_tasks->push_back(

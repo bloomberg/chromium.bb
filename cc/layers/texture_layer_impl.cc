@@ -103,7 +103,7 @@ bool TextureLayerImpl::WillDraw(DrawMode draw_mode,
 
     if (!texture_copy_->id()) {
       texture_copy_->Allocate(texture_mailbox_.shared_memory_size(),
-                              ResourceProvider::TextureUsageAny,
+                              ResourceProvider::TextureHintImmutable,
                               resource_provider->best_texture_format());
     }
 

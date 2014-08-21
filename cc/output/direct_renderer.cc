@@ -409,7 +409,7 @@ bool DirectRenderer::UseRenderPass(DrawingFrame* frame,
                enlarge_pass_texture_amount_.y());
   if (!texture->id())
     texture->Allocate(
-        size, ResourceProvider::TextureUsageFramebuffer, RGBA_8888);
+        size, ResourceProvider::TextureHintImmutableFramebuffer, RGBA_8888);
   DCHECK(texture->id());
 
   return BindFramebufferToTexture(frame, texture, render_pass->output_rect);

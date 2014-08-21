@@ -497,7 +497,7 @@ void CheckCreateResource(ResourceProvider::ResourceType expected_default_type,
   ASSERT_EQ(4U, pixel_size);
 
   ResourceProvider::ResourceId id = resource_provider->CreateResource(
-      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny, format);
+      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureHintImmutable, format);
   EXPECT_EQ(1, static_cast<int>(resource_provider->num_resources()));
   if (expected_default_type == ResourceProvider::GLTexture)
     EXPECT_EQ(0u, context->NumTextures());
@@ -529,7 +529,7 @@ TEST_P(ResourceProviderTest, Upload) {
   ASSERT_EQ(16U, pixel_size);
 
   ResourceProvider::ResourceId id = resource_provider_->CreateResource(
-      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny, format);
+      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureHintImmutable, format);
 
   uint8_t image[16] = { 0 };
   gfx::Rect image_rect(size);
@@ -598,18 +598,18 @@ TEST_P(ResourceProviderTest, TransferGLResources) {
   ASSERT_EQ(4U, pixel_size);
 
   ResourceProvider::ResourceId id1 = child_resource_provider_->CreateResource(
-      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny, format);
+      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureHintImmutable, format);
   uint8_t data1[4] = { 1, 2, 3, 4 };
   gfx::Rect rect(size);
   child_resource_provider_->SetPixels(id1, data1, rect, rect, gfx::Vector2d());
 
   ResourceProvider::ResourceId id2 = child_resource_provider_->CreateResource(
-      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny, format);
+      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureHintImmutable, format);
   uint8_t data2[4] = { 5, 5, 5, 5 };
   child_resource_provider_->SetPixels(id2, data2, rect, rect, gfx::Vector2d());
 
   ResourceProvider::ResourceId id3 = child_resource_provider_->CreateResource(
-      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny, format);
+      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureHintImmutable, format);
   child_resource_provider_->MapImageRasterBuffer(id3);
   child_resource_provider_->UnmapImageRasterBuffer(id3);
 
@@ -839,7 +839,7 @@ TEST_P(ResourceProviderTest, ReadLockCountStopsReturnToChildOrDelete) {
   ResourceFormat format = RGBA_8888;
 
   ResourceProvider::ResourceId id1 = child_resource_provider_->CreateResource(
-      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny, format);
+      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureHintImmutable, format);
   uint8_t data1[4] = {1, 2, 3, 4};
   gfx::Rect rect(size);
   child_resource_provider_->SetPixels(id1, data1, rect, rect, gfx::Vector2d());
@@ -945,18 +945,18 @@ TEST_P(ResourceProviderTest, TransferSoftwareResources) {
   ASSERT_EQ(4U, pixel_size);
 
   ResourceProvider::ResourceId id1 = child_resource_provider_->CreateResource(
-      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny, format);
+      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureHintImmutable, format);
   uint8_t data1[4] = { 1, 2, 3, 4 };
   gfx::Rect rect(size);
   child_resource_provider_->SetPixels(id1, data1, rect, rect, gfx::Vector2d());
 
   ResourceProvider::ResourceId id2 = child_resource_provider_->CreateResource(
-      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny, format);
+      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureHintImmutable, format);
   uint8_t data2[4] = { 5, 5, 5, 5 };
   child_resource_provider_->SetPixels(id2, data2, rect, rect, gfx::Vector2d());
 
   ResourceProvider::ResourceId id3 = child_resource_provider_->CreateResource(
-      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny, format);
+      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureHintImmutable, format);
   uint8_t data3[4] = { 6, 7, 8, 9 };
   SkImageInfo info = SkImageInfo::MakeN32Premul(size.width(), size.height());
   SkCanvas* raster_canvas = child_resource_provider_->MapImageRasterBuffer(id3);
@@ -1181,7 +1181,7 @@ TEST_P(ResourceProviderTest, TransferGLToSoftware) {
   ASSERT_EQ(4U, pixel_size);
 
   ResourceProvider::ResourceId id1 = child_resource_provider->CreateResource(
-      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny, format);
+      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureHintImmutable, format);
   uint8_t data1[4] = { 1, 2, 3, 4 };
   gfx::Rect rect(size);
   child_resource_provider->SetPixels(id1, data1, rect, rect, gfx::Vector2d());
@@ -1228,7 +1228,7 @@ TEST_P(ResourceProviderTest, TransferInvalidSoftware) {
   ASSERT_EQ(4U, pixel_size);
 
   ResourceProvider::ResourceId id1 = child_resource_provider_->CreateResource(
-      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny, format);
+      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureHintImmutable, format);
   uint8_t data1[4] = { 1, 2, 3, 4 };
   gfx::Rect rect(size);
   child_resource_provider_->SetPixels(id1, data1, rect, rect, gfx::Vector2d());
@@ -1276,13 +1276,13 @@ TEST_P(ResourceProviderTest, DeleteExportedResources) {
   ASSERT_EQ(4U, pixel_size);
 
   ResourceProvider::ResourceId id1 = child_resource_provider_->CreateResource(
-      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny, format);
+      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureHintImmutable, format);
   uint8_t data1[4] = { 1, 2, 3, 4 };
   gfx::Rect rect(size);
   child_resource_provider_->SetPixels(id1, data1, rect, rect, gfx::Vector2d());
 
   ResourceProvider::ResourceId id2 = child_resource_provider_->CreateResource(
-      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny, format);
+      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureHintImmutable, format);
   uint8_t data2[4] = {5, 5, 5, 5};
   child_resource_provider_->SetPixels(id2, data2, rect, rect, gfx::Vector2d());
 
@@ -1370,13 +1370,13 @@ TEST_P(ResourceProviderTest, DestroyChildWithExportedResources) {
   ASSERT_EQ(4U, pixel_size);
 
   ResourceProvider::ResourceId id1 = child_resource_provider_->CreateResource(
-      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny, format);
+      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureHintImmutable, format);
   uint8_t data1[4] = {1, 2, 3, 4};
   gfx::Rect rect(size);
   child_resource_provider_->SetPixels(id1, data1, rect, rect, gfx::Vector2d());
 
   ResourceProvider::ResourceId id2 = child_resource_provider_->CreateResource(
-      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny, format);
+      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureHintImmutable, format);
   uint8_t data2[4] = {5, 5, 5, 5};
   child_resource_provider_->SetPixels(id2, data2, rect, rect, gfx::Vector2d());
 
@@ -1481,7 +1481,7 @@ TEST_P(ResourceProviderTest, DeleteTransferredResources) {
   ASSERT_EQ(4U, pixel_size);
 
   ResourceProvider::ResourceId id = child_resource_provider_->CreateResource(
-      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny, format);
+      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureHintImmutable, format);
   uint8_t data[4] = { 1, 2, 3, 4 };
   gfx::Rect rect(size);
   child_resource_provider_->SetPixels(id, data, rect, rect, gfx::Vector2d());
@@ -1531,7 +1531,7 @@ TEST_P(ResourceProviderTest, UnuseTransferredResources) {
   ASSERT_EQ(4U, pixel_size);
 
   ResourceProvider::ResourceId id = child_resource_provider_->CreateResource(
-      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny, format);
+      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureHintImmutable, format);
   uint8_t data[4] = {1, 2, 3, 4};
   gfx::Rect rect(size);
   child_resource_provider_->SetPixels(id, data, rect, rect, gfx::Vector2d());
@@ -1682,7 +1682,7 @@ class ResourceProviderTestTextureFilters : public ResourceProviderTest {
     ASSERT_EQ(4U, pixel_size);
 
     ResourceProvider::ResourceId id = child_resource_provider->CreateResource(
-        size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny, format);
+        size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureHintImmutable, format);
 
     // The new texture is created with GL_LINEAR.
     EXPECT_CALL(*child_context, bindTexture(GL_TEXTURE_2D, child_texture_id))
@@ -1948,7 +1948,10 @@ TEST_P(ResourceProviderTest, LostResourceInParent) {
   ResourceFormat format = RGBA_8888;
   ResourceProvider::ResourceId resource =
       child_resource_provider_->CreateResource(
-          size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny, format);
+          size,
+          GL_CLAMP_TO_EDGE,
+          ResourceProvider::TextureHintImmutable,
+          format);
   child_resource_provider_->AllocateForTesting(resource);
   // Expect a GL resource to be lost.
   bool should_lose_resource = GetParam() == ResourceProvider::GLTexture;
@@ -2001,7 +2004,10 @@ TEST_P(ResourceProviderTest, LostResourceInGrandParent) {
   ResourceFormat format = RGBA_8888;
   ResourceProvider::ResourceId resource =
       child_resource_provider_->CreateResource(
-          size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny, format);
+          size,
+          GL_CLAMP_TO_EDGE,
+          ResourceProvider::TextureHintImmutable,
+          format);
   child_resource_provider_->AllocateForTesting(resource);
 
   ReturnedResourceArray returned_to_child;
@@ -2287,7 +2293,7 @@ TEST_P(ResourceProviderTest, ScopedSampler) {
   int texture_id = 1;
 
   ResourceProvider::ResourceId id = resource_provider->CreateResource(
-      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny, format);
+      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureHintImmutable, format);
 
   // Check that the texture gets created with the right sampler settings.
   EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, texture_id))
@@ -2372,7 +2378,7 @@ TEST_P(ResourceProviderTest, ManagedResource) {
       size,
       GL_TEXTURE_2D,
       GL_CLAMP_TO_EDGE,
-      ResourceProvider::TextureUsageAny,
+      ResourceProvider::TextureHintImmutable,
       format);
   EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, texture_id));
   EXPECT_CALL(*context,
@@ -2419,12 +2425,70 @@ TEST_P(ResourceProviderTest, TextureWrapMode) {
   for (int texture_id = 1; texture_id <= 2; ++texture_id) {
     GLint wrap_mode = texture_id == 1 ? GL_CLAMP_TO_EDGE : GL_REPEAT;
     // Check that the texture gets created with the right sampler settings.
+    ResourceProvider::ResourceId id = resource_provider->CreateGLTexture(
+        size,
+        GL_TEXTURE_2D,
+        texture_pool,
+        wrap_mode,
+        ResourceProvider::TextureHintImmutable,
+        format);
+    EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, texture_id));
+    EXPECT_CALL(*context,
+                texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
+    EXPECT_CALL(*context,
+                texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
+    EXPECT_CALL(*context,
+                texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrap_mode));
+    EXPECT_CALL(*context,
+                texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrap_mode));
+    EXPECT_CALL(*context,
+                texParameteri(GL_TEXTURE_2D,
+                              GL_TEXTURE_POOL_CHROMIUM,
+                              GL_TEXTURE_POOL_UNMANAGED_CHROMIUM));
+    resource_provider->CreateForTesting(id);
+    EXPECT_NE(0u, id);
+
+    Mock::VerifyAndClearExpectations(context);
+  }
+}
+
+TEST_P(ResourceProviderTest, TextureHint) {
+  // Sampling is only supported for GL textures.
+  if (GetParam() != ResourceProvider::GLTexture)
+    return;
+
+  scoped_ptr<TextureStateTrackingContext> context_owned(
+      new TextureStateTrackingContext);
+  TextureStateTrackingContext* context = context_owned.get();
+  context->set_support_texture_storage(true);
+  context->set_support_texture_usage(true);
+
+  FakeOutputSurfaceClient output_surface_client;
+  scoped_ptr<OutputSurface> output_surface(FakeOutputSurface::Create3d(
+      context_owned.PassAs<TestWebGraphicsContext3D>()));
+  CHECK(output_surface->BindToClient(&output_surface_client));
+
+  scoped_ptr<ResourceProvider> resource_provider(ResourceProvider::Create(
+      output_surface.get(), shared_bitmap_manager_.get(), 0, false, 1, false));
+
+  gfx::Size size(1, 1);
+  ResourceFormat format = RGBA_8888;
+  GLenum texture_pool = GL_TEXTURE_POOL_UNMANAGED_CHROMIUM;
+
+  const ResourceProvider::TextureHint hints[4] = {
+      ResourceProvider::TextureHintDefault,
+      ResourceProvider::TextureHintImmutable,
+      ResourceProvider::TextureHintFramebuffer,
+      ResourceProvider::TextureHintImmutableFramebuffer,
+  };
+  for (GLuint texture_id = 1; texture_id <= arraysize(hints); ++texture_id) {
+    // Check that the texture gets created with the right sampler settings.
     ResourceProvider::ResourceId id =
         resource_provider->CreateGLTexture(size,
                                            GL_TEXTURE_2D,
                                            texture_pool,
-                                           wrap_mode,
-                                           ResourceProvider::TextureUsageAny,
+                                           GL_CLAMP_TO_EDGE,
+                                           hints[texture_id - 1],
                                            format);
     EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, texture_id));
     EXPECT_CALL(*context,
@@ -2433,14 +2497,22 @@ TEST_P(ResourceProviderTest, TextureWrapMode) {
                 texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
     EXPECT_CALL(
         *context,
-        texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrap_mode));
+        texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
     EXPECT_CALL(
         *context,
-        texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrap_mode));
+        texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
     EXPECT_CALL(*context,
                 texParameteri(GL_TEXTURE_2D,
                               GL_TEXTURE_POOL_CHROMIUM,
                               GL_TEXTURE_POOL_UNMANAGED_CHROMIUM));
+    // Check only TextureHintFramebuffer set GL_TEXTURE_USAGE_ANGLE.
+    bool is_framebuffer_hint =
+        hints[texture_id - 1] & ResourceProvider::TextureHintFramebuffer;
+    EXPECT_CALL(*context,
+                texParameteri(GL_TEXTURE_2D,
+                              GL_TEXTURE_USAGE_ANGLE,
+                              GL_FRAMEBUFFER_ATTACHMENT_ANGLE))
+        .Times(is_framebuffer_hint ? 1 : 0);
     resource_provider->CreateForTesting(id);
     EXPECT_NE(0u, id);
 
@@ -2823,7 +2895,7 @@ TEST_P(ResourceProviderTest, TextureAllocation) {
 
   // Lazy allocation. Don't allocate when creating the resource.
   id = resource_provider->CreateResource(
-      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny, format);
+      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureHintImmutable, format);
 
   EXPECT_CALL(*context, NextTextureId()).WillOnce(Return(texture_id));
   EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, texture_id)).Times(1);
@@ -2836,7 +2908,7 @@ TEST_P(ResourceProviderTest, TextureAllocation) {
 
   // Do allocate when we set the pixels.
   id = resource_provider->CreateResource(
-      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny, format);
+      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureHintImmutable, format);
 
   EXPECT_CALL(*context, NextTextureId()).WillOnce(Return(texture_id));
   EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, texture_id)).Times(3);
@@ -2851,7 +2923,7 @@ TEST_P(ResourceProviderTest, TextureAllocation) {
 
   // Same for async version.
   id = resource_provider->CreateResource(
-      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny, format);
+      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureHintImmutable, format);
   resource_provider->AcquirePixelRasterBuffer(id);
 
   EXPECT_CALL(*context, NextTextureId()).WillOnce(Return(texture_id));
@@ -2869,7 +2941,7 @@ TEST_P(ResourceProviderTest, TextureAllocation) {
   Mock::VerifyAndClearExpectations(context);
 }
 
-TEST_P(ResourceProviderTest, TextureAllocationStorageUsageAny) {
+TEST_P(ResourceProviderTest, TextureAllocationHint) {
   // Only for GL textures.
   if (GetParam() != ResourceProvider::GLTexture)
     return;
@@ -2877,6 +2949,7 @@ TEST_P(ResourceProviderTest, TextureAllocationStorageUsageAny) {
       new StrictMock<AllocationTrackingContext3D>);
   AllocationTrackingContext3D* context = context_owned.get();
   context->set_support_texture_storage(true);
+  context->set_support_texture_usage(true);
 
   FakeOutputSurfaceClient output_surface_client;
   scoped_ptr<OutputSurface> output_surface(FakeOutputSurface::Create3d(
@@ -2888,62 +2961,33 @@ TEST_P(ResourceProviderTest, TextureAllocationStorageUsageAny) {
 
   gfx::Size size(2, 2);
   ResourceFormat format = RGBA_8888;
-  ResourceProvider::ResourceId id = 0;
-  int texture_id = 123;
 
-  // Lazy allocation. Don't allocate when creating the resource.
-  id = resource_provider->CreateResource(
-      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny, format);
+  const ResourceProvider::TextureHint hints[4] = {
+      ResourceProvider::TextureHintDefault,
+      ResourceProvider::TextureHintImmutable,
+      ResourceProvider::TextureHintFramebuffer,
+      ResourceProvider::TextureHintImmutableFramebuffer,
+  };
+  for (GLuint texture_id = 1; texture_id <= arraysize(hints); ++texture_id) {
+    // Lazy allocation. Don't allocate when creating the resource.
+    ResourceProvider::ResourceId id = resource_provider->CreateResource(
+        size, GL_CLAMP_TO_EDGE, hints[texture_id - 1], format);
 
-  EXPECT_CALL(*context, NextTextureId()).WillOnce(Return(texture_id));
-  EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, texture_id)).Times(2);
-  EXPECT_CALL(*context, texStorage2DEXT(_, _, _, 2, 2)).Times(1);
-  resource_provider->AllocateForTesting(id);
+    EXPECT_CALL(*context, NextTextureId()).WillOnce(Return(texture_id));
+    EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, texture_id)).Times(2);
+    bool is_immutable_hint =
+        hints[texture_id - 1] & ResourceProvider::TextureHintImmutable;
+    EXPECT_CALL(*context, texStorage2DEXT(_, _, _, 2, 2))
+        .Times(is_immutable_hint ? 1 : 0);
+    EXPECT_CALL(*context, texImage2D(_, _, _, 2, 2, _, _, _, _))
+        .Times(is_immutable_hint ? 0 : 1);
+    resource_provider->AllocateForTesting(id);
 
-  EXPECT_CALL(*context, RetireTextureId(texture_id)).Times(1);
-  resource_provider->DeleteResource(id);
+    EXPECT_CALL(*context, RetireTextureId(texture_id)).Times(1);
+    resource_provider->DeleteResource(id);
 
-  Mock::VerifyAndClearExpectations(context);
-}
-
-TEST_P(ResourceProviderTest, TextureAllocationStorageUsageFramebuffer) {
-  // Only for GL textures.
-  if (GetParam() != ResourceProvider::GLTexture)
-    return;
-  scoped_ptr<AllocationTrackingContext3D> context_owned(
-      new StrictMock<AllocationTrackingContext3D>);
-  AllocationTrackingContext3D* context = context_owned.get();
-  context->set_support_texture_storage(true);
-
-  FakeOutputSurfaceClient output_surface_client;
-  scoped_ptr<OutputSurface> output_surface(FakeOutputSurface::Create3d(
-      context_owned.PassAs<TestWebGraphicsContext3D>()));
-  CHECK(output_surface->BindToClient(&output_surface_client));
-
-  scoped_ptr<ResourceProvider> resource_provider(ResourceProvider::Create(
-      output_surface.get(), shared_bitmap_manager_.get(), 0, false, 1, false));
-
-  gfx::Size size(2, 2);
-  ResourceFormat format = RGBA_8888;
-  ResourceProvider::ResourceId id = 0;
-  int texture_id = 123;
-
-  // Lazy allocation. Don't allocate when creating the resource.
-  id = resource_provider->CreateResource(
-      size,
-      GL_CLAMP_TO_EDGE,
-      ResourceProvider::TextureUsageFramebuffer,
-      format);
-
-  EXPECT_CALL(*context, NextTextureId()).WillOnce(Return(texture_id));
-  EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, texture_id)).Times(2);
-  EXPECT_CALL(*context, texImage2D(_, _, _, 2, 2, _, _, _, _)).Times(1);
-  resource_provider->AllocateForTesting(id);
-
-  EXPECT_CALL(*context, RetireTextureId(texture_id)).Times(1);
-  resource_provider->DeleteResource(id);
-
-  Mock::VerifyAndClearExpectations(context);
+    Mock::VerifyAndClearExpectations(context);
+  }
 }
 
 TEST_P(ResourceProviderTest, PixelBuffer_GLTexture) {
@@ -2967,7 +3011,7 @@ TEST_P(ResourceProviderTest, PixelBuffer_GLTexture) {
       output_surface.get(), shared_bitmap_manager_.get(), 0, false, 1, false));
 
   id = resource_provider->CreateResource(
-      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny, format);
+      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureHintImmutable, format);
   resource_provider->AcquirePixelRasterBuffer(id);
 
   EXPECT_CALL(*context, NextTextureId()).WillOnce(Return(texture_id));
@@ -3008,7 +3052,7 @@ TEST_P(ResourceProviderTest, ForcingAsyncUploadToComplete) {
       output_surface.get(), shared_bitmap_manager_.get(), 0, false, 1, false));
 
   id = resource_provider->CreateResource(
-      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny, format);
+      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureHintImmutable, format);
   resource_provider->AcquirePixelRasterBuffer(id);
 
   EXPECT_CALL(*context, NextTextureId()).WillOnce(Return(texture_id));
@@ -3051,7 +3095,7 @@ TEST_P(ResourceProviderTest, PixelBufferLostContext) {
   EXPECT_CALL(*context, NextTextureId()).WillRepeatedly(Return(texture_id));
 
   id = resource_provider->CreateResource(
-      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny, format);
+      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureHintImmutable, format);
   context->loseContextCHROMIUM(GL_GUILTY_CONTEXT_RESET_ARB,
                                GL_INNOCENT_CONTEXT_RESET_ARB);
 
@@ -3088,7 +3132,7 @@ TEST_P(ResourceProviderTest, Image_GLTexture) {
       output_surface.get(), shared_bitmap_manager_.get(), 0, false, 1, false));
 
   id = resource_provider->CreateResource(
-      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny, format);
+      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureHintImmutable, format);
 
   const int kStride = 4;
   void* dummy_mapped_buffer_address = NULL;
@@ -3182,7 +3226,7 @@ TEST_P(ResourceProviderTest, Image_Bitmap) {
       output_surface.get(), shared_bitmap_manager_.get(), 0, false, 1, false));
 
   id = resource_provider->CreateResource(
-      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny, format);
+      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureHintImmutable, format);
 
   SkBitmap bitmap;
   bitmap.allocN32Pixels(size.width(), size.height());
@@ -3230,7 +3274,7 @@ TEST_P(ResourceProviderTest, CopyResource_GLTexture) {
       output_surface.get(), shared_bitmap_manager_.get(), 0, false, 1, false));
 
   source_id = resource_provider->CreateResource(
-      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny, format);
+      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureHintImmutable, format);
 
   const int kStride = 4;
   void* dummy_mapped_buffer_address = NULL;
@@ -3257,7 +3301,7 @@ TEST_P(ResourceProviderTest, CopyResource_GLTexture) {
   Mock::VerifyAndClearExpectations(context);
 
   dest_id = resource_provider->CreateResource(
-      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny, format);
+      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureHintImmutable, format);
 
   EXPECT_CALL(*context, NextTextureId())
       .WillOnce(Return(kDestTextureId))
@@ -3308,7 +3352,7 @@ TEST_P(ResourceProviderTest, CopyResource_Bitmap) {
       output_surface.get(), shared_bitmap_manager_.get(), 0, false, 1, false));
 
   source_id = resource_provider->CreateResource(
-      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny, format);
+      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureHintImmutable, format);
 
   SkBitmap bitmap;
   bitmap.allocN32Pixels(size.width(), size.height());
@@ -3319,7 +3363,7 @@ TEST_P(ResourceProviderTest, CopyResource_Bitmap) {
   resource_provider->UnmapImageRasterBuffer(source_id);
 
   dest_id = resource_provider->CreateResource(
-      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny, format);
+      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureHintImmutable, format);
 
   resource_provider->CopyResource(source_id, dest_id);
 
@@ -3406,7 +3450,7 @@ TEST_P(ResourceProviderTest, CompressedTextureETC1Allocate) {
   int texture_id = 123;
 
   ResourceProvider::ResourceId id = resource_provider->CreateResource(
-      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny, ETC1);
+      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureHintImmutable, ETC1);
   EXPECT_NE(0u, id);
   EXPECT_CALL(*context, NextTextureId()).WillOnce(Return(texture_id));
   EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, texture_id)).Times(2);
@@ -3442,7 +3486,7 @@ TEST_P(ResourceProviderTest, CompressedTextureETC1SetPixels) {
   uint8_t pixels[8];
 
   ResourceProvider::ResourceId id = resource_provider->CreateResource(
-      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny, ETC1);
+      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureHintImmutable, ETC1);
   EXPECT_NE(0u, id);
   EXPECT_CALL(*context, NextTextureId()).WillOnce(Return(texture_id));
   EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, texture_id)).Times(3);
@@ -3500,7 +3544,7 @@ TEST(ResourceProviderTest, TextureAllocationChunkSize) {
                                  false));
 
     ResourceProvider::ResourceId id = resource_provider->CreateResource(
-        size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny, format);
+        size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureHintImmutable, format);
     resource_provider->AllocateForTesting(id);
     Mock::VerifyAndClearExpectations(context);
 
@@ -3519,7 +3563,7 @@ TEST(ResourceProviderTest, TextureAllocationChunkSize) {
                                  false));
 
     ResourceProvider::ResourceId id = resource_provider->CreateResource(
-        size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny, format);
+        size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureHintImmutable, format);
     resource_provider->AllocateForTesting(id);
     Mock::VerifyAndClearExpectations(context);
 

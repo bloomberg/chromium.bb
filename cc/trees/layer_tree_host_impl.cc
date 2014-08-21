@@ -3304,11 +3304,11 @@ void LayerTreeHostImpl::CreateUIResource(UIResourceId uid,
       format = ETC1;
       break;
   }
-  id = resource_provider_->CreateResource(
-      bitmap.GetSize(),
-      wrap_mode,
-      ResourceProvider::TextureUsageAny,
-      format);
+  id =
+      resource_provider_->CreateResource(bitmap.GetSize(),
+                                         wrap_mode,
+                                         ResourceProvider::TextureHintImmutable,
+                                         format);
 
   UIResourceData data;
   data.resource_id = id;

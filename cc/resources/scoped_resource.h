@@ -26,7 +26,7 @@ class CC_EXPORT ScopedResource : public Resource {
   virtual ~ScopedResource();
 
   void Allocate(const gfx::Size& size,
-                ResourceProvider::TextureUsageHint hint,
+                ResourceProvider::TextureHint hint,
                 ResourceFormat format);
   void AllocateManaged(const gfx::Size& size,
                        GLenum target,

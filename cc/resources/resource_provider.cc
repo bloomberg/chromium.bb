@@ -248,7 +248,7 @@ ResourceProvider::Resource::Resource()
       bound_image_id(0),
       texture_pool(0),
       wrap_mode(0),
-      hint(TextureUsageAny),
+      hint(TextureHintImmutable),
       type(InvalidType),
       format(RGBA_8888),
       shared_bitmap(NULL) {
@@ -263,7 +263,7 @@ ResourceProvider::Resource::Resource(GLuint texture_id,
                                      GLenum filter,
                                      GLenum texture_pool,
                                      GLint wrap_mode,
-                                     TextureUsageHint hint,
+                                     TextureHint hint,
                                      ResourceFormat format)
     : child_id(0),
       gl_id(texture_id),
@@ -337,7 +337,7 @@ ResourceProvider::Resource::Resource(uint8_t* pixels,
       bound_image_id(0),
       texture_pool(0),
       wrap_mode(wrap_mode),
-      hint(TextureUsageAny),
+      hint(TextureHintImmutable),
       type(Bitmap),
       format(RGBA_8888),
       shared_bitmap(bitmap) {
@@ -381,7 +381,7 @@ ResourceProvider::Resource::Resource(const SharedBitmapId& bitmap_id,
       bound_image_id(0),
       texture_pool(0),
       wrap_mode(wrap_mode),
-      hint(TextureUsageAny),
+      hint(TextureHintImmutable),
       type(Bitmap),
       format(RGBA_8888),
       shared_bitmap_id(bitmap_id),
@@ -629,7 +629,7 @@ bool ResourceProvider::AllowOverlay(ResourceId id) {
 ResourceProvider::ResourceId ResourceProvider::CreateResource(
     const gfx::Size& size,
     GLint wrap_mode,
-    TextureUsageHint hint,
+    TextureHint hint,
     ResourceFormat format) {
   DCHECK(!size.IsEmpty());
   switch (default_resource_type_) {
@@ -655,7 +655,7 @@ ResourceProvider::ResourceId ResourceProvider::CreateManagedResource(
     const gfx::Size& size,
     GLenum target,
     GLint wrap_mode,
-    TextureUsageHint hint,
+    TextureHint hint,
     ResourceFormat format) {
   DCHECK(!size.IsEmpty());
   switch (default_resource_type_) {
@@ -682,7 +682,7 @@ ResourceProvider::ResourceId ResourceProvider::CreateGLTexture(
     GLenum target,
     GLenum texture_pool,
     GLint wrap_mode,
-    TextureUsageHint hint,
+    TextureHint hint,
     ResourceFormat format) {
   DCHECK_LE(size.width(), max_texture_size_);
   DCHECK_LE(size.height(), max_texture_size_);
@@ -741,7 +741,7 @@ ResourceProvider::ResourceId ResourceProvider::CreateResourceFromIOSurface(
                     GL_LINEAR,
                     GL_TEXTURE_POOL_UNMANAGED_CHROMIUM,
                     GL_CLAMP_TO_EDGE,
-                    TextureUsageAny,
+                    TextureHintImmutable,
                     RGBA_8888);
   LazyCreate(&resource);
   GLES2Interface* gl = ContextGL();
@@ -770,7 +770,7 @@ ResourceProvider::ResourceId ResourceProvider::CreateResourceFromTextureMailbox(
                         GL_LINEAR,
                         0,
                         GL_CLAMP_TO_EDGE,
-                        TextureUsageAny,
+                        TextureHintImmutable,
                         RGBA_8888);
   } else {
     DCHECK(mailbox.IsSharedMemory());
@@ -1418,7 +1418,7 @@ void ResourceProvider::ReceiveFromChild(
                           it->filter,
                           0,
                           it->is_repeated ? GL_REPEAT : GL_CLAMP_TO_EDGE,
-                          TextureUsageAny,
+                          TextureHintImmutable,
                           it->format);
       resource.mailbox = TextureMailbox(it->mailbox_holder.mailbox,
                                         it->mailbox_holder.texture_target,
@@ -2048,7 +2048,7 @@ void ResourceProvider::LazyCreate(Resource* resource) {
   GLC(gl,
       gl->TexParameteri(
           resource->target, GL_TEXTURE_POOL_CHROMIUM, resource->texture_pool));
-  if (use_texture_usage_hint_ && resource->hint == TextureUsageFramebuffer) {
+  if (use_texture_usage_hint_ && (resource->hint & TextureHintFramebuffer)) {
     GLC(gl,
         gl->TexParameteri(resource->target,
                           GL_TEXTURE_USAGE_ANGLE,
@@ -2074,7 +2074,7 @@ void ResourceProvider::LazyAllocate(Resource* resource) {
   ResourceFormat format = resource->format;
   GLC(gl, gl->BindTexture(GL_TEXTURE_2D, resource->gl_id));
   if (use_texture_storage_ext_ && IsFormatSupportedForStorage(format) &&
-      resource->hint != TextureUsageFramebuffer) {
+      (resource->hint & TextureHintImmutable)) {
     GLenum storage_format = TextureToStorageFormat(format);
     GLC(gl,
         gl->TexStorage2DEXT(

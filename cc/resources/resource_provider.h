@@ -60,9 +60,12 @@ class CC_EXPORT ResourceProvider {
   typedef std::vector<ResourceId> ResourceIdArray;
   typedef std::set<ResourceId> ResourceIdSet;
   typedef base::hash_map<ResourceId, ResourceId> ResourceIdMap;
-  enum TextureUsageHint {
-    TextureUsageAny,
-    TextureUsageFramebuffer,
+  enum TextureHint {
+    TextureHintDefault = 0x0,
+    TextureHintImmutable = 0x1,
+    TextureHintFramebuffer = 0x2,
+    TextureHintImmutableFramebuffer =
+        TextureHintImmutable | TextureHintFramebuffer
   };
   enum ResourceType {
     InvalidType = 0,
@@ -106,7 +109,7 @@ class CC_EXPORT ResourceProvider {
   // Creates a resource of the default resource type.
   ResourceId CreateResource(const gfx::Size& size,
                             GLint wrap_mode,
-                            TextureUsageHint hint,
+                            TextureHint hint,
                             ResourceFormat format);
 
   // Creates a resource which is tagged as being managed for GPU memory
@@ -114,7 +117,7 @@ class CC_EXPORT ResourceProvider {
   ResourceId CreateManagedResource(const gfx::Size& size,
                                    GLenum target,
                                    GLint wrap_mode,
-                                   TextureUsageHint hint,
+                                   TextureHint hint,
                                    ResourceFormat format);
 
   // You can also explicitly create a specific resource type.
@@ -122,7 +125,7 @@ class CC_EXPORT ResourceProvider {
                              GLenum target,
                              GLenum texture_pool,
                              GLint wrap_mode,
-                             TextureUsageHint hint,
+                             TextureHint hint,
                              ResourceFormat format);
 
   ResourceId CreateBitmap(const gfx::Size& size, GLint wrap_mode);
@@ -387,7 +390,7 @@ class CC_EXPORT ResourceProvider {
              GLenum filter,
              GLenum texture_pool,
              GLint wrap_mode,
-             TextureUsageHint hint,
+             TextureHint hint,
              ResourceFormat format);
     Resource(uint8_t* pixels,
              SharedBitmap* bitmap,
@@ -436,7 +439,7 @@ class CC_EXPORT ResourceProvider {
     unsigned bound_image_id;
     GLenum texture_pool;
     GLint wrap_mode;
-    TextureUsageHint hint;
+    TextureHint hint;
     ResourceType type;
     ResourceFormat format;
     SharedBitmapId shared_bitmap_id;

@@ -208,7 +208,7 @@ class RasterWorkerPoolTest
 
     scoped_ptr<ScopedResource> resource(
         ScopedResource::Create(resource_provider_.get()));
-    resource->Allocate(size, ResourceProvider::TextureUsageAny, RGBA_8888);
+    resource->Allocate(size, ResourceProvider::TextureHintImmutable, RGBA_8888);
     const Resource* const_resource = resource.get();
 
     ImageDecodeTask::Vector empty;
@@ -226,7 +226,7 @@ class RasterWorkerPoolTest
 
     scoped_ptr<ScopedResource> resource(
         ScopedResource::Create(resource_provider_.get()));
-    resource->Allocate(size, ResourceProvider::TextureUsageAny, RGBA_8888);
+    resource->Allocate(size, ResourceProvider::TextureHintImmutable, RGBA_8888);
     const Resource* const_resource = resource.get();
 
     ImageDecodeTask::Vector empty;

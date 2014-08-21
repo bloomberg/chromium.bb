@@ -34,43 +34,43 @@ void TestRenderPass::AppendOneOfEveryQuadType(
   ResourceProvider::ResourceId resource1 = resource_provider->CreateResource(
       gfx::Size(45, 5),
       GL_CLAMP_TO_EDGE,
-      ResourceProvider::TextureUsageAny,
+      ResourceProvider::TextureHintImmutable,
       resource_provider->best_texture_format());
   resource_provider->AllocateForTesting(resource1);
   ResourceProvider::ResourceId resource2 = resource_provider->CreateResource(
       gfx::Size(346, 61),
       GL_CLAMP_TO_EDGE,
-      ResourceProvider::TextureUsageAny,
+      ResourceProvider::TextureHintImmutable,
       resource_provider->best_texture_format());
   resource_provider->AllocateForTesting(resource2);
   ResourceProvider::ResourceId resource3 = resource_provider->CreateResource(
       gfx::Size(12, 134),
       GL_CLAMP_TO_EDGE,
-      ResourceProvider::TextureUsageAny,
+      ResourceProvider::TextureHintImmutable,
       resource_provider->best_texture_format());
   resource_provider->AllocateForTesting(resource3);
   ResourceProvider::ResourceId resource4 = resource_provider->CreateResource(
       gfx::Size(56, 12),
       GL_CLAMP_TO_EDGE,
-      ResourceProvider::TextureUsageAny,
+      ResourceProvider::TextureHintImmutable,
       resource_provider->best_texture_format());
   resource_provider->AllocateForTesting(resource4);
   ResourceProvider::ResourceId resource5 = resource_provider->CreateResource(
       gfx::Size(73, 26),
       GL_CLAMP_TO_EDGE,
-      ResourceProvider::TextureUsageAny,
+      ResourceProvider::TextureHintImmutable,
       resource_provider->best_texture_format());
   resource_provider->AllocateForTesting(resource5);
   ResourceProvider::ResourceId resource6 = resource_provider->CreateResource(
       gfx::Size(64, 92),
       GL_CLAMP_TO_EDGE,
-      ResourceProvider::TextureUsageAny,
+      ResourceProvider::TextureHintImmutable,
       resource_provider->best_texture_format());
   resource_provider->AllocateForTesting(resource6);
   ResourceProvider::ResourceId resource7 = resource_provider->CreateResource(
       gfx::Size(9, 14),
       GL_CLAMP_TO_EDGE,
-      ResourceProvider::TextureUsageAny,
+      ResourceProvider::TextureHintImmutable,
       resource_provider->best_texture_format());
   resource_provider->AllocateForTesting(resource7);
 
@@ -231,12 +231,11 @@ void TestRenderPass::AppendOneOfEveryQuadType(
 
   ResourceProvider::ResourceId plane_resources[4];
   for (int i = 0; i < 4; ++i) {
-    plane_resources[i] =
-        resource_provider->CreateResource(
-            gfx::Size(20, 12),
-            GL_CLAMP_TO_EDGE,
-            ResourceProvider::TextureUsageAny,
-            resource_provider->best_texture_format());
+    plane_resources[i] = resource_provider->CreateResource(
+        gfx::Size(20, 12),
+        GL_CLAMP_TO_EDGE,
+        ResourceProvider::TextureHintImmutable,
+        resource_provider->best_texture_format());
     resource_provider->AllocateForTesting(plane_resources[i]);
   }
   YUVVideoDrawQuad::ColorSpace color_space = YUVVideoDrawQuad::REC_601;
