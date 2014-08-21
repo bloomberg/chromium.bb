@@ -357,10 +357,16 @@ willPositionSheet:(NSWindow*)sheet
         static_cast<FramedBrowserWindow*>([self window]);
     rightIndent += -[window fullScreenButtonOriginAdjustment].x;
 
-    // The new avatar is wider than the default indentation, so we need to
-    // account for its width.
-    if ([self shouldUseNewAvatarButton])
+    if ([self shouldUseNewAvatarButton]) {
+      // The new avatar is wider than the default indentation, so we need to
+      // account for its width.
       rightIndent += NSWidth([avatarButton frame]) + kAvatarTabStripShrink;
+
+      // When the fullscreen icon is not displayed, return its width to the
+      // tabstrip.
+      if ([self isFullscreen])
+        rightIndent -= kFullscreenIconWidth;
+    }
   } else if ([self shouldShowAvatar]) {
     rightIndent += kAvatarTabStripShrink +
         NSWidth([avatarButton frame]) + kAvatarRightOffset;
