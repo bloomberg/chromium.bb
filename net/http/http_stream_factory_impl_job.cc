@@ -1028,6 +1028,22 @@ int HttpStreamFactoryImpl::Job::DoWaitingUserAction(int result) {
   return ERR_IO_PENDING;
 }
 
+int HttpStreamFactoryImpl::Job::SetSpdyHttpStream(
+    base::WeakPtr<SpdySession> session, bool direct) {
+  // TODO(ricea): Restore the code for WebSockets over SPDY once it's
+  // implemented.
+  if (stream_factory_->for_websockets_)
+    return ERR_NOT_IMPLEMENTED;
+
+  // TODO(willchan): Delete this code, because eventually, the
+  // HttpStreamFactoryImpl will be creating all the SpdyHttpStreams, since it
+  // will know when SpdySessions become available.
+
+  bool use_relative_url = direct || request_info_.url.SchemeIs("https");
+  stream_.reset(new SpdyHttpStream(session, use_relative_url));
+  return OK;
+}
+
 int HttpStreamFactoryImpl::Job::DoCreateStream() {
   DCHECK(connection_->socket() || existing_spdy_session_.get() || using_quic_);
 
@@ -1061,6 +1077,20 @@ int HttpStreamFactoryImpl::Job::DoCreateStream() {
   bool direct = true;
   const ProxyServer& proxy_server = proxy_info_.proxy_server();
   PrivacyMode privacy_mode = request_info_.privacy_mode;
+  if (IsHttpsProxyAndHttpUrl())
+    direct = false;
+
+  if (existing_spdy_session_.get()) {
+    // We picked up an existing session, so we don't need our socket.
+    if (connection_->socket())
+      connection_->socket()->Disconnect();
+    connection_->Reset();
+
+    int set_result = SetSpdyHttpStream(existing_spdy_session_, direct);
+    existing_spdy_session_.reset();
+    return set_result;
+  }
+
   SpdySessionKey spdy_session_key(origin_, proxy_server, privacy_mode);
   if (IsHttpsProxyAndHttpUrl()) {
     // If we don't have a direct SPDY session, and we're using an HTTPS
@@ -1069,68 +1099,42 @@ int HttpStreamFactoryImpl::Job::DoCreateStream() {
     spdy_session_key = SpdySessionKey(proxy_server.host_port_pair(),
                                       ProxyServer::Direct(),
                                       PRIVACY_MODE_DISABLED);
-    direct = false;
   }
 
-  base::WeakPtr<SpdySession> spdy_session;
-  if (existing_spdy_session_.get()) {
-    // We picked up an existing session, so we don't need our socket.
-    if (connection_->socket())
-      connection_->socket()->Disconnect();
-    connection_->Reset();
-    std::swap(spdy_session, existing_spdy_session_);
-  } else {
-    SpdySessionPool* spdy_pool = session_->spdy_session_pool();
-    spdy_session = spdy_pool->FindAvailableSession(spdy_session_key, net_log_);
-    if (!spdy_session) {
-      base::WeakPtr<SpdySession> new_spdy_session =
-          spdy_pool->CreateAvailableSessionFromSocket(spdy_session_key,
-                                                      connection_.Pass(),
-                                                      net_log_,
-                                                      spdy_certificate_error_,
-                                                      using_ssl_);
-      if (!new_spdy_session->HasAcceptableTransportSecurity()) {
-        new_spdy_session->CloseSessionOnError(
-            ERR_SPDY_INADEQUATE_TRANSPORT_SECURITY, "");
-        return ERR_SPDY_INADEQUATE_TRANSPORT_SECURITY;
-      }
+  SpdySessionPool* spdy_pool = session_->spdy_session_pool();
+  base::WeakPtr<SpdySession> spdy_session =
+      spdy_pool->FindAvailableSession(spdy_session_key, net_log_);
 
-      new_spdy_session_ = new_spdy_session;
-      spdy_session_direct_ = direct;
-      const HostPortPair& host_port_pair = spdy_session_key.host_port_pair();
-      base::WeakPtr<HttpServerProperties> http_server_properties =
-          session_->http_server_properties();
-      if (http_server_properties)
-        http_server_properties->SetSupportsSpdy(host_port_pair, true);
-
-      // Create a SpdyHttpStream attached to the session;
-      // OnNewSpdySessionReadyCallback is not called until an event loop
-      // iteration later, so if the SpdySession is closed between then, allow
-      // reuse state from the underlying socket, sampled by SpdyHttpStream,
-      // bubble up to the request.
-      bool use_relative_url = direct || request_info_.url.SchemeIs("https");
-      stream_.reset(new SpdyHttpStream(new_spdy_session_, use_relative_url));
-
-      return OK;
-    }
+  if (spdy_session) {
+    return SetSpdyHttpStream(spdy_session, direct);
   }
 
-  if (!spdy_session)
-    return ERR_CONNECTION_CLOSED;
+  spdy_session =
+      spdy_pool->CreateAvailableSessionFromSocket(spdy_session_key,
+                                                  connection_.Pass(),
+                                                  net_log_,
+                                                  spdy_certificate_error_,
+                                                  using_ssl_);
+  if (!spdy_session->HasAcceptableTransportSecurity()) {
+    spdy_session->CloseSessionOnError(
+        ERR_SPDY_INADEQUATE_TRANSPORT_SECURITY, "");
+    return ERR_SPDY_INADEQUATE_TRANSPORT_SECURITY;
+  }
 
-  // TODO(willchan): Delete this code, because eventually, the
-  // HttpStreamFactoryImpl will be creating all the SpdyHttpStreams, since it
-  // will know when SpdySessions become available.
+  new_spdy_session_ = spdy_session;
+  spdy_session_direct_ = direct;
+  const HostPortPair& host_port_pair = spdy_session_key.host_port_pair();
+  base::WeakPtr<HttpServerProperties> http_server_properties =
+      session_->http_server_properties();
+  if (http_server_properties)
+    http_server_properties->SetSupportsSpdy(host_port_pair, true);
 
-  // TODO(ricea): Restore the code for WebSockets over SPDY once it's
-  // implemented.
-  if (stream_factory_->for_websockets_)
-    return ERR_NOT_IMPLEMENTED;
-
-  bool use_relative_url = direct || request_info_.url.SchemeIs("https");
-  stream_.reset(new SpdyHttpStream(spdy_session, use_relative_url));
-
-  return OK;
+  // Create a SpdyHttpStream attached to the session;
+  // OnNewSpdySessionReadyCallback is not called until an event loop
+  // iteration later, so if the SpdySession is closed between then, allow
+  // reuse state from the underlying socket, sampled by SpdyHttpStream,
+  // bubble up to the request.
+  return SetSpdyHttpStream(new_spdy_session_, spdy_session_direct_);
 }
 
 int HttpStreamFactoryImpl::Job::DoCreateStreamComplete(int result) {
