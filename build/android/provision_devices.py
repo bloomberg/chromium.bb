@@ -140,7 +140,8 @@ def WipeDeviceIfPossible(device):
   try:
     device.EnableRoot()
     WipeDeviceData(device)
-    device.Reboot(True, timeout=180, retries=0)
+    # TODO(jbudorick): Tune the timeout per OS version.
+    device.Reboot(True, timeout=600, retries=0)
   except (errors.DeviceUnresponsiveError, device_errors.CommandFailedError):
     pass
 
@@ -149,7 +150,10 @@ def ProvisionDevice(device, options, is_perf):
   try:
     if not options.skip_wipe:
       WipeDeviceIfPossible(device)
-    device.EnableRoot()
+    try:
+      device.EnableRoot()
+    except device_errors.CommandFailedError as e:
+      logging.warning(str(e))
     _ConfigureLocalProperties(device, is_perf)
     device_settings.ConfigureContentSettings(
         device, device_settings.DETERMINISTIC_DEVICE_SETTINGS)
@@ -187,7 +191,8 @@ def ProvisionDevice(device, options, is_perf):
         time.sleep(60)
         battery_info = device.old_interface.GetBatteryInfo()
     device.RunShellCommand('date -u %f' % time.time(), as_root=True)
-    device.Reboot(True, timeout=180, retries=0)
+    # TODO(jbudorick): Tune the timeout per OS version.
+    device.Reboot(True, timeout=600, retries=0)
     props = device.RunShellCommand('getprop')
     for prop in props:
       logging.info('  %s' % prop)
