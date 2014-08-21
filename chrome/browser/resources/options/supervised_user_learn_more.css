@@ -3,6 +3,8 @@
  * found in the LICENSE file. */
 
 #supervised-user-learn-more {
+  display: flex;
+  flex-direction: column;
   width: 722px;
 }
 
@@ -31,7 +33,6 @@
       url(../../../../ui/resources/default_100_percent/supervised_illustration_start.png) 1x,
       url(../../../../ui/resources/default_200_percent/supervised_illustration_start.png) 2x);
   background-position: center;
-  flex: 1;
   height: 344px;
 }
 
