@@ -69,10 +69,8 @@ struct wl_global {
 };
 
 struct wl_event_queue {
-	struct wl_list link;
 	struct wl_list event_list;
 	struct wl_display *display;
-	pthread_cond_t cond;
 };
 
 struct wl_display {
@@ -100,7 +98,6 @@ struct wl_display {
 	struct wl_map objects;
 	struct wl_event_queue display_queue;
 	struct wl_event_queue default_queue;
-	struct wl_list event_queue_list;
 	pthread_mutex_t mutex;
 
 	int reader_count;
@@ -123,8 +120,6 @@ static int debug_client = 0;
 static void
 display_fatal_error(struct wl_display *display, int error)
 {
-	struct wl_event_queue *iter;
-
 	if (display->last_error)
 		return;
 
@@ -132,9 +127,6 @@ display_fatal_error(struct wl_display *display, int error)
 		error = EFAULT;
 
 	display->last_error = error;
-
-	wl_list_for_each(iter, &display->event_queue_list, link)
-		pthread_cond_broadcast(&iter->cond);
 }
 
 /**
@@ -153,7 +145,6 @@ static void
 display_protocol_error(struct wl_display *display, uint32_t code,
 		       uint32_t id, const struct wl_interface *intf)
 {
-	struct wl_event_queue *iter;
 	int err;
 
 	if (display->last_error)
@@ -184,9 +175,6 @@ display_protocol_error(struct wl_display *display, uint32_t code,
 	display->protocol_error.id = id;
 	display->protocol_error.interface = intf;
 
-	wl_list_for_each(iter, &display->event_queue_list, link)
-		pthread_cond_broadcast(&iter->cond);
-
 	pthread_mutex_unlock(&display->mutex);
 }
 
@@ -194,7 +182,6 @@ static void
 wl_event_queue_init(struct wl_event_queue *queue, struct wl_display *display)
 {
 	wl_list_init(&queue->event_list);
-	pthread_cond_init(&queue->cond, NULL);
 	queue->display = display;
 }
 
@@ -209,7 +196,6 @@ wl_event_queue_release(struct wl_event_queue *queue)
 		wl_list_remove(&closure->link);
 		wl_closure_destroy(closure);
 	}
-	pthread_cond_destroy(&queue->cond);
 }
 
 /** Destroy an event queue
@@ -231,7 +217,6 @@ wl_event_queue_destroy(struct wl_event_queue *queue)
 	struct wl_display *display = queue->display;
 
 	pthread_mutex_lock(&display->mutex);
-	wl_list_remove(&queue->link);
 	wl_event_queue_release(queue);
 	free(queue);
 	pthread_mutex_unlock(&display->mutex);
@@ -255,10 +240,6 @@ wl_display_create_queue(struct wl_display *display)
 		return NULL;
 
 	wl_event_queue_init(queue, display);
-
-	pthread_mutex_lock(&display->mutex);
-	wl_list_insert(&display->event_queue_list, &queue->link);
-	pthread_mutex_unlock(&display->mutex);
 
 	return queue;
 }
@@ -767,7 +748,6 @@ wl_display_connect_to_fd(int fd)
 	wl_map_init(&display->objects, WL_MAP_CLIENT_SIDE);
 	wl_event_queue_init(&display->default_queue, display);
 	wl_event_queue_init(&display->display_queue, display);
-	wl_list_init(&display->event_queue_list);
 	pthread_mutex_init(&display->mutex, NULL);
 	pthread_cond_init(&display->reader_cond, NULL);
 	display->reader_count = 0;
@@ -1046,8 +1026,6 @@ queue_event(struct wl_display *display, int len)
 	else
 		queue = proxy->queue;
 
-	if (wl_list_empty(&queue->event_list))
-		pthread_cond_signal(&queue->cond);
 	wl_list_insert(queue->event_list.prev, &closure->link);
 
 	return size;
