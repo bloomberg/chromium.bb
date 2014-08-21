@@ -51,15 +51,15 @@ class GServicesSettingsTest : public testing::Test {
   void CheckAllSetToDefault();
 
   GServicesSettings& settings() {
-    return gserivces_settings_;
+    return gservices_settings_;
   }
 
  private:
-  GServicesSettings gserivces_settings_;
+  GServicesSettings gservices_settings_;
 };
 
 GServicesSettingsTest::GServicesSettingsTest()
-    : gserivces_settings_() {
+    : gservices_settings_() {
 }
 
 GServicesSettingsTest::~GServicesSettingsTest() {}

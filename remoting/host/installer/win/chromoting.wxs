@@ -700,7 +700,7 @@
         <![CDATA[NOT REMOVE AND (auto_start_service = "#2")]]>
       </Custom>
 
-      <!-- Set the serivce name and description -->
+      <!-- Set the service name and description -->
       <Custom Action="set_service_display_name_xp" Before="InstallInitialize">
         <![CDATA[VersionNT < 600]]>
       </Custom>

@@ -57,7 +57,7 @@ class FakeGCMProfileService : public GCMProfileService {
   }
 
  private:
-  // Indicates whether the serivce will collect paramters of the calls for
+  // Indicates whether the service will collect paramters of the calls for
   // furter verification in tests.
   bool collect_;
   std::string last_registered_app_id_;

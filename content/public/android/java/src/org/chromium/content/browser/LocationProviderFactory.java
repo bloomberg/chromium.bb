@@ -97,7 +97,7 @@ public class LocationProviderFactory {
 
         @Override
         public void onLocationChanged(Location location) {
-            // Callbacks from the system location sevice are queued to this thread, so it's
+            // Callbacks from the system location service are queued to this thread, so it's
             // possible that we receive callbacks after unregistering. At this point, the
             // native object will no longer exist.
             if (mIsRunning) {

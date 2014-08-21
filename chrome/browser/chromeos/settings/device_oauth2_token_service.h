@@ -38,7 +38,7 @@ namespace chromeos {
 //
 // See |OAuth2TokenService| for usage details.
 //
-// When using DeviceOAuth2TokenSerivce, a value of |GetRobotAccountId| should
+// When using DeviceOAuth2TokenService, a value of |GetRobotAccountId| should
 // be used in places where API expects |account_id|.
 //
 // Note that requests must be made from the UI thread.

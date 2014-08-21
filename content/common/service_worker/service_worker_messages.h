@@ -123,7 +123,7 @@ IPC_MESSAGE_CONTROL1(ServiceWorkerHostMsg_DecrementRegistrationRefCount,
 
 // Informs the browser that |provider_id| is associated
 // with a service worker script running context and
-// |version_id| identifies which ServcieWorkerVersion.
+// |version_id| identifies which ServiceWorkerVersion.
 IPC_MESSAGE_CONTROL2(ServiceWorkerHostMsg_SetVersionId,
                      int /* provider_id */,
                      int64 /* version_id */)

@@ -973,7 +973,7 @@ bool PrerenderLocalPredictor::ApplyParsedPrerenderServiceResponse(
                                               !in_index_timed_out);
       }
       if (list->GetSize() > 0)
-        RecordEvent(EVENT_PRERENDER_SERIVCE_RETURNED_HINTING_CANDIDATES);
+        RecordEvent(EVENT_PRERENDER_SERVICE_RETURNED_HINTING_CANDIDATES);
     }
   }
 

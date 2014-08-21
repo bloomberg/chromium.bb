@@ -126,11 +126,11 @@ void QueryTracker::Query::End(GLES2Implementation* gl) {
     case GL_GET_ERROR_QUERY_CHROMIUM: {
       GLenum error = gl->GetClientSideGLError();
       if (error == GL_NO_ERROR) {
-        // There was no error so start the query on the serivce.
+        // There was no error so start the query on the service.
         // it will end immediately.
         gl->helper()->BeginQueryEXT(target(), id(), shm_id(), shm_offset());
       } else {
-        // There's an error on the client, no need to bother the service. just
+        // There's an error on the client, no need to bother the service. Just
         // set the query as completed and return the error.
         if (error != GL_NO_ERROR) {
           state_ = kComplete;
