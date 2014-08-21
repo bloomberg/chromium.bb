@@ -317,6 +317,8 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
                                    GrSurfaceOrigin origin,
                                    GrPixelConfig config);
 
+  bool IsHLSStream() const;
+
   blink::WebFrame* const frame_;
 
   blink::WebMediaPlayerClient* const client_;

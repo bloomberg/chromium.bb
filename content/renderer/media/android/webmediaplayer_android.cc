@@ -279,8 +279,11 @@ void WebMediaPlayerAndroid::DidLoadMediaInfo(
 
 void WebMediaPlayerAndroid::play() {
   DCHECK(main_thread_checker_.CalledOnValidThread());
+
+  // For HLS streams, some devices cannot detect the video size unless a surface
+  // texture is bind to it. See http://crbug.com/400145.
 #if defined(VIDEO_HOLE)
-  if (hasVideo() && needs_external_surface_ &&
+  if ((hasVideo() || IsHLSStream()) && needs_external_surface_ &&
       !player_manager_->IsInFullscreen(frame_)) {
     DCHECK(!needs_establish_peer_);
     player_manager_->RequestExternalSurface(player_id_, last_computed_rect_);
@@ -290,7 +293,7 @@ void WebMediaPlayerAndroid::play() {
   TryCreateStreamTextureProxyIfNeeded();
   // There is no need to establish the surface texture peer for fullscreen
   // video.
-  if (hasVideo() && needs_establish_peer_ &&
+  if ((hasVideo() || IsHLSStream()) && needs_establish_peer_ &&
       !player_manager_->IsInFullscreen(frame_)) {
     EstablishSurfaceTexturePeer();
   }
@@ -1733,6 +1736,13 @@ void WebMediaPlayerAndroid::enterFullscreen() {
 
 bool WebMediaPlayerAndroid::canEnterFullscreen() const {
   return player_manager_->CanEnterFullscreen(frame_);
+}
+
+bool WebMediaPlayerAndroid::IsHLSStream() const {
+  std::string mime;
+  if (!net::GetMimeTypeFromFile(base::FilePath(url_.path()), &mime))
+    return false;
+  return !mime.compare("application/x-mpegurl");
 }
 
 }  // namespace content
