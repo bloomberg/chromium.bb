@@ -530,7 +530,6 @@
         'browser/chromeos/login/auth/login_performer.h',
         'browser/chromeos/login/auth/parallel_authenticator.cc',
         'browser/chromeos/login/auth/parallel_authenticator.h',
-        'browser/chromeos/login/authentication_notification_details.h',
         'browser/chromeos/login/chrome_restart_request.cc',
         'browser/chromeos/login/chrome_restart_request.h',
         'browser/chromeos/login/default_pinned_apps_field_trial.cc',

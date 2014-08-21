@@ -18,8 +18,18 @@ class CHROMEOS_EXPORT LoginEventRecorder {
  public:
   class Delegate {
    public:
+  // Add a time marker for login. A timeline will be dumped to
+  // /tmp/login-times-sent after login is done. If |send_to_uma| is true
+  // the time between this marker and the last will be sent to UMA with
+  // the identifier BootTime.|marker_name|.
     virtual void AddLoginTimeMarker(const std::string& marker_name,
                                     bool send_to_uma) = 0;
+
+  // Record events for successful authentication.
+    virtual void RecordAuthenticationSuccess() = 0;
+
+  // Record events for authentication failure.
+    virtual void RecordAuthenticationFailure() = 0;
   };
   LoginEventRecorder();
   virtual ~LoginEventRecorder();
@@ -33,6 +43,12 @@ class CHROMEOS_EXPORT LoginEventRecorder {
   // the time between this marker and the last will be sent to UMA with
   // the identifier BootTime.|marker_name|.
   void AddLoginTimeMarker(const std::string& marker_name, bool send_to_uma);
+
+  // Record events for successful authentication.
+  void RecordAuthenticationSuccess();
+
+  // Record events for authentication failure.
+  void RecordAuthenticationFailure();
 
  private:
   Delegate* delegate_;

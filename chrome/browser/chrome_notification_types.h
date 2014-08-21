@@ -492,10 +492,6 @@ enum NotificationType {
   // default profile image or no profile image at all. No details are expected.
   NOTIFICATION_PROFILE_IMAGE_UPDATE_FAILED,
 
-  // Sent when a chromium os user attempts to log in.  The source is
-  // all and the details are AuthenticationNotificationDetails.
-  NOTIFICATION_LOGIN_AUTHENTICATION,
-
   // Sent when a network error message is displayed on the WebUI login screen.
   // First paint event of this fires NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE.
   NOTIFICATION_LOGIN_NETWORK_ERROR_SHOWN,

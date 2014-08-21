@@ -26,7 +26,6 @@
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/login/auth/authentication_notification_details.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -428,8 +427,6 @@ void BootTimesLoader::RecordLoginAttempted() {
   AddLoginTimeMarker("LoginStarted", false);
   if (!have_registered_) {
     have_registered_ = true;
-    registrar_.Add(this, chrome::NOTIFICATION_LOGIN_AUTHENTICATION,
-                   content::NotificationService::AllSources());
     registrar_.Add(this, content::NOTIFICATION_LOAD_START,
                    content::NotificationService::AllSources());
     registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
@@ -475,21 +472,20 @@ void BootTimesLoader::AddMarker(std::vector<TimeMarker>* vector,
   }
 }
 
+void BootTimesLoader::RecordAuthenticationSuccess() {
+  AddLoginTimeMarker("Authenticate", true);
+  RecordCurrentStats(kLoginSuccess);
+}
+
+void BootTimesLoader::RecordAuthenticationFailure() {
+  // Do nothing for now.
+}
+
 void BootTimesLoader::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_LOGIN_AUTHENTICATION: {
-      content::Details<AuthenticationNotificationDetails> auth_details(details);
-      if (auth_details->success()) {
-        AddLoginTimeMarker("Authenticate", true);
-        RecordCurrentStats(kLoginSuccess);
-        registrar_.Remove(this, chrome::NOTIFICATION_LOGIN_AUTHENTICATION,
-                          content::NotificationService::AllSources());
-      }
-      break;
-    }
     case content::NOTIFICATION_LOAD_START: {
       NavigationController* tab =
           content::Source<NavigationController>(source).ptr();

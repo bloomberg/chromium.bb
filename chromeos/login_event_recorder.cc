@@ -34,4 +34,14 @@ void LoginEventRecorder::AddLoginTimeMarker(const std::string& marker_name,
     delegate_->AddLoginTimeMarker(marker_name, send_to_uma);
 }
 
+void LoginEventRecorder::RecordAuthenticationSuccess() {
+  if (delegate_)
+    delegate_->RecordAuthenticationSuccess();
+}
+
+void LoginEventRecorder::RecordAuthenticationFailure() {
+  if (delegate_)
+    delegate_->RecordAuthenticationFailure();
+}
+
 }  // namespace chromeos

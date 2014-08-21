@@ -8,9 +8,6 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/boot_times_loader.h"
-#include "chrome/browser/chromeos/login/auth/authentication_notification_details.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/common/chrome_switches.h"
@@ -23,10 +20,10 @@
 #include "chromeos/login/auth/user_context.h"
 #include "chromeos/login/login_state.h"
 #include "chromeos/login/user_names.h"
+#include "chromeos/login_event_recorder.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_type.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_service.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 using content::BrowserThread;
@@ -76,7 +73,7 @@ void TriggerResolveWithLoginTimeMarker(
     scoped_refptr<ParallelAuthenticator> resolver,
     bool success,
     cryptohome::MountError return_code) {
-  chromeos::BootTimesLoader::Get()->AddLoginTimeMarker(marker_name, false);
+  chromeos::LoginEventRecorder::Get()->AddLoginTimeMarker(marker_name, false);
   TriggerResolve(attempt, resolver, success, return_code);
 }
 
@@ -86,7 +83,7 @@ void Mount(AuthAttemptState* attempt,
            int flags,
            const std::string& system_salt) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  chromeos::BootTimesLoader::Get()->AddLoginTimeMarker(
+  chromeos::LoginEventRecorder::Get()->AddLoginTimeMarker(
       "CryptohomeMount-Start", false);
   // Set state that username_hash is requested here so that test implementation
   // that returns directly would not generate 2 OnLoginSucces() calls.
@@ -164,7 +161,7 @@ void Migrate(AuthAttemptState* attempt,
              const std::string& old_password,
              const std::string& system_salt) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  chromeos::BootTimesLoader::Get()->AddLoginTimeMarker(
+  chromeos::LoginEventRecorder::Get()->AddLoginTimeMarker(
       "CryptohomeMigrate-Start", false);
   cryptohome::AsyncMethodCaller* caller =
       cryptohome::AsyncMethodCaller::GetInstance();
@@ -198,7 +195,7 @@ void Migrate(AuthAttemptState* attempt,
 void Remove(AuthAttemptState* attempt,
             scoped_refptr<ParallelAuthenticator> resolver) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  chromeos::BootTimesLoader::Get()->AddLoginTimeMarker(
+  chromeos::LoginEventRecorder::Get()->AddLoginTimeMarker(
       "CryptohomeRemove-Start", false);
   cryptohome::AsyncMethodCaller::GetInstance()->AsyncRemove(
       attempt->user_context.GetUserID(),
@@ -395,12 +392,7 @@ void ParallelAuthenticator::LoginAsKioskAccount(
 void ParallelAuthenticator::OnRetailModeAuthSuccess() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   VLOG(1) << "Retail mode login success";
-  // Send notification of success
-  AuthenticationNotificationDetails details(true);
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_LOGIN_AUTHENTICATION,
-      content::NotificationService::AllSources(),
-      content::Details<AuthenticationNotificationDetails>(&details));
+  chromeos::LoginEventRecorder::Get()->RecordAuthenticationSuccess();
   if (consumer_)
     consumer_->OnRetailModeAuthSuccess(current_state_->user_context);
 }
@@ -409,11 +401,7 @@ void ParallelAuthenticator::OnAuthSuccess() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   VLOG(1) << "Login success";
   // Send notification of success
-  AuthenticationNotificationDetails details(true);
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_LOGIN_AUTHENTICATION,
-      content::NotificationService::AllSources(),
-      content::Details<AuthenticationNotificationDetails>(&details));
+  chromeos::LoginEventRecorder::Get()->RecordAuthenticationSuccess();
   {
     base::AutoLock for_this_block(success_lock_);
     already_reported_success_ = true;
@@ -424,12 +412,7 @@ void ParallelAuthenticator::OnAuthSuccess() {
 
 void ParallelAuthenticator::OnOffTheRecordAuthSuccess() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  // Send notification of success
-  AuthenticationNotificationDetails details(true);
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_LOGIN_AUTHENTICATION,
-      content::NotificationService::AllSources(),
-      content::Details<AuthenticationNotificationDetails>(&details));
+  chromeos::LoginEventRecorder::Get()->RecordAuthenticationSuccess();
   if (consumer_)
     consumer_->OnOffTheRecordAuthSuccess();
 }
@@ -450,13 +433,7 @@ void ParallelAuthenticator::OnAuthFailure(const AuthFailure& error) {
     RemoveEncryptedData();
     return;
   }
-
-  // Send notification of failure
-  AuthenticationNotificationDetails details(false);
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_LOGIN_AUTHENTICATION,
-      content::NotificationService::AllSources(),
-      content::Details<AuthenticationNotificationDetails>(&details));
+  chromeos::LoginEventRecorder::Get()->RecordAuthenticationFailure();
   LOG(WARNING) << "Login failed: " << error.GetErrorString();
   if (consumer_)
     consumer_->OnAuthFailure(error);
