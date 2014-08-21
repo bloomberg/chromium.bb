@@ -11,6 +11,7 @@
 #include "ui/gfx/screen.h"
 
 namespace gfx {
+class Insets;
 class Rect;
 class Transform;
 }
@@ -35,6 +36,7 @@ class TestScreen : public gfx::Screen,
   void SetDeviceScaleFactor(float device_scale_fator);
   void SetDisplayRotation(gfx::Display::Rotation rotation);
   void SetUIScale(float ui_scale);
+  void SetWorkAreaInsets(const gfx::Insets& insets);
 
  protected:
   gfx::Transform GetRotationTransform() const;

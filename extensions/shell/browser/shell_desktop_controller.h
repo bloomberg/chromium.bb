@@ -30,6 +30,7 @@ class BrowserContext;
 }
 
 namespace gfx {
+class Insets;
 class Size;
 }
 
@@ -84,6 +85,9 @@ class ShellDesktopController : public aura::client::WindowTreeClient,
 
   // Closes and destroys the app windows.
   void CloseAppWindows();
+
+  // Sets the screen's work area insets.
+  void SetDisplayWorkAreaInsets(const gfx::Insets& insets);
 
   // Overridden from aura::client::WindowTreeClient:
   virtual aura::Window* GetDefaultParent(aura::Window* context,

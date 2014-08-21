@@ -168,9 +168,9 @@ void SplitViewController::OnAnimationCompleted(aura::Window* window) {
     return;
   DCHECK(window == left_window_ || window == right_window_);
   if (state_ == ACTIVE) {
-    gfx::Rect window_bounds = gfx::Rect(container_->bounds().size());
-    int container_width = window_bounds.width();
-    window_bounds.set_width(container_width / 2);
+    int container_width = container_->bounds().width();
+    gfx::Display display = gfx::Screen::GetNativeScreen()->GetPrimaryDisplay();
+    gfx::Rect window_bounds(container_width / 2, display.work_area().height());
     window->SetTransform(gfx::Transform());
     if (window == left_window_) {
       left_window_->SetBounds(window_bounds);

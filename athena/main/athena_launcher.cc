@@ -91,7 +91,8 @@ class AthenaViewsDelegate : public views::ViewsDelegate {
   DISALLOW_COPY_AND_ASSIGN(AthenaViewsDelegate);
 };
 
-void StartAthenaEnv(aura::Window* root_window) {
+void StartAthenaEnv(aura::Window* root_window,
+                    athena::ScreenManagerDelegate* delegate) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 
   // Force showing in the experimental app-list view.
@@ -116,7 +117,7 @@ void StartAthenaEnv(aura::Window* root_window) {
       content::BrowserThread::GetMessageLoopProxyForThread(
           content::BrowserThread::FILE));
   athena::InputManager::Create()->OnRootWindowCreated(root_window);
-  athena::ScreenManager::Create(root_window);
+  athena::ScreenManager::Create(delegate, root_window);
   athena::WindowManager::Create();
   SetupBackgroundImage();
 

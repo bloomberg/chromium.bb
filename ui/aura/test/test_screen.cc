@@ -76,6 +76,10 @@ void TestScreen::SetUIScale(float ui_scale) {
   host_->SetRootTransform(GetRotationTransform() * GetUIScaleTransform());
 }
 
+void TestScreen::SetWorkAreaInsets(const gfx::Insets& insets) {
+  display_.UpdateWorkAreaFromInsets(insets);
+}
+
 gfx::Transform TestScreen::GetRotationTransform() const {
   gfx::Transform rotate;
   switch (display_.rotation()) {

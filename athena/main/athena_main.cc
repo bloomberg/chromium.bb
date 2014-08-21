@@ -6,6 +6,7 @@
 #include "athena/main/athena_app_window_controller.h"
 #include "athena/main/athena_launcher.h"
 #include "athena/screen/public/screen_manager.h"
+#include "athena/screen/public/screen_manager_delegate.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
@@ -43,6 +44,28 @@ class AthenaDesktopController : public extensions::ShellDesktopController {
   DISALLOW_COPY_AND_ASSIGN(AthenaDesktopController);
 };
 
+class AthenaScreenManagerDelegate : public athena::ScreenManagerDelegate {
+ public:
+  explicit AthenaScreenManagerDelegate(
+      extensions::ShellDesktopController* controller)
+      : controller_(controller) {
+  }
+
+  virtual ~AthenaScreenManagerDelegate() {
+  }
+
+ private:
+  // athena::ScreenManagerDelegate:
+  virtual void SetWorkAreaInsets(const gfx::Insets& insets) OVERRIDE {
+    controller_->SetDisplayWorkAreaInsets(insets);
+  }
+
+  // Not owned.
+  extensions::ShellDesktopController* controller_;
+
+  DISALLOW_COPY_AND_ASSIGN(AthenaScreenManagerDelegate);
+};
+
 class AthenaBrowserMainDelegate : public extensions::ShellBrowserMainDelegate {
  public:
   AthenaBrowserMainDelegate() {}
@@ -66,8 +89,12 @@ class AthenaBrowserMainDelegate : public extensions::ShellBrowserMainDelegate {
       extension_system->LoadApp(app_absolute_dir);
     }
 
-    athena::StartAthenaEnv(
-        extensions::ShellDesktopController::instance()->host()->window());
+    extensions::ShellDesktopController* desktop_controller =
+        extensions::ShellDesktopController::instance();
+    screen_manager_delegate_.reset(
+        new AthenaScreenManagerDelegate(desktop_controller));
+    athena::StartAthenaEnv(desktop_controller->host()->window(),
+                           screen_manager_delegate_.get());
     athena::StartAthenaSessionWithContext(context);
   }
 
@@ -85,6 +112,8 @@ class AthenaBrowserMainDelegate : public extensions::ShellBrowserMainDelegate {
   }
 
  private:
+  scoped_ptr<AthenaScreenManagerDelegate> screen_manager_delegate_;
+
   DISALLOW_COPY_AND_ASSIGN(AthenaBrowserMainDelegate);
 };
 

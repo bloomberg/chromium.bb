@@ -16,6 +16,7 @@ class Window;
 
 namespace gfx {
 class ImageSkia;
+class Insets;
 }
 
 namespace ui {
@@ -27,6 +28,7 @@ class FocusRules;
 }
 
 namespace athena {
+class ScreenManagerDelegate;
 
 // Mananges basic UI components on the screen such as background, and provide
 // API for other UI components, such as window manager, home card, to
@@ -49,11 +51,15 @@ class ATHENA_EXPORT ScreenManager {
 
   // Creates, returns and deletes the singleton object of the ScreenManager
   // implementation.
-  static ScreenManager* Create(aura::Window* root);
+  static ScreenManager* Create(ScreenManagerDelegate* delegate,
+                               aura::Window* root);
   static ScreenManager* Get();
   static void Shutdown();
 
   virtual ~ScreenManager() {}
+
+  // Sets the screen's work area insets.
+  virtual void SetWorkAreaInsets(const gfx::Insets& insets) = 0;
 
   // Creates the container window that is used when creating a normal
   // widget without specific parent.

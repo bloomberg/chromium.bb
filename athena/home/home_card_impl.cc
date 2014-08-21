@@ -519,6 +519,12 @@ void HomeCardImpl::Init() {
       aura::client::GetActivationClient(container->GetRootWindow());
   if (activation_client_)
     activation_client_->AddObserver(this);
+
+  int work_area_bottom_inset =
+      GetBoundsForState(GetNativeWindow()->bounds(),
+                        HomeCard::VISIBLE_MINIMIZED).height();
+  ScreenManager::Get()->SetWorkAreaInsets(
+      gfx::Insets(0, 0, work_area_bottom_inset, 0));
 }
 
 void HomeCardImpl::InstallAccelerators() {

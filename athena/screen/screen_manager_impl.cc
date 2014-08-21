@@ -8,6 +8,7 @@
 #include "athena/common/fill_layout_manager.h"
 #include "athena/input/public/accelerator_manager.h"
 #include "athena/screen/background_controller.h"
+#include "athena/screen/public/screen_manager_delegate.h"
 #include "athena/screen/screen_accelerator_handler.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -191,13 +192,14 @@ class AthenaEventTargeter : public aura::WindowTargeter,
 
 class ScreenManagerImpl : public ScreenManager {
  public:
-  explicit ScreenManagerImpl(aura::Window* root_window);
+  ScreenManagerImpl(ScreenManagerDelegate* delegate, aura::Window* root_window);
   virtual ~ScreenManagerImpl();
 
   void Init();
 
  private:
   // ScreenManager:
+  virtual void SetWorkAreaInsets(const gfx::Insets& insets) OVERRIDE;
   virtual aura::Window* CreateDefaultContainer(
       const ContainerParams& params) OVERRIDE;
   virtual aura::Window* CreateContainer(const ContainerParams& params) OVERRIDE;
@@ -206,6 +208,8 @@ class ScreenManagerImpl : public ScreenManager {
   virtual void SetRotation(gfx::Display::Rotation rotation) OVERRIDE;
   virtual ui::LayerAnimator* GetScreenAnimator() OVERRIDE;
 
+  // Not owned.
+  ScreenManagerDelegate* delegate_;
   aura::Window* root_window_;
   aura::Window* background_window_;
 
@@ -218,8 +222,10 @@ class ScreenManagerImpl : public ScreenManager {
   DISALLOW_COPY_AND_ASSIGN(ScreenManagerImpl);
 };
 
-ScreenManagerImpl::ScreenManagerImpl(aura::Window* root_window)
-    : root_window_(root_window) {
+ScreenManagerImpl::ScreenManagerImpl(ScreenManagerDelegate* delegate,
+                                     aura::Window* root_window)
+    : delegate_(delegate),
+      root_window_(root_window) {
   DCHECK(root_window_);
   DCHECK(!instance);
   instance = this;
@@ -243,6 +249,10 @@ void ScreenManagerImpl::Init() {
 
   capture_client_.reset(new ::wm::ScopedCaptureClient(root_window_));
   accelerator_handler_.reset(new ScreenAcceleratorHandler(root_window_));
+}
+
+void ScreenManagerImpl::SetWorkAreaInsets(const gfx::Insets& insets) {
+  delegate_->SetWorkAreaInsets(insets);
 }
 
 aura::Window* ScreenManagerImpl::CreateDefaultContainer(
@@ -355,8 +365,9 @@ ScreenManager::ContainerParams::ContainerParams(const std::string& n,
 }
 
 // static
-ScreenManager* ScreenManager::Create(aura::Window* root_window) {
-  (new ScreenManagerImpl(root_window))->Init();
+ScreenManager* ScreenManager::Create(ScreenManagerDelegate* delegate,
+                                     aura::Window* root_window) {
+  (new ScreenManagerImpl(delegate, root_window))->Init();
   DCHECK(instance);
   return instance;
 }

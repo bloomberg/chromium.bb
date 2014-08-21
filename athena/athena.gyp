@@ -65,6 +65,7 @@
         'screen/background_controller.cc',
         'screen/background_controller.h',
         'screen/public/screen_manager.h',
+        'screen/public/screen_manager_delegate.h',
         'screen/screen_accelerator_handler.cc',
         'screen/screen_accelerator_handler.h',
         'screen/screen_manager_impl.cc',
@@ -161,6 +162,8 @@
         'test/sample_activity_factory.h',
         'test/test_app_model_builder.cc',
         'test/test_app_model_builder.h',
+        'test/test_screen_manager_delegate.cc',
+        'test/test_screen_manager_delegate.h',
       ],
     },
     {
