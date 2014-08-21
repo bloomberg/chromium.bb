@@ -13,6 +13,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/component_updater/component_updater_resource_throttle.h"
+#include "chrome/browser/component_updater/pnacl/pnacl_component_installer.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/download/download_request_limiter.h"
 #include "chrome/browser/download/download_resource_throttle.h"
@@ -51,10 +52,6 @@
 #include "net/base/request_priority.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
-
-#if !defined(DISABLE_NACL)
-#include "chrome/browser/component_updater/pnacl/pnacl_component_installer.h"
-#endif
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
 #include "components/policy/core/common/cloud/policy_header_io_helper.h"
@@ -226,7 +223,6 @@ void LaunchURL(const GURL& url, int render_process_id, int render_view_id) {
 }
 #endif  // !defined(OS_ANDROID)
 
-#if !defined(DISABLE_NACL)
 void AppendComponentUpdaterThrottles(
     net::URLRequest* request,
     content::ResourceContext* resource_context,
@@ -255,9 +251,8 @@ void AppendComponentUpdaterThrottles(
         component_updater::GetOnDemandResourceThrottle(cus, crx_id));
   }
 }
-#endif  // !defined(DISABLE_NACL)
 
-}  // namespace
+}  // end namespace
 
 ChromeResourceDispatcherHostDelegate::ChromeResourceDispatcherHostDelegate(
     prerender::PrerenderTracker* prerender_tracker)
@@ -402,14 +397,12 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
                                   resource_context,
                                   resource_type,
                                   throttles);
-#if defined(ENABLE_PLUGINS)
   if (!is_prerendering) {
     AppendComponentUpdaterThrottles(request,
                                     resource_context,
                                     resource_type,
                                     throttles);
   }
-#endif
 }
 
 void ChromeResourceDispatcherHostDelegate::DownloadStarting(

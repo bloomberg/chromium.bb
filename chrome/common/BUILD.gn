@@ -93,6 +93,7 @@ static_library("common") {
       "//extensions/common",
       "//extensions/common/api",
       "//ipc",
+      "//third_party/adobe/flash:flapper_version_h",
       "//third_party/re2",
       "//third_party/widevine/cdm:version_h",
     ]
@@ -209,11 +210,7 @@ static_library("common") {
   if (enable_remoting) {
     #deps += [ '../remoting/remoting.gyp:remoting_client_plugin' ]  TODO(GYP)
   }
-  if (enable_plugins) {
-    deps += [
-      "//third_party/adobe/flash:flapper_version_h",
-    ]
-  } else {
+  if (!enable_plugins) {
     sources -= [ "pepper_permission_util.cc" ]
   }
   if (!enable_webrtc) {

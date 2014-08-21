@@ -29,6 +29,7 @@
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/component_updater/chrome_component_updater_configurator.h"
+#include "chrome/browser/component_updater/pnacl/pnacl_component_installer.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/devtools/remote_debugging_server.h"
 #include "chrome/browser/download/download_request_limiter.h"
@@ -126,10 +127,6 @@
 #include "chrome/browser/extensions/extension_renderer_state.h"
 #include "chrome/browser/media_galleries/media_file_system_registry.h"
 #include "components/storage_monitor/storage_monitor.h"
-#endif
-
-#if !defined(DISABLE_NACL)
-#include "chrome/browser/component_updater/pnacl/pnacl_component_installer.h"
 #endif
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
@@ -904,15 +901,11 @@ CRLSetFetcher* BrowserProcessImpl::crl_set_fetcher() {
 
 component_updater::PnaclComponentInstaller*
 BrowserProcessImpl::pnacl_component_installer() {
-#if !defined(DISABLE_NACL)
   if (!pnacl_component_installer_.get()) {
     pnacl_component_installer_.reset(
         new component_updater::PnaclComponentInstaller());
   }
   return pnacl_component_installer_.get();
-#else
-  return NULL;
-#endif
 }
 
 void BrowserProcessImpl::ResourceDispatcherHostCreated() {
