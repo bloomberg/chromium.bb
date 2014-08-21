@@ -21,7 +21,7 @@ class VideoCaptureDeviceMac;
 // implementation.
 - (id)initWithFrameReceiver:(media::VideoCaptureDeviceMac*)frameReceiver;
 
-// Set the frame receiver. This method executes the registration in mutual
+// Sets the frame receiver. This method executes the registration in mutual
 // exclusion.
 // TODO(mcasas): This method and stopCapture() are always called in sequence and
 // this one is only used to clear the frameReceiver, investigate if both can be
@@ -31,8 +31,9 @@ class VideoCaptureDeviceMac;
 // Sets which capture device to use by name passed as deviceId argument. The
 // device names are usually obtained via VideoCaptureDevice::GetDeviceNames()
 // method. This method will also configure all device properties except those in
-// setCaptureHeight:widht:frameRate. If |deviceId| is nil, all potential
-// configuration is torn down. Returns YES on sucess, NO otherwise.
+// setCaptureHeight:width:frameRate. If |deviceId| is nil, capture is stopped
+// and all potential configuration is torn down. Returns YES on sucess, NO
+// otherwise.
 - (BOOL)setCaptureDevice:(NSString*)deviceId;
 
 // Configures the capture properties.
@@ -40,7 +41,7 @@ class VideoCaptureDeviceMac;
                    width:(int)width
                frameRate:(float)frameRate;
 
-// Start video capturing, register observers. Returns YES on sucess, NO
+// Starts video capturing, registers observers. Returns YES on sucess, NO
 // otherwise.
 - (BOOL)startCapture;
 

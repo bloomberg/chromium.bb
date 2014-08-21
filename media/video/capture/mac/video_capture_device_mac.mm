@@ -440,7 +440,6 @@ void VideoCaptureDeviceMac::AllocateAndStart(
 void VideoCaptureDeviceMac::StopAndDeAllocate() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(state_ == kCapturing || state_ == kError) << state_;
-  [capture_device_ stopCapture];
 
   [capture_device_ setCaptureDevice:nil];
   [capture_device_ setFrameReceiver:nil];
