@@ -229,13 +229,14 @@ class CONTENT_EXPORT BrowserThread {
   // not deleted while unregistering.
   static void SetDelegate(ID identifier, BrowserThreadDelegate* delegate);
 
-  // Use these templates in conjuction with RefCountedThreadSafe when you want
-  // to ensure that an object is deleted on a specific thread.  This is needed
-  // when an object can hop between threads (i.e. IO -> FILE -> IO), and thread
-  // switching delays can mean that the final IO tasks executes before the FILE
-  // task's stack unwinds.  This would lead to the object destructing on the
-  // FILE thread, which often is not what you want (i.e. to unregister from
-  // NotificationService, to notify other objects on the creating thread etc).
+  // Use these templates in conjunction with RefCountedThreadSafe or scoped_ptr
+  // when you want to ensure that an object is deleted on a specific thread.
+  // This is needed when an object can hop between threads
+  // (i.e. IO -> FILE -> IO), and thread switching delays can mean that the
+  // final IO tasks executes before the FILE task's stack unwinds.
+  // This would lead to the object destructing on the FILE thread, which often
+  // is not what you want (i.e. to unregister from NotificationService, to
+  // notify other objects on the creating thread etc).
   template<ID thread>
   struct DeleteOnThread {
     template<typename T>
@@ -252,9 +253,14 @@ class CONTENT_EXPORT BrowserThread {
         }
       }
     }
+    template <typename T>
+    inline void operator()(T* ptr) const {
+      enum { type_must_be_complete = sizeof(T) };
+      Destruct(ptr);
+    }
   };
 
-  // Sample usage:
+  // Sample usage with RefCountedThreadSafe:
   // class Foo
   //     : public base::RefCountedThreadSafe<
   //           Foo, BrowserThread::DeleteOnIOThread> {
@@ -265,6 +271,9 @@ class CONTENT_EXPORT BrowserThread {
   //   friend class base::DeleteHelper<Foo>;
   //
   //   ~Foo();
+  //
+  // Sample usage with scoped_ptr:
+  // scoped_ptr<Foo, BrowserThread::DeleteOnIOThread> ptr;
   struct DeleteOnUIThread : public DeleteOnThread<UI> { };
   struct DeleteOnIOThread : public DeleteOnThread<IO> { };
   struct DeleteOnFileThread : public DeleteOnThread<FILE> { };

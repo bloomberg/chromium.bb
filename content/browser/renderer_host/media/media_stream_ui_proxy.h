@@ -9,6 +9,7 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/common/media_stream_request.h"
 
 namespace content {
@@ -65,7 +66,7 @@ class CONTENT_EXPORT MediaStreamUIProxy {
   void OnWindowId(const WindowIdCallback& window_id_callback,
                   gfx::NativeViewId* window_id);
 
-  scoped_ptr<Core> core_;
+  scoped_ptr<Core, content::BrowserThread::DeleteOnUIThread> core_;
   ResponseCallback response_callback_;
   base::Closure stop_callback_;
 

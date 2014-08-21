@@ -128,7 +128,6 @@ MediaStreamUIProxy::MediaStreamUIProxy(
 
 MediaStreamUIProxy::~MediaStreamUIProxy() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  BrowserThread::DeleteSoon(BrowserThread::UI, FROM_HERE, core_.release());
 }
 
 void MediaStreamUIProxy::RequestAccess(
