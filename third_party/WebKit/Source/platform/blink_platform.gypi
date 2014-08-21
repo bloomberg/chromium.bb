@@ -625,8 +625,6 @@
       'graphics/ImageOrientation.h',
       'graphics/ImageSource.cpp',
       'graphics/ImageSource.h',
-      'graphics/LazyDecodingPixelRef.cpp',
-      'graphics/LazyDecodingPixelRef.h',
       'graphics/LoggingCanvas.cpp',
       'graphics/LoggingCanvas.h',
       'graphics/OpaqueRectTrackingContentLayerDelegate.cpp',

@@ -41,6 +41,16 @@ namespace {
 // Helper methods to generate standard sizes.
 SkISize fullSize() { return SkISize::Make(100, 100); }
 
+SkImageInfo imageInfo()
+{
+    SkImageInfo info;
+    info.fWidth = 100;
+    info.fHeight = 100;
+    info.fColorType = kBGRA_8888_SkColorType;
+    info.fAlphaType = kOpaque_SkAlphaType;
+    return info;
+}
+
 } // namespace
 
 class ImageFrameGeneratorTest : public ::testing::Test, public MockImageDecoderClient {
@@ -89,14 +99,6 @@ protected:
         m_generator->setImageDecoderFactory(MockImageDecoderFactory::create(this, fullSize()));
     }
 
-    PassOwnPtr<ScaledImageFragment> createCompleteImage(const SkISize& size)
-    {
-        SkBitmap bitmap;
-        if (!bitmap.allocN32Pixels(size.width(), size.height()))
-            return nullptr;
-        return ScaledImageFragment::createComplete(size, 0, bitmap);
-    }
-
     void addNewData()
     {
         m_data->append("g", 1);
@@ -106,20 +108,6 @@ protected:
     void setFrameStatus(ImageFrame::Status status)  { m_status = m_nextFrameStatus = status; }
     void setNextFrameStatus(ImageFrame::Status status)  { m_nextFrameStatus = status; }
 
-    SkBitmap::Allocator* allocator() const { return m_generator->allocator(); }
-    void setAllocator(PassOwnPtr<SkBitmap::Allocator> allocator)
-    {
-        m_generator->setAllocator(allocator);
-    }
-
-    PassOwnPtr<ScaledImageFragment> decode(size_t index)
-    {
-        ImageDecoder* decoder = 0;
-        OwnPtr<ScaledImageFragment> fragment = m_generator->decode(index, &decoder);
-        delete decoder;
-        return fragment.release();
-    }
-
     RefPtr<SharedBuffer> m_data;
     RefPtr<ImageFrameGenerator> m_generator;
     int m_decodersDestroyed;
@@ -128,43 +116,17 @@ protected:
     ImageFrame::Status m_nextFrameStatus;
 };
 
-TEST_F(ImageFrameGeneratorTest, cacheHit)
-{
-    OwnPtr<ScaledImageFragment> completeImageTemp = createCompleteImage(fullSize());
-    ASSERT_TRUE(completeImageTemp);
-    const ScaledImageFragment* fullImage = ImageDecodingStore::instance()->insertAndLockCache(
-        m_generator.get(), completeImageTemp.release());
-    EXPECT_EQ(fullSize(), fullImage->scaledSize());
-    ImageDecodingStore::instance()->unlockCache(m_generator.get(), fullImage);
-
-    const ScaledImageFragment* tempImage = m_generator->decodeAndScale(fullSize());
-    EXPECT_EQ(fullImage, tempImage);
-    EXPECT_EQ(fullSize(), tempImage->scaledSize());
-    EXPECT_TRUE(m_generator->hasAlpha(0));
-    ImageDecodingStore::instance()->unlockCache(m_generator.get(), tempImage);
-    EXPECT_EQ(0, m_frameBufferRequestCount);
-}
-
-TEST_F(ImageFrameGeneratorTest, cacheMissWithIncompleteDecode)
+TEST_F(ImageFrameGeneratorTest, incompleteDecode)
 {
     setFrameStatus(ImageFrame::FramePartial);
 
-    const ScaledImageFragment* tempImage = m_generator->decodeAndScale(fullSize());
-    EXPECT_FALSE(tempImage->isComplete());
+    char buffer[100 * 100 * 4];
+    m_generator->decodeAndScale(imageInfo(), 0, buffer, 100 * 4);
     EXPECT_EQ(1, m_frameBufferRequestCount);
-    ImageDecodingStore::instance()->unlockCache(m_generator.get(), tempImage);
-    EXPECT_EQ(2, ImageDecodingStore::instance()->cacheEntries());
-    EXPECT_EQ(1, ImageDecodingStore::instance()->imageCacheEntries());
-    EXPECT_EQ(1, ImageDecodingStore::instance()->decoderCacheEntries());
 
     addNewData();
-    tempImage = m_generator->decodeAndScale(fullSize());
-    EXPECT_FALSE(tempImage->isComplete());
+    m_generator->decodeAndScale(imageInfo(), 0, buffer, 100 * 4);
     EXPECT_EQ(2, m_frameBufferRequestCount);
-    ImageDecodingStore::instance()->unlockCache(m_generator.get(), tempImage);
-    EXPECT_EQ(3, ImageDecodingStore::instance()->cacheEntries());
-    EXPECT_EQ(2, ImageDecodingStore::instance()->imageCacheEntries());
-    EXPECT_EQ(1, ImageDecodingStore::instance()->decoderCacheEntries());
     EXPECT_EQ(0, m_decodersDestroyed);
 }
 
@@ -172,51 +134,37 @@ TEST_F(ImageFrameGeneratorTest, incompleteDecodeBecomesComplete)
 {
     setFrameStatus(ImageFrame::FramePartial);
 
-    const ScaledImageFragment* tempImage = m_generator->decodeAndScale(fullSize());
-    EXPECT_FALSE(tempImage->isComplete());
+    char buffer[100 * 100 * 4];
+    m_generator->decodeAndScale(imageInfo(), 0, buffer, 100 * 4);
     EXPECT_EQ(1, m_frameBufferRequestCount);
     EXPECT_EQ(0, m_decodersDestroyed);
-    ImageDecodingStore::instance()->unlockCache(m_generator.get(), tempImage);
-    EXPECT_EQ(2, ImageDecodingStore::instance()->cacheEntries());
-    EXPECT_EQ(1, ImageDecodingStore::instance()->imageCacheEntries());
-    EXPECT_EQ(1, ImageDecodingStore::instance()->decoderCacheEntries());
 
     setFrameStatus(ImageFrame::FrameComplete);
     addNewData();
 
-    tempImage = m_generator->decodeAndScale(fullSize());
-    EXPECT_TRUE(tempImage->isComplete());
+    m_generator->decodeAndScale(imageInfo(), 0, buffer, 100 * 4);
     EXPECT_EQ(2, m_frameBufferRequestCount);
     EXPECT_EQ(1, m_decodersDestroyed);
-    ImageDecodingStore::instance()->unlockCache(m_generator.get(), tempImage);
-    EXPECT_EQ(2, ImageDecodingStore::instance()->cacheEntries());
-    EXPECT_EQ(2, ImageDecodingStore::instance()->imageCacheEntries());
-    EXPECT_EQ(0, ImageDecodingStore::instance()->decoderCacheEntries());
 
-    tempImage = m_generator->decodeAndScale(fullSize());
-    EXPECT_TRUE(tempImage->isComplete());
-    EXPECT_EQ(2, m_frameBufferRequestCount);
-    ImageDecodingStore::instance()->unlockCache(m_generator.get(), tempImage);
+    // Decoder created again.
+    m_generator->decodeAndScale(imageInfo(), 0, buffer, 100 * 4);
+    EXPECT_EQ(3, m_frameBufferRequestCount);
 }
 
 static void decodeThreadMain(ImageFrameGenerator* generator)
 {
-    const ScaledImageFragment* tempImage = generator->decodeAndScale(fullSize());
-    ImageDecodingStore::instance()->unlockCache(generator, tempImage);
+    char buffer[100 * 100 * 4];
+    generator->decodeAndScale(imageInfo(), 0, buffer, 100 * 4);
 }
 
 TEST_F(ImageFrameGeneratorTest, incompleteDecodeBecomesCompleteMultiThreaded)
 {
     setFrameStatus(ImageFrame::FramePartial);
 
-    const ScaledImageFragment* tempImage = m_generator->decodeAndScale(fullSize());
-    EXPECT_FALSE(tempImage->isComplete());
+    char buffer[100 * 100 * 4];
+    m_generator->decodeAndScale(imageInfo(), 0, buffer, 100 * 4);
     EXPECT_EQ(1, m_frameBufferRequestCount);
     EXPECT_EQ(0, m_decodersDestroyed);
-    ImageDecodingStore::instance()->unlockCache(m_generator.get(), tempImage);
-    EXPECT_EQ(2, ImageDecodingStore::instance()->cacheEntries());
-    EXPECT_EQ(1, ImageDecodingStore::instance()->imageCacheEntries());
-    EXPECT_EQ(1, ImageDecodingStore::instance()->decoderCacheEntries());
 
     // LocalFrame can now be decoded completely.
     setFrameStatus(ImageFrame::FrameComplete);
@@ -224,55 +172,22 @@ TEST_F(ImageFrameGeneratorTest, incompleteDecodeBecomesCompleteMultiThreaded)
     OwnPtr<WebThread> thread = adoptPtr(Platform::current()->createThread("DecodeThread"));
     thread->postTask(new Task(WTF::bind(&decodeThreadMain, m_generator.get())));
     thread.clear();
-
     EXPECT_EQ(2, m_frameBufferRequestCount);
     EXPECT_EQ(1, m_decodersDestroyed);
-    EXPECT_EQ(2, ImageDecodingStore::instance()->cacheEntries());
-    EXPECT_EQ(2, ImageDecodingStore::instance()->imageCacheEntries());
-    EXPECT_EQ(0, ImageDecodingStore::instance()->decoderCacheEntries());
 
-    tempImage = m_generator->decodeAndScale(fullSize());
-    EXPECT_TRUE(tempImage->isComplete());
-    EXPECT_EQ(2, m_frameBufferRequestCount);
-    ImageDecodingStore::instance()->unlockCache(m_generator.get(), tempImage);
-}
-
-TEST_F(ImageFrameGeneratorTest, incompleteBitmapCopied)
-{
-    setFrameStatus(ImageFrame::FramePartial);
-
-    const ScaledImageFragment* tempImage= m_generator->decodeAndScale(fullSize());
-    EXPECT_FALSE(tempImage->isComplete());
-    EXPECT_EQ(1, m_frameBufferRequestCount);
-
-    ImageDecoder* tempDecoder = 0;
-    EXPECT_TRUE(ImageDecodingStore::instance()->lockDecoder(m_generator.get(), fullSize(), &tempDecoder));
-    ASSERT_TRUE(tempDecoder);
-    EXPECT_NE(tempDecoder->frameBufferAtIndex(0)->getSkBitmap().getPixels(), tempImage->bitmap().getPixels());
-    ImageDecodingStore::instance()->unlockCache(m_generator.get(), tempImage);
-    ImageDecodingStore::instance()->unlockDecoder(m_generator.get(), tempDecoder);
-}
-
-TEST_F(ImageFrameGeneratorTest, resumeDecodeEmptyFrameTurnsComplete)
-{
-    m_generator = ImageFrameGenerator::create(fullSize(), m_data, false, true);
-    useMockImageDecoderFactory();
-    setFrameStatus(ImageFrame::FrameComplete);
-
-    const ScaledImageFragment* tempImage = m_generator->decodeAndScale(fullSize(), 0);
-    EXPECT_TRUE(tempImage->isComplete());
-    ImageDecodingStore::instance()->unlockCache(m_generator.get(), tempImage);
-
-    setFrameStatus(ImageFrame::FrameEmpty);
-    setNextFrameStatus(ImageFrame::FrameComplete);
-    EXPECT_FALSE(m_generator->decodeAndScale(fullSize(), 1));
+    // Decoder created again.
+    m_generator->decodeAndScale(imageInfo(), 0, buffer, 100 * 4);
+    EXPECT_EQ(3, m_frameBufferRequestCount);
 }
 
 TEST_F(ImageFrameGeneratorTest, frameHasAlpha)
 {
     setFrameStatus(ImageFrame::FramePartial);
-    ImageDecodingStore::instance()->unlockCache(m_generator.get(), m_generator->decodeAndScale(fullSize(), 1));
+
+    char buffer[100 * 100 * 4];
+    m_generator->decodeAndScale(imageInfo(), 1, buffer, 100 * 4);
     EXPECT_TRUE(m_generator->hasAlpha(1));
+    EXPECT_EQ(1, m_frameBufferRequestCount);
 
     ImageDecoder* tempDecoder = 0;
     EXPECT_TRUE(ImageDecodingStore::instance()->lockDecoder(m_generator.get(), fullSize(), &tempDecoder));
@@ -281,55 +196,9 @@ TEST_F(ImageFrameGeneratorTest, frameHasAlpha)
     ImageDecodingStore::instance()->unlockDecoder(m_generator.get(), tempDecoder);
 
     setFrameStatus(ImageFrame::FrameComplete);
-    ImageDecodingStore::instance()->unlockCache(m_generator.get(), m_generator->decodeAndScale(fullSize(), 1));
+    m_generator->decodeAndScale(imageInfo(), 1, buffer, 100 * 4);
+    EXPECT_EQ(2, m_frameBufferRequestCount);
     EXPECT_FALSE(m_generator->hasAlpha(1));
-}
-
-namespace {
-
-class MockAllocator : public SkBitmap::Allocator {
-public:
-    // N starts from 0.
-    MockAllocator(int failAtNthCall)
-        : m_callCount(0)
-        , m_failAtNthCall(failAtNthCall)
-        , m_defaultAllocator(adoptPtr(new DiscardablePixelRefAllocator()))
-    {
-    }
-
-    virtual bool allocPixelRef(SkBitmap* bitmap, SkColorTable* colorTable) OVERRIDE
-    {
-        if (m_callCount++ == m_failAtNthCall)
-            return false;
-        return m_defaultAllocator->allocPixelRef(bitmap, colorTable);
-    }
-
-    int m_callCount;
-    int m_failAtNthCall;
-    OwnPtr<SkBitmap::Allocator> m_defaultAllocator;
-};
-
-} // namespace
-
-TEST_F(ImageFrameGeneratorTest, decodingAllocatorFailure)
-{
-    // Try to emulate allocation failures at different stages. For now, the
-    // first allocation is for the bitmap in ImageFrame, the second is for the
-    // copy of partial bitmap. The loop will still work if the number or purpose
-    // of allocations change in the future.
-    for (int i = 0; ; ++i) {
-        SCOPED_TRACE(testing::Message() << "Allocation failure at call " << i);
-        setFrameStatus(ImageFrame::FramePartial);
-        setAllocator(adoptPtr(new MockAllocator(i)));
-        OwnPtr<ScaledImageFragment> image = decode(0);
-        if (i >= static_cast<MockAllocator*>(allocator())->m_callCount) {
-            // We have tested failures of all stages. This time all allocations
-            // were successful.
-            EXPECT_TRUE(image);
-            break;
-        }
-        EXPECT_FALSE(image);
-    }
 }
 
 } // namespace blink

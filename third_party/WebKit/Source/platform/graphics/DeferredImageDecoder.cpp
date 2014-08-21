@@ -28,7 +28,6 @@
 
 #include "platform/graphics/DecodingImageGenerator.h"
 #include "platform/graphics/ImageDecodingStore.h"
-#include "platform/graphics/LazyDecodingPixelRef.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "wtf/PassOwnPtr.h"
 
