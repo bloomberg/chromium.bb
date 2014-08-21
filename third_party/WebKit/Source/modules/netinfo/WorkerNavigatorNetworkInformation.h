@@ -32,7 +32,7 @@ private:
     WorkerNavigatorNetworkInformation(WorkerNavigator&, ExecutionContext*);
     NetworkInformation* connection(ExecutionContext*);
 
-    RefPtrWillBeMember<NetworkInformation> m_connection;
+    PersistentWillBeMember<NetworkInformation> m_connection;
 };
 
 } // namespace blink
