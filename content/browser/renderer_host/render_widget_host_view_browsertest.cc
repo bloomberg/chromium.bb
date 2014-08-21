@@ -789,7 +789,9 @@ class CompositingRenderWidgetHostViewBrowserTestTabCaptureHighDPI
 // ImageSkia (related to ResourceBundle) implementation crashes the process on
 // Windows when this content_browsertest forces a device scale factor.
 // http://crbug.com/399349
-#if defined(OS_WIN)
+//
+// These tests are flaky on ChromeOS builders.  See http://crbug.com/406018.
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
 #define MAYBE_CopyToBitmap_EntireRegion DISABLED_CopyToBitmap_EntireRegion
 #define MAYBE_CopyToBitmap_CenterRegion DISABLED_CopyToBitmap_CenterRegion
 #define MAYBE_CopyToBitmap_ScaledResult DISABLED_CopyToBitmap_ScaledResult
