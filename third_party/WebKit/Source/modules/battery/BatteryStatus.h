@@ -11,10 +11,10 @@
 
 namespace blink {
 
-class BatteryStatus FINAL : public RefCountedWillBeGarbageCollected<BatteryStatus> {
+class BatteryStatus FINAL : public GarbageCollected<BatteryStatus> {
 public:
-    static PassRefPtrWillBeRawPtr<BatteryStatus> create();
-    static PassRefPtrWillBeRawPtr<BatteryStatus> create(bool charging, double chargingTime, double dischargingTime, double level);
+    static BatteryStatus* create();
+    static BatteryStatus* create(bool charging, double chargingTime, double dischargingTime, double level);
 
     bool charging() const { return m_charging; }
     double chargingTime() const  { return m_chargingTime; }

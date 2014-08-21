@@ -31,7 +31,7 @@ private:
     NavigatorBattery();
     static const char* supplementName();
 
-    RefPtrWillBeMember<BatteryManager> m_batteryManager;
+    PersistentWillBeMember<BatteryManager> m_batteryManager;
 };
 
 } // namespace blink

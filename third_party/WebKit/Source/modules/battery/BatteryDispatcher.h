@@ -31,7 +31,7 @@ private:
     virtual void startListening() OVERRIDE;
     virtual void stopListening() OVERRIDE;
 
-    RefPtrWillBePersistent<BatteryStatus> m_batteryStatus;
+    Persistent<BatteryStatus> m_batteryStatus;
 };
 
 } // namespace blink
