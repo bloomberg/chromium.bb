@@ -28239,40 +28239,6 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
-<histogram name="Search.ContextualSearchOptCard"
-    enum="ContextualSearchOptCardAction">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <summary>The type of action taken in the Opt-in card.</summary>
-</histogram>
-
-<histogram name="Search.ContextualSearchOptPeekCard"
-    enum="ContextualSearchPeekCardAction">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <summary>The type of action taken when the Opt-in card is peeking.</summary>
-</histogram>
-
-<histogram name="Search.ContextualSearchPeekCard"
-    enum="ContextualSearchPeekCardAction">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <summary>The type of action taken when the Search card is peeking.</summary>
-</histogram>
-
-<histogram name="Search.ContextualSearchTap" enum="ContextualSearchTapAction">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <summary>The type of tap action taken by opted-in users.</summary>
-</histogram>
-
-<histogram name="Search.ContextualSearchTapUndecided"
-    enum="ContextualSearchTapAction">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <summary>The type of tap action taken by undecided users.</summary>
-</histogram>
-
-<histogram name="Search.ContextualSearchTimeToSearch" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <summary>The time between tapping on a word and performing a search.</summary>
-</histogram>
-
 <histogram name="Search.DefaultSearchChangeOrigin"
     enum="DefaultSearchChangeOrigin">
   <owner>mathp@chromium.org</owner>
@@ -38308,28 +38274,6 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="2" label="BLOCK"/>
   <int value="3" label="ASK"/>
   <int value="4" label="SESSION_ONLY"/>
-</enum>
-
-<enum name="ContextualSearchOptCardAction" type="int">
-  <int value="0" label="Opt-in"/>
-  <int value="1" label="Opt-out"/>
-  <int value="2" label="Learn More"/>
-  <int value="3" label="Dismiss by Tapping on the Page"/>
-  <int value="4" label="Dismiss by Scrolling the Page"/>
-  <int value="5" label="Dismiss by Leaving the Page"/>
-</enum>
-
-<enum name="ContextualSearchPeekCardAction" type="int">
-  <int value="0" label="Tap Card"/>
-  <int value="1" label="Dismiss by Tapping on the Page"/>
-  <int value="2" label="Dismiss by Scrolling the Page"/>
-  <int value="3" label="Dismiss by Leaving the Page"/>
-</enum>
-
-<enum name="ContextualSearchTapAction" type="int">
-  <int value="0" label="Tap Word"/>
-  <int value="1" label="Tap Ignored"/>
-  <int value="2" label="Tap Invalid"/>
 </enum>
 
 <enum name="CookieDeletionCause" type="int">
@@ -51425,18 +51369,6 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="PLT.BeginToFinish_LinkLoadReload"/>
   <affected-histogram name="PLT.BeginToFinish_NormalLoad"/>
   <affected-histogram name="PLT.LoadType"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="ContextualSearch">
-  <suffix name="Control"/>
-  <suffix name="Tap"/>
-  <suffix name="TapForced"/>
-  <affected-histogram name="Search.ContextualSearchOptCard"/>
-  <affected-histogram name="Search.ContextualSearchOptPeekCard"/>
-  <affected-histogram name="Search.ContextualSearchPeekCard"/>
-  <affected-histogram name="Search.ContextualSearchTap"/>
-  <affected-histogram name="Search.ContextualSearchTapUndecided"/>
-  <affected-histogram name="Search.ContextualSearchTimeToSearch"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="CrosFirstRunStep" separator="">
