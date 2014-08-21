@@ -1253,16 +1253,6 @@ crbug.com/392706 virtual/threaded/animations/play-state-initially-paused.html [ 
 
 crbug.com/389594 svg/filters/feBlend-all-modes.html [ NeedsManualRebaseline ]
 
-crbug.com/403557 css3/filters/buffer-offset.html [ NeedsRebaseline ]
-crbug.com/403557 css3/filters/effect-reference-colorspace.html [ NeedsRebaseline ]
-crbug.com/403557 css3/filters/effect-reference-hidpi.html [ NeedsRebaseline ]
-crbug.com/403557 css3/filters/effect-reference-subregion.html [ NeedsRebaseline ]
-crbug.com/403557 css3/filters/effect-reference-zoom.html [ NeedsRebaseline ]
-crbug.com/403557 css3/filters/effect-reference.html [ NeedsRebaseline ]
-crbug.com/403557 css3/filters/filter-repaint-child-layers.html [ NeedsRebaseline ]
-crbug.com/403557 css3/filters/filter-with-transform.html [ NeedsRebaseline ]
-crbug.com/403557 css3/filters/nested-filter.html [ NeedsRebaseline ]
-
 # V8 3.28.19
 crbug.com/392762 fast/js/nested-object-gc.html [ Pass Crash ]
 
