@@ -111,6 +111,25 @@ void DataTypeManagerImpl::Configure(syncer::ModelTypeSet desired_types,
   ConfigureImpl(filtered_desired_types, reason);
 }
 
+void DataTypeManagerImpl::ReenableType(syncer::ModelType type) {
+  // TODO(zea): move the "should we reconfigure" logic into the datatype handler
+  // itself.
+  // Only reconfigure if the type actually had a data type or unready error.
+  if (!failed_data_types_handler_->ResetDataTypeErrorFor(type) &&
+      !failed_data_types_handler_->ResetUnreadyErrorFor(type)) {
+    return;
+  }
+
+  // Only reconfigure if the type is actually desired.
+  if (!last_requested_types_.Has(type))
+    return;
+
+  DVLOG(1) << "Reenabling " << syncer::ModelTypeToString(type);
+  needs_reconfigure_ = true;
+  last_configure_reason_ = syncer::CONFIGURE_REASON_PROGRAMMATIC;
+  ProcessReconfigure();
+}
+
 void DataTypeManagerImpl::PurgeForMigration(
     syncer::ModelTypeSet undesired_types,
     syncer::ConfigureReason reason) {
@@ -419,6 +438,7 @@ void DataTypeManagerImpl::OnSingleDataTypeWillStop(
     // reconfigure.
     if (error.error_type() != syncer::SyncError::UNRECOVERABLE_ERROR) {
       needs_reconfigure_ = true;
+      last_configure_reason_ = syncer::CONFIGURE_REASON_PROGRAMMATIC;
       ProcessReconfigure();
     } else {
       DCHECK_EQ(state_, CONFIGURING);

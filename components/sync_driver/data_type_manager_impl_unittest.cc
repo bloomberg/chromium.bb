@@ -1180,12 +1180,9 @@ TEST_F(SyncDataTypeManagerImplTest, ReenableAfterDataTypeError) {
   Mock::VerifyAndClearExpectations(&observer_);
 
   // Re-enable bookmarks.
-  failed_data_types_handler_.ResetDataTypeErrorFor(syncer::BOOKMARKS);
-
-  SetConfigureStartExpectation();
   SetConfigureDoneExpectation(DataTypeManager::OK);
+  dtm_->ReenableType(syncer::BOOKMARKS);
 
-  Configure(dtm_.get(), ModelTypeSet(BOOKMARKS, PREFERENCES));
   EXPECT_EQ(DataTypeManager::DOWNLOAD_PENDING, dtm_->state());
   FinishDownload(*dtm_, ModelTypeSet(), ModelTypeSet());
   FinishDownload(*dtm_, ModelTypeSet(BOOKMARKS), ModelTypeSet());
@@ -1194,6 +1191,9 @@ TEST_F(SyncDataTypeManagerImplTest, ReenableAfterDataTypeError) {
   EXPECT_EQ(DataTypeManager::CONFIGURED, dtm_->state());
   EXPECT_EQ(DataTypeController::RUNNING, GetController(PREFERENCES)->state());
   EXPECT_EQ(DataTypeController::RUNNING, GetController(BOOKMARKS)->state());
+
+  // Should do nothing.
+  dtm_->ReenableType(syncer::BOOKMARKS);
 }
 
 TEST_F(SyncDataTypeManagerImplTest, UnreadyType) {
@@ -1212,9 +1212,8 @@ TEST_F(SyncDataTypeManagerImplTest, UnreadyType) {
 
   // Bookmarks should start normally now.
   GetController(BOOKMARKS)->SetReadyForStart(true);
-  SetConfigureStartExpectation();
   SetConfigureDoneExpectation(DataTypeManager::OK);
-  Configure(dtm_.get(), ModelTypeSet(BOOKMARKS));
+  dtm_->ReenableType(BOOKMARKS);
   EXPECT_EQ(DataTypeManager::DOWNLOAD_PENDING, dtm_->state());
 
   FinishDownload(*dtm_, ModelTypeSet(), ModelTypeSet());
@@ -1224,6 +1223,10 @@ TEST_F(SyncDataTypeManagerImplTest, UnreadyType) {
   GetController(BOOKMARKS)->FinishStart(DataTypeController::OK);
   EXPECT_EQ(DataTypeManager::CONFIGURED, dtm_->state());
   EXPECT_EQ(1U, configurer_.activated_types().Size());
+
+  // Should do nothing.
+  Mock::VerifyAndClearExpectations(&observer_);
+  dtm_->ReenableType(BOOKMARKS);
 
   dtm_->Stop();
   EXPECT_EQ(DataTypeManager::STOPPED, dtm_->state());

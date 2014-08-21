@@ -1008,21 +1008,8 @@ void ProfileSyncService::OnUnrecoverableErrorImpl(
 }
 
 void ProfileSyncService::ReenableDatatype(syncer::ModelType type) {
-  // Only reconfigure if the type actually had a data type or unready error.
-  if (!failed_data_types_handler_.ResetDataTypeErrorFor(type) &&
-      !failed_data_types_handler_.ResetUnreadyErrorFor(type)) {
-    return;
-  }
-
-  // If the type is no longer enabled, don't bother reconfiguring.
-  // TODO(zea): something else should encapsulate the notion of "whether a type
-  // should be enabled".
-  if (!syncer::CoreTypes().Has(type) && !GetPreferredDataTypes().Has(type))
-    return;
-
-  base::MessageLoop::current()->PostTask(FROM_HERE,
-      base::Bind(&ProfileSyncService::ReconfigureDatatypeManager,
-                 weak_factory_.GetWeakPtr()));
+  DCHECK(backend_initialized_);
+  directory_data_type_manager_->ReenableType(type);
 }
 
 void ProfileSyncService::UpdateBackendInitUMA(bool success) {

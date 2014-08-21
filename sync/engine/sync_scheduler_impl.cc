@@ -143,6 +143,7 @@ bool IsConfigRelatedUpdateSourceValue(
     case GetUpdatesCallerInfo::MIGRATION:
     case GetUpdatesCallerInfo::NEW_CLIENT:
     case GetUpdatesCallerInfo::NEWLY_SUPPORTED_DATATYPE:
+    case GetUpdatesCallerInfo::PROGRAMMATIC:
       return true;
     default:
       return false;

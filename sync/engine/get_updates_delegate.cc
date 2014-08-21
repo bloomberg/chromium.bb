@@ -136,6 +136,8 @@ ConfigureGetUpdatesDelegate::ConvertConfigureSourceToOrigin(
       return sync_pb::SyncEnums::RECONFIGURATION;
     case sync_pb::GetUpdatesCallerInfo::NEW_CLIENT:
       return sync_pb::SyncEnums::NEW_CLIENT;
+    case sync_pb::GetUpdatesCallerInfo::PROGRAMMATIC:
+      return sync_pb::SyncEnums::PROGRAMMATIC;
     default:
       NOTREACHED();
       return sync_pb::SyncEnums::UNKNOWN_ORIGIN;

@@ -79,6 +79,8 @@ GetUpdatesCallerInfo::GetUpdatesSource GetSourceFromReason(
     case CONFIGURE_REASON_NEWLY_ENABLED_DATA_TYPE:
     case CONFIGURE_REASON_CRYPTO:
       return GetUpdatesCallerInfo::NEWLY_SUPPORTED_DATATYPE;
+    case CONFIGURE_REASON_PROGRAMMATIC:
+      return GetUpdatesCallerInfo::PROGRAMMATIC;
     default:
       NOTREACHED();
   }

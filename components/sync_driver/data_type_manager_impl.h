@@ -53,6 +53,7 @@ class DataTypeManagerImpl : public DataTypeManager,
   // DataTypeManager interface.
   virtual void Configure(syncer::ModelTypeSet desired_types,
                          syncer::ConfigureReason reason) OVERRIDE;
+  virtual void ReenableType(syncer::ModelType type) OVERRIDE;
 
   // Needed only for backend migration.
   virtual void PurgeForMigration(

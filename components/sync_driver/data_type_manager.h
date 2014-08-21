@@ -74,6 +74,10 @@ class DataTypeManager {
   virtual void Configure(syncer::ModelTypeSet desired_types,
                          syncer::ConfigureReason reason) = 0;
 
+  // Resets the error state for |type| and triggers a reconfiguration if
+  // necessary.
+  virtual void ReenableType(syncer::ModelType type) = 0;
+
   virtual void PurgeForMigration(syncer::ModelTypeSet undesired_types,
                                  syncer::ConfigureReason reason) = 0;
 

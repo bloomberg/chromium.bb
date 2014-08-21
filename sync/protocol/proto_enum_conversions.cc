@@ -83,7 +83,7 @@ const char* GetPageTransitionRedirectTypeString(
 const char* GetUpdatesSourceString(
     sync_pb::GetUpdatesCallerInfo::GetUpdatesSource updates_source) {
   ASSERT_ENUM_BOUNDS(sync_pb::GetUpdatesCallerInfo, GetUpdatesSource,
-                     UNKNOWN, RETRY);
+                     UNKNOWN, PROGRAMMATIC);
   switch (updates_source) {
     ENUM_CASE(sync_pb::GetUpdatesCallerInfo, UNKNOWN);
     ENUM_CASE(sync_pb::GetUpdatesCallerInfo, FIRST_UPDATE);
@@ -97,6 +97,7 @@ const char* GetUpdatesSourceString(
     ENUM_CASE(sync_pb::GetUpdatesCallerInfo, RECONFIGURATION);
     ENUM_CASE(sync_pb::GetUpdatesCallerInfo, DATATYPE_REFRESH);
     ENUM_CASE(sync_pb::GetUpdatesCallerInfo, RETRY);
+    ENUM_CASE(sync_pb::GetUpdatesCallerInfo, PROGRAMMATIC);
   }
   NOTREACHED();
   return "";
@@ -105,7 +106,7 @@ const char* GetUpdatesSourceString(
 const char* GetUpdatesOriginString(
     sync_pb::SyncEnums::GetUpdatesOrigin origin) {
   ASSERT_ENUM_BOUNDS(sync_pb::SyncEnums, GetUpdatesOrigin,
-                     UNKNOWN_ORIGIN, RETRY);
+                     UNKNOWN_ORIGIN, PROGRAMMATIC);
   switch (origin) {
     ENUM_CASE(sync_pb::SyncEnums, UNKNOWN_ORIGIN);
     ENUM_CASE(sync_pb::SyncEnums, PERIODIC);
@@ -115,6 +116,7 @@ const char* GetUpdatesOriginString(
     ENUM_CASE(sync_pb::SyncEnums, RECONFIGURATION);
     ENUM_CASE(sync_pb::SyncEnums, GU_TRIGGER);
     ENUM_CASE(sync_pb::SyncEnums, RETRY);
+    ENUM_CASE(sync_pb::SyncEnums, PROGRAMMATIC);
   }
   NOTREACHED();
   return "";

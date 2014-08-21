@@ -43,6 +43,8 @@ message GetUpdatesCallerInfo {
                               // typically used when datatype's have custom
                               // sync UI, e.g. sessions.
     RETRY = 13;  // A follow-up GU to pick up updates missed by previous GU.
+    PROGRAMMATIC = 14;     // The client is programmatically enabling/disabling
+                           // a type, typically for error handling purposes.
   }
 
   required GetUpdatesSource source = 1;

@@ -157,5 +157,7 @@ message SyncEnums {
                       // GetUpdateTriggers message for more details.
     RETRY = 13;  // A retry GU to pick up updates missed by last GU due to
                  // replication delay, missing hints, etc.
+    PROGRAMMATIC = 14;     // A GU to programmatically enable/disable a
+                           // datatype, often due to error handling.
   }
 }

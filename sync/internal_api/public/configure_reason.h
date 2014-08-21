@@ -35,6 +35,10 @@ enum ConfigureReason {
 
   // Configure data types for backup/rollback.
   CONFIGURE_REASON_BACKUP_ROLLBACK,
+
+  // The client is configuring because of a programmatic type enable/disable,
+  // such as when an error is encountered/resolved.
+  CONFIGURE_REASON_PROGRAMMATIC,
 };
 
 }  // namespace syncer

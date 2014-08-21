@@ -57,6 +57,7 @@ class FakeDataTypeManager : public sync_driver::DataTypeManager {
     observer_->OnConfigureDone(result);
   }
 
+  virtual void ReenableType(syncer::ModelType type) OVERRIDE {}
   virtual void PurgeForMigration(syncer::ModelTypeSet undesired_types,
                                  syncer::ConfigureReason reason) OVERRIDE {}
   virtual void Stop() OVERRIDE {};
