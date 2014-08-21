@@ -25,6 +25,7 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "net/base/auth.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/test/spawned_test_server/spawned_test_server.h"
 
 using content::NavigationController;
 using content::OpenURLParams;
@@ -1247,6 +1248,63 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
   ASSERT_EQ("127.0.0.1", test_page.host());
   std::string auth_host("www.a.com");
   TestCrossOriginPrompt(test_page, auth_host);
+}
+
+IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
+                       LoginInterstitialShouldReplaceExistingInterstitial) {
+  net::SpawnedTestServer https_server(
+      net::SpawnedTestServer::TYPE_HTTPS,
+      net::SpawnedTestServer::SSLOptions(
+          net::SpawnedTestServer::SSLOptions::CERT_EXPIRED),
+      base::FilePath());
+  ASSERT_TRUE(https_server.Start());
+
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  NavigationController* controller = &contents->GetController();
+  LoginPromptBrowserTestObserver observer;
+
+  observer.Register(content::Source<NavigationController>(controller));
+
+  // Load a page which triggers an SSL interstitial. Proceeding through it
+  // should show the login page with the blank interstitial.
+  {
+    GURL test_page = https_server.GetURL(kAuthBasicPage);
+    ASSERT_EQ("127.0.0.1", test_page.host());
+
+    WindowedAuthNeededObserver auth_needed_waiter(controller);
+    browser()->OpenURL(OpenURLParams(
+        test_page, Referrer(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED,
+        false));
+    ASSERT_EQ("127.0.0.1", contents->GetURL().host());
+    WaitForInterstitialAttach(contents);
+
+    // An overrideable SSL interstitial is now being displayed. Proceed through
+    // the interstitial to see the login prompt.
+    contents->GetInterstitialPage()->Proceed();
+    auth_needed_waiter.Wait();
+    ASSERT_EQ(1u, observer.handlers().size());
+    WaitForInterstitialAttach(contents);
+
+    // The omnibox should show the correct origin while the login prompt is
+    // being displayed.
+    EXPECT_EQ("127.0.0.1", contents->GetVisibleURL().host());
+    EXPECT_TRUE(contents->ShowingInterstitialPage());
+
+    // Cancelling the login prompt should detach the interstitial while keeping
+    // the correct origin.
+    LoginHandler* handler = *observer.handlers().begin();
+    scoped_refptr<content::MessageLoopRunner> loop_runner(
+        new content::MessageLoopRunner);
+    InterstitialObserver interstitial_observer(contents,
+                                               base::Closure(),
+                                               loop_runner->QuitClosure());
+    handler->CancelAuth();
+    if (content::InterstitialPage::GetInterstitialPage(contents))
+      loop_runner->Run();
+    EXPECT_EQ("127.0.0.1", contents->GetVisibleURL().host());
+    EXPECT_FALSE(contents->ShowingInterstitialPage());
+  }
 }
 
 }  // namespace
