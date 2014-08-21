@@ -347,6 +347,10 @@ Activity::ActivityMediaState WebActivity::GetMediaState() {
   return Activity::ACTIVITY_MEDIA_STATE_NONE;
 }
 
+aura::Window* WebActivity::GetWindow() {
+  return !web_view_ ? NULL : web_view_->GetWidget()->GetNativeWindow();
+}
+
 void WebActivity::Init() {
   DCHECK(web_view_);
   web_view_->InstallAccelerators();

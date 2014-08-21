@@ -13,6 +13,7 @@
       'dependencies': [
         '../athena.gyp:athena_lib',
         '../athena.gyp:athena_content_lib',
+        '../athena.gyp:athena_content_support_lib',
         '../resources/athena_resources.gyp:athena_resources',
 	# debug_widow.cc depends on this. Remove this once debug_window
 	# is removed.

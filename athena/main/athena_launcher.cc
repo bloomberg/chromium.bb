@@ -6,6 +6,7 @@
 
 #include "athena/activity/public/activity_factory.h"
 #include "athena/activity/public/activity_manager.h"
+#include "athena/content/public/app_registry.h"
 #include "athena/content/public/content_activity_factory.h"
 #include "athena/content/public/content_app_model_builder.h"
 #include "athena/home/public/home_card.h"
@@ -119,6 +120,7 @@ void StartAthenaEnv(aura::Window* root_window,
   athena::InputManager::Create()->OnRootWindowCreated(root_window);
   athena::ScreenManager::Create(delegate, root_window);
   athena::WindowManager::Create();
+  athena::AppRegistry::Create();
   SetupBackgroundImage();
 
   athena::ScreenManager::Get()->GetContext()->SetProperty(
@@ -151,6 +153,7 @@ void ShutdownAthena() {
   athena::ActivityFactory::Shutdown();
   athena::ActivityManager::Shutdown();
   athena::HomeCard::Shutdown();
+  athena::AppRegistry::ShutDown();
   athena::WindowManager::Shutdown();
   athena::ScreenManager::Shutdown();
   athena::InputManager::Shutdown();
