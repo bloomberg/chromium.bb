@@ -14,7 +14,7 @@ async_test(function(t) {
               // Override onload handler assigned by with_iframe. 
               frame.onload = t.step_func(function() {
                   resolve(frame.contentWindow.navigator.serviceWorker.register(
-                      'worker-no-op.js',
+                      'empty-worker.js',
                       {scope: scope}));
               });
           });

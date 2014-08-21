@@ -27,7 +27,7 @@ t.step(function() {
             return;
         }
 
-        w.navigator.serviceWorker.register('worker-no-op.js',
+        w.navigator.serviceWorker.register('empty-worker.js',
                                            {scope: 'blank.html'})
         .then(function(registration) {
             return wait_for_update(t, registration);

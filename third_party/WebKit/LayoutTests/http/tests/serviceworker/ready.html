@@ -26,7 +26,7 @@ async_test(function(t) {
   }, 'ready returns a Promise object in the context of the related document');
 
 async_test(function(t) {
-    var url = 'resources/worker-no-op.js';
+    var url = 'resources/empty-worker.js';
     var scope = 'resources/blank.html?ready-active';
     var frame;
     var registered_service_worker;

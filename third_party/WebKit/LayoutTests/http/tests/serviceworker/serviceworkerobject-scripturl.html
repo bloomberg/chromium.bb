@@ -22,9 +22,9 @@ function url_test(name, url) {
   }, 'Verify the scriptURL property: ' + name);
 }
 
-url_test('relative', 'resources/worker-no-op.js');
-url_test('with-fragment', 'resources/worker-no-op.js#ref');
+url_test('relative', 'resources/empty-worker.js');
+url_test('with-fragment', 'resources/empty-worker.js#ref');
 url_test('absolute',
-         'http://127.0.0.1:8000/serviceworker/resources/worker-no-op.js');
+         'http://127.0.0.1:8000/serviceworker/resources/empty-worker.js');
 
 </script>
