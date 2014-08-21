@@ -6,25 +6,28 @@
 
 #include "base/callback_helpers.h"
 #include "content/public/renderer/render_thread.h"
-#include "ipc/ipc_channel_proxy.h"
+#include "ipc/ipc_sync_channel.h"
 #include "ppapi/c/pp_errors.h"
 
 namespace nacl {
 
 TrustedPluginChannel::TrustedPluginChannel(
-    const IPC::ChannelHandle& handle) {
-  channel_proxy_ = IPC::ChannelProxy::Create(
+    const IPC::ChannelHandle& handle,
+    base::WaitableEvent* shutdown_event) {
+  channel_ = IPC::SyncChannel::Create(
       handle,
       IPC::Channel::MODE_CLIENT,
       this,
-      content::RenderThread::Get()->GetIOMessageLoopProxy()).Pass();
+      content::RenderThread::Get()->GetIOMessageLoopProxy(),
+      true,
+      shutdown_event).Pass();
 }
 
 TrustedPluginChannel::~TrustedPluginChannel() {
 }
 
 bool TrustedPluginChannel::Send(IPC::Message* message) {
-  return channel_proxy_->Send(message);
+  return channel_->Send(message);
 }
 
 bool TrustedPluginChannel::OnMessageReceived(const IPC::Message& message) {

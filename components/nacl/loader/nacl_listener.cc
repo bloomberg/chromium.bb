@@ -313,7 +313,8 @@ void NaClListener::OnStart(const nacl::NaClStartParams& params) {
 
   trusted_listener_ = new NaClTrustedListener(
       IPC::Channel::GenerateVerifiedChannelID("nacl"),
-      io_thread_.message_loop_proxy().get());
+      io_thread_.message_loop_proxy().get(),
+      &shutdown_event_);
   if (!Send(new NaClProcessHostMsg_PpapiChannelsCreated(
           browser_handle,
           ppapi_renderer_handle,

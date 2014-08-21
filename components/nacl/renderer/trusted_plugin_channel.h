@@ -8,22 +8,24 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "ipc/ipc_listener.h"
+#include "ppapi/c/pp_instance.h"
 
 namespace base {
 class WaitableEvent;
 }  // namespace base
 
 namespace IPC {
-class ChannelProxy;
 struct ChannelHandle;
 class Message;
+class SyncChannel;
 }  // namespace IPC
 
 namespace nacl {
 
 class TrustedPluginChannel : public IPC::Listener {
  public:
-  explicit TrustedPluginChannel(const IPC::ChannelHandle& handle);
+  TrustedPluginChannel(const IPC::ChannelHandle& handle,
+                       base::WaitableEvent* shutdown_event);
   virtual ~TrustedPluginChannel();
 
   bool Send(IPC::Message* message);
@@ -32,7 +34,7 @@ class TrustedPluginChannel : public IPC::Listener {
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
  private:
-  scoped_ptr<IPC::ChannelProxy> channel_proxy_;
+  scoped_ptr<IPC::SyncChannel> channel_;
 
   DISALLOW_COPY_AND_ASSIGN(TrustedPluginChannel);
 };

@@ -408,7 +408,8 @@ void LaunchSelLdr(PP_Instance instance,
   if (IsValidChannelHandle(launch_result.trusted_ipc_channel_handle)) {
     scoped_ptr<TrustedPluginChannel> trusted_plugin_channel(
         new TrustedPluginChannel(
-            launch_result.trusted_ipc_channel_handle));
+            launch_result.trusted_ipc_channel_handle,
+            content::RenderThread::Get()->GetShutdownEvent()));
     load_manager->set_trusted_plugin_channel(trusted_plugin_channel.Pass());
   } else {
     PostPPCompletionCallback(callback, PP_ERROR_FAILED);
