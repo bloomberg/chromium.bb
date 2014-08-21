@@ -14,6 +14,7 @@
 #include "net/base/upload_data_stream.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/redirect_info.h"
+#include "net/url_request/url_request_context.h"
 
 namespace mojo {
 namespace {
@@ -83,7 +84,8 @@ class UploadDataPipeElementReader : public net::UploadElementReader {
                    int buf_length,
                    const net::CompletionCallback& callback) OVERRIDE {
     uint32_t bytes_read =
-        std::min(BytesRemaining(), static_cast<uint64>(buf_length));
+        std::min(static_cast<uint32_t>(BytesRemaining()),
+                 static_cast<uint32_t>(buf_length));
     if (bytes_read > 0) {
       ReadDataRaw(pipe_.get(), buf->data(), &bytes_read,
                   MOJO_READ_DATA_FLAG_NONE);
@@ -178,11 +180,11 @@ void URLLoaderImpl::Start(URLRequestPtr request,
     return;
   }
 
-  url_request_.reset(
-      new net::URLRequest(GURL(request->url),
-                          net::DEFAULT_PRIORITY,
-                          this,
-                          context_->url_request_context()));
+  url_request_ = context_->url_request_context()->CreateRequest(
+      GURL(request->url),
+      net::DEFAULT_PRIORITY,
+      this,
+      NULL);
   url_request_->set_method(request->method);
   if (request->headers) {
     net::HttpRequestHeaders headers;

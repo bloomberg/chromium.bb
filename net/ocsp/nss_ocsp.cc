@@ -20,6 +20,7 @@
 #include "base/compiler_specific.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
@@ -187,7 +188,6 @@ class OCSPRequestSession
       : url_(url),
         http_request_method_(http_request_method),
         timeout_(timeout),
-        request_(NULL),
         buffer_(new IOBuffer(kRecvBufferSize)),
         response_code_(-1),
         cv_(&lock_),
@@ -218,7 +218,7 @@ class OCSPRequestSession
   }
 
   bool Started() const {
-    return request_ != NULL;
+    return request_.get() != NULL;
   }
 
   void Cancel() {
@@ -286,7 +286,7 @@ class OCSPRequestSession
   virtual void OnReceivedRedirect(URLRequest* request,
                                   const RedirectInfo& redirect_info,
                                   bool* defer_redirect) OVERRIDE {
-    DCHECK_EQ(request, request_);
+    DCHECK_EQ(request_.get(), request);
     DCHECK_EQ(base::MessageLoopForIO::current(), io_loop_);
 
     if (!redirect_info.new_url.SchemeIs("http")) {
@@ -297,7 +297,7 @@ class OCSPRequestSession
   }
 
   virtual void OnResponseStarted(URLRequest* request) OVERRIDE {
-    DCHECK_EQ(request, request_);
+    DCHECK_EQ(request_.get(), request);
     DCHECK_EQ(base::MessageLoopForIO::current(), io_loop_);
 
     int bytes_read = 0;
@@ -307,12 +307,12 @@ class OCSPRequestSession
       response_headers_->GetMimeType(&response_content_type_);
       request_->Read(buffer_.get(), kRecvBufferSize, &bytes_read);
     }
-    OnReadCompleted(request_, bytes_read);
+    OnReadCompleted(request_.get(), bytes_read);
   }
 
   virtual void OnReadCompleted(URLRequest* request,
                                int bytes_read) OVERRIDE {
-    DCHECK_EQ(request, request_);
+    DCHECK_EQ(request_.get(), request);
     DCHECK_EQ(base::MessageLoopForIO::current(), io_loop_);
 
     do {
@@ -322,8 +322,7 @@ class OCSPRequestSession
     } while (request_->Read(buffer_.get(), kRecvBufferSize, &bytes_read));
 
     if (!request_->status().is_io_pending()) {
-      delete request_;
-      request_ = NULL;
+      request_.reset();
       g_ocsp_io_loop.Get().RemoveRequest(this);
       {
         base::AutoLock autolock(lock_);
@@ -345,9 +344,7 @@ class OCSPRequestSession
     }
 #endif
     if (request_) {
-      request_->Cancel();
-      delete request_;
-      request_ = NULL;
+      request_.reset();
       g_ocsp_io_loop.Get().RemoveRequest(this);
       {
         base::AutoLock autolock(lock_);
@@ -398,8 +395,8 @@ class OCSPRequestSession
       g_ocsp_io_loop.Get().AddRequest(this);
     }
 
-    request_ =
-        new URLRequest(url_, DEFAULT_PRIORITY, this, url_request_context);
+    request_ = url_request_context->CreateRequest(
+        url_, DEFAULT_PRIORITY, this, NULL);
     // To meet the privacy requirements of incognito mode.
     request_->SetLoadFlags(LOAD_DISABLE_CACHE | LOAD_DO_NOT_SAVE_COOKIES |
                            LOAD_DO_NOT_SEND_COOKIES);
@@ -424,10 +421,10 @@ class OCSPRequestSession
     AddRef();  // Release after |request_| deleted.
   }
 
-  GURL url_;                      // The URL we eventually wound up at
+  GURL url_;                        // The URL we eventually wound up at
   std::string http_request_method_;
-  base::TimeDelta timeout_;       // The timeout for OCSP
-  URLRequest* request_;           // The actual request this wraps
+  base::TimeDelta timeout_;         // The timeout for OCSP
+  scoped_ptr<URLRequest> request_;  // The actual request this wraps
   scoped_refptr<IOBuffer> buffer_;  // Read buffer
   HttpRequestHeaders extra_request_headers_;
 

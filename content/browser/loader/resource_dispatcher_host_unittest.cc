@@ -1763,15 +1763,17 @@ TEST_F(ResourceDispatcherHostTest, TestBlockedRequestsDontLeak) {
 // Test the private helper method "CalculateApproximateMemoryCost()".
 TEST_F(ResourceDispatcherHostTest, CalculateApproximateMemoryCost) {
   net::URLRequestContext context;
-  net::URLRequest req(
-      GURL("http://www.google.com"), net::DEFAULT_PRIORITY, NULL, &context);
-  EXPECT_EQ(4427,
-            ResourceDispatcherHostImpl::CalculateApproximateMemoryCost(&req));
+  scoped_ptr<net::URLRequest> req(context.CreateRequest(
+      GURL("http://www.google.com"), net::DEFAULT_PRIORITY, NULL, NULL));
+  EXPECT_EQ(
+      4427,
+      ResourceDispatcherHostImpl::CalculateApproximateMemoryCost(req.get()));
 
   // Add 9 bytes of referrer.
-  req.SetReferrer("123456789");
-  EXPECT_EQ(4436,
-            ResourceDispatcherHostImpl::CalculateApproximateMemoryCost(&req));
+  req->SetReferrer("123456789");
+  EXPECT_EQ(
+      4436,
+      ResourceDispatcherHostImpl::CalculateApproximateMemoryCost(req.get()));
 
   // Add 33 bytes of upload content.
   std::string upload_content;
@@ -1779,12 +1781,13 @@ TEST_F(ResourceDispatcherHostTest, CalculateApproximateMemoryCost) {
   std::fill(upload_content.begin(), upload_content.end(), 'x');
   scoped_ptr<net::UploadElementReader> reader(new net::UploadBytesElementReader(
       upload_content.data(), upload_content.size()));
-  req.set_upload(make_scoped_ptr(
+  req->set_upload(make_scoped_ptr(
       net::UploadDataStream::CreateWithReader(reader.Pass(), 0)));
 
   // Since the upload throttling is disabled, this has no effect on the cost.
-  EXPECT_EQ(4436,
-            ResourceDispatcherHostImpl::CalculateApproximateMemoryCost(&req));
+  EXPECT_EQ(
+      4436,
+      ResourceDispatcherHostImpl::CalculateApproximateMemoryCost(req.get()));
 }
 
 // Test that too much memory for outstanding requests for a particular

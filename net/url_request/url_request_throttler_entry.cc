@@ -150,11 +150,11 @@ void URLRequestThrottlerEntry::DetachManager() {
 }
 
 bool URLRequestThrottlerEntry::ShouldRejectRequest(
-    const URLRequest& request) const {
+    const URLRequest& request,
+    NetworkDelegate* network_delegate) const {
   bool reject_request = false;
   if (!is_backoff_disabled_ && !ExplicitUserRequest(request.load_flags()) &&
-      (!request.context()->network_delegate() ||
-       request.context()->network_delegate()->CanThrottleRequest(request)) &&
+      (!network_delegate || network_delegate->CanThrottleRequest(request)) &&
       GetBackoffEntry()->ShouldRejectRequest()) {
     int num_failures = GetBackoffEntry()->failure_count();
     int release_after_ms =

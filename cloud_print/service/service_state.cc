@@ -175,21 +175,21 @@ std::string ServiceState::LoginToGoogle(const std::string& service,
   post_body += "&source=" + net::EscapeUrlEncodedData("CP-Service", true);
   post_body += "&service=" + net::EscapeUrlEncodedData(service, true);
 
-  net::URLRequest request(
-      url, net::DEFAULT_PRIORITY, &fetcher_delegate, context.get());
-  int load_flags = request.load_flags();
+  scoped_ptr<net::URLRequest> request(context->CreateRequest(
+      url, net::DEFAULT_PRIORITY, &fetcher_delegate, NULL));
+  int load_flags = request->load_flags();
   load_flags = load_flags | net::LOAD_DO_NOT_SEND_COOKIES;
   load_flags = load_flags | net::LOAD_DO_NOT_SAVE_COOKIES;
-  request.SetLoadFlags(load_flags);
+  request->SetLoadFlags(load_flags);
 
   scoped_ptr<net::UploadElementReader> reader(
       net::UploadOwnedBytesElementReader::CreateWithString(post_body));
-  request.set_upload(make_scoped_ptr(
+  request->set_upload(make_scoped_ptr(
       net::UploadDataStream::CreateWithReader(reader.Pass(), 0)));
-  request.SetExtraRequestHeaderByName(
+  request->SetExtraRequestHeaderByName(
       "Content-Type", "application/x-www-form-urlencoded", true);
-  request.set_method("POST");
-  request.Start();
+  request->set_method("POST");
+  request->Start();
 
   base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,

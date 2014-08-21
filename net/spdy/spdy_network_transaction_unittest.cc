@@ -2482,26 +2482,27 @@ TEST_P(SpdyNetworkTransactionTest, RedirectGetRequest) {
         GetParam().protocol,
         false  /* force_spdy_over_ssl*/,
         true  /* force_spdy_always */);
-    net::URLRequest r(GURL("http://www.google.com/"),
-                      DEFAULT_PRIORITY,
-                      &d,
-                      &spdy_url_request_context);
+    scoped_ptr<URLRequest> r(
+        spdy_url_request_context.CreateRequest(GURL("http://www.google.com/"),
+                                               DEFAULT_PRIORITY,
+                                               &d,
+                                               NULL));
     spdy_url_request_context.socket_factory().
         AddSocketDataProvider(&data);
     spdy_url_request_context.socket_factory().
         AddSocketDataProvider(&data2);
 
     d.set_quit_on_redirect(true);
-    r.Start();
+    r->Start();
     base::RunLoop().Run();
 
     EXPECT_EQ(1, d.received_redirect_count());
 
-    r.FollowDeferredRedirect();
+    r->FollowDeferredRedirect();
     base::RunLoop().Run();
     EXPECT_EQ(1, d.response_started_count());
     EXPECT_FALSE(d.received_data_before_response());
-    EXPECT_EQ(net::URLRequestStatus::SUCCESS, r.status().status());
+    EXPECT_EQ(net::URLRequestStatus::SUCCESS, r->status().status());
     std::string contents("hello!");
     EXPECT_EQ(contents, d.data_received());
   }
@@ -2576,37 +2577,40 @@ TEST_P(SpdyNetworkTransactionTest, RedirectServerPush) {
       false  /* force_spdy_over_ssl*/,
       true  /* force_spdy_always */);
   {
-    net::URLRequest r(GURL("http://www.google.com/"),
-                      DEFAULT_PRIORITY,
-                      &d,
-                      &spdy_url_request_context);
+    scoped_ptr<URLRequest> r(
+        spdy_url_request_context.CreateRequest(GURL("http://www.google.com/"),
+                                               DEFAULT_PRIORITY,
+                                               &d,
+                                               NULL));
     spdy_url_request_context.socket_factory().
         AddSocketDataProvider(&data);
 
-    r.Start();
+    r->Start();
     base::RunLoop().Run();
 
     EXPECT_EQ(0, d.received_redirect_count());
     std::string contents("hello!");
     EXPECT_EQ(contents, d.data_received());
 
-    net::URLRequest r2(GURL("http://www.google.com/foo.dat"),
-                       DEFAULT_PRIORITY,
-                       &d2,
-                       &spdy_url_request_context);
+    scoped_ptr<URLRequest> r2(
+        spdy_url_request_context.CreateRequest(
+            GURL("http://www.google.com/foo.dat"),
+            DEFAULT_PRIORITY,
+            &d2,
+            NULL));
     spdy_url_request_context.socket_factory().
         AddSocketDataProvider(&data2);
 
     d2.set_quit_on_redirect(true);
-    r2.Start();
+    r2->Start();
     base::RunLoop().Run();
     EXPECT_EQ(1, d2.received_redirect_count());
 
-    r2.FollowDeferredRedirect();
+    r2->FollowDeferredRedirect();
     base::RunLoop().Run();
     EXPECT_EQ(1, d2.response_started_count());
     EXPECT_FALSE(d2.received_data_before_response());
-    EXPECT_EQ(net::URLRequestStatus::SUCCESS, r2.status().status());
+    EXPECT_EQ(net::URLRequestStatus::SUCCESS, r2->status().status());
     std::string contents2("hello!");
     EXPECT_EQ(contents2, d2.data_received());
   }

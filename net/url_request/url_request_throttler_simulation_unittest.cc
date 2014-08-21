@@ -21,6 +21,7 @@
 #include "base/rand_util.h"
 #include "base/time/time.h"
 #include "net/base/request_priority.h"
+#include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_test_util.h"
 #include "net/url_request/url_request_throttler_manager.h"
 #include "net/url_request/url_request_throttler_test_support.h"
@@ -275,6 +276,8 @@ class Server : public DiscreteTimeSimulation::Actor {
     return output;
   }
 
+  const URLRequestContext& context() const { return context_; }
+
  private:
   TimeTicks now_;
   TimeTicks start_downtime_;  // Can be 0 to say "no downtime".
@@ -427,7 +430,9 @@ class Requester : public DiscreteTimeSimulation::Actor {
 
     if (throttler_entry_->fake_now() - time_of_last_attempt_ >
         effective_delay) {
-      if (!throttler_entry_->ShouldRejectRequest(server_->mock_request())) {
+      if (!throttler_entry_->ShouldRejectRequest(
+              server_->mock_request(),
+              server_->context().network_delegate())) {
         int status_code = server_->HandleRequest();
         MockURLRequestThrottlerHeaderAdapter response_headers(status_code);
         throttler_entry_->UpdateWithResponse(std::string(), &response_headers);

@@ -14,6 +14,7 @@
 
 namespace net {
 
+class NetworkDelegate;
 class URLRequest;
 class URLRequestThrottlerHeaderInterface;
 
@@ -30,7 +31,9 @@ class NET_EXPORT URLRequestThrottlerEntryInterface
   //
   // URLRequestHttpJob checks this method prior to every request; it
   // cancels requests if this method returns true.
-  virtual bool ShouldRejectRequest(const URLRequest& request) const = 0;
+  virtual bool ShouldRejectRequest(
+      const URLRequest& request,
+      NetworkDelegate* network_delegate) const = 0;
 
   // Calculates a recommended sending time for the next request and reserves it.
   // The sending time is not earlier than the current exponential back-off

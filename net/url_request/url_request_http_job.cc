@@ -446,8 +446,9 @@ void URLRequestHttpJob::StartTransactionInternal() {
           base::Bind(&URLRequestHttpJob::NotifyBeforeSendProxyHeadersCallback,
                      base::Unretained(this)));
 
-      if (!throttling_entry_.get() ||
-          !throttling_entry_->ShouldRejectRequest(*request_)) {
+      if (!throttling_entry_ ||
+          !throttling_entry_->ShouldRejectRequest(
+              *request_, network_delegate())) {
         rv = transaction_->Start(
             &request_info_, start_callback_, request_->net_log());
         start_time_ = base::TimeTicks::Now();

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "net/base/request_priority.h"
@@ -66,8 +67,8 @@ class URLRequestSimpleJobTest : public ::testing::Test {
     context_.set_job_factory(&job_factory_);
     context_.Init();
 
-    request_.reset(new URLRequest(
-        GURL("data:test"), DEFAULT_PRIORITY, &delegate_, &context_));
+    request_ = context_.CreateRequest(
+        GURL("data:test"), DEFAULT_PRIORITY, &delegate_, NULL);
   }
 
   void StartRequest(const HttpRequestHeaders* headers) {

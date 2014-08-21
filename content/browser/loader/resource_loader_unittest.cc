@@ -313,10 +313,11 @@ class ResourceLoaderTest : public testing::Test,
     const int kRenderViewId = 2;
 
     scoped_ptr<net::URLRequest> request(
-        new net::URLRequest(test_url(),
-                            net::DEFAULT_PRIORITY,
-                            NULL,
-                            resource_context_.GetRequestContext()));
+        resource_context_.GetRequestContext()->CreateRequest(
+            test_url(),
+            net::DEFAULT_PRIORITY,
+            NULL /* delegate */,
+            NULL /* cookie_store */));
     raw_ptr_to_request_ = request.get();
     ResourceRequestInfo::AllocateForTesting(request.get(),
                                             RESOURCE_TYPE_MAIN_FRAME,

@@ -36,10 +36,11 @@ void AssertInterceptedIO(
     net::URLRequestJobFactory* interceptor) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   net::URLRequestContext context;
-  net::URLRequest request(url, net::DEFAULT_PRIORITY, NULL, &context);
+  scoped_ptr<net::URLRequest> request(context.CreateRequest(
+      url, net::DEFAULT_PRIORITY, NULL, NULL));
   scoped_refptr<net::URLRequestJob> job =
       interceptor->MaybeCreateJobWithProtocolHandler(
-          url.scheme(), &request, context.network_delegate());
+          url.scheme(), request.get(), context.network_delegate());
   ASSERT_TRUE(job.get() != NULL);
 }
 

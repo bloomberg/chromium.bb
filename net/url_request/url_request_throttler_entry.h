@@ -16,6 +16,7 @@
 
 namespace net {
 
+class NetworkDelegate;
 class URLRequestThrottlerManager;
 
 // URLRequestThrottlerEntry represents an entry of URLRequestThrottlerManager.
@@ -92,7 +93,9 @@ class NET_EXPORT URLRequestThrottlerEntry
   void DetachManager();
 
   // Implementation of URLRequestThrottlerEntryInterface.
-  virtual bool ShouldRejectRequest(const URLRequest& request) const OVERRIDE;
+  virtual bool ShouldRejectRequest(
+      const URLRequest& request,
+      NetworkDelegate* network_delegate) const OVERRIDE;
   virtual int64 ReserveSendingTimeForNextRequest(
       const base::TimeTicks& earliest_time) OVERRIDE;
   virtual base::TimeTicks GetExponentialBackoffReleaseTime() const OVERRIDE;

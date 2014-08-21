@@ -21,6 +21,7 @@
 #include "net/test/cert_test_util.h"
 #include "net/url_request/fraudulent_certificate_reporter.h"
 #include "net/url_request/url_request.h"
+#include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -115,23 +116,6 @@ class NotSendingTestReporter : public TestReporter {
   }
 };
 
-// For the first version of the feature, sending reports is "fire and forget".
-// Therefore, we test only that the Reporter tried to send a request at all.
-// In the future, when we have more sophisticated (i.e., any) error handling
-// and re-tries, we will need more sopisticated tests as well.
-//
-// This class doesn't do anything now, but in near future versions it will.
-class MockURLRequest : public net::URLRequest {
- public:
-  explicit MockURLRequest(net::URLRequestContext* context)
-      : net::URLRequest(GURL(std::string()),
-                        net::DEFAULT_PRIORITY,
-                        NULL,
-                        context) {}
-
- private:
-};
-
 // A ChromeFraudulentCertificateReporter that uses a MockURLRequest, but is
 // otherwise normal: reports are constructed and sent in the usual way.
 class MockReporter : public ChromeFraudulentCertificateReporter {
@@ -141,7 +125,10 @@ class MockReporter : public ChromeFraudulentCertificateReporter {
 
   virtual scoped_ptr<net::URLRequest> CreateURLRequest(
       net::URLRequestContext* context) OVERRIDE {
-    return scoped_ptr<net::URLRequest>(new MockURLRequest(context));
+    return context->CreateRequest(GURL(std::string()),
+                                  net::DEFAULT_PRIORITY,
+                                  NULL,
+                                  NULL);
   }
 
   virtual void SendReport(

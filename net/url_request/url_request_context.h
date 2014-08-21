@@ -59,9 +59,8 @@ class NET_EXPORT URLRequestContext
   // May return NULL if this context doesn't have an associated network session.
   const HttpNetworkSession::Params* GetNetworkSessionParams() const;
 
-  // Creates a URLRequest. |cookie_store| optionally specifies a cookie store
-  // to be used rather than the one represented by the context, or NULL
-  // otherwise.
+  // Creates a URLRequest. If |cookie_store| is non-NULL, it will be used
+  // instead of the context's cookie store.
   scoped_ptr<URLRequest> CreateRequest(const GURL& url,
                                        RequestPriority priority,
                                        URLRequest::Delegate* delegate,

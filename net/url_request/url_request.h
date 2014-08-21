@@ -273,19 +273,17 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
     virtual ~Delegate() {}
   };
 
-  // TODO(tburkard): we should get rid of this constructor, and have each
-  // creator of a URLRequest specifically list the cookie store to be used.
-  // For now, this constructor will use the cookie store in |context|.
-  URLRequest(const GURL& url,
-             RequestPriority priority,
-             Delegate* delegate,
-             const URLRequestContext* context);
-
+  // URLRequests should almost always be created by calling
+  // URLRequestContext::CreateRequest.
+  //
+  // If no cookie store or network delegate are passed in, will use the ones
+  // from the URLRequestContext.
   URLRequest(const GURL& url,
              RequestPriority priority,
              Delegate* delegate,
              const URLRequestContext* context,
-             CookieStore* cookie_store);
+             CookieStore* cookie_store,
+             NetworkDelegate* network_delegate);
 
   // If destroyed after Start() has been called but while IO is pending,
   // then the request will be effectively canceled and the delegate
@@ -720,15 +718,6 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
   // Registers or unregisters a network interception class.
   static void RegisterRequestInterceptor(Interceptor* interceptor);
   static void UnregisterRequestInterceptor(Interceptor* interceptor);
-
-  // Initializes the URLRequest. Code shared between the two constructors.
-  // TODO(tburkard): This can ultimately be folded into a single constructor
-  // again.
-  void Init(const GURL& url,
-            RequestPriority priotity,
-            Delegate* delegate,
-            const URLRequestContext* context,
-            CookieStore* cookie_store);
 
   // Resumes or blocks a request paused by the NetworkDelegate::OnBeforeRequest
   // handler. If |blocked| is true, the request is blocked and an error page is

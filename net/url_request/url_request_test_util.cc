@@ -134,7 +134,7 @@ TestURLRequest::TestURLRequest(const GURL& url,
                                RequestPriority priority,
                                Delegate* delegate,
                                TestURLRequestContext* context)
-    : URLRequest(url, priority, delegate, context) {}
+    : URLRequest(url, priority, delegate, context, NULL, NULL) {}
 
 TestURLRequest::~TestURLRequest() {
 }

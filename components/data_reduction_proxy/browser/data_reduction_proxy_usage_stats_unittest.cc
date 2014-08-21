@@ -48,9 +48,10 @@ class DataReductionProxyUsageStatsTest : public testing::Test {
   DataReductionProxyUsageStatsTest()
       : loop_proxy_(MessageLoopProxy::current().get()),
         context_(true),
-        mock_url_request_(GURL(), net::IDLE, &delegate_, &context_),
         unavailable_(false) {
     context_.Init();
+    mock_url_request_ = context_.CreateRequest(GURL(), net::IDLE, &delegate_,
+                                               NULL);
   }
 
   void NotifyUnavailable(bool unavailable) {
@@ -65,7 +66,7 @@ class DataReductionProxyUsageStatsTest : public testing::Test {
   TestURLRequestContext context_;
   TestDelegate delegate_;
   DataReductionProxyParamsMock mock_params_;
-  URLRequest mock_url_request_;
+  scoped_ptr<URLRequest> mock_url_request_;
   bool unavailable_;
 };
 
@@ -95,10 +96,11 @@ TEST_F(DataReductionProxyUsageStatsTest, IsDataReductionProxyUnreachable) {
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
     TestCase test_case = test_cases[i];
 
-    EXPECT_CALL(mock_params_, IsDataReductionProxyEligible(&mock_url_request_))
-        .WillRepeatedly(Return(test_case.is_proxy_eligible));
     EXPECT_CALL(mock_params_,
-                WasDataReductionProxyUsed(&mock_url_request_, NULL))
+                IsDataReductionProxyEligible(mock_url_request_.get()))
+                    .WillRepeatedly(Return(test_case.is_proxy_eligible));
+    EXPECT_CALL(mock_params_,
+                WasDataReductionProxyUsed(mock_url_request_.get(), NULL))
         .WillRepeatedly(Return(test_case.was_proxy_used));
 
     scoped_ptr<DataReductionProxyUsageStats> usage_stats(
@@ -108,7 +110,7 @@ TEST_F(DataReductionProxyUsageStatsTest, IsDataReductionProxyUnreachable) {
         base::Bind(&DataReductionProxyUsageStatsTest::NotifyUnavailable,
                    base::Unretained(this)));
 
-    usage_stats->OnUrlRequestCompleted(&mock_url_request_, false);
+    usage_stats->OnUrlRequestCompleted(mock_url_request_.get(), false);
     MessageLoop::current()->RunUntilIdle();
 
     EXPECT_EQ(test_case.is_unreachable, unavailable_);

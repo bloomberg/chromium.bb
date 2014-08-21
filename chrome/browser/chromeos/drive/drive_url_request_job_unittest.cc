@@ -25,6 +25,8 @@
 #include "net/base/test_completion_callback.h"
 #include "net/http/http_byte_range.h"
 #include "net/url_request/redirect_info.h"
+#include "net/url_request/url_request.h"
+#include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -184,17 +186,18 @@ class DriveURLRequestJobTest : public testing::Test {
 };
 
 TEST_F(DriveURLRequestJobTest, NonGetMethod) {
-  net::URLRequest request(GURL("drive:drive/root/File 1.txt"),
-                          net::DEFAULT_PRIORITY,
-                          test_delegate_.get(),
-                          url_request_context_.get());
-  request.set_method("POST");  // Set non "GET" method.
-  request.Start();
+  scoped_ptr<net::URLRequest> request(url_request_context_->CreateRequest(
+      GURL("drive:drive/root/File 1.txt"),
+      net::DEFAULT_PRIORITY,
+      test_delegate_.get(),
+      NULL));
+  request->set_method("POST");  // Set non "GET" method.
+  request->Start();
 
   base::RunLoop().Run();
 
-  EXPECT_EQ(net::URLRequestStatus::FAILED, request.status().status());
-  EXPECT_EQ(net::ERR_METHOD_NOT_SUPPORTED, request.status().error());
+  EXPECT_EQ(net::URLRequestStatus::FAILED, request->status().status());
+  EXPECT_EQ(net::ERR_METHOD_NOT_SUPPORTED, request->status().error());
 }
 
 TEST_F(DriveURLRequestJobTest, RegularFile) {
@@ -203,19 +206,20 @@ TEST_F(DriveURLRequestJobTest, RegularFile) {
 
   // For the first time, the file should be fetched from the server.
   {
-    net::URLRequest request(kTestUrl,
-                            net::DEFAULT_PRIORITY,
-                            test_delegate_.get(),
-                            url_request_context_.get());
-    request.Start();
+    scoped_ptr<net::URLRequest> request(url_request_context_->CreateRequest(
+        kTestUrl,
+        net::DEFAULT_PRIORITY,
+        test_delegate_.get(),
+        NULL));
+    request->Start();
 
     base::RunLoop().Run();
 
-    EXPECT_EQ(net::URLRequestStatus::SUCCESS, request.status().status());
+    EXPECT_EQ(net::URLRequestStatus::SUCCESS, request->status().status());
     // It looks weird, but the mime type for the "File 1.txt" is "audio/mpeg"
     // on the server.
     std::string mime_type;
-    request.GetMimeType(&mime_type);
+    request->GetMimeType(&mime_type);
     EXPECT_EQ("audio/mpeg", mime_type);
 
     // Reading file must be done after |request| runs, otherwise
@@ -229,17 +233,18 @@ TEST_F(DriveURLRequestJobTest, RegularFile) {
   // The caching emulation is done by FakeFileSystem.
   {
     test_delegate_.reset(new TestDelegate);
-    net::URLRequest request(GURL("drive:drive/root/File 1.txt"),
-                            net::DEFAULT_PRIORITY,
-                            test_delegate_.get(),
-                            url_request_context_.get());
-    request.Start();
+    scoped_ptr<net::URLRequest> request(url_request_context_->CreateRequest(
+        GURL("drive:drive/root/File 1.txt"),
+        net::DEFAULT_PRIORITY,
+        test_delegate_.get(),
+        NULL));
+    request->Start();
 
     base::RunLoop().Run();
 
-    EXPECT_EQ(net::URLRequestStatus::SUCCESS, request.status().status());
+    EXPECT_EQ(net::URLRequestStatus::SUCCESS, request->status().status());
     std::string mime_type;
-    request.GetMimeType(&mime_type);
+    request->GetMimeType(&mime_type);
     EXPECT_EQ("audio/mpeg", mime_type);
 
     std::string expected_data;
@@ -251,105 +256,111 @@ TEST_F(DriveURLRequestJobTest, RegularFile) {
 TEST_F(DriveURLRequestJobTest, HostedDocument) {
   // Open a gdoc file.
   test_delegate_->set_quit_on_redirect(true);
-  net::URLRequest request(
+  scoped_ptr<net::URLRequest> request(url_request_context_->CreateRequest(
       GURL("drive:drive/root/Document 1 excludeDir-test.gdoc"),
       net::DEFAULT_PRIORITY,
       test_delegate_.get(),
-      url_request_context_.get());
-  request.Start();
+      NULL));
+  request->Start();
 
   base::RunLoop().Run();
 
-  EXPECT_EQ(net::URLRequestStatus::SUCCESS, request.status().status());
+  EXPECT_EQ(net::URLRequestStatus::SUCCESS, request->status().status());
   // Make sure that a hosted document triggers redirection.
-  EXPECT_TRUE(request.is_redirecting());
+  EXPECT_TRUE(request->is_redirecting());
   EXPECT_TRUE(test_delegate_->redirect_url().is_valid());
 }
 
 TEST_F(DriveURLRequestJobTest, RootDirectory) {
-  net::URLRequest request(GURL("drive:drive/root"),
-                          net::DEFAULT_PRIORITY,
-                          test_delegate_.get(),
-                          url_request_context_.get());
-  request.Start();
+  scoped_ptr<net::URLRequest> request(url_request_context_->CreateRequest(
+      GURL("drive:drive/root"),
+      net::DEFAULT_PRIORITY,
+      test_delegate_.get(),
+      NULL));
+  request->Start();
 
   base::RunLoop().Run();
 
-  EXPECT_EQ(net::URLRequestStatus::FAILED, request.status().status());
-  EXPECT_EQ(net::ERR_FAILED, request.status().error());
+  EXPECT_EQ(net::URLRequestStatus::FAILED, request->status().status());
+  EXPECT_EQ(net::ERR_FAILED, request->status().error());
 }
 
 TEST_F(DriveURLRequestJobTest, Directory) {
-  net::URLRequest request(GURL("drive:drive/root/Directory 1"),
-                          net::DEFAULT_PRIORITY,
-                          test_delegate_.get(),
-                          url_request_context_.get());
-  request.Start();
+  scoped_ptr<net::URLRequest> request(url_request_context_->CreateRequest(
+      GURL("drive:drive/root/Directory 1"),
+      net::DEFAULT_PRIORITY,
+      test_delegate_.get(),
+      NULL));
+  request->Start();
 
   base::RunLoop().Run();
 
-  EXPECT_EQ(net::URLRequestStatus::FAILED, request.status().status());
-  EXPECT_EQ(net::ERR_FAILED, request.status().error());
+  EXPECT_EQ(net::URLRequestStatus::FAILED, request->status().status());
+  EXPECT_EQ(net::ERR_FAILED, request->status().error());
 }
 
 TEST_F(DriveURLRequestJobTest, NonExistingFile) {
-  net::URLRequest request(GURL("drive:drive/root/non-existing-file.txt"),
-                          net::DEFAULT_PRIORITY,
-                          test_delegate_.get(),
-                          url_request_context_.get());
-  request.Start();
+  scoped_ptr<net::URLRequest> request(url_request_context_->CreateRequest(
+      GURL("drive:drive/root/non-existing-file.txt"),
+      net::DEFAULT_PRIORITY,
+      test_delegate_.get(),
+      NULL));
+  request->Start();
 
   base::RunLoop().Run();
 
-  EXPECT_EQ(net::URLRequestStatus::FAILED, request.status().status());
-  EXPECT_EQ(net::ERR_FILE_NOT_FOUND, request.status().error());
+  EXPECT_EQ(net::URLRequestStatus::FAILED, request->status().status());
+  EXPECT_EQ(net::ERR_FILE_NOT_FOUND, request->status().error());
 }
 
 TEST_F(DriveURLRequestJobTest, WrongFormat) {
-  net::URLRequest request(GURL("drive:"),
-                          net::DEFAULT_PRIORITY,
-                          test_delegate_.get(),
-                          url_request_context_.get());
-  request.Start();
+  scoped_ptr<net::URLRequest> request(url_request_context_->CreateRequest(
+      GURL("drive:"),
+      net::DEFAULT_PRIORITY,
+      test_delegate_.get(),
+      NULL));
+  request->Start();
 
   base::RunLoop().Run();
 
-  EXPECT_EQ(net::URLRequestStatus::FAILED, request.status().status());
-  EXPECT_EQ(net::ERR_INVALID_URL, request.status().error());
+  EXPECT_EQ(net::URLRequestStatus::FAILED, request->status().status());
+  EXPECT_EQ(net::ERR_INVALID_URL, request->status().error());
 }
 
 TEST_F(DriveURLRequestJobTest, Cancel) {
-  net::URLRequest request(GURL("drive:drive/root/File 1.txt"),
-                          net::DEFAULT_PRIORITY,
-                          test_delegate_.get(),
-                          url_request_context_.get());
+  scoped_ptr<net::URLRequest> request(url_request_context_->CreateRequest(
+      GURL("drive:drive/root/File 1.txt"),
+      net::DEFAULT_PRIORITY,
+      test_delegate_.get(),
+      NULL));
 
   // Start the request, and cancel it immediately after it.
-  request.Start();
-  request.Cancel();
+  request->Start();
+  request->Cancel();
 
   base::RunLoop().Run();
 
-  EXPECT_EQ(net::URLRequestStatus::CANCELED, request.status().status());
+  EXPECT_EQ(net::URLRequestStatus::CANCELED, request->status().status());
 }
 
 TEST_F(DriveURLRequestJobTest, RangeHeader) {
   const GURL kTestUrl("drive:drive/root/File 1.txt");
   const base::FilePath kTestFilePath("drive/root/File 1.txt");
 
-  net::URLRequest request(kTestUrl,
-                          net::DEFAULT_PRIORITY,
-                          test_delegate_.get(),
-                          url_request_context_.get());
+  scoped_ptr<net::URLRequest> request(url_request_context_->CreateRequest(
+      kTestUrl,
+      net::DEFAULT_PRIORITY,
+      test_delegate_.get(),
+      NULL));
 
   // Set range header.
-  request.SetExtraRequestHeaderByName(
+  request->SetExtraRequestHeaderByName(
       "Range", "bytes=3-5", false /* overwrite */);
-  request.Start();
+  request->Start();
 
   base::RunLoop().Run();
 
-  EXPECT_EQ(net::URLRequestStatus::SUCCESS, request.status().status());
+  EXPECT_EQ(net::URLRequestStatus::SUCCESS, request->status().status());
 
   // Reading file must be done after |request| runs, otherwise
   // it'll create a local cache file, and we cannot test correctly.
@@ -361,20 +372,21 @@ TEST_F(DriveURLRequestJobTest, RangeHeader) {
 TEST_F(DriveURLRequestJobTest, WrongRangeHeader) {
   const GURL kTestUrl("drive:drive/root/File 1.txt");
 
-  net::URLRequest request(kTestUrl,
-                          net::DEFAULT_PRIORITY,
-                          test_delegate_.get(),
-                          url_request_context_.get());
+  scoped_ptr<net::URLRequest> request(url_request_context_->CreateRequest(
+      kTestUrl,
+      net::DEFAULT_PRIORITY,
+      test_delegate_.get(),
+      NULL));
 
   // Set range header.
-  request.SetExtraRequestHeaderByName(
+  request->SetExtraRequestHeaderByName(
       "Range", "Wrong Range Header Value", false /* overwrite */);
-  request.Start();
+  request->Start();
 
   base::RunLoop().Run();
 
-  EXPECT_EQ(net::URLRequestStatus::FAILED, request.status().status());
-  EXPECT_EQ(net::ERR_REQUEST_RANGE_NOT_SATISFIABLE, request.status().error());
+  EXPECT_EQ(net::URLRequestStatus::FAILED, request->status().status());
+  EXPECT_EQ(net::ERR_REQUEST_RANGE_NOT_SATISFIABLE, request->status().error());
 }
 
 }  // namespace drive

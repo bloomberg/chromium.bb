@@ -197,26 +197,27 @@ class DataReductionProxyProtocolTest : public testing::Test {
                                                const std::string& value,
                                                bool expected_retry) {
     TestDelegate d;
-    URLRequest r(GURL("http://www.google.com/"),
-                 net::DEFAULT_PRIORITY,
-                 &d,
-                 context_.get());
-    r.set_method(method);
-    r.SetLoadFlags(net::LOAD_NORMAL);
+    scoped_ptr<URLRequest> r(context_->CreateRequest(
+        GURL("http://www.google.com/"),
+        net::DEFAULT_PRIORITY,
+        &d,
+        NULL));
+    r->set_method(method);
+    r->SetLoadFlags(net::LOAD_NORMAL);
 
-    r.Start();
+    r->Start();
     base::RunLoop().Run();
 
-    EXPECT_EQ(net::URLRequestStatus::SUCCESS, r.status().status());
-    EXPECT_EQ(net::OK, r.status().error());
+    EXPECT_EQ(net::URLRequestStatus::SUCCESS, r->status().status());
+    EXPECT_EQ(net::OK, r->status().error());
     if (expected_retry)
-      EXPECT_EQ(2U, r.url_chain().size());
+      EXPECT_EQ(2U, r->url_chain().size());
     else
-      EXPECT_EQ(1U, r.url_chain().size());
+      EXPECT_EQ(1U, r->url_chain().size());
 
     if (!header.empty()) {
       // We also have a server header here that isn't set by the proxy.
-      EXPECT_TRUE(r.response_headers()->HasHeaderValue(header, value));
+      EXPECT_TRUE(r->response_headers()->HasHeaderValue(header, value));
     }
 
     EXPECT_EQ(content, d.data_received());
@@ -247,8 +248,7 @@ class DataReductionProxyProtocolTest : public testing::Test {
     if (duration_seconds == 0) {
       expected_min_duration = base::TimeDelta::FromMinutes(1);
       expected_max_duration = base::TimeDelta::FromMinutes(5);
-    }
-    else {
+    } else {
       expected_min_duration = base::TimeDelta::FromSeconds(duration_seconds);
       expected_max_duration = base::TimeDelta::FromSeconds(duration_seconds);
     }
@@ -753,18 +753,19 @@ TEST_F(DataReductionProxyProtocolTest,
   mock_socket_factory_.AddSocketDataProvider(&data1);
 
   TestDelegate d;
-  URLRequest r(GURL("http://www.google.com/"),
-               net::DEFAULT_PRIORITY,
-               &d,
-               context_.get());
-   r.set_method("GET");
-   r.SetLoadFlags(net::LOAD_NORMAL);
+  scoped_ptr<URLRequest> r(context_->CreateRequest(
+      GURL("http://www.google.com/"),
+      net::DEFAULT_PRIORITY,
+      &d,
+      NULL));
+  r->set_method("GET");
+  r->SetLoadFlags(net::LOAD_NORMAL);
 
-   r.Start();
-   base::RunLoop().Run();
+  r->Start();
+  base::RunLoop().Run();
 
-   EXPECT_EQ(net::URLRequestStatus::SUCCESS, r.status().status());
-   EXPECT_EQ(net::OK, r.status().error());
+  EXPECT_EQ(net::URLRequestStatus::SUCCESS, r->status().status());
+  EXPECT_EQ(net::OK, r->status().error());
 
   EXPECT_EQ("Bypass message", d.data_received());
 

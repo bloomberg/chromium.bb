@@ -78,7 +78,8 @@ scoped_ptr<URLRequest> URLRequestContext::CreateRequest(
     URLRequest::Delegate* delegate,
     CookieStore* cookie_store) const {
   return scoped_ptr<URLRequest>(
-      new URLRequest(url, priority, delegate, this, cookie_store));
+      new URLRequest(url, priority, delegate, this, cookie_store,
+                     network_delegate_));
 }
 
 void URLRequestContext::set_cookie_store(CookieStore* cookie_store) {
