@@ -8,7 +8,7 @@ found in the LICENSE file.
 <link href="../model/ct-builder-revisions.html" rel="import">
 <link href="ct-popup-menu.html" rel="import">
 
-<polymer-element name="ct-revision-details" attributes="builderLatestRevisions revisionLog tree">
+<polymer-element name="ct-revision-details" attributes="builderLatestRevisions commitLog tree">
   <template>
     <style>
       ct-popup-menu > div {
@@ -35,7 +35,7 @@ found in the LICENSE file.
           </div>
         </template>
       </ct-popup-menu>
-      trunk is at <a id="trunkRevision" href="{{ revisionLog.commits.blink[revisionLog.lastRevision['blink']].url }}">{{ revisionLog.lastRevision['blink'] }}</a>
+      trunk is at <a id="trunkRevision" href="{{ commitLog.commits.blink[commitLog.lastRevision['blink']].url }}">{{ commitLog.lastRevision['blink'] }}</a>
     </template>
   </template>
   <script>

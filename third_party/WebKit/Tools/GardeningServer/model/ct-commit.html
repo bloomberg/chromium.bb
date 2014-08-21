@@ -9,10 +9,8 @@ function CTCommit() {}
 
 CTCommit.create = function(author, message, baseUrl, repository) {
   var commit = new CTCommit();
-  commit.author = author;
-  commit.message = message;
-  commit.revision = commit._findRevision();
-  commit.summary = commit._findSummary();
+  var revision = CTCommit.findRevision(message);
+  commit.complete(author, message, revision);
   commit.url = commit._url(baseUrl);
   commit.repository = repository;
   return commit;
@@ -28,18 +26,26 @@ CTCommit.createIncomplete = function(baseUrl, revision, repository) {
   return commit;
 }
 
-CTCommit.prototype._url = function(baseUrl) {
-  return baseUrl.assign({revision: this.revision});
-}
-
-CTCommit.prototype._findRevision = function() {
+CTCommit.findRevision = function(message) {
   // FIXME: This needs to be updated post git-migration to
   // use the new commit numbers (ideally not git hashes!).
   var regexp = /git-svn-id:[^@]*@(\d+)/;
-  var match = regexp.exec(this.message);
+  var match = regexp.exec(message);
   if (match)
     return parseInt(match[1], 10);
   return null;
+}
+
+CTCommit.prototype.complete = function(author, message, revision) {
+  this.author = author;
+  this.message = message;
+  this.revision = revision;
+  this.summary = this._findSummary();
+  this.isComplete = true;
+}
+
+CTCommit.prototype._url = function(baseUrl) {
+  return baseUrl.assign({revision: this.revision});
 }
 
 CTCommit.prototype._findSummary = function() {

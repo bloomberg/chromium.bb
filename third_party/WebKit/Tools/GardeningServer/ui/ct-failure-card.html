@@ -11,7 +11,7 @@ found in the LICENSE file.
 <link rel="import" href="../bower_components/paper-dialog/paper-dialog-transition.html">
 <link rel="import" href="../bower_components/paper-input/paper-input.html">
 
-<polymer-element name="ct-failure-card" attributes="group commits tree bug">
+<polymer-element name="ct-failure-card" attributes="group commitLog tree bug">
   <template>
     <style>
       :host {
@@ -68,7 +68,7 @@ found in the LICENSE file.
     <ct-builder-grid failures="{{ group.failures }}"></ct-builder-grid>
     <div id="failure" class="{{ { snoozed: group.isSnoozed } | tokenList }}">
       <ct-test-list tests="{{ group.failures }}" tree="{{ tree }}"></ct-test-list>
-      <ct-commit-list commitList="{{ _commits() }}"></ct-commit-list>
+      <ct-commit-list commitList="{{ _commitList }}"></ct-commit-list>
     </div>
     <div id="buttons">
       <paper-button id="examine" on-tap="{{ examine }}" label="Examine"></paper-button>
@@ -96,8 +96,14 @@ found in the LICENSE file.
   <script>
     Polymer({
       group: null,
-      commits: null,
+      commitLog: null,
       tree: '',
+      _commitList: null,
+
+      observe: {
+        group: '_updateCommitList',
+        commitLog: '_updateCommitList'
+      },
 
       examine: function() {
         this.fire('ct-examine-failures', this.group);
@@ -111,10 +117,9 @@ found in the LICENSE file.
         this.group.unsnooze();
       },
 
-      _commits: function() {
-        if (!this.group)
-          return undefined;
-        return this.group.commitList(this.commits);
+      _updateCommitList: function() {
+        this._commitList = this.group ?
+            this.group.commitList(this.commitLog) : undefined;
       },
 
       linkBug: function() {

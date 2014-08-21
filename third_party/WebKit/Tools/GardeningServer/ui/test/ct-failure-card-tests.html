@@ -6,6 +6,7 @@ found in the LICENSE file.
 
 <link rel="import" href="../ct-failure-card.html">
 
+<link rel="import" href="../../model/ct-commit-log-mock.html">
 <link rel="import" href="../../model/ct-failure-group.html">
 
 <script>
@@ -13,21 +14,50 @@ found in the LICENSE file.
 
 var assert = chai.assert;
 
-describe('ct-failure-group', function() {
+describe('ct-failure-card', function() {
   var group;
   var card;
 
   beforeEach(function(done) {
     card = document.createElement('ct-failure-card');
-    group = new CTFailureGroup('key', []);
+    group = new CTFailureGroup('key', [
+        new CTFailure('autobot', 'unknown', {}, {'blink':158547},
+                      {'blink':158544})]);
     card.group = group;
+    card.commitLog = new CTCommitLogMock();
     setTimeout(done);
   });
 
-  describe('failure group UI', function() {
+  describe('failure card UI', function() {
+
+    it('should have commit summaries', function(done) {
+      // Expand the first repository so that the <ct-commit>'s are generated.
+      card._commitList.repositories[0].expanded = true;
+
+      setTimeout(function() {
+        var list = card.shadowRoot.querySelector('ct-commit-list');
+        var commits = list.shadowRoot.querySelectorAll('ct-commit');
+        assert(commits[0].data);
+        assert(commits[0].data.summary);
+        done();
+      });
+    });
+
+    it('removing a commit summary', function(done) {
+      card.commitLog.commits['blink']['158545'].summary = undefined;
+      card._commitList.repositories[0].expanded = true;
+
+      setTimeout(function() {
+        var list = card.shadowRoot.querySelector('ct-commit-list');
+        var commits = list.shadowRoot.querySelectorAll('ct-commit');
+        assert.notOk(commits[0].data.summary);
+        done();
+      });
+    });
+
     it('examine should dispatch event', function(done) {
       card.addEventListener('ct-examine-failures', function(event) {
-        assert.deepEqual(event.detail.failures, []);
+        assert.deepEqual(event.detail.failures, card.group.failures);
         done();
       });
 

@@ -40,14 +40,14 @@ found in the LICENSE file.
     </style>
     <ct-failure-analyzer id="analyzer" failures="{{ failures }}" builderLatestRevisions="{{ builderLatestRevisions }}" lastUpdateDate="{{ lastUpdateDate }}"></ct-failure-analyzer>
     <div class="toolbar">
-      <ct-revision-details id="revisionDetails" builderLatestRevisions="{{ builderLatestRevisions }}" revisionLog="{{ revisionLog }}" tree="{{ tree }}"></ct-revision-details>
+      <ct-revision-details id="revisionDetails" builderLatestRevisions="{{ builderLatestRevisions }}" commitLog="{{ commitLog }}" tree="{{ tree }}"></ct-revision-details>
       <a href="https://code.google.com/p/chromium/wiki/UsefulURLs">Useful URLs</a>
     </div>
     <ct-tree-status status="{{ treeStatuses['chromium'] }}" state="{{ treeStatuses['chromium'].status }}"></ct-tree-status>
     <ct-tree-status status="{{ treeStatuses['blink'] }}" state="{{ treeStatuses['blink'].status }}"></ct-tree-status>
     <ct-party-time failures="{{ failures }}" tree="{{ tree }}"></ct-party-time>
-    <ct-failure-stream category="default" groups="{{ failures[tree] }}" commits="{{ revisionLog }}" tree="{{ tree }}"></ct-failure-stream>
-    <ct-failure-stream category="snoozed" groups="{{ failures[tree] }}" commits="{{ revisionLog }}" tree="{{ tree }}"></ct-failure-stream>
+    <ct-failure-stream category="default" groups="{{ failures[tree] }}" commitLog="{{ commitLog }}" tree="{{ tree }}"></ct-failure-stream>
+    <ct-failure-stream category="snoozed" groups="{{ failures[tree] }}" commitLog="{{ commitLog }}" tree="{{ tree }}"></ct-failure-stream>
   </template>
   <script>
   (function() {
@@ -57,7 +57,7 @@ found in the LICENSE file.
       tree: '',
 
       created: function() {
-        this.revisionLog = new CTCommitLog(),
+        this.commitLog = new CTCommitLog(),
         this._updater = new CTScheduledUpdater(this.update.bind(this), kUpdateFrequency);
 
         this.treeStatuses = {};
@@ -73,7 +73,7 @@ found in the LICENSE file.
 
       update: function() {
         // FIXME: These shouldn't update if there's already an update in progress.
-        this.revisionLog.update();
+        this.commitLog.update();
         this.$.analyzer.update();
         Object.keys(this.treeStatuses, function(tree, status) {
           status.update();

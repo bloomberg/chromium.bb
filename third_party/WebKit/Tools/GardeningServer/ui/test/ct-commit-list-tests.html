@@ -6,7 +6,7 @@ found in the LICENSE file.
 
 <link rel="import" href="../ct-commit-list.html">
 
-<link rel="import" href="../../model/ct-commit-log-mock.html">
+<link rel="import" href="../../model/ct-commit-list-mock.html">
 
 <script>
 (function () {
@@ -23,19 +23,7 @@ describe('ct-commit-list', function() {
 
   describe('commit list UI', function() {
     beforeEach(function(done) {
-      var repos = [
-          { commits: [ new CTCommitMock(), new CTCommitMock() ],
-            expanded: false },
-          { commits: [ new CTCommitMock(), new CTCommitMock() ],
-            expanded: false }
-      ];
-
-      list.commitList = {
-        repositories: function() {
-          return repos;
-        }
-      };
-
+      list.commitList = new CTCommitListMock();
       setTimeout(done);
     });
 
@@ -46,13 +34,12 @@ describe('ct-commit-list', function() {
 
     describe('expanded test', function() {
       beforeEach(function(done) {
-        list.commitList.repositories().first().expanded = true;
-        list.commitList.repositories().last().expanded = true;
+        list.commitList.repositories.first().expanded = true;
         setTimeout(done);
       });
 
-      it('should show commits when expanded', function() {
-        assert.lengthOf(list.shadowRoot.querySelectorAll('ct-commit'), 4);
+      it('should show commit when expanded', function() {
+        assert.lengthOf(list.shadowRoot.querySelectorAll('ct-commit'), 1);
       });
     });
   });

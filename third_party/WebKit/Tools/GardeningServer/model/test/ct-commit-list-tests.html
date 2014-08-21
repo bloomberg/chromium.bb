@@ -64,7 +64,7 @@ describe('ct-commit-list', function() {
       };
 
       var cl = new CTCommitList(group, new CTCommitLogMock());
-      var repos = cl.repositories();
+      var repos = cl.repositories;
       assert.lengthOf(repos, 1);
       assert.equal(repos[0].name, 'blink');
       assert.lengthOf(repos[0].commits, 1);

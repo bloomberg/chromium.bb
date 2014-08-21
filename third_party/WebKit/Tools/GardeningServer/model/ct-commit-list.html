@@ -8,19 +8,20 @@ found in the LICENSE file.
 
 <script>
 function CTCommitList(group, commits) {
-  this.revisionLog = commits;
+  this.commitLog = commits;
   if (group.failures && group.failures.first()) {
     this.firstFailing = group.failures.first().firstFailingRevisions;
     this.lastPassing = group.failures.first().lastPassingRevisions;
   }
+  this._updateRepositories();
 }
 
-CTCommitList.prototype.repositories = function() {
-  var ret = [];
-  if (!this.revisionLog || !this.lastPassing || !this.firstFailing)
-    return ret;
+CTCommitList.prototype._updateRepositories = function() {
+  this.repositories = [];
+  if (!this.commitLog || !this.lastPassing || !this.firstFailing)
+    return;
 
-  var allRepositories = Object.keys(this.revisionLog.commits).sort();
+  var allRepositories = this.commitLog._repositories.names;
   for (var i = 0; i < allRepositories.length; i++) {
     var repository = allRepositories[i];
 
@@ -28,14 +29,13 @@ CTCommitList.prototype.repositories = function() {
     if (!commits.length)
       continue;
 
-    ret.push({
+    this.repositories.push({
       name: repository,
       range: this._range(commits),
       commits: commits,
       expanded: false
     });
   }
-  return ret;
 };
 
 CTCommitList.prototype._commits = function(repository) {
@@ -54,7 +54,7 @@ CTCommitList.prototype._commits = function(repository) {
     return commits;
   }
 
-  return this.revisionLog.range(repository, lastPassing + 1, firstFailing);
+  return this.commitLog.range(repository, lastPassing + 1, firstFailing);
 };
 
 CTCommitList.prototype._range = function(commits) {

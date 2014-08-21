@@ -20,7 +20,7 @@ found in the LICENSE file.
         display: block;
       }
     </style>
-    <template repeat="{{ repository in commitList | _repositories }}">
+    <template repeat="{{ repository in commitList.repositories }}">
       <div class="repository-info">
         {{ repository.name }} {{ repository.range }}
         <paper-icon-button icon="unfold-more"
@@ -35,21 +35,9 @@ found in the LICENSE file.
   </template>
   <script>
   Polymer({
-    repositories: undefined,
-
-    created: function() {
-      this.repositories = [];
-    },
-
-    _repositories: function() {
-      if (this.commitList)
-        this.repositories = this.commitList.repositories();
-      return this.repositories;
-    },
-
     _toggle: function(event, detail, sender, target) {
       var repo = sender.getAttribute('repository');
-      var r = this.repositories.find(function(item) {
+      var r = this.commitList.repositories.find(function(item) {
         return item.name === repo;
       });
       r.expanded = !r.expanded;

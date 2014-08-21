@@ -47,17 +47,25 @@ describe('ct-commit-log model', function() {
     log._handleResponse(repositoryUrl, repository, exampleCommitData);
 
     var expectedCommits = {};
-    expectedCommits[repository] = {};
+    log._repositories.names.forEach(function(name) {
+      expectedCommits[name] = {};
+    });
     expectedCommits[repository][commit.revision] = commit;
     assert.deepEqual(log.commits, expectedCommits);
 
     assert.deepEqual(log.range(repository, commit.revision, commit.revision), [commit]);
-    assert.deepEqual(log.range(repository, commit.revision, commit.revision + 1), [commit]);
+
     // This url is different than the one obove because CTCommitLog gets the url
     // from CTRepositories.
     var incompleteRepositoryUrl = log._repositories.repositories[repository].repositoryUrl;
-    var incompleteCommit = CTCommit.createIncomplete(incompleteRepositoryUrl, commit.revision - 1, repository);
-    assert.deepEqual(log.range(repository, commit.revision - 1, commit.revision + 1), [incompleteCommit, commit]);
+    var incompleteCommitAfter = CTCommit.createIncomplete(incompleteRepositoryUrl, commit.revision + 1, repository);
+    // Expect an incomplete commit for revision + 1.
+    assert.deepEqual(log.range(repository, commit.revision, commit.revision + 1), [commit, incompleteCommitAfter]);
+
+    // Expect two incomplete commits: one before and one after.
+    var incompleteCommitBefore = CTCommit.createIncomplete(incompleteRepositoryUrl, commit.revision - 1, repository);
+    assert.deepEqual(log.range(repository, commit.revision - 1, commit.revision + 1),
+                     [incompleteCommitBefore, commit, incompleteCommitAfter]);
   });
 });
 

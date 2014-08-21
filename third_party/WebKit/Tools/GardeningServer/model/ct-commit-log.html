@@ -14,6 +14,10 @@ function CTCommitLog() {
   this.firstRevision = {};
   this.lastRevision = {};
   this._repositories = new CTRepositories();
+
+  this._repositories.names.forEach(function(name) {
+    this.commits[name] = {};
+  }.bind(this));
 }
 
 CTCommitLog.prototype.update = function() {
@@ -27,14 +31,23 @@ CTCommitLog.prototype.update = function() {
 }
 
 CTCommitLog.prototype._handleResponse = function(repositoryUrl, repository, json) {
-  if (!this.commits[repository])
-    this.commits[repository] = {};
-
   // FIXME: Fix googlesource to not do this outdated JSON XSS mitigation.
   json = json.substring(')]}\n'.length);
   JSON.parse(json).log.forEach(function(entry) {
-    var commit = CTCommit.create(entry.author.name, entry.message, repositoryUrl, repository);
-    this.commits[repository][commit.revision] = commit;
+    var author = entry.author.name;
+    var message = entry.message;
+    var revision = CTCommit.findRevision(message);
+
+    // Check for existing commit for that revision, and possibly complete it.
+    // We update the existing commit instead of creating a new one so that the
+    // data-binding properly updates all the <ct-commit>'s.
+    var existingCommit = this.commits[repository][revision];
+    if (existingCommit && !existingCommit.isComplete) {
+      existingCommit.complete(author, message, revision);
+    } else {
+      var commit = CTCommit.create(author, message, repositoryUrl, repository);
+      this.commits[repository][commit.revision] = commit;
+    }
   }.bind(this));
 
   this._findFirstAndLastRevisions(repository);
@@ -49,17 +62,19 @@ CTCommitLog.prototype._findFirstAndLastRevisions = function(repository) {
 CTCommitLog.prototype.range = function(repository, first, last) {
   var commits = [];
   for (var revision = first; revision <= last; revision++) {
-    // Until we've seen a commit we have data for, fill in dummy data
-    // so that we show something. Assume that we have the correct data
-    // for all the commits after the first one we have data for.
-    if (revision >= this.firstRevision[repository]) {
-      var commit = this.commits[repository][revision];
-      if (commit)
-        commits.push(commit);
-    } else {
-      var url = this._repositories.repositories[repository].repositoryUrl;
-      commits.push(CTCommit.createIncomplete(url, revision, repository));
-    }
+     var commit = this.commits[repository][revision];
+     if (!commit) {
+       // FIXME: This is wrong. If we iterate through revisions and then later
+       // in handleReponse we realize that this revision doesn't actually exist
+       // in the repo (e.g. because it corresponds to a branch commit), then we
+       // don't remove the incomplete commit.
+       var url = this._repositories.repositories[repository].repositoryUrl;
+       commit = CTCommit.createIncomplete(url, revision, repository);
+       this.commits[repository][revision] = commit;
+     }
+
+     if (commit)
+       commits.push(commit);
   }
   return commits;
 }
