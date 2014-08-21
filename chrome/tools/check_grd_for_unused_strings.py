@@ -131,9 +131,9 @@ def main():
     chrome_app_dir = os.path.join(chrome_dir, 'app')
     chrome_app_res_dir = os.path.join(chrome_app_dir, 'resources')
     device_base_dir = os.path.join(src_dir, 'device')
-    ui_base_dir = os.path.join(src_dir, 'ui', 'base',)
-    ui_base_strings_dir = os.path.join(ui_base_dir, 'strings')
-    ui_chromeos_dir = os.path.join(ui_base_dir, 'chromeos', 'strings')
+    ui_dir = os.path.join(src_dir, 'ui')
+    ui_strings_dir = os.path.join(ui_dir, 'strings')
+    ui_chromeos_dir = os.path.join(ui_dir, 'chromeos')
     grd_files = [
       os.path.join(ash_base_dir, 'ash_strings.grd'),
       os.path.join(ash_base_dir, 'resources', 'ash_resources.grd'),
@@ -155,8 +155,8 @@ def main():
       os.path.join(src_dir, 'extensions', 'extensions_strings.grd'),
       os.path.join(src_dir, 'ui', 'resources', 'ui_resources.grd'),
       os.path.join(src_dir, 'ui', 'webui', 'resources', 'webui_resources.grd'),
-      os.path.join(ui_base_strings_dir, 'app_locale_settings.grd'),
-      os.path.join(ui_base_strings_dir, 'ui_strings.grd'),
+      os.path.join(ui_strings_dir, 'app_locale_settings.grd'),
+      os.path.join(ui_strings_dir, 'ui_strings.grd'),
       os.path.join(ui_chromeos_dir, 'ui_chromeos_strings.grd'),
     ]
 
