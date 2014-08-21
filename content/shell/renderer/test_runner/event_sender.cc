@@ -1267,6 +1267,10 @@ void EventSender::KeyDown(const std::string& code_str,
     code = ui::VKEY_RMENU;
   } else if ("numLock" == code_str) {
     code = ui::VKEY_NUMLOCK;
+  } else if ("backspace" == code_str) {
+    code = ui::VKEY_BACK;
+  } else if ("escape" == code_str) {
+    code = ui::VKEY_ESCAPE;
   } else {
     // Compare the input string with the function-key names defined by the
     // DOM spec (i.e. "F1",...,"F24"). If the input string is a function-key
@@ -1946,7 +1950,7 @@ void EventSender::GestureEvent(WebInputEvent::Type type,
       event.x = current_gesture_location_.x;
       event.y = current_gesture_location_.y;
       break;
-    case WebInputEvent::GestureTap: 
+    case WebInputEvent::GestureTap:
     {
       float tap_count = 1;
       float width = 30;
