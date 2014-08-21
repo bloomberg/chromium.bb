@@ -1439,12 +1439,7 @@ if (is_android) {
     sources = [
       "android/java/templates/NativeLibraries.template",
     ]
-    inputs = [
-      "android/java/templates/native_libraries_array.h",
-    ]
-
     package_name = "org/chromium/base/library_loader"
-    include_path = "android/java/templates"
   }
 
   android_library("base_java_unittest_support") {

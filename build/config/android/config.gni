@@ -87,20 +87,29 @@ if (is_android) {
   # only need to define the current one, rather than one for every platform
   # like the toolchain roots.
   if (cpu_arch == "x86") {
+    android_prebuilt_arch = "android-x86"
+    _binary_prefix = "i686-linux-android"
     android_toolchain_root = "$x86_android_toolchain_root"
     android_libgcc_file =
       "$android_toolchain_root/lib/gcc/i686-linux-android/${_android_toolchain_version}/libgcc.a"
   } else if (cpu_arch == "arm") {
+    android_prebuilt_arch = "android-arm"
+    _binary_prefix = "arm-linux-androideabi"
     android_toolchain_root = "$arm_android_toolchain_root"
     android_libgcc_file =
       "$android_toolchain_root/lib/gcc/arm-linux-androideabi/${_android_toolchain_version}/libgcc.a"
   } else if (cpu_arch == "mipsel") {
+    android_prebuilt_arch = "android-mips"
+    _binary_prefix = "mipsel-linux-android"
     android_toolchain_root = "$mips_android_toolchain_root"
     android_libgcc_file =
       "$android_toolchain_root/lib/gcc/mipsel-linux-android/${_android_toolchain_version}/libgcc.a"
   } else {
     assert(false, "Need android libgcc support for your target arch.")
   }
+
+  android_readelf = "$android_toolchain_root/bin/$_binary_prefix-readelf"
+  android_gdbserver = "$android_ndk_root/prebuilt/$android_prebuilt_arch/gdbserver/gdbserver"
 
   # stlport stuff --------------------------------------------------------------
 

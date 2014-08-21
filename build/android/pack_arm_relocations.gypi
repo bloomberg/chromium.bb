@@ -53,7 +53,7 @@
         '--android-objcopy=<(android_objcopy)',
         '--stripped-libraries-dir=<(stripped_libraries_dir)',
         '--packed-libraries-dir=<(packed_libraries_dir)',
-        '--libraries-file=<(ordered_libraries_file)',
+        '--libraries=@FileArg(<(ordered_libraries_file):libraries)',
         '--stamp=<(stamp)',
       ],
     }, {
@@ -64,7 +64,7 @@
         '--enable-packing=0',
         '--stripped-libraries-dir=<(stripped_libraries_dir)',
         '--packed-libraries-dir=<(packed_libraries_dir)',
-        '--libraries-file=<(ordered_libraries_file)',
+        '--libraries=@FileArg(<(ordered_libraries_file):libraries)',
         '--stamp=<(stamp)',
       ],
     }],

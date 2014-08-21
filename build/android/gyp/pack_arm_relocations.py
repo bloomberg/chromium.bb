@@ -21,7 +21,6 @@ irrespective of any --enable-packing setting.  Typically this would be
 'libchromium_android_linker.so'.
 """
 
-import json
 import optparse
 import os
 import shlex
@@ -59,7 +58,8 @@ def CopyArmLibraryUnchanged(library_path, output_path):
   shutil.copy(library_path, output_path)
 
 
-def main():
+def main(args):
+  args = build_utils.ExpandFileArgs(args)
   parser = optparse.OptionParser()
 
   parser.add_option('--configuration-name',
@@ -80,17 +80,16 @@ def main():
       help='Directory for stripped libraries')
   parser.add_option('--packed-libraries-dir',
       help='Directory for packed libraries')
-  parser.add_option('--libraries-file',
-      help='Path to json file containing list of libraries')
+  parser.add_option('--libraries',
+      help='List of libraries')
   parser.add_option('--stamp', help='Path to touch on success')
 
-  options, _ = parser.parse_args()
+  options, _ = parser.parse_args(args)
   enable_packing = (options.enable_packing == '1' and
                     options.configuration_name == 'Release')
   exclude_packing_set = set(shlex.split(options.exclude_packing_list))
 
-  with open(options.libraries_file, 'r') as libfile:
-    libraries = json.load(libfile)
+  libraries = build_utils.ParseGypList(options.libraries)
 
   build_utils.MakeDirectory(options.packed_libraries_dir)
 
@@ -113,4 +112,4 @@ def main():
 
 
 if __name__ == '__main__':
-  sys.exit(main())
+  sys.exit(main(sys.argv[1:]))

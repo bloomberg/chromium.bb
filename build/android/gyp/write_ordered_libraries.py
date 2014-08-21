@@ -27,13 +27,26 @@ import sys
 
 from util import build_utils
 
-_options = None
+_readelf = None
+_library_dirs = None
+
 _library_re = re.compile(
     '.*NEEDED.*Shared library: \[(?P<library_name>[\w/.]+)\]')
 
 
+def SetReadelfPath(path):
+  global _readelf
+  _readelf = path
+
+
+def SetLibraryDirs(dirs):
+  global _library_dirs
+  _library_dirs = dirs
+
+
 def FullLibraryPath(library_name):
-  for directory in _options.libraries_dir.split(','):
+  assert _library_dirs is not None
+  for directory in _library_dirs:
     path = '%s/%s' % (directory, library_name)
     if os.path.exists(path):
       return path
@@ -47,9 +60,10 @@ def IsSystemLibrary(library_name):
 
 
 def CallReadElf(library_or_executable):
-  readelf_cmd = [_options.readelf,
+  assert _readelf is not None
+  readelf_cmd = [_readelf,
                  '-d',
-                 library_or_executable]
+                 FullLibraryPath(library_or_executable)]
   return build_utils.CheckOutput(readelf_cmd)
 
 
@@ -91,17 +105,26 @@ def main():
   parser.add_option('--output', help='Path to the generated .json file.')
   parser.add_option('--stamp', help='Path to touch on success.')
 
-  global _options
-  _options, _ = parser.parse_args()
+  options, _ = parser.parse_args()
 
-  libraries = build_utils.ParseGypList(_options.input_libraries)
+  SetReadelfPath(options.readelf)
+  SetLibraryDirs(options.libraries_dir.split(','))
+
+  libraries = build_utils.ParseGypList(options.input_libraries)
   if len(libraries):
     libraries = GetSortedTransitiveDependenciesForBinaries(libraries)
 
-  build_utils.WriteJson(libraries, _options.output, only_if_changed=True)
+  # Convert to "base" library names: e.g. libfoo.so -> foo
+  java_libraries_list = (
+      '{%s}' % ','.join(['"%s"' % s[3:-3] for s in libraries]))
 
-  if _options.stamp:
-    build_utils.Touch(_options.stamp)
+  build_utils.WriteJson(
+      {'libraries': libraries, 'java_libraries_list': java_libraries_list},
+      options.output,
+      only_if_changed=True)
+
+  if options.stamp:
+    build_utils.Touch(options.stamp)
 
 
 if __name__ == '__main__':

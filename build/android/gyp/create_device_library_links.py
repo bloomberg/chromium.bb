@@ -34,7 +34,7 @@ def RunShellCommand(device, cmd):
 
 
 def CreateSymlinkScript(options):
-  libraries = build_utils.ReadJson(options.libraries_json)
+  libraries = build_utils.ParseGypList(options.libraries)
 
   link_cmd = (
       'rm $APK_LIBRARIES_DIR/%(lib_basename)s > /dev/null 2>&1 \n'
@@ -78,15 +78,16 @@ def TriggerSymlinkScript(options):
   RunShellCommand(device, trigger_cmd)
 
 
-def main():
+def main(args):
+  args = build_utils.ExpandFileArgs(args)
   parser = optparse.OptionParser()
   parser.add_option('--apk', help='Path to the apk.')
   parser.add_option('--script-host-path',
       help='Path on the host for the symlink script.')
   parser.add_option('--script-device-path',
       help='Path on the device to push the created symlink script.')
-  parser.add_option('--libraries-json',
-      help='Path to the json list of native libraries.')
+  parser.add_option('--libraries',
+      help='List of native libraries.')
   parser.add_option('--target-dir',
       help='Device directory that contains the target libraries for symlinks.')
   parser.add_option('--stamp', help='Path to touch on success.')
@@ -94,9 +95,9 @@ def main():
       help='Path to build device configuration.')
   parser.add_option('--configuration-name',
       help='The build CONFIGURATION_NAME')
-  options, _ = parser.parse_args()
+  options, _ = parser.parse_args(args)
 
-  required_options = ['apk', 'libraries_json', 'script_host_path',
+  required_options = ['apk', 'libraries', 'script_host_path',
       'script_device_path', 'target_dir', 'configuration_name']
   build_utils.CheckOptions(options, parser, required=required_options)
   constants.SetBuildType(options.configuration_name)
@@ -109,4 +110,4 @@ def main():
 
 
 if __name__ == '__main__':
-  sys.exit(main())
+  sys.exit(main(sys.argv[1:]))

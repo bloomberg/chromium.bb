@@ -36,6 +36,9 @@ import sys
 
 from util import build_utils
 
+import write_ordered_libraries
+
+
 dep_config_cache = {}
 def GetDepConfig(path):
   if not path in dep_config_cache:
@@ -74,6 +77,10 @@ def main(argv):
   parser.add_option('--jar-path', help='Path to target\'s jar output.')
   parser.add_option('--dex-path', help='Path to target\'s dex output.')
 
+  # apk native library options
+  parser.add_option('--native-libs', help='List of top-level native libs.')
+  parser.add_option('--readelf-path', help='Path to toolchain\'s readelf.')
+
   options, args = parser.parse_args(argv)
 
   if args:
@@ -91,12 +98,13 @@ def main(argv):
       'android_apk': ['jar_path', 'dex_path', 'resources_zip']
     }[options.type]
 
+  if options.native_libs:
+    required_options += ['readelf_path']
+
   build_utils.CheckOptions(options, parser, required_options)
 
   possible_deps_config_paths = build_utils.ParseGypList(
       options.possible_deps_configs)
-
-
 
 
   allow_unknown_deps = options.type == 'android_apk'
@@ -156,6 +164,26 @@ def main(argv):
     # TODO(cjhopman): proguard version
     dex_deps_files = [c['dex_path'] for c in all_library_deps]
     dex_config['dependency_dex_files'] = dex_deps_files
+
+    library_paths = []
+    java_libraries_list = []
+    if options.native_libs:
+      libraries = build_utils.ParseGypList(options.native_libs)
+      libraries_dir = os.path.dirname(libraries[0])
+      write_ordered_libraries.SetReadelfPath(options.readelf_path)
+      write_ordered_libraries.SetLibraryDirs([libraries_dir])
+      all_native_library_deps = (
+          write_ordered_libraries.GetSortedTransitiveDependenciesForBinaries(
+              libraries))
+      java_libraries_list = '{%s}' % ','.join(
+          ['"%s"' % s for s in all_native_library_deps])
+      library_paths = map(
+          write_ordered_libraries.FullLibraryPath, all_native_library_deps)
+
+    config['native'] = {
+      'libraries': library_paths,
+      'java_libraries_list': java_libraries_list
+    }
 
   build_utils.WriteJson(config, options.build_config, only_if_changed=True)
 

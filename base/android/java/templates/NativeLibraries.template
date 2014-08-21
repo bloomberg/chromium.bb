@@ -73,13 +73,20 @@ public class NativeLibraries {
     // .apk is being built).
     // TODO(cjhopman): This is public since it is referenced by ChromeNativeTestActivity.java
     // directly. The two ways of library loading should be refactored into one.
-    public static final String[] LIBRARIES
-#include <native_libraries_array.h>
-      ;
+    public static final String[] LIBRARIES =
+#if defined(NATIVE_LIBRARIES_LIST)
+      NATIVE_LIBRARIES_LIST;
+#else
+      {};
+#endif
+
     // This is the expected version of the 'main' native library, which is the one that
     // implements the initial set of base JNI functions including
     // base::android::nativeGetVersionName()
-    static String VERSION_NUMBER
-#include <native_libraries_version.h>
-      ;
+    static String VERSION_NUMBER =
+#if defined(NATIVE_LIBRARIES_VERSION_NUMBER)
+      NATIVE_LIBRARIES_VERSION_NUMBER;
+#else
+      "";
+#endif
 }

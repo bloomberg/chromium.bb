@@ -29,7 +29,9 @@ def DoGcc(options):
   build_utils.CheckOutput(gcc_cmd)
 
 
-def main():
+def main(args):
+  args = build_utils.ExpandFileArgs(args)
+
   parser = optparse.OptionParser()
   build_utils.AddDepfileOption(parser)
 
@@ -39,7 +41,7 @@ def main():
   parser.add_option('--stamp', help='Path to touch on success.')
   parser.add_option('--defines', help='Pre-defines macros', action='append')
 
-  options, _ = parser.parse_args()
+  options, _ = parser.parse_args(args)
 
   DoGcc(options)
 
@@ -53,4 +55,4 @@ def main():
 
 
 if __name__ == '__main__':
-  sys.exit(main())
+  sys.exit(main(sys.argv[1:]))

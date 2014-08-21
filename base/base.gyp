@@ -1317,10 +1317,7 @@
           ],
           'variables': {
             'package_name': 'org/chromium/base/library_loader',
-            'include_path': 'android/java/templates',
-            'template_deps': [
-              'android/java/templates/native_libraries_array.h'
-            ],
+            'template_deps': [],
           },
           'includes': [ '../build/android/java_cpp_template.gypi' ],
         },

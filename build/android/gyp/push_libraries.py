@@ -22,7 +22,7 @@ from util import build_utils
 from util import md5_check
 
 def DoPush(options):
-  libraries = build_utils.ReadJson(options.libraries_json)
+  libraries = build_utils.ParseGypList(options.libraries)
 
   device = build_device.GetBuildDeviceFromPath(
       options.build_device_configuration)
@@ -50,22 +50,23 @@ def DoPush(options):
         input_strings=[device_path])
 
 
-def main():
+def main(args):
+  args = build_utils.ExpandFileArgs(args)
   parser = optparse.OptionParser()
   parser.add_option('--libraries-dir',
       help='Directory that contains stripped libraries.')
   parser.add_option('--device-dir',
       help='Device directory to push the libraries to.')
-  parser.add_option('--libraries-json',
-      help='Path to the json list of native libraries.')
+  parser.add_option('--libraries',
+      help='List of native libraries.')
   parser.add_option('--stamp', help='Path to touch on success.')
   parser.add_option('--build-device-configuration',
       help='Path to build device configuration.')
   parser.add_option('--configuration-name',
       help='The build CONFIGURATION_NAME')
-  options, _ = parser.parse_args()
+  options, _ = parser.parse_args(args)
 
-  required_options = ['libraries_dir', 'device_dir', 'libraries_json']
+  required_options = ['libraries', 'device_dir', 'libraries']
   build_utils.CheckOptions(options, parser, required=required_options)
   constants.SetBuildType(options.configuration_name)
 
@@ -76,4 +77,4 @@ def main():
 
 
 if __name__ == '__main__':
-  sys.exit(main())
+  sys.exit(main(sys.argv[1:]))

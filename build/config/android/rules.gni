@@ -237,6 +237,12 @@ template("java_cpp_template") {
       "--output", rebase_path(gen_dir, root_build_dir) + "/{{source_name_part}}.java",
       "--template={{source}}",
     ]
+
+    if (defined(invoker.defines)) {
+      foreach(def, invoker.defines) {
+        args += ["--defines", def]
+      }
+    }
   }
 
   apply_gcc_outputs = get_target_outputs(":${target_name}__apply_gcc")
@@ -502,10 +508,19 @@ template("android_apk") {
   resource_srcjar_path = "$base_path.resources.srcjar"
   jar_path = "$base_path.jar"
   final_dex_path = "$gen_dir/classes.dex"
+  _template_name = target_name
 
-  # Just mark these as used for now.
-  assert(!defined(invoker.native_libs)
-      || invoker.native_libs == [] || true)
+  _native_lib_version_name = ""
+
+  _use_chromium_linker = false
+  _enable_chromium_linker_tests = false
+  _load_library_from_apk = false
+
+  _native_libs_dir = base_path + "/libs"
+  _native_libs = []
+  if (defined(invoker.native_libs)) {
+    _native_libs = invoker.native_libs
+  }
 
   _keystore_path = android_default_keystore_path
   _keystore_name = android_default_keystore_name
@@ -517,12 +532,12 @@ template("android_apk") {
     _keystore_password = invoker.keystore_password
   }
 
-  # TODO(cjhopman): Remove this once we correctly generate the real
-  # NativeLibraries.java
-  srcjar_deps = [ "//base:base_native_libraries_gen" ]
+  _srcjar_deps = []
   if (defined(invoker.srcjar_deps)) {
-    srcjar_deps += invoker.srcjar_deps
+    _srcjar_deps += invoker.srcjar_deps
   }
+
+  _rebased_build_config = rebase_path(build_config, root_build_dir)
 
   write_build_config("${target_name}__build_config") {
     type = "android_apk"
@@ -533,6 +548,8 @@ template("android_apk") {
     if (defined(invoker.deps)) {
       deps = invoker.deps
     }
+
+    native_libs = _native_libs
   }
 
   final_deps = []
@@ -548,11 +565,38 @@ template("android_apk") {
     generate_constant_ids = true
   }
 
+  java_cpp_template("${target_name}__native_libraries_java") {
+    package_name = "org/chromium/base/library_loader"
+    sources = [
+      "//base/android/java/templates/NativeLibraries.template",
+    ]
+    inputs = [
+      build_config,
+    ]
+
+    defines = [
+      "NATIVE_LIBRARIES_LIST=" +
+        "@FileArg($_rebased_build_config:native:java_libraries_list)",
+      "NATIVE_LIBRARIES_VERSION_NUMBER=\"$_native_lib_version_name\"",
+    ]
+    if (_use_chromium_linker) {
+      defines += ["ENABLED_CHROMIUM_LINKER"]
+    }
+    if (_load_library_from_apk) {
+      defines += ["ENABLE_CHROMIUM_LINKER_LIBRARY_IN_ZIP_FILE"]
+    }
+    if (_enable_chromium_linker_tests) {
+      defines += ["ENABLE_CHROMIUM_LINKER_TESTS"]
+    }
+  }
+  _srcjar_deps += [ ":${target_name}__native_libraries_java" ]
+
   rebased_build_config = rebase_path(build_config, root_build_dir)
 
   final_deps += [":${target_name}__java"]
   android_java_library("${target_name}__java") {
     java_files = invoker.java_files
+    srcjar_deps = _srcjar_deps
     dex_path = base_path + ".dex.jar"
   }
 
@@ -563,6 +607,23 @@ template("android_apk") {
     output = final_dex_path
     dex_arg_key = "${rebased_build_config}:apk_dex:dependency_dex_files"
     args = ["--inputs=@FileArg($dex_arg_key)"]
+  }
+
+  if (_native_libs != []) {
+    copy_ex("${target_name}__prepare_native") {
+      clear_dir = true
+      inputs = [build_config]
+      dest = "$_native_libs_dir/$android_app_abi"
+      args = [
+        "--files=@FileArg(${rebased_build_config}:native:libraries)",
+      ]
+      if (is_debug) {
+        rebased_gdbserver = rebase_path(android_gdbserver, root_build_dir)
+        args += [
+          "--files=[\"$rebased_gdbserver\"]"
+        ]
+      }
+    }
   }
 
   final_deps += [":${target_name}__create"]
@@ -576,7 +637,10 @@ template("android_apk") {
     keystore_path = _keystore_path
     keystore_password = _keystore_password
 
-    # TODO: native libs
+    if (_native_libs != []) {
+      native_libs_dir = _native_libs_dir
+      deps = [":${_template_name}__prepare_native"]
+    }
   }
 
   group(target_name) {

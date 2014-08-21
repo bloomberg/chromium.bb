@@ -73,6 +73,17 @@ template("write_build_config") {
       ]
     }
 
+    if (type == "android_apk") {
+      if (defined(invoker.native_libs)) {
+        rebased_native_libs = rebase_path(invoker.native_libs, root_build_dir)
+        rebased_android_readelf = rebase_path(android_readelf, root_build_dir)
+        args += [
+          "--native-libs=$rebased_native_libs",
+          "--readelf-path=$rebased_android_readelf",
+        ]
+      }
+    }
+
     if (defined(invoker.srcjar)) {
       args += [
         "--srcjar", rebase_path(invoker.srcjar, root_build_dir)
@@ -512,6 +523,32 @@ template("process_resources") {
 
     if (defined(invoker.args)) {
       args += invoker.args
+    }
+  }
+}
+
+template("copy_ex") {
+  action(target_name) {
+    script = "//build/android/gyp/copy_ex.py"
+    depfile = "$target_gen_dir/$target_name.d"
+    outputs = [
+      depfile,
+    ]
+
+    inputs = []
+    if (defined(invoker.inputs)) {
+      inputs += invoker.inputs
+    }
+
+    args = [
+      "--depfile", rebase_path(depfile, root_build_dir),
+      "--dest", rebase_path(invoker.dest, root_build_dir),
+    ]
+    if (defined(invoker.args)) {
+      args += invoker.args
+    }
+    if (defined(invoker.clear_dir) && invoker.clear_dir) {
+      args += ["--clear"]
     }
   }
 }
