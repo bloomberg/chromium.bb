@@ -1,10 +1,13 @@
 {
   "config_version": "accounts-google-com-v1",
-  "config_valid_until": 1413331200.0,
+  "config_valid_until": 1425168000.0,
   "monitored_domain": "accounts.google.com",
   "collectors": [
     {
       "upload_url": "https://clients2.google.com/domainreliability/upload"
+    },
+    {
+      "upload_url": "https://beacons.gvt2.com/domainreliability/upload"
     }
   ],
   "monitored_resources": [

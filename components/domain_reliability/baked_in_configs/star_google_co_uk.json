@@ -1,7 +1,7 @@
 {
-  "config_version": "media-admob-com-v1",
+  "config_version": "star-google-co-uk-v1",
   "config_valid_until": 1425168000.0,
-  "monitored_domain": "media.admob.com",
+  "monitored_domain": "*.google.co.uk",
   "collectors": [
     {
       "upload_url": "https://clients2.google.com/domainreliability/upload"
@@ -12,8 +12,8 @@
   ],
   "monitored_resources": [
     {
-      "resource_name": "media-admob-com-other",
-      "url_patterns": ["http*://media.admob.com/*"],
+      "resource_name": "star-google-co-uk-other",
+      "url_patterns": ["http*://*.google.co.uk/*"],
       "success_sample_rate": 0.05,
       "failure_sample_rate": 1.00
     }

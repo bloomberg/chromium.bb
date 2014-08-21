@@ -18,9 +18,12 @@ import sys
 # Chrome, to ensure incorrect ones are not added accidentally. Subdomains of
 # whitelist entries are also allowed (e.g. maps.google.com, ssl.gstatic.com).
 DOMAIN_WHITELIST = ('2mdn.net', 'admob.com', 'doubleclick.net', 'ggpht.com',
-                    'google.com', 'googleadservices.com', 'googleapis.com',
-                    'googlesyndication.com', 'googleusercontent.com',
-                    'googlevideo.com', 'gstatic.com', 'gvt1.com', 'youtube.com')
+                    'google.cn', 'google.co.uk', 'google.com', 'google.com.au',
+                    'google.de', 'google.fr', 'google.it', 'google.jp',
+                    'google.org', 'google.ru', 'googleadservices.com',
+                    'googleapis.com', 'googlesyndication.com',
+                    'googleusercontent.com', 'googlevideo.com', 'gstatic.com',
+                    'gvt1.com', 'youtube.com', 'ytimg.com')
 
 
 CC_HEADER = """// Copyright (C) 2014 The Chromium Authors. All rights reserved.
