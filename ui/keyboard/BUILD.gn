@@ -31,8 +31,6 @@ component("keyboard") {
     "//base",
     "//base/third_party/dynamic_annotations",
     "//content/public/browser",
-    "//ipc",
-    "//skia",
     "//url",
     "//ui/aura",
     "//ui/base",
@@ -40,6 +38,7 @@ component("keyboard") {
     "//ui/events",
     "//ui/gfx",
     "//ui/gfx/geometry",
+    "//ui/keyboard/webui",
     "//ui/wm",
   ]
 }
@@ -71,10 +70,6 @@ copy("resources") {
   forward_dependent_configs_from = deps
 }
 
-# TODO(GYP) enable this when all dependencies are resolved. Some transitive
-# deps aren't done yet.
-if (false) {
-
 test("keyboard_unittests") {
   sources = [
     "test/run_all_unittests.cc",
@@ -100,6 +95,4 @@ test("keyboard_unittests") {
     "//ui/wm",
     "//url",
   ]
-}
-
 }

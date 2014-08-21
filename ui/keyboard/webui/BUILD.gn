@@ -10,3 +10,31 @@ mojom("mojo_bindings") {
     "keyboard.mojom",
   ]
 }
+
+# GYP version: part of ui/keyboard/keyboard.gyp:keyboard
+source_set("webui") {
+  visibility = "//ui/keyboard"
+
+  sources = [
+    "vk_mojo_handler.cc",
+    "vk_mojo_handler.h",
+    "vk_webui_controller.cc",
+    "vk_webui_controller.h",
+  ]
+
+  deps = [
+    ":mojo_bindings",
+    "//base",
+    "//content/public/browser",
+    "//ui/aura",
+    "//ui/base",
+    "//ui/keyboard:resources",
+    "//mojo/public/cpp/bindings",
+    "//mojo/environment:chromium",
+    "//mojo/bindings/js",
+    "//mojo/system",
+  ]
+
+  defines = [ "KEYBOARD_IMPLEMENTATION" ]
+
+}

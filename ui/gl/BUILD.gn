@@ -152,6 +152,9 @@ component("gl") {
       "gl_implementation_osmesa.h",
     ]
   }
+  if (is_linux) {
+    deps += [ "//third_party/libevent" ]
+  }
   if (use_x11) {
     sources += [
       "gl_context_glx.cc",
