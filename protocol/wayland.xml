@@ -679,7 +679,8 @@
 
     <request name="get_shell_surface">
       <description summary="create a shell surface from a surface">
-	Create a shell surface for an existing surface.
+	Create a shell surface for an existing surface. This gives
+	the wl_surface the role of a shell surface.
 
 	Only one shell surface can be associated with a given surface.
       </description>
