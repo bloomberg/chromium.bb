@@ -66,7 +66,7 @@ TEST(OSExchangeDataWinTest, StringDataWritingViaCOM) {
   std::wstring title;
   EXPECT_TRUE(data2.GetURLAndTitle(
       OSExchangeData::CONVERT_FILENAMES, &url_from_data, &title));
-  GURL reference_url(in put);
+  GURL reference_url(input);
   EXPECT_EQ(reference_url.spec(), url_from_data.spec());
 }
 
