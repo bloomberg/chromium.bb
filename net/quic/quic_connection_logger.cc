@@ -333,6 +333,9 @@ QuicConnectionLogger::QuicConnectionLogger(const BoundNetLog& net_log)
       num_truncated_acks_received_(0),
       num_frames_received_(0),
       num_duplicate_frames_received_(0),
+      num_incorrect_connection_ids_(0),
+      num_undecryptable_packets_(0),
+      num_duplicate_packets_(0),
       connection_description_(GetConnectionDescriptionString()) {
 }
 
@@ -343,6 +346,13 @@ QuicConnectionLogger::~QuicConnectionLogger() {
                        num_truncated_acks_sent_);
   UMA_HISTOGRAM_COUNTS("Net.QuicSession.TruncatedAcksReceived",
                        num_truncated_acks_received_);
+  UMA_HISTOGRAM_COUNTS("Net.QuicSession.IncorrectConnectionIDsReceived",
+                       num_incorrect_connection_ids_);
+  UMA_HISTOGRAM_COUNTS("Net.QuicSession.UndecryptablePacketsReceived",
+                       num_undecryptable_packets_);
+  UMA_HISTOGRAM_COUNTS("Net.QuicSession.DuplicatePacketsReceived",
+                       num_duplicate_packets_);
+
   if (num_frames_received_ > 0) {
     int duplicate_stream_frame_per_thousand =
         num_duplicate_frames_received_ * 1000 / num_frames_received_;
@@ -466,6 +476,20 @@ void QuicConnectionLogger::OnPacketReceived(const IPEndPoint& self_address,
       NetLog::TYPE_QUIC_SESSION_PACKET_RECEIVED,
       base::Bind(&NetLogQuicPacketCallback, &self_address, &peer_address,
                  packet.length()));
+}
+
+void QuicConnectionLogger::OnIncorrectConnectionId(
+    QuicConnectionId connection_id) {
+  ++num_incorrect_connection_ids_;
+}
+
+void QuicConnectionLogger::OnUndecryptablePacket() {
+  ++num_undecryptable_packets_;
+}
+
+void QuicConnectionLogger::OnDuplicatePacket(
+    QuicPacketSequenceNumber sequence_number) {
+  ++num_duplicate_packets_;
 }
 
 void QuicConnectionLogger::OnProtocolVersionMismatch(

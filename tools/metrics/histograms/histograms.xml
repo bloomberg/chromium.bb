@@ -16180,6 +16180,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Net.QuicSession.DuplicatePacketsReceived">
+  <owner>rch@chromium.org</owner>
+  <summary>
+    The number of duplicate packets recevied by a QuicSession when the session
+    is closed.
+  </summary>
+</histogram>
+
 <histogram name="Net.QuicSession.FinalTcpCwnd">
   <owner>rch@chromium.org</owner>
   <summary>
@@ -16203,6 +16211,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>
     Samples of the number of round-trips needed by a QUIC connection before a
     request could be sent by the client.
+  </summary>
+</histogram>
+
+<histogram name="Net.QuicSession.IncorrectConnectionIDsReceived">
+  <owner>rch@chromium.org</owner>
+  <summary>
+    The number packets recevied by a QuicSession with an incorrect connection id
+    when the sesesion is closed.
   </summary>
 </histogram>
 
@@ -16425,6 +16441,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <histogram name="Net.QuicSession.TruncatedAcksSent">
   <owner>rch@chromium.org</owner>
   <summary>The number of truncated ACK frames sent.</summary>
+</histogram>
+
+<histogram name="Net.QuicSession.UndecryptablePacketsReceived">
+  <owner>rch@chromium.org</owner>
+  <summary>
+    The number of undecryptable packets recevied by a QuicSession when the
+    sesesion is closed.
+  </summary>
 </histogram>
 
 <histogram name="Net.QuicSession.UnexpectedNotGoingAway"

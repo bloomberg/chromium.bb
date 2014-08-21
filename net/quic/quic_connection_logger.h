@@ -42,6 +42,11 @@ class NET_EXPORT_PRIVATE QuicConnectionLogger
   virtual void OnPacketReceived(const IPEndPoint& self_address,
                                 const IPEndPoint& peer_address,
                                 const QuicEncryptedPacket& packet) OVERRIDE;
+  virtual void OnIncorrectConnectionId(
+      QuicConnectionId connection_id) OVERRIDE;
+  virtual void OnUndecryptablePacket() OVERRIDE;
+  virtual void OnDuplicatePacket(QuicPacketSequenceNumber sequence_number)
+      OVERRIDE;
   virtual void OnProtocolVersionMismatch(QuicVersion version) OVERRIDE;
   virtual void OnPacketHeader(const QuicPacketHeader& header) OVERRIDE;
   virtual void OnStreamFrame(const QuicStreamFrame& frame) OVERRIDE;
@@ -139,6 +144,12 @@ class NET_EXPORT_PRIVATE QuicConnectionLogger
   int num_frames_received_;
   // Count of the number of duplicate frames received.
   int num_duplicate_frames_received_;
+  // Count of the number of packets received with incorrect connection IDs.
+  int num_incorrect_connection_ids_;
+  // Count of the number of undecryptable packets received.
+  int num_undecryptable_packets_;
+  // Count of the number of duplicate packets received.
+  int num_duplicate_packets_;
   // Vector of inital packets status' indexed by packet sequence numbers, where
   // false means never received.  Zero is not a valid packet sequence number, so
   // that offset is never used, and we'll track 150 packets.
