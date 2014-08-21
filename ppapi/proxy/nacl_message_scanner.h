@@ -34,11 +34,16 @@ class PPAPI_PROXY_EXPORT NaClMessageScanner {
   // are found, |handles| is left unchanged. If no rewriting is needed,
   // |new_msg_ptr| is left unchanged.
   //
+  // For normal messages, |type| is equivalent to |msg|.id(), but, if |msg| is
+  // a reply to a synchronous message, |type| is the id of the original
+  // message.
+  //
   // See more explanation in the method definition.
   //
   // See chrome/nacl/nacl_ipc_adapter.cc for where this is used to help convert
   // native handles to NaClDescs.
   bool ScanMessage(const IPC::Message& msg,
+                   uint32_t type,
                    std::vector<SerializedHandle>* handles,
                    scoped_ptr<IPC::Message>* new_msg_ptr);
 
@@ -99,17 +104,9 @@ class PPAPI_PROXY_EXPORT NaClMessageScanner {
 
  private:
   friend class NaClMessageScannerTest;
-
-  void RegisterSyncMessageForReply(const IPC::Message& msg);
   void AuditNestedMessage(PP_Resource resource,
                           const IPC::Message& msg,
                           SerializedHandle* handle);
-
-  // When we send a synchronous message (from untrusted to trusted), we store
-  // its type here, so that later we can associate the reply with its type
-  // for scanning.
-  typedef std::map<int, uint32> PendingSyncMsgMap;
-  PendingSyncMsgMap pending_sync_msgs_;
 
   // We intercept FileSystem and FileIO messages to maintain information about
   // file systems and open files. This is used by NaClQuotaDescs to calculate

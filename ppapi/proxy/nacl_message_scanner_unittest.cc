@@ -23,16 +23,6 @@ class NaClMessageScannerTest : public PluginProxyTest {
  public:
   NaClMessageScannerTest() {}
 
-  uint32 FindPendingSyncMessage(
-      const NaClMessageScanner& scanner,
-      const IPC::Message& msg) {
-    int msg_id = IPC::SyncMessage::GetMessageId(msg);
-    std::map<int, uint32>::const_iterator it =
-        scanner.pending_sync_msgs_.find(msg_id);
-    // O can signal that no message was found.
-    return (it != scanner.pending_sync_msgs_.end()) ? it->second : 0;
-  }
-
   NaClMessageScanner::FileSystem* FindFileSystem(
       const NaClMessageScanner& scanner,
       PP_Resource file_system) {
@@ -56,35 +46,15 @@ class NaClMessageScannerTest : public PluginProxyTest {
     ResourceMessageReplyParams fio_reply_params(file_io, 0);
     scoped_ptr<IPC::Message> new_msg_ptr;
     scanner->ScanMessage(
-      PpapiPluginMsg_ResourceReply(
-          fio_reply_params,
-          PpapiPluginMsg_FileIO_OpenReply(file_system, 0)),
-      &unused_handles,
-      &new_msg_ptr);
+        PpapiPluginMsg_ResourceReply(
+            fio_reply_params,
+            PpapiPluginMsg_FileIO_OpenReply(file_system, 0)),
+        PpapiPluginMsg_ResourceReply::ID,
+        &unused_handles,
+        &new_msg_ptr);
     EXPECT_FALSE(new_msg_ptr);
   }
 };
-
-TEST_F(NaClMessageScannerTest, SyncMessageAndReply) {
-  NaClMessageScanner test;
-  ppapi::proxy::SerializedHandle handle(
-      ppapi::proxy::SerializedHandle::SHARED_MEMORY);
-  int id = -1;
-  IPC::Message msg =
-      PpapiHostMsg_PPBGraphics3D_CreateTransferBuffer(
-          ppapi::API_ID_PPB_GRAPHICS_3D,
-          HostResource(),
-          4096,  // size
-          &id,
-          &handle);
-  scoped_ptr<IPC::Message> new_msg_ptr;
-  EXPECT_NE(msg.type(), FindPendingSyncMessage(test, msg));
-  test.ScanUntrustedMessage(msg, &new_msg_ptr);
-  EXPECT_FALSE(new_msg_ptr);
-  EXPECT_EQ(msg.type(), FindPendingSyncMessage(test, msg));
-
-  // TODO(bbudge) Figure out how to put together a sync reply message.
-}
 
 TEST_F(NaClMessageScannerTest, FileOpenClose) {
   NaClMessageScanner test;
@@ -103,6 +73,7 @@ TEST_F(NaClMessageScannerTest, FileOpenClose) {
       PpapiPluginMsg_ResourceReply(
           fio_reply_params,
           PpapiPluginMsg_FileIO_OpenReply(kInvalidResource, 0)),
+      PpapiPluginMsg_ResourceReply::ID,
       &unused_handles,
       &new_msg_ptr);
   EXPECT_FALSE(new_msg_ptr);
@@ -195,6 +166,7 @@ TEST_F(NaClMessageScannerTest, QuotaAuditing) {
           PpapiPluginMsg_FileSystem_ReserveQuotaReply(
               kQuotaReservationAmount,
               file_sizes)),
+      PpapiPluginMsg_ResourceReply::ID,
       &unused_handles,
       &new_msg_ptr);
   EXPECT_FALSE(new_msg_ptr);
@@ -257,6 +229,7 @@ TEST_F(NaClMessageScannerTest, SetLength) {
           PpapiPluginMsg_FileSystem_ReserveQuotaReply(
               kQuotaReservationAmount,
               file_sizes)),
+      PpapiPluginMsg_ResourceReply::ID,
       &unused_handles,
       &new_msg_ptr);
 

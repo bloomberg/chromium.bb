@@ -291,6 +291,7 @@ NaClMessageScanner::~NaClMessageScanner() {
 // format before we can send it to the NaCl plugin.
 bool NaClMessageScanner::ScanMessage(
     const IPC::Message& msg,
+    uint32_t type,
     std::vector<SerializedHandle>* handles,
     scoped_ptr<IPC::Message>* new_msg_ptr) {
   DCHECK(handles);
@@ -313,30 +314,14 @@ bool NaClMessageScanner::ScanMessage(
   results.nested_msg_callback =
       base::Bind(&NaClMessageScanner::AuditNestedMessage,
                  base::Unretained(this));
-  switch (msg.type()) {
+  switch (type) {
     CASE_FOR_MESSAGE(PpapiMsg_PPBAudio_NotifyAudioStreamCreated)
     CASE_FOR_MESSAGE(PpapiMsg_PPPMessaging_HandleMessage)
     CASE_FOR_MESSAGE(PpapiPluginMsg_ResourceReply)
-    case IPC_REPLY_ID: {
-      int id = IPC::SyncMessage::GetMessageId(msg);
-      PendingSyncMsgMap::iterator iter(pending_sync_msgs_.find(id));
-      if (iter == pending_sync_msgs_.end()) {
-        NOTREACHED();
-        return false;
-      }
-      uint32_t type = iter->second;
-      pending_sync_msgs_.erase(iter);
-      switch (type) {
-        CASE_FOR_REPLY(PpapiHostMsg_PPBGraphics3D_CreateTransferBuffer)
-        CASE_FOR_REPLY(PpapiHostMsg_PPBImageData_CreateSimple)
-        CASE_FOR_REPLY(PpapiHostMsg_ResourceSyncCall)
-        CASE_FOR_REPLY(PpapiHostMsg_SharedMemory_CreateSharedMemory)
-        default:
-          // Do nothing for messages we don't know.
-          break;
-      }
-      break;
-    }
+    CASE_FOR_REPLY(PpapiHostMsg_PPBGraphics3D_CreateTransferBuffer)
+    CASE_FOR_REPLY(PpapiHostMsg_PPBImageData_CreateSimple)
+    CASE_FOR_REPLY(PpapiHostMsg_ResourceSyncCall)
+    CASE_FOR_REPLY(PpapiHostMsg_SharedMemory_CreateSharedMemory)
     default:
       // Do nothing for messages we don't know.
       break;
@@ -355,9 +340,6 @@ bool NaClMessageScanner::ScanMessage(
 void NaClMessageScanner::ScanUntrustedMessage(
     const IPC::Message& untrusted_msg,
     scoped_ptr<IPC::Message>* new_msg_ptr) {
-  if (untrusted_msg.is_sync())
-    RegisterSyncMessageForReply(untrusted_msg);
-
   // Audit FileIO and FileSystem messages to ensure that the plugin doesn't
   // exceed its file quota. If we find the message is malformed, just pass it
   // through - we only care about well formed messages to the host.
@@ -471,13 +453,6 @@ void NaClMessageScanner::ScanUntrustedMessage(
       }
     }
   }
-}
-
-void NaClMessageScanner::RegisterSyncMessageForReply(const IPC::Message& msg) {
-  int msg_id = IPC::SyncMessage::GetMessageId(msg);
-  DCHECK(pending_sync_msgs_.find(msg_id) == pending_sync_msgs_.end());
-
-  pending_sync_msgs_[msg_id] = msg.type();
 }
 
 NaClMessageScanner::FileIO* NaClMessageScanner::GetFile(

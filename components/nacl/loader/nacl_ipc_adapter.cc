@@ -464,15 +464,28 @@ int NaClIPCAdapter::TakeClientFileDescriptor() {
 #endif
 
 bool NaClIPCAdapter::OnMessageReceived(const IPC::Message& msg) {
+  uint32_t type = msg.type();
+  if (type == IPC_REPLY_ID) {
+    int id = IPC::SyncMessage::GetMessageId(msg);
+    IOThreadData::PendingSyncMsgMap::iterator it =
+        io_thread_data_.pending_sync_msgs_.find(id);
+    DCHECK(it != io_thread_data_.pending_sync_msgs_.end());
+    if (it != io_thread_data_.pending_sync_msgs_.end()) {
+      type = it->second;
+      io_thread_data_.pending_sync_msgs_.erase(it);
+    }
+  }
+
   {
     base::AutoLock lock(lock_);
-
     scoped_refptr<RewrittenMessage> rewritten_msg(new RewrittenMessage);
 
     typedef std::vector<ppapi::proxy::SerializedHandle> Handles;
     Handles handles;
     scoped_ptr<IPC::Message> new_msg;
-    if (!locked_data_.nacl_msg_scanner_.ScanMessage(msg, &handles, &new_msg))
+
+    if (!locked_data_.nacl_msg_scanner_.ScanMessage(
+            msg, type, &handles, &new_msg))
       return false;
 
     // Now add any descriptors we found to rewritten_msg. |handles| is usually
@@ -646,6 +659,12 @@ void NaClIPCAdapter::CloseChannelOnIOThread() {
 }
 
 void NaClIPCAdapter::SendMessageOnIOThread(scoped_ptr<IPC::Message> message) {
+  int id = IPC::SyncMessage::GetMessageId(*message.get());
+  DCHECK(io_thread_data_.pending_sync_msgs_.find(id) ==
+         io_thread_data_.pending_sync_msgs_.end());
+
+  if (message->is_sync())
+    io_thread_data_.pending_sync_msgs_[id] = message->type();
   io_thread_data_.channel_->Send(message.release());
 }
 

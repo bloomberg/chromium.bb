@@ -148,6 +148,12 @@ class NaClIPCAdapter : public base::RefCountedThreadSafe<NaClIPCAdapter>,
     ~IOThreadData();
 
     scoped_ptr<IPC::Channel> channel_;
+
+    // When we send a synchronous message (from untrusted to trusted), we store
+    // its type here, so that later we can associate the reply with its type
+    // for scanning.
+    typedef std::map<int, uint32> PendingSyncMsgMap;
+    PendingSyncMsgMap pending_sync_msgs_;
   };
 
   virtual ~NaClIPCAdapter();
