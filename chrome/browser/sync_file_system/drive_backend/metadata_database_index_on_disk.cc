@@ -870,27 +870,28 @@ void MetadataDatabaseIndexOnDisk::AddToPathIndexes(
 
   const std::string prefix =
       GenerateTrackerIDByParentAndTitleKeyPrefix(parent_id, title);
-  scoped_ptr<LevelDBWrapper::Iterator> itr(db_->NewIterator());
-  for (itr->Seek(prefix); itr->Valid(); itr->Next()) {
-    std::string id_str;
-    if (!RemovePrefix(itr->key().ToString(), prefix, &id_str))
+  if (!title.empty()) {
+    scoped_ptr<LevelDBWrapper::Iterator> itr(db_->NewIterator());
+    for (itr->Seek(prefix); itr->Valid(); itr->Next()) {
+      std::string id_str;
+      if (!RemovePrefix(itr->key().ToString(), prefix, &id_str))
+        break;
+
+      int64 tracker_id;
+      if (!base::StringToInt64(id_str, &tracker_id))
+        continue;
+      if (tracker_id == new_tracker.tracker_id()) {
+        NOTREACHED();
+        continue;
+      }
+
+      const std::string multi_key =
+          GenerateMultiBackingParentAndTitleKey(parent_id, title);
+      DVLOG_IF(1, !DBHasKey(multi_key))
+          << "  Add to multi backing file paths: " << parent_id << " " << title;
+      db_->Put(multi_key, std::string());
       break;
-
-    int64 tracker_id;
-    if (!base::StringToInt64(id_str, &tracker_id))
-      continue;
-    if (tracker_id == new_tracker.tracker_id()) {
-      NOTREACHED();
-      continue;
     }
-
-    const std::string multi_key =
-        GenerateMultiBackingParentAndTitleKey(parent_id, title);
-    DVLOG_IF(1, !DBHasKey(multi_key))
-        << "  Add to multi backing file paths: " << parent_id << " " << title;
-    db_->Put(GenerateMultiBackingParentAndTitleKey(parent_id, title),
-             std::string());
-    break;
   }
 
   AddToTrackerIDSetWithPrefix(
@@ -937,7 +938,7 @@ void MetadataDatabaseIndexOnDisk::UpdateInPathIndexes(
         GenerateActiveTrackerIDByParentAndTitleKey(parent_id, title),
         prefix, new_tracker);
 
-    if (CountWithPrefix(prefix, tracker_id) != NONE) {
+    if (!title.empty() && CountWithPrefix(prefix, tracker_id) != NONE) {
       const std::string multi_backing_key =
           GenerateMultiBackingParentAndTitleKey(parent_id, title);
       DVLOG_IF(1, !DBHasKey(multi_backing_key))

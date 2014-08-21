@@ -485,6 +485,64 @@ TEST_F(MetadataDatabaseIndexOnDiskTest, TrackerIDSetByParentIDAndTitleTest) {
   EXPECT_TRUE(multi_backing.title.empty()) << multi_backing.title;
 }
 
+TEST_F(MetadataDatabaseIndexOnDiskTest,
+       TrackerIDSetByParentIDAndTitleTest_EmptyTitle) {
+  CreateTestDatabase(true, NULL);
+
+  const int64 kFolderTrackerID = 23;
+  const int64 kNewFileTrackerID = 42;
+  {
+    FileTracker app_root_tracker;
+    EXPECT_TRUE(index()->GetFileTracker(kAppRootTrackerID, &app_root_tracker));
+    scoped_ptr<FileMetadata> folder_metadata =
+        test_util::CreateFolderMetadata("folder_id", "folder_name");
+    scoped_ptr<FileTracker> folder_tracker =
+        test_util::CreateTracker(*folder_metadata, kFolderTrackerID,
+                                 &app_root_tracker);
+    index()->StoreFileMetadata(folder_metadata.Pass());
+    index()->StoreFileTracker(folder_tracker.Pass());
+    WriteToDB();
+  }
+
+  FileTracker folder_tracker;
+  EXPECT_TRUE(index()->GetFileTracker(kFolderTrackerID, &folder_tracker));
+  scoped_ptr<FileMetadata> metadata =
+      test_util::CreateFileMetadata("file_id2", std::string(), "md5_2");
+
+  // Testing GetFileTrackerIDsByFileID
+  TrackerIDSet tracker_ids = index()->GetFileTrackerIDsByParentAndTitle(
+      kFolderTrackerID, std::string());
+  EXPECT_TRUE(tracker_ids.empty());
+
+  // Testing AddToFileIDIndexes
+  scoped_ptr<FileTracker> file_tracker =
+      test_util::CreateTracker(*metadata, kNewFileTrackerID, &folder_tracker);
+
+  index()->StoreFileTracker(file_tracker.Pass());
+  WriteToDB();
+  tracker_ids = index()->GetFileTrackerIDsByParentAndTitle(
+      kFolderTrackerID, std::string());
+  EXPECT_EQ(1U, tracker_ids.size());
+  EXPECT_EQ(kNewFileTrackerID, tracker_ids.active_tracker());
+
+  ParentIDAndTitle multi_backing = index()->PickMultiBackingFilePath();
+  EXPECT_EQ(kInvalidTrackerID, multi_backing.parent_id);
+
+  // Testing UpdateInFileIDIndexes
+  file_tracker =
+      test_util::CreateTracker(*metadata, kNewFileTrackerID, &folder_tracker);
+
+  index()->StoreFileTracker(file_tracker.Pass());
+  WriteToDB();
+  tracker_ids = index()->GetFileTrackerIDsByParentAndTitle(
+      kFolderTrackerID, std::string());
+  EXPECT_EQ(1U, tracker_ids.size());
+  EXPECT_EQ(kNewFileTrackerID, tracker_ids.active_tracker());
+
+  multi_backing = index()->PickMultiBackingFilePath();
+  EXPECT_EQ(kInvalidTrackerID, multi_backing.parent_id);
+}
+
 TEST_F(MetadataDatabaseIndexOnDiskTest, TrackerIDSetDetailsTest) {
   CreateTestDatabase(true, NULL);
 
