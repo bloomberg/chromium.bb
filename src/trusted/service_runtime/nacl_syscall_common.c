@@ -118,28 +118,21 @@ int32_t NaClSysExit(struct NaClAppThread  *natp,
 }
 
 int32_t NaClSysThreadExit(struct NaClAppThread  *natp,
-                          int32_t               *stack_flag) {
+                          uint32_t              stack_flag_addr) {
   uint32_t  zero = 0;
 
   NaClLog(4, "NaClSysThreadExit(0x%08"NACL_PRIxPTR", "
-          "0x%08"NACL_PRIxPTR"\n",
-          (uintptr_t) natp,
-          (uintptr_t) stack_flag);
+          "0x%08"NACL_PRIx32"\n",
+          (uintptr_t) natp, stack_flag_addr);
   /*
    * NB: NaClThreads are never joinable, but the abstraction for NaClApps
    * are.
    */
 
-  if (NULL != stack_flag) {
-    NaClLog(4,
-            "NaClSysThreadExit: stack_flag is %"NACL_PRIxPTR"\n",
-            (uintptr_t) stack_flag);
-    if (!NaClCopyOutToUser(natp->nap, (uintptr_t) stack_flag,
+  if (0 != stack_flag_addr) {
+    if (!NaClCopyOutToUser(natp->nap, (uintptr_t) stack_flag_addr,
                            &zero, sizeof zero)) {
-      NaClLog(4,
-              ("NaClSysThreadExit: ignoring invalid"
-               " stack_flag 0x%"NACL_PRIxPTR"\n"),
-              (uintptr_t) stack_flag);
+      NaClLog(4, "NaClSysThreadExit: ignoring invalid stack_flag_addr\n");
     }
   }
 
@@ -149,18 +142,18 @@ int32_t NaClSysThreadExit(struct NaClAppThread  *natp,
 }
 
 int32_t NaClSysNameService(struct NaClAppThread *natp,
-                           int32_t              *desc_addr) {
+                           uint32_t             desc_addr) {
   struct NaClApp *nap = natp->nap;
   int32_t   retval = -NACL_ABI_EINVAL;
   int32_t   desc;
 
   NaClLog(3,
           ("NaClSysNameService(0x%08"NACL_PRIxPTR","
-           " 0x%08"NACL_PRIxPTR")\n"),
+           " 0x%08"NACL_PRIx32")\n"),
           (uintptr_t) natp,
-          (uintptr_t) desc_addr);
+          desc_addr);
 
-  if (!NaClCopyInFromUser(nap, &desc, (uintptr_t) desc_addr, sizeof desc)) {
+  if (!NaClCopyInFromUser(nap, &desc, desc_addr, sizeof desc)) {
     NaClLog(LOG_ERROR,
             "Invalid address argument to NaClSysNameService\n");
     retval = -NACL_ABI_EFAULT;
@@ -170,8 +163,7 @@ int32_t NaClSysNameService(struct NaClAppThread *natp,
   if (-1 == desc) {
     /* read */
     desc = NaClAppSetDescAvail(nap, NaClDescRef(nap->name_service_conn_cap));
-    if (NaClCopyOutToUser(nap, (uintptr_t) desc_addr,
-                          &desc, sizeof desc)) {
+    if (NaClCopyOutToUser(nap, desc_addr, &desc, sizeof desc)) {
       retval = 0;
     } else {
       retval = -NACL_ABI_EFAULT;

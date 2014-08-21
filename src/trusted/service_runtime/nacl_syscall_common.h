@@ -39,14 +39,14 @@ int32_t NaClSysExit(struct NaClAppThread  *natp,
                     int                   status);
 
 int32_t NaClSysThreadExit(struct NaClAppThread  *natp,
-                          int32_t               *stack_flag);
+                          uint32_t              stack_flag_addr);
 
 extern int NaClAclBypassChecks;
 
 void NaClInsecurelyBypassAllAclChecks(void);
 
 int32_t NaClSysNameService(struct NaClAppThread *natp,
-                           int32_t              *desc_addr);
+                           uint32_t             desc_addr);
 
 /* bool */
 int NaClSysCommonAddrRangeContainsExecutablePages(struct NaClApp *nap,

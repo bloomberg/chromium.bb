@@ -121,7 +121,7 @@ int32_t NaClSysIsatty(struct NaClAppThread *natp,
 
 int32_t NaClSysGetdents(struct NaClAppThread *natp,
                         int                  d,
-                        void                 *dirp,
+                        uint32_t             dirp,
                         size_t               count) {
   struct NaClApp  *nap = natp->nap;
   int32_t         retval = -NACL_ABI_EINVAL;
@@ -131,9 +131,9 @@ int32_t NaClSysGetdents(struct NaClAppThread *natp,
 
   NaClLog(3,
           ("Entered NaClSysGetdents(0x%08"NACL_PRIxPTR", "
-           "%d, 0x%08"NACL_PRIxPTR", "
+           "%d, 0x%08"NACL_PRIx32", "
            "%"NACL_PRIuS"[0x%"NACL_PRIxS"])\n"),
-          (uintptr_t) natp, d, (uintptr_t) dirp, count, count);
+          (uintptr_t) natp, d, dirp, count, count);
 
   ndp = NaClAppGetDesc(nap, d);
   if (NULL == ndp) {
@@ -146,7 +146,7 @@ int32_t NaClSysGetdents(struct NaClAppThread *natp,
    * |count| is arbitrary and we wouldn't want to have to allocate
    * memory in trusted address space to match.
    */
-  sysaddr = NaClUserToSysAddrRange(nap, (uintptr_t) dirp, count);
+  sysaddr = NaClUserToSysAddrRange(nap, dirp, count);
   if (kNaClBadAddress == sysaddr) {
     NaClLog(4, " illegal address for directory data\n");
     retval = -NACL_ABI_EFAULT;
@@ -347,7 +347,7 @@ cleanup:
  */
 int32_t NaClSysLseek(struct NaClAppThread *natp,
                      int                  d,
-                     nacl_abi_off_t       *offp,
+                     uint32_t             offp,
                      int                  whence) {
   struct NaClApp  *nap = natp->nap;
   nacl_abi_off_t  offset;
@@ -357,8 +357,8 @@ int32_t NaClSysLseek(struct NaClAppThread *natp,
 
   NaClLog(3,
           ("Entered NaClSysLseek(0x%08"NACL_PRIxPTR", %d,"
-           " 0x%08"NACL_PRIxPTR", %d)\n"),
-          (uintptr_t) natp, d, (uintptr_t) offp, whence);
+           " 0x%08"NACL_PRIx32", %d)\n"),
+          (uintptr_t) natp, d, offp, whence);
 
   ndp = NaClAppGetDesc(nap, d);
   if (NULL == ndp) {
@@ -366,7 +366,7 @@ int32_t NaClSysLseek(struct NaClAppThread *natp,
     goto cleanup;
   }
 
-  if (!NaClCopyInFromUser(nap, &offset, (uintptr_t) offp, sizeof offset)) {
+  if (!NaClCopyInFromUser(nap, &offset, offp, sizeof offset)) {
     retval = -NACL_ABI_EFAULT;
     goto cleanup_unref;
   }
@@ -377,7 +377,7 @@ int32_t NaClSysLseek(struct NaClAppThread *natp,
   if (NaClOff64IsNegErrno(&retval64)) {
     retval = (int32_t) retval64;
   } else {
-    if (NaClCopyOutToUser(nap, (uintptr_t) offp, &retval64, sizeof retval64)) {
+    if (NaClCopyOutToUser(nap, offp, &retval64, sizeof retval64)) {
       retval = 0;
     } else {
       NaClLog(LOG_FATAL,
@@ -392,7 +392,7 @@ cleanup:
 
 int32_t NaClSysFstat(struct NaClAppThread *natp,
                      int                  d,
-                     struct nacl_abi_stat *nasp) {
+                     uint32_t             nasp) {
   struct NaClApp        *nap = natp->nap;
   int32_t               retval = -NACL_ABI_EINVAL;
   struct NaClDesc       *ndp;
@@ -400,13 +400,8 @@ int32_t NaClSysFstat(struct NaClAppThread *natp,
 
   NaClLog(3,
           ("Entered NaClSysFstat(0x%08"NACL_PRIxPTR
-           ", %d, 0x%08"NACL_PRIxPTR")\n"),
-          (uintptr_t) natp,
-          d, (uintptr_t) nasp);
-
-  NaClLog(4,
-          " sizeof(struct nacl_abi_stat) = %"NACL_PRIuS" (0x%"NACL_PRIxS")\n",
-          sizeof *nasp, sizeof *nasp);
+           ", %d, 0x%08"NACL_PRIx32")\n"),
+          (uintptr_t) natp, d, nasp);
 
   ndp = NaClAppGetDesc(nap, d);
   if (NULL == ndp) {
@@ -418,8 +413,7 @@ int32_t NaClSysFstat(struct NaClAppThread *natp,
   retval = (*((struct NaClDescVtbl const *) ndp->base.vtbl)->
             Fstat)(ndp, &result);
   if (0 == retval) {
-    if (!NaClCopyOutToUser(nap, (uintptr_t) nasp,
-                           &result, sizeof result)) {
+    if (!NaClCopyOutToUser(nap, nasp, &result, sizeof result)) {
       retval = -NACL_ABI_EFAULT;
     }
   }

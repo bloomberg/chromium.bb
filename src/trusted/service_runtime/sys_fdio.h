@@ -39,16 +39,16 @@ int32_t NaClSysWrite(struct NaClAppThread *natp,
 
 int32_t NaClSysLseek(struct NaClAppThread *natp,
                      int                  d,
-                     nacl_abi_off_t       *offp,
+                     uint32_t             offp,
                      int                  whence);
 
 int32_t NaClSysFstat(struct NaClAppThread *natp,
                      int                  d,
-                     struct nacl_abi_stat *nasp);
+                     uint32_t             nasp);
 
 int32_t NaClSysGetdents(struct NaClAppThread  *natp,
                         int                   d,
-                        void                  *dirp,
+                        uint32_t              dirp,
                         size_t                count);
 
 int32_t NaClSysIsatty(struct NaClAppThread *natp,
