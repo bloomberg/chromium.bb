@@ -1324,12 +1324,11 @@ want to set 'managed': False in .gclient.
     if not self.dependencies:
       raise gclient_utils.Error('No solution specified')
 
-    self._CheckConfig()
-
     revision_overrides = {}
     # It's unnecessary to check for revision overrides for 'recurse'.
     # Save a few seconds by not calling _EnforceRevisions() in that case.
     if command not in ('diff', 'recurse', 'runhooks', 'status'):
+      self._CheckConfig()
       revision_overrides = self._EnforceRevisions()
     pm = None
     # Disable progress for non-tty stdout.
