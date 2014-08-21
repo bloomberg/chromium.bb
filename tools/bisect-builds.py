@@ -158,6 +158,8 @@ class PathContext(object):
         self._binary_name = 'Google Chrome.app/Contents/MacOS/Google Chrome'
       elif self.platform == 'win':
         self._listing_platform_dir = 'win/'
+        self.archive_name = 'chrome-win.zip'
+        self._archive_extract_dir = 'chrome-win'
     else:
       if self.platform in ('linux', 'linux64', 'linux-arm'):
         self.archive_name = 'chrome-linux.zip'
@@ -445,7 +447,6 @@ class PathContext(object):
     revision_re = re.compile(r'(\d\d\.\d\.\d{4}\.\d+)')
     build_numbers = filter(lambda b: revision_re.search(b), build_numbers)
     final_list = []
-    i = 0
     parsed_build_numbers = [LooseVersion(x) for x in build_numbers]
     connection = httplib.HTTPConnection(GOOGLE_APIS_URL)
     for build_number in sorted(parsed_build_numbers):
@@ -455,7 +456,6 @@ class PathContext(object):
         continue
       path = ('/' + GS_BUCKET_NAME + '/' + str(build_number) + '/' +
               self._listing_platform_dir + self.archive_name)
-      i = i + 1
       connection.request('HEAD', path)
       response = connection.getresponse()
       if response.status == 200:
