@@ -249,35 +249,20 @@ list > .folder > .label,
 </if>
 }
 
-.logo {
-  -webkit-appearance: none;
-  background: url('../images/bookmarks_section_32.png') no-repeat 50% 50%;
-  border: 0;
-  cursor: pointer;
-  float: left;
-  height: 32px;
-  margin: 10px;
-  width: 32px;
-}
-
-html:not(.focus-outline-visible) .logo:focus {
-  outline: none;
-}
-
-.header form {
-  float: left;
-  margin: 14px 2px 0 2px;
-  width: 171px;
-}
-
-.header {
+header {
+  align-items: center;
+  display: flex;
   min-width: 400px;
+  padding: 0 12px;
 }
 
-html[dir=rtl] .logo,
-html[dir=rtl] .header > div,
-html[dir=rtl] .header form {
-  float: right;
+header h2 {
+  flex: 1;
+  font-weight: normal;
+}
+
+header form {
+  flex: none;
 }
 
 .tree-row.drag-on,
@@ -339,13 +324,14 @@ list > .drag-above {
 
 .summary button {
   -webkit-appearance: none;
-  -webkit-margin-start: 10px;
+  -webkit-margin-start: 16px;
   -webkit-padding-end: 11px;
   -webkit-padding-start: 0;
   background: transparent -webkit-canvas(drop-down-arrow)
               no-repeat right center;
   border: 0;
   font: inherit;
+  font-weight: bold;
   padding-bottom: 0;
   padding-top: 0;
 }

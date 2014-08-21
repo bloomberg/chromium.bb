@@ -55,16 +55,15 @@ found in the LICENSE file.
 </head>
 <body i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
 
-<div class="header">
-  <button class="logo link-button" tabindex=3></button>
-  <form class="form">
+<header>
+  <h2 i18n-content="title"></h2>
+  <form>
     <input type="search" id="term" tabindex=1 autofocus incremental
         i18n-values="placeholder:search_button">
   </form>
-</div>
+</header>
 
 <div class="summary">
-  <h3 i18n-content="title"></h3>
   <button menu="#organize-menu" tabindex="4" i18n-content="organize_menu">
   </button>
 </div>
