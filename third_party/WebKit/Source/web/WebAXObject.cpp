@@ -54,7 +54,21 @@
 #include "public/web/WebNode.h"
 #include "wtf/text/StringBuilder.h"
 
+using namespace blink;
+
 namespace blink {
+
+#if ENABLE(ASSERT)
+// It's not safe to call some WebAXObject APIs if a layout is pending.
+// Clients should call updateLayoutAndCheckValidity first.
+static bool isLayoutClean(Document* document)
+{
+    if (!document || !document->view())
+        return false;
+    return document->lifecycle().state() >= DocumentLifecycle::LayoutClean
+        || (document->lifecycle().state() == DocumentLifecycle::StyleClean && !document->view()->needsLayout());
+}
+#endif
 
 void WebAXObject::reset()
 {
@@ -127,6 +141,8 @@ WebString WebAXObject::accessibilityDescription() const
 {
     if (isDetached())
         return WebString();
+
+    ASSERT(isLayoutClean(m_private->document()));
 
     return m_private->accessibilityDescription();
 }
@@ -542,23 +558,11 @@ bool WebAXObject::ariaOwns(WebVector<WebAXObject>& ownsElements) const
     return true;
 }
 
-#if ENABLE(ASSERT)
-static bool isLayoutClean(Document* document)
-{
-    if (!document || !document->view())
-        return false;
-    return document->lifecycle().state() >= DocumentLifecycle::LayoutClean
-        || (document->lifecycle().state() == DocumentLifecycle::StyleClean && !document->view()->needsLayout());
-}
-#endif
-
 WebRect WebAXObject::boundingBoxRect() const
 {
     if (isDetached())
         return WebRect();
 
-    // It's not safe to call boundingBoxRect if a layout is pending.
-    // Clients should call updateLayoutAndCheckValidity first.
     ASSERT(isLayoutClean(m_private->document()));
 
     return pixelSnappedIntRect(m_private->elementRect());
@@ -781,6 +785,8 @@ WebString WebAXObject::title() const
 {
     if (isDetached())
         return WebString();
+
+    ASSERT(isLayoutClean(m_private->document()));
 
     return m_private->title();
 }
