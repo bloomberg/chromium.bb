@@ -1803,10 +1803,11 @@ void ChromeContentBrowserClient::RequestDesktopNotificationPermission(
   // permission, the user will still be prompted.)
   Profile* profile = Profile::FromBrowserContext(
       render_frame_host->GetSiteInstance()->GetBrowserContext());
-  InfoMap* extension_info_map =
-      extensions::ExtensionSystem::Get(profile)->info_map();
   DesktopNotificationService* notification_service =
       DesktopNotificationServiceFactory::GetForProfile(profile);
+#if defined(ENABLE_EXTENSIONS)
+  InfoMap* extension_info_map =
+      extensions::ExtensionSystem::Get(profile)->info_map();
   const Extension* extension = NULL;
   if (extension_info_map) {
     extensions::ExtensionSet extensions;
@@ -1831,6 +1832,7 @@ void ChromeContentBrowserClient::RequestDesktopNotificationPermission(
     callback.Run(blink::WebNotificationPermissionAllowed);
     return;
   }
+#endif
 
   WebContents* web_contents = WebContents::FromRenderFrameHost(
       render_frame_host);
