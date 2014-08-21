@@ -912,6 +912,8 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
     GetRenderWidgetHost()->ForwardTouchEventWithLatencyInfo(touch,
                                                             ui::LatencyInfo());
     filter()->WaitForAck(blink::WebInputEvent::TouchStart);
+    WaitAFrame();
+
     // Assert on the ack, because we'll end up waiting for acks that will never
     // come if this is not true.
     ASSERT_EQ(INPUT_EVENT_ACK_STATE_NOT_CONSUMED, filter()->last_ack_state());
@@ -928,7 +930,6 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
     GetRenderWidgetHost()->ForwardGestureEventWithLatencyInfo(
         scroll_begin, ui::LatencyInfo());
     // Scroll begin ignores ack disposition, so don't wait for the ack.
-    //    GiveItSomeTime();
     WaitAFrame();
 
     // First touchmove already sent, start at 2.
