@@ -291,9 +291,7 @@ base::DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
   //   on those specified in the permissions.
   bool wants_all_urls =
       util::ScriptsMayRequireActionForExtension(extension) &&
-      (extension->permissions_data()->HasWithheldImpliedAllHosts() ||
-       util::AllowedScriptingOnAllUrls(
-           extension->id(), extension_service_->GetBrowserContext()));
+      extension->permissions_data()->HasWithheldImpliedAllHosts();
   extension_data->SetBoolean("wantsAllUrls", wants_all_urls);
   extension_data->SetBoolean(
       "allowAllUrls",
