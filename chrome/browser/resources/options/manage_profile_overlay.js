@@ -500,6 +500,7 @@ cr.define('options', function() {
         var name = this.defaultProfileNames_[index];
         if (name) {
           this.setProfileName_(name, mode);
+          this.updateCreateOrImport_(mode);
         }
       }
       if (this.profileInfo_ && this.profileInfo_.filePath) {
