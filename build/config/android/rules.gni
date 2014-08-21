@@ -405,7 +405,7 @@ template("java_strings_grd") {
 #   java_files: List of .java files included in this library.
 #   srcjar_deps: List of srcjar dependencies. The .java files in the srcjars
 #     will be added to java_files and be included in this library.
-#
+#   chromium_code: If true, extra static analysis warning/errors will be enabled.
 #   jar_excluded_patterns: List of patterns of .class files to exclude from the
 #     final jar.
 #
@@ -444,7 +444,13 @@ template("android_library") {
     # base_path
   }
 
+  _chromium_code = true
+  if (defined(invoker.chromium_code)) {
+    _chromium_code = invoker.chromium_code
+  }
+
   android_java_library(target_name) {
+    chromium_code = _chromium_code
     java_files = invoker.java_files
     build_config = build_config
 
@@ -595,6 +601,7 @@ template("android_apk") {
 
   final_deps += [":${target_name}__java"]
   android_java_library("${target_name}__java") {
+    android_manifest = invoker.android_manifest
     java_files = invoker.java_files
     srcjar_deps = _srcjar_deps
     dex_path = base_path + ".dex.jar"

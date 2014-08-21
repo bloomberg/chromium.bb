@@ -11,6 +11,44 @@ rebased_android_sdk = rebase_path(android_sdk, root_build_dir)
 rebased_android_sdk_root = rebase_path(android_sdk_root, root_build_dir)
 rebased_android_sdk_build_tools = rebase_path(android_sdk_build_tools, root_build_dir)
 
+template("android_lint") {
+  jar_path = invoker.jar_path
+  android_manifest = invoker.android_manifest
+  java_files = invoker.java_files
+  base_path = "$target_gen_dir/$target_name"
+
+  action(target_name) {
+    script = "//build/android/gyp/lint.py"
+    result_path = base_path + "/result.xml"
+    config_path = base_path + "/config.xml"
+    suppressions_file = "//build/android/lint/suppressions.xml"
+    inputs = [
+      suppressions_file,
+      android_manifest,
+      jar_path,
+    ] + java_files
+
+    outputs = [
+      config_path,
+      result_path
+    ]
+
+    rebased_java_files = rebase_path(java_files, root_build_dir)
+
+    args = [
+      "--lint-path=$rebased_android_sdk_root/tools/lint",
+      "--config-path", rebase_path(suppressions_file, root_build_dir),
+      "--manifest-path", rebase_path(android_manifest, root_build_dir),
+      "--product-dir=.",
+      "--jar-path", rebase_path(jar_path, root_build_dir),
+      "--processed-config-path", rebase_path(config_path, root_build_dir),
+      "--result-path", rebase_path(result_path, root_build_dir),
+      "--java-files=$rebased_java_files",
+      "--enable",
+    ]
+  }
+}
+
 
 # Write the target's .build_config file. This is a json file that contains a
 # dictionary of information about how to build this target (things that
@@ -304,7 +342,7 @@ template("create_apk") {
 #   java_files: List of .java files to compile.
 #   java_deps: List of java dependencies. These should all have a .jar output
 #     at "${target_gen_dir}/${target_name}.jar.
-#   chromium_code: If 1, enable extra warnings.
+#   chromium_code: If true, enable extra warnings.
 #   srcjar_deps: List of srcjar dependencies. The .java files contained in the
 #     dependencies srcjar outputs will be compiled and added to the output jar.
 #   jar_path: Use this to explicitly set the output jar path. Defaults to
@@ -419,6 +457,14 @@ template("android_java_library") {
   _jar_path = invoker.jar_path
   _dex_path = invoker.dex_path
 
+  _android_manifest = "//build/android/AndroidManifest.xml"
+  if (defined(invoker.android_manifest)) {
+    _android_manifest = invoker.android_manifest
+  }
+  assert(_android_manifest != "")
+
+  _final_deps = []
+
   java_library("${target_name}__java_library") {
     jar_path = _jar_path
     if (defined(invoker.jar_excluded_patterns)) {
@@ -432,8 +478,14 @@ template("android_java_library") {
     }
   }
 
-  # TODO(cjhopman): lint
-
+  if (defined(invoker.chromium_code) && invoker.chromium_code) {
+    _final_deps += [ ":${target_name}__lint" ]
+    android_lint("${target_name}__lint") {
+      android_manifest = _android_manifest
+      jar_path = _jar_path
+      java_files = invoker.java_files
+    }
+  }
 
   dex("${target_name}__dex") {
     sources = [_jar_path]
@@ -444,7 +496,7 @@ template("android_java_library") {
     deps = [
       ":${target_name}__java_library",
       ":${target_name}__dex",
-    ]
+    ] + _final_deps
   }
 }
 
