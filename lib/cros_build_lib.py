@@ -761,14 +761,6 @@ def GetHostDomain():
   return domain if domain else 'localdomain'
 
 
-def HostIsCIBuilder(fq_hostname=None):
-  """Return True iff a host is a continuous-integration builder."""
-  if not fq_hostname:
-    fq_hostname = GetHostName(fully_qualified=True)
-  return (fq_hostname.endswith('.' + constants.GOLO_DOMAIN) or
-          fq_hostname.endswith('.' + constants.CHROME_DOMAIN))
-
-
 def TimedCommand(functor, *args, **kwargs):
   """Wrapper for simple log timing of other python functions.
 

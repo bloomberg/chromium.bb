@@ -75,7 +75,6 @@ CHROMIUM_EMAIL = '@chromium.org'
 
 CORP_DOMAIN = 'corp.google.com'
 GOLO_DOMAIN = 'golo.chromium.org'
-CHROME_DOMAIN = 'chrome.' + CORP_DOMAIN
 
 GOB_HOST = '%s.googlesource.com'
 
@@ -100,9 +99,6 @@ CHROMITE_PROJECT = 'chromiumos/chromite'
 CHROMITE_URL = '%s/%s' % (EXTERNAL_GOB_URL, CHROMITE_PROJECT)
 CHROMIUM_SRC_PROJECT = 'chromium/src'
 CHROMIUM_GOB_URL = '%s/%s.git' % (EXTERNAL_GOB_URL, CHROMIUM_SRC_PROJECT)
-CHROME_INTERNAL_PROJECT = 'chrome/src-internal'
-CHROME_INTERNAL_GOB_URL = '%s/%s.git' % (
-    INTERNAL_GOB_URL, CHROME_INTERNAL_PROJECT)
 
 MANIFEST_PROJECT = 'chromiumos/manifest'
 MANIFEST_INT_PROJECT = 'chromeos/manifest-internal'

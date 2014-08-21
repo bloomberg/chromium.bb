@@ -15,21 +15,18 @@ Returns chrome-base/chromeos-chrome-8.0.552.0_alpha_r1
 emerge-x86-generic =chrome-base/chromeos-chrome-8.0.552.0_alpha_r1
 """
 
-import base64
-import distutils.version
 import filecmp
 import optparse
 import os
 import re
 import sys
-import urlparse
+import time
 
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import portage_utilities
 from chromite.lib import cros_build_lib
+from chromite.lib import gclient
 from chromite.lib import git
-from chromite.lib import gob_util
-from chromite.lib import timeout_util
 from chromite.scripts import cros_mark_as_stable
 
 # Helper regex's for finding ebuilds.
@@ -51,8 +48,12 @@ _CHROME_VERSION_URL = ('http://omahaproxy.appspot.com/changelog?'
 _REV_TYPES_FOR_LINKS = [constants.CHROME_REV_LATEST,
                         constants.CHROME_REV_STICKY]
 
-# TODO(szager): This is inaccurate, but is it safe to change?  I have no idea.
 _CHROME_SVN_TAG = 'CROS_SVN_COMMIT'
+
+
+def _GetSvnUrl(base_url):
+  """Returns the path to the svn url for the given chrome branch."""
+  return os.path.join(base_url, 'trunk')
 
 
 def _GetVersionContents(chrome_version_info):
@@ -68,37 +69,40 @@ def _GetVersionContents(chrome_version_info):
   return '.'.join(chrome_version_array)
 
 
-def _GetSpecificVersionUrl(git_url, revision, time_to_wait=600):
+def _GetSpecificVersionUrl(base_url, revision, time_to_wait=600):
   """Returns the Chromium version, from a repository URL and version.
 
   Args:
-     git_url: Repository URL for chromium.
-     revision: the git revision we want to use.
+     base_url: URL for the root of the chromium checkout.
+     revision: the SVN revision we want to use.
      time_to_wait: the minimum period before abandoning our wait for the
          desired revision to be present.
   """
-  parsed_url = urlparse.urlparse(git_url)
-  host = parsed_url[1]
-  path = parsed_url[2].rstrip('/') + (
-      '/+/%s/chrome/VERSION?format=text' % revision)
+  svn_url = os.path.join(_GetSvnUrl(base_url), 'src', 'chrome', 'VERSION')
+  if not revision or not (int(revision) > 0):
+    raise Exception('Revision must be positive, got %s' % revision)
 
-  # Allow for git repository replication lag with sleep/retry loop.
-  def _fetch():
-    fh = gob_util.FetchUrl(host, path, ignore_404=True)
-    return fh.read() if fh else None
+  start = time.time()
+  # Use the fact we are SVN, hence ordered.
+  # Dodge the fact it will silently ignore the revision if it is not
+  # yet known.  (i.e. too high)
+  repo_version = gclient.GetTipOfTrunkSvnRevision(base_url)
+  while revision > repo_version:
+    if time.time() - start > time_to_wait:
+      raise Exception('Timeout Exceeeded')
 
-  def _wait_msg(_remaining_minutes):
-    cros_build_lib.Info(
-        'Repository does not yet have revision %s.  Sleeping...',
-        revision)
+    msg = 'Repository only has version %s, looking for %s.  Sleeping...'
+    cros_build_lib.Info(msg, repo_version, revision)
+    time.sleep(30)
+    repo_version = gclient.GetTipOfTrunkSvnRevision(base_url)
 
-  content = timeout_util.WaitForSuccess(
-      retry_check=lambda x: not bool(x),
-      func=_fetch,
-      timeout=time_to_wait,
-      period=30,
-      side_effect_func=_wait_msg)
-  return _GetVersionContents(base64.b64decode(content))
+  chrome_version_info = cros_build_lib.RunCommand(
+      ['svn', 'cat', '-r', revision, svn_url],
+      redirect_stdout=True,
+      error_message='Could not read version file at %s revision %s.' %
+                    (svn_url, revision)).output
+
+  return _GetVersionContents(chrome_version_info)
 
 
 def _GetTipOfTrunkVersionFile(root):
@@ -116,7 +120,7 @@ def _GetTipOfTrunkVersionFile(root):
   return _GetVersionContents(chrome_version_info)
 
 
-def CheckIfChromeRightForOS(deps_content):
+def CheckIfChromeRightForOS(url):
   """Checks if DEPS is right for Chrome OS.
 
   This function checks for a variable called 'buildspec_platforms' to
@@ -124,12 +128,15 @@ def CheckIfChromeRightForOS(deps_content):
   then it chooses that DEPS.
 
   Args:
-    deps_content: Content of release buildspec DEPS file.
+    url: url where DEPS file present.
 
   Returns:
     True if DEPS is the right Chrome for Chrome OS.
   """
-  platforms_search = re.search(r'buildspec_platforms.*\s.*\s', deps_content)
+  deps_contents = cros_build_lib.RunCommand(['svn', 'cat', url],
+                                            redirect_stdout=True).output
+
+  platforms_search = re.search(r'buildspec_platforms.*\s.*\s', deps_contents)
 
   if platforms_search:
     platforms = platforms_search.group()
@@ -139,40 +146,37 @@ def CheckIfChromeRightForOS(deps_content):
   return False
 
 
-def GetLatestRelease(git_url, branch=None):
-  """Gets the latest release version from the release tags in the repository.
+def GetLatestRelease(base_url, branch=None):
+  """Gets the latest release version from the buildspec_url for the branch.
 
   Args:
-    git_url: URL of git repository.
+    base_url: Base URL for the SVN repository.
     branch: If set, gets the latest release for branch, otherwise latest
       release.
 
   Returns:
     Latest version string.
   """
-  # TODO(szager): This only works for public release buildspecs in the chromium
-  # src repository.  Internal buildspecs are tracked differently.  At the time
-  # of writing, I can't find any callers that use this method to scan for
-  # internal buildspecs.  But there may be something lurking...
-
-  parsed_url = urlparse.urlparse(git_url)
-  path = parsed_url[2].rstrip('/') + '/+refs/tags?format=JSON'
-  j = gob_util.FetchUrlJson(parsed_url[1], path, ignore_404=False)
+  buildspec_url = os.path.join(base_url, 'releases')
+  svn_ls = cros_build_lib.RunCommand(['svn', 'ls', buildspec_url],
+                                     redirect_stdout=True).output
+  sorted_ls = cros_build_lib.RunCommand(['sort', '--version-sort', '-r'],
+                                        input=svn_ls,
+                                        redirect_stdout=True).output
   if branch:
     chrome_version_re = re.compile(r'^%s\.\d+.*' % branch)
   else:
     chrome_version_re = re.compile(r'^[0-9]+\..*')
-  matching_versions = [key for key in j.keys() if chrome_version_re.match(key)]
-  matching_versions.sort(key=distutils.version.LooseVersion)
-  for chrome_version in reversed(matching_versions):
-    path = parsed_url[2].rstrip() + (
-        '/+/refs/tags/%s/DEPS?format=text' % chrome_version)
-    fh = gob_util.FetchUrl(parsed_url[1], path, ignore_404=False)
-    content = fh.read() if fh else None
-    if content:
-      deps_content = base64.b64decode(content)
-      if CheckIfChromeRightForOS(deps_content):
-        return chrome_version
+
+  for chrome_version in sorted_ls.splitlines():
+    if chrome_version_re.match(chrome_version):
+      deps_url = os.path.join(buildspec_url, chrome_version, 'DEPS')
+      deps_check = cros_build_lib.RunCommand(['svn', 'ls', deps_url],
+                                             error_code_ok=True,
+                                             redirect_stdout=True).output
+      if deps_check == 'DEPS\n':
+        if CheckIfChromeRightForOS(deps_url):
+          return chrome_version.rstrip('/')
 
   return None
 
@@ -359,7 +363,7 @@ def MarkChromeEBuildAsStable(stable_candidate, unstable_ebuild, chrome_rev,
         are release candidates for the next sticky version.
       constants.CHROME_REV_STICKY -  Revs the sticky version.
     chrome_version: The \d.\d.\d.\d version of Chrome.
-    commit: Used with constants.CHROME_REV_TOT.  The git revision of chrome.
+    commit: Used with constants.CHROME_REV_TOT.  The svn revision of chrome.
     overlay_dir: Path to the chromeos-chrome package dir.
 
   Returns:
@@ -427,15 +431,25 @@ def MarkChromeEBuildAsStable(stable_candidate, unstable_ebuild, chrome_rev,
   return '%s-%s' % (new_ebuild.package, new_ebuild.version)
 
 
+def ParseMaxRevision(revision_list):
+  """Returns the max revision from a list of url@revision string."""
+  revision_re = re.compile(r'.*@(\d+)')
+
+  def RevisionKey(revision):
+    return revision_re.match(revision).group(1)
+
+  max_revision = max(revision_list.split(), key=RevisionKey)
+  return max_revision.rpartition('@')[2]
+
+
 def main(_argv):
   usage_options = '|'.join(constants.VALID_CHROME_REVISIONS)
   usage = '%s OPTIONS [%s]' % (__file__, usage_options)
   parser = optparse.OptionParser(usage)
   parser.add_option('-b', '--boards', default=None)
-  parser.add_option('-c', '--chrome_url',
-                    default=constants.CHROMIUM_GOB_URL)
+  parser.add_option('-c', '--chrome_url', default=gclient.GetBaseURLs()[0])
   parser.add_option('-f', '--force_version', default=None,
-                    help='Chrome version or git revision hash to use')
+                    help='Chrome version or SVN revision number to use')
   parser.add_option('-s', '--srcroot', default=os.path.join(os.environ['HOME'],
                                                             'trunk', 'src'),
                     help='Path to the src directory')
@@ -476,11 +490,11 @@ def main(_argv):
     else:
       commit_to_use = options.force_version
       if '@' in commit_to_use:
-        commit_to_use = commit_to_use.rpartition('@')[2]
+        commit_to_use = ParseMaxRevision(commit_to_use)
       version_to_uprev = _GetSpecificVersionUrl(options.chrome_url,
                                                 commit_to_use)
   elif chrome_rev == constants.CHROME_REV_TOT:
-    commit_to_use = gob_util.GetTipOfTrunkRevision(options.chrome_url)
+    commit_to_use = gclient.GetTipOfTrunkSvnRevision(options.chrome_url)
     version_to_uprev = _GetSpecificVersionUrl(options.chrome_url,
                                               commit_to_use)
   elif chrome_rev == constants.CHROME_REV_LATEST:

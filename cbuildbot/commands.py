@@ -4,7 +4,6 @@
 
 """Module containing the various individual commands a builder can run."""
 
-import base64
 import collections
 import fnmatch
 import glob
@@ -20,8 +19,8 @@ from chromite.cbuildbot import failures_lib
 from chromite.cbuildbot import constants
 from chromite.cros.tests import cros_vm_test
 from chromite.lib import cros_build_lib
+from chromite.lib import gclient
 from chromite.lib import git
-from chromite.lib import gob_util
 from chromite.lib import gs
 from chromite.lib import locking
 from chromite.lib import osutils
@@ -1832,13 +1831,15 @@ def GeneratePayloads(build_root, target_image_path, archive_dir):
                 os.path.join(archive_dir, STATEFUL_FILE))
 
 
-def GetChromeLKGM(revision):
-  """Returns the ChromeOS LKGM from Chrome given the git revision."""
-  revision = revision or 'refs/heads/master'
-  lkgm_url_path = '%s/+/%s/%s?format=text' % (
-      constants.CHROMIUM_SRC_PROJECT, revision, constants.PATH_TO_CHROME_LKGM)
-  contents_b64 = gob_util.FetchUrl(constants.EXTERNAL_GOB_HOST, lkgm_url_path)
-  return base64.b64decode(contents_b64).strip()
+def GetChromeLKGM(svn_revision):
+  """Returns the ChromeOS LKGM from Chrome given the SVN revision."""
+  svn_url = '/'.join([gclient.GetBaseURLs()[0], constants.SVN_CHROME_LKGM])
+  svn_revision_args = []
+  if svn_revision:
+    svn_revision_args = ['-r', str(svn_revision)]
+
+  svn_cmd = ['svn', 'cat', svn_url] + svn_revision_args
+  return cros_build_lib.RunCommand(svn_cmd, capture_output=True).output.strip()
 
 
 def SyncChrome(build_root, chrome_root, useflags, tag=None, revision=None):

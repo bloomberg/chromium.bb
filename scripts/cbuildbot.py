@@ -52,9 +52,9 @@ from chromite.lib import cgroups
 from chromite.lib import cleanup
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
+from chromite.lib import gclient
 from chromite.lib import gerrit
 from chromite.lib import git
-from chromite.lib import gob_util
 from chromite.lib import osutils
 from chromite.lib import patch as cros_patch
 from chromite.lib import parallel
@@ -917,8 +917,9 @@ def _RunBuildStagesWrapper(options, build_config):
   if options.chrome_rev:
     chrome_rev = options.chrome_rev
   if chrome_rev == constants.CHROME_REV_TOT:
-    options.chrome_version = gob_util.GetTipOfTrunkRevision(
-        constants.CHROMIUM_GOB_URL)
+    # Build the TOT Chrome revision.
+    svn_url = gclient.GetBaseURLs()[0]
+    options.chrome_version = gclient.GetTipOfTrunkSvnRevision(svn_url)
     options.chrome_rev = constants.CHROME_REV_SPEC
 
   # If it's likely we'll need to build Chrome, fetch the source.
@@ -1240,7 +1241,7 @@ def _CreateParser():
                           action='callback', dest='chrome_version',
                           callback=_CheckChromeVersionOption,
                           help=('Used with SPEC logic to force a particular '
-                                'git revision of chrome rather than the '
+                                'SVN revision of chrome rather than the '
                                 'latest.'))
   group.add_remote_option('--clobber', action='store_true', dest='clobber',
                           default=False,
