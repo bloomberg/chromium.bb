@@ -30,6 +30,7 @@
 
 #include "core/fetch/DocumentResource.h"
 #include "core/fetch/DocumentResourceReference.h"
+#include "core/frame/Settings.h"
 #include "core/page/Page.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderView.h"
@@ -44,6 +45,7 @@
 #include "platform/graphics/filters/FEComponentTransfer.h"
 #include "platform/graphics/filters/FEDropShadow.h"
 #include "platform/graphics/filters/FEGaussianBlur.h"
+#include "platform/graphics/filters/SkiaImageFilterBuilder.h"
 #include "wtf/MathExtras.h"
 #include <algorithm>
 
@@ -330,6 +332,7 @@ bool FilterEffectRendererHelper::prepareFilterEffect(RenderLayer* renderLayer, c
         return false;
     }
 
+    m_filterBoxRect = filterBoxRect;
     filter->setFilterRegion(filter->mapAbsoluteRectToLocalRect(filterSourceRect));
     filter->lastEffect()->determineFilterPrimitiveSubregion(MapRectForward);
 
@@ -343,21 +346,37 @@ bool FilterEffectRendererHelper::prepareFilterEffect(RenderLayer* renderLayer, c
     return true;
 }
 
-GraphicsContext* FilterEffectRendererHelper::beginFilterEffect(GraphicsContext* oldContext)
+GraphicsContext* FilterEffectRendererHelper::beginFilterEffect(GraphicsContext* context)
 {
     ASSERT(m_renderLayer);
 
     FilterEffectRenderer* filter = m_renderLayer->filterRenderer();
+    if (m_renderLayer->renderer()->document().settings()->deferredFiltersEnabled()) {
+        SkiaImageFilterBuilder builder(context);
+        RefPtr<ImageFilter> imageFilter = builder.build(filter->lastEffect().get(), ColorSpaceDeviceRGB);
+        if (!imageFilter) {
+            m_haveFilterEffect = false;
+            return context;
+        }
+        m_savedGraphicsContext = context;
+        context->save();
+        FloatRect boundaries = mapImageFilterRect(imageFilter.get(), m_filterBoxRect);
+        context->translate(m_filterBoxRect.x(), m_filterBoxRect.y());
+        boundaries.move(-m_filterBoxRect.x(), -m_filterBoxRect.y());
+        context->beginLayer(1, CompositeSourceOver, &boundaries, ColorFilterNone, imageFilter.get());
+        context->translate(-m_filterBoxRect.x(), -m_filterBoxRect.y());
+        return context;
+    }
     filter->allocateBackingStoreIfNeeded();
     // Paint into the context that represents the SourceGraphic of the filter.
     GraphicsContext* sourceGraphicsContext = filter->inputContext();
     if (!sourceGraphicsContext || !FilterEffect::isFilterSizeValid(filter->absoluteFilterRegion())) {
         // Disable the filters and continue.
         m_haveFilterEffect = false;
-        return oldContext;
+        return context;
     }
 
-    m_savedGraphicsContext = oldContext;
+    m_savedGraphicsContext = context;
 
     // Translate the context so that the contents of the layer is captuterd in the offscreen memory buffer.
     sourceGraphicsContext->save();
@@ -375,6 +394,14 @@ GraphicsContext* FilterEffectRendererHelper::applyFilterEffect()
 {
     ASSERT(m_haveFilterEffect && m_renderLayer->filterRenderer());
     FilterEffectRenderer* filter = m_renderLayer->filterRenderer();
+
+    if (m_renderLayer->renderer()->document().settings()->deferredFiltersEnabled()) {
+        GraphicsContext* context = m_savedGraphicsContext;
+        context->endLayer();
+        context->restore();
+        return context;
+    }
+
     filter->inputContext()->restore();
 
     filter->apply();

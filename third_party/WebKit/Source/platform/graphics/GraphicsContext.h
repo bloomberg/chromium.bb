@@ -34,6 +34,7 @@
 #include "platform/graphics/DashArray.h"
 #include "platform/graphics/DrawLooperBuilder.h"
 #include "platform/graphics/ImageBufferSurface.h"
+#include "platform/graphics/ImageFilter.h"
 #include "platform/graphics/ImageOrientation.h"
 #include "platform/graphics/GraphicsContextAnnotation.h"
 #include "platform/graphics/GraphicsContextState.h"
@@ -54,8 +55,6 @@ namespace blink {
 class DisplayList;
 class ImageBuffer;
 class KURL;
-
-typedef SkImageFilter ImageFilter;
 
 class PLATFORM_EXPORT GraphicsContext {
     WTF_MAKE_NONCOPYABLE(GraphicsContext); WTF_MAKE_FAST_ALLOCATED;

@@ -615,6 +615,8 @@
       'graphics/ImageBufferSurface.h',
       'graphics/ImageDecodingStore.cpp',
       'graphics/ImageDecodingStore.h',
+      'graphics/ImageFilter.cpp',
+      'graphics/ImageFilter.h',
       'graphics/ImageFrameGenerator.cpp',
       'graphics/ImageFrameGenerator.h',
       'graphics/ImageObserver.cpp',

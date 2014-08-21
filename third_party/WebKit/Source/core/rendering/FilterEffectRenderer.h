@@ -67,6 +67,7 @@ private:
     RenderLayer* m_renderLayer;
 
     LayoutRect m_paintInvalidationRect;
+    FloatRect m_filterBoxRect;
     bool m_haveFilterEffect;
 };
 
