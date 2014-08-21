@@ -30,6 +30,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
 #include "net/url_request/redirect_info.h"
+#include "net/url_request/url_request_data_job.h"
 #include "third_party/WebKit/public/platform/WebHTTPHeaderVisitor.h"
 #include "third_party/WebKit/public/platform/WebHTTPLoadInfo.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
@@ -108,35 +109,6 @@ class HeaderFlattener : public WebHTTPHeaderVisitor {
   bool has_accept_header_;
 };
 
-// Extracts the information from a data: url.
-bool GetInfoFromDataURL(const GURL& url,
-                        ResourceResponseInfo* info,
-                        std::string* data,
-                        int* error_code) {
-  std::string mime_type;
-  std::string charset;
-  if (net::DataURL::Parse(url, &mime_type, &charset, data)) {
-    *error_code = net::OK;
-    // Assure same time for all time fields of data: URLs.
-    Time now = Time::Now();
-    info->load_timing.request_start = TimeTicks::Now();
-    info->load_timing.request_start_time = now;
-    info->request_time = now;
-    info->response_time = now;
-    info->headers = NULL;
-    info->mime_type.swap(mime_type);
-    info->charset.swap(charset);
-    info->security_info.clear();
-    info->content_length = data->length();
-    info->encoded_data_length = 0;
-
-    return true;
-  }
-
-  *error_code = net::ERR_INVALID_URL;
-  return false;
-}
-
 typedef ResourceDevToolsInfo::HeadersVector HeadersVector;
 
 // Converts timing data from |load_timing| to the format used by WebKit.
@@ -195,6 +167,37 @@ net::RequestPriority ConvertWebKitPriorityToNetPriority(
       NOTREACHED();
       return net::LOW;
   }
+}
+
+// Extracts info from a data scheme URL into |info| and |data|. Returns net::OK
+// if successful. Returns a net error code otherwise. Exported only for testing.
+int GetInfoFromDataURL(const GURL& url,
+                       ResourceResponseInfo* info,
+                       std::string* data) {
+  // Assure same time for all time fields of data: URLs.
+  Time now = Time::Now();
+  info->load_timing.request_start = TimeTicks::Now();
+  info->load_timing.request_start_time = now;
+  info->request_time = now;
+  info->response_time = now;
+
+  std::string mime_type;
+  std::string charset;
+  scoped_refptr<net::HttpResponseHeaders> headers(
+      new net::HttpResponseHeaders(std::string()));
+  int result = net::URLRequestDataJob::BuildResponse(
+      url, &mime_type, &charset, data, headers.get());
+  if (result != net::OK)
+    return result;
+
+  info->headers = headers;
+  info->mime_type.swap(mime_type);
+  info->charset.swap(charset);
+  info->security_info.clear();
+  info->content_length = data->length();
+  info->encoded_data_length = 0;
+
+  return net::OK;
 }
 
 }  // namespace
@@ -316,10 +319,9 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
     if (sync_load_response) {
       // This is a sync load. Do the work now.
       sync_load_response->url = url;
-      std::string data;
-      GetInfoFromDataURL(sync_load_response->url, sync_load_response,
-                         &sync_load_response->data,
-                         &sync_load_response->error_code);
+      sync_load_response->error_code =
+          GetInfoFromDataURL(sync_load_response->url, sync_load_response,
+                             &sync_load_response->data);
     } else {
       base::MessageLoop::current()->PostTask(
           FROM_HERE, base::Bind(&Context::HandleDataURL, this));
@@ -688,10 +690,11 @@ bool WebURLLoaderImpl::Context::CanHandleDataURL(const GURL& url) const {
 
 void WebURLLoaderImpl::Context::HandleDataURL() {
   ResourceResponseInfo info;
-  int error_code;
   std::string data;
 
-  if (GetInfoFromDataURL(request_.url(), &info, &data, &error_code)) {
+  int error_code = GetInfoFromDataURL(request_.url(), &info, &data);
+
+  if (error_code == net::OK) {
     OnReceivedResponse(info);
     if (!data.empty())
       OnReceivedData(data.data(), data.size(), 0);

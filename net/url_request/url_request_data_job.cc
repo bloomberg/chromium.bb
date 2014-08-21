@@ -8,8 +8,40 @@
 
 #include "net/base/data_url.h"
 #include "net/base/net_errors.h"
+#include "net/http/http_response_headers.h"
+#include "url/gurl.h"
 
 namespace net {
+
+int URLRequestDataJob::BuildResponse(const GURL& url,
+                                     std::string* mime_type,
+                                     std::string* charset,
+                                     std::string* data,
+                                     HttpResponseHeaders* headers) {
+  if (!net::DataURL::Parse(url, mime_type, charset, data))
+    return net::ERR_INVALID_URL;
+
+  // |mime_type| set by net::DataURL::Parse() is guaranteed to be in
+  //     token "/" token
+  // form. |charset| is also guaranteed to be a token.
+
+  DCHECK(!mime_type->empty());
+  DCHECK(!charset->empty());
+
+  if (headers) {
+    headers->ReplaceStatusLine("HTTP/1.1 200 OK");
+    // "charset" in the Content-Type header is specified explicitly to follow
+    // the "token" ABNF in the HTTP spec. When DataURL::Parse() call is
+    // successful, it's guaranteed that the string in |charset| follows the
+    // "token" ABNF.
+    std::string content_type_header =
+        "Content-Type: " + *mime_type + ";charset=" + *charset;
+    headers->AddHeader(content_type_header);
+    headers->AddHeader("Access-Control-Allow-Origin: *");
+  }
+
+  return net::OK;
+}
 
 URLRequestDataJob::URLRequestDataJob(
     URLRequest* request, NetworkDelegate* network_delegate)
@@ -25,7 +57,10 @@ int URLRequestDataJob::GetData(std::string* mime_type,
   const GURL& url = request_->url();
   if (!url.is_valid())
     return ERR_INVALID_URL;
-  return DataURL::Parse(url, mime_type, charset, data)? OK: ERR_INVALID_URL;
+
+  // TODO(tyoshino): Get the headers and export via
+  // URLRequestJob::GetResponseInfo().
+  return BuildResponse(url, mime_type, charset, data, NULL);
 }
 
 URLRequestDataJob::~URLRequestDataJob() {
