@@ -41,6 +41,7 @@ const char kIPConfigs[] = "IPConfigs";
 const char kMacAddress[] = "MacAddress";
 const char kName[] = "Name";
 const char kNameServers[] = "NameServers";
+const char kPriority[] = "Priority";
 const char kProxySettings[] = "ProxySettings";
 const char kSearchDomains[] = "SearchDomains";
 const char kConnectionState[] = "ConnectionState";

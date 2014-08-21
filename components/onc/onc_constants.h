@@ -65,6 +65,7 @@ ONC_EXPORT extern const char kIPConfigs[];
 ONC_EXPORT extern const char kMacAddress[];
 ONC_EXPORT extern const char kName[];
 ONC_EXPORT extern const char kNameServers[];
+ONC_EXPORT extern const char kPriority[];
 ONC_EXPORT extern const char kProxySettings[];
 ONC_EXPORT extern const char kSearchDomains[];
 ONC_EXPORT extern const char kConnectionState[];

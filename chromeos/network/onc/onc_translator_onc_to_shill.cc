@@ -55,6 +55,7 @@ class LocalTranslator {
  private:
   void TranslateEthernet();
   void TranslateOpenVPN();
+  void TranslateIPsec();
   void TranslateVPN();
   void TranslateWiFi();
   void TranslateEAP();
@@ -94,6 +95,8 @@ void LocalTranslator::TranslateFields() {
     TranslateVPN();
   else if (onc_signature_ == &kOpenVPNSignature)
     TranslateOpenVPN();
+  else if (onc_signature_ == &kIPsecSignature)
+    TranslateIPsec();
   else if (onc_signature_ == &kWiFiSignature)
     TranslateWiFi();
   else if (onc_signature_ == &kEAPSignature)
@@ -117,6 +120,14 @@ void LocalTranslator::TranslateEthernet() {
 }
 
 void LocalTranslator::TranslateOpenVPN() {
+  // SaveCredentials needs special handling when translating from Shill -> ONC
+  // so handle it explicitly here.
+  bool save_credentials;
+  if (onc_object_->GetBooleanWithoutPathExpansion(
+          ::onc::vpn::kSaveCredentials, &save_credentials)) {
+    shill_dictionary_->SetBooleanWithoutPathExpansion(
+        shill::kSaveCredentialsProperty, save_credentials);
+  }
   // Shill supports only one RemoteCertKU but ONC a list.
   // Copy only the first entry if existing.
   const base::ListValue* certKUs = NULL;
@@ -131,8 +142,7 @@ void LocalTranslator::TranslateOpenVPN() {
   for (base::DictionaryValue::Iterator it(*onc_object_); !it.IsAtEnd();
        it.Advance()) {
     scoped_ptr<base::Value> translated;
-    if (it.key() == ::onc::vpn::kSaveCredentials ||
-        it.key() == ::onc::openvpn::kRemoteCertKU ||
+    if (it.key() == ::onc::openvpn::kRemoteCertKU ||
         it.key() == ::onc::openvpn::kServerCAPEMs) {
       translated.reset(it.value().DeepCopy());
     } else {
@@ -143,7 +153,25 @@ void LocalTranslator::TranslateOpenVPN() {
   }
 }
 
+void LocalTranslator::TranslateIPsec() {
+  CopyFieldsAccordingToSignature();
+
+  // SaveCredentials needs special handling when translating from Shill -> ONC
+  // so handle it explicitly here.
+  bool save_credentials;
+  if (onc_object_->GetBooleanWithoutPathExpansion(
+          ::onc::vpn::kSaveCredentials, &save_credentials)) {
+    shill_dictionary_->SetBooleanWithoutPathExpansion(
+        shill::kSaveCredentialsProperty, save_credentials);
+  }
+}
+
 void LocalTranslator::TranslateVPN() {
+  std::string host;
+  if (onc_object_->GetStringWithoutPathExpansion(::onc::vpn::kHost, &host)) {
+    shill_dictionary_->SetStringWithoutPathExpansion(
+        shill::kProviderHostProperty, host);
+  }
   std::string type;
   onc_object_->GetStringWithoutPathExpansion(::onc::vpn::kType, &type);
   TranslateWithTableAndSet(type, kVPNTypeTable, shill::kProviderTypeProperty);

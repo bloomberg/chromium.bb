@@ -43,6 +43,7 @@
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_util.h"
 #include "chromeos/network/onc/onc_signature.h"
+#include "chromeos/network/onc/onc_translation_tables.h"
 #include "chromeos/network/onc/onc_translator.h"
 #include "chromeos/network/onc/onc_utils.h"
 #include "components/onc/onc_constants.h"
@@ -61,6 +62,10 @@ namespace chromeos {
 namespace options {
 
 namespace {
+
+// The key in a Managed Value dictionary for translated values.
+// TODO(stevenjb): Consider making this part of the ONC spec.
+const char kTranslatedKey[] = "Translated";
 
 // Keys for the network description dictionary passed to the web ui. Make sure
 // to keep the strings in sync with what the JavaScript side uses.
@@ -149,8 +154,6 @@ const char kTagNetworkId[] = "networkId";
 const char kTagOptions[] = "options";
 const char kTagPassword[] = "password";
 const char kTagPolicy[] = "policy";
-const char kTagPreferred[] = "preferred";
-const char kTagProviderType[] = "providerType";
 const char kTagProviderApnList[] = "providerApnList";
 const char kTagRecommended[] = "recommended";
 const char kTagRecommendedValue[] = "recommendedValue";
@@ -158,7 +161,6 @@ const char kTagRemembered[] = "remembered";
 const char kTagRememberedList[] = "rememberedList";
 const char kTagRestrictedPool[] = "restrictedPool";
 const char kTagRoamingState[] = "roamingState";
-const char kTagServerHostname[] = "serverHostname";
 const char kTagCarriers[] = "carriers";
 const char kTagCurrentCarrierIndex[] = "currentCarrierIndex";
 const char kTagShared[] = "shared";
@@ -334,20 +336,20 @@ const char* GetOncSettingString(::onc::ONCSource onc_source) {
 
 // Creates a GetManagedProperties style dictionary and adds it to |settings|.
 // |default_value| represents either the recommended value if |recommended|
-// is true, or the enforced value if |recommended| is false.
+// is true, or the enforced value if |recommended| is false. |settings_dict_key|
+// is expected to be an ONC key with no '.' in it.
 // Note(stevenjb): This is bridge code until we use GetManagedProperties to
 // retrieve Shill properties.
-void SetManagedValueDictionary(const char* key,
-                               const base::Value* value,
-                               ::onc::ONCSource onc_source,
-                               bool recommended,
-                               const base::Value* default_value,
-                               base::DictionaryValue* settings) {
+void SetManagedValueDictionaryEx(const char* settings_dict_key,
+                                 const base::Value& value,
+                                 ::onc::ONCSource onc_source,
+                                 bool recommended,
+                                 const base::Value* default_value,
+                                 base::DictionaryValue* settings_dict) {
   base::DictionaryValue* dict = new base::DictionaryValue();
-  settings->Set(key, dict);
+  settings_dict->SetWithoutPathExpansion(settings_dict_key, dict);
 
-  DCHECK(value);
-  dict->Set(::onc::kAugmentationActiveSetting, value->DeepCopy());
+  dict->Set(::onc::kAugmentationActiveSetting, value.DeepCopy());
 
   if (onc_source == ::onc::ONC_SOURCE_NONE)
     return;
@@ -360,14 +362,56 @@ void SetManagedValueDictionary(const char* key,
   if (default_value) {
     std::string policy_source = GetOncPolicyString(onc_source);
     dict->Set(policy_source, default_value->DeepCopy());
-    if (recommended && !value->Equals(default_value)) {
+    if (recommended && !value.Equals(default_value)) {
       std::string setting_source = GetOncSettingString(onc_source);
-      dict->Set(setting_source, value->DeepCopy());
+      dict->Set(setting_source, value.DeepCopy());
       dict->SetString(::onc::kAugmentationEffectiveSetting, setting_source);
     } else {
       dict->SetString(::onc::kAugmentationEffectiveSetting, policy_source);
     }
   }
+}
+
+// Wrapper for SetManagedValueDictionaryEx that does the policy lookup.
+// Note: We have to pass |onc_key| separately from |settings_dict_key| since
+// we might be populating a sub-dictionary in which case |onc_key| will be the
+// complete path (e.g. 'VPN.Host') and |settings_dict_key| is the dictionary key
+// (e.g. 'Host').
+void SetManagedValueDictionary(const std::string& guid,
+                               const char* settings_dict_key,
+                               const base::Value& value,
+                               const std::string& onc_key,
+                               base::DictionaryValue* settings_dict) {
+  ::onc::ONCSource onc_source = ::onc::ONC_SOURCE_NONE;
+  const base::DictionaryValue* onc =
+      onc::FindPolicyForActiveUser(guid, &onc_source);
+  DCHECK_EQ(onc == NULL, onc_source == ::onc::ONC_SOURCE_NONE);
+  const base::Value* default_value = NULL;
+  bool recommended = false;
+  if (onc) {
+    onc->Get(onc_key, &default_value);
+    recommended = onc::IsRecommendedValue(onc, onc_key);
+  }
+  SetManagedValueDictionaryEx(settings_dict_key,
+                              value,
+                              onc_source,
+                              recommended,
+                              default_value,
+                              settings_dict);
+}
+
+// Creates a GetManagedProperties style dictionary with an Active value and
+// a Translated value, and adds it to |settings|.
+// Note(stevenjb): This is bridge code until we use GetManagedProperties to
+// retrieve Shill properties and include Translated values.
+void SetTranslatedDictionary(const char* settings_dict_key,
+                             const std::string& value,
+                             const std::string& translated_value,
+                             base::DictionaryValue* settings_dict) {
+  base::DictionaryValue* dict = new base::DictionaryValue();
+  settings_dict->Set(settings_dict_key, dict);
+  dict->SetString(::onc::kAugmentationActiveSetting, value);
+  dict->SetString(kTranslatedKey, translated_value);
 }
 
 std::string CopyStringFromDictionary(const base::DictionaryValue& source,
@@ -387,46 +431,55 @@ void PopulateVPNDetails(const NetworkState* vpn,
                         base::DictionaryValue* dictionary) {
   // Name and Remembered are set in PopulateConnectionDetails().
   // Provider properties are stored in the "Provider" dictionary.
-  const base::DictionaryValue* provider_properties = NULL;
+  const base::DictionaryValue* shill_provider_properties = NULL;
   if (!shill_properties.GetDictionaryWithoutPathExpansion(
-          shill::kProviderProperty, &provider_properties)) {
+          shill::kProviderProperty, &shill_provider_properties)) {
     LOG(ERROR) << "No provider properties for VPN: " << vpn->path();
     return;
   }
-  std::string provider_type;
-  provider_properties->GetStringWithoutPathExpansion(
-      shill::kTypeProperty, &provider_type);
-  dictionary->SetString(kTagProviderType,
-                        internet_options_strings::ProviderTypeString(
-                            provider_type,
-                            *provider_properties));
+  base::DictionaryValue* vpn_dictionary = new base::DictionaryValue;
+  dictionary->Set(::onc::network_config::kVPN, vpn_dictionary);
 
+  std::string shill_provider_type;
+  if (!shill_provider_properties->GetStringWithoutPathExpansion(
+          shill::kTypeProperty, &shill_provider_type)) {
+    LOG(ERROR) << "Shill VPN has no Provider.Type: " << vpn->path();
+    return;
+  }
+  std::string onc_provider_type;
+  onc::TranslateStringToONC(
+      onc::kVPNTypeTable, shill_provider_type, &onc_provider_type);
+  SetTranslatedDictionary(
+      ::onc::vpn::kType,
+      onc_provider_type,
+      internet_options_strings::ProviderTypeString(shill_provider_type,
+                                                   *shill_provider_properties),
+      vpn_dictionary);
+
+  std::string provider_type_key;
   std::string username;
-  if (provider_type == shill::kProviderOpenVpn) {
-    provider_properties->GetStringWithoutPathExpansion(
+  if (shill_provider_type == shill::kProviderOpenVpn) {
+    provider_type_key = ::onc::vpn::kOpenVPN;
+    shill_provider_properties->GetStringWithoutPathExpansion(
         shill::kOpenVPNUserProperty, &username);
   } else {
-    provider_properties->GetStringWithoutPathExpansion(
+    provider_type_key = ::onc::vpn::kL2TP;
+    shill_provider_properties->GetStringWithoutPathExpansion(
         shill::kL2tpIpsecUserProperty, &username);
   }
-  dictionary->SetString(kTagUsername, username);
+  base::DictionaryValue* provider_type_dictionary = new base::DictionaryValue;
+  vpn_dictionary->Set(provider_type_key, provider_type_dictionary);
+  provider_type_dictionary->SetString(::onc::vpn::kUsername, username);
 
-  ::onc::ONCSource onc_source = ::onc::ONC_SOURCE_NONE;
-  const base::DictionaryValue* onc =
-      onc::FindPolicyForActiveUser(vpn->guid(), &onc_source);
-
-  NetworkPropertyUIData hostname_ui_data;
-  hostname_ui_data.ParseOncProperty(
-      onc_source,
-      onc,
-      ::onc::network_config::VpnProperty(::onc::vpn::kHost));
   std::string provider_host;
-  provider_properties->GetStringWithoutPathExpansion(
+  shill_provider_properties->GetStringWithoutPathExpansion(
       shill::kHostProperty, &provider_host);
-  SetValueDictionary(kTagServerHostname,
-                     new base::StringValue(provider_host),
-                     hostname_ui_data,
-                     dictionary);
+  SetManagedValueDictionary(
+      vpn->guid(),
+      ::onc::vpn::kHost,
+      base::StringValue(provider_host),
+      ::onc::network_config::VpnProperty(::onc::vpn::kHost),
+      vpn_dictionary);
 }
 
 // Given a list of supported carrier's by the device, return the index of
@@ -1332,11 +1385,11 @@ void InternetOptionsHandler::PopulateDictionaryDetailsCallback(
   int priority = 0;
   shill_properties.GetIntegerWithoutPathExpansion(
       shill::kPriorityProperty, &priority);
-  bool preferred = priority > 0;
-  SetValueDictionary(kTagPreferred,
-                     new base::FundamentalValue(preferred),
-                     property_ui_data,
-                     dictionary.get());
+  SetManagedValueDictionary(network->guid(),
+                            ::onc::network_config::kPriority,
+                            base::FundamentalValue(priority),
+                            ::onc::network_config::kPriority,
+                            dictionary.get());
 
   std::string onc_path_to_auto_connect;
   if (network->Matches(NetworkTypePattern::WiFi())) {
@@ -1371,8 +1424,7 @@ void InternetOptionsHandler::PopulateDictionaryDetailsCallback(
     shill_properties.GetBooleanWithoutPathExpansion(
         shill::kAutoConnectProperty, &auto_connect);
 
-    scoped_ptr<base::Value> auto_connect_value(
-        new base::FundamentalValue(auto_connect));
+    base::FundamentalValue auto_connect_value(auto_connect);
     ::onc::ONCSource auto_connect_onc_source = onc_source;
 
     DCHECK_EQ(onc == NULL, onc_source == ::onc::ONC_SOURCE_NONE);
@@ -1397,15 +1449,15 @@ void InternetOptionsHandler::PopulateDictionaryDetailsCallback(
                                     : ::onc::ONC_SOURCE_DEVICE_POLICY;
       if (auto_connect) {
         LOG(WARNING) << "Policy prevents autoconnect, but value is True.";
-        auto_connect_value.reset(new base::FundamentalValue(false));
+        auto_connect_value = base::FundamentalValue(false);
       }
     }
-    SetManagedValueDictionary(shill::kAutoConnectProperty,
-                              auto_connect_value.get(),
-                              auto_connect_onc_source,
-                              auto_connect_recommended,
-                              auto_connect_default_value,
-                              dictionary.get());
+    SetManagedValueDictionaryEx(shill::kAutoConnectProperty,
+                                auto_connect_value,
+                                auto_connect_onc_source,
+                                auto_connect_recommended,
+                                auto_connect_default_value,
+                                dictionary.get());
   }
 
   // Show details dialog

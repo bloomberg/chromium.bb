@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "chromeos/chromeos_export.h"
 #include "chromeos/network/onc/onc_signature.h"
 
 namespace chromeos {
@@ -25,12 +26,12 @@ struct StringTranslationEntry {
 
 // These tables contain the mapping from ONC strings to Shill strings.
 // These are NULL-terminated arrays.
-extern const StringTranslationEntry kNetworkTypeTable[];
-extern const StringTranslationEntry kVPNTypeTable[];
-extern const StringTranslationEntry kWiFiSecurityTable[];
-extern const StringTranslationEntry kEAPOuterTable[];
-extern const StringTranslationEntry kEAP_PEAP_InnerTable[];
-extern const StringTranslationEntry kEAP_TTLS_InnerTable[];
+CHROMEOS_EXPORT extern const StringTranslationEntry kNetworkTypeTable[];
+CHROMEOS_EXPORT extern const StringTranslationEntry kVPNTypeTable[];
+CHROMEOS_EXPORT extern const StringTranslationEntry kWiFiSecurityTable[];
+CHROMEOS_EXPORT extern const StringTranslationEntry kEAPOuterTable[];
+CHROMEOS_EXPORT extern const StringTranslationEntry kEAP_PEAP_InnerTable[];
+CHROMEOS_EXPORT extern const StringTranslationEntry kEAP_TTLS_InnerTable[];
 
 // A separate translation table for cellular properties that are stored in a
 // Shill Device instead of a Service. The |shill_property_name| entries
@@ -48,14 +49,15 @@ bool GetShillPropertyName(const std::string& onc_field_name,
                           std::string* shill_property_name);
 
 // Translate individual strings to Shill using the above tables.
-bool TranslateStringToShill(const StringTranslationEntry table[],
-                            const std::string& onc_value,
-                            std::string* shill_value);
+CHROMEOS_EXPORT bool TranslateStringToShill(
+    const StringTranslationEntry table[],
+    const std::string& onc_value,
+    std::string* shill_value);
 
 // Translate individual strings to ONC using the above tables.
-bool TranslateStringToONC(const StringTranslationEntry table[],
-                          const std::string& shill_value,
-                          std::string* onc_value);
+CHROMEOS_EXPORT bool TranslateStringToONC(const StringTranslationEntry table[],
+                                          const std::string& shill_value,
+                                          std::string* onc_value);
 
 }  // namespace onc
 }  // namespace chromeos

@@ -1,9 +1,11 @@
 {
    "AutoConnect": true,
+   "Connectable": true,
    "GUID": "{64c4f86b-cf6a-4e4a-8eff-456def}",
    "Mode": "managed",
    "Name": "OpenWrt",
    "Passphrase": "some passphrase",
+   "Priority": 1,
    "Security": "psk",
    "State": "idle",
    "Strength": 10,
