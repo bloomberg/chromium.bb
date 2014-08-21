@@ -141,12 +141,15 @@ TEST_F(L10nUtilTest, GetAppLocale) {
     base::i18n::SetICUDefaultLocale("en-US");
     env->SetVar("LANGUAGE", "xx:fr_CA");
     EXPECT_EQ("fr", l10n_util::GetApplicationLocale(std::string()));
+    EXPECT_STREQ("fr", icu::Locale::getDefault().getLanguage());
 
     env->SetVar("LANGUAGE", "xx:yy:en_gb.utf-8@quot");
     EXPECT_EQ("en-GB", l10n_util::GetApplicationLocale(std::string()));
+    EXPECT_STREQ("en", icu::Locale::getDefault().getLanguage());
 
     env->SetVar("LANGUAGE", "xx:zh-hk");
     EXPECT_EQ("zh-TW", l10n_util::GetApplicationLocale(std::string()));
+    EXPECT_STREQ("zh", icu::Locale::getDefault().getLanguage());
 
     // We emulate gettext's behavior here, which ignores LANG/LC_MESSAGES/LC_ALL
     // when LANGUAGE is specified. If no language specified in LANGUAGE is
@@ -155,9 +158,11 @@ TEST_F(L10nUtilTest, GetAppLocale) {
     base::i18n::SetICUDefaultLocale("fr-FR");
     env->SetVar("LANGUAGE", "xx:yy");
     EXPECT_EQ("en-US", l10n_util::GetApplicationLocale(std::string()));
+    EXPECT_STREQ("en", icu::Locale::getDefault().getLanguage());
 
     env->SetVar("LANGUAGE", "/fr:zh_CN");
     EXPECT_EQ("zh-CN", l10n_util::GetApplicationLocale(std::string()));
+    EXPECT_STREQ("zh", icu::Locale::getDefault().getLanguage());
 
     // Test prioritization of the different environment variables.
     env->SetVar("LANGUAGE", "fr");
@@ -165,35 +170,46 @@ TEST_F(L10nUtilTest, GetAppLocale) {
     env->SetVar("LC_MESSAGES", "he");
     env->SetVar("LANG", "nb");
     EXPECT_EQ("fr", l10n_util::GetApplicationLocale(std::string()));
+    EXPECT_STREQ("fr", icu::Locale::getDefault().getLanguage());
     env->UnSetVar("LANGUAGE");
     EXPECT_EQ("es", l10n_util::GetApplicationLocale(std::string()));
+    EXPECT_STREQ("es", icu::Locale::getDefault().getLanguage());
     env->UnSetVar("LC_ALL");
     EXPECT_EQ("he", l10n_util::GetApplicationLocale(std::string()));
+    EXPECT_STREQ("he", icu::Locale::getDefault().getLanguage());
     env->UnSetVar("LC_MESSAGES");
     EXPECT_EQ("nb", l10n_util::GetApplicationLocale(std::string()));
+    EXPECT_STREQ("nb", icu::Locale::getDefault().getLanguage());
     env->UnSetVar("LANG");
 
     SetDefaultLocaleForTest("ca", env.get());
     EXPECT_EQ("ca", l10n_util::GetApplicationLocale(std::string()));
+    EXPECT_STREQ("ca", icu::Locale::getDefault().getLanguage());
 
     SetDefaultLocaleForTest("ca-ES", env.get());
     EXPECT_EQ("ca", l10n_util::GetApplicationLocale(std::string()));
+    EXPECT_STREQ("ca", icu::Locale::getDefault().getLanguage());
 
     SetDefaultLocaleForTest("ca@valencia", env.get());
     EXPECT_EQ("ca@valencia", l10n_util::GetApplicationLocale(std::string()));
+    EXPECT_STREQ("ca", icu::Locale::getDefault().getLanguage());
 
     SetDefaultLocaleForTest("ca_ES@valencia", env.get());
     EXPECT_EQ("ca@valencia", l10n_util::GetApplicationLocale(std::string()));
+    EXPECT_STREQ("ca", icu::Locale::getDefault().getLanguage());
 
     SetDefaultLocaleForTest("ca_ES.UTF8@valencia", env.get());
     EXPECT_EQ("ca@valencia", l10n_util::GetApplicationLocale(std::string()));
+    EXPECT_STREQ("ca", icu::Locale::getDefault().getLanguage());
   }
 
   SetDefaultLocaleForTest("en-US", env.get());
   EXPECT_EQ("en-US", l10n_util::GetApplicationLocale(std::string()));
+  EXPECT_STREQ("en", icu::Locale::getDefault().getLanguage());
 
   SetDefaultLocaleForTest("xx", env.get());
   EXPECT_EQ("en-US", l10n_util::GetApplicationLocale(std::string()));
+  EXPECT_STREQ("en", icu::Locale::getDefault().getLanguage());
 
   if (!kPlatformHasDefaultLocale) {
     // ChromeOS & embedded use only browser prefs in GetApplicationLocale(),
@@ -201,88 +217,148 @@ TEST_F(L10nUtilTest, GetAppLocale) {
     // the default locale from the OS or environment.
     SetDefaultLocaleForTest("en-GB", env.get());
     EXPECT_EQ("en-US", l10n_util::GetApplicationLocale(""));
+    EXPECT_STREQ("en", icu::Locale::getDefault().getLanguage());
 
     SetDefaultLocaleForTest("en-US", env.get());
     EXPECT_EQ("en-GB", l10n_util::GetApplicationLocale("en-GB"));
+    EXPECT_STREQ("en", icu::Locale::getDefault().getLanguage());
 
     SetDefaultLocaleForTest("en-US", env.get());
     EXPECT_EQ("en-GB", l10n_util::GetApplicationLocale("en-AU"));
+    EXPECT_STREQ("en", icu::Locale::getDefault().getLanguage());
 
     SetDefaultLocaleForTest("en-US", env.get());
     EXPECT_EQ("en-GB", l10n_util::GetApplicationLocale("en-NZ"));
+    EXPECT_STREQ("en", icu::Locale::getDefault().getLanguage());
 
     SetDefaultLocaleForTest("en-US", env.get());
     EXPECT_EQ("en-GB", l10n_util::GetApplicationLocale("en-CA"));
+    EXPECT_STREQ("en", icu::Locale::getDefault().getLanguage());
 
     SetDefaultLocaleForTest("en-US", env.get());
     EXPECT_EQ("en-GB", l10n_util::GetApplicationLocale("en-ZA"));
+    EXPECT_STREQ("en", icu::Locale::getDefault().getLanguage());
   } else {
     // Most platforms have an OS-provided locale. This locale is preferred.
     SetDefaultLocaleForTest("en-GB", env.get());
     EXPECT_EQ("en-GB", l10n_util::GetApplicationLocale(std::string()));
+    EXPECT_STREQ("en", icu::Locale::getDefault().getLanguage());
 
     SetDefaultLocaleForTest("fr-CA", env.get());
     EXPECT_EQ("fr", l10n_util::GetApplicationLocale(std::string()));
+    EXPECT_STREQ("fr", icu::Locale::getDefault().getLanguage());
 
     SetDefaultLocaleForTest("es-MX", env.get());
     EXPECT_EQ("es-419", l10n_util::GetApplicationLocale(std::string()));
+    EXPECT_STREQ("es", icu::Locale::getDefault().getLanguage());
 
     SetDefaultLocaleForTest("es-AR", env.get());
     EXPECT_EQ("es-419", l10n_util::GetApplicationLocale(std::string()));
+    EXPECT_STREQ("es", icu::Locale::getDefault().getLanguage());
 
     SetDefaultLocaleForTest("es-ES", env.get());
     EXPECT_EQ("es", l10n_util::GetApplicationLocale(std::string()));
+    EXPECT_STREQ("es", icu::Locale::getDefault().getLanguage());
 
     SetDefaultLocaleForTest("es", env.get());
     EXPECT_EQ("es", l10n_util::GetApplicationLocale(std::string()));
+    EXPECT_STREQ("es", icu::Locale::getDefault().getLanguage());
 
     SetDefaultLocaleForTest("zh-HK", env.get());
     EXPECT_EQ("zh-TW", l10n_util::GetApplicationLocale(std::string()));
+    EXPECT_STREQ("zh", icu::Locale::getDefault().getLanguage());
 
     SetDefaultLocaleForTest("zh-MO", env.get());
     EXPECT_EQ("zh-TW", l10n_util::GetApplicationLocale(std::string()));
+    EXPECT_STREQ("zh", icu::Locale::getDefault().getLanguage());
 
     SetDefaultLocaleForTest("zh-SG", env.get());
     EXPECT_EQ("zh-CN", l10n_util::GetApplicationLocale(std::string()));
+    EXPECT_STREQ("zh", icu::Locale::getDefault().getLanguage());
 
     SetDefaultLocaleForTest("en-CA", env.get());
     EXPECT_EQ("en-GB", l10n_util::GetApplicationLocale(std::string()));
+    EXPECT_STREQ("en", icu::Locale::getDefault().getLanguage());
 
     SetDefaultLocaleForTest("en-AU", env.get());
     EXPECT_EQ("en-GB", l10n_util::GetApplicationLocale(std::string()));
+    EXPECT_STREQ("en", icu::Locale::getDefault().getLanguage());
 
     SetDefaultLocaleForTest("en-NZ", env.get());
     EXPECT_EQ("en-GB", l10n_util::GetApplicationLocale(std::string()));
+    EXPECT_STREQ("en", icu::Locale::getDefault().getLanguage());
 
     SetDefaultLocaleForTest("en-ZA", env.get());
     EXPECT_EQ("en-GB", l10n_util::GetApplicationLocale(std::string()));
+    EXPECT_STREQ("en", icu::Locale::getDefault().getLanguage());
   }
+
+  SetDefaultLocaleForTest("en-US", env.get());
 
   if (kSupportsLocalePreference) {
     // On windows, the user can override the locale in preferences.
     base::i18n::SetICUDefaultLocale("en-US");
     EXPECT_EQ("fr", l10n_util::GetApplicationLocale("fr"));
+    EXPECT_STREQ("fr", icu::Locale::getDefault().getLanguage());
     EXPECT_EQ("fr", l10n_util::GetApplicationLocale("fr-CA"));
+    EXPECT_STREQ("fr", icu::Locale::getDefault().getLanguage());
 
     base::i18n::SetICUDefaultLocale("en-US");
     // Aliases iw, no, tl to he, nb, fil.
     EXPECT_EQ("he", l10n_util::GetApplicationLocale("iw"));
+    EXPECT_STREQ("he", icu::Locale::getDefault().getLanguage());
     EXPECT_EQ("nb", l10n_util::GetApplicationLocale("no"));
+    EXPECT_STREQ("nb", icu::Locale::getDefault().getLanguage());
     EXPECT_EQ("fil", l10n_util::GetApplicationLocale("tl"));
+    EXPECT_STREQ("fil", icu::Locale::getDefault().getLanguage());
     // es-419 and es-XX (where XX is not Spain) should be
     // mapped to es-419 (Latin American Spanish).
     EXPECT_EQ("es-419", l10n_util::GetApplicationLocale("es-419"));
+    EXPECT_STREQ("es", icu::Locale::getDefault().getLanguage());
     EXPECT_EQ("es", l10n_util::GetApplicationLocale("es-ES"));
+    EXPECT_STREQ("es", icu::Locale::getDefault().getLanguage());
     EXPECT_EQ("es-419", l10n_util::GetApplicationLocale("es-AR"));
+    EXPECT_STREQ("es", icu::Locale::getDefault().getLanguage());
 
     base::i18n::SetICUDefaultLocale("es-AR");
     EXPECT_EQ("es", l10n_util::GetApplicationLocale("es"));
+    EXPECT_STREQ("es", icu::Locale::getDefault().getLanguage());
 
     base::i18n::SetICUDefaultLocale("zh-HK");
     EXPECT_EQ("zh-CN", l10n_util::GetApplicationLocale("zh-CN"));
+    EXPECT_STREQ("zh", icu::Locale::getDefault().getLanguage());
 
     base::i18n::SetICUDefaultLocale("he");
     EXPECT_EQ("en-US", l10n_util::GetApplicationLocale("en"));
+    EXPECT_STREQ("en", icu::Locale::getDefault().getLanguage());
+
+    base::i18n::SetICUDefaultLocale("he");
+    EXPECT_EQ("en-US", l10n_util::GetApplicationLocale("en", false));
+    EXPECT_STREQ("he", icu::Locale::getDefault().getLanguage());
+
+    base::i18n::SetICUDefaultLocale("de");
+    EXPECT_EQ("en-US", l10n_util::GetApplicationLocale("xx", false));
+    EXPECT_STREQ("de", icu::Locale::getDefault().getLanguage());
+
+    base::i18n::SetICUDefaultLocale("de");
+    EXPECT_EQ("fr", l10n_util::GetApplicationLocale("fr", false));
+    EXPECT_STREQ("de", icu::Locale::getDefault().getLanguage());
+
+    base::i18n::SetICUDefaultLocale("de");
+    EXPECT_EQ("en-US", l10n_util::GetApplicationLocale("en", false));
+    EXPECT_STREQ("de", icu::Locale::getDefault().getLanguage());
+
+    base::i18n::SetICUDefaultLocale("de");
+    EXPECT_EQ("en-US", l10n_util::GetApplicationLocale("en-US", true));
+    EXPECT_STREQ("en", icu::Locale::getDefault().getLanguage());
+  } else {
+    base::i18n::SetICUDefaultLocale("de");
+    EXPECT_EQ("en-US", l10n_util::GetApplicationLocale(std::string(), false));
+    EXPECT_STREQ("de", icu::Locale::getDefault().getLanguage());
+
+    base::i18n::SetICUDefaultLocale("de");
+    EXPECT_EQ("en-US", l10n_util::GetApplicationLocale(std::string(), true));
+    EXPECT_STREQ("en", icu::Locale::getDefault().getLanguage());
   }
 
 #if defined(OS_WIN)
@@ -290,13 +366,17 @@ TEST_F(L10nUtilTest, GetAppLocale) {
   if (base::win::GetVersion() < base::win::VERSION_VISTA) {
     base::i18n::SetICUDefaultLocale("am");
     EXPECT_EQ("en-US", l10n_util::GetApplicationLocale(""));
+    EXPECT_STREQ("en", icu::Locale::getDefault().getLanguage());
     base::i18n::SetICUDefaultLocale("en-GB");
     EXPECT_EQ("en-GB", l10n_util::GetApplicationLocale("am"));
+    EXPECT_STREQ("en", icu::Locale::getDefault().getLanguage());
   } else {
     base::i18n::SetICUDefaultLocale("am");
     EXPECT_EQ("am", l10n_util::GetApplicationLocale(""));
+    EXPECT_STREQ("am", icu::Locale::getDefault().getLanguage());
     base::i18n::SetICUDefaultLocale("en-GB");
     EXPECT_EQ("am", l10n_util::GetApplicationLocale("am"));
+    EXPECT_STREQ("am", icu::Locale::getDefault().getLanguage());
   }
 #endif  // defined(OS_WIN)
 

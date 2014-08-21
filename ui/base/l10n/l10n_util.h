@@ -40,7 +40,13 @@ UI_BASE_EXPORT bool CheckAndResolveLocale(const std::string& locale,
 // command line (--lang), second we try the value in the prefs file (passed in
 // as |pref_locale|), finally, we fall back on the system locale. We only return
 // a value if there's a corresponding resource DLL for the locale.  Otherwise,
-// we fall back to en-us.
+// we fall back to en-us. |set_icu_locale| determines whether the resulting
+// locale is set as the default ICU locale before returning it.
+UI_BASE_EXPORT std::string GetApplicationLocale(const std::string& pref_locale,
+                                                bool set_icu_locale);
+
+// Convenience version of GetApplicationLocale() that sets the resulting locale
+// as the default ICU locale before returning it.
 UI_BASE_EXPORT std::string GetApplicationLocale(const std::string& pref_locale);
 
 // Returns true if a display name for |locale| is available in the locale

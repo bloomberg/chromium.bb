@@ -401,7 +401,7 @@ bool CheckAndResolveLocale(const std::string& locale,
 #endif
 }
 
-std::string GetApplicationLocale(const std::string& pref_locale) {
+std::string GetApplicationLocaleInternal(const std::string& pref_locale) {
 #if defined(OS_MACOSX)
 
   // Use any override (Cocoa for the browser), otherwise use the preference
@@ -415,12 +415,6 @@ std::string GetApplicationLocale(const std::string& pref_locale) {
   if (app_locale.empty())
     app_locale = "en-US";
 
-  // Windows/Linux call SetICUDefaultLocale after determining the actual locale
-  // with CheckAndResolveLocal to make ICU APIs work in that locale.
-  // Mac doesn't use a locale directory tree of resources (it uses Mac style
-  // resources), so mirror the Windows/Linux behavior of calling
-  // SetICUDefaultLocale.
-  base::i18n::SetICUDefaultLocale(app_locale);
   return app_locale;
 
 #else
@@ -482,7 +476,6 @@ std::string GetApplicationLocale(const std::string& pref_locale) {
   std::vector<std::string>::const_iterator i = candidates.begin();
   for (; i != candidates.end(); ++i) {
     if (CheckAndResolveLocale(*i, &resolved_locale)) {
-      base::i18n::SetICUDefaultLocale(resolved_locale);
       return resolved_locale;
     }
   }
@@ -490,13 +483,24 @@ std::string GetApplicationLocale(const std::string& pref_locale) {
   // Fallback on en-US.
   const std::string fallback_locale("en-US");
   if (IsLocaleAvailable(fallback_locale)) {
-    base::i18n::SetICUDefaultLocale(fallback_locale);
     return fallback_locale;
   }
 
   return std::string();
 
 #endif
+}
+
+std::string GetApplicationLocale(const std::string& pref_locale,
+                                 bool set_icu_locale) {
+  const std::string locale = GetApplicationLocaleInternal(pref_locale);
+  if (set_icu_locale && !locale.empty())
+    base::i18n::SetICUDefaultLocale(locale);
+  return locale;
+}
+
+std::string GetApplicationLocale(const std::string& pref_locale) {
+  return GetApplicationLocale(pref_locale, true /* set_icu_locale */);
 }
 
 bool IsLocaleNameTranslated(const char* locale,
