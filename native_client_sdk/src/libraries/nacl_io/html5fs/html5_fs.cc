@@ -180,6 +180,8 @@ Html5Fs::Html5Fs()
 }
 
 Error Html5Fs::Init(const FsInitArgs& args) {
+  pthread_cond_init(&filesystem_open_cond_, NULL);
+
   Error error = Filesystem::Init(args);
   if (error)
     return error;
@@ -203,8 +205,6 @@ Error Html5Fs::Init(const FsInitArgs& args) {
               file_io_iface_ ? "" : "FileIo ");
     return ENOSYS;
   }
-
-  pthread_cond_init(&filesystem_open_cond_, NULL);
 
   // Parse filesystem args.
   PP_FileSystemType filesystem_type = PP_FILESYSTEMTYPE_LOCALPERSISTENT;
@@ -277,7 +277,8 @@ Error Html5Fs::Init(const FsInitArgs& args) {
 }
 
 void Html5Fs::Destroy() {
-  ppapi_->ReleaseResource(filesystem_resource_);
+  if (ppapi_ != NULL && filesystem_resource_ != 0)
+    ppapi_->ReleaseResource(filesystem_resource_);
   pthread_cond_destroy(&filesystem_open_cond_);
 }
 

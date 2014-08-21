@@ -44,9 +44,11 @@ int ki_init(void* kernel_proxy);
 /*
  * Saves the current internal state.  This is used by test code which can
  * use this to save the current state before calling ki_init().  The
- * pushed state is restored in the next call to ki_uninit().
+ * pushed state is restored by ki_pop_state_for_testing() (or ki_uninit()).
  */
 int ki_push_state_for_testing(void);
+
+int ki_pop_state_for_testing(void);
 
 int ki_init_ppapi(void* kernel_proxy,
                   PP_Instance instance,

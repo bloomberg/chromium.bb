@@ -31,6 +31,7 @@ int _real_open_resource(const char* file, int* fd);
 int _real_read(int fd, void* buf, size_t count, size_t* nread);
 int _real_rmdir(const char* pathname);
 int _real_write(int fd, const void* buf, size_t count, size_t* nwrote);
+int _real_getcwd(char* pathname, size_t len);
 
 EXTERN_C_END
 

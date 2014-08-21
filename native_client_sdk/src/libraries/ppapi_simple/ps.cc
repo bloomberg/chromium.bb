@@ -12,12 +12,17 @@
 
 static pp::Instance* s_Instance = NULL;
 
-PP_Instance PSGetInstanceId() {
+PP_Instance PSGetInstanceId(void) {
+  if (s_Instance == NULL)
+    return 0;
   return s_Instance->pp_instance();
 }
 
 const void* PSGetInterface(const char *name) {
-  return pp::Module::Get()->GetBrowserInterface(name);
+  pp::Module* module = pp::Module::Get();
+  if (module == NULL)
+    return NULL;
+  return module->GetBrowserInterface(name);
 }
 
 

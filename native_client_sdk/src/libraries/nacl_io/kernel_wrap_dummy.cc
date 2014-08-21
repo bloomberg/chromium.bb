@@ -78,6 +78,10 @@ void _real_exit(int status) {
   exit(status);
 }
 
+int _real_getcwd(char* pathname, size_t len) {
+  return ENOSYS;
+}
+
 #endif
 
 // The Chromium build system defines __linux__ even for native client builds,

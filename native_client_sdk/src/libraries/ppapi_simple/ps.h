@@ -43,7 +43,7 @@ EXTERN_C_BEGIN
  * Return the PP_Instance id of this instance of the module.  This is required
  * by most of the Pepper resource creation routines.
  */
-PP_Instance PSGetInstanceId();
+PP_Instance PSGetInstanceId(void);
 
 
 /**

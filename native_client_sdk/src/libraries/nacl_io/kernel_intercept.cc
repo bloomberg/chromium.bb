@@ -48,6 +48,21 @@ int ki_push_state_for_testing() {
   return 0;
 }
 
+static void ki_pop_state() {
+  // Swap out the KernelProxy. This will normally reset the
+  // proxy to NULL, aside from in test code that has called
+  // ki_push_state_for_testing().
+  s_state = s_saved_state;
+  s_saved_state.kp = NULL;
+  s_saved_state.ppapi = NULL;
+  s_saved_state.kp_owned = false;
+}
+
+int ki_pop_state_for_testing() {
+  ki_pop_state();
+  return 0;
+}
+
 int ki_init(void* kp) {
   LOG_TRACE("ki_init: %p", kp);
   return ki_init_ppapi(kp, 0, NULL);
@@ -103,13 +118,7 @@ void ki_uninit() {
   // until we've swapped it out.
   KernelInterceptState state_to_delete = s_state;
 
-  // Swap out the KernelProxy. This will normally reset the
-  // proxy to NULL, aside from in test code that has called
-  // ki_push_state_for_testing().
-  s_state = s_saved_state;
-  s_saved_state.kp = NULL;
-  s_saved_state.ppapi = NULL;
-  s_saved_state.kp_owned = false;
+  ki_pop_state();
 
   if (state_to_delete.kp_owned)
     delete state_to_delete.kp;
@@ -134,15 +143,20 @@ void ki_exit(int status) {
 }
 
 char* ki_getcwd(char* buf, size_t size) {
-  // gtest uses getcwd in a static initializer. If we haven't initialized the
-  // kernel-intercept yet, just return ".".
+  // gtest uses getcwd in a static initializer and expects it to always
+  // succeed.  If we haven't initialized kernel-intercept yet, then try
+  // the IRT's getcwd, and fall back to just returning ".".
   if (!ki_is_initialized()) {
-    if (size < 2) {
-      errno = ERANGE;
-      return NULL;
+    int rtn = _real_getcwd(buf, size);
+    if (rtn != 0) {
+      if (rtn == ENOSYS) {
+        buf[0] = '.';
+        buf[1] = 0;
+      } else {
+        errno = rtn;
+        return NULL;
+      }
     }
-    buf[0] = '.';
-    buf[1] = 0;
     return buf;
   }
   return s_state.kp->getcwd(buf, size);

@@ -341,6 +341,11 @@ static void assign_real_pointers() {
   if (!REAL(func))       \
     assign_real_pointers();
 
+#define CHECK_REAL_NOSYS(func)  \
+  CHECK_REAL(func)              \
+  if (!REAL(func))              \
+    return ENOSYS;
+
 // "real" functions, i.e. the unwrapped original functions.
 
 int _real_close(int fd) {
@@ -498,7 +503,13 @@ int _real_write(int fd, const void* buf, size_t count, size_t* nwrote) {
   return REAL(write)(fd, buf, count, nwrote);
 }
 
+int _real_getcwd(char* pathname, size_t len) {
+  CHECK_REAL_NOSYS(getcwd);
+  return REAL(getcwd)(pathname, len);
+}
+
 static bool s_wrapped = false;
+
 void kernel_wrap_init() {
   if (!s_wrapped) {
     assign_real_pointers();
@@ -516,4 +527,4 @@ void kernel_wrap_uninit() {
 
 EXTERN_C_END
 
-#endif  // defined(__native_client__) && defined(__GLIBC__)
+#endif  // defined(__native_client__) && defined(__BIONIC__)

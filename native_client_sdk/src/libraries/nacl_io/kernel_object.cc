@@ -119,7 +119,7 @@ Error KernelObject::AcquireFsAndNode(const std::string& path,
 Path KernelObject::GetAbsParts(const std::string& path) {
   AUTO_LOCK(cwd_lock_);
 
-  Path abs_parts(cwd_);
+  Path abs_parts;
   if (path[0] == '/') {
     abs_parts = path;
   } else {
