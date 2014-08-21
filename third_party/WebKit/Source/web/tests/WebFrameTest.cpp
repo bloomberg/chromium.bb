@@ -48,6 +48,7 @@
 #include "core/editing/SpellChecker.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/events/MouseEvent.h"
+#include "core/fetch/MemoryCache.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
@@ -77,6 +78,7 @@
 #include "public/platform/WebURL.h"
 #include "public/platform/WebURLResponse.h"
 #include "public/platform/WebUnitTestSupport.h"
+#include "public/web/WebCache.h"
 #include "public/web/WebDataSource.h"
 #include "public/web/WebDocument.h"
 #include "public/web/WebFindOptions.h"
@@ -169,6 +171,11 @@ protected:
     {
         settings->setAcceleratedCompositingEnabled(true);
         settings->setPreferCompositingToLCDTextEnabled(true);
+    }
+
+    static void configureLoadsImagesAutomatically(WebSettings* settings)
+    {
+        settings->setLoadsImagesAutomatically(true);
     }
 
     void initializeTextSelectionWebView(const std::string& url, FrameTestHelpers::WebViewHelper* webViewHelper)
@@ -5332,6 +5339,41 @@ TEST_F(WebFrameTest, NavigateToSame)
     FrameTestHelpers::pumpPendingRequestsDoNotUse(webViewHelper.webView()->mainFrame());
 
     EXPECT_TRUE(client.frameLoadTypeSameSeen());
+}
+
+class TestSameDocumentWithImageWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
+public:
+    TestSameDocumentWithImageWebFrameClient()
+        : m_numOfImageRequests(0)
+    {
+    }
+
+    virtual void willSendRequest(WebLocalFrame* frame, unsigned, WebURLRequest& request, const WebURLResponse&)
+    {
+        if (request.requestContext() == WebURLRequest::RequestContextImage) {
+            m_numOfImageRequests++;
+            EXPECT_EQ(WebURLRequest::UseProtocolCachePolicy, request.cachePolicy());
+        }
+    }
+
+    int numOfImageRequests() const { return m_numOfImageRequests; }
+
+private:
+    int m_numOfImageRequests;
+};
+
+TEST_F(WebFrameTest, NavigateToSameNoConditionalRequestForSubresource)
+{
+    registerMockedHttpURLLoad("foo_with_image.html");
+    registerMockedHttpURLLoad("white-1x1.png");
+    TestSameDocumentWithImageWebFrameClient client;
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    webViewHelper.initializeAndLoad(m_baseURL + "foo_with_image.html", true, &client, 0, &configureLoadsImagesAutomatically);
+
+    WebCache::clear();
+    FrameTestHelpers::loadFrame(webViewHelper.webView()->mainFrame(), m_baseURL + "foo_with_image.html");
+
+    EXPECT_EQ(client.numOfImageRequests(), 2);
 }
 
 TEST_F(WebFrameTest, WebNodeImageContents)

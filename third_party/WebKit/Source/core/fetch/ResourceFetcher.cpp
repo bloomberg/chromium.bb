@@ -229,6 +229,19 @@ static WebURLRequest::RequestContext requestContextFromType(const ResourceFetche
     return WebURLRequest::RequestContextSubresource;
 }
 
+static ResourceRequestCachePolicy memoryCachePolicyToResourceRequestCachePolicy(
+    const CachePolicy policy) {
+    if (policy == CachePolicyVerify)
+        return UseProtocolCachePolicy;
+    if (policy == CachePolicyRevalidate)
+        return ReloadIgnoringCacheData;
+    if (policy == CachePolicyReload)
+        return ReloadBypassingCache;
+    if (policy == CachePolicyHistoryBuffer)
+        return ReturnCacheDataElseLoad;
+    return UseProtocolCachePolicy;
+}
+
 ResourceFetcher::ResourceFetcher(DocumentLoader* documentLoader)
     : m_document(nullptr)
     , m_documentLoader(documentLoader)
@@ -847,7 +860,7 @@ ResourceRequestCachePolicy ResourceFetcher::resourceRequestCachePolicy(const Res
                 return ReturnCacheDataElseLoad;
             return UseProtocolCachePolicy;
         }
-        return mainResourceCachePolicy;
+        return memoryCachePolicyToResourceRequestCachePolicy(context().cachePolicy(m_document));
     }
     return UseProtocolCachePolicy;
 }
