@@ -4,6 +4,7 @@
 
 #include "content/public/test/browser_test_utils.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
 #include "base/path_service.h"
@@ -19,6 +20,7 @@
 #include "content/common/input/synthetic_web_input_event_builders.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/dom_operation_notification_details.h"
+#include "content/public/browser/histogram_fetcher.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_frame_host.h"
@@ -584,6 +586,20 @@ bool SetCookie(BrowserContext* browser_context,
                  make_scoped_refptr(context_getter), &event, &result));
   event.Wait();
   return result;
+}
+
+void FetchHistogramsFromChildProcesses() {
+  scoped_refptr<content::MessageLoopRunner> runner = new MessageLoopRunner;
+
+  FetchHistogramsAsynchronously(
+      base::MessageLoop::current(),
+      runner->QuitClosure(),
+      // If this call times out, it means that a child process is not
+      // responding, which is something we should not ignore.  The timeout is
+      // set to be longer than the normal browser test timeout so that it will
+      // be prempted by the normal timeout.
+      TestTimeouts::action_max_timeout());
+  runner->Run();
 }
 
 TitleWatcher::TitleWatcher(WebContents* web_contents,

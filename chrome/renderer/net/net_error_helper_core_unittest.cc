@@ -13,11 +13,11 @@
 #include "base/logging.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/histogram_tester.h"
 #include "base/timer/mock_timer.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
 #include "chrome/common/net/net_error_info.h"
-#include "chrome/test/base/uma_histogram_helper.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/net_errors.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -2230,37 +2230,11 @@ TEST_F(NetErrorHelperCoreAutoReloadTest, ShownWhileNotReloading) {
   EXPECT_TRUE(timer()->IsRunning());
 }
 
-// Return the count for the named histogram, or 0 if there is no histogram by
-// that name. This function is error-tolerant because histograms that have no
-// data points may not be registered, and the unit tests below still need to be
-// able to check that they haven't changed.
-int GetHistogramCount(const char *name) {
-  base::HistogramBase* histogram =
-      base::StatisticsRecorder::FindHistogram(name);
-  if (!histogram)
-    return 0;
-  scoped_ptr<base::HistogramSamples> samples = histogram->SnapshotSamples();
-  if (!samples)
-    return 0;
-  return samples->TotalCount();
-}
-
-void ExpectHistogramDelta(const char *name, int old_count, int delta) {
-  int new_count = GetHistogramCount(name);
-  EXPECT_EQ(old_count + delta, new_count) << "For histogram " << name;
-}
-
 class NetErrorHelperCoreHistogramTest
     : public NetErrorHelperCoreAutoReloadTest {
  public:
   virtual void SetUp() OVERRIDE {
     NetErrorHelperCoreAutoReloadTest::SetUp();
-    StoreOldCounts();
-  }
-
-  void ExpectDelta(const char *name, int delta) {
-    DCHECK(old_counts_.count(name) == 1);
-    ExpectHistogramDelta(name, old_counts_[name], delta);
   }
 
   static const char kCountAtStop[];
@@ -2269,15 +2243,8 @@ class NetErrorHelperCoreHistogramTest
   static const char kErrorAtSuccess[];
   static const char kErrorAtFirstSuccess[];
 
- private:
-  void StoreOldCounts() {
-    for (size_t i = 0; kHistogramNames[i]; i++)
-      old_counts_[kHistogramNames[i]] = GetHistogramCount(kHistogramNames[i]);
-  }
-
-  static const char *kHistogramNames[];
-
-  std::map<std::string, int> old_counts_;
+ protected:
+  base::HistogramTester histogram_tester_;
 };
 
 const char NetErrorHelperCoreHistogramTest::kCountAtStop[] =
@@ -2290,14 +2257,6 @@ const char NetErrorHelperCoreHistogramTest::kErrorAtSuccess[] =
     "Net.AutoReload.ErrorAtSuccess";
 const char NetErrorHelperCoreHistogramTest::kErrorAtFirstSuccess[] =
     "Net.AutoReload.ErrorAtFirstSuccess";
-const char *NetErrorHelperCoreHistogramTest::kHistogramNames[] = {
-  kCountAtStop,
-  kErrorAtStop,
-  kCountAtSuccess,
-  kErrorAtSuccess,
-  kErrorAtFirstSuccess,
-  NULL
-};
 
 // Test that the success histograms are updated when auto-reload succeeds at the
 // first attempt, and that the failure histograms are not updated.
@@ -2308,11 +2267,11 @@ TEST_F(NetErrorHelperCoreHistogramTest, SuccessAtFirstAttempt) {
 
   // All of CountAtSuccess, ErrorAtSuccess, and ErrorAtFirstSuccess should
   // reflect this successful load. The failure histograms should be unchanged.
-  ExpectDelta(kCountAtSuccess, 1);
-  ExpectDelta(kErrorAtSuccess, 1);
-  ExpectDelta(kErrorAtFirstSuccess, 1);
-  ExpectDelta(kCountAtStop, 0);
-  ExpectDelta(kErrorAtStop, 0);
+  histogram_tester_.ExpectTotalCount(kCountAtSuccess, 1);
+  histogram_tester_.ExpectTotalCount(kErrorAtSuccess, 1);
+  histogram_tester_.ExpectTotalCount(kErrorAtFirstSuccess, 1);
+  histogram_tester_.ExpectTotalCount(kCountAtStop, 0);
+  histogram_tester_.ExpectTotalCount(kErrorAtStop, 0);
 }
 
 // Test that the success histograms are updated when auto-reload succeeds but
@@ -2329,11 +2288,11 @@ TEST_F(NetErrorHelperCoreHistogramTest, SuccessAtSecondAttempt) {
 
   // CountAtSuccess and ErrorAtSuccess should reflect this successful load, but
   // not ErrorAtFirstSuccess since it wasn't a first success.
-  ExpectDelta(kCountAtSuccess, 1);
-  ExpectDelta(kErrorAtSuccess, 1);
-  ExpectDelta(kErrorAtFirstSuccess, 0);
-  ExpectDelta(kCountAtStop, 0);
-  ExpectDelta(kErrorAtStop, 0);
+  histogram_tester_.ExpectTotalCount(kCountAtSuccess, 1);
+  histogram_tester_.ExpectTotalCount(kErrorAtSuccess, 1);
+  histogram_tester_.ExpectTotalCount(kErrorAtFirstSuccess, 0);
+  histogram_tester_.ExpectTotalCount(kCountAtStop, 0);
+  histogram_tester_.ExpectTotalCount(kErrorAtStop, 0);
 }
 
 // Test that a user stop (caused by the user pressing the 'Stop' button)
@@ -2348,11 +2307,11 @@ TEST_F(NetErrorHelperCoreHistogramTest, UserStop) {
   core()->OnStop();
 
   // CountAtStop and ErrorAtStop should reflect the failure.
-  ExpectDelta(kCountAtSuccess, 0);
-  ExpectDelta(kErrorAtSuccess, 0);
-  ExpectDelta(kErrorAtFirstSuccess, 0);
-  ExpectDelta(kCountAtStop, 1);
-  ExpectDelta(kErrorAtStop, 1);
+  histogram_tester_.ExpectTotalCount(kCountAtSuccess, 0);
+  histogram_tester_.ExpectTotalCount(kErrorAtSuccess, 0);
+  histogram_tester_.ExpectTotalCount(kErrorAtFirstSuccess, 0);
+  histogram_tester_.ExpectTotalCount(kCountAtStop, 1);
+  histogram_tester_.ExpectTotalCount(kErrorAtStop, 1);
 }
 
 // Test that a user stop (caused by the user pressing the 'Stop' button)
@@ -2366,11 +2325,11 @@ TEST_F(NetErrorHelperCoreHistogramTest, OtherPageLoaded) {
                      NetErrorHelperCore::NON_ERROR_PAGE);
   core()->OnStop();
 
-  ExpectDelta(kCountAtSuccess, 0);
-  ExpectDelta(kErrorAtSuccess, 0);
-  ExpectDelta(kErrorAtFirstSuccess, 0);
-  ExpectDelta(kCountAtStop, 1);
-  ExpectDelta(kErrorAtStop, 1);
+  histogram_tester_.ExpectTotalCount(kCountAtSuccess, 0);
+  histogram_tester_.ExpectTotalCount(kErrorAtSuccess, 0);
+  histogram_tester_.ExpectTotalCount(kErrorAtFirstSuccess, 0);
+  histogram_tester_.ExpectTotalCount(kCountAtStop, 1);
+  histogram_tester_.ExpectTotalCount(kErrorAtStop, 1);
 }
 
 // Test that a commit of a different URL (caused by the user navigating to a
@@ -2386,11 +2345,11 @@ TEST_F(NetErrorHelperCoreHistogramTest, OtherPageLoadedAfterTimerFires) {
                       kTestUrl);
   core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
 
-  ExpectDelta(kCountAtSuccess, 0);
-  ExpectDelta(kErrorAtSuccess, 0);
-  ExpectDelta(kErrorAtFirstSuccess, 0);
-  ExpectDelta(kCountAtStop, 1);
-  ExpectDelta(kErrorAtStop, 1);
+  histogram_tester_.ExpectTotalCount(kCountAtSuccess, 0);
+  histogram_tester_.ExpectTotalCount(kErrorAtSuccess, 0);
+  histogram_tester_.ExpectTotalCount(kErrorAtFirstSuccess, 0);
+  histogram_tester_.ExpectTotalCount(kCountAtStop, 1);
+  histogram_tester_.ExpectTotalCount(kErrorAtStop, 1);
 }
 
 // Test that a commit of the same URL with an auto-reload attempt in flight
@@ -2400,11 +2359,11 @@ TEST_F(NetErrorHelperCoreHistogramTest, SamePageLoadedAfterTimerFires) {
   timer()->Fire();
   DoSuccessLoad();
 
-  ExpectDelta(kCountAtSuccess, 1);
-  ExpectDelta(kErrorAtSuccess, 1);
-  ExpectDelta(kErrorAtFirstSuccess, 1);
-  ExpectDelta(kCountAtStop, 0);
-  ExpectDelta(kErrorAtStop, 0);
+  histogram_tester_.ExpectTotalCount(kCountAtSuccess, 1);
+  histogram_tester_.ExpectTotalCount(kErrorAtSuccess, 1);
+  histogram_tester_.ExpectTotalCount(kErrorAtFirstSuccess, 1);
+  histogram_tester_.ExpectTotalCount(kCountAtStop, 0);
+  histogram_tester_.ExpectTotalCount(kErrorAtStop, 0);
 }
 
 TEST_F(NetErrorHelperCoreHistogramTest, SamePageLoadedAfterLoadStarts) {
@@ -2416,11 +2375,11 @@ TEST_F(NetErrorHelperCoreHistogramTest, SamePageLoadedAfterLoadStarts) {
   // User does a manual reload
   DoSuccessLoad();
 
-  ExpectDelta(kCountAtSuccess, 1);
-  ExpectDelta(kErrorAtSuccess, 1);
-  ExpectDelta(kErrorAtFirstSuccess, 1);
-  ExpectDelta(kCountAtStop, 0);
-  ExpectDelta(kErrorAtStop, 0);
+  histogram_tester_.ExpectTotalCount(kCountAtSuccess, 1);
+  histogram_tester_.ExpectTotalCount(kErrorAtSuccess, 1);
+  histogram_tester_.ExpectTotalCount(kErrorAtFirstSuccess, 1);
+  histogram_tester_.ExpectTotalCount(kCountAtStop, 0);
+  histogram_tester_.ExpectTotalCount(kErrorAtStop, 0);
 }
 
 // In this test case, the user presses the reload button manually after an
@@ -2434,11 +2393,11 @@ TEST_F(NetErrorHelperCoreHistogramTest, ErrorPageLoadedAfterTimerFires) {
                                              default_url()));
   DoErrorLoad(net::ERR_CONNECTION_RESET);
 
-  ExpectDelta(kCountAtSuccess, 0);
-  ExpectDelta(kErrorAtSuccess, 0);
-  ExpectDelta(kErrorAtFirstSuccess, 0);
-  ExpectDelta(kCountAtStop, 0);
-  ExpectDelta(kErrorAtStop, 0);
+  histogram_tester_.ExpectTotalCount(kCountAtSuccess, 0);
+  histogram_tester_.ExpectTotalCount(kErrorAtSuccess, 0);
+  histogram_tester_.ExpectTotalCount(kErrorAtFirstSuccess, 0);
+  histogram_tester_.ExpectTotalCount(kCountAtStop, 0);
+  histogram_tester_.ExpectTotalCount(kErrorAtStop, 0);
 }
 
 TEST_F(NetErrorHelperCoreHistogramTest, SuccessPageLoadedBeforeTimerFires) {
@@ -2448,11 +2407,11 @@ TEST_F(NetErrorHelperCoreHistogramTest, SuccessPageLoadedBeforeTimerFires) {
   core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME,
                       GURL(kFailedHttpsUrl));
 
-  ExpectDelta(kCountAtSuccess, 0);
-  ExpectDelta(kErrorAtSuccess, 0);
-  ExpectDelta(kErrorAtFirstSuccess, 0);
-  ExpectDelta(kCountAtStop, 1);
-  ExpectDelta(kErrorAtStop, 1);
+  histogram_tester_.ExpectTotalCount(kCountAtSuccess, 0);
+  histogram_tester_.ExpectTotalCount(kErrorAtSuccess, 0);
+  histogram_tester_.ExpectTotalCount(kErrorAtFirstSuccess, 0);
+  histogram_tester_.ExpectTotalCount(kCountAtStop, 1);
+  histogram_tester_.ExpectTotalCount(kErrorAtStop, 1);
 }
 
 

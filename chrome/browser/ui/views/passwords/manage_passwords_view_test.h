@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_PASSWORDS_MANAGE_PASSWORDS_VIEW_TEST_H_
 
 #include "base/metrics/histogram_samples.h"
-#include "base/test/statistics_delta_reader.h"
+#include "base/test/histogram_tester.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/autofill/core/common/password_form.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -52,7 +52,7 @@ class ManagePasswordsViewTest : public InProcessBrowserTest {
 
  private:
   autofill::PasswordForm test_form_;
-  base::StatisticsDeltaReader statistics_reader_;
+  base::HistogramTester histogram_tester_;
 
   DISALLOW_COPY_AND_ASSIGN(ManagePasswordsViewTest);
 };

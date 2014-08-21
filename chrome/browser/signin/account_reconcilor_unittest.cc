@@ -6,6 +6,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/histogram_tester.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
@@ -20,7 +21,6 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
-#include "chrome/test/base/uma_histogram_helper.h"
 #include "components/signin/core/browser/account_reconcilor.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
@@ -36,13 +36,6 @@
 namespace {
 
 const char kTestEmail[] = "user@gmail.com";
-const char* const kHistogramsToSnapshot[] = {
-    "Signin.Reconciler.DifferentPrimaryAccounts.FirstRun",
-    "Signin.Reconciler.AddedToCookieJar.FirstRun",
-    "Signin.Reconciler.AddedToChrome.FirstRun",
-    "Signin.Reconciler.DifferentPrimaryAccounts.SubsequentRun",
-    "Signin.Reconciler.AddedToCookieJar.SubsequentRun",
-    "Signin.Reconciler.AddedToChrome.SubsequentRun"};
 
 class MockAccountReconcilor : public testing::StrictMock<AccountReconcilor> {
  public:
@@ -100,7 +93,7 @@ class AccountReconcilorTest : public ::testing::TestWithParam<bool> {
   TestingProfile* profile() { return profile_; }
   FakeSigninManagerForTesting* signin_manager() { return signin_manager_; }
   FakeProfileOAuth2TokenService* token_service() { return token_service_; }
-  UMAHistogramHelper* histogram_helper() { return &histogram_helper_; }
+  base::HistogramTester* histogram_tester() { return &histogram_tester_; }
 
   void SetFakeResponse(const std::string& url,
                        const std::string& data,
@@ -129,7 +122,7 @@ class AccountReconcilorTest : public ::testing::TestWithParam<bool> {
   MockAccountReconcilor* mock_reconcilor_;
   net::FakeURLFetcherFactory url_fetcher_factory_;
   scoped_ptr<TestingProfileManager> testing_profile_manager_;
-  UMAHistogramHelper histogram_helper_;
+  base::HistogramTester histogram_tester_;
 
   DISALLOW_COPY_AND_ASSIGN(AccountReconcilorTest);
 };
@@ -175,10 +168,6 @@ void AccountReconcilorTest::SetUp() {
   token_service_ =
       static_cast<FakeProfileOAuth2TokenService*>(
           ProfileOAuth2TokenServiceFactory::GetForProfile(profile()));
-
-  // Take a new snapshot of the concerned histograms before each test
-  histogram_helper_.PrepareSnapshot(kHistogramsToSnapshot,
-                                    arraysize(kHistogramsToSnapshot));
 }
 
 MockAccountReconcilor* AccountReconcilorTest::GetMockReconcilor() {
@@ -396,10 +385,9 @@ TEST_P(AccountReconcilorTest, StartReconcileNoop) {
   ASSERT_TRUE(reconcilor->AreAllRefreshTokensChecked());
   ASSERT_FALSE(reconcilor->is_reconcile_started_);
 
-  histogram_helper()->Fetch();
-  histogram_helper()->ExpectTotalCount(
+  histogram_tester()->ExpectTotalCount(
       "Signin.Reconciler.DifferentPrimaryAccounts.FirstRun", 1);
-  histogram_helper()->ExpectUniqueSample(
+  histogram_tester()->ExpectUniqueSample(
       "Signin.Reconciler.DifferentPrimaryAccounts.FirstRun",
       signin_metrics::ACCOUNTS_SAME,
       1);
@@ -445,8 +433,7 @@ TEST_P(AccountReconcilorTest, StartReconcileNoopWithDots) {
   ASSERT_TRUE(reconcilor->AreAllRefreshTokensChecked());
   ASSERT_FALSE(reconcilor->is_reconcile_started_);
 
-  histogram_helper()->Fetch();
-  histogram_helper()->ExpectUniqueSample(
+  histogram_tester()->ExpectUniqueSample(
       "Signin.Reconciler.DifferentPrimaryAccounts.FirstRun",
       signin_metrics::ACCOUNTS_SAME,
       1);
@@ -490,10 +477,9 @@ TEST_P(AccountReconcilorTest, StartReconcileNoopMultiple) {
   ASSERT_TRUE(reconcilor->AreAllRefreshTokensChecked());
   ASSERT_FALSE(reconcilor->is_reconcile_started_);
 
-  histogram_helper()->Fetch();
-  histogram_helper()->ExpectTotalCount(
+  histogram_tester()->ExpectTotalCount(
       "Signin.Reconciler.DifferentPrimaryAccounts.FirstRun", 1);
-  histogram_helper()->ExpectUniqueSample(
+  histogram_tester()->ExpectUniqueSample(
       "Signin.Reconciler.DifferentPrimaryAccounts.FirstRun",
       signin_metrics::ACCOUNTS_SAME,
       1);
@@ -525,14 +511,13 @@ TEST_P(AccountReconcilorTest, StartReconcileAddToCookie) {
                                 GoogleServiceAuthError::AuthErrorNone());
   ASSERT_FALSE(reconcilor->is_reconcile_started_);
 
-  histogram_helper()->Fetch();
-  histogram_helper()->ExpectUniqueSample(
+  histogram_tester()->ExpectUniqueSample(
       "Signin.Reconciler.DifferentPrimaryAccounts.FirstRun",
       signin_metrics::ACCOUNTS_SAME,
       1);
-  histogram_helper()->ExpectUniqueSample(
+  histogram_tester()->ExpectUniqueSample(
       "Signin.Reconciler.AddedToCookieJar.FirstRun", 1, 1);
-  histogram_helper()->ExpectUniqueSample(
+  histogram_tester()->ExpectUniqueSample(
       "Signin.Reconciler.AddedToChrome.FirstRun", 0, 1);
 }
 
@@ -571,14 +556,13 @@ TEST_P(AccountReconcilorTest, StartReconcileAddToCookieTwice) {
       reconcilor, "other@gmail.com", GoogleServiceAuthError::AuthErrorNone());
   ASSERT_FALSE(reconcilor->is_reconcile_started_);
 
-  histogram_helper()->Fetch();
-  histogram_helper()->ExpectUniqueSample(
+  histogram_tester()->ExpectUniqueSample(
       "Signin.Reconciler.DifferentPrimaryAccounts.FirstRun",
       signin_metrics::ACCOUNTS_SAME,
       1);
-  histogram_helper()->ExpectUniqueSample(
+  histogram_tester()->ExpectUniqueSample(
       "Signin.Reconciler.AddedToCookieJar.FirstRun", 1, 1);
-  histogram_helper()->ExpectUniqueSample(
+  histogram_tester()->ExpectUniqueSample(
       "Signin.Reconciler.AddedToChrome.FirstRun", 0, 1);
 
   // Do another pass after I've added a third account to the token service
@@ -612,22 +596,21 @@ TEST_P(AccountReconcilorTest, StartReconcileAddToCookieTwice) {
       reconcilor, "third@gmail.com", GoogleServiceAuthError::AuthErrorNone());
   ASSERT_FALSE(reconcilor->is_reconcile_started_);
 
-  histogram_helper()->Fetch();
-  histogram_helper()->ExpectUniqueSample(
+  histogram_tester()->ExpectUniqueSample(
       "Signin.Reconciler.DifferentPrimaryAccounts.FirstRun",
       signin_metrics::ACCOUNTS_SAME,
       1);
-  histogram_helper()->ExpectUniqueSample(
+  histogram_tester()->ExpectUniqueSample(
       "Signin.Reconciler.AddedToCookieJar.FirstRun", 1, 1);
-  histogram_helper()->ExpectUniqueSample(
+  histogram_tester()->ExpectUniqueSample(
       "Signin.Reconciler.AddedToChrome.FirstRun", 0, 1);
-  histogram_helper()->ExpectUniqueSample(
+  histogram_tester()->ExpectUniqueSample(
       "Signin.Reconciler.DifferentPrimaryAccounts.SubsequentRun",
       signin_metrics::ACCOUNTS_SAME,
       1);
-  histogram_helper()->ExpectUniqueSample(
+  histogram_tester()->ExpectUniqueSample(
       "Signin.Reconciler.AddedToCookieJar.SubsequentRun", 1, 1);
-  histogram_helper()->ExpectUniqueSample(
+  histogram_tester()->ExpectUniqueSample(
       "Signin.Reconciler.AddedToChrome.SubsequentRun", 0, 1);
 }
 
@@ -655,14 +638,13 @@ TEST_P(AccountReconcilorTest, StartReconcileAddToChrome) {
   SimulateRefreshTokenFetched(reconcilor, "other@gmail.com", "");
   ASSERT_FALSE(reconcilor->is_reconcile_started_);
 
-  histogram_helper()->Fetch();
-  histogram_helper()->ExpectUniqueSample(
+  histogram_tester()->ExpectUniqueSample(
       "Signin.Reconciler.DifferentPrimaryAccounts.FirstRun",
       signin_metrics::ACCOUNTS_SAME,
       1);
-  histogram_helper()->ExpectUniqueSample(
+  histogram_tester()->ExpectUniqueSample(
       "Signin.Reconciler.AddedToCookieJar.FirstRun", 0, 1);
-  histogram_helper()->ExpectUniqueSample(
+  histogram_tester()->ExpectUniqueSample(
       "Signin.Reconciler.AddedToChrome.FirstRun", 1, 1);
 }
 
@@ -698,14 +680,13 @@ TEST_P(AccountReconcilorTest, StartReconcileBadPrimary) {
                                 GoogleServiceAuthError::AuthErrorNone());
   ASSERT_FALSE(reconcilor->is_reconcile_started_);
 
-  histogram_helper()->Fetch();
-  histogram_helper()->ExpectUniqueSample(
+  histogram_tester()->ExpectUniqueSample(
       "Signin.Reconciler.DifferentPrimaryAccounts.FirstRun",
       signin_metrics::COOKIE_AND_TOKEN_PRIMARIES_DIFFERENT,
       1);
-  histogram_helper()->ExpectUniqueSample(
+  histogram_tester()->ExpectUniqueSample(
       "Signin.Reconciler.AddedToCookieJar.FirstRun", 2, 1);
-  histogram_helper()->ExpectUniqueSample(
+  histogram_tester()->ExpectUniqueSample(
       "Signin.Reconciler.AddedToChrome.FirstRun", 0, 1);
 }
 

@@ -9,7 +9,7 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
-#include "base/test/statistics_delta_reader.h"
+#include "base/test/histogram_tester.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_log_unittest.h"
@@ -1792,25 +1792,26 @@ TEST_P(SpdySessionTest, SynCompressionHistograms) {
   EXPECT_TRUE(spdy_stream->HasUrlFromHeaders());
 
   // Write request headers & capture resulting histogram update.
-  base::StatisticsDeltaReader statistics_delta_reader;
-  data.RunFor(1);
-  scoped_ptr<base::HistogramSamples> samples(
-    statistics_delta_reader.GetHistogramSamplesSinceCreation(
-        "Net.SpdySynStreamCompressionPercentage"));
+  base::HistogramTester histogram_tester;
 
+  data.RunFor(1);
   // Regression test of compression performance under the request fixture.
   switch (spdy_util_.spdy_version()) {
     case SPDY2:
-      EXPECT_EQ(samples->GetCount(0), 1);
+      histogram_tester.ExpectBucketCount(
+          "Net.SpdySynStreamCompressionPercentage", 0, 1);
       break;
     case SPDY3:
-      EXPECT_EQ(samples->GetCount(30), 1);
+      histogram_tester.ExpectBucketCount(
+          "Net.SpdySynStreamCompressionPercentage", 30, 1);
       break;
     case SPDY4:
-      EXPECT_EQ(samples->GetCount(82), 1);
+      histogram_tester.ExpectBucketCount(
+          "Net.SpdySynStreamCompressionPercentage", 82, 1);
       break;
     case SPDY5:
-      EXPECT_EQ(samples->GetCount(82), 1);
+      histogram_tester.ExpectBucketCount(
+          "Net.SpdySynStreamCompressionPercentage", 82, 1);
       break;
     default:
       NOTREACHED();

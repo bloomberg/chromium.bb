@@ -188,6 +188,10 @@ bool SetCookie(BrowserContext* browser_context,
                const GURL& url,
                const std::string& value);
 
+// Fetch the histograms data from other processes. This should be called after
+// the test code has been executed but before performing assertions.
+void FetchHistogramsFromChildProcesses();
+
 // Watches title changes on a WebContents, blocking until an expected title is
 // set.
 class TitleWatcher : public WebContentsObserver {

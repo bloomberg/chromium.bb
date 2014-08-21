@@ -2,22 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/test/base/uma_histogram_helper.h"
+#include "base/test/histogram_tester.h"
 #include "chrome/test/nacl/nacl_browsertest_util.h"
 #include "components/nacl/browser/nacl_browser.h"
+#include "content/public/test/browser_test_utils.h"
 #include "native_client/src/trusted/service_runtime/nacl_error_code.h"
 #include "ppapi/c/private/ppb_nacl_private.h"
 
 namespace {
 
 NACL_BROWSER_TEST_F(NaClBrowserTest, SuccessfulLoadUMA, {
+  base::HistogramTester histograms;
   // Load a NaCl module to generate UMA data.
   RunLoadTest(FILE_PATH_LITERAL("nacl_load_test.html"));
 
   // Make sure histograms from child processes have been accumulated in the
   // browser brocess.
-  UMAHistogramHelper histograms;
-  histograms.Fetch();
+  content::FetchHistogramsFromChildProcesses();
 
   // Did the plugin report success?
   histograms.ExpectUniqueSample("NaCl.LoadStatus.Plugin",
@@ -88,6 +89,7 @@ class NaClBrowserTestNewlibVcacheExtension:
 
 IN_PROC_BROWSER_TEST_F(NaClBrowserTestNewlibVcacheExtension,
                        ValidationCacheOfMainNexe) {
+  base::HistogramTester histograms;
   // Hardcoded extension AppID that corresponds to the hardcoded
   // public key in the manifest.json file. We need to load the extension
   // nexe from the same origin, so we can't just try to load the extension
@@ -98,9 +100,8 @@ IN_PROC_BROWSER_TEST_F(NaClBrowserTestNewlibVcacheExtension,
   RunNaClIntegrationTest(full_url, true);
 
   // Make sure histograms from child processes have been accumulated in the
-  // browser process.
-  UMAHistogramHelper histograms;
-  histograms.Fetch();
+  // browser brocess.
+  content::FetchHistogramsFromChildProcesses();
   // Should have received 2 validation queries (one for IRT and one for NEXE),
   // and responded with a miss.
   histograms.ExpectBucketCount("NaCl.ValidationCache.Query",
@@ -113,7 +114,7 @@ IN_PROC_BROWSER_TEST_F(NaClBrowserTestNewlibVcacheExtension,
 
   // Load it again to hit the cache.
   RunNaClIntegrationTest(full_url, true);
-  histograms.Fetch();
+  content::FetchHistogramsFromChildProcesses();
   // Should have received 2 more validation queries later (IRT and NEXE),
   // and responded with a hit.
   histograms.ExpectBucketCount("NaCl.ValidationCache.Query",
@@ -134,6 +135,9 @@ class NaClBrowserTestGLibcVcacheExtension:
 
 IN_PROC_BROWSER_TEST_F(NaClBrowserTestGLibcVcacheExtension,
                        ValidationCacheOfMainNexe) {
+  // Make sure histograms from child processes have been accumulated in the
+  // browser process.
+  base::HistogramTester histograms;
   // Hardcoded extension AppID that corresponds to the hardcoded
   // public key in the manifest.json file. We need to load the extension
   // nexe from the same origin, so we can't just try to load the extension
@@ -143,10 +147,6 @@ IN_PROC_BROWSER_TEST_F(NaClBrowserTestGLibcVcacheExtension,
       FILE_PATH_LITERAL("extension_validation_cache.html");
   RunNaClIntegrationTest(full_url, true);
 
-  // Make sure histograms from child processes have been accumulated in the
-  // browser process.
-  UMAHistogramHelper histograms;
-  histograms.Fetch();
   // Should have received 9 validation queries, which respond with misses:
   //   - the IRT
   //   - ld.so (the initial nexe)
@@ -167,7 +167,6 @@ IN_PROC_BROWSER_TEST_F(NaClBrowserTestGLibcVcacheExtension,
 
   // Load it again to hit the cache.
   RunNaClIntegrationTest(full_url, true);
-  histograms.Fetch();
   // Should have received 9 more validation queries and responded with hits.
   histograms.ExpectBucketCount("NaCl.ValidationCache.Query",
                                nacl::NaClBrowser::CACHE_HIT, 9);
@@ -178,11 +177,11 @@ IN_PROC_BROWSER_TEST_F(NaClBrowserTestGLibcVcacheExtension,
 // Test that validation for the 2 PNaCl translator nexes can be cached.
 IN_PROC_BROWSER_TEST_F(NaClBrowserTestPnacl,
                        ValidationCacheOfTranslatorNexes) {
+  base::HistogramTester histograms;
   // Run a load test w/ one pexe cache identity.
   RunLoadTest(FILE_PATH_LITERAL("pnacl_options.html?use_nmf=o_0"));
 
-  UMAHistogramHelper histograms;
-  histograms.Fetch();
+  content::FetchHistogramsFromChildProcesses();
   // Should have received 3 validation queries:
   // - One for IRT for actual application
   // - Two for two translator nexes

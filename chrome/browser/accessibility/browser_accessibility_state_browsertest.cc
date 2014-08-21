@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/test/histogram_tester.h"
 #include "content/public/browser/browser_accessibility_state.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chrome/test/base/uma_histogram_helper.h"
 
 namespace content {
 
@@ -15,10 +15,9 @@ class BrowserAccessibilityStateImplTest : public InProcessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(BrowserAccessibilityStateImplTest, TestHistograms) {
-  UMAHistogramHelper histograms;
+  base::HistogramTester histograms;
 
   BrowserAccessibilityState::GetInstance()->UpdateHistogramsForTesting();
-  histograms.Fetch();
   histograms.ExpectTotalCount("Accessibility.State", 1);
 #if defined(OS_WIN)
   histograms.ExpectTotalCount("Accessibility.WinScreenReader", 1);

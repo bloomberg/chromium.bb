@@ -194,8 +194,6 @@
         'test/base/tracing.h',
         'test/base/ui_test_utils.cc',
         'test/base/ui_test_utils.h',
-        'test/base/uma_histogram_helper.cc',
-        'test/base/uma_histogram_helper.h',
         'test/logging/win/file_logger.cc',
         'test/logging/win/file_logger.h',
         'test/logging/win/log_file_printer.cc',

@@ -8,9 +8,8 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
-#include "base/metrics/histogram_samples.h"
-#include "base/metrics/statistics_recorder.h"
-#include "base/test/statistics_delta_reader.h"
+
+#include "base/test/histogram_tester.h"
 #include "components/pref_registry/testing_pref_service_syncable.h"
 #include "components/suggestions/proto/suggestions.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -133,16 +132,14 @@ TEST_F(BlacklistStoreTest, GetFirstUrlFromBlacklist) {
 }
 
 TEST_F(BlacklistStoreTest, LogsBlacklistSize) {
-  base::StatisticsDeltaReader statistics_delta_reader;
+  base::HistogramTester histogram_tester;
 
   // Create a first store - blacklist is empty at this point.
   scoped_ptr<BlacklistStore> blacklist_store(
       new BlacklistStore(pref_service()));
-  scoped_ptr<base::HistogramSamples> samples(
-      statistics_delta_reader.GetHistogramSamplesSinceCreation(
-          "Suggestions.LocalBlacklistSize"));
-  EXPECT_EQ(1, samples->TotalCount());
-  EXPECT_EQ(1, samples->GetCount(0));
+
+  histogram_tester.ExpectTotalCount("Suggestions.LocalBlacklistSize", 1);
+  histogram_tester.ExpectUniqueSample("Suggestions.LocalBlacklistSize", 0, 1);
 
   // Add some content to the blacklist.
   EXPECT_TRUE(blacklist_store->BlacklistUrl(GURL(kTestUrlA)));
@@ -150,11 +147,10 @@ TEST_F(BlacklistStoreTest, LogsBlacklistSize) {
 
   // Create a new BlacklistStore and verify the counts.
   blacklist_store.reset(new BlacklistStore(pref_service()));
-  samples = statistics_delta_reader.GetHistogramSamplesSinceCreation(
-      "Suggestions.LocalBlacklistSize");
-  EXPECT_EQ(2, samples->TotalCount());
-  EXPECT_EQ(1, samples->GetCount(0));
-  EXPECT_EQ(1, samples->GetCount(2));
+
+  histogram_tester.ExpectTotalCount("Suggestions.LocalBlacklistSize", 2);
+  histogram_tester.ExpectBucketCount("Suggestions.LocalBlacklistSize", 0, 1);
+  histogram_tester.ExpectBucketCount("Suggestions.LocalBlacklistSize", 2, 1);
 }
 
 }  // namespace suggestions

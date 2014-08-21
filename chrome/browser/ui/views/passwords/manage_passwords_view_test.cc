@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/views/passwords/manage_passwords_view_test.h"
 
-#include "base/test/statistics_delta_reader.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
@@ -104,6 +103,6 @@ base::HistogramSamples* ManagePasswordsViewTest::GetSamples(
     const char* histogram) {
   // Ensure that everything has been properly recorded before pulling samples.
   content::RunAllPendingInMessageLoop();
-  return statistics_reader_.GetHistogramSamplesSinceCreation(
-      histogram).release();
+  return histogram_tester_.GetHistogramSamplesSinceCreation(histogram)
+      .release();
 }

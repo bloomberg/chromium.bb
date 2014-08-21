@@ -6,8 +6,8 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/statistics_recorder.h"
+#include "base/test/histogram_tester.h"
 #include "chrome/browser/chromeos/external_metrics.h"
-#include "chrome/test/base/uma_histogram_helper.h"
 #include "components/metrics/serialization/metric_sample.h"
 #include "components/metrics/serialization/serialization_utils.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -20,8 +20,6 @@ class ExternalMetricsTest : public testing::Test {
     ASSERT_TRUE(dir_.CreateUniqueTempDir());
     external_metrics_ = ExternalMetrics::CreateForTesting(
         dir_.path().Append("testfile").value());
-
-    base::StatisticsRecorder::Initialize();
   }
 
   base::ScopedTempDir dir_;
@@ -37,6 +35,8 @@ TEST_F(ExternalMetricsTest, HandleMissingFile) {
 }
 
 TEST_F(ExternalMetricsTest, CanReceiveHistogram) {
+  base::HistogramTester histogram_tester;
+
   scoped_ptr<metrics::MetricSample> hist =
       metrics::MetricSample::HistogramSample("foo", 2, 1, 100, 10);
 
@@ -45,12 +45,12 @@ TEST_F(ExternalMetricsTest, CanReceiveHistogram) {
 
   EXPECT_EQ(1, external_metrics_->CollectEvents());
 
-  UMAHistogramHelper helper;
-  helper.Fetch();
-  helper.ExpectTotalCount("foo", 1);
+  histogram_tester.ExpectTotalCount("foo", 1);
 }
 
 TEST_F(ExternalMetricsTest, IncorrectHistogramsAreDiscarded) {
+  base::HistogramTester histogram_tester;
+
   // Malformed histogram (min > max).
   scoped_ptr<metrics::MetricSample> hist =
       metrics::MetricSample::HistogramSample("bar", 30, 200, 20, 10);
@@ -60,9 +60,7 @@ TEST_F(ExternalMetricsTest, IncorrectHistogramsAreDiscarded) {
 
   external_metrics_->CollectEvents();
 
-  UMAHistogramHelper helper;
-  helper.Fetch();
-  helper.ExpectTotalCount("bar", 0);
+  histogram_tester.ExpectTotalCount("bar", 0);
 }
 
 }  // namespace chromeos

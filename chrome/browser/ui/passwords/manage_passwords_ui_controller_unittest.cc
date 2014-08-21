@@ -2,10 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/metrics/histogram_samples.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/statistics_delta_reader.h"
 #include "base/time/time.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"

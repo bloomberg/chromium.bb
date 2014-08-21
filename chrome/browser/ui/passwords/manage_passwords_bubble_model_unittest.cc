@@ -5,7 +5,7 @@
 #include "base/metrics/histogram_samples.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/statistics_delta_reader.h"
+#include "base/test/histogram_tester.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller_mock.h"
@@ -85,7 +85,7 @@ TEST_F(ManagePasswordsBubbleModelTest, DefaultValues) {
 }
 
 TEST_F(ManagePasswordsBubbleModelTest, CloseWithoutLogging) {
-  base::StatisticsDeltaReader statistics_delta_reader;
+  base::HistogramTester histogram_tester;
   model_->OnBubbleHidden();
   EXPECT_EQ(model_->dismissal_reason(),
             password_manager::metrics_util::NOT_DISPLAYED);
@@ -93,13 +93,13 @@ TEST_F(ManagePasswordsBubbleModelTest, CloseWithoutLogging) {
   EXPECT_FALSE(controller()->never_saved_password());
 
   scoped_ptr<base::HistogramSamples> samples(
-      statistics_delta_reader.GetHistogramSamplesSinceCreation(
+      histogram_tester.GetHistogramSamplesSinceCreation(
           kUIDismissalReasonMetric));
   EXPECT_EQ(NULL, samples.get());
 }
 
 TEST_F(ManagePasswordsBubbleModelTest, CloseWithoutInteraction) {
-  base::StatisticsDeltaReader statistics_delta_reader;
+  base::HistogramTester histogram_tester;
   PretendPasswordWaiting();
   model_->OnBubbleHidden();
   EXPECT_EQ(model_->dismissal_reason(),
@@ -109,26 +109,14 @@ TEST_F(ManagePasswordsBubbleModelTest, CloseWithoutInteraction) {
   EXPECT_FALSE(controller()->saved_password());
   EXPECT_FALSE(controller()->never_saved_password());
 
-  scoped_ptr<base::HistogramSamples> samples(
-      statistics_delta_reader.GetHistogramSamplesSinceCreation(
-          kUIDismissalReasonMetric));
-  EXPECT_EQ(
-      1,
-      samples->GetCount(password_manager::metrics_util::NO_DIRECT_INTERACTION));
-  EXPECT_EQ(0, samples->GetCount(password_manager::metrics_util::CLICKED_SAVE));
-  EXPECT_EQ(0, samples->GetCount(password_manager::metrics_util::CLICKED_NOPE));
-  EXPECT_EQ(0,
-            samples->GetCount(password_manager::metrics_util::CLICKED_NEVER));
-  EXPECT_EQ(0,
-            samples->GetCount(password_manager::metrics_util::CLICKED_MANAGE));
-  EXPECT_EQ(0, samples->GetCount(password_manager::metrics_util::CLICKED_DONE));
-  EXPECT_EQ(
-      0,
-      samples->GetCount(password_manager::metrics_util::CLICKED_UNBLACKLIST));
+  histogram_tester.ExpectUniqueSample(
+      kUIDismissalReasonMetric,
+      password_manager::metrics_util::NO_DIRECT_INTERACTION,
+      1);
 }
 
 TEST_F(ManagePasswordsBubbleModelTest, ClickSave) {
-  base::StatisticsDeltaReader statistics_delta_reader;
+  base::HistogramTester histogram_tester;
   PretendPasswordWaiting();
   model_->OnSaveClicked();
   model_->OnBubbleHidden();
@@ -138,26 +126,14 @@ TEST_F(ManagePasswordsBubbleModelTest, ClickSave) {
   EXPECT_TRUE(controller()->saved_password());
   EXPECT_FALSE(controller()->never_saved_password());
 
-  scoped_ptr<base::HistogramSamples> samples(
-      statistics_delta_reader.GetHistogramSamplesSinceCreation(
-          kUIDismissalReasonMetric));
-  EXPECT_EQ(
-      0,
-      samples->GetCount(password_manager::metrics_util::NO_DIRECT_INTERACTION));
-  EXPECT_EQ(1, samples->GetCount(password_manager::metrics_util::CLICKED_SAVE));
-  EXPECT_EQ(0, samples->GetCount(password_manager::metrics_util::CLICKED_NOPE));
-  EXPECT_EQ(0,
-            samples->GetCount(password_manager::metrics_util::CLICKED_NEVER));
-  EXPECT_EQ(0,
-            samples->GetCount(password_manager::metrics_util::CLICKED_MANAGE));
-  EXPECT_EQ(0, samples->GetCount(password_manager::metrics_util::CLICKED_DONE));
-  EXPECT_EQ(
-      0,
-      samples->GetCount(password_manager::metrics_util::CLICKED_UNBLACKLIST));
+  histogram_tester.ExpectUniqueSample(
+      kUIDismissalReasonMetric,
+      password_manager::metrics_util::CLICKED_SAVE,
+      1);
 }
 
 TEST_F(ManagePasswordsBubbleModelTest, ClickNope) {
-  base::StatisticsDeltaReader statistics_delta_reader;
+  base::HistogramTester histogram_tester;
   PretendPasswordWaiting();
   model_->OnNopeClicked();
   model_->OnBubbleHidden();
@@ -167,26 +143,14 @@ TEST_F(ManagePasswordsBubbleModelTest, ClickNope) {
   EXPECT_FALSE(controller()->saved_password());
   EXPECT_FALSE(controller()->never_saved_password());
 
-  scoped_ptr<base::HistogramSamples> samples(
-      statistics_delta_reader.GetHistogramSamplesSinceCreation(
-          kUIDismissalReasonMetric));
-  EXPECT_EQ(
-      0,
-      samples->GetCount(password_manager::metrics_util::NO_DIRECT_INTERACTION));
-  EXPECT_EQ(0, samples->GetCount(password_manager::metrics_util::CLICKED_SAVE));
-  EXPECT_EQ(1, samples->GetCount(password_manager::metrics_util::CLICKED_NOPE));
-  EXPECT_EQ(0,
-            samples->GetCount(password_manager::metrics_util::CLICKED_NEVER));
-  EXPECT_EQ(0,
-            samples->GetCount(password_manager::metrics_util::CLICKED_MANAGE));
-  EXPECT_EQ(0, samples->GetCount(password_manager::metrics_util::CLICKED_DONE));
-  EXPECT_EQ(
-      0,
-      samples->GetCount(password_manager::metrics_util::CLICKED_UNBLACKLIST));
+  histogram_tester.ExpectUniqueSample(
+      kUIDismissalReasonMetric,
+      password_manager::metrics_util::CLICKED_NOPE,
+      1);
 }
 
 TEST_F(ManagePasswordsBubbleModelTest, ClickNever) {
-  base::StatisticsDeltaReader statistics_delta_reader;
+  base::HistogramTester histogram_tester;
   PretendPasswordWaiting();
   model_->OnNeverForThisSiteClicked();
   model_->OnBubbleHidden();
@@ -196,26 +160,14 @@ TEST_F(ManagePasswordsBubbleModelTest, ClickNever) {
   EXPECT_FALSE(controller()->saved_password());
   EXPECT_TRUE(controller()->never_saved_password());
 
-  scoped_ptr<base::HistogramSamples> samples(
-      statistics_delta_reader.GetHistogramSamplesSinceCreation(
-          kUIDismissalReasonMetric));
-  EXPECT_EQ(
-      0,
-      samples->GetCount(password_manager::metrics_util::NO_DIRECT_INTERACTION));
-  EXPECT_EQ(0, samples->GetCount(password_manager::metrics_util::CLICKED_SAVE));
-  EXPECT_EQ(0, samples->GetCount(password_manager::metrics_util::CLICKED_NOPE));
-  EXPECT_EQ(1,
-            samples->GetCount(password_manager::metrics_util::CLICKED_NEVER));
-  EXPECT_EQ(0,
-            samples->GetCount(password_manager::metrics_util::CLICKED_MANAGE));
-  EXPECT_EQ(0, samples->GetCount(password_manager::metrics_util::CLICKED_DONE));
-  EXPECT_EQ(
-      0,
-      samples->GetCount(password_manager::metrics_util::CLICKED_UNBLACKLIST));
+  histogram_tester.ExpectUniqueSample(
+      kUIDismissalReasonMetric,
+      password_manager::metrics_util::CLICKED_NEVER,
+      1);
 }
 
 TEST_F(ManagePasswordsBubbleModelTest, ClickManage) {
-  base::StatisticsDeltaReader statistics_delta_reader;
+  base::HistogramTester histogram_tester;
   PretendManagingPasswords();
   model_->OnManageLinkClicked();
   model_->OnBubbleHidden();
@@ -225,26 +177,14 @@ TEST_F(ManagePasswordsBubbleModelTest, ClickManage) {
   EXPECT_FALSE(controller()->saved_password());
   EXPECT_FALSE(controller()->never_saved_password());
 
-  scoped_ptr<base::HistogramSamples> samples(
-      statistics_delta_reader.GetHistogramSamplesSinceCreation(
-          kUIDismissalReasonMetric));
-  EXPECT_EQ(
-      0,
-      samples->GetCount(password_manager::metrics_util::NO_DIRECT_INTERACTION));
-  EXPECT_EQ(0, samples->GetCount(password_manager::metrics_util::CLICKED_SAVE));
-  EXPECT_EQ(0, samples->GetCount(password_manager::metrics_util::CLICKED_NOPE));
-  EXPECT_EQ(0,
-            samples->GetCount(password_manager::metrics_util::CLICKED_NEVER));
-  EXPECT_EQ(1,
-            samples->GetCount(password_manager::metrics_util::CLICKED_MANAGE));
-  EXPECT_EQ(0, samples->GetCount(password_manager::metrics_util::CLICKED_DONE));
-  EXPECT_EQ(
-      0,
-      samples->GetCount(password_manager::metrics_util::CLICKED_UNBLACKLIST));
+  histogram_tester.ExpectUniqueSample(
+      kUIDismissalReasonMetric,
+      password_manager::metrics_util::CLICKED_MANAGE,
+      1);
 }
 
 TEST_F(ManagePasswordsBubbleModelTest, ClickDone) {
-  base::StatisticsDeltaReader statistics_delta_reader;
+  base::HistogramTester histogram_tester;
   PretendManagingPasswords();
   model_->OnDoneClicked();
   model_->OnBubbleHidden();
@@ -254,26 +194,14 @@ TEST_F(ManagePasswordsBubbleModelTest, ClickDone) {
   EXPECT_FALSE(controller()->saved_password());
   EXPECT_FALSE(controller()->never_saved_password());
 
-  scoped_ptr<base::HistogramSamples> samples(
-      statistics_delta_reader.GetHistogramSamplesSinceCreation(
-          kUIDismissalReasonMetric));
-  EXPECT_EQ(
-      0,
-      samples->GetCount(password_manager::metrics_util::NO_DIRECT_INTERACTION));
-  EXPECT_EQ(0, samples->GetCount(password_manager::metrics_util::CLICKED_SAVE));
-  EXPECT_EQ(0, samples->GetCount(password_manager::metrics_util::CLICKED_NOPE));
-  EXPECT_EQ(0,
-            samples->GetCount(password_manager::metrics_util::CLICKED_NEVER));
-  EXPECT_EQ(0,
-            samples->GetCount(password_manager::metrics_util::CLICKED_MANAGE));
-  EXPECT_EQ(1, samples->GetCount(password_manager::metrics_util::CLICKED_DONE));
-  EXPECT_EQ(
-      0,
-      samples->GetCount(password_manager::metrics_util::CLICKED_UNBLACKLIST));
+  histogram_tester.ExpectUniqueSample(
+      kUIDismissalReasonMetric,
+      password_manager::metrics_util::CLICKED_DONE,
+      1);
 }
 
 TEST_F(ManagePasswordsBubbleModelTest, ClickUnblacklist) {
-  base::StatisticsDeltaReader statistics_delta_reader;
+  base::HistogramTester histogram_tester;
   PretendBlacklisted();
   model_->OnUnblacklistClicked();
   model_->OnBubbleHidden();
@@ -283,22 +211,10 @@ TEST_F(ManagePasswordsBubbleModelTest, ClickUnblacklist) {
   EXPECT_FALSE(controller()->saved_password());
   EXPECT_FALSE(controller()->never_saved_password());
 
-  scoped_ptr<base::HistogramSamples> samples(
-      statistics_delta_reader.GetHistogramSamplesSinceCreation(
-          kUIDismissalReasonMetric));
-  EXPECT_EQ(
-      0,
-      samples->GetCount(password_manager::metrics_util::NO_DIRECT_INTERACTION));
-  EXPECT_EQ(0, samples->GetCount(password_manager::metrics_util::CLICKED_SAVE));
-  EXPECT_EQ(0, samples->GetCount(password_manager::metrics_util::CLICKED_NOPE));
-  EXPECT_EQ(0,
-            samples->GetCount(password_manager::metrics_util::CLICKED_NEVER));
-  EXPECT_EQ(0,
-            samples->GetCount(password_manager::metrics_util::CLICKED_MANAGE));
-  EXPECT_EQ(0, samples->GetCount(password_manager::metrics_util::CLICKED_DONE));
-  EXPECT_EQ(
-      1,
-      samples->GetCount(password_manager::metrics_util::CLICKED_UNBLACKLIST));
+  histogram_tester.ExpectUniqueSample(
+      kUIDismissalReasonMetric,
+      password_manager::metrics_util::CLICKED_UNBLACKLIST,
+      1);
 }
 
 TEST_F(ManagePasswordsBubbleModelTest, PasswordPendingUserDecision) {

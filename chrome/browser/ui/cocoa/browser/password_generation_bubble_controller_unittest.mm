@@ -8,7 +8,7 @@
 #include "base/metrics/histogram_samples.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/test/statistics_delta_reader.h"
+#include "base/test/histogram_tester.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #include "components/autofill/core/browser/password_generator.h"
 #include "components/autofill/core/common/password_form.h"
@@ -81,24 +81,14 @@ TEST_F(PasswordGenerationBubbleControllerTest, Regenerate) {
 }
 
 TEST_F(PasswordGenerationBubbleControllerTest, UMALogging) {
-  base::StatisticsDeltaReader statistics_delta_reader;
+  base::HistogramTester histogram_tester;
   [controller() showWindow:nil];
 
   // Do nothing.
   CloseController();
 
-  scoped_ptr<base::HistogramSamples> samples(
-      statistics_delta_reader.GetHistogramSamplesSinceCreation(kHistogramName));
-  EXPECT_EQ(
-      1,
-      samples->GetCount(autofill::password_generation::IGNORE_FEATURE));
-  EXPECT_EQ(
-      0,
-      samples->GetCount(autofill::password_generation::ACCEPT_AFTER_EDITING));
-  EXPECT_EQ(
-      0,
-      samples->GetCount(
-          autofill::password_generation::ACCEPT_ORIGINAL_PASSWORD));
+  histogram_tester.ExpectUniqueSample(
+      kHistogramName, autofill::password_generation::IGNORE_FEATURE, 1);
 
   SetUpController();
 
@@ -107,18 +97,11 @@ TEST_F(PasswordGenerationBubbleControllerTest, UMALogging) {
   [controller() fillPassword:nil];
   CloseController();
 
-  samples =
-      statistics_delta_reader.GetHistogramSamplesSinceCreation(kHistogramName);
-  EXPECT_EQ(
-      1,
-      samples->GetCount(autofill::password_generation::IGNORE_FEATURE));
-  EXPECT_EQ(
-      1,
-      samples->GetCount(autofill::password_generation::ACCEPT_AFTER_EDITING));
-  EXPECT_EQ(
-      0,
-      samples->GetCount(
-          autofill::password_generation::ACCEPT_ORIGINAL_PASSWORD));
+  histogram_tester.ExpectBucketCount(
+      kHistogramName, autofill::password_generation::IGNORE_FEATURE, 1);
+  histogram_tester.ExpectBucketCount(
+      kHistogramName, autofill::password_generation::ACCEPT_AFTER_EDITING, 1);
+  histogram_tester.ExpectTotalCount(kHistogramName, 2);
 
   SetUpController();
 
@@ -126,16 +109,13 @@ TEST_F(PasswordGenerationBubbleControllerTest, UMALogging) {
   [controller() fillPassword:nil];
   CloseController();
 
-  samples =
-      statistics_delta_reader.GetHistogramSamplesSinceCreation(kHistogramName);
-  EXPECT_EQ(
-      1,
-      samples->GetCount(autofill::password_generation::IGNORE_FEATURE));
-  EXPECT_EQ(
-      1,
-      samples->GetCount(autofill::password_generation::ACCEPT_AFTER_EDITING));
-  EXPECT_EQ(
-      1,
-      samples->GetCount(
-          autofill::password_generation::ACCEPT_ORIGINAL_PASSWORD));
+  histogram_tester.ExpectBucketCount(
+      kHistogramName, autofill::password_generation::IGNORE_FEATURE, 1);
+  histogram_tester.ExpectBucketCount(
+      kHistogramName, autofill::password_generation::ACCEPT_AFTER_EDITING, 1);
+  histogram_tester.ExpectBucketCount(
+      kHistogramName,
+      autofill::password_generation::ACCEPT_ORIGINAL_PASSWORD,
+      1);
+  histogram_tester.ExpectTotalCount(kHistogramName, 3);
 }

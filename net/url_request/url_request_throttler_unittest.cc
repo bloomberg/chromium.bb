@@ -10,7 +10,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
-#include "base/test/statistics_delta_reader.h"
+#include "base/test/histogram_tester.h"
 #include "base/time/time.h"
 #include "net/base/load_flags.h"
 #include "net/base/request_priority.h"
@@ -209,7 +209,7 @@ TEST_F(URLRequestThrottlerEntryTest, CanThrottleRequest) {
 }
 
 TEST_F(URLRequestThrottlerEntryTest, InterfaceDuringExponentialBackoff) {
-  base::StatisticsDeltaReader statistics_delta_reader;
+  base::HistogramTester histogram_tester;
   entry_->set_exponential_backoff_release_time(
       entry_->fake_time_now_ + TimeDelta::FromMilliseconds(1));
   EXPECT_TRUE(entry_->ShouldRejectRequest(request_,
@@ -220,15 +220,12 @@ TEST_F(URLRequestThrottlerEntryTest, InterfaceDuringExponentialBackoff) {
   EXPECT_FALSE(entry_->ShouldRejectRequest(request_,
                                            context_.network_delegate()));
 
-  scoped_ptr<base::HistogramSamples> samples(
-      statistics_delta_reader.GetHistogramSamplesSinceCreation(
-          kRequestThrottledHistogramName));
-  ASSERT_EQ(1, samples->GetCount(0));
-  ASSERT_EQ(1, samples->GetCount(1));
+  histogram_tester.ExpectBucketCount(kRequestThrottledHistogramName, 0, 1);
+  histogram_tester.ExpectBucketCount(kRequestThrottledHistogramName, 1, 1);
 }
 
 TEST_F(URLRequestThrottlerEntryTest, InterfaceNotDuringExponentialBackoff) {
-  base::StatisticsDeltaReader statistics_delta_reader;
+  base::HistogramTester histogram_tester;
   entry_->set_exponential_backoff_release_time(entry_->fake_time_now_);
   EXPECT_FALSE(entry_->ShouldRejectRequest(request_,
                                            context_.network_delegate()));
@@ -237,11 +234,8 @@ TEST_F(URLRequestThrottlerEntryTest, InterfaceNotDuringExponentialBackoff) {
   EXPECT_FALSE(entry_->ShouldRejectRequest(request_,
                                            context_.network_delegate()));
 
-  scoped_ptr<base::HistogramSamples> samples(
-      statistics_delta_reader.GetHistogramSamplesSinceCreation(
-          kRequestThrottledHistogramName));
-  ASSERT_EQ(2, samples->GetCount(0));
-  ASSERT_EQ(0, samples->GetCount(1));
+  histogram_tester.ExpectBucketCount(kRequestThrottledHistogramName, 0, 2);
+  histogram_tester.ExpectBucketCount(kRequestThrottledHistogramName, 1, 0);
 }
 
 TEST_F(URLRequestThrottlerEntryTest, InterfaceUpdateFailure) {
