@@ -40,6 +40,9 @@ WebGLVertexArrayObjectOES::WebGLVertexArrayObjectOES(WebGLRenderingContextBase* 
     : WebGLContextObject(ctx)
     , m_type(type)
     , m_hasEverBeenBound(false)
+#if ENABLE(OILPAN)
+    , m_destructionInProgress(false)
+#endif
     , m_boundElementArrayBuffer(nullptr)
 {
     ScriptWrappable::init(this);
@@ -57,13 +60,9 @@ WebGLVertexArrayObjectOES::WebGLVertexArrayObjectOES(WebGLRenderingContextBase* 
 WebGLVertexArrayObjectOES::~WebGLVertexArrayObjectOES()
 {
 #if ENABLE(OILPAN)
-    // These heap objects must not be accessed by deleteObjectImpl(),
-    // clear them out before a call to it is triggered below. The
-    // finalizers of these two (and their elements) will themselves
-    // handle detachment.
-    m_boundElementArrayBuffer.clear();
-    m_vertexAttribState.clear();
+    m_destructionInProgress = true;
 #endif
+
     // Delete the platform framebuffer resource. Explicit detachment
     // is for the benefit of Oilpan, where this vertex array object
     // isn't detached when it and the WebGLRenderingContextBase object
@@ -73,6 +72,18 @@ WebGLVertexArrayObjectOES::~WebGLVertexArrayObjectOES()
     // To keep the code regular, the trivial detach()ment is always
     // performed.
     detachAndDeleteObject();
+}
+
+void WebGLVertexArrayObjectOES::dispatchDetached(blink::WebGraphicsContext3D* context3d)
+{
+    if (m_boundElementArrayBuffer)
+        m_boundElementArrayBuffer->onDetached(context3d);
+
+    for (size_t i = 0; i < m_vertexAttribState.size(); ++i) {
+        VertexAttribState& state = m_vertexAttribState[i];
+        if (state.bufferBinding)
+            state.bufferBinding->onDetached(context3d);
+    }
 }
 
 void WebGLVertexArrayObjectOES::deleteObjectImpl(blink::WebGraphicsContext3D* context3d, Platform3DObject object)
@@ -85,14 +96,17 @@ void WebGLVertexArrayObjectOES::deleteObjectImpl(blink::WebGraphicsContext3D* co
         break;
     }
 
-    if (m_boundElementArrayBuffer)
-        m_boundElementArrayBuffer->onDetached(context3d);
-
-    for (size_t i = 0; i < m_vertexAttribState.size(); ++i) {
-        VertexAttribState& state = m_vertexAttribState[i];
-        if (state.bufferBinding)
-            state.bufferBinding->onDetached(context3d);
-    }
+#if ENABLE(OILPAN)
+    // These m_boundElementArrayBuffer and m_vertexAttribState heap
+    // objects must not be accessed during destruction in the oilpan
+    // build. They could have been already finalized. The finalizers
+    // of these objects (and their elements) will themselves handle
+    // detachment.
+    if (!m_destructionInProgress)
+        dispatchDetached(context3d);
+#else
+    dispatchDetached(context3d);
+#endif
 }
 
 void WebGLVertexArrayObjectOES::setElementArrayBuffer(PassRefPtrWillBeRawPtr<WebGLBuffer> buffer)

@@ -94,10 +94,14 @@ public:
 private:
     WebGLVertexArrayObjectOES(WebGLRenderingContextBase*, VaoType);
 
+    void dispatchDetached(blink::WebGraphicsContext3D*);
     virtual void deleteObjectImpl(blink::WebGraphicsContext3D*, Platform3DObject) OVERRIDE;
 
     VaoType m_type;
     bool m_hasEverBeenBound;
+#if ENABLE(OILPAN)
+    bool m_destructionInProgress;
+#endif
     RefPtrWillBeMember<WebGLBuffer> m_boundElementArrayBuffer;
     WillBeHeapVector<VertexAttribState> m_vertexAttribState;
 };
