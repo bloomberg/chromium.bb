@@ -472,6 +472,7 @@ def TargetLibCompiler(host):
       # what host they run on; they can just depend on 'target_lib_compiler'
       'target_lib_compiler': {
           'type': 'work',
+          'output_subdir': 'target_lib_compiler',
           'dependencies': [ H('binutils_pnacl'), H('llvm') ],
           'inputs': { 'driver': os.path.join(NACL_DIR, 'pnacl', 'driver')},
           'commands': [
@@ -696,18 +697,21 @@ if __name__ == '__main__':
       packages.update(HostTools(host, args))
       packages.update(TargetLibCompiler(DefaultHostForTargetLibs()))
     # Don't build the target libs on Windows because of pathname issues.
-    # Don't build the target libs on Mac because the gold plugin's rpaths
-    # aren't right.
-    # On linux use the 32-bit compiler to build the target libs since that's
-    # what most developers will be using. (hosts[0] is i686-linux on linux64)
-    # TODO(dschuff): Figure out a better way to test things on toolchain bots.
-    if pynacl.platform.IsLinux():
+    # Only the linux64 bot is canonical (i.e. it will upload its packages).
+    # The other bots will use a 'work' target instead of a 'build' target for
+    # the target libs, so they will not be memoized, but can be used for tests.
+    # TODO(dschuff): Even better would be if we could memoize non-canonical
+    # build targets without doing things like mangling their names (and for e.g.
+    # scons tests, skip running them if their dependencies haven't changed, like
+    # build targets)
+    is_canonical = pynacl.platform.IsLinux64()
+    if pynacl.platform.IsLinux() or pynacl.platform.IsMac():
       packages.update(pnacl_targetlibs.TargetLibsSrc(
         GetGitSyncCmdsCallback(rev)))
       for bias in BITCODE_BIASES:
-        packages.update(pnacl_targetlibs.BitcodeLibs(bias))
+        packages.update(pnacl_targetlibs.BitcodeLibs(bias, is_canonical))
       for arch in ALL_ARCHES:
-        packages.update(pnacl_targetlibs.NativeLibs(arch))
+        packages.update(pnacl_targetlibs.NativeLibs(arch, is_canonical))
       packages.update(Metadata())
     if pynacl.platform.IsLinux() or pynacl.platform.IsMac():
       packages.update(pnacl_targetlibs.UnsandboxedIRT(

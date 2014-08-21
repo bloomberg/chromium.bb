@@ -262,7 +262,7 @@ class PackageBuilder(object):
         signature_file=self._signature_file,
         subdir=output_subdir)
 
-    if is_build_target and self._options.install:
+    if not is_source_target and self._options.install:
       install = pynacl.platform.CygPath(self._options.install)
       logging.debug('Installing output to %s' % install)
       pynacl.file_tools.CopyTree(output, install)

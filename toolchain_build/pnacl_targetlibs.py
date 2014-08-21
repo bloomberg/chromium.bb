@@ -242,7 +242,7 @@ def TargetLibsSrc(GitSyncCmds):
   return source
 
 
-def BitcodeLibs(bias_arch):
+def BitcodeLibs(bias_arch, is_canonical):
   def B(component_name):
     return Mangle(component_name, bias_arch)
   def BcSubdir(subdir, bias_arch):
@@ -252,7 +252,7 @@ def BitcodeLibs(bias_arch):
       return subdir + '-bc-' + bias_arch
   libs = {
       B('newlib'): {
-          'type': 'build',
+          'type': 'build' if is_canonical else 'work',
           'output_subdir': BcSubdir('usr', bias_arch),
           'dependencies': [ 'newlib_src', 'target_lib_compiler'],
           'commands' : [
@@ -297,7 +297,7 @@ def BitcodeLibs(bias_arch):
           ],
       },
       B('libcxx'): {
-          'type': 'build',
+          'type': 'build' if is_canonical else 'work',
           'output_subdir': BcSubdir('usr', bias_arch),
           'dependencies': ['libcxx_src', 'libcxxabi_src', 'llvm_src', 'gcc_src',
                            'target_lib_compiler', B('newlib'),
@@ -347,7 +347,7 @@ def BitcodeLibs(bias_arch):
           ],
       },
       B('libstdcxx'): {
-          'type': 'build',
+          'type': 'build' if is_canonical else 'work',
           'output_subdir': BcSubdir('usr', bias_arch),
           'dependencies': ['gcc_src', 'gcc_src', 'target_lib_compiler',
                            B('newlib')],
@@ -395,7 +395,7 @@ def BitcodeLibs(bias_arch):
           ],
       },
       B('libs_support_bitcode'): {
-          'type': 'build',
+          'type': 'build' if is_canonical else 'work',
           'output_subdir': BcSubdir('lib', bias_arch),
           'dependencies': [ B('newlib'), 'target_lib_compiler'],
           'inputs': { 'src': os.path.join(NACL_DIR,
@@ -430,7 +430,7 @@ def BitcodeLibs(bias_arch):
   return libs
 
 
-def NativeLibs(arch):
+def NativeLibs(arch, is_canonical):
   setjmp_arch = arch
   if setjmp_arch.endswith('-nonsfi'):
     setjmp_arch = setjmp_arch[:-len('-nonsfi')]
@@ -452,7 +452,7 @@ def NativeLibs(arch):
 
   libs = {
       Mangle('libs_support_native', arch): {
-          'type': 'build',
+          'type': 'build' if is_canonical else 'work',
           'output_subdir': 'lib-' + arch,
           'dependencies': [ 'newlib_src', 'newlib_portable',
                             'target_lib_compiler'],
@@ -507,7 +507,7 @@ def NativeLibs(arch):
           ],
       },
       Mangle('compiler_rt', arch): {
-          'type': 'build',
+          'type': 'build' if is_canonical else 'work',
           'output_subdir': 'lib-' + arch,
           'dependencies': [ 'compiler_rt_src', 'target_lib_compiler'],
           'commands': [
@@ -528,7 +528,7 @@ def NativeLibs(arch):
   if not arch.endswith('-nonsfi'):
     libs.update({
       Mangle('libgcc_eh', arch): {
-          'type': 'build',
+          'type': 'build' if is_canonical else 'work',
           'output_subdir': 'lib-' + arch,
           'dependencies': [ 'gcc_src', 'target_lib_compiler'],
           'inputs': { 'scripts': os.path.join(NACL_DIR, 'pnacl', 'scripts')},
