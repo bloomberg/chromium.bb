@@ -266,6 +266,7 @@ static PassRefPtr<TypeBuilder::Network::Response> buildObjectForResourceResponse
         .setEncodedDataLength(encodedDataLength);
 
     responseObject->setFromDiskCache(response.wasCached());
+    responseObject->setFromServiceWorker(response.wasFetchedViaServiceWorker());
     if (response.resourceLoadTiming())
         responseObject->setTiming(buildObjectForTiming(*response.resourceLoadTiming(), loader));
 
