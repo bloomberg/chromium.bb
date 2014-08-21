@@ -1698,7 +1698,13 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, EditSearchEngines) {
   EXPECT_FALSE(omnibox_view->model()->popup_model()->IsOpen());
 }
 
-IN_PROC_BROWSER_TEST_F(OmniboxViewTest, BeginningShownAfterBlur) {
+#if defined(OS_MACOSX)
+// http://crbug.com/406012
+#define MAYBE_BeginningShownAfterBlur DISABLED_BeginningShownAfterBlur
+#else
+#define MAYBE_BeginningShownAfterBlur BeginningShownAfterBlur
+#endif
+IN_PROC_BROWSER_TEST_F(OmniboxViewTest, MAYBE_BeginningShownAfterBlur) {
   OmniboxView* omnibox_view = NULL;
   ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
 
