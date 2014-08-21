@@ -74,7 +74,6 @@ void ServiceWorkerCacheStorageDispatcher::OnCacheStorageGetSuccess(
     int cache_id) {
   CacheStorageWithCacheCallbacks* callbacks =
       get_callbacks_.Lookup(request_id);
-  DCHECK(callbacks);
   callbacks->onSuccess(NULL);
   get_callbacks_.Remove(request_id);
 }
@@ -82,7 +81,6 @@ void ServiceWorkerCacheStorageDispatcher::OnCacheStorageGetSuccess(
 void ServiceWorkerCacheStorageDispatcher::OnCacheStorageHasSuccess(
     int request_id) {
   CacheStorageCallbacks* callbacks = has_callbacks_.Lookup(request_id);
-  DCHECK(callbacks);
   callbacks->onSuccess();
   has_callbacks_.Remove(request_id);
 }
@@ -92,7 +90,6 @@ void ServiceWorkerCacheStorageDispatcher::OnCacheStorageCreateSuccess(
     int cache_id) {
   CacheStorageWithCacheCallbacks* callbacks =
       create_callbacks_.Lookup(request_id);
-  DCHECK(callbacks);
   callbacks->onSuccess(NULL);
   create_callbacks_.Remove(request_id);
 }
@@ -100,7 +97,6 @@ void ServiceWorkerCacheStorageDispatcher::OnCacheStorageCreateSuccess(
 void ServiceWorkerCacheStorageDispatcher::OnCacheStorageDeleteSuccess(
     int request_id) {
   CacheStorageCallbacks* callbacks = delete_callbacks_.Lookup(request_id);
-  DCHECK(callbacks);
   callbacks->onSuccess();
   delete_callbacks_.Remove(request_id);
 }
@@ -109,7 +105,6 @@ void ServiceWorkerCacheStorageDispatcher::OnCacheStorageKeysSuccess(
     int request_id,
     const std::vector<base::string16>& keys) {
   CacheStorageKeysCallbacks* callbacks = keys_callbacks_.Lookup(request_id);
-  DCHECK(callbacks);
   blink::WebVector<blink::WebString> webKeys(keys.size());
   for (size_t i = 0; i < keys.size(); ++i)
     webKeys[i] = keys[i];
@@ -123,7 +118,6 @@ void ServiceWorkerCacheStorageDispatcher::OnCacheStorageGetError(
       blink::WebServiceWorkerCacheError reason) {
   CacheStorageWithCacheCallbacks* callbacks =
       get_callbacks_.Lookup(request_id);
-  DCHECK(callbacks);
   callbacks->onError(&reason);
   get_callbacks_.Remove(request_id);
 }
@@ -132,7 +126,6 @@ void ServiceWorkerCacheStorageDispatcher::OnCacheStorageHasError(
       int request_id,
       blink::WebServiceWorkerCacheError reason) {
   CacheStorageCallbacks* callbacks = has_callbacks_.Lookup(request_id);
-  DCHECK(callbacks);
   callbacks->onError(&reason);
   has_callbacks_.Remove(request_id);
 }
@@ -142,7 +135,6 @@ void ServiceWorkerCacheStorageDispatcher::OnCacheStorageCreateError(
     blink::WebServiceWorkerCacheError reason) {
   CacheStorageWithCacheCallbacks* callbacks =
       create_callbacks_.Lookup(request_id);
-  DCHECK(callbacks);
   callbacks->onError(&reason);
   create_callbacks_.Remove(request_id);
 }
@@ -151,7 +143,6 @@ void ServiceWorkerCacheStorageDispatcher::OnCacheStorageDeleteError(
       int request_id,
       blink::WebServiceWorkerCacheError reason) {
   CacheStorageCallbacks* callbacks = delete_callbacks_.Lookup(request_id);
-  DCHECK(callbacks);
   callbacks->onError(&reason);
   delete_callbacks_.Remove(request_id);
 }
@@ -160,7 +151,6 @@ void ServiceWorkerCacheStorageDispatcher::OnCacheStorageKeysError(
       int request_id,
       blink::WebServiceWorkerCacheError reason) {
   CacheStorageKeysCallbacks* callbacks = keys_callbacks_.Lookup(request_id);
-  DCHECK(callbacks);
   callbacks->onError(&reason);
   keys_callbacks_.Remove(request_id);
 }
@@ -176,7 +166,7 @@ void ServiceWorkerCacheStorageDispatcher::dispatchGet(
 void ServiceWorkerCacheStorageDispatcher::dispatchHas(
     CacheStorageCallbacks* callbacks,
     const blink::WebString& cacheName) {
-  int request_id = delete_callbacks_.Add(callbacks);
+  int request_id = has_callbacks_.Add(callbacks);
   script_context_->Send(new ServiceWorkerHostMsg_CacheStorageDelete(
       script_context_->GetRoutingID(), request_id, cacheName));
 }
