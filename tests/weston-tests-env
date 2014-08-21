@@ -28,6 +28,7 @@ XWAYLAND_PLUGIN=$abs_builddir/.libs/xwayland.so
 
 case $TESTNAME in
 	*.la|*.so)
+		WESTON_BUILD_DIR=$abs_builddir \
 		$WESTON --backend=$BACKEND \
 			--no-config \
 			--shell=$SHELL_PLUGIN \
@@ -37,6 +38,7 @@ case $TESTNAME in
 			&> "$OUTLOG"
 		;;
 	*)
+		WESTON_BUILD_DIR=$abs_builddir \
 		WESTON_TEST_CLIENT_PATH=$abs_builddir/$TESTNAME $WESTON \
 			--socket=test-$(basename $TESTNAME) \
 			--backend=$BACKEND \

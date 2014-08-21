@@ -92,6 +92,9 @@ int
 weston_config_section_get_bool(struct weston_config_section *section,
 			       const char *key,
 			       int *value, int default_value);
+const char *
+weston_config_get_libexec_dir(void);
+
 struct weston_config *
 weston_config_parse(const char *name);
 

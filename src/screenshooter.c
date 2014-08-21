@@ -286,12 +286,16 @@ screenshooter_binding(struct weston_seat *seat, uint32_t time, uint32_t key,
 		      void *data)
 {
 	struct screenshooter *shooter = data;
-	const char *screenshooter_exe = LIBEXECDIR "/weston-screenshooter";
+	char *screenshooter_exe;
+
+	asprintf(&screenshooter_exe, "%s/%s", weston_config_get_libexec_dir(),
+					      "/weston-screenshooter");
 
 	if (!shooter->client)
 		shooter->client = weston_client_launch(shooter->ec,
 					&shooter->process,
 					screenshooter_exe, screenshooter_sigchld);
+	free(screenshooter_exe);
 }
 
 struct weston_recorder {
