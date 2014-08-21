@@ -48,7 +48,7 @@ CSS3TextDecorations status=experimental
 CompositedSelectionUpdates
 CustomSchemeHandler depends_on=NavigatorContentUtils, status=experimental
 Database status=stable
-DeviceLight status=test
+DeviceLight status=experimental
 DialogElement status=stable
 DisplayList2dCanvas
 SVGFontsOnNonGDIPlatforms
