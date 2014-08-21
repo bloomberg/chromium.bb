@@ -1930,4 +1930,78 @@ TEST_F(SessionsSyncManagerTest, NotifiedOfRefresh) {
 }
 #endif  // defined(OS_ANDROID) || defined(OS_IOS)
 
+// Tests receipt of duplicate tab IDs in the same window.  This should never
+// happen, but we want to make sure the client won't do anything bad if it does
+// receive such garbage input data.
+TEST_F(SessionsSyncManagerTest, ReceiveDuplicateTabInSameWindow) {
+  std::string tag = "tag1";
+
+  // Reuse tab ID 10 in an attempt to trigger bad behavior.
+  SessionID::id_type n1[] = {5, 10, 10, 17};
+  std::vector<SessionID::id_type> tab_list1(n1, n1 + arraysize(n1));
+  std::vector<sync_pb::SessionSpecifics> tabs1;
+  sync_pb::SessionSpecifics meta(
+      helper()->BuildForeignSession(tag, tab_list1, &tabs1));
+
+  // Set up initial data.
+  syncer::SyncDataList initial_data;
+  sync_pb::EntitySpecifics entity;
+  entity.mutable_session()->CopyFrom(meta);
+  initial_data.push_back(SyncData::CreateRemoteData(
+      1,
+      entity,
+      base::Time(),
+      syncer::AttachmentIdList(),
+      syncer::AttachmentServiceProxyForTest::Create()));
+  AddTabsToSyncDataList(tabs1, &initial_data);
+
+  syncer::SyncChangeList output;
+  InitWithSyncDataTakeOutput(initial_data, &output);
+}
+
+// Tests receipt of duplicate tab IDs for the same session.  The duplicate tab
+// ID is present in two different windows.  A client can't be expected to do
+// anything reasonable with this input, but we can expect that it doesn't
+// crash.
+TEST_F(SessionsSyncManagerTest, ReceiveDuplicateTabInOtherWindow) {
+  std::string tag = "tag1";
+
+  SessionID::id_type n1[] = {5, 10, 17};
+  std::vector<SessionID::id_type> tab_list1(n1, n1 + arraysize(n1));
+  std::vector<sync_pb::SessionSpecifics> tabs1;
+  sync_pb::SessionSpecifics meta(
+      helper()->BuildForeignSession(tag, tab_list1, &tabs1));
+
+  // Add a second window.  Tab ID 10 is a duplicate.
+  SessionID::id_type n2[] = {10, 18, 20};
+  std::vector<SessionID::id_type> tab_list2(n2, n2 + arraysize(n2));
+  helper()->AddWindowSpecifics(1, tab_list2, &meta);
+
+  // Set up initial data.
+  syncer::SyncDataList initial_data;
+  sync_pb::EntitySpecifics entity;
+  entity.mutable_session()->CopyFrom(meta);
+  initial_data.push_back(SyncData::CreateRemoteData(
+      1,
+      entity,
+      base::Time(),
+      syncer::AttachmentIdList(),
+      syncer::AttachmentServiceProxyForTest::Create()));
+  AddTabsToSyncDataList(tabs1, &initial_data);
+
+  for (size_t i = 0; i < tab_list2.size(); ++i) {
+    sync_pb::EntitySpecifics entity;
+    helper()->BuildTabSpecifics(tag, 0, tab_list2[i], entity.mutable_session());
+    initial_data.push_back(SyncData::CreateRemoteData(
+        i + 10,
+        entity,
+        base::Time(),
+        syncer::AttachmentIdList(),
+        syncer::AttachmentServiceProxyForTest::Create()));
+  }
+
+  syncer::SyncChangeList output;
+  InitWithSyncDataTakeOutput(initial_data, &output);
+}
+
 }  // namespace browser_sync

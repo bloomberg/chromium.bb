@@ -323,6 +323,10 @@ class SessionsSyncManager : public syncer::SyncableService,
   // See |local_tab_pool_out_of_sync_|.
   void RebuildAssociations();
 
+  // Validates the content of a SessionHeader protobuf.
+  // Returns false if validation fails.
+  static bool IsValidSessionHeader(const sync_pb::SessionHeader& header);
+
   // Mapping of current open (local) tabs to their sync identifiers.
   TabLinksMap local_tab_map_;
 

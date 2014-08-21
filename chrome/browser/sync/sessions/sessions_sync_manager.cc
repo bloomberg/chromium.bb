@@ -338,6 +338,24 @@ void SessionsSyncManager::RebuildAssociations() {
       syncer::SESSIONS, data, processor.Pass(), error_handler.Pass());
 }
 
+bool SessionsSyncManager::IsValidSessionHeader(
+    const sync_pb::SessionHeader& header) {
+  // Verify that tab IDs appear only once within a session.
+  // Intended to prevent http://crbug.com/360822.
+  std::set<int> session_tab_ids;
+  for (int i = 0; i < header.window_size(); ++i) {
+    const sync_pb::SessionWindow& window = header.window(i);
+    for (int j = 0; j < window.tab_size(); ++j) {
+      const int tab_id = window.tab(j);
+      bool success = session_tab_ids.insert(tab_id).second;
+      if (!success)
+        return false;
+    }
+  }
+
+  return true;
+}
+
 void SessionsSyncManager::OnLocalTabModified(SyncedTabDelegate* modified_tab) {
   const content::NavigationEntry* entry = modified_tab->GetActiveEntry();
   if (!modified_tab->IsBeingDestroyed() &&
@@ -588,6 +606,12 @@ void SessionsSyncManager::UpdateTrackerWithForeignSession(
     // Read in the header data for this foreign session.
     // Header data contains window information and ordered tab id's for each
     // window.
+
+    if (!IsValidSessionHeader(specifics.header())) {
+      LOG(WARNING) << "Ignoring foreign session node with invalid header "
+                   << "and tag " << foreign_session_tag << ".";
+      return;
+    }
 
     // Load (or create) the SyncedSession object for this client.
     const sync_pb::SessionHeader& header = specifics.header();

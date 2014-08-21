@@ -286,8 +286,20 @@ void SyncedSessionTracker::PutTabInWindow(const std::string& session_tag,
   // collected eventually.
   SessionTab* tab_ptr = GetTabImpl(
       session_tag, tab_id, TabNodePool::kInvalidTabNodeID);
+
+  // It's up to the caller to ensure this never happens.  Tabs should not
+  // belong to more than one window or appear twice within the same window.
+  //
+  // If this condition were violated, we would double-free during shutdown.
+  // That could cause all sorts of hard to diagnose crashes, possibly in code
+  // far away from here.  We crash early to avoid this.
+  //
+  // See http://crbug.com/360822.
+  CHECK(!synced_tab_map_[session_tag][tab_id].owned);
+
   unmapped_tabs_.erase(tab_ptr);
   synced_tab_map_[session_tag][tab_id].owned = true;
+
   tab_ptr->window_id.set_id(window_id);
   DVLOG(1) << "  - tab " << tab_id << " added to window "<< window_id;
   DCHECK(GetSession(session_tag)->windows.find(window_id) !=
