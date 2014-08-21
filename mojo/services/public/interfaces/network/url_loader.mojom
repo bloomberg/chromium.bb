@@ -14,11 +14,11 @@ struct URLRequest {
   string method = "GET";
 
   // Additional HTTP request headers.
-  string[] headers;
+  string[]? headers;
 
   // The payload for the request body, represented as a concatenation of data
   // streams. For HTTP requests, the method must be set to "POST" or "PUT".
-  handle<data_pipe_consumer>[] body;
+  handle<data_pipe_consumer>[]? body;
 
   // The number of bytes to be read from |body|. A Content-Length header of
   // this value will be sent. Set to -1 if length is unknown, which will cause
@@ -43,7 +43,7 @@ struct URLRequest {
 
 struct URLResponse {
   // If the response resulted in a network level error, this field will be set.
-  NetworkError error;
+  NetworkError? error;
 
   // The response body stream. Read from this data pipe to receive the bytes of
   // response body.
@@ -70,14 +70,14 @@ struct URLResponse {
   // These fields are set to non-NULL if this response corresponds to a
   // redirect.  Call the |FollowRedirect| method on the URLLoader instance to
   // follow this redirect.
-  string redirect_method;
-  string redirect_url;
+  string? redirect_method;
+  string? redirect_url;
 };
 
 struct URLLoaderStatus {
   // If the loader has failed due to a network level error, this field will be
   // set.
-  NetworkError error;
+  NetworkError? error;
 
   // Set to true if the URLLoader is still working. Set to false once an error
   // is encountered or the response body is completely copied to the response

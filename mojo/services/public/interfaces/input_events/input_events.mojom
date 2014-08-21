@@ -9,7 +9,7 @@ module mojo {
 
 struct LocationData {
   Point in_view_location;
-  Point screen_location;
+  Point? screen_location;
 };
 
 struct KeyData {
