@@ -357,15 +357,6 @@ void FrameView::setFrameRect(const IntRect& newRect)
         page()->frameHost().pinchViewport().mainFrameDidChangeSize();
 }
 
-bool FrameView::scheduleAnimation()
-{
-    if (HostWindow* window = hostWindow()) {
-        window->scheduleAnimation();
-        return true;
-    }
-    return false;
-}
-
 Page* FrameView::page() const
 {
     return frame().page();

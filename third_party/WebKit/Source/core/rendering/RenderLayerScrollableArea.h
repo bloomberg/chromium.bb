@@ -73,6 +73,8 @@ public:
     virtual Scrollbar* horizontalScrollbar() const OVERRIDE { return m_hBar.get(); }
     virtual Scrollbar* verticalScrollbar() const OVERRIDE { return m_vBar.get(); }
 
+    virtual HostWindow* hostWindow() const OVERRIDE;
+
     virtual GraphicsLayer* layerForScrolling() const OVERRIDE;
     virtual GraphicsLayer* layerForHorizontalScrollbar() const OVERRIDE;
     virtual GraphicsLayer* layerForVerticalScrollbar() const OVERRIDE;

@@ -54,6 +54,7 @@
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTraceEvents.h"
+#include "core/page/Chrome.h"
 #include "core/page/EventHandler.h"
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
@@ -140,6 +141,13 @@ RenderLayerScrollableArea::~RenderLayerScrollableArea()
         m_scrollCorner->destroy();
     if (m_resizer)
         m_resizer->destroy();
+}
+
+HostWindow* RenderLayerScrollableArea::hostWindow() const
+{
+    if (Page* page = box().frame()->page())
+        return &page->chrome();
+    return nullptr;
 }
 
 GraphicsLayer* RenderLayerScrollableArea::layerForScrolling() const

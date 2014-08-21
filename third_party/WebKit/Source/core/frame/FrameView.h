@@ -72,8 +72,6 @@ public:
     virtual void invalidateRect(const IntRect&) OVERRIDE;
     virtual void setFrameRect(const IntRect&) OVERRIDE;
 
-    virtual bool scheduleAnimation() OVERRIDE;
-
     LocalFrame& frame() const { return *m_frame; }
     Page* page() const;
 
