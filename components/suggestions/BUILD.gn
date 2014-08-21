@@ -13,6 +13,8 @@ static_library("suggestions") {
     "suggestions_service.h",
     "suggestions_store.cc",
     "suggestions_store.h",
+    "suggestions_utils.cc",
+    "suggestions_utils.h",
   ]
 
   deps = [

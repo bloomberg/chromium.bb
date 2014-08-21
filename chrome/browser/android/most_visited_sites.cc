@@ -24,8 +24,11 @@
 #include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/search/suggestions/suggestions_service_factory.h"
 #include "chrome/browser/search/suggestions/suggestions_source.h"
+#include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/thumbnails/thumbnail_list_source.h"
 #include "components/suggestions/suggestions_service.h"
+#include "components/suggestions/suggestions_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/url_data_source.h"
@@ -46,6 +49,7 @@ using suggestions::ChromeSuggestion;
 using suggestions::SuggestionsProfile;
 using suggestions::SuggestionsService;
 using suggestions::SuggestionsServiceFactory;
+using suggestions::SyncState;
 
 namespace {
 
@@ -171,6 +175,18 @@ void LogHistogramEvent(const std::string& histogram, int position,
     counter->Add(position);
 }
 
+// Return the current SyncState for use with the SuggestionsService.
+SyncState GetSyncState(Profile* profile) {
+  ProfileSyncService* sync =
+      ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
+  if (!sync)
+    return SyncState::SYNC_OR_HISTORY_SYNC_DISABLED;
+  return suggestions::GetSyncState(
+      sync->IsSyncEnabledAndLoggedIn(),
+      sync->sync_initialized(),
+      sync->GetActiveDataTypes().Has(syncer::HISTORY_DELETE_DIRECTIVES));
+}
+
 }  // namespace
 
 MostVisitedSites::MostVisitedSites(Profile* profile)
@@ -182,6 +198,14 @@ MostVisitedSites::MostVisitedSites(Profile* profile)
   content::URLDataSource::Add(profile_,
                               new suggestions::SuggestionsSource(profile_));
   content::URLDataSource::Add(profile_, new ThumbnailListSource(profile_));
+
+  // Register this class as an observer to the sync service. It is important to
+  // be notified of changes in the sync state such as initialization, sync
+  // being enabled or disabled, etc.
+  ProfileSyncService* profile_sync_service =
+      ProfileSyncServiceFactory::GetForProfile(profile_);
+  if (profile_sync_service)
+    profile_sync_service->AddObserver(this);
 }
 
 MostVisitedSites::~MostVisitedSites() {
@@ -230,11 +254,13 @@ void MostVisitedSites::GetURLThumbnail(JNIEnv* env,
   std::string url_string = ConvertJavaStringToUTF8(env, url);
   scoped_refptr<TopSites> top_sites(profile_->GetTopSites());
 
-  // If the Suggestions service is enabled, create a callback to fetch a
-  // server thumbnail from it, in case the local thumbnail is not found.
+  // If the Suggestions service is enabled and in use, create a callback to
+  // fetch a server thumbnail from it, in case the local thumbnail is not found.
   SuggestionsService* suggestions_service =
       SuggestionsServiceFactory::GetForProfile(profile_);
-  base::Closure lookup_failed_callback = suggestions_service ?
+  bool use_suggestions_service = suggestions_service &&
+      mv_source_ == SUGGESTIONS_SERVICE;
+  base::Closure lookup_failed_callback = use_suggestions_service ?
       base::Bind(&MostVisitedSites::GetSuggestionsThumbnailOnUIThread,
                  weak_ptr_factory_.GetWeakPtr(),
                  suggestions_service, url_string,
@@ -317,6 +343,13 @@ void MostVisitedSites::Observe(int type,
   }
 }
 
+void MostVisitedSites::OnStateChanged() {
+  // There have been changes to the sync state. This class cares about a few
+  // (just initialized, enabled/disabled or history sync state changed). Re-run
+  // the query code which will use the proper state.
+  QueryMostVisitedURLs();
+}
+
 // static
 bool MostVisitedSites::Register(JNIEnv* env) {
   return RegisterNativesImpl(env);
@@ -328,6 +361,7 @@ void MostVisitedSites::QueryMostVisitedURLs() {
   if (suggestions_service) {
     // Suggestions service is enabled, initiate a query.
     suggestions_service->FetchSuggestionsData(
+        GetSyncState(profile_),
         base::Bind(
           &MostVisitedSites::OnSuggestionsProfileAvailable,
           weak_ptr_factory_.GetWeakPtr(),

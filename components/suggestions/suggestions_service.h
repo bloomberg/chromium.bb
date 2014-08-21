@@ -19,6 +19,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/suggestions/image_manager.h"
 #include "components/suggestions/proto/suggestions.pb.h"
+#include "components/suggestions/suggestions_utils.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "ui/gfx/image/image_skia.h"
 #include "url/gurl.h"
@@ -64,16 +65,20 @@ class SuggestionsService : public KeyedService, public net::URLFetcherDelegate {
   // Whether the user is part of a control group.
   static bool IsControlGroup();
 
-  // Request suggestions data, which will be passed to |callback|. Initiates a
-  // fetch request unless a pending one exists. To prevent multiple requests,
-  // we place all |callback|s in a queue and update them simultaneously when
-  // fetch request completes. Also posts a task to execute OnRequestTimeout
-  // if the request hasn't completed in a given amount of time.
-  void FetchSuggestionsData(ResponseCallback callback);
-
-  // Similar to FetchSuggestionsData but doesn't post a task to execute
-  // OnDelaySinceFetch.
-  void FetchSuggestionsDataNoTimeout(ResponseCallback callback);
+  // Request suggestions data, which will be passed to |callback|. |sync_state|
+  // will influence the behavior of this function (see SyncState definition).
+  //
+  // |sync_state| must be specified based on the current state of the system
+  // (see suggestions::GetSyncState). Callers should call this function again if
+  // sync state changes.
+  //
+  // If state allows for a network request, it is initiated unless a pending one
+  // exists. To prevent multiple requests, all |callback|s are placed in a queue
+  // and are updated simultaneously when the fetch completes. Also posts a task
+  // to execute OnRequestTimeout if the request hasn't completed in a given
+  // amount of time.
+  void FetchSuggestionsData(SyncState sync_state,
+                            ResponseCallback callback);
 
   // Retrieves stored thumbnail for website |url| asynchronously. Calls
   // |callback| with Bitmap pointer if found, and NULL otherwise.
@@ -97,9 +102,14 @@ class SuggestionsService : public KeyedService, public net::URLFetcherDelegate {
   void SetDefaultExpiryTimestamp(SuggestionsProfile* suggestions,
                                  int64 timestamp_usec);
  private:
+  friend class SuggestionsServiceTest;
   FRIEND_TEST_ALL_PREFIXES(SuggestionsServiceTest, BlacklistURLFails);
   FRIEND_TEST_ALL_PREFIXES(SuggestionsServiceTest, FetchSuggestionsData);
   FRIEND_TEST_ALL_PREFIXES(SuggestionsServiceTest, UpdateBlacklistDelay);
+
+  // Similar to FetchSuggestionsData but doesn't post a task to execute
+  // OnDelaySinceFetch.
+  void FetchSuggestionsDataNoTimeout(ResponseCallback callback);
 
   // Issue a request.
   void IssueRequest(const GURL& url);

@@ -18,6 +18,7 @@
 #include "components/suggestions/image_manager.h"
 #include "components/suggestions/proto/suggestions.pb.h"
 #include "components/suggestions/suggestions_store.h"
+#include "components/suggestions/suggestions_utils.h"
 #include "components/variations/entropy_provider.h"
 #include "components/variations/variations_associated_data.h"
 #include "net/http/http_response_headers.h"
@@ -326,6 +327,7 @@ TEST_F(SuggestionsServiceTest, FetchSuggestionsDataRequestError) {
 
   // Send the request. Empty data will be returned to the callback.
   suggestions_service->FetchSuggestionsData(
+      INITIALIZED_ENABLED_HISTORY,  // Normal mode.
       base::Bind(&SuggestionsServiceTest::ExpectEmptySuggestionsProfile,
                  base::Unretained(this)));
 
@@ -361,6 +363,7 @@ TEST_F(SuggestionsServiceTest, FetchSuggestionsDataResponseNotOK) {
 
   // Send the request. Empty data will be returned to the callback.
   suggestions_service->FetchSuggestionsData(
+      INITIALIZED_ENABLED_HISTORY,  // Normal mode.
       base::Bind(&SuggestionsServiceTest::ExpectEmptySuggestionsProfile,
                  base::Unretained(this)));
 
@@ -369,6 +372,62 @@ TEST_F(SuggestionsServiceTest, FetchSuggestionsDataResponseNotOK) {
 
   // Ensure that ExpectEmptySuggestionsProfile ran once.
   EXPECT_EQ(1, suggestions_empty_data_count_);
+}
+
+TEST_F(SuggestionsServiceTest, FetchSuggestionsDataSyncDisabled) {
+  // Field trial enabled with a specific suggestions URL.
+  EnableFieldTrial(kFakeSuggestionsURL, kFakeSuggestionsCommonParams,
+                   kFakeBlacklistPath, kFakeBlacklistUrlParam, false);
+  scoped_ptr<SuggestionsService> suggestions_service(
+      CreateSuggestionsServiceWithMocks());
+  EXPECT_TRUE(suggestions_service != NULL);
+
+  // Set up expectations on the SuggestionsStore.
+  EXPECT_CALL(*mock_suggestions_store_, ClearSuggestions());
+
+  // Send the request. Cache is cleared and empty data will be returned to the
+  // callback.
+  suggestions_service->FetchSuggestionsData(
+      SYNC_OR_HISTORY_SYNC_DISABLED,
+      base::Bind(&SuggestionsServiceTest::ExpectEmptySuggestionsProfile,
+                 base::Unretained(this)));
+
+  // Wait for posted task to complete.
+  base::MessageLoop::current()->RunUntilIdle();
+
+  // Ensure that ExpectEmptySuggestionsProfile ran once.
+  EXPECT_EQ(1, suggestions_empty_data_count_);
+}
+
+TEST_F(SuggestionsServiceTest, FetchSuggestionsDataSyncNotInitializedEnabled) {
+  // Field trial enabled with a specific suggestions URL.
+  EnableFieldTrial(kFakeSuggestionsURL, kFakeSuggestionsCommonParams,
+                   kFakeBlacklistPath, kFakeBlacklistUrlParam, false);
+  scoped_ptr<SuggestionsService> suggestions_service(
+      CreateSuggestionsServiceWithMocks());
+  EXPECT_TRUE(suggestions_service != NULL);
+  scoped_ptr<SuggestionsProfile> suggestions_profile(
+      CreateSuggestionsProfile());
+
+  // Expectations.
+  EXPECT_CALL(*mock_suggestions_store_, LoadSuggestions(_))
+      .WillOnce(DoAll(SetArgPointee<0>(*suggestions_profile), Return(true)));
+  EXPECT_CALL(*mock_thumbnail_manager_,
+              Initialize(EqualsProto(*suggestions_profile)));
+  EXPECT_CALL(*mock_blacklist_store_, FilterSuggestions(_));
+
+  // Send the request. In this state, cached data will be returned to the
+  // caller.
+  suggestions_service->FetchSuggestionsData(
+      NOT_INITIALIZED_ENABLED,
+      base::Bind(&SuggestionsServiceTest::CheckSuggestionsData,
+                 base::Unretained(this)));
+
+  // Wait for posted task to complete.
+  base::MessageLoop::current()->RunUntilIdle();
+
+  // Ensure that CheckSuggestionsData ran once.
+  EXPECT_EQ(1, suggestions_data_check_count_);
 }
 
 TEST_F(SuggestionsServiceTest, BlacklistURL) {

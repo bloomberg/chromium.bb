@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sync/profile_sync_service_observer.h"
 #include "components/suggestions/proto/suggestions.pb.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -21,7 +22,8 @@ class SuggestionsService;
 }
 
 // Provides the list of most visited sites and their thumbnails to Java.
-class MostVisitedSites : public content::NotificationObserver {
+class MostVisitedSites : public ProfileSyncServiceObserver,
+                         public content::NotificationObserver {
  public:
   typedef base::Callback<
       void(base::android::ScopedJavaGlobalRef<jobject>* bitmap,
@@ -46,6 +48,9 @@ class MostVisitedSites : public content::NotificationObserver {
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
+
+  // ProfileSyncServiceObserver implementation.
+  virtual void OnStateChanged() OVERRIDE;
 
   // Registers JNI methods.
   static bool Register(JNIEnv* env);

@@ -31,6 +31,8 @@
         'suggestions/suggestions_service.h',
         'suggestions/suggestions_store.cc',
         'suggestions/suggestions_store.h',
+        'suggestions/suggestions_utils.cc',
+        'suggestions/suggestions_utils.h',
       ],
       'variables': {
         'proto_in_dir': 'suggestions/proto',
