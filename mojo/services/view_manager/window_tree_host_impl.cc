@@ -89,6 +89,8 @@ WindowTreeHostImpl::WindowTreeHostImpl(
 WindowTreeHostImpl::~WindowTreeHostImpl() {
   DestroyCompositor();
   DestroyDispatcher();
+  delete context_factory_;
+  context_factory_ = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -159,7 +161,6 @@ ui::EventProcessor* WindowTreeHostImpl::GetEventProcessor() {
 // WindowTreeHostImpl, NativeViewportClient implementation:
 
 void WindowTreeHostImpl::OnCreated(uint64_t native_viewport_id) {
-  LOG(ERROR) << "OnCreated " << native_viewport_id;
   CommandBufferPtr cb;
   gpu_service_->CreateOnscreenGLES2Context(
       native_viewport_id, Size::From(bounds_.size()), Get(&cb));
