@@ -182,10 +182,8 @@ void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
   AddTrayItem(new TraySms(this));
   AddTrayItem(new TrayBluetooth(this));
   AddTrayItem(new TrayDisplay(this));
-  screen_capture_tray_item_ = new ScreenCaptureTrayItem(this);
-  AddTrayItem(screen_capture_tray_item_);
-  screen_share_tray_item_ = new ScreenShareTrayItem(this);
-  AddTrayItem(screen_share_tray_item_);
+  AddTrayItem(new ScreenCaptureTrayItem(this));
+  AddTrayItem(new ScreenShareTrayItem(this));
   AddTrayItem(new MultiProfileMediaTrayItem(this));
   AddTrayItem(new TrayAudioChromeOs(this));
   AddTrayItem(new TrayBrightness(this));

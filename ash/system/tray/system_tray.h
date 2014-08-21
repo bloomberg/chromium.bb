@@ -20,7 +20,6 @@
 #include <vector>
 
 namespace ash {
-class ScreenTrayItem;
 class SystemBubbleWrapper;
 class SystemTrayDelegate;
 class SystemTrayItem;
@@ -142,9 +141,6 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView,
       AnchorAlignment anchor_alignment) const OVERRIDE;
   virtual void HideBubble(const views::TrayBubbleView* bubble_view) OVERRIDE;
 
-  ScreenTrayItem* GetScreenShareItem() { return screen_share_tray_item_; }
-  ScreenTrayItem* GetScreenCaptureItem() { return screen_capture_tray_item_; }
-
   TrayAccessibility* GetTrayAccessibilityForTest() {
     return tray_accessibility_;
   }
@@ -235,10 +231,6 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView,
 
   TrayAccessibility* tray_accessibility_;  // not owned
   TrayDate* tray_date_;
-
-  // A reference to the Screen share and capture item.
-  ScreenTrayItem* screen_capture_tray_item_;  // not owned
-  ScreenTrayItem* screen_share_tray_item_;  // not owned
 
   DISALLOW_COPY_AND_ASSIGN(SystemTray);
 };
