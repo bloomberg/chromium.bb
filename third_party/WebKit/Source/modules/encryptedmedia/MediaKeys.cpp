@@ -71,7 +71,13 @@ static bool isKeySystemSupportedWithInitDataType(const String& keySystem, const 
 {
     // FIXME: initDataType != contentType. Implement this properly.
     // http://crbug.com/385874.
-    return isKeySystemSupportedWithContentType(keySystem, initDataType);
+    String contentType = initDataType;
+    if (initDataType == "webm") {
+        contentType = "video/webm";
+    } else if (initDataType == "cenc") {
+        contentType = "video/mp4";
+    }
+    return isKeySystemSupportedWithContentType(keySystem, contentType);
 }
 
 static ScriptPromise createRejectedPromise(ScriptState* scriptState, ExceptionCode error, const String& errorMessage)

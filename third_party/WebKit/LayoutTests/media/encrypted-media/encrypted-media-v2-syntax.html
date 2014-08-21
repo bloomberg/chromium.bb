@@ -264,9 +264,8 @@
             async_test(function(test)
             {
                 MediaKeys.create('org.w3.clearkey').then(function(mediaKeys) {
-                    // FIXME: Remove "video/" from the calls to test_exception()
-                    // below when initDataType is properly supported.
-                    // http://crbug.com/385874.
+                    // FIXME: Remove "video/" from the calls to isTypeSupported() once it is updated.
+                    // http://crbug.com/405731.
                     var initData = stringToUint8Array('init data');
                     var sessionPromises = kCreateSessionExceptionsTestCases.map(function(testCase) {
                         return test_exception(testCase, mediaKeys, '', initData);
@@ -276,7 +275,7 @@
                     // supported.
                     if (MediaKeys.isTypeSupported('org.w3.clearkey', 'video/webm')) {
                         var WebmSessionPromises = kTypeSpecificCreateSessionExceptionsTestCases.map(function(testCase) {
-                            return test_exception(testCase, mediaKeys, 'video/webm', getInitData('video/webm'));
+                            return test_exception(testCase, mediaKeys, 'webm', getInitData('webm'));
                         });
                         sessionPromises = sessionPromises.concat(WebmSessionPromises);
                     }
@@ -284,7 +283,7 @@
                     // Repeat for MP4, if supported.
                     if (MediaKeys.isTypeSupported('org.w3.clearkey', 'video/mp4')) {
                         var mp4SessionPromises = kTypeSpecificCreateSessionExceptionsTestCases.map(function(testCase) {
-                            return test_exception(testCase, mediaKeys, 'video/mp4', getInitData('video/mp4'));
+                            return test_exception(testCase, mediaKeys, 'cenc', getInitData('cenc'));
                         });
                         sessionPromises = sessionPromises.concat(mp4SessionPromises);
                     }
@@ -381,7 +380,7 @@
                     // supported.
                     if (MediaKeys.isTypeSupported('org.w3.clearkey', 'video/webm')) {
                         var WebmSessionPromises = kCreateSessionTestCases.map(function(testCase) {
-                            return test_createSession(testCase, mediaKeys, 'video/webm', getInitData('video/webm'));
+                            return test_createSession(testCase, mediaKeys, 'webm', getInitData('webm'));
                         });
                         sessionPromises = sessionPromises.concat(WebmSessionPromises);
                     }
@@ -389,7 +388,7 @@
                     // Repeat for MP4, if supported.
                     if (MediaKeys.isTypeSupported('org.w3.clearkey', 'video/mp4')) {
                         var mp4SessionPromises = kCreateSessionTestCases.map(function(testCase) {
-                            return test_createSession(testCase, mediaKeys, 'video/mp4', getInitData('video/mp4'));
+                            return test_createSession(testCase, mediaKeys, 'cenc', getInitData('cenc'));
                         });
                         sessionPromises = sessionPromises.concat(mp4SessionPromises);
                     }
@@ -455,11 +454,11 @@
                     var promises = [];
 
                     if (MediaKeys.isTypeSupported('org.w3.clearkey', 'video/webm')) {
-                        promises.push(create_update_exception_test(mediaKeys, 'video/webm', getInitData('video/webm')));
+                        promises.push(create_update_exception_test(mediaKeys, 'webm', getInitData('webm')));
                     }
 
                     if (MediaKeys.isTypeSupported('org.w3.clearkey', 'video/mp4')) {
-                        promises.push(create_update_exception_test(mediaKeys, 'video/mp4', getInitData('video/mp4')));
+                        promises.push(create_update_exception_test(mediaKeys, 'cenc', getInitData('cenc')));
                     }
 
                     assert_not_equals(promises.length, 0);
@@ -493,11 +492,11 @@
                   var promises = [];
 
                   if (MediaKeys.isTypeSupported('org.w3.clearkey', 'video/webm')) {
-                      promises.push(create_update_test(mediaKeys, 'video/webm', getInitData('video/webm')));
+                      promises.push(create_update_test(mediaKeys, 'webm', getInitData('webm')));
                   }
 
                   if (MediaKeys.isTypeSupported('org.w3.clearkey', 'video/mp4')) {
-                      promises.push(create_update_test(mediaKeys, 'video/mp4', getInitData('video/mp4')));
+                      promises.push(create_update_test(mediaKeys, 'cenc', getInitData('cenc')));
                   }
 
                   assert_not_equals(promises.length, 0);
@@ -530,11 +529,11 @@
                     var promises = [];
 
                     if (MediaKeys.isTypeSupported('org.w3.clearkey', 'video/webm')) {
-                        promises.push(create_release_test(mediaKeys, 'video/webm', getInitData('video/webm')));
+                        promises.push(create_release_test(mediaKeys, 'webm', getInitData('webm')));
                     }
 
                     if (MediaKeys.isTypeSupported('org.w3.clearkey', 'video/mp4')) {
-                        promises.push(create_release_test(mediaKeys, 'video/mp4', getInitData('video/mp4')));
+                        promises.push(create_release_test(mediaKeys, 'cenc', getInitData('cenc')));
                     }
 
                     assert_not_equals(promises.length, 0);

@@ -14,7 +14,7 @@ function consoleWrite(text)
 
 function getInitDataType()
 {
-    return (MediaKeys.isTypeSupported('org.w3.clearkey', 'video/webm')) ? 'video/webm' : 'video/mp4';
+    return (MediaKeys.isTypeSupported('org.w3.clearkey', 'video/webm')) ? 'webm' : 'cenc';
 }
 
 function getInitData(initDataType)
