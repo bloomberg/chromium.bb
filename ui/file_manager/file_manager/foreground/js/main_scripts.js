@@ -101,6 +101,7 @@
 //<include src="share_client.js"/>
 //<include src="share_dialog.js"/>
 //<include src="suggest_apps_dialog.js"/>
+//<include src="thumbnail_loader.js"/>
 //<include src="tree.css.js"/>
 //<include src="ui/breadcrumbs_controller.js"/>
 //<include src="ui/conflict_dialog.js"/>
@@ -110,7 +111,6 @@
 //<include src="ui/progress_center_panel.js"/>
 //<include src="ui/search_box.js"/>
 //<include src="volume_manager_wrapper.js"/>
-//<include src="media/media_util.js"/>
 //<include src="metadata/metadata_cache.js"/>
 //<include src="default_action_dialog.js"/>
 //<include src="file_manager_commands.js"/>

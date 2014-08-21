@@ -35,6 +35,7 @@
 //<include src="../../../common/js/util.js">
 //<include src="../../../common/js/volume_manager_common.js">
 //<include src="../file_type.js">
+//<include src="../thumbnail_loader.js"/>
 //<include src="../volume_manager_wrapper.js">
 
 //<include src="../image_editor/image_util.js"/>
@@ -50,7 +51,6 @@
 //<include src="../image_editor/exif_encoder.js"/>
 
 //<include src="../media/media_controls.js"/>
-//<include src="../media/media_util.js"/>
 //<include src="../media/mouse_inactivity_watcher.js"/>
 
 //<include src="../metadata/metadata_cache.js"/>

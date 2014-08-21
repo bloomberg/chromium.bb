@@ -36,6 +36,7 @@
 //<include src="../../file_manager/common/js/util.js">
 //<include src="../../file_manager/common/js/volume_manager_common.js">
 //<include src="../../file_manager/foreground/js/file_type.js">
+//<include src="../../file_manager/foreground/js/thumbnail_loader.js"/>
 //<include src="../../file_manager/foreground/js/volume_manager_wrapper.js">
 
 //<include src="image_editor/image_util.js"/>
@@ -50,7 +51,6 @@
 //<include src="image_editor/image_encoder.js"/>
 //<include src="image_editor/exif_encoder.js"/>
 
-//<include src="../../file_manager/foreground/js/media/media_util.js"/>
 //<include src="../../file_manager/foreground/js/media/mouse_inactivity_watcher.js"/>
 //<include src="../../file_manager/foreground/js/metadata/metadata_cache.js"/>
 
