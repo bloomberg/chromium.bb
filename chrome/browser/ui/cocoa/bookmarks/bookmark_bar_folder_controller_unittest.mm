@@ -1166,6 +1166,43 @@ TEST_F(BookmarkBarFolderControllerMenuTest, MoveRemoveAddButtons) {
   [folder validateMenuSpacing];
 }
 
+TEST_F(BookmarkBarFolderControllerMenuTest, RemoveLastButtonOtherBookmarks) {
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
+  const BookmarkNode* otherBookmarks = model->other_node();
+
+  BookmarkButton* otherButton = [bar_ otherBookmarksButton];
+  ASSERT_TRUE(otherButton);
+
+  // Open the folder to get the folderController_.
+  [[otherButton target] openBookmarkFolderFromButton:otherButton];
+  BookmarkBarFolderController* folder = [bar_ folderController];
+  EXPECT_TRUE(folder);
+
+  // Initially there is only (empty) placeholder button, hence buttonCount
+  // should be 1.
+  NSArray* buttons = [folder buttons];
+  EXPECT_TRUE(buttons);
+  EXPECT_EQ(1U, [buttons count]);
+
+  // Add a new bookmark into 'Other bookmarks' folder.
+  model->AddURL(otherBookmarks, otherBookmarks->child_count(),
+                ASCIIToUTF16("TheOther"),
+                GURL("http://www.other.com"));
+
+  // buttonCount still should be 1, as we remove the (empty) placeholder button
+  // when adding a new button to an empty folder.
+  EXPECT_EQ(1U, [buttons count]);
+
+  // Now we have only 1 button; remove it so that 'Other bookmarks' folder
+  // is hidden.
+  [folder removeButton:0 animate:NO];
+  EXPECT_EQ(0U, [buttons count]);
+
+  // 'Other bookmarks' folder gets closed once we remove the last button. Hence
+  // folderController_ should be NULL.
+  EXPECT_FALSE([bar_ folderController]);
+}
+
 TEST_F(BookmarkBarFolderControllerMenuTest, ControllerForNode) {
   BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
   const BookmarkNode* root = model->bookmark_bar_node();

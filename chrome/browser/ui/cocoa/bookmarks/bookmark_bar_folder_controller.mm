@@ -762,7 +762,7 @@ NSRect GetFirstButtonFrameForHeight(CGFloat height) {
 - (void)adjustWindowForButtonCount:(NSUInteger)buttonCount {
   NSRect folderFrame = [folderView_ frame];
   CGFloat newMenuHeight =
-      (CGFloat)[self menuHeightForButtonCount:[buttons_ count]];
+      (CGFloat)[self menuHeightForButtonCount:buttonCount];
   CGFloat deltaMenuHeight = newMenuHeight - NSHeight(folderFrame);
   // If the height has changed then also change the origin, and adjust the
   // scroll (if scrolling).
@@ -1936,9 +1936,10 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
         [folderController_
             offsetFolderMenuWindow:NSMakeSize(0.0, chrome::kBookmarkBarHeight)];
     }
-  } else {
+  } else if (parentButton_ != [barController_ otherBookmarksButton]) {
     // If all nodes have been removed from this folder then add in the
-    // 'empty' placeholder button.
+    // 'empty' placeholder button except for "Other bookmarks" folder
+    // as we are going to hide it.
     NSRect buttonFrame =
         GetFirstButtonFrameForHeight([self menuHeightForButtonCount:1]);
     BookmarkButton* button = [self makeButtonForNode:nil
@@ -1948,7 +1949,12 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
     buttonCount = 1;
   }
 
-  [self adjustWindowForButtonCount:buttonCount];
+  // buttonCount will be 0 if "Other bookmarks" folder is empty, so close
+  // the folder before hiding it.
+  if (buttonCount == 0)
+    [barController_ closeBookmarkFolder:nil];
+  else if (buttonCount > 0)
+    [self adjustWindowForButtonCount:buttonCount];
 
   if (animate && !ignoreAnimations_)
     NSShowAnimationEffect(NSAnimationEffectDisappearingItemDefault, poofPoint,
