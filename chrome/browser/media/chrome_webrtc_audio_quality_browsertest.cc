@@ -48,15 +48,14 @@ static const char kMainWebrtcTestHtmlPage[] =
 
 // Test we can set up a WebRTC call and play audio through it.
 //
-// If you're not a googler and want to run this test, you need to provide a
-// pesq binary for your platform (and sox.exe on windows). Read more on how
-// resources are managed in chrome/test/data/webrtc/resources/README.
+// You must have the src-internal solution in your .gclient to put the required
+// pyauto_private directory into chrome/test/data/.
 //
 // This test will only work on machines that have been configured to record
 // their own input.
 //
 // On Linux:
-// 1. # sudo apt-get install pavucontrol sox
+// 1. # sudo apt-get install pavucontrol
 // 2. For the user who will run the test: # pavucontrol
 // 3. In a separate terminal, # arecord dummy
 // 4. In pavucontrol, go to the recording tab.
@@ -193,7 +192,7 @@ class AudioRecorder {
 bool ForceMicrophoneVolumeTo100Percent() {
 #if defined(OS_WIN)
   CommandLine command_line(test::GetReferenceFilesDir().Append(
-      FILE_PATH_LITERAL("tools/force_mic_volume_max.exe")));
+      FILE_PATH_LITERAL("force_mic_volume_max.exe")));
   VLOG(0) << "Running " << command_line.GetCommandLineString();
   std::string result;
   if (!base::GetAppOutput(command_line, &result)) {
@@ -240,14 +239,8 @@ bool RemoveSilence(const base::FilePath& input_file,
   const char* kTreshold = "5%";
 
 #if defined(OS_WIN)
-  base::FilePath sox_path = test::GetReferenceFilesDir().Append(
-      FILE_PATH_LITERAL("tools/sox.exe"));
-  if (!base::PathExists(sox_path)) {
-    LOG(ERROR) << "Missing sox.exe binary in " << sox_path.value()
-               << "; you may have to provide this binary yourself.";
-    return false;
-  }
-  CommandLine command_line(sox_path);
+  CommandLine command_line(test::GetReferenceFilesDir().Append(
+      FILE_PATH_LITERAL("sox.exe")));
 #else
   CommandLine command_line(base::FilePath(FILE_PATH_LITERAL("sox")));
 #endif
@@ -295,15 +288,14 @@ bool RunPesq(const base::FilePath& reference_file,
 
 #if defined(OS_WIN)
   base::FilePath pesq_path =
-      test::GetReferenceFilesDir().Append(FILE_PATH_LITERAL("tools/pesq.exe"));
+      test::GetReferenceFilesDir().Append(FILE_PATH_LITERAL("pesq.exe"));
 #else
   base::FilePath pesq_path =
-      test::GetReferenceFilesDir().Append(FILE_PATH_LITERAL("tools/pesq"));
+      test::GetReferenceFilesDir().Append(FILE_PATH_LITERAL("pesq"));
 #endif
 
   if (!base::PathExists(pesq_path)) {
-    LOG(ERROR) << "Missing PESQ binary in " << pesq_path.value()
-               << "; you may have to provide this binary yourself.";
+    LOG(ERROR) << "Missing PESQ binary in " << pesq_path.value();
     return false;
   }
 
