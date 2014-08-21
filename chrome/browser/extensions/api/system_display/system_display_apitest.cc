@@ -9,6 +9,7 @@
 #include "chrome/browser/extensions/api/system_display/display_info_provider.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
+#include "chrome/common/extensions/api/system_display.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/display_observer.h"
 #include "ui/gfx/screen.h"
@@ -51,6 +52,7 @@ class MockScreen : public ash::ScreenAsh {
   virtual gfx::Display GetPrimaryDisplay() const OVERRIDE {
     return displays_[0];
   }
+
  private:
   std::vector<gfx::Display> displays_;
 
@@ -194,6 +196,7 @@ class SystemDisplayApiTest: public ExtensionApiTest {
   scoped_ptr<MockDisplayInfoProvider> provider_;
   scoped_ptr<gfx::Screen> screen_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(SystemDisplayApiTest);
 };
 
@@ -301,4 +304,4 @@ IN_PROC_BROWSER_TEST_F(SystemDisplayApiTest, SetDisplayKioskEnabled) {
 }
 #endif  // defined(OS_CHROMEOS)
 
-} // namespace extensions
+}  // namespace extensions

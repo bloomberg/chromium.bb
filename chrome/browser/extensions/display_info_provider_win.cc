@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/system_display/display_info_provider.h"
+#include "chrome/browser/extensions/display_info_provider_win.h"
 
 #include <windows.h>
 
@@ -10,6 +10,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/win_util.h"
+#include "chrome/common/extensions/api/system_display.h"
 #include "ui/gfx/size.h"
 #include "ui/gfx/win/dpi.h"
 
@@ -19,10 +20,8 @@ using api::system_display::DisplayUnitInfo;
 
 namespace {
 
-BOOL CALLBACK EnumMonitorCallback(HMONITOR monitor,
-                                  HDC hdc,
-                                  LPRECT rect,
-                                  LPARAM data) {
+BOOL CALLBACK
+EnumMonitorCallback(HMONITOR monitor, HDC hdc, LPRECT rect, LPARAM data) {
   DisplayInfo* all_displays = reinterpret_cast<DisplayInfo*>(data);
   DCHECK(all_displays);
 
@@ -39,8 +38,8 @@ BOOL CALLBACK EnumMonitorCallback(HMONITOR monitor,
     return FALSE;
 
   gfx::Size dpi(gfx::GetDPI());
-  unit->id = base::Int64ToString(
-      base::Hash(base::WideToUTF8(monitor_info.szDevice)));
+  unit->id =
+      base::Int64ToString(base::Hash(base::WideToUTF8(monitor_info.szDevice)));
   unit->name = base::WideToUTF8(device.DeviceString);
   unit->dpi_x = dpi.width();
   unit->dpi_y = dpi.height();
@@ -51,19 +50,26 @@ BOOL CALLBACK EnumMonitorCallback(HMONITOR monitor,
 
 }  // namespace
 
-bool DisplayInfoProvider::SetInfo(const std::string& display_id,
+DisplayInfoProviderWin::DisplayInfoProviderWin() {
+}
+
+DisplayInfoProviderWin::~DisplayInfoProviderWin() {
+}
+
+bool DisplayInfoProviderWin::SetInfo(
+    const std::string& display_id,
     const api::system_display::DisplayProperties& info,
     std::string* error) {
   *error = "Not implemented";
   return false;
 }
 
-void DisplayInfoProvider::UpdateDisplayUnitInfoForPlatform(
+void DisplayInfoProviderWin::UpdateDisplayUnitInfoForPlatform(
     const gfx::Display& display,
     extensions::api::system_display::DisplayUnitInfo* unit) {
   DisplayInfo all_displays;
-  EnumDisplayMonitors(NULL, NULL, EnumMonitorCallback,
-                      reinterpret_cast<LPARAM>(&all_displays));
+  EnumDisplayMonitors(
+      NULL, NULL, EnumMonitorCallback, reinterpret_cast<LPARAM>(&all_displays));
   for (size_t i = 0; i < all_displays.size(); ++i) {
     if (unit->id == all_displays[i]->id) {
       unit->name = all_displays[i]->name;
@@ -72,6 +78,11 @@ void DisplayInfoProvider::UpdateDisplayUnitInfoForPlatform(
       break;
     }
   }
+}
+
+// static
+DisplayInfoProvider* DisplayInfoProvider::Create() {
+  return new DisplayInfoProviderWin();
 }
 
 }  // namespace extensions

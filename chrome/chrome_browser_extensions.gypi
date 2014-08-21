@@ -514,9 +514,6 @@
       'browser/extensions/api/system_cpu/system_cpu_api.h',
       'browser/extensions/api/system_display/display_info_provider.cc',
       'browser/extensions/api/system_display/display_info_provider.h',
-      'browser/extensions/api/system_display/display_info_provider_chromeos.cc',
-      'browser/extensions/api/system_display/display_info_provider_mac.cc',
-      'browser/extensions/api/system_display/display_info_provider_win.cc',
       'browser/extensions/api/system_display/system_display_api.cc',
       'browser/extensions/api/system_display/system_display_api.h',
       'browser/extensions/api/system_indicator/system_indicator_api.h',
@@ -650,6 +647,12 @@
       'browser/extensions/dev_mode_bubble_controller.h',
       'browser/extensions/devtools_util.cc',
       'browser/extensions/devtools_util.h',
+      'browser/extensions/display_info_provider_chromeos.cc',
+      'browser/extensions/display_info_provider_chromeos.h',
+      'browser/extensions/display_info_provider_mac.cc',
+      'browser/extensions/display_info_provider_mac.h',
+      'browser/extensions/display_info_provider_win.cc',
+      'browser/extensions/display_info_provider_win.h',
       'browser/extensions/error_console/error_console.cc',
       'browser/extensions/error_console/error_console.h',
       'browser/extensions/event_router_forwarder.cc',
@@ -1133,7 +1136,8 @@
         }],
         ['OS!="win" and chromeos==0', {
           'sources': [
-            'browser/extensions/api/system_display/display_info_provider_aura.cc',
+            'browser/extensions/display_info_provider_aura.cc',
+            'browser/extensions/display_info_provider_aura.h',
           ],
         }],
         ['enable_app_list==1', {

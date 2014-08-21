@@ -5,12 +5,16 @@
 #include "chrome/browser/extensions/api/system_display/display_info_provider.h"
 
 #include "base/strings/string_number_conversions.h"
+#include "chrome/common/extensions/api/system_display.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
 
 namespace extensions {
 
 namespace {
+
+// Created on demand and will leak when the process exits.
+DisplayInfoProvider* g_display_info_provider = NULL;
 
 // Converts Rotation enum to integer.
 int RotationToDegrees(gfx::Display::Rotation rotation) {
@@ -50,21 +54,19 @@ CreateDisplayUnitInfo(const gfx::Display& display, int64 primary_display_id) {
   return unit;
 }
 
-DisplayInfoProvider* g_display_info_provider = NULL;
-
 }  // namespace
 
+DisplayInfoProvider::~DisplayInfoProvider() {
+}
 
-DisplayInfoProvider::DisplayInfoProvider() {}
-
-DisplayInfoProvider::~DisplayInfoProvider() {}
-
+// static
 DisplayInfoProvider* DisplayInfoProvider::Get() {
   if (g_display_info_provider == NULL)
-    g_display_info_provider = new DisplayInfoProvider();
+    g_display_info_provider = DisplayInfoProvider::Create();
   return g_display_info_provider;
 }
 
+// static
 void DisplayInfoProvider::InitializeForTesting(
     DisplayInfoProvider* display_info_provider) {
   DCHECK(display_info_provider);
@@ -84,6 +86,9 @@ DisplayInfo DisplayInfoProvider::GetAllDisplaysInfo() {
     all_displays.push_back(unit);
   }
   return all_displays;
+}
+
+DisplayInfoProvider::DisplayInfoProvider() {
 }
 
 }  // namespace extensions

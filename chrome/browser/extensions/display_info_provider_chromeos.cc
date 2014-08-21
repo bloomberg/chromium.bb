@@ -1,14 +1,15 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/system_display/display_info_provider.h"
+#include "chrome/browser/extensions/display_info_provider_chromeos.h"
 
 #include "ash/display/display_controller.h"
 #include "ash/display/display_manager.h"
 #include "ash/shell.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/strings/string_number_conversions.h"
+#include "chrome/common/extensions/api/system_display.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
@@ -65,7 +66,7 @@ bool PointIsOverRadiusVector(const gfx::Point& point,
   // So, (x, y) is over (a, b) if x * b + y * (-a) >= 0, which is equivalent to
   // x * b >= y * a.
   return static_cast<int64>(point.x()) * static_cast<int64>(vector.y()) >=
-      static_cast<int64>(point.y()) * static_cast<int64>(vector.x());
+         static_cast<int64>(point.y()) * static_cast<int64>(vector.x());
 }
 
 // Created ash::DisplayLayout value for |rectangle| compared to the |reference|
@@ -122,8 +123,8 @@ ash::DisplayLayout GetLayoutForRectangles(const gfx::Rect& reference,
 
   ash::DisplayLayout::Position position;
   if (is_top_right) {
-    position = is_bottom_right ? ash::DisplayLayout::RIGHT :
-                                 ash::DisplayLayout::TOP;
+    position =
+        is_bottom_right ? ash::DisplayLayout::RIGHT : ash::DisplayLayout::TOP;
   } else {
     position =
         is_bottom_right ? ash::DisplayLayout::BOTTOM : ash::DisplayLayout::LEFT;
@@ -164,10 +165,10 @@ void UpdateDisplayLayout(const gfx::Rect& primary_display_bounds,
                          int primary_display_id,
                          const gfx::Rect& target_display_bounds,
                          int target_display_id) {
-  ash::DisplayLayout layout = GetLayoutForRectangles(primary_display_bounds,
-                                                     target_display_bounds);
-  ash::Shell::GetInstance()->display_manager()->
-      SetLayoutForCurrentDisplays(layout);
+  ash::DisplayLayout layout =
+      GetLayoutForRectangles(primary_display_bounds, target_display_bounds);
+  ash::Shell::GetInstance()->display_manager()->SetLayoutForCurrentDisplays(
+      layout);
 }
 
 // Validates that parameters passed to the SetInfo function are valid for the
@@ -201,8 +202,9 @@ bool ValidateParamsForDisplay(const DisplayProperties& info,
 
   // If mirroring source parameter is specified, no other parameter should be
   // set as when the mirroring is applied the display list could change.
-  if (info.mirroring_source_id && (info.is_primary || info.bounds_origin_x ||
-      info.bounds_origin_y || info.rotation || info.overscan)) {
+  if (info.mirroring_source_id &&
+      (info.is_primary || info.bounds_origin_x || info.bounds_origin_y ||
+       info.rotation || info.overscan)) {
     *error = "No other parameter should be set alongside mirroringSourceId.";
     return false;
   }
@@ -216,15 +218,13 @@ bool ValidateParamsForDisplay(const DisplayProperties& info,
       *error = "Bounds origin not allowed for the primary display.";
       return false;
     }
-    if (info.bounds_origin_x &&
-        (*info.bounds_origin_x > kMaxBoundsOrigin ||
-         *info.bounds_origin_x < -kMaxBoundsOrigin)) {
+    if (info.bounds_origin_x && (*info.bounds_origin_x > kMaxBoundsOrigin ||
+                                 *info.bounds_origin_x < -kMaxBoundsOrigin)) {
       *error = "Bounds origin x out of bounds.";
       return false;
     }
-    if (info.bounds_origin_y &&
-        (*info.bounds_origin_y > kMaxBoundsOrigin ||
-         *info.bounds_origin_y < -kMaxBoundsOrigin)) {
+    if (info.bounds_origin_y && (*info.bounds_origin_y > kMaxBoundsOrigin ||
+                                 *info.bounds_origin_y < -kMaxBoundsOrigin)) {
       *error = "Bounds origin y out of bounds.";
       return false;
     }
@@ -279,12 +279,17 @@ gfx::Display GetTargetDisplay(const std::string& display_id_str,
   return manager->GetDisplayForId(display_id);
 }
 
-// Updates the display with |display_id_str| id according to |info|. Returns
-// whether the display was successfully updated. On failure, no display
-// parameters should be changed, and |error| should be set to the error string.
-bool SetInfoImpl(const std::string& display_id_str,
-                 const DisplayProperties& info,
-                 std::string* error) {
+}  // namespace
+
+DisplayInfoProviderChromeOS::DisplayInfoProviderChromeOS() {
+}
+
+DisplayInfoProviderChromeOS::~DisplayInfoProviderChromeOS() {
+}
+
+bool DisplayInfoProviderChromeOS::SetInfo(const std::string& display_id_str,
+                                          const DisplayProperties& info,
+                                          std::string* error) {
   DisplayManager* display_manager =
       ash::Shell::GetInstance()->display_manager();
   DCHECK(display_manager);
@@ -304,8 +309,8 @@ bool SetInfoImpl(const std::string& display_id_str,
   const gfx::Display& primary =
       gfx::Screen::GetNativeScreen()->GetPrimaryDisplay();
 
-  if (!ValidateParamsForDisplay(info, target, display_manager, primary.id(),
-                                error)) {
+  if (!ValidateParamsForDisplay(
+          info, target, display_manager, primary.id(), error)) {
     return false;
   }
 
@@ -321,10 +326,11 @@ bool SetInfoImpl(const std::string& display_id_str,
 
   // Process 'overscan' parameter.
   if (info.overscan) {
-    display_manager->SetOverscanInsets(
-        display_id,
-        gfx::Insets(info.overscan->top, info.overscan->left,
-                    info.overscan->bottom, info.overscan->right));
+    display_manager->SetOverscanInsets(display_id,
+                                       gfx::Insets(info.overscan->top,
+                                                   info.overscan->left,
+                                                   info.overscan->bottom,
+                                                   info.overscan->right));
   }
 
   // Process 'rotation' parameter.
@@ -344,25 +350,16 @@ bool SetInfoImpl(const std::string& display_id_str,
     gfx::Rect target_bounds = target.bounds();
     target_bounds.Offset(new_bounds_origin.x() - target.bounds().x(),
                          new_bounds_origin.y() - target.bounds().y());
-    UpdateDisplayLayout(primary.bounds(), primary.id(),
-                        target_bounds, target.id());
+    UpdateDisplayLayout(
+        primary.bounds(), primary.id(), target_bounds, target.id());
   }
 
   return true;
 }
 
-}  // namespace
-
-bool DisplayInfoProvider::SetInfo(const std::string& display_id,
-                                  const DisplayProperties& info,
-                                  std::string* error) {
-  return SetInfoImpl(display_id, info, error);
-}
-
-void DisplayInfoProvider::UpdateDisplayUnitInfoForPlatform(
+void DisplayInfoProviderChromeOS::UpdateDisplayUnitInfoForPlatform(
     const gfx::Display& display,
     extensions::api::system_display::DisplayUnitInfo* unit) {
-
   ash::DisplayManager* display_manager =
       ash::Shell::GetInstance()->display_manager();
   unit->name = display_manager->GetDisplayNameForId(display.id());
@@ -381,6 +378,11 @@ void DisplayInfoProvider::UpdateDisplayUnitInfoForPlatform(
   unit->overscan.top = overscan_insets.top();
   unit->overscan.right = overscan_insets.right();
   unit->overscan.bottom = overscan_insets.bottom();
+}
+
+// static
+DisplayInfoProvider* DisplayInfoProvider::Create() {
+  return new DisplayInfoProviderChromeOS();
 }
 
 }  // namespace extensions

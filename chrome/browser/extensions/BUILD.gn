@@ -191,7 +191,10 @@ static_library("extensions") {
       "//third_party/isimpledom",
     ]
   } else if (!is_chromeos) {
-    sources += [ "api/system_display/display_info_provider_aura.cc" ]
+    sources += [
+      "display_info_provider_aura.cc",
+      "display_info_provider_aura.h",
+    ]
   }
 
   if (enable_app_list) {

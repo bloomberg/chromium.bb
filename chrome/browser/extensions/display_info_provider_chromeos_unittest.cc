@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #include "ash/test/display_manager_test_api.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "chrome/common/extensions/api/system_display.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/rect.h"
 
@@ -52,17 +53,18 @@ class DisplayInfoProviderChromeosTest : public ash::test::AshTestBase {
   std::string SystemInfoDisplayInsetsToString(
       const api::system_display::Insets& insets) const {
     // Order to match gfx::Insets::ToString().
-    return base::StringPrintf("%d,%d,%d,%d",
-        insets.top,  insets.left, insets.bottom, insets.right);
+    return base::StringPrintf(
+        "%d,%d,%d,%d", insets.top, insets.left, insets.bottom, insets.right);
   }
 
   std::string SystemInfoDisplayBoundsToString(
       const api::system_display::Bounds& bounds) const {
     // Order to match gfx::Rect::ToString().
-    return base::StringPrintf("%d,%d %dx%d",
-        bounds.left,  bounds.top, bounds.width, bounds.height);
+    return base::StringPrintf(
+        "%d,%d %dx%d", bounds.left, bounds.top, bounds.width, bounds.height);
   }
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(DisplayInfoProviderChromeosTest);
 };
 
@@ -242,14 +244,14 @@ TEST_F(DisplayInfoProviderChromeosTest, GetMirroring) {
   int64 display_id_primary;
   ASSERT_TRUE(base::StringToInt64(result[0]->id, &display_id_primary))
       << "Display id must be convertable to integer: " << result[0]->id;
-  ASSERT_TRUE(DisplayExists(display_id_primary))
-      << display_id_primary << " not found";
+  ASSERT_TRUE(DisplayExists(display_id_primary)) << display_id_primary
+                                                 << " not found";
 
   int64 display_id_secondary;
   ASSERT_TRUE(base::StringToInt64(result[1]->id, &display_id_secondary))
       << "Display id must be convertable to integer: " << result[1]->id;
-  ASSERT_TRUE(DisplayExists(display_id_secondary))
-      << display_id_secondary << " not found";
+  ASSERT_TRUE(DisplayExists(display_id_secondary)) << display_id_secondary
+                                                   << " not found";
 
   ASSERT_FALSE(GetDisplayManager()->IsMirrored());
   EXPECT_TRUE(result[0]->mirroring_source_id.empty());
@@ -319,8 +321,8 @@ TEST_F(DisplayInfoProviderChromeosTest, SetBoundsOriginLeftExact) {
 
   bool success = false;
   std::string error;
-  CallSetDisplayUnitInfo(base::Int64ToString(secondary.id()), info,
-      &success, &error);
+  CallSetDisplayUnitInfo(
+      base::Int64ToString(secondary.id()), info, &success, &error);
 
   ASSERT_TRUE(success);
   ASSERT_TRUE(error.empty());
@@ -338,8 +340,8 @@ TEST_F(DisplayInfoProviderChromeosTest, SetBoundsOriginRightExact) {
 
   bool success = false;
   std::string error;
-  CallSetDisplayUnitInfo(base::Int64ToString(secondary.id()), info,
-      &success, &error);
+  CallSetDisplayUnitInfo(
+      base::Int64ToString(secondary.id()), info, &success, &error);
 
   ASSERT_TRUE(success);
   ASSERT_TRUE(error.empty());
@@ -357,8 +359,8 @@ TEST_F(DisplayInfoProviderChromeosTest, SetBoundsOriginTopExact) {
 
   bool success = false;
   std::string error;
-  CallSetDisplayUnitInfo(base::Int64ToString(secondary.id()), info,
-      &success, &error);
+  CallSetDisplayUnitInfo(
+      base::Int64ToString(secondary.id()), info, &success, &error);
 
   ASSERT_TRUE(success);
   ASSERT_TRUE(error.empty());
@@ -376,8 +378,8 @@ TEST_F(DisplayInfoProviderChromeosTest, SetBoundsOriginBottomExact) {
 
   bool success = false;
   std::string error;
-  CallSetDisplayUnitInfo(base::Int64ToString(secondary.id()), info,
-      &success, &error);
+  CallSetDisplayUnitInfo(
+      base::Int64ToString(secondary.id()), info, &success, &error);
 
   ASSERT_TRUE(success);
   ASSERT_TRUE(error.empty());
@@ -395,8 +397,8 @@ TEST_F(DisplayInfoProviderChromeosTest, SetBoundsOriginSameCenter) {
 
   bool success = false;
   std::string error;
-  CallSetDisplayUnitInfo(base::Int64ToString(secondary.id()), info,
-      &success, &error);
+  CallSetDisplayUnitInfo(
+      base::Int64ToString(secondary.id()), info, &success, &error);
 
   ASSERT_TRUE(success);
   ASSERT_TRUE(error.empty());
@@ -414,8 +416,8 @@ TEST_F(DisplayInfoProviderChromeosTest, SetBoundsOriginLeftOutside) {
 
   bool success = false;
   std::string error;
-  CallSetDisplayUnitInfo(base::Int64ToString(secondary.id()), info,
-      &success, &error);
+  CallSetDisplayUnitInfo(
+      base::Int64ToString(secondary.id()), info, &success, &error);
 
   ASSERT_TRUE(success);
   ASSERT_TRUE(error.empty());
@@ -433,8 +435,8 @@ TEST_F(DisplayInfoProviderChromeosTest, SetBoundsOriginTopOutside) {
 
   bool success = false;
   std::string error;
-  CallSetDisplayUnitInfo(base::Int64ToString(secondary.id()), info,
-      &success, &error);
+  CallSetDisplayUnitInfo(
+      base::Int64ToString(secondary.id()), info, &success, &error);
 
   ASSERT_TRUE(success);
   ASSERT_TRUE(error.empty());
@@ -453,8 +455,8 @@ TEST_F(DisplayInfoProviderChromeosTest,
 
   bool success = false;
   std::string error;
-  CallSetDisplayUnitInfo(base::Int64ToString(secondary.id()), info,
-      &success, &error);
+  CallSetDisplayUnitInfo(
+      base::Int64ToString(secondary.id()), info, &success, &error);
 
   ASSERT_TRUE(success);
   ASSERT_TRUE(error.empty());
@@ -462,8 +464,7 @@ TEST_F(DisplayInfoProviderChromeosTest,
   EXPECT_EQ("-650,600 1000x100", secondary.bounds().ToString());
 }
 
-TEST_F(DisplayInfoProviderChromeosTest,
-       SetBoundsOriginRightButSharesTopSide) {
+TEST_F(DisplayInfoProviderChromeosTest, SetBoundsOriginRightButSharesTopSide) {
   UpdateDisplay("1200x600,1000x100");
 
   const gfx::Display& secondary = ash::ScreenUtil::GetSecondaryDisplay();
@@ -473,8 +474,8 @@ TEST_F(DisplayInfoProviderChromeosTest,
 
   bool success = false;
   std::string error;
-  CallSetDisplayUnitInfo(base::Int64ToString(secondary.id()), info,
-      &success, &error);
+  CallSetDisplayUnitInfo(
+      base::Int64ToString(secondary.id()), info, &success, &error);
 
   ASSERT_TRUE(success);
   ASSERT_TRUE(error.empty());
@@ -482,8 +483,7 @@ TEST_F(DisplayInfoProviderChromeosTest,
   EXPECT_EQ("850,-100 1000x100", secondary.bounds().ToString());
 }
 
-TEST_F(DisplayInfoProviderChromeosTest,
-       SetBoundsOriginTopButSharesLeftSide) {
+TEST_F(DisplayInfoProviderChromeosTest, SetBoundsOriginTopButSharesLeftSide) {
   UpdateDisplay("1200x600,1000x100/l");
 
   const gfx::Display& secondary = ash::ScreenUtil::GetSecondaryDisplay();
@@ -493,8 +493,8 @@ TEST_F(DisplayInfoProviderChromeosTest,
 
   bool success = false;
   std::string error;
-  CallSetDisplayUnitInfo(base::Int64ToString(secondary.id()), info,
-      &success, &error);
+  CallSetDisplayUnitInfo(
+      base::Int64ToString(secondary.id()), info, &success, &error);
 
   ASSERT_TRUE(success);
   ASSERT_TRUE(error.empty());
@@ -513,8 +513,8 @@ TEST_F(DisplayInfoProviderChromeosTest,
 
   bool success = false;
   std::string error;
-  CallSetDisplayUnitInfo(base::Int64ToString(secondary.id()), info,
-      &success, &error);
+  CallSetDisplayUnitInfo(
+      base::Int64ToString(secondary.id()), info, &success, &error);
 
   ASSERT_TRUE(success);
   ASSERT_TRUE(error.empty());
@@ -532,8 +532,8 @@ TEST_F(DisplayInfoProviderChromeosTest, SetBoundsOriginPrimaryHiDPI) {
 
   bool success = false;
   std::string error;
-  CallSetDisplayUnitInfo(base::Int64ToString(secondary.id()), info,
-      &success, &error);
+  CallSetDisplayUnitInfo(
+      base::Int64ToString(secondary.id()), info, &success, &error);
 
   ASSERT_TRUE(success);
   ASSERT_TRUE(error.empty());
@@ -551,8 +551,8 @@ TEST_F(DisplayInfoProviderChromeosTest, SetBoundsOriginSecondaryHiDPI) {
 
   bool success = false;
   std::string error;
-  CallSetDisplayUnitInfo(base::Int64ToString(secondary.id()), info,
-      &success, &error);
+  CallSetDisplayUnitInfo(
+      base::Int64ToString(secondary.id()), info, &success, &error);
 
   ASSERT_TRUE(success);
   ASSERT_TRUE(error.empty());
@@ -570,8 +570,8 @@ TEST_F(DisplayInfoProviderChromeosTest, SetBoundsOriginOutOfBounds) {
 
   bool success = false;
   std::string error;
-  CallSetDisplayUnitInfo(base::Int64ToString(secondary.id()), info,
-      &success, &error);
+  CallSetDisplayUnitInfo(
+      base::Int64ToString(secondary.id()), info, &success, &error);
 
   ASSERT_FALSE(success);
   ASSERT_EQ("Bounds origin x out of bounds.", error);
@@ -589,8 +589,8 @@ TEST_F(DisplayInfoProviderChromeosTest, SetBoundsOriginOutOfBoundsNegative) {
 
   bool success = false;
   std::string error;
-  CallSetDisplayUnitInfo(base::Int64ToString(secondary.id()), info,
-      &success, &error);
+  CallSetDisplayUnitInfo(
+      base::Int64ToString(secondary.id()), info, &success, &error);
 
   ASSERT_FALSE(success);
   ASSERT_EQ("Bounds origin y out of bounds.", error);
@@ -608,8 +608,8 @@ TEST_F(DisplayInfoProviderChromeosTest, SetBoundsOriginMaxValues) {
 
   bool success = false;
   std::string error;
-  CallSetDisplayUnitInfo(base::Int64ToString(secondary.id()), info,
-      &success, &error);
+  CallSetDisplayUnitInfo(
+      base::Int64ToString(secondary.id()), info, &success, &error);
 
   ASSERT_TRUE(success);
   EXPECT_TRUE(error.empty());
@@ -627,8 +627,8 @@ TEST_F(DisplayInfoProviderChromeosTest, SetBoundsOriginOnPrimary) {
 
   bool success = false;
   std::string error;
-  CallSetDisplayUnitInfo(base::Int64ToString(secondary.id()), info,
-      &success, &error);
+  CallSetDisplayUnitInfo(
+      base::Int64ToString(secondary.id()), info, &success, &error);
 
   ASSERT_FALSE(success);
   ASSERT_EQ("Bounds origin not allowed for the primary display.", error);
@@ -652,8 +652,8 @@ TEST_F(DisplayInfoProviderChromeosTest, SetBoundsOriginWithMirroring) {
 
   bool success = false;
   std::string error;
-  CallSetDisplayUnitInfo(base::Int64ToString(secondary.id()), info,
-      &success, &error);
+  CallSetDisplayUnitInfo(
+      base::Int64ToString(secondary.id()), info, &success, &error);
 
   ASSERT_FALSE(success);
   ASSERT_EQ("No other parameter should be set alongside mirroringSourceId.",
@@ -669,8 +669,8 @@ TEST_F(DisplayInfoProviderChromeosTest, SetRotation) {
 
   bool success = false;
   std::string error;
-  CallSetDisplayUnitInfo(base::Int64ToString(secondary.id()), info,
-      &success, &error);
+  CallSetDisplayUnitInfo(
+      base::Int64ToString(secondary.id()), info, &success, &error);
 
   ASSERT_TRUE(success);
   EXPECT_TRUE(error.empty());
@@ -679,8 +679,8 @@ TEST_F(DisplayInfoProviderChromeosTest, SetRotation) {
   EXPECT_EQ(gfx::Display::ROTATE_90, secondary.rotation());
 
   info.rotation.reset(new int(270));
-  CallSetDisplayUnitInfo(base::Int64ToString(secondary.id()), info,
-      &success, &error);
+  CallSetDisplayUnitInfo(
+      base::Int64ToString(secondary.id()), info, &success, &error);
 
   ASSERT_TRUE(success);
   EXPECT_TRUE(error.empty());
@@ -691,8 +691,8 @@ TEST_F(DisplayInfoProviderChromeosTest, SetRotation) {
   info.rotation.reset(new int(180));
   // Switch primary display.
   info.is_primary.reset(new bool(true));
-  CallSetDisplayUnitInfo(base::Int64ToString(secondary.id()), info,
-      &success, &error);
+  CallSetDisplayUnitInfo(
+      base::Int64ToString(secondary.id()), info, &success, &error);
 
   ASSERT_TRUE(success);
   EXPECT_TRUE(error.empty());
@@ -702,8 +702,8 @@ TEST_F(DisplayInfoProviderChromeosTest, SetRotation) {
   EXPECT_EQ(ash::Shell::GetScreen()->GetPrimaryDisplay().id(), secondary.id());
 
   info.rotation.reset(new int(0));
-  CallSetDisplayUnitInfo(base::Int64ToString(secondary.id()), info,
-      &success, &error);
+  CallSetDisplayUnitInfo(
+      base::Int64ToString(secondary.id()), info, &success, &error);
 
   ASSERT_TRUE(success);
   EXPECT_TRUE(error.empty());
@@ -722,8 +722,8 @@ TEST_F(DisplayInfoProviderChromeosTest, SetInvalidRotation) {
 
   bool success = false;
   std::string error;
-  CallSetDisplayUnitInfo(base::Int64ToString(secondary.id()), info,
-      &success, &error);
+  CallSetDisplayUnitInfo(
+      base::Int64ToString(secondary.id()), info, &success, &error);
 
   ASSERT_FALSE(success);
   EXPECT_EQ("Invalid rotation.", error);
@@ -735,56 +735,56 @@ TEST_F(DisplayInfoProviderChromeosTest, SetNegativeOverscan) {
   const gfx::Display& secondary = ash::ScreenUtil::GetSecondaryDisplay();
   api::system_display::DisplayProperties info;
   info.overscan.reset(new api::system_display::Insets);
-  info.overscan->left= -10;
+  info.overscan->left = -10;
 
   bool success = false;
   std::string error;
-  CallSetDisplayUnitInfo(base::Int64ToString(secondary.id()), info,
-      &success, &error);
+  CallSetDisplayUnitInfo(
+      base::Int64ToString(secondary.id()), info, &success, &error);
 
   ASSERT_FALSE(success);
   EXPECT_EQ("Negative overscan not allowed.", error);
 
   EXPECT_EQ("1200,0 300x500", secondary.bounds().ToString());
 
-  info.overscan->left= 0;
+  info.overscan->left = 0;
   info.overscan->right = -200;
 
-  CallSetDisplayUnitInfo(base::Int64ToString(secondary.id()), info,
-      &success, &error);
+  CallSetDisplayUnitInfo(
+      base::Int64ToString(secondary.id()), info, &success, &error);
 
   ASSERT_FALSE(success);
   EXPECT_EQ("Negative overscan not allowed.", error);
 
   EXPECT_EQ("1200,0 300x500", secondary.bounds().ToString());
 
-  info.overscan->right= 0;
+  info.overscan->right = 0;
   info.overscan->top = -300;
 
-  CallSetDisplayUnitInfo(base::Int64ToString(secondary.id()), info,
-      &success, &error);
+  CallSetDisplayUnitInfo(
+      base::Int64ToString(secondary.id()), info, &success, &error);
 
   ASSERT_FALSE(success);
   EXPECT_EQ("Negative overscan not allowed.", error);
 
   EXPECT_EQ("1200,0 300x500", secondary.bounds().ToString());
 
-  info.overscan->right= 0;
+  info.overscan->right = 0;
   info.overscan->top = -1000;
 
-  CallSetDisplayUnitInfo(base::Int64ToString(secondary.id()), info,
-      &success, &error);
+  CallSetDisplayUnitInfo(
+      base::Int64ToString(secondary.id()), info, &success, &error);
 
   ASSERT_FALSE(success);
   EXPECT_EQ("Negative overscan not allowed.", error);
 
   EXPECT_EQ("1200,0 300x500", secondary.bounds().ToString());
 
-  info.overscan->right= 0;
+  info.overscan->right = 0;
   info.overscan->top = 0;
 
-  CallSetDisplayUnitInfo(base::Int64ToString(secondary.id()), info,
-      &success, &error);
+  CallSetDisplayUnitInfo(
+      base::Int64ToString(secondary.id()), info, &success, &error);
 
   ASSERT_TRUE(success);
   EXPECT_TRUE(error.empty());
@@ -799,15 +799,15 @@ TEST_F(DisplayInfoProviderChromeosTest, SetOverscanLargerThanHorizontalBounds) {
   api::system_display::DisplayProperties info;
   info.overscan.reset(new api::system_display::Insets);
   // Horizontal overscan is 151, which would make the bounds width 149.
-  info.overscan->left= 50;
+  info.overscan->left = 50;
   info.overscan->top = 10;
   info.overscan->right = 101;
   info.overscan->bottom = 20;
 
   bool success = false;
   std::string error;
-  CallSetDisplayUnitInfo(base::Int64ToString(secondary.id()), info,
-      &success, &error);
+  CallSetDisplayUnitInfo(
+      base::Int64ToString(secondary.id()), info, &success, &error);
 
   ASSERT_FALSE(success);
   EXPECT_EQ("Horizontal overscan is more than half of the screen width.",
@@ -821,19 +821,18 @@ TEST_F(DisplayInfoProviderChromeosTest, SetOverscanLargerThanVerticalBounds) {
   api::system_display::DisplayProperties info;
   info.overscan.reset(new api::system_display::Insets);
   // Vertical overscan is 501, which would make the bounds height 499.
-  info.overscan->left= 20;
+  info.overscan->left = 20;
   info.overscan->top = 250;
   info.overscan->right = 101;
   info.overscan->bottom = 251;
 
   bool success = false;
   std::string error;
-  CallSetDisplayUnitInfo(base::Int64ToString(secondary.id()), info,
-      &success, &error);
+  CallSetDisplayUnitInfo(
+      base::Int64ToString(secondary.id()), info, &success, &error);
 
   ASSERT_FALSE(success);
-  EXPECT_EQ("Vertical overscan is more than half of the screen height.",
-            error);
+  EXPECT_EQ("Vertical overscan is more than half of the screen height.", error);
 }
 
 TEST_F(DisplayInfoProviderChromeosTest, SetOverscan) {
@@ -842,15 +841,15 @@ TEST_F(DisplayInfoProviderChromeosTest, SetOverscan) {
   const gfx::Display& secondary = ash::ScreenUtil::GetSecondaryDisplay();
   api::system_display::DisplayProperties info;
   info.overscan.reset(new api::system_display::Insets);
-  info.overscan->left= 20;
+  info.overscan->left = 20;
   info.overscan->top = 199;
   info.overscan->right = 130;
   info.overscan->bottom = 51;
 
   bool success = false;
   std::string error;
-  CallSetDisplayUnitInfo(base::Int64ToString(secondary.id()), info,
-      &success, &error);
+  CallSetDisplayUnitInfo(
+      base::Int64ToString(secondary.id()), info, &success, &error);
 
   ASSERT_TRUE(success);
   EXPECT_TRUE(error.empty());
@@ -868,25 +867,24 @@ TEST_F(DisplayInfoProviderChromeosTest, SetOverscan) {
 TEST_F(DisplayInfoProviderChromeosTest, SetOverscanForInternal) {
   UpdateDisplay("1200x600,600x1000*2");
   const int64 internal_display_id =
-      ash::test::DisplayManagerTestApi(GetDisplayManager()).
-      SetFirstDisplayAsInternalDisplay();
+      ash::test::DisplayManagerTestApi(GetDisplayManager())
+          .SetFirstDisplayAsInternalDisplay();
 
   api::system_display::DisplayProperties info;
   info.overscan.reset(new api::system_display::Insets);
   // Vertical overscan is 501, which would make the bounds height 499.
-  info.overscan->left= 20;
+  info.overscan->left = 20;
   info.overscan->top = 20;
   info.overscan->right = 20;
   info.overscan->bottom = 20;
 
   bool success = false;
   std::string error;
-  CallSetDisplayUnitInfo(base::Int64ToString(internal_display_id), info,
-      &success, &error);
+  CallSetDisplayUnitInfo(
+      base::Int64ToString(internal_display_id), info, &success, &error);
 
   ASSERT_FALSE(success);
-  EXPECT_EQ("Overscan changes not allowed for the internal monitor.",
-            error);
+  EXPECT_EQ("Overscan changes not allowed for the internal monitor.", error);
 }
 
 }  // namespace
