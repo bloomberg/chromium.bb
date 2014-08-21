@@ -26630,7 +26630,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SB2.DatabaseUpdateKilobytes" units="KB">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>shess@chromium.org</owner>
   <summary>
     The size of the update file before merging with the database file, in
     kilobytes.
@@ -26941,7 +26941,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="SB2.Network" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>shess@chromium.org</owner>
   <summary>
     The time that it took to receive a response from the Google SafeBrowsing
     servers for a GetHash request.
