@@ -32,7 +32,7 @@ class InterstitialUITest : public InProcessBrowserTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(InterstitialUITest, OpenInterstitial) {
+IN_PROC_BROWSER_TEST_F(InterstitialUITest, FLAKY_OpenInterstitial) {
   TestInterstitial(
       GURL("chrome://interstitials"),
       "Interstitials");
