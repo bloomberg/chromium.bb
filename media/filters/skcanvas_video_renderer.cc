@@ -190,6 +190,7 @@ void SkCanvasVideoRenderer::Paint(media::VideoFrame* video_frame,
                                   SkCanvas* canvas,
                                   const gfx::RectF& dest_rect,
                                   uint8 alpha,
+                                  SkXfermode::Mode mode,
                                   VideoRotation video_rotation) {
   if (alpha == 0) {
     return;
@@ -233,13 +234,21 @@ void SkCanvasVideoRenderer::Paint(media::VideoFrame* video_frame,
     last_frame_timestamp_ = video_frame->timestamp();
   }
 
-  // Use SRC mode so we completely overwrite the buffer (in case we have alpha)
-  // this means we don't need the extra cost of clearing the buffer first.
-  paint.setXfermode(SkXfermode::Create(SkXfermode::kSrc_Mode));
+  paint.setXfermodeMode(mode);
 
   // Paint using |last_frame_|.
   paint.setFilterLevel(SkPaint::kLow_FilterLevel);
   canvas->drawBitmapRect(last_frame_, NULL, dest, &paint);
+}
+
+void SkCanvasVideoRenderer::Copy(media::VideoFrame* video_frame,
+                                 SkCanvas* canvas) {
+  Paint(video_frame,
+        canvas,
+        video_frame->visible_rect(),
+        0xff,
+        SkXfermode::kSrc_Mode,
+        media::VIDEO_ROTATION_0);
 }
 
 }  // namespace media

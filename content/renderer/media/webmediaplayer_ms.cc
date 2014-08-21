@@ -319,15 +319,26 @@ bool WebMediaPlayerMS::didLoadingProgress() {
   return true;
 }
 
-void WebMediaPlayerMS::paint(WebCanvas* canvas,
-                             const WebRect& rect,
+void WebMediaPlayerMS::paint(blink::WebCanvas* canvas,
+                             const blink::WebRect& rect,
                              unsigned char alpha) {
+  paint(canvas, rect, alpha, SkXfermode::kSrcOver_Mode);
+}
+
+void WebMediaPlayerMS::paint(blink::WebCanvas* canvas,
+                             const blink::WebRect& rect,
+                             unsigned char alpha,
+                             SkXfermode::Mode mode) {
   DVLOG(3) << "WebMediaPlayerMS::paint";
   DCHECK(thread_checker_.CalledOnValidThread());
 
   gfx::RectF dest_rect(rect.x, rect.y, rect.width, rect.height);
-  video_renderer_.Paint(
-      current_frame_.get(), canvas, dest_rect, alpha, media::VIDEO_ROTATION_0);
+  video_renderer_.Paint(current_frame_.get(),
+                        canvas,
+                        dest_rect,
+                        alpha,
+                        mode,
+                        media::VIDEO_ROTATION_0);
 
   {
     base::AutoLock auto_lock(current_frame_lock_);

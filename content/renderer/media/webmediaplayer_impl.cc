@@ -536,9 +536,16 @@ bool WebMediaPlayerImpl::didLoadingProgress() {
   return pipeline_progress || data_progress;
 }
 
-void WebMediaPlayerImpl::paint(WebCanvas* canvas,
-                               const WebRect& rect,
+void WebMediaPlayerImpl::paint(blink::WebCanvas* canvas,
+                               const blink::WebRect& rect,
                                unsigned char alpha) {
+  paint(canvas, rect, alpha, SkXfermode::kSrcOver_Mode);
+}
+
+void WebMediaPlayerImpl::paint(blink::WebCanvas* canvas,
+                               const blink::WebRect& rect,
+                               unsigned char alpha,
+                               SkXfermode::Mode mode) {
   DCHECK(main_loop_->BelongsToCurrentThread());
   TRACE_EVENT0("media", "WebMediaPlayerImpl:paint");
 
@@ -556,6 +563,7 @@ void WebMediaPlayerImpl::paint(WebCanvas* canvas,
                                  canvas,
                                  gfx_rect,
                                  alpha,
+                                 mode,
                                  pipeline_metadata_.video_rotation);
 }
 

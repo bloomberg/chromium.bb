@@ -9,6 +9,7 @@
 #include "media/base/media_export.h"
 #include "media/base/video_rotation.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkXfermode.h"
 #include "ui/gfx/rect.h"
 
 class SkCanvas;
@@ -32,7 +33,11 @@ class MEDIA_EXPORT SkCanvasVideoRenderer {
              SkCanvas* canvas,
              const gfx::RectF& dest_rect,
              uint8 alpha,
+             SkXfermode::Mode mode,
              VideoRotation video_rotation);
+
+  // Copy |video_frame| on |canvas|.
+  void Copy(media::VideoFrame* video_frame, SkCanvas* canvas);
 
  private:
   // An RGB bitmap and corresponding timestamp of the previously converted

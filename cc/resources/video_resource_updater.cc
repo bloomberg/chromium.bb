@@ -249,11 +249,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
     {
       ResourceProvider::ScopedWriteLockSoftware lock(
           resource_provider_, plane_resources[0].resource_id);
-      video_renderer_->Paint(video_frame.get(),
-                             lock.sk_canvas(),
-                             video_frame->visible_rect(),
-                             0xff,
-                             media::VIDEO_ROTATION_0);
+      video_renderer_->Copy(video_frame.get(), lock.sk_canvas());
     }
 
     RecycleResourceData recycle_data = {

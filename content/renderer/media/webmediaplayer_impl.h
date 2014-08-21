@@ -95,6 +95,11 @@ class WebMediaPlayerImpl
   // Methods for painting.
   virtual void paint(blink::WebCanvas* canvas,
                      const blink::WebRect& rect,
+                     unsigned char alpha,
+                     SkXfermode::Mode mode);
+  // TODO(dshwang): remove it because above method replaces. crbug.com/401027
+  virtual void paint(blink::WebCanvas* canvas,
+                     const blink::WebRect& rect,
                      unsigned char alpha);
 
   // True if the loaded media has a playable video/audio track.

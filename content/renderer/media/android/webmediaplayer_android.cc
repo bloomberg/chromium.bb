@@ -514,6 +514,13 @@ bool WebMediaPlayerAndroid::EnsureTextureBackedSkBitmap(GrContext* gr,
 void WebMediaPlayerAndroid::paint(blink::WebCanvas* canvas,
                                   const blink::WebRect& rect,
                                   unsigned char alpha) {
+  paint(canvas, rect, alpha, SkXfermode::kSrcOver_Mode);
+}
+
+void WebMediaPlayerAndroid::paint(blink::WebCanvas* canvas,
+                                  const blink::WebRect& rect,
+                                  unsigned char alpha,
+                                  SkXfermode::Mode mode) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   scoped_ptr<blink::WebGraphicsContext3DProvider> provider =
     scoped_ptr<blink::WebGraphicsContext3DProvider>(blink::Platform::current(
@@ -550,6 +557,7 @@ void WebMediaPlayerAndroid::paint(blink::WebCanvas* canvas,
   dest.set(rect.x, rect.y, rect.x + rect.width, rect.y + rect.height);
   SkPaint paint;
   paint.setAlpha(alpha);
+  paint.setXfermodeMode(mode);
   // It is not necessary to pass the dest into the drawBitmap call since all
   // the context have been set up before calling paintCurrentFrameInContext.
   canvas->drawBitmapRect(bitmap_, 0, dest, &paint);

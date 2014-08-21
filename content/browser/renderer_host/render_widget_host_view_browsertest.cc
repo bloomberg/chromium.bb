@@ -491,14 +491,9 @@ class CompositingRenderWidgetHostViewBrowserTestTabCapture
     SkBitmap bitmap;
     bitmap.allocN32Pixels(video_frame->visible_rect().width(),
                           video_frame->visible_rect().height());
-    bitmap.eraseColor(SK_ColorTRANSPARENT);
+    // Don't clear the canvas because drawing a video frame by Src mode.
     SkCanvas canvas(bitmap);
-
-    video_renderer.Paint(video_frame.get(),
-                         &canvas,
-                         video_frame->visible_rect(),
-                         0xff,
-                         media::VIDEO_ROTATION_0);
+    video_renderer.Copy(video_frame.get(), &canvas);
 
     CopyFromCompositingSurfaceCallback(quit_callback,
                                        result,
