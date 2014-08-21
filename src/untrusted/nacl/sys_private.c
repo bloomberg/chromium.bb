@@ -58,7 +58,7 @@ void _exit(int status) {
 }
 
 int gettimeofday(struct timeval *tv, void *tz) {
-  return errno_call(NACL_SYSCALL(gettimeofday)(tv, NULL));
+  return errno_call(NACL_SYSCALL(gettimeofday)(tv));
 }
 
 clock_t clock(void) {

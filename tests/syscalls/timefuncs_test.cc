@@ -40,7 +40,7 @@
 #ifdef USE_RAW_SYSCALLS
 #define CLOCK NACL_SYSCALL(clock)
 #define NANOSLEEP(REQ, REM)  NACL_SYSCALL(nanosleep)(REQ, REM)
-#define GETTIMEOFDAY(TV, TZ) NACL_SYSCALL(gettimeofday)(TV, TZ)
+#define GETTIMEOFDAY(TV, TZ) ((void) (TZ), NACL_SYSCALL(gettimeofday)(TV))
 #else
 #define CLOCK clock
 #define NANOSLEEP(REQ, REM)  nanosleep(REQ, REM)

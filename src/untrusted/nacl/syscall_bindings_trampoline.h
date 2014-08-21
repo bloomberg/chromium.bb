@@ -168,7 +168,7 @@ typedef int (*TYPE_nacl_sem_post) (int sem);
 
 typedef int (*TYPE_nacl_getdents) (int desc, void *dirp, size_t count);
 
-typedef int (*TYPE_nacl_gettimeofday) (struct timeval *tv, void *tz);
+typedef int (*TYPE_nacl_gettimeofday) (struct timeval *tv);
 
 typedef int (*TYPE_nacl_sched_yield) (void);
 

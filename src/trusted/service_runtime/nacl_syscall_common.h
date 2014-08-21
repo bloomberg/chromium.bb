@@ -58,9 +58,8 @@ int NaClSysCommonAddrRangeInAllowedDynamicCodeSpace(struct NaClApp *nap,
                                                     uintptr_t usraddr,
                                                     size_t length);
 
-int32_t NaClSysGetTimeOfDay(struct NaClAppThread      *natp,
-                            struct nacl_abi_timeval   *tv,
-                            struct nacl_abi_timezone  *tz);
+int32_t NaClSysGetTimeOfDay(struct NaClAppThread *natp,
+                            uint32_t             tv_addr);
 
 int32_t NaClSysClockGetRes(struct NaClAppThread *natp,
                            int                  clk_id,

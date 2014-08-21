@@ -956,26 +956,20 @@ int32_t NaClSysTestCrash(struct NaClAppThread *natp, int crash_type) {
   return -NACL_ABI_EINVAL;
 }
 
-int32_t NaClSysGetTimeOfDay(struct NaClAppThread      *natp,
-                            struct nacl_abi_timeval   *tv,
-                            struct nacl_abi_timezone  *tz) {
+/*
+ * This syscall does not take a "tz" (timezone) argument.  tz is not
+ * supported in linux, nor is it supported by glibc, since tzset(3) and the
+ * zoneinfo file should be used instead.
+ */
+int32_t NaClSysGetTimeOfDay(struct NaClAppThread *natp,
+                            uint32_t             tv_addr) {
   int                     retval;
   struct nacl_abi_timeval now;
 
-  UNREFERENCED_PARAMETER(tz);
-
   NaClLog(3,
           ("Entered NaClSysGetTimeOfDay(%08"NACL_PRIxPTR
-           ", 0x%08"NACL_PRIxPTR", 0x%08"NACL_PRIxPTR")\n"),
-          (uintptr_t) natp, (uintptr_t) tv, (uintptr_t) tz);
-
-  /*
-   * tz is not supported in linux, nor is it supported by glibc, since
-   * tzset(3) and the zoneinfo file should be used instead.
-   *
-   * TODO(bsy) Do we make the zoneinfo directory available to
-   * applications?
-   */
+           ", 0x%08"NACL_PRIx32")\n"),
+          (uintptr_t) natp, tv_addr);
 
   /* memset() call is required to clear padding in struct nacl_abi_timeval. */
   memset(&now, 0, sizeof(now));
@@ -994,7 +988,7 @@ int32_t NaClSysGetTimeOfDay(struct NaClAppThread      *natp,
 #endif
   CHECK(now.nacl_abi_tv_usec >= 0);
   CHECK(now.nacl_abi_tv_usec < NACL_MICROS_PER_UNIT);
-  if (!NaClCopyOutToUser(natp->nap, (uintptr_t) tv, &now, sizeof now)) {
+  if (!NaClCopyOutToUser(natp->nap, tv_addr, &now, sizeof now)) {
     return -NACL_ABI_EFAULT;
   }
   return 0;
