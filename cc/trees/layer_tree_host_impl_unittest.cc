@@ -3041,6 +3041,21 @@ TEST_F(LayerTreeHostImplTest, ScrollScaledLayer) {
                  wheel_scroll_delta);
 }
 
+TEST_F(LayerTreeHostImplTest, ScrollViewportRounding) {
+  int width = 332;
+  int height = 20;
+  int scale = 3;
+  SetupScrollAndContentsLayers(gfx::Size(width, height));
+  host_impl_->SetViewportSize(gfx::Size(width * scale - 1, height * scale));
+  host_impl_->SetDeviceScaleFactor(scale);
+  host_impl_->active_tree()->SetPageScaleFactorAndLimits(1.f, 0.5f, 4.f);
+
+  LayerImpl* inner_viewport_scroll_layer =
+      host_impl_->active_tree()->InnerViewportScrollLayer();
+  EXPECT_EQ(gfx::Vector2d(0, 0),
+            inner_viewport_scroll_layer->MaxScrollOffset());
+}
+
 class TestScrollOffsetDelegate : public LayerScrollOffsetDelegate {
  public:
   TestScrollOffsetDelegate()

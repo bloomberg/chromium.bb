@@ -771,7 +771,7 @@ bool LayerImpl::IsActive() const {
 
 // TODO(wjmaclean) Convert so that bounds returns SizeF.
 gfx::Size LayerImpl::bounds() const {
-  return ToFlooredSize(temporary_impl_bounds_);
+  return ToCeiledSize(temporary_impl_bounds_);
 }
 
 void LayerImpl::SetBounds(const gfx::Size& bounds) {
