@@ -143,15 +143,27 @@ void WorkspaceLayoutManager::OnKeyboardBoundsChanging(
   aura::Window *window = text_input_client->GetAttachedWindow();
   if (!window || !window_->Contains(window))
     return;
-  gfx::Rect window_bounds = ScreenUtil::ConvertRectToScreen(
-      window_,
-      window->GetTargetBounds());
-  gfx::Rect intersect = gfx::IntersectRects(window_bounds, new_bounds);
-  int shift = std::min(intersect.height(),
-                       window->bounds().y() - work_area_in_parent_.y());
-  if (shift > 0) {
-    gfx::Point origin(window->bounds().x(), window->bounds().y() - shift);
-    SetChildBounds(window, gfx::Rect(origin, window->bounds().size()));
+  aura::Window *toplevel_window = window->GetToplevelWindow();
+  wm::WindowState* toplevel_window_state = wm::GetWindowState(toplevel_window);
+  if (!new_bounds.IsEmpty()) {
+    // Store existing bounds to be restored before resizing for keyboard if it
+    // is not already stored.
+    if (!toplevel_window_state->HasRestoreBounds())
+      toplevel_window_state->SaveCurrentBoundsForRestore();
+
+    gfx::Rect window_bounds = ScreenUtil::ConvertRectToScreen(
+        window_,
+        window->GetTargetBounds());
+    gfx::Rect intersect = gfx::IntersectRects(window_bounds, new_bounds);
+    int shift = std::min(intersect.height(),
+                         window->bounds().y() - work_area_in_parent_.y());
+    if (shift > 0) {
+      gfx::Point origin(window->bounds().x(), window->bounds().y() - shift);
+      SetChildBounds(window, gfx::Rect(origin, window->bounds().size()));
+    }
+  } else if (toplevel_window_state->HasRestoreBounds()) {
+    // Keyboard hidden, restore original bounds if they exist.
+    toplevel_window_state->SetAndClearRestoreBounds();
   }
 }
 

@@ -992,12 +992,12 @@ class WorkspaceLayoutManagerKeyboardTest : public test::AshTestBase {
   }
 
   void ShowKeyboard() {
+    layout_manager_->OnKeyboardBoundsChanging(keyboard_bounds_);
     restore_work_area_insets_ = Shell::GetScreen()->GetPrimaryDisplay().
         GetWorkAreaInsets();
     Shell::GetInstance()->SetDisplayWorkAreaInsets(
         Shell::GetPrimaryRootWindow(),
         gfx::Insets(0, 0, keyboard_bounds_.height(), 0));
-    layout_manager_->OnKeyboardBoundsChanging(keyboard_bounds_);
   }
 
   void HideKeyboard() {
@@ -1043,8 +1043,10 @@ TEST_F(WorkspaceLayoutManagerKeyboardTest, AdjustWindowForA11yKeyboard) {
                             work_area.height() / 2);
 
   SetKeyboardBounds(keyboard_bounds);
-  scoped_ptr<aura::Window> window(
-      CreateTestWindowInShellWithBounds(work_area));
+
+  aura::test::TestWindowDelegate delegate;
+  scoped_ptr<aura::Window> window(CreateTestWindowInShellWithDelegate(
+      &delegate, -1, work_area));
 
   aura::Window* root_window = ash::Shell::GetInstance()->GetPrimaryRootWindow();
   FakeTextInputClient text_input_client(window.get());
@@ -1061,20 +1063,23 @@ TEST_F(WorkspaceLayoutManagerKeyboardTest, AdjustWindowForA11yKeyboard) {
       Shell::GetScreen()->GetPrimaryDisplay().bounds().height() -
       keyboard_bounds.height();
 
-  EXPECT_EQ(gfx::Rect(work_area).ToString(),
-      window->bounds().ToString());
+  EXPECT_EQ(gfx::Rect(work_area).ToString(), window->bounds().ToString());
   ShowKeyboard();
   EXPECT_EQ(gfx::Rect(work_area.origin(),
             gfx::Size(work_area.width(), available_height)).ToString(),
             window->bounds().ToString());
   HideKeyboard();
+  EXPECT_EQ(gfx::Rect(work_area).ToString(), window->bounds().ToString());
 
-  window->SetBounds(gfx::Rect(50, 50, 100, 500));
-  EXPECT_EQ("50,50 100x500", window->bounds().ToString());
+  gfx::Rect small_window_bound(50, 50, 100, 500);
+  window->SetBounds(small_window_bound);
+  EXPECT_EQ(small_window_bound.ToString(), window->bounds().ToString());
   ShowKeyboard();
   EXPECT_EQ(gfx::Rect(50, 0, 100, available_height).ToString(),
             window->bounds().ToString());
   HideKeyboard();
+  EXPECT_EQ(small_window_bound.ToString(), window->bounds().ToString());
+
   if (switches::IsTextInputFocusManagerEnabled()) {
     ui::TextInputFocusManager::GetInstance()->BlurTextInputClient(
         &text_input_client);
