@@ -55,6 +55,8 @@ signin::GAIAServiceType GetGAIAServiceTypeFromHeader(
     return signin::GAIA_SERVICE_TYPE_ADDSESSION;
   else if (header_value == "REAUTH")
     return signin::GAIA_SERVICE_TYPE_REAUTH;
+  else if (header_value == "SIGNUP")
+    return signin::GAIA_SERVICE_TYPE_SIGNUP;
   else if (header_value == "DEFAULT")
     return signin::GAIA_SERVICE_TYPE_DEFAULT;
   else

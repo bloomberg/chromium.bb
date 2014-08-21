@@ -354,6 +354,10 @@ void ProfileMetrics::LogProfileDesktopMenu(
       UMA_HISTOGRAM_ENUMERATION("Profile.DesktopMenu.GAIAReAuth", metric,
                                 NUM_PROFILE_DESKTOP_MENU_METRICS);
       break;
+    case signin::GAIA_SERVICE_TYPE_SIGNUP:
+      UMA_HISTOGRAM_ENUMERATION("Profile.DesktopMenu.GAIASignup", metric,
+                                NUM_PROFILE_DESKTOP_MENU_METRICS);
+      break;
     case signin::GAIA_SERVICE_TYPE_DEFAULT:
       UMA_HISTOGRAM_ENUMERATION("Profile.DesktopMenu.GAIADefault", metric,
                                 NUM_PROFILE_DESKTOP_MENU_METRICS);
@@ -421,6 +425,12 @@ void ProfileMetrics::LogProfileAndroidAccountManagementMenu(
     case signin::GAIA_SERVICE_TYPE_REAUTH:
       UMA_HISTOGRAM_ENUMERATION(
           "Profile.AndroidAccountManagementMenu.GAIAReAuth",
+          metric,
+          NUM_PROFILE_ANDROID_ACCOUNT_MANAGEMENT_MENU_METRICS);
+      break;
+    case signin::GAIA_SERVICE_TYPE_SIGNUP:
+      UMA_HISTOGRAM_ENUMERATION(
+          "Profile.AndroidAccountManagementMenu.GAIASignup",
           metric,
           NUM_PROFILE_ANDROID_ACCOUNT_MANAGEMENT_MENU_METRICS);
       break;

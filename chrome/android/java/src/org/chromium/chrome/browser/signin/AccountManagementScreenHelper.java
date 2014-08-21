@@ -5,6 +5,8 @@
 package org.chromium.chrome.browser.signin;
 
 import android.content.Context;
+import android.content.Intent;
+import android.provider.Settings;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.ThreadUtils;
@@ -38,6 +40,18 @@ public class AccountManagementScreenHelper {
     public static final int ACCOUNT_MANAGEMENT_MENU_SIGNOUT_SIGNOUT = 6;
     // User toggled Chrome signout, and clicked Cancel.
     public static final int ACCOUNT_MANAGEMENT_MENU_SIGNOUT_CANCEL = 7;
+    // User arrived at the android Account management screen directly from some
+    // Gaia requests.
+    public static final int ACCOUNT_MANAGEMENT_ADD_ACCOUNT = 8;
+    /*
+     * TODO(guohui): add all Gaia service types.
+     * Enum for the Gaia service types, must match GAIAServiceType in
+     * signin_header_helper.h
+     */
+    public static final int GAIA_SERVICE_TYPE_SIGNUP = 5;
+
+    private static final String EXTRA_ACCOUNT_TYPES = "account_types";
+    private static final String EXTRA_VALUE_GOOGLE_ACCOUNTS = "com.google";
 
     /**
      * The screen manager interface.
@@ -68,7 +82,28 @@ public class AccountManagementScreenHelper {
         ThreadUtils.assertOnUiThread();
         if (sManager == null) return;
 
-        sManager.openAccountManagementScreen(applicationContext, profile, gaiaServiceType);
+        if (gaiaServiceType == GAIA_SERVICE_TYPE_SIGNUP)
+            openAndroidAccountCreationScreen(applicationContext);
+        else
+            sManager.openAccountManagementScreen(applicationContext, profile, gaiaServiceType);
+    }
+
+    /**
+     * Opens the Android account manager for adding or creating a Google account.
+     * @param applicationContext
+     */
+    private static void openAndroidAccountCreationScreen(
+            Context applicationContext) {
+        logEvent(ACCOUNT_MANAGEMENT_ADD_ACCOUNT, GAIA_SERVICE_TYPE_SIGNUP);
+
+        Intent createAccountIntent = new Intent(Settings.ACTION_ADD_ACCOUNT);
+        createAccountIntent.putExtra(
+                EXTRA_ACCOUNT_TYPES, new String[]{EXTRA_VALUE_GOOGLE_ACCOUNTS});
+        createAccountIntent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT
+                | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_NEW_TASK
+                | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+
+        applicationContext.startActivity(createAccountIntent);
     }
 
     /**
