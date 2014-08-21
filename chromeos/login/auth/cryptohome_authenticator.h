@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_AUTH_PARALLEL_AUTHENTICATOR_H_
-#define CHROME_BROWSER_CHROMEOS_LOGIN_AUTH_PARALLEL_AUTHENTICATOR_H_
+#ifndef CHROMEOS_LOGIN_AUTH_CRYPTOHOME_AUTHENTICATOR_H_
+#define CHROMEOS_LOGIN_AUTH_CRYPTOHOME_AUTHENTICATOR_H_
 
 #include <string>
 
@@ -12,6 +12,8 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
+#include "base/task_runner.h"
+#include "chromeos/chromeos_export.h"
 #include "chromeos/login/auth/auth_attempt_state.h"
 #include "chromeos/login/auth/auth_attempt_state_resolver.h"
 #include "chromeos/login/auth/authenticator.h"
@@ -31,7 +33,7 @@ class AuthStatusConsumer;
 //
 // At a high, level, here's what happens:
 // AuthenticateToLogin() calls a Cryptohome's method to perform offline login.
-// Resultes are stored in a AuthAttemptState owned by ParallelAuthenticator
+// Resultes are stored in a AuthAttemptState owned by CryptohomeAuthenticator
 // and then call Resolve().  Resolve() will attempt to
 // determine which AuthState we're in, based on the info at hand.
 // It then triggers further action based on the calculated AuthState; this
@@ -50,10 +52,9 @@ class AuthStatusConsumer;
 //     Old password failure: NEED_OLD_PW
 //     Old password ok: RECOVER_MOUNT > CONTINUE > ONLINE_LOGIN
 //
-// TODO(nkostylev): Rename ParallelAuthenticator since it is not doing
-// offline/online login operations in parallel anymore.
-class ParallelAuthenticator : public Authenticator,
-                              public AuthAttemptStateResolver {
+class CHROMEOS_EXPORT CryptohomeAuthenticator
+    : public Authenticator,
+      public AuthAttemptStateResolver {
  public:
   enum AuthState {
     CONTINUE = 0,            // State indeterminate; try again with more info.
@@ -80,15 +81,16 @@ class ParallelAuthenticator : public Authenticator,
     GUEST_LOGIN = 17,        // Logged in guest mode.
     PUBLIC_ACCOUNT_LOGIN = 18,        // Logged into a public account.
     SUPERVISED_USER_LOGIN = 19,       // Logged in as a supervised user.
-    LOGIN_FAILED = 20,       // Login denied.
-    OWNER_REQUIRED = 21,     // Login is restricted to the owner only.
+    LOGIN_FAILED = 20,                // Login denied.
+    OWNER_REQUIRED = 21,              // Login is restricted to the owner only.
     FAILED_USERNAME_HASH = 22,        // Failed GetSanitizedUsername request.
     KIOSK_ACCOUNT_LOGIN = 23,         // Logged into a kiosk account.
     REMOVED_DATA_AFTER_FAILURE = 24,  // Successfully removed the user's
                                       // cryptohome after a login failure.
   };
 
-  explicit ParallelAuthenticator(AuthStatusConsumer* consumer);
+  CryptohomeAuthenticator(scoped_refptr<base::TaskRunner> task_runner,
+                          AuthStatusConsumer* consumer);
 
   // Authenticator overrides.
   virtual void CompleteLogin(Profile* profile,
@@ -114,8 +116,7 @@ class ParallelAuthenticator : public Authenticator,
   // Initiates supervised user login.
   // Creates cryptohome if missing or mounts existing one and
   // notifies consumer on the success/failure.
-  virtual void LoginAsSupervisedUser(
-      const UserContext& user_context) OVERRIDE;
+  virtual void LoginAsSupervisedUser(const UserContext& user_context) OVERRIDE;
 
   // Initiates retail mode login.
   // Mounts tmpfs and notifies consumer on the success/failure.
@@ -143,8 +144,7 @@ class ParallelAuthenticator : public Authenticator,
   virtual void OnRetailModeAuthSuccess() OVERRIDE;
   virtual void OnAuthSuccess() OVERRIDE;
   virtual void OnAuthFailure(const AuthFailure& error) OVERRIDE;
-  virtual void RecoverEncryptedData(
-      const std::string& old_password) OVERRIDE;
+  virtual void RecoverEncryptedData(const std::string& old_password) OVERRIDE;
   virtual void ResyncEncryptedData() OVERRIDE;
 
   // AuthAttemptStateResolver overrides.
@@ -160,14 +160,31 @@ class ParallelAuthenticator : public Authenticator,
   void OnPasswordChangeDetected();
 
  protected:
-  virtual ~ParallelAuthenticator();
+  virtual ~CryptohomeAuthenticator();
+
+  typedef base::Callback<void(bool is_owner)> IsOwnerCallback;
+
+  // Method to be implemented in child. Return |true| if user specified in
+  // |context| exists on device.
+  virtual bool IsKnownUser(const UserContext& context) = 0;
+
+  // Method to be implemented in child. Return |true| if device is running
+  // in safe mode.
+  virtual bool IsSafeMode() = 0;
+
+  // Method to be implemented in child. Have to call |callback| with boolean
+  // parameter that indicates if user in |context| can act as an owner in
+  // safe mode.
+  virtual void CheckSafeModeOwnership(const UserContext& context,
+                                      const IsOwnerCallback& callback) = 0;
 
  private:
-  friend class ParallelAuthenticatorTest;
-  FRIEND_TEST_ALL_PREFIXES(ParallelAuthenticatorTest,
+  friend class CryptohomeAuthenticatorTest;
+  FRIEND_TEST_ALL_PREFIXES(CryptohomeAuthenticatorTest,
                            ResolveOwnerNeededDirectFailedMount);
-  FRIEND_TEST_ALL_PREFIXES(ParallelAuthenticatorTest, ResolveOwnerNeededMount);
-  FRIEND_TEST_ALL_PREFIXES(ParallelAuthenticatorTest,
+  FRIEND_TEST_ALL_PREFIXES(CryptohomeAuthenticatorTest,
+                           ResolveOwnerNeededMount);
+  FRIEND_TEST_ALL_PREFIXES(CryptohomeAuthenticatorTest,
                            ResolveOwnerNeededFailedMount);
 
   // Removes the cryptohome of the user.
@@ -216,6 +233,8 @@ class ParallelAuthenticator : public Authenticator,
   // an external authentication provider (i.e. GAIA extension).
   void ResolveLoginCompletionStatus();
 
+  scoped_refptr<base::TaskRunner> task_runner_;
+
   scoped_ptr<AuthAttemptState> current_state_;
   bool migrate_attempted_;
   bool remove_attempted_;
@@ -242,9 +261,9 @@ class ParallelAuthenticator : public Authenticator,
   // consumer_->OnAuthFailure() until we removed the user cryptohome.
   const AuthFailure* delayed_login_failure_;
 
-  DISALLOW_COPY_AND_ASSIGN(ParallelAuthenticator);
+  DISALLOW_COPY_AND_ASSIGN(CryptohomeAuthenticator);
 };
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_AUTH_PARALLEL_AUTHENTICATOR_H_
+#endif  // CHROMEOS_LOGIN_AUTH_CRYPTOHOME_AUTHENTICATOR_H_

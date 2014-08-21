@@ -36,7 +36,7 @@
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
-#include "chrome/browser/chromeos/login/auth/parallel_authenticator.h"
+#include "chrome/browser/chromeos/login/auth/chrome_cryptohome_authenticator.h"
 #include "chrome/browser/chromeos/login/chrome_restart_request.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_app_launcher.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
@@ -421,7 +421,7 @@ scoped_refptr<Authenticator> LoginUtilsImpl::CreateAuthenticator(
   }
 
   if (authenticator_.get() == NULL) {
-    authenticator_ = new ParallelAuthenticator(consumer);
+    authenticator_ = new ChromeCryptohomeAuthenticator(consumer);
   } else {
     // TODO(nkostylev): Fix this hack by improving Authenticator dependencies.
     authenticator_->SetConsumer(consumer);

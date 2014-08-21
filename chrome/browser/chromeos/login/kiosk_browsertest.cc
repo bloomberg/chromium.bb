@@ -39,6 +39,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/profiles/profile_impl.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/ui/webui/chromeos/login/kiosk_app_menu_handler.h"
 #include "chrome/common/chrome_constants.h"

@@ -126,13 +126,13 @@ class ProfileHelper
   user_manager::User* GetUserByProfile(Profile* profile);
 
  private:
+  friend class CryptohomeAuthenticatorTest;
   friend class DeviceSettingsTestBase;
   friend class extensions::ExtensionGarbageCollectorChromeOSUnitTest;
   friend class FakeUserManager;
   friend class KioskTest;
   friend class MockUserManager;
   friend class MultiProfileUserControllerTest;
-  friend class ParallelAuthenticatorTest;
   friend class ProfileHelperTest;
   friend class ProfileListChromeOSTest;
   friend class SessionStateDelegateChromeOSTest;

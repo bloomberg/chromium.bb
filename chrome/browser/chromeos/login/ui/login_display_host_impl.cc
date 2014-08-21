@@ -54,6 +54,7 @@
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/chromeos/ui/focus_ring_controller.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"

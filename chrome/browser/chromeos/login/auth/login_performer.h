@@ -11,7 +11,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/policy/wildcard_login_checker.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chromeos/login/auth/auth_status_consumer.h"
 #include "chromeos/login/auth/authenticator.h"
 #include "chromeos/login/auth/extended_authenticator.h"

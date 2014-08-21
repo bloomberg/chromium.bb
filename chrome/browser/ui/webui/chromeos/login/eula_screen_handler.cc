@@ -12,6 +12,7 @@
 #include "chrome/browser/chromeos/login/screens/core_oobe_actor.h"
 #include "chrome/browser/chromeos/login/ui/login_web_dialog.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_display.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_contents.h"

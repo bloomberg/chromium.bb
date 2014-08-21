@@ -279,6 +279,8 @@
         'login/auth/auth_status_consumer.h',
         'login/auth/authenticator.cc',
         'login/auth/authenticator.h',
+        'login/auth/cryptohome_authenticator.cc',
+        'login/auth/cryptohome_authenticator.h',
         'login/auth/extended_authenticator.cc',
         'login/auth/extended_authenticator.h',
         'login/auth/key.cc',

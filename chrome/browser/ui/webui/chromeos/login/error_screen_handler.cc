@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/webui/chromeos/login/native_window_delegate.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
