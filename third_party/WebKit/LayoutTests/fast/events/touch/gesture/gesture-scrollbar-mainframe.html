@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<script src="../../../../resources/js-test.js"></script>
+<style>
+::-webkit-scrollbar {
+  background-color: #ccc;
+  /* fixed size for consistent touch adjustment behavior across platforms */
+  width: 15px;
+}
+
+::-webkit-scrollbar-button {
+  display: none;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #777;
+  width: 15px;
+}
+
+body {
+    margin: 0;
+}
+
+.large {
+    height: 2000px;
+    width: 600px;
+}
+</style>
+<div id="console"></div>
+<div class="large">
+
+<script type="text/javascript">
+
+// Ensure there's a candidate for touch adjustment.
+document.addEventListener("click", function() {});
+
+function scrollTest() {
+    shouldBeGreaterThan("window.innerWidth - document.body.clientWidth", "5");
+    var scrollbarX = document.body.clientWidth + 5;
+    var scrollbarY = 50;
+
+    // Ensure we use a touch with an area to test under touch adjustment
+    var touchWidth = 25;
+    var touchHeight = 25;
+
+    shouldBe('window.scrollY', '0');
+    eventSender.gestureTapDown(scrollbarX, scrollbarY, touchWidth, touchHeight);
+    eventSender.gestureShowPress(scrollbarX, scrollbarY, touchWidth, touchHeight);
+    eventSender.gestureScrollBegin(scrollbarX - 20, scrollbarY, touchWidth, touchHeight);
+    eventSender.gestureTapCancel(scrollbarX, scrollbarY, touchWidth, touchHeight);
+    shouldBe('window.scrollY', '0');
+    eventSender.gestureScrollUpdate(0, 20);
+    shouldBeGreaterThan('window.scrollY', '20');
+    eventSender.gestureScrollUpdate(0, 60);
+    shouldBeGreaterThan('window.scrollY', '85');
+    eventSender.gestureScrollEnd(0, 0);
+    shouldBeGreaterThan('window.scrollY', '85');
+}
+
+//if (window.internals)
+//    internals.settings.setMockScrollbarsEnabled(true);
+
+description('This tests scroll gesture events on main frame scroll bars. ' +
+    'The document should be slightly scrolled down if successful.');
+
+if (window.eventSender) {
+   scrollTest();
+} else {
+    debug("This test requires eventSender");
+}
+</script>

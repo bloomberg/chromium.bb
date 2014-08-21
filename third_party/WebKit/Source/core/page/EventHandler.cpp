@@ -2097,11 +2097,6 @@ bool EventHandler::handleGestureEventInFrame(const GestureEventWithHitTestResult
     RefPtr<Scrollbar> scrollbar = targetedEvent.hitTestResult().scrollbar();
     const PlatformGestureEvent& gestureEvent = targetedEvent.event();
 
-    if (!scrollbar) {
-        FrameView* view = m_frame->view();
-        scrollbar = view ? view->scrollbarAtPoint(gestureEvent.position()) : 0;
-    }
-
     if (scrollbar) {
         bool eventSwallowed = scrollbar->gestureEvent(gestureEvent);
         if (gestureEvent.type() == PlatformEvent::GestureTapDown && eventSwallowed)
@@ -2587,6 +2582,14 @@ GestureEventWithHitTestResults EventHandler::targetGestureEvent(const PlatformGe
     touchRadius.scale(1.f / 2);
     // FIXME: We should not do a rect-based hit-test if touch adjustment is disabled.
     HitTestResult hitTestResult = hitTestResultAtPoint(hitTestPoint, hitType | HitTestRequest::ReadOnly, touchRadius);
+
+    // Hit-test the main frame scrollbars (in addition to the child-frame and RenderLayer
+    // scroll bars checked by the hit-test code.
+    if (!hitTestResult.scrollbar()) {
+        if (FrameView* view = m_frame->view()) {
+            hitTestResult.setScrollbar(view->scrollbarAtPoint(gestureEvent.position()));
+        }
+    }
 
     // Adjust the location of the gesture to the most likely nearby node, as appropriate for the
     // type of event.
