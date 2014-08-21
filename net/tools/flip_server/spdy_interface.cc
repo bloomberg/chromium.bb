@@ -296,6 +296,10 @@ void SpdySM::OnRstStream(SpdyStreamId stream_id, SpdyRstStreamStatus status) {
   client_output_ordering_.RemoveStreamId(stream_id);
 }
 
+bool SpdySM::OnUnknownFrame(SpdyStreamId stream_id, int frame_type) {
+  return false;
+}
+
 size_t SpdySM::ProcessReadInput(const char* data, size_t len) {
   DCHECK(buffered_spdy_framer_);
   return buffered_spdy_framer_->ProcessInput(data, len);

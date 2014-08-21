@@ -103,7 +103,7 @@ class NET_EXPORT_PRIVATE HpackDecoder {
   // (or parts thereof). These methods return true on success and
   // false on error.
   bool DecodeNextOpcode(HpackInputStream* input_stream);
-  bool DecodeNextContextUpdate(HpackInputStream* input_stream);
+  bool DecodeNextHeaderTableSizeUpdate(HpackInputStream* input_stream);
   bool DecodeNextIndexedHeader(HpackInputStream* input_stream);
   bool DecodeNextLiteralHeader(HpackInputStream* input_stream,
                                bool should_index);

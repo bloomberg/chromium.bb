@@ -23,8 +23,7 @@ namespace test {
 class HpackHeaderTablePeer;
 }  // namespace test
 
-// A data structure for both the header table (described in 3.2) and
-// the reference set (3.3).
+// A data structure for the static table (3.3.1) and the header table (3.3.2).
 class NET_EXPORT_PRIVATE HpackHeaderTable {
  public:
   friend class test::HpackHeaderTablePeer;
@@ -63,10 +62,6 @@ class NET_EXPORT_PRIVATE HpackHeaderTable {
   size_t size() const { return size_; }
   size_t max_size() const { return max_size_; }
 
-  const OrderedEntrySet& reference_set() {
-    return reference_set_;
-  }
-
   // Returns the entry matching the index, or NULL.
   HpackEntry* GetByIndex(size_t index);
 
@@ -101,15 +96,6 @@ class NET_EXPORT_PRIVATE HpackHeaderTable {
   // evicted and the empty table is of insufficent size for the representation.
   HpackEntry* TryAddEntry(base::StringPiece name, base::StringPiece value);
 
-  // Toggles the presence of a dynamic entry in the reference set. Returns
-  // true if the entry was added, or false if removed. It is an error to
-  // Toggle(entry) if |entry->state()| != 0.
-  bool Toggle(HpackEntry* entry);
-
-  // Removes all entries from the reference set. Sets the state of each removed
-  // entry to zero.
-  void ClearReferenceSet();
-
   void DebugLogTableState() const;
 
  private:
@@ -128,8 +114,6 @@ class NET_EXPORT_PRIVATE HpackHeaderTable {
 
   // Full table index, over |dynamic_entries_| and |static_entries_|.
   OrderedEntrySet index_;
-  // The reference set is strictly a subset of |dynamic_entries_|.
-  OrderedEntrySet reference_set_;
 
   // Last acknowledged value for SETTINGS_HEADER_TABLE_SIZE.
   size_t settings_size_bound_;

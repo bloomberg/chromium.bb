@@ -2352,6 +2352,15 @@ void SpdySession::OnHeaders(SpdyStreamId stream_id,
   }
 }
 
+bool SpdySession::OnUnknownFrame(SpdyStreamId stream_id, int frame_type) {
+  // Validate stream id.
+  // Was the frame sent on a stream id that has not been used in this session?
+  if (stream_id % 2 == 1 && stream_id > stream_hi_water_mark_)
+    return false;
+  // TODO(bnc):  Track highest id for server initiated streams.
+  return true;
+}
+
 void SpdySession::OnRstStream(SpdyStreamId stream_id,
                               SpdyRstStreamStatus status) {
   CHECK(in_io_loop_);

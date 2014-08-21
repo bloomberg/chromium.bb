@@ -81,7 +81,7 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramerVisitorInterface {
   virtual void OnSettingsAck() {}
 
   // Called at the completion of parsing SETTINGS id and value tuples.
-  virtual void OnSettingsEnd() {};
+  virtual void OnSettingsEnd() {}
 
   // Called when a PING frame has been parsed.
   virtual void OnPing(SpdyPingId unique_id, bool is_ack) = 0;
@@ -102,6 +102,12 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramerVisitorInterface {
   virtual void OnPushPromise(SpdyStreamId stream_id,
                              SpdyStreamId promised_stream_id,
                              const SpdyHeaderBlock& headers) = 0;
+
+  // Called when a frame type we don't recognize is received.
+  // Return true if this appears to be a valid extension frame, false otherwise.
+  // We distinguish between extension frames and nonsense by checking
+  // whether the stream id is valid.
+  virtual bool OnUnknownFrame(SpdyStreamId stream_id, int frame_type) = 0;
 
  protected:
   virtual ~BufferedSpdyFramerVisitorInterface() {}
@@ -163,6 +169,7 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramer
                                  size_t length,
                                  bool fin) OVERRIDE;
   virtual void OnContinuation(SpdyStreamId stream_id, bool end) OVERRIDE;
+  virtual bool OnUnknownFrame(SpdyStreamId stream_id, int frame_type) OVERRIDE;
 
   // SpdyFramer methods.
   size_t ProcessInput(const char* data, size_t len);

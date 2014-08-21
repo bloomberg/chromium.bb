@@ -95,6 +95,11 @@ class NET_EXPORT_PRIVATE SpdyFrameBuilder {
     value = htons(value);
     return WriteBytes(&value, sizeof(value));
   }
+  bool WriteUInt24(uint32 value) {
+    value = htonl(value);
+    return WriteBytes(reinterpret_cast<char*>(&value) + 1,
+                      sizeof(value) - 1);
+  }
   bool WriteUInt32(uint32 value) {
     value = htonl(value);
     return WriteBytes(&value, sizeof(value));

@@ -61,17 +61,9 @@ const HpackPrefix kLiteralNoIndexOpcode = { 0x0, 4 };
 // 7.2.3: Opcode for a literal header field which is never indexed.
 const HpackPrefix kLiteralNeverIndexOpcode = { 0x1, 4 };
 
-// 7.3: Opcode for an encoding context update.
-const HpackPrefix kEncodingContextOpcode = { 0x1, 3 };
-
-// 7.3: Flag following an |kEncodingContextOpcode|, which indicates
-// the reference set should be cleared.
-const HpackPrefix kEncodingContextEmptyReferenceSet = { 0x10, 5 };
-
-// 7.3: Flag following an |kEncodingContextOpcode|, which indicates
-// the encoder is using a new maximum headers table size. Begins a
-// varint-encoded table size with a 4-bit prefix.
-const HpackPrefix kEncodingContextNewMaximumSize = { 0x0, 1 };
+// 7.3: Opcode for maximum header table size update. Begins a varint-encoded
+// table size with a 5-bit prefix.
+const HpackPrefix kHeaderTableSizeUpdateOpcode = { 0x1, 3 };
 
 // Returns symbol code table from "Appendix C. Huffman Codes".
 NET_EXPORT_PRIVATE std::vector<HpackHuffmanSymbol> HpackHuffmanCode();

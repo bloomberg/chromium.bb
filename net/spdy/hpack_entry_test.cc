@@ -61,7 +61,6 @@ TEST_F(HpackEntryTest, StaticConstructor) {
   EXPECT_EQ(value_, entry.value());
   EXPECT_TRUE(entry.IsStatic());
   EXPECT_EQ(1u, IndexOf(entry));
-  EXPECT_EQ(0u, entry.state());
   EXPECT_EQ(Size(), entry.Size());
 }
 
@@ -72,7 +71,6 @@ TEST_F(HpackEntryTest, DynamicConstructor) {
   EXPECT_EQ(value_, entry.value());
   EXPECT_FALSE(entry.IsStatic());
   EXPECT_EQ(1u, IndexOf(entry));
-  EXPECT_EQ(0u, entry.state());
   EXPECT_EQ(Size(), entry.Size());
 }
 
@@ -83,7 +81,6 @@ TEST_F(HpackEntryTest, LookupConstructor) {
   EXPECT_EQ(value_, entry.value());
   EXPECT_FALSE(entry.IsStatic());
   EXPECT_EQ(0u, IndexOf(entry));
-  EXPECT_EQ(0u, entry.state());
   EXPECT_EQ(Size(), entry.Size());
 }
 
@@ -92,7 +89,6 @@ TEST_F(HpackEntryTest, DefaultConstructor) {
 
   EXPECT_TRUE(entry.name().empty());
   EXPECT_TRUE(entry.value().empty());
-  EXPECT_EQ(0u, entry.state());
   EXPECT_EQ(HpackEntry::kSizeOverhead, entry.Size());
 }
 

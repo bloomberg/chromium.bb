@@ -248,6 +248,9 @@ class PriorityGetter : public BufferedSpdyFramerVisitorInterface {
   virtual void OnPushPromise(SpdyStreamId stream_id,
                              SpdyStreamId promised_stream_id,
                              const SpdyHeaderBlock& headers) OVERRIDE {}
+  virtual bool OnUnknownFrame(SpdyStreamId stream_id, int frame_type) OVERRIDE {
+    return false;
+  }
 
  private:
   SpdyPriority priority_;

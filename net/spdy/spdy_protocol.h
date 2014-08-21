@@ -49,6 +49,12 @@ const SpdyStreamId kSessionFlowControlStreamId = 0;
 // Initial window size for a Spdy stream in bytes.
 const int32 kSpdyStreamInitialWindowSize = 64 * 1024;  // 64 KBytes
 
+// The maxmium possible control frame size allowed by the spec.
+const int32 kSpdyMaxControlFrameSize = (1 << 24) - 1;
+
+// The maximum control frame size we actually send/accept.
+const int32 kControlFrameSizeLimit = 1 << 14;
+
 // Initial window size for a Spdy session in bytes.
 const int32 kSpdySessionInitialWindowSize = 64 * 1024;  // 64 KBytes
 
@@ -273,6 +279,8 @@ const char kHttp2ConnectionHeaderPrefix[] = {
 const int kHttp2ConnectionHeaderPrefixSize =
     arraysize(kHttp2ConnectionHeaderPrefix);
 
+const char kHttp2VersionString[] = "HTTP/1.1";
+
 // Types of SPDY frames.
 enum SpdyFrameType {
   DATA,
@@ -285,11 +293,12 @@ enum SpdyFrameType {
   HEADERS,
   WINDOW_UPDATE,
   CREDENTIAL = 10,  // No longer valid.  Kept for identifiability.
-  BLOCKED,
   PUSH_PROMISE,
   CONTINUATION,
+  PRIORITY,
+  // BLOCKED and ALTSVC are recognized extensions.
+  BLOCKED,
   ALTSVC,
-  PRIORITY
 };
 
 // Flags on data packets.
@@ -360,6 +369,10 @@ enum SpdySettingsIds {
   SETTINGS_HEADER_TABLE_SIZE = 0x8,
   // Whether or not server push (PUSH_PROMISE) is enabled.
   SETTINGS_ENABLE_PUSH = 0x9,
+  // The size of the largest frame payload that a receiver is willing to accept.
+  SETTINGS_MAX_FRAME_SIZE = 0xa,
+  // The maximum size of header list that the sender is prepared to accept.
+  SETTINGS_MAX_HEADER_LIST_SIZE = 0xb,
 };
 
 // Status codes for RST_STREAM frames.
@@ -498,7 +511,7 @@ class NET_EXPORT_PRIVATE SpdyConstants {
   // Size, in bytes, of the data frame header. Future versions of SPDY
   // will likely vary this, so we allow for the flexibility of a function call
   // for this value as opposed to a constant.
-  static size_t GetDataFrameMinimumSize();
+  static size_t GetDataFrameMinimumSize(SpdyMajorVersion version);
 
   // Size, in bytes, of the control frame header.
   static size_t GetControlFrameHeaderSize(SpdyMajorVersion version);

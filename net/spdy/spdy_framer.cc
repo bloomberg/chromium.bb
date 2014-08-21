@@ -74,9 +74,10 @@ const size_t kPriorityWeightPayloadSize = 1;
 
 const SpdyStreamId SpdyFramer::kInvalidStream = static_cast<SpdyStreamId>(-1);
 const size_t SpdyFramer::kHeaderDataChunkMaxSize = 1024;
+// The size of the control frame buffer. Must be >= the minimum size of the
 // largest control frame, which is SYN_STREAM. See GetSynStreamMinimumSize() for
 // calculation details.
-const size_t SpdyFramer::kControlFrameBufferSize = 18;
+const size_t SpdyFramer::kControlFrameBufferSize = 19;
 
 #ifdef DEBUG_SPDY_STATE_CHANGES
 #define CHANGE_STATE(newstate)                                  \
@@ -188,7 +189,7 @@ void SpdyFramer::Reset() {
 }
 
 size_t SpdyFramer::GetDataFrameMinimumSize() const {
-  return SpdyConstants::GetDataFrameMinimumSize();
+  return SpdyConstants::GetDataFrameMinimumSize(protocol_version());
 }
 
 // Size, in bytes, of the control frame header.
@@ -497,16 +498,16 @@ const char* SpdyFramer::FrameTypeToString(SpdyFrameType type) {
       return "WINDOW_UPDATE";
     case CREDENTIAL:
       return "CREDENTIAL";
-    case BLOCKED:
-      return "BLOCKED";
     case PUSH_PROMISE:
       return "PUSH_PROMISE";
     case CONTINUATION:
       return "CONTINUATION";
-    case ALTSVC:
-      return "ALTSVC";
     case PRIORITY:
       return "PRIORITY";
+    case ALTSVC:
+      return "ALTSVC";
+    case BLOCKED:
+      return "BLOCKED";
   }
   return "UNKNOWN_CONTROL_TYPE";
 }
@@ -722,8 +723,8 @@ size_t SpdyFramer::ProcessCommonHeader(const char* data, size_t len) {
     current_frame_length_ = remaining_data_length_ + reader->GetBytesConsumed();
   } else {
     version = protocol_version();
-    uint16 length_field = 0;
-    bool successful_read = reader->ReadUInt16(&length_field);
+    uint32 length_field = 0;
+    bool successful_read = reader->ReadUInt24(&length_field);
     DCHECK(successful_read);
 
     uint8 control_frame_type_field_uint8 =
@@ -734,9 +735,9 @@ size_t SpdyFramer::ProcessCommonHeader(const char* data, size_t len) {
     // ProcessControlFrameHeader().
     control_frame_type_field = control_frame_type_field_uint8;
     is_control_frame = (protocol_version() > SPDY3) ?
-        control_frame_type_field !=
-            SpdyConstants::SerializeFrameType(protocol_version(), DATA) :
-        control_frame_type_field != 0;
+      control_frame_type_field !=
+      SpdyConstants::SerializeFrameType(protocol_version(), DATA) :
+      control_frame_type_field != 0;
 
     if (is_control_frame) {
       current_frame_length_ = length_field + GetControlFrameHeaderSize();
@@ -837,7 +838,6 @@ void SpdyFramer::ProcessControlFrameHeader(uint16 control_frame_type_field) {
   // or add them to parsing + serialization methods for SPDY3.
   // Early detection of deprecated frames that we ignore.
   if (protocol_version() <= SPDY3) {
-
     if (control_frame_type_field == CREDENTIAL) {
       current_frame_type_ = CREDENTIAL;
       DCHECK_EQ(SPDY3, protocol_version());
@@ -849,10 +849,31 @@ void SpdyFramer::ProcessControlFrameHeader(uint16 control_frame_type_field) {
 
   if (!SpdyConstants::IsValidFrameType(protocol_version(),
                                        control_frame_type_field)) {
-    DLOG(WARNING) << "Invalid control frame type " << control_frame_type_field
-                  << " (protocol version: " << protocol_version() << ")";
-    set_error(SPDY_INVALID_CONTROL_FRAME);
-    return;
+    if (protocol_version() <= SPDY3) {
+      DLOG(WARNING) << "Invalid control frame type " << control_frame_type_field
+                    << " (protocol version: " << protocol_version() << ")";
+      set_error(SPDY_INVALID_CONTROL_FRAME);
+      return;
+    } else {
+      // In HTTP2 we ignore unknown frame types for extensibility, as long as
+      // the rest of the control frame header is valid.
+      // We rely on the visitor to check validity of current_frame_stream_id_.
+      bool valid_stream = visitor_->OnUnknownFrame(current_frame_stream_id_,
+                                                   control_frame_type_field);
+      if (valid_stream) {
+        DVLOG(1) << "Ignoring unknown frame type.";
+        CHANGE_STATE(SPDY_IGNORE_REMAINING_PAYLOAD);
+      } else {
+        // Report an invalid frame error and close the stream if the
+        // stream_id is not valid.
+        DLOG(WARNING) << "Unknown control frame type "
+                      << control_frame_type_field
+                      << " received on invalid stream "
+                      << current_frame_stream_id_;
+        set_error(SPDY_INVALID_CONTROL_FRAME);
+      }
+      return;
+    }
   }
 
   current_frame_type_ = SpdyConstants::ParseFrameType(protocol_version(),
@@ -947,6 +968,8 @@ void SpdyFramer::ProcessControlFrameHeader(uint16 control_frame_type_field) {
           min_size += 4;
         }
         if (current_frame_length_ < min_size) {
+          // TODO(mlavan): check here for HEADERS with no payload?
+          // (not allowed in SPDY4)
           set_error(SPDY_INVALID_CONTROL_FRAME);
         } else if (protocol_version() <= SPDY3 &&
                    current_frame_flags_ & ~CONTROL_FLAG_FIN) {
@@ -970,7 +993,6 @@ void SpdyFramer::ProcessControlFrameHeader(uint16 control_frame_type_field) {
     case BLOCKED:
       if (current_frame_length_ != GetBlockedSize() ||
           protocol_version() <= SPDY3) {
-        // TODO(mlavan): BLOCKED frames are no longer part of SPDY4.
         set_error(SPDY_INVALID_CONTROL_FRAME);
       } else if (current_frame_flags_ != 0) {
         set_error(SPDY_INVALID_CONTROL_FRAME_FLAGS);
@@ -1732,7 +1754,12 @@ bool SpdyFramer::ProcessSetting(const char* data) {
   // Validate id.
   if (!SpdyConstants::IsValidSettingId(protocol_version(), id_field)) {
     DLOG(WARNING) << "Unknown SETTINGS ID: " << id_field;
-    return false;
+    if (protocol_version() <= SPDY3) {
+      return false;
+    } else {
+      // In HTTP2 we ignore unknown settings for extensibility.
+      return true;
+    }
   }
   id = SpdyConstants::ParseSettingId(protocol_version(), id_field);
 
@@ -1877,13 +1904,10 @@ size_t SpdyFramer::ProcessGoAwayFramePayload(const char* data, size_t len) {
           status = SpdyConstants::ParseGoAwayStatus(protocol_version(),
                                                     status_raw);
         } else {
-          DCHECK(false);
-          // Throw an error for SPDY4+, keep liberal behavior
-          // for earlier versions.
           if (protocol_version() > SPDY3) {
-            DLOG(WARNING) << "Invalid GO_AWAY status " << status_raw;
-            set_error(SPDY_INVALID_CONTROL_FRAME);
-            return 0;
+            // Treat unrecognized status codes as INTERNAL_ERROR as
+            // recommended by the HTTP/2 spec.
+            status = GOAWAY_INTERNAL_ERROR;
           }
         }
       }
@@ -1946,12 +1970,10 @@ size_t SpdyFramer::ProcessRstStreamFramePayload(const char* data, size_t len) {
                                                 status_raw)) {
         status = static_cast<SpdyRstStreamStatus>(status_raw);
       } else {
-        // Throw an error for SPDY4+, keep liberal behavior
-        // for earlier versions.
         if (protocol_version() > SPDY3) {
-          DLOG(WARNING) << "Invalid RST_STREAM status " << status_raw;
-          set_error(SPDY_INVALID_CONTROL_FRAME);
-          return 0;
+          // Treat unrecognized status codes as INTERNAL_ERROR as
+          // recommended by the HTTP/2 spec.
+          status = RST_STREAM_INTERNAL_ERROR;
         }
       }
       // Finished parsing the RST_STREAM header, call frame handler.

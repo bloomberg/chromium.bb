@@ -198,6 +198,12 @@ class SpdyFramerTestUtil {
       // Do nothing.
     }
 
+    virtual bool OnUnknownFrame(SpdyStreamId stream_id,
+                                int frame_type) override {
+      LOG(FATAL);
+      return false;
+    }
+
     char* ReleaseBuffer() {
       CHECK(finished_);
       return buffer_.release();
@@ -249,6 +255,7 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
         altsvc_count_(0),
         priority_count_(0),
         test_altsvc_ir_(0),
+        on_unknown_frame_result_(false),
         last_window_update_stream_(0),
         last_window_update_delta_(0),
         last_push_promise_stream_(0),
@@ -438,19 +445,24 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
     ++altsvc_count_;
   }
 
+  virtual void OnPriority(SpdyStreamId stream_id,
+                          SpdyStreamId parent_stream_id,
+                          uint8 weight,
+                          bool exclusive) OVERRIDE {
+    ++priority_count_;
+  }
+
+  virtual bool OnUnknownFrame(SpdyStreamId stream_id, int frame_type) override {
+    DLOG(INFO) << "Unknown frame type " << frame_type;
+    return on_unknown_frame_result_;
+  }
+
   virtual void OnSendCompressedFrame(SpdyStreamId stream_id,
                                      SpdyFrameType type,
                                      size_t payload_len,
                                      size_t frame_len) OVERRIDE {
     last_payload_len_ = payload_len;
     last_frame_len_ = frame_len;
-  }
-
-  virtual void OnPriority(SpdyStreamId stream_id,
-                          SpdyStreamId parent_stream_id,
-                          uint8 weight,
-                          bool exclusive) OVERRIDE {
-    ++priority_count_;
   }
 
   virtual void OnReceiveCompressedFrame(SpdyStreamId stream_id,
@@ -523,6 +535,7 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
   int altsvc_count_;
   int priority_count_;
   SpdyAltSvcIR test_altsvc_ir_;
+  bool on_unknown_frame_result_;
   SpdyStreamId last_window_update_stream_;
   uint32 last_window_update_delta_;
   SpdyStreamId last_push_promise_stream_;
@@ -553,7 +566,11 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
 base::StringPiece GetSerializedHeaders(const SpdyFrame* frame,
                                        const SpdyFramer& framer) {
   SpdyFrameReader reader(frame->data(), frame->size());
-  reader.Seek(2);  // Seek past the frame length.
+  if (framer.protocol_version() > SPDY3) {
+    reader.Seek(3);  // Seek past the frame length.
+  } else {
+    reader.Seek(2);  // Seek past the frame length.
+  }
   SpdyFrameType frame_type;
   if (framer.protocol_version() > SPDY3) {
     uint8 serialized_type;
@@ -1156,48 +1173,53 @@ TEST_P(SpdyFramerTest, Basic) {
   // SYN_STREAM doesn't exist in SPDY4, so instead we send
   // HEADERS frames with PRIORITY and END_HEADERS set.
   const unsigned char kV4Input[] = {
-    0x00, 0x05, 0x01, 0x24,           // HEADERS: PRIORITY | END_HEADERS
-    0x00, 0x00, 0x00, 0x01,           // Stream 1
-    0x00, 0x00, 0x00, 0x00,           // Priority 0
-    0x82,                             // :method: GET
+    0x00, 0x00, 0x05, 0x01,           // HEADERS: PRIORITY | END_HEADERS
+    0x24, 0x00, 0x00, 0x00,
+    0x01, 0x00, 0x00, 0x00,           // Stream 1, Priority 0
+    0x00, 0x82,                       // :method: GET
 
-    0x00, 0x01, 0x01, 0x04,           // HEADERS: END_HEADERS
-    0x00, 0x00, 0x00, 0x01,           // Stream 1
-    0x8c,                             // :status: 200
+    0x00, 0x00, 0x01, 0x01,           // HEADERS: END_HEADERS
+    0x04, 0x00, 0x00, 0x00,           // Stream 1
+    0x01, 0x8c,                       // :status: 200
 
-    0x00, 0x0c, 0x00, 0x00,           // DATA on Stream #1
-    0x00, 0x00, 0x00, 0x01,
-    0xde, 0xad, 0xbe, 0xef,
-    0xde, 0xad, 0xbe, 0xef,
-    0xde, 0xad, 0xbe, 0xef,
+    0x00, 0x00, 0x0c, 0x00,           // DATA on Stream #1
+    0x00, 0x00, 0x00, 0x00,
+    0x01, 0xde, 0xad, 0xbe,
+    0xef, 0xde, 0xad, 0xbe,
+    0xef, 0xde, 0xad, 0xbe,
+    0xef,
 
-    0x00, 0x05, 0x01, 0x24,           // HEADERS: PRIORITY | END_HEADERS
-    0x00, 0x00, 0x00, 0x03,           // Stream 3
-    0x00, 0x00, 0x00, 0x00,           // Priority 0
-    0x82,                             // :method: GET
+    0x00, 0x00, 0x05, 0x01,           // HEADERS: PRIORITY | END_HEADERS
+    0x24, 0x00, 0x00, 0x00,
+    0x03, 0x00, 0x00, 0x00,           // Stream 3, Priority 0
+    0x00, 0x82,                       // :method: GET
 
-    0x00, 0x08, 0x00, 0x00,           // DATA on Stream #3
-    0x00, 0x00, 0x00, 0x03,
-    0xde, 0xad, 0xbe, 0xef,
-    0xde, 0xad, 0xbe, 0xef,
+    0x00, 0x00, 0x08, 0x00,           // DATA on Stream #3
+    0x00, 0x00, 0x00, 0x00,
+    0x03, 0xde, 0xad, 0xbe,
+    0xef, 0xde, 0xad, 0xbe,
+    0xef,
 
-    0x00, 0x04, 0x00, 0x00,           // DATA on Stream #1
-    0x00, 0x00, 0x00, 0x01,
-    0xde, 0xad, 0xbe, 0xef,
+    0x00, 0x00, 0x04, 0x00,           // DATA on Stream #1
+    0x00, 0x00, 0x00, 0x00,
+    0x01, 0xde, 0xad, 0xbe,
+    0xef,
 
-    0x00, 0x04, 0x03, 0x00,           // RST_STREAM on Stream #1
-    0x00, 0x00, 0x00, 0x01,
-    0x00, 0x00, 0x00, 0x08,           // RST_STREAM_CANCEL
+    0x00, 0x00, 0x04, 0x03,           // RST_STREAM on Stream #1
+    0x00, 0x00, 0x00, 0x00,
+    0x01, 0x00, 0x00, 0x00,
+    0x08,                             // RST_STREAM_CANCEL
 
     0x00, 0x00, 0x00, 0x00,           // DATA on Stream #3
-    0x00, 0x00, 0x00, 0x03,
+    0x00, 0x00, 0x00, 0x00,
+    0x03,
 
-    0x00, 0x0f, 0x03, 0x00,           // RST_STREAM on Stream #3
-    0x00, 0x00, 0x00, 0x03,
-    0x00, 0x00, 0x00, 0x08,           // RST_STREAM_CANCEL
-    0x52, 0x45, 0x53, 0x45,           // opaque data
-    0x54, 0x53, 0x54, 0x52,
-    0x45, 0x41, 0x4d,
+    0x00, 0x00, 0x0f, 0x03,           // RST_STREAM on Stream #3
+    0x00, 0x00, 0x00, 0x00,
+    0x03, 0x00, 0x00, 0x00,           // RST_STREAM_CANCEL
+    0x08, 0x52, 0x45, 0x53,           // opaque data
+    0x45, 0x54, 0x53, 0x54,
+    0x52, 0x45, 0x41, 0x4d,
   };
 
   TestSpdyVisitor visitor(spdy_version_);
@@ -1291,24 +1313,26 @@ TEST_P(SpdyFramerTest, FinOnDataFrame) {
   // SYN_STREAM and SYN_REPLY don't exist in SPDY4, so instead we send
   // HEADERS frames with PRIORITY(SYN_STREAM only) and END_HEADERS set.
   const unsigned char kV4Input[] = {
-    0x00, 0x05, 0x01, 0x24,           // HEADERS: PRIORITY | END_HEADERS
-    0x00, 0x00, 0x00, 0x01,           // Stream 1
-    0x00, 0x00, 0x00, 0x00,           // Priority 0
-    0x82,                             // :method: GET
+    0x00, 0x00, 0x05, 0x01,           // HEADERS: PRIORITY | END_HEADERS
+    0x24, 0x00, 0x00, 0x00,           // Stream 1
+    0x01, 0x00, 0x00, 0x00,           // Priority 0
+    0x00, 0x82,                       // :method: GET
 
-    0x00, 0x01, 0x01, 0x04,           // HEADERS: END_HEADERS
-    0x00, 0x00, 0x00, 0x01,           // Stream 1
-    0x8c,                             // :status: 200
+    0x00, 0x00, 0x01, 0x01,           // HEADERS: END_HEADERS
+    0x04, 0x00, 0x00, 0x00,           // Stream 1
+    0x01, 0x8c,                       // :status: 200
 
-    0x00, 0x0c, 0x00, 0x00,           // DATA on Stream #1
-    0x00, 0x00, 0x00, 0x01,
-    0xde, 0xad, 0xbe, 0xef,
-    0xde, 0xad, 0xbe, 0xef,
-    0xde, 0xad, 0xbe, 0xef,
+    0x00, 0x00, 0x0c, 0x00,           // DATA on Stream #1
+    0x00, 0x00, 0x00, 0x00,
+    0x01, 0xde, 0xad, 0xbe,
+    0xef, 0xde, 0xad, 0xbe,
+    0xef, 0xde, 0xad, 0xbe,
+    0xef,
 
-    0x00, 0x04, 0x00, 0x01,           // DATA on Stream #1, with FIN
-    0x00, 0x00, 0x00, 0x01,
-    0xde, 0xad, 0xbe, 0xef,
+    0x00, 0x00, 0x04, 0x00,           // DATA on Stream #1, with FIN
+    0x01, 0x00, 0x00, 0x00,
+    0x01, 0xde, 0xad, 0xbe,
+    0xef,
   };
 
   TestSpdyVisitor visitor(spdy_version_);
@@ -1339,52 +1363,55 @@ TEST_P(SpdyFramerTest, FinOnDataFrame) {
 // Test that the FIN flag on a SYN reply frame signifies EOF.
 TEST_P(SpdyFramerTest, FinOnSynReplyFrame) {
   const unsigned char kV2Input[] = {
-    0x80, spdy_version_ch_, 0x00, 0x01,  // SYN Stream #1
-    0x00, 0x00, 0x00, 0x14,
-    0x00, 0x00, 0x00, 0x01,
+    0x80, spdy_version_ch_, 0x00,  // SYN Stream #1
+    0x01, 0x00, 0x00, 0x00,
+    0x14, 0x00, 0x00, 0x00,
+    0x01, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x01,
-    0x00, 0x02, 'h', 'h',
-    0x00, 0x02, 'v', 'v',
+    0x01, 0x00, 0x02, 'h',
+    'h',  0x00, 0x02, 'v',
+    'v',
 
-    0x80, spdy_version_ch_, 0x00, 0x02,  // SYN REPLY Stream #1
-    0x01, 0x00, 0x00, 0x10,
-    0x00, 0x00, 0x00, 0x01,
-    0x00, 0x00, 0x00, 0x01,
-    0x00, 0x02, 'a', 'a',
-    0x00, 0x02, 'b', 'b',
+    0x80, spdy_version_ch_, 0x00,  // SYN REPLY Stream #1
+    0x02, 0x01, 0x00, 0x00,
+    0x10, 0x00, 0x00, 0x00,
+    0x01, 0x00, 0x00, 0x00,
+    0x01, 0x00, 0x02, 'a',
+    'a',  0x00, 0x02, 'b',
+    'b',
   };
   const unsigned char kV3Input[] = {
-    0x80, spdy_version_ch_, 0x00, 0x01,  // SYN Stream #1
-    0x00, 0x00, 0x00, 0x1a,
-    0x00, 0x00, 0x00, 0x01,
+    0x80, spdy_version_ch_, 0x00,  // SYN Stream #1
+    0x01, 0x00, 0x00, 0x00,
+    0x1a, 0x00, 0x00, 0x00,
+    0x01, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00,
-    0x00, 0x01, 0x00, 0x00,
-    0x00, 0x02, 'h', 'h',
-    0x00, 0x00, 0x00, 0x02,
-    'v', 'v',
+    0x00, 0x00, 0x01, 0x00,
+    0x00, 0x00, 0x02, 'h',
+    'h',  0x00, 0x00, 0x00,
+    0x02, 'v', 'v',
 
-    0x80, spdy_version_ch_, 0x00, 0x02,  // SYN REPLY Stream #1
-    0x01, 0x00, 0x00, 0x14,
-    0x00, 0x00, 0x00, 0x01,
-    0x00, 0x00, 0x00, 0x01,
-    0x00, 0x00, 0x00, 0x02,
-    'a', 'a',   0x00, 0x00,
-    0x00, 0x02, 'b', 'b',
+    0x80, spdy_version_ch_, 0x00,  // SYN REPLY Stream #1
+    0x02, 0x01, 0x00, 0x00,
+    0x14, 0x00, 0x00, 0x00,
+    0x01, 0x00, 0x00, 0x00,
+    0x01, 0x00, 0x00, 0x00,
+    0x02, 'a',  'a',  0x00,
+    0x00, 0x00, 0x02, 'b',
+    'b',
   };
 
   // SYN_STREAM and SYN_REPLY don't exist in SPDY4, so instead we send
   // HEADERS frames with PRIORITY(SYN_STREAM only) and END_HEADERS set.
   const unsigned char kV4Input[] = {
-    0x00, 0x05, 0x01, 0x24,           // HEADERS: PRIORITY | END_HEADERS
-    0x00, 0x00, 0x00, 0x01,           // Stream 1
-    0x00, 0x00, 0x00, 0x00,           // Priority 0
-    0x82,                             // :method: GET
+    0x00, 0x00, 0x05, 0x01,           // HEADERS: PRIORITY | END_HEADERS
+    0x24, 0x00, 0x00, 0x00,
+    0x01, 0x00, 0x00, 0x00,           // Stream 1, Priority 0
+    0x00, 0x82,                       // :method: GET
 
-    0x00, 0x01, 0x01, 0x05,           // HEADERS: FIN | END_HEADERS
-    0x00, 0x00, 0x00, 0x01,           // Stream 1
-    0x8c,                             // :status: 200
+    0x00, 0x00, 0x01, 0x01,           // HEADERS: FIN | END_HEADERS
+    0x05, 0x00, 0x00, 0x00,
+    0x01, 0x8c,                       // Stream 1, :status: 200
   };
 
   TestSpdyVisitor visitor(spdy_version_);
@@ -1542,9 +1569,10 @@ TEST_P(SpdyFramerTest, WindowUpdateFrame) {
     0x12, 0x34, 0x56, 0x78
   };
   const unsigned char kV4FrameData[] = {
-    0x00, 0x04, 0x08, 0x00,
-    0x00, 0x00, 0x00, 0x01,
-    0x12, 0x34, 0x56, 0x78
+    0x00, 0x00, 0x04, 0x08,
+    0x00, 0x00, 0x00, 0x00,
+    0x01, 0x12, 0x34, 0x56,
+    0x78
   };
 
   if (IsSpdy4()) {
@@ -1566,10 +1594,10 @@ TEST_P(SpdyFramerTest, CreateDataFrame) {
       'o'
     };
     const unsigned char kV4FrameData[] = {
-      0x00, 0x05, 0x00, 0x00,
-      0x00, 0x00, 0x00, 0x01,
-      'h',  'e',  'l',  'l',
-      'o'
+      0x00, 0x00, 0x05, 0x00,
+      0x00, 0x00, 0x00, 0x00,
+      0x01, 'h',  'e',  'l',
+      'l',  'o'
     };
     const char bytes[] = "hello";
 
@@ -1605,9 +1633,9 @@ TEST_P(SpdyFramerTest, CreateDataFrame) {
     };
 
     const unsigned char kV4FrameData[] = {
-      0x00, 0xfd, 0x00, 0x08,      // Length = 253.  PADDED set.
-      0x00, 0x00, 0x00, 0x01,
-      0xf7,                        // Pad length field.
+      0x00, 0x00, 0xfd, 0x00,      // Length = 253.  PADDED set.
+      0x08, 0x00, 0x00, 0x00,
+      0x01, 0xf7,                  // Pad length field.
       'h',  'e',  'l',  'l',       // Data
       'o',
       // Padding of 247 zeros.
@@ -1665,9 +1693,9 @@ TEST_P(SpdyFramerTest, CreateDataFrame) {
     };
 
     const unsigned char kV4FrameData[] = {
-      0x00, 0x0d, 0x00, 0x08,      // Length = 13.  PADDED set.
-      0x00, 0x00, 0x00, 0x01,
-      0x07,                        // Pad length field.
+      0x00, 0x00, 0x0d, 0x00,      // Length = 13.  PADDED set.
+      0x08, 0x00, 0x00, 0x00,
+      0x01, 0x07,                  // Pad length field.
       'h',  'e',  'l',  'l',       // Data
       'o',
       '0',  '0',  '0',  '0',       // Padding
@@ -1699,9 +1727,9 @@ TEST_P(SpdyFramerTest, CreateDataFrame) {
     };
 
     const unsigned char kV4FrameData[] = {
-      0x00, 0x06, 0x00, 0x08,      // Length = 6.  PADDED set.
-      0x00, 0x00, 0x00, 0x01,
-      0x00,                        // Pad length field.
+      0x00, 0x00, 0x06, 0x00,      // Length = 6.  PADDED set.
+      0x08, 0x00, 0x00, 0x00,
+      0x01, 0x00,                  // Pad length field.
       'h',  'e',  'l',  'l',       // Data
       'o',
     };
@@ -1737,7 +1765,7 @@ TEST_P(SpdyFramerTest, CreateDataFrame) {
       0xff
     };
     const unsigned char kV4FrameData[] = {
-      0x00, 0x01, 0x00, 0x00,
+      0x00, 0x00, 0x01, 0x00, 0x00,
       0x00, 0x00, 0x00, 0x01,
       0xff
     };
@@ -1761,10 +1789,10 @@ TEST_P(SpdyFramerTest, CreateDataFrame) {
       'o'
     };
     const unsigned char kV4FrameData[] = {
-      0x00, 0x05, 0x00, 0x01,
-      0x00, 0x00, 0x00, 0x01,
-      'h',  'e',  'l',  'l',
-      'o'
+      0x00, 0x00, 0x05, 0x00,
+      0x01, 0x00, 0x00, 0x00,
+      0x01, 'h',  'e',  'l',
+      'l',  'o'
     };
     SpdyDataIR data_ir(1, StringPiece("hello", 5));
     data_ir.set_fin(true);
@@ -1786,7 +1814,8 @@ TEST_P(SpdyFramerTest, CreateDataFrame) {
     };
     const unsigned char kV4FrameData[] = {
       0x00, 0x00, 0x00, 0x00,
-      0x00, 0x00, 0x00, 0x01,
+      0x00, 0x00, 0x00, 0x00,
+      0x01,
     };
     SpdyDataIR data_ir(1, StringPiece());
     scoped_ptr<SpdyFrame> frame(framer.SerializeData(data_ir));
@@ -1816,10 +1845,10 @@ TEST_P(SpdyFramerTest, CreateDataFrame) {
       'o'
     };
     const unsigned char kV4FrameData[] = {
-      0x00, 0x05, 0x00, 0x01,
-      0x7f, 0xff, 0xff, 0xff,
-      'h',  'e',  'l',  'l',
-      'o'
+      0x00, 0x00, 0x05, 0x00,
+      0x01, 0x7f, 0xff, 0xff,
+      0xff, 'h',  'e',  'l',
+      'l',  'o'
     };
     SpdyDataIR data_ir(0x7fffffff, "hello");
     data_ir.set_fin(true);
@@ -2282,10 +2311,10 @@ TEST_P(SpdyFramerTest, CreateRstStream) {
       0x00, 0x00, 0x00, 0x01,
     };
     const unsigned char kV4FrameData[] = {
-      0x00, 0x07, 0x03, 0x00,
-      0x00, 0x00, 0x00, 0x01,
-      0x00, 0x00, 0x00, 0x01,
-      0x52, 0x53, 0x54
+      0x00, 0x00, 0x07, 0x03,
+      0x00, 0x00, 0x00, 0x00,
+      0x01, 0x00, 0x00, 0x00,
+      0x01, 0x52, 0x53, 0x54
     };
     SpdyRstStreamIR rst_stream(1, RST_STREAM_PROTOCOL_ERROR, "RST");
     scoped_ptr<SpdyFrame> frame(framer.SerializeRstStream(rst_stream));
@@ -2305,9 +2334,10 @@ TEST_P(SpdyFramerTest, CreateRstStream) {
       0x00, 0x00, 0x00, 0x01,
     };
     const unsigned char kV4FrameData[] = {
-      0x00, 0x04, 0x03, 0x00,
-      0x7f, 0xff, 0xff, 0xff,
-      0x00, 0x00, 0x00, 0x01,
+      0x00, 0x00, 0x04, 0x03,
+      0x00, 0x7f, 0xff, 0xff,
+      0xff, 0x00, 0x00, 0x00,
+      0x01,
     };
     SpdyRstStreamIR rst_stream(0x7FFFFFFF,
                                RST_STREAM_PROTOCOL_ERROR,
@@ -2329,9 +2359,10 @@ TEST_P(SpdyFramerTest, CreateRstStream) {
       0x00, 0x00, 0x00, 0x06,
     };
     const unsigned char kV4FrameData[] = {
-      0x00, 0x04, 0x03, 0x00,
-      0x7f, 0xff, 0xff, 0xff,
-      0x00, 0x00, 0x00, 0x06,
+      0x00, 0x00, 0x04, 0x03,
+      0x00, 0x7f, 0xff, 0xff,
+      0xff, 0x00, 0x00, 0x00,
+      0x06,
     };
     SpdyRstStreamIR rst_stream(0x7FFFFFFF,
                                RST_STREAM_INTERNAL_ERROR,
@@ -2366,10 +2397,10 @@ TEST_P(SpdyFramerTest, CreateSettings) {
       0x0a, 0x0b, 0x0c, 0x0d,
     };
     const unsigned char kV4FrameData[] = {
-      0x00, 0x06, 0x04, 0x00,
+      0x00, 0x00, 0x06, 0x04,
       0x00, 0x00, 0x00, 0x00,
-      0x00, 0x04, 0x0a, 0x0b,
-      0x0c, 0x0d,
+      0x00, 0x00, 0x04, 0x0a,
+      0x0b, 0x0c, 0x0d,
     };
 
     uint32 kValue = 0x0a0b0c0d;
@@ -2429,9 +2460,9 @@ TEST_P(SpdyFramerTest, CreateSettings) {
     // ordering for settings_ir works. HTTP2 has no requirement on ordering on
     // the wire.
     const unsigned char kV4FrameData[] = {
-      0x00, 0x18, 0x04, 0x00,
+      0x00, 0x00, 0x18, 0x04,
       0x00, 0x00, 0x00, 0x00,
-      0x00, 0x03,              // 3rd Setting
+      0x00, 0x00, 0x03,        // 3rd Setting
       0x00, 0x00, 0x00, 0x07,
       0x00, 0x04,              // 4th Setting
       0x00, 0x00, 0x00, 0x08,
@@ -2478,8 +2509,9 @@ TEST_P(SpdyFramerTest, CreateSettings) {
       0x00, 0x00, 0x00, 0x00,
     };
     const unsigned char kV4FrameData[] = {
-      0x00, 0x00, 0x04, 0x00,
+      0x00, 0x00, 0x00, 0x04,
       0x00, 0x00, 0x00, 0x00,
+      0x00,
     };
     SpdySettingsIR settings_ir;
     scoped_ptr<SpdyFrame> frame(framer.SerializeSettings(settings_ir));
@@ -2502,16 +2534,18 @@ TEST_P(SpdyFramerTest, CreatePingFrame) {
       0x12, 0x34, 0x56, 0x78,
     };
     const unsigned char kV4FrameData[] = {
-      0x00, 0x08, 0x06, 0x00,
+      0x00, 0x00, 0x08, 0x06,
       0x00, 0x00, 0x00, 0x00,
-      0x12, 0x34, 0x56, 0x78,
-      0x9a, 0xbc, 0xde, 0xff,
+      0x00, 0x12, 0x34, 0x56,
+      0x78, 0x9a, 0xbc, 0xde,
+      0xff,
     };
     const unsigned char kV4FrameDataWithAck[] = {
-      0x00, 0x08, 0x06, 0x01,
-      0x00, 0x00, 0x00, 0x00,
-      0x12, 0x34, 0x56, 0x78,
-      0x9a, 0xbc, 0xde, 0xff,
+      0x00, 0x00, 0x08, 0x06,
+      0x01, 0x00, 0x00, 0x00,
+      0x00, 0x12, 0x34, 0x56,
+      0x78, 0x9a, 0xbc, 0xde,
+      0xff,
     };
     scoped_ptr<SpdyFrame> frame;
     if (IsSpdy4()) {
@@ -2552,11 +2586,11 @@ TEST_P(SpdyFramerTest, CreateGoAway) {
       0x00, 0x00, 0x00, 0x00,  // Status
     };
     const unsigned char kV4FrameData[] = {
-      0x00, 0x0a, 0x07, 0x00,
+      0x00, 0x00, 0x0a, 0x07,
       0x00, 0x00, 0x00, 0x00,
       0x00, 0x00, 0x00, 0x00,  // Stream id
       0x00, 0x00, 0x00, 0x00,  // Status
-      0x47, 0x41,              // Opaque Description
+      0x00, 0x47, 0x41,        // Opaque Description
     };
     SpdyGoAwayIR goaway_ir(0, GOAWAY_OK, "GA");
     scoped_ptr<SpdyFrame> frame(framer.SerializeGoAway(goaway_ir));
@@ -2583,11 +2617,11 @@ TEST_P(SpdyFramerTest, CreateGoAway) {
       0x00, 0x00, 0x00, 0x01,  // Status: PROTOCOL_ERROR.
     };
     const unsigned char kV4FrameData[] = {
-      0x00, 0x0a, 0x07, 0x00,
+      0x00, 0x00, 0x0a, 0x07,
       0x00, 0x00, 0x00, 0x00,
-      0x7f, 0xff, 0xff, 0xff,  // Stream Id
-      0x00, 0x00, 0x00, 0x02,  // Status: INTERNAL_ERROR.
-      0x47, 0x41,              // Opaque Description
+      0x00, 0x7f, 0xff, 0xff,  // Stream Id
+      0xff, 0x00, 0x00, 0x00,  // Status: INTERNAL_ERROR.
+      0x02, 0x47, 0x41,        // Opaque Description
     };
     SpdyGoAwayIR goaway_ir(0x7FFFFFFF, GOAWAY_INTERNAL_ERROR, "GA");
     scoped_ptr<SpdyFrame> frame(framer.SerializeGoAway(goaway_ir));
@@ -2633,13 +2667,13 @@ TEST_P(SpdyFramerTest, CreateHeadersUncompressed) {
       0x03, 'b',  'a',  'r'
     };
     const unsigned char kV4FrameData[] = {
-       0x00, 0x12, 0x01, 0x04,  // Headers: END_HEADERS
-       0x00, 0x00, 0x00, 0x01,  // Stream 1
-       0x00, 0x03, 0x62, 0x61,  // @.ba
-       0x72, 0x03, 0x66, 0x6f,  // r.fo
-       0x6f, 0x00, 0x03, 0x66,  // o@.f
-       0x6f, 0x6f, 0x03, 0x62,  // oo.b
-       0x61, 0x72,              // ar
+       0x00, 0x00, 0x12, 0x01,  // Headers: END_HEADERS
+       0x04, 0x00, 0x00, 0x00,  // Stream 1
+       0x01, 0x00, 0x03, 0x62,  // @.ba
+       0x61, 0x72, 0x03, 0x66,  // r.fo
+       0x6f, 0x6f, 0x00, 0x03,  // o@.f
+       0x66, 0x6f, 0x6f, 0x03,  // oo.b
+       0x62, 0x61, 0x72,        // ar
     };
     SpdyHeadersIR headers_ir(1);
     headers_ir.SetHeader("bar", "foo");
@@ -2683,12 +2717,12 @@ TEST_P(SpdyFramerTest, CreateHeadersUncompressed) {
       'r'
     };
     const unsigned char kV4FrameData[] = {
-      0x00, 0x0f, 0x01, 0x05,  // HEADER: FIN | END_HEADERS
-      0x7f, 0xff, 0xff, 0xff,  // Stream 0x7fffffff
-      0x00, 0x00, 0x03, 0x66,  // @..f
-      0x6f, 0x6f, 0x00, 0x03,  // oo@.
-      0x66, 0x6f, 0x6f, 0x03,  // foo.
-      0x62, 0x61, 0x72,        // bar
+      0x00, 0x00, 0x0f, 0x01,  // Headers: FIN | END_HEADERS
+      0x05, 0x7f, 0xff, 0xff,  // Stream 0x7fffffff
+      0xff, 0x00, 0x00, 0x03,  // @..
+      0x66, 0x6f, 0x6f, 0x00,  // foo@
+      0x03, 0x66, 0x6f, 0x6f,  // .foo
+      0x03, 0x62, 0x61, 0x72,  // .bar
     };
     SpdyHeadersIR headers_ir(0x7fffffff);
     headers_ir.set_fin(true);
@@ -2733,12 +2767,12 @@ TEST_P(SpdyFramerTest, CreateHeadersUncompressed) {
       0x00
     };
     const unsigned char kV4FrameData[] = {
-      0x00, 0x0f, 0x01, 0x05,  // HEADER: FIN | END_HEADERS
-      0x7f, 0xff, 0xff, 0xff,  // Stream 0x7fffffff
-      0x00, 0x03, 0x62, 0x61,  // @.ba
-      0x72, 0x03, 0x66, 0x6f,  // r.fo
-      0x6f, 0x00, 0x03, 0x66,  // o@.f
-      0x6f, 0x6f, 0x00,        // oo.
+      0x00, 0x00, 0x0f, 0x01,  // Headers: FIN | END_HEADERS
+      0x05, 0x7f, 0xff, 0xff,  // Stream 0x7fffffff
+      0xff, 0x00, 0x03, 0x62,  // @.b
+      0x61, 0x72, 0x03, 0x66,  // ar.f
+      0x6f, 0x6f, 0x00, 0x03,  // oo@.
+      0x66, 0x6f, 0x6f, 0x00,  // foo.
     };
     SpdyHeadersIR headers_ir(0x7fffffff);
     headers_ir.set_fin(true);
@@ -2759,10 +2793,10 @@ TEST_P(SpdyFramerTest, CreateHeadersUncompressed) {
         "HEADERS frame with a 0-length header val, FIN, max stream ID, pri";
 
     const unsigned char kV4FrameData[] = {
-      0x00, 0x14, 0x01, 0x25,  // Headers: FIN | END_HEADERS | PRIORITY
-      0x7f, 0xff, 0xff, 0xff,  // Stream 0x7fffffff
-      0x00, 0x00, 0x00, 0x00,  // parent stream
-      0xdb,                    // weight
+      0x00, 0x00, 0x14, 0x01,  // Headers: FIN | END_HEADERS | PRIORITY
+      0x25, 0x7f, 0xff, 0xff,  // Stream 0x7fffffff
+      0xff, 0x00, 0x00, 0x00,  // parent stream
+      0x00, 0xdb,              // weight
       0x00, 0x03, 0x62, 0x61,  // @.ba
       0x72, 0x03, 0x66, 0x6f,  // r.fo
       0x6f, 0x00, 0x03, 0x66,  // o@.f
@@ -2854,9 +2888,10 @@ TEST_P(SpdyFramerTest, CreateWindowUpdate) {
       0x00, 0x00, 0x00, 0x01,
     };
     const unsigned char kV4FrameData[] = {
-      0x00, 0x04, 0x08, 0x00,
-      0x00, 0x00, 0x00, 0x01,
-      0x00, 0x00, 0x00, 0x01,
+      0x00, 0x00, 0x04, 0x08,
+      0x00, 0x00, 0x00, 0x00,
+      0x01, 0x00, 0x00, 0x00,
+      0x01,
     };
     scoped_ptr<SpdyFrame> frame(
         framer.SerializeWindowUpdate(SpdyWindowUpdateIR(1, 1)));
@@ -2876,9 +2911,10 @@ TEST_P(SpdyFramerTest, CreateWindowUpdate) {
       0x00, 0x00, 0x00, 0x01,
     };
     const unsigned char kV4FrameData[] = {
-      0x00, 0x04, 0x08, 0x00,
-      0x7f, 0xff, 0xff, 0xff,
-      0x00, 0x00, 0x00, 0x01,
+      0x00, 0x00, 0x04, 0x08,
+      0x00, 0x7f, 0xff, 0xff,
+      0xff, 0x00, 0x00, 0x00,
+      0x01,
     };
     scoped_ptr<SpdyFrame> frame(framer.SerializeWindowUpdate(
         SpdyWindowUpdateIR(0x7FFFFFFF, 1)));
@@ -2898,9 +2934,10 @@ TEST_P(SpdyFramerTest, CreateWindowUpdate) {
       0x7f, 0xff, 0xff, 0xff,
     };
     const unsigned char kV4FrameData[] = {
-      0x00, 0x04, 0x08, 0x00,
-      0x00, 0x00, 0x00, 0x01,
-      0x7f, 0xff, 0xff, 0xff,
+      0x00, 0x00, 0x04, 0x08,
+      0x00, 0x00, 0x00, 0x00,
+      0x01, 0x7f, 0xff, 0xff,
+      0xff,
     };
     scoped_ptr<SpdyFrame> frame(framer.SerializeWindowUpdate(
         SpdyWindowUpdateIR(1, 0x7FFFFFFF)));
@@ -2923,7 +2960,7 @@ TEST_P(SpdyFramerTest, SerializeBlocked) {
   const unsigned char kType = static_cast<unsigned char>(
       SpdyConstants::SerializeFrameType(spdy_version_, BLOCKED));
   const unsigned char kFrameData[] = {
-    0x00, 0x00, kType, 0x00,
+    0x00, 0x00, 0x00, kType, 0x00,
     0x00, 0x00, 0x00,  0x00,
   };
   SpdyBlockedIR blocked_ir(0);
@@ -2960,7 +2997,7 @@ TEST_P(SpdyFramerTest, CreatePushPromiseUncompressed) {
   const char kDescription[] = "PUSH_PROMISE frame";
 
   const unsigned char kFrameData[] = {
-    0x00, 0x16, 0x05, 0x04,  // PUSH_PROMISE: END_HEADERS
+    0x00, 0x00, 0x16, 0x05, 0x04,  // PUSH_PROMISE: END_HEADERS
     0x00, 0x00, 0x00, 0x2a,  // Stream 42
     0x00, 0x00, 0x00, 0x39,  // Promised stream 57
     0x00, 0x03, 0x62, 0x61,  // @.ba
@@ -2978,6 +3015,33 @@ TEST_P(SpdyFramerTest, CreatePushPromiseUncompressed) {
   CompareFrame(kDescription, *frame, kFrameData, arraysize(kFrameData));
 }
 
+TEST_P(SpdyFramerTest, CreateContinuationUncompressed) {
+  if (spdy_version_ <= SPDY3) {
+    return;
+  }
+
+  SpdyFramer framer(spdy_version_);
+  framer.set_enable_compression(false);
+  const char kDescription[] = "CONTINUATION frame";
+
+  const unsigned char kFrameData[] = {
+     0x00, 0x00, 0x12, 0x09, 0x00,  // CONTINUATION
+     0x00, 0x00, 0x00, 0x2a,  // Stream 42
+     0x00, 0x03, 0x62, 0x61,  // @.ba
+     0x72, 0x03, 0x66, 0x6f,  // r.fo
+     0x6f, 0x00, 0x03, 0x66,  // o@.f
+     0x6f, 0x6f, 0x03, 0x62,  // oo.b
+     0x61, 0x72,              // ar
+  };
+
+  SpdyContinuationIR continuation(42);
+  continuation.SetHeader("bar", "foo");
+  continuation.SetHeader("foo", "bar");
+  scoped_ptr<SpdySerializedFrame> frame(
+    framer.SerializeContinuation(continuation));
+  CompareFrame(kDescription, *frame, kFrameData, arraysize(kFrameData));
+}
+
 TEST_P(SpdyFramerTest, CreateAltSvc) {
   if (spdy_version_ <= SPDY3) {
     return;
@@ -2989,7 +3053,7 @@ TEST_P(SpdyFramerTest, CreateAltSvc) {
   const unsigned char kType = static_cast<unsigned char>(
       SpdyConstants::SerializeFrameType(spdy_version_, ALTSVC));
   const unsigned char kFrameData[] = {
-    0x00, 0x17, kType, 0x00,
+    0x00, 0x00, 0x17, kType, 0x00,
     0x00, 0x00, 0x00, 0x03,
     0x00, 0x00, 0x00, 0x05,
     0x01, 0xbb, 0x00, 0x04,  // Port = 443
@@ -3019,7 +3083,7 @@ TEST_P(SpdyFramerTest, CreatePriority) {
   const unsigned char kType = static_cast<unsigned char>(
       SpdyConstants::SerializeFrameType(spdy_version_, PRIORITY));
   const unsigned char kFrameData[] = {
-      0x00, 0x05, kType, 0x00,
+      0x00, 0x00, 0x05, kType, 0x00,
       0x00, 0x00, 0x00, 0x02,  // Stream ID = 2
       0x80, 0x00, 0x00,  0x01,  // Exclusive dependency, parent stream ID = 1
       0x10,                     // Weight = 16
@@ -3345,10 +3409,11 @@ TEST_P(SpdyFramerTest, ControlFrameSizesAreValidated) {
   const unsigned char less_than_min_length =
       framer.GetGoAwayMinimumSize() - framer.GetControlFrameHeaderSize() - 1;
   const unsigned char kV4FrameData[] = {
-    0x00, static_cast<uint8>(less_than_min_length), 0x07, 0x00,
+    0x00, 0x00, static_cast<uint8>(less_than_min_length), 0x07,
     0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00,  // Stream Id
     0x00, 0x00, 0x00, 0x00,  // Status
+    0x00,
   };
   const size_t pad_length =
       length + framer.GetControlFrameHeaderSize() -
@@ -3494,9 +3559,9 @@ TEST_P(SpdyFramerTest, ReadDuplicateSettings) {
     0x00, 0x00, 0x00, 0x03,
   };
   const unsigned char kV4FrameData[] = {
-    0x00, 0x12, 0x04, 0x00,
+    0x00, 0x00, 0x12, 0x04,
     0x00, 0x00, 0x00, 0x00,
-    0x00, 0x01,  // 1st Setting
+    0x00, 0x00, 0x01,  // 1st Setting
     0x00, 0x00, 0x00, 0x02,
     0x00, 0x01,  // 2nd (duplicate) Setting
     0x00, 0x00, 0x00, 0x03,
@@ -3523,6 +3588,51 @@ TEST_P(SpdyFramerTest, ReadDuplicateSettings) {
     EXPECT_EQ(3, visitor.setting_count_);
     EXPECT_EQ(0, visitor.error_count_);
     EXPECT_EQ(1, visitor.settings_ack_sent_);
+  }
+}
+
+// Tests handling of SETTINGS frame with a setting we don't recognize.
+TEST_P(SpdyFramerTest, ReadUnknownSettingsId) {
+  SpdyFramer framer(spdy_version_);
+
+  const unsigned char kV2FrameData[] = {
+    0x80, spdy_version_ch_, 0x00, 0x04,
+    0x00, 0x00, 0x00, 0x1C,
+    0x00, 0x00, 0x00, 0x01,
+    0x10, 0x00, 0x00, 0x00,  // 1st Setting
+    0x00, 0x00, 0x00, 0x02,
+  };
+  const unsigned char kV3FrameData[] = {
+    0x80, spdy_version_ch_, 0x00, 0x04,
+    0x00, 0x00, 0x00, 0x1C,
+    0x00, 0x00, 0x00, 0x01,
+    0x00, 0x00, 0x00, 0x10,  // 1st Setting
+    0x00, 0x00, 0x00, 0x02,
+  };
+  const unsigned char kV4FrameData[] = {
+    0x00, 0x00, 0x06, 0x04,
+    0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x10,  // 1st Setting
+    0x00, 0x00, 0x00, 0x02,
+  };
+
+  TestSpdyVisitor visitor(spdy_version_);
+  visitor.use_compression_ = false;
+  if (IsSpdy2()) {
+    visitor.SimulateInFramer(kV2FrameData, sizeof(kV2FrameData));
+  } else if (IsSpdy3()) {
+    visitor.SimulateInFramer(kV3FrameData, sizeof(kV3FrameData));
+  } else {
+    visitor.SimulateInFramer(kV4FrameData, sizeof(kV4FrameData));
+  }
+
+  if (!IsSpdy4()) {
+    EXPECT_EQ(0, visitor.setting_count_);
+    EXPECT_EQ(1, visitor.error_count_);
+  } else {
+    // In SPDY 4+, we ignore unknown settings because of extensions.
+    EXPECT_EQ(0, visitor.setting_count_);
+    EXPECT_EQ(0, visitor.error_count_);
   }
 }
 
@@ -3553,9 +3663,9 @@ TEST_P(SpdyFramerTest, ReadOutOfOrderSettings) {
     0x00, 0x00, 0x00, 0x03,
   };
   const unsigned char kV4FrameData[] = {
-    0x00, 0x12, 0x04, 0x00,
+    0x00, 0x00, 0x12, 0x04,
     0x00, 0x00, 0x00, 0x00,
-    0x00, 0x02,  // 1st Setting
+    0x00, 0x00, 0x02,  // 1st Setting
     0x00, 0x00, 0x00, 0x02,
     0x00, 0x01,  // 2nd (out of order) Setting
     0x00, 0x00, 0x00, 0x03,
@@ -3580,7 +3690,6 @@ TEST_P(SpdyFramerTest, ReadOutOfOrderSettings) {
     // In SPDY 4+, settings are allowed in any order.
     EXPECT_EQ(3, visitor.setting_count_);
     EXPECT_EQ(0, visitor.error_count_);
-    // EXPECT_EQ(1, visitor.settings_ack_count_);
   }
 }
 
@@ -3591,7 +3700,7 @@ TEST_P(SpdyFramerTest, ProcessSettingsAckFrame) {
   SpdyFramer framer(spdy_version_);
 
   const unsigned char kFrameData[] = {
-    0x00, 0x00, 0x04, 0x01,
+    0x00, 0x00, 0x00, 0x04, 0x01,
     0x00, 0x00, 0x00, 0x00,
   };
 
@@ -3627,10 +3736,12 @@ TEST_P(SpdyFramerTest, ProcessDataFrameWithPadding) {
   EXPECT_CALL(visitor, OnDataFrameHeader(1,
                                          kPaddingLen + strlen(data_payload),
                                          false));
-  CHECK_EQ(8u, framer.ProcessInput(frame->data(), 8));
+  CHECK_EQ(framer.GetDataFrameMinimumSize(),
+           framer.ProcessInput(frame->data(),
+                               framer.GetDataFrameMinimumSize()));
   CHECK_EQ(framer.state(), SpdyFramer::SPDY_READ_PADDING_LENGTH);
   CHECK_EQ(framer.error_code(), SpdyFramer::SPDY_NO_ERROR);
-  bytes_consumed += 8;
+  bytes_consumed += framer.GetDataFrameMinimumSize();
 
   // Send the padding length field.
   CHECK_EQ(1u, framer.ProcessInput(frame->data() + bytes_consumed, 1));
@@ -3744,33 +3855,6 @@ TEST_P(SpdyFramerTest, ReadCredentialFrameFollowedByAnotherFrame) {
   EXPECT_EQ(2u, visitor.last_window_update_delta_);
 }
 
-TEST_P(SpdyFramerTest, CreateContinuationUncompressed) {
-  if (spdy_version_ <= SPDY3) {
-    return;
-  }
-
-  SpdyFramer framer(spdy_version_);
-  framer.set_enable_compression(false);
-  const char kDescription[] = "CONTINUATION frame";
-
-  const unsigned char kFrameData[] = {
-     0x00, 0x12, 0x09, 0x00,  // CONTINUATION
-     0x00, 0x00, 0x00, 0x2a,  // Stream 42
-     0x00, 0x03, 0x62, 0x61,  // @.ba
-     0x72, 0x03, 0x66, 0x6f,  // r.fo
-     0x6f, 0x00, 0x03, 0x66,  // o@.f
-     0x6f, 0x6f, 0x03, 0x62,  // oo.b
-     0x61, 0x72,              // ar
-  };
-
-  SpdyContinuationIR continuation(42);
-  continuation.SetHeader("bar", "foo");
-  continuation.SetHeader("foo", "bar");
-  scoped_ptr<SpdySerializedFrame> frame(
-    framer.SerializeContinuation(continuation));
-  CompareFrame(kDescription, *frame, kFrameData, arraysize(kFrameData));
-}
-
 TEST_P(SpdyFramerTest, ReadCompressedPushPromise) {
   if (spdy_version_ <= SPDY3) {
     return;
@@ -3800,7 +3884,7 @@ TEST_P(SpdyFramerTest, ReadHeadersWithContinuation) {
   }
 
   const unsigned char kInput[] = {
-    0x00, 0x14, 0x01, 0x08,  // HEADERS: PADDED
+    0x00, 0x00, 0x14, 0x01, 0x08,  // HEADERS: PADDED
     0x00, 0x00, 0x00, 0x01,  // Stream 1
     0x03,                    // Padding of 3.
     0x00, 0x06, 0x63, 0x6f,
@@ -3809,7 +3893,7 @@ TEST_P(SpdyFramerTest, ReadHeadersWithContinuation) {
     0x3d, 0x62, 0x61, 0x72,
     0x00, 0x00, 0x00,
 
-    0x00, 0x14, 0x09, 0x00,  // CONTINUATION
+    0x00, 0x00, 0x14, 0x09, 0x00,  // CONTINUATION
     0x00, 0x00, 0x00, 0x01,  // Stream 1
     0x00, 0x06, 0x63, 0x6f,
     0x6f, 0x6b, 0x69, 0x65,
@@ -3817,7 +3901,7 @@ TEST_P(SpdyFramerTest, ReadHeadersWithContinuation) {
     0x3d, 0x62, 0x69, 0x6e,
     0x67, 0x00, 0x06, 0x63,
 
-    0x00, 0x12, 0x09, 0x04,  // CONTINUATION: END_HEADERS
+    0x00, 0x00, 0x12, 0x09, 0x04,  // CONTINUATION: END_HEADERS
     0x00, 0x00, 0x00, 0x01,  // Stream 1
     0x6f, 0x6f, 0x6b, 0x69,
     0x65, 0x00, 0x00, 0x04,
@@ -3846,14 +3930,14 @@ TEST_P(SpdyFramerTest, ReadHeadersWithContinuationAndFin) {
   }
 
   const unsigned char kInput[] = {
-    0x00, 0x10, 0x01, 0x01,  // HEADERS: FIN
+    0x00, 0x00, 0x10, 0x01, 0x01,  // HEADERS: FIN
     0x00, 0x00, 0x00, 0x01,  // Stream 1
     0x00, 0x06, 0x63, 0x6f,
     0x6f, 0x6b, 0x69, 0x65,
     0x07, 0x66, 0x6f, 0x6f,
     0x3d, 0x62, 0x61, 0x72,
 
-    0x00, 0x14, 0x09, 0x00,  // CONTINUATION
+    0x00, 0x00, 0x14, 0x09, 0x00,  // CONTINUATION
     0x00, 0x00, 0x00, 0x01,  // Stream 1
     0x00, 0x06, 0x63, 0x6f,
     0x6f, 0x6b, 0x69, 0x65,
@@ -3861,7 +3945,7 @@ TEST_P(SpdyFramerTest, ReadHeadersWithContinuationAndFin) {
     0x3d, 0x62, 0x69, 0x6e,
     0x67, 0x00, 0x06, 0x63,
 
-    0x00, 0x12, 0x09, 0x04,  // CONTINUATION: END_HEADERS
+    0x00, 0x00, 0x12, 0x09, 0x04,  // CONTINUATION: END_HEADERS
     0x00, 0x00, 0x00, 0x01,  // Stream 1
     0x6f, 0x6f, 0x6b, 0x69,
     0x65, 0x00, 0x00, 0x04,
@@ -3892,7 +3976,7 @@ TEST_P(SpdyFramerTest, ReadPushPromiseWithContinuation) {
   }
 
   const unsigned char kInput[] = {
-    0x00, 0x17, 0x05, 0x08,  // PUSH_PROMISE: PADDED
+    0x00, 0x00, 0x17, 0x05, 0x08,  // PUSH_PROMISE: PADDED
     0x00, 0x00, 0x00, 0x01,  // Stream 1
     0x00, 0x00, 0x00, 0x2A,  // Promised stream 42
     0x02,                    // Padding of 2.
@@ -3902,7 +3986,7 @@ TEST_P(SpdyFramerTest, ReadPushPromiseWithContinuation) {
     0x3d, 0x62, 0x61, 0x72,
     0x00, 0x00,
 
-    0x00, 0x14, 0x09, 0x00,  // CONTINUATION
+    0x00, 0x00, 0x14, 0x09, 0x00,  // CONTINUATION
     0x00, 0x00, 0x00, 0x01,  // Stream 1
     0x00, 0x06, 0x63, 0x6f,
     0x6f, 0x6b, 0x69, 0x65,
@@ -3910,7 +3994,7 @@ TEST_P(SpdyFramerTest, ReadPushPromiseWithContinuation) {
     0x3d, 0x62, 0x69, 0x6e,
     0x67, 0x00, 0x06, 0x63,
 
-    0x00, 0x12, 0x09, 0x04,  // CONTINUATION: END_HEADERS
+    0x00, 0x00, 0x12, 0x09, 0x04,  // CONTINUATION: END_HEADERS
     0x00, 0x00, 0x00, 0x01,  // Stream 1
     0x6f, 0x6f, 0x6b, 0x69,
     0x65, 0x00, 0x00, 0x04,
@@ -3941,14 +4025,14 @@ TEST_P(SpdyFramerTest, ReadContinuationWithWrongStreamId) {
   }
 
   const unsigned char kInput[] = {
-    0x00, 0x10, 0x01, 0x00,  // HEADERS
+    0x00, 0x00, 0x10, 0x01, 0x00,  // HEADERS
     0x00, 0x00, 0x00, 0x01,  // Stream 1
     0x00, 0x06, 0x63, 0x6f,
     0x6f, 0x6b, 0x69, 0x65,
     0x07, 0x66, 0x6f, 0x6f,
     0x3d, 0x62, 0x61, 0x72,
 
-    0x00, 0x14, 0x09, 0x00,  // CONTINUATION
+    0x00, 0x00, 0x14, 0x09, 0x00,  // CONTINUATION
     0x00, 0x00, 0x00, 0x02,  // Stream 2
     0x00, 0x06, 0x63, 0x6f,
     0x6f, 0x6b, 0x69, 0x65,
@@ -3977,7 +4061,7 @@ TEST_P(SpdyFramerTest, ReadContinuationOutOfOrder) {
   }
 
   const unsigned char kInput[] = {
-    0x00, 0x10, 0x09, 0x00,  // CONTINUATION
+    0x00, 0x00, 0x18, 0x09, 0x00,  // CONTINUATION
     0x00, 0x00, 0x00, 0x01,  // Stream 1
     0x00, 0x06, 0x63, 0x6f,
     0x6f, 0x6b, 0x69, 0x65,
@@ -4004,14 +4088,14 @@ TEST_P(SpdyFramerTest, ExpectContinuationReceiveData) {
   }
 
   const unsigned char kInput[] = {
-    0x00, 0x10, 0x01, 0x00,  // HEADERS
+    0x00, 0x00, 0x10, 0x01, 0x00,  // HEADERS
     0x00, 0x00, 0x00, 0x01,  // Stream 1
     0x00, 0x06, 0x63, 0x6f,
     0x6f, 0x6b, 0x69, 0x65,
     0x07, 0x66, 0x6f, 0x6f,
     0x3d, 0x62, 0x61, 0x72,
 
-    0x00, 0x00, 0x00, 0x01,  // DATA on Stream #1
+    0x00, 0x00, 0x00, 0x00, 0x01,  // DATA on Stream #1
     0x00, 0x00, 0x00, 0x04,
     0xde, 0xad, 0xbe, 0xef,
   };
@@ -4037,14 +4121,14 @@ TEST_P(SpdyFramerTest, ExpectContinuationReceiveControlFrame) {
   }
 
   const unsigned char kInput[] = {
-    0x00, 0x10, 0x01, 0x00,  // HEADERS
+    0x00, 0x00, 0x18, 0x01, 0x00,  // HEADERS
     0x00, 0x00, 0x00, 0x01,  // Stream 1
     0x00, 0x06, 0x63, 0x6f,
     0x6f, 0x6b, 0x69, 0x65,
     0x07, 0x66, 0x6f, 0x6f,
     0x3d, 0x62, 0x61, 0x72,
 
-    0x00, 0x14, 0x08, 0x00,  // HEADERS
+    0x00, 0x00, 0x1c, 0x08, 0x00,  // HEADERS
     0x00, 0x00, 0x00, 0x01,  // Stream 1
     0x00, 0x06, 0x63, 0x6f,  // (Note this is a valid continued encoding).
     0x6f, 0x6b, 0x69, 0x65,
@@ -4073,7 +4157,7 @@ TEST_P(SpdyFramerTest, EndSegmentOnDataFrame) {
     return;
   }
   const unsigned char kInput[] = {
-    0x00, 0x0c, 0x00, 0x02,  // DATA: END_SEGMENT
+    0x00, 0x00, 0x0c, 0x00, 0x02,  // DATA: END_SEGMENT
     0x00, 0x00, 0x00, 0x01,  // Stream 1
     0xde, 0xad, 0xbe, 0xef,
     0xde, 0xad, 0xbe, 0xef,
@@ -4095,7 +4179,7 @@ TEST_P(SpdyFramerTest, EndSegmentOnHeadersFrame) {
     return;
   }
   const unsigned char kInput[] = {
-    0x00, 0x10, 0x01, 0x06,  // HEADERS: END_SEGMENT | END_HEADERS
+    0x00, 0x00, 0x10, 0x01, 0x06,  // HEADERS: END_SEGMENT | END_HEADERS
     0x00, 0x00, 0x00, 0x01,  // Stream 1
     0x00, 0x06, 0x63, 0x6f,
     0x6f, 0x6b, 0x69, 0x65,
@@ -4125,13 +4209,50 @@ TEST_P(SpdyFramerTest, ReadGarbage) {
   EXPECT_EQ(1, visitor.error_count_);
 }
 
+TEST_P(SpdyFramerTest, ReadUnknownExtensionFrame) {
+  if (spdy_version_ <= SPDY3) {
+    return;
+  }
+  SpdyFramer framer(spdy_version_);
+
+  // The unrecognized frame type should still have a valid length.
+  const unsigned char unknown_frame[] = {
+    0x00, 0x00, 0x08, 0xff, 0xff,
+    0xff, 0xff, 0xff, 0xff,
+    0xff, 0xff, 0xff, 0xff,
+    0xff, 0xff, 0xff, 0xff,
+  };
+  TestSpdyVisitor visitor(spdy_version_);
+
+  // Simulate the case where the stream id validation checks out.
+  visitor.on_unknown_frame_result_ = true;
+  visitor.use_compression_ = false;
+  visitor.SimulateInFramer(unknown_frame, arraysize(unknown_frame));
+  EXPECT_EQ(0, visitor.error_count_);
+
+  // Follow it up with a valid control frame to make sure we handle
+  // subsequent frames correctly.
+  SpdySettingsIR settings_ir;
+  settings_ir.AddSetting(SpdyConstants::ParseSettingId(spdy_version_, 1),
+                         false,  // persist
+                         false,  // persisted
+                         10);
+  scoped_ptr<SpdyFrame> control_frame(framer.SerializeSettings(settings_ir));
+  visitor.SimulateInFramer(
+      reinterpret_cast<unsigned char*>(control_frame->data()),
+      control_frame->size());
+  EXPECT_EQ(0, visitor.error_count_);
+  EXPECT_EQ(1u, static_cast<unsigned>(visitor.setting_count_));
+  EXPECT_EQ(1u, static_cast<unsigned>(visitor.settings_ack_sent_));
+}
+
 TEST_P(SpdyFramerTest, ReadGarbageWithValidLength) {
   if (!IsSpdy4()) {
     return;
   }
   SpdyFramer framer(spdy_version_);
   const unsigned char kFrameData[] = {
-    0x00, 0x10, 0xff, 0xff,
+    0x00, 0x00, 0x08, 0xff, 0xff,
     0xff, 0xff, 0xff, 0xff,
     0xff, 0xff, 0xff, 0xff,
     0xff, 0xff, 0xff, 0xff,
@@ -4179,22 +4300,25 @@ TEST_P(SpdyFramerTest, ReadGarbageHPACKEncoding) {
 
 TEST_P(SpdyFramerTest, SizesTest) {
   SpdyFramer framer(spdy_version_);
-  EXPECT_EQ(8u, framer.GetDataFrameMinimumSize());
   if (IsSpdy4() || IsSpdy5()) {
-    EXPECT_EQ(8u, framer.GetSynReplyMinimumSize());
-    EXPECT_EQ(12u, framer.GetRstStreamMinimumSize());
-    EXPECT_EQ(8u, framer.GetSettingsMinimumSize());
-    EXPECT_EQ(16u, framer.GetPingSize());
-    EXPECT_EQ(16u, framer.GetGoAwayMinimumSize());
-    EXPECT_EQ(8u, framer.GetHeadersMinimumSize());
-    EXPECT_EQ(12u, framer.GetWindowUpdateSize());
-    EXPECT_EQ(8u, framer.GetBlockedSize());
-    EXPECT_EQ(12u, framer.GetPushPromiseMinimumSize());
-    EXPECT_EQ(17u, framer.GetAltSvcMinimumSize());
-    EXPECT_EQ(8u, framer.GetFrameMinimumSize());
-    EXPECT_EQ(16383u, framer.GetFrameMaximumSize());
-    EXPECT_EQ(16375u, framer.GetDataFrameMaximumPayload());
+    EXPECT_EQ(9u, framer.GetDataFrameMinimumSize());
+    EXPECT_EQ(9u, framer.GetControlFrameHeaderSize());
+    EXPECT_EQ(14u, framer.GetSynStreamMinimumSize());
+    EXPECT_EQ(9u, framer.GetSynReplyMinimumSize());
+    EXPECT_EQ(13u, framer.GetRstStreamMinimumSize());
+    EXPECT_EQ(9u, framer.GetSettingsMinimumSize());
+    EXPECT_EQ(17u, framer.GetPingSize());
+    EXPECT_EQ(17u, framer.GetGoAwayMinimumSize());
+    EXPECT_EQ(9u, framer.GetHeadersMinimumSize());
+    EXPECT_EQ(13u, framer.GetWindowUpdateSize());
+    EXPECT_EQ(9u, framer.GetBlockedSize());
+    EXPECT_EQ(13u, framer.GetPushPromiseMinimumSize());
+    EXPECT_EQ(18u, framer.GetAltSvcMinimumSize());
+    EXPECT_EQ(9u, framer.GetFrameMinimumSize());
+    EXPECT_EQ(16393u, framer.GetFrameMaximumSize());
+    EXPECT_EQ(16384u, framer.GetDataFrameMaximumPayload());
   } else {
+    EXPECT_EQ(8u, framer.GetDataFrameMinimumSize());
     EXPECT_EQ(8u, framer.GetControlFrameHeaderSize());
     EXPECT_EQ(18u, framer.GetSynStreamMinimumSize());
     EXPECT_EQ(IsSpdy2() ? 14u : 12u, framer.GetSynReplyMinimumSize());
@@ -5000,9 +5124,10 @@ TEST_P(SpdyFramerTest, RstStreamStatusBounds) {
     0x00, 0x00, 0x00, kRstStreamStatusTooLow
   };
   const unsigned char kV4RstStreamInvalid[] = {
-    0x00, 0x04, 0x03, 0x00,
-    0x00, 0x00, 0x00, 0x01,
-    0x00, 0x00, 0x00, kRstStreamStatusTooLow
+    0x00, 0x00, 0x04, 0x03,
+    0x00, 0x00, 0x00, 0x00,
+    0x01, 0x00, 0x00, 0x00,
+    kRstStreamStatusTooLow
   };
 
   const unsigned char kV3RstStreamNumStatusCodes[] = {
@@ -5012,9 +5137,10 @@ TEST_P(SpdyFramerTest, RstStreamStatusBounds) {
     0x00, 0x00, 0x00, kRstStreamStatusTooHigh
   };
   const unsigned char kV4RstStreamNumStatusCodes[] = {
-    0x00, 0x04, 0x03, 0x00,
-    0x00, 0x00, 0x00, 0x01,
-    0x00, 0x00, 0x00, kRstStreamStatusTooHigh
+    0x00, 0x00, 0x04, 0x03,
+    0x00, 0x00, 0x00, 0x00,
+    0x01, 0x00, 0x00, 0x00,
+    kRstStreamStatusTooHigh
   };
 
   testing::StrictMock<test::MockSpdyFramerVisitor> visitor;
@@ -5022,41 +5148,72 @@ TEST_P(SpdyFramerTest, RstStreamStatusBounds) {
   framer.set_visitor(&visitor);
 
   if (IsSpdy4()) {
-    EXPECT_CALL(visitor, OnError(_));
+    EXPECT_CALL(visitor, OnRstStream(1, RST_STREAM_INTERNAL_ERROR));
     framer.ProcessInput(reinterpret_cast<const char*>(kV4RstStreamInvalid),
                         arraysize(kV4RstStreamInvalid));
-    EXPECT_EQ(SpdyFramer::SPDY_ERROR, framer.state());
-    EXPECT_EQ(SpdyFramer::SPDY_INVALID_CONTROL_FRAME, framer.error_code())
-      << SpdyFramer::ErrorCodeToString(framer.error_code());
   } else {
     EXPECT_CALL(visitor, OnRstStream(1, RST_STREAM_INVALID));
     framer.ProcessInput(reinterpret_cast<const char*>(kV3RstStreamInvalid),
                         arraysize(kV3RstStreamInvalid));
-    EXPECT_EQ(SpdyFramer::SPDY_RESET, framer.state());
-    EXPECT_EQ(SpdyFramer::SPDY_NO_ERROR, framer.error_code())
-      << SpdyFramer::ErrorCodeToString(framer.error_code());
   }
+  EXPECT_EQ(SpdyFramer::SPDY_RESET, framer.state());
+  EXPECT_EQ(SpdyFramer::SPDY_NO_ERROR, framer.error_code())
+      << SpdyFramer::ErrorCodeToString(framer.error_code());
 
 
   framer.Reset();
 
   if (IsSpdy4()) {
-    EXPECT_CALL(visitor, OnError(_));
+    EXPECT_CALL(visitor, OnRstStream(1, RST_STREAM_INTERNAL_ERROR));
     framer.ProcessInput(
         reinterpret_cast<const char*>(kV4RstStreamNumStatusCodes),
         arraysize(kV4RstStreamNumStatusCodes));
-    EXPECT_EQ(SpdyFramer::SPDY_ERROR, framer.state());
-    EXPECT_EQ(SpdyFramer::SPDY_INVALID_CONTROL_FRAME, framer.error_code())
-      << SpdyFramer::ErrorCodeToString(framer.error_code());
   } else {
     EXPECT_CALL(visitor, OnRstStream(1, RST_STREAM_INVALID));
     framer.ProcessInput(
         reinterpret_cast<const char*>(kV3RstStreamNumStatusCodes),
         arraysize(kV3RstStreamNumStatusCodes));
-    EXPECT_EQ(SpdyFramer::SPDY_RESET, framer.state());
-    EXPECT_EQ(SpdyFramer::SPDY_NO_ERROR, framer.error_code())
-      << SpdyFramer::ErrorCodeToString(framer.error_code());
   }
+  EXPECT_EQ(SpdyFramer::SPDY_RESET, framer.state());
+  EXPECT_EQ(SpdyFramer::SPDY_NO_ERROR, framer.error_code())
+      << SpdyFramer::ErrorCodeToString(framer.error_code());
+}
+
+// Test handling of GOAWAY frames with out-of-bounds status code.
+TEST_P(SpdyFramerTest, GoAwayStatusBounds) {
+  if (spdy_version_ <= SPDY2) {
+    return;
+  }
+  SpdyFramer framer(spdy_version_);
+
+  const unsigned char kV3FrameData[] = {
+    0x80, spdy_version_ch_, 0x00, 0x07,
+    0x00, 0x00, 0x00, 0x08,
+    0x00, 0x00, 0x00, 0x01,  // Stream Id
+    0xff, 0xff, 0xff, 0xff,  // Status
+  };
+  const unsigned char kV4FrameData[] = {
+    0x00, 0x00, 0x0a, 0x07,
+    0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00,  // Stream id
+    0x01, 0xff, 0xff, 0xff,  // Status
+    0xff, 0x47, 0x41,        // Opaque Description
+  };
+  testing::StrictMock<test::MockSpdyFramerVisitor> visitor;
+  framer.set_visitor(&visitor);
+
+  if (IsSpdy3()) {
+    EXPECT_CALL(visitor, OnGoAway(1, GOAWAY_OK));
+    framer.ProcessInput(reinterpret_cast<const char*>(kV3FrameData),
+                        arraysize(kV3FrameData));
+  } else {
+    EXPECT_CALL(visitor, OnGoAway(1, GOAWAY_INTERNAL_ERROR));
+    framer.ProcessInput(reinterpret_cast<const char*>(kV4FrameData),
+                        arraysize(kV4FrameData));
+  }
+  EXPECT_EQ(SpdyFramer::SPDY_RESET, framer.state());
+  EXPECT_EQ(SpdyFramer::SPDY_NO_ERROR, framer.error_code())
+      << SpdyFramer::ErrorCodeToString(framer.error_code());
 }
 
 // Tests handling of a GOAWAY frame with out-of-bounds stream ID.
@@ -5073,10 +5230,11 @@ TEST_P(SpdyFramerTest, GoAwayStreamIdBounds) {
     0x00, 0x00, 0x00, 0x00,
   };
   const unsigned char kV4FrameData[] = {
-    0x00, 0x08, 0x07, 0x00,
+    0x00, 0x00, 0x08, 0x07,
     0x00, 0x00, 0x00, 0x00,
-    0xff, 0xff, 0xff, 0xff,
-    0x00, 0x00, 0x00, 0x00,
+    0x00, 0xff, 0xff, 0xff,
+    0xff, 0x00, 0x00, 0x00,
+    0x00,
   };
 
   testing::StrictMock<test::MockSpdyFramerVisitor> visitor;
@@ -5202,7 +5360,7 @@ TEST_P(SpdyFramerTest, OnAltSvcBadLengths) {
     framer.set_visitor(&visitor);
 
     const unsigned char kFrameDataLargePIDLen[] = {
-      0x00, 0x17, kType, 0x00,
+      0x00, 0x00, 0x17, kType, 0x00,
       0x00, 0x00, 0x00, 0x03,
       0x00, 0x00, 0x00, 0x05,
       0x01, 0xbb, 0x00, 0x05,  // Port = 443
@@ -5224,7 +5382,7 @@ TEST_P(SpdyFramerTest, OnAltSvcBadLengths) {
     SpdyFramer framer(spdy_version_);
     framer.set_visitor(&visitor);
     const unsigned char kFrameDataPIDLenLargerThanFrame[] = {
-      0x00, 0x17, kType, 0x00,
+      0x00, 0x00, 0x17, kType, 0x00,
       0x00, 0x00, 0x00, 0x03,
       0x00, 0x00, 0x00, 0x05,
       0x01, 0xbb, 0x00, 0x99,  // Port = 443
@@ -5247,7 +5405,7 @@ TEST_P(SpdyFramerTest, OnAltSvcBadLengths) {
     framer.set_visitor(&visitor);
 
     const unsigned char kFrameDataLargeHostLen[] = {
-      0x00, 0x17, kType, 0x00,
+      0x00, 0x00, 0x17, kType, 0x00,
       0x00, 0x00, 0x00, 0x03,
       0x00, 0x00, 0x00, 0x05,
       0x01, 0xbb, 0x00, 0x04,  // Port = 443
@@ -5269,7 +5427,7 @@ TEST_P(SpdyFramerTest, OnAltSvcBadLengths) {
     SpdyFramer framer(spdy_version_);
     framer.set_visitor(&visitor);
     const unsigned char kFrameDataSmallPIDLen[] = {
-      0x00, 0x17, kType, 0x00,
+      0x00, 0x00, 0x17, kType, 0x00,
       0x00, 0x00, 0x00, 0x03,
       0x00, 0x00, 0x00, 0x05,
       0x01, 0xbb, 0x00, 0x01,  // Port = 443
@@ -5343,28 +5501,6 @@ TEST_P(SpdyFramerTest, ReadPriority) {
   // check that state is adjusted correctly.
 }
 
-// Tests handling of PRIORITY frame with incorrect size.
-TEST_P(SpdyFramerTest, ReadIncorrectlySizedPriority) {
-  if (spdy_version_ <= SPDY3) {
-    return;
-  }
-
-  // PRIORITY frame of size 4, which isn't correct.
-  const unsigned char kFrameData[] = {
-    0x00, 0x04, 0x02, 0x00,
-    0x00, 0x00, 0x00, 0x03,
-    0x00, 0x00, 0x00, 0x01,
-  };
-
-  TestSpdyVisitor visitor(spdy_version_);
-  visitor.SimulateInFramer(kFrameData, sizeof(kFrameData));
-
-  EXPECT_EQ(SpdyFramer::SPDY_ERROR, visitor.framer_.state());
-  EXPECT_EQ(SpdyFramer::SPDY_INVALID_CONTROL_FRAME,
-            visitor.framer_.error_code())
-      << SpdyFramer::ErrorCodeToString(visitor.framer_.error_code());
-}
-
 TEST_P(SpdyFramerTest, PriorityWeightMapping) {
   if (spdy_version_ <= SPDY3) {
     return;
@@ -5395,6 +5531,28 @@ TEST_P(SpdyFramerTest, PriorityWeightMapping) {
   EXPECT_EQ(6u, framer.MapWeightToPriority(36));
   EXPECT_EQ(6u, framer.MapWeightToPriority(1));
   EXPECT_EQ(7u, framer.MapWeightToPriority(0));
+}
+
+// Tests handling of PRIORITY frame with incorrect size.
+TEST_P(SpdyFramerTest, ReadIncorrectlySizedPriority) {
+  if (spdy_version_ <= SPDY3) {
+    return;
+  }
+
+  // PRIORITY frame of size 4, which isn't correct.
+  const unsigned char kFrameData[] = {
+    0x00, 0x00, 0x04, 0x02, 0x00,
+    0x00, 0x00, 0x00, 0x03,
+    0x00, 0x00, 0x00, 0x01,
+  };
+
+  TestSpdyVisitor visitor(spdy_version_);
+  visitor.SimulateInFramer(kFrameData, sizeof(kFrameData));
+
+  EXPECT_EQ(SpdyFramer::SPDY_ERROR, visitor.framer_.state());
+  EXPECT_EQ(SpdyFramer::SPDY_INVALID_CONTROL_FRAME,
+            visitor.framer_.error_code())
+      << SpdyFramer::ErrorCodeToString(visitor.framer_.error_code());
 }
 
 }  // namespace net

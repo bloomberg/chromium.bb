@@ -131,7 +131,8 @@ class HpackHeaderTableTest : public ::testing::Test {
     }
 
     for (size_t i = 0; i != entries.size(); ++i) {
-      size_t index = entries.size() - i;
+      // Static table has 61 entries, dynamic entries follow those.
+      size_t index = 61 + entries.size() - i;
       HpackEntry* entry = table_.GetByIndex(index);
       EXPECT_EQ(entries[i].name(), entry->name());
       EXPECT_EQ(entries[i].value(), entry->value());
@@ -159,7 +160,6 @@ TEST_F(HpackHeaderTableTest, StaticTableInitialization) {
   EXPECT_EQ(kDefaultHeaderTableSizeSetting, table_.settings_size_bound());
 
   EXPECT_EQ(0u, peer_.dynamic_entries_count());
-  EXPECT_EQ(0u, table_.reference_set().size());
   EXPECT_EQ(peer_.static_entries().size(), peer_.total_insertions());
 
   // Static entries have been populated and inserted into the table & index.
@@ -193,10 +193,11 @@ TEST_F(HpackHeaderTableTest, BasicDynamicEntryInsertionAndEviction) {
   EXPECT_EQ(static_count + 1, peer_.index().size());
 
   // Index() of entries reflects the insertion.
-  EXPECT_EQ(1u, table_.IndexOf(entry));
-  EXPECT_EQ(2u, table_.IndexOf(first_static_entry));
-  EXPECT_EQ(entry, table_.GetByIndex(1));
-  EXPECT_EQ(first_static_entry, table_.GetByIndex(2));
+  EXPECT_EQ(1u, table_.IndexOf(first_static_entry));
+  // Static table has 61 entries.
+  EXPECT_EQ(62u, table_.IndexOf(entry));
+  EXPECT_EQ(first_static_entry, table_.GetByIndex(1));
+  EXPECT_EQ(entry, table_.GetByIndex(62));
 
   // Evict |entry|. Table counts are again updated appropriately.
   peer_.Evict(1);
@@ -232,14 +233,14 @@ TEST_F(HpackHeaderTableTest, EntryIndexing) {
   HpackEntry* entry7 = table_.TryAddEntry("key-2", "Value Four");
 
   // Entries are queryable under their current index.
-  EXPECT_EQ(entry7, table_.GetByIndex(1));
-  EXPECT_EQ(entry6, table_.GetByIndex(2));
-  EXPECT_EQ(entry5, table_.GetByIndex(3));
-  EXPECT_EQ(entry4, table_.GetByIndex(4));
-  EXPECT_EQ(entry3, table_.GetByIndex(5));
-  EXPECT_EQ(entry2, table_.GetByIndex(6));
-  EXPECT_EQ(entry1, table_.GetByIndex(7));
-  EXPECT_EQ(first_static_entry, table_.GetByIndex(8));
+  EXPECT_EQ(entry7, table_.GetByIndex(62));
+  EXPECT_EQ(entry6, table_.GetByIndex(63));
+  EXPECT_EQ(entry5, table_.GetByIndex(64));
+  EXPECT_EQ(entry4, table_.GetByIndex(65));
+  EXPECT_EQ(entry3, table_.GetByIndex(66));
+  EXPECT_EQ(entry2, table_.GetByIndex(67));
+  EXPECT_EQ(entry1, table_.GetByIndex(68));
+  EXPECT_EQ(first_static_entry, table_.GetByIndex(1));
 
   // Querying by name returns the lowest-value matching entry.
   EXPECT_EQ(entry3, table_.GetByName("key-1"));
@@ -253,8 +254,9 @@ TEST_F(HpackHeaderTableTest, EntryIndexing) {
   EXPECT_EQ(entry5, table_.GetByNameAndValue("key-1", "Value Two"));
   EXPECT_EQ(entry6, table_.GetByNameAndValue("key-2", "Value Three"));
   EXPECT_EQ(entry7, table_.GetByNameAndValue("key-2", "Value Four"));
-  EXPECT_EQ(entry1, table_.GetByNameAndValue(first_static_entry->name(),
-                                             first_static_entry->value()));
+  EXPECT_EQ(first_static_entry,
+            table_.GetByNameAndValue(first_static_entry->name(),
+                                     first_static_entry->value()));
   EXPECT_EQ(entry2, table_.GetByNameAndValue(first_static_entry->name(),
                                              "Value Four"));
   EXPECT_EQ(NULL, table_.GetByNameAndValue("key-1", "Not Present"));
@@ -307,46 +309,6 @@ TEST_F(HpackHeaderTableTest, SetSizes) {
   EXPECT_EQ(max_size, table_.max_size());
   EXPECT_EQ(max_size, table_.settings_size_bound());
   EXPECT_EQ(0u, peer_.dynamic_entries().size());
-}
-
-TEST_F(HpackHeaderTableTest, ToggleReferenceSet) {
-  HpackEntry* entry1 = table_.TryAddEntry("key-1", "Value One");
-  HpackEntry* entry2 = table_.TryAddEntry("key-2", "Value Two");
-
-  // Entries must be explictly toggled after creation.
-  EXPECT_EQ(0u, table_.reference_set().size());
-
-  // Add |entry1|.
-  EXPECT_TRUE(table_.Toggle(entry1));
-  EXPECT_EQ(1u, table_.reference_set().size());
-  EXPECT_EQ(1u, table_.reference_set().count(entry1));
-  EXPECT_EQ(0u, table_.reference_set().count(entry2));
-
-  // Add |entry2|.
-  EXPECT_TRUE(table_.Toggle(entry2));
-  EXPECT_EQ(2u, table_.reference_set().size());
-  EXPECT_EQ(1u, table_.reference_set().count(entry1));
-  EXPECT_EQ(1u, table_.reference_set().count(entry2));
-
-  // Remove |entry2|.
-  EXPECT_FALSE(table_.Toggle(entry2));
-  EXPECT_EQ(1u, table_.reference_set().size());
-  EXPECT_EQ(0u, table_.reference_set().count(entry2));
-
-  // Evict |entry1|. Implicit removal from reference set.
-  peer_.Evict(1);
-  EXPECT_EQ(0u, table_.reference_set().size());
-}
-
-TEST_F(HpackHeaderTableTest, ClearReferenceSet) {
-  HpackEntry* entry1 = table_.TryAddEntry("key-1", "Value One");
-  EXPECT_TRUE(table_.Toggle(entry1));
-  entry1->set_state(123);
-
-  // |entry1| state is cleared, and removed from the reference set.
-  table_.ClearReferenceSet();
-  EXPECT_EQ(0u, entry1->state());
-  EXPECT_EQ(0u, table_.reference_set().size());
 }
 
 TEST_F(HpackHeaderTableTest, EvictionCountForEntry) {
@@ -425,20 +387,20 @@ TEST_F(HpackHeaderTableTest, TryAddEntryEviction) {
   HpackEntryVector entries = MakeEntriesOfTotalSize(table_.max_size());
   AddEntriesExpectNoEviction(entries);
 
-  HpackEntry* survivor_entry = table_.GetByIndex(1);
+  HpackEntry* survivor_entry = table_.GetByIndex(61 + 1);
   HpackEntry long_entry =
       MakeEntryOfSize(table_.max_size() - survivor_entry->Size());
 
-  // All entries but the first are to be evicted.
+  // All dynamic entries but the first are to be evicted.
   EXPECT_EQ(peer_.dynamic_entries().size() - 1, peer_.EvictionSet(
       long_entry.name(), long_entry.value()).size());
 
   HpackEntry* new_entry = table_.TryAddEntry(long_entry.name(),
                                              long_entry.value());
-  EXPECT_EQ(1u, table_.IndexOf(new_entry));
+  EXPECT_EQ(62u, table_.IndexOf(new_entry));
   EXPECT_EQ(2u, peer_.dynamic_entries().size());
-  EXPECT_EQ(table_.GetByIndex(2), survivor_entry);
-  EXPECT_EQ(table_.GetByIndex(1), new_entry);
+  EXPECT_EQ(table_.GetByIndex(63), survivor_entry);
+  EXPECT_EQ(table_.GetByIndex(62), new_entry);
 }
 
 // Fill a header table with entries, and then add an entry bigger than
@@ -494,9 +456,9 @@ TEST_F(HpackHeaderTableTest, ComparatorIndexOrdering) {
   EXPECT_TRUE(comparator(&entry4, &entry3));
   EXPECT_FALSE(comparator(&entry3, &entry4));
 
-  // |entry3| has lower index than |entry1|.
-  EXPECT_TRUE(comparator(&entry3, &entry1));
-  EXPECT_FALSE(comparator(&entry1, &entry3));
+  // |entry1| has lower index than |entry3|.
+  EXPECT_TRUE(comparator(&entry1, &entry3));
+  EXPECT_FALSE(comparator(&entry3, &entry1));
 
   // |entry1| & |entry2| ordering is preserved, though each Index() has changed.
   EXPECT_TRUE(comparator(&entry1, &entry2));

@@ -234,6 +234,11 @@ void BufferedSpdyFramer::OnPushPromise(SpdyStreamId stream_id,
 void BufferedSpdyFramer::OnContinuation(SpdyStreamId stream_id, bool end) {
 }
 
+bool BufferedSpdyFramer::OnUnknownFrame(SpdyStreamId stream_id,
+                                        int frame_type) {
+  return visitor_->OnUnknownFrame(stream_id, frame_type);
+}
+
 SpdyMajorVersion BufferedSpdyFramer::protocol_version() {
   return spdy_framer_.protocol_version();
 }

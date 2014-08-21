@@ -118,7 +118,6 @@ bool HpackHeaderTable::EntryComparator::operator() (
 
 HpackHeaderTable::HpackHeaderTable()
     : index_(EntryComparator(this)),
-      reference_set_(EntryComparator(this)),
       settings_size_bound_(kDefaultHeaderTableSizeSetting),
       size_(0),
       max_size_(kDefaultHeaderTableSizeSetting),
@@ -143,12 +142,12 @@ HpackEntry* HpackHeaderTable::GetByIndex(size_t index) {
     return NULL;
   }
   index -= 1;
-  if (index < dynamic_entries_.size()) {
-    return &dynamic_entries_[index];
-  }
-  index -= dynamic_entries_.size();
   if (index < static_entries_.size()) {
     return &static_entries_[index];
+  }
+  index -= static_entries_.size();
+  if (index < dynamic_entries_.size()) {
+    return &dynamic_entries_[index];
   }
   return NULL;
 }
@@ -176,9 +175,9 @@ size_t HpackHeaderTable::IndexOf(const HpackEntry* entry) const {
   if (entry->IsLookup()) {
     return 0;
   } else if (entry->IsStatic()) {
-    return 1 + entry->InsertionIndex() + dynamic_entries_.size();
+    return 1 + entry->InsertionIndex();
   } else {
-    return total_insertions_ - entry->InsertionIndex();
+    return total_insertions_ - entry->InsertionIndex() + static_entries_.size();
   }
 }
 
@@ -236,7 +235,6 @@ void HpackHeaderTable::Evict(size_t count) {
 
     size_ -= entry->Size();
     CHECK_EQ(1u, index_.erase(entry));
-    reference_set_.erase(entry);
     dynamic_entries_.pop_back();
   }
 }
@@ -263,34 +261,7 @@ HpackEntry* HpackHeaderTable::TryAddEntry(StringPiece name, StringPiece value) {
   return &dynamic_entries_.front();
 }
 
-void HpackHeaderTable::ClearReferenceSet() {
-  for (OrderedEntrySet::iterator it = reference_set_.begin();
-       it != reference_set_.end(); ++it) {
-    (*it)->set_state(0);
-  }
-  reference_set_.clear();
-}
-
-bool HpackHeaderTable::Toggle(HpackEntry* entry) {
-  CHECK(!entry->IsStatic());
-  CHECK_EQ(0u, entry->state());
-
-  std::pair<OrderedEntrySet::iterator, bool> insert_result =
-      reference_set_.insert(entry);
-  if (insert_result.second) {
-    return true;
-  } else {
-    reference_set_.erase(insert_result.first);
-    return false;
-  }
-}
-
 void HpackHeaderTable::DebugLogTableState() const {
-  DVLOG(2) << "Reference Set:";
-  for (OrderedEntrySet::const_iterator it = reference_set_.begin();
-      it != reference_set_.end(); ++it) {
-    DVLOG(2) << "  " << (*it)->GetDebugString();
-  }
   DVLOG(2) << "Dynamic table:";
   for (EntryTable::const_iterator it = dynamic_entries_.begin();
       it != dynamic_entries_.end(); ++it) {

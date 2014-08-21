@@ -137,6 +137,11 @@ class QuicHeadersStream::SpdyFramerVisitor
     CloseConnection("SPDY CONTINUATION frame received.");
   }
 
+  virtual bool OnUnknownFrame(SpdyStreamId stream_id, int frame_type) OVERRIDE {
+    CloseConnection("SPDY unknown frame received.");
+    return false;
+  }
+
   // SpdyFramerDebugVisitorInterface implementation
   virtual void OnSendCompressedFrame(SpdyStreamId stream_id,
                                      SpdyFrameType type,

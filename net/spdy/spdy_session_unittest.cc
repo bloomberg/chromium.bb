@@ -4952,6 +4952,33 @@ TEST_P(SpdySessionTest, CancelReservedStreamOnHeadersReceived) {
   data.RunFor(2);
 }
 
+TEST_P(SpdySessionTest, RejectInvalidUnknownFrames) {
+  session_deps_.host_resolver->set_synchronous_mode(true);
+
+  MockRead reads[] = {
+      MockRead(SYNCHRONOUS, ERR_IO_PENDING)  // Stall forever.
+  };
+
+  StaticSocketDataProvider data(reads, arraysize(reads), NULL, 0);
+
+  MockConnect connect_data(SYNCHRONOUS, OK);
+  data.set_connect_data(connect_data);
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+
+  CreateNetworkSession();
+  base::WeakPtr<SpdySession> session =
+      CreateInsecureSpdySession(http_session_, key_, BoundNetLog());
+
+  session->stream_hi_water_mark_ = 5;
+  // Low client (odd) ids are fine.
+  EXPECT_TRUE(session->OnUnknownFrame(3, 0));
+  // Client id exceeding watermark.
+  EXPECT_FALSE(session->OnUnknownFrame(9, 0));
+  // Currently we do not keep track of server initiated (even) ids.
+  EXPECT_TRUE(session->OnUnknownFrame(2, 0));
+  EXPECT_TRUE(session->OnUnknownFrame(8, 0));
+}
+
 TEST(MapFramerErrorToProtocolError, MapsValues) {
   CHECK_EQ(
       SPDY_ERROR_INVALID_CONTROL_FRAME,

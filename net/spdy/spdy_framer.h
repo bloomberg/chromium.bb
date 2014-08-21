@@ -289,7 +289,13 @@ class NET_EXPORT_PRIVATE SpdyFramerVisitorInterface {
   virtual void OnPriority(SpdyStreamId stream_id,
                           SpdyStreamId parent_stream_id,
                           uint8 weight,
-                          bool exclusive) {};
+                          bool exclusive) {}
+
+  // Called when a frame type we don't recognize is received.
+  // Return true if this appears to be a valid extension frame, false otherwise.
+  // We distinguish between extension frames and nonsense by checking
+  // whether the stream id is valid.
+  virtual bool OnUnknownFrame(SpdyStreamId stream_id, int frame_type) = 0;
 };
 
 // Optionally, and in addition to SpdyFramerVisitorInterface, a class supporting

@@ -66,8 +66,7 @@ class NET_EXPORT_PRIVATE HpackEncoder {
   typedef std::vector<Representation> Representations;
 
   // Emits a static/dynamic indexed representation (Section 7.1).
-  void EmitDynamicIndex(HpackEntry* entry);
-  void EmitStaticIndex(HpackEntry* entry);
+  void EmitIndex(HpackEntry* entry);
 
   // Emits a literal representation (Section 7.2).
   void EmitIndexedLiteral(const Representation& representation);
@@ -78,13 +77,6 @@ class NET_EXPORT_PRIVATE HpackEncoder {
   void EmitString(base::StringPiece str);
 
   void UpdateCharacterCounts(base::StringPiece str);
-
-  // Determines the representation delta required to encode |header_set| in
-  // the current header table context. Entries in the reference set are
-  // enumerated and marked with membership in the current |header_set|.
-  // Representations which must be explicitly emitted are returned.
-  Representations DetermineEncodingDelta(
-      const std::map<std::string, std::string>& header_set);
 
   // Crumbles a cookie header into sorted, de-duplicated crumbs.
   static void CookieToCrumbs(const Representation& cookie,

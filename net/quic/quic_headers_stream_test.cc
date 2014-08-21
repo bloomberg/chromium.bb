@@ -68,6 +68,7 @@ class MockVisitor : public SpdyFramerVisitorInterface {
                               StringPiece protocol_id,
                               StringPiece host,
                               StringPiece origin));
+  MOCK_METHOD2(OnUnknownFrame, bool(SpdyStreamId stream_id, int frame_type));
 };
 
 class QuicHeadersStreamTest : public ::testing::TestWithParam<bool> {

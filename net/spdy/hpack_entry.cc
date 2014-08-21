@@ -21,7 +21,6 @@ HpackEntry::HpackEntry(StringPiece name,
     : name_(name.data(), name.size()),
       value_(value.data(), value.size()),
       insertion_index_(insertion_index),
-      state_(0),
       type_(is_static ? STATIC : DYNAMIC) {
 }
 
@@ -29,13 +28,11 @@ HpackEntry::HpackEntry(StringPiece name, StringPiece value)
     : name_(name.data(), name.size()),
       value_(value.data(), value.size()),
       insertion_index_(0),
-      state_(0),
       type_(LOOKUP) {
 }
 
 HpackEntry::HpackEntry()
     : insertion_index_(0),
-      state_(0),
       type_(LOOKUP) {
 }
 
@@ -52,8 +49,7 @@ size_t HpackEntry::Size() const {
 std::string HpackEntry::GetDebugString() const {
   return "{ name: \"" + name_ +
       "\", value: \"" + value_ +
-      "\", " + (IsStatic() ? "static" : "dynamic") +
-      ", state: " + base::IntToString(state_) + " }";
+      "\", " + (IsStatic() ? "static" : "dynamic") + " }";
 }
 
 }  // namespace net

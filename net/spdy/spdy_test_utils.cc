@@ -94,11 +94,9 @@ void SetFrameFlags(SpdyFrame* frame,
   switch (spdy_version) {
     case SPDY2:
     case SPDY3:
-      frame->data()[4] = flags;
-      break;
     case SPDY4:
     case SPDY5:
-      frame->data()[3] = flags;
+      frame->data()[4] = flags;
       break;
     default:
       LOG(FATAL) << "Unsupported SPDY version.";
@@ -123,10 +121,10 @@ void SetFrameLength(SpdyFrame* frame,
     case SPDY5:
       CHECK_GT(1u<<14, length);
       {
-        int32 wire_length = base::HostToNet16(static_cast<uint16>(length));
+        int32 wire_length = base::HostToNet32(length);
         memcpy(frame->data(),
-               reinterpret_cast<char*>(&wire_length),
-               sizeof(uint16));
+               reinterpret_cast<char*>(&wire_length) + 1,
+               3);
       }
       break;
     default:

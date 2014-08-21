@@ -61,6 +61,7 @@ class MockSpdyFramerVisitor : public SpdyFramerVisitorInterface {
                     SpdyStreamId parent_stream_id,
                     uint8 weight,
                     bool exclusive));
+  MOCK_METHOD2(OnUnknownFrame, bool(SpdyStreamId stream_id, int frame_type));
 };
 
 }  // namespace test

@@ -43,13 +43,19 @@ bool SpdyConstants::IsValidFrameType(SpdyMajorVersion version,
       return true;
     case SPDY4:
     case SPDY5:
+      // Check for recognized extensions.
+      if (frame_type_field == SerializeFrameType(version, ALTSVC) ||
+          frame_type_field == SerializeFrameType(version, BLOCKED)) {
+        return true;
+      }
+
       // DATA is the first valid frame.
       if (frame_type_field < SerializeFrameType(version, DATA)) {
         return false;
       }
 
-      // BLOCKED is the last valid frame.
-      if (frame_type_field > SerializeFrameType(version, BLOCKED)) {
+      // CONTINUATION is the last valid frame.
+      if (frame_type_field > SerializeFrameType(version, CONTINUATION)) {
         return false;
       }
 
@@ -168,6 +174,7 @@ int SpdyConstants::SerializeFrameType(SpdyMajorVersion version,
           return 8;
         case CONTINUATION:
           return 9;
+        // ALTSVC and BLOCKED are extensions.
         case ALTSVC:
           return 10;
         case BLOCKED:
@@ -222,9 +229,9 @@ bool SpdyConstants::IsValidSettingId(SpdyMajorVersion version,
         return false;
       }
 
-      // INITIAL_WINDOW_SIZE is the last valid setting id.
+      // MAX_HEADER_LIST_SIZE is the last valid setting id.
       if (setting_id_field >
-          SerializeSettingId(version, SETTINGS_INITIAL_WINDOW_SIZE)) {
+          SerializeSettingId(version, SETTINGS_MAX_HEADER_LIST_SIZE)) {
         return false;
       }
 
@@ -268,6 +275,10 @@ SpdySettingsIds SpdyConstants::ParseSettingId(SpdyMajorVersion version,
           return SETTINGS_MAX_CONCURRENT_STREAMS;
         case 4:
           return SETTINGS_INITIAL_WINDOW_SIZE;
+        case 5:
+          return SETTINGS_MAX_FRAME_SIZE;
+        case 6:
+          return SETTINGS_MAX_HEADER_LIST_SIZE;
       }
       break;
   }
@@ -311,6 +322,10 @@ int SpdyConstants::SerializeSettingId(SpdyMajorVersion version,
           return 3;
         case SETTINGS_INITIAL_WINDOW_SIZE:
           return 4;
+        case SETTINGS_MAX_FRAME_SIZE:
+          return 5;
+        case SETTINGS_MAX_HEADER_LIST_SIZE:
+          return 6;
         default:
           LOG(DFATAL) << "Serializing unhandled setting id " << id;
           return -1;
@@ -694,17 +709,27 @@ int SpdyConstants::SerializeGoAwayStatus(SpdyMajorVersion version,
   return -1;
 }
 
-size_t SpdyConstants::GetDataFrameMinimumSize() {
-  return 8;
+size_t SpdyConstants::GetDataFrameMinimumSize(SpdyMajorVersion version) {
+  switch (version) {
+    case SPDY2:
+    case SPDY3:
+      return 8;
+    case SPDY4:
+    case SPDY5:
+      return 9;
+  }
+  LOG(DFATAL) << "Unhandled SPDY version.";
+  return 0;
 }
 
 size_t SpdyConstants::GetControlFrameHeaderSize(SpdyMajorVersion version) {
   switch (version) {
     case SPDY2:
     case SPDY3:
+      return 8;
     case SPDY4:
     case SPDY5:
-      return 8;
+      return 9;
   }
   LOG(DFATAL) << "Unhandled SPDY version.";
   return 0;
@@ -715,7 +740,7 @@ size_t SpdyConstants::GetPrefixLength(SpdyFrameType type,
   if (type != DATA) {
      return GetControlFrameHeaderSize(version);
   } else {
-     return GetDataFrameMinimumSize();
+     return GetDataFrameMinimumSize(version);
   }
 }
 
@@ -724,8 +749,11 @@ size_t SpdyConstants::GetFrameMaximumSize(SpdyMajorVersion version) {
     // 24-bit length field plus eight-byte frame header.
     return ((1<<24) - 1) + 8;
   } else {
-    // 14-bit length field.
-    return (1<<14) - 1;
+    // Max payload of 2^14 plus nine-byte frame header.
+    // TODO(mlavan): In HTTP/2 this is actually not a constant;
+    // payload size can be set using the MAX_FRAME_SIZE setting to
+    // anything between 1 << 14 and (1 << 24) - 1
+    return (1 << 14) + 9;
   }
 }
 

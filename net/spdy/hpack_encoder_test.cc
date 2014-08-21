@@ -165,9 +165,6 @@ TEST_F(HpackEncoderTest, SingleDynamicIndex) {
   map<string, string> headers;
   headers[key_2_->name()] = key_2_->value();
   CompareWithExpectedEncoding(headers);
-
-  // |key_2_| was added to the reference set.
-  EXPECT_THAT(peer_.table()->reference_set(), ElementsAre(key_2_));
 }
 
 TEST_F(HpackEncoderTest, SingleStaticIndex) {
@@ -176,13 +173,6 @@ TEST_F(HpackEncoderTest, SingleStaticIndex) {
   map<string, string> headers;
   headers[static_->name()] = static_->value();
   CompareWithExpectedEncoding(headers);
-
-  // A new entry copying |static_| was inserted and added to the reference set.
-  HpackEntry* new_entry = &peer_.table_peer().dynamic_entries()->front();
-  EXPECT_NE(static_, new_entry);
-  EXPECT_EQ(static_->name(), new_entry->name());
-  EXPECT_EQ(static_->value(), new_entry->value());
-  EXPECT_THAT(peer_.table()->reference_set(), ElementsAre(new_entry));
 }
 
 TEST_F(HpackEncoderTest, SingleStaticIndexTooLarge) {
@@ -194,7 +184,6 @@ TEST_F(HpackEncoderTest, SingleStaticIndexTooLarge) {
   CompareWithExpectedEncoding(headers);
 
   EXPECT_EQ(0u, peer_.table_peer().dynamic_entries()->size());
-  EXPECT_EQ(0u, peer_.table()->reference_set().size());
 }
 
 TEST_F(HpackEncoderTest, SingleLiteralWithIndexName) {
@@ -208,7 +197,6 @@ TEST_F(HpackEncoderTest, SingleLiteralWithIndexName) {
   HpackEntry* new_entry = &peer_.table_peer().dynamic_entries()->front();
   EXPECT_EQ(new_entry->name(), key_2_->name());
   EXPECT_EQ(new_entry->value(), "value3");
-  EXPECT_THAT(peer_.table()->reference_set(), ElementsAre(new_entry));
 }
 
 TEST_F(HpackEncoderTest, SingleLiteralWithLiteralName) {
@@ -218,11 +206,9 @@ TEST_F(HpackEncoderTest, SingleLiteralWithLiteralName) {
   headers["key3"] = "value3";
   CompareWithExpectedEncoding(headers);
 
-  // A new entry was inserted and added to the reference set.
   HpackEntry* new_entry = &peer_.table_peer().dynamic_entries()->front();
   EXPECT_EQ(new_entry->name(), "key3");
   EXPECT_EQ(new_entry->value(), "value3");
-  EXPECT_THAT(peer_.table()->reference_set(), ElementsAre(new_entry));
 }
 
 TEST_F(HpackEncoderTest, SingleLiteralTooLarge) {
@@ -237,55 +223,6 @@ TEST_F(HpackEncoderTest, SingleLiteralTooLarge) {
   CompareWithExpectedEncoding(headers);
 
   EXPECT_EQ(0u, peer_.table_peer().dynamic_entries()->size());
-  EXPECT_EQ(0u, peer_.table()->reference_set().size());
-}
-
-TEST_F(HpackEncoderTest, SingleInReferenceSet) {
-  peer_.table()->Toggle(key_2_);
-
-  // Nothing is emitted.
-  map<string, string> headers;
-  headers[key_2_->name()] = key_2_->value();
-  CompareWithExpectedEncoding(headers);
-}
-
-TEST_F(HpackEncoderTest, ExplicitToggleOff) {
-  peer_.table()->Toggle(key_1_);
-  peer_.table()->Toggle(key_2_);
-
-  // |key_1_| is explicitly toggled off.
-  ExpectIndex(IndexOf(key_1_));
-
-  map<string, string> headers;
-  headers[key_2_->name()] = key_2_->value();
-  CompareWithExpectedEncoding(headers);
-}
-
-TEST_F(HpackEncoderTest, ImplicitToggleOff) {
-  peer_.table()->Toggle(key_1_);
-  peer_.table()->Toggle(key_2_);
-
-  // |key_1_| is evicted. No explicit toggle required.
-  ExpectIndexedLiteral("key3", "value3");
-
-  map<string, string> headers;
-  headers[key_2_->name()] = key_2_->value();
-  headers["key3"] = "value3";
-  CompareWithExpectedEncoding(headers);
-}
-
-TEST_F(HpackEncoderTest, ExplicitDoubleToggle) {
-  peer_.table()->Toggle(key_1_);
-
-  // |key_1_| is double-toggled prior to being evicted.
-  ExpectIndex(IndexOf(key_1_));
-  ExpectIndex(IndexOf(key_1_));
-  ExpectIndexedLiteral("key3", "value3");
-
-  map<string, string> headers;
-  headers[key_1_->name()] = key_1_->value();
-  headers["key3"] = "value3";
-  CompareWithExpectedEncoding(headers);
 }
 
 TEST_F(HpackEncoderTest, EmitThanEvict) {
@@ -301,10 +238,7 @@ TEST_F(HpackEncoderTest, EmitThanEvict) {
 }
 
 TEST_F(HpackEncoderTest, CookieHeaderIsCrumbled) {
-  peer_.table()->Toggle(cookie_a_);
-
-  // |cookie_a_| is already in the reference set. |cookie_c_| is
-  // toggled, and "e=ff" is emitted with an indexed name.
+  ExpectIndex(IndexOf(cookie_a_));
   ExpectIndex(IndexOf(cookie_c_));
   ExpectIndexedLiteral(peer_.table()->GetByName("cookie"), "e=ff");
 
@@ -354,7 +288,7 @@ TEST_F(HpackEncoderTest, EncodingWithoutCompression) {
 }
 
 TEST_F(HpackEncoderTest, MultipleEncodingPasses) {
-  // Pass 1: key_1_ and cookie_a_ are toggled on.
+  // Pass 1.
   {
     map<string, string> headers;
     headers["key1"] = "value1";
@@ -364,37 +298,43 @@ TEST_F(HpackEncoderTest, MultipleEncodingPasses) {
     ExpectIndex(IndexOf(key_1_));
     CompareWithExpectedEncoding(headers);
   }
-  // Pass 2: |key_1_| is double-toggled and evicted.
-  // |key_2_| & |cookie_c_| are toggled on.
-  // |cookie_a_| is toggled off.
-  // A new cookie entry is added.
+  // Header table is:
+  // 65: key1: value1
+  // 64: key2: value2
+  // 63: cookie: a=bb
+  // 62: cookie: c=dd
+  // Pass 2.
   {
     map<string, string> headers;
     headers["key1"] = "value1";
     headers["key2"] = "value2";
     headers["cookie"] = "c=dd; e=ff";
 
-    ExpectIndex(IndexOf(cookie_c_));  // Toggle on.
-    ExpectIndex(IndexOf(key_1_));  // Double-toggle before eviction.
-    ExpectIndex(IndexOf(key_1_));
+    ExpectIndex(IndexOf(cookie_c_));
+    // This cookie evicts |key1| from the header table.
     ExpectIndexedLiteral(peer_.table()->GetByName("cookie"), "e=ff");
+    // |key1| is inserted to the header table, which evicts |key2|.
+    ExpectIndexedLiteral("key1", "value1");
+    // |key2| is inserted to the header table, which evicts |cookie_a|.
+    ExpectIndexedLiteral("key2", "value2");
 
-    ExpectIndex(IndexOf(key_2_) + 1);  // Toggle on. Add 1 to reflect insertion.
-    ExpectIndex(IndexOf(cookie_a_) + 1);  // Toggle off.
     CompareWithExpectedEncoding(headers);
   }
-  // Pass 3: |key_2_| is evicted and implicitly toggled off.
-  // |cookie_c_| is explicitly toggled off.
-  // "key1" is re-inserted.
+  // Header table is:
+  // 65: cookie: c=dd
+  // 64: cookie: e=ff
+  // 63: key1: value1
+  // 62: key2: value2
+  // Pass 3.
   {
     map<string, string> headers;
     headers["key1"] = "value1";
     headers["key3"] = "value3";
     headers["cookie"] = "e=ff";
 
-    ExpectIndexedLiteral("key1", "value1");
+    ExpectIndex(64);
+    ExpectIndex(63);
     ExpectIndexedLiteral("key3", "value3");
-    ExpectIndex(IndexOf(cookie_c_) + 2);  // Toggle off. Add 1 for insertion.
 
     CompareWithExpectedEncoding(headers);
   }

@@ -19,8 +19,8 @@
 
 namespace net {
 
-// A structure for an entry in the header table (3.2) and the
-// reference set (3.3).
+// A structure for an entry in the static table (3.3.1)
+// and the header table (3.3.2).
 class NET_EXPORT_PRIVATE HpackEntry {
  public:
   // The constant amount added to name().size() and value().size() to
@@ -60,11 +60,6 @@ class NET_EXPORT_PRIVATE HpackEntry {
   // Returns whether this entry is a lookup-only entry.
   bool IsLookup() const { return type_ == LOOKUP; }
 
-  // Returns and sets the state of the entry, or zero if never set.
-  // The semantics of |state| are specific to the encoder or decoder.
-  uint8 state() const { return state_; }
-  void set_state(uint8 state) { state_ = state; }
-
   // Used to compute the entry's index in the header table.
   size_t InsertionIndex() const { return insertion_index_; }
 
@@ -89,7 +84,6 @@ class NET_EXPORT_PRIVATE HpackEntry {
   // table.
   size_t insertion_index_;
 
-  uint8 state_;
   EntryType type_;
 };
 

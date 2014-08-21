@@ -545,6 +545,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, IgnoreReservedRemoteStreamsCount);
   FRIEND_TEST_ALL_PREFIXES(SpdySessionTest,
                            CancelReservedStreamOnHeadersReceived);
+  FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, RejectInvalidUnknownFrames);
 
   typedef std::deque<base::WeakPtr<SpdyStreamRequest> >
       PendingStreamRequestQueue;
@@ -849,6 +850,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
       SpdyStreamId stream_id,
       bool fin,
       const SpdyHeaderBlock& headers) OVERRIDE;
+  virtual bool OnUnknownFrame(SpdyStreamId stream_id, int frame_type) OVERRIDE;
 
   // SpdyFramerDebugVisitorInterface
   virtual void OnSendCompressedFrame(

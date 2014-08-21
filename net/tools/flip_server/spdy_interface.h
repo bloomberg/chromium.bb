@@ -130,6 +130,8 @@ class SpdySM : public BufferedSpdyFramerVisitorInterface, public SMInterface {
                              SpdyStreamId promised_stream_id,
                              const SpdyHeaderBlock& headers) OVERRIDE {}
 
+  virtual bool OnUnknownFrame(SpdyStreamId stream_id, int frame_type) OVERRIDE;
+
  public:
   virtual size_t ProcessReadInput(const char* data, size_t len) OVERRIDE;
   virtual size_t ProcessWriteInput(const char* data, size_t len) OVERRIDE;
