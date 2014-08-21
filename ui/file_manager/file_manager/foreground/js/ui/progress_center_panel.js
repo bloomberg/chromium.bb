@@ -280,6 +280,16 @@ ProgressCenterPanel.getToggleAnimation_ = function(document) {
  */
 ProgressCenterPanel.RESET_DELAY_TIME_MS_ = 5000;
 
+ProgressCenterPanel.prototype = {
+  /**
+   * Root element of the progress center.
+   * @type {HTMLElement}
+   */
+  get element() {
+    return this.element_;
+  }
+};
+
 /**
  * Updates an item to the progress center panel.
  * @param {!ProgressCenterItem} item Item including new contents.
