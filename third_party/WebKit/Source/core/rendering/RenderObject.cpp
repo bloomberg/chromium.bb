@@ -1327,11 +1327,16 @@ void RenderObject::addChildFocusRingRects(Vector<IntRect>& rects, const LayoutPo
                 box->addFocusRingRects(layerFocusRingRects, LayoutPoint(), box);
                 for (size_t i = 0; i < layerFocusRingRects.size(); ++i) {
                     FloatQuad quadInBox = box->localToContainerQuad(FloatRect(layerFocusRingRects[i]), paintContainer);
-                    rects.append(pixelSnappedIntRect(LayoutRect(quadInBox.boundingBox())));
+                    FloatRect rect = quadInBox.boundingBox();
+                    // Floor the location instead of using pixelSnappedIntRect to match the !hasLayer() path.
+                    // FIXME: roundedIntSize matches pixelSnappedIntRect in other places of addFocusRingRects
+                    // because we always floor the offset.
+                    // This assumption is fragile and should be replaced by better solution.
+                    rects.append(IntRect(flooredIntPoint(rect.location()), roundedIntSize(rect.size())));
                 }
             } else {
                 FloatPoint pos(additionalOffset);
-                pos.move(box->locationOffset()); // FIXME: Snap offsets? crbug.com/350474
+                pos.move(box->locationOffset());
                 box->addFocusRingRects(rects, flooredIntPoint(pos), paintContainer);
             }
         } else {
