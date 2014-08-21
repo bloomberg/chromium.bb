@@ -508,7 +508,8 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
 // Flaky on Windows (http://crbug.com/357311). Might be related to
 // OverscrollNavigation test.
 // Flaky on Ozone (http://crbug.com/399676).
-#if defined(OS_WIN) || defined(USE_OZONE)
+// Flaky on ChromeOS (http://crbug.com/405945).
+#if defined(OS_WIN) || defined(USE_OZONE) || defined(OS_CHROMEOS)
 #define MAYBE_OverscrollScreenshot DISABLED_OverscrollScreenshot
 #else
 #define MAYBE_OverscrollScreenshot OverscrollScreenshot
