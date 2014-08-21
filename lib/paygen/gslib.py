@@ -142,11 +142,15 @@ def RetryGSLib(func):
           raise
 
         error_msg = str(ex)
-        if (func.__name__ == 'Copy' and (
-                gs.GSContext.RESUMABLE_DOWNLOAD_ERROR in error_msg or
-                gs.GSContext.RESUMABLE_UPLOAD_ERROR in error_msg or
-                'ResumableUploadException' in error_msg or
-                'ResumableDownloadException' in error_msg)):
+        RESUMABLE_ERROR_MESSAGE = (
+            gs.GSContext.RESUMABLE_DOWNLOAD_ERROR,
+            gs.GSContext.RESUMABLE_UPLOAD_ERROR,
+            'ResumableUploadException',
+            'ResumableDownloadException',
+            'ssl.SSLError: The read operation timed out',
+        )
+        if (func.__name__ == 'Copy' and
+            any(x in error_msg for x in RESUMABLE_ERROR_MESSAGE)):
           logging.info(
               'Resumable download/upload exception occured for %s', args[1])
           # Pass the dest_path to get the tracker filename.
