@@ -9,6 +9,7 @@ var FocusManager = cr.ui.FocusManager;
  * "background" pages (i.e., those in a dialog that is not the topmost overlay)
  * do not receive focus.
  * @constructor
+ * @extends {cr.ui.FocusManager}
  */
 function HistoryFocusManager() {
 }

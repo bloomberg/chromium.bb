@@ -327,6 +327,10 @@ scoped_ptr<base::DictionaryValue> BrowsingHistoryHandler::HistoryEntry::ToValue(
   if (domain.empty())
     domain = base::UTF8ToUTF16(url.scheme() + ":");
 
+  // The items which are to be written into result are also described in
+  // chrome/browser/resources/history/history.js in @typedef for
+  // HistoryEntry. Please update it whenever you add or remove
+  // any keys in result.
   result->SetString("domain", domain);
   result->SetDouble("time", time.ToJsTime());
 
@@ -783,6 +787,10 @@ void BrowsingHistoryHandler::QueryComplete(
             accept_languages));
   }
 
+  // The items which are to be written into results_info_value_ are also
+  // described in chrome/browser/resources/history/history.js in @typedef for
+  // HistoryQuery. Please update it whenever you add or remove any keys in
+  // results_info_value_.
   results_info_value_.SetString("term", search_text);
   results_info_value_.SetBoolean("finished", results->reached_beginning());
 

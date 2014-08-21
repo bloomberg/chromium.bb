@@ -301,6 +301,7 @@ var cr = function() {
     defineProperty: defineProperty,
     dispatchPropertyChange: dispatchPropertyChange,
     dispatchSimpleEvent: dispatchSimpleEvent,
+    exportPath: exportPath,
     getUid: getUid,
     PropertyKind: PropertyKind,
 

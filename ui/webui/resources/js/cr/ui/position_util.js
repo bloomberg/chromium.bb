@@ -6,55 +6,59 @@
  * @fileoverview This file provides utility functions for position popups.
  */
 
+cr.exportPath('cr.ui');
+
+/**
+ * Type def for rects as returned by getBoundingClientRect.
+ * @typedef {{left: number, top: number, width: number, height: number,
+ *            right: number, bottom: number}}
+ */
+cr.ui.Rect;
+
+/**
+ * Enum for defining how to anchor a popup to an anchor element.
+ * @enum {number}
+ */
+cr.ui.AnchorType = {
+  /**
+   * The popup's right edge is aligned with the left edge of the anchor.
+   * The popup's top edge is aligned with the top edge of the anchor.
+   */
+  BEFORE: 1,  // p: right, a: left, p: top, a: top
+
+  /**
+   * The popop's left edge is aligned with the right edge of the anchor.
+   * The popup's top edge is aligned with the top edge of the anchor.
+   */
+  AFTER: 2,  // p: left a: right, p: top, a: top
+
+  /**
+   * The popop's bottom edge is aligned with the top edge of the anchor.
+   * The popup's left edge is aligned with the left edge of the anchor.
+   */
+  ABOVE: 3,  // p: bottom, a: top, p: left, a: left
+
+  /**
+   * The popop's top edge is aligned with the bottom edge of the anchor.
+   * The popup's left edge is aligned with the left edge of the anchor.
+   */
+  BELOW: 4  // p: top, a: bottom, p: left, a: left
+};
+
 cr.define('cr.ui', function() {
-
-  /**
-   * Type def for rects as returned by getBoundingClientRect.
-   * @typedef { {left: number, top: number, width: number, height: number,
-   *             right: number, bottom: number}}
-   */
-  var Rect;
-
-  /**
-   * Enum for defining how to anchor a popup to an anchor element.
-   * @enum {number}
-   */
-  var AnchorType = {
-    /**
-     * The popup's right edge is aligned with the left edge of the anchor.
-     * The popup's top edge is aligned with the top edge of the anchor.
-     */
-    BEFORE: 1,  // p: right, a: left, p: top, a: top
-
-    /**
-     * The popop's left edge is aligned with the right edge of the anchor.
-     * The popup's top edge is aligned with the top edge of the anchor.
-     */
-    AFTER: 2,  // p: left a: right, p: top, a: top
-
-    /**
-     * The popop's bottom edge is aligned with the top edge of the anchor.
-     * The popup's left edge is aligned with the left edge of the anchor.
-     */
-    ABOVE: 3,  // p: bottom, a: top, p: left, a: left
-
-    /**
-     * The popop's top edge is aligned with the bottom edge of the anchor.
-     * The popup's left edge is aligned with the left edge of the anchor.
-     */
-    BELOW: 4  // p: top, a: bottom, p: left, a: left
-  };
+  /** @const */
+  var AnchorType = cr.ui.AnchorType;
 
   /**
    * Helper function for positionPopupAroundElement and positionPopupAroundRect.
-   * @param {!Rect} anchorRect The rect for the anchor.
+   * @param {!cr.ui.Rect} anchorRect The rect for the anchor.
    * @param {!HTMLElement} popupElement The element used for the popup.
-   * @param {AnchorType} type The type of anchoring to do.
-   * @param {boolean} invertLeftRight Whether to invert the right/left
+   * @param {cr.ui.AnchorType} type The type of anchoring to do.
+   * @param {boolean=} opt_invertLeftRight Whether to invert the right/left
    *     alignment.
    */
   function positionPopupAroundRect(anchorRect, popupElement, type,
-                                   invertLeftRight) {
+                                   opt_invertLeftRight) {
     var popupRect = popupElement.getBoundingClientRect();
     var availRect;
     var ownerDoc = popupElement.ownerDocument;
@@ -77,10 +81,10 @@ cr.define('cr.ui', function() {
     }
 
     if (cs.direction == 'rtl')
-      invertLeftRight = !invertLeftRight;
+      opt_invertLeftRight = !opt_invertLeftRight;
 
     // Flip BEFORE, AFTER based on alignment.
-    if (invertLeftRight) {
+    if (opt_invertLeftRight) {
       if (type == AnchorType.BEFORE)
         type = AnchorType.AFTER;
       else if (type == AnchorType.AFTER)
@@ -152,7 +156,7 @@ cr.define('cr.ui', function() {
     switch (type) {
       case AnchorType.BELOW:
       case AnchorType.ABOVE:
-        if (invertLeftRight) {
+        if (opt_invertLeftRight) {
           // align right edges
           if (anchorRect.right - popupRect.width >= 0) {
             style.right = availRect.width - anchorRect.right + 'px';
@@ -206,7 +210,7 @@ cr.define('cr.ui', function() {
    * @param {!HTMLElement} anchorElement The element that the popup is anchored
    *     to.
    * @param {!HTMLElement} popupElement The popup element we are positioning.
-   * @param {AnchorType} type The type of anchoring we want.
+   * @param {cr.ui.AnchorType} type The type of anchoring we want.
    * @param {boolean} invertLeftRight Whether to invert the right/left
    *     alignment.
    */
@@ -236,7 +240,6 @@ cr.define('cr.ui', function() {
 
   // Export
   return {
-    AnchorType: AnchorType,
     positionPopupAroundElement: positionPopupAroundElement,
     positionPopupAtPoint: positionPopupAtPoint
   };

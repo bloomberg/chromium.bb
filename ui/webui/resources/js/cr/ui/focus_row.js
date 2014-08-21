@@ -41,10 +41,10 @@ cr.define('cr.ui', function() {
     /** @type {!Node} */
     this.boundary_ = opt_boundary || document;
 
-    /** @private {FocusRow.Delegate|undefined} */
+    /** @private {cr.ui.FocusRow.Delegate|undefined} */
     this.delegate_ = opt_delegate;
 
-    /** @private {FocusRow.Observer|undefined} */
+    /** @private {cr.ui.FocusRow.Observer|undefined} */
     this.observer_ = opt_observer;
 
     /** @private {!EventTracker} */

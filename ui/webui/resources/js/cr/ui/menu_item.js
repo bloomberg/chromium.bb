@@ -9,7 +9,8 @@ cr.define('cr.ui', function() {
    * Creates a new menu item element.
    * @param {Object=} opt_propertyBag Optional properties.
    * @constructor
-   * @extends {HTMLDivElement}
+   * @extends {HTMLButtonElement}
+   * @implements {EventListener}
    */
   var MenuItem = cr.ui.define('div');
 
@@ -69,7 +70,7 @@ cr.define('cr.ui', function() {
       }
 
       if (typeof command == 'string' && command[0] == '#') {
-        command = this.ownerDocument.getElementById(command.slice(1));
+        command = assert(this.ownerDocument.getElementById(command.slice(1)));
         cr.ui.decorate(command, Command);
       }
 
@@ -183,10 +184,11 @@ cr.define('cr.ui', function() {
     /**
      * Handles mouseup events. This dispatches an activate event; if there is an
      * associated command, that command is executed.
-     * @param {Event} e The mouseup event object.
+     * @param {!Event} e The mouseup event object.
      * @private
      */
     handleMouseUp_: function(e) {
+      e = /** @type {!MouseEvent} */(e);
       // Only dispatch an activate event for left or middle click.
       if (e.button > 1)
         return;
@@ -243,31 +245,26 @@ cr.define('cr.ui', function() {
 
   /**
    * Whether the menu item is disabled or not.
-   * @type {boolean}
    */
   cr.defineProperty(MenuItem, 'disabled', cr.PropertyKind.BOOL_ATTR);
 
   /**
    * Whether the menu item is hidden or not.
-   * @type {boolean}
    */
   cr.defineProperty(MenuItem, 'hidden', cr.PropertyKind.BOOL_ATTR);
 
   /**
    * Whether the menu item is selected or not.
-   * @type {boolean}
    */
   cr.defineProperty(MenuItem, 'selected', cr.PropertyKind.BOOL_ATTR);
 
   /**
    * Whether the menu item is checked or not.
-   * @type {boolean}
    */
   cr.defineProperty(MenuItem, 'checked', cr.PropertyKind.BOOL_ATTR);
 
   /**
    * Whether the menu item is checkable or not.
-   * @type {boolean}
    */
   cr.defineProperty(MenuItem, 'checkable', cr.PropertyKind.BOOL_ATTR);
 

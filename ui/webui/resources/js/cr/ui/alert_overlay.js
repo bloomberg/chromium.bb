@@ -5,13 +5,13 @@
 cr.define('alertOverlay', function() {
   /**
    * The confirm <button>.
-   * @type {HTMLButtonElement}
+   * @type {HTMLElement}
    */
   var okButton;
 
   /**
    * The cancel <button>.
-   * @type {HTMLButtonElement}
+   * @type {HTMLElement}
    */
   var cancelButton;
 
@@ -46,13 +46,14 @@ cr.define('alertOverlay', function() {
    *     no button is shown.
    * @param {string=} cancelTitle The title of the cancel button. If undefined
    *     or empty, no button is shown.
-   * @param {function=} okCallback A function to be called when the user presses
-   *     the ok button. Can be undefined if |okTitle| is falsey.
-   * @param {function=} cancelCallback A function to be called when the user
-   *     presses the cancel button. Can be undefined if |cancelTitle| is falsey.
+   * @param {function()=} opt_okCallback A function to be called when the user
+   *     presses the ok button. Can be undefined if |okTitle| is falsey.
+   * @param {function()=} opt_cancelCallback A function to be called when the
+   *     user presses the cancel button. Can be undefined if |cancelTitle| is
+   *     falsey.
    */
-  function setValues(
-      title, message, okTitle, cancelTitle, okCallback, cancelCallback) {
+  function setValues(title, message, okTitle, cancelTitle, opt_okCallback,
+                     opt_cancelCallback) {
     if (typeof title != 'undefined')
       $('alertOverlayTitle').textContent = title;
     $('alertOverlayTitle').hidden = typeof title == 'undefined';
@@ -64,12 +65,12 @@ cr.define('alertOverlay', function() {
     if (okTitle)
       okButton.textContent = okTitle;
     okButton.hidden = !okTitle;
-    okButton.clickCallback = okCallback;
+    okButton.clickCallback = opt_okCallback;
 
     if (cancelTitle)
       cancelButton.textContent = cancelTitle;
     cancelButton.hidden = !cancelTitle;
-    cancelButton.clickCallback = cancelCallback;
+    cancelButton.clickCallback = opt_cancelCallback;
   };
 
   // Export

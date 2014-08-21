@@ -86,17 +86,17 @@ cr.define('cr.ui', function() {
     },
 
     /**
-     * Walks up the ancestors of |el| until a menu item belonging to this menu
+     * Walks up the ancestors of |node| until a menu item belonging to this menu
      * is found.
-     * @param {Element} el The element to start searching from.
+     * @param {Node} node The node to start searching from.
      * @return {cr.ui.MenuItem} The found menu item or null.
      * @private
      */
-    findMenuItem_: function(el) {
-      while (el && el.parentNode != this) {
-        el = el.parentNode;
+    findMenuItem_: function(node) {
+      while (node && node.parentNode != this) {
+        node = node.parentNode;
       }
-      return el ? assertInstanceof(el, MenuItem) : null;
+      return node ? assertInstanceof(node, MenuItem) : null;
     },
 
     /**
@@ -105,7 +105,7 @@ cr.define('cr.ui', function() {
      * @private
      */
     handleMouseOver_: function(e) {
-      var overItem = this.findMenuItem_(e.target);
+      var overItem = this.findMenuItem_(/** @type {Element} */(e.target));
       this.selectedItem = overItem;
     },
 
@@ -267,7 +267,7 @@ cr.define('cr.ui', function() {
 
   /**
    * The selected menu item.
-   * @type {number}
+   * type {number}
    */
   cr.defineProperty(Menu, 'selectedIndex', cr.PropertyKind.JS,
       selectedIndexChanged);

@@ -168,14 +168,14 @@ function setQueryParam(location, key, value) {
 }
 
 /**
- * @param {Node} el An element to search for ancestors with |className|.
+ * @param {Element} el An element to search for ancestors with |className|.
  * @param {string} className A class to search for.
- * @return {Node} A node with class of |className| or null if none is found.
+ * @return {Element} A node with class of |className| or null if none is found.
  */
 function findAncestorByClass(el, className) {
-  return findAncestor(el, function(el) {
+  return /** @type {Element} */(findAncestor(el, function(el) {
     return el.classList && el.classList.contains(className);
-  });
+  }));
 }
 
 /**
