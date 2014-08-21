@@ -15,6 +15,7 @@
 #include "components/google/core/browser/google_util.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/web_contents.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "net/http/http_response_headers.h"
@@ -251,6 +252,11 @@ void ProcessMirrorResponseHeaderIfExists(
 #else
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   if (!gaia::IsGaiaSignonRealm(request->url().GetOrigin()))
+    return;
+
+  const content::ResourceRequestInfo* info =
+      content::ResourceRequestInfo::ForRequest(request);
+  if (!(info && info->IsMainFrame() && info->HasUserGesture()))
     return;
 
   std::string header_value;
