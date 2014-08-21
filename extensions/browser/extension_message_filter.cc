@@ -4,6 +4,7 @@
 
 #include "extensions/browser/extension_message_filter.h"
 
+#include "components/crx_file/id_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_dispatcher_host.h"
@@ -105,7 +106,7 @@ void ExtensionMessageFilter::OnExtensionAddListener(
   if (!router)
     return;
 
-  if (Extension::IdIsValid(extension_id)) {
+  if (crx_file::id_util::IdIsValid(extension_id)) {
     router->AddEventListener(event_name, process, extension_id);
   } else if (listener_url.is_valid()) {
     router->AddEventListenerForURL(event_name, process, listener_url);
@@ -126,7 +127,7 @@ void ExtensionMessageFilter::OnExtensionRemoveListener(
   if (!router)
     return;
 
-  if (Extension::IdIsValid(extension_id)) {
+  if (crx_file::id_util::IdIsValid(extension_id)) {
     router->RemoveEventListener(event_name, process, extension_id);
   } else if (listener_url.is_valid()) {
     router->RemoveEventListenerForURL(event_name, process, listener_url);

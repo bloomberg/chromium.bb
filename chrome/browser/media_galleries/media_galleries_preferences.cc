@@ -26,6 +26,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
+#include "components/crx_file/id_util.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/storage_monitor/media_storage_util.h"
 #include "components/storage_monitor/storage_monitor.h"
@@ -33,7 +34,6 @@
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/pref_names.h"
-#include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/media_galleries_permission.h"
@@ -1198,7 +1198,7 @@ bool MediaGalleriesPreferences::NonAutoGalleryHasPermission(
 
   for (base::DictionaryValue::Iterator iter(*extensions); !iter.IsAtEnd();
        iter.Advance()) {
-    if (!extensions::Extension::IdIsValid(iter.key())) {
+    if (!crx_file::id_util::IdIsValid(iter.key())) {
       NOTREACHED();
       continue;
     }
@@ -1439,7 +1439,7 @@ void MediaGalleriesPreferences::RemoveGalleryPermissionsFromPrefs(
 
   for (base::DictionaryValue::Iterator iter(*extensions); !iter.IsAtEnd();
        iter.Advance()) {
-    if (!extensions::Extension::IdIsValid(iter.key())) {
+    if (!crx_file::id_util::IdIsValid(iter.key())) {
       NOTREACHED();
       continue;
     }

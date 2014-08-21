@@ -22,6 +22,7 @@ include_rules = [
   "+components/component_updater",
   "+components/content_settings",
   "+components/copresence",
+  "+components/crx_file",
   "+components/data_reduction_proxy",
   "+components/dom_distiller",
   "+components/domain_reliability",

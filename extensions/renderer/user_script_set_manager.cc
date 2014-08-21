@@ -4,6 +4,7 @@
 
 #include "extensions/renderer/user_script_set_manager.h"
 
+#include "components/crx_file/id_util.h"
 #include "content/public/renderer/render_thread.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/renderer/dispatcher.h"
@@ -83,7 +84,7 @@ void UserScriptSetManager::OnUpdateUserScripts(
   for (std::set<std::string>::const_iterator iter = changed_extensions.begin();
        iter != changed_extensions.end();
        ++iter) {
-    if (!Extension::IdIsValid(*iter)) {
+    if (!crx_file::id_util::IdIsValid(*iter)) {
       NOTREACHED() << "Invalid extension id: " << *iter;
       return;
     }

@@ -12,7 +12,7 @@
 #include "chrome/browser/extensions/api/signed_in_devices/signed_in_devices_api.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/device_info.h"
-#include "extensions/common/extension.h"
+#include "components/crx_file/id_util.h"
 
 using base::DictionaryValue;
 using base::Value;
@@ -88,8 +88,8 @@ scoped_ptr<DeviceInfo> GetDeviceInfoForClientId(
     const std::string& client_id,
     const std::string& extension_id,
     Profile* profile) {
-  DCHECK(Extension::IdIsValid(extension_id)) << extension_id
-                                             << " is not valid";
+  DCHECK(crx_file::id_util::IdIsValid(extension_id)) << extension_id
+                                                     << " is not valid";
   ScopedVector<DeviceInfo> devices = GetAllSignedInDevices(extension_id,
                                                            profile);
   for (ScopedVector<DeviceInfo>::iterator it = devices.begin();

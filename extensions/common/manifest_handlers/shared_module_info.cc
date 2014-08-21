@@ -10,6 +10,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/version.h"
+#include "components/crx_file/id_util.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/manifest_constants.h"
@@ -52,7 +53,7 @@ void SharedModuleInfo::ParseImportedPath(const std::string& path,
   std::vector<std::string> tokens;
   Tokenize(path, std::string("/"), &tokens);
   if (tokens.size() > 2 && tokens[0] == kModulesDir &&
-      Extension::IdIsValid(tokens[1])) {
+      crx_file::id_util::IdIsValid(tokens[1])) {
     *import_id = tokens[1];
     *import_relative_path = tokens[2];
     for (size_t i = 3; i < tokens.size(); ++i)
@@ -65,7 +66,7 @@ bool SharedModuleInfo::IsImportedPath(const std::string& path) {
   std::vector<std::string> tokens;
   Tokenize(path, std::string("/"), &tokens);
   if (tokens.size() > 2 && tokens[0] == kModulesDir &&
-      Extension::IdIsValid(tokens[1])) {
+      crx_file::id_util::IdIsValid(tokens[1])) {
     return true;
   }
   return false;
@@ -154,7 +155,7 @@ bool SharedModuleInfo::Parse(const Extension* extension,
       for (size_t i = 0; i < whitelist->GetSize(); ++i) {
         std::string extension_id;
         if (!whitelist->GetString(i, &extension_id) ||
-            !Extension::IdIsValid(extension_id)) {
+            !crx_file::id_util::IdIsValid(extension_id)) {
           *error = ErrorUtils::FormatErrorMessageUTF16(
               errors::kInvalidExportWhitelistString, base::IntToString(i));
           return false;
@@ -195,7 +196,7 @@ bool SharedModuleInfo::Parse(const Extension* extension,
       std::string extension_id;
       imports_.push_back(ImportInfo());
       if (!import_entry->GetString(keys::kId, &extension_id) ||
-          !Extension::IdIsValid(extension_id)) {
+          !crx_file::id_util::IdIsValid(extension_id)) {
         *error = ErrorUtils::FormatErrorMessageUTF16(
             errors::kInvalidImportId, base::IntToString(i));
         return false;

@@ -17,8 +17,8 @@
 #include "base/version.h"
 #include "base/win/registry.h"
 #include "chrome/browser/extensions/external_provider_impl.h"
+#include "components/crx_file/id_util.h"
 #include "content/public/browser/browser_thread.h"
-#include "extensions/common/extension.h"
 
 using content::BrowserThread;
 
@@ -97,7 +97,7 @@ void ExternalRegistryLoader::LoadOnFileThread() {
 
     std::string id = base::UTF16ToASCII(*it);
     base::StringToLowerASCII(&id);
-    if (!Extension::IdIsValid(id)) {
+    if (!crx_file::id_util::IdIsValid(id)) {
       LOG(ERROR) << "Invalid id value " << id
                  << " for key " << key_path << ".";
       continue;

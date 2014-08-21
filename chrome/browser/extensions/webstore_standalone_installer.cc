@@ -14,6 +14,7 @@
 #include "chrome/browser/extensions/install_tracker.h"
 #include "chrome/browser/extensions/webstore_data_fetcher.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/crx_file/id_util.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
@@ -55,7 +56,7 @@ void WebstoreStandaloneInstaller::BeginInstall() {
   // AbortInstall, which both release this ref.
   AddRef();
 
-  if (!Extension::IdIsValid(id_)) {
+  if (!crx_file::id_util::IdIsValid(id_)) {
     CompleteInstall(webstore_install::INVALID_ID, kInvalidWebstoreItemId);
     return;
   }

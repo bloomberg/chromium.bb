@@ -15,8 +15,8 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/extensions/webstore_install_result.h"
+#include "components/crx_file/id_util.h"
 #include "extensions/browser/extension_registry.h"
-#include "extensions/common/extension.h"
 #include "extensions/common/manifest_constants.h"
 
 using extensions::ExtensionRegistry;
@@ -74,7 +74,7 @@ void WebstoreInstallWithPromptAppsOnly::OnManifestParsed() {
 namespace install_chrome_app {
 
 void InstallChromeApp(const std::string& app_id) {
-  if (!extensions::Extension::IdIsValid(app_id))
+  if (!crx_file::id_util::IdIsValid(app_id))
     return;
 
   // At the moment InstallChromeApp() is called immediately after handling

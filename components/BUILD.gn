@@ -191,6 +191,7 @@ test("components_unittests") {
     "//components/bookmarks/browser:unit_tests",
     "//components/captive_portal:unit_tests",
     "//components/cloud_devices/common:unit_tests",
+    "//components/crx_file:unit_tests",
     "//components/data_reduction_proxy/browser:unit_tests",
     "//components/data_reduction_proxy/common:unit_tests",
     "//components/dom_distiller/core:unit_tests",

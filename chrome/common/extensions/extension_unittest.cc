@@ -12,6 +12,7 @@
 #include "chrome/common/extensions/extension_test_util.h"
 #include "chrome/common/extensions/manifest_handlers/content_scripts_handler.h"
 #include "chrome/common/url_constants.h"
+#include "components/crx_file/id_util.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_resource.h"
 #include "extensions/common/file_util.h"
@@ -184,15 +185,19 @@ TEST(ExtensionTest, GetAbsolutePathNoError) {
 
 
 TEST(ExtensionTest, IdIsValid) {
-  EXPECT_TRUE(Extension::IdIsValid("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"));
-  EXPECT_TRUE(Extension::IdIsValid("pppppppppppppppppppppppppppppppp"));
-  EXPECT_TRUE(Extension::IdIsValid("abcdefghijklmnopabcdefghijklmnop"));
-  EXPECT_TRUE(Extension::IdIsValid("ABCDEFGHIJKLMNOPABCDEFGHIJKLMNOP"));
-  EXPECT_FALSE(Extension::IdIsValid("abcdefghijklmnopabcdefghijklmno"));
-  EXPECT_FALSE(Extension::IdIsValid("abcdefghijklmnopabcdefghijklmnopa"));
-  EXPECT_FALSE(Extension::IdIsValid("0123456789abcdef0123456789abcdef"));
-  EXPECT_FALSE(Extension::IdIsValid("abcdefghijklmnopabcdefghijklmnoq"));
-  EXPECT_FALSE(Extension::IdIsValid("abcdefghijklmnopabcdefghijklmno0"));
+  EXPECT_TRUE(crx_file::id_util::IdIsValid("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"));
+  EXPECT_TRUE(crx_file::id_util::IdIsValid("pppppppppppppppppppppppppppppppp"));
+  EXPECT_TRUE(crx_file::id_util::IdIsValid("abcdefghijklmnopabcdefghijklmnop"));
+  EXPECT_TRUE(crx_file::id_util::IdIsValid("ABCDEFGHIJKLMNOPABCDEFGHIJKLMNOP"));
+  EXPECT_FALSE(crx_file::id_util::IdIsValid("abcdefghijklmnopabcdefghijklmno"));
+  EXPECT_FALSE(
+      crx_file::id_util::IdIsValid("abcdefghijklmnopabcdefghijklmnopa"));
+  EXPECT_FALSE(
+      crx_file::id_util::IdIsValid("0123456789abcdef0123456789abcdef"));
+  EXPECT_FALSE(
+      crx_file::id_util::IdIsValid("abcdefghijklmnopabcdefghijklmnoq"));
+  EXPECT_FALSE(
+      crx_file::id_util::IdIsValid("abcdefghijklmnopabcdefghijklmno0"));
 }
 
 

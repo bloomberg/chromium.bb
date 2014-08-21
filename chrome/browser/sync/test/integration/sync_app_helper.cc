@@ -13,13 +13,12 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/extensions/sync_helper.h"
+#include "components/crx_file/id_util.h"
 #include "extensions/browser/app_sorting.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
-#include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
-#include "extensions/common/id_util.h"
 
 using extensions::ExtensionPrefs;
 
@@ -174,7 +173,7 @@ syncer::StringOrdinal SyncAppHelper::GetPageOrdinalForApp(
     Profile* profile,
     const std::string& name) {
   return ExtensionPrefs::Get(profile)->app_sorting()->GetPageOrdinal(
-      extensions::id_util::GenerateId(name));
+      crx_file::id_util::GenerateId(name));
 }
 
 void SyncAppHelper::SetPageOrdinalForApp(
@@ -182,14 +181,14 @@ void SyncAppHelper::SetPageOrdinalForApp(
     const std::string& name,
     const syncer::StringOrdinal& page_ordinal) {
   ExtensionPrefs::Get(profile)->app_sorting()->SetPageOrdinal(
-      extensions::id_util::GenerateId(name), page_ordinal);
+      crx_file::id_util::GenerateId(name), page_ordinal);
 }
 
 syncer::StringOrdinal SyncAppHelper::GetAppLaunchOrdinalForApp(
     Profile* profile,
     const std::string& name) {
   return ExtensionPrefs::Get(profile)->app_sorting()->GetAppLaunchOrdinal(
-      extensions::id_util::GenerateId(name));
+      crx_file::id_util::GenerateId(name));
 }
 
 void SyncAppHelper::SetAppLaunchOrdinalForApp(
@@ -197,7 +196,7 @@ void SyncAppHelper::SetAppLaunchOrdinalForApp(
     const std::string& name,
     const syncer::StringOrdinal& app_launch_ordinal) {
   ExtensionPrefs::Get(profile)->app_sorting()->SetAppLaunchOrdinal(
-      extensions::id_util::GenerateId(name), app_launch_ordinal);
+      crx_file::id_util::GenerateId(name), app_launch_ordinal);
 }
 
 void SyncAppHelper::FixNTPOrdinalCollisions(Profile* profile) {

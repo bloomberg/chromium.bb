@@ -7,10 +7,10 @@
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
+#include "components/crx_file/id_util.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_paths.h"
 #include "extensions/common/extension_resource.h"
-#include "extensions/common/id_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -36,7 +36,7 @@ TEST(ExtensionResourceTest, CreateWithMissingResourceOnDisk) {
   ASSERT_TRUE(PathService::Get(DIR_TEST_DATA, &root_path));
   base::FilePath relative_path;
   relative_path = relative_path.AppendASCII("cira.js");
-  std::string extension_id = id_util::GenerateId("test");
+  std::string extension_id = crx_file::id_util::GenerateId("test");
   ExtensionResource resource(extension_id, root_path, relative_path);
 
   // The path doesn't exist on disk, we will be returned an empty path.
@@ -57,7 +57,7 @@ TEST(ExtensionResourceTest, ResourcesOutsideOfPath) {
   base::FilePath outer_file = temp.path().AppendASCII("outer");
   ASSERT_TRUE(base::WriteFile(outer_file, "X", 1));
   ASSERT_TRUE(base::WriteFile(inner_file, "X", 1));
-  std::string extension_id = id_util::GenerateId("test");
+  std::string extension_id = crx_file::id_util::GenerateId("test");
 
 #if defined(OS_POSIX)
   base::FilePath symlink_file = inner_dir.AppendASCII("symlink");
@@ -143,7 +143,7 @@ TEST(ExtensionResourceTest, CreateWithAllResourcesOnDisk) {
   }
 
   base::FilePath path;
-  std::string extension_id = id_util::GenerateId("test");
+  std::string extension_id = crx_file::id_util::GenerateId("test");
   ExtensionResource resource(extension_id, temp.path(),
                              base::FilePath().AppendASCII(filename));
   base::FilePath resolved_path = resource.GetFilePath();

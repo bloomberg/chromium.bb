@@ -8,6 +8,7 @@
 #include "base/prefs/pref_value_map.h"
 #include "chrome/browser/extensions/external_policy_loader.h"
 #include "chrome/common/pref_names.h"
+#include "components/crx_file/id_util.h"
 #include "components/policy/core/browser/policy_error_map.h"
 #include "components/policy/core/common/policy_map.h"
 #include "extensions/browser/pref_names.h"
@@ -79,8 +80,7 @@ bool ExtensionListPolicyHandler::CheckAndGetList(
                        ValueTypeToString(base::Value::TYPE_STRING));
       continue;
     }
-    if (!(allow_wildcards_ && id == "*") &&
-        !extensions::Extension::IdIsValid(id)) {
+    if (!(allow_wildcards_ && id == "*") && !crx_file::id_util::IdIsValid(id)) {
       errors->AddError(policy_name(),
                        entry - list_value->begin(),
                        IDS_POLICY_VALUE_FORMAT_ERROR);
@@ -166,7 +166,7 @@ bool ExtensionInstallForcelistPolicyHandler::ParseList(
 
     std::string extension_id = entry_string.substr(0, pos);
     std::string update_url = entry_string.substr(pos+1);
-    if (!extensions::Extension::IdIsValid(extension_id) ||
+    if (!crx_file::id_util::IdIsValid(extension_id) ||
         !GURL(update_url).is_valid()) {
       if (errors) {
         errors->AddError(policy_name(),

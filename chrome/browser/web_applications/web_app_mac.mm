@@ -38,6 +38,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #import "chrome/common/mac/app_mode_common.h"
+#include "components/crx_file/id_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
@@ -447,7 +448,7 @@ bool IsShimForProfile(const base::FilePath& base_name,
   std::string app_id = base_name.RemoveExtension().value();
   // Strip (profile_base_name + " ") from the start.
   app_id = app_id.substr(profile_base_name.size() + 1);
-  return extensions::Extension::IdIsValid(app_id);
+  return crx_file::id_util::IdIsValid(app_id);
 }
 
 std::vector<base::FilePath> GetAllAppBundlesInPath(

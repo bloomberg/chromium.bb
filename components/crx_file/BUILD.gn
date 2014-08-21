@@ -7,9 +7,22 @@ source_set("crx_file") {
     "constants.h",
     "crx_file.cc",
     "crx_file.h",
+    "id_util.cc",
+    "id_util.h",
   ]
 
   deps = [
     "//base",
+  ]
+}
+
+source_set("unit_tests") {
+  sources = [
+    "id_util_unittest.cc",
+  ]
+
+  deps = [
+    ":crx_file",
+    "//testing/gtest",
   ]
 }

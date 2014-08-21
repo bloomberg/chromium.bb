@@ -10,6 +10,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "chrome/browser/extensions/api/push_messaging/push_messaging_invalidation_handler_delegate.h"
+#include "components/crx_file/id_util.h"
 #include "components/invalidation/invalidation_service.h"
 #include "components/invalidation/object_id_invalidation_map.h"
 #include "extensions/common/extension.h"
@@ -60,7 +61,7 @@ bool ObjectIdToExtensionAndSubchannel(const invalidation::ObjectId& object_id,
     DLOG(WARNING) << "Invalid format type from object name " << name;
     return false;
   }
-  if (!Extension::IdIsValid(components[1])) {
+  if (!crx_file::id_util::IdIsValid(components[1])) {
     DLOG(WARNING) << "Invalid extension ID from object name " << name;
     return false;
   }
@@ -103,7 +104,7 @@ void PushMessagingInvalidationHandler::SuppressInitialInvalidationsForExtension(
 void PushMessagingInvalidationHandler::RegisterExtension(
     const std::string& extension_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(Extension::IdIsValid(extension_id));
+  DCHECK(crx_file::id_util::IdIsValid(extension_id));
   registered_extensions_.insert(extension_id);
   UpdateRegistrations();
 }
@@ -111,7 +112,7 @@ void PushMessagingInvalidationHandler::RegisterExtension(
 void PushMessagingInvalidationHandler::UnregisterExtension(
     const std::string& extension_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(Extension::IdIsValid(extension_id));
+  DCHECK(crx_file::id_util::IdIsValid(extension_id));
   registered_extensions_.erase(extension_id);
   UpdateRegistrations();
 }

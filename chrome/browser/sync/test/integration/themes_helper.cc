@@ -14,11 +14,10 @@
 #include "chrome/browser/sync/test/integration/sync_extension_helper.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
+#include "components/crx_file/id_util.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
-#include "extensions/common/extension.h"
-#include "extensions/common/id_util.h"
 #include "extensions/common/manifest.h"
 
 using sync_datatype_helper::test;
@@ -39,7 +38,7 @@ ThemeService* GetThemeService(Profile* profile) {
 namespace themes_helper {
 
 std::string GetCustomTheme(int index) {
-  return extensions::id_util::GenerateId(MakeName(index));
+  return crx_file::id_util::GenerateId(MakeName(index));
 }
 
 std::string GetThemeID(Profile* profile) {

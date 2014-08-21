@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/crx_file/id_util.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
@@ -19,7 +20,6 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/feature_switch.h"
-#include "extensions/common/id_util.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/user_script.h"
 #include "extensions/common/value_builder.h"
@@ -95,7 +95,7 @@ ActiveScriptControllerUnitTest::~ActiveScriptControllerUnitTest() {
 }
 
 const Extension* ActiveScriptControllerUnitTest::AddExtension() {
-  const std::string kId = id_util::GenerateId("all_hosts_extension");
+  const std::string kId = crx_file::id_util::GenerateId("all_hosts_extension");
   extension_ = ExtensionBuilder()
                    .SetManifest(
                        DictionaryBuilder()

@@ -202,9 +202,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // The mimetype used for extensions.
   static const char kMimeType[];
 
-  // Checks to see if the extension has a valid ID.
-  static bool IdIsValid(const std::string& id);
-
   // See Type definition in Manifest.
   Manifest::Type GetType() const;
 

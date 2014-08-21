@@ -73,6 +73,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/scoped_browser_locale.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/crx_file/id_util.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "content/public/browser/dom_storage_context.h"
 #include "content/public/browser/gpu_data_manager.h"
@@ -4576,7 +4577,7 @@ TEST_F(ExtensionServiceTest, GenerateID) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0u, GetErrors().size());
   ASSERT_EQ(1u, loaded_.size());
-  ASSERT_TRUE(Extension::IdIsValid(loaded_[0]->id()));
+  ASSERT_TRUE(crx_file::id_util::IdIsValid(loaded_[0]->id()));
   EXPECT_EQ(loaded_[0]->location(), Manifest::UNPACKED);
 
   ValidatePrefKeyCount(1);

@@ -17,12 +17,12 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "components/crx_file/id_util.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/plugin_service.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/file_util.h"
-#include "extensions/common/id_util.h"
 #include "extensions/common/manifest_constants.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
@@ -66,7 +66,7 @@ std::string GenerateId(const base::DictionaryValue* manifest,
   std::string id_input;
   CHECK(manifest->GetString(manifest_keys::kPublicKey, &raw_key));
   CHECK(Extension::ParsePEMKeyBytes(raw_key, &id_input));
-  std::string id = id_util::GenerateId(id_input);
+  std::string id = crx_file::id_util::GenerateId(id_input);
   return id;
 }
 

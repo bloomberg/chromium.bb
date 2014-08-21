@@ -8,6 +8,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
+#include "components/crx_file/id_util.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -85,7 +86,7 @@ TEST_F(InitValueManifestTest, InitFromValueValid) {
   PathService::Get(chrome::DIR_TEST_DATA, &path);
   path = path.AppendASCII("extensions");
 
-  EXPECT_TRUE(Extension::IdIsValid(extension->id()));
+  EXPECT_TRUE(crx_file::id_util::IdIsValid(extension->id()));
   EXPECT_EQ("1.0.0.0", extension->VersionString());
   EXPECT_EQ("my extension", extension->name());
   EXPECT_EQ(extension->name(), extension->short_name());

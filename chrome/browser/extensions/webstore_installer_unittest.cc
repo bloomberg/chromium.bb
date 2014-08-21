@@ -7,8 +7,8 @@
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/webstore_installer.h"
 #include "chrome/browser/omaha_query_params/chrome_omaha_query_params_delegate.h"
+#include "components/crx_file/id_util.h"
 #include "components/omaha_query_params/omaha_query_params.h"
-#include "extensions/common/id_util.h"
 #include "net/base/escape.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -23,7 +23,7 @@ bool Contains(const std::string& source, const std::string& target) {
 }
 
 TEST(WebstoreInstallerTest, PlatformParams) {
-  std::string id = extensions::id_util::GenerateId("some random string");
+  std::string id = crx_file::id_util::GenerateId("some random string");
   std::string source = "inline";
   GURL url = WebstoreInstaller::GetWebstoreInstallURL(id,
       WebstoreInstaller::INSTALL_SOURCE_INLINE);

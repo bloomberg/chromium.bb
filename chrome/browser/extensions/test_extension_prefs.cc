@@ -19,6 +19,7 @@
 #include "chrome/browser/prefs/pref_service_mock_factory.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/common/chrome_constants.h"
+#include "components/crx_file/id_util.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_pref_store.h"
@@ -161,7 +162,7 @@ scoped_refptr<Extension> TestExtensionPrefs::AddExtensionWithManifestAndFlags(
   if (!extension.get())
     return NULL;
 
-  EXPECT_TRUE(Extension::IdIsValid(extension->id()));
+  EXPECT_TRUE(crx_file::id_util::IdIsValid(extension->id()));
   prefs_->OnExtensionInstalled(extension.get(),
                                Extension::ENABLED,
                                syncer::StringOrdinal::CreateInitialOrdinal(),

@@ -26,6 +26,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "components/crx_file/id_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/external_provider_interface.h"
@@ -114,7 +115,7 @@ void ExternalProviderImpl::SetPrefs(base::DictionaryValue* prefs) {
     const std::string& extension_id = i.key();
     const base::DictionaryValue* extension = NULL;
 
-    if (!Extension::IdIsValid(extension_id)) {
+    if (!crx_file::id_util::IdIsValid(extension_id)) {
       LOG(WARNING) << "Malformed extension dictionary: key "
                    << extension_id.c_str() << " is not a valid id.";
       continue;

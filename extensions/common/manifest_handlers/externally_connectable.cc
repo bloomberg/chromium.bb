@@ -8,6 +8,7 @@
 
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/crx_file/id_util.h"
 #include "extensions/common/api/extensions_manifest_types.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/manifest_constants.h"
@@ -172,7 +173,7 @@ scoped_ptr<ExternallyConnectableInfo> ExternallyConnectableInfo::FromValue(
          ++it) {
       if (*it == kAllIds) {
         all_ids = true;
-      } else if (Extension::IdIsValid(*it)) {
+      } else if (crx_file::id_util::IdIsValid(*it)) {
         ids.push_back(*it);
       } else {
         *error =

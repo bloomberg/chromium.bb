@@ -13,5 +13,6 @@ include_rules = [
   "+chrome/common/chrome_paths.h",
   "+chrome/common/extensions/extension_constants.h",
   "+chrome/common/mac/app_mode_common.h",
+  "+components/crx_file",
   "+grit/generated_resources.h",
 ]

@@ -20,10 +20,10 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "base/version.h"
+#include "components/crx_file/id_util.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/error_utils.h"
-#include "extensions/common/id_util.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handler.h"
@@ -131,22 +131,6 @@ scoped_refptr<Extension> Extension::Create(const base::FilePath& path,
   }
 
   return extension;
-}
-
-// static
-bool Extension::IdIsValid(const std::string& id) {
-  // Verify that the id is legal.
-  if (id.size() != (id_util::kIdSize * 2))
-    return false;
-
-  // We only support lowercase IDs, because IDs can be used as URL components
-  // (where GURL will lowercase it).
-  std::string temp = base::StringToLowerASCII(id);
-  for (size_t i = 0; i < temp.size(); i++)
-    if (temp[i] < 'a' || temp[i] > 'p')
-      return false;
-
-  return true;
 }
 
 Manifest::Type Extension::GetType() const {
@@ -470,7 +454,7 @@ bool Extension::InitExtensionID(extensions::Manifest* manifest,
       *error = base::ASCIIToUTF16(errors::kInvalidKey);
       return false;
     }
-    std::string extension_id = id_util::GenerateId(public_key_bytes);
+    std::string extension_id = crx_file::id_util::GenerateId(public_key_bytes);
     manifest->set_extension_id(extension_id);
     return true;
   }
@@ -482,7 +466,7 @@ bool Extension::InitExtensionID(extensions::Manifest* manifest,
     // If there is a path, we generate the ID from it. This is useful for
     // development mode, because it keeps the ID stable across restarts and
     // reloading the extension.
-    std::string extension_id = id_util::GenerateIdForPath(path);
+    std::string extension_id = crx_file::id_util::GenerateIdForPath(path);
     if (extension_id.empty()) {
       NOTREACHED() << "Could not create ID from path.";
       return false;
@@ -503,7 +487,7 @@ Extension::Extension(const base::FilePath& path,
       wants_file_access_(false),
       creation_flags_(0) {
   DCHECK(path.empty() || path.IsAbsolute());
-  path_ = id_util::MaybeNormalizePath(path);
+  path_ = crx_file::id_util::MaybeNormalizePath(path);
 }
 
 Extension::~Extension() {

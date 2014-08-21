@@ -8,8 +8,8 @@
 #include "base/logging.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/installer/util/master_preferences_constants.h"
+#include "components/crx_file/id_util.h"
 #include "components/search_engines/search_engines_pref_names.h"
-#include "extensions/common/extension.h"
 
 BrandcodedDefaultSettings::BrandcodedDefaultSettings() {
 }
@@ -71,7 +71,7 @@ bool BrandcodedDefaultSettings::GetExtensions(
           &extensions)) {
     for (base::DictionaryValue::Iterator extension_id(*extensions);
          !extension_id.IsAtEnd(); extension_id.Advance()) {
-      if (extensions::Extension::IdIsValid(extension_id.key()))
+      if (crx_file::id_util::IdIsValid(extension_id.key()))
         extension_ids->push_back(extension_id.key());
     }
     return true;

@@ -13,11 +13,11 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/crx_file/id_util.h"
 #include "extensions/browser/api_test_utils.h"
 #include "extensions/browser/extension_function.h"
 #include "extensions/browser/extension_function_dispatcher.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/id_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::WebContents;
@@ -136,7 +136,7 @@ scoped_refptr<Extension> CreateExtension(
   const base::FilePath test_extension_path;
   std::string id;
   if (!id_input.empty())
-    id = extensions::id_util::GenerateId(id_input);
+    id = crx_file::id_util::GenerateId(id_input);
   scoped_refptr<Extension> extension(Extension::Create(
       test_extension_path,
       location,

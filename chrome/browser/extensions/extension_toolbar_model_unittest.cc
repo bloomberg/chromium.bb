@@ -11,13 +11,13 @@
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
+#include "components/crx_file/id_util.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/feature_switch.h"
-#include "extensions/common/id_util.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/value_builder.h"
 
@@ -39,7 +39,7 @@ scoped_refptr<const Extension> GetActionExtension(const std::string& name,
     manifest.Set(action_key, DictionaryBuilder().Pass());
 
   return ExtensionBuilder().SetManifest(manifest.Pass())
-                           .SetID(id_util::GenerateId(name))
+                           .SetID(crx_file::id_util::GenerateId(name))
                            .Build();
 }
 

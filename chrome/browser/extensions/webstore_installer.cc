@@ -35,6 +35,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "components/crx_file/id_util.h"
 #include "components/omaha_query_params/omaha_query_params.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_manager.h"
@@ -300,7 +301,7 @@ void WebstoreInstaller::Start() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   AddRef();  // Balanced in ReportSuccess and ReportFailure.
 
-  if (!Extension::IdIsValid(id_)) {
+  if (!crx_file::id_util::IdIsValid(id_)) {
     ReportFailure(kInvalidIdError, FAILURE_REASON_OTHER);
     return;
   }

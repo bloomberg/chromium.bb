@@ -27,6 +27,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
+#include "components/crx_file/id_util.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/user_manager/user_manager.h"
@@ -76,7 +77,7 @@ StartupAppLauncher::StartupAppLauncher(Profile* profile,
       ready_to_launch_(false),
       wait_for_crx_update_(false) {
   DCHECK(profile_);
-  DCHECK(Extension::IdIsValid(app_id_));
+  DCHECK(crx_file::id_util::IdIsValid(app_id_));
   KioskAppManager::Get()->AddObserver(this);
 }
 

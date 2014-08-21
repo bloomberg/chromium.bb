@@ -19,10 +19,10 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/settings/cros_settings_names.h"
+#include "components/crx_file/id_util.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
-#include "extensions/common/extension.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -57,7 +57,7 @@ void PopulateAppDict(const KioskAppManager::App& app_data,
 // Returns false if an app id could not be derived out of the input.
 bool ExtractsAppIdFromInput(const std::string& input,
                             std::string* app_id) {
-  if (extensions::Extension::IdIsValid(input)) {
+  if (crx_file::id_util::IdIsValid(input)) {
     *app_id = input;
     return true;
   }
@@ -82,7 +82,7 @@ bool ExtractsAppIdFromInput(const std::string& input,
     return false;
 
   const std::string candidate_id = path.substr(last_slash + 1);
-  if (!extensions::Extension::IdIsValid(candidate_id))
+  if (!crx_file::id_util::IdIsValid(candidate_id))
     return false;
 
   *app_id = candidate_id;

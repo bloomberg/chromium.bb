@@ -27,7 +27,8 @@ class ExternalProviderInterface {
   // caller what extensions are registered, and which |id|, |version| and |path|
   // they have. See also VisitRegisteredExtension below. Ownership of |version|
   // is not transferred to the visitor.  Callers of the methods below must
-  // ensure that |id| is a valid extension id (use Extension::IdIsValid(id)).
+  // ensure that |id| is a valid extension id (use
+  // crx_file::id_util::IdIsValid(id)).
   class VisitorInterface {
    public:
     // Return true if the extension install will proceed.  Install will not

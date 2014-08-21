@@ -17,6 +17,7 @@
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/features/feature_channel.h"
 #include "chrome/common/pref_names.h"
+#include "components/crx_file/id_util.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
@@ -77,7 +78,7 @@ void ErrorConsole::SetReportingForExtension(const std::string& extension_id,
                                             ExtensionError::Type type,
                                             bool enabled) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (!enabled_ || !Extension::IdIsValid(extension_id))
+  if (!enabled_ || !crx_file::id_util::IdIsValid(extension_id))
     return;
 
   int mask = default_mask_;
@@ -98,7 +99,7 @@ void ErrorConsole::SetReportingForExtension(const std::string& extension_id,
 void ErrorConsole::SetReportingAllForExtension(
     const std::string& extension_id, bool enabled) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (!enabled_ || !Extension::IdIsValid(extension_id))
+  if (!enabled_ || !crx_file::id_util::IdIsValid(extension_id))
     return;
 
   int mask = 0;
@@ -113,7 +114,7 @@ void ErrorConsole::SetReportingAllForExtension(
 bool ErrorConsole::IsReportingEnabledForExtension(
     const std::string& extension_id) const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (!enabled_ || !Extension::IdIsValid(extension_id))
+  if (!enabled_ || !crx_file::id_util::IdIsValid(extension_id))
     return false;
 
   return GetMaskForExtension(extension_id) != 0;
@@ -122,7 +123,7 @@ bool ErrorConsole::IsReportingEnabledForExtension(
 void ErrorConsole::UseDefaultReportingForExtension(
     const std::string& extension_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (!enabled_ || !Extension::IdIsValid(extension_id))
+  if (!enabled_ || !crx_file::id_util::IdIsValid(extension_id))
     return;
 
   prefs_->UpdateExtensionPref(extension_id, kStoreExtensionErrorsPref, NULL);
@@ -130,7 +131,7 @@ void ErrorConsole::UseDefaultReportingForExtension(
 
 void ErrorConsole::ReportError(scoped_ptr<ExtensionError> error) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (!enabled_ || !Extension::IdIsValid(error->extension_id()))
+  if (!enabled_ || !crx_file::id_util::IdIsValid(error->extension_id()))
     return;
 
   int mask = GetMaskForExtension(error->extension_id());

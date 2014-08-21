@@ -76,6 +76,7 @@
             'captive_portal/captive_portal_detector_unittest.cc',
             'cloud_devices/common/cloud_devices_urls_unittest.cc',
             'cloud_devices/common/printer_description_unittest.cc',
+            'crx_file/id_util_unittest.cc',
             'data_reduction_proxy/browser/data_reduction_proxy_auth_request_handler_unittest.cc',
             'data_reduction_proxy/browser/data_reduction_proxy_config_service_unittest.cc',
             'data_reduction_proxy/browser/data_reduction_proxy_metrics_unittest.cc',
@@ -276,6 +277,9 @@
 
             # Dependencies of cloud_devices
             'components.gyp:cloud_devices_common',
+
+            # Dependencies of crx_file
+            'components.gyp:crx_file',
 
             # Dependencies of data_reduction_proxy
             'components.gyp:data_reduction_proxy_browser',

@@ -20,6 +20,7 @@
 #include "chrome/browser/extensions/install_tracker.h"
 #include "chrome/browser/extensions/pending_extension_manager.h"
 #include "chrome/common/extensions/manifest_handlers/app_isolation_info.h"
+#include "components/crx_file/id_util.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
@@ -57,7 +58,7 @@ void CheckExtensionDirectory(const base::FilePath& path,
   std::string extension_id;
   if (base::IsStringASCII(basename.value())) {
     extension_id = base::UTF16ToASCII(basename.LossyDisplayName());
-    if (!Extension::IdIsValid(extension_id))
+    if (!crx_file::id_util::IdIsValid(extension_id))
       extension_id.clear();
   }
 

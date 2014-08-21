@@ -11,11 +11,11 @@
 #include "chrome/browser/extensions/pending_extension_manager.h"
 #include "chrome/browser/extensions/shared_module_service.h"
 #include "chrome/common/extensions/features/feature_channel.h"
+#include "components/crx_file/id_util.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/install_flag.h"
 #include "extensions/browser/uninstall_reason.h"
 #include "extensions/common/extension_builder.h"
-#include "extensions/common/id_util.h"
 #include "extensions/common/value_builder.h"
 #include "sync/api/string_ordinal.h"
 
@@ -101,8 +101,8 @@ testing::AssertionResult SharedModuleServiceUnitTest::InstallExtension(
 
 TEST_F(SharedModuleServiceUnitTest, AddDependentSharedModules) {
   // Create an extension that has a dependency.
-  std::string import_id = id_util::GenerateId("id");
-  std::string extension_id = id_util::GenerateId("extension_id");
+  std::string import_id = crx_file::id_util::GenerateId("id");
+  std::string extension_id = crx_file::id_util::GenerateId("extension_id");
   scoped_refptr<Extension> extension =
       CreateExtensionImportingModule(import_id, extension_id, "1.0");
 
@@ -129,14 +129,15 @@ TEST_F(SharedModuleServiceUnitTest, PruneSharedModulesOnUninstall) {
                DictionaryBuilder().Set("resources",
                                        ListBuilder().Append("foo.js"))).Build();
   scoped_refptr<Extension> shared_module =
-      ExtensionBuilder().SetManifest(manifest.Pass())
-                        .AddFlags(Extension::FROM_WEBSTORE)
-                        .SetID(id_util::GenerateId("shared_module"))
-                        .Build();
+      ExtensionBuilder()
+          .SetManifest(manifest.Pass())
+          .AddFlags(Extension::FROM_WEBSTORE)
+          .SetID(crx_file::id_util::GenerateId("shared_module"))
+          .Build();
 
   EXPECT_TRUE(InstallExtension(shared_module, false));
 
-  std::string extension_id = id_util::GenerateId("extension_id");
+  std::string extension_id = crx_file::id_util::GenerateId("extension_id");
   // Create and install an extension that imports our new module.
   scoped_refptr<Extension> importing_extension =
       CreateExtensionImportingModule(shared_module->id(), extension_id, "1.0");
@@ -168,10 +169,11 @@ TEST_F(SharedModuleServiceUnitTest, PruneSharedModulesOnUpdate) {
                DictionaryBuilder().Set("resources",
                                        ListBuilder().Append("foo.js"))).Build();
   scoped_refptr<Extension> shared_module_1 =
-      ExtensionBuilder().SetManifest(manifest_1.Pass())
-                        .AddFlags(Extension::FROM_WEBSTORE)
-                        .SetID(id_util::GenerateId("shared_module_1"))
-                        .Build();
+      ExtensionBuilder()
+          .SetManifest(manifest_1.Pass())
+          .AddFlags(Extension::FROM_WEBSTORE)
+          .SetID(crx_file::id_util::GenerateId("shared_module_1"))
+          .Build();
   EXPECT_TRUE(InstallExtension(shared_module_1, false));
 
   scoped_ptr<base::DictionaryValue> manifest_2 =
@@ -183,13 +185,14 @@ TEST_F(SharedModuleServiceUnitTest, PruneSharedModulesOnUpdate) {
                DictionaryBuilder().Set("resources",
                                        ListBuilder().Append("foo.js"))).Build();
   scoped_refptr<Extension> shared_module_2 =
-      ExtensionBuilder().SetManifest(manifest_2.Pass())
-                        .AddFlags(Extension::FROM_WEBSTORE)
-                        .SetID(id_util::GenerateId("shared_module_2"))
-                        .Build();
+      ExtensionBuilder()
+          .SetManifest(manifest_2.Pass())
+          .AddFlags(Extension::FROM_WEBSTORE)
+          .SetID(crx_file::id_util::GenerateId("shared_module_2"))
+          .Build();
   EXPECT_TRUE(InstallExtension(shared_module_2, false));
 
-  std::string extension_id = id_util::GenerateId("extension_id");
+  std::string extension_id = crx_file::id_util::GenerateId("extension_id");
 
   // Create and install an extension v1.0 that imports our new module 1.
   scoped_refptr<Extension> importing_extension_1 =
@@ -229,8 +232,9 @@ TEST_F(SharedModuleServiceUnitTest, PruneSharedModulesOnUpdate) {
 }
 
 TEST_F(SharedModuleServiceUnitTest, WhitelistedImports) {
-  std::string whitelisted_id = id_util::GenerateId("whitelisted");
-  std::string nonwhitelisted_id = id_util::GenerateId("nonwhitelisted");
+  std::string whitelisted_id = crx_file::id_util::GenerateId("whitelisted");
+  std::string nonwhitelisted_id =
+      crx_file::id_util::GenerateId("nonwhitelisted");
   // Create a module which exports to a restricted whitelist.
   scoped_ptr<base::DictionaryValue> manifest =
       DictionaryBuilder()
@@ -244,10 +248,11 @@ TEST_F(SharedModuleServiceUnitTest, WhitelistedImports) {
                                   .Set("resources",
                                        ListBuilder().Append("*"))).Build();
   scoped_refptr<Extension> shared_module =
-      ExtensionBuilder().SetManifest(manifest.Pass())
-                        .AddFlags(Extension::FROM_WEBSTORE)
-                        .SetID(id_util::GenerateId("shared_module"))
-                        .Build();
+      ExtensionBuilder()
+          .SetManifest(manifest.Pass())
+          .AddFlags(Extension::FROM_WEBSTORE)
+          .SetID(crx_file::id_util::GenerateId("shared_module"))
+          .Build();
 
   EXPECT_TRUE(InstallExtension(shared_module, false));
 

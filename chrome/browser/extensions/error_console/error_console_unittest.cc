@@ -12,13 +12,13 @@
 #include "chrome/common/extensions/features/feature_channel.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/crx_file/id_util.h"
 #include "extensions/browser/extension_error.h"
 #include "extensions/browser/extension_error_test_util.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/feature_switch.h"
-#include "extensions/common/id_util.h"
 #include "extensions/common/value_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -128,7 +128,7 @@ TEST_F(ErrorConsoleUnitTest, EnableAndDisableErrorConsole) {
 // is tested more thoroughly in extensions/browser/error_map_unittest.cc
 TEST_F(ErrorConsoleUnitTest, ReportErrors) {
   const size_t kNumTotalErrors = 6;
-  const std::string kId = id_util::GenerateId("id");
+  const std::string kId = crx_file::id_util::GenerateId("id");
   error_console_->set_default_reporting_for_test(ExtensionError::MANIFEST_ERROR,
                                                  true);
   ASSERT_EQ(0u, error_console_->GetErrorsForExtension(kId).size());
@@ -149,7 +149,7 @@ TEST_F(ErrorConsoleUnitTest, DontStoreErrorsWithoutEnablingType) {
   error_console_->set_default_reporting_for_test(ExtensionError::MANIFEST_ERROR,
                                                  true);
 
-  const std::string kId = id_util::GenerateId("id");
+  const std::string kId = crx_file::id_util::GenerateId("id");
 
   // Try to report a runtime error - it should be ignored.
   error_console_->ReportError(CreateNewRuntimeError(kId, "a"));
@@ -176,7 +176,7 @@ TEST_F(ErrorConsoleUnitTest, DontStoreErrorsWithoutEnablingType) {
 
   // All other extensions should still use the default mask, and ignore runtime
   // errors but report manifest errors.
-  const std::string kId2 = id_util::GenerateId("id2");
+  const std::string kId2 = crx_file::id_util::GenerateId("id2");
   error_console_->ReportError(CreateNewRuntimeError(kId2, "f"));
   ASSERT_EQ(0u, error_console_->GetErrorsForExtension(kId2).size());
   error_console_->ReportError(CreateNewManifestError(kId2, "g"));
@@ -197,21 +197,23 @@ TEST_F(ErrorConsoleUnitTest, TestDefaultStoringPrefs) {
   // For this, we need actual extensions.
   scoped_refptr<const Extension> unpacked_extension =
       ExtensionBuilder()
-          .SetManifest(DictionaryBuilder().Set("name", "unpacked")
-                                          .Set("version", "0.0.1")
-                                          .Set("manifest_version", 2)
-                                          .Build())
+          .SetManifest(DictionaryBuilder()
+                           .Set("name", "unpacked")
+                           .Set("version", "0.0.1")
+                           .Set("manifest_version", 2)
+                           .Build())
           .SetLocation(Manifest::UNPACKED)
-          .SetID(id_util::GenerateId("unpacked"))
+          .SetID(crx_file::id_util::GenerateId("unpacked"))
           .Build();
   scoped_refptr<const Extension> packed_extension =
       ExtensionBuilder()
-          .SetManifest(DictionaryBuilder().Set("name", "packed")
-                                          .Set("version", "0.0.1")
-                                          .Set("manifest_version", 2)
-                                          .Build())
+          .SetManifest(DictionaryBuilder()
+                           .Set("name", "packed")
+                           .Set("version", "0.0.1")
+                           .Set("manifest_version", 2)
+                           .Build())
           .SetLocation(Manifest::INTERNAL)
-          .SetID(id_util::GenerateId("packed"))
+          .SetID(crx_file::id_util::GenerateId("packed"))
           .Build();
 
   ExtensionRegistry* registry = ExtensionRegistry::Get(profile_.get());

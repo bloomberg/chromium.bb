@@ -8,6 +8,7 @@
 
 #include "chrome/browser/extensions/./extension_prefs_unittest.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "components/crx_file/id_util.h"
 #include "extensions/common/manifest_constants.h"
 #include "sync/api/string_ordinal.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -813,7 +814,7 @@ class ChromeAppSortingDefaultOrdinalsBase : public ChromeAppSortingTest {
         prefs_.temp_dir().AppendASCII(name), Manifest::EXTERNAL_PREF,
         simple_dict, Extension::NO_FLAGS, &errors);
     EXPECT_TRUE(app.get()) << errors;
-    EXPECT_TRUE(Extension::IdIsValid(app->id()));
+    EXPECT_TRUE(crx_file::id_util::IdIsValid(app->id()));
     return app;
   }
 

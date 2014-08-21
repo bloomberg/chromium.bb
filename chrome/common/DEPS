@@ -8,6 +8,7 @@ include_rules = [
   "+components/bookmarks/common",
   "+components/cloud_devices/common",
   "+components/content_settings/core/common",
+  "+components/crx_file",
   "+components/data_reduction_proxy/common",
   "+components/dom_distiller/core",
   "+components/metrics/client_info.h",

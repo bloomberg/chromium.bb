@@ -10,7 +10,6 @@
 #include "extensions/browser/api/api_resource_manager.h"
 #include "extensions/browser/extensions_test.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/id_util.h"
 #include "extensions/common/test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"

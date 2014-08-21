@@ -7,10 +7,10 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
+#include "components/crx_file/id_util.h"
 #include "extensions/browser/extension_error.h"
 #include "extensions/browser/extension_error_test_util.h"
 #include "extensions/common/constants.h"
-#include "extensions/common/id_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
@@ -37,7 +37,7 @@ TEST_F(ErrorMapUnitTest, AddAndRemoveErrors) {
 
   const size_t kNumTotalErrors = 6;
   const size_t kNumNonIncognitoErrors = 3;
-  const std::string kId = id_util::GenerateId("id");
+  const std::string kId = crx_file::id_util::GenerateId("id");
   // Populate with both incognito and non-incognito errors (evenly distributed).
   for (size_t i = 0; i < kNumTotalErrors; ++i) {
     ASSERT_TRUE(errors_.AddError(
@@ -59,7 +59,7 @@ TEST_F(ErrorMapUnitTest, AddAndRemoveErrors) {
     ASSERT_FALSE(list[i]->from_incognito());
 
   // Add another error for a different extension id.
-  const std::string kSecondId = id_util::GenerateId("id2");
+  const std::string kSecondId = crx_file::id_util::GenerateId("id2");
   ASSERT_TRUE(errors_.AddError(CreateNewRuntimeError(kSecondId, "foo")));
 
   // There should be two entries now, one for each id, and there should be one
@@ -89,7 +89,7 @@ TEST_F(ErrorMapUnitTest, ExcessiveErrorsGetCropped) {
   // This constant matches one of the same name in error_console.cc.
   const size_t kMaxErrorsPerExtension = 100;
   const size_t kNumExtraErrors = 5;
-  const std::string kId = id_util::GenerateId("id");
+  const std::string kId = crx_file::id_util::GenerateId("id");
 
   // Add new errors, with each error's message set to its number.
   for (size_t i = 0; i < kMaxErrorsPerExtension + kNumExtraErrors; ++i) {
@@ -116,7 +116,7 @@ TEST_F(ErrorMapUnitTest, ExcessiveErrorsGetCropped) {
 TEST_F(ErrorMapUnitTest, DuplicateErrorsAreReplaced) {
   ASSERT_EQ(0u, errors_.size());
 
-  const std::string kId = id_util::GenerateId("id");
+  const std::string kId = crx_file::id_util::GenerateId("id");
   const size_t kNumErrors = 3u;
 
   // Report three errors.

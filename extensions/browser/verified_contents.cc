@@ -9,6 +9,7 @@
 #include "base/json/json_reader.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
+#include "components/crx_file/id_util.h"
 #include "crypto/signature_verifier.h"
 #include "extensions/common/extension.h"
 
@@ -131,7 +132,7 @@ bool VerifiedContents::InitFrom(const base::FilePath& path,
 
   std::string item_id;
   if (!dictionary->GetString(kItemIdKey, &item_id) ||
-      !Extension::IdIsValid(item_id))
+      !crx_file::id_util::IdIsValid(item_id))
     return false;
   extension_id_ = item_id;
 

@@ -36,6 +36,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
+#include "components/crx_file/id_util.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "content/public/browser/gpu_data_manager.h"
@@ -237,7 +238,7 @@ bool WebstorePrivateBeginInstallWithManifest3Function::RunAsync() {
   params_ = BeginInstallWithManifest3::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_);
 
-  if (!extensions::Extension::IdIsValid(params_->details.id)) {
+  if (!crx_file::id_util::IdIsValid(params_->details.id)) {
     SetResultCode(INVALID_ID);
     error_ = kInvalidIdError;
     return false;
@@ -508,7 +509,7 @@ bool WebstorePrivateCompleteInstallFunction::RunAsync() {
   scoped_ptr<CompleteInstall::Params> params(
       CompleteInstall::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
-  if (!extensions::Extension::IdIsValid(params->expected_id)) {
+  if (!crx_file::id_util::IdIsValid(params->expected_id)) {
     error_ = kInvalidIdError;
     return false;
   }

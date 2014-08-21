@@ -1,8 +1,8 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "extensions/common/id_util.h"
+#include "components/crx_file/id_util.h"
 
 #include "base/files/file_path.h"
 #include "base/strings/string_number_conversions.h"
@@ -18,9 +18,8 @@ namespace {
 static void ConvertHexadecimalToIDAlphabet(std::string* id) {
   for (size_t i = 0; i < id->size(); ++i) {
     int val;
-    if (base::HexStringToInt(base::StringPiece(id->begin() + i,
-                                               id->begin() + i + 1),
-                             &val)) {
+    if (base::HexStringToInt(
+            base::StringPiece(id->begin() + i, id->begin() + i + 1), &val)) {
       (*id)[i] = val + 'a';
     } else {
       (*id)[i] = 'a';
@@ -30,7 +29,7 @@ static void ConvertHexadecimalToIDAlphabet(std::string* id) {
 
 }  // namespace
 
-namespace extensions {
+namespace crx_file {
 namespace id_util {
 
 // First 16 bytes of SHA256 hashed public key.
@@ -70,5 +69,20 @@ base::FilePath MaybeNormalizePath(const base::FilePath& path) {
 #endif
 }
 
+bool IdIsValid(const std::string& id) {
+  // Verify that the id is legal.
+  if (id.size() != (crx_file::id_util::kIdSize * 2))
+    return false;
+
+  // We only support lowercase IDs, because IDs can be used as URL components
+  // (where GURL will lowercase it).
+  std::string temp = base::StringToLowerASCII(id);
+  for (size_t i = 0; i < temp.size(); i++)
+    if (temp[i] < 'a' || temp[i] > 'p')
+      return false;
+
+  return true;
+}
+
 }  // namespace id_util
-}  // namespace extensions
+}  // namespace crx_file

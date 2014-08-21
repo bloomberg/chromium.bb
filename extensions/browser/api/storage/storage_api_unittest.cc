@@ -18,7 +18,6 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/value_store/leveldb_value_store.h"
 #include "extensions/browser/value_store/value_store.h"
-#include "extensions/common/id_util.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/test_util.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"

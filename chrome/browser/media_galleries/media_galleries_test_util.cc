@@ -18,9 +18,9 @@
 #include "chrome/browser/media_galleries/fileapi/picasa_finder.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_paths.h"
+#include "components/crx_file/id_util.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
-#include "extensions/common/extension.h"
 #include "extensions/common/manifest_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -69,8 +69,8 @@ scoped_refptr<extensions::Extension> AddMediaGalleriesApp(
                                     *manifest.get(),
                                     extensions::Extension::NO_FLAGS, &errors);
   EXPECT_TRUE(extension.get() != NULL) << errors;
-  EXPECT_TRUE(extensions::Extension::IdIsValid(extension->id()));
-  if (!extension.get() || !extensions::Extension::IdIsValid(extension->id()))
+  EXPECT_TRUE(crx_file::id_util::IdIsValid(extension->id()));
+  if (!extension.get() || !crx_file::id_util::IdIsValid(extension->id()))
     return NULL;
 
   extension_prefs->OnExtensionInstalled(

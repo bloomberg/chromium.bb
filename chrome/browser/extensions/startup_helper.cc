@@ -19,6 +19,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/chrome_extensions_client.h"
+#include "components/crx_file/id_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/common/extension.h"
@@ -313,7 +314,7 @@ void DeleteHelperAndRunCallback(AppInstallHelper* helper,
 bool StartupHelper::InstallFromWebstore(const CommandLine& cmd_line,
                                         Profile* profile) {
   std::string id = cmd_line.GetSwitchValueASCII(switches::kInstallFromWebstore);
-  if (!Extension::IdIsValid(id)) {
+  if (!crx_file::id_util::IdIsValid(id)) {
     LOG(ERROR) << "Invalid id for " << switches::kInstallFromWebstore
                << " : '" << id << "'";
     return false;
@@ -334,7 +335,7 @@ void StartupHelper::LimitedInstallFromWebstore(
     Profile* profile,
     base::Callback<void()> done_callback) {
   std::string id = WebStoreIdFromLimitedInstallCmdLine(cmd_line);
-  if (!Extension::IdIsValid(id)) {
+  if (!crx_file::id_util::IdIsValid(id)) {
     LOG(ERROR) << "Invalid index for " << switches::kLimitedInstallFromWebstore;
     done_callback.Run();
     return;

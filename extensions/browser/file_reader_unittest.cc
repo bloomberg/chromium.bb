@@ -8,11 +8,11 @@
 #include "base/files/file_path.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
+#include "components/crx_file/id_util.h"
 #include "content/public/test/test_browser_thread.h"
 #include "extensions/browser/file_reader.h"
 #include "extensions/common/extension_paths.h"
 #include "extensions/common/extension_resource.h"
-#include "extensions/common/id_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
@@ -55,7 +55,7 @@ class Receiver {
 void RunBasicTest(const char* filename) {
   base::FilePath path;
   PathService::Get(DIR_TEST_DATA, &path);
-  std::string extension_id = id_util::GenerateId("test");
+  std::string extension_id = crx_file::id_util::GenerateId("test");
   ExtensionResource resource(
       extension_id, path, base::FilePath().AppendASCII(filename));
   path = path.AppendASCII(filename);
@@ -86,7 +86,7 @@ TEST_F(FileReaderTest, BiggerFile) {
 TEST_F(FileReaderTest, NonExistantFile) {
   base::FilePath path;
   PathService::Get(DIR_TEST_DATA, &path);
-  std::string extension_id = id_util::GenerateId("test");
+  std::string extension_id = crx_file::id_util::GenerateId("test");
   ExtensionResource resource(extension_id, path, base::FilePath(
       FILE_PATH_LITERAL("file_that_does_not_exist")));
   path = path.AppendASCII("file_that_does_not_exist");

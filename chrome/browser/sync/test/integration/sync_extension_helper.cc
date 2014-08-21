@@ -15,13 +15,13 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
+#include "components/crx_file/id_util.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/install_flag.h"
 #include "extensions/browser/uninstall_reason.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
-#include "extensions/common/id_util.h"
 #include "extensions/common/manifest_constants.h"
 #include "sync/api/string_ordinal.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -83,7 +83,7 @@ void SyncExtensionHelper::UninstallExtension(
     Profile* profile, const std::string& name) {
   ExtensionService::UninstallExtensionHelper(
       extensions::ExtensionSystem::Get(profile)->extension_service(),
-      extensions::id_util::GenerateId(name),
+      crx_file::id_util::GenerateId(name),
       extensions::UNINSTALL_REASON_SYNC);
 }
 
@@ -106,14 +106,14 @@ void SyncExtensionHelper::EnableExtension(Profile* profile,
                                           const std::string& name) {
   extensions::ExtensionSystem::Get(profile)
       ->extension_service()
-      ->EnableExtension(extensions::id_util::GenerateId(name));
+      ->EnableExtension(crx_file::id_util::GenerateId(name));
 }
 
 void SyncExtensionHelper::DisableExtension(Profile* profile,
                                            const std::string& name) {
   extensions::ExtensionSystem::Get(profile)
       ->extension_service()
-      ->DisableExtension(extensions::id_util::GenerateId(name),
+      ->DisableExtension(crx_file::id_util::GenerateId(name),
                          Extension::DISABLE_USER_ACTION);
 }
 
@@ -121,25 +121,25 @@ bool SyncExtensionHelper::IsExtensionEnabled(
     Profile* profile, const std::string& name) const {
   return extensions::ExtensionSystem::Get(profile)
       ->extension_service()
-      ->IsExtensionEnabled(extensions::id_util::GenerateId(name));
+      ->IsExtensionEnabled(crx_file::id_util::GenerateId(name));
 }
 
 void SyncExtensionHelper::IncognitoEnableExtension(
     Profile* profile, const std::string& name) {
   extensions::util::SetIsIncognitoEnabled(
-      extensions::id_util::GenerateId(name), profile, true);
+      crx_file::id_util::GenerateId(name), profile, true);
 }
 
 void SyncExtensionHelper::IncognitoDisableExtension(
     Profile* profile, const std::string& name) {
   extensions::util::SetIsIncognitoEnabled(
-      extensions::id_util::GenerateId(name), profile, false);
+      crx_file::id_util::GenerateId(name), profile, false);
 }
 
 bool SyncExtensionHelper::IsIncognitoEnabled(
     Profile* profile, const std::string& name) const {
   return extensions::util::IsIncognitoEnabled(
-      extensions::id_util::GenerateId(name), profile);
+      crx_file::id_util::GenerateId(name), profile);
 }
 
 
@@ -384,7 +384,7 @@ scoped_refptr<Extension> SyncExtensionHelper::GetExtension(
     ADD_FAILURE();
     return NULL;
   }
-  const std::string& expected_id = extensions::id_util::GenerateId(name);
+  const std::string& expected_id = crx_file::id_util::GenerateId(name);
   if (extension->id() != expected_id) {
     EXPECT_EQ(expected_id, extension->id());
     return NULL;

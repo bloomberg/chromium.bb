@@ -10,6 +10,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/extension_options_internal.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
+#include "components/crx_file/id_util.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
@@ -59,12 +60,12 @@ void ExtensionOptionsGuest::CreateWebContents(
   std::string extension_id;
   create_params.GetString(extensionoptions::kExtensionId, &extension_id);
 
-  if (!extensions::Extension::IdIsValid(extension_id)) {
+  if (!crx_file::id_util::IdIsValid(extension_id)) {
     callback.Run(NULL);
     return;
   }
 
-  if (extensions::Extension::IdIsValid(embedder_extension_id) &&
+  if (crx_file::id_util::IdIsValid(embedder_extension_id) &&
       extension_id != embedder_extension_id) {
     // Extensions cannot embed other extensions' options pages.
     callback.Run(NULL);

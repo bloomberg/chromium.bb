@@ -16,6 +16,7 @@
 #include "chrome/browser/extensions/permissions_updater.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/plugins/plugins_handler.h"
+#include "components/crx_file/id_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
@@ -23,7 +24,6 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_l10n_util.h"
 #include "extensions/common/file_util.h"
-#include "extensions/common/id_util.h"
 #include "extensions/common/manifest.h"
 #include "sync/api/string_ordinal.h"
 
@@ -210,7 +210,7 @@ void UnpackedInstaller::OnInstallChecksComplete(int failed_checks) {
 }
 
 int UnpackedInstaller::GetFlags() {
-  std::string id = id_util::GenerateIdForPath(extension_path_);
+  std::string id = crx_file::id_util::GenerateIdForPath(extension_path_);
   bool allow_file_access =
       Manifest::ShouldAlwaysAllowFileAccess(Manifest::UNPACKED);
   ExtensionPrefs* prefs = ExtensionPrefs::Get(service_weak_->profile());

@@ -9,9 +9,9 @@
 #include "chrome/browser/extensions/extension_icon_manager.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/crx_file/id_util.h"
 #include "content/public/test/test_browser_thread.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/id_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/skia_util.h"
 
@@ -93,7 +93,7 @@ class TestIconManager : public ExtensionIconManager {
 // Returns the default icon that ExtensionIconManager gives when an extension
 // doesn't have an icon.
 SkBitmap GetDefaultIcon() {
-  std::string dummy_id = extensions::id_util::GenerateId("whatever");
+  std::string dummy_id = crx_file::id_util::GenerateId("whatever");
   ExtensionIconManager manager;
   return manager.GetIcon(dummy_id);
 }

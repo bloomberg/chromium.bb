@@ -56,6 +56,7 @@
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "components/crx_file/id_util.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/startup_metric_utils/startup_metric_utils.h"
 #include "content/public/browser/devtools_agent_host.h"
@@ -189,7 +190,7 @@ bool ExtensionService::OnExternalExtensionUpdateUrlFound(
     int creation_flags,
     bool mark_acknowledged) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  CHECK(Extension::IdIsValid(id));
+  CHECK(crx_file::id_util::IdIsValid(id));
 
   if (Manifest::IsExternalLocation(location)) {
     // All extensions that are not user specific can be cached.
@@ -1952,7 +1953,7 @@ bool ExtensionService::OnExternalExtensionFileFound(
          int creation_flags,
          bool mark_acknowledged) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  CHECK(Extension::IdIsValid(id));
+  CHECK(crx_file::id_util::IdIsValid(id));
   if (extension_prefs_->IsExternalExtensionUninstalled(id))
     return false;
 

@@ -78,8 +78,6 @@ source_set("common") {
     "features/simple_feature_filter.h",
     "file_util.cc",
     "file_util.h",
-    "id_util.cc",
-    "id_util.h",
     "install_warning.cc",
     "install_warning.h",
     "manifest.cc",
@@ -184,6 +182,7 @@ source_set("common") {
     # api resources compiled into the chrome resource bundle.
     # http://crbug.com/162530
     "//chrome:resources",
+    "//components/crx_file",
     "//components/url_matcher",
     "//content/public/common",
     "//crypto",

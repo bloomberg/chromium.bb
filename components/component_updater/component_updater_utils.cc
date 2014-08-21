@@ -17,6 +17,7 @@
 #include "base/win/windows_version.h"
 #include "components/component_updater/component_updater_configurator.h"
 #include "components/component_updater/crx_update_item.h"
+#include "components/crx_file/id_util.h"
 #include "components/omaha_query_params/omaha_query_params.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_fetcher.h"
@@ -181,8 +182,7 @@ std::string HexStringToID(const std::string& hexstr) {
     }
   }
 
-  // TODO(tommycli): Add back the DCHECK validating the generated id. This
-  // requires moving the extension id_util functions into components/crx_file.
+  DCHECK(crx_file::id_util::IdIsValid(id));
 
   return id;
 }

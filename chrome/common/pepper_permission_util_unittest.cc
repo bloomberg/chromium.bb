@@ -8,9 +8,9 @@
 #include <string>
 
 #include "chrome/common/extensions/features/feature_channel.h"
+#include "components/crx_file/id_util.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/extension_set.h"
-#include "extensions/common/id_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using chrome::IsExtensionOrSharedModuleWhitelisted;
@@ -45,7 +45,8 @@ scoped_refptr<Extension> CreateExtensionImportingModule(
 TEST(PepperPermissionUtilTest, ExtensionWhitelisting) {
   ScopedCurrentChannel current_channel(chrome::VersionInfo::CHANNEL_UNKNOWN);
   ExtensionSet extensions;
-  std::string whitelisted_id = id_util::GenerateId("whitelisted_extension");
+  std::string whitelisted_id =
+      crx_file::id_util::GenerateId("whitelisted_extension");
   scoped_ptr<base::DictionaryValue> manifest =
       DictionaryBuilder()
           .Set("name", "Whitelisted Extension")
@@ -62,8 +63,8 @@ TEST(PepperPermissionUtilTest, ExtensionWhitelisting) {
                     std::string("/manifest.nmf");
   std::string bad_scheme_url =
       std::string("http://") + whitelisted_id + std::string("/manifest.nmf");
-  std::string bad_host_url =
-      std::string("chrome-extension://") + id_util::GenerateId("bad_host");
+  std::string bad_host_url = std::string("chrome-extension://") +
+                             crx_file::id_util::GenerateId("bad_host");
   std::string("/manifest.nmf");
 
   EXPECT_FALSE(
@@ -80,8 +81,8 @@ TEST(PepperPermissionUtilTest, ExtensionWhitelisting) {
 TEST(PepperPermissionUtilTest, SharedModuleWhitelisting) {
   ScopedCurrentChannel current_channel(chrome::VersionInfo::CHANNEL_UNKNOWN);
   ExtensionSet extensions;
-  std::string whitelisted_id = id_util::GenerateId("extension_id");
-  std::string bad_id = id_util::GenerateId("bad_id");
+  std::string whitelisted_id = crx_file::id_util::GenerateId("extension_id");
+  std::string bad_id = crx_file::id_util::GenerateId("bad_id");
 
   scoped_ptr<base::DictionaryValue> shared_module_manifest =
       DictionaryBuilder()

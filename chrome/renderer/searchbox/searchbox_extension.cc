@@ -15,8 +15,8 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/renderer_resources.h"
 #include "chrome/renderer/searchbox/searchbox.h"
+#include "components/crx_file/id_util.h"
 #include "content/public/renderer/render_view.h"
-#include "extensions/common/extension.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
@@ -849,7 +849,7 @@ void SearchBoxExtensionWrapper::GetThemeBackgroundInfo(
   // theme.
   // This is the CSS "background-image" format.
   // Value is only valid if there's a custom theme background image.
-  if (extensions::Extension::IdIsValid(theme_info.theme_id)) {
+  if (crx_file::id_util::IdIsValid(theme_info.theme_id)) {
     info->Set(v8::String::NewFromUtf8(isolate, "imageUrl"),
               UTF8ToV8String(isolate,
                              base::StringPrintf(kCSSBackgroundImageFormat,
