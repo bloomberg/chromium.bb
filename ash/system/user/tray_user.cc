@@ -93,8 +93,11 @@ views::View* TrayUser::CreateDefaultView(user::LoginStatus status) {
   const SessionStateDelegate* session_state_delegate =
       Shell::GetInstance()->session_state_delegate();
 
-  // If the screen is locked show only the currently active user.
-  if (multiprofile_index_ && session_state_delegate->IsUserSessionBlocked())
+  // If the screen is locked or a system modal dialog box is shown, show only
+  // the currently active user.
+  if (multiprofile_index_ &&
+      (session_state_delegate->IsUserSessionBlocked() ||
+       Shell::GetInstance()->IsSystemModalWindowOpen()))
     return NULL;
 
   CHECK(user_ == NULL);

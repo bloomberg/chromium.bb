@@ -26,8 +26,10 @@ views::View* TrayUserSeparator::CreateDefaultView(user::LoginStatus status) {
   const SessionStateDelegate* session_state_delegate =
       Shell::GetInstance()->session_state_delegate();
 
-  // If the screen is locked, or only a single user is shown, show nothing.
+  // If the screen is locked, a system modal dialog or a single user is shown,
+  // show nothing.
   if (session_state_delegate->IsUserSessionBlocked() ||
+      Shell::GetInstance()->IsSystemModalWindowOpen() ||
       session_state_delegate->NumberOfLoggedInUsers() < 2)
     return NULL;
 
