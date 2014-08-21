@@ -368,7 +368,7 @@ bool SharedLibrary::Load(const char* full_path,
   if (packed_relocations_offset && packed_relocations_size) {
     LOG("%s: Packed relocations found at offset %d, %d bytes\n",
         __FUNCTION__,
-        packed_relocationss_offset,
+        packed_relocations_offset,
         packed_relocations_size);
 
     packed_relocations_ =
