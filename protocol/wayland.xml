@@ -1394,7 +1394,10 @@
     <request name="set_cursor">
       <description summary="set the pointer surface">
 	Set the pointer surface, i.e., the surface that contains the
-	pointer image (cursor). This request only takes effect if the pointer
+	pointer image (cursor). This request gives the surface the role
+	of a cursor.
+
+	The cursor actually changes only if the pointer
 	focus for this device is one of the requesting client's surfaces
 	or the surface parameter is the current pointer surface. If
 	there was a previous surface set with this request it is
