@@ -267,11 +267,96 @@ NSImage* SkBitmapToNSImage(const SkBitmap& skiaBitmap) {
 
 SkiaBitLocker::SkiaBitLocker(SkCanvas* canvas)
     : canvas_(canvas),
-      cgContext_(0) {
+      userClipRectSpecified_(false),
+      cgContext_(0),
+      useDeviceBits_(false),
+      bitmapIsDummy_(false) {
+}
+
+SkiaBitLocker::SkiaBitLocker(SkCanvas* canvas, const SkIRect& userClipRect)
+    : canvas_(canvas),
+      userClipRectSpecified_(true),
+      cgContext_(0),
+      useDeviceBits_(false),
+      bitmapIsDummy_(false) {
+  canvas_->save();
+  canvas_->clipRect(SkRect::MakeFromIRect(userClipRect));
 }
 
 SkiaBitLocker::~SkiaBitLocker() {
   releaseIfNeeded();
+  if (userClipRectSpecified_)
+    canvas_->restore();
+}
+
+SkIRect SkiaBitLocker::computeDirtyRect() {
+  // If the user specified a clip region, assume that it was tight and that the
+  // dirty rect is approximately the whole bitmap.
+  if (userClipRectSpecified_)
+    return SkIRect::MakeWH(bitmap_.width(), bitmap_.height());
+
+  // Find the bits that were drawn to.
+  SkAutoLockPixels lockedPixels(bitmap_);
+  const uint32_t* pixelBase
+      = reinterpret_cast<uint32_t*>(bitmap_.getPixels());
+  int rowPixels = bitmap_.rowBytesAsPixels();
+  int width = bitmap_.width();
+  int height = bitmap_.height();
+  SkIRect bounds;
+  bounds.fTop = 0;
+  int x;
+  int y = -1;
+  const uint32_t* pixels = pixelBase;
+  while (++y < height) {
+    for (x = 0; x < width; ++x) {
+      if (pixels[x]) {
+        bounds.fTop = y;
+        goto foundTop;
+      }
+    }
+    pixels += rowPixels;
+  }
+foundTop:
+  bounds.fBottom = height;
+  y = height;
+  pixels = pixelBase + rowPixels * (y - 1);
+  while (--y > bounds.fTop) {
+    for (x = 0; x < width; ++x) {
+      if (pixels[x]) {
+        bounds.fBottom = y + 1;
+        goto foundBottom;
+      }
+    }
+    pixels -= rowPixels;
+  }
+foundBottom:
+  bounds.fLeft = 0;
+  x = -1;
+  while (++x < width) {
+    pixels = pixelBase + rowPixels * bounds.fTop;
+    for (y = bounds.fTop; y < bounds.fBottom; ++y) {
+      if (pixels[x]) {
+        bounds.fLeft = x;
+        goto foundLeft;
+      }
+      pixels += rowPixels;
+    }
+  }
+foundLeft:
+  bounds.fRight = width;
+  x = width;
+  while (--x > bounds.fLeft) {
+    pixels = pixelBase + rowPixels * bounds.fTop;
+    for (y = bounds.fTop; y < bounds.fBottom; ++y) {
+      if (pixels[x]) {
+        bounds.fRight = x + 1;
+        goto foundRight;
+      }
+      pixels += rowPixels;
+    }
+  }
+foundRight:
+  return bounds;
 }
 
 // This must be called to balance calls to cgContext
@@ -280,68 +365,9 @@ void SkiaBitLocker::releaseIfNeeded() {
     return;
   if (useDeviceBits_) {
     bitmap_.unlockPixels();
-  } else {
+  } else if (!bitmapIsDummy_) {
     // Find the bits that were drawn to.
-    SkAutoLockPixels lockedPixels(bitmap_);
-    const uint32_t* pixelBase
-        = reinterpret_cast<uint32_t*>(bitmap_.getPixels());
-    int rowPixels = bitmap_.rowBytesAsPixels();
-    int width = bitmap_.width();
-    int height = bitmap_.height();
-    SkIRect bounds;
-    bounds.fTop = 0;
-    int x;
-    int y = -1;
-    const uint32_t* pixels = pixelBase;
-    while (++y < height) {
-      for (x = 0; x < width; ++x) {
-        if (pixels[x]) {
-          bounds.fTop = y;
-          goto foundTop;
-        }
-      }
-      pixels += rowPixels;
-    }
-foundTop:
-    bounds.fBottom = height;
-    y = height;
-    pixels = pixelBase + rowPixels * (y - 1);
-    while (--y > bounds.fTop) {
-      for (x = 0; x < width; ++x) {
-        if (pixels[x]) {
-          bounds.fBottom = y + 1;
-          goto foundBottom;
-        }
-      }
-      pixels -= rowPixels;
-    }
-foundBottom:
-    bounds.fLeft = 0;
-    x = -1;
-    while (++x < width) {
-      pixels = pixelBase + rowPixels * bounds.fTop;
-      for (y = bounds.fTop; y < bounds.fBottom; ++y) {
-        if (pixels[x]) {
-          bounds.fLeft = x;
-          goto foundLeft;
-        }
-        pixels += rowPixels;
-      }
-    }
-foundLeft:
-    bounds.fRight = width;
-    x = width;
-    while (--x > bounds.fLeft) {
-      pixels = pixelBase + rowPixels * bounds.fTop;
-      for (y = bounds.fTop; y < bounds.fBottom; ++y) {
-        if (pixels[x]) {
-          bounds.fRight = x + 1;
-          goto foundRight;
-        }
-        pixels += rowPixels;
-      }
-    }
-foundRight:
+    SkIRect bounds = computeDirtyRect();
     SkBitmap subset;
     if (!bitmap_.extractSubset(&subset, bounds)) {
         return;
@@ -362,12 +388,19 @@ foundRight:
   }
   CGContextRelease(cgContext_);
   cgContext_ = 0;
+  useDeviceBits_ = false;
+  bitmapIsDummy_ = false;
 }
 
 CGContextRef SkiaBitLocker::cgContext() {
   SkIRect clip_bounds;
-  if (!canvas_->getClipDeviceBounds(&clip_bounds))
-    return 0;  // the clip is empty, nothing to draw
+  if (!canvas_->getClipDeviceBounds(&clip_bounds)) {
+    // If the clip is empty, then there is nothing to draw. The caller may
+    // attempt to draw (to-be-clipped) results, so ensure there is a dummy
+    // non-NULL CGContext to use.
+    bitmapIsDummy_ = true;
+    clip_bounds = SkIRect::MakeXYWH(0, 0, 1, 1);
+  }
 
   SkBaseDevice* device = canvas_->getTopDevice();
   DCHECK(device);
@@ -387,13 +420,20 @@ CGContextRef SkiaBitLocker::cgContext() {
   // Only draw directly if we have pixels, and we're only rect-clipped.
   // If not, we allocate an offscreen and draw into that, relying on the
   // compositing step to apply skia's clip.
-  useDeviceBits_ = deviceBits.getPixels() && canvas_->isClipRect();
+  useDeviceBits_ = deviceBits.getPixels() &&
+                   canvas_->isClipRect() &&
+                   !bitmapIsDummy_;
   if (useDeviceBits_) {
-    if (!deviceBits.extractSubset(&bitmap_, clip_bounds))
+    bool result = deviceBits.extractSubset(&bitmap_, clip_bounds);
+    DCHECK(result);
+    if (!result)
       return 0;
     bitmap_.lockPixels();
   } else {
-    if (!bitmap_.allocN32Pixels(clip_bounds.width(), clip_bounds.height()))
+    bool result = bitmap_.allocN32Pixels(
+        clip_bounds.width(), clip_bounds.height());
+    DCHECK(result);
+    if (!result)
       return 0;
     bitmap_.eraseColor(0);
   }
@@ -402,6 +442,7 @@ CGContextRef SkiaBitLocker::cgContext() {
   cgContext_ = CGBitmapContextCreate(bitmap_.getPixels(), bitmap_.width(),
     bitmap_.height(), 8, bitmap_.rowBytes(), colorSpace, 
     kCGBitmapByteOrder32Host | kCGImageAlphaPremultipliedFirst);
+  DCHECK(cgContext_);
 
   SkMatrix matrix = canvas_->getTotalMatrix();
   matrix.postTranslate(-SkIntToScalar(bitmapOffset_.x()),
@@ -412,6 +453,10 @@ CGContextRef SkiaBitLocker::cgContext() {
   CGContextConcatCTM(cgContext_, SkMatrixToCGAffineTransform(matrix));
   
   return cgContext_;
+}
+
+bool SkiaBitLocker::hasEmptyClipRegion() const {
+  return canvas_->isClipEmpty();
 }
 
 }  // namespace gfx
