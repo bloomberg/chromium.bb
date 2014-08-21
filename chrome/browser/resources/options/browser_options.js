@@ -651,8 +651,6 @@ cr.define('options', function() {
       $('reset-profile-settings').onclick = function(event) {
         PageManager.showPageByName('resetProfileSettings');
       };
-      $('reset-profile-settings-section').hidden =
-          !loadTimeData.getBoolean('enableResetProfileSettings');
 
       // Extension controlled UI.
       this.addExtensionControlledBox_('search-section-content',

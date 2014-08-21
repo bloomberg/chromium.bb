@@ -538,11 +538,6 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
   // Pass along sync status early so it will be available during page init.
   values->Set("syncData", GetSyncStateDictionary().release());
 
-  // The Reset Profile Settings feature makes no sense for an off-the-record
-  // profile (e.g. in Guest mode on Chrome OS), so hide it.
-  values->SetBoolean("enableResetProfileSettings",
-                     !Profile::FromWebUI(web_ui())->IsOffTheRecord());
-
   values->SetString("privacyLearnMoreURL", chrome::kPrivacyLearnMoreURL);
   values->SetString("doNotTrackLearnMoreURL", chrome::kDoNotTrackLearnMoreURL);
 
@@ -597,6 +592,9 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
 
   if (ShouldShowMultiProfilesUserList())
     values->Set("profilesInfo", GetProfilesInfoList().release());
+
+  values->SetBoolean("profileIsGuest",
+                     Profile::FromWebUI(web_ui())->IsOffTheRecord());
 
   values->SetBoolean("profileIsSupervised",
                      Profile::FromWebUI(web_ui())->IsSupervised());
@@ -841,6 +839,10 @@ void BrowserOptionsHandler::InitializeHandler() {
                    profile->GetPath()));
   }
 #endif
+
+  // No preferences below this point may be modified by guest profiles.
+  if (Profile::FromWebUI(web_ui())->IsGuestSession())
+    return;
 
   auto_open_files_.Init(
       prefs::kDownloadExtensionsToOpen, prefs,

@@ -184,8 +184,11 @@ cr.define('options', function() {
 
   ContentSettings.setOTRExceptions = function(type, otrExceptions) {
     var exceptionsList = this.getExceptionsList(type, 'otr');
-    exceptionsList.parentNode.hidden = false;
-    exceptionsList.setExceptions(otrExceptions);
+    // Settings for Guest hides many sections, so check for null first.
+    if (exceptionsList) {
+      exceptionsList.parentNode.hidden = false;
+      exceptionsList.setExceptions(otrExceptions);
+    }
   };
 
   /**

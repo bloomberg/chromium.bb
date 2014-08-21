@@ -48,6 +48,11 @@ void StartupPagesHandler::GetLocalizedValues(
 }
 
 void StartupPagesHandler::RegisterMessages() {
+  // Guest profiles should never have been displayed the option to set these
+  // values.
+  if (Profile::FromWebUI(web_ui())->IsOffTheRecord())
+    return;
+
   web_ui()->RegisterMessageCallback("removeStartupPages",
       base::Bind(&StartupPagesHandler::RemoveStartupPages,
                  base::Unretained(this)));
