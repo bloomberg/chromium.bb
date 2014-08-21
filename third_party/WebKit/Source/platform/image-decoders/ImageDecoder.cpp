@@ -212,7 +212,7 @@ ImagePlanes::ImagePlanes()
     }
 }
 
-void ImagePlanes::set(void* planes[3], size_t rowBytes[3])
+void ImagePlanes::setPlanes(void* planes[3], size_t rowBytes[3])
 {
     for (int i = 0; i < 3; ++i) {
         m_planes[i] = planes[i];

@@ -54,7 +54,7 @@ class PLATFORM_EXPORT ImagePlanes {
 public:
     ImagePlanes();
 
-    void set(void* planes[3], size_t rowBytes[3]);
+    void setPlanes(void* planes[3], size_t rowBytes[3]);
     void* plane(int);
     size_t rowBytes(int) const;
 

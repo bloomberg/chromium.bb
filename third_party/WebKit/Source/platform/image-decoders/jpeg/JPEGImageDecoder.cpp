@@ -259,7 +259,7 @@ static IntSize computeUVSize(const jpeg_decompress_struct* info)
     return IntSize((info->output_width + h - 1) / h, (info->output_height + v - 1) / v);
 }
 
-static yuv_subsampling getYUVSubsampling(const jpeg_decompress_struct& info)
+static yuv_subsampling yuvSubsampling(const jpeg_decompress_struct& info)
 {
     if ((DCTSIZE == 8)
         && (info.num_components == 3)
@@ -400,6 +400,7 @@ public:
         if (setjmp(m_err.setjmp_buffer))
             return m_decoder->setFailed();
 
+        J_COLOR_SPACE overrideColorSpace = JCS_UNKNOWN;
         switch (m_state) {
         case JPEG_HEADER:
             // Read file parameters with jpeg_read_header().
@@ -410,9 +411,8 @@ public:
             case JCS_YCbCr:
                 // libjpeg can convert YCbCr image pixels to RGB.
                 m_info.out_color_space = rgbOutputColorSpace();
-                if (m_decoder->YUVDecoding() && (getYUVSubsampling(m_info) != YUV_UNKNOWN)) {
-                    m_info.out_color_space = JCS_YCbCr;
-                    m_info.raw_data_out = TRUE;
+                if (m_decoder->YUVDecoding() && (yuvSubsampling(m_info) != YUV_UNKNOWN)) {
+                    overrideColorSpace = JCS_YCbCr;
                 }
                 break;
             case JCS_GRAYSCALE:
@@ -458,18 +458,22 @@ public:
                 ColorProfile colorProfile;
                 readColorProfile(info(), colorProfile);
                 createColorTransform(colorProfile, colorSpaceHasAlpha(m_info.out_color_space));
-                if (m_transform && m_info.out_color_space == JCS_YCbCr) {
-                    m_info.out_color_space = rgbOutputColorSpace();
-                    m_info.raw_data_out = FALSE;
-                }
+                if (m_transform) {
+                    overrideColorSpace = JCS_UNKNOWN;
 #if defined(TURBO_JPEG_RGB_SWIZZLE)
-                // Input RGBA data to qcms. Note: restored to BGRA on output.
-                if (m_transform && m_info.out_color_space == JCS_EXT_BGRA)
-                    m_info.out_color_space = JCS_EXT_RGBA;
+                    // Input RGBA data to qcms. Note: restored to BGRA on output.
+                    if (m_info.out_color_space == JCS_EXT_BGRA)
+                        m_info.out_color_space = JCS_EXT_RGBA;
 #endif
+                }
                 m_decoder->setHasColorProfile(!!m_transform);
             }
 #endif
+            if (overrideColorSpace == JCS_YCbCr) {
+                m_info.out_color_space = JCS_YCbCr;
+                m_info.raw_data_out = TRUE;
+            }
+
             // Don't allocate a giant and superfluous memory buffer when the
             // image is a sequential JPEG.
             m_info.buffered_image = jpeg_has_multiple_scans(&m_info);
