@@ -25,7 +25,6 @@ from telemetry.page import page_set
 from telemetry.page import page_test
 from telemetry.util import statistics
 from telemetry.value import list_of_scalar_values
-from telemetry.value import scalar
 
 
 class _JetstreamMeasurement(page_test.PageTest):
@@ -59,16 +58,21 @@ class _JetstreamMeasurement(page_test.PageTest):
     result = tab.EvaluateJavaScript(get_results_js)
     result = json.loads(result.partition(': ')[2])
 
-    all_scores = []
+    all_score_lists = []
     for k, v in result.iteritems():
       results.AddValue(list_of_scalar_values.ListOfScalarValues(
           results.current_page, k.replace('.', '_'), 'score', v['result'],
           important=False))
       # Collect all test scores to compute geometric mean.
-      all_scores.extend(v['result'])
-    total = statistics.GeometricMean(all_scores)
-    results.AddSummaryValue(
-        scalar.ScalarValue(None, 'Score', 'score', total))
+      for i, score in enumerate(v['result']):
+        if len(all_score_lists) <= i:
+          all_score_lists.append([])
+        all_score_lists[i].append(score)
+    all_scores = []
+    for score_list in all_score_lists:
+      all_scores.append(statistics.GeometricMean(score_list))
+    results.AddSummaryValue(list_of_scalar_values.ListOfScalarValues(
+        None, 'Score', 'score', all_scores))
 
 
 @benchmark.Disabled('android', 'xp')  # crbug.com/381742
