@@ -95,6 +95,17 @@
       ],
     },
     {
+      'target_name': 'android_webview_strings_grd',
+      'android_unmangled_name': 1,
+      'type': 'none',
+      'variables': {
+        'grd_file': '../android_webview/java/strings/android_webview_strings.grd',
+      },
+      'includes': [
+          '../build/java_strings_grd.gypi',
+      ],
+    },
+    {
       'target_name': 'android_webview_common',
       'type': 'static_library',
       'dependencies': [
@@ -275,6 +286,7 @@
             '../components/components.gyp:web_contents_delegate_android_java',
             '../content/content.gyp:content_java',
             '../ui/android/ui_android.gyp:ui_java',
+            'android_webview_strings_grd',
           ],
           'variables': {
             'java_in_dir': '../android_webview/java',
@@ -311,8 +323,9 @@
           'dependencies': [
             '../content/content.gyp:content_strings_grd',
             '../ui/android/ui_android.gyp:ui_strings_grd',
+            'android_webview_jarjar_content_resources',
             'android_webview_jarjar_ui_resources',
-            'android_webview_jarjar_content_resources'
+            'android_webview_strings_grd',
           ],
         },
       ],
