@@ -1486,6 +1486,8 @@
       'browser/guest_view/extension_options/extension_options_guest.h',
       'browser/guest_view/web_view/chrome_web_view_permission_helper_delegate.cc',
       'browser/guest_view/web_view/chrome_web_view_permission_helper_delegate.h',
+      'browser/guest_view/web_view/chrome_web_view_guest_delegate.cc',
+      'browser/guest_view/web_view/chrome_web_view_guest_delegate.h',
       'browser/guest_view/web_view/context_menu_content_type_web_view.cc',
       'browser/guest_view/web_view/context_menu_content_type_web_view.h',
       'browser/guest_view/web_view/javascript_dialog_helper.cc',

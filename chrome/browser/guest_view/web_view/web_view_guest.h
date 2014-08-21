@@ -17,22 +17,11 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/guest_view/guest_view.h"
+#include "extensions/browser/guest_view/web_view/web_view_guest_delegate.h"
 #include "extensions/browser/script_executor.h"
 #include "third_party/WebKit/public/web/WebFindOptions.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
-#endif
-
-class RenderViewContextMenu;
-
-namespace ui {
-class SimpleMenuModel;
-}  // namespace ui
-
 namespace extensions {
-
-namespace webview_api = api::web_view_internal;
 
 class WebViewInternalFindFunction;
 
@@ -69,12 +58,13 @@ class WebViewGuest : public GuestView<WebViewGuest>,
   // Request navigating the guest to the provided |src| URL.
   void NavigateGuest(const std::string& src);
 
-  typedef std::vector<linked_ptr<webview_api::ContextMenuItem> > MenuItemVector;
   // Shows the context menu for the guest.
   // |items| acts as a filter. This restricts the current context's default
   // menu items to contain only the items from |items|.
   // |items| == NULL means no filtering will be applied.
-  void ShowContextMenu(int request_id, const MenuItemVector* items);
+  void ShowContextMenu(
+      int request_id,
+      const WebViewGuestDelegate::MenuItemVector* items);
 
   // Sets the frame name of the guest.
   void SetName(const std::string& name);
@@ -243,10 +233,6 @@ class WebViewGuest : public GuestView<WebViewGuest>,
 
   virtual ~WebViewGuest();
 
-  // Returns the top level items (ignoring submenus) as Value.
-  static scoped_ptr<base::ListValue> MenuModelToValue(
-      const ui::SimpleMenuModel& menu_model);
-
   void AttachWebViewHelpers(content::WebContents* contents);
 
   void OnWebViewNewWindowResponse(int new_window_instance_id,
@@ -291,14 +277,6 @@ class WebViewGuest : public GuestView<WebViewGuest>,
   static void RemoveWebViewStateFromIOThread(
       content::WebContents* web_contents);
 
-#if defined(OS_CHROMEOS)
-  // Notification of a change in the state of an accessibility setting.
-  void OnAccessibilityStatusChanged(
-    const chromeos::AccessibilityStatusEventDetails& details);
-#endif
-
-  void InjectChromeVoxIfNeeded(content::RenderViewHost* render_view_host);
-
   void LoadURLWithParams(const GURL& url,
                          const content::Referrer& referrer,
                          content::PageTransition transition_type,
@@ -340,18 +318,8 @@ class WebViewGuest : public GuestView<WebViewGuest>,
 
   content::NotificationRegistrar notification_registrar_;
 
-  // A counter to generate a unique request id for a context menu request.
-  // We only need the ids to be unique for a given WebViewGuest.
-  int pending_context_menu_request_id_;
-
   // True if the user agent is overridden.
   bool is_overriding_user_agent_;
-
-  // Set to |true| if ChromeVox was already injected in main frame.
-  bool chromevox_injected_;
-
-  // Stores the current zoom factor.
-  double current_zoom_factor_;
 
   // Stores the window name of the main frame of the guest.
   std::string name_;
@@ -365,18 +333,10 @@ class WebViewGuest : public GuestView<WebViewGuest>,
   // Handels permission requests.
   scoped_ptr<WebViewPermissionHelper> web_view_permission_helper_;
 
+  scoped_ptr<WebViewGuestDelegate> web_view_guest_delegate_;
+
   friend void WebViewFindHelper::DispatchFindUpdateEvent(bool canceled,
                                                          bool final_update);
-
-  // Holds the RenderViewContextMenu that has been built but yet to be
-  // shown. This is .Reset() after ShowContextMenu().
-  scoped_ptr<RenderViewContextMenu> pending_menu_;
-
-#if defined(OS_CHROMEOS)
-  // Subscription to receive notifications on changes to a11y settings.
-  scoped_ptr<chromeos::AccessibilityStatusSubscription>
-      accessibility_subscription_;
-#endif
 
   // Tracks the name, and target URL of the new window. Once the first
   // navigation commits, we no longer track this information.
