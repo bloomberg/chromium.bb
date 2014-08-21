@@ -155,6 +155,32 @@ class Parallelizer(object):
     self.pFinish(timeout)
     return self._objs
 
+  def pMap(self, f, *args, **kwargs):
+    """Map a function across the current wrapped objects in parallel.
+
+    This calls f(o, *args, **kwargs) for each o in the set of wrapped objects.
+
+    Note that this call is asynchronous. Call pFinish on the return value to
+    block until the call finishes.
+
+    Args:
+      f: The function to call.
+      args: The positional args to pass to f.
+      kwargs: The keyword args to pass to f.
+    Returns:
+      A Parallelizer wrapping the ReraiserThreadGroup running the map in
+      parallel.
+    """
+    self._assertNoShadow('pMap')
+    r = type(self)(self._orig_objs)
+    r._objs = reraiser_thread.ReraiserThreadGroup(
+        [reraiser_thread.ReraiserThread(
+            f, args=tuple([o] + list(args)), kwargs=kwargs,
+            name='%s(%s)' % (f.__name__, d))
+         for d, o in zip(self._orig_objs, self._objs)])
+    r._objs.StartAll() # pylint: disable=W0212
+    return r
+
   def _assertNoShadow(self, attr_name):
     """Ensures that |attr_name| isn't shadowing part of the wrapped obejcts.
 
@@ -191,6 +217,26 @@ class SyncParallelizer(Parallelizer):
       AttributeError if the wrapped objects aren't callable.
     """
     r = super(SyncParallelizer, self).__call__(*args, **kwargs)
+    r.pFinish(None)
+    return r
+
+  #override
+  def pMap(self, f, *args, **kwargs):
+    """Map a function across the current wrapped objects in parallel.
+
+    This calls f(o, *args, **kwargs) for each o in the set of wrapped objects.
+
+    Note that this call is synchronous.
+
+    Args:
+      f: The function to call.
+      args: The positional args to pass to f.
+      kwargs: The keyword args to pass to f.
+    Returns:
+      A Parallelizer wrapping the ReraiserThreadGroup running the map in
+      parallel.
+    """
+    r = super(SyncParallelizer, self).pMap(f, *args, **kwargs)
     r.pFinish(None)
     return r
 

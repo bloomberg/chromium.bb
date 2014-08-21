@@ -36,9 +36,6 @@ def ConfigureContentSettings(device, desired_settings):
     logging.error('Skipping content settings configuration due to outdated sdk')
     return
 
-  device.SetProp('persist.sys.usb.config', 'adb')
-  device.old_interface.WaitForDevicePm()
-
   if device.GetProp('ro.build.type') == 'userdebug':
     for table, key_value in desired_settings:
       settings = content_settings.ContentSettings(table, device)

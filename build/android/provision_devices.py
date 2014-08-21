@@ -49,42 +49,40 @@ def LaunchHostHeartbeat():
                                  'build/android/host_heartbeat.py')])
 
 
-def PushAndLaunchAdbReboot(devices, target):
+def PushAndLaunchAdbReboot(device, target):
   """Pushes and launches the adb_reboot binary on the device.
 
   Arguments:
-    devices: The list of serial numbers of the device to which the
-             adb_reboot binary should be pushed.
-    target : The build target (example, Debug or Release) which helps in
-             locating the adb_reboot binary.
+    device: The DeviceUtils instance for the device to which the adb_reboot
+            binary should be pushed.
+    target: The build target (example, Debug or Release) which helps in
+            locating the adb_reboot binary.
   """
-  for device_serial in devices:
-    logging.info('Will push and launch adb_reboot on %s' % device_serial)
-    device = device_utils.DeviceUtils(device_serial)
-    # Kill if adb_reboot is already running.
-    try:
-      # Don't try to kill adb_reboot more than once. We don't expect it to be
-      # running at all.
-      device.KillAll('adb_reboot', blocking=True, timeout=2, retries=0)
-    except device_errors.CommandFailedError:
-      # We can safely ignore the exception because we don't expect adb_reboot
-      # to be running.
-      pass
-    # Push adb_reboot
-    logging.info('  Pushing adb_reboot ...')
-    adb_reboot = os.path.join(constants.DIR_SOURCE_ROOT,
-                              'out/%s/adb_reboot' % target)
-    device.PushChangedFiles(adb_reboot, '/data/local/tmp/')
-    # Launch adb_reboot
-    logging.info('  Launching adb_reboot ...')
-    device.old_interface.GetAndroidToolStatusAndOutput(
-        '/data/local/tmp/adb_reboot')
-  LaunchHostHeartbeat()
+  logging.info('Will push and launch adb_reboot on %s' % str(device))
+  # Kill if adb_reboot is already running.
+  try:
+    # Don't try to kill adb_reboot more than once. We don't expect it to be
+    # running at all.
+    device.KillAll('adb_reboot', blocking=True, timeout=2, retries=0)
+  except device_errors.CommandFailedError:
+    # We can safely ignore the exception because we don't expect adb_reboot
+    # to be running.
+    pass
+  # Push adb_reboot
+  logging.info('  Pushing adb_reboot ...')
+  adb_reboot = os.path.join(constants.DIR_SOURCE_ROOT,
+                            'out/%s/adb_reboot' % target)
+  device.PushChangedFiles(adb_reboot, '/data/local/tmp/')
+  # Launch adb_reboot
+  logging.info('  Launching adb_reboot ...')
+  device.old_interface.GetAndroidToolStatusAndOutput(
+      '/data/local/tmp/adb_reboot')
 
 
 def _ConfigureLocalProperties(device, is_perf):
   """Set standard readonly testing device properties prior to reboot."""
   local_props = [
+      'persist.sys.usb.config=adb',
       'ro.monkey=1',
       'ro.test_harness=1',
       'ro.audio.silent=1',
@@ -138,135 +136,90 @@ def WipeDeviceData(device):
                            as_root=True)
 
 
-def WipeDevicesIfPossible(devices):
-  devices_to_reboot = []
-  for device_serial in devices:
-    device = device_utils.DeviceUtils(device_serial)
-    if not device.old_interface.EnableAdbRoot():
-      continue
+def WipeDeviceIfPossible(device):
+  try:
+    device.EnableRoot()
     WipeDeviceData(device)
-    devices_to_reboot.append(device)
-
-  if devices_to_reboot:
-    try:
-      device_utils.DeviceUtils.parallel(devices_to_reboot).Reboot(True)
-    except errors.DeviceUnresponsiveError:
-      pass
-    for device_serial in devices_to_reboot:
-      device.WaitUntilFullyBooted(timeout=90)
+    device.Reboot(True, timeout=180, retries=0)
+  except (errors.DeviceUnresponsiveError, device_errors.CommandFailedError):
+    pass
 
 
-def ProvisionDevice(device_serial, is_perf, disable_location):
-  device = device_utils.DeviceUtils(device_serial)
-  device.old_interface.EnableAdbRoot()
-  _ConfigureLocalProperties(device, is_perf)
-  device_settings.ConfigureContentSettings(
-      device, device_settings.DETERMINISTIC_DEVICE_SETTINGS)
-  if disable_location:
+def ProvisionDevice(device, options, is_perf):
+  try:
+    if not options.skip_wipe:
+      WipeDeviceIfPossible(device)
+    device.EnableRoot()
+    _ConfigureLocalProperties(device, is_perf)
     device_settings.ConfigureContentSettings(
-        device, device_settings.DISABLE_LOCATION_SETTINGS)
-  else:
-    device_settings.ConfigureContentSettings(
-        device, device_settings.ENABLE_LOCATION_SETTINGS)
-  device_settings.SetLockScreenSettings(device)
-  if is_perf:
-    # TODO(tonyg): We eventually want network on. However, currently radios
-    # can cause perfbots to drain faster than they charge.
-    device_settings.ConfigureContentSettings(
-      device, device_settings.NETWORK_DISABLED_SETTINGS)
-    # Some perf bots run benchmarks with USB charging disabled which leads
-    # to gradual draining of the battery. We must wait for a full charge
-    # before starting a run in order to keep the devices online.
-    try:
-      battery_info = device.old_interface.GetBatteryInfo()
-    except Exception as e:
-      battery_info = {}
-      logging.error('Unable to obtain battery info for %s, %s',
-                    device_serial, e)
+        device, device_settings.DETERMINISTIC_DEVICE_SETTINGS)
+    if options.disable_location:
+      device_settings.ConfigureContentSettings(
+          device, device_settings.DISABLE_LOCATION_SETTINGS)
+    else:
+      device_settings.ConfigureContentSettings(
+          device, device_settings.ENABLE_LOCATION_SETTINGS)
+    device_settings.SetLockScreenSettings(device)
+    if is_perf:
+      # TODO(tonyg): We eventually want network on. However, currently radios
+      # can cause perfbots to drain faster than they charge.
+      device_settings.ConfigureContentSettings(
+          device, device_settings.NETWORK_DISABLED_SETTINGS)
+      # Some perf bots run benchmarks with USB charging disabled which leads
+      # to gradual draining of the battery. We must wait for a full charge
+      # before starting a run in order to keep the devices online.
+      try:
+        battery_info = device.old_interface.GetBatteryInfo()
+      except Exception as e:
+        battery_info = {}
+        logging.error('Unable to obtain battery info for %s, %s',
+                      str(device), e)
 
-    while int(battery_info.get('level', 100)) < 95:
-      if not device.old_interface.IsDeviceCharging():
-        if device.old_interface.CanControlUsbCharging():
-          device.old_interface.EnableUsbCharging()
-        else:
-          logging.error('Device is not charging')
-          break
-      logging.info('Waiting for device to charge. Current level=%s',
+      while int(battery_info.get('level', 100)) < 95:
+        if not device.old_interface.IsDeviceCharging():
+          if device.old_interface.CanControlUsbCharging():
+            device.old_interface.EnableUsbCharging()
+          else:
+            logging.error('Device is not charging')
+            break
+        logging.info('Waiting for device to charge. Current level=%s',
                      battery_info.get('level', 0))
-      time.sleep(60)
-      battery_info = device.old_interface.GetBatteryInfo()
-  device.RunShellCommand('date -u %f' % time.time(), as_root=True)
+        time.sleep(60)
+        battery_info = device.old_interface.GetBatteryInfo()
+    device.RunShellCommand('date -u %f' % time.time(), as_root=True)
+    device.Reboot(True, timeout=180, retries=0)
+    props = device.RunShellCommand('getprop')
+    for prop in props:
+      logging.info('  %s' % prop)
+    if options.auto_reconnect:
+      PushAndLaunchAdbReboot(device, options.target)
+  except (errors.WaitForResponseTimedOutError,
+          device_errors.CommandTimeoutError):
+    logging.info('Timed out waiting for device %s. Adding to blacklist.',
+                 str(device))
+    # Device black list is reset by bb_device_status_check.py per build.
+    device_blacklist.ExtendBlacklist([str(device)])
+  except (device_errors.CommandFailedError):
+    logging.info('Failed to provision device %s. Adding to blacklist.',
+                 str(device))
+    device_blacklist.ExtendBlacklist([str(device)])
 
 
 def ProvisionDevices(options):
   is_perf = 'perf' in os.environ.get('BUILDBOT_BUILDERNAME', '').lower()
-  # TODO(jbudorick): Parallelize provisioning of all attached devices after
-  # switching from AndroidCommands.
   if options.device is not None:
     devices = [options.device]
   else:
     devices = android_commands.GetAttachedDevices()
 
-  # Wipe devices (unless --skip-wipe was specified)
-  if not options.skip_wipe:
-    WipeDevicesIfPossible(devices)
-
-  bad_devices = []
-  # Provision devices
-  for device_serial in devices:
-    try:
-      ProvisionDevice(device_serial, is_perf, options.disable_location)
-    except (errors.WaitForResponseTimedOutError,
-            device_errors.CommandTimeoutError):
-      logging.info('Timed out waiting for device %s. Adding to blacklist.',
-                   device_serial)
-      bad_devices.append(device_serial)
-      # Device black list is reset by bb_device_status_check.py per build.
-      device_blacklist.ExtendBlacklist([device_serial])
-    except device_errors.CommandFailedError:
-      logging.info('Failed to provision device %s. Adding to blacklist.',
-                   device_serial)
-      bad_devices.append(device_serial)
-      device_blacklist.ExtendBlacklist([device_serial])
-  devices = [device for device in devices if device not in bad_devices]
-
-  # If there are no good devices
-  if not devices:
-    raise device_errors.NoDevicesError
-
-  try:
-    device_utils.DeviceUtils.parallel(devices).Reboot(True)
-  except errors.DeviceUnresponsiveError:
-    pass
-
-  bad_devices = []
-  for device_serial in devices:
-    device = device_utils.DeviceUtils(device_serial)
-    try:
-      device.WaitUntilFullyBooted(timeout=90)
-      (_, prop) = device.old_interface.GetShellCommandStatusAndOutput('getprop')
-      for p in prop:
-        logging.info(p)
-    except (errors.WaitForResponseTimedOutError,
-            device_errors.CommandTimeoutError):
-      logging.info('Timed out waiting for device %s. Adding to blacklist.',
-                   device_serial)
-      bad_devices.append(device_serial)
-      # Device black list is reset by bb_device_status_check.py per build.
-      device_blacklist.ExtendBlacklist([device_serial])
-    except device_errors.CommandFailedError:
-      logging.info('Failed to provision device %s. Adding to blacklist.',
-                   device_serial)
-      bad_devices.append(device_serial)
-      device_blacklist.ExtendBlacklist([device_serial])
-  devices = [device for device in devices if device not in bad_devices]
-
-  # If there are no good devices
-  if not devices:
-    raise device_errors.NoDevicesError
-
+  parallel_devices = device_utils.DeviceUtils.parallel(devices)
+  parallel_devices.pMap(ProvisionDevice, options, is_perf)
   if options.auto_reconnect:
-    PushAndLaunchAdbReboot(devices, options.target)
+    LaunchHostHeartbeat()
+  blacklist = device_blacklist.ReadBlacklist()
+  if all(d in blacklist for d in devices):
+    raise device_errors.NoDevicesError
+  return 0
 
 
 def main(argv):
@@ -293,7 +246,7 @@ def main(argv):
     print >> sys.stderr, 'Unused args %s' % args
     return 1
 
-  ProvisionDevices(options)
+  return ProvisionDevices(options)
 
 
 if __name__ == '__main__':

@@ -4,6 +4,7 @@
 
 import json
 import os
+import threading
 
 from pylib import constants
 _BLACKLIST_JSON = os.path.join(
@@ -11,17 +12,22 @@ _BLACKLIST_JSON = os.path.join(
     os.environ.get('CHROMIUM_OUT_DIR', 'out'),
     'bad_devices.json')
 
+# Note that this only protects against concurrent accesses to the blacklist
+# within a process.
+_blacklist_lock = threading.RLock()
+
 def ReadBlacklist():
   """Reads the blacklist from the _BLACKLIST_JSON file.
 
   Returns:
     A list containing bad devices.
   """
-  if not os.path.exists(_BLACKLIST_JSON):
-    return []
+  with _blacklist_lock:
+    if not os.path.exists(_BLACKLIST_JSON):
+      return []
 
-  with open(_BLACKLIST_JSON, 'r') as f:
-    return json.load(f)
+    with open(_BLACKLIST_JSON, 'r') as f:
+      return json.load(f)
 
 
 def WriteBlacklist(blacklist):
@@ -30,8 +36,9 @@ def WriteBlacklist(blacklist):
   Args:
     blacklist: list of bad devices to write to the _BLACKLIST_JSON file.
   """
-  with open(_BLACKLIST_JSON, 'w') as f:
-    json.dump(list(set(blacklist)), f)
+  with _blacklist_lock:
+    with open(_BLACKLIST_JSON, 'w') as f:
+      json.dump(list(set(blacklist)), f)
 
 
 def ExtendBlacklist(devices):
@@ -40,13 +47,15 @@ def ExtendBlacklist(devices):
   Args:
     devices: list of bad devices to be added to the _BLACKLIST_JSON file.
   """
-  blacklist = ReadBlacklist()
-  blacklist.extend(devices)
-  WriteBlacklist(blacklist)
+  with _blacklist_lock:
+    blacklist = ReadBlacklist()
+    blacklist.extend(devices)
+    WriteBlacklist(blacklist)
 
 
 def ResetBlacklist():
   """Erases the _BLACKLIST_JSON file if it exists."""
-  if os.path.exists(_BLACKLIST_JSON):
-    os.remove(_BLACKLIST_JSON)
+  with _blacklist_lock:
+    if os.path.exists(_BLACKLIST_JSON):
+      os.remove(_BLACKLIST_JSON)
 
