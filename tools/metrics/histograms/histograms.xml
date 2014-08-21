@@ -18995,6 +18995,38 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Network.Shill.WiFi.StoppedTxQueueLength" units="frames">
+  <owner>quiche@chromium.org</owner>
+  <summary>
+    Chrome OS network metric indicating the maximal length of any stopped
+    mac80211 transmit queue. The metric is reported when a queue-status check
+    determines that at least one transmit queue is stopped, and has more than a
+    threshold number of frames queued.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.WiFi.StoppedTxQueueReason"
+    enum="NetworkQueueStopReason">
+  <owner>quiche@chromium.org</owner>
+  <summary>
+    Chrome OS network metric indicating the reason that mac80211 transmit queues
+    were stopped. The metric is reported when a queue-status check determines
+    that at least one queue is stopped, and has more than a threshold number of
+    frames queued.
+
+    One measurement is reported per stop reason, per queue-status check. Reasons
+    that apply to multiple queues are reported only once per queue-status check.
+    Reasons that only apply to queues that have a below-threshold number of
+    frames are skipped.
+
+    Note that, because we may report multiple stop reasons for a single
+    queue-status check, this histogram is not suitable for determining the
+    number of times a queue-status check found that the queues were stopped. To
+    determine that number, use the count of
+    Network.Shill.WiFi.StoppedTxQueueLength reports.
+  </summary>
+</histogram>
+
 <histogram name="Network.Shill.Wifi.TimeOnline" units="seconds">
   <owner>quiche@chromium.org</owner>
   <summary>
@@ -45605,6 +45637,17 @@ To add a new entry, add it with any value and run test to compute valid value.
 <enum name="NetworkProblemType" type="int">
   <int value="0" label="Congested TCP Queue"/>
   <int value="1" label="DNS Failure"/>
+</enum>
+
+<enum name="NetworkQueueStopReason" type="int">
+  <summary>The stop reasons come from shill/mac80211_monitor.h.</summary>
+  <int value="0" label="Device Driver"/>
+  <int value="1" label="Power Save"/>
+  <int value="2" label="Channel Switch Announcement"/>
+  <int value="3" label="Aggregation"/>
+  <int value="4" label="Suspend"/>
+  <int value="5" label="Buffer Add"/>
+  <int value="6" label="Channel Type Change"/>
 </enum>
 
 <enum name="NetworkSecurityType" type="int">
