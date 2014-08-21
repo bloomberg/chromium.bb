@@ -31,7 +31,7 @@ class AndroidUsbSocket : public net::StreamSocket,
 
   void HandleIncoming(scoped_refptr<AdbMessage> message);
 
-  void Terminated();
+  void Terminated(bool closed_by_device);
 
   // net::StreamSocket implementation.
   virtual int Read(net::IOBuffer* buf, int buf_len,

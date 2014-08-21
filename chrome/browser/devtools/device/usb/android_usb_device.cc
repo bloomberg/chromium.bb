@@ -638,7 +638,7 @@ void AndroidUsbDevice::Terminate() {
   AndroidUsbSockets sockets(sockets_);
   for (AndroidUsbSockets::iterator it = sockets.begin();
        it != sockets.end(); ++it) {
-    it->second->Terminated();
+    it->second->Terminated(true);
   }
   DCHECK(sockets_.empty());
 

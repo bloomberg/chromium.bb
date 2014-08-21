@@ -82,7 +82,7 @@ void AndroidUsbSocket::HandleIncoming(scoped_refptr<AdbMessage> message) {
     case AdbMessage::kCommandCLSE:
       if (is_connected_)
         device_->Send(AdbMessage::kCommandCLSE, local_id_, 0, "");
-      Terminated();
+      Terminated(true);
       // "this" can be NULL.
       break;
     default:
@@ -90,13 +90,16 @@ void AndroidUsbSocket::HandleIncoming(scoped_refptr<AdbMessage> message) {
   }
 }
 
-void AndroidUsbSocket::Terminated() {
+void AndroidUsbSocket::Terminated(bool closed_by_device) {
   is_connected_ = false;
 
   // Break the socket -> device connection, release the device.
   delete_callback_.Run(local_id_);
   delete_callback_.Reset();
   device_ = NULL;
+
+  if (!closed_by_device)
+    return;
 
   // Respond to pending callbacks.
   if (!connect_callback_.is_null()) {
@@ -167,7 +170,7 @@ void AndroidUsbSocket::Disconnect() {
   if (!device_)
     return;
   device_->Send(AdbMessage::kCommandCLSE, local_id_, remote_id_, "");
-  Terminated();
+  Terminated(false);
 }
 
 bool AndroidUsbSocket::IsConnected() const {
