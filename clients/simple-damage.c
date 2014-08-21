@@ -642,7 +642,7 @@ static const struct xdg_shell_listener xdg_shell_listener = {
 	xdg_shell_ping,
 };
 
-#define XDG_VERSION 3 /* The version of xdg-shell that we implement */
+#define XDG_VERSION 4 /* The version of xdg-shell that we implement */
 #ifdef static_assert
 static_assert(XDG_VERSION == XDG_SHELL_VERSION_CURRENT,
 	      "Interface version doesn't match implementation version");
