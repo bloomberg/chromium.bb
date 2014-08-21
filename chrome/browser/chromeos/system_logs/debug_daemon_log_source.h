@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/feedback/system_logs/system_logs_fetcher_base.h"
 
@@ -45,7 +46,7 @@ class DebugDaemonLogSource : public SystemLogsSource {
   // the response parameter.
   static void ReadUserLogFiles(
       const KeyValueMap& user_log_files,
-      const std::vector<Profile*>& last_used_profiles,
+      const std::vector<base::FilePath>& profile_dirs,
       SystemLogsResponse* response);
 
   // Merge the responses from ReadUserLogFiles into the main response dict and

@@ -12,10 +12,11 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/common/chrome_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon_client.h"
+#include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -134,20 +135,24 @@ void DebugDaemonLogSource::OnGetUserLogFiles(
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   if (succeeded) {
     SystemLogsResponse* response = new SystemLogsResponse;
-    std::vector<Profile*> last_used = ProfileManager::GetLastOpenedProfiles();
 
-    if (last_used.empty() && user_manager::UserManager::IsInitialized() &&
-        user_manager::UserManager::Get()->IsLoggedInAsKioskApp()) {
-      // Use the kiosk app profile explicitly because kiosk session does not
-      // open any browsers thus ProfileManager::GetLastOpenedProfiles returns
-      // an empty |last_used|.
-      last_used.push_back(ProfileManager::GetActiveUserProfile());
+    const user_manager::UserList& users =
+        user_manager::UserManager::Get()->GetLoggedInUsers();
+    std::vector<base::FilePath> profile_dirs;
+    for (user_manager::UserList::const_iterator it = users.begin();
+         it != users.end();
+         ++it) {
+      if ((*it)->username_hash().empty())
+        continue;
+      profile_dirs.push_back(
+          chromeos::ProfileHelper::GetProfilePathByUserIdHash(
+              (*it)->username_hash()));
     }
 
     content::BrowserThread::PostBlockingPoolTaskAndReply(
         FROM_HERE,
         base::Bind(&DebugDaemonLogSource::ReadUserLogFiles,
-                   user_log_files, last_used, response),
+                   user_log_files, profile_dirs, response),
         base::Bind(&DebugDaemonLogSource::MergeResponse,
                    weak_ptr_factory_.GetWeakPtr(),
                    base::Owned(response)));
@@ -160,9 +165,9 @@ void DebugDaemonLogSource::OnGetUserLogFiles(
 // static
 void DebugDaemonLogSource::ReadUserLogFiles(
     const KeyValueMap& user_log_files,
-    const std::vector<Profile*>& last_used_profiles,
+    const std::vector<base::FilePath>& profile_dirs,
     SystemLogsResponse* response) {
-  for (size_t i = 0; i < last_used_profiles.size(); ++i) {
+  for (size_t i = 0; i < profile_dirs.size(); ++i) {
     std::string profile_prefix = "Profile[" + base::UintToString(i) + "] ";
     for (KeyValueMap::const_iterator it = user_log_files.begin();
          it != user_log_files.end();
@@ -170,9 +175,8 @@ void DebugDaemonLogSource::ReadUserLogFiles(
       std::string key = it->first;
       std::string value;
       std::string filename = it->second;
-      base::FilePath profile_dir = last_used_profiles[i]->GetPath();
       bool read_success = base::ReadFileToString(
-          profile_dir.Append(filename), &value);
+          profile_dirs[i].Append(filename), &value);
 
       if (read_success && !value.empty())
         (*response)[profile_prefix + key] = value;
