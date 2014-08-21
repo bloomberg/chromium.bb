@@ -85,7 +85,7 @@ void ConsumerManagementHandler::HandleEnrollConsumerManagement(
 
   CHECK(management_service_);
   management_service_->SetEnrollmentState(
-      policy::ConsumerManagementService::ENROLLMENT_ENROLLING);
+      policy::ConsumerManagementService::ENROLLMENT_REQUESTED);
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RequestRestart();
 }
 

@@ -62,7 +62,8 @@ class DeviceCloudPolicyInitializer : public CloudPolicyStore::Observer {
 
   virtual ~DeviceCloudPolicyInitializer();
 
-  void Shutdown();
+  virtual void Init();
+  virtual void Shutdown();
 
   // Starts enrollment or re-enrollment. Once the enrollment process completes,
   // |enrollment_callback| is invoked and gets passed the status of the
@@ -70,7 +71,7 @@ class DeviceCloudPolicyInitializer : public CloudPolicyStore::Observer {
   // |allowed_modes| specifies acceptable DEVICE_MODE_* constants for
   // enrollment.
   // |management_mode| should be either ENTERPRISE_MANAGED or CONSUMER_MANAGED.
-  void StartEnrollment(
+  virtual void StartEnrollment(
       enterprise_management::PolicyData::ManagementMode management_mode,
       DeviceManagementService* device_management_service,
       const std::string& auth_token,
@@ -122,6 +123,7 @@ class DeviceCloudPolicyInitializer : public CloudPolicyStore::Observer {
   DeviceCloudPolicyManagerChromeOS* manager_;
   chromeos::DeviceSettingsService* device_settings_service_;
   base::Closure on_connected_callback_;
+  bool is_initialized_;
 
   // Non-NULL if there is an enrollment operation pending.
   scoped_ptr<EnrollmentHandlerChromeOS> enrollment_handler_;

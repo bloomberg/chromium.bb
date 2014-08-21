@@ -305,7 +305,7 @@ SigninScreenHandler::SigninScreenHandler(
   is_enrolling_consumer_management_ =
       consumer_management &&
       consumer_management->GetEnrollmentState() ==
-          policy::ConsumerManagementService::ENROLLMENT_ENROLLING;
+          policy::ConsumerManagementService::ENROLLMENT_REQUESTED;
 }
 
 SigninScreenHandler::~SigninScreenHandler() {

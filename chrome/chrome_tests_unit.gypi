@@ -287,6 +287,8 @@
             'browser/chromeos/policy/cloud_external_data_manager_base_test_util.h',
             'browser/chromeos/policy/device_policy_builder.cc',
             'browser/chromeos/policy/device_policy_builder.h',
+            'browser/chromeos/policy/fake_device_cloud_policy_initializer.cc',
+            'browser/chromeos/policy/fake_device_cloud_policy_initializer.h',
             'browser/chromeos/policy/stub_enterprise_install_attributes.cc',
             'browser/chromeos/policy/stub_enterprise_install_attributes.h',
             'browser/chromeos/settings/device_settings_test_helper.cc',

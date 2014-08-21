@@ -386,12 +386,15 @@ void GaiaScreenHandler::OnSetOwnerDone(const std::string& typed_email,
                                        const std::string& password,
                                        bool using_saml,
                                        bool success) {
-  if (!success) {
+  CHECK(consumer_management_);
+  if (success) {
+    consumer_management_->SetEnrollmentState(
+        policy::ConsumerManagementService::ENROLLMENT_OWNER_STORED);
+  } else {
     LOG(ERROR) << "Failed to write owner e-mail to boot lockbox.";
-    CHECK(consumer_management_);
     consumer_management_->SetEnrollmentState(
         policy::ConsumerManagementService::ENROLLMENT_BOOT_LOCKBOX_FAILED);
-    // We should continue loggin in the user, as there's not much we can do
+    // We should continue logging in the user, as there's not much we can do
     // here.
   }
   DoCompleteLogin(typed_email, password, using_saml);

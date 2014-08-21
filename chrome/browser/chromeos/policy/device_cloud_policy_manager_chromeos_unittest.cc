@@ -167,6 +167,7 @@ class DeviceCloudPolicyManagerChromeOSTest
         manager_.get(),
         &device_settings_service_,
         base::Bind(&base::DoNothing)));
+    initializer_->Init();
   }
 
   void VerifyPolicyPopulated() {

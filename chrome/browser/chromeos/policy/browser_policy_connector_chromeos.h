@@ -46,12 +46,11 @@ class BrowserPolicyConnectorChromeOS : public ChromeBrowserPolicyConnector {
       PrefService* local_state,
       scoped_refptr<net::URLRequestContextGetter> request_context) OVERRIDE;
 
-  // Destroys the |device_cloud_policy_invalidator_|. This cannot wait until
-  // Shutdown() because that method is only called during
-  // BrowserProcessImpl::StartTearDown() but the invalidator may be observing
-  // the global DeviceOAuth2TokenService that is destroyed earlier by
-  // ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun().
-  void ShutdownInvalidator();
+  // Shutdown() is called from BrowserProcessImpl::StartTearDown() but |this|
+  // observes some objects that get destroyed earlier. PreShutdown() is called
+  // from ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun(), allowing the
+  // connection to these dependencies to be severed earlier.
+  void PreShutdown();
 
   virtual void Shutdown() OVERRIDE;
 
@@ -113,6 +112,10 @@ class BrowserPolicyConnectorChromeOS : public ChromeBrowserPolicyConnector {
   ConsumerManagementService* GetConsumerManagementService() const {
     return consumer_management_service_.get();
   }
+
+  // Sets the device cloud policy initializer for testing.
+  void SetDeviceCloudPolicyInitializerForTesting(
+      scoped_ptr<DeviceCloudPolicyInitializer> initializer);
 
   // Sets the install attributes for testing. Must be called before the browser
   // is created. RemoveInstallAttributesForTesting must be called after the test

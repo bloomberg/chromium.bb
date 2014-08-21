@@ -180,6 +180,7 @@ void BrowserPolicyConnectorChromeOS::Init(
             base::Bind(&BrowserPolicyConnectorChromeOS::
                            OnDeviceCloudPolicyManagerConnected,
                        base::Unretained(this))));
+    device_cloud_policy_initializer_->Init();
   }
 
   device_local_account_policy_service_.reset(
@@ -213,13 +214,23 @@ void BrowserPolicyConnectorChromeOS::Init(
           chromeos::CrosSettings::Get());
 }
 
-void BrowserPolicyConnectorChromeOS::ShutdownInvalidator() {
+void BrowserPolicyConnectorChromeOS::PreShutdown() {
+  // Let the |device_cloud_policy_invalidator_| unregister itself as an
+  // observer of per-Profile InvalidationServices and the device-global
+  // invalidation::TiclInvalidationService it may have created as an observer of
+  // the DeviceOAuth2TokenService that is destroyed before Shutdown() is called.
   device_cloud_policy_invalidator_.reset();
+
+  // The |consumer_management_service_| may be observing a
+  // ProfileOAuth2TokenService and needs to be destroyed before the token
+  // service.
+  consumer_management_service_.reset();
 }
 
 void BrowserPolicyConnectorChromeOS::Shutdown() {
-  // Verify that ShutdownInvalidator() has been called first.
+  // Verify that PreShutdown() has been called first.
   DCHECK(!device_cloud_policy_invalidator_);
+  DCHECK(!consumer_management_service_);
 
   // The AppPackUpdater may be observing the |device_cloud_policy_manager_|.
   // Delete it first.
@@ -275,6 +286,11 @@ AppPackUpdater* BrowserPolicyConnectorChromeOS::GetAppPackUpdater() {
 void BrowserPolicyConnectorChromeOS::SetUserPolicyDelegate(
     ConfigurationPolicyProvider* user_policy_provider) {
   global_user_cloud_policy_provider_->SetDelegate(user_policy_provider);
+}
+
+void BrowserPolicyConnectorChromeOS::SetDeviceCloudPolicyInitializerForTesting(
+    scoped_ptr<DeviceCloudPolicyInitializer> initializer) {
+  device_cloud_policy_initializer_ = initializer.Pass();
 }
 
 void BrowserPolicyConnectorChromeOS::SetInstallAttributesForTesting(
