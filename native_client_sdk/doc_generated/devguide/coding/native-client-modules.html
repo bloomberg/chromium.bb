@@ -123,9 +123,9 @@ the NaCl SDK), these three components are specified in the file
 <code>hello_tutorial.cc</code>. Here is the factory function:</p>
 <pre class="prettyprint">
 namespace pp {
-Module* CreateModule() {
-  return new HelloTutorialModule();
-}
+  Module* CreateModule() {
+    return new HelloTutorialModule();
+  }
 }
 </pre>
 <p>The <code>CreateModule()</code> factory function is the main binding point between a

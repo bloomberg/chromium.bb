@@ -140,9 +140,9 @@ the NaCl SDK), these three components are specified in the file
 .. naclcode::
 
   namespace pp {
-  Module* CreateModule() {
-    return new HelloTutorialModule();
-  }
+    Module* CreateModule() {
+      return new HelloTutorialModule();
+    }
   }
 
 The ``CreateModule()`` factory function is the main binding point between a

@@ -394,12 +394,12 @@ to avoid client side buffers. Use Vertex Buffer Objects (VBOs) instead.</li>
 to a single point. You could create a buffer and bind it to both
 <code>GL_ARRAY_BUFFER</code> and <code>GL_ELEMENT_ARRAY_BUFFER</code>, but that would be
 expensive overhead and it is not recommended.</li>
-<li><strong>Don&#8217;t call ``glGet*`` or ``glCheck*`` during rendering.</strong> This is normal
+<li><strong>Don&#8217;t call glGet* or glCheck* during rendering.</strong> This is normal
 advice for OpenGL programs, but is particularly important for 3D on
 Chrome. Calls to any OpenGL ES 2.0 function whose name begins with these
 strings blocks the Native Client thread. This includes <code>glGetError</code>; avoid
 calling it in release builds.</li>
-<li><strong>Don&#8217;t use fixed point (``GL_FIXED``) vertex attributes.</strong> Fixed point
+<li><strong>Don&#8217;t use fixed point (GL_FIXED) vertex attributes.</strong> Fixed point
 attributes are not supported in OpenGL ES 2.0, so emulating them in OpenGL ES
 2.0 is slow. By default, <code>GL_FIXED</code> support is turned off in the Pepper 3D
 API.</li>
@@ -408,7 +408,7 @@ API.</li>
 2.0 implementation when you update a portion of a buffer (with
 <code>glSubBufferData</code> for example) the entire buffer must be reprocessed. To
 avoid this problem, keep static and dynamic data in different buffers.</li>
-<li><strong>Don&#8217;t call ``glDisable(GL_TEXTURE_2D)``.</strong> This is an OpenGL ES 2.0
+<li><strong>Don&#8217;t call glDisable(GL_TEXTURE_2D).</strong> This is an OpenGL ES 2.0
 error. Each time it is called, an error messages will appear in Chrome&#8217;s
 <code>about:gpu</code> tab.</li>
 </ul>

@@ -507,13 +507,13 @@ Don'ts
   ``GL_ARRAY_BUFFER`` and ``GL_ELEMENT_ARRAY_BUFFER``, but that would be
   expensive overhead and it is not recommended.
 
-* **Don't call ``glGet*`` or ``glCheck*`` during rendering.** This is normal
+* **Don't call glGet* or glCheck* during rendering.** This is normal
   advice for OpenGL programs, but is particularly important for 3D on
   Chrome. Calls to any OpenGL ES 2.0 function whose name begins with these
   strings blocks the Native Client thread. This includes ``glGetError``; avoid
   calling it in release builds.
 
-* **Don't use fixed point (``GL_FIXED``) vertex attributes.** Fixed point
+* **Don't use fixed point (GL_FIXED) vertex attributes.** Fixed point
   attributes are not supported in OpenGL ES 2.0, so emulating them in OpenGL ES
   2.0 is slow. By default, ``GL_FIXED`` support is turned off in the Pepper 3D
   API.
@@ -525,6 +525,6 @@ Don'ts
   ``glSubBufferData`` for example) the entire buffer must be reprocessed. To
   avoid this problem, keep static and dynamic data in different buffers.
 
-* **Don't call ``glDisable(GL_TEXTURE_2D)``.** This is an OpenGL ES 2.0
+* **Don't call glDisable(GL_TEXTURE_2D).** This is an OpenGL ES 2.0
   error. Each time it is called, an error messages will appear in Chrome's
   ``about:gpu`` tab.

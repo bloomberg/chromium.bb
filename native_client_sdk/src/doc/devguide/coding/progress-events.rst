@@ -22,8 +22,8 @@ chapter assumes you are familiar with the material presented in the
   :class: note
 
   The load_progress example illustrates progress event handling. You can find
-  this code in the ``/examples/tutorial/load_progress/`` directory in the Native
-  Client SDK download.
+  this code in the ``/pepper_<version>/examples/tutorial/load_progress/`` 
+  directory in the Native Client SDK download.
 
 Module loading and progress events
 ==================================

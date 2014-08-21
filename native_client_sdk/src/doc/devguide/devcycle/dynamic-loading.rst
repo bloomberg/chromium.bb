@@ -84,13 +84,20 @@ library.**
 .. Note::
   :class: note
 
-  **Notes:**
+  **Disclaimer:**
 
   * **None of the above constitutes legal advice, or a description of the legal
     obligations you need to fulfill in order to be compliant with the LGPL or
     newlib licenses. The above description is only a technical explanation of
     the differences between newlib and glibc, and the choice you must make
     between the two libraries.**
+
+
+
+.. Note::
+  :class: note
+
+  **Notes:**
 
   * Static linking with glibc is rarely used. Use this feature with caution.
 

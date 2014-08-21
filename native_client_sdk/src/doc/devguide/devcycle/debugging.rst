@@ -27,15 +27,15 @@ application:
    memory information are visible. If they are not, right click in the header
    row and select the memory items from the popup menu that appears.
 
-A browser window running a Native Client application will have at least two
-processes associated with it: a process for the app's top level (the render
-process managing the page including its HTML and any JavaScript) and one or
-more processes for each instance of a Native Client module embedded in the page
-(each process running native code from one nexe file). The top-level process
-appears with the application's icon and begins with the text "App:". A Native
-Client process appears with a Chrome extension icon (a jigsaw puzzle piece
-|puzzle|) and begins with the text "Native Client module" followed by the URL
-of its manifest file.
+A browser window running a Native Client application has at least two processes
+associated with it: a process for the app's top level (the render process
+managing the page including its HTML and JavaScript) and one or more
+processes for each instance of a Native Client module embedded in the page
+(each process running native code from one nexe or pexe file). The top-level
+process appears with the application's icon and begins with the text "Tab:". 
+A Native Client process appears with a Chrome extension icon (a jigsaw puzzle
+piece |puzzle|) and begins with the text "Native Client module:" followed by the
+URL of its manifest file.
 
 From the Task Manager you can view the changing memory allocations of all the
 processes associated with a Native Client application. Each process has its own
@@ -52,9 +52,10 @@ increase the amount of Native Client's diagnostic output by setting the
 following `environment variables
 <http://en.wikipedia.org/wiki/Environment_variable>`_:
 
-* NACL_PLUGIN_DEBUG=1
-* NACL_SRPC_DEBUG=[1-255] (use a higher number for more verbose debug output)
-* NACLVERBOSITY=[1-255]
+* ``NACL_PLUGIN_DEBUG=1``
+* ``NACL_SRPC_DEBUG=[1-255]`` (use a higher number for more verbose debug
+  output)
+* ``NACLVERBOSITY=[1-255]``
 
 Basic debugging
 ===============
@@ -62,12 +63,12 @@ Basic debugging
 Writing messages to the JavaScript console
 ------------------------------------------
 
-You can send messages from your C/C++ code to JavaScript using the PostMessage
-call in the :doc:`Pepper messaging system <../coding/message-system>`. When the
-JavaScript code receives a message, its message event handler can call
-`console.log() <https://developer.mozilla.org/en/DOM/console.log>`_ to write
-the message to the JavaScript `console </devtools/docs/console-api>`_ in
-Chrome's Developer Tools.
+You can send messages from your C/C++ code to JavaScript using the 
+``PostMessage()`` call in the :doc:`Pepper messaging system 
+<../coding/message-system>`. When the JavaScript code receives a message, its 
+message event handler can call `console.log() 
+<https://developer.mozilla.org/en/DOM/console.log>`_ to write the message to the
+JavaScript `console </devtools/docs/console-api>`_ in Chrome's Developer Tools.
 
 Debugging with printf
 ---------------------
@@ -88,10 +89,12 @@ calling fprintf() directly, or by using cover functions like these:
 By default stdout and stderr will appear in Chrome's stdout and stderr stream
 but they can also be redirected as described below.
 
+
 Redirecting output to log files
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-You can redirect stdout and stderr to output files by setting these environment variables:
+You can redirect stdout and stderr to output files by setting these environment
+variables:
 
 * ``NACL_EXE_STDOUT=c:\nacl_stdout.log``
 * ``NACL_EXE_STDERR=c:\nacl_stderr.log``
@@ -106,10 +109,10 @@ variable as follows:
 .. Note::
   :class: note
 
-  **Note:** If you set the NACL_EXE_STDOUT, NACL_EXE_STDERR, or NACLLOG
-  variables to redirect output to a file, you must run Chrome with the
-  ``--no-sandbox`` flag.  You must also be careful that each variable points to
-  a different file.
+  **Note:** If you set the ``NACL_EXE_STDOUT``, ``NACL_EXE_STDERR``, or
+  ``NACLLOG`` variables to redirect output to a file, you must run Chrome with
+  the ``--no-sandbox`` flag.  You must also be careful that each variable points
+  to a different file.
 
 Redirecting output to the JavaScript console
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -119,15 +122,15 @@ relayed to the JavaScript side of your application through the Pepper messaging
 system, where you can then write the output to the JavaScript console. Follow
 these steps:
 
-#. Set the NACL_EXE_STDOUT and NACL_EXE_STDERR environment variables as
+#. Set the ``NACL_EXE_STDOUT`` and ``NACL_EXE_STDERR`` environment variables as
    follows:
 
-   * NACL_EXE_STDOUT=DEBUG_ONLY:dev://postmessage
-   * NACL_EXE_STDERR=DEBUG_ONLY:dev://postmessage
+   * ``NACL_EXE_STDOUT=DEBUG_ONLY:dev://postmessage``
+   * ``NACL_EXE_STDERR=DEBUG_ONLY:dev://postmessage``
 
-   These settings tell Native Client to use PostMessage() to send output that
-   your Native Client module writes to stdout and stderr to the JavaScript side
-   of your application.
+   These settings tell Native Client to use ``PostMessage()`` to send output
+   that your Native Client module writes to stdout and stderr to the JavaScript
+   side of your application.
 
 #. Register a JavaScript handler to receive messages from your Native Client
    module:
@@ -161,7 +164,7 @@ these steps:
    Once you've implemented a message handler and set up the environment
    variables as described above, you can check the JavaScript console to see
    output that your Native Client module prints to stdout and stderr. Keep in
-   mind that your module makes a call to PostMessage() every time it flushes
+   mind that your module makes a call to ``PostMessage()`` every time it flushes
    stdout or stderr.  Your application's performance will degrade considerably
    if your module prints and flushes frequently, or if it makes frequent Pepper
    calls to begin with (e.g., to render).
@@ -201,8 +204,8 @@ Debugging with nacl-gdb
 The Native Client SDK includes a command-line debugger that you can use to
 debug Native Client modules. The debugger is based on the GNU debugger `gdb
 <http://www.gnu.org/software/gdb/>`_, and is located at
-``toolchain/<platform>_x86_newlib/bin/x86_64-nacl-gdb`` (where *<platform>*
-is the platform of your development machine: ``win``, ``mac``, or
+``pepper_<version>/toolchain/<platform>_x86_newlib/bin/x86_64-nacl-gdb`` (where
+*<platform>* is the platform of your development machine: ``win``, ``mac``, or
 ``linux``).
 
 Note that this same copy of GDB can be used to debug any NaCl program,
@@ -212,8 +215,8 @@ and ``glibc`` toolchains both contain the same version of GDB.
 
 .. _debugging_pnacl_pexes:
 
-Debugging PNaCl pexes (with Pepper 35+)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Debugging PNaCl pexes (Pepper 35 or later)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If you want to use GDB to debug a program that is compiled with the PNaCl
 toolchain, you must have a copy of the pexe from **before** running
@@ -229,7 +232,7 @@ is not considered stable. This means that a debug copy of the PNaCl
 application created by a Pepper N SDK is only guaranteed to run
 with a matching Chrome version N. If the version of the debug bitcode pexe
 does not match that of Chrome then the translation process may fail, and
-you will see and error message in the JavaScript console.
+you will see an error message in the JavaScript console.
 
 Also, make sure you are passing the ``-g`` :ref:`compile option
 <compile_flags>` to ``pnacl-clang`` to enable generating debugging info.
@@ -293,10 +296,12 @@ pepper 35 or later.)
   .. naclcode::
     :prettyprint: 0
 
-    <NACL_SDK_ROOT>/toolchain/win_pnacl/bin/pnacl-translate ^
-      --allow-llvm-bitcode-input hello_world.pexe -arch x86-32 -o hello_world_x86_32.nexe
-    <NACL_SDK_ROOT>/toolchain/win_pnacl/bin/pnacl-translate ^
-      --allow-llvm-bitcode-input hello_world.pexe -arch x86-64 -o hello_world_x86_64.nexe
+    nacl_sdk/pepper_<version>/toolchain/win_pnacl/bin/pnacl-translate \
+      --allow-llvm-bitcode-input hello_world.pexe -arch x86-32 \
+      -o hello_world_x86_32.nexe
+    nacl_sdk/pepper_<version>/toolchain/win_pnacl/bin/pnacl-translate \
+      --allow-llvm-bitcode-input hello_world.pexe -arch x86-64 \
+      -o hello_world_x86_64.nexe
 
   For this, use the non-finalized ``pexe`` file produced by
   ``pnacl-clang``, not the ``pexe`` file produced by ``pnacl-finalize``.
@@ -419,24 +424,25 @@ Follow the instructions below to debug your module with nacl-gdb:
 #. Go to the directory with your source code, and run nacl-gdb from there. For
    example::
 
-     cd <NACL_SDK_ROOT>/examples/hello_world_gles
-     <NACL_SDK_ROOT>/toolchain/win_x86_newlib/bin/x86_64-nacl-gdb
+     cd nacl_sdk/pepper_<version>/examples/demo/drive
+     nacl_sdk/pepper_<version>/toolchain/win_x86_newlib/bin/x86_64-nacl-gdb
 
    The debugger will start and show you a gdb prompt::
 
      (gdb)
 
-#. For debugging PNaCl pexes run the following gdb command lines
-   (skip to the next item if you are using NaCl instead of PNaCl)::
+#. Run the debugging command lines.
 
+   **For PNaCl**::
+   
      (gdb) target remote localhost:4014
      (gdb) remote get nexe <path-to-save-translated-nexe-with-debug-info>
      (gdb) file <path-to-save-translated-nexe-with-debug-info>
      (gdb) remote get irt <path-to-save-NaCl-integrated-runtime>
      (gdb) nacl-irt <path-to-saved-NaCl-integrated-runtime>
 
-#. For NaCl nexes, run the following commands from the gdb command line::
-
+   **For NaCl**::
+   
      (gdb) target remote localhost:4014
      (gdb) nacl-manifest <path-to-your-.nmf-file>
      (gdb) remote get irt <path-to-save-NaCl-integrated-runtime>
@@ -474,7 +480,7 @@ Follow the instructions below to debug your module with nacl-gdb:
      SxS/Application/23.0.1247.1/nacl_irt_x86_64.nexe``.
      The ``remote get irt <path>`` saves that to the current working
      directory so that you do not need to find where exactly the IRT
-     is stored alongside Chrome.
+     is stored.
 
    ``nacl-irt <path>``
      Tells the debugger where to find the Native Client Integrated Runtime
@@ -495,13 +501,13 @@ Follow the instructions below to debug your module with nacl-gdb:
    Windows::
 
      target remote localhost:4014
-     nacl-manifest "C:/<NACL_SDK_ROOT>/examples/hello_world_gles/newlib/Debug/hello_world_gles.nmf"
+     nacl-manifest "C:/nacl_sdk/pepper_<version>/examples/hello_world_gles/newlib/Debug/hello_world_gles.nmf"
      nacl-irt "C:/Users/<username>/AppData/Local/Google/Chrome SxS/Application/23.0.1247.1/nacl_irt_x86_64.nexe"
 
    To save yourself some typing, you can put put these nacl-gdb commands in a
    script file, and execute the file when you run nacl-gdb, like so::
 
-     <NACL_SDK_ROOT>/toolchain/win_x86_newlib/bin/x86_64-nacl-gdb -x <nacl-script-file>
+     nacl_sdk/pepper_<version>/toolchain/win_x86_newlib/bin/x86_64-nacl-gdb -x <nacl-script-file>
 
    If nacl-gdb connects successfully to Chrome, it displays a message such as
    the one below, followed by a gdb prompt::
