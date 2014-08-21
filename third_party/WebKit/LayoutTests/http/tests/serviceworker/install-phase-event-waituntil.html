@@ -4,6 +4,12 @@
 <script src="../resources/testharnessreport.js"></script>
 <script src="resources/test-helpers.js"></script>
 <script>
+// Temporary measure to diagnose timeouts on Win XP. Let the W3C harness
+// timeout before run-webkit-tests does, so it can report the particular
+// test that timed out.
+// FIXME: Remove after the cause of timeout is fixed.
+var properties = {timeout: 5500};
+
 // FIXME: Use the test-helpers.js version once it can handle workers that
 // don't install successfully.
 function unregisterAndRegister(test, script, scope) {
@@ -59,7 +65,7 @@ async_test(function(t) {
           });
       };
     runTest(t, scope, onRegister);
-  }, 'Test install event waitUntil fulfilled');
+  }, 'Test install event waitUntil fulfilled', properties);
 
 async_test(function(t) {
     var scope = 'activate-fulfilled';
@@ -78,7 +84,7 @@ async_test(function(t) {
           });
       };
     runTest(t, scope, onRegister);
-  }, 'Test activate event waitUntil fulfilled');
+  }, 'Test activate event waitUntil fulfilled', properties);
 
 async_test(function(t) {
     var scope = 'install-rejected';
@@ -89,7 +95,7 @@ async_test(function(t) {
           });
       };
     runTest(t, scope, onRegister);
-  }, 'Test install event waitUntil rejected');
+  }, 'Test install event waitUntil rejected', properties);
 
 async_test(function(t) {
     var scope = 'activate-rejected';
@@ -100,7 +106,7 @@ async_test(function(t) {
           });
       };
     runTest(t, scope, onRegister);
-  }, 'Test activate event waitUntil rejected.');
+  }, 'Test activate event waitUntil rejected.', properties);
 
 async_test(function(t) {
     var scope = 'activate-multiple-fulfilled';
@@ -114,14 +120,14 @@ async_test(function(t) {
             } else if (worker.state == 'activated') {
               assert_true(
                   obj1.synced && obj2.synced,
-                  'state should be "activated" after all waitUnitl promises ' +
+                  'state should be "activated" after all waitUntil promises ' +
                       'for "onactivate" are fulfilled.');
               service_worker_unregister_and_done(t, scope);
             }
           });
       };
     runTest(t, scope, onRegister);
-  }, 'Test InstallPhaseEvent multiple waitUntil fulfilled.');
+  }, 'Test InstallPhaseEvent multiple waitUntil fulfilled.', properties);
 
 async_test(function(t) {
     var scope = 'activate-reject-precedence';
@@ -132,5 +138,5 @@ async_test(function(t) {
           });
       };
     runTest(t, scope, onRegister);
-  }, 'Test InstallPhaseEvent waitUntil reject precedence.');
+  }, 'Test InstallPhaseEvent waitUntil reject precedence.', properties);
 </script>
