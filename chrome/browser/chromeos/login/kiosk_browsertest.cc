@@ -7,11 +7,16 @@
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/desktop_background/desktop_background_controller_observer.h"
 #include "ash/shell.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/file_util.h"
+#include "base/location.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/synchronization/lock.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/app_mode/fake_cws.h"
@@ -42,6 +47,7 @@
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "components/signin/core/common/signin_pref_names.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
@@ -137,6 +143,12 @@ void ConsumerKioskModeAutoStartLockCheck(
 // Helper function for WaitForNetworkTimeOut.
 void OnNetworkWaitTimedOut(const base::Closure& runner_quit_task) {
   runner_quit_task.Run();
+}
+
+// Helper function for LockFileThread.
+void LockAndUnlock(scoped_ptr<base::Lock> lock) {
+  lock->Acquire();
+  lock->Release();
 }
 
 // Helper functions for CanConfigureNetwork mock.
@@ -505,6 +517,22 @@ class KioskTest : public OobeBaseTest {
         ->GetAppLaunchController();
   }
 
+  // Returns a lock that is holding a task on the FILE thread. Any tasks posted
+  // to the FILE thread after this call will be blocked until the returned
+  // lock is released.
+  // This can be used to prevent app installation from completing until some
+  // other conditions are checked and triggered. For example, this can be used
+  // to trigger the network screen during app launch without racing with the
+  // app launching process itself.
+  scoped_ptr<base::AutoLock> LockFileThread() {
+    scoped_ptr<base::Lock> lock(new base::Lock);
+    scoped_ptr<base::AutoLock> auto_lock(new base::AutoLock(*lock));
+    content::BrowserThread::PostTask(
+        content::BrowserThread::FILE, FROM_HERE,
+        base::Bind(&LockAndUnlock, base::Passed(&lock)));
+    return auto_lock.Pass();
+  }
+
   MockUserManager* mock_user_manager() { return mock_user_manager_.get(); }
 
   void set_test_app_id(const std::string& test_app_id) {
@@ -559,10 +587,11 @@ IN_PROC_BROWSER_TEST_F(KioskTest, LaunchAppNetworkDown) {
   RunAppLaunchNetworkDownTest();
 }
 
-// TODO(zelidrag): Figure out why this test is flaky on bbots.
-IN_PROC_BROWSER_TEST_F(KioskTest,
-                       DISABLED_LaunchAppWithNetworkConfigAccelerator) {
+IN_PROC_BROWSER_TEST_F(KioskTest, LaunchAppWithNetworkConfigAccelerator) {
   ScopedCanConfigureNetwork can_configure_network(true, false);
+
+  // Block app loading until the network screen is shown.
+  scoped_ptr<base::AutoLock> lock = LockFileThread();
 
   // Start app launch and wait for network connectivity timeout.
   StartAppLaunchFromLoginScreen(SimulateNetworkOnlineClosure());
@@ -588,6 +617,9 @@ IN_PROC_BROWSER_TEST_F(KioskTest,
       "var e = new Event('click');"
       "$('continue-network-config-btn').dispatchEvent(e);"
       "})();"));
+
+  // Let app launching resume.
+  lock.reset();
 
   WaitForAppLaunchSuccess();
 }
