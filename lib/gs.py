@@ -784,24 +784,24 @@ class GSContext(object):
     Returns:
       A tuple of the generation and metageneration.
     """
-    def _Header(name):
+    def _Field(name):
       if res and res.returncode == 0 and res.output is not None:
-        # Search for a header that looks like this:
-        # header: x-goog-generation: 1378856506589000
-        m = re.search(r'header: %s: (\d+)' % name, res.output)
+        # Search for a field that looks like this:
+        # Generation: 1378856506589000
+        m = re.search(r'%s:\s*(\d+)' % name, res.output)
         if m:
           return int(m.group(1))
       return 0
 
     try:
-      res = self.DoCommand(['-d', 'acl', 'get', path],
+      res = self.DoCommand(['stat', path],
                            error_code_ok=True, redirect_stdout=True)
     except GSNoSuchKey:
       # If a DoCommand throws an error, 'res' will be None, so _Header(...)
       # will return 0 in both of the cases below.
       pass
 
-    return (_Header('x-goog-generation'), _Header('x-goog-metageneration'))
+    return (_Field('Generation'), _Field('Metageneration'))
 
   def Counter(self, path):
     """Return a GSCounter object pointing at a |path| in Google Storage.
