@@ -96,7 +96,7 @@ cr.define('cr.ui', function() {
       while (el && el.parentNode != this) {
         el = el.parentNode;
       }
-      return assertInstanceof(el, MenuItem);
+      return el ? assertInstanceof(el, MenuItem) : null;
     },
 
     /**

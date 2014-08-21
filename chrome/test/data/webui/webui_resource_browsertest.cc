@@ -111,6 +111,16 @@ IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, LocalStringsTest) {
   RunTest(base::FilePath(FILE_PATH_LITERAL("local_strings_test.html")));
 }
 
+IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, MenuTest) {
+  AddLibrary(IDR_WEBUI_JS_ASSERT);
+  AddLibrary(IDR_WEBUI_JS_CR);
+  AddLibrary(IDR_WEBUI_JS_CR_UI);
+  AddLibrary(IDR_WEBUI_JS_CR_UI_COMMAND);
+  AddLibrary(IDR_WEBUI_JS_CR_UI_MENU_ITEM);
+  AddLibrary(IDR_WEBUI_JS_CR_UI_MENU);
+  RunTest(base::FilePath(FILE_PATH_LITERAL("menu_test.html")));
+}
+
 IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, MockTimerTest) {
   RunTest(base::FilePath(FILE_PATH_LITERAL("mock_timer_test.html")));
 }

@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script>
+
+function testHandleMouseOver() {
+  var menu = new cr.ui.Menu;
+
+  var called = false;
+  menu.findMenuItem_ = function() {
+    called = true;
+    return cr.ui.Menu.prototype.findMenuItem_.apply(this, arguments);
+  };
+
+  var over = new MouseEvent('mouseover', {bubbles: true, target: cr.doc.body});
+  assertFalse(called);
+  menu.dispatchEvent(over);
+  assertTrue(called);
+}
+
+</script>
+</body>
+</html>
