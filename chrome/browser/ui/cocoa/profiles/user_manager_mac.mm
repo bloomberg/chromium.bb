@@ -92,11 +92,10 @@ class UserManagerWebContentsDelegate : public content::WebContentsDelegate {
 - (id)initWithProfile:(Profile*)profile
          withObserver:(UserManagerMac*)userManagerObserver {
 
-  // Center the window on the primary screen.
-  CGFloat screenHeight =
-      [[[NSScreen screens] objectAtIndex:0] frame].size.height;
-  CGFloat screenWidth =
-      [[[NSScreen screens] objectAtIndex:0] frame].size.width;
+  // Center the window on the screen that currently has focus.
+  NSScreen* mainScreen = [NSScreen mainScreen];
+  CGFloat screenHeight = [mainScreen frame].size.height;
+  CGFloat screenWidth = [mainScreen frame].size.width;
 
   NSRect contentRect = NSMakeRect((screenWidth - kWindowWidth) / 2,
                                   (screenHeight - kWindowHeight) / 2,
@@ -107,7 +106,8 @@ class UserManagerWebContentsDelegate : public content::WebContentsDelegate {
                           NSClosableWindowMask |
                           NSResizableWindowMask
                   backing:NSBackingStoreBuffered
-                    defer:NO];
+                    defer:NO
+                   screen:mainScreen];
   [window setTitle:l10n_util::GetNSString(IDS_PRODUCT_NAME)];
   [window setMinSize:NSMakeSize(kWindowWidth, kWindowHeight)];
 
