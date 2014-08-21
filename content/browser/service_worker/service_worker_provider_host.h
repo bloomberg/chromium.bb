@@ -40,7 +40,7 @@ class ServiceWorkerVersion;
 // Note this class can also host a running service worker, in which
 // case it will observe resource loads made directly by the service worker.
 class CONTENT_EXPORT ServiceWorkerProviderHost
-    : public ServiceWorkerRegistration::Listener,
+    : public NON_EXPORTED_BASE(ServiceWorkerRegistration::Listener),
       public base::SupportsWeakPtr<ServiceWorkerProviderHost> {
  public:
   ServiceWorkerProviderHost(int process_id,

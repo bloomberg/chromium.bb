@@ -20,11 +20,9 @@ namespace content {
 class ServiceWorkerRegistrationInfo;
 class ServiceWorkerVersion;
 
-// This class represents a service worker registration. The
-// scope and script url are constant for the life of the persistent
-// registration. It's refcounted to facillitate multiple controllees
-// being associated with the same registration. The class roughly
-// corresponds to navigator.serviceWorker.registgration.
+// This class represents a Service Worker registration. The scope is constant
+// for the life of the persistent registration. It's refcounted to facilitate
+// multiple controllees being associated with the same registration.
 class CONTENT_EXPORT ServiceWorkerRegistration
     : NON_EXPORTED_BASE(public base::RefCounted<ServiceWorkerRegistration>),
       public ServiceWorkerVersion::Listener {
@@ -36,9 +34,11 @@ class CONTENT_EXPORT ServiceWorkerRegistration
     virtual void OnVersionAttributesChanged(
         ServiceWorkerRegistration* registration,
         ChangedVersionAttributesMask changed_mask,
-        const ServiceWorkerRegistrationInfo& info) = 0;
+        const ServiceWorkerRegistrationInfo& info) {}
     virtual void OnRegistrationFailed(
-        ServiceWorkerRegistration* registration) = 0;
+        ServiceWorkerRegistration* registration) {}
+    virtual void OnRegistrationFinishedUninstalling(
+        ServiceWorkerRegistration* registration) {}
   };
 
   ServiceWorkerRegistration(const GURL& pattern,
@@ -46,9 +46,15 @@ class CONTENT_EXPORT ServiceWorkerRegistration
                             int64 registration_id,
                             base::WeakPtr<ServiceWorkerContextCore> context);
 
-  int64 id() const { return registration_id_; }
-  const GURL& script_url() const { return script_url_; }
   const GURL& pattern() const { return pattern_; }
+
+  // Corresponds to the spec's [[ScriptURL]]: the URL passed to the
+  // serviceWorker.navigator.register() call that created or last updated this
+  // registration.
+  const GURL& script_url() const { return script_url_; }
+  void set_script_url(const GURL& url) { script_url_ = url; }
+
+  int64 id() const { return registration_id_; }
 
   bool is_deleted() const { return is_deleted_; }
   void set_is_deleted(bool deleted) { is_deleted_ = deleted; }
@@ -96,9 +102,8 @@ class CONTENT_EXPORT ServiceWorkerRegistration
   void ClearWhenReady();
 
   // Restores this registration in storage and cancels the pending
-  // [[ClearRegistration]] algorithm. If the algorithm was already triggered,
-  // does nothing.
-  void AbortPendingClear();
+  // [[ClearRegistration]] algorithm.
+  void AbortPendingClear(const StatusCallback& callback);
 
   // The time of the most recent update check.
   base::Time last_update_check() const { return last_update_check_; }
@@ -129,11 +134,13 @@ class CONTENT_EXPORT ServiceWorkerRegistration
 
   // This method corresponds to the [[ClearRegistration]] algorithm.
   void Clear();
-  void OnStoreFinished(scoped_refptr<ServiceWorkerVersion> version,
-                       ServiceWorkerStatusCode status);
+
+  void OnRestoreFinished(const StatusCallback& callback,
+                         scoped_refptr<ServiceWorkerVersion> version,
+                         ServiceWorkerStatusCode status);
 
   const GURL pattern_;
-  const GURL script_url_;
+  GURL script_url_;
   const int64 registration_id_;
   bool is_deleted_;
   bool is_uninstalling_;
