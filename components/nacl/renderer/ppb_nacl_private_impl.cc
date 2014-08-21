@@ -11,7 +11,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
-#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/cpu.h"
 #include "base/files/file.h"
 #include "base/lazy_instance.h"
@@ -103,20 +102,6 @@ typedef std::map<PP_Instance, InstanceInfo> InstanceInfoMap;
 base::LazyInstance<InstanceInfoMap> g_instance_info =
     LAZY_INSTANCE_INITIALIZER;
 
-typedef base::ScopedPtrHashMap<PP_Instance, NexeLoadManager>
-    NexeLoadManagerMap;
-
-base::LazyInstance<NexeLoadManagerMap> g_load_manager_map =
-    LAZY_INSTANCE_INITIALIZER;
-
-nacl::NexeLoadManager* GetNexeLoadManager(PP_Instance instance) {
-  NexeLoadManagerMap& map = g_load_manager_map.Get();
-  NexeLoadManagerMap::iterator iter = map.find(instance);
-  if (iter != map.end())
-    return iter->second;
-  return NULL;
-}
-
 static const PP_NaClFileInfo kInvalidNaClFileInfo = {
     PP_kInvalidFileHandle,
     0,  // token_lo
@@ -185,7 +170,7 @@ class ManifestServiceProxy : public ManifestServiceChannel::Delegate {
   virtual void StartupInitializationComplete() OVERRIDE {
     if (StartPpapiProxy(pp_instance_) == PP_TRUE) {
       JsonManifest* manifest = GetJsonManifest(pp_instance_);
-      NexeLoadManager* load_manager = GetNexeLoadManager(pp_instance_);
+      NexeLoadManager* load_manager = NexeLoadManager::Get(pp_instance_);
       if (load_manager && manifest) {
         std::string full_url;
         PP_PNaClOptions pnacl_options;
@@ -383,7 +368,7 @@ void LaunchSelLdr(PP_Instance instance,
 
   if (!error_message_string.empty()) {
     if (PP_ToBool(main_service_runtime)) {
-      NexeLoadManager* load_manager = GetNexeLoadManager(instance);
+      NexeLoadManager* load_manager = NexeLoadManager::Get(instance);
       if (load_manager) {
         load_manager->ReportLoadError(PP_NACL_ERROR_SEL_LDR_LAUNCH,
                                       "ServiceRuntime: failed to start",
@@ -407,7 +392,7 @@ void LaunchSelLdr(PP_Instance instance,
 
   *(static_cast<NaClHandle*>(imc_handle)) = ToNativeHandle(result_socket);
 
-  NexeLoadManager* load_manager = GetNexeLoadManager(instance);
+  NexeLoadManager* load_manager = NexeLoadManager::Get(instance);
   DCHECK(load_manager);
   if (!load_manager) {
     PostPPCompletionCallback(callback, PP_ERROR_FAILED);
@@ -458,7 +443,7 @@ void LaunchSelLdr(PP_Instance instance,
 }
 
 PP_Bool StartPpapiProxy(PP_Instance instance) {
-  NexeLoadManager* load_manager = GetNexeLoadManager(instance);
+  NexeLoadManager* load_manager = NexeLoadManager::Get(instance);
   DCHECK(load_manager);
   if (!load_manager)
     return PP_FALSE;
@@ -659,7 +644,7 @@ void ReportTranslationFinished(PP_Instance instance,
                       compile_time_us);
     HistogramSizeKB("NaCl.Perf.Size.Pexe", pexe_size / 1024);
 
-    NexeLoadManager* load_manager = GetNexeLoadManager(instance);
+    NexeLoadManager* load_manager = NexeLoadManager::Get(instance);
     if (load_manager) {
       base::TimeDelta total_time = base::Time::Now() -
                                    load_manager->pnacl_start_time();
@@ -738,7 +723,7 @@ void DispatchEvent(PP_Instance instance,
 void ReportLoadSuccess(PP_Instance instance,
                        uint64_t loaded_bytes,
                        uint64_t total_bytes) {
-  NexeLoadManager* load_manager = GetNexeLoadManager(instance);
+  NexeLoadManager* load_manager = NexeLoadManager::Get(instance);
   if (load_manager) {
     load_manager->ReportLoadSuccess(load_manager->program_url(),
                                     loaded_bytes,
@@ -749,42 +734,30 @@ void ReportLoadSuccess(PP_Instance instance,
 void ReportLoadError(PP_Instance instance,
                      PP_NaClError error,
                      const char* error_message) {
-  NexeLoadManager* load_manager = GetNexeLoadManager(instance);
+  NexeLoadManager* load_manager = NexeLoadManager::Get(instance);
   if (load_manager)
     load_manager->ReportLoadError(error, error_message);
 }
 
 void ReportLoadAbort(PP_Instance instance) {
-  NexeLoadManager* load_manager = GetNexeLoadManager(instance);
+  NexeLoadManager* load_manager = NexeLoadManager::Get(instance);
   if (load_manager)
     load_manager->ReportLoadAbort();
 }
 
 void NexeDidCrash(PP_Instance instance) {
-  NexeLoadManager* load_manager = GetNexeLoadManager(instance);
+  NexeLoadManager* load_manager = NexeLoadManager::Get(instance);
   if (load_manager)
     load_manager->NexeDidCrash();
 }
 
 void InstanceCreated(PP_Instance instance) {
-  scoped_ptr<NexeLoadManager> new_load_manager(new NexeLoadManager(instance));
-  NexeLoadManagerMap& map = g_load_manager_map.Get();
-  DLOG_IF(ERROR, map.count(instance) != 0) << "Instance count should be 0";
-  map.add(instance, new_load_manager.Pass());
+  NexeLoadManager::Create(instance);
 }
 
 void InstanceDestroyed(PP_Instance instance) {
   DeleteJsonManifest(instance);
-
-  NexeLoadManagerMap& map = g_load_manager_map.Get();
-  DLOG_IF(ERROR, map.count(instance) == 0) << "Could not find instance ID";
-  // The erase may call NexeLoadManager's destructor prior to removing it from
-  // the map. In that case, it is possible for the trusted Plugin to re-enter
-  // the NexeLoadManager (e.g., by calling ReportLoadError). Passing out the
-  // NexeLoadManager to a local scoped_ptr just ensures that its entry is gone
-  // from the map prior to the destructor being invoked.
-  scoped_ptr<NexeLoadManager> temp(map.take(instance));
-  map.erase(instance);
+  NexeLoadManager::Delete(instance);
 }
 
 PP_Bool NaClDebugEnabledForURL(const char* alleged_nmf_url) {
@@ -800,14 +773,14 @@ PP_Bool NaClDebugEnabledForURL(const char* alleged_nmf_url) {
 }
 
 void LogToConsole(PP_Instance instance, const char* message) {
-  NexeLoadManager* load_manager = GetNexeLoadManager(instance);
+  NexeLoadManager* load_manager = NexeLoadManager::Get(instance);
   DCHECK(load_manager);
   if (load_manager)
     load_manager->LogToConsole(std::string(message));
 }
 
 PP_NaClReadyState GetNaClReadyState(PP_Instance instance) {
-  NexeLoadManager* load_manager = GetNexeLoadManager(instance);
+  NexeLoadManager* load_manager = NexeLoadManager::Get(instance);
   DCHECK(load_manager);
   if (load_manager)
     return load_manager->nacl_ready_state();
@@ -815,7 +788,7 @@ PP_NaClReadyState GetNaClReadyState(PP_Instance instance) {
 }
 
 int32_t GetExitStatus(PP_Instance instance) {
-  NexeLoadManager* load_manager = GetNexeLoadManager(instance);
+  NexeLoadManager* load_manager = NexeLoadManager::Get(instance);
   DCHECK(load_manager);
   if (load_manager)
     return load_manager->exit_status();
@@ -823,7 +796,7 @@ int32_t GetExitStatus(PP_Instance instance) {
 }
 
 void SetExitStatus(PP_Instance instance, int32_t exit_status) {
-  NexeLoadManager* load_manager = GetNexeLoadManager(instance);
+  NexeLoadManager* load_manager = NexeLoadManager::Get(instance);
   DCHECK(load_manager);
   if (load_manager)
     return load_manager->set_exit_status(exit_status);
@@ -837,14 +810,14 @@ void InitializePlugin(PP_Instance instance,
                       uint32_t argc,
                       const char* argn[],
                       const char* argv[]) {
-  NexeLoadManager* load_manager = GetNexeLoadManager(instance);
+  NexeLoadManager* load_manager = NexeLoadManager::Get(instance);
   DCHECK(load_manager);
   if (load_manager)
     load_manager->InitializePlugin(argc, argn, argv);
 }
 
 int64_t GetNexeSize(PP_Instance instance) {
-  NexeLoadManager* load_manager = GetNexeLoadManager(instance);
+  NexeLoadManager* load_manager = NexeLoadManager::Get(instance);
   DCHECK(load_manager);
   if (load_manager)
     return load_manager->nexe_size();
@@ -860,7 +833,7 @@ bool CreateJsonManifest(PP_Instance instance,
 
 void RequestNaClManifest(PP_Instance instance,
                          PP_CompletionCallback callback) {
-  NexeLoadManager* load_manager = GetNexeLoadManager(instance);
+  NexeLoadManager* load_manager = NexeLoadManager::Get(instance);
   DCHECK(load_manager);
   if (!load_manager) {
     ppapi::PpapiGlobals::Get()->GetMainThreadMessageLoop()->PostTask(
@@ -907,7 +880,7 @@ void RequestNaClManifest(PP_Instance instance,
 }
 
 PP_Var GetManifestBaseURL(PP_Instance instance) {
-  NexeLoadManager* load_manager = GetNexeLoadManager(instance);
+  NexeLoadManager* load_manager = NexeLoadManager::Get(instance);
   DCHECK(load_manager);
   if (!load_manager)
     return PP_MakeUndefined();
@@ -918,13 +891,13 @@ PP_Var GetManifestBaseURL(PP_Instance instance) {
 }
 
 void ProcessNaClManifest(PP_Instance instance, const char* program_url) {
-  nacl::NexeLoadManager* load_manager = GetNexeLoadManager(instance);
+  nacl::NexeLoadManager* load_manager = NexeLoadManager::Get(instance);
   if (load_manager)
     load_manager->ProcessNaClManifest(program_url);
 }
 
 PP_Bool DevInterfacesEnabled(PP_Instance instance) {
-  nacl::NexeLoadManager* load_manager = GetNexeLoadManager(instance);
+  nacl::NexeLoadManager* load_manager = NexeLoadManager::Get(instance);
   if (load_manager)
     return PP_FromBool(load_manager->DevInterfacesEnabled());
   return PP_FALSE;
@@ -938,7 +911,7 @@ void DownloadManifestToBufferCompletion(PP_Instance instance,
 
 void DownloadManifestToBuffer(PP_Instance instance,
                               struct PP_CompletionCallback callback) {
-  nacl::NexeLoadManager* load_manager = GetNexeLoadManager(instance);
+  nacl::NexeLoadManager* load_manager = NexeLoadManager::Get(instance);
   DCHECK(load_manager);
   content::PepperPluginInstance* plugin_instance =
       content::PepperPluginInstance::Get(instance);
@@ -974,7 +947,7 @@ void DownloadManifestToBufferCompletion(PP_Instance instance,
   HistogramTimeSmall("NaCl.Perf.StartupTime.ManifestDownload",
                      download_time.InMilliseconds());
 
-  nacl::NexeLoadManager* load_manager = GetNexeLoadManager(instance);
+  nacl::NexeLoadManager* load_manager = NexeLoadManager::Get(instance);
   if (!load_manager) {
     callback.func(callback.user_data, PP_ERROR_ABORTED);
     return;
@@ -1021,7 +994,7 @@ bool CreateJsonManifest(PP_Instance instance,
   HistogramSizeKB("NaCl.Perf.Size.Manifest",
                   static_cast<int32_t>(manifest_data.length() / 1024));
 
-  nacl::NexeLoadManager* load_manager = GetNexeLoadManager(instance);
+  nacl::NexeLoadManager* load_manager = NexeLoadManager::Get(instance);
   if (!load_manager)
     return false;
 
@@ -1050,7 +1023,7 @@ PP_Bool ManifestGetProgramURL(PP_Instance instance,
                               PP_Var* pp_full_url,
                               PP_PNaClOptions* pnacl_options,
                               PP_Bool* pp_uses_nonsfi_mode) {
-  nacl::NexeLoadManager* load_manager = GetNexeLoadManager(instance);
+  nacl::NexeLoadManager* load_manager = NexeLoadManager::Get(instance);
 
   JsonManifest* manifest = GetJsonManifest(instance);
   if (manifest == NULL)
@@ -1083,7 +1056,7 @@ bool ManifestResolveKey(PP_Instance instance,
     // We can only resolve keys in the files/ namespace.
     const std::string kFilesPrefix = "files/";
     if (key.find(kFilesPrefix) == std::string::npos) {
-      nacl::NexeLoadManager* load_manager = GetNexeLoadManager(instance);
+      nacl::NexeLoadManager* load_manager = NexeLoadManager::Get(instance);
       if (load_manager)
         load_manager->ReportLoadError(PP_NACL_ERROR_MANIFEST_RESOLVE_URL,
                                       "key did not start with files/");
@@ -1106,7 +1079,7 @@ PP_Bool GetPNaClResourceInfo(PP_Instance instance,
                              PP_Var* llc_tool_name,
                              PP_Var* ld_tool_name) {
   static const char kFilename[] = "chrome://pnacl-translator/pnacl.json";
-  NexeLoadManager* load_manager = GetNexeLoadManager(instance);
+  NexeLoadManager* load_manager = NexeLoadManager::Get(instance);
   DCHECK(load_manager);
   if (!load_manager)
     return PP_FALSE;
@@ -1338,7 +1311,7 @@ void DownloadNexeCompletion(const DownloadNexeRequest& request,
 
   base::TimeDelta download_time = base::Time::Now() - request.start_time;
 
-  NexeLoadManager* load_manager = GetNexeLoadManager(request.instance);
+  NexeLoadManager* load_manager = NexeLoadManager::Get(request.instance);
   if (load_manager) {
     load_manager->NexeFileDidOpen(pp_error,
                                   target_file,
@@ -1380,7 +1353,7 @@ void DownloadFile(PP_Instance instance,
   DCHECK(ppapi::PpapiGlobals::Get()->GetMainThreadMessageLoop()->
              BelongsToCurrentThread());
 
-  NexeLoadManager* load_manager = GetNexeLoadManager(instance);
+  NexeLoadManager* load_manager = NexeLoadManager::Get(instance);
   DCHECK(load_manager);
   if (!load_manager) {
     base::MessageLoop::current()->PostTask(
@@ -1480,7 +1453,7 @@ void ReportSelLdrStatus(PP_Instance instance,
                         int32_t load_status,
                         int32_t max_status) {
   HistogramEnumerate("NaCl.LoadStatus.SelLdr", load_status, max_status);
-  NexeLoadManager* load_manager = GetNexeLoadManager(instance);
+  NexeLoadManager* load_manager = NexeLoadManager::Get(instance);
   DCHECK(load_manager);
   if (!load_manager)
     return;
@@ -1535,7 +1508,7 @@ void OpenManifestEntry(PP_Instance instance,
 }
 
 void SetPNaClStartTime(PP_Instance instance) {
-  NexeLoadManager* load_manager = GetNexeLoadManager(instance);
+  NexeLoadManager* load_manager = NexeLoadManager::Get(instance);
   if (load_manager)
     load_manager->set_pnacl_start_time(base::Time::Now());
 }

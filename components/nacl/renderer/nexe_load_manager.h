@@ -30,8 +30,12 @@ class TrustedPluginChannel;
 // nexe.
 class NexeLoadManager {
  public:
-  explicit NexeLoadManager(PP_Instance instance);
   ~NexeLoadManager();
+
+  static void Create(PP_Instance instance);
+  // Non-owning pointer.
+  static NexeLoadManager* Get(PP_Instance instance);
+  static void Delete(PP_Instance instance);
 
   void NexeFileDidOpen(int32_t pp_error,
                        const base::File& file,
@@ -119,6 +123,8 @@ class NexeLoadManager {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NexeLoadManager);
+
+  explicit NexeLoadManager(PP_Instance instance);
 
   void ReportDeadNexe();
 

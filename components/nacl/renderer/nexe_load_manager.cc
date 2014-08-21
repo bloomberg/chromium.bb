@@ -5,6 +5,8 @@
 #include "components/nacl/renderer/nexe_load_manager.h"
 
 #include "base/command_line.h"
+#include "base/containers/scoped_ptr_hash_map.h"
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_tokenizer.h"
@@ -38,6 +40,8 @@
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "v8/include/v8.h"
+
+namespace nacl {
 
 namespace {
 
@@ -76,9 +80,11 @@ std::string LookupAttribute(const std::map<std::string, std::string>& args,
   return std::string();
 }
 
-}  // namespace
+typedef base::ScopedPtrHashMap<PP_Instance, NexeLoadManager> NexeLoadManagerMap;
+base::LazyInstance<NexeLoadManagerMap> g_load_manager_map =
+    LAZY_INSTANCE_INITIALIZER;
 
-namespace nacl {
+}  // namespace
 
 NexeLoadManager::NexeLoadManager(
     PP_Instance pp_instance)
@@ -106,6 +112,32 @@ NexeLoadManager::~NexeLoadManager() {
   }
   if (base::SharedMemory::IsHandleValid(crash_info_shmem_handle_))
     base::SharedMemory::CloseHandle(crash_info_shmem_handle_);
+}
+
+void NexeLoadManager::Create(PP_Instance instance) {
+  scoped_ptr<NexeLoadManager> new_load_manager(new NexeLoadManager(instance));
+  NexeLoadManagerMap& map = g_load_manager_map.Get();
+  DLOG_IF(ERROR, map.count(instance) != 0) << "Instance count should be 0";
+  map.add(instance, new_load_manager.Pass());
+}
+
+NexeLoadManager* NexeLoadManager::Get(PP_Instance instance) {
+  NexeLoadManagerMap& map = g_load_manager_map.Get();
+  NexeLoadManagerMap::iterator iter = map.find(instance);
+  if (iter != map.end())
+    return iter->second;
+  return NULL;
+}
+
+void NexeLoadManager::Delete(PP_Instance instance) {
+  NexeLoadManagerMap& map = g_load_manager_map.Get();
+  // The erase may call NexeLoadManager's destructor prior to removing it from
+  // the map. In that case, it is possible for the trusted Plugin to re-enter
+  // the NexeLoadManager (e.g., by calling ReportLoadError). Passing out the
+  // NexeLoadManager to a local scoped_ptr just ensures that its entry is gone
+  // from the map prior to the destructor being invoked.
+  scoped_ptr<NexeLoadManager> temp(map.take(instance));
+  map.erase(instance);
 }
 
 void NexeLoadManager::NexeFileDidOpen(int32_t pp_error,
