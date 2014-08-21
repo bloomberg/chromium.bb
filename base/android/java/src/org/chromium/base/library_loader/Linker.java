@@ -13,8 +13,6 @@ import android.util.Log;
 import org.chromium.base.SysUtils;
 import org.chromium.base.ThreadUtils;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -595,9 +593,9 @@ public class Linker {
             sBaseLoadAddress = address;
             sCurrentLoadAddress = address;
             if (address == 0) {
-                // If the computed address is 0, there are issues with the
-                // entropy source, so disable RELRO shared / fixed load addresses.
-                Log.w(TAG, "Disabling shared RELROs due to bad entropy sources");
+                // If the computed address is 0, there are issues with finding enough
+                // free address space, so disable RELRO shared / fixed load addresses.
+                Log.w(TAG, "Disabling shared RELROs due address space pressure");
                 sBrowserUsesSharedRelro = false;
                 sWaitForSharedRelros = false;
             }
@@ -606,99 +604,33 @@ public class Linker {
 
 
     /**
-     * Compute a random base load address where to place loaded libraries.
+     * Compute a random base load address at which to place loaded libraries.
      * @return new base load address, or 0 if the system does not support
      * RELRO sharing.
      */
     private static long computeRandomBaseLoadAddress() {
-        // The kernel ASLR feature will place randomized mappings starting
-        // from this address. Never try to load anything above this
-        // explicitly to avoid random conflicts.
-        final long baseAddressLimit = 0x40000000;
-
-        // Start loading libraries from this base address.
-        final long baseAddress = 0x20000000;
-
-        // Maximum randomized base address value. Used to ensure a margin
-        // of 192 MB below baseAddressLimit.
-        final long baseAddressMax = baseAddressLimit - 192 * 1024 * 1024;
-
-        // The maximum limit of the desired random offset.
-        final long pageSize = nativeGetPageSize();
-        final int offsetLimit = (int) ((baseAddressMax - baseAddress) / pageSize);
-
-        // Get the greatest power of 2 that is smaller or equal to offsetLimit.
-        int numBits = 30;
-        for (; numBits > 1; numBits--) {
-            if ((1 << numBits) <= offsetLimit)
-                break;
-        }
-
-        if (DEBUG) {
-            final int maxValue = (1 << numBits) - 1;
-            Log.i(TAG, String.format(Locale.US, "offsetLimit=%d numBits=%d maxValue=%d (0x%x)",
-                offsetLimit, numBits, maxValue, maxValue));
-        }
-
-        // Find a random offset between 0 and (2^numBits - 1), included.
-        int offset = getRandomBits(numBits);
-        long address = 0;
-        if (offset >= 0)
-            address = baseAddress + offset * pageSize;
-
+        // nativeGetRandomBaseLoadAddress() returns an address at which it has previously
+        // successfully mapped an area of the given size, on the basis that we will be
+        // able, with high probability, to map our library into it.
+        //
+        // One issue with this is that we do not yet know the size of the library that
+        // we will load is. So here we pass a value that we expect will always be larger
+        // than that needed. If it is smaller the library mapping may still succeed. The
+        // other issue is that although highly unlikely, there is no guarantee that
+        // something else does not map into the area we are going to use between here and
+        // when we try to map into it.
+        //
+        // The above notes mean that all of this is probablistic. It is however okay to do
+        // because if, worst case and unlikely, we get unlucky in our choice of address,
+        // the back-out and retry without the shared RELRO in the ChildProcessService will
+        // keep things running.
+        final long maxExpectedBytes = 192 * 1024 * 1024;
+        final long address = nativeGetRandomBaseLoadAddress(maxExpectedBytes);
         if (DEBUG) {
             Log.i(TAG,
-                  String.format(Locale.US, "Linker.computeRandomBaseLoadAddress() return 0x%x",
-                                address));
+                  String.format(Locale.US, "Random native base load address: 0x%x", address));
         }
         return address;
-    }
-
-    /**
-     * Return a cryptographically-strong random number of numBits bits.
-     * @param numBits The number of bits in the result. Must be in 1..31 range.
-     * @return A random integer between 0 and (2^numBits - 1), inclusive, or -1
-     * in case of error (e.g. if /dev/urandom can't be opened or read).
-     */
-    private static int getRandomBits(int numBits) {
-        // Sanity check.
-        assert numBits > 0;
-        assert numBits < 32;
-
-        FileInputStream input;
-        try {
-            // A naive implementation would read a 32-bit integer then use modulo, but
-            // this introduces a slight bias. Instead, read 32-bit integers from the
-            // entropy source until the value is positive but smaller than maxLimit.
-            input = new FileInputStream(new File("/dev/urandom"));
-        } catch (Exception e) {
-            Log.e(TAG, "Could not open /dev/urandom", e);
-            return -1;
-        }
-
-        int result = 0;
-        try {
-            for (int n = 0; n < 4; n++) {
-                result = (result << 8) | (input.read() & 255);
-            }
-        } catch (Exception e) {
-            Log.e(TAG, "Could not read /dev/urandom", e);
-            return -1;
-        } finally {
-            try {
-                input.close();
-            } catch (Exception e) {
-                // Can't really do anything here.
-            }
-        }
-        result &= (1 << numBits) - 1;
-
-        if (DEBUG) {
-            Log.i(TAG, String.format(
-                    Locale.US, "getRandomBits(%d) returned %d", numBits, result));
-        }
-
-        return result;
     }
 
     // Used for debugging only.
@@ -976,8 +908,16 @@ public class Linker {
      */
     private static native boolean nativeCanUseSharedRelro();
 
-    // Returns the native page size in bytes.
-    private static native long nativeGetPageSize();
+    /**
+     * Return a random address that should be free to be mapped with the given size.
+     * Maps an area of size bytes, and if successful then unmaps it and returns
+     * the address of the area allocated by the system (with ASLR). The idea is
+     * that this area should remain free of other mappings until we map our library
+     * into it.
+     * @param sizeBytes Size of area in bytes to search for.
+     * @return address to pass to future mmap, or 0 on error.
+     */
+    private static native long nativeGetRandomBaseLoadAddress(long sizeBytes);
 
     /**
      * Record information for a given library.
