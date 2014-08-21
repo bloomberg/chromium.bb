@@ -130,11 +130,6 @@ client_test_multiple_queues(void)
 	state.display = wl_display_connect(SOCKET_NAME);
 	client_assert(state.display);
 
-	/* Make the current thread the display thread. This is because
-	 * wl_display_dispatch_queue() will only read the display fd if
-	 * the main display thread has been set. */
-	wl_display_dispatch_pending(state.display);
-
 	queue = wl_display_create_queue(state.display);
 	client_assert(queue);
 
@@ -185,11 +180,6 @@ client_test_queue_roundtrip(void)
 
 	display = wl_display_connect(SOCKET_NAME);
 	client_assert(display);
-
-	/* Make the current thread the display thread. This is because
-	 * wl_display_dispatch_queue() will only read the display fd if
-	 * the main display thread has been set. */
-	wl_display_dispatch_pending(display);
 
 	queue = wl_display_create_queue(display);
 	client_assert(queue);
