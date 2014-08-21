@@ -45,6 +45,12 @@
 
 namespace {
 
+// Stores the current mouse location on the screen. So that we can use it
+// when firing keyboard and mouse click events.
+NSPoint g_mouse_location = { 0, 0 };
+
+bool g_ui_controls_enabled = false;
+
 // From
 // http://stackoverflow.com/questions/1597383/cgeventtimestamp-to-nsdate
 // Which credits Apple sample code for this routine.
@@ -205,11 +211,17 @@ void EventQueueWatcher(const base::Closure& task) {
   }
 }
 
-// Stores the current mouse location on the screen. So that we can use it
-// when firing keyboard and mouse click events.
-NSPoint g_mouse_location = { 0, 0 };
-
-bool g_ui_controls_enabled = false;
+// Returns the NSWindow located at |g_mouse_location|. NULL if there is no
+// window there, or if the window located there is not owned by the application.
+// On Mac, unless dragging, mouse events are sent to the window under the
+// cursor. Note that the OS will ignore transparent windows and windows that
+// explicitly ignore mouse events.
+NSWindow* WindowAtCurrentMouseLocation() {
+  NSInteger window_number = [NSWindow windowNumberAtPoint:g_mouse_location
+                              belowWindowWithWindowNumber:0];
+  return
+      [[NSApplication sharedApplication] windowWithWindowNumber:window_number];
+}
 
 }  // namespace
 
@@ -275,10 +287,12 @@ bool SendMouseMove(long x, long y) {
 // platforms.  E.g. (0,0) is upper-left.
 bool SendMouseMoveNotifyWhenDone(long x, long y, const base::Closure& task) {
   CHECK(g_ui_controls_enabled);
-  NSWindow* window = [[NSApplication sharedApplication] keyWindow];
   CGFloat screenHeight =
     [[[NSScreen screens] objectAtIndex:0] frame].size.height;
   g_mouse_location = NSMakePoint(x, screenHeight - y);  // flip!
+
+  NSWindow* window = WindowAtCurrentMouseLocation();
+
   NSPoint pointInWindow = g_mouse_location;
   if (window)
     pointInWindow = [window convertScreenToBase:pointInWindow];
@@ -340,7 +354,7 @@ bool SendMouseEventsNotifyWhenDone(MouseButton type, int state,
   } else {
     return false;
   }
-  NSWindow* window = [[NSApplication sharedApplication] keyWindow];
+  NSWindow* window = WindowAtCurrentMouseLocation();
   NSPoint pointInWindow = g_mouse_location;
   if (window)
     pointInWindow = [window convertScreenToBase:pointInWindow];
