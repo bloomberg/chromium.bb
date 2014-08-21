@@ -49,9 +49,6 @@ class ProfileOAuth2TokenServiceIOSProvider {
   ProfileOAuth2TokenServiceIOSProvider() {};
   virtual ~ProfileOAuth2TokenServiceIOSProvider() {};
 
-  // Returns whether authentication is using the shared authentication library.
-  virtual bool IsUsingSharedAuthentication() const = 0;
-
   // Initializes the shared authentication library. This method should be called
   // when loading credentials if the user is signed in to Chrome via the shared
   // authentication library.

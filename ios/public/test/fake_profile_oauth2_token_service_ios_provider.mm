@@ -12,8 +12,7 @@
 namespace ios {
 
 FakeProfileOAuth2TokenServiceIOSProvider::
-    FakeProfileOAuth2TokenServiceIOSProvider()
-    : is_using_shared_authentication_(true) {}
+    FakeProfileOAuth2TokenServiceIOSProvider() {}
 
 FakeProfileOAuth2TokenServiceIOSProvider::
     ~FakeProfileOAuth2TokenServiceIOSProvider() {}
@@ -24,7 +23,6 @@ void FakeProfileOAuth2TokenServiceIOSProvider::GetAccessToken(
     const std::string& client_secret,
     const std::set<std::string>& scopes,
     const AccessTokenCallback& callback) {
-  DCHECK(is_using_shared_authentication_);
   requests_.push_back(AccessTokenRequest(account_id, callback));
 }
 
@@ -71,11 +69,6 @@ void FakeProfileOAuth2TokenServiceIOSProvider::
     callback.Run(nil, nil, error);
   }
   requests_.clear();
-}
-
-bool FakeProfileOAuth2TokenServiceIOSProvider::IsUsingSharedAuthentication()
-    const {
-  return is_using_shared_authentication_;
 }
 
 void

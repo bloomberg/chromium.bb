@@ -77,9 +77,9 @@
         'signin/core/browser/webdata/token_web_data.h',
       ],
       'conditions': [
-        ['OS=="android"', {
+        ['OS=="android" or OS=="ios"', {
           'sources!': [
-            # Not used on Android.
+            # Not used on Android nor iOS.
             'signin/core/browser/mutable_profile_oauth2_token_service.cc',
             'signin/core/browser/mutable_profile_oauth2_token_service.h',
           ],

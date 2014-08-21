@@ -235,7 +235,6 @@ OAuth2TokenService::Fetcher::Fetcher(
       client_id_(client_id),
       client_secret_(client_secret) {
   DCHECK(oauth2_token_service_);
-  DCHECK(getter_.get());
   waiting_requests_.push_back(waiting_request);
 }
 

@@ -20,9 +20,6 @@
 
 namespace {
 
-const char* kForceInvalidGrantResponsesRefreshToken =
-    "force_invalid_grant_responses_refresh_token";
-
 // Match the way Chromium handles authentication errors in
 // google_apis/gaia/oauth2_access_token_fetcher.cc:
 GoogleServiceAuthError GetGoogleServiceAuthErrorFromNSError(
@@ -130,55 +127,6 @@ void SSOAccessTokenFetcher::OnAccessTokenResponse(NSString* token,
   }
 }
 
-// Fetcher that returns INVALID_GAIA_CREDENTIALS responses for all requests.
-class InvalidGrantAccessTokenFetcher : public OAuth2AccessTokenFetcher {
- public:
-  explicit InvalidGrantAccessTokenFetcher(OAuth2AccessTokenConsumer* consumer);
-  virtual ~InvalidGrantAccessTokenFetcher();
-
-  // OAuth2AccessTokenFetcher
-  virtual void Start(const std::string& client_id,
-                     const std::string& client_secret,
-                     const std::vector<std::string>& scopes) OVERRIDE;
-  virtual void CancelRequest() OVERRIDE;
-
-  // Fires token failure notifications with INVALID_GAIA_CREDENTIALS error.
-  void FireInvalidGrant();
-
- private:
-  bool request_was_cancelled_;
-  DISALLOW_COPY_AND_ASSIGN(InvalidGrantAccessTokenFetcher);
-};
-
-InvalidGrantAccessTokenFetcher::InvalidGrantAccessTokenFetcher(
-    OAuth2AccessTokenConsumer* consumer)
-    : OAuth2AccessTokenFetcher(consumer),
-      request_was_cancelled_(false) {}
-
-InvalidGrantAccessTokenFetcher::~InvalidGrantAccessTokenFetcher() {}
-
-void InvalidGrantAccessTokenFetcher::Start(
-    const std::string& client_id,
-    const std::string& client_secret,
-    const std::vector<std::string>& scopes) {
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&InvalidGrantAccessTokenFetcher::FireInvalidGrant,
-                 base::Unretained(this)));
-};
-
-void InvalidGrantAccessTokenFetcher::FireInvalidGrant() {
-  if (request_was_cancelled_)
-    return;
-  GoogleServiceAuthError auth_error(
-      GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
-  FireOnGetTokenFailure(auth_error);
-}
-
-void InvalidGrantAccessTokenFetcher::CancelRequest() {
-  request_was_cancelled_ = true;
-}
-
 }  // namespace
 
 ProfileOAuth2TokenServiceIOS::AccountInfo::AccountInfo(
@@ -220,8 +168,7 @@ ProfileOAuth2TokenServiceIOS::AccountInfo::GetAuthStatus() const {
 }
 
 ProfileOAuth2TokenServiceIOS::ProfileOAuth2TokenServiceIOS()
-    : MutableProfileOAuth2TokenService(),
-      use_legacy_token_service_(false) {
+    : ProfileOAuth2TokenService() {
   DCHECK(thread_checker_.CalledOnValidThread());
 }
 
@@ -231,14 +178,14 @@ ProfileOAuth2TokenServiceIOS::~ProfileOAuth2TokenServiceIOS() {
 
 void ProfileOAuth2TokenServiceIOS::Initialize(SigninClient* client) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  MutableProfileOAuth2TokenService::Initialize(client);
+  ProfileOAuth2TokenService::Initialize(client);
 }
 
 void ProfileOAuth2TokenServiceIOS::Shutdown() {
   DCHECK(thread_checker_.CalledOnValidThread());
   CancelAllRequests();
   accounts_.clear();
-  MutableProfileOAuth2TokenService::Shutdown();
+  ProfileOAuth2TokenService::Shutdown();
 }
 
 ios::ProfileOAuth2TokenServiceIOSProvider*
@@ -257,12 +204,6 @@ void ProfileOAuth2TokenServiceIOS::LoadCredentials(
   // primary account id must not be empty.
   DCHECK(!primary_account_id.empty());
 
-  use_legacy_token_service_ = !GetProvider()->IsUsingSharedAuthentication();
-  if (use_legacy_token_service_) {
-    MutableProfileOAuth2TokenService::LoadCredentials(primary_account_id);
-    return;
-  }
-
   GetProvider()->InitializeSharedAuthentication();
   ReloadCredentials();
   FireRefreshTokensLoaded();
@@ -270,10 +211,6 @@ void ProfileOAuth2TokenServiceIOS::LoadCredentials(
 
 void ProfileOAuth2TokenServiceIOS::ReloadCredentials() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (use_legacy_token_service_) {
-    NOTREACHED();
-    return;
-  }
 
   ScopedBacthChange batch(this);
 
@@ -298,21 +235,12 @@ void ProfileOAuth2TokenServiceIOS::UpdateCredentials(
     const std::string& account_id,
     const std::string& refresh_token) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (use_legacy_token_service_) {
-    MutableProfileOAuth2TokenService::UpdateCredentials(account_id,
-                                                        refresh_token);
-    return;
-  }
   NOTREACHED() << "Unexpected call to UpdateCredentials when using shared "
                   "authentication.";
 }
 
 void ProfileOAuth2TokenServiceIOS::RevokeAllCredentials() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (use_legacy_token_service_) {
-    MutableProfileOAuth2TokenService::RevokeAllCredentials();
-    return;
-  }
 
   ScopedBacthChange batch(this);
   CancelAllRequests();
@@ -329,46 +257,7 @@ ProfileOAuth2TokenServiceIOS::CreateAccessTokenFetcher(
     const std::string& account_id,
     net::URLRequestContextGetter* getter,
     OAuth2AccessTokenConsumer* consumer) {
-  if (use_legacy_token_service_) {
-    std::string refresh_token = GetRefreshToken(account_id);
-    DCHECK(!refresh_token.empty());
-    if (refresh_token == kForceInvalidGrantResponsesRefreshToken) {
-      return new InvalidGrantAccessTokenFetcher(consumer);
-    } else {
-      return MutableProfileOAuth2TokenService::CreateAccessTokenFetcher(
-          account_id, getter, consumer);
-    }
-  }
-
   return new SSOAccessTokenFetcher(consumer, GetProvider(), account_id);
-}
-
-void ProfileOAuth2TokenServiceIOS::ForceInvalidGrantResponses() {
-  if (!use_legacy_token_service_) {
-    NOTREACHED();
-    return;
-  }
-  std::vector<std::string> accounts =
-      MutableProfileOAuth2TokenService::GetAccounts();
-  if (accounts.empty()) {
-    NOTREACHED();
-    return;
-  }
-
-  std::string first_account_id = *accounts.begin();
-  if (RefreshTokenIsAvailable(first_account_id) &&
-      GetRefreshToken(first_account_id) !=
-          kForceInvalidGrantResponsesRefreshToken) {
-    MutableProfileOAuth2TokenService::RevokeAllCredentials();
-  }
-
-  ScopedBacthChange batch(this);
-  for (auto i = accounts.begin(); i != accounts.end(); ++i) {
-    std::string account_id = *i;
-    MutableProfileOAuth2TokenService::UpdateCredentials(
-        account_id,
-        kForceInvalidGrantResponsesRefreshToken);
-  }
 }
 
 void ProfileOAuth2TokenServiceIOS::InvalidateOAuth2Token(
@@ -378,12 +267,12 @@ void ProfileOAuth2TokenServiceIOS::InvalidateOAuth2Token(
     const std::string& access_token) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  // Call |MutableProfileOAuth2TokenService::InvalidateOAuth2Token| to clear the
+  // Call |ProfileOAuth2TokenService::InvalidateOAuth2Token| to clear the
   // cached access token.
-  MutableProfileOAuth2TokenService::InvalidateOAuth2Token(account_id,
-                                                          client_id,
-                                                          scopes,
-                                                          access_token);
+  ProfileOAuth2TokenService::InvalidateOAuth2Token(account_id,
+                                                   client_id,
+                                                   scopes,
+                                                   access_token);
 
   // There is no need to inform the authentication library that the access
   // token is invalid as it never caches the token.
@@ -391,10 +280,6 @@ void ProfileOAuth2TokenServiceIOS::InvalidateOAuth2Token(
 
 std::vector<std::string> ProfileOAuth2TokenServiceIOS::GetAccounts() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (use_legacy_token_service_) {
-    return MutableProfileOAuth2TokenService::GetAccounts();
-  }
-
   std::vector<std::string> account_ids;
   for (auto i = accounts_.begin(); i != accounts_.end(); ++i)
     account_ids.push_back(i->first);
@@ -405,42 +290,13 @@ bool ProfileOAuth2TokenServiceIOS::RefreshTokenIsAvailable(
     const std::string& account_id) const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (use_legacy_token_service_) {
-    return MutableProfileOAuth2TokenService::RefreshTokenIsAvailable(
-        account_id);
-  }
-
   return accounts_.count(account_id) > 0;
-}
-
-std::string ProfileOAuth2TokenServiceIOS::GetRefreshToken(
-    const std::string& account_id) const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  if (use_legacy_token_service_)
-    return MutableProfileOAuth2TokenService::GetRefreshToken(account_id);
-
-  // On iOS, the refresh token does not exist as ProfileOAuth2TokenServiceIOS
-  // fetches the access token from the iOS authentication library.
-  NOTREACHED();
-  return std::string();
-}
-
-std::string
-ProfileOAuth2TokenServiceIOS::GetRefreshTokenWhenNotUsingSharedAuthentication(
-    const std::string& account_id) {
-  DCHECK(use_legacy_token_service_);
-  return GetRefreshToken(account_id);
 }
 
 void ProfileOAuth2TokenServiceIOS::UpdateAuthError(
     const std::string& account_id,
     const GoogleServiceAuthError& error) {
   DCHECK(thread_checker_.CalledOnValidThread());
-
-  if (use_legacy_token_service_) {
-    MutableProfileOAuth2TokenService::UpdateAuthError(account_id, error);
-    return;
-  }
 
   // Do not report connection errors as these are not actually auth errors.
   // We also want to avoid masking a "real" auth error just because we
@@ -463,7 +319,6 @@ void ProfileOAuth2TokenServiceIOS::AddOrUpdateAccount(
     const std::string& account_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!account_id.empty());
-  DCHECK(!use_legacy_token_service_);
 
   bool account_present = accounts_.count(account_id) > 0;
   if (account_present && accounts_[account_id]->GetAuthStatus().state() ==
@@ -487,7 +342,6 @@ void ProfileOAuth2TokenServiceIOS::RemoveAccount(
     const std::string& account_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!account_id.empty());
-  DCHECK(!use_legacy_token_service_);
 
   if (accounts_.count(account_id) > 0) {
     CancelRequestsForAccount(account_id);
@@ -495,16 +349,4 @@ void ProfileOAuth2TokenServiceIOS::RemoveAccount(
     accounts_.erase(account_id);
     FireRefreshTokenRevoked(account_id);
   }
-}
-
-void ProfileOAuth2TokenServiceIOS::StartUsingSharedAuthentication() {
-  if (!use_legacy_token_service_)
-    return;
-  MutableProfileOAuth2TokenService::RevokeAllCredentials();
-  use_legacy_token_service_ = false;
-}
-
-void ProfileOAuth2TokenServiceIOS::SetUseLegacyTokenServiceForTesting(
-    bool use_legacy_token_service) {
-  use_legacy_token_service_ = use_legacy_token_service;
 }
