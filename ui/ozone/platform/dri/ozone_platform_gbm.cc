@@ -14,6 +14,7 @@
 #include "ui/events/ozone/evdev/event_factory_evdev.h"
 #include "ui/ozone/platform/dri/cursor_factory_evdev_dri.h"
 #include "ui/ozone/platform/dri/dri_window.h"
+#include "ui/ozone/platform/dri/dri_window_manager.h"
 #include "ui/ozone/platform/dri/dri_wrapper.h"
 #include "ui/ozone/platform/dri/gbm_buffer.h"
 #include "ui/ozone/platform/dri/gbm_surface.h"
@@ -140,7 +141,9 @@ class OzonePlatformGbm : public OzonePlatform {
                                           buffer_generator_->device(),
                                           screen_manager_.get());
     gpu_platform_support_.reset(
-        new GpuPlatformSupportGbm(surface_factory_ozone_.get()));
+        new GpuPlatformSupportGbm(surface_factory_ozone_.get(),
+                                  &gpu_window_manager_,
+                                  screen_manager_.get()));
 #if defined(OS_CHROMEOS)
     gpu_platform_support_->AddHandler(scoped_ptr<GpuPlatformSupport>(
         new DisplayMessageHandler(
@@ -168,6 +171,8 @@ class OzonePlatformGbm : public OzonePlatform {
 
   scoped_ptr<GpuPlatformSupportGbm> gpu_platform_support_;
   scoped_ptr<GpuPlatformSupportHostGbm> gpu_platform_support_host_;
+
+  DriWindowManager gpu_window_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(OzonePlatformGbm);
 };

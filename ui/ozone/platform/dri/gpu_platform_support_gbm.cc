@@ -7,11 +7,18 @@
 #include "ipc/ipc_message_macros.h"
 #include "ui/ozone/common/gpu/ozone_gpu_messages.h"
 #include "ui/ozone/platform/dri/dri_surface_factory.h"
+#include "ui/ozone/platform/dri/dri_window_delegate_impl.h"
+#include "ui/ozone/platform/dri/dri_window_manager.h"
 
 namespace ui {
 
-GpuPlatformSupportGbm::GpuPlatformSupportGbm(DriSurfaceFactory* dri)
-    : sender_(NULL), dri_(dri) {
+GpuPlatformSupportGbm::GpuPlatformSupportGbm(DriSurfaceFactory* dri,
+                                             DriWindowManager* window_manager,
+                                             ScreenManager* screen_manager)
+    : sender_(NULL),
+      dri_(dri),
+      window_manager_(window_manager),
+      screen_manager_(screen_manager) {
 }
 
 GpuPlatformSupportGbm::~GpuPlatformSupportGbm() {}
@@ -31,6 +38,11 @@ bool GpuPlatformSupportGbm::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
 
   IPC_BEGIN_MESSAGE_MAP(GpuPlatformSupportGbm, message)
+  IPC_MESSAGE_HANDLER(OzoneGpuMsg_CreateWindowDelegate, OnCreateWindowDelegate)
+  IPC_MESSAGE_HANDLER(OzoneGpuMsg_DestroyWindowDelegate,
+                      OnDestroyWindowDelegate)
+  IPC_MESSAGE_HANDLER(OzoneGpuMsg_WindowBoundsChanged, OnWindowBoundsChanged)
+
   IPC_MESSAGE_HANDLER(OzoneGpuMsg_CursorSet, OnCursorSet)
   IPC_MESSAGE_HANDLER(OzoneGpuMsg_CursorMove, OnCursorMove)
   IPC_MESSAGE_UNHANDLED(handled = false);
@@ -42,6 +54,39 @@ bool GpuPlatformSupportGbm::OnMessageReceived(const IPC::Message& message) {
         return true;
 
   return false;
+}
+
+void GpuPlatformSupportGbm::OnCreateWindowDelegate(
+    gfx::AcceleratedWidget widget) {
+  // Due to how the GPU process starts up this IPC call may happen after the IPC
+  // to create a surface. Since a surface wants to know the window associated
+  // with it, we create it ahead of time. So when this call happens we do not
+  // create a delegate if it already exists.
+  if (!window_manager_->HasWindowDelegate(widget)) {
+    scoped_ptr<DriWindowDelegate> delegate(
+        new DriWindowDelegateImpl(widget, screen_manager_));
+    delegate->Initialize();
+    window_manager_->AddWindowDelegate(widget, delegate.get());
+
+    std::pair<WidgetToWindowDelegateMap::iterator, bool> result =
+        window_delegate_owner_.add(widget, delegate.Pass());
+    DCHECK(result.second) << "Delegate already added.";
+  }
+}
+
+void GpuPlatformSupportGbm::OnDestroyWindowDelegate(
+    gfx::AcceleratedWidget widget) {
+  scoped_ptr<DriWindowDelegate> delegate =
+      window_delegate_owner_.take_and_erase(widget);
+  DCHECK(delegate) << "Attempting to remove non-existing delegate.";
+
+  window_manager_->RemoveWindowDelegate(widget);
+  delegate->Shutdown();
+}
+
+void GpuPlatformSupportGbm::OnWindowBoundsChanged(gfx::AcceleratedWidget widget,
+                                                  const gfx::Rect& bounds) {
+  window_manager_->GetWindowDelegate(widget)->OnBoundsChanged(bounds);
 }
 
 void GpuPlatformSupportGbm::OnCursorSet(gfx::AcceleratedWidget widget,

@@ -55,6 +55,15 @@ class ScreenManager {
   base::WeakPtr<HardwareDisplayController> GetDisplayController(
       gfx::AcceleratedWidget widget);
 
+  // Returns a reference to the display controller configured to display within
+  // |bounds|.
+  // This returns a weak reference since the display controller may be destroyed
+  // at any point in time, but the changes are propagated to the compositor much
+  // later (Compositor owns SurfaceOzone*, which is responsible for updating the
+  // display surface).
+  base::WeakPtr<HardwareDisplayController> GetDisplayController(
+      const gfx::Rect& bounds);
+
  private:
   typedef std::map<gfx::AcceleratedWidget, HardwareDisplayController*>
       HardwareDisplayControllerMap;
@@ -68,6 +77,11 @@ class ScreenManager {
   // |origin|.
   HardwareDisplayControllerMap::iterator FindDisplayControllerByOrigin(
       const gfx::Point& origin);
+
+  // Returns an iterator into |controllers_| for the controller located within
+  // |bounds|.
+  HardwareDisplayControllerMap::iterator FindActiveDisplayControllerByLocation(
+      const gfx::Rect& bounds);
 
   // Perform modesetting in |controller| using |origin| and |mode|.
   bool ModesetDisplayController(HardwareDisplayController* controller,

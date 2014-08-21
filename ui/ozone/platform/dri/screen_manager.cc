@@ -16,6 +16,14 @@
 
 namespace ui {
 
+namespace {
+
+gfx::Size GetModeSize(const drmModeModeInfo& mode) {
+  return gfx::Size(mode.hdisplay, mode.vdisplay);
+}
+
+}  // namespace
+
 ScreenManager::ScreenManager(
     DriWrapper* dri, ScanoutBufferGenerator* buffer_generator)
     : dri_(dri), buffer_generator_(buffer_generator), last_added_widget_(0) {
@@ -111,6 +119,22 @@ base::WeakPtr<HardwareDisplayController> ScreenManager::GetDisplayController(
   return base::WeakPtr<HardwareDisplayController>();
 }
 
+base::WeakPtr<HardwareDisplayController> ScreenManager::GetDisplayController(
+    const gfx::Rect& bounds) {
+  // TODO(dnicoara): Remove hack once TestScreen uses a simple Ozone display
+  // configuration reader and ScreenManager is called from there to create the
+  // one display needed by the content_shell target.
+  if (controllers_.empty())
+    ForceInitializationOfPrimaryDisplay();
+
+  HardwareDisplayControllerMap::iterator it =
+      FindActiveDisplayControllerByLocation(bounds);
+  if (it != controllers_.end())
+    return it->second->AsWeakPtr();
+
+  return base::WeakPtr<HardwareDisplayController>();
+}
+
 ScreenManager::HardwareDisplayControllerMap::iterator
 ScreenManager::FindDisplayController(uint32_t crtc) {
   for (HardwareDisplayControllerMap::iterator it = controllers_.begin();
@@ -129,6 +153,22 @@ ScreenManager::FindDisplayControllerByOrigin(const gfx::Point& origin) {
        it != controllers_.end();
        ++it) {
     if (it->second->origin() == origin)
+      return it;
+  }
+
+  return controllers_.end();
+}
+
+ScreenManager::HardwareDisplayControllerMap::iterator
+ScreenManager::FindActiveDisplayControllerByLocation(const gfx::Rect& bounds) {
+  for (HardwareDisplayControllerMap::iterator it = controllers_.begin();
+       it != controllers_.end();
+       ++it) {
+    gfx::Rect controller_bounds(it->second->origin(),
+                                GetModeSize(it->second->get_mode()));
+    // We don't perform a strict check since content_shell will have windows
+    // smaller than the display size.
+    if (controller_bounds.Contains(bounds))
       return it;
   }
 
