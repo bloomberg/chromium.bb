@@ -1,0 +1,10 @@
+Test video element control visibility after touch on control. After a delay the controls must be hidden.
+
+This test only runs in DRT!
+
+EXPECTED (video.paused == 'true') OK
+EXPECTED (video.paused == 'false') OK
+EXPECTED (getComputedStyle(controls).opacity == '0') OK
+
+END OF TEST
+

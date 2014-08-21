@@ -13,7 +13,7 @@ var video = document.querySelector("video");
 
 video.addEventListener("playing", function()
 {
-    runAfterControlsHidden(function()
+    runAfterHideMediaControlsTimerFired(function()
     {
         controls = mediaControlsButton(video, "panel");
 

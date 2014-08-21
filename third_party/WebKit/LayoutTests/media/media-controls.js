@@ -118,7 +118,7 @@ function clickCCButton()
     eventSender.mouseUp();
 }
 
-function runAfterControlsHidden(func, mediaElement)
+function runAfterHideMediaControlsTimerFired(func, mediaElement)
 {
     if (mediaElement.paused)
         throw "The media element is not playing";

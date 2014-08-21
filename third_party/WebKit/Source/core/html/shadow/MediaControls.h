@@ -82,7 +82,8 @@ private:
 
     enum HideBehaviorFlags {
         IgnoreVideoHover = 1 << 0,
-        IgnoreFocus = 1 << 1
+        IgnoreFocus = 1 << 1,
+        IgnoreControlsHover = 1 << 2
     };
 
     bool shouldHideMediaControls(unsigned behaviorFlags = 0) const;

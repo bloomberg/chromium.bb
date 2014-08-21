@@ -1,0 +1,10 @@
+Test video element control visibility after click on control. After the click the mouse does not move, so the control is still hovered and it should remain visible.
+
+This test only runs in DRT!
+
+EXPECTED (video.paused == 'true') OK
+EXPECTED (video.paused == 'false') OK
+EXPECTED (getComputedStyle(controls).opacity == '1') OK
+
+END OF TEST
+

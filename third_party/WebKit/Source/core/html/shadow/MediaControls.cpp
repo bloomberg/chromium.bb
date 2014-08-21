@@ -45,6 +45,11 @@ static bool fullscreenIsSupported(const Document& document)
     return !document.settings() || document.settings()->fullscreenSupported();
 }
 
+static bool deviceSupportsMouse(const Document& document)
+{
+    return !document.settings() || document.settings()->deviceSupportsMouse();
+}
+
 MediaControls::MediaControls(HTMLMediaElement& mediaElement)
     : HTMLDivElement(mediaElement.document())
     , m_mediaElement(&mediaElement)
@@ -229,9 +234,13 @@ bool MediaControls::shouldHideMediaControls(unsigned behaviorFlags) const
     // Never hide for a media element without visual representation.
     if (!mediaElement().hasVideo())
         return false;
-    // Don't hide if the controls are hovered or the mouse is over the video area.
+    // Don't hide if the mouse is over the controls.
+    const bool ignoreControlsHover = behaviorFlags & IgnoreControlsHover;
+    if (!ignoreControlsHover && m_panel->hovered())
+        return false;
+    // Don't hide if the mouse is over the video area.
     const bool ignoreVideoHover = behaviorFlags & IgnoreVideoHover;
-    if (m_panel->hovered() || (!ignoreVideoHover && m_isMouseOverControls))
+    if (!ignoreVideoHover && m_isMouseOverControls)
         return false;
     // Don't hide if focus is on the HTMLMediaElement or within the
     // controls/shadow tree. (Perform the checks separately to avoid going
@@ -399,7 +408,12 @@ void MediaControls::hideMediaControlsTimerFired(Timer<MediaControls>*)
     if (mediaElement().togglePlayStateWillPlay())
         return;
 
-    if (!shouldHideMediaControls(IgnoreFocus | IgnoreVideoHover))
+    unsigned behaviorFlags = IgnoreFocus | IgnoreVideoHover;
+    // FIXME: improve this check, see http://www.crbug.com/401177.
+    if (!deviceSupportsMouse(document())) {
+        behaviorFlags |= IgnoreControlsHover;
+    }
+    if (!shouldHideMediaControls(behaviorFlags))
         return;
 
     makeTransparent();

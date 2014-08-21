@@ -21,7 +21,7 @@ video.addEventListener("canplay", function()
 
     testExpected("document.activeElement", video);
 
-    runAfterControlsHidden(function()
+    runAfterHideMediaControlsTimerFired(function()
     {
         controls = mediaControlsButton(video, "panel");
         testExpected("getComputedStyle(controls).opacity", 0);

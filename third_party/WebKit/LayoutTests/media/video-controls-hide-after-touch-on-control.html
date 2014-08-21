@@ -37,17 +37,16 @@ function runTest()
         consoleWrite("");
         endTest();
     }, video);
-
-    // Move the mouse to the upper-left corner of the video.
-    eventSender.mouseMoveTo(video.offsetLeft + 4, video.offsetTop + 4);
 }
 </script>
 <body>
-    <p>Test video element control visibility when mouse is not over element.</p>
+    <p>Test video element control visibility after touch on control. After a delay the
+       controls must be hidden.</p>
     <p>This test only runs in DRT!</p>
 
     <video id="no-video-media" controls loop oncanplaythrough="runTest()"></video>
     <script>
+        window.internals.settings.setDeviceSupportsMouse(false);
         setSrcById("no-video-media", findMediaFile("video", "content/test"));
     </script>
 </body>

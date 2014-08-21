@@ -16,7 +16,7 @@
     var audio = document.getElementById("audio");
     audio.addEventListener("playing", function()
     {
-        runAfterControlsHidden(function()
+        runAfterHideMediaControlsTimerFired(function()
         {
             controls = mediaControlsButton(audio, "panel");
             testExpected("getComputedStyle(controls).opacity", 1);

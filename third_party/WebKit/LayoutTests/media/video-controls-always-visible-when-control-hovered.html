@@ -32,18 +32,17 @@ function runTest()
     runAfterHideMediaControlsTimerFired(function()
     {
         controls = mediaControlsButton(video, "panel");
-        testExpected("getComputedStyle(controls).opacity", 0);
+        testExpected("getComputedStyle(controls).opacity", 1);
 
         consoleWrite("");
         endTest();
     }, video);
-
-    // Move the mouse to the upper-left corner of the video.
-    eventSender.mouseMoveTo(video.offsetLeft + 4, video.offsetTop + 4);
 }
 </script>
 <body>
-    <p>Test video element control visibility when mouse is not over element.</p>
+    <p>Test video element control visibility after click on control. After the click
+       the mouse does not move, so the control is still hovered and it should
+       remain visible.</p>
     <p>This test only runs in DRT!</p>
 
     <video id="no-video-media" controls loop oncanplaythrough="runTest()"></video>
