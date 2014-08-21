@@ -7,8 +7,10 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "mojo/public/c/system/main.h"
 #include "mojo/public/cpp/application/application_delegate.h"
 #include "mojo/public/cpp/application/application_impl.h"
+#include "mojo/public/cpp/application/application_runner.h"
 #include "mojo/public/cpp/environment/environment.h"
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/public/cpp/system/macros.h"
@@ -42,10 +44,9 @@ class DBusEchoApp : public ApplicationDelegate {
 };
 
 }  // namespace examples
-
-// static
-ApplicationDelegate* ApplicationDelegate::Create() {
-  return new examples::DBusEchoApp();
-}
-
 }  // namespace mojo
+
+MojoResult MojoMain(MojoHandle shell_handle) {
+  mojo::ApplicationRunner runner(new mojo::examples::DBusEchoApp);
+  return runner.Run(shell_handle);
+}

@@ -4,8 +4,10 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
+#include "mojo/public/c/system/main.h"
 #include "mojo/public/cpp/application/application_delegate.h"
 #include "mojo/public/cpp/application/application_impl.h"
+#include "mojo/public/cpp/application/application_runner_chromium.h"
 #include "mojo/public/interfaces/application/service_provider.mojom.h"
 #include "mojo/services/public/interfaces/view_manager/view_manager.mojom.h"
 
@@ -39,10 +41,9 @@ class ViewManagerInit : public ApplicationDelegate {
 };
 
 }  // namespace examples
-
-// static
-ApplicationDelegate* ApplicationDelegate::Create() {
-  return new examples::ViewManagerInit();
-}
-
 }  // namespace mojo
+
+MojoResult MojoMain(MojoHandle shell_handle) {
+  mojo::ApplicationRunnerChromium runner(new mojo::examples::ViewManagerInit);
+  return runner.Run(shell_handle);
+}

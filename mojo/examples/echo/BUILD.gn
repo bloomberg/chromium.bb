@@ -18,10 +18,8 @@ shared_library("client") {
 
   deps = [
     ":bindings",
-    "//mojo/public/cpp/application:main_standalone",
     "//mojo/public/cpp/application:standalone",
     "//mojo/public/cpp/bindings",
-    "//mojo/public/cpp/environment:standalone",
     "//mojo/public/cpp/utility",
   ]
   deps += mojo_system_for_shared_library
@@ -35,10 +33,8 @@ shared_library("service") {
 
   deps = [
     ":bindings",
-    "//mojo/public/cpp/application:main_standalone",
     "//mojo/public/cpp/application:standalone",
     "//mojo/public/cpp/bindings",
-    "//mojo/public/cpp/environment:standalone",
     "//mojo/public/cpp/utility",
   ]
   deps += mojo_system_for_shared_library

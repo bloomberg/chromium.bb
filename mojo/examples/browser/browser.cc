@@ -7,9 +7,11 @@
 #include "base/strings/utf_string_conversions.h"
 #include "mojo/common/common_type_converters.h"
 #include "mojo/examples/window_manager/window_manager.mojom.h"
+#include "mojo/public/c/system/main.h"
 #include "mojo/public/cpp/application/application_connection.h"
 #include "mojo/public/cpp/application/application_delegate.h"
 #include "mojo/public/cpp/application/application_impl.h"
+#include "mojo/public/cpp/application/application_runner_chromium.h"
 #include "mojo/services/public/cpp/geometry/geometry_type_converters.h"
 #include "mojo/services/public/cpp/view_manager/view.h"
 #include "mojo/services/public/cpp/view_manager/view_manager.h"
@@ -263,10 +265,9 @@ class Browser : public ApplicationDelegate,
 };
 
 }  // namespace examples
-
-// static
-ApplicationDelegate* ApplicationDelegate::Create() {
-  return new examples::Browser;
-}
-
 }  // namespace mojo
+
+MojoResult MojoMain(MojoHandle shell_handle) {
+  mojo::ApplicationRunnerChromium runner(new mojo::examples::Browser);
+  return runner.Run(shell_handle);
+}

@@ -7,9 +7,11 @@
 #include "mojo/examples/keyboard/keyboard.mojom.h"
 #include "mojo/examples/window_manager/debug_panel.h"
 #include "mojo/examples/window_manager/window_manager.mojom.h"
+#include "mojo/public/c/system/main.h"
 #include "mojo/public/cpp/application/application_connection.h"
 #include "mojo/public/cpp/application/application_delegate.h"
 #include "mojo/public/cpp/application/application_impl.h"
+#include "mojo/public/cpp/application/application_runner_chromium.h"
 #include "mojo/public/cpp/application/interface_factory_impl.h"
 #include "mojo/services/public/cpp/geometry/geometry_type_converters.h"
 #include "mojo/services/public/cpp/input_events/input_events_type_converters.h"
@@ -560,10 +562,9 @@ void NavigatorHostImpl::RequestNavigate(
 }
 
 }  // namespace examples
-
-// static
-ApplicationDelegate* ApplicationDelegate::Create() {
-  return new examples::WindowManager;
-}
-
 }  // namespace mojo
+
+MojoResult MojoMain(MojoHandle shell_handle) {
+  mojo::ApplicationRunnerChromium runner(new mojo::examples::WindowManager);
+  return runner.Run(shell_handle);
+}

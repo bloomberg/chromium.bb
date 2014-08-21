@@ -416,10 +416,12 @@
      'target_name': 'mojo_application_chromium',
      'type': 'static_library',
      'sources': [
-       'public/cpp/application/lib/application_impl_chromium.cc',
+       'public/cpp/application/lib/application_runner_chromium.cc',
+       'public/cpp/application/application_runner_chromium.h',
       ],
       'dependencies': [
         'mojo_application_base',
+        'mojo_environment_chromium',
        ],
       'export_dependent_settings': [
         'mojo_application_base',

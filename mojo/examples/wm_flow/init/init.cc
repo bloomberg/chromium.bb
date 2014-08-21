@@ -3,8 +3,10 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "mojo/public/c/system/main.h"
 #include "mojo/public/cpp/application/application_delegate.h"
 #include "mojo/public/cpp/application/application_impl.h"
+#include "mojo/public/cpp/application/application_runner_chromium.h"
 #include "mojo/public/cpp/application/service_provider_impl.h"
 #include "mojo/public/interfaces/application/service_provider.mojom.h"
 #include "mojo/services/public/interfaces/view_manager/view_manager.mojom.h"
@@ -42,11 +44,7 @@ class WMFlowInit : public mojo::ApplicationDelegate {
 
 }  // namespace examples
 
-namespace mojo {
-
-// static
-ApplicationDelegate* ApplicationDelegate::Create() {
-  return new examples::WMFlowInit;
+MojoResult MojoMain(MojoHandle shell_handle) {
+  mojo::ApplicationRunnerChromium runner(new examples::WMFlowInit);
+  return runner.Run(shell_handle);
 }
-
-}  // namespace

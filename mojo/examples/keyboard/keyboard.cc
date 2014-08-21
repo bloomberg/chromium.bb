@@ -8,8 +8,10 @@
 #include "mojo/examples/keyboard/keyboard.mojom.h"
 #include "mojo/examples/keyboard/keyboard_delegate.h"
 #include "mojo/examples/keyboard/keyboard_view.h"
+#include "mojo/public/c/system/main.h"
 #include "mojo/public/cpp/application/application_connection.h"
 #include "mojo/public/cpp/application/application_delegate.h"
+#include "mojo/public/cpp/application/application_runner_chromium.h"
 #include "mojo/public/cpp/application/interface_factory_impl.h"
 #include "mojo/services/public/cpp/view_manager/view.h"
 #include "mojo/services/public/cpp/view_manager/view_manager.h"
@@ -137,10 +139,9 @@ void KeyboardServiceImpl::SetTarget(uint32_t view_id) {
 }
 
 }  // namespace examples
-
-// static
-ApplicationDelegate* ApplicationDelegate::Create() {
-  return new examples::Keyboard;
-}
-
 }  // namespace mojo
+
+MojoResult MojoMain(MojoHandle shell_handle) {
+  mojo::ApplicationRunnerChromium runner(new mojo::examples::Keyboard);
+  return runner.Run(shell_handle);
+}

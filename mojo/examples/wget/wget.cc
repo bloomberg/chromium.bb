@@ -4,8 +4,10 @@
 
 #include <stdio.h>
 
+#include "mojo/public/c/system/main.h"
 #include "mojo/public/cpp/application/application_delegate.h"
 #include "mojo/public/cpp/application/application_impl.h"
+#include "mojo/public/cpp/application/application_runner.h"
 #include "mojo/public/cpp/utility/run_loop.h"
 #include "mojo/services/public/interfaces/network/network_service.mojom.h"
 #include "mojo/services/public/interfaces/network/url_loader.mojom.h"
@@ -101,10 +103,9 @@ class WGetApp : public ApplicationDelegate {
 };
 
 }  // namespace examples
-
-// static
-ApplicationDelegate* ApplicationDelegate::Create() {
-  return new examples::WGetApp();
-}
-
 }  // namespace mojo
+
+MojoResult MojoMain(MojoHandle shell_handle) {
+  mojo::ApplicationRunner runner(new mojo::examples::WGetApp);
+  return runner.Run(shell_handle);
+}

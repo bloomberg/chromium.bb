@@ -261,10 +261,12 @@
       'target_name': 'mojo_application_standalone',
       'type': 'static_library',
       'sources': [
-        'public/cpp/application/lib/application_impl_standalone.cc',
+        'public/cpp/application/lib/application_runner.cc',
+        'public/cpp/application/application_runner.h',
       ],
       'dependencies': [
         'mojo_application_base',
+        'mojo_environment_standalone',
       ],
       'export_dependent_settings': [
         'mojo_application_base',

@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/memory/scoped_ptr.h"
+#include "mojo/public/c/system/main.h"
 #include "mojo/public/cpp/application/application_delegate.h"
+#include "mojo/public/cpp/application/application_runner_chromium.h"
 #include "mojo/public/cpp/application/service_provider_impl.h"
 #include "mojo/services/public/cpp/view_manager/view_manager.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_delegate.h"
@@ -69,9 +71,9 @@ class DefaultWindowManager : public ApplicationDelegate,
   MOJO_DISALLOW_COPY_AND_ASSIGN(DefaultWindowManager);
 };
 
-// static
-ApplicationDelegate* ApplicationDelegate::Create() {
-  return new DefaultWindowManager;
-}
-
 }  // namespace mojo
+
+MojoResult MojoMain(MojoHandle shell_handle) {
+  mojo::ApplicationRunnerChromium runner(new mojo::DefaultWindowManager);
+  return runner.Run(shell_handle);
+}

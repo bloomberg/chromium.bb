@@ -7,8 +7,10 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_tokenizer.h"
 #include "mojo/examples/media_viewer/media_viewer.mojom.h"
+#include "mojo/public/c/system/main.h"
 #include "mojo/public/cpp/application/application_connection.h"
 #include "mojo/public/cpp/application/application_delegate.h"
+#include "mojo/public/cpp/application/application_runner_chromium.h"
 #include "mojo/public/cpp/application/interface_factory_impl.h"
 #include "mojo/services/public/cpp/view_manager/types.h"
 #include "mojo/services/public/cpp/view_manager/view.h"
@@ -244,10 +246,9 @@ void NavigatorImpl::UpdateView(Id view_id,
 }
 
 }  // namespace examples
-
-// static
-ApplicationDelegate* ApplicationDelegate::Create() {
-  return new examples::PNGViewer;
-}
-
 }  // namespace mojo
+
+MojoResult MojoMain(MojoHandle shell_handle) {
+  mojo::ApplicationRunnerChromium runner(new mojo::examples::PNGViewer);
+  return runner.Run(shell_handle);
+}

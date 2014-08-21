@@ -20,7 +20,6 @@ shared_library("surfaces") {
     "//mojo/services/public/interfaces/surfaces",
     "//mojo/services/public/cpp/geometry",
     "//mojo/services/public/cpp/surfaces",
-    "//mojo/public/cpp/application:main_chromium",
   ] + mojo_gles2_for_shared_library + mojo_system_for_shared_library
 
   sources = [

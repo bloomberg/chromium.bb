@@ -7,9 +7,11 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
+#include "mojo/public/c/system/main.h"
 #include "mojo/public/cpp/application/application_connection.h"
 #include "mojo/public/cpp/application/application_delegate.h"
 #include "mojo/public/cpp/application/application_impl.h"
+#include "mojo/public/cpp/application/application_runner_chromium.h"
 #include "mojo/public/cpp/application/interface_factory_impl.h"
 #include "mojo/services/public/cpp/view_manager/types.h"
 #include "mojo/services/public/interfaces/launcher/launcher.mojom.h"
@@ -174,9 +176,9 @@ void LaunchInstance::OnReceivedResponse(URLResponsePtr response) {
   ScheduleDestroy();
 }
 
-// static
-ApplicationDelegate* ApplicationDelegate::Create() {
-  return new LauncherApp;
-}
-
 }  // namespace mojo
+
+MojoResult MojoMain(MojoHandle shell_handle) {
+  mojo::ApplicationRunnerChromium runner(new mojo::LauncherApp);
+  return runner.Run(shell_handle);
+}

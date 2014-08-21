@@ -8,9 +8,10 @@
 #include "base/files/file_path.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
+#include "mojo/public/c/system/main.h"
 #include "mojo/public/cpp/application/application_connection.h"
 #include "mojo/public/cpp/application/application_delegate.h"
-#include "mojo/public/cpp/application/application_impl.h"
+#include "mojo/public/cpp/application/application_runner_chromium.h"
 #include "mojo/public/cpp/application/interface_factory.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "mojo/services/network/network_context.h"
@@ -48,29 +49,8 @@ class Delegate : public mojo::ApplicationDelegate,
   scoped_ptr<mojo::NetworkContext> context_;
 };
 
-extern "C" APPLICATION_EXPORT MojoResult CDECL MojoMain(
-    MojoHandle shell_handle) {
-  base::CommandLine::Init(0, NULL);
-#if !defined(COMPONENT_BUILD)
-  base::AtExitManager at_exit;
-#endif
-
-  // The Delegate owns the NetworkContext, which needs to outlive
-  // MessageLoopForIO. Destruction of the message loop will serve to
-  // invalidate connections made to network services (URLLoader) and cause
-  // the service instances to be cleaned up as a result of observing pipe
-  // errors. This is important as ~URLRequestContext asserts that no out-
-  // standing URLRequests exist.
-  Delegate delegate;
-  {
-    // The IO message loop allows us to use net::URLRequest on this thread.
-    base::MessageLoopForIO loop;
-
-    mojo::ApplicationImpl app(
-        &delegate,
-        mojo::MakeScopedHandle(mojo::MessagePipeHandle(shell_handle)));
-
-    loop.Run();
-  }
-  return MOJO_RESULT_OK;
+MojoResult MojoMain(MojoHandle shell_handle) {
+  mojo::ApplicationRunnerChromium runner(new Delegate);
+  runner.set_message_loop_type(base::MessageLoop::TYPE_IO);
+  return runner.Run(shell_handle);
 }

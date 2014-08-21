@@ -3,8 +3,10 @@
 // found in the LICENSE file.
 
 #include "mojo/examples/echo/echo_service.mojom.h"
+#include "mojo/public/c/system/main.h"
 #include "mojo/public/cpp/application/application_connection.h"
 #include "mojo/public/cpp/application/application_delegate.h"
+#include "mojo/public/cpp/application/application_runner.h"
 #include "mojo/public/cpp/application/interface_factory_impl.h"
 
 namespace mojo {
@@ -32,10 +34,9 @@ class EchoServiceDelegate : public ApplicationDelegate {
 };
 
 }  // namespace examples
-
-// static
-ApplicationDelegate* ApplicationDelegate::Create() {
-  return new examples::EchoServiceDelegate();
-}
-
 }  // namespace mojo
+
+MojoResult MojoMain(MojoHandle shell_handle) {
+  mojo::ApplicationRunner runner(new mojo::examples::EchoServiceDelegate);
+  return runner.Run(shell_handle);
+}

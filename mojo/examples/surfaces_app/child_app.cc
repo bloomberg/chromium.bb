@@ -3,9 +3,11 @@
 // found in the LICENSE file.
 
 #include "mojo/examples/surfaces_app/child_impl.h"
+#include "mojo/public/c/system/main.h"
 #include "mojo/public/cpp/application/application_connection.h"
 #include "mojo/public/cpp/application/application_delegate.h"
 #include "mojo/public/cpp/application/application_impl.h"
+#include "mojo/public/cpp/application/application_runner_chromium.h"
 #include "mojo/public/cpp/bindings/string.h"
 
 namespace mojo {
@@ -41,10 +43,9 @@ class ChildApp : public ApplicationDelegate, public InterfaceFactory<Child> {
 };
 
 }  // namespace examples
-
-// static
-ApplicationDelegate* ApplicationDelegate::Create() {
-  return new examples::ChildApp();
-}
-
 }  // namespace mojo
+
+MojoResult MojoMain(MojoHandle shell_handle) {
+  mojo::ApplicationRunnerChromium runner(new mojo::examples::ChildApp);
+  return runner.Run(shell_handle);
+}

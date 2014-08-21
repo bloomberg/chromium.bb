@@ -6,6 +6,9 @@
 
 #include "cc/surfaces/display.h"
 
+#include "mojo/public/c/system/main.h"
+#include "mojo/public/cpp/application/application_runner_chromium.h"
+
 namespace mojo {
 
 SurfacesServiceApplication::SurfacesServiceApplication()
@@ -36,9 +39,9 @@ void SurfacesServiceApplication::SetDisplay(cc::Display* display) {
   display_ = display;
 }
 
-// static
-ApplicationDelegate* ApplicationDelegate::Create() {
-  return new SurfacesServiceApplication;
-}
-
 }  // namespace mojo
+
+MojoResult MojoMain(MojoHandle shell_handle) {
+  mojo::ApplicationRunnerChromium runner(new mojo::SurfacesServiceApplication);
+  return runner.Run(shell_handle);
+}

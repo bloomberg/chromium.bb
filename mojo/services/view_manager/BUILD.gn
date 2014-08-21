@@ -13,7 +13,6 @@ component("view_manager") {
     "//mojo/common",
     "//mojo/environment:chromium",
     "//mojo/public/cpp/application:chromium",
-    "//mojo/public/cpp/application:main_chromium",
     "//mojo/services/public/cpp/geometry",
     "//mojo/services/public/cpp/input_events",
     "//mojo/services/public/cpp/view_manager:common",

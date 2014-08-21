@@ -8,8 +8,10 @@
 #include "cc/surfaces/surface_id_allocator.h"
 #include "mojo/examples/surfaces_app/child.mojom.h"
 #include "mojo/examples/surfaces_app/embedder.h"
+#include "mojo/public/c/system/main.h"
 #include "mojo/public/cpp/application/application_connection.h"
 #include "mojo/public/cpp/application/application_delegate.h"
+#include "mojo/public/cpp/application/application_runner_chromium.h"
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/services/gles2/command_buffer.mojom.h"
 #include "mojo/services/public/cpp/geometry/geometry_type_converters.h"
@@ -153,10 +155,9 @@ class SurfacesApp : public ApplicationDelegate,
 };
 
 }  // namespace examples
-
-// static
-ApplicationDelegate* ApplicationDelegate::Create() {
-  return new examples::SurfacesApp();
-}
-
 }  // namespace mojo
+
+MojoResult MojoMain(MojoHandle shell_handle) {
+  mojo::ApplicationRunnerChromium runner(new mojo::examples::SurfacesApp);
+  return runner.Run(shell_handle);
+}

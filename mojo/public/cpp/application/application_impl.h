@@ -13,24 +13,6 @@
 #include "mojo/public/interfaces/application/application.mojom.h"
 #include "mojo/public/interfaces/application/shell.mojom.h"
 
-#if defined(WIN32)
-#if !defined(CDECL)
-#define CDECL __cdecl
-#endif
-#define APPLICATION_EXPORT __declspec(dllexport)
-#else
-#define CDECL
-#define APPLICATION_EXPORT __attribute__((visibility("default")))
-#endif
-
-// DSOs can either implement MojoMain directly or include
-// mojo_main_{standalone|chromium}.cc in their project and implement
-// ApplicationImpl::Create();
-// TODO(davemoore): Establish this as part of our SDK for third party mojo
-// application writers.
-extern "C" APPLICATION_EXPORT MojoResult CDECL MojoMain(
-    MojoHandle service_provider_handle);
-
 namespace mojo {
 
 class ApplicationDelegate;
@@ -70,7 +52,6 @@ class ApplicationDelegate;
 //
 class ApplicationImpl : public InterfaceImpl<Application> {
  public:
-  explicit ApplicationImpl(ApplicationDelegate* delegate);
   ApplicationImpl(ApplicationDelegate* delegate,
                   ScopedMessagePipeHandle shell_handle);
   ApplicationImpl(ApplicationDelegate* delegate,
@@ -99,15 +80,12 @@ class ApplicationImpl : public InterfaceImpl<Application> {
     MOJO_DISALLOW_COPY_AND_ASSIGN(ShellPtrWatcher);
   };
 
-  friend MojoResult (::MojoMain)(MojoHandle);
-
   void BindShell(ScopedMessagePipeHandle shell_handle);
-  void BindShell(MojoHandle shell_handle);
   void ClearConnections();
   void OnShellError() { ClearConnections(); Terminate(); };
 
   // Quits the main run loop for this application.
-  void Terminate();
+  static void Terminate();
 
   // Application implementation.
   virtual void AcceptConnection(const String& requestor_url,

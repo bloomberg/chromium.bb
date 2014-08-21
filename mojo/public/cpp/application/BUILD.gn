@@ -23,7 +23,7 @@ source_set("base") {
 
 source_set("chromium") {
   sources = [
-    "lib/application_impl_chromium.cc"
+    "lib/application_runner_chromium.cc"
   ]
 
   deps = [ ":base" ]
@@ -31,24 +31,11 @@ source_set("chromium") {
 
 source_set("standalone") {
   sources = [
-    "lib/application_impl_standalone.cc"
+    "lib/application_runner.cc"
   ]
 
-  deps = [ ":base" ]
-}
-
-source_set("main_chromium") {
-  sources = [
-    "lib/mojo_main_chromium.cc"
+  deps = [ 
+    ":base",
+    "//mojo/public/cpp/environment:standalone",
   ]
-
-  deps = [ ":chromium" ]
-}
-
-source_set("main_standalone") {
-  sources = [
-    "lib/mojo_main_standalone.cc"
-  ]
-
-  deps = [ ":standalone" ]
 }

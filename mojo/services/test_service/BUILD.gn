@@ -18,9 +18,7 @@ shared_library("mojo_test_app") {
   deps = [
     ":bindings",
     "//base",
-    "//mojo/public/cpp/application:main_standalone",
     "//mojo/public/cpp/application:standalone",
-    "//mojo/public/cpp/environment:standalone",
     "//mojo/public/cpp/utility",
   ]
   deps += mojo_system_for_shared_library
@@ -42,9 +40,7 @@ shared_library("mojo_test_request_tracker_app") {
   deps = [
     ":bindings",
     "//base",
-    "//mojo/public/cpp/application:main_standalone",
     "//mojo/public/cpp/application:standalone",
-    "//mojo/public/cpp/environment:standalone",
     "//mojo/public/cpp/utility",
   ]
   deps += mojo_system_for_shared_library

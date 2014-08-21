@@ -11,8 +11,10 @@
 #include "mojo/examples/pepper_container_app/plugin_instance.h"
 #include "mojo/examples/pepper_container_app/plugin_module.h"
 #include "mojo/examples/pepper_container_app/type_converters.h"
+#include "mojo/public/c/system/main.h"
 #include "mojo/public/cpp/application/application_delegate.h"
 #include "mojo/public/cpp/application/application_impl.h"
+#include "mojo/public/cpp/application/application_runner_chromium.h"
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/services/public/interfaces/gpu/gpu.mojom.h"
 #include "mojo/services/public/interfaces/native_viewport/native_viewport.mojom.h"
@@ -110,10 +112,11 @@ class PepperContainerApp: public ApplicationDelegate,
 };
 
 }  // namespace examples
+}  // namespace mojo
 
-// static
-ApplicationDelegate* ApplicationDelegate::Create() {
-  return new examples::PepperContainerApp();
+MojoResult MojoMain(MojoHandle shell_handle) {
+  mojo::ApplicationRunnerChromium runner(
+      new mojo::examples::PepperContainerApp);
+  return runner.Run(shell_handle);
 }
 
-}  // namespace mojo

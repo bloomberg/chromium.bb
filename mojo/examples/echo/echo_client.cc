@@ -5,8 +5,10 @@
 #include <stdio.h>
 
 #include "mojo/examples/echo/echo_service.mojom.h"
+#include "mojo/public/c/system/main.h"
 #include "mojo/public/cpp/application/application_delegate.h"
 #include "mojo/public/cpp/application/application_impl.h"
+#include "mojo/public/cpp/application/application_runner.h"
 #include "mojo/public/cpp/utility/run_loop.h"
 
 namespace mojo {
@@ -34,10 +36,9 @@ class EchoClientDelegate : public ApplicationDelegate {
 };
 
 }  // namespace examples
-
-// static
-ApplicationDelegate* ApplicationDelegate::Create() {
-  return new examples::EchoClientDelegate();
-}
-
 }  // namespace mojo
+
+MojoResult MojoMain(MojoHandle shell_handle) {
+  mojo::ApplicationRunner runner(new mojo::examples::EchoClientDelegate);
+  return runner.Run(shell_handle);
+}

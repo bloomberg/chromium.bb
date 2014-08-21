@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "mojo/examples/apptest/example_client_application.h"
 #include "mojo/examples/apptest/example_client_impl.h"
 #include "mojo/examples/apptest/example_service.mojom.h"
+#include "mojo/public/c/system/main.h"
 #include "mojo/public/cpp/application/application_delegate.h"
 #include "mojo/public/cpp/application/application_impl.h"
 #include "mojo/public/cpp/bindings/callback.h"
@@ -71,14 +73,14 @@ TEST_F(ExampleServiceTest, RunCallback) {
 
 }  // namespace mojo
 
-extern "C" APPLICATION_EXPORT MojoResult CDECL MojoMain(
-    MojoHandle shell_handle) {
+MojoResult MojoMain(MojoHandle shell_handle) {
   mojo::Environment env;
   mojo::RunLoop loop;
 
-  mojo::ApplicationDelegate* delegate = mojo::ApplicationDelegate::Create();
-  mojo::ApplicationImpl app(delegate);
-  app.BindShell(shell_handle);
+  // TODO(tim): Perhaps the delegate should be the thing that provides
+  // the ExampleServiceTest with the ApplicationImpl somehow.
+  mojo::ApplicationDelegate* delegate = new mojo::ExampleClientApplication();
+  mojo::ApplicationImpl app(delegate, shell_handle);
   g_application_impl_hack = &app;
 
   // TODO(msw): Get actual commandline arguments.

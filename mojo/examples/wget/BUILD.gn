@@ -9,10 +9,8 @@ shared_library("wget") {
   output_name = "mojo_wget"
 
   deps = [
-    "//mojo/public/cpp/application:main_standalone",
     "//mojo/public/cpp/application:standalone",
     "//mojo/public/cpp/bindings",
-    "//mojo/public/cpp/environment:standalone",
     "//mojo/public/cpp/utility",
     "//mojo/services/public/interfaces/network",
   ]

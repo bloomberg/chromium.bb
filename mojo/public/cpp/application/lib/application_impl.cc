@@ -19,9 +19,6 @@ void ApplicationImpl::ShellPtrWatcher::OnConnectionError() {
   impl_->OnShellError();
 }
 
-ApplicationImpl::ApplicationImpl(ApplicationDelegate* delegate)
-    : delegate_(delegate), shell_watch_(this) {}
-
 ApplicationImpl::ApplicationImpl(ApplicationDelegate* delegate,
                                  ScopedMessagePipeHandle shell_handle)
     : delegate_(delegate), shell_watch_(this) {
@@ -31,7 +28,7 @@ ApplicationImpl::ApplicationImpl(ApplicationDelegate* delegate,
 ApplicationImpl::ApplicationImpl(ApplicationDelegate* delegate,
                                  MojoHandle shell_handle)
     : delegate_(delegate), shell_watch_(this) {
-  BindShell(shell_handle);
+  BindShell(MakeScopedHandle(MessagePipeHandle(shell_handle)));
 }
 
 void ApplicationImpl::ClearConnections() {
@@ -70,10 +67,6 @@ void ApplicationImpl::BindShell(ScopedMessagePipeHandle shell_handle) {
   shell_.set_client(this);
   shell_.set_error_handler(&shell_watch_);
   delegate_->Initialize(this);
-}
-
-void ApplicationImpl::BindShell(MojoHandle shell_handle) {
-  BindShell(mojo::MakeScopedHandle(mojo::MessagePipeHandle(shell_handle)));
 }
 
 void ApplicationImpl::AcceptConnection(const String& requestor_url,

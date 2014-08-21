@@ -6,9 +6,11 @@
 #include <string>
 
 #include "mojo/examples/sample_app/gles2_client_impl.h"
+#include "mojo/public/c/system/main.h"
 #include "mojo/public/cpp/application/application_connection.h"
 #include "mojo/public/cpp/application/application_delegate.h"
 #include "mojo/public/cpp/application/application_impl.h"
+#include "mojo/public/cpp/application/application_runner.h"
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/public/cpp/system/macros.h"
 #include "mojo/public/cpp/utility/run_loop.h"
@@ -82,11 +84,7 @@ class SampleApp : public mojo::ApplicationDelegate,
 
 }  // namespace examples
 
-namespace mojo {
-
-// static
-ApplicationDelegate* ApplicationDelegate::Create() {
-  return new examples::SampleApp();
+MojoResult MojoMain(MojoHandle shell_handle) {
+  mojo::ApplicationRunner runner(new examples::SampleApp);
+  return runner.Run(shell_handle);
 }
-
-}  // namespace mojo

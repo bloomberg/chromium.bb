@@ -6,7 +6,9 @@
 
 #include <assert.h>
 
+#include "mojo/public/c/system/main.h"
 #include "mojo/public/cpp/application/application_connection.h"
+#include "mojo/public/cpp/application/application_runner.h"
 #include "mojo/services/test_service/test_time_service_impl.h"
 
 namespace mojo {
@@ -37,10 +39,10 @@ void TestRequestTrackerApplication::Create(
 }
 
 }  // namespace test
-
-// static
-ApplicationDelegate* ApplicationDelegate::Create() {
-  return new test::TestRequestTrackerApplication();
-}
-
 }  // namespace mojo
+
+MojoResult MojoMain(MojoHandle shell_handle) {
+  mojo::ApplicationRunner runner(
+      new mojo::test::TestRequestTrackerApplication);
+  return runner.Run(shell_handle);
+}

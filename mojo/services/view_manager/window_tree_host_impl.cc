@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/services/view_manager/root_node_manager.h"
-#include "mojo/services/view_manager/window_tree_host_impl.h"
 #include "mojo/public/c/gles2/gles2.h"
 #include "mojo/services/public/cpp/geometry/geometry_type_converters.h"
 #include "mojo/services/public/cpp/input_events/input_events_type_converters.h"
 #include "mojo/services/view_manager/context_factory_impl.h"
+#include "mojo/services/view_manager/root_node_manager.h"
+#include "mojo/services/view_manager/window_tree_host_impl.h"
 #include "ui/aura/env.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window.h"

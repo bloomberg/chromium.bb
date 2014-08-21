@@ -3,9 +3,11 @@
 // found in the LICENSE file.
 
 #include "base/message_loop/message_loop.h"
+#include "mojo/public/c/system/main.h"
 #include "mojo/public/cpp/application/application_connection.h"
 #include "mojo/public/cpp/application/application_delegate.h"
 #include "mojo/public/cpp/application/application_impl.h"
+#include "mojo/public/cpp/application/application_runner_chromium.h"
 #include "mojo/public/cpp/application/interface_factory_impl.h"
 #include "mojo/services/html_viewer/blink_platform_impl.h"
 #include "mojo/services/html_viewer/html_document_view.h"
@@ -110,9 +112,9 @@ void NavigatorImpl::Navigate(
   viewer_->Load(response_details.Pass());
 }
 
-// static
-ApplicationDelegate* ApplicationDelegate::Create() {
-  return new HTMLViewer;
-}
+}  // namespace mojo
 
+MojoResult MojoMain(MojoHandle shell_handle) {
+  mojo::ApplicationRunnerChromium runner(new mojo::HTMLViewer);
+  return runner.Run(shell_handle);
 }

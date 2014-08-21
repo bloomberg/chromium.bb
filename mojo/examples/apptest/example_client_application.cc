@@ -14,9 +14,4 @@ ExampleClientApplication::~ExampleClientApplication() {}
 
 void ExampleClientApplication::Initialize(ApplicationImpl* app) {}
 
-// static
-ApplicationDelegate* ApplicationDelegate::Create() {
-  return new ExampleClientApplication();
-}
-
 }  // namespace mojo

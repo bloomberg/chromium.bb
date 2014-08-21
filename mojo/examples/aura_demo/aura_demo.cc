@@ -10,8 +10,10 @@
 #include "mojo/aura/screen_mojo.h"
 #include "mojo/aura/window_tree_host_mojo.h"
 #include "mojo/aura/window_tree_host_mojo_delegate.h"
+#include "mojo/public/c/system/main.h"
 #include "mojo/public/cpp/application/application_connection.h"
 #include "mojo/public/cpp/application/application_delegate.h"
+#include "mojo/public/cpp/application/application_runner_chromium.h"
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/services/public/cpp/view_manager/view.h"
 #include "mojo/services/public/cpp/view_manager/view_manager.h"
@@ -200,10 +202,9 @@ class AuraDemo : public ApplicationDelegate,
 };
 
 }  // namespace examples
-
-// static
-ApplicationDelegate* ApplicationDelegate::Create() {
-  return new examples::AuraDemo();
-}
-
 }  // namespace mojo
+
+MojoResult MojoMain(MojoHandle shell_handle) {
+  mojo::ApplicationRunnerChromium runner(new mojo::examples::AuraDemo);
+  return runner.Run(shell_handle);
+}
