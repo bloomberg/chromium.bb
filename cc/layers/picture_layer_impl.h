@@ -184,6 +184,8 @@ class CC_EXPORT PictureLayerImpl
   bool CanHaveTilingWithScale(float contents_scale) const;
   void SanityCheckTilingState() const;
 
+  bool ShouldAdjustRasterScaleDuringScaleAnimations() const;
+
   virtual void GetDebugBorderProperties(
       SkColor* color, float* width) const OVERRIDE;
   virtual void AsValueInto(base::debug::TracedValue* dict) const OVERRIDE;

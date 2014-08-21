@@ -68,6 +68,8 @@ class FakePicturePileImpl : public PicturePileImpl {
     clear_canvas_with_debug_color_ = clear;
   }
 
+  void set_has_text(bool has_text) { has_text_ = has_text; }
+
  protected:
   FakePicturePileImpl();
   virtual ~FakePicturePileImpl();

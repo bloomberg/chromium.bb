@@ -49,6 +49,9 @@ class CC_EXPORT PicturePileBase : public base::RefCounted<PicturePileBase> {
   // If this pile contains any valid recordings. May have false positives.
   bool HasRecordings() const { return has_any_recordings_; }
 
+  // If this pile has ever contained any recordings with text.
+  bool has_text() const { return has_text_; }
+
   static void ComputeTileGridInfo(const gfx::Size& tile_grid_size,
                                   SkTileGridFactory::TileGridInfo* info);
 
@@ -117,6 +120,7 @@ class CC_EXPORT PicturePileBase : public base::RefCounted<PicturePileBase> {
   // A hint about whether there are any recordings. This may be a false
   // positive.
   bool has_any_recordings_;
+  bool has_text_;
 
  private:
   void SetBufferPixels(int buffer_pixels);

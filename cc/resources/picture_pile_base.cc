@@ -47,7 +47,8 @@ PicturePileBase::PicturePileBase()
       contents_fill_bounds_completely_(false),
       show_debug_picture_borders_(false),
       clear_canvas_with_debug_color_(kDefaultClearCanvasSetting),
-      has_any_recordings_(false) {
+      has_any_recordings_(false),
+      has_text_(false) {
   tiling_.SetMaxTextureSize(gfx::Size(kBasePictureSize, kBasePictureSize));
   tile_grid_info_.fTileInterval.setEmpty();
   tile_grid_info_.fMargin.setEmpty();
@@ -67,7 +68,9 @@ PicturePileBase::PicturePileBase(const PicturePileBase* other)
       contents_fill_bounds_completely_(other->contents_fill_bounds_completely_),
       show_debug_picture_borders_(other->show_debug_picture_borders_),
       clear_canvas_with_debug_color_(other->clear_canvas_with_debug_color_),
-      has_any_recordings_(other->has_any_recordings_) {}
+      has_any_recordings_(other->has_any_recordings_),
+      has_text_(other->has_text_) {
+}
 
 PicturePileBase::PicturePileBase(const PicturePileBase* other,
                                  unsigned thread_index)
@@ -82,7 +85,8 @@ PicturePileBase::PicturePileBase(const PicturePileBase* other,
       contents_fill_bounds_completely_(other->contents_fill_bounds_completely_),
       show_debug_picture_borders_(other->show_debug_picture_borders_),
       clear_canvas_with_debug_color_(other->clear_canvas_with_debug_color_),
-      has_any_recordings_(other->has_any_recordings_) {
+      has_any_recordings_(other->has_any_recordings_),
+      has_text_(other->has_text_) {
   for (PictureMap::const_iterator it = other->picture_map_.begin();
        it != other->picture_map_.end();
        ++it) {

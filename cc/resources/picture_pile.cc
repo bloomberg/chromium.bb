@@ -371,6 +371,7 @@ bool PicturePile::UpdateAndExpandInvalidation(
         // the pile after each invalidation.
         is_suitable_for_gpu_rasterization_ &=
             picture->IsSuitableForGpuRasterization();
+        has_text_ |= picture->HasText();
         base::TimeDelta duration =
             stats_instrumentation->EndRecording(start_time);
         best_duration = std::min(duration, best_duration);

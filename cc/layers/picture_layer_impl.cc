@@ -1046,6 +1046,11 @@ bool PictureLayerImpl::ShouldAdjustRasterScale() const {
       draw_properties().screen_space_transform_is_animating)
     return true;
 
+  if (draw_properties().screen_space_transform_is_animating &&
+      raster_contents_scale_ != ideal_contents_scale_ &&
+      ShouldAdjustRasterScaleDuringScaleAnimations())
+    return true;
+
   bool is_pinching = layer_tree_impl()->PinchGestureActive();
   if (is_pinching && raster_page_scale_) {
     // We change our raster scale when it is:
@@ -1140,11 +1145,12 @@ void PictureLayerImpl::RecalculateRasterScales() {
   raster_contents_scale_ =
       std::max(raster_contents_scale_, MinimumContentsScale());
 
-  // Since we're not re-rasterizing during animation, rasterize at the maximum
+  // If we're not re-rasterizing during animation, rasterize at the maximum
   // scale that will occur during the animation, if the maximum scale is
   // known. However, to avoid excessive memory use, don't rasterize at a scale
   // at which this layer would become larger than the viewport.
-  if (draw_properties().screen_space_transform_is_animating) {
+  if (draw_properties().screen_space_transform_is_animating &&
+      !ShouldAdjustRasterScaleDuringScaleAnimations()) {
     bool can_raster_at_maximum_scale = false;
     if (draw_properties().maximum_animation_contents_scale > 0.f) {
       gfx::Size bounds_at_maximum_scale = gfx::ToCeiledSize(gfx::ScaleSize(
@@ -1320,6 +1326,22 @@ void PictureLayerImpl::SanityCheckTilingState() const {
   // tiling to mark its tiles as being required for activation.
   DCHECK_EQ(1, tilings_->NumHighResTilings());
 #endif
+}
+
+bool PictureLayerImpl::ShouldAdjustRasterScaleDuringScaleAnimations() const {
+  if (!layer_tree_impl()->use_gpu_rasterization())
+    return false;
+
+  // Re-rastering text at different scales using GPU rasterization causes
+  // texture uploads for glyphs at each scale (see crbug.com/366225). To
+  // workaround this performance issue, we don't re-rasterize layers with
+  // text during scale animations.
+  // TODO(ajuma): Remove this workaround once text can be efficiently
+  // re-rastered at different scales (e.g. by using distance-field fonts).
+  if (pile_->has_text())
+    return false;
+
+  return true;
 }
 
 float PictureLayerImpl::MaximumTilingContentsScale() const {

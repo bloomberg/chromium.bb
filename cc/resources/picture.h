@@ -75,6 +75,8 @@ class CC_EXPORT Picture
 
   bool IsSuitableForGpuRasterization() const;
 
+  bool HasText() const;
+
   // Apply this scale and raster the negated region into the canvas.
   // |negated_content_region| specifies the region to be clipped out of the
   // raster operation, i.e., the parts of the canvas which will not get drawn

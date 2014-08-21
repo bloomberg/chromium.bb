@@ -217,6 +217,11 @@ bool Picture::IsSuitableForGpuRasterization() const {
   return picture_->suitableForGpuRasterization(NULL);
 }
 
+bool Picture::HasText() const {
+  DCHECK(picture_);
+  return picture_->hasText();
+}
+
 void Picture::CloneForDrawing(int num_threads) {
   TRACE_EVENT1("cc", "Picture::CloneForDrawing", "num_threads", num_threads);
 
