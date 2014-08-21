@@ -97,7 +97,6 @@ struct wl_display {
 		uint32_t id;
 	} protocol_error;
 	int fd;
-	pthread_t display_thread;
 	struct wl_map objects;
 	struct wl_event_queue display_queue;
 	struct wl_event_queue default_queue;
