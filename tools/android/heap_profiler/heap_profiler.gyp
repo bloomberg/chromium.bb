@@ -32,25 +32,26 @@
     },
     {
       'target_name': 'heap_profiler_unittests',
-      'type': 'executable',
+      'type': '<(gtest_target_type)',
       'sources': [ 'heap_profiler_unittest.cc' ],
       'dependencies': [
         'heap_profiler_core',
+        '../../../testing/android/native_test.gyp:native_test_native_code',
         '../../../testing/gtest.gyp:gtest',
         '../../../testing/gtest.gyp:gtest_main',
       ],
       'include_dirs': [ '../../..' ],
     },
     {
-      'target_name': 'heap_profiler_unittests_stripped',
+      'target_name': 'heap_profiler_unittests_apk',
       'type': 'none',
-      'dependencies': [ 'heap_profiler_unittests' ],
-      'actions': [{
-        'action_name': 'strip heap_profiler_unittests',
-        'inputs': [ '<(PRODUCT_DIR)/heap_profiler_unittests' ],
-        'outputs': [ '<(PRODUCT_DIR)/heap_profiler_unittests_stripped' ],
-        'action': [ '<(android_strip)', '<@(_inputs)', '-o', '<@(_outputs)' ],
-      }],
+      'dependencies': [
+        'heap_profiler_unittests',
+      ],
+      'variables': {
+        'test_suite_name': 'heap_profiler_unittests',
+      },
+      'includes': [ '../../../build/apk_test.gypi' ],
     },
     {
       'target_name': 'heap_profiler_integrationtest',
