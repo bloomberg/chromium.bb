@@ -178,7 +178,8 @@ class MockAudioInputCallback : public AudioInputStream::AudioInputCallback {
 class WebContentsAudioInputStreamTest : public testing::Test {
  public:
   WebContentsAudioInputStreamTest()
-      : thread_bundle_(TestBrowserThreadBundle::REAL_IO_THREAD),
+      : thread_bundle_(new TestBrowserThreadBundle(
+            TestBrowserThreadBundle::REAL_IO_THREAD)),
         audio_thread_("Audio thread"),
         mock_mirroring_manager_(new MockAudioMirroringManager()),
         mock_tracker_(new MockWebContentsTracker()),
@@ -193,6 +194,7 @@ class WebContentsAudioInputStreamTest : public testing::Test {
 
   virtual ~WebContentsAudioInputStreamTest() {
     audio_thread_.Stop();
+    thread_bundle_.reset();
 
     DCHECK(!mock_vais_);
     DCHECK(!wcais_);
@@ -368,7 +370,7 @@ class WebContentsAudioInputStreamTest : public testing::Test {
   }
 
  private:
-  TestBrowserThreadBundle thread_bundle_;
+  scoped_ptr<TestBrowserThreadBundle> thread_bundle_;
   base::Thread audio_thread_;
 
   scoped_ptr<MockAudioMirroringManager> mock_mirroring_manager_;
