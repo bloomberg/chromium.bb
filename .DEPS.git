@@ -7,7 +7,7 @@ vars = {
     'angle_revision':
          'bc75f36b04c8bab99bcecf8cdca16ecee3ac58ee',
     'skia_revision':
-         'a38acc74bba8a591dcdf0ef28a63175f6086214d',
+         '4082d290eea2f70caa82120ff3bc4fbdccbf206c',
     'google_toolbox_for_mac_revision':
          '662',
     'lighttpd_revision':
@@ -194,7 +194,7 @@ deps = {
     'src/third_party/sfntly/cpp/src':
         Var('git_url') + '/external/sfntly/cpp/src.git@1bdaae8fc788a5ac8936d68bf24f37d977a13dac',
     'src/third_party/skia':
-        Var('git_url') + '/skia.git@a38acc74bba8a591dcdf0ef28a63175f6086214d',
+        Var('git_url') + '/skia.git@4082d290eea2f70caa82120ff3bc4fbdccbf206c',
     'src/third_party/smhasher/src':
         Var('git_url') + '/external/smhasher.git@e87738e57558e0ec472b2fc3a643b838e5b6e88f',
     'src/third_party/snappy/src':
