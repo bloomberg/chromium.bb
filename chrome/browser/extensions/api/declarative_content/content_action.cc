@@ -70,6 +70,10 @@ class ShowPageAction : public ContentAction {
     ExtensionActionAPI::Get(apply_info->profile)->NotifyChange(
         action, apply_info->tab, apply_info->profile);
   }
+  // The page action is already showing, so nothing needs to be done here.
+  virtual void Reapply(const std::string& extension_id,
+                       const base::Time& extension_install_time,
+                       ApplyInfo* apply_info) const OVERRIDE {}
   virtual void Revert(const std::string& extension_id,
                       const base::Time& extension_install_time,
                       ApplyInfo* apply_info) const OVERRIDE {
@@ -121,6 +125,13 @@ class RequestContentScript : public ContentAction {
   virtual void Apply(const std::string& extension_id,
                      const base::Time& extension_install_time,
                      ApplyInfo* apply_info) const OVERRIDE {
+    // TODO(markdittmer): Invoke UserScriptMaster declarative script loader:
+    // load new user script.
+  }
+
+  virtual void Reapply(const std::string& extension_id,
+                       const base::Time& extension_install_time,
+                       ApplyInfo* apply_info) const OVERRIDE {
     // TODO(markdittmer): Invoke UserScriptMaster declarative script loader:
     // load new user script.
   }

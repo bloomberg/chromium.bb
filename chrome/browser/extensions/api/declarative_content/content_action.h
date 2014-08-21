@@ -45,10 +45,14 @@ class ContentAction : public base::RefCounted<ContentAction> {
 
   // Applies or reverts this ContentAction on a particular tab for a particular
   // extension.  Revert exists to keep the actions up to date as the page
-  // changes.
+  // changes.  Reapply exists to reapply changes to a new page, even if the
+  // previous page also matched relevant conditions.
   virtual void Apply(const std::string& extension_id,
                      const base::Time& extension_install_time,
                      ApplyInfo* apply_info) const = 0;
+  virtual void Reapply(const std::string& extension_id,
+                       const base::Time& extension_install_time,
+                       ApplyInfo* apply_info) const = 0;
   virtual void Revert(const std::string& extension_id,
                       const base::Time& extension_install_time,
                       ApplyInfo* apply_info) const = 0;

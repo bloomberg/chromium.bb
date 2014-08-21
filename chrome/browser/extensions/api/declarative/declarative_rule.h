@@ -156,6 +156,12 @@ class DeclarativeActionSet {
              const base::Time& extension_install_time,
              typename ActionT::ApplyInfo* apply_info) const;
 
+  // Rules call this method when their conditions are fulfilled, but Apply has
+  // already been called.
+  void Reapply(const std::string& extension_id,
+               const base::Time& extension_install_time,
+               typename ActionT::ApplyInfo* apply_info) const;
+
   // Rules call this method when they have stateful conditions, and those
   // conditions stop being fulfilled.  Rules with event-based conditions (e.g. a
   // network request happened) will never Revert() an action.
@@ -381,6 +387,16 @@ void DeclarativeActionSet<ActionT>::Apply(
   for (typename Actions::const_iterator i = actions_.begin();
        i != actions_.end(); ++i)
     (*i)->Apply(extension_id, extension_install_time, apply_info);
+}
+
+template<typename ActionT>
+void DeclarativeActionSet<ActionT>::Reapply(
+    const std::string& extension_id,
+    const base::Time& extension_install_time,
+    typename ActionT::ApplyInfo* apply_info) const {
+  for (typename Actions::const_iterator i = actions_.begin();
+       i != actions_.end(); ++i)
+    (*i)->Reapply(extension_id, extension_install_time, apply_info);
 }
 
 template<typename ActionT>
