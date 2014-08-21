@@ -103,9 +103,14 @@ void AppListControllerDelegate::DoShowAppInfoFlow(
 
   OnShowChildDialog();
 
-  // Since the AppListControllerDelegate is a leaky singleton, passing its
-  // raw pointer around is OK.
-  ShowAppInfoDialog(this, profile, extension);
+  // Since the AppListControllerDelegate is a leaky singleton, passing its raw
+  // pointer around is OK.
+  ShowAppInfoDialog(GetAppListWindow(),
+                    GetAppListBounds(),
+                    profile,
+                    extension,
+                    base::Bind(&AppListControllerDelegate::OnCloseChildDialog,
+                               base::Unretained(this)));
 }
 
 void AppListControllerDelegate::UninstallApp(Profile* profile,

@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/app_list/app_list_dialog_contents_view.h"
+#include "chrome/browser/ui/views/app_list/app_list_dialog_container.h"
 
-#include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
-#include "chrome/browser/ui/app_list/app_list_service.h"
+#include "base/callback.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "ui/app_list/app_list_constants.h"
@@ -56,11 +55,11 @@ class AppListOverlayBackground : public views::Background {
 
 }  // namespace
 
-AppListDialogContentsView::AppListDialogContentsView(
-    AppListControllerDelegate* app_list_controller_delegate,
-    views::View* dialog_body)
-    : app_list_controller_delegate_(app_list_controller_delegate),
-      dialog_body_(dialog_body),
+AppListDialogContainer::AppListDialogContainer(
+    views::View* dialog_body,
+    const base::Closure& close_callback)
+    : dialog_body_(dialog_body),
+      close_callback_(close_callback),
       close_button_(NULL) {
   set_background(new AppListOverlayBackground());
   AddChildView(dialog_body_);
@@ -82,34 +81,10 @@ AppListDialogContentsView::AppListDialogContentsView(
   AddChildView(close_button_);
 }
 
-AppListDialogContentsView::~AppListDialogContentsView() {
+AppListDialogContainer::~AppListDialogContainer() {
 }
 
-// static
-views::Widget* AppListDialogContentsView::CreateDialogWidget(
-    gfx::NativeView parent,
-    const gfx::Rect& bounds,
-    AppListDialogContentsView* dialog) {
-  views::Widget::InitParams params;
-  params.delegate = dialog;
-  params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
-  params.remove_standard_frame = true;
-  params.parent = parent;
-  params.bounds = bounds;
-  // Since this stretches to the corners of the app list, any shadow we add
-  // would be hidden anyway, so don't add one.
-  params.shadow_type = views::Widget::InitParams::SHADOW_TYPE_NONE;
-  // TODO(sashab): Plumb wm::WindowVisibilityAnimationType through to the
-  // NativeWindow so that widgets can specify custom animations for their
-  // windows. Then specify a matching animation for this type of widget,
-  // such as WINDOW_VISIBILITY_ANIMATION_TYPE_VERTICAL.
-
-  views::Widget* widget = new views::Widget();
-  widget->Init(params);
-  return widget;
-}
-
-void AppListDialogContentsView::Layout() {
+void AppListDialogContainer::Layout() {
   // Place the close button in the top right-hand corner.
   close_button_->SetSize(close_button_->GetPreferredSize());
   close_button_->SetPosition(
@@ -123,26 +98,26 @@ void AppListDialogContentsView::Layout() {
   views::View::Layout();
 }
 
-views::View* AppListDialogContentsView::GetInitiallyFocusedView() {
+views::View* AppListDialogContainer::GetInitiallyFocusedView() {
   return GetContentsView();
 }
 
-views::View* AppListDialogContentsView::GetContentsView() {
+views::View* AppListDialogContainer::GetContentsView() {
   return this;
 }
 
-views::ClientView* AppListDialogContentsView::CreateClientView(
+views::ClientView* AppListDialogContainer::CreateClientView(
     views::Widget* widget) {
   return new views::ClientView(widget, GetContentsView());
 }
 
-views::NonClientFrameView* AppListDialogContentsView::CreateNonClientFrameView(
+views::NonClientFrameView* AppListDialogContainer::CreateNonClientFrameView(
     views::Widget* widget) {
   return new views::NativeFrameView(widget);
 }
 
-void AppListDialogContentsView::ButtonPressed(views::Button* sender,
-                                              const ui::Event& event) {
+void AppListDialogContainer::ButtonPressed(views::Button* sender,
+                                           const ui::Event& event) {
   if (sender == close_button_) {
     GetWidget()->Close();
   } else {
@@ -150,10 +125,11 @@ void AppListDialogContentsView::ButtonPressed(views::Button* sender,
   }
 }
 
-ui::ModalType AppListDialogContentsView::GetModalType() const {
+ui::ModalType AppListDialogContainer::GetModalType() const {
   return ui::MODAL_TYPE_WINDOW;
 }
 
-void AppListDialogContentsView::WindowClosing() {
-  app_list_controller_delegate_->OnCloseChildDialog();
+void AppListDialogContainer::WindowClosing() {
+  if (!close_callback_.is_null())
+    close_callback_.Run();
 }

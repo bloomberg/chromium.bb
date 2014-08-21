@@ -4,15 +4,15 @@
 
 #include "chrome/browser/ui/views/apps/app_info_dialog/app_info_dialog_views.h"
 
+#include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
-#include "chrome/browser/ui/views/app_list/app_list_dialog_contents_view.h"
+#include "chrome/browser/ui/views/app_list/app_list_dialog_container.h"
 #include "chrome/browser/ui/views/apps/app_info_dialog/app_info_footer_panel.h"
 #include "chrome/browser/ui/views/apps/app_info_dialog/app_info_header_panel.h"
 #include "chrome/browser/ui/views/apps/app_info_dialog/app_info_permissions_panel.h"
 #include "chrome/browser/ui/views/apps/app_info_dialog/app_info_summary_panel.h"
-#include "chrome/browser/ui/views/constrained_window_views.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
 #include "ui/app_list/app_list_constants.h"
@@ -23,10 +23,13 @@
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/window/dialog_delegate.h"
 
-void ShowAppInfoDialog(AppListControllerDelegate* app_list_controller_delegate,
+void ShowAppInfoDialog(gfx::NativeWindow parent,
+                       const gfx::Rect& bounds,
                        Profile* profile,
-                       const extensions::Extension* app) {
+                       const extensions::Extension* app,
+                       const base::Closure& close_callback) {
   UMA_HISTOGRAM_ENUMERATION("Apps.AppInfoDialogOpenedForType",
                             app->GetType(),
                             extensions::Manifest::NUM_LOAD_TYPES);
@@ -34,17 +37,10 @@ void ShowAppInfoDialog(AppListControllerDelegate* app_list_controller_delegate,
                             app->location(),
                             extensions::Manifest::NUM_LOCATIONS);
 
-  gfx::NativeWindow app_list_window =
-      app_list_controller_delegate->GetAppListWindow();
-  DCHECK(app_list_window);
-  gfx::Rect app_list_bounds = app_list_controller_delegate->GetAppListBounds();
-
-  views::View* app_info_view = new AppInfoDialog(app_list_window, profile, app);
-  views::Widget* dialog_widget = AppListDialogContentsView::CreateDialogWidget(
-      app_list_window,
-      app_list_bounds,
-      new AppListDialogContentsView(app_list_controller_delegate,
-                                    app_info_view));
+  views::View* app_info_view = new AppInfoDialog(parent, profile, app);
+  views::Widget* dialog_widget = views::DialogDelegate::CreateDialogWidget(
+      new AppListDialogContainer(app_info_view, close_callback), NULL, parent);
+  dialog_widget->SetBounds(bounds);
   dialog_widget->Show();
 }
 

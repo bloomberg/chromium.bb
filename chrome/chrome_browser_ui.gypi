@@ -1132,8 +1132,8 @@
     # Note that we assume app list is enabled on all views builds, so the
     # views-specific app list files are in the views section.
     'chrome_browser_ui_app_list_sources': [
-      'browser/ui/views/app_list/app_list_dialog_contents_view.cc',
-      'browser/ui/views/app_list/app_list_dialog_contents_view.h',
+      'browser/ui/views/app_list/app_list_dialog_container.cc',
+      'browser/ui/views/app_list/app_list_dialog_container.h',
       'browser/ui/views/app_list/win/activation_tracker_win.cc',
       'browser/ui/views/app_list/win/activation_tracker_win.h',
       'browser/ui/views/app_list/win/app_list_controller_delegate_win.cc',
