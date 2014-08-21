@@ -33,7 +33,7 @@
 {%-   set field_name = packed_field.field.name %}
 {%-   if packed_field.field|is_string_pointer_field %}
     // validate {{struct.name}}.{{field_name}}
-    err = messageValidator.validateStringPointer({{packed_field|field_offset}})
+    err = messageValidator.validateStringPointer({{packed_field|validate_string_params}})
 {%-   elif packed_field.field|is_array_pointer_field %}
     // validate {{struct.name}}.{{field_name}}
     err = messageValidator.validateArrayPointer({{packed_field|validate_array_params}});
@@ -42,7 +42,7 @@
     err = messageValidator.validateStructPointer({{packed_field|validate_struct_params}});
 {%-   elif packed_field.field|is_handle_field %}
     // validate {{struct.name}}.{{field_name}}
-    err = messageValidator.validateHandle({{packed_field|field_offset}})
+    err = messageValidator.validateHandle({{packed_field|validate_handle_params}})
 {%-   endif %}
     if (err !== validator.validationError.NONE)
         return err;

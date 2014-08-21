@@ -593,6 +593,14 @@ define("mojo/public/js/bindings/codec", [
     encoder.encodeStringPointer(val);
   };
 
+  function NullableString() {
+  }
+
+  NullableString.encodedSize = String.encodedSize;
+
+  NullableString.decode = String.decode;
+
+  NullableString.encode = String.encode;
 
   function Float() {
   }
@@ -643,6 +651,12 @@ define("mojo/public/js/bindings/codec", [
     this.cls.encode(objectEncoder, val);
   };
 
+  function NullablePointerTo(cls) {
+    PointerTo.call(this, cls);
+  }
+
+  NullablePointerTo.prototype = Object.create(PointerTo.prototype);
+
   function ArrayOf(cls) {
     this.cls = cls;
   }
@@ -657,6 +671,12 @@ define("mojo/public/js/bindings/codec", [
     encoder.encodeArrayPointer(this.cls, val);
   };
 
+  function NullableArrayOf(cls) {
+    ArrayOf.call(this, cls);
+  }
+
+  NullableArrayOf.prototype = Object.create(ArrayOf.prototype);
+
   function Handle() {
   }
 
@@ -669,6 +689,15 @@ define("mojo/public/js/bindings/codec", [
   Handle.encode = function(encoder, val) {
     encoder.encodeHandle(val);
   };
+
+  function NullableHandle() {
+  }
+
+  NullableHandle.encodedSize = Handle.encodedSize;
+
+  NullableHandle.decode = Handle.decode;
+
+  NullableHandle.encode = Handle.encode;
 
   var exports = {};
   exports.align = align;
@@ -695,9 +724,13 @@ define("mojo/public/js/bindings/codec", [
   exports.Float = Float;
   exports.Double = Double;
   exports.String = String;
+  exports.NullableString = NullableString;
   exports.PointerTo = PointerTo;
+  exports.NullablePointerTo = NullablePointerTo;
   exports.ArrayOf = ArrayOf;
+  exports.NullableArrayOf = NullableArrayOf;
   exports.PackedBool = PackedBool;
   exports.Handle = Handle;
+  exports.NullableHandle = NullableHandle;
   return exports;
 });

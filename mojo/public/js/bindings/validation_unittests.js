@@ -208,13 +208,6 @@ define([
         continue;
       }
 
-      // TODO(hansmuller): Temporarily skipping array unexpected null tests.
-      if (testFiles[i].indexOf("unexpected_null") != -1 ||
-          testFiles[i].indexOf("unexpected_invalid") != -1) {
-        console.log("[Skipping " + testFiles[i] + "]");
-        continue;
-      }
-
       var testMessage = readTestMessage(testFiles[i]);
       var handles = new Array(testMessage.handleCount);
       var message = new codec.Message(testMessage.buffer, handles);

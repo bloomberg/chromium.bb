@@ -13,7 +13,9 @@ define("mojo/public/js/bindings/validator", [
     UNEXPECTED_STRUCT_HEADER: 'VALIDATION_ERROR_UNEXPECTED_STRUCT_HEADER',
     UNEXPECTED_ARRAY_HEADER: 'VALIDATION_ERROR_UNEXPECTED_ARRAY_HEADER',
     ILLEGAL_HANDLE: 'VALIDATION_ERROR_ILLEGAL_HANDLE',
+    UNEXPECTED_INVALID_HANDLE: 'VALIDATION_ERROR_UNEXPECTED_INVALID_HANDLE',
     ILLEGAL_POINTER: 'VALIDATION_ERROR_ILLEGAL_POINTER',
+    UNEXPECTED_NULL_POINTER: 'VALIDATION_ERROR_UNEXPECTED_NULL_POINTER',
     MESSAGE_HEADER_INVALID_FLAG_COMBINATION:
         'VALIDATION_ERROR_MESSAGE_HEADER_INVALID_FLAG_COMBINATION',
     MESSAGE_HEADER_MISSING_REQUEST_ID:
@@ -21,6 +23,20 @@ define("mojo/public/js/bindings/validator", [
   };
 
   var NULL_MOJO_POINTER = "NULL_MOJO_POINTER";
+
+  function isStringClass(cls) {
+    return cls === codec.String || cls === codec.NullableString;
+  }
+
+  function isHandleClass(cls) {
+    return cls === codec.Handle || cls === codec.NullableHandle;
+  }
+
+  function isNullable(type) {
+    return type === codec.NullableString || type === codec.NullableHandle ||
+        type instanceof codec.NullableArrayOf ||
+        type instanceof codec.NullablePointerTo;
+  }
 
   function Validator(message) {
     this.message = message;
@@ -73,8 +89,13 @@ define("mojo/public/js/bindings/validator", [
     return true;
   }
 
-  Validator.prototype.validateHandle = function(offset) {
+  Validator.prototype.validateHandle = function(offset, nullable) {
     var index = this.message.buffer.getUint32(offset);
+
+    if (index === codec.kEncodedInvalidHandleValue)
+      return nullable ?
+          validationError.NONE : validationError.UNEXPECTED_INVALID_HANDLE;
+
     if (!this.claimHandle(index))
       return validationError.ILLEGAL_HANDLE;
     return validationError.NONE;
@@ -140,23 +161,30 @@ define("mojo/public/js/bindings/validator", [
     return Number.isSafeInteger(bufferOffset) ? bufferOffset : null;
   }
 
-  Validator.prototype.validateArrayPointer =
-      function(offset, elementSize, expectedElementCount, elementType) {
+  Validator.prototype.validateArrayPointer = function(
+      offset, elementSize, expectedElementCount, elementType, nullable) {
     var arrayOffset = this.decodePointer(offset);
     if (arrayOffset === null)
       return validationError.ILLEGAL_POINTER;
+
     if (arrayOffset === NULL_MOJO_POINTER)
-      return validationError.NONE;
+      return nullable ?
+          validationError.NONE : validationError.UNEXPECTED_NULL_POINTER;
+
     return this.validateArray(
         arrayOffset, elementSize, expectedElementCount, elementType);
   }
 
-  Validator.prototype.validateStructPointer = function(offset, structClass) {
+  Validator.prototype.validateStructPointer = function(
+        offset, structClass, nullable) {
     var structOffset = this.decodePointer(offset);
     if (structOffset === null)
       return validationError.ILLEGAL_POINTER;
+
     if (structOffset === NULL_MOJO_POINTER)
-      return validationError.NONE;
+      return nullable ?
+          validationError.NONE : validationError.UNEXPECTED_NULL_POINTER;
+
     return structClass.validate(this, structOffset);
   }
 
@@ -196,17 +224,19 @@ define("mojo/public/js/bindings/validator", [
     // Validate the array's elements if they are pointers or handles.
 
     var elementsOffset = offset + codec.kArrayHeaderSize;
-    if (elementType === codec.Handle)
-      return this.validateHandleElements(elementsOffset, numElements);
+    var nullable = isNullable(elementType);
+
+    if (isHandleClass(elementType))
+      return this.validateHandleElements(elementsOffset, numElements, nullable);
+    if (isStringClass(elementType))
+      return this.validateArrayElements(
+          elementsOffset, numElements, codec.Uint8, nullable)
     if (elementType instanceof codec.PointerTo)
       return this.validateStructElements(
-          elementsOffset, numElements, elementType.cls);
-    if (elementType instanceof codec.String)
-      return this.validateArrayElements(
-          elementsOffset, numElements, codec.Uint8);
+          elementsOffset, numElements, elementType.cls, nullable);
     if (elementType instanceof codec.ArrayOf)
       return this.validateArrayElements(
-          elementsOffset, numElements, elementType.cls);
+          elementsOffset, numElements, elementType.cls, nullable);
 
     return validationError.NONE;
   }
@@ -215,24 +245,26 @@ define("mojo/public/js/bindings/validator", [
   // methods below is "safe" because elementSize <= 8, offset and
   // numElements are uint32, and 0 <= i < numElements.
 
-  Validator.prototype.validateHandleElements = function(offset, numElements) {
+  Validator.prototype.validateHandleElements =
+      function(offset, numElements, nullable) {
     var elementSize = codec.Handle.encodedSize;
     for (var i = 0; i < numElements; i++) {
-      var index = this.message.buffer.getUint32(offset + i * elementSize);
-      if (!this.claimHandle(index))
-        return validationError.ILLEGAL_HANDLE;
+      var elementOffset = offset + i * elementSize;
+      var err = this.validateHandle(elementOffset, nullable);
+      if (err != validationError.NONE)
+        return err;
     }
     return validationError.NONE;
   }
 
   // The elementClass parameter is the element type of the element arrays.
   Validator.prototype.validateArrayElements =
-      function(offset, numElements, elementClass) {
+      function(offset, numElements, elementClass, nullable) {
     var elementSize = codec.PointerTo.prototype.encodedSize;
     for (var i = 0; i < numElements; i++) {
       var elementOffset = offset + i * elementSize;
       var err = this.validateArrayPointer(
-          elementOffset, elementClass.encodedSize, 0, elementClass);
+          elementOffset, elementClass.encodedSize, 0, elementClass, nullable);
       if (err != validationError.NONE)
         return err;
     }
@@ -240,11 +272,12 @@ define("mojo/public/js/bindings/validator", [
   }
 
   Validator.prototype.validateStructElements =
-      function(offset, numElements, structClass) {
+      function(offset, numElements, structClass, nullable) {
     var elementSize = codec.PointerTo.prototype.encodedSize;
     for (var i = 0; i < numElements; i++) {
       var elementOffset = offset + i * elementSize;
-      var err = this.validateStructPointer(elementOffset, structClass);
+      var err =
+          this.validateStructPointer(elementOffset, structClass, nullable);
       if (err != validationError.NONE)
         return err;
     }

@@ -85,16 +85,16 @@ _kind_to_codec_type = {
   mojom.DPPIPE:                "codec.Handle",
   mojom.MSGPIPE:               "codec.Handle",
   mojom.SHAREDBUFFER:          "codec.Handle",
-  mojom.NULLABLE_HANDLE:       "codec.Handle",
-  mojom.NULLABLE_DCPIPE:       "codec.Handle",
-  mojom.NULLABLE_DPPIPE:       "codec.Handle",
-  mojom.NULLABLE_MSGPIPE:      "codec.Handle",
-  mojom.NULLABLE_SHAREDBUFFER: "codec.Handle",
+  mojom.NULLABLE_HANDLE:       "codec.NullableHandle",
+  mojom.NULLABLE_DCPIPE:       "codec.NullableHandle",
+  mojom.NULLABLE_DPPIPE:       "codec.NullableHandle",
+  mojom.NULLABLE_MSGPIPE:      "codec.NullableHandle",
+  mojom.NULLABLE_SHAREDBUFFER: "codec.NullableHandle",
   mojom.INT64:                 "codec.Int64",
   mojom.UINT64:                "codec.Uint64",
   mojom.DOUBLE:                "codec.Double",
   mojom.STRING:                "codec.String",
-  mojom.NULLABLE_STRING:       "codec.String",
+  mojom.NULLABLE_STRING:       "codec.NullableString",
 }
 
 
@@ -102,11 +102,14 @@ def CodecType(kind):
   if kind in mojom.PRIMITIVES:
     return _kind_to_codec_type[kind]
   if mojom.IsStructKind(kind):
-    return "new codec.PointerTo(%s)" % JavaScriptType(kind)
-  if mojom.IsAnyArrayKind(kind) and mojom.IsBoolKind(kind.kind):
-    return "new codec.ArrayOf(codec.PackedBool)"
+    pointer_type = "NullablePointerTo" if mojom.IsNullableKind(kind) \
+        else "PointerTo"
+    return "new codec.%s(%s)" % (pointer_type, JavaScriptType(kind))
   if mojom.IsAnyArrayKind(kind):
-    return "new codec.ArrayOf(%s)" % CodecType(kind.kind)
+    array_type = "NullableArrayOf" if mojom.IsNullableKind(kind) else "ArrayOf"
+    element_type = "codec.PackedBool" if mojom.IsBoolKind(kind.kind) \
+        else CodecType(kind.kind)
+    return "new codec.%s(%s)" % (array_type, element_type)
   if mojom.IsInterfaceKind(kind) or mojom.IsInterfaceRequestKind(kind):
     return CodecType(mojom.MSGPIPE)
   if mojom.IsEnumKind(kind):
@@ -147,18 +150,39 @@ def JavaScriptEncodeSnippet(kind):
 def JavaScriptFieldOffset(packed_field):
   return "offset + codec.kStructHeaderSize + %s" % packed_field.offset
 
-def JavaScriptValidateArrayParams(pf):
-  elementKind = pf.field.kind.kind
-  elementSize = pack.PackedField.GetSizeForKind(elementKind)
-  elementCount = generator.ExpectedArraySize(pf.field.kind)
-  elementType = "codec.PackedBool" if mojom.IsBoolKind(elementKind) \
-      else CodecType(elementKind)
-  return "%s, %s, %s, %s" % \
-    (JavaScriptFieldOffset(pf), elementSize, elementCount, elementType)
 
-def JavaScriptValidateStructParams(pf):
-  structType = JavaScriptType(pf.field.kind)
-  return "%s, %s" % (JavaScriptFieldOffset(pf), structType)
+def JavaScriptNullableParam(packed_field):
+  return "true" if mojom.IsNullableKind(packed_field.field.kind) else "false"
+
+
+def JavaScriptValidateArrayParams(packed_field):
+  nullable = JavaScriptNullableParam(packed_field)
+  field_offset = JavaScriptFieldOffset(packed_field)
+  element_kind = packed_field.field.kind.kind
+  element_size = pack.PackedField.GetSizeForKind(element_kind)
+  element_count = generator.ExpectedArraySize(packed_field.field.kind)
+  element_type = "codec.PackedBool" if mojom.IsBoolKind(element_kind) \
+      else CodecType(element_kind)
+  return "%s, %s, %s, %s, %s" % \
+      (field_offset, element_size, element_count, element_type, nullable)
+
+
+def JavaScriptValidateStructParams(packed_field):
+  nullable = JavaScriptNullableParam(packed_field)
+  field_offset = JavaScriptFieldOffset(packed_field)
+  struct_type = JavaScriptType(packed_field.field.kind)
+  return "%s, %s, %s" % (field_offset, struct_type, nullable)
+
+
+def JavaScriptValidateStringParams(packed_field):
+  nullable = JavaScriptNullableParam(packed_field)
+  return "%s, %s" % (JavaScriptFieldOffset(packed_field), nullable)
+
+
+def JavaScriptValidateHandleParams(packed_field):
+  nullable = JavaScriptNullableParam(packed_field)
+  field_offset = JavaScriptFieldOffset(packed_field)
+  return "%s, %s" % (field_offset, nullable)
 
 
 def TranslateConstants(token):
@@ -211,6 +235,8 @@ class Generator(generator.Generator):
     "js_type": JavaScriptType,
     "stylize_method": generator.StudlyCapsToCamel,
     "validate_array_params": JavaScriptValidateArrayParams,
+    "validate_handle_params": JavaScriptValidateHandleParams,
+    "validate_string_params": JavaScriptValidateStringParams,
     "validate_struct_params": JavaScriptValidateStructParams,
   }
 
