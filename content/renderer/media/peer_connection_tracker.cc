@@ -301,7 +301,7 @@ void PeerConnectionTracker::OnGetAllStats() {
 void PeerConnectionTracker::OnSuspend() {
   for (PeerConnectionIdMap::iterator it = peer_connection_id_map_.begin();
        it != peer_connection_id_map_.end(); ++it) {
-    it->first->stop();
+    it->first->CloseClientPeerConnection();
   }
 }
 
