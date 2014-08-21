@@ -31,6 +31,7 @@ const char* cacheErrorToString(WebServiceWorkerCacheError reason)
     }
 }
 
+// FIXME: Consider using CallbackPromiseAdapter.
 class CacheStorageCallbacks : public WebServiceWorkerCacheStorage::CacheStorageCallbacks {
     WTF_MAKE_NONCOPYABLE(CacheStorageCallbacks);
 public:
@@ -40,17 +41,20 @@ public:
     virtual void onSuccess() OVERRIDE
     {
         m_resolver->resolve(true);
+        m_resolver.clear();
     }
 
     virtual void onError(WebServiceWorkerCacheError* reason) OVERRIDE
     {
         m_resolver->reject(cacheErrorToString(*reason));
+        m_resolver.clear();
     }
 
 private:
-    const RefPtr<ScriptPromiseResolver> m_resolver;
+    RefPtr<ScriptPromiseResolver> m_resolver;
 };
 
+// FIXME: Consider using CallbackPromiseAdapter.
 class CacheStorageWithCacheCallbacks : public WebServiceWorkerCacheStorage::CacheStorageWithCacheCallbacks {
     WTF_MAKE_NONCOPYABLE(CacheStorageWithCacheCallbacks);
 public:
@@ -60,17 +64,20 @@ public:
     virtual void onSuccess(WebServiceWorkerCache* cache) OVERRIDE
     {
         m_resolver->resolve(Cache::fromWebServiceWorkerCache(cache));
+        m_resolver.clear();
     }
 
     virtual void onError(WebServiceWorkerCacheError* reason) OVERRIDE
     {
         m_resolver->reject(cacheErrorToString(*reason));
+        m_resolver.clear();
     }
 
 private:
-    const RefPtr<ScriptPromiseResolver> m_resolver;
+    RefPtr<ScriptPromiseResolver> m_resolver;
 };
 
+// FIXME: Consider using CallbackPromiseAdapter.
 class CacheStorageKeysCallbacks : public WebServiceWorkerCacheStorage::CacheStorageKeysCallbacks {
     WTF_MAKE_NONCOPYABLE(CacheStorageKeysCallbacks);
 public:
@@ -83,15 +90,17 @@ public:
         for (size_t i = 0; i < keys->size(); ++i)
             wtfKeys.append((*keys)[i]);
         m_resolver->resolve(wtfKeys);
+        m_resolver.clear();
     }
 
     virtual void onError(WebServiceWorkerCacheError* reason) OVERRIDE
     {
         m_resolver->reject(cacheErrorToString(*reason));
+        m_resolver.clear();
     }
 
 private:
-    const RefPtr<ScriptPromiseResolver> m_resolver;
+    RefPtr<ScriptPromiseResolver> m_resolver;
 };
 
 }
