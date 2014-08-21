@@ -1053,8 +1053,6 @@
       'browser/ui/webui/fileicon_source.h',
       'browser/ui/webui/flags_ui.cc',
       'browser/ui/webui/flags_ui.h',
-      'browser/ui/webui/flash_ui.cc',
-      'browser/ui/webui/flash_ui.h',
       'browser/ui/webui/gcm_internals_ui.cc',
       'browser/ui/webui/gcm_internals_ui.h',
       'browser/ui/webui/history_ui.cc',
@@ -1848,6 +1846,8 @@
     'chrome_browser_ui_plugin_sources': [
       'browser/ui/hung_plugin_tab_helper.cc',
       'browser/ui/hung_plugin_tab_helper.h',
+      'browser/ui/webui/flash_ui.cc',
+      'browser/ui/webui/flash_ui.h',
     ],
     'chrome_browser_ui_policy_sources': [
       'browser/ui/webui/policy_ui.cc',
@@ -2614,7 +2614,6 @@
             '../media/media.gyp:media',
             '../mojo/mojo_base.gyp:mojo_system_impl',
             '../net/net.gyp:net_with_v8',
-            '../third_party/adobe/flash/flash_player.gyp:flapper_version_h',
             '../third_party/expat/expat.gyp:expat',
             '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
             '../third_party/libjingle/libjingle.gyp:libjingle',
@@ -2674,6 +2673,7 @@
           'sources': [ '<@(chrome_browser_ui_plugin_sources)' ],
           'dependencies': [
             '../ppapi/ppapi_internal.gyp:ppapi_ipc',
+            '../third_party/adobe/flash/flash_player.gyp:flapper_version_h',
           ],
         }],
         ['safe_browsing==1', {

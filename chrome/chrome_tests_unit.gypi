@@ -2278,7 +2278,9 @@
             ['exclude', '^browser/plugins/'],
           ],
           'sources!': [
+            'browser/component_updater/test/component_installers_unittest.cc',
             'browser/metrics/plugin_metrics_provider_unittest.cc',
+            'common/pepper_permission_util_unittest.cc',
           ],
         }],
         ['enable_printing!=1', {

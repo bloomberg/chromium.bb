@@ -21,12 +21,10 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/crash_keys.h"
-#include "chrome/common/pepper_flash.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/common_resources.h"
 #include "components/dom_distiller/core/url_constants.h"
-#include "components/nacl/common/nacl_process_type.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/pepper_plugin_info.h"
@@ -34,12 +32,10 @@
 #include "content/public/common/user_agent.h"
 #include "extensions/common/constants.h"
 #include "gpu/config/gpu_info.h"
-#include "ppapi/shared_impl/ppapi_permissions.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 
-#include "flapper_version.h"  // In SHARED_INTERMEDIATE_DIR.
 #include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
 
 #if defined(OS_WIN)
@@ -51,7 +47,14 @@
 
 #if !defined(DISABLE_NACL)
 #include "components/nacl/common/nacl_constants.h"
+#include "components/nacl/common/nacl_process_type.h"
 #include "ppapi/native_client/src/trusted/plugin/ppapi_entrypoints.h"
+#endif
+
+#if defined(ENABLE_PLUGINS)
+#include "chrome/common/pepper_flash.h"
+#include "flapper_version.h"  // In SHARED_INTERMEDIATE_DIR.
+#include "ppapi/shared_impl/ppapi_permissions.h"
 #endif
 
 #if defined(ENABLE_REMOTING)
@@ -65,6 +68,7 @@
 
 namespace {
 
+#if defined(ENABLE_PLUGINS)
 const char kPDFPluginMimeType[] = "application/pdf";
 const char kPDFPluginExtension[] = "pdf";
 const char kPDFPluginDescription[] = "Portable Document Format";
@@ -95,6 +99,7 @@ const char kGTalkPluginExtension[] = ".googletalk";
 const char kGTalkPluginDescription[] = "Google Talk Plugin";
 const uint32 kGTalkPluginPermissions = ppapi::PERMISSION_PRIVATE |
                                        ppapi::PERMISSION_DEV;
+#endif  // defined(ENABLE_PLUGINS)
 
 #if defined(ENABLE_REMOTING)
 #if defined(GOOGLE_CHROME_BUILD)
@@ -116,6 +121,7 @@ const uint32 kRemotingViewerPluginPermissions = ppapi::PERMISSION_PRIVATE |
                                                 ppapi::PERMISSION_DEV;
 #endif  // defined(ENABLE_REMOTING)
 
+#if defined(ENABLE_PLUGINS)
 // Appends the known built-in plugins to the given vector. Some built-in
 // plugins are "internal" which means they are compiled into the Chrome binary,
 // and some are extra shared libraries distributed with the browser (these are
@@ -407,6 +413,7 @@ bool GetBundledPepperFlash(content::PepperPluginInfo* plugin) {
   return false;
 #endif  // FLAPPER_AVAILABLE
 }
+#endif  // defined(ENABLE_PLUGINS)
 
 std::string GetProduct() {
   chrome::VersionInfo version_info;
@@ -457,12 +464,14 @@ void ChromeContentClient::SetGpuInfo(const gpu::GPUInfo& gpu_info) {
 
 void ChromeContentClient::AddPepperPlugins(
     std::vector<content::PepperPluginInfo>* plugins) {
+#if defined(ENABLE_PLUGINS)
   ComputeBuiltInPlugins(plugins);
   AddPepperFlashFromCommandLine(plugins);
 
   content::PepperPluginInfo plugin;
   if (GetBundledPepperFlash(&plugin))
     plugins->push_back(plugin);
+#endif
 }
 
 void ChromeContentClient::AddAdditionalSchemes(
@@ -511,14 +520,16 @@ gfx::Image& ChromeContentClient::GetNativeImageNamed(int resource_id) const {
 }
 
 std::string ChromeContentClient::GetProcessTypeNameInEnglish(int type) {
+#if !defined(DISABLE_NACL)
   switch (type) {
     case PROCESS_TYPE_NACL_LOADER:
       return "Native Client module";
     case PROCESS_TYPE_NACL_BROKER:
       return "Native Client broker";
   }
+#endif
 
-  DCHECK(false) << "Unknown child process type!";
+  NOTREACHED() << "Unknown child process type!";
   return "Unknown";
 }
 
