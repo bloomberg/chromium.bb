@@ -99,12 +99,25 @@ def FetchGitRevision(directory):
   Returns:
     A VersionInfo object or None on error.
   """
+  hsh = ''
   proc = RunGitCommand(directory, ['rev-parse', 'HEAD'])
   if proc:
     output = proc.communicate()[0].strip()
     if proc.returncode == 0 and output:
-      return VersionInfo('git', output[:7])
-  return None
+      hsh = output
+  if not hsh:
+    return None
+  pos = ''
+  proc = RunGitCommand(directory, ['show', '-s', '--format=%B', 'HEAD'])
+  if proc:
+    output = proc.communicate()[0]
+    if proc.returncode == 0 and output:
+      for line in reversed(output.splitlines()):
+        if line.startswith('Cr-Commit-Position:'):
+          pos = line.rsplit()[-1].strip()
+  if not pos:
+    return VersionInfo('git', hsh)
+  return VersionInfo('git', '%s-%s' % (hsh, pos))
 
 
 def FetchGitSVNURLAndRevision(directory, svn_url_regex):
@@ -116,8 +129,7 @@ def FetchGitSVNURLAndRevision(directory, svn_url_regex):
   Returns:
     A tuple containing the Subversion URL and revision.
   """
-  proc = RunGitCommand(directory, ['log', '-1',
-                                   '--grep=git-svn-id', '--format=%b'])
+  proc = RunGitCommand(directory, ['log', '-1', '--format=%b'])
   if proc:
     output = proc.communicate()[0].strip()
     if proc.returncode == 0 and output:
