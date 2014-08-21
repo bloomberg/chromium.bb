@@ -26,6 +26,11 @@ namespace {
 // stub_hash = "[user_id]-hash";
 static const char kUserIdStubHashSuffix[] = "-hash";
 
+// Timeout for TPM operations. On slow machines it should be larger, than
+// default DBus timeout. TPM operations can take up to 80 seconds, so limit
+// is 2 minutes.
+const int kTpmDBusTimeoutMs = 2 * 60 * 1000;
+
 // The CryptohomeClient implementation.
 class CryptohomeClientImpl : public CryptohomeClient {
  public:
@@ -74,7 +79,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(username);
     writer.AppendString(key);
-    proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+    proxy_->CallMethod(&method_call, kTpmDBusTimeoutMs ,
                        base::Bind(&CryptohomeClientImpl::OnAsyncMethodCall,
                                   weak_ptr_factory_.GetWeakPtr(),
                                   callback));
@@ -91,7 +96,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
     writer.AppendString(username);
     writer.AppendString(from_key);
     writer.AppendString(to_key);
-    proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+    proxy_->CallMethod(&method_call, kTpmDBusTimeoutMs ,
                        base::Bind(&CryptohomeClientImpl::OnAsyncMethodCall,
                                   weak_ptr_factory_.GetWeakPtr(),
                                   callback));
@@ -104,7 +109,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
                                  cryptohome::kCryptohomeAsyncRemove);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(username);
-    proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+    proxy_->CallMethod(&method_call, kTpmDBusTimeoutMs ,
                        base::Bind(&CryptohomeClientImpl::OnAsyncMethodCall,
                                   weak_ptr_factory_.GetWeakPtr(),
                                   callback));
@@ -114,7 +119,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
   virtual void GetSystemSalt(const GetSystemSaltCallback& callback) OVERRIDE {
     dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
                                  cryptohome::kCryptohomeGetSystemSalt);
-    proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+    proxy_->CallMethod(&method_call, kTpmDBusTimeoutMs ,
                        base::Bind(&CryptohomeClientImpl::OnGetSystemSalt,
                                   weak_ptr_factory_.GetWeakPtr(),
                                   callback));
@@ -128,7 +133,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
                                  cryptohome::kCryptohomeGetSanitizedUsername);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(username);
-    proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+    proxy_->CallMethod(&method_call, kTpmDBusTimeoutMs ,
                        base::Bind(&CryptohomeClientImpl::OnStringMethod,
                                   weak_ptr_factory_.GetWeakPtr(),
                                   callback));
@@ -168,7 +173,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
     writer.AppendBool(flags & cryptohome::ENSURE_EPHEMERAL);
     // deprecated_tracked_subdirectories
     writer.AppendArrayOfStrings(std::vector<std::string>());
-    proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+    proxy_->CallMethod(&method_call, kTpmDBusTimeoutMs ,
                        base::Bind(&CryptohomeClientImpl::OnAsyncMethodCall,
                                   weak_ptr_factory_.GetWeakPtr(),
                                   callback));
@@ -185,7 +190,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
     writer.AppendString(username);
     writer.AppendString(key);
     writer.AppendString(new_key);
-    proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+    proxy_->CallMethod(&method_call, kTpmDBusTimeoutMs ,
                        base::Bind(&CryptohomeClientImpl::OnAsyncMethodCall,
                                   weak_ptr_factory_.GetWeakPtr(),
                                   callback));
@@ -195,7 +200,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
   virtual void AsyncMountGuest(const AsyncMethodCallback& callback) OVERRIDE {
     dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
                                  cryptohome::kCryptohomeAsyncMountGuest);
-    proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+    proxy_->CallMethod(&method_call, kTpmDBusTimeoutMs ,
                        base::Bind(&CryptohomeClientImpl::OnAsyncMethodCall,
                                   weak_ptr_factory_.GetWeakPtr(),
                                   callback));
@@ -211,7 +216,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
     writer.AppendString(public_mount_id);
     writer.AppendBool(flags & cryptohome::CREATE_IF_MISSING);
     writer.AppendBool(flags & cryptohome::ENSURE_EPHEMERAL);
-    proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+    proxy_->CallMethod(&method_call, kTpmDBusTimeoutMs ,
                        base::Bind(&CryptohomeClientImpl::OnAsyncMethodCall,
                                   weak_ptr_factory_.GetWeakPtr(),
                                   callback));
@@ -245,7 +250,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
     dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
                                  cryptohome::kCryptohomeTpmGetPassword);
     proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        &method_call, kTpmDBusTimeoutMs ,
         base::Bind(&CryptohomeClientImpl::OnStringMethod,
                    weak_ptr_factory_.GetWeakPtr(),
                    callback));
@@ -322,7 +327,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
     dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
                                  cryptohome::kCryptohomePkcs11GetTpmTokenInfo);
     proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        &method_call, kTpmDBusTimeoutMs ,
         base::Bind(
             &CryptohomeClientImpl::OnPkcs11GetTpmTokenInfo,
             weak_ptr_factory_.GetWeakPtr(),
@@ -339,7 +344,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(user_email);
     proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        &method_call, kTpmDBusTimeoutMs ,
         base::Bind(
             &CryptohomeClientImpl::OnPkcs11GetTpmTokenInfoForUser,
             weak_ptr_factory_.GetWeakPtr(),
@@ -441,7 +446,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
         cryptohome::kCryptohomeAsyncTpmAttestationCreateEnrollRequest);
     dbus::MessageWriter writer(&method_call);
     writer.AppendInt32(pca_type);
-    proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+    proxy_->CallMethod(&method_call, kTpmDBusTimeoutMs ,
                        base::Bind(&CryptohomeClientImpl::OnAsyncMethodCall,
                                   weak_ptr_factory_.GetWeakPtr(),
                                   callback));
@@ -460,7 +465,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
     writer.AppendArrayOfBytes(
         reinterpret_cast<const uint8*>(pca_response.data()),
         pca_response.size());
-    proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+    proxy_->CallMethod(&method_call, kTpmDBusTimeoutMs ,
                        base::Bind(&CryptohomeClientImpl::OnAsyncMethodCall,
                                   weak_ptr_factory_.GetWeakPtr(),
                                   callback));
@@ -481,7 +486,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
     writer.AppendInt32(certificate_profile);
     writer.AppendString(user_id);
     writer.AppendString(request_origin);
-    proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+    proxy_->CallMethod(&method_call, kTpmDBusTimeoutMs ,
                        base::Bind(&CryptohomeClientImpl::OnAsyncMethodCall,
                                   weak_ptr_factory_.GetWeakPtr(),
                                   callback));
@@ -505,7 +510,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
     writer.AppendBool(is_user_specific);
     writer.AppendString(user_id);
     writer.AppendString(key_name);
-    proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+    proxy_->CallMethod(&method_call, kTpmDBusTimeoutMs ,
                        base::Bind(&CryptohomeClientImpl::OnAsyncMethodCall,
                                   weak_ptr_factory_.GetWeakPtr(),
                                   callback));
@@ -542,7 +547,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
     writer.AppendBool(is_user_specific);
     writer.AppendString(user_id);
     writer.AppendString(key_name);
-    proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+    proxy_->CallMethod(&method_call, kTpmDBusTimeoutMs ,
                        base::Bind(&CryptohomeClientImpl::OnDataMethod,
                                   weak_ptr_factory_.GetWeakPtr(),
                                   callback));
@@ -562,7 +567,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
     writer.AppendBool(is_user_specific);
     writer.AppendString(user_id);
     writer.AppendString(key_name);
-    proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+    proxy_->CallMethod(&method_call, kTpmDBusTimeoutMs ,
                        base::Bind(&CryptohomeClientImpl::OnDataMethod,
                                   weak_ptr_factory_.GetWeakPtr(),
                                   callback));
@@ -582,7 +587,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
     writer.AppendBool(is_user_specific);
     writer.AppendString(user_id);
     writer.AppendString(key_name);
-    proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+    proxy_->CallMethod(&method_call, kTpmDBusTimeoutMs ,
                        base::Bind(&CryptohomeClientImpl::OnAsyncMethodCall,
                                   weak_ptr_factory_.GetWeakPtr(),
                                   callback));
@@ -614,7 +619,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
     writer.AppendBool(include_signed_public_key);
     writer.AppendArrayOfBytes(reinterpret_cast<const uint8*>(challenge.data()),
                               challenge.size());
-    proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+    proxy_->CallMethod(&method_call, kTpmDBusTimeoutMs ,
                        base::Bind(&CryptohomeClientImpl::OnAsyncMethodCall,
                                   weak_ptr_factory_.GetWeakPtr(),
                                   callback));
@@ -637,7 +642,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
     writer.AppendString(key_name);
     writer.AppendArrayOfBytes(reinterpret_cast<const uint8*>(challenge.data()),
                               challenge.size());
-    proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+    proxy_->CallMethod(&method_call, kTpmDBusTimeoutMs ,
                        base::Bind(&CryptohomeClientImpl::OnAsyncMethodCall,
                                   weak_ptr_factory_.GetWeakPtr(),
                                   callback));
@@ -657,7 +662,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
     writer.AppendBool(is_user_specific);
     writer.AppendString(user_id);
     writer.AppendString(key_name);
-    proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+    proxy_->CallMethod(&method_call, kTpmDBusTimeoutMs ,
                        base::Bind(&CryptohomeClientImpl::OnDataMethod,
                                   weak_ptr_factory_.GetWeakPtr(),
                                   callback));
@@ -714,7 +719,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
     writer.AppendProtoAsArrayOfBytes(auth);
     writer.AppendProtoAsArrayOfBytes(request);
 
-    proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+    proxy_->CallMethod(&method_call, kTpmDBusTimeoutMs ,
                         base::Bind(&CryptohomeClientImpl::OnBaseReplyMethod,
                                    weak_ptr_factory_.GetWeakPtr(),
                                    callback));
@@ -734,7 +739,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
     writer.AppendProtoAsArrayOfBytes(auth);
     writer.AppendProtoAsArrayOfBytes(request);
 
-    proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+    proxy_->CallMethod(&method_call, kTpmDBusTimeoutMs ,
                        base::Bind(&CryptohomeClientImpl::OnBaseReplyMethod,
                                   weak_ptr_factory_.GetWeakPtr(),
                                   callback));
@@ -754,7 +759,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
     writer.AppendProtoAsArrayOfBytes(auth);
     writer.AppendProtoAsArrayOfBytes(request);
 
-    proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+    proxy_->CallMethod(&method_call, kTpmDBusTimeoutMs,
                        base::Bind(&CryptohomeClientImpl::OnBaseReplyMethod,
                                   weak_ptr_factory_.GetWeakPtr(),
                                   callback));
@@ -775,7 +780,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
     writer.AppendProtoAsArrayOfBytes(request);
 
     proxy_->CallMethod(&method_call,
-                       dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                       kTpmDBusTimeoutMs ,
                        base::Bind(&CryptohomeClientImpl::OnBaseReplyMethod,
                                   weak_ptr_factory_.GetWeakPtr(),
                                   callback));
@@ -794,7 +799,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
     writer.AppendProtoAsArrayOfBytes(request);
 
     proxy_->CallMethod(&method_call,
-                       dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                       kTpmDBusTimeoutMs ,
                        base::Bind(&CryptohomeClientImpl::OnBaseReplyMethod,
                                   weak_ptr_factory_.GetWeakPtr(),
                                   callback));
@@ -810,7 +815,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
     writer.AppendProtoAsArrayOfBytes(request);
 
     proxy_->CallMethod(&method_call,
-                       dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                       kTpmDBusTimeoutMs ,
                        base::Bind(&CryptohomeClientImpl::OnBaseReplyMethod,
                                   weak_ptr_factory_.GetWeakPtr(),
                                   callback));
@@ -826,7 +831,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
     writer.AppendProtoAsArrayOfBytes(request);
 
     proxy_->CallMethod(&method_call,
-                       dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                       kTpmDBusTimeoutMs ,
                        base::Bind(&CryptohomeClientImpl::OnBaseReplyMethod,
                                   weak_ptr_factory_.GetWeakPtr(),
                                   callback));
@@ -842,7 +847,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
     writer.AppendProtoAsArrayOfBytes(request);
 
     proxy_->CallMethod(&method_call,
-                       dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                       kTpmDBusTimeoutMs ,
                        base::Bind(&CryptohomeClientImpl::OnBaseReplyMethod,
                                   weak_ptr_factory_.GetWeakPtr(),
                                   callback));
@@ -907,7 +912,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
   // Calls a method without result values.
   void CallVoidMethod(dbus::MethodCall* method_call,
                       const VoidDBusMethodCallback& callback) {
-    proxy_->CallMethod(method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+    proxy_->CallMethod(method_call, kTpmDBusTimeoutMs ,
                        base::Bind(&CryptohomeClientImpl::OnVoidMethod,
                                   weak_ptr_factory_.GetWeakPtr(),
                                   callback));
@@ -936,7 +941,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
   // Calls a method with a bool value result.
   void CallBoolMethod(dbus::MethodCall* method_call,
                       const BoolDBusMethodCallback& callback) {
-    proxy_->CallMethod(method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+    proxy_->CallMethod(method_call, kTpmDBusTimeoutMs ,
                        base::Bind(
                            &CryptohomeClientImpl::OnBoolMethod,
                            weak_ptr_factory_.GetWeakPtr(),
