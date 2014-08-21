@@ -2585,6 +2585,7 @@ GestureEventWithHitTestResults EventHandler::targetGestureEvent(const PlatformGe
     IntPoint hitTestPoint = m_frame->view()->windowToContents(gestureEvent.position());
     IntSize touchRadius = gestureEvent.area();
     touchRadius.scale(1.f / 2);
+    // FIXME: We should not do a rect-based hit-test if touch adjustment is disabled.
     HitTestResult hitTestResult = hitTestResultAtPoint(hitTestPoint, hitType | HitTestRequest::ReadOnly, touchRadius);
 
     // Adjust the location of the gesture to the most likely nearby node, as appropriate for the
@@ -2659,6 +2660,8 @@ void EventHandler::applyTouchAdjustment(PlatformGestureEvent* gestureEvent, HitT
         ASSERT_NOT_REACHED();
     }
 
+    // Update the hit-test result to be a point-based result instead of a rect-based result.
+    // FIXME: We should do this even when no candidate matches the node filter. crbug.com/398914
     if (adjusted) {
         hitTestResult->resolveRectBasedTest(adjustedNode, m_frame->view()->windowToContents(adjustedPoint));
         gestureEvent->applyTouchAdjustment(adjustedPoint);

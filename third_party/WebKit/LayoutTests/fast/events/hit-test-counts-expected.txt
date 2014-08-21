@@ -54,7 +54,7 @@ TouchMove: 0 0 0
 TouchEnd: 0 0 0
 GestureTapDown: 1 4 16
 GestureShowPress: 2 8 32
-GestureTap: 3 9 36
+GestureTap: 3 12 32
 GestureScrollBegin: 1 1 0
 GestureTapCancel: 1 1 0
 GestureScrollUpdate: 0 0 0
