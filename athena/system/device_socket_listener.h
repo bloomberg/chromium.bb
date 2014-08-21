@@ -27,10 +27,10 @@ class DeviceSocketListener {
       scoped_refptr<base::TaskRunner> io_task_runner);
   static void ShutdownSocketManager();
 
-  // This is called on the IO thread when data is available on the socket.
+  // This is called on the FILE thread when data is available on the socket.
   // |data| is guaranteed to be of exactly |data_size| length. Note that the
   // implementation must not mutate or free the data.
-  virtual void OnDataAvailableOnIO(const void* data) = 0;
+  virtual void OnDataAvailableOnFILE(const void* data) = 0;
 
  protected:
   void StartListening();

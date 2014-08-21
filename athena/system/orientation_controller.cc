@@ -58,21 +58,37 @@ struct DeviceSensorEvent {
 
 OrientationController::OrientationController()
     : DeviceSocketListener(kSocketPath, sizeof(DeviceSensorEvent)),
-      last_orientation_change_time_(0) {
+      last_orientation_change_time_(0),
+      shutdown_(false) {
   CHECK(base::MessageLoopForUI::current());
   ui_task_runner_ = base::MessageLoopForUI::current()->task_runner();
 }
 
 void OrientationController::InitWith(
-    scoped_refptr<base::TaskRunner> io_task_runner) {
-  io_task_runner->PostTask(FROM_HERE, base::Bind(
-      &OrientationController::WatchForSocketPathOnIO, this));
+    scoped_refptr<base::TaskRunner> file_task_runner) {
+  file_task_runner_ = file_task_runner;
+  file_task_runner->PostTask(
+      FROM_HERE,
+      base::Bind(&OrientationController::WatchForSocketPathOnFILE, this));
 }
 
 OrientationController::~OrientationController() {
 }
 
-void OrientationController::WatchForSocketPathOnIO() {
+void OrientationController::Shutdown() {
+  CHECK(file_task_runner_);
+  StopListening();
+  file_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&OrientationController::ShutdownOnFILE, this));
+}
+
+void OrientationController::ShutdownOnFILE() {
+  shutdown_ = true;
+  watcher_.reset();
+}
+
+void OrientationController::WatchForSocketPathOnFILE() {
   CHECK(base::MessageLoopForIO::current());
   if (base::PathExists(base::FilePath(kSocketPath))) {
     ui_task_runner_->PostTask(FROM_HERE,
@@ -80,22 +96,23 @@ void OrientationController::WatchForSocketPathOnIO() {
   } else {
     watcher_.reset(new base::FilePathWatcher);
     watcher_->Watch(
-        base::FilePath(kSocketPath), false,
-        base::Bind(&OrientationController::OnFilePathChangedOnIO, this));
+        base::FilePath(kSocketPath),
+        false,
+        base::Bind(&OrientationController::OnFilePathChangedOnFILE, this));
   }
 }
 
-void OrientationController::OnFilePathChangedOnIO(const base::FilePath& path,
-                                                  bool error) {
+void OrientationController::OnFilePathChangedOnFILE(const base::FilePath& path,
+                                                    bool error) {
   watcher_.reset();
-  if (error)
+  if (error || shutdown_)
     return;
 
   ui_task_runner_->PostTask(FROM_HERE,
       base::Bind(&OrientationController::StartListening, this));
 }
 
-void OrientationController::OnDataAvailableOnIO(const void* data) {
+void OrientationController::OnDataAvailableOnFILE(const void* data) {
   const DeviceSensorEvent* event =
       static_cast<const DeviceSensorEvent*>(data);
   if (event->type != SENSOR_ACCELEROMETER)
@@ -131,7 +148,7 @@ void OrientationController::OnDataAvailableOnIO(const void* data) {
 
 void OrientationController::RotateOnUI(gfx::Display::Rotation rotation) {
   ScreenManager* screen_manager = ScreenManager::Get();
-  // Since this is called from the IO thread, the screen manager may no longer
+  // Since this is called from the FILE thread, the screen manager may no longer
   // exist.
   if (screen_manager)
     screen_manager->SetRotation(rotation);

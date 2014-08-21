@@ -28,19 +28,22 @@ class OrientationController
  public:
   OrientationController();
 
-  void InitWith(scoped_refptr<base::TaskRunner> io_task_runner);
+  void InitWith(scoped_refptr<base::TaskRunner> file_task_runner);
+
+  void Shutdown();
 
  private:
   friend class base::RefCountedThreadSafe<OrientationController>;
 
   virtual ~OrientationController();
 
-  // Watch for the socket path to be created, called on the IO thread.
-  void WatchForSocketPathOnIO();
-  void OnFilePathChangedOnIO(const base::FilePath& path, bool error);
+  void ShutdownOnFILE();
+  // Watch for the socket path to be created, called on the FILE thread.
+  void WatchForSocketPathOnFILE();
+  void OnFilePathChangedOnFILE(const base::FilePath& path, bool error);
 
   // Overridden from device::DeviceSocketListener:
-  virtual void OnDataAvailableOnIO(const void* data) OVERRIDE;
+  virtual void OnDataAvailableOnFILE(const void* data) OVERRIDE;
 
   // Rotates the display to |rotation|, called on the UI thread.
   void RotateOnUI(gfx::Display::Rotation rotation);
@@ -51,8 +54,16 @@ class OrientationController
   // The timestamp of the last applied orientation change.
   int64_t last_orientation_change_time_;
 
+  // True if the OrientaionController has already been shutdown.
+  // This is initialized on UI thread, but must be accessed / modified
+  // only on FILE thread.
+  bool shutdown_;
+
   // A task runner for the UI thread.
   scoped_refptr<base::TaskRunner> ui_task_runner_;
+
+  // A task runner for the FILE thread.
+  scoped_refptr<base::TaskRunner> file_task_runner_;
 
   // File path watcher used to detect when sensors are present.
   scoped_ptr<base::FilePathWatcher> watcher_;

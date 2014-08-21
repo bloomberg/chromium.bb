@@ -486,6 +486,11 @@ HomeCardImpl::~HomeCardImpl() {
   if (activation_client_)
     activation_client_->RemoveObserver(this);
   home_card_widget_->CloseNow();
+
+  // Reset the view delegate first as it access search provider during
+  // shutdown.
+  view_delegate_.reset();
+  search_provider_.reset();
   instance = NULL;
 }
 

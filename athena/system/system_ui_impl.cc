@@ -18,13 +18,16 @@ SystemUI* instance = NULL;
 
 class SystemUIImpl : public SystemUI {
  public:
-  SystemUIImpl(scoped_refptr<base::TaskRunner> io_task_runner)
+  SystemUIImpl(scoped_refptr<base::TaskRunner> file_task_runner)
       : orientation_controller_(new OrientationController()),
         power_button_controller_(new PowerButtonController) {
-    orientation_controller_->InitWith(io_task_runner);
+    orientation_controller_->InitWith(file_task_runner);
   }
 
   virtual ~SystemUIImpl() {
+    // Stops file watching now if exists. Waiting until message loop shutdon
+    // leads to FilePathWatcher crash.
+    orientation_controller_->Shutdown();
   }
 
  private:
@@ -37,10 +40,9 @@ class SystemUIImpl : public SystemUI {
 }  // namespace
 
 // static
-SystemUI* SystemUI::Create(
-    scoped_refptr<base::TaskRunner> io_task_runner) {
-  DeviceSocketListener::CreateSocketManager(io_task_runner);
-  instance = new SystemUIImpl(io_task_runner);
+SystemUI* SystemUI::Create(scoped_refptr<base::TaskRunner> file_task_runner) {
+  DeviceSocketListener::CreateSocketManager(file_task_runner);
+  instance = new SystemUIImpl(file_task_runner);
   return instance;
 }
 
