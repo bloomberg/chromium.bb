@@ -870,6 +870,7 @@ Gallery.prototype.updateSelectionAndState_ = function() {
     }
   } else {
     document.title = '';
+    this.filenameEdit_.disabled = true;
     this.filenameEdit_.value = '';
     this.shareButton_.hidden = true;
   }
