@@ -73,6 +73,9 @@ remoting.It2MeService.prototype.onConnectExternal_ = function(port) {
       case ConnectionTypes.HELPER_HANGOUT:
         this.handleExternalHelperConnection_(port);
         return true;
+      case ConnectionTypes.HELPEE_HANGOUT:
+        this.handleExternalHelpeeConnection_(port);
+        return true;
       default:
         throw new Error('Unsupported port - ' + port.name);
     }
@@ -126,6 +129,11 @@ remoting.It2MeService.prototype.onHelperChannelDisconnected = function(helper) {
   }
 };
 
+remoting.It2MeService.prototype.onHelpeeChannelDisconnected = function() {
+  base.debug.assert(this.helpee_ !== null);
+  this.helpee_ = null;
+};
+
 /**
  * @param {chrome.runtime.Port} port
  * @private
@@ -136,6 +144,7 @@ remoting.It2MeService.prototype.handleExternalHelperConnection_ =
     console.error(
         'Cannot start a helper session while a helpee session is in process.');
     port.disconnect();
+    return;
   }
 
   console.log('Incoming helper connection from Hangouts');
@@ -143,4 +152,25 @@ remoting.It2MeService.prototype.handleExternalHelperConnection_ =
       this.appLauncher_, port, this.onHelperChannelDisconnected.bind(this));
   helper.init();
   this.helpers_.push(helper);
+};
+
+/**
+ * @param {chrome.runtime.Port} hangoutPort Represents a connection to Hangouts.
+ * @private
+ */
+remoting.It2MeService.prototype.handleExternalHelpeeConnection_ =
+    function(hangoutPort) {
+  if (this.helpee_) {
+    console.error('An existing helpee session is in process.');
+    hangoutPort.disconnect();
+    return;
+  }
+
+  console.log('Incoming helpee connection from Hangouts');
+  this.helpee_ = new remoting.It2MeHelpeeChannel(
+      hangoutPort,
+      new remoting.It2MeHostFacade(),
+      new remoting.HostInstaller(),
+      this.onHelpeeChannelDisconnected.bind(this));
+  this.helpee_.init();
 };

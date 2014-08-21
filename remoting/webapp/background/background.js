@@ -53,6 +53,8 @@ function initializeBackgroundService(appLauncher) {
     remoting.it2meService = null;
   });
 
+  remoting.settings = new remoting.Settings();
+
   chrome.runtime.onSuspendCanceled.addListener(initializeIt2MeService);
   initializeIt2MeService();
 }

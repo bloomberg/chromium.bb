@@ -53,8 +53,8 @@ remoting.It2MeHostFacade = function() {
   this.initialized_ = false;
 
   /**
-   * @type {function():void}
-   * @private
+   * @type {?function():void}
+ * @private
    */
   this.onInitialized_ = function() {};
 
@@ -73,13 +73,13 @@ remoting.It2MeHostFacade = function() {
   this.onError_ = function(error) {};
 
   /**
-   * @type {function(remoting.HostSession.State):void}
+   * @type {?function(remoting.HostSession.State):void}
    * @private
    */
   this.onStateChanged_ = function() {};
 
   /**
-   * @type {function(boolean):void}
+   * @type {?function(boolean):void}
    * @private
    */
   this.onNatPolicyChanged_ = function() {};
@@ -149,7 +149,7 @@ remoting.It2MeHostFacade.prototype.connect =
 
   this.onStateChanged_ = onStateChanged;
   this.onNatPolicyChanged_ = onNatPolicyChanged;
-  this.onErrorHandler_ = onError;
+  this.onError_ = onError;
   this.port_.postMessage({
     type: 'connect',
     userName: email,
@@ -161,6 +161,20 @@ remoting.It2MeHostFacade.prototype.connect =
 };
 
 /**
+ * Unhooks the |onStateChanged|, |onError|, |onNatPolicyChanged| and
+ * |onInitalized| callbacks.  This is called when the client shuts down so that
+ * the callbacks will not be invoked on a disposed client.
+ *
+ * @return {void}
+ */
+remoting.It2MeHostFacade.prototype.unhookCallbacks = function() {
+  this.onStateChanged_ = null;
+  this.onNatPolicyChanged_ = null;
+  this.onError_ = null;
+  this.onInitialized_ = null;
+};
+
+/**
  * @return {void}
  */
 remoting.It2MeHostFacade.prototype.disconnect = function() {
@@ -169,17 +183,24 @@ remoting.It2MeHostFacade.prototype.disconnect = function() {
 };
 
 /**
+ * @return {boolean}
+ */
+remoting.It2MeHostFacade.prototype.initialized = function() {
+  return this.initialized_;
+};
+
+/**
  * @return {string}
  */
 remoting.It2MeHostFacade.prototype.getAccessCode = function() {
-  return this.accessCode_
+  return this.accessCode_;
 };
 
 /**
  * @return {number}
  */
 remoting.It2MeHostFacade.prototype.getAccessCodeLifetime = function() {
-  return this.accessCodeLifetime_
+  return this.accessCodeLifetime_;
 };
 
 /**
@@ -208,7 +229,9 @@ remoting.It2MeHostFacade.prototype.onIncomingMessage_ =
       // A "hello" request is sent immediately after the native messaging host
       // is started. We can proceed to the next task once we receive the
       // "helloReponse".
-      this.onInitialized_();
+      if (this.onInitialized_) {
+        this.onInitialized_();
+      }
       break;
 
     case 'connectResponse':
@@ -240,17 +263,24 @@ remoting.It2MeHostFacade.prototype.onIncomingMessage_ =
           this.onConnected_(client);
           break;
       }
-      this.onStateChanged_(state);
+      if (this.onStateChanged_) {
+        this.onStateChanged_(state);
+      }
       break;
 
     case 'natPolicyChanged':
-      var natTraversalEnabled = getBooleanAttr(message, 'natTraversalEnabled');
-      this.onNatPolicyChanged_(natTraversalEnabled);
+      if (this.onNatPolicyChanged_) {
+        var natTraversalEnabled =
+            getBooleanAttr(message, 'natTraversalEnabled');
+        this.onNatPolicyChanged_(natTraversalEnabled);
+      }
       break;
 
     case 'error':
       console.error(getStringAttr(message, 'description'));
-      this.onError_(remoting.Error.UNEXPECTED);
+      if (this.onError_) {
+        this.onError_(remoting.Error.UNEXPECTED);
+      }
       break;
 
     default:

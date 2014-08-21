@@ -151,6 +151,7 @@
       'webapp/unittests/base_unittest.js',
       'webapp/unittests/l10n_unittest.js',
       'webapp/unittests/menu_button_unittest.js',
+      'webapp/unittests/it2me_helpee_channel_unittest.js',
       'webapp/unittests/it2me_helper_channel_unittest.js',
       'webapp/unittests/it2me_service_unittest.js'
     ],
@@ -181,13 +182,19 @@
       # '<@(remoting_webapp_js_browser_test_files)'
     ],
 
-    # The JavaScript files that are used as background pages.
+    # The JavaScript files that are used in the background page.
     'remoting_webapp_background_js_files': [
       'webapp/base.js',
       'webapp/client_session.js',
+      'webapp/error.js',
+      'webapp/host_installer.js',
+      'webapp/host_session.js',
+      'webapp/it2me_host_facade.js',
+      'webapp/plugin_settings.js',
       'webapp/typecheck.js',
       'webapp/background/app_launcher.js',
       'webapp/background/background.js',
+      'webapp/background/it2me_helpee_channel.js',
       'webapp/background/it2me_helper_channel.js',
       'webapp/background/it2me_service.js',
     ],

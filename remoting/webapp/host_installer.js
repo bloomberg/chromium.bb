@@ -81,9 +81,8 @@ remoting.HostInstaller.prototype.isInstalled = function() {
 /**
  * @throws {Error}  Throws if there is no matching host binary for the current
  *     platform.
- * @private
  */
-remoting.HostInstaller.prototype.download_ = function() {
+remoting.HostInstaller.prototype.download = function() {
   /** @type {Object.<string,string>} */
   var hostDownloadUrls = {
     'Win32' : 'http://dl.google.com/dl/edgedl/chrome-remote-desktop/' +
@@ -133,7 +132,7 @@ remoting.HostInstaller.prototype.downloadAndWaitForInstall = function() {
       that.downloadAndWaitForInstallPromise_ = new Promise(
         /** @param {Function} resolve */
         function(resolve){
-          that.download_();
+          that.download();
           that.checkInstallIntervalId_ = window.setInterval(function() {
             /** @param {boolean} installed */
             that.isInstalled().then(function(installed) {
