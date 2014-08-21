@@ -53,6 +53,15 @@ BASE_EXPORT bool IsVMInitialized();
 BASE_EXPORT void InitApplicationContext(JNIEnv* env,
                                         const JavaRef<jobject>& context);
 
+// Initializes the global ClassLoader used by the GetClass and LazyGetClass
+// methods. This is needed because JNI will use the base ClassLoader when there
+// is no Java code on the stack. The base ClassLoader doesn't know about any of
+// the application classes and will fail to lookup anything other than system
+// classes.
+BASE_EXPORT void InitReplacementClassLoader(
+    JNIEnv* env,
+    const JavaRef<jobject>& class_loader);
+
 // Gets a global ref to the application context set with
 // InitApplicationContext(). Ownership is retained by the function - the caller
 // must NOT release it.
@@ -65,6 +74,17 @@ const BASE_EXPORT jobject GetApplicationContext();
 // Use HasClass if you need to check whether the class exists.
 BASE_EXPORT ScopedJavaLocalRef<jclass> GetClass(JNIEnv* env,
                                                 const char* class_name);
+
+// The method will initialize |atomic_class_id| to contain a global ref to the
+// class. And will return that ref on subsequent calls.  It's the caller's
+// responsibility to release the ref when it is no longer needed.
+// The caller is responsible to zero-initialize |atomic_method_id|.
+// It's fine to simultaneously call this on multiple threads referencing the
+// same |atomic_method_id|.
+BASE_EXPORT jclass LazyGetClass(
+    JNIEnv* env,
+    const char* class_name,
+    base::subtle::AtomicWord* atomic_class_id);
 
 // This class is a wrapper for JNIEnv Get(Static)MethodID.
 class BASE_EXPORT MethodID {

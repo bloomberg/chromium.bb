@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,6 +24,7 @@ const char kTestJniClassPath[] = "org/chromium/TestJni";
 const char kMyInnerClassClassPath[] = "org/chromium/TestJni$MyInnerClass";
 // Leaking this jclass as we cannot use LazyInstance from some threads.
 jclass g_TestJni_clazz = NULL;
+#define TestJni_clazz(env) g_TestJni_clazz
 
 }  // namespace
 
@@ -56,21 +57,21 @@ static bool RegisterNativesImpl(JNIEnv* env) {
   const int kMethodsMyOtherInnerClassSize =
       arraysize(kMethodsMyOtherInnerClass);
 
-  if (env->RegisterNatives(g_MyOtherInnerClass_clazz,
+  if (env->RegisterNatives(MyOtherInnerClass_clazz(env),
                            kMethodsMyOtherInnerClass,
                            kMethodsMyOtherInnerClassSize) < 0) {
     jni_generator::HandleRegistrationError(
-        env, g_MyOtherInnerClass_clazz, __FILE__);
+        env, MyOtherInnerClass_clazz(env), __FILE__);
     return false;
   }
 
   const int kMethodsMyInnerClassSize = arraysize(kMethodsMyInnerClass);
 
-  if (env->RegisterNatives(g_MyInnerClass_clazz,
+  if (env->RegisterNatives(MyInnerClass_clazz(env),
                            kMethodsMyInnerClass,
                            kMethodsMyInnerClassSize) < 0) {
     jni_generator::HandleRegistrationError(
-        env, g_MyInnerClass_clazz, __FILE__);
+        env, MyInnerClass_clazz(env), __FILE__);
     return false;
   }
 

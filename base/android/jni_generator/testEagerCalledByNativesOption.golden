@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,6 +21,7 @@ namespace {
 const char kTestClassPath[] = "org/chromium/example/jni_generator/Test";
 // Leaking this jclass as we cannot use LazyInstance from some threads.
 jclass g_Test_clazz = NULL;
+#define Test_clazz(env) g_Test_clazz
 jmethodID g_Test_testMethodWithParam = NULL;
 jmethodID g_Test_testStaticMethodWithParam = NULL;
 jmethodID g_Test_testMethodWithNoParam = NULL;
@@ -46,20 +47,21 @@ static void testMethodWithParam(JNIEnv* env, jobject obj, JniIntWrapper iParam)
 }
 
 static jint testStaticMethodWithParam(JNIEnv* env, JniIntWrapper iParam) {
-  jint ret = env->CallStaticIntMethod(g_Test_clazz,
+  jint ret = env->CallStaticIntMethod(Test_clazz(env),
       g_Test_testStaticMethodWithParam, as_jint(iParam));
   return ret;
 }
 
 static jdouble testMethodWithNoParam(JNIEnv* env) {
-  jdouble ret = env->CallStaticDoubleMethod(g_Test_clazz,
+  jdouble ret = env->CallStaticDoubleMethod(Test_clazz(env),
       g_Test_testMethodWithNoParam);
   return ret;
 }
 
 static base::android::ScopedJavaLocalRef<jstring>
     testStaticMethodWithNoParam(JNIEnv* env) {
-  jstring ret = static_cast<jstring>(env->CallStaticObjectMethod(g_Test_clazz,
+  jstring ret =
+      static_cast<jstring>(env->CallStaticObjectMethod(Test_clazz(env),
       g_Test_testStaticMethodWithNoParam));
   return base::android::ScopedJavaLocalRef<jstring>(env, ret);
 }
@@ -81,16 +83,16 @@ static bool RegisterNativesImpl(JNIEnv* env, jclass clazz) {
 
   const int kMethodsTestSize = arraysize(kMethodsTest);
 
-  if (env->RegisterNatives(g_Test_clazz,
+  if (env->RegisterNatives(Test_clazz(env),
                            kMethodsTest,
                            kMethodsTestSize) < 0) {
     jni_generator::HandleRegistrationError(
-        env, g_Test_clazz, __FILE__);
+        env, Test_clazz(env), __FILE__);
     return false;
   }
 
   g_Test_testMethodWithParam = env->GetMethodID(
-      g_Test_clazz,
+      Test_clazz(env),
       "testMethodWithParam",
 "("
 "I"
@@ -101,7 +103,7 @@ static bool RegisterNativesImpl(JNIEnv* env, jclass clazz) {
   }
 
   g_Test_testStaticMethodWithParam = env->GetStaticMethodID(
-      g_Test_clazz,
+      Test_clazz(env),
       "testStaticMethodWithParam",
 "("
 "I"
@@ -112,7 +114,7 @@ static bool RegisterNativesImpl(JNIEnv* env, jclass clazz) {
   }
 
   g_Test_testMethodWithNoParam = env->GetStaticMethodID(
-      g_Test_clazz,
+      Test_clazz(env),
       "testMethodWithNoParam",
 "("
 ")"
@@ -122,7 +124,7 @@ static bool RegisterNativesImpl(JNIEnv* env, jclass clazz) {
   }
 
   g_Test_testStaticMethodWithNoParam = env->GetStaticMethodID(
-      g_Test_clazz,
+      Test_clazz(env),
       "testStaticMethodWithNoParam",
 "("
 ")"

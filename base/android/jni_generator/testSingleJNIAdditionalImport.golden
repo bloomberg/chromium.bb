@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,6 +21,7 @@ namespace {
 const char kFooClassPath[] = "org/chromium/foo/Foo";
 // Leaking this jclass as we cannot use LazyInstance from some threads.
 jclass g_Foo_clazz = NULL;
+#define Foo_clazz(env) g_Foo_clazz
 
 }  // namespace
 
@@ -32,12 +33,12 @@ static void DoSomething(JNIEnv* env, jclass jcaller,
 static base::subtle::AtomicWord g_Foo_calledByNative = 0;
 static void Java_Foo_calledByNative(JNIEnv* env, jobject callback) {
   /* Must call RegisterNativesImpl()  */
-  CHECK_CLAZZ(env, g_Foo_clazz,
-      g_Foo_clazz);
+  CHECK_CLAZZ(env, Foo_clazz(env),
+      Foo_clazz(env));
   jmethodID method_id =
       base::android::MethodID::LazyGet<
       base::android::MethodID::TYPE_STATIC>(
-      env, g_Foo_clazz,
+      env, Foo_clazz(env),
       "calledByNative",
 
 "("
@@ -46,7 +47,7 @@ static void Java_Foo_calledByNative(JNIEnv* env, jobject callback) {
 "V",
       &g_Foo_calledByNative);
 
-     env->CallStaticVoidMethod(g_Foo_clazz,
+     env->CallStaticVoidMethod(Foo_clazz(env),
           method_id, callback);
   jni_generator::CheckException(env);
 
@@ -68,11 +69,11 @@ static bool RegisterNativesImpl(JNIEnv* env) {
 
   const int kMethodsFooSize = arraysize(kMethodsFoo);
 
-  if (env->RegisterNatives(g_Foo_clazz,
+  if (env->RegisterNatives(Foo_clazz(env),
                            kMethodsFoo,
                            kMethodsFooSize) < 0) {
     jni_generator::HandleRegistrationError(
-        env, g_Foo_clazz, __FILE__);
+        env, Foo_clazz(env), __FILE__);
     return false;
   }
 

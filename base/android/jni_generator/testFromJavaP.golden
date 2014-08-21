@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,6 +21,7 @@ namespace {
 const char kInputStreamClassPath[] = "java/io/InputStream";
 // Leaking this jclass as we cannot use LazyInstance from some threads.
 jclass g_InputStream_clazz = NULL;
+#define InputStream_clazz(env) g_InputStream_clazz
 
 }  // namespace
 
@@ -34,11 +35,11 @@ static jint Java_InputStream_available(JNIEnv* env, jobject obj) __attribute__
 static jint Java_InputStream_available(JNIEnv* env, jobject obj) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
-      g_InputStream_clazz, 0);
+      InputStream_clazz(env), 0);
   jmethodID method_id =
       base::android::MethodID::LazyGet<
       base::android::MethodID::TYPE_INSTANCE>(
-      env, g_InputStream_clazz,
+      env, InputStream_clazz(env),
       "available",
       "()I",
       &g_InputStream_available);
@@ -56,11 +57,11 @@ static void Java_InputStream_close(JNIEnv* env, jobject obj) __attribute__
 static void Java_InputStream_close(JNIEnv* env, jobject obj) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
-      g_InputStream_clazz);
+      InputStream_clazz(env));
   jmethodID method_id =
       base::android::MethodID::LazyGet<
       base::android::MethodID::TYPE_INSTANCE>(
-      env, g_InputStream_clazz,
+      env, InputStream_clazz(env),
       "close",
       "()V",
       &g_InputStream_close);
@@ -77,11 +78,11 @@ static void Java_InputStream_mark(JNIEnv* env, jobject obj, JniIntWrapper p0)
 static void Java_InputStream_mark(JNIEnv* env, jobject obj, JniIntWrapper p0) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
-      g_InputStream_clazz);
+      InputStream_clazz(env));
   jmethodID method_id =
       base::android::MethodID::LazyGet<
       base::android::MethodID::TYPE_INSTANCE>(
-      env, g_InputStream_clazz,
+      env, InputStream_clazz(env),
       "mark",
       "(I)V",
       &g_InputStream_mark);
@@ -98,11 +99,11 @@ static jboolean Java_InputStream_markSupported(JNIEnv* env, jobject obj)
 static jboolean Java_InputStream_markSupported(JNIEnv* env, jobject obj) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
-      g_InputStream_clazz, false);
+      InputStream_clazz(env), false);
   jmethodID method_id =
       base::android::MethodID::LazyGet<
       base::android::MethodID::TYPE_INSTANCE>(
-      env, g_InputStream_clazz,
+      env, InputStream_clazz(env),
       "markSupported",
       "()Z",
       &g_InputStream_markSupported);
@@ -120,11 +121,11 @@ static jint Java_InputStream_readI(JNIEnv* env, jobject obj) __attribute__
 static jint Java_InputStream_readI(JNIEnv* env, jobject obj) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
-      g_InputStream_clazz, 0);
+      InputStream_clazz(env), 0);
   jmethodID method_id =
       base::android::MethodID::LazyGet<
       base::android::MethodID::TYPE_INSTANCE>(
-      env, g_InputStream_clazz,
+      env, InputStream_clazz(env),
       "read",
       "()I",
       &g_InputStream_readI);
@@ -142,11 +143,11 @@ static jint Java_InputStream_readI_AB(JNIEnv* env, jobject obj, jbyteArray p0)
 static jint Java_InputStream_readI_AB(JNIEnv* env, jobject obj, jbyteArray p0) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
-      g_InputStream_clazz, 0);
+      InputStream_clazz(env), 0);
   jmethodID method_id =
       base::android::MethodID::LazyGet<
       base::android::MethodID::TYPE_INSTANCE>(
-      env, g_InputStream_clazz,
+      env, InputStream_clazz(env),
       "read",
       "([B)I",
       &g_InputStream_readI_AB);
@@ -169,11 +170,11 @@ static jint Java_InputStream_readI_AB_I_I(JNIEnv* env, jobject obj, jbyteArray
     JniIntWrapper p2) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
-      g_InputStream_clazz, 0);
+      InputStream_clazz(env), 0);
   jmethodID method_id =
       base::android::MethodID::LazyGet<
       base::android::MethodID::TYPE_INSTANCE>(
-      env, g_InputStream_clazz,
+      env, InputStream_clazz(env),
       "read",
       "([BII)I",
       &g_InputStream_readI_AB_I_I);
@@ -191,11 +192,11 @@ static void Java_InputStream_reset(JNIEnv* env, jobject obj) __attribute__
 static void Java_InputStream_reset(JNIEnv* env, jobject obj) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
-      g_InputStream_clazz);
+      InputStream_clazz(env));
   jmethodID method_id =
       base::android::MethodID::LazyGet<
       base::android::MethodID::TYPE_INSTANCE>(
-      env, g_InputStream_clazz,
+      env, InputStream_clazz(env),
       "reset",
       "()V",
       &g_InputStream_reset);
@@ -212,11 +213,11 @@ static jlong Java_InputStream_skip(JNIEnv* env, jobject obj, jlong p0)
 static jlong Java_InputStream_skip(JNIEnv* env, jobject obj, jlong p0) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
-      g_InputStream_clazz, 0);
+      InputStream_clazz(env), 0);
   jmethodID method_id =
       base::android::MethodID::LazyGet<
       base::android::MethodID::TYPE_INSTANCE>(
-      env, g_InputStream_clazz,
+      env, InputStream_clazz(env),
       "skip",
       "(J)J",
       &g_InputStream_skip);
@@ -234,18 +235,18 @@ static base::android::ScopedJavaLocalRef<jobject>
 static base::android::ScopedJavaLocalRef<jobject>
     Java_InputStream_Constructor(JNIEnv* env) {
   /* Must call RegisterNativesImpl()  */
-  CHECK_CLAZZ(env, g_InputStream_clazz,
-      g_InputStream_clazz, NULL);
+  CHECK_CLAZZ(env, InputStream_clazz(env),
+      InputStream_clazz(env), NULL);
   jmethodID method_id =
       base::android::MethodID::LazyGet<
       base::android::MethodID::TYPE_INSTANCE>(
-      env, g_InputStream_clazz,
+      env, InputStream_clazz(env),
       "<init>",
       "()V",
       &g_InputStream_Constructor);
 
   jobject ret =
-      env->NewObject(g_InputStream_clazz,
+      env->NewObject(InputStream_clazz(env),
           method_id);
   jni_generator::CheckException(env);
   return base::android::ScopedJavaLocalRef<jobject>(env, ret);

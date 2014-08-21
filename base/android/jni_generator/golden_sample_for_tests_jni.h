@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,10 +26,13 @@ const char kInnerStructBClassPath[] =
     "org/chromium/example/jni_generator/SampleForTests$InnerStructB";
 // Leaking this jclass as we cannot use LazyInstance from some threads.
 jclass g_InnerStructA_clazz = NULL;
+#define InnerStructA_clazz(env) g_InnerStructA_clazz
 // Leaking this jclass as we cannot use LazyInstance from some threads.
 jclass g_SampleForTests_clazz = NULL;
+#define SampleForTests_clazz(env) g_SampleForTests_clazz
 // Leaking this jclass as we cannot use LazyInstance from some threads.
 jclass g_InnerStructB_clazz = NULL;
+#define InnerStructB_clazz(env) g_InnerStructB_clazz
 
 }  // namespace
 
@@ -99,11 +102,11 @@ static jint Java_SampleForTests_javaMethod(JNIEnv* env, jobject obj,
     JniIntWrapper bar) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
-      g_SampleForTests_clazz, 0);
+      SampleForTests_clazz(env), 0);
   jmethodID method_id =
       base::android::MethodID::LazyGet<
       base::android::MethodID::TYPE_INSTANCE>(
-      env, g_SampleForTests_clazz,
+      env, SampleForTests_clazz(env),
       "javaMethod",
 
 "("
@@ -123,12 +126,12 @@ static jint Java_SampleForTests_javaMethod(JNIEnv* env, jobject obj,
 static base::subtle::AtomicWord g_SampleForTests_staticJavaMethod = 0;
 static jboolean Java_SampleForTests_staticJavaMethod(JNIEnv* env) {
   /* Must call RegisterNativesImpl()  */
-  CHECK_CLAZZ(env, g_SampleForTests_clazz,
-      g_SampleForTests_clazz, false);
+  CHECK_CLAZZ(env, SampleForTests_clazz(env),
+      SampleForTests_clazz(env), false);
   jmethodID method_id =
       base::android::MethodID::LazyGet<
       base::android::MethodID::TYPE_STATIC>(
-      env, g_SampleForTests_clazz,
+      env, SampleForTests_clazz(env),
       "staticJavaMethod",
 
 "("
@@ -137,7 +140,7 @@ static jboolean Java_SampleForTests_staticJavaMethod(JNIEnv* env) {
       &g_SampleForTests_staticJavaMethod);
 
   jboolean ret =
-      env->CallStaticBooleanMethod(g_SampleForTests_clazz,
+      env->CallStaticBooleanMethod(SampleForTests_clazz(env),
           method_id);
   jni_generator::CheckException(env);
   return ret;
@@ -148,11 +151,11 @@ static void Java_SampleForTests_packagePrivateJavaMethod(JNIEnv* env, jobject
     obj) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
-      g_SampleForTests_clazz);
+      SampleForTests_clazz(env));
   jmethodID method_id =
       base::android::MethodID::LazyGet<
       base::android::MethodID::TYPE_INSTANCE>(
-      env, g_SampleForTests_clazz,
+      env, SampleForTests_clazz(env),
       "packagePrivateJavaMethod",
 
 "("
@@ -171,11 +174,11 @@ static void Java_SampleForTests_methodThatThrowsException(JNIEnv* env, jobject
     obj) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
-      g_SampleForTests_clazz);
+      SampleForTests_clazz(env));
   jmethodID method_id =
       base::android::MethodID::LazyGet<
       base::android::MethodID::TYPE_INSTANCE>(
-      env, g_SampleForTests_clazz,
+      env, SampleForTests_clazz(env),
       "methodThatThrowsException",
 
 "("
@@ -194,12 +197,12 @@ static base::android::ScopedJavaLocalRef<jobject>
     JniIntWrapper i,
     jstring s) {
   /* Must call RegisterNativesImpl()  */
-  CHECK_CLAZZ(env, g_InnerStructA_clazz,
-      g_InnerStructA_clazz, NULL);
+  CHECK_CLAZZ(env, InnerStructA_clazz(env),
+      InnerStructA_clazz(env), NULL);
   jmethodID method_id =
       base::android::MethodID::LazyGet<
       base::android::MethodID::TYPE_STATIC>(
-      env, g_InnerStructA_clazz,
+      env, InnerStructA_clazz(env),
       "create",
 
 "("
@@ -211,7 +214,7 @@ static base::android::ScopedJavaLocalRef<jobject>
       &g_InnerStructA_create);
 
   jobject ret =
-      env->CallStaticObjectMethod(g_InnerStructA_clazz,
+      env->CallStaticObjectMethod(InnerStructA_clazz(env),
           method_id, l, as_jint(i), s);
   jni_generator::CheckException(env);
   return base::android::ScopedJavaLocalRef<jobject>(env, ret);
@@ -222,11 +225,11 @@ static void Java_SampleForTests_addStructA(JNIEnv* env, jobject obj, jobject a)
     {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
-      g_SampleForTests_clazz);
+      SampleForTests_clazz(env));
   jmethodID method_id =
       base::android::MethodID::LazyGet<
       base::android::MethodID::TYPE_INSTANCE>(
-      env, g_SampleForTests_clazz,
+      env, SampleForTests_clazz(env),
       "addStructA",
 
 "("
@@ -246,11 +249,11 @@ static void Java_SampleForTests_iterateAndDoSomething(JNIEnv* env, jobject obj)
     {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
-      g_SampleForTests_clazz);
+      SampleForTests_clazz(env));
   jmethodID method_id =
       base::android::MethodID::LazyGet<
       base::android::MethodID::TYPE_INSTANCE>(
-      env, g_SampleForTests_clazz,
+      env, SampleForTests_clazz(env),
       "iterateAndDoSomething",
 
 "("
@@ -268,11 +271,11 @@ static base::subtle::AtomicWord g_InnerStructB_getKey = 0;
 static jlong Java_InnerStructB_getKey(JNIEnv* env, jobject obj) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
-      g_InnerStructB_clazz, 0);
+      InnerStructB_clazz(env), 0);
   jmethodID method_id =
       base::android::MethodID::LazyGet<
       base::android::MethodID::TYPE_INSTANCE>(
-      env, g_InnerStructB_clazz,
+      env, InnerStructB_clazz(env),
       "getKey",
 
 "("
@@ -292,11 +295,11 @@ static base::android::ScopedJavaLocalRef<jstring>
     Java_InnerStructB_getValue(JNIEnv* env, jobject obj) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
-      g_InnerStructB_clazz, NULL);
+      InnerStructB_clazz(env), NULL);
   jmethodID method_id =
       base::android::MethodID::LazyGet<
       base::android::MethodID::TYPE_INSTANCE>(
-      env, g_InnerStructB_clazz,
+      env, InnerStructB_clazz(env),
       "getValue",
 
 "("
@@ -379,11 +382,11 @@ static bool RegisterNativesImpl(JNIEnv* env) {
 
   const int kMethodsSampleForTestsSize = arraysize(kMethodsSampleForTests);
 
-  if (env->RegisterNatives(g_SampleForTests_clazz,
+  if (env->RegisterNatives(SampleForTests_clazz(env),
                            kMethodsSampleForTests,
                            kMethodsSampleForTestsSize) < 0) {
     jni_generator::HandleRegistrationError(
-        env, g_SampleForTests_clazz, __FILE__);
+        env, SampleForTests_clazz(env), __FILE__);
     return false;
   }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,6 +21,7 @@ namespace {
 const char kTestJniClassPath[] = "org/chromium/TestJni";
 // Leaking this jclass as we cannot use LazyInstance from some threads.
 jclass g_TestJni_clazz = NULL;
+#define TestJni_clazz(env) g_TestJni_clazz
 
 }  // namespace
 
@@ -49,11 +50,11 @@ static bool RegisterNativesImpl(JNIEnv* env) {
 
   const int kMethodsTestJniSize = arraysize(kMethodsTestJni);
 
-  if (env->RegisterNatives(g_TestJni_clazz,
+  if (env->RegisterNatives(TestJni_clazz(env),
                            kMethodsTestJni,
                            kMethodsTestJniSize) < 0) {
     jni_generator::HandleRegistrationError(
-        env, g_TestJni_clazz, __FILE__);
+        env, TestJni_clazz(env), __FILE__);
     return false;
   }
 

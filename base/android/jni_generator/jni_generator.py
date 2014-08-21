@@ -731,7 +731,7 @@ class InlHeaderFileGenerator(object):
   def GetContent(self):
     """Returns the content of the JNI binding file."""
     template = Template("""\
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -947,11 +947,11 @@ ${CALLED_BY_NATIVES}
     template = Template("""\
   const int kMethods${JAVA_CLASS}Size = arraysize(kMethods${JAVA_CLASS});
 
-  if (env->RegisterNatives(g_${JAVA_CLASS}_clazz,
+  if (env->RegisterNatives(${JAVA_CLASS}_clazz(env),
                            kMethods${JAVA_CLASS},
                            kMethods${JAVA_CLASS}Size) < 0) {
     jni_generator::HandleRegistrationError(
-        env, g_${JAVA_CLASS}_clazz, __FILE__);
+        env, ${JAVA_CLASS}_clazz(env), __FILE__);
     return false;
   }
 """)
@@ -1122,11 +1122,10 @@ static ${RETURN} ${NAME}(JNIEnv* env, ${PARAMS_IN_DECLARATION}) {"""
 
   def GetCalledByNativeValues(self, called_by_native):
     """Fills in necessary values for the CalledByNative methods."""
+    java_class = called_by_native.java_class_name or self.class_name
     if called_by_native.static or called_by_native.is_constructor:
       first_param_in_declaration = ''
-      first_param_in_call = ('g_%s_clazz' %
-                             (called_by_native.java_class_name or
-                              self.class_name))
+      first_param_in_call = ('%s_clazz(env)' % java_class)
     else:
       first_param_in_declaration = ', jobject obj'
       first_param_in_call = 'obj'
@@ -1160,7 +1159,7 @@ static ${RETURN} ${NAME}(JNIEnv* env, ${PARAMS_IN_DECLARATION}) {"""
       else:
         return_clause = 'return ret;'
     return {
-        'JAVA_CLASS': called_by_native.java_class_name or self.class_name,
+        'JAVA_CLASS': java_class,
         'RETURN_TYPE': return_type,
         'OPTIONAL_ERROR_RETURN': optional_error_return,
         'RETURN_DECLARATION': return_declaration,
@@ -1204,7 +1203,7 @@ static base::subtle::AtomicWord g_${JAVA_CLASS}_${METHOD_ID_VAR_NAME} = 0;
 ${FUNCTION_HEADER}
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, ${FIRST_PARAM_IN_CALL},
-      g_${JAVA_CLASS}_clazz${OPTIONAL_ERROR_RETURN});
+      ${JAVA_CLASS}_clazz(env)${OPTIONAL_ERROR_RETURN});
   jmethodID method_id =
     ${GET_METHOD_ID_IMPL}
   ${RETURN_DECLARATION}
@@ -1263,22 +1262,42 @@ const char k${JAVA_CLASS}ClassPath[] = "${JNI_CLASS_PATH}";""")
       }
       ret += [template.substitute(values)]
     ret += ''
-    for clazz in called_by_native_classes:
+
+    class_getter_methods = []
+    if self.options.native_exports:
       template = Template("""\
 // Leaking this jclass as we cannot use LazyInstance from some threads.
-jclass g_${JAVA_CLASS}_clazz = NULL;""")
+base::subtle::AtomicWord g_${JAVA_CLASS}_clazz = 0;
+#define ${JAVA_CLASS}_clazz(env) \
+base::android::LazyGetClass(env, k${JAVA_CLASS}ClassPath, \
+&g_${JAVA_CLASS}_clazz)""")
+    else:
+      template = Template("""\
+// Leaking this jclass as we cannot use LazyInstance from some threads.
+jclass g_${JAVA_CLASS}_clazz = NULL;
+#define ${JAVA_CLASS}_clazz(env) g_${JAVA_CLASS}_clazz""")
+
+    for clazz in called_by_native_classes:
       values = {
           'JAVA_CLASS': clazz,
       }
       ret += [template.substitute(values)]
+
     return '\n'.join(ret)
 
   def GetFindClasses(self):
     """Returns the imlementation of FindClass for all known classes."""
     if self.init_native:
-      template = Template("""\
+      if self.options.native_exports:
+        template = Template("""\
+    base::subtle::Release_Store(&g_${JAVA_CLASS}_clazz,
+      static_cast<base::subtle::AtomicWord>(env->NewWeakGlobalRef(clazz));""")
+      else:
+        template = Template("""\
   g_${JAVA_CLASS}_clazz = static_cast<jclass>(env->NewWeakGlobalRef(clazz));""")
     else:
+      if self.options.native_exports:
+        return '\n'
       template = Template("""\
   g_${JAVA_CLASS}_clazz = reinterpret_cast<jclass>(env->NewGlobalRef(
       base::android::GetClass(env, k${JAVA_CLASS}ClassPath).obj()));""")
@@ -1293,13 +1312,13 @@ jclass g_${JAVA_CLASS}_clazz = NULL;""")
     if self.options.eager_called_by_natives:
       template = Template("""\
 env->Get${STATIC_METHOD_PART}MethodID(
-      g_${JAVA_CLASS}_clazz,
+      ${JAVA_CLASS}_clazz(env),
       "${JNI_NAME}", ${JNI_SIGNATURE});""")
     else:
       template = Template("""\
   base::android::MethodID::LazyGet<
       base::android::MethodID::TYPE_${STATIC}>(
-      env, g_${JAVA_CLASS}_clazz,
+      env, ${JAVA_CLASS}_clazz(env),
       "${JNI_NAME}",
       ${JNI_SIGNATURE},
       &g_${JAVA_CLASS}_${METHOD_ID_VAR_NAME});

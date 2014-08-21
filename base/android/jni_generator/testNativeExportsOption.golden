@@ -21,7 +21,8 @@ namespace {
 const char kSampleForTestsClassPath[] =
     "org/chromium/example/jni_generator/SampleForTests";
 // Leaking this jclass as we cannot use LazyInstance from some threads.
-jclass g_SampleForTests_clazz = NULL;
+base::subtle::AtomicWord g_SampleForTests_clazz = 0;
+#define SampleForTests_clazz(env) base::android::LazyGetClass(env, kSampleForTestsClassPath, &g_SampleForTests_clazz)
 
 }  // namespace
 
@@ -79,11 +80,11 @@ static void Java_SampleForTests_testMethodWithParam(JNIEnv* env, jobject obj,
     JniIntWrapper iParam) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
-      g_SampleForTests_clazz);
+      SampleForTests_clazz(env));
   jmethodID method_id =
       base::android::MethodID::LazyGet<
       base::android::MethodID::TYPE_INSTANCE>(
-      env, g_SampleForTests_clazz,
+      env, SampleForTests_clazz(env),
       "testMethodWithParam",
 
 "("
@@ -105,11 +106,11 @@ static base::android::ScopedJavaLocalRef<jstring>
     JniIntWrapper iParam) {
   /* Must call RegisterNativesImpl()  */
   CHECK_CLAZZ(env, obj,
-      g_SampleForTests_clazz, NULL);
+      SampleForTests_clazz(env), NULL);
   jmethodID method_id =
       base::android::MethodID::LazyGet<
       base::android::MethodID::TYPE_INSTANCE>(
-      env, g_SampleForTests_clazz,
+      env, SampleForTests_clazz(env),
       "testMethodWithParamAndReturn",
 
 "("
@@ -129,12 +130,12 @@ static base::subtle::AtomicWord g_SampleForTests_testStaticMethodWithParam = 0;
 static jint Java_SampleForTests_testStaticMethodWithParam(JNIEnv* env,
     JniIntWrapper iParam) {
   /* Must call RegisterNativesImpl()  */
-  CHECK_CLAZZ(env, g_SampleForTests_clazz,
-      g_SampleForTests_clazz, 0);
+  CHECK_CLAZZ(env, SampleForTests_clazz(env),
+      SampleForTests_clazz(env), 0);
   jmethodID method_id =
       base::android::MethodID::LazyGet<
       base::android::MethodID::TYPE_STATIC>(
-      env, g_SampleForTests_clazz,
+      env, SampleForTests_clazz(env),
       "testStaticMethodWithParam",
 
 "("
@@ -144,7 +145,7 @@ static jint Java_SampleForTests_testStaticMethodWithParam(JNIEnv* env,
       &g_SampleForTests_testStaticMethodWithParam);
 
   jint ret =
-      env->CallStaticIntMethod(g_SampleForTests_clazz,
+      env->CallStaticIntMethod(SampleForTests_clazz(env),
           method_id, as_jint(iParam));
   jni_generator::CheckException(env);
   return ret;
@@ -153,12 +154,12 @@ static jint Java_SampleForTests_testStaticMethodWithParam(JNIEnv* env,
 static base::subtle::AtomicWord g_SampleForTests_testMethodWithNoParam = 0;
 static jdouble Java_SampleForTests_testMethodWithNoParam(JNIEnv* env) {
   /* Must call RegisterNativesImpl()  */
-  CHECK_CLAZZ(env, g_SampleForTests_clazz,
-      g_SampleForTests_clazz, 0);
+  CHECK_CLAZZ(env, SampleForTests_clazz(env),
+      SampleForTests_clazz(env), 0);
   jmethodID method_id =
       base::android::MethodID::LazyGet<
       base::android::MethodID::TYPE_STATIC>(
-      env, g_SampleForTests_clazz,
+      env, SampleForTests_clazz(env),
       "testMethodWithNoParam",
 
 "("
@@ -167,7 +168,7 @@ static jdouble Java_SampleForTests_testMethodWithNoParam(JNIEnv* env) {
       &g_SampleForTests_testMethodWithNoParam);
 
   jdouble ret =
-      env->CallStaticDoubleMethod(g_SampleForTests_clazz,
+      env->CallStaticDoubleMethod(SampleForTests_clazz(env),
           method_id);
   jni_generator::CheckException(env);
   return ret;
@@ -178,12 +179,12 @@ static base::subtle::AtomicWord g_SampleForTests_testStaticMethodWithNoParam =
 static base::android::ScopedJavaLocalRef<jstring>
     Java_SampleForTests_testStaticMethodWithNoParam(JNIEnv* env) {
   /* Must call RegisterNativesImpl()  */
-  CHECK_CLAZZ(env, g_SampleForTests_clazz,
-      g_SampleForTests_clazz, NULL);
+  CHECK_CLAZZ(env, SampleForTests_clazz(env),
+      SampleForTests_clazz(env), NULL);
   jmethodID method_id =
       base::android::MethodID::LazyGet<
       base::android::MethodID::TYPE_STATIC>(
-      env, g_SampleForTests_clazz,
+      env, SampleForTests_clazz(env),
       "testStaticMethodWithNoParam",
 
 "("
@@ -192,7 +193,7 @@ static base::android::ScopedJavaLocalRef<jstring>
       &g_SampleForTests_testStaticMethodWithNoParam);
 
   jstring ret =
-      static_cast<jstring>(env->CallStaticObjectMethod(g_SampleForTests_clazz,
+static_cast<jstring>(env->CallStaticObjectMethod(SampleForTests_clazz(env),
           method_id));
   jni_generator::CheckException(env);
   return base::android::ScopedJavaLocalRef<jstring>(env, ret);
@@ -202,7 +203,8 @@ static base::android::ScopedJavaLocalRef<jstring>
 // Step 3: RegisterNatives.
 
 static bool RegisterNativesImpl(JNIEnv* env, jclass clazz) {
-  g_SampleForTests_clazz = static_cast<jclass>(env->NewWeakGlobalRef(clazz));
+    base::subtle::Release_Store(&g_SampleForTests_clazz,
+      static_cast<base::subtle::AtomicWord>(env->NewWeakGlobalRef(clazz));
 
   return true;
 }
