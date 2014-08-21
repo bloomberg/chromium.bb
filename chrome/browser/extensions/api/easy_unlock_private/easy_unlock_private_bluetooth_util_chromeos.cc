@@ -5,9 +5,6 @@
 #include "chrome/browser/extensions/api/easy_unlock_private/easy_unlock_private_bluetooth_util.h"
 
 #include <stdint.h>
-#include <bluetooth/bluetooth.h>
-#include <bluetooth/l2cap.h>
-#include <bluetooth/sdp.h>
 #include <sys/socket.h>
 #include <algorithm>
 #include <vector>
@@ -17,12 +14,33 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
+#include "base/sys_byteorder.h"
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/time/time.h"
 #include "content/public/browser/browser_thread.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "net/socket/socket_descriptor.h"
+
+// The bluez headers are (intentionally) not available within the Chromium
+// repository, so several definitions from these headers are replicated below.
+
+// From <bluetooth/bluetooth.h>:
+#define BTPROTO_L2CAP 0
+struct bdaddr_t {
+  uint8_t b[6];
+} __attribute__((packed));
+
+// From <bluetooth/l2cap.h>:
+struct sockaddr_l2 {
+  sa_family_t l2_family;
+  unsigned short l2_psm;
+  bdaddr_t l2_bdaddr;
+  unsigned short l2_cid;
+};
+
+// From <bluetooth/sdp.h>:
+#define SDP_PSM 0x0001
 
 namespace extensions {
 namespace api {
@@ -84,7 +102,7 @@ SeekDeviceResult SeekBluetoothDeviceByAddressImpl(
   struct sockaddr_l2 addr;
   memset(&addr, 0, sizeof(addr));
   addr.l2_family = AF_BLUETOOTH;
-  addr.l2_psm = htobs(SDP_PSM);
+  addr.l2_psm = base::ByteSwapToLE16(SDP_PSM);
   if (!BluetoothAddressToBdaddr(device_address, &addr.l2_bdaddr)) {
     seek_result.error_message = kInvalidDeviceAddress;
     return seek_result;
