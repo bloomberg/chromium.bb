@@ -4032,7 +4032,7 @@
             'conditions': [
               ['use_sanitizer_options==1 and OS=="linux" and (chromeos==0 or target_arch!="ia32")', {
                 'dependencies': [
-                  '<(DEPTH)/base/base.gyp:sanitizer_options',
+                  '<(DEPTH)/build/sanitizers/sanitizers.gyp:sanitizer_options',
                 ],
               }],
             ],

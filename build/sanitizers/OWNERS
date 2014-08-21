@@ -1,0 +1,2 @@
+glider@chromium.org
+per-file tsan_suppressions.cc=*

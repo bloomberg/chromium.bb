@@ -245,8 +245,8 @@
               'cflags': ['-fPIE'],
               'ldflags!': [
                 # Do not pick the default ASan options from
-                # base/debug/sanitizer_options.cc to avoid a conflict with those
-                # in nacl/nacl_helper_linux.cc.
+                # build/sanitizers/sanitizer_options.cc to avoid a conflict with
+                # those in nacl/nacl_helper_linux.cc.
                 '-Wl,-u_sanitizer_options_link_helper',
               ],
               'link_settings': {
