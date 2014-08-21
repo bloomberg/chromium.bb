@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- Copyright 2014 The Chromium Authors. All rights reserved.
+
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file.
+ -->
+
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="org.chromium.chrome.sync_shell">
+
+    <uses-sdk android:minSdkVersion="14" android:targetSdkVersion="20" />
+    <permission android:name="org.chromium.chrome.shell.permission.SANDBOX"
+            android:protectionLevel="signature" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.GET_ACCOUNTS"/>
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS"/>
+    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+    <uses-permission android:name="android.permission.VIBRATE"/>
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    <uses-permission android:name="android.permission.READ_SYNC_SETTINGS"/>
+    <uses-permission android:name="android.permission.WRITE_SYNC_SETTINGS" />
+    <uses-permission android:name="android.permission.USE_CREDENTIALS" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <!-- Only Chrome can receive the messages and registration result for GCM -->
+    <permission android:name="org.chromium.chrome.shell.permission.C2D_MESSAGE"
+                android:protectionLevel="signature" />
+    <uses-permission android:name="org.chromium.chrome.shell.permission.C2D_MESSAGE" />
+    <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
+
+    <application android:name="org.chromium.chrome.shell.ChromeShellApplication"
+            android:icon="@mipmap/app_icon"
+            android:label="Chrome Sync Shell">
+        <activity android:name="org.chromium.chrome.shell.ChromeShellActivity"
+                  android:launchMode="singleTask"
+                  android:theme="@android:style/Theme.Holo.Light.NoActionBar"
+                  android:configChanges="orientation|keyboardHidden|keyboard|screenSize"
+                  android:hardwareAccelerated="true">
+              <intent-filter>
+                  <action android:name="android.intent.action.MAIN" />
+                  <category android:name="android.intent.category.LAUNCHER" />
+              </intent-filter>
+         </activity>
+        <activity android:name="org.chromium.sync.test.util.MockGrantCredentialsPermissionActivity"
+                  android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <!-- The following service entries exist in order to allow us to
+             start more than one sandboxed process. -->
+
+        <!-- NOTE: If you change the values of "android:process" for any of the below services,
+             you also need to update kHelperProcessExecutableName in chrome_constants.cc. -->
+        <service android:name="org.chromium.content.app.SandboxedProcessService0"
+                 android:process=":sandboxed_process0"
+                 android:permission="org.chromium.content_shell.permission.SANDBOX"
+                 android:isolatedProcess="true"
+                 android:exported="false" />
+        <service android:name="org.chromium.content.app.SandboxedProcessService1"
+                 android:process=":sandboxed_process1"
+                 android:permission="org.chromium.content_shell.permission.SANDBOX"
+                 android:isolatedProcess="true"
+                 android:exported="false" />
+        <service android:name="org.chromium.content.app.SandboxedProcessService2"
+                 android:process=":sandboxed_process2"
+                 android:permission="org.chromium.content_shell.permission.SANDBOX"
+                 android:isolatedProcess="true"
+                 android:exported="false" />
+        <service android:name="org.chromium.content.app.SandboxedProcessService3"
+                 android:process=":sandboxed_process3"
+                 android:permission="org.chromium.content_shell.permission.SANDBOX"
+                 android:isolatedProcess="true"
+                 android:exported="false" />
+        <service android:name="org.chromium.content.app.SandboxedProcessService4"
+                 android:process=":sandboxed_process4"
+                 android:permission="org.chromium.content_shell.permission.SANDBOX"
+                 android:isolatedProcess="true"
+                 android:exported="false" />
+        <service android:name="org.chromium.content.app.SandboxedProcessService5"
+                 android:process=":sandboxed_process5"
+                 android:permission="org.chromium.content_shell.permission.SANDBOX"
+                 android:isolatedProcess="true"
+                 android:exported="false" />
+        <service android:name="org.chromium.content.app.SandboxedProcessService6"
+                 android:process=":sandboxed_process6"
+                 android:permission="org.chromium.content_shell.permission.SANDBOX"
+                 android:isolatedProcess="true"
+                 android:exported="false" />
+        <service android:name="org.chromium.content.app.SandboxedProcessService7"
+                 android:process=":sandboxed_process7"
+                 android:permission="org.chromium.content_shell.permission.SANDBOX"
+                 android:isolatedProcess="true"
+                 android:exported="false" />
+        <service android:name="org.chromium.content.app.SandboxedProcessService8"
+                 android:process=":sandboxed_process8"
+                 android:permission="org.chromium.content_shell.permission.SANDBOX"
+                 android:isolatedProcess="true"
+                 android:exported="false" />
+        <service android:name="org.chromium.content.app.SandboxedProcessService9"
+                 android:process=":sandboxed_process9"
+                 android:permission="org.chromium.content_shell.permission.SANDBOX"
+                 android:isolatedProcess="true"
+                 android:exported="false" />
+        <service android:name="org.chromium.content.app.SandboxedProcessService10"
+                 android:process=":sandboxed_process10"
+                 android:permission="org.chromium.content_shell.permission.SANDBOX"
+                 android:isolatedProcess="true"
+                 android:exported="false" />
+        <service android:name="org.chromium.content.app.SandboxedProcessService11"
+                 android:process=":sandboxed_process11"
+                 android:permission="org.chromium.content_shell.permission.SANDBOX"
+                 android:isolatedProcess="true"
+                 android:exported="false" />
+        <service android:name="org.chromium.content.app.SandboxedProcessService12"
+                 android:process=":sandboxed_process12"
+                 android:permission="org.chromium.content_shell.permission.SANDBOX"
+                 android:isolatedProcess="true"
+                 android:exported="false" />
+        <service android:name="org.chromium.content.app.SandboxedProcessService13"
+                 android:process=":sandboxed_process13"
+                 android:permission="org.chromium.content_shell.permission.SANDBOX"
+                 android:isolatedProcess="true"
+                 android:exported="false" />
+        <service android:name="org.chromium.content.app.SandboxedProcessService14"
+                 android:process=":sandboxed_process14"
+                 android:permission="org.chromium.content_shell.permission.SANDBOX"
+                 android:isolatedProcess="true"
+                 android:exported="false" />
+        <service android:name="org.chromium.content.app.SandboxedProcessService15"
+                 android:process=":sandboxed_process15"
+                 android:permission="org.chromium.content_shell.permission.SANDBOX"
+                 android:isolatedProcess="true"
+                 android:exported="false" />
+        <service android:name="org.chromium.content.app.SandboxedProcessService16"
+                 android:process=":sandboxed_process16"
+                 android:permission="org.chromium.content_shell.permission.SANDBOX"
+                 android:isolatedProcess="true"
+                 android:exported="false" />
+        <service android:name="org.chromium.content.app.SandboxedProcessService17"
+                 android:process=":sandboxed_process17"
+                 android:permission="org.chromium.content_shell.permission.SANDBOX"
+                 android:isolatedProcess="true"
+                 android:exported="false" />
+        <service android:name="org.chromium.content.app.SandboxedProcessService18"
+                 android:process=":sandboxed_process18"
+                 android:permission="org.chromium.content_shell.permission.SANDBOX"
+                 android:isolatedProcess="true"
+                 android:exported="false" />
+        <service android:name="org.chromium.content.app.SandboxedProcessService19"
+                 android:process=":sandboxed_process19"
+                 android:permission="org.chromium.content_shell.permission.SANDBOX"
+                 android:isolatedProcess="true"
+                 android:exported="false" />
+
+        <!-- Receiver for GCM messages. Rebroadcasts them locally for sync. -->
+        <receiver android:exported="true"
+                  android:name="com.google.ipc.invalidation.external.client.contrib.MultiplexingGcmListener$GCMReceiver"
+                  android:permission="com.google.android.c2dm.permission.SEND">
+            <intent-filter>
+                <action android:name="com.google.android.c2dm.intent.RECEIVE" />
+                <action android:name="com.google.android.c2dm.intent.REGISTRATION" />
+                <category android:name="org.chromium.chrome.shell"/>
+            </intent-filter>
+        </receiver>
+        <service android:exported="false"
+                 android:name="com.google.ipc.invalidation.external.client.contrib.MultiplexingGcmListener">
+            <meta-data android:name="sender_ids"
+                       android:value="cloudprint.c2dm@gmail.com,ipc.invalidation@gmail.com"/>
+        </service>
+
+        <!-- Notification service for sync. -->
+        <meta-data android:name="ipc.invalidation.ticl.listener_service_class"
+                   android:value="org.chromium.sync.notifier.InvalidationService"/>
+        <service android:name="org.chromium.sync.notifier.InvalidationService"
+                 android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.ipc.invalidation.AUTH_TOKEN_REQUEST"/>
+            </intent-filter>
+        </service>
+        <service android:exported="false"
+                 android:name="com.google.ipc.invalidation.ticl.android2.TiclService"/>
+        <service android:exported="false"
+                 android:name="com.google.ipc.invalidation.ticl.android2.channel.AndroidMessageSenderService"/>
+        <receiver android:exported="false"
+                  android:name="com.google.ipc.invalidation.ticl.android2.AndroidInternalScheduler$AlarmReceiver"/>
+        <receiver android:exported="false"
+                  android:name="com.google.ipc.invalidation.external.client.contrib.AndroidListener$AlarmReceiver"/>
+
+        <!-- Notification service multiplexed GCM receiver -->
+        <service android:exported="false"
+                 android:name="com.google.ipc.invalidation.ticl.android2.channel.AndroidMessageReceiverService"
+                 android:enabled="true"/>
+        <receiver android:exported="false"
+                  android:name="com.google.ipc.invalidation.ticl.android2.channel.AndroidMessageReceiverService$Receiver">
+            <intent-filter>
+                <action android:name="com.google.ipc.invalidation.gcmmplex.EVENT" />
+            </intent-filter>
+        </receiver>
+
+        <!-- GCMDriver multiplexed GCM receiver -->
+        <service android:exported="false"
+                 android:name="org.chromium.components.gcm_driver.GCMListener"/>
+        <receiver android:exported="false"
+                  android:name="org.chromium.components.gcm_driver.GCMListener$Receiver">
+            <intent-filter>
+                <action android:name="com.google.ipc.invalidation.gcmmplex.EVENT" />
+            </intent-filter>
+        </receiver>
+
+        <provider android:name="org.chromium.chrome.browser.ChromeBrowserProvider"
+                  android:authorities="org.chromium.chrome.sync_shell"
+                  android:exported="true" />
+
+        <!-- Sync adapter for browser sync. -->
+        <service android:exported="false"
+                 android:name="org.chromium.chrome.shell.sync.ChromeShellSyncAdapterService">
+            <intent-filter>
+                <action android:name="android.content.SyncAdapter" />
+            </intent-filter>
+            <meta-data android:name="android.content.SyncAdapter"
+                       android:resource="@xml/syncadapter" />
+        </service>
+
+        <!-- Broadcast receiver that will be notified of account changes. -->
+        <receiver android:name="org.chromium.chrome.shell.signin.AccountsChangedReceiver">
+            <intent-filter>
+                <action android:name="android.accounts.LOGIN_ACCOUNTS_CHANGED" />
+            </intent-filter>
+        </receiver>
+        <meta-data android:name="org.chromium.content.browser.SMART_CLIP_PROVIDER"
+                   android:value="org.chromium.content.browser.SmartClipProvider" />
+
+    </application>
+</manifest>

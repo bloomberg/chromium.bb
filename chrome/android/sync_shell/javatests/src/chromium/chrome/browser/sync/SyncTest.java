@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,10 +6,11 @@ package org.chromium.chrome.browser.sync;
 
 import android.accounts.Account;
 import android.app.Activity;
+import android.test.suitebuilder.annotation.LargeTest;
 import android.util.Log;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.util.HostDrivenTest;
+import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.identity.UniqueIdentificationGenerator;
 import org.chromium.chrome.browser.identity.UniqueIdentificationGeneratorFactory;
 import org.chromium.chrome.browser.identity.UuidBasedUniqueIdentificationGenerator;
@@ -65,10 +66,24 @@ public class SyncTest extends ChromeShellTestBase {
                 mSyncController = SyncController.get(mContext);
             }
         });
-        SyncTestUtil.verifySyncServerIsRunning();
+        FakeServerHelper.useFakeServer(getInstrumentation().getTargetContext());
     }
 
-    @HostDrivenTest
+    @Override
+    protected void tearDown() throws Exception {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                mSyncController.stop();
+                FakeServerHelper.deleteFakeServer();
+            }
+        });
+
+        super.tearDown();
+    }
+
+    @LargeTest
+    @Feature({"Sync"})
     public void testGetAboutSyncInfoYieldsValidData() throws Throwable {
         setupTestAccountAndSignInToSync(FOREIGN_SESSION_TEST_MACHINE_ID);
 
@@ -86,7 +101,8 @@ public class SyncTest extends ChromeShellTestBase {
         assertTrue("Couldn't get about info.", gotInfo);
     }
 
-    @HostDrivenTest
+    @LargeTest
+    @Feature({"Sync"})
     public void testAboutSyncPageDisplaysCurrentSyncStatus() throws InterruptedException {
         setupTestAccountAndSignInToSync(FOREIGN_SESSION_TEST_MACHINE_ID);
 
@@ -130,7 +146,8 @@ public class SyncTest extends ChromeShellTestBase {
                 hadExpectedStatus);
     }
 
-    @HostDrivenTest
+    @LargeTest
+    @Feature({"Sync"})
     public void testDisableAndEnableSync() throws InterruptedException {
         setupTestAccountAndSignInToSync(FOREIGN_SESSION_TEST_MACHINE_ID);
         Account account =

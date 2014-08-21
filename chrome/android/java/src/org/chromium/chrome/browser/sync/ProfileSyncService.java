@@ -501,6 +501,18 @@ public class ProfileSyncService {
         return nativeGetLastSyncedTimeForTest(mNativeProfileSyncServiceAndroid);
     }
 
+    /**
+     * Overrides the Sync engine's NetworkResources. This is used to set up the Sync FakeServer for
+     * testing.
+     *
+     * @param networkResources the pointer to the NetworkResources created by the native code. It
+     *                         is assumed that the Java caller has ownership of this pointer;
+     *                         ownership is transferred as part of this call.
+     */
+    public void overrideNetworkResourcesForTest(long networkResources) {
+        nativeOverrideNetworkResourcesForTest(mNativeProfileSyncServiceAndroid, networkResources);
+    }
+
     // Native methods
     private native void nativeNudgeSyncer(
             long nativeProfileSyncServiceAndroid, int objectSource, String objectId, long version,
@@ -552,4 +564,6 @@ public class ProfileSyncService {
     private native boolean nativeHasUnrecoverableError(long nativeProfileSyncServiceAndroid);
     private native String nativeGetAboutInfoForTest(long nativeProfileSyncServiceAndroid);
     private native long nativeGetLastSyncedTimeForTest(long nativeProfileSyncServiceAndroid);
+    private native void nativeOverrideNetworkResourcesForTest(
+            long nativeProfileSyncServiceAndroid, long networkResources);
 }

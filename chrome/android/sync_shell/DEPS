@@ -1,0 +1,6 @@
+include_rules = [
+  "+chrome/app",
+  "+components/search_engines",
+  "+sync/test/fake_server/android",
+]
+

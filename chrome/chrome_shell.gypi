@@ -8,15 +8,12 @@
 # and should be separately customized.
 {
   'variables': {
-    'apk_name': 'ChromeShell',
-    'manifest_package_name': 'org.chromium.chrome.shell',
-    'native_lib_version_name': '<(version_full)',
     'package_name': 'chrome_shell_apk',
   },
   'targets': [
     {
-      'target_name': 'libchromeshell',
-      'type': 'shared_library',
+      'target_name': 'libchromeshell_base',
+      'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
         'chrome_android_core',
@@ -24,13 +21,8 @@
         '../content/content.gyp:content_app_browser',
       ],
       'sources': [
-        # This file must always be included in the shared_library step to ensure
-        # JNI_OnLoad is exported.
-        'app/android/chrome_jni_onload.cc',
-        'android/shell/chrome_main_delegate_chrome_shell_android.cc',
-        'android/shell/chrome_main_delegate_chrome_shell_android.h',
-        "android/shell/chrome_shell_google_location_settings_helper.cc",
-        "android/shell/chrome_shell_google_location_settings_helper.h",
+        'android/shell/chrome_shell_google_location_settings_helper.cc',
+        'android/shell/chrome_shell_google_location_settings_helper.h',
       ],
       'include_dirs': [
         '../skia/config',
@@ -48,12 +40,43 @@
             '../base/allocator/allocator.gyp:allocator', ],
         }],
         ['OS=="android"', {
-          'ldflags': [
-            # Some android targets still depend on --gc-sections to link.
-            # TODO: remove --gc-sections for Debug builds (crbug.com/159847).
-            '-Wl,--gc-sections',
-          ],
+          'direct_dependent_settings': {
+            'ldflags': [
+              # Some android targets still depend on --gc-sections to link.
+              # TODO: remove --gc-sections for Debug builds (crbug.com/159847).
+              '-Wl,--gc-sections',
+            ],
+          },
         }],
+      ],
+    },
+    {
+      'target_name': 'libchromeshell',
+      'type': 'shared_library',
+      'sources': [
+        # This file must always be included in the shared_library step to ensure
+        # JNI_OnLoad is exported.
+        'app/android/chrome_jni_onload.cc',
+        'android/shell/chrome_main_delegate_chrome_shell_android.cc',
+        'android/shell/chrome_main_delegate_chrome_shell_android.h',
+      ],
+      'dependencies': [
+        'libchromeshell_base',
+      ],
+    },
+    {
+      'target_name': 'libchromesyncshell',
+      'type': 'shared_library',
+      'sources': [
+        # This file must always be included in the shared_library step to ensure
+        # JNI_OnLoad is exported.
+        'app/android/chrome_jni_onload.cc',
+        'android/sync_shell/chrome_main_delegate_chrome_sync_shell_android.cc',
+        'android/sync_shell/chrome_main_delegate_chrome_sync_shell_android.h',
+      ],
+      'dependencies': [
+        'libchromeshell_base',
+        '../sync/sync.gyp:test_support_sync_fake_server_android',
       ],
     },
     {
@@ -66,6 +89,8 @@
         '../media/media.gyp:media_java',
       ],
       'variables': {
+        'apk_name': 'ChromeShell',
+        'native_lib_version_name': '<(version_full)',
         'java_in_dir': 'android/shell/java',
         'resource_dir': 'android/shell/res',
         'asset_location': '<(PRODUCT_DIR)/../assets/<(package_name)',
@@ -105,6 +130,44 @@
           ],
         }
       ],
+    },
+    {
+      'target_name': 'chrome_sync_shell_apk',
+      'type': 'none',
+      'dependencies': [
+        'chrome_java',
+        'chrome_shell_paks',
+        'libchromesyncshell',
+        '../media/media.gyp:media_java',
+        '../sync/sync.gyp:sync_java_test_support',
+      ],
+      'variables': {
+        'apk_name': 'ChromeSyncShell',
+        'android_manifest_path': 'android/sync_shell/java/AndroidManifest.xml',
+        'R_package': 'org.chromium.chrome.shell',
+        'native_lib_version_name': '<(version_full)',
+        'java_in_dir': 'android/shell/java',
+        'resource_dir': 'android/shell/res',
+        'asset_location': '<(PRODUCT_DIR)/../assets/<(package_name)',
+        'native_lib_target': 'libchromesyncshell',
+        'additional_input_paths': [
+          '<@(chrome_android_pak_output_resources)',
+        ],
+      },
+      'includes': [ '../build/java_apk.gypi', ],
+    },
+    {
+      # chrome_sync_shell_apk creates a .jar as a side effect. Any java
+      # targets that need that .jar in their classpath should depend on this
+      # target. Dependents of chrome_sync_shell_apk receive its jar path in the
+      # variable 'apk_output_jar_path'. This target should only be used by
+      # targets which instrument chrome_sync_shell_apk.
+      'target_name': 'chrome_sync_shell_apk_java',
+      'type': 'none',
+      'dependencies': [
+        'chrome_sync_shell_apk',
+      ],
+      'includes': [ '../build/apk_fake_jar.gypi' ],
     },
   ],
 

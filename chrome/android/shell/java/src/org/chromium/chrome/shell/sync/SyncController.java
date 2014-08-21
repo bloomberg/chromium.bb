@@ -153,7 +153,10 @@ public class SyncController implements ProfileSyncService.SyncStateChangedListen
         }
     }
 
-    private void stop() {
+    /**
+     * Stops Sync if a user is currently signed in.
+     */
+    public void stop() {
         ThreadUtils.assertOnUiThread();
         if (mChromeSigninController.isSignedIn()) {
             Log.d(TAG, "Disabling sync");

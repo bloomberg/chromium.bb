@@ -2,4 +2,7 @@ include_rules = [
   # Test files can include anything from sync.
   "+sync",
   "+net",
+
+  # For generated JNI code.
+  "+jni",
 ]

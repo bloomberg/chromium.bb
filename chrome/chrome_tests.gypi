@@ -2831,6 +2831,25 @@
           'includes': [ '../build/uiautomator_test.gypi' ],
         },
         {
+          'target_name': 'chrome_sync_shell_test_apk',
+          'type': 'none',
+          'dependencies': [
+            'chrome_java',
+            'chrome_sync_shell_apk_java',
+            'chrome_java_test_support',
+            '../base/base.gyp:base',
+            '../base/base.gyp:base_java_test_support',
+            '../content/content_shell_and_tests.gyp:content_java_test_support',
+          ],
+          'variables': {
+            'apk_name': 'ChromeSyncShellTest',
+            'java_in_dir': 'android/sync_shell/javatests',
+            'additional_src_dirs': [ 'android/shell/javatests', ],
+            'is_test_apk': 1,
+          },
+          'includes': [ '../build/java_apk.gypi' ],
+        },
+        {
           'target_name': 'chrome_java_test_support',
           'type': 'none',
           'variables': {
