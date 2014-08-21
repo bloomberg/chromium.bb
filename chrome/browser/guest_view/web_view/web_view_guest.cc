@@ -7,13 +7,22 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api.h"
 #include "chrome/browser/extensions/api/web_view/web_view_internal_api.h"
-#include "chrome/browser/guest_view/web_view/chrome_web_view_guest_delegate.h"
+#include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
+#include "chrome/browser/extensions/menu_manager.h"
+#include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/guest_view/web_view/web_view_constants.h"
 #include "chrome/browser/guest_view/web_view/web_view_permission_helper.h"
 #include "chrome/browser/guest_view/web_view/web_view_permission_types.h"
 #include "chrome/browser/guest_view/web_view/web_view_renderer_state.h"
+#include "chrome/browser/renderer_context_menu/render_view_context_menu.h"
+#include "chrome/browser/ui/pdf/pdf_tab_helper.h"
+#include "chrome/browser/ui/zoom/zoom_controller.h"
+#include "chrome/common/chrome_version_info.h"
+#include "chrome/common/render_messages.h"
+#include "components/renderer_context_menu/context_menu_delegate.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/native_web_keyboard_event.h"
@@ -45,6 +54,19 @@
 #include "net/base/net_errors.h"
 #include "third_party/WebKit/public/web/WebFindOptions.h"
 #include "ui/base/models/simple_menu_model.h"
+
+#if defined(ENABLE_PRINTING)
+#if defined(ENABLE_FULL_PRINTING)
+#include "chrome/browser/printing/print_preview_message_handler.h"
+#include "chrome/browser/printing/print_view_manager.h"
+#else
+#include "chrome/browser/printing/print_view_manager_basic.h"
+#endif  // defined(ENABLE_FULL_PRINTING)
+#endif  // defined(ENABLE_PRINTING)
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
+#endif
 
 using base::UserMetricsAction;
 using content::RenderFrameHost;
@@ -187,6 +209,22 @@ int WebViewGuest::GetViewInstanceId(WebContents* contents) {
   return guest->view_instance_id();
 }
 
+// static
+scoped_ptr<base::ListValue> WebViewGuest::MenuModelToValue(
+    const ui::SimpleMenuModel& menu_model) {
+  scoped_ptr<base::ListValue> items(new base::ListValue());
+  for (int i = 0; i < menu_model.GetItemCount(); ++i) {
+    base::DictionaryValue* item_value = new base::DictionaryValue();
+    // TODO(lazyboy): We need to expose some kind of enum equivalent of
+    // |command_id| instead of plain integers.
+    item_value->SetInteger(webview::kMenuItemCommandId,
+                           menu_model.GetCommandIdAt(i));
+    item_value->SetString(webview::kMenuItemLabel, menu_model.GetLabelAt(i));
+    items->Append(item_value);
+  }
+  return items.Pass();
+}
+
 const char* WebViewGuest::GetAPINamespace() {
   return webview::kAPINamespace;
 }
@@ -307,14 +345,38 @@ void WebViewGuest::DidInitialize() {
       this, content::NOTIFICATION_RESOURCE_RECEIVED_REDIRECT,
       content::Source<WebContents>(guest_web_contents()));
 
-  if (web_view_guest_delegate_)
-    web_view_guest_delegate_->OnDidInitialize();
+#if defined(OS_CHROMEOS)
+  chromeos::AccessibilityManager* accessibility_manager =
+      chromeos::AccessibilityManager::Get();
+  CHECK(accessibility_manager);
+  accessibility_subscription_ = accessibility_manager->RegisterCallback(
+      base::Bind(&WebViewGuest::OnAccessibilityStatusChanged,
+                 base::Unretained(this)));
+#endif
+
   AttachWebViewHelpers(guest_web_contents());
 }
 
 void WebViewGuest::AttachWebViewHelpers(WebContents* contents) {
-  if (web_view_guest_delegate_)
-    web_view_guest_delegate_->OnAttachWebViewHelpers(contents);
+  // Create a zoom controller for the guest contents give it access to
+  // GetZoomLevel() and and SetZoomLevel() in WebViewGuest.
+  // TODO(wjmaclean) This currently uses the same HostZoomMap as the browser
+  // context, but we eventually want to isolate the guest contents from zoom
+  // changes outside the guest (e.g. in the main browser), so we should
+  // create a separate HostZoomMap for the guest.
+  ZoomController::CreateForWebContents(contents);
+
+  FaviconTabHelper::CreateForWebContents(contents);
+  ChromeExtensionWebContentsObserver::CreateForWebContents(contents);
+#if defined(ENABLE_PRINTING)
+#if defined(ENABLE_FULL_PRINTING)
+  printing::PrintViewManager::CreateForWebContents(contents);
+  printing::PrintPreviewMessageHandler::CreateForWebContents(contents);
+#else
+  printing::PrintViewManagerBasic::CreateForWebContents(contents);
+#endif  // defined(ENABLE_FULL_PRINTING)
+#endif  // defined(ENABLE_PRINTING)
+  PDFTabHelper::CreateForWebContents(contents);
   web_view_permission_helper_.reset(new WebViewPermissionHelper(this));
 }
 
@@ -344,8 +406,11 @@ void WebViewGuest::EmbedderDestroyed() {
 
 void WebViewGuest::GuestDestroyed() {
   // Clean up custom context menu items for this guest.
-  if (web_view_guest_delegate_)
-    web_view_guest_delegate_->OnGuestDestroyed();
+  MenuManager* menu_manager = MenuManager::Get(
+      Profile::FromBrowserContext(browser_context()));
+  menu_manager->RemoveAllContextItems(MenuItem::ExtensionKey(
+      embedder_extension_id(), view_instance_id()));
+
   RemoveWebViewStateFromIOThread(web_contents());
 }
 
@@ -415,9 +480,22 @@ void WebViewGuest::FindReply(WebContents* source,
 
 bool WebViewGuest::HandleContextMenu(
     const content::ContextMenuParams& params) {
-  if (!web_view_guest_delegate_)
-    return false;
-  return web_view_guest_delegate_->HandleContextMenu(params);
+  ContextMenuDelegate* menu_delegate =
+      ContextMenuDelegate::FromWebContents(guest_web_contents());
+  DCHECK(menu_delegate);
+
+  pending_menu_ = menu_delegate->BuildMenu(guest_web_contents(), params);
+
+  // Pass it to embedder.
+  int request_id = ++pending_context_menu_request_id_;
+  scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
+  scoped_ptr<base::ListValue> items =
+      MenuModelToValue(pending_menu_->menu_model());
+  args->Set(webview::kContextMenuItems, items.release());
+  args->SetInteger(webview::kRequestId, request_id);
+  DispatchEventToEmbedder(
+      new GuestViewBase::Event(webview::kEventContextMenu, args.Pass()));
+  return true;
 }
 
 void WebViewGuest::HandleKeyboardEvent(
@@ -556,9 +634,7 @@ void WebViewGuest::Observe(int type,
 }
 
 double WebViewGuest::GetZoom() {
-  if (!web_view_guest_delegate_)
-    return 1.0;
-  return web_view_guest_delegate_->GetZoom();
+  return current_zoom_factor_;
 }
 
 void WebViewGuest::Find(
@@ -633,10 +709,12 @@ bool WebViewGuest::ClearData(const base::Time remove_since,
 WebViewGuest::WebViewGuest(content::BrowserContext* browser_context,
                            int guest_instance_id)
     : GuestView<WebViewGuest>(browser_context, guest_instance_id),
+      pending_context_menu_request_id_(0),
       is_overriding_user_agent_(false),
+      chromevox_injected_(false),
+      current_zoom_factor_(1.0),
       find_helper_(this),
       javascript_dialog_helper_(this) {
-  web_view_guest_delegate_.reset(new ChromeWebViewGuestDelegate(this));
 }
 
 WebViewGuest::~WebViewGuest() {
@@ -659,10 +737,15 @@ void WebViewGuest::DidCommitProvisionalLoadForFrame(
       guest_web_contents()->GetRenderProcessHost()->GetID());
   DispatchEventToEmbedder(
       new GuestViewBase::Event(webview::kEventLoadCommit, args.Pass()));
-  if (web_view_guest_delegate_) {
-    web_view_guest_delegate_->OnDidCommitProvisionalLoadForFrame(
-        !render_frame_host->GetParent());
-  }
+
+  // Update the current zoom factor for the new page.
+  ZoomController* zoom_controller =
+      ZoomController::FromWebContents(guest_web_contents());
+  DCHECK(zoom_controller);
+  current_zoom_factor_ = zoom_controller->GetZoomLevel();
+
+  if (!render_frame_host->GetParent())
+    chromevox_injected_ = false;
 }
 
 void WebViewGuest::DidFailProvisionalLoad(
@@ -688,8 +771,8 @@ void WebViewGuest::DidStartProvisionalLoadForFrame(
 
 void WebViewGuest::DocumentLoadedInFrame(
     content::RenderFrameHost* render_frame_host) {
-  if (web_view_guest_delegate_)
-    web_view_guest_delegate_->OnDocumentLoadedInFrame(render_frame_host);
+  if (!render_frame_host->GetParent())
+    InjectChromeVoxIfNeeded(render_frame_host->GetRenderViewHost());
 }
 
 bool WebViewGuest::OnMessageReceived(const IPC::Message& message,
@@ -892,6 +975,35 @@ void WebViewGuest::NavigateGuest(const std::string& src) {
                     guest_web_contents());
 }
 
+#if defined(OS_CHROMEOS)
+void WebViewGuest::OnAccessibilityStatusChanged(
+    const chromeos::AccessibilityStatusEventDetails& details) {
+  if (details.notification_type == chromeos::ACCESSIBILITY_MANAGER_SHUTDOWN) {
+    accessibility_subscription_.reset();
+  } else if (details.notification_type ==
+      chromeos::ACCESSIBILITY_TOGGLE_SPOKEN_FEEDBACK) {
+    if (details.enabled)
+      InjectChromeVoxIfNeeded(guest_web_contents()->GetRenderViewHost());
+    else
+      chromevox_injected_ = false;
+  }
+}
+#endif
+
+void WebViewGuest::InjectChromeVoxIfNeeded(
+    content::RenderViewHost* render_view_host) {
+#if defined(OS_CHROMEOS)
+  if (!chromevox_injected_) {
+    chromeos::AccessibilityManager* manager =
+        chromeos::AccessibilityManager::Get();
+    if (manager && manager->IsSpokenFeedbackEnabled()) {
+      manager->InjectChromeVox(render_view_host);
+      chromevox_injected_ = true;
+    }
+  }
+#endif
+}
+
 bool WebViewGuest::HandleKeyboardShortcuts(
     const content::NativeWebKeyboardEvent& event) {
   if (event.type != blink::WebInputEvent::RawKeyDown)
@@ -954,11 +1066,21 @@ void WebViewGuest::SetUpAutoSize() {
               gfx::Size(max_width, max_height));
 }
 
-void WebViewGuest::ShowContextMenu(
-    int request_id,
-    const WebViewGuestDelegate::MenuItemVector* items) {
-  if (web_view_guest_delegate_)
-    web_view_guest_delegate_->OnShowContextMenu(request_id, items);
+void WebViewGuest::ShowContextMenu(int request_id,
+                                   const MenuItemVector* items) {
+  if (!pending_menu_.get())
+    return;
+
+  // Make sure this was the correct request.
+  if (request_id != pending_context_menu_request_id_)
+    return;
+
+  // TODO(lazyboy): Implement.
+  DCHECK(!items);
+
+  ContextMenuDelegate* menu_delegate =
+      ContextMenuDelegate::FromWebContents(guest_web_contents());
+  menu_delegate->ShowMenu(pending_menu_.Pass());
 }
 
 void WebViewGuest::SetName(const std::string& name) {
@@ -970,8 +1092,19 @@ void WebViewGuest::SetName(const std::string& name) {
 }
 
 void WebViewGuest::SetZoom(double zoom_factor) {
-  if (web_view_guest_delegate_)
-    web_view_guest_delegate_->OnSetZoom(zoom_factor);
+  ZoomController* zoom_controller =
+      ZoomController::FromWebContents(guest_web_contents());
+  DCHECK(zoom_controller);
+  double zoom_level = content::ZoomFactorToZoomLevel(zoom_factor);
+  zoom_controller->SetZoomLevel(zoom_level);
+
+  scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
+  args->SetDouble(webview::kOldZoomFactor, current_zoom_factor_);
+  args->SetDouble(webview::kNewZoomFactor, zoom_factor);
+  DispatchEventToEmbedder(
+      new GuestViewBase::Event(webview::kEventZoomChange, args.Pass()));
+
+  current_zoom_factor_ = zoom_factor;
 }
 
 void WebViewGuest::AddNewContents(content::WebContents* source,

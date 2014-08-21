@@ -470,8 +470,6 @@
         'browser/guest_view/guest_view.h',
         'browser/guest_view/web_view/web_view_permission_helper_delegate.cc',
         'browser/guest_view/web_view/web_view_permission_helper_delegate.h',
-        'browser/guest_view/web_view/web_view_guest_delegate.cc',
-        'browser/guest_view/web_view/web_view_guest_delegate.h',
         'browser/image_loader.cc',
         'browser/image_loader.h',
         'browser/image_loader_factory.cc',

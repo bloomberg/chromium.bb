@@ -1,3 +1,0 @@
-include_rules = [
-  "+chrome/common/extensions/api/web_view_internal.h"
-]
