@@ -15,7 +15,6 @@ source_set("chrome") {
   # removing unused files.
   sources = [
     "app/chrome_exe_resource.h",
-    "//content/public/common/content_switches.cc",
   ]
   deps = []
 

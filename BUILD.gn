@@ -16,8 +16,7 @@ group("root") {
   # currently written but not hooked up to the build yet. They may need to be
   # completed or possibly just tested and then re-enabled.
   deps = [
-    # This is a temporary test of the not-yet-complete NaCl cross-compilation.
-    #"//base(//build/toolchain/nacl:x86_newlib)",
+    "//apps",
     "//ash",
     "//cc",
     "//cc/blink",
@@ -163,6 +162,7 @@ group("root") {
     ]
 
     deps -= [
+      "//apps",  # Needs testing.
       "//cc/blink", # Blocked on blink
       "//chrome/browser",  # Blocked on content.
       "//chrome/browser/devtools",  # Blocked on content.

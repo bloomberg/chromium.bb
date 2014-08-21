@@ -5,6 +5,7 @@
 {
   'targets': [
     {
+      # GN version: //apps
       'target_name': 'apps',
       'type': 'static_library',
       'variables': { 'enable_wexit_time_destructors': 1, },
@@ -15,6 +16,7 @@
       # browser, then we can clean up these dependencies.
       'dependencies': [
         'browser_extensions',
+        'chrome_resources.gyp:theme_resources',
         'common/extensions/api/api.gyp:chrome_api',
         '../skia/skia.gyp:skia',
       ],
@@ -23,6 +25,7 @@
         '<(grit_out_dir)',
       ],
       'sources': [
+        # Note: file list duplicated in GN build.
         'app_lifetime_monitor.cc',
         'app_lifetime_monitor.h',
         'app_lifetime_monitor_factory.cc',

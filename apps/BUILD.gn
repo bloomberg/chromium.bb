@@ -1,0 +1,94 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/features.gni")
+import("//build/config/ui.gni")
+
+static_library("apps") {
+  sources = [
+    "app_lifetime_monitor.cc",
+    "app_lifetime_monitor.h",
+    "app_lifetime_monitor_factory.cc",
+    "app_lifetime_monitor_factory.h",
+    "app_load_service.cc",
+    "app_load_service.h",
+    "app_load_service_factory.cc",
+    "app_load_service_factory.h",
+    "app_restore_service.cc",
+    "app_restore_service.h",
+    "app_restore_service_factory.cc",
+    "app_restore_service_factory.h",
+    "app_window.cc",
+    "app_window.h",
+    "app_window_contents.cc",
+    "app_window_contents.h",
+    "app_window_registry.cc",
+    "app_window_registry.h",
+    "browser_context_keyed_service_factories.cc",
+    "browser_context_keyed_service_factories.h",
+    "custom_launcher_page_contents.cc",
+    "custom_launcher_page_contents.h",
+    "launcher.cc",
+    "launcher.h",
+    "metrics_names.h",
+    "pref_names.cc",
+    "pref_names.h",
+    "prefs.cc",
+    "prefs.h",
+    "saved_files_service.cc",
+    "saved_files_service.h",
+    "saved_files_service_factory.cc",
+    "saved_files_service_factory.h",
+    "switches.cc",
+    "switches.h",
+    "ui/apps_client.cc",
+    "ui/apps_client.h",
+    "ui/web_contents_sizer.h",
+  ]
+
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
+
+  deps = [
+    "//chrome/app/theme:theme_resources",
+    "//chrome/browser/extensions",
+    "//chrome/common/extensions/api:api",
+    "//skia",
+  ]
+
+  if (is_chromeos) {
+    #deps += [ "browser_chromeos" ]  TODO(GYP)
+  }
+
+  if (!enable_extensions) {
+    # When extensions are disabled, only the sizer file below is included.
+    deps -= [ "//chrome/browser/extensions" ]
+    sources = []
+  }
+
+  # This needs to run after the extensions check above since we always want
+  # this file in the project.
+  if (is_mac) {
+    sources += [ "ui/web_contents_sizer.mm" ]
+  } else {
+    sources += [ "ui/web_contents_sizer.cc" ]
+  }
+
+  if (toolkit_views) {
+    sources += [
+      "ui/views/app_window_frame_view.cc",
+      "ui/views/app_window_frame_view.h",
+      "ui/views/native_app_window_views.cc",
+      "ui/views/native_app_window_views.h",
+    ]
+    deps += [
+      "//ui/strings",
+      "//ui/views",
+    ]
+  }
+
+  if (is_win) {
+    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+    cflags = [ "/wd4267" ]
+  }
+}
