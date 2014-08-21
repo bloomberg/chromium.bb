@@ -1943,7 +1943,6 @@
             '../third_party/ocmock/ocmock.gyp:ocmock',
           ],
           'sources': [
-            'browser/media_galleries/fileapi/iphoto_data_provider_browsertest.cc',
             'browser/renderer_host/chrome_render_widget_host_view_mac_delegate_browsertest.cc',
             'browser/renderer_host/chrome_render_widget_host_view_mac_history_swiper_browsertest.mm',
             'browser/spellchecker/spellcheck_message_filter_mac_browsertest.cc',
@@ -1952,20 +1951,6 @@
             # TODO(groby): This test depends on hunspell and we cannot run it on
             # Mac, which does not use hunspell by default.
             'browser/spellchecker/spellcheck_service_browsertest.cc',
-
-            # TODO(tapted): Enable toolkit-views browser_tests on Mac when their
-            # respective implementations are linked in. http://crbug.com/404979.
-            'browser/ui/views/autofill/autofill_dialog_view_tester_views.cc',
-            'browser/ui/views/autofill/autofill_popup_base_view_browsertest.cc',
-            'browser/ui/views/extensions/extension_install_dialog_view_browsertest.cc',
-            'browser/ui/views/frame/browser_view_browsertest.cc',
-            'browser/ui/views/location_bar/zoom_bubble_view_browsertest.cc',
-            'browser/ui/views/profiles/avatar_menu_button_browsertest.cc',
-            'browser/ui/views/profiles/new_avatar_menu_button_browsertest.cc',
-            'browser/ui/views/profiles/profile_chooser_view_browsertest.cc',
-            'browser/ui/views/toolbar/browser_actions_container_browsertest.cc',
-            'browser/ui/views/translate/translate_bubble_view_browsertest.cc',
-
             # TODO(rouslan): This test depends on the custom dictionary UI,
             # which is disabled on Mac.
             'browser/ui/webui/options/edit_dictionary_browsertest.js',
@@ -1983,11 +1968,16 @@
             'renderer/safe_browsing/phishing_classifier_delegate_browsertest.cc',
             'renderer/safe_browsing/phishing_dom_feature_extractor_browsertest.cc',
           ],
-        }],  # OS=="mac"
+        }],
         ['OS=="mac" or OS=="win"', {
           'sources': [
             'browser/media_galleries/fileapi/itunes_data_provider_browsertest.cc',
             'browser/media_galleries/fileapi/picasa_data_provider_browsertest.cc',
+          ],
+        }],
+        ['OS=="mac"', {
+          'sources': [
+            'browser/media_galleries/fileapi/iphoto_data_provider_browsertest.cc',
           ],
         }],
         ['os_posix == 0 or chromeos == 1', {

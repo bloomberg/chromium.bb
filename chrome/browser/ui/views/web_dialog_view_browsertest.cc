@@ -84,14 +84,12 @@ class WebDialogBrowserTest : public InProcessBrowserTest {
   WebDialogBrowserTest() {}
 };
 
-// Windows has some issues resizing windows. An off by one problem, and a
-// minimum size that seems too big. See http://crbug.com/52602.
-#if defined(OS_WIN)
-#define MAYBE_SizeWindow DISABLED_SizeWindow
-#else
-#define MAYBE_SizeWindow SizeWindow
-#endif
-IN_PROC_BROWSER_TEST_F(WebDialogBrowserTest, MAYBE_SizeWindow) {
+// http://code.google.com/p/chromium/issues/detail?id=52602
+// Windows has some issues resizing windows- an off by one problem,
+// and a minimum size that seems too big.  This file isn't included in
+// Mac builds yet. On Chrome OS, this test doesn't apply since ChromeOS
+// doesn't allow resizing of windows.
+IN_PROC_BROWSER_TEST_F(WebDialogBrowserTest, DISABLED_SizeWindow) {
   ui::test::TestWebDialogDelegate* delegate =
       new ui::test::TestWebDialogDelegate(
           GURL(chrome::kChromeUIChromeURLsURL));
@@ -102,7 +100,8 @@ IN_PROC_BROWSER_TEST_F(WebDialogBrowserTest, MAYBE_SizeWindow) {
   WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(web_contents != NULL);
-  views::Widget::CreateWindowWithParent(view, web_contents->GetNativeView());
+  views::Widget::CreateWindowWithParent(
+      view, web_contents->GetTopLevelNativeWindow());
   view->GetWidget()->Show();
 
   // TestWebDialogView should quit current message loop on size change.
@@ -146,10 +145,7 @@ IN_PROC_BROWSER_TEST_F(WebDialogBrowserTest, MAYBE_SizeWindow) {
   EXPECT_GE(set_bounds.height(), rwhv_bounds.height());
 
   // Get very small.
-  const gfx::Size min_size = view->GetWidget()->GetMinimumSize();
-  EXPECT_LT(0, min_size.width());
-  EXPECT_LT(0, min_size.height());
-
+  gfx::Size min_size = view->GetWidget()->GetMinimumSize();
   set_bounds.set_size(min_size);
 
   view->MoveContents(web_contents, set_bounds);
@@ -164,26 +160,13 @@ IN_PROC_BROWSER_TEST_F(WebDialogBrowserTest, MAYBE_SizeWindow) {
   EXPECT_GE(set_bounds.width(), rwhv_bounds.width());
   EXPECT_GE(set_bounds.height(), rwhv_bounds.height());
 
-  // Check to make sure we can't get to 0x0. First expand beyond the minimum
-  // size that was set above so that TestWebDialogView has a change to pick up.
-  set_bounds.set_height(250);
-  view->MoveContents(web_contents, set_bounds);
-  content::RunMessageLoop();  // TestWebDialogView will quit.
-  actual_bounds = view->GetWidget()->GetClientAreaBoundsInScreen();
-  EXPECT_EQ(set_bounds, actual_bounds);
-
-  // Now verify that attempts to re-size to 0x0 enforces the minimum size.
+  // Check to make sure we can't get to 0x0
   set_bounds.set_width(0);
   set_bounds.set_height(0);
 
   view->MoveContents(web_contents, set_bounds);
   content::RunMessageLoop();  // TestWebDialogView will quit.
   actual_bounds = view->GetWidget()->GetClientAreaBoundsInScreen();
-  EXPECT_EQ(min_size, actual_bounds.size());
-
-  // And that the render view is also non-zero.
-  rwhv_bounds =
-      view->web_contents()->GetRenderWidgetHostView()->GetViewBounds();
-  EXPECT_LT(0, rwhv_bounds.width());
-  EXPECT_LT(0, rwhv_bounds.height());
+  EXPECT_LT(0, actual_bounds.width());
+  EXPECT_LT(0, actual_bounds.height());
 }
