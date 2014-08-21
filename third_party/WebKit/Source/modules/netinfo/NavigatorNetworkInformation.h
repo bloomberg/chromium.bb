@@ -33,7 +33,7 @@ private:
     explicit NavigatorNetworkInformation(Navigator&);
     NetworkInformation* connection();
 
-    PersistentWillBeMember<NetworkInformation> m_connection;
+    RefPtrWillBeMember<NetworkInformation> m_connection;
 };
 
 } // namespace blink

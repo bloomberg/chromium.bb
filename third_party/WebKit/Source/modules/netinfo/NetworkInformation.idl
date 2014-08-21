@@ -15,7 +15,7 @@ enum ConnectionType {
 [
     RuntimeEnabled=NetworkInformation,
     Exposed=(Window,Worker),
-    GarbageCollected,
+    WillBeGarbageCollected,
     ActiveDOMObject
 ] interface NetworkInformation : EventTarget {
     readonly attribute ConnectionType type;
