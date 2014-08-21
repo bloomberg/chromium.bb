@@ -31,7 +31,7 @@ class DepsWhitelist(object):
     # team and are in the process of having the required branches being created
     # in the Android tree.
     self._compile_but_not_snapshot_dependencies = [
-      'third_party/libaddressinput/src/cpp',
+      'third_party/libaddressinput/src',
       'third_party/boringssl/src',
     ]
 

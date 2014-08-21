@@ -271,11 +271,8 @@ deps = {
   "src/third_party/smhasher/src":
     (Var("googlecode_url") % "smhasher") + "/trunk@152",
 
-  "src/third_party/libaddressinput/src/cpp":
-    (Var("googlecode_url") % "libaddressinput") + "/trunk/cpp@" +
-        Var("libaddressinput_revision"),
-  "src/third_party/libaddressinput/src/testdata":
-    (Var("googlecode_url") % "libaddressinput") + "/trunk/testdata@" +
+  "src/third_party/libaddressinput/src":
+    (Var("googlecode_url") % "libaddressinput") + "/trunk@" +
         Var("libaddressinput_revision"),
 
   "src/third_party/libphonenumber/src/phonenumbers":

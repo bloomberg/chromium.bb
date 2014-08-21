@@ -161,4 +161,25 @@
       ],
     },
   ],
+  'conditions': [
+    ['OS=="android"', {
+      'targets': [
+        {
+          'target_name': 'android_addressinput_widget',
+          'type': 'none',
+          'variables': {
+            'java_in_dir': 'src/java',
+            'never_lint': 1,
+            'res_v14_verify_only': 1,
+            'has_java_resources': 1,
+            'R_package': 'com.android.i18n.addressinput',
+            'R_package_relpath': 'com/android/i18n/addressinput',
+          },
+          'includes': [
+            '../../build/java.gypi',
+          ],
+        },
+      ],
+    },],
+  ],
 }
