@@ -4,8 +4,27 @@
 
 #include "mojo/public/cpp/bindings/lib/array_internal.h"
 
+#include <sstream>
+
 namespace mojo {
 namespace internal {
+
+std::string MakeMessageWithArrayIndex(const char* message,
+                                      size_t size,
+                                      size_t index) {
+  std::ostringstream stream;
+  stream << message << ": array size - " << size << "; index - " << index;
+  return stream.str();
+}
+
+std::string MakeMessageWithExpectedArraySize(const char* message,
+                                             size_t size,
+                                             size_t expected_size) {
+  std::ostringstream stream;
+  stream << message << ": array size - " << size << "; expected size - "
+         << expected_size;
+  return stream.str();
+}
 
 ArrayDataTraits<bool>::BitRef::~BitRef() {
 }

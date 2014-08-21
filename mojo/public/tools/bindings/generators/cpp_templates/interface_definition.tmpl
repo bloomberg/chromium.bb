@@ -44,7 +44,7 @@ params->{{param.name}}
 {%-   endfor %}
 {%- endmacro %}
 
-{%- macro build_message(params_name, parameters) -%}
+{%- macro build_message(params_name, parameters, params_description) -%}
   {# TODO(yzshen): Consider refactoring to share code with
      struct_serialization_definition.tmpl #}
   {{params_name}}* params =
@@ -61,7 +61,8 @@ params->{{param.name}}
 {%-       if not param.kind|is_nullable_kind %}
   MOJO_INTERNAL_DLOG_SERIALIZATION_WARNING(
       !params->{{param.name}}.ptr,
-      mojo::internal::VALIDATION_ERROR_UNEXPECTED_NULL_POINTER);
+      mojo::internal::VALIDATION_ERROR_UNEXPECTED_NULL_POINTER,
+      "null {{param.name}} argument in {{params_description}}");
 {%-       endif %}
 {%-     elif param.kind|is_any_handle_kind %}
 {%-       if param.kind|is_interface_kind or
@@ -74,7 +75,8 @@ params->{{param.name}}
 {%-       if not param.kind|is_nullable_kind %}
   MOJO_INTERNAL_DLOG_SERIALIZATION_WARNING(
       !params->{{param.name}}.is_valid(),
-      mojo::internal::VALIDATION_ERROR_UNEXPECTED_INVALID_HANDLE);
+      mojo::internal::VALIDATION_ERROR_UNEXPECTED_INVALID_HANDLE,
+      "invalid {{param.name}} argument in {{params_description}}");
 {%-       endif %}
 {%-     else %}
   params->{{param.name}} = in_{{param.name}};
@@ -132,6 +134,8 @@ bool {{class_name}}_{{method.name}}_ForwardToCallback::Accept(
           "internal::k%s_%s_Name"|format(interface.name, method.name) %}
 {%-   set params_name =
           "internal::%s_%s_Params_Data"|format(interface.name, method.name) %}
+{%-   set params_description =
+          "%s.%s request"|format(interface.name, method.name) %}
 void {{proxy_name}}::{{method.name}}(
     {{interface_macros.declare_request_params("in_", method)}}) {
   {{compute_payload_size(params_name, method.parameters)}}
@@ -142,7 +146,7 @@ void {{proxy_name}}::{{method.name}}(
   mojo::internal::MessageBuilder builder({{message_name}}, payload_size);
 {%- endif %}
 
-  {{build_message(params_name, method.parameters)}}
+  {{build_message(params_name, method.parameters, params_description)}}
 
 {%- if method.response_parameters != None %}
   mojo::MessageReceiver* responder =
@@ -164,6 +168,8 @@ void {{proxy_name}}::{{method.name}}(
             "internal::k%s_%s_Name"|format(interface.name, method.name) %}
 {%-     set params_name =
             "internal::%s_%s_ResponseParams_Data"|format(interface.name, method.name) %}
+{%-     set params_description =
+            "%s.%s response"|format(interface.name, method.name) %}
 class {{class_name}}_{{method.name}}_ProxyToResponder
     : public {{interface_macros.declare_callback(method)}}::Runnable {
  public:
@@ -190,7 +196,7 @@ void {{class_name}}_{{method.name}}_ProxyToResponder::Run(
   {{compute_payload_size(params_name, method.response_parameters)}}
   mojo::internal::ResponseMessageBuilder builder(
       {{message_name}}, payload_size, request_id_);
-  {{build_message(params_name, method.response_parameters)}}
+  {{build_message(params_name, method.response_parameters, params_description)}}
   bool ok MOJO_ALLOW_UNUSED = responder_->Accept(&message);
   // TODO(darin): !ok returned here indicates a malformed message, and that may
   // be good reason to close the connection. However, we don't have a way to do

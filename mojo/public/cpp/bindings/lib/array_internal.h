@@ -27,6 +27,14 @@ namespace internal {
 // C++11).
 const uint32_t kMaxUint32 = 0xFFFFFFFF;
 
+std::string MakeMessageWithArrayIndex(const char* message,
+                                      size_t size,
+                                      size_t index);
+
+std::string MakeMessageWithExpectedArraySize(const char* message,
+                                             size_t size,
+                                             size_t expected_size);
+
 template <typename T>
 struct ArrayDataTraits {
   typedef T StorageType;

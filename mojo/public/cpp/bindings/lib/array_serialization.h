@@ -103,7 +103,10 @@ template <typename H> struct ArraySerializer<ScopedHandleBase<H>, H, true> {
       output->at(i) = input[i].release();  // Transfer ownership of the handle.
       MOJO_INTERNAL_DLOG_SERIALIZATION_WARNING(
           !element_is_nullable && !output->at(i).is_valid(),
-          VALIDATION_ERROR_UNEXPECTED_INVALID_HANDLE);
+          VALIDATION_ERROR_UNEXPECTED_INVALID_HANDLE,
+          MakeMessageWithArrayIndex(
+              "invalid handle in array expecting valid handles",
+              input.size(), i));
     }
   }
   static void DeserializeElements(
@@ -134,7 +137,9 @@ template <typename S> struct ArraySerializer<S, typename S::Data_*, true> {
       output->at(i) = element;
       MOJO_INTERNAL_DLOG_SERIALIZATION_WARNING(
           !element_is_nullable && !element,
-          VALIDATION_ERROR_UNEXPECTED_NULL_POINTER);
+          VALIDATION_ERROR_UNEXPECTED_NULL_POINTER,
+          MakeMessageWithArrayIndex(
+              "null in array expecting valid pointers", input.size(), i));
     }
   }
   static void DeserializeElements(
@@ -193,7 +198,9 @@ template <> struct ArraySerializer<String, String_Data*, false> {
       output->at(i) = element;
       MOJO_INTERNAL_DLOG_SERIALIZATION_WARNING(
           !element_is_nullable && !element,
-          VALIDATION_ERROR_UNEXPECTED_NULL_POINTER);
+          VALIDATION_ERROR_UNEXPECTED_NULL_POINTER,
+          MakeMessageWithArrayIndex(
+              "null in array expecting valid strings", input.size(), i));
     }
   }
   static void DeserializeElements(
@@ -222,7 +229,10 @@ inline void SerializeArray_(Array<E> input, internal::Buffer* buf,
     MOJO_INTERNAL_DLOG_SERIALIZATION_WARNING(
         ValidateParams::expected_num_elements != 0 &&
             input.size() != ValidateParams::expected_num_elements,
-        internal::VALIDATION_ERROR_UNEXPECTED_ARRAY_HEADER);
+        internal::VALIDATION_ERROR_UNEXPECTED_ARRAY_HEADER,
+        internal::MakeMessageWithExpectedArraySize(
+            "fixed-size array has wrong number of elements",
+            input.size(), ValidateParams::expected_num_elements));
 
     internal::Array_Data<F>* result =
         internal::Array_Data<F>::New(input.size(), buf);
