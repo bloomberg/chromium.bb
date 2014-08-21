@@ -683,6 +683,7 @@ willPositionSheet:(NSWindow*)sheet
       // Leaving wantsLayer on for the duration of presentation mode causes
       // performance issues when the dropdown is animated in/out.  It also does
       // not seem to be required for the exit animation.
+      windowViewWantsLayer_ = [[[self window] cr_windowView] wantsLayer];
       [[[self window] cr_windowView] setWantsLayer:YES];
     }
     NSView* contentView = [[self window] contentView];
@@ -920,7 +921,7 @@ willPositionSheet:(NSWindow*)sheet
 
   [self showFullscreenExitBubbleIfNecessary];
   browser_->WindowFullscreenStateChanged();
-  [[[self window] cr_windowView] setWantsLayer:NO];
+  [[[self window] cr_windowView] setWantsLayer:windowViewWantsLayer_];
   [self updateRoundedBottomCorners];
 }
 
