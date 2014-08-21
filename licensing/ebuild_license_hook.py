@@ -22,5 +22,4 @@ def main(args):
   opts = parser.parse_args(args)
   opts.Freeze()
 
-  licensing = licenses_lib.Licensing(None, None, True)
-  licensing.HookPackageProcess(opts.builddir)
+  licenses_lib.HookPackageProcess(opts.builddir)
