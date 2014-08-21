@@ -13,32 +13,25 @@
 
 namespace blink {
 
-PaintInvalidationState::PaintInvalidationState(RenderObject& renderer)
+PaintInvalidationState::PaintInvalidationState(const RenderView& renderView)
     : m_clipped(false)
     , m_cachedOffsetsEnabled(true)
     , m_forceCheckForPaintInvalidation(false)
-    , m_paintInvalidationContainer(*renderer.containerForPaintInvalidation())
-    , m_renderer(renderer)
+    , m_paintInvalidationContainer(*renderView.containerForPaintInvalidation())
+    , m_renderer(renderView)
 {
     bool establishesPaintInvalidationContainer = &m_renderer == &m_paintInvalidationContainer;
     if (!establishesPaintInvalidationContainer) {
-        if (!renderer.supportsPaintInvalidationStateCachedOffsets()) {
+        if (!renderView.supportsPaintInvalidationStateCachedOffsets()) {
             m_cachedOffsetsEnabled = false;
             return;
         }
-        bool invalidationContainerSkipped;
-        RenderObject* container = renderer.container(&m_paintInvalidationContainer, &invalidationContainerSkipped);
-        if (container && !invalidationContainerSkipped) {
-            FloatPoint point = container->localToContainerPoint(FloatPoint(), &m_paintInvalidationContainer);
-            if (container->isTableRow())
-                point = FloatPoint(point.x() - toRenderBox(container)->x().toFloat(), point.y() - toRenderBox(container)->y().toFloat());
-            m_paintOffset = LayoutSize(point.x(), point.y());
-
-            applyClipIfNeeded(*container);
-        }
-    } else {
-        applyClipIfNeeded(m_renderer);
+        FloatPoint point = renderView.localToContainerPoint(FloatPoint(), &m_paintInvalidationContainer, TraverseDocumentBoundaries);
+        m_paintOffset = LayoutSize(point.x(), point.y());
     }
+    m_clipRect = renderView.viewRect();
+    m_clipRect.move(m_paintOffset);
+    m_clipped = true;
 }
 
 PaintInvalidationState::PaintInvalidationState(const PaintInvalidationState& next, RenderLayerModelObject& renderer, const RenderLayerModelObject& paintInvalidationContainer)
@@ -50,7 +43,7 @@ PaintInvalidationState::PaintInvalidationState(const PaintInvalidationState& nex
 {
     // FIXME: SVG could probably benefit from a stack-based optimization like html does. crbug.com/391054
     bool establishesPaintInvalidationContainer = &m_renderer == &m_paintInvalidationContainer;
-    bool fixed = m_renderer.isOutOfFlowPositioned() && m_renderer.style()->position() == FixedPosition;
+    bool fixed = m_renderer.style()->position() == FixedPosition;
 
     if (establishesPaintInvalidationContainer) {
         // When we hit a new paint invalidation container, we don't need to
@@ -61,12 +54,11 @@ PaintInvalidationState::PaintInvalidationState(const PaintInvalidationState& nex
         if (!renderer.supportsPaintInvalidationStateCachedOffsets() || !next.m_cachedOffsetsEnabled) {
             m_cachedOffsetsEnabled = false;
         } else {
-            LayoutSize offset = m_renderer.isBox() && !m_renderer.isTableRow() ? toRenderBox(renderer).locationOffset() : LayoutSize();
             if (fixed) {
-                // FIXME: This doesn't work correctly with transforms.
-                FloatPoint fixedOffset = m_renderer.view()->localToAbsolute(FloatPoint(), IsFixed);
-                m_paintOffset = LayoutSize(fixedOffset.x(), fixedOffset.y()) + offset;
+                FloatPoint fixedOffset = m_renderer.localToContainerPoint(FloatPoint(), &m_paintInvalidationContainer, TraverseDocumentBoundaries);
+                m_paintOffset = LayoutSize(fixedOffset.x(), fixedOffset.y());
             } else {
+                LayoutSize offset = m_renderer.isBox() && !m_renderer.isTableRow() ? toRenderBox(renderer).locationOffset() : LayoutSize();
                 m_paintOffset = next.m_paintOffset + offset;
             }
 

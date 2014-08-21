@@ -14,6 +14,7 @@ class RenderBox;
 class RenderInline;
 class RenderLayerModelObject;
 class RenderObject;
+class RenderView;
 class RenderSVGModelObject;
 
 class PaintInvalidationState {
@@ -21,7 +22,7 @@ class PaintInvalidationState {
 public:
     PaintInvalidationState(const PaintInvalidationState& next, RenderLayerModelObject& renderer, const RenderLayerModelObject& paintInvalidationContainer);
 
-    explicit PaintInvalidationState(RenderObject&);
+    explicit PaintInvalidationState(const RenderView&);
 
     const LayoutRect& clipRect() const { return m_clipRect; }
     const LayoutSize& paintOffset() const { return m_paintOffset; }
@@ -33,7 +34,7 @@ public:
     void setForceCheckForPaintInvalidation() { m_forceCheckForPaintInvalidation = true; }
 
     const RenderLayerModelObject& paintInvalidationContainer() const { return m_paintInvalidationContainer; }
-    RenderObject& renderer() const { return m_renderer; }
+    const RenderObject& renderer() const { return m_renderer; }
 
     bool canMapToContainer(const RenderLayerModelObject* container) const
     {
@@ -55,7 +56,7 @@ private:
 
     const RenderLayerModelObject& m_paintInvalidationContainer;
 
-    RenderObject& m_renderer;
+    const RenderObject& m_renderer;
 };
 
 } // namespace blink

@@ -156,6 +156,7 @@ public:
 
     void pushLayoutState(LayoutState&);
     void popLayoutState();
+    virtual void invalidateTreeIfNeeded(const PaintInvalidationState&) OVERRIDE FINAL;
 
 private:
     virtual void mapLocalToContainer(const RenderLayerModelObject* paintInvalidationContainer, TransformState&, MapCoordinatesFlags = ApplyContainerFlip, bool* wasFixed = 0, const PaintInvalidationState* = 0) const OVERRIDE;
@@ -163,7 +164,6 @@ private:
     virtual void mapAbsoluteToLocalPoint(MapCoordinatesFlags, TransformState&) const OVERRIDE;
     virtual void computeSelfHitTestRects(Vector<LayoutRect>&, const LayoutPoint& layerOffset) const OVERRIDE;
 
-    virtual void invalidateTreeIfNeeded(const PaintInvalidationState&) OVERRIDE FINAL;
 
     bool shouldInvalidatePaint(const LayoutRect&) const;
 

@@ -965,14 +965,14 @@ void FrameView::layout(bool allowSubtree)
 // See http://crbug.com/306706
 void FrameView::invalidateTreeIfNeeded()
 {
-    RenderObject* rootForPaintInvalidation = renderView();
-    ASSERT(!rootForPaintInvalidation->needsLayout());
+    RenderView& rootForPaintInvalidation = *renderView();
+    ASSERT(!rootForPaintInvalidation.needsLayout());
 
-    TRACE_EVENT1("blink", "FrameView::invalidateTree", "root", rootForPaintInvalidation->debugName().ascii());
+    TRACE_EVENT1("blink", "FrameView::invalidateTree", "root", rootForPaintInvalidation.debugName().ascii());
 
-    PaintInvalidationState rootPaintInvalidationState(*rootForPaintInvalidation);
+    PaintInvalidationState rootPaintInvalidationState(rootForPaintInvalidation);
 
-    rootForPaintInvalidation->invalidateTreeIfNeeded(rootPaintInvalidationState);
+    rootForPaintInvalidation.invalidateTreeIfNeeded(rootPaintInvalidationState);
 
     // Invalidate the paint of the frameviews scrollbars if needed
     if (hasVerticalBarDamage())
@@ -1604,7 +1604,7 @@ HostWindow* FrameView::hostWindow() const
 void FrameView::contentRectangleForPaintInvalidation(const IntRect& r)
 {
     ASSERT(paintInvalidationIsAllowed());
-    ASSERT(!m_frame->owner());
+    ASSERT(!m_frame->ownerRenderer());
 
     if (m_isTrackingPaintInvalidations) {
         IntRect paintInvalidationRect = r;
