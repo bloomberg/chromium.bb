@@ -326,9 +326,6 @@ class ContentViewCoreImpl : public ContentViewCore,
   gfx::Size GetViewportSizePix() const;
   gfx::Size GetViewportSizeOffsetPix() const;
 
-  void DeleteScaledSnapshotTexture();
-
-  bool OnMotionEvent(const ui::MotionEvent& event);
   void SendGestureEvent(const blink::WebGestureEvent& event);
 
   // Update focus state of the RenderWidgetHostView.
