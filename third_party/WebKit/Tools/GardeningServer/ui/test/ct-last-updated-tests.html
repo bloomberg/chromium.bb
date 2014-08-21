@@ -23,9 +23,42 @@ describe('ct-last-updated', function() {
     });
 
     it('should have correct text', function() {
-      var expected = 'Updated 5 min ago @ ' + lastUpdated.date.getHours() + ':' +
+      var expected = 'Updated @ ' + lastUpdated.date.getHours() + ':' +
                      lastUpdated.date.getMinutes().toString().padLeft(2, '0');
-      assert.include(lastUpdated.shadowRoot.innerHTML.trim(), expected);
+      assert.include(lastUpdated.shadowRoot.getElementsByTagName('span')[0].innerHTML.trim(), expected);
+    });
+
+    it('should have a stale class', function() {
+      var expected = 'stale_5minutes';
+      assert.include(lastUpdated.shadowRoot.getElementsByTagName('span')[0].className, expected);
+    });
+  });
+
+  describe('Updated 10 minutes ago', function() {
+    beforeEach(function(done) {
+      lastUpdated = document.createElement('ct-last-updated');
+      // Set the date to 10 minutes ago.
+      lastUpdated.date = new Date(Date.now() - (10 * 60 * 1000));
+      requestAnimationFrame(function() { done(); });
+    });
+
+    it('should have a stale class', function() {
+      var expected = 'stale_10minutes';
+      assert.include(lastUpdated.shadowRoot.getElementsByTagName('span')[0].className, expected);
+    });
+  });
+
+  describe('Updated 20 minutes ago', function() {
+    beforeEach(function(done) {
+      lastUpdated = document.createElement('ct-last-updated');
+      // Set the date to 20 minutes ago.
+      lastUpdated.date = new Date(Date.now() - (20 * 60 * 1000));
+      requestAnimationFrame(function() { done(); });
+    });
+
+    it('should have a stale class', function() {
+      var expected = 'stale_20minutes';
+      assert.include(lastUpdated.shadowRoot.getElementsByTagName('span')[0].className, expected);
     });
   });
 

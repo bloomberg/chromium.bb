@@ -7,17 +7,36 @@ found in the LICENSE file.
 <polymer-element name="ct-last-updated" attributes="date">
   <template>
     <template if="{{ date }}">
-      Updated {{ date | _deltaMinutes }} min ago @ {{ date | _hours }}:{{ date | _minutes }}
+      <style>
+        .stale_5minutes {
+          color: orange;
+        }
+        .stale_10minutes {
+          color: red;
+        }
+        .stale_20minutes {
+          background-color: red;
+          color: black;
+        }
+      </style>
+      <span class="{{ date | _style }}">Updated @ {{ date | _hours }}:{{ date | _minutes }}</div>
     </template>
   </template>
   <script>
   (function() {
     Polymer({
       date: null,
-
-      _deltaMinutes: function(date) {
-        return date.minutesAgo();
+      _style: function(date) {
+        var staleness = date.minutesAgo();
+        if (staleness >= 20)
+          return "stale_20minutes";
+        if (staleness >= 10)
+          return "stale_10minutes";
+        if (staleness >= 5)
+          return "stale_5minutes";
+        return "";
       },
+
       _hours: function(date) {
         return date.getHours();
       },
