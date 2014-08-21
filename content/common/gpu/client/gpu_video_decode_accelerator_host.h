@@ -64,7 +64,9 @@ class GpuVideoDecodeAcceleratorHost
                               const gfx::Size& dimensions,
                               uint32 texture_target);
   void OnDismissPictureBuffer(int32 picture_buffer_id);
-  void OnPictureReady(int32 picture_buffer_id, int32 bitstream_buffer_id);
+  void OnPictureReady(int32 picture_buffer_id,
+                      int32 bitstream_buffer_id,
+                      const gfx::Rect& visible_rect);
   void OnFlushDone();
   void OnResetDone();
   void OnNotifyError(uint32 error);

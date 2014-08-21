@@ -313,6 +313,8 @@ void PepperVideoDecoderHost::ProvidePictureBuffers(
 }
 
 void PepperVideoDecoderHost::PictureReady(const media::Picture& picture) {
+  // So far picture.visible_rect is not used. If used, visible_rect should
+  // be validated since it comes from GPU process and may not be trustworthy.
   host()->SendUnsolicitedReply(
       pp_resource(),
       PpapiPluginMsg_VideoDecoder_PictureReady(picture.bitstream_buffer_id(),

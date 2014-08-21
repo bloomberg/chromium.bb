@@ -422,8 +422,22 @@ void GpuVideoDecoder::PictureReady(const media::Picture& picture) {
   }
   const PictureBuffer& pb = it->second;
 
+  // Validate picture rectangle from GPU. This is for sanity/security check
+  // even the rectangle is not used in this class.
+  if (picture.visible_rect().IsEmpty() ||
+      !gfx::Rect(pb.size()).Contains(picture.visible_rect())) {
+    NOTREACHED() << "Invalid picture size from VDA: "
+                 << picture.visible_rect().ToString() << " should fit in "
+                 << pb.size().ToString();
+    NotifyError(media::VideoDecodeAccelerator::PLATFORM_FAILURE);
+    return;
+  }
+
   // Update frame's timestamp.
   base::TimeDelta timestamp;
+  // Some of the VDAs don't support and thus don't provide us with visible
+  // size in picture.size, passing coded size instead, so always drop it and
+  // use config information instead.
   gfx::Rect visible_rect;
   gfx::Size natural_size;
   GetBufferData(picture.bitstream_buffer_id(), &timestamp, &visible_rect,

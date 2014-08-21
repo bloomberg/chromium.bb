@@ -61,13 +61,9 @@ RTCVideoDecoder::SHMBuffer::~SHMBuffer() { shm->Close(); }
 
 RTCVideoDecoder::BufferData::BufferData(int32 bitstream_buffer_id,
                                         uint32_t timestamp,
-                                        int width,
-                                        int height,
                                         size_t size)
     : bitstream_buffer_id(bitstream_buffer_id),
       timestamp(timestamp),
-      width(width),
-      height(height),
       size(size) {}
 
 RTCVideoDecoder::BufferData::BufferData() {}
@@ -227,8 +223,6 @@ int32_t RTCVideoDecoder::Decode(
   // Create buffer metadata.
   BufferData buffer_data(next_bitstream_buffer_id_,
                          inputImage._timeStamp,
-                         frame_size_.width(),
-                         frame_size_.height(),
                          inputImage._length);
   // Mask against 30 bits, to avoid (undefined) wraparound on signed integer.
   next_bitstream_buffer_id_ = (next_bitstream_buffer_id_ + 1) & ID_LAST;
@@ -364,13 +358,21 @@ void RTCVideoDecoder::PictureReady(const media::Picture& picture) {
   }
   const media::PictureBuffer& pb = it->second;
 
+  // Validate picture rectangle from GPU.
+  if (picture.visible_rect().IsEmpty() ||
+      !gfx::Rect(pb.size()).Contains(picture.visible_rect())) {
+    NOTREACHED() << "Invalid picture size from VDA: "
+                 << picture.visible_rect().ToString() << " should fit in "
+                 << pb.size().ToString();
+    NotifyError(media::VideoDecodeAccelerator::PLATFORM_FAILURE);
+    return;
+  }
+
   // Create a media::VideoFrame.
-  uint32_t timestamp = 0, width = 0, height = 0;
-  size_t size = 0;
-  GetBufferData(
-      picture.bitstream_buffer_id(), &timestamp, &width, &height, &size);
+  uint32_t timestamp = 0;
+  GetBufferData(picture.bitstream_buffer_id(), &timestamp);
   scoped_refptr<media::VideoFrame> frame =
-      CreateVideoFrame(picture, pb, timestamp, width, height, size);
+      CreateVideoFrame(picture, pb, timestamp);
   bool inserted =
       picture_buffers_at_display_.insert(std::make_pair(
                                              picture.picture_buffer_id(),
@@ -380,7 +382,11 @@ void RTCVideoDecoder::PictureReady(const media::Picture& picture) {
   // Create a WebRTC video frame.
   webrtc::RefCountImpl<NativeHandleImpl>* handle =
       new webrtc::RefCountImpl<NativeHandleImpl>(frame);
-  webrtc::TextureVideoFrame decoded_image(handle, width, height, timestamp, 0);
+  webrtc::TextureVideoFrame decoded_image(handle,
+                                          picture.visible_rect().width(),
+                                          picture.visible_rect().height(),
+                                          timestamp,
+                                          0);
 
   // Invoke decode callback. WebRTC expects no callback after Reset or Release.
   {
@@ -423,11 +429,8 @@ static void ReadPixelsSync(
 scoped_refptr<media::VideoFrame> RTCVideoDecoder::CreateVideoFrame(
     const media::Picture& picture,
     const media::PictureBuffer& pb,
-    uint32_t timestamp,
-    uint32_t width,
-    uint32_t height,
-    size_t size) {
-  gfx::Rect visible_rect(width, height);
+    uint32_t timestamp) {
+  gfx::Rect visible_rect(picture.visible_rect());
   DCHECK(decoder_texture_target_);
   // Convert timestamp from 90KHz to ms.
   base::TimeDelta timestamp_ms = base::TimeDelta::FromInternalValue(
@@ -777,18 +780,13 @@ void RTCVideoDecoder::RecordBufferData(const BufferData& buffer_data) {
 }
 
 void RTCVideoDecoder::GetBufferData(int32 bitstream_buffer_id,
-                                    uint32_t* timestamp,
-                                    uint32_t* width,
-                                    uint32_t* height,
-                                    size_t* size) {
+                                    uint32_t* timestamp) {
   for (std::list<BufferData>::iterator it = input_buffer_data_.begin();
        it != input_buffer_data_.end();
        ++it) {
     if (it->bitstream_buffer_id != bitstream_buffer_id)
       continue;
     *timestamp = it->timestamp;
-    *width = it->width;
-    *height = it->height;
     return;
   }
   NOTREACHED() << "Missing bitstream buffer id: " << bitstream_buffer_id;

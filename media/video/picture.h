@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "media/base/media_export.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/size.h"
 
 namespace media {
@@ -54,7 +55,9 @@ class MEDIA_EXPORT PictureBuffer {
 // This is the media-namespace equivalent of PP_Picture_Dev.
 class MEDIA_EXPORT Picture {
  public:
-  Picture(int32 picture_buffer_id, int32 bitstream_buffer_id);
+  Picture(int32 picture_buffer_id,
+          int32 bitstream_buffer_id,
+          const gfx::Rect& visible_rect);
 
   // Returns the id of the picture buffer where this picture is contained.
   int32 picture_buffer_id() const {
@@ -70,9 +73,15 @@ class MEDIA_EXPORT Picture {
     bitstream_buffer_id_ = bitstream_buffer_id;
   }
 
+  // Returns the visible rectangle of the picture. Its size may be smaller
+  // than the size of the PictureBuffer, as it is the only visible part of the
+  // Picture contained in the PictureBuffer.
+  gfx::Rect visible_rect() const { return visible_rect_; }
+
  private:
   int32 picture_buffer_id_;
   int32 bitstream_buffer_id_;
+  gfx::Rect visible_rect_;
 };
 
 }  // namespace media

@@ -376,7 +376,8 @@ void VTVideoDecodeAccelerator::SendPictures() {
         0));                          // plane
 
     picture_bindings_[picture_id] = frame.image_buffer;
-    client_->PictureReady(media::Picture(picture_id, frame.bitstream_id));
+    client_->PictureReady(media::Picture(
+        picture_id, frame.bitstream_id, gfx::Rect(texture_size_)));
     client_->NotifyEndOfBitstreamBuffer(frame.bitstream_id);
   }
 

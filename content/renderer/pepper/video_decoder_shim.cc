@@ -47,11 +47,14 @@ VideoDecoderShim::PendingDecode::~PendingDecode() {
 
 struct VideoDecoderShim::PendingFrame {
   explicit PendingFrame(uint32_t decode_id);
-  PendingFrame(uint32_t decode_id, const gfx::Size& size);
+  PendingFrame(uint32_t decode_id,
+               const gfx::Size& coded_size,
+               const gfx::Rect& visible_rect);
   ~PendingFrame();
 
   const uint32_t decode_id;
-  const gfx::Size size;
+  const gfx::Size coded_size;
+  const gfx::Rect visible_rect;
   std::vector<uint8_t> argb_pixels;
 
  private:
@@ -64,10 +67,12 @@ VideoDecoderShim::PendingFrame::PendingFrame(uint32_t decode_id)
 }
 
 VideoDecoderShim::PendingFrame::PendingFrame(uint32_t decode_id,
-                                             const gfx::Size& size)
+                                             const gfx::Size& coded_size,
+                                             const gfx::Rect& visible_rect)
     : decode_id(decode_id),
-      size(size),
-      argb_pixels(size.width() * size.height() * 4) {
+      coded_size(coded_size),
+      visible_rect(visible_rect),
+      argb_pixels(coded_size.width() * coded_size.height() * 4) {
 }
 
 VideoDecoderShim::PendingFrame::~PendingFrame() {
@@ -258,7 +263,8 @@ void VideoDecoderShim::DecoderImpl::OnOutputComplete(
     const scoped_refptr<media::VideoFrame>& frame) {
   scoped_ptr<PendingFrame> pending_frame;
   if (!frame->end_of_stream()) {
-    pending_frame.reset(new PendingFrame(decode_id_, frame->coded_size()));
+    pending_frame.reset(new PendingFrame(
+        decode_id_, frame->coded_size(), frame->visible_rect()));
     // Convert the VideoFrame pixels to ABGR to match VideoDecodeAccelerator.
     libyuv::I420ToABGR(frame->data(media::VideoFrame::kYPlane),
                        frame->stride(media::VideoFrame::kYPlane),
@@ -470,7 +476,7 @@ void VideoDecoderShim::OnOutputComplete(scoped_ptr<PendingFrame> frame) {
   DCHECK(host_);
 
   if (!frame->argb_pixels.empty()) {
-    if (texture_size_ != frame->size) {
+    if (texture_size_ != frame->coded_size) {
       // If the size has changed, all current textures must be dismissed. Add
       // all textures to |textures_to_dismiss_| and dismiss any that aren't in
       // use by the plugin. We will dismiss the rest as they are recycled.
@@ -492,10 +498,10 @@ void VideoDecoderShim::OnOutputComplete(scoped_ptr<PendingFrame> frame) {
         pending_texture_mailboxes_.push_back(gpu::Mailbox::Generate());
 
       host_->RequestTextures(texture_pool_size_,
-                             frame->size,
+                             frame->coded_size,
                              GL_TEXTURE_2D,
                              pending_texture_mailboxes_);
-      texture_size_ = frame->size;
+      texture_size_ = frame->coded_size;
     }
 
     pending_frames_.push(linked_ptr<PendingFrame>(frame.release()));
@@ -527,7 +533,8 @@ void VideoDecoderShim::SendPictures() {
                       GL_UNSIGNED_BYTE,
                       &frame->argb_pixels.front());
 
-    host_->PictureReady(media::Picture(texture_id, frame->decode_id));
+    host_->PictureReady(
+        media::Picture(texture_id, frame->decode_id, frame->visible_rect));
     pending_frames_.pop();
   }
 

@@ -371,8 +371,11 @@ void VaapiVideoDecodeAccelerator::OutputPicture(
   TRACE_COUNTER1("Video Decoder", "Textures at client", num_frames_at_client_);
   DVLOG(4) << "Notifying output picture id " << output_id
            << " for input "<< input_id << " is ready";
+  // TODO(posciak): Use visible size from decoder here instead
+  // (crbug.com/402760).
   if (client_)
-    client_->PictureReady(media::Picture(output_id, input_id));
+    client_->PictureReady(
+        media::Picture(output_id, input_id, gfx::Rect(tfp_picture->size())));
 }
 
 void VaapiVideoDecodeAccelerator::TryOutputSurface() {

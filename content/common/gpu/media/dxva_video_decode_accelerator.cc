@@ -943,7 +943,8 @@ void DXVAVideoDecodeAccelerator::ProcessPendingSamples() {
           PLATFORM_FAILURE, );
 
       media::Picture output_picture(index->second->id(),
-                                    sample_info.input_buffer_id);
+                                    sample_info.input_buffer_id,
+                                    gfx::Rect(index->second->size()));
       base::MessageLoop::current()->PostTask(
           FROM_HERE,
           base::Bind(&DXVAVideoDecodeAccelerator::NotifyPictureReady,

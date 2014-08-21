@@ -91,15 +91,11 @@ class CONTENT_EXPORT RTCVideoDecoder
   struct BufferData {
     BufferData(int32 bitstream_buffer_id,
                uint32_t timestamp,
-               int width,
-               int height,
                size_t size);
     BufferData();
     ~BufferData();
     int32 bitstream_buffer_id;
     uint32_t timestamp;  // in 90KHz
-    uint32_t width;
-    uint32_t height;
     size_t size;  // buffer size
   };
 
@@ -138,10 +134,7 @@ class CONTENT_EXPORT RTCVideoDecoder
   scoped_refptr<media::VideoFrame> CreateVideoFrame(
       const media::Picture& picture,
       const media::PictureBuffer& pb,
-      uint32_t timestamp,
-      uint32_t width,
-      uint32_t height,
-      size_t size);
+      uint32_t timestamp);
 
   // Resets VDA.
   void ResetInternal();
@@ -176,11 +169,7 @@ class CONTENT_EXPORT RTCVideoDecoder
   // Stores the buffer metadata to |input_buffer_data_|.
   void RecordBufferData(const BufferData& buffer_data);
   // Gets the buffer metadata from |input_buffer_data_|.
-  void GetBufferData(int32 bitstream_buffer_id,
-                     uint32_t* timestamp,
-                     uint32_t* width,
-                     uint32_t* height,
-                     size_t* size);
+  void GetBufferData(int32 bitstream_buffer_id, uint32_t* timestamp);
 
   // Records the result of InitDecode to UMA and returns |status|.
   int32_t RecordInitDecodeUMA(int32_t status);

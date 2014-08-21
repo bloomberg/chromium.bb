@@ -246,6 +246,8 @@ void PPB_VideoDecoder_Impl::ProvidePictureBuffers(
 }
 
 void PPB_VideoDecoder_Impl::PictureReady(const media::Picture& picture) {
+  // So far picture.visible_rect is not used. If used, visible_rect should
+  // be validated since it comes from GPU process and may not be trustworthy.
   DCHECK(RenderThreadImpl::current());
   if (!ppp_videodecoder_)
     return;
