@@ -44,7 +44,7 @@ GCLIENT_CONFIG = os.path.join(os.path.dirname(REPO_ROOT), '.gclient')
 
 # Incremented whenever some changes to scrip logic are made. Change in version
 # will cause the check to be rerun on next gclient runhooks invocation.
-CHECKER_VERSION = 0
+CHECKER_VERSION = 1
 
 # Do not attempt to upload a report after this date.
 UPLOAD_DISABLE_TS = datetime.datetime(2014, 10, 1)
@@ -69,9 +69,13 @@ GOOD_GCLIENT_SOLUTION = {
 BAD_ACL_ERRORS = (
   '(prohibited by Gerrit)',
   'does not match your user account',
+  'Git repository not found',
   'Invalid user name or password',
   'Please make sure you have the correct access rights',
 )
+
+# Git executable to call.
+GIT_EXE = 'git.bat' if sys.platform == 'win32' else 'git'
 
 
 def is_on_bot():
@@ -105,7 +109,7 @@ def read_git_config(prop):
   """
   try:
     proc = subprocess.Popen(
-        ['git', 'config', prop], stdout=subprocess.PIPE, cwd=REPO_ROOT)
+        [GIT_EXE, 'config', prop], stdout=subprocess.PIPE, cwd=REPO_ROOT)
     out, _ = proc.communicate()
     return out.strip()
   except OSError as exc:
@@ -130,7 +134,7 @@ def read_netrc_user(netrc_obj, host):
 def get_git_version():
   """Returns version of git or None if git is not available."""
   try:
-    proc = subprocess.Popen(['git', '--version'], stdout=subprocess.PIPE)
+    proc = subprocess.Popen([GIT_EXE, '--version'], stdout=subprocess.PIPE)
     out, _ = proc.communicate()
     return out.strip() if proc.returncode == 0 else ''
   except OSError as exc:
@@ -157,6 +161,23 @@ def read_gclient_solution():
   except Exception:
     logging.exception('Failed to read .gclient solution')
     return None, None, None
+
+
+def read_git_insteadof(host):
+  """Reads relevant insteadOf config entries."""
+  try:
+    proc = subprocess.Popen([GIT_EXE, 'config', '-l'], stdout=subprocess.PIPE)
+    out, _ = proc.communicate()
+    lines = []
+    for line in out.strip().split('\n'):
+      line = line.lower()
+      if 'insteadof=' in line and host in line:
+        lines.append(line)
+    return '\n'.join(lines)
+  except OSError as exc:
+    if exc.errno != errno.ENOENT:
+      logging.exception('Unexpected error when calling git')
+    return ''
 
 
 def scan_configuration():
@@ -198,6 +219,7 @@ def scan_configuration():
     'username': getpass.getuser(),
     'git_user_email': read_git_config('user.email') if is_git else '',
     'git_user_name': read_git_config('user.name') if is_git else '',
+    'git_insteadof': read_git_insteadof('chromium.googlesource.com'),
     'chromium_netrc_email':
         read_netrc_user(netrc_obj, 'chromium.googlesource.com'),
     'chrome_internal_netrc_email':
@@ -310,21 +332,22 @@ def check_git_config(conf, report_url, verbose):
     with temp_directory() as tmp:
       # Prepare a simple commit on a new timeline.
       runner = Runner(tmp, verbose)
-      runner.run(['git', 'init', '.'])
+      runner.run([GIT_EXE, 'init', '.'])
       if conf['git_user_name']:
-        runner.run(['git', 'config', 'user.name', conf['git_user_name']])
+        runner.run([GIT_EXE, 'config', 'user.name', conf['git_user_name']])
       if conf['git_user_email']:
-        runner.run(['git', 'config', 'user.email', conf['git_user_email']])
+        runner.run([GIT_EXE, 'config', 'user.email', conf['git_user_email']])
       with open(os.path.join(tmp, 'timestamp'), 'w') as f:
         f.write(str(int(time.time() * 1000)))
-      runner.run(['git', 'add', 'timestamp'])
-      runner.run(['git', 'commit', '-m', 'Push test.'])
+      runner.run([GIT_EXE, 'add', 'timestamp'])
+      runner.run([GIT_EXE, 'commit', '-m', 'Push test.'])
       # Try to push multiple times if it fails due to issues other than ACLs.
       attempt = 0
       while attempt < 5:
         attempt += 1
         logging.info('Pushing to %s %s', TEST_REPO_URL, ref)
-        ret = runner.run(['git', 'push', TEST_REPO_URL, 'HEAD:%s' % ref, '-f'])
+        ret = runner.run(
+            [GIT_EXE, 'push', TEST_REPO_URL, 'HEAD:%s' % ref, '-f'])
         if not ret:
           push_works = True
           break
@@ -359,10 +382,14 @@ def check_gclient_config(conf):
   current = {
     'name': 'src',
     'deps_file': conf['gclient_deps'],
-    'managed': conf['gclient_managed'],
+    'managed': conf['gclient_managed'] or False,
     'url': conf['gclient_url'],
   }
-  if current != GOOD_GCLIENT_SOLUTION:
+  good = GOOD_GCLIENT_SOLUTION
+  if current == good:
+    return
+  # Show big warning if url or deps_file is wrong.
+  if current['url'] != good['url'] or current['deps_file'] != good['deps_file']:
     print '-' * 80
     print 'Your gclient solution is not set to use supported git workflow!'
     print
@@ -370,9 +397,29 @@ def check_gclient_config(conf):
     print pprint.pformat(current, indent=2)
     print
     print 'Correct \'src\' solution to use git:'
-    print pprint.pformat(GOOD_GCLIENT_SOLUTION, indent=2)
+    print pprint.pformat(good, indent=2)
     print
     print 'Please update your .gclient file ASAP.'
+    print '-' * 80
+  # Show smaller (additional) warning about managed workflow.
+  if current['managed']:
+    print '-' * 80
+    print (
+        'You are using managed gclient mode with git, which was deprecated '
+        'on 8/22/13:')
+    print (
+        'https://groups.google.com/a/chromium.org/'
+        'forum/#!topic/chromium-dev/n9N5N3JL2_U')
+    print
+    print (
+        'It is strongly advised to switch to unmanaged mode. For more '
+        'information about managed mode and reasons for its deprecation see:')
+    print 'http://www.chromium.org/developers/how-tos/get-the-code#Managed_mode'
+    print
+    print (
+        'There\'s also a large suite of tools to assist managing git '
+        'checkouts.\nSee \'man depot_tools\' (or read '
+        'depot_tools/man/html/depot_tools.html).')
     print '-' * 80
 
 
