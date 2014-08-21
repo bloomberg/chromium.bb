@@ -83,7 +83,7 @@ vars = {
     'webrtc_revision':
          '6905',
     'v8_revision':
-         '23233'
+         '23256'
 }
 
 deps = {
@@ -228,7 +228,7 @@ deps = {
     'src/tools/swarming_client':
         Var('git_url') + '/external/swarming.client.git@b8aeeaef087fa2571aaaf64a8a8dbec06a0e0e41',
     'src/v8':
-        Var('git_url') + '/external/v8.git@2fc7321eae88bc8c9bdbc7f6c872d1f615057690',
+        Var('git_url') + '/external/v8.git@e2a8937454723a720c81acc3f9e4162b18999b43',
 }
 
 deps_os = {
