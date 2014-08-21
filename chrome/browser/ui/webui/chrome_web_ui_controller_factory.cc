@@ -532,8 +532,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<extensions::ExtensionsUI>;
 #endif
 #if defined(ENABLE_FULL_PRINTING)
-  if (url.host() == chrome::kChromeUIPrintHost &&
-      !profile->GetPrefs()->GetBoolean(prefs::kPrintPreviewDisabled))
+  if (url.host() == chrome::kChromeUIPrintHost)
     return &NewWebUI<PrintPreviewUI>;
 #endif
 

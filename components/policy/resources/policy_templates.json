@@ -3691,15 +3691,18 @@
       'name': 'DisablePrintPreview',
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.*:18-'],
+      'supported_on': ['chrome.*:18-38'],
+      'deprecated': True,
       'features': {
         'dynamic_refresh': False,
         'per_profile': True,
       },
       'example_value': False,
       'id': 117,
-      'caption': '''Disable Print Preview''',
-      'desc': '''Show the system print dialog instead of print preview.
+      'caption': '''Disable Print Preview (deprecated)''',
+      'desc': '''This setting has been retired as of <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> version 39.
+
+      Show the system print dialog instead of print preview.
 
       When this setting is enabled, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will open the system print dialog instead of the built-in print preview when a user requests a page to be printed.
 

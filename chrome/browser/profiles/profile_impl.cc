@@ -390,10 +390,6 @@ void ProfileImpl::RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 #endif
   registry->RegisterBooleanPref(
-      prefs::kPrintPreviewDisabled,
-      false,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterBooleanPref(
       prefs::kForceEphemeralProfiles,
       false,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);

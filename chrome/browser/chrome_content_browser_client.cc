@@ -1277,9 +1277,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
             switches::kDisableClientSidePhishingDetection);
       }
 
-      if (!prefs->GetBoolean(prefs::kPrintPreviewDisabled))
-        command_line->AppendSwitch(switches::kRendererPrintPreview);
-
       InstantService* instant_service =
           InstantServiceFactory::GetForProfile(profile);
       if (instant_service &&
@@ -1342,7 +1339,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       switches::kCloudPrintURL,
       switches::kCloudPrintXmppEndpoint,
       switches::kDisableBundledPpapiFlash,
-      switches::kDisableScriptedPrintThrottling,
       switches::kEnableAppWindowControls,
       switches::kEnableBenchmarking,
       switches::kEnableNaCl,

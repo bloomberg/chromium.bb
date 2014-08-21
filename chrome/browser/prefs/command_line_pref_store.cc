@@ -55,7 +55,6 @@ const CommandLinePrefStore::BooleanSwitchToPreferenceMapEntry
         prefs::kWebKitAllowDisplayingInsecureContent, false },
       { switches::kAllowCrossOriginAuthPrompt,
         prefs::kAllowCrossOriginAuthPrompt, true },
-      { switches::kDisablePrintPreview, prefs::kPrintPreviewDisabled, true },
 #if defined(OS_CHROMEOS)
       { chromeos::switches::kEnableTouchpadThreeFingerClick,
           prefs::kEnableTouchpadThreeFingerClick, true },

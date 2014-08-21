@@ -1498,12 +1498,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
 
         if (!print_view_manager)
           break;
-        if (GetPrefs(browser_context_)
-                ->GetBoolean(prefs::kPrintPreviewDisabled)) {
-          print_view_manager->PrintNow();
-        } else {
-          print_view_manager->PrintPreviewNow(!params_.selection_text.empty());
-        }
+        print_view_manager->PrintPreviewNow(!params_.selection_text.empty());
 #else
         printing::PrintViewManagerBasic* print_view_manager =
             printing::PrintViewManagerBasic::FromWebContents(

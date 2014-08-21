@@ -4,11 +4,9 @@
 
 #include "chrome/browser/printing/print_preview_test.h"
 
-#include "base/prefs/pref_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/test/base/test_browser_window.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
 #include "content/public/browser/plugin_service.h"
@@ -79,8 +77,6 @@ void PrintPreviewTest::SetUp() {
   // ShadowingAtExitManager in our base class).
   content::PluginService::GetInstance()->Init();
   content::PluginService::GetInstance()->DisablePluginsDiscoveryForTesting();
-
-  profile()->GetPrefs()->SetBoolean(prefs::kPrintPreviewDisabled, false);
 }
 
 BrowserWindow* PrintPreviewTest::CreateBrowserWindow() {

@@ -34,13 +34,14 @@ namespace {
 // A simple web page.
 const char kHelloWorldHTML[] = "<body><p>Hello World!</p></body>";
 
+#if !defined(OS_CHROMEOS)
+
 // A simple webpage with a button to print itself with.
 const char kPrintOnUserAction[] =
     "<body>"
     "  <button id=\"print\" onclick=\"window.print();\">Hello World!</button>"
     "</body>";
 
-#if !defined(OS_CHROMEOS)
 // HTML with 3 pages.
 const char kMultipageHTML[] =
   "<html><head><style>"
@@ -192,6 +193,14 @@ class PrintWebViewHelperTestBase : public ChromeRenderViewTest {
     ProcessPendingMessages();
   }
 
+  void VerifyPreviewRequest(bool requested) {
+    const IPC::Message* print_msg =
+        render_thread_->sink().GetUniqueMessageMatching(
+            PrintHostMsg_SetupScriptedPrintPreview::ID);
+    bool did_print_msg = (NULL != print_msg);
+    ASSERT_EQ(requested, did_print_msg);
+  }
+
   void OnPrintPreview(const base::DictionaryValue& dict) {
     PrintWebViewHelper* print_web_view_helper = PrintWebViewHelper::Get(view_);
     print_web_view_helper->OnInitiatePrintPreview(false);
@@ -230,89 +239,6 @@ TEST_F(PrintWebViewHelperTest, OnPrintPages) {
   LoadHTML(kHelloWorldHTML);
   OnPrintPages();
 
-  VerifyPageCount(1);
-  VerifyPagesPrinted(true);
-}
-
-// Duplicate of OnPrintPagesTest only using javascript to print.
-TEST_F(PrintWebViewHelperTest, PrintWithJavascript) {
-  PrintWithJavaScript();
-
-  VerifyPageCount(1);
-  VerifyPagesPrinted(true);
-}
-
-// Tests that the renderer blocks window.print() calls if they occur too
-// frequently.
-TEST_F(PrintWebViewHelperTest, BlockScriptInitiatedPrinting) {
-  // Pretend user will cancel printing.
-  chrome_render_thread_->set_print_dialog_user_response(false);
-  // Try to print with window.print() a few times.
-  PrintWithJavaScript();
-  PrintWithJavaScript();
-  PrintWithJavaScript();
-  VerifyPagesPrinted(false);
-
-  // Pretend user will print. (but printing is blocked.)
-  chrome_render_thread_->set_print_dialog_user_response(true);
-  PrintWithJavaScript();
-  VerifyPagesPrinted(false);
-
-  // Unblock script initiated printing and verify printing works.
-  PrintWebViewHelper::Get(view_)->ResetScriptedPrintCount();
-  chrome_render_thread_->printer()->ResetPrinter();
-  PrintWithJavaScript();
-  VerifyPageCount(1);
-  VerifyPagesPrinted(true);
-}
-
-// Tests that the renderer always allows window.print() calls if they are user
-// initiated.
-TEST_F(PrintWebViewHelperTest, AllowUserOriginatedPrinting) {
-  // Pretend user will cancel printing.
-  chrome_render_thread_->set_print_dialog_user_response(false);
-  // Try to print with window.print() a few times.
-  PrintWithJavaScript();
-  PrintWithJavaScript();
-  PrintWithJavaScript();
-  VerifyPagesPrinted(false);
-
-  // Pretend user will print. (but printing is blocked.)
-  chrome_render_thread_->set_print_dialog_user_response(true);
-  PrintWithJavaScript();
-  VerifyPagesPrinted(false);
-
-  // Try again as if user initiated, without resetting the print count.
-  chrome_render_thread_->printer()->ResetPrinter();
-  LoadHTML(kPrintOnUserAction);
-  gfx::Size new_size(200, 100);
-  Resize(new_size, gfx::Rect(), false);
-
-  gfx::Rect bounds = GetElementBounds("print");
-  EXPECT_FALSE(bounds.IsEmpty());
-  blink::WebMouseEvent mouse_event;
-  mouse_event.type = blink::WebInputEvent::MouseDown;
-  mouse_event.button = blink::WebMouseEvent::ButtonLeft;
-  mouse_event.x = bounds.CenterPoint().x();
-  mouse_event.y = bounds.CenterPoint().y();
-  mouse_event.clickCount = 1;
-  SendWebMouseEvent(mouse_event);
-  mouse_event.type = blink::WebInputEvent::MouseUp;
-  SendWebMouseEvent(mouse_event);
-  ProcessPendingMessages();
-
-  VerifyPageCount(1);
-  VerifyPagesPrinted(true);
-}
-
-TEST_F(PrintWebViewHelperTest, BlockScriptInitiatedPrintingFromPopup) {
-  PrintWebViewHelper* print_web_view_helper = PrintWebViewHelper::Get(view_);
-  print_web_view_helper->SetScriptedPrintBlocked(true);
-  PrintWithJavaScript();
-  VerifyPagesPrinted(false);
-
-  print_web_view_helper->SetScriptedPrintBlocked(false);
-  PrintWithJavaScript();
   VerifyPageCount(1);
   VerifyPagesPrinted(true);
 }
@@ -466,14 +392,6 @@ class PrintWebViewHelperPreviewTest : public PrintWebViewHelperTestBase {
   PrintWebViewHelperPreviewTest() {}
   virtual ~PrintWebViewHelperPreviewTest() {}
 
-  virtual void SetUp() OVERRIDE {
-    // Append the print preview switch before creating the PrintWebViewHelper.
-    CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kRendererPrintPreview);
-
-    ChromeRenderViewTest::SetUp();
-  }
-
  protected:
   void VerifyPrintPreviewCancelled(bool did_cancel) {
     bool print_preview_cancelled =
@@ -563,6 +481,37 @@ class PrintWebViewHelperPreviewTest : public PrintWebViewHelperTestBase {
 
   DISALLOW_COPY_AND_ASSIGN(PrintWebViewHelperPreviewTest);
 };
+
+TEST_F(PrintWebViewHelperPreviewTest, BlockScriptInitiatedPrinting) {
+  PrintWebViewHelper* print_web_view_helper = PrintWebViewHelper::Get(view_);
+  print_web_view_helper->SetScriptedPrintBlocked(true);
+  PrintWithJavaScript();
+  VerifyPreviewRequest(false);
+
+  print_web_view_helper->SetScriptedPrintBlocked(false);
+  PrintWithJavaScript();
+  VerifyPreviewRequest(true);
+}
+
+TEST_F(PrintWebViewHelperPreviewTest, PrintWithJavaScript) {
+  LoadHTML(kPrintOnUserAction);
+  gfx::Size new_size(200, 100);
+  Resize(new_size, gfx::Rect(), false);
+
+  gfx::Rect bounds = GetElementBounds("print");
+  EXPECT_FALSE(bounds.IsEmpty());
+  blink::WebMouseEvent mouse_event;
+  mouse_event.type = blink::WebInputEvent::MouseDown;
+  mouse_event.button = blink::WebMouseEvent::ButtonLeft;
+  mouse_event.x = bounds.CenterPoint().x();
+  mouse_event.y = bounds.CenterPoint().y();
+  mouse_event.clickCount = 1;
+  SendWebMouseEvent(mouse_event);
+  mouse_event.type = blink::WebInputEvent::MouseUp;
+  SendWebMouseEvent(mouse_event);
+
+  VerifyPreviewRequest(true);
+}
 
 // Tests that print preview work and sending and receiving messages through
 // that channel all works.
@@ -963,44 +912,5 @@ TEST_F(PrintWebViewHelperPreviewTest,
 }
 
 #endif  // !defined(OS_CHROMEOS)
-
-class PrintWebViewHelperKioskTest : public PrintWebViewHelperTestBase {
- public:
-  PrintWebViewHelperKioskTest() {}
-  virtual ~PrintWebViewHelperKioskTest() {}
-
-  virtual void SetUp() OVERRIDE {
-    // Append the throttling disable switch before creating the
-    // PrintWebViewHelper.
-    CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kDisableScriptedPrintThrottling);
-
-    ChromeRenderViewTest::SetUp();
-  }
-
- protected:
-  DISALLOW_COPY_AND_ASSIGN(PrintWebViewHelperKioskTest);
-};
-
-// Tests that the switch overrides the throttling that blocks window.print()
-// calls if they occur too frequently. Compare with
-// PrintWebViewHelperTest.BlockScriptInitiatedPrinting above.
-TEST_F(PrintWebViewHelperKioskTest, DontBlockScriptInitiatedPrinting) {
-  // Pretend user will cancel printing.
-  chrome_render_thread_->set_print_dialog_user_response(false);
-  // Try to print with window.print() a few times.
-  PrintWithJavaScript();
-  chrome_render_thread_->printer()->ResetPrinter();
-  PrintWithJavaScript();
-  chrome_render_thread_->printer()->ResetPrinter();
-  PrintWithJavaScript();
-  chrome_render_thread_->printer()->ResetPrinter();
-  VerifyPagesPrinted(false);
-
-  // Pretend user will print, should not be throttled.
-  chrome_render_thread_->set_print_dialog_user_response(true);
-  PrintWithJavaScript();
-  VerifyPagesPrinted(true);
-}
 
 }  // namespace printing

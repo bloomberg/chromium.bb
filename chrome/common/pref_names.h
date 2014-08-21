@@ -371,7 +371,6 @@ extern const char kProfileAvatarTutorialShown[];
 extern const char kInvertNotificationShown[];
 
 extern const char kPrintingEnabled[];
-extern const char kPrintPreviewDisabled[];
 
 extern const char kDefaultSupervisedUserFilteringBehavior[];
 

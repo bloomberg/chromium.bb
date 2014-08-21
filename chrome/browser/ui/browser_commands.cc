@@ -855,10 +855,7 @@ void Print(Browser* browser) {
 #if defined(ENABLE_FULL_PRINTING)
   printing::PrintViewManager* print_view_manager =
       printing::PrintViewManager::FromWebContents(contents);
-  if (browser->profile()->GetPrefs()->GetBoolean(prefs::kPrintPreviewDisabled))
-    print_view_manager->PrintNow();
-  else
-    print_view_manager->PrintPreviewNow(false);
+  print_view_manager->PrintPreviewNow(false);
 #else
   printing::PrintViewManagerBasic* print_view_manager =
       printing::PrintViewManagerBasic::FromWebContents(contents);

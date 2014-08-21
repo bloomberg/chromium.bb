@@ -749,12 +749,6 @@ void PrintPreviewHandler::HandlePrint(const base::ListValue* args) {
   UMA_HISTOGRAM_COUNTS("PrintPreview.RegeneratePreviewRequest.BeforePrint",
                        regenerate_preview_request_count_);
 
-  WebContents* initiator = GetInitiator();
-  if (initiator) {
-    RenderViewHost* rvh = initiator->GetRenderViewHost();
-    rvh->Send(new PrintMsg_ResetScriptedPrintCount(rvh->GetRoutingID()));
-  }
-
   scoped_ptr<base::DictionaryValue> settings(GetSettingsDictionary(args));
   if (!settings.get())
     return;
@@ -859,6 +853,7 @@ void PrintPreviewHandler::HandlePrint(const base::ListValue* args) {
     // printing has finished. Then the dialog closes and PrintPreviewDone() gets
     // called. In the case below, since the preview dialog will be hidden and
     // not closed, we need to make this call.
+    WebContents* initiator = GetInitiator();
     if (initiator) {
       printing::PrintViewManager* print_view_manager =
           printing::PrintViewManager::FromWebContents(initiator);

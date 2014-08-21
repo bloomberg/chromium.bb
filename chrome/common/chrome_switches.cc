@@ -315,9 +315,6 @@ const char kDisablePreconnect[]             = "disable-preconnect";
 const char kDisablePrerenderLocalPredictor[] =
     "disable-prerender-local-predictor";
 
-// Disables print preview (For testing, and for users who don't like us. :[ )
-const char kDisablePrintPreview[]           = "disable-print-preview";
-
 // Normally when the user attempts to navigate to a page that was the result of
 // a post we prompt to make sure they want to. This switch may be used to
 // disable that check. This switch is used during automated testing.
@@ -341,10 +338,6 @@ const char kDisableQuicTimeBasedLossDetection[] =
 
 // Prevents the save password bubble from being enabled.
 const char kDisableSavePasswordBubble[] = "disable-save-password-bubble";
-
-// Disables throttling prints initiated by scripts.
-const char kDisableScriptedPrintThrottling[] =
-    "disable-scripted-print-throttling";
 
 // Disables the "search button in omnibox" experiment.
 const char kDisableSearchButtonInOmnibox[]  =
@@ -1029,10 +1022,6 @@ const char kRecordMode[]                    = "record-mode";
 // time. In particular, remember these decisions through session restart. The
 // time delta to remember certificates should be specified in seconds.
 const char kRememberCertErrorDecisions[]    = "remember-cert-error-decisions";
-
-// Enables print preview in the renderer. This flag is generated internally by
-// Chrome and does nothing when directly passed to the browser.
-const char kRendererPrintPreview[]          = "renderer-print-preview";
 
 // If set, the app list will forget it has been installed on startup. Note this
 // doesn't prevent the app list from running, it just makes Chrome think the app

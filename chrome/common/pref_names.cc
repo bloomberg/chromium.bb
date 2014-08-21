@@ -1172,9 +1172,6 @@ const char kInvertNotificationShown[] = "invert_notification_version_2_shown";
 // Boolean controlling whether printing is enabled.
 const char kPrintingEnabled[] = "printing.enabled";
 
-// Boolean controlling whether print preview is disabled.
-const char kPrintPreviewDisabled[] = "printing.print_preview_disabled";
-
 // An integer pref specifying the fallback behavior for sites outside of content
 // packs. One of:
 // 0: Allow (does nothing)
