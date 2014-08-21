@@ -20,7 +20,6 @@ GraphicsContextState::GraphicsContextState()
     , m_interpolationQuality(InterpolationDefault)
     , m_saveCount(0)
     , m_shouldAntialias(true)
-    , m_shouldSmoothFonts(true)
     , m_shouldClampToSourceRect(true)
 {
     m_strokePaint.setStyle(SkPaint::kStroke_Style);
@@ -54,7 +53,6 @@ GraphicsContextState::GraphicsContextState(const GraphicsContextState& other)
     , m_interpolationQuality(other.m_interpolationQuality)
     , m_saveCount(0)
     , m_shouldAntialias(other.m_shouldAntialias)
-    , m_shouldSmoothFonts(other.m_shouldSmoothFonts)
     , m_shouldClampToSourceRect(other.m_shouldClampToSourceRect) { }
 
 void GraphicsContextState::copy(const GraphicsContextState& source)

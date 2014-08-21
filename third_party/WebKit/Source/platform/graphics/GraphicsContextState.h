@@ -138,9 +138,6 @@ public:
     bool shouldAntialias() const { return m_shouldAntialias; }
     void setShouldAntialias(bool);
 
-    bool shouldSmoothFonts() const { return m_shouldSmoothFonts; }
-    void setShouldSmoothFonts(bool shouldSmoothFonts) { m_shouldSmoothFonts = shouldSmoothFonts; }
-
     bool shouldClampToSourceRect() const { return m_shouldClampToSourceRect; }
     void setShouldClampToSourceRect(bool shouldClampToSourceRect) { m_shouldClampToSourceRect = shouldClampToSourceRect; }
 
@@ -184,7 +181,6 @@ private:
     uint16_t m_saveCount;
 
     bool m_shouldAntialias : 1;
-    bool m_shouldSmoothFonts : 1;
     bool m_shouldClampToSourceRect : 1;
 };
 

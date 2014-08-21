@@ -160,8 +160,10 @@ public:
     void setShouldClampToSourceRect(bool clampToSourceRect) { mutableState()->setShouldClampToSourceRect(clampToSourceRect); }
     bool shouldClampToSourceRect() const { return immutableState()->shouldClampToSourceRect(); }
 
-    void setShouldSmoothFonts(bool smoothFonts) { mutableState()->setShouldSmoothFonts(smoothFonts); }
-    bool shouldSmoothFonts() const { return immutableState()->shouldSmoothFonts(); }
+    // FIXME: the setter is only used once, at construction time; convert to a constructor param,
+    // and possibly consolidate with other flags (paintDisabled, isPrinting, ...)
+    void setShouldSmoothFonts(bool smoothFonts) { m_shouldSmoothFonts = smoothFonts; }
+    bool shouldSmoothFonts() const { return m_shouldSmoothFonts; }
 
     // Turn off LCD text for the paint if not supported on this context.
     void adjustTextRenderMode(SkPaint*);
@@ -534,6 +536,7 @@ private:
     bool m_isCertainlyOpaque : 1;
     bool m_printing : 1;
     bool m_antialiasHairlineImages : 1;
+    bool m_shouldSmoothFonts : 1;
 };
 
 } // namespace blink

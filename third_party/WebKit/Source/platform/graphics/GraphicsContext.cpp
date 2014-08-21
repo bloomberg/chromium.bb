@@ -132,6 +132,7 @@ GraphicsContext::GraphicsContext(SkCanvas* canvas, DisabledMode disableContextOr
     , m_isCertainlyOpaque(true)
     , m_printing(false)
     , m_antialiasHairlineImages(false)
+    , m_shouldSmoothFonts(true)
 {
     ASSERT(canvas);
 
