@@ -519,10 +519,6 @@ bool OcclusionTracker<LayerType>::Occluded(
     return false;
   }
 
-  gfx::Transform inverse_draw_transform(gfx::Transform::kSkipInitialization);
-  if (!draw_transform.GetInverse(&inverse_draw_transform))
-    return false;
-
   // Take the ToEnclosingRect at each step, as we want to contain any unoccluded
   // partial pixels in the resulting Rect.
   Region unoccluded_region_in_target_surface =
@@ -555,8 +551,8 @@ gfx::Rect OcclusionTracker<LayerType>::UnoccludedContentRect(
   }
 
   gfx::Transform inverse_draw_transform(gfx::Transform::kSkipInitialization);
-  if (!draw_transform.GetInverse(&inverse_draw_transform))
-    return content_rect;
+  bool ok = draw_transform.GetInverse(&inverse_draw_transform);
+  DCHECK(ok);
 
   // Take the ToEnclosingRect at each step, as we want to contain any unoccluded
   // partial pixels in the resulting Rect.
@@ -600,8 +596,8 @@ gfx::Rect OcclusionTracker<LayerType>::UnoccludedContributingSurfaceContentRect(
     return content_rect;
 
   gfx::Transform inverse_draw_transform(gfx::Transform::kSkipInitialization);
-  if (!draw_transform.GetInverse(&inverse_draw_transform))
-    return content_rect;
+  bool ok = draw_transform.GetInverse(&inverse_draw_transform);
+  DCHECK(ok);
 
   // Take the ToEnclosingRect at each step, as we want to contain any unoccluded
   // partial pixels in the resulting Rect.
