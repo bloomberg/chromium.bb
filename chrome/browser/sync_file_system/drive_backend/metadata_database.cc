@@ -1940,7 +1940,8 @@ bool MetadataDatabase::CanClearDirty(const FileTracker& tracker) {
   const FileDetails& remote_details = metadata.details();
   const FileDetails& synced_details = tracker.synced_details();
   if (remote_details.title() != synced_details.title() ||
-      remote_details.md5() != synced_details.md5())
+      remote_details.md5() != synced_details.md5() ||
+      remote_details.missing() != synced_details.missing())
     return false;
 
   std::set<std::string> parents;
