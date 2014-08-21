@@ -29,6 +29,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/display_observer.h"
+#include "ui/gfx/font_render_params.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/size_conversions.h"
@@ -185,6 +186,10 @@ DisplayManager::DisplayManager()
 }
 
 DisplayManager::~DisplayManager() {
+#if defined(OS_CHROMEOS)
+  // Reset the font params.
+  gfx::SetFontRenderParamsDeviceScaleFactor(1.0f);
+#endif
 }
 
 // static
@@ -262,6 +267,17 @@ void DisplayManager::InitDefaultDisplay() {
   info_list.push_back(DisplayInfo::CreateFromSpec(std::string()));
   MaybeInitInternalDisplay(info_list[0].id());
   OnNativeDisplaysChanged(info_list);
+}
+
+void DisplayManager::InitFontParams() {
+#if defined(OS_CHROMEOS)
+  if (!HasInternalDisplay())
+    return;
+  const DisplayInfo& display_info =
+      GetDisplayInfo(gfx::Display::InternalDisplayId());
+  gfx::SetFontRenderParamsDeviceScaleFactor(
+      display_info.device_scale_factor());
+#endif  // OS_CHROMEOS
 }
 
 // static

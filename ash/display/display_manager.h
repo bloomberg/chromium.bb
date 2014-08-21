@@ -122,6 +122,10 @@ class ASH_EXPORT DisplayManager
   // Initialize default display.
   void InitDefaultDisplay();
 
+  // Initializes font related params that depends on display
+  // configuration.
+  void InitFontParams();
+
   // True if the given |display| is currently connected.
   bool IsActiveDisplay(const gfx::Display& display) const;
 

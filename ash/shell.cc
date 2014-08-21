@@ -853,6 +853,8 @@ void Shell::Init(const ShellInitParams& init_params) {
   if (!display_initialized)
     display_manager_->InitDefaultDisplay();
 
+  display_manager_->InitFontParams();
+
   // Install the custom factory first so that views::FocusManagers for Tray,
   // Shelf, and WallPaper could be created by the factory.
   views::FocusManagerFactory::Install(new AshFocusManagerFactory);

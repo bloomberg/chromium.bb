@@ -4,6 +4,7 @@
 
 #include "ash/display/display_manager.h"
 
+#include "ash/ash_switches.h"
 #include "ash/display/display_controller.h"
 #include "ash/display/display_layout_store.h"
 #include "ash/screen_util.h"
@@ -11,6 +12,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/display_manager_test_api.h"
 #include "ash/test/mirror_window_test_api.h"
+#include "base/command_line.h"
 #include "base/format_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -20,6 +22,7 @@
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/display_observer.h"
+#include "ui/gfx/font_render_params.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/screen_type_delegate.h"
 
@@ -1380,5 +1383,97 @@ TEST_F(ScreenShutdownTest, ScreenAfterShutdown) {
     return;
   UpdateDisplay("500x300,800x400");
 }
+
+
+#if defined(OS_CHROMEOS)
+namespace {
+
+// A helper class that sets the display configuration and starts ash.
+// This is to make sure the font configuration happens during ash
+// initialization process.
+class FontTestHelper : public test::AshTestBase {
+ public:
+  enum DisplayType {
+    INTERNAL,
+    EXTERNAL
+  };
+
+  FontTestHelper(float scale, DisplayType display_type) {
+    gfx::ClearFontRenderParamsCacheForTest();
+    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+    if (display_type == INTERNAL)
+      command_line->AppendSwitch(switches::kAshUseFirstDisplayAsInternal);
+    command_line->AppendSwitchASCII(switches::kAshHostWindowBounds,
+                                    StringPrintf("1000x800*%f", scale));
+    SetUp();
+  }
+
+  virtual ~FontTestHelper() {
+    TearDown();
+  }
+
+  // test::AshTestBase:
+  virtual void TestBody() OVERRIDE {
+    NOTREACHED();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(FontTestHelper);
+};
+
+
+bool IsTextSubpixelPositioningEnabled() {
+  gfx::FontRenderParams params =
+      gfx::GetFontRenderParams(gfx::FontRenderParamsQuery(false), NULL);
+  return params.subpixel_positioning;
+}
+
+}  // namespace
+
+typedef testing::Test DisplayManagerFontTest;
+
+TEST_F(DisplayManagerFontTest, TextSubpixelPositioningWithDsf100Internal) {
+  FontTestHelper helper(1.0f, FontTestHelper::INTERNAL);
+  ASSERT_DOUBLE_EQ(
+      1.0f, Shell::GetScreen()->GetPrimaryDisplay().device_scale_factor());
+  EXPECT_FALSE(IsTextSubpixelPositioningEnabled());
+}
+
+TEST_F(DisplayManagerFontTest, TextSubpixelPositioningWithDsf125Internal) {
+  FontTestHelper helper(1.25f, FontTestHelper::INTERNAL);
+  ASSERT_DOUBLE_EQ(
+      1.25f, Shell::GetScreen()->GetPrimaryDisplay().device_scale_factor());
+  EXPECT_TRUE(IsTextSubpixelPositioningEnabled());
+}
+
+TEST_F(DisplayManagerFontTest, TextSubpixelPositioningWithDsf200Internal) {
+  FontTestHelper helper(2.0f, FontTestHelper::INTERNAL);
+  ASSERT_DOUBLE_EQ(
+      2.0f, Shell::GetScreen()->GetPrimaryDisplay().device_scale_factor());
+  EXPECT_TRUE(IsTextSubpixelPositioningEnabled());
+}
+
+TEST_F(DisplayManagerFontTest, TextSubpixelPositioningWithDsf100External) {
+  FontTestHelper helper(1.0f, FontTestHelper::EXTERNAL);
+  ASSERT_DOUBLE_EQ(
+      1.0f, Shell::GetScreen()->GetPrimaryDisplay().device_scale_factor());
+  EXPECT_FALSE(IsTextSubpixelPositioningEnabled());
+}
+
+TEST_F(DisplayManagerFontTest, TextSubpixelPositioningWithDsf125External) {
+  FontTestHelper helper(1.25f, FontTestHelper::EXTERNAL);
+  ASSERT_DOUBLE_EQ(
+      1.25f, Shell::GetScreen()->GetPrimaryDisplay().device_scale_factor());
+  EXPECT_FALSE(IsTextSubpixelPositioningEnabled());
+}
+
+TEST_F(DisplayManagerFontTest, TextSubpixelPositioningWithDsf200External) {
+  FontTestHelper helper(2.0f, FontTestHelper::EXTERNAL);
+  ASSERT_DOUBLE_EQ(
+      2.0f, Shell::GetScreen()->GetPrimaryDisplay().device_scale_factor());
+  EXPECT_FALSE(IsTextSubpixelPositioningEnabled());
+}
+
+#endif  // OS_CHROMEOS
 
 }  // namespace ash

@@ -273,6 +273,28 @@ TEST_F(FontRenderParamsTest, ForceFullHintingWhenAntialiasingIsDisabled) {
   EXPECT_FALSE(params.subpixel_positioning);
 }
 
+#if defined(OS_CHROMEOS)
+TEST_F(FontRenderParamsTest, ForceSubpixelPositioning) {
+  {
+    FontRenderParams params =
+        GetFontRenderParams(FontRenderParamsQuery(false), NULL);
+    EXPECT_TRUE(params.antialiasing);
+    EXPECT_FALSE(params.subpixel_positioning);
+    SetFontRenderParamsDeviceScaleFactor(1.0f);
+  }
+  ClearFontRenderParamsCacheForTest();
+  SetFontRenderParamsDeviceScaleFactor(1.25f);
+  // Subpixel positioning should be forced.
+  {
+    FontRenderParams params =
+        GetFontRenderParams(FontRenderParamsQuery(false), NULL);
+    EXPECT_TRUE(params.antialiasing);
+    EXPECT_TRUE(params.subpixel_positioning);
+    SetFontRenderParamsDeviceScaleFactor(1.0f);
+  }
+}
+#endif
+
 TEST_F(FontRenderParamsTest, OnlySetConfiguredValues) {
   // Configure the LinuxFontDelegate (which queries GtkSettings on desktop
   // Linux) to request subpixel rendering.

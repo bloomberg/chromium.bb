@@ -98,6 +98,13 @@ GFX_EXPORT FontRenderParams GetFontRenderParams(
 // out what's going on here.
 GFX_EXPORT void ClearFontRenderParamsCacheForTest();
 
+#if defined(OS_CHROMEOS)
+// Sets the device scale factor for FontRenderParams to decide
+// if it should enable subpixel positioning.
+GFX_EXPORT void SetFontRenderParamsDeviceScaleFactor(
+    float device_scale_factor);
+#endif
+
 }  // namespace gfx
 
 #endif  // UI_GFX_FONT_RENDER_PARAMS_H_
