@@ -1944,9 +1944,9 @@
 	associate it with the given parent surface. This turns a
 	plain wl_surface into a sub-surface.
 
-	The to-be sub-surface must not already have a dedicated
-	purpose, like any shell surface type, cursor image, drag icon,
-	or sub-surface. Otherwise a protocol error is raised.
+	The to-be sub-surface must not already have another role, and it
+	must not have an existing wl_subsurface object. Otherwise a protocol
+	error is raised.
       </description>
 
       <arg name="id" type="new_id" interface="wl_subsurface"
