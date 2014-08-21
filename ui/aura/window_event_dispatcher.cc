@@ -893,11 +893,11 @@ void WindowEventDispatcher::PreDispatchTouchEvent(Window* target,
     ui::TouchEvent orig_event(*event, target, window());
 
     // If the touch event is invalid in some way, the gesture recognizer will
-    // reject it. In this case, stop the touch from reaching the next event
-    // phase.
+    // reject it. This must call |StopPropagation()|, in order to prevent the
+    // touch from being acked in |PostDispatchEvent|.
     if (!ui::GestureRecognizer::Get()->ProcessTouchEventPreDispatch(orig_event,
                                                                     target)) {
-      event->SetHandled();
+      event->StopPropagation();
     }
   }
 
