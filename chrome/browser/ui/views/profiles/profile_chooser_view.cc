@@ -141,6 +141,7 @@ class BackgroundColorHoverButton : public views::LabelButton {
     SetMinSize(gfx::Size(0,
         kButtonHeight + views::kRelatedControlVerticalSpacing));
     SetImage(STATE_NORMAL, icon);
+    SetFocusable(true);
   }
 
   virtual ~BackgroundColorHoverButton() {}
@@ -202,17 +203,18 @@ class RightAlignedIconLabelButton : public views::LabelButton {
 // EditableProfilePhoto -------------------------------------------------
 
 // A custom Image control that shows a "change" button when moused over.
-class EditableProfilePhoto : public views::ImageView {
+class EditableProfilePhoto : public views::LabelButton {
  public:
   EditableProfilePhoto(views::ButtonListener* listener,
                        const gfx::Image& icon,
                        bool is_editing_allowed,
                        const gfx::Rect& bounds)
-      : views::ImageView(),
-        change_photo_button_(NULL) {
+      : views::LabelButton(listener, base::string16()),
+        photo_overlay_(NULL) {
     gfx::Image image = profiles::GetSizedAvatarIcon(
         icon, true, kLargeImageSide, kLargeImageSide);
-    SetImage(image.ToImageSkia());
+    SetImage(views::LabelButton::STATE_NORMAL, *image.ToImageSkia());
+    SetBorder(views::Border::NullBorder());
     SetBoundsRect(bounds);
 
     // Calculate the circular mask that will be used to display the photo.
@@ -220,32 +222,32 @@ class EditableProfilePhoto : public views::ImageView {
                              SkIntToScalar(bounds.height() / 2),
                              SkIntToScalar(bounds.width() / 2));
 
-    if (!is_editing_allowed)
+    if (!is_editing_allowed) {
+      SetEnabled(false);
       return;
+    }
 
+    SetFocusable(true);
     set_notify_enter_exit_on_child(true);
 
-    // Button overlay that appears when hovering over the image.
-    change_photo_button_ = new views::LabelButton(listener, base::string16());
-    change_photo_button_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
-    change_photo_button_->SetBorder(views::Border::NullBorder());
+    // Photo overlay that appears when hovering over the button.
+    photo_overlay_ = new views::ImageView();
 
     const SkColor kBackgroundColor = SkColorSetARGB(65, 255, 255, 255);
-    change_photo_button_->set_background(
+    photo_overlay_->set_background(
         views::Background::CreateSolidBackground(kBackgroundColor));
-    change_photo_button_->SetImage(views::LabelButton::STATE_NORMAL,
-        *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-            IDR_ICON_PROFILES_EDIT_CAMERA));
+    photo_overlay_->SetImage(*ui::ResourceBundle::GetSharedInstance().
+        GetImageSkiaNamed(IDR_ICON_PROFILES_EDIT_CAMERA));
 
-    change_photo_button_->SetSize(bounds.size());
-    change_photo_button_->SetVisible(false);
-    AddChildView(change_photo_button_);
+    photo_overlay_->SetSize(bounds.size());
+    photo_overlay_->SetVisible(false);
+    AddChildView(photo_overlay_);
   }
 
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
     // Display the profile picture as a circle.
     canvas->ClipPath(circular_mask_, true);
-    views::ImageView::OnPaint(canvas);
+    views::LabelButton::OnPaint(canvas);
   }
 
   virtual void PaintChildren(gfx::Canvas* canvas,
@@ -255,25 +257,33 @@ class EditableProfilePhoto : public views::ImageView {
     View::PaintChildren(canvas, cull_set);
   }
 
-  views::LabelButton* change_photo_button() { return change_photo_button_; }
-
  private:
-  // views::View:
-  virtual void OnMouseEntered(const ui::MouseEvent& event) OVERRIDE {
-    if (change_photo_button_)
-      change_photo_button_->SetVisible(true);
+  // views::CustomButton:
+  virtual void StateChanged() OVERRIDE {
+    bool show_overlay =
+        (state() == STATE_PRESSED || state() == STATE_HOVERED || HasFocus());
+    if (photo_overlay_)
+      photo_overlay_->SetVisible(show_overlay);
   }
 
-  virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE {
-    if (change_photo_button_)
-      change_photo_button_->SetVisible(false);
+  virtual void OnFocus() OVERRIDE {
+    views::LabelButton::OnFocus();
+    if (photo_overlay_)
+      photo_overlay_->SetVisible(true);
+  }
+
+  virtual void OnBlur() OVERRIDE {
+    views::LabelButton::OnBlur();
+    // Don't hide the overlay if it's being shown as a result of a mouseover.
+    if (photo_overlay_ && state() != STATE_HOVERED)
+      photo_overlay_->SetVisible(false);
   }
 
   gfx::Path circular_mask_;
 
-  // Button that is shown when hovering over the image view. Can be NULL if
+  // Image that is shown when hovering over the image button. Can be NULL if
   // the photo isn't allowed to be edited (e.g. for guest profiles).
-  views::LabelButton* change_photo_button_;
+  views::ImageView* photo_overlay_;
 
   DISALLOW_COPY_AND_ASSIGN(EditableProfilePhoto);
 };
@@ -300,6 +310,7 @@ class EditableProfileName : public RightAlignedIconLabelButton,
       return;
     }
 
+    SetFocusable(true);
     // Show an "edit" pencil icon when hovering over. In the default state,
     // we need to create an empty placeholder of the correct size, so that
     // the text doesn't jump around when the hovered icon appears.
@@ -362,6 +373,16 @@ class EditableProfileName : public RightAlignedIconLabelButton,
     RightAlignedIconLabelButton::Layout();
   }
 
+  virtual void OnFocus() OVERRIDE {
+    RightAlignedIconLabelButton::OnFocus();
+    SetState(STATE_HOVERED);
+  }
+
+  virtual void OnBlur() OVERRIDE {
+    RightAlignedIconLabelButton::OnBlur();
+    SetState(STATE_NORMAL);
+  }
+
   // Textfield that is shown when editing the profile name. Can be NULL if
   // the profile name isn't allowed to be edited (e.g. for guest profiles).
   views::Textfield* profile_name_textfield_;
@@ -386,6 +407,7 @@ class TitleCard : public views::View {
                            rb->GetImageSkiaNamed(IDR_BACK_P));
     back_button_->SetImage(views::ImageButton::STATE_DISABLED,
                            rb->GetImageSkiaNamed(IDR_BACK_D));
+    back_button_->SetFocusable(true);
     *back_button = back_button_;
 
     title_label_ = new views::Label(message);
@@ -730,8 +752,7 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
     ShowView(account_management_available ?
         profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT :
         profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER, avatar_menu_.get());
-  } else if (current_profile_photo_ &&
-             sender == current_profile_photo_->change_photo_button()) {
+  } else if (sender == current_profile_photo_) {
     avatar_menu_->EditProfile(avatar_menu_->GetActiveProfileIndex());
     PostActionPerformed(ProfileMetrics::PROFILE_DESKTOP_MENU_EDIT_IMAGE);
   } else if (sender == signin_current_profile_link_) {
@@ -1144,6 +1165,7 @@ views::View* ProfileChooserView::CreateCurrentProfileView(
         auth_error_email_button_->SetTextColor(
             views::LabelButton::STATE_NORMAL,
             views::Link::GetDefaultEnabledColor());
+        auth_error_email_button_->SetFocusable(true);
         layout->AddView(auth_error_email_button_);
       } else {
         views::Label* email_label = new views::Label(avatar_item.sync_state);

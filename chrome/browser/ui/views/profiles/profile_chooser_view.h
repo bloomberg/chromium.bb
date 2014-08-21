@@ -96,7 +96,7 @@ class ProfileChooserView : public views::BubbleDelegateView,
   // views::LinkListener:
   virtual void LinkClicked(views::Link* sender, int event_flags) OVERRIDE;
 
-  // views::StyledLabelListener implementation.
+  // views::StyledLabelListener:
   virtual void StyledLabelLinkClicked(
       const gfx::Range& range, int event_flags) OVERRIDE;
 
