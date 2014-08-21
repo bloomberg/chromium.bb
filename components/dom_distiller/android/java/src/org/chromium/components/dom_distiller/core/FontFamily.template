@@ -25,7 +25,7 @@ int asNativeEnum() {
   return mFontFamily;
 }
 
-static FontFamily getFontFamilyForValue(int value) {
+public static FontFamily getFontFamilyForValue(int value) {
   for (FontFamily fontFamily: FontFamily.values()) {
     if (fontFamily.mFontFamily == value) {
       return fontFamily;

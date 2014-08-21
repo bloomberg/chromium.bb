@@ -6,14 +6,19 @@ package org.chromium.chrome.browser.dom_distiller;
 
 import android.app.AlertDialog;
 import android.content.Context;
+import android.graphics.Typeface;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemSelectedListener;
+import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.SeekBar;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import org.chromium.chrome.R;
@@ -53,7 +58,10 @@ public class DistilledPagePrefsView extends LinearLayout
     // SeekBar for font scale. Has range of [0, 30].
     private SeekBar mFontScaleSeekBar;
 
-    private NumberFormat mPercentageFormatter;
+    // Spinner for choosing a font family.
+    private Spinner mFontFamilySpinner;
+
+    private final NumberFormat mPercentageFormatter;
 
     /**
      * Creates a DistilledPagePrefsView.
@@ -96,9 +104,63 @@ public class DistilledPagePrefsView extends LinearLayout
         mFontScaleSeekBar = (SeekBar) findViewById(R.id.font_size);
         mFontScaleTextView = (TextView) findViewById(R.id.font_size_percentage);
 
+        mFontFamilySpinner = (Spinner) findViewById(R.id.font_family);
+        initFontFamilySpinner();
+
         // Setting initial progress on font scale seekbar.
         onChangeFontSize(mFontSizePrefs.getFontScaleFactor());
         mFontScaleSeekBar.setOnSeekBarChangeListener(this);
+    }
+
+    private void initFontFamilySpinner() {
+        ArrayAdapter<CharSequence> adapter = new ArrayAdapter<CharSequence>(getContext(),
+                android.R.layout.simple_spinner_item, getResources().getStringArray(
+                        R.array.distiller_mode_font_family_values)) {
+            @Override
+            public View getView(int position, View convertView, ViewGroup parent) {
+                View view = super.getView(position, convertView, parent);
+                return overrideTypeFace(view, position);
+            }
+
+            @Override
+            public View getDropDownView(int position, View convertView, ViewGroup parent) {
+                View view = super.getDropDownView(position, convertView, parent);
+                return overrideTypeFace(view, position);
+            }
+
+            private View overrideTypeFace(View view, int position) {
+                if (view instanceof TextView) {
+                    TextView textView = (TextView) view;
+                    FontFamily family = FontFamily.values()[position];
+                    if (family == FontFamily.MONOSPACE) {
+                        textView.setTypeface(Typeface.MONOSPACE);
+                    } else if (family == FontFamily.SANS_SERIF) {
+                        textView.setTypeface(Typeface.SANS_SERIF);
+                    } else if (family == FontFamily.SERIF) {
+                        textView.setTypeface(Typeface.SERIF);
+                    }
+                }
+                return view;
+            }
+        };
+
+        adapter.setDropDownViewResource(R.layout.distilled_page_font_family_spinner);
+        mFontFamilySpinner.setAdapter(adapter);
+        mFontFamilySpinner.setSelection(mDistilledPagePrefs.getFontFamily().ordinal());
+        mFontFamilySpinner.setOnItemSelectedListener(new OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                FontFamily family = FontFamily.getFontFamilyForValue(position);
+                if (family != null) {
+                    mDistilledPagePrefs.setFontFamily(family);
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                // Nothing to do.
+            }
+        });
     }
 
     @Override
@@ -106,8 +168,7 @@ public class DistilledPagePrefsView extends LinearLayout
         mRadioGroup.setOrientation(HORIZONTAL);
 
         for (RadioButton button : mColorModeButtons.values()) {
-            ViewGroup.LayoutParams layoutParams =
-                    (ViewGroup.LayoutParams) button.getLayoutParams();
+            ViewGroup.LayoutParams layoutParams = button.getLayoutParams();
             layoutParams.width = 0;
         }
 
@@ -119,8 +180,7 @@ public class DistilledPagePrefsView extends LinearLayout
             if (button.getLineCount() > 1) {
                 mRadioGroup.setOrientation(VERTICAL);
                 for (RadioButton innerLoopButton : mColorModeButtons.values()) {
-                    ViewGroup.LayoutParams layoutParams =
-                            (ViewGroup.LayoutParams) innerLoopButton.getLayoutParams();
+                    ViewGroup.LayoutParams layoutParams = innerLoopButton.getLayoutParams();
                     layoutParams.width = LayoutParams.MATCH_PARENT;
                 }
                 break;
@@ -146,7 +206,7 @@ public class DistilledPagePrefsView extends LinearLayout
 
     @Override
     public void onChangeFontFamily(FontFamily fontFamily) {
-         // TODO(smaslo): add GUI and front end implementation for FontFamily.
+         mFontFamilySpinner.setSelection(fontFamily.ordinal());
     }
 
     /**
@@ -165,7 +225,7 @@ public class DistilledPagePrefsView extends LinearLayout
         // newValue = .50, .55, .60, ..., 1.95, 2.00 (supported font scales)
         float newValue = (progress / 20f + .5f);
         setFontScaleTextView(newValue);
-        mFontSizePrefs.setFontScaleFactor((float) newValue);
+        mFontSizePrefs.setFontScaleFactor(newValue);
     }
 
     @Override

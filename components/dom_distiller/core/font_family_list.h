@@ -10,7 +10,9 @@
 #endif
 
 // First argument represents the enum name, second argument represents enum
-// value. FONT_FAMILY_COUNT used only by native enum.
+// value.
+// These must be kept in sync with the resource strings in
+// chrome/android/java/res/values/arrays.xml
 DEFINE_FONT_FAMILY(SANS_SERIF, 0)
 DEFINE_FONT_FAMILY(SERIF, 1)
 DEFINE_FONT_FAMILY(MONOSPACE, 2)

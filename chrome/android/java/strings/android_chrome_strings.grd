@@ -363,6 +363,15 @@ You are signing in with a managed account and giving its administrator control o
       <message name="IDS_SEPIA_MODE" desc="Title of button that will change theme of distilled pages to sepia mode.">
         Sepia
       </message>
+      <message name="IDS_SANS_SERIF" desc="Title of the selector button that will change the typeface of distilled pages to use a SansSerif font.">
+        Sans Serif
+      </message>
+      <message name="IDS_SERIF" desc="Title of the selector button that will change the typeface of distilled pages to use a Serif font.">
+        Serif
+      </message>
+      <message name="IDS_MONOSPACE" desc="Title of the selector button that will change the typeface of distilled pages to use a Monospace font.">
+        Monospace
+      </message>
       <message name="IDS_TEXT_SIZE_SIGNIFIER" desc="A typical letter of the alphabet.  This is drawn on either end of a slider bar that allows the user to change the font size.  On one end, it is drawn smaller and on the other end larger.">
         A
       </message>
