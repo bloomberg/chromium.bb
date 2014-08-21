@@ -40,10 +40,10 @@ TEST(DataURLTest, Parse) {
       "" },
 
     { "data:;charset=,test",
-      false,
-      "",
-      "",
-      "" },
+      true,
+      "text/plain",
+      "US-ASCII",
+      "test" },
 
     { "data:TeXt/HtMl,<b>x</b>",
       true,

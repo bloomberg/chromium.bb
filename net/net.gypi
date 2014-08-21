@@ -1670,7 +1670,6 @@
       'url_request/url_fetcher_impl_unittest.cc',
       'url_request/url_fetcher_response_writer_unittest.cc',
       'url_request/url_request_context_builder_unittest.cc',
-      'url_request/url_request_data_job_unittest.cc',
       'url_request/url_request_file_job_unittest.cc',
       'url_request/url_request_filter_unittest.cc',
       'url_request/url_request_ftp_job_unittest.cc',
