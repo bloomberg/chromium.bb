@@ -794,7 +794,12 @@ void SpdyStream::QueueNextDataFrame() {
         io_state_ == STATE_HALF_CLOSED_REMOTE) << io_state_;
   CHECK_GT(stream_id_, 0u);
   CHECK(pending_send_data_.get());
-  CHECK_GT(pending_send_data_->BytesRemaining(), 0);
+  // Only the final fame may have a length of 0.
+  if (pending_send_status_ == NO_MORE_DATA_TO_SEND) {
+    CHECK_GE(pending_send_data_->BytesRemaining(), 0);
+  } else {
+    CHECK_GT(pending_send_data_->BytesRemaining(), 0);
+  }
 
   SpdyDataFlags flags =
       (pending_send_status_ == NO_MORE_DATA_TO_SEND) ?
@@ -814,13 +819,18 @@ void SpdyStream::QueueNextDataFrame() {
     size_t payload_size =
         data_buffer->GetRemainingSize() - session_->GetDataFrameMinimumSize();
     DCHECK_LE(payload_size, session_->GetDataFrameMaximumPayload());
-    DecreaseSendWindowSize(static_cast<int32>(payload_size));
-    // This currently isn't strictly needed, since write frames are
-    // discarded only if the stream is about to be closed. But have it
-    // here anyway just in case this changes.
-    data_buffer->AddConsumeCallback(
-        base::Bind(&SpdyStream::OnWriteBufferConsumed,
-                   GetWeakPtr(), payload_size));
+
+    // Send window size is based on payload size, so nothing to do if this is
+    // just a FIN with no payload.
+    if (payload_size != 0) {
+      DecreaseSendWindowSize(static_cast<int32>(payload_size));
+      // This currently isn't strictly needed, since write frames are
+      // discarded only if the stream is about to be closed. But have it
+      // here anyway just in case this changes.
+      data_buffer->AddConsumeCallback(
+          base::Bind(&SpdyStream::OnWriteBufferConsumed,
+                     GetWeakPtr(), payload_size));
+    }
   }
 
   session_->EnqueueStreamWrite(

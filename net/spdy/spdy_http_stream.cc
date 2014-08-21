@@ -424,6 +424,7 @@ void SpdyHttpStream::OnRequestBodyReadCompleted(int status) {
   CHECK_GE(status, 0);
   request_body_buf_size_ = status;
   const bool eof = request_info_->upload_data_stream->IsEOF();
+  // Only the final fame may have a length of 0.
   if (eof) {
     CHECK_GE(request_body_buf_size_, 0);
   } else {

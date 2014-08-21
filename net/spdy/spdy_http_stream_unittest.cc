@@ -485,6 +485,166 @@ TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPost) {
   EXPECT_TRUE(deterministic_data()->at_write_eof());
 }
 
+// Test that the SpdyStream state machine can handle sending a final empty data
+// frame when uploading a chunked data stream.
+TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPostWithEmptyFinalDataFrame) {
+  scoped_ptr<SpdyFrame> req(spdy_util_.ConstructChunkedSpdyPost(NULL, 0));
+  scoped_ptr<SpdyFrame> chunk1(spdy_util_.ConstructSpdyBodyFrame(1, false));
+  scoped_ptr<SpdyFrame> chunk2(
+      spdy_util_.ConstructSpdyBodyFrame(1, "", 0, true));
+  MockWrite writes[] = {
+    CreateMockWrite(*req.get(), 0),
+    CreateMockWrite(*chunk1, 1),  // POST upload frames
+    CreateMockWrite(*chunk2, 2),
+  };
+  scoped_ptr<SpdyFrame> resp(spdy_util_.ConstructSpdyPostSynReply(NULL, 0));
+  MockRead reads[] = {
+    CreateMockRead(*resp, 3),
+    CreateMockRead(*chunk1, 4),
+    CreateMockRead(*chunk2, 5),
+    MockRead(ASYNC, 0, 6)  // EOF
+  };
+
+  HostPortPair host_port_pair("www.google.com", 80);
+  SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
+                     PRIVACY_MODE_DISABLED);
+  InitSessionDeterministic(reads, arraysize(reads),
+                           writes, arraysize(writes),
+                           key);
+
+  UploadDataStream upload_stream(UploadDataStream::CHUNKED, 0);
+
+  HttpRequestInfo request;
+  request.method = "POST";
+  request.url = GURL("http://www.google.com/");
+  request.upload_data_stream = &upload_stream;
+
+  ASSERT_EQ(OK, upload_stream.Init(CompletionCallback()));
+  upload_stream.AppendChunk(kUploadData, kUploadDataSize, false);
+
+  BoundNetLog net_log;
+  scoped_ptr<SpdyHttpStream> http_stream(new SpdyHttpStream(session_, true));
+  ASSERT_EQ(OK, http_stream->InitializeStream(&request, DEFAULT_PRIORITY,
+                                              net_log, CompletionCallback()));
+
+  TestCompletionCallback callback;
+  HttpRequestHeaders headers;
+  HttpResponseInfo response;
+  // This will attempt to Write() the initial request and headers, which will
+  // complete asynchronously.
+  EXPECT_EQ(ERR_IO_PENDING, http_stream->SendRequest(headers, &response,
+                                                     callback.callback()));
+  EXPECT_TRUE(HasSpdySession(http_session_->spdy_session_pool(), key));
+
+  // Complete the initial request write and the first chunk.
+  deterministic_data()->RunFor(2);
+  ASSERT_TRUE(callback.have_result());
+  EXPECT_EQ(OK, callback.WaitForResult());
+
+  // Now end the stream with an empty data frame and the FIN set.
+  upload_stream.AppendChunk(NULL, 0, true);
+
+  // Finish writing the final frame.
+  deterministic_data()->RunFor(1);
+
+  // Read response headers.
+  deterministic_data()->RunFor(1);
+  ASSERT_EQ(OK, http_stream->ReadResponseHeaders(callback.callback()));
+
+  // Read and check |chunk1| response.
+  deterministic_data()->RunFor(1);
+  scoped_refptr<IOBuffer> buf1(new IOBuffer(kUploadDataSize));
+  ASSERT_EQ(kUploadDataSize,
+            http_stream->ReadResponseBody(
+                buf1.get(), kUploadDataSize, callback.callback()));
+  EXPECT_EQ(kUploadData, std::string(buf1->data(), kUploadDataSize));
+
+  // Read and check |chunk2| response.
+  deterministic_data()->RunFor(1);
+  ASSERT_EQ(0,
+            http_stream->ReadResponseBody(
+                buf1.get(), kUploadDataSize, callback.callback()));
+
+  // Finish reading the |EOF|.
+  deterministic_data()->RunFor(1);
+  ASSERT_TRUE(response.headers.get());
+  ASSERT_EQ(200, response.headers->response_code());
+  EXPECT_TRUE(deterministic_data()->at_read_eof());
+  EXPECT_TRUE(deterministic_data()->at_write_eof());
+}
+
+// Test that the SpdyStream state machine handles a chunked upload with no
+// payload. Unclear if this is a case worth supporting.
+TEST_P(SpdyHttpStreamTest, ChunkedPostWithEmptyPayload) {
+  scoped_ptr<SpdyFrame> req(spdy_util_.ConstructChunkedSpdyPost(NULL, 0));
+  scoped_ptr<SpdyFrame> chunk(
+      spdy_util_.ConstructSpdyBodyFrame(1, "", 0, true));
+  MockWrite writes[] = {
+    CreateMockWrite(*req.get(), 0),
+    CreateMockWrite(*chunk, 1),
+  };
+  scoped_ptr<SpdyFrame> resp(spdy_util_.ConstructSpdyPostSynReply(NULL, 0));
+  MockRead reads[] = {
+    CreateMockRead(*resp, 2),
+    CreateMockRead(*chunk, 3),
+    MockRead(ASYNC, 0, 4)  // EOF
+  };
+
+  HostPortPair host_port_pair("www.google.com", 80);
+  SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
+                     PRIVACY_MODE_DISABLED);
+  InitSessionDeterministic(reads, arraysize(reads),
+                           writes, arraysize(writes),
+                           key);
+
+  UploadDataStream upload_stream(UploadDataStream::CHUNKED, 0);
+
+  HttpRequestInfo request;
+  request.method = "POST";
+  request.url = GURL("http://www.google.com/");
+  request.upload_data_stream = &upload_stream;
+
+  ASSERT_EQ(OK, upload_stream.Init(CompletionCallback()));
+  upload_stream.AppendChunk("", 0, true);
+
+  BoundNetLog net_log;
+  scoped_ptr<SpdyHttpStream> http_stream(new SpdyHttpStream(session_, true));
+  ASSERT_EQ(OK, http_stream->InitializeStream(&request, DEFAULT_PRIORITY,
+                                              net_log, CompletionCallback()));
+
+  TestCompletionCallback callback;
+  HttpRequestHeaders headers;
+  HttpResponseInfo response;
+  // This will attempt to Write() the initial request and headers, which will
+  // complete asynchronously.
+  EXPECT_EQ(ERR_IO_PENDING, http_stream->SendRequest(headers, &response,
+                                                     callback.callback()));
+  EXPECT_TRUE(HasSpdySession(http_session_->spdy_session_pool(), key));
+
+  // Complete writing request, followed by a FIN.
+  deterministic_data()->RunFor(2);
+  ASSERT_TRUE(callback.have_result());
+  EXPECT_EQ(OK, callback.WaitForResult());
+
+  // Read response headers.
+  deterministic_data()->RunFor(1);
+  ASSERT_EQ(OK, http_stream->ReadResponseHeaders(callback.callback()));
+
+  // Read and check |chunk| response.
+  deterministic_data()->RunFor(1);
+  scoped_refptr<IOBuffer> buf(new IOBuffer(1));
+  ASSERT_EQ(0,
+            http_stream->ReadResponseBody(
+                buf.get(), 1, callback.callback()));
+
+  // Finish reading the |EOF|.
+  deterministic_data()->RunFor(1);
+  ASSERT_TRUE(response.headers.get());
+  ASSERT_EQ(200, response.headers->response_code());
+  EXPECT_TRUE(deterministic_data()->at_read_eof());
+  EXPECT_TRUE(deterministic_data()->at_write_eof());
+}
+
 // Test case for bug: http://code.google.com/p/chromium/issues/detail?id=50058
 TEST_P(SpdyHttpStreamTest, SpdyURLTest) {
   const char * const full_url = "http://www.google.com/foo?query=what#anchor";

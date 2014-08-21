@@ -1182,7 +1182,10 @@ scoped_ptr<SpdyBuffer> SpdySession::CreateDataBuffer(SpdyStreamId stream_id,
 
   scoped_ptr<SpdyBuffer> data_buffer(new SpdyBuffer(frame.Pass()));
 
-  if (flow_control_state_ == FLOW_CONTROL_STREAM_AND_SESSION) {
+  // Send window size is based on payload size, so nothing to do if this is
+  // just a FIN with no payload.
+  if (flow_control_state_ == FLOW_CONTROL_STREAM_AND_SESSION &&
+      effective_len != 0) {
     DecreaseSendWindowSize(static_cast<int32>(effective_len));
     data_buffer->AddConsumeCallback(
         base::Bind(&SpdySession::OnWriteBufferConsumed,
