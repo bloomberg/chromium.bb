@@ -101,13 +101,15 @@ ResultExpr RestrictCloneToThreadsAndEPERMFork() {
                                      CLONE_SIGHAND | CLONE_THREAD |
                                      CLONE_SYSVSEM;
   const uint64_t kObsoleteAndroidCloneMask = kAndroidCloneMask | CLONE_DETACHED;
-  const BoolExpr android_test =
-      flags == kAndroidCloneMask || flags == kObsoleteAndroidCloneMask;
 
   const uint64_t kGlibcPthreadFlags =
       CLONE_VM | CLONE_FS | CLONE_FILES | CLONE_SIGHAND | CLONE_THREAD |
       CLONE_SYSVSEM | CLONE_SETTLS | CLONE_PARENT_SETTID | CLONE_CHILD_CLEARTID;
   const BoolExpr glibc_test = flags == kGlibcPthreadFlags;
+
+  const BoolExpr android_test = flags == kAndroidCloneMask ||
+                                flags == kObsoleteAndroidCloneMask ||
+                                flags == kGlibcPthreadFlags;
 
   return If(IsAndroid() ? android_test : glibc_test, Allow())
       .ElseIf((flags & (CLONE_VM | CLONE_THREAD)) == 0, Error(EPERM))
