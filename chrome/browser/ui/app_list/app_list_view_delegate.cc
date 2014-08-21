@@ -483,6 +483,20 @@ void AppListViewDelegate::OnSpeechSoundLevelChanged(int16 level) {
 void AppListViewDelegate::OnSpeechRecognitionStateChanged(
     app_list::SpeechRecognitionState new_state) {
   speech_ui_->SetSpeechRecognitionState(new_state);
+
+  app_list::StartPageService* service =
+      app_list::StartPageService::Get(profile_);
+  // With the new hotword extension, we need to re-request hotwording after
+  // speech recognition has stopped.
+  if (new_state == app_list::SPEECH_RECOGNITION_READY &&
+      HotwordService::IsExperimentalHotwordingEnabled() &&
+      service && service->HotwordEnabled()) {
+    HotwordService* hotword_service =
+        HotwordServiceFactory::GetForProfile(profile_);
+    if (hotword_service) {
+      hotword_service->RequestHotwordSession(this);
+    }
+  }
 }
 
 void AppListViewDelegate::OnProfileAdded(const base::FilePath& profile_path) {

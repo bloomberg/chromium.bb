@@ -144,7 +144,8 @@ void StartPageHandler::OnHotwordEnabledChanged() {
                                  extensions::ExtensionRegistry::ENABLED);
   if (hotword_extension &&
       hotword_extension->version()->CompareTo(
-          base::Version(kOldHotwordExtensionVersionString)) <= 0) {
+          base::Version(kOldHotwordExtensionVersionString)) <= 0 &&
+      !HotwordService::IsExperimentalHotwordingEnabled()) {
     StartPageService* service = StartPageService::Get(profile);
     web_ui()->CallJavascriptFunction(
         "appList.startPage.setHotwordEnabled",
@@ -193,9 +194,13 @@ void StartPageHandler::HandleInitialize(const base::ListValue* args) {
 #endif
 
   if (!app_list::switches::IsExperimentalAppListEnabled()) {
+    // If experimental hotwording is enabled, don't enable hotwording in the
+    // start page, since the hotword extension is taking care of this.
+    bool hotword_enabled = service->HotwordEnabled() &&
+        !HotwordService::IsExperimentalHotwordingEnabled();
     web_ui()->CallJavascriptFunction(
         "appList.startPage.onAppListShown",
-        base::FundamentalValue(service->HotwordEnabled()));
+        base::FundamentalValue(hotword_enabled));
   }
 }
 

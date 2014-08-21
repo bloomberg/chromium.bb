@@ -39,6 +39,9 @@ class HotwordService : public content::NotificationObserver,
   // Returns true if the hotword supports the current system language.
   static bool DoesHotwordSupportLanguage(Profile* profile);
 
+  // Returns true if the "enable-experimental-hotwording" flag is set.
+  static bool IsExperimentalHotwordingEnabled();
+
   explicit HotwordService(Profile* profile);
   virtual ~HotwordService();
 

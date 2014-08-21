@@ -13,6 +13,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/media/media_stream_infobar_delegate.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search/hotword_service.h"
 #include "chrome/browser/search/hotword_service_factory.h"
 #include "chrome/browser/ui/app_list/recommended_apps.h"
 #include "chrome/browser/ui/app_list/start_page_observer.h"
@@ -103,6 +104,12 @@ StartPageService::StartPageService(Profile* profile)
       state_(app_list::SPEECH_RECOGNITION_OFF),
       speech_button_toggled_manually_(false),
       speech_result_obtained_(false) {
+  // If experimental hotwording is enabled, then we're always "ready".
+  // Transitioning into the "hotword recognizing" state is handled by the
+  // hotword extension.
+  if (HotwordService::IsExperimentalHotwordingEnabled())
+    state_ = app_list::SPEECH_RECOGNITION_READY;
+
   if (app_list::switches::IsExperimentalAppListEnabled())
     LoadContents();
 }
@@ -121,9 +128,13 @@ void StartPageService::AppListShown() {
   if (!contents_) {
     LoadContents();
   } else {
+    // If experimental hotwording is enabled, don't enable hotwording in the
+    // start page, since the hotword extension is taking care of this.
+    bool hotword_enabled = HotwordEnabled() &&
+        !HotwordService::IsExperimentalHotwordingEnabled();
     contents_->GetWebUI()->CallJavascriptFunction(
         "appList.startPage.onAppListShown",
-        base::FundamentalValue(HotwordEnabled()));
+        base::FundamentalValue(hotword_enabled));
   }
 }
 
@@ -141,6 +152,10 @@ void StartPageService::ToggleSpeechRecognition() {
 }
 
 bool StartPageService::HotwordEnabled() {
+  if (HotwordService::IsExperimentalHotwordingEnabled()) {
+    return HotwordServiceFactory::IsServiceAvailable(profile_) &&
+        profile_->GetPrefs()->GetBoolean(prefs::kHotwordSearchEnabled);
+  }
 #if defined(OS_CHROMEOS)
   return HotwordServiceFactory::IsServiceAvailable(profile_) &&
       profile_->GetPrefs()->GetBoolean(prefs::kHotwordSearchEnabled);

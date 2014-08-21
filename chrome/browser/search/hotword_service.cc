@@ -4,6 +4,7 @@
 
 #include "chrome/browser/search/hotword_service.h"
 
+#include "base/command_line.h"
 #include "base/i18n/case_conversion.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
@@ -20,6 +21,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/hotword_service_factory.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
@@ -171,6 +173,12 @@ bool HotwordService::DoesHotwordSupportLanguage(Profile* profile) {
       return true;
   }
   return false;
+}
+
+// static
+bool HotwordService::IsExperimentalHotwordingEnabled() {
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  return command_line->HasSwitch(switches::kEnableExperimentalHotwording);
 }
 
 HotwordService::HotwordService(Profile* profile)
@@ -447,7 +455,7 @@ void HotwordService::OnHotwordSearchEnabledChanged(
 }
 
 void HotwordService::RequestHotwordSession(HotwordClient* client) {
-  if (!IsServiceAvailable() || client_)
+  if (!IsServiceAvailable() || (client_ && client_ != client))
     return;
 
   client_ = client;
