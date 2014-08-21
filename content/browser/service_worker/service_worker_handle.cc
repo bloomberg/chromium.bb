@@ -110,7 +110,7 @@ ServiceWorkerObjectInfo ServiceWorkerHandle::GetObjectInfo() {
   ServiceWorkerObjectInfo info;
   info.handle_id = handle_id_;
   info.scope = registration_->pattern();
-  info.url = version_->script_url();
+  info.url = registration_->script_url();
   info.state = GetWebServiceWorkerState(version_);
   return info;
 }

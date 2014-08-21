@@ -157,17 +157,15 @@ void ServiceWorkerRegistration::ClearWhenReady() {
       id(),
       script_url().GetOrigin(),
       base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
+
   if (!active_version() || !active_version()->HasControllee())
     Clear();
 }
 
-void ServiceWorkerRegistration::AbortPendingClear(
-    const StatusCallback& callback) {
+void ServiceWorkerRegistration::AbortPendingClear() {
   DCHECK(context_);
-  if (!is_uninstalling()) {
-    callback.Run(SERVICE_WORKER_OK);
+  if (!is_uninstalling())
     return;
-  }
   is_uninstalling_ = false;
   context_->storage()->NotifyDoneUninstallingRegistration(this);
 
@@ -178,9 +176,8 @@ void ServiceWorkerRegistration::AbortPendingClear(
   context_->storage()->StoreRegistration(
       this,
       most_recent_version,
-      base::Bind(&ServiceWorkerRegistration::OnRestoreFinished,
+      base::Bind(&ServiceWorkerRegistration::OnStoreFinished,
                  this,
-                 callback,
                  most_recent_version));
 }
 
@@ -276,9 +273,7 @@ void ServiceWorkerRegistration::OnDeleteFinished(
 }
 
 void ServiceWorkerRegistration::Clear() {
-  is_uninstalling_ = false;
-  if (context_)
-    context_->storage()->NotifyDoneUninstallingRegistration(this);
+  context_->storage()->NotifyDoneUninstallingRegistration(this);
 
   ChangedVersionAttributesMask mask;
   if (installing_version_) {
@@ -302,22 +297,15 @@ void ServiceWorkerRegistration::Clear() {
     FOR_EACH_OBSERVER(Listener, listeners_,
                       OnVersionAttributesChanged(this, mask, info));
   }
-
-  FOR_EACH_OBSERVER(
-      Listener, listeners_, OnRegistrationFinishedUninstalling(this));
 }
 
-void ServiceWorkerRegistration::OnRestoreFinished(
-    const StatusCallback& callback,
+void ServiceWorkerRegistration::OnStoreFinished(
     scoped_refptr<ServiceWorkerVersion> version,
     ServiceWorkerStatusCode status) {
-  if (!context_) {
-    callback.Run(ServiceWorkerStatusCode::SERVICE_WORKER_ERROR_ABORT);
+  if (!context_)
     return;
-  }
   context_->storage()->NotifyDoneInstallingRegistration(
       this, version.get(), status);
-  callback.Run(status);
 }
 
 }  // namespace content
