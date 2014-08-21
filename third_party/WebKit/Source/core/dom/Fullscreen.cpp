@@ -48,7 +48,7 @@ using namespace HTMLNames;
 
 static bool fullscreenIsAllowedForAllOwners(const Document& document)
 {
-    for (const HTMLFrameOwnerElement* owner = document.ownerElement(); owner; owner = owner->document().ownerElement()) {
+    for (const Element* owner = document.ownerElement(); owner; owner = owner->document().ownerElement()) {
         if (!isHTMLIFrameElement(owner))
             return false;
         if (!owner->hasAttribute(allowfullscreenAttr))
@@ -69,6 +69,46 @@ static bool fullscreenIsSupported(const Document& document, const Element& eleme
     if (!document.settings() || (document.settings()->disallowFullscreenForNonMediaElements() && !isHTMLMediaElement(element)))
         return false;
     return fullscreenIsSupported(document);
+}
+
+static bool fullscreenElementReady(const Element& element, Fullscreen::RequestType requestType)
+{
+    // A fullscreen element ready check for an element |element| returns true if all of the
+    // following are true, and false otherwise:
+
+    // |element| is in a document.
+    if (!element.inDocument())
+        return false;
+
+    // |element|'s node document's fullscreen enabled flag is set.
+    if (!fullscreenIsAllowedForAllOwners(element.document())) {
+        if (requestType == Fullscreen::PrefixedVideoRequest)
+            UseCounter::count(element.document(), UseCounter::VideoFullscreenAllowedExemption);
+        else
+            return false;
+    }
+
+    // |element|'s node document's fullscreen element stack is either empty or its top element is an
+    // inclusive ancestor of |element|.
+    if (const Element* topElement = Fullscreen::fullscreenElementFrom(element.document())) {
+        if (!topElement->contains(&element))
+            return false;
+    }
+
+    // |element| has no ancestor element whose local name is iframe and namespace is the HTML
+    // namespace.
+    if (Traversal<HTMLIFrameElement>::firstAncestor(element))
+        return false;
+
+    // |element|'s node document's browsing context either has a browsing context container and the
+    // fullscreen element ready check returns true for |element|'s node document's browsing
+    // context's browsing context container, or it has no browsing context container.
+    if (const Element* owner = element.document().ownerElement()) {
+        if (!fullscreenElementReady(*owner, requestType))
+            return false;
+    }
+
+    return true;
 }
 
 static bool isPrefixed(const AtomicString& type)
@@ -167,46 +207,6 @@ void Fullscreen::documentWasDisposed()
 }
 #endif
 
-bool Fullscreen::elementReady(Element& element, RequestType requestType)
-{
-    // A fullscreen element ready check for an element |element| returns true if all of the
-    // following are true, and false otherwise:
-
-    // |element| is in a document.
-    if (!element.inDocument())
-        return false;
-
-    // |element|'s node document's fullscreen enabled flag is set.
-    if (!fullscreenIsAllowedForAllOwners(element.document())) {
-        if (requestType == PrefixedVideoRequest)
-            UseCounter::count(element.document(), UseCounter::VideoFullscreenAllowedExemption);
-        else
-            return false;
-    }
-
-    // |element|'s node document's fullscreen element stack is either empty or its top element is an
-    // inclusive ancestor of |element|.
-    if (Element* topElement = fullscreenElementFrom(element.document())) {
-        if (!topElement->contains(&element))
-            return false;
-    }
-
-    // |element| has no ancestor element whose local name is iframe and namespace is the HTML
-    // namespace.
-    if (Traversal<HTMLIFrameElement>::firstAncestor(element))
-        return false;
-
-    // |element|'s node document's browsing context either has a browsing context container and the
-    // fullscreen element ready check returns true for |element|'s node document's browsing
-    // context's browsing context container, or it has no browsing context container.
-    if (HTMLFrameOwnerElement* container = element.document().ownerElement()) {
-        if (!elementReady(*container, requestType))
-            return false;
-    }
-
-    return true;
-}
-
 void Fullscreen::requestFullscreen(Element& element, RequestType requestType)
 {
     // Ignore this request if the document is not in a live frame.
@@ -223,7 +223,7 @@ void Fullscreen::requestFullscreen(Element& element, RequestType requestType)
         // node document:
 
         // The fullscreen element ready check returns false.
-        if (!elementReady(element, requestType))
+        if (!fullscreenElementReady(element, requestType))
             break;
 
         // This algorithm is not allowed to show a pop-up:
