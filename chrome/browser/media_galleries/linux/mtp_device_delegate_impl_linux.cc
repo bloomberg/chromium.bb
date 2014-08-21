@@ -207,6 +207,7 @@ MTPDeviceDelegateImplLinux::PendingTaskInfo::~PendingTaskInfo() {
 class MTPDeviceDelegateImplLinux::MTPFileNode {
  public:
   MTPFileNode(uint32 file_id,
+              const std::string& file_name,
               MTPFileNode* parent,
               FileIdToMTPFileNodeMap* file_id_to_node_map);
   ~MTPFileNode();
@@ -222,6 +223,7 @@ class MTPDeviceDelegateImplLinux::MTPFileNode {
   bool DeleteChild(uint32 file_id);
 
   uint32 file_id() const { return file_id_; }
+  const std::string& file_name() const { return file_name_; }
   MTPFileNode* parent() { return parent_; }
 
  private:
@@ -229,6 +231,8 @@ class MTPDeviceDelegateImplLinux::MTPFileNode {
   typedef base::ScopedPtrHashMap<std::string, MTPFileNode> ChildNodes;
 
   const uint32 file_id_;
+  const std::string file_name_;
+
   ChildNodes children_;
   MTPFileNode* const parent_;
   FileIdToMTPFileNodeMap* file_id_to_node_map_;
@@ -238,9 +242,11 @@ class MTPDeviceDelegateImplLinux::MTPFileNode {
 
 MTPDeviceDelegateImplLinux::MTPFileNode::MTPFileNode(
     uint32 file_id,
+    const std::string& file_name,
     MTPFileNode* parent,
     FileIdToMTPFileNodeMap* file_id_to_node_map)
     : file_id_(file_id),
+      file_name_(file_name),
       parent_(parent),
       file_id_to_node_map_(file_id_to_node_map) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
@@ -272,7 +278,7 @@ void MTPDeviceDelegateImplLinux::MTPFileNode::EnsureChildExists(
 
   children_.set(
       name,
-      make_scoped_ptr(new MTPFileNode(id, this, file_id_to_node_map_)));
+      make_scoped_ptr(new MTPFileNode(id, name, this, file_id_to_node_map_)));
 }
 
 void MTPDeviceDelegateImplLinux::MTPFileNode::ClearNonexistentChildren(
@@ -309,7 +315,8 @@ MTPDeviceDelegateImplLinux::MTPDeviceDelegateImplLinux(
       task_in_progress_(false),
       device_path_(device_location),
       root_node_(new MTPFileNode(mtpd::kRootFileId,
-                                 NULL,
+                                 "",    // Root node has no name.
+                                 NULL,  // And no parent node.
                                  &file_id_to_node_map_)),
       weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
@@ -328,6 +335,24 @@ void MTPDeviceDelegateImplLinux::GetFileInfo(
     const ErrorCallback& error_callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(!file_path.empty());
+
+  // If a ReadDirectory operation is in progress, the file info may already be
+  // cached.
+  FileInfoCache::const_iterator it = file_info_cache_.find(file_path);
+  if (it != file_info_cache_.end()) {
+    // TODO(thestig): This code is repeated in several places. Combine them.
+    // e.g. c/b/media_galleries/win/mtp_device_operations_util.cc
+    const fileapi::DirectoryEntry& cached_file_entry = it->second;
+    base::File::Info info;
+    info.size = cached_file_entry.size;
+    info.is_directory = cached_file_entry.is_directory;
+    info.is_symbolic_link = false;
+    info.last_modified = cached_file_entry.last_modified_time;
+    info.creation_time = base::Time();
+
+    success_callback.Run(info);
+    return;
+  }
   base::Closure closure =
       base::Bind(&MTPDeviceDelegateImplLinux::GetFileInfoInternal,
                  weak_ptr_factory_.GetWeakPtr(),
@@ -733,6 +758,17 @@ void MTPDeviceDelegateImplLinux::OnDidReadDirectory(
   DCHECK(it != file_id_to_node_map_.end());
   MTPFileNode* dir_node = it->second;
 
+  // Traverse the MTPFileNode tree to reconstuct the full path for |dir_id|.
+  std::deque<std::string> dir_path_parts;
+  MTPFileNode* parent_node = dir_node;
+  while (parent_node->parent()) {
+    dir_path_parts.push_front(parent_node->file_name());
+    parent_node = parent_node->parent();
+  }
+  base::FilePath dir_path = device_path_;
+  for (size_t i = 0; i < dir_path_parts.size(); ++i)
+    dir_path = dir_path.Append(dir_path_parts[i]);
+
   fileapi::AsyncFileUtil::EntryList normalized_file_list;
   for (size_t i = 0; i < file_list.size(); ++i) {
     normalized_file_list.push_back(file_list[i]);
@@ -751,6 +787,9 @@ void MTPDeviceDelegateImplLinux::OnDidReadDirectory(
     // Refresh the in memory tree.
     dir_node->EnsureChildExists(entry.name, file_id);
     child_nodes_seen_.insert(entry.name);
+
+    // Add to |file_info_cache_|.
+    file_info_cache_[dir_path.Append(entry.name)] = entry;
   }
 
   success_callback.Run(normalized_file_list, has_more);
@@ -760,6 +799,7 @@ void MTPDeviceDelegateImplLinux::OnDidReadDirectory(
   // Last call, finish book keeping and continue with the next request.
   dir_node->ClearNonexistentChildren(child_nodes_seen_);
   child_nodes_seen_.clear();
+  file_info_cache_.clear();
 
   PendingRequestDone();
 }

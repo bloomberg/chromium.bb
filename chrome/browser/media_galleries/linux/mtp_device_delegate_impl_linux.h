@@ -60,6 +60,9 @@ class MTPDeviceDelegateImplLinux : public MTPDeviceAsyncDelegate {
   // Maps file ids to file nodes.
   typedef std::map<uint32, MTPFileNode*> FileIdToMTPFileNodeMap;
 
+  // Maps file paths to file info.
+  typedef std::map<base::FilePath, fileapi::DirectoryEntry> FileInfoCache;
+
   // Should only be called by CreateMTPDeviceAsyncDelegate() factory call.
   // Defer the device initializations until the first file operation request.
   // Do all the initializations in EnsureInitAndRunTask() function.
@@ -277,6 +280,11 @@ class MTPDeviceDelegateImplLinux : public MTPDeviceAsyncDelegate {
   // A list of child nodes encountered while a ReadDirectory operation, which
   // can return results over multiple callbacks, is in progress.
   std::set<std::string> child_nodes_seen_;
+
+  // A cache to store file metadata for file entries read during a ReadDirectory
+  // operation. Used to service incoming GetFileInfo calls for the duration of
+  // the ReadDirectory operation.
+  FileInfoCache file_info_cache_;
 
   // For callbacks that may run after destruction.
   base::WeakPtrFactory<MTPDeviceDelegateImplLinux> weak_ptr_factory_;
