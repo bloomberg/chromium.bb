@@ -27,6 +27,7 @@ from chromite.lib import cros_build_lib
 from chromite.lib import git
 from chromite.lib import gs
 from chromite.lib import osutils
+from chromite.lib import terminal
 
 
 CHECKOUT_TYPE_UNKNOWN = 'unknown'
@@ -212,6 +213,32 @@ class FilteringOption(Option):
     parser.AddParsedArg(self, opt, [str(v) for v in value])
 
 
+class ColoredFormatter(logging.Formatter):
+  """A logging formatter that can color the messages."""
+
+  _COLOR_MAPPING = {
+      'WARNING': terminal.Color.YELLOW,
+      'ERROR': terminal.Color.RED,
+  }
+
+  def __init__(self, *args, **kwargs):
+    """Initializes the formatter."""
+    # If enable_color is None, termail.Color will determine whether to
+    # enable color based on the environment variable $NOCOLOR.
+    self.color = terminal.Color(enabled=kwargs.pop('enable_color'))
+    super(ColoredFormatter, self).__init__(*args, **kwargs)
+
+  def format(self, record, **kwargs):
+    """Formats |record| with color."""
+    msg = super(ColoredFormatter, self).format(record, **kwargs)
+    color = self._COLOR_MAPPING.get(record.levelname)
+    return msg if not color else self.color.Color(color, msg)
+
+
+class ChromiteStreamHandler(logging.StreamHandler):
+  """A stream handler for logging."""
+
+
 class BaseParser(object):
   """Base parser class that includes the logic to add logging controls."""
 
@@ -278,14 +305,18 @@ class BaseParser(object):
     if self.logging_enabled:
       self.debug_group = self.add_option_group("Debug options")
       self.add_option_to_group(
-          self.debug_group, "--log-level", choices=self.log_levels,
+          self.debug_group, '--log-level', choices=self.log_levels,
           default=self.default_log_level,
-          help="Set logging level to report at.")
+          help='Set logging level to report at.')
+      self.add_option_to_group(
+          self.debug_group, '--log_format', action='store',
+          default=constants.LOGGER_FMT,
+          help='Set logging format to use.')
       if self.debug_enabled:
         self.add_option_to_group(
-          self.debug_group, "--debug", action="store_const", const="debug",
-          dest="log_level", help="Alias for `--log-level=debug`. "
-          "Useful for debugging bugs/failures.")
+          self.debug_group, '--debug', action='store_const', const='debug',
+          dest='log_level', help='Alias for `--log-level=debug`. '
+          'Useful for debugging bugs/failures.')
       self.add_option_to_group(
         self.debug_group, '--nocolor', action='store_false', dest='color',
         default=None,
@@ -299,8 +330,21 @@ class BaseParser(object):
           "typically defaults to '$REPO/.cache' .")
 
   def SetupLogging(self, opts):
+    """Sets up logging based on |opts|."""
     value = opts.log_level.upper()
-    logging.getLogger().setLevel(getattr(logging, value))
+    logger = logging.getLogger()
+    logger.setLevel(getattr(logging, value))
+    formatter = ColoredFormatter(fmt=opts.log_format,
+                                 datefmt=constants.LOGGER_DATE_FMT,
+                                 enable_color=opts.color)
+
+    # Only set colored formatter for ChromiteStreamHandler instances,
+    # which could have been added by ScriptWrapperMain() below.
+    chromite_handlers = [x for x in logger.handlers if
+                         isinstance(x, ChromiteStreamHandler)]
+    for handler in chromite_handlers:
+      handler.setFormatter(formatter)
+
     return value
 
   def DoPostParseSetup(self, opts, args):
@@ -576,10 +620,12 @@ def ScriptWrapperMain(find_target_func, argv=None,
   # Set up basic logging information for all modules that use logging.
   # Note a script target may setup default logging in its module namespace
   # which will take precedence over this.
-  logging.basicConfig(
-      level=log_level,
-      format=log_format,
-      datefmt=constants.LOGGER_DATE_FMT)
+  logger = logging.getLogger()
+  logger.setLevel(log_level)
+  logger_handler = ChromiteStreamHandler()
+  logger_handler.setFormatter(
+      logging.Formatter(fmt=log_format, datefmt=constants.LOGGER_DATE_FMT))
+  logger.addHandler(logger_handler)
 
   signal.signal(signal.SIGTERM, _DefaultHandler)
 
