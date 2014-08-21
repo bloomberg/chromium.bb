@@ -45,8 +45,11 @@ class NaClBrowserDelegateImpl : public NaClBrowserDelegate {
                                    const GURL& manifest_url) OVERRIDE;
 
  private:
+#if defined(ENABLE_EXTENSIONS)
   scoped_refptr<extensions::InfoMap> GetExtensionInfoMap(
       const base::FilePath& profile_directory);
+#endif
+
   ProfileManager* profile_manager_;
   std::vector<URLPattern> debug_patterns_;
   bool inverse_debug_patterns_;

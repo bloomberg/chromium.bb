@@ -62,10 +62,12 @@ void OnKeepaliveOnUIThread(
   if (instance_data.size() < 1)
     return;
 
+#if defined(ENABLE_EXTENSIONS)
   extensions::ProcessManager::OnKeepaliveFromPlugin(
       instance_data[0].render_process_id,
       instance_data[0].render_frame_id,
       instance_data[0].document_url.host());
+#endif
 }
 
 // Calls OnKeepaliveOnUIThread on UI thread.
@@ -190,10 +192,14 @@ bool NaClBrowserDelegateImpl::MapUrlToLocalFilePath(
     bool use_blocking_api,
     const base::FilePath& profile_directory,
     base::FilePath* file_path) {
+#if defined(ENABLE_EXTENSIONS)
   scoped_refptr<extensions::InfoMap> extension_info_map =
       GetExtensionInfoMap(profile_directory);
   return extension_info_map->MapUrlToLocalFilePath(
       file_url, use_blocking_api, file_path);
+#else
+  return false;
+#endif
 }
 
 content::BrowserPpapiHost::OnKeepaliveCallback
@@ -204,12 +210,17 @@ NaClBrowserDelegateImpl::GetOnKeepaliveCallback() {
 bool NaClBrowserDelegateImpl::IsNonSfiModeAllowed(
     const base::FilePath& profile_directory,
     const GURL& manifest_url) {
+#if defined(ENABLE_EXTENSIONS)
   const extensions::ExtensionSet* extension_set =
       &GetExtensionInfoMap(profile_directory)->extensions();
   return chrome::IsExtensionOrSharedModuleWhitelisted(
       manifest_url, extension_set, allowed_nonsfi_origins_);
+#else
+  return false;
+#endif
 }
 
+#if defined(ENABLE_EXTENSIONS)
 scoped_refptr<extensions::InfoMap> NaClBrowserDelegateImpl::GetExtensionInfoMap(
     const base::FilePath& profile_directory) {
   // Get the profile associated with the renderer.
@@ -220,3 +231,4 @@ scoped_refptr<extensions::InfoMap> NaClBrowserDelegateImpl::GetExtensionInfoMap(
   DCHECK(extension_info_map);
   return extension_info_map;
 }
+#endif

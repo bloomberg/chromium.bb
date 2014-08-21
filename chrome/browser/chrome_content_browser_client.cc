@@ -2317,7 +2317,7 @@ bool ChromeContentBrowserClient::AllowPepperSocketAPI(
     const GURL& url,
     bool private_api,
     const content::SocketPermissionRequest* params) {
-#if defined(ENABLE_PLUGINS)
+#if defined(ENABLE_EXTENSIONS)
   Profile* profile = Profile::FromBrowserContext(browser_context);
   const extensions::ExtensionSet* extension_set = NULL;
   if (profile) {
@@ -2533,7 +2533,7 @@ ChromeContentBrowserClient::GetDevToolsManagerDelegate() {
 bool ChromeContentBrowserClient::IsPluginAllowedToCallRequestOSFileHandle(
     content::BrowserContext* browser_context,
     const GURL& url) {
-#if defined(ENABLE_PLUGINS)
+#if defined(ENABLE_EXTENSIONS)
   Profile* profile = Profile::FromBrowserContext(browser_context);
   const extensions::ExtensionSet* extension_set = NULL;
   if (profile) {
@@ -2555,7 +2555,7 @@ bool ChromeContentBrowserClient::IsPluginAllowedToCallRequestOSFileHandle(
 bool ChromeContentBrowserClient::IsPluginAllowedToUseDevChannelAPIs(
     content::BrowserContext* browser_context,
     const GURL& url) {
-#if defined(ENABLE_PLUGINS)
+#if defined(ENABLE_EXTENSIONS)
   // Allow access for tests.
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnablePepperTesting)) {

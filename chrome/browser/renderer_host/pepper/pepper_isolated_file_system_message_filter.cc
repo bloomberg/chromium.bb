@@ -98,6 +98,7 @@ Profile* PepperIsolatedFileSystemMessageFilter::GetProfile() {
 
 std::string PepperIsolatedFileSystemMessageFilter::CreateCrxFileSystem(
     Profile* profile) {
+#if defined(ENABLE_EXTENSIONS)
   extensions::ExtensionSystem* extension_system =
       extensions::ExtensionSystem::Get(profile);
   if (!extension_system)
@@ -120,6 +121,9 @@ std::string PepperIsolatedFileSystemMessageFilter::CreateCrxFileSystem(
       std::string(),
       extension->path(),
       &kFirstLevelDirectory);
+#else
+  return std::string();
+#endif
 }
 
 int32_t PepperIsolatedFileSystemMessageFilter::OnOpenFileSystem(
@@ -141,6 +145,7 @@ int32_t PepperIsolatedFileSystemMessageFilter::OnOpenFileSystem(
 
 int32_t PepperIsolatedFileSystemMessageFilter::OpenCrxFileSystem(
     ppapi::host::HostMessageContext* context) {
+#if defined(ENABLE_EXTENSIONS)
   Profile* profile = GetProfile();
   const extensions::ExtensionSet* extension_set = NULL;
   if (profile) {
@@ -173,6 +178,9 @@ int32_t PepperIsolatedFileSystemMessageFilter::OpenCrxFileSystem(
 
   context->reply_msg = PpapiPluginMsg_IsolatedFileSystem_BrowserOpenReply(fsid);
   return PP_OK;
+#else
+  return PP_ERROR_NOTSUPPORTED;
+#endif
 }
 
 int32_t PepperIsolatedFileSystemMessageFilter::OpenPluginPrivateFileSystem(
