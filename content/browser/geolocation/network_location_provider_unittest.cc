@@ -51,7 +51,7 @@ class MessageLoopQuitListener {
 // http://gears.googlecode.com/svn/trunk/gears/geolocation/geolocation_test.cc
 class MockWifiDataProvider : public WifiDataProvider {
  public:
-  // Factory method for use with WifiDataProvider::SetFactory.
+  // Factory method for use with WifiDataProvider::SetFactoryForTesting.
   static WifiDataProvider* GetInstance() {
     CHECK(instance_);
     return instance_;
@@ -117,7 +117,7 @@ class GeolocationNetworkProviderTest : public testing::Test {
     wifi_data_provider_ = MockWifiDataProvider::CreateInstance();
   }
 
-  virtual void TearDown() { WifiDataProviderManager::ResetFactory(); }
+  virtual void TearDown() { WifiDataProviderManager::ResetFactoryForTesting(); }
 
   LocationProvider* CreateProvider(bool set_permission_granted) {
     LocationProvider* provider = NewNetworkLocationProvider(
@@ -134,7 +134,8 @@ class GeolocationNetworkProviderTest : public testing::Test {
   GeolocationNetworkProviderTest() {
     // TODO(joth): Really these should be in SetUp, not here, but they take no
     // effect on Mac OS Release builds if done there. I kid not. Figure out why.
-    WifiDataProviderManager::SetFactory(MockWifiDataProvider::GetInstance);
+    WifiDataProviderManager::SetFactoryForTesting(
+        MockWifiDataProvider::GetInstance);
   }
 
   // Returns the current url fetcher (if any) and advances the id ready for the

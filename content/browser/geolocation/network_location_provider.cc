@@ -154,9 +154,8 @@ void NetworkLocationProvider::OnPermissionGranted() {
   }
 }
 
-void NetworkLocationProvider::OnWifiDataUpdate(
-    WifiDataProviderManager* manager) {
-  DCHECK(manager == wifi_data_provider_manager_);
+void NetworkLocationProvider::OnWifiDataUpdate() {
+  DCHECK(wifi_data_provider_manager_);
   is_wifi_data_complete_ = wifi_data_provider_manager_->GetData(&wifi_data_);
   OnWifiDataUpdated();
 }

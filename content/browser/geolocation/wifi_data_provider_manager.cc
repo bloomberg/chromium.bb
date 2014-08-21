@@ -16,13 +16,13 @@ WifiDataProviderManager::ImplFactoryFunction
     WifiDataProviderManager::factory_function_ = DefaultFactoryFunction;
 
 // static
-void WifiDataProviderManager::SetFactory(
+void WifiDataProviderManager::SetFactoryForTesting(
     ImplFactoryFunction factory_function_in) {
   factory_function_ = factory_function_in;
 }
 
 // static
-void WifiDataProviderManager::ResetFactory() {
+void WifiDataProviderManager::ResetFactoryForTesting() {
   factory_function_ = DefaultFactoryFunction;
 }
 
@@ -65,12 +65,10 @@ WifiDataProviderManager::WifiDataProviderManager() {
   DCHECK(factory_function_);
   impl_ = (*factory_function_)();
   DCHECK(impl_.get());
-  impl_->SetContainer(this);
 }
 
 WifiDataProviderManager::~WifiDataProviderManager() {
   DCHECK(impl_.get());
-  impl_->SetContainer(NULL);
 }
 
 bool WifiDataProviderManager::GetData(WifiData* data) {

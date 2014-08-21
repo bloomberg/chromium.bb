@@ -19,8 +19,6 @@
 
 namespace content {
 
-class WifiDataProviderManager;
-
 class CONTENT_EXPORT WifiDataProvider
     : public base::RefCountedThreadSafe<WifiDataProvider> {
  public:
@@ -39,11 +37,7 @@ class CONTENT_EXPORT WifiDataProvider
   // obtain.
   virtual bool GetData(WifiData* data) = 0;
 
-  // Sets the container of this class, which is of type WifiDataProviderManager.
-  // This is required to pass as a parameter when calling a callback.
-  void SetContainer(WifiDataProviderManager* container);
-
-  typedef base::Callback<void(WifiDataProviderManager*)> WifiDataUpdateCallback;
+  typedef base::Closure WifiDataUpdateCallback;
 
   void AddCallback(WifiDataUpdateCallback* callback);
 
@@ -67,8 +61,6 @@ class CONTENT_EXPORT WifiDataProvider
 
  private:
   void DoRunCallbacks();
-
-  WifiDataProviderManager* container_;
 
   // Reference to the client's message loop. All callbacks should happen in this
   // context.

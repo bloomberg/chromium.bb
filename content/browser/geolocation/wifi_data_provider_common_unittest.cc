@@ -68,7 +68,7 @@ class MessageLoopQuitter {
     CHECK(message_loop_to_quit_ != NULL);
   }
 
-  void OnWifiDataUpdate(WifiDataProviderManager* manager) {
+  void OnWifiDataUpdate() {
     // Provider should call back on client's thread.
     EXPECT_EQ(base::MessageLoop::current(), message_loop_to_quit_);
     message_loop_to_quit_->QuitNow();
@@ -229,11 +229,12 @@ TEST_F(GeolocationWifiDataProviderCommonTest, MAYBE_DoScanWithResults) {
 
 TEST_F(GeolocationWifiDataProviderCommonTest, RegisterUnregister) {
   MessageLoopQuitter loop_quitter(&main_message_loop_);
-  WifiDataProviderManager::SetFactory(CreateWifiDataProviderCommonWithMock);
+  WifiDataProviderManager::SetFactoryForTesting(
+      CreateWifiDataProviderCommonWithMock);
   WifiDataProviderManager::Register(&loop_quitter.callback_);
   main_message_loop_.Run();
   WifiDataProviderManager::Unregister(&loop_quitter.callback_);
-  WifiDataProviderManager::ResetFactory();
+  WifiDataProviderManager::ResetFactoryForTesting();
 }
 
 }  // namespace content

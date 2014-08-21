@@ -83,7 +83,7 @@ class NetworkLocationProvider
   void RequestPosition();
 
   // Gets called when new wifi data is available.
-  void OnWifiDataUpdate(WifiDataProviderManager* manager);
+  void OnWifiDataUpdate();
 
   // Internal helper used by OnWifiDataUpdate.
   void OnWifiDataUpdated();

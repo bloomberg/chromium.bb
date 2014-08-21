@@ -38,17 +38,18 @@ class WifiDataProvider;
 // Register and Unregister methods.
 class CONTENT_EXPORT WifiDataProviderManager {
  public:
+  typedef WifiDataProvider* (*ImplFactoryFunction)(void);
+
   // Sets the factory function which will be used by Register to create the
   // implementation used by the singleton instance. This factory approach is
   // used both to abstract accross platform-specific implementations and to
   // inject mock implementations for testing.
-  typedef WifiDataProvider* (*ImplFactoryFunction)(void);
-  static void SetFactory(ImplFactoryFunction factory_function_in);
+  static void SetFactoryForTesting(ImplFactoryFunction factory_function_in);
 
   // Resets the factory function to the default.
-  static void ResetFactory();
+  static void ResetFactoryForTesting();
 
-  typedef base::Callback<void(WifiDataProviderManager*)> WifiDataUpdateCallback;
+  typedef base::Closure WifiDataUpdateCallback;
 
   // Registers a callback, which will be run whenever new data is available.
   // Instantiates the singleton if necessary, and always returns it.

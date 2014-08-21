@@ -7,15 +7,11 @@
 namespace content {
 
 WifiDataProvider::WifiDataProvider()
-    : container_(NULL), client_loop_(base::MessageLoop::current()) {
+    : client_loop_(base::MessageLoop::current()) {
   DCHECK(client_loop_);
 }
 
 WifiDataProvider::~WifiDataProvider() {
-}
-
-void WifiDataProvider::SetContainer(WifiDataProviderManager* container) {
-  container_ = container;
 }
 
 void WifiDataProvider::AddCallback(WifiDataUpdateCallback* callback) {
@@ -44,13 +40,13 @@ base::MessageLoop* WifiDataProvider::client_loop() const {
 }
 
 void WifiDataProvider::DoRunCallbacks() {
-  // It's possible that all the callbacks (and the container) went away
-  // whilst this task was pending. This is fine; the loop will be a no-op.
+  // It's possible that all the callbacks went away whilst this task was
+  // pending. This is fine; the loop will be a no-op.
   CallbackSet::const_iterator iter = callbacks_.begin();
   while (iter != callbacks_.end()) {
     WifiDataUpdateCallback* callback = *iter;
     ++iter;  // Advance iter before running, in case callback unregisters.
-    callback->Run(container_);
+    callback->Run();
   }
 }
 
