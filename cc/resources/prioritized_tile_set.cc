@@ -40,12 +40,19 @@ class BinComparator {
 
 namespace {
 
+bool TilePriorityTieBreaker(const Tile* tile_i, const Tile* tile_j) {
+  // When two tiles has same priority use Id as tie breaker.
+  return tile_i->id() < tile_j->id();
+}
+
 typedef std::vector<Tile*> TileVector;
 
 void SortBinTiles(ManagedTileBin bin, TileVector* tiles) {
   switch (bin) {
-    case NOW_AND_READY_TO_DRAW_BIN:
     case NEVER_BIN:
+      break;
+    case NOW_AND_READY_TO_DRAW_BIN:
+      std::sort(tiles->begin(), tiles->end(), TilePriorityTieBreaker);
       break;
     case NOW_BIN:
     case SOON_BIN:
