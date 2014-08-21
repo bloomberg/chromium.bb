@@ -162,7 +162,6 @@
 #endif
 
 #if defined(OS_WIN)
-#include "base/strings/string_number_conversions.h"
 #include "base/win/scoped_com_initializer.h"
 #include "content/common/font_cache_dispatcher_win.h"
 #include "content/common/sandbox_win.h"
@@ -180,10 +179,10 @@
 
 extern bool g_exited_main_message_loop;
 
-static const char* kSiteProcessMapKeyName = "content_site_process_map";
-
 namespace content {
 namespace {
+
+const char kSiteProcessMapKeyName[] = "content_site_process_map";
 
 void CacheShaderInfo(int32 id, base::FilePath path) {
   ShaderCacheFactory::GetInstance()->SetCacheInfo(id, path);
@@ -304,7 +303,7 @@ SiteProcessMap* GetSiteProcessMapForBrowserContext(BrowserContext* context) {
 class RendererSandboxedProcessLauncherDelegate
     : public content::SandboxedProcessLauncherDelegate {
  public:
-  RendererSandboxedProcessLauncherDelegate(IPC::ChannelProxy* channel)
+  explicit RendererSandboxedProcessLauncherDelegate(IPC::ChannelProxy* channel)
 #if defined(OS_POSIX)
        : ipc_fd_(channel->TakeClientFileDescriptor())
 #endif  // OS_POSIX

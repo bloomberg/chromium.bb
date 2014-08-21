@@ -18,7 +18,7 @@
 
 namespace content {
 
-static const char* kWebRTCIdentityStoreDBName = "webrtc_identity_store";
+static const char kWebRTCIdentityStoreDBName[] = "webrtc_identity_store";
 
 static const base::FilePath::CharType kWebRTCIdentityStoreDirectory[] =
     FILE_PATH_LITERAL("WebRTCIdentityStore");

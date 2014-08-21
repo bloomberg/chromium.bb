@@ -19,9 +19,11 @@ namespace content {
 
 namespace {
 
+const char kBlobStorageContextKeyName[] = "content_blob_storage_context";
+
 class BlobHandleImpl : public BlobHandle {
  public:
-  BlobHandleImpl(scoped_ptr<webkit_blob::BlobDataHandle> handle)
+  explicit BlobHandleImpl(scoped_ptr<webkit_blob::BlobDataHandle> handle)
       : handle_(handle.Pass()) {
   }
 
@@ -36,8 +38,6 @@ class BlobHandleImpl : public BlobHandle {
 };
 
 }  // namespace
-
-static const char* kBlobStorageContextKeyName = "content_blob_storage_context";
 
 ChromeBlobStorageContext::ChromeBlobStorageContext() {}
 

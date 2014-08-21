@@ -17,11 +17,11 @@
 
 namespace content {
 
-static const char* kFakeOrigin = "http://foo.com";
-static const char* kFakeIdentityName1 = "name1";
-static const char* kFakeIdentityName2 = "name2";
-static const char* kFakeCommonName1 = "cname1";
-static const char* kFakeCommonName2 = "cname2";
+static const char kFakeOrigin[] = "http://foo.com";
+static const char kFakeIdentityName1[] = "name1";
+static const char kFakeIdentityName2[] = "name2";
+static const char kFakeCommonName1[] = "cname1";
+static const char kFakeCommonName2[] = "cname2";
 
 static void OnRequestCompleted(bool* completed,
                                std::string* out_cert,

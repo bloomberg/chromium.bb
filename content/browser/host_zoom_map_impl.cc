@@ -23,11 +23,11 @@
 #include "content/public/common/page_zoom.h"
 #include "net/base/net_util.h"
 
-static const char* kHostZoomMapKeyName = "content_host_zoom_map";
-
 namespace content {
 
 namespace {
+
+const char kHostZoomMapKeyName[] = "content_host_zoom_map";
 
 std::string GetHostFromProcessView(int render_process_id, int render_view_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
