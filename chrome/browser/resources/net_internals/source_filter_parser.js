@@ -33,7 +33,7 @@ var SourceFilterParser = (function() {
         continue;
       }
 
-      this.textWithoutSort += filterList[i].original;
+      this.filterTextWithoutSort += filterList[i].original;
 
       var filter = parseRestrictDirective_(filterElement, negated);
       if (!filter)

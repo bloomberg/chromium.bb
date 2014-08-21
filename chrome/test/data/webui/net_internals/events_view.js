@@ -213,6 +213,36 @@ TEST_F('NetInternalsTest', 'netInternalsEventsViewFilter', function() {
   checkFilter('Quoted" source', [false, false]);
   checkFilter('Quoted "String', [true, false]);
 
+  // Test toggling sort method, without any filters.
+  var eventsView = EventsView.getInstance();
+  eventsView.setFilterText_('');
+  $(EventsView.SORT_BY_DESCRIPTION_ID).click();
+  expectEquals('sort:desc', eventsView.getFilterText_());
+  $(EventsView.SORT_BY_DESCRIPTION_ID).click();
+  expectEquals('-sort:desc', eventsView.getFilterText_());
+  $(EventsView.SORT_BY_ID_ID).click();
+  expectEquals('sort:id', eventsView.getFilterText_());
+
+  // Sort by default is by ID, so toggling ID when there's no filter results in
+  // sort:-id.
+  eventsView.setFilterText_('');
+  $(EventsView.SORT_BY_ID_ID).click();
+  expectEquals('-sort:id', eventsView.getFilterText_());
+  $(EventsView.SORT_BY_ID_ID).click();
+  expectEquals('sort:id', eventsView.getFilterText_());
+
+  // Test toggling sort method with filters.
+  eventsView.setFilterText_('text');
+  $(EventsView.SORT_BY_ID_ID).click();
+  expectEquals('-sort:id text', eventsView.getFilterText_());
+  $(EventsView.SORT_BY_ID_ID).click();
+  expectEquals('sort:id text', eventsView.getFilterText_());
+  $(EventsView.SORT_BY_SOURCE_TYPE_ID).click();
+  expectEquals('sort:source text', eventsView.getFilterText_());
+  eventsView.setFilterText_('text sort:id "more text"');
+  $(EventsView.SORT_BY_ID_ID).click();
+  expectEquals('-sort:id text "more text"', eventsView.getFilterText_());
+
   testDone();
 });
 
