@@ -11,6 +11,7 @@
 #include "extensions/renderer/request_sender.h"
 #include "extensions/renderer/script_context.h"
 #include "ipc/ipc_message_utils.h"
+#include "third_party/WebKit/public/web/WebArrayBufferConverter.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/ipc/gfx_param_traits.h"
 
@@ -35,7 +36,7 @@ SetIconNatives::SetIconNatives(RequestSender* request_sender,
 
 bool SetIconNatives::ConvertImageDataToBitmapValue(
     const v8::Local<v8::Object> image_data,
-    base::Value** bitmap_value) {
+    v8::Local<v8::Value>* image_data_bitmap) {
   v8::Isolate* isolate = context()->v8_context()->GetIsolate();
   v8::Local<v8::Object> data =
       image_data->Get(v8::String::NewFromUtf8(isolate, "data"))->ToObject();
@@ -92,72 +93,57 @@ bool SetIconNatives::ConvertImageDataToBitmapValue(
   // Construct the Value object.
   IPC::Message bitmap_pickle;
   IPC::WriteParam(&bitmap_pickle, bitmap);
-  *bitmap_value = base::BinaryValue::CreateWithCopiedBuffer(
-      static_cast<const char*>(bitmap_pickle.data()), bitmap_pickle.size());
+  blink::WebArrayBuffer buffer =
+      blink::WebArrayBuffer::create(bitmap_pickle.size(), 1);
+  memcpy(buffer.data(), bitmap_pickle.data(), bitmap_pickle.size());
+  *image_data_bitmap = blink::WebArrayBufferConverter::toV8Value(
+      &buffer, context()->v8_context()->Global(), isolate);
 
   return true;
 }
 
 bool SetIconNatives::ConvertImageDataSetToBitmapValueSet(
-    const v8::FunctionCallbackInfo<v8::Value>& args,
-    base::DictionaryValue* bitmap_set_value) {
-  v8::Local<v8::Object> extension_args = args[1]->ToObject();
-  v8::Local<v8::Object> details =
-      extension_args->Get(v8::String::NewFromUtf8(args.GetIsolate(), "0"))
-          ->ToObject();
+    v8::Local<v8::Object>& details,
+    v8::Local<v8::Object>* bitmap_set_value) {
+  v8::Isolate* isolate = context()->v8_context()->GetIsolate();
   v8::Local<v8::Object> image_data_set =
-      details->Get(v8::String::NewFromUtf8(args.GetIsolate(), "imageData"))
-          ->ToObject();
+      details->Get(v8::String::NewFromUtf8(isolate, "imageData"))->ToObject();
 
   DCHECK(bitmap_set_value);
   for (size_t i = 0; i < arraysize(kImageSizeKeys); i++) {
     if (!image_data_set->Has(
-            v8::String::NewFromUtf8(args.GetIsolate(), kImageSizeKeys[i])))
+            v8::String::NewFromUtf8(isolate, kImageSizeKeys[i])))
       continue;
     v8::Local<v8::Object> image_data =
-        image_data_set->Get(v8::String::NewFromUtf8(args.GetIsolate(),
-                                                    kImageSizeKeys[i]))
+        image_data_set->Get(v8::String::NewFromUtf8(isolate, kImageSizeKeys[i]))
             ->ToObject();
-    base::Value* image_data_bitmap = NULL;
+    v8::Local<v8::Value> image_data_bitmap;
     if (!ConvertImageDataToBitmapValue(image_data, &image_data_bitmap))
       return false;
-    bitmap_set_value->Set(kImageSizeKeys[i], image_data_bitmap);
+    (*bitmap_set_value)->Set(
+        v8::String::NewFromUtf8(isolate, kImageSizeKeys[i]), image_data_bitmap);
   }
   return true;
 }
 
 void SetIconNatives::SetIconCommon(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
-  scoped_ptr<base::DictionaryValue> bitmap_set_value(
-      new base::DictionaryValue());
-  if (!ConvertImageDataSetToBitmapValueSet(args, bitmap_set_value.get()))
+  CHECK_EQ(1, args.Length());
+  CHECK(args[0]->IsObject());
+  v8::Local<v8::Object> details = args[0]->ToObject();
+  v8::Local<v8::Object> bitmap_set_value(v8::Object::New(args.GetIsolate()));
+  if (!ConvertImageDataSetToBitmapValueSet(details, &bitmap_set_value))
     return;
 
-  v8::Local<v8::Object> extension_args = args[1]->ToObject();
-  v8::Local<v8::Object> details =
-      extension_args->Get(v8::String::NewFromUtf8(args.GetIsolate(), "0"))
-          ->ToObject();
-
-  base::DictionaryValue* dict = new base::DictionaryValue();
-  dict->Set("imageData", bitmap_set_value.release());
-
+  v8::Local<v8::Object> dict(v8::Object::New(args.GetIsolate()));
+  dict->Set(v8::String::NewFromUtf8(args.GetIsolate(), "imageData"),
+            bitmap_set_value);
   if (details->Has(v8::String::NewFromUtf8(args.GetIsolate(), "tabId"))) {
-    dict->SetInteger(
-        "tabId",
-        details->Get(v8::String::NewFromUtf8(args.GetIsolate(), "tabId"))
-            ->Int32Value());
+    dict->Set(
+        v8::String::NewFromUtf8(args.GetIsolate(), "tabId"),
+        details->Get(v8::String::NewFromUtf8(args.GetIsolate(), "tabId")));
   }
-
-  base::ListValue list_value;
-  list_value.Append(dict);
-
-  std::string name = *v8::String::Utf8Value(args[0]);
-  int request_id = args[2]->Int32Value();
-  bool has_callback = args[3]->BooleanValue();
-  bool for_io_thread = args[4]->BooleanValue();
-
-  request_sender_->StartRequest(
-      context(), name, request_id, has_callback, for_io_thread, &list_value);
+  args.GetReturnValue().Set(dict);
 }
 
 }  // namespace extensions

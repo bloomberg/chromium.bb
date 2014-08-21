@@ -5,11 +5,10 @@
 var SetIconCommon = requireNative('setIcon').SetIconCommon;
 var sendRequest = require('sendRequest').sendRequest;
 
-function loadImagePath(path, iconSize, actionType, callback) {
+function loadImagePath(path, iconSize, callback) {
   var img = new Image();
   img.onerror = function() {
-    console.error('Could not load ' + actionType + ' icon \'' +
-                  path + '\'.');
+    console.error('Could not load action icon \'' + path + '\'.');
   };
   img.onload = function() {
     var canvas = document.createElement('canvas');
@@ -49,39 +48,51 @@ function verifyImageData(imageData, iconSize) {
   }
 }
 
-function setIcon(details, callback, name, parameters, actionType) {
+/**
+ * Normalizes |details| to a format suitable for sending to the browser,
+ * for example converting ImageData to a binary representation.
+ *
+ * @param {ImageDetails} details
+ *   The ImageDetails passed into an extension action-style API.
+ * @param {Function} callback
+ *   The callback function to pass processed imageData back to. Note that this
+ *   callback may be called reentrantly.
+ */
+function setIcon(details, callback) {
   var iconSizes = [19, 38];
+  // Note that iconIndex is actually deprecated, and only available to the
+  // pageAction API.
+  // TODO(kalman): Investigate whether this is for the pageActions API, and if
+  // so, delete it.
   if ('iconIndex' in details) {
-    sendRequest(name, [details, callback], parameters);
-  } else if ('imageData' in details) {
-    if (typeof details.imageData == 'object') {
-      var isEmpty = true;
-      for (var i = 0; i < iconSizes.length; i++) {
-        var sizeKey = iconSizes[i].toString();
-        if (sizeKey in details.imageData) {
-          verifyImageData(details.imageData[sizeKey], iconSizes[i]);
-          isEmpty =false;
-        }
-      }
+    callback(details);
+    return;
+  }
 
-      if (!isEmpty) {
-        sendRequest(name, [details, callback], parameters,
-                    {nativeFunction: SetIconCommon});
-      } else {
-        // If details.imageData is not dictionary with keys in set {'19', '38'},
-        // it must be an ImageData object.
-        var sizeKey = iconSizes[0].toString();
-        var imageData = details.imageData;
-        details.imageData = {};
-        details.imageData[sizeKey] = imageData;
-        verifyImageData(details.imageData[sizeKey], iconSizes[0]);
-        sendRequest(name, [details, callback], parameters,
-                    {nativeFunction: SetIconCommon});
-     }
-    } else {
-      throw new Error('imageData property has unexpected type.');
+  if ('imageData' in details) {
+    var isEmpty = true;
+    for (var i = 0; i < iconSizes.length; i++) {
+      var sizeKey = iconSizes[i].toString();
+      if (sizeKey in details.imageData) {
+        verifyImageData(details.imageData[sizeKey], iconSizes[i]);
+        isEmpty =false;
+      }
     }
-  } else if ('path' in details) {
+
+    if (isEmpty) {
+      // If details.imageData is not dictionary with keys in set {'19', '38'},
+      // it must be an ImageData object.
+      var sizeKey = iconSizes[0].toString();
+      var imageData = details.imageData;
+      details.imageData = {};
+      details.imageData[sizeKey] = imageData;
+      verifyImageData(details.imageData[sizeKey], iconSizes[0]);
+    }
+    callback(SetIconCommon(details));
+    return;
+  }
+
+  if ('path' in details) {
     if (typeof details.path == 'object') {
       details.imageData = {};
       var isEmpty = true;
@@ -90,8 +101,7 @@ function setIcon(details, callback, name, parameters, actionType) {
           delete details.path;
           if (isEmpty)
             throw new Error('The path property must not be empty.');
-          sendRequest(name, [details, callback], parameters,
-                      {nativeFunction: SetIconCommon});
+          callback(SetIconCommon(details));
           return;
         }
         var sizeKey = iconSizes[index].toString();
@@ -100,32 +110,27 @@ function setIcon(details, callback, name, parameters, actionType) {
           return;
         }
         isEmpty = false;
-        loadImagePath(details.path[sizeKey], iconSizes[index], actionType,
+        loadImagePath(details.path[sizeKey], iconSizes[index],
           function(imageData) {
             details.imageData[sizeKey] = imageData;
             processIconSize(index + 1);
           });
       }
-
       processIconSize(0);
     } else if (typeof details.path == 'string') {
       var sizeKey = iconSizes[0].toString();
       details.imageData = {};
-      loadImagePath(details.path, iconSizes[0], actionType,
+      loadImagePath(details.path, iconSizes[0],
           function(imageData) {
             details.imageData[sizeKey] = imageData;
             delete details.path;
-            sendRequest(name, [details, callback], parameters,
-                        {nativeFunction: SetIconCommon});
+            callback(SetIconCommon(details));
+            return;
       });
-    } else {
-      throw new Error('The path property should contain either string or ' +
-                      'dictionary of strings.');
     }
-  } else {
-    throw new Error(
-        'Either the path or imageData property must be specified.');
+    return;
   }
+  throw new Error('Either the path or imageData property must be specified.');
 }
 
 exports.setIcon = setIcon;

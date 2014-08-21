@@ -9,13 +9,15 @@
 var binding = require('binding').Binding.create('systemIndicator');
 
 var setIcon = require('setIcon').setIcon;
+var sendRequest = require('sendRequest').sendRequest;
 
 binding.registerCustomHook(function(bindingsAPI) {
   var apiFunctions = bindingsAPI.apiFunctions;
 
   apiFunctions.setHandleRequest('setIcon', function(details, callback) {
-    setIcon(details, callback, this.name, this.definition.parameters,
-            'system indicator');
+    setIcon(details, function(args) {
+      sendRequest(this.name, [args, callback], this.definition.parameters);
+    }.bind(this));
   });
 });
 

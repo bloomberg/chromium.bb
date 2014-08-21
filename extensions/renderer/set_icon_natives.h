@@ -24,10 +24,10 @@ class SetIconNatives : public ObjectBackedNativeHandler {
 
  private:
   bool ConvertImageDataToBitmapValue(const v8::Local<v8::Object> image_data,
-                                     base::Value** bitmap_value);
+                                     v8::Local<v8::Value>* image_data_bitmap);
   bool ConvertImageDataSetToBitmapValueSet(
-      const v8::FunctionCallbackInfo<v8::Value>& args,
-      base::DictionaryValue* bitmap_value);
+      v8::Local<v8::Object>& details,
+      v8::Local<v8::Object>* bitmap_set_value);
   void SetIconCommon(const v8::FunctionCallbackInfo<v8::Value>& args);
 
   RequestSender* request_sender_;

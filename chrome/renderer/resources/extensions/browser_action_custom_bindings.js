@@ -8,13 +8,15 @@ var binding = require('binding').Binding.create('browserAction');
 
 var setIcon = require('setIcon').setIcon;
 var getExtensionViews = requireNative('runtime').GetExtensionViews;
+var sendRequest = require('sendRequest').sendRequest;
 
 binding.registerCustomHook(function(bindingsAPI) {
   var apiFunctions = bindingsAPI.apiFunctions;
 
   apiFunctions.setHandleRequest('setIcon', function(details, callback) {
-    setIcon(details, callback, this.name, this.definition.parameters,
-        'browser action');
+    setIcon(details, function(args) {
+      sendRequest(this.name, [args, callback], this.definition.parameters);
+    }.bind(this));
   });
 
   apiFunctions.setCustomCallback('openPopup',
