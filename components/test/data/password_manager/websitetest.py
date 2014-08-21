@@ -211,20 +211,9 @@ class WebsiteTest:
     password_element = self.driver.find_element_by_css_selector(selector)
     # Chrome protects the password inputs and doesn't fill them until
     # the user interacts with the page. To be sure that such thing has
-    # happened we click on the password fields or one of its ancestors.
-    element = password_element
-    while True:
-      try:
-        element.click()
-        break
-      except Exception:
-        try:
-          element = element.parent
-        except AttributeError:
-          raise Exception("Error: unable to find a clickable element to "
-              "release the password protection for the following website: %s \n"
-              % (self.name))
-
+    # happened we perform |Keys.CONTROL| keypress.
+    action_chains = ActionChains(self.driver)
+    action_chains.key_down(Keys.CONTROL).key_up(Keys.CONTROL).perform()
     if self.mode == self.Mode.AUTOFILLED:
       autofilled_password = password_element.get_attribute("value")
       if autofilled_password != self.password:
@@ -406,6 +395,6 @@ class WebsiteTest:
     self.environment.CheckForNewMessage(
         environment.MESSAGE_ASK,
         True,
-        "Error: password manager thinks that a login with wrong password was "
-        "successful for the following website : %s \n" % self.name)
+        "Error: password manager hasn't detected a successful login for the "
+        "following website : %s \n" % self.name)
     self.environment.SwitchFromInternals()
