@@ -142,7 +142,9 @@ check_LTLIBRARIES = libtest-runner.la
 libtest_runner_la_SOURCES =			\
 	tests/test-runner.c			\
 	tests/test-runner.h			\
-	tests/test-helpers.c
+	tests/test-helpers.c			\
+	tests/test-compositor.h			\
+	tests/test-compositor.c
 libtest_runner_la_LIBADD =			\
 	libwayland-util.la			\
 	libwayland-client.la			\
