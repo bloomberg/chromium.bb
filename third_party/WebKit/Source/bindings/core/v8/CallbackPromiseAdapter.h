@@ -78,7 +78,7 @@ namespace blink {
 template<typename S, typename T>
 class CallbackPromiseAdapter FINAL : public blink::WebCallbacks<typename S::WebType, typename T::WebType> {
 public:
-    CallbackPromiseAdapter(PassRefPtr<ScriptPromiseResolver> resolver)
+    explicit CallbackPromiseAdapter(PassRefPtr<ScriptPromiseResolver> resolver)
         : m_resolver(resolver)
     {
         ASSERT(m_resolver);
@@ -92,6 +92,38 @@ public:
             return;
         }
         m_resolver->resolve(S::take(m_resolver.get(), result));
+    }
+
+    virtual void onError(typename T::WebType* error) OVERRIDE
+    {
+        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped()) {
+            T::dispose(error);
+            return;
+        }
+        m_resolver->reject(T::take(m_resolver.get(), error));
+    }
+
+private:
+    RefPtr<ScriptPromiseResolver> m_resolver;
+    WTF_MAKE_NONCOPYABLE(CallbackPromiseAdapter);
+};
+
+template<typename T>
+class CallbackPromiseAdapter<void, T> FINAL : public blink::WebCallbacks<void, typename T::WebType> {
+public:
+    explicit CallbackPromiseAdapter(PassRefPtr<ScriptPromiseResolver> resolver)
+        : m_resolver(resolver)
+    {
+        ASSERT(m_resolver);
+    }
+    virtual ~CallbackPromiseAdapter() { }
+
+    virtual void onSuccess() OVERRIDE
+    {
+        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped()) {
+            return;
+        }
+        m_resolver->resolve(V8UndefinedType());
     }
 
     virtual void onError(typename T::WebType* error) OVERRIDE
