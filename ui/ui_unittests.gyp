@@ -31,7 +31,6 @@
       # iOS uses a small subset of ui. common_sources are the only files that
       # are built on iOS.
       'common_sources' : [
-        # Note: file list duplicated in GN build.
         'base/layout_unittest.cc',
         'base/l10n/l10n_util_mac_unittest.mm',
         'base/l10n/l10n_util_unittest.cc',
@@ -44,7 +43,6 @@
         'base/test/run_all_unittests.cc',
       ],
       'all_sources': [
-        # Note: file list duplicated in GN build.
         '<@(_common_sources)',
         'base/accelerators/accelerator_manager_unittest.cc',
         'base/accelerators/menu_label_accelerator_util_linux_unittest.cc',
@@ -193,6 +191,11 @@
             'events/platform/events_platform.gyp:events_platform',
           ],
         }],
+        ['use_aura==1', {
+          'sources!': [
+            'base/dragdrop/os_exchange_data_win_unittest.cc',
+          ],
+        }],
         ['chromeos==1', {
           'dependencies': [
             '../chromeos/chromeos.gyp:chromeos',
@@ -206,6 +209,12 @@
           'sources!': [
             'base/dragdrop/os_exchange_data_provider_aurax11_unittest.cc',
             'base/x/selection_requestor_unittest.cc',
+          ],
+        }],
+        ['chromeos==0 or use_x11==0', {
+          'sources!': [
+            'base/ime/chromeos/character_composer_unittest.cc',
+            'base/ime/input_method_chromeos_unittest.cc',
           ],
         }],
         ['use_x11==0', {
