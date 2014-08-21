@@ -848,16 +848,8 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestPageWithNoJavaScript) {
   CloseDevToolsWindow();
 }
 
-#if defined(OS_MACOSX)
-#define MAYBE_InspectSharedWorker DISABLED_InspectSharedWorker
-#elif defined(OS_WIN)
-// Disabled on Windows due to flakiness. http://crbug.com/403007
-#define MAYBE_InspectSharedWorker DISABLED_InspectSharedWorker
-#else
-#define MAYBE_InspectSharedWorker InspectSharedWorker
-#endif
-// Flakily fails with 25s timeout: http://crbug.com/89845
-IN_PROC_BROWSER_TEST_F(WorkerDevToolsSanityTest, MAYBE_InspectSharedWorker) {
+// Flakily fails: http://crbug.com/403007 http://crbug.com/89845
+IN_PROC_BROWSER_TEST_F(WorkerDevToolsSanityTest, DISABLED_InspectSharedWorker) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
