@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/thread_task_runner_handle.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_registration_handle.h"
@@ -24,9 +25,9 @@ class ServiceWorkerRegistrationTest : public testing::Test {
   virtual void SetUp() OVERRIDE {
     context_.reset(
         new ServiceWorkerContextCore(base::FilePath(),
-                                     base::MessageLoopProxy::current(),
-                                     base::MessageLoopProxy::current(),
-                                     base::MessageLoopProxy::current(),
+                                     base::ThreadTaskRunnerHandle::Get(),
+                                     base::ThreadTaskRunnerHandle::Get(),
+                                     base::ThreadTaskRunnerHandle::Get(),
                                      NULL,
                                      NULL,
                                      NULL));

@@ -9,15 +9,21 @@
 
 #include "base/containers/hash_tables.h"
 #include "base/files/file_path.h"
+#include "base/memory/ref_counted.h"
 #include "net/disk_cache/blockfile/addr.h"
 #include "net/disk_cache/blockfile/backend_impl_v3.h"
 #include "net/disk_cache/blockfile/block_files.h"
+
+namespace base {
+class SingleThreadTaskRunner;
+}  // namespace base
 
 namespace disk_cache {
 
 class BackendImplV3::Worker : public base::RefCountedThreadSafe<Worker> {
  public:
-  Worker(const base::FilePath& path, base::MessageLoopProxy* main_thread);
+  Worker(const base::FilePath& path,
+         const scoped_refptr<base::SingleThreadTaskRunner>& main_thread);
 
   // Performs general initialization for this current instance of the cache.
   int Init(const CompletionCallback& callback);

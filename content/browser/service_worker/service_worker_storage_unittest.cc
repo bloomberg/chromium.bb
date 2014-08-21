@@ -6,8 +6,8 @@
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/thread_task_runner_handle.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_disk_cache.h"
@@ -194,9 +194,9 @@ class ServiceWorkerStorageTest : public testing::Test {
   virtual void SetUp() OVERRIDE {
     context_.reset(
         new ServiceWorkerContextCore(GetUserDataDirectory(),
-                                     base::MessageLoopProxy::current(),
-                                     base::MessageLoopProxy::current(),
-                                     base::MessageLoopProxy::current(),
+                                     base::ThreadTaskRunnerHandle::Get(),
+                                     base::ThreadTaskRunnerHandle::Get(),
+                                     base::ThreadTaskRunnerHandle::Get(),
                                      NULL,
                                      NULL,
                                      NULL));
@@ -809,13 +809,14 @@ TEST_F(ServiceWorkerResourceStorageDiskTest, MAYBE_CleanupOnRestart) {
   // Simulate browser shutdown. The purgeable and uncommitted resources are now
   // stale.
   context_.reset();
-  context_.reset(new ServiceWorkerContextCore(GetUserDataDirectory(),
-                                              base::MessageLoopProxy::current(),
-                                              base::MessageLoopProxy::current(),
-                                              base::MessageLoopProxy::current(),
-                                              NULL,
-                                              NULL,
-                                              NULL));
+  context_.reset(
+      new ServiceWorkerContextCore(GetUserDataDirectory(),
+                                   base::ThreadTaskRunnerHandle::Get(),
+                                   base::ThreadTaskRunnerHandle::Get(),
+                                   base::ThreadTaskRunnerHandle::Get(),
+                                   NULL,
+                                   NULL,
+                                   NULL));
   storage()->LazyInitialize(base::Bind(&base::DoNothing));
   base::RunLoop().RunUntilIdle();
 

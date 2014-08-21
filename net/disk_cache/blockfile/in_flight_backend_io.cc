@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/single_thread_task_runner.h"
 #include "net/base/net_errors.h"
 #include "net/disk_cache/blockfile/backend_impl.h"
 #include "net/disk_cache/blockfile/entry_impl.h"
@@ -330,8 +331,9 @@ void BackendIO::ExecuteEntryOperation() {
     NotifyController();
 }
 
-InFlightBackendIO::InFlightBackendIO(BackendImpl* backend,
-                    base::MessageLoopProxy* background_thread)
+InFlightBackendIO::InFlightBackendIO(
+    BackendImpl* backend,
+    const scoped_refptr<base::SingleThreadTaskRunner>& background_thread)
     : backend_(backend),
       background_thread_(background_thread),
       ptr_factory_(this) {
@@ -513,8 +515,8 @@ void InFlightBackendIO::OnOperationComplete(BackgroundIO* operation,
 }
 
 void InFlightBackendIO::PostOperation(BackendIO* operation) {
-  background_thread_->PostTask(FROM_HERE,
-      base::Bind(&BackendIO::ExecuteOperation, operation));
+  background_thread_->PostTask(
+      FROM_HERE, base::Bind(&BackendIO::ExecuteOperation, operation));
   OnOperationPosted(operation);
 }
 

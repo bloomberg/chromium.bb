@@ -364,7 +364,7 @@ URLRequestContext* URLRequestContextBuilder::Build() {
           net::CACHE_BACKEND_DEFAULT,
           http_cache_params_.path,
           http_cache_params_.max_size,
-          context->GetCacheThread()->message_loop_proxy().get());
+          context->GetCacheThread()->task_runner());
     } else {
       http_cache_backend =
           HttpCache::DefaultBackend::InMemory(http_cache_params_.max_size);

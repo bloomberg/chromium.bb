@@ -74,10 +74,11 @@ class NET_EXPORT_PRIVATE SimpleIndexFile {
     uint64 cache_size_;  // Total cache storage size in bytes.
   };
 
-  SimpleIndexFile(base::SingleThreadTaskRunner* cache_thread,
-                  base::TaskRunner* worker_pool,
-                  net::CacheType cache_type,
-                  const base::FilePath& cache_directory);
+  SimpleIndexFile(
+      const scoped_refptr<base::SingleThreadTaskRunner>& cache_thread,
+      const scoped_refptr<base::TaskRunner>& worker_pool,
+      net::CacheType cache_type,
+      const base::FilePath& cache_directory);
   virtual ~SimpleIndexFile();
 
   // Get index entries based on current disk context.

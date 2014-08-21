@@ -234,8 +234,8 @@ bool SimpleIndexFile::IndexMetadata::CheckIndexMetadata() {
 }
 
 SimpleIndexFile::SimpleIndexFile(
-    base::SingleThreadTaskRunner* cache_thread,
-    base::TaskRunner* worker_pool,
+    const scoped_refptr<base::SingleThreadTaskRunner>& cache_thread,
+    const scoped_refptr<base::TaskRunner>& worker_pool,
     net::CacheType cache_type,
     const base::FilePath& cache_directory)
     : cache_thread_(cache_thread),
@@ -266,15 +266,15 @@ void SimpleIndexFile::WriteToDisk(const SimpleIndex::EntrySet& entry_set,
                                   bool app_on_background) {
   IndexMetadata index_metadata(entry_set.size(), cache_size);
   scoped_ptr<Pickle> pickle = Serialize(index_metadata, entry_set);
-  cache_thread_->PostTask(FROM_HERE, base::Bind(
-      &SimpleIndexFile::SyncWriteToDisk,
-      cache_type_,
-      cache_directory_,
-      index_file_,
-      temp_index_file_,
-      base::Passed(&pickle),
-      base::TimeTicks::Now(),
-      app_on_background));
+  cache_thread_->PostTask(FROM_HERE,
+                          base::Bind(&SimpleIndexFile::SyncWriteToDisk,
+                                     cache_type_,
+                                     cache_directory_,
+                                     index_file_,
+                                     temp_index_file_,
+                                     base::Passed(&pickle),
+                                     base::TimeTicks::Now(),
+                                     app_on_background));
 }
 
 // static

@@ -9,6 +9,7 @@
 
 #include "base/containers/hash_tables.h"
 #include "base/files/file_path.h"
+#include "base/memory/ref_counted.h"
 #include "base/timer/timer.h"
 #include "net/disk_cache/blockfile/block_files.h"
 #include "net/disk_cache/blockfile/eviction.h"
@@ -18,6 +19,10 @@
 #include "net/disk_cache/blockfile/stress_support.h"
 #include "net/disk_cache/blockfile/trace.h"
 #include "net/disk_cache/disk_cache.h"
+
+namespace base {
+class SingleThreadTaskRunner;
+}  // namespace base
 
 namespace net {
 class NetLog;
@@ -44,11 +49,14 @@ enum BackendFlags {
 class NET_EXPORT_PRIVATE BackendImpl : public Backend {
   friend class Eviction;
  public:
-  BackendImpl(const base::FilePath& path, base::MessageLoopProxy* cache_thread,
+  BackendImpl(const base::FilePath& path,
+              const scoped_refptr<base::SingleThreadTaskRunner>& cache_thread,
               net::NetLog* net_log);
   // mask can be used to limit the usable size of the hash table, for testing.
-  BackendImpl(const base::FilePath& path, uint32 mask,
-              base::MessageLoopProxy* cache_thread, net::NetLog* net_log);
+  BackendImpl(const base::FilePath& path,
+              uint32 mask,
+              const scoped_refptr<base::SingleThreadTaskRunner>& cache_thread,
+              net::NetLog* net_log);
   virtual ~BackendImpl();
 
   // Performs general initialization for this current instance of the cache.

@@ -21,18 +21,18 @@
 #include "net/base/net_errors.h"
 #include "webkit/browser/quota/quota_manager_proxy.h"
 
+namespace base {
+class FilePath;
+class SingleThreadTaskRunner;
+}  // namespace base
+
 namespace net {
 class URLRequestContext;
 }  // namespace net
 
-namespace base {
-class FilePath;
-class MessageLoopProxy;
-}
-
 namespace quota {
 class SpecialStoragePolicy;
-}
+}  // namespace quota
 
 namespace content {
 FORWARD_DECLARE_TEST(AppCacheServiceImplTest, ScheduleReinitialize);
@@ -81,9 +81,10 @@ class CONTENT_EXPORT AppCacheServiceImpl
   explicit AppCacheServiceImpl(quota::QuotaManagerProxy* quota_manager_proxy);
   virtual ~AppCacheServiceImpl();
 
-  void Initialize(const base::FilePath& cache_directory,
-                  base::MessageLoopProxy* db_thread,
-                  base::MessageLoopProxy* cache_thread);
+  void Initialize(
+      const base::FilePath& cache_directory,
+      const scoped_refptr<base::SingleThreadTaskRunner>& db_thread,
+      const scoped_refptr<base::SingleThreadTaskRunner>& cache_thread);
 
   void AddObserver(Observer* observer) {
     observers_.AddObserver(observer);
@@ -196,8 +197,8 @@ class CONTENT_EXPORT AppCacheServiceImpl
   void Reinitialize();
 
   base::FilePath cache_directory_;
-  scoped_refptr<base::MessageLoopProxy> db_thread_;
-  scoped_refptr<base::MessageLoopProxy> cache_thread_;
+  scoped_refptr<base::SingleThreadTaskRunner> db_thread_;
+  scoped_refptr<base::SingleThreadTaskRunner> cache_thread_;
   AppCachePolicy* appcache_policy_;
   AppCacheQuotaClient* quota_client_;
   AppCacheExecutableHandlerFactory* handler_factory_;

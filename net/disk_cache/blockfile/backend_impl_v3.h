@@ -9,6 +9,7 @@
 
 #include "base/containers/hash_tables.h"
 #include "base/files/file_path.h"
+#include "base/memory/ref_counted.h"
 #include "base/timer/timer.h"
 #include "net/disk_cache/blockfile/block_bitmaps_v3.h"
 #include "net/disk_cache/blockfile/block_files.h"
@@ -18,6 +19,10 @@
 #include "net/disk_cache/blockfile/stress_support.h"
 #include "net/disk_cache/blockfile/trace.h"
 #include "net/disk_cache/disk_cache.h"
+
+namespace base {
+class SingleThreadTaskRunner;
+}  // namespace base
 
 namespace net {
 class NetLog;
@@ -43,7 +48,7 @@ class NET_EXPORT_PRIVATE BackendImplV3 : public Backend {
   };
 
   BackendImplV3(const base::FilePath& path,
-                base::MessageLoopProxy* cache_thread,
+                const scoped_refptr<base::SingleThreadTaskRunner>& cache_thread,
                 net::NetLog* net_log);
   virtual ~BackendImplV3();
 

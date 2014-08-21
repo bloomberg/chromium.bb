@@ -13,12 +13,16 @@
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "content/browser/appcache/appcache_database.h"
 #include "content/browser/appcache/appcache_disk_cache.h"
 #include "content/browser/appcache/appcache_storage.h"
 #include "content/common/content_export.h"
+
+namespace base {
+class SingleThreadTaskRunner;
+}  // namespace base
 
 namespace content {
 class AppCacheStorageImplTest;
@@ -29,9 +33,10 @@ class AppCacheStorageImpl : public AppCacheStorage {
   explicit AppCacheStorageImpl(AppCacheServiceImpl* service);
   virtual ~AppCacheStorageImpl();
 
-  void Initialize(const base::FilePath& cache_directory,
-                  base::MessageLoopProxy* db_thread,
-                  base::MessageLoopProxy* cache_thread);
+  void Initialize(
+      const base::FilePath& cache_directory,
+      const scoped_refptr<base::SingleThreadTaskRunner>& db_thread,
+      const scoped_refptr<base::SingleThreadTaskRunner>& cache_thread);
   void Disable();
   bool is_disabled() const { return is_disabled_; }
 
@@ -137,9 +142,9 @@ class AppCacheStorageImpl : public AppCacheStorage {
 
   // This class operates primarily on the IO thread, but schedules
   // its DatabaseTasks on the db thread. Separately, the disk_cache uses
-  // the cache_thread.
-  scoped_refptr<base::MessageLoopProxy> db_thread_;
-  scoped_refptr<base::MessageLoopProxy> cache_thread_;
+  // the cache thread.
+  scoped_refptr<base::SingleThreadTaskRunner> db_thread_;
+  scoped_refptr<base::SingleThreadTaskRunner> cache_thread_;
 
   // Structures to keep track of DatabaseTasks that are in-flight.
   DatabaseTaskQueue scheduled_database_tasks_;

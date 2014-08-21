@@ -4,6 +4,7 @@
 
 #include "base/files/file_path.h"
 #include "base/metrics/field_trial.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "net/base/cache_type.h"
 #include "net/base/net_errors.h"
@@ -24,9 +25,14 @@ namespace {
 // finished.
 class CacheCreator {
  public:
-  CacheCreator(const base::FilePath& path, bool force, int max_bytes,
-               net::CacheType type, net::BackendType backend_type, uint32 flags,
-               base::MessageLoopProxy* thread, net::NetLog* net_log,
+  CacheCreator(const base::FilePath& path,
+               bool force,
+               int max_bytes,
+               net::CacheType type,
+               net::BackendType backend_type,
+               uint32 flags,
+               const scoped_refptr<base::SingleThreadTaskRunner>& thread,
+               net::NetLog* net_log,
                scoped_ptr<disk_cache::Backend>* backend,
                const net::CompletionCallback& callback);
 
@@ -47,7 +53,7 @@ class CacheCreator {
   net::CacheType type_;
   net::BackendType backend_type_;
   uint32 flags_;
-  scoped_refptr<base::MessageLoopProxy> thread_;
+  scoped_refptr<base::SingleThreadTaskRunner> thread_;
   scoped_ptr<disk_cache::Backend>* backend_;
   net::CompletionCallback callback_;
   scoped_ptr<disk_cache::Backend> created_cache_;
@@ -57,9 +63,14 @@ class CacheCreator {
 };
 
 CacheCreator::CacheCreator(
-    const base::FilePath& path, bool force, int max_bytes,
-    net::CacheType type, net::BackendType backend_type, uint32 flags,
-    base::MessageLoopProxy* thread, net::NetLog* net_log,
+    const base::FilePath& path,
+    bool force,
+    int max_bytes,
+    net::CacheType type,
+    net::BackendType backend_type,
+    uint32 flags,
+    const scoped_refptr<base::SingleThreadTaskRunner>& thread,
+    net::NetLog* net_log,
     scoped_ptr<disk_cache::Backend>* backend,
     const net::CompletionCallback& callback)
     : path_(path),
@@ -88,8 +99,8 @@ int CacheCreator::Run() {
       (backend_type_ == net::CACHE_BACKEND_DEFAULT &&
        kSimpleBackendIsDefault)) {
     disk_cache::SimpleBackendImpl* simple_cache =
-        new disk_cache::SimpleBackendImpl(path_, max_bytes_, type_,
-                                          thread_.get(), net_log_);
+        new disk_cache::SimpleBackendImpl(
+            path_, max_bytes_, type_, thread_, net_log_);
     created_cache_.reset(simple_cache);
     return simple_cache->Init(
         base::Bind(&CacheCreator::OnIOComplete, base::Unretained(this)));
@@ -100,7 +111,7 @@ int CacheCreator::Run() {
   return net::ERR_FAILED;
 #else
   disk_cache::BackendImpl* new_cache =
-      new disk_cache::BackendImpl(path_, thread_.get(), net_log_);
+      new disk_cache::BackendImpl(path_, thread_, net_log_);
   created_cache_.reset(new_cache);
   new_cache->SetMaxSize(max_bytes_);
   new_cache->SetType(type_);
@@ -152,22 +163,32 @@ void CacheCreator::OnIOComplete(int result) {
 
 namespace disk_cache {
 
-int CreateCacheBackend(net::CacheType type,
-                       net::BackendType backend_type,
-                       const base::FilePath& path,
-                       int max_bytes,
-                       bool force, base::MessageLoopProxy* thread,
-                       net::NetLog* net_log, scoped_ptr<Backend>* backend,
-                       const net::CompletionCallback& callback) {
+int CreateCacheBackend(
+    net::CacheType type,
+    net::BackendType backend_type,
+    const base::FilePath& path,
+    int max_bytes,
+    bool force,
+    const scoped_refptr<base::SingleThreadTaskRunner>& thread,
+    net::NetLog* net_log,
+    scoped_ptr<Backend>* backend,
+    const net::CompletionCallback& callback) {
   DCHECK(!callback.is_null());
   if (type == net::MEMORY_CACHE) {
     *backend = disk_cache::MemBackendImpl::CreateBackend(max_bytes, net_log);
     return *backend ? net::OK : net::ERR_FAILED;
   }
   DCHECK(thread);
-  CacheCreator* creator = new CacheCreator(path, force, max_bytes, type,
-                                           backend_type, kNone,
-                                           thread, net_log, backend, callback);
+  CacheCreator* creator = new CacheCreator(path,
+                                           force,
+                                           max_bytes,
+                                           type,
+                                           backend_type,
+                                           kNone,
+                                           thread,
+                                           net_log,
+                                           backend,
+                                           callback);
   return creator->Run();
 }
 

@@ -398,8 +398,7 @@ class AppCacheStorageImplTest : public testing::Test {
   void SetUpTest() {
     DCHECK(base::MessageLoop::current() == io_thread->message_loop());
     service_.reset(new AppCacheServiceImpl(NULL));
-    service_->Initialize(
-        base::FilePath(), db_thread->message_loop_proxy().get(), NULL);
+    service_->Initialize(base::FilePath(), db_thread->task_runner(), NULL);
     mock_quota_manager_proxy_ = new MockQuotaManagerProxy();
     service_->quota_manager_proxy_ = mock_quota_manager_proxy_;
     delegate_.reset(new MockStorageDelegate(this));
@@ -1710,10 +1709,9 @@ class AppCacheStorageImplTest : public testing::Test {
     // Recreate the service to point at the db and corruption on disk.
     service_.reset(new AppCacheServiceImpl(NULL));
     service_->set_request_context(io_thread->request_context());
-    service_->Initialize(
-        temp_directory_.path(),
-        db_thread->message_loop_proxy().get(),
-        db_thread->message_loop_proxy().get());
+    service_->Initialize(temp_directory_.path(),
+                         db_thread->task_runner(),
+                         db_thread->task_runner());
     mock_quota_manager_proxy_ = new MockQuotaManagerProxy();
     service_->quota_manager_proxy_ = mock_quota_manager_proxy_;
     delegate_.reset(new MockStorageDelegate(this));

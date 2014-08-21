@@ -14,6 +14,7 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "content/browser/appcache/appcache.h"
@@ -186,8 +187,8 @@ void AppCacheStorageImpl::DatabaseTask::Schedule() {
     return;
 
   if (storage_->db_thread_->PostTask(
-      FROM_HERE,
-      base::Bind(&DatabaseTask::CallRun, this, base::TimeTicks::Now()))) {
+          FROM_HERE,
+          base::Bind(&DatabaseTask::CallRun, this, base::TimeTicks::Now()))) {
     storage_->scheduled_database_tasks_.push_back(this);
   } else {
     NOTREACHED() << "Thread for database tasks is not running.";
@@ -1333,7 +1334,8 @@ AppCacheStorageImpl::~AppCacheStorageImpl() {
   if (database_ &&
       !db_thread_->PostTask(
           FROM_HERE,
-          base::Bind(&ClearSessionOnlyOrigins, database_,
+          base::Bind(&ClearSessionOnlyOrigins,
+                     database_,
                      make_scoped_refptr(service_->special_storage_policy()),
                      service()->force_keep_session_state()))) {
     delete database_;
@@ -1341,9 +1343,10 @@ AppCacheStorageImpl::~AppCacheStorageImpl() {
   database_ = NULL;  // So no further database tasks can be scheduled.
 }
 
-void AppCacheStorageImpl::Initialize(const base::FilePath& cache_directory,
-                                     base::MessageLoopProxy* db_thread,
-                                     base::MessageLoopProxy* cache_thread) {
+void AppCacheStorageImpl::Initialize(
+    const base::FilePath& cache_directory,
+    const scoped_refptr<base::SingleThreadTaskRunner>& db_thread,
+    const scoped_refptr<base::SingleThreadTaskRunner>& cache_thread) {
   DCHECK(db_thread);
 
   cache_directory_ = cache_directory;
@@ -1846,10 +1849,9 @@ void AppCacheStorageImpl::DeleteAndStartOver() {
 void AppCacheStorageImpl::DeleteAndStartOverPart2() {
   db_thread_->PostTaskAndReply(
       FROM_HERE,
-      base::Bind(base::IgnoreResult(&base::DeleteFile),
-                 cache_directory_, true),
+      base::Bind(base::IgnoreResult(&base::DeleteFile), cache_directory_, true),
       base::Bind(&AppCacheStorageImpl::CallScheduleReinitialize,
-                  weak_factory_.GetWeakPtr()));
+                 weak_factory_.GetWeakPtr()));
 }
 
 void AppCacheStorageImpl::CallScheduleReinitialize() {

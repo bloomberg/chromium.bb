@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "net/base/cache_type.h"
 #include "net/base/completion_callback.h"
@@ -19,7 +20,7 @@
 
 namespace base {
 class FilePath;
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }
 
 namespace net {
@@ -47,15 +48,16 @@ class Backend;
 // be invoked when a backend is available or a fatal error condition is reached.
 // The pointer to receive the |backend| must remain valid until the operation
 // completes (the callback is notified).
-NET_EXPORT int CreateCacheBackend(net::CacheType type,
-                                  net::BackendType backend_type,
-                                  const base::FilePath& path,
-                                  int max_bytes,
-                                  bool force,
-                                  base::MessageLoopProxy* thread,
-                                  net::NetLog* net_log,
-                                  scoped_ptr<Backend>* backend,
-                                  const net::CompletionCallback& callback);
+NET_EXPORT int CreateCacheBackend(
+    net::CacheType type,
+    net::BackendType backend_type,
+    const base::FilePath& path,
+    int max_bytes,
+    bool force,
+    const scoped_refptr<base::SingleThreadTaskRunner>& thread,
+    net::NetLog* net_log,
+    scoped_ptr<Backend>* backend,
+    const net::CompletionCallback& callback);
 
 // The root interface for a disk cache instance.
 class NET_EXPORT Backend {

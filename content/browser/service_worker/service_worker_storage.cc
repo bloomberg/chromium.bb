@@ -10,6 +10,7 @@
 #include "base/file_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/sequenced_task_runner.h"
+#include "base/single_thread_task_runner.h"
 #include "base/task_runner_util.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_disk_cache.h"
@@ -227,15 +228,14 @@ ServiceWorkerStorage::~ServiceWorkerStorage() {
 scoped_ptr<ServiceWorkerStorage> ServiceWorkerStorage::Create(
     const base::FilePath& path,
     base::WeakPtr<ServiceWorkerContextCore> context,
-    base::SequencedTaskRunner* database_task_runner,
-    base::MessageLoopProxy* disk_cache_thread,
+    const scoped_refptr<base::SequencedTaskRunner>& database_task_runner,
+    const scoped_refptr<base::SingleThreadTaskRunner>& disk_cache_thread,
     quota::QuotaManagerProxy* quota_manager_proxy) {
-  return make_scoped_ptr(
-      new ServiceWorkerStorage(path,
-                               context,
-                               database_task_runner,
-                               disk_cache_thread,
-                               quota_manager_proxy));
+  return make_scoped_ptr(new ServiceWorkerStorage(path,
+                                                  context,
+                                                  database_task_runner,
+                                                  disk_cache_thread,
+                                                  quota_manager_proxy));
 }
 
 // static
@@ -675,8 +675,8 @@ void ServiceWorkerStorage::PurgeResources(const ResourceList& resources) {
 ServiceWorkerStorage::ServiceWorkerStorage(
     const base::FilePath& path,
     base::WeakPtr<ServiceWorkerContextCore> context,
-    base::SequencedTaskRunner* database_task_runner,
-    base::MessageLoopProxy* disk_cache_thread,
+    const scoped_refptr<base::SequencedTaskRunner>& database_task_runner,
+    const scoped_refptr<base::SingleThreadTaskRunner>& disk_cache_thread,
     quota::QuotaManagerProxy* quota_manager_proxy)
     : next_registration_id_(kInvalidServiceWorkerRegistrationId),
       next_version_id_(kInvalidServiceWorkerVersionId),
@@ -1052,8 +1052,10 @@ ServiceWorkerDiskCache* ServiceWorkerStorage::disk_cache() {
   }
 
   int rv = disk_cache_->InitWithDiskBackend(
-      path, kMaxDiskCacheSize, false,
-      disk_cache_thread_.get(),
+      path,
+      kMaxDiskCacheSize,
+      false,
+      disk_cache_thread_,
       base::Bind(&ServiceWorkerStorage::OnDiskCacheInitialized,
                  weak_factory_.GetWeakPtr()));
   if (rv != net::ERR_IO_PENDING)

@@ -60,11 +60,12 @@ void DeletePath(base::FilePath path) {
 
 namespace net {
 
-HttpCache::DefaultBackend::DefaultBackend(CacheType type,
-                                          BackendType backend_type,
-                                          const base::FilePath& path,
-                                          int max_bytes,
-                                          base::MessageLoopProxy* thread)
+HttpCache::DefaultBackend::DefaultBackend(
+    CacheType type,
+    BackendType backend_type,
+    const base::FilePath& path,
+    int max_bytes,
+    const scoped_refptr<base::SingleThreadTaskRunner>& thread)
     : type_(type),
       backend_type_(backend_type),
       path_(path),
@@ -89,7 +90,7 @@ int HttpCache::DefaultBackend::CreateBackend(
                                         path_,
                                         max_bytes_,
                                         true,
-                                        thread_.get(),
+                                        thread_,
                                         net_log,
                                         backend,
                                         callback);

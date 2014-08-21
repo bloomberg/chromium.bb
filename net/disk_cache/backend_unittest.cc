@@ -9,6 +9,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "net/base/cache_type.h"
@@ -426,16 +427,15 @@ TEST_F(DiskCacheTest, CreateBackend) {
     cache.reset();
 
     // Now test the public API.
-    int rv =
-        disk_cache::CreateCacheBackend(net::DISK_CACHE,
-                                       net::CACHE_BACKEND_DEFAULT,
-                                       cache_path_,
-                                       0,
-                                       false,
-                                       cache_thread.message_loop_proxy().get(),
-                                       NULL,
-                                       &cache,
-                                       cb.callback());
+    int rv = disk_cache::CreateCacheBackend(net::DISK_CACHE,
+                                            net::CACHE_BACKEND_DEFAULT,
+                                            cache_path_,
+                                            0,
+                                            false,
+                                            cache_thread.task_runner(),
+                                            NULL,
+                                            &cache,
+                                            cb.callback());
     ASSERT_EQ(net::OK, cb.GetResult(rv));
     ASSERT_TRUE(cache.get());
     cache.reset();
@@ -465,7 +465,7 @@ TEST_F(DiskCacheBackendTest, CreateBackend_MissingFile) {
 
   bool prev = base::ThreadRestrictions::SetIOAllowed(false);
   scoped_ptr<disk_cache::BackendImpl> cache(new disk_cache::BackendImpl(
-      cache_path_, cache_thread.message_loop_proxy().get(), NULL));
+      cache_path_, cache_thread.task_runner(), NULL));
   int rv = cache->Init(cb.callback());
   EXPECT_EQ(net::ERR_FAILED, cb.GetResult(rv));
   base::ThreadRestrictions::SetIOAllowed(prev);
@@ -558,10 +558,15 @@ TEST_F(DiskCacheBackendTest, MultipleInstancesWithPendingFileIO) {
 
   net::TestCompletionCallback cb;
   scoped_ptr<disk_cache::Backend> extra_cache;
-  int rv = disk_cache::CreateCacheBackend(
-               net::DISK_CACHE, net::CACHE_BACKEND_DEFAULT, store.path(), 0,
-               false, base::MessageLoopProxy::current().get(), NULL,
-               &extra_cache, cb.callback());
+  int rv = disk_cache::CreateCacheBackend(net::DISK_CACHE,
+                                          net::CACHE_BACKEND_DEFAULT,
+                                          store.path(),
+                                          0,
+                                          false,
+                                          base::ThreadTaskRunnerHandle::Get(),
+                                          NULL,
+                                          &extra_cache,
+                                          cb.callback());
   ASSERT_EQ(net::OK, cb.GetResult(rv));
   ASSERT_TRUE(extra_cache.get() != NULL);
 
@@ -682,16 +687,15 @@ TEST_F(DiskCacheTest, TruncatedIndex) {
   net::TestCompletionCallback cb;
 
   scoped_ptr<disk_cache::Backend> backend;
-  int rv =
-      disk_cache::CreateCacheBackend(net::DISK_CACHE,
-                                     net::CACHE_BACKEND_BLOCKFILE,
-                                     cache_path_,
-                                     0,
-                                     false,
-                                     cache_thread.message_loop_proxy().get(),
-                                     NULL,
-                                     &backend,
-                                     cb.callback());
+  int rv = disk_cache::CreateCacheBackend(net::DISK_CACHE,
+                                          net::CACHE_BACKEND_BLOCKFILE,
+                                          cache_path_,
+                                          0,
+                                          false,
+                                          cache_thread.task_runner(),
+                                          NULL,
+                                          &backend,
+                                          cb.callback());
   ASSERT_NE(net::OK, cb.GetResult(rv));
 
   ASSERT_FALSE(backend);
@@ -1835,7 +1839,7 @@ TEST_F(DiskCacheTest, WrongVersion) {
   net::TestCompletionCallback cb;
 
   scoped_ptr<disk_cache::BackendImpl> cache(new disk_cache::BackendImpl(
-      cache_path_, cache_thread.message_loop_proxy().get(), NULL));
+      cache_path_, cache_thread.task_runner(), NULL));
   int rv = cache->Init(cb.callback());
   ASSERT_EQ(net::ERR_FAILED, cb.GetResult(rv));
 }
@@ -1872,16 +1876,15 @@ TEST_F(DiskCacheTest, SimpleCacheControlJoin) {
                                          "ExperimentControl");
   net::TestCompletionCallback cb;
   scoped_ptr<disk_cache::Backend> base_cache;
-  int rv =
-      disk_cache::CreateCacheBackend(net::DISK_CACHE,
-                                     net::CACHE_BACKEND_BLOCKFILE,
-                                     cache_path_,
-                                     0,
-                                     true,
-                                     cache_thread.message_loop_proxy().get(),
-                                     NULL,
-                                     &base_cache,
-                                     cb.callback());
+  int rv = disk_cache::CreateCacheBackend(net::DISK_CACHE,
+                                          net::CACHE_BACKEND_BLOCKFILE,
+                                          cache_path_,
+                                          0,
+                                          true,
+                                          cache_thread.task_runner(),
+                                          NULL,
+                                          &base_cache,
+                                          cb.callback());
   ASSERT_EQ(net::OK, cb.GetResult(rv));
   EXPECT_EQ(0, base_cache->GetEntryCount());
 }
@@ -1977,16 +1980,15 @@ TEST_F(DiskCacheBackendTest, DeleteOld) {
   net::TestCompletionCallback cb;
   bool prev = base::ThreadRestrictions::SetIOAllowed(false);
   base::FilePath path(cache_path_);
-  int rv =
-      disk_cache::CreateCacheBackend(net::DISK_CACHE,
-                                     net::CACHE_BACKEND_BLOCKFILE,
-                                     path,
-                                     0,
-                                     true,
-                                     cache_thread.message_loop_proxy().get(),
-                                     NULL,
-                                     &cache_,
-                                     cb.callback());
+  int rv = disk_cache::CreateCacheBackend(net::DISK_CACHE,
+                                          net::CACHE_BACKEND_BLOCKFILE,
+                                          path,
+                                          0,
+                                          true,
+                                          cache_thread.task_runner(),
+                                          NULL,
+                                          &cache_,
+                                          cb.callback());
   path.clear();  // Make sure path was captured by the previous call.
   ASSERT_EQ(net::OK, cb.GetResult(rv));
   base::ThreadRestrictions::SetIOAllowed(prev);
@@ -2743,7 +2745,7 @@ TEST_F(DiskCacheTest, Backend_UsageStatsTimer) {
   ASSERT_TRUE(CleanupCacheDir());
   scoped_ptr<disk_cache::BackendImpl> cache;
   cache.reset(new disk_cache::BackendImpl(
-      cache_path_, base::MessageLoopProxy::current().get(), NULL));
+      cache_path_, base::ThreadTaskRunnerHandle::Get(), NULL));
   ASSERT_TRUE(NULL != cache.get());
   cache->SetUnitTestMode();
   ASSERT_EQ(net::OK, cache->SyncInit());
@@ -2758,7 +2760,7 @@ TEST_F(DiskCacheBackendTest, TimerNotCreated) {
 
   scoped_ptr<disk_cache::BackendImpl> cache;
   cache.reset(new disk_cache::BackendImpl(
-      cache_path_, base::MessageLoopProxy::current().get(), NULL));
+      cache_path_, base::ThreadTaskRunnerHandle::Get(), NULL));
   ASSERT_TRUE(NULL != cache.get());
   cache->SetUnitTestMode();
   ASSERT_NE(net::OK, cache->SyncInit());
@@ -2910,23 +2912,22 @@ TEST_F(DiskCacheTest, MultipleInstances) {
   const int kNumberOfCaches = 2;
   scoped_ptr<disk_cache::Backend> cache[kNumberOfCaches];
 
-  int rv =
-      disk_cache::CreateCacheBackend(net::DISK_CACHE,
-                                     net::CACHE_BACKEND_DEFAULT,
-                                     store1.path(),
-                                     0,
-                                     false,
-                                     cache_thread.message_loop_proxy().get(),
-                                     NULL,
-                                     &cache[0],
-                                     cb.callback());
+  int rv = disk_cache::CreateCacheBackend(net::DISK_CACHE,
+                                          net::CACHE_BACKEND_DEFAULT,
+                                          store1.path(),
+                                          0,
+                                          false,
+                                          cache_thread.task_runner(),
+                                          NULL,
+                                          &cache[0],
+                                          cb.callback());
   ASSERT_EQ(net::OK, cb.GetResult(rv));
   rv = disk_cache::CreateCacheBackend(net::MEDIA_CACHE,
                                       net::CACHE_BACKEND_DEFAULT,
                                       store2.path(),
                                       0,
                                       false,
-                                      cache_thread.message_loop_proxy().get(),
+                                      cache_thread.task_runner(),
                                       NULL,
                                       &cache[1],
                                       cb.callback());
@@ -3365,11 +3366,8 @@ TEST_F(DiskCacheBackendTest, SimpleCacheOverBlockfileCache) {
   ASSERT_TRUE(cache_thread.StartWithOptions(
       base::Thread::Options(base::MessageLoop::TYPE_IO, 0)));
   disk_cache::SimpleBackendImpl* simple_cache =
-      new disk_cache::SimpleBackendImpl(cache_path_,
-                                        0,
-                                        net::DISK_CACHE,
-                                        cache_thread.message_loop_proxy().get(),
-                                        NULL);
+      new disk_cache::SimpleBackendImpl(
+          cache_path_, 0, net::DISK_CACHE, cache_thread.task_runner(), NULL);
   net::TestCompletionCallback cb;
   int rv = simple_cache->Init(cb.callback());
   EXPECT_NE(net::OK, cb.GetResult(rv));
@@ -3397,7 +3395,7 @@ TEST_F(DiskCacheBackendTest, BlockfileCacheOverSimpleCache) {
   ASSERT_TRUE(cache_thread.StartWithOptions(
       base::Thread::Options(base::MessageLoop::TYPE_IO, 0)));
   disk_cache::BackendImpl* cache = new disk_cache::BackendImpl(
-      cache_path_, base::MessageLoopProxy::current().get(), NULL);
+      cache_path_, base::ThreadTaskRunnerHandle::Get(), NULL);
   cache->SetUnitTestMode();
   net::TestCompletionCallback cb;
   int rv = cache->Init(cb.callback());

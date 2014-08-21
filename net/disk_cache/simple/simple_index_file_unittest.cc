@@ -8,10 +8,10 @@
 #include "base/hash.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/pickle.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "net/base/cache_type.h"
@@ -75,8 +75,8 @@ class WrappedSimpleIndexFile : public SimpleIndexFile {
   using SimpleIndexFile::SerializeFinalData;
 
   explicit WrappedSimpleIndexFile(const base::FilePath& index_file_directory)
-      : SimpleIndexFile(base::MessageLoopProxy::current().get(),
-                        base::MessageLoopProxy::current().get(),
+      : SimpleIndexFile(base::ThreadTaskRunnerHandle::Get(),
+                        base::ThreadTaskRunnerHandle::Get(),
                         net::DISK_CACHE,
                         index_file_directory) {}
   virtual ~WrappedSimpleIndexFile() {

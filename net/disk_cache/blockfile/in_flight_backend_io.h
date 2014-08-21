@@ -8,7 +8,8 @@
 #include <list>
 #include <string>
 
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/memory/ref_counted.h"
+#include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
@@ -146,8 +147,9 @@ class BackendIO : public BackgroundIO {
 // The specialized controller that keeps track of current operations.
 class InFlightBackendIO : public InFlightIO {
  public:
-  InFlightBackendIO(BackendImpl* backend,
-                    base::MessageLoopProxy* background_thread);
+  InFlightBackendIO(
+      BackendImpl* backend,
+      const scoped_refptr<base::SingleThreadTaskRunner>& background_thread);
   virtual ~InFlightBackendIO();
 
   // Proxied operations.
@@ -193,13 +195,13 @@ class InFlightBackendIO : public InFlightIO {
   // Blocks until all operations are cancelled or completed.
   void WaitForPendingIO();
 
-  scoped_refptr<base::MessageLoopProxy> background_thread() {
+  scoped_refptr<base::SingleThreadTaskRunner> background_thread() {
     return background_thread_;
   }
 
   // Returns true if the current thread is the background thread.
   bool BackgroundIsCurrentThread() {
-    return background_thread_->BelongsToCurrentThread();
+    return background_thread_->RunsTasksOnCurrentThread();
   }
 
   base::WeakPtr<InFlightBackendIO> GetWeakPtr();
@@ -212,7 +214,7 @@ class InFlightBackendIO : public InFlightIO {
   void PostOperation(BackendIO* operation);
 
   BackendImpl* backend_;
-  scoped_refptr<base::MessageLoopProxy> background_thread_;
+  scoped_refptr<base::SingleThreadTaskRunner> background_thread_;
   base::WeakPtrFactory<InFlightBackendIO> ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(InFlightBackendIO);

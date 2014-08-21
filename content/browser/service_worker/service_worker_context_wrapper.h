@@ -16,8 +16,8 @@
 
 namespace base {
 class FilePath;
-class MessageLoopProxy;
 class SequencedTaskRunner;
+class SingleThreadTaskRunner;
 }
 
 namespace net {
@@ -97,11 +97,12 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   friend class ServiceWorkerProcessManager;
   virtual ~ServiceWorkerContextWrapper();
 
-  void InitInternal(const base::FilePath& user_data_directory,
-                    base::SequencedTaskRunner* stores_task_runner,
-                    base::SequencedTaskRunner* database_task_runner,
-                    base::MessageLoopProxy* disk_cache_thread,
-                    quota::QuotaManagerProxy* quota_manager_proxy);
+  void InitInternal(
+      const base::FilePath& user_data_directory,
+      const scoped_refptr<base::SequencedTaskRunner>& stores_task_runner,
+      const scoped_refptr<base::SequencedTaskRunner>& database_task_runner,
+      const scoped_refptr<base::SingleThreadTaskRunner>& disk_cache_thread,
+      quota::QuotaManagerProxy* quota_manager_proxy);
   void ShutdownOnIO();
 
   void DidDeleteAndStartOver(ServiceWorkerStatusCode status);

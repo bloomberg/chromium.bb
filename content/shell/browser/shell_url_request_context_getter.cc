@@ -149,8 +149,7 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
 #endif
             cache_path,
             0,
-            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE)
-                .get());
+            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE));
 
     net::HttpNetworkSession::Params network_session_params;
     network_session_params.cert_verifier =

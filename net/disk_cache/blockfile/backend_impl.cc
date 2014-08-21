@@ -15,6 +15,7 @@
 #include "base/metrics/histogram.h"
 #include "base/metrics/stats_counters.h"
 #include "base/rand_util.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
@@ -109,9 +110,10 @@ void FinalCleanupCallback(disk_cache::BackendImpl* backend) {
 
 namespace disk_cache {
 
-BackendImpl::BackendImpl(const base::FilePath& path,
-                         base::MessageLoopProxy* cache_thread,
-                         net::NetLog* net_log)
+BackendImpl::BackendImpl(
+    const base::FilePath& path,
+    const scoped_refptr<base::SingleThreadTaskRunner>& cache_thread,
+    net::NetLog* net_log)
     : background_queue_(this, cache_thread),
       path_(path),
       block_files_(path),
@@ -134,10 +136,11 @@ BackendImpl::BackendImpl(const base::FilePath& path,
       ptr_factory_(this) {
 }
 
-BackendImpl::BackendImpl(const base::FilePath& path,
-                         uint32 mask,
-                         base::MessageLoopProxy* cache_thread,
-                         net::NetLog* net_log)
+BackendImpl::BackendImpl(
+    const base::FilePath& path,
+    uint32 mask,
+    const scoped_refptr<base::SingleThreadTaskRunner>& cache_thread,
+    net::NetLog* net_log)
     : background_queue_(this, cache_thread),
       path_(path),
       block_files_(path),

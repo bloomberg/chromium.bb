@@ -5,7 +5,7 @@
 #include "content/browser/service_worker/service_worker_context_core.h"
 
 #include "base/files/file_path.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "content/browser/service_worker/embedded_worker_registry.h"
 #include "content/browser/service_worker/service_worker_cache_storage_manager.h"
@@ -83,9 +83,9 @@ void ServiceWorkerContextCore::ProviderHostIterator::Initialize() {
 
 ServiceWorkerContextCore::ServiceWorkerContextCore(
     const base::FilePath& path,
-    base::SequencedTaskRunner* cache_task_runner,
-    base::SequencedTaskRunner* database_task_runner,
-    base::MessageLoopProxy* disk_cache_thread,
+    const scoped_refptr<base::SequencedTaskRunner>& cache_task_runner,
+    const scoped_refptr<base::SequencedTaskRunner>& database_task_runner,
+    const scoped_refptr<base::SingleThreadTaskRunner>& disk_cache_thread,
     quota::QuotaManagerProxy* quota_manager_proxy,
     ObserverListThreadSafe<ServiceWorkerContextObserver>* observer_list,
     ServiceWorkerContextWrapper* wrapper)

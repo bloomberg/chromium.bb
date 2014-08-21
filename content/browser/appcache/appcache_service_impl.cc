@@ -10,6 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "content/browser/appcache/appcache.h"
 #include "content/browser/appcache/appcache_backend_impl.h"
@@ -467,9 +468,10 @@ AppCacheServiceImpl::~AppCacheServiceImpl() {
   storage_.reset();
 }
 
-void AppCacheServiceImpl::Initialize(const base::FilePath& cache_directory,
-                                 base::MessageLoopProxy* db_thread,
-                                 base::MessageLoopProxy* cache_thread) {
+void AppCacheServiceImpl::Initialize(
+    const base::FilePath& cache_directory,
+    const scoped_refptr<base::SingleThreadTaskRunner>& db_thread,
+    const scoped_refptr<base::SingleThreadTaskRunner>& cache_thread) {
   DCHECK(!storage_.get());
   cache_directory_ = cache_directory;
   db_thread_ = db_thread;

@@ -23,7 +23,6 @@
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/time/time.h"
 #include "net/base/cache_type.h"
@@ -36,10 +35,14 @@
 
 class GURL;
 
+namespace base {
+class SingleThreadTaskRunner;
+}  // namespace base
+
 namespace disk_cache {
 class Backend;
 class Entry;
-}
+}  // namespace disk_cache
 
 namespace net {
 
@@ -97,11 +100,13 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory,
   class NET_EXPORT DefaultBackend : public BackendFactory {
    public:
     // |path| is the destination for any files used by the backend, and
-    // |cache_thread| is the thread where disk operations should take place. If
+    // |thread| is the thread where disk operations should take place. If
     // |max_bytes| is  zero, a default value will be calculated automatically.
-    DefaultBackend(CacheType type, BackendType backend_type,
-                   const base::FilePath& path, int max_bytes,
-                   base::MessageLoopProxy* thread);
+    DefaultBackend(CacheType type,
+                   BackendType backend_type,
+                   const base::FilePath& path,
+                   int max_bytes,
+                   const scoped_refptr<base::SingleThreadTaskRunner>& thread);
     virtual ~DefaultBackend();
 
     // Returns a factory for an in-memory cache.
@@ -117,7 +122,7 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory,
     BackendType backend_type_;
     const base::FilePath path_;
     int max_bytes_;
-    scoped_refptr<base::MessageLoopProxy> thread_;
+    scoped_refptr<base::SingleThreadTaskRunner> thread_;
   };
 
   // The disk cache is initialized lazily (by CreateTransaction) in this case.

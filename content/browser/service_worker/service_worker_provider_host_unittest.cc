@@ -4,6 +4,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/weak_ptr.h"
+#include "base/thread_task_runner_handle.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/browser/service_worker/service_worker_register_job.h"
@@ -25,9 +26,9 @@ class ServiceWorkerProviderHostTest : public testing::Test {
   virtual void SetUp() OVERRIDE {
     context_.reset(
         new ServiceWorkerContextCore(base::FilePath(),
-                                     base::MessageLoopProxy::current(),
-                                     base::MessageLoopProxy::current(),
-                                     base::MessageLoopProxy::current(),
+                                     base::ThreadTaskRunnerHandle::Get(),
+                                     base::ThreadTaskRunnerHandle::Get(),
+                                     base::ThreadTaskRunnerHandle::Get(),
                                      NULL,
                                      NULL,
                                      NULL));

@@ -16,13 +16,13 @@
 #include "base/callback.h"
 #include "base/file_util.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/single_thread_task_runner.h"
 #include "base/sys_info.h"
 #include "base/task_runner_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/time/time.h"
 #include "net/base/net_errors.h"
@@ -39,9 +39,7 @@
 using base::Callback;
 using base::Closure;
 using base::FilePath;
-using base::MessageLoopProxy;
 using base::SequencedWorkerPool;
-using base::SingleThreadTaskRunner;
 using base::Time;
 using base::DirectoryExists;
 using base::CreateDirectory;
@@ -197,19 +195,19 @@ void RecordIndexLoad(net::CacheType cache_type,
 
 }  // namespace
 
-SimpleBackendImpl::SimpleBackendImpl(const FilePath& path,
-                                     int max_bytes,
-                                     net::CacheType cache_type,
-                                     base::SingleThreadTaskRunner* cache_thread,
-                                     net::NetLog* net_log)
+SimpleBackendImpl::SimpleBackendImpl(
+    const FilePath& path,
+    int max_bytes,
+    net::CacheType cache_type,
+    const scoped_refptr<base::SingleThreadTaskRunner>& cache_thread,
+    net::NetLog* net_log)
     : path_(path),
       cache_type_(cache_type),
       cache_thread_(cache_thread),
       orig_max_size_(max_bytes),
-      entry_operations_mode_(
-          cache_type == net::DISK_CACHE ?
-              SimpleEntryImpl::OPTIMISTIC_OPERATIONS :
-              SimpleEntryImpl::NON_OPTIMISTIC_OPERATIONS),
+      entry_operations_mode_(cache_type == net::DISK_CACHE ?
+                                 SimpleEntryImpl::OPTIMISTIC_OPERATIONS :
+                                 SimpleEntryImpl::NON_OPTIMISTIC_OPERATIONS),
       net_log_(net_log) {
   MaybeHistogramFdLimit(cache_type_);
 }
@@ -224,19 +222,22 @@ int SimpleBackendImpl::Init(const CompletionCallback& completion_callback) {
   worker_pool_ = g_sequenced_worker_pool->GetTaskRunnerWithShutdownBehavior(
       SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
 
-  index_.reset(new SimpleIndex(MessageLoopProxy::current(), this, cache_type_,
-                               make_scoped_ptr(new SimpleIndexFile(
-                                   cache_thread_.get(), worker_pool_.get(),
-                                   cache_type_, path_))));
+  index_.reset(new SimpleIndex(
+      base::ThreadTaskRunnerHandle::Get(),
+      this,
+      cache_type_,
+      make_scoped_ptr(new SimpleIndexFile(
+          cache_thread_, worker_pool_.get(), cache_type_, path_))));
   index_->ExecuteWhenReady(
       base::Bind(&RecordIndexLoad, cache_type_, base::TimeTicks::Now()));
 
   PostTaskAndReplyWithResult(
       cache_thread_,
       FROM_HERE,
-      base::Bind(&SimpleBackendImpl::InitCacheStructureOnDisk, path_,
-                 orig_max_size_),
-      base::Bind(&SimpleBackendImpl::InitializeIndex, AsWeakPtr(),
+      base::Bind(
+          &SimpleBackendImpl::InitCacheStructureOnDisk, path_, orig_max_size_),
+      base::Bind(&SimpleBackendImpl::InitializeIndex,
+                 AsWeakPtr(),
                  completion_callback));
   return net::ERR_IO_PENDING;
 }

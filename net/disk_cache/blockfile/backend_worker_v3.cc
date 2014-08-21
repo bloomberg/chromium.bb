@@ -93,11 +93,10 @@ bool InitExperiment(disk_cache::IndexHeader* header, bool cache_created) {
 
 namespace disk_cache {
 
-BackendImplV3::Worker::Worker(const base::FilePath& path,
-                              base::MessageLoopProxy* main_thread)
-      : path_(path),
-        block_files_(path),
-        init_(false) {
+BackendImplV3::Worker::Worker(
+    const base::FilePath& path,
+    const scoped_refptr<base::SingleThreadTaskRunner>& main_thread)
+    : path_(path), block_files_(path), init_(false) {
 }
 
 #if defined(V3_NOT_JUST_YET_READY)

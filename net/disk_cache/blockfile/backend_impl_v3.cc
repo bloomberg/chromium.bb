@@ -53,9 +53,10 @@ const int kTrimDelay = 10;
 
 namespace disk_cache {
 
-BackendImplV3::BackendImplV3(const base::FilePath& path,
-                             base::MessageLoopProxy* cache_thread,
-                             net::NetLog* net_log)
+BackendImplV3::BackendImplV3(
+    const base::FilePath& path,
+    const scoped_refptr<base::SingleThreadTaskRunner>& cache_thread,
+    net::NetLog* net_log)
     : index_(NULL),
       path_(path),
       block_files_(),

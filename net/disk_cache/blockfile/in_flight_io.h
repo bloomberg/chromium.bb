@@ -7,9 +7,13 @@
 
 #include <set>
 
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
+
+namespace base {
+class TaskRunner;
+}  // namespace base
 
 namespace disk_cache {
 
@@ -123,7 +127,7 @@ class InFlightIO {
   typedef std::set<scoped_refptr<BackgroundIO> > IOList;
 
   IOList io_list_;  // List of pending, in-flight io operations.
-  scoped_refptr<base::MessageLoopProxy> callback_thread_;
+  scoped_refptr<base::TaskRunner> callback_task_runner_;
 
   bool running_;  // True after the first posted operation completes.
   bool single_thread_;  // True if we only have one thread.
