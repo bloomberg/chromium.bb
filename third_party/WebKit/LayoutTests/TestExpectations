@@ -155,6 +155,8 @@ crbug.com/377950 svg/repaint/image-animation-with-zoom.html [ Failure Pass ]
 
 crbug.com/377960 fast/css/font-load-while-styleresolver-missing.html  [ Pass ImageOnlyFailure ]
 
+crbug.com/404179 fast/repaint/shadow-multiple.html [ NeedsRebaseline ]
+
 crbug.com/377970 [ Win Linux ] http/tests/misc/image-blocked-src-change.html [ Failure Pass ]
 
 # Flaky on Linux ASAN and debug bots.
