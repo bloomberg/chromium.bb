@@ -318,8 +318,7 @@ void BrowserActionsContainer::RemoveObserver(
 }
 
 gfx::Size BrowserActionsContainer::GetPreferredSize() const {
-  size_t icon_count = browser_action_views_.size() -
-      (in_overflow_mode() ? main_container_->VisibleBrowserActions() : 0);
+  size_t icon_count = GetIconCount();
 
   // If there are no actions to show, or we are in overflow mode and the main
   // container is already showing them all, then no further work is required.
@@ -624,8 +623,18 @@ void BrowserActionsContainer::OnResize(int resize_amount, bool done_resizing) {
   int max_width = IconCountToWidth(-1, false);
   container_width_ =
       std::min(std::max(0, container_width_ - resize_amount), max_width);
-  SaveDesiredSizeAndAnimate(gfx::Tween::EASE_OUT,
-                            WidthToIconCount(container_width_));
+
+  // Save off the desired number of visible icons.  We do this now instead of at
+  // the end of the animation so that even if the browser is shut down while
+  // animating, the right value will be restored on next run.
+  // NOTE: Don't save the icon count in incognito because there may be fewer
+  // icons in that mode. The result is that the container in a normal window is
+  // always at least as wide as in an incognito window.
+  int visible_icons = WidthToIconCount(container_width_);
+  if (!profile_->IsOffTheRecord())
+    model_->SetVisibleIconCount(visible_icons);
+
+  Animate(gfx::Tween::EASE_OUT, visible_icons);
 }
 
 void BrowserActionsContainer::AnimationProgressed(
@@ -796,8 +805,6 @@ void BrowserActionsContainer::ToolbarExtensionAdded(const Extension* extension,
   if (!ShouldDisplayBrowserAction(extension))
     return;
 
-  size_t visible_actions = VisibleBrowserActionsAfterAnimation();
-
   // Add the new browser action to the vector and the view hierarchy.
   if (profile_->IsOffTheRecord())
     index = model_->OriginalIndexToIncognito(index);
@@ -819,7 +826,7 @@ void BrowserActionsContainer::ToolbarExtensionAdded(const Extension* extension,
       !extensions::ExtensionSystem::Get(profile_)->runtime_data()->
           IsBeingUpgraded(extension)) {
     suppress_chevron_ = true;
-    SaveDesiredSizeAndAnimate(gfx::Tween::LINEAR, visible_actions + 1);
+    Animate(gfx::Tween::LINEAR, browser_action_views_.size());
   } else {
     // Just redraw the (possibly modified) visible icon set.
     OnBrowserActionVisibilityChanged();
@@ -854,8 +861,7 @@ void BrowserActionsContainer::ToolbarExtensionRemoved(
         // overflow container by 1.  Either way the size changed, so animate.
         if (chevron_)
           chevron_->SetVisible(false);
-        SaveDesiredSizeAndAnimate(gfx::Tween::EASE_OUT,
-                                  browser_action_views_.size());
+        Animate(gfx::Tween::EASE_OUT, browser_action_views_.size());
       }
       return;  // We have found the action to remove, bail out.
     }
@@ -906,7 +912,10 @@ bool BrowserActionsContainer::ShowExtensionActionPopup(
 }
 
 void BrowserActionsContainer::ToolbarVisibleCountChanged() {
+  int old_container_width = container_width_;
   SetContainerWidth();
+  if (old_container_width != container_width_)
+    Animate(gfx::Tween::EASE_OUT, GetIconCount());
 }
 
 void BrowserActionsContainer::ToolbarHighlightModeChanged(
@@ -917,7 +926,7 @@ void BrowserActionsContainer::ToolbarHighlightModeChanged(
   // the extra complexity to create and insert only the new extensions.
   DeleteBrowserActionViews();
   CreateBrowserActionViews();
-  SaveDesiredSizeAndAnimate(gfx::Tween::LINEAR, browser_action_views_.size());
+  Animate(gfx::Tween::LINEAR, browser_action_views_.size());
 }
 
 void BrowserActionsContainer::LoadImages() {
@@ -941,13 +950,7 @@ void BrowserActionsContainer::OnBrowserActionVisibilityChanged() {
 }
 
 void BrowserActionsContainer::SetContainerWidth() {
-  // The slave only draws the overflow (what isn't visible in the other
-  // container).
-  int visible_actions = in_overflow_mode() ?
-      model_->toolbar_items().size() - model_->GetVisibleIconCount() :
-      model_->GetVisibleIconCount();
-  if (visible_actions < 0)  // All icons should be visible.
-    visible_actions = model_->toolbar_items().size();
+  int visible_actions = GetIconCount();
   if (chevron_) {
     chevron_->SetVisible(
       static_cast<size_t>(visible_actions) < model_->toolbar_items().size());
@@ -1024,17 +1027,8 @@ int BrowserActionsContainer::MinimumNonemptyWidth() const {
       chevron_->GetPreferredSize().width();
 }
 
-void BrowserActionsContainer::SaveDesiredSizeAndAnimate(
-    gfx::Tween::Type tween_type,
-    size_t num_visible_icons) {
-  // Save off the desired number of visible icons.  We do this now instead of at
-  // the end of the animation so that even if the browser is shut down while
-  // animating, the right value will be restored on next run.
-  // NOTE: Don't save the icon count in incognito because there may be fewer
-  // icons in that mode. The result is that the container in a normal window is
-  // always at least as wide as in an incognito window.
-  if (!profile_->IsOffTheRecord())
-    model_->SetVisibleIconCount(num_visible_icons);
+void BrowserActionsContainer::Animate(gfx::Tween::Type tween_type,
+                                      size_t num_visible_icons) {
   int target_size = IconCountToWidth(num_visible_icons,
       num_visible_icons < browser_action_views_.size());
   if (resize_animation_ && !disable_animations_during_testing_) {
@@ -1051,7 +1045,7 @@ void BrowserActionsContainer::SaveDesiredSizeAndAnimate(
 }
 
 bool BrowserActionsContainer::ShouldDisplayBrowserAction(
-    const Extension* extension) {
+    const Extension* extension) const {
   // Only display incognito-enabled extensions while in incognito mode.
   return !profile_->IsOffTheRecord() ||
       extensions::util::IsIncognitoEnabled(extension->id(), profile_);
@@ -1086,4 +1080,27 @@ BrowserActionView* BrowserActionsContainer::GetViewForExtension(
   }
 
   return NULL;
+}
+
+size_t BrowserActionsContainer::GetIconCount() const {
+  if (!model_)
+    return 0u;
+  // Find the number of icons which could be displayed.
+  size_t displayable_icon_count = 0u;
+  const extensions::ExtensionList& extensions = model_->toolbar_items();
+  for (extensions::ExtensionList::const_iterator iter = extensions.begin();
+       iter != extensions.end(); ++iter) {
+    displayable_icon_count += ShouldDisplayBrowserAction(*iter) ? 1u : 0u;
+  }
+  // Find the absolute value for the model's visible count.
+  int model_size = model_->GetVisibleIconCount();
+  size_t absolute_model_size =
+      model_size == -1 ? extensions.size() : model_size;
+
+  // The main container will try to show |model_size| icons, but reduce if there
+  // aren't enough displayable icons to do so.
+  size_t main_displayed = std::min(displayable_icon_count, absolute_model_size);
+  // The overflow will display the extras, if any.
+  return in_overflow_mode() ?
+      displayable_icon_count - main_displayed : main_displayed;
 }

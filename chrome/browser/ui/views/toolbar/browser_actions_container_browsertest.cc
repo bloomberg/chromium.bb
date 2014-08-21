@@ -27,9 +27,18 @@ class BrowserActionsContainerTest : public ExtensionBrowserTest {
   }
   virtual ~BrowserActionsContainerTest() {}
 
+  virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE {
+    BrowserActionsContainer::disable_animations_during_testing_ = true;
+    ExtensionBrowserTest::SetUpCommandLine(command_line);
+  }
+
   virtual void SetUpOnMainThread() OVERRIDE {
     ExtensionBrowserTest::SetUpOnMainThread();
     browser_actions_bar_.reset(new BrowserActionTestUtil(browser()));
+  }
+
+  virtual void TearDownOnMainThread() OVERRIDE {
+    BrowserActionsContainer::disable_animations_during_testing_ = false;
   }
 
   BrowserActionTestUtil* browser_actions_bar() {
@@ -47,8 +56,6 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, DISABLED_Basic) {
 #else
 IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, Basic) {
 #endif
-  BrowserActionsContainer::disable_animations_during_testing_ = true;
-
   // Load an extension with no browser action.
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("api_test")
                                           .AppendASCII("browser_action")
@@ -74,8 +81,6 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, Basic) {
 // move (that's in the toolbar model tests), but just to check our ui.
 IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest,
                        MoveBrowserActions) {
-  BrowserActionsContainer::disable_animations_during_testing_ = true;
-
   // Load three extensions with browser actions.
   const Extension* extension_a =
       LoadExtension(test_data_dir_.AppendASCII("api_test")
@@ -125,8 +130,6 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest,
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, Visibility) {
-  BrowserActionsContainer::disable_animations_during_testing_ = true;
-
   // Load extension A (contains browser action).
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("api_test")
                                           .AppendASCII("browser_action")
@@ -216,8 +219,6 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, Visibility) {
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, ForceHide) {
-  BrowserActionsContainer::disable_animations_during_testing_ = true;
-
   // Load extension A (contains browser action).
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("api_test")
                                           .AppendASCII("browser_action")
@@ -238,8 +239,6 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, ForceHide) {
 // highlight mode. (Highlight mode itself it tested more thoroughly in the
 // ExtensionToolbarModel browsertests).
 IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, HighlightMode) {
-  BrowserActionsContainer::disable_animations_during_testing_ = true;
-
   // Load three extensions with browser actions.
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("api_test")
                                           .AppendASCII("browser_action")

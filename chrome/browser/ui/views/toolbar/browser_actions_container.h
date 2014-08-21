@@ -339,15 +339,13 @@ class BrowserActionsContainer
   int MinimumNonemptyWidth() const;
 
   // Animate to the target size (unless testing, in which case we go straight to
-  // the target size).  This also saves the target number of visible icons in
-  // the pref if we're not incognito.
-  void SaveDesiredSizeAndAnimate(gfx::Tween::Type type,
-                                 size_t num_visible_icons);
+  // the target size).
+  void Animate(gfx::Tween::Type type, size_t num_visible_icons);
 
   // Returns true if this extension should be shown in this toolbar. This can
   // return false if we are in an incognito window and the extension is disabled
   // for incognito.
-  bool ShouldDisplayBrowserAction(const extensions::Extension* extension);
+  bool ShouldDisplayBrowserAction(const extensions::Extension* extension) const;
 
   // Return the index of the first visible icon.
   size_t GetFirstVisibleIconIndex() const;
@@ -356,6 +354,10 @@ class BrowserActionsContainer
   // NULL if none exists.
   BrowserActionView* GetViewForExtension(
       const extensions::Extension* extension);
+
+  // Returns the number of icons that this container should draw. This differs
+  // from the model's GetVisibleIconCount if this container is for the overflow.
+  size_t GetIconCount() const;
 
   // Whether this container is in overflow mode (as opposed to in 'main'
   // mode). See class comments for details on the difference.

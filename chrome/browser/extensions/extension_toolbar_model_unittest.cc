@@ -5,6 +5,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/browser/extensions/extension_toolbar_model.h"
@@ -126,7 +127,7 @@ class ExtensionToolbarModelUnitTest : public ExtensionServiceTestBase {
   testing::AssertionResult AddBrowserActionExtensions() WARN_UNUSED_RESULT;
 
   // Adds three extensions, one each for browser action, page action, and no
-  // action.
+  // action, and are added in that order.
   testing::AssertionResult AddActionExtensions() WARN_UNUSED_RESULT;
 
   // Returns the extension at the given index in the toolbar model, or NULL
@@ -690,6 +691,130 @@ TEST_F(ExtensionToolbarModelUnitTest, TestToolbarExtensionTypesSwitch) {
   EXPECT_EQ(browser_action(), GetExtensionAtIndex(0u));
   EXPECT_EQ(page_action(), GetExtensionAtIndex(1u));
   EXPECT_EQ(no_action(), GetExtensionAtIndex(2u));
+}
+
+// Test that hiding actions on the toolbar results in their removal from the
+// model when the redesign switch is not enabled.
+TEST_F(ExtensionToolbarModelUnitTest,
+       ExtensionToolbarActionsVisibilityNoSwitch) {
+  Init();
+
+  ASSERT_TRUE(AddBrowserActionExtensions());
+  // Sanity check: Order should start as A B C.
+  EXPECT_EQ(3u, num_toolbar_items());
+  EXPECT_EQ(browser_action_a(), GetExtensionAtIndex(0u));
+  EXPECT_EQ(browser_action_b(), GetExtensionAtIndex(1u));
+  EXPECT_EQ(browser_action_c(), GetExtensionAtIndex(2u));
+
+  ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
+
+  // By default, all actions should be visible.
+  EXPECT_TRUE(ExtensionActionAPI::GetBrowserActionVisibility(
+                  prefs, browser_action_a()->id()));
+  EXPECT_TRUE(ExtensionActionAPI::GetBrowserActionVisibility(
+                  prefs, browser_action_b()->id()));
+  EXPECT_TRUE(ExtensionActionAPI::GetBrowserActionVisibility(
+                  prefs, browser_action_c()->id()));
+
+  // Hiding an action should result in its removal from the toolbar.
+  ExtensionActionAPI::SetBrowserActionVisibility(
+      prefs, browser_action_b()->id(), false);
+  EXPECT_FALSE(ExtensionActionAPI::GetBrowserActionVisibility(
+                   prefs, browser_action_b()->id()));
+  // Thus, there should now only be two items on the toolbar - A and C.
+  EXPECT_EQ(2u, num_toolbar_items());
+  EXPECT_EQ(browser_action_a(), GetExtensionAtIndex(0u));
+  EXPECT_EQ(browser_action_c(), GetExtensionAtIndex(1u));
+
+  // Resetting the visibility to 'true' should result in the extension being
+  // added back at its original position.
+  ExtensionActionAPI::SetBrowserActionVisibility(
+      prefs, browser_action_b()->id(), true);
+  EXPECT_TRUE(ExtensionActionAPI::GetBrowserActionVisibility(
+                  prefs, browser_action_b()->id()));
+  // So the toolbar order should be A B C.
+  EXPECT_EQ(3u, num_toolbar_items());
+  EXPECT_EQ(browser_action_a(), GetExtensionAtIndex(0u));
+  EXPECT_EQ(browser_action_b(), GetExtensionAtIndex(1u));
+  EXPECT_EQ(browser_action_c(), GetExtensionAtIndex(2u));
+}
+
+// Test that hiding actions on the toolbar results in sending them to the
+// overflow menu when the redesign switch is enabled.
+TEST_F(ExtensionToolbarModelUnitTest,
+       ExtensionToolbarActionsVisibilityWithSwitch) {
+  FeatureSwitch::ScopedOverride enable_redesign(
+      FeatureSwitch::extension_action_redesign(), true);
+  Init();
+
+  // We choose to use all types of extensions here, since the misnamed
+  // BrowserActionVisibility is now for toolbar visibility.
+  ASSERT_TRUE(AddActionExtensions());
+
+  // For readability, alias extensions A B C.
+  const Extension* extension_a = browser_action();
+  const Extension* extension_b = page_action();
+  const Extension* extension_c = no_action();
+
+  // Sanity check: Order should start as A B C, with all three visible.
+  EXPECT_EQ(3u, num_toolbar_items());
+  EXPECT_EQ(-1, toolbar_model()->GetVisibleIconCount());  // -1 = 'all'.
+  EXPECT_EQ(extension_a, GetExtensionAtIndex(0u));
+  EXPECT_EQ(extension_b, GetExtensionAtIndex(1u));
+  EXPECT_EQ(extension_c, GetExtensionAtIndex(2u));
+
+  ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
+
+  // By default, all actions should be visible.
+  EXPECT_TRUE(ExtensionActionAPI::GetBrowserActionVisibility(
+                  prefs, extension_a->id()));
+  EXPECT_TRUE(ExtensionActionAPI::GetBrowserActionVisibility(
+                  prefs, extension_c->id()));
+  EXPECT_TRUE(ExtensionActionAPI::GetBrowserActionVisibility(
+                  prefs, extension_b->id()));
+
+  // Hiding an action should result in it being sent to the overflow menu.
+  ExtensionActionAPI::SetBrowserActionVisibility(
+      prefs, extension_b->id(), false);
+
+  // Thus, the order should be A C B, with B in the overflow.
+  EXPECT_EQ(3u, num_toolbar_items());
+  EXPECT_EQ(2, toolbar_model()->GetVisibleIconCount());
+  EXPECT_EQ(extension_a, GetExtensionAtIndex(0u));
+  EXPECT_EQ(extension_c, GetExtensionAtIndex(1u));
+  EXPECT_EQ(extension_b, GetExtensionAtIndex(2u));
+
+  // Hiding an extension's action should result in it being sent to the overflow
+  // as well, but as the _first_ extension in the overflow.
+  ExtensionActionAPI::SetBrowserActionVisibility(
+      prefs, extension_a->id(), false);
+  // Thus, the order should be C A B, with A and B in the overflow.
+  EXPECT_EQ(3u, num_toolbar_items());
+  EXPECT_EQ(1, toolbar_model()->GetVisibleIconCount());
+  EXPECT_EQ(extension_c, GetExtensionAtIndex(0u));
+  EXPECT_EQ(extension_a, GetExtensionAtIndex(1u));
+  EXPECT_EQ(extension_b, GetExtensionAtIndex(2u));
+
+  // Resetting A's visibility to true should send it back to the visible icons
+  // (and should grow visible icons by 1), but it should be added to the end of
+  // the visible icon list (not to its original position).
+  ExtensionActionAPI::SetBrowserActionVisibility(
+      prefs, extension_a->id(), true);
+  // So order is C A B, with only B in the overflow.
+  EXPECT_EQ(3u, num_toolbar_items());
+  EXPECT_EQ(2, toolbar_model()->GetVisibleIconCount());
+  EXPECT_EQ(extension_c, GetExtensionAtIndex(0u));
+  EXPECT_EQ(extension_a, GetExtensionAtIndex(1u));
+  EXPECT_EQ(extension_b, GetExtensionAtIndex(2u));
+
+  // Resetting B to be visible should make the order C A B, with no overflow.
+  ExtensionActionAPI::SetBrowserActionVisibility(
+      prefs, extension_b->id(), true);
+  EXPECT_EQ(3u, num_toolbar_items());
+  EXPECT_EQ(-1, toolbar_model()->GetVisibleIconCount());  // -1 = 'all'
+  EXPECT_EQ(extension_c, GetExtensionAtIndex(0u));
+  EXPECT_EQ(extension_a, GetExtensionAtIndex(1u));
+  EXPECT_EQ(extension_b, GetExtensionAtIndex(2u));
 }
 
 }  // namespace extensions

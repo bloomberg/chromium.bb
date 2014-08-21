@@ -35,7 +35,7 @@ class ExtensionContextMenuModel
   enum MenuEntries {
     NAME = 0,
     CONFIGURE,
-    HIDE,
+    TOGGLE_VISIBILITY,
     UNINSTALL,
     MANAGE,
     INSPECT_POPUP,

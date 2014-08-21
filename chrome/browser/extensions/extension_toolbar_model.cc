@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <string>
 
+#include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_base.h"
 #include "base/prefs/pref_service.h"
@@ -117,7 +118,7 @@ void ExtensionToolbarModel::MoveExtensionIcon(const Extension* extension,
 
   FOR_EACH_OBSERVER(
       Observer, observers_, ToolbarExtensionMoved(extension, index));
-
+  MaybeUpdateVisibilityPref(extension, index);
   UpdatePrefs();
 }
 
@@ -158,11 +159,21 @@ ExtensionAction::ShowAction ExtensionToolbarModel::ExecuteBrowserAction(
 void ExtensionToolbarModel::SetVisibleIconCount(int count) {
   visible_icon_count_ =
       count == static_cast<int>(toolbar_items_.size()) ? -1 : count;
+
   // Only set the prefs if we're not in highlight mode. Highlight mode is
   // designed to be a transitory state, and should not persist across browser
   // restarts (though it may be re-entered).
-  if (!is_highlighting_)
+  if (!is_highlighting_) {
+    // Additionally, if we are using the new toolbar, any icons which are in the
+    // overflow menu are considered "hidden". But it so happens that the times
+    // we are likely to call SetVisibleIconCount() are also those when we are
+    // in flux. So wait for things to cool down before setting the prefs.
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&ExtensionToolbarModel::MaybeUpdateVisibilityPrefs,
+                   weak_ptr_factory_.GetWeakPtr()));
     prefs_->SetInteger(pref_names::kToolbarSize, visible_icon_count_);
+  }
 }
 
 void ExtensionToolbarModel::OnExtensionActionUpdated(
@@ -222,18 +233,42 @@ void ExtensionToolbarModel::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  DCHECK_EQ(
-      extensions::NOTIFICATION_EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED,
-      type);
+  DCHECK_EQ(NOTIFICATION_EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED, type);
   const Extension* extension =
       ExtensionRegistry::Get(profile_)->GetExtensionById(
           *content::Details<const std::string>(details).ptr(),
           ExtensionRegistry::EVERYTHING);
-  if (ExtensionActionAPI::GetBrowserActionVisibility(extension_prefs_,
-                                                     extension->id()))
-    AddExtension(extension);
-  else
-    RemoveExtension(extension);
+
+  bool visible = ExtensionActionAPI::GetBrowserActionVisibility(
+                     extension_prefs_, extension->id());
+  // Hiding works differently with the new and old toolbars.
+  if (include_all_extensions_) {
+    int new_size = 0;
+    int new_index = 0;
+    if (visible) {
+      // If this action used to be hidden, we can't possible be showing all.
+      DCHECK_NE(-1, visible_icon_count_);
+      // Grow the bar by one and move the extension to the end of the visibles.
+      new_size = visible_icon_count_ + 1;
+      new_index = new_size - 1;
+    } else {
+      // If we're hiding one, we must be showing at least one.
+      DCHECK_NE(visible_icon_count_, 0);
+      // Shrink the bar by one and move the extension to the beginning of the
+      // overflow menu.
+      new_size = visible_icon_count_ == -1 ?
+                     toolbar_items_.size() - 1 : visible_icon_count_ - 1;
+      new_index = new_size;
+    }
+    SetVisibleIconCount(new_size);
+    MoveExtensionIcon(extension, new_index);
+    FOR_EACH_OBSERVER(Observer, observers_, ToolbarVisibleCountChanged());
+  } else {  // Don't include all extensions.
+    if (visible)
+      AddExtension(extension);
+    else
+      RemoveExtension(extension);
+  }
 }
 
 void ExtensionToolbarModel::OnReady() {
@@ -318,6 +353,8 @@ void ExtensionToolbarModel::AddExtension(const Extension* extension) {
     UpdatePrefs();
   }
 
+  MaybeUpdateVisibilityPref(extension, new_index);
+
   // If we're currently highlighting, then even though we add a browser action
   // to the full list (|toolbar_items_|, there won't be another *visible*
   // browser action, which was what the observers care about.
@@ -369,6 +406,7 @@ void ExtensionToolbarModel::InitializeExtensionList(
   Populate(last_known_positions_, extensions);
 
   extensions_initialized_ = true;
+  MaybeUpdateVisibilityPrefs();
   FOR_EACH_OBSERVER(Observer, observers_, ToolbarVisibleCountChanged());
 }
 
@@ -467,6 +505,42 @@ void ExtensionToolbarModel::UpdatePrefs() {
   pref_change_registrar_.Remove(pref_names::kToolbar);
   extension_prefs_->SetToolbarOrder(last_known_positions_);
   pref_change_registrar_.Add(pref_names::kToolbar, pref_change_callback_);
+}
+
+void ExtensionToolbarModel::MaybeUpdateVisibilityPref(
+    const Extension* extension, int index) {
+  // We only update the visibility pref for hidden/not hidden based on the
+  // overflow menu with the new toolbar design.
+  if (include_all_extensions_) {
+    bool visible = index < visible_icon_count_ || visible_icon_count_ == -1;
+    if (visible != ExtensionActionAPI::GetBrowserActionVisibility(
+                       extension_prefs_, extension->id())) {
+      // Don't observe changes caused by ourselves.
+      bool was_registered = false;
+      if (registrar_.IsRegistered(
+              this,
+              NOTIFICATION_EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED,
+              content::Source<ExtensionPrefs>(extension_prefs_))) {
+        was_registered = true;
+        registrar_.Remove(
+            this,
+            NOTIFICATION_EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED,
+            content::Source<ExtensionPrefs>(extension_prefs_));
+      }
+      ExtensionActionAPI::SetBrowserActionVisibility(
+          extension_prefs_, extension->id(), visible);
+      if (was_registered) {
+        registrar_.Add(this,
+                       NOTIFICATION_EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED,
+                       content::Source<ExtensionPrefs>(extension_prefs_));
+      }
+    }
+  }
+}
+
+void ExtensionToolbarModel::MaybeUpdateVisibilityPrefs() {
+  for (size_t i = 0u; i < toolbar_items_.size(); ++i)
+    MaybeUpdateVisibilityPref(toolbar_items_[i], i);
 }
 
 int ExtensionToolbarModel::IncognitoIndexToOriginal(int incognito_index) {

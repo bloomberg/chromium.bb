@@ -181,6 +181,13 @@ class ExtensionToolbarModel : public content::NotificationObserver,
   // Save the model to prefs.
   void UpdatePrefs();
 
+  // Updates |extension|'s browser action visibility pref if the browser action
+  // is in the overflow menu and should be considered hidden.
+  void MaybeUpdateVisibilityPref(const Extension* extension, int index);
+
+  // Calls MaybeUpdateVisibilityPref() for each extension in |toolbar_items|.
+  void MaybeUpdateVisibilityPrefs();
+
   // Finds the last known visible position of the icon for an |extension|. The
   // value returned is a zero-based index into the vector of visible items.
   size_t FindNewPositionFromLastKnownGood(const Extension* extension);
