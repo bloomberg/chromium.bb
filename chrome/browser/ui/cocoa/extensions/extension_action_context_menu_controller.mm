@@ -5,6 +5,7 @@
 #import "chrome/browser/ui/cocoa/extensions/extension_action_context_menu_controller.h"
 
 #include "base/strings/sys_string_conversions.h"
+#include "chrome/browser/extensions/active_script_controller.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -78,6 +79,7 @@ class AsyncUninstaller : public extensions::ExtensionUninstallDialog::Delegate {
 
 @interface ExtensionActionContextMenuController ()
 - (void)onExtensionName:(id)sender;
+- (void)onAlwaysRun:(id)sender;
 - (void)onOptions:(id)sender;
 - (void)onUninstall:(id)sender;
 - (void)onHide:(id)sender;
@@ -112,6 +114,19 @@ class AsyncUninstaller : public extensions::ExtensionUninstallDialog::Delegate {
 
   // Separator.
   [menu addItem:[NSMenuItem separatorItem]];
+
+  // Always Run. Only displayed if there is an active script injection action.
+  content::WebContents* activeTab =
+      browser_->tab_strip_model()->GetActiveWebContents();
+  if (activeTab &&
+      extensions::ActiveScriptController::GetForWebContents(activeTab)
+          ->HasActiveScriptAction(extension_)) {
+    item = [menu addItemWithTitle:
+                l10n_util::GetNSStringWithFixup(IDS_EXTENSIONS_ALWAYS_RUN)
+                           action:@selector(onAlwaysRun:)
+                    keyEquivalent:@""];
+    [item setTarget:self];
+  }
 
   // Options.
   item = [menu addItemWithTitle:
@@ -171,6 +186,15 @@ class AsyncUninstaller : public extensions::ExtensionUninstallDialog::Delegate {
                        content::PAGE_TRANSITION_LINK,
                        false);
   browser_->OpenURL(params);
+}
+
+- (void)onAlwaysRun:(id)sender {
+  content::WebContents* activeTab =
+      browser_->tab_strip_model()->GetActiveWebContents();
+  if (activeTab) {
+    extensions::ActiveScriptController::GetForWebContents(activeTab)
+        ->AlwaysRunOnVisibleOrigin(extension_);
+  }
 }
 
 - (void)onOptions:(id)sender {
