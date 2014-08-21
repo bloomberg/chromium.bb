@@ -1965,9 +1965,14 @@ void RenderWidget::didHandleGestureEvent(
 #if defined(OS_ANDROID) || defined(USE_AURA)
   if (event_cancelled)
     return;
-  if (event.type == WebInputEvent::GestureTap ||
-      event.type == WebInputEvent::GestureLongPress) {
+  if (event.type == WebInputEvent::GestureTap) {
     UpdateTextInputState(SHOW_IME_IF_NEEDED, FROM_NON_IME);
+  } else if (event.type == WebInputEvent::GestureLongPress) {
+    DCHECK(webwidget_);
+    if (webwidget_->textInputInfo().value.isEmpty())
+      UpdateTextInputState(NO_SHOW_IME, FROM_NON_IME);
+    else
+      UpdateTextInputState(SHOW_IME_IF_NEEDED, FROM_NON_IME);
   }
 #endif
 }
