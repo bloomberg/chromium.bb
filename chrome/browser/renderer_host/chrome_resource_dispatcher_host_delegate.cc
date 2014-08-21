@@ -276,8 +276,6 @@ ChromeResourceDispatcherHostDelegate::~ChromeResourceDispatcherHostDelegate() {
 }
 
 bool ChromeResourceDispatcherHostDelegate::ShouldBeginRequest(
-    int child_id,
-    int route_id,
     const std::string& method,
     const GURL& url,
     ResourceType resource_type,
@@ -304,8 +302,6 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
     content::ResourceContext* resource_context,
     content::AppCacheService* appcache_service,
     ResourceType resource_type,
-    int child_id,
-    int route_id,
     ScopedVector<content::ResourceThrottle>* throttles) {
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
   bool is_prerendering =
@@ -400,8 +396,7 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
 #endif
 
   signin::AppendMirrorRequestHeaderIfPossible(
-      request, GURL() /* redirect_url */,
-      io_data, info->GetChildID(), info->GetRouteID());
+      request, GURL() /* redirect_url */, io_data);
 
   AppendStandardResourceThrottles(request,
                                   resource_context,
@@ -699,9 +694,10 @@ void ChromeResourceDispatcherHostDelegate::OnRequestRedirected(
     content::ResourceContext* resource_context,
     content::ResourceResponse* response) {
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(resource_context);
-  const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
 
 #if defined(ENABLE_ONE_CLICK_SIGNIN)
+  const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
+
   // See if the response contains the Google-Accounts-SignIn header.  If so,
   // then the user has just finished signing in, and the server is allowing the
   // browser to suggest connecting the user's profile to the account.
@@ -716,8 +712,7 @@ void ChromeResourceDispatcherHostDelegate::OnRequestRedirected(
   // response and let Chrome handle the action with native UI. The only
   // exception is requests from gaia webview, since the native profile
   // management UI is built on top of it.
-  signin::AppendMirrorRequestHeaderIfPossible(request, redirect_url, io_data,
-      info->GetChildID(), info->GetRouteID());
+  signin::AppendMirrorRequestHeaderIfPossible(request, redirect_url, io_data);
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
   if (io_data->policy_header_helper())

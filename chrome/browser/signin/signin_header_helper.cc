@@ -189,9 +189,7 @@ ManageAccountsParams::ManageAccountsParams() :
 bool AppendMirrorRequestHeaderIfPossible(
     net::URLRequest* request,
     const GURL& redirect_url,
-    ProfileIOData* io_data,
-    int child_id,
-    int route_id) {
+    ProfileIOData* io_data) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
 
   if (io_data->IsOffTheRecord() ||

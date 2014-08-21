@@ -9,8 +9,6 @@
 namespace content {
 
 bool ResourceDispatcherHostDelegate::ShouldBeginRequest(
-    int child_id,
-    int route_id,
     const std::string& method,
     const GURL& url,
     ResourceType resource_type,
@@ -23,8 +21,6 @@ void ResourceDispatcherHostDelegate::RequestBeginning(
     ResourceContext* resource_context,
     AppCacheService* appcache_service,
     ResourceType resource_type,
-    int child_id,
-    int route_id,
     ScopedVector<ResourceThrottle>* throttles) {
 }
 

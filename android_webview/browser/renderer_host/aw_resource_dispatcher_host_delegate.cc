@@ -212,8 +212,6 @@ void AwResourceDispatcherHostDelegate::RequestBeginning(
     content::ResourceContext* resource_context,
     content::AppCacheService* appcache_service,
     ResourceType resource_type,
-    int child_id,
-    int route_id,
     ScopedVector<content::ResourceThrottle>* throttles) {
 
   AddExtraHeadersIfNeeded(request, resource_context);
@@ -227,7 +225,7 @@ void AwResourceDispatcherHostDelegate::RequestBeginning(
   // however io_client may or may not be ready at the time depending on whether
   // webcontents is created.
   throttles->push_back(new IoThreadClientThrottle(
-      child_id, request_info->GetRenderFrameID(), request));
+      request_info->GetChildID(), request_info->GetRenderFrameID(), request));
 
   // We allow intercepting only navigations within main frames. This
   // is used to post onPageStarted. We handle shouldOverrideUrlLoading

@@ -1008,9 +1008,7 @@ void ResourceDispatcherHostImpl::BeginRequest(
   }
 
   // Allow the observer to block/handle the request.
-  if (delegate_ && !delegate_->ShouldBeginRequest(child_id,
-                                                  route_id,
-                                                  request_data.method,
+  if (delegate_ && !delegate_->ShouldBeginRequest(request_data.method,
                                                   request_data.url,
                                                   request_data.resource_type,
                                                   resource_context)) {
@@ -1196,8 +1194,6 @@ scoped_ptr<ResourceHandler> ResourceDispatcherHostImpl::CreateResourceHandler(
                                 resource_context,
                                 filter_->appcache_service(),
                                 request_data.resource_type,
-                                child_id,
-                                route_id,
                                 &throttles);
   }
 

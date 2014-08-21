@@ -51,16 +51,12 @@ class TransitionBrowserTestObserver
       ResourceContext* resource_context,
       AppCacheService* appcache_service,
       ResourceType resource_type,
-      int child_id,
-      int route_id,
       ScopedVector<ResourceThrottle>* throttles) OVERRIDE {
     CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     ShellResourceDispatcherHostDelegate::RequestBeginning(request,
                                                           resource_context,
                                                           appcache_service,
                                                           resource_type,
-                                                          child_id,
-                                                          route_id,
                                                           throttles);
     request_ = request;
 
@@ -69,7 +65,7 @@ class TransitionBrowserTestObserver
 
     if (is_transition_request_) {
       TransitionRequestManager::GetInstance()->AddPendingTransitionRequestData(
-          child_id, info->GetRenderFrameID(), "*", "", "");
+          info->GetChildID(), info->GetRenderFrameID(), "*", "", "");
     }
   }
 

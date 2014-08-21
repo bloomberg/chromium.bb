@@ -38,13 +38,10 @@ class TrackingResourceDispatcherHostDelegate
       ResourceContext* resource_context,
       AppCacheService* appcache_service,
       ResourceType resource_type,
-      int child_id,
-      int route_id,
       ScopedVector<ResourceThrottle>* throttles) OVERRIDE {
     CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     ShellResourceDispatcherHostDelegate::RequestBeginning(
-        request, resource_context, appcache_service, resource_type, child_id,
-        route_id, throttles);
+        request, resource_context, appcache_service, resource_type, throttles);
     // Expect only a single request for the tracked url.
     ASSERT_FALSE(throttle_created_);
     // If this is a request for the tracked URL, add a throttle to track it.

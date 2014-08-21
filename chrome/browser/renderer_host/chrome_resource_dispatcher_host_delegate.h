@@ -39,8 +39,6 @@ class ChromeResourceDispatcherHostDelegate
 
   // ResourceDispatcherHostDelegate implementation.
   virtual bool ShouldBeginRequest(
-      int child_id,
-      int route_id,
       const std::string& method,
       const GURL& url,
       content::ResourceType resource_type,
@@ -50,8 +48,6 @@ class ChromeResourceDispatcherHostDelegate
       content::ResourceContext* resource_context,
       content::AppCacheService* appcache_service,
       content::ResourceType resource_type,
-      int child_id,
-      int route_id,
       ScopedVector<content::ResourceThrottle>* throttles) OVERRIDE;
   virtual void DownloadStarting(
       net::URLRequest* request,

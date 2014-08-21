@@ -39,9 +39,7 @@ struct ResourceResponse;
 class CONTENT_EXPORT ResourceDispatcherHostDelegate {
  public:
   // Called when a request begins. Return false to abort the request.
-  virtual bool ShouldBeginRequest(int child_id,
-                                  int route_id,
-                                  const std::string& method,
+  virtual bool ShouldBeginRequest(const std::string& method,
                                   const GURL& url,
                                   ResourceType resource_type,
                                   ResourceContext* resource_context);
@@ -52,8 +50,6 @@ class CONTENT_EXPORT ResourceDispatcherHostDelegate {
                                 ResourceContext* resource_context,
                                 AppCacheService* appcache_service,
                                 ResourceType resource_type,
-                                int child_id,
-                                int route_id,
                                 ScopedVector<ResourceThrottle>* throttles);
 
   // Allows an embedder to add additional resource handlers for a download.

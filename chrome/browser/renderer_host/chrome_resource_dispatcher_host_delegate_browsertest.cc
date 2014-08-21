@@ -64,16 +64,12 @@ class TestDispatcherHostDelegate : public ChromeResourceDispatcherHostDelegate {
       content::ResourceContext* resource_context,
       content::AppCacheService* appcache_service,
       ResourceType resource_type,
-      int child_id,
-      int route_id,
       ScopedVector<content::ResourceThrottle>* throttles) OVERRIDE {
     ChromeResourceDispatcherHostDelegate::RequestBeginning(
         request,
         resource_context,
         appcache_service,
         resource_type,
-        child_id,
-        route_id,
         throttles);
     request_headers_.MergeFrom(request->extra_request_headers());
   }
