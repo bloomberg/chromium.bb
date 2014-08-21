@@ -9,7 +9,8 @@
 #include <stdio.h>
 #include <string.h>
 
-#define USE_HISTORICAL_STRERRO_R (defined(__GLIBC__) || defined(OS_NACL))
+#define USE_HISTORICAL_STRERRO_R (defined(__GLIBC__) || defined(__BIONIC__) || \
+                                  defined(OS_NACL))
 
 #if USE_HISTORICAL_STRERRO_R && defined(__GNUC__)
 // GCC will complain about the unused second wrap function unless we tell it
