@@ -1887,13 +1887,20 @@ surface_resize(struct shell_surface *shsurf,
 	       struct weston_seat *seat, uint32_t edges)
 {
 	struct weston_resize_grab *resize;
+	const unsigned resize_topbottom =
+		WL_SHELL_SURFACE_RESIZE_TOP | WL_SHELL_SURFACE_RESIZE_BOTTOM;
+	const unsigned resize_leftright =
+		WL_SHELL_SURFACE_RESIZE_LEFT | WL_SHELL_SURFACE_RESIZE_RIGHT;
+	const unsigned resize_any = resize_topbottom | resize_leftright;
 
 	if (shsurf->grabbed ||
 	    shsurf->state.fullscreen || shsurf->state.maximized)
 		return 0;
 
-	if (edges == 0 || edges > 15 ||
-	    (edges & 3) == 3 || (edges & 12) == 12)
+	/* Check for invalid edge combinations. */
+	if (edges == WL_SHELL_SURFACE_RESIZE_NONE || edges > resize_any ||
+	    (edges & resize_topbottom) == resize_topbottom ||
+	    (edges & resize_leftright) == resize_leftright)
 		return 0;
 
 	resize = malloc(sizeof *resize);
