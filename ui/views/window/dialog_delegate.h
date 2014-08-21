@@ -32,10 +32,18 @@ class VIEWS_EXPORT DialogDelegate : public ui::DialogModel,
   DialogDelegate();
   virtual ~DialogDelegate();
 
-  // Create a dialog widget with the specified |context| or |parent|.
+  // Same as CreateDialogWidgetWithBounds() with an empty |bounds|.
   static Widget* CreateDialogWidget(WidgetDelegate* delegate,
                                     gfx::NativeWindow context,
                                     gfx::NativeView parent);
+
+  // Create a dialog widget with the specified |context| or |parent|.
+  // If |bounds| is not empty, used to initially place the dialog, otherwise
+  // a default location is used.
+  static Widget* CreateDialogWidgetWithBounds(WidgetDelegate* delegate,
+                                              gfx::NativeWindow context,
+                                              gfx::NativeView parent,
+                                              const gfx::Rect& bounds);
 
   // Override this function to display an extra view adjacent to the buttons.
   // Overrides may construct the view; this will only be called once per dialog.
