@@ -2,26 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/guest_view/app_view/app_view_guest.h"
+#include "extensions/browser/guest_view/app_view/app_view_guest.h"
 
 #include "base/command_line.h"
-#include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
-#include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/guest_view/app_view/app_view_constants.h"
-#include "chrome/browser/renderer_context_menu/render_view_context_menu.h"
-#include "chrome/common/chrome_switches.h"
-#include "components/renderer_context_menu/context_menu_delegate.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/common/renderer_preferences.h"
 #include "extensions/browser/api/app_runtime/app_runtime_api.h"
+#include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_host.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/guest_view/app_view/app_view_constants.h"
 #include "extensions/browser/guest_view/guest_view_manager.h"
 #include "extensions/browser/lazy_background_task_queue.h"
+#include "extensions/browser/process_manager.h"
 #include "extensions/browser/view_type_utils.h"
 #include "extensions/common/api/app_runtime.h"
 #include "extensions/common/extension_messages.h"
+#include "extensions/common/switches.h"
 #include "ipc/ipc_message_macros.h"
 
 namespace app_runtime = extensions::core_api::app_runtime;
@@ -93,7 +92,7 @@ bool AppViewGuest::CompletePendingRequest(
 GuestViewBase* AppViewGuest::Create(content::BrowserContext* browser_context,
                                     int guest_instance_id) {
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableAppView)) {
+      extensions::switches::kEnableAppView)) {
     return NULL;
   }
   return new AppViewGuest(browser_context, guest_instance_id);
@@ -102,6 +101,8 @@ GuestViewBase* AppViewGuest::Create(content::BrowserContext* browser_context,
 AppViewGuest::AppViewGuest(content::BrowserContext* browser_context,
                            int guest_instance_id)
     : GuestView<AppViewGuest>(browser_context, guest_instance_id),
+      app_view_guest_delegate_(
+          ExtensionsAPIClient::Get()->CreateAppViewGuestDelegate()),
       weak_ptr_factory_(this) {
 }
 
@@ -126,14 +127,11 @@ bool AppViewGuest::OnMessageReceived(const IPC::Message& message) {
 }
 
 bool AppViewGuest::HandleContextMenu(const content::ContextMenuParams& params) {
-  ContextMenuDelegate* menu_delegate =
-      ContextMenuDelegate::FromWebContents(guest_web_contents());
-  DCHECK(menu_delegate);
-
-  scoped_ptr<RenderViewContextMenu> menu =
-      menu_delegate->BuildMenu(guest_web_contents(), params);
-  menu_delegate->ShowMenu(menu.Pass());
-  return true;
+  if (app_view_guest_delegate_) {
+    return app_view_guest_delegate_->HandleContextMenu(guest_web_contents(),
+                                                       params);
+  }
+  return false;
 }
 
 const char* AppViewGuest::GetAPINamespace() {
@@ -157,11 +155,11 @@ void AppViewGuest::CreateWebContents(
     return;
   }
 
-  ExtensionService* service =
-      ExtensionSystem::Get(browser_context())->extension_service();
-  const Extension* guest_extension = service->GetExtensionById(app_id, false);
+  const ExtensionSet& enabled_extensions =
+      ExtensionRegistry::Get(browser_context())->enabled_extensions();
+  const Extension* guest_extension = enabled_extensions.GetByID(app_id);
   const Extension* embedder_extension =
-      service->GetExtensionById(embedder_extension_id, false);
+      enabled_extensions.GetByID(embedder_extension_id);
 
   if (!guest_extension || !guest_extension->is_platform_app() ||
       !embedder_extension | !embedder_extension->is_platform_app()) {

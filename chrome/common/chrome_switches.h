@@ -118,7 +118,6 @@ extern const char kDnsPrefetchDisable[];
 extern const char kDumpBrowserHistograms[];
 extern const char kEasyUnlockAppPath[];
 extern const char kEnableAppList[];
-extern const char kEnableAppView[];
 extern const char kEnableAppWindowControls[];
 extern const char kEnableAppsFileAssociations[];
 extern const char kEnableAsyncDns[];

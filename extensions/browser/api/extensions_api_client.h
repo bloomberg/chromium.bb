@@ -25,6 +25,7 @@ class HidService;
 
 namespace extensions {
 
+class AppViewGuestDelegate;
 class SettingsObserver;
 class SettingsStorageFactory;
 class ValueStoreCache;
@@ -67,6 +68,9 @@ class ExtensionsAPIClient {
       content::BrowserContext* browser_context,
       int guest_instance_id,
       const std::string& guest_extension_id);
+
+  // Creates the AppViewGuestDelegate.
+  virtual AppViewGuestDelegate* CreateAppViewGuestDelegate() const;
 
   // Returns the HidService instance for this embedder.
   virtual device::HidService* GetHidService();

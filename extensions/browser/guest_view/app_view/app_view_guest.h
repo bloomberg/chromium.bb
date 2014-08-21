@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_GUEST_VIEW_APP_VIEW_APP_VIEW_GUEST_H_
-#define CHROME_BROWSER_GUEST_VIEW_APP_VIEW_APP_VIEW_GUEST_H_
+#ifndef EXTENSIONS_BROWSER_GUEST_VIEW_APP_VIEW_APP_VIEW_GUEST_H_
+#define EXTENSIONS_BROWSER_GUEST_VIEW_APP_VIEW_APP_VIEW_GUEST_H_
 
 #include "base/id_map.h"
 #include "extensions/browser/extension_function_dispatcher.h"
+#include "extensions/browser/guest_view/app_view/app_view_guest_delegate.h"
 #include "extensions/browser/guest_view/guest_view.h"
 
 namespace extensions {
@@ -55,8 +56,7 @@ class AppViewGuest : public GuestView<AppViewGuest>,
   virtual void DidInitialize() OVERRIDE;
 
  private:
-  AppViewGuest(content::BrowserContext* browser_context,
-               int guest_instance_id);
+  AppViewGuest(content::BrowserContext* browser_context, int guest_instance_id);
 
   virtual ~AppViewGuest();
 
@@ -73,6 +73,7 @@ class AppViewGuest : public GuestView<AppViewGuest>,
   GURL url_;
   std::string guest_extension_id_;
   scoped_ptr<ExtensionFunctionDispatcher> extension_function_dispatcher_;
+  scoped_ptr<AppViewGuestDelegate> app_view_guest_delegate_;
 
   // This is used to ensure pending tasks will not fire after this object is
   // destroyed.
@@ -83,4 +84,4 @@ class AppViewGuest : public GuestView<AppViewGuest>,
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_GUEST_VIEW_APP_VIEW_APP_VIEW_GUEST_H_
+#endif  // EXTENSIONS_BROWSER_GUEST_VIEW_APP_VIEW_APP_VIEW_GUEST_H_

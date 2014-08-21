@@ -7,10 +7,10 @@
 #include "base/logging.h"
 
 namespace extensions {
+class AppViewGuestDelegate;
+
 namespace {
-
 ExtensionsAPIClient* g_instance = NULL;
-
 }  // namespace
 
 ExtensionsAPIClient::ExtensionsAPIClient() { g_instance = this; }
@@ -39,6 +39,10 @@ bool ExtensionsAPIClient::AppViewInternalDenyRequest(
     int guest_instance_id,
     const std::string& guest_extension_id) {
   return false;
+}
+
+AppViewGuestDelegate* ExtensionsAPIClient::CreateAppViewGuestDelegate() const {
+  return NULL;
 }
 
 device::HidService* ExtensionsAPIClient::GetHidService() {

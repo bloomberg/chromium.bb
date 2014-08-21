@@ -35,6 +35,7 @@
 #include "extensions/common/permissions/manifest_permission_set.h"
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/permissions/permissions_data.h"
+#include "extensions/common/switches.h"
 #include "extensions/common/url_pattern_set.h"
 #include "extensions/renderer/dispatcher.h"
 #include "extensions/renderer/native_handler.h"
@@ -308,7 +309,8 @@ void ChromeExtensionsDispatcherDelegate::RequireAdditionalModules(
 
   if (context_type == extensions::Feature::BLESSED_EXTENSION_CONTEXT) {
     // TODO(fsamuel): Use context->GetAvailability("appViewInternal").
-    if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableAppView) &&
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+            extensions::switches::kEnableAppView) &&
         extension->permissions_data()->HasAPIPermission(
             extensions::APIPermission::kAppView)) {
       module_system->Require("appView");

@@ -1483,7 +1483,7 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_ENABLE_APP_VIEW_NAME,
     IDS_FLAGS_ENABLE_APP_VIEW_DESCRIPTION,
     kOsAll,
-    SINGLE_VALUE_TYPE(switches::kEnableAppView)
+    SINGLE_VALUE_TYPE(extensions::switches::kEnableAppView)
   },
   {
     "disable-app-list-app-info",

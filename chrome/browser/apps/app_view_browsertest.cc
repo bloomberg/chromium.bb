@@ -5,7 +5,6 @@
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
@@ -13,6 +12,7 @@
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/guest_view/guest_view_manager.h"
 #include "extensions/browser/guest_view/guest_view_manager_factory.h"
+#include "extensions/common/switches.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -132,7 +132,7 @@ class AppViewTest : public extensions::PlatformAppBrowserTest {
 
  private:
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    command_line->AppendSwitch(switches::kEnableAppView);
+    command_line->AppendSwitch(extensions::switches::kEnableAppView);
     extensions::PlatformAppBrowserTest::SetUpCommandLine(command_line);
   }
 
