@@ -4,12 +4,29 @@
 
 group("mojo") {
   deps = [
+    ":tests",
     "//mojo/common",
     "//mojo/examples",
     "//mojo/public",
     "//mojo/services",
     "//mojo/shell:mojo_shell",
+  ]
+}
+
+group("tests") {
+  deps = [
+    "//mojo/application_manager:mojo_application_manager_unittests",
+    "//mojo/apps/js/test:mojo_apps_js_unittests",
+    "//mojo/common:mojo_common_unittests",
+    "//mojo/public/cpp/application/tests:mojo_public_application_unittests",
+    "//mojo/public/cpp/bindings/tests:mojo_public_bindings_unittests",
+    "//mojo/public/cpp/environment/tests:mojo_public_environment_unittests",
+    "//mojo/public/cpp/system/tests:mojo_public_system_unittests",
+    "//mojo/public/cpp/utility/tests:mojo_public_utility_unittests",
+    "//mojo/public/js/bindings/tests:mojo_js_unittests",
+    "//mojo/services/public/cpp/surfaces/tests:mojo_surfaces_lib_unittests",
     "//mojo/shell:mojo_shell_tests",
+    "//mojo/system:mojo_system_unittests",
   ]
 }
 

@@ -27,5 +27,29 @@ component("common") {
   deps = [
     "//base",
     "//base/third_party/dynamic_annotations",
+    "//url",
   ] + mojo_system_for_component
+}
+
+# GYP version: mojo/mojo_base.gyp:mojo_common_unittests
+test("mojo_common_unittests") {
+  deps = [
+    ":common",
+    "//base",
+    "//base:message_loop_tests",
+    "//mojo/common/test:run_all_unittests",
+    "//mojo/common/test:test_support",
+    "//mojo/environment:chromium",
+    "//mojo/public/cpp/bindings",
+    "//mojo/public/cpp/test_support:test_utils",
+    "//testing/gtest",
+    "//url",
+  ]
+
+  sources = [
+    "common_type_converters_unittest.cc",
+    "handle_watcher_unittest.cc",
+    "message_pump_mojo_unittest.cc",
+    "test/multiprocess_test_helper_unittest.cc",
+  ]
 }

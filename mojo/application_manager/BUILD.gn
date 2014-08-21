@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//mojo/public/tools/bindings/mojom.gni")
+
 # GYP version: mojo.gyp:mojo_application_manager
 component("application_manager") {
   output_name = "mojo_application_manager"
@@ -35,4 +37,29 @@ component("application_manager") {
   forward_dependent_configs_from = [
     "//mojo/public/interfaces/application:application",
   ]
+}
+
+# GYP version: mojo.gyp:mojo_application_manager_unittests
+test("mojo_application_manager_unittests") {
+  deps = [
+    ":application_manager",
+    ":test_bindings",
+    "//base",
+    "//testing/gtest",
+    "//url",
+    "//mojo/common",
+    "//mojo/environment:chromium",
+    "//mojo/public/cpp/application:chromium",
+    "//mojo/common/test:run_all_unittests",
+    "//mojo/public/cpp/bindings",
+  ]
+
+  sources = [
+    "application_manager_unittest.cc",
+    "background_shell_application_loader_unittest.cc",
+  ]
+}
+
+mojom("test_bindings") {
+  sources = [ "test.mojom" ]
 }

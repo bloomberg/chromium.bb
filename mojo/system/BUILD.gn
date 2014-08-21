@@ -12,33 +12,20 @@ config("system_config") {
 component("system") {
   output_name = "mojo_system_impl"
 
+  deps = [
+    "//base",
+    "//base/third_party/dynamic_annotations",
+    "//mojo/embedder",
+  ]
+
+  defines = [
+    "MOJO_SYSTEM_IMPL_IMPLEMENTATION",
+    "MOJO_SYSTEM_IMPLEMENTATION",
+  ]
+
+  all_dependent_configs = [ ":system_config" ]
+
   sources = [
-    # Should there be a separate "embedder" target?
-    "../embedder/channel_init.cc",
-    "../embedder/channel_init.h",
-    "../embedder/embedder.cc",
-    "../embedder/embedder.h",
-    "../embedder/platform_channel_pair.cc",
-    "../embedder/platform_channel_pair.h",
-    "../embedder/platform_channel_pair_posix.cc",
-    "../embedder/platform_channel_pair_win.cc",
-    "../embedder/platform_channel_utils_posix.cc",
-    "../embedder/platform_channel_utils_posix.h",
-    "../embedder/platform_handle.cc",
-    "../embedder/platform_handle.h",
-    "../embedder/platform_handle_utils.h",
-    "../embedder/platform_handle_utils_posix.cc",
-    "../embedder/platform_handle_utils_win.cc",
-    "../embedder/platform_handle_vector.h",
-    "../embedder/platform_shared_buffer.h",
-    "../embedder/platform_support.h",
-    "../embedder/scoped_platform_handle.h",
-    "../embedder/simple_platform_shared_buffer.cc",
-    "../embedder/simple_platform_shared_buffer.h",
-    "../embedder/simple_platform_shared_buffer_posix.cc",
-    "../embedder/simple_platform_shared_buffer_win.cc",
-    "../embedder/simple_platform_support.cc",
-    "../embedder/simple_platform_support.h",
     "channel.cc",
     "channel.h",
     "constants.h",
@@ -93,23 +80,43 @@ component("system") {
     "waiter.h",
     "waiter_list.cc",
     "waiter_list.h",
-    # Test-only code:
-    # TODO(vtl): It's a little unfortunate that these end up in the same
-    # component as non-test-only code. In the static build, this code should
-    # hopefully be dead-stripped.
-    "../embedder/test_embedder.cc",
-    "../embedder/test_embedder.h",
   ]
+}
 
-  defines = [
-    "MOJO_SYSTEM_IMPL_IMPLEMENTATION",
-    "MOJO_SYSTEM_IMPLEMENTATION",
-  ]
-
-  all_dependent_configs = [ ":system_config" ]
-
+# GYP version: mojo/mojo_base.gyp:mojo_system_unittests
+test("mojo_system_unittests") {
   deps = [
+    ":system",
     "//base",
-    "//base/third_party/dynamic_annotations",
+    "//mojo/common/test:test_support",
+    "//mojo/embedder:embedder_unittests",
+    "//testing/gtest",
+  ]
+
+  sources = [
+    "channel_unittest.cc",
+    "core_unittest.cc",
+    "core_test_base.cc",
+    "core_test_base.h",
+    "data_pipe_unittest.cc",
+    "dispatcher_unittest.cc",
+    "local_data_pipe_unittest.cc",
+    "memory_unittest.cc",
+    "message_pipe_dispatcher_unittest.cc",
+    "message_pipe_unittest.cc",
+    "multiprocess_message_pipe_unittest.cc",
+    "options_validation_unittest.cc",
+    "platform_handle_dispatcher_unittest.cc",
+    "raw_channel_unittest.cc",
+    "remote_message_pipe_unittest.cc",
+    "run_all_unittests.cc",
+    "shared_buffer_dispatcher_unittest.cc",
+    "simple_dispatcher_unittest.cc",
+    "test_utils.cc",
+    "test_utils.h",
+    "waiter_list_unittest.cc",
+    "waiter_test_utils.cc",
+    "waiter_test_utils.h",
+    "waiter_unittest.cc",
   ]
 }

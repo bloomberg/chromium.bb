@@ -336,6 +336,7 @@
       ],
     },
     {
+      # GN version: //mojo/application_manager:unittests
       'target_name': 'mojo_application_manager_unittests',
       'type': 'executable',
       'dependencies': [

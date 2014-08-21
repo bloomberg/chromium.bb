@@ -51,6 +51,7 @@
       'type': 'none',
     },
     {
+      # GN version: //mojo/common/test:run_all_unittests
       'target_name': 'mojo_run_all_unittests',
       'type': 'static_library',
       'dependencies': [
@@ -184,6 +185,7 @@
       }
     },
     {
+      # GN version: //mojo/system:mojo_system_unittests
       'target_name': 'mojo_system_unittests',
       'type': 'executable',
       'dependencies': [
@@ -223,6 +225,7 @@
       ],
     },
     {
+      # GN version: //mojo/common/test:test_support_impl
       'target_name': 'mojo_test_support_impl',
       'type': 'static_library',
       'dependencies': [
@@ -264,6 +267,7 @@
       ],
     },
     {
+      # GN version: //mojo/common/test:test_support
       'target_name': 'mojo_common_test_support',
       'type': 'static_library',
       'dependencies': [
@@ -281,6 +285,7 @@
       ],
     },
     {
+      # GN version: //mojo/common:mojo_common_unittests
       'target_name': 'mojo_common_unittests',
       'type': 'executable',
       'dependencies': [

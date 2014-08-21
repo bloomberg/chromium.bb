@@ -1,0 +1,47 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# GYP version: mojo/mojo_base.gyp:mojo_run_all_unittests
+source_set("run_all_unittests") {
+  deps = [
+    ":test_support_impl",
+    "//base",
+    "//base/test:test_support",
+    "//mojo/public/c/test_support",
+    "//mojo/system",
+    "//testing/gtest",
+  ]
+
+  sources = [ "run_all_unittests.cc" ]
+}
+
+# GYP version: mojo/mojo_base.gyp:mojo_test_support_impl
+source_set("test_support_impl") {
+  deps = [
+    "//base",
+  ]
+
+  sources = [
+    "test_support_impl.cc",
+    "test_support_impl.h",
+  ]
+}
+
+# GYP version: mojo/mojo_base.gyp:mojo_common_test_support
+source_set("test_support") {
+  deps = [
+    "//base",
+    "//base/test:test_support",
+    "//testing/gtest",
+    "//mojo/system",
+  ]
+
+  sources = [
+    "multiprocess_test_helper.cc",
+    "multiprocess_test_helper.h",
+    "test_utils.h",
+    "test_utils_posix.cc",
+    "test_utils_win.cc",
+  ]
+}

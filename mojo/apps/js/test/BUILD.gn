@@ -1,0 +1,27 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//mojo/public/tools/bindings/mojom.gni")
+
+# GYP version: mojo/mojo_apps.gypi:mojo_apps_js_unittests
+test("mojo_apps_js_unittests") {
+  deps = [
+    ":js_to_cpp_bindings",
+    "//gin:gin_test",
+    "//mojo/apps/js",
+    "//mojo/common",
+    "//mojo/common/test:run_all_unittests",
+    "//mojo/common/test:test_support",
+    "//mojo/public/interfaces/bindings/tests:test_interfaces",
+  ]
+
+  sources = [
+    "js_to_cpp_unittest.cc",
+    "run_apps_js_tests.cc",
+  ]
+}
+
+mojom("js_to_cpp_bindings") {
+  sources = [ "js_to_cpp.mojom" ]
+}

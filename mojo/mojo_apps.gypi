@@ -5,6 +5,9 @@
 {
   'targets': [
     {
+      # GN version: //mojo/apps/js
+      #             //mojo/apps/js/bindings
+      #             //mojo/apps/js/bindings/gl
       'target_name': 'mojo_js_lib',
       'type': 'static_library',
       'dependencies': [
@@ -55,6 +58,7 @@
       ],
     },
     {
+      # GN version: //mojo/apps/js/test/mojo_apps_js_unittests
       'target_name': 'mojo_apps_js_unittests',
       'type': 'executable',
       'dependencies': [

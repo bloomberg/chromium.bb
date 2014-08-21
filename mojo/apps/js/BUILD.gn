@@ -1,0 +1,18 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# GYP version: part of mojo/mojo_apps.gypi:mojo_js_lib
+source_set("js") {
+  deps = [
+    "//base",
+    "//gin",
+    "//mojo/apps/js/bindings",
+    "//mojo/apps/js/bindings/gl",
+    "//mojo/bindings/js",
+  ]
+  sources = [
+    "mojo_runner_delegate.cc",
+    "mojo_runner_delegate.h",
+  ]
+}

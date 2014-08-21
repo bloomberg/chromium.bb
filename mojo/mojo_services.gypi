@@ -175,6 +175,7 @@
       ],
     },
     {
+      # GN version: //mojo/services/public/cpp/surfaces/tests
       'target_name': 'mojo_surfaces_lib_unittests',
       'type': 'executable',
       'dependencies': [

@@ -1,0 +1,17 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# GYP version: mojo/mojo_public_tests.gypi:mojo_public_application_unittests
+test("mojo_public_application_unittests") {
+  deps = [
+    "//base",
+    "//mojo/common/test:run_all_unittests",
+    "//mojo/public/cpp/application:standalone",
+    "//mojo/public/cpp/environment:standalone",
+    "//mojo/public/cpp/utility",
+    "//testing/gtest",
+  ]
+
+  sources = [ "service_registry_unittest.cc" ]
+}

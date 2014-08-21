@@ -1,0 +1,20 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# GYP version: part of mojo/mojo_apps.gypi:mojo_js_lib
+source_set("bindings") {
+  deps = [
+    "//base",
+    "//gin",
+    "//v8",
+    "//mojo/bindings/js",
+  ]
+
+  sources = [
+    "threading.cc",
+    "threading.h",
+    "monotonic_clock.cc",
+    "monotonic_clock.h",
+  ]
+}
