@@ -11,7 +11,7 @@
 
   <script>
     if (window.internals)
-      window.internals.settings.setPreferCompositingToLCDTextEnabled(false);
+      window.internals.settings.setPreferCompositingToLCDTextEnabled(true);
 
     if (window.testRunner) {
       testRunner.dumpAsText();
@@ -24,7 +24,7 @@
   </script>
 </head>
 
-<body style="height: 5000px">
+<body>
   <div class="fixed">TEST</div>
 
   <pre id="layerTree"></pre>
