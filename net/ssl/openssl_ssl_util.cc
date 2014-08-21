@@ -62,13 +62,10 @@ int MapOpenSSLErrorSSL(unsigned long error_code) {
   switch (ERR_GET_REASON(error_code)) {
     case SSL_R_READ_TIMEOUT_EXPIRED:
       return ERR_TIMED_OUT;
-    case SSL_R_BAD_RESPONSE_ARGUMENT:
-      return ERR_INVALID_ARGUMENT;
     case SSL_R_UNKNOWN_CERTIFICATE_TYPE:
     case SSL_R_UNKNOWN_CIPHER_TYPE:
     case SSL_R_UNKNOWN_KEY_EXCHANGE_TYPE:
     case SSL_R_UNKNOWN_PKEY_TYPE:
-    case SSL_R_UNKNOWN_REMOTE_ERROR_TYPE:
     case SSL_R_UNKNOWN_SSL_VERSION:
       return ERR_NOT_IMPLEMENTED;
     case SSL_R_UNSUPPORTED_SSL_VERSION:
@@ -86,7 +83,6 @@ int MapOpenSSLErrorSSL(unsigned long error_code) {
     case SSL_R_TLSV1_ALERT_ACCESS_DENIED:
     case SSL_R_TLSV1_ALERT_UNKNOWN_CA:
       return ERR_BAD_SSL_CLIENT_AUTH_CERT;
-    case SSL_R_BAD_DECOMPRESSION:
     case SSL_R_SSLV3_ALERT_DECOMPRESSION_FAILURE:
       return ERR_SSL_DECOMPRESSION_FAILURE_ALERT;
     case SSL_R_SSLV3_ALERT_BAD_RECORD_MAC:
@@ -97,7 +93,7 @@ int MapOpenSSLErrorSSL(unsigned long error_code) {
       return ERR_SSL_UNRECOGNIZED_NAME_ALERT;
     case SSL_R_UNSAFE_LEGACY_RENEGOTIATION_DISABLED:
       return ERR_SSL_UNSAFE_NEGOTIATION;
-    case SSL_R_WRONG_NUMBER_OF_KEY_BITS:
+    case SSL_R_BAD_DH_P_LENGTH:
       return ERR_SSL_WEAK_SERVER_EPHEMERAL_DH_KEY;
     // SSL_R_UNKNOWN_PROTOCOL is reported if premature application data is
     // received (see http://crbug.com/42538), and also if all the protocol
@@ -110,21 +106,14 @@ int MapOpenSSLErrorSSL(unsigned long error_code) {
     case SSL_R_DECRYPTION_FAILED_OR_BAD_RECORD_MAC:
     case SSL_R_DH_PUBLIC_VALUE_LENGTH_IS_WRONG:
     case SSL_R_DIGEST_CHECK_FAILED:
-    case SSL_R_DUPLICATE_COMPRESSION_ID:
-    case SSL_R_ECGROUP_TOO_LARGE_FOR_CIPHER:
     case SSL_R_ENCRYPTED_LENGTH_TOO_LONG:
     case SSL_R_ERROR_IN_RECEIVED_CIPHER_LIST:
     case SSL_R_EXCESSIVE_MESSAGE_SIZE:
     case SSL_R_EXTRA_DATA_IN_MESSAGE:
     case SSL_R_GOT_A_FIN_BEFORE_A_CCS:
-    case SSL_R_ILLEGAL_PADDING:
-    case SSL_R_INVALID_CHALLENGE_LENGTH:
     case SSL_R_INVALID_COMMAND:
-    case SSL_R_INVALID_PURPOSE:
     case SSL_R_INVALID_STATUS_RESPONSE:
     case SSL_R_INVALID_TICKET_KEYS_LENGTH:
-    case SSL_R_KEY_ARG_TOO_LONG:
-    case SSL_R_READ_WRONG_PACKET_TYPE:
     // SSL_do_handshake reports this error when the server responds to a
     // ClientHello with a fatal close_notify alert.
     case SSL_AD_REASON_OFFSET + SSL_AD_CLOSE_NOTIFY:
