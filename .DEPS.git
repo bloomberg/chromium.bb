@@ -77,7 +77,7 @@ vars = {
     'llvm_git':
          'https://llvm.googlesource.com',
     'nacl_revision':
-         '13626',
+         '13637',
     'llvm_url':
          'http://src.chromium.org/llvm-project',
     'webrtc_revision':
@@ -102,7 +102,7 @@ deps = {
     'src/media/cdm/ppapi/api':
         Var('git_url') + '/chromium/cdm.git@41c8183a3966a17b440dbe606cb2840e1b7ce884',
     'src/native_client':
-        Var('git_url') + '/native_client/src/native_client.git@4a2be76975082aad3f769115f23661acca318949',
+        Var('git_url') + '/native_client/src/native_client.git@c49fcd263ff91bc8acba3118b22b71345488896e',
     'src/sdch/open-vcdiff':
         Var('git_url') + '/external/open-vcdiff.git@438f2a5be6d809bc21611a94cd37bfc8c28ceb33',
     'src/testing/gmock':
