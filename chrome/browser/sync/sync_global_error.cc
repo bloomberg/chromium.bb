@@ -31,7 +31,7 @@ SyncGlobalError::SyncGlobalError(SyncErrorController* error_controller,
 
 SyncGlobalError::~SyncGlobalError() {
   DCHECK(!error_controller_)
-      << "SigninGlobalError::Shutdown() was not called";
+      << "SyncGlobalError::Shutdown() was not called";
 }
 
 void SyncGlobalError::Shutdown() {
