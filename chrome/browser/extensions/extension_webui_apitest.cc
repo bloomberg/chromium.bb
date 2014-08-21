@@ -210,9 +210,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebUITest, CanEmbedExtensionOptions) {
   scoped_ptr<ExtensionTestMessageListener> listener(
       new ExtensionTestMessageListener("ready", true));
 
-  const Extension* extension = InstallExtension(
-      test_data_dir_.AppendASCII("extension_options").AppendASCII("embed_self"),
-      1);
+  const Extension* extension =
+      LoadExtension(test_data_dir_.AppendASCII("extension_options")
+                        .AppendASCII("embed_self"));
   ASSERT_TRUE(extension);
 
   ASSERT_TRUE(RunTestOnExtensionsFrame("can_embed_extension_options.js"));

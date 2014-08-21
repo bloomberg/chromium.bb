@@ -6,6 +6,7 @@
   "description": "Tests if extensions can embed their own options pages using <extensionoptions>",
   "permissions": [
     "embeddedExtensionOptions",
-    "storage"
+    "storage",
+    "tabs"
   ]
 }

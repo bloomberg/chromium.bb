@@ -44,5 +44,14 @@ chrome.runtime.sendMessage('ready', function(command) {
           });
         });
       });
+
+      break;
+
+    case 'externalLinksOpenInNewTab':
+      var link = document.getElementById('link');
+      chrome.test.runWithUserGesture(function() {
+        link.click();
+        chrome.runtime.sendMessage('done');
+      }.bind(link));
   }
 });

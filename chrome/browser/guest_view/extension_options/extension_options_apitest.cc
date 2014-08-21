@@ -32,7 +32,7 @@ class ExtensionOptionsApiTest : public ExtensionApiTest {
 IN_PROC_BROWSER_TEST_F(ExtensionOptionsApiTest, ExtensionCanEmbedOwnOptions) {
   base::FilePath extension_dir =
       test_data_dir_.AppendASCII("extension_options").AppendASCII("embed_self");
-  ASSERT_TRUE(InstallExtension(extension_dir, 1));
+  ASSERT_TRUE(LoadExtension(extension_dir));
   ASSERT_TRUE(RunExtensionSubtest("extension_options/embed_self", "test.html"));
 }
 
