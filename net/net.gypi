@@ -272,8 +272,6 @@
       'base/upload_bytes_element_reader.h',
       'base/upload_data_stream.cc',
       'base/upload_data_stream.h',
-      'base/upload_element.cc',
-      'base/upload_element.h',
       'base/upload_element_reader.cc',
       'base/upload_element_reader.h',
       'base/upload_file_element_reader.cc',
