@@ -81,7 +81,7 @@ class NET_EXPORT_PRIVATE ProofVerifierChromium : public ProofVerifier {
   // Underlying verifier used to verify certificates.
   CertVerifier* const cert_verifier_;
 
-  TransportSecurityState* transport_security_state_;
+  TransportSecurityState* const transport_security_state_;
 
   DISALLOW_COPY_AND_ASSIGN(ProofVerifierChromium);
 };
