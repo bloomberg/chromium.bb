@@ -49,23 +49,30 @@ class PolymerCalculatorPage(PolymerPage):
     interaction.End()
 
   def SlidePanel(self, action_runner):
-    interaction = action_runner.BeginInteraction(
-        'Action_SwipeAction', is_smooth=True)
-    action_runner.SwipeElement(
-        left_start_ratio=0.1, top_start_ratio=0.2,
-        direction='left', distance=300, speed_in_pixels_per_second=5000,
-        element_function='''
-            document.querySelector(
-              'body /deep/ #outerPanels'
-            ).querySelector(
-              '#advanced'
-            ).shadowRoot.querySelector(
-              '.handle-bar'
-            )''')
-    action_runner.WaitForJavaScriptCondition('''
-        var outer = document.querySelector("body /deep/ #outerPanels");
-        outer.opened || outer.wideMode;''')
-    interaction.End()
+    # only bother with this interaction if the drawer is hidden
+    opened = action_runner.EvaluateJavaScript('''
+        (function() {
+          var outer = document.querySelector("body /deep/ #outerPanels");
+          return outer.opened || outer.wideMode;
+          }());''')
+    if not opened:
+      interaction = action_runner.BeginInteraction(
+          'Action_SwipeAction', is_smooth=True)
+      action_runner.SwipeElement(
+          left_start_ratio=0.1, top_start_ratio=0.2,
+          direction='left', distance=300, speed_in_pixels_per_second=5000,
+          element_function='''
+              document.querySelector(
+                'body /deep/ #outerPanels'
+              ).querySelector(
+                '#advanced'
+              ).shadowRoot.querySelector(
+                '.handle-bar'
+              )''')
+      action_runner.WaitForJavaScriptCondition('''
+          var outer = document.querySelector("body /deep/ #outerPanels");
+          outer.opened || outer.wideMode;''')
+      interaction.End()
 
 
 class PolymerShadowPage(PolymerPage):
