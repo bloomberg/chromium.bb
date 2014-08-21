@@ -97,6 +97,15 @@ ui::Accelerator ParseImpl(const std::string& accelerator,
         key = ui::VKEY_UNKNOWN;
         break;
       }
+    } else if (tokens[i] == values::kKeySearch) {
+      // Search is a special modifier only on ChromeOS and maps to 'Command'.
+      if (platform_key == values::kKeybindingPlatformChromeOs) {
+        modifiers |= ui::EF_COMMAND_DOWN;
+      } else {
+        // No other platform supports Search.
+        key = ui::VKEY_UNKNOWN;
+        break;
+      }
     } else if (tokens[i] == values::kKeyAlt) {
       modifiers |= ui::EF_ALT_DOWN;
     } else if (tokens[i] == values::kKeyShift) {
@@ -303,7 +312,12 @@ std::string Command::AcceleratorToString(const ui::Accelerator& accelerator) {
     shortcut += values::kKeySeparator;
 
   if (accelerator.IsCmdDown()) {
+#if defined(OS_CHROMEOS)
+    // Chrome OS treats the Search key like the Command key.
+    shortcut += values::kKeySearch;
+#else
     shortcut += values::kKeyCommand;
+#endif
     shortcut += values::kKeySeparator;
   }
 

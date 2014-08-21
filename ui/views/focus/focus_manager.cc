@@ -66,6 +66,10 @@ bool FocusManager::OnKeyEvent(const ui::KeyEvent& event) {
     modifiers |= ui::EF_CONTROL_DOWN;
   if (event.IsAltDown())
     modifiers |= ui::EF_ALT_DOWN;
+#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
+  if (event.IsCommandDown())
+    modifiers |= ui::EF_COMMAND_DOWN;
+#endif
   ui::Accelerator accelerator(event.key_code(), modifiers);
   accelerator.set_type(event.type());
   accelerator.set_is_repeat(event.IsRepeat());

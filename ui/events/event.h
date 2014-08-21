@@ -84,6 +84,7 @@ class EVENTS_EXPORT Event {
   bool IsCapsLockDown() const { return (flags_ & EF_CAPS_LOCK_DOWN) != 0; }
   bool IsAltDown() const { return (flags_ & EF_ALT_DOWN) != 0; }
   bool IsAltGrDown() const { return (flags_ & EF_ALTGR_DOWN) != 0; }
+  bool IsCommandDown() const { return (flags_ & EF_COMMAND_DOWN) != 0; }
   bool IsRepeat() const { return (flags_ & EF_IS_REPEAT) != 0; }
 
   bool IsKeyEvent() const {

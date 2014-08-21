@@ -220,6 +220,7 @@ extern const char kKeyPgDwn[];
 extern const char kKeyPgUp[];
 extern const char kKeyPeriod[];
 extern const char kKeyRight[];
+extern const char kKeySearch[];
 extern const char kKeySeparator[];
 extern const char kKeyTab[];
 extern const char kKeyUp[];

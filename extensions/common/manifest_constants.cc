@@ -211,6 +211,7 @@ const char kKeyPgDwn[] = "PageDown";
 const char kKeyPgUp[] = "PageUp";
 const char kKeyPeriod[] = "Period";
 const char kKeyRight[] = "Right";
+const char kKeySearch[] = "Search";
 const char kKeySeparator[] = "+";
 const char kKeyShift[] = "Shift";
 const char kKeyTab[] = "Tab";
