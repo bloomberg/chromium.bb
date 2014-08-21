@@ -40,9 +40,10 @@ devices you must compile separate versions of your Native Client module
 for different processors on end-user machines. A
 :ref:`manifest file <application_files>` will then specify which version
 of the module to load based on the end-user's architecture. The SDK
-includes a script---``create_nmf.py`` (in the ``tools/`` directory)---to
-generate manifest files. For examples of how to compile modules
-for multiple target architectures and how to generate manifest files, see the
+includes a script for generating manifest files called ``create_nmf.py``.  This
+script is located in the ``pepper_<version>/tools/`` directory, meaning under
+your installed pepper bundle. For examples of how to compile modules for
+multiple target architectures and how to generate manifest files, see the
 Makefiles included with the SDK examples.
 
 This section will mostly cover PNaCl, but also describes how to build
@@ -85,29 +86,13 @@ SDK toolchains
 The Native Client SDK includes multiple toolchains. It has one PNaCl toolchain
 and it has multiple GCC-based toolchains that are differentiated by target
 architectures and C libraries. The single PNaCl toolchain is located
-in a directory named ``toolchain/<OS_platform>_pnacl``, and the GCC-based
-toolchains are located in directories named
-``toolchain/<OS_platform>_<architecture>_<library>``, where:
-
-* *<platform>* is the platform of your development machine (*win*, *mac*, or
-   *linux*)
-* *<architecture>* is your target architecture (*x86* or *arm*)
-* *<library>* is the C library you are compiling with (*newlib* or *glibc*)
+in a directory named ``pepper_<version>/toolchain/<OS_platform>_pnacl``,
+and the GCC-based toolchains are located in directories named
+``pepper_<version>/toolchain/<OS_platform>_<architecture>_<c_library>``.
 
 The compilers, linkers, and other tools are located in the ``bin/``
 subdirectory in each toolchain. For example, the tools in the Windows SDK
 for PNaCl has a C++ compiler in ``toolchain/win_pnacl/bin/pnacl-clang++``.
-As another example, the GCC-based C++ compiler that targets x86 and uses the
-newlib library, is located at ``toolchain/win_x86_newlib/bin/x86_64-nacl-g++``.
-
-.. Note::
-  :class: note
-
-  The SDK toolchains descend from the ``toolchain/`` directory. The SDK also
-  has a ``tools/`` directory; this directory contains utilities that are not
-  properly part of the toolchains but that you may find helpful in building and
-  testing your application (e.g., the ``create_nmf.py`` script, which you can
-  use to create a manifest file).
 
 SDK toolchains versus your hosted toolchain
 -------------------------------------------
@@ -151,11 +136,10 @@ are used to compile and link applications into **.pexe** files. The toolchain
 also contains a tool to translate a **pexe** file into a
 architecture-specific **.nexe** (e.g., for debugging purposes).
 
-Each tool's name is preceded by the prefix "pnacl-". Some of the useful
-tools include:
+Some of the useful tools include:
 
 pnacl-abicheck
-  Check that the **pexe** follows the PNaCl ABI rules.
+  Checks that the **pexe** follows the PNaCl ABI rules.
 pnacl-ar
   Creates archives (i.e., static libraries)
 pnacl-clang
@@ -163,7 +147,7 @@ pnacl-clang
 pnacl-clang++
   C++ compiler and compiler driver
 pnacl-compress
-  Size compresses a finalized **pexe** file for deployment.
+  Compresses a finalized **pexe** file for deployment.
 pnacl-dis
   Disassembler for both **pexe** files and **nexe** files
 pnacl-finalize
@@ -178,7 +162,7 @@ pnacl-translate
   Translates a **pexe** to a native architecture, outside of the browser
 
 For the full list of tools, see the
-``<NACL_SDK_ROOT>/toolchain/<platform>_pnacl/bin`` directory.
+``pepper_<version>/toolchain/<platform>_pnacl/bin`` directory.
 
 Using the PNaCl tools to compile, link, debug, and deploy
 =========================================================
@@ -191,23 +175,17 @@ Compile
 -------
 
 To compile a simple application consisting of ``file1.cc`` and ``file2.cc`` into
-``hello_world.pexe`` with a single command, use the ``pnacl-clang++`` tool
+``hello_world.pexe`` use the ``pnacl-clang++`` tool
 
 .. naclcode::
   :prettyprint: 0
 
-  <NACL_SDK_ROOT>/toolchain/win_pnacl/bin/pnacl-clang++ file1.cc file2.cc ^
-    -I<NACL_SDK_ROOT>/include -L<NACL_SDK_ROOT>/lib/pnacl/Release ^
-    -o hello_world.pexe -g -O2 -lppapi_cpp -lppapi
+  nacl_sdk/pepper_<version>/toolchain/win_pnacl/bin/pnacl-clang++ \
+    file1.cc file2.cc -Inacl_sdk/pepper_<version>/include \
+    -Lnacl_sdk/pepper_<version>/lib/pnacl/Release -o hello_world.pexe \
+    -g -O2 -lppapi_cpp -lppapi
 
-(The carat ``^`` allows the command to span multiple lines on Windows;
-to do the same on Mac and Linux use a backslash instead. Or you can
-simply type the command and all its arguments on one
-line. ``<NACL_SDK_ROOT>`` represents the path to the top-level
-directory of the bundle you are using, e.g.,
-``<location-where-you-installed-the-SDK>/pepper_31``.)
-
-However, the typical application consists of many files. In that case,
+The typical application consists of many files. In that case,
 each file can be compiled separately so that only files that are
 affected by a change need to be recompiled. To compile an individual
 file from your application, you must use either the ``pnacl-clang`` C
@@ -217,8 +195,9 @@ separate bitcode files. For example:
 .. naclcode::
   :prettyprint: 0
 
-  <NACL_SDK_ROOT>/toolchain/win_pnacl/bin/pnacl-clang++ hello_world.cc ^
-    -I<NACL_SDK_ROOT>/include -c -o hello_world.o -g -O0
+  nacl_sdk/pepper_<version>/toolchain/win_pnacl/bin/pnacl-clang++ \
+    hello_world.cc -Inacl_sdk/pepper_<version>/include -c \
+    -o hello_world.o -g -O0
 
 For a description of each command line flag, run ``pnacl-clang --help``.
 For convenience, here is a description of some of the flags used in
@@ -258,8 +237,9 @@ the example.
 
 ``-I<directory>``
   adds a directory to the search path for **include** files. The SDK has
-  Pepper (PPAPI) headers located at ``<NACL_SDK_ROOT>/include``, so add
-  that directory when compiling to be able to include the headers.
+  Pepper (PPAPI) headers located at ``nacl_sdk/pepper_<version>/
+  include``, so add that directory when compiling to be able to include the
+  headers.
 
 ``-mllvm -inline-threshold=n``
   change how much inlining is performed by LLVM (the default is 225, a smaller
@@ -278,10 +258,10 @@ into the full application.
 .. naclcode::
   :prettyprint: 0
 
-  <NACL_SDK_ROOT>/toolchain/win_pnacl/bin/pnacl-ar cr libfoo.a ^
-    foo1.o foo2.o foo3.o
+  nacl_sdk/pepper_<version>/toolchain/win_pnacl/bin/pnacl-ar cr \
+    libfoo.a foo1.o foo2.o foo3.o
 
-  <NACL_SDK_ROOT>/toolchain/win_pnacl/bin/pnacl-ranlib libfoo.a
+  nacl_sdk/pepper_<version>/toolchain/win_pnacl/bin/pnacl-ranlib libfoo.a
 
 
 Link the application
@@ -294,16 +274,16 @@ full application.
 .. naclcode::
   :prettyprint: 0
 
-  <NACL_SDK_ROOT>/toolchain/win_pnacl/bin/pnacl-clang++ -o hello_world.pexe ^
-    hello_world.o -L<NACL_SDK_ROOT>/lib/pnacl/Debug ^
+  nacl_sdk/pepper_<version>/toolchain/win_pnacl/bin/pnacl-clang++ \
+    -o hello_world.pexe hello_world.o -Lnacl_sdk/pepper_<version>/lib/pnacl/Debug \
     -lfoo -lppapi_cpp -lppapi
 
 This links the hello world bitcode with the ``foo`` library in the example
 as well as the *Debug* version of the Pepper libraries which are located
-in ``<NACL_SDK_ROOT>/lib/pnacl/Debug``. If you wish to link against the
-*Release* version of the Pepper libraries, change the
-``-L<NACL_SDK_ROOT>/lib/pnacl/Debug`` to
-``-L<NACL_SDK_ROOT>/lib/pnacl/Release``.
+in ``nacl_sdk/pepper_<version>/lib/pnacl/Debug``. If you wish to link
+against the *Release* version of the Pepper libraries, change the
+``-Lnacl_sdk/pepper_<version>/lib/pnacl/Debug`` to
+``-Lnacl_sdk/pepper_<version>/lib/pnacl/Release``.
 
 In a release build you'll want to pass ``-O2`` to the compiler *as well as to
 the linker* to enable link-time optimizations. This reduces the size and
@@ -313,8 +293,8 @@ and on-device translation.
 .. naclcode::
   :prettyprint: 0
 
-  <NACL_SDK_ROOT>/toolchain/win_pnacl/bin/pnacl-clang++ -o hello_world.pexe ^
-    hello_world.o -L<NACL_SDK_ROOT>/lib/pnacl/Release ^
+  nacl_sdk/pepper_<version>/toolchain/win_pnacl/bin/pnacl-clang++ \
+    -o hello_world.pexe hello_world.o -Lnacl_sdk/pepper_<version>/lib/pnacl/Release \
     -lfoo -lppapi_cpp -lppapi -O2
 
 By default the link step will turn all C++ exceptions into calls to ``abort()``
@@ -336,7 +316,7 @@ debugging techniques and workflow. After testing a PNaCl application, you must
 .. naclcode::
   :prettyprint: 0
 
-  <NACL_SDK_ROOT>/toolchain/win_pnacl/bin/pnacl-finalize ^
+  nacl_sdk/pepper_<version>/toolchain/win_pnacl/bin/pnacl-finalize \
     hello_world.pexe -o hello_world.final.pexe
 
 Prior to finalization, the application **pexe** is stored in a binary
@@ -372,7 +352,7 @@ appications). Hence, this step is optional.
 .. naclcode::
   :prettyprint: 0
 
-  <NACL_SDK_ROOT>/toolchain/win_pnacl/bin/pnacl-compress ^
+  nacl_sdk/pepper_<version>/toolchain/win_pnacl/bin/pnacl-compress \
     hello_world.final.pexe
 
 ``pnacl-compress`` must be called after a **pexe** file has been finalized for
@@ -451,9 +431,10 @@ for the hello_world example with the following command:
 .. naclcode::
   :prettyprint: 0
 
-  <NACL_SDK_ROOT>/toolchain/win_x86_newlib/bin/i686-nacl-gcc hello_world.c ^
-    -I<NACL_SDK_ROOT>/include -L<NACL_SDK_ROOT>/lib/newlib/Release ^
-    -o hello_world_x86_32.nexe -m32 -g -O2 -lppapi
+  nacl_sdk/pepper_<version>/toolchain/win_x86_newlib/bin/i686-nacl-gcc \
+    hello_world.c -Inacl_sdk/pepper_<version>/include \
+    -Lnacl_sdk/pepper_<version>/lib/newlib/Release -o hello_world_x86_32.nexe \
+    -m32 -g -O2 -lppapi
 
 To compile a 64-bit **.nexe**, you can run the same command but use -m64 instead
 of -m32. Alternatively, you could also use the version of the compiler that
@@ -562,12 +543,13 @@ Libraries and header files provided with the SDK
 
 The Native Client SDK includes modified versions of standard toolchain-support
 libraries, such as libpthread and libc, plus the relevant header files.
-The standard libraries are located in the following directories:
+The standard libraries are located under the ``/pepper_<version>`` directory
+in the following locations:
 
 * PNaCl toolchain: ``toolchain/<platform>_pnacl/usr/lib``
-* x86 toolchains: ``toolchain/<platform>_x86_<library>/x86_64-nacl/lib32`` and
+* x86 toolchains: ``toolchain/<platform>_x86_<c_library>/x86_64-nacl/lib32`` and
   ``/lib64`` (for the 32-bit and 64-bit target architectures, respectively)
-* ARM toolchain: ``toolchain/<platform>_arm_<library>/arm-nacl/lib``
+* ARM toolchain: ``toolchain/<platform>_arm_<c_library>/arm-nacl/lib``
 
 For example, on Windows, the libraries for the x86-64 architecture in the
 newlib toolchain are in ``toolchain/win_x86_newlib/x86_64-nacl/lib64``.
@@ -575,8 +557,8 @@ newlib toolchain are in ``toolchain/win_x86_newlib/x86_64-nacl/lib64``.
 The header files are in:
 
 * PNaCl toolchain: ``toolchain/<platform>_pnacl/usr/include``
-* x86 toolchains: ``toolchain/<platform>_x86_<library>/x86_64-nacl/include``
-* ARM toolchain: ``toolchain/<platform>_arm_<library>/arm-nacl/include``
+* x86 toolchains: ``toolchain/<platform>_x86_<c_library>/x86_64-nacl/include``
+* ARM toolchain: ``toolchain/<platform>_arm_<c_library>/arm-nacl/include``
 
 Many other libraries have been ported for use with Native Client; for more
 information, see the `naclports <http://code.google.com/p/naclports/>`_
@@ -585,10 +567,10 @@ adding it to naclports.
 
 Besides the standard libraries, the SDK includes Pepper libraries.
 The PNaCl Pepper libraries are located in the the
-``<NACL_SDK_ROOT>/lib/pnacl/<Release or Debug>`` directory.
+``nacl_sdk/pepper_<version>/lib/pnacl/<Release or Debug>`` directory.
 The GNU-based toolchain has Pepper libraries in
-``<NACL_SDK_ROOT>/lib/newlib_<arch>/<Release or Debug>``
-and ``<NACL_SDK_ROOT>/lib/glibc_<arch>/<Release or Debug>``.
+``nacl_sdk/pepper_<version>/lib/newlib_<arch>/<Release or Debug>``
+and ``nacl_sdk/pepper_<version>/lib/glibc_<arch>/<Release or Debug>``.
 The libraries provided by the SDK allow the application to use Pepper,
 as well as convenience libraries to simplify porting an application that
 uses POSIX functions. Here are descriptions of the Pepper libraries provided
@@ -636,7 +618,7 @@ libppapi_simple.a
     <http://code.google.com/p/naclports/>`_, or port the library yourself.
   * The order in which you list libraries in your build commands is important,
     since the linker searches and processes libraries in the order in which they
-    are specified. See the \*_LDFLAGS variables in the Makefiles of the SDK
+    are specified. See the ``\*_LDFLAGS`` variables in the Makefiles of the SDK
     examples for the order in which specific libraries should be listed.
 
 Troubleshooting
@@ -678,8 +660,9 @@ Here is one way to find the appropriate library for a given symbol:
 .. naclcode::
   :prettyprint: 0
 
-  <NACL_SDK_ROOT>/toolchain/<platform>_pnacl/bin/pnacl-nm -o \
-    toolchain/<platform>_pnacl/usr/lib/*.a | grep <MySymbolName>
+  nacl_sdk/pepper_<version>/toolchain/<platform>_pnacl/bin/pnacl-nm -o \
+    nacl_sdk/pepper_<version>toolchain/<platform>_pnacl/usr/lib/*.a | \
+    grep <MySymbolName>
 
 
 PNaCl ABI Verification errors
