@@ -49,8 +49,22 @@ class WebsiteSettingsHandler : public content_settings::Observer,
   // |args| is the filter string.
   void HandleUpdateSearchResults(const base::ListValue* args);
 
+  // Update the single site edit view with the permission values for a given
+  // url, if the url is valid.
+  // |args| is the URL.
+  void HandleGetOriginInfo(const base::ListValue* args);
+
+  // Sets the content setting permissions for a given setting type for the last
+  // used origin.
+  // |args| is the name of the setting and the new value.
+  void HandleSetOriginPermission(const base::ListValue* args);
+
   // Update the page with all origins that are using local storage.
   void HandleUpdateLocalStorage(const base::ListValue* args);
+
+  // Show the single site edit view if the given URL is valid.
+  // |args| is the URL.
+  void HandleMaybeShowEditPage(const base::ListValue* args);
 
   // Callback method to be invoked when fetching the data is complete.
   void OnLocalStorageFetched(const LocalStorageList& storage);
@@ -63,11 +77,16 @@ class WebsiteSettingsHandler : public content_settings::Observer,
   // and update the page.
   void UpdateLocalStorage();
 
+  // Populates the single site edit view with the permissions and local storage
+  // usage for a given |site_url|.
+  void GetInfoForOrigin(const GURL& site_url);
+
   // Updates the page with the last settings used.
   void Update();
 
   std::string last_setting_;
   std::string last_filter_;
+  GURL last_site_;
   scoped_refptr<BrowsingDataLocalStorageHelper> local_storage_;
   LocalStorageList local_storage_list_;
 

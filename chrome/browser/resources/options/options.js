@@ -44,6 +44,7 @@ var SupervisedUserCreateConfirmOverlay =
 var SupervisedUserImportOverlay = options.SupervisedUserImportOverlay;
 var SupervisedUserLearnMoreOverlay = options.SupervisedUserLearnMoreOverlay;
 var SyncSetupOverlay = options.SyncSetupOverlay;
+var WebsiteSettingsEditor = options.WebsiteSettings.WebsiteSettingsEditor;
 var WebsiteSettingsManager = options.WebsiteSettingsManager;
 var ThirdPartyImeConfirmOverlay = options.ThirdPartyImeConfirmOverlay;
 
@@ -117,6 +118,8 @@ function load() {
   PageManager.registerOverlay(WebsiteSettingsManager.getInstance(),
                               BrowserOptions.getInstance(),
                               [$('website-management-button')]);
+  PageManager.registerOverlay(WebsiteSettingsEditor.getInstance(),
+                              WebsiteSettingsManager.getInstance());
   PageManager.registerOverlay(ContentSettingsExceptionsArea.getInstance(),
                               ContentSettings.getInstance());
   PageManager.registerOverlay(CookiesView.getInstance(),

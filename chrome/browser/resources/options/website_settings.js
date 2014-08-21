@@ -123,6 +123,10 @@ cr.define('options', function() {
     WebsiteSettingsManager.getInstance().populateOrigins_(originDict);
   };
 
+  WebsiteSettingsManager.showEditPage = function(url) {
+    WebsiteSettingsEditor.getInstance().populatePage(url);
+  };
+
   // Export
   return {
     WebsiteSettingsManager: WebsiteSettingsManager

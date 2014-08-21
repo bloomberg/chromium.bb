@@ -9,6 +9,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/web_ui.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/time_format.h"
 #include "ui/base/text/bytes_formatting.h"
 
@@ -38,18 +39,25 @@ void WebsiteSettingsHandler::GetLocalizedValues(
   DCHECK(localized_strings);
 
   static OptionsStringResource resources[] = {
-      {"websitesOptionsPageTabTitle", IDS_WEBSITES_SETTINGS_TITLE},
+      {"websitesOptionsPageTabTitle", IDS_WEBSITE_SETTINGS_TITLE},
+      {"websitesSettingsEditPage", IDS_WEBSITE_SETTINGS_EDIT_TITLE},
       {"websitesManage", IDS_WEBSITE_SETTINGS_MANAGE},
       {"websitesSearch", IDS_WEBSITE_SETTINGS_SEARCH_ORIGINS},
       {"websitesLabelGeolocation", IDS_WEBSITE_SETTINGS_TYPE_LOCATION},
       {"websitesLabelMediaStream", IDS_WEBSITE_SETTINGS_TYPE_MEDIASTREAM},
       {"websitesLabelNotifications", IDS_WEBSITE_SETTINGS_TYPE_NOTIFICATIONS},
       {"websitesLabelStorage", IDS_WEBSITE_SETTINGS_TYPE_STORAGE},
+      {"websitesLocationDescription",
+       IDS_WEBSITE_SETTINGS_LOCATION_DESCRIPTION},
+      {"websitesMediastreamDescription",
+       IDS_WEBSITE_SETTINGS_MEDIASTREAM_DESCRIPTION},
+      {"websitesNotificationsDescription",
+       IDS_WEBSITE_SETTINGS_NOTIFICATIONS_DESCRIPTION},
   };
 
   RegisterStrings(localized_strings, resources, arraysize(resources));
   RegisterTitle(
-      localized_strings, "websiteSettingsPage", IDS_WEBSITES_SETTINGS_TITLE);
+      localized_strings, "websiteSettingsPage", IDS_WEBSITE_SETTINGS_TITLE);
 }
 
 void WebsiteSettingsHandler::InitializeHandler() {
@@ -72,6 +80,21 @@ void WebsiteSettingsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "updateLocalStorage",
       base::Bind(&WebsiteSettingsHandler::HandleUpdateLocalStorage,
+                 base::Unretained(this)));
+
+  web_ui()->RegisterMessageCallback(
+      "getOriginInfo",
+      base::Bind(&WebsiteSettingsHandler::HandleGetOriginInfo,
+                 base::Unretained(this)));
+
+  web_ui()->RegisterMessageCallback(
+      "setOriginPermission",
+      base::Bind(&WebsiteSettingsHandler::HandleSetOriginPermission,
+                 base::Unretained(this)));
+
+  web_ui()->RegisterMessageCallback(
+      "maybeShowEditPage",
+      base::Bind(&WebsiteSettingsHandler::HandleMaybeShowEditPage,
                  base::Unretained(this)));
 }
 
@@ -120,6 +143,22 @@ void WebsiteSettingsHandler::HandleUpdateLocalStorage(
   local_storage_->StartFetching(
       base::Bind(&WebsiteSettingsHandler::OnLocalStorageFetched,
                  weak_ptr_factory_.GetWeakPtr()));
+}
+
+void WebsiteSettingsHandler::HandleMaybeShowEditPage(
+    const base::ListValue* args) {
+  std::string site;
+  bool rv = args->GetString(0, &site);
+  DCHECK(rv);
+
+  GURL last_site(site);
+  if (!last_site.is_valid())
+    return;
+
+  last_site_ = last_site;
+  base::StringValue site_value(site);
+  web_ui()->CallJavascriptFunction("WebsiteSettingsManager.showEditPage",
+                                   site_value);
 }
 
 void WebsiteSettingsHandler::OnLocalStorageFetched(const std::list<
@@ -206,6 +245,159 @@ void WebsiteSettingsHandler::UpdateOrigins() {
 
   web_ui()->CallJavascriptFunction("WebsiteSettingsManager.populateOrigins",
                                    origins);
+}
+
+void WebsiteSettingsHandler::HandleGetOriginInfo(const base::ListValue* args) {
+  std::string url;
+  bool rv = args->GetString(0, &url);
+  DCHECK(rv);
+  GURL origin(url);
+
+  if (!origin.is_valid())
+    return;
+
+  GetInfoForOrigin(origin);
+}
+
+void WebsiteSettingsHandler::HandleSetOriginPermission(
+    const base::ListValue* args) {
+  std::string setting_name;
+  bool rv = args->GetString(0, &setting_name);
+  DCHECK(rv);
+  ContentSettingsType settings_type;
+  rv = content_settings::GetTypeFromName(setting_name, &settings_type);
+  DCHECK(rv);
+
+  std::string value;
+  rv = args->GetString(1, &value);
+  DCHECK(rv);
+
+  ContentSetting setting = content_settings::ContentSettingFromString(value);
+  Profile* profile = Profile::FromWebUI(web_ui());
+  HostContentSettingsMap* map = profile->GetHostContentSettingsMap();
+  ContentSetting default_value =
+      map->GetDefaultContentSetting(settings_type, NULL);
+
+  // Users are not allowed to be the source of the "ask" setting. It is an
+  // ephemeral setting which is removed once the question is asked.
+  if (setting == CONTENT_SETTING_ASK && setting == default_value)
+    setting = CONTENT_SETTING_DEFAULT;
+
+  ContentSettingsPattern primary_pattern;
+  ContentSettingsPattern secondary_pattern;
+  switch (settings_type) {
+    case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
+      primary_pattern = ContentSettingsPattern::FromURLNoWildcard(last_site_);
+      secondary_pattern = ContentSettingsPattern::Wildcard();
+      break;
+    case CONTENT_SETTINGS_TYPE_GEOLOCATION:
+      primary_pattern = ContentSettingsPattern::FromURLNoWildcard(last_site_);
+      secondary_pattern = ContentSettingsPattern::FromURLNoWildcard(last_site_);
+      break;
+    case CONTENT_SETTINGS_TYPE_MEDIASTREAM:
+      primary_pattern = ContentSettingsPattern::FromURLNoWildcard(last_site_);
+      secondary_pattern = ContentSettingsPattern::Wildcard();
+      map->SetContentSetting(primary_pattern,
+                             secondary_pattern,
+                             CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
+                             std::string(),
+                             setting);
+      map->SetContentSetting(primary_pattern,
+                             secondary_pattern,
+                             CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
+                             std::string(),
+                             setting);
+      return;
+    default:
+      NOTREACHED() << "Content settings type not yet supported.";
+      break;
+  }
+
+  content_settings::SettingInfo info;
+  scoped_ptr<base::Value> v(map->GetWebsiteSetting(
+      last_site_, last_site_, settings_type, std::string(), &info));
+  map->SetNarrowestWebsiteSetting(primary_pattern,
+                                  secondary_pattern,
+                                  settings_type,
+                                  std::string(),
+                                  setting,
+                                  info);
+}
+
+void WebsiteSettingsHandler::GetInfoForOrigin(const GURL& site_url) {
+  Profile* profile = Profile::FromWebUI(web_ui());
+  HostContentSettingsMap* map = profile->GetHostContentSettingsMap();
+
+  double storage = 0.0;
+  for (LocalStorageList::const_iterator it = local_storage_list_.begin();
+       it != local_storage_list_.end();
+       it++) {
+    if (it->origin_url == site_url) {
+      storage = static_cast<double>(it->size);
+      break;
+    }
+  }
+
+  base::DictionaryValue* permissions = new base::DictionaryValue;
+  for (size_t i = 0; i < arraysize(kValidTypes); ++i) {
+    ContentSettingsType permission_type = kValidTypes[i];
+
+    // Append the possible settings.
+    base::ListValue* options = new base::ListValue;
+    ContentSetting default_value =
+        map->GetDefaultContentSetting(permission_type, NULL);
+    if (default_value != CONTENT_SETTING_ALLOW &&
+        default_value != CONTENT_SETTING_BLOCK) {
+      options->AppendString(
+          content_settings::ContentSettingToString(default_value));
+    }
+    options->AppendString(
+        content_settings::ContentSettingToString(CONTENT_SETTING_ALLOW));
+    options->AppendString(
+        content_settings::ContentSettingToString(CONTENT_SETTING_BLOCK));
+
+    ContentSetting permission;
+    content_settings::SettingInfo info;
+    if (permission_type == CONTENT_SETTINGS_TYPE_MEDIASTREAM) {
+      scoped_ptr<base::Value> mic_value(
+          map->GetWebsiteSetting(site_url,
+                                 site_url,
+                                 CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
+                                 std::string(),
+                                 &info));
+      ContentSetting mic_setting =
+          content_settings::ValueToContentSetting(mic_value.get());
+      ContentSetting cam_setting =
+          map->GetContentSetting(site_url,
+                                 site_url,
+                                 CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
+                                 std::string());
+
+      if (mic_setting != cam_setting)
+        permission = CONTENT_SETTING_ASK;
+      else
+        permission = mic_setting;
+    } else {
+      scoped_ptr<base::Value> v(map->GetWebsiteSetting(
+          site_url, site_url, permission_type, std::string(), &info));
+      permission = content_settings::ValueToContentSetting(v.get());
+    }
+
+    base::DictionaryValue* permission_info = new base::DictionaryValue;
+    permission_info->SetStringWithoutPathExpansion(
+        "setting", content_settings::ContentSettingToString(permission));
+    permission_info->SetWithoutPathExpansion("options", options);
+    permission_info->SetBooleanWithoutPathExpansion(
+        "editable", info.source == content_settings::SETTING_SOURCE_USER);
+    permissions->SetWithoutPathExpansion(
+        content_settings::GetTypeName(permission_type), permission_info);
+  }
+
+  base::Value* storage_used = new base::StringValue(l10n_util::GetStringFUTF16(
+      IDS_WEBSITE_SETTINGS_STORAGE_USED, ui::FormatBytes(storage)));
+
+  web_ui()->CallJavascriptFunction(
+      "WebsiteSettingsEditor.populateOrigin", *storage_used, *permissions);
 }
 
 void WebsiteSettingsHandler::UpdateLocalStorage() {

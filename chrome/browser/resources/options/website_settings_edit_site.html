@@ -1,0 +1,43 @@
+<div id="website-settings-edit-page" class="page not-resizable" hidden>
+  <div class="close-button"></div>
+  <h1 i18n-content="websitesSettingsEditPage"></h1>
+  <div class="content-area">
+    <div class="website-properties">
+      <h3 id="website-title" class="title favicon-cell weaktrl"></h3>
+      <div id="local-storage-title" class="website-property"></div>
+    </div>
+    <div class="website-column-headers">
+      <div class="website-header-controls">
+        <div id="website-settings-permission-column">Permissions</div>
+      </div>
+    </div>
+    <list class="origin-permission-list">
+      <div class="permission-option">
+        <span class="permission-name"
+            i18n-content="websitesNotificationsDescription"></span>
+        <select id="notifications-select-option"
+            class="weaktrl permission-selection-option"></select>
+      </div>
+      <div class="permission-option">
+        <span class="permission-name"
+            i18n-content="websitesLocationDescription"></span>
+        <select id="geolocation-select-option"
+            class="weaktrl permission-selection-option"></select>
+      </div>
+      <div class="permission-option">
+        <span class="permission-name"
+            i18n-content="websitesMediastreamDescription"></span>
+        <select id="media-stream-select-option"
+            class="weaktrl permission-selection-option"></select>
+      </div>
+    </list>
+  </div>
+  <div class="action-area">
+    <div class="button-strip">
+      <button id="websiteSettingsEditorCancelButton" i18n-content="cancel">
+      </button>
+      <button id="websiteSettingsEditorDoneButton" i18n-content="done">
+      </button>
+    </div>
+  </div>
+</div>

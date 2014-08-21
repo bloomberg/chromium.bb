@@ -293,6 +293,34 @@ void HostContentSettingsMap::SetWebsiteSetting(
   NOTREACHED();
 }
 
+void HostContentSettingsMap::SetNarrowestWebsiteSetting(
+    const ContentSettingsPattern& primary_pattern,
+    const ContentSettingsPattern& secondary_pattern,
+    ContentSettingsType content_type,
+    const std::string& resource_identifier,
+    ContentSetting setting,
+    content_settings::SettingInfo existing_info) {
+  ContentSettingsPattern narrow_primary = primary_pattern;
+  ContentSettingsPattern narrow_secondary = secondary_pattern;
+
+  DCHECK_EQ(content_settings::SETTING_SOURCE_USER, existing_info.source);
+  ContentSettingsPattern::Relation r1 =
+      existing_info.primary_pattern.Compare(primary_pattern);
+  if (r1 == ContentSettingsPattern::PREDECESSOR) {
+    narrow_primary = existing_info.primary_pattern;
+  } else if (r1 == ContentSettingsPattern::IDENTITY) {
+    ContentSettingsPattern::Relation r2 =
+        existing_info.secondary_pattern.Compare(secondary_pattern);
+    DCHECK(r2 != ContentSettingsPattern::DISJOINT_ORDER_POST &&
+           r2 != ContentSettingsPattern::DISJOINT_ORDER_PRE);
+    if (r2 == ContentSettingsPattern::PREDECESSOR)
+      narrow_secondary = existing_info.secondary_pattern;
+  }
+
+  SetContentSetting(
+      narrow_primary, narrow_secondary, content_type, std::string(), setting);
+}
+
 void HostContentSettingsMap::SetContentSetting(
     const ContentSettingsPattern& primary_pattern,
     const ContentSettingsPattern& secondary_pattern,

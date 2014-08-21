@@ -268,22 +268,9 @@ void WebsiteSettings::OnSitePermissionChanged(ContentSettingsType type,
     content_settings::SettingInfo info;
     scoped_ptr<base::Value> v(content_settings_->GetWebsiteSetting(
         site_url_, site_url_, type, std::string(), &info));
-    DCHECK(info.source == content_settings::SETTING_SOURCE_USER);
-    ContentSettingsPattern::Relation r1 =
-        info.primary_pattern.Compare(primary_pattern);
-    DCHECK(r1 != ContentSettingsPattern::DISJOINT_ORDER_POST &&
-           r1 != ContentSettingsPattern::DISJOINT_ORDER_PRE);
-    if (r1 == ContentSettingsPattern::PREDECESSOR) {
-      primary_pattern = info.primary_pattern;
-    } else if (r1 == ContentSettingsPattern::IDENTITY) {
-      ContentSettingsPattern::Relation r2 =
-          info.secondary_pattern.Compare(secondary_pattern);
-      DCHECK(r2 != ContentSettingsPattern::DISJOINT_ORDER_POST &&
-             r2 != ContentSettingsPattern::DISJOINT_ORDER_PRE);
-      if (r2 == ContentSettingsPattern::PREDECESSOR)
-        secondary_pattern = info.secondary_pattern;
-    }
-
+    content_settings_->SetNarrowestWebsiteSetting(
+        primary_pattern, secondary_pattern, type, std::string(), setting, info);
+  } else {
     base::Value* value = NULL;
     if (setting != CONTENT_SETTING_DEFAULT)
       value = new base::FundamentalValue(setting);

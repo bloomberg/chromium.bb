@@ -148,6 +148,16 @@ class HostContentSettingsMap
                          const std::string& resource_identifier,
                          base::Value* value);
 
+  // Sets the most specific rule that currently defines the permission for the
+  // given permission type.
+  void SetNarrowestWebsiteSetting(
+      const ContentSettingsPattern& primary_pattern,
+      const ContentSettingsPattern& secondary_pattern,
+      ContentSettingsType content_type,
+      const std::string& resource_identifier,
+      ContentSetting setting,
+      content_settings::SettingInfo existing_info);
+
   // Convenience method to add a content setting for the given URLs, making sure
   // that there is no setting overriding it.
   //

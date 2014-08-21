@@ -76,6 +76,39 @@ bool GetTypeFromName(const std::string& name,
   return false;
 }
 
+std::string ContentSettingToString(ContentSetting setting) {
+  switch (setting) {
+    case CONTENT_SETTING_ALLOW:
+      return "allow";
+    case CONTENT_SETTING_ASK:
+      return "ask";
+    case CONTENT_SETTING_BLOCK:
+      return "block";
+    case CONTENT_SETTING_SESSION_ONLY:
+      return "session";
+    case CONTENT_SETTING_DEFAULT:
+      return "default";
+    case CONTENT_SETTING_NUM_SETTINGS:
+      NOTREACHED();
+  }
+
+  return std::string();
+}
+
+ContentSetting ContentSettingFromString(const std::string& name) {
+  if (name == "allow")
+    return CONTENT_SETTING_ALLOW;
+  if (name == "ask")
+    return CONTENT_SETTING_ASK;
+  if (name == "block")
+    return CONTENT_SETTING_BLOCK;
+  if (name == "session")
+    return CONTENT_SETTING_SESSION_ONLY;
+
+  NOTREACHED() << name << " is not a recognized content setting.";
+  return CONTENT_SETTING_DEFAULT;
+}
+
 std::string CreatePatternString(
     const ContentSettingsPattern& item_pattern,
     const ContentSettingsPattern& top_level_frame_pattern) {

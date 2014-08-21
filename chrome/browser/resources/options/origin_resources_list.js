@@ -34,8 +34,13 @@ cr.define('options', function() {
       var titleEl = this.ownerDocument.createElement('div');
       titleEl.className = 'title favicon-cell weaktrl';
       titleEl.textContent = this.origin_;
+      titleEl.originPattern = this.origin_;
       titleEl.style.backgroundImage = getFaviconImageSet(this.origin_);
       this.contentElement_.appendChild(titleEl);
+
+      this.contentElement_.onclick = function() {
+        chrome.send('maybeShowEditPage', [titleEl.originPattern]);
+      };
 
       if (this.usageString_) {
         var usageEl = this.ownerDocument.createElement('span');

@@ -7,12 +7,21 @@
   min-width: 540px;
 }
 
+#website-settings-edit-page {
+  max-height: 445px;
+  min-width: 540px;
+}
+
 .website-column-headers {
   padding: 3px 0 6px;
 }
 
 .website-header-controls {
   display: flex;
+}
+
+.website-header-controls > div {
+  font-weight: bold;
 }
 
 .resource-type-select {
@@ -29,9 +38,61 @@
   padding-bottom: 20px;
 }
 
-.content-area.website-list-content-area {
+.website-list-content-area {
   display: flex;
   flex-direction: column;
+}
+
+.permission-name {
+  -webkit-margin-start: 7px;
+  font-size: 13px;
+  width: 300px;
+}
+
+#website-settings-edit-page .permission-selection-option {
+  -webkit-margin-end: 20px;
+  -webkit-margin-start: 35px;
+  width: 12em;
+}
+
+#website-settings-permission-column {
+  -webkit-margin-start: 8px;
+}
+
+.website-properties {
+  -webkit-margin-after: 8px;
+  -webkit-margin-start: 8px;
+}
+
+.website-property {
+  -webkit-margin-after: 22px;
+}
+
+#website-title {
+  -webkit-margin-after: 22px;
+  -webkit-margin-before: 0;
+  -webkit-padding-start: 21px;
+  font-size: 15px;
+  line-height: 20px;
+}
+
+#website-settings-page .content-area {
+  padding: auto 20px;
+}
+
+#website-settings-page .action-area {
+  padding: auto 20px;
+
+}
+
+#website-settings-edit-page .action-area {
+  padding: auto 20px;
+
+}
+
+.origin-permission-list {
+  -webkit-padding-before: 4px;
+  border: 1px solid #d9d9d9;
 }
 
 /* Styles for the origin list elements in the website settings page. */
@@ -54,4 +115,17 @@
 list.origin-list .favicon-cell {
   -webkit-margin-start: 6px;
   -webkit-padding-start: 21px;
+}
+
+list.origin-list .favicon-cell {
+  -webkit-margin-start: 5px;
+  -webkit-padding-start: 21px;
+  font-size: 13px;
+}
+
+.permission-option {
+  -webkit-margin-before: 4px;
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
 }

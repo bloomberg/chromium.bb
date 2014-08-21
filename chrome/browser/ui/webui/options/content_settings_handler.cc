@@ -56,6 +56,8 @@
 #endif
 
 using base::UserMetricsAction;
+using content_settings::ContentSettingToString;
+using content_settings::ContentSettingFromString;
 using extensions::APIPermission;
 
 namespace {
@@ -133,39 +135,6 @@ ContentSettingsType ContentSettingsTypeFromGroupName(const std::string& name) {
 
   NOTREACHED() << name << " is not a recognized content settings type.";
   return CONTENT_SETTINGS_TYPE_DEFAULT;
-}
-
-std::string ContentSettingToString(ContentSetting setting) {
-  switch (setting) {
-    case CONTENT_SETTING_ALLOW:
-      return "allow";
-    case CONTENT_SETTING_ASK:
-      return "ask";
-    case CONTENT_SETTING_BLOCK:
-      return "block";
-    case CONTENT_SETTING_SESSION_ONLY:
-      return "session";
-    case CONTENT_SETTING_DEFAULT:
-      return "default";
-    case CONTENT_SETTING_NUM_SETTINGS:
-      NOTREACHED();
-  }
-
-  return std::string();
-}
-
-ContentSetting ContentSettingFromString(const std::string& name) {
-  if (name == "allow")
-    return CONTENT_SETTING_ALLOW;
-  if (name == "ask")
-    return CONTENT_SETTING_ASK;
-  if (name == "block")
-    return CONTENT_SETTING_BLOCK;
-  if (name == "session")
-    return CONTENT_SETTING_SESSION_ONLY;
-
-  NOTREACHED() << name << " is not a recognized content setting.";
-  return CONTENT_SETTING_DEFAULT;
 }
 
 // Create a DictionaryValue* that will act as a data source for a single row

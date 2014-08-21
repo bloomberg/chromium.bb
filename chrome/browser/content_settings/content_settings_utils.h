@@ -31,6 +31,10 @@ std::string GetTypeName(ContentSettingsType type);
 bool GetTypeFromName(const std::string& name,
                      ContentSettingsType* return_setting);
 
+std::string ContentSettingToString(ContentSetting setting);
+
+ContentSetting ContentSettingFromString(const std::string& name);
+
 // Converts |Value| to |ContentSetting|.
 ContentSetting ValueToContentSetting(const base::Value* value);
 
