@@ -11,6 +11,7 @@
 #include "chrome/browser/android/accessibility_util.h"
 #include "chrome/browser/android/banners/app_banner_manager.h"
 #include "chrome/browser/android/bookmarks/bookmarks_bridge.h"
+#include "chrome/browser/android/browser_version.h"
 #include "chrome/browser/android/chrome_web_contents_delegate_android.h"
 #include "chrome/browser/android/chromium_application.h"
 #include "chrome/browser/android/content_view_util.h"
@@ -120,6 +121,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     autofill::AutofillPopupViewAndroid::RegisterAutofillPopupViewAndroid },
   { "AutoLoginDelegate", AutoLoginInfoBarDelegateAndroid::Register },
   { "BookmarksBridge", BookmarksBridge::RegisterBookmarksBridge },
+  { "BrowserVersion", RegisterBrowserVersion },
   { "CertificateViewer", RegisterCertificateViewer },
   { "ChromeBrowserProvider",
     ChromeBrowserProvider::RegisterChromeBrowserProvider },
