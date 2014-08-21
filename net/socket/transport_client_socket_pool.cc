@@ -392,7 +392,7 @@ int TransportConnectJob::ConnectInternal() {
 }
 
 scoped_ptr<ConnectJob>
-    TransportClientSocketPool::TransportConnectJobFactory::NewConnectJob(
+TransportClientSocketPool::TransportConnectJobFactory::NewConnectJob(
     const std::string& group_name,
     const PoolBase::Request& request,
     ConnectJob::Delegate* delegate) const {

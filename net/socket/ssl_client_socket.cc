@@ -89,16 +89,6 @@ NextProto SSLClientSocket::GetNegotiatedProtocol() const {
   return protocol_negotiated_;
 }
 
-// static
-std::string SSLClientSocket::CreateSessionCacheKey(
-    const HostPortPair& host_and_port,
-    const std::string& ssl_session_cache_shard) {
-  std::string result = host_and_port.ToString();
-  result.append("/");
-  result.append(ssl_session_cache_shard);
-  return result;
-}
-
 bool SSLClientSocket::IgnoreCertError(int error, int load_flags) {
   if (error == OK || load_flags & LOAD_IGNORE_ALL_CERT_ERRORS)
     return true;

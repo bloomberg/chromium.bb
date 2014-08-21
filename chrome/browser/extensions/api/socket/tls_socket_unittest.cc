@@ -60,6 +60,7 @@ class MockSSLClientSocket : public net::SSLClientSocket {
                    unsigned char*,
                    unsigned int));
   MOCK_METHOD1(GetTLSUniqueChannelBinding, int(std::string*));
+  MOCK_CONST_METHOD0(GetSessionCacheKey, std::string());
   MOCK_CONST_METHOD0(InSessionCache, bool());
   MOCK_METHOD1(SetHandshakeCompletionCallback, void(const base::Closure&));
   MOCK_METHOD1(GetSSLCertRequestInfo, void(net::SSLCertRequestInfo*));

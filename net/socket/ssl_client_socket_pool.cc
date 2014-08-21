@@ -104,7 +104,10 @@ SSLConnectJobMessenger::SocketAndCallback::SocketAndCallback(
 SSLConnectJobMessenger::SocketAndCallback::~SocketAndCallback() {
 }
 
-SSLConnectJobMessenger::SSLConnectJobMessenger() : weak_factory_(this) {
+SSLConnectJobMessenger::SSLConnectJobMessenger(
+    const base::Closure& messenger_finished_callback)
+    : messenger_finished_callback_(messenger_finished_callback),
+      weak_factory_(this) {
 }
 
 SSLConnectJobMessenger::~SSLConnectJobMessenger() {
@@ -125,9 +128,8 @@ void SSLConnectJobMessenger::RemovePendingSocket(SSLClientSocket* ssl_socket) {
 }
 
 bool SSLConnectJobMessenger::CanProceed(SSLClientSocket* ssl_socket) {
-  // If the session is in the session cache, or there are no connecting
-  // sockets, allow the connection to proceed.
-  return ssl_socket->InSessionCache() || connecting_sockets_.empty();
+  // If there are no connecting sockets, allow the connection to proceed.
+  return connecting_sockets_.empty();
 }
 
 void SSLConnectJobMessenger::MonitorConnectionResult(
@@ -149,6 +151,8 @@ void SSLConnectJobMessenger::OnSSLHandshakeCompleted() {
   connecting_sockets_.clear();
   SSLPendingSocketsAndCallbacks temp_list;
   temp_list.swap(pending_sockets_and_callbacks_);
+  base::Closure messenger_finished_callback = messenger_finished_callback_;
+  messenger_finished_callback.Run();
   RunAllCallbacks(temp_list);
 }
 
@@ -175,7 +179,7 @@ SSLConnectJob::SSLConnectJob(const std::string& group_name,
                              ClientSocketFactory* client_socket_factory,
                              HostResolver* host_resolver,
                              const SSLClientSocketContext& context,
-                             SSLConnectJobMessenger* messenger,
+                             const GetMessengerCallback& get_messenger_callback,
                              Delegate* delegate,
                              NetLog* net_log)
     : ConnectJob(group_name,
@@ -198,7 +202,8 @@ SSLConnectJob::SSLConnectJob(const std::string& group_name,
                     : context.ssl_session_cache_shard)),
       io_callback_(
           base::Bind(&SSLConnectJob::OnIOComplete, base::Unretained(this))),
-      messenger_(messenger),
+      messenger_(NULL),
+      get_messenger_callback_(get_messenger_callback),
       weak_factory_(this) {
 }
 
@@ -402,23 +407,31 @@ int SSLConnectJob::DoCreateSSLSocket() {
       params_->host_and_port(),
       params_->ssl_config(),
       context_);
+
+  if (!ssl_socket_->InSessionCache())
+    messenger_ = get_messenger_callback_.Run(ssl_socket_->GetSessionCacheKey());
+
   return OK;
 }
 
 int SSLConnectJob::DoCheckForResume() {
   next_state_ = STATE_SSL_CONNECT;
+
   if (!messenger_)
     return OK;
 
-  // TODO(mshelley): Remove duplicate InSessionCache() calls.
   if (messenger_->CanProceed(ssl_socket_.get())) {
-    if (!ssl_socket_->InSessionCache())
-      messenger_->MonitorConnectionResult(ssl_socket_.get());
+    messenger_->MonitorConnectionResult(ssl_socket_.get());
+    // The SSLConnectJob no longer needs access to the messenger after this
+    // point.
+    messenger_ = NULL;
     return OK;
   }
+
   messenger_->AddPendingSocket(ssl_socket_.get(),
                                base::Bind(&SSLConnectJob::ResumeSSLConnection,
                                           weak_factory_.GetWeakPtr()));
+
   return ERR_IO_PENDING;
 }
 
@@ -556,6 +569,7 @@ int SSLConnectJob::DoSSLConnectComplete(int result) {
 
 void SSLConnectJob::ResumeSSLConnection() {
   DCHECK_EQ(next_state_, STATE_SSL_CONNECT);
+  messenger_ = NULL;
   OnIOComplete(OK);
 }
 
@@ -585,7 +599,7 @@ SSLClientSocketPool::SSLConnectJobFactory::SSLConnectJobFactory(
     ClientSocketFactory* client_socket_factory,
     HostResolver* host_resolver,
     const SSLClientSocketContext& context,
-    bool enable_ssl_connect_job_waiting,
+    const SSLConnectJob::GetMessengerCallback& get_messenger_callback,
     NetLog* net_log)
     : transport_pool_(transport_pool),
       socks_pool_(socks_pool),
@@ -593,9 +607,8 @@ SSLClientSocketPool::SSLConnectJobFactory::SSLConnectJobFactory(
       client_socket_factory_(client_socket_factory),
       host_resolver_(host_resolver),
       context_(context),
-      enable_ssl_connect_job_waiting_(enable_ssl_connect_job_waiting),
-      net_log_(net_log),
-      messenger_map_(new MessengerMap) {
+      get_messenger_callback_(get_messenger_callback),
+      net_log_(net_log) {
   base::TimeDelta max_transport_timeout = base::TimeDelta();
   base::TimeDelta pool_timeout;
   if (transport_pool_)
@@ -615,7 +628,6 @@ SSLClientSocketPool::SSLConnectJobFactory::SSLConnectJobFactory(
 }
 
 SSLClientSocketPool::SSLConnectJobFactory::~SSLConnectJobFactory() {
-  STLDeleteValues(messenger_map_.get());
 }
 
 SSLClientSocketPool::SSLClientSocketPool(
@@ -655,9 +667,12 @@ SSLClientSocketPool::SSLClientSocketPool(
                                        transport_security_state,
                                        cert_transparency_verifier,
                                        ssl_session_cache_shard),
-                enable_ssl_connect_job_waiting,
+                base::Bind(
+                    &SSLClientSocketPool::GetOrCreateSSLConnectJobMessenger,
+                    base::Unretained(this)),
                 net_log)),
-      ssl_config_service_(ssl_config_service) {
+      ssl_config_service_(ssl_config_service),
+      enable_ssl_connect_job_waiting_(enable_ssl_connect_job_waiting) {
   if (ssl_config_service_.get())
     ssl_config_service_->AddObserver(this);
   if (transport_pool_)
@@ -669,28 +684,16 @@ SSLClientSocketPool::SSLClientSocketPool(
 }
 
 SSLClientSocketPool::~SSLClientSocketPool() {
+  STLDeleteContainerPairSecondPointers(messenger_map_.begin(),
+                                       messenger_map_.end());
   if (ssl_config_service_.get())
     ssl_config_service_->RemoveObserver(this);
 }
 
-scoped_ptr<ConnectJob>
-SSLClientSocketPool::SSLConnectJobFactory::NewConnectJob(
+scoped_ptr<ConnectJob> SSLClientSocketPool::SSLConnectJobFactory::NewConnectJob(
     const std::string& group_name,
     const PoolBase::Request& request,
     ConnectJob::Delegate* delegate) const {
-  SSLConnectJobMessenger* messenger = NULL;
-  if (enable_ssl_connect_job_waiting_) {
-    std::string cache_key = SSLClientSocket::CreateSessionCacheKey(
-        request.params()->host_and_port(), context_.ssl_session_cache_shard);
-    MessengerMap::const_iterator it = messenger_map_->find(cache_key);
-    if (it == messenger_map_->end()) {
-      std::pair<MessengerMap::iterator, bool> iter = messenger_map_->insert(
-          MessengerMap::value_type(cache_key, new SSLConnectJobMessenger()));
-      it = iter.first;
-    }
-    messenger = it->second;
-  }
-
   return scoped_ptr<ConnectJob>(new SSLConnectJob(group_name,
                                                   request.priority(),
                                                   request.params(),
@@ -701,13 +704,13 @@ SSLClientSocketPool::SSLConnectJobFactory::NewConnectJob(
                                                   client_socket_factory_,
                                                   host_resolver_,
                                                   context_,
-                                                  messenger,
+                                                  get_messenger_callback_,
                                                   delegate,
                                                   net_log_));
 }
 
-base::TimeDelta
-SSLClientSocketPool::SSLConnectJobFactory::ConnectionTimeout() const {
+base::TimeDelta SSLClientSocketPool::SSLConnectJobFactory::ConnectionTimeout()
+    const {
   return timeout_;
 }
 
@@ -820,6 +823,32 @@ bool SSLClientSocketPool::CloseOneIdleConnection() {
   if (base_.CloseOneIdleSocket())
     return true;
   return base_.CloseOneIdleConnectionInHigherLayeredPool();
+}
+
+SSLConnectJobMessenger* SSLClientSocketPool::GetOrCreateSSLConnectJobMessenger(
+    const std::string& cache_key) {
+  if (!enable_ssl_connect_job_waiting_)
+    return NULL;
+  MessengerMap::const_iterator it = messenger_map_.find(cache_key);
+  if (it == messenger_map_.end()) {
+    std::pair<MessengerMap::iterator, bool> iter =
+        messenger_map_.insert(MessengerMap::value_type(
+            cache_key,
+            new SSLConnectJobMessenger(
+                base::Bind(&SSLClientSocketPool::DeleteSSLConnectJobMessenger,
+                           base::Unretained(this),
+                           cache_key))));
+    it = iter.first;
+  }
+  return it->second;
+}
+
+void SSLClientSocketPool::DeleteSSLConnectJobMessenger(
+    const std::string& cache_key) {
+  MessengerMap::iterator it = messenger_map_.find(cache_key);
+  CHECK(it != messenger_map_.end());
+  delete it->second;
+  messenger_map_.erase(it);
 }
 
 void SSLClientSocketPool::OnSSLConfigChanged() {

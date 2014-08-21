@@ -83,15 +83,8 @@ class NET_EXPORT SSLClientSocket : public SSLSocket {
   virtual bool WasNpnNegotiated() const OVERRIDE;
   virtual NextProto GetNegotiatedProtocol() const OVERRIDE;
 
-  // Formats a unique key for the SSL session cache. This method
-  // is necessary so that all classes create cache keys in a consistent
-  // manner.
-  // TODO(mshelley) This method will be deleted in an upcoming CL when
-  // it will no longer be necessary to generate a cache key outside of
-  // an SSLClientSocket.
-  static std::string CreateSessionCacheKey(
-      const HostPortPair& host_and_port,
-      const std::string& ssl_session_cache_shard);
+  // Computes a unique key string for the SSL session cache.
+  virtual std::string GetSessionCacheKey() const = 0;
 
   // Returns true if there is a cache entry in the SSL session cache
   // for the cache key of the SSL socket.

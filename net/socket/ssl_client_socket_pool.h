@@ -115,7 +115,11 @@ class SSLConnectJobMessenger {
 
   typedef std::vector<SocketAndCallback> SSLPendingSocketsAndCallbacks;
 
-  SSLConnectJobMessenger();
+  // |messenger_finished_callback| is run when a connection monitored by the
+  // SSLConnectJobMessenger has completed and we are finished with the
+  // SSLConnectJobMessenger.
+  explicit SSLConnectJobMessenger(
+      const base::Closure& messenger_finished_callback);
   ~SSLConnectJobMessenger();
 
   // Removes |socket| from the set of sockets being monitored. This
@@ -151,18 +155,30 @@ class SSLConnectJobMessenger {
   void RunAllCallbacks(
       const SSLPendingSocketsAndCallbacks& pending_socket_and_callbacks);
 
-  base::WeakPtrFactory<SSLConnectJobMessenger> weak_factory_;
-
   SSLPendingSocketsAndCallbacks pending_sockets_and_callbacks_;
   // Note: this field is a vector to allow for future design changes. Currently,
   // this vector should only ever have one entry.
   std::vector<SSLClientSocket*> connecting_sockets_;
+
+  base::Closure messenger_finished_callback_;
+
+  base::WeakPtrFactory<SSLConnectJobMessenger> weak_factory_;
 };
 
 // SSLConnectJob handles the SSL handshake after setting up the underlying
 // connection as specified in the params.
 class SSLConnectJob : public ConnectJob {
  public:
+  // Callback to allow the SSLConnectJob to obtain an SSLConnectJobMessenger to
+  // coordinate connecting. The SSLConnectJob will supply a unique identifer
+  // (ex: the SSL session cache key), with the expectation that the same
+  // Messenger will be returned for all such ConnectJobs.
+  //
+  // Note: It will only be called for situations where the SSL session cache
+  // does not already have a candidate session to resume.
+  typedef base::Callback<SSLConnectJobMessenger*(const std::string&)>
+      GetMessengerCallback;
+
   // Note: the SSLConnectJob does not own |messenger| so it must outlive the
   // job.
   SSLConnectJob(const std::string& group_name,
@@ -175,7 +191,7 @@ class SSLConnectJob : public ConnectJob {
                 ClientSocketFactory* client_socket_factory,
                 HostResolver* host_resolver,
                 const SSLClientSocketContext& context,
-                SSLConnectJobMessenger* messenger,
+                const GetMessengerCallback& get_messenger_callback,
                 Delegate* delegate,
                 NetLog* net_log);
   virtual ~SSLConnectJob();
@@ -244,6 +260,8 @@ class SSLConnectJob : public ConnectJob {
 
   SSLConnectJobMessenger* messenger_;
   HttpResponseInfo error_response_info_;
+
+  GetMessengerCallback get_messenger_callback_;
 
   base::WeakPtrFactory<SSLConnectJob> weak_factory_;
 
@@ -330,8 +348,16 @@ class NET_EXPORT_PRIVATE SSLClientSocketPool
   // HigherLayeredPool implementation.
   virtual bool CloseOneIdleConnection() OVERRIDE;
 
+  // Gets the SSLConnectJobMessenger for the given ssl session |cache_key|. If
+  // none exits, it creates one and stores it in |messenger_map_|.
+  SSLConnectJobMessenger* GetOrCreateSSLConnectJobMessenger(
+      const std::string& cache_key);
+  void DeleteSSLConnectJobMessenger(const std::string& cache_key);
+
  private:
   typedef ClientSocketPoolBase<SSLSocketParams> PoolBase;
+  // Maps SSLConnectJob cache keys to SSLConnectJobMessenger objects.
+  typedef std::map<std::string, SSLConnectJobMessenger*> MessengerMap;
 
   // SSLConfigService::Observer implementation.
 
@@ -341,14 +367,15 @@ class NET_EXPORT_PRIVATE SSLClientSocketPool
 
   class SSLConnectJobFactory : public PoolBase::ConnectJobFactory {
    public:
-    SSLConnectJobFactory(TransportClientSocketPool* transport_pool,
-                         SOCKSClientSocketPool* socks_pool,
-                         HttpProxyClientSocketPool* http_proxy_pool,
-                         ClientSocketFactory* client_socket_factory,
-                         HostResolver* host_resolver,
-                         const SSLClientSocketContext& context,
-                         bool enable_ssl_connect_job_waiting,
-                         NetLog* net_log);
+    SSLConnectJobFactory(
+        TransportClientSocketPool* transport_pool,
+        SOCKSClientSocketPool* socks_pool,
+        HttpProxyClientSocketPool* http_proxy_pool,
+        ClientSocketFactory* client_socket_factory,
+        HostResolver* host_resolver,
+        const SSLClientSocketContext& context,
+        const SSLConnectJob::GetMessengerCallback& get_messenger_callback,
+        NetLog* net_log);
 
     virtual ~SSLConnectJobFactory();
 
@@ -361,9 +388,6 @@ class NET_EXPORT_PRIVATE SSLClientSocketPool
     virtual base::TimeDelta ConnectionTimeout() const OVERRIDE;
 
    private:
-    // Maps SSLConnectJob cache keys to SSLConnectJobMessenger objects.
-    typedef std::map<std::string, SSLConnectJobMessenger*> MessengerMap;
-
     TransportClientSocketPool* const transport_pool_;
     SOCKSClientSocketPool* const socks_pool_;
     HttpProxyClientSocketPool* const http_proxy_pool_;
@@ -371,13 +395,8 @@ class NET_EXPORT_PRIVATE SSLClientSocketPool
     HostResolver* const host_resolver_;
     const SSLClientSocketContext context_;
     base::TimeDelta timeout_;
-    bool enable_ssl_connect_job_waiting_;
+    SSLConnectJob::GetMessengerCallback get_messenger_callback_;
     NetLog* net_log_;
-    // |messenger_map_| is currently a pointer so that an element can be
-    // added to it inside of the const method NewConnectJob. In the future,
-    // elements will be added in a different method.
-    // TODO(mshelley) Change this to a non-pointer.
-    scoped_ptr<MessengerMap> messenger_map_;
 
     DISALLOW_COPY_AND_ASSIGN(SSLConnectJobFactory);
   };
@@ -387,6 +406,8 @@ class NET_EXPORT_PRIVATE SSLClientSocketPool
   HttpProxyClientSocketPool* const http_proxy_pool_;
   PoolBase base_;
   const scoped_refptr<SSLConfigService> ssl_config_service_;
+  MessengerMap messenger_map_;
+  bool enable_ssl_connect_job_waiting_;
 
   DISALLOW_COPY_AND_ASSIGN(SSLClientSocketPool);
 };

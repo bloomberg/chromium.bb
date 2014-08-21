@@ -57,6 +57,7 @@ class SSLClientSocketOpenSSL : public SSLClientSocket {
   }
 
   // SSLClientSocket implementation.
+  virtual std::string GetSessionCacheKey() const OVERRIDE;
   virtual bool InSessionCache() const OVERRIDE;
   virtual void SetHandshakeCompletionCallback(
       const base::Closure& callback) OVERRIDE;
@@ -110,8 +111,6 @@ class SSLClientSocketOpenSSL : public SSLClientSocket {
   void DoReadCallback(int result);
   void DoWriteCallback(int result);
 
-  // Compute a unique key string for the SSL session cache.
-  std::string GetSessionCacheKey() const;
   void OnHandshakeCompletion();
 
   bool DoTransportIO();

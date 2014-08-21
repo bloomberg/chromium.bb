@@ -68,6 +68,7 @@ class SSLClientSocketNSS : public SSLClientSocket {
   virtual ~SSLClientSocketNSS();
 
   // SSLClientSocket implementation.
+  virtual std::string GetSessionCacheKey() const OVERRIDE;
   virtual bool InSessionCache() const OVERRIDE;
   virtual void SetHandshakeCompletionCallback(
       const base::Closure& callback) OVERRIDE;

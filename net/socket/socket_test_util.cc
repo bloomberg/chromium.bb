@@ -764,6 +764,11 @@ const BoundNetLog& MockClientSocket::NetLog() const {
   return net_log_;
 }
 
+std::string MockClientSocket::GetSessionCacheKey() const {
+  NOTIMPLEMENTED();
+  return std::string();
+}
+
 bool MockClientSocket::InSessionCache() const {
   NOTIMPLEMENTED();
   return false;
@@ -1322,6 +1327,7 @@ MockSSLClientSocket::MockSSLClientSocket(
           // tests.
           transport_socket->socket()->NetLog()),
       transport_(transport_socket.Pass()),
+      host_port_pair_(host_port_pair),
       data_(data),
       is_npn_state_set_(false),
       new_npn_value_(false),
@@ -1387,6 +1393,12 @@ bool MockSSLClientSocket::GetSSLInfo(SSLInfo* ssl_info) {
   ssl_info->channel_id_sent = data_->channel_id_sent;
   ssl_info->connection_status = data_->connection_status;
   return true;
+}
+
+std::string MockSSLClientSocket::GetSessionCacheKey() const {
+  // For the purposes of these tests, |host_and_port| will serve as the
+  // cache key.
+  return host_port_pair_.ToString();
 }
 
 bool MockSSLClientSocket::InSessionCache() const {

@@ -703,6 +703,7 @@ class MockClientSocket : public SSLClientSocket {
   virtual void SetOmniboxSpeculation() OVERRIDE {}
 
   // SSLClientSocket implementation.
+  virtual std::string GetSessionCacheKey() const OVERRIDE;
   virtual bool InSessionCache() const OVERRIDE;
   virtual void SetHandshakeCompletionCallback(const base::Closure& cb) OVERRIDE;
   virtual void GetSSLCertRequestInfo(SSLCertRequestInfo* cert_request_info)
@@ -964,6 +965,7 @@ class MockSSLClientSocket : public MockClientSocket, public AsyncSocket {
   virtual bool GetSSLInfo(SSLInfo* ssl_info) OVERRIDE;
 
   // SSLClientSocket implementation.
+  virtual std::string GetSessionCacheKey() const OVERRIDE;
   virtual bool InSessionCache() const OVERRIDE;
   virtual void SetHandshakeCompletionCallback(const base::Closure& cb) OVERRIDE;
   virtual void GetSSLCertRequestInfo(SSLCertRequestInfo* cert_request_info)
@@ -1003,6 +1005,7 @@ class MockSSLClientSocket : public MockClientSocket, public AsyncSocket {
   int DoSSLConnectComplete(int result);
 
   scoped_ptr<ClientSocketHandle> transport_;
+  HostPortPair host_port_pair_;
   SSLSocketDataProvider* data_;
   bool is_npn_state_set_;
   bool new_npn_value_;

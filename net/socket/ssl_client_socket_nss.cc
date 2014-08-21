@@ -2834,6 +2834,11 @@ bool SSLClientSocketNSS::GetSSLInfo(SSLInfo* ssl_info) {
   return true;
 }
 
+std::string SSLClientSocketNSS::GetSessionCacheKey() const {
+  NOTIMPLEMENTED();
+  return std::string();
+}
+
 bool SSLClientSocketNSS::InSessionCache() const {
   // For now, always return true so that SSLConnectJobs are never held back.
   return true;

@@ -369,6 +369,13 @@ SSLClientSocketOpenSSL::~SSLClientSocketOpenSSL() {
   Disconnect();
 }
 
+std::string SSLClientSocketOpenSSL::GetSessionCacheKey() const {
+  std::string result = host_and_port_.ToString();
+  result.append("/");
+  result.append(ssl_session_cache_shard_);
+  return result;
+}
+
 bool SSLClientSocketOpenSSL::InSessionCache() const {
   SSLContext* context = SSLContext::GetInstance();
   std::string cache_key = GetSessionCacheKey();
@@ -838,10 +845,6 @@ void SSLClientSocketOpenSSL::DoWriteCallback(int rv) {
     OnHandshakeCompletion();
   }
   base::ResetAndReturn(&user_write_callback_).Run(rv);
-}
-
-std::string SSLClientSocketOpenSSL::GetSessionCacheKey() const {
-  return CreateSessionCacheKey(host_and_port_, ssl_session_cache_shard_);
 }
 
 void SSLClientSocketOpenSSL::OnHandshakeCompletion() {
