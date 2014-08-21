@@ -282,7 +282,11 @@ template("grit") {
 
     args = [
       "-i", source_path, "build",
-      "-f", resource_ids,
+    ]
+    if (resource_ids != "") {
+      args += [ "-f", resource_ids ]
+    }
+    args += [
       "-o", rebased_output_dir,
       "--depdir", ".",
       "--depfile", rebase_path(depfile, root_build_dir),
