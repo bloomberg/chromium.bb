@@ -71,7 +71,7 @@ OfflineAudioContext* OfflineAudioContext::create(ExecutionContext* context, unsi
         return 0;
     }
 
-    OfflineAudioContext* audioContext = adoptRefCountedGarbageCollected(new OfflineAudioContext(document, numberOfChannels, numberOfFrames, sampleRate));
+    OfflineAudioContext* audioContext = adoptRefCountedGarbageCollectedWillBeNoop(new OfflineAudioContext(document, numberOfChannels, numberOfFrames, sampleRate));
 
     if (!audioContext->destination()) {
         exceptionState.throwDOMException(

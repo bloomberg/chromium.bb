@@ -72,9 +72,8 @@ class WaveShaperNode;
 // AudioContext is the cornerstone of the web audio API and all AudioNodes are created from it.
 // For thread safety between the audio thread and the main thread, it has a rendering graph locking mechanism.
 
-// FIXME: Oilpan: This should be ThreadSafeRefCountedGarbageCollectedWillBeGarbageCollectedFinalized.
-class AudioContext : public ThreadSafeRefCountedGarbageCollected<AudioContext>, public ActiveDOMObject, public EventTargetWithInlineData {
-    DEFINE_EVENT_TARGET_REFCOUNTING(ThreadSafeRefCountedGarbageCollected<AudioContext>);
+class AudioContext : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<AudioContext>, public ActiveDOMObject, public EventTargetWithInlineData {
+    DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<AudioContext>);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(AudioContext);
 public:
     // Create an AudioContext for rendering to the audio hardware.
