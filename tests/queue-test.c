@@ -86,6 +86,8 @@ client_test_proxy_destroy(void)
 
 	client_assert(counter == 1);
 
+	/* don't destroy the registry, we have already destroyed them
+	 * in the global handler */
 	wl_display_disconnect(display);
 
 	return 0;
@@ -152,6 +154,7 @@ client_test_multiple_queues(void)
 	while (!state.done && !ret)
 		ret = wl_display_dispatch_queue(state.display, queue);
 
+	wl_event_queue_destroy(queue);
 	wl_display_disconnect(state.display);
 
 	return ret == -1 ? -1 : 0;
@@ -221,6 +224,8 @@ client_test_queue_roundtrip(void)
 
 	wl_callback_destroy(callback1);
 	wl_callback_destroy(callback2);
+	wl_event_queue_destroy(queue);
+
 	wl_display_disconnect(display);
 
 	return 0;
