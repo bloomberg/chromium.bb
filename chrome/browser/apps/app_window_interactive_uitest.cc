@@ -126,7 +126,13 @@ IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest, ESCLeavesFullscreenWindow) {
   }
 }
 
-IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest, ESCLeavesFullscreenDOM) {
+#if defined(OS_MACOSX)
+// http://crbug.com/406009
+#define MAYBE_ESCLeavesFullscreenDOM DISABLED_ESCLeavesFullscreenDOM
+#else
+#define MAYBE_ESCLeavesFullscreenDOM ESCLeavesFullscreenDOM
+#endif
+IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest, MAYBE_ESCLeavesFullscreenDOM) {
 // This test is flaky on MacOS 10.6.
 #if defined(OS_MACOSX) && !defined(OS_IOS)
   if (base::mac::IsOSSnowLeopard())
@@ -176,8 +182,14 @@ IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest, ESCLeavesFullscreenDOM) {
   }
 }
 
+#if defined(OS_MACOSX)
+// http://crbug.com/406009
+#define MAYBE_ESCDoesNotLeaveFullscreenWindow DISABLED_ESCDoesNotLeaveFullscreenWindow
+#else
+#define MAYBE_ESCDoesNotLeaveFullscreenWindow ESCDoesNotLeaveFullscreenWindow
+#endif
 IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest,
-                       ESCDoesNotLeaveFullscreenWindow) {
+                       MAYBE_ESCDoesNotLeaveFullscreenWindow) {
 // This test is flaky on MacOS 10.6.
 #if defined(OS_MACOSX) && !defined(OS_IOS)
   if (base::mac::IsOSSnowLeopard())
