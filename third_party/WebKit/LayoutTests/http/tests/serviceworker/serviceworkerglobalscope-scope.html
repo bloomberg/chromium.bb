@@ -6,7 +6,7 @@
 <script>
 function scope_test(name, scope) {
   var t = async_test('Verify the scope property: ' + name);
-  t.step(function() {
+  return new Promise(function(test_finished) {
       var expectedScope, options;
       if (scope) {
         expectedScope = new URL(scope, document.location).toString();
@@ -42,13 +42,19 @@ function scope_test(name, scope) {
           })
         .then(function() {
             t.done();
+            test_finished();
           })
-        .catch(unreached_rejection(t));
+        .catch(function(error) {
+            unreached_rejection(t)(error);
+            test_finished();
+          });
     });
 }
 
-scope_test('default');
-scope_test('relative path', '/a/b/c/');
-scope_test('absolute url', 'http://127.0.0.1:8000/');
+// 'default' and 'absolute url' are the same scope, so don't let the tests
+// run concurrently.
+scope_test('default')
+  .then(scope_test('relative path', '/a/b/c/'))
+  .then(scope_test('absolute url', 'http://127.0.0.1:8000/'));
 
 </script>
