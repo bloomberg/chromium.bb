@@ -21,12 +21,6 @@ using extensions::Extension;
 
 namespace {
 
-bool HasExtensionPageActionCountReachedTarget(LocationBarTesting* location_bar,
-                                              int target_page_action_count) {
-  VLOG(1) << "Number of page actions: " << location_bar->PageActionCount();
-  return location_bar->PageActionCount() == target_page_action_count;
-}
-
 bool HasExtensionPageActionVisibilityReachedTarget(
     LocationBarTesting* location_bar,
     int target_visible_page_action_count) {
@@ -149,17 +143,6 @@ void ExtensionTestNotificationObserver::WaitForNotification(
       notification_type, content::NotificationService::AllSources()).Wait();
 }
 
-bool ExtensionTestNotificationObserver::WaitForPageActionCountChangeTo(
-    int count) {
-  LocationBarTesting* location_bar =
-      browser_->window()->GetLocationBar()->GetLocationBarForTesting();
-  WaitForCondition(
-      base::Bind(
-          &HasExtensionPageActionCountReachedTarget, location_bar, count),
-      extensions::NOTIFICATION_EXTENSION_PAGE_ACTION_COUNT_CHANGED);
-  return true;
-}
-
 bool ExtensionTestNotificationObserver::WaitForPageActionVisibilityChangeTo(
     int count) {
   LocationBarTesting* location_bar =
@@ -167,7 +150,7 @@ bool ExtensionTestNotificationObserver::WaitForPageActionVisibilityChangeTo(
   WaitForCondition(
       base::Bind(
           &HasExtensionPageActionVisibilityReachedTarget, location_bar, count),
-      extensions::NOTIFICATION_EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED);
+      extensions::NOTIFICATION_EXTENSION_PAGE_ACTIONS_UPDATED);
   return true;
 }
 

@@ -232,11 +232,6 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest {
 
   void EnableExtension(const std::string& extension_id);
 
-  // Wait for the total number of page actions to change to |count|.
-  bool WaitForPageActionCountChangeTo(int count) {
-    return observer_->WaitForPageActionCountChangeTo(count);
-  }
-
   // Wait for the number of visible page actions to change to |count|.
   bool WaitForPageActionVisibilityChangeTo(int count) {
     return observer_->WaitForPageActionVisibilityChangeTo(count);

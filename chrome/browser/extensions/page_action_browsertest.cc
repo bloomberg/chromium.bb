@@ -9,6 +9,8 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "extensions/browser/extension_system.h"
@@ -106,12 +108,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, UnloadPageAction) {
   // Navigation prompts the location bar to load page actions.
   GURL feed_url = test_server()->GetURL(kFeedPage);
   ui_test_utils::NavigateToURL(browser(), feed_url);
-  ASSERT_TRUE(WaitForPageActionCountChangeTo(1));
+  LocationBarTesting* location_bar =
+      browser()->window()->GetLocationBar()->GetLocationBarForTesting();
+  EXPECT_EQ(1, location_bar->PageActionCount());
 
   UnloadExtension(last_loaded_extension_id());
 
   // Make sure the page action goes away when it's unloaded.
-  ASSERT_TRUE(WaitForPageActionCountChangeTo(0));
+  EXPECT_EQ(0, location_bar->PageActionCount());
 }
 
 // Tests that we can load page actions in the Omnibox.

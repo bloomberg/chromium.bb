@@ -13,8 +13,11 @@
 #include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/navigation_details.h"
+#include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/notification_types.h"
 
 namespace extensions {
 
@@ -85,6 +88,11 @@ void LocationBarController::NotifyChange(content::WebContents* web_contents) {
   if (!location_bar)
     return;
   location_bar->UpdatePageActions();
+
+  content::NotificationService::current()->Notify(
+      NOTIFICATION_EXTENSION_PAGE_ACTIONS_UPDATED,
+      content::Source<content::WebContents>(web_contents),
+      content::NotificationService::NoDetails());
 }
 
 void LocationBarController::DidNavigateMainFrame(

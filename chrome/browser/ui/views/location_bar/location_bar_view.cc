@@ -1146,15 +1146,6 @@ bool LocationBarView::RefreshPageActionViews() {
     return false;
 
   bool changed = false;
-
-  // Remember the previous visibility of the page actions so that we can
-  // notify when this changes.
-  std::map<ExtensionAction*, bool> old_visibility;
-  for (PageActionViews::const_iterator i(page_action_views_.begin());
-       i != page_action_views_.end(); ++i) {
-    old_visibility[(*i)->image_view()->extension_action()] = (*i)->visible();
-  }
-
   PageActions new_page_actions;
 
   WebContents* web_contents = GetWebContents();
@@ -1206,19 +1197,10 @@ bool LocationBarView::RefreshPageActionViews() {
   if (!page_action_views_.empty() && web_contents) {
     for (PageActionViews::const_iterator i(page_action_views_.begin());
          i != page_action_views_.end(); ++i) {
+      bool old_visibility = (*i)->visible();
       (*i)->UpdateVisibility(
           GetToolbarModel()->input_in_progress() ? NULL : web_contents);
-
-      // Check if the visibility of the action changed and notify if it did.
-      ExtensionAction* action = (*i)->image_view()->extension_action();
-      if (old_visibility.find(action) == old_visibility.end() ||
-          old_visibility[action] != (*i)->visible()) {
-        changed = true;
-        content::NotificationService::current()->Notify(
-            extensions::NOTIFICATION_EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED,
-            content::Source<ExtensionAction>(action),
-            content::Details<WebContents>(web_contents));
-      }
+      changed |= old_visibility != (*i)->visible();
     }
   }
   return changed;
@@ -1378,30 +1360,14 @@ void LocationBarView::UpdateManagePasswordsIconAndBubble() {
 }
 
 void LocationBarView::UpdatePageActions() {
-  size_t count_before = page_action_views_.size();
-  bool changed = RefreshPageActionViews();
-  if (page_action_views_.size() != count_before) {
-    content::NotificationService::current()->Notify(
-        extensions::NOTIFICATION_EXTENSION_PAGE_ACTION_COUNT_CHANGED,
-        content::Source<LocationBar>(this),
-        content::NotificationService::NoDetails());
-  }
-
-  if (changed) {
+  if (RefreshPageActionViews()) {  // Changed.
     Layout();
     SchedulePaint();
   }
 }
 
 void LocationBarView::InvalidatePageActions() {
-  size_t count_before = page_action_views_.size();
   DeletePageActionViews();
-  if (page_action_views_.size() != count_before) {
-    content::NotificationService::current()->Notify(
-        extensions::NOTIFICATION_EXTENSION_PAGE_ACTION_COUNT_CHANGED,
-        content::Source<LocationBar>(this),
-        content::NotificationService::NoDetails());
-  }
 }
 
 void LocationBarView::UpdateOpenPDFInReaderPrompt() {
