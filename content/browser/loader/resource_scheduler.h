@@ -78,6 +78,14 @@ class CONTENT_EXPORT ResourceScheduler : public base::NonThreadSafe {
     ACTIVE_AND_LOADING,
   };
 
+  enum RequestClassification {
+    NORMAL_REQUEST,
+    // Low priority in-flight requests
+    IN_FLIGHT_DELAYABLE_REQUEST,
+    // High-priority requests received before the renderer has a <body>
+    LAYOUT_BLOCKING_REQUEST,
+  };
+
   ResourceScheduler();
   ~ResourceScheduler();
 

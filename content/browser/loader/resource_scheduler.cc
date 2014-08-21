@@ -125,10 +125,10 @@ class ResourceScheduler::ScheduledResourceRequest
         request_(request),
         ready_(false),
         deferred_(false),
+        classification_(NORMAL_REQUEST),
         scheduler_(scheduler),
         priority_(priority),
-        fifo_ordering_(0),
-        accounted_as_delayable_request_(false) {
+        fifo_ordering_(0) {
     TRACE_EVENT_ASYNC_BEGIN1("net", "URLRequest", request_,
                              "url", request->url().spec());
   }
@@ -159,11 +159,11 @@ class ResourceScheduler::ScheduledResourceRequest
   void set_fifo_ordering(uint32 fifo_ordering) {
     fifo_ordering_ = fifo_ordering;
   }
-  bool accounted_as_delayable_request() const {
-    return accounted_as_delayable_request_;
+  RequestClassification classification() const {
+    return classification_;
   }
-  void set_accounted_as_delayable_request(bool accounted) {
-    accounted_as_delayable_request_ = accounted;
+  void set_classification(RequestClassification classification) {
+    classification_ = classification;
   }
 
  private:
@@ -195,11 +195,10 @@ class ResourceScheduler::ScheduledResourceRequest
   net::URLRequest* request_;
   bool ready_;
   bool deferred_;
+  RequestClassification classification_;
   ResourceScheduler* scheduler_;
   RequestPriorityParams priority_;
   uint32 fifo_ordering_;
-  // True if the request is delayable in |in_flight_requests_|.
-  bool accounted_as_delayable_request_;
 
   DISALLOW_COPY_AND_ASSIGN(ScheduledResourceRequest);
 };
@@ -237,7 +236,8 @@ class ResourceScheduler::Client {
         is_paused_(false),
         has_body_(false),
         using_spdy_proxy_(false),
-        total_delayable_count_(0),
+        in_flight_delayable_count_(0),
+        total_layout_blocking_count_(0),
         throttle_state_(ResourceScheduler::THROTTLED) {
     scheduler_ = scheduler;
   }
@@ -254,11 +254,11 @@ class ResourceScheduler::Client {
   void ScheduleRequest(
       net::URLRequest* url_request,
       ScheduledResourceRequest* request) {
-    if (ShouldStartRequest(request) == START_REQUEST) {
+    if (ShouldStartRequest(request) == START_REQUEST)
       StartRequest(request);
-    } else {
+    else
       pending_requests_.Insert(request);
-    }
+    SetRequestClassification(request, ClassifyRequest(request));
   }
 
   void RemoveRequest(ScheduledResourceRequest* request) {
@@ -278,7 +278,7 @@ class ResourceScheduler::Client {
     for (RequestSet::iterator it = in_flight_requests_.begin();
          it != in_flight_requests_.end(); ++it) {
       unowned_requests.insert(*it);
-      (*it)->set_accounted_as_delayable_request(false);
+      (*it)->set_classification(NORMAL_REQUEST);
     }
     ClearInFlightRequests();
     return unowned_requests;
@@ -374,7 +374,7 @@ class ResourceScheduler::Client {
       DCHECK(ContainsKey(in_flight_requests_, request));
       // The priority and SPDY support may have changed, so update the
       // delayable count.
-      SetRequestDelayable(request, IsDelayableRequest(request));
+      SetRequestClassification(request, ClassifyRequest(request));
       // Request has already started.
       return;
     }
@@ -441,44 +441,87 @@ class ResourceScheduler::Client {
 
   void InsertInFlightRequest(ScheduledResourceRequest* request) {
     in_flight_requests_.insert(request);
-    if (IsDelayableRequest(request))
-      SetRequestDelayable(request, true);
+    SetRequestClassification(request, ClassifyRequest(request));
   }
 
   void EraseInFlightRequest(ScheduledResourceRequest* request) {
     size_t erased = in_flight_requests_.erase(request);
     DCHECK_EQ(1u, erased);
-    SetRequestDelayable(request, false);
-    DCHECK_LE(total_delayable_count_, in_flight_requests_.size());
+    // Clear any special state that we were tracking for this request.
+    SetRequestClassification(request, NORMAL_REQUEST);
   }
 
   void ClearInFlightRequests() {
     in_flight_requests_.clear();
-    total_delayable_count_ = 0;
+    in_flight_delayable_count_ = 0;
+    total_layout_blocking_count_ = 0;
   }
 
-  bool IsDelayableRequest(ScheduledResourceRequest* request) {
+  size_t CountRequestsWithClassification(
+      const RequestClassification classification, const bool include_pending) {
+    size_t classification_request_count = 0;
+    for (RequestSet::const_iterator it = in_flight_requests_.begin();
+         it != in_flight_requests_.end(); ++it) {
+      if ((*it)->classification() == classification)
+        classification_request_count++;
+    }
+    if (include_pending) {
+      for (RequestQueue::NetQueue::const_iterator
+           it = pending_requests_.GetNextHighestIterator();
+           it != pending_requests_.End(); ++it) {
+        if ((*it)->classification() == classification)
+          classification_request_count++;
+      }
+    }
+    return classification_request_count;
+  }
+
+  void SetRequestClassification(ScheduledResourceRequest* request,
+                                RequestClassification classification) {
+    RequestClassification old_classification = request->classification();
+    if (old_classification == classification)
+      return;
+
+    if (old_classification == IN_FLIGHT_DELAYABLE_REQUEST)
+      in_flight_delayable_count_--;
+    if (old_classification == LAYOUT_BLOCKING_REQUEST)
+      total_layout_blocking_count_--;
+
+    if (classification == IN_FLIGHT_DELAYABLE_REQUEST)
+      in_flight_delayable_count_++;
+    if (classification == LAYOUT_BLOCKING_REQUEST)
+      total_layout_blocking_count_++;
+
+    request->set_classification(classification);
+    DCHECK_EQ(
+        CountRequestsWithClassification(IN_FLIGHT_DELAYABLE_REQUEST, false),
+        in_flight_delayable_count_);
+    DCHECK_EQ(CountRequestsWithClassification(LAYOUT_BLOCKING_REQUEST, true),
+              total_layout_blocking_count_);
+  }
+
+  RequestClassification ClassifyRequest(ScheduledResourceRequest* request) {
+    // If a request is already marked as layout-blocking make sure to keep the
+    // classification across redirects unless the priority was lowered.
+    if (request->classification() == LAYOUT_BLOCKING_REQUEST &&
+        request->url_request()->priority() >= net::LOW) {
+      return LAYOUT_BLOCKING_REQUEST;
+    }
+
+    if (!has_body_ && request->url_request()->priority() >= net::LOW)
+      return LAYOUT_BLOCKING_REQUEST;
+
     if (request->url_request()->priority() < net::LOW) {
       net::HostPortPair host_port_pair =
           net::HostPortPair::FromURL(request->url_request()->url());
       net::HttpServerProperties& http_server_properties =
           *request->url_request()->context()->http_server_properties();
-      if (!http_server_properties.SupportsSpdy(host_port_pair)) {
-        return true;
+      if (!http_server_properties.SupportsSpdy(host_port_pair) &&
+          ContainsKey(in_flight_requests_, request)) {
+        return IN_FLIGHT_DELAYABLE_REQUEST;
       }
     }
-    return false;
-  }
-
-  void SetRequestDelayable(ScheduledResourceRequest* request,
-                           bool delayable) {
-    if (request->accounted_as_delayable_request() == delayable)
-      return;
-    if (delayable)
-      total_delayable_count_++;
-    else
-      total_delayable_count_--;
-    request->set_accounted_as_delayable_request(delayable);
+    return NORMAL_REQUEST;
   }
 
   bool ShouldKeepSearching(
@@ -504,7 +547,7 @@ class ResourceScheduler::Client {
 
   // ShouldStartRequest is the main scheduling algorithm.
   //
-  // Requests are categorized into three categories:
+  // Requests are evaluated on five attributes:
   //
   // 1. Non-delayable requests:
   //   * Synchronous requests.
@@ -515,20 +558,23 @@ class ResourceScheduler::Client {
   // 3. High-priority requests:
   //   * Higher priority requests (>= net::LOW).
   //
-  // 4. Low priority requests
+  // 4. Layout-blocking requests:
+  //   * High-priority requests initiated before the renderer has a <body>.
+  //
+  // 5. Low priority requests
   //
   //  The following rules are followed:
   //
   //  ACTIVE_AND_LOADING and UNTHROTTLED Clients follow these rules:
-  //   * Non-delayable, High-priority and SDPY capable requests are issued
-  //     immediately
-  //   * If no high priority requests are in flight, start loading low priority
-  //     requests.
+  //   * Non-delayable, High-priority and SPDY capable requests are issued
+  //     immediately.
   //   * Low priority requests are delayable.
-  //   * Once the renderer has a <body>, start loading delayable requests.
+  //   * Allow one delayable request to load at a time while layout-blocking
+  //     requests are loading.
+  //   * If no high priority or layout-blocking requests are in flight, start
+  //     loading delayable requests.
   //   * Never exceed 10 delayable requests in flight per client.
   //   * Never exceed 6 delayable requests for a given host.
-  //   * Prior to <body>, allow one delayable request to load at a time.
   //
   //  THROTTLED Clients follow these rules:
   //   * Non-delayable and SPDY-capable requests are issued immediately.
@@ -585,12 +631,12 @@ class ResourceScheduler::Client {
       return DO_NOT_START_REQUEST_AND_KEEP_SEARCHING;
     }
 
+    // High-priority and layout-blocking requests.
     if (url_request.priority() >= net::LOW) {
       return START_REQUEST;
     }
 
-    size_t num_delayable_requests_in_flight = total_delayable_count_;
-    if (num_delayable_requests_in_flight >= kMaxNumDelayableRequestsPerClient) {
+    if (in_flight_delayable_count_ >= kMaxNumDelayableRequestsPerClient) {
       return DO_NOT_START_REQUEST_AND_STOP_SEARCHING;
     }
 
@@ -601,9 +647,10 @@ class ResourceScheduler::Client {
     }
 
     bool have_immediate_requests_in_flight =
-        in_flight_requests_.size() > num_delayable_requests_in_flight;
-    if (have_immediate_requests_in_flight && !has_body_ &&
-        num_delayable_requests_in_flight != 0) {
+        in_flight_requests_.size() > in_flight_delayable_count_;
+    if (have_immediate_requests_in_flight &&
+        total_layout_blocking_count_ != 0 &&
+        in_flight_delayable_count_ != 0) {
       return DO_NOT_START_REQUEST_AND_STOP_SEARCHING;
     }
 
@@ -657,7 +704,9 @@ class ResourceScheduler::Client {
   RequestSet in_flight_requests_;
   ResourceScheduler* scheduler_;
   // The number of delayable in-flight requests.
-  size_t total_delayable_count_;
+  size_t in_flight_delayable_count_;
+  // The number of layout-blocking in-flight requests.
+  size_t total_layout_blocking_count_;
   ResourceScheduler::ClientThrottleState throttle_state_;
 };
 

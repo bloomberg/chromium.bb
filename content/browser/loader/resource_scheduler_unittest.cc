@@ -305,7 +305,21 @@ TEST_F(ResourceSchedulerTest, OneLowLoadsUntilBodyInserted) {
   EXPECT_TRUE(high->started());
   EXPECT_TRUE(low->started());
   EXPECT_FALSE(low2->started());
+  high.reset();
   scheduler_.OnWillInsertBody(kChildId, kRouteId);
+  EXPECT_TRUE(low2->started());
+}
+
+TEST_F(ResourceSchedulerTest, OneLowLoadsUntilCriticalComplete) {
+  scoped_ptr<TestRequest> high(NewRequest("http://host/high", net::HIGHEST));
+  scoped_ptr<TestRequest> low(NewRequest("http://host/low", net::LOWEST));
+  scoped_ptr<TestRequest> low2(NewRequest("http://host/low", net::LOWEST));
+  EXPECT_TRUE(high->started());
+  EXPECT_TRUE(low->started());
+  EXPECT_FALSE(low2->started());
+  scheduler_.OnWillInsertBody(kChildId, kRouteId);
+  EXPECT_FALSE(low2->started());
+  high.reset();
   EXPECT_TRUE(low2->started());
 }
 
@@ -322,6 +336,7 @@ TEST_F(ResourceSchedulerTest, OneLowLoadsUntilBodyInsertedExceptSpdy) {
   EXPECT_TRUE(low->started());
   EXPECT_FALSE(low2->started());
   scheduler_.OnWillInsertBody(kChildId, kRouteId);
+  high.reset();
   EXPECT_TRUE(low2->started());
 }
 
@@ -462,6 +477,8 @@ TEST_F(ResourceSchedulerTest, RaisePriorityInQueue) {
   }
 
   scheduler_.OnWillInsertBody(kChildId, kRouteId);
+  high.reset();
+
   EXPECT_TRUE(request->started());
   EXPECT_FALSE(idle->started());
 }
@@ -491,6 +508,8 @@ TEST_F(ResourceSchedulerTest, LowerPriority) {
   }
 
   scheduler_.OnWillInsertBody(kChildId, kRouteId);
+  high.reset();
+
   EXPECT_FALSE(request->started());
   EXPECT_TRUE(idle->started());
 }
@@ -544,6 +563,7 @@ TEST_F(ResourceSchedulerTest, HigherIntraPriorityGoesToFrontOfQueue) {
   EXPECT_FALSE(request->started());
 
   scheduler_.OnWillInsertBody(kChildId, kRouteId);
+  high.reset();
   EXPECT_TRUE(request->started());
 }
 
