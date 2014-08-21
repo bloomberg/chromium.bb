@@ -145,14 +145,17 @@ void SyncProcessRunner::ResetThrottling() {
   throttle_until_ = base::TimeTicks();
 }
 
+SyncServiceState SyncProcessRunner::GetServiceState() {
+  return client_->GetSyncServiceState();
+}
+
 void SyncProcessRunner::OnChangesUpdated(
     int64 pending_changes) {
   DCHECK_GE(pending_changes, 0);
   int64 old_pending_changes = pending_changes_;
   pending_changes_ = pending_changes;
   if (old_pending_changes != pending_changes) {
-    if (pending_changes == 0)
-      client_->OnSyncIdle();
+    CheckIfIdle();
     util::Log(logging::LOG_VERBOSE, FROM_HERE,
               "[%s] pending_changes updated: %" PRId64,
               name_.c_str(), pending_changes);
@@ -164,15 +167,12 @@ SyncFileSystemService* SyncProcessRunner::GetSyncService() {
   return client_->GetSyncService();
 }
 
-SyncServiceState SyncProcessRunner::GetServiceState() {
-  return client_->GetSyncServiceState();
-}
-
 void SyncProcessRunner::Finished(const base::TimeTicks& start_time,
                                  SyncStatusCode status) {
   DCHECK_LT(0u, running_tasks_);
   DCHECK_LE(running_tasks_, max_parallel_task_);
   --running_tasks_;
+  CheckIfIdle();
   util::Log(logging::LOG_VERBOSE, FROM_HERE,
             "[%s] * Finished (elapsed: %" PRId64 " ms)", name_.c_str(),
             (timer_helper_->Now() - start_time).InMilliseconds());
@@ -236,6 +236,11 @@ void SyncProcessRunner::ScheduleInternal(int64 delay) {
   timer_helper_->Start(
       FROM_HERE, next_scheduled - now,
       base::Bind(&SyncProcessRunner::Run, base::Unretained(this)));
+}
+
+void SyncProcessRunner::CheckIfIdle() {
+  if (pending_changes_ == 0 && running_tasks_ == 0)
+    client_->OnSyncIdle();
 }
 
 }  // namespace sync_file_system

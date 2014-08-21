@@ -355,22 +355,71 @@ LocalChangeProcessor* SyncFileSystemService::GetLocalChangeProcessor(
 }
 
 void SyncFileSystemService::OnSyncIdle() {
+  if (promoting_demoted_changes_)
+    return;
+  promoting_demoted_changes_ = true;
+
+  int* job_count = new int(1);
+  base::Closure promote_completion_callback =
+      base::Bind(&SyncFileSystemService::OnPromotionCompleted,
+                 AsWeakPtr(), base::Owned(job_count));
+
   int64 remote_changes = 0;
-  for (ScopedVector<SyncProcessRunner>::iterator iter =
-           remote_sync_runners_.begin();
-       iter != remote_sync_runners_.end(); ++iter)
-    remote_changes += (*iter)->pending_changes();
-  if (remote_changes == 0)
-    local_service_->PromoteDemotedChanges(NoopClosure());
+  for (size_t i = 0; i < remote_sync_runners_.size(); ++i)
+    remote_changes += remote_sync_runners_[i]->pending_changes();
+  if (remote_changes == 0) {
+    ++*job_count;
+    local_service_->PromoteDemotedChanges(promote_completion_callback);
+  }
 
   int64 local_changes = 0;
-  for (ScopedVector<SyncProcessRunner>::iterator iter =
-           local_sync_runners_.begin();
-       iter != local_sync_runners_.end(); ++iter)
-    local_changes += (*iter)->pending_changes();
+  for (size_t i = 0; i < local_sync_runners_.size(); ++i)
+    local_changes += local_sync_runners_[i]->pending_changes();
   if (local_changes == 0) {
-    remote_service_->PromoteDemotedChanges(NoopClosure());
+    ++*job_count;
+    remote_service_->PromoteDemotedChanges(promote_completion_callback);
   }
+
+  promote_completion_callback.Run();
+}
+
+void SyncFileSystemService::OnPromotionCompleted(int* count) {
+  if (--*count != 0)
+    return;
+  promoting_demoted_changes_ = false;
+  CheckIfIdle();
+}
+
+void SyncFileSystemService::CheckIfIdle() {
+  if (promoting_demoted_changes_)
+    return;
+
+  for (size_t i = 0; i < remote_sync_runners_.size(); ++i) {
+    SyncServiceState service_state = remote_sync_runners_[i]->GetServiceState();
+    if (service_state != SYNC_SERVICE_RUNNING &&
+        service_state != SYNC_SERVICE_TEMPORARY_UNAVAILABLE)
+      continue;
+
+    if (remote_sync_runners_[i]->pending_changes())
+      return;
+  }
+
+  for (size_t i = 0; i < local_sync_runners_.size(); ++i) {
+    SyncServiceState service_state = local_sync_runners_[i]->GetServiceState();
+    if (service_state != SYNC_SERVICE_RUNNING &&
+        service_state != SYNC_SERVICE_TEMPORARY_UNAVAILABLE)
+      continue;
+
+    if (local_sync_runners_[i]->pending_changes())
+      return;
+  }
+
+  if (idle_callback_.is_null())
+    return;
+
+  base::Closure callback = idle_callback_;
+  idle_callback_.Reset();
+  callback.Run();
 }
 
 SyncServiceState SyncFileSystemService::GetSyncServiceState() {
@@ -382,9 +431,17 @@ SyncFileSystemService* SyncFileSystemService::GetSyncService() {
   return this;
 }
 
+void SyncFileSystemService::CallOnIdleForTesting(
+    const base::Closure& callback) {
+  DCHECK(idle_callback_.is_null());
+  idle_callback_ = callback;
+  CheckIfIdle();
+}
+
 SyncFileSystemService::SyncFileSystemService(Profile* profile)
     : profile_(profile),
-      sync_enabled_(true) {
+      sync_enabled_(true),
+      promoting_demoted_changes_(false) {
 }
 
 void SyncFileSystemService::Initialize(

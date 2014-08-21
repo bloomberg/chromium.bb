@@ -78,13 +78,13 @@ class SyncProcessRunner {
 
   int64 pending_changes() const { return pending_changes_; }
 
- protected:
-  void OnChangesUpdated(int64 pending_changes);
-  SyncFileSystemService* GetSyncService();
-
   // Returns the current service state.  Default implementation returns
   // sync_service()->GetSyncServiceState().
   virtual SyncServiceState GetServiceState();
+
+ protected:
+  void OnChangesUpdated(int64 pending_changes);
+  SyncFileSystemService* GetSyncService();
 
  private:
   void Finished(const base::TimeTicks& start_time, SyncStatusCode status);
@@ -98,6 +98,8 @@ class SyncProcessRunner {
   // Clears old throttling setting that is already over.
   void ResetOldThrottling();
   void ResetThrottling();
+
+  void CheckIfIdle();
 
   std::string name_;
   Client* client_;

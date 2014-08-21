@@ -80,7 +80,12 @@ class SyncFileSystemService
   virtual SyncServiceState GetSyncServiceState() OVERRIDE;
   virtual SyncFileSystemService* GetSyncService() OVERRIDE;
 
+  void OnPromotionCompleted(int* num_running_jobs);
+  void CheckIfIdle();
+
   TaskLogger* task_logger() { return &task_logger_; }
+
+  void CallOnIdleForTesting(const base::Closure& callback);
 
  private:
   friend class SyncFileSystemServiceFactory;
@@ -181,6 +186,9 @@ class SyncFileSystemService
 
   TaskLogger task_logger_;
   ObserverList<SyncEventObserver> observers_;
+
+  bool promoting_demoted_changes_;
+  base::Closure idle_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncFileSystemService);
 };
