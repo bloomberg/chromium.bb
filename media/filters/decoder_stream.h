@@ -192,10 +192,6 @@ class MEDIA_EXPORT DecoderStream {
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<DecoderStream<StreamType> > weak_factory_;
-
-  // This is required so the VideoFrameStream can access private members in
-  // FinishInitialization() and ReportStatistics().
-  DISALLOW_IMPLICIT_CONSTRUCTORS(DecoderStream);
 };
 
 template <>

@@ -227,16 +227,17 @@ void DecoderStream<StreamType>::OnDecoderSelected(
 
   if (!selected_decoder) {
     state_ = STATE_UNINITIALIZED;
-    StreamTraits::FinishInitialization(
-        base::ResetAndReturn(&init_cb_), selected_decoder.get(), stream_);
+    base::ResetAndReturn(&init_cb_).Run(false);
     return;
   }
 
   state_ = STATE_NORMAL;
   decoder_ = selected_decoder.Pass();
   decrypting_demuxer_stream_ = decrypting_demuxer_stream.Pass();
-  StreamTraits::FinishInitialization(
-      base::ResetAndReturn(&init_cb_), decoder_.get(), stream_);
+
+  if (StreamTraits::NeedsBitstreamConversion(decoder_.get()))
+    stream_->EnableBitstreamConverter();
+  base::ResetAndReturn(&init_cb_).Run(true);
 }
 
 template <DemuxerStream::Type StreamType>

@@ -36,9 +36,7 @@ struct DecoderStreamTraits<DemuxerStream::AUDIO> {
                          bool low_delay,
                          const PipelineStatusCB& status_cb,
                          const OutputCB& output_cb);
-  static bool FinishInitialization(const StreamInitCB& init_cb,
-                                   DecoderType* decoder,
-                                   DemuxerStream* stream);
+  static bool NeedsBitstreamConversion(DecoderType* decoder) { return false; }
   static void ReportStatistics(const StatisticsCB& statistics_cb,
                                int bytes_decoded);
   static DecoderConfigType GetDecoderConfig(DemuxerStream& stream);
@@ -60,9 +58,7 @@ struct DecoderStreamTraits<DemuxerStream::VIDEO> {
                          bool low_delay,
                          const PipelineStatusCB& status_cb,
                          const OutputCB& output_cb);
-  static bool FinishInitialization(const StreamInitCB& init_cb,
-                                   DecoderType* decoder,
-                                   DemuxerStream* stream);
+  static bool NeedsBitstreamConversion(DecoderType* decoder);
   static void ReportStatistics(const StatisticsCB& statistics_cb,
                                int bytes_decoded);
   static DecoderConfigType GetDecoderConfig(DemuxerStream& stream);

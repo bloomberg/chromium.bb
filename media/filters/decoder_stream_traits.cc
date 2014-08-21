@@ -27,19 +27,6 @@ void DecoderStreamTraits<DemuxerStream::AUDIO>::Initialize(
   decoder->Initialize(config, status_cb, output_cb);
 }
 
-bool DecoderStreamTraits<DemuxerStream::AUDIO>::FinishInitialization(
-    const StreamInitCB& init_cb,
-    DecoderType* decoder,
-    DemuxerStream* stream) {
-  DCHECK(stream);
-  if (!decoder) {
-    init_cb.Run(false);
-    return false;
-  }
-  init_cb.Run(true);
-  return true;
-}
-
 void DecoderStreamTraits<DemuxerStream::AUDIO>::ReportStatistics(
     const StatisticsCB& statistics_cb,
     int bytes_decoded) {
@@ -72,19 +59,9 @@ void DecoderStreamTraits<DemuxerStream::VIDEO>::Initialize(
   decoder->Initialize(config, low_delay, status_cb, output_cb);
 }
 
-bool DecoderStreamTraits<DemuxerStream::VIDEO>::FinishInitialization(
-    const StreamInitCB& init_cb,
-    DecoderType* decoder,
-    DemuxerStream* stream) {
-  DCHECK(stream);
-  if (!decoder) {
-    init_cb.Run(false);
-    return false;
-  }
-  if (decoder->NeedsBitstreamConversion())
-    stream->EnableBitstreamConverter();
-  init_cb.Run(true);
-  return true;
+bool DecoderStreamTraits<DemuxerStream::VIDEO>::NeedsBitstreamConversion(
+    DecoderType* decoder) {
+  return decoder->NeedsBitstreamConversion();
 }
 
 void DecoderStreamTraits<DemuxerStream::VIDEO>::ReportStatistics(
