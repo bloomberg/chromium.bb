@@ -213,12 +213,10 @@ void PasswordGenerationPopupControllerImpl::ViewDestroyed() {
 }
 
 void PasswordGenerationPopupControllerImpl::OnSavedPasswordsLinkClicked() {
-  // TODO(gcasto): Change this to navigate to account central once passwords
-  // are visible there.
   Browser* browser =
       chrome::FindBrowserWithWebContents(controller_common_.web_contents());
   content::OpenURLParams params(
-      GURL(chrome::kAutoPasswordGenerationLearnMoreURL), content::Referrer(),
+      GURL(chrome::kPasswordManagerAccountDashboardURL), content::Referrer(),
       NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK, false);
   browser->OpenURL(params);
 }
