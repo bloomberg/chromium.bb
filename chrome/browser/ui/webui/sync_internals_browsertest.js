@@ -360,9 +360,9 @@ TEST_F('SyncInternalsWebUITest', 'EventLogTest', function() {
   // Makes some assumptions about column ordering.  We'll need re-think this if
   // it turns out to be a maintenance burden.
   assertEquals(4, firstRow.children.length);
+  var detailsText = firstRow.children[0].textContent;
   var submoduleName = firstRow.children[1].textContent;
   var eventName = firstRow.children[2].textContent;
-  var detailsText = firstRow.children[3].textContent;
 
   expectGE(submoduleName.indexOf('manager'), 0,
       'submoduleName=' + submoduleName);

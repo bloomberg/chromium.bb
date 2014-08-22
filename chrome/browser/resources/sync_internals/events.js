@@ -2,33 +2,50 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-(function() {
-'use strict';
-var toggleDisplay = function(event) {
-  var originatingButton = event.target;
-  var detailsNode = originatingButton.parentNode.getElementsByClassName(
-      'details')[0];
+cr.define('chrome.sync.events_tab', function() {
+  'use strict';
 
-  if (detailsNode.getAttribute('hidden') != null) {
-    detailsNode.removeAttribute('hidden');
-  } else {
-    detailsNode.setAttribute('hidden', 'hidden');
-  }
-}
+  function toggleDisplay(event) {
+    var originatingButton = event.target;
+    if (originatingButton.className != 'toggle-button') {
+      return;
+    }
+    var detailsNode = originatingButton.parentNode.getElementsByClassName(
+        'details')[0];
+    var detailsColumn = detailsNode.parentNode;
+    var detailsRow = detailsColumn.parentNode;
 
-var syncEvents = $('sync-events');
-
-var entries = chrome.sync.log.entries;
-var displaySyncEvents = function() {
-  var eventTemplateContext = {
-    eventList: entries,
+    if (!detailsRow.classList.contains('expanded')) {
+      detailsRow.classList.toggle('expanded');
+      detailsColumn.setAttribute('colspan', 4);
+      detailsNode.removeAttribute('hidden');
+    } else {
+      detailsNode.setAttribute('hidden', '');
+      detailsColumn.removeAttribute('colspan');
+      detailsRow.classList.toggle('expanded');
+    }
   };
-  var context = new JsEvalContext(eventTemplateContext);
-  jstProcess(context, syncEvents);
-}
 
-syncEvents.addEventListener('click', toggleDisplay);
-chrome.sync.log.addEventListener('append', function(event) {
-  displaySyncEvents();
+  function displaySyncEvents() {
+    var entries = chrome.sync.log.entries;
+    var eventTemplateContext = {
+      eventList: entries,
+    };
+    var context = new JsEvalContext(eventTemplateContext);
+    jstProcess(context, $('sync-events'));
+  };
+
+  function onLoad() {
+    $('sync-events').addEventListener('click', toggleDisplay);
+    chrome.sync.log.addEventListener('append', function(event) {
+      displaySyncEvents();
+    });
+  }
+
+  return {
+    onLoad: onLoad
+  };
 });
-})();
+
+document.addEventListener(
+    'DOMContentLoaded', chrome.sync.events_tab.onLoad, false);
