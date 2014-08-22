@@ -6650,7 +6650,7 @@
       'name': 'BrowserGuestModeEnabled',
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.*:39-'],
+      'supported_on': ['chrome.*:38-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
