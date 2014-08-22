@@ -17,5 +17,21 @@ chrome.test.runTests([
       chrome.test.succeed();
     else
       chrome.test.fail('execCommand("paste") succeeded');
+  },
+  function copyInIframe() {
+    var ifr = document.createElement('iframe');
+    document.body.appendChild(ifr);
+    if (ifr.contentDocument.execCommand('copy'))
+      chrome.test.succeed();
+    else
+      chrome.test.fail('execCommand("copy") failed in iframe');
+  },
+  function pasteInIframe() {
+    var ifr = document.createElement('iframe');
+    document.body.appendChild(ifr);
+    if (ifr.contentDocument.execCommand('paste'))
+      chrome.test.fail('execCommand("paste") succeeded in iframe');
+    else
+      chrome.test.succeed();
   }
 ]);
