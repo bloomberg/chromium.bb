@@ -151,10 +151,8 @@ void ExtensionOptionsGuest::GuestSizeChangedDueToAutoSize(
     const gfx::Size& old_size,
     const gfx::Size& new_size) {
   scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
-  args->SetInteger(extensionoptions::kNewWidth, new_size.width());
-  args->SetInteger(extensionoptions::kNewHeight, new_size.height());
-  args->SetInteger(extensionoptions::kOldWidth, old_size.width());
-  args->SetInteger(extensionoptions::kOldHeight, old_size.height());
+  args->SetInteger(extensionoptions::kWidth, new_size.width());
+  args->SetInteger(extensionoptions::kHeight, new_size.height());
   DispatchEventToEmbedder(new extensions::GuestViewBase::Event(
       extension_options_internal::OnSizeChanged::kEventName, args.Pass()));
 }

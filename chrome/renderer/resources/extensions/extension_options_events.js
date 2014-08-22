@@ -16,10 +16,10 @@ var EXTENSION_OPTIONS_EVENTS = {
   },
   'sizechanged': {
     evt: CreateEvent('extensionOptionsInternal.onSizeChanged'),
-    customHandler: function(handler, event, extensionOptionsEvent) {
-      handler.handleSizeChangedEvent(event, extensionOptionsEvent);
+    customHandler: function(handler, event, webViewEvent) {
+      handler.handleSizeChangedEvent(event, webViewEvent);
     },
-    fields:['newWidth', 'newHeight', 'oldWidth', 'oldHeight']
+    fields:['width', 'height']
   }
 }
 
@@ -63,10 +63,8 @@ ExtensionOptionsEvents.prototype.setupEvent = function(name, info) {
 
 ExtensionOptionsEvents.prototype.handleSizeChangedEvent = function(
     event, extensionOptionsEvent) {
-  this.extensionOptionsInternal.onSizeChanged(extensionOptionsEvent.newWidth,
-                                              extensionOptionsEvent.newHeight,
-                                              extensionOptionsEvent.oldWidth,
-                                              extensionOptionsEvent.oldHeight);
+  this.extensionOptionsInternal.onSizeChanged(extensionOptionsEvent.width,
+                                              extensionOptionsEvent.height);
   this.extensionOptionsInternal.dispatchEvent(extensionOptionsEvent);
 }
 

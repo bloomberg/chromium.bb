@@ -49,7 +49,7 @@ cr.define('extensions', function() {
       this.setVisible_(false);
       var extensionoptions = document.querySelector('extensionoptions');
       if (extensionoptions)
-        $('extension-options-overlay-guest').removeChild(extensionoptions);
+        $('extension-options-overlay').removeChild(extensionoptions);
     },
 
     /**
@@ -60,68 +60,20 @@ cr.define('extensions', function() {
      *     as the header of the overlay.
      */
     setExtensionAndShowOverlay: function(extensionId, extensionName) {
-      $('extension-options-overlay-title').textContent = extensionName;
-
       var extensionoptions = new ExtensionOptions();
       extensionoptions.extension = extensionId;
       extensionoptions.autosize = 'on';
 
-      // The <extensionoptions> content's size needs to be restricted to the
-      // bounds of the overlay window. The overlay gives a min width and
-      // max height, but the maxheight does not include our header height
-      // (title and close button), so we need to subtract that to get the
-      // max height for the extension options.
-      var headerHeight = $('extension-options-overlay-title').offsetHeight;
-      var overlayMaxHeight =
-          parseInt($('extension-options-overlay').style.maxHeight);
-      extensionoptions.maxheight = overlayMaxHeight - headerHeight;
-
-      extensionoptions.minwidth =
-          parseInt(window.getComputedStyle($('extension-options-overlay'))
-              .minWidth);
-
-      // Resize the overlay if the <extensionoptions> changes size.
+      // TODO(ericzeng): Resize in a non-jarring way.
       extensionoptions.onsizechanged = function(evt) {
-        var overlayStyle =
-            window.getComputedStyle($('extension-options-overlay'));
-        var oldWidth = parseInt(overlayStyle.width);
-        var oldHeight = parseInt(overlayStyle.height);
-
-        // animationTime is the amount of time in ms that will be used to resize
-        // the overlay. It is calculated by multiplying the pythagorean distance
-        // between old and the new size (in px) with a constant speed of
-        // 0.25 ms/px.
-        var animationTime = 0.25 * Math.sqrt(
-            Math.pow(evt.newWidth - oldWidth, 2) +
-            Math.pow(evt.newHeight - oldHeight, 2));
-
-        var player = $('extension-options-overlay').animate([
-          {width: oldWidth + 'px', height: oldHeight + 'px'},
-          {width: evt.newWidth + 'px', height: evt.newHeight + 'px'}
-        ], {
-          duration: animationTime,
-          delay: 0
-        });
-
-        player.onfinish = function(e) {
-          // Allow the <extensionoptions> to autosize now that the overlay
-          // has resized, and move it back on-screen.
-          extensionoptions.resumeDeferredAutoSize();
-          $('extension-options-overlay-guest').style.position = 'static';
-          $('extension-options-overlay-guest').style.left = 'auto';
-        };
+        $('extension-options-overlay').style.width = evt.width;
+        $('extension-options-overlay').style.height = evt.height;
       }.bind(this);
 
-      // Don't allow the <extensionoptions> to autosize until the overlay
-      // animation is complete.
-      extensionoptions.setDeferAutoSize(true);
+      $('extension-options-overlay').appendChild(extensionoptions);
 
-      // Move the <extensionoptions> off screen until the overlay is ready
-      $('extension-options-overlay-guest').style.position = 'fixed';
-      $('extension-options-overlay-guest').style.left =
-          window.outerWidth + 'px';
+      $('extension-options-overlay-title').textContent = extensionName;
 
-      $('extension-options-overlay-guest').appendChild(extensionoptions);
       this.setVisible_(true);
     },
 

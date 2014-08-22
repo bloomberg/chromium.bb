@@ -125,10 +125,10 @@ chrome.test.runTests([
 
     extensionoptions.onsizechanged = function(evt) {
       try {
-        chrome.test.assertTrue(evt.newWidth >= 499);
-        chrome.test.assertTrue(evt.newHeight >= 499);
-        chrome.test.assertTrue(evt.newWidth <= 501);
-        chrome.test.assertTrue(evt.newHeight <= 501);
+        chrome.test.assertTrue(evt.width >= 499);
+        chrome.test.assertTrue(evt.height >= 499);
+        chrome.test.assertTrue(evt.width <= 501);
+        chrome.test.assertTrue(evt.height <= 501);
         done();
       } finally {
         document.body.removeChild(extensionoptions);

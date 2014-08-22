@@ -18,12 +18,8 @@ extern const char kAttributeMinHeight[];
 extern const char kAttributeMinWidth[];
 
 extern const char kExtensionId[];
-
-// SizeChanged event properties.
-extern const char kNewHeight[];
-extern const char kNewWidth[];
-extern const char kOldHeight[];
-extern const char kOldWidth[];
+extern const char kHeight[];
+extern const char kWidth[];
 
 }  // namespace extensionoptions
 
