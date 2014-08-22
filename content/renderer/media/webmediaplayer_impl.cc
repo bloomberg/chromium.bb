@@ -508,10 +508,15 @@ WebMediaPlayer::ReadyState WebMediaPlayerImpl::readyState() const {
 
 blink::WebTimeRanges WebMediaPlayerImpl::buffered() const {
   DCHECK(main_loop_->BelongsToCurrentThread());
+
   media::Ranges<base::TimeDelta> buffered_time_ranges =
       pipeline_.GetBufferedTimeRanges();
-  buffered_data_source_host_.AddBufferedTimeRanges(
-      &buffered_time_ranges, pipeline_.GetMediaDuration());
+
+  const base::TimeDelta duration = pipeline_.GetMediaDuration();
+  if (duration != media::kInfiniteDuration()) {
+    buffered_data_source_host_.AddBufferedTimeRanges(
+        &buffered_time_ranges, duration);
+  }
   return ConvertToWebTimeRanges(buffered_time_ranges);
 }
 

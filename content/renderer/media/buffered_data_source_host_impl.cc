@@ -36,6 +36,8 @@ static base::TimeDelta TimeForByteOffset(
 void BufferedDataSourceHostImpl::AddBufferedTimeRanges(
     media::Ranges<base::TimeDelta>* buffered_time_ranges,
     base::TimeDelta media_duration) const {
+  DCHECK(media_duration != media::kNoTimestamp());
+  DCHECK(media_duration != media::kInfiniteDuration());
   if (total_bytes_ && buffered_byte_ranges_.size()) {
     for (size_t i = 0; i < buffered_byte_ranges_.size(); ++i) {
       int64 start = buffered_byte_ranges_.start(i);
