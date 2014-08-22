@@ -754,10 +754,16 @@ void InputMethodManagerImpl::SetState(
     // indicator is used by only keyboard layout input methods.
     MaybeInitializeCandidateWindowController();
 
-    if (need_update_current_input_method)
+    if (need_update_current_input_method) {
       ChangeInputMethodInternal(state_->current_input_method,
                                 false /* show_message */,
                                 true /* notify_menu */);
+    } else {
+      // Update input method indicators (e.g. "US", "DV") in Chrome windows.
+      FOR_EACH_OBSERVER(InputMethodManager::Observer,
+                        observers_,
+                        InputMethodChanged(this, false /* show_message */));
+    }
   }
 }
 
