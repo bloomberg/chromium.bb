@@ -24,9 +24,6 @@ namespace content {
 // "Arab" to "My Arabic Font".
 typedef std::map<std::string, base::string16> ScriptFontFamilyMap;
 
-typedef std::vector<std::pair<std::string, std::string> >
-    WebInspectorPreferences;
-
 enum EditingBehavior {
   EDITING_BEHAVIOR_MAC,
   EDITING_BEHAVIOR_WIN,
@@ -72,7 +69,6 @@ struct CONTENT_EXPORT WebPreferences {
   bool images_enabled;
   bool plugins_enabled;
   bool dom_paste_enabled;
-  WebInspectorPreferences inspector_settings;
   bool shrinks_standalone_images_to_fit;
   bool uses_universal_detector;
   bool text_areas_are_resizable;

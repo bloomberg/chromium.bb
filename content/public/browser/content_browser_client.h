@@ -516,11 +516,6 @@ class CONTENT_EXPORT ContentBrowserClient {
                                    const GURL& url,
                                    WebPreferences* prefs) {}
 
-  // Inspector setting was changed and should be persisted.
-  virtual void UpdateInspectorSetting(RenderViewHost* rvh,
-                                      const std::string& key,
-                                      const std::string& value) {}
-
   // Notifies that BrowserURLHandler has been created, so that the embedder can
   // optionally add their own handlers.
   virtual void BrowserURLHandlerCreated(BrowserURLHandler* handler) {}

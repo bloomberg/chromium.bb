@@ -522,14 +522,6 @@ bool AwContentBrowserClient::IsFastShutdownPossible() {
   return false;
 }
 
-void AwContentBrowserClient::UpdateInspectorSetting(
-    content::RenderViewHost* rvh,
-    const std::string& key,
-    const std::string& value) {
-  // TODO(boliu): Implement persisting inspector settings.
-  NOTIMPLEMENTED();
-}
-
 void AwContentBrowserClient::ClearCache(content::RenderViewHost* rvh) {
   RemoveHttpDiskCache(rvh->GetProcess()->GetBrowserContext(),
                       rvh->GetProcess()->GetID());

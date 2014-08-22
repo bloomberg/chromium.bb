@@ -156,9 +156,6 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
   virtual net::NetLog* GetNetLog() OVERRIDE;
   virtual content::AccessTokenStore* CreateAccessTokenStore() OVERRIDE;
   virtual bool IsFastShutdownPossible() OVERRIDE;
-  virtual void UpdateInspectorSetting(content::RenderViewHost* rvh,
-                                      const std::string& key,
-                                      const std::string& value) OVERRIDE;
   virtual void ClearCache(content::RenderViewHost* rvh) OVERRIDE;
   virtual void ClearCookies(content::RenderViewHost* rvh) OVERRIDE;
   virtual base::FilePath GetDefaultDownloadDirectory() OVERRIDE;

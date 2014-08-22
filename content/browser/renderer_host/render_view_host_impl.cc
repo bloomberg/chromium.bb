@@ -891,8 +891,6 @@ bool RenderViewHostImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_RenderProcessGone, OnRenderProcessGone)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateState, OnUpdateState)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateTargetURL, OnUpdateTargetURL)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateInspectorSetting,
-                        OnUpdateInspectorSetting)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Close, OnClose)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RequestMove, OnRequestMove)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DocumentAvailableInMainFrame,
@@ -1085,12 +1083,6 @@ void RenderViewHostImpl::OnUpdateTargetURL(int32 page_id, const GURL& url) {
   // Send a notification back to the renderer that we are ready to
   // receive more target urls.
   Send(new ViewMsg_UpdateTargetURL_ACK(GetRoutingID()));
-}
-
-void RenderViewHostImpl::OnUpdateInspectorSetting(
-    const std::string& key, const std::string& value) {
-  GetContentClient()->browser()->UpdateInspectorSetting(
-      this, key, value);
 }
 
 void RenderViewHostImpl::OnClose() {

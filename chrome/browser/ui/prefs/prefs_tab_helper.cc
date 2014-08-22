@@ -61,7 +61,6 @@ const char* kPrefsToObserve[] = {
   prefs::kWebKitForceEnableZoom,
   prefs::kWebKitPasswordEchoEnabled,
 #endif
-  prefs::kWebKitInspectorSettings,
   prefs::kWebKitJavascriptCanOpenWindowsAutomatically,
   prefs::kWebKitJavascriptEnabled,
   prefs::kWebKitJavaEnabled,
@@ -422,9 +421,6 @@ void PrefsTabHelper::RegisterProfilePrefs(
   registry->RegisterBooleanPref(
       prefs::kWebKitShrinksStandaloneImagesToFit,
       pref_defaults.shrinks_standalone_images_to_fit,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterDictionaryPref(
-      prefs::kWebKitInspectorSettings,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterBooleanPref(
       prefs::kWebKitTextAreasAreResizable,

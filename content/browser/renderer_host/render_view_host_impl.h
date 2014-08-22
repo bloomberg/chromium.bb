@@ -434,8 +434,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   void OnTargetDropACK();
   void OnTakeFocus(bool reverse);
   void OnFocusedNodeChanged(bool is_editable_node);
-  void OnUpdateInspectorSetting(const std::string& key,
-                                const std::string& value);
   void OnClosePageACK();
   void OnDidZoomURL(double zoom_level, const GURL& url);
   void OnRunFileChooser(const FileChooserParams& params);

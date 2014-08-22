@@ -1025,14 +1025,6 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
       prefs.asynchronous_spell_checking_enabled);
   settings->setUnifiedTextCheckerEnabled(prefs.unified_textchecker_enabled);
 
-  for (WebInspectorPreferences::const_iterator it =
-           prefs.inspector_settings.begin();
-       it != prefs.inspector_settings.end();
-       ++it) {
-    web_view->setInspectorSetting(WebString::fromUTF8(it->first),
-                                  WebString::fromUTF8(it->second));
-  }
-
   // Tabs to link is not part of the settings. WebCore calls
   // ChromeClient::tabsToLinks which is part of the glue code.
   web_view->setTabsToLinks(prefs.tabs_to_links);
@@ -2037,13 +2029,6 @@ int RenderViewImpl::historyForwardListCount() {
 void RenderViewImpl::postAccessibilityEvent(
     const WebAXObject& obj, blink::WebAXEvent event) {
   main_render_frame()->HandleWebAccessibilityEvent(obj, event);
-}
-
-void RenderViewImpl::didUpdateInspectorSetting(const WebString& key,
-                                           const WebString& value) {
-  Send(new ViewHostMsg_UpdateInspectorSetting(routing_id_,
-                                              key.utf8(),
-                                              value.utf8()));
 }
 
 // blink::WebWidgetClient ----------------------------------------------------

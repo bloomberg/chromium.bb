@@ -280,7 +280,6 @@ const char kWebKitWebSecurityEnabled[] = "webkit.webprefs.web_security_enabled";
 const char kWebKitDomPasteEnabled[] = "webkit.webprefs.dom_paste_enabled";
 const char kWebKitShrinksStandaloneImagesToFit[] =
     "webkit.webprefs.shrinks_standalone_images_to_fit";
-const char kWebKitInspectorSettings[] = "webkit.webprefs.inspector_settings";
 const char kWebKitUsesUniversalDetector[] =
     "webkit.webprefs.uses_universal_detector";
 const char kWebKitTextAreasAreResizable[] =

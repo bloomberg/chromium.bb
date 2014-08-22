@@ -684,13 +684,6 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestShowScriptsTab) {
 IN_PROC_BROWSER_TEST_F(
     DevToolsSanityTest,
     TestScriptsTabIsPopulatedOnInspectedPageRefresh) {
-  // Clear inspector settings to ensure that Elements will be
-  // current panel when DevTools window is open.
-  content::BrowserContext* browser_context =
-      GetInspectedTab()->GetBrowserContext();
-  Profile::FromBrowserContext(browser_context)->GetPrefs()->
-      ClearPref(prefs::kWebKitInspectorSettings);
-
   RunTest("testScriptsTabIsPopulatedOnInspectedPageRefresh",
           kDebuggerTestPage);
 }

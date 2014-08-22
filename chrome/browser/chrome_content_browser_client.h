@@ -242,9 +242,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   virtual void OverrideWebkitPrefs(content::RenderViewHost* rvh,
                                    const GURL& url,
                                    content::WebPreferences* prefs) OVERRIDE;
-  virtual void UpdateInspectorSetting(content::RenderViewHost* rvh,
-                                      const std::string& key,
-                                      const std::string& value) OVERRIDE;
   virtual void BrowserURLHandlerCreated(
       content::BrowserURLHandler* handler) OVERRIDE;
   virtual void ClearCache(content::RenderViewHost* rvh) OVERRIDE;

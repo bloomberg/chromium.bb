@@ -420,8 +420,6 @@ class CONTENT_EXPORT RenderViewImpl
   virtual int historyForwardListCount();
   virtual void postAccessibilityEvent(
       const blink::WebAXObject& obj, blink::WebAXEvent event);
-  virtual void didUpdateInspectorSetting(const blink::WebString& key,
-                                         const blink::WebString& value);
   virtual blink::WebSpeechRecognizer* speechRecognizer();
   virtual void zoomLimitsChanged(double minimum_level, double maximum_level);
   virtual void zoomLevelChanged();

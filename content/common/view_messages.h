@@ -1474,12 +1474,6 @@ IPC_MESSAGE_ROUTED3(ViewHostMsg_UnregisterProtocolHandler,
                     GURL /* url */,
                     bool /* user_gesture */)
 
-// Stores new inspector setting in the profile.
-// TODO(jam): this should be in the chrome module
-IPC_MESSAGE_ROUTED2(ViewHostMsg_UpdateInspectorSetting,
-                    std::string,  /* key */
-                    std::string /* value */)
-
 // Puts the browser into "tab fullscreen" mode for the sending renderer.
 // See the comment in chrome/browser/ui/browser.h for more details.
 IPC_MESSAGE_ROUTED1(ViewHostMsg_ToggleFullscreen,

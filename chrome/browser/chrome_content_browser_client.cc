@@ -2143,19 +2143,6 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
       prefs->GetBoolean(prefs::kWebKitDomPasteEnabled);
   web_prefs->shrinks_standalone_images_to_fit =
       prefs->GetBoolean(prefs::kWebKitShrinksStandaloneImagesToFit);
-  const base::DictionaryValue* inspector_settings =
-      prefs->GetDictionary(prefs::kWebKitInspectorSettings);
-  if (inspector_settings) {
-    for (base::DictionaryValue::Iterator iter(*inspector_settings);
-         !iter.IsAtEnd();
-         iter.Advance()) {
-      std::string value;
-      if (iter.value().GetAsString(&value)) {
-          web_prefs->inspector_settings.push_back(
-              std::make_pair(iter.key(), value));
-      }
-    }
-  }
   web_prefs->tabs_to_links = prefs->GetBoolean(prefs::kWebkitTabsToLinks);
 
   if (!prefs->GetBoolean(prefs::kWebKitJavascriptEnabled))
@@ -2213,18 +2200,6 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
 
   for (size_t i = 0; i < extra_parts_.size(); ++i)
     extra_parts_[i]->OverrideWebkitPrefs(rvh, url, web_prefs);
-}
-
-void ChromeContentBrowserClient::UpdateInspectorSetting(
-    RenderViewHost* rvh, const std::string& key, const std::string& value) {
-  content::BrowserContext* browser_context =
-      rvh->GetProcess()->GetBrowserContext();
-  DictionaryPrefUpdate update(
-      Profile::FromBrowserContext(browser_context)->GetPrefs(),
-      prefs::kWebKitInspectorSettings);
-  base::DictionaryValue* inspector_settings = update.Get();
-  inspector_settings->SetWithoutPathExpansion(key,
-                                              new base::StringValue(value));
 }
 
 void ChromeContentBrowserClient::BrowserURLHandlerCreated(
