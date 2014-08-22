@@ -144,6 +144,9 @@ class ExtensionToolbarModel : public content::NotificationObserver,
   // number of visible icons will be reset to what it was before highlighting.
   void StopHighlighting();
 
+  // Sets the number of visible icons and notifies all observers of the change.
+  void SetVisibleIconCountForTest(size_t visible_icons);
+
  private:
   // content::NotificationObserver:
   virtual void Observe(int type,

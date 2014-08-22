@@ -485,7 +485,7 @@ void ExtensionMessageBubbleFactory::ShowHighlightingBubble() {
   stage_ = STAGE_COMPLETE;
 
   views::View* reference_view = NULL;
-  if (container_->num_browser_actions() > 0)
+  if (container_->num_browser_actions() > 0u)
     reference_view = container_->GetBrowserActionViewAt(0);
   if (reference_view && reference_view->visible())
     anchor_view_ = reference_view;

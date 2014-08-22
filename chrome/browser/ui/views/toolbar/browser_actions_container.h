@@ -143,7 +143,7 @@ class BrowserActionsContainer
   void Init();
 
   // Get the number of browser actions being displayed.
-  int num_browser_actions() const { return browser_action_views_.size(); }
+  size_t num_browser_actions() const { return browser_action_views_.size(); }
 
   // Whether we are performing resize animation on the container.
   bool animating() const { return animation_target_size_ > 0; }

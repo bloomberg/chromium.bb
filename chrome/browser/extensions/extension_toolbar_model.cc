@@ -692,4 +692,9 @@ void ExtensionToolbarModel::StopHighlighting() {
   }
 }
 
+void ExtensionToolbarModel::SetVisibleIconCountForTest(size_t visible_icons) {
+  SetVisibleIconCount(visible_icons);
+  FOR_EACH_OBSERVER(Observer, observers_, ToolbarVisibleCountChanged());
+}
+
 }  // namespace extensions
