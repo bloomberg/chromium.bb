@@ -249,7 +249,7 @@ class TestRenderViewHost
       FrameHostMsg_DidCommitProvisionalLoad_Params* params);
 
   void TestOnUpdateStateWithFile(
-      int page_id, const base::FilePath& file_path);
+      int process_id, const base::FilePath& file_path);
 
   void TestOnStartDragging(const DropData& drop_data);
 
