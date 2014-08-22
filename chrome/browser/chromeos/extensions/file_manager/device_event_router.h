@@ -1,0 +1,110 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_DEVICE_EVENT_ROUTER_H_
+#define CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_DEVICE_EVENT_ROUTER_H_
+
+#include <map>
+#include <string>
+
+#include "base/memory/weak_ptr.h"
+#include "base/threading/thread_checker.h"
+#include "chrome/browser/chromeos/file_manager/volume_manager_observer.h"
+#include "chrome/common/extensions/api/file_browser_private.h"
+#include "chromeos/dbus/power_manager_client.h"
+
+namespace file_manager {
+
+enum DeviceState {
+  // Device is not being scanned and is not hard unplugged.
+  DEVICE_STATE_USUAL,
+  DEVICE_SCANNED,
+  DEVICE_SCANNED_AND_REPORTED,
+  DEVICE_HARD_UNPLUGGED,
+  DEVICE_HARD_UNPLUGGED_AND_REPORTED
+};
+
+// Event router for device events.
+class DeviceEventRouter : public VolumeManagerObserver,
+                          public chromeos::PowerManagerClient::Observer {
+ public:
+  DeviceEventRouter();
+
+  // |overriding_time_delta| overrides time delta of delayed tasks for testing
+  // |so that the tasks are executed by RunLoop::RunUntilIdle.
+  explicit DeviceEventRouter(base::TimeDelta overriding_time_delta);
+
+  virtual ~DeviceEventRouter();
+
+  // Turns the startup flag on, and then turns it off after few seconds.
+  void Startup();
+
+  // VolumeManagerObserver overrides.
+  virtual void OnDiskAdded(const chromeos::disks::DiskMountManager::Disk& disk,
+                           bool mounting) OVERRIDE;
+  virtual void OnDiskRemoved(
+      const chromeos::disks::DiskMountManager::Disk& disk) OVERRIDE;
+  virtual void OnDeviceAdded(const std::string& device_path) OVERRIDE;
+  virtual void OnDeviceRemoved(const std::string& device_path) OVERRIDE;
+  virtual void OnVolumeMounted(chromeos::MountError error_code,
+                               const VolumeInfo& volume_info,
+                               bool is_remounting) OVERRIDE;
+  virtual void OnVolumeUnmounted(chromeos::MountError error_code,
+                                 const VolumeInfo& volume_info) OVERRIDE;
+  virtual void OnFormatStarted(const std::string& device_path,
+                               bool success) OVERRIDE;
+  virtual void OnFormatCompleted(const std::string& device_path,
+                                 bool success) OVERRIDE;
+
+  // TODO(hirono): Remove the method from VolumeManagerObserver.
+  virtual void OnHardUnplugged(const std::string& device_path) OVERRIDE;
+
+  // PowerManagerClient::Observer overrides.
+  virtual void SuspendImminent() OVERRIDE;
+  virtual void SuspendDone(const base::TimeDelta& sleep_duration) OVERRIDE;
+
+ protected:
+  // Handles a device event containing |type| and |device_path|.
+  virtual void OnDeviceEvent(
+      extensions::api::file_browser_private::DeviceEventType type,
+      const std::string& device_path) = 0;
+  // Returns external storage is disabled or not.
+  virtual bool IsExternalStorageDisabled() = 0;
+
+ private:
+  void StartupDelayed();
+  void OnDeviceAddedDelayed(const std::string& device_path);
+  void SuspendDoneDelayed();
+
+  // Obtains device state of the device having |device_path|.
+  DeviceState GetDeviceState(const std::string& device_path) const;
+
+  // Sets device state to the device having |device_path|.
+  void SetDeviceState(const std::string& device_path, DeviceState state);
+
+  // Whther to use zero time delta for testing or not.
+  const base::TimeDelta resume_time_delta_;
+  const base::TimeDelta startup_time_delta_;
+  const base::TimeDelta scan_time_delta_;
+
+  // Whether the profile is starting up or not.
+  bool is_starting_up_;
+
+  // Whether the system is resuming or not.
+  bool is_resuming_;
+
+  // Map of device path and device state.
+  std::map<std::string, DeviceState> device_states_;
+
+  // Thread checker.
+  base::ThreadChecker thread_checker_;
+
+  // Note: This should remain the last member so it'll be destroyed and
+  // invalidate the weak pointers before any other members are destroyed.
+  base::WeakPtrFactory<DeviceEventRouter> weak_factory_;
+  DISALLOW_COPY_AND_ASSIGN(DeviceEventRouter);
+};
+}  // namespace file_manager
+
+#endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_DEVICE_EVENT_ROUTER_H_

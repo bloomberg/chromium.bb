@@ -684,6 +684,7 @@
         'browser/chromeos/extensions/device_local_account_external_policy_loader_unittest.cc',
         'browser/chromeos/extensions/device_local_account_management_policy_provider_unittest.cc',
         'browser/chromeos/extensions/external_cache_unittest.cc',
+        'browser/chromeos/extensions/file_manager/device_event_router_unittest.cc',
         'browser/chromeos/extensions/wallpaper_private_api_unittest.cc',
         'browser/chromeos/external_metrics_unittest.cc',
         'browser/chromeos/file_manager/fake_disk_mount_manager.cc',

@@ -1037,6 +1037,8 @@
             # Only extension API implementations should go here.
             'browser/chromeos/extensions/echo_private_api.cc',
             'browser/chromeos/extensions/echo_private_api.h',
+            'browser/chromeos/extensions/file_manager/device_event_router.cc',
+            'browser/chromeos/extensions/file_manager/device_event_router.h',
             'browser/chromeos/extensions/file_manager/event_router.cc',
             'browser/chromeos/extensions/file_manager/event_router.h',
             'browser/chromeos/extensions/file_manager/file_browser_handler_api.cc',
