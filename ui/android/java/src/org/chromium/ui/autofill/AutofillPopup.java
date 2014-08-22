@@ -84,7 +84,7 @@ public class AutofillPopup extends DropdownPopupWindow implements AdapterView.On
         ArrayList<DropdownItem> cleanedData = new ArrayList<DropdownItem>();
         HashSet<Integer> separators = new HashSet<Integer>();
         for (int i = 0; i < suggestions.length; i++) {
-            int itemId = suggestions[i].mUniqueId;
+            int itemId = suggestions[i].getUniqueId();
             if (itemId > 0 || itemId == ITEM_ID_AUTOCOMPLETE_ENTRY ||
                     itemId == ITEM_ID_PASSWORD_ENTRY || itemId == ITEM_ID_DATA_LIST_ENTRY) {
                 cleanedData.add(suggestions[i]);

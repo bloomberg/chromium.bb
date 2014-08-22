@@ -10,9 +10,9 @@ import org.chromium.ui.DropdownItem;
  * Autofill suggestion container used to store information needed for each Autofill popup entry.
  */
 public class AutofillSuggestion implements DropdownItem {
-    final String mLabel;
-    final String mSublabel;
-    final int mUniqueId;
+    private final String mLabel;
+    private final String mSublabel;
+    private final int mUniqueId;
 
     /**
      * Constructs a Autofill suggestion container.
