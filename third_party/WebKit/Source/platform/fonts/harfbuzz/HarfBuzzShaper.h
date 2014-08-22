@@ -78,7 +78,6 @@ private:
         }
 
         void applyShapeResult(hb_buffer_t*);
-        void copyShapeResultAndGlyphPositions(const HarfBuzzRun&);
         void setGlyphAndPositions(unsigned index, uint16_t glyphId, float advance, float offsetX, float offsetY);
         void setWidth(float width) { m_width = width; }
 

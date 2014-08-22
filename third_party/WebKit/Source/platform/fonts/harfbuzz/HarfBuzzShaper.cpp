@@ -274,16 +274,6 @@ inline void HarfBuzzShaper::HarfBuzzRun::applyShapeResult(hb_buffer_t* harfBuzzB
     m_offsets.resize(m_numGlyphs);
 }
 
-inline void HarfBuzzShaper::HarfBuzzRun::copyShapeResultAndGlyphPositions(const HarfBuzzRun& run)
-{
-    m_numGlyphs = run.m_numGlyphs;
-    m_glyphs = run.m_glyphs;
-    m_advances = run.m_advances;
-    m_glyphToCharacterIndexes = run.m_glyphToCharacterIndexes;
-    m_offsets = run.m_offsets;
-    m_width = run.m_width;
-}
-
 inline void HarfBuzzShaper::HarfBuzzRun::setGlyphAndPositions(unsigned index, uint16_t glyphId, float advance, float offsetX, float offsetY)
 {
     m_glyphs[index] = glyphId;
