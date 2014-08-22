@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/time/time.h"
 #include "content/child/resource_dispatcher.h"
 #include "content/public/child/request_peer.h"
 #include "content/public/common/resource_response_info.h"

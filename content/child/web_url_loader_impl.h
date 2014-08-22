@@ -10,6 +10,8 @@
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebURLLoader.h"
 
+class GURL;
+
 namespace content {
 
 class ResourceDispatcher;
