@@ -236,7 +236,7 @@ function updateGetUserMediaConstraints() {
                           maxHeight: screen.height}}
     };
     if ($('audio').checked)
-      print_('Audio for screencapture is not implemented yet, please ' +
+      warning_('Audio for screencapture is not implemented yet, please ' +
             'try to set audio = false prior requesting screencapture');
   }
 
@@ -435,13 +435,13 @@ function handleMessage(peerConnection, message) {
     peerConnection.setRemoteDescription(
         session_description,
         function() { success_('setRemoteDescription'); },
-        function(error) { failure_('setRemoteDescription', error); });
+        function(error) { error_('setRemoteDescription', error); });
     if (session_description.type == 'offer') {
       print_('createAnswer with constraints: ' +
             JSON.stringify(global.createAnswerConstraints, null, ' '));
       peerConnection.createAnswer(
           setLocalAndSendMessage_,
-          function(error) { failure_('createAnswer', error); },
+          function(error) { error_('createAnswer', error); },
           global.createAnswerConstraints);
     }
     return;
@@ -449,7 +449,7 @@ function handleMessage(peerConnection, message) {
     var candidate = new RTCIceCandidate(parsed_msg);
     peerConnection.addIceCandidate(candidate,
         function() { success_('addIceCandidate'); },
-        function(error) { failure_('addIceCandidate', error); }
+        function(error) { error_('addIceCandidate', error); }
     );
     return;
   }
@@ -495,7 +495,7 @@ function setupCall(peerConnection) {
         JSON.stringify(global.createOfferConstraints, null, ' '));
   peerConnection.createOffer(
       setLocalAndSendMessage_,
-      function(error) { failure_('createOffer', error); },
+      function(error) { error_('createOffer', error); },
       global.createOfferConstraints);
 }
 
@@ -904,20 +904,7 @@ function getSourcesFromField_(audioSelect, videoSelect) {
  * @param {NavigatorUserMediaError} error Error containing details.
  */
 function getUserMediaFailedCallback_(error) {
-  print_('GetUserMedia FAILED: Maybe the camera is in use by another process?');
-  gRequestWebcamAndMicrophoneResult = 'failed-with-error-' + error.name;
-  print_(gRequestWebcamAndMicrophoneResult);
-}
-
-/** @private */
-function success_(method) {
-  $('messages').innerHTML += '<span style="color:green;">' + method +
-                             '(): success. </span><br>';
-}
-
-/** @private */
-function failure_(method, error) {
-  error_(method + '() failed: ' + JSON.stringify(error));
+  error_('GetUserMedia failed with error: ' + error.name);
 }
 
 /** @private */
@@ -933,7 +920,7 @@ function setLocalAndSendMessage_(session_description) {
   global.peerConnection.setLocalDescription(
     session_description,
     function() { success_('setLocalDescription'); },
-    function(error) { failure_('setLocalDescription', error); });
+    function(error) { error_('setLocalDescription', error); });
   print_('Sending SDP message:\n' + session_description.sdp);
   sendToPeer(global.remotePeerId, JSON.stringify(session_description));
 }
@@ -1007,13 +994,13 @@ function getUserMediaOkCallback_(stream) {
     };
 
     // Print information on track going to mute or back from it.
-    // TODO(mcasas): add a warning_() function and move the following print_()
-    // notifications to error_() and warning_(), respectively.
     stream.getVideoTracks()[0].onmute = function() {
-      print_(global.localStream + ' track onmute event has fired');
+      error_(global.localStream + ' MediaStreamTrack.onmute event has fired, ' +
+             'no frames to the track.');
     };
     stream.getVideoTracks()[0].onunmute = function() {
-      print_(global.localStream + ' track onunmute event has fired');
+      warning_(global.localStream + ' MediaStreamTrack.onunmute event has ' +
+               'fired.');
     };
   }
 }
@@ -1135,27 +1122,50 @@ function ensureHasPeerConnection_() {
  * @param {string} message Text to print.
  */
 function print_(message) {
-  console.log(message);
-  $('messages').innerHTML += message + '<br>';
+  print_handler_(message, 'messages', 'black');
 }
 
 /**
  * @private
  * @param {string} message Text to print.
  */
-function debug_(message) {
-  console.log(message);
-  $('debug').innerHTML += message + '<br>';
+function success_(message) {
+  print_handler_(message, 'messages', 'green');
 }
 
 /**
- * Print error message in the debug log + JS console and throw an Error.
  * @private
- * @param {string} message Text to print in red.
+ * @param {string} message Text to print.
+ */
+function warning_(message) {
+  print_handler_(message, 'debug', 'orange');
+}
+
+/**
+ * @private
+ * @param {string} message Text to print.
  */
 function error_(message) {
-  $('debug').innerHTML += '<span style="color:red;">' + message + '</span><br>';
-  throw new Error(message);
+  print_handler_(message, 'debug', 'red');
+}
+
+/**
+ * @private
+ * @param {string} message Text to print.
+ * @param {string} textField Element ID of where to print.
+ * @param {string} color Color of the text.
+ */
+function print_handler_(message, textField, color) {
+  if (color == 'red' )
+    throw new Error(message);
+
+  if (color == 'green' )
+    message += ' success';
+
+  $(textField).innerHTML += '<span style="color:' + color + ';">' + message +
+                            '</span><br>'
+
+  console.log(message);
 }
 
 /**
@@ -1248,7 +1258,7 @@ function connectCallback_(request) {
   print_('Connect callback: ' + request.status + ', ' + request.readyState);
   if (request.status == 0) {
     print_('peerconnection_server doesn\'t seem to be up.');
-    print_('failed-to-connect');
+    error_('failed connecting to peerConnection server');
   }
   if (request.readyState == 4 && request.status == 200) {
     global.ourPeerId = parseOurPeerId_(request.responseText);
