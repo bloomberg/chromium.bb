@@ -6,6 +6,7 @@
 
 #include "ui/views/background.h"
 #include "ui/views/view.h"
+#include "ui/views/widget/widget.h"
 
 namespace athena {
 namespace test {
@@ -41,6 +42,11 @@ bool SampleActivity::IsVisible() {
 
 Activity::ActivityMediaState SampleActivity::GetMediaState() {
   return Activity::ACTIVITY_MEDIA_STATE_NONE;
+}
+
+aura::Window* SampleActivity::GetWindow() {
+   return
+       !contents_view_ ? NULL : contents_view_->GetWidget()->GetNativeWindow();
 }
 
 void SampleActivity::Init() {
