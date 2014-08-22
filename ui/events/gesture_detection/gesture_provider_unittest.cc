@@ -45,9 +45,6 @@ GestureProvider::Config CreateDefaultConfig() {
   // the second tap at microsecond intervals.
   sConfig.gesture_detector_config.double_tap_timeout = kOneMicrosecond * 4;
   sConfig.gesture_detector_config.double_tap_min_time = kOneMicrosecond * 2;
-
-  sConfig.scale_gesture_detector_config.gesture_detector_config =
-      sConfig.gesture_detector_config;
   return sConfig;
 }
 

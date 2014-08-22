@@ -49,14 +49,13 @@ ScaleGestureDetector::Config DefaultScaleGestureDetectorConfig(
     const gfx::Display& display) {
   ScaleGestureDetector::Config config;
 
-  config.gesture_detector_config = DefaultGestureDetectorConfig(display);
-  config.quick_scale_enabled = true;
-
   const float px_to_dp = 1.f / display.device_scale_factor();
+  config.span_slop = ViewConfiguration::GetTouchSlopInPixels() * 2.f * px_to_dp;
   config.min_scaling_touch_major =
       ViewConfiguration::GetMinScalingTouchMajorInPixels() * px_to_dp;
   config.min_scaling_span =
       ViewConfiguration::GetMinScalingSpanInPixels() * px_to_dp;
+  config.min_pinch_update_span_delta = 0.f;
 
   return config;
 }

@@ -31,9 +31,9 @@ const float kScaleFactor = .5f;
 // Note: These constants were taken directly from the default (unscaled)
 // versions found in Android's ViewConfiguration.
 ScaleGestureDetector::Config::Config()
-    : min_scaling_touch_major(48),
+    : span_slop(16),
+      min_scaling_touch_major(48),
       min_scaling_span(200),
-      quick_scale_enabled(true),
       min_pinch_update_span_delta(0) {
 }
 
@@ -55,10 +55,8 @@ void ScaleGestureDetector::SimpleScaleGestureListener::OnScaleEnd(
 ScaleGestureDetector::ScaleGestureDetector(const Config& config,
                                            ScaleGestureListener* listener)
     : listener_(listener),
-      config_(config),
       focus_x_(0),
       focus_y_(0),
-      quick_scale_enabled_(false),
       curr_span_(0),
       prev_span_(0),
       initial_span_(0),
@@ -80,13 +78,12 @@ ScaleGestureDetector::ScaleGestureDetector(const Config& config,
       double_tap_mode_(DOUBLE_TAP_MODE_NONE),
       event_before_or_above_starting_gesture_event_(false) {
   DCHECK(listener_);
-  span_slop_ = (config.gesture_detector_config.touch_slop + kSlopEpsilon) * 2;
+  span_slop_ = config.span_slop + kSlopEpsilon;
   touch_min_major_ = config.min_scaling_touch_major;
   touch_max_major_ = std::min(config.min_scaling_span / std::sqrt(2.f),
                               2.f * touch_min_major_);
   min_span_ = config.min_scaling_span + kSlopEpsilon;
   ResetTouchHistory();
-  SetQuickScaleEnabled(config.quick_scale_enabled);
 }
 
 ScaleGestureDetector::~ScaleGestureDetector() {}
@@ -95,12 +92,6 @@ bool ScaleGestureDetector::OnTouchEvent(const MotionEvent& event) {
   curr_time_ = event.GetEventTime();
 
   const int action = event.GetAction();
-
-  // Forward the event to check for double tap gesture.
-  if (quick_scale_enabled_) {
-    DCHECK(gesture_detector_);
-    gesture_detector_->OnTouchEvent(event);
-  }
 
   const bool stream_complete =
       action == MotionEvent::ACTION_UP ||
@@ -239,18 +230,6 @@ bool ScaleGestureDetector::OnTouchEvent(const MotionEvent& event) {
   }
 
   return true;
-}
-
-void ScaleGestureDetector::SetQuickScaleEnabled(bool scales) {
-  quick_scale_enabled_ = scales;
-  if (quick_scale_enabled_ && !gesture_detector_) {
-    gesture_detector_.reset(
-        new GestureDetector(config_.gesture_detector_config, this, this));
-  }
-}
-
-bool ScaleGestureDetector::IsQuickScaleEnabled() const {
-  return quick_scale_enabled_;
 }
 
 bool ScaleGestureDetector::IsInProgress() const { return in_progress_; }

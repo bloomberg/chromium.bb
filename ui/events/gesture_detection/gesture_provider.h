@@ -91,49 +91,21 @@ class GESTURE_DETECTION_EXPORT GestureProvider {
   }
 
  private:
-  void InitGestureDetectors(const Config& config);
-
   bool CanHandle(const MotionEvent& event) const;
-
-  void Fling(const MotionEvent& e, float velocity_x, float velocity_y);
-  void Send(GestureEventData gesture);
-  bool SendLongTapIfNecessary(const MotionEvent& event);
-  void EndTouchScrollIfNecessary(const MotionEvent& event,
-                                 bool send_scroll_end_event);
   void OnTouchEventHandlingBegin(const MotionEvent& event);
   void OnTouchEventHandlingEnd(const MotionEvent& event);
   void UpdateDoubleTapDetectionSupport();
 
-  GestureProviderClient* const client_;
-
   class GestureListenerImpl;
-  friend class GestureListenerImpl;
   scoped_ptr<GestureListenerImpl> gesture_listener_;
 
-  class ScaleGestureListenerImpl;
-  friend class ScaleGestureListenerImpl;
-  scoped_ptr<ScaleGestureListenerImpl> scale_gesture_listener_;
-
   scoped_ptr<MotionEvent> current_down_event_;
-
-  // Whether the respective {SCROLL,PINCH}_BEGIN gestures have been terminated
-  // with a {SCROLL,PINCH}_END.
-  bool touch_scroll_in_progress_;
-  bool pinch_in_progress_;
 
   // Whether double-tap gesture detection is currently supported.
   bool double_tap_support_for_page_;
   bool double_tap_support_for_platform_;
 
-  // Keeps track of the current GESTURE_LONG_PRESS event. If a context menu is
-  // opened after a GESTURE_LONG_PRESS, this is used to insert a
-  // GESTURE_TAP_CANCEL for removing any ::active styling.
-  base::TimeTicks current_longpress_time_;
-
   const bool gesture_begin_end_types_enabled_;
-
-  const float min_gesture_bounds_length_;
-  const float max_gesture_bounds_length_;
 };
 
 }  //  namespace ui
