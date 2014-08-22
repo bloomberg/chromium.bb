@@ -190,13 +190,6 @@ class ServiceRuntime {
   Plugin* plugin() const { return plugin_; }
   void Shutdown();
 
-  // exit_status is -1 when invalid; when we set it, we will ensure
-  // that it is non-negative (the portion of the exit status from the
-  // nexe that is transferred is the low 8 bits of the argument to the
-  // exit syscall).
-  int exit_status();  // const, but grabs mutex etc.
-  void set_exit_status(int exit_status);
-
   bool main_service_runtime() const { return main_service_runtime_; }
 
  private:

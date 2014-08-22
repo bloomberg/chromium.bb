@@ -97,6 +97,7 @@ NexeLoadManager::NexeLoadManager(
       plugin_instance_(content::PepperPluginInstance::Get(pp_instance)),
       crash_info_shmem_handle_(base::SharedMemory::NULLHandle()),
       weak_factory_(this) {
+  set_exit_status(-1);
   SetLastError("");
   HistogramEnumerateOsArch(GetSandboxArch());
   if (plugin_instance_) {

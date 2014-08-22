@@ -238,7 +238,8 @@ void PluginReverseInterface::ReportCrash() {
 }
 
 void PluginReverseInterface::ReportExitStatus(int exit_status) {
-  service_runtime_->set_exit_status(exit_status);
+  // We do nothing here; reporting exit status is handled through a separate
+  // embedder interface.
 }
 
 int64_t PluginReverseInterface::RequestQuotaForWrite(
@@ -580,12 +581,6 @@ ServiceRuntime::~ServiceRuntime() {
   anchor_->Unref();
   NaClCondVarDtor(&cond_);
   NaClMutexDtor(&mu_);
-}
-
-void ServiceRuntime::set_exit_status(int exit_status) {
-  nacl::MutexLocker take(&mu_);
-  if (main_service_runtime_)
-    plugin_->set_exit_status(exit_status & 0xff);
 }
 
 }  // namespace plugin

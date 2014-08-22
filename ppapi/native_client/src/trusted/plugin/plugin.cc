@@ -275,9 +275,6 @@ Plugin::Plugin(PP_Instance pp_instance)
   // Notify PPB_NaCl_Private that the instance is created before altering any
   // state that it tracks.
   nacl_interface_->InstanceCreated(pp_instance);
-  // We call set_exit_status() here to ensure that the 'exitStatus' property is
-  // set. This can only be called when nacl_interface_ is not NULL.
-  set_exit_status(-1);
   nexe_file_info_ = kInvalidNaClFileInfo;
 }
 
@@ -451,25 +448,5 @@ bool Plugin::DocumentCanRequest(const std::string& url) {
   CHECK(pp::URLUtil_Dev::Get() != NULL);
   return pp::URLUtil_Dev::Get()->DocumentCanRequest(this, pp::Var(url));
 }
-
-void Plugin::set_exit_status(int exit_status) {
-  pp::Core* core = pp::Module::Get()->core();
-  if (core->IsMainThread()) {
-    SetExitStatusOnMainThread(PP_OK, exit_status);
-  } else {
-    pp::CompletionCallback callback =
-        callback_factory_.NewCallback(&Plugin::SetExitStatusOnMainThread,
-                                      exit_status);
-    core->CallOnMainThread(0, callback, 0);
-  }
-}
-
-void Plugin::SetExitStatusOnMainThread(int32_t pp_error,
-                                       int exit_status) {
-  DCHECK(pp::Module::Get()->core()->IsMainThread());
-  DCHECK(nacl_interface_);
-  nacl_interface_->SetExitStatus(pp_instance(), exit_status);
-}
-
 
 }  // namespace plugin

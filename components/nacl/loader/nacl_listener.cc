@@ -19,6 +19,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/rand_util.h"
 #include "components/nacl/common/nacl_messages.h"
+#include "components/nacl/common/nacl_renderer_messages.h"
 #include "components/nacl/loader/nacl_ipc_adapter.h"
 #include "components/nacl/loader/nacl_validation_db.h"
 #include "components/nacl/loader/nacl_validation_query.h"
@@ -418,5 +419,11 @@ void NaClListener::OnStart(const nacl::NaClStartParams& params) {
   nexe_file_info.file_token.hi = params.nexe_token_hi;
   args->nexe_desc = NaClDescIoFromFileInfo(nexe_file_info, NACL_ABI_O_RDONLY);
 
-  NaClChromeMainStartApp(nap, args);
+  int exit_status;
+  if (!NaClChromeMainStart(nap, args, &exit_status))
+    NaClExit(1);
+
+  // Report the plugin's exit status if the application started successfully.
+  trusted_listener_->Send(new NaClRendererMsg_ReportExitStatus(exit_status));
+  NaClExit(exit_status);
 }

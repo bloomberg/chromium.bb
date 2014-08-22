@@ -127,9 +127,6 @@ class Plugin : public pp::Instance {
   // document to request the URL using CORS even if this function returns false.
   bool DocumentCanRequest(const std::string& url);
 
-  // set_exit_status may be called off the main thread.
-  void set_exit_status(int exit_status);
-
   const PPB_NaCl_Private* nacl_interface() const { return nacl_interface_; }
   pp::UMAPrivate& uma_interface() { return uma_interface_; }
 
@@ -205,8 +202,6 @@ class Plugin : public pp::Instance {
 
   // Processes the JSON manifest string and starts loading the nexe.
   void ProcessNaClManifest(const nacl::string& manifest_json);
-
-  void SetExitStatusOnMainThread(int32_t pp_error, int exit_status);
 
   // Keep track of the NaCl module subprocess that was spun up in the plugin.
   NaClSubprocess main_subprocess_;

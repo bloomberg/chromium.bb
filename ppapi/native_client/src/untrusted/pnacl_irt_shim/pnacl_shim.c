@@ -3482,16 +3482,6 @@ static PP_NaClReadyState Pnacl_M25_PPB_NaCl_Private_GetNaClReadyState(PP_Instanc
   return iface->GetNaClReadyState(instance);
 }
 
-static int32_t Pnacl_M25_PPB_NaCl_Private_GetExitStatus(PP_Instance instance) {
-  const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
-  return iface->GetExitStatus(instance);
-}
-
-static void Pnacl_M25_PPB_NaCl_Private_SetExitStatus(PP_Instance instance, int32_t exit_status) {
-  const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
-  iface->SetExitStatus(instance, exit_status);
-}
-
 static void Pnacl_M25_PPB_NaCl_Private_Vlog(const char* message) {
   const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
   iface->Vlog(message);
@@ -5374,8 +5364,6 @@ static const struct PPB_NaCl_Private_1_0 Pnacl_Wrappers_PPB_NaCl_Private_1_0 = {
     .GetSandboxArch = (const char* (*)(void))&Pnacl_M25_PPB_NaCl_Private_GetSandboxArch,
     .LogToConsole = (void (*)(PP_Instance instance, const char* message))&Pnacl_M25_PPB_NaCl_Private_LogToConsole,
     .GetNaClReadyState = (PP_NaClReadyState (*)(PP_Instance instance))&Pnacl_M25_PPB_NaCl_Private_GetNaClReadyState,
-    .GetExitStatus = (int32_t (*)(PP_Instance instance))&Pnacl_M25_PPB_NaCl_Private_GetExitStatus,
-    .SetExitStatus = (void (*)(PP_Instance instance, int32_t exit_status))&Pnacl_M25_PPB_NaCl_Private_SetExitStatus,
     .Vlog = (void (*)(const char* message))&Pnacl_M25_PPB_NaCl_Private_Vlog,
     .InitializePlugin = (void (*)(PP_Instance instance, uint32_t argc, const char* argn[], const char* argv[]))&Pnacl_M25_PPB_NaCl_Private_InitializePlugin,
     .GetNexeSize = (int64_t (*)(PP_Instance instance))&Pnacl_M25_PPB_NaCl_Private_GetNexeSize,

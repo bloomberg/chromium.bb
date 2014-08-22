@@ -406,10 +406,13 @@ void LaunchSelLdr(PP_Instance instance,
 
   // Create the trusted plugin channel.
   if (IsValidChannelHandle(launch_result.trusted_ipc_channel_handle)) {
+    bool report_exit_status = PP_ToBool(main_service_runtime);
     scoped_ptr<TrustedPluginChannel> trusted_plugin_channel(
         new TrustedPluginChannel(
+            load_manager,
             launch_result.trusted_ipc_channel_handle,
-            content::RenderThread::Get()->GetShutdownEvent()));
+            content::RenderThread::Get()->GetShutdownEvent(),
+            report_exit_status));
     load_manager->set_trusted_plugin_channel(trusted_plugin_channel.Pass());
   } else {
     PostPPCompletionCallback(callback, PP_ERROR_FAILED);
@@ -786,21 +789,6 @@ PP_NaClReadyState GetNaClReadyState(PP_Instance instance) {
   if (load_manager)
     return load_manager->nacl_ready_state();
   return PP_NACL_READY_STATE_UNSENT;
-}
-
-int32_t GetExitStatus(PP_Instance instance) {
-  NexeLoadManager* load_manager = NexeLoadManager::Get(instance);
-  DCHECK(load_manager);
-  if (load_manager)
-    return load_manager->exit_status();
-  return -1;
-}
-
-void SetExitStatus(PP_Instance instance, int32_t exit_status) {
-  NexeLoadManager* load_manager = NexeLoadManager::Get(instance);
-  DCHECK(load_manager);
-  if (load_manager)
-    return load_manager->set_exit_status(exit_status);
 }
 
 void Vlog(const char* message) {
@@ -1703,8 +1691,6 @@ const PPB_NaCl_Private nacl_interface = {
   &GetSandboxArch,
   &LogToConsole,
   &GetNaClReadyState,
-  &GetExitStatus,
-  &SetExitStatus,
   &Vlog,
   &InitializePlugin,
   &GetNexeSize,

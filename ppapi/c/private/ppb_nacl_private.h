@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_nacl_private.idl modified Thu Aug 14 11:48:23 2014. */
+/* From private/ppb_nacl_private.idl modified Thu Aug 21 11:14:10 2014. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
 #define PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
@@ -322,10 +322,6 @@ struct PPB_NaCl_Private_1_0 {
   void (*LogToConsole)(PP_Instance instance, const char* message);
   /* Returns the NaCl readiness status for this instance. */
   PP_NaClReadyState (*GetNaClReadyState)(PP_Instance instance);
-  /* Returns the exit status of the plugin process. */
-  int32_t (*GetExitStatus)(PP_Instance instance);
-  /* Sets the exit status of the plugin process. */
-  void (*SetExitStatus)(PP_Instance instance, int32_t exit_status);
   /* Logs the message via VLOG. */
   void (*Vlog)(const char* message);
   /* Initializes internal state for a NaCl plugin. */

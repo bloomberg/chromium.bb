@@ -301,13 +301,6 @@ interface PPB_NaCl_Private {
   /* Returns the NaCl readiness status for this instance. */
   PP_NaClReadyState GetNaClReadyState([in] PP_Instance instance);
 
-  /* Returns the exit status of the plugin process. */
-  int32_t GetExitStatus([in] PP_Instance instance);
-
-  /* Sets the exit status of the plugin process. */
-  void SetExitStatus([in] PP_Instance instance,
-                     [in] int32_t exit_status);
-
   /* Logs the message via VLOG. */
   void Vlog([in] str_t message);
 
