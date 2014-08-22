@@ -9,6 +9,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/views/profiles/profile_chooser_view.h"
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
@@ -50,7 +51,8 @@ NewAvatarButton::NewAvatarButton(
                  profiles::GetAvatarButtonTextForProfile(browser->profile()),
                  NULL,
                  true),
-      browser_(browser) {
+      browser_(browser),
+      suppress_mouse_released_action_(false) {
   set_animate_on_state_change(false);
   SetTextColor(views::Button::STATE_NORMAL, SK_ColorWHITE);
   SetTextColor(views::Button::STATE_HOVERED, SK_ColorWHITE);
@@ -109,6 +111,19 @@ NewAvatarButton::~NewAvatarButton() {
       profiles::GetSigninErrorController(browser_->profile());
   if (error)
     error->RemoveObserver(this);
+}
+
+bool NewAvatarButton::OnMousePressed(const ui::MouseEvent& event) {
+  // Prevent the bubble from being re-shown if it's already showing.
+  suppress_mouse_released_action_ = ProfileChooserView::IsShowing();
+  return MenuButton::OnMousePressed(event);
+}
+
+void NewAvatarButton::OnMouseReleased(const ui::MouseEvent& event) {
+  if (suppress_mouse_released_action_)
+    suppress_mouse_released_action_ = false;
+  else
+    MenuButton::OnMouseReleased(event);
 }
 
 void NewAvatarButton::OnProfileAdded(const base::FilePath& profile_path) {
