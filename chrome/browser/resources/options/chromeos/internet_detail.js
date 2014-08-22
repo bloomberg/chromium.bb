@@ -1315,7 +1315,7 @@ cr.define('options.internet', function() {
       setOrHideParent('prl-version',
                       getManagedValue(data, 'Cellular.PRLVersion'));
 
-      var family = getManagedValue(data, 'Cellular.GSM');
+      var family = getManagedValue(data, 'Cellular.Family');
       detailsPage.gsm = family == 'GSM';
       if (detailsPage.gsm) {
         $('iccid').textContent = getManagedValue(data, 'Cellular.ICCID');
