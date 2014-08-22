@@ -27,6 +27,8 @@ class UserScript {
   // The file extension for standalone user scripts.
   static const char kFileExtension[];
 
+  static int GenerateUserScriptID();
+
   // Check if a URL should be treated as a user script and converted to an
   // extension.
   static bool IsURLUserScript(const GURL& url, const std::string& mime_type);
@@ -193,8 +195,8 @@ class UserScript {
   const std::string& extension_id() const { return extension_id_; }
   void set_extension_id(const std::string& id) { extension_id_ = id; }
 
-  int64 id() const { return user_script_id_; }
-  void set_id(int64 id) { user_script_id_ = id; }
+  int id() const { return user_script_id_; }
+  void set_id(int id) { user_script_id_ = id; }
 
   bool is_incognito_enabled() const { return incognito_enabled_; }
   void set_incognito_enabled(bool enabled) { incognito_enabled_ = enabled; }
@@ -269,7 +271,7 @@ class UserScript {
 
   // The globally-unique id associated with this user script. Defaults to
   // -1 for invalid.
-  int64 user_script_id_;
+  int user_script_id_;
 
   // Whether we should try to emulate Greasemonkey's APIs when running this
   // script.

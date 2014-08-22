@@ -66,7 +66,7 @@ class UserScriptInjector : public ScriptInjector,
   // The id of the associated user script. We cache this because when we update
   // the |script_| associated with this injection, the old referance may be
   // deleted.
-  int64 script_id_;
+  int script_id_;
 
   // The associated extension id, preserved for the same reason as |script_id|.
   std::string extension_id_;

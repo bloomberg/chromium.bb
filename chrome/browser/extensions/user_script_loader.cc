@@ -128,7 +128,7 @@ SubstitutionMap* GetLocalizationMessages(const ExtensionsInfo& extensions_info,
 
 void LoadUserScripts(UserScriptList* user_scripts,
                      const ExtensionsInfo& extensions_info,
-                     const std::set<int64>& added_script_ids,
+                     const std::set<int>& added_script_ids,
                      ContentVerifier* verifier) {
   for (UserScriptList::iterator script = user_scripts->begin();
        script != user_scripts->end();
@@ -202,7 +202,7 @@ scoped_ptr<base::SharedMemory> Serialize(const UserScriptList& scripts) {
 
 void LoadScriptsOnFileThread(scoped_ptr<UserScriptList> user_scripts,
                              const ExtensionsInfo& extensions_info,
-                             const std::set<int64>& added_script_ids,
+                             const std::set<int>& added_script_ids,
                              scoped_refptr<ContentVerifier> verifier,
                              LoadScriptsCallback callback) {
   DCHECK(user_scripts.get());
@@ -333,7 +333,7 @@ bool UserScriptLoader::ParseMetadataHeader(const base::StringPiece& script_text,
 // static
 void UserScriptLoader::LoadScriptsForTest(UserScriptList* user_scripts) {
   ExtensionsInfo info;
-  std::set<int64> added_script_ids;
+  std::set<int> added_script_ids;
   for (UserScriptList::iterator it = user_scripts->begin();
        it != user_scripts->end();
        ++it) {
@@ -468,7 +468,7 @@ void UserScriptLoader::StartLoad() {
   user_scripts_->insert(
       user_scripts_->end(), added_scripts_.begin(), added_scripts_.end());
 
-  std::set<int64> added_script_ids;
+  std::set<int> added_script_ids;
   for (std::set<UserScript>::const_iterator it = added_scripts_.begin();
        it != added_scripts_.end();
        ++it) {

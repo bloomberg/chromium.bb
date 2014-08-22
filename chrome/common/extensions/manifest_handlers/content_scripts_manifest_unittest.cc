@@ -75,7 +75,7 @@ TEST_F(ContentScriptsManifestTest, ContentScriptIds) {
   const UserScriptList& user_scripts1 =
       ContentScriptsInfo::GetContentScripts(extension1);
   ASSERT_EQ(1u, user_scripts1.size());
-  int64 id = user_scripts1[0].id();
+  int id = user_scripts1[0].id();
   const UserScriptList& user_scripts2 =
       ContentScriptsInfo::GetContentScripts(extension2);
   ASSERT_EQ(1u, user_scripts2.size());

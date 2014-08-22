@@ -4,12 +4,17 @@
 
 #include "extensions/common/user_script.h"
 
+#include "base/atomic_sequence_num.h"
 #include "base/command_line.h"
 #include "base/pickle.h"
 #include "base/strings/string_util.h"
 #include "extensions/common/switches.h"
 
 namespace {
+
+// This cannot be a plain int or int64 because we need to generate unique IDs
+// from multiple threads.
+base::StaticAtomicSequenceNumber g_user_script_id_generator;
 
 bool UrlMatchesGlobs(const std::vector<std::string>* globs,
                      const GURL& url) {
@@ -37,6 +42,12 @@ enum {
 
 // static
 const char UserScript::kFileExtension[] = ".user.js";
+
+
+// static
+int UserScript::GenerateUserScriptID() {
+   return g_user_script_id_generator.GetNext();
+}
 
 bool UserScript::IsURLUserScript(const GURL& url,
                                  const std::string& mime_type) {
@@ -128,7 +139,7 @@ void UserScript::Pickle(::Pickle* pickle) const {
   // Write the simple types to the pickle.
   pickle->WriteInt(run_location());
   pickle->WriteString(extension_id());
-  pickle->WriteInt64(user_script_id_);
+  pickle->WriteInt(user_script_id_);
   pickle->WriteBool(emulate_greasemonkey());
   pickle->WriteBool(match_all_frames());
   pickle->WriteBool(match_about_blank());
@@ -178,7 +189,7 @@ void UserScript::Unpickle(const ::Pickle& pickle, PickleIterator* iter) {
   run_location_ = static_cast<RunLocation>(run_location);
 
   CHECK(pickle.ReadString(iter, &extension_id_));
-  CHECK(pickle.ReadInt64(iter, &user_script_id_));
+  CHECK(pickle.ReadInt(iter, &user_script_id_));
   CHECK(pickle.ReadBool(iter, &emulate_greasemonkey_));
   CHECK(pickle.ReadBool(iter, &match_all_frames_));
   CHECK(pickle.ReadBool(iter, &match_about_blank_));
