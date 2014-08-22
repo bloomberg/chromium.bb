@@ -159,6 +159,7 @@ void GAIAInfoUpdateService::OnUsernameChanged(const std::string& username) {
   if (username.empty()) {
     // Unset the old user's GAIA info.
     cache.SetGAIANameOfProfileAtIndex(profile_index, base::string16());
+    cache.SetGAIAGivenNameOfProfileAtIndex(profile_index, base::string16());
     // The profile index may have changed.
     profile_index = cache.GetIndexOfProfileWithPath(profile_->GetPath());
     if (profile_index == std::string::npos)
