@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/ui.gni")
+
 group("services") {
   deps = [
     "//mojo/services/dbus_echo:bindings",
@@ -15,9 +17,14 @@ group("services") {
     "//mojo/services/public/interfaces/navigation",
     "//mojo/services/public/interfaces/network",
     "//mojo/services/public/interfaces/surfaces",
-    "//mojo/services/public/interfaces/view_manager",
-    "//mojo/services/public/interfaces/window_manager",
     "//mojo/services/surfaces",
     "//mojo/services/test_service:bindings",
   ]
+  if (use_aura) {
+    deps += [
+      "//mojo/services/public/interfaces/view_manager",
+      "//mojo/services/public/interfaces/window_manager",
+      "//mojo/services/window_manager",
+    ]
+  }
 }

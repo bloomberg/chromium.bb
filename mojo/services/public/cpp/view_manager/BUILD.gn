@@ -2,22 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# GYP version: mojo/mojo_services.gypi:mojo_view_manager_lib
 source_set("view_manager") {
-  deps = [
-    ":common",
-    "//base",
-    "//mojo/public/cpp/application:chromium",
-    "//mojo/public/interfaces/application",
-    "//mojo/services/public/cpp/geometry",
-    "//mojo/services/public/interfaces/geometry",
-    "//mojo/services/public/interfaces/view_manager",
-    "//mojo/services/public/interfaces/window_manager",
-    "//skia",
-    "//ui/events",
-    "//ui/gfx",
-    "//ui/gfx/geometry",
-  ]
-
   sources = [
     "lib/view.cc",
     "lib/view_manager_client_factory.cc",
@@ -33,6 +19,23 @@ source_set("view_manager") {
     "view_observer.h",
     "window_manager_delegate.h",
   ]
+
+  deps = [
+    ":common",
+    "//base",
+    "//mojo/public/cpp/application:chromium",
+    "//mojo/public/interfaces/application",
+    "//mojo/services/public/cpp/geometry",
+    "//mojo/services/public/interfaces/geometry",
+    "//mojo/services/public/interfaces/view_manager",
+    "//mojo/services/public/interfaces/window_manager",
+    "//skia",
+    "//ui/events",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
+  ]
+
+  forward_dependent_configs_from = [ "//skia" ]
 }
 
 source_set("common") {

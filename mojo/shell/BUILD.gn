@@ -164,3 +164,20 @@ test("mojo_shell_tests") {
     ]
   }
 }
+
+# GYP version: mojo/mojo.gyp:mojo_shell_test_support
+source_set("test_support") {
+  sources = [
+    "shell_test_helper.cc",
+    "shell_test_helper.h",
+  ]
+
+  deps = [
+    ":lib",
+    "//base",
+    "//base:base_static",
+    "//mojo/application_manager",
+    "//mojo/system",
+    "//url",
+  ]
+}

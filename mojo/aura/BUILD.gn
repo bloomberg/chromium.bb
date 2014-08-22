@@ -1,0 +1,38 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//mojo/system.gni")
+
+# GYP version: mojo/mojo.gyp:mojo_aura_support
+source_set("aura") {
+  sources = [
+    "aura_init.cc",
+    "aura_init.h",
+    "context_factory_mojo.cc",
+    "context_factory_mojo.h",
+    "screen_mojo.cc",
+    "screen_mojo.h",
+    "window_tree_host_mojo.cc",
+    "window_tree_host_mojo.h",
+    "window_tree_host_mojo_delegate.h",
+  ]
+
+  deps = [
+    "//cc",
+    "//skia",
+    "//ui/aura",
+    "//ui/compositor",
+    "//ui/events",
+    "//ui/events:events_base",
+    "//ui/gl",
+    "//webkit/common/gpu",
+    "//mojo/cc",
+    "//mojo/services/public/interfaces/native_viewport",
+    "//mojo/services/public/cpp/view_manager",
+  ] + mojo_gles2_for_shared_library
+
+  forward_dependent_configs_from = [
+    "//mojo/services/public/cpp/view_manager",
+  ]
+}

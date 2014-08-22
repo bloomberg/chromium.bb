@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/ui.gni")
+
 group("mojo") {
   deps = [
     ":tests",
@@ -28,6 +30,14 @@ group("tests") {
     "//mojo/shell:mojo_shell_tests",
     "//mojo/system:mojo_system_unittests",
   ]
+
+  if (use_aura) {
+    deps += [
+      "//mojo/services/public/cpp/view_manager/tests:mojo_view_manager_lib_unittests",
+      "//mojo/services/view_manager:mojo_view_manager_unittests",
+      "//mojo/services/window_manager:mojo_core_window_manager_unittests",
+    ]
+  }
 }
 
 if (is_android) {

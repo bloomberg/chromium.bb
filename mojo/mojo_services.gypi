@@ -545,6 +545,7 @@
       ],
     },
     {
+      # GN version: //mojo/services/public/cpp/view_manager/tests:mojo_view_manager_lib_unittests
       'target_name': 'mojo_view_manager_lib_unittests',
       'type': 'executable',
       'dependencies': [
@@ -742,6 +743,7 @@
           ],
         },
         {
+          # GN version: //mojo/services/public/cpp/view_manager/lib:run_unittests
           'target_name': 'mojo_view_manager_run_unittests',
           'type': 'static_library',
           'dependencies': [
@@ -769,6 +771,7 @@
           ],
         },
         {
+          # GN version: //mojo/services/view_manager:mojo_view_manager_unittests
           'target_name': 'mojo_view_manager_unittests',
           'type': 'executable',
           'dependencies': [
@@ -805,6 +808,7 @@
           'includes': [ 'build/package_app.gypi' ],
         },
         {
+          # GN version: //mojo/services/window_manager:lib
           'target_name': 'mojo_core_window_manager_lib',
           'type': 'static_library',
           'dependencies': [
@@ -828,6 +832,7 @@
           ],
         },
         {
+          # GN version: //mojo/services/window_manager
           'target_name': 'mojo_core_window_manager',
           'type': 'loadable_module',
           'dependencies': [
@@ -839,6 +844,7 @@
           ],
         },
         {
+          # GN version: //mojo/services/window_manager:mojo_core_window_manager_unittests
           'target_name': 'mojo_core_window_manager_unittests',
           'type': 'executable',
           'dependencies': [

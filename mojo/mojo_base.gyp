@@ -416,6 +416,7 @@
       }
     },
     {
+     # GN version: //mojo/public/cpp/application:chromium
      'target_name': 'mojo_application_chromium',
      'type': 'static_library',
      'sources': [

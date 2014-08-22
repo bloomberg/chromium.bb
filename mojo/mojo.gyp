@@ -223,6 +223,7 @@
       ],
     },
     {
+      # GN version: //mojo/shell:test_support
       'target_name': 'mojo_shell_test_support',
       'type': 'static_library',
       'dependencies': [
@@ -453,6 +454,7 @@
     ['use_aura==1', {
       'targets': [
         {
+          # GN version: //mojo/aura
           'target_name': 'mojo_aura_support',
           'type': 'static_library',
           'dependencies': [

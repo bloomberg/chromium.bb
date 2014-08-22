@@ -2,17 +2,26 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("base") {
+# GYP version: mojo/mojo_public.gypi:mojo_application_base
+source_set("application") {
   sources = [
+    "application_connection.h",
+    "application_delegate.h",
     "application_impl.h",
     "connect.h",
-    "lib/application_impl.cc",
-    "lib/service_connector.cc",
-    "lib/service_connector.h",
+    "service_provider_impl.h",
+    "interface_factory.h",
+    "interface_factory_impl.h",
     "lib/application_connection.cc",
     "lib/application_delegate.cc",
+    "lib/application_impl.cc",
+    "lib/service_provider_impl.cc",
+    "lib/service_connector.cc",
+    "lib/service_connector.h",
     "lib/service_registry.cc",
     "lib/service_registry.h",
+    "lib/weak_service_provider.cc",
+    "lib/weak_service_provider.h",
   ]
 
   deps = [
@@ -21,21 +30,26 @@ source_set("base") {
   ]
 }
 
+# GYP version: mojo/mojo_base.gyp:mojo_application_chromium
 source_set("chromium") {
   sources = [
     "lib/application_runner_chromium.cc"
   ]
 
-  deps = [ ":base" ]
+  deps = [
+    ":application",
+    "//mojo/environment:chromium",
+  ]
 }
 
+# GYP version: mojo/mojo_public.gypi:mojo_application_standalone
 source_set("standalone") {
   sources = [
     "lib/application_runner.cc"
   ]
 
-  deps = [ 
-    ":base",
+  deps = [
+    ":application",
     "//mojo/public/cpp/environment:standalone",
   ]
 }

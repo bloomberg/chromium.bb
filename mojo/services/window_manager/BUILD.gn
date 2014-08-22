@@ -1,0 +1,80 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/ui.gni")
+
+if (use_aura) {
+
+import("//mojo/system.gni")
+
+# GYP version: mojo/mojo_services.gypi:mojo_core_window_manager
+shared_library("window_manager") {
+  output_name = "mojo_core_window_manager"
+
+  sources = [ "main.cc" ]
+
+  deps = [
+    ":lib",
+    "//mojo/public/cpp/application:chromium",
+  ] + mojo_system_for_shared_library
+}
+
+# GYP version: mojo/mojo_services.gypi:mojo_core_window_manager_lib
+source_set("lib") {
+  sources = [
+    "window_manager_app.cc",
+    "window_manager_app.h",
+    "window_manager_service_impl.cc",
+    "window_manager_service_impl.h",
+  ]
+
+  deps = [
+    "//base",
+    "//mojo/aura",
+    "//mojo/common",
+    "//mojo/environment:chromium",
+    "//mojo/public/cpp/application:chromium",
+    "//mojo/services/public/cpp/input_events",
+    "//mojo/services/public/cpp/view_manager",
+    "//mojo/services/public/interfaces/window_manager",
+    "//ui/base",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
+    "//ui/wm",
+  ]
+
+  forward_dependent_configs_from = [ "//mojo/aura" ]
+}
+
+# GYP version: mojo/mojo_services.gypi:mojo_core_window_manager_unittests
+test("mojo_core_window_manager_unittests") {
+  sources = [
+    "window_manager_api_unittest.cc",
+    "window_manager_unittests.cc",
+  ]
+
+  deps = [
+    "//base/test:test_support",
+    "//mojo/application_manager",
+    "//mojo/environment:chromium",
+    "//mojo/services/public/cpp/view_manager",
+    "//mojo/services/public/interfaces/view_manager",
+    "//mojo/services/public/interfaces/window_manager",
+    "//mojo/shell:test_support",
+    "//mojo/system",
+    "//testing/gtest",
+    "//ui/gl",
+  ]
+  if (is_linux) {
+    deps += [
+      "//third_party/mesa:osmesa",
+      "//mojo/services/native_viewport",
+    ]
+  }
+  if (use_x11) {
+    deps += [ "//ui/gfx/x" ]
+  }
+}
+
+}  # use_aura

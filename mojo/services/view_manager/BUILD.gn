@@ -68,3 +68,35 @@ component("view_manager") {
     "window_tree_host_impl.h",
   ]
 }
+
+# GYP version: mojo/mojo_services.gypi:mojo_view_manager_unittests
+test("mojo_view_manager_unittests") {
+  deps = [
+    "//base",
+    "//base/test:test_support",
+    "//mojo/application_manager",
+    "//mojo/environment:chromium",
+    "//mojo/public/cpp/application:chromium",
+    "//mojo/services/public/cpp/input_events",
+    "//mojo/services/public/cpp/geometry",
+    "//mojo/services/public/cpp/view_manager",
+    "//mojo/services/public/cpp/view_manager/lib:run_unittests",
+    "//mojo/services/public/cpp/view_manager:common",
+    "//mojo/services/public/interfaces/input_events",
+    "//mojo/services/public/interfaces/geometry",
+    "//mojo/services/public/interfaces/view_manager",
+    "//mojo/shell:test_support",
+    "//mojo/system",
+    "//skia",
+    "//testing/gtest",
+    "//ui/aura",
+    "//ui/gfx/geometry",
+    "//ui/gl",
+  ]
+
+  sources = [
+    "test_change_tracker.cc",
+    "test_change_tracker.h",
+    "view_manager_unittest.cc",
+  ]
+}

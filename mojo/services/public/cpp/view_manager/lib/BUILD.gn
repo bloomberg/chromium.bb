@@ -1,0 +1,29 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/ui.gni")
+
+# GYP version: mojo/mojo_services.gypi:mojo_view_manager_run_unittests
+source_set("run_unittests") {
+  sources = [
+    "view_manager_test_suite.cc",
+    "view_manager_test_suite.h",
+    "view_manager_unittests.cc",
+  ]
+
+  deps = [
+    "//base",
+    "//base/test:test_support",
+    "//ui/gl",
+  ]
+  if (is_linux) {
+    deps += [
+      "//third_party/mesa:osmesa",
+      "//mojo/services/native_viewport",
+    ]
+  }
+  if (use_x11) {
+    deps += [ "//ui/gfx/x" ]
+  }
+}
