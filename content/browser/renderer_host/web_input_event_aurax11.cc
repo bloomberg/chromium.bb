@@ -47,6 +47,7 @@
 #include "content/browser/renderer_host/ui_events_helper.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
+#include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_code_conversion_x.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
@@ -54,40 +55,6 @@ namespace content {
 
 // chromium WebKit does not provide a WebInputEventFactory for X11, so we have
 // to do the work here ourselves.
-
-namespace {
-
-int XKeyEventToWindowsKeyCode(XKeyEvent* event) {
-  int windows_key_code =
-      ui::KeyboardCodeFromXKeyEvent(reinterpret_cast<XEvent*>(event));
-  if (windows_key_code == ui::VKEY_SHIFT ||
-      windows_key_code == ui::VKEY_CONTROL ||
-      windows_key_code == ui::VKEY_MENU) {
-    // To support DOM3 'location' attribute, we need to lookup an X KeySym and
-    // set ui::VKEY_[LR]XXX instead of ui::VKEY_XXX.
-    KeySym keysym = XK_VoidSymbol;
-    XLookupString(event, NULL, 0, &keysym, NULL);
-    switch (keysym) {
-      case XK_Shift_L:
-        return ui::VKEY_LSHIFT;
-      case XK_Shift_R:
-        return ui::VKEY_RSHIFT;
-      case XK_Control_L:
-        return ui::VKEY_LCONTROL;
-      case XK_Control_R:
-        return ui::VKEY_RCONTROL;
-      case XK_Meta_L:
-      case XK_Alt_L:
-        return ui::VKEY_LMENU;
-      case XK_Meta_R:
-      case XK_Alt_R:
-        return ui::VKEY_RMENU;
-    }
-  }
-  return windows_key_code;
-}
-
-}  // namespace
 
 blink::WebKeyboardEvent MakeWebKeyboardEventFromAuraEvent(
     ui::KeyEvent* event) {
@@ -113,22 +80,11 @@ blink::WebKeyboardEvent MakeWebKeyboardEventFromAuraEvent(
   if (webkit_event.modifiers & blink::WebInputEvent::AltKey)
     webkit_event.isSystemKey = true;
 
-  webkit_event.windowsKeyCode = XKeyEventToWindowsKeyCode(native_key_event);
+  webkit_event.windowsKeyCode = ui::WindowsKeycodeFromNative(native_event);
   webkit_event.nativeKeyCode = native_key_event->keycode;
-
-  if (webkit_event.windowsKeyCode == ui::VKEY_RETURN)
-    webkit_event.unmodifiedText[0] = '\r';
-  else
-    webkit_event.unmodifiedText[0] = ui::GetCharacterFromXEvent(native_event);
-
-  if (webkit_event.modifiers & blink::WebInputEvent::ControlKey) {
-    webkit_event.text[0] =
-        GetControlCharacter(
-            webkit_event.windowsKeyCode,
-            webkit_event.modifiers & blink::WebInputEvent::ShiftKey);
-  } else {
-    webkit_event.text[0] = webkit_event.unmodifiedText[0];
-  }
+  webkit_event.unmodifiedText[0] =
+      ui::UnmodifiedTextFromNative(native_event);
+  webkit_event.text[0] = ui::TextFromNative(native_event);
 
   webkit_event.setKeyIdentifierFromWindowsKeyCode();
 

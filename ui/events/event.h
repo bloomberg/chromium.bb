@@ -10,6 +10,7 @@
 #include "base/event_types.h"
 #include "base/gtest_prod_util.h"
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/gesture_event_details.h"
@@ -546,6 +547,17 @@ class EVENTS_EXPORT TouchEvent : public LocatedEvent {
   float force_;
 };
 
+// An interface that individual platforms can use to store additional data on
+// KeyEvent.
+//
+// Currently only used in mojo.
+class EVENTS_EXPORT ExtendedKeyEventData {
+ public:
+  virtual ~ExtendedKeyEventData() {}
+
+  virtual ExtendedKeyEventData* Clone() const = 0;
+};
+
 // A KeyEvent is really two distinct classes, melded together due to the
 // DOM legacy of Windows key events: a keystroke event (is_char_ == false),
 // or a character event (is_char_ == true).
@@ -592,6 +604,23 @@ class EVENTS_EXPORT KeyEvent : public Event {
            const std::string& code,
            int flags);
 
+  KeyEvent(const KeyEvent& rhs);
+
+  KeyEvent& operator=(const KeyEvent& rhs);
+
+  virtual ~KeyEvent();
+
+  // TODO(erg): While we transition to mojo, we have to hack around a mismatch
+  // in our event types. Our ui::Events don't really have all the data we need
+  // to process key events, and we instead do per-platform conversions with
+  // native HWNDs or XEvents. And we can't reliably send those native data
+  // types across mojo types in a cross-platform way. So instead, we set the
+  // resulting data when read across IPC boundaries.
+  void SetExtendedKeyEventData(scoped_ptr<ExtendedKeyEventData> data);
+  const ExtendedKeyEventData* extended_key_event_data() const {
+    return extended_key_event_data_.get();
+  }
+
   // This bypasses the normal mapping from keystroke events to characters,
   // which allows an I18N virtual keyboard to fabricate a keyboard event that
   // does not have a corresponding KeyboardCode (example: U+00E1 Latin small
@@ -603,6 +632,7 @@ class EVENTS_EXPORT KeyEvent : public Event {
   base::char16 GetCharacter() const;
 
   // Gets the platform key code. For XKB, this is the xksym value.
+  void set_platform_keycode(uint32 keycode) { platform_keycode_ = keycode; }
   uint32 platform_keycode() const { return platform_keycode_; }
   KeyboardCode key_code() const { return key_code_; }
 
@@ -659,6 +689,12 @@ class EVENTS_EXPORT KeyEvent : public Event {
   // field. For key with modifier key, it may have specifial text.
   // e.g. CTRL+A has '\x01'.
   base::char16 character_;
+
+  // Parts of our event handling require raw native events (see both the
+  // windows and linux implementations of web_input_event in content/). Because
+  // mojo instead serializes and deserializes events in potentially different
+  // processes, we need to have a mechanism to keep track of this data.
+  scoped_ptr<ExtendedKeyEventData> extended_key_event_data_;
 
   static bool IsRepeated(const KeyEvent& event);
 

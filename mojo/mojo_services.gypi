@@ -95,6 +95,7 @@
       'sources': [
         'services/public/interfaces/input_events/input_event_constants.mojom',
         'services/public/interfaces/input_events/input_events.mojom',
+        'services/public/interfaces/input_events/input_key_codes.mojom',
       ],
       'includes': [ 'public/tools/bindings/mojom_bindings_generator.gypi' ],
       'dependencies': [

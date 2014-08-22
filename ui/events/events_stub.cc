@@ -142,4 +142,20 @@ bool IsCharFromNative(const base::NativeEvent& native_event) {
   return false;
 }
 
+uint32 WindowsKeycodeFromNative(const base::NativeEvent& native_event) {
+  NOTIMPLEMENTED();
+  return 0;
+}
+
+uint16 TextFromNative(const base::NativeEvent& native_event) {
+  NOTIMPLEMENTED();
+  return 0;
+}
+
+uint16 UnmodifiedTextFromNative(const base::NativeEvent& native_event) {
+  NOTIMPLEMENTED();
+  return 0;
+}
+
+
 }  // namespace ui

@@ -684,6 +684,54 @@ bool IsCharFromNative(const base::NativeEvent& native_event) {
   return false;
 }
 
+uint32 WindowsKeycodeFromNative(const base::NativeEvent& native_event) {
+  int windows_key_code = ui::KeyboardCodeFromXKeyEvent(native_event);
+  if (windows_key_code == ui::VKEY_SHIFT ||
+      windows_key_code == ui::VKEY_CONTROL ||
+      windows_key_code == ui::VKEY_MENU) {
+    // To support DOM3 'location' attribute, we need to lookup an X KeySym and
+    // set ui::VKEY_[LR]XXX instead of ui::VKEY_XXX.
+    KeySym keysym = XK_VoidSymbol;
+    XLookupString(&native_event->xkey, NULL, 0, &keysym, NULL);
+    switch (keysym) {
+      case XK_Shift_L:
+        return ui::VKEY_LSHIFT;
+      case XK_Shift_R:
+        return ui::VKEY_RSHIFT;
+      case XK_Control_L:
+        return ui::VKEY_LCONTROL;
+      case XK_Control_R:
+        return ui::VKEY_RCONTROL;
+      case XK_Meta_L:
+      case XK_Alt_L:
+        return ui::VKEY_LMENU;
+      case XK_Meta_R:
+      case XK_Alt_R:
+        return ui::VKEY_RMENU;
+    }
+  }
+  return windows_key_code;
+}
+
+uint16 TextFromNative(const base::NativeEvent& native_event) {
+  int flags = EventFlagsFromNative(native_event);
+  if ((flags & ui::EF_CONTROL_DOWN) != 0) {
+    int windows_key_code = WindowsKeycodeFromNative(native_event);
+    return ui::GetControlCharacterForKeycode(windows_key_code,
+                                             flags & ui::EF_SHIFT_DOWN);
+  }
+
+  return UnmodifiedTextFromNative(native_event);
+}
+
+uint16 UnmodifiedTextFromNative(const base::NativeEvent& native_event) {
+  uint32 keycode = WindowsKeycodeFromNative(native_event);
+  if (keycode == ui::VKEY_RETURN)
+    return '\r';
+  else
+    return ui::GetCharacterFromXEvent(native_event);
+}
+
 int GetChangedMouseButtonFlagsFromNative(
     const base::NativeEvent& native_event) {
   switch (native_event->type) {

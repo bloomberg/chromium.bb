@@ -620,7 +620,40 @@ KeyEvent::KeyEvent(base::char16 character, KeyboardCode key_code, int flags)
       key_code_(key_code),
       code_(""),
       is_char_(true),
+      platform_keycode_(0),
       character_(character) {
+}
+
+KeyEvent::KeyEvent(const KeyEvent& rhs)
+    : Event(rhs),
+      key_code_(rhs.key_code_),
+      code_(rhs.code_),
+      is_char_(rhs.is_char_),
+      platform_keycode_(rhs.platform_keycode_),
+      character_(rhs.character_) {
+  if (rhs.extended_key_event_data_)
+    extended_key_event_data_.reset(rhs.extended_key_event_data_->Clone());
+}
+
+KeyEvent& KeyEvent::operator=(const KeyEvent& rhs) {
+  if (this != &rhs) {
+    Event::operator=(rhs);
+    key_code_ = rhs.key_code_;
+    code_ = rhs.code_;
+    is_char_ = rhs.is_char_;
+    platform_keycode_ = rhs.platform_keycode_;
+    character_ = rhs.character_;
+
+    if (rhs.extended_key_event_data_)
+      extended_key_event_data_.reset(rhs.extended_key_event_data_->Clone());
+  }
+  return *this;
+}
+
+KeyEvent::~KeyEvent() {}
+
+void KeyEvent::SetExtendedKeyEventData(scoped_ptr<ExtendedKeyEventData> data) {
+  extended_key_event_data_ = data.Pass();
 }
 
 base::char16 KeyEvent::GetCharacter() const {
