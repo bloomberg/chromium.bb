@@ -5,7 +5,7 @@
 # Documentation on PRESUBMIT.py can be found at:
 # http://www.chromium.org/developers/how-tos/depottools/presubmit-scripts
 
-import os.path
+import os
 import sys
 
 # List of directories to not apply presubmit project checks, relative
@@ -29,11 +29,10 @@ EXCLUDE_PROJECT_CHECKS_DIRS = [
     'src/trusted/validator_ragel/gen',
     ]
 
-def NaClTopDir():
-  # git-cl and gcl run PRESUBMIT.py with the current directory set to
-  # the native_client directory (which may have a different basename
-  # in a standalone checkout).
-  return os.getcwd()
+NACL_TOP_DIR = os.getcwd()
+while not os.path.isfile(os.path.join(NACL_TOP_DIR, 'PRESUBMIT.py')):
+  NACL_TOP_DIR = os.path.dirname(NACL_TOP_DIR)
+  assert len(NACL_TOP_DIR) >= 3, "Could not find NaClTopDir"
 
 def _CommonChecks(input_api, output_api):
   """Checks for both upload and commit."""
@@ -64,15 +63,15 @@ def CheckChangeOnUpload(input_api, output_api):
   # it can be used by the commit queue.
   old_sys_path = list(sys.path)
   try:
-    sys.path.append(os.path.join(NaClTopDir(), 'tools'))
-    sys.path.append(os.path.join(NaClTopDir(), 'build'))
+    sys.path.append(os.path.join(NACL_TOP_DIR, 'tools'))
+    sys.path.append(os.path.join(NACL_TOP_DIR, 'build'))
     import code_hygiene
   finally:
     sys.path = old_sys_path
     del old_sys_path
 
   affected_files = input_api.AffectedFiles(include_deletes=False)
-  exclude_dirs = [ NaClTopDir() + '/' + x + '/'
+  exclude_dirs = [ NACL_TOP_DIR + '/' + x + '/'
                    for x in EXCLUDE_PROJECT_CHECKS_DIRS ]
   for filename in affected_files:
     filename = filename.AbsoluteLocalPath()
@@ -168,19 +167,19 @@ def GetPreferredTryMasters(_, change):
 
   for file in change.AffectedFiles(include_dirs=True):
     if IsFileInDirectories(file.AbsoluteLocalPath(),
-                           [os.path.join(NaClTopDir(), 'build'),
-                            os.path.join(NaClTopDir(), 'buildbot'),
-                            os.path.join(NaClTopDir(), 'pynacl')]):
+                           [os.path.join(NACL_TOP_DIR, 'build'),
+                            os.path.join(NACL_TOP_DIR, 'buildbot'),
+                            os.path.join(NACL_TOP_DIR, 'pynacl')]):
       # Buildbot and infrastructure changes should trigger all the try bots.
       has_pnacl = True
       has_toolchain_build = True
       has_others = True
       break
     elif IsFileInDirectories(file.AbsoluteLocalPath(),
-                           [os.path.join(NaClTopDir(), 'pnacl')]):
+                           [os.path.join(NACL_TOP_DIR, 'pnacl')]):
       has_pnacl = True
     elif IsFileInDirectories(file.AbsoluteLocalPath(),
-                             [os.path.join(NaClTopDir(), 'toolchain_build')]):
+                             [os.path.join(NACL_TOP_DIR, 'toolchain_build')]):
       has_toolchain_build = True
     else:
       has_others = True
