@@ -39,7 +39,6 @@ class WebActivity : public Activity,
   virtual ActivityState GetCurrentState() OVERRIDE;
   virtual bool IsVisible() OVERRIDE;
   virtual ActivityMediaState GetMediaState() OVERRIDE;
-  virtual aura::Window* GetWindow() OVERRIDE;
 
   // ActivityViewModel:
   virtual void Init() OVERRIDE;

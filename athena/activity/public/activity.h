@@ -9,10 +9,6 @@
 
 #include "athena/athena_export.h"
 
-namespace aura {
-class Window;
-}
-
 namespace athena {
 
 class ActivityViewModel;
@@ -76,10 +72,6 @@ class ATHENA_EXPORT Activity {
 
   // Returns the current media state.
   virtual ActivityMediaState GetMediaState() = 0;
-
-  // Returns the window for the activity. This can be used to determine the
-  // stacking order of this activity against others.
-  virtual aura::Window* GetWindow() = 0;
 };
 
 }  // namespace athena
