@@ -157,9 +157,6 @@ class GitilesFileSystem(FileSystem):
     #   }
     return content_future.Then(lambda json: _ParseGitilesJson(json)['commit'])
 
-  def Stat(self, path):
-    return self.StatAsync(path).Get()
-
   def StatAsync(self, path):
     dir_, filename = posixpath.split(path)
     def stat(content):

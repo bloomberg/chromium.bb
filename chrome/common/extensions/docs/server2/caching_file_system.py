@@ -33,9 +33,6 @@ class CachingFileSystem(FileSystem):
   def Refresh(self):
     return self._file_system.Refresh()
 
-  def Stat(self, path):
-    return self.StatAsync(path).Get()
-
   def StatAsync(self, path):
     '''Stats the directory given, or if a file is given, stats the file's parent
     directory to get info about the file.

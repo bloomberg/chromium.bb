@@ -121,18 +121,27 @@ class FileSystem(object):
 
   # TODO(cduvall): Allow Stat to take a list of paths like Read.
   def Stat(self, path):
-    '''Returns a |StatInfo| object containing the version of |path|. If |path|
+    '''DEPRECATED: Please try to use StatAsync instead.
+
+    Returns a |StatInfo| object containing the version of |path|. If |path|
     is a directory, |StatInfo| will have the versions of all the children of
     the directory in |StatInfo.child_versions|.
 
     If the path cannot be found, raises a FileNotFoundError.
     For any other failure, raises a FileSystemError.
     '''
+    # Delegate to this implementation's StatAsync if it has been implemented.
+    if type(self).StatAsync != FileSystem.StatAsync:
+      return self.StatAsync(path).Get()
     raise NotImplementedError(self.__class__)
 
   def StatAsync(self, path):
-    '''Bandaid for a lack of an async Stat function. Stat() should be async
-    by default but for now just let implementations override this if they like.
+    '''An async version of Stat. Returns a Future to a StatInfo rather than a
+    raw StatInfo.
+
+    This is a bandaid for a lack of an async Stat function. Stat() should be
+    async by default but for now just let implementations override this if they
+    like.
     '''
     return Future(callback=lambda: self.Stat(path))
 

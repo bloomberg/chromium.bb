@@ -167,9 +167,6 @@ class SubversionFileSystem(FileSystem):
   def Refresh(self):
     return Future(value=())
 
-  def Stat(self, path):
-    return self.StatAsync(path).Get()
-
   def StatAsync(self, path):
     directory, filename = posixpath.split(path)
     if self._revision is not None:
