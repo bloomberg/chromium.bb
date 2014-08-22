@@ -1,0 +1,14 @@
+
+
+In Blink accessibility, the parent of a remove SVG root has to be explicitly set to a node in the main accessibility tree. This test ensures that if the same remote SVG url is referenced twice in the same document, the parent doesn't change depending on when you access it.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+Parent of first child of image 1: AXDescription: Image1
+Parent of first child of image 2: AXDescription: Image1
+PASS imageChildParentDescription2 is imageChildParentDescription1
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

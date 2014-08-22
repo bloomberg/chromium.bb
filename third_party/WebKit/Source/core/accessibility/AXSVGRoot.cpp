@@ -47,6 +47,16 @@ PassRefPtr<AXSVGRoot> AXSVGRoot::create(RenderObject* renderer)
     return adoptRef(new AXSVGRoot(renderer));
 }
 
+void AXSVGRoot::setParent(AXObject* parent)
+{
+    // Only update the parent to another objcet if it wasn't already set to
+    // something. Multiple elements in an HTML document can reference
+    // the same remote SVG document, and in that case the parent should just
+    // stay with the first one.
+    if (!m_parent || !parent)
+        m_parent = parent;
+}
+
 AXObject* AXSVGRoot::parentObject() const
 {
     // If a parent was set because this is a remote SVG resource, use that

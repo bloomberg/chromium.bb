@@ -1,0 +1,46 @@
+<!DOCTYPE HTML>
+<html>
+<body>
+<script src="../resources/js-test.js"></script>
+
+<div>
+  <img id="svg-image1" alt="Image1">
+</div>
+<div>
+  <img id="svg-image2" alt="Image2">
+</div>
+
+<div id="console"></div>
+<script>
+
+description("In Blink accessibility, the parent of a remove SVG root has to be explicitly set to a node in the main accessibility tree. This test ensures that if the same remote SVG url is referenced twice in the same document, the parent doesn't change depending on when you access it.");
+window.jsTestIsAsync = true;
+
+function runAXTest() {    
+    var image1 = accessibilityController.accessibleElementById("svg-image1");
+    var image2 = accessibilityController.accessibleElementById("svg-image2");
+
+    var imageChild1 = image1.childAtIndex(0);
+    window.imageChildParentDescription1 = imageChild1.parentElement().description;
+    debug('Parent of first child of image 1: ' + imageChildParentDescription1);
+
+    var imageChild2 = image2.childAtIndex(0);
+    window.imageChildParentDescription2 = imageChild2.parentElement().description;
+    debug('Parent of first child of image 2: ' + imageChildParentDescription2);
+
+    shouldBe('imageChildParentDescription2', 'imageChildParentDescription1');
+
+    finishJSTest();
+}
+
+if (window.accessibilityController) {
+    document.getElementById("svg-image1").addEventListener("load", runAXTest);
+}
+document.getElementById("svg-image1").src = "resources/svg-face.svg";
+document.getElementById("svg-image2").src = "resources/svg-face.svg";
+
+</script>
+
+</body>
+</html>
+

@@ -41,7 +41,7 @@ public:
     static PassRefPtr<AXSVGRoot> create(RenderObject*);
     virtual ~AXSVGRoot();
 
-    void setParent(AXObject* parent) { m_parent = parent; }
+    void setParent(AXObject*);
 
 private:
     AXObject* m_parent;
