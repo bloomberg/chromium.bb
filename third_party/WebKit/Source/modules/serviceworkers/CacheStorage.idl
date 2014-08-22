@@ -5,7 +5,6 @@
 // See https://slightlyoff.github.io/ServiceWorker/spec/service_worker/index.html#cache-storage
 [
     WillBeGarbageCollected,
-    NoInterfaceObject,
     Exposed=ServiceWorker,
     RuntimeEnabled=ServiceWorker,
 ] interface CacheStorage {

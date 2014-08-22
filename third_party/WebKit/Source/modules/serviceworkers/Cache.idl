@@ -17,7 +17,6 @@
 
 [
     WillBeGarbageCollected,
-    NoInterfaceObject,
     Exposed=ServiceWorker,
     RuntimeEnabled=ServiceWorker,
 ] interface Cache {

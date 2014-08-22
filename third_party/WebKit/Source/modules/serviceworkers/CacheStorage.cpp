@@ -63,7 +63,7 @@ public:
     virtual void onError(WebServiceWorkerCacheError* reason) OVERRIDE
     {
         if (*reason == WebServiceWorkerCacheErrorNotFound)
-            m_resolver->resolve(false);
+            m_resolver->resolve();
         else
             m_resolver->resolve(Cache::domExceptionForCacheError(*reason));
         m_resolver.clear();
