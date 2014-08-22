@@ -25,8 +25,7 @@
 
 [
     GarbageCollected,
-    NoInterfaceObject,
-    RuntimeEnabled=SpeechSynthesis
+    NoInterfaceObject
 ] interface SpeechSynthesis : EventTarget {
     readonly attribute boolean pending;
     readonly attribute boolean speaking;

@@ -121,7 +121,6 @@ ShowModalDialog status=deprecated
 // Lax Mixed Content checking for WebSockets, XHR, etc. is deprecated and slated for removal. crbug.com/389089
 LaxMixedContentChecking status=deprecated
 
-SpeechSynthesis status=stable
 Stream status=experimental
 SubpixelFontScaling status=stable
 SubresourceIntegrity status=test

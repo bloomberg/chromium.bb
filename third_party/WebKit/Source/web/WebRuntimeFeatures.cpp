@@ -207,11 +207,6 @@ void WebRuntimeFeatures::enableSessionStorage(bool enable)
     RuntimeEnabledFeatures::setSessionStorageEnabled(enable);
 }
 
-void WebRuntimeFeatures::enableSpeechSynthesis(bool enable)
-{
-    RuntimeEnabledFeatures::setSpeechSynthesisEnabled(enable);
-}
-
 void WebRuntimeFeatures::enableTouch(bool enable)
 {
     RuntimeEnabledFeatures::setTouchEnabled(enable);

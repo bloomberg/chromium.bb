@@ -100,8 +100,6 @@ public:
 
     BLINK_EXPORT static void enableSessionStorage(bool);
 
-    BLINK_EXPORT static void enableSpeechSynthesis(bool);
-
     BLINK_EXPORT static void enableTouch(bool);
 
     BLINK_EXPORT static void enableTouchIconLoading(bool);
