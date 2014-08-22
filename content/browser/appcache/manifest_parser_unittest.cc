@@ -4,7 +4,7 @@
 
 #include <string>
 
-#include "content/browser/appcache/appcache_manifest_parser.h"
+#include "content/browser/appcache/manifest_parser.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
