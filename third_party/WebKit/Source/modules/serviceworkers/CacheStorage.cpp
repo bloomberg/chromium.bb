@@ -7,6 +7,7 @@
 
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/ScriptState.h"
+#include "core/dom/DOMException.h"
 #include "modules/serviceworkers/Cache.h"
 #include "public/platform/WebServiceWorkerCacheError.h"
 #include "public/platform/WebServiceWorkerCacheStorage.h"
@@ -15,20 +16,9 @@ namespace blink {
 
 namespace {
 
-const char* cacheErrorToString(WebServiceWorkerCacheError reason)
+PassRefPtrWillBeRawPtr<DOMException> createNoImplementationException()
 {
-    // FIXME: Construct correct DOM error objects rather than returning strings.
-    switch (reason) {
-    case WebServiceWorkerCacheErrorNotImplemented:
-        return "not implemented";
-    case WebServiceWorkerCacheErrorNotFound:
-        return "not found";
-    case WebServiceWorkerCacheErrorExists:
-        return "entry already exists";
-    default:
-        ASSERT_NOT_REACHED();
-        return "unknown error";
-    }
+    return DOMException::create(NotSupportedError, "No CacheStorage implementation provided.");
 }
 
 // FIXME: Consider using CallbackPromiseAdapter.
@@ -46,7 +36,10 @@ public:
 
     virtual void onError(WebServiceWorkerCacheError* reason) OVERRIDE
     {
-        m_resolver->reject(cacheErrorToString(*reason));
+        if (*reason == WebServiceWorkerCacheErrorNotFound)
+            m_resolver->resolve(false);
+        else
+            m_resolver->resolve(Cache::domExceptionForCacheError(*reason));
         m_resolver.clear();
     }
 
@@ -69,7 +62,10 @@ public:
 
     virtual void onError(WebServiceWorkerCacheError* reason) OVERRIDE
     {
-        m_resolver->reject(cacheErrorToString(*reason));
+        if (*reason == WebServiceWorkerCacheErrorNotFound)
+            m_resolver->resolve(false);
+        else
+            m_resolver->resolve(Cache::domExceptionForCacheError(*reason));
         m_resolver.clear();
     }
 
@@ -95,7 +91,7 @@ public:
 
     virtual void onError(WebServiceWorkerCacheError* reason) OVERRIDE
     {
-        m_resolver->reject(cacheErrorToString(*reason));
+        m_resolver->reject(Cache::domExceptionForCacheError(*reason));
         m_resolver.clear();
     }
 
@@ -118,7 +114,7 @@ ScriptPromise CacheStorage::get(ScriptState* scriptState, const String& cacheNam
     if (m_webCacheStorage)
         m_webCacheStorage->dispatchGet(new CacheStorageWithCacheCallbacks(resolver), cacheName);
     else
-        resolver->reject("no implementation provided");
+        resolver->reject(createNoImplementationException());
 
     return promise;
 }
@@ -131,7 +127,7 @@ ScriptPromise CacheStorage::has(ScriptState* scriptState, const String& cacheNam
     if (m_webCacheStorage)
         m_webCacheStorage->dispatchHas(new CacheStorageCallbacks(resolver), cacheName);
     else
-        resolver->reject("no implementation provided");
+        resolver->reject(createNoImplementationException());
 
     return promise;
 }
@@ -144,7 +140,7 @@ ScriptPromise CacheStorage::createFunction(ScriptState* scriptState, const Strin
     if (m_webCacheStorage)
         m_webCacheStorage->dispatchCreate(new CacheStorageWithCacheCallbacks(resolver), cacheName);
     else
-        resolver->reject("no implementation provided");
+        resolver->reject(createNoImplementationException());
 
     return promise;
 }
@@ -157,7 +153,7 @@ ScriptPromise CacheStorage::deleteFunction(ScriptState* scriptState, const Strin
     if (m_webCacheStorage)
         m_webCacheStorage->dispatchDelete(new CacheStorageCallbacks(resolver), cacheName);
     else
-        resolver->reject("no implementation provided");
+        resolver->reject(createNoImplementationException());
 
     return promise;
 }
@@ -170,7 +166,7 @@ ScriptPromise CacheStorage::keys(ScriptState* scriptState)
     if (m_webCacheStorage)
         m_webCacheStorage->dispatchKeys(new CacheStorageKeysCallbacks(resolver));
     else
-        resolver->reject("no implementation provided");
+        resolver->reject(createNoImplementationException());
 
     return promise;
 }

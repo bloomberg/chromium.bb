@@ -7,6 +7,8 @@
 
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "core/dom/DOMException.h"
+#include "public/platform/WebServiceWorkerCacheError.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/RefCounted.h"
@@ -44,6 +46,8 @@ public:
     ScriptPromise keys(ScriptState*, const String&, const Dictionary& queryParams);
 
     void trace(Visitor*) { }
+
+    static PassRefPtrWillBeRawPtr<DOMException> domExceptionForCacheError(WebServiceWorkerCacheError);
 
 private:
     explicit Cache(WebServiceWorkerCache* webCache);

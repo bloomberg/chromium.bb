@@ -16,8 +16,7 @@ ScriptPromise rejectAsNotImplemented(ScriptState* scriptState)
 {
     RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     const ScriptPromise promise = resolver->promise();
-    resolver->reject("not implemented");
-
+    resolver->reject(DOMException::create(NotSupportedError, "Cache is not implemented"));
     return promise;
 }
 
@@ -97,6 +96,21 @@ ScriptPromise Cache::keys(ScriptState* scriptState, Request* request, const Dict
 ScriptPromise Cache::keys(ScriptState* scriptState, const String& requestString, const Dictionary& queryParams)
 {
     return rejectAsNotImplemented(scriptState);
+}
+
+PassRefPtrWillBeRawPtr<DOMException> Cache::domExceptionForCacheError(WebServiceWorkerCacheError reason)
+{
+    switch (reason) {
+    case WebServiceWorkerCacheErrorNotImplemented:
+        return DOMException::create(NotSupportedError, "Method is not implemented.");
+    case WebServiceWorkerCacheErrorNotFound:
+        return DOMException::create(NotFoundError, "Entry was not found.");
+    case WebServiceWorkerCacheErrorExists:
+        return DOMException::create(InvalidAccessError, "Entry already exists.");
+    default:
+        ASSERT_NOT_REACHED();
+        return DOMException::create(NotSupportedError, "Unknown error.");
+    }
 }
 
 Cache::Cache(WebServiceWorkerCache* webCache) : m_webCache(webCache)
