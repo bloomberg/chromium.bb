@@ -58,7 +58,7 @@ void XMLHttpRequestProgressEventThrottle::dispatchProgressEvent(const AtomicStri
     }
 
     if (m_deferEvents) {
-        // Only store the latest progress event while suspended.
+        // Only store the latest "progress" event while suspended.
         m_deferredProgressEvent = progressEvent;
         return;
     }
@@ -85,8 +85,13 @@ void XMLHttpRequestProgressEventThrottle::dispatchProgressEvent(const AtomicStri
 void XMLHttpRequestProgressEventThrottle::dispatchReadyStateChangeEvent(PassRefPtrWillBeRawPtr<Event> event, ProgressEventAction progressEventAction)
 {
     if (progressEventAction == FlushProgressEvent || progressEventAction == FlushDeferredProgressEvent) {
-        if (!flushDeferredProgressEvent() && progressEventAction == FlushProgressEvent)
-            deliverProgressEvent();
+        // FIXME: If m_deferredProgressEvent is not null, we just queue it to
+        // m_deferredEvents (since http://trac.webkit.org/changeset/114374).
+        // This coalescing seems to be not the best. Consider overwriting it
+        // with the latest info when progressEventAction is FlushProgressEvent.
+        bool hadDeferredProgressEvent = flushDeferredProgressEvent();
+        if (!hadDeferredProgressEvent && progressEventAction == FlushProgressEvent)
+            deliverScheduledProgressEvent();
     }
 
     dispatchEvent(event);
@@ -109,7 +114,8 @@ void XMLHttpRequestProgressEventThrottle::dispatchEvent(PassRefPtrWillBeRawPtr<E
 bool XMLHttpRequestProgressEventThrottle::flushDeferredProgressEvent()
 {
     if (m_deferEvents && m_deferredProgressEvent) {
-        // Move the progress event to the queue, to get it in the right order on resume.
+        // Move the deferred "progress" event to the queue, to get it in the
+        // right order on resume.
         m_deferredEvents.append(m_deferredProgressEvent);
         m_deferredProgressEvent = nullptr;
         return true;
@@ -117,7 +123,7 @@ bool XMLHttpRequestProgressEventThrottle::flushDeferredProgressEvent()
     return false;
 }
 
-void XMLHttpRequestProgressEventThrottle::deliverProgressEvent()
+void XMLHttpRequestProgressEventThrottle::deliverScheduledProgressEvent()
 {
     if (!hasEventToDispatch())
         return;
@@ -150,17 +156,20 @@ void XMLHttpRequestProgressEventThrottle::dispatchDeferredEvents(Timer<XMLHttpRe
     for (; it != end; ++it)
         dispatchEvent(*it);
 
-    // The progress event will be in the m_deferredEvents vector if the load was finished while suspended.
-    // If not, just send the most up-to-date progress on resume.
+    // The "progress" event will be in the m_deferredEvents vector if the load
+    //  was finished while suspended. If not, just send the most up-to-date
+    // progress on resume.
     if (deferredProgressEvent)
         dispatchEvent(deferredProgressEvent);
 }
 
 void XMLHttpRequestProgressEventThrottle::fired()
 {
+    ASSERT(!m_deferEvents);
     ASSERT(isActive());
     if (!hasEventToDispatch()) {
-        // No progress event was queued since the previous dispatch, we can safely stop the timer.
+        // No "progress" event was queued since the previous dispatch, we can
+        // safely stop the timer.
         stop();
         return;
     }
@@ -189,8 +198,7 @@ void XMLHttpRequestProgressEventThrottle::suspend()
     ASSERT(!m_deferEvents);
 
     m_deferEvents = true;
-    // If we have a progress event waiting to be dispatched,
-    // just defer it.
+    // If we have a "progress" event waiting to be dispatched, just defer it.
     if (hasEventToDispatch()) {
         m_deferredProgressEvent = XMLHttpRequestProgressEvent::create(EventTypeNames::progress, m_lengthComputable, m_loaded, m_total);
         m_total = 0;

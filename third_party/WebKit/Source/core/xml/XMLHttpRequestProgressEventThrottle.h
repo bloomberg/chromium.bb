@@ -37,6 +37,7 @@ namespace blink {
 
 class Event;
 class EventTarget;
+class XMLHttpRequestProgressEvent;
 
 enum ProgressEventAction {
     DoNotFlushProgressEvent,
@@ -44,8 +45,17 @@ enum ProgressEventAction {
     FlushProgressEvent
 };
 
-// This implements the XHR2 progress event dispatching: "dispatch a progress event called progress
-// about every 50ms or for every byte received, whichever is least frequent".
+// This class implements the XHR2 ProgressEvent dispatching:
+//   "dispatch a progress event named progress about every 50ms or for every
+//   byte received, whichever is least frequent".
+//
+// readystatechange events also go through this class since ProgressEvents and
+// readystatechange events affect each other.
+//
+// In the comments for this class:
+// - "progress" event means an event named "progress"
+// - ProgressEvent means an event using the ProgressEvent interface defined in
+//   the spec.
 class XMLHttpRequestProgressEventThrottle FINAL : public TimerBase {
     DISALLOW_ALLOCATION();
 public:
@@ -61,6 +71,8 @@ public:
     // m_lengthComputable, m_loaded and m_total. They'll be used on next
     // fired() call.
     void dispatchProgressEvent(const AtomicString&, bool lengthComputable, unsigned long long loaded, unsigned long long total);
+    // Dispatches the given event after operation about the "progress" event
+    // depending on the value of the ProgressEventAction argument.
     void dispatchReadyStateChangeEvent(PassRefPtrWillBeRawPtr<Event>, ProgressEventAction = DoNotFlushProgressEvent);
 
     void suspend();
@@ -76,8 +88,12 @@ private:
 
     virtual void fired() OVERRIDE;
     void dispatchDeferredEvents(Timer<XMLHttpRequestProgressEventThrottle>*);
+    // If m_deferredProgressEvent is not null, push it to m_deferredEvents.
+    // Otherwise, do nothing. Returns true iff push happened.
     bool flushDeferredProgressEvent();
-    void deliverProgressEvent();
+    // Builds a "progress" event from m_lengthComputable, m_loaded and m_total
+    // and tries to dispatch it. If we're suspended, just queues the event.
+    void deliverScheduledProgressEvent();
 
     bool hasEventToDispatch() const;
 
@@ -87,12 +103,19 @@ private:
     // with the XMLHttpRequest object.
     RawPtrWillBeMember<EventTarget> m_target;
 
+    // These three variables represents the "progress" event scheduled by
+    // dispatchProgressEvent() to be dispatched by fired() on the next Timer
+    // event.
     bool m_lengthComputable;
     unsigned long long m_loaded;
     unsigned long long m_total;
 
     bool m_deferEvents;
-    RefPtrWillBeMember<Event> m_deferredProgressEvent;
+    // Holds a "progress" event deferred due to suspension.
+    //
+    // FIXME: Consider reusing m_lengthComputable, m_loaded and m_total than
+    // having this separate variable to remember a deferred "progress" event.
+    RefPtrWillBeMember<XMLHttpRequestProgressEvent> m_deferredProgressEvent;
     WillBeHeapVector<RefPtrWillBeMember<Event> > m_deferredEvents;
     Timer<XMLHttpRequestProgressEventThrottle> m_dispatchDeferredEventsTimer;
 };
