@@ -167,12 +167,17 @@ void LockWindowState::UpdateBounds(wm::WindowState* window_state) {
       keyboard::KeyboardController::GetInstance();
   gfx::Rect keyboard_bounds;
 
-  if (keyboard_controller && !keyboard::IsKeyboardOverscrollEnabled())
+  if (keyboard_controller &&
+      !keyboard::IsKeyboardOverscrollEnabled() &&
+      keyboard_controller->keyboard_visible()) {
     keyboard_bounds = keyboard_controller->current_keyboard_bounds();
+  }
 
   gfx::Rect bounds =
       ScreenUtil::GetDisplayBoundsInParent(window_state->window());
   bounds.set_height(bounds.height() - keyboard_bounds.height());
+
+  VLOG(1) << "Updating window bounds to: " << bounds.ToString();
   window_state->SetBoundsDirect(bounds);
 }
 

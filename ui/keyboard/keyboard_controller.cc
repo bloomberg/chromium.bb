@@ -305,6 +305,8 @@ void KeyboardController::NotifyKeyboardBoundsChanging(
     } else {
       ResetWindowInsets();
     }
+  } else {
+    current_keyboard_bounds_ = gfx::Rect();
   }
 }
 

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/display/display_manager.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
@@ -187,7 +188,8 @@ TEST_F(LockLayoutManagerTest, MaximizedFullscreenWindowBoundsAreEqualToScreen) {
 }
 
 TEST_F(LockLayoutManagerTest, KeyboardBounds) {
-  gfx::Rect screen_bounds = Shell::GetScreen()->GetPrimaryDisplay().bounds();
+  gfx::Display primary_display = Shell::GetScreen()->GetPrimaryDisplay();
+  gfx::Rect screen_bounds = primary_display.bounds();
 
   views::Widget::InitParams widget_params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
@@ -203,7 +205,29 @@ TEST_F(LockLayoutManagerTest, KeyboardBounds) {
        keyboard::KEYBOARD_OVERSCROLL_OVERRIDE_ENABLED);
   ShowKeyboard(true);
   EXPECT_EQ(screen_bounds.ToString(), window->GetBoundsInScreen().ToString());
+  gfx::Rect keyboard_bounds =
+      keyboard::KeyboardController::GetInstance()->current_keyboard_bounds();
+  EXPECT_NE(keyboard_bounds, gfx::Rect());
   ShowKeyboard(false);
+
+  // When keyboard is hidden make sure that rotating the screen gives 100% of
+  // screen size to window.
+  // Repro steps for http://crbug.com/401667:
+  // 1. Set up login screen defaults: VK override disabled
+  // 2. Show/hide keyboard, make sure that no stale keyboard bounds are cached.
+  keyboard::SetKeyboardOverscrollOverride(
+       keyboard::KEYBOARD_OVERSCROLL_OVERRIDE_DISABLED);
+  ShowKeyboard(true);
+  ShowKeyboard(false);
+  ash::DisplayManager* display_manager =
+      Shell::GetInstance()->display_manager();
+  display_manager->SetDisplayRotation(primary_display.id(),
+                                      gfx::Display::ROTATE_90);
+  primary_display = Shell::GetScreen()->GetPrimaryDisplay();
+  screen_bounds = primary_display.bounds();
+  EXPECT_EQ(screen_bounds.ToString(), window->GetBoundsInScreen().ToString());
+  display_manager->SetDisplayRotation(primary_display.id(),
+                                      gfx::Display::ROTATE_0);
 
   // When virtual keyboard overscroll is disabled keyboard bounds do
   // affect window bounds.
@@ -212,6 +236,8 @@ TEST_F(LockLayoutManagerTest, KeyboardBounds) {
   ShowKeyboard(true);
   keyboard::KeyboardController* keyboard =
         keyboard::KeyboardController::GetInstance();
+  primary_display = Shell::GetScreen()->GetPrimaryDisplay();
+  screen_bounds = primary_display.bounds();
   gfx::Rect target_bounds(screen_bounds);
   target_bounds.set_height(target_bounds.height() -
       keyboard->proxy()->GetKeyboardWindow()->bounds().height());

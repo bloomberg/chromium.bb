@@ -56,7 +56,10 @@ void KeyboardLayoutManager::SetChildBounds(aura::Window* child,
     // case the show keyboard request is called before the height is set.
     controller_->ShowKeyboard(false);
   } else {
-    controller_->NotifyKeyboardBoundsChanging(requested_bounds);
+    // We need to send out this notification only if keyboard is visible since
+    // keyboard window is resized even if keyboard is hidden.
+    if (controller_->keyboard_visible())
+      controller_->NotifyKeyboardBoundsChanging(requested_bounds);
   }
 }
 
