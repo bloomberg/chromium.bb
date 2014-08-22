@@ -1570,7 +1570,7 @@ def GerritUpload(options, args, cl):
   return 0
 
 
-def RietveldUpload(options, args, cl, change):
+def RietveldUpload(options, args, cl):
   """upload the patch to rietveld."""
   upload_args = ['--assume_yes']  # Don't ask about untracked files.
   upload_args.extend(['--server', cl.GetRietveldServer()])
@@ -1597,22 +1597,6 @@ def RietveldUpload(options, args, cl, change):
     change_desc = ChangeDescription(message)
     if options.reviewers:
       change_desc.update_reviewers(options.reviewers)
-    if options.auto_bots:
-      masters = presubmit_support.DoGetTryMasters(
-          change,
-          change.LocalPaths(),
-          settings.GetRoot(),
-          None,
-          None,
-          options.verbose,
-          sys.stdout)
-
-      if masters:
-        change_description = change_desc.description + '\nCQ_TRYBOTS='
-        lst = []
-        for master, mapping in masters.iteritems():
-          lst.append(master + ':' + ','.join(mapping.keys()))
-        change_desc.set_description(change_description + ';'.join(lst))
     if not options.force:
       change_desc.prompt()
 
@@ -1746,8 +1730,6 @@ def CMDupload(parser, args):
                          'use for CL.  Default: master')
   parser.add_option('--email', default=None,
                     help='email address to use to connect to Rietveld')
-  parser.add_option('--auto-bots', default=False, action='store_true',
-                    help='Autogenerate which trybots to use for this CL')
 
   add_git_similarity(parser)
   (options, args) = parser.parse_args(args)
@@ -1807,7 +1789,7 @@ def CMDupload(parser, args):
   print_stats(options.similarity, options.find_copies, args)
   if settings.GetIsGerrit():
     return GerritUpload(options, args, cl)
-  ret = RietveldUpload(options, args, cl, change)
+  ret = RietveldUpload(options, args, cl)
   if not ret:
     git_set_branch_value('last-upload-hash',
                          RunGit(['rev-parse', 'HEAD']).strip())
