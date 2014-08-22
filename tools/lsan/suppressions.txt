@@ -85,9 +85,4 @@ leak:CertificateViewerUITest::ShowModalCertificateViewer
 # http://crbug.com/356306
 leak:content::SetProcessTitleFromCommandLine
 
-# http://crbug.com/354881
-leak:LoginUtilsBlockingLoginTest_LoginBlocksForUser
-leak:LoginUtilsTest::SetUp
-leak:LoginUtilsTest::PrepareProfile
-
 # PLEASE READ ABOVE BEFORE ADDING NEW SUPPRESSIONS.
