@@ -37,7 +37,7 @@ vars = {
     'lss_revision':
          '31',
     'boringssl_revision':
-         'd4178fd9d85f246620b6f1a2158a1268d2d2d4a5',
+         '5213df4e9ed9ca130c40f142893cb91f2e18eee1',
     'pdfium_revision':
          '635e82ec20b3d5ffcb24f9a1b1be9f1f24d8a3f4',
     'git_url':
@@ -120,7 +120,7 @@ deps = {
     'src/third_party/bidichecker':
         Var('git_url') + '/external/bidichecker/lib.git@97f2aa645b74c28c57eca56992235c79850fa9e0',
     'src/third_party/boringssl/src':
-        'https://boringssl.googlesource.com/boringssl.git@d4178fd9d85f246620b6f1a2158a1268d2d2d4a5',
+        'https://boringssl.googlesource.com/boringssl.git@5213df4e9ed9ca130c40f142893cb91f2e18eee1',
     'src/third_party/brotli/src':
         Var('git_url') + '/external/font-compression-reference.git@6cef49677dc4c650ef6e3f56041e0a41803afa8c',
     'src/third_party/cacheinvalidation/src':
@@ -138,7 +138,7 @@ deps = {
     'src/third_party/hunspell_dictionaries':
         Var('git_url') + '/chromium/deps/hunspell_dictionaries.git@4560bdd463a3500e2334e85c8a0e9e5d5d6774e7',
     'src/third_party/icu':
-        Var('git_url') + '/chromium/deps/icu52.git@471c37c8bf67983b26e0db03d6d7ee81112ce2dd',
+        Var('git_url') + '/chromium/deps/icu52.git@fdf0bb34eaddce23811770b987ecf95ee18572d6',
     'src/third_party/jsoncpp/source/include':
         Var('git_url') + '/external/jsoncpp/jsoncpp/include.git@b0dd48e02b6e6248328db78a65b5c601f150c349',
     'src/third_party/jsoncpp/source/src/lib_json':
