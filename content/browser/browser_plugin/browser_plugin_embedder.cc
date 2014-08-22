@@ -157,8 +157,10 @@ void BrowserPluginEmbedder::OnAttach(
 
 bool BrowserPluginEmbedder::HandleKeyboardEvent(
     const NativeWebKeyboardEvent& event) {
-  if (event.windowsKeyCode != ui::VKEY_ESCAPE)
+  if ((event.windowsKeyCode != ui::VKEY_ESCAPE) ||
+      (event.modifiers & blink::WebInputEvent::InputModifiers)) {
     return false;
+  }
 
   bool event_consumed = false;
   GetBrowserPluginGuestManager()->ForEachGuest(
