@@ -199,7 +199,7 @@ Status: %(status)s
 Test Command: %(command)s
 Test Metric: %(metrics)s
 Relative Change: %(change)s
-Estimated Confidence: %(confidence)d%%"""
+Estimated Confidence: %(confidence).02f%%"""
 
 # The perf dashboard specifically looks for the string
 # "Author  : " to parse out who to cc on a bug. If you change the
