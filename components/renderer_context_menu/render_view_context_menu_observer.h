@@ -24,12 +24,12 @@ struct ContextMenuParams;
 //   </message>
 //
 // 3. Create a class that implements this interface. (It is a good idea to use
-// the RenderViewContextMenuDelegate interface to avoid accessing the
+// the RenderViewContextMenuProxy interface to avoid accessing the
 // RenderViewContextMenu class directly.)
 //
 //  class MyMenuObserver : public RenderViewContextMenuObserver {
 //   public:
-//    MyMenuObserver(RenderViewContextMenuDelegate* d);
+//    MyMenuObserver(RenderViewContextMenuProxy* p);
 //    ~MyMenuObserver();
 //
 //    virtual void InitMenu(const content::ContextMenuParams& params) OVERRIDE;
@@ -38,11 +38,11 @@ struct ContextMenuParams;
 //    virtual void ExecuteCommand(int command_id) OVERRIDE;
 //
 //   private:
-//    RenderViewContextMenuDelgate* delegate_;
+//    RenderViewContextMenuProxy* proxy_;
 //  }
 //
 //  void MyMenuObserver::InitMenu(const content::ContextMenuParams& params) {
-//    delegate_->AddMenuItem(IDC_MY_COMMAND,...);
+//    proxy_->AddMenuItem(IDC_MY_COMMAND,...);
 //  }
 //
 //  bool MyMenuObserver::IsCommandIdSupported(int command_id) {
@@ -82,7 +82,7 @@ class RenderViewContextMenuObserver {
   virtual ~RenderViewContextMenuObserver() {}
 
   // Called when the RenderViewContextMenu class initializes a context menu. We
-  // usually call RenderViewContextMenuDelegate::AddMenuItem() to add menu items
+  // usually call RenderViewContextMenuProxy::AddMenuItem() to add menu items
   // in this function.
   virtual void InitMenu(const content::ContextMenuParams& params) {}
 
@@ -93,7 +93,7 @@ class RenderViewContextMenuObserver {
 
   // Called when the RenderViewContextMenu class sets the initial status of the
   // specified context-menu item. If we need to enable or disable a context-menu
-  // item while showing, use RenderViewContextMenuDelegate::UpdateMenuItem().
+  // item while showing, use RenderViewContextMenuProxy::UpdateMenuItem().
   virtual bool IsCommandIdChecked(int command_id);
   virtual bool IsCommandIdEnabled(int command_id);
 
