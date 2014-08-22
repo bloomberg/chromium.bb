@@ -13,6 +13,8 @@
 #include "extensions/common/features/manifest_feature.h"
 #include "extensions/common/features/permission_feature.h"
 #include "extensions/common/manifest_handler.h"
+#include "extensions/common/permissions/extensions_api_permissions.h"
+#include "extensions/common/permissions/permissions_info.h"
 #include "extensions/common/url_pattern_set.h"
 #include "extensions/test/test_permission_message_provider.h"
 #include "grit/extensions_resources.h"
@@ -41,6 +43,10 @@ void TestExtensionsClient::Initialize() {
     RegisterCommonManifestHandlers();
     ManifestHandler::FinalizeRegistration();
   }
+
+  // Allow the core API permissions.
+  static ExtensionsAPIPermissions extensions_api_permissions;
+  PermissionsInfo::GetInstance()->AddProvider(extensions_api_permissions);
 }
 
 const PermissionMessageProvider&
