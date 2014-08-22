@@ -1,14 +1,14 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
-#include "chrome/browser/autocomplete/keyword_provider.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
 #include "components/omnibox/autocomplete_match.h"
+#include "components/omnibox/autocomplete_scheme_classifier.h"
+#include "components/omnibox/keyword_provider.h"
 #include "components/search_engines/search_engines_switches.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
@@ -16,6 +16,20 @@
 #include "url/gurl.h"
 
 using base::ASCIIToUTF16;
+
+namespace {
+
+class TestingSchemeClassifier : public AutocompleteSchemeClassifier {
+ public:
+  virtual metrics::OmniboxInputType::Type GetInputTypeForScheme(
+      const std::string& scheme) const OVERRIDE {
+    if (net::URLRequest::IsHandledProtocol(scheme))
+      return metrics::OmniboxInputType::URL;
+    return metrics::OmniboxInputType::INVALID;
+  }
+};
+
+}  // namespace
 
 class KeywordProviderTest : public testing::Test {
  protected:
@@ -73,18 +87,16 @@ void KeywordProviderTest::TearDown() {
 }
 
 template<class ResultType>
-void KeywordProviderTest::RunTest(
-    TestData<ResultType>* keyword_cases,
-    int num_cases,
-    ResultType AutocompleteMatch::* member) {
+void KeywordProviderTest::RunTest(TestData<ResultType>* keyword_cases,
+                                  int num_cases,
+                                  ResultType AutocompleteMatch::* member) {
   ACMatches matches;
   for (int i = 0; i < num_cases; ++i) {
     SCOPED_TRACE(keyword_cases[i].input);
     AutocompleteInput input(keyword_cases[i].input, base::string16::npos,
                             base::string16(), GURL(),
                             metrics::OmniboxEventProto::INVALID_SPEC, true,
-                            false, true, true,
-                            ChromeAutocompleteSchemeClassifier(NULL));
+                            false, true, true, TestingSchemeClassifier());
     kw_provider_->Start(input, false);
     EXPECT_TRUE(kw_provider_->done());
     matches = kw_provider_->matches();
@@ -326,8 +338,7 @@ TEST_F(KeywordProviderTest, GetSubstitutingTemplateURLForInput) {
     AutocompleteInput input(
         ASCIIToUTF16(cases[i].text), cases[i].cursor_position, base::string16(),
         GURL(), metrics::OmniboxEventProto::INVALID_SPEC, false, false,
-        cases[i].allow_exact_keyword_match, true,
-        ChromeAutocompleteSchemeClassifier(NULL));
+        cases[i].allow_exact_keyword_match, true, TestingSchemeClassifier());
     const TemplateURL* url =
         KeywordProvider::GetSubstitutingTemplateURLForInput(model_.get(),
                                                             &input);

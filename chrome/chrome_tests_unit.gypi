@@ -580,7 +580,6 @@
         'browser/autocomplete/builtin_provider_unittest.cc',
         'browser/autocomplete/history_quick_provider_unittest.cc',
         'browser/autocomplete/history_url_provider_unittest.cc',
-        'browser/autocomplete/keyword_provider_unittest.cc',
         'browser/autocomplete/search_provider_unittest.cc',
         'browser/autocomplete/shortcuts_backend_unittest.cc',
         'browser/autocomplete/shortcuts_provider_unittest.cc',

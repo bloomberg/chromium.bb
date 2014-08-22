@@ -11,11 +11,11 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/autocomplete/keyword_extensions_delegate.h"
-#include "chrome/browser/autocomplete/keyword_provider.h"
 #include "components/omnibox/autocomplete_input.h"
 #include "components/omnibox/autocomplete_match.h"
 #include "components/omnibox/autocomplete_provider_listener.h"
+#include "components/omnibox/keyword_extensions_delegate.h"
+#include "components/omnibox/keyword_provider.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 

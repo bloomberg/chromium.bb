@@ -142,6 +142,7 @@
             'omnibox/autocomplete_input_unittest.cc',
             'omnibox/autocomplete_match_unittest.cc',
             'omnibox/autocomplete_result_unittest.cc',
+            'omnibox/keyword_provider_unittest.cc',
             'omnibox/omnibox_field_trial_unittest.cc',
             'os_crypt/ie7_password_win_unittest.cc',
             'os_crypt/keychain_password_mac_unittest.mm',

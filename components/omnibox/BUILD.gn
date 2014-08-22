@@ -15,6 +15,10 @@ static_library("omnibox") {
     "autocomplete_result.cc",
     "autocomplete_result.h",
     "autocomplete_scheme_classifier.h",
+    "keyword_extensions_delegate.cc",
+    "keyword_extensions_delegate.h",
+    "keyword_provider.cc",
+    "keyword_provider.h",
     "omnibox_field_trial.cc",
     "omnibox_field_trial.h",
     "omnibox_switches.cc",
@@ -30,8 +34,10 @@ static_library("omnibox") {
     "//components/metrics/proto",
     "//components/resources",
     "//components/search_engines",
+    "//components/strings",
     "//components/url_fixer",
     "//net",
+    "//ui/base",
     "//url",
   ]
 
@@ -58,6 +64,7 @@ source_set("unit_tests") {
     "autocomplete_input_unittest.cc",
     "autocomplete_match_unittest.cc",
     "autocomplete_result_unittest.cc",
+    "keyword_provider_unittest.cc",
     "omnibox_field_trial_unittest.cc",
   ]
 

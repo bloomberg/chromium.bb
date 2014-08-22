@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -8,18 +8,18 @@
 // instance of it gets created and managed by the autocomplete controller.
 // KeywordProvider uses a TemplateURLService to find the set of keywords.
 
-#ifndef CHROME_BROWSER_AUTOCOMPLETE_KEYWORD_PROVIDER_H_
-#define CHROME_BROWSER_AUTOCOMPLETE_KEYWORD_PROVIDER_H_
+#ifndef COMPONENTS_OMNIBOX_KEYWORD_PROVIDER_H_
+#define COMPONENTS_OMNIBOX_KEYWORD_PROVIDER_H_
 
 #include <string>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/autocomplete/keyword_extensions_delegate.h"
 #include "components/metrics/proto/omnibox_input_type.pb.h"
 #include "components/omnibox/autocomplete_input.h"
 #include "components/omnibox/autocomplete_provider.h"
+#include "components/omnibox/keyword_extensions_delegate.h"
 
 class AutocompleteProviderListener;
 class KeywordExtensionsDelegate;
@@ -155,4 +155,4 @@ class KeywordProvider : public AutocompleteProvider {
   DISALLOW_COPY_AND_ASSIGN(KeywordProvider);
 };
 
-#endif  // CHROME_BROWSER_AUTOCOMPLETE_KEYWORD_PROVIDER_H_
+#endif  // COMPONENTS_OMNIBOX_KEYWORD_PROVIDER_H_
