@@ -1399,6 +1399,7 @@ _arm_full_boards = _arm_release_boards | frozenset([
 ])
 
 _x86_release_boards = frozenset([
+  'auron',
   'bayleybay',
   'beltino',
   'butterfly',
@@ -1764,6 +1765,12 @@ internal_paladin.add_config('beltino-paladin',
 )
 
 # x86 full compile
+internal_paladin.add_config('auron-paladin',
+  boards=['auron'],
+  paladin_builder_name='auron paladin',
+  important=False,
+)
+
 internal_paladin.add_config('butterfly-paladin',
   full_paladin,
   boards=['butterfly'],
@@ -2597,6 +2604,7 @@ _depthcharge_full_internal = full.derive(
 )
 
 _x86_firmware_boards = (
+  'auron',
   'bayleybay',
   'beltino',
   'butterfly',
@@ -2630,6 +2638,7 @@ _x86_firmware_boards = (
 )
 
 _x86_depthcharge_firmware_boards = (
+  'auron',
   'bayleybay',
   'candy',
   'clapper',
