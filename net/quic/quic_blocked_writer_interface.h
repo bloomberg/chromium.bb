@@ -24,4 +24,18 @@ class NET_EXPORT_PRIVATE QuicBlockedWriterInterface {
 
 }  // namespace net
 
+#if defined(COMPILER_GCC)
+namespace BASE_HASH_NAMESPACE {
+// Hash pointers as if they were int's, but bring more entropy to the lower
+// bits.
+template <>
+struct hash<net::QuicBlockedWriterInterface*> {
+  std::size_t operator()(const net::QuicBlockedWriterInterface* ptr) const {
+    size_t k = reinterpret_cast<size_t>(ptr);
+    return k + (k >> 6);
+  }
+};
+}
+#endif
+
 #endif  // NET_QUIC_QUIC_BLOCKED_WRITER_INTERFACE_H_

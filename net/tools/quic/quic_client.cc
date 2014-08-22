@@ -97,6 +97,18 @@ bool QuicClient::Initialize() {
   return true;
 }
 
+QuicClient::DummyPacketWriterFactory::DummyPacketWriterFactory(
+    QuicPacketWriter* writer)
+    : writer_(writer) {}
+
+QuicClient::DummyPacketWriterFactory::~DummyPacketWriterFactory() {}
+
+QuicPacketWriter* QuicClient::DummyPacketWriterFactory::Create(
+    QuicConnection* /*connection*/) const {
+  return writer_;
+}
+
+
 bool QuicClient::CreateUDPSocket() {
   int address_family = server_address_.GetSockAddrFamily();
   fd_ = socket(address_family, SOCK_DGRAM | SOCK_NONBLOCK, IPPROTO_UDP);
@@ -179,15 +191,18 @@ bool QuicClient::StartConnect() {
 
   QuicPacketWriter* writer = CreateQuicPacketWriter();
 
+  DummyPacketWriterFactory factory(writer);
+
   session_.reset(new QuicClientSession(
       config_,
       new QuicConnection(GenerateConnectionId(),
                          server_address_,
                          helper_.get(),
-                         writer,
-                         false  /* owns_writer */,
-                         false  /* is_server */,
+                         factory,
+                         /* owns_writer= */ false,
+                         /* is_server= */ false,
                          supported_versions_)));
+
   // Reset |writer_| after |session_| so that the old writer outlives the old
   // session.
   if (writer_.get() != writer) {

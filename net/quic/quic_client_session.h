@@ -30,7 +30,6 @@ class CertVerifyResult;
 class DatagramClientSocket;
 class QuicConnectionHelper;
 class QuicCryptoClientStreamFactory;
-class QuicDefaultPacketWriter;
 class QuicServerId;
 class QuicServerInfo;
 class QuicStreamFactory;
@@ -93,7 +92,6 @@ class NET_EXPORT_PRIVATE QuicClientSession : public QuicClientSessionBase {
   // TODO(rch): decouple the factory from the session via a Delegate interface.
   QuicClientSession(QuicConnection* connection,
                     scoped_ptr<DatagramClientSocket> socket,
-                    scoped_ptr<QuicDefaultPacketWriter> writer,
                     QuicStreamFactory* stream_factory,
                     QuicCryptoClientStreamFactory* crypto_client_stream_factory,
                     TransportSecurityState* transport_security_state,
@@ -226,7 +224,6 @@ class NET_EXPORT_PRIVATE QuicClientSession : public QuicClientSessionBase {
   scoped_ptr<QuicCryptoClientStream> crypto_stream_;
   QuicStreamFactory* stream_factory_;
   scoped_ptr<DatagramClientSocket> socket_;
-  scoped_ptr<QuicDefaultPacketWriter> writer_;
   scoped_refptr<IOBufferWithSize> read_buffer_;
   TransportSecurityState* transport_security_state_;
   scoped_ptr<QuicServerInfo> server_info_;

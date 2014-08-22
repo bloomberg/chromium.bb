@@ -2,25 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/quic/quic_per_connection_packet_writer.h"
-
-#include "net/quic/quic_server_packet_writer.h"
+#include "net/tools/quic/quic_per_connection_packet_writer.h"
 
 namespace net {
 
+namespace tools {
+
 QuicPerConnectionPacketWriter::QuicPerConnectionPacketWriter(
-    QuicServerPacketWriter* shared_writer,
+    QuicPacketWriter* shared_writer,
     QuicConnection* connection)
-    : weak_factory_(this),
-      shared_writer_(shared_writer),
+    : shared_writer_(shared_writer),
       connection_(connection) {
 }
 
 QuicPerConnectionPacketWriter::~QuicPerConnectionPacketWriter() {
-}
-
-QuicPacketWriter* QuicPerConnectionPacketWriter::shared_writer() const {
-  return shared_writer_;
 }
 
 WriteResult QuicPerConnectionPacketWriter::WritePacket(
@@ -28,13 +23,10 @@ WriteResult QuicPerConnectionPacketWriter::WritePacket(
     size_t buf_len,
     const IPAddressNumber& self_address,
     const IPEndPoint& peer_address) {
-  return shared_writer_->WritePacketWithCallback(
-      buffer,
-      buf_len,
-      self_address,
-      peer_address,
-      base::Bind(&QuicPerConnectionPacketWriter::OnWriteComplete,
-                 weak_factory_.GetWeakPtr()));
+  return shared_writer_->WritePacket(buffer,
+                                     buf_len,
+                                     self_address,
+                                     peer_address);
 }
 
 bool QuicPerConnectionPacketWriter::IsWriteBlockedDataBuffered() const {
@@ -49,8 +41,6 @@ void QuicPerConnectionPacketWriter::SetWritable() {
   shared_writer_->SetWritable();
 }
 
-void QuicPerConnectionPacketWriter::OnWriteComplete(WriteResult result) {
-  connection_->OnPacketSent(result);
-}
+}  // namespace tools
 
 }  // namespace net

@@ -30,6 +30,7 @@ class PacketDroppingTestWriter : public QuicPacketWriterWrapper {
   class Delegate {
    public:
     virtual ~Delegate() {}
+    virtual void OnPacketSent(WriteResult result) = 0;
     virtual void OnCanWrite() = 0;
   };
 

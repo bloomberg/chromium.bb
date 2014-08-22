@@ -22,7 +22,10 @@ class QuicChromeServerDispatchPacketTest : public ::testing::Test {
  public:
   QuicChromeServerDispatchPacketTest()
       : crypto_config_("blah", QuicRandom::GetInstance()),
-        dispatcher_(config_, crypto_config_, &helper_) {
+        dispatcher_(config_,
+                    crypto_config_,
+                    new QuicDispatcher::DefaultPacketWriterFactory(),
+                    &helper_) {
     dispatcher_.Initialize(NULL);
   }
 

@@ -188,6 +188,18 @@ class QuicClient : public EpollCallbackInterface,
  private:
   friend class net::tools::test::QuicClientPeer;
 
+  // A packet writer factory that always returns the same writer
+  class DummyPacketWriterFactory : public QuicConnection::PacketWriterFactory {
+   public:
+    DummyPacketWriterFactory(QuicPacketWriter* writer);
+    virtual ~DummyPacketWriterFactory();
+
+    virtual QuicPacketWriter* Create(QuicConnection* connection) const OVERRIDE;
+
+   private:
+    QuicPacketWriter* writer_;
+  };
+
   // Used during initialization: creates the UDP socket FD, sets socket options,
   // and binds the socket to our address.
   bool CreateUDPSocket();

@@ -20,7 +20,6 @@
 #include "net/quic/crypto/quic_decrypter.h"
 #include "net/quic/crypto/quic_encrypter.h"
 #include "net/quic/crypto/quic_server_info.h"
-#include "net/quic/quic_default_packet_writer.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
 #include "net/quic/test_tools/quic_client_session_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
@@ -39,43 +38,12 @@ namespace {
 const char kServerHostname[] = "www.example.org";
 const uint16 kServerPort = 80;
 
-class TestPacketWriter : public QuicDefaultPacketWriter {
- public:
-  TestPacketWriter(QuicVersion version) : version_(version) {}
-
-  // QuicPacketWriter
-  virtual WriteResult WritePacket(
-      const char* buffer, size_t buf_len,
-      const IPAddressNumber& self_address,
-      const IPEndPoint& peer_address) OVERRIDE {
-    SimpleQuicFramer framer(SupportedVersions(version_));
-    QuicEncryptedPacket packet(buffer, buf_len);
-    EXPECT_TRUE(framer.ProcessPacket(packet));
-    header_ = framer.header();
-    return WriteResult(WRITE_STATUS_OK, packet.length());
-  }
-
-  virtual bool IsWriteBlockedDataBuffered() const OVERRIDE {
-    // Chrome sockets' Write() methods buffer the data until the Write is
-    // permitted.
-    return true;
-  }
-
-  // Returns the header from the last packet written.
-  const QuicPacketHeader& header() { return header_; }
-
- private:
-  QuicVersion version_;
-  QuicPacketHeader header_;
-};
-
 class QuicClientSessionTest : public ::testing::TestWithParam<QuicVersion> {
  protected:
   QuicClientSessionTest()
-      : writer_(new TestPacketWriter(GetParam())),
-        connection_(
+      : connection_(
             new PacketSavingConnection(false, SupportedVersions(GetParam()))),
-        session_(connection_, GetSocket().Pass(), writer_.Pass(), NULL, NULL,
+        session_(connection_, GetSocket().Pass(), NULL, NULL,
                  &transport_security_state_,
                  make_scoped_ptr((QuicServerInfo*)NULL),
                  QuicServerId(kServerHostname, kServerPort, false,
@@ -107,7 +75,6 @@ class QuicClientSessionTest : public ::testing::TestWithParam<QuicVersion> {
     ASSERT_EQ(OK, callback_.WaitForResult());
   }
 
-  scoped_ptr<QuicDefaultPacketWriter> writer_;
   PacketSavingConnection* connection_;
   CapturingNetLog net_log_;
   MockClientSocketFactory socket_factory_;

@@ -20,18 +20,6 @@
 #include "net/tools/quic/quic_server_session.h"
 #include "net/tools/quic/quic_time_wait_list_manager.h"
 
-#if defined(COMPILER_GCC)
-namespace BASE_HASH_NAMESPACE {
-template<>
-struct hash<net::QuicBlockedWriterInterface*> {
-  std::size_t operator()(
-      const net::QuicBlockedWriterInterface* ptr) const {
-    return hash<size_t>()(reinterpret_cast<size_t>(ptr));
-  }
-};
-}
-#endif
-
 namespace net {
 
 class EpollServer;
@@ -61,15 +49,40 @@ class ProcessPacketInterface {
 class QuicDispatcher : public QuicServerSessionVisitor,
                        public ProcessPacketInterface {
  public:
+  // Creates per-connection packet writers out of the QuicDispatcher's shared
+  // QuicPacketWriter. The per-connection writers' IsWriteBlocked() state must
+  // always be the same as the shared writer's IsWriteBlocked(), or else the
+  // QuicDispatcher::OnCanWrite logic will not work. (This will hopefully be
+  // cleaned up for bug 16950226.)
+  class PacketWriterFactory {
+   public:
+    virtual ~PacketWriterFactory() {}
+
+    virtual QuicPacketWriter* Create(QuicPacketWriter* writer,
+                                     QuicConnection* connection) = 0;
+  };
+
+  // Creates ordinary QuicPerConnectionPacketWriter instances.
+  class DefaultPacketWriterFactory : public PacketWriterFactory {
+   public:
+    virtual ~DefaultPacketWriterFactory() {}
+
+    virtual QuicPacketWriter* Create(
+        QuicPacketWriter* writer,
+        QuicConnection* connection) OVERRIDE;
+  };
+
   // Ideally we'd have a linked_hash_set: the  boolean is unused.
   typedef linked_hash_map<QuicBlockedWriterInterface*, bool> WriteBlockedList;
 
-  // Due to the way delete_sessions_closure_ is registered, the Dispatcher
-  // must live until epoll_server Shutdown. |supported_versions| specifies the
-  // list of supported QUIC versions.
+  // Due to the way delete_sessions_closure_ is registered, the Dispatcher must
+  // live until epoll_server Shutdown. |supported_versions| specifies the list
+  // of supported QUIC versions. Takes ownership of |packet_writer_factory|,
+  // which is used to create per-connection writers.
   QuicDispatcher(const QuicConfig& config,
                  const QuicCryptoServerConfig& crypto_config,
                  const QuicVersionVector& supported_versions,
+                 PacketWriterFactory* packet_writer_factory,
                  EpollServer* epoll_server);
 
   virtual ~QuicDispatcher();
@@ -164,9 +177,28 @@ class QuicDispatcher : public QuicServerSessionVisitor,
 
   QuicPacketWriter* writer() { return writer_.get(); }
 
+  const QuicConnection::PacketWriterFactory& connection_writer_factory() {
+    return connection_writer_factory_;
+  }
+
  private:
   class QuicFramerVisitor;
   friend class net::tools::test::QuicDispatcherPeer;
+
+  // An adapter that creates packet writers using the dispatcher's
+  // PacketWriterFactory and shared writer. Essentially, it just curries the
+  // writer argument away from QuicDispatcher::PacketWriterFactory.
+  class PacketWriterFactoryAdapter :
+    public QuicConnection::PacketWriterFactory {
+   public:
+    PacketWriterFactoryAdapter(QuicDispatcher* dispatcher);
+    virtual ~PacketWriterFactoryAdapter ();
+
+    virtual QuicPacketWriter* Create(QuicConnection* connection) const OVERRIDE;
+
+   private:
+    QuicDispatcher* dispatcher_;
+  };
 
   // Called by |framer_visitor_| when the private header has been parsed
   // of a data packet that is destined for the time wait manager.
@@ -203,6 +235,12 @@ class QuicDispatcher : public QuicServerSessionVisitor,
 
   // The writer to write to the socket with.
   scoped_ptr<QuicPacketWriter> writer_;
+
+  // Used to create per-connection packet writers, not |writer_| itself.
+  scoped_ptr<PacketWriterFactory> packet_writer_factory_;
+
+  // Passed in to QuicConnection for it to create the per-connection writers
+  PacketWriterFactoryAdapter connection_writer_factory_;
 
   // This vector contains QUIC versions which we currently support.
   // This should be ordered such that the highest supported version is the first

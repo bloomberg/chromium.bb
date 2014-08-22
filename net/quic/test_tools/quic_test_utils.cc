@@ -221,12 +221,29 @@ void MockHelper::AdvanceTime(QuicTime::Delta delta) {
   clock_.AdvanceTime(delta);
 }
 
+namespace {
+class NiceMockPacketWriterFactory
+    : public QuicConnection::PacketWriterFactory {
+ public:
+  NiceMockPacketWriterFactory() {}
+  virtual ~NiceMockPacketWriterFactory() {}
+
+  virtual QuicPacketWriter* Create(
+      QuicConnection* /*connection*/) const override {
+    return new testing::NiceMock<MockPacketWriter>();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(NiceMockPacketWriterFactory);
+};
+}  // namespace
+
 MockConnection::MockConnection(bool is_server)
     : QuicConnection(kTestConnectionId,
                      IPEndPoint(TestPeerIPAddress(), kTestPort),
                      new testing::NiceMock<MockHelper>(),
-                     new testing::NiceMock<MockPacketWriter>(),
-                     true  /* owns_writer */,
+                     NiceMockPacketWriterFactory(),
+                     /* owns_writer= */ true,
                      is_server, QuicSupportedVersions()),
       helper_(helper()) {
 }
@@ -235,8 +252,8 @@ MockConnection::MockConnection(IPEndPoint address,
                                bool is_server)
     : QuicConnection(kTestConnectionId, address,
                      new testing::NiceMock<MockHelper>(),
-                     new testing::NiceMock<MockPacketWriter>(),
-                     true  /* owns_writer */,
+                     NiceMockPacketWriterFactory(),
+                     /* owns_writer= */ true,
                      is_server, QuicSupportedVersions()),
       helper_(helper()) {
 }
@@ -246,8 +263,8 @@ MockConnection::MockConnection(QuicConnectionId connection_id,
     : QuicConnection(connection_id,
                      IPEndPoint(TestPeerIPAddress(), kTestPort),
                      new testing::NiceMock<MockHelper>(),
-                     new testing::NiceMock<MockPacketWriter>(),
-                     true  /* owns_writer */,
+                     NiceMockPacketWriterFactory(),
+                     /* owns_writer= */ true,
                      is_server, QuicSupportedVersions()),
       helper_(helper()) {
 }
@@ -257,8 +274,8 @@ MockConnection::MockConnection(bool is_server,
     : QuicConnection(kTestConnectionId,
                      IPEndPoint(TestPeerIPAddress(), kTestPort),
                      new testing::NiceMock<MockHelper>(),
-                     new testing::NiceMock<MockPacketWriter>(),
-                     true  /* owns_writer */,
+                     NiceMockPacketWriterFactory(),
+                     /* owns_writer= */ true,
                      is_server, supported_versions),
       helper_(helper()) {
 }
@@ -604,6 +621,54 @@ QuicVersionVector SupportedVersions(QuicVersion version) {
   QuicVersionVector versions;
   versions.push_back(version);
   return versions;
+}
+
+TestWriterFactory::TestWriterFactory() : current_writer_(NULL) {}
+TestWriterFactory::~TestWriterFactory() {}
+
+QuicPacketWriter* TestWriterFactory::Create(QuicServerPacketWriter* writer,
+                                            QuicConnection* connection) {
+  return new PerConnectionPacketWriter(this, writer, connection);
+}
+
+void TestWriterFactory::OnPacketSent(WriteResult result) {
+  if (current_writer_ != NULL) {
+    current_writer_->connection()->OnPacketSent(result);
+    current_writer_ = NULL;
+  }
+}
+
+void TestWriterFactory::Unregister(PerConnectionPacketWriter* writer) {
+  if (current_writer_ == writer) {
+    current_writer_ = NULL;
+  }
+}
+
+TestWriterFactory::PerConnectionPacketWriter::PerConnectionPacketWriter(
+    TestWriterFactory* factory,
+    QuicServerPacketWriter* writer,
+    QuicConnection* connection)
+    : QuicPerConnectionPacketWriter(writer, connection),
+      factory_(factory) {
+}
+
+TestWriterFactory::PerConnectionPacketWriter::~PerConnectionPacketWriter() {
+  factory_->Unregister(this);
+}
+
+WriteResult TestWriterFactory::PerConnectionPacketWriter::WritePacket(
+    const char* buffer,
+    size_t buf_len,
+    const IPAddressNumber& self_address,
+    const IPEndPoint& peer_address) {
+  // A DCHECK(factory_current_writer_ == NULL) would be wrong here -- this class
+  // may be used in a setting where connection()->OnPacketSent() is called in a
+  // different way, so TestWriterFactory::OnPacketSent might never be called.
+  factory_->current_writer_ = this;
+  return QuicPerConnectionPacketWriter::WritePacket(buffer,
+                                                    buf_len,
+                                                    self_address,
+                                                    peer_address);
 }
 
 }  // namespace test

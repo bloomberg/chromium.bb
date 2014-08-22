@@ -167,6 +167,7 @@ QuicFramer* QuicConnectionPeer::GetFramer(QuicConnection* connection) {
   return &connection->framer_;
 }
 
+// static
 QuicFecGroup* QuicConnectionPeer::GetFecGroup(QuicConnection* connection,
                                               int fec_group) {
   connection->last_header_.fec_group = fec_group;

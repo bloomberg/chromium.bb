@@ -12,6 +12,7 @@
 #include "net/quic/quic_blocked_writer_interface.h"
 #include "net/quic/quic_connection_helper.h"
 #include "net/quic/quic_flags.h"
+#include "net/quic/quic_per_connection_packet_writer.h"
 #include "net/quic/quic_time_wait_list_manager.h"
 #include "net/quic/quic_utils.h"
 
@@ -154,15 +155,37 @@ class QuicDispatcher::QuicFramerVisitor : public QuicFramerVisitorInterface {
   QuicConnectionId connection_id_;
 };
 
+QuicPacketWriter* QuicDispatcher::DefaultPacketWriterFactory::Create(
+    QuicServerPacketWriter* writer,
+    QuicConnection* connection) {
+  return new QuicPerConnectionPacketWriter(writer, connection);
+}
+
+QuicDispatcher::PacketWriterFactoryAdapter::PacketWriterFactoryAdapter(
+    QuicDispatcher* dispatcher)
+    : dispatcher_(dispatcher) {}
+
+QuicDispatcher::PacketWriterFactoryAdapter::~PacketWriterFactoryAdapter() {}
+
+QuicPacketWriter* QuicDispatcher::PacketWriterFactoryAdapter::Create(
+    QuicConnection* connection) const {
+  return dispatcher_->packet_writer_factory_->Create(
+      dispatcher_->writer_.get(),
+      connection);
+}
+
 QuicDispatcher::QuicDispatcher(const QuicConfig& config,
                                const QuicCryptoServerConfig& crypto_config,
                                const QuicVersionVector& supported_versions,
+                               PacketWriterFactory* packet_writer_factory,
                                QuicConnectionHelperInterface* helper)
     : config_(config),
       crypto_config_(crypto_config),
       helper_(helper),
       delete_sessions_alarm_(
           helper_->CreateAlarm(new DeleteSessionsAlarm(this))),
+      packet_writer_factory_(packet_writer_factory),
+      connection_writer_factory_(this),
       supported_versions_(supported_versions),
       current_packet_(NULL),
       framer_(supported_versions, /*unused*/ QuicTime::Zero(), true),
@@ -339,17 +362,9 @@ QuicSession* QuicDispatcher::CreateQuicSession(
     QuicConnectionId connection_id,
     const IPEndPoint& server_address,
     const IPEndPoint& client_address) {
-  QuicPerConnectionPacketWriter* per_connection_packet_writer =
-      new QuicPerConnectionPacketWriter(writer_.get());
-  QuicConnection* connection =
-      CreateQuicConnection(connection_id,
-                           server_address,
-                           client_address,
-                           per_connection_packet_writer);
   QuicServerSession* session = new QuicServerSession(
       config_,
-      connection,
-      per_connection_packet_writer,
+      CreateQuicConnection(connection_id, server_address, client_address),
       this);
   session->InitializeSession(crypto_config_);
   return session;
@@ -358,19 +373,14 @@ QuicSession* QuicDispatcher::CreateQuicSession(
 QuicConnection* QuicDispatcher::CreateQuicConnection(
     QuicConnectionId connection_id,
     const IPEndPoint& server_address,
-    const IPEndPoint& client_address,
-    QuicPerConnectionPacketWriter* writer) {
-  QuicConnection* connection;
-  connection = new QuicConnection(
-      connection_id,
-      client_address,
-      helper_,
-      writer,
-      false  /* owns_writer */,
-      true   /* is_server */,
-      supported_versions_);
-  writer->set_connection(connection);
-  return connection;
+    const IPEndPoint& client_address) {
+  return new QuicConnection(connection_id,
+                            client_address,
+                            helper_,
+                            connection_writer_factory_,
+                            /* owns_writer= */ true,
+                            /* is_server= */ true,
+                            supported_versions_);
 }
 
 QuicTimeWaitListManager* QuicDispatcher::CreateQuicTimeWaitListManager() {

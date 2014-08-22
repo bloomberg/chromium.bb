@@ -236,13 +236,21 @@ class NET_EXPORT_PRIVATE QuicConnection
     BUNDLE_PENDING_ACK = 2,
   };
 
-  // Constructs a new QuicConnection for |connection_id| and |address|.
-  // |helper| must outlive this connection, and if |owns_writer| is false, so
-  // must |writer|.
+  class PacketWriterFactory {
+   public:
+    virtual ~PacketWriterFactory() {}
+
+    virtual QuicPacketWriter* Create(QuicConnection* connection) const = 0;
+  };
+
+  // Constructs a new QuicConnection for |connection_id| and |address|. Invokes
+  // writer_factory->Create() to get a writer; |owns_writer| specifies whether
+  // the connection takes ownership of the returned writer. |helper| must
+  // outlive this connection.
   QuicConnection(QuicConnectionId connection_id,
                  IPEndPoint address,
                  QuicConnectionHelperInterface* helper,
-                 QuicPacketWriter* writer,
+                 const PacketWriterFactory& writer_factory,
                  bool owns_writer,
                  bool is_server,
                  const QuicVersionVector& supported_versions);

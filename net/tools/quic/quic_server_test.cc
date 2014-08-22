@@ -21,7 +21,10 @@ class QuicServerDispatchPacketTest : public ::testing::Test {
  public:
   QuicServerDispatchPacketTest()
       : crypto_config_("blah", QuicRandom::GetInstance()),
-        dispatcher_(config_, crypto_config_, &eps_) {
+        dispatcher_(config_,
+                    crypto_config_,
+                    new QuicDispatcher::DefaultPacketWriterFactory(),
+                    &eps_) {
     dispatcher_.Initialize(1234);
   }
 

@@ -38,6 +38,7 @@ using testing::Contains;
 using testing::DoAll;
 using testing::InSequence;
 using testing::InvokeWithoutArgs;
+using testing::NiceMock;
 using testing::Ref;
 using testing::Return;
 using testing::SaveArg;
@@ -411,21 +412,20 @@ class TestConnection : public QuicConnection {
   TestConnection(QuicConnectionId connection_id,
                  IPEndPoint address,
                  TestConnectionHelper* helper,
-                 TestPacketWriter* writer,
+                 const PacketWriterFactory& factory,
                  bool is_server,
                  QuicVersion version)
       : QuicConnection(connection_id,
                        address,
                        helper,
-                       writer,
-                       false  /* owns_writer */,
+                       factory,
+                       /* owns_writer= */ false,
                        is_server,
-                       SupportedVersions(version)),
-        writer_(writer) {
+                       SupportedVersions(version)) {
     // Disable tail loss probes for most tests.
     QuicSentPacketManagerPeer::SetMaxTailLossProbes(
         QuicConnectionPeer::GetSentPacketManager(this), 0);
-    writer_->set_is_server(is_server);
+    writer()->set_is_server(is_server);
   }
 
   void SendAck() {
@@ -537,11 +537,11 @@ class TestConnection : public QuicConnection {
 
   void SetSupportedVersions(const QuicVersionVector& versions) {
     QuicConnectionPeer::GetFramer(this)->SetSupportedVersions(versions);
-    writer_->SetSupportedVersions(versions);
+    writer()->SetSupportedVersions(versions);
   }
 
   void set_is_server(bool is_server) {
-    writer_->set_is_server(is_server);
+    writer()->set_is_server(is_server);
     QuicConnectionPeer::SetIsServer(this, is_server);
   }
 
@@ -578,7 +578,9 @@ class TestConnection : public QuicConnection {
   using QuicConnection::SelectMutualVersion;
 
  private:
-  TestPacketWriter* writer_;
+  TestPacketWriter* writer() {
+    return static_cast<TestPacketWriter*>(QuicConnection::writer());
+  }
 
   DISALLOW_COPY_AND_ASSIGN(TestConnection);
 };
@@ -601,6 +603,16 @@ class FecQuicConnectionDebugVisitor
   QuicPacketHeader revived_header_;
 };
 
+class MockPacketWriterFactory : public QuicConnection::PacketWriterFactory {
+ public:
+  MockPacketWriterFactory(QuicPacketWriter* writer) {
+    ON_CALL(*this, Create(_)).WillByDefault(Return(writer));
+  }
+  virtual ~MockPacketWriterFactory() {}
+
+  MOCK_CONST_METHOD1(Create, QuicPacketWriter*(QuicConnection* connection));
+};
+
 class QuicConnectionTest : public ::testing::TestWithParam<QuicVersion> {
  protected:
   QuicConnectionTest()
@@ -611,8 +623,9 @@ class QuicConnectionTest : public ::testing::TestWithParam<QuicVersion> {
         loss_algorithm_(new MockLossAlgorithm()),
         helper_(new TestConnectionHelper(&clock_, &random_generator_)),
         writer_(new TestPacketWriter(version())),
+        factory_(writer_.get()),
         connection_(connection_id_, IPEndPoint(), helper_.get(),
-                    writer_.get(), false, version()),
+                    factory_, false, version()),
         frame1_(1, false, 0, MakeIOVector(data1)),
         frame2_(1, false, 3, MakeIOVector(data2)),
         sequence_number_length_(PACKET_6BYTE_SEQUENCE_NUMBER),
@@ -960,6 +973,7 @@ class QuicConnectionTest : public ::testing::TestWithParam<QuicVersion> {
   MockRandom random_generator_;
   scoped_ptr<TestConnectionHelper> helper_;
   scoped_ptr<TestPacketWriter> writer_;
+  NiceMock<MockPacketWriterFactory> factory_;
   TestConnection connection_;
   StrictMock<MockConnectionVisitor> visitor_;
 
@@ -3923,9 +3937,9 @@ TEST_P(QuicConnectionTest, OnPacketHeaderDebugVisitor) {
 
 TEST_P(QuicConnectionTest, Pacing) {
   TestConnection server(connection_id_, IPEndPoint(), helper_.get(),
-                        writer_.get(), true, version());
+                        factory_, /* is_server= */ true, version());
   TestConnection client(connection_id_, IPEndPoint(), helper_.get(),
-                        writer_.get(), false, version());
+                        factory_, /* is_server= */ false, version());
   EXPECT_FALSE(client.sent_packet_manager().using_pacing());
   EXPECT_FALSE(server.sent_packet_manager().using_pacing());
 }

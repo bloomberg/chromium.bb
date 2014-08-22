@@ -166,6 +166,7 @@ QuicDispatcher* QuicServer::CreateQuicDispatcher() {
       config_,
       crypto_config_,
       supported_versions_,
+      new QuicDispatcher::DefaultPacketWriterFactory(),
       &epoll_server_);
 }
 

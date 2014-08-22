@@ -31,6 +31,13 @@ QuicPacketWriter* QuicDispatcherPeer::GetWriter(QuicDispatcher* dispatcher) {
 }
 
 // static
+void QuicDispatcherPeer::SetPacketWriterFactory(
+    QuicDispatcher* dispatcher,
+    QuicDispatcher::PacketWriterFactory* packet_writer_factory) {
+  dispatcher->packet_writer_factory_.reset(packet_writer_factory);
+}
+
+// static
 QuicEpollConnectionHelper* QuicDispatcherPeer::GetHelper(
     QuicDispatcher* dispatcher) {
   return dispatcher->helper_.get();

@@ -161,11 +161,17 @@ vector<TestParams> GetTestParams() {
 
 class ServerDelegate : public PacketDroppingTestWriter::Delegate {
  public:
-  explicit ServerDelegate(QuicDispatcher* dispatcher)
-      : dispatcher_(dispatcher) {}
+  ServerDelegate(TestWriterFactory* writer_factory,
+                 QuicDispatcher* dispatcher)
+      : writer_factory_(writer_factory),
+        dispatcher_(dispatcher) {}
   virtual ~ServerDelegate() {}
+  virtual void OnPacketSent(WriteResult result) override {
+    writer_factory_->OnPacketSent(result);
+  }
   virtual void OnCanWrite() OVERRIDE { dispatcher_->OnCanWrite(); }
  private:
+  TestWriterFactory* writer_factory_;
   QuicDispatcher* dispatcher_;
 };
 
@@ -173,6 +179,7 @@ class ClientDelegate : public PacketDroppingTestWriter::Delegate {
  public:
   explicit ClientDelegate(QuicClient* client) : client_(client) {}
   virtual ~ClientDelegate() {}
+  virtual void OnPacketSent(WriteResult result) OVERRIDE {}
   virtual void OnCanWrite() OVERRIDE {
     EpollEvent event(EPOLLOUT, false);
     client_->OnEvent(client_->fd(), &event);
@@ -326,7 +333,7 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
 
   virtual void SetUp() OVERRIDE {
     // The ownership of these gets transferred to the QuicPacketWriterWrapper
-    // and QuicDispatcher when Initialize() is executed.
+    // and TestWriterFactory when Initialize() is executed.
     client_writer_ = new PacketDroppingTestWriter();
     server_writer_ = new PacketDroppingTestWriter();
   }
@@ -346,10 +353,13 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
                                  server_thread_->GetPort());
     QuicDispatcher* dispatcher =
         QuicServerPeer::GetDispatcher(server_thread_->server());
+    TestWriterFactory* packet_writer_factory = new TestWriterFactory();
+    QuicDispatcherPeer::SetPacketWriterFactory(dispatcher,
+                                               packet_writer_factory);
     QuicDispatcherPeer::UseWriter(dispatcher, server_writer_);
     server_writer_->Initialize(
         QuicDispatcherPeer::GetHelper(dispatcher),
-        new ServerDelegate(dispatcher));
+        new ServerDelegate(packet_writer_factory, dispatcher));
     server_thread_->Start();
     server_started_ = true;
   }
@@ -1150,7 +1160,7 @@ TEST_P(EndToEndTest, ConnectionMigrationClientIPChanged) {
   writer->set_writer(new QuicDefaultPacketWriter(client_->client()->fd()));
   QuicConnectionPeer::SetWriter(client_->client()->session()->connection(),
                                 writer,
-                                true  /* owns_writer */);
+                                /* owns_writer= */ true);
 
   client_->SendSynchronousRequest("/bar");
 

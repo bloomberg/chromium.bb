@@ -59,12 +59,12 @@ class TestQuicConnection : public QuicConnection {
                      QuicConnectionId connection_id,
                      IPEndPoint address,
                      QuicConnectionHelper* helper,
-                     QuicPacketWriter* writer)
+                     const QuicConnection::PacketWriterFactory& writer_factory)
       : QuicConnection(connection_id,
                        address,
                        helper,
-                       writer,
-                       false  /* owns_writer */,
+                       writer_factory,
+                       true  /* owns_writer */,
                        false  /* is_server */,
                        versions) {
   }
@@ -101,6 +101,20 @@ class AutoClosingStream : public QuicHttpStream {
     Close(false);
     return OK;
   }
+};
+
+class TestPacketWriterFactory : public QuicConnection::PacketWriterFactory {
+ public:
+  explicit TestPacketWriterFactory(DatagramClientSocket* socket)
+      : socket_(socket) {}
+  virtual ~TestPacketWriterFactory() {}
+
+  virtual QuicPacketWriter* Create(QuicConnection* connection) const OVERRIDE {
+    return new QuicDefaultPacketWriter(socket_);
+  }
+
+ private:
+  DatagramClientSocket* socket_;
 };
 
 }  // namespace
@@ -202,10 +216,10 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
     EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _)).Times(AnyNumber());
     helper_.reset(new QuicConnectionHelper(runner_.get(), &clock_,
                                            &random_generator_));
-    writer_.reset(new QuicDefaultPacketWriter(socket));
+    TestPacketWriterFactory writer_factory(socket);
     connection_ = new TestQuicConnection(SupportedVersions(GetParam()),
                                          connection_id_, peer_addr_,
-                                         helper_.get(), writer_.get());
+                                         helper_.get(), writer_factory);
     connection_->set_visitor(&visitor_);
     connection_->SetSendAlgorithm(send_algorithm_);
     connection_->SetReceiveAlgorithm(receive_algorithm_);
@@ -213,7 +227,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
     session_.reset(
         new QuicClientSession(connection_,
                               scoped_ptr<DatagramClientSocket>(socket),
-                              writer_.Pass(), NULL,
+                              NULL,
                               &crypto_client_stream_factory_,
                               &transport_security_state_,
                               make_scoped_ptr((QuicServerInfo*)NULL),
@@ -300,7 +314,6 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
   scoped_ptr<QuicConnectionHelper> helper_;
   testing::StrictMock<MockConnectionVisitor> visitor_;
   scoped_ptr<QuicHttpStream> stream_;
-  scoped_ptr<QuicDefaultPacketWriter> writer_;
   TransportSecurityState transport_security_state_;
   scoped_ptr<QuicClientSession> session_;
   QuicCryptoClientConfig crypto_config_;

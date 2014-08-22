@@ -15,10 +15,8 @@ namespace net {
 QuicServerSession::QuicServerSession(
     const QuicConfig& config,
     QuicConnection* connection,
-    QuicPerConnectionPacketWriter* connection_packet_writer,
     QuicServerSessionVisitor* visitor)
     : QuicSession(connection, config),
-      connection_packet_writer_(connection_packet_writer),
       visitor_(visitor) {}
 
 QuicServerSession::~QuicServerSession() {}

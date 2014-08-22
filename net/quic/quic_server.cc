@@ -104,6 +104,7 @@ int QuicServer::Listen(const IPEndPoint& address) {
       new QuicDispatcher(config_,
                          crypto_config_,
                          supported_versions_,
+                         new QuicDispatcher::DefaultPacketWriterFactory(),
                          &helper_));
   QuicServerPacketWriter* writer = new QuicServerPacketWriter(
       socket_.get(),

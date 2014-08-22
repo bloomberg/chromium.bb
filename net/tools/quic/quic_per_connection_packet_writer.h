@@ -2,29 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_QUIC_QUIC_PER_CONNECTION_PACKET_WRITER_H_
-#define NET_QUIC_QUIC_PER_CONNECTION_PACKET_WRITER_H_
+#ifndef NET_TOOLS_QUIC_QUIC_PER_CONNECTION_PACKET_WRITER_H_
+#define NET_TOOLS_QUIC_QUIC_PER_CONNECTION_PACKET_WRITER_H_
 
-#include "base/memory/weak_ptr.h"
 #include "net/quic/quic_connection.h"
 #include "net/quic/quic_packet_writer.h"
 
 namespace net {
 
-class QuicServerPacketWriter;
+namespace tools {
 
-// A connection-specific packet writer that notifies its connection when its
-// writes to the shared QuicServerPacketWriter complete.
-// This class is necessary because multiple connections can share the same
-// QuicServerPacketWriter, so it has no way to know which connection to notify.
+// A connection-specific packet writer that wraps a shared writer and keeps a
+// reference to the connection.
 class QuicPerConnectionPacketWriter : public QuicPacketWriter {
  public:
   // Does not take ownership of |shared_writer| or |connection|.
-  QuicPerConnectionPacketWriter(QuicServerPacketWriter* shared_writer,
+  QuicPerConnectionPacketWriter(QuicPacketWriter* shared_writer,
                                 QuicConnection* connection);
   virtual ~QuicPerConnectionPacketWriter();
 
-  QuicPacketWriter* shared_writer() const;
+  QuicPacketWriter* shared_writer() const { return shared_writer_; }
   QuicConnection* connection() const { return connection_; }
 
   // Default implementation of the QuicPacketWriter interface: Passes everything
@@ -38,15 +35,14 @@ class QuicPerConnectionPacketWriter : public QuicPacketWriter {
   virtual void SetWritable() OVERRIDE;
 
  private:
-  void OnWriteComplete(WriteResult result);
-
-  base::WeakPtrFactory<QuicPerConnectionPacketWriter> weak_factory_;
-  QuicServerPacketWriter* shared_writer_;  // Not owned.
+  QuicPacketWriter* shared_writer_;  // Not owned.
   QuicConnection* connection_;  // Not owned.
 
   DISALLOW_COPY_AND_ASSIGN(QuicPerConnectionPacketWriter);
 };
 
+}  // namespace tools
+
 }  // namespace net
 
-#endif  // NET_QUIC_QUIC_PER_CONNECTION_PACKET_WRITER_H_
+#endif  // NET_TOOLS_QUIC_QUIC_PER_CONNECTION_PACKET_WRITER_H_

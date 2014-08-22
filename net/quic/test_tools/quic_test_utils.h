@@ -16,7 +16,9 @@
 #include "net/quic/quic_ack_notifier.h"
 #include "net/quic/quic_client_session_base.h"
 #include "net/quic/quic_connection.h"
+#include "net/quic/quic_dispatcher.h"
 #include "net/quic/quic_framer.h"
+#include "net/quic/quic_per_connection_packet_writer.h"
 #include "net/quic/quic_sent_packet_manager.h"
 #include "net/quic/quic_session.h"
 #include "net/quic/test_tools/mock_clock.h"
@@ -541,6 +543,46 @@ class MockNetworkChangeVisitor :
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockNetworkChangeVisitor);
+};
+
+// Creates per-connection packet writers that register themselves with the
+// TestWriterFactory on each write so that TestWriterFactory::OnPacketSent can
+// be routed to the appropriate QuicConnection.
+class TestWriterFactory : public QuicDispatcher::PacketWriterFactory {
+ public:
+  TestWriterFactory();
+  virtual ~TestWriterFactory();
+
+  virtual QuicPacketWriter* Create(QuicServerPacketWriter* writer,
+                                   QuicConnection* connection) OVERRIDE;
+
+  // Calls OnPacketSent on the last QuicConnection to write through one of the
+  // packet writers created by this factory.
+  void OnPacketSent(WriteResult result);
+
+ private:
+  class PerConnectionPacketWriter : public QuicPerConnectionPacketWriter {
+   public:
+    PerConnectionPacketWriter(TestWriterFactory* factory,
+                              QuicServerPacketWriter* writer,
+                              QuicConnection* connection);
+    virtual ~PerConnectionPacketWriter();
+
+    virtual WriteResult WritePacket(
+        const char* buffer,
+        size_t buf_len,
+        const IPAddressNumber& self_address,
+        const IPEndPoint& peer_address) OVERRIDE;
+
+   private:
+    TestWriterFactory* factory_;
+  };
+
+  // If an asynchronous write is happening and |writer| gets deleted, this
+  // clears the pointer to it to prevent use-after-free.
+  void Unregister(PerConnectionPacketWriter* writer);
+
+  PerConnectionPacketWriter* current_writer_;
 };
 
 }  // namespace test

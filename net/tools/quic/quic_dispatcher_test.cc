@@ -48,6 +48,7 @@ class TestDispatcher : public QuicDispatcher {
       : QuicDispatcher(config,
                        crypto_config,
                        QuicSupportedVersions(),
+                       new QuicDispatcher::DefaultPacketWriterFactory(),
                        eps) {
   }
 
@@ -271,12 +272,11 @@ class BlockingWriter : public QuicPacketWriterWrapper {
       size_t buf_len,
       const IPAddressNumber& self_client_address,
       const IPEndPoint& peer_client_address) OVERRIDE {
-    if (write_blocked_) {
-      return WriteResult(WRITE_STATUS_BLOCKED, EAGAIN);
-    } else {
-      return QuicPacketWriterWrapper::WritePacket(
-          buffer, buf_len, self_client_address, peer_client_address);
-    }
+    // It would be quite possible to actually implement this method here with
+    // the fake blocked status, but it would be significantly more work in
+    // Chromium, and since it's not called anyway, don't bother.
+    LOG(DFATAL) << "Not supported";
+    return WriteResult();
   }
 
   bool write_blocked_;
@@ -286,6 +286,8 @@ class QuicDispatcherWriteBlockedListTest : public QuicDispatcherTest {
  public:
   virtual void SetUp() {
     writer_ = new BlockingWriter;
+    QuicDispatcherPeer::SetPacketWriterFactory(&dispatcher_,
+                                               new TestWriterFactory());
     QuicDispatcherPeer::UseWriter(&dispatcher_, writer_);
 
     IPEndPoint client_address(net::test::Loopback4(), 1);

@@ -18,7 +18,6 @@
 #include "net/quic/crypto/quic_server_info.h"
 #include "net/quic/quic_connection_helper.h"
 #include "net/quic/quic_crypto_client_stream_factory.h"
-#include "net/quic/quic_default_packet_writer.h"
 #include "net/quic/quic_server_id.h"
 #include "net/quic/quic_stream_factory.h"
 #include "net/spdy/spdy_session.h"
@@ -137,7 +136,6 @@ void QuicClientSession::StreamRequest::OnRequestCompleteFailure(int rv) {
 QuicClientSession::QuicClientSession(
     QuicConnection* connection,
     scoped_ptr<DatagramClientSocket> socket,
-    scoped_ptr<QuicDefaultPacketWriter> writer,
     QuicStreamFactory* stream_factory,
     QuicCryptoClientStreamFactory* crypto_client_stream_factory,
     TransportSecurityState* transport_security_state,
@@ -152,7 +150,6 @@ QuicClientSession::QuicClientSession(
       require_confirmation_(false),
       stream_factory_(stream_factory),
       socket_(socket.Pass()),
-      writer_(writer.Pass()),
       read_buffer_(new IOBufferWithSize(kMaxPacketSize)),
       transport_security_state_(transport_security_state),
       server_info_(server_info.Pass()),
