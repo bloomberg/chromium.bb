@@ -43,6 +43,7 @@
             'components_resources.gyp:components_resources',
             'components_strings.gyp:components_strings',
             'distilled_page_proto',
+            'pref_registry',
           ],
           'include_dirs': [
             '..',
