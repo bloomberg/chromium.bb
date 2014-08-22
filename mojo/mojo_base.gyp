@@ -399,6 +399,9 @@
           'GLES2_USE_MOJO',
         ],
       },
+      'export_dependent_settings': [
+        'mojo_gles2_bindings',
+      ],
       'sources': [
         'gles2/command_buffer_client_impl.cc',
         'gles2/command_buffer_client_impl.h',

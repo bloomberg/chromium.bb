@@ -97,10 +97,11 @@
         'services/public/interfaces/input_events/input_events.mojom',
       ],
       'includes': [ 'public/tools/bindings/mojom_bindings_generator.gypi' ],
-      'export_dependent_settings': [
-        'mojo_base.gyp:mojo_cpp_bindings',
-      ],
       'dependencies': [
+        'mojo_base.gyp:mojo_cpp_bindings',
+        'mojo_geometry_bindings',
+      ],
+      'export_dependent_settings': [
         'mojo_base.gyp:mojo_cpp_bindings',
         'mojo_geometry_bindings',
       ],
@@ -165,6 +166,7 @@
       ],
       'export_dependent_settings': [
         'mojo_geometry_lib',
+        'mojo_surfaces_bindings',
       ],
       'sources': [
         'services/public/cpp/surfaces/lib/surfaces_type_converters.cc',
@@ -225,10 +227,12 @@
         'services/public/interfaces/gpu/gpu.mojom',
       ],
       'includes': [ 'public/tools/bindings/mojom_bindings_generator.gypi' ],
-      'export_dependent_settings': [
-        'mojo_base.gyp:mojo_cpp_bindings',
-      ],
       'dependencies': [
+        'mojo_base.gyp:mojo_cpp_bindings',
+        'mojo_base.gyp:mojo_gles2_bindings',
+        'mojo_geometry_bindings',
+      ],
+      'export_dependent_settings': [
         'mojo_base.gyp:mojo_cpp_bindings',
         'mojo_base.gyp:mojo_gles2_bindings',
         'mojo_geometry_bindings',
@@ -242,10 +246,13 @@
         'services/public/interfaces/native_viewport/native_viewport.mojom',
       ],
       'includes': [ 'public/tools/bindings/mojom_bindings_generator.gypi' ],
-      'export_dependent_settings': [
-        'mojo_base.gyp:mojo_cpp_bindings',
-      ],
       'dependencies': [
+        'mojo_base.gyp:mojo_cpp_bindings',
+        'mojo_base.gyp:mojo_gles2_bindings',
+        'mojo_geometry_bindings',
+        'mojo_input_events_bindings',
+      ],
+      'export_dependent_settings': [
         'mojo_base.gyp:mojo_cpp_bindings',
         'mojo_base.gyp:mojo_gles2_bindings',
         'mojo_geometry_bindings',
@@ -270,6 +277,11 @@
         'mojo_gles2_service',
         'mojo_gpu_bindings',
         'mojo_input_events_lib',
+        'mojo_native_viewport_bindings',
+      ],
+      'export_dependent_settings': [
+        'mojo_geometry_bindings',
+        'mojo_gpu_bindings',
         'mojo_native_viewport_bindings',
       ],
       'sources': [
@@ -481,10 +493,13 @@
         'services/public/interfaces/view_manager/view_manager_constants.mojom',
       ],
       'includes': [ 'public/tools/bindings/mojom_bindings_generator.gypi' ],
-      'export_dependent_settings': [
-        'mojo_base.gyp:mojo_cpp_bindings',
-      ],
       'dependencies': [
+        'mojo_base.gyp:mojo_application_bindings',
+        'mojo_base.gyp:mojo_cpp_bindings',
+        'mojo_geometry_bindings',
+        'mojo_input_events_bindings',
+      ],
+      'export_dependent_settings': [
         'mojo_base.gyp:mojo_application_bindings',
         'mojo_base.gyp:mojo_cpp_bindings',
         'mojo_geometry_bindings',

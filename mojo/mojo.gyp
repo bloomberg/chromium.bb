@@ -333,6 +333,7 @@
       'export_dependent_settings': [
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         'mojo_base.gyp:mojo_application_bindings',
+        'mojo_network_bindings',
       ],
     },
     {
