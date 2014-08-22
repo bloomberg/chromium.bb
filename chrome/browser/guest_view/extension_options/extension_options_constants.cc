@@ -17,7 +17,11 @@ const char kAttributeMinHeight[] = "minheight";
 const char kAttributeMinWidth[] = "minwidth";
 
 const char kExtensionId[] = "extensionId";
-const char kHeight[] = "height";
-const char kWidth[] = "width";
+
+const char kNewHeight[] = "newHeight";
+const char kNewWidth[] = "newWidth";
+const char kOldHeight[] = "oldHeight";
+const char kOldWidth[] = "oldWidth";
+
 
 }  // namespace extensionoptions
