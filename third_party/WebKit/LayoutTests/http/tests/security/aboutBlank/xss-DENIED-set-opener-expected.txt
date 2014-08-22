@@ -4,7 +4,7 @@ Code injected into window:
 <script>function write(target, message) { target.document.body.innerHTML = message; }
 setTimeout(function() {write(window.opener.top.frames[0], 'FAIL: XSS was allowed.');}, 100);
 setTimeout(function() {write(window.opener.top.frames[1], 'SUCCESS: Window remained in original SecurityOrigin.');}, 200);
-setTimeout(function() { if (window.testRunner) testRunner.globalFlag = true; }, 300);</script>
+setTimeout(function() { window.opener.top.postMessage('done', '*'); }, 300);</script>
 PASS: 'window.open' called on another frame threw: SecurityError: Failed to execute 'open' on 'Window': Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.
  
 

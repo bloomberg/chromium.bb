@@ -9,27 +9,14 @@
                 testRunner.waitUntilDone();
             }
 
-            if (window.testRunner) {
-                setTimeout(pollForTest, 1);
-            } else {
-                log("To run the test, click the button below when the frame finishes loading.");
-                var button = document.createElement("button");
-                button.appendChild(document.createTextNode("Run Test"));
-                button.onclick = runTest;
-                document.body.appendChild(button);
-            }
+            window.addEventListener('message', function ()
+            {
+                runTest();
+                if (window.testRunner)
+                    testRunner.notifyDone();
+            });
         }
     
-        pollForTest = function()
-        {
-            if (!testRunner.globalFlag) {
-                setTimeout(pollForTest, 1);
-                return;
-            }
-            runTest();
-            testRunner.notifyDone();
-        }
-
         runTest = function()
         {
             // Test enumerating the Window object

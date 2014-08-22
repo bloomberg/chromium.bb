@@ -9,8 +9,7 @@
 
         window.onload = function()
         {
-            if (window.testRunner)
-                testRunner.globalFlag = true;
+            window.parent.postMessage('start', '*');
         }
     </script>
 </head>

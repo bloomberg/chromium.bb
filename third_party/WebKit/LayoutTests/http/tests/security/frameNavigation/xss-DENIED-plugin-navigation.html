@@ -11,6 +11,7 @@
                 testRunner.setCanOpenWindows();
                 testRunner.setCloseRemainingWindowsWhenComplete(true);
             }
+            window.frames[0].postMessage('run test', '*');
         }
     </script>
 </head>

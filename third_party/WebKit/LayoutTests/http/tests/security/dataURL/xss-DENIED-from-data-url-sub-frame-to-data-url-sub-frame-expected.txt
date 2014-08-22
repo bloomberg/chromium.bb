@@ -14,5 +14,4 @@ Frame: 'secondSubFrame'
 --------
 Inner iframe.
 
-Test
 

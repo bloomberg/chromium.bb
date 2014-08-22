@@ -14,18 +14,10 @@
 
             openedWindow = window.open("http://localhost:8000/security/javascriptURL/resources/foreign-domain-javascript-url-accessor-opened-frame.html");
 
-            if (window.testRunner) {
-                setTimeout(pollUntilDone, 1);
-            }
-        }
-
-        pollUntilDone = function()
-        {
-            if (!testRunner.globalFlag) {
-                setTimeout(pollUntilDone, 1);
-                return;
-            }
-            closeWindowAndNotifyDone(openedWindow);
+            window.addEventListener('message', function ()
+            {
+                closeWindowAndNotifyDone(openedWindow);
+            });
         }
     </script>
 </head>

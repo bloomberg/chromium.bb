@@ -4,18 +4,7 @@
     <script>
         function loaded()
         {
-            if (window.testRunner) {
-                function waitForFlag() {
-                    if (!testRunner.globalFlag) {
-                        setTimeout(waitForFlag, 1);
-                        return;
-                    }
-                    performTest();
-                }
-                setTimeout(waitForFlag, 1);
-            } else {
-                log("Click the button when all the subframes have finished loading.");
-            }
+            window.addEventListener('message', performTest);
         }
 
         function performTest()
@@ -33,7 +22,6 @@
 </head>
 <body onload="loaded();">
     <p>Other inner iframe.</p>
-    <button onclick="performTest();">Test</button>
     <pre id='console'></pre>
 </body>
 </html>

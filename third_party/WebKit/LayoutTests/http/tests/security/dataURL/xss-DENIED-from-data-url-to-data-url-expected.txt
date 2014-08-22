@@ -8,7 +8,6 @@ Frame: 'aFrame'
 
 Inner iframe.
 
-Test
 
 
 --------

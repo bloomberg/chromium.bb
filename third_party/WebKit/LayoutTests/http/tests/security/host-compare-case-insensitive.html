@@ -6,6 +6,11 @@
             testRunner.dumpChildFramesAsText();
             testRunner.waitUntilDone();
         }
+
+        window.onload = function ()
+        {
+            window.frames[1].postMessage('run test', '*');
+        };
     </script>
 </head>
 <body>

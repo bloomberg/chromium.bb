@@ -13,19 +13,7 @@
         function loaded()
         {
             document.getElementsByTagName('h4')[0].innerHTML = document.domain;
-
-            if (window.testRunner) {
-                function waitForFlag() {
-                    if (!testRunner.globalFlag) {
-                        setTimeout(waitForFlag, 1);
-                        return;
-                    }
-
-                    testRunner.globalFlag = false;
-                    performTest();
-                }
-                setTimeout(waitForFlag, 1);
-            }
+            performTest();
         }
 
         function performTest()

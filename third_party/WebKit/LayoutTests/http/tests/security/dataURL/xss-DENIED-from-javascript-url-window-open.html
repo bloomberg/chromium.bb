@@ -16,8 +16,7 @@
                 +                 "opener.document.getElementById(\"accessMe\").innerHTML = \"FAIL: Access from a window opened with a data: URL was allowed!\";"
                 +             "} catch (e) {"
                 +             "}"
-                +             "if (window.testRunner)"
-                +                 "testRunner.globalFlag = true;" // Flag that the test has completed and we can close the window now
+                +             "window.opener.postMessage('done', '*');"
                 +         "}"
                 +     "</scri" + "pt>"
                 + "</head>"
@@ -26,18 +25,10 @@
                 + "</body>"
                 + "</html>";
 
+            window.addEventListener('message', function () {
+                closeWindowAndNotifyDone(openedWindow);
+            });
             var openedWindow = window.open(url);
-
-            if (window.testRunner) {
-                setTimeout(waitForFlag, 1);
-                function waitForFlag() {
-                    if (!testRunner.globalFlag) {
-                        setTimeout(waitForFlag, 1);
-                        return;
-                    }
-                    closeWindowAndNotifyDone(openedWindow);
-                }
-            }
         }
     </script>
 </head>

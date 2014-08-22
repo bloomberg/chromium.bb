@@ -14,5 +14,4 @@ Frame: 'frameB'
 --------
 Other inner iframe.
 
-Test
 

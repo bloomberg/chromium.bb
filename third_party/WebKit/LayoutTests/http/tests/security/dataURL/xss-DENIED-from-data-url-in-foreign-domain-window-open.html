@@ -13,17 +13,10 @@
 
             openedWindow = window.open("http://localhost:8000/security/dataURL/resources/foreign-domain-data-url-accessor-opened-frame.html");
 
-            if (window.testRunner)
-                setTimeout(pollUntilDone, 1);
-        }
-
-        pollUntilDone = function()
-        {
-            if (!testRunner.globalFlag) {
-                setTimeout(pollUntilDone, 1);
-                return;
-            }
-            closeWindowAndNotifyDone(openedWindow);
+            window.addEventListener('message', function ()
+            {
+                closeWindowAndNotifyDone(openedWindow);
+            });
         }
     </script>
 </head>

@@ -26,71 +26,25 @@
         var try_control = 'write(window.opener.top.frames[1], ' + libwrapjs.in_string(message_success) + ');';
         var control = 'setTimeout(function() {' + try_control + '}, 200);';
 
-        var sigDone = 'setTimeout(function() { if (window.testRunner) testRunner.globalFlag = true; }, 300);';
+        var sigDone = 'setTimeout(function() { window.opener.top.postMessage(\'done\', \'*\'); }, 300);';
 
         var payload = 'document.write(' + libwrapjs.in_string(libwrapjs.in_script_tag(write_func + attack + control + sigDone)) + ');';
         code = libwrapjs.in_script_tag(payload);
         log("Code injected into window:");
         log(code);
 
-        if (window.testRunner) {
-            setTimeout(pollForTest1, 1);
-        } else {
-            log("To run the test, click the button below when the frames finish loading.");
-            var button = document.createElement("button");
-            button.appendChild(document.createTextNode("Run Test"));
-            button.onclick = runTest1;
-            document.body.appendChild(button);
-        }
-    }
-    
-    pollForTest1 = function()
-    {
-        if (window.testRunner && !testRunner.globalFlag) {
-            setTimeout(pollForTest1, 1);
-            return;
-        }
-        runTest1();
-    }
-
-    runTest1 = function() {
         frames[0].openWindow();
         openedWindow = frames[0].openedWindow;
 
-        if (window.testRunner)
-            testRunner.globalFlag = false;
-
-        frames[0].location = 'http://localhost:8000/security/resources/innocent-victim-with-notify.html';
-
-        setTimeout(pollForTest2, 1);
+        document.getElementById('targetFrame').onload = runTest;
+        frames[0].location = 'http://localhost:8000/security/resources/innocent-victim.html';
     }
 
-    pollForTest2 = function()
+    runTest = function()
     {
-        if (window.testRunner && !testRunner.globalFlag) {
-            setTimeout(pollForTest2, 1);
-            return;
-        }
-        runTest2();
-    }
-
-    runTest2 = function()
-    {
+        window.addEventListener('message', function () { closeWindowAndNotifyDone(openedWindow); });
         openedWindow.document.write(code);
         openedWindow.document.close();
-        if (window.testRunner) {
-            testRunner.globalFlag = false;
-            setTimeout(pollForDone, 1);
-        }
-    }
-
-    pollForDone = function()
-    {
-        if (window.testRunner && !testRunner.globalFlag) {
-            setTimeout(pollForDone, 1);
-            return;
-        }
-        closeWindowAndNotifyDone(openedWindow);
     }
 </script>
 </head>
@@ -99,7 +53,7 @@
 then navigates its opener to the victim.  The opened window then tries to
 scripts its opener after <code>document.write</code>ing a new document.</div>
 <pre id="console"></pre>
-<iframe style="border: solid 3px red;" src="../resources/open-window.html"></iframe>
+<iframe id="targetFrame" style="border: solid 3px red;" src="../resources/open-window.html"></iframe>
 <iframe style="border: solid 3px green;" src="../resources/innocent-victim.html"></iframe>
 </body>
 </html>

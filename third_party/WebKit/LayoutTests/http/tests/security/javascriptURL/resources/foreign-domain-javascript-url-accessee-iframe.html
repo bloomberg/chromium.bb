@@ -4,15 +4,6 @@
     <iframe id="aFrame" name="aFrame"></iframe>
     <script>
         var url = "javascript:\"<html>"
-            + "<head>"
-            +     "<scr" + "ipt>"
-            +         "window.onload = function()"
-            +         "{"
-            +             "if (window.testRunner)"
-            +                 "testRunner.globalFlag = true;"
-            +         "}"
-            +     "</scr" + "ipt>"
-            + "</head>"
             + "<body>"
             +     "<p id='accessMe'>PASS: Cross frame access from a frame on a foreign domain denied!</p>"
             +     "<p>Inner-inner iframe. This iframe (which is javascript: URL and whose parent is on a foreign domain) is the frame that the"
@@ -21,6 +12,7 @@
             + "</html>\"";
 
         var frame = document.getElementById('aFrame');
+        frame.onload = function () { window.parent.postMessage('run test', '*'); };
         frame.src = url;
     </script>
 </body>

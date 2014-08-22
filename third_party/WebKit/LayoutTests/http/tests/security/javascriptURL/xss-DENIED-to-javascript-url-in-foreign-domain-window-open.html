@@ -14,25 +14,11 @@
 
             openedWindow = window.open("http://localhost:8000/security/javascriptURL/resources/foreign-domain-javascript-url-accessee-opened-frame.html");
 
-            if (window.testRunner) {
-                setTimeout(pollForTest, 1);
-            } else {
-                log("To run the test, click the button below when the opened window finishes loading.");
-                var button = document.createElement("button");
-                button.appendChild(document.createTextNode("Run Test"));
-                button.onclick = runTest;
-                document.body.appendChild(button);
-            }
-        }
-
-        pollForTest = function()
-        {
-            if (!testRunner.globalFlag) {
-                setTimeout(pollForTest, 1);
-                return;
-            }
-            runTest();
-            closeWindowAndNotifyDone(openedWindow);
+            window.addEventListener('message', function ()
+            {
+                runTest();
+                closeWindowAndNotifyDone(openedWindow);
+            });
         }
 
         runTest = function()

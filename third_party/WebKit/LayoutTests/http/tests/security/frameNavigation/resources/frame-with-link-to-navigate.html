@@ -5,20 +5,7 @@
         window.onload = function()
         {
             document.getElementsByTagName('h4')[0].innerHTML = document.domain;
-            if (window.testRunner) {
-                setTimeout(pollForTest, 1);
-            } else {
-                log("Click the link to run the test.");
-            }
-        }
-
-        pollForTest = function()
-        {
-            if (!testRunner.globalFlag) {
-                setTimeout(pollForTest, 1);
-                return;
-            }
-            runTest();
+            window.addEventListener('message', runTest);
         }
 
         runTest = function()
