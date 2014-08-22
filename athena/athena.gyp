@@ -164,6 +164,8 @@
         'test/test_app_model_builder.h',
         'test/test_screen_manager_delegate.cc',
         'test/test_screen_manager_delegate.h',
+        'wm/test/window_manager_impl_test_api.cc',
+        'wm/test/window_manager_impl_test_api.h',
       ],
     },
     {

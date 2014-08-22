@@ -20,6 +20,10 @@ class WMState;
 
 namespace athena {
 
+namespace test {
+class WindowManagerImplTestApi;
+}
+
 class BezelController;
 class SplitViewController;
 class WindowListProvider;
@@ -39,7 +43,7 @@ class WindowManagerImpl : public WindowManager,
   virtual bool IsOverviewModeActive() OVERRIDE;
 
  private:
-  friend class WindowManagerImplTestApi;
+  friend class test::WindowManagerImplTestApi;
   friend class AthenaContainerLayoutManager;
 
   enum Command {

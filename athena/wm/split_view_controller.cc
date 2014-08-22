@@ -20,6 +20,21 @@
 
 namespace athena {
 
+namespace {
+
+// Returns a target transform which is suitable for animating a windows's
+// bounds.
+gfx::Transform GetTargetTransformForBoundsAnimation(const gfx::Rect& from,
+                                                    const gfx::Rect& to) {
+  gfx::Transform transform;
+  transform.Translate(to.x() - from.x(), to.y() - from.y());
+  transform.Scale(to.width() / static_cast<float>(from.width()),
+                  to.height() / static_cast<float>(from.height()));
+  return transform;
+}
+
+}  // namespace
+
 SplitViewController::SplitViewController(
     aura::Window* container,
     WindowListProvider* window_list_provider)
@@ -113,6 +128,20 @@ void SplitViewController::DeactivateSplitMode() {
   left_window_ = right_window_ = NULL;
 }
 
+gfx::Rect SplitViewController::GetLeftTargetBounds() {
+  gfx::Rect work_area =
+      gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().work_area();
+  return gfx::Rect(0, 0, container_->bounds().width() / 2, work_area.height());
+}
+
+gfx::Rect SplitViewController::GetRightTargetBounds() {
+  gfx::Rect work_area =
+      gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().work_area();
+  int container_width = container_->bounds().width();
+  return gfx::Rect(
+      container_width / 2, 0, container_width / 2, work_area.height());
+}
+
 void SplitViewController::UpdateLayout(bool animate) {
   if  (!left_window_)
     return;
@@ -121,19 +150,16 @@ void SplitViewController::UpdateLayout(bool animate) {
   gfx::Transform right_transform;
   int container_width = container_->GetBoundsInScreen().width();
   if (state_ == ACTIVE) {
-    // This method should only be called once in ACTIVE state when
-    // the left and rightwindows are still full screen and need to be resized.
-    CHECK_EQ(left_window_->bounds().width(), container_width);
-    CHECK_EQ(right_window_->bounds().width(), container_width);
     // Windows should be resized via an animation when entering the ACTIVE
     // state.
     CHECK(animate);
     // We scale the windows here, but when the animation finishes, we reset
     // the scaling and update the window bounds to the proper size - see
     // OnAnimationCompleted().
-    left_transform.Scale(.5, 1);
-    right_transform.Scale(.5, 1);
-    right_transform.Translate(container_width, 0);
+    left_transform = GetTargetTransformForBoundsAnimation(
+        left_window_->bounds(), GetLeftTargetBounds());
+    right_transform = GetTargetTransformForBoundsAnimation(
+        right_window_->bounds(), GetRightTargetBounds());
   } else {
     left_transform.Translate(separator_position_ - container_width, 0);
     right_transform.Translate(separator_position_, 0);
@@ -168,16 +194,11 @@ void SplitViewController::OnAnimationCompleted(aura::Window* window) {
     return;
   DCHECK(window == left_window_ || window == right_window_);
   if (state_ == ACTIVE) {
-    int container_width = container_->bounds().width();
-    gfx::Display display = gfx::Screen::GetNativeScreen()->GetPrimaryDisplay();
-    gfx::Rect window_bounds(container_width / 2, display.work_area().height());
     window->SetTransform(gfx::Transform());
-    if (window == left_window_) {
-      left_window_->SetBounds(window_bounds);
-    } else {
-      window_bounds.set_x(container_width / 2);
-      right_window_->SetBounds(window_bounds);
-    }
+    if (window == left_window_)
+      left_window_->SetBounds(GetLeftTargetBounds());
+    else
+      right_window_->SetBounds(GetRightTargetBounds());
   } else {
     int container_width = container_->bounds().width();
     window->SetTransform(gfx::Transform());

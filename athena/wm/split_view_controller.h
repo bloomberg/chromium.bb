@@ -11,6 +11,7 @@
 #include "base/memory/weak_ptr.h"
 
 namespace gfx {
+class Rect;
 class Transform;
 }
 
@@ -41,6 +42,13 @@ class ATHENA_EXPORT SplitViewController
 
   void ReplaceWindow(aura::Window* window,
                      aura::Window* replace_with);
+
+  // Returns the bounds that the left and right windows will have once split
+  // view is active and they are done animating. If |left_window_| and
+  // |right_window_| are still animating this may be different than their
+  // current bounds.
+  gfx::Rect GetLeftTargetBounds();
+  gfx::Rect GetRightTargetBounds();
 
   aura::Window* left_window() { return left_window_; }
   aura::Window* right_window() { return right_window_; }
