@@ -384,6 +384,13 @@ class CGen(object):
 
     # Generate passing type by modifying root type
     rtype = self.GetTypeByMode(node, release, mode)
+    # If this is an array output, change it from type* foo[] to type** foo.
+    # type* foo[] means an array of pointers to type, which is confusing.
+    arrayspec = [self.GetArraySpec(array) for array in node.GetListOf('Array')]
+    if mode == 'out' and len(arrayspec) == 1 and arrayspec[0] == '[]':
+      rtype += '*'
+      del arrayspec[0]
+
     if node.IsA('Enum', 'Interface', 'Struct'):
       rname = node.GetName()
     else:
@@ -394,7 +401,6 @@ class CGen(object):
     if '%' in rtype:
       rtype = rtype % rname
     name = node.GetName()
-    arrayspec = [self.GetArraySpec(array) for array in node.GetListOf('Array')]
     callnode = node.GetOneOf('Callspec')
     if callnode:
       callspec = []

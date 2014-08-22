@@ -4,7 +4,7 @@
  */
 
 /* From private/ppb_camera_capabilities_private.idl,
- *   modified Thu Aug 14 11:40:27 2014.
+ *   modified Fri Aug 22 11:08:14 2014.
  */
 
 #ifndef PPAPI_C_PRIVATE_PPB_CAMERA_CAPABILITIES_PRIVATE_H_
@@ -68,15 +68,15 @@ struct PPB_CameraCapabilities_Private_0_1 {
    * @param[in] capabilities A <code>PP_Resource</code> corresponding to an
    * image capture capabilities resource.
    * @param[out] array_size The size of preview size array.
-   * @param[out] An array of <code>PP_Size</code> corresponding to the
-   * supported preview sizes in pixels. The ownership of the array belongs to
-   * <code>PPB_CameraCapabilities_Private</code> and the caller should not
-   * free it. When a PPB_CameraCapabilities_Private is deleted, the array
-   * returning from this is no longer valid.
+   * @param[out] preview_sizes An array of <code>PP_Size</code> corresponding
+   * to the supported preview sizes in pixels. The ownership of the array
+   * belongs to <code>PPB_CameraCapabilities_Private</code> and the caller
+   * should not free it. When a PPB_CameraCapabilities_Private is deleted,
+   * the array returning from this is no longer valid.
    */
   void (*GetSupportedPreviewSizes)(PP_Resource capabilities,
                                    int32_t* array_size,
-                                   struct PP_Size* preview_sizes[]);
+                                   struct PP_Size** preview_sizes);
   /**
    * GetSupportedJpegSize() returns the supported JPEG sizes for the given
    * <code>PPB_CameraCapabilities_Private</code>.
@@ -85,15 +85,15 @@ struct PPB_CameraCapabilities_Private_0_1 {
    * image capture capabilities resource.
    * @param[out] array_size The size of JPEG size array. If the output of this
    * is 0, the camera has no support for generating JPEG images.
-   * @param[out] An array of <code>PP_Size</code> corresponding to the
-   * supported JPEG image sizes in pixels. The ownership of the array belongs
-   * to <code>PPB_CameraCapabilities_Private</code> and the caller should not
-   * free it. When a PPB_CameraCapabilities_Private is deleted, the array
-   * returning from this is no longer valid.
+   * @param[out] jpeg_sizes An array of <code>PP_Size</code> corresponding to
+   * the supported JPEG image sizes in pixels. The ownership of the array
+   * belongs to <code>PPB_CameraCapabilities_Private</code> and the caller
+   * should not free it. When a PPB_CameraCapabilities_Private is deleted, the
+   * array returning from this is no longer valid.
    */
   void (*GetSupportedJpegSizes)(PP_Resource capabilities,
                                 int32_t* array_size,
-                                struct PP_Size* jpeg_sizes[]);
+                                struct PP_Size** jpeg_sizes);
 };
 
 typedef struct PPB_CameraCapabilities_Private_0_1

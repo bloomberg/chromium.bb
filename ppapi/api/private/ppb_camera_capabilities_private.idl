@@ -53,11 +53,11 @@ interface PPB_CameraCapabilities_Private {
    * @param[in] capabilities A <code>PP_Resource</code> corresponding to an
    * image capture capabilities resource.
    * @param[out] array_size The size of preview size array.
-   * @param[out] An array of <code>PP_Size</code> corresponding to the
-   * supported preview sizes in pixels. The ownership of the array belongs to
-   * <code>PPB_CameraCapabilities_Private</code> and the caller should not
-   * free it. When a PPB_CameraCapabilities_Private is deleted, the array
-   * returning from this is no longer valid.
+   * @param[out] preview_sizes An array of <code>PP_Size</code> corresponding
+   * to the supported preview sizes in pixels. The ownership of the array
+   * belongs to <code>PPB_CameraCapabilities_Private</code> and the caller
+   * should not free it. When a PPB_CameraCapabilities_Private is deleted,
+   * the array returning from this is no longer valid.
    */
   void GetSupportedPreviewSizes(
       [in] PP_Resource capabilities,
@@ -72,11 +72,11 @@ interface PPB_CameraCapabilities_Private {
    * image capture capabilities resource.
    * @param[out] array_size The size of JPEG size array. If the output of this
    * is 0, the camera has no support for generating JPEG images.
-   * @param[out] An array of <code>PP_Size</code> corresponding to the
-   * supported JPEG image sizes in pixels. The ownership of the array belongs
-   * to <code>PPB_CameraCapabilities_Private</code> and the caller should not
-   * free it. When a PPB_CameraCapabilities_Private is deleted, the array
-   * returning from this is no longer valid.
+   * @param[out] jpeg_sizes An array of <code>PP_Size</code> corresponding to
+   * the supported JPEG image sizes in pixels. The ownership of the array
+   * belongs to <code>PPB_CameraCapabilities_Private</code> and the caller
+   * should not free it. When a PPB_CameraCapabilities_Private is deleted, the
+   * array returning from this is no longer valid.
    */
   void GetSupportedJpegSizes(
       [in] PP_Resource capabilities,

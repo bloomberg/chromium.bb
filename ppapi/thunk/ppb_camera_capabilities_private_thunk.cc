@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // From private/ppb_camera_capabilities_private.idl,
-//   modified Wed Aug 13 14:08:24 2014.
+//   modified Tue Aug 19 14:43:34 2014.
 
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_camera_capabilities_private.h"
@@ -33,7 +33,7 @@ PP_Bool IsCameraCapabilities(PP_Resource resource) {
 
 void GetSupportedPreviewSizes(PP_Resource capabilities,
                               int32_t* array_size,
-                              struct PP_Size* preview_sizes[]) {
+                              struct PP_Size** preview_sizes) {
   VLOG(4) << "PPB_CameraCapabilities_Private::GetSupportedPreviewSizes()";
   EnterResource<PPB_CameraCapabilities_API> enter(capabilities, true);
   if (enter.failed())
@@ -43,7 +43,7 @@ void GetSupportedPreviewSizes(PP_Resource capabilities,
 
 void GetSupportedJpegSizes(PP_Resource capabilities,
                            int32_t* array_size,
-                           struct PP_Size* jpeg_sizes[]) {
+                           struct PP_Size** jpeg_sizes) {
   VLOG(4) << "PPB_CameraCapabilities_Private::GetSupportedJpegSizes()";
   EnterResource<PPB_CameraCapabilities_API> enter(capabilities, true);
   if (enter.failed())
