@@ -203,8 +203,8 @@ private:
     // The scoping effort can time out and we need to keep track of where we
     // ended our last search so we can continue from where we left of.
     //
-    // This range is collapsed to the start position of the last successful
-    // search; the new search should start from the next adjacent position.
+    // This range is collapsed to the end position of the last successful
+    // search; the new search should start from this position.
     RefPtrWillBePersistent<Range> m_resumeScopingFromRange;
 
     // Keeps track of the last string this frame searched for. This is used for

@@ -12,6 +12,7 @@
 #include "core/dom/Range.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/HTMLElement.h"
+#include "public/platform/Platform.h"
 #include "public/web/WebDocument.h"
 #include "web/FindInPageCoordinates.h"
 #include "web/WebLocalFrameImpl.h"
@@ -287,6 +288,192 @@ TEST_F(TextFinderTest, ScopeTextMatchesWithShadowDOM)
     EXPECT_EQ(findInPageRect(textInUElement, 0, textInUElement, 3), matchRects[0]);
     EXPECT_EQ(findInPageRect(textInBElement, 0, textInBElement, 3), matchRects[1]);
     EXPECT_EQ(findInPageRect(textInIElement, 0, textInIElement, 3), matchRects[2]);
+}
+
+TEST_F(TextFinderTest, ScopeRepeatPatternTextMatches)
+{
+    document().body()->setInnerHTML("ab ab ab ab ab", ASSERT_NO_EXCEPTION);
+    Node* textNode = document().body()->firstChild();
+
+    int identifier = 0;
+    WebString searchText(String("ab ab"));
+    WebFindOptions findOptions; // Default.
+
+    textFinder().resetMatchCount();
+    textFinder().scopeStringMatches(identifier, searchText, findOptions, true);
+    while (textFinder().scopingInProgress())
+        FrameTestHelpers::runPendingTasks();
+
+    EXPECT_EQ(2, textFinder().totalMatchCount());
+    WebVector<WebFloatRect> matchRects;
+    textFinder().findMatchRects(matchRects);
+    ASSERT_EQ(2u, matchRects.size());
+    EXPECT_EQ(findInPageRect(textNode, 0, textNode, 5), matchRects[0]);
+    EXPECT_EQ(findInPageRect(textNode, 6, textNode, 11), matchRects[1]);
+}
+
+TEST_F(TextFinderTest, OverlappingMatches)
+{
+    document().body()->setInnerHTML("aababaa", ASSERT_NO_EXCEPTION);
+    Node* textNode = document().body()->firstChild();
+
+    int identifier = 0;
+    WebString searchText(String("aba"));
+    WebFindOptions findOptions; // Default.
+
+    textFinder().resetMatchCount();
+    textFinder().scopeStringMatches(identifier, searchText, findOptions, true);
+    while (textFinder().scopingInProgress())
+        FrameTestHelpers::runPendingTasks();
+
+    // We shouldn't find overlapped matches.
+    EXPECT_EQ(1, textFinder().totalMatchCount());
+    WebVector<WebFloatRect> matchRects;
+    textFinder().findMatchRects(matchRects);
+    ASSERT_EQ(1u, matchRects.size());
+    EXPECT_EQ(findInPageRect(textNode, 1, textNode, 4), matchRects[0]);
+}
+
+TEST_F(TextFinderTest, SequentialMatches)
+{
+    document().body()->setInnerHTML("ababab", ASSERT_NO_EXCEPTION);
+    Node* textNode = document().body()->firstChild();
+
+    int identifier = 0;
+    WebString searchText(String("ab"));
+    WebFindOptions findOptions; // Default.
+
+    textFinder().resetMatchCount();
+    textFinder().scopeStringMatches(identifier, searchText, findOptions, true);
+    while (textFinder().scopingInProgress())
+        FrameTestHelpers::runPendingTasks();
+
+    EXPECT_EQ(3, textFinder().totalMatchCount());
+    WebVector<WebFloatRect> matchRects;
+    textFinder().findMatchRects(matchRects);
+    ASSERT_EQ(3u, matchRects.size());
+    EXPECT_EQ(findInPageRect(textNode, 0, textNode, 2), matchRects[0]);
+    EXPECT_EQ(findInPageRect(textNode, 2, textNode, 4), matchRects[1]);
+    EXPECT_EQ(findInPageRect(textNode, 4, textNode, 6), matchRects[2]);
+}
+
+class TextFinderFakeTimerTest : public TextFinderTest {
+protected:
+    virtual void SetUp() OVERRIDE;
+    virtual void TearDown() OVERRIDE;
+
+    // A simple platform that mocks out the clock.
+    class TimeProxyPlatform : public blink::Platform {
+    public:
+        TimeProxyPlatform()
+            : m_timeCounter(0.)
+            , m_fallbackPlatform(0)
+        { }
+
+        void install()
+        {
+            // Check that the proxy wasn't installed yet.
+            ASSERT_NE(blink::Platform::current(), this);
+            m_fallbackPlatform = blink::Platform::current();
+            m_timeCounter = m_fallbackPlatform->currentTime();
+            blink::Platform::initialize(this);
+            ASSERT_EQ(blink::Platform::current(), this);
+        }
+
+        void remove()
+        {
+            // Check that the proxy was installed.
+            ASSERT_EQ(blink::Platform::current(), this);
+            blink::Platform::initialize(m_fallbackPlatform);
+            ASSERT_EQ(blink::Platform::current(), m_fallbackPlatform);
+            m_fallbackPlatform = 0;
+        }
+
+    private:
+        blink::Platform& ensureFallback()
+        {
+            ASSERT(m_fallbackPlatform);
+            return *m_fallbackPlatform;
+        }
+
+        // From blink::Platform:
+        virtual double currentTime() OVERRIDE
+        {
+            return ++m_timeCounter;
+        }
+
+        // These blink::Platform methods must be overriden to make a usable object.
+        virtual void cryptographicallyRandomValues(unsigned char* buffer, size_t length) OVERRIDE
+        {
+            ensureFallback().cryptographicallyRandomValues(buffer, length);
+        }
+
+        virtual const unsigned char* getTraceCategoryEnabledFlag(const char* categoryName) OVERRIDE
+        {
+            return ensureFallback().getTraceCategoryEnabledFlag(categoryName);
+        }
+
+        // These two methods allow timers to work correctly.
+        virtual double monotonicallyIncreasingTime() OVERRIDE
+        {
+            return ensureFallback().monotonicallyIncreasingTime();
+        }
+
+        virtual void setSharedTimerFireInterval(double interval) OVERRIDE
+        {
+            ensureFallback().setSharedTimerFireInterval(interval);
+        }
+
+        virtual WebThread* currentThread() OVERRIDE { return ensureFallback().currentThread(); }
+        virtual WebUnitTestSupport* unitTestSupport() OVERRIDE { return ensureFallback().unitTestSupport(); }
+        virtual WebString defaultLocale() OVERRIDE { return ensureFallback().defaultLocale(); }
+        virtual WebCompositorSupport* compositorSupport() OVERRIDE { return ensureFallback().compositorSupport(); }
+
+        double m_timeCounter;
+        blink::Platform* m_fallbackPlatform;
+    };
+
+    TimeProxyPlatform m_proxyTimePlatform;
+};
+
+void TextFinderFakeTimerTest::SetUp()
+{
+    TextFinderTest::SetUp();
+    m_proxyTimePlatform.install();
+}
+
+void TextFinderFakeTimerTest::TearDown()
+{
+    m_proxyTimePlatform.remove();
+    TextFinderTest::TearDown();
+}
+
+TEST_F(TextFinderFakeTimerTest, ScopeWithTimeouts)
+{
+    // Make a long string.
+    String text(Vector<UChar>(100));
+    text.fill('a');
+    String searchPattern("abc");
+    // Make 4 substrings "abc" in text.
+    text.insert(searchPattern, 1);
+    text.insert(searchPattern, 10);
+    text.insert(searchPattern, 50);
+    text.insert(searchPattern, 90);
+
+    document().body()->setInnerHTML(text, ASSERT_NO_EXCEPTION);
+
+    int identifier = 0;
+    WebFindOptions findOptions; // Default.
+
+    textFinder().resetMatchCount();
+
+    // There will be only one iteration before timeout, because increment
+    // of the TimeProxyPlatform timer is greater than timeout threshold.
+    textFinder().scopeStringMatches(identifier, searchPattern, findOptions, true);
+    while (textFinder().scopingInProgress())
+        FrameTestHelpers::runPendingTasks();
+
+    EXPECT_EQ(4, textFinder().totalMatchCount());
 }
 
 } // namespace
