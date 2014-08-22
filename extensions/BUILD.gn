@@ -138,6 +138,7 @@ test("unittests") {
   output_name = "extensions_unittests"
 
   sources = [
+    "browser/info_map_unittest.cc",
     "browser/process_manager_unittest.cc",
     "common/api/sockets/sockets_manifest_permission_unittest.cc",
     "common/csp_validator_unittest.cc",

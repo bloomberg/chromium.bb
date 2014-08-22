@@ -2,15 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/json/json_file_value_serializer.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
-#include "chrome/common/chrome_paths.h"
 #include "content/public/test/test_browser_thread.h"
 #include "extensions/browser/info_map.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_paths.h"
 #include "extensions/common/manifest_constants.h"
-#include "extensions/common/permissions/permissions_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
@@ -34,8 +32,7 @@ class InfoMapTest : public testing::Test {
 // Returns a barebones test Extension object with the given name.
 static scoped_refptr<Extension> CreateExtension(const std::string& name) {
   base::FilePath path;
-  PathService::Get(chrome::DIR_TEST_DATA, &path);
-  path = path.AppendASCII("extensions");
+  PathService::Get(DIR_TEST_DATA, &path);
 
   base::DictionaryValue manifest;
   manifest.SetString(keys::kVersion, "1.0.0.0");
@@ -46,29 +43,6 @@ static scoped_refptr<Extension> CreateExtension(const std::string& name) {
       Extension::Create(path.AppendASCII(name),
                         Manifest::INVALID_LOCATION,
                         manifest,
-                        Extension::NO_FLAGS,
-                        &error);
-  EXPECT_TRUE(extension.get()) << error;
-
-  return extension;
-}
-
-static scoped_refptr<Extension> LoadManifest(const std::string& dir,
-                                             const std::string& test_file) {
-  base::FilePath path;
-  PathService::Get(chrome::DIR_TEST_DATA, &path);
-  path = path.AppendASCII("extensions").AppendASCII(dir).AppendASCII(test_file);
-
-  JSONFileValueSerializer serializer(path);
-  scoped_ptr<base::Value> result(serializer.Deserialize(NULL, NULL));
-  if (!result)
-    return NULL;
-
-  std::string error;
-  scoped_refptr<Extension> extension =
-      Extension::Create(path,
-                        Manifest::INVALID_LOCATION,
-                        *static_cast<base::DictionaryValue*>(result.get()),
                         Extension::NO_FLAGS,
                         &error);
   EXPECT_TRUE(extension.get()) << error;
@@ -123,68 +97,10 @@ TEST_F(InfoMapTest, Properties) {
   EXPECT_EQ(extension2.get(), info_map->extensions().GetByID(extension2->id()));
 }
 
-// Tests CheckURLAccessToExtensionPermission given both extension and app URLs.
-TEST_F(InfoMapTest, CheckPermissions) {
-  scoped_refptr<InfoMap> info_map(new InfoMap());
-
-  scoped_refptr<Extension> app(
-      LoadManifest("manifest_tests", "valid_app.json"));
-  scoped_refptr<Extension> extension(
-      LoadManifest("manifest_tests", "tabs_extension.json"));
-
-  GURL app_url("http://www.google.com/mail/foo.html");
-  ASSERT_TRUE(app->is_app());
-  ASSERT_TRUE(app->web_extent().MatchesURL(app_url));
-
-  info_map->AddExtension(app.get(), base::Time(), false, false);
-  info_map->AddExtension(extension.get(), base::Time(), false, false);
-
-  // The app should have the notifications permission, either from a
-  // chrome-extension URL or from its web extent.
-  const Extension* match = info_map->extensions().GetExtensionOrAppByURL(
-      app->GetResourceURL("a.html"));
-  EXPECT_TRUE(match &&
-              match->permissions_data()->HasAPIPermission(
-                  APIPermission::kNotifications));
-  match = info_map->extensions().GetExtensionOrAppByURL(app_url);
-  EXPECT_TRUE(match &&
-              match->permissions_data()->HasAPIPermission(
-                  APIPermission::kNotifications));
-  EXPECT_FALSE(
-      match &&
-      match->permissions_data()->HasAPIPermission(APIPermission::kTab));
-
-  // The extension should have the tabs permission.
-  match = info_map->extensions().GetExtensionOrAppByURL(
-      extension->GetResourceURL("a.html"));
-  EXPECT_TRUE(match &&
-              match->permissions_data()->HasAPIPermission(APIPermission::kTab));
-  EXPECT_FALSE(match &&
-               match->permissions_data()->HasAPIPermission(
-                   APIPermission::kNotifications));
-
-  // Random URL should not have any permissions.
-  GURL evil_url("http://evil.com/a.html");
-  match = info_map->extensions().GetExtensionOrAppByURL(evil_url);
-  EXPECT_FALSE(match);
-}
-
-TEST_F(InfoMapTest, TestNotificationsDisabled) {
-  scoped_refptr<InfoMap> info_map(new InfoMap());
-  scoped_refptr<Extension> app(LoadManifest("manifest_tests",
-                                            "valid_app.json"));
-  info_map->AddExtension(app.get(), base::Time(), false, false);
-
-  EXPECT_FALSE(info_map->AreNotificationsDisabled(app->id()));
-  info_map->SetNotificationsDisabled(app->id(), true);
-  EXPECT_TRUE(info_map->AreNotificationsDisabled(app->id()));
-  info_map->SetNotificationsDisabled(app->id(), false);
-}
-
 // Tests that extension URLs are properly mapped to local file paths.
 TEST_F(InfoMapTest, MapUrlToLocalFilePath) {
   scoped_refptr<InfoMap> info_map(new InfoMap());
-  scoped_refptr<Extension> app(CreateExtension("app"));
+  scoped_refptr<Extension> app(CreateExtension("platform_app"));
   info_map->AddExtension(app.get(), base::Time(), false, false);
 
   // Non-extension URLs don't map to anything.

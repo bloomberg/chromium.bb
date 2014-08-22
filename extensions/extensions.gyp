@@ -890,6 +890,7 @@
         'browser/guest_view/guest_view_manager_unittest.cc',
         'browser/image_loader_unittest.cc',
         'browser/image_util_unittest.cc',
+        'browser/info_map_unittest.cc',
         'browser/lazy_background_task_queue_unittest.cc',
         'browser/management_policy_unittest.cc',
         'browser/process_manager_unittest.cc',
