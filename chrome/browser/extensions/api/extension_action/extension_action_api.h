@@ -90,6 +90,10 @@ class ExtensionActionAPI : public BrowserContextKeyedAPI {
                     content::WebContents* web_contents,
                     content::BrowserContext* browser_context);
 
+  // Clears the values for all ExtensionActions for the tab associated with the
+  // given |web_contents|.
+  void ClearAllValuesForTab(content::WebContents* web_contents);
+
  private:
   friend class BrowserContextKeyedAPIFactory<ExtensionActionAPI>;
 

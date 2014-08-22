@@ -545,7 +545,9 @@ void InstalledLoader::LoadAllExtensions() {
                            extension_external_count);
   UMA_HISTOGRAM_COUNTS_100("Extensions.LoadUserScript", user_script_count);
   UMA_HISTOGRAM_COUNTS_100("Extensions.LoadTheme", theme_count);
-  UMA_HISTOGRAM_COUNTS_100("Extensions.LoadPageAction", page_action_count);
+  // Histogram name different for legacy reasons.
+  UMA_HISTOGRAM_COUNTS_100("PageActionController.ExtensionsWithPageActions",
+                           page_action_count);
   UMA_HISTOGRAM_COUNTS_100("Extensions.LoadBrowserAction",
                            browser_action_count);
   UMA_HISTOGRAM_COUNTS_100("Extensions.LoadContentPack", content_pack_count);

@@ -64,32 +64,8 @@ ExtensionAction::ShowAction PageActionController::OnClicked(
 }
 
 void PageActionController::OnNavigated() {
-  const ExtensionSet& extensions =
-      ExtensionRegistry::Get(web_contents_->GetBrowserContext())
-          ->enabled_extensions();
-  int tab_id = SessionTabHelper::IdForTab(web_contents_);
-  size_t num_current_actions = 0u;
-  for (ExtensionSet::const_iterator iter = extensions.begin();
-       iter != extensions.end();
-       ++iter) {
-    ExtensionAction* action = GetActionForExtension(*iter);
-    if (action) {
-      action->ClearAllValuesForTab(tab_id);
-      ++num_current_actions;
-    }
-  }
-
-  Profile* profile = GetProfile();
-  // Report the number of page actions for this profile, if we haven't already.
-  // TODO(rdevlin.cronin): This is wrong. Instead, it should record the number
-  // of page actions displayed per page.
-  if (!g_reported_for_profiles.Get().count(profile)) {
-    UMA_HISTOGRAM_COUNTS_100("PageActionController.ExtensionsWithPageActions",
-                             num_current_actions);
-    g_reported_for_profiles.Get().insert(profile);
-  }
-
-  LocationBarController::NotifyChange(web_contents_);
+  // Clearing extension action values is handled in TabHelper, so nothing to
+  // do here.
 }
 
 void PageActionController::OnExtensionActionUpdated(

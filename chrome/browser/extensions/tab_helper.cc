@@ -17,9 +17,6 @@
 #include "chrome/browser/extensions/api/webstore/webstore_api.h"
 #include "chrome/browser/extensions/bookmark_app_helper.h"
 #include "chrome/browser/extensions/error_console/error_console.h"
-#include "chrome/browser/extensions/extension_action.h"
-#include "chrome/browser/extensions/extension_action_manager.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/location_bar_controller.h"
 #include "chrome/browser/extensions/webstore_inline_installer.h"
@@ -48,7 +45,6 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/frame_navigate_params.h"
 #include "extensions/browser/extension_error.h"
@@ -248,24 +244,8 @@ void TabHelper::DidNavigateMainFrame(
         enabled_extensions.GetExtensionOrAppByURL(params.url));
   }
 
-  if (details.is_in_page)
-    return;
-
-  ExtensionActionManager* extension_action_manager =
-      ExtensionActionManager::Get(Profile::FromBrowserContext(context));
-  ExtensionActionAPI* extension_action_api = ExtensionActionAPI::Get(context);
-  for (ExtensionSet::const_iterator it = enabled_extensions.begin();
-       it != enabled_extensions.end();
-       ++it) {
-    ExtensionAction* browser_action =
-        extension_action_manager->GetBrowserAction(*it->get());
-    if (browser_action) {
-      browser_action->ClearAllValuesForTab(
-          SessionTabHelper::IdForTab(web_contents()));
-      extension_action_api->NotifyChange(
-          browser_action, web_contents(), profile_);
-    }
-  }
+  if (!details.is_in_page)
+    ExtensionActionAPI::Get(context)->ClearAllValuesForTab(web_contents());
 }
 
 bool TabHelper::OnMessageReceived(const IPC::Message& message) {

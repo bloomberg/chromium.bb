@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_icon_factory.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/cocoa/extensions/extension_action_context_menu_controller.h"
 #include "extensions/common/extension.h"

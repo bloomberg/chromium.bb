@@ -22,9 +22,10 @@ namespace {
 class ExtensionActionManagerFactory : public BrowserContextKeyedServiceFactory {
  public:
   // BrowserContextKeyedServiceFactory implementation:
-  static ExtensionActionManager* GetForProfile(Profile* profile) {
+  static ExtensionActionManager* GetForBrowserContext(
+      content::BrowserContext* context) {
     return static_cast<ExtensionActionManager*>(
-        GetInstance()->GetServiceForBrowserContext(profile, true));
+        GetInstance()->GetServiceForBrowserContext(context, true));
   }
 
   static ExtensionActionManagerFactory* GetInstance();
@@ -68,8 +69,9 @@ ExtensionActionManager::~ExtensionActionManager() {
   // sometimes (only in tests?) not unloaded before the Profile is destroyed.
 }
 
-ExtensionActionManager* ExtensionActionManager::Get(Profile* profile) {
-  return ExtensionActionManagerFactory::GetForProfile(profile);
+ExtensionActionManager* ExtensionActionManager::Get(
+    content::BrowserContext* context) {
+  return ExtensionActionManagerFactory::GetForBrowserContext(context);
 }
 
 void ExtensionActionManager::OnExtensionUnloaded(

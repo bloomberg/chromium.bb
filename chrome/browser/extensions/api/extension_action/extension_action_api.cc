@@ -18,6 +18,7 @@
 #include "chrome/browser/extensions/location_bar_controller.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "chrome/common/render_messages.h"
 #include "content/public/browser/navigation_entry.h"
@@ -397,6 +398,29 @@ void ExtensionActionAPI::NotifyChange(ExtensionAction* extension_action,
       Observer,
       observers_,
       OnExtensionActionUpdated(extension_action, web_contents, context));
+}
+
+void ExtensionActionAPI::ClearAllValuesForTab(
+    content::WebContents* web_contents) {
+  DCHECK(web_contents);
+  int tab_id = SessionTabHelper::IdForTab(web_contents);
+  content::BrowserContext* browser_context = web_contents->GetBrowserContext();
+  const ExtensionSet& enabled_extensions =
+      ExtensionRegistry::Get(browser_context_)->enabled_extensions();
+  ExtensionActionManager* action_manager =
+      ExtensionActionManager::Get(browser_context_);
+
+  for (ExtensionSet::const_iterator iter = enabled_extensions.begin();
+       iter != enabled_extensions.end(); ++iter) {
+    ExtensionAction* extension_action =
+        action_manager->GetBrowserAction(*iter->get());
+    if (!extension_action)
+      extension_action = action_manager->GetPageAction(*iter->get());
+    if (extension_action) {
+      extension_action->ClearAllValuesForTab(tab_id);
+      NotifyChange(extension_action, web_contents, browser_context);
+    }
+  }
 }
 
 void ExtensionActionAPI::Shutdown() {

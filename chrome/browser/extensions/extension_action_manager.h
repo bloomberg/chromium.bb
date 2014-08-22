@@ -31,7 +31,7 @@ class ExtensionActionManager : public KeyedService,
 
   // Returns this profile's ExtensionActionManager.  One instance is
   // shared between a profile and its incognito version.
-  static ExtensionActionManager* Get(Profile* profile);
+  static ExtensionActionManager* Get(content::BrowserContext* browser_context);
 
   // Retrieves the page action, or browser action for |extension|.
   // If the result is not NULL, it remains valid until the extension is

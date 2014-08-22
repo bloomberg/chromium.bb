@@ -7666,13 +7666,6 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
-<histogram name="Extensions.LoadPageAction">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <summary>
-    The number of page action extensions loaded at browser startup.
-  </summary>
-</histogram>
-
 <histogram name="Extensions.LoadPlatformApp">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>The number of platform apps loaded at browser startup.</summary>
