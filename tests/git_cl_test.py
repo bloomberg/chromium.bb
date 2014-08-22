@@ -206,6 +206,7 @@ class TestGitCl(TestCase):
         ((['git', 'config', 'core.editor'],), ''),
     ] + cc_call + private_call + [
         ((['git', 'config', 'branch.master.base-url'],), ''),
+        ((['git', 'config', 'rietveld.pending-ref-prefix'],), ''),
         ((['git',
            'config', '--local', '--get-regexp', '^svn-remote\\.'],),
          (('', None), 0)),
@@ -252,14 +253,16 @@ class TestGitCl(TestCase):
   @classmethod
   def _dcommit_calls_1(cls):
     return [
+      ((['git', 'config', 'rietveld.autoupdate'],),
+       ''),
+      ((['git', 'config', 'rietveld.pending-ref-prefix'],),
+       ''),
       ((['git',
          'config', '--local', '--get-regexp', '^svn-remote\\.'],),
        ((('svn-remote.svn.url svn://svn.chromium.org/chrome\n'
           'svn-remote.svn.fetch trunk/src:refs/remotes/origin/master'),
          None),
         0)),
-      ((['git', 'config', 'rietveld.autoupdate'],),
-       ''),
       ((['git',
          'config', 'rietveld.server'],), 'codereview.example.com'),
       ((['git', 'symbolic-ref', 'HEAD'],), 'refs/heads/working'),
@@ -689,6 +692,8 @@ class TestGitCl(TestCase):
            'rietveld.cpplint-ignore-regex'],), ''),
         ((['git', 'config', '--unset-all',
            'rietveld.project'],), ''),
+        ((['git', 'config', '--unset-all',
+           'rietveld.pending-ref-prefix'],), ''),
         ((['git', 'config', 'gerrit.host',
            'gerrit.chromium.org'],), ''),
         # DownloadHooks(False)
@@ -773,6 +778,8 @@ class TestGitCl(TestCase):
         ((['git', 'rev-parse', '--show-cdup',],),
          ''),
         ((['git', 'config', 'rietveld.private',],),
+         ''),
+        ((['git', 'config', 'rietveld.pending-ref-prefix',],),
          ''),
         ((['git', 'config', '--local', '--get-regexp', '^svn-remote\\.'],),
          ''),

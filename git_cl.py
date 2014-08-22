@@ -74,6 +74,7 @@ def GetNoGitPagerEnv():
   env['GIT_PAGER'] = 'cat'
   return env
 
+
 def RunCommand(args, error_ok=False, error_message=None, **kwargs):
   try:
     return subprocess2.check_output(args, shell=False, **kwargs)
@@ -280,6 +281,7 @@ class Settings(object):
     self.is_gerrit = None
     self.git_editor = None
     self.project = None
+    self.pending_ref_prefix = None
 
   def LazyUpdateIfNeeded(self):
     """Updates the settings from a codereview.settings file, if available."""
@@ -325,9 +327,13 @@ class Settings(object):
   def GetIsGitSvn(self):
     """Return true if this repo looks like it's using git-svn."""
     if self.is_git_svn is None:
-      # If you have any "svn-remote.*" config keys, we think you're using svn.
-      self.is_git_svn = RunGitWithCode(
-          ['config', '--local', '--get-regexp', r'^svn-remote\.'])[0] == 0
+      if self.GetPendingRefPrefix():
+        # If PENDING_REF_PREFIX is set then it's a pure git repo no matter what.
+        self.is_git_svn = False
+      else:
+        # If you have any "svn-remote.*" config keys, we think you're using svn.
+        self.is_git_svn = RunGitWithCode(
+            ['config', '--local', '--get-regexp', r'^svn-remote\.'])[0] == 0
     return self.is_git_svn
 
   def GetSVNBranch(self):
@@ -445,6 +451,12 @@ class Settings(object):
     if not self.project:
       self.project = self._GetRietveldConfig('project', error_ok=True)
     return self.project
+
+  def GetPendingRefPrefix(self):
+    if not self.pending_ref_prefix:
+      self.pending_ref_prefix = self._GetRietveldConfig(
+          'pending-ref-prefix', error_ok=True)
+    return self.pending_ref_prefix
 
   def _GetRietveldConfig(self, param, **kwargs):
     return self._GetConfig('rietveld.' + param, **kwargs)
@@ -1085,6 +1097,7 @@ def LoadCodereviewSettingsFromFile(fileobj):
   SetProperty('cpplint-regex', 'LINT_REGEX', unset_error_ok=True)
   SetProperty('cpplint-ignore-regex', 'LINT_IGNORE_REGEX', unset_error_ok=True)
   SetProperty('project', 'PROJECT', unset_error_ok=True)
+  SetProperty('pending-ref-prefix', 'PENDING_REF_PREFIX', unset_error_ok=True)
 
   if 'GERRIT_HOST' in keyvals:
     RunGit(['config', 'gerrit.host', keyvals['GERRIT_HOST']])
@@ -1847,7 +1860,7 @@ def SendUpstream(parser, args, cmd):
     print '  Current parent: %r' % upstream_branch
     return 1
 
-  if not args or cmd == 'push':
+  if not args or cmd == 'land':
     # Default to merging against our best guess of the upstream branch.
     args = [cl.GetUpstreamBranch()]
 
@@ -1873,8 +1886,10 @@ def SendUpstream(parser, args, cmd):
     return 1
 
   # This is the revision `svn dcommit` will commit on top of.
-  svn_head = RunGit(['log', '--grep=^git-svn-id:', '-1',
-                     '--pretty=format:%H'])
+  svn_head = None
+  if cmd == 'dcommit' or base_has_submodules:
+    svn_head = RunGit(['log', '--grep=^git-svn-id:', '-1',
+                       '--pretty=format:%H'])
 
   if cmd == 'dcommit':
     # If the base_head is a submodule merge commit, the first parent of the
@@ -1904,16 +1919,16 @@ def SendUpstream(parser, args, cmd):
     if not hook_results.should_continue():
       return 1
 
-    if cmd == 'dcommit':
-      # Check the tree status if the tree status URL is set.
-      status = GetTreeStatus()
-      if 'closed' == status:
-        print('The tree is closed.  Please wait for it to reopen. Use '
-              '"git cl dcommit --bypass-hooks" to commit on a closed tree.')
-        return 1
-      elif 'unknown' == status:
-        print('Unable to determine tree status.  Please verify manually and '
-              'use "git cl dcommit --bypass-hooks" to commit on a closed tree.')
+    # Check the tree status if the tree status URL is set.
+    status = GetTreeStatus()
+    if 'closed' == status:
+      print('The tree is closed.  Please wait for it to reopen. Use '
+            '"git cl %s --bypass-hooks" to commit on a closed tree.' % cmd)
+      return 1
+    elif 'unknown' == status:
+      print('Unable to determine tree status.  Please verify manually and '
+            'use "git cl %s --bypass-hooks" to commit on a closed tree.' % cmd)
+      return 1
   else:
     breakpad.SendStack(
         'GitClHooksBypassedCommit',
@@ -1978,6 +1993,8 @@ def SendUpstream(parser, args, cmd):
   # We wrap in a try...finally block so if anything goes wrong,
   # we clean up the branches.
   retcode = -1
+  used_pending = False
+  pending_ref = None
   try:
     RunGit(['checkout', '-q', '-b', MERGE_BRANCH])
     RunGit(['reset', '--soft', base_branch])
@@ -1994,11 +2011,22 @@ def SendUpstream(parser, args, cmd):
       RunGit(['branch', CHERRY_PICK_BRANCH, svn_head])
       RunGit(['checkout', CHERRY_PICK_BRANCH])
       RunGit(['cherry-pick', cherry_pick_commit])
-    if cmd == 'push':
-      # push the merge branch.
+    if cmd == 'land':
       remote, branch = cl.FetchUpstreamTuple(cl.GetBranch())
-      retcode, output = RunGitWithCode(
-          ['push', '--porcelain', remote, 'HEAD:%s' % branch])
+      pending_prefix = settings.GetPendingRefPrefix()
+      if not pending_prefix or branch.startswith(pending_prefix):
+        # If not using refs/pending/heads/* at all, or target ref is already set
+        # to pending, then push to the target ref directly.
+        retcode, output = RunGitWithCode(
+            ['push', '--porcelain', remote, 'HEAD:%s' % branch])
+        used_pending = pending_prefix and branch.startswith(pending_prefix)
+      else:
+        # Cherry-pick the change on top of pending ref and then push it.
+        assert branch.startswith('refs/'), branch
+        assert pending_prefix[-1] == '/', pending_prefix
+        pending_ref = pending_prefix + branch[len('refs/'):]
+        retcode, output = PushToGitPending(remote, pending_ref, branch)
+        used_pending = (retcode == 0)
       logging.debug(output)
     else:
       # dcommit the merge branch.
@@ -2015,7 +2043,7 @@ def SendUpstream(parser, args, cmd):
   if cl.GetIssue():
     if cmd == 'dcommit' and 'Committed r' in output:
       revision = re.match('.*?\nCommitted r(\\d+)', output, re.DOTALL).group(1)
-    elif cmd == 'push' and retcode == 0:
+    elif cmd == 'land' and retcode == 0:
       match = (re.match(r'.*?([a-f0-9]{7,})\.\.([a-f0-9]{7,})$', l)
                for l in output.splitlines(False))
       match = filter(None, match)
@@ -2025,18 +2053,21 @@ def SendUpstream(parser, args, cmd):
       revision = match[0].group(2)
     else:
       return 1
+    to_pending = ' to pending queue' if used_pending else ''
     viewvc_url = settings.GetViewVCUrl()
     if viewvc_url and revision:
-      change_desc.append_footer('Committed: ' + viewvc_url + revision)
+      change_desc.append_footer(
+          'Committed%s: %s%s' % (to_pending, viewvc_url, revision))
     elif revision:
-      change_desc.append_footer('Committed: ' + revision)
+      change_desc.append_footer('Committed%s: %s' % (to_pending, revision))
     print ('Closing issue '
            '(you may be prompted for your codereview password)...')
     cl.UpdateDescription(change_desc.description)
     cl.CloseIssue()
     props = cl.GetIssueProperties()
     patch_num = len(props['patchsets'])
-    comment = "Committed patchset #%d manually as %s" % (patch_num, revision)
+    comment = "Committed patchset #%d%s manually as %s" % (
+        patch_num, to_pending, revision)
     if options.bypass_hooks:
       comment += ' (tree was closed).' if GetTreeStatus() == 'closed' else '.'
     else:
@@ -2044,12 +2075,63 @@ def SendUpstream(parser, args, cmd):
     cl.RpcServer().add_comment(cl.GetIssue(), comment)
     cl.SetIssue(None)
 
+  if used_pending and retcode == 0:
+    _, branch = cl.FetchUpstreamTuple(cl.GetBranch())
+    print 'The commit is in the pending queue (%s).' % pending_ref
+    print (
+        'It will show up on %s in ~1 min, once it gets Cr-Commit-Position '
+        'footer.' % branch)
+
   if retcode == 0:
     hook = POSTUPSTREAM_HOOK_PATTERN % cmd
     if os.path.isfile(hook):
       RunCommand([hook, base_branch], error_ok=True)
 
   return 0
+
+
+def PushToGitPending(remote, pending_ref, upstream_ref):
+  """Fetches pending_ref, cherry-picks current HEAD on top of it, pushes.
+
+  Returns:
+    (retcode of last operation, output log of last operation).
+  """
+  assert pending_ref.startswith('refs/'), pending_ref
+  local_pending_ref = 'refs/git-cl/' + pending_ref[len('refs/'):]
+  cherry = RunGit(['rev-parse', 'HEAD']).strip()
+  code = 0
+  out = ''
+  attempt = 0
+  while attempt < 5:
+    attempt += 1
+
+    # Fetch. Retry fetch errors.
+    code, out = RunGitWithCode(
+        ['retry', 'fetch', remote, '+%s:%s' % (pending_ref, local_pending_ref)],
+        suppress_stderr=True)
+    if code:
+      continue
+
+    # Try to cherry pick. Abort on merge conflicts.
+    RunGitWithCode(['checkout', local_pending_ref], suppress_stderr=True)
+    code, out = RunGitWithCode(['cherry-pick', cherry], suppress_stderr=True)
+    if code:
+      print (
+          'Your patch doesn\'t apply cleanly to upstream ref \'%s\', '
+          'the following files have merge conflicts:' % upstream_ref)
+      print RunGit(['diff', '--name-status', '--diff-filter=U']).strip()
+      print 'Please rebase your patch and try again.'
+      RunGitWithCode(['cherry-pick', '--abort'], suppress_stderr=True)
+      return code, out
+
+    # Applied cleanly, try to push now. Retry on error (flake or non-ff push).
+    code, out = RunGitWithCode(
+        ['retry', 'push', '--porcelain', remote, 'HEAD:%s' % pending_ref])
+    if code == 0:
+      # Success.
+      return code, out
+
+  return code, out
 
 
 @subcommand.usage('[upstream branch to apply against]')
@@ -2075,7 +2157,7 @@ def CMDland(parser, args):
     print('This appears to be an SVN repository.')
     print('Are you sure you didn\'t mean \'git cl dcommit\'?')
     ask_for_data('[Press enter to push or ctrl-C to quit]')
-  return SendUpstream(parser, args, 'push')
+  return SendUpstream(parser, args, 'land')
 
 
 @subcommand.usage('<patch url or issue id>')
