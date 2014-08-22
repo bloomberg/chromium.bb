@@ -3304,7 +3304,7 @@ bool RenderBlock::requiresColumns(int desiredColumnCount) const
     return firstChild()
         && (desiredColumnCount != 1 || !style()->hasAutoColumnWidth() || isPaginated)
         && !firstChild()->isAnonymousColumnsBlock()
-        && !firstChild()->isAnonymousColumnSpanBlock();
+        && !firstChild()->isAnonymousColumnSpanBlock() && !isFlexibleBoxIncludingDeprecated();
 }
 
 void RenderBlock::setDesiredColumnCountAndWidth(int count, LayoutUnit width)
