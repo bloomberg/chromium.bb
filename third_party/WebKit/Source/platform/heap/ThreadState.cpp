@@ -37,6 +37,7 @@
 #include "platform/heap/Handle.h"
 #include "platform/heap/Heap.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebThread.h"
 #include "wtf/ThreadingPrimitives.h"
 #if ENABLE(GC_PROFILE_HEAP)
 #include "platform/TracedValue.h"
@@ -306,6 +307,7 @@ ThreadState::ThreadState()
     , m_heapContainsCache(adoptPtr(new HeapContainsCache()))
     , m_isTerminating(false)
     , m_lowCollectionRate(false)
+    , m_numberOfSweeperTasks(0)
 #if defined(ADDRESS_SANITIZER)
     , m_asanFakeStack(__asan_get_current_fake_stack())
 #endif
@@ -313,11 +315,12 @@ ThreadState::ThreadState()
     ASSERT(!**s_threadSpecific);
     **s_threadSpecific = this;
 
-    m_stats.clear();
-    m_statsAfterLastGC.clear();
-
     InitializeHeaps<NumberOfHeaps>::init(m_heaps, this);
+
     CallbackStack::init(&m_weakCallbackStack);
+
+    if (blink::Platform::current())
+        m_sweeperThread = adoptPtr(blink::Platform::current()->createThread("Blink GC Sweeper"));
 }
 
 ThreadState::~ThreadState()
@@ -867,7 +870,6 @@ void ThreadState::getStats(HeapStats& stats)
 #if ENABLE(ASSERT)
     if (isConsistentForSweeping()) {
         HeapStats scannedStats;
-        scannedStats.clear();
         for (int i = 0; i < NumberOfHeaps; i++)
             m_heaps[i]->getScannedStats(scannedStats);
         ASSERT(scannedStats == stats);
@@ -976,6 +978,51 @@ void ThreadState::copyStackUntilSafePointScope()
     }
 }
 
+void ThreadState::registerSweepingTask()
+{
+    MutexLocker locker(m_sweepMutex);
+    ++m_numberOfSweeperTasks;
+}
+
+void ThreadState::unregisterSweepingTask()
+{
+    MutexLocker locker(m_sweepMutex);
+    ASSERT(m_numberOfSweeperTasks > 0);
+    if (!--m_numberOfSweeperTasks)
+        m_sweepThreadCondition.signal();
+}
+
+void ThreadState::waitUntilSweepersDone()
+{
+    MutexLocker locker(m_sweepMutex);
+    while (m_numberOfSweeperTasks > 0)
+        m_sweepThreadCondition.wait(m_sweepMutex);
+}
+
+
+class SweepNonFinalizedHeapTask FINAL : public WebThread::Task {
+public:
+    SweepNonFinalizedHeapTask(ThreadState* state, BaseHeap* heap, HeapStats* stats)
+        : m_threadState(state)
+        , m_heap(heap)
+        , m_stats(stats)
+    {
+        m_threadState->registerSweepingTask();
+    }
+
+    virtual ~SweepNonFinalizedHeapTask()
+    {
+        m_threadState->unregisterSweepingTask();
+    }
+
+    virtual void run() { m_heap->sweep(m_stats); }
+
+private:
+    ThreadState* m_threadState;
+    BaseHeap* m_heap;
+    HeapStats* m_stats;
+};
+
 void ThreadState::performPendingSweep()
 {
     if (!sweepRequested())
@@ -1008,17 +1055,74 @@ void ThreadState::performPendingSweep()
     leaveNoAllocationScope();
     // Perform sweeping and finalization.
     size_t objectSpaceBeforeSweep = m_stats.totalObjectSpace();
-    m_stats.clear(); // Sweeping will recalculate the stats
-    // Sweep non-finalized heaps first. Finalized heap objects can allocate
-    // non-finalized heap objects during finalizers. Sweeping non-finalized
-    // pages first ensures that we do not needlessly have to allocate
-    // extra pages for such allocations.
+
+    // Sweeping will recalculate the stats
+    m_stats.clear();
+
+    // Sweep the non-finalized heap pages on multiple threads.
+    // Attempt to load-balance by having the sweeper thread sweep as
+    // close to half of the pages as possible.
+    int nonFinalizedPages = 0;
     for (int i = 0; i < NumberOfNonFinalizedHeaps; i++)
-        m_heaps[FirstNonFinalizedHeap + i]->sweep();
+        nonFinalizedPages += m_heaps[FirstNonFinalizedHeap + i]->normalPageCount();
+
+    int finalizedPages = 0;
     for (int i = 0; i < NumberOfFinalizedHeaps; i++)
-        m_heaps[FirstFinalizedHeap + i]->sweep();
+        finalizedPages += m_heaps[FirstFinalizedHeap + i]->normalPageCount();
+
+    int pagesToSweepInParallel = nonFinalizedPages < finalizedPages ? nonFinalizedPages : ((nonFinalizedPages + finalizedPages) / 2);
+
+    // Start the sweeper thread for the non finalized heaps. No
+    // finalizers need to run and therefore the pages can be
+    // swept on other threads.
+    static const int minNumberOfPagesForParallelSweep = 10;
+    HeapStats heapStatsVector[NumberOfNonFinalizedHeaps];
+    BaseHeap* splitOffHeaps[NumberOfNonFinalizedHeaps] = { 0 };
+    for (int i = 0; i < NumberOfNonFinalizedHeaps && pagesToSweepInParallel > 0; i++) {
+        BaseHeap* heap = m_heaps[FirstNonFinalizedHeap + i];
+        int pageCount = heap->normalPageCount();
+        // Only use the sweeper thread if it exists and there are
+        // pages to sweep.
+        if (m_sweeperThread && pageCount > minNumberOfPagesForParallelSweep) {
+            // Create a new thread heap instance to make sure that the
+            // state modified while sweeping is separate for the
+            // sweeper thread and the owner thread.
+            int pagesToSplitOff = std::min(pageCount, pagesToSweepInParallel);
+            pagesToSweepInParallel -= pagesToSplitOff;
+            BaseHeap* splitOff = heap->split(pagesToSplitOff);
+            splitOffHeaps[i] = splitOff;
+            HeapStats* stats = &heapStatsVector[i];
+            m_sweeperThread->postTask(new SweepNonFinalizedHeapTask(this, splitOff, stats));
+        }
+    }
+
+    // Sweep the remainder of the non-finalized pages (or all of them
+    // if there is no sweeper thread).
+    for (int i = 0; i < NumberOfNonFinalizedHeaps; i++) {
+        HeapStats stats;
+        m_heaps[FirstNonFinalizedHeap + i]->sweep(&stats);
+        m_stats.add(&stats);
+    }
+
+    // Sweep the finalized pages.
+    for (int i = 0; i < NumberOfFinalizedHeaps; i++) {
+        HeapStats stats;
+        m_heaps[FirstFinalizedHeap + i]->sweep(&stats);
+        m_stats.add(&stats);
+    }
+
+    // Wait for the sweeper threads and update the heap stats with the
+    // stats for the heap portions swept by those threads.
+    waitUntilSweepersDone();
+    for (int i = 0; i < NumberOfNonFinalizedHeaps; i++) {
+        m_stats.add(&heapStatsVector[i]);
+        if (BaseHeap* splitOff = splitOffHeaps[i])
+            m_heaps[FirstNonFinalizedHeap + i]->merge(splitOff);
+    }
+
     for (int i = 0; i < NumberOfHeaps; i++)
         m_heaps[i]->postSweepProcessing();
+
     getStats(m_statsAfterLastGC);
     m_sweepInProgress = false;
     clearGCRequested();

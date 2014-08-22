@@ -438,6 +438,13 @@ public:
     NO_SANITIZE_ADDRESS
     FreeListEntry* next() const { return m_next; }
 
+    NO_SANITIZE_ADDRESS
+    void append(FreeListEntry* next)
+    {
+        ASSERT(!m_next);
+        m_next = next;
+    }
+
 #if defined(ADDRESS_SANITIZER)
     NO_SANITIZE_ADDRESS
     bool shouldAddToFreeList()
@@ -475,7 +482,7 @@ public:
     HeapPage(PageMemory*, ThreadHeap<Header>*, const GCInfo*);
 
     void link(HeapPage**);
-    static void unlink(HeapPage*, HeapPage**);
+    static void unlink(ThreadHeap<Header>*, HeapPage*, HeapPage**);
 
     bool isEmpty();
 
@@ -505,7 +512,7 @@ public:
 
     void getStats(HeapStats&);
     void clearLiveAndMarkDead();
-    void sweep();
+    void sweep(HeapStats*, ThreadHeap<Header>*);
     void clearObjectStartBitMap();
     void finalize(Header*);
     virtual void checkAndMarkPointer(Visitor*, Address) OVERRIDE;
@@ -515,7 +522,7 @@ public:
 #if ENABLE(GC_PROFILE_HEAP)
     virtual void snapshot(TracedValue*, ThreadState::SnapshotInfo*);
 #endif
-    ThreadHeap<Header>* heap() { return m_heap; }
+
 #if defined(ADDRESS_SANITIZER)
     void poisonUnmarkedObjects();
 #endif
@@ -543,8 +550,10 @@ protected:
     TraceCallback traceCallback(Header*);
     bool hasVTable(Header*);
 
+    intptr_t padding() const { return m_padding; }
+
     HeapPage<Header>* m_next;
-    ThreadHeap<Header>* m_heap;
+    intptr_t m_padding; // Preserve 8-byte alignment on 32-bit systems.
     bool m_objectStartBitMapComputed;
     uint8_t m_objectStartBitMap[reservedForObjectBitMap];
 
@@ -859,7 +868,7 @@ public:
 
     // Sweep this part of the Blink heap. This finalizes dead objects
     // and builds freelists for all the unused memory.
-    virtual void sweep() = 0;
+    virtual void sweep(HeapStats*) = 0;
     virtual void postSweepProcessing() = 0;
 
     virtual void clearFreeLists() = 0;
@@ -874,6 +883,11 @@ public:
 #endif
 
     virtual void prepareHeapForTermination() = 0;
+
+    virtual int normalPageCount() = 0;
+
+    virtual BaseHeap* split(int normalPages) = 0;
+    virtual void merge(BaseHeap* other) = 0;
 
     // Returns a bucket number for inserting a FreeListEntry of a
     // given size. All FreeListEntries in the given bucket, n, have
@@ -905,7 +919,8 @@ public:
 #if ENABLE(GC_PROFILE_HEAP)
     virtual void snapshot(TracedValue*, ThreadState::SnapshotInfo*);
 #endif
-    virtual void sweep();
+
+    virtual void sweep(HeapStats*);
     virtual void postSweepProcessing();
 
     virtual void clearFreeLists();
@@ -933,7 +948,13 @@ public:
         return allocationSizeFromSize(size) - sizeof(Header);
     }
 
-    void prepareHeapForTermination();
+    virtual void prepareHeapForTermination();
+
+    virtual int normalPageCount() { return m_numberOfNormalPages; }
+
+    virtual BaseHeap* split(int numberOfNormalPages);
+    virtual void merge(BaseHeap* splitOffBase);
+
     void removePageFromHeap(HeapPage<Header>*);
 
 private:
@@ -962,6 +983,9 @@ private:
     bool pagesAllocatedDuringSweepingContains(Address);
 #endif
 
+    void sweepNormalPages(HeapStats*);
+    void sweepLargePages(HeapStats*);
+
     Address m_currentAllocationPoint;
     size_t m_remainingAllocationSize;
 
@@ -971,15 +995,22 @@ private:
     HeapPage<Header>* m_firstPageAllocatedDuringSweeping;
     HeapPage<Header>* m_lastPageAllocatedDuringSweeping;
 
+    // Merge point for parallel sweep.
+    HeapPage<Header>* m_mergePoint;
+
     int m_biggestFreeListIndex;
+
     ThreadState* m_threadState;
 
     // All FreeListEntries in the nth list have size >= 2^n.
     FreeListEntry* m_freeLists[blinkPageSizeLog2];
+    FreeListEntry* m_lastFreeListEntries[blinkPageSizeLog2];
 
     // Index into the page pools. This is used to ensure that the pages of the
     // same type go into the correct page pool and thus avoid type confusion.
     int m_index;
+
+    int m_numberOfNormalPages;
 };
 
 class PLATFORM_EXPORT Heap {
@@ -1476,8 +1507,6 @@ Address ThreadHeap<Header>::allocate(size_t size, const GCInfo* gcInfo)
     return result;
 }
 
-// FIXME: Allocate objects that do not need finalization separately
-// and use separate sweeping to not have to check for finalizers.
 template<typename T, typename HeapTraits>
 Address Heap::allocate(size_t size)
 {
@@ -1489,8 +1518,6 @@ Address Heap::allocate(size_t size)
     return static_cast<typename HeapTraits::HeapType*>(heap)->allocate(size, gcInfo);
 }
 
-// FIXME: Allocate objects that do not need finalization separately
-// and use separate sweeping to not have to check for finalizers.
 template<typename T>
 Address Heap::reallocate(void* previous, size_t size)
 {

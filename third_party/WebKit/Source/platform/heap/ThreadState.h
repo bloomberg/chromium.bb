@@ -33,6 +33,7 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/heap/AddressSanitizer.h"
+#include "public/platform/WebThread.h"
 #include "wtf/HashSet.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
@@ -213,6 +214,8 @@ FOR_EACH_TYPED_HEAP(DEFINE_TYPED_HEAP_TRAIT)
 // when to perform garbage collections.
 class HeapStats {
 public:
+    HeapStats() : m_totalObjectSpace(0), m_totalAllocatedSpace(0) { }
+
     size_t totalObjectSpace() const { return m_totalObjectSpace; }
     size_t totalAllocatedSpace() const { return m_totalAllocatedSpace; }
 
@@ -590,6 +593,11 @@ public:
 
     void setupHeapsForTermination();
 
+    void registerSweepingTask();
+    void unregisterSweepingTask();
+
+    Mutex& sweepMutex() { return m_sweepMutex; }
+
 private:
     explicit ThreadState();
     ~ThreadState();
@@ -624,6 +632,8 @@ private:
     void cleanupPages();
 
     void setLowCollectionRate(bool value) { m_lowCollectionRate = value; }
+
+    void waitUntilSweepersDone();
 
     static WTF::ThreadSpecific<ThreadState*>* s_threadSpecific;
     static SafePointBarrier* s_safePointBarrier;
@@ -665,6 +675,11 @@ private:
     bool m_isTerminating;
 
     bool m_lowCollectionRate;
+
+    OwnPtr<blink::WebThread> m_sweeperThread;
+    int m_numberOfSweeperTasks;
+    Mutex m_sweepMutex;
+    ThreadCondition m_sweepThreadCondition;
 
     CallbackStack* m_weakCallbackStack;
 
