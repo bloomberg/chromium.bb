@@ -191,6 +191,9 @@ const char* kRecommendedLocales2[] = {
   "fr",
   "nl",
 };
+const char* kInvalidRecommendedLocale[] = {
+  "xx",
+};
 const char kPublicSessionLocale[] = "de";
 const char kPublicSessionInputMethodIDTemplate[] = "_comp_ime_%sxkb:de:neo:ger";
 
@@ -1746,6 +1749,49 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, MultipleRecommendedLocales) {
                 ->GetActiveIMEState()
                 ->GetCurrentInputMethod()
                 .id());
+}
+
+IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, InvalidRecommendedLocale) {
+  // Specify an invalid recommended locale.
+  SetRecommendedLocales(kInvalidRecommendedLocale,
+                        arraysize(kInvalidRecommendedLocale));
+  UploadAndInstallDeviceLocalAccountPolicy();
+  AddPublicSessionToDevicePolicy(kAccountId1);
+
+  WaitForPolicy();
+
+  // Click on the pod to expand it. Verify that the pod expands to its basic
+  // form as there is only one recommended locale.
+  bool advanced = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      contents_,
+      base::StringPrintf(
+          "var pod ="
+          "    document.getElementById('pod-row').getPodWithUsername_('%s');"
+          "pod.click();"
+          "domAutomationController.send(pod.classList.contains('advanced'));",
+          user_id_1_.c_str()),
+      &advanced));
+  EXPECT_FALSE(advanced);
+  EXPECT_EQ(l10n_util::GetLanguage(initial_locale_),
+            icu::Locale::getDefault().getLanguage());
+
+  // Click the enter button to start the session.
+  ASSERT_TRUE(content::ExecuteScript(
+      contents_,
+      base::StringPrintf(
+          "document.getElementById('pod-row').getPodWithUsername_('%s')"
+          "    .querySelector('.enter-button').click();",
+          user_id_1_.c_str())));
+
+  WaitForSessionStart();
+
+  // Verify that since the recommended locale was invalid, the locale has not
+  // changed and the first keyboard layout applicable to the locale was chosen.
+  EXPECT_EQ(initial_locale_, g_browser_process->GetApplicationLocale());
+  EXPECT_EQ(l10n_util::GetLanguage(initial_locale_),
+            icu::Locale::getDefault().getLanguage());
+  VerifyKeyboardLayoutMatchesLocale();
 }
 
 IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest,

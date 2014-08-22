@@ -52,7 +52,7 @@ class ChromeUserSelectionScreen
   // of the |recommended_locales| followed by all other available locales.
   void SetPublicSessionLocales(
       const std::string& user_id,
-      const std::vector<std::string>* recommended_locales);
+      const std::vector<std::string>& recommended_locales);
 
   bool handler_initialized_;
 

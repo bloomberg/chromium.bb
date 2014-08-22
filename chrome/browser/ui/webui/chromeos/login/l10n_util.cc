@@ -370,6 +370,32 @@ scoped_ptr<base::ListValue> GetUILanguageList(
   return languages_list.Pass();
 }
 
+std::string FindMostRelevantLocale(
+    const std::vector<std::string>& most_relevant_language_codes,
+    const base::ListValue& available_locales,
+    const std::string& fallback_locale) {
+  for (std::vector<std::string>::const_iterator most_relevant_it =
+          most_relevant_language_codes.begin();
+       most_relevant_it != most_relevant_language_codes.end();
+       ++most_relevant_it) {
+    for (base::ListValue::const_iterator available_it =
+             available_locales.begin();
+         available_it != available_locales.end(); ++available_it) {
+      base::DictionaryValue* dict;
+      std::string available_locale;
+      if (!(*available_it)->GetAsDictionary(&dict) ||
+          !dict->GetString("value", &available_locale)) {
+        NOTREACHED();
+        continue;
+      }
+      if (available_locale == *most_relevant_it)
+        return *most_relevant_it;
+    }
+  }
+
+  return fallback_locale;
+}
+
 scoped_ptr<base::ListValue> GetAcceptLanguageList() {
   // Collect the language codes from the supported accept-languages.
   const std::string app_locale = g_browser_process->GetApplicationLocale();
@@ -464,7 +490,7 @@ void GetKeyboardLayoutsForLocale(
   base::PostTaskAndReplyWithResult(
       background_task_runner,
       FROM_HERE,
-      base::Bind(get_application_locale, locale, false /* set_icu_locale*/ ),
+      base::Bind(get_application_locale, locale, false /* set_icu_locale */),
       base::Bind(&GetKeyboardLayoutsForResolvedLocale, callback));
 }
 

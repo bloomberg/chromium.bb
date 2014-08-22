@@ -4,8 +4,6 @@
 
 #include "chrome/browser/chromeos/login/screens/user_selection_screen.h"
 
-#include <vector>
-
 #include "ash/shell.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -66,23 +64,27 @@ void AddPublicSessionDetailsToUserDictionaryEntry(
   }
 
   std::vector<std::string> kEmptyRecommendedLocales;
-  const std::vector<std::string>* recommended_locales =
+  const std::vector<std::string>& recommended_locales =
       public_session_recommended_locales ?
-          public_session_recommended_locales : &kEmptyRecommendedLocales;
+          *public_session_recommended_locales : kEmptyRecommendedLocales;
 
-  // Set |kKeyInitialLocales| to the list of available locales. This list
-  // consists of the recommended locales, followed by all others.
-  user_dict->Set(
-      kKeyInitialLocales,
-      GetUILanguageList(recommended_locales, std::string()).release());
+  // Construct the list of available locales. This list consists of the
+  // recommended locales, followed by all others.
+  scoped_ptr<base::ListValue> available_locales =
+      GetUILanguageList(&recommended_locales, std::string());
 
-  // Set |kKeyInitialLocale| to the initially selected locale. If the list of
-  // recommended locales is not empty, select its first entry. Otherwise,
-  // select the current UI locale.
-  user_dict->SetString(kKeyInitialLocale,
-                       recommended_locales->empty() ?
-                           g_browser_process->GetApplicationLocale() :
-                           recommended_locales->front());
+  // Select the the first recommended locale that is actually available or the
+  // current UI locale if none of them are available.
+  const std::string selected_locale = FindMostRelevantLocale(
+      recommended_locales,
+      *available_locales.get(),
+      g_browser_process->GetApplicationLocale());
+
+  // Set |kKeyInitialLocales| to the list of available locales.
+  user_dict->Set(kKeyInitialLocales, available_locales.release());
+
+  // Set |kKeyInitialLocale| to the initially selected locale.
+  user_dict->SetString(kKeyInitialLocale, selected_locale);
 
   // Set |kKeyInitialMultipleRecommendedLocales| to indicate whether the list
   // of recommended locales contains at least two entries. This is used to
@@ -90,7 +92,7 @@ void AddPublicSessionDetailsToUserDictionaryEntry(
   // or one recommended locales) or the advanced form (two or more recommended
   // locales).
   user_dict->SetBoolean(kKeyInitialMultipleRecommendedLocales,
-                        recommended_locales->size() >= 2);
+                        recommended_locales.size() >= 2);
 
   // Set |kKeyInitialKeyboardLayout| to the current keyboard layout. This
   // value will be used temporarily only because the UI immediately requests a

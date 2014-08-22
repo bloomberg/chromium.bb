@@ -37,6 +37,14 @@ scoped_ptr<base::ListValue> GetUILanguageList(
     const std::vector<std::string>* most_relevant_language_codes,
     const std::string& selected);
 
+// Returns the most first entry of |most_relevant_language_codes| that is
+// actually available (present in |available_locales|). If none of the entries
+// are present in |available_locales|, returns the |fallback_locale|.
+std::string FindMostRelevantLocale(
+    const std::vector<std::string>& most_relevant_language_codes,
+    const base::ListValue& available_locales,
+    const std::string& fallback_locale);
+
 // Return a list of supported accept languages. The listed languages can be used
 // in the Accept-Language header. The return value will look like:
 // [{'code': 'fi', 'displayName': 'Finnish', 'nativeDisplayName': 'suomi'}, ...]

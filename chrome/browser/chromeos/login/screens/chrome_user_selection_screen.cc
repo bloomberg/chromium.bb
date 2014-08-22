@@ -126,28 +126,16 @@ void ChromeUserSelectionScreen::CheckForPublicSessionLocalePolicyChange(
     }
   }
 
-  if (new_recommended_locales.empty()) {
-    // There are no recommended locales.
-    PublicSessionRecommendedLocaleMap::iterator it =
-        public_session_recommended_locales_.find(user_id);
-    if (it != public_session_recommended_locales_.end()) {
-      // If there previously were recommended locales, remove them from
-      // |public_session_recommended_locales_| and notify the UI.
-      public_session_recommended_locales_.erase(it);
-      SetPublicSessionLocales(user_id, &new_recommended_locales);
-    }
-    return;
-  }
-
-  // There are recommended locales.
   std::vector<std::string>& recommended_locales =
       public_session_recommended_locales_[user_id];
-  if (new_recommended_locales != recommended_locales) {
-    // If the list of recommended locales has changed, update
-    // |public_session_recommended_locales_| and notify the UI.
+
+  if (new_recommended_locales != recommended_locales)
+    SetPublicSessionLocales(user_id, new_recommended_locales);
+
+  if (new_recommended_locales.empty())
+    public_session_recommended_locales_.erase(user_id);
+  else
     recommended_locales = new_recommended_locales;
-    SetPublicSessionLocales(user_id, &new_recommended_locales);
-  }
 }
 
 void ChromeUserSelectionScreen::SetPublicSessionDisplayName(
@@ -164,29 +152,31 @@ void ChromeUserSelectionScreen::SetPublicSessionDisplayName(
 
 void ChromeUserSelectionScreen::SetPublicSessionLocales(
     const std::string& user_id,
-    const std::vector<std::string>* recommended_locales) {
+    const std::vector<std::string>& recommended_locales) {
   if (!handler_initialized_)
     return;
 
   // Construct the list of available locales. This list consists of the
   // recommended locales, followed by all others.
-  scoped_ptr<base::ListValue> locales =
-      GetUILanguageList(recommended_locales, std::string());
+  scoped_ptr<base::ListValue> available_locales =
+      GetUILanguageList(&recommended_locales, std::string());
 
-  // Set the initially selected locale. If the list of recommended locales is
-  // not empty, select its first entry. Otherwise, select the current UI locale.
-  const std::string& default_locale = recommended_locales->empty() ?
-      g_browser_process->GetApplicationLocale() : recommended_locales->front();
+  // Set the initially selected locale to the first recommended locale that is
+  // actually available or the current UI locale if none of them are available.
+  const std::string default_locale = FindMostRelevantLocale(
+      recommended_locales,
+      *available_locales.get(),
+      g_browser_process->GetApplicationLocale());
 
   // Set a flag to indicate whether the list of recommended locales contains at
   // least two entries. This is used to decide whether the public session pod
   // expands to its basic form (for zero or one recommended locales) or the
   // advanced form (two or more recommended locales).
-  const bool two_or_more_recommended_locales = recommended_locales->size() >= 2;
+  const bool two_or_more_recommended_locales = recommended_locales.size() >= 2;
 
   // Notify the UI.
   handler_->SetPublicSessionLocales(user_id,
-                                    locales.Pass(),
+                                    available_locales.Pass(),
                                     default_locale,
                                     two_or_more_recommended_locales);
 }

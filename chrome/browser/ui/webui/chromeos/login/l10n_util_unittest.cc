@@ -129,6 +129,39 @@ TEST_F(L10nUtilTest, GetUILanguageList) {
   VerifyOnlyUILanguages(*list);
 }
 
+TEST_F(L10nUtilTest, FindMostRelevantLocale) {
+  base::ListValue available_locales;
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
+  dict->SetString("value", "de");
+  available_locales.Append(dict.release());
+  dict.reset(new base::DictionaryValue);
+  dict->SetString("value", "fr");
+  available_locales.Append(dict.release());
+  dict.reset(new base::DictionaryValue);
+  dict->SetString("value", "en-GB");
+  available_locales.Append(dict.release());
+
+  std::vector<std::string> most_relevant_language_codes;
+  EXPECT_EQ("en-US", FindMostRelevantLocale(most_relevant_language_codes,
+                                            available_locales,
+                                            "en-US"));
+
+  most_relevant_language_codes.push_back("xx");
+  EXPECT_EQ("en-US", FindMostRelevantLocale(most_relevant_language_codes,
+                                            available_locales,
+                                            "en-US"));
+
+  most_relevant_language_codes.push_back("fr");
+  EXPECT_EQ("fr", FindMostRelevantLocale(most_relevant_language_codes,
+                                         available_locales,
+                                         "en-US"));
+
+  most_relevant_language_codes.push_back("de");
+  EXPECT_EQ("fr", FindMostRelevantLocale(most_relevant_language_codes,
+                                         available_locales,
+                                         "en-US"));
+}
+
 void InitStartupCustomizationDocumentForTesting(const std::string& manifest) {
   StartupCustomizationDocument::GetInstance()->LoadManifestFromString(manifest);
   StartupCustomizationDocument::GetInstance()->Init(
