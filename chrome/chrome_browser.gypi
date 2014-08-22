@@ -1178,6 +1178,8 @@
       'browser/signin/about_signin_internals_factory.h',
       'browser/signin/account_reconcilor_factory.cc',
       'browser/signin/account_reconcilor_factory.h',
+      'browser/signin/account_tracker_service_factory.cc',
+      'browser/signin/account_tracker_service_factory.h',
       'browser/signin/chrome_signin_client.cc',
       'browser/signin/chrome_signin_client.h',
       'browser/signin/chrome_signin_client_factory.cc',
