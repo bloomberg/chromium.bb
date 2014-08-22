@@ -59,8 +59,10 @@ class FileStreamWriter::OperationRunner
   void CloseFileOnUIThread() {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     if (file_system_.get() && file_handle_ != -1) {
-      abort_callback_ = file_system_->CloseFile(
-          file_handle_, base::Bind(&EmptyStatusCallback));
+      // Closing a file must not be aborted, since we could end up on files
+      // which are never closed.
+      file_system_->CloseFile(file_handle_, base::Bind(&EmptyStatusCallback));
+      abort_callback_ = ProvidedFileSystemInterface::AbortCallback();
     }
   }
 
@@ -96,12 +98,11 @@ class FileStreamWriter::OperationRunner
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     if (abort_callback_.is_null()) {
-      // No operation on the file system being performed. At most a callback
-      // call, which will be discarded.
-      BrowserThread::PostTask(
-          BrowserThread::IO,
-          FROM_HERE,
-          base::Bind(callback, base::File::FILE_ERROR_ABORT));
+      // No operation to be cancelled. At most a callback call, which will be
+      // discarded.
+      BrowserThread::PostTask(BrowserThread::IO,
+                              FROM_HERE,
+                              base::Bind(callback, base::File::FILE_OK));
       return;
     }
 
