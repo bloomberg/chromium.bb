@@ -27,6 +27,11 @@
 namespace cc {
 namespace {
 
+const size_t kMaxTransferBufferUsageBytes = 10000U;
+// A resource of this dimension^2 * 4 must be greater than the above transfer
+// buffer constant.
+const size_t kLargeResourceDimension = 1000U;
+
 enum RasterWorkerPoolType {
   RASTER_WORKER_POOL_TYPE_PIXEL_BUFFER,
   RASTER_WORKER_POOL_TYPE_IMAGE,
@@ -126,7 +131,7 @@ class RasterWorkerPoolTest
             RasterWorkerPool::GetTaskGraphRunner(),
             context_provider_.get(),
             resource_provider_.get(),
-            std::numeric_limits<size_t>::max());
+            kMaxTransferBufferUsageBytes);
         break;
       case RASTER_WORKER_POOL_TYPE_IMAGE:
         raster_worker_pool_ = ImageRasterWorkerPool::Create(
@@ -203,9 +208,7 @@ class RasterWorkerPoolTest
     raster_worker_pool_->AsRasterizer()->ScheduleTasks(&queue);
   }
 
-  void AppendTask(unsigned id) {
-    const gfx::Size size(1, 1);
-
+  void AppendTask(unsigned id, const gfx::Size& size) {
     scoped_ptr<ScopedResource> resource(
         ScopedResource::Create(resource_provider_.get()));
     resource->Allocate(size, ResourceProvider::TextureHintImmutable, RGBA_8888);
@@ -220,6 +223,8 @@ class RasterWorkerPoolTest
                    id),
         &empty));
   }
+
+  void AppendTask(unsigned id) { AppendTask(id, gfx::Size(1, 1)); }
 
   void AppendBlockingTask(unsigned id, base::Lock* lock) {
     const gfx::Size size(1, 1);
@@ -321,6 +326,27 @@ TEST_P(RasterWorkerPoolTest, FalseThrottling) {
   // Unblock the first task to allow the second task to complete.
   lock.Release();
 
+  RunMessageLoopUntilAllTasksHaveCompleted();
+}
+
+TEST_P(RasterWorkerPoolTest, LargeResources) {
+  gfx::Size size(kLargeResourceDimension, kLargeResourceDimension);
+
+  {
+    // Verify a resource of this size is larger than the transfer buffer.
+    scoped_ptr<ScopedResource> resource(
+        ScopedResource::Create(resource_provider_.get()));
+    resource->Allocate(size, ResourceProvider::TextureHintImmutable, RGBA_8888);
+    EXPECT_GE(resource->bytes(), kMaxTransferBufferUsageBytes);
+  }
+
+  AppendTask(0u, size);
+  AppendTask(1u, size);
+  AppendTask(2u, size);
+  ScheduleTasks();
+
+  // This will time out if a resource that is larger than the throttle limit
+  // never gets scheduled.
   RunMessageLoopUntilAllTasksHaveCompleted();
 }
 

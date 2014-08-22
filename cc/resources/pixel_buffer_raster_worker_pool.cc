@@ -515,10 +515,13 @@ void PixelBufferRasterWorkerPool::ScheduleMoreTasks() {
       continue;
     }
 
-    // All raster tasks need to be throttled by bytes of pending uploads.
+    // All raster tasks need to be throttled by bytes of pending uploads,
+    // but if it's the only task allow it to complete no matter what its size,
+    // to prevent starvation of the task queue.
     size_t new_bytes_pending_upload = bytes_pending_upload;
     new_bytes_pending_upload += task->resource()->bytes();
-    if (new_bytes_pending_upload > max_bytes_pending_upload_) {
+    if (new_bytes_pending_upload > max_bytes_pending_upload_ &&
+        bytes_pending_upload) {
       did_throttle_raster_tasks = true;
       if (item.required_for_activation)
         did_throttle_raster_tasks_required_for_activation = true;
