@@ -86,6 +86,11 @@ class CastSender {
       const CastInitializationCallback& cast_initialization_cb,
       const CreateVideoEncodeAcceleratorCallback& create_vea_cb,
       const CreateVideoEncodeMemoryCallback& create_video_encode_mem_cb) = 0;
+
+  // Change the target delay. This is only valid if the receiver
+  // supports the "adaptive_target_delay" rtp extension.
+  virtual void SetTargetPlayoutDelay(
+      base::TimeDelta new_target_playout_delay) = 0;
 };
 
 }  // namespace cast

@@ -26,8 +26,18 @@ class FrameSender {
               CastTransportSender* const transport_sender,
               base::TimeDelta rtcp_interval,
               int frequency,
-              uint32 ssrc);
+              uint32 ssrc,
+              double max_frame_rate,
+              base::TimeDelta playout_delay);
   virtual ~FrameSender();
+
+  // Calling this function is only valid if the receiver supports the
+  // "extra_playout_delay", rtp extension.
+  void SetTargetPlayoutDelay(base::TimeDelta new_target_playout_delay);
+
+  base::TimeDelta GetTargetPlayoutDelay() const {
+    return target_playout_delay_;
+  }
 
  protected:
   // Schedule and execute periodic sending of RTCP report.
@@ -63,9 +73,28 @@ class FrameSender {
   base::TimeDelta min_rtt_;
   base::TimeDelta max_rtt_;
 
- private:
+ protected:
   const base::TimeDelta rtcp_interval_;
 
+  // The total amount of time between a frame's capture/recording on the sender
+  // and its playback on the receiver (i.e., shown to a user).  This is fixed as
+  // a value large enough to give the system sufficient time to encode,
+  // transmit/retransmit, receive, decode, and render; given its run-time
+  // environment (sender/receiver hardware performance, network conditions,
+  // etc.).
+  base::TimeDelta target_playout_delay_;
+
+  // If true, we transmit the target playout delay to the receiver.
+  bool send_target_playout_delay_;
+
+  // Max encoded frames generated per second.
+  double max_frame_rate_;
+
+  // Maximum number of outstanding frames before the encoding and sending of
+  // new frames shall halt.
+  int max_unacked_frames_;
+
+ private:
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<FrameSender> weak_factory_;
 

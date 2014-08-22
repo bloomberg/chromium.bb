@@ -79,19 +79,6 @@ class VideoSender : public FrameSender,
   // Called by the |video_encoder_| with the next EncodeFrame to send.
   void SendEncodedVideoFrame(int requested_bitrate_before_encode,
                              scoped_ptr<EncodedFrame> encoded_frame);
-
-  // The total amount of time between a frame's capture/recording on the sender
-  // and its playback on the receiver (i.e., shown to a user).  This is fixed as
-  // a value large enough to give the system sufficient time to encode,
-  // transmit/retransmit, receive, decode, and render; given its run-time
-  // environment (sender/receiver hardware performance, network conditions,
-  // etc.).
-  const base::TimeDelta target_playout_delay_;
-
-  // Maximum number of outstanding frames before the encoding and sending of
-  // new frames shall halt.
-  const int max_unacked_frames_;
-
   // If this value is non zero then a fixed value is used for bitrate.
   // If external video encoder is used then bitrate will be fixed to
   // (min_bitrate + max_bitrate) / 2.

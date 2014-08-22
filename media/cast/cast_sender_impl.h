@@ -37,6 +37,9 @@ class CastSenderImpl : public CastSender {
       const CreateVideoEncodeMemoryCallback& create_video_encode_mem_cb)
       OVERRIDE;
 
+  virtual void SetTargetPlayoutDelay(
+      base::TimeDelta new_target_playout_delay) OVERRIDE;
+
   virtual ~CastSenderImpl();
 
   virtual scoped_refptr<AudioFrameInput> audio_frame_input() OVERRIDE;

@@ -7,16 +7,10 @@
 #include "base/big_endian.h"
 #include "base/logging.h"
 #include "media/cast/cast_defines.h"
+#include "media/cast/net/rtp/rtp_defines.h"
 
 namespace media {
 namespace cast {
-
-static const size_t kRtpHeaderLength = 12;
-static const size_t kCastHeaderLength = 7;
-static const uint8 kRtpExtensionBitMask = 0x10;
-static const uint8 kRtpMarkerBitMask = 0x80;
-static const uint8 kCastKeyFrameBitMask = 0x80;
-static const uint8 kCastReferenceFrameIdBitMask = 0x40;
 
 RtpParser::RtpParser(uint32 expected_sender_ssrc, uint8 expected_payload_type)
     : expected_sender_ssrc_(expected_sender_ssrc),
@@ -90,6 +84,22 @@ bool RtpParser::ParsePacket(const uint8* packet,
       --truncated_reference_frame_id;
   } else if (!reader.ReadU8(&truncated_reference_frame_id)) {
     return false;
+  }
+
+  for (int i = 0; i < (bits & kCastExtensionCountmask); i++) {
+    uint16 type_and_size;
+    if (!reader.ReadU16(&type_and_size))
+      return false;
+    base::StringPiece tmp;
+    if (!reader.ReadPiece(&tmp, type_and_size & 0x3ff))
+      return false;
+    base::BigEndianReader chunk(tmp.data(), tmp.size());
+    switch (type_and_size >> 10) {
+      case kCastRtpExtensionAdaptiveLatency:
+        if (!chunk.ReadU16(&header->new_playout_delay_ms))
+          return false;
+
+    }
   }
 
   // Only the lower 8 bits of the |frame_id| were serialized, so do some magic

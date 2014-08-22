@@ -117,6 +117,10 @@ struct EncodedFrame {
   // timestamps; and it may not necessarily increment with precise regularity.
   base::TimeTicks reference_time;
 
+  // Playout delay for this and all future frames. Used by the Adaptive
+  // Playout delay extension. Zero means no change.
+  uint16 new_playout_delay_ms;
+
   // The encoded signal data.
   std::string data;
 };

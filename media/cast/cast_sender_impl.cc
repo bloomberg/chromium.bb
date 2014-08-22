@@ -110,6 +110,10 @@ void CastSenderImpl::InitializeAudio(
         new LocalAudioFrameInput(cast_environment_, audio_sender_->AsWeakPtr());
   }
   cast_initialization_cb.Run(status);
+  if (video_sender_) {
+    DCHECK(audio_sender_->GetTargetPlayoutDelay() ==
+           video_sender_->GetTargetPlayoutDelay());
+  }
 }
 
 void CastSenderImpl::InitializeVideo(
@@ -136,6 +140,10 @@ void CastSenderImpl::InitializeVideo(
         new LocalVideoFrameInput(cast_environment_, video_sender_->AsWeakPtr());
   }
   cast_initialization_cb.Run(status);
+  if (audio_sender_) {
+    DCHECK(audio_sender_->GetTargetPlayoutDelay() ==
+           video_sender_->GetTargetPlayoutDelay());
+  }
 }
 
 CastSenderImpl::~CastSenderImpl() {
@@ -148,6 +156,18 @@ scoped_refptr<AudioFrameInput> CastSenderImpl::audio_frame_input() {
 
 scoped_refptr<VideoFrameInput> CastSenderImpl::video_frame_input() {
   return video_frame_input_;
+}
+
+void CastSenderImpl::SetTargetPlayoutDelay(
+    base::TimeDelta new_target_playout_delay) {
+  VLOG(1) << "CastSenderImpl@" << this << "::SetTargetPlayoutDelay("
+          << new_target_playout_delay.InMilliseconds() << " ms)";
+  if (audio_sender_) {
+    audio_sender_->SetTargetPlayoutDelay(new_target_playout_delay);
+  }
+  if (video_sender_) {
+    video_sender_->SetTargetPlayoutDelay(new_target_playout_delay);
+  }
 }
 
 }  // namespace cast

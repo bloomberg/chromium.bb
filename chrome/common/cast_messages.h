@@ -34,6 +34,7 @@ IPC_STRUCT_TRAITS_BEGIN(media::cast::EncodedFrame)
   IPC_STRUCT_TRAITS_MEMBER(referenced_frame_id)
   IPC_STRUCT_TRAITS_MEMBER(rtp_timestamp)
   IPC_STRUCT_TRAITS_MEMBER(reference_time)
+  IPC_STRUCT_TRAITS_MEMBER(new_playout_delay_ms)
   IPC_STRUCT_TRAITS_MEMBER(data)
 IPC_STRUCT_TRAITS_END()
 

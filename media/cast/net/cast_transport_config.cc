@@ -16,7 +16,8 @@ EncodedFrame::EncodedFrame()
     : dependency(UNKNOWN_DEPENDENCY),
       frame_id(0),
       referenced_frame_id(0),
-      rtp_timestamp(0) {}
+      rtp_timestamp(0),
+      new_playout_delay_ms(0) {}
 
 EncodedFrame::~EncodedFrame() {}
 

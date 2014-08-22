@@ -1494,6 +1494,38 @@ TEST_F(End2EndTest, OldPacketNetwork) {
   EXPECT_EQ(10000ul, video_ticks_.size());
 }
 
+TEST_F(End2EndTest, TestSetPlayoutDelay) {
+  Configure(CODEC_VIDEO_FAKE, CODEC_AUDIO_PCM16, 32000, 1);
+  Create();
+  StartBasicPlayer();
+  const int kNewDelay = 600;
+
+  int frames_counter = 0;
+  for (; frames_counter < 200; ++frames_counter) {
+    SendFakeVideoFrame(testing_clock_sender_->NowTicks());
+    RunTasks(kFrameTimerMs);
+  }
+  cast_sender_->SetTargetPlayoutDelay(
+      base::TimeDelta::FromMilliseconds(kNewDelay));
+  for (; frames_counter < 400; ++frames_counter) {
+    SendFakeVideoFrame(testing_clock_sender_->NowTicks());
+    RunTasks(kFrameTimerMs);
+  }
+  RunTasks(100 * kFrameTimerMs + 1);  // Empty the pipeline.
+  size_t jump = 0;
+  for (size_t i = 1; i < video_ticks_.size(); i++) {
+    int64 delta = (video_ticks_[i].second -
+                   video_ticks_[i-1].second).InMilliseconds();
+    if (delta > 100) {
+      EXPECT_EQ(delta, kNewDelay - kTargetPlayoutDelayMs + kFrameTimerMs);
+      EXPECT_EQ(0u, jump);
+      jump = i;
+    }
+  }
+  EXPECT_GT(jump, 199u);
+  EXPECT_LT(jump, 220u);
+}
+
 // TODO(pwestin): Add repeatable packet loss test.
 // TODO(pwestin): Add test for misaligned send get calls.
 // TODO(pwestin): Add more tests that does not resample.

@@ -39,6 +39,7 @@ class FrameBuffer {
   uint32 frame_id_;
   uint16 max_packet_id_;
   uint16 num_packets_received_;
+  uint16 new_playout_delay_ms_;
   bool is_key_frame_;
   size_t total_data_size_;
   uint32 last_referenced_frame_id_;

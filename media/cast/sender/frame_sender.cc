@@ -14,14 +14,19 @@ FrameSender::FrameSender(scoped_refptr<CastEnvironment> cast_environment,
                          CastTransportSender* const transport_sender,
                          base::TimeDelta rtcp_interval,
                          int frequency,
-                         uint32 ssrc)
+                         uint32 ssrc,
+                         double max_frame_rate,
+                         base::TimeDelta playout_delay)
     : cast_environment_(cast_environment),
       transport_sender_(transport_sender),
       ssrc_(ssrc),
       rtp_timestamp_helper_(frequency),
       rtt_available_(false),
       rtcp_interval_(rtcp_interval),
+      max_frame_rate_(max_frame_rate),
       weak_factory_(this) {
+  SetTargetPlayoutDelay(playout_delay);
+  send_target_playout_delay_ = false;
 }
 
 FrameSender::~FrameSender() {
@@ -66,6 +71,17 @@ void FrameSender::OnReceivedRtt(base::TimeDelta rtt,
   avg_rtt_ = avg_rtt;
   min_rtt_ = min_rtt;
   max_rtt_ = max_rtt;
+}
+
+void FrameSender::SetTargetPlayoutDelay(
+    base::TimeDelta new_target_playout_delay) {
+  target_playout_delay_ = new_target_playout_delay;
+  max_unacked_frames_ =
+      std::min(kMaxUnackedFrames,
+               1 + static_cast<int>(target_playout_delay_ *
+                                    max_frame_rate_ /
+                                    base::TimeDelta::FromSeconds(1)));
+  send_target_playout_delay_ = true;
 }
 
 }  // namespace cast

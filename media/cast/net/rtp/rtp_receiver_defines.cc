@@ -17,7 +17,8 @@ RtpCastHeader::RtpCastHeader()
       frame_id(0),
       packet_id(0),
       max_packet_id(0),
-      reference_frame_id(0) {}
+      reference_frame_id(0),
+      new_playout_delay_ms(0) {}
 
 RtpPayloadFeedback::~RtpPayloadFeedback() {}
 

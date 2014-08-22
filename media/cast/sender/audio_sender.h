@@ -73,18 +73,6 @@ class AudioSender : public FrameSender,
   // Called by the |audio_encoder_| with the next EncodedFrame to send.
   void SendEncodedAudioFrame(scoped_ptr<EncodedFrame> audio_frame);
 
-  // The total amount of time between a frame's capture/recording on the sender
-  // and its playback on the receiver (i.e., shown to a user).  This is fixed as
-  // a value large enough to give the system sufficient time to encode,
-  // transmit/retransmit, receive, decode, and render; given its run-time
-  // environment (sender/receiver hardware performance, network conditions,
-  // etc.).
-  const base::TimeDelta target_playout_delay_;
-
-  // Maximum number of outstanding frames before the encoding and sending of
-  // new frames shall halt.
-  const int max_unacked_frames_;
-
   // Encodes AudioBuses into EncodedFrames.
   scoped_ptr<AudioEncoder> audio_encoder_;
   const int configured_encoder_bitrate_;

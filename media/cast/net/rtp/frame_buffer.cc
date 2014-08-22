@@ -13,6 +13,7 @@ FrameBuffer::FrameBuffer()
     : frame_id_(0),
       max_packet_id_(0),
       num_packets_received_(0),
+      new_playout_delay_ms_(0),
       is_key_frame_(false),
       total_data_size_(0),
       last_referenced_frame_id_(0),
@@ -28,6 +29,7 @@ void FrameBuffer::InsertPacket(const uint8* payload_data,
     frame_id_ = rtp_header.frame_id;
     max_packet_id_ = rtp_header.max_packet_id;
     is_key_frame_ = rtp_header.is_key_frame;
+    new_playout_delay_ms_ = rtp_header.new_playout_delay_ms;
     if (is_key_frame_)
       DCHECK_EQ(rtp_header.frame_id, rtp_header.reference_frame_id);
     last_referenced_frame_id_ = rtp_header.reference_frame_id;
@@ -73,6 +75,7 @@ bool FrameBuffer::AssembleEncodedFrame(EncodedFrame* frame) const {
   frame->frame_id = frame_id_;
   frame->referenced_frame_id = last_referenced_frame_id_;
   frame->rtp_timestamp = rtp_timestamp_;
+  frame->new_playout_delay_ms = new_playout_delay_ms_;
 
   // Build the data vector.
   frame->data.clear();

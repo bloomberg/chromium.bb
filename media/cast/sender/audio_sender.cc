@@ -23,16 +23,6 @@ const int kMinSchedulingDelayMs = 1;
 // well.
 const int kAudioFrameRate = 100;
 
-// Helper function to compute the maximum unacked audio frames that is sent.
-int GetMaxUnackedFrames(base::TimeDelta target_delay) {
-  // As long as it doesn't go over |kMaxUnackedFrames|, it is okay to send more
-  // audio data than the target delay would suggest. Audio packets are tiny and
-  // receiver has the ability to drop any one of the packets.
-  // We send up to three times of the target delay of audio frames.
-  int frames =
-      1 + 2 * target_delay * kAudioFrameRate / base::TimeDelta::FromSeconds(1);
-  return std::min(kMaxUnackedFrames, frames);
-}
 }  // namespace
 
 AudioSender::AudioSender(scoped_refptr<CastEnvironment> cast_environment,
@@ -43,9 +33,9 @@ AudioSender::AudioSender(scoped_refptr<CastEnvironment> cast_environment,
         transport_sender,
         base::TimeDelta::FromMilliseconds(audio_config.rtcp_interval),
         audio_config.frequency,
-        audio_config.ssrc),
-      target_playout_delay_(audio_config.target_playout_delay),
-      max_unacked_frames_(GetMaxUnackedFrames(target_playout_delay_)),
+        audio_config.ssrc,
+        kAudioFrameRate * 2.0, // We lie to increase max outstanding frames.
+        audio_config.target_playout_delay),
       configured_encoder_bitrate_(audio_config.bitrate),
       num_aggressive_rtcp_reports_sent_(0),
       last_sent_frame_id_(0),
@@ -152,6 +142,10 @@ void AudioSender::SendEncodedAudioFrame(
     SendRtcpReport(is_last_aggressive_report);
   }
 
+  if (send_target_playout_delay_) {
+    encoded_frame->new_playout_delay_ms =
+        target_playout_delay_.InMilliseconds();
+  }
   transport_sender_->InsertCodedAudioFrame(*encoded_frame);
 }
 

@@ -47,13 +47,9 @@ VideoSender::VideoSender(
         transport_sender,
         base::TimeDelta::FromMilliseconds(video_config.rtcp_interval),
         kVideoFrequency,
-        video_config.ssrc),
-      target_playout_delay_(video_config.target_playout_delay),
-      max_unacked_frames_(
-          std::min(kMaxUnackedFrames,
-                   1 + static_cast<int>(target_playout_delay_ *
-                                        video_config.max_frame_rate /
-                                        base::TimeDelta::FromSeconds(1)))),
+        video_config.ssrc,
+        video_config.max_frame_rate,
+        video_config.target_playout_delay),
       fixed_bitrate_(GetFixedBitrate(video_config)),
       num_aggressive_rtcp_reports_sent_(0),
       frames_in_encoder_(0),
@@ -220,6 +216,10 @@ void VideoSender::SendEncodedVideoFrame(
   congestion_control_.SendFrameToTransport(
       frame_id, encoded_frame->data.size() * 8, last_send_time_);
 
+  if (send_target_playout_delay_) {
+    encoded_frame->new_playout_delay_ms =
+        target_playout_delay_.InMilliseconds();
+  }
   transport_sender_->InsertCodedVideoFrame(*encoded_frame);
 }
 

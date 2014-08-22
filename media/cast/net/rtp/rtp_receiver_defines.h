@@ -28,6 +28,8 @@ struct RtpCastHeader {
   uint16 packet_id;
   uint16 max_packet_id;
   uint32 reference_frame_id;
+
+  uint16 new_playout_delay_ms;
 };
 
 class RtpPayloadFeedback {

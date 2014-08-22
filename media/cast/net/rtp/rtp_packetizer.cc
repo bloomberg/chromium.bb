@@ -7,15 +7,10 @@
 #include "base/big_endian.h"
 #include "base/logging.h"
 #include "media/cast/net/pacing/paced_sender.h"
+#include "media/cast/net/rtp/rtp_defines.h"
 
 namespace media {
 namespace cast {
-
-static const uint16 kCommonRtpHeaderLength = 12;
-static const uint16 kCastRtpHeaderLength = 7;
-static const uint8 kCastKeyFrameBitMask = 0x80;
-static const uint8 kCastReferenceFrameIdBitMask = 0x40;
-static const uint8 kRtpMarkerBitMask = 0x80;
 
 RtpPacketizerConfig::RtpPacketizerConfig()
     : payload_type(-1),
@@ -47,7 +42,7 @@ uint16 RtpPacketizer::NextSequenceNumber() {
 }
 
 void RtpPacketizer::SendFrameAsPackets(const EncodedFrame& frame) {
-  uint16 rtp_header_length = kCommonRtpHeaderLength + kCastRtpHeaderLength;
+  uint16 rtp_header_length = kRtpHeaderLength + kCastHeaderLength;
   uint16 max_length = config_.max_payload_length - rtp_header_length - 1;
   rtp_timestamp_ = frame.rtp_timestamp;
 
@@ -73,9 +68,15 @@ void RtpPacketizer::SendFrameAsPackets(const EncodedFrame& frame) {
     // Build Cast header.
     // TODO(miu): Should we always set the ref frame bit and the ref_frame_id?
     DCHECK_NE(frame.dependency, EncodedFrame::UNKNOWN_DEPENDENCY);
-    packet->data.push_back(
-        ((frame.dependency == EncodedFrame::KEY) ? kCastKeyFrameBitMask : 0) |
-             kCastReferenceFrameIdBitMask);
+    uint8 num_extensions = 0;
+    if (frame.new_playout_delay_ms)
+      num_extensions++;
+    uint8 byte0 = kCastReferenceFrameIdBitMask;
+    if (frame.dependency == EncodedFrame::KEY)
+      byte0 |= kCastKeyFrameBitMask;
+    DCHECK_LE(num_extensions, kCastExtensionCountmask);
+    byte0 |= num_extensions;
+    packet->data.push_back(byte0);
     packet->data.push_back(static_cast<uint8>(frame.frame_id));
     size_t start_size = packet->data.size();
     packet->data.resize(start_size + 4);
@@ -84,6 +85,14 @@ void RtpPacketizer::SendFrameAsPackets(const EncodedFrame& frame) {
     big_endian_writer.WriteU16(packet_id_);
     big_endian_writer.WriteU16(static_cast<uint16>(num_packets - 1));
     packet->data.push_back(static_cast<uint8>(frame.referenced_frame_id));
+    if (frame.new_playout_delay_ms) {
+      packet->data.push_back(kCastRtpExtensionAdaptiveLatency << 2);
+      packet->data.push_back(2);  // 2 bytes
+      packet->data.push_back(
+          static_cast<uint8>(frame.new_playout_delay_ms >> 8));
+      packet->data.push_back(
+          static_cast<uint8>(frame.new_playout_delay_ms));
+    }
 
     // Copy payload data.
     packet->data.insert(packet->data.end(),
