@@ -281,6 +281,13 @@ void TestSuite::SuppressErrorDialogs() {
 }
 
 void TestSuite::Initialize() {
+#if !defined(OS_IOS)
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kWaitForDebugger)) {
+    base::debug::WaitForDebugger(60, true);
+  }
+#endif
+
 #if defined(OS_MACOSX) && !defined(OS_IOS)
   // Some of the app unit tests spin runloops.
   mock_cr_app::RegisterMockCrApp();
