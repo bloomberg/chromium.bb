@@ -54,7 +54,8 @@ typedef InProcessBrowserTest ChromePluginTest;
 
 // Test that if a background tab loads an NPAPI plugin, they are displayed after
 // switching to that page.  http://crbug.com/335900
-IN_PROC_BROWSER_TEST_F(ChromePluginTest, WindowedNPAPIPluginHidden) {
+// flaky: http://crbug.com/406631
+IN_PROC_BROWSER_TEST_F(ChromePluginTest, DISABLED_WindowedNPAPIPluginHidden) {
   browser()->profile()->GetPrefs()->SetBoolean(prefs::kPluginsAlwaysAuthorize,
                                                true);
 
@@ -103,7 +104,8 @@ typedef InProcessBrowserTest PrintPreviewTest;
 
 // This test verifies that constrained windows aren't covered by windowed NPAPI
 // plugins. The code which fixes this is in WebContentsViewAura::WindowObserver.
-IN_PROC_BROWSER_TEST_F(PrintPreviewTest, WindowedNPAPIPluginHidden) {
+// flaky: http://crbug.com/406631
+IN_PROC_BROWSER_TEST_F(PrintPreviewTest, DISABLED_WindowedNPAPIPluginHidden) {
   browser()->profile()->GetPrefs()->SetBoolean(prefs::kPluginsAlwaysAuthorize,
                                                true);
 
@@ -170,7 +172,9 @@ void EnsureFindBoxOpen(Browser* browser) {
 }
 
 // Ensure that the find bar is always over a windowed NPAPI plugin.
-IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, WindowedNPAPIPluginHidden) {
+// flaky: http://crbug.com/406631
+IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
+                       DISABLED_WindowedNPAPIPluginHidden) {
   chrome::DisableFindBarAnimationsDuringTesting(true);
   browser()->profile()->GetPrefs()->SetBoolean(prefs::kPluginsAlwaysAuthorize,
                                                true);

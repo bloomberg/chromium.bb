@@ -88,7 +88,8 @@ BOOL CALLBACK EnumerateChildren(HWND hwnd, LPARAM l_param) {
 // Ensure that UIs like the star window, user profiler picker, omnibox
 // popup and bookmark editor are always over a windowed NPAPI plugin even if
 // kDisableDwmComposition is used.
-IN_PROC_BROWSER_TEST_F(StarViewTestNoDWM, WindowedNPAPIPluginHidden) {
+// flaky: http://crbug.com/406631
+IN_PROC_BROWSER_TEST_F(StarViewTestNoDWM, DISABLED_WindowedNPAPIPluginHidden) {
   browser()->profile()->GetPrefs()->SetBoolean(prefs::kPluginsAlwaysAuthorize,
                                                true);
 
