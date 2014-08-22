@@ -1340,11 +1340,11 @@ TEST_F(ExtensionSettingsSyncTest,
   Manifest::Type type = Manifest::TYPE_LEGACY_PACKAGED_APP;
 
   // This value should be larger than the limit in sync_storage_backend.cc.
-  std::string string_5k;
-  for (size_t i = 0; i < 5000; ++i) {
-    string_5k.append("a");
+  std::string string_10k;
+  for (size_t i = 0; i < 10000; ++i) {
+    string_10k.append("a");
   }
-  base::StringValue large_value(string_5k);
+  base::StringValue large_value(string_10k);
 
   GetSyncableService(model_type)->MergeDataAndStartSyncing(
       model_type,

@@ -181,7 +181,7 @@
             "description": "The maximum total amount (in bytes) of data that can be stored in sync storage, as measured by the JSON stringification of every value plus every key's length. Updates that would cause this limit to be exceeded fail immediately and set $(ref:runtime.lastError)."
           },
           "QUOTA_BYTES_PER_ITEM": {
-            "value": 4096,
+            "value": 8192,
             "description": "The maximum size (in bytes) of each individual item in sync storage, as measured by the JSON stringification of its value plus its key length. Updates containing items larger than this limit will fail immediately and set $(ref:runtime.lastError)."
           },
           "MAX_ITEMS": {
