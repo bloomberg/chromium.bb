@@ -26,7 +26,7 @@ class BookmarkNodeDataTest : public testing::Test {
 
   virtual void SetUp() OVERRIDE {
     event_source_ = ui::PlatformEventSource::CreateDefault();
-    model_ = client_.CreateModel(false);
+    model_ = client_.CreateModel();
     test::WaitForBookmarkModelToLoad(model_.get());
     bool success = profile_dir_.CreateUniqueTempDir();
     ASSERT_TRUE(success);

@@ -97,11 +97,9 @@ BookmarkIndex::NodeSet::const_iterator BookmarkIndex::Match::nodes_end() const {
 }
 
 BookmarkIndex::BookmarkIndex(BookmarkClient* client,
-                             bool index_urls,
                              const std::string& languages)
     : client_(client),
-      languages_(languages),
-      index_urls_(index_urls) {
+      languages_(languages) {
   DCHECK(client_);
 }
 
@@ -115,12 +113,10 @@ void BookmarkIndex::Add(const BookmarkNode* node) {
       ExtractQueryWords(Normalize(node->GetTitle()));
   for (size_t i = 0; i < terms.size(); ++i)
     RegisterNode(terms[i], node);
-  if (index_urls_) {
-    terms =
-        ExtractQueryWords(CleanUpUrlForMatching(node->url(), languages_, NULL));
-    for (size_t i = 0; i < terms.size(); ++i)
-      RegisterNode(terms[i], node);
-  }
+  terms =
+      ExtractQueryWords(CleanUpUrlForMatching(node->url(), languages_, NULL));
+  for (size_t i = 0; i < terms.size(); ++i)
+    RegisterNode(terms[i], node);
 }
 
 void BookmarkIndex::Remove(const BookmarkNode* node) {
@@ -131,12 +127,10 @@ void BookmarkIndex::Remove(const BookmarkNode* node) {
       ExtractQueryWords(Normalize(node->GetTitle()));
   for (size_t i = 0; i < terms.size(); ++i)
     UnregisterNode(terms[i], node);
-  if (index_urls_) {
-    terms =
-        ExtractQueryWords(CleanUpUrlForMatching(node->url(), languages_, NULL));
-    for (size_t i = 0; i < terms.size(); ++i)
-      UnregisterNode(terms[i], node);
-  }
+  terms =
+      ExtractQueryWords(CleanUpUrlForMatching(node->url(), languages_, NULL));
+  for (size_t i = 0; i < terms.size(); ++i)
+    UnregisterNode(terms[i], node);
 }
 
 void BookmarkIndex::GetBookmarksMatching(const base::string16& input_query,
@@ -218,22 +212,19 @@ void BookmarkIndex::AddMatchToResults(
       base::i18n::ToLower(Normalize(node->GetTitle()));
   parser->ExtractQueryWords(lower_title, &title_words);
   base::OffsetAdjuster::Adjustments adjustments;
-  if (index_urls_) {
-    parser->ExtractQueryWords(
-        CleanUpUrlForMatching(node->url(), languages_, &adjustments),
-        &url_words);
-  }
+  parser->ExtractQueryWords(
+      CleanUpUrlForMatching(node->url(), languages_, &adjustments),
+      &url_words);
   query_parser::Snippet::MatchPositions title_matches, url_matches;
   for (size_t i = 0; i < query_nodes.size(); ++i) {
     const bool has_title_matches =
         query_nodes[i]->HasMatchIn(title_words, &title_matches);
-    const bool has_url_matches = index_urls_ &&
+    const bool has_url_matches =
         query_nodes[i]->HasMatchIn(url_words, &url_matches);
     if (!has_title_matches && !has_url_matches)
       return;
     query_parser::QueryParser::SortAndCoalesceMatchPositions(&title_matches);
-    if (index_urls_)
-      query_parser::QueryParser::SortAndCoalesceMatchPositions(&url_matches);
+    query_parser::QueryParser::SortAndCoalesceMatchPositions(&url_matches);
   }
   BookmarkMatch match;
   if (lower_title.length() == node->GetTitle().length()) {
@@ -242,17 +233,15 @@ void BookmarkIndex::AddMatchToResults(
     // TODO(mpearson): revise match positions appropriately.
     match.title_match_positions.swap(title_matches);
   }
-  if (index_urls_) {
-    // Now that we're done processing this entry, correct the offsets of the
-    // matches in |url_matches| so they point to offsets in the original URL
-    // spec, not the cleaned-up URL string that we used for matching.
-    std::vector<size_t> offsets =
-        BookmarkMatch::OffsetsFromMatchPositions(url_matches);
-    base::OffsetAdjuster::UnadjustOffsets(adjustments, &offsets);
-    url_matches =
-        BookmarkMatch::ReplaceOffsetsInMatchPositions(url_matches, offsets);
-    match.url_match_positions.swap(url_matches);
-  }
+  // Now that we're done processing this entry, correct the offsets of the
+  // matches in |url_matches| so they point to offsets in the original URL
+  // spec, not the cleaned-up URL string that we used for matching.
+  std::vector<size_t> offsets =
+      BookmarkMatch::OffsetsFromMatchPositions(url_matches);
+  base::OffsetAdjuster::UnadjustOffsets(adjustments, &offsets);
+  url_matches =
+      BookmarkMatch::ReplaceOffsetsInMatchPositions(url_matches, offsets);
+  match.url_match_positions.swap(url_matches);
   match.node = node;
   results->push_back(match);
 }

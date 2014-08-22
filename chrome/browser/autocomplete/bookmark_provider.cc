@@ -19,7 +19,6 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/metrics/proto/omnibox_input_type.pb.h"
 #include "components/omnibox/autocomplete_result.h"
-#include "components/omnibox/omnibox_field_trial.h"
 #include "components/omnibox/url_prefix.h"
 #include "net/base/net_util.h"
 
@@ -32,8 +31,7 @@ typedef std::vector<BookmarkMatch> BookmarkMatches;
 BookmarkProvider::BookmarkProvider(Profile* profile)
     : AutocompleteProvider(AutocompleteProvider::TYPE_BOOKMARK),
       profile_(profile),
-      bookmark_model_(NULL),
-      score_using_url_matches_(OmniboxFieldTrial::BookmarksIndexURLsValue()) {
+      bookmark_model_(NULL) {
   if (profile) {
     bookmark_model_ = BookmarkModelFactory::GetForProfile(profile);
     languages_ = profile_->GetPrefs()->GetString(prefs::kAcceptLanguages);
@@ -220,21 +218,19 @@ AutocompleteMatch BookmarkProvider::BookmarkMatchToACMatch(
   //     a partial factor of (14-6)/14 = 0.571 ).  (In this example neither
   //     term matches in the URL.)
   //
-  // Once all match factors have been calculated they are summed.  If URL
-  // matches are not considered, the resulting sum will never be greater than
-  // the length of the bookmark title because of the way the bookmark model
-  // matches and removes overlaps.  (In particular, the bookmark model only
+  // Once all match factors have been calculated they are summed.  If there
+  // are no URL matches, the resulting sum will never be greater than the
+  // length of the bookmark title because of the way the bookmark model matches
+  // and removes overlaps.  (In particular, the bookmark model only
   // matches terms to the beginning of words and it removes all overlapping
   // matches, keeping only the longest.  Together these mean that each
-  // character is included in at most one match.)  If URL matches are
-  // considered, the sum can be greater.
+  // character is included in at most one match.)  If there are matches in the
+  // URL, the sum can be greater.
   //
-  // This sum is then normalized by the length of the bookmark title (if URL
-  // matches are not considered) or by the length of the bookmark title + 10
-  // (if URL matches are considered) and capped at 1.0.  (If URL matches
-  // are considered, we want to expand the scoring range so fewer bookmarks
-  // will hit the 1.0 cap and hence lose all ability to distinguish between
-  // these high-quality bookmarks.)
+  // This sum is then normalized by the length of the bookmark title + 10
+  // and capped at 1.0.  The +10 is to expand the scoring range so fewer
+  // bookmarks will hit the 1.0 cap and hence lose all ability to distinguish
+  // between these high-quality bookmarks.
   //
   // The normalized value is multiplied against the scoring range available,
   // which is 299.  The 299 is calculated by subtracting the minimum possible
@@ -250,13 +246,10 @@ AutocompleteMatch BookmarkProvider::BookmarkMatchToACMatch(
   // scored up to a maximum of three, the score is boosted by a fixed amount
   // given by |kURLCountBoost|, below.
   //
-  if (score_using_url_matches_) {
-    // Pretend empty titles are identical to the URL.
-    if (title.empty())
-      title = base::ASCIIToUTF16(url.spec());
-  } else {
-    DCHECK(!title.empty());
-  }
+
+  // Pretend empty titles are identical to the URL.
+  if (title.empty())
+    title = base::ASCIIToUTF16(url.spec());
   ScoringFunctor title_position_functor =
       for_each(bookmark_match.title_match_positions.begin(),
                bookmark_match.title_match_positions.end(),
@@ -266,10 +259,9 @@ AutocompleteMatch BookmarkProvider::BookmarkMatchToACMatch(
                bookmark_match.url_match_positions.end(),
                ScoringFunctor(bookmark_match.node->url().spec().length()));
   const double summed_factors = title_position_functor.ScoringFactor() +
-      (score_using_url_matches_ ? url_position_functor.ScoringFactor() : 0);
-  const double normalized_sum = std::min(
-      summed_factors / (title.size() + (score_using_url_matches_ ? 10 : 0)),
-      1.0);
+      url_position_functor.ScoringFactor();
+  const double normalized_sum =
+      std::min(summed_factors / (title.size() + 10), 1.0);
   const int kBaseBookmarkScore = 900;
   const int kMaxBookmarkScore = 1199;
   const double kBookmarkScoreRange =

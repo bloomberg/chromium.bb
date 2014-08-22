@@ -138,7 +138,7 @@ class BookmarkModelTest : public testing::Test,
     int index2_;
   };
 
-  BookmarkModelTest() : model_(client_.CreateModel(false)) {
+  BookmarkModelTest() : model_(client_.CreateModel()) {
     model_->AddObserver(this);
     ClearCounts();
   }
@@ -282,7 +282,7 @@ class BookmarkModelTest : public testing::Test,
     client_.SetExtraNodesToLoad(extra_nodes.Pass());
 
     model_->RemoveObserver(this);
-    model_ = client_.CreateModel(false);
+    model_ = client_.CreateModel();
     model_->AddObserver(this);
     ClearCounts();
 
@@ -978,7 +978,7 @@ TEST_F(BookmarkModelTestWithProfile, CreateAndRestore) {
     { "a b c [ d e [ f ] ]", "g h i [ j k [ l ] ]"},
   };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(data); ++i) {
-    model_ = client_.CreateModel(false);
+    model_ = client_.CreateModel();
 
     TestNode bbn;
     PopulateNodeFromString(data[i].bbn_contents, &bbn);

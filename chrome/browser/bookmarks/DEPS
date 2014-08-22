@@ -22,7 +22,6 @@ include_rules = [
   "!chrome/browser/history/history_service.h",
   "!chrome/browser/history/history_service_factory.h",
   "!chrome/browser/history/url_database.h",
-  "!chrome/browser/omnibox/omnibox_field_trial.h",
   # Do not add to the list of temporarily-allowed dependencies above,
   # and please do not introduce more #includes of these files.
 ]

@@ -14,7 +14,7 @@ namespace {
 
 TEST(BookmarkEditorTest, ApplyEditsWithNoFolderChange) {
   test::TestBookmarkClient client;
-  scoped_ptr<BookmarkModel> model(client.CreateModel(false));
+  scoped_ptr<BookmarkModel> model(client.CreateModel());
   const BookmarkNode* bookmarkbar = model->bookmark_bar_node();
   model->AddURL(bookmarkbar, 0, ASCIIToUTF16("url0"), GURL("chrome://newtab"));
   model->AddURL(bookmarkbar, 1, ASCIIToUTF16("url1"), GURL("chrome://newtab"));

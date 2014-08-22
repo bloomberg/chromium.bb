@@ -236,17 +236,6 @@ class OmniboxFieldTrial {
   static bool HQPAllowMatchInSchemeValue();
 
   // ---------------------------------------------------------
-  // For the BookmarksIndexURLs experiment that's part of the
-  // bundled omnibox field trial.
-
-  // Returns true if BookmarkIndex should index the URL of bookmarks
-  // (not only the titles) and search for / mark matches in the URLs,
-  // and BookmarkProvider should score bookmarks based on both the
-  // matches in bookmark title and URL.  Returns false if the bookmarks
-  // index URLs experiment isn't active.
-  static bool BookmarksIndexURLsValue();
-
-  // ---------------------------------------------------------
   // For the DisableInlining experiment that's part of the bundled omnibox
   // field trial.
 
@@ -304,7 +293,6 @@ class OmniboxFieldTrial {
   static const char kHQPAllowMatchInSchemeRule[];
   static const char kZeroSuggestRule[];
   static const char kZeroSuggestVariantRule[];
-  static const char kBookmarksIndexURLsRule[];
   static const char kDisableInliningRule[];
   static const char kAnswersInSuggestRule[];
   static const char kAddUWYTMatchEvenIfPromotedURLsRule[];

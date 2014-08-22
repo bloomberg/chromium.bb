@@ -73,9 +73,6 @@ class BookmarkProvider : public AutocompleteProvider {
   Profile* profile_;
   BookmarkModel* bookmark_model_;
 
-  // True if we should use matches in the URL for scoring.
-  const bool score_using_url_matches_;
-
   // Languages used during the URL formatting.
   std::string languages_;
 

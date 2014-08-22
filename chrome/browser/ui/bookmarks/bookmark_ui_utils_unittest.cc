@@ -18,7 +18,7 @@ namespace {
 
 TEST(BookmarkUIUtilsTest, HasBookmarkURLs) {
   test::TestBookmarkClient client;
-  scoped_ptr<BookmarkModel> model(client.CreateModel(false));
+  scoped_ptr<BookmarkModel> model(client.CreateModel());
 
   std::vector<const BookmarkNode*> nodes;
 
@@ -60,7 +60,7 @@ TEST(BookmarkUIUtilsTest, HasBookmarkURLs) {
 
 TEST(BookmarkUIUtilsTest, HasBookmarkURLsAllowedInIncognitoMode) {
   test::TestBookmarkClient client;
-  scoped_ptr<BookmarkModel> model(client.CreateModel(false));
+  scoped_ptr<BookmarkModel> model(client.CreateModel());
   TestingProfile profile;
 
   std::vector<const BookmarkNode*> nodes;
