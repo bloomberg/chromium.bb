@@ -197,28 +197,16 @@ void Rtcp::SendRtcpFromRtpReceiver(
     base::TimeDelta target_delay,
     const ReceiverRtcpEventSubscriber::RtcpEventMultiMap* rtcp_events,
     RtpReceiverStatistics* rtp_receiver_statistics) {
-  uint32 packet_type_flags = 0;
-
   base::TimeTicks now = clock_->NowTicks();
   RtcpReportBlock report_block;
   RtcpReceiverReferenceTimeReport rrtr;
 
   // Attach our NTP to all RTCP packets; with this information a "smart" sender
   // can make decisions based on how old the RTCP message is.
-  packet_type_flags |= kRtcpRrtr;
   ConvertTimeTicksToNtp(now, &rrtr.ntp_seconds, &rrtr.ntp_fraction);
   SaveLastSentNtpTime(now, rrtr.ntp_seconds, rrtr.ntp_fraction);
 
-  if (cast_message) {
-    packet_type_flags |= kRtcpCast;
-  }
-  if (rtcp_events) {
-    packet_type_flags |= kRtcpReceiverLog;
-  }
-  // If RTCP is in compound mode then we always send a RR.
   if (rtp_receiver_statistics) {
-    packet_type_flags |= kRtcpRr;
-
     report_block.remote_ssrc = 0;            // Not needed to set send side.
     report_block.media_ssrc = remote_ssrc_;  // SSRC of the RTP packet sender.
     if (rtp_receiver_statistics) {
@@ -240,45 +228,24 @@ void Rtcp::SendRtcpFromRtpReceiver(
       report_block.delay_since_last_sr = 0;
     }
   }
-  rtcp_sender_->SendRtcpFromRtpReceiver(packet_type_flags,
-                                        &report_block,
-                                        &rrtr,
-                                        cast_message,
-                                        rtcp_events,
-                                        target_delay);
+  rtcp_sender_->SendRtcpFromRtpReceiver(
+      rtp_receiver_statistics ? &report_block : NULL,
+      &rrtr,
+      cast_message,
+      rtcp_events,
+      target_delay);
 }
 
 void Rtcp::SendRtcpFromRtpSender(base::TimeTicks current_time,
                                  uint32 current_time_as_rtp_timestamp,
                                  uint32 send_packet_count,
                                  size_t send_octet_count) {
-  uint32 packet_type_flags = kRtcpSr;
   uint32 current_ntp_seconds = 0;
   uint32 current_ntp_fractions = 0;
   ConvertTimeTicksToNtp(current_time, &current_ntp_seconds,
                         &current_ntp_fractions);
   SaveLastSentNtpTime(current_time, current_ntp_seconds,
                       current_ntp_fractions);
-
-  RtcpDlrrReportBlock dlrr;
-  if (!time_last_report_received_.is_null()) {
-    packet_type_flags |= kRtcpDlrr;
-    dlrr.last_rr = last_report_truncated_ntp_;
-    uint32 delay_seconds = 0;
-    uint32 delay_fraction = 0;
-    base::TimeDelta delta = current_time - time_last_report_received_;
-    // TODO(hclam): DLRR is not used by any receiver. Consider removing
-    // it. There is one race condition in the computation of the time for
-    // DLRR: current time is submitted to this method while
-    // |time_last_report_received_| is updated just before that. This can
-    // happen if current time is not submitted synchronously.
-    if (delta < base::TimeDelta())
-      delta = base::TimeDelta();
-    ConvertTimeToFractions(delta.InMicroseconds(), &delay_seconds,
-                           &delay_fraction);
-
-    dlrr.delay_since_last_rr = ConvertToNtpDiff(delay_seconds, delay_fraction);
-  }
 
   RtcpSenderInfo sender_info;
   sender_info.ntp_seconds = current_ntp_seconds;
@@ -287,7 +254,7 @@ void Rtcp::SendRtcpFromRtpSender(base::TimeTicks current_time,
   sender_info.send_packet_count = send_packet_count;
   sender_info.send_octet_count = send_octet_count;
 
-  rtcp_sender_->SendRtcpFromRtpSender(packet_type_flags, sender_info, dlrr);
+  rtcp_sender_->SendRtcpFromRtpSender(sender_info);
 }
 
 void Rtcp::OnReceivedNtp(uint32 ntp_seconds, uint32 ntp_fraction) {

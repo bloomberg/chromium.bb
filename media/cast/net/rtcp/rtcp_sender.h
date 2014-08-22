@@ -51,7 +51,6 @@ class RtcpSender {
   // TODO(hclam): This method should be to build a packet instead of
   // sending it.
   void SendRtcpFromRtpReceiver(
-      uint32 packet_type_flags,
       const RtcpReportBlock* report_block,
       const RtcpReceiverReferenceTimeReport* rrtr,
       const RtcpCastMessage* cast_message,
@@ -60,9 +59,7 @@ class RtcpSender {
 
   // TODO(hclam): This method should be to build a packet instead of
   // sending it.
-  void SendRtcpFromRtpSender(uint32 packet_type_flags,
-                             const RtcpSenderInfo& sender_info,
-                             const RtcpDlrrReportBlock& dlrr);
+  void SendRtcpFromRtpSender(const RtcpSenderInfo& sender_info);
 
  private:
   void BuildRR(const RtcpReportBlock* report_block,

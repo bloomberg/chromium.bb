@@ -312,14 +312,6 @@ bool RtcpParser::ParseExtendedReport(base::BigEndianReader* reader,
           return false;
         break;
 
-      case 5:  // DLRR. RFC3611 Section 4.5.
-        if (block_length % 3 != 0)
-          return false;
-        for (int block = 0; block < block_length / 3; block++)
-          if (!ParseExtendedReportDelaySinceLastReceiverReport(reader))
-            return false;
-        return true;
-
       default:
         // Skip unknown item.
         if (!reader->Skip(block_length * 4))
@@ -339,24 +331,6 @@ bool RtcpParser::ParseExtendedReportReceiverReferenceTimeReport(
     return false;
 
   has_receiver_reference_time_report_ = true;
-  return true;
-}
-
-bool RtcpParser::ParseExtendedReportDelaySinceLastReceiverReport(
-    base::BigEndianReader* reader) {
-  uint32 ssrc, last_report, delay;
-  if (!reader->ReadU32(&ssrc) ||
-      !reader->ReadU32(&last_report) ||
-      !reader->ReadU32(&delay))
-    return false;
-
-  if (ssrc == remote_ssrc_) {
-    last_report_ = last_report;
-    delay_since_last_report_ = delay;
-    has_last_report_ = true;
-  }
-
-  has_last_report_ = true;
   return true;
 }
 

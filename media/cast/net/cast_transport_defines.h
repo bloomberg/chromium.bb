@@ -47,15 +47,6 @@ enum RtcpPacketFields {
   kPacketTypeHigh = 210,  // Port Mapping.
 };
 
-enum RtcpPacketField {
-    kRtcpSr     = 0x0002,
-    kRtcpRr     = 0x0004,
-    kRtcpDlrr   = 0x0400,
-    kRtcpRrtr   = 0x0800,
-    kRtcpCast   = 0x20000,
-    kRtcpReceiverLog = 0x80000,
-  };
-
 // Each uint16 represents one packet id within a cast frame.
 typedef std::set<uint16> PacketIdSet;
 // Each uint8 represents one cast frame.

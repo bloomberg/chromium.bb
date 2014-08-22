@@ -105,16 +105,6 @@ class RtcpSenderTest : public ::testing::Test {
 };
 
 TEST_F(RtcpSenderTest, RtcpReceiverReport) {
-  // Empty receiver report.
-  TestRtcpPacketBuilder p1;
-  p1.AddRr(kSendingSsrc, 0);
-  test_transport_.SetExpectedRtcpPacket(p1.GetPacket());
-
-  rtcp_sender_->SendRtcpFromRtpReceiver(
-      kRtcpRr, NULL, NULL, NULL, NULL, kDefaultDelay);
-
-  EXPECT_EQ(1, test_transport_.packet_count());
-
   // Receiver report with report block.
   TestRtcpPacketBuilder p2;
   p2.AddRr(kSendingSsrc, 1);
@@ -124,9 +114,9 @@ TEST_F(RtcpSenderTest, RtcpReceiverReport) {
   RtcpReportBlock report_block = GetReportBlock();
 
   rtcp_sender_->SendRtcpFromRtpReceiver(
-      kRtcpRr, &report_block, NULL, NULL, NULL, kDefaultDelay);
+      &report_block, NULL, NULL, NULL, kDefaultDelay);
 
-  EXPECT_EQ(2, test_transport_.packet_count());
+  EXPECT_EQ(1, test_transport_.packet_count());
 }
 
 TEST_F(RtcpSenderTest, RtcpReceiverReportWithRrtr) {
@@ -145,7 +135,6 @@ TEST_F(RtcpSenderTest, RtcpReceiverReportWithRrtr) {
   rrtr.ntp_fraction = kNtpLow;
 
   rtcp_sender_->SendRtcpFromRtpReceiver(
-      kRtcpRr | kRtcpRrtr,
       &report_block,
       &rrtr,
       NULL,
@@ -177,7 +166,6 @@ TEST_F(RtcpSenderTest, RtcpReceiverReportWithCast) {
       missing_packets;
 
   rtcp_sender_->SendRtcpFromRtpReceiver(
-      kRtcpRr | kRtcpCast,
       &report_block,
       NULL,
       &cast_message,
@@ -214,7 +202,6 @@ TEST_F(RtcpSenderTest, RtcpReceiverReportWithRrtraAndCastMessage) {
       missing_packets;
 
   rtcp_sender_->SendRtcpFromRtpReceiver(
-      kRtcpRr | kRtcpRrtr | kRtcpCast,
       &report_block,
       &rrtr,
       &cast_message,
@@ -257,8 +244,6 @@ TEST_F(RtcpSenderTest, RtcpReceiverReportWithRrtrCastMessageAndLog) {
   ReceiverRtcpEventSubscriber::RtcpEventMultiMap rtcp_events;
 
   rtcp_sender_->SendRtcpFromRtpReceiver(
-      kRtcpRr | kRtcpRrtr | kRtcpCast |
-          kRtcpReceiverLog,
       &report_block,
       &rrtr,
       &cast_message,
@@ -294,8 +279,6 @@ TEST_F(RtcpSenderTest, RtcpReceiverReportWithRrtrCastMessageAndLog) {
   EXPECT_EQ(2u, rtcp_events.size());
 
   rtcp_sender_->SendRtcpFromRtpReceiver(
-      kRtcpRr | kRtcpRrtr | kRtcpCast |
-          kRtcpReceiverLog,
       &report_block,
       &rrtr,
       &cast_message,
@@ -362,7 +345,6 @@ TEST_F(RtcpSenderTest, RtcpReceiverReportWithOversizedFrameLog) {
   event_subscriber.GetRtcpEventsAndReset(&rtcp_events);
 
   rtcp_sender_->SendRtcpFromRtpReceiver(
-      kRtcpRr | kRtcpReceiverLog,
       &report_block,
       NULL,
       NULL,
@@ -418,7 +400,6 @@ TEST_F(RtcpSenderTest, RtcpReceiverReportWithTooManyLogFrames) {
   event_subscriber.GetRtcpEventsAndReset(&rtcp_events);
 
   rtcp_sender_->SendRtcpFromRtpReceiver(
-      kRtcpRr | kRtcpReceiverLog,
       &report_block,
       NULL,
       NULL,
@@ -468,7 +449,6 @@ TEST_F(RtcpSenderTest, RtcpReceiverReportWithOldLogFrames) {
   event_subscriber.GetRtcpEventsAndReset(&rtcp_events);
 
   rtcp_sender_->SendRtcpFromRtpReceiver(
-      kRtcpRr | kRtcpReceiverLog,
       &report_block,
       NULL,
       NULL,
@@ -526,7 +506,6 @@ TEST_F(RtcpSenderTest, RtcpReceiverReportRedundancy) {
     event_subscriber.GetRtcpEventsAndReset(&rtcp_events);
 
     rtcp_sender_->SendRtcpFromRtpReceiver(
-        kRtcpRr | kRtcpReceiverLog,
         &report_block,
         NULL,
         NULL,
@@ -549,45 +528,12 @@ TEST_F(RtcpSenderTest, RtcpSenderReport) {
   sender_info.send_packet_count = kSendPacketCount;
   sender_info.send_octet_count = kSendOctetCount;
 
-  RtcpDlrrReportBlock dlrr_rb;
-  dlrr_rb.last_rr = kLastRr;
-  dlrr_rb.delay_since_last_rr = kDelayLastRr;
-
   // Sender report.
   TestRtcpPacketBuilder p;
   p.AddSr(kSendingSsrc, 0);
   test_transport_.SetExpectedRtcpPacket(p.GetPacket().Pass());
 
-  rtcp_sender_->SendRtcpFromRtpSender(kRtcpSr,
-                                      sender_info,
-                                      dlrr_rb);
-
-  EXPECT_EQ(1, test_transport_.packet_count());
-}
-
-TEST_F(RtcpSenderTest, RtcpSenderReportWithDlrr) {
-  RtcpSenderInfo sender_info;
-  sender_info.ntp_seconds = kNtpHigh;
-  sender_info.ntp_fraction = kNtpLow;
-  sender_info.rtp_timestamp = kRtpTimestamp;
-  sender_info.send_packet_count = kSendPacketCount;
-  sender_info.send_octet_count = kSendOctetCount;
-
-  // Sender report + dlrr.
-  TestRtcpPacketBuilder p1;
-  p1.AddSr(kSendingSsrc, 0);
-  p1.AddXrHeader(kSendingSsrc);
-  p1.AddXrDlrrBlock(kSendingSsrc);
-  test_transport_.SetExpectedRtcpPacket(p1.GetPacket().Pass());
-
-  RtcpDlrrReportBlock dlrr_rb;
-  dlrr_rb.last_rr = kLastRr;
-  dlrr_rb.delay_since_last_rr = kDelayLastRr;
-
-  rtcp_sender_->SendRtcpFromRtpSender(
-      kRtcpSr | kRtcpDlrr,
-      sender_info,
-      dlrr_rb);
+  rtcp_sender_->SendRtcpFromRtpSender(sender_info);
 
   EXPECT_EQ(1, test_transport_.packet_count());
 }

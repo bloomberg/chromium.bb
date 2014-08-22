@@ -247,7 +247,8 @@ TEST_F(RtcpParserTest, InjectSenderReportPacketWithDlrr) {
   RtcpParser parser2(kSourceSsrc, kSenderSsrc);
   EXPECT_TRUE(parser2.Parse(p.Reader()));
   ExpectSenderInfo(parser2);
-  ExpectLastReport(parser2);
+  // DLRRs are ignored.
+  EXPECT_FALSE(parser2.has_last_report());
 }
 
 TEST_F(RtcpParserTest, InjectReceiverReportPacketWithRrtr) {

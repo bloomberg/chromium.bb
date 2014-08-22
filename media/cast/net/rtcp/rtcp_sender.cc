@@ -154,32 +154,21 @@ RtcpSender::RtcpSender(PacedPacketSender* outgoing_transport,
 RtcpSender::~RtcpSender() {}
 
 void RtcpSender::SendRtcpFromRtpReceiver(
-    uint32 packet_type_flags,
     const RtcpReportBlock* report_block,
     const RtcpReceiverReferenceTimeReport* rrtr,
     const RtcpCastMessage* cast_message,
     const ReceiverRtcpEventSubscriber::RtcpEventMultiMap* rtcp_events,
     base::TimeDelta target_delay) {
-  if (packet_type_flags & kRtcpDlrr) {
-    NOTREACHED() << "Invalid argument";
-  }
   PacketRef packet(new base::RefCountedData<Packet>);
   packet->data.reserve(kMaxIpPacketSize);
-  if (packet_type_flags & kRtcpRr) {
+  if (report_block)
     BuildRR(report_block, &packet->data);
-  }
-  if (packet_type_flags & kRtcpRrtr) {
-    DCHECK(rrtr) << "Invalid argument";
+  if (rrtr)
     BuildRrtr(rrtr, &packet->data);
-  }
-  if (packet_type_flags & kRtcpCast) {
-    DCHECK(cast_message) << "Invalid argument";
+  if (cast_message)
     BuildCast(cast_message, target_delay, &packet->data);
-  }
-  if (packet_type_flags & kRtcpReceiverLog) {
-    DCHECK(rtcp_events) << "Invalid argument";
+  if (rtcp_events)
     BuildReceiverLog(*rtcp_events, &packet->data);
-  }
 
   if (packet->data.empty()) {
     NOTREACHED() << "Empty packet.";
@@ -190,23 +179,11 @@ void RtcpSender::SendRtcpFromRtpReceiver(
 }
 
 void RtcpSender::SendRtcpFromRtpSender(
-    uint32 packet_type_flags,
-    const RtcpSenderInfo& sender_info,
-    const RtcpDlrrReportBlock& dlrr) {
-  if (packet_type_flags & kRtcpRr ||
-      packet_type_flags & kRtcpRrtr ||
-      packet_type_flags & kRtcpCast ||
-      packet_type_flags & kRtcpReceiverLog) {
-    NOTREACHED() << "Invalid argument";
-  }
+    const RtcpSenderInfo& sender_info) {
   PacketRef packet(new base::RefCountedData<Packet>);
   packet->data.reserve(kMaxIpPacketSize);
-  if (packet_type_flags & kRtcpSr) {
-    BuildSR(sender_info, &packet->data);
-  }
-  if (packet_type_flags & kRtcpDlrr) {
-    BuildDlrrRb(dlrr, &packet->data);
-  }
+  BuildSR(sender_info, &packet->data);
+
   if (packet->data.empty()) {
     NOTREACHED() << "Empty packet.";
     return;  // Sanity - don't send empty packets.
