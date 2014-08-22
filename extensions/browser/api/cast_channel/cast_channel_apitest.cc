@@ -269,8 +269,7 @@ IN_PROC_BROWSER_TEST_F(CastChannelAPITest, MAYBE_TestGetLogs) {
 
 // TODO(munjal): Win Dbg has a workaround that makes RunExtensionSubtest
 // always return true without actually running the test. Remove when fixed.
-// Flaky on mac: crbug.com/393969
-#if (defined(OS_WIN) && !defined(NDEBUG)) || defined(OS_MACOSX)
+#if defined(OS_WIN) && !defined(NDEBUG)
 #define MAYBE_TestOpenError DISABLED_TestOpenError
 #else
 #define MAYBE_TestOpenError TestOpenError
@@ -291,9 +290,6 @@ IN_PROC_BROWSER_TEST_F(CastChannelAPITest, MAYBE_TestOpenError) {
 
   EXPECT_TRUE(RunExtensionSubtest("cast_channel/api",
                                   "test_open_error.html"));
-
-  ResultCatcher catcher;
-  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
 IN_PROC_BROWSER_TEST_F(CastChannelAPITest, TestOpenInvalidConnectInfo) {
