@@ -794,7 +794,8 @@ void DevToolsUIBindings::SetDelegate(Delegate* delegate) {
 }
 
 void DevToolsUIBindings::AttachTo(content::DevToolsAgentHost* agent_host) {
-  DCHECK(!agent_host_);
+  if (agent_host_)
+    Detach();
   agent_host_ = agent_host;
   agent_host_->AttachClient(this);
 }
@@ -806,8 +807,8 @@ void DevToolsUIBindings::Reattach() {
 }
 
 void DevToolsUIBindings::Detach() {
-  DCHECK(agent_host_);
-  agent_host_->DetachClient();
+  if (agent_host_)
+    agent_host_->DetachClient();
   agent_host_ = NULL;
 }
 
