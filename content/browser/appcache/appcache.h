@@ -14,7 +14,7 @@
 #include "base/time/time.h"
 #include "content/browser/appcache/appcache_database.h"
 #include "content/browser/appcache/appcache_entry.h"
-#include "content/browser/appcache/manifest_parser.h"
+#include "content/browser/appcache/appcache_manifest_parser.h"
 #include "content/common/content_export.h"
 #include "url/gurl.h"
 

@@ -179,11 +179,11 @@ ui/gfx/codec/png_codec.cc
 # Copyright The Chromium Authors and Apple Inc; BSD license. This third-party
 # code is taken from WebKit, the license for which we already pick up from
 # webkit/.
-content/browser/appcache/manifest_parser.cc
+content/browser/appcache/appcache_manifest_parser.cc
 # Copyright The Chromium Authors and Apple Inc; BSD license. This third-party
 # code is taken from WebKit, the license for which we already pick up from
 # webkit/.
-content/browser/appcache/manifest_parser.h
+content/browser/appcache/appcache_manifest_parser.h
 # Copyright The Chromium Authors and Netscape Communications Corporation; BSD
 # and (MPL, GPL v2 or LGPL v2) licenses. This third-party code is taken from
 # Mozilla, the license for which we already pick up from third_party/npapi/.
