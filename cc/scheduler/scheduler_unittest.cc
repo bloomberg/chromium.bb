@@ -1427,7 +1427,7 @@ void BeginFramesNotFromClient(bool begin_frame_scheduling_enabled,
   client.Reset();
 }
 
-// See: http://crbug.com/388901
+// See: http://crbug.com/380889
 TEST(SchedulerTest, DISABLED_SyntheticBeginFrames) {
   bool begin_frame_scheduling_enabled = false;
   bool throttle_frame_production = true;
@@ -1442,7 +1442,8 @@ TEST(SchedulerTest, VSyncThrottlingDisabled) {
                            throttle_frame_production);
 }
 
-TEST(SchedulerTest, SyntheticBeginFrames_And_VSyncThrottlingDisabled) {
+// See: http://crbug.com/380889
+TEST(SchedulerTest, DISABLED_SyntheticBeginFrames_And_VSyncThrottlingDisabled) {
   bool begin_frame_scheduling_enabled = false;
   bool throttle_frame_production = false;
   BeginFramesNotFromClient(begin_frame_scheduling_enabled,
@@ -1522,7 +1523,8 @@ void BeginFramesNotFromClient_SwapThrottled(bool begin_frame_scheduling_enabled,
   client.Reset();
 }
 
-TEST(SchedulerTest, SyntheticBeginFrames_SwapThrottled) {
+// See: http://crbug.com/380889
+TEST(SchedulerTest, DISABLED_SyntheticBeginFrames_SwapThrottled) {
   bool begin_frame_scheduling_enabled = false;
   bool throttle_frame_production = true;
   BeginFramesNotFromClient_SwapThrottled(begin_frame_scheduling_enabled,
@@ -1536,8 +1538,9 @@ TEST(SchedulerTest, VSyncThrottlingDisabled_SwapThrottled) {
                                          throttle_frame_production);
 }
 
+// See: http://crbug.com/380889
 TEST(SchedulerTest,
-     SyntheticBeginFrames_And_VSyncThrottlingDisabled_SwapThrottled) {
+     DISABLED_SyntheticBeginFrames_And_VSyncThrottlingDisabled_SwapThrottled) {
   bool begin_frame_scheduling_enabled = false;
   bool throttle_frame_production = false;
   BeginFramesNotFromClient_SwapThrottled(begin_frame_scheduling_enabled,
@@ -1875,8 +1878,10 @@ TEST(SchedulerTest, DidLoseOutputSurfaceDuringBeginRetroFrameRunning) {
   EXPECT_NO_ACTION(client);
 }
 
-TEST(SchedulerTest,
-     StopBeginFrameAfterDidLoseOutputSurfaceWithSyntheticBeginFrameSource) {
+// See: http://crbug.com/380889
+TEST(
+    SchedulerTest,
+    DISABLED_StopBeginFrameAfterDidLoseOutputSurfaceWithSyntheticBeginFrameSource) {
   FakeSchedulerClient client;
   SchedulerSettings scheduler_settings;
   scheduler_settings.begin_frame_scheduling_enabled = false;
