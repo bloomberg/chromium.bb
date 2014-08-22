@@ -277,7 +277,30 @@ PrefService* GetPrefs(content::BrowserContext* context) {
   return user_prefs::UserPrefs::Get(context);
 }
 
-bool custom_id_ranges_initialized = false;
+bool ExtensionPatternMatch(const extensions::URLPatternSet& patterns,
+                           const GURL& url) {
+  // No patterns means no restriction, so that implicitly matches.
+  if (patterns.is_empty())
+    return true;
+  return patterns.MatchesURL(url);
+}
+
+const GURL& GetDocumentURL(const content::ContextMenuParams& params) {
+  return params.frame_url.is_empty() ? params.page_url : params.frame_url;
+}
+
+content::Referrer CreateSaveAsReferrer(
+    const GURL& url,
+    const content::ContextMenuParams& params) {
+  const GURL& referring_url = GetDocumentURL(params);
+  return content::Referrer::SanitizeForRequest(
+      url,
+      content::Referrer(referring_url.GetAsReferrer(), params.referrer_policy));
+}
+
+bool g_custom_id_ranges_initialized = false;
+
+const int kSpellcheckRadioGroup = 1;
 
 }  // namespace
 
@@ -293,8 +316,6 @@ bool RenderViewContextMenu::IsInternalResourcesURL(const GURL& url) {
   return url.host() == chrome::kChromeUISyncResourcesHost;
 }
 
-static const int kSpellcheckRadioGroup = 1;
-
 RenderViewContextMenu::RenderViewContextMenu(
     content::RenderFrameHost* render_frame_host,
     const content::ContextMenuParams& params)
@@ -306,8 +327,8 @@ RenderViewContextMenu::RenderViewContextMenu(
       protocol_handler_submenu_model_(this),
       protocol_handler_registry_(
           ProtocolHandlerRegistryFactory::GetForBrowserContext(GetProfile())) {
-  if (!custom_id_ranges_initialized) {
-    custom_id_ranges_initialized = true;
+  if (!g_custom_id_ranges_initialized) {
+    g_custom_id_ranges_initialized = true;
     SetContentCustomCommandIdRange(IDC_CONTENT_CONTEXT_CUSTOM_FIRST,
                                    IDC_CONTENT_CONTEXT_CUSTOM_LAST);
   }
@@ -320,18 +341,10 @@ RenderViewContextMenu::~RenderViewContextMenu() {
 
 // Menu construction functions -------------------------------------------------
 
-static bool ExtensionPatternMatch(const extensions::URLPatternSet& patterns,
-                                  const GURL& url) {
-  // No patterns means no restriction, so that implicitly matches.
-  if (patterns.is_empty())
-    return true;
-  return patterns.MatchesURL(url);
-}
-
 // static
 bool RenderViewContextMenu::ExtensionContextAndPatternMatch(
     const content::ContextMenuParams& params,
-    MenuItem::ContextList contexts,
+    const MenuItem::ContextList& contexts,
     const extensions::URLPatternSet& target_url_patterns) {
   const bool has_link = !params.link_url.is_empty();
   const bool has_selection = !params.selection_text.empty();
@@ -379,10 +392,6 @@ bool RenderViewContextMenu::ExtensionContextAndPatternMatch(
     return true;
 
   return false;
-}
-
-static const GURL& GetDocumentURL(const content::ContextMenuParams& params) {
-  return params.frame_url.is_empty() ? params.page_url : params.frame_url;
 }
 
 // static
@@ -835,13 +844,13 @@ void RenderViewContextMenu::AppendSearchProvider() {
                      base::ASCIIToUTF16(" "), &params_.selection_text);
 
   AutocompleteMatch match;
-  AutocompleteClassifierFactory::GetForProfile(GetProfile())
-      ->Classify(params_.selection_text,
-                 false,
-                 false,
-                 metrics::OmniboxEventProto::INVALID_SPEC,
-                 &match,
-                 NULL);
+  AutocompleteClassifierFactory::GetForProfile(GetProfile())->Classify(
+      params_.selection_text,
+      false,
+      false,
+      metrics::OmniboxEventProto::INVALID_SPEC,
+      &match,
+      NULL);
   selection_navigation_url_ = match.destination_url;
   if (!selection_navigation_url_.is_valid())
     return;
@@ -1249,15 +1258,11 @@ bool RenderViewContextMenu::IsCommandIdChecked(int id) const {
     return true;
 
   // See if the video is set to looping.
-  if (id == IDC_CONTENT_CONTEXT_LOOP) {
-    return (params_.media_flags &
-            WebContextMenuData::MediaLoop) != 0;
-  }
+  if (id == IDC_CONTENT_CONTEXT_LOOP)
+    return (params_.media_flags & WebContextMenuData::MediaLoop) != 0;
 
-  if (id == IDC_CONTENT_CONTEXT_CONTROLS) {
-    return (params_.media_flags &
-            WebContextMenuData::MediaControls) != 0;
-  }
+  if (id == IDC_CONTENT_CONTEXT_CONTROLS)
+    return (params_.media_flags & WebContextMenuData::MediaControls) != 0;
 
   // Extension items.
   if (ContextMenuMatcher::IsExtensionsCustomCommandId(id))
@@ -1284,18 +1289,18 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       id <= IDC_CONTENT_CONTEXT_PROTOCOL_HANDLER_LAST) {
     ProtocolHandlerRegistry::ProtocolHandlerList handlers =
         GetHandlersForLinkUrl();
-    if (handlers.empty()) {
+    if (handlers.empty())
       return;
-    }
+
     content::RecordAction(
         UserMetricsAction("RegisterProtocolHandler.ContextMenu_Open"));
     int handlerIndex = id - IDC_CONTENT_CONTEXT_PROTOCOL_HANDLER_FIRST;
     WindowOpenDisposition disposition =
         ForceNewTabDispositionFromEventFlags(event_flags);
-    OpenURL(
-        handlers[handlerIndex].TranslateUrl(params_.link_url),
-        params_.frame_url.is_empty() ? params_.page_url : params_.frame_url,
-        disposition, content::PAGE_TRANSITION_LINK);
+    OpenURL(handlers[handlerIndex].TranslateUrl(params_.link_url),
+            GetDocumentURL(params_),
+            disposition,
+            content::PAGE_TRANSITION_LINK);
     return;
   }
 
@@ -1303,19 +1308,18 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
     case IDC_CONTENT_CONTEXT_OPENLINKNEWTAB: {
       Browser* browser =
           chrome::FindBrowserWithWebContents(source_web_contents_);
-      OpenURL(
-          params_.link_url,
-          params_.frame_url.is_empty() ? params_.page_url : params_.frame_url,
-          !browser || browser->is_app() ?
+      OpenURL(params_.link_url,
+              GetDocumentURL(params_),
+              !browser || browser->is_app() ?
                   NEW_FOREGROUND_TAB : NEW_BACKGROUND_TAB,
-          content::PAGE_TRANSITION_LINK);
+              content::PAGE_TRANSITION_LINK);
       break;
     }
     case IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW:
-      OpenURL(
-          params_.link_url,
-          params_.frame_url.is_empty() ? params_.page_url : params_.frame_url,
-          NEW_WINDOW, content::PAGE_TRANSITION_LINK);
+      OpenURL(params_.link_url,
+              GetDocumentURL(params_),
+              NEW_WINDOW,
+              content::PAGE_TRANSITION_LINK);
       break;
 
     case IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD:
@@ -1326,12 +1330,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
     case IDC_CONTENT_CONTEXT_SAVELINKAS: {
       RecordDownloadSource(DOWNLOAD_INITIATED_BY_CONTEXT_MENU);
       const GURL& url = params_.link_url;
-      const GURL& referring_url =
-          params_.frame_url.is_empty() ? params_.page_url : params_.frame_url;
-      content::Referrer referrer = content::Referrer::SanitizeForRequest(
-          url,
-          content::Referrer(referring_url.GetAsReferrer(),
-                            params_.referrer_policy));
+      content::Referrer referrer = CreateSaveAsReferrer(url, params_);
       DownloadManager* dlm =
           BrowserContext::GetDownloadManager(browser_context_);
       scoped_ptr<DownloadUrlParameters> dl_params(
@@ -1353,12 +1352,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
         // TODO(zino): We can use SaveImageAt() like a case of canvas.
         RecordDownloadSource(DOWNLOAD_INITIATED_BY_CONTEXT_MENU);
         const GURL& url = params_.src_url;
-        const GURL& referring_url =
-            params_.frame_url.is_empty() ? params_.page_url : params_.frame_url;
-        content::Referrer referrer = content::Referrer::SanitizeForRequest(
-            url,
-            content::Referrer(referring_url.GetAsReferrer(),
-                              params_.referrer_policy));
+        content::Referrer referrer = CreateSaveAsReferrer(url, params_);
         source_web_contents_->SaveFrame(url, referrer);
       }
       break;
@@ -1383,10 +1377,10 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
 
     case IDC_CONTENT_CONTEXT_OPENIMAGENEWTAB:
     case IDC_CONTENT_CONTEXT_OPENAVNEWTAB:
-      OpenURL(
-          params_.src_url,
-          params_.frame_url.is_empty() ? params_.page_url : params_.frame_url,
-          NEW_BACKGROUND_TAB, content::PAGE_TRANSITION_LINK);
+      OpenURL(params_.src_url,
+              GetDocumentURL(params_),
+              NEW_BACKGROUND_TAB,
+              content::PAGE_TRANSITION_LINK);
       break;
 
     case IDC_CONTENT_CONTEXT_PLAYPAUSE: {
@@ -1437,9 +1431,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       UserMetricsAction("PluginContextMenu_RotateClockwise"));
       PluginActionAt(
           gfx::Point(params_.x, params_.y),
-          WebPluginAction(
-              WebPluginAction::Rotate90Clockwise,
-              true));
+          WebPluginAction(WebPluginAction::Rotate90Clockwise, true));
       break;
 
     case IDC_CONTENT_CONTEXT_ROTATECCW:
@@ -1447,9 +1439,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       UserMetricsAction("PluginContextMenu_RotateCounterclockwise"));
       PluginActionAt(
           gfx::Point(params_.x, params_.y),
-          WebPluginAction(
-              WebPluginAction::Rotate90Counterclockwise,
-              true));
+          WebPluginAction(WebPluginAction::Rotate90Counterclockwise, true));
       break;
 
     case IDC_BACK:

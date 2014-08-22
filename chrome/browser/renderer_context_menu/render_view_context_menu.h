@@ -71,7 +71,7 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
   static bool IsInternalResourcesURL(const GURL& url);
   static bool ExtensionContextAndPatternMatch(
       const content::ContextMenuParams& params,
-      extensions::MenuItem::ContextList contexts,
+      const extensions::MenuItem::ContextList& contexts,
       const extensions::URLPatternSet& target_url_patterns);
   static bool MenuItemMatchesParams(const content::ContextMenuParams& params,
                                     const extensions::MenuItem* item);
