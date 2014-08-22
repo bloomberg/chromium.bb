@@ -190,7 +190,7 @@ TEST(SubstitutionWriter, TargetSubstitutions) {
 
   EXPECT_TRUE(SubstitutionWriter::GetTargetSubstitution(
       &target, SUBSTITUTION_ROOT_OUT_DIR, &result));
-  EXPECT_EQ("", result);
+  EXPECT_EQ(".", result);
 
   EXPECT_TRUE(SubstitutionWriter::GetTargetSubstitution(
       &target, SUBSTITUTION_TARGET_GEN_DIR, &result));
@@ -253,5 +253,5 @@ TEST(SubstitutionWriter, LinkerSubstitutions) {
 
   OutputFile output = SubstitutionWriter::ApplyPatternToLinkerAsOutputFile(
       &target, tool, pattern);
-  EXPECT_EQ("libbaz.so", output.value());
+  EXPECT_EQ("./libbaz.so", output.value());
 }

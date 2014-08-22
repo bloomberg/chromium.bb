@@ -17,65 +17,18 @@
 
 namespace {
 
-// This happens when the output of a substitution looks like
-// <some_output_dir>/<other_stuff>. and we're computing a file in the output
-// directory. If <some_output_dir> resolves to the empty string because it
-// refers to the root build directory, the result will start with a slash which
-// is wrong.
-//
-// There are several possible solutions:
-//
-//  - Could convert empty directories to a ".". However, this looks weird in the
-//    Ninja file and Ninja doesn't canonicalize this away.
-//
-//  - Make all substitutions compute SourceFiles and then convert to
-//    OutputFiles. The root_build_dir will never be empty in this case, and the
-//    Rebase function will properly strip the slash away when it is rebased to
-//    be relative to the output directory. However, we never need compiler and
-//    linker outputs as SourceFiles, and we do a lot of these conversions which
-//    requires a lot of unnecessary path rebasing.
-//
-//  - Detect this as a special case and delete the slash.
-//
-// This function implements the special case solution. This problem only arises
-// in the very specific case where we're appending a literal beginning in a
-// slash, the result string is empty, and the preceeding pattern identifies
-// an output directory.
-//
-// If we find too many problems with this implementation, it would probably be
-// cleanest to implement the "round trip through SourceFile" solution for
-// simplicity and guaranteed correctness, rather than adding even more special
-// cases.
-//
-// This function only needs to be called when computing substitutions as
-// OutputFiles (which are relative to the build dir) and not round-tripping
-// through SourceFiles.
-void AppendLiteralWithPossibleSlashEliding(
-    const std::vector<SubstitutionPattern::Subrange>& ranges,
-    size_t literal_index,
-    std::string* result) {
-  const std::string& literal = ranges[literal_index].literal;
+// Sets the given directory string to the destination, trimming any trailing
+// slash from the directory (SourceDirs and OutputFiles representing
+// directories will end in a trailing slash). If the directory is empty,
+// it will be replaced with a ".".
+void SetDirOrDotWithNoSlash(const std::string& dir, std::string* dest) {
+  if (!dir.empty() && dir[dir.size() - 1] == '/')
+    dest->assign(dir.data(), dir.size() - 1);
+  else
+    dest->assign(dir);
 
-  if (// When the literal's index is 0 and it begins with a slash the user
-      // must have wanted it to start with a slash. Likewise, if it's 2 or
-      // more, it's impossible to have a length > 1 sequence of substitutions
-      // that both make sense as a path and resolve to the build directory.
-      literal_index != 1 ||
-      // When the result is nonempty, appending the slash as a separator is
-      // always OK.
-      !result->empty() ||
-      // If the literal doesn't begin in a slash, appending directly is fine.
-      literal.empty() || literal[0] != '/') {
-    result->append(literal);
-    return;
-  }
-
-  // If we get here, we need to collapse the slash. Assert that the first
-  // substitution should have ended up in the output directory. This should
-  // have already been checked since linker and compiler outputs (which is
-  // what this is used for) should always bein the output directory.
-  DCHECK(SubstitutionIsInOutputDir(ranges[0].type));
-  result->append(&literal[1], literal.size() - 1);
+  if (dest->empty())
+    dest->push_back('.');
 }
 
 }  // namespace
@@ -486,20 +439,24 @@ bool SubstitutionWriter::GetTargetSubstitution(
           !target->settings()->is_default());
       break;
     case SUBSTITUTION_ROOT_GEN_DIR:
-      *result = GetToolchainGenDirAsOutputFile(target->settings()).value();
-      TrimTrailingSlash(result);
+      SetDirOrDotWithNoSlash(
+          GetToolchainGenDirAsOutputFile(target->settings()).value(),
+          result);
       break;
     case SUBSTITUTION_ROOT_OUT_DIR:
-      *result = target->settings()->toolchain_output_subdir().value();
-      TrimTrailingSlash(result);
+      SetDirOrDotWithNoSlash(
+          target->settings()->toolchain_output_subdir().value(),
+          result);
       break;
     case SUBSTITUTION_TARGET_GEN_DIR:
-      *result = GetTargetGenDirAsOutputFile(target).value();
-      TrimTrailingSlash(result);
+      SetDirOrDotWithNoSlash(
+          GetTargetGenDirAsOutputFile(target).value(),
+          result);
       break;
     case SUBSTITUTION_TARGET_OUT_DIR:
-      *result = GetTargetOutputDirAsOutputFile(target).value();
-      TrimTrailingSlash(result);
+      SetDirOrDotWithNoSlash(
+          GetTargetOutputDirAsOutputFile(target).value(),
+          result);
       break;
     case SUBSTITUTION_TARGET_OUTPUT_NAME:
       *result = target->GetComputedOutputName(true);
@@ -528,8 +485,7 @@ OutputFile SubstitutionWriter::ApplyPatternToCompilerAsOutputFile(
   for (size_t i = 0; i < pattern.ranges().size(); i++) {
     const SubstitutionPattern::Subrange& subrange = pattern.ranges()[i];
     if (subrange.type == SUBSTITUTION_LITERAL) {
-      AppendLiteralWithPossibleSlashEliding(
-          pattern.ranges(), i, &result.value());
+      result.value().append(subrange.literal);
     } else {
       result.value().append(
           GetCompilerSubstitution(target, source, subrange.type));
@@ -575,8 +531,7 @@ OutputFile SubstitutionWriter::ApplyPatternToLinkerAsOutputFile(
   for (size_t i = 0; i < pattern.ranges().size(); i++) {
     const SubstitutionPattern::Subrange& subrange = pattern.ranges()[i];
     if (subrange.type == SUBSTITUTION_LITERAL) {
-      AppendLiteralWithPossibleSlashEliding(
-          pattern.ranges(), i, &result.value());
+      result.value().append(subrange.literal);
     } else {
       result.value().append(GetLinkerSubstitution(target, tool, subrange.type));
     }
