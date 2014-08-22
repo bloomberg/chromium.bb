@@ -2142,7 +2142,7 @@ function entryBoxMousedown(event) {
 }
 
 /**
- * Handle click event for entryBox labels.
+ * Handle click event for entryBoxes.
  * @param {!Event} event A click event.
  */
 function entryBoxClick(event) {
