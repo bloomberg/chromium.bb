@@ -38,9 +38,9 @@ void AutofillPopupViewAndroid::Show() {
 }
 
 void AutofillPopupViewAndroid::Hide() {
+  controller_ = NULL;
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_AutofillPopupBridge_hide(env, java_object_.obj());
-  delete this;
 }
 
 void AutofillPopupViewAndroid::UpdateBoundsAndRedrawPopup() {
@@ -84,8 +84,11 @@ void AutofillPopupViewAndroid::SuggestionSelected(JNIEnv* env,
   controller_->AcceptSuggestion(list_index);
 }
 
-void AutofillPopupViewAndroid::RequestHide(JNIEnv* env, jobject obj) {
-  controller_->Hide();
+void AutofillPopupViewAndroid::PopupDismissed(JNIEnv* env, jobject obj) {
+  if (controller_)
+    controller_->ViewDestroyed();
+
+  delete this;
 }
 
 void AutofillPopupViewAndroid::InvalidateRow(size_t) {}

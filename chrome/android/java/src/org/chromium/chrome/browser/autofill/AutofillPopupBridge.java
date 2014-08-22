@@ -35,7 +35,7 @@ public class AutofillPopupBridge implements AutofillPopupDelegate{
             new Handler().post(new Runnable() {
                 @Override
                 public void run() {
-                    requestHide();
+                    dismissed();
                 }
             });
         } else {
@@ -51,8 +51,8 @@ public class AutofillPopupBridge implements AutofillPopupDelegate{
     }
 
     @Override
-    public void requestHide() {
-        nativeRequestHide(mNativeAutofillPopup);
+    public void dismissed() {
+        nativePopupDismissed(mNativeAutofillPopup);
     }
 
     @Override
@@ -109,7 +109,7 @@ public class AutofillPopupBridge implements AutofillPopupDelegate{
         array[index] = new AutofillSuggestion(label, sublabel, uniqueId);
     }
 
-    private native void nativeRequestHide(long nativeAutofillPopupViewAndroid);
+    private native void nativePopupDismissed(long nativeAutofillPopupViewAndroid);
     private native void nativeSuggestionSelected(long nativeAutofillPopupViewAndroid,
             int listIndex);
 }

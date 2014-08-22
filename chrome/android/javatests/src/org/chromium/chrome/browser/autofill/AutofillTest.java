@@ -82,7 +82,7 @@ public class AutofillTest extends ChromeShellTestBase {
         }
 
         @Override
-        public void requestHide() {
+        public void dismissed() {
         }
     }
 

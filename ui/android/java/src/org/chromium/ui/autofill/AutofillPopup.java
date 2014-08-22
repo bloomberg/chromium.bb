@@ -6,8 +6,11 @@ package org.chromium.ui.autofill;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.ListPopupWindow;
+import android.widget.PopupWindow;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.ui.DropdownAdapter;
@@ -15,6 +18,7 @@ import org.chromium.ui.DropdownItem;
 import org.chromium.ui.DropdownPopupWindow;
 import org.chromium.ui.base.ViewAndroidDelegate;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -23,7 +27,8 @@ import java.util.List;
 /**
  * The Autofill suggestion popup that lists relevant suggestions.
  */
-public class AutofillPopup extends DropdownPopupWindow implements AdapterView.OnItemClickListener {
+public class AutofillPopup extends DropdownPopupWindow implements AdapterView.OnItemClickListener,
+        PopupWindow.OnDismissListener {
 
     /**
      * Constants defining types of Autofill suggestion entries.
@@ -47,9 +52,9 @@ public class AutofillPopup extends DropdownPopupWindow implements AdapterView.On
      */
     public interface AutofillPopupDelegate {
         /**
-         * Requests the controller to hide AutofillPopup.
+         * Informs the controller the AutofillPopup was hidden.
          */
-        public void requestHide();
+        public void dismissed();
 
         /**
          * Handles the selection of an Autofill suggestion from an AutofillPopup.
@@ -71,6 +76,7 @@ public class AutofillPopup extends DropdownPopupWindow implements AdapterView.On
         mAutofillCallback = autofillCallback;
 
         setOnItemClickListener(this);
+        setOnDismissListener(this);
     }
 
     /**
@@ -96,21 +102,27 @@ public class AutofillPopup extends DropdownPopupWindow implements AdapterView.On
         show();
         ApiCompatibilityUtils.setLayoutDirection(getListView(),
                 isRtl ? View.LAYOUT_DIRECTION_RTL : View.LAYOUT_DIRECTION_LTR);
-    }
 
-    /**
-     * Overrides the default dismiss behavior to request the controller to dismiss the view.
-     */
-    @Override
-    public void dismiss() {
-        mAutofillCallback.requestHide();
+        // HACK: The ListPopupWindow's mPopup automatically dismisses on an outside tap. There's
+        // no way to override it or prevent it, except reaching into ListPopupWindow's hidden
+        // API. This allows the C++ controller to completely control showing/hiding the popup.
+        // See http://crbug.com/400601
+        try {
+            Method setForceIgnoreOutsideTouch = ListPopupWindow.class.getMethod(
+                    "setForceIgnoreOutsideTouch", new Class[] { boolean.class });
+            setForceIgnoreOutsideTouch.invoke(this, new Object[] { true });
+        } catch (Exception e) {
+            Log.e("AutofillPopup",
+                    "ListPopupWindow.setForceIgnoreOutsideTouch not found",
+                    e);
+        }
     }
 
     /**
      * Hides the popup.
      */
     public void hide() {
-        super.dismiss();
+        dismiss();
     }
 
     @Override
@@ -119,5 +131,10 @@ public class AutofillPopup extends DropdownPopupWindow implements AdapterView.On
         int listIndex = mSuggestions.indexOf(adapter.getItem(position));
         assert listIndex > -1;
         mAutofillCallback.suggestionSelected(listIndex);
+    }
+
+    @Override
+    public void onDismiss() {
+        mAutofillCallback.dismissed();
     }
 }

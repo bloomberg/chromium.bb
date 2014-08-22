@@ -50,7 +50,7 @@ public class AwAutofillClient {
                 mContentViewCore.getViewAndroidDelegate(),
                 new AutofillPopup.AutofillPopupDelegate() {
                     @Override
-                    public void requestHide() { }
+                    public void dismissed() { }
                     @Override
                     public void suggestionSelected(int listIndex) {
                         nativeSuggestionSelected(mNativeAwAutofillClient, listIndex);
