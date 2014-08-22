@@ -323,12 +323,6 @@ void ExtensionActionAPI::PageActionExecuted(content::BrowserContext* context,
                                             int tab_id,
                                             const std::string& url,
                                             int button) {
-  DispatchOldPageActionEvent(context,
-                             page_action.extension_id(),
-                             page_action.id(),
-                             tab_id,
-                             url,
-                             button);
   WebContents* web_contents = NULL;
   if (!ExtensionTabUtil::GetTabById(
            tab_id,
@@ -357,27 +351,6 @@ void ExtensionActionAPI::DispatchEventToExtension(
   event->user_gesture = EventRouter::USER_GESTURE_ENABLED;
   EventRouter::Get(context)
       ->DispatchEventToExtension(extension_id, event.Pass());
-}
-
-// static
-void ExtensionActionAPI::DispatchOldPageActionEvent(
-    content::BrowserContext* context,
-    const std::string& extension_id,
-    const std::string& page_action_id,
-    int tab_id,
-    const std::string& url,
-    int button) {
-  scoped_ptr<base::ListValue> args(new base::ListValue());
-  args->Append(new base::StringValue(page_action_id));
-
-  base::DictionaryValue* data = new base::DictionaryValue();
-  data->Set(page_actions_keys::kTabIdKey, new base::FundamentalValue(tab_id));
-  data->Set(page_actions_keys::kTabUrlKey, new base::StringValue(url));
-  data->Set(page_actions_keys::kButtonKey,
-            new base::FundamentalValue(button));
-  args->Append(data);
-
-  DispatchEventToExtension(context, extension_id, "pageActions", args.Pass());
 }
 
 // static

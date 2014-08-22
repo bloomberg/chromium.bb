@@ -99,16 +99,6 @@ class ExtensionActionAPI : public BrowserContextKeyedAPI {
                                        const std::string& event_name,
                                        scoped_ptr<base::ListValue> event_args);
 
-  // Called to dispatch a deprecated style page action click event that was
-  // registered like:
-  //   chrome.pageActions["name"].addListener(function(actionId, info){})
-  static void DispatchOldPageActionEvent(content::BrowserContext* context,
-                                         const std::string& extension_id,
-                                         const std::string& page_action_id,
-                                         int tab_id,
-                                         const std::string& url,
-                                         int button);
-
   // Called when either a browser or page action is executed. Figures out which
   // event to send based on what the extension wants.
   static void ExtensionActionExecuted(content::BrowserContext* context,
