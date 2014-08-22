@@ -140,6 +140,10 @@ scoped_ptr<PasswordForm> FormFromAttributes(GnomeKeyringAttributeList* attrs) {
   int64 date_synced = 0;
   base::StringToInt64(string_attr_map["date_synced"], &date_synced);
   form->date_synced = base::Time::FromInternalValue(date_synced);
+  form->display_name = UTF8ToUTF16(string_attr_map["display_name"]);
+  form->avatar_url = GURL(string_attr_map["avatar_url"]);
+  form->federation_url = GURL(string_attr_map["federation_url"]);
+  form->is_zero_click = uint_attr_map["is_zero_click"];
 
   return form.Pass();
 }
@@ -222,6 +226,10 @@ const GnomeKeyringPasswordSchema kGnomeSchema = {
     { "type", GNOME_KEYRING_ATTRIBUTE_TYPE_UINT32 },
     { "times_used", GNOME_KEYRING_ATTRIBUTE_TYPE_UINT32 },
     { "date_synced", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING },
+    { "display_name", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING },
+    { "avatar_url", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING },
+    { "federation_url", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING },
+    { "is_zero_click", GNOME_KEYRING_ATTRIBUTE_TYPE_UINT32 },
     // This field is always "chrome" so that we can search for it.
     { "application", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING },
     { NULL }
@@ -340,6 +348,10 @@ void GKRMethod::AddLogin(const PasswordForm& form, const char* app_string) {
       "times_used", form.times_used,
       "scheme", form.scheme,
       "date_synced", base::Int64ToString(date_synced).c_str(),
+      "display_name", UTF16ToUTF8(form.display_name).c_str(),
+      "avatar_url", form.avatar_url.spec().c_str(),
+      "federation_url", form.federation_url.spec().c_str(),
+      "is_zero_click", form.is_zero_click,
       "application", app_string,
       NULL);
 }

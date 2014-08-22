@@ -135,6 +135,10 @@ TEST_F(LoginDatabaseTest, Logins) {
   form.times_used = 1;
   form.form_data.name = ASCIIToUTF16("form_name");
   form.date_synced = base::Time::Now();
+  form.display_name = ASCIIToUTF16("Mr. Smith");
+  form.avatar_url = GURL("https://accounts.google.com/Avatar");
+  form.federation_url = GURL("https://accounts.google.com/federation");
+  form.is_zero_click = true;
 
   // Add it and make sure it is there and that all the fields were retrieved
   // correctly.
@@ -589,6 +593,11 @@ static bool AddTimestampedLogin(LoginDatabase* db,
   form.password_element = ASCIIToUTF16(unique_string);
   form.submit_element = ASCIIToUTF16("signIn");
   form.signon_realm = url;
+  form.display_name = ASCIIToUTF16(unique_string);
+  form.avatar_url = GURL("https://accounts.google.com/Avatar");
+  form.federation_url = GURL("https://accounts.google.com/federation");
+  form.is_zero_click = true;
+
   if (date_is_creation)
     form.date_created = time;
   else
@@ -709,6 +718,10 @@ TEST_F(LoginDatabaseTest, BlacklistedLogins) {
   form.blacklisted_by_user = true;
   form.scheme = PasswordForm::SCHEME_HTML;
   form.date_synced = base::Time::Now();
+  form.display_name = ASCIIToUTF16("Mr. Smith");
+  form.avatar_url = GURL("https://accounts.google.com/Avatar");
+  form.federation_url = GURL("https://accounts.google.com/federation");
+  form.is_zero_click = true;
   EXPECT_EQ(AddChangeForForm(form), db_.AddLogin(form));
 
   // Get all non-blacklisted logins (should be none).
@@ -926,6 +939,10 @@ TEST_F(LoginDatabaseTest, UpdateLogin) {
   form.blacklisted_by_user = true;
   form.scheme = PasswordForm::SCHEME_BASIC;
   form.type = PasswordForm::TYPE_GENERATED;
+  form.display_name = ASCIIToUTF16("Mr. Smith");
+  form.avatar_url = GURL("https://accounts.google.com/Avatar");
+  form.federation_url = GURL("https://accounts.google.com/federation");
+  form.is_zero_click = true;
   EXPECT_EQ(UpdateChangeForForm(form), db_.UpdateLogin(form));
 
   ScopedVector<autofill::PasswordForm> result;

@@ -137,7 +137,7 @@ class NativeBackendKWallet : public PasswordStoreX::NativeBackend {
 
   // In case the fields in the pickle ever change, version them so we can try to
   // read old pickles. (Note: do not eat old pickles past the expiration date.)
-  static const int kPickleVersion = 3;
+  static const int kPickleVersion = 4;
 
   // Generates a profile-specific folder name based on profile_id_.
   std::string GetProfileSpecificFolderName() const;

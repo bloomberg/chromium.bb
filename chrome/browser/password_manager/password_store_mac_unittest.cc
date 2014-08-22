@@ -203,11 +203,15 @@ static PasswordForm* CreatePasswordFormFromData(
     form->password_element = WideToUTF16(form_data.password_element);
   if (form_data.username_value) {
     form->username_value = WideToUTF16(form_data.username_value);
+    form->display_name = form->username_value;
+    form->is_zero_click = true;
     if (form_data.password_value)
       form->password_value = WideToUTF16(form_data.password_value);
   } else {
     form->blacklisted_by_user = true;
   }
+  form->avatar_url = GURL("https://accounts.google.com/Avatar");
+  form->federation_url = GURL("https://accounts.google.com/login");
   return form;
 }
 
@@ -250,6 +254,9 @@ static void CheckFormsAgainstExpectations(
     if (expectation->username_value) {
       EXPECT_EQ(WideToUTF16(expectation->username_value),
                 form->username_value) << test_label;
+      EXPECT_EQ(WideToUTF16(expectation->username_value),
+                form->display_name) << test_label;
+      EXPECT_TRUE(form->is_zero_click) << test_label;
       EXPECT_EQ(WideToUTF16(expectation->password_value),
                 form->password_value) << test_label;
     } else {
@@ -262,6 +269,8 @@ static void CheckFormsAgainstExpectations(
     base::Time created = base::Time::FromDoubleT(expectation->creation_time);
     EXPECT_EQ(created + base::TimeDelta::FromDays(1),
               form->date_synced) << test_label;
+    EXPECT_EQ(GURL("https://accounts.google.com/Avatar"), form->avatar_url);
+    EXPECT_EQ(GURL("https://accounts.google.com/login"), form->federation_url);
   }
 }
 
