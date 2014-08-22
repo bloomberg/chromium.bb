@@ -37,6 +37,7 @@
 #include "media/base/bind_to_current_loop.h"
 // TODO(xhwang): Remove when we remove prefixed EME implementation.
 #include "media/base/media_keys.h"
+#include "media/base/media_log.h"
 #include "media/base/media_switches.h"
 #include "media/base/video_frame.h"
 #include "net/base/mime_util.h"

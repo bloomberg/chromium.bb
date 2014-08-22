@@ -453,7 +453,7 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
   // Whether the browser is currently connected to a remote media player.
   bool is_remote_;
 
-  media::MediaLog* media_log_;
+  scoped_refptr<media::MediaLog> media_log_;
 
   scoped_ptr<MediaInfoLoader> info_loader_;
 

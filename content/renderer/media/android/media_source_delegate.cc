@@ -49,7 +49,7 @@ MediaSourceDelegate::MediaSourceDelegate(
     RendererDemuxerAndroid* demuxer_client,
     int demuxer_client_id,
     const scoped_refptr<base::MessageLoopProxy>& media_loop,
-    media::MediaLog* media_log)
+    const scoped_refptr<media::MediaLog> media_log)
     : demuxer_client_(demuxer_client),
       demuxer_client_id_(demuxer_client_id),
       media_log_(media_log),

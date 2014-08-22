@@ -56,7 +56,7 @@ class MediaSourceDelegate : public media::DemuxerHost {
   MediaSourceDelegate(RendererDemuxerAndroid* demuxer_client,
                       int demuxer_client_id,
                       const scoped_refptr<base::MessageLoopProxy>& media_loop,
-                      media::MediaLog* media_log);
+                      const scoped_refptr<media::MediaLog> media_log);
 
   // Initialize the MediaSourceDelegate. |media_source| will be owned by
   // this object after this call.
