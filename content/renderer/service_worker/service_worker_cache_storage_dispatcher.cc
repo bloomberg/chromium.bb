@@ -167,7 +167,7 @@ void ServiceWorkerCacheStorageDispatcher::dispatchHas(
     CacheStorageCallbacks* callbacks,
     const blink::WebString& cacheName) {
   int request_id = has_callbacks_.Add(callbacks);
-  script_context_->Send(new ServiceWorkerHostMsg_CacheStorageDelete(
+  script_context_->Send(new ServiceWorkerHostMsg_CacheStorageHas(
       script_context_->GetRoutingID(), request_id, cacheName));
 }
 

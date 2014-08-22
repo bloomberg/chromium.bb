@@ -63,7 +63,7 @@ bool ServiceWorkerCacheListener::OnMessageReceived(
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_CacheStorageGet,
                         OnCacheStorageGet)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_CacheStorageHas,
-                        OnCacheStorageGet)
+                        OnCacheStorageHas)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_CacheStorageCreate,
                         OnCacheStorageCreate)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_CacheStorageDelete,
