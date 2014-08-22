@@ -931,6 +931,10 @@ public class ContentViewCore
     @CalledByNative
     public int getPhysicalBackingHeightPix() { return mPhysicalBackingHeightPix; }
 
+    /* TODO(aelias): Remove these when downstream callers disappear. */
+    public int getViewportSizeOffsetWidthPix() { return 0; }
+    public int getViewportSizeOffsetHeightPix() { return getTopControlsLayoutHeightPix(); }
+
     /**
      * @return The amount that the viewport size given to Blink is shrunk by the URL-bar..
      */
