@@ -425,12 +425,19 @@ class CONTENT_EXPORT RenderViewImpl
   virtual void zoomLevelChanged();
   virtual double zoomLevelToZoomFactor(double zoom_level) const;
   virtual double zoomFactorToZoomLevel(double factor) const;
+
+  // TODO(sanjoy.pal): Remove once blink patch lands. http://crbug.com/406236.
   virtual void registerProtocolHandler(const blink::WebString& scheme,
                                        const blink::WebURL& base_url,
                                        const blink::WebURL& url,
                                        const blink::WebString& title);
   virtual void unregisterProtocolHandler(const blink::WebString& scheme,
                                          const blink::WebURL& base_url,
+                                         const blink::WebURL& url);
+  virtual void registerProtocolHandler(const blink::WebString& scheme,
+                                       const blink::WebURL& url,
+                                       const blink::WebString& title);
+  virtual void unregisterProtocolHandler(const blink::WebString& scheme,
                                          const blink::WebURL& url);
   virtual blink::WebPageVisibilityState visibilityState() const;
   virtual blink::WebPushClient* webPushClient();
