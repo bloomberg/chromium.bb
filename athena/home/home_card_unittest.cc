@@ -8,6 +8,7 @@
 #include "athena/activity/public/activity_manager.h"
 #include "athena/test/athena_test_base.h"
 #include "athena/wm/public/window_manager.h"
+#include "ui/aura/window.h"
 #include "ui/events/test/event_generator.h"
 
 namespace athena {
@@ -80,6 +81,26 @@ TEST_F(HomeCardTest, Accelerators) {
   EXPECT_EQ(HomeCard::VISIBLE_CENTERED, HomeCard::Get()->GetState());
   generator.PressKey(ui::VKEY_L, ui::EF_CONTROL_DOWN);
   EXPECT_EQ(HomeCard::VISIBLE_CENTERED, HomeCard::Get()->GetState());
+}
+
+TEST_F(HomeCardTest, MouseClick) {
+  ASSERT_EQ(HomeCard::VISIBLE_MINIMIZED, HomeCard::Get()->GetState());
+
+  // Mouse click at the bottom of the screen should invokes overview mode and
+  // changes the state to BOTTOM.
+  ui::test::EventGenerator generator(root_window());
+  gfx::Rect screen_rect(root_window()->bounds());
+  generator.MoveMouseTo(gfx::Point(
+      screen_rect.x() + screen_rect.width() / 2, screen_rect.bottom() - 1));
+  generator.ClickLeftButton();
+
+  EXPECT_EQ(HomeCard::VISIBLE_BOTTOM, HomeCard::Get()->GetState());
+  EXPECT_TRUE(WindowManager::GetInstance()->IsOverviewModeActive());
+
+  // Further clicks are simply ignored.
+  generator.ClickLeftButton();
+  EXPECT_EQ(HomeCard::VISIBLE_BOTTOM, HomeCard::Get()->GetState());
+  EXPECT_TRUE(WindowManager::GetInstance()->IsOverviewModeActive());
 }
 
 }  // namespace athena
