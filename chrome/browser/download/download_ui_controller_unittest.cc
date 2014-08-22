@@ -135,7 +135,7 @@ class DownloadUIControllerTest : public ChromeRenderViewHostTestHarness {
 
   // Constructs and returns a TestDownloadService.
   static KeyedService* TestingDownloadServiceFactory(
-      content::BrowserContext* brwoser_context);
+      content::BrowserContext* browser_context);
 
   scoped_ptr<MockDownloadManager> manager_;
   content::DownloadManager::Observer* download_history_manager_observer_;
