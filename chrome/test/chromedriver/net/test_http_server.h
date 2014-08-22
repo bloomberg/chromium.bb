@@ -77,7 +77,7 @@ class TestHttpServer : public net::HttpServer::Delegate {
   base::Thread thread_;
 
   // Access only on the server thread.
-  scoped_ptr<net::HttpServer> server_;
+  scoped_refptr<net::HttpServer> server_;
 
   // Access only on the server thread.
   std::set<int> connections_;

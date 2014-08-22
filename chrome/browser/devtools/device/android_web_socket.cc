@@ -199,7 +199,8 @@ void WebSocketImpl::OnBytesRead(scoped_refptr<net::IOBuffer> response_buffer,
     return;
   }
 
-  response_buffer_.append(response_buffer->data(), result);
+  std::string data = std::string(response_buffer->data(), result);
+  response_buffer_ += data;
 
   int bytes_consumed;
   std::string output;

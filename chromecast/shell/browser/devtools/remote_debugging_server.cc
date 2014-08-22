@@ -17,11 +17,11 @@
 #include "content/public/browser/devtools_http_handler.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/user_agent.h"
-#include "net/socket/tcp_server_socket.h"
+#include "net/socket/tcp_listen_socket.h"
 
 #if defined(OS_ANDROID)
 #include "content/public/browser/android/devtools_auth.h"
-#include "net/socket/unix_domain_server_socket_posix.h"
+#include "net/socket/unix_domain_socket_posix.h"
 #endif  // defined(OS_ANDROID)
 
 namespace chromecast {
@@ -35,45 +35,7 @@ const char kFrontEndURL[] =
 #endif  // defined(OS_ANDROID)
 const int kDefaultRemoteDebuggingPort = 9222;
 
-#if defined(OS_ANDROID)
-class UnixDomainServerSocketFactory
-    : public content::DevToolsHttpHandler::ServerSocketFactory {
- public:
-  explicit UnixDomainServerSocketFactory(const std::string& socket_name)
-      : content::DevToolsHttpHandler::ServerSocketFactory(socket_name, 0, 1) {}
-
- private:
-  // content::DevToolsHttpHandler::ServerSocketFactory.
-  virtual scoped_ptr<net::ServerSocket> Create() const OVERRIDE {
-    return scoped_ptr<net::ServerSocket>(
-        new net::UnixDomainServerSocket(
-            base::Bind(&content::CanUserConnectToDevTools),
-            true /* use_abstract_namespace */));
-  }
-
-  DISALLOW_COPY_AND_ASSIGN(UnixDomainServerSocketFactory);
-};
-#else
-class TCPServerSocketFactory
-    : public content::DevToolsHttpHandler::ServerSocketFactory {
- public:
-  TCPServerSocketFactory(const std::string& address, int port, int backlog)
-      : content::DevToolsHttpHandler::ServerSocketFactory(
-            address, port, backlog) {}
-
- private:
-  // content::DevToolsHttpHandler::ServerSocketFactory.
-  virtual scoped_ptr<net::ServerSocket> Create() const OVERRIDE {
-    return scoped_ptr<net::ServerSocket>(
-        new net::TCPServerSocket(NULL, net::NetLog::Source()));
-  }
-
-  DISALLOW_COPY_AND_ASSIGN(TCPServerSocketFactory);
-};
-#endif
-
-scoped_ptr<content::DevToolsHttpHandler::ServerSocketFactory>
-CreateSocketFactory(int port) {
+net::StreamListenSocketFactory* CreateSocketFactory(int port) {
 #if defined(OS_ANDROID)
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   std::string socket_name = "content_shell_devtools_remote";
@@ -81,12 +43,11 @@ CreateSocketFactory(int port) {
     socket_name = command_line->GetSwitchValueASCII(
         switches::kRemoteDebuggingSocketName);
   }
-  return scoped_ptr<content::DevToolsHttpHandler::ServerSocketFactory>(
-      new UnixDomainServerSocketFactory(socket_name));
+  return new net::UnixDomainSocketWithAbstractNamespaceFactory(
+      socket_name, "", base::Bind(&content::CanUserConnectToDevTools));
 #else
-  return scoped_ptr<content::DevToolsHttpHandler::ServerSocketFactory>(
-      new TCPServerSocketFactory("0.0.0.0", port, 1));
-#endif
+  return new net::TCPListenSocketFactory("0.0.0.0", port);
+#endif  // defined(OS_ANDROID)
 }
 
 std::string GetFrontendUrl() {

@@ -39,7 +39,6 @@
 #include "net/base/net_errors.h"
 #include "net/server/http_server_request_info.h"
 #include "net/server/http_server_response_info.h"
-#include "net/socket/server_socket.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/build_info.h"
@@ -67,9 +66,6 @@ const char kTargetThumbnailUrlField[] = "thumbnailUrl";
 const char kTargetFaviconUrlField[] = "faviconUrl";
 const char kTargetWebSocketDebuggerUrlField[] = "webSocketDebuggerUrl";
 const char kTargetDevtoolsFrontendUrlField[] = "devtoolsFrontendUrl";
-
-// Maximum write buffer size of devtools http/websocket connectinos.
-const int32 kSendBufferSizeForDevTools = 100 * 1024 * 1024;  // 100Mb
 
 // An internal implementation of DevToolsAgentHostClient that delegates
 // messages sent to a DebuggerShell instance.
@@ -108,15 +104,13 @@ class DevToolsAgentHostClientImpl : public DevToolsAgentHostClient {
     message_loop_->PostTask(
         FROM_HERE,
         base::Bind(&net::HttpServer::SendOverWebSocket,
-                   base::Unretained(server_),
+                   server_,
                    connection_id_,
                    response));
 
     message_loop_->PostTask(
         FROM_HERE,
-        base::Bind(&net::HttpServer::Close,
-                   base::Unretained(server_),
-                   connection_id_));
+        base::Bind(&net::HttpServer::Close, server_, connection_id_));
   }
 
   virtual void DispatchProtocolMessage(
@@ -125,7 +119,7 @@ class DevToolsAgentHostClientImpl : public DevToolsAgentHostClient {
     message_loop_->PostTask(
         FROM_HERE,
         base::Bind(&net::HttpServer::SendOverWebSocket,
-                   base::Unretained(server_),
+                   server_,
                    connection_id_,
                    message));
   }
@@ -136,9 +130,9 @@ class DevToolsAgentHostClientImpl : public DevToolsAgentHostClient {
   }
 
  private:
-  base::MessageLoop* const message_loop_;
-  net::HttpServer* const server_;
-  const int connection_id_;
+  base::MessageLoop* message_loop_;
+  net::HttpServer* server_;
+  int connection_id_;
   scoped_refptr<DevToolsAgentHost> agent_host_;
 };
 
@@ -166,39 +160,17 @@ int DevToolsHttpHandler::GetFrontendResourceId(const std::string& name) {
 
 // static
 DevToolsHttpHandler* DevToolsHttpHandler::Start(
-    scoped_ptr<ServerSocketFactory> server_socket_factory,
+    const net::StreamListenSocketFactory* socket_factory,
     const std::string& frontend_url,
     DevToolsHttpHandlerDelegate* delegate,
     const base::FilePath& active_port_output_directory) {
   DevToolsHttpHandlerImpl* http_handler =
-      new DevToolsHttpHandlerImpl(server_socket_factory.Pass(),
+      new DevToolsHttpHandlerImpl(socket_factory,
                                   frontend_url,
                                   delegate,
                                   active_port_output_directory);
   http_handler->Start();
   return http_handler;
-}
-
-DevToolsHttpHandler::ServerSocketFactory::ServerSocketFactory(
-    const std::string& address,
-    int port,
-    int backlog)
-    : address_(address),
-      port_(port),
-      backlog_(backlog) {
-}
-
-DevToolsHttpHandler::ServerSocketFactory::~ServerSocketFactory() {
-}
-
-scoped_ptr<net::ServerSocket>
-DevToolsHttpHandler::ServerSocketFactory::CreateAndListen() const {
-  scoped_ptr<net::ServerSocket> socket = Create();
-  if (socket &&
-      socket->ListenWithAddressAndPort(address_, port_, backlog_) == net::OK) {
-    return socket.Pass();
-  }
-  return scoped_ptr<net::ServerSocket>();
 }
 
 DevToolsHttpHandlerImpl::~DevToolsHttpHandlerImpl() {
@@ -290,8 +262,6 @@ static std::string GetMimeType(const std::string& filename) {
 void DevToolsHttpHandlerImpl::OnHttpRequest(
     int connection_id,
     const net::HttpServerRequestInfo& info) {
-  server_->SetSendBufferSize(connection_id, kSendBufferSizeForDevTools);
-
   if (info.path.find("/json") == 0) {
     BrowserThread::PostTask(
         BrowserThread::UI,
@@ -381,7 +351,6 @@ void DevToolsHttpHandlerImpl::OnWebSocketRequest(
         true /* handle on UI thread */);
     browser_targets_[connection_id] = browser_target;
 
-    server_->SetSendBufferSize(connection_id, kSendBufferSizeForDevTools);
     server_->AcceptWebSocket(connection_id, request);
     return;
   }
@@ -682,16 +651,16 @@ void DevToolsHttpHandlerImpl::OnCloseUI(int connection_id) {
 }
 
 DevToolsHttpHandlerImpl::DevToolsHttpHandlerImpl(
-    scoped_ptr<ServerSocketFactory> server_socket_factory,
+    const net::StreamListenSocketFactory* socket_factory,
     const std::string& frontend_url,
     DevToolsHttpHandlerDelegate* delegate,
     const base::FilePath& active_port_output_directory)
     : frontend_url_(frontend_url),
-      server_socket_factory_(server_socket_factory.Pass()),
+      socket_factory_(socket_factory),
       delegate_(delegate),
       active_port_output_directory_(active_port_output_directory) {
   if (frontend_url_.empty())
-    frontend_url_ = "/devtools/devtools.html";
+      frontend_url_ = "/devtools/devtools.html";
 
   // Balanced in ResetHandlerThreadAndRelease().
   AddRef();
@@ -699,15 +668,14 @@ DevToolsHttpHandlerImpl::DevToolsHttpHandlerImpl(
 
 // Runs on the handler thread
 void DevToolsHttpHandlerImpl::Init() {
-  server_.reset(new net::HttpServer(server_socket_factory_->CreateAndListen(),
-                                    this));
+  server_ = new net::HttpServer(*socket_factory_.get(), this);
   if (!active_port_output_directory_.empty())
     WriteActivePortToUserProfile();
 }
 
 // Runs on the handler thread
 void DevToolsHttpHandlerImpl::Teardown() {
-  server_.reset(NULL);
+  server_ = NULL;
 }
 
 // Runs on FILE thread to make sure that it is serialized against
@@ -765,7 +733,7 @@ void DevToolsHttpHandlerImpl::SendJson(int connection_id,
   thread_->message_loop()->PostTask(
       FROM_HERE,
       base::Bind(&net::HttpServer::SendResponse,
-                 base::Unretained(server_.get()),
+                 server_.get(),
                  connection_id,
                  response));
 }
@@ -778,7 +746,7 @@ void DevToolsHttpHandlerImpl::Send200(int connection_id,
   thread_->message_loop()->PostTask(
       FROM_HERE,
       base::Bind(&net::HttpServer::Send200,
-                 base::Unretained(server_.get()),
+                 server_.get(),
                  connection_id,
                  data,
                  mime_type));
@@ -789,9 +757,7 @@ void DevToolsHttpHandlerImpl::Send404(int connection_id) {
     return;
   thread_->message_loop()->PostTask(
       FROM_HERE,
-      base::Bind(&net::HttpServer::Send404,
-                 base::Unretained(server_.get()),
-                 connection_id));
+      base::Bind(&net::HttpServer::Send404, server_.get(), connection_id));
 }
 
 void DevToolsHttpHandlerImpl::Send500(int connection_id,
@@ -800,9 +766,7 @@ void DevToolsHttpHandlerImpl::Send500(int connection_id,
     return;
   thread_->message_loop()->PostTask(
       FROM_HERE,
-      base::Bind(&net::HttpServer::Send500,
-                 base::Unretained(server_.get()),
-                 connection_id,
+      base::Bind(&net::HttpServer::Send500, server_.get(), connection_id,
                  message));
 }
 
@@ -813,16 +777,8 @@ void DevToolsHttpHandlerImpl::AcceptWebSocket(
     return;
   thread_->message_loop()->PostTask(
       FROM_HERE,
-      base::Bind(&net::HttpServer::SetSendBufferSize,
-                 base::Unretained(server_.get()),
-                 connection_id,
-                 kSendBufferSizeForDevTools));
-  thread_->message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(&net::HttpServer::AcceptWebSocket,
-                 base::Unretained(server_.get()),
-                 connection_id,
-                 request));
+      base::Bind(&net::HttpServer::AcceptWebSocket, server_.get(),
+                 connection_id, request));
 }
 
 base::DictionaryValue* DevToolsHttpHandlerImpl::SerializeTarget(

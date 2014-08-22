@@ -2,13 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <algorithm>
 #include <utility>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/callback_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/format_macros.h"
 #include "base/memory/ref_counted.h"
@@ -26,12 +24,11 @@
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_log.h"
-#include "net/base/net_util.h"
 #include "net/base/test_completion_callback.h"
 #include "net/server/http_server.h"
 #include "net/server/http_server_request_info.h"
 #include "net/socket/tcp_client_socket.h"
-#include "net/socket/tcp_server_socket.h"
+#include "net/socket/tcp_listen_socket.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_context.h"
@@ -158,10 +155,8 @@ class HttpServerTest : public testing::Test,
   HttpServerTest() : quit_after_request_count_(0) {}
 
   virtual void SetUp() OVERRIDE {
-    scoped_ptr<ServerSocket> server_socket(
-        new TCPServerSocket(NULL, net::NetLog::Source()));
-    server_socket->ListenWithAddressAndPort("127.0.0.1", 0, 1);
-    server_.reset(new HttpServer(server_socket.Pass(), this));
+    TCPListenSocketFactory socket_factory("127.0.0.1", 0);
+    server_ = new HttpServer(socket_factory, this);
     ASSERT_EQ(OK, server_->GetLocalAddress(&server_address_));
   }
 
@@ -204,13 +199,8 @@ class HttpServerTest : public testing::Test,
     return requests_[request_index].second;
   }
 
-  void HandleAcceptResult(scoped_ptr<StreamSocket> socket) {
-    server_->accepted_socket_.reset(socket.release());
-    server_->HandleAcceptResult(OK);
-  }
-
  protected:
-  scoped_ptr<HttpServer> server_;
+  scoped_refptr<HttpServer> server_;
   IPEndPoint server_address_;
   base::Closure run_loop_quit_func_;
   std::vector<std::pair<HttpServerRequestInfo, int> > requests_;
@@ -439,105 +429,23 @@ TEST_F(HttpServerTest, SendRaw) {
 
 namespace {
 
-class MockStreamSocket : public StreamSocket {
+class MockStreamListenSocket : public StreamListenSocket {
  public:
-  MockStreamSocket()
-      : connected_(true),
-        read_buf_(NULL),
-        read_buf_len_(0) {}
+  MockStreamListenSocket(StreamListenSocket::Delegate* delegate)
+      : StreamListenSocket(kInvalidSocket, delegate) {}
 
-  // StreamSocket
-  virtual int Connect(const CompletionCallback& callback) OVERRIDE {
-    return ERR_NOT_IMPLEMENTED;
-  }
-  virtual void Disconnect() OVERRIDE {
-    connected_ = false;
-    if (!read_callback_.is_null()) {
-      read_buf_ = NULL;
-      read_buf_len_ = 0;
-      base::ResetAndReturn(&read_callback_).Run(ERR_CONNECTION_CLOSED);
-    }
-  }
-  virtual bool IsConnected() const OVERRIDE { return connected_; }
-  virtual bool IsConnectedAndIdle() const OVERRIDE { return IsConnected(); }
-  virtual int GetPeerAddress(IPEndPoint* address) const OVERRIDE {
-    return ERR_NOT_IMPLEMENTED;
-  }
-  virtual int GetLocalAddress(IPEndPoint* address) const OVERRIDE {
-    return ERR_NOT_IMPLEMENTED;
-  }
-  virtual const BoundNetLog& NetLog() const OVERRIDE { return net_log_; }
-  virtual void SetSubresourceSpeculation() OVERRIDE {}
-  virtual void SetOmniboxSpeculation() OVERRIDE {}
-  virtual bool WasEverUsed() const OVERRIDE { return true; }
-  virtual bool UsingTCPFastOpen() const OVERRIDE { return false; }
-  virtual bool WasNpnNegotiated() const OVERRIDE { return false; }
-  virtual NextProto GetNegotiatedProtocol() const OVERRIDE {
-    return kProtoUnknown;
-  }
-  virtual bool GetSSLInfo(SSLInfo* ssl_info) OVERRIDE { return false; }
-
-  // Socket
-  virtual int Read(IOBuffer* buf, int buf_len,
-                   const CompletionCallback& callback) OVERRIDE {
-    if (!connected_) {
-      return ERR_SOCKET_NOT_CONNECTED;
-    }
-    if (pending_read_data_.empty()) {
-      read_buf_ = buf;
-      read_buf_len_ = buf_len;
-      read_callback_ = callback;
-      return ERR_IO_PENDING;
-    }
-    DCHECK_GT(buf_len, 0);
-    int read_len = std::min(static_cast<int>(pending_read_data_.size()),
-                            buf_len);
-    memcpy(buf->data(), pending_read_data_.data(), read_len);
-    pending_read_data_.erase(0, read_len);
-    return read_len;
-  }
-  virtual int Write(IOBuffer* buf, int buf_len,
-                    const CompletionCallback& callback) OVERRIDE {
-    return ERR_NOT_IMPLEMENTED;
-  }
-  virtual int SetReceiveBufferSize(int32 size) OVERRIDE {
-    return ERR_NOT_IMPLEMENTED;
-  }
-  virtual int SetSendBufferSize(int32 size) OVERRIDE {
-    return ERR_NOT_IMPLEMENTED;
-  }
-
-  void DidRead(const char* data, int data_len) {
-    if (!read_buf_) {
-      pending_read_data_.append(data, data_len);
-      return;
-    }
-    int read_len = std::min(data_len, read_buf_len_);
-    memcpy(read_buf_->data(), data, read_len);
-    pending_read_data_.assign(data + read_len, data_len - read_len);
-    read_buf_ = NULL;
-    read_buf_len_ = 0;
-    base::ResetAndReturn(&read_callback_).Run(read_len);
-  }
+  virtual void Accept() OVERRIDE { NOTREACHED(); }
 
  private:
-  virtual ~MockStreamSocket() {}
-
-  bool connected_;
-  scoped_refptr<IOBuffer> read_buf_;
-  int read_buf_len_;
-  CompletionCallback read_callback_;
-  std::string pending_read_data_;
-  BoundNetLog net_log_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockStreamSocket);
+  virtual ~MockStreamListenSocket() {}
 };
 
 }  // namespace
 
 TEST_F(HttpServerTest, RequestWithBodySplitAcrossPackets) {
-  MockStreamSocket* socket = new MockStreamSocket();
-  HandleAcceptResult(make_scoped_ptr<StreamSocket>(socket));
+  StreamListenSocket* socket =
+      new MockStreamListenSocket(server_.get());
+  server_->DidAccept(NULL, make_scoped_ptr(socket));
   std::string body("body");
   std::string request_text = base::StringPrintf(
       "GET /test HTTP/1.1\r\n"
@@ -545,9 +453,9 @@ TEST_F(HttpServerTest, RequestWithBodySplitAcrossPackets) {
       "Content-Length: %" PRIuS "\r\n\r\n%s",
       body.length(),
       body.c_str());
-  socket->DidRead(request_text.c_str(), request_text.length() - 2);
+  server_->DidRead(socket, request_text.c_str(), request_text.length() - 2);
   ASSERT_EQ(0u, requests_.size());
-  socket->DidRead(request_text.c_str() + request_text.length() - 2, 2);
+  server_->DidRead(socket, request_text.c_str() + request_text.length() - 2, 2);
   ASSERT_EQ(1u, requests_.size());
   ASSERT_EQ(body, GetRequest(0).data);
 }

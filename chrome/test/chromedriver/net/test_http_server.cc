@@ -13,7 +13,7 @@
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/server/http_server_request_info.h"
-#include "net/socket/tcp_server_socket.h"
+#include "net/socket/tcp_listen_socket.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 TestHttpServer::TestHttpServer()
@@ -92,7 +92,10 @@ void TestHttpServer::OnWebSocketRequest(
       server_->Send404(connection_id);
       break;
     case kClose:
-      server_->Close(connection_id);
+      // net::HttpServer doesn't allow us to close connection during callback.
+      base::MessageLoop::current()->PostTask(
+          FROM_HERE,
+          base::Bind(&net::HttpServer::Close, server_, connection_id));
       break;
   }
 }
@@ -109,7 +112,10 @@ void TestHttpServer::OnWebSocketMessage(int connection_id,
       server_->SendOverWebSocket(connection_id, data);
       break;
     case kCloseOnMessage:
-      server_->Close(connection_id);
+      // net::HttpServer doesn't allow us to close connection during callback.
+      base::MessageLoop::current()->PostTask(
+          FROM_HERE,
+          base::Bind(&net::HttpServer::Close, server_, connection_id));
       break;
   }
 }
@@ -122,10 +128,8 @@ void TestHttpServer::OnClose(int connection_id) {
 
 void TestHttpServer::StartOnServerThread(bool* success,
                                          base::WaitableEvent* event) {
-  scoped_ptr<net::ServerSocket> server_socket(
-      new net::TCPServerSocket(NULL, net::NetLog::Source()));
-  server_socket->ListenWithAddressAndPort("127.0.0.1", 0, 1);
-  server_.reset(new net::HttpServer(server_socket.Pass(), this));
+  net::TCPListenSocketFactory factory("127.0.0.1", 0);
+  server_ = new net::HttpServer(factory, this);
 
   net::IPEndPoint address;
   int error = server_->GetLocalAddress(&address);
@@ -135,13 +139,14 @@ void TestHttpServer::StartOnServerThread(bool* success,
     web_socket_url_ = GURL(base::StringPrintf("ws://127.0.0.1:%d",
                                               address.port()));
   } else {
-    server_.reset(NULL);
+    server_ = NULL;
   }
   *success = server_.get();
   event->Signal();
 }
 
 void TestHttpServer::StopOnServerThread(base::WaitableEvent* event) {
-  server_.reset(NULL);
+  if (server_.get())
+    server_ = NULL;
   event->Signal();
 }

@@ -8,12 +8,10 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/strings/string_piece.h"
 
 namespace net {
 
 class HttpConnection;
-class HttpServer;
 class HttpServerRequestInfo;
 
 class WebSocket {
@@ -25,12 +23,11 @@ class WebSocket {
     FRAME_ERROR
   };
 
-  static WebSocket* CreateWebSocket(HttpServer* server,
-                                    HttpConnection* connection,
+  static WebSocket* CreateWebSocket(HttpConnection* connection,
                                     const HttpServerRequestInfo& request,
                                     size_t* pos);
 
-  static ParseResult DecodeFrameHybi17(const base::StringPiece& frame,
+  static ParseResult DecodeFrameHybi17(const std::string& frame,
                                        bool client_frame,
                                        int* bytes_consumed,
                                        std::string* output);
@@ -44,10 +41,8 @@ class WebSocket {
   virtual ~WebSocket() {}
 
  protected:
-  WebSocket(HttpServer* server, HttpConnection* connection);
-
-  HttpServer* const server_;
-  HttpConnection* const connection_;
+  explicit WebSocket(HttpConnection* connection);
+  HttpConnection* connection_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebSocket);

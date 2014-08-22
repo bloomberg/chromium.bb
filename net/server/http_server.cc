@@ -17,25 +17,14 @@
 #include "net/server/http_server_request_info.h"
 #include "net/server/http_server_response_info.h"
 #include "net/server/web_socket.h"
-#include "net/socket/server_socket.h"
-#include "net/socket/stream_socket.h"
-#include "net/socket/tcp_server_socket.h"
+#include "net/socket/tcp_listen_socket.h"
 
 namespace net {
 
-HttpServer::HttpServer(scoped_ptr<ServerSocket> server_socket,
+HttpServer::HttpServer(const StreamListenSocketFactory& factory,
                        HttpServer::Delegate* delegate)
-    : server_socket_(server_socket.Pass()),
-      delegate_(delegate),
-      last_id_(0),
-      weak_ptr_factory_(this) {
-  DCHECK(server_socket_);
-  DoAcceptLoop();
-}
-
-HttpServer::~HttpServer() {
-  STLDeleteContainerPairSecondPointers(
-      id_to_connection_.begin(), id_to_connection_.end());
+    : delegate_(delegate),
+      server_(factory.CreateAndListen(this)) {
 }
 
 void HttpServer::AcceptWebSocket(
@@ -44,8 +33,9 @@ void HttpServer::AcceptWebSocket(
   HttpConnection* connection = FindConnection(connection_id);
   if (connection == NULL)
     return;
-  DCHECK(connection->web_socket());
-  connection->web_socket()->Accept(request);
+
+  DCHECK(connection->web_socket_.get());
+  connection->web_socket_->Accept(request);
 }
 
 void HttpServer::SendOverWebSocket(int connection_id,
@@ -53,23 +43,23 @@ void HttpServer::SendOverWebSocket(int connection_id,
   HttpConnection* connection = FindConnection(connection_id);
   if (connection == NULL)
     return;
-  DCHECK(connection->web_socket());
-  connection->web_socket()->Send(data);
+  DCHECK(connection->web_socket_.get());
+  connection->web_socket_->Send(data);
 }
 
 void HttpServer::SendRaw(int connection_id, const std::string& data) {
   HttpConnection* connection = FindConnection(connection_id);
   if (connection == NULL)
     return;
-
-  bool writing_in_progress = !connection->write_buf()->IsEmpty();
-  if (connection->write_buf()->Append(data) && !writing_in_progress)
-    DoWriteLoop(connection);
+  connection->Send(data);
 }
 
 void HttpServer::SendResponse(int connection_id,
                               const HttpServerResponseInfo& response) {
-  SendRaw(connection_id, response.Serialize());
+  HttpConnection* connection = FindConnection(connection_id);
+  if (connection == NULL)
+    return;
+  connection->Send(response);
 }
 
 void HttpServer::Send(int connection_id,
@@ -77,9 +67,8 @@ void HttpServer::Send(int connection_id,
                       const std::string& data,
                       const std::string& content_type) {
   HttpServerResponseInfo response(status_code);
-  response.SetContentHeaders(data.size(), content_type);
+  response.SetBody(data, content_type);
   SendResponse(connection_id, response);
-  SendRaw(connection_id, data);
 }
 
 void HttpServer::Send200(int connection_id,
@@ -101,208 +90,107 @@ void HttpServer::Close(int connection_id) {
   if (connection == NULL)
     return;
 
-  id_to_connection_.erase(connection_id);
-  delegate_->OnClose(connection_id);
-
-  // The call stack might have callbacks which still have the pointer of
-  // connection. Instead of referencing connection with ID all the time,
-  // destroys the connection in next run loop to make sure any pending
-  // callbacks in the call stack return.
-  base::MessageLoopProxy::current()->DeleteSoon(FROM_HERE, connection);
+  // Initiating close from server-side does not lead to the DidClose call.
+  // Do it manually here.
+  DidClose(connection->socket_.get());
 }
 
 int HttpServer::GetLocalAddress(IPEndPoint* address) {
-  return server_socket_->GetLocalAddress(address);
+  if (!server_)
+    return ERR_SOCKET_NOT_CONNECTED;
+  return server_->GetLocalAddress(address);
 }
 
-void HttpServer::SetReceiveBufferSize(int connection_id, int32 size) {
-  HttpConnection* connection = FindConnection(connection_id);
-  DCHECK(connection);
-  connection->read_buf()->set_max_buffer_size(size);
-}
-
-void HttpServer::SetSendBufferSize(int connection_id, int32 size) {
-  HttpConnection* connection = FindConnection(connection_id);
-  DCHECK(connection);
-  connection->write_buf()->set_max_buffer_size(size);
-}
-
-void HttpServer::DoAcceptLoop() {
-  int rv;
-  do {
-    rv = server_socket_->Accept(&accepted_socket_,
-                                base::Bind(&HttpServer::OnAcceptCompleted,
-                                           weak_ptr_factory_.GetWeakPtr()));
-    if (rv == ERR_IO_PENDING)
-      return;
-    rv = HandleAcceptResult(rv);
-  } while (rv == OK);
-}
-
-void HttpServer::OnAcceptCompleted(int rv) {
-  if (HandleAcceptResult(rv) == OK)
-    DoAcceptLoop();
-}
-
-int HttpServer::HandleAcceptResult(int rv) {
-  if (rv < 0) {
-    LOG(ERROR) << "Accept error: rv=" << rv;
-    return rv;
-  }
-
-  HttpConnection* connection =
-      new HttpConnection(++last_id_, accepted_socket_.Pass());
+void HttpServer::DidAccept(StreamListenSocket* server,
+                           scoped_ptr<StreamListenSocket> socket) {
+  HttpConnection* connection = new HttpConnection(this, socket.Pass());
   id_to_connection_[connection->id()] = connection;
-  DoReadLoop(connection);
-  return OK;
+  // TODO(szym): Fix socket access. Make HttpConnection the Delegate.
+  socket_to_connection_[connection->socket_.get()] = connection;
 }
 
-void HttpServer::DoReadLoop(HttpConnection* connection) {
-  int rv;
-  do {
-    HttpConnection::ReadIOBuffer* read_buf = connection->read_buf();
-    // Increases read buffer size if necessary.
-    if (read_buf->RemainingCapacity() == 0 && !read_buf->IncreaseCapacity()) {
-      Close(connection->id());
-      return;
-    }
-
-    rv = connection->socket()->Read(
-        read_buf,
-        read_buf->RemainingCapacity(),
-        base::Bind(&HttpServer::OnReadCompleted,
-                   weak_ptr_factory_.GetWeakPtr(), connection->id()));
-    if (rv == ERR_IO_PENDING)
-      return;
-    rv = HandleReadResult(connection, rv);
-  } while (rv == OK);
-}
-
-void HttpServer::OnReadCompleted(int connection_id, int rv) {
-  HttpConnection* connection = FindConnection(connection_id);
-  if (!connection)  // It might be closed right before by write error.
+void HttpServer::DidRead(StreamListenSocket* socket,
+                         const char* data,
+                         int len) {
+  HttpConnection* connection = FindConnection(socket);
+  DCHECK(connection != NULL);
+  if (connection == NULL)
     return;
 
-  if (HandleReadResult(connection, rv) == OK)
-    DoReadLoop(connection);
-}
-
-int HttpServer::HandleReadResult(HttpConnection* connection, int rv) {
-  if (rv <= 0) {
-    Close(connection->id());
-    return rv == 0 ? ERR_CONNECTION_CLOSED : rv;
-  }
-
-  HttpConnection::ReadIOBuffer* read_buf = connection->read_buf();
-  read_buf->DidRead(rv);
-
-  // Handles http requests or websocket messages.
-  while (read_buf->GetSize() > 0) {
-    if (connection->web_socket()) {
+  connection->recv_data_.append(data, len);
+  while (connection->recv_data_.length()) {
+    if (connection->web_socket_.get()) {
       std::string message;
-      WebSocket::ParseResult result = connection->web_socket()->Read(&message);
+      WebSocket::ParseResult result = connection->web_socket_->Read(&message);
       if (result == WebSocket::FRAME_INCOMPLETE)
         break;
 
       if (result == WebSocket::FRAME_CLOSE ||
           result == WebSocket::FRAME_ERROR) {
         Close(connection->id());
-        return ERR_CONNECTION_CLOSED;
+        break;
       }
       delegate_->OnWebSocketMessage(connection->id(), message);
-      if (HasClosedConnection(connection))
-        return ERR_CONNECTION_CLOSED;
       continue;
     }
 
     HttpServerRequestInfo request;
     size_t pos = 0;
-    if (!ParseHeaders(read_buf->StartOfBuffer(), read_buf->GetSize(),
-                      &request, &pos)) {
+    if (!ParseHeaders(connection, &request, &pos))
       break;
-    }
 
     // Sets peer address if exists.
-    connection->socket()->GetPeerAddress(&request.peer);
+    socket->GetPeerAddress(&request.peer);
 
     if (request.HasHeaderValue("connection", "upgrade")) {
-      scoped_ptr<WebSocket> websocket(
-          WebSocket::CreateWebSocket(this, connection, request, &pos));
-      if (!websocket)  // Not enough data was received.
+      connection->web_socket_.reset(WebSocket::CreateWebSocket(connection,
+                                                               request,
+                                                               &pos));
+
+      if (!connection->web_socket_.get())  // Not enough data was received.
         break;
-      connection->SetWebSocket(websocket.Pass());
-      read_buf->DidConsume(pos);
       delegate_->OnWebSocketRequest(connection->id(), request);
-      if (HasClosedConnection(connection))
-        return ERR_CONNECTION_CLOSED;
+      connection->Shift(pos);
       continue;
     }
 
     const char kContentLength[] = "content-length";
-    if (request.headers.count(kContentLength) > 0) {
+    if (request.headers.count(kContentLength)) {
       size_t content_length = 0;
       const size_t kMaxBodySize = 100 << 20;
       if (!base::StringToSizeT(request.GetHeaderValue(kContentLength),
                                &content_length) ||
           content_length > kMaxBodySize) {
-        SendResponse(connection->id(),
-                     HttpServerResponseInfo::CreateFor500(
-                         "request content-length too big or unknown: " +
-                         request.GetHeaderValue(kContentLength)));
-        Close(connection->id());
-        return ERR_CONNECTION_CLOSED;
+        connection->Send(HttpServerResponseInfo::CreateFor500(
+            "request content-length too big or unknown: " +
+            request.GetHeaderValue(kContentLength)));
+        DidClose(socket);
+        break;
       }
 
-      if (read_buf->GetSize() - pos < content_length)
+      if (connection->recv_data_.length() - pos < content_length)
         break;  // Not enough data was received yet.
-      request.data.assign(read_buf->StartOfBuffer() + pos, content_length);
+      request.data = connection->recv_data_.substr(pos, content_length);
       pos += content_length;
     }
 
-    read_buf->DidConsume(pos);
     delegate_->OnHttpRequest(connection->id(), request);
-    if (HasClosedConnection(connection))
-      return ERR_CONNECTION_CLOSED;
-  }
-
-  return OK;
-}
-
-void HttpServer::DoWriteLoop(HttpConnection* connection) {
-  int rv = OK;
-  HttpConnection::QueuedWriteIOBuffer* write_buf = connection->write_buf();
-  while (rv == OK && write_buf->GetSizeToWrite() > 0) {
-    rv = connection->socket()->Write(
-        write_buf,
-        write_buf->GetSizeToWrite(),
-        base::Bind(&HttpServer::OnWriteCompleted,
-                   weak_ptr_factory_.GetWeakPtr(), connection->id()));
-    if (rv == ERR_IO_PENDING || rv == OK)
-      return;
-    rv = HandleWriteResult(connection, rv);
+    connection->Shift(pos);
   }
 }
 
-void HttpServer::OnWriteCompleted(int connection_id, int rv) {
-  HttpConnection* connection = FindConnection(connection_id);
-  if (!connection)  // It might be closed right before by read error.
-    return;
-
-  if (HandleWriteResult(connection, rv) == OK)
-    DoWriteLoop(connection);
+void HttpServer::DidClose(StreamListenSocket* socket) {
+  HttpConnection* connection = FindConnection(socket);
+  DCHECK(connection != NULL);
+  id_to_connection_.erase(connection->id());
+  socket_to_connection_.erase(connection->socket_.get());
+  delete connection;
 }
 
-int HttpServer::HandleWriteResult(HttpConnection* connection, int rv) {
-  if (rv < 0) {
-    Close(connection->id());
-    return rv;
-  }
-
-  connection->write_buf()->DidConsume(rv);
-  return OK;
+HttpServer::~HttpServer() {
+  STLDeleteContainerPairSecondPointers(
+      id_to_connection_.begin(), id_to_connection_.end());
 }
-
-namespace {
 
 //
 // HTTP Request Parser
@@ -367,19 +255,17 @@ int charToInput(char ch) {
   return INPUT_DEFAULT;
 }
 
-}  // namespace
-
-bool HttpServer::ParseHeaders(const char* data,
-                              size_t data_len,
+bool HttpServer::ParseHeaders(HttpConnection* connection,
                               HttpServerRequestInfo* info,
                               size_t* ppos) {
   size_t& pos = *ppos;
+  size_t data_len = connection->recv_data_.length();
   int state = ST_METHOD;
   std::string buffer;
   std::string header_name;
   std::string header_value;
   while (pos < data_len) {
-    char ch = data[pos++];
+    char ch = connection->recv_data_[pos++];
     int input = charToInput(ch);
     int next_state = parser_state[state][input];
 
@@ -451,12 +337,11 @@ HttpConnection* HttpServer::FindConnection(int connection_id) {
   return it->second;
 }
 
-// This is called after any delegate callbacks are called to check if Close()
-// has been called during callback processing. Using the pointer of connection,
-// |connection| is safe here because Close() deletes the connection in next run
-// loop.
-bool HttpServer::HasClosedConnection(HttpConnection* connection) {
-  return FindConnection(connection->id()) != connection;
+HttpConnection* HttpServer::FindConnection(StreamListenSocket* socket) {
+  SocketToConnectionMap::iterator it = socket_to_connection_.find(socket);
+  if (it == socket_to_connection_.end())
+    return NULL;
+  return it->second;
 }
 
 }  // namespace net

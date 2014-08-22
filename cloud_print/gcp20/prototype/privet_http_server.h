@@ -204,7 +204,7 @@ class PrivetHttpServer: public net::HttpServer::Delegate {
   uint16 port_;
 
   // Contains encapsulated object for listening for requests.
-  scoped_ptr<net::HttpServer> server_;
+  scoped_refptr<net::HttpServer> server_;
 
   Delegate* delegate_;
 
@@ -212,3 +212,4 @@ class PrivetHttpServer: public net::HttpServer::Delegate {
 };
 
 #endif  // CLOUD_PRINT_GCP20_PROTOTYPE_PRIVET_HTTP_SERVER_H_
+

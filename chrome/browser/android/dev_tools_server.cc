@@ -40,9 +40,7 @@
 #include "content/public/common/user_agent.h"
 #include "grit/browser_resources.h"
 #include "jni/DevToolsServer_jni.h"
-#include "net/base/net_errors.h"
 #include "net/socket/unix_domain_listen_socket_posix.h"
-#include "net/socket/unix_domain_server_socket_posix.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -395,49 +393,6 @@ class DevToolsServerDelegate : public content::DevToolsHttpHandlerDelegate {
   DISALLOW_COPY_AND_ASSIGN(DevToolsServerDelegate);
 };
 
-// Factory for UnixDomainServerSocket. It tries a fallback socket when
-// original socket doesn't work.
-class UnixDomainServerSocketFactory
-    : public content::DevToolsHttpHandler::ServerSocketFactory {
- public:
-  UnixDomainServerSocketFactory(
-      const std::string& socket_name,
-      const net::UnixDomainServerSocket::AuthCallback& auth_callback)
-      : content::DevToolsHttpHandler::ServerSocketFactory(socket_name, 0, 1),
-        auth_callback_(auth_callback) {
-  }
-
- private:
-  // content::DevToolsHttpHandler::ServerSocketFactory.
-  virtual scoped_ptr<net::ServerSocket> Create() const OVERRIDE {
-    return scoped_ptr<net::ServerSocket>(
-        new net::UnixDomainServerSocket(auth_callback_,
-                                        true /* use_abstract_namespace */));
-  }
-
-  virtual scoped_ptr<net::ServerSocket> CreateAndListen() const OVERRIDE {
-    scoped_ptr<net::ServerSocket> socket = Create();
-    if (!socket)
-      return scoped_ptr<net::ServerSocket>();
-
-    if (socket->ListenWithAddressAndPort(address_, port_, backlog_) == net::OK)
-      return socket.Pass();
-
-    // Try a fallback socket name.
-    const std::string fallback_address(
-        base::StringPrintf("%s_%d", address_.c_str(), getpid()));
-    if (socket->ListenWithAddressAndPort(fallback_address, port_, backlog_)
-        == net::OK)
-      return socket.Pass();
-
-    return scoped_ptr<net::ServerSocket>();
-  }
-
-  const net::UnixDomainServerSocket::AuthCallback auth_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(UnixDomainServerSocketFactory);
-};
-
 }  // namespace
 
 DevToolsServer::DevToolsServer(const std::string& socket_name_prefix)
@@ -464,10 +419,12 @@ void DevToolsServer::Start(bool allow_debug_permission) {
       allow_debug_permission ?
           base::Bind(&AuthorizeSocketAccessWithDebugPermission) :
           base::Bind(&content::CanUserConnectToDevTools);
-  scoped_ptr<content::DevToolsHttpHandler::ServerSocketFactory> factory(
-      new UnixDomainServerSocketFactory(socket_name_, auth_callback));
+
   protocol_handler_ = content::DevToolsHttpHandler::Start(
-      factory.Pass(),
+      new net::deprecated::UnixDomainListenSocketWithAbstractNamespaceFactory(
+          socket_name_,
+          base::StringPrintf("%s_%d", socket_name_.c_str(), getpid()),
+          auth_callback),
       base::StringPrintf(kFrontEndURL, content::GetWebKitRevision().c_str()),
       new DevToolsServerDelegate(auth_callback),
       base::FilePath());

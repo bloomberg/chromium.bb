@@ -20,7 +20,7 @@
 #include "net/base/net_errors.h"
 #include "net/server/http_server.h"
 #include "net/server/http_server_request_info.h"
-#include "net/socket/tcp_server_socket.h"
+#include "net/socket/tcp_listen_socket.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -54,10 +54,8 @@ class FetchUrlTest : public testing::Test,
   }
 
   void InitOnIO(base::WaitableEvent* event) {
-    scoped_ptr<net::ServerSocket> server_socket(
-        new net::TCPServerSocket(NULL, net::NetLog::Source()));
-    server_socket->ListenWithAddressAndPort("127.0.0.1", 0, 1);
-    server_.reset(new net::HttpServer(server_socket.Pass(), this));
+    net::TCPListenSocketFactory factory("127.0.0.1", 0);
+    server_ = new net::HttpServer(factory, this);
     net::IPEndPoint address;
     CHECK_EQ(net::OK, server_->GetLocalAddress(&address));
     server_url_ = base::StringPrintf("http://127.0.0.1:%d", address.port());
@@ -65,7 +63,7 @@ class FetchUrlTest : public testing::Test,
   }
 
   void DestroyServerOnIO(base::WaitableEvent* event) {
-    server_.reset(NULL);
+    server_ = NULL;
     event->Signal();
   }
 
@@ -80,7 +78,10 @@ class FetchUrlTest : public testing::Test,
         server_->Send404(connection_id);
         break;
       case kClose:
-        server_->Close(connection_id);
+        // net::HttpServer doesn't allow us to close connection during callback.
+        base::MessageLoop::current()->PostTask(
+            FROM_HERE,
+            base::Bind(&net::HttpServer::Close, server_, connection_id));
         break;
       default:
         break;
@@ -103,7 +104,7 @@ class FetchUrlTest : public testing::Test,
 
   base::Thread io_thread_;
   ServerResponse response_;
-  scoped_ptr<net::HttpServer> server_;
+  scoped_refptr<net::HttpServer> server_;
   scoped_refptr<URLRequestContextGetter> context_getter_;
   std::string server_url_;
 };

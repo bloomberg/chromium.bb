@@ -19,7 +19,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/user_agent.h"
 #include "jni/AwDevToolsServer_jni.h"
-#include "net/socket/unix_domain_server_socket_posix.h"
+#include "net/socket/unix_domain_listen_socket_posix.h"
 
 using content::DevToolsAgentHost;
 using content::RenderViewHost;
@@ -157,25 +157,6 @@ std::string GetViewDescription(WebContents* web_contents) {
   return json;
 }
 
-// Factory for UnixDomainServerSocket.
-class UnixDomainServerSocketFactory
-    : public content::DevToolsHttpHandler::ServerSocketFactory {
- public:
-  explicit UnixDomainServerSocketFactory(const std::string& socket_name)
-      : content::DevToolsHttpHandler::ServerSocketFactory(socket_name, 0, 1) {}
-
- private:
-  // content::DevToolsHttpHandler::ServerSocketFactory.
-  virtual scoped_ptr<net::ServerSocket> Create() const OVERRIDE {
-    return scoped_ptr<net::ServerSocket>(
-        new net::UnixDomainServerSocket(
-            base::Bind(&content::CanUserConnectToDevTools),
-            true /* use_abstract_namespace */));
-  }
-
-  DISALLOW_COPY_AND_ASSIGN(UnixDomainServerSocketFactory);
-};
-
 }  // namespace
 
 namespace android_webview {
@@ -192,11 +173,11 @@ void AwDevToolsServer::Start() {
   if (protocol_handler_)
     return;
 
-  scoped_ptr<content::DevToolsHttpHandler::ServerSocketFactory> factory(
-      new UnixDomainServerSocketFactory(
-          base::StringPrintf(kSocketNameFormat, getpid())));
   protocol_handler_ = content::DevToolsHttpHandler::Start(
-      factory.Pass(),
+      new net::deprecated::UnixDomainListenSocketWithAbstractNamespaceFactory(
+          base::StringPrintf(kSocketNameFormat, getpid()),
+          "",
+          base::Bind(&content::CanUserConnectToDevTools)),
       base::StringPrintf(kFrontEndURL, content::GetWebKitRevision().c_str()),
       new AwDevToolsServerDelegate(),
       base::FilePath());

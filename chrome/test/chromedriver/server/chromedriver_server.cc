@@ -33,7 +33,7 @@
 #include "net/server/http_server.h"
 #include "net/server/http_server_request_info.h"
 #include "net/server/http_server_response_info.h"
-#include "net/socket/tcp_server_socket.h"
+#include "net/socket/tcp_listen_socket.h"
 
 namespace {
 
@@ -55,10 +55,8 @@ class HttpServer : public net::HttpServer::Delegate {
     std::string binding_ip = kLocalHostAddress;
     if (allow_remote)
       binding_ip = "0.0.0.0";
-    scoped_ptr<net::ServerSocket> server_socket(
-        new net::TCPServerSocket(NULL, net::NetLog::Source()));
-    server_socket->ListenWithAddressAndPort(binding_ip, port, 1);
-    server_.reset(new net::HttpServer(server_socket.Pass(), this));
+    server_ = new net::HttpServer(
+        net::TCPListenSocketFactory(binding_ip, port), this);
     net::IPEndPoint address;
     return server_->GetLocalAddress(&address) == net::OK;
   }
@@ -91,7 +89,7 @@ class HttpServer : public net::HttpServer::Delegate {
   }
 
   HttpRequestHandlerFunc handle_request_func_;
-  scoped_ptr<net::HttpServer> server_;
+  scoped_refptr<net::HttpServer> server_;
   base::WeakPtrFactory<HttpServer> weak_factory_;  // Should be last.
 };
 
