@@ -24,7 +24,10 @@
     "easyUnlockPrivate",
     "systemPrivate",
     "alarms",
-    "gcm"
+    "gcm",
+    "system.display",
+    "chromeosInfoPrivate",
+    "tabs"
   ],
 
   "app": {
