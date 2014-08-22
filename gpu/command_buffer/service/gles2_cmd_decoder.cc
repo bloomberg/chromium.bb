@@ -10047,6 +10047,29 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
     return;
   }
 
+  GLenum source_type = 0;
+  GLenum source_internal_format = 0;
+  source_texture->GetLevelType(
+      source_texture->target(), 0, &source_type, &source_internal_format);
+
+  // The destination format should be GL_RGB, or GL_RGBA. GL_ALPHA,
+  // GL_LUMINANCE, and GL_LUMINANCE_ALPHA are not supported because they are not
+  // renderable on some platforms.
+  bool valid_dest_format =
+      internal_format == GL_RGB || internal_format == GL_RGBA;
+  bool valid_source_format = source_internal_format == GL_ALPHA ||
+                             source_internal_format == GL_RGB ||
+                             source_internal_format == GL_RGBA ||
+                             source_internal_format == GL_LUMINANCE ||
+                             source_internal_format == GL_LUMINANCE_ALPHA ||
+                             source_internal_format == GL_BGRA_EXT;
+  if (!valid_source_format || !valid_dest_format) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION,
+                       "glCopyTextureCHROMIUM",
+                       "invalid internal format");
+    return;
+  }
+
   // Defer initializing the CopyTextureCHROMIUMResourceManager until it is
   // needed because it takes 10s of milliseconds to initialize.
   if (!copy_texture_CHROMIUM_.get()) {
@@ -10058,11 +10081,6 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
       return;
   }
 
-  GLenum source_type = 0;
-  GLenum source_internal_format = 0;
-  source_texture->GetLevelType(
-      source_texture->target(), 0, &source_type, &source_internal_format);
-
   GLenum dest_type_previous = dest_type;
   GLenum dest_internal_format = internal_format;
   bool dest_level_defined = dest_texture->GetLevelSize(
@@ -10071,20 +10089,6 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
   if (dest_level_defined) {
     dest_texture->GetLevelType(GL_TEXTURE_2D, level, &dest_type_previous,
                                &dest_internal_format);
-  }
-
-  // The destination format should be GL_ALPHA, GL_RGB, GL_RGBA, GL_LUMINANCE,
-  // or GL_LUMINANCE_ALPHA.
-  bool valid_dest_format = dest_internal_format >= GL_ALPHA &&
-                           dest_internal_format <= GL_LUMINANCE_ALPHA;
-  // The source format can be GL_BGRA_EXT.
-  bool valid_source_format = (source_internal_format >= GL_ALPHA &&
-                              source_internal_format <= GL_LUMINANCE_ALPHA) ||
-                             source_internal_format == GL_BGRA_EXT;
-  if (!valid_source_format || !valid_dest_format) {
-    LOCAL_SET_GL_ERROR(
-        GL_INVALID_VALUE, "glCopyTextureCHROMIUM", "invalid internal format");
-    return;
   }
 
   // Resize the destination texture to the dimensions of the source texture.

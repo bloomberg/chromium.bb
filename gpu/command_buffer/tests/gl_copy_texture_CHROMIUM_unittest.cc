@@ -76,6 +76,118 @@ TEST_F(GLCopyTextureCHROMIUMTest, Basic) {
   EXPECT_TRUE(GL_NO_ERROR == glGetError());
 }
 
+TEST_F(GLCopyTextureCHROMIUMTest, InternalFormat) {
+  GLint src_formats[] = {GL_ALPHA,     GL_RGB,             GL_RGBA,
+                         GL_LUMINANCE, GL_LUMINANCE_ALPHA, GL_BGRA_EXT};
+  GLint dest_formats[] = {GL_RGB, GL_RGBA};
+
+  for (size_t src_index = 0; src_index < arraysize(src_formats); src_index++) {
+    for (size_t dest_index = 0; dest_index < arraysize(dest_formats);
+         dest_index++) {
+      glBindTexture(GL_TEXTURE_2D, textures_[0]);
+      glTexImage2D(GL_TEXTURE_2D,
+                   0,
+                   src_formats[src_index],
+                   1,
+                   1,
+                   0,
+                   src_formats[src_index],
+                   GL_UNSIGNED_BYTE,
+                   NULL);
+      EXPECT_TRUE(GL_NO_ERROR == glGetError());
+
+      glCopyTextureCHROMIUM(GL_TEXTURE_2D,
+                            textures_[0],
+                            textures_[1],
+                            0,
+                            dest_formats[dest_index],
+                            GL_UNSIGNED_BYTE);
+      EXPECT_TRUE(GL_NO_ERROR == glGetError()) << "src_index:" << src_index
+                                               << " dest_index:" << dest_index;
+    }
+  }
+}
+
+TEST_F(GLCopyTextureCHROMIUMTest, InternalFormatNotSupported) {
+  glBindTexture(GL_TEXTURE_2D, textures_[0]);
+  glTexImage2D(
+      GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+  EXPECT_TRUE(GL_NO_ERROR == glGetError());
+
+  // Check unsupported format reports error.
+  GLint unsupported_dest_formats[] = {GL_ALPHA, GL_LUMINANCE,
+                                      GL_LUMINANCE_ALPHA, GL_BGRA_EXT};
+  for (size_t dest_index = 0; dest_index < arraysize(unsupported_dest_formats);
+       dest_index++) {
+    glCopyTextureCHROMIUM(GL_TEXTURE_2D,
+                          textures_[0],
+                          textures_[1],
+                          0,
+                          unsupported_dest_formats[dest_index],
+                          GL_UNSIGNED_BYTE);
+    EXPECT_TRUE(GL_INVALID_OPERATION == glGetError())
+        << "dest_index:" << dest_index;
+  }
+}
+
+// Test to ensure that the destination texture is redefined if the properties
+// are different.
+TEST_F(GLCopyTextureCHROMIUMTest, RedefineDestinationTexture) {
+  uint8 pixels[4 * 4] = {255u, 0u, 0u, 255u, 255u, 0u, 0u, 255u,
+                         255u, 0u, 0u, 255u, 255u, 0u, 0u, 255u};
+
+  glBindTexture(GL_TEXTURE_2D, textures_[0]);
+  glTexImage2D(
+      GL_TEXTURE_2D, 0, GL_RGBA, 2, 2, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+
+  glBindTexture(GL_TEXTURE_2D, textures_[1]);
+  glTexImage2D(GL_TEXTURE_2D,
+               0,
+               GL_BGRA_EXT,
+               1,
+               1,
+               0,
+               GL_BGRA_EXT,
+               GL_UNSIGNED_BYTE,
+               pixels);
+  EXPECT_TRUE(GL_NO_ERROR == glGetError());
+
+  // GL_INVALID_OPERATION due to "intrinsic format" != "internal format".
+  glTexSubImage2D(
+      GL_TEXTURE_2D, 0, 0, 0, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+  EXPECT_TRUE(GL_INVALID_OPERATION == glGetError());
+  // GL_INVALID_VALUE due to bad dimensions.
+  glTexSubImage2D(
+      GL_TEXTURE_2D, 0, 1, 1, 1, 1, GL_BGRA_EXT, GL_UNSIGNED_BYTE, pixels);
+  EXPECT_TRUE(GL_INVALID_VALUE == glGetError());
+
+  // If the dest texture has different properties, glCopyTextureCHROMIUM()
+  // redefines them.
+  glCopyTextureCHROMIUM(
+      GL_TEXTURE_2D, textures_[0], textures_[1], 0, GL_RGBA, GL_UNSIGNED_BYTE);
+  EXPECT_TRUE(GL_NO_ERROR == glGetError());
+
+  // glTexSubImage2D() succeeds because textures_[1] is redefined into 2x2
+  // dimension and GL_RGBA format.
+  glBindTexture(GL_TEXTURE_2D, textures_[1]);
+  glTexSubImage2D(
+      GL_TEXTURE_2D, 0, 1, 1, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+  EXPECT_TRUE(GL_NO_ERROR == glGetError());
+
+  // Check the FB is still bound.
+  GLint value = 0;
+  glGetIntegerv(GL_FRAMEBUFFER_BINDING, &value);
+  GLuint fb_id = value;
+  EXPECT_EQ(framebuffer_id_, fb_id);
+
+  // Check that FB is complete.
+  EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_COMPLETE),
+            glCheckFramebufferStatus(GL_FRAMEBUFFER));
+
+  GLTestHelper::CheckPixels(1, 1, 1, 1, 0, &pixels[12]);
+  EXPECT_TRUE(GL_NO_ERROR == glGetError());
+}
+
 // Test that the extension respects the flip-y pixel storage setting.
 TEST_F(GLCopyTextureCHROMIUMTest, FlipY) {
   uint8 pixels[2][2][4];

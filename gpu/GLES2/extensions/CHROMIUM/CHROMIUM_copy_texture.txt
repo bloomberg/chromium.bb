@@ -48,7 +48,10 @@ New Procedures and Functions
 
     The internal format of the destination texture is converted to that
     specified by <internal_format>. Must be one of the following symbolic
-    constants: GL_ALPHA, GL_LUMINANCE, GL_LUMINANCE_ALPHA, GL_RGB, GL_RGBA
+    constants: GL_RGB, GL_RGBA
+    The internal format of <source_id> texture must be one of the following
+    symbolic constants: GL_ALPHA, GL_LUMINANCE, GL_LUMINANCE_ALPHA, GL_RGB,
+    GL_RGBA, GL_BGRA_EXT
     When <source_id> texture doens't contain a superset of the component
     required by <internal_format>, fill the components by following rules.
 
@@ -59,11 +62,18 @@ New Procedures and Functions
                    GL_LUMINANCE_ALPHA     (L, L, L, A)
                    GL_RGB                 (R, G, B, 1)
                    GL_RGBA                (R, G, B, A)
+                   GL_BGRA_EXT            (R, G, B, A)
 
     The format type of the destination texture is converted to that specified
     by <dest_type>.
 
     <target> uses the same parameters as TexImage2D.
+
+    INVALID_OPERATION is generated if <internal_format> is not one of the valid formats
+    described above.
+
+    INVALID_OPERATION is generated if the internal format of <source_id> is not one of
+    formats from the table above.
 
     INVALID_VALUE is generated if <target> is not GL_TEXTURE_2D.
 
