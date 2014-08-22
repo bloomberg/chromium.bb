@@ -438,7 +438,7 @@ GtkStyle* NativeThemeGtk2::GetTooltipStyle() const {
 
 GtkStyle* NativeThemeGtk2::GetMenuStyle() const {
   if (!fake_menu_.get())
-    fake_menu_.Own(gtk_menu_new());
+    fake_menu_.Own(gtk_custom_menu_new());
   return gtk_rc_get_style(fake_menu_.get());
 }
 
