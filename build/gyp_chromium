@@ -188,6 +188,13 @@ def additional_include_files(supplemental_files, args=[]):
 
 
 if __name__ == '__main__':
+  # Disabling garbage collection saves about 1 second out of 16 on a Linux
+  # z620 workstation. Since this is a short-lived process it's not a problem to
+  # leak a few cyclyc references in order to spare the CPU cycles for
+  # scanning the heap.
+  import gc
+  gc.disable()
+
   args = sys.argv[1:]
 
   use_analyzer = len(args) and args[0] == '--analyzer'
