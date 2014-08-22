@@ -26,7 +26,7 @@ namespace content {
 class BlobStorageHost;
 }
 
-namespace webkit_blob {
+namespace storage {
 
 class BlobDataHandle;
 
@@ -113,6 +113,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT BlobStorageContext
   DISALLOW_COPY_AND_ASSIGN(BlobStorageContext);
 };
 
-}  // namespace webkit_blob
+}  // namespace storage
 
 #endif  // WEBKIT_BROWSER_BLOB_BLOB_STORAGE_CONTEXT_H_

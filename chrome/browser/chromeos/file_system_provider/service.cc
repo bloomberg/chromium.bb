@@ -126,8 +126,8 @@ bool Service::MountFileSystem(const std::string& extension_id,
     return false;
   }
 
-  fileapi::ExternalMountPoints* const mount_points =
-      fileapi::ExternalMountPoints::GetSystemInstance();
+  storage::ExternalMountPoints* const mount_points =
+      storage::ExternalMountPoints::GetSystemInstance();
   DCHECK(mount_points);
 
   // The mount point path and name are unique per system, since they are system
@@ -137,8 +137,8 @@ bool Service::MountFileSystem(const std::string& extension_id,
   const std::string mount_point_name = mount_path.BaseName().AsUTF8Unsafe();
 
   if (!mount_points->RegisterFileSystem(mount_point_name,
-                                        fileapi::kFileSystemTypeProvided,
-                                        fileapi::FileSystemMountOption(),
+                                        storage::kFileSystemTypeProvided,
+                                        storage::FileSystemMountOption(),
                                         mount_path)) {
     FOR_EACH_OBSERVER(
         Observer,
@@ -191,8 +191,8 @@ bool Service::UnmountFileSystem(const std::string& extension_id,
     return false;
   }
 
-  fileapi::ExternalMountPoints* const mount_points =
-      fileapi::ExternalMountPoints::GetSystemInstance();
+  storage::ExternalMountPoints* const mount_points =
+      storage::ExternalMountPoints::GetSystemInstance();
   DCHECK(mount_points);
 
   const ProvidedFileSystemInfo& file_system_info =

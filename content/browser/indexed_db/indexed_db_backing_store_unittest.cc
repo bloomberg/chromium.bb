@@ -375,7 +375,7 @@ TEST_F(IndexedDBBackingStoreTest, PutGetConsistency) {
   {
     IndexedDBBackingStore::Transaction transaction1(backing_store_);
     transaction1.Begin();
-    ScopedVector<webkit_blob::BlobDataHandle> handles;
+    ScopedVector<storage::BlobDataHandle> handles;
     IndexedDBBackingStore::RecordIdentifier record;
     leveldb::Status s = backing_store_->PutRecord(
         &transaction1, 1, 1, m_key1, &m_value1, &handles, &record);
@@ -407,7 +407,7 @@ TEST_F(IndexedDBBackingStoreTest, PutGetConsistencyWithBlobs) {
   {
     IndexedDBBackingStore::Transaction transaction1(backing_store_);
     transaction1.Begin();
-    ScopedVector<webkit_blob::BlobDataHandle> handles;
+    ScopedVector<storage::BlobDataHandle> handles;
     IndexedDBBackingStore::RecordIdentifier record;
     EXPECT_TRUE(backing_store_->PutRecord(&transaction1,
                                           1,
@@ -492,7 +492,7 @@ TEST_F(IndexedDBBackingStoreTest, DeleteRange) {
       IndexedDBValue value3 = IndexedDBValue("value3", blob_info3);
       IndexedDBBackingStore::Transaction transaction1(backing_store_);
       transaction1.Begin();
-      ScopedVector<webkit_blob::BlobDataHandle> handles;
+      ScopedVector<storage::BlobDataHandle> handles;
       IndexedDBBackingStore::RecordIdentifier record;
       EXPECT_TRUE(backing_store_->PutRecord(&transaction1,
                                             1,
@@ -582,7 +582,7 @@ TEST_F(IndexedDBBackingStoreTest, DeleteRangeEmptyRange) {
       IndexedDBValue value3 = IndexedDBValue("value3", blob_info3);
       IndexedDBBackingStore::Transaction transaction1(backing_store_);
       transaction1.Begin();
-      ScopedVector<webkit_blob::BlobDataHandle> handles;
+      ScopedVector<storage::BlobDataHandle> handles;
       IndexedDBBackingStore::RecordIdentifier record;
       EXPECT_TRUE(backing_store_->PutRecord(&transaction1,
                                             1,
@@ -641,7 +641,7 @@ TEST_F(IndexedDBBackingStoreTest, LiveBlobJournal) {
   {
     IndexedDBBackingStore::Transaction transaction1(backing_store_);
     transaction1.Begin();
-    ScopedVector<webkit_blob::BlobDataHandle> handles;
+    ScopedVector<storage::BlobDataHandle> handles;
     IndexedDBBackingStore::RecordIdentifier record;
     EXPECT_TRUE(backing_store_->PutRecord(&transaction1,
                                           1,
@@ -720,7 +720,7 @@ TEST_F(IndexedDBBackingStoreTest, HighIds) {
   {
     IndexedDBBackingStore::Transaction transaction1(backing_store_);
     transaction1.Begin();
-    ScopedVector<webkit_blob::BlobDataHandle> handles;
+    ScopedVector<storage::BlobDataHandle> handles;
     IndexedDBBackingStore::RecordIdentifier record;
     leveldb::Status s = backing_store_->PutRecord(&transaction1,
                                                   high_database_id,
@@ -809,7 +809,7 @@ TEST_F(IndexedDBBackingStoreTest, InvalidIds) {
   IndexedDBBackingStore::Transaction transaction1(backing_store_);
   transaction1.Begin();
 
-  ScopedVector<webkit_blob::BlobDataHandle> handles;
+  ScopedVector<storage::BlobDataHandle> handles;
   IndexedDBBackingStore::RecordIdentifier record;
   leveldb::Status s = backing_store_->PutRecord(&transaction1,
                                                 database_id,

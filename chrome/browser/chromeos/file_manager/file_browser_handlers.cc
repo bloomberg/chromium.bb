@@ -42,7 +42,7 @@ using content::ChildProcessSecurityPolicy;
 using content::SiteInstance;
 using content::WebContents;
 using extensions::Extension;
-using fileapi::FileSystemURL;
+using storage::FileSystemURL;
 using file_manager::util::EntryDefinition;
 using file_manager::util::EntryDefinitionList;
 using file_manager::util::FileDefinition;
@@ -165,7 +165,7 @@ class FileBrowserHandlerExecutor {
   // Checks legitimacy of file url and grants file RO access permissions from
   // handler (target) extension and its renderer process.
   static scoped_ptr<FileDefinitionList> SetupFileAccessPermissions(
-      scoped_refptr<fileapi::FileSystemContext> file_system_context_handler,
+      scoped_refptr<storage::FileSystemContext> file_system_context_handler,
       const scoped_refptr<const Extension>& handler_extension,
       const std::vector<FileSystemURL>& file_urls);
 
@@ -199,13 +199,13 @@ class FileBrowserHandlerExecutor {
 // static
 scoped_ptr<FileDefinitionList>
 FileBrowserHandlerExecutor::SetupFileAccessPermissions(
-    scoped_refptr<fileapi::FileSystemContext> file_system_context_handler,
+    scoped_refptr<storage::FileSystemContext> file_system_context_handler,
     const scoped_refptr<const Extension>& handler_extension,
     const std::vector<FileSystemURL>& file_urls) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   DCHECK(handler_extension.get());
 
-  fileapi::ExternalFileSystemBackend* backend =
+  storage::ExternalFileSystemBackend* backend =
       file_system_context_handler->external_backend();
 
   scoped_ptr<FileDefinitionList> file_definition_list(new FileDefinitionList);
@@ -218,12 +218,12 @@ FileBrowserHandlerExecutor::SetupFileAccessPermissions(
     base::FilePath local_path = url.path();
     base::FilePath virtual_path = url.virtual_path();
 
-    const bool is_drive_file = url.type() == fileapi::kFileSystemTypeDrive;
+    const bool is_drive_file = url.type() == storage::kFileSystemTypeDrive;
     DCHECK(!is_drive_file || drive::util::IsUnderDriveMountPoint(local_path));
 
     const bool is_native_file =
-        url.type() == fileapi::kFileSystemTypeNativeLocal ||
-        url.type() == fileapi::kFileSystemTypeRestrictedNativeLocal;
+        url.type() == storage::kFileSystemTypeNativeLocal ||
+        url.type() == storage::kFileSystemTypeRestrictedNativeLocal;
 
     // If the file is from a physical volume, actual file must be found.
     if (is_native_file) {
@@ -270,9 +270,8 @@ void FileBrowserHandlerExecutor::Execute(
   // Get file system context for the extension to which onExecute event will be
   // sent. The file access permissions will be granted to the extension in the
   // file system context for the files in |file_urls|.
-  scoped_refptr<fileapi::FileSystemContext> file_system_context(
-      util::GetFileSystemContextForExtensionId(
-          profile_, extension_->id()));
+  scoped_refptr<storage::FileSystemContext> file_system_context(
+      util::GetFileSystemContextForExtensionId(profile_, extension_->id()));
 
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::FILE,

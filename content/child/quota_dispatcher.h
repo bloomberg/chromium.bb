@@ -40,7 +40,7 @@ class QuotaDispatcher : public WorkerTaskRunner::Observer {
     virtual ~Callback() {}
     virtual void DidQueryStorageUsageAndQuota(int64 usage, int64 quota) = 0;
     virtual void DidGrantStorageQuota(int64 usage, int64 granted_quota) = 0;
-    virtual void DidFail(quota::QuotaStatusCode status) = 0;
+    virtual void DidFail(storage::QuotaStatusCode status) = 0;
   };
 
   QuotaDispatcher(ThreadSafeSender* thread_safe_sender,
@@ -59,11 +59,11 @@ class QuotaDispatcher : public WorkerTaskRunner::Observer {
   void OnMessageReceived(const IPC::Message& msg);
 
   void QueryStorageUsageAndQuota(const GURL& gurl,
-                                 quota::StorageType type,
+                                 storage::StorageType type,
                                  Callback* callback);
   void RequestStorageQuota(int render_view_id,
                            const GURL& gurl,
-                           quota::StorageType type,
+                           storage::StorageType type,
                            uint64 requested_size,
                            Callback* callback);
 
@@ -79,8 +79,7 @@ class QuotaDispatcher : public WorkerTaskRunner::Observer {
   void DidGrantStorageQuota(int request_id,
                             int64 current_usage,
                             int64 granted_quota);
-  void DidFail(int request_id,
-               quota::QuotaStatusCode error);
+  void DidFail(int request_id, storage::QuotaStatusCode error);
 
   IDMap<Callback, IDMapOwnPointer> pending_quota_callbacks_;
 

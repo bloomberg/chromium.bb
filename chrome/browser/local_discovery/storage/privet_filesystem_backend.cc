@@ -14,7 +14,7 @@
 namespace local_discovery {
 
 PrivetFileSystemBackend::PrivetFileSystemBackend(
-    fileapi::ExternalMountPoints* mount_points,
+    storage::ExternalMountPoints* mount_points,
     content::BrowserContext* browser_context)
     : mount_points_(mount_points),
       async_util_(new PrivetFileSystemAsyncUtil(browser_context)) {
@@ -24,81 +24,82 @@ PrivetFileSystemBackend::~PrivetFileSystemBackend() {
 }
 
 bool PrivetFileSystemBackend::CanHandleType(
-    fileapi::FileSystemType type) const {
-  return (type == fileapi::kFileSystemTypeCloudDevice);
+    storage::FileSystemType type) const {
+  return (type == storage::kFileSystemTypeCloudDevice);
 }
 
-void PrivetFileSystemBackend::Initialize(fileapi::FileSystemContext* context) {
-  mount_points_->RegisterFileSystem(
-      "privet",
-      fileapi::kFileSystemTypeCloudDevice,
-      fileapi::FileSystemMountOption(),
-      base::FilePath(kPrivetFilePath));
+void PrivetFileSystemBackend::Initialize(storage::FileSystemContext* context) {
+  mount_points_->RegisterFileSystem("privet",
+                                    storage::kFileSystemTypeCloudDevice,
+                                    storage::FileSystemMountOption(),
+                                    base::FilePath(kPrivetFilePath));
 }
 
 void PrivetFileSystemBackend::ResolveURL(
-    const fileapi::FileSystemURL& url,
-    fileapi::OpenFileSystemMode mode,
+    const storage::FileSystemURL& url,
+    storage::OpenFileSystemMode mode,
     const OpenFileSystemCallback& callback) {
   // TODO(noamsml): Provide a proper root url and a proper name.
   GURL root_url = GURL(
-      fileapi::GetExternalFileSystemRootURIString(url.origin(), std::string()));
+      storage::GetExternalFileSystemRootURIString(url.origin(), std::string()));
   callback.Run(root_url, std::string(), base::File::FILE_OK);
 }
 
-fileapi::FileSystemQuotaUtil* PrivetFileSystemBackend::GetQuotaUtil() {
+storage::FileSystemQuotaUtil* PrivetFileSystemBackend::GetQuotaUtil() {
   // No quota support.
   return NULL;
 }
 
-fileapi::AsyncFileUtil* PrivetFileSystemBackend::GetAsyncFileUtil(
-    fileapi::FileSystemType type) {
+storage::AsyncFileUtil* PrivetFileSystemBackend::GetAsyncFileUtil(
+    storage::FileSystemType type) {
   return async_util_.get();
 }
 
-fileapi::CopyOrMoveFileValidatorFactory*
+storage::CopyOrMoveFileValidatorFactory*
 PrivetFileSystemBackend::GetCopyOrMoveFileValidatorFactory(
-    fileapi::FileSystemType type, base::File::Error* error_code) {
+    storage::FileSystemType type,
+    base::File::Error* error_code) {
   DCHECK(error_code);
   *error_code = base::File::FILE_OK;
   return NULL;
 }
 
-fileapi::FileSystemOperation*
+storage::FileSystemOperation*
 PrivetFileSystemBackend::CreateFileSystemOperation(
-    const fileapi::FileSystemURL& url,
-    fileapi::FileSystemContext* context,
+    const storage::FileSystemURL& url,
+    storage::FileSystemContext* context,
     base::File::Error* error_code) const {
-  return fileapi::FileSystemOperation::Create(
-      url, context,
-      make_scoped_ptr(new fileapi::FileSystemOperationContext(context)));
+  return storage::FileSystemOperation::Create(
+      url,
+      context,
+      make_scoped_ptr(new storage::FileSystemOperationContext(context)));
 }
 
 bool PrivetFileSystemBackend::SupportsStreaming(
-    const fileapi::FileSystemURL& url) const {
+    const storage::FileSystemURL& url) const {
   return false;
 }
 
 bool PrivetFileSystemBackend::HasInplaceCopyImplementation(
-    fileapi::FileSystemType type) const {
+    storage::FileSystemType type) const {
   return true;
 }
 
-scoped_ptr<webkit_blob::FileStreamReader>
+scoped_ptr<storage::FileStreamReader>
 PrivetFileSystemBackend::CreateFileStreamReader(
-    const fileapi::FileSystemURL& url,
+    const storage::FileSystemURL& url,
     int64 offset,
     const base::Time& expected_modification_time,
-    fileapi::FileSystemContext* context) const {
-  return scoped_ptr<webkit_blob::FileStreamReader>();
+    storage::FileSystemContext* context) const {
+  return scoped_ptr<storage::FileStreamReader>();
 }
 
-scoped_ptr<fileapi::FileStreamWriter>
+scoped_ptr<storage::FileStreamWriter>
 PrivetFileSystemBackend::CreateFileStreamWriter(
-    const fileapi::FileSystemURL& url,
+    const storage::FileSystemURL& url,
     int64 offset,
-    fileapi::FileSystemContext* context) const {
-  return scoped_ptr<fileapi::FileStreamWriter>();
+    storage::FileSystemContext* context) const {
+  return scoped_ptr<storage::FileStreamWriter>();
 }
 
 }  // namespace local_discovery

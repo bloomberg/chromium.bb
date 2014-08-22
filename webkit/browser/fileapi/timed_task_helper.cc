@@ -8,7 +8,7 @@
 #include "base/logging.h"
 #include "base/sequenced_task_runner.h"
 
-namespace fileapi {
+namespace storage {
 
 struct TimedTaskHelper::Tracker {
   explicit Tracker(TimedTaskHelper* timer) : timer(timer) {}
@@ -89,4 +89,4 @@ void TimedTaskHelper::PostDelayedTask(scoped_ptr<Tracker> tracker,
       delay);
 }
 
-}  // namespace fileapi
+}  // namespace storage

@@ -34,7 +34,7 @@ ServiceWorkerContextWrapper::~ServiceWorkerContextWrapper() {
 
 void ServiceWorkerContextWrapper::Init(
     const base::FilePath& user_data_directory,
-    quota::QuotaManagerProxy* quota_manager_proxy) {
+    storage::QuotaManagerProxy* quota_manager_proxy) {
   is_incognito_ = user_data_directory.empty();
   scoped_refptr<base::SequencedTaskRunner> database_task_runner =
       BrowserThread::GetBlockingPool()->
@@ -243,7 +243,7 @@ void ServiceWorkerContextWrapper::InitInternal(
     const scoped_refptr<base::SequencedTaskRunner>& stores_task_runner,
     const scoped_refptr<base::SequencedTaskRunner>& database_task_runner,
     const scoped_refptr<base::SingleThreadTaskRunner>& disk_cache_thread,
-    quota::QuotaManagerProxy* quota_manager_proxy) {
+    storage::QuotaManagerProxy* quota_manager_proxy) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     BrowserThread::PostTask(
         BrowserThread::IO,

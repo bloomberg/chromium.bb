@@ -17,9 +17,9 @@
 #include "webkit/browser/quota/quota_manager.h"
 #include "webkit/browser/quota/quota_temporary_storage_evictor.h"
 
-using quota::QuotaTemporaryStorageEvictor;
-using quota::StorageType;
-using quota::UsageAndQuota;
+using storage::QuotaTemporaryStorageEvictor;
+using storage::StorageType;
+using storage::UsageAndQuota;
 
 namespace content {
 
@@ -27,7 +27,7 @@ class QuotaTemporaryStorageEvictorTest;
 
 namespace {
 
-class MockQuotaEvictionHandler : public quota::QuotaEvictionHandler {
+class MockQuotaEvictionHandler : public storage::QuotaEvictionHandler {
  public:
   explicit MockQuotaEvictionHandler(QuotaTemporaryStorageEvictorTest *test)
       : quota_(0),
@@ -40,25 +40,25 @@ class MockQuotaEvictionHandler : public quota::QuotaEvictionHandler {
       StorageType type,
       const EvictOriginDataCallback& callback) OVERRIDE {
     if (error_on_evict_origin_data_) {
-      callback.Run(quota::kQuotaErrorInvalidModification);
+      callback.Run(storage::kQuotaErrorInvalidModification);
       return;
     }
     int64 origin_usage = EnsureOriginRemoved(origin);
     if (origin_usage >= 0)
       available_space_ += origin_usage;
-    callback.Run(quota::kQuotaStatusOk);
+    callback.Run(storage::kQuotaStatusOk);
   }
 
   virtual void GetUsageAndQuotaForEviction(
       const UsageAndQuotaCallback& callback) OVERRIDE {
     if (error_on_get_usage_and_quota_) {
-      callback.Run(quota::kQuotaErrorInvalidAccess, UsageAndQuota());
+      callback.Run(storage::kQuotaErrorInvalidAccess, UsageAndQuota());
       return;
     }
     if (!task_for_get_usage_and_quota_.is_null())
       task_for_get_usage_and_quota_.Run();
     UsageAndQuota quota_and_usage(-1, GetUsage(), quota_, available_space_);
-    callback.Run(quota::kQuotaStatusOk, quota_and_usage);
+    callback.Run(storage::kQuotaStatusOk, quota_and_usage);
   }
 
   virtual void GetLRUOrigin(

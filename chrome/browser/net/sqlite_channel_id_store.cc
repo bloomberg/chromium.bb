@@ -36,7 +36,7 @@ class SQLiteChannelIDStore::Backend
   Backend(
       const base::FilePath& path,
       const scoped_refptr<base::SequencedTaskRunner>& background_task_runner,
-      quota::SpecialStoragePolicy* special_storage_policy)
+      storage::SpecialStoragePolicy* special_storage_policy)
       : path_(path),
         num_pending_(0),
         force_keep_session_state_(false),
@@ -130,7 +130,7 @@ class SQLiteChannelIDStore::Backend
 
   scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
 
-  scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy_;
+  scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy_;
 
   // Indicates if the kill-database callback has been scheduled.
   bool corruption_detected_;
@@ -610,10 +610,10 @@ void SQLiteChannelIDStore::Backend::SetForceKeepSessionState() {
 SQLiteChannelIDStore::SQLiteChannelIDStore(
     const base::FilePath& path,
     const scoped_refptr<base::SequencedTaskRunner>& background_task_runner,
-    quota::SpecialStoragePolicy* special_storage_policy)
-    : backend_(new Backend(path,
-                           background_task_runner,
-                           special_storage_policy)) {}
+    storage::SpecialStoragePolicy* special_storage_policy)
+    : backend_(
+          new Backend(path, background_task_runner, special_storage_policy)) {
+}
 
 void SQLiteChannelIDStore::Load(
     const LoadedCallback& loaded_callback) {

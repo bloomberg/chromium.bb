@@ -5,7 +5,7 @@
 #ifndef WEBKIT_COMMON_FILEAPI_FILE_SYSTEM_MOUNT_OPTION_H_
 #define WEBKIT_COMMON_FILEAPI_FILE_SYSTEM_MOUNT_OPTION_H_
 
-namespace fileapi {
+namespace storage {
 
 // Option for specifying if disk sync operation is wanted after copying.
 enum CopySyncOption {
@@ -32,6 +32,6 @@ class FileSystemMountOption {
   CopySyncOption copy_sync_option_;
 };
 
-}  // namespace fileapi
+}  // namespace storage
 
 #endif  // WEBKIT_COMMON_FILEAPI_FILE_SYSTEM_MOUNT_OPTION_H_

@@ -28,18 +28,18 @@ class StoragePartitionImpl : public StoragePartition {
   CONTENT_EXPORT static int GenerateQuotaClientMask(uint32 remove_mask);
 
   CONTENT_EXPORT void OverrideQuotaManagerForTesting(
-      quota::QuotaManager* quota_manager);
+      storage::QuotaManager* quota_manager);
   CONTENT_EXPORT void OverrideSpecialStoragePolicyForTesting(
-      quota::SpecialStoragePolicy* special_storage_policy);
+      storage::SpecialStoragePolicy* special_storage_policy);
 
   // StoragePartition interface.
   virtual base::FilePath GetPath() OVERRIDE;
   virtual net::URLRequestContextGetter* GetURLRequestContext() OVERRIDE;
   virtual net::URLRequestContextGetter* GetMediaURLRequestContext() OVERRIDE;
-  virtual quota::QuotaManager* GetQuotaManager() OVERRIDE;
+  virtual storage::QuotaManager* GetQuotaManager() OVERRIDE;
   virtual ChromeAppCacheService* GetAppCacheService() OVERRIDE;
-  virtual fileapi::FileSystemContext* GetFileSystemContext() OVERRIDE;
-  virtual webkit_database::DatabaseTracker* GetDatabaseTracker() OVERRIDE;
+  virtual storage::FileSystemContext* GetFileSystemContext() OVERRIDE;
+  virtual storage::DatabaseTracker* GetDatabaseTracker() OVERRIDE;
   virtual DOMStorageContextWrapper* GetDOMStorageContext() OVERRIDE;
   virtual IndexedDBContextImpl* GetIndexedDBContext() OVERRIDE;
   virtual ServiceWorkerContextWrapper* GetServiceWorkerContext() OVERRIDE;
@@ -109,15 +109,15 @@ class StoragePartitionImpl : public StoragePartition {
 
   CONTENT_EXPORT StoragePartitionImpl(
       const base::FilePath& partition_path,
-      quota::QuotaManager* quota_manager,
+      storage::QuotaManager* quota_manager,
       ChromeAppCacheService* appcache_service,
-      fileapi::FileSystemContext* filesystem_context,
-      webkit_database::DatabaseTracker* database_tracker,
+      storage::FileSystemContext* filesystem_context,
+      storage::DatabaseTracker* database_tracker,
       DOMStorageContextWrapper* dom_storage_context,
       IndexedDBContextImpl* indexed_db_context,
       ServiceWorkerContextWrapper* service_worker_context,
       WebRTCIdentityStore* webrtc_identity_store,
-      quota::SpecialStoragePolicy* special_storage_policy);
+      storage::SpecialStoragePolicy* special_storage_policy);
 
   void ClearDataImpl(uint32 remove_mask,
                      uint32 quota_storage_remove_mask,
@@ -148,15 +148,15 @@ class StoragePartitionImpl : public StoragePartition {
   base::FilePath partition_path_;
   scoped_refptr<net::URLRequestContextGetter> url_request_context_;
   scoped_refptr<net::URLRequestContextGetter> media_url_request_context_;
-  scoped_refptr<quota::QuotaManager> quota_manager_;
+  scoped_refptr<storage::QuotaManager> quota_manager_;
   scoped_refptr<ChromeAppCacheService> appcache_service_;
-  scoped_refptr<fileapi::FileSystemContext> filesystem_context_;
-  scoped_refptr<webkit_database::DatabaseTracker> database_tracker_;
+  scoped_refptr<storage::FileSystemContext> filesystem_context_;
+  scoped_refptr<storage::DatabaseTracker> database_tracker_;
   scoped_refptr<DOMStorageContextWrapper> dom_storage_context_;
   scoped_refptr<IndexedDBContextImpl> indexed_db_context_;
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
   scoped_refptr<WebRTCIdentityStore> webrtc_identity_store_;
-  scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy_;
+  scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy_;
 
   DISALLOW_COPY_AND_ASSIGN(StoragePartitionImpl);
 };

@@ -10,7 +10,7 @@
 
 #include "webkit/browser/fileapi/sandbox_origin_database_interface.h"
 
-namespace fileapi {
+namespace storage {
 
 class SandboxOriginDatabase;
 
@@ -56,6 +56,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE SandboxIsolatedOriginDatabase
   DISALLOW_COPY_AND_ASSIGN(SandboxIsolatedOriginDatabase);
 };
 
-}  // namespace fileapi
+}  // namespace storage
 
 #endif  // WEBKIT_BROWSER_FILEAPI_SANDBOX_ISOLATED_ORIGIN_DATABASE_H_

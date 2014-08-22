@@ -2354,7 +2354,7 @@ void ChromeContentBrowserClient::GetAdditionalAllowedSchemesForFileSystem(
 }
 
 void ChromeContentBrowserClient::GetURLRequestAutoMountHandlers(
-    std::vector<fileapi::URLRequestAutoMountHandler>* handlers) {
+    std::vector<storage::URLRequestAutoMountHandler>* handlers) {
   for (size_t i = 0; i < extra_parts_.size(); ++i)
     extra_parts_[i]->GetURLRequestAutoMountHandlers(handlers);
 }
@@ -2362,9 +2362,9 @@ void ChromeContentBrowserClient::GetURLRequestAutoMountHandlers(
 void ChromeContentBrowserClient::GetAdditionalFileSystemBackends(
     content::BrowserContext* browser_context,
     const base::FilePath& storage_partition_path,
-    ScopedVector<fileapi::FileSystemBackend>* additional_backends) {
+    ScopedVector<storage::FileSystemBackend>* additional_backends) {
 #if defined(OS_CHROMEOS)
-  fileapi::ExternalMountPoints* external_mount_points =
+  storage::ExternalMountPoints* external_mount_points =
       content::BrowserContext::GetMountPoints(browser_context);
   DCHECK(external_mount_points);
   chromeos::FileSystemBackend* backend = new chromeos::FileSystemBackend(
@@ -2373,19 +2373,17 @@ void ChromeContentBrowserClient::GetAdditionalFileSystemBackends(
       new chromeos::MTPFileSystemBackendDelegate(storage_partition_path),
       browser_context->GetSpecialStoragePolicy(),
       external_mount_points,
-      fileapi::ExternalMountPoints::GetSystemInstance());
+      storage::ExternalMountPoints::GetSystemInstance());
   backend->AddSystemMountPoints();
-  DCHECK(backend->CanHandleType(fileapi::kFileSystemTypeExternal));
+  DCHECK(backend->CanHandleType(storage::kFileSystemTypeExternal));
   additional_backends->push_back(backend);
 #endif
 
 #if defined(ENABLE_SERVICE_DISCOVERY)
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnablePrivetStorage)) {
-    additional_backends->push_back(
-        new local_discovery::PrivetFileSystemBackend(
-            fileapi::ExternalMountPoints::GetSystemInstance(),
-            browser_context));
+    additional_backends->push_back(new local_discovery::PrivetFileSystemBackend(
+        storage::ExternalMountPoints::GetSystemInstance(), browser_context));
   }
 #endif
 

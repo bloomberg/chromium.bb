@@ -11,7 +11,7 @@
 #include "base/files/file_path.h"
 #include "webkit/browser/webkit_storage_browser_export.h"
 
-namespace fileapi {
+namespace storage {
 
 class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE SandboxOriginDatabaseInterface {
  public:
@@ -50,6 +50,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE SandboxOriginDatabaseInterface {
   SandboxOriginDatabaseInterface() {}
 };
 
-}  // namespace fileapi
+}  // namespace storage
 
 #endif  // WEBKIT_BROWSER_FILEAPI_SANDBOX_ORIGIN_DATABASE_INTERFACE_H_

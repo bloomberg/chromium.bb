@@ -13,7 +13,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 
-namespace webkit_blob {
+namespace storage {
 
 namespace {
 
@@ -166,4 +166,4 @@ void LocalFileStreamReader::DidGetFileInfoForGetLength(
   callback.Run(file_info.size);
 }
 
-}  // namespace webkit_blob
+}  // namespace storage

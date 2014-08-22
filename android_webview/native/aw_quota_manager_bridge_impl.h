@@ -23,9 +23,9 @@ namespace content {
 class StoragePartition;
 }
 
-namespace quota {
+namespace storage {
 class QuotaManager;
-}  // namespace quota
+}  // namespace storage
 
 namespace android_webview {
 
@@ -60,7 +60,7 @@ class AwQuotaManagerBridgeImpl : public AwQuotaManagerBridge {
 
   content::StoragePartition* GetStoragePartition() const;
 
-  quota::QuotaManager* GetQuotaManager() const;
+  storage::QuotaManager* GetQuotaManager() const;
 
   void DeleteAllDataOnUiThread();
   void DeleteOriginOnUiThread(const base::string16& origin);

@@ -14,43 +14,42 @@
 
 namespace content {
 
-fileapi::FileSystemContext* CreateFileSystemContextForTesting(
-    quota::QuotaManagerProxy* quota_manager_proxy,
+storage::FileSystemContext* CreateFileSystemContextForTesting(
+    storage::QuotaManagerProxy* quota_manager_proxy,
     const base::FilePath& base_path) {
-  ScopedVector<fileapi::FileSystemBackend> additional_providers;
+  ScopedVector<storage::FileSystemBackend> additional_providers;
   additional_providers.push_back(new TestFileSystemBackend(
       base::MessageLoopProxy::current().get(), base_path));
   return CreateFileSystemContextWithAdditionalProvidersForTesting(
       quota_manager_proxy, additional_providers.Pass(), base_path);
 }
 
-fileapi::FileSystemContext*
+storage::FileSystemContext*
 CreateFileSystemContextWithAdditionalProvidersForTesting(
-    quota::QuotaManagerProxy* quota_manager_proxy,
-    ScopedVector<fileapi::FileSystemBackend> additional_providers,
+    storage::QuotaManagerProxy* quota_manager_proxy,
+    ScopedVector<storage::FileSystemBackend> additional_providers,
     const base::FilePath& base_path) {
-  return new fileapi::FileSystemContext(
+  return new storage::FileSystemContext(
       base::MessageLoopProxy::current().get(),
       base::MessageLoopProxy::current().get(),
-      fileapi::ExternalMountPoints::CreateRefCounted().get(),
+      storage::ExternalMountPoints::CreateRefCounted().get(),
       make_scoped_refptr(new MockSpecialStoragePolicy()).get(),
       quota_manager_proxy,
       additional_providers.Pass(),
-      std::vector<fileapi::URLRequestAutoMountHandler>(),
+      std::vector<storage::URLRequestAutoMountHandler>(),
       base_path,
       CreateAllowFileAccessOptions());
 }
 
-fileapi::FileSystemContext*
-CreateFileSystemContextWithAutoMountersForTesting(
-    quota::QuotaManagerProxy* quota_manager_proxy,
-    ScopedVector<fileapi::FileSystemBackend> additional_providers,
-    const std::vector<fileapi::URLRequestAutoMountHandler>& auto_mounters,
+storage::FileSystemContext* CreateFileSystemContextWithAutoMountersForTesting(
+    storage::QuotaManagerProxy* quota_manager_proxy,
+    ScopedVector<storage::FileSystemBackend> additional_providers,
+    const std::vector<storage::URLRequestAutoMountHandler>& auto_mounters,
     const base::FilePath& base_path) {
-  return new fileapi::FileSystemContext(
+  return new storage::FileSystemContext(
       base::MessageLoopProxy::current().get(),
       base::MessageLoopProxy::current().get(),
-      fileapi::ExternalMountPoints::CreateRefCounted().get(),
+      storage::ExternalMountPoints::CreateRefCounted().get(),
       make_scoped_refptr(new MockSpecialStoragePolicy()).get(),
       quota_manager_proxy,
       additional_providers.Pass(),
@@ -59,18 +58,18 @@ CreateFileSystemContextWithAutoMountersForTesting(
       CreateAllowFileAccessOptions());
 }
 
-fileapi::FileSystemContext* CreateIncognitoFileSystemContextForTesting(
-    quota::QuotaManagerProxy* quota_manager_proxy,
+storage::FileSystemContext* CreateIncognitoFileSystemContextForTesting(
+    storage::QuotaManagerProxy* quota_manager_proxy,
     const base::FilePath& base_path) {
-  ScopedVector<fileapi::FileSystemBackend> additional_providers;
-  return new fileapi::FileSystemContext(
+  ScopedVector<storage::FileSystemBackend> additional_providers;
+  return new storage::FileSystemContext(
       base::MessageLoopProxy::current().get(),
       base::MessageLoopProxy::current().get(),
-      fileapi::ExternalMountPoints::CreateRefCounted().get(),
+      storage::ExternalMountPoints::CreateRefCounted().get(),
       make_scoped_refptr(new MockSpecialStoragePolicy()).get(),
       quota_manager_proxy,
       additional_providers.Pass(),
-      std::vector<fileapi::URLRequestAutoMountHandler>(),
+      std::vector<storage::URLRequestAutoMountHandler>(),
       base_path,
       CreateIncognitoFileSystemOptions());
 }

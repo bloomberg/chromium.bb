@@ -196,7 +196,7 @@ BrowserPluginGuestManager* ShellBrowserContext::GetGuestManager() {
   return guest_manager_;
 }
 
-quota::SpecialStoragePolicy* ShellBrowserContext::GetSpecialStoragePolicy() {
+storage::SpecialStoragePolicy* ShellBrowserContext::GetSpecialStoragePolicy() {
   return NULL;
 }
 

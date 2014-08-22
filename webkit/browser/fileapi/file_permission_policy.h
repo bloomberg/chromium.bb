@@ -7,7 +7,7 @@
 
 #include "webkit/browser/webkit_storage_browser_export.h"
 
-namespace fileapi {
+namespace storage {
 
 enum FilePermissionPolicy {
   // Any access should be always denied.
@@ -23,6 +23,6 @@ enum FilePermissionPolicy {
   FILE_PERMISSION_USE_FILE_PERMISSION = 1 << 2,
 };
 
-}  // namespace fileapi
+}  // namespace storage
 
 #endif  // WEBKIT_BROWSER_FILEAPI_FILE_PERMISSION_POLICY_H_

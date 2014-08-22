@@ -29,7 +29,7 @@ class FileResource;
 class ResourceEntry;
 }
 
-namespace webkit_blob {
+namespace storage {
 class ScopedFile;
 }
 
@@ -49,7 +49,7 @@ class RemoteToLocalSyncer : public SyncTask {
   virtual void RunPreflight(scoped_ptr<SyncTaskToken> token) OVERRIDE;
   void RunExclusive(scoped_ptr<SyncTaskToken> token);
 
-  const fileapi::FileSystemURL& url() const { return url_; }
+  const storage::FileSystemURL& url() const { return url_; }
   SyncAction sync_action() const { return sync_action_; }
 
   bool is_sync_root_deletion() const { return sync_root_deletion_; }
@@ -174,11 +174,11 @@ class RemoteToLocalSyncer : public SyncTask {
   void DeleteLocalFile(scoped_ptr<SyncTaskToken> token);
   void DownloadFile(scoped_ptr<SyncTaskToken> token);
   void DidDownloadFile(scoped_ptr<SyncTaskToken> token,
-                       webkit_blob::ScopedFile file,
+                       storage::ScopedFile file,
                        google_apis::GDataErrorCode error,
                        const base::FilePath&);
   void DidApplyDownload(scoped_ptr<SyncTaskToken> token,
-                        webkit_blob::ScopedFile,
+                        storage::ScopedFile,
                         SyncStatusCode status);
 
   void CreateFolder(scoped_ptr<SyncTaskToken> token);
@@ -196,7 +196,7 @@ class RemoteToLocalSyncer : public SyncTask {
   scoped_ptr<FileTracker> dirty_tracker_;
   scoped_ptr<FileMetadata> remote_metadata_;
 
-  fileapi::FileSystemURL url_;
+  storage::FileSystemURL url_;
   SyncAction sync_action_;
 
   bool prepared_;

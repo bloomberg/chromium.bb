@@ -64,7 +64,7 @@ content::BrowserPluginGuestManager* FakeProfile::GetGuestManager() {
   return NULL;
 }
 
-quota::SpecialStoragePolicy* FakeProfile::GetSpecialStoragePolicy() {
+storage::SpecialStoragePolicy* FakeProfile::GetSpecialStoragePolicy() {
   return NULL;
 }
 

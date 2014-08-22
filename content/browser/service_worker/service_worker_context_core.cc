@@ -86,7 +86,7 @@ ServiceWorkerContextCore::ServiceWorkerContextCore(
     const scoped_refptr<base::SequencedTaskRunner>& cache_task_runner,
     const scoped_refptr<base::SequencedTaskRunner>& database_task_runner,
     const scoped_refptr<base::SingleThreadTaskRunner>& disk_cache_thread,
-    quota::QuotaManagerProxy* quota_manager_proxy,
+    storage::QuotaManagerProxy* quota_manager_proxy,
     ObserverListThreadSafe<ServiceWorkerContextObserver>* observer_list,
     ServiceWorkerContextWrapper* wrapper)
     : weak_factory_(this),
@@ -338,7 +338,7 @@ void ServiceWorkerContextCore::DeleteAndStartOver(
 
 void ServiceWorkerContextCore::SetBlobParametersForCache(
     net::URLRequestContext* request_context,
-    base::WeakPtr<webkit_blob::BlobStorageContext> blob_storage_context) {
+    base::WeakPtr<storage::BlobStorageContext> blob_storage_context) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   cache_manager_->SetBlobParametersForCache(request_context,

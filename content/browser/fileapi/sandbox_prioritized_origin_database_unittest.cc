@@ -9,9 +9,9 @@
 #include "webkit/browser/fileapi/sandbox_origin_database.h"
 #include "webkit/browser/fileapi/sandbox_prioritized_origin_database.h"
 
-using fileapi::SandboxOriginDatabase;
-using fileapi::SandboxOriginDatabaseInterface;
-using fileapi::SandboxPrioritizedOriginDatabase;
+using storage::SandboxOriginDatabase;
+using storage::SandboxOriginDatabaseInterface;
+using storage::SandboxPrioritizedOriginDatabase;
 
 namespace content {
 

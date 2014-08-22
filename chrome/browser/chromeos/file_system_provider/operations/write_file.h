@@ -38,7 +38,7 @@ class WriteFile : public Operation {
             scoped_refptr<net::IOBuffer> buffer,
             int64 offset,
             int length,
-            const fileapi::AsyncFileUtil::StatusCallback& callback);
+            const storage::AsyncFileUtil::StatusCallback& callback);
   virtual ~WriteFile();
 
   // Operation overrides.
@@ -55,7 +55,7 @@ class WriteFile : public Operation {
   scoped_refptr<net::IOBuffer> buffer_;
   int64 offset_;
   int length_;
-  const fileapi::AsyncFileUtil::StatusCallback callback_;
+  const storage::AsyncFileUtil::StatusCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(WriteFile);
 };

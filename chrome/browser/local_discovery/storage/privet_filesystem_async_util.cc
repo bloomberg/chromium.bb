@@ -23,8 +23,8 @@ PrivetFileSystemAsyncUtil::~PrivetFileSystemAsyncUtil() {
 }
 
 void PrivetFileSystemAsyncUtil::CreateOrOpen(
-    scoped_ptr<fileapi::FileSystemOperationContext> context,
-    const fileapi::FileSystemURL& url,
+    scoped_ptr<storage::FileSystemOperationContext> context,
+    const storage::FileSystemURL& url,
     int file_flags,
     const CreateOrOpenCallback& callback) {
   NOTIMPLEMENTED();
@@ -33,16 +33,16 @@ void PrivetFileSystemAsyncUtil::CreateOrOpen(
 }
 
 void PrivetFileSystemAsyncUtil::EnsureFileExists(
-    scoped_ptr<fileapi::FileSystemOperationContext> context,
-    const fileapi::FileSystemURL& url,
+    scoped_ptr<storage::FileSystemOperationContext> context,
+    const storage::FileSystemURL& url,
     const EnsureFileExistsCallback& callback) {
     NOTIMPLEMENTED();
     callback.Run(base::File::FILE_ERROR_INVALID_OPERATION, false);
 }
 
 void PrivetFileSystemAsyncUtil::CreateDirectory(
-    scoped_ptr<fileapi::FileSystemOperationContext> context,
-    const fileapi::FileSystemURL& url,
+    scoped_ptr<storage::FileSystemOperationContext> context,
+    const storage::FileSystemURL& url,
     bool exclusive,
     bool recursive,
     const StatusCallback& callback) {
@@ -51,8 +51,8 @@ void PrivetFileSystemAsyncUtil::CreateDirectory(
 }
 
 void PrivetFileSystemAsyncUtil::GetFileInfo(
-    scoped_ptr<fileapi::FileSystemOperationContext> context,
-    const fileapi::FileSystemURL& url,
+    scoped_ptr<storage::FileSystemOperationContext> context,
+    const storage::FileSystemURL& url,
     const GetFileInfoCallback& callback) {
   ParsedPrivetPath parsed_path(url.path());
 
@@ -74,8 +74,8 @@ void PrivetFileSystemAsyncUtil::GetFileInfo(
 }
 
 void PrivetFileSystemAsyncUtil::ReadDirectory(
-    scoped_ptr<fileapi::FileSystemOperationContext> context,
-    const fileapi::FileSystemURL& url,
+    scoped_ptr<storage::FileSystemOperationContext> context,
+    const storage::FileSystemURL& url,
     const ReadDirectoryCallback& callback) {
   content::BrowserThread::PostTask(
       content::BrowserThread::UI,
@@ -86,10 +86,9 @@ void PrivetFileSystemAsyncUtil::ReadDirectory(
                  callback));
 }
 
-
 void PrivetFileSystemAsyncUtil::Touch(
-    scoped_ptr<fileapi::FileSystemOperationContext> context,
-    const fileapi::FileSystemURL& url,
+    scoped_ptr<storage::FileSystemOperationContext> context,
+    const storage::FileSystemURL& url,
     const base::Time& last_access_time,
     const base::Time& last_modified_time,
     const StatusCallback& callback) {
@@ -98,8 +97,8 @@ void PrivetFileSystemAsyncUtil::Touch(
 }
 
 void PrivetFileSystemAsyncUtil::Truncate(
-    scoped_ptr<fileapi::FileSystemOperationContext> context,
-    const fileapi::FileSystemURL& url,
+    scoped_ptr<storage::FileSystemOperationContext> context,
+    const storage::FileSystemURL& url,
     int64 length,
     const StatusCallback& callback) {
   NOTIMPLEMENTED();
@@ -107,9 +106,9 @@ void PrivetFileSystemAsyncUtil::Truncate(
 }
 
 void PrivetFileSystemAsyncUtil::CopyFileLocal(
-    scoped_ptr<fileapi::FileSystemOperationContext> context,
-    const fileapi::FileSystemURL& src_url,
-    const fileapi::FileSystemURL& dest_url,
+    scoped_ptr<storage::FileSystemOperationContext> context,
+    const storage::FileSystemURL& src_url,
+    const storage::FileSystemURL& dest_url,
     CopyOrMoveOption option,
     const CopyFileProgressCallback& progress_callback,
     const StatusCallback& callback) {
@@ -118,9 +117,9 @@ void PrivetFileSystemAsyncUtil::CopyFileLocal(
 }
 
 void PrivetFileSystemAsyncUtil::MoveFileLocal(
-    scoped_ptr<fileapi::FileSystemOperationContext> context,
-    const fileapi::FileSystemURL& src_url,
-    const fileapi::FileSystemURL& dest_url,
+    scoped_ptr<storage::FileSystemOperationContext> context,
+    const storage::FileSystemURL& src_url,
+    const storage::FileSystemURL& dest_url,
     CopyOrMoveOption option,
     const StatusCallback& callback) {
   NOTIMPLEMENTED();
@@ -128,47 +127,47 @@ void PrivetFileSystemAsyncUtil::MoveFileLocal(
 }
 
 void PrivetFileSystemAsyncUtil::CopyInForeignFile(
-    scoped_ptr<fileapi::FileSystemOperationContext> context,
+    scoped_ptr<storage::FileSystemOperationContext> context,
     const base::FilePath& src_file_path,
-    const fileapi::FileSystemURL& dest_url,
+    const storage::FileSystemURL& dest_url,
     const StatusCallback& callback) {
   NOTIMPLEMENTED();
   callback.Run(base::File::FILE_ERROR_INVALID_OPERATION);
 }
 
 void PrivetFileSystemAsyncUtil::DeleteFile(
-    scoped_ptr<fileapi::FileSystemOperationContext> context,
-    const fileapi::FileSystemURL& url,
+    scoped_ptr<storage::FileSystemOperationContext> context,
+    const storage::FileSystemURL& url,
     const StatusCallback& callback) {
   NOTIMPLEMENTED();
   callback.Run(base::File::FILE_ERROR_INVALID_OPERATION);
 }
 
 void PrivetFileSystemAsyncUtil::DeleteDirectory(
-    scoped_ptr<fileapi::FileSystemOperationContext> context,
-    const fileapi::FileSystemURL& url,
+    scoped_ptr<storage::FileSystemOperationContext> context,
+    const storage::FileSystemURL& url,
     const StatusCallback& callback) {
   NOTIMPLEMENTED();
   callback.Run(base::File::FILE_ERROR_INVALID_OPERATION);
 }
 
 void PrivetFileSystemAsyncUtil::DeleteRecursively(
-    scoped_ptr<fileapi::FileSystemOperationContext> context,
-    const fileapi::FileSystemURL& url,
+    scoped_ptr<storage::FileSystemOperationContext> context,
+    const storage::FileSystemURL& url,
     const StatusCallback& callback) {
   NOTIMPLEMENTED();
   callback.Run(base::File::FILE_ERROR_INVALID_OPERATION);
 }
 
 void PrivetFileSystemAsyncUtil::CreateSnapshotFile(
-    scoped_ptr<fileapi::FileSystemOperationContext> context,
-    const fileapi::FileSystemURL& url,
+    scoped_ptr<storage::FileSystemOperationContext> context,
+    const storage::FileSystemURL& url,
     const CreateSnapshotFileCallback& callback) {
   NOTIMPLEMENTED();
   callback.Run(base::File::FILE_ERROR_INVALID_OPERATION,
                base::File::Info(),
                base::FilePath(),
-               scoped_refptr<webkit_blob::ShareableFileReference>());
+               scoped_refptr<storage::ShareableFileReference>());
 }
 
 }  // namespace local_discovery

@@ -19,54 +19,53 @@ namespace local_discovery {
 
 class PrivetFileSystemAsyncUtil;
 
-class PrivetFileSystemBackend : public fileapi::FileSystemBackend {
+class PrivetFileSystemBackend : public storage::FileSystemBackend {
  public:
-  PrivetFileSystemBackend(fileapi::ExternalMountPoints* mount_points,
+  PrivetFileSystemBackend(storage::ExternalMountPoints* mount_points,
                           content::BrowserContext* browser_context);
   virtual ~PrivetFileSystemBackend();
 
   // FileSystemBackend implementation.
-  virtual bool CanHandleType(fileapi::FileSystemType type) const OVERRIDE;
-  virtual void Initialize(fileapi::FileSystemContext* context) OVERRIDE;
+  virtual bool CanHandleType(storage::FileSystemType type) const OVERRIDE;
+  virtual void Initialize(storage::FileSystemContext* context) OVERRIDE;
 
-  virtual void ResolveURL(const fileapi::FileSystemURL& url,
-                          fileapi::OpenFileSystemMode mode,
+  virtual void ResolveURL(const storage::FileSystemURL& url,
+                          storage::OpenFileSystemMode mode,
                           const OpenFileSystemCallback& callback) OVERRIDE;
 
-  virtual fileapi::AsyncFileUtil* GetAsyncFileUtil(
-      fileapi::FileSystemType type) OVERRIDE;
-  virtual fileapi::CopyOrMoveFileValidatorFactory*
-      GetCopyOrMoveFileValidatorFactory(
-          fileapi::FileSystemType type,
-          base::File::Error* error_code) OVERRIDE;
+  virtual storage::AsyncFileUtil* GetAsyncFileUtil(
+      storage::FileSystemType type) OVERRIDE;
+  virtual storage::CopyOrMoveFileValidatorFactory*
+      GetCopyOrMoveFileValidatorFactory(storage::FileSystemType type,
+                                        base::File::Error* error_code) OVERRIDE;
 
-  virtual fileapi::FileSystemOperation* CreateFileSystemOperation(
-      const fileapi::FileSystemURL& url,
-      fileapi::FileSystemContext* context,
+  virtual storage::FileSystemOperation* CreateFileSystemOperation(
+      const storage::FileSystemURL& url,
+      storage::FileSystemContext* context,
       base::File::Error* error_code) const OVERRIDE;
 
   virtual bool SupportsStreaming(
-      const fileapi::FileSystemURL& url) const OVERRIDE;
+      const storage::FileSystemURL& url) const OVERRIDE;
 
   virtual bool HasInplaceCopyImplementation(
-      fileapi::FileSystemType type) const OVERRIDE;
+      storage::FileSystemType type) const OVERRIDE;
 
-  virtual scoped_ptr<webkit_blob::FileStreamReader> CreateFileStreamReader(
-      const fileapi::FileSystemURL& url,
+  virtual scoped_ptr<storage::FileStreamReader> CreateFileStreamReader(
+      const storage::FileSystemURL& url,
       int64 offset,
       const base::Time& expected_modification_time,
-      fileapi::FileSystemContext* context) const OVERRIDE;
+      storage::FileSystemContext* context) const OVERRIDE;
 
-  virtual scoped_ptr<fileapi::FileStreamWriter> CreateFileStreamWriter(
-      const fileapi::FileSystemURL& url,
+  virtual scoped_ptr<storage::FileStreamWriter> CreateFileStreamWriter(
+      const storage::FileSystemURL& url,
       int64 offset,
-      fileapi::FileSystemContext* context) const OVERRIDE;
+      storage::FileSystemContext* context) const OVERRIDE;
 
-  virtual fileapi::FileSystemQuotaUtil* GetQuotaUtil() OVERRIDE;
+  virtual storage::FileSystemQuotaUtil* GetQuotaUtil() OVERRIDE;
 
  private:
   // User mount points.
-  scoped_refptr<fileapi::ExternalMountPoints> mount_points_;
+  scoped_refptr<storage::ExternalMountPoints> mount_points_;
   scoped_ptr<PrivetFileSystemAsyncUtil> async_util_;
 };
 

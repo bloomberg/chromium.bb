@@ -48,7 +48,7 @@ class ServiceWorkerRequestInterceptor
 void ServiceWorkerRequestHandler::InitializeHandler(
     net::URLRequest* request,
     ServiceWorkerContextWrapper* context_wrapper,
-    webkit_blob::BlobStorageContext* blob_storage_context,
+    storage::BlobStorageContext* blob_storage_context,
     int process_id,
     int provider_id,
     ResourceType resource_type,
@@ -93,7 +93,7 @@ ServiceWorkerRequestHandler::~ServiceWorkerRequestHandler() {
 ServiceWorkerRequestHandler::ServiceWorkerRequestHandler(
     base::WeakPtr<ServiceWorkerContextCore> context,
     base::WeakPtr<ServiceWorkerProviderHost> provider_host,
-    base::WeakPtr<webkit_blob::BlobStorageContext> blob_storage_context,
+    base::WeakPtr<storage::BlobStorageContext> blob_storage_context,
     ResourceType resource_type)
     : context_(context),
       provider_host_(provider_host),

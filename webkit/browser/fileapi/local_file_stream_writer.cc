@@ -10,7 +10,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 
-namespace fileapi {
+namespace storage {
 
 namespace {
 
@@ -254,4 +254,4 @@ bool LocalFileStreamWriter::CancelIfRequested() {
   return true;
 }
 
-}  // namespace fileapi
+}  // namespace storage

@@ -120,25 +120,25 @@ ProfileImplIOData::Handle::~Handle() {
 }
 
 void ProfileImplIOData::Handle::Init(
-      const base::FilePath& cookie_path,
-      const base::FilePath& channel_id_path,
-      const base::FilePath& cache_path,
-      int cache_max_size,
-      const base::FilePath& media_cache_path,
-      int media_cache_max_size,
-      const base::FilePath& extensions_cookie_path,
-      const base::FilePath& profile_path,
-      const base::FilePath& infinite_cache_path,
-      chrome_browser_net::Predictor* predictor,
-      content::CookieStoreConfig::SessionCookieMode session_cookie_mode,
-      quota::SpecialStoragePolicy* special_storage_policy,
-      scoped_ptr<domain_reliability::DomainReliabilityMonitor>
-          domain_reliability_monitor,
-      const base::Callback<void(bool)>& data_reduction_proxy_unavailable,
-      scoped_ptr<DataReductionProxyChromeConfigurator>
-          data_reduction_proxy_chrome_configurator,
-      scoped_ptr<data_reduction_proxy::DataReductionProxyParams>
-          data_reduction_proxy_params) {
+    const base::FilePath& cookie_path,
+    const base::FilePath& channel_id_path,
+    const base::FilePath& cache_path,
+    int cache_max_size,
+    const base::FilePath& media_cache_path,
+    int media_cache_max_size,
+    const base::FilePath& extensions_cookie_path,
+    const base::FilePath& profile_path,
+    const base::FilePath& infinite_cache_path,
+    chrome_browser_net::Predictor* predictor,
+    content::CookieStoreConfig::SessionCookieMode session_cookie_mode,
+    storage::SpecialStoragePolicy* special_storage_policy,
+    scoped_ptr<domain_reliability::DomainReliabilityMonitor>
+        domain_reliability_monitor,
+    const base::Callback<void(bool)>& data_reduction_proxy_unavailable,
+    scoped_ptr<DataReductionProxyChromeConfigurator>
+        data_reduction_proxy_chrome_configurator,
+    scoped_ptr<data_reduction_proxy::DataReductionProxyParams>
+        data_reduction_proxy_params) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!io_data_->lazy_params_);
   DCHECK(predictor);

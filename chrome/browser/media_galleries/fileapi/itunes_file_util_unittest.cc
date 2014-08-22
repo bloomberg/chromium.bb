@@ -29,9 +29,9 @@
 #include "webkit/browser/fileapi/file_system_operation_context.h"
 #include "webkit/browser/fileapi/file_system_operation_runner.h"
 
-using fileapi::FileSystemOperationContext;
-using fileapi::FileSystemOperation;
-using fileapi::FileSystemURL;
+using storage::FileSystemOperationContext;
+using storage::FileSystemOperation;
+using storage::FileSystemURL;
 
 namespace itunes {
 
@@ -49,7 +49,7 @@ void ReadDirectoryTestHelperCallback(
   run_loop->Quit();
 }
 
-void ReadDirectoryTestHelper(fileapi::FileSystemOperationRunner* runner,
+void ReadDirectoryTestHelper(storage::FileSystemOperationRunner* runner,
                              const FileSystemURL& url,
                              FileSystemOperation::FileEntryList* contents,
                              bool* completed) {
@@ -120,16 +120,16 @@ class TestMediaFileSystemBackend : public MediaFileSystemBackend {
             MediaFileSystemBackend::MediaTaskRunner().get()),
         test_file_util_(itunes_file_util) {}
 
-  virtual fileapi::AsyncFileUtil*
-  GetAsyncFileUtil(fileapi::FileSystemType type) OVERRIDE {
-    if (type != fileapi::kFileSystemTypeItunes)
+  virtual storage::AsyncFileUtil* GetAsyncFileUtil(
+      storage::FileSystemType type) OVERRIDE {
+    if (type != storage::kFileSystemTypeItunes)
       return NULL;
 
     return test_file_util_.get();
   }
 
  private:
-  scoped_ptr<fileapi::AsyncFileUtil> test_file_util_;
+  scoped_ptr<storage::AsyncFileUtil> test_file_util_;
 };
 
 class ItunesFileUtilTest : public testing::Test {
@@ -156,7 +156,7 @@ class ItunesFileUtilTest : public testing::Test {
     ASSERT_TRUE(profile_dir_.CreateUniqueTempDir());
     ImportedMediaGalleryRegistry::GetInstance()->Initialize();
 
-    scoped_refptr<quota::SpecialStoragePolicy> storage_policy =
+    scoped_refptr<storage::SpecialStoragePolicy> storage_policy =
         new content::MockSpecialStoragePolicy();
 
     // Initialize fake ItunesDataProvider on media task runner thread.
@@ -171,20 +171,20 @@ class ItunesFileUtilTest : public testing::Test {
     event.Wait();
 
     media_path_filter_.reset(new MediaPathFilter());
-    ScopedVector<fileapi::FileSystemBackend> additional_providers;
+    ScopedVector<storage::FileSystemBackend> additional_providers;
     additional_providers.push_back(new TestMediaFileSystemBackend(
         profile_dir_.path(),
         new TestITunesFileUtil(media_path_filter_.get(),
                                itunes_data_provider_.get())));
 
-    file_system_context_ = new fileapi::FileSystemContext(
+    file_system_context_ = new storage::FileSystemContext(
         base::MessageLoopProxy::current().get(),
         base::MessageLoopProxy::current().get(),
-        fileapi::ExternalMountPoints::CreateRefCounted().get(),
+        storage::ExternalMountPoints::CreateRefCounted().get(),
         storage_policy.get(),
         NULL,
         additional_providers.Pass(),
-        std::vector<fileapi::URLRequestAutoMountHandler>(),
+        std::vector<storage::URLRequestAutoMountHandler>(),
         profile_dir_.path(),
         content::CreateAllowFileAccessOptions());
   }
@@ -205,15 +205,16 @@ class ItunesFileUtilTest : public testing::Test {
     virtual_path = virtual_path.AppendASCII("itunes");
     virtual_path = virtual_path.AppendASCII(path);
     return file_system_context_->CreateCrackedFileSystemURL(
-        GURL("http://www.example.com"), fileapi::kFileSystemTypeItunes,
+        GURL("http://www.example.com"),
+        storage::kFileSystemTypeItunes,
         virtual_path);
   }
 
-  fileapi::FileSystemOperationRunner* operation_runner() const {
+  storage::FileSystemOperationRunner* operation_runner() const {
     return file_system_context_->operation_runner();
   }
 
-  scoped_refptr<fileapi::FileSystemContext> file_system_context() const {
+  scoped_refptr<storage::FileSystemContext> file_system_context() const {
     return file_system_context_;
   }
 
@@ -228,7 +229,7 @@ class ItunesFileUtilTest : public testing::Test {
   base::ScopedTempDir profile_dir_;
   base::ScopedTempDir fake_library_dir_;
 
-  scoped_refptr<fileapi::FileSystemContext> file_system_context_;
+  scoped_refptr<storage::FileSystemContext> file_system_context_;
   scoped_ptr<MediaPathFilter> media_path_filter_;
   scoped_ptr<TestITunesDataProvider> itunes_data_provider_;
 

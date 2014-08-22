@@ -4,7 +4,7 @@
 
 #include "webkit/common/fileapi/directory_entry.h"
 
-namespace fileapi {
+namespace storage {
 
 DirectoryEntry::DirectoryEntry() : is_directory(false), size(0) {}
 
@@ -18,4 +18,4 @@ DirectoryEntry::DirectoryEntry(const std::string& name,
       last_modified_time(last_modified_time) {
 }
 
-}  // namespace fileapi
+}  // namespace storage

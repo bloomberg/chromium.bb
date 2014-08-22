@@ -27,7 +27,7 @@ class SingleThreadTaskRunner;
 class Thread;
 }
 
-namespace fileapi {
+namespace storage {
 class FileSystemContext;
 class FileSystemOperationRunner;
 class FileSystemURL;
@@ -41,7 +41,7 @@ namespace net {
 class URLRequestContext;
 }
 
-namespace quota {
+namespace storage {
 class QuotaManager;
 }
 
@@ -63,7 +63,7 @@ class CannedSyncableFileSystem
       OpenFileSystemCallback;
   typedef base::Callback<void(base::File::Error)> StatusCallback;
   typedef base::Callback<void(int64)> WriteCallback;
-  typedef fileapi::FileSystemOperation::FileEntryList FileEntryList;
+  typedef storage::FileSystemOperation::FileEntryList FileEntryList;
 
   enum QuotaMode {
     QUOTA_ENABLED,
@@ -83,7 +83,7 @@ class CannedSyncableFileSystem
   void TearDown();
 
   // Creates a FileSystemURL for the given (utf8) path string.
-  fileapi::FileSystemURL URL(const std::string& path) const;
+  storage::FileSystemURL URL(const std::string& path) const;
 
   // Initialize this with given |sync_context| if it hasn't
   // been initialized.
@@ -100,13 +100,13 @@ class CannedSyncableFileSystem
   void RemoveSyncStatusObserver(LocalFileSyncStatus::Observer* observer);
 
   // Accessors.
-  fileapi::FileSystemContext* file_system_context() {
+  storage::FileSystemContext* file_system_context() {
     return file_system_context_.get();
   }
-  quota::QuotaManager* quota_manager() { return quota_manager_.get(); }
+  storage::QuotaManager* quota_manager() { return quota_manager_.get(); }
   GURL origin() const { return origin_; }
-  fileapi::FileSystemType type() const { return type_; }
-  quota::StorageType storage_type() const {
+  storage::FileSystemType type() const { return type_; }
+  storage::StorageType storage_type() const {
     return FileSystemTypeToQuotaStorageType(type_);
   }
 
@@ -114,101 +114,100 @@ class CannedSyncableFileSystem
   // OpenFileSystem() must have been called before calling any of them.
   // They create an operation and run it on IO task runner, and the operation
   // posts a task on file runner.
-  base::File::Error CreateDirectory(const fileapi::FileSystemURL& url);
-  base::File::Error CreateFile(const fileapi::FileSystemURL& url);
-  base::File::Error Copy(const fileapi::FileSystemURL& src_url,
-                         const fileapi::FileSystemURL& dest_url);
-  base::File::Error Move(const fileapi::FileSystemURL& src_url,
-                         const fileapi::FileSystemURL& dest_url);
-  base::File::Error TruncateFile(const fileapi::FileSystemURL& url,
-                                 int64 size);
-  base::File::Error TouchFile(const fileapi::FileSystemURL& url,
+  base::File::Error CreateDirectory(const storage::FileSystemURL& url);
+  base::File::Error CreateFile(const storage::FileSystemURL& url);
+  base::File::Error Copy(const storage::FileSystemURL& src_url,
+                         const storage::FileSystemURL& dest_url);
+  base::File::Error Move(const storage::FileSystemURL& src_url,
+                         const storage::FileSystemURL& dest_url);
+  base::File::Error TruncateFile(const storage::FileSystemURL& url, int64 size);
+  base::File::Error TouchFile(const storage::FileSystemURL& url,
                               const base::Time& last_access_time,
                               const base::Time& last_modified_time);
-  base::File::Error Remove(const fileapi::FileSystemURL& url, bool recursive);
-  base::File::Error FileExists(const fileapi::FileSystemURL& url);
-  base::File::Error DirectoryExists(const fileapi::FileSystemURL& url);
-  base::File::Error VerifyFile(const fileapi::FileSystemURL& url,
+  base::File::Error Remove(const storage::FileSystemURL& url, bool recursive);
+  base::File::Error FileExists(const storage::FileSystemURL& url);
+  base::File::Error DirectoryExists(const storage::FileSystemURL& url);
+  base::File::Error VerifyFile(const storage::FileSystemURL& url,
                                const std::string& expected_data);
   base::File::Error GetMetadataAndPlatformPath(
-      const fileapi::FileSystemURL& url,
+      const storage::FileSystemURL& url,
       base::File::Info* info,
       base::FilePath* platform_path);
-  base::File::Error ReadDirectory(const fileapi::FileSystemURL& url,
+  base::File::Error ReadDirectory(const storage::FileSystemURL& url,
                                   FileEntryList* entries);
 
   // Returns the # of bytes written (>=0) or an error code (<0).
   int64 Write(net::URLRequestContext* url_request_context,
-              const fileapi::FileSystemURL& url,
-              scoped_ptr<webkit_blob::BlobDataHandle> blob_data_handle);
-  int64 WriteString(const fileapi::FileSystemURL& url, const std::string& data);
+              const storage::FileSystemURL& url,
+              scoped_ptr<storage::BlobDataHandle> blob_data_handle);
+  int64 WriteString(const storage::FileSystemURL& url, const std::string& data);
 
   // Purges the file system local storage.
   base::File::Error DeleteFileSystem();
 
   // Retrieves the quota and usage.
-  quota::QuotaStatusCode GetUsageAndQuota(int64* usage, int64* quota);
+  storage::QuotaStatusCode GetUsageAndQuota(int64* usage, int64* quota);
 
   // ChangeTracker related methods. They run on file task runner.
-  void GetChangedURLsInTracker(fileapi::FileSystemURLSet* urls);
-  void ClearChangeForURLInTracker(const fileapi::FileSystemURL& url);
-  void GetChangesForURLInTracker(const fileapi::FileSystemURL& url,
+  void GetChangedURLsInTracker(storage::FileSystemURLSet* urls);
+  void ClearChangeForURLInTracker(const storage::FileSystemURL& url);
+  void GetChangesForURLInTracker(const storage::FileSystemURL& url,
                                  FileChangeList* changes);
 
   SyncFileSystemBackend* backend();
-  fileapi::FileSystemOperationRunner* operation_runner();
+  storage::FileSystemOperationRunner* operation_runner();
 
   // LocalFileSyncStatus::Observer overrides.
-  virtual void OnSyncEnabled(const fileapi::FileSystemURL& url) OVERRIDE;
-  virtual void OnWriteEnabled(const fileapi::FileSystemURL& url) OVERRIDE;
+  virtual void OnSyncEnabled(const storage::FileSystemURL& url) OVERRIDE;
+  virtual void OnWriteEnabled(const storage::FileSystemURL& url) OVERRIDE;
 
   // Operation methods body.
   // They can be also called directly if the caller is already on IO thread.
   void DoOpenFileSystem(const OpenFileSystemCallback& callback);
-  void DoCreateDirectory(const fileapi::FileSystemURL& url,
+  void DoCreateDirectory(const storage::FileSystemURL& url,
                          const StatusCallback& callback);
-  void DoCreateFile(const fileapi::FileSystemURL& url,
+  void DoCreateFile(const storage::FileSystemURL& url,
                     const StatusCallback& callback);
-  void DoCopy(const fileapi::FileSystemURL& src_url,
-              const fileapi::FileSystemURL& dest_url,
+  void DoCopy(const storage::FileSystemURL& src_url,
+              const storage::FileSystemURL& dest_url,
               const StatusCallback& callback);
-  void DoMove(const fileapi::FileSystemURL& src_url,
-              const fileapi::FileSystemURL& dest_url,
+  void DoMove(const storage::FileSystemURL& src_url,
+              const storage::FileSystemURL& dest_url,
               const StatusCallback& callback);
-  void DoTruncateFile(const fileapi::FileSystemURL& url,
+  void DoTruncateFile(const storage::FileSystemURL& url,
                       int64 size,
                       const StatusCallback& callback);
-  void DoTouchFile(const fileapi::FileSystemURL& url,
+  void DoTouchFile(const storage::FileSystemURL& url,
                    const base::Time& last_access_time,
                    const base::Time& last_modified_time,
                    const StatusCallback& callback);
-  void DoRemove(const fileapi::FileSystemURL& url,
+  void DoRemove(const storage::FileSystemURL& url,
                 bool recursive,
                 const StatusCallback& callback);
-  void DoFileExists(const fileapi::FileSystemURL& url,
+  void DoFileExists(const storage::FileSystemURL& url,
                     const StatusCallback& callback);
-  void DoDirectoryExists(const fileapi::FileSystemURL& url,
+  void DoDirectoryExists(const storage::FileSystemURL& url,
                          const StatusCallback& callback);
-  void DoVerifyFile(const fileapi::FileSystemURL& url,
+  void DoVerifyFile(const storage::FileSystemURL& url,
                     const std::string& expected_data,
                     const StatusCallback& callback);
-  void DoGetMetadataAndPlatformPath(const fileapi::FileSystemURL& url,
+  void DoGetMetadataAndPlatformPath(const storage::FileSystemURL& url,
                                     base::File::Info* info,
                                     base::FilePath* platform_path,
                                     const StatusCallback& callback);
-  void DoReadDirectory(const fileapi::FileSystemURL& url,
+  void DoReadDirectory(const storage::FileSystemURL& url,
                        FileEntryList* entries,
                        const StatusCallback& callback);
   void DoWrite(net::URLRequestContext* url_request_context,
-               const fileapi::FileSystemURL& url,
-               scoped_ptr<webkit_blob::BlobDataHandle> blob_data_handle,
+               const storage::FileSystemURL& url,
+               scoped_ptr<storage::BlobDataHandle> blob_data_handle,
                const WriteCallback& callback);
-  void DoWriteString(const fileapi::FileSystemURL& url,
+  void DoWriteString(const storage::FileSystemURL& url,
                      const std::string& data,
                      const WriteCallback& callback);
   void DoGetUsageAndQuota(int64* usage,
                           int64* quota,
-                          const quota::StatusCallback& callback);
+                          const storage::StatusCallback& callback);
 
  private:
   typedef ObserverListThreadSafe<LocalFileSyncStatus::Observer> ObserverList;
@@ -227,10 +226,10 @@ class CannedSyncableFileSystem
   base::ScopedTempDir data_dir_;
   const std::string service_name_;
 
-  scoped_refptr<quota::QuotaManager> quota_manager_;
-  scoped_refptr<fileapi::FileSystemContext> file_system_context_;
+  scoped_refptr<storage::QuotaManager> quota_manager_;
+  scoped_refptr<storage::FileSystemContext> file_system_context_;
   const GURL origin_;
-  const fileapi::FileSystemType type_;
+  const storage::FileSystemType type_;
   GURL root_url_;
   base::File::Error result_;
   sync_file_system::SyncStatusCode sync_status_;

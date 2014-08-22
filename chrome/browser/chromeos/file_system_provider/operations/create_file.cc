@@ -16,7 +16,7 @@ namespace operations {
 CreateFile::CreateFile(extensions::EventRouter* event_router,
                        const ProvidedFileSystemInfo& file_system_info,
                        const base::FilePath& file_path,
-                       const fileapi::AsyncFileUtil::StatusCallback& callback)
+                       const storage::AsyncFileUtil::StatusCallback& callback)
     : Operation(event_router, file_system_info),
       file_path_(file_path),
       callback_(callback) {

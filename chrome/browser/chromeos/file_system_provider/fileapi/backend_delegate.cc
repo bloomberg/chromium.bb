@@ -31,37 +31,35 @@ BackendDelegate::BackendDelegate()
 
 BackendDelegate::~BackendDelegate() {}
 
-fileapi::AsyncFileUtil* BackendDelegate::GetAsyncFileUtil(
-    fileapi::FileSystemType type) {
+storage::AsyncFileUtil* BackendDelegate::GetAsyncFileUtil(
+    storage::FileSystemType type) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK_EQ(fileapi::kFileSystemTypeProvided, type);
+  DCHECK_EQ(storage::kFileSystemTypeProvided, type);
   return async_file_util_.get();
 }
 
-scoped_ptr<webkit_blob::FileStreamReader>
-BackendDelegate::CreateFileStreamReader(
-    const fileapi::FileSystemURL& url,
+scoped_ptr<storage::FileStreamReader> BackendDelegate::CreateFileStreamReader(
+    const storage::FileSystemURL& url,
     int64 offset,
     const base::Time& expected_modification_time,
-    fileapi::FileSystemContext* context) {
+    storage::FileSystemContext* context) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK_EQ(fileapi::kFileSystemTypeProvided, url.type());
+  DCHECK_EQ(storage::kFileSystemTypeProvided, url.type());
 
-  return scoped_ptr<webkit_blob::FileStreamReader>(
-      new BufferingFileStreamReader(
-          scoped_ptr<webkit_blob::FileStreamReader>(new FileStreamReader(
-              context, url, offset, expected_modification_time)),
-          kReaderBufferSize));
+  return scoped_ptr<storage::FileStreamReader>(new BufferingFileStreamReader(
+      scoped_ptr<storage::FileStreamReader>(new FileStreamReader(
+          context, url, offset, expected_modification_time)),
+      kReaderBufferSize));
 }
 
-scoped_ptr<fileapi::FileStreamWriter> BackendDelegate::CreateFileStreamWriter(
-    const fileapi::FileSystemURL& url,
+scoped_ptr<storage::FileStreamWriter> BackendDelegate::CreateFileStreamWriter(
+    const storage::FileSystemURL& url,
     int64 offset,
-    fileapi::FileSystemContext* context) {
+    storage::FileSystemContext* context) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK_EQ(fileapi::kFileSystemTypeProvided, url.type());
+  DCHECK_EQ(storage::kFileSystemTypeProvided, url.type());
 
-  return scoped_ptr<fileapi::FileStreamWriter>(
+  return scoped_ptr<storage::FileStreamWriter>(
       new FileStreamWriter(url, offset));
 }
 

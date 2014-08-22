@@ -16,7 +16,7 @@
 #include "webkit/browser/webkit_storage_browser_export.h"
 #include "webkit/common/fileapi/file_system_types.h"
 
-namespace fileapi {
+namespace storage {
 
 class QuotaReservation;
 class OpenFileHandle;
@@ -73,7 +73,7 @@ class QuotaReservationBuffer : public base::RefCounted<QuotaReservationBuffer> {
   base::WeakPtr<QuotaReservationManager> reservation_manager_;
 
   GURL origin_;
-  fileapi::FileSystemType type_;
+  storage::FileSystemType type_;
 
   int64 reserved_quota_;
 
@@ -82,6 +82,6 @@ class QuotaReservationBuffer : public base::RefCounted<QuotaReservationBuffer> {
   DISALLOW_COPY_AND_ASSIGN(QuotaReservationBuffer);
 };
 
-}  // namespace fileapi
+}  // namespace storage
 
 #endif  // WEBKIT_BROWSER_FILEAPI_QUOTA_QUOTA_RESERVATION_BUFFER_H_

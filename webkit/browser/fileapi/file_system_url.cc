@@ -12,7 +12,7 @@
 #include "webkit/common/fileapi/file_system_types.h"
 #include "webkit/common/fileapi/file_system_util.h"
 
-namespace fileapi {
+namespace storage {
 
 namespace {
 
@@ -150,4 +150,4 @@ bool FileSystemURL::Comparator::operator()(const FileSystemURL& lhs,
   return lhs.path_ < rhs.path_;
 }
 
-}  // namespace fileapi
+}  // namespace storage

@@ -34,7 +34,7 @@ class BrowsingDataQuotaHelperTest : public testing::Test {
 
   virtual void SetUp() OVERRIDE {
     EXPECT_TRUE(dir_.CreateUniqueTempDir());
-    quota_manager_ = new quota::QuotaManager(
+    quota_manager_ = new storage::QuotaManager(
         false,
         dir_.path(),
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO).get(),
@@ -71,9 +71,10 @@ class BrowsingDataQuotaHelperTest : public testing::Test {
 
   void RegisterClient(const MockOriginData* data, std::size_t data_len) {
     MockStorageClient* client =
-        new MockStorageClient(
-            quota_manager_->proxy(), data, quota::QuotaClient::kFileSystem,
-            data_len);
+        new MockStorageClient(quota_manager_->proxy(),
+                              data,
+                              storage::QuotaClient::kFileSystem,
+                              data_len);
     quota_manager_->proxy()->RegisterClient(client);
     client->TouchAllOriginsAndNotify();
   }
@@ -94,9 +95,8 @@ class BrowsingDataQuotaHelperTest : public testing::Test {
                    weak_factory_.GetWeakPtr()));
   }
 
-  void GotPersistentHostQuota(quota::QuotaStatusCode status,
-                              int64 quota) {
-    EXPECT_EQ(quota::kQuotaStatusOk, status);
+  void GotPersistentHostQuota(storage::QuotaStatusCode status, int64 quota) {
+    EXPECT_EQ(storage::kQuotaStatusOk, status);
     quota_ = quota;
   }
 
@@ -115,7 +115,7 @@ class BrowsingDataQuotaHelperTest : public testing::Test {
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
-  scoped_refptr<quota::QuotaManager> quota_manager_;
+  scoped_refptr<storage::QuotaManager> quota_manager_;
 
   base::ScopedTempDir dir_;
   scoped_refptr<BrowsingDataQuotaHelper> helper_;
@@ -137,11 +137,11 @@ TEST_F(BrowsingDataQuotaHelperTest, Empty) {
 
 TEST_F(BrowsingDataQuotaHelperTest, FetchData) {
   const MockOriginData kOrigins[] = {
-    {"http://example.com/", quota::kStorageTypeTemporary, 1},
-    {"https://example.com/", quota::kStorageTypeTemporary, 10},
-    {"http://example.com/", quota::kStorageTypePersistent, 100},
-    {"https://example.com/", quota::kStorageTypeSyncable, 1},
-    {"http://example2.com/", quota::kStorageTypeTemporary, 1000},
+      {"http://example.com/", storage::kStorageTypeTemporary, 1},
+      {"https://example.com/", storage::kStorageTypeTemporary, 10},
+      {"http://example.com/", storage::kStorageTypePersistent, 100},
+      {"https://example.com/", storage::kStorageTypeSyncable, 1},
+      {"http://example2.com/", storage::kStorageTypeTemporary, 1000},
   };
 
   RegisterClient(kOrigins, arraysize(kOrigins));
@@ -158,19 +158,19 @@ TEST_F(BrowsingDataQuotaHelperTest, FetchData) {
 
 TEST_F(BrowsingDataQuotaHelperTest, IgnoreExtensionsAndDevTools) {
   const MockOriginData kOrigins[] = {
-    {"http://example.com/", quota::kStorageTypeTemporary, 1},
-    {"https://example.com/", quota::kStorageTypeTemporary, 10},
-    {"http://example.com/", quota::kStorageTypePersistent, 100},
-    {"https://example.com/", quota::kStorageTypeSyncable, 1},
-    {"http://example2.com/", quota::kStorageTypeTemporary, 1000},
-    {"chrome-extension://abcdefghijklmnopqrstuvwxyz/",
-        quota::kStorageTypeTemporary, 10000},
-    {"chrome-extension://abcdefghijklmnopqrstuvwxyz/",
-        quota::kStorageTypePersistent, 100000},
-    {"chrome-devtools://abcdefghijklmnopqrstuvwxyz/",
-        quota::kStorageTypeTemporary, 10000},
-    {"chrome-devtools://abcdefghijklmnopqrstuvwxyz/",
-        quota::kStorageTypePersistent, 100000},
+      {"http://example.com/", storage::kStorageTypeTemporary, 1},
+      {"https://example.com/", storage::kStorageTypeTemporary, 10},
+      {"http://example.com/", storage::kStorageTypePersistent, 100},
+      {"https://example.com/", storage::kStorageTypeSyncable, 1},
+      {"http://example2.com/", storage::kStorageTypeTemporary, 1000},
+      {"chrome-extension://abcdefghijklmnopqrstuvwxyz/",
+       storage::kStorageTypeTemporary, 10000},
+      {"chrome-extension://abcdefghijklmnopqrstuvwxyz/",
+       storage::kStorageTypePersistent, 100000},
+      {"chrome-devtools://abcdefghijklmnopqrstuvwxyz/",
+       storage::kStorageTypeTemporary, 10000},
+      {"chrome-devtools://abcdefghijklmnopqrstuvwxyz/",
+       storage::kStorageTypePersistent, 100000},
   };
 
   RegisterClient(kOrigins, arraysize(kOrigins));

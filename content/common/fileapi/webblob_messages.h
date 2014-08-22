@@ -20,7 +20,7 @@ IPC_MESSAGE_CONTROL1(BlobHostMsg_StartBuilding,
                      std::string /*uuid */)
 IPC_MESSAGE_CONTROL2(BlobHostMsg_AppendBlobDataItem,
                      std::string /* uuid */,
-                     webkit_blob::BlobData::Item)
+                     storage::BlobData::Item)
 IPC_SYNC_MESSAGE_CONTROL3_0(BlobHostMsg_SyncAppendSharedMemory,
                             std::string /*uuid*/,
                             base::SharedMemoryHandle,
@@ -49,7 +49,7 @@ IPC_MESSAGE_CONTROL2(StreamHostMsg_StartBuilding,
 // Appends data to a stream being built.
 IPC_MESSAGE_CONTROL2(StreamHostMsg_AppendBlobDataItem,
                      GURL /* url */,
-                     webkit_blob::BlobData::Item)
+                     storage::BlobData::Item)
 
 // Appends data to a stream being built.
 IPC_SYNC_MESSAGE_CONTROL3_0(StreamHostMsg_SyncAppendSharedMemory,

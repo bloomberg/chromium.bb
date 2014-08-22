@@ -16,7 +16,7 @@
 
 class GURL;
 
-namespace fileapi {
+namespace storage {
 
 class QuotaReservationBuffer;
 class OpenFileHandle;
@@ -90,6 +90,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT QuotaReservation
   DISALLOW_COPY_AND_ASSIGN(QuotaReservation);
 };
 
-}  // namespace fileapi
+}  // namespace storage
 
 #endif  // WEBKIT_BROWSER_FILEAPI_QUOTA_QUOTA_RESERVATION_H_

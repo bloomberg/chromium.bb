@@ -97,8 +97,8 @@ int32_t PepperExternalFileRefBackend::GetAbsolutePath(
   return PP_OK_COMPLETIONPENDING;
 }
 
-fileapi::FileSystemURL PepperExternalFileRefBackend::GetFileSystemURL() const {
-  return fileapi::FileSystemURL();
+storage::FileSystemURL PepperExternalFileRefBackend::GetFileSystemURL() const {
+  return storage::FileSystemURL();
 }
 
 base::FilePath PepperExternalFileRefBackend::GetExternalFilePath() const {

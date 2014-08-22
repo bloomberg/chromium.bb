@@ -17,7 +17,7 @@
 #include "webkit/browser/quota/storage_monitor.h"
 #include "webkit/browser/quota/storage_observer.h"
 
-namespace quota {
+namespace storage {
 
 namespace {
 
@@ -691,4 +691,4 @@ bool ClientUsageTracker::IsStorageUnlimited(const GURL& origin) const {
          special_storage_policy_->IsStorageUnlimited(origin);
 }
 
-}  // namespace quota
+}  // namespace storage

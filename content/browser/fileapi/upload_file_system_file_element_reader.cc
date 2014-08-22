@@ -15,7 +15,7 @@
 namespace content {
 
 UploadFileSystemFileElementReader::UploadFileSystemFileElementReader(
-    fileapi::FileSystemContext* file_system_context,
+    storage::FileSystemContext* file_system_context,
     const GURL& url,
     uint64 range_offset,
     uint64 range_length,

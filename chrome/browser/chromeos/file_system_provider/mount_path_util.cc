@@ -77,7 +77,7 @@ bool IsFileSystemProviderLocalPath(const base::FilePath& local_path) {
   return true;
 }
 
-FileSystemURLParser::FileSystemURLParser(const fileapi::FileSystemURL& url)
+FileSystemURLParser::FileSystemURLParser(const storage::FileSystemURL& url)
     : url_(url), file_system_(NULL) {
 }
 
@@ -87,7 +87,7 @@ FileSystemURLParser::~FileSystemURLParser() {
 bool FileSystemURLParser::Parse() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  if (url_.type() != fileapi::kFileSystemTypeProvided)
+  if (url_.type() != storage::kFileSystemTypeProvided)
     return false;
 
   // First, find the service handling the mount point of the URL.

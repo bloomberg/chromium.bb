@@ -20,8 +20,8 @@
 
 #define FPL(x) FILE_PATH_LITERAL(x)
 
-using fileapi::FilePathToString;
-using fileapi::SandboxDirectoryDatabase;
+using storage::FilePathToString;
+using storage::SandboxDirectoryDatabase;
 
 namespace content {
 

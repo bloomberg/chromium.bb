@@ -77,7 +77,7 @@ bool CanOpenWithPepperFlags(int pp_open_flags,
 
 bool CanOpenFileSystemURLWithPepperFlags(int pp_open_flags,
                                          int child_id,
-                                         const fileapi::FileSystemURL& url) {
+                                         const storage::FileSystemURL& url) {
   return CanOpenFileWithPepperFlags(
       &ChildProcessSecurityPolicyImpl::CanReadFileSystemFile,
       &ChildProcessSecurityPolicyImpl::CanWriteFileSystemFile,

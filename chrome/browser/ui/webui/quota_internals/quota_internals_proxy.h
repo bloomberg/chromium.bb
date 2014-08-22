@@ -35,7 +35,7 @@ class QuotaInternalsProxy
  public:
   explicit QuotaInternalsProxy(QuotaInternalsHandler* handler);
 
-  void RequestInfo(scoped_refptr<quota::QuotaManager> quota_manager);
+  void RequestInfo(scoped_refptr<storage::QuotaManager> quota_manager);
 
  private:
   friend class base::DeleteHelper<QuotaInternalsProxy>;
@@ -43,8 +43,8 @@ class QuotaInternalsProxy
       content::BrowserThread::IO>;
   friend class QuotaInternalsHandler;
 
-  typedef quota::QuotaManager::QuotaTableEntries QuotaTableEntries;
-  typedef quota::QuotaManager::OriginInfoTableEntries OriginInfoTableEntries;
+  typedef storage::QuotaManager::QuotaTableEntries QuotaTableEntries;
+  typedef storage::QuotaManager::OriginInfoTableEntries OriginInfoTableEntries;
 
   virtual ~QuotaInternalsProxy();
 
@@ -55,31 +55,31 @@ class QuotaInternalsProxy
   void ReportStatistics(const Statistics& stats);
 
   // Called on IO Thread by QuotaManager as callback.
-  void DidGetAvailableSpace(quota::QuotaStatusCode status, int64 space);
-  void DidGetGlobalQuota(quota::StorageType type,
-                         quota::QuotaStatusCode status,
+  void DidGetAvailableSpace(storage::QuotaStatusCode status, int64 space);
+  void DidGetGlobalQuota(storage::StorageType type,
+                         storage::QuotaStatusCode status,
                          int64 quota);
-  void DidGetGlobalUsage(quota::StorageType type,
+  void DidGetGlobalUsage(storage::StorageType type,
                          int64 usage,
                          int64 unlimited_usage);
   void DidDumpQuotaTable(const QuotaTableEntries& entries);
   void DidDumpOriginInfoTable(const OriginInfoTableEntries& entries);
   void DidGetHostUsage(const std::string& host,
-                       quota::StorageType type,
+                       storage::StorageType type,
                        int64 usage);
 
   // Helper. Called on IO Thread.
-  void RequestPerOriginInfo(quota::StorageType type);
-  void VisitHost(const std::string& host, quota::StorageType type);
-  void GetHostUsage(const std::string& host, quota::StorageType type);
+  void RequestPerOriginInfo(storage::StorageType type);
+  void VisitHost(const std::string& host, storage::StorageType type);
+  void GetHostUsage(const std::string& host, storage::StorageType type);
 
   // Used on UI Thread.
   QuotaInternalsHandler* handler_;
 
   // Used on IO Thread.
-  scoped_refptr<quota::QuotaManager> quota_manager_;
-  std::set<std::pair<std::string, quota::StorageType> >
-      hosts_visited_, hosts_pending_;
+  scoped_refptr<storage::QuotaManager> quota_manager_;
+  std::set<std::pair<std::string, storage::StorageType> > hosts_visited_,
+      hosts_pending_;
   std::vector<PerHostStorageInfo> report_pending_;
   base::WeakPtrFactory<QuotaInternalsProxy> weak_factory_;
 

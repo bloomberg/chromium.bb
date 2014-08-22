@@ -28,57 +28,57 @@ class ITunesFileUtil : public NativeMediaFileUtil {
  protected:
   // NativeMediaFileUtil overrides.
   virtual void GetFileInfoOnTaskRunnerThread(
-      scoped_ptr<fileapi::FileSystemOperationContext> context,
-      const fileapi::FileSystemURL& url,
+      scoped_ptr<storage::FileSystemOperationContext> context,
+      const storage::FileSystemURL& url,
       const GetFileInfoCallback& callback) OVERRIDE;
   virtual void ReadDirectoryOnTaskRunnerThread(
-      scoped_ptr<fileapi::FileSystemOperationContext> context,
-      const fileapi::FileSystemURL& url,
+      scoped_ptr<storage::FileSystemOperationContext> context,
+      const storage::FileSystemURL& url,
       const ReadDirectoryCallback& callback) OVERRIDE;
   virtual void CreateSnapshotFileOnTaskRunnerThread(
-      scoped_ptr<fileapi::FileSystemOperationContext> context,
-      const fileapi::FileSystemURL& url,
+      scoped_ptr<storage::FileSystemOperationContext> context,
+      const storage::FileSystemURL& url,
       const CreateSnapshotFileCallback& callback) OVERRIDE;
   virtual base::File::Error GetFileInfoSync(
-      fileapi::FileSystemOperationContext* context,
-      const fileapi::FileSystemURL& url,
+      storage::FileSystemOperationContext* context,
+      const storage::FileSystemURL& url,
       base::File::Info* file_info,
       base::FilePath* platform_path) OVERRIDE;
   virtual base::File::Error ReadDirectorySync(
-      fileapi::FileSystemOperationContext* context,
-      const fileapi::FileSystemURL& url,
+      storage::FileSystemOperationContext* context,
+      const storage::FileSystemURL& url,
       EntryList* file_list) OVERRIDE;
   virtual base::File::Error DeleteDirectorySync(
-      fileapi::FileSystemOperationContext* context,
-      const fileapi::FileSystemURL& url) OVERRIDE;
+      storage::FileSystemOperationContext* context,
+      const storage::FileSystemURL& url) OVERRIDE;
   virtual base::File::Error DeleteFileSync(
-      fileapi::FileSystemOperationContext* context,
-      const fileapi::FileSystemURL& url) OVERRIDE;
+      storage::FileSystemOperationContext* context,
+      const storage::FileSystemURL& url) OVERRIDE;
   virtual base::File::Error CreateSnapshotFileSync(
-      fileapi::FileSystemOperationContext* context,
-      const fileapi::FileSystemURL& url,
+      storage::FileSystemOperationContext* context,
+      const storage::FileSystemURL& url,
       base::File::Info* file_info,
       base::FilePath* platform_path,
-      scoped_refptr<webkit_blob::ShareableFileReference>* file_ref) OVERRIDE;
+      scoped_refptr<storage::ShareableFileReference>* file_ref) OVERRIDE;
   virtual base::File::Error GetLocalFilePath(
-      fileapi::FileSystemOperationContext* context,
-      const fileapi::FileSystemURL& url,
+      storage::FileSystemOperationContext* context,
+      const storage::FileSystemURL& url,
       base::FilePath* local_file_path) OVERRIDE;
 
  private:
   void GetFileInfoWithFreshDataProvider(
-      scoped_ptr<fileapi::FileSystemOperationContext> context,
-      const fileapi::FileSystemURL& url,
+      scoped_ptr<storage::FileSystemOperationContext> context,
+      const storage::FileSystemURL& url,
       const GetFileInfoCallback& callback,
       bool valid_parse);
   void ReadDirectoryWithFreshDataProvider(
-      scoped_ptr<fileapi::FileSystemOperationContext> context,
-      const fileapi::FileSystemURL& url,
+      scoped_ptr<storage::FileSystemOperationContext> context,
+      const storage::FileSystemURL& url,
       const ReadDirectoryCallback& callback,
       bool valid_parse);
   virtual void CreateSnapshotFileWithFreshDataProvider(
-      scoped_ptr<fileapi::FileSystemOperationContext> context,
-      const fileapi::FileSystemURL& url,
+      scoped_ptr<storage::FileSystemOperationContext> context,
+      const storage::FileSystemURL& url,
       const CreateSnapshotFileCallback& callback,
       bool valid_parse);
 

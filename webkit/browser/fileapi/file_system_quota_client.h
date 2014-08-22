@@ -22,7 +22,7 @@ namespace base {
 class SequencedTaskRunner;
 }
 
-namespace fileapi {
+namespace storage {
 
 class FileSystemContext;
 
@@ -32,7 +32,7 @@ class FileSystemContext;
 // All of the public methods of this class are called by the quota manager
 // (except for the constructor/destructor).
 class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE FileSystemQuotaClient
-    : public NON_EXPORTED_BASE(quota::QuotaClient) {
+    : public NON_EXPORTED_BASE(storage::QuotaClient) {
  public:
   FileSystemQuotaClient(
       FileSystemContext* file_system_context,
@@ -40,23 +40,20 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE FileSystemQuotaClient
   virtual ~FileSystemQuotaClient();
 
   // QuotaClient methods.
-  virtual quota::QuotaClient::ID id() const OVERRIDE;
+  virtual storage::QuotaClient::ID id() const OVERRIDE;
   virtual void OnQuotaManagerDestroyed() OVERRIDE;
   virtual void GetOriginUsage(const GURL& origin_url,
-                              quota::StorageType type,
+                              storage::StorageType type,
                               const GetUsageCallback& callback) OVERRIDE;
-  virtual void GetOriginsForType(
-      quota::StorageType type,
-      const GetOriginsCallback& callback) OVERRIDE;
-  virtual void GetOriginsForHost(
-      quota::StorageType type,
-      const std::string& host,
-      const GetOriginsCallback& callback) OVERRIDE;
-  virtual void DeleteOriginData(
-      const GURL& origin,
-      quota::StorageType type,
-      const DeletionCallback& callback) OVERRIDE;
-  virtual bool DoesSupport(quota::StorageType type) const OVERRIDE;
+  virtual void GetOriginsForType(storage::StorageType type,
+                                 const GetOriginsCallback& callback) OVERRIDE;
+  virtual void GetOriginsForHost(storage::StorageType type,
+                                 const std::string& host,
+                                 const GetOriginsCallback& callback) OVERRIDE;
+  virtual void DeleteOriginData(const GURL& origin,
+                                storage::StorageType type,
+                                const DeletionCallback& callback) OVERRIDE;
+  virtual bool DoesSupport(storage::StorageType type) const OVERRIDE;
 
  private:
   base::SequencedTaskRunner* file_task_runner() const;
@@ -68,6 +65,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE FileSystemQuotaClient
   DISALLOW_COPY_AND_ASSIGN(FileSystemQuotaClient);
 };
 
-}  // namespace fileapi
+}  // namespace storage
 
 #endif  // WEBKIT_BROWSER_FILEAPI_FILE_SYSTEM_QUOTA_CLIENT_H_

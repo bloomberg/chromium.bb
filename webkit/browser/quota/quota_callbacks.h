@@ -18,7 +18,7 @@
 
 class GURL;
 
-namespace quota {
+namespace storage {
 
 struct UsageInfo;
 typedef std::vector<UsageInfo> UsageInfoEntries;
@@ -124,6 +124,6 @@ typedef CallbackQueueMap<QuotaCallback, std::string,
                          Tuple2<QuotaStatusCode, int64> >
     HostQuotaCallbackMap;
 
-}  // namespace quota
+}  // namespace storage
 
 #endif  // WEBKIT_QUOTA_QUOTA_TYPES_H_

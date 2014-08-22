@@ -6,17 +6,17 @@
 
 namespace content {
 
-fileapi::FileSystemType PepperFileSystemTypeToFileSystemType(
+storage::FileSystemType PepperFileSystemTypeToFileSystemType(
     PP_FileSystemType type) {
   switch (type) {
     case PP_FILESYSTEMTYPE_LOCALTEMPORARY:
-      return fileapi::kFileSystemTypeTemporary;
+      return storage::kFileSystemTypeTemporary;
     case PP_FILESYSTEMTYPE_LOCALPERSISTENT:
-      return fileapi::kFileSystemTypePersistent;
+      return storage::kFileSystemTypePersistent;
     case PP_FILESYSTEMTYPE_EXTERNAL:
-      return fileapi::kFileSystemTypeExternal;
+      return storage::kFileSystemTypeExternal;
     default:
-      return fileapi::kFileSystemTypeUnknown;
+      return storage::kFileSystemTypeUnknown;
   }
 }
 

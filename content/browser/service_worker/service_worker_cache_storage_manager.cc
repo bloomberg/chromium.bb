@@ -127,7 +127,7 @@ void ServiceWorkerCacheStorageManager::EnumerateCaches(
 
 void ServiceWorkerCacheStorageManager::SetBlobParametersForCache(
     net::URLRequestContext* request_context,
-    base::WeakPtr<webkit_blob::BlobStorageContext> blob_storage_context) {
+    base::WeakPtr<storage::BlobStorageContext> blob_storage_context) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(cache_storage_map_.empty());
   DCHECK(!request_context_ || request_context_ == request_context);

@@ -8,7 +8,7 @@
 #include "base/logging.h"
 #include "webkit/browser/fileapi/sandbox_origin_database.h"
 
-namespace fileapi {
+namespace storage {
 
 // Special directory name for isolated origin.
 const base::FilePath::CharType
@@ -77,4 +77,4 @@ void SandboxIsolatedOriginDatabase::MigrateBackFromObsoleteOriginDatabase(
   }
 }
 
-}  // namespace fileapi
+}  // namespace storage

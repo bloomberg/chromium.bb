@@ -14,7 +14,7 @@ namespace base {
 class FilePath;
 }
 
-namespace webkit_database {
+namespace storage {
 
 class DatabaseTracker;
 
@@ -34,6 +34,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT DatabaseUtil {
   static bool IsValidOriginIdentifier(const std::string& origin_identifier);
 };
 
-}  // namespace webkit_database
+}  // namespace storage
 
 #endif  // WEBKIT_BROWSER_DATABASE_DATABASE_UTIL_H_

@@ -19,7 +19,7 @@ class URLRequest;
 class URLRequestInterceptor;
 }
 
-namespace webkit_blob {
+namespace storage {
 class BlobStorageContext;
 }
 
@@ -44,7 +44,7 @@ class CONTENT_EXPORT ServiceWorkerRequestHandler
   static void InitializeHandler(
       net::URLRequest* request,
       ServiceWorkerContextWrapper* context_wrapper,
-      webkit_blob::BlobStorageContext* blob_storage_context,
+      storage::BlobStorageContext* blob_storage_context,
       int process_id,
       int provider_id,
       ResourceType resource_type,
@@ -73,12 +73,12 @@ class CONTENT_EXPORT ServiceWorkerRequestHandler
   ServiceWorkerRequestHandler(
       base::WeakPtr<ServiceWorkerContextCore> context,
       base::WeakPtr<ServiceWorkerProviderHost> provider_host,
-      base::WeakPtr<webkit_blob::BlobStorageContext> blob_storage_context,
+      base::WeakPtr<storage::BlobStorageContext> blob_storage_context,
       ResourceType resource_type);
 
   base::WeakPtr<ServiceWorkerContextCore> context_;
   base::WeakPtr<ServiceWorkerProviderHost> provider_host_;
-  base::WeakPtr<webkit_blob::BlobStorageContext> blob_storage_context_;
+  base::WeakPtr<storage::BlobStorageContext> blob_storage_context_;
   ResourceType resource_type_;
 
  private:

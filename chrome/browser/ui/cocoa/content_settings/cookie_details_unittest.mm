@@ -61,8 +61,11 @@ TEST_F(CookiesDetailsTest, CreateForTreeDatabase) {
   int64 size = 1234;
   base::Time last_modified = base::Time::Now();
   BrowsingDataDatabaseHelper::DatabaseInfo info(
-      webkit_database::DatabaseIdentifier::CreateFromOrigin(origin),
-      database_name, description, size, last_modified);
+      storage::DatabaseIdentifier::CreateFromOrigin(origin),
+      database_name,
+      description,
+      size,
+      last_modified);
   details.reset([[CocoaCookieDetails alloc] initWithDatabase:&info]);
 
   EXPECT_EQ([details.get() type], kCocoaCookieDetailsTypeTreeDatabase);

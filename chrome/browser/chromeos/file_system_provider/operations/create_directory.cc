@@ -19,7 +19,7 @@ CreateDirectory::CreateDirectory(
     const base::FilePath& directory_path,
     bool exclusive,
     bool recursive,
-    const fileapi::AsyncFileUtil::StatusCallback& callback)
+    const storage::AsyncFileUtil::StatusCallback& callback)
     : Operation(event_router, file_system_info),
       directory_path_(directory_path),
       exclusive_(exclusive),

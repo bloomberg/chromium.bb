@@ -27,10 +27,10 @@
 #include "webkit/browser/fileapi/native_file_util.h"
 
 using content::AsyncFileTestHelper;
-using fileapi::FileSystemContext;
-using fileapi::FileSystemOperationContext;
-using fileapi::FileSystemType;
-using fileapi::FileSystemURL;
+using storage::FileSystemContext;
+using storage::FileSystemOperationContext;
+using storage::FileSystemType;
+using storage::FileSystemURL;
 
 namespace content {
 
@@ -100,7 +100,7 @@ class DraggedFileUtilTest : public testing::Test {
   virtual void SetUp() {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
     ASSERT_TRUE(partition_dir_.CreateUniqueTempDir());
-    file_util_.reset(new fileapi::DraggedFileUtil());
+    file_util_.reset(new storage::DraggedFileUtil());
 
     // Register the files/directories of RegularTestCases (with random
     // root paths) as dropped files.
@@ -118,8 +118,8 @@ class DraggedFileUtilTest : public testing::Test {
   }
 
  protected:
-  fileapi::IsolatedContext* isolated_context() const {
-    return fileapi::IsolatedContext::GetInstance();
+  storage::IsolatedContext* isolated_context() const {
+    return storage::IsolatedContext::GetInstance();
   }
   const base::FilePath& root_path() const {
     return data_dir_.path();
@@ -127,7 +127,7 @@ class DraggedFileUtilTest : public testing::Test {
   FileSystemContext* file_system_context() const {
     return file_system_context_.get();
   }
-  fileapi::FileSystemFileUtil* file_util() const { return file_util_.get(); }
+  storage::FileSystemFileUtil* file_util() const { return file_util_.get(); }
   std::string filesystem_id() const { return filesystem_id_; }
 
   base::FilePath GetTestCasePlatformPath(
@@ -148,14 +148,14 @@ class DraggedFileUtilTest : public testing::Test {
         filesystem_id()).Append(path);
     return file_system_context_->CreateCrackedFileSystemURL(
         GURL("http://example.com"),
-        fileapi::kFileSystemTypeIsolated,
+        storage::kFileSystemTypeIsolated,
         virtual_path);
   }
 
   FileSystemURL GetOtherFileSystemURL(const base::FilePath& path) const {
     return file_system_context()->CreateCrackedFileSystemURL(
         GURL("http://example.com"),
-        fileapi::kFileSystemTypeTemporary,
+        storage::kFileSystemTypeTemporary,
         base::FilePath().AppendASCII("dest").Append(path));
   }
 
@@ -247,9 +247,9 @@ class DraggedFileUtilTest : public testing::Test {
     }
   }
 
-  scoped_ptr<fileapi::FileSystemOperationContext> GetOperationContext() {
-    return make_scoped_ptr(
-        new fileapi::FileSystemOperationContext(file_system_context())).Pass();
+  scoped_ptr<storage::FileSystemOperationContext> GetOperationContext() {
+    return make_scoped_ptr(new storage::FileSystemOperationContext(
+                               file_system_context())).Pass();
   }
 
 
@@ -257,7 +257,7 @@ class DraggedFileUtilTest : public testing::Test {
   void SimulateDropFiles() {
     size_t root_path_index = 0;
 
-    fileapi::IsolatedContext::FileInfoSet toplevels;
+    storage::IsolatedContext::FileInfoSet toplevels;
     for (size_t i = 0; i < kRegularFileSystemTestCaseSize; ++i) {
       const FileSystemTestCaseRecord& test_case =
           kRegularFileSystemTestCases[i];
@@ -286,7 +286,7 @@ class DraggedFileUtilTest : public testing::Test {
   std::string filesystem_id_;
   scoped_refptr<FileSystemContext> file_system_context_;
   std::map<base::FilePath, base::FilePath> toplevel_root_map_;
-  scoped_ptr<fileapi::DraggedFileUtil> file_util_;
+  scoped_ptr<storage::DraggedFileUtil> file_util_;
   DISALLOW_COPY_AND_ASSIGN(DraggedFileUtilTest);
 };
 
@@ -361,7 +361,7 @@ TEST_F(DraggedFileUtilTest, ReadDirectoryTest) {
                  << ": " << test_case.path);
 
     // Read entries in the directory to construct the expected results map.
-    typedef std::map<base::FilePath::StringType, fileapi::DirectoryEntry>
+    typedef std::map<base::FilePath::StringType, storage::DirectoryEntry>
         EntryMap;
     EntryMap expected_entry_map;
 
@@ -372,7 +372,7 @@ TEST_F(DraggedFileUtilTest, ReadDirectoryTest) {
     base::FilePath current;
     while (!(current = file_enum.Next()).empty()) {
       base::FileEnumerator::FileInfo file_info = file_enum.GetInfo();
-      fileapi::DirectoryEntry entry;
+      storage::DirectoryEntry entry;
       entry.is_directory = file_info.IsDirectory();
       entry.name = current.BaseName().value();
       entry.size = file_info.GetSize();
@@ -399,7 +399,7 @@ TEST_F(DraggedFileUtilTest, ReadDirectoryTest) {
 
     EXPECT_EQ(expected_entry_map.size(), entries.size());
     for (size_t i = 0; i < entries.size(); ++i) {
-      const fileapi::DirectoryEntry& entry = entries[i];
+      const storage::DirectoryEntry& entry = entries[i];
       EntryMap::iterator found = expected_entry_map.find(entry.name);
       EXPECT_TRUE(found != expected_entry_map.end());
       EXPECT_EQ(found->second.name, entry.name);

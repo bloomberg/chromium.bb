@@ -35,7 +35,7 @@ using net::URLRequest;
 using net::URLRequestJob;
 using net::URLRequestStatus;
 
-namespace fileapi {
+namespace storage {
 
 static net::HttpResponseHeaders* CreateHttpResponseHeaders() {
   // HttpResponseHeaders expects its input string to be terminated by two NULs.
@@ -260,4 +260,4 @@ void FileSystemURLRequestJob::NotifyFailed(int rv) {
   NotifyDone(URLRequestStatus(URLRequestStatus::FAILED, rv));
 }
 
-}  // namespace fileapi
+}  // namespace storage

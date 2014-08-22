@@ -35,20 +35,20 @@ class CallbackLogger {
   class Event {
    public:
     Event(base::File::Error result,
-          const fileapi::AsyncFileUtil::EntryList& entry_list,
+          const storage::AsyncFileUtil::EntryList& entry_list,
           bool has_more)
         : result_(result), entry_list_(entry_list), has_more_(has_more) {}
     virtual ~Event() {}
 
     base::File::Error result() { return result_; }
-    const fileapi::AsyncFileUtil::EntryList& entry_list() {
+    const storage::AsyncFileUtil::EntryList& entry_list() {
       return entry_list_;
     }
     bool has_more() { return has_more_; }
 
    private:
     base::File::Error result_;
-    fileapi::AsyncFileUtil::EntryList entry_list_;
+    storage::AsyncFileUtil::EntryList entry_list_;
     bool has_more_;
 
     DISALLOW_COPY_AND_ASSIGN(Event);
@@ -58,7 +58,7 @@ class CallbackLogger {
   virtual ~CallbackLogger() {}
 
   void OnReadDirectory(base::File::Error result,
-                       const fileapi::AsyncFileUtil::EntryList& entry_list,
+                       const storage::AsyncFileUtil::EntryList& entry_list,
                        bool has_more) {
     events_.push_back(new Event(result, entry_list, has_more));
   }
@@ -207,7 +207,7 @@ TEST_F(FileSystemProviderOperationsReadDirectoryTest, OnSuccess) {
   EXPECT_EQ(base::File::FILE_OK, event->result());
 
   ASSERT_EQ(1u, event->entry_list().size());
-  const fileapi::DirectoryEntry entry = event->entry_list()[0];
+  const storage::DirectoryEntry entry = event->entry_list()[0];
   EXPECT_FALSE(entry.is_directory);
   EXPECT_EQ("blueberries.txt", entry.name);
   EXPECT_EQ(4096, entry.size);

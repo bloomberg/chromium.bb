@@ -55,7 +55,7 @@ const char* LastPathKey() {
 
 }  // namespace
 
-namespace fileapi {
+namespace storage {
 
 SandboxOriginDatabase::SandboxOriginDatabase(
     const base::FilePath& file_system_directory,
@@ -344,4 +344,4 @@ bool SandboxOriginDatabase::GetLastPathNumber(int* number) {
   return true;
 }
 
-}  // namespace fileapi
+}  // namespace storage

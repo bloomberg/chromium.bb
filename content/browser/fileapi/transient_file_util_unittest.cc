@@ -16,7 +16,7 @@
 #include "webkit/browser/fileapi/transient_file_util.h"
 #include "webkit/common/blob/scoped_file.h"
 
-using fileapi::FileSystemURL;
+using storage::FileSystemURL;
 
 namespace content {
 
@@ -28,7 +28,7 @@ class TransientFileUtilTest : public testing::Test {
   virtual void SetUp() OVERRIDE {
     file_system_context_ = CreateFileSystemContextForTesting(
         NULL, base::FilePath(FILE_PATH_LITERAL("dummy")));
-    transient_file_util_.reset(new fileapi::TransientFileUtil);
+    transient_file_util_.reset(new storage::TransientFileUtil);
 
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
   }
@@ -42,11 +42,11 @@ class TransientFileUtilTest : public testing::Test {
       FileSystemURL* file_url,
       base::FilePath* file_path) {
     EXPECT_TRUE(base::CreateTemporaryFileInDir(data_dir_.path(), file_path));
-    fileapi::IsolatedContext* isolated_context =
-        fileapi::IsolatedContext::GetInstance();
+    storage::IsolatedContext* isolated_context =
+        storage::IsolatedContext::GetInstance();
     std::string name = "tmp";
     std::string fsid = isolated_context->RegisterFileSystemForPath(
-        fileapi::kFileSystemTypeForTransientFile,
+        storage::kFileSystemTypeForTransientFile,
         std::string(),
         *file_path,
         &name);
@@ -54,25 +54,23 @@ class TransientFileUtilTest : public testing::Test {
     base::FilePath virtual_path = isolated_context->CreateVirtualRootPath(
         fsid).AppendASCII(name);
     *file_url = file_system_context_->CreateCrackedFileSystemURL(
-        GURL("http://foo"),
-        fileapi::kFileSystemTypeIsolated,
-        virtual_path);
+        GURL("http://foo"), storage::kFileSystemTypeIsolated, virtual_path);
   }
 
-  scoped_ptr<fileapi::FileSystemOperationContext> NewOperationContext() {
+  scoped_ptr<storage::FileSystemOperationContext> NewOperationContext() {
     return make_scoped_ptr(
-        new fileapi::FileSystemOperationContext(file_system_context_.get()));
+        new storage::FileSystemOperationContext(file_system_context_.get()));
   }
 
-  fileapi::FileSystemFileUtil* file_util() {
+  storage::FileSystemFileUtil* file_util() {
     return transient_file_util_.get();
   }
 
  private:
   base::MessageLoop message_loop_;
   base::ScopedTempDir data_dir_;
-  scoped_refptr<fileapi::FileSystemContext> file_system_context_;
-  scoped_ptr<fileapi::TransientFileUtil> transient_file_util_;
+  scoped_refptr<storage::FileSystemContext> file_system_context_;
+  scoped_ptr<storage::TransientFileUtil> transient_file_util_;
 
   DISALLOW_COPY_AND_ASSIGN(TransientFileUtilTest);
 };
@@ -94,12 +92,8 @@ TEST_F(TransientFileUtilTest, TransientFile) {
 
   // Create a snapshot file.
   {
-    webkit_blob::ScopedFile scoped_file =
-        file_util()->CreateSnapshotFile(NewOperationContext().get(),
-                                        temp_url,
-                                        &error,
-                                        &file_info,
-                                        &path);
+    storage::ScopedFile scoped_file = file_util()->CreateSnapshotFile(
+        NewOperationContext().get(), temp_url, &error, &file_info, &path);
     ASSERT_EQ(base::File::FILE_OK, error);
     ASSERT_EQ(temp_path, path);
     ASSERT_FALSE(file_info.is_directory);

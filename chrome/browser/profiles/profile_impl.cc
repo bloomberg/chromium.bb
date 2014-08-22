@@ -1144,7 +1144,7 @@ DownloadManagerDelegate* ProfileImpl::GetDownloadManagerDelegate() {
       GetDownloadManagerDelegate();
 }
 
-quota::SpecialStoragePolicy* ProfileImpl::GetSpecialStoragePolicy() {
+storage::SpecialStoragePolicy* ProfileImpl::GetSpecialStoragePolicy() {
 #if defined(ENABLE_EXTENSIONS)
   return GetExtensionSpecialStoragePolicy();
 #else

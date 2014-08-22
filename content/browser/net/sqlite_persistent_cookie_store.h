@@ -27,7 +27,7 @@ namespace net {
 class CanonicalCookie;
 }
 
-namespace quota {
+namespace storage {
 class SpecialStoragePolicy;
 }
 
@@ -50,7 +50,7 @@ class CONTENT_EXPORT SQLitePersistentCookieStore
       const scoped_refptr<base::SequencedTaskRunner>& client_task_runner,
       const scoped_refptr<base::SequencedTaskRunner>& background_task_runner,
       bool restore_old_session_cookies,
-      quota::SpecialStoragePolicy* special_storage_policy,
+      storage::SpecialStoragePolicy* special_storage_policy,
       CookieCryptoDelegate* crypto_delegate);
 
   // net::CookieMonster::PersistentCookieStore:

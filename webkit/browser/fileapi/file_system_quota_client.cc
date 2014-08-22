@@ -24,9 +24,9 @@
 #include "webkit/browser/fileapi/sandbox_file_system_backend.h"
 #include "webkit/common/fileapi/file_system_util.h"
 
-using quota::StorageType;
+using storage::StorageType;
 
-namespace fileapi {
+namespace storage {
 
 namespace {
 
@@ -57,25 +57,24 @@ void GetOriginsForHostOnFileTaskRunner(
   quota_util->GetOriginsForHostOnFileTaskRunner(type, host, origins_ptr);
 }
 
-void DidGetOrigins(
-    const quota::QuotaClient::GetOriginsCallback& callback,
-    std::set<GURL>* origins_ptr) {
+void DidGetOrigins(const storage::QuotaClient::GetOriginsCallback& callback,
+                   std::set<GURL>* origins_ptr) {
   callback.Run(*origins_ptr);
 }
 
-quota::QuotaStatusCode DeleteOriginOnFileTaskRunner(
+storage::QuotaStatusCode DeleteOriginOnFileTaskRunner(
     FileSystemContext* context,
     const GURL& origin,
     FileSystemType type) {
   FileSystemBackend* provider = context->GetFileSystemBackend(type);
   if (!provider || !provider->GetQuotaUtil())
-    return quota::kQuotaErrorNotSupported;
+    return storage::kQuotaErrorNotSupported;
   base::File::Error result =
       provider->GetQuotaUtil()->DeleteOriginDataOnFileTaskRunner(
           context, context->quota_manager_proxy(), origin, type);
   if (result == base::File::FILE_OK)
-    return quota::kQuotaStatusOk;
-  return quota::kQuotaErrorInvalidModification;
+    return storage::kQuotaStatusOk;
+  return storage::kQuotaErrorInvalidModification;
 }
 
 }  // namespace
@@ -89,8 +88,8 @@ FileSystemQuotaClient::FileSystemQuotaClient(
 
 FileSystemQuotaClient::~FileSystemQuotaClient() {}
 
-quota::QuotaClient::ID FileSystemQuotaClient::id() const {
-  return quota::QuotaClient::kFileSystem;
+storage::QuotaClient::ID FileSystemQuotaClient::id() const {
+  return storage::QuotaClient::kFileSystem;
 }
 
 void FileSystemQuotaClient::OnQuotaManagerDestroyed() {
@@ -197,7 +196,8 @@ void FileSystemQuotaClient::DeleteOriginData(
       callback);
 }
 
-bool FileSystemQuotaClient::DoesSupport(quota::StorageType storage_type) const {
+bool FileSystemQuotaClient::DoesSupport(
+    storage::StorageType storage_type) const {
   FileSystemType type = QuotaStorageTypeToFileSystemType(storage_type);
   DCHECK(type != kFileSystemTypeUnknown);
   return file_system_context_->IsSandboxFileSystem(type);
@@ -207,4 +207,4 @@ base::SequencedTaskRunner* FileSystemQuotaClient::file_task_runner() const {
   return file_system_context_->default_file_task_runner();
 }
 
-}  // namespace fileapi
+}  // namespace storage

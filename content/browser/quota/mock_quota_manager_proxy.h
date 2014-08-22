@@ -11,7 +11,7 @@
 #include "webkit/browser/quota/quota_manager_proxy.h"
 #include "webkit/common/quota/quota_types.h"
 
-using quota::QuotaManagerProxy;
+using storage::QuotaManagerProxy;
 
 namespace content {
 

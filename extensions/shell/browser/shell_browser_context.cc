@@ -17,7 +17,7 @@ ShellBrowserContext::ShellBrowserContext()
 ShellBrowserContext::~ShellBrowserContext() {
 }
 
-quota::SpecialStoragePolicy* ShellBrowserContext::GetSpecialStoragePolicy() {
+storage::SpecialStoragePolicy* ShellBrowserContext::GetSpecialStoragePolicy() {
   return storage_policy_.get();
 }
 

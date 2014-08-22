@@ -68,9 +68,9 @@ void BoolCallbackAsFileErrorCallback(
 // Part of PrepareFileOnIOThread. It tries to create a new file if the given
 // |url| is not already inhabited.
 void PrepareFileAfterCheckExistOnIOThread(
-    scoped_refptr<fileapi::FileSystemContext> file_system_context,
-    const fileapi::FileSystemURL& url,
-    const fileapi::FileSystemOperation::StatusCallback& callback,
+    scoped_refptr<storage::FileSystemContext> file_system_context,
+    const storage::FileSystemURL& url,
+    const storage::FileSystemOperation::StatusCallback& callback,
     base::File::Error error) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
@@ -91,8 +91,8 @@ void PrepareFileAfterCheckExistOnIOThread(
 // Checks whether a file exists at the given |url|, and try creating it if it
 // is not already there.
 void PrepareFileOnIOThread(
-    scoped_refptr<fileapi::FileSystemContext> file_system_context,
-    const fileapi::FileSystemURL& url,
+    scoped_refptr<storage::FileSystemContext> file_system_context,
+    const storage::FileSystemURL& url,
     const base::Callback<void(bool)>& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
@@ -116,15 +116,15 @@ bool IsUnderNonNativeLocalPath(Profile* profile,
     return false;
   }
 
-  fileapi::FileSystemURL filesystem_url =
-      GetFileSystemContextForExtensionId(profile,
-                                         kFileManagerAppId)->CrackURL(url);
+  storage::FileSystemURL filesystem_url =
+      GetFileSystemContextForExtensionId(profile, kFileManagerAppId)
+          ->CrackURL(url);
   if (!filesystem_url.is_valid())
     return false;
 
   switch (filesystem_url.type()) {
-    case fileapi::kFileSystemTypeNativeLocal:
-    case fileapi::kFileSystemTypeRestrictedNativeLocal:
+    case storage::kFileSystemTypeNativeLocal:
+    case storage::kFileSystemTypeRestrictedNativeLocal:
       return false;
     default:
       // The path indeed corresponds to a mount point not associated with a
@@ -224,7 +224,7 @@ void PrepareNonNativeLocalFileForWritableApp(
     return;
   }
 
-  fileapi::FileSystemContext* const context =
+  storage::FileSystemContext* const context =
       GetFileSystemContextForExtensionId(profile, kFileManagerAppId);
   DCHECK(context);
 

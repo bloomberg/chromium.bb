@@ -46,7 +46,7 @@ using content::BrowserThread;
 using content::NavigationController;
 using content::RenderProcessHost;
 using content::WebContents;
-using fileapi::ExternalMountPoints;
+using storage::ExternalMountPoints;
 using storage_monitor::MediaStorageUtil;
 using storage_monitor::StorageInfo;
 using storage_monitor::StorageMonitor;
@@ -703,8 +703,10 @@ class MediaFileSystemRegistry::MediaFileSystemContextImpl
       result = registry->RegisterIPhotoFilesystemOnUIThread(fs_name, path);
     } else {
       result = ExternalMountPoints::GetSystemInstance()->RegisterFileSystem(
-          fs_name, fileapi::kFileSystemTypeNativeMedia,
-          fileapi::FileSystemMountOption(), path);
+          fs_name,
+          storage::kFileSystemTypeNativeMedia,
+          storage::FileSystemMountOption(),
+          path);
     }
     return result;
   }
@@ -718,8 +720,10 @@ class MediaFileSystemRegistry::MediaFileSystemContextImpl
     // Sanity checks for |path|.
     CHECK(MediaStorageUtil::CanCreateFileSystem(device_id, path));
     bool result = ExternalMountPoints::GetSystemInstance()->RegisterFileSystem(
-        fs_name, fileapi::kFileSystemTypeDeviceMedia,
-        fileapi::FileSystemMountOption(), path);
+        fs_name,
+        storage::kFileSystemTypeDeviceMedia,
+        storage::FileSystemMountOption(),
+        path);
     CHECK(result);
     BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, base::Bind(
         &MTPDeviceMapService::RegisterMTPFileSystem,

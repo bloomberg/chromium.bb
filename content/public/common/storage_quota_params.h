@@ -18,14 +18,14 @@ struct CONTENT_EXPORT StorageQuotaParams {
   StorageQuotaParams()
       : render_view_id(MSG_ROUTING_NONE),
         request_id(-1),
-        storage_type(quota::kStorageTypeTemporary),
+        storage_type(storage::kStorageTypeTemporary),
         requested_size(0),
         user_gesture(false) {}
 
   int render_view_id;
   int request_id;
   GURL origin_url;
-  quota::StorageType storage_type;
+  storage::StorageType storage_type;
   uint64 requested_size;
 
   // Request was made in the context of a user gesture.

@@ -49,10 +49,10 @@ const base::FilePath::CharType kDomStorageOrigin2[] =
 const base::FilePath::CharType kDomStorageOrigin3[] =
     FILE_PATH_LITERAL("http_host3_1.localstorage");
 
-const quota::StorageType kTemporary = quota::kStorageTypeTemporary;
-const quota::StorageType kPersistent = quota::kStorageTypePersistent;
+const storage::StorageType kTemporary = storage::kStorageTypeTemporary;
+const storage::StorageType kPersistent = storage::kStorageTypePersistent;
 
-const quota::QuotaClient::ID kClientFile = quota::QuotaClient::kFileSystem;
+const storage::QuotaClient::ID kClientFile = storage::QuotaClient::kFileSystem;
 
 const uint32 kAllQuotaRemoveMask =
     StoragePartition::REMOVE_DATA_MASK_APPCACHE |
@@ -225,7 +225,7 @@ bool IsWebSafeSchemeForTest(const std::string& scheme) {
 
 bool DoesOriginMatchForUnprotectedWeb(
     const GURL& origin,
-    quota::SpecialStoragePolicy* special_storage_policy) {
+    storage::SpecialStoragePolicy* special_storage_policy) {
   if (IsWebSafeSchemeForTest(origin.scheme()))
     return !special_storage_policy->IsStorageProtected(origin.GetOrigin());
 
@@ -234,13 +234,13 @@ bool DoesOriginMatchForUnprotectedWeb(
 
 bool DoesOriginMatchForBothProtectedAndUnprotectedWeb(
     const GURL& origin,
-    quota::SpecialStoragePolicy* special_storage_policy) {
+    storage::SpecialStoragePolicy* special_storage_policy) {
   return true;
 }
 
 bool DoesOriginMatchUnprotected(
     const GURL& origin,
-    quota::SpecialStoragePolicy* special_storage_policy) {
+    storage::SpecialStoragePolicy* special_storage_policy) {
   return origin.GetOrigin().scheme() != kOriginDevTools.scheme();
 }
 
@@ -413,22 +413,22 @@ TEST_F(StoragePartitionShaderClearTest, ClearShaderCache) {
 }
 
 TEST_F(StoragePartitionImplTest, QuotaClientMaskGeneration) {
-  EXPECT_EQ(quota::QuotaClient::kFileSystem,
+  EXPECT_EQ(storage::QuotaClient::kFileSystem,
             StoragePartitionImpl::GenerateQuotaClientMask(
                 StoragePartition::REMOVE_DATA_MASK_FILE_SYSTEMS));
-  EXPECT_EQ(quota::QuotaClient::kDatabase,
+  EXPECT_EQ(storage::QuotaClient::kDatabase,
             StoragePartitionImpl::GenerateQuotaClientMask(
                 StoragePartition::REMOVE_DATA_MASK_WEBSQL));
-  EXPECT_EQ(quota::QuotaClient::kAppcache,
+  EXPECT_EQ(storage::QuotaClient::kAppcache,
             StoragePartitionImpl::GenerateQuotaClientMask(
                 StoragePartition::REMOVE_DATA_MASK_APPCACHE));
-  EXPECT_EQ(quota::QuotaClient::kIndexedDatabase,
+  EXPECT_EQ(storage::QuotaClient::kIndexedDatabase,
             StoragePartitionImpl::GenerateQuotaClientMask(
                 StoragePartition::REMOVE_DATA_MASK_INDEXEDDB));
-  EXPECT_EQ(quota::QuotaClient::kFileSystem |
-            quota::QuotaClient::kDatabase |
-            quota::QuotaClient::kAppcache |
-            quota::QuotaClient::kIndexedDatabase,
+  EXPECT_EQ(storage::QuotaClient::kFileSystem |
+                storage::QuotaClient::kDatabase |
+                storage::QuotaClient::kAppcache |
+                storage::QuotaClient::kIndexedDatabase,
             StoragePartitionImpl::GenerateQuotaClientMask(kAllQuotaRemoveMask));
 }
 

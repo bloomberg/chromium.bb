@@ -21,12 +21,12 @@ namespace net {
 class IOBuffer;
 }
 
-namespace fileapi {
+namespace storage {
 class FileSystemContext;
 class FileSystemURL;
 }
 
-namespace webkit_blob {
+namespace storage {
 
 // A generic interface for reading a file-like object.
 class FileStreamReader {
@@ -52,8 +52,8 @@ class FileStreamReader {
   // modification time to see if the file has been modified, and if it does any
   // succeeding read operations should fail with ERR_UPLOAD_FILE_CHANGED error.
   WEBKIT_STORAGE_BROWSER_EXPORT static FileStreamReader*
-      CreateForFileSystemFile(fileapi::FileSystemContext* context,
-                              const fileapi::FileSystemURL& url,
+      CreateForFileSystemFile(storage::FileSystemContext* context,
+                              const storage::FileSystemURL& url,
                               int64 initial_offset,
                               const base::Time& expected_modification_time);
 
@@ -94,6 +94,6 @@ class FileStreamReader {
   virtual int64 GetLength(const net::Int64CompletionCallback& callback) = 0;
 };
 
-}  // namespace webkit_blob
+}  // namespace storage
 
 #endif  // WEBKIT_BLOB_FILE_STREAM_READER_H_

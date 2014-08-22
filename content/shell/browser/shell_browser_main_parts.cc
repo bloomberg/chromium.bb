@@ -146,17 +146,17 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   }
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree)) {
-    quota::QuotaManager* quota_manager =
+    storage::QuotaManager* quota_manager =
         BrowserContext::GetDefaultStoragePartition(browser_context())
             ->GetQuotaManager();
     BrowserThread::PostTask(
         BrowserThread::IO,
         FROM_HERE,
-        base::Bind(&quota::QuotaManager::SetTemporaryGlobalOverrideQuota,
+        base::Bind(&storage::QuotaManager::SetTemporaryGlobalOverrideQuota,
                    quota_manager,
                    kDefaultLayoutTestQuotaBytes *
-                       quota::QuotaManager::kPerHostTemporaryPortion,
-                   quota::QuotaCallback()));
+                       storage::QuotaManager::kPerHostTemporaryPortion,
+                   storage::QuotaCallback()));
 #if defined(ENABLE_PLUGINS)
     PluginService* plugin_service = PluginService::GetInstance();
     plugin_service_filter_.reset(new ShellPluginServiceFilter);

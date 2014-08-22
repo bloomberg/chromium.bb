@@ -13,8 +13,8 @@
 #include "webkit/browser/fileapi/external_mount_points.h"
 #include "webkit/common/fileapi/file_system_types.h"
 
-using fileapi::ExternalMountPoints;
-using fileapi::FileSystemURL;
+using storage::ExternalMountPoints;
+using storage::FileSystemURL;
 
 namespace sync_file_system {
 

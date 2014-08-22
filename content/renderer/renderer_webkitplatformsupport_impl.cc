@@ -1161,11 +1161,11 @@ void RendererWebKitPlatformSupportImpl::queryStorageUsageAndQuota(
     blink::WebStorageQuotaCallbacks callbacks) {
   if (!thread_safe_sender_.get() || !quota_message_filter_.get())
     return;
-  QuotaDispatcher::ThreadSpecificInstance(
-      thread_safe_sender_.get(),
-      quota_message_filter_.get())->QueryStorageUsageAndQuota(
+  QuotaDispatcher::ThreadSpecificInstance(thread_safe_sender_.get(),
+                                          quota_message_filter_.get())
+      ->QueryStorageUsageAndQuota(
           storage_partition,
-          static_cast<quota::StorageType>(type),
+          static_cast<storage::StorageType>(type),
           QuotaDispatcher::CreateWebStorageQuotaCallbacksWrapper(callbacks));
 }
 

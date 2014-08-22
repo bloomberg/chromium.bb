@@ -14,7 +14,7 @@
 
 class GURL;
 
-namespace fileapi {
+namespace storage {
 class FileSystemContext;
 }
 
@@ -32,9 +32,9 @@ class RootDeleteHelper {
  public:
   typedef base::Callback<void(base::File::Error)> FileStatusCallback;
 
-  RootDeleteHelper(fileapi::FileSystemContext* file_system_context,
+  RootDeleteHelper(storage::FileSystemContext* file_system_context,
                    LocalFileSyncStatus* sync_status,
-                   const fileapi::FileSystemURL& url,
+                   const storage::FileSystemURL& url,
                    const FileStatusCallback& callback);
   ~RootDeleteHelper();
 
@@ -47,8 +47,8 @@ class RootDeleteHelper {
                          const std::string& name,
                          base::File::Error error);
 
-  scoped_refptr<fileapi::FileSystemContext> file_system_context_;
-  const fileapi::FileSystemURL url_;
+  scoped_refptr<storage::FileSystemContext> file_system_context_;
+  const storage::FileSystemURL url_;
   FileStatusCallback callback_;
 
   // Not owned; owner of this instance owns it.

@@ -56,7 +56,7 @@ void WebBlobRegistryImpl::registerBlobData(
       }
       case WebBlobData::Item::TypeFile:
         if (data_item.length) {
-          webkit_blob::BlobData::Item item;
+          storage::BlobData::Item item;
           item.SetToFilePathRange(
               base::FilePath::FromUTF16Unsafe(data_item.filePath),
               static_cast<uint64>(data_item.offset),
@@ -68,7 +68,7 @@ void WebBlobRegistryImpl::registerBlobData(
         break;
       case WebBlobData::Item::TypeBlob:
         if (data_item.length) {
-          webkit_blob::BlobData::Item item;
+          storage::BlobData::Item item;
           item.SetToBlobRange(
               data_item.blobUUID.utf8(),
               static_cast<uint64>(data_item.offset),
@@ -81,7 +81,7 @@ void WebBlobRegistryImpl::registerBlobData(
         if (data_item.length) {
           // We only support filesystem URL as of now.
           DCHECK(GURL(data_item.fileSystemURL).SchemeIsFileSystem());
-          webkit_blob::BlobData::Item item;
+          storage::BlobData::Item item;
           item.SetToFileSystemUrlRange(
               data_item.fileSystemURL,
               static_cast<uint64>(data_item.offset),
@@ -122,7 +122,7 @@ void WebBlobRegistryImpl::SendDataForBlob(const std::string& uuid_str,
   if (data.size() == 0)
     return;
   if (data.size() < kLargeThresholdBytes) {
-    webkit_blob::BlobData::Item item;
+    storage::BlobData::Item item;
     item.SetToBytes(data.data(), data.size());
     sender_->Send(new BlobHostMsg_AppendBlobDataItem(uuid_str, item));
   } else {
@@ -168,7 +168,7 @@ void WebBlobRegistryImpl::addDataToStream(const WebURL& url,
   if (data.size() == 0)
     return;
   if (data.size() < kLargeThresholdBytes) {
-    webkit_blob::BlobData::Item item;
+    storage::BlobData::Item item;
     item.SetToBytes(data.data(), data.size());
     sender_->Send(new StreamHostMsg_AppendBlobDataItem(url, item));
   } else {

@@ -10,13 +10,13 @@
 namespace content {
 
 // Returns Filesystem options for incognito mode.
-fileapi::FileSystemOptions CreateIncognitoFileSystemOptions();
+storage::FileSystemOptions CreateIncognitoFileSystemOptions();
 
 // Returns Filesystem options that allow file access.
-fileapi::FileSystemOptions CreateAllowFileAccessOptions();
+storage::FileSystemOptions CreateAllowFileAccessOptions();
 
 // Returns Filesystem options that disallow file access.
-fileapi::FileSystemOptions CreateDisallowFileAccessOptions();
+storage::FileSystemOptions CreateDisallowFileAccessOptions();
 
 }  // namespace content
 

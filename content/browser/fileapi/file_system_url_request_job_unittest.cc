@@ -39,9 +39,9 @@
 #include "webkit/browser/fileapi/file_system_file_util.h"
 
 using content::AsyncFileTestHelper;
-using fileapi::FileSystemContext;
-using fileapi::FileSystemURL;
-using fileapi::FileSystemURLRequestJob;
+using storage::FileSystemContext;
+using storage::FileSystemURL;
+using storage::FileSystemURLRequestJob;
 
 namespace content {
 namespace {
@@ -60,7 +60,7 @@ const char kValidExternalMountPoint[] = "mnt_name";
 // "automount", but will only succeed for the mount point "mnt_name".
 bool TestAutoMountForURLRequest(
     const net::URLRequest* /*url_request*/,
-    const fileapi::FileSystemURL& filesystem_url,
+    const storage::FileSystemURL& filesystem_url,
     const std::string& storage_domain,
     const base::Callback<void(base::File::Error result)>& callback) {
   if (storage_domain != "automount")
@@ -70,9 +70,11 @@ bool TestAutoMountForURLRequest(
   std::string mount_point = base::FilePath(components[0]).AsUTF8Unsafe();
 
   if (mount_point == kValidExternalMountPoint) {
-    fileapi::ExternalMountPoints::GetSystemInstance()->RegisterFileSystem(
-        kValidExternalMountPoint, fileapi::kFileSystemTypeTest,
-        fileapi::FileSystemMountOption(), base::FilePath());
+    storage::ExternalMountPoints::GetSystemInstance()->RegisterFileSystem(
+        kValidExternalMountPoint,
+        storage::kFileSystemTypeTest,
+        storage::FileSystemMountOption(),
+        base::FilePath());
     callback.Run(base::File::FILE_OK);
   } else {
     callback.Run(base::File::FILE_ERROR_NOT_FOUND);
@@ -91,7 +93,7 @@ class FileSystemURLRequestJobFactory : public net::URLRequestJobFactory {
       const std::string& scheme,
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) const OVERRIDE {
-    return new fileapi::FileSystemURLRequestJob(
+    return new storage::FileSystemURLRequestJob(
         request, network_delegate, storage_domain_, file_system_context_);
   }
 
@@ -128,8 +130,9 @@ class FileSystemURLRequestJobTest : public testing::Test {
         CreateFileSystemContextForTesting(NULL, temp_dir_.path());
 
     file_system_context_->OpenFileSystem(
-        GURL("http://remote/"), fileapi::kFileSystemTypeTemporary,
-        fileapi::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
+        GURL("http://remote/"),
+        storage::kFileSystemTypeTemporary,
+        storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
         base::Bind(&FileSystemURLRequestJobTest::OnOpenFileSystem,
                    weak_factory_.GetWeakPtr()));
     base::RunLoop().RunUntilIdle();
@@ -144,11 +147,11 @@ class FileSystemURLRequestJobTest : public testing::Test {
     base::FilePath mnt_point = temp_dir_.path().AppendASCII("auto_mount_dir");
     ASSERT_TRUE(base::CreateDirectory(mnt_point));
 
-    ScopedVector<fileapi::FileSystemBackend> additional_providers;
+    ScopedVector<storage::FileSystemBackend> additional_providers;
     additional_providers.push_back(new TestFileSystemBackend(
         base::MessageLoopProxy::current().get(), mnt_point));
 
-    std::vector<fileapi::URLRequestAutoMountHandler> handlers;
+    std::vector<storage::URLRequestAutoMountHandler> handlers;
     handlers.push_back(base::Bind(&TestAutoMountForURLRequest));
 
     file_system_context_ = CreateFileSystemContextWithAutoMountersForTesting(
@@ -210,7 +213,7 @@ class FileSystemURLRequestJobTest : public testing::Test {
   void CreateDirectory(const base::StringPiece& dir_name) {
     FileSystemURL url = file_system_context_->CreateCrackedFileSystemURL(
         GURL("http://remote"),
-        fileapi::kFileSystemTypeTemporary,
+        storage::kFileSystemTypeTemporary,
         base::FilePath().AppendASCII(dir_name));
     ASSERT_EQ(base::File::FILE_OK, AsyncFileTestHelper::CreateDirectory(
         file_system_context_, url));
@@ -220,7 +223,7 @@ class FileSystemURLRequestJobTest : public testing::Test {
                  const char* buf, int buf_size) {
     FileSystemURL url = file_system_context_->CreateCrackedFileSystemURL(
         GURL("http://remote"),
-        fileapi::kFileSystemTypeTemporary,
+        storage::kFileSystemTypeTemporary,
         base::FilePath().AppendASCII(file_name));
     ASSERT_EQ(base::File::FILE_OK,
               AsyncFileTestHelper::CreateFileWithData(
@@ -235,7 +238,7 @@ class FileSystemURLRequestJobTest : public testing::Test {
   base::MessageLoopForIO message_loop_;
 
   base::ScopedTempDir temp_dir_;
-  scoped_refptr<fileapi::FileSystemContext> file_system_context_;
+  scoped_refptr<storage::FileSystemContext> file_system_context_;
   base::WeakPtrFactory<FileSystemURLRequestJobTest> weak_factory_;
 
   net::URLRequestContext empty_context_;
@@ -430,7 +433,7 @@ TEST_F(FileSystemURLRequestJobTest, AutoMountFileTest) {
   EXPECT_EQ("no-cache", cache_control);
 
   ASSERT_TRUE(
-      fileapi::ExternalMountPoints::GetSystemInstance()->RevokeFileSystem(
+      storage::ExternalMountPoints::GetSystemInstance()->RevokeFileSystem(
           kValidExternalMountPoint));
 }
 
@@ -443,7 +446,7 @@ TEST_F(FileSystemURLRequestJobTest, AutoMountInvalidRoot) {
   EXPECT_EQ(net::ERR_FILE_NOT_FOUND, request_->status().error());
 
   ASSERT_FALSE(
-      fileapi::ExternalMountPoints::GetSystemInstance()->RevokeFileSystem(
+      storage::ExternalMountPoints::GetSystemInstance()->RevokeFileSystem(
           "invalid"));
 }
 
@@ -456,7 +459,7 @@ TEST_F(FileSystemURLRequestJobTest, AutoMountNoHandler) {
   EXPECT_EQ(net::ERR_FILE_NOT_FOUND, request_->status().error());
 
   ASSERT_FALSE(
-      fileapi::ExternalMountPoints::GetSystemInstance()->RevokeFileSystem(
+      storage::ExternalMountPoints::GetSystemInstance()->RevokeFileSystem(
           kValidExternalMountPoint));
 }
 

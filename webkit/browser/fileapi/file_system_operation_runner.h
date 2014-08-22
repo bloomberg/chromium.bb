@@ -22,7 +22,7 @@ namespace net {
 class URLRequestContext;
 }
 
-namespace fileapi {
+namespace storage {
 
 class FileSystemURL;
 class FileSystemContext;
@@ -111,7 +111,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemOperationRunner
   // |url_request_context| is used to read contents in |blob|.
   OperationID Write(const net::URLRequestContext* url_request_context,
                     const FileSystemURL& url,
-                    scoped_ptr<webkit_blob::BlobDataHandle> blob,
+                    scoped_ptr<storage::BlobDataHandle> blob,
                     int64 offset,
                     const WriteCallback& callback);
 
@@ -279,7 +279,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemOperationRunner
       base::File::Error rv,
       const base::File::Info& file_info,
       const base::FilePath& platform_path,
-      const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref);
+      const scoped_refptr<storage::ShareableFileReference>& file_ref);
 
   void OnCopyProgress(
       const OperationHandle& handle,
@@ -317,6 +317,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemOperationRunner
   DISALLOW_COPY_AND_ASSIGN(FileSystemOperationRunner);
 };
 
-}  // namespace fileapi
+}  // namespace storage
 
 #endif  // WEBKIT_BROWSER_FILEAPI_FILE_SYSTEM_OPERATION_RUNNER_H_

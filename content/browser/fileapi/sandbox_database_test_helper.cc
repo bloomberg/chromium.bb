@@ -15,7 +15,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/common/fileapi/file_system_util.h"
 
-using fileapi::FilePathToString;
+using storage::FilePathToString;
 
 namespace content {
 

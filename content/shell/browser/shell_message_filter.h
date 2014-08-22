@@ -18,11 +18,11 @@ namespace net {
 class URLRequestContextGetter;
 }
 
-namespace quota {
+namespace storage {
 class QuotaManager;
 }
 
-namespace webkit_database {
+namespace storage {
 class DatabaseTracker;
 }
 
@@ -31,8 +31,8 @@ namespace content {
 class ShellMessageFilter : public BrowserMessageFilter {
  public:
   ShellMessageFilter(int render_process_id,
-                     webkit_database::DatabaseTracker* database_tracker,
-                     quota::QuotaManager* quota_manager,
+                     storage::DatabaseTracker* database_tracker,
+                     storage::QuotaManager* quota_manager,
                      net::URLRequestContextGetter* request_context_getter);
 
  private:
@@ -59,8 +59,8 @@ class ShellMessageFilter : public BrowserMessageFilter {
 
   int render_process_id_;
 
-  webkit_database::DatabaseTracker* database_tracker_;
-  quota::QuotaManager* quota_manager_;
+  storage::DatabaseTracker* database_tracker_;
+  storage::QuotaManager* quota_manager_;
   net::URLRequestContextGetter* request_context_getter_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellMessageFilter);

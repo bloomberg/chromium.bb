@@ -13,7 +13,7 @@ namespace base {
 class FilePath;
 }
 
-namespace quota {
+namespace storage {
 class SpecialStoragePolicy;
 }
 
@@ -28,8 +28,9 @@ class CONTENT_EXPORT DOMStorageContextWrapper :
     public base::RefCountedThreadSafe<DOMStorageContextWrapper> {
  public:
   // If |data_path| is empty, nothing will be saved to disk.
-  DOMStorageContextWrapper(const base::FilePath& data_path,
-                        quota::SpecialStoragePolicy* special_storage_policy);
+  DOMStorageContextWrapper(
+      const base::FilePath& data_path,
+      storage::SpecialStoragePolicy* special_storage_policy);
 
   // DOMStorageContext implementation.
   virtual void GetLocalStorageUsage(

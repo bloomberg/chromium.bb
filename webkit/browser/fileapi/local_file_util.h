@@ -17,7 +17,7 @@ class Time;
 
 class GURL;
 
-namespace fileapi {
+namespace storage {
 
 class FileSystemOperationContext;
 class FileSystemURL;
@@ -78,7 +78,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT LocalFileUtil
   virtual base::File::Error DeleteDirectory(
       FileSystemOperationContext* context,
       const FileSystemURL& url) OVERRIDE;
-  virtual webkit_blob::ScopedFile CreateSnapshotFile(
+  virtual storage::ScopedFile CreateSnapshotFile(
       FileSystemOperationContext* context,
       const FileSystemURL& url,
       base::File::Error* error,
@@ -89,6 +89,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT LocalFileUtil
   DISALLOW_COPY_AND_ASSIGN(LocalFileUtil);
 };
 
-}  // namespace fileapi
+}  // namespace storage
 
 #endif  // WEBKIT_BROWSER_FILEAPI_LOCAL_FILE_UTIL_H_

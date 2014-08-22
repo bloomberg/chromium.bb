@@ -354,8 +354,8 @@ bool DriveIntegrationService::IsMounted() const {
   // Look up the registered path, and just discard it.
   // GetRegisteredPath() returns true if the path is available.
   base::FilePath unused;
-  fileapi::ExternalMountPoints* const mount_points =
-      fileapi::ExternalMountPoints::GetSystemInstance();
+  storage::ExternalMountPoints* const mount_points =
+      storage::ExternalMountPoints::GetSystemInstance();
   DCHECK(mount_points);
   return mount_points->GetRegisteredPath(mount_point_name_, &unused);
 }
@@ -434,15 +434,15 @@ void DriveIntegrationService::AddDriveMountPoint() {
       util::GetDriveMountPointPath(profile_);
   if (mount_point_name_.empty())
     mount_point_name_ = drive_mount_point.BaseName().AsUTF8Unsafe();
-  fileapi::ExternalMountPoints* const mount_points =
-      fileapi::ExternalMountPoints::GetSystemInstance();
+  storage::ExternalMountPoints* const mount_points =
+      storage::ExternalMountPoints::GetSystemInstance();
   DCHECK(mount_points);
 
-  bool success = mount_points->RegisterFileSystem(
-      mount_point_name_,
-      fileapi::kFileSystemTypeDrive,
-      fileapi::FileSystemMountOption(),
-      drive_mount_point);
+  bool success =
+      mount_points->RegisterFileSystem(mount_point_name_,
+                                       storage::kFileSystemTypeDrive,
+                                       storage::FileSystemMountOption(),
+                                       drive_mount_point);
 
   if (success) {
     logger_->Log(logging::LOG_INFO, "Drive mount point is added");
@@ -460,8 +460,8 @@ void DriveIntegrationService::RemoveDriveMountPoint() {
     FOR_EACH_OBSERVER(DriveIntegrationServiceObserver, observers_,
                       OnFileSystemBeingUnmounted());
 
-    fileapi::ExternalMountPoints* const mount_points =
-        fileapi::ExternalMountPoints::GetSystemInstance();
+    storage::ExternalMountPoints* const mount_points =
+        storage::ExternalMountPoints::GetSystemInstance();
     DCHECK(mount_points);
 
     mount_points->RevokeFileSystem(mount_point_name_);

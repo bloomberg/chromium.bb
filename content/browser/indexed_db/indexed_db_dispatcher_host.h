@@ -69,7 +69,7 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
 
   // A shortcut for accessing our context.
   IndexedDBContextImpl* Context() { return indexed_db_context_; }
-  webkit_blob::BlobStorageContext* blob_storage_context() const {
+  storage::BlobStorageContext* blob_storage_context() const {
     return blob_storage_context_->context();
   }
 
@@ -94,9 +94,8 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
   static uint32 TransactionIdToRendererTransactionId(int64 host_transaction_id);
   static uint32 TransactionIdToProcessId(int64 host_transaction_id);
 
-  void HoldBlobDataHandle(
-      const std::string& uuid,
-      scoped_ptr<webkit_blob::BlobDataHandle> blob_data_handle);
+  void HoldBlobDataHandle(const std::string& uuid,
+                          scoped_ptr<storage::BlobDataHandle> blob_data_handle);
   void DropBlobDataHandle(const std::string& uuid);
 
  private:
@@ -117,7 +116,7 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
 
   void OnAckReceivedBlobs(const std::vector<std::string>& uuids);
   void OnPutHelper(const IndexedDBHostMsg_DatabasePut_Params& params,
-                   std::vector<webkit_blob::BlobDataHandle*> handles);
+                   std::vector<storage::BlobDataHandle*> handles);
 
   void ResetDispatcherHosts();
 
@@ -196,7 +195,7 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
     // before posting to the IDB TaskRunner for the rest of the job.
     void OnPutWrapper(const IndexedDBHostMsg_DatabasePut_Params& params);
     void OnPut(const IndexedDBHostMsg_DatabasePut_Params& params,
-               std::vector<webkit_blob::BlobDataHandle*> handles);
+               std::vector<storage::BlobDataHandle*> handles);
     void OnSetIndexKeys(
         const IndexedDBHostMsg_DatabaseSetIndexKeys_Params& params);
     void OnSetIndexesReady(int32 ipc_database_id,
@@ -271,7 +270,7 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
   scoped_refptr<IndexedDBContextImpl> indexed_db_context_;
   scoped_refptr<ChromeBlobStorageContext> blob_storage_context_;
 
-  typedef std::map<std::string, webkit_blob::BlobDataHandle*> BlobDataHandleMap;
+  typedef std::map<std::string, storage::BlobDataHandle*> BlobDataHandleMap;
   BlobDataHandleMap blob_data_handle_map_;
 
   // Only access on IndexedDB thread.

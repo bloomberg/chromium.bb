@@ -20,7 +20,7 @@
 
 using content::BrowserContext;
 using content::BrowserThread;
-using webkit_database::DatabaseIdentifier;
+using storage::DatabaseIdentifier;
 
 BrowsingDataDatabaseHelper::DatabaseInfo::DatabaseInfo(
     const DatabaseIdentifier& identifier,
@@ -72,10 +72,12 @@ void BrowsingDataDatabaseHelper::DeleteDatabase(const std::string& origin,
 
 void BrowsingDataDatabaseHelper::FetchDatabaseInfoOnFileThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-  std::vector<webkit_database::OriginInfo> origins_info;
+  std::vector<storage::OriginInfo> origins_info;
   if (tracker_.get() && tracker_->GetAllOriginsInfo(&origins_info)) {
-    for (std::vector<webkit_database::OriginInfo>::const_iterator ori =
-         origins_info.begin(); ori != origins_info.end(); ++ori) {
+    for (std::vector<storage::OriginInfo>::const_iterator ori =
+             origins_info.begin();
+         ori != origins_info.end();
+         ++ori) {
       DatabaseIdentifier identifier =
           DatabaseIdentifier::Parse(ori->GetOriginIdentifier());
       if (!BrowsingDataHelper::HasWebScheme(identifier.ToOrigin())) {
@@ -217,7 +219,7 @@ void CannedBrowsingDataDatabaseHelper::DeleteDatabase(
     const std::string& origin_identifier,
     const std::string& name) {
   GURL origin =
-      webkit_database::DatabaseIdentifier::Parse(origin_identifier).ToOrigin();
+      storage::DatabaseIdentifier::Parse(origin_identifier).ToOrigin();
   for (std::set<PendingDatabaseInfo>::iterator it =
            pending_database_info_.begin();
        it != pending_database_info_.end();

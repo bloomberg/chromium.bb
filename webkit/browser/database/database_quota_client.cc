@@ -18,9 +18,9 @@
 #include "webkit/browser/database/database_util.h"
 #include "webkit/common/database/database_identifier.h"
 
-using quota::QuotaClient;
+using storage::QuotaClient;
 
-namespace webkit_database {
+namespace storage {
 
 namespace {
 
@@ -28,8 +28,8 @@ int64 GetOriginUsageOnDBThread(
     DatabaseTracker* db_tracker,
     const GURL& origin_url) {
   OriginInfo info;
-  if (db_tracker->GetOriginInfo(
-          webkit_database::GetIdentifierFromOrigin(origin_url), &info))
+  if (db_tracker->GetOriginInfo(storage::GetIdentifierFromOrigin(origin_url),
+                                &info))
     return info.TotalSize();
   return 0;
 }
@@ -42,7 +42,7 @@ void GetOriginsOnDBThread(
     for (std::vector<std::string>::const_iterator iter =
          origin_identifiers.begin();
          iter != origin_identifiers.end(); ++iter) {
-      GURL origin = webkit_database::GetOriginFromIdentifier(*iter);
+      GURL origin = storage::GetOriginFromIdentifier(*iter);
       origins_ptr->insert(origin);
     }
   }
@@ -57,7 +57,7 @@ void GetOriginsForHostOnDBThread(
     for (std::vector<std::string>::const_iterator iter =
          origin_identifiers.begin();
          iter != origin_identifiers.end(); ++iter) {
-      GURL origin = webkit_database::GetOriginFromIdentifier(*iter);
+      GURL origin = storage::GetOriginFromIdentifier(*iter);
       if (host == net::GetHostOrSpecFromURL(origin))
         origins_ptr->insert(origin);
     }
@@ -80,11 +80,11 @@ void DidDeleteOriginData(
     return;
   }
 
-  quota::QuotaStatusCode status;
+  storage::QuotaStatusCode status;
   if (result == net::OK)
-    status = quota::kQuotaStatusOk;
+    status = storage::kQuotaStatusOk;
   else
-    status = quota::kQuotaStatusUnknown;
+    status = storage::kQuotaStatusUnknown;
 
   if (original_task_runner->BelongsToCurrentThread())
     callback.Run(status);
@@ -119,15 +119,14 @@ void DatabaseQuotaClient::OnQuotaManagerDestroyed() {
   delete this;
 }
 
-void DatabaseQuotaClient::GetOriginUsage(
-    const GURL& origin_url,
-    quota::StorageType type,
-    const GetUsageCallback& callback) {
+void DatabaseQuotaClient::GetOriginUsage(const GURL& origin_url,
+                                         storage::StorageType type,
+                                         const GetUsageCallback& callback) {
   DCHECK(!callback.is_null());
   DCHECK(db_tracker_.get());
 
   // All databases are in the temp namespace for now.
-  if (type != quota::kStorageTypeTemporary) {
+  if (type != storage::kStorageTypeTemporary) {
     callback.Run(0);
     return;
   }
@@ -140,13 +139,13 @@ void DatabaseQuotaClient::GetOriginUsage(
 }
 
 void DatabaseQuotaClient::GetOriginsForType(
-    quota::StorageType type,
+    storage::StorageType type,
     const GetOriginsCallback& callback) {
   DCHECK(!callback.is_null());
   DCHECK(db_tracker_.get());
 
   // All databases are in the temp namespace for now.
-  if (type != quota::kStorageTypeTemporary) {
+  if (type != storage::kStorageTypeTemporary) {
     callback.Run(std::set<GURL>());
     return;
   }
@@ -163,14 +162,14 @@ void DatabaseQuotaClient::GetOriginsForType(
 }
 
 void DatabaseQuotaClient::GetOriginsForHost(
-    quota::StorageType type,
+    storage::StorageType type,
     const std::string& host,
     const GetOriginsCallback& callback) {
   DCHECK(!callback.is_null());
   DCHECK(db_tracker_.get());
 
   // All databases are in the temp namespace for now.
-  if (type != quota::kStorageTypeTemporary) {
+  if (type != storage::kStorageTypeTemporary) {
     callback.Run(std::set<GURL>());
     return;
   }
@@ -187,16 +186,15 @@ void DatabaseQuotaClient::GetOriginsForHost(
                  base::Owned(origins_ptr)));
 }
 
-void DatabaseQuotaClient::DeleteOriginData(
-    const GURL& origin,
-    quota::StorageType type,
-    const DeletionCallback& callback) {
+void DatabaseQuotaClient::DeleteOriginData(const GURL& origin,
+                                           storage::StorageType type,
+                                           const DeletionCallback& callback) {
   DCHECK(!callback.is_null());
   DCHECK(db_tracker_.get());
 
   // All databases are in the temp namespace for now, so nothing to delete.
-  if (type != quota::kStorageTypeTemporary) {
-    callback.Run(quota::kQuotaStatusOk);
+  if (type != storage::kStorageTypeTemporary) {
+    callback.Run(storage::kQuotaStatusOk);
     return;
   }
 
@@ -210,13 +208,13 @@ void DatabaseQuotaClient::DeleteOriginData(
       FROM_HERE,
       base::Bind(&DatabaseTracker::DeleteDataForOrigin,
                  db_tracker_,
-                 webkit_database::GetIdentifierFromOrigin(origin),
+                 storage::GetIdentifierFromOrigin(origin),
                  delete_callback),
       delete_callback);
 }
 
-bool DatabaseQuotaClient::DoesSupport(quota::StorageType type) const {
-  return type == quota::kStorageTypeTemporary;
+bool DatabaseQuotaClient::DoesSupport(storage::StorageType type) const {
+  return type == storage::kStorageTypeTemporary;
 }
 
-}  // namespace webkit_database
+}  // namespace storage

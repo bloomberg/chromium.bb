@@ -8,7 +8,7 @@
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_operation_runner.h"
 
-namespace fileapi {
+namespace storage {
 
 namespace {
 // Don't start too many inflight operations.
@@ -236,4 +236,4 @@ void RecursiveOperationDelegate::Done(base::File::Error error) {
   }
 }
 
-}  // namespace fileapi
+}  // namespace storage

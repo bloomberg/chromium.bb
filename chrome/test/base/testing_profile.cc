@@ -894,7 +894,7 @@ PrefService* TestingProfile::GetOffTheRecordPrefs() {
   return NULL;
 }
 
-quota::SpecialStoragePolicy* TestingProfile::GetSpecialStoragePolicy() {
+storage::SpecialStoragePolicy* TestingProfile::GetSpecialStoragePolicy() {
 #if defined(ENABLE_EXTENSIONS)
   return GetExtensionSpecialStoragePolicy();
 #else

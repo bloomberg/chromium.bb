@@ -8,7 +8,7 @@
 #include "third_party/WebKit/public/platform/WebStorageQuotaError.h"
 #include "webkit/common/webkit_storage_common_export.h"
 
-namespace quota {
+namespace storage {
 
 enum QuotaStatusCode {
   kQuotaStatusOk = 0,
@@ -23,6 +23,6 @@ enum QuotaStatusCode {
 WEBKIT_STORAGE_COMMON_EXPORT const char* QuotaStatusCodeToString(
     QuotaStatusCode status);
 
-}  // namespace quota
+}  // namespace storage
 
 #endif  // WEBKIT_COMMON_QUOTA_QUOTA_STATUS_CODE_H_

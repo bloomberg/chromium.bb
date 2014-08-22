@@ -53,15 +53,16 @@ bool RegisterDownloadsMountPoint(Profile* profile, const base::FilePath& path) {
   // For this reason, we need to register to the global GetSystemInstance().
   const std::string mount_point_name =
       file_manager::util::GetDownloadsMountPointName(profile);
-  fileapi::ExternalMountPoints* const mount_points =
-      fileapi::ExternalMountPoints::GetSystemInstance();
+  storage::ExternalMountPoints* const mount_points =
+      storage::ExternalMountPoints::GetSystemInstance();
 
   // In some tests we want to override existing Downloads mount point, so we
   // first revoke the existing mount point (if any).
   mount_points->RevokeFileSystem(mount_point_name);
-  return mount_points->RegisterFileSystem(
-      mount_point_name, fileapi::kFileSystemTypeNativeLocal,
-      fileapi::FileSystemMountOption(), path);
+  return mount_points->RegisterFileSystem(mount_point_name,
+                                          storage::kFileSystemTypeNativeLocal,
+                                          storage::FileSystemMountOption(),
+                                          path);
 }
 
 // Finds the path register as the "Downloads" folder to FileSystem API backend.
@@ -69,8 +70,8 @@ bool RegisterDownloadsMountPoint(Profile* profile, const base::FilePath& path) {
 bool FindDownloadsMountPointPath(Profile* profile, base::FilePath* path) {
   const std::string mount_point_name =
       util::GetDownloadsMountPointName(profile);
-  fileapi::ExternalMountPoints* const mount_points =
-      fileapi::ExternalMountPoints::GetSystemInstance();
+  storage::ExternalMountPoints* const mount_points =
+      storage::ExternalMountPoints::GetSystemInstance();
 
   return mount_points->GetRegisteredPath(mount_point_name, path);
 }
@@ -696,9 +697,11 @@ void VolumeManager::OnRemovableStorageAttached(
     label = base_name + base::StringPrintf(" (%d)", i);
 
   bool result =
-      fileapi::ExternalMountPoints::GetSystemInstance()->RegisterFileSystem(
-          fsid, fileapi::kFileSystemTypeDeviceMediaAsFileStorage,
-          fileapi::FileSystemMountOption(), path);
+      storage::ExternalMountPoints::GetSystemInstance()->RegisterFileSystem(
+          fsid,
+          storage::kFileSystemTypeDeviceMediaAsFileStorage,
+          storage::FileSystemMountOption(),
+          path);
   DCHECK(result);
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE, base::Bind(
@@ -730,8 +733,7 @@ void VolumeManager::OnRemovableStorageDetached(
       DoUnmountEvent(chromeos::MOUNT_ERROR_NONE, VolumeInfo(it->second));
 
       const std::string fsid = GetMountPointNameForMediaStorage(info);
-      fileapi::ExternalMountPoints::GetSystemInstance()->RevokeFileSystem(
-          fsid);
+      storage::ExternalMountPoints::GetSystemInstance()->RevokeFileSystem(fsid);
       content::BrowserThread::PostTask(
           content::BrowserThread::IO, FROM_HERE, base::Bind(
               &MTPDeviceMapService::RevokeMTPFileSystem,

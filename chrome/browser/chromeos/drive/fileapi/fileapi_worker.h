@@ -31,10 +31,10 @@ namespace base {
 class FilePath;
 }  // namespace base
 
-namespace fileapi {
+namespace storage {
 struct DirectoryEntry;
 class FileSystemURL;
-}  // namespace fileapi
+}  // namespace storage
 
 namespace drive {
 
@@ -51,14 +51,13 @@ typedef base::Callback<
          const base::File::Info& file_info)> GetFileInfoCallback;
 typedef base::Callback<
     void(base::File::Error result,
-         const std::vector<fileapi::DirectoryEntry>& file_list,
+         const std::vector<storage::DirectoryEntry>& file_list,
          bool has_more)> ReadDirectoryCallback;
-typedef base::Callback<
-    void(base::File::Error result,
-         const base::File::Info& file_info,
-         const base::FilePath& snapshot_file_path,
-         webkit_blob::ScopedFile::ScopeOutPolicy scope_out_policy)>
-    CreateSnapshotFileCallback;
+typedef base::Callback<void(base::File::Error result,
+                            const base::File::Info& file_info,
+                            const base::FilePath& snapshot_file_path,
+                            storage::ScopedFile::ScopeOutPolicy
+                                scope_out_policy)> CreateSnapshotFileCallback;
 typedef base::Callback<
     void(base::File::Error result,
          const base::FilePath& snapshot_file_path,
@@ -71,7 +70,7 @@ typedef base::Callback<
 // Gets the profile of the Drive entry pointed by |url|. Used as
 // FileSystemGetter callback by binding an URL on the IO thread and passing to
 // the UI thread.
-FileSystemInterface* GetFileSystemFromUrl(const fileapi::FileSystemURL& url);
+FileSystemInterface* GetFileSystemFromUrl(const storage::FileSystemURL& url);
 
 // Runs |file_system_getter| to obtain the instance of FileSystemInstance,
 // and then runs |callback| with it.

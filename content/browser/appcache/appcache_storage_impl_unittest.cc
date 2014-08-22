@@ -251,7 +251,7 @@ class AppCacheStorageImplTest : public testing::Test {
     AppCacheStorageImplTest* test_;
   };
 
-  class MockQuotaManager : public quota::QuotaManager {
+  class MockQuotaManager : public storage::QuotaManager {
    public:
     MockQuotaManager()
         : QuotaManager(true /* is_incognito */,
@@ -263,9 +263,9 @@ class AppCacheStorageImplTest : public testing::Test {
 
     virtual void GetUsageAndQuota(
         const GURL& origin,
-        quota::StorageType type,
+        storage::StorageType type,
         const GetUsageAndQuotaCallback& callback) OVERRIDE {
-      EXPECT_EQ(quota::kStorageTypeTemporary, type);
+      EXPECT_EQ(storage::kStorageTypeTemporary, type);
       if (async_) {
         base::MessageLoop::current()->PostTask(
             FROM_HERE,
@@ -278,7 +278,7 @@ class AppCacheStorageImplTest : public testing::Test {
     }
 
     void CallCallback(const GetUsageAndQuotaCallback& callback) {
-      callback.Run(quota::kQuotaStatusOk, 0, kMockQuota);
+      callback.Run(storage::kQuotaStatusOk, 0, kMockQuota);
     }
 
     bool async_;
@@ -287,7 +287,7 @@ class AppCacheStorageImplTest : public testing::Test {
     virtual ~MockQuotaManager() {}
   };
 
-  class MockQuotaManagerProxy : public quota::QuotaManagerProxy {
+  class MockQuotaManagerProxy : public storage::QuotaManagerProxy {
    public:
     MockQuotaManagerProxy()
         : QuotaManagerProxy(NULL, NULL),
@@ -298,38 +298,38 @@ class AppCacheStorageImplTest : public testing::Test {
       manager_ = mock_manager_.get();
     }
 
-    virtual void NotifyStorageAccessed(quota::QuotaClient::ID client_id,
+    virtual void NotifyStorageAccessed(storage::QuotaClient::ID client_id,
                                        const GURL& origin,
-                                       quota::StorageType type) OVERRIDE {
-      EXPECT_EQ(quota::QuotaClient::kAppcache, client_id);
-      EXPECT_EQ(quota::kStorageTypeTemporary, type);
+                                       storage::StorageType type) OVERRIDE {
+      EXPECT_EQ(storage::QuotaClient::kAppcache, client_id);
+      EXPECT_EQ(storage::kStorageTypeTemporary, type);
       ++notify_storage_accessed_count_;
       last_origin_ = origin;
     }
 
-    virtual void NotifyStorageModified(quota::QuotaClient::ID client_id,
+    virtual void NotifyStorageModified(storage::QuotaClient::ID client_id,
                                        const GURL& origin,
-                                       quota::StorageType type,
+                                       storage::StorageType type,
                                        int64 delta) OVERRIDE {
-      EXPECT_EQ(quota::QuotaClient::kAppcache, client_id);
-      EXPECT_EQ(quota::kStorageTypeTemporary, type);
+      EXPECT_EQ(storage::QuotaClient::kAppcache, client_id);
+      EXPECT_EQ(storage::kStorageTypeTemporary, type);
       ++notify_storage_modified_count_;
       last_origin_ = origin;
       last_delta_ = delta;
     }
 
     // Not needed for our tests.
-    virtual void RegisterClient(quota::QuotaClient* client) OVERRIDE {}
+    virtual void RegisterClient(storage::QuotaClient* client) OVERRIDE {}
     virtual void NotifyOriginInUse(const GURL& origin) OVERRIDE {}
     virtual void NotifyOriginNoLongerInUse(const GURL& origin) OVERRIDE {}
-    virtual void SetUsageCacheEnabled(quota::QuotaClient::ID client_id,
+    virtual void SetUsageCacheEnabled(storage::QuotaClient::ID client_id,
                                       const GURL& origin,
-                                      quota::StorageType type,
+                                      storage::StorageType type,
                                       bool enabled) OVERRIDE {}
     virtual void GetUsageAndQuota(
         base::SequencedTaskRunner* original_task_runner,
         const GURL& origin,
-        quota::StorageType type,
+        storage::StorageType type,
         const GetUsageAndQuotaCallback& callback) OVERRIDE {}
 
     int notify_storage_accessed_count_;

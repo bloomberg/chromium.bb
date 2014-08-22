@@ -50,7 +50,7 @@ class ShellBrowserContext : public BrowserContext {
           bool in_memory) OVERRIDE;
   virtual ResourceContext* GetResourceContext() OVERRIDE;
   virtual BrowserPluginGuestManager* GetGuestManager() OVERRIDE;
-  virtual quota::SpecialStoragePolicy* GetSpecialStoragePolicy() OVERRIDE;
+  virtual storage::SpecialStoragePolicy* GetSpecialStoragePolicy() OVERRIDE;
   virtual PushMessagingService* GetPushMessagingService() OVERRIDE;
   virtual SSLHostStateDelegate* GetSSLHostStateDelegate() OVERRIDE;
 

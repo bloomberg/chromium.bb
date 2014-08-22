@@ -4,7 +4,7 @@
 
 #include "webkit/browser/fileapi/file_system_options.h"
 
-namespace fileapi {
+namespace storage {
 
 FileSystemOptions::FileSystemOptions(
       ProfileMode profile_mode,
@@ -18,4 +18,4 @@ FileSystemOptions::FileSystemOptions(
 FileSystemOptions::~FileSystemOptions() {
 }
 
-}  // namespace fileapi
+}  // namespace storage

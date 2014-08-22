@@ -19,10 +19,8 @@
 
 SafeAudioVideoChecker::SafeAudioVideoChecker(
     base::File file,
-    const fileapi::CopyOrMoveFileValidator::ResultCallback& callback)
-    : state_(INITIAL_STATE),
-      file_(file.Pass()),
-      callback_(callback) {
+    const storage::CopyOrMoveFileValidator::ResultCallback& callback)
+    : state_(INITIAL_STATE), file_(file.Pass()), callback_(callback) {
   DCHECK(!callback.is_null());
 }
 

@@ -71,8 +71,8 @@ TEST(DriveMetadataDBMigrationUtilTest, RollbackFromV4ToV3) {
   {
     leveldb::Options options;
     options.create_if_missing = true;
-    std::string db_dir = fileapi::FilePathToString(
-        base_dir.path().Append(kDatabaseName));
+    std::string db_dir =
+        storage::FilePathToString(base_dir.path().Append(kDatabaseName));
     leveldb::Status status = leveldb::DB::Open(options, db_dir, &db_ptr);
     ASSERT_TRUE(status.ok());
   }

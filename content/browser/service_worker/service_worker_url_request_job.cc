@@ -32,7 +32,7 @@ ServiceWorkerURLRequestJob::ServiceWorkerURLRequestJob(
     net::URLRequest* request,
     net::NetworkDelegate* network_delegate,
     base::WeakPtr<ServiceWorkerProviderHost> provider_host,
-    base::WeakPtr<webkit_blob::BlobStorageContext> blob_storage_context,
+    base::WeakPtr<storage::BlobStorageContext> blob_storage_context,
     scoped_refptr<ResourceRequestBody> body)
     : net::URLRequestJob(request, network_delegate),
       provider_host_(provider_host),
@@ -275,18 +275,17 @@ bool ServiceWorkerURLRequestJob::CreateRequestBodyBlob(std::string* blob_uuid,
       resolved_elements.push_back(&element);
       continue;
     }
-    scoped_ptr<webkit_blob::BlobDataHandle> handle =
+    scoped_ptr<storage::BlobDataHandle> handle =
         blob_storage_context_->GetBlobDataFromUUID(element.blob_uuid());
     if (handle->data()->items().empty())
       continue;
     for (size_t i = 0; i < handle->data()->items().size(); ++i) {
-      const webkit_blob::BlobData::Item& item = handle->data()->items().at(i);
-      DCHECK_NE(webkit_blob::BlobData::Item::TYPE_BLOB, item.type());
+      const storage::BlobData::Item& item = handle->data()->items().at(i);
+      DCHECK_NE(storage::BlobData::Item::TYPE_BLOB, item.type());
       resolved_elements.push_back(&item);
     }
   }
-  scoped_refptr<webkit_blob::BlobData> blob_data =
-      new webkit_blob::BlobData(uuid);
+  scoped_refptr<storage::BlobData> blob_data = new storage::BlobData(uuid);
   for (size_t i = 0; i < resolved_elements.size(); ++i) {
     const ResourceRequestBody::Element& element = *resolved_elements[i];
     size += element.length();
@@ -356,14 +355,14 @@ void ServiceWorkerURLRequestJob::DidDispatchFetchEvent(
 
   // Set up a request for reading the blob.
   if (!response.blob_uuid.empty() && blob_storage_context_) {
-    scoped_ptr<webkit_blob::BlobDataHandle> blob_data_handle =
+    scoped_ptr<storage::BlobDataHandle> blob_data_handle =
         blob_storage_context_->GetBlobDataFromUUID(response.blob_uuid);
     if (!blob_data_handle) {
       // The renderer gave us a bad blob UUID.
       DeliverErrorResponse();
       return;
     }
-    blob_request_ = webkit_blob::BlobProtocolHandler::CreateBlobRequest(
+    blob_request_ = storage::BlobProtocolHandler::CreateBlobRequest(
         blob_data_handle.Pass(), request()->context(), this);
     blob_request_->Start();
   }

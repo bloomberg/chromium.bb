@@ -19,7 +19,7 @@ ResourceMessageFilter::ResourceMessageFilter(
     int process_type,
     ChromeAppCacheService* appcache_service,
     ChromeBlobStorageContext* blob_storage_context,
-    fileapi::FileSystemContext* file_system_context,
+    storage::FileSystemContext* file_system_context,
     ServiceWorkerContextWrapper* service_worker_context,
     const GetContextsCallback& get_contexts_callback)
     : BrowserMessageFilter(ResourceMsgStart),

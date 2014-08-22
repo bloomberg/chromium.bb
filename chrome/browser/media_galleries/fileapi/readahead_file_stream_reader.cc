@@ -11,7 +11,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 
-using webkit_blob::FileStreamReader;
+using storage::FileStreamReader;
 
 namespace {
 

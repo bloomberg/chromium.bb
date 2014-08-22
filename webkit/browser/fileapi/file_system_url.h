@@ -14,7 +14,7 @@
 #include "webkit/common/fileapi/file_system_mount_option.h"
 #include "webkit/common/fileapi/file_system_types.h"
 
-namespace fileapi {
+namespace storage {
 
 // A class representing a filesystem URL which consists of origin URL,
 // type and an internal path used inside the filesystem.
@@ -175,6 +175,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemURL {
 
 typedef std::set<FileSystemURL, FileSystemURL::Comparator> FileSystemURLSet;
 
-}  // namespace fileapi
+}  // namespace storage
 
 #endif  // WEBKIT_BROWSER_FILEAPI_FILE_SYSTEM_URL_H_

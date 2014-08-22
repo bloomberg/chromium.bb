@@ -292,12 +292,14 @@ GrantedFileEntry CreateFileEntry(
     const base::FilePath& path,
     bool is_directory) {
   GrantedFileEntry result;
-  fileapi::IsolatedContext* isolated_context =
-      fileapi::IsolatedContext::GetInstance();
+  storage::IsolatedContext* isolated_context =
+      storage::IsolatedContext::GetInstance();
   DCHECK(isolated_context);
 
   result.filesystem_id = isolated_context->RegisterFileSystemForPath(
-      fileapi::kFileSystemTypeNativeForPlatformApp, std::string(), path,
+      storage::kFileSystemTypeNativeForPlatformApp,
+      std::string(),
+      path,
       &result.registered_name);
 
   content::ChildProcessSecurityPolicy* policy =
@@ -344,7 +346,7 @@ bool ValidateFileEntryAndGetPath(
   }
 
   std::string filesystem_id;
-  if (!fileapi::CrackIsolatedFileSystemName(filesystem_name, &filesystem_id)) {
+  if (!storage::CrackIsolatedFileSystemName(filesystem_name, &filesystem_id)) {
     *error = kInvalidParameters;
     return false;
   }
@@ -359,13 +361,13 @@ bool ValidateFileEntryAndGetPath(
     return false;
   }
 
-  fileapi::IsolatedContext* context = fileapi::IsolatedContext::GetInstance();
+  storage::IsolatedContext* context = storage::IsolatedContext::GetInstance();
   base::FilePath relative_path =
       base::FilePath::FromUTF8Unsafe(filesystem_path);
   base::FilePath virtual_path = context->CreateVirtualRootPath(filesystem_id)
       .Append(relative_path);
-  fileapi::FileSystemType type;
-  fileapi::FileSystemMountOption mount_option;
+  storage::FileSystemType type;
+  storage::FileSystemMountOption mount_option;
   std::string cracked_id;
   if (!context->CrackVirtualPath(
           virtual_path, &filesystem_id, &type, &cracked_id, file_path,
@@ -377,8 +379,8 @@ bool ValidateFileEntryAndGetPath(
   // The file system API is only intended to operate on file entries that
   // correspond to a native file, selected by the user so only allow file
   // systems returned by the file system API or from a drag and drop operation.
-  if (type != fileapi::kFileSystemTypeNativeForPlatformApp &&
-      type != fileapi::kFileSystemTypeDragged) {
+  if (type != storage::kFileSystemTypeNativeForPlatformApp &&
+      type != storage::kFileSystemTypeDragged) {
     *error = kInvalidParameters;
     return false;
   }

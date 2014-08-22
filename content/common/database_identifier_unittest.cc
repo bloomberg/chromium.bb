@@ -8,7 +8,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-using webkit_database::DatabaseIdentifier;
+using storage::DatabaseIdentifier;
 
 namespace content {
 namespace {

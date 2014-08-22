@@ -17,7 +17,7 @@
 #include "webkit/common/fileapi/file_system_mount_option.h"
 
 using base::Bind;
-using fileapi::ExternalMountPoints;
+using storage::ExternalMountPoints;
 
 namespace {
 
@@ -55,7 +55,9 @@ bool ImportedMediaGalleryRegistry::RegisterPicasaFilesystemOnUIThread(
   if (root.empty())
     return false;
   result = ExternalMountPoints::GetSystemInstance()->RegisterFileSystem(
-      fs_name, fileapi::kFileSystemTypePicasa, fileapi::FileSystemMountOption(),
+      fs_name,
+      storage::kFileSystemTypePicasa,
+      storage::FileSystemMountOption(),
       root.AppendASCII("picasa"));
   if (!result)
     return result;
@@ -90,7 +92,9 @@ bool ImportedMediaGalleryRegistry::RegisterITunesFilesystemOnUIThread(
   if (root.empty())
     return false;
   result = ExternalMountPoints::GetSystemInstance()->RegisterFileSystem(
-      fs_name, fileapi::kFileSystemTypeItunes, fileapi::FileSystemMountOption(),
+      fs_name,
+      storage::kFileSystemTypeItunes,
+      storage::FileSystemMountOption(),
       root.AppendASCII("itunes"));
   if (!result)
     return result;
@@ -127,7 +131,9 @@ bool ImportedMediaGalleryRegistry::RegisterIPhotoFilesystemOnUIThread(
   if (root.empty())
     return false;
   result = ExternalMountPoints::GetSystemInstance()->RegisterFileSystem(
-      fs_name, fileapi::kFileSystemTypeIphoto, fileapi::FileSystemMountOption(),
+      fs_name,
+      storage::kFileSystemTypeIphoto,
+      storage::FileSystemMountOption(),
       root.AppendASCII("iphoto"));
   if (!result)
     return result;

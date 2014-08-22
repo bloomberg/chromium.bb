@@ -43,14 +43,14 @@ void LogValue(std::vector<int>* log, int value) {
 }
 
 // Creates a cracked FileSystemURL for tests.
-fileapi::FileSystemURL CreateFileSystemURL(const std::string& mount_point_name,
+storage::FileSystemURL CreateFileSystemURL(const std::string& mount_point_name,
                                            const base::FilePath& file_path) {
   const std::string origin = std::string("chrome-extension://") + kExtensionId;
-  const fileapi::ExternalMountPoints* const mount_points =
-      fileapi::ExternalMountPoints::GetSystemInstance();
+  const storage::ExternalMountPoints* const mount_points =
+      storage::ExternalMountPoints::GetSystemInstance();
   return mount_points->CreateCrackedFileSystemURL(
       GURL(origin),
-      fileapi::kFileSystemTypeExternal,
+      storage::kFileSystemTypeExternal,
       base::FilePath::FromUTF8Unsafe(mount_point_name).Append(file_path));
 }
 
@@ -112,8 +112,8 @@ class FileSystemProviderFileStreamWriter : public testing::Test {
   scoped_ptr<TestingProfileManager> profile_manager_;
   TestingProfile* profile_;  // Owned by TestingProfileManager.
   FakeProvidedFileSystem* provided_file_system_;  // Owned by Service.
-  fileapi::FileSystemURL file_url_;
-  fileapi::FileSystemURL wrong_file_url_;
+  storage::FileSystemURL file_url_;
+  storage::FileSystemURL wrong_file_url_;
 };
 
 TEST_F(FileSystemProviderFileStreamWriter, Write) {

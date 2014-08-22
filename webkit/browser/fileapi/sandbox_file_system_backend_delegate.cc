@@ -28,7 +28,7 @@
 #include "webkit/browser/quota/quota_manager_proxy.h"
 #include "webkit/common/fileapi/file_system_util.h"
 
-namespace fileapi {
+namespace storage {
 
 namespace {
 
@@ -170,27 +170,25 @@ std::string SandboxFileSystemBackendDelegate::GetTypeString(
 }
 
 SandboxFileSystemBackendDelegate::SandboxFileSystemBackendDelegate(
-    quota::QuotaManagerProxy* quota_manager_proxy,
+    storage::QuotaManagerProxy* quota_manager_proxy,
     base::SequencedTaskRunner* file_task_runner,
     const base::FilePath& profile_path,
-    quota::SpecialStoragePolicy* special_storage_policy,
+    storage::SpecialStoragePolicy* special_storage_policy,
     const FileSystemOptions& file_system_options)
     : file_task_runner_(file_task_runner),
       sandbox_file_util_(new AsyncFileUtilAdapter(
-          new ObfuscatedFileUtil(
-              special_storage_policy,
-              profile_path.Append(kFileSystemDirectory),
-              file_system_options.env_override(),
-              file_task_runner,
-              base::Bind(&GetTypeStringForURL),
-              GetKnownTypeStrings(),
-              this))),
+          new ObfuscatedFileUtil(special_storage_policy,
+                                 profile_path.Append(kFileSystemDirectory),
+                                 file_system_options.env_override(),
+                                 file_task_runner,
+                                 base::Bind(&GetTypeStringForURL),
+                                 GetKnownTypeStrings(),
+                                 this))),
       file_system_usage_cache_(new FileSystemUsageCache(file_task_runner)),
-      quota_observer_(new SandboxQuotaObserver(
-          quota_manager_proxy,
-          file_task_runner,
-          obfuscated_file_util(),
-          usage_cache())),
+      quota_observer_(new SandboxQuotaObserver(quota_manager_proxy,
+                                               file_task_runner,
+                                               obfuscated_file_util(),
+                                               usage_cache())),
       quota_reservation_manager_(new QuotaReservationManager(
           scoped_ptr<QuotaReservationManager::QuotaBackend>(
               new QuotaBackendImpl(file_task_runner_,
@@ -297,16 +295,16 @@ SandboxFileSystemBackendDelegate::CreateFileSystemOperationContext(
   return operation_context.Pass();
 }
 
-scoped_ptr<webkit_blob::FileStreamReader>
+scoped_ptr<storage::FileStreamReader>
 SandboxFileSystemBackendDelegate::CreateFileStreamReader(
     const FileSystemURL& url,
     int64 offset,
     const base::Time& expected_modification_time,
     FileSystemContext* context) const {
   if (!IsAccessValid(url))
-    return scoped_ptr<webkit_blob::FileStreamReader>();
-  return scoped_ptr<webkit_blob::FileStreamReader>(
-      webkit_blob::FileStreamReader::CreateForFileSystemFile(
+    return scoped_ptr<storage::FileStreamReader>();
+  return scoped_ptr<storage::FileStreamReader>(
+      storage::FileStreamReader::CreateForFileSystemFile(
           context, url, offset, expected_modification_time));
 }
 
@@ -327,7 +325,7 @@ SandboxFileSystemBackendDelegate::CreateFileStreamWriter(
 base::File::Error
 SandboxFileSystemBackendDelegate::DeleteOriginDataOnFileTaskRunner(
     FileSystemContext* file_system_context,
-    quota::QuotaManagerProxy* proxy,
+    storage::QuotaManagerProxy* proxy,
     const GURL& origin_url,
     FileSystemType type) {
   DCHECK(file_task_runner_->RunsTasksOnCurrentThread());
@@ -337,11 +335,10 @@ SandboxFileSystemBackendDelegate::DeleteOriginDataOnFileTaskRunner(
   bool result = obfuscated_file_util()->DeleteDirectoryForOriginAndType(
       origin_url, GetTypeString(type));
   if (result && proxy) {
-    proxy->NotifyStorageModified(
-        quota::QuotaClient::kFileSystem,
-        origin_url,
-        FileSystemTypeToQuotaStorageType(type),
-        -usage);
+    proxy->NotifyStorageModified(storage::QuotaClient::kFileSystem,
+                                 origin_url,
+                                 FileSystemTypeToQuotaStorageType(type),
+                                 -usage);
   }
 
   if (result)
@@ -660,7 +657,7 @@ ObfuscatedFileUtil* SandboxFileSystemBackendDelegate::obfuscated_file_util() {
 // Declared in obfuscated_file_util.h.
 // static
 ObfuscatedFileUtil* ObfuscatedFileUtil::CreateForTesting(
-    quota::SpecialStoragePolicy* special_storage_policy,
+    storage::SpecialStoragePolicy* special_storage_policy,
     const base::FilePath& file_system_directory,
     leveldb::Env* env_override,
     base::SequencedTaskRunner* file_task_runner) {
@@ -673,4 +670,4 @@ ObfuscatedFileUtil* ObfuscatedFileUtil::CreateForTesting(
                                 NULL);
 }
 
-}  // namespace fileapi
+}  // namespace storage

@@ -19,9 +19,9 @@ class FilePath;
 class TaskRunner;
 }  // namespace base
 
-namespace quota {
+namespace storage {
 class SpecialStoragePolicy;
-}  // namespace quota
+}  // namespace storage
 
 namespace content {
 class WebRTCIdentityRequest;
@@ -43,7 +43,7 @@ class CONTENT_EXPORT WebRTCIdentityStore
 
   // If |path| is empty, nothing will be saved to disk.
   WebRTCIdentityStore(const base::FilePath& path,
-                      quota::SpecialStoragePolicy* policy);
+                      storage::SpecialStoragePolicy* policy);
 
   // Retrieve the cached DTLS private key and certificate, i.e. identity, for
   // the |origin| and |identity_name| pair, or generate a new identity using

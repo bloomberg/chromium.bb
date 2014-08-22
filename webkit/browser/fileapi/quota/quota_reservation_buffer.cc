@@ -9,7 +9,7 @@
 #include "webkit/browser/fileapi/quota/open_file_handle_context.h"
 #include "webkit/browser/fileapi/quota/quota_reservation.h"
 
-namespace fileapi {
+namespace storage {
 
 QuotaReservationBuffer::QuotaReservationBuffer(
     base::WeakPtr<QuotaReservationManager> reservation_manager,
@@ -102,5 +102,4 @@ bool QuotaReservationBuffer::DecrementDirtyCount(
   return false;
 }
 
-
-}  // namespace fileapi
+}  // namespace storage

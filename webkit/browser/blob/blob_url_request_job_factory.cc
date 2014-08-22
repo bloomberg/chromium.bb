@@ -16,7 +16,7 @@
 #include "webkit/browser/blob/blob_url_request_job.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 
-namespace webkit_blob {
+namespace storage {
 
 namespace {
 
@@ -49,10 +49,9 @@ void BlobProtocolHandler::SetRequestedBlobDataHandle(
 
 BlobProtocolHandler::BlobProtocolHandler(
     BlobStorageContext* context,
-    fileapi::FileSystemContext* file_system_context,
+    storage::FileSystemContext* file_system_context,
     base::MessageLoopProxy* loop_proxy)
-    : file_system_context_(file_system_context),
-      file_loop_proxy_(loop_proxy) {
+    : file_system_context_(file_system_context), file_loop_proxy_(loop_proxy) {
   if (context)
     context_ = context->AsWeakPtr();
 }
@@ -62,13 +61,15 @@ BlobProtocolHandler::~BlobProtocolHandler() {
 
 net::URLRequestJob* BlobProtocolHandler::MaybeCreateJob(
     net::URLRequest* request, net::NetworkDelegate* network_delegate) const {
-  return new webkit_blob::BlobURLRequestJob(
-      request, network_delegate, LookupBlobData(request),
-      file_system_context_, file_loop_proxy_);
+  return new storage::BlobURLRequestJob(request,
+                                        network_delegate,
+                                        LookupBlobData(request),
+                                        file_system_context_,
+                                        file_loop_proxy_);
 }
 
-scoped_refptr<webkit_blob::BlobData>
-BlobProtocolHandler::LookupBlobData(net::URLRequest* request) const {
+scoped_refptr<storage::BlobData> BlobProtocolHandler::LookupBlobData(
+    net::URLRequest* request) const {
   BlobDataHandle* blob_data_handle = GetRequestedBlobDataHandle(request);
   if (blob_data_handle)
     return blob_data_handle->data();
@@ -86,4 +87,4 @@ BlobProtocolHandler::LookupBlobData(net::URLRequest* request) const {
   return handle.get() ? handle->data() : NULL;
 }
 
-}  // namespace webkit_blob
+}  // namespace storage

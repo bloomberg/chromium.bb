@@ -12,7 +12,7 @@
 #include "webkit/browser/fileapi/sandbox_isolated_origin_database.h"
 #include "webkit/browser/fileapi/sandbox_origin_database.h"
 
-namespace fileapi {
+namespace storage {
 
 namespace {
 
@@ -220,4 +220,4 @@ SandboxPrioritizedOriginDatabase::GetSandboxOriginDatabase() {
   return origin_database_.get();
 }
 
-}  // namespace fileapi
+}  // namespace storage

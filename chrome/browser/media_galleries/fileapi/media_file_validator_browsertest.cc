@@ -107,7 +107,7 @@ class MediaFileValidatorTest : public InProcessBrowserTest {
     base::FilePath src_path = base.AppendASCII("src_fs");
     ASSERT_TRUE(base::CreateDirectory(src_path));
 
-    ScopedVector<fileapi::FileSystemBackend> additional_providers;
+    ScopedVector<storage::FileSystemBackend> additional_providers;
     additional_providers.push_back(new content::TestFileSystemBackend(
         base::MessageLoopProxy::current().get(), src_path));
     additional_providers.push_back(new MediaFileSystemBackend(
@@ -117,7 +117,8 @@ class MediaFileValidatorTest : public InProcessBrowserTest {
             NULL, additional_providers.Pass(), base);
 
     move_src_ = file_system_context_->CreateCrackedFileSystemURL(
-        GURL(kOrigin), fileapi::kFileSystemTypeTest,
+        GURL(kOrigin),
+        storage::kFileSystemTypeTest,
         base::FilePath::FromUTF8Unsafe(filename));
 
     test_file_size_ = content.size();
@@ -128,14 +129,16 @@ class MediaFileValidatorTest : public InProcessBrowserTest {
     base::FilePath dest_path = base.AppendASCII("dest_fs");
     ASSERT_TRUE(base::CreateDirectory(dest_path));
     std::string dest_fsid =
-        fileapi::IsolatedContext::GetInstance()->RegisterFileSystemForPath(
-            fileapi::kFileSystemTypeNativeMedia, std::string(), dest_path,
+        storage::IsolatedContext::GetInstance()->RegisterFileSystemForPath(
+            storage::kFileSystemTypeNativeMedia,
+            std::string(),
+            dest_path,
             NULL);
 
     size_t extension_index = filename.find_last_of(".");
     ASSERT_NE(std::string::npos, extension_index);
     std::string extension = filename.substr(extension_index);
-    std::string dest_root_fs_url = fileapi::GetIsolatedFileSystemRootURIString(
+    std::string dest_root_fs_url = storage::GetIsolatedFileSystemRootURIString(
         GURL(kOrigin), dest_fsid, "dest_fs/");
     move_dest_ = file_system_context_->CrackURL(GURL(
           dest_root_fs_url + "move_dest" + extension));
@@ -170,7 +173,7 @@ class MediaFileValidatorTest : public InProcessBrowserTest {
   // Helper that checks a file has the |expected_size|, which may be
   // |kNoFileSize| if the file should not exist.  |callback| is called
   // with success/failure.
-  void CheckFile(fileapi::FileSystemURL url,
+  void CheckFile(storage::FileSystemURL url,
                  int64 expected_size,
                  const base::Callback<void(bool success)>& callback) {
     operation_runner()->GetMetadata(url,
@@ -196,10 +199,12 @@ class MediaFileValidatorTest : public InProcessBrowserTest {
   // |move_src_| to |move_dest_|.
   void OnTestFilesReady(bool expected_result, bool test_files_ready) {
     ASSERT_TRUE(test_files_ready);
-    operation_runner()->Move(
-        move_src_, move_dest_, fileapi::FileSystemOperation::OPTION_NONE,
-        base::Bind(&MediaFileValidatorTest::OnMoveResult,
-                   base::Unretained(this), expected_result));
+    operation_runner()->Move(move_src_,
+                             move_dest_,
+                             storage::FileSystemOperation::OPTION_NONE,
+                             base::Bind(&MediaFileValidatorTest::OnMoveResult,
+                                        base::Unretained(this),
+                                        expected_result));
   }
 
   // Check that the move succeeded/failed based on expectation and then
@@ -222,18 +227,18 @@ class MediaFileValidatorTest : public InProcessBrowserTest {
                                      loop_runner_->QuitClosure());
   }
 
-  fileapi::FileSystemOperationRunner* operation_runner() {
+  storage::FileSystemOperationRunner* operation_runner() {
     return file_system_context_->operation_runner();
   }
 
   base::ScopedTempDir base_dir_;
 
-  scoped_refptr<fileapi::FileSystemContext> file_system_context_;
+  scoped_refptr<storage::FileSystemContext> file_system_context_;
 
   int test_file_size_;
 
-  fileapi::FileSystemURL move_src_;
-  fileapi::FileSystemURL move_dest_;
+  storage::FileSystemURL move_src_;
+  storage::FileSystemURL move_dest_;
 
   scoped_refptr<content::MessageLoopRunner> loop_runner_;
 

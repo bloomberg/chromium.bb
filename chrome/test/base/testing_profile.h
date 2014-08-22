@@ -34,7 +34,7 @@ class ProfilePolicyConnector;
 class SchemaRegistryService;
 }
 
-namespace quota {
+namespace storage {
 class SpecialStoragePolicy;
 }
 
@@ -223,7 +223,7 @@ class TestingProfile : public Profile {
       int renderer_child_id) OVERRIDE;
   virtual content::ResourceContext* GetResourceContext() OVERRIDE;
   virtual content::BrowserPluginGuestManager* GetGuestManager() OVERRIDE;
-  virtual quota::SpecialStoragePolicy* GetSpecialStoragePolicy() OVERRIDE;
+  virtual storage::SpecialStoragePolicy* GetSpecialStoragePolicy() OVERRIDE;
   virtual content::PushMessagingService* GetPushMessagingService() OVERRIDE;
   virtual content::SSLHostStateDelegate* GetSSLHostStateDelegate() OVERRIDE;
 

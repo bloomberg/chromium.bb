@@ -26,7 +26,7 @@ class CONTENT_EXPORT ResourceRequestBody
     : public base::RefCountedThreadSafe<ResourceRequestBody>,
       public base::SupportsUserData {
  public:
-  typedef webkit_common::DataElement Element;
+  typedef storage::DataElement Element;
 
   ResourceRequestBody();
 

@@ -26,10 +26,10 @@
 #include "webkit/common/fileapi/file_system_types.h"
 #include "webkit/common/fileapi/file_system_util.h"
 
-using quota::QuotaManagerProxy;
-using quota::SpecialStoragePolicy;
+using storage::QuotaManagerProxy;
+using storage::SpecialStoragePolicy;
 
-namespace fileapi {
+namespace storage {
 
 SandboxFileSystemBackend::SandboxFileSystemBackend(
     SandboxFileSystemBackendDelegate* delegate)
@@ -49,15 +49,13 @@ void SandboxFileSystemBackend::Initialize(FileSystemContext* context) {
   DCHECK(delegate_);
 
   // Set quota observers.
-  delegate_->RegisterQuotaUpdateObserver(fileapi::kFileSystemTypeTemporary);
+  delegate_->RegisterQuotaUpdateObserver(storage::kFileSystemTypeTemporary);
   delegate_->AddFileAccessObserver(
-      fileapi::kFileSystemTypeTemporary,
-      delegate_->quota_observer(), NULL);
+      storage::kFileSystemTypeTemporary, delegate_->quota_observer(), NULL);
 
-  delegate_->RegisterQuotaUpdateObserver(fileapi::kFileSystemTypePersistent);
+  delegate_->RegisterQuotaUpdateObserver(storage::kFileSystemTypePersistent);
   delegate_->AddFileAccessObserver(
-      fileapi::kFileSystemTypePersistent,
-      delegate_->quota_observer(), NULL);
+      storage::kFileSystemTypePersistent, delegate_->quota_observer(), NULL);
 }
 
 void SandboxFileSystemBackend::ResolveURL(
@@ -111,24 +109,24 @@ FileSystemOperation* SandboxFileSystemBackend::CreateFileSystemOperation(
 
   SpecialStoragePolicy* policy = delegate_->special_storage_policy();
   if (policy && policy->IsStorageUnlimited(url.origin()))
-    operation_context->set_quota_limit_type(quota::kQuotaLimitTypeUnlimited);
+    operation_context->set_quota_limit_type(storage::kQuotaLimitTypeUnlimited);
   else
-    operation_context->set_quota_limit_type(quota::kQuotaLimitTypeLimited);
+    operation_context->set_quota_limit_type(storage::kQuotaLimitTypeLimited);
 
   return FileSystemOperation::Create(url, context, operation_context.Pass());
 }
 
 bool SandboxFileSystemBackend::SupportsStreaming(
-    const fileapi::FileSystemURL& url) const {
+    const storage::FileSystemURL& url) const {
   return false;
 }
 
 bool SandboxFileSystemBackend::HasInplaceCopyImplementation(
-    fileapi::FileSystemType type) const {
+    storage::FileSystemType type) const {
   return true;
 }
 
-scoped_ptr<webkit_blob::FileStreamReader>
+scoped_ptr<storage::FileStreamReader>
 SandboxFileSystemBackend::CreateFileStreamReader(
     const FileSystemURL& url,
     int64 offset,
@@ -140,7 +138,7 @@ SandboxFileSystemBackend::CreateFileStreamReader(
       url, offset, expected_modification_time, context);
 }
 
-scoped_ptr<fileapi::FileStreamWriter>
+scoped_ptr<storage::FileStreamWriter>
 SandboxFileSystemBackend::CreateFileStreamWriter(
     const FileSystemURL& url,
     int64 offset,
@@ -160,4 +158,4 @@ SandboxFileSystemBackend::CreateOriginEnumerator() {
   return delegate_->CreateOriginEnumerator();
 }
 
-}  // namespace fileapi
+}  // namespace storage

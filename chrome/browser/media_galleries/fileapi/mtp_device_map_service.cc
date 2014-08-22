@@ -85,7 +85,7 @@ MTPDeviceAsyncDelegate* MTPDeviceMapService::GetMTPDeviceAsyncDelegate(
     const std::string& filesystem_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   base::FilePath device_path;
-  if (!fileapi::ExternalMountPoints::GetSystemInstance()->GetRegisteredPath(
+  if (!storage::ExternalMountPoints::GetSystemInstance()->GetRegisteredPath(
           filesystem_id, &device_path)) {
     return NULL;
   }

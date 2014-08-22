@@ -12,16 +12,16 @@
 #include "base/bind_helpers.h"
 #include "content/browser/appcache/appcache_service_impl.h"
 
-using quota::QuotaClient;
+using storage::QuotaClient;
 
 namespace {
-quota::QuotaStatusCode NetErrorCodeToQuotaStatus(int code) {
+storage::QuotaStatusCode NetErrorCodeToQuotaStatus(int code) {
   if (code == net::OK)
-    return quota::kQuotaStatusOk;
+    return storage::kQuotaStatusOk;
   else if (code == net::ERR_ABORTED)
-    return quota::kQuotaErrorAbort;
+    return storage::kQuotaErrorAbort;
   else
-    return quota::kQuotaStatusUnknown;
+    return storage::kQuotaStatusUnknown;
 }
 
 void RunFront(content::AppCacheQuotaClient::RequestQueue* queue) {
@@ -61,10 +61,9 @@ void AppCacheQuotaClient::OnQuotaManagerDestroyed() {
     delete this;
 }
 
-void AppCacheQuotaClient::GetOriginUsage(
-    const GURL& origin,
-    quota::StorageType type,
-    const GetUsageCallback& callback) {
+void AppCacheQuotaClient::GetOriginUsage(const GURL& origin,
+                                         storage::StorageType type,
+                                         const GetUsageCallback& callback) {
   DCHECK(!callback.is_null());
   DCHECK(!quota_manager_is_destroyed_);
 
@@ -80,7 +79,7 @@ void AppCacheQuotaClient::GetOriginUsage(
     return;
   }
 
-  if (type != quota::kStorageTypeTemporary) {
+  if (type != storage::kStorageTypeTemporary) {
     callback.Run(0);
     return;
   }
@@ -95,13 +94,13 @@ void AppCacheQuotaClient::GetOriginUsage(
 }
 
 void AppCacheQuotaClient::GetOriginsForType(
-    quota::StorageType type,
+    storage::StorageType type,
     const GetOriginsCallback& callback) {
   GetOriginsHelper(type, std::string(), callback);
 }
 
 void AppCacheQuotaClient::GetOriginsForHost(
-    quota::StorageType type,
+    storage::StorageType type,
     const std::string& host,
     const GetOriginsCallback& callback) {
   DCHECK(!callback.is_null());
@@ -113,12 +112,12 @@ void AppCacheQuotaClient::GetOriginsForHost(
 }
 
 void AppCacheQuotaClient::DeleteOriginData(const GURL& origin,
-                                           quota::StorageType type,
+                                           storage::StorageType type,
                                            const DeletionCallback& callback) {
   DCHECK(!quota_manager_is_destroyed_);
 
   if (!service_) {
-    callback.Run(quota::kQuotaErrorAbort);
+    callback.Run(storage::kQuotaErrorAbort);
     return;
   }
 
@@ -130,7 +129,7 @@ void AppCacheQuotaClient::DeleteOriginData(const GURL& origin,
   }
 
   current_delete_request_callback_ = callback;
-  if (type != quota::kStorageTypeTemporary) {
+  if (type != storage::kStorageTypeTemporary) {
     DidDeleteAppCachesForOrigin(net::OK);
     return;
   }
@@ -139,8 +138,8 @@ void AppCacheQuotaClient::DeleteOriginData(const GURL& origin,
       origin, GetServiceDeleteCallback()->callback());
 }
 
-bool AppCacheQuotaClient::DoesSupport(quota::StorageType type) const {
-  return type == quota::kStorageTypeTemporary;
+bool AppCacheQuotaClient::DoesSupport(storage::StorageType type) const {
+  return type == storage::kStorageTypeTemporary;
 }
 
 void AppCacheQuotaClient::DidDeleteAppCachesForOrigin(int rv) {
@@ -158,10 +157,9 @@ void AppCacheQuotaClient::DidDeleteAppCachesForOrigin(int rv) {
   RunFront(&pending_serial_requests_);
 }
 
-void AppCacheQuotaClient::GetOriginsHelper(
-    quota::StorageType type,
-    const std::string& opt_host,
-    const GetOriginsCallback& callback) {
+void AppCacheQuotaClient::GetOriginsHelper(storage::StorageType type,
+                                           const std::string& opt_host,
+                                           const GetOriginsCallback& callback) {
   DCHECK(!callback.is_null());
   DCHECK(!quota_manager_is_destroyed_);
 
@@ -177,7 +175,7 @@ void AppCacheQuotaClient::GetOriginsHelper(
     return;
   }
 
-  if (type != quota::kStorageTypeTemporary) {
+  if (type != storage::kStorageTypeTemporary) {
     callback.Run(std::set<GURL>());
     return;
   }
@@ -241,7 +239,7 @@ void AppCacheQuotaClient::NotifyAppCacheDestroyed() {
     RunFront(&pending_serial_requests_);
 
   if (!current_delete_request_callback_.is_null()) {
-    current_delete_request_callback_.Run(quota::kQuotaErrorAbort);
+    current_delete_request_callback_.Run(storage::kQuotaErrorAbort);
     current_delete_request_callback_.Reset();
     GetServiceDeleteCallback()->Cancel();
   }

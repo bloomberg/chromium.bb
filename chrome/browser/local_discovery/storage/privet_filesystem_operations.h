@@ -44,11 +44,11 @@ class PrivetFileSystemOperationFactory
       content::BrowserContext* browser_context);
   virtual ~PrivetFileSystemOperationFactory();
 
-  void GetFileInfo(const fileapi::FileSystemURL& url,
-                   const fileapi::AsyncFileUtil::GetFileInfoCallback& callback);
+  void GetFileInfo(const storage::FileSystemURL& url,
+                   const storage::AsyncFileUtil::GetFileInfoCallback& callback);
   void ReadDirectory(
-      const fileapi::FileSystemURL& url,
-      const fileapi::AsyncFileUtil::ReadDirectoryCallback& callback);
+      const storage::FileSystemURL& url,
+      const storage::AsyncFileUtil::ReadDirectoryCallback& callback);
 
   base::WeakPtr<PrivetFileSystemOperationFactory> GetWeakPtr() {
     return weak_factory_.GetWeakPtr();
@@ -114,7 +114,7 @@ class PrivetFileSystemListOperation
       content::BrowserContext* browser_context,
       PrivetFileSystemAsyncOperationContainer* container,
       PrivetFileSystemAttributeCache* attribute_cache,
-      const fileapi::AsyncFileUtil::ReadDirectoryCallback& callback);
+      const storage::AsyncFileUtil::ReadDirectoryCallback& callback);
   virtual ~PrivetFileSystemListOperation();
 
   virtual void Start() OVERRIDE;
@@ -127,14 +127,14 @@ class PrivetFileSystemListOperation
   void SignalError();
   void TriggerCallbackAndDestroy(
       base::File::Error result,
-      const fileapi::AsyncFileUtil::EntryList& file_list,
+      const storage::AsyncFileUtil::EntryList& file_list,
       bool has_more);
 
   PrivetFileSystemAsyncOperationUtil core_;
   base::FilePath full_path_;
   PrivetFileSystemAsyncOperationContainer* container_;
   PrivetFileSystemAttributeCache* attribute_cache_;
-  fileapi::AsyncFileUtil::ReadDirectoryCallback callback_;
+  storage::AsyncFileUtil::ReadDirectoryCallback callback_;
 
   scoped_ptr<PrivetJSONOperation> list_operation_;
 };
@@ -148,7 +148,7 @@ class PrivetFileSystemDetailsOperation
       content::BrowserContext* browser_context,
       PrivetFileSystemAsyncOperationContainer* container,
       PrivetFileSystemAttributeCache* attribute_cache,
-      const fileapi::AsyncFileUtil::GetFileInfoCallback& callback);
+      const storage::AsyncFileUtil::GetFileInfoCallback& callback);
   virtual ~PrivetFileSystemDetailsOperation();
 
   virtual void Start() OVERRIDE;
@@ -166,7 +166,7 @@ class PrivetFileSystemDetailsOperation
   base::FilePath full_path_;
   PrivetFileSystemAsyncOperationContainer* container_;
   PrivetFileSystemAttributeCache* attribute_cache_;
-  fileapi::AsyncFileUtil::GetFileInfoCallback callback_;
+  storage::AsyncFileUtil::GetFileInfoCallback callback_;
 
   scoped_ptr<PrivetJSONOperation> list_operation_;
 };

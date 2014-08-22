@@ -20,9 +20,9 @@ WorkerStoragePartition::WorkerStoragePartition(
     net::URLRequestContextGetter* url_request_context,
     net::URLRequestContextGetter* media_url_request_context,
     ChromeAppCacheService* appcache_service,
-    quota::QuotaManager* quota_manager,
-    fileapi::FileSystemContext* filesystem_context,
-    webkit_database::DatabaseTracker* database_tracker,
+    storage::QuotaManager* quota_manager,
+    storage::FileSystemContext* filesystem_context,
+    storage::DatabaseTracker* database_tracker,
     IndexedDBContextImpl* indexed_db_context,
     ServiceWorkerContextWrapper* service_worker_context)
     : url_request_context_(url_request_context),

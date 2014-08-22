@@ -17,19 +17,19 @@
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
 #define IPC_MESSAGE_START FileSystemMsgStart
 
-IPC_STRUCT_TRAITS_BEGIN(fileapi::DirectoryEntry)
+IPC_STRUCT_TRAITS_BEGIN(storage::DirectoryEntry)
   IPC_STRUCT_TRAITS_MEMBER(name)
   IPC_STRUCT_TRAITS_MEMBER(is_directory)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(fileapi::FileSystemInfo)
+IPC_STRUCT_TRAITS_BEGIN(storage::FileSystemInfo)
   IPC_STRUCT_TRAITS_MEMBER(name)
   IPC_STRUCT_TRAITS_MEMBER(root_url)
   IPC_STRUCT_TRAITS_MEMBER(mount_type)
 IPC_STRUCT_TRAITS_END()
 
-IPC_ENUM_TRAITS(fileapi::FileSystemType)
-IPC_ENUM_TRAITS(quota::QuotaLimitType)
+IPC_ENUM_TRAITS(storage::FileSystemType)
+IPC_ENUM_TRAITS(storage::QuotaLimitType)
 
 // File system messages sent from the browser to the child process.
 
@@ -42,7 +42,7 @@ IPC_MESSAGE_CONTROL3(FileSystemMsg_DidOpenFileSystem,
 // WebFileSystem response messages.
 IPC_MESSAGE_CONTROL4(FileSystemMsg_DidResolveURL,
                      int /* request_id */,
-                     fileapi::FileSystemInfo /* filesystem_info */,
+                     storage::FileSystemInfo /* filesystem_info */,
                      base::FilePath /* file_path */,
                      bool /* is_directory */)
 IPC_MESSAGE_CONTROL1(FileSystemMsg_DidSucceed,
@@ -56,7 +56,7 @@ IPC_MESSAGE_CONTROL3(FileSystemMsg_DidCreateSnapshotFile,
                      base::FilePath /* true platform path */)
 IPC_MESSAGE_CONTROL3(FileSystemMsg_DidReadDirectory,
                      int /* request_id */,
-                     std::vector<fileapi::DirectoryEntry> /* entries */,
+                     std::vector<storage::DirectoryEntry> /* entries */,
                      bool /* has_more */)
 IPC_MESSAGE_CONTROL3(FileSystemMsg_DidWrite,
                      int /* request_id */,
@@ -72,7 +72,7 @@ IPC_MESSAGE_CONTROL2(FileSystemMsg_DidFail,
 IPC_MESSAGE_CONTROL3(FileSystemHostMsg_OpenFileSystem,
                      int /* request_id */,
                      GURL /* origin_url */,
-                     fileapi::FileSystemType /* type */)
+                     storage::FileSystemType /* type */)
 
 // WevFrameClient::resolveURL() message.
 IPC_MESSAGE_CONTROL2(FileSystemHostMsg_ResolveURL,
@@ -83,7 +83,7 @@ IPC_MESSAGE_CONTROL2(FileSystemHostMsg_ResolveURL,
 IPC_MESSAGE_CONTROL3(FileSystemHostMsg_DeleteFileSystem,
                      int /* request_id */,
                      GURL /* origin_url */,
-                     fileapi::FileSystemType /* type */)
+                     storage::FileSystemType /* type */)
 
 // WebFileSystem::move() message.
 IPC_MESSAGE_CONTROL3(FileSystemHostMsg_Move,

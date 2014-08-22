@@ -7,7 +7,7 @@
 #include "webkit/browser/fileapi/quota/open_file_handle_context.h"
 #include "webkit/browser/fileapi/quota/quota_reservation.h"
 
-namespace fileapi {
+namespace storage {
 
 OpenFileHandle::~OpenFileHandle() {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
@@ -52,4 +52,4 @@ OpenFileHandle::OpenFileHandle(QuotaReservation* reservation,
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
 }
 
-}  // namespace fileapi
+}  // namespace storage

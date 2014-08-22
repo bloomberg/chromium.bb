@@ -29,7 +29,7 @@ class AppCacheStorageImpl;
 // used on the IO thread by the quota manager. This class deletes
 // itself when both the quota manager and the appcache service have
 // been destroyed.
-class AppCacheQuotaClient : public quota::QuotaClient {
+class AppCacheQuotaClient : public storage::QuotaClient {
  public:
   typedef std::deque<base::Closure> RequestQueue;
 
@@ -39,17 +39,17 @@ class AppCacheQuotaClient : public quota::QuotaClient {
   virtual ID id() const OVERRIDE;
   virtual void OnQuotaManagerDestroyed() OVERRIDE;
   virtual void GetOriginUsage(const GURL& origin,
-                              quota::StorageType type,
+                              storage::StorageType type,
                               const GetUsageCallback& callback) OVERRIDE;
-  virtual void GetOriginsForType(quota::StorageType type,
+  virtual void GetOriginsForType(storage::StorageType type,
                                  const GetOriginsCallback& callback) OVERRIDE;
-  virtual void GetOriginsForHost(quota::StorageType type,
+  virtual void GetOriginsForHost(storage::StorageType type,
                                  const std::string& host,
                                  const GetOriginsCallback& callback) OVERRIDE;
   virtual void DeleteOriginData(const GURL& origin,
-                                quota::StorageType type,
+                                storage::StorageType type,
                                 const DeletionCallback& callback) OVERRIDE;
-  virtual bool DoesSupport(quota::StorageType type) const OVERRIDE;
+  virtual bool DoesSupport(storage::StorageType type) const OVERRIDE;
 
  private:
   friend class content::AppCacheQuotaClientTest;
@@ -60,7 +60,7 @@ class AppCacheQuotaClient : public quota::QuotaClient {
       explicit AppCacheQuotaClient(AppCacheServiceImpl* service);
 
   void DidDeleteAppCachesForOrigin(int rv);
-  void GetOriginsHelper(quota::StorageType type,
+  void GetOriginsHelper(storage::StorageType type,
                         const std::string& opt_host,
                         const GetOriginsCallback& callback);
   void ProcessPendingRequests();

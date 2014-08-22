@@ -23,24 +23,21 @@ class RemoteChangeProcessorWrapper
       RemoteChangeProcessor* remote_change_processor);
 
   void PrepareForProcessRemoteChange(
-      const fileapi::FileSystemURL& url,
+      const storage::FileSystemURL& url,
       const RemoteChangeProcessor::PrepareChangeCallback& callback);
 
-  void ApplyRemoteChange(
-      const FileChange& change,
-      const base::FilePath& local_path,
-      const fileapi::FileSystemURL& url,
-      const SyncStatusCallback& callback);
+  void ApplyRemoteChange(const FileChange& change,
+                         const base::FilePath& local_path,
+                         const storage::FileSystemURL& url,
+                         const SyncStatusCallback& callback);
 
-  void FinalizeRemoteSync(
-      const fileapi::FileSystemURL& url,
-      bool clear_local_changes,
-      const base::Closure& completion_callback);
+  void FinalizeRemoteSync(const storage::FileSystemURL& url,
+                          bool clear_local_changes,
+                          const base::Closure& completion_callback);
 
-  void RecordFakeLocalChange(
-      const fileapi::FileSystemURL& url,
-      const FileChange& change,
-      const SyncStatusCallback& callback);
+  void RecordFakeLocalChange(const storage::FileSystemURL& url,
+                             const FileChange& change,
+                             const SyncStatusCallback& callback);
 
  private:
   RemoteChangeProcessor* remote_change_processor_;

@@ -8,8 +8,8 @@
 #include "base/stl_util.h"
 #include "webkit/common/fileapi/file_system_util.h"
 
-using fileapi::FileSystemURL;
-using fileapi::FileSystemURLSet;
+using storage::FileSystemURL;
+using storage::FileSystemURLSet;
 
 namespace sync_file_system {
 
@@ -17,7 +17,7 @@ namespace {
 
 typedef LocalFileSyncStatus::OriginAndType OriginAndType;
 
-OriginAndType GetOriginAndType(const fileapi::FileSystemURL& url) {
+OriginAndType GetOriginAndType(const storage::FileSystemURL& url) {
   return std::make_pair(url.origin(), url.type());
 }
 
@@ -25,7 +25,7 @@ base::FilePath NormalizePath(const base::FilePath& path) {
   // Ensure |path| has single trailing path-separator, so that we can use
   // prefix-match to find descendants of |path| in an ordered container.
   return base::FilePath(path.StripTrailingSeparators().value() +
-                        fileapi::VirtualPath::kSeparator);
+                        storage::VirtualPath::kSeparator);
 }
 
 struct SetKeyHelper {
@@ -63,11 +63,11 @@ bool ContainsChildOrParent(const Container& paths,
     if (ContainsKey(paths, normalized_path))
       return true;
 
-    if (fileapi::VirtualPath::IsRootPath(normalized_path))
+    if (storage::VirtualPath::IsRootPath(normalized_path))
       return false;
 
     normalized_path =
-        NormalizePath(fileapi::VirtualPath::DirName(normalized_path));
+        NormalizePath(storage::VirtualPath::DirName(normalized_path));
   }
 }
 

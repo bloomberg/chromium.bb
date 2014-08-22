@@ -125,7 +125,7 @@ class CONTENT_EXPORT IndexedDBDatabase
   void Put(int64 transaction_id,
            int64 object_store_id,
            IndexedDBValue* value,
-           ScopedVector<webkit_blob::BlobDataHandle>* handles,
+           ScopedVector<storage::BlobDataHandle>* handles,
            scoped_ptr<IndexedDBKey> key,
            blink::WebIDBPutMode mode,
            scoped_refptr<IndexedDBCallbacks> callbacks,

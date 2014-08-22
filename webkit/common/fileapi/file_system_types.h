@@ -7,7 +7,7 @@
 
 #include "third_party/WebKit/public/platform/WebFileSystemType.h"
 
-namespace fileapi {
+namespace storage {
 
 enum FileSystemType {
   // Indicates uninitialized or invalid filesystem type.
@@ -132,6 +132,6 @@ enum FileSystemType {
   kFileSystemInternalTypeEnumEnd,
 };
 
-}  // namespace fileapi
+}  // namespace storage
 
 #endif  // WEBKIT_COMMON_FILEAPI_FILE_SYSTEM_TYPES_H_

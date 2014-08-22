@@ -26,7 +26,7 @@
 #include "webkit/common/fileapi/file_system_types.h"
 #include "webkit/common/fileapi/file_system_util.h"
 
-namespace fileapi {
+namespace storage {
 
 IsolatedFileSystemBackend::IsolatedFileSystemBackend()
     : isolated_file_util_(new AsyncFileUtilAdapter(new LocalFileUtil())),
@@ -101,27 +101,29 @@ FileSystemOperation* IsolatedFileSystemBackend::CreateFileSystemOperation(
 }
 
 bool IsolatedFileSystemBackend::SupportsStreaming(
-    const fileapi::FileSystemURL& url) const {
+    const storage::FileSystemURL& url) const {
   return false;
 }
 
 bool IsolatedFileSystemBackend::HasInplaceCopyImplementation(
-    fileapi::FileSystemType type) const {
+    storage::FileSystemType type) const {
   DCHECK(type == kFileSystemTypeNativeLocal || type == kFileSystemTypeDragged ||
          type == kFileSystemTypeForTransientFile);
   return false;
 }
 
-scoped_ptr<webkit_blob::FileStreamReader>
+scoped_ptr<storage::FileStreamReader>
 IsolatedFileSystemBackend::CreateFileStreamReader(
     const FileSystemURL& url,
     int64 offset,
     const base::Time& expected_modification_time,
     FileSystemContext* context) const {
-  return scoped_ptr<webkit_blob::FileStreamReader>(
-      webkit_blob::FileStreamReader::CreateForLocalFile(
+  return scoped_ptr<storage::FileStreamReader>(
+      storage::FileStreamReader::CreateForLocalFile(
           context->default_file_task_runner(),
-          url.path(), offset, expected_modification_time));
+          url.path(),
+          offset,
+          expected_modification_time));
 }
 
 scoped_ptr<FileStreamWriter> IsolatedFileSystemBackend::CreateFileStreamWriter(
@@ -141,4 +143,4 @@ FileSystemQuotaUtil* IsolatedFileSystemBackend::GetQuotaUtil() {
   return NULL;
 }
 
-}  // namespace fileapi
+}  // namespace storage

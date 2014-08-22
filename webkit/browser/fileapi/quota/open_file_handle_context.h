@@ -15,7 +15,7 @@
 #include "webkit/browser/webkit_storage_browser_export.h"
 #include "webkit/common/fileapi/file_system_types.h"
 
-namespace fileapi {
+namespace storage {
 
 class QuotaReservationBuffer;
 
@@ -56,6 +56,6 @@ class OpenFileHandleContext : public base::RefCounted<OpenFileHandleContext> {
   DISALLOW_COPY_AND_ASSIGN(OpenFileHandleContext);
 };
 
-}  // namespace fileapi
+}  // namespace storage
 
 #endif  // WEBKIT_BROWSER_FILEAPI_OPEN_FILE_HANDLE_CONTEXT_H_

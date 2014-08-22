@@ -76,7 +76,7 @@ class SQLitePersistentCookieStore::Backend
       const scoped_refptr<base::SequencedTaskRunner>& client_task_runner,
       const scoped_refptr<base::SequencedTaskRunner>& background_task_runner,
       bool restore_old_session_cookies,
-      quota::SpecialStoragePolicy* special_storage_policy,
+      storage::SpecialStoragePolicy* special_storage_policy,
       CookieCryptoDelegate* crypto_delegate)
       : path_(path),
         num_pending_(0),
@@ -249,7 +249,7 @@ class SQLitePersistentCookieStore::Backend
   bool restore_old_session_cookies_;
 
   // Policy defining what data is deleted on shutdown.
-  scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy_;
+  scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy_;
 
   // The cumulative time spent loading the cookies on the background runner.
   // Incremented and reported from the background runner.
@@ -1205,7 +1205,7 @@ SQLitePersistentCookieStore::SQLitePersistentCookieStore(
     const scoped_refptr<base::SequencedTaskRunner>& client_task_runner,
     const scoped_refptr<base::SequencedTaskRunner>& background_task_runner,
     bool restore_old_session_cookies,
-    quota::SpecialStoragePolicy* special_storage_policy,
+    storage::SpecialStoragePolicy* special_storage_policy,
     CookieCryptoDelegate* crypto_delegate)
     : backend_(new Backend(path,
                            client_task_runner,
@@ -1259,15 +1259,15 @@ CookieStoreConfig::CookieStoreConfig()
 }
 
 CookieStoreConfig::CookieStoreConfig(
-     const base::FilePath& path,
+    const base::FilePath& path,
     SessionCookieMode session_cookie_mode,
-     quota::SpecialStoragePolicy* storage_policy,
+    storage::SpecialStoragePolicy* storage_policy,
     net::CookieMonsterDelegate* cookie_delegate)
-  : path(path),
-    session_cookie_mode(session_cookie_mode),
-    storage_policy(storage_policy),
-    cookie_delegate(cookie_delegate),
-    crypto_delegate(NULL) {
+    : path(path),
+      session_cookie_mode(session_cookie_mode),
+      storage_policy(storage_policy),
+      cookie_delegate(cookie_delegate),
+      crypto_delegate(NULL) {
   CHECK(!path.empty() || session_cookie_mode == EPHEMERAL_SESSION_COOKIES);
 }
 

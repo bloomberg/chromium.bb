@@ -22,11 +22,11 @@ namespace base {
 class FilePath;
 }
 
-namespace webkit_blob {
+namespace storage {
 class FileStreamReader;
 }
 
-namespace fileapi {
+namespace storage {
 class FileSystemContext;
 
 // A request job that handles reading filesystem: URLs
@@ -69,7 +69,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE FileSystemURLRequestJob
 
   const std::string storage_domain_;
   FileSystemContext* file_system_context_;
-  scoped_ptr<webkit_blob::FileStreamReader> reader_;
+  scoped_ptr<storage::FileStreamReader> reader_;
   FileSystemURL url_;
   bool is_directory_;
   scoped_ptr<net::HttpResponseInfo> response_info_;
@@ -80,6 +80,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE FileSystemURLRequestJob
   DISALLOW_COPY_AND_ASSIGN(FileSystemURLRequestJob);
 };
 
-}  // namespace fileapi
+}  // namespace storage
 
 #endif  // WEBKIT_BROWSER_FILEAPI_FILE_SYSTEM_URL_REQUEST_JOB_H_

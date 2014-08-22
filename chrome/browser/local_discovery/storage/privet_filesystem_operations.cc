@@ -18,8 +18,8 @@ PrivetFileSystemOperationFactory::~PrivetFileSystemOperationFactory() {
 }
 
 void PrivetFileSystemOperationFactory::GetFileInfo(
-    const fileapi::FileSystemURL& url,
-    const fileapi::AsyncFileUtil::GetFileInfoCallback& callback) {
+    const storage::FileSystemURL& url,
+    const storage::AsyncFileUtil::GetFileInfoCallback& callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   PrivetFileSystemAsyncOperation* operation =
       new PrivetFileSystemDetailsOperation(
@@ -29,8 +29,8 @@ void PrivetFileSystemOperationFactory::GetFileInfo(
 }
 
 void PrivetFileSystemOperationFactory::ReadDirectory(
-    const fileapi::FileSystemURL& url,
-    const fileapi::AsyncFileUtil::ReadDirectoryCallback& callback) {
+    const storage::FileSystemURL& url,
+    const storage::AsyncFileUtil::ReadDirectoryCallback& callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   PrivetFileSystemAsyncOperation* operation = new PrivetFileSystemListOperation(
       url.path(), browser_context_, this, &attribute_cache_, callback);
@@ -109,7 +109,7 @@ PrivetFileSystemListOperation::PrivetFileSystemListOperation(
     content::BrowserContext* browser_context,
     PrivetFileSystemAsyncOperationContainer* container,
     PrivetFileSystemAttributeCache* attribute_cache,
-    const fileapi::AsyncFileUtil::ReadDirectoryCallback& callback)
+    const storage::AsyncFileUtil::ReadDirectoryCallback& callback)
     : core_(full_path, browser_context, this),
       full_path_(full_path),
       container_(container),
@@ -155,7 +155,7 @@ void PrivetFileSystemListOperation::OnStorageListResult(
 
   attribute_cache_->AddFileInfoFromJSON(full_path_, value);
 
-  fileapi::AsyncFileUtil::EntryList entry_list;
+  storage::AsyncFileUtil::EntryList entry_list;
 
   const base::ListValue* entries;
   if (!value->GetList(kPrivetListEntries, &entries)) {
@@ -178,12 +178,12 @@ void PrivetFileSystemListOperation::OnStorageListResult(
     entry_value->GetString(kPrivetListKeyType, &type);
     entry_value->GetInteger(kPrivetListKeySize, &size);
 
-    fileapi::DirectoryEntry entry(
-        name,
-        (type == kPrivetListTypeDir) ?
-        fileapi::DirectoryEntry::DIRECTORY : fileapi::DirectoryEntry::FILE,
-        size,
-        base::Time() /* TODO(noamsml) */);
+    storage::DirectoryEntry entry(name,
+                                  (type == kPrivetListTypeDir)
+                                      ? storage::DirectoryEntry::DIRECTORY
+                                      : storage::DirectoryEntry::FILE,
+                                  size,
+                                  base::Time() /* TODO(noamsml) */);
 
     entry_list.push_back(entry);
   }
@@ -194,13 +194,13 @@ void PrivetFileSystemListOperation::OnStorageListResult(
 void PrivetFileSystemListOperation::SignalError() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   TriggerCallbackAndDestroy(base::File::FILE_ERROR_FAILED,
-                            fileapi::AsyncFileUtil::EntryList(),
+                            storage::AsyncFileUtil::EntryList(),
                             false);
 }
 
 void PrivetFileSystemListOperation::TriggerCallbackAndDestroy(
     base::File::Error result,
-    const fileapi::AsyncFileUtil::EntryList& file_list,
+    const storage::AsyncFileUtil::EntryList& file_list,
     bool has_more) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   content::BrowserThread::PostTask(
@@ -215,7 +215,7 @@ PrivetFileSystemDetailsOperation::PrivetFileSystemDetailsOperation(
     content::BrowserContext* browser_context,
     PrivetFileSystemAsyncOperationContainer* container,
     PrivetFileSystemAttributeCache* attribute_cache,
-    const fileapi::AsyncFileUtil::GetFileInfoCallback& callback)
+    const storage::AsyncFileUtil::GetFileInfoCallback& callback)
     : core_(full_path, browser_context, this),
       full_path_(full_path),
       container_(container),

@@ -275,10 +275,10 @@ base::FilePath GetLocalPathFromURL(content::RenderViewHost* render_view_host,
   DCHECK(render_view_host);
   DCHECK(profile);
 
-  scoped_refptr<fileapi::FileSystemContext> file_system_context =
+  scoped_refptr<storage::FileSystemContext> file_system_context =
       util::GetFileSystemContextForRenderViewHost(profile, render_view_host);
 
-  const fileapi::FileSystemURL filesystem_url(
+  const storage::FileSystemURL filesystem_url(
       file_system_context->CrackURL(url));
   base::FilePath path;
   if (!chromeos::FileSystemBackend::CanHandleURL(filesystem_url))

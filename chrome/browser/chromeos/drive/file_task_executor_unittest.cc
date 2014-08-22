@@ -99,14 +99,14 @@ TEST(FileTaskExecutorTest, DriveAppOpenSuccess) {
   FileTaskExecutor* const executor = new FileTaskExecutor(
       scoped_ptr<FileTaskExecutorDelegate>(delegate_ptr), "test-app-id");
 
-  std::vector<fileapi::FileSystemURL> urls;
-  urls.push_back(fileapi::FileSystemURL::CreateForTest(
+  std::vector<storage::FileSystemURL> urls;
+  urls.push_back(storage::FileSystemURL::CreateForTest(
       GURL("http://origin/"),
-      fileapi::kFileSystemTypeDrive,
+      storage::kFileSystemTypeDrive,
       base::FilePath::FromUTF8Unsafe("/special/drive/root/file1.txt")));
-  urls.push_back(fileapi::FileSystemURL::CreateForTest(
+  urls.push_back(storage::FileSystemURL::CreateForTest(
       GURL("http://origin/"),
-      fileapi::kFileSystemTypeDrive,
+      storage::kFileSystemTypeDrive,
       base::FilePath::FromUTF8Unsafe("/special/drive/root/file2.txt")));
 
   extensions::api::file_browser_private::TaskResult result =
@@ -133,10 +133,10 @@ TEST(FileTaskExecutorTest, DriveAppOpenFailForNonExistingFile) {
   FileTaskExecutor* const executor = new FileTaskExecutor(
       scoped_ptr<FileTaskExecutorDelegate>(delegate_ptr), "test-app-id");
 
-  std::vector<fileapi::FileSystemURL> urls;
-  urls.push_back(fileapi::FileSystemURL::CreateForTest(
+  std::vector<storage::FileSystemURL> urls;
+  urls.push_back(storage::FileSystemURL::CreateForTest(
       GURL("http://origin/"),
-      fileapi::kFileSystemTypeDrive,
+      storage::kFileSystemTypeDrive,
       base::FilePath::FromUTF8Unsafe("/special/drive/root/not-exist.txt")));
 
   extensions::api::file_browser_private::TaskResult result =

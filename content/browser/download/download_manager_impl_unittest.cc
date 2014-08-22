@@ -415,7 +415,7 @@ class MockBrowserContext : public BrowserContext {
   MOCK_METHOD0(GetResourceContext, ResourceContext*());
   MOCK_METHOD0(GetDownloadManagerDelegate, DownloadManagerDelegate*());
   MOCK_METHOD0(GetGuestManager, BrowserPluginGuestManager* ());
-  MOCK_METHOD0(GetSpecialStoragePolicy, quota::SpecialStoragePolicy*());
+  MOCK_METHOD0(GetSpecialStoragePolicy, storage::SpecialStoragePolicy*());
   MOCK_METHOD0(GetPushMessagingService, PushMessagingService*());
   MOCK_METHOD0(GetSSLHostStateDelegate, SSLHostStateDelegate*());
 };

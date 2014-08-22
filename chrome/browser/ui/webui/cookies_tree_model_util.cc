@@ -208,8 +208,8 @@ bool CookiesTreeModelUtil::GetCookieTreeNodeDictionary(
 
       const BrowsingDataFileSystemHelper::FileSystemInfo& file_system_info =
           *node.GetDetailedInfo().file_system_info;
-      const fileapi::FileSystemType kPerm = fileapi::kFileSystemTypePersistent;
-      const fileapi::FileSystemType kTemp = fileapi::kFileSystemTypeTemporary;
+      const storage::FileSystemType kPerm = storage::kFileSystemTypePersistent;
+      const storage::FileSystemType kTemp = storage::kFileSystemTypeTemporary;
 
       dict->SetString(kKeyOrigin, file_system_info.origin.spec());
       dict->SetString(kKeyPersistent,

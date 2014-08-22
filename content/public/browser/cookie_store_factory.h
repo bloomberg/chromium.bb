@@ -18,7 +18,7 @@ class CookieMonsterDelegate;
 class CookieStore;
 }
 
-namespace quota {
+namespace storage {
 class SpecialStoragePolicy;
 }
 
@@ -56,13 +56,13 @@ struct CONTENT_EXPORT CookieStoreConfig {
   // created using this config.
   CookieStoreConfig(const base::FilePath& path,
                     SessionCookieMode session_cookie_mode,
-                    quota::SpecialStoragePolicy* storage_policy,
+                    storage::SpecialStoragePolicy* storage_policy,
                     net::CookieMonsterDelegate* cookie_delegate);
   ~CookieStoreConfig();
 
   const base::FilePath path;
   const SessionCookieMode session_cookie_mode;
-  const scoped_refptr<quota::SpecialStoragePolicy> storage_policy;
+  const scoped_refptr<storage::SpecialStoragePolicy> storage_policy;
   const scoped_refptr<net::CookieMonsterDelegate> cookie_delegate;
 
   // The following are infrequently used cookie store parameters.

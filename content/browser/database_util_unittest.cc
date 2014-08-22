@@ -9,7 +9,7 @@
 #include "webkit/common/database/database_identifier.h"
 
 using base::ASCIIToUTF16;
-using webkit_database::DatabaseUtil;
+using storage::DatabaseUtil;
 
 static void TestVfsFilePath(bool expected_result,
                             const char* vfs_file_name,
@@ -30,8 +30,8 @@ static void TestVfsFilePath(bool expected_result,
 }
 
 static GURL ToAndFromOriginIdentifier(const GURL origin_url) {
-  std::string id = webkit_database::GetIdentifierFromOrigin(origin_url);
-  return webkit_database::GetOriginFromIdentifier(id);
+  std::string id = storage::GetIdentifierFromOrigin(origin_url);
+  return storage::GetOriginFromIdentifier(id);
 }
 
 static void TestValidOriginIdentifier(bool expected_result,

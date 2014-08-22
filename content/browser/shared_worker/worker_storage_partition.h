@@ -8,21 +8,21 @@
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 
-namespace quota {
+namespace storage {
 class QuotaManager;
 }
 
-namespace fileapi {
+namespace storage {
 class FileSystemContext;
-}  // namespace fileapi
+}  // namespace storage
 
 namespace net {
 class URLRequestContextGetter;
 }
 
-namespace webkit_database {
+namespace storage {
 class DatabaseTracker;
-}  // namespace webkit_database
+}  // namespace storage
 
 namespace content {
 class ChromeAppCacheService;
@@ -47,9 +47,9 @@ class CONTENT_EXPORT WorkerStoragePartition {
       net::URLRequestContextGetter* url_request_context,
       net::URLRequestContextGetter* media_url_request_context,
       ChromeAppCacheService* appcache_service,
-      quota::QuotaManager* quota_manager,
-      fileapi::FileSystemContext* filesystem_context,
-      webkit_database::DatabaseTracker* database_tracker,
+      storage::QuotaManager* quota_manager,
+      storage::FileSystemContext* filesystem_context,
+      storage::DatabaseTracker* database_tracker,
       IndexedDBContextImpl* indexed_db_context,
       ServiceWorkerContextWrapper* service_worker_context);
   ~WorkerStoragePartition();
@@ -74,15 +74,13 @@ class CONTENT_EXPORT WorkerStoragePartition {
     return appcache_service_.get();
   }
 
-  quota::QuotaManager* quota_manager() const {
-    return quota_manager_.get();
-  }
+  storage::QuotaManager* quota_manager() const { return quota_manager_.get(); }
 
-  fileapi::FileSystemContext* filesystem_context() const {
+  storage::FileSystemContext* filesystem_context() const {
     return filesystem_context_.get();
   }
 
-  webkit_database::DatabaseTracker* database_tracker() const {
+  storage::DatabaseTracker* database_tracker() const {
     return database_tracker_.get();
   }
 
@@ -100,9 +98,9 @@ class CONTENT_EXPORT WorkerStoragePartition {
   scoped_refptr<net::URLRequestContextGetter> url_request_context_;
   scoped_refptr<net::URLRequestContextGetter> media_url_request_context_;
   scoped_refptr<ChromeAppCacheService> appcache_service_;
-  scoped_refptr<quota::QuotaManager> quota_manager_;
-  scoped_refptr<fileapi::FileSystemContext> filesystem_context_;
-  scoped_refptr<webkit_database::DatabaseTracker> database_tracker_;
+  scoped_refptr<storage::QuotaManager> quota_manager_;
+  scoped_refptr<storage::FileSystemContext> filesystem_context_;
+  scoped_refptr<storage::DatabaseTracker> database_tracker_;
   scoped_refptr<IndexedDBContextImpl> indexed_db_context_;
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
 };
@@ -122,9 +120,9 @@ class CONTENT_EXPORT WorkerStoragePartitionId {
   net::URLRequestContextGetter* url_request_context_;
   net::URLRequestContextGetter* media_url_request_context_;
   ChromeAppCacheService* appcache_service_;
-  quota::QuotaManager* quota_manager_;
-  fileapi::FileSystemContext* filesystem_context_;
-  webkit_database::DatabaseTracker* database_tracker_;
+  storage::QuotaManager* quota_manager_;
+  storage::FileSystemContext* filesystem_context_;
+  storage::DatabaseTracker* database_tracker_;
   IndexedDBContextImpl* indexed_db_context_;
   ServiceWorkerContextWrapper* service_worker_context_;
 };

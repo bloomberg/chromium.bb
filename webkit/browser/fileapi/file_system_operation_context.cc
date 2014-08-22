@@ -7,14 +7,15 @@
 #include "base/sequenced_task_runner.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 
-namespace fileapi {
+namespace storage {
 
 FileSystemOperationContext::FileSystemOperationContext(
     FileSystemContext* context)
     : file_system_context_(context),
       task_runner_(file_system_context_->default_file_task_runner()),
       allowed_bytes_growth_(0),
-      quota_limit_type_(quota::kQuotaLimitTypeUnknown) {}
+      quota_limit_type_(storage::kQuotaLimitTypeUnknown) {
+}
 
 FileSystemOperationContext::FileSystemOperationContext(
     FileSystemContext* context,
@@ -22,11 +23,12 @@ FileSystemOperationContext::FileSystemOperationContext(
     : file_system_context_(context),
       task_runner_(task_runner),
       allowed_bytes_growth_(0),
-      quota_limit_type_(quota::kQuotaLimitTypeUnknown) {}
+      quota_limit_type_(storage::kQuotaLimitTypeUnknown) {
+}
 
 FileSystemOperationContext::~FileSystemOperationContext() {
   DetachUserDataThread();
   setter_thread_checker_.DetachFromThread();
 }
 
-}  // namespace fileapi
+}  // namespace storage

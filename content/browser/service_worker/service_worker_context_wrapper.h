@@ -24,7 +24,7 @@ namespace net {
 class URLRequestContextGetter;
 }
 
-namespace quota {
+namespace storage {
 class QuotaManagerProxy;
 }
 
@@ -48,7 +48,7 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   // Init and Shutdown are for use on the UI thread when the profile,
   // storagepartition is being setup and torn down.
   void Init(const base::FilePath& user_data_directory,
-            quota::QuotaManagerProxy* quota_manager_proxy);
+            storage::QuotaManagerProxy* quota_manager_proxy);
   void Shutdown();
 
   // Deletes all files on disk and restarts the system asynchronously. This
@@ -102,7 +102,7 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
       const scoped_refptr<base::SequencedTaskRunner>& stores_task_runner,
       const scoped_refptr<base::SequencedTaskRunner>& database_task_runner,
       const scoped_refptr<base::SingleThreadTaskRunner>& disk_cache_thread,
-      quota::QuotaManagerProxy* quota_manager_proxy);
+      storage::QuotaManagerProxy* quota_manager_proxy);
   void ShutdownOnIO();
 
   void DidDeleteAndStartOver(ServiceWorkerStatusCode status);

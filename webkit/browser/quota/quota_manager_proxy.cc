@@ -12,7 +12,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/task_runner_util.h"
 
-namespace quota {
+namespace storage {
 
 namespace {
 
@@ -157,4 +157,4 @@ QuotaManagerProxy::QuotaManagerProxy(
 QuotaManagerProxy::~QuotaManagerProxy() {
 }
 
-}  // namespace quota
+}  // namespace storage

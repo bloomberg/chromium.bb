@@ -49,7 +49,7 @@ class MockHttpProtocolHandler
  public:
   MockHttpProtocolHandler(
       base::WeakPtr<ServiceWorkerProviderHost> provider_host,
-      base::WeakPtr<webkit_blob::BlobStorageContext> blob_storage_context)
+      base::WeakPtr<storage::BlobStorageContext> blob_storage_context)
       : provider_host_(provider_host),
         blob_storage_context_(blob_storage_context) {}
   virtual ~MockHttpProtocolHandler() {}
@@ -69,16 +69,16 @@ class MockHttpProtocolHandler
 
  private:
   base::WeakPtr<ServiceWorkerProviderHost> provider_host_;
-  base::WeakPtr<webkit_blob::BlobStorageContext> blob_storage_context_;
+  base::WeakPtr<storage::BlobStorageContext> blob_storage_context_;
 };
 
 // Returns a BlobProtocolHandler that uses |blob_storage_context|. Caller owns
 // the memory.
-webkit_blob::BlobProtocolHandler* CreateMockBlobProtocolHandler(
-    webkit_blob::BlobStorageContext* blob_storage_context) {
+storage::BlobProtocolHandler* CreateMockBlobProtocolHandler(
+    storage::BlobStorageContext* blob_storage_context) {
   // The FileSystemContext and MessageLoopProxy are not actually used but a
   // MessageLoopProxy is needed to avoid a DCHECK in BlobURLRequestJob ctor.
-  return new webkit_blob::BlobProtocolHandler(
+  return new storage::BlobProtocolHandler(
       blob_storage_context, NULL, base::MessageLoopProxy::current().get());
 }
 
@@ -88,7 +88,7 @@ class ServiceWorkerURLRequestJobTest : public testing::Test {
  protected:
   ServiceWorkerURLRequestJobTest()
       : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
-        blob_data_(new webkit_blob::BlobData("blob-id:myblob")) {}
+        blob_data_(new storage::BlobData("blob-id:myblob")) {}
   virtual ~ServiceWorkerURLRequestJobTest() {}
 
   virtual void SetUp() OVERRIDE {
@@ -117,7 +117,7 @@ class ServiceWorkerURLRequestJobTest : public testing::Test {
         ChromeBlobStorageContext::GetFor(browser_context_.get());
     // Wait for chrome_blob_storage_context to finish initializing.
     base::RunLoop().RunUntilIdle();
-    webkit_blob::BlobStorageContext* blob_storage_context =
+    storage::BlobStorageContext* blob_storage_context =
         chrome_blob_storage_context->context();
 
     url_request_job_factory_.reset(new net::URLRequestJobFactoryImpl);
@@ -170,7 +170,7 @@ class ServiceWorkerURLRequestJobTest : public testing::Test {
   MockURLRequestDelegate url_request_delegate_;
   scoped_ptr<net::URLRequest> request_;
 
-  scoped_refptr<webkit_blob::BlobData> blob_data_;
+  scoped_refptr<storage::BlobData> blob_data_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerURLRequestJobTest);
@@ -218,7 +218,7 @@ TEST_F(ServiceWorkerURLRequestJobTest, BlobResponse) {
     blob_data_->AppendData(kTestData);
     expected_response += kTestData;
   }
-  scoped_ptr<webkit_blob::BlobDataHandle> blob_handle =
+  scoped_ptr<storage::BlobDataHandle> blob_handle =
       blob_storage_context->context()->AddFinishedBlob(blob_data_);
   SetUpWithHelper(new BlobResponder(kProcessID, blob_handle->uuid()));
 

@@ -13,8 +13,8 @@
 #include "webkit/browser/database/databases_table.h"
 
 using base::ASCIIToUTF16;
-using webkit_database::DatabaseDetails;
-using webkit_database::DatabasesTable;
+using storage::DatabaseDetails;
+using storage::DatabasesTable;
 
 namespace content {
 

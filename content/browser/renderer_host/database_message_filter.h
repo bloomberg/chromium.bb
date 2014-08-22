@@ -14,11 +14,10 @@
 
 namespace content {
 
-class DatabaseMessageFilter
-    : public BrowserMessageFilter,
-      public webkit_database::DatabaseTracker::Observer {
+class DatabaseMessageFilter : public BrowserMessageFilter,
+                              public storage::DatabaseTracker::Observer {
  public:
-  explicit DatabaseMessageFilter(webkit_database::DatabaseTracker* db_tracker);
+  explicit DatabaseMessageFilter(storage::DatabaseTracker* db_tracker);
 
   // BrowserMessageFilter implementation.
   virtual void OnChannelClosing() OVERRIDE;
@@ -27,7 +26,7 @@ class DatabaseMessageFilter
       BrowserThread::ID* thread) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
-  webkit_database::DatabaseTracker* database_tracker() const {
+  storage::DatabaseTracker* database_tracker() const {
     return db_tracker_.get();
   }
 
@@ -55,7 +54,7 @@ class DatabaseMessageFilter
   void OnDatabaseGetSpaceAvailable(const std::string& origin_identifier,
                                    IPC::Message* reply_msg);
   void OnDatabaseGetUsageAndQuota(IPC::Message* reply_msg,
-                                  quota::QuotaStatusCode status,
+                                  storage::QuotaStatusCode status,
                                   int64 usage,
                                   int64 quota);
 
@@ -86,14 +85,14 @@ class DatabaseMessageFilter
                           int reschedule_count);
 
   // The database tracker for the current browser context.
-  scoped_refptr<webkit_database::DatabaseTracker> db_tracker_;
+  scoped_refptr<storage::DatabaseTracker> db_tracker_;
 
   // True if and only if this instance was added as an observer
   // to DatabaseTracker.
   bool observer_added_;
 
   // Keeps track of all DB connections opened by this renderer
-  webkit_database::DatabaseConnections database_connections_;
+  storage::DatabaseConnections database_connections_;
 };
 
 }  // namespace content

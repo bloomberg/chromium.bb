@@ -22,8 +22,8 @@ class IndexedDBContextImpl;
 // A QuotaClient implementation to integrate IndexedDB
 // with the quota  management system. This interface is used
 // on the IO thread by the quota manager.
-class IndexedDBQuotaClient : public quota::QuotaClient,
-                             public quota::QuotaTaskObserver {
+class IndexedDBQuotaClient : public storage::QuotaClient,
+                             public storage::QuotaTaskObserver {
  public:
   CONTENT_EXPORT explicit IndexedDBQuotaClient(
       IndexedDBContextImpl* indexed_db_context);
@@ -32,22 +32,22 @@ class IndexedDBQuotaClient : public quota::QuotaClient,
   // QuotaClient method overrides
   virtual ID id() const OVERRIDE;
   virtual void OnQuotaManagerDestroyed() OVERRIDE;
-  CONTENT_EXPORT virtual void GetOriginUsage(const GURL& origin_url,
-                                             quota::StorageType type,
-                                             const GetUsageCallback& callback)
-      OVERRIDE;
+  CONTENT_EXPORT virtual void GetOriginUsage(
+      const GURL& origin_url,
+      storage::StorageType type,
+      const GetUsageCallback& callback) OVERRIDE;
   CONTENT_EXPORT virtual void GetOriginsForType(
-      quota::StorageType type,
+      storage::StorageType type,
       const GetOriginsCallback& callback) OVERRIDE;
   CONTENT_EXPORT virtual void GetOriginsForHost(
-      quota::StorageType type,
+      storage::StorageType type,
       const std::string& host,
       const GetOriginsCallback& callback) OVERRIDE;
-  CONTENT_EXPORT virtual void DeleteOriginData(const GURL& origin,
-                                               quota::StorageType type,
-                                               const DeletionCallback& callback)
-      OVERRIDE;
-  virtual bool DoesSupport(quota::StorageType type) const OVERRIDE;
+  CONTENT_EXPORT virtual void DeleteOriginData(
+      const GURL& origin,
+      storage::StorageType type,
+      const DeletionCallback& callback) OVERRIDE;
+  virtual bool DoesSupport(storage::StorageType type) const OVERRIDE;
 
  private:
   scoped_refptr<IndexedDBContextImpl> indexed_db_context_;

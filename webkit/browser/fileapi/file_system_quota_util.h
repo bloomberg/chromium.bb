@@ -19,11 +19,11 @@ namespace base {
 class SequencedTaskRunner;
 }
 
-namespace quota {
+namespace storage {
 class QuotaManagerProxy;
 }
 
-namespace fileapi {
+namespace storage {
 
 class FileSystemContext;
 class QuotaReservation;
@@ -40,24 +40,22 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemQuotaUtil {
   // to the quota manager via |proxy|.
   virtual base::File::Error DeleteOriginDataOnFileTaskRunner(
       FileSystemContext* context,
-      quota::QuotaManagerProxy* proxy,
+      storage::QuotaManagerProxy* proxy,
       const GURL& origin_url,
       FileSystemType type) = 0;
 
-  virtual void GetOriginsForTypeOnFileTaskRunner(
-      fileapi::FileSystemType type,
-      std::set<GURL>* origins) = 0;
+  virtual void GetOriginsForTypeOnFileTaskRunner(storage::FileSystemType type,
+                                                 std::set<GURL>* origins) = 0;
 
-  virtual void GetOriginsForHostOnFileTaskRunner(
-      fileapi::FileSystemType type,
-      const std::string& host,
-      std::set<GURL>* origins) = 0;
+  virtual void GetOriginsForHostOnFileTaskRunner(storage::FileSystemType type,
+                                                 const std::string& host,
+                                                 std::set<GURL>* origins) = 0;
 
   // Returns the amount of data used for the origin for usage tracking.
   virtual int64 GetOriginUsageOnFileTaskRunner(
-      fileapi::FileSystemContext* file_system_context,
+      storage::FileSystemContext* file_system_context,
       const GURL& origin_url,
-      fileapi::FileSystemType type) = 0;
+      storage::FileSystemType type) = 0;
 
   // Creates new reservation object for the origin and the type.
   virtual scoped_refptr<QuotaReservation>
@@ -88,6 +86,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemQuotaUtil {
       FileSystemType type) const = 0;
 };
 
-}  // namespace fileapi
+}  // namespace storage
 
 #endif  // WEBKIT_BROWSER_FILEAPI_FILE_SYSTEM_QUOTA_UTIL_H_

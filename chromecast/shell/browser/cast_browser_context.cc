@@ -117,7 +117,7 @@ content::BrowserPluginGuestManager* CastBrowserContext::GetGuestManager() {
   return NULL;
 }
 
-quota::SpecialStoragePolicy* CastBrowserContext::GetSpecialStoragePolicy() {
+storage::SpecialStoragePolicy* CastBrowserContext::GetSpecialStoragePolicy() {
   NOTIMPLEMENTED();
   return NULL;
 }

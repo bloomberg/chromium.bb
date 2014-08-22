@@ -15,7 +15,7 @@ class FilePath;
 class SequencedTaskRunner;
 }
 
-namespace quota {
+namespace storage {
 class SpecialStoragePolicy;
 }
 
@@ -31,7 +31,7 @@ class SQLiteChannelIDStore
   SQLiteChannelIDStore(
       const base::FilePath& path,
       const scoped_refptr<base::SequencedTaskRunner>& background_task_runner,
-      quota::SpecialStoragePolicy* special_storage_policy);
+      storage::SpecialStoragePolicy* special_storage_policy);
 
   // net::DefaultChannelIDStore::PersistentStore:
   virtual void Load(const LoadedCallback& loaded_callback) OVERRIDE;

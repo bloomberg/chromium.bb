@@ -14,7 +14,7 @@
 
 class Profile;
 
-namespace fileapi {
+namespace storage {
 class FileSystemURL;
 }
 
@@ -110,7 +110,7 @@ Profile* ExtractProfileFromPath(const base::FilePath& path);
 // Extracts the Drive path (e.g., "drive/foo.txt") from the filesystem URL.
 // Returns an empty path if |url| does not point under Drive mount point.
 base::FilePath ExtractDrivePathFromFileSystemUrl(
-    const fileapi::FileSystemURL& url);
+    const storage::FileSystemURL& url);
 
 // Escapes a file name in Drive cache.
 // Replaces percent ('%'), period ('.') and slash ('/') with %XX (hex)

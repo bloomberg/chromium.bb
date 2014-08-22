@@ -16,7 +16,7 @@ namespace IPC {
 class Message;
 }
 
-namespace quota {
+namespace storage {
 class QuotaManager;
 }
 
@@ -27,7 +27,7 @@ struct StorageQuotaParams;
 class QuotaDispatcherHost : public BrowserMessageFilter {
  public:
   QuotaDispatcherHost(int process_id,
-                      quota::QuotaManager* quota_manager,
+                      storage::QuotaManager* quota_manager,
                       QuotaPermissionContext* permission_context);
 
   // BrowserMessageFilter:
@@ -41,16 +41,15 @@ class QuotaDispatcherHost : public BrowserMessageFilter {
   class QueryUsageAndQuotaDispatcher;
   class RequestQuotaDispatcher;
 
-  void OnQueryStorageUsageAndQuota(
-      int request_id,
-      const GURL& origin_url,
-      quota::StorageType type);
+  void OnQueryStorageUsageAndQuota(int request_id,
+                                   const GURL& origin_url,
+                                   storage::StorageType type);
   void OnRequestStorageQuota(const StorageQuotaParams& params);
 
   // The ID of this process.
   int process_id_;
 
-  quota::QuotaManager* quota_manager_;
+  storage::QuotaManager* quota_manager_;
   scoped_refptr<QuotaPermissionContext> permission_context_;
 
   IDMap<RequestDispatcher, IDMapOwnPointer> outstanding_requests_;

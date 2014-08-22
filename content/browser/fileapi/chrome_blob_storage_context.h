@@ -10,7 +10,7 @@
 #include "base/sequenced_task_runner_helpers.h"
 #include "content/common/content_export.h"
 
-namespace webkit_blob {
+namespace storage {
 class BlobStorageContext;
 }
 
@@ -37,9 +37,7 @@ class CONTENT_EXPORT ChromeBlobStorageContext
 
   void InitializeOnIOThread();
 
-  webkit_blob::BlobStorageContext* context() const {
-    return context_.get();
-  }
+  storage::BlobStorageContext* context() const { return context_.get(); }
 
   // Returns a NULL scoped_ptr on failure.
   scoped_ptr<BlobHandle> CreateMemoryBackedBlob(const char* data,
@@ -56,7 +54,7 @@ class CONTENT_EXPORT ChromeBlobStorageContext
 
   void DeleteOnCorrectThread() const;
 
-  scoped_ptr<webkit_blob::BlobStorageContext> context_;
+  scoped_ptr<storage::BlobStorageContext> context_;
 };
 
 struct ChromeBlobStorageContextDeleter {

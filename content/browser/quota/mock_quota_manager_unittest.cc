@@ -15,9 +15,9 @@
 #include "content/public/test/mock_storage_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using quota::kQuotaStatusOk;
-using quota::kStorageTypePersistent;
-using quota::kStorageTypeTemporary;
+using storage::kQuotaStatusOk;
+using storage::kStorageTypePersistent;
+using storage::kStorageTypeTemporary;
 
 namespace content {
 

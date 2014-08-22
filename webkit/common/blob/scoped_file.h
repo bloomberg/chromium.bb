@@ -17,7 +17,7 @@ namespace base {
 class TaskRunner;
 }
 
-namespace webkit_blob {
+namespace storage {
 
 // A scoped reference for a FilePath that can optionally schedule the file
 // to be deleted and/or to notify a consumer when it is going to be scoped out.
@@ -89,6 +89,6 @@ class WEBKIT_STORAGE_COMMON_EXPORT ScopedFile {
   ScopeOutCallbackList scope_out_callbacks_;
 };
 
-}  // namespace webkit_blob
+}  // namespace storage
 
 #endif  // WEBKIT_COMMON_BLOB_SCOPED_FILE_H_

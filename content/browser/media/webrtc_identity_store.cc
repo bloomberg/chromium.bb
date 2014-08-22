@@ -171,7 +171,7 @@ class WebRTCIdentityRequestHandle {
 };
 
 WebRTCIdentityStore::WebRTCIdentityStore(const base::FilePath& path,
-                                         quota::SpecialStoragePolicy* policy)
+                                         storage::SpecialStoragePolicy* policy)
     : validity_period_(base::TimeDelta::FromDays(30)),
       task_runner_(base::WorkerPool::GetTaskRunner(true)),
       backend_(new WebRTCIdentityStoreBackend(path, policy, validity_period_)) {

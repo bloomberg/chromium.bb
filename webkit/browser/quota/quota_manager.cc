@@ -35,7 +35,7 @@
       (name), static_cast<int>((sample) / kMBytes), \
       1, 10 * 1024 * 1024 /* 10TB */, 100)
 
-namespace quota {
+namespace storage {
 
 namespace {
 
@@ -1628,4 +1628,4 @@ void QuotaManager::PostTaskAndReplyWithResultForDBThread(
       reply);
 }
 
-}  // namespace quota
+}  // namespace storage

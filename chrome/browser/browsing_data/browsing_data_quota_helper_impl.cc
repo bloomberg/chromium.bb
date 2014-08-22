@@ -57,7 +57,7 @@ void BrowsingDataQuotaHelperImpl::RevokeHostQuota(const std::string& host) {
 BrowsingDataQuotaHelperImpl::BrowsingDataQuotaHelperImpl(
     base::MessageLoopProxy* ui_thread,
     base::MessageLoopProxy* io_thread,
-    quota::QuotaManager* quota_manager)
+    storage::QuotaManager* quota_manager)
     : BrowsingDataQuotaHelper(io_thread),
       quota_manager_(quota_manager),
       is_fetching_(false),
@@ -78,39 +78,39 @@ void BrowsingDataQuotaHelperImpl::FetchQuotaInfo() {
   }
 
   quota_manager_->GetOriginsModifiedSince(
-      quota::kStorageTypeTemporary,
+      storage::kStorageTypeTemporary,
       base::Time(),
       base::Bind(&BrowsingDataQuotaHelperImpl::GotOrigins,
                  weak_factory_.GetWeakPtr()));
 }
 
-void BrowsingDataQuotaHelperImpl::GotOrigins(
-    const std::set<GURL>& origins, quota::StorageType type) {
+void BrowsingDataQuotaHelperImpl::GotOrigins(const std::set<GURL>& origins,
+                                             storage::StorageType type) {
   for (std::set<GURL>::const_iterator itr = origins.begin();
        itr != origins.end();
        ++itr)
     if (BrowsingDataHelper::HasWebScheme(*itr))
       pending_hosts_.insert(std::make_pair(itr->host(), type));
 
-  DCHECK(type == quota::kStorageTypeTemporary ||
-         type == quota::kStorageTypePersistent ||
-         type == quota::kStorageTypeSyncable);
+  DCHECK(type == storage::kStorageTypeTemporary ||
+         type == storage::kStorageTypePersistent ||
+         type == storage::kStorageTypeSyncable);
 
   // Calling GetOriginsModifiedSince() for all types by chaining callbacks.
-  if (type == quota::kStorageTypeTemporary) {
+  if (type == storage::kStorageTypeTemporary) {
     quota_manager_->GetOriginsModifiedSince(
-        quota::kStorageTypePersistent,
+        storage::kStorageTypePersistent,
         base::Time(),
         base::Bind(&BrowsingDataQuotaHelperImpl::GotOrigins,
                    weak_factory_.GetWeakPtr()));
-  } else if (type == quota::kStorageTypePersistent) {
+  } else if (type == storage::kStorageTypePersistent) {
     quota_manager_->GetOriginsModifiedSince(
-        quota::kStorageTypeSyncable,
+        storage::kStorageTypeSyncable,
         base::Time(),
         base::Bind(&BrowsingDataQuotaHelperImpl::GotOrigins,
                    weak_factory_.GetWeakPtr()));
   } else {
-    DCHECK(type == quota::kStorageTypeSyncable);
+    DCHECK(type == storage::kStorageTypeSyncable);
     ProcessPendingHosts();
   }
 }
@@ -123,13 +123,13 @@ void BrowsingDataQuotaHelperImpl::ProcessPendingHosts() {
 
   PendingHosts::iterator itr = pending_hosts_.begin();
   std::string host = itr->first;
-  quota::StorageType type = itr->second;
+  storage::StorageType type = itr->second;
   pending_hosts_.erase(itr);
   GetHostUsage(host, type);
 }
 
 void BrowsingDataQuotaHelperImpl::GetHostUsage(const std::string& host,
-                                               quota::StorageType type) {
+                                               storage::StorageType type) {
   DCHECK(quota_manager_.get());
   quota_manager_->GetHostUsage(
       host, type,
@@ -138,16 +138,16 @@ void BrowsingDataQuotaHelperImpl::GetHostUsage(const std::string& host,
 }
 
 void BrowsingDataQuotaHelperImpl::GotHostUsage(const std::string& host,
-                                               quota::StorageType type,
+                                               storage::StorageType type,
                                                int64 usage) {
   switch (type) {
-    case quota::kStorageTypeTemporary:
+    case storage::kStorageTypeTemporary:
       quota_info_[host].temporary_usage = usage;
       break;
-    case quota::kStorageTypePersistent:
+    case storage::kStorageTypePersistent:
       quota_info_[host].persistent_usage = usage;
       break;
-    case quota::kStorageTypeSyncable:
+    case storage::kStorageTypeSyncable:
       quota_info_[host].syncable_usage = usage;
       break;
     default:
@@ -187,6 +187,6 @@ void BrowsingDataQuotaHelperImpl::OnComplete() {
 }
 
 void BrowsingDataQuotaHelperImpl::DidRevokeHostQuota(
-    quota::QuotaStatusCode status_unused,
+    storage::QuotaStatusCode status_unused,
     int64 quota_unused) {
 }

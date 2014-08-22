@@ -49,8 +49,8 @@
 #include "chrome/browser/media_galleries/fileapi/iphoto_file_util.h"
 #endif  // defined(OS_MACOSX)
 
-using fileapi::FileSystemContext;
-using fileapi::FileSystemURL;
+using storage::FileSystemContext;
+using storage::FileSystemURL;
 
 namespace {
 
@@ -179,11 +179,11 @@ std::string MediaFileSystemBackend::ConstructMountName(
 // static
 bool MediaFileSystemBackend::AttemptAutoMountForURLRequest(
     const net::URLRequest* url_request,
-    const fileapi::FileSystemURL& filesystem_url,
+    const storage::FileSystemURL& filesystem_url,
     const std::string& storage_domain,
     const base::Callback<void(base::File::Error result)>& callback) {
   if (storage_domain.empty() ||
-      filesystem_url.type() != fileapi::kFileSystemTypeExternal ||
+      filesystem_url.type() != storage::kFileSystemTypeExternal ||
       storage_domain != filesystem_url.origin().host()) {
     return false;
   }
@@ -213,17 +213,16 @@ bool MediaFileSystemBackend::AttemptAutoMountForURLRequest(
   return true;
 }
 
-bool MediaFileSystemBackend::CanHandleType(
-    fileapi::FileSystemType type) const {
+bool MediaFileSystemBackend::CanHandleType(storage::FileSystemType type) const {
   switch (type) {
-    case fileapi::kFileSystemTypeNativeMedia:
-    case fileapi::kFileSystemTypeDeviceMedia:
+    case storage::kFileSystemTypeNativeMedia:
+    case storage::kFileSystemTypeDeviceMedia:
 #if defined(OS_WIN) || defined(OS_MACOSX)
-    case fileapi::kFileSystemTypePicasa:
-    case fileapi::kFileSystemTypeItunes:
+    case storage::kFileSystemTypePicasa:
+    case storage::kFileSystemTypeItunes:
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
 #if defined(OS_MACOSX)
-    case fileapi::kFileSystemTypeIphoto:
+    case storage::kFileSystemTypeIphoto:
 #endif  // defined(OS_MACOSX)
       return true;
     default:
@@ -231,12 +230,12 @@ bool MediaFileSystemBackend::CanHandleType(
   }
 }
 
-void MediaFileSystemBackend::Initialize(fileapi::FileSystemContext* context) {
+void MediaFileSystemBackend::Initialize(storage::FileSystemContext* context) {
 }
 
 void MediaFileSystemBackend::ResolveURL(
     const FileSystemURL& url,
-    fileapi::OpenFileSystemMode mode,
+    storage::OpenFileSystemMode mode,
     const OpenFileSystemCallback& callback) {
   // We never allow opening a new FileSystem via usual ResolveURL.
   base::MessageLoopProxy::current()->PostTask(
@@ -247,21 +246,21 @@ void MediaFileSystemBackend::ResolveURL(
                  base::File::FILE_ERROR_SECURITY));
 }
 
-fileapi::AsyncFileUtil* MediaFileSystemBackend::GetAsyncFileUtil(
-    fileapi::FileSystemType type) {
+storage::AsyncFileUtil* MediaFileSystemBackend::GetAsyncFileUtil(
+    storage::FileSystemType type) {
   switch (type) {
-    case fileapi::kFileSystemTypeNativeMedia:
+    case storage::kFileSystemTypeNativeMedia:
       return native_media_file_util_.get();
-    case fileapi::kFileSystemTypeDeviceMedia:
+    case storage::kFileSystemTypeDeviceMedia:
       return device_media_async_file_util_.get();
 #if defined(OS_WIN) || defined(OS_MACOSX)
-    case fileapi::kFileSystemTypeItunes:
+    case storage::kFileSystemTypeItunes:
       return itunes_file_util_.get();
-    case fileapi::kFileSystemTypePicasa:
+    case storage::kFileSystemTypePicasa:
       return picasa_file_util_.get();
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
 #if defined(OS_MACOSX)
-    case fileapi::kFileSystemTypeIphoto:
+    case storage::kFileSystemTypeIphoto:
       return iphoto_file_util_.get();
 #endif  // defined(OS_MACOSX)
     default:
@@ -270,16 +269,17 @@ fileapi::AsyncFileUtil* MediaFileSystemBackend::GetAsyncFileUtil(
   return NULL;
 }
 
-fileapi::CopyOrMoveFileValidatorFactory*
+storage::CopyOrMoveFileValidatorFactory*
 MediaFileSystemBackend::GetCopyOrMoveFileValidatorFactory(
-    fileapi::FileSystemType type, base::File::Error* error_code) {
+    storage::FileSystemType type,
+    base::File::Error* error_code) {
   DCHECK(error_code);
   *error_code = base::File::FILE_OK;
   switch (type) {
-    case fileapi::kFileSystemTypeNativeMedia:
-    case fileapi::kFileSystemTypeDeviceMedia:
-    case fileapi::kFileSystemTypeIphoto:
-    case fileapi::kFileSystemTypeItunes:
+    case storage::kFileSystemTypeNativeMedia:
+    case storage::kFileSystemTypeDeviceMedia:
+    case storage::kFileSystemTypeIphoto:
+    case storage::kFileSystemTypeItunes:
       if (!media_copy_or_move_file_validator_factory_) {
         *error_code = base::File::FILE_ERROR_SECURITY;
         return NULL;
@@ -291,21 +291,20 @@ MediaFileSystemBackend::GetCopyOrMoveFileValidatorFactory(
   return NULL;
 }
 
-fileapi::FileSystemOperation*
-MediaFileSystemBackend::CreateFileSystemOperation(
+storage::FileSystemOperation* MediaFileSystemBackend::CreateFileSystemOperation(
     const FileSystemURL& url,
     FileSystemContext* context,
     base::File::Error* error_code) const {
-  scoped_ptr<fileapi::FileSystemOperationContext> operation_context(
-      new fileapi::FileSystemOperationContext(
-          context, media_task_runner_.get()));
-  return fileapi::FileSystemOperation::Create(
+  scoped_ptr<storage::FileSystemOperationContext> operation_context(
+      new storage::FileSystemOperationContext(context,
+                                              media_task_runner_.get()));
+  return storage::FileSystemOperation::Create(
       url, context, operation_context.Pass());
 }
 
 bool MediaFileSystemBackend::SupportsStreaming(
-    const fileapi::FileSystemURL& url) const {
-  if (url.type() == fileapi::kFileSystemTypeDeviceMedia) {
+    const storage::FileSystemURL& url) const {
+  if (url.type() == storage::kFileSystemTypeDeviceMedia) {
     DCHECK(device_media_async_file_util_);
     return device_media_async_file_util_->SupportsStreaming(url);
   }
@@ -314,51 +313,52 @@ bool MediaFileSystemBackend::SupportsStreaming(
 }
 
 bool MediaFileSystemBackend::HasInplaceCopyImplementation(
-    fileapi::FileSystemType type) const {
-  DCHECK(type == fileapi::kFileSystemTypeNativeMedia ||
-         type == fileapi::kFileSystemTypeDeviceMedia ||
-         type == fileapi::kFileSystemTypeItunes ||
-         type == fileapi::kFileSystemTypePicasa ||
-         type == fileapi::kFileSystemTypeIphoto);
+    storage::FileSystemType type) const {
+  DCHECK(type == storage::kFileSystemTypeNativeMedia ||
+         type == storage::kFileSystemTypeDeviceMedia ||
+         type == storage::kFileSystemTypeItunes ||
+         type == storage::kFileSystemTypePicasa ||
+         type == storage::kFileSystemTypeIphoto);
   return true;
 }
 
-scoped_ptr<webkit_blob::FileStreamReader>
+scoped_ptr<storage::FileStreamReader>
 MediaFileSystemBackend::CreateFileStreamReader(
     const FileSystemURL& url,
     int64 offset,
     const base::Time& expected_modification_time,
     FileSystemContext* context) const {
-  if (url.type() == fileapi::kFileSystemTypeDeviceMedia) {
+  if (url.type() == storage::kFileSystemTypeDeviceMedia) {
     DCHECK(device_media_async_file_util_);
-    scoped_ptr<webkit_blob::FileStreamReader> reader =
+    scoped_ptr<storage::FileStreamReader> reader =
         device_media_async_file_util_->GetFileStreamReader(
             url, offset, expected_modification_time, context);
     DCHECK(reader);
     return reader.Pass();
   }
 
-  return scoped_ptr<webkit_blob::FileStreamReader>(
-      webkit_blob::FileStreamReader::CreateForLocalFile(
+  return scoped_ptr<storage::FileStreamReader>(
+      storage::FileStreamReader::CreateForLocalFile(
           context->default_file_task_runner(),
-          url.path(), offset, expected_modification_time));
+          url.path(),
+          offset,
+          expected_modification_time));
 }
 
-scoped_ptr<fileapi::FileStreamWriter>
+scoped_ptr<storage::FileStreamWriter>
 MediaFileSystemBackend::CreateFileStreamWriter(
     const FileSystemURL& url,
     int64 offset,
     FileSystemContext* context) const {
-  return scoped_ptr<fileapi::FileStreamWriter>(
-      fileapi::FileStreamWriter::CreateForLocalFile(
+  return scoped_ptr<storage::FileStreamWriter>(
+      storage::FileStreamWriter::CreateForLocalFile(
           context->default_file_task_runner(),
           url.path(),
           offset,
-          fileapi::FileStreamWriter::OPEN_EXISTING_FILE));
+          storage::FileStreamWriter::OPEN_EXISTING_FILE));
 }
 
-fileapi::FileSystemQuotaUtil*
-MediaFileSystemBackend::GetQuotaUtil() {
+storage::FileSystemQuotaUtil* MediaFileSystemBackend::GetQuotaUtil() {
   // No quota support.
   return NULL;
 }

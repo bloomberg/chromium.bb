@@ -73,7 +73,7 @@ bool DeleteGroupAndRelatedRecords(AppCacheDatabase* database,
 // (|force_keep_session_state| is false), deletes session-only appcache data.
 void ClearSessionOnlyOrigins(
     AppCacheDatabase* database,
-    scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy,
+    scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy,
     bool force_keep_session_state) {
   scoped_ptr<AppCacheDatabase> database_to_delete(database);
 
@@ -591,8 +591,9 @@ class AppCacheStorageImpl::StoreGroupAndCacheTask : public StoreOrLoadTask {
                          AppCache* newest_cache);
 
   void GetQuotaThenSchedule();
-  void OnQuotaCallback(
-      quota::QuotaStatusCode status, int64 usage, int64 quota);
+  void OnQuotaCallback(storage::QuotaStatusCode status,
+                       int64 usage,
+                       int64 quota);
 
   // DatabaseTask:
   virtual void Run() OVERRIDE;
@@ -629,7 +630,7 @@ AppCacheStorageImpl::StoreGroupAndCacheTask::StoreGroupAndCacheTask(
 }
 
 void AppCacheStorageImpl::StoreGroupAndCacheTask::GetQuotaThenSchedule() {
-  quota::QuotaManager* quota_manager = NULL;
+  storage::QuotaManager* quota_manager = NULL;
   if (storage_->service()->quota_manager_proxy()) {
     quota_manager =
         storage_->service()->quota_manager_proxy()->quota_manager();
@@ -647,14 +648,17 @@ void AppCacheStorageImpl::StoreGroupAndCacheTask::GetQuotaThenSchedule() {
   // We have to ask the quota manager for the value.
   storage_->pending_quota_queries_.insert(this);
   quota_manager->GetUsageAndQuota(
-      group_record_.origin, quota::kStorageTypeTemporary,
+      group_record_.origin,
+      storage::kStorageTypeTemporary,
       base::Bind(&StoreGroupAndCacheTask::OnQuotaCallback, this));
 }
 
 void AppCacheStorageImpl::StoreGroupAndCacheTask::OnQuotaCallback(
-    quota::QuotaStatusCode status, int64 usage, int64 quota) {
+    storage::QuotaStatusCode status,
+    int64 usage,
+    int64 quota) {
   if (storage_) {
-    if (status == quota::kQuotaStatusOk)
+    if (status == storage::kQuotaStatusOk)
       space_available_ = std::max(static_cast<int64>(0), quota - usage);
     else
       space_available_ = 0;

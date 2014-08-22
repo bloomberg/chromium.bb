@@ -20,7 +20,7 @@ void AwQuotaPermissionContext::RequestQuotaPermission(
     const content::StorageQuotaParams& params,
     int render_process_id,
     const PermissionCallback& callback) {
-  // Android WebView only uses quota::kStorageTypeTemporary type of storage
+  // Android WebView only uses storage::kStorageTypeTemporary type of storage
   // with quota managed automatically, not through this interface. Therefore
   // unconditionally disallow all quota requests here.
   callback.Run(QUOTA_PERMISSION_RESPONSE_DISALLOW);

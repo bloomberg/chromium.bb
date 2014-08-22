@@ -12,7 +12,7 @@ namespace base {
 class FilePath;
 }
 
-namespace fileapi {
+namespace storage {
 class FileSystemURL;
 }
 
@@ -20,15 +20,16 @@ class FileSystemURL;
 // strategies (depending on the file type) to attempt to verify that the file
 // is a valid media file.
 class MediaFileValidatorFactory
-    : public fileapi::CopyOrMoveFileValidatorFactory {
+    : public storage::CopyOrMoveFileValidatorFactory {
  public:
   MediaFileValidatorFactory();
   virtual ~MediaFileValidatorFactory();
 
   // CopyOrMoveFileValidatorFactory implementation.
-  virtual fileapi::CopyOrMoveFileValidator* CreateCopyOrMoveFileValidator(
-            const fileapi::FileSystemURL& src,
-            const base::FilePath& platform_path) OVERRIDE;
+  virtual storage::CopyOrMoveFileValidator* CreateCopyOrMoveFileValidator(
+      const storage::FileSystemURL& src,
+      const base::FilePath& platform_path) OVERRIDE;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(MediaFileValidatorFactory);
 };

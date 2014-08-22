@@ -223,7 +223,7 @@ TEST_F(SyncEngineTest, UpdateServiceState) {
 
 TEST_F(SyncEngineTest, ProcessRemoteChange) {
   SyncStatusCode sync_status;
-  fileapi::FileSystemURL url;
+  storage::FileSystemURL url;
   sync_engine()->ProcessRemoteChange(CreateResultReceiver(&sync_status, &url));
   WaitForWorkerTaskRunner();
   EXPECT_EQ(SYNC_STATUS_OK, sync_status);

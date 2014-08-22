@@ -20,11 +20,11 @@ namespace content {
 class QuotaBackendImplTest;
 }
 
-namespace quota {
+namespace storage {
 class QuotaManagerProxy;
 }
 
-namespace fileapi {
+namespace storage {
 
 class FileSystemUsageCache;
 class ObfuscatedFileUtil;
@@ -39,7 +39,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT QuotaBackendImpl
   QuotaBackendImpl(base::SequencedTaskRunner* file_task_runner,
                    ObfuscatedFileUtil* obfuscated_file_util,
                    FileSystemUsageCache* file_system_usage_cache,
-                   quota::QuotaManagerProxy* quota_manager_proxy);
+                   storage::QuotaManagerProxy* quota_manager_proxy);
   virtual ~QuotaBackendImpl();
 
   // QuotaReservationManager::QuotaBackend overrides.
@@ -75,12 +75,11 @@ class WEBKIT_STORAGE_BROWSER_EXPORT QuotaBackendImpl
     int64 delta;
   };
 
-  void DidGetUsageAndQuotaForReserveQuota(
-      const QuotaReservationInfo& info,
-      const ReserveQuotaCallback& callback,
-      quota::QuotaStatusCode status,
-      int64 usage,
-      int64 quota);
+  void DidGetUsageAndQuotaForReserveQuota(const QuotaReservationInfo& info,
+                                          const ReserveQuotaCallback& callback,
+                                          storage::QuotaStatusCode status,
+                                          int64 usage,
+                                          int64 quota);
 
   void ReserveQuotaInternal(
       const QuotaReservationInfo& info);
@@ -95,13 +94,13 @@ class WEBKIT_STORAGE_BROWSER_EXPORT QuotaBackendImpl
   ObfuscatedFileUtil* obfuscated_file_util_;
   FileSystemUsageCache* file_system_usage_cache_;
 
-  scoped_refptr<quota::QuotaManagerProxy> quota_manager_proxy_;
+  scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy_;
 
   base::WeakPtrFactory<QuotaBackendImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(QuotaBackendImpl);
 };
 
-}  // namespace fileapi
+}  // namespace storage
 
 #endif  // WEBKIT_BROWSER_FILEAPI_QUOTA_QUOTA_BACKEND_IMPL_H_

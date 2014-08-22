@@ -25,9 +25,9 @@
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/quota/quota_manager.h"
 
-using fileapi::FileSystemContext;
-using fileapi::FileSystemURL;
-using fileapi::FileSystemURLSet;
+using storage::FileSystemContext;
+using storage::FileSystemURL;
+using storage::FileSystemURLSet;
 using content::MockBlobURLRequestContext;
 using content::ScopedTextBlob;
 
@@ -106,7 +106,7 @@ class LocalFileChangeTrackerTest : public testing::Test {
     change_tracker()->CollectLastDirtyChanges(file_system_context());
   }
 
-  void GetAllChangedURLs(fileapi::FileSystemURLSet* urls) {
+  void GetAllChangedURLs(storage::FileSystemURLSet* urls) {
     change_tracker()->GetAllChangedURLs(urls);
   }
 

@@ -17,7 +17,7 @@
 #include "webkit/browser/fileapi/file_writer_delegate.h"
 #include "webkit/common/blob/shareable_file_reference.h"
 
-using fileapi::FileSystemURL;
+using storage::FileSystemURL;
 
 namespace sync_file_system {
 
@@ -215,7 +215,7 @@ void SyncableFileSystemOperation::Remove(
 
 void SyncableFileSystemOperation::Write(
     const FileSystemURL& url,
-    scoped_ptr<fileapi::FileWriterDelegate> writer_delegate,
+    scoped_ptr<storage::FileWriterDelegate> writer_delegate,
     scoped_ptr<net::URLRequest> blob_request,
     const WriteCallback& callback) {
   DCHECK(CalledOnValidThread());
@@ -349,10 +349,9 @@ base::File::Error SyncableFileSystemOperation::SyncGetPlatformPath(
 
 SyncableFileSystemOperation::SyncableFileSystemOperation(
     const FileSystemURL& url,
-    fileapi::FileSystemContext* file_system_context,
-    scoped_ptr<fileapi::FileSystemOperationContext> operation_context)
-    : url_(url),
-      weak_factory_(this) {
+    storage::FileSystemContext* file_system_context,
+    scoped_ptr<storage::FileSystemOperationContext> operation_context)
+    : url_(url), weak_factory_(this) {
   DCHECK(file_system_context);
   SyncFileSystemBackend* backend =
       SyncFileSystemBackend::GetBackend(file_system_context);
@@ -363,7 +362,7 @@ SyncableFileSystemOperation::SyncableFileSystemOperation(
     // Returning here to leave operation_runner_ as NULL.
     return;
   }
-  impl_.reset(fileapi::FileSystemOperation::Create(
+  impl_.reset(storage::FileSystemOperation::Create(
       url_, file_system_context, operation_context.Pass()));
   operation_runner_ = backend->sync_context()->operation_runner();
 }

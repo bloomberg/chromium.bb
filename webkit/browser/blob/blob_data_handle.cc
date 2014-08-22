@@ -11,7 +11,7 @@
 #include "webkit/browser/blob/blob_storage_context.h"
 #include "webkit/common/blob/blob_data.h"
 
-namespace webkit_blob {
+namespace storage {
 
 BlobDataHandle::BlobDataHandleShared::BlobDataHandleShared(
     BlobData* blob_data,
@@ -65,4 +65,4 @@ std::string BlobDataHandle::uuid() const {
   return shared_->uuid();
 }
 
-}  // namespace webkit_blob
+}  // namespace storage

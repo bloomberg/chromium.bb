@@ -33,19 +33,18 @@ class RemoteChangeProcessorOnWorker : public RemoteChangeProcessor {
   virtual ~RemoteChangeProcessorOnWorker();
 
   virtual void PrepareForProcessRemoteChange(
-      const fileapi::FileSystemURL& url,
+      const storage::FileSystemURL& url,
       const PrepareChangeCallback& callback) OVERRIDE;
-  virtual void ApplyRemoteChange(
-      const FileChange& change,
-      const base::FilePath& local_path,
-      const fileapi::FileSystemURL& url,
-      const SyncStatusCallback& callback) OVERRIDE;
+  virtual void ApplyRemoteChange(const FileChange& change,
+                                 const base::FilePath& local_path,
+                                 const storage::FileSystemURL& url,
+                                 const SyncStatusCallback& callback) OVERRIDE;
   virtual void FinalizeRemoteSync(
-      const fileapi::FileSystemURL& url,
+      const storage::FileSystemURL& url,
       bool clear_local_changes,
       const base::Closure& completion_callback) OVERRIDE;
   virtual void RecordFakeLocalChange(
-      const fileapi::FileSystemURL& url,
+      const storage::FileSystemURL& url,
       const FileChange& change,
       const SyncStatusCallback& callback) OVERRIDE;
 

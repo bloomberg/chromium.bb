@@ -12,7 +12,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/browser/fileapi/timed_task_helper.h"
 
-using fileapi::TimedTaskHelper;
+using storage::TimedTaskHelper;
 
 namespace content {
 

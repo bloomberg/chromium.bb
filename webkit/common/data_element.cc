@@ -4,7 +4,7 @@
 
 #include "webkit/common/data_element.h"
 
-namespace webkit_common {
+namespace storage {
 
 DataElement::DataElement()
     : type_(TYPE_UNKNOWN),

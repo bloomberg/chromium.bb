@@ -15,7 +15,7 @@
 #include "url/gurl.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 
-using fileapi::FileSystemURL;
+using storage::FileSystemURL;
 
 namespace content {
 
@@ -23,8 +23,9 @@ namespace {
 
 FileSystemURL CreateFileSystemURL(const char* path) {
   const GURL kOrigin("http://foo/");
-  return fileapi::FileSystemURL::CreateForTest(
-      kOrigin, fileapi::kFileSystemTypeTemporary,
+  return storage::FileSystemURL::CreateForTest(
+      kOrigin,
+      storage::kFileSystemTypeTemporary,
       base::FilePath::FromUTF8Unsafe(path));
 }
 
@@ -34,7 +35,7 @@ class SandboxFileSystemBackendDelegateTest : public testing::Test {
  protected:
   virtual void SetUp() {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
-    delegate_.reset(new fileapi::SandboxFileSystemBackendDelegate(
+    delegate_.reset(new storage::SandboxFileSystemBackendDelegate(
         NULL /* quota_manager_proxy */,
         base::MessageLoopProxy::current().get(),
         data_dir_.path(),
@@ -48,7 +49,7 @@ class SandboxFileSystemBackendDelegateTest : public testing::Test {
 
   base::ScopedTempDir data_dir_;
   base::MessageLoop message_loop_;
-  scoped_ptr<fileapi::SandboxFileSystemBackendDelegate> delegate_;
+  scoped_ptr<storage::SandboxFileSystemBackendDelegate> delegate_;
 };
 
 TEST_F(SandboxFileSystemBackendDelegateTest, IsAccessValid) {
@@ -60,9 +61,9 @@ TEST_F(SandboxFileSystemBackendDelegateTest, IsAccessValid) {
 
   // Access from non-allowed scheme should be disallowed.
   EXPECT_FALSE(IsAccessValid(
-      FileSystemURL::CreateForTest(
-          GURL("unknown://bar"), fileapi::kFileSystemTypeTemporary,
-          base::FilePath::FromUTF8Unsafe("foo"))));
+      FileSystemURL::CreateForTest(GURL("unknown://bar"),
+                                   storage::kFileSystemTypeTemporary,
+                                   base::FilePath::FromUTF8Unsafe("foo"))));
 
   // Access with restricted name should be disallowed.
   EXPECT_FALSE(IsAccessValid(CreateFileSystemURL(".")));

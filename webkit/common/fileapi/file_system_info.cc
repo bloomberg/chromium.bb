@@ -4,21 +4,19 @@
 
 #include "webkit/common/fileapi/file_system_info.h"
 
-namespace fileapi {
+namespace storage {
 
 FileSystemInfo::FileSystemInfo()
-    : mount_type(fileapi::kFileSystemTypeTemporary) {
+    : mount_type(storage::kFileSystemTypeTemporary) {
 }
 
 FileSystemInfo::FileSystemInfo(const std::string& name,
                                const GURL& root_url,
-                               fileapi::FileSystemType mount_type)
-    : name(name),
-      root_url(root_url),
-      mount_type(mount_type) {
+                               storage::FileSystemType mount_type)
+    : name(name), root_url(root_url), mount_type(mount_type) {
 }
 
 FileSystemInfo::~FileSystemInfo() {
 }
 
-}  // namespace fileapi
+}  // namespace storage

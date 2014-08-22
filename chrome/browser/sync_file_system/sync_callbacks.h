@@ -10,7 +10,7 @@
 #include "chrome/browser/sync_file_system/sync_status_code.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 
-namespace fileapi {
+namespace storage {
 class FileSystemURL;
 }
 
@@ -21,16 +21,16 @@ class SyncFileMetadata;
 typedef base::Callback<void(SyncStatusCode status)>
     SyncStatusCallback;
 
-typedef base::Callback<void(SyncStatusCode status,
-                            const fileapi::FileSystemURL& url)>
+typedef base::Callback<
+    void(SyncStatusCode status, const storage::FileSystemURL& url)>
     SyncFileCallback;
 
 typedef base::Callback<void(SyncStatusCode status,
                             const SyncFileMetadata& metadata)>
     SyncFileMetadataCallback;
 
-typedef base::Callback<void(SyncStatusCode status,
-                            const fileapi::FileSystemURLSet& urls)>
+typedef base::Callback<
+    void(SyncStatusCode status, const storage::FileSystemURLSet& urls)>
     SyncFileSetCallback;
 
 typedef base::Callback<void(SyncStatusCode status,

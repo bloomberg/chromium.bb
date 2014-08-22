@@ -95,7 +95,7 @@ TEST_F(ServiceWorkerContextRequestHandlerTest, UpdateBefore24Hours) {
       new ServiceWorkerContextRequestHandler(
           context()->AsWeakPtr(),
           provider_host_,
-          base::WeakPtr<webkit_blob::BlobStorageContext>(),
+          base::WeakPtr<storage::BlobStorageContext>(),
           RESOURCE_TYPE_SERVICE_WORKER));
   scoped_refptr<net::URLRequestJob> job =
       handler->MaybeCreateJob(request.get(), NULL);
@@ -126,7 +126,7 @@ TEST_F(ServiceWorkerContextRequestHandlerTest, UpdateAfter24Hours) {
       new ServiceWorkerContextRequestHandler(
           context()->AsWeakPtr(),
           provider_host_,
-          base::WeakPtr<webkit_blob::BlobStorageContext>(),
+          base::WeakPtr<storage::BlobStorageContext>(),
           RESOURCE_TYPE_SERVICE_WORKER));
   scoped_refptr<net::URLRequestJob> job =
       handler->MaybeCreateJob(request.get(), NULL);

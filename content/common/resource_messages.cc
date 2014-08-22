@@ -33,23 +33,21 @@ void ParamTraits<scoped_refptr<net::HttpResponseHeaders> >::Log(
   l->append("<HttpResponseHeaders>");
 }
 
-
-void ParamTraits<webkit_common::DataElement>::Write(
-    Message* m, const param_type& p) {
+void ParamTraits<storage::DataElement>::Write(Message* m, const param_type& p) {
   WriteParam(m, static_cast<int>(p.type()));
   switch (p.type()) {
-    case webkit_common::DataElement::TYPE_BYTES: {
+    case storage::DataElement::TYPE_BYTES: {
       m->WriteData(p.bytes(), static_cast<int>(p.length()));
       break;
     }
-    case webkit_common::DataElement::TYPE_FILE: {
+    case storage::DataElement::TYPE_FILE: {
       WriteParam(m, p.path());
       WriteParam(m, p.offset());
       WriteParam(m, p.length());
       WriteParam(m, p.expected_modification_time());
       break;
     }
-    case webkit_common::DataElement::TYPE_FILE_FILESYSTEM: {
+    case storage::DataElement::TYPE_FILE_FILESYSTEM: {
       WriteParam(m, p.filesystem_url());
       WriteParam(m, p.offset());
       WriteParam(m, p.length());
@@ -57,7 +55,7 @@ void ParamTraits<webkit_common::DataElement>::Write(
       break;
     }
     default: {
-      DCHECK(p.type() == webkit_common::DataElement::TYPE_BLOB);
+      DCHECK(p.type() == storage::DataElement::TYPE_BLOB);
       WriteParam(m, p.blob_uuid());
       WriteParam(m, p.offset());
       WriteParam(m, p.length());
@@ -66,13 +64,14 @@ void ParamTraits<webkit_common::DataElement>::Write(
   }
 }
 
-bool ParamTraits<webkit_common::DataElement>::Read(
-    const Message* m, PickleIterator* iter, param_type* r) {
+bool ParamTraits<storage::DataElement>::Read(const Message* m,
+                                             PickleIterator* iter,
+                                             param_type* r) {
   int type;
   if (!ReadParam(m, iter, &type))
     return false;
   switch (type) {
-    case webkit_common::DataElement::TYPE_BYTES: {
+    case storage::DataElement::TYPE_BYTES: {
       const char* data;
       int len;
       if (!m->ReadData(iter, &data, &len))
@@ -80,7 +79,7 @@ bool ParamTraits<webkit_common::DataElement>::Read(
       r->SetToBytes(data, len);
       break;
     }
-    case webkit_common::DataElement::TYPE_FILE: {
+    case storage::DataElement::TYPE_FILE: {
       base::FilePath file_path;
       uint64 offset, length;
       base::Time expected_modification_time;
@@ -96,7 +95,7 @@ bool ParamTraits<webkit_common::DataElement>::Read(
                             expected_modification_time);
       break;
     }
-    case webkit_common::DataElement::TYPE_FILE_FILESYSTEM: {
+    case storage::DataElement::TYPE_FILE_FILESYSTEM: {
       GURL file_system_url;
       uint64 offset, length;
       base::Time expected_modification_time;
@@ -113,7 +112,7 @@ bool ParamTraits<webkit_common::DataElement>::Read(
       break;
     }
     default: {
-      DCHECK(type == webkit_common::DataElement::TYPE_BLOB);
+      DCHECK(type == storage::DataElement::TYPE_BLOB);
       std::string blob_uuid;
       uint64 offset, length;
       if (!ReadParam(m, iter, &blob_uuid))
@@ -129,9 +128,9 @@ bool ParamTraits<webkit_common::DataElement>::Read(
   return true;
 }
 
-void ParamTraits<webkit_common::DataElement>::Log(
-    const param_type& p, std::string* l) {
-  l->append("<webkit_common::DataElement>");
+void ParamTraits<storage::DataElement>::Log(const param_type& p,
+                                            std::string* l) {
+  l->append("<storage::DataElement>");
 }
 
 void ParamTraits<scoped_refptr<content::ResourceDevToolsInfo> >::Write(
@@ -278,7 +277,7 @@ bool ParamTraits<scoped_refptr<content::ResourceRequestBody> >::Read(
     return false;
   if (!has_object)
     return true;
-  std::vector<webkit_common::DataElement> elements;
+  std::vector<storage::DataElement> elements;
   if (!ReadParam(m, iter, &elements))
     return false;
   int64 identifier;

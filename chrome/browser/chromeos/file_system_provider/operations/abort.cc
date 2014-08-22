@@ -16,7 +16,7 @@ namespace operations {
 Abort::Abort(extensions::EventRouter* event_router,
              const ProvidedFileSystemInfo& file_system_info,
              int operation_request_id,
-             const fileapi::AsyncFileUtil::StatusCallback& callback)
+             const storage::AsyncFileUtil::StatusCallback& callback)
     : Operation(event_router, file_system_info),
       operation_request_id_(operation_request_id),
       callback_(callback) {

@@ -11,7 +11,7 @@
 #include "webkit/browser/fileapi/file_system_operation_context.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 
-namespace fileapi {
+namespace storage {
 
 namespace {
 
@@ -312,4 +312,4 @@ base::File::Error NativeFileUtil::DeleteDirectory(const base::FilePath& path) {
   return base::File::FILE_OK;
 }
 
-}  // namespace fileapi
+}  // namespace storage

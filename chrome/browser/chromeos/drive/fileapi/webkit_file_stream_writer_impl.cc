@@ -168,9 +168,11 @@ void WebkitFileStreamWriterImpl::WriteAfterCreateWritableSnapshotFile(
   // Keep |close_callback| to close the file when the stream is destructed.
   DCHECK(!close_callback_on_ui_thread.is_null());
   close_callback_on_ui_thread_ = close_callback_on_ui_thread;
-  local_file_writer_.reset(fileapi::FileStreamWriter::CreateForLocalFile(
-      file_task_runner_.get(), local_path, offset_,
-      fileapi::FileStreamWriter::OPEN_EXISTING_FILE));
+  local_file_writer_.reset(storage::FileStreamWriter::CreateForLocalFile(
+      file_task_runner_.get(),
+      local_path,
+      offset_,
+      storage::FileStreamWriter::OPEN_EXISTING_FILE));
   int result = local_file_writer_->Write(buf, buf_len, callback);
   if (result != net::ERR_IO_PENDING)
     callback.Run(result);

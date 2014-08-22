@@ -16,7 +16,7 @@ namespace operations {
 CloseFile::CloseFile(extensions::EventRouter* event_router,
                      const ProvidedFileSystemInfo& file_system_info,
                      int open_request_id,
-                     const fileapi::AsyncFileUtil::StatusCallback& callback)
+                     const storage::AsyncFileUtil::StatusCallback& callback)
     : Operation(event_router, file_system_info),
       open_request_id_(open_request_id),
       callback_(callback) {

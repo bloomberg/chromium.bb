@@ -43,14 +43,14 @@ class CONTENT_EXPORT ChromeAppCacheService
       NON_EXPORTED_BASE(public AppCacheServiceImpl),
       NON_EXPORTED_BASE(public AppCachePolicy) {
  public:
-  explicit ChromeAppCacheService(quota::QuotaManagerProxy* proxy);
+  explicit ChromeAppCacheService(storage::QuotaManagerProxy* proxy);
 
   // If |cache_path| is empty we will use in-memory structs.
   void InitializeOnIOThread(
       const base::FilePath& cache_path,
       ResourceContext* resource_context,
       net::URLRequestContextGetter* request_context_getter,
-      scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy);
+      scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy);
 
   // AppCachePolicy overrides
   virtual bool CanLoadAppCache(const GURL& manifest_url,

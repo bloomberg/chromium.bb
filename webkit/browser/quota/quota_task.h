@@ -18,7 +18,7 @@ class SingleThreadTaskRunner;
 class TaskRunner;
 }
 
-namespace quota {
+namespace storage {
 
 class QuotaTaskObserver;
 

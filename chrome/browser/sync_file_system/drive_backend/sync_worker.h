@@ -29,7 +29,7 @@ class DriveServiceInterface;
 class DriveUploaderInterface;
 }
 
-namespace fileapi {
+namespace storage {
 class FileSystemURL;
 }
 
@@ -89,12 +89,11 @@ class SyncWorker : public SyncWorkerInterface,
   virtual scoped_ptr<base::ListValue> DumpDatabase() OVERRIDE;
   virtual void SetSyncEnabled(bool enabled) OVERRIDE;
   virtual void PromoteDemotedChanges(const base::Closure& callback) OVERRIDE;
-  virtual void ApplyLocalChange(
-      const FileChange& local_change,
-      const base::FilePath& local_path,
-      const SyncFileMetadata& local_metadata,
-      const fileapi::FileSystemURL& url,
-      const SyncStatusCallback& callback) OVERRIDE;
+  virtual void ApplyLocalChange(const FileChange& local_change,
+                                const base::FilePath& local_path,
+                                const SyncFileMetadata& local_metadata,
+                                const storage::FileSystemURL& url,
+                                const SyncStatusCallback& callback) OVERRIDE;
   virtual void ActivateService(RemoteServiceState service_state,
                                const std::string& description) OVERRIDE;
   virtual void DeactivateService(const std::string& description) OVERRIDE;

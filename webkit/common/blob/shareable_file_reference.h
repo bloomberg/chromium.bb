@@ -9,7 +9,7 @@
 
 #include "webkit/common/blob/scoped_file.h"
 
-namespace webkit_blob {
+namespace storage {
 
 // ShareableFileReference allows consumers to share FileReference for the
 // same path if it already exists in its internal map.
@@ -69,6 +69,6 @@ class WEBKIT_STORAGE_COMMON_EXPORT ShareableFileReference
   DISALLOW_COPY_AND_ASSIGN(ShareableFileReference);
 };
 
-}  // namespace webkit_blob
+}  // namespace storage
 
 #endif  // WEBKIT_COMMON_BLOB_SHAREABLE_FILE_REFERENCE_H_

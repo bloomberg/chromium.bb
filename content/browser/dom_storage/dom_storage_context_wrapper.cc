@@ -64,7 +64,7 @@ void GetSessionStorageUsageHelper(
 
 DOMStorageContextWrapper::DOMStorageContextWrapper(
     const base::FilePath& data_path,
-    quota::SpecialStoragePolicy* special_storage_policy) {
+    storage::SpecialStoragePolicy* special_storage_policy) {
   base::SequencedWorkerPool* worker_pool = BrowserThread::GetBlockingPool();
   context_ = new DOMStorageContextImpl(
       data_path.empty() ? data_path

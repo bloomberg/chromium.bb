@@ -14,7 +14,7 @@
 namespace content {
 
 namespace {
-const quota::StorageType kTemp = quota::kStorageTypeTemporary;
+const storage::StorageType kTemp = storage::kStorageTypeTemporary;
 }
 
 class AppCacheStorageTest : public testing::Test {

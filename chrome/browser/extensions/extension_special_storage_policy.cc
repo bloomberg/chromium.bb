@@ -25,7 +25,7 @@
 using content::BrowserThread;
 using extensions::APIPermission;
 using extensions::Extension;
-using quota::SpecialStoragePolicy;
+using storage::SpecialStoragePolicy;
 
 ExtensionSpecialStoragePolicy::ExtensionSpecialStoragePolicy(
     CookieSettings* cookie_settings)

@@ -14,7 +14,7 @@
 #include "webkit/browser/fileapi/file_system_operation.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 
-namespace fileapi {
+namespace storage {
 
 class FileSystemContext;
 class FileSystemOperationRunner;
@@ -147,6 +147,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT RecursiveOperationDelegate
   DISALLOW_COPY_AND_ASSIGN(RecursiveOperationDelegate);
 };
 
-}  // namespace fileapi
+}  // namespace storage
 
 #endif  // WEBKIT_BROWSER_FILEAPI_RECURSIVE_OPERATION_DELEGATE_H_

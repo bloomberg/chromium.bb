@@ -18,7 +18,7 @@
 #include "url/gurl.h"
 #include "webkit/common/fileapi/file_system_types.h"
 
-namespace fileapi {
+namespace storage {
 class FileSystemContext;
 }
 
@@ -52,7 +52,7 @@ class BrowsingDataFileSystemHelper
     // The origin for which the information is relevant.
     GURL origin;
     // FileSystemType to usage (in bytes) map.
-    std::map<fileapi::FileSystemType, int64> usage_map;
+    std::map<storage::FileSystemType, int64> usage_map;
   };
 
   // Creates a BrowsingDataFileSystemHelper instance for the file systems
@@ -63,7 +63,7 @@ class BrowsingDataFileSystemHelper
   // The BrowsingDataFileSystemHelper will not change the profile itself, but
   // can modify data it contains (by removing file systems).
   static BrowsingDataFileSystemHelper* Create(
-      fileapi::FileSystemContext* file_system_context);
+      storage::FileSystemContext* file_system_context);
 
   // Starts the process of fetching file system data, which will call |callback|
   // upon completion, passing it a constant list of FileSystemInfo objects.
@@ -112,7 +112,7 @@ class CannedBrowsingDataFileSystemHelper
   // and a persistent filesystem, AddFileSystem must be called twice (once for
   // each file system type).
   void AddFileSystem(const GURL& origin,
-                     fileapi::FileSystemType type,
+                     storage::FileSystemType type,
                      int64 size);
 
   // Clear this helper's list of canned filesystems.

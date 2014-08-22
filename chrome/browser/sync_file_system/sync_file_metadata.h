@@ -31,7 +31,7 @@ struct LocalFileSyncInfo {
   LocalFileSyncInfo();
   ~LocalFileSyncInfo();
 
-  fileapi::FileSystemURL url;
+  storage::FileSystemURL url;
   base::FilePath local_file_path;
   SyncFileMetadata metadata;
   FileChangeList changes;

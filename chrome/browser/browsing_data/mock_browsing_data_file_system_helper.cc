@@ -36,11 +36,11 @@ void MockBrowsingDataFileSystemHelper::AddFileSystem(
     bool has_syncable) {
   BrowsingDataFileSystemHelper::FileSystemInfo info(origin);
   if (has_persistent)
-    info.usage_map[fileapi::kFileSystemTypePersistent] = 0;
+    info.usage_map[storage::kFileSystemTypePersistent] = 0;
   if (has_temporary)
-    info.usage_map[fileapi::kFileSystemTypeTemporary] = 0;
+    info.usage_map[storage::kFileSystemTypeTemporary] = 0;
   if (has_syncable)
-    info.usage_map[fileapi::kFileSystemTypeSyncable] = 0;
+    info.usage_map[storage::kFileSystemTypeSyncable] = 0;
   response_.push_back(info);
   file_systems_[origin.spec()] = true;
 }

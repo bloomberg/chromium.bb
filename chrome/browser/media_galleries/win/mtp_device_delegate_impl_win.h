@@ -159,7 +159,7 @@ class MTPDeviceDelegateImplWin : public MTPDeviceAsyncDelegate {
   // is invoked to notify the caller about the platform file |error|.
   void OnDidReadDirectory(const ReadDirectorySuccessCallback& success_callback,
                           const ErrorCallback& error_callback,
-                          fileapi::AsyncFileUtil::EntryList* file_list,
+                          storage::AsyncFileUtil::EntryList* file_list,
                           base::File::Error error);
 
   // Called when the get file stream request completes.

@@ -9,13 +9,13 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/browser/quota/usage_tracker.h"
 
-using quota::kQuotaStatusOk;
-using quota::kStorageTypeTemporary;
-using quota::QuotaClient;
-using quota::QuotaClientList;
-using quota::SpecialStoragePolicy;
-using quota::StorageType;
-using quota::UsageTracker;
+using storage::kQuotaStatusOk;
+using storage::kStorageTypeTemporary;
+using storage::QuotaClient;
+using storage::QuotaClientList;
+using storage::SpecialStoragePolicy;
+using storage::StorageType;
+using storage::UsageTracker;
 
 namespace content {
 
@@ -97,8 +97,8 @@ class MockQuotaClient : public QuotaClient {
         FROM_HERE, base::Bind(callback, kQuotaStatusOk));
   }
 
-  virtual bool DoesSupport(quota::StorageType type) const OVERRIDE {
-    return type == quota::kStorageTypeTemporary;
+  virtual bool DoesSupport(storage::StorageType type) const OVERRIDE {
+    return type == storage::kStorageTypeTemporary;
   }
 
   int64 GetUsage(const GURL& origin) {

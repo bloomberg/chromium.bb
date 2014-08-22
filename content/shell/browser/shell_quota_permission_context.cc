@@ -14,7 +14,7 @@ void ShellQuotaPermissionContext::RequestQuotaPermission(
     const StorageQuotaParams& params,
     int render_process_id,
     const PermissionCallback& callback) {
-  if (params.storage_type != quota::kStorageTypePersistent) {
+  if (params.storage_type != storage::kStorageTypePersistent) {
     // For now we only support requesting quota with this interface
     // for Persistent storage type.
     callback.Run(QUOTA_PERMISSION_RESPONSE_DISALLOW);

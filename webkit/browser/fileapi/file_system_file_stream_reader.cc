@@ -13,27 +13,24 @@
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_operation_runner.h"
 
-using webkit_blob::FileStreamReader;
+using storage::FileStreamReader;
 
 // TODO(kinuko): Remove this temporary namespace hack after we move both
 // blob and fileapi into content namespace.
-namespace webkit_blob {
+namespace storage {
 
 FileStreamReader* FileStreamReader::CreateForFileSystemFile(
-    fileapi::FileSystemContext* file_system_context,
-    const fileapi::FileSystemURL& url,
+    storage::FileSystemContext* file_system_context,
+    const storage::FileSystemURL& url,
     int64 initial_offset,
     const base::Time& expected_modification_time) {
-  return new fileapi::FileSystemFileStreamReader(
-      file_system_context,
-      url,
-      initial_offset,
-      expected_modification_time);
+  return new storage::FileSystemFileStreamReader(
+      file_system_context, url, initial_offset, expected_modification_time);
 }
 
-}  // namespace webkit_blob
+}  // namespace storage
 
-namespace fileapi {
+namespace storage {
 
 namespace {
 
@@ -119,7 +116,7 @@ void FileSystemFileStreamReader::DidCreateSnapshot(
     base::File::Error file_error,
     const base::File::Info& file_info,
     const base::FilePath& platform_path,
-    const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref) {
+    const scoped_refptr<storage::ShareableFileReference>& file_ref) {
   DCHECK(has_pending_create_snapshot_);
   DCHECK(!local_file_reader_.get());
   has_pending_create_snapshot_ = false;
@@ -140,4 +137,4 @@ void FileSystemFileStreamReader::DidCreateSnapshot(
   callback.Run();
 }
 
-}  // namespace fileapi
+}  // namespace storage

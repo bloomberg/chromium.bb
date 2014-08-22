@@ -20,9 +20,9 @@
 #include "webkit/common/fileapi/file_system_util.h"
 
 using content::AsyncFileTestHelper;
-using fileapi::FileSystemContext;
-using fileapi::FileSystemURL;
-using fileapi::IsolatedContext;
+using storage::FileSystemContext;
+using storage::FileSystemURL;
+using storage::IsolatedContext;
 
 namespace content {
 
@@ -31,7 +31,7 @@ namespace {
 const GURL kOrigin("http://www.example.com");
 const std::string kPlugin1("plugin1");
 const std::string kPlugin2("plugin2");
-const fileapi::FileSystemType kType = fileapi::kFileSystemTypePluginPrivate;
+const storage::FileSystemType kType = storage::kFileSystemTypePluginPrivate;
 const std::string kRootName = "pluginprivate";
 
 void DidOpenFileSystem(base::File::Error* error_out,
@@ -63,7 +63,7 @@ class PluginPrivateFileSystemBackendTest : public testing::Test {
         root.virtual_path().AppendASCII(relative));
   }
 
-  fileapi::PluginPrivateFileSystemBackend* backend() const {
+  storage::PluginPrivateFileSystemBackend* backend() const {
     return context_->plugin_private_backend();
   }
 
@@ -79,8 +79,11 @@ TEST_F(PluginPrivateFileSystemBackendTest, OpenFileSystemBasic) {
   const std::string filesystem_id1 = RegisterFileSystem();
   base::File::Error error = base::File::FILE_ERROR_FAILED;
   backend()->OpenPrivateFileSystem(
-      kOrigin, kType, filesystem_id1, kPlugin1,
-      fileapi::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
+      kOrigin,
+      kType,
+      filesystem_id1,
+      kPlugin1,
+      storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
       base::Bind(&DidOpenFileSystem, &error));
   base::RunLoop().RunUntilIdle();
   ASSERT_EQ(base::File::FILE_OK, error);
@@ -89,15 +92,17 @@ TEST_F(PluginPrivateFileSystemBackendTest, OpenFileSystemBasic) {
   const std::string filesystem_id2 = RegisterFileSystem();
   error = base::File::FILE_ERROR_FAILED;
   backend()->OpenPrivateFileSystem(
-      kOrigin, kType, filesystem_id2, kPlugin1,
-      fileapi::OPEN_FILE_SYSTEM_FAIL_IF_NONEXISTENT,
+      kOrigin,
+      kType,
+      filesystem_id2,
+      kPlugin1,
+      storage::OPEN_FILE_SYSTEM_FAIL_IF_NONEXISTENT,
       base::Bind(&DidOpenFileSystem, &error));
   base::RunLoop().RunUntilIdle();
   ASSERT_EQ(base::File::FILE_OK, error);
 
-  const GURL root_url(
-      fileapi::GetIsolatedFileSystemRootURIString(
-          kOrigin, filesystem_id1, kRootName));
+  const GURL root_url(storage::GetIsolatedFileSystemRootURIString(
+      kOrigin, filesystem_id1, kRootName));
   FileSystemURL file = CreateURL(root_url, "foo");
   base::FilePath platform_path;
   EXPECT_EQ(base::File::FILE_OK,
@@ -114,8 +119,11 @@ TEST_F(PluginPrivateFileSystemBackendTest, PluginIsolation) {
   const std::string filesystem_id1 = RegisterFileSystem();
   base::File::Error error = base::File::FILE_ERROR_FAILED;
   backend()->OpenPrivateFileSystem(
-      kOrigin, kType, filesystem_id1, kPlugin1,
-      fileapi::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
+      kOrigin,
+      kType,
+      filesystem_id1,
+      kPlugin1,
+      storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
       base::Bind(&DidOpenFileSystem, &error));
   base::RunLoop().RunUntilIdle();
   ASSERT_EQ(base::File::FILE_OK, error);
@@ -123,16 +131,18 @@ TEST_F(PluginPrivateFileSystemBackendTest, PluginIsolation) {
   const std::string filesystem_id2 = RegisterFileSystem();
   error = base::File::FILE_ERROR_FAILED;
   backend()->OpenPrivateFileSystem(
-      kOrigin, kType, filesystem_id2, kPlugin2,
-      fileapi::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
+      kOrigin,
+      kType,
+      filesystem_id2,
+      kPlugin2,
+      storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
       base::Bind(&DidOpenFileSystem, &error));
   base::RunLoop().RunUntilIdle();
   ASSERT_EQ(base::File::FILE_OK, error);
 
   // Create 'foo' in kPlugin1.
-  const GURL root_url1(
-      fileapi::GetIsolatedFileSystemRootURIString(
-          kOrigin, filesystem_id1, kRootName));
+  const GURL root_url1(storage::GetIsolatedFileSystemRootURIString(
+      kOrigin, filesystem_id1, kRootName));
   FileSystemURL file1 = CreateURL(root_url1, "foo");
   base::FilePath platform_path;
   EXPECT_EQ(base::File::FILE_OK,
@@ -141,9 +151,8 @@ TEST_F(PluginPrivateFileSystemBackendTest, PluginIsolation) {
       context_.get(), file1, AsyncFileTestHelper::kDontCheckSize));
 
   // See the same path is not available in kPlugin2.
-  const GURL root_url2(
-      fileapi::GetIsolatedFileSystemRootURIString(
-          kOrigin, filesystem_id2, kRootName));
+  const GURL root_url2(storage::GetIsolatedFileSystemRootURIString(
+      kOrigin, filesystem_id2, kRootName));
   FileSystemURL file2 = CreateURL(root_url2, "foo");
   EXPECT_FALSE(AsyncFileTestHelper::FileExists(
       context_.get(), file2, AsyncFileTestHelper::kDontCheckSize));

@@ -17,7 +17,7 @@ MoveEntry::MoveEntry(extensions::EventRouter* event_router,
                      const ProvidedFileSystemInfo& file_system_info,
                      const base::FilePath& source_path,
                      const base::FilePath& target_path,
-                     const fileapi::AsyncFileUtil::StatusCallback& callback)
+                     const storage::AsyncFileUtil::StatusCallback& callback)
     : Operation(event_router, file_system_info),
       source_path_(source_path),
       target_path_(target_path),

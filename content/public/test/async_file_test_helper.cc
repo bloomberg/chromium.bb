@@ -17,7 +17,7 @@
 
 namespace content {
 
-typedef fileapi::FileSystemOperation::FileEntryList FileEntryList;
+typedef storage::FileSystemOperation::FileEntryList FileEntryList;
 
 namespace {
 
@@ -52,7 +52,7 @@ void CreateSnapshotFileCallback(
     base::File::Error result,
     const base::File::Info& file_info,
     const base::FilePath& platform_path,
-    const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref) {
+    const scoped_refptr<storage::ShareableFileReference>& file_ref) {
   DCHECK(!file_ref.get());
   *result_out = result;
   if (platform_path_out)
@@ -72,10 +72,10 @@ void ReadDirectoryCallback(base::RunLoop* run_loop,
     run_loop->Quit();
 }
 
-void DidGetUsageAndQuota(quota::QuotaStatusCode* status_out,
+void DidGetUsageAndQuota(storage::QuotaStatusCode* status_out,
                          int64* usage_out,
                          int64* quota_out,
-                         quota::QuotaStatusCode status,
+                         storage::QuotaStatusCode status,
                          int64 usage,
                          int64 quota) {
   if (status_out)
@@ -91,42 +91,45 @@ void DidGetUsageAndQuota(quota::QuotaStatusCode* status_out,
 const int64 AsyncFileTestHelper::kDontCheckSize = -1;
 
 base::File::Error AsyncFileTestHelper::Copy(
-    fileapi::FileSystemContext* context,
-    const fileapi::FileSystemURL& src,
-    const fileapi::FileSystemURL& dest) {
+    storage::FileSystemContext* context,
+    const storage::FileSystemURL& src,
+    const storage::FileSystemURL& dest) {
   return CopyWithProgress(context, src, dest, CopyProgressCallback());
 }
 
 base::File::Error AsyncFileTestHelper::CopyWithProgress(
-    fileapi::FileSystemContext* context,
-    const fileapi::FileSystemURL& src,
-    const fileapi::FileSystemURL& dest,
+    storage::FileSystemContext* context,
+    const storage::FileSystemURL& src,
+    const storage::FileSystemURL& dest,
     const CopyProgressCallback& progress_callback) {
   base::File::Error result = base::File::FILE_ERROR_FAILED;
   base::RunLoop run_loop;
-  context->operation_runner()->Copy(
-      src, dest, fileapi::FileSystemOperation::OPTION_NONE, progress_callback,
-      AssignAndQuitCallback(&run_loop, &result));
+  context->operation_runner()->Copy(src,
+                                    dest,
+                                    storage::FileSystemOperation::OPTION_NONE,
+                                    progress_callback,
+                                    AssignAndQuitCallback(&run_loop, &result));
   run_loop.Run();
   return result;
 }
 
 base::File::Error AsyncFileTestHelper::Move(
-    fileapi::FileSystemContext* context,
-    const fileapi::FileSystemURL& src,
-    const fileapi::FileSystemURL& dest) {
+    storage::FileSystemContext* context,
+    const storage::FileSystemURL& src,
+    const storage::FileSystemURL& dest) {
   base::File::Error result = base::File::FILE_ERROR_FAILED;
   base::RunLoop run_loop;
-  context->operation_runner()->Move(
-      src, dest, fileapi::FileSystemOperation::OPTION_NONE,
-      AssignAndQuitCallback(&run_loop, &result));
+  context->operation_runner()->Move(src,
+                                    dest,
+                                    storage::FileSystemOperation::OPTION_NONE,
+                                    AssignAndQuitCallback(&run_loop, &result));
   run_loop.Run();
   return result;
 }
 
 base::File::Error AsyncFileTestHelper::Remove(
-    fileapi::FileSystemContext* context,
-    const fileapi::FileSystemURL& url,
+    storage::FileSystemContext* context,
+    const storage::FileSystemURL& url,
     bool recursive) {
   base::File::Error result = base::File::FILE_ERROR_FAILED;
   base::RunLoop run_loop;
@@ -137,8 +140,8 @@ base::File::Error AsyncFileTestHelper::Remove(
 }
 
 base::File::Error AsyncFileTestHelper::ReadDirectory(
-    fileapi::FileSystemContext* context,
-    const fileapi::FileSystemURL& url,
+    storage::FileSystemContext* context,
+    const storage::FileSystemURL& url,
     FileEntryList* entries) {
   base::File::Error result = base::File::FILE_ERROR_FAILED;
   DCHECK(entries);
@@ -151,8 +154,8 @@ base::File::Error AsyncFileTestHelper::ReadDirectory(
 }
 
 base::File::Error AsyncFileTestHelper::CreateDirectory(
-    fileapi::FileSystemContext* context,
-    const fileapi::FileSystemURL& url) {
+    storage::FileSystemContext* context,
+    const storage::FileSystemURL& url) {
   base::File::Error result = base::File::FILE_ERROR_FAILED;
   base::RunLoop run_loop;
   context->operation_runner()->CreateDirectory(
@@ -165,8 +168,8 @@ base::File::Error AsyncFileTestHelper::CreateDirectory(
 }
 
 base::File::Error AsyncFileTestHelper::CreateFile(
-    fileapi::FileSystemContext* context,
-    const fileapi::FileSystemURL& url) {
+    storage::FileSystemContext* context,
+    const storage::FileSystemURL& url) {
   base::File::Error result = base::File::FILE_ERROR_FAILED;
   base::RunLoop run_loop;
   context->operation_runner()->CreateFile(
@@ -177,8 +180,8 @@ base::File::Error AsyncFileTestHelper::CreateFile(
 }
 
 base::File::Error AsyncFileTestHelper::CreateFileWithData(
-    fileapi::FileSystemContext* context,
-    const fileapi::FileSystemURL& url,
+    storage::FileSystemContext* context,
+    const storage::FileSystemURL& url,
     const char* buf,
     int buf_size) {
   base::ScopedTempDir dir;
@@ -196,8 +199,8 @@ base::File::Error AsyncFileTestHelper::CreateFileWithData(
 }
 
 base::File::Error AsyncFileTestHelper::TruncateFile(
-    fileapi::FileSystemContext* context,
-    const fileapi::FileSystemURL& url,
+    storage::FileSystemContext* context,
+    const storage::FileSystemURL& url,
     size_t size) {
   base::RunLoop run_loop;
   base::File::Error result = base::File::FILE_ERROR_FAILED;
@@ -208,8 +211,8 @@ base::File::Error AsyncFileTestHelper::TruncateFile(
 }
 
 base::File::Error AsyncFileTestHelper::GetMetadata(
-    fileapi::FileSystemContext* context,
-    const fileapi::FileSystemURL& url,
+    storage::FileSystemContext* context,
+    const storage::FileSystemURL& url,
     base::File::Info* file_info) {
   base::File::Error result = base::File::FILE_ERROR_FAILED;
   base::RunLoop run_loop;
@@ -221,8 +224,8 @@ base::File::Error AsyncFileTestHelper::GetMetadata(
 }
 
 base::File::Error AsyncFileTestHelper::GetPlatformPath(
-    fileapi::FileSystemContext* context,
-    const fileapi::FileSystemURL& url,
+    storage::FileSystemContext* context,
+    const storage::FileSystemURL& url,
     base::FilePath* platform_path) {
   base::File::Error result = base::File::FILE_ERROR_FAILED;
   base::RunLoop run_loop;
@@ -233,10 +236,9 @@ base::File::Error AsyncFileTestHelper::GetPlatformPath(
   return result;
 }
 
-bool AsyncFileTestHelper::FileExists(
-    fileapi::FileSystemContext* context,
-    const fileapi::FileSystemURL& url,
-    int64 expected_size) {
+bool AsyncFileTestHelper::FileExists(storage::FileSystemContext* context,
+                                     const storage::FileSystemURL& url,
+                                     int64 expected_size) {
   base::File::Info file_info;
   base::File::Error result = GetMetadata(context, url, &file_info);
   if (result != base::File::FILE_OK || file_info.is_directory)
@@ -244,21 +246,20 @@ bool AsyncFileTestHelper::FileExists(
   return expected_size == kDontCheckSize || file_info.size == expected_size;
 }
 
-bool AsyncFileTestHelper::DirectoryExists(
-    fileapi::FileSystemContext* context,
-    const fileapi::FileSystemURL& url) {
+bool AsyncFileTestHelper::DirectoryExists(storage::FileSystemContext* context,
+                                          const storage::FileSystemURL& url) {
   base::File::Info file_info;
   base::File::Error result = GetMetadata(context, url, &file_info);
   return (result == base::File::FILE_OK) && file_info.is_directory;
 }
 
-quota::QuotaStatusCode AsyncFileTestHelper::GetUsageAndQuota(
-    quota::QuotaManager* quota_manager,
+storage::QuotaStatusCode AsyncFileTestHelper::GetUsageAndQuota(
+    storage::QuotaManager* quota_manager,
     const GURL& origin,
-    fileapi::FileSystemType type,
+    storage::FileSystemType type,
     int64* usage,
     int64* quota) {
-  quota::QuotaStatusCode status = quota::kQuotaStatusUnknown;
+  storage::QuotaStatusCode status = storage::kQuotaStatusUnknown;
   quota_manager->GetUsageAndQuota(
       origin,
       FileSystemTypeToQuotaStorageType(type),
@@ -267,4 +268,4 @@ quota::QuotaStatusCode AsyncFileTestHelper::GetUsageAndQuota(
   return status;
 }
 
-}  // namespace fileapi
+}  // namespace storage

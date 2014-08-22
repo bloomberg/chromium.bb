@@ -98,7 +98,7 @@
 using base::Time;
 using base::TimeDelta;
 using base::TimeTicks;
-using webkit_blob::ShareableFileReference;
+using storage::ShareableFileReference;
 
 // ----------------------------------------------------------------------------
 
@@ -200,7 +200,7 @@ void SetReferrerForRequest(net::URLRequest* request, const Referrer& referrer) {
 bool ShouldServiceRequest(int process_type,
                           int child_id,
                           const ResourceHostMsg_Request& request_data,
-                          fileapi::FileSystemContext* file_system_context)  {
+                          storage::FileSystemContext* file_system_context) {
   if (process_type == PROCESS_TYPE_PLUGIN)
     return true;
 
@@ -227,7 +227,7 @@ bool ShouldServiceRequest(int process_type,
         return false;
       }
       if (iter->type() == ResourceRequestBody::Element::TYPE_FILE_FILESYSTEM) {
-        fileapi::FileSystemURL url =
+        storage::FileSystemURL url =
             file_system_context->CrackURL(iter->filesystem_url());
         if (!policy->CanReadFileSystemFile(child_id, url)) {
           NOTREACHED() << "Denied unauthorized upload of "
@@ -299,7 +299,7 @@ bool IsValidatedSCT(
   return sct_status.status == net::ct::SCT_STATUS_OK;
 }
 
-webkit_blob::BlobStorageContext* GetBlobStorageContext(
+storage::BlobStorageContext* GetBlobStorageContext(
     ResourceMessageFilter* filter) {
   if (!filter->blob_storage_context())
     return NULL;
@@ -552,7 +552,7 @@ DownloadInterruptReason ResourceDispatcherHostImpl::BeginDownload(
   if (request->url().SchemeIs(url::kBlobScheme)) {
     ChromeBlobStorageContext* blob_context =
         GetChromeBlobStorageContextForResourceContext(context);
-    webkit_blob::BlobProtocolHandler::SetRequestedBlobDataHandle(
+    storage::BlobProtocolHandler::SetRequestedBlobDataHandle(
         request.get(),
         blob_context->context()->GetBlobDataFromPublicURL(request->url()));
   }
@@ -1101,10 +1101,10 @@ void ResourceDispatcherHostImpl::BeginRequest(
   if (new_request->url().SchemeIs(url::kBlobScheme)) {
     // Hang on to a reference to ensure the blob is not released prior
     // to the job being started.
-    webkit_blob::BlobProtocolHandler::SetRequestedBlobDataHandle(
+    storage::BlobProtocolHandler::SetRequestedBlobDataHandle(
         new_request.get(),
-        filter_->blob_storage_context()->context()->
-            GetBlobDataFromPublicURL(new_request->url()));
+        filter_->blob_storage_context()->context()->GetBlobDataFromPublicURL(
+            new_request->url()));
   }
 
   // Initialize the service worker handler for the request.

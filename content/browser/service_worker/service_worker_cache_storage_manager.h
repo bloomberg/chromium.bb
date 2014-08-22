@@ -22,7 +22,7 @@ namespace net {
 class URLRequestContext;
 }
 
-namespace webkit_blob {
+namespace storage {
 class BlobStorageContext;
 }
 
@@ -70,7 +70,7 @@ class CONTENT_EXPORT ServiceWorkerCacheStorageManager {
   // above.
   void SetBlobParametersForCache(
       net::URLRequestContext* request_context,
-      base::WeakPtr<webkit_blob::BlobStorageContext> blob_storage_context);
+      base::WeakPtr<storage::BlobStorageContext> blob_storage_context);
 
  private:
   typedef std::map<GURL, ServiceWorkerCacheStorage*>
@@ -88,7 +88,7 @@ class CONTENT_EXPORT ServiceWorkerCacheStorageManager {
   net::URLRequestContext* url_request_context() const {
     return request_context_;
   }
-  base::WeakPtr<webkit_blob::BlobStorageContext> blob_storage_context() const {
+  base::WeakPtr<storage::BlobStorageContext> blob_storage_context() const {
     return blob_context_;
   }
   base::FilePath root_path() const { return root_path_; }
@@ -104,7 +104,7 @@ class CONTENT_EXPORT ServiceWorkerCacheStorageManager {
   ServiceWorkerCacheStorageMap cache_storage_map_;
 
   net::URLRequestContext* request_context_;
-  base::WeakPtr<webkit_blob::BlobStorageContext> blob_context_;
+  base::WeakPtr<storage::BlobStorageContext> blob_context_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerCacheStorageManager);
 };

@@ -182,12 +182,12 @@ void MTPDeviceTaskHelper::OnDidReadDirectory(
   if (error)
     return HandleDeviceError(error_callback, base::File::FILE_ERROR_FAILED);
 
-  fileapi::AsyncFileUtil::EntryList entries;
+  storage::AsyncFileUtil::EntryList entries;
   base::FilePath current;
   MTPDeviceObjectEnumerator file_enum(file_entries);
   while (!(current = file_enum.Next()).empty()) {
-    fileapi::DirectoryEntry entry;
-    entry.name = fileapi::VirtualPath::BaseName(current).value();
+    storage::DirectoryEntry entry;
+    entry.name = storage::VirtualPath::BaseName(current).value();
     uint32 file_id = 0;
     bool ret = file_enum.GetEntryId(&file_id);
     DCHECK(ret);

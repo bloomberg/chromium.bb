@@ -11,9 +11,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/browser/fileapi/native_file_util.h"
 
-using fileapi::FileSystemFileUtil;
-using fileapi::FileSystemOperation;
-using fileapi::NativeFileUtil;
+using storage::FileSystemFileUtil;
+using storage::FileSystemOperation;
+using storage::NativeFileUtil;
 
 namespace content {
 

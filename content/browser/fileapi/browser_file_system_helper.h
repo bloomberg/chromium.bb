@@ -9,7 +9,7 @@
 #include "content/common/content_export.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 
-namespace fileapi {
+namespace storage {
 class ExternalMountPoints;
 class FileSystemContext;
 class FileSystemURL;
@@ -21,20 +21,19 @@ class BrowserContext;
 
 // Helper method that returns FileSystemContext constructed for
 // the browser process.
-CONTENT_EXPORT scoped_refptr<fileapi::FileSystemContext>
-CreateFileSystemContext(
-    BrowserContext* browser_context,
-    const base::FilePath& profile_path,
-    bool is_incognito,
-    quota::QuotaManagerProxy* quota_manager_proxy);
+CONTENT_EXPORT scoped_refptr<storage::FileSystemContext>
+    CreateFileSystemContext(BrowserContext* browser_context,
+                            const base::FilePath& profile_path,
+                            bool is_incognito,
+                            storage::QuotaManagerProxy* quota_manager_proxy);
 
 // Verifies that |url| is valid and has a registered backend in |context|.
-CONTENT_EXPORT bool FileSystemURLIsValid(fileapi::FileSystemContext* context,
-                                         const fileapi::FileSystemURL& url);
+CONTENT_EXPORT bool FileSystemURLIsValid(storage::FileSystemContext* context,
+                                         const storage::FileSystemURL& url);
 
 // Get the platform path from a file system URL. This needs to be called
 // on the FILE thread.
-CONTENT_EXPORT void SyncGetPlatformPath(fileapi::FileSystemContext* context,
+CONTENT_EXPORT void SyncGetPlatformPath(storage::FileSystemContext* context,
                                         int process_id,
                                         const GURL& path,
                                         base::FilePath* platform_path);

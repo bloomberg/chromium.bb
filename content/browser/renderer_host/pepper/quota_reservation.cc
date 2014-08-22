@@ -16,17 +16,17 @@ namespace content {
 
 // static
 scoped_refptr<QuotaReservation> QuotaReservation::Create(
-    scoped_refptr<fileapi::FileSystemContext> file_system_context,
+    scoped_refptr<storage::FileSystemContext> file_system_context,
     const GURL& origin_url,
-    fileapi::FileSystemType type) {
+    storage::FileSystemType type) {
   return scoped_refptr<QuotaReservation>(
       new QuotaReservation(file_system_context, origin_url, type));
 }
 
 QuotaReservation::QuotaReservation(
-    scoped_refptr<fileapi::FileSystemContext> file_system_context,
+    scoped_refptr<storage::FileSystemContext> file_system_context,
     const GURL& origin_url,
-    fileapi::FileSystemType file_system_type)
+    storage::FileSystemType file_system_type)
     : file_system_context_(file_system_context) {
   quota_reservation_ =
       file_system_context->CreateQuotaReservationOnFileTaskRunner(
@@ -35,10 +35,11 @@ QuotaReservation::QuotaReservation(
 
 // For unit testing only.
 QuotaReservation::QuotaReservation(
-    scoped_refptr<fileapi::QuotaReservation> quota_reservation,
+    scoped_refptr<storage::QuotaReservation> quota_reservation,
     const GURL& /* origin_url */,
-    fileapi::FileSystemType /* file_system_type */)
-    : quota_reservation_(quota_reservation) {}
+    storage::FileSystemType /* file_system_type */)
+    : quota_reservation_(quota_reservation) {
+}
 
 QuotaReservation::~QuotaReservation() {
   // We should have no open files at this point.
@@ -48,7 +49,7 @@ QuotaReservation::~QuotaReservation() {
 }
 
 int64_t QuotaReservation::OpenFile(int32_t id,
-                                   const fileapi::FileSystemURL& url) {
+                                   const storage::FileSystemURL& url) {
   base::FilePath platform_file_path;
   if (file_system_context_) {
     base::File::Error error =
@@ -63,7 +64,7 @@ int64_t QuotaReservation::OpenFile(int32_t id,
     platform_file_path = url.path();
   }
 
-  scoped_ptr<fileapi::OpenFileHandle> file_handle =
+  scoped_ptr<storage::OpenFileHandle> file_handle =
       quota_reservation_->GetOpenFileHandle(platform_file_path);
   std::pair<FileMap::iterator, bool> insert_result =
       files_.insert(std::make_pair(id, file_handle.get()));

@@ -31,7 +31,7 @@ class ReadDirectory : public Operation {
   ReadDirectory(extensions::EventRouter* event_router,
                 const ProvidedFileSystemInfo& file_system_info,
                 const base::FilePath& directory_path,
-                const fileapi::AsyncFileUtil::ReadDirectoryCallback& callback);
+                const storage::AsyncFileUtil::ReadDirectoryCallback& callback);
   virtual ~ReadDirectory();
 
   // Operation overrides.
@@ -45,7 +45,7 @@ class ReadDirectory : public Operation {
 
  private:
   base::FilePath directory_path_;
-  const fileapi::AsyncFileUtil::ReadDirectoryCallback callback_;
+  const storage::AsyncFileUtil::ReadDirectoryCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ReadDirectory);
 };

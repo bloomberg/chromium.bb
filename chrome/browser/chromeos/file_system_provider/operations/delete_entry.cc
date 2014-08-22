@@ -17,7 +17,7 @@ DeleteEntry::DeleteEntry(extensions::EventRouter* event_router,
                          const ProvidedFileSystemInfo& file_system_info,
                          const base::FilePath& entry_path,
                          bool recursive,
-                         const fileapi::AsyncFileUtil::StatusCallback& callback)
+                         const storage::AsyncFileUtil::StatusCallback& callback)
     : Operation(event_router, file_system_info),
       entry_path_(entry_path),
       recursive_(recursive),

@@ -18,17 +18,17 @@
 #include "webkit/browser/fileapi/file_system_url.h"
 
 using content::AsyncFileTestHelper;
-using fileapi::FileSystemContext;
-using fileapi::FileSystemType;
-using fileapi::FileSystemURL;
+using storage::FileSystemContext;
+using storage::FileSystemType;
+using storage::FileSystemURL;
 
 namespace content {
 
 namespace {
 
 const char kFileSystemURLOrigin[] = "http://remote";
-const fileapi::FileSystemType kFileSystemType =
-    fileapi::kFileSystemTypeTemporary;
+const storage::FileSystemType kFileSystemType =
+    storage::kFileSystemTypeTemporary;
 
 }  // namespace
 
@@ -45,7 +45,7 @@ class UploadFileSystemFileElementReaderTest : public testing::Test {
     file_system_context_->OpenFileSystem(
         GURL(kFileSystemURLOrigin),
         kFileSystemType,
-        fileapi::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
+        storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
         base::Bind(&UploadFileSystemFileElementReaderTest::OnOpenFileSystem,
                    base::Unretained(this)));
     base::RunLoop().RunUntilIdle();
@@ -88,7 +88,7 @@ class UploadFileSystemFileElementReaderTest : public testing::Test {
                            const char* buf,
                            int buf_size,
                            base::Time* modification_time) {
-    fileapi::FileSystemURL url =
+    storage::FileSystemURL url =
         file_system_context_->CreateCrackedFileSystemURL(
             GURL(kFileSystemURLOrigin),
             kFileSystemType,

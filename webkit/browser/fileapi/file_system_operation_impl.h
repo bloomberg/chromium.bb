@@ -18,7 +18,7 @@
 #include "webkit/common/blob/scoped_file.h"
 #include "webkit/common/quota/quota_types.h"
 
-namespace fileapi {
+namespace storage {
 
 class AsyncFileUtil;
 class FileSystemContext;
@@ -118,11 +118,11 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemOperationImpl
   // Sets the quota info in the operation_context_ and then runs the given
   // |task| if the returned quota status is successful, otherwise runs
   // |error_callback|.
-  void DidGetUsageAndQuotaAndRunTask(
-      const base::Closure& task,
-      const base::Closure& error_callback,
-      quota::QuotaStatusCode status,
-      int64 usage, int64 quota);
+  void DidGetUsageAndQuotaAndRunTask(const base::Closure& task,
+                                     const base::Closure& error_callback,
+                                     storage::QuotaStatusCode status,
+                                     int64 usage,
+                                     int64 quota);
 
   // The 'body' methods that perform the actual work (i.e. posting the
   // file task on proxy_) after the quota check.
@@ -201,6 +201,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemOperationImpl
   DISALLOW_COPY_AND_ASSIGN(FileSystemOperationImpl);
 };
 
-}  // namespace fileapi
+}  // namespace storage
 
 #endif  // WEBKIT_BROWSER_FILEAPI_FILE_SYSTEM_OPERATION_IMPL_H_

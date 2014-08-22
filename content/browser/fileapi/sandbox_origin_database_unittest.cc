@@ -20,7 +20,7 @@
 #include "webkit/browser/fileapi/sandbox_origin_database.h"
 #include "webkit/common/fileapi/file_system_util.h"
 
-using fileapi::SandboxOriginDatabase;
+using storage::SandboxOriginDatabase;
 
 namespace content {
 

@@ -25,7 +25,7 @@ namespace net {
 class FileStream;
 }
 
-namespace fileapi {
+namespace storage {
 
 // This class is a thin wrapper around net::FileStream for writing local files.
 class WEBKIT_STORAGE_BROWSER_EXPORT LocalFileStreamWriter
@@ -95,6 +95,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT LocalFileStreamWriter
   DISALLOW_COPY_AND_ASSIGN(LocalFileStreamWriter);
 };
 
-}  // namespace fileapi
+}  // namespace storage
 
 #endif  // WEBKIT_BROWSER_FILEAPI_LOCAL_FILE_STREAM_WRITER_H_

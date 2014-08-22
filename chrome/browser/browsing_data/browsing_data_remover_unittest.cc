@@ -144,16 +144,14 @@ class TestStoragePartition : public StoragePartition {
   virtual net::URLRequestContextGetter* GetMediaURLRequestContext() OVERRIDE {
     return NULL;
   }
-  virtual quota::QuotaManager* GetQuotaManager() OVERRIDE {
-    return NULL;
-  }
+  virtual storage::QuotaManager* GetQuotaManager() OVERRIDE { return NULL; }
   virtual content::AppCacheService* GetAppCacheService() OVERRIDE {
     return NULL;
   }
-  virtual fileapi::FileSystemContext* GetFileSystemContext() OVERRIDE {
+  virtual storage::FileSystemContext* GetFileSystemContext() OVERRIDE {
     return NULL;
   }
-  virtual webkit_database::DatabaseTracker* GetDatabaseTracker() OVERRIDE {
+  virtual storage::DatabaseTracker* GetDatabaseTracker() OVERRIDE {
     return NULL;
   }
   virtual content::DOMStorageContext* GetDOMStorageContext() OVERRIDE {
@@ -827,7 +825,7 @@ class BrowsingDataRemoverTest : public testing::Test,
 #endif
   }
 
-  quota::SpecialStoragePolicy* mock_policy() {
+  storage::SpecialStoragePolicy* mock_policy() {
 #if defined(ENABLE_EXTENSIONS)
     return mock_policy_;
 #else

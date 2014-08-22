@@ -31,9 +31,9 @@ namespace {
 
 GURL ConvertRelativeFilePathToFileSystemUrl(const base::FilePath& relative_path,
                                             const std::string& extension_id) {
-  GURL base_url = fileapi::GetFileSystemRootURI(
+  GURL base_url = storage::GetFileSystemRootURI(
       extensions::Extension::GetBaseURLFromExtensionId(extension_id),
-      fileapi::kFileSystemTypeExternal);
+      storage::kFileSystemTypeExternal);
   return GURL(base_url.spec() +
               net::EscapeUrlEncodedData(relative_path.AsUTF8Unsafe(),
                                         false));  // Space to %20 instead of +.
@@ -74,9 +74,9 @@ class FileDefinitionListConverter {
   void OnResolvedURL(scoped_ptr<FileDefinitionListConverter> self_deleter,
                      FileDefinitionList::const_iterator iterator,
                      base::File::Error error,
-                     const fileapi::FileSystemInfo& info,
+                     const storage::FileSystemInfo& info,
                      const base::FilePath& file_path,
-                     fileapi::FileSystemContext::ResolvedEntryType type);
+                     storage::FileSystemContext::ResolvedEntryType type);
 
   // Called when the iterator is converted. Adds the |entry_definition| to
   // |results_| and calls ConvertNextIterator() for the next element.
@@ -84,7 +84,7 @@ class FileDefinitionListConverter {
                            FileDefinitionList::const_iterator iterator,
                            const EntryDefinition& entry_definition);
 
-  scoped_refptr<fileapi::FileSystemContext> file_system_context_;
+  scoped_refptr<storage::FileSystemContext> file_system_context_;
   const std::string extension_id_;
   const FileDefinitionList file_definition_list_;
   const EntryDefinitionListCallback callback_;
@@ -135,9 +135,9 @@ void FileDefinitionListConverter::ConvertNextIterator(
     return;
   }
 
-  fileapi::FileSystemURL url = file_system_context_->CreateCrackedFileSystemURL(
+  storage::FileSystemURL url = file_system_context_->CreateCrackedFileSystemURL(
       extensions::Extension::GetBaseURLFromExtensionId(extension_id_),
-      fileapi::kFileSystemTypeExternal,
+      storage::kFileSystemTypeExternal,
       iterator->virtual_path);
   DCHECK(url.is_valid());
 
@@ -155,9 +155,9 @@ void FileDefinitionListConverter::OnResolvedURL(
     scoped_ptr<FileDefinitionListConverter> self_deleter,
     FileDefinitionList::const_iterator iterator,
     base::File::Error error,
-    const fileapi::FileSystemInfo& info,
+    const storage::FileSystemInfo& info,
     const base::FilePath& file_path,
-    fileapi::FileSystemContext::ResolvedEntryType type) {
+    storage::FileSystemContext::ResolvedEntryType type) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (error != base::File::FILE_OK) {
@@ -171,13 +171,13 @@ void FileDefinitionListConverter::OnResolvedURL(
   entry_definition.file_system_root_url = info.root_url.spec();
   entry_definition.file_system_name = info.name;
   switch (type) {
-    case fileapi::FileSystemContext::RESOLVED_ENTRY_FILE:
+    case storage::FileSystemContext::RESOLVED_ENTRY_FILE:
       entry_definition.is_directory = false;
       break;
-    case fileapi::FileSystemContext::RESOLVED_ENTRY_DIRECTORY:
+    case storage::FileSystemContext::RESOLVED_ENTRY_DIRECTORY:
       entry_definition.is_directory = true;
       break;
-    case fileapi::FileSystemContext::RESOLVED_ENTRY_NOT_FOUND:
+    case storage::FileSystemContext::RESOLVED_ENTRY_NOT_FOUND:
       entry_definition.is_directory = iterator->is_directory;
       break;
   }
@@ -215,12 +215,12 @@ void OnConvertFileDefinitionDone(
 
 // Used to implement CheckIfDirectoryExists().
 void CheckIfDirectoryExistsOnIOThread(
-    scoped_refptr<fileapi::FileSystemContext> file_system_context,
+    scoped_refptr<storage::FileSystemContext> file_system_context,
     const GURL& url,
-    const fileapi::FileSystemOperationRunner::StatusCallback& callback) {
+    const storage::FileSystemOperationRunner::StatusCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  fileapi::FileSystemURL file_system_url = file_system_context->CrackURL(url);
+  storage::FileSystemURL file_system_url = file_system_context->CrackURL(url);
   file_system_context->operation_runner()->DirectoryExists(
       file_system_url, callback);
 }
@@ -233,7 +233,7 @@ EntryDefinition::EntryDefinition() {
 EntryDefinition::~EntryDefinition() {
 }
 
-fileapi::FileSystemContext* GetFileSystemContextForExtensionId(
+storage::FileSystemContext* GetFileSystemContextForExtensionId(
     Profile* profile,
     const std::string& extension_id) {
   GURL site = extensions::util::GetSiteForExtensionId(extension_id, profile);
@@ -241,7 +241,7 @@ fileapi::FileSystemContext* GetFileSystemContextForExtensionId(
       GetFileSystemContext();
 }
 
-fileapi::FileSystemContext* GetFileSystemContextForRenderViewHost(
+storage::FileSystemContext* GetFileSystemContextForRenderViewHost(
     Profile* profile,
     content::RenderViewHost* render_view_host) {
   content::SiteInstance* site_instance = render_view_host->GetSiteInstance();
@@ -301,9 +301,10 @@ bool ConvertAbsoluteFilePathToRelativeFileSystemPath(
   // extension's site is the one in whose file system context the virtual path
   // should be found.
   GURL site = extensions::util::GetSiteForExtensionId(extension_id, profile);
-  fileapi::ExternalFileSystemBackend* backend =
-      content::BrowserContext::GetStoragePartitionForSite(profile, site)->
-          GetFileSystemContext()->external_backend();
+  storage::ExternalFileSystemBackend* backend =
+      content::BrowserContext::GetStoragePartitionForSite(profile, site)
+          ->GetFileSystemContext()
+          ->external_backend();
   if (!backend)
     return false;
 
@@ -343,14 +344,14 @@ void ConvertFileDefinitionToEntryDefinition(
 }
 
 void CheckIfDirectoryExists(
-    scoped_refptr<fileapi::FileSystemContext> file_system_context,
+    scoped_refptr<storage::FileSystemContext> file_system_context,
     const GURL& url,
-    const fileapi::FileSystemOperationRunner::StatusCallback& callback) {
+    const storage::FileSystemOperationRunner::StatusCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Check the existence of directory using file system API implementation on
   // behalf of the file manager app. We need to grant access beforehand.
-  fileapi::ExternalFileSystemBackend* backend =
+  storage::ExternalFileSystemBackend* backend =
       file_system_context->external_backend();
   DCHECK(backend);
   backend->GrantFullAccessToExtension(kFileManagerAppId);

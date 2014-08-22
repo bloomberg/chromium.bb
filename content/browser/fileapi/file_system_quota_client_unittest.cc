@@ -21,8 +21,8 @@
 #include "webkit/common/quota/quota_types.h"
 
 using content::AsyncFileTestHelper;
-using fileapi::FileSystemQuotaClient;
-using fileapi::FileSystemURL;
+using storage::FileSystemQuotaClient;
+using storage::FileSystemURL;
 
 namespace content {
 namespace {
@@ -32,8 +32,8 @@ const char kDummyURL2[] = "http://www.example.com";
 const char kDummyURL3[] = "http://www.bleh";
 
 // Declared to shorten the variable names.
-const quota::StorageType kTemporary = quota::kStorageTypeTemporary;
-const quota::StorageType kPersistent = quota::kStorageTypePersistent;
+const storage::StorageType kTemporary = storage::kStorageTypeTemporary;
+const storage::StorageType kPersistent = storage::kStorageTypePersistent;
 
 }  // namespace
 
@@ -42,8 +42,7 @@ class FileSystemQuotaClientTest : public testing::Test {
   FileSystemQuotaClientTest()
       : weak_factory_(this),
         additional_callback_count_(0),
-        deletion_status_(quota::kQuotaStatusUnknown) {
-  }
+        deletion_status_(storage::kQuotaStatusUnknown) {}
 
   virtual void SetUp() {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
@@ -56,7 +55,7 @@ class FileSystemQuotaClientTest : public testing::Test {
     const char* name;
     int64 size;
     const char* origin_url;
-    quota::StorageType type;
+    storage::StorageType type;
   };
 
  protected:
@@ -66,7 +65,7 @@ class FileSystemQuotaClientTest : public testing::Test {
 
   void GetOriginUsageAsync(FileSystemQuotaClient* quota_client,
                            const std::string& origin_url,
-                           quota::StorageType type) {
+                           storage::StorageType type) {
     quota_client->GetOriginUsage(
         GURL(origin_url), type,
         base::Bind(&FileSystemQuotaClientTest::OnGetUsage,
@@ -75,15 +74,14 @@ class FileSystemQuotaClientTest : public testing::Test {
 
   int64 GetOriginUsage(FileSystemQuotaClient* quota_client,
                        const std::string& origin_url,
-                       quota::StorageType type) {
+                       storage::StorageType type) {
     GetOriginUsageAsync(quota_client, origin_url, type);
     base::RunLoop().RunUntilIdle();
     return usage_;
   }
 
-  const std::set<GURL>& GetOriginsForType(
-      FileSystemQuotaClient* quota_client,
-      quota::StorageType type) {
+  const std::set<GURL>& GetOriginsForType(FileSystemQuotaClient* quota_client,
+                                          storage::StorageType type) {
     origins_.clear();
     quota_client->GetOriginsForType(
         type,
@@ -93,10 +91,9 @@ class FileSystemQuotaClientTest : public testing::Test {
     return origins_;
   }
 
-  const std::set<GURL>& GetOriginsForHost(
-      FileSystemQuotaClient* quota_client,
-      quota::StorageType type,
-      const std::string& host) {
+  const std::set<GURL>& GetOriginsForHost(FileSystemQuotaClient* quota_client,
+                                          storage::StorageType type,
+                                          const std::string& host) {
     origins_.clear();
     quota_client->GetOriginsForHost(
         type, host,
@@ -106,10 +103,9 @@ class FileSystemQuotaClientTest : public testing::Test {
     return origins_;
   }
 
-  void RunAdditionalOriginUsageTask(
-      FileSystemQuotaClient* quota_client,
-      const std::string& origin_url,
-      quota::StorageType type) {
+  void RunAdditionalOriginUsageTask(FileSystemQuotaClient* quota_client,
+                                    const std::string& origin_url,
+                                    storage::StorageType type) {
     quota_client->GetOriginUsage(
         GURL(origin_url), type,
         base::Bind(&FileSystemQuotaClientTest::OnGetAdditionalUsage,
@@ -118,9 +114,9 @@ class FileSystemQuotaClientTest : public testing::Test {
 
   bool CreateFileSystemDirectory(const base::FilePath& file_path,
                                  const std::string& origin_url,
-                                 quota::StorageType storage_type) {
-    fileapi::FileSystemType type =
-        fileapi::QuotaStorageTypeToFileSystemType(storage_type);
+                                 storage::StorageType storage_type) {
+    storage::FileSystemType type =
+        storage::QuotaStorageTypeToFileSystemType(storage_type);
     FileSystemURL url = file_system_context_->CreateCrackedFileSystemURL(
         GURL(origin_url), type, file_path);
 
@@ -132,12 +128,12 @@ class FileSystemQuotaClientTest : public testing::Test {
   bool CreateFileSystemFile(const base::FilePath& file_path,
                             int64 file_size,
                             const std::string& origin_url,
-                            quota::StorageType storage_type) {
+                            storage::StorageType storage_type) {
     if (file_path.empty())
       return false;
 
-    fileapi::FileSystemType type =
-        fileapi::QuotaStorageTypeToFileSystemType(storage_type);
+    storage::FileSystemType type =
+        storage::QuotaStorageTypeToFileSystemType(storage_type);
     FileSystemURL url = file_system_context_->CreateCrackedFileSystemURL(
         GURL(origin_url), type, file_path);
 
@@ -182,15 +178,15 @@ class FileSystemQuotaClientTest : public testing::Test {
   int64 ComputeFilePathsCostForOriginAndType(const TestFile* files,
                                              int num_files,
                                              const std::string& origin_url,
-                                             quota::StorageType type) {
+                                             storage::StorageType type) {
     int64 file_paths_cost = 0;
     for (int i = 0; i < num_files; i++) {
       if (files[i].type == type &&
           GURL(files[i].origin_url) == GURL(origin_url)) {
         base::FilePath path = base::FilePath().AppendASCII(files[i].name);
         if (!path.empty()) {
-          file_paths_cost += fileapi::ObfuscatedFileUtil::ComputeFilePathCost(
-              path);
+          file_paths_cost +=
+              storage::ObfuscatedFileUtil::ComputeFilePathCost(path);
         }
       }
     }
@@ -199,8 +195,8 @@ class FileSystemQuotaClientTest : public testing::Test {
 
   void DeleteOriginData(FileSystemQuotaClient* quota_client,
                         const std::string& origin,
-                        quota::StorageType type) {
-    deletion_status_ = quota::kQuotaStatusUnknown;
+                        storage::StorageType type) {
+    deletion_status_ = storage::kQuotaStatusUnknown;
     quota_client->DeleteOriginData(
         GURL(origin), type,
         base::Bind(&FileSystemQuotaClientTest::OnDeleteOrigin,
@@ -208,7 +204,7 @@ class FileSystemQuotaClientTest : public testing::Test {
   }
 
   int64 usage() const { return usage_; }
-  quota::QuotaStatusCode status() { return deletion_status_; }
+  storage::QuotaStatusCode status() { return deletion_status_; }
   int additional_callback_count() const { return additional_callback_count_; }
   void set_additional_callback_count(int count) {
     additional_callback_count_ = count;
@@ -227,18 +223,18 @@ class FileSystemQuotaClientTest : public testing::Test {
     ++additional_callback_count_;
   }
 
-  void OnDeleteOrigin(quota::QuotaStatusCode status) {
+  void OnDeleteOrigin(storage::QuotaStatusCode status) {
     deletion_status_ = status;
   }
 
   base::ScopedTempDir data_dir_;
   base::MessageLoop message_loop_;
-  scoped_refptr<fileapi::FileSystemContext> file_system_context_;
+  scoped_refptr<storage::FileSystemContext> file_system_context_;
   base::WeakPtrFactory<FileSystemQuotaClientTest> weak_factory_;
   int64 usage_;
   int additional_callback_count_;
   std::set<GURL> origins_;
-  quota::QuotaStatusCode deletion_status_;
+  storage::QuotaStatusCode deletion_status_;
 
   DISALLOW_COPY_AND_ASSIGN(FileSystemQuotaClientTest);
 };
@@ -528,15 +524,15 @@ TEST_F(FileSystemQuotaClientTest, DeleteOriginTest) {
 
   DeleteOriginData(quota_client.get(), "http://foo.com/", kTemporary);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(quota::kQuotaStatusOk, status());
+  EXPECT_EQ(storage::kQuotaStatusOk, status());
 
   DeleteOriginData(quota_client.get(), "http://bar.com/", kPersistent);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(quota::kQuotaStatusOk, status());
+  EXPECT_EQ(storage::kQuotaStatusOk, status());
 
   DeleteOriginData(quota_client.get(), "http://buz.com/", kTemporary);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(quota::kQuotaStatusOk, status());
+  EXPECT_EQ(storage::kQuotaStatusOk, status());
 
   EXPECT_EQ(0, GetOriginUsage(
       quota_client.get(), "http://foo.com/", kTemporary));

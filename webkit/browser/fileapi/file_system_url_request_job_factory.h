@@ -15,7 +15,7 @@ namespace base {
 class MessageLoopProxy;
 }  // namespace base
 
-namespace fileapi {
+namespace storage {
 
 class FileSystemContext;
 
@@ -26,6 +26,6 @@ WEBKIT_STORAGE_BROWSER_EXPORT net::URLRequestJobFactory::ProtocolHandler*
     CreateFileSystemProtocolHandler(const std::string& storage_domain,
                                     FileSystemContext* context);
 
-}  // namespace fileapi
+}  // namespace storage
 
 #endif  // WEBKIT_BROWSER_FILEAPI_FILE_SYSTEM_URL_REQUEST_JOB_FACTORY_H_

@@ -27,8 +27,8 @@
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_operation_runner.h"
 
-using fileapi::FileSystemOperation;
-using fileapi::FileSystemURL;
+using storage::FileSystemOperation;
+using storage::FileSystemURL;
 using content::MockBlobURLRequestContext;
 using content::ScopedTextBlob;
 using base::File;
@@ -249,13 +249,15 @@ TEST_F(SyncableFileOperationRunnerTest, CopyAndMove) {
   // (since the source directory is in syncing).
   ResetCallbackStatus();
   file_system_.operation_runner()->Copy(
-      URL(kDir), URL("dest-copy"),
-      fileapi::FileSystemOperation::OPTION_NONE,
-      fileapi::FileSystemOperationRunner::CopyProgressCallback(),
+      URL(kDir),
+      URL("dest-copy"),
+      storage::FileSystemOperation::OPTION_NONE,
+      storage::FileSystemOperationRunner::CopyProgressCallback(),
       ExpectStatus(FROM_HERE, File::FILE_OK));
   file_system_.operation_runner()->Move(
-      URL(kDir), URL("dest-move"),
-      fileapi::FileSystemOperation::OPTION_NONE,
+      URL(kDir),
+      URL("dest-move"),
+      storage::FileSystemOperation::OPTION_NONE,
       ExpectStatus(FROM_HERE, File::FILE_OK));
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(1, callback_count_);
@@ -272,9 +274,10 @@ TEST_F(SyncableFileOperationRunnerTest, CopyAndMove) {
   // Now the destination is also locked copying kDir should be queued.
   ResetCallbackStatus();
   file_system_.operation_runner()->Copy(
-      URL(kDir), URL("dest-copy2"),
-      fileapi::FileSystemOperation::OPTION_NONE,
-      fileapi::FileSystemOperationRunner::CopyProgressCallback(),
+      URL(kDir),
+      URL("dest-copy2"),
+      storage::FileSystemOperation::OPTION_NONE,
+      storage::FileSystemOperationRunner::CopyProgressCallback(),
       ExpectStatus(FROM_HERE, File::FILE_OK));
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(0, callback_count_);
@@ -396,10 +399,9 @@ TEST_F(SyncableFileOperationRunnerTest, Cancel) {
 
   // Run Truncate and immediately cancel. This shouldn't crash.
   ResetCallbackStatus();
-  fileapi::FileSystemOperationRunner::OperationID id =
+  storage::FileSystemOperationRunner::OperationID id =
       file_system_.operation_runner()->Truncate(
-          URL(kFile), 10,
-          ExpectStatus(FROM_HERE, File::FILE_OK));
+          URL(kFile), 10, ExpectStatus(FROM_HERE, File::FILE_OK));
   file_system_.operation_runner()->Cancel(
       id, ExpectStatus(FROM_HERE, File::FILE_ERROR_INVALID_OPERATION));
   base::MessageLoop::current()->RunUntilIdle();

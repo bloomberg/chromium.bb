@@ -10,7 +10,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
 
-namespace webkit_database {
+namespace storage {
 
 DatabaseConnections::DatabaseConnections() {
 }
@@ -172,4 +172,4 @@ void DatabaseConnectionsWrapper::RemoveOpenConnection(
     base::MessageLoop::current()->Quit();
 }
 
-}  // namespace webkit_database
+}  // namespace storage

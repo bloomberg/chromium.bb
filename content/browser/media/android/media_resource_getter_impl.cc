@@ -49,10 +49,9 @@ static void RequestPlatformPathFromBlobURL(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   ChromeBlobStorageContext* context =
       ChromeBlobStorageContext::GetFor(browser_context);
-  scoped_ptr<webkit_blob::BlobDataHandle> handle =
+  scoped_ptr<storage::BlobDataHandle> handle =
       context->context()->GetBlobDataFromPublicURL(url);
-  const std::vector<webkit_blob::BlobData::Item> items =
-      handle->data()->items();
+  const std::vector<storage::BlobData::Item> items = handle->data()->items();
 
   // TODO(qinmin): handle the case when the blob data is not a single file.
   DLOG_IF(WARNING, items.size() != 1u)
@@ -63,7 +62,7 @@ static void RequestPlatformPathFromBlobURL(
 static void RequestPlaformPathFromFileSystemURL(
     const GURL& url,
     int render_process_id,
-    scoped_refptr<fileapi::FileSystemContext> file_system_context,
+    scoped_refptr<storage::FileSystemContext> file_system_context,
     const base::Callback<void(const std::string&)>& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   base::FilePath platform_path;
@@ -253,14 +252,15 @@ void MediaResourceGetterTask::CheckPolicyForCookies(
 
 MediaResourceGetterImpl::MediaResourceGetterImpl(
     BrowserContext* browser_context,
-    fileapi::FileSystemContext* file_system_context,
+    storage::FileSystemContext* file_system_context,
     int render_process_id,
     int render_frame_id)
     : browser_context_(browser_context),
       file_system_context_(file_system_context),
       render_process_id_(render_process_id),
       render_frame_id_(render_frame_id),
-      weak_factory_(this) {}
+      weak_factory_(this) {
+}
 
 MediaResourceGetterImpl::~MediaResourceGetterImpl() {}
 
@@ -327,7 +327,7 @@ void MediaResourceGetterImpl::GetPlatformPathFromURL(
     return;
   }
 
-  scoped_refptr<fileapi::FileSystemContext> context(file_system_context_);
+  scoped_refptr<storage::FileSystemContext> context(file_system_context_);
   BrowserThread::PostTask(
       BrowserThread::FILE,
       FROM_HERE,

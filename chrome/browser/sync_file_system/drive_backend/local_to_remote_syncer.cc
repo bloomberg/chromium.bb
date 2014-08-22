@@ -75,7 +75,7 @@ LocalToRemoteSyncer::LocalToRemoteSyncer(SyncEngineContext* sync_context,
                                          const SyncFileMetadata& local_metadata,
                                          const FileChange& local_change,
                                          const base::FilePath& local_path,
-                                         const fileapi::FileSystemURL& url)
+                                         const storage::FileSystemURL& url)
     : sync_context_(sync_context),
       local_change_(local_change),
       local_is_missing_(IsLocalFileMissing(local_metadata, local_change)),
@@ -156,7 +156,7 @@ void LocalToRemoteSyncer::RunPreflight(scoped_ptr<SyncTaskToken> token) {
   }
 
   std::vector<base::FilePath::StringType> missing_components;
-  fileapi::VirtualPath::GetComponents(missing_entries, &missing_components);
+  storage::VirtualPath::GetComponents(missing_entries, &missing_components);
 
   if (!missing_components.empty()) {
     if (local_is_missing_) {
@@ -364,7 +364,7 @@ void LocalToRemoteSyncer::HandleConflict(scoped_ptr<SyncTaskToken> token) {
   }
 
   const FileDetails& remote_details = remote_file_metadata.details();
-  base::FilePath title = fileapi::VirtualPath::BaseName(target_path_);
+  base::FilePath title = storage::VirtualPath::BaseName(target_path_);
   if (!remote_details.missing() &&
       remote_details.file_kind() == FILE_KIND_FOLDER &&
       remote_details.title() == title.AsUTF8Unsafe() &&
@@ -575,7 +575,7 @@ void LocalToRemoteSyncer::DidUpdateDatabaseForUploadExistingFile(
   }
 
   const FileDetails& details = file.details();
-  base::FilePath title = fileapi::VirtualPath::BaseName(target_path_);
+  base::FilePath title = storage::VirtualPath::BaseName(target_path_);
   if (!details.missing() &&
       details.file_kind() == FILE_KIND_FILE &&
       details.title() == title.AsUTF8Unsafe() &&
@@ -646,7 +646,7 @@ void LocalToRemoteSyncer::UploadNewFile(scoped_ptr<SyncTaskToken> token) {
   DCHECK(remote_parent_folder_tracker_);
 
   sync_action_ = SYNC_ACTION_ADDED;
-  base::FilePath title = fileapi::VirtualPath::BaseName(target_path_);
+  base::FilePath title = storage::VirtualPath::BaseName(target_path_);
   drive_uploader()->UploadNewFile(
       remote_parent_folder_tracker_->file_id(),
       local_path_,
@@ -690,7 +690,7 @@ void LocalToRemoteSyncer::CreateRemoteFolder(
     scoped_ptr<SyncTaskToken> token) {
   DCHECK(remote_parent_folder_tracker_);
 
-  base::FilePath title = fileapi::VirtualPath::BaseName(target_path_);
+  base::FilePath title = storage::VirtualPath::BaseName(target_path_);
   sync_action_ = SYNC_ACTION_ADDED;
 
   DCHECK(!folder_creator_);

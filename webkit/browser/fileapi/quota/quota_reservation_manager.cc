@@ -7,7 +7,7 @@
 #include "webkit/browser/fileapi/quota/quota_reservation.h"
 #include "webkit/browser/fileapi/quota/quota_reservation_buffer.h"
 
-namespace fileapi {
+namespace storage {
 
 QuotaReservationManager::QuotaReservationManager(
     scoped_ptr<QuotaBackend> backend)
@@ -88,4 +88,4 @@ scoped_refptr<QuotaReservation> QuotaReservationManager::CreateReservation(
   return GetReservationBuffer(origin, type)->CreateReservation();;
 }
 
-}  // namespace fileapi
+}  // namespace storage

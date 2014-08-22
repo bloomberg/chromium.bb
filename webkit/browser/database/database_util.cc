@@ -10,7 +10,7 @@
 #include "webkit/browser/database/vfs_backend.h"
 #include "webkit/common/database/database_identifier.h"
 
-namespace webkit_database {
+namespace storage {
 
 namespace {
 
@@ -105,4 +105,4 @@ bool DatabaseUtil::IsValidOriginIdentifier(
   return GetOriginFromIdentifier(origin_identifier).is_valid();
 }
 
-}  // namespace webkit_database
+}  // namespace storage

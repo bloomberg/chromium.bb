@@ -23,13 +23,13 @@ namespace net {
 class URLRequest;
 }
 
-namespace webkit_blob {
+namespace storage {
 class ShareableFileReference;
 }
 
 class GURL;
 
-namespace fileapi {
+namespace storage {
 
 class FileSystemContext;
 class FileSystemURL;
@@ -117,8 +117,8 @@ class FileSystemOperation {
       void(base::File::Error result,
            const base::File::Info& file_info,
            const base::FilePath& platform_path,
-           const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref)>
-          SnapshotFileCallback;
+           const scoped_refptr<storage::ShareableFileReference>& file_ref)>
+      SnapshotFileCallback;
 
   // Used for progress update callback for Copy().
   //
@@ -480,6 +480,6 @@ class FileSystemOperation {
   };
 };
 
-}  // namespace fileapi
+}  // namespace storage
 
 #endif  // WEBKIT_BROWSER_FILEAPI_FILE_SYSTEM_OPERATION_H_

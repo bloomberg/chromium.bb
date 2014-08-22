@@ -13,7 +13,7 @@ class FilePath;
 }  // namespace base
 
 // This class supports AV scanning on post write validation.
-class AVScanningFileValidator : public fileapi::CopyOrMoveFileValidator {
+class AVScanningFileValidator : public storage::CopyOrMoveFileValidator {
  public:
   virtual ~AVScanningFileValidator();
 

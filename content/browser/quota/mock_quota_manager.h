@@ -17,13 +17,13 @@
 #include "webkit/browser/quota/quota_task.h"
 #include "webkit/common/quota/quota_types.h"
 
-using quota::GetOriginsCallback;
-using quota::QuotaClient;
-using quota::QuotaManager;
-using quota::QuotaStatusCode;
-using quota::SpecialStoragePolicy;
-using quota::StatusCallback;
-using quota::StorageType;
+using storage::GetOriginsCallback;
+using storage::QuotaClient;
+using storage::QuotaManager;
+using storage::QuotaStatusCode;
+using storage::SpecialStoragePolicy;
+using storage::StatusCallback;
+using storage::StorageType;
 
 namespace content {
 
@@ -52,7 +52,7 @@ class MockQuotaManager : public QuotaManager {
   // a helper method MockQuotaManagerProxy::SetQuota().
   virtual void GetUsageAndQuota(
       const GURL& origin,
-      quota::StorageType type,
+      storage::StorageType type,
       const GetUsageAndQuotaCallback& callback) OVERRIDE;
 
   // Overrides QuotaManager's implementation with a canned implementation that

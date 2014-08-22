@@ -41,8 +41,8 @@ using content::BrowserThread;
 using extensions::Extension;
 using extensions::ExtensionPrefs;
 using extensions::ExtensionRegistry;
-using fileapi::FileSystemURL;
-using fileapi::FileSystemURLSet;
+using storage::FileSystemURL;
+using storage::FileSystemURLSet;
 
 namespace sync_file_system {
 
@@ -276,7 +276,7 @@ SyncFileSystemService::~SyncFileSystemService() {
 }
 
 void SyncFileSystemService::InitializeForApp(
-    fileapi::FileSystemContext* file_system_context,
+    storage::FileSystemContext* file_system_context,
     const GURL& app_origin,
     const SyncStatusCallback& callback) {
   DCHECK(local_service_);
@@ -305,7 +305,7 @@ void SyncFileSystemService::DumpFiles(const GURL& origin,
 
   content::StoragePartition* storage_partition =
       content::BrowserContext::GetStoragePartitionForSite(profile_, origin);
-  fileapi::FileSystemContext* file_system_context =
+  storage::FileSystemContext* file_system_context =
       storage_partition->GetFileSystemContext();
   local_service_->MaybeInitializeFileSystemContext(
       origin, file_system_context,

@@ -25,7 +25,7 @@ class SequencedTaskRunner;
 class SingleThreadTaskRunner;
 }
 
-namespace quota {
+namespace storage {
 
 // The proxy may be called and finally released on any thread.
 class WEBKIT_STORAGE_BROWSER_EXPORT QuotaManagerProxy
@@ -73,6 +73,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT QuotaManagerProxy
   DISALLOW_COPY_AND_ASSIGN(QuotaManagerProxy);
 };
 
-}  // namespace quota
+}  // namespace storage
 
 #endif  // WEBKIT_BROWSER_QUOTA_QUOTA_MANAGER_PROXY_H_

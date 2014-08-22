@@ -30,7 +30,7 @@ namespace content {
 
 namespace {
 
-using fileapi::FileSystemOptions;
+using storage::FileSystemOptions;
 
 FileSystemOptions CreateBrowserFileSystemOptions(bool is_incognito) {
   FileSystemOptions::ProfileMode profile_mode =
@@ -48,12 +48,11 @@ FileSystemOptions CreateBrowserFileSystemOptions(bool is_incognito) {
 
 }  // namespace
 
-scoped_refptr<fileapi::FileSystemContext> CreateFileSystemContext(
+scoped_refptr<storage::FileSystemContext> CreateFileSystemContext(
     BrowserContext* browser_context,
     const base::FilePath& profile_path,
     bool is_incognito,
-    quota::QuotaManagerProxy* quota_manager_proxy) {
-
+    storage::QuotaManagerProxy* quota_manager_proxy) {
   base::SequencedWorkerPool* pool = BrowserThread::GetBlockingPool();
   scoped_refptr<base::SequencedTaskRunner> file_task_runner =
       pool->GetSequencedTaskRunnerWithShutdownBehavior(
@@ -61,20 +60,20 @@ scoped_refptr<fileapi::FileSystemContext> CreateFileSystemContext(
           base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
 
   // Setting up additional filesystem backends.
-  ScopedVector<fileapi::FileSystemBackend> additional_backends;
+  ScopedVector<storage::FileSystemBackend> additional_backends;
   GetContentClient()->browser()->GetAdditionalFileSystemBackends(
       browser_context,
       profile_path,
       &additional_backends);
 
   // Set up the auto mount handlers for url requests.
-  std::vector<fileapi::URLRequestAutoMountHandler>
+  std::vector<storage::URLRequestAutoMountHandler>
       url_request_auto_mount_handlers;
   GetContentClient()->browser()->GetURLRequestAutoMountHandlers(
       &url_request_auto_mount_handlers);
 
-  scoped_refptr<fileapi::FileSystemContext> file_system_context =
-      new fileapi::FileSystemContext(
+  scoped_refptr<storage::FileSystemContext> file_system_context =
+      new storage::FileSystemContext(
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO).get(),
           file_task_runner.get(),
           BrowserContext::GetMountPoints(browser_context),
@@ -85,28 +84,27 @@ scoped_refptr<fileapi::FileSystemContext> CreateFileSystemContext(
           profile_path,
           CreateBrowserFileSystemOptions(is_incognito));
 
-  std::vector<fileapi::FileSystemType> types;
+  std::vector<storage::FileSystemType> types;
   file_system_context->GetFileSystemTypes(&types);
   for (size_t i = 0; i < types.size(); ++i) {
-    ChildProcessSecurityPolicyImpl::GetInstance()->
-        RegisterFileSystemPermissionPolicy(
+    ChildProcessSecurityPolicyImpl::GetInstance()
+        ->RegisterFileSystemPermissionPolicy(
             types[i],
-            fileapi::FileSystemContext::GetPermissionPolicy(types[i]));
+            storage::FileSystemContext::GetPermissionPolicy(types[i]));
   }
 
   return file_system_context;
 }
 
-bool FileSystemURLIsValid(
-    fileapi::FileSystemContext* context,
-    const fileapi::FileSystemURL& url) {
+bool FileSystemURLIsValid(storage::FileSystemContext* context,
+                          const storage::FileSystemURL& url) {
   if (!url.is_valid())
     return false;
 
   return context->GetFileSystemBackend(url.type()) != NULL;
 }
 
-void SyncGetPlatformPath(fileapi::FileSystemContext* context,
+void SyncGetPlatformPath(storage::FileSystemContext* context,
                          int process_id,
                          const GURL& path,
                          base::FilePath* platform_path) {
@@ -114,7 +112,7 @@ void SyncGetPlatformPath(fileapi::FileSystemContext* context,
          RunsTasksOnCurrentThread());
   DCHECK(platform_path);
   *platform_path = base::FilePath();
-  fileapi::FileSystemURL url(context->CrackURL(path));
+  storage::FileSystemURL url(context->CrackURL(path));
   if (!FileSystemURLIsValid(context, url))
     return;
 

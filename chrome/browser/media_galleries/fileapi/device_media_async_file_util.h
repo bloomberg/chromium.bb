@@ -13,12 +13,12 @@
 #include "webkit/browser/fileapi/async_file_util.h"
 #include "webkit/common/blob/shareable_file_reference.h"
 
-namespace fileapi {
+namespace storage {
 class FileSystemOperationContext;
 class FileSystemURL;
 }
 
-namespace webkit_blob {
+namespace storage {
 class FileStreamReader;
 }
 
@@ -27,7 +27,7 @@ enum MediaFileValidationType {
   APPLY_MEDIA_FILE_VALIDATION,
 };
 
-class DeviceMediaAsyncFileUtil : public fileapi::AsyncFileUtil {
+class DeviceMediaAsyncFileUtil : public storage::AsyncFileUtil {
  public:
   virtual ~DeviceMediaAsyncFileUtil();
 
@@ -36,76 +36,74 @@ class DeviceMediaAsyncFileUtil : public fileapi::AsyncFileUtil {
       const base::FilePath& profile_path,
       MediaFileValidationType validation_type);
 
-  bool SupportsStreaming(const fileapi::FileSystemURL& url);
+  bool SupportsStreaming(const storage::FileSystemURL& url);
 
   // AsyncFileUtil overrides.
   virtual void CreateOrOpen(
-      scoped_ptr<fileapi::FileSystemOperationContext> context,
-      const fileapi::FileSystemURL& url,
+      scoped_ptr<storage::FileSystemOperationContext> context,
+      const storage::FileSystemURL& url,
       int file_flags,
       const CreateOrOpenCallback& callback) OVERRIDE;
   virtual void EnsureFileExists(
-      scoped_ptr<fileapi::FileSystemOperationContext> context,
-      const fileapi::FileSystemURL& url,
+      scoped_ptr<storage::FileSystemOperationContext> context,
+      const storage::FileSystemURL& url,
       const EnsureFileExistsCallback& callback) OVERRIDE;
   virtual void CreateDirectory(
-      scoped_ptr<fileapi::FileSystemOperationContext> context,
-      const fileapi::FileSystemURL& url,
+      scoped_ptr<storage::FileSystemOperationContext> context,
+      const storage::FileSystemURL& url,
       bool exclusive,
       bool recursive,
       const StatusCallback& callback) OVERRIDE;
   virtual void GetFileInfo(
-      scoped_ptr<fileapi::FileSystemOperationContext> context,
-      const fileapi::FileSystemURL& url,
+      scoped_ptr<storage::FileSystemOperationContext> context,
+      const storage::FileSystemURL& url,
       const GetFileInfoCallback& callback) OVERRIDE;
   virtual void ReadDirectory(
-      scoped_ptr<fileapi::FileSystemOperationContext> context,
-      const fileapi::FileSystemURL& url,
+      scoped_ptr<storage::FileSystemOperationContext> context,
+      const storage::FileSystemURL& url,
       const ReadDirectoryCallback& callback) OVERRIDE;
-  virtual void Touch(
-      scoped_ptr<fileapi::FileSystemOperationContext> context,
-      const fileapi::FileSystemURL& url,
-      const base::Time& last_access_time,
-      const base::Time& last_modified_time,
-      const StatusCallback& callback) OVERRIDE;
-  virtual void Truncate(
-      scoped_ptr<fileapi::FileSystemOperationContext> context,
-      const fileapi::FileSystemURL& url,
-      int64 length,
-      const StatusCallback& callback) OVERRIDE;
+  virtual void Touch(scoped_ptr<storage::FileSystemOperationContext> context,
+                     const storage::FileSystemURL& url,
+                     const base::Time& last_access_time,
+                     const base::Time& last_modified_time,
+                     const StatusCallback& callback) OVERRIDE;
+  virtual void Truncate(scoped_ptr<storage::FileSystemOperationContext> context,
+                        const storage::FileSystemURL& url,
+                        int64 length,
+                        const StatusCallback& callback) OVERRIDE;
   virtual void CopyFileLocal(
-      scoped_ptr<fileapi::FileSystemOperationContext> context,
-      const fileapi::FileSystemURL& src_url,
-      const fileapi::FileSystemURL& dest_url,
+      scoped_ptr<storage::FileSystemOperationContext> context,
+      const storage::FileSystemURL& src_url,
+      const storage::FileSystemURL& dest_url,
       CopyOrMoveOption option,
       const CopyFileProgressCallback& progress_callback,
       const StatusCallback& callback) OVERRIDE;
   virtual void MoveFileLocal(
-      scoped_ptr<fileapi::FileSystemOperationContext> context,
-      const fileapi::FileSystemURL& src_url,
-      const fileapi::FileSystemURL& dest_url,
+      scoped_ptr<storage::FileSystemOperationContext> context,
+      const storage::FileSystemURL& src_url,
+      const storage::FileSystemURL& dest_url,
       CopyOrMoveOption option,
       const StatusCallback& callback) OVERRIDE;
   virtual void CopyInForeignFile(
-      scoped_ptr<fileapi::FileSystemOperationContext> context,
+      scoped_ptr<storage::FileSystemOperationContext> context,
       const base::FilePath& src_file_path,
-      const fileapi::FileSystemURL& dest_url,
+      const storage::FileSystemURL& dest_url,
       const StatusCallback& callback) OVERRIDE;
   virtual void DeleteFile(
-      scoped_ptr<fileapi::FileSystemOperationContext> context,
-      const fileapi::FileSystemURL& url,
+      scoped_ptr<storage::FileSystemOperationContext> context,
+      const storage::FileSystemURL& url,
       const StatusCallback& callback) OVERRIDE;
   virtual void DeleteDirectory(
-      scoped_ptr<fileapi::FileSystemOperationContext> context,
-      const fileapi::FileSystemURL& url,
+      scoped_ptr<storage::FileSystemOperationContext> context,
+      const storage::FileSystemURL& url,
       const StatusCallback& callback) OVERRIDE;
   virtual void DeleteRecursively(
-      scoped_ptr<fileapi::FileSystemOperationContext> context,
-      const fileapi::FileSystemURL& url,
+      scoped_ptr<storage::FileSystemOperationContext> context,
+      const storage::FileSystemURL& url,
       const StatusCallback& callback) OVERRIDE;
   virtual void CreateSnapshotFile(
-      scoped_ptr<fileapi::FileSystemOperationContext> context,
-      const fileapi::FileSystemURL& url,
+      scoped_ptr<storage::FileSystemOperationContext> context,
+      const storage::FileSystemURL& url,
       const CreateSnapshotFileCallback& callback) OVERRIDE;
 
   // This method is called when existing Blobs are read.
@@ -113,11 +111,11 @@ class DeviceMediaAsyncFileUtil : public fileapi::AsyncFileUtil {
   // underlying storage. The returned FileStreamReader must return an error
   // when the state of the underlying storage changes. Any errors associated
   // with reading this file are returned by the FileStreamReader itself.
-  virtual scoped_ptr<webkit_blob::FileStreamReader> GetFileStreamReader(
-      const fileapi::FileSystemURL& url,
+  virtual scoped_ptr<storage::FileStreamReader> GetFileStreamReader(
+      const storage::FileSystemURL& url,
       int64 offset,
       const base::Time& expected_modification_time,
-      fileapi::FileSystemContext* context);
+      storage::FileSystemContext* context);
 
  private:
   class MediaPathFilterWrapper;

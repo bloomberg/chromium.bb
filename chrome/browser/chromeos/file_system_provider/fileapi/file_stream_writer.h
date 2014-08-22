@@ -20,13 +20,13 @@ class ProvidedFileSystemInterface;
 
 // Implements a streamed file writer. It is lazily initialized by the first call
 // to Write().
-class FileStreamWriter : public fileapi::FileStreamWriter {
+class FileStreamWriter : public storage::FileStreamWriter {
  public:
-  FileStreamWriter(const fileapi::FileSystemURL& url, int64 initial_offset);
+  FileStreamWriter(const storage::FileSystemURL& url, int64 initial_offset);
 
   virtual ~FileStreamWriter();
 
-  // fileapi::FileStreamWriter overrides.
+  // storage::FileStreamWriter overrides.
   virtual int Write(net::IOBuffer* buf,
                     int buf_len,
                     const net::CompletionCallback& callback) OVERRIDE;
@@ -72,7 +72,7 @@ class FileStreamWriter : public fileapi::FileStreamWriter {
                              int buffer_length,
                              const net::CompletionCallback& callback);
 
-  fileapi::FileSystemURL url_;
+  storage::FileSystemURL url_;
   int64 current_offset_;
   scoped_refptr<OperationRunner> runner_;
   State state_;

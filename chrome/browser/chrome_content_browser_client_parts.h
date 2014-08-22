@@ -25,7 +25,7 @@ class SiteInstance;
 struct WebPreferences;
 }
 
-namespace fileapi {
+namespace storage {
 class FileSystemBackend;
 }
 
@@ -49,11 +49,11 @@ class ChromeContentBrowserClientParts {
   virtual void GetAdditionalAllowedSchemesForFileSystem(
       std::vector<std::string>* additional_allowed_schemes) {}
   virtual void GetURLRequestAutoMountHandlers(
-      std::vector<fileapi::URLRequestAutoMountHandler>* handlers) {}
+      std::vector<storage::URLRequestAutoMountHandler>* handlers) {}
   virtual void GetAdditionalFileSystemBackends(
       content::BrowserContext* browser_context,
       const base::FilePath& storage_partition_path,
-      ScopedVector<fileapi::FileSystemBackend>* additional_backends) {}
+      ScopedVector<storage::FileSystemBackend>* additional_backends) {}
 
   // Append extra switches to |command_line| for |process|. If |process| is not
   // NULL, then neither is |profile|.

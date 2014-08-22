@@ -21,7 +21,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 
-using fileapi::FileSystemURL;
+using storage::FileSystemURL;
 
 namespace drive {
 

@@ -19,8 +19,8 @@
 using blink::WebStorageQuotaCallbacks;
 using blink::WebStorageQuotaError;
 using blink::WebStorageQuotaType;
-using quota::QuotaStatusCode;
-using quota::StorageType;
+using storage::QuotaStatusCode;
+using storage::StorageType;
 
 namespace content {
 
@@ -43,7 +43,7 @@ class WebStorageQuotaDispatcherCallback : public QuotaDispatcher::Callback {
   virtual void DidGrantStorageQuota(int64 usage, int64 granted_quota) OVERRIDE {
     callbacks_.didGrantStorageQuota(usage, granted_quota);
   }
-  virtual void DidFail(quota::QuotaStatusCode error) OVERRIDE {
+  virtual void DidFail(storage::QuotaStatusCode error) OVERRIDE {
     callbacks_.didFail(static_cast<WebStorageQuotaError>(error));
   }
 
@@ -69,7 +69,7 @@ QuotaDispatcher::QuotaDispatcher(ThreadSafeSender* thread_safe_sender,
 QuotaDispatcher::~QuotaDispatcher() {
   IDMap<Callback, IDMapOwnPointer>::iterator iter(&pending_quota_callbacks_);
   while (!iter.IsAtEnd()) {
-    iter.GetCurrentValue()->DidFail(quota::kQuotaErrorAbort);
+    iter.GetCurrentValue()->DidFail(storage::kQuotaErrorAbort);
     iter.Advance();
   }
 
@@ -175,14 +175,18 @@ void QuotaDispatcher::DidFail(
   pending_quota_callbacks_.Remove(request_id);
 }
 
-COMPILE_ASSERT(int(blink::WebStorageQuotaTypeTemporary) == \
-               int(quota::kStorageTypeTemporary), mismatching_enums);
-COMPILE_ASSERT(int(blink::WebStorageQuotaTypePersistent) == \
-               int(quota::kStorageTypePersistent), mismatching_enums);
+COMPILE_ASSERT(int(blink::WebStorageQuotaTypeTemporary) ==
+                   int(storage::kStorageTypeTemporary),
+               mismatching_enums);
+COMPILE_ASSERT(int(blink::WebStorageQuotaTypePersistent) ==
+                   int(storage::kStorageTypePersistent),
+               mismatching_enums);
 
-COMPILE_ASSERT(int(blink::WebStorageQuotaErrorNotSupported) == \
-               int(quota::kQuotaErrorNotSupported), mismatching_enums);
-COMPILE_ASSERT(int(blink::WebStorageQuotaErrorAbort) == \
-               int(quota::kQuotaErrorAbort), mismatching_enums);
+COMPILE_ASSERT(int(blink::WebStorageQuotaErrorNotSupported) ==
+                   int(storage::kQuotaErrorNotSupported),
+               mismatching_enums);
+COMPILE_ASSERT(int(blink::WebStorageQuotaErrorAbort) ==
+                   int(storage::kQuotaErrorAbort),
+               mismatching_enums);
 
 }  // namespace content

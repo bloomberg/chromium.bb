@@ -37,21 +37,21 @@ const char kFileSystemId[] = "File/System/Id";
 const char kDisplayName[] = "Camera Pictures";
 
 // Creates a FileSystemURL for tests.
-fileapi::FileSystemURL CreateFileSystemURL(
+storage::FileSystemURL CreateFileSystemURL(
     Profile* profile,
     const ProvidedFileSystemInfo& file_system_info,
     const base::FilePath& file_path) {
   const std::string origin =
       std::string("chrome-extension://") + file_system_info.extension_id();
   const base::FilePath mount_path = file_system_info.mount_path();
-  const fileapi::ExternalMountPoints* const mount_points =
-      fileapi::ExternalMountPoints::GetSystemInstance();
+  const storage::ExternalMountPoints* const mount_points =
+      storage::ExternalMountPoints::GetSystemInstance();
   DCHECK(mount_points);
   DCHECK(file_path.IsAbsolute());
   base::FilePath relative_path(file_path.value().substr(1));
   return mount_points->CreateCrackedFileSystemURL(
       GURL(origin),
-      fileapi::kFileSystemTypeExternal,
+      storage::kFileSystemTypeExternal,
       base::FilePath(mount_path.BaseName().Append(relative_path)));
 }
 
@@ -137,7 +137,7 @@ TEST_F(FileSystemProviderMountPathUtilTest, Parser) {
 
   const base::FilePath kFilePath =
       base::FilePath::FromUTF8Unsafe("/hello/world.txt");
-  const fileapi::FileSystemURL url =
+  const storage::FileSystemURL url =
       CreateFileSystemURL(profile_, file_system_info, kFilePath);
   EXPECT_TRUE(url.is_valid());
 
@@ -160,7 +160,7 @@ TEST_F(FileSystemProviderMountPathUtilTest, Parser_RootPath) {
           ->GetFileSystemInfo();
 
   const base::FilePath kFilePath = base::FilePath::FromUTF8Unsafe("/");
-  const fileapi::FileSystemURL url =
+  const storage::FileSystemURL url =
       CreateFileSystemURL(profile_, file_system_info, kFilePath);
   EXPECT_TRUE(url.is_valid());
 
@@ -182,7 +182,7 @@ TEST_F(FileSystemProviderMountPathUtilTest, Parser_WrongUrl) {
       GetMountPath(profile_, kExtensionId, kFileSystemId));
 
   const base::FilePath kFilePath = base::FilePath::FromUTF8Unsafe("/hello");
-  const fileapi::FileSystemURL url =
+  const storage::FileSystemURL url =
       CreateFileSystemURL(profile_, file_system_info, kFilePath);
   // It is impossible to create a cracked URL for a mount point which doesn't
   // exist, therefore is will always be invalid, and empty.
@@ -203,16 +203,16 @@ TEST_F(FileSystemProviderMountPathUtilTest, Parser_IsolatedURL) {
 
   const base::FilePath kFilePath =
       base::FilePath::FromUTF8Unsafe("/hello/world.txt");
-  const fileapi::FileSystemURL url =
+  const storage::FileSystemURL url =
       CreateFileSystemURL(profile_, file_system_info, kFilePath);
   EXPECT_TRUE(url.is_valid());
 
   // Create an isolated URL for the original one.
-  fileapi::IsolatedContext* const isolated_context =
-      fileapi::IsolatedContext::GetInstance();
+  storage::IsolatedContext* const isolated_context =
+      storage::IsolatedContext::GetInstance();
   const std::string isolated_file_system_id =
       isolated_context->RegisterFileSystemForPath(
-          fileapi::kFileSystemTypeProvided,
+          storage::kFileSystemTypeProvided,
           url.filesystem_id(),
           url.path(),
           NULL);
@@ -221,10 +221,10 @@ TEST_F(FileSystemProviderMountPathUtilTest, Parser_IsolatedURL) {
       isolated_context->CreateVirtualRootPath(isolated_file_system_id)
           .Append(kFilePath.BaseName().value());
 
-  const fileapi::FileSystemURL isolated_url =
+  const storage::FileSystemURL isolated_url =
       isolated_context->CreateCrackedFileSystemURL(
           url.origin(),
-          fileapi::kFileSystemTypeIsolated,
+          storage::kFileSystemTypeIsolated,
           isolated_virtual_path);
 
   EXPECT_TRUE(isolated_url.is_valid());

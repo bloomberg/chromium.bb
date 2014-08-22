@@ -60,7 +60,7 @@ class PageCaptureSaveAsMHTMLFunction : public ChromeAsyncExtensionFunction {
   base::FilePath mhtml_path_;
 
   // The file containing the MHTML.
-  scoped_refptr<webkit_blob::ShareableFileReference> mhtml_file_;
+  scoped_refptr<storage::ShareableFileReference> mhtml_file_;
 
   DECLARE_EXTENSION_FUNCTION("pageCapture.saveAsMHTML", PAGECAPTURE_SAVEASMHTML)
 };

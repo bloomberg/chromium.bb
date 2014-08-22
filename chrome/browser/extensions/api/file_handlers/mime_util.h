@@ -20,9 +20,9 @@ namespace base {
 class FilePath;
 }  // namespace base
 
-namespace fileapi {
+namespace storage {
 class FileSystemURL;
-}  // namespace fileapi
+}  // namespace storage
 
 namespace extensions {
 namespace app_file_handler_util {
@@ -48,7 +48,7 @@ class MimeTypeCollector {
 
   // Collects all mime types asynchronously for a vector of URLs and upon
   // completion, calls the |callback|. It can be called only once.
-  void CollectForURLs(const std::vector<fileapi::FileSystemURL>& urls,
+  void CollectForURLs(const std::vector<storage::FileSystemURL>& urls,
                       const CompletionCallback& callback);
 
   // Collects all mime types asynchronously for a vector of local file paths and

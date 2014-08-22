@@ -2890,8 +2890,10 @@ void RenderFrameImpl::requestStorageQuota(
     return;
   }
   ChildThread::current()->quota_dispatcher()->RequestStorageQuota(
-      render_view_->GetRoutingID(), GURL(origin.toString()),
-      static_cast<quota::StorageType>(type), requested_size,
+      render_view_->GetRoutingID(),
+      GURL(origin.toString()),
+      static_cast<storage::StorageType>(type),
+      requested_size,
       QuotaDispatcher::CreateWebStorageQuotaCallbacksWrapper(callbacks));
 }
 

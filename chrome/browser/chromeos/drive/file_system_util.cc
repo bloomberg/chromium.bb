@@ -237,8 +237,8 @@ Profile* ExtractProfileFromPath(const base::FilePath& path) {
 }
 
 base::FilePath ExtractDrivePathFromFileSystemUrl(
-    const fileapi::FileSystemURL& url) {
-  if (!url.is_valid() || url.type() != fileapi::kFileSystemTypeDrive)
+    const storage::FileSystemURL& url) {
+  if (!url.is_valid() || url.type() != storage::kFileSystemTypeDrive)
     return base::FilePath();
   return ExtractDrivePath(url.path());
 }

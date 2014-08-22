@@ -87,7 +87,7 @@ void AddHorizontalRule(std::string* out) {
 
 }  // namespace
 
-namespace webkit_blob {
+namespace storage {
 
 ViewBlobInternalsJob::ViewBlobInternalsJob(
     net::URLRequest* request,
@@ -239,4 +239,4 @@ void ViewBlobInternalsJob::GenerateHTMLForBlobData(const BlobData& blob_data,
   EndHTMLList(out);
 }
 
-}  // namespace webkit_blob
+}  // namespace storage

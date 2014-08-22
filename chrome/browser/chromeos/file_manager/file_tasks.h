@@ -127,7 +127,7 @@ namespace drive {
 class DriveAppRegistry;
 }
 
-namespace fileapi {
+namespace storage {
 class FileSystemURL;
 }
 
@@ -241,7 +241,7 @@ typedef base::Callback<void(extensions::api::file_browser_private::TaskResult
 bool ExecuteFileTask(Profile* profile,
                      const GURL& source_url,
                      const TaskDescriptor& task,
-                     const std::vector<fileapi::FileSystemURL>& file_urls,
+                     const std::vector<storage::FileSystemURL>& file_urls,
                      const FileTaskFinishedCallback& done);
 
 typedef extensions::app_file_handler_util::PathAndMimeTypeSet

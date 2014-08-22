@@ -16,15 +16,15 @@ namespace base {
 class MessageLoopProxy;
 }  // namespace base
 
-namespace fileapi {
+namespace storage {
 class FileSystemContext;
-}  // namespace fileapi
+}  // namespace storage
 
 namespace net {
 class URLRequestContext;
 }  // namespace net
 
-namespace webkit_blob {
+namespace storage {
 
 class BlobData;
 class BlobDataHandle;
@@ -46,7 +46,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT BlobProtocolHandler
       scoped_ptr<BlobDataHandle> blob_data_handle);
 
   BlobProtocolHandler(BlobStorageContext* context,
-                      fileapi::FileSystemContext* file_system_context,
+                      storage::FileSystemContext* file_system_context,
                       base::MessageLoopProxy* file_loop_proxy);
   virtual ~BlobProtocolHandler();
 
@@ -59,12 +59,12 @@ class WEBKIT_STORAGE_BROWSER_EXPORT BlobProtocolHandler
       net::URLRequest* request) const;
 
   base::WeakPtr<BlobStorageContext> context_;
-  const scoped_refptr<fileapi::FileSystemContext> file_system_context_;
+  const scoped_refptr<storage::FileSystemContext> file_system_context_;
   const scoped_refptr<base::MessageLoopProxy> file_loop_proxy_;
 
   DISALLOW_COPY_AND_ASSIGN(BlobProtocolHandler);
 };
 
-}  // namespace webkit_blob
+}  // namespace storage
 
 #endif  // WEBKIT_BROWSER_BLOB_BLOB_URL_REQUEST_JOB_FACTORY_H_

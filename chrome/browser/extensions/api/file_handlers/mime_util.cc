@@ -153,7 +153,7 @@ MimeTypeCollector::~MimeTypeCollector() {
 }
 
 void MimeTypeCollector::CollectForURLs(
-    const std::vector<fileapi::FileSystemURL>& urls,
+    const std::vector<storage::FileSystemURL>& urls,
     const CompletionCallback& callback) {
   std::vector<base::FilePath> local_paths;
   for (size_t i = 0; i < urls.size(); ++i) {

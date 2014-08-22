@@ -116,8 +116,8 @@ std::string PepperIsolatedFileSystemMessageFilter::CreateCrxFileSystem(
 
   // First level directory for isolated filesystem to lookup.
   std::string kFirstLevelDirectory("crxfs");
-  return fileapi::IsolatedContext::GetInstance()->RegisterFileSystemForPath(
-      fileapi::kFileSystemTypeNativeLocal,
+  return storage::IsolatedContext::GetInstance()->RegisterFileSystemForPath(
+      storage::kFileSystemTypeNativeLocal,
       std::string(),
       extension->path(),
       &kFirstLevelDirectory);
@@ -193,8 +193,8 @@ int32_t PepperIsolatedFileSystemMessageFilter::OpenPluginPrivateFileSystem(
   const std::string& root_name = ppapi::IsolatedFileSystemTypeToRootName(
       PP_ISOLATEDFILESYSTEMTYPE_PRIVATE_PLUGINPRIVATE);
   const std::string& fsid =
-      fileapi::IsolatedContext::GetInstance()->RegisterFileSystemForVirtualPath(
-          fileapi::kFileSystemTypePluginPrivate, root_name, base::FilePath());
+      storage::IsolatedContext::GetInstance()->RegisterFileSystemForVirtualPath(
+          storage::kFileSystemTypePluginPrivate, root_name, base::FilePath());
 
   // Grant full access of isolated filesystem to renderer process.
   content::ChildProcessSecurityPolicy* policy =

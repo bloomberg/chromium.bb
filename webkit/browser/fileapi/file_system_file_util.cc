@@ -4,7 +4,7 @@
 
 #include "webkit/browser/fileapi/file_system_file_util.h"
 
-namespace fileapi {
+namespace storage {
 
 base::FilePath FileSystemFileUtil::EmptyFileEnumerator::Next() {
   return base::FilePath();
@@ -22,4 +22,4 @@ bool FileSystemFileUtil::EmptyFileEnumerator::IsDirectory() {
   return false;
 }
 
-}  // namespace fileapi
+}  // namespace storage

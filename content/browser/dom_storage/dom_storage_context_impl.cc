@@ -29,7 +29,7 @@ static const int kSessionStoraceScavengingSeconds = 60;
 DOMStorageContextImpl::DOMStorageContextImpl(
     const base::FilePath& localstorage_directory,
     const base::FilePath& sessionstorage_directory,
-    quota::SpecialStoragePolicy* special_storage_policy,
+    storage::SpecialStoragePolicy* special_storage_policy,
     DOMStorageTaskRunner* task_runner)
     : localstorage_directory_(localstorage_directory),
       sessionstorage_directory_(sessionstorage_directory),

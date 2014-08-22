@@ -16,7 +16,7 @@
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/browser/webkit_storage_browser_export.h"
 
-namespace fileapi {
+namespace storage {
 
 class FileSystemContext;
 struct DirectoryEntry;
@@ -64,6 +64,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE FileSystemDirURLRequestJob
   DISALLOW_COPY_AND_ASSIGN(FileSystemDirURLRequestJob);
 };
 
-}  // namespace fileapi
+}  // namespace storage
 
 #endif  // WEBKIT_BROWSER_FILEAPI_FILE_SYSTEM_DIR_URL_REQUEST_JOB_H_

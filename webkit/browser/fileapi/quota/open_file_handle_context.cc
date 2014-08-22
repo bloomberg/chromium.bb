@@ -7,7 +7,7 @@
 #include "base/file_util.h"
 #include "webkit/browser/fileapi/quota/quota_reservation_buffer.h"
 
-namespace fileapi {
+namespace storage {
 
 OpenFileHandleContext::OpenFileHandleContext(
     const base::FilePath& platform_path,
@@ -69,4 +69,4 @@ OpenFileHandleContext::~OpenFileHandleContext() {
   reservation_buffer_->DetachOpenFileHandleContext(this);
 }
 
-}  // namespace fileapi
+}  // namespace storage

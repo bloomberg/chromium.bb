@@ -13,7 +13,7 @@ namespace chromeos {
 namespace file_system_provider {
 
 BufferingFileStreamReader::BufferingFileStreamReader(
-    scoped_ptr<webkit_blob::FileStreamReader> file_stream_reader,
+    scoped_ptr<storage::FileStreamReader> file_stream_reader,
     int buffer_size)
     : file_stream_reader_(file_stream_reader.Pass()),
       buffer_size_(buffer_size),

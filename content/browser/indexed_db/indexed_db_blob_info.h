@@ -17,8 +17,7 @@ namespace content {
 
 class CONTENT_EXPORT IndexedDBBlobInfo {
  public:
-  typedef webkit_blob::ShareableFileReference::FinalReleaseCallback
-      ReleaseCallback;
+  typedef storage::ShareableFileReference::FinalReleaseCallback ReleaseCallback;
   IndexedDBBlobInfo();
   ~IndexedDBBlobInfo();
   // These two are used for Blobs.

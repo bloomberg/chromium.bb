@@ -29,7 +29,7 @@ class Status;
 class WriteBatch;
 }
 
-namespace fileapi {
+namespace storage {
 
 // This class WILL NOT protect you against producing directory loops, giving an
 // empty directory a backing data file, giving two files the same backing file,
@@ -130,6 +130,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE SandboxDirectoryDatabase {
   DISALLOW_COPY_AND_ASSIGN(SandboxDirectoryDatabase);
 };
 
-}  // namespace fileapi
+}  // namespace storage
 
 #endif  // WEBKIT_BROWSER_FILEAPI_SANDBOX_DIRECTORY_DATABASE_H_

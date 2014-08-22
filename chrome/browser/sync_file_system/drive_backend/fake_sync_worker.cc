@@ -66,7 +66,7 @@ void FakeSyncWorker::UninstallOrigin(const GURL& origin,
 void FakeSyncWorker::ProcessRemoteChange(
     const SyncFileCallback& callback) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
-  callback.Run(SYNC_STATUS_OK, fileapi::FileSystemURL());
+  callback.Run(SYNC_STATUS_OK, storage::FileSystemURL());
 }
 
 void FakeSyncWorker::SetRemoteChangeProcessor(
@@ -137,12 +137,11 @@ void FakeSyncWorker::PromoteDemotedChanges(const base::Closure& callback) {
   callback.Run();
 }
 
-void FakeSyncWorker::ApplyLocalChange(
-    const FileChange& local_change,
-    const base::FilePath& local_path,
-    const SyncFileMetadata& local_metadata,
-    const fileapi::FileSystemURL& url,
-    const SyncStatusCallback& callback) {
+void FakeSyncWorker::ApplyLocalChange(const FileChange& local_change,
+                                      const base::FilePath& local_path,
+                                      const SyncFileMetadata& local_metadata,
+                                      const storage::FileSystemURL& url,
+                                      const SyncStatusCallback& callback) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
   callback.Run(SYNC_STATUS_OK);
 }

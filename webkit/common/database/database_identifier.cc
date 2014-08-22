@@ -8,7 +8,7 @@
 #include "base/strings/string_util.h"
 #include "url/url_canon.h"
 
-namespace webkit_database {
+namespace storage {
 
 // static
 std::string GetIdentifierFromOrigin(const GURL& origin) {
@@ -142,4 +142,4 @@ GURL DatabaseIdentifier::ToOrigin() const {
   return GURL(scheme_ + "://" + hostname_ + ":" + base::IntToString(port_));
 }
 
-}  // namespace webkit_database
+}  // namespace storage

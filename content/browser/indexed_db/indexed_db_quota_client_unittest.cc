@@ -22,8 +22,8 @@
 #include "webkit/common/database/database_identifier.h"
 
 // Declared to shorten the line lengths.
-static const quota::StorageType kTemp = quota::kStorageTypeTemporary;
-static const quota::StorageType kPerm = quota::kStorageTypePersistent;
+static const storage::StorageType kTemp = storage::kStorageTypeTemporary;
+static const storage::StorageType kPerm = storage::kStorageTypePersistent;
 
 namespace content {
 
@@ -43,13 +43,12 @@ class IndexedDBQuotaClientTest : public testing::Test {
         weak_factory_(this) {
     browser_context_.reset(new TestBrowserContext());
 
-    scoped_refptr<quota::QuotaManager> quota_manager =
-        new MockQuotaManager(
-            false /*in_memory*/,
-            browser_context_->GetPath(),
-            base::MessageLoop::current()->message_loop_proxy(),
-            base::MessageLoop::current()->message_loop_proxy(),
-            browser_context_->GetSpecialStoragePolicy());
+    scoped_refptr<storage::QuotaManager> quota_manager =
+        new MockQuotaManager(false /*in_memory*/,
+                             browser_context_->GetPath(),
+                             base::MessageLoop::current()->message_loop_proxy(),
+                             base::MessageLoop::current()->message_loop_proxy(),
+                             browser_context_->GetSpecialStoragePolicy());
 
     idb_context_ =
         new IndexedDBContextImpl(browser_context_->GetPath(),
@@ -77,9 +76,9 @@ class IndexedDBQuotaClientTest : public testing::Test {
     base::MessageLoop::current()->RunUntilIdle();
   }
 
-  int64 GetOriginUsage(quota::QuotaClient* client,
+  int64 GetOriginUsage(storage::QuotaClient* client,
                        const GURL& origin,
-                       quota::StorageType type) {
+                       storage::StorageType type) {
     usage_ = -1;
     client->GetOriginUsage(
         origin,
@@ -92,8 +91,8 @@ class IndexedDBQuotaClientTest : public testing::Test {
     return usage_;
   }
 
-  const std::set<GURL>& GetOriginsForType(quota::QuotaClient* client,
-                                          quota::StorageType type) {
+  const std::set<GURL>& GetOriginsForType(storage::QuotaClient* client,
+                                          storage::StorageType type) {
     origins_.clear();
     client->GetOriginsForType(
         type,
@@ -104,8 +103,8 @@ class IndexedDBQuotaClientTest : public testing::Test {
     return origins_;
   }
 
-  const std::set<GURL>& GetOriginsForHost(quota::QuotaClient* client,
-                                          quota::StorageType type,
+  const std::set<GURL>& GetOriginsForHost(storage::QuotaClient* client,
+                                          storage::StorageType type,
                                           const std::string& host) {
     origins_.clear();
     client->GetOriginsForHost(
@@ -118,9 +117,9 @@ class IndexedDBQuotaClientTest : public testing::Test {
     return origins_;
   }
 
-  quota::QuotaStatusCode DeleteOrigin(quota::QuotaClient* client,
-                                      const GURL& origin_url) {
-    delete_status_ = quota::kQuotaStatusUnknown;
+  storage::QuotaStatusCode DeleteOrigin(storage::QuotaClient* client,
+                                        const GURL& origin_url) {
+    delete_status_ = storage::kQuotaStatusUnknown;
     client->DeleteOriginData(
         origin_url,
         kTemp,
@@ -140,7 +139,7 @@ class IndexedDBQuotaClientTest : public testing::Test {
 
   void AddFakeIndexedDB(const GURL& origin, int size) {
     base::FilePath file_path_origin = idb_context()->GetFilePathForTesting(
-        webkit_database::GetIdentifierFromOrigin(origin));
+        storage::GetIdentifierFromOrigin(origin));
     if (!base::CreateDirectory(file_path_origin)) {
       LOG(ERROR) << "failed to base::CreateDirectory "
                  << file_path_origin.value();
@@ -157,7 +156,7 @@ class IndexedDBQuotaClientTest : public testing::Test {
     origins_ = origins;
   }
 
-  void OnDeleteOriginComplete(quota::QuotaStatusCode code) {
+  void OnDeleteOriginComplete(storage::QuotaStatusCode code) {
     delete_status_ = code;
   }
 
@@ -168,7 +167,7 @@ class IndexedDBQuotaClientTest : public testing::Test {
   scoped_refptr<IndexedDBContextImpl> idb_context_;
   content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<TestBrowserContext> browser_context_;
-  quota::QuotaStatusCode delete_status_;
+  storage::QuotaStatusCode delete_status_;
   base::WeakPtrFactory<IndexedDBQuotaClientTest> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(IndexedDBQuotaClientTest);
@@ -237,8 +236,8 @@ TEST_F(IndexedDBQuotaClientTest, DeleteOrigin) {
   EXPECT_EQ(1000, GetOriginUsage(&client, kOriginA, kTemp));
   EXPECT_EQ(50, GetOriginUsage(&client, kOriginB, kTemp));
 
-  quota::QuotaStatusCode delete_status = DeleteOrigin(&client, kOriginA);
-  EXPECT_EQ(quota::kQuotaStatusOk, delete_status);
+  storage::QuotaStatusCode delete_status = DeleteOrigin(&client, kOriginA);
+  EXPECT_EQ(storage::kQuotaStatusOk, delete_status);
   EXPECT_EQ(0, GetOriginUsage(&client, kOriginA, kTemp));
   EXPECT_EQ(50, GetOriginUsage(&client, kOriginB, kTemp));
 }

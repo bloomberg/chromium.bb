@@ -18,12 +18,12 @@
 #define DRIVE FPL("/a/")
 #endif
 
-using fileapi::FileSystemURL;
-using fileapi::kFileSystemTypeExternal;
-using fileapi::kFileSystemTypeIsolated;
-using fileapi::kFileSystemTypePersistent;
-using fileapi::kFileSystemTypeTemporary;
-using fileapi::VirtualPath;
+using storage::FileSystemURL;
+using storage::kFileSystemTypeExternal;
+using storage::kFileSystemTypeIsolated;
+using storage::kFileSystemTypePersistent;
+using storage::kFileSystemTypeTemporary;
+using storage::VirtualPath;
 
 namespace content {
 

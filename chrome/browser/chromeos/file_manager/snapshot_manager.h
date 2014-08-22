@@ -18,13 +18,13 @@ namespace base {
 class FilePath;
 }  // namespace base
 
-namespace fileapi {
+namespace storage {
 class FileSystemURL;
-}  // namespace fileapi
+}  // namespace storage
 
-namespace webkit_blob {
+namespace storage {
 class ShareableFileReference;
-}  // namespace webkit_blob
+}  // namespace storage
 
 namespace file_manager {
 
@@ -49,17 +49,17 @@ class SnapshotManager {
   // computing the necessity of clean up.
   struct FileReferenceWithSizeInfo {
     FileReferenceWithSizeInfo(
-        scoped_refptr<webkit_blob::ShareableFileReference> ref,
+        scoped_refptr<storage::ShareableFileReference> ref,
         int64 size);
     ~FileReferenceWithSizeInfo();
-    scoped_refptr<webkit_blob::ShareableFileReference> file_ref;
+    scoped_refptr<storage::ShareableFileReference> file_ref;
     int64 file_size;
   };
 
  private:
   // Part of CreateManagedSnapshot.
   void CreateManagedSnapshotAfterSpaceComputed(
-      const fileapi::FileSystemURL& filesystem_url,
+      const storage::FileSystemURL& filesystem_url,
       const LocalPathCallback& callback,
       int64 needed_space);
 
@@ -69,7 +69,7 @@ class SnapshotManager {
       base::File::Error result,
       const base::File::Info& file_info,
       const base::FilePath& platform_path,
-      const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref);
+      const scoped_refptr<storage::ShareableFileReference>& file_ref);
 
   Profile* profile_;
   std::deque<FileReferenceWithSizeInfo> file_refs_;

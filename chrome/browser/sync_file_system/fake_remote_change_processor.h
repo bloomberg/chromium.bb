@@ -17,7 +17,7 @@ namespace base {
 class FilePath;
 }
 
-namespace fileapi {
+namespace storage {
 class FileSystemURL;
 }
 
@@ -27,38 +27,39 @@ class FileChange;
 
 class FakeRemoteChangeProcessor : public RemoteChangeProcessor {
  public:
-  typedef std::map<fileapi::FileSystemURL, std::vector<FileChange>,
-                   fileapi::FileSystemURL::Comparator> URLToFileChangesMap;
-  typedef std::map<fileapi::FileSystemURL, FileChangeList,
-                   fileapi::FileSystemURL::Comparator> URLToFileChangeList;
-  typedef std::map<fileapi::FileSystemURL, SyncFileMetadata,
-                   fileapi::FileSystemURL::Comparator> URLToFileMetadata;
+  typedef std::map<storage::FileSystemURL,
+                   std::vector<FileChange>,
+                   storage::FileSystemURL::Comparator> URLToFileChangesMap;
+  typedef std::map<storage::FileSystemURL,
+                   FileChangeList,
+                   storage::FileSystemURL::Comparator> URLToFileChangeList;
+  typedef std::map<storage::FileSystemURL,
+                   SyncFileMetadata,
+                   storage::FileSystemURL::Comparator> URLToFileMetadata;
 
   FakeRemoteChangeProcessor();
   virtual ~FakeRemoteChangeProcessor();
 
   // RemoteChangeProcessor overrides.
   virtual void PrepareForProcessRemoteChange(
-      const fileapi::FileSystemURL& url,
+      const storage::FileSystemURL& url,
       const PrepareChangeCallback& callback) OVERRIDE;
-  virtual void ApplyRemoteChange(
-      const FileChange& change,
-      const base::FilePath& local_path,
-      const fileapi::FileSystemURL& url,
-      const SyncStatusCallback& callback) OVERRIDE;
+  virtual void ApplyRemoteChange(const FileChange& change,
+                                 const base::FilePath& local_path,
+                                 const storage::FileSystemURL& url,
+                                 const SyncStatusCallback& callback) OVERRIDE;
   virtual void FinalizeRemoteSync(
-      const fileapi::FileSystemURL& url,
+      const storage::FileSystemURL& url,
       bool clear_local_changes,
       const base::Closure& completion_callback) OVERRIDE;
   virtual void RecordFakeLocalChange(
-      const fileapi::FileSystemURL& url,
+      const storage::FileSystemURL& url,
       const FileChange& change,
       const SyncStatusCallback& callback) OVERRIDE;
 
-  void UpdateLocalFileMetadata(
-    const fileapi::FileSystemURL& url,
-    const FileChange& change);
-  void ClearLocalChanges(const fileapi::FileSystemURL& url);
+  void UpdateLocalFileMetadata(const storage::FileSystemURL& url,
+                               const FileChange& change);
+  void ClearLocalChanges(const storage::FileSystemURL& url);
 
   const URLToFileChangesMap& GetAppliedRemoteChanges() const;
 

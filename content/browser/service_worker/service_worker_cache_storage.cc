@@ -31,10 +31,9 @@ class ServiceWorkerCacheStorage::CacheLoader
   typedef base::Callback<void(scoped_ptr<std::vector<std::string> >)>
       StringsCallback;
 
-  CacheLoader(
-      base::SequencedTaskRunner* cache_task_runner,
-      net::URLRequestContext* request_context,
-      base::WeakPtr<webkit_blob::BlobStorageContext> blob_context)
+  CacheLoader(base::SequencedTaskRunner* cache_task_runner,
+              net::URLRequestContext* request_context,
+              base::WeakPtr<storage::BlobStorageContext> blob_context)
       : cache_task_runner_(cache_task_runner),
         request_context_(request_context),
         blob_context_(blob_context) {}
@@ -69,16 +68,15 @@ class ServiceWorkerCacheStorage::CacheLoader
 
   scoped_refptr<base::SequencedTaskRunner> cache_task_runner_;
   net::URLRequestContext* request_context_;
-  base::WeakPtr<webkit_blob::BlobStorageContext> blob_context_;
+  base::WeakPtr<storage::BlobStorageContext> blob_context_;
 };
 
 class ServiceWorkerCacheStorage::MemoryLoader
     : public ServiceWorkerCacheStorage::CacheLoader {
  public:
-  MemoryLoader(
-      base::SequencedTaskRunner* cache_task_runner,
-      net::URLRequestContext* request_context,
-      base::WeakPtr<webkit_blob::BlobStorageContext> blob_context)
+  MemoryLoader(base::SequencedTaskRunner* cache_task_runner,
+               net::URLRequestContext* request_context,
+               base::WeakPtr<storage::BlobStorageContext> blob_context)
       : CacheLoader(cache_task_runner, request_context, blob_context) {}
   virtual void LoadCache(const std::string& cache_name,
                          const CacheCallback& callback) OVERRIDE {
@@ -118,7 +116,7 @@ class ServiceWorkerCacheStorage::SimpleCacheLoader
   SimpleCacheLoader(const base::FilePath& origin_path,
                     base::SequencedTaskRunner* cache_task_runner,
                     net::URLRequestContext* request_context,
-                    base::WeakPtr<webkit_blob::BlobStorageContext> blob_context)
+                    base::WeakPtr<storage::BlobStorageContext> blob_context)
       : CacheLoader(cache_task_runner, request_context, blob_context),
         origin_path_(origin_path) {}
 
@@ -379,7 +377,7 @@ ServiceWorkerCacheStorage::ServiceWorkerCacheStorage(
     bool memory_only,
     base::SequencedTaskRunner* cache_task_runner,
     net::URLRequestContext* request_context,
-    base::WeakPtr<webkit_blob::BlobStorageContext> blob_context)
+    base::WeakPtr<storage::BlobStorageContext> blob_context)
     : initialized_(false),
       origin_path_(path),
       cache_task_runner_(cache_task_runner),

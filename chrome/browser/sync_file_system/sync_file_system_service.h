@@ -30,7 +30,7 @@
 class Profile;
 class ProfileSyncServiceBase;
 
-namespace fileapi {
+namespace storage {
 class FileSystemContext;
 }
 
@@ -56,19 +56,17 @@ class SyncFileSystemService
   // KeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
-  void InitializeForApp(
-      fileapi::FileSystemContext* file_system_context,
-      const GURL& app_origin,
-      const SyncStatusCallback& callback);
+  void InitializeForApp(storage::FileSystemContext* file_system_context,
+                        const GURL& app_origin,
+                        const SyncStatusCallback& callback);
 
   void GetExtensionStatusMap(const ExtensionStatusMapCallback& callback);
   void DumpFiles(const GURL& origin, const DumpFilesCallback& callback);
   void DumpDatabase(const DumpFilesCallback& callback);
 
   // Returns the file |url|'s sync status.
-  void GetFileSyncStatus(
-      const fileapi::FileSystemURL& url,
-      const SyncFileStatusCallback& callback);
+  void GetFileSyncStatus(const storage::FileSystemURL& url,
+                         const SyncFileStatusCallback& callback);
 
   void AddSyncEventObserver(SyncEventObserver* observer);
   void RemoveSyncEventObserver(SyncEventObserver* observer);
@@ -153,11 +151,10 @@ class SyncFileSystemService
   virtual void OnStateChanged() OVERRIDE;
 
   // SyncFileStatusObserver implementation.
-  virtual void OnFileStatusChanged(
-      const fileapi::FileSystemURL& url,
-      SyncFileStatus sync_status,
-      SyncAction action_taken,
-      SyncDirection direction) OVERRIDE;
+  virtual void OnFileStatusChanged(const storage::FileSystemURL& url,
+                                   SyncFileStatus sync_status,
+                                   SyncAction action_taken,
+                                   SyncDirection direction) OVERRIDE;
 
   // Check the profile's sync preference settings and call
   // remote_file_service_->SetSyncEnabled() to update the status.

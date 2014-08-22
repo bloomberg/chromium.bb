@@ -25,7 +25,7 @@ class FileStream;
 class GrowableIOBuffer;
 }
 
-namespace webkit_blob {
+namespace storage {
 class ShareableFileReference;
 }
 
@@ -68,10 +68,9 @@ class CONTENT_EXPORT RedirectToFileResourceHandler
                                    bool* defer) OVERRIDE;
 
  private:
-  void DidCreateTemporaryFile(
-      base::File::Error error_code,
-      scoped_ptr<net::FileStream> file_stream,
-      webkit_blob::ShareableFileReference* deletable_file);
+  void DidCreateTemporaryFile(base::File::Error error_code,
+                              scoped_ptr<net::FileStream> file_stream,
+                              storage::ShareableFileReference* deletable_file);
 
   // Called by RedirectToFileResourceHandler::Writer.
   void DidWriteToFile(int result);
@@ -94,7 +93,7 @@ class CONTENT_EXPORT RedirectToFileResourceHandler
   int write_cursor_;
 
   // Helper writer object which maintains references to the net::FileStream and
-  // webkit_blob::ShareableFileReference. This is maintained separately so that,
+  // storage::ShareableFileReference. This is maintained separately so that,
   // on Windows, the temporary file isn't deleted until after it is closed.
   class Writer;
   Writer* writer_;

@@ -56,8 +56,8 @@ void ComputeSpaceNeedToBeFreedAfterGetMetadata(
 
 // Part of ComputeSpaceNeedToBeFreed.
 void GetMetadataOnIOThread(const base::FilePath& path,
-                           scoped_refptr<fileapi::FileSystemContext> context,
-                           const fileapi::FileSystemURL& url,
+                           scoped_refptr<storage::FileSystemContext> context,
+                           const storage::FileSystemURL& url,
                            const GetNecessaryFreeSpaceCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   context->operation_runner()->GetMetadata(
@@ -70,8 +70,8 @@ void GetMetadataOnIOThread(const base::FilePath& path,
 // Returns 0 if no additional space is required, or -1 in the case of an error.
 void ComputeSpaceNeedToBeFreed(
     Profile* profile,
-    scoped_refptr<fileapi::FileSystemContext> context,
-    const fileapi::FileSystemURL& url,
+    scoped_refptr<storage::FileSystemContext> context,
+    const storage::FileSystemURL& url,
     const GetNecessaryFreeSpaceCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   content::BrowserThread::PostTask(
@@ -83,9 +83,9 @@ void ComputeSpaceNeedToBeFreed(
 
 // Part of CreateManagedSnapshot. Runs CreateSnapshotFile method of fileapi.
 void CreateSnapshotFileOnIOThread(
-    scoped_refptr<fileapi::FileSystemContext> context,
-    const fileapi::FileSystemURL& url,
-    const fileapi::FileSystemOperation::SnapshotFileCallback& callback) {
+    scoped_refptr<storage::FileSystemContext> context,
+    const storage::FileSystemURL& url,
+    const storage::FileSystemOperation::SnapshotFileCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   context->operation_runner()->CreateSnapshotFile(url, callback);
 }
@@ -101,8 +101,9 @@ void FreeReferenceOnIOThread(
 }  // namespace
 
 SnapshotManager::FileReferenceWithSizeInfo::FileReferenceWithSizeInfo(
-    scoped_refptr<webkit_blob::ShareableFileReference> ref,
-    int64 size) : file_ref(ref), file_size(size) {
+    scoped_refptr<storage::ShareableFileReference> ref,
+    int64 size)
+    : file_ref(ref), file_size(size) {
 }
 
 SnapshotManager::FileReferenceWithSizeInfo::~FileReferenceWithSizeInfo() {
@@ -125,7 +126,7 @@ SnapshotManager::~SnapshotManager() {
 void SnapshotManager::CreateManagedSnapshot(
     const base::FilePath& absolute_file_path,
     const LocalPathCallback& callback) {
-  scoped_refptr<fileapi::FileSystemContext> context(
+  scoped_refptr<storage::FileSystemContext> context(
       util::GetFileSystemContextForExtensionId(profile_, kFileManagerAppId));
   DCHECK(context);
 
@@ -135,7 +136,7 @@ void SnapshotManager::CreateManagedSnapshot(
     callback.Run(base::FilePath());
     return;
   }
-  fileapi::FileSystemURL filesystem_url = context->CrackURL(url);
+  storage::FileSystemURL filesystem_url = context->CrackURL(url);
 
   ComputeSpaceNeedToBeFreed(profile_, context, filesystem_url,
       base::Bind(&SnapshotManager::CreateManagedSnapshotAfterSpaceComputed,
@@ -145,10 +146,10 @@ void SnapshotManager::CreateManagedSnapshot(
 }
 
 void SnapshotManager::CreateManagedSnapshotAfterSpaceComputed(
-    const fileapi::FileSystemURL& filesystem_url,
+    const storage::FileSystemURL& filesystem_url,
     const LocalPathCallback& callback,
     int64 needed_space) {
-  scoped_refptr<fileapi::FileSystemContext> context(
+  scoped_refptr<storage::FileSystemContext> context(
       util::GetFileSystemContextForExtensionId(profile_, kFileManagerAppId));
   DCHECK(context);
 
@@ -196,7 +197,7 @@ void SnapshotManager::OnCreateSnapshotFile(
     base::File::Error result,
     const base::File::Info& file_info,
     const base::FilePath& platform_path,
-    const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref) {
+    const scoped_refptr<storage::ShareableFileReference>& file_ref) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (result != base::File::FILE_OK) {

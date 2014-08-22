@@ -41,7 +41,7 @@ class PepperExternalFileRefBackend : public PepperFileRefBackend {
       OVERRIDE;
   virtual int32_t GetAbsolutePath(ppapi::host::ReplyMessageContext context)
       OVERRIDE;
-  virtual fileapi::FileSystemURL GetFileSystemURL() const OVERRIDE;
+  virtual storage::FileSystemURL GetFileSystemURL() const OVERRIDE;
   virtual base::FilePath GetExternalFilePath() const OVERRIDE;
 
   virtual int32_t CanRead() const OVERRIDE;

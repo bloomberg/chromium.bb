@@ -16,7 +16,7 @@ namespace base {
 class Time;
 }
 
-namespace fileapi {
+namespace storage {
 
 // A thin wrapper class for accessing the OS native filesystem.
 // This performs common error checks necessary to implement FileUtil family
@@ -68,6 +68,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE NativeFileUtil {
   DISALLOW_IMPLICIT_CONSTRUCTORS(NativeFileUtil);
 };
 
-}  // namespace fileapi
+}  // namespace storage
 
 #endif  // WEBKIT_BROWSER_FILEAPI_NATIVE_FILE_UTIL_H_

@@ -52,7 +52,7 @@ class BrowsingDataHelperTest : public testing::Test {
 
   bool Match(const GURL& origin,
              int mask,
-             quota::SpecialStoragePolicy* policy) {
+             storage::SpecialStoragePolicy* policy) {
     return BrowsingDataHelper::DoesOriginMatchMask(origin, mask, policy);
   }
 

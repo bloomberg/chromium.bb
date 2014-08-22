@@ -59,11 +59,11 @@ PepperInternalFileRefBackend::PepperInternalFileRefBackend(
 
 PepperInternalFileRefBackend::~PepperInternalFileRefBackend() {}
 
-fileapi::FileSystemURL PepperInternalFileRefBackend::GetFileSystemURL() const {
+storage::FileSystemURL PepperInternalFileRefBackend::GetFileSystemURL() const {
   if (!fs_url_.is_valid() && fs_host_.get() && fs_host_->IsOpened()) {
     GURL fs_path =
         fs_host_->GetRootUrl().Resolve(net::EscapePath(path_.substr(1)));
-    scoped_refptr<fileapi::FileSystemContext> fs_context =
+    scoped_refptr<storage::FileSystemContext> fs_context =
         GetFileSystemContext();
     if (fs_context.get())
       fs_url_ = fs_context->CrackURL(fs_path);
@@ -75,7 +75,7 @@ base::FilePath PepperInternalFileRefBackend::GetExternalFilePath() const {
   return base::FilePath();
 }
 
-scoped_refptr<fileapi::FileSystemContext>
+scoped_refptr<storage::FileSystemContext>
 PepperInternalFileRefBackend::GetFileSystemContext() const {
   if (!fs_host_.get())
     return NULL;
@@ -146,7 +146,7 @@ int32_t PepperInternalFileRefBackend::Rename(
   if (!GetFileSystemURL().is_valid())
     return PP_ERROR_FAILED;
 
-  fileapi::FileSystemURL new_url = new_file_ref->GetFileSystemURL();
+  storage::FileSystemURL new_url = new_file_ref->GetFileSystemURL();
   if (!new_url.is_valid())
     return PP_ERROR_FAILED;
   if (!new_url.IsInSameFileSystem(GetFileSystemURL()))
@@ -155,7 +155,7 @@ int32_t PepperInternalFileRefBackend::Rename(
   GetFileSystemContext()->operation_runner()->Move(
       GetFileSystemURL(),
       new_url,
-      fileapi::FileSystemOperation::OPTION_NONE,
+      storage::FileSystemOperation::OPTION_NONE,
       base::Bind(&PepperInternalFileRefBackend::DidFinish,
                  weak_factory_.GetWeakPtr(),
                  reply_context,
@@ -197,8 +197,8 @@ int32_t PepperInternalFileRefBackend::ReadDirectoryEntries(
   if (!GetFileSystemURL().is_valid())
     return PP_ERROR_FAILED;
 
-  fileapi::FileSystemOperation::FileEntryList* accumulated_file_list =
-      new fileapi::FileSystemOperation::FileEntryList;
+  storage::FileSystemOperation::FileEntryList* accumulated_file_list =
+      new storage::FileSystemOperation::FileEntryList;
   GetFileSystemContext()->operation_runner()->ReadDirectory(
       GetFileSystemURL(),
       base::Bind(&PepperInternalFileRefBackend::ReadDirectoryComplete,
@@ -210,9 +210,9 @@ int32_t PepperInternalFileRefBackend::ReadDirectoryEntries(
 
 void PepperInternalFileRefBackend::ReadDirectoryComplete(
     ppapi::host::ReplyMessageContext context,
-    fileapi::FileSystemOperation::FileEntryList* accumulated_file_list,
+    storage::FileSystemOperation::FileEntryList* accumulated_file_list,
     base::File::Error error,
-    const fileapi::FileSystemOperation::FileEntryList& file_list,
+    const storage::FileSystemOperation::FileEntryList& file_list,
     bool has_more) {
   accumulated_file_list->insert(
       accumulated_file_list->end(), file_list.begin(), file_list.end());
@@ -228,7 +228,7 @@ void PepperInternalFileRefBackend::ReadDirectoryComplete(
     if (dir_path.empty() || dir_path[dir_path.size() - 1] != '/')
       dir_path += '/';
 
-    for (fileapi::FileSystemOperation::FileEntryList::const_iterator it =
+    for (storage::FileSystemOperation::FileEntryList::const_iterator it =
              accumulated_file_list->begin();
          it != accumulated_file_list->end();
          ++it) {
@@ -241,7 +241,7 @@ void PepperInternalFileRefBackend::ReadDirectoryComplete(
       info.file_system_type = fs_type_;
       info.file_system_plugin_resource = fs_host_->pp_resource();
       std::string path =
-          dir_path + fileapi::FilePathToString(base::FilePath(it->name));
+          dir_path + storage::FilePathToString(base::FilePath(it->name));
       info.internal_path = path;
       info.display_name = ppapi::GetNameForInternalFilePath(path);
       infos.push_back(info);
@@ -261,7 +261,7 @@ int32_t PepperInternalFileRefBackend::GetAbsolutePath(
 }
 
 int32_t PepperInternalFileRefBackend::CanRead() const {
-  fileapi::FileSystemURL url = GetFileSystemURL();
+  storage::FileSystemURL url = GetFileSystemURL();
   if (!FileSystemURLIsValid(GetFileSystemContext().get(), url))
     return PP_ERROR_FAILED;
   if (!ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFileSystemFile(
@@ -272,7 +272,7 @@ int32_t PepperInternalFileRefBackend::CanRead() const {
 }
 
 int32_t PepperInternalFileRefBackend::CanWrite() const {
-  fileapi::FileSystemURL url = GetFileSystemURL();
+  storage::FileSystemURL url = GetFileSystemURL();
   if (!FileSystemURLIsValid(GetFileSystemContext().get(), url))
     return PP_ERROR_FAILED;
   if (!ChildProcessSecurityPolicyImpl::GetInstance()->CanWriteFileSystemFile(
@@ -283,7 +283,7 @@ int32_t PepperInternalFileRefBackend::CanWrite() const {
 }
 
 int32_t PepperInternalFileRefBackend::CanCreate() const {
-  fileapi::FileSystemURL url = GetFileSystemURL();
+  storage::FileSystemURL url = GetFileSystemURL();
   if (!FileSystemURLIsValid(GetFileSystemContext().get(), url))
     return PP_ERROR_FAILED;
   if (!ChildProcessSecurityPolicyImpl::GetInstance()->CanCreateFileSystemFile(
@@ -294,7 +294,7 @@ int32_t PepperInternalFileRefBackend::CanCreate() const {
 }
 
 int32_t PepperInternalFileRefBackend::CanReadWrite() const {
-  fileapi::FileSystemURL url = GetFileSystemURL();
+  storage::FileSystemURL url = GetFileSystemURL();
   if (!FileSystemURLIsValid(GetFileSystemContext().get(), url))
     return PP_ERROR_FAILED;
   ChildProcessSecurityPolicyImpl* policy =

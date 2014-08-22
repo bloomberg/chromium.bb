@@ -10,7 +10,7 @@
 #include "base/callback.h"
 #include "base/stl_util.h"
 
-using fileapi::FileSystemURL;
+using storage::FileSystemURL;
 
 namespace sync_file_system {
 

@@ -16,7 +16,7 @@
 #include "webkit/browser/fileapi/file_writer_delegate.h"
 #include "webkit/common/blob/shareable_file_reference.h"
 
-namespace fileapi {
+namespace storage {
 
 typedef FileSystemOperationRunner::OperationID OperationID;
 
@@ -238,7 +238,7 @@ OperationID FileSystemOperationRunner::Remove(
 OperationID FileSystemOperationRunner::Write(
     const net::URLRequestContext* url_request_context,
     const FileSystemURL& url,
-    scoped_ptr<webkit_blob::BlobDataHandle> blob,
+    scoped_ptr<storage::BlobDataHandle> blob,
     int64 offset,
     const WriteCallback& callback) {
   base::File::Error error = base::File::FILE_OK;
@@ -268,10 +268,8 @@ OperationID FileSystemOperationRunner::Write(
       new FileWriterDelegate(writer.Pass(), flush_policy));
 
   scoped_ptr<net::URLRequest> blob_request(
-      webkit_blob::BlobProtocolHandler::CreateBlobRequest(
-          blob.Pass(),
-          url_request_context,
-          writer_delegate.get()));
+      storage::BlobProtocolHandler::CreateBlobRequest(
+          blob.Pass(), url_request_context, writer_delegate.get()));
 
   PrepareForWrite(handle.id, url);
   operation->Write(
@@ -598,7 +596,7 @@ void FileSystemOperationRunner::DidCreateSnapshot(
     base::File::Error rv,
     const base::File::Info& file_info,
     const base::FilePath& platform_path,
-    const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref) {
+    const scoped_refptr<storage::ShareableFileReference>& file_ref) {
   if (handle.scope) {
     finished_operations_.insert(handle.id);
     base::MessageLoopProxy::current()->PostTask(
@@ -686,4 +684,4 @@ void FileSystemOperationRunner::FinishOperation(OperationID id) {
   }
 }
 
-}  // namespace fileapi
+}  // namespace storage

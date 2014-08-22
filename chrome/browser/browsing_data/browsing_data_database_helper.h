@@ -30,14 +30,14 @@ class BrowsingDataDatabaseHelper
  public:
   // Contains detailed information about a web database.
   struct DatabaseInfo {
-    DatabaseInfo(const webkit_database::DatabaseIdentifier& identifier,
+    DatabaseInfo(const storage::DatabaseIdentifier& identifier,
                  const std::string& database_name,
                  const std::string& description,
                  int64 size,
                  base::Time last_modified);
     ~DatabaseInfo();
 
-    webkit_database::DatabaseIdentifier identifier;
+    storage::DatabaseIdentifier identifier;
     std::string database_name;
     std::string description;
     int64 size;
@@ -89,7 +89,7 @@ class BrowsingDataDatabaseHelper
   void DeleteDatabaseOnFileThread(const std::string& origin,
                                   const std::string& name);
 
-  scoped_refptr<webkit_database::DatabaseTracker> tracker_;
+  scoped_refptr<storage::DatabaseTracker> tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowsingDataDatabaseHelper);
 };

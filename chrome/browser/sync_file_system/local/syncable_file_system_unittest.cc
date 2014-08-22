@@ -23,12 +23,12 @@
 #include "webkit/common/quota/quota_types.h"
 
 using content::SandboxFileSystemTestHelper;
-using fileapi::FileSystemContext;
-using fileapi::FileSystemOperationContext;
-using fileapi::FileSystemURL;
-using fileapi::FileSystemURLSet;
-using quota::QuotaManager;
-using quota::QuotaStatusCode;
+using storage::FileSystemContext;
+using storage::FileSystemOperationContext;
+using storage::FileSystemURL;
+using storage::FileSystemURLSet;
+using storage::QuotaManager;
+using storage::QuotaStatusCode;
 
 namespace sync_file_system {
 
@@ -128,7 +128,7 @@ TEST_F(SyncableFileSystemTest, SyncableLocalSandboxCombined) {
   const int64 kQuota = 12345 * 1024;
   QuotaManager::kSyncableStorageDefaultHostQuota = kQuota;
   int64 usage, quota;
-  EXPECT_EQ(quota::kQuotaStatusOk,
+  EXPECT_EQ(storage::kQuotaStatusOk,
             file_system_.GetUsageAndQuota(&usage, &quota));
 
   // Returned quota must be what we overrode. Usage must be greater than 0
@@ -145,7 +145,7 @@ TEST_F(SyncableFileSystemTest, SyncableLocalSandboxCombined) {
             file_system_.TruncateFile(URL("dir/foo"), kFileSizeToExtend));
 
   int64 new_usage;
-  EXPECT_EQ(quota::kQuotaStatusOk,
+  EXPECT_EQ(storage::kQuotaStatusOk,
             file_system_.GetUsageAndQuota(&new_usage, &quota));
   EXPECT_EQ(kFileSizeToExtend, new_usage - usage);
 
@@ -156,7 +156,7 @@ TEST_F(SyncableFileSystemTest, SyncableLocalSandboxCombined) {
             file_system_.TruncateFile(URL("dir/foo"), kFileSizeToExtend + 1));
 
   usage = new_usage;
-  EXPECT_EQ(quota::kQuotaStatusOk,
+  EXPECT_EQ(storage::kQuotaStatusOk,
             file_system_.GetUsageAndQuota(&new_usage, &quota));
   EXPECT_EQ(usage, new_usage);
 
@@ -165,7 +165,7 @@ TEST_F(SyncableFileSystemTest, SyncableLocalSandboxCombined) {
             file_system_.DeleteFileSystem());
 
   // Now the usage must be zero.
-  EXPECT_EQ(quota::kQuotaStatusOk,
+  EXPECT_EQ(storage::kQuotaStatusOk,
             file_system_.GetUsageAndQuota(&usage, &quota));
   EXPECT_EQ(0, usage);
 

@@ -20,11 +20,11 @@ namespace base {
 class SequencedTaskRunner;
 }
 
-namespace quota {
+namespace storage {
 class QuotaManagerProxy;
 }
 
-namespace fileapi {
+namespace storage {
 
 class FileSystemUsageCache;
 class FileSystemURL;
@@ -37,11 +37,10 @@ class SandboxQuotaObserver
  public:
   typedef std::map<base::FilePath, int64> PendingUpdateNotificationMap;
 
-  SandboxQuotaObserver(
-      quota::QuotaManagerProxy* quota_manager_proxy,
-      base::SequencedTaskRunner* update_notify_runner,
-      ObfuscatedFileUtil* sandbox_file_util,
-      FileSystemUsageCache* file_system_usage_cache_);
+  SandboxQuotaObserver(storage::QuotaManagerProxy* quota_manager_proxy,
+                       base::SequencedTaskRunner* update_notify_runner,
+                       ObfuscatedFileUtil* sandbox_file_util,
+                       FileSystemUsageCache* file_system_usage_cache_);
   virtual ~SandboxQuotaObserver();
 
   // FileUpdateObserver overrides.
@@ -62,7 +61,7 @@ class SandboxQuotaObserver
 
   base::FilePath GetUsageCachePath(const FileSystemURL& url);
 
-  scoped_refptr<quota::QuotaManagerProxy> quota_manager_proxy_;
+  scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy_;
   scoped_refptr<base::SequencedTaskRunner> update_notify_runner_;
 
   // Not owned; sandbox_file_util_ should have identical lifetime with this.
@@ -77,6 +76,6 @@ class SandboxQuotaObserver
   DISALLOW_COPY_AND_ASSIGN(SandboxQuotaObserver);
 };
 
-}  // namespace fileapi
+}  // namespace storage
 
 #endif  // WEBKIT_BROWSER_FILEAPI_SANDBOX_QUOTA_OBSERVER_H_

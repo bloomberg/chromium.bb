@@ -14,7 +14,7 @@
 #include "base/stl_util.h"
 #include "webkit/browser/fileapi/timed_task_helper.h"
 
-namespace fileapi {
+namespace storage {
 
 namespace {
 const int64 kCloseDelaySeconds = 5;
@@ -304,4 +304,4 @@ bool FileSystemUsageCache::HasCacheFileHandle(const base::FilePath& file_path) {
   return ContainsKey(cache_files_, file_path);
 }
 
-}  // namespace fileapi
+}  // namespace storage

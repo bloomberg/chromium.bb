@@ -32,7 +32,7 @@
 #include "webkit/browser/database/database_util.h"
 #include "webkit/common/database/database_identifier.h"
 
-using webkit_database::DatabaseUtil;
+using storage::DatabaseUtil;
 using blink::WebIDBKey;
 
 namespace content {
@@ -211,7 +211,7 @@ uint32 IndexedDBDispatcherHost::TransactionIdToProcessId(
 
 void IndexedDBDispatcherHost::HoldBlobDataHandle(
     const std::string& uuid,
-    scoped_ptr<webkit_blob::BlobDataHandle> blob_data_handle) {
+    scoped_ptr<storage::BlobDataHandle> blob_data_handle) {
   DCHECK(!ContainsKey(blob_data_handle_map_, uuid));
   blob_data_handle_map_[uuid] = blob_data_handle.release();
 }
@@ -278,7 +278,7 @@ void IndexedDBDispatcherHost::OnIDBFactoryGetDatabaseNames(
   base::FilePath indexed_db_path = indexed_db_context_->data_path();
 
   GURL origin_url =
-      webkit_database::GetOriginFromIdentifier(params.database_identifier);
+      storage::GetOriginFromIdentifier(params.database_identifier);
 
   Context()->GetIDBFactory()->GetDatabaseNames(
       new IndexedDBCallbacks(
@@ -295,7 +295,7 @@ void IndexedDBDispatcherHost::OnIDBFactoryOpen(
   base::FilePath indexed_db_path = indexed_db_context_->data_path();
 
   GURL origin_url =
-      webkit_database::GetOriginFromIdentifier(params.database_identifier);
+      storage::GetOriginFromIdentifier(params.database_identifier);
 
   int64 host_transaction_id = HostTransactionId(params.transaction_id);
 
@@ -326,7 +326,7 @@ void IndexedDBDispatcherHost::OnIDBFactoryDeleteDatabase(
     const IndexedDBHostMsg_FactoryDeleteDatabase_Params& params) {
   DCHECK(indexed_db_context_->TaskRunner()->RunsTasksOnCurrentThread());
   GURL origin_url =
-      webkit_database::GetOriginFromIdentifier(params.database_identifier);
+      storage::GetOriginFromIdentifier(params.database_identifier);
   base::FilePath indexed_db_path = indexed_db_context_->data_path();
   DCHECK(request_context_);
   Context()->GetIDBFactory()->DeleteDatabase(
@@ -342,7 +342,7 @@ void IndexedDBDispatcherHost::OnIDBFactoryDeleteDatabase(
 // to the IndexedDBDispatcherHost.
 void IndexedDBDispatcherHost::OnPutHelper(
     const IndexedDBHostMsg_DatabasePut_Params& params,
-    std::vector<webkit_blob::BlobDataHandle*> handles) {
+    std::vector<storage::BlobDataHandle*> handles) {
   database_dispatcher_host_->OnPut(params, handles);
 }
 
@@ -618,7 +618,7 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnGet(
 
 void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnPutWrapper(
     const IndexedDBHostMsg_DatabasePut_Params& params) {
-  std::vector<webkit_blob::BlobDataHandle*> handles;
+  std::vector<storage::BlobDataHandle*> handles;
   for (size_t i = 0; i < params.blob_or_file_info.size(); ++i) {
     const IndexedDBMsg_BlobOrFileInfo& info = params.blob_or_file_info[i];
     handles.push_back(parent_->blob_storage_context_->context()
@@ -633,12 +633,11 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnPutWrapper(
 
 void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnPut(
     const IndexedDBHostMsg_DatabasePut_Params& params,
-    std::vector<webkit_blob::BlobDataHandle*> handles) {
-
+    std::vector<storage::BlobDataHandle*> handles) {
   DCHECK(
       parent_->indexed_db_context_->TaskRunner()->RunsTasksOnCurrentThread());
 
-  ScopedVector<webkit_blob::BlobDataHandle> scoped_handles;
+  ScopedVector<storage::BlobDataHandle> scoped_handles;
   scoped_handles.swap(handles);
 
   IndexedDBConnection* connection =

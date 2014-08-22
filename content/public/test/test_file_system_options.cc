@@ -7,7 +7,7 @@
 #include <string>
 #include <vector>
 
-using fileapi::FileSystemOptions;
+using storage::FileSystemOptions;
 
 namespace content {
 

@@ -12,7 +12,7 @@
 #include "webkit/browser/blob/blob_data_handle.h"
 #include "webkit/common/blob/blob_data.h"
 
-namespace webkit_blob {
+namespace storage {
 
 namespace {
 
@@ -322,4 +322,4 @@ bool BlobStorageContext::IsUrlRegistered(const GURL& blob_url) {
   return public_blob_urls_.find(blob_url) != public_blob_urls_.end();
 }
 
-}  // namespace webkit_blob
+}  // namespace storage

@@ -25,15 +25,15 @@ namespace file_system_provider {
 // The underlying inner file stream reader *must not* return any values
 // synchronously. Instead, results must be returned by a callback, including
 // errors.
-class BufferingFileStreamReader : public webkit_blob::FileStreamReader {
+class BufferingFileStreamReader : public storage::FileStreamReader {
  public:
   BufferingFileStreamReader(
-      scoped_ptr<webkit_blob::FileStreamReader> file_stream_reader,
+      scoped_ptr<storage::FileStreamReader> file_stream_reader,
       int buffer_size);
 
   virtual ~BufferingFileStreamReader();
 
-  // webkit_blob::FileStreamReader overrides.
+  // storage::FileStreamReader overrides.
   virtual int Read(net::IOBuffer* buf,
                    int buf_len,
                    const net::CompletionCallback& callback) OVERRIDE;
@@ -56,7 +56,7 @@ class BufferingFileStreamReader : public webkit_blob::FileStreamReader {
                           const net::CompletionCallback& callback,
                           int result);
 
-  scoped_ptr<webkit_blob::FileStreamReader> file_stream_reader_;
+  scoped_ptr<storage::FileStreamReader> file_stream_reader_;
   int buffer_size_;
   scoped_refptr<net::IOBuffer> preloading_buffer_;
   int preloading_buffer_offset_;

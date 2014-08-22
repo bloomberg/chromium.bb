@@ -11,17 +11,17 @@
 
 namespace {
 
-std::string StorageTypeToString(quota::StorageType type) {
+std::string StorageTypeToString(storage::StorageType type) {
   switch (type) {
-    case quota::kStorageTypeTemporary:
+    case storage::kStorageTypeTemporary:
       return "temporary";
-    case quota::kStorageTypePersistent:
+    case storage::kStorageTypePersistent:
       return "persistent";
-    case quota::kStorageTypeSyncable:
+    case storage::kStorageTypeSyncable:
       return "syncable";
-    case quota::kStorageTypeQuotaNotManaged:
+    case storage::kStorageTypeQuotaNotManaged:
       return "quota not managed";
-    case quota::kStorageTypeUnknown:
+    case storage::kStorageTypeUnknown:
       return "unknown";
   }
   return "unknown";
@@ -31,7 +31,7 @@ std::string StorageTypeToString(quota::StorageType type) {
 
 namespace quota_internals {
 
-GlobalStorageInfo::GlobalStorageInfo(quota::StorageType type)
+GlobalStorageInfo::GlobalStorageInfo(storage::StorageType type)
     : type_(type), usage_(-1), unlimited_usage_(-1), quota_(-1) {
 }
 
@@ -52,7 +52,7 @@ base::Value* GlobalStorageInfo::NewValue() const {
 }
 
 PerHostStorageInfo::PerHostStorageInfo(const std::string& host,
-                                       quota::StorageType type)
+                                       storage::StorageType type)
     : host_(host), type_(type), usage_(-1), quota_(-1) {
 }
 
@@ -71,7 +71,7 @@ base::Value* PerHostStorageInfo::NewValue() const {
 }
 
 PerOriginStorageInfo::PerOriginStorageInfo(const GURL& origin,
-                                           quota::StorageType type)
+                                           storage::StorageType type)
     : origin_(origin),
       type_(type),
       host_(net::GetHostOrSpecFromURL(origin)),

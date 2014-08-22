@@ -32,7 +32,7 @@ class MoveEntry : public Operation {
             const ProvidedFileSystemInfo& file_system_info,
             const base::FilePath& source_path,
             const base::FilePath& target_path,
-            const fileapi::AsyncFileUtil::StatusCallback& callback);
+            const storage::AsyncFileUtil::StatusCallback& callback);
   virtual ~MoveEntry();
 
   // Operation overrides.
@@ -47,7 +47,7 @@ class MoveEntry : public Operation {
  private:
   base::FilePath source_path_;
   base::FilePath target_path_;
-  const fileapi::AsyncFileUtil::StatusCallback callback_;
+  const storage::AsyncFileUtil::StatusCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(MoveEntry);
 };

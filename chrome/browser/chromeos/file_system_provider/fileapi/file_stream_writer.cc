@@ -33,8 +33,8 @@ class FileStreamWriter::OperationRunner
   // Opens a file for writing and calls the completion callback. Must be called
   // on UI thread.
   void OpenFileOnUIThread(
-      const fileapi::FileSystemURL& url,
-      const fileapi::AsyncFileUtil::StatusCallback& callback) {
+      const storage::FileSystemURL& url,
+      const storage::AsyncFileUtil::StatusCallback& callback) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     util::FileSystemURLParser parser(url);
@@ -72,7 +72,7 @@ class FileStreamWriter::OperationRunner
       scoped_refptr<net::IOBuffer> buffer,
       int64 offset,
       int length,
-      const fileapi::AsyncFileUtil::StatusCallback& callback) {
+      const storage::AsyncFileUtil::StatusCallback& callback) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     // If the file system got unmounted, then abort the writing operation.
@@ -94,7 +94,7 @@ class FileStreamWriter::OperationRunner
   }
 
   // Aborts the most recent operation (if exists), and calls the callback.
-  void AbortOnUIThread(const fileapi::AsyncFileUtil::StatusCallback& callback) {
+  void AbortOnUIThread(const storage::AsyncFileUtil::StatusCallback& callback) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     if (abort_callback_.is_null()) {
@@ -121,7 +121,7 @@ class FileStreamWriter::OperationRunner
   // Remembers a file handle for further operations and forwards the result to
   // the IO thread.
   void OnOpenFileCompletedOnUIThread(
-      const fileapi::AsyncFileUtil::StatusCallback& callback,
+      const storage::AsyncFileUtil::StatusCallback& callback,
       int file_handle,
       base::File::Error result) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -133,7 +133,7 @@ class FileStreamWriter::OperationRunner
 
   // Forwards a response of writing to a file to the IO thread.
   void OnWriteFileCompletedOnUIThread(
-      const fileapi::AsyncFileUtil::StatusCallback& callback,
+      const storage::AsyncFileUtil::StatusCallback& callback,
       base::File::Error result) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     BrowserThread::PostTask(
@@ -142,7 +142,7 @@ class FileStreamWriter::OperationRunner
 
   // Forwards a response of aborting an operation to the IO thread.
   void OnAbortCompletedOnUIThread(
-      const fileapi::AsyncFileUtil::StatusCallback& callback,
+      const storage::AsyncFileUtil::StatusCallback& callback,
       base::File::Error result) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     BrowserThread::PostTask(
@@ -156,7 +156,7 @@ class FileStreamWriter::OperationRunner
   DISALLOW_COPY_AND_ASSIGN(OperationRunner);
 };
 
-FileStreamWriter::FileStreamWriter(const fileapi::FileSystemURL& url,
+FileStreamWriter::FileStreamWriter(const storage::FileSystemURL& url,
                                    int64 initial_offset)
     : url_(url),
       current_offset_(initial_offset),

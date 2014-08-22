@@ -21,7 +21,7 @@ namespace net {
 class URLRequestContext;
 }
 
-namespace webkit_blob {
+namespace storage {
 class BlobStorageContext;
 }
 
@@ -54,7 +54,7 @@ class ServiceWorkerCacheStorage {
       bool memory_only,
       base::SequencedTaskRunner* cache_task_runner,
       net::URLRequestContext* request_context,
-      base::WeakPtr<webkit_blob::BlobStorageContext> blob_context);
+      base::WeakPtr<storage::BlobStorageContext> blob_context);
 
   virtual ~ServiceWorkerCacheStorage();
 

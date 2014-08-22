@@ -18,7 +18,7 @@ namespace base {
 class MessageLoopProxy;
 }
 
-namespace webkit_database {
+namespace storage {
 
 class WEBKIT_STORAGE_COMMON_EXPORT DatabaseConnections {
  public:
@@ -94,6 +94,6 @@ class WEBKIT_STORAGE_COMMON_EXPORT DatabaseConnectionsWrapper
   scoped_refptr<base::MessageLoopProxy> main_thread_;
 };
 
-}  // namespace webkit_database
+}  // namespace storage
 
 #endif  // WEBKIT_COMMON_DATABASE_DATABASE_CONNECTIONS_H_

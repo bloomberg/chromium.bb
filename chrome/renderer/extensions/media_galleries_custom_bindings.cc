@@ -30,11 +30,11 @@ void GetMediaFileSystemObject(const v8::FunctionCallbackInfo<v8::Value>& args) {
       blink::WebLocalFrame::frameForCurrentContext();
   const GURL origin = GURL(webframe->document().securityOrigin().toString());
   std::string fs_name =
-      fileapi::GetFileSystemName(origin, fileapi::kFileSystemTypeExternal);
+      storage::GetFileSystemName(origin, storage::kFileSystemTypeExternal);
   fs_name.append("_");
   fs_name.append(fs_mount);
   const GURL root_url(
-      fileapi::GetExternalFileSystemRootURIString(origin, fs_mount));
+      storage::GetExternalFileSystemRootURIString(origin, fs_mount));
   args.GetReturnValue().Set(
       blink::WebDOMFileSystem::create(webframe,
                                       blink::WebFileSystemTypeExternal,

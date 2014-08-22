@@ -31,9 +31,9 @@
 #include "webkit/common/fileapi/file_system_info.h"
 #include "webkit/common/fileapi/file_system_util.h"
 
-using quota::QuotaClient;
+using storage::QuotaClient;
 
-namespace fileapi {
+namespace storage {
 
 namespace {
 
@@ -134,8 +134,8 @@ FileSystemContext::FileSystemContext(
     base::SingleThreadTaskRunner* io_task_runner,
     base::SequencedTaskRunner* file_task_runner,
     ExternalMountPoints* external_mount_points,
-    quota::SpecialStoragePolicy* special_storage_policy,
-    quota::QuotaManagerProxy* quota_manager_proxy,
+    storage::SpecialStoragePolicy* special_storage_policy,
+    storage::QuotaManagerProxy* quota_manager_proxy,
     ScopedVector<FileSystemBackend> additional_backends,
     const std::vector<URLRequestAutoMountHandler>& auto_mount_handlers,
     const base::FilePath& partition_path,
@@ -143,20 +143,19 @@ FileSystemContext::FileSystemContext(
     : io_task_runner_(io_task_runner),
       default_file_task_runner_(file_task_runner),
       quota_manager_proxy_(quota_manager_proxy),
-      sandbox_delegate_(new SandboxFileSystemBackendDelegate(
-          quota_manager_proxy,
-          file_task_runner,
-          partition_path,
-          special_storage_policy,
-          options)),
-      sandbox_backend_(new SandboxFileSystemBackend(
-          sandbox_delegate_.get())),
+      sandbox_delegate_(
+          new SandboxFileSystemBackendDelegate(quota_manager_proxy,
+                                               file_task_runner,
+                                               partition_path,
+                                               special_storage_policy,
+                                               options)),
+      sandbox_backend_(new SandboxFileSystemBackend(sandbox_delegate_.get())),
       isolated_backend_(new IsolatedFileSystemBackend()),
-      plugin_private_backend_(new PluginPrivateFileSystemBackend(
-          file_task_runner,
-          partition_path,
-          special_storage_policy,
-          options)),
+      plugin_private_backend_(
+          new PluginPrivateFileSystemBackend(file_task_runner,
+                                             partition_path,
+                                             special_storage_policy,
+                                             options)),
       additional_backends_(additional_backends.Pass()),
       auto_mount_handlers_(auto_mount_handlers),
       external_mount_points_(external_mount_points),
@@ -419,16 +418,15 @@ void FileSystemContext::DeleteFileSystem(
       callback);
 }
 
-scoped_ptr<webkit_blob::FileStreamReader>
-FileSystemContext::CreateFileStreamReader(
+scoped_ptr<storage::FileStreamReader> FileSystemContext::CreateFileStreamReader(
     const FileSystemURL& url,
     int64 offset,
     const base::Time& expected_modification_time) {
   if (!url.is_valid())
-    return scoped_ptr<webkit_blob::FileStreamReader>();
+    return scoped_ptr<storage::FileStreamReader>();
   FileSystemBackend* backend = GetFileSystemBackend(url.type());
   if (!backend)
-    return scoped_ptr<webkit_blob::FileStreamReader>();
+    return scoped_ptr<storage::FileStreamReader>();
   return backend->CreateFileStreamReader(
       url, offset, expected_modification_time, this);
 }
@@ -608,7 +606,7 @@ void FileSystemContext::DidOpenFileSystemForResolveURL(
     return;
   }
 
-  fileapi::FileSystemInfo info(
+  storage::FileSystemInfo info(
       filesystem_name, filesystem_root, url.mount_type());
 
   // Extract the virtual path not containing a filesystem type part from |url|.
@@ -627,4 +625,4 @@ void FileSystemContext::DidOpenFileSystemForResolveURL(
       url, base::Bind(&DidGetMetadataForResolveURL, path, callback, info));
 }
 
-}  // namespace fileapi
+}  // namespace storage

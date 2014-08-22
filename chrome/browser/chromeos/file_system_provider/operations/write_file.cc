@@ -19,7 +19,7 @@ WriteFile::WriteFile(extensions::EventRouter* event_router,
                      scoped_refptr<net::IOBuffer> buffer,
                      int64 offset,
                      int length,
-                     const fileapi::AsyncFileUtil::StatusCallback& callback)
+                     const storage::AsyncFileUtil::StatusCallback& callback)
     : Operation(event_router, file_system_info),
       file_handle_(file_handle),
       buffer_(buffer),

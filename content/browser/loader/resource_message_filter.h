@@ -14,9 +14,9 @@
 
 struct ResourceHostMsg_Request;
 
-namespace fileapi {
+namespace storage {
 class FileSystemContext;
-}  // namespace fileapi
+}  // namespace storage
 
 namespace net {
 class URLRequestContext;
@@ -42,14 +42,13 @@ class CONTENT_EXPORT ResourceMessageFilter : public BrowserMessageFilter {
 
   // |appcache_service|, |blob_storage_context|, |file_system_context| may be
   // NULL in unittests or for requests from the (NPAPI) plugin process.
-  ResourceMessageFilter(
-      int child_id,
-      int process_type,
-      ChromeAppCacheService* appcache_service,
-      ChromeBlobStorageContext* blob_storage_context,
-      fileapi::FileSystemContext* file_system_context,
-      ServiceWorkerContextWrapper* service_worker_context,
-      const GetContextsCallback& get_contexts_callback);
+  ResourceMessageFilter(int child_id,
+                        int process_type,
+                        ChromeAppCacheService* appcache_service,
+                        ChromeBlobStorageContext* blob_storage_context,
+                        storage::FileSystemContext* file_system_context,
+                        ServiceWorkerContextWrapper* service_worker_context,
+                        const GetContextsCallback& get_contexts_callback);
 
   // BrowserMessageFilter implementation.
   virtual void OnChannelClosing() OVERRIDE;
@@ -70,7 +69,7 @@ class CONTENT_EXPORT ResourceMessageFilter : public BrowserMessageFilter {
     return blob_storage_context_.get();
   }
 
-  fileapi::FileSystemContext* file_system_context() const {
+  storage::FileSystemContext* file_system_context() const {
     return file_system_context_.get();
   }
 
@@ -95,7 +94,7 @@ class CONTENT_EXPORT ResourceMessageFilter : public BrowserMessageFilter {
 
   scoped_refptr<ChromeAppCacheService> appcache_service_;
   scoped_refptr<ChromeBlobStorageContext> blob_storage_context_;
-  scoped_refptr<fileapi::FileSystemContext> file_system_context_;
+  scoped_refptr<storage::FileSystemContext> file_system_context_;
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
 
   GetContextsCallback get_contexts_callback_;

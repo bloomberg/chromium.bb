@@ -631,7 +631,7 @@ void ComponentLoader::EnableFileSystemInGuestMode(const std::string& id) {
             browser_context_);
     GURL site = content::SiteInstance::GetSiteForURL(
         off_the_record_context, Extension::GetBaseURLFromExtensionId(id));
-    fileapi::FileSystemContext* file_system_context =
+    storage::FileSystemContext* file_system_context =
         content::BrowserContext::GetStoragePartitionForSite(
             off_the_record_context, site)->GetFileSystemContext();
     file_system_context->EnableTemporaryFileSystemInIncognito();

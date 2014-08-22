@@ -13,12 +13,12 @@
 
 // This class is the same as MockSpecialStoragePolicy (in
 // content/public/test/mock_special_storage_policy.h), but it inherits
-// ExtensionSpecialStoragePolicy instead of quota::SpecialStoragePolicy.
+// ExtensionSpecialStoragePolicy instead of storage::SpecialStoragePolicy.
 class MockExtensionSpecialStoragePolicy : public ExtensionSpecialStoragePolicy {
  public:
   MockExtensionSpecialStoragePolicy();
 
-  // quota::SpecialStoragePolicy:
+  // storage::SpecialStoragePolicy:
   virtual bool IsStorageProtected(const GURL& origin) OVERRIDE;
   virtual bool IsStorageUnlimited(const GURL& origin) OVERRIDE;
   virtual bool IsStorageSessionOnly(const GURL& origin) OVERRIDE;

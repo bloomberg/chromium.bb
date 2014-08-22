@@ -30,9 +30,9 @@ base::FilePath NormalizeFilePath(const base::FilePath& path) {
   return base::FilePath(path_str).NormalizePathSeparators();
 }
 
-bool IsOverlappingMountPathForbidden(fileapi::FileSystemType type) {
-  return type != fileapi::kFileSystemTypeNativeMedia &&
-      type != fileapi::kFileSystemTypeDeviceMedia;
+bool IsOverlappingMountPathForbidden(storage::FileSystemType type) {
+  return type != storage::kFileSystemTypeNativeMedia &&
+         type != storage::kFileSystemTypeDeviceMedia;
 }
 
 // Wrapper around ref-counted ExternalMountPoints that will be used to lazily
@@ -40,17 +40,15 @@ bool IsOverlappingMountPathForbidden(fileapi::FileSystemType type) {
 class SystemMountPointsLazyWrapper {
  public:
   SystemMountPointsLazyWrapper()
-      : system_mount_points_(fileapi::ExternalMountPoints::CreateRefCounted()) {
+      : system_mount_points_(storage::ExternalMountPoints::CreateRefCounted()) {
   }
 
   ~SystemMountPointsLazyWrapper() {}
 
-  fileapi::ExternalMountPoints* get() {
-    return system_mount_points_.get();
-  }
+  storage::ExternalMountPoints* get() { return system_mount_points_.get(); }
 
  private:
-  scoped_refptr<fileapi::ExternalMountPoints> system_mount_points_;
+  scoped_refptr<storage::ExternalMountPoints> system_mount_points_;
 };
 
 base::LazyInstance<SystemMountPointsLazyWrapper>::Leaky
@@ -58,7 +56,7 @@ base::LazyInstance<SystemMountPointsLazyWrapper>::Leaky
 
 }  // namespace
 
-namespace fileapi {
+namespace storage {
 
 class ExternalMountPoints::Instance {
  public:
@@ -247,11 +245,10 @@ FileSystemURL ExternalMountPoints::CreateExternalFileSystemURL(
     const base::FilePath& path) const {
   return CreateCrackedFileSystemURL(
       origin,
-      fileapi::kFileSystemTypeExternal,
+      storage::kFileSystemTypeExternal,
       // Avoid using FilePath::Append as path may be an absolute path.
-      base::FilePath(
-          CreateVirtualRootPath(mount_name).value() +
-          base::FilePath::kSeparators[0] + path.value()));
+      base::FilePath(CreateVirtualRootPath(mount_name).value() +
+                     base::FilePath::kSeparators[0] + path.value()));
 }
 
 void ExternalMountPoints::RevokeAllFileSystems() {
@@ -357,4 +354,4 @@ bool ExternalMountPoints::ValidateNewMountPoint(const std::string& mount_name,
   return true;
 }
 
-}  // namespace fileapi
+}  // namespace storage

@@ -12,19 +12,19 @@
 
 namespace {
 
-class InvalidFileValidator : public fileapi::CopyOrMoveFileValidator {
+class InvalidFileValidator : public storage::CopyOrMoveFileValidator {
  public:
   virtual ~InvalidFileValidator() {}
   virtual void StartPreWriteValidation(
-      const fileapi::CopyOrMoveFileValidator::ResultCallback&
-          result_callback) OVERRIDE {
+      const storage::CopyOrMoveFileValidator::ResultCallback& result_callback)
+      OVERRIDE {
     result_callback.Run(base::File::FILE_ERROR_SECURITY);
   }
 
   virtual void StartPostWriteValidation(
       const base::FilePath& dest_platform_path,
-      const fileapi::CopyOrMoveFileValidator::ResultCallback&
-          result_callback) OVERRIDE {
+      const storage::CopyOrMoveFileValidator::ResultCallback& result_callback)
+      OVERRIDE {
     result_callback.Run(base::File::FILE_ERROR_SECURITY);
   }
 
@@ -41,9 +41,9 @@ class InvalidFileValidator : public fileapi::CopyOrMoveFileValidator {
 MediaFileValidatorFactory::MediaFileValidatorFactory() {}
 MediaFileValidatorFactory::~MediaFileValidatorFactory() {}
 
-fileapi::CopyOrMoveFileValidator*
+storage::CopyOrMoveFileValidator*
 MediaFileValidatorFactory::CreateCopyOrMoveFileValidator(
-    const fileapi::FileSystemURL& src,
+    const storage::FileSystemURL& src,
     const base::FilePath& platform_path) {
   base::FilePath src_path = src.virtual_path();
   if (SupportedImageTypeValidator::SupportsFileType(src_path))

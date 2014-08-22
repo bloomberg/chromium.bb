@@ -14,7 +14,7 @@ namespace leveldb {
 class Env;
 }
 
-namespace fileapi {
+namespace storage {
 
 // Provides runtime options that may change FileSystem API behavior.
 // This object is copyable.
@@ -57,6 +57,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemOptions {
   leveldb::Env* env_override_;
 };
 
-}  // namespace fileapi
+}  // namespace storage
 
 #endif  // WEBKIT_BROWSER_FILEAPI_FILE_SYSTEM_OPTIONS_H_

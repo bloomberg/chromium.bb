@@ -8,7 +8,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "sql/statement.h"
 
-namespace webkit_database {
+namespace storage {
 
 DatabaseDetails::DatabaseDetails() : estimated_size(0) { }
 
@@ -147,4 +147,4 @@ bool DatabasesTable::DeleteOriginIdentifier(
   return (delete_statement.Run() && db_->GetLastChangeCount());
 }
 
-}  // namespace webkit_database
+}  // namespace storage

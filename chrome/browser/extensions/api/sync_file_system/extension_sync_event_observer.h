@@ -44,11 +44,10 @@ class ExtensionSyncEventObserver : public sync_file_system::SyncEventObserver,
       sync_file_system::SyncServiceState state,
       const std::string& description) OVERRIDE;
 
-  virtual void OnFileSynced(
-      const fileapi::FileSystemURL& url,
-      sync_file_system::SyncFileStatus status,
-      sync_file_system::SyncAction action,
-      sync_file_system::SyncDirection direction) OVERRIDE;
+  virtual void OnFileSynced(const storage::FileSystemURL& url,
+                            sync_file_system::SyncFileStatus status,
+                            sync_file_system::SyncAction action,
+                            sync_file_system::SyncDirection direction) OVERRIDE;
 
  private:
   friend class BrowserContextKeyedAPIFactory<ExtensionSyncEventObserver>;

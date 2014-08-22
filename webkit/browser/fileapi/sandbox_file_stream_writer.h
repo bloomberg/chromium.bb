@@ -17,7 +17,7 @@
 #include "webkit/common/fileapi/file_system_types.h"
 #include "webkit/common/quota/quota_types.h"
 
-namespace fileapi {
+namespace storage {
 
 class FileSystemContext;
 class FileSystemQuotaUtil;
@@ -55,10 +55,11 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE SandboxFileStreamWriter
       base::File::Error file_error,
       const base::File::Info& file_info,
       const base::FilePath& platform_path,
-      const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref);
+      const scoped_refptr<storage::ShareableFileReference>& file_ref);
   void DidGetUsageAndQuota(const net::CompletionCallback& callback,
-                           quota::QuotaStatusCode status,
-                           int64 usage, int64 quota);
+                           storage::QuotaStatusCode status,
+                           int64 usage,
+                           int64 quota);
   void DidInitializeForWrite(net::IOBuffer* buf, int buf_len,
                              const net::CompletionCallback& callback,
                              int init_status);
@@ -90,6 +91,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE SandboxFileStreamWriter
   DISALLOW_COPY_AND_ASSIGN(SandboxFileStreamWriter);
 };
 
-}  // namespace fileapi
+}  // namespace storage
 
 #endif  // WEBKIT_BROWSER_FILEAPI_SANDBOX_FILE_STREAM_WRITER_H_

@@ -26,7 +26,7 @@ namespace net {
 class FileStream;
 }
 
-namespace webkit_blob {
+namespace storage {
 
 // A thin wrapper of net::FileStream with range support for sliced file
 // handling.
@@ -76,6 +76,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT LocalFileStreamReader
   base::WeakPtrFactory<LocalFileStreamReader> weak_factory_;
 };
 
-}  // namespace webkit_blob
+}  // namespace storage
 
 #endif  // WEBKIT_BROWSER_BLOB_LOCAL_FILE_STREAM_READER_H_

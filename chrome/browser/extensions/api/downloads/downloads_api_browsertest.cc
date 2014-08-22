@@ -699,9 +699,9 @@ class ScopedItemVectorCanceller {
 // Writes an HTML5 file so that it can be downloaded.
 class HTML5FileWriter {
  public:
-  static bool CreateFileForTesting(fileapi::FileSystemContext* context,
-                                   const fileapi::FileSystemURL& path,
-                                   const char*data,
+  static bool CreateFileForTesting(storage::FileSystemContext* context,
+                                   const storage::FileSystemURL& path,
+                                   const char* data,
                                    int length) {
     // Create a temp file.
     base::FilePath temp_file;
@@ -735,8 +735,8 @@ class HTML5FileWriter {
   }
 
   static void CreateFileForTestingOnIOThread(
-      fileapi::FileSystemContext* context,
-      const fileapi::FileSystemURL& path,
+      storage::FileSystemContext* context,
+      const storage::FileSystemURL& path,
       const base::FilePath& temp_file,
       bool* result,
       base::WaitableEvent* done_event) {
@@ -2331,10 +2331,11 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
 
   // Setup a file in the filesystem which we can download.
   ASSERT_TRUE(HTML5FileWriter::CreateFileForTesting(
-      BrowserContext::GetDefaultStoragePartition(browser()->profile())->
-          GetFileSystemContext(),
-      fileapi::FileSystemURL::CreateForTest(GURL(download_url)),
-      kPayloadData, strlen(kPayloadData)));
+      BrowserContext::GetDefaultStoragePartition(browser()->profile())
+          ->GetFileSystemContext(),
+      storage::FileSystemURL::CreateForTest(GURL(download_url)),
+      kPayloadData,
+      strlen(kPayloadData)));
 
   // Now download it.
   scoped_ptr<base::Value> result(RunFunctionAndReturnResult(

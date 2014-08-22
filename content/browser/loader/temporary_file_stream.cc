@@ -12,7 +12,7 @@
 #include "net/base/file_stream.h"
 #include "webkit/common/blob/shareable_file_reference.h"
 
-using webkit_blob::ShareableFileReference;
+using storage::ShareableFileReference;
 
 namespace content {
 

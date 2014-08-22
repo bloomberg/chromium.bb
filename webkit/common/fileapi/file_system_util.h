@@ -19,7 +19,7 @@
 
 class GURL;
 
-namespace fileapi {
+namespace storage {
 
 WEBKIT_STORAGE_COMMON_EXPORT extern const char kPersistentDir[];
 WEBKIT_STORAGE_COMMON_EXPORT extern const char kTemporaryDir[];
@@ -106,10 +106,10 @@ GetFileSystemName(const GURL& origin_url, FileSystemType type);
 // (Basically this naively maps TEMPORARY storage type to TEMPORARY filesystem
 // type, PERSISTENT storage type to PERSISTENT filesystem type and vice versa.)
 WEBKIT_STORAGE_COMMON_EXPORT FileSystemType
-QuotaStorageTypeToFileSystemType(quota::StorageType storage_type);
+    QuotaStorageTypeToFileSystemType(storage::StorageType storage_type);
 
-WEBKIT_STORAGE_COMMON_EXPORT quota::StorageType
-FileSystemTypeToQuotaStorageType(FileSystemType type);
+WEBKIT_STORAGE_COMMON_EXPORT storage::StorageType
+    FileSystemTypeToQuotaStorageType(FileSystemType type);
 
 // Returns the string representation of the given filesystem |type|.
 // Returns an empty string if the |type| is invalid.
@@ -177,6 +177,6 @@ WEBKIT_STORAGE_COMMON_EXPORT std::string GetExternalFileSystemRootURIString(
 WEBKIT_STORAGE_COMMON_EXPORT base::File::Error
 NetErrorToFileError(int error);
 
-}  // namespace fileapi
+}  // namespace storage
 
 #endif  // WEBKIT_COMMON_FILEAPI_FILE_SYSTEM_UTIL_H_

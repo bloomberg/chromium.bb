@@ -20,11 +20,11 @@ namespace base {
 class Time;
 }
 
-namespace webkit_blob {
+namespace storage {
 class ShareableFileReference;
 }
 
-namespace fileapi {
+namespace storage {
 
 class FileSystemOperationContext;
 class FileSystemURL;
@@ -74,9 +74,8 @@ class AsyncFileUtil {
       void(base::File::Error result,
            const base::File::Info& file_info,
            const base::FilePath& platform_path,
-           const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref)>
+           const scoped_refptr<storage::ShareableFileReference>& file_ref)>
       CreateSnapshotFileCallback;
-
 
   typedef base::Callback<void(int64 size)> CopyFileProgressCallback;
 
@@ -362,6 +361,6 @@ class AsyncFileUtil {
   DISALLOW_COPY_AND_ASSIGN(AsyncFileUtil);
 };
 
-}  // namespace fileapi
+}  // namespace storage
 
 #endif  // WEBKIT_BROWSER_FILEAPI_ASYNC_FILE_UTIL_H_

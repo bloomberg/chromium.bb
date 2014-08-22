@@ -28,15 +28,15 @@
 #include "webkit/browser/fileapi/sandbox_file_stream_writer.h"
 
 using content::AsyncFileTestHelper;
-using fileapi::FileSystemURL;
-using fileapi::FileWriterDelegate;
+using storage::FileSystemURL;
+using storage::FileWriterDelegate;
 
 namespace content {
 
 namespace {
 
 const GURL kOrigin("http://example.com");
-const fileapi::FileSystemType kFileSystemType = fileapi::kFileSystemTypeTest;
+const storage::FileSystemType kFileSystemType = storage::kFileSystemTypeTest;
 
 const char kData[] = "The quick brown fox jumps over the lazy dog.\n";
 const int kDataSize = ARRAYSIZE_UNSAFE(kData) - 1;
@@ -116,16 +116,15 @@ class FileWriterDelegateTest : public PlatformTest {
       const char* test_file_path,
       int64 offset,
       int64 allowed_growth) {
-    fileapi::SandboxFileStreamWriter* writer =
-        new fileapi::SandboxFileStreamWriter(
+    storage::SandboxFileStreamWriter* writer =
+        new storage::SandboxFileStreamWriter(
             file_system_context_.get(),
             GetFileSystemURL(test_file_path),
             offset,
             *file_system_context_->GetUpdateObservers(kFileSystemType));
     writer->set_default_quota(allowed_growth);
-    return new FileWriterDelegate(
-        scoped_ptr<fileapi::FileStreamWriter>(writer),
-        FileWriterDelegate::FLUSH_ON_COMPLETION);
+    return new FileWriterDelegate(scoped_ptr<storage::FileStreamWriter>(writer),
+                                  FileWriterDelegate::FLUSH_ON_COMPLETION);
   }
 
   FileWriterDelegate::DelegateWriteCallback GetWriteCallback(Result* result) {
@@ -147,7 +146,7 @@ class FileWriterDelegateTest : public PlatformTest {
   // This should be alive until the very end of this instance.
   base::MessageLoopForIO loop_;
 
-  scoped_refptr<fileapi::FileSystemContext> file_system_context_;
+  scoped_refptr<storage::FileSystemContext> file_system_context_;
 
   net::URLRequestContext empty_context_;
   scoped_ptr<FileWriterDelegate> file_writer_delegate_;

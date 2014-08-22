@@ -13,8 +13,8 @@
 #include "net/base/net_util.h"
 #include "webkit/browser/quota/quota_manager_proxy.h"
 
-using quota::kQuotaErrorInvalidModification;
-using quota::kQuotaStatusOk;
+using storage::kQuotaErrorInvalidModification;
+using storage::kQuotaStatusOk;
 
 namespace content {
 
@@ -124,7 +124,7 @@ void MockStorageClient::DeleteOriginData(
                  weak_factory_.GetWeakPtr(), origin, type, callback));
 }
 
-bool MockStorageClient::DoesSupport(quota::StorageType type) const {
+bool MockStorageClient::DoesSupport(storage::StorageType type) const {
   return true;
 }
 

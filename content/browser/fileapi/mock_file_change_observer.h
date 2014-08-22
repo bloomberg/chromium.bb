@@ -11,7 +11,7 @@
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/browser/fileapi/task_runner_bound_observer_list.h"
 
-namespace fileapi {
+namespace storage {
 
 // Mock file change observer.
 class MockFileChangeObserver : public FileChangeObserver {
@@ -98,6 +98,6 @@ class MockFileChangeObserver : public FileChangeObserver {
   DISALLOW_COPY_AND_ASSIGN(MockFileChangeObserver);
 };
 
-}  // namespace fileapi
+}  // namespace storage
 
 #endif  // WEBKIT_BROWSER_FILEAPI_MOCK_FILE_CHANGE_OBSERVER_H_

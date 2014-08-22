@@ -4,7 +4,7 @@
 
 #include "webkit/browser/quota/special_storage_policy.h"
 
-namespace quota {
+namespace storage {
 
 SpecialStoragePolicy::Observer::~Observer() {}
 
@@ -35,4 +35,4 @@ void SpecialStoragePolicy::NotifyCleared() {
   FOR_EACH_OBSERVER(Observer, observers_, OnCleared());
 }
 
-}  // namespace quota
+}  // namespace storage

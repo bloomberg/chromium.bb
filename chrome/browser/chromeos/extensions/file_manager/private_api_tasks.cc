@@ -19,7 +19,7 @@
 #include "webkit/browser/fileapi/file_system_url.h"
 
 using content::BrowserThread;
-using fileapi::FileSystemURL;
+using storage::FileSystemURL;
 
 namespace extensions {
 namespace {
@@ -31,7 +31,7 @@ const char kInvalidFileUrl[] = "Invalid file URL";
 // Make a set of unique filename suffixes out of the list of file URLs.
 std::set<std::string> GetUniqueSuffixes(
     const std::vector<std::string>& file_url_list,
-    const fileapi::FileSystemContext* context) {
+    const storage::FileSystemContext* context) {
   std::set<std::string> suffixes;
   for (size_t i = 0; i < file_url_list.size(); ++i) {
     const FileSystemURL url = context->CrackURL(GURL(file_url_list[i]));
@@ -79,7 +79,7 @@ bool FileBrowserPrivateExecuteTaskFunction::RunAsync() {
     return true;
   }
 
-  const scoped_refptr<fileapi::FileSystemContext> file_system_context =
+  const scoped_refptr<storage::FileSystemContext> file_system_context =
       file_manager::util::GetFileSystemContextForRenderViewHost(
           GetProfile(), render_view_host());
 
@@ -134,7 +134,7 @@ bool FileBrowserPrivateGetFileTasksFunction::RunAsync() {
   if (params->file_urls.empty())
     return false;
 
-  const scoped_refptr<fileapi::FileSystemContext> file_system_context =
+  const scoped_refptr<storage::FileSystemContext> file_system_context =
       file_manager::util::GetFileSystemContextForRenderViewHost(
           GetProfile(), render_view_host());
 
@@ -142,7 +142,7 @@ bool FileBrowserPrivateGetFileTasksFunction::RunAsync() {
   // file paths.
   for (size_t i = 0; i < params->file_urls.size(); ++i) {
     const GURL file_url(params->file_urls[i]);
-    fileapi::FileSystemURL file_system_url(
+    storage::FileSystemURL file_system_url(
         file_system_context->CrackURL(file_url));
     if (!chromeos::FileSystemBackend::CanHandleURL(file_system_url))
       continue;
@@ -199,7 +199,7 @@ bool FileBrowserPrivateSetDefaultTaskFunction::RunSync() {
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  const scoped_refptr<fileapi::FileSystemContext> file_system_context =
+  const scoped_refptr<storage::FileSystemContext> file_system_context =
       file_manager::util::GetFileSystemContextForRenderViewHost(
           GetProfile(), render_view_host());
 

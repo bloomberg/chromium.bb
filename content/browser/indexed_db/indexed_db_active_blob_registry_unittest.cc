@@ -105,8 +105,7 @@ class IndexedDBActiveBlobRegistryTest : public testing::Test {
   static const int64 kBlobKey0 = 77;
   static const int64 kBlobKey1 = 14;
 
-  typedef webkit_blob::ShareableFileReference::FinalReleaseCallback
-      ReleaseCallback;
+  typedef storage::ShareableFileReference::FinalReleaseCallback ReleaseCallback;
 
  private:
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;

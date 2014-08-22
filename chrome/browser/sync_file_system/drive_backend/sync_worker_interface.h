@@ -26,7 +26,7 @@ class DriveServiceInterface;
 class DriveUploaderInterface;
 }
 
-namespace fileapi {
+namespace storage {
 class FileSystemURL;
 }
 
@@ -47,7 +47,7 @@ class SyncWorkerInterface {
   class Observer {
    public:
     virtual void OnPendingFileListUpdated(int item_count) = 0;
-    virtual void OnFileStatusChanged(const fileapi::FileSystemURL& url,
+    virtual void OnFileStatusChanged(const storage::FileSystemURL& url,
                                      SyncFileStatus file_status,
                                      SyncAction sync_action,
                                      SyncDirection direction) = 0;
@@ -88,12 +88,11 @@ class SyncWorkerInterface {
   virtual void PromoteDemotedChanges(const base::Closure& callback) = 0;
 
   // See LocalChangeProcessor for the details.
-  virtual void ApplyLocalChange(
-      const FileChange& local_change,
-      const base::FilePath& local_path,
-      const SyncFileMetadata& local_metadata,
-      const fileapi::FileSystemURL& url,
-      const SyncStatusCallback& callback) = 0;
+  virtual void ApplyLocalChange(const FileChange& local_change,
+                                const base::FilePath& local_path,
+                                const SyncFileMetadata& local_metadata,
+                                const storage::FileSystemURL& url,
+                                const SyncStatusCallback& callback) = 0;
 
   virtual void ActivateService(RemoteServiceState service_state,
                                const std::string& description) = 0;

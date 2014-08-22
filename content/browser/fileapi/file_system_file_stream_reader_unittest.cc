@@ -21,10 +21,10 @@
 #include "webkit/browser/fileapi/file_system_file_util.h"
 
 using content::AsyncFileTestHelper;
-using fileapi::FileSystemContext;
-using fileapi::FileSystemFileStreamReader;
-using fileapi::FileSystemType;
-using fileapi::FileSystemURL;
+using storage::FileSystemContext;
+using storage::FileSystemFileStreamReader;
+using storage::FileSystemType;
+using storage::FileSystemURL;
 
 namespace content {
 
@@ -35,7 +35,7 @@ const char kTestFileName[] = "test.dat";
 const char kTestData[] = "0123456789";
 const int kTestDataSize = arraysize(kTestData) - 1;
 
-void ReadFromReader(fileapi::FileSystemFileStreamReader* reader,
+void ReadFromReader(storage::FileSystemFileStreamReader* reader,
                     std::string* data,
                     size_t size,
                     int* result) {
@@ -74,8 +74,9 @@ class FileSystemFileStreamReaderTest : public testing::Test {
         NULL, temp_dir_.path());
 
     file_system_context_->OpenFileSystem(
-        GURL(kURLOrigin), fileapi::kFileSystemTypeTemporary,
-        fileapi::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
+        GURL(kURLOrigin),
+        storage::kFileSystemTypeTemporary,
+        storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
         base::Bind(&OnOpenFileSystem));
     base::RunLoop().RunUntilIdle();
 
@@ -88,7 +89,7 @@ class FileSystemFileStreamReaderTest : public testing::Test {
   }
 
  protected:
-  fileapi::FileSystemFileStreamReader* CreateFileReader(
+  storage::FileSystemFileStreamReader* CreateFileReader(
       const std::string& file_name,
       int64 initial_offset,
       const base::Time& expected_modification_time) {
@@ -130,7 +131,7 @@ class FileSystemFileStreamReaderTest : public testing::Test {
   FileSystemURL GetFileSystemURL(const std::string& file_name) {
     return file_system_context_->CreateCrackedFileSystemURL(
         GURL(kURLOrigin),
-        fileapi::kFileSystemTypeTemporary,
+        storage::kFileSystemTypeTemporary,
         base::FilePath().AppendASCII(file_name));
   }
 

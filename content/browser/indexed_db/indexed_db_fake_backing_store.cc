@@ -83,7 +83,7 @@ leveldb::Status IndexedDBFakeBackingStore::PutRecord(
     int64 object_store_id,
     const IndexedDBKey& key,
     IndexedDBValue* value,
-    ScopedVector<webkit_blob::BlobDataHandle>* handles,
+    ScopedVector<storage::BlobDataHandle>* handles,
     RecordIdentifier* record) {
   return leveldb::Status::OK();
 }

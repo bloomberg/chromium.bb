@@ -21,7 +21,7 @@ namespace content {
 class RenderViewHost;
 }
 
-namespace fileapi {
+namespace storage {
 class FileSystemContext;
 }
 
@@ -65,13 +65,13 @@ typedef base::Callback<void(scoped_ptr<
 
 // Returns a file system context associated with the given profile and the
 // extension ID.
-fileapi::FileSystemContext* GetFileSystemContextForExtensionId(
+storage::FileSystemContext* GetFileSystemContextForExtensionId(
     Profile* profile,
     const std::string& extension_id);
 
 // Returns a file system context associated with the given profile and the
 // render view host.
-fileapi::FileSystemContext* GetFileSystemContextForRenderViewHost(
+storage::FileSystemContext* GetFileSystemContextForRenderViewHost(
     Profile* profile,
     content::RenderViewHost* render_view_host);
 
@@ -127,9 +127,9 @@ void ConvertFileDefinitionListToEntryDefinitionList(
 
 // Checks if a directory exists at |url|.
 void CheckIfDirectoryExists(
-    scoped_refptr<fileapi::FileSystemContext> file_system_context,
+    scoped_refptr<storage::FileSystemContext> file_system_context,
     const GURL& url,
-    const fileapi::FileSystemOperationRunner::StatusCallback& callback);
+    const storage::FileSystemOperationRunner::StatusCallback& callback);
 
 }  // namespace util
 }  // namespace file_manager

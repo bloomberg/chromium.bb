@@ -53,7 +53,7 @@ base::FilePath TestBrowserContext::TakePath() {
 }
 
 void TestBrowserContext::SetSpecialStoragePolicy(
-    quota::SpecialStoragePolicy* policy) {
+    storage::SpecialStoragePolicy* policy) {
   special_storage_policy_ = policy;
 }
 
@@ -109,7 +109,7 @@ BrowserPluginGuestManager* TestBrowserContext::GetGuestManager() {
   return NULL;
 }
 
-quota::SpecialStoragePolicy* TestBrowserContext::GetSpecialStoragePolicy() {
+storage::SpecialStoragePolicy* TestBrowserContext::GetSpecialStoragePolicy() {
   return special_storage_policy_.get();
 }
 

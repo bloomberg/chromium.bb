@@ -27,8 +27,8 @@ class FileSystemInterface;
 
 namespace internal {
 
-// The implementation of fileapi::FileStreamWriter for the Drive File System.
-class WebkitFileStreamWriterImpl : public fileapi::FileStreamWriter {
+// The implementation of storage::FileStreamWriter for the Drive File System.
+class WebkitFileStreamWriterImpl : public storage::FileStreamWriter {
  public:
   // Callback to return the FileSystemInterface instance. This is an
   // injecting point for testing.
@@ -66,7 +66,7 @@ class WebkitFileStreamWriterImpl : public fileapi::FileStreamWriter {
   const base::FilePath file_path_;
   const int64 offset_;
 
-  scoped_ptr<fileapi::FileStreamWriter> local_file_writer_;
+  scoped_ptr<storage::FileStreamWriter> local_file_writer_;
   base::Closure close_callback_on_ui_thread_;
   net::CompletionCallback pending_write_callback_;
   net::CompletionCallback pending_cancel_callback_;

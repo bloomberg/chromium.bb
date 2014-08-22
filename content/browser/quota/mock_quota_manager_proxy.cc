@@ -8,7 +8,7 @@
 #include "base/single_thread_task_runner.h"
 #include "url/gurl.h"
 
-using quota::kStorageTypeUnknown;
+using storage::kStorageTypeUnknown;
 
 namespace content {
 

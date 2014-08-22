@@ -98,7 +98,7 @@ class ChildProcessSecurityPolicyTest : public testing::Test {
 
   void CheckHasNoFileSystemFilePermission(ChildProcessSecurityPolicyImpl* p,
                                           const base::FilePath& file,
-                                          const fileapi::FileSystemURL& url) {
+                                          const storage::FileSystemURL& url) {
     EXPECT_FALSE(p->CanReadFile(kRendererID, file));
     EXPECT_FALSE(p->CanCreateReadWriteFile(kRendererID, file));
     EXPECT_FALSE(p->CanReadFileSystemFile(kRendererID, url));
@@ -308,22 +308,24 @@ TEST_F(ChildProcessSecurityPolicyTest, FileSystemGrantsTest) {
       ChildProcessSecurityPolicyImpl::GetInstance();
 
   p->Add(kRendererID);
-  std::string read_id = fileapi::IsolatedContext::GetInstance()->
-      RegisterFileSystemForVirtualPath(fileapi::kFileSystemTypeTest,
-                                       "read_filesystem",
-                                       base::FilePath());
-  std::string read_write_id = fileapi::IsolatedContext::GetInstance()->
-      RegisterFileSystemForVirtualPath(fileapi::kFileSystemTypeTest,
-                                       "read_write_filesystem",
-                                       base::FilePath());
-  std::string copy_into_id = fileapi::IsolatedContext::GetInstance()->
-      RegisterFileSystemForVirtualPath(fileapi::kFileSystemTypeTest,
-                                       "copy_into_filesystem",
-                                       base::FilePath());
-  std::string delete_from_id = fileapi::IsolatedContext::GetInstance()->
-      RegisterFileSystemForVirtualPath(fileapi::kFileSystemTypeTest,
-                                       "delete_from_filesystem",
-                                       base::FilePath());
+  std::string read_id =
+      storage::IsolatedContext::GetInstance()->RegisterFileSystemForVirtualPath(
+          storage::kFileSystemTypeTest, "read_filesystem", base::FilePath());
+  std::string read_write_id =
+      storage::IsolatedContext::GetInstance()->RegisterFileSystemForVirtualPath(
+          storage::kFileSystemTypeTest,
+          "read_write_filesystem",
+          base::FilePath());
+  std::string copy_into_id =
+      storage::IsolatedContext::GetInstance()->RegisterFileSystemForVirtualPath(
+          storage::kFileSystemTypeTest,
+          "copy_into_filesystem",
+          base::FilePath());
+  std::string delete_from_id =
+      storage::IsolatedContext::GetInstance()->RegisterFileSystemForVirtualPath(
+          storage::kFileSystemTypeTest,
+          "delete_from_filesystem",
+          base::FilePath());
 
   // Test initially having no permissions.
   CheckHasNoFileSystemPermission(p, read_id);
@@ -373,10 +375,10 @@ TEST_F(ChildProcessSecurityPolicyTest, FileSystemGrantsTest) {
 
   // Cleanup.
   p->Remove(kRendererID);
-  fileapi::IsolatedContext::GetInstance()->RevokeFileSystem(read_id);
-  fileapi::IsolatedContext::GetInstance()->RevokeFileSystem(read_write_id);
-  fileapi::IsolatedContext::GetInstance()->RevokeFileSystem(copy_into_id);
-  fileapi::IsolatedContext::GetInstance()->RevokeFileSystem(delete_from_id);
+  storage::IsolatedContext::GetInstance()->RevokeFileSystem(read_id);
+  storage::IsolatedContext::GetInstance()->RevokeFileSystem(read_write_id);
+  storage::IsolatedContext::GetInstance()->RevokeFileSystem(copy_into_id);
+  storage::IsolatedContext::GetInstance()->RevokeFileSystem(delete_from_id);
 }
 
 TEST_F(ChildProcessSecurityPolicyTest, FilePermissionGrantingAndRevoking) {
@@ -384,14 +386,14 @@ TEST_F(ChildProcessSecurityPolicyTest, FilePermissionGrantingAndRevoking) {
       ChildProcessSecurityPolicyImpl::GetInstance();
 
   p->RegisterFileSystemPermissionPolicy(
-      fileapi::kFileSystemTypeTest,
-      fileapi::FILE_PERMISSION_USE_FILE_PERMISSION);
+      storage::kFileSystemTypeTest,
+      storage::FILE_PERMISSION_USE_FILE_PERMISSION);
 
   p->Add(kRendererID);
   base::FilePath file(TEST_PATH("/dir/testfile"));
   file = file.NormalizePathSeparators();
-  fileapi::FileSystemURL url = fileapi::FileSystemURL::CreateForTest(
-      GURL("http://foo/"), fileapi::kFileSystemTypeTest, file);
+  storage::FileSystemURL url = storage::FileSystemURL::CreateForTest(
+      GURL("http://foo/"), storage::kFileSystemTypeTest, file);
 
   // Test initially having no permissions.
   CheckHasNoFileSystemFilePermission(p, file, url);

@@ -31,16 +31,16 @@ class SandboxFileSystemBackendDelegateTest;
 class SandboxFileSystemTestHelper;
 }
 
-namespace quota {
+namespace storage {
 class QuotaManagerProxy;
 class SpecialStoragePolicy;
 }
 
-namespace webkit_blob {
+namespace storage {
 class FileStreamReader;
 }
 
-namespace fileapi {
+namespace storage {
 
 class AsyncFileUtil;
 class FileStreamWriter;
@@ -80,10 +80,10 @@ class WEBKIT_STORAGE_BROWSER_EXPORT SandboxFileSystemBackendDelegate
   static std::string GetTypeString(FileSystemType type);
 
   SandboxFileSystemBackendDelegate(
-      quota::QuotaManagerProxy* quota_manager_proxy,
+      storage::QuotaManagerProxy* quota_manager_proxy,
       base::SequencedTaskRunner* file_task_runner,
       const base::FilePath& profile_path,
-      quota::SpecialStoragePolicy* special_storage_policy,
+      storage::SpecialStoragePolicy* special_storage_policy,
       const FileSystemOptions& file_system_options);
 
   virtual ~SandboxFileSystemBackendDelegate();
@@ -114,7 +114,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT SandboxFileSystemBackendDelegate
       const FileSystemURL& url,
       FileSystemContext* context,
       base::File::Error* error_code) const;
-  scoped_ptr<webkit_blob::FileStreamReader> CreateFileStreamReader(
+  scoped_ptr<storage::FileStreamReader> CreateFileStreamReader(
       const FileSystemURL& url,
       int64 offset,
       const base::Time& expected_modification_time,
@@ -128,7 +128,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT SandboxFileSystemBackendDelegate
   // FileSystemQuotaUtil overrides.
   virtual base::File::Error DeleteOriginDataOnFileTaskRunner(
       FileSystemContext* context,
-      quota::QuotaManagerProxy* proxy,
+      storage::QuotaManagerProxy* proxy,
       const GURL& origin_url,
       FileSystemType type) OVERRIDE;
   virtual void GetOriginsForTypeOnFileTaskRunner(
@@ -183,7 +183,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT SandboxFileSystemBackendDelegate
   FileSystemUsageCache* usage_cache() { return file_system_usage_cache_.get(); }
   SandboxQuotaObserver* quota_observer() { return quota_observer_.get(); }
 
-  quota::SpecialStoragePolicy* special_storage_policy() {
+  storage::SpecialStoragePolicy* special_storage_policy() {
     return special_storage_policy_.get();
   }
 
@@ -232,7 +232,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT SandboxFileSystemBackendDelegate
   scoped_ptr<SandboxQuotaObserver> quota_observer_;
   scoped_ptr<QuotaReservationManager> quota_reservation_manager_;
 
-  scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy_;
+  scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy_;
 
   FileSystemOptions file_system_options_;
 
@@ -255,6 +255,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT SandboxFileSystemBackendDelegate
   DISALLOW_COPY_AND_ASSIGN(SandboxFileSystemBackendDelegate);
 };
 
-}  // namespace fileapi
+}  // namespace storage
 
 #endif  // WEBKIT_BROWSER_FILEAPI_SANDBOX_FILE_SYSTEM_BACKEND_DELEGATE_H_

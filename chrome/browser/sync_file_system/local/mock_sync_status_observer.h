@@ -16,8 +16,8 @@ class MockSyncStatusObserver : public LocalFileSyncStatus::Observer {
   virtual ~MockSyncStatusObserver();
 
   // LocalFileSyncStatus::Observer overrides.
-  MOCK_METHOD1(OnSyncEnabled, void(const fileapi::FileSystemURL& url));
-  MOCK_METHOD1(OnWriteEnabled, void(const fileapi::FileSystemURL& url));
+  MOCK_METHOD1(OnSyncEnabled, void(const storage::FileSystemURL& url));
+  MOCK_METHOD1(OnWriteEnabled, void(const storage::FileSystemURL& url));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockSyncStatusObserver);

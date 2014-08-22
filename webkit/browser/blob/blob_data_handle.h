@@ -16,7 +16,7 @@ namespace base {
 class SequencedTaskRunner;
 }
 
-namespace webkit_blob {
+namespace storage {
 
 class BlobData;
 class BlobStorageContext;
@@ -66,6 +66,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT BlobDataHandle
   scoped_refptr<BlobDataHandleShared> shared_;
 };
 
-}  // namespace webkit_blob
+}  // namespace storage
 
 #endif  // WEBKIT_BROWSER_BLOB_BLOB_DATA_HANDLE_H_

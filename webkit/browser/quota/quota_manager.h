@@ -46,7 +46,7 @@ class StorageMonitorTest;
 
 }
 
-namespace quota {
+namespace storage {
 
 class QuotaDatabase;
 class QuotaManagerProxy;
@@ -454,6 +454,6 @@ struct QuotaManagerDeleter {
   }
 };
 
-}  // namespace quota
+}  // namespace storage
 
 #endif  // WEBKIT_BROWSER_QUOTA_QUOTA_MANAGER_H_

@@ -203,7 +203,7 @@ class MTPDeviceDelegateImplMacTest : public testing::Test {
   }
 
   void OnReadDir(base::WaitableEvent* event,
-                 const fileapi::AsyncFileUtil::EntryList& files,
+                 const storage::AsyncFileUtil::EntryList& files,
                  bool has_more) {
     error_ = base::File::FILE_OK;
     ASSERT_FALSE(has_more);
@@ -212,7 +212,7 @@ class MTPDeviceDelegateImplMacTest : public testing::Test {
   }
 
   void OverlappedOnReadDir(base::WaitableEvent* event,
-                           const fileapi::AsyncFileUtil::EntryList& files,
+                           const storage::AsyncFileUtil::EntryList& files,
                            bool has_more) {
     overlapped_error_ = base::File::FILE_OK;
     ASSERT_FALSE(has_more);
@@ -294,10 +294,10 @@ class MTPDeviceDelegateImplMacTest : public testing::Test {
 
   base::File::Error error_;
   base::File::Info info_;
-  fileapi::AsyncFileUtil::EntryList file_list_;
+  storage::AsyncFileUtil::EntryList file_list_;
 
   base::File::Error overlapped_error_;
-  fileapi::AsyncFileUtil::EntryList overlapped_file_list_;
+  storage::AsyncFileUtil::EntryList overlapped_file_list_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MTPDeviceDelegateImplMacTest);

@@ -9,7 +9,7 @@
 
 #include "webkit/browser/fileapi/recursive_operation_delegate.h"
 
-namespace fileapi {
+namespace storage {
 
 class RemoveOperationDelegate : public RecursiveOperationDelegate {
  public:
@@ -41,6 +41,6 @@ class RemoveOperationDelegate : public RecursiveOperationDelegate {
   DISALLOW_COPY_AND_ASSIGN(RemoveOperationDelegate);
 };
 
-}  // namespace fileapi
+}  // namespace storage
 
 #endif  // WEBKIT_BROWSER_FILEAPI_REMOVE_OPERATION_DELEGATE_H_

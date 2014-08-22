@@ -112,7 +112,7 @@ class WebRTCIdentityStoreBackend::SqlLiteStorage
  public:
   SqlLiteStorage(base::TimeDelta validity_period,
                  const base::FilePath& path,
-                 quota::SpecialStoragePolicy* policy)
+                 storage::SpecialStoragePolicy* policy)
       : validity_period_(validity_period), special_storage_policy_(policy) {
     if (!path.empty())
       path_ = path.Append(kWebRTCIdentityStoreDirectory);
@@ -169,7 +169,7 @@ class WebRTCIdentityStoreBackend::SqlLiteStorage
   base::TimeDelta validity_period_;
   // The file path of the DB. Empty if temporary.
   base::FilePath path_;
-  scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy_;
+  scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy_;
   scoped_ptr<sql::Connection> db_;
   // Batched DB operations pending to commit.
   PendingOperationList pending_operations_;
@@ -179,11 +179,12 @@ class WebRTCIdentityStoreBackend::SqlLiteStorage
 
 WebRTCIdentityStoreBackend::WebRTCIdentityStoreBackend(
     const base::FilePath& path,
-    quota::SpecialStoragePolicy* policy,
+    storage::SpecialStoragePolicy* policy,
     base::TimeDelta validity_period)
     : validity_period_(validity_period),
       state_(NOT_STARTED),
-      sql_lite_storage_(new SqlLiteStorage(validity_period, path, policy)) {}
+      sql_lite_storage_(new SqlLiteStorage(validity_period, path, policy)) {
+}
 
 bool WebRTCIdentityStoreBackend::FindIdentity(
     const GURL& origin,

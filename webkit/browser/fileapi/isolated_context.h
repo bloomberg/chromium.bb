@@ -19,11 +19,11 @@
 #include "webkit/browser/webkit_storage_browser_export.h"
 #include "webkit/common/fileapi/file_system_types.h"
 
-namespace fileapi {
+namespace storage {
 class FileSystemURL;
 }
 
-namespace fileapi {
+namespace storage {
 
 // Manages isolated filesystem mount points which have no well-known names
 // and are identified by a string 'filesystem ID', which usually just looks
@@ -196,6 +196,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT IsolatedContext : public MountPoints {
   DISALLOW_COPY_AND_ASSIGN(IsolatedContext);
 };
 
-}  // namespace fileapi
+}  // namespace storage
 
 #endif  // WEBKIT_BROWSER_FILEAPI_ISOLATED_CONTEXT_H_

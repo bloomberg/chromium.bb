@@ -18,12 +18,12 @@ class DrainableIOBuffer;
 class IOBufferWithSize;
 }
 
-namespace webkit_blob {
+namespace storage {
 class FileStreamReader;
 class ShareableFileReference;
 }
 
-namespace fileapi {
+namespace storage {
 
 class CopyOrMoveFileValidator;
 class FileStreamWriter;
@@ -46,7 +46,7 @@ class CopyOrMoveOperationDelegate
   class WEBKIT_STORAGE_BROWSER_EXPORT StreamCopyHelper {
    public:
     StreamCopyHelper(
-        scoped_ptr<webkit_blob::FileStreamReader> reader,
+        scoped_ptr<storage::FileStreamReader> reader,
         scoped_ptr<FileStreamWriter> writer,
         bool need_flush,
         int buffer_size,
@@ -76,7 +76,7 @@ class CopyOrMoveOperationDelegate
     void Flush(const StatusCallback& callback, bool is_eof);
     void DidFlush(const StatusCallback& callback, bool is_eof, int result);
 
-    scoped_ptr<webkit_blob::FileStreamReader> reader_;
+    scoped_ptr<storage::FileStreamReader> reader_;
     scoped_ptr<FileStreamWriter> writer_;
     const bool need_flush_;
     FileSystemOperation::CopyFileProgressCallback file_progress_callback_;
@@ -157,6 +157,6 @@ class CopyOrMoveOperationDelegate
   DISALLOW_COPY_AND_ASSIGN(CopyOrMoveOperationDelegate);
 };
 
-}  // namespace fileapi
+}  // namespace storage
 
 #endif  // WEBKIT_BROWSER_FILEAPI_COPY_OR_MOVE_OPERATION_DELEGATE_H_

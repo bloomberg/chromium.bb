@@ -90,27 +90,27 @@ class AppCacheHostTest : public testing::Test {
     bool content_blocked_;
   };
 
-  class MockQuotaManagerProxy : public quota::QuotaManagerProxy {
+  class MockQuotaManagerProxy : public storage::QuotaManagerProxy {
    public:
     MockQuotaManagerProxy() : QuotaManagerProxy(NULL, NULL) {}
 
     // Not needed for our tests.
-    virtual void RegisterClient(quota::QuotaClient* client) OVERRIDE {}
-    virtual void NotifyStorageAccessed(quota::QuotaClient::ID client_id,
+    virtual void RegisterClient(storage::QuotaClient* client) OVERRIDE {}
+    virtual void NotifyStorageAccessed(storage::QuotaClient::ID client_id,
                                        const GURL& origin,
-                                       quota::StorageType type) OVERRIDE {}
-    virtual void NotifyStorageModified(quota::QuotaClient::ID client_id,
+                                       storage::StorageType type) OVERRIDE {}
+    virtual void NotifyStorageModified(storage::QuotaClient::ID client_id,
                                        const GURL& origin,
-                                       quota::StorageType type,
+                                       storage::StorageType type,
                                        int64 delta) OVERRIDE {}
-    virtual void SetUsageCacheEnabled(quota::QuotaClient::ID client_id,
+    virtual void SetUsageCacheEnabled(storage::QuotaClient::ID client_id,
                                       const GURL& origin,
-                                      quota::StorageType type,
+                                      storage::StorageType type,
                                       bool enabled) OVERRIDE {}
     virtual void GetUsageAndQuota(
         base::SequencedTaskRunner* original_task_runner,
         const GURL& origin,
-        quota::StorageType type,
+        storage::StorageType type,
         const GetUsageAndQuotaCallback& callback) OVERRIDE {}
 
     virtual void NotifyOriginInUse(const GURL& origin) OVERRIDE {

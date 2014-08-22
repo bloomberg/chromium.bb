@@ -4,12 +4,11 @@
 
 #include "webkit/browser/fileapi/mount_points.h"
 
-namespace fileapi {
+namespace storage {
 
 MountPoints::MountPointInfo::MountPointInfo() {}
 MountPoints::MountPointInfo::MountPointInfo(
     const std::string& name, const base::FilePath& path)
     : name(name), path(path) {}
 
-}  // namespace fileapi
-
+}  // namespace storage

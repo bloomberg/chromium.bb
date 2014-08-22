@@ -12,7 +12,7 @@ namespace base {
 class TaskRunner;
 }
 
-namespace fileapi {
+namespace storage {
 class FileSystemContext;
 }
 
@@ -20,7 +20,7 @@ namespace net {
 class UploadDataStream;
 }
 
-namespace webkit_blob {
+namespace storage {
 class BlobStorageContext;
 }
 
@@ -42,8 +42,8 @@ class CONTENT_EXPORT UploadDataStreamBuilder {
   // when the data gets uploaded.
   static scoped_ptr<net::UploadDataStream> Build(
       ResourceRequestBody* body,
-      webkit_blob::BlobStorageContext* blob_context,
-      fileapi::FileSystemContext* file_system_context,
+      storage::BlobStorageContext* blob_context,
+      storage::FileSystemContext* file_system_context,
       base::TaskRunner* file_task_runner);
 };
 

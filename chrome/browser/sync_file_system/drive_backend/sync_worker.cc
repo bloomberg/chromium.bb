@@ -244,12 +244,11 @@ void SyncWorker::PromoteDemotedChanges(const base::Closure& callback) {
   callback.Run();
 }
 
-void SyncWorker::ApplyLocalChange(
-    const FileChange& local_change,
-    const base::FilePath& local_path,
-    const SyncFileMetadata& local_metadata,
-    const fileapi::FileSystemURL& url,
-    const SyncStatusCallback& callback) {
+void SyncWorker::ApplyLocalChange(const FileChange& local_change,
+                                  const base::FilePath& local_path,
+                                  const SyncFileMetadata& local_metadata,
+                                  const storage::FileSystemURL& url,
+                                  const SyncStatusCallback& callback) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
 
   LocalToRemoteSyncer* syncer = new LocalToRemoteSyncer(
@@ -515,7 +514,7 @@ void SyncWorker::DidProcessRemoteChange(RemoteToLocalSyncer* syncer,
 
     if (syncer->sync_action() == SYNC_ACTION_DELETED &&
         syncer->url().is_valid() &&
-        fileapi::VirtualPath::IsRootPath(syncer->url().path())) {
+        storage::VirtualPath::IsRootPath(syncer->url().path())) {
       RegisterOrigin(syncer->url().origin(), base::Bind(&EmptyStatusCallback));
     }
     should_check_conflict_ = true;
@@ -531,7 +530,7 @@ void SyncWorker::DidApplyLocalChange(LocalToRemoteSyncer* syncer,
   if ((status == SYNC_STATUS_OK || status == SYNC_STATUS_RETRY) &&
       syncer->url().is_valid() &&
       syncer->sync_action() != SYNC_ACTION_NONE) {
-    fileapi::FileSystemURL updated_url = syncer->url();
+    storage::FileSystemURL updated_url = syncer->url();
     if (!syncer->target_path().empty()) {
       updated_url = CreateSyncableFileSystemURL(syncer->url().origin(),
                                                 syncer->target_path());

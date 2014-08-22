@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "third_party/sqlite/sqlite3.h"
 
-namespace webkit_database {
+namespace storage {
 
 static const int kFileTypeMask = 0x00007F00;
 
@@ -155,4 +155,4 @@ int64 VfsBackend::GetFileSize(const base::FilePath& file_path) {
   return (base::GetFileSize(file_path, &size) ? size : 0);
 }
 
-} // namespace webkit_database
+}  // namespace storage

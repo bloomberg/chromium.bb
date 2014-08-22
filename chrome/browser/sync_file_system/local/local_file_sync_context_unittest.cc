@@ -32,9 +32,9 @@
 #define FPL FILE_PATH_LITERAL
 
 using content::BrowserThread;
-using fileapi::FileSystemContext;
-using fileapi::FileSystemURL;
-using fileapi::FileSystemURLSet;
+using storage::FileSystemContext;
+using storage::FileSystemURL;
+using storage::FileSystemURLSet;
 
 // This tests LocalFileSyncContext behavior in multi-thread /
 // multi-file-system-context environment.
@@ -81,7 +81,7 @@ class LocalFileSyncContextTest : public testing::Test {
                            LocalFileSyncContext::SyncMode sync_mode,
                            SyncFileMetadata* metadata,
                            FileChangeList* changes,
-                           webkit_blob::ScopedFile* snapshot) {
+                           storage::ScopedFile* snapshot) {
     ASSERT_TRUE(changes != NULL);
     ASSERT_FALSE(has_inflight_prepare_for_sync_);
     status_ = SYNC_STATUS_UNKNOWN;
@@ -99,7 +99,7 @@ class LocalFileSyncContextTest : public testing::Test {
                                 LocalFileSyncContext::SyncMode sync_mode,
                                 SyncFileMetadata* metadata,
                                 FileChangeList* changes,
-                                webkit_blob::ScopedFile* snapshot) {
+                                storage::ScopedFile* snapshot) {
     StartPrepareForSync(file_system_context, url, sync_mode,
                         metadata, changes, snapshot);
     base::MessageLoop::current()->Run();
@@ -112,7 +112,7 @@ class LocalFileSyncContextTest : public testing::Test {
       LocalFileSyncContext::SyncMode sync_mode,
       SyncFileMetadata* metadata,
       FileChangeList* changes,
-      webkit_blob::ScopedFile* snapshot) {
+      storage::ScopedFile* snapshot) {
     return base::Bind(&LocalFileSyncContextTest::StartPrepareForSync,
                       base::Unretained(this),
                       base::Unretained(file_system_context),
@@ -121,10 +121,10 @@ class LocalFileSyncContextTest : public testing::Test {
 
   void DidPrepareForSync(SyncFileMetadata* metadata_out,
                          FileChangeList* changes_out,
-                         webkit_blob::ScopedFile* snapshot_out,
+                         storage::ScopedFile* snapshot_out,
                          SyncStatusCode status,
                          const LocalFileSyncInfo& sync_file_info,
-                         webkit_blob::ScopedFile snapshot) {
+                         storage::ScopedFile snapshot) {
     ASSERT_TRUE(ui_task_runner_->RunsTasksOnCurrentThread());
     has_inflight_prepare_for_sync_ = false;
     status_ = status;
@@ -299,7 +299,7 @@ class LocalFileSyncContextTest : public testing::Test {
 
     SyncFileMetadata metadata;
     FileChangeList changes;
-    webkit_blob::ScopedFile snapshot;
+    storage::ScopedFile snapshot;
     EXPECT_EQ(SYNC_STATUS_OK,
               PrepareForSync(file_system.file_system_context(), kFile,
                              sync_mode, &metadata, &changes, &snapshot));
@@ -612,7 +612,7 @@ TEST_F(LocalFileSyncContextTest, ApplyRemoteChangeForDeletion) {
   // Record the initial usage (likely 0).
   int64 initial_usage = -1;
   int64 quota = -1;
-  EXPECT_EQ(quota::kQuotaStatusOk,
+  EXPECT_EQ(storage::kQuotaStatusOk,
             file_system.GetUsageAndQuota(&initial_usage, &quota));
 
   // Create a file and directory in the file_system.
@@ -638,7 +638,7 @@ TEST_F(LocalFileSyncContextTest, ApplyRemoteChangeForDeletion) {
 
   // At this point the usage must be greater than the initial usage.
   int64 new_usage = -1;
-  EXPECT_EQ(quota::kQuotaStatusOk,
+  EXPECT_EQ(storage::kQuotaStatusOk,
             file_system.GetUsageAndQuota(&new_usage, &quota));
   EXPECT_GT(new_usage, initial_usage);
 
@@ -674,7 +674,7 @@ TEST_F(LocalFileSyncContextTest, ApplyRemoteChangeForDeletion) {
   EXPECT_TRUE(urls.empty());
 
   // The quota usage data must have reflected the deletion.
-  EXPECT_EQ(quota::kQuotaStatusOk,
+  EXPECT_EQ(storage::kQuotaStatusOk,
             file_system.GetUsageAndQuota(&new_usage, &quota));
   EXPECT_EQ(new_usage, initial_usage);
 
@@ -700,7 +700,7 @@ TEST_F(LocalFileSyncContextTest, ApplyRemoteChangeForDeletion_ForRoot) {
   // Record the initial usage (likely 0).
   int64 initial_usage = -1;
   int64 quota = -1;
-  EXPECT_EQ(quota::kQuotaStatusOk,
+  EXPECT_EQ(storage::kQuotaStatusOk,
             file_system.GetUsageAndQuota(&initial_usage, &quota));
 
   // Create a file and directory in the file_system.
@@ -714,7 +714,7 @@ TEST_F(LocalFileSyncContextTest, ApplyRemoteChangeForDeletion_ForRoot) {
 
   // At this point the usage must be greater than the initial usage.
   int64 new_usage = -1;
-  EXPECT_EQ(quota::kQuotaStatusOk,
+  EXPECT_EQ(storage::kQuotaStatusOk,
             file_system.GetUsageAndQuota(&new_usage, &quota));
   EXPECT_GT(new_usage, initial_usage);
 
@@ -741,7 +741,7 @@ TEST_F(LocalFileSyncContextTest, ApplyRemoteChangeForDeletion_ForRoot) {
   EXPECT_TRUE(urls.empty());
 
   // The quota usage data must have reflected the deletion.
-  EXPECT_EQ(quota::kQuotaStatusOk,
+  EXPECT_EQ(storage::kQuotaStatusOk,
             file_system.GetUsageAndQuota(&new_usage, &quota));
   EXPECT_EQ(new_usage, initial_usage);
 
@@ -807,7 +807,7 @@ TEST_F(LocalFileSyncContextTest, ApplyRemoteChangeForAddOrUpdate) {
   // Record the usage.
   int64 usage = -1, new_usage = -1;
   int64 quota = -1;
-  EXPECT_EQ(quota::kQuotaStatusOk,
+  EXPECT_EQ(storage::kQuotaStatusOk,
             file_system.GetUsageAndQuota(&usage, &quota));
 
   // Here in the local filesystem we have:
@@ -834,7 +834,7 @@ TEST_F(LocalFileSyncContextTest, ApplyRemoteChangeForAddOrUpdate) {
   // Check if the usage has been increased by (kTestFileData1 - kTestFileData0).
   const int updated_size =
       arraysize(kTestFileData1) - arraysize(kTestFileData0);
-  EXPECT_EQ(quota::kQuotaStatusOk,
+  EXPECT_EQ(storage::kQuotaStatusOk,
             file_system.GetUsageAndQuota(&new_usage, &quota));
   EXPECT_EQ(updated_size, new_usage - usage);
 
@@ -881,7 +881,7 @@ TEST_F(LocalFileSyncContextTest, ApplyRemoteChangeForAddOrUpdate) {
   // Creating a file/directory must have increased the usage more than
   // the size of kTestFileData2.
   new_usage = usage;
-  EXPECT_EQ(quota::kQuotaStatusOk,
+  EXPECT_EQ(storage::kQuotaStatusOk,
             file_system.GetUsageAndQuota(&new_usage, &quota));
   EXPECT_GT(new_usage,
             static_cast<int64>(usage + arraysize(kTestFileData2) - 1));

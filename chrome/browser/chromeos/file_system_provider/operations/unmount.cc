@@ -13,7 +13,7 @@ namespace operations {
 
 Unmount::Unmount(extensions::EventRouter* event_router,
                  const ProvidedFileSystemInfo& file_system_info,
-                 const fileapi::AsyncFileUtil::StatusCallback& callback)
+                 const storage::AsyncFileUtil::StatusCallback& callback)
     : Operation(event_router, file_system_info), callback_(callback) {
 }
 

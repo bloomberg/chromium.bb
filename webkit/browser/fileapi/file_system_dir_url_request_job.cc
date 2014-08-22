@@ -29,7 +29,7 @@ using net::URLRequest;
 using net::URLRequestJob;
 using net::URLRequestStatus;
 
-namespace fileapi {
+namespace storage {
 
 FileSystemDirURLRequestJob::FileSystemDirURLRequestJob(
     URLRequest* request,
@@ -157,4 +157,4 @@ void FileSystemDirURLRequestJob::DidReadDirectory(
   }
 }
 
-}  // namespace fileapi
+}  // namespace storage

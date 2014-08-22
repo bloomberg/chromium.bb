@@ -499,7 +499,7 @@ void ChromeContentBrowserClientExtensionsPart::
 }
 
 void ChromeContentBrowserClientExtensionsPart::GetURLRequestAutoMountHandlers(
-    std::vector<fileapi::URLRequestAutoMountHandler>* handlers) {
+    std::vector<storage::URLRequestAutoMountHandler>* handlers) {
   handlers->push_back(
       base::Bind(MediaFileSystemBackend::AttemptAutoMountForURLRequest));
 }
@@ -507,7 +507,7 @@ void ChromeContentBrowserClientExtensionsPart::GetURLRequestAutoMountHandlers(
 void ChromeContentBrowserClientExtensionsPart::GetAdditionalFileSystemBackends(
     content::BrowserContext* browser_context,
     const base::FilePath& storage_partition_path,
-    ScopedVector<fileapi::FileSystemBackend>* additional_backends) {
+    ScopedVector<storage::FileSystemBackend>* additional_backends) {
   base::SequencedWorkerPool* pool = content::BrowserThread::GetBlockingPool();
   additional_backends->push_back(new MediaFileSystemBackend(
       storage_partition_path,

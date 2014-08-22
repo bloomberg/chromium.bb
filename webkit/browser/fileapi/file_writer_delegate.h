@@ -15,7 +15,7 @@
 #include "net/url_request/url_request.h"
 #include "webkit/browser/webkit_storage_browser_export.h"
 
-namespace fileapi {
+namespace storage {
 
 class FileStreamWriter;
 
@@ -105,6 +105,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE FileWriterDelegate
   DISALLOW_COPY_AND_ASSIGN(FileWriterDelegate);
 };
 
-}  // namespace fileapi
+}  // namespace storage
 
 #endif  // WEBKIT_BROWSER_FILEAPI_FILE_WRITER_DELEGATE_H_

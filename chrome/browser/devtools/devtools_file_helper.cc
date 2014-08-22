@@ -131,10 +131,10 @@ void AppendToFile(const base::FilePath& path, const std::string& content) {
   base::AppendToFile(path, content.c_str(), content.length());
 }
 
-fileapi::IsolatedContext* isolated_context() {
+storage::IsolatedContext* isolated_context() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  fileapi::IsolatedContext* isolated_context =
-      fileapi::IsolatedContext::GetInstance();
+  storage::IsolatedContext* isolated_context =
+      storage::IsolatedContext::GetInstance();
   DCHECK(isolated_context);
   return isolated_context;
 }
@@ -145,7 +145,9 @@ std::string RegisterFileSystem(WebContents* web_contents,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   CHECK(web_contents->GetURL().SchemeIs(content::kChromeDevToolsScheme));
   std::string file_system_id = isolated_context()->RegisterFileSystemForPath(
-      fileapi::kFileSystemTypeNativeLocal, std::string(), path,
+      storage::kFileSystemTypeNativeLocal,
+      std::string(),
+      path,
       registered_name);
 
   content::ChildProcessSecurityPolicy* policy =
@@ -172,13 +174,10 @@ DevToolsFileHelper::FileSystem CreateFileSystemStruct(
     const std::string& registered_name,
     const std::string& file_system_path) {
   const GURL origin = web_contents->GetURL().GetOrigin();
-  std::string file_system_name = fileapi::GetIsolatedFileSystemName(
-      origin,
-      file_system_id);
-  std::string root_url = fileapi::GetIsolatedFileSystemRootURIString(
-      origin,
-      file_system_id,
-      registered_name);
+  std::string file_system_name =
+      storage::GetIsolatedFileSystemName(origin, file_system_id);
+  std::string root_url = storage::GetIsolatedFileSystemRootURIString(
+      origin, file_system_id, registered_name);
   return DevToolsFileHelper::FileSystem(file_system_name,
                                         root_url,
                                         file_system_path);
@@ -320,18 +319,18 @@ void DevToolsFileHelper::UpgradeDraggedFileSystemPermissions(
     const std::string& file_system_url,
     const AddFileSystemCallback& callback,
     const ShowInfoBarCallback& show_info_bar_callback) {
-  fileapi::FileSystemURL root_url =
+  storage::FileSystemURL root_url =
       isolated_context()->CrackURL(GURL(file_system_url));
   if (!root_url.is_valid() || !root_url.path().empty()) {
     callback.Run(FileSystem());
     return;
   }
 
-  std::vector<fileapi::MountPoints::MountPointInfo> mount_points;
+  std::vector<storage::MountPoints::MountPointInfo> mount_points;
   isolated_context()->GetDraggedFileInfo(root_url.filesystem_id(),
                                          &mount_points);
 
-  std::vector<fileapi::MountPoints::MountPointInfo>::const_iterator it =
+  std::vector<storage::MountPoints::MountPointInfo>::const_iterator it =
       mount_points.begin();
   for (; it != mount_points.end(); ++it)
     InnerAddFileSystem(callback, show_info_bar_callback, it->path);

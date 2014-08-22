@@ -18,9 +18,9 @@ namespace base {
 class FilePath;
 }  // namespace base
 
-namespace quota {
+namespace storage {
 class SpecialStoragePolicy;
-}  // namespace quota
+}  // namespace storage
 
 namespace content {
 
@@ -38,7 +38,7 @@ class WebRTCIdentityStoreBackend
   // No data is saved on disk if |path| is empty. Identites older than
   // |validity_period| will be removed lazily.
   WebRTCIdentityStoreBackend(const base::FilePath& path,
-                             quota::SpecialStoragePolicy* policy,
+                             storage::SpecialStoragePolicy* policy,
                              base::TimeDelta validity_period);
 
   // Finds the identity with |origin|, |identity_name|, and |common_name| from

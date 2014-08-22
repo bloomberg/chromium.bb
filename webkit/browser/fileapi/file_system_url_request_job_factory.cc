@@ -12,7 +12,7 @@
 #include "webkit/browser/fileapi/file_system_dir_url_request_job.h"
 #include "webkit/browser/fileapi/file_system_url_request_job.h"
 
-namespace fileapi {
+namespace storage {
 
 namespace {
 
@@ -70,4 +70,4 @@ net::URLRequestJobFactory::ProtocolHandler* CreateFileSystemProtocolHandler(
   return new FileSystemProtocolHandler(storage_domain, context);
 }
 
-}  // namespace fileapi
+}  // namespace storage

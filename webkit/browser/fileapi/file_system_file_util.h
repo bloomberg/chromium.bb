@@ -16,7 +16,7 @@ namespace base {
 class Time;
 }
 
-namespace fileapi {
+namespace storage {
 
 class FileSystemOperationContext;
 class FileSystemURL;
@@ -167,7 +167,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemFileUtil {
   //
   // See header comments for AsyncFileUtil::CreateSnapshotFile() for
   // more details.
-  virtual webkit_blob::ScopedFile CreateSnapshotFile(
+  virtual storage::ScopedFile CreateSnapshotFile(
       FileSystemOperationContext* context,
       const FileSystemURL& url,
       base::File::Error* error,
@@ -181,6 +181,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemFileUtil {
   DISALLOW_COPY_AND_ASSIGN(FileSystemFileUtil);
 };
 
-}  // namespace fileapi
+}  // namespace storage
 
 #endif  // WEBKIT_BROWSER_FILEAPI_FILE_SYSTEM_FILE_UTIL_H_

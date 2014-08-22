@@ -8,12 +8,12 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-using fileapi::CrackIsolatedFileSystemName;
-using fileapi::GetExternalFileSystemRootURIString;
-using fileapi::GetIsolatedFileSystemName;
-using fileapi::GetIsolatedFileSystemRootURIString;
-using fileapi::ValidateIsolatedFileSystemId;
-using fileapi::VirtualPath;
+using storage::CrackIsolatedFileSystemName;
+using storage::GetExternalFileSystemRootURIString;
+using storage::GetIsolatedFileSystemName;
+using storage::GetIsolatedFileSystemRootURIString;
+using storage::ValidateIsolatedFileSystemId;
+using storage::VirtualPath;
 
 namespace content {
 namespace {
@@ -23,11 +23,11 @@ class FileSystemUtilTest : public testing::Test {};
 TEST_F(FileSystemUtilTest, ParseFileSystemSchemeURL) {
   GURL uri("filesystem:http://chromium.org/temporary/foo/bar");
   GURL origin_url;
-  fileapi::FileSystemType type;
+  storage::FileSystemType type;
   base::FilePath virtual_path;
   ParseFileSystemSchemeURL(uri, &origin_url, &type, &virtual_path);
   EXPECT_EQ(GURL("http://chromium.org"), origin_url);
-  EXPECT_EQ(fileapi::kFileSystemTypeTemporary, type);
+  EXPECT_EQ(storage::kFileSystemTypeTemporary, type);
 #if defined(FILE_PATH_USES_WIN_SEPARATORS)
   base::FilePath expected_path(FILE_PATH_LITERAL("foo\\bar"));
 #else
@@ -38,14 +38,14 @@ TEST_F(FileSystemUtilTest, ParseFileSystemSchemeURL) {
 
 TEST_F(FileSystemUtilTest, GetTempFileSystemRootURI) {
   GURL origin_url("http://chromium.org");
-  fileapi::FileSystemType type = fileapi::kFileSystemTypeTemporary;
+  storage::FileSystemType type = storage::kFileSystemTypeTemporary;
   GURL uri = GURL("filesystem:http://chromium.org/temporary/");
   EXPECT_EQ(uri, GetFileSystemRootURI(origin_url, type));
 }
 
 TEST_F(FileSystemUtilTest, GetPersistentFileSystemRootURI) {
   GURL origin_url("http://chromium.org");
-  fileapi::FileSystemType type = fileapi::kFileSystemTypePersistent;
+  storage::FileSystemType type = storage::kFileSystemTypePersistent;
   GURL uri = GURL("filesystem:http://chromium.org/persistent/");
   EXPECT_EQ(uri, GetFileSystemRootURI(origin_url, type));
 }

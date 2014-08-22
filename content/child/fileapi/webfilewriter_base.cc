@@ -10,7 +10,7 @@
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "webkit/common/fileapi/file_system_util.h"
 
-using fileapi::FileErrorToWebFileError;
+using storage::FileErrorToWebFileError;
 
 namespace content {
 

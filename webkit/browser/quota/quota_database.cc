@@ -18,7 +18,7 @@
 #include "url/gurl.h"
 #include "webkit/browser/quota/special_storage_policy.h"
 
-namespace quota {
+namespace storage {
 namespace {
 
 // Definitions for database schema.
@@ -654,4 +654,4 @@ bool operator<(const QuotaDatabase::OriginInfoTableEntry& lhs,
   return lhs.last_access_time < rhs.last_access_time;
 }
 
-}  // namespace quota
+}  // namespace storage

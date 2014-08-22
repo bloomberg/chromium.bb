@@ -230,7 +230,7 @@ scoped_ptr<ServiceWorkerStorage> ServiceWorkerStorage::Create(
     base::WeakPtr<ServiceWorkerContextCore> context,
     const scoped_refptr<base::SequencedTaskRunner>& database_task_runner,
     const scoped_refptr<base::SingleThreadTaskRunner>& disk_cache_thread,
-    quota::QuotaManagerProxy* quota_manager_proxy) {
+    storage::QuotaManagerProxy* quota_manager_proxy) {
   return make_scoped_ptr(new ServiceWorkerStorage(path,
                                                   context,
                                                   database_task_runner,
@@ -677,7 +677,7 @@ ServiceWorkerStorage::ServiceWorkerStorage(
     base::WeakPtr<ServiceWorkerContextCore> context,
     const scoped_refptr<base::SequencedTaskRunner>& database_task_runner,
     const scoped_refptr<base::SingleThreadTaskRunner>& disk_cache_thread,
-    quota::QuotaManagerProxy* quota_manager_proxy)
+    storage::QuotaManagerProxy* quota_manager_proxy)
     : next_registration_id_(kInvalidServiceWorkerRegistrationId),
       next_version_id_(kInvalidServiceWorkerVersionId),
       next_resource_id_(kInvalidServiceWorkerResourceId),

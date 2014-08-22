@@ -22,10 +22,10 @@
 #include "webkit/browser/fileapi/native_file_util.h"
 #include "webkit/common/blob/shareable_file_reference.h"
 
-using fileapi::AsyncFileUtil;
-using fileapi::FileSystemOperationContext;
-using fileapi::FileSystemURL;
-using webkit_blob::ShareableFileReference;
+using storage::AsyncFileUtil;
+using storage::FileSystemOperationContext;
+using storage::FileSystemURL;
+using storage::ShareableFileReference;
 
 namespace {
 
@@ -104,7 +104,7 @@ base::FilePath CreateSnapshotFileOnBlockingPool(
 void OnDidCheckMediaForCreateSnapshotFile(
     const AsyncFileUtil::CreateSnapshotFileCallback& callback,
     const base::File::Info& file_info,
-    scoped_refptr<webkit_blob::ShareableFileReference> platform_file,
+    scoped_refptr<storage::ShareableFileReference> platform_file,
     base::File::Error error) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   base::FilePath platform_path(platform_file.get()->path());
@@ -123,7 +123,7 @@ void OnDidCreateSnapshotFile(
     const base::File::Info& file_info,
     const base::FilePath& platform_path) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  scoped_refptr<webkit_blob::ShareableFileReference> file =
+  scoped_refptr<storage::ShareableFileReference> file =
       ShareableFileReference::GetOrCreate(
           platform_path,
           ShareableFileReference::DELETE_ON_FINAL_RELEASE,
@@ -224,7 +224,7 @@ DeviceMediaAsyncFileUtil::MediaPathFilterWrapper::FilterMediaEntries(
     const AsyncFileUtil::EntryList& file_list) {
   AsyncFileUtil::EntryList results;
   for (size_t i = 0; i < file_list.size(); ++i) {
-    const fileapi::DirectoryEntry& entry = file_list[i];
+    const storage::DirectoryEntry& entry = file_list[i];
     if (entry.is_directory || CheckFilePath(base::FilePath(entry.name))) {
       results.push_back(entry);
     }
@@ -250,7 +250,7 @@ scoped_ptr<DeviceMediaAsyncFileUtil> DeviceMediaAsyncFileUtil::Create(
 }
 
 bool DeviceMediaAsyncFileUtil::SupportsStreaming(
-    const fileapi::FileSystemURL& url) {
+    const storage::FileSystemURL& url) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   MTPDeviceAsyncDelegate* delegate = GetMTPDeviceDelegate(url);
   if (!delegate)
@@ -442,24 +442,23 @@ void DeviceMediaAsyncFileUtil::CreateSnapshotFile(
                  validate_media_files()));
 }
 
-scoped_ptr<webkit_blob::FileStreamReader>
+scoped_ptr<storage::FileStreamReader>
 DeviceMediaAsyncFileUtil::GetFileStreamReader(
     const FileSystemURL& url,
     int64 offset,
     const base::Time& expected_modification_time,
-    fileapi::FileSystemContext* context) {
+    storage::FileSystemContext* context) {
   MTPDeviceAsyncDelegate* delegate = GetMTPDeviceDelegate(url);
   if (!delegate)
-    return scoped_ptr<webkit_blob::FileStreamReader>();
+    return scoped_ptr<storage::FileStreamReader>();
 
   DCHECK(delegate->IsStreaming());
-  return scoped_ptr<webkit_blob::FileStreamReader>(
-      new ReadaheadFileStreamReader(
-          new MTPFileStreamReader(context,
-                                  url,
-                                  offset,
-                                  expected_modification_time,
-                                  validate_media_files())));
+  return scoped_ptr<storage::FileStreamReader>(new ReadaheadFileStreamReader(
+      new MTPFileStreamReader(context,
+                              url,
+                              offset,
+                              expected_modification_time,
+                              validate_media_files())));
 }
 
 DeviceMediaAsyncFileUtil::DeviceMediaAsyncFileUtil(

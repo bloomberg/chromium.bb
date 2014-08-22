@@ -620,7 +620,7 @@ void RenderViewHostImpl::DragTargetDragEnter(
 
   // The filenames vector, on the other hand, does represent a capability to
   // access the given files.
-  fileapi::IsolatedContext::FileInfoSet files;
+  storage::IsolatedContext::FileInfoSet files;
   for (std::vector<ui::FileInfo>::iterator iter(
            filtered_data.filenames.begin());
        iter != filtered_data.filenames.end();
@@ -653,8 +653,8 @@ void RenderViewHostImpl::DragTargetDragEnter(
       policy->GrantReadFile(renderer_id, iter->path);
   }
 
-  fileapi::IsolatedContext* isolated_context =
-      fileapi::IsolatedContext::GetInstance();
+  storage::IsolatedContext* isolated_context =
+      storage::IsolatedContext::GetInstance();
   DCHECK(isolated_context);
   std::string filesystem_id = isolated_context->RegisterDraggedFileSystem(
       files);
@@ -664,12 +664,12 @@ void RenderViewHostImpl::DragTargetDragEnter(
   }
   filtered_data.filesystem_id = base::UTF8ToUTF16(filesystem_id);
 
-  fileapi::FileSystemContext* file_system_context =
-      BrowserContext::GetStoragePartition(
-          GetProcess()->GetBrowserContext(),
-          GetSiteInstance())->GetFileSystemContext();
+  storage::FileSystemContext* file_system_context =
+      BrowserContext::GetStoragePartition(GetProcess()->GetBrowserContext(),
+                                          GetSiteInstance())
+          ->GetFileSystemContext();
   for (size_t i = 0; i < filtered_data.file_system_files.size(); ++i) {
-    fileapi::FileSystemURL file_system_url =
+    storage::FileSystemURL file_system_url =
         file_system_context->CrackURL(filtered_data.file_system_files[i].url);
 
     std::string register_name;
@@ -680,11 +680,10 @@ void RenderViewHostImpl::DragTargetDragEnter(
 
     // Note: We are using the origin URL provided by the sender here. It may be
     // different from the receiver's.
-    filtered_data.file_system_files[i].url = GURL(
-        fileapi::GetIsolatedFileSystemRootURIString(
-            file_system_url.origin(),
-            filesystem_id,
-            std::string()).append(register_name));
+    filtered_data.file_system_files[i].url =
+        GURL(storage::GetIsolatedFileSystemRootURIString(
+                 file_system_url.origin(), filesystem_id, std::string())
+                 .append(register_name));
   }
 
   Send(new DragMsg_TargetDragEnter(GetRoutingID(), filtered_data, client_pt,
@@ -1159,13 +1158,13 @@ void RenderViewHostImpl::OnStartDragging(
       filtered_data.filenames.push_back(*it);
   }
 
-  fileapi::FileSystemContext* file_system_context =
-      BrowserContext::GetStoragePartition(
-          GetProcess()->GetBrowserContext(),
-          GetSiteInstance())->GetFileSystemContext();
+  storage::FileSystemContext* file_system_context =
+      BrowserContext::GetStoragePartition(GetProcess()->GetBrowserContext(),
+                                          GetSiteInstance())
+          ->GetFileSystemContext();
   filtered_data.file_system_files.clear();
   for (size_t i = 0; i < drop_data.file_system_files.size(); ++i) {
-    fileapi::FileSystemURL file_system_url =
+    storage::FileSystemURL file_system_url =
         file_system_context->CrackURL(drop_data.file_system_files[i].url);
     if (policy->CanReadFileSystemFile(GetProcess()->GetID(), file_system_url))
       filtered_data.file_system_files.push_back(drop_data.file_system_files[i]);

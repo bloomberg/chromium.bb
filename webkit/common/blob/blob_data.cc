@@ -9,7 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 
-namespace webkit_blob {
+namespace storage {
 
 BlobData::BlobData() {}
 BlobData::BlobData(const std::string& uuid)
@@ -60,4 +60,4 @@ int64 BlobData::GetMemoryUsage() const {
   return memory;
 }
 
-}  // namespace webkit_blob
+}  // namespace storage

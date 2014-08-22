@@ -16,7 +16,7 @@
 #include "chrome/browser/sync_file_system/local/local_file_sync_status.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 
-namespace fileapi {
+namespace storage {
 class FileSystemURL;
 }
 
@@ -41,7 +41,7 @@ class SyncableFileOperationRunner
 
    protected:
     // This is never called after Run() or Cancel() is called.
-    virtual const std::vector<fileapi::FileSystemURL>& target_paths() const = 0;
+    virtual const std::vector<storage::FileSystemURL>& target_paths() const = 0;
 
    private:
     friend class SyncableFileOperationRunner;
@@ -57,8 +57,8 @@ class SyncableFileOperationRunner
   virtual ~SyncableFileOperationRunner();
 
   // LocalFileSyncStatus::Observer overrides.
-  virtual void OnSyncEnabled(const fileapi::FileSystemURL& url) OVERRIDE;
-  virtual void OnWriteEnabled(const fileapi::FileSystemURL& url) OVERRIDE;
+  virtual void OnSyncEnabled(const storage::FileSystemURL& url) OVERRIDE;
+  virtual void OnWriteEnabled(const storage::FileSystemURL& url) OVERRIDE;
 
   // Runs the given |task| if no sync operation is running on any of
   // its target_paths(). This also runs pending tasks that have become
@@ -74,7 +74,7 @@ class SyncableFileOperationRunner
   // Called when an operation is completed. This will make |target_paths|
   // writable and may start a next runnable task.
   void OnOperationCompleted(
-      const std::vector<fileapi::FileSystemURL>& target_paths);
+      const std::vector<storage::FileSystemURL>& target_paths);
 
   LocalFileSyncStatus* sync_status() const { return sync_status_; }
 

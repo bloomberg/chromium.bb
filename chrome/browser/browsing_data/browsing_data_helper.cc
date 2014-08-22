@@ -47,8 +47,10 @@ bool BrowsingDataHelper::HasExtensionScheme(const GURL& origin) {
 }
 
 // Static
-bool BrowsingDataHelper::DoesOriginMatchMask(const GURL& origin,
-    int origin_set_mask, quota::SpecialStoragePolicy* policy) {
+bool BrowsingDataHelper::DoesOriginMatchMask(
+    const GURL& origin,
+    int origin_set_mask,
+    storage::SpecialStoragePolicy* policy) {
   // Packaged apps and extensions match iff EXTENSION.
   if (BrowsingDataHelper::HasExtensionScheme(origin.GetOrigin()) &&
       origin_set_mask & EXTENSION)

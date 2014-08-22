@@ -15,7 +15,7 @@
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/common/quota/quota_types.h"
 
-namespace fileapi {
+namespace storage {
 class FileSystemContext;
 }
 
@@ -67,13 +67,13 @@ class SyncFileSystemGetFileStatusesFunction
  private:
   typedef std::pair<sync_file_system::SyncStatusCode,
                     sync_file_system::SyncFileStatus> FileStatusPair;
-  typedef std::map<fileapi::FileSystemURL, FileStatusPair,
-                   fileapi::FileSystemURL::Comparator> URLToStatusMap;
+  typedef std::map<storage::FileSystemURL,
+                   FileStatusPair,
+                   storage::FileSystemURL::Comparator> URLToStatusMap;
 
-  void DidGetFileStatus(
-      const fileapi::FileSystemURL& file_system_url,
-      sync_file_system::SyncStatusCode sync_status_code,
-      sync_file_system::SyncFileStatus sync_file_statuses);
+  void DidGetFileStatus(const storage::FileSystemURL& file_system_url,
+                        sync_file_system::SyncStatusCode sync_status_code,
+                        sync_file_system::SyncFileStatus sync_file_statuses);
 
   unsigned int num_expected_results_;
   unsigned int num_results_received_;
@@ -91,7 +91,7 @@ class SyncFileSystemGetUsageAndQuotaFunction
   virtual bool RunAsync() OVERRIDE;
 
  private:
-  void DidGetUsageAndQuota(quota::QuotaStatusCode status,
+  void DidGetUsageAndQuota(storage::QuotaStatusCode status,
                            int64 usage,
                            int64 quota);
 };
@@ -110,7 +110,7 @@ class SyncFileSystemRequestFileSystemFunction
   typedef SyncFileSystemRequestFileSystemFunction self;
 
   // Returns the file system context for this extension.
-  fileapi::FileSystemContext* GetFileSystemContext();
+  storage::FileSystemContext* GetFileSystemContext();
 
   void DidOpenFileSystem(const GURL& root_url,
                          const std::string& file_system_name,

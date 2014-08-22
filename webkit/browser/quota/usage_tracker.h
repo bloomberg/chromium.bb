@@ -22,7 +22,7 @@
 #include "webkit/browser/webkit_storage_browser_export.h"
 #include "webkit/common/quota/quota_types.h"
 
-namespace quota {
+namespace storage {
 
 class ClientUsageTracker;
 class StorageMonitor;
@@ -197,6 +197,6 @@ class ClientUsageTracker : public SpecialStoragePolicy::Observer,
   DISALLOW_COPY_AND_ASSIGN(ClientUsageTracker);
 };
 
-}  // namespace quota
+}  // namespace storage
 
 #endif  // WEBKIT_BROWSER_QUOTA_USAGE_TRACKER_H_

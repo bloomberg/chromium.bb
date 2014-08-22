@@ -66,9 +66,9 @@ TEST_F(IndexedDBTest, ClearSessionOnlyDatabases) {
         temp_dir.path(), special_storage_policy_, NULL, task_runner_);
 
     normal_path = idb_context->GetFilePathForTesting(
-        webkit_database::GetIdentifierFromOrigin(kNormalOrigin));
+        storage::GetIdentifierFromOrigin(kNormalOrigin));
     session_only_path = idb_context->GetFilePathForTesting(
-        webkit_database::GetIdentifierFromOrigin(kSessionOnlyOrigin));
+        storage::GetIdentifierFromOrigin(kSessionOnlyOrigin));
     ASSERT_TRUE(base::CreateDirectory(normal_path));
     ASSERT_TRUE(base::CreateDirectory(session_only_path));
     FlushIndexedDBTaskRunner();
@@ -100,9 +100,9 @@ TEST_F(IndexedDBTest, SetForceKeepSessionState) {
     idb_context->SetForceKeepSessionState();
 
     normal_path = idb_context->GetFilePathForTesting(
-        webkit_database::GetIdentifierFromOrigin(kNormalOrigin));
+        storage::GetIdentifierFromOrigin(kNormalOrigin));
     session_only_path = idb_context->GetFilePathForTesting(
-        webkit_database::GetIdentifierFromOrigin(kSessionOnlyOrigin));
+        storage::GetIdentifierFromOrigin(kSessionOnlyOrigin));
     ASSERT_TRUE(base::CreateDirectory(normal_path));
     ASSERT_TRUE(base::CreateDirectory(session_only_path));
     message_loop_.RunUntilIdle();
@@ -173,7 +173,7 @@ TEST_F(IndexedDBTest, ForceCloseOpenDatabasesOnDelete) {
     IndexedDBFactory* factory = idb_context->GetIDBFactory();
 
     test_path = idb_context->GetFilePathForTesting(
-        webkit_database::GetIdentifierFromOrigin(kTestOrigin));
+        storage::GetIdentifierFromOrigin(kTestOrigin));
 
     IndexedDBPendingConnection open_connection(open_callbacks,
                                                open_db_callbacks,
@@ -223,7 +223,7 @@ TEST_F(IndexedDBTest, DeleteFailsIfDirectoryLocked) {
       temp_dir.path(), special_storage_policy_, NULL, task_runner_);
 
   base::FilePath test_path = idb_context->GetFilePathForTesting(
-      webkit_database::GetIdentifierFromOrigin(kTestOrigin));
+      storage::GetIdentifierFromOrigin(kTestOrigin));
   ASSERT_TRUE(base::CreateDirectory(test_path));
 
   scoped_ptr<LevelDBLock> lock =

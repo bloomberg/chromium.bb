@@ -4,7 +4,7 @@
 
 #include "content/browser/fileapi/mock_file_change_observer.h"
 
-namespace fileapi {
+namespace storage {
 
 MockFileChangeObserver::MockFileChangeObserver()
     : create_file_count_(0),
@@ -48,4 +48,4 @@ void MockFileChangeObserver::OnRemoveDirectory(const FileSystemURL& url) {
   remove_directory_count_++;
 }
 
-}  // namespace fileapi
+}  // namespace storage

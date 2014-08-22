@@ -43,7 +43,7 @@
 
 using base::FilePath;
 using base::StringPiece;
-using fileapi::FileWriterDelegate;
+using storage::FileWriterDelegate;
 
 namespace content {
 
@@ -78,18 +78,18 @@ bool MakeIDBBlobDirectory(const FilePath& pathBase,
 }
 
 static std::string ComputeOriginIdentifier(const GURL& origin_url) {
-  return webkit_database::GetIdentifierFromOrigin(origin_url) + "@1";
+  return storage::GetIdentifierFromOrigin(origin_url) + "@1";
 }
 
 static base::FilePath ComputeFileName(const GURL& origin_url) {
   return base::FilePath()
-      .AppendASCII(webkit_database::GetIdentifierFromOrigin(origin_url))
+      .AppendASCII(storage::GetIdentifierFromOrigin(origin_url))
       .AddExtension(FILE_PATH_LITERAL(".indexeddb.leveldb"));
 }
 
 static base::FilePath ComputeBlobPath(const GURL& origin_url) {
   return base::FilePath()
-      .AppendASCII(webkit_database::GetIdentifierFromOrigin(origin_url))
+      .AppendASCII(storage::GetIdentifierFromOrigin(origin_url))
       .AddExtension(FILE_PATH_LITERAL(".indexeddb.blob"));
 }
 
@@ -1901,7 +1901,7 @@ leveldb::Status IndexedDBBackingStore::PutRecord(
     int64 object_store_id,
     const IndexedDBKey& key,
     IndexedDBValue* value,
-    ScopedVector<webkit_blob::BlobDataHandle>* handles,
+    ScopedVector<storage::BlobDataHandle>* handles,
     RecordIdentifier* record_identifier) {
   IDB_TRACE("IndexedDBBackingStore::PutRecord");
   if (!KeyPrefix::ValidIds(database_id, object_store_id))
@@ -2314,10 +2314,12 @@ class LocalWriteClosure : public FileWriterDelegate::DelegateWriteCallback,
                                  const GURL& blob_url,
                                  net::URLRequestContext* request_context) {
     DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-    scoped_ptr<fileapi::FileStreamWriter> writer(
-        fileapi::FileStreamWriter::CreateForLocalFile(
-            task_runner_, file_path, 0,
-            fileapi::FileStreamWriter::CREATE_NEW_FILE));
+    scoped_ptr<storage::FileStreamWriter> writer(
+        storage::FileStreamWriter::CreateForLocalFile(
+            task_runner_,
+            file_path,
+            0,
+            storage::FileStreamWriter::CREATE_NEW_FILE));
     scoped_ptr<FileWriterDelegate> delegate(
         new FileWriterDelegate(writer.Pass(),
                                FileWriterDelegate::FLUSH_ON_COMPLETION));
@@ -4201,7 +4203,7 @@ void IndexedDBBackingStore::BlobChangeRecord::SetBlobInfo(
 }
 
 void IndexedDBBackingStore::BlobChangeRecord::SetHandles(
-    ScopedVector<webkit_blob::BlobDataHandle>* handles) {
+    ScopedVector<storage::BlobDataHandle>* handles) {
   handles_.clear();
   if (handles)
     handles_.swap(*handles);
@@ -4213,9 +4215,9 @@ IndexedDBBackingStore::BlobChangeRecord::Clone() const {
       new BlobChangeRecord(key_, object_store_id_));
   record->blob_info_ = blob_info_;
 
-  ScopedVector<webkit_blob::BlobDataHandle>::const_iterator iter;
+  ScopedVector<storage::BlobDataHandle>::const_iterator iter;
   for (iter = handles_.begin(); iter != handles_.end(); ++iter)
-    record->handles_.push_back(new webkit_blob::BlobDataHandle(**iter));
+    record->handles_.push_back(new storage::BlobDataHandle(**iter));
   return record.Pass();
 }
 
@@ -4224,7 +4226,7 @@ leveldb::Status IndexedDBBackingStore::Transaction::PutBlobInfoIfNeeded(
     int64 object_store_id,
     const std::string& object_store_data_key,
     std::vector<IndexedDBBlobInfo>* blob_info,
-    ScopedVector<webkit_blob::BlobDataHandle>* handles) {
+    ScopedVector<storage::BlobDataHandle>* handles) {
   if (!blob_info || blob_info->empty()) {
     blob_change_map_.erase(object_store_data_key);
     incognito_blob_map_.erase(object_store_data_key);
@@ -4259,7 +4261,7 @@ void IndexedDBBackingStore::Transaction::PutBlobInfo(
     int64 object_store_id,
     const std::string& object_store_data_key,
     std::vector<IndexedDBBlobInfo>* blob_info,
-    ScopedVector<webkit_blob::BlobDataHandle>* handles) {
+    ScopedVector<storage::BlobDataHandle>* handles) {
   DCHECK_GT(object_store_data_key.size(), 0UL);
   if (database_id_ < 0)
     database_id_ = database_id;

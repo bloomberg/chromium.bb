@@ -20,7 +20,7 @@ using content::BrowserThread;
 using extensions::Extension;
 using extensions::ExtensionSet;
 using extensions::Manifest;
-using quota::SpecialStoragePolicy;
+using storage::SpecialStoragePolicy;
 
 typedef SpecialStoragePolicy::StoragePolicy StoragePolicy;
 

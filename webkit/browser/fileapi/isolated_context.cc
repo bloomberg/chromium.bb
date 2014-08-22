@@ -14,7 +14,7 @@
 #include "base/strings/stringprintf.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 
-namespace fileapi {
+namespace storage {
 
 namespace {
 
@@ -481,4 +481,4 @@ std::string IsolatedContext::GetNewFileSystemId() const {
   return id;
 }
 
-}  // namespace fileapi
+}  // namespace storage

@@ -11,7 +11,7 @@
 #include "base/files/file_path.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 
-namespace fileapi {
+namespace storage {
 class FileSystemContext;
 class FileSystemURL;
 }
@@ -38,13 +38,13 @@ GURL GetSyncableFileSystemRootURI(const GURL& origin);
 //   origin: 'http://www.example.com/',
 //   path: '/foo/bar',
 // returns 'filesystem:http://www.example.com/external/syncfs/foo/bar'
-fileapi::FileSystemURL
-CreateSyncableFileSystemURL(const GURL& origin, const base::FilePath& path);
+storage::FileSystemURL CreateSyncableFileSystemURL(const GURL& origin,
+                                                   const base::FilePath& path);
 
 // Creates a special filesystem URL for synchronizing |syncable_url|.
-fileapi::FileSystemURL CreateSyncableFileSystemURLForSync(
-    fileapi::FileSystemContext* file_system_context,
-    const fileapi::FileSystemURL& syncable_url);
+storage::FileSystemURL CreateSyncableFileSystemURLForSync(
+    storage::FileSystemContext* file_system_context,
+    const storage::FileSystemURL& syncable_url);
 
 // Serializes a given FileSystemURL |url| and sets the serialized string to
 // |serialized_url|. If the URL does not represent a syncable filesystem,
@@ -61,8 +61,8 @@ fileapi::FileSystemURL CreateSyncableFileSystemURLForSync(
 //   'filesystem:http://www.example.com/external/syncfs/foo\\bar'
 // (on others)
 //   'filesystem:http://www.example.com/external/syncfs/foo/bar'
-bool SerializeSyncableFileSystemURL(
-    const fileapi::FileSystemURL& url, std::string* serialized_url);
+bool SerializeSyncableFileSystemURL(const storage::FileSystemURL& url,
+                                    std::string* serialized_url);
 
 // Deserializes a serialized FileSystem URL string |serialized_url| and sets the
 // deserialized value to |url|. If the reconstructed object is invalid or does
@@ -74,8 +74,8 @@ bool SerializeSyncableFileSystemURL(
 // behavior).
 //
 // See the comment of SerializeSyncableFileSystemURL() for more details.
-bool DeserializeSyncableFileSystemURL(
-    const std::string& serialized_url, fileapi::FileSystemURL* url);
+bool DeserializeSyncableFileSystemURL(const std::string& serialized_url,
+                                      storage::FileSystemURL* url);
 
 // Returns SyncFileSystem sub-directory path.
 base::FilePath GetSyncFileSystemDir(const base::FilePath& profile_base_dir);

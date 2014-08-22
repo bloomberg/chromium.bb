@@ -31,7 +31,7 @@ class Unmount : public Operation {
  public:
   Unmount(extensions::EventRouter* event_router,
           const ProvidedFileSystemInfo& file_system_info,
-          const fileapi::AsyncFileUtil::StatusCallback& callback);
+          const storage::AsyncFileUtil::StatusCallback& callback);
   virtual ~Unmount();
 
   // Operation overrides.
@@ -44,7 +44,7 @@ class Unmount : public Operation {
                        base::File::Error error) OVERRIDE;
 
  private:
-  const fileapi::AsyncFileUtil::StatusCallback callback_;
+  const storage::AsyncFileUtil::StatusCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(Unmount);
 };

@@ -10,7 +10,7 @@
 
 namespace content {
 
-fileapi::FileSystemType PepperFileSystemTypeToFileSystemType(
+storage::FileSystemType PepperFileSystemTypeToFileSystemType(
     PP_FileSystemType type);
 
 }  // namespace content

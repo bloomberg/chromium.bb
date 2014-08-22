@@ -22,7 +22,7 @@
 class GURL;
 class Profile;
 
-namespace fileapi {
+namespace storage {
 class FileSystemContext;
 }
 
@@ -30,7 +30,7 @@ namespace leveldb {
 class Env;
 }
 
-namespace webkit_blob {
+namespace storage {
 class ScopedFile;
 }
 
@@ -80,7 +80,7 @@ class LocalFileSyncService
 
   void MaybeInitializeFileSystemContext(
       const GURL& app_origin,
-      fileapi::FileSystemContext* file_system_context,
+      storage::FileSystemContext* file_system_context,
       const SyncStatusCallback& callback);
 
   void AddChangeObserver(Observer* observer);
@@ -91,7 +91,7 @@ class LocalFileSyncService
   // for sync).
   // Calling this method again while this already has another URL waiting
   // for sync will overwrite the previously registered URL.
-  void RegisterURLForWaitingSync(const fileapi::FileSystemURL& url,
+  void RegisterURLForWaitingSync(const storage::FileSystemURL& url,
                                  const base::Closure& on_syncable_callback);
 
   // Synchronize one (or a set of) local change(s) to the remote server
@@ -119,32 +119,29 @@ class LocalFileSyncService
 
   // Returns true via |callback| if the given file |url| has local pending
   // changes.
-  void HasPendingLocalChanges(
-      const fileapi::FileSystemURL& url,
-      const HasPendingLocalChangeCallback& callback);
+  void HasPendingLocalChanges(const storage::FileSystemURL& url,
+                              const HasPendingLocalChangeCallback& callback);
 
   void PromoteDemotedChanges(const base::Closure& callback);
 
   // Returns the metadata of a remote file pointed by |url|.
-  virtual void GetLocalFileMetadata(
-      const fileapi::FileSystemURL& url,
-      const SyncFileMetadataCallback& callback);
+  virtual void GetLocalFileMetadata(const storage::FileSystemURL& url,
+                                    const SyncFileMetadataCallback& callback);
 
   // RemoteChangeProcessor overrides.
   virtual void PrepareForProcessRemoteChange(
-      const fileapi::FileSystemURL& url,
+      const storage::FileSystemURL& url,
       const PrepareChangeCallback& callback) OVERRIDE;
-  virtual void ApplyRemoteChange(
-      const FileChange& change,
-      const base::FilePath& local_path,
-      const fileapi::FileSystemURL& url,
-      const SyncStatusCallback& callback) OVERRIDE;
+  virtual void ApplyRemoteChange(const FileChange& change,
+                                 const base::FilePath& local_path,
+                                 const storage::FileSystemURL& url,
+                                 const SyncStatusCallback& callback) OVERRIDE;
   virtual void FinalizeRemoteSync(
-      const fileapi::FileSystemURL& url,
+      const storage::FileSystemURL& url,
       bool clear_local_changes,
       const base::Closure& completion_callback) OVERRIDE;
   virtual void RecordFakeLocalChange(
-      const fileapi::FileSystemURL& url,
+      const storage::FileSystemURL& url,
       const FileChange& change,
       const SyncStatusCallback& callback) OVERRIDE;
 
@@ -158,7 +155,7 @@ class LocalFileSyncService
   void SetOriginEnabled(const GURL& origin, bool enabled);
 
  private:
-  typedef std::map<GURL, fileapi::FileSystemContext*> OriginToContext;
+  typedef std::map<GURL, storage::FileSystemContext*> OriginToContext;
   friend class OriginChangeMapTest;
 
   class OriginChangeMap {
@@ -193,19 +190,18 @@ class LocalFileSyncService
 
   void DidInitializeFileSystemContext(
       const GURL& app_origin,
-      fileapi::FileSystemContext* file_system_context,
+      storage::FileSystemContext* file_system_context,
       const SyncStatusCallback& callback,
       SyncStatusCode status);
   void DidInitializeForRemoteSync(
-      const fileapi::FileSystemURL& url,
-      fileapi::FileSystemContext* file_system_context,
+      const storage::FileSystemURL& url,
+      storage::FileSystemContext* file_system_context,
       const PrepareChangeCallback& callback,
       SyncStatusCode status);
 
   // Runs local_sync_callback_ and resets it.
-  void RunLocalSyncCallback(
-      SyncStatusCode status,
-      const fileapi::FileSystemURL& url);
+  void RunLocalSyncCallback(SyncStatusCode status,
+                            const storage::FileSystemURL& url);
 
   // Callback for ApplyRemoteChange.
   void DidApplyRemoteChange(
@@ -213,20 +209,18 @@ class LocalFileSyncService
       SyncStatusCode status);
 
   // Callbacks for ProcessLocalChange.
-  void DidGetFileForLocalSync(
-      SyncStatusCode status,
-      const LocalFileSyncInfo& sync_file_info,
-      webkit_blob::ScopedFile snapshot);
-  void ProcessNextChangeForURL(
-      webkit_blob::ScopedFile snapshot,
-      const LocalFileSyncInfo& sync_file_info,
-      const FileChange& last_change,
-      const FileChangeList& changes,
-      SyncStatusCode status);
+  void DidGetFileForLocalSync(SyncStatusCode status,
+                              const LocalFileSyncInfo& sync_file_info,
+                              storage::ScopedFile snapshot);
+  void ProcessNextChangeForURL(storage::ScopedFile snapshot,
+                               const LocalFileSyncInfo& sync_file_info,
+                               const FileChange& last_change,
+                               const FileChangeList& changes,
+                               SyncStatusCode status);
 
   // A thin wrapper of get_local_change_processor_.
   LocalChangeProcessor* GetLocalChangeProcessor(
-      const fileapi::FileSystemURL& url);
+      const storage::FileSystemURL& url);
 
   Profile* profile_;
 

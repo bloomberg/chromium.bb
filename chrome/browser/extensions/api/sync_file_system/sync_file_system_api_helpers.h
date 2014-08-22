@@ -13,7 +13,7 @@
 #include "chrome/browser/sync_file_system/sync_service_state.h"
 #include "chrome/common/extensions/api/sync_file_system.h"
 
-namespace fileapi {
+namespace storage {
 class FileSystemURL;
 }
 
@@ -53,7 +53,7 @@ ExtensionEnumToConflictResolutionPolicy(
 // This returns NULL if the given |url| is not valid or |file_type| is
 // SYNC_FILE_TYPE_UNKNOWN.
 base::DictionaryValue* CreateDictionaryValueForFileSystemEntry(
-    const fileapi::FileSystemURL& url,
+    const storage::FileSystemURL& url,
     sync_file_system::SyncFileType file_type);
 
 }  // namespace extensions

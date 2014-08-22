@@ -23,7 +23,7 @@ namespace extensions {
 class Extension;
 }
 
-namespace fileapi {
+namespace storage {
 class FileSystemURL;
 }
 
@@ -47,7 +47,7 @@ bool ExecuteFileBrowserHandler(
     Profile* profile,
     const extensions::Extension* extension,
     const std::string& action_id,
-    const std::vector<fileapi::FileSystemURL>& file_urls,
+    const std::vector<storage::FileSystemURL>& file_urls,
     const file_tasks::FileTaskFinishedCallback& done);
 
 }  // namespace file_browser_handlers

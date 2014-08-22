@@ -74,7 +74,7 @@ namespace ui {
 class SelectFilePolicy;
 }
 
-namespace fileapi {
+namespace storage {
 class ExternalMountPoints;
 class FileSystemBackend;
 }
@@ -565,7 +565,7 @@ class CONTENT_EXPORT ContentBrowserClient {
 
   // Returns auto mount handlers for URL requests for FileSystem APIs.
   virtual void GetURLRequestAutoMountHandlers(
-      std::vector<fileapi::URLRequestAutoMountHandler>* handlers) {}
+      std::vector<storage::URLRequestAutoMountHandler>* handlers) {}
 
   // Returns additional file system backends for FileSystem API.
   // |browser_context| is needed in the additional FileSystemBackends.
@@ -574,7 +574,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual void GetAdditionalFileSystemBackends(
       BrowserContext* browser_context,
       const base::FilePath& storage_partition_path,
-      ScopedVector<fileapi::FileSystemBackend>* additional_backends) {}
+      ScopedVector<storage::FileSystemBackend>* additional_backends) {}
 
   // Allows an embedder to return its own LocationProvider implementation.
   // Return NULL to use the default one for the platform to be created.

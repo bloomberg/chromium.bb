@@ -30,13 +30,13 @@
 #include "webkit/common/fileapi/file_system_util.h"
 
 using content::AsyncFileTestHelper;
-using fileapi::FileSystemOperation;
-using fileapi::FileSystemOperationContext;
-using fileapi::FileSystemOperationRunner;
-using fileapi::FileSystemURL;
-using quota::QuotaManager;
-using quota::QuotaManagerProxy;
-using webkit_blob::ShareableFileReference;
+using storage::FileSystemOperation;
+using storage::FileSystemOperationContext;
+using storage::FileSystemOperationRunner;
+using storage::FileSystemURL;
+using storage::QuotaManager;
+using storage::QuotaManagerProxy;
+using storage::ShareableFileReference;
 
 namespace content {
 
@@ -63,8 +63,8 @@ class FileSystemOperationImplTest
  protected:
   virtual void SetUp() OVERRIDE {
     EXPECT_TRUE(base_.CreateUniqueTempDir());
-    change_observers_ = fileapi::MockFileChangeObserver::CreateList(
-        &change_observer_);
+    change_observers_ =
+        storage::MockFileChangeObserver::CreateList(&change_observer_);
 
     base::FilePath base_dir = base_.path().AppendASCII("filesystem");
     quota_manager_ =
@@ -94,7 +94,7 @@ class FileSystemOperationImplTest
   int status() const { return status_; }
   const base::File::Info& info() const { return info_; }
   const base::FilePath& path() const { return path_; }
-  const std::vector<fileapi::DirectoryEntry>& entries() const {
+  const std::vector<storage::DirectoryEntry>& entries() const {
     return entries_;
   }
 
@@ -111,11 +111,11 @@ class FileSystemOperationImplTest
         quota_manager_proxy_.get());
   }
 
-  fileapi::FileSystemFileUtil* file_util() {
+  storage::FileSystemFileUtil* file_util() {
     return sandbox_file_system_.file_util();
   }
 
-  fileapi::MockFileChangeObserver* change_observer() {
+  storage::MockFileChangeObserver* change_observer() {
     return &change_observer_;
   }
 
@@ -197,10 +197,9 @@ class FileSystemOperationImplTest
     status_ = status;
   }
 
-  void DidReadDirectory(
-      base::File::Error status,
-      const std::vector<fileapi::DirectoryEntry>& entries,
-      bool /* has_more */) {
+  void DidReadDirectory(base::File::Error status,
+                        const std::vector<storage::DirectoryEntry>& entries,
+                        bool /* has_more */) {
     entries_ = entries;
     status_ = status;
   }
@@ -228,14 +227,14 @@ class FileSystemOperationImplTest
   }
 
   void GetUsageAndQuota(int64* usage, int64* quota) {
-    quota::QuotaStatusCode status =
+    storage::QuotaStatusCode status =
         AsyncFileTestHelper::GetUsageAndQuota(quota_manager_.get(),
                                               sandbox_file_system_.origin(),
                                               sandbox_file_system_.type(),
                                               usage,
                                               quota);
     base::RunLoop().RunUntilIdle();
-    ASSERT_EQ(quota::kQuotaStatusOk, status);
+    ASSERT_EQ(storage::kQuotaStatusOk, status);
   }
 
   int64 ComputePathCost(const FileSystemURL& url) {
@@ -291,11 +290,11 @@ class FileSystemOperationImplTest
   int status_;
   base::File::Info info_;
   base::FilePath path_;
-  std::vector<fileapi::DirectoryEntry> entries_;
+  std::vector<storage::DirectoryEntry> entries_;
   scoped_refptr<ShareableFileReference> shareable_file_ref_;
 
-  fileapi::MockFileChangeObserver change_observer_;
-  fileapi::ChangeObserverList change_observers_;
+  storage::MockFileChangeObserver change_observer_;
+  storage::ChangeObserverList change_observers_;
 
   base::WeakPtrFactory<FileSystemOperationImplTest> weak_factory_;
 

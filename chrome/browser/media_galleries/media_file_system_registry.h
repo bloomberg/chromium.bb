@@ -36,7 +36,7 @@ namespace extensions {
 class Extension;
 }
 
-namespace fileapi {
+namespace storage {
 class IsolatedContext;
 }
 

@@ -108,7 +108,7 @@ class SyncEngine::WorkerObserver : public SyncWorkerInterface::Observer {
                    item_count));
   }
 
-  virtual void OnFileStatusChanged(const fileapi::FileSystemURL& url,
+  virtual void OnFileStatusChanged(const storage::FileSystemURL& url,
                                    SyncFileStatus file_status,
                                    SyncAction sync_action,
                                    SyncDirection direction) OVERRIDE {
@@ -459,12 +459,12 @@ void SyncEngine::UninstallOrigin(
 
 void SyncEngine::ProcessRemoteChange(const SyncFileCallback& callback) {
   if (GetCurrentState() == REMOTE_SERVICE_DISABLED) {
-    callback.Run(SYNC_STATUS_SYNC_DISABLED, fileapi::FileSystemURL());
+    callback.Run(SYNC_STATUS_SYNC_DISABLED, storage::FileSystemURL());
     return;
   }
 
   base::Closure abort_closure =
-      base::Bind(callback, SYNC_STATUS_ABORT, fileapi::FileSystemURL());
+      base::Bind(callback, SYNC_STATUS_ABORT, storage::FileSystemURL());
 
   if (!sync_worker_) {
     abort_closure.Run();
@@ -606,12 +606,11 @@ void SyncEngine::PromoteDemotedChanges(const base::Closure& callback) {
                  relayed_callback));
 }
 
-void SyncEngine::ApplyLocalChange(
-    const FileChange& local_change,
-    const base::FilePath& local_path,
-    const SyncFileMetadata& local_metadata,
-    const fileapi::FileSystemURL& url,
-    const SyncStatusCallback& callback) {
+void SyncEngine::ApplyLocalChange(const FileChange& local_change,
+                                  const base::FilePath& local_path,
+                                  const SyncFileMetadata& local_metadata,
+                                  const storage::FileSystemURL& url,
+                                  const SyncStatusCallback& callback) {
   if (GetCurrentState() == REMOTE_SERVICE_DISABLED) {
     callback.Run(SYNC_STATUS_SYNC_DISABLED);
     return;
@@ -762,7 +761,7 @@ void SyncEngine::OnPendingFileListUpdated(int item_count) {
       OnRemoteChangeQueueUpdated(item_count));
 }
 
-void SyncEngine::OnFileStatusChanged(const fileapi::FileSystemURL& url,
+void SyncEngine::OnFileStatusChanged(const storage::FileSystemURL& url,
                                      SyncFileStatus file_status,
                                      SyncAction sync_action,
                                      SyncDirection direction) {

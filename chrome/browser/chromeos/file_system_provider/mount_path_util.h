@@ -32,7 +32,7 @@ bool IsFileSystemProviderLocalPath(const base::FilePath& local_path);
 // to be used by the file system operations.
 class FileSystemURLParser {
  public:
-  explicit FileSystemURLParser(const fileapi::FileSystemURL& url);
+  explicit FileSystemURLParser(const storage::FileSystemURL& url);
   virtual ~FileSystemURLParser();
 
   // Parses the |url| passed to the constructor. If parsing succeeds, then
@@ -43,7 +43,7 @@ class FileSystemURLParser {
   const base::FilePath& file_path() const { return file_path_; }
 
  private:
-  fileapi::FileSystemURL url_;
+  storage::FileSystemURL url_;
   ProvidedFileSystemInterface* file_system_;
   base::FilePath file_path_;
 

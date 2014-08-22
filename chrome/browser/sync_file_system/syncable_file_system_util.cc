@@ -14,9 +14,9 @@
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/common/fileapi/file_system_util.h"
 
-using fileapi::ExternalMountPoints;
-using fileapi::FileSystemContext;
-using fileapi::FileSystemURL;
+using storage::ExternalMountPoints;
+using storage::FileSystemContext;
+using storage::FileSystemURL;
 
 namespace sync_file_system {
 
@@ -35,13 +35,13 @@ void Noop() {}
 void RegisterSyncableFileSystem() {
   ExternalMountPoints::GetSystemInstance()->RegisterFileSystem(
       kSyncableMountName,
-      fileapi::kFileSystemTypeSyncable,
-      fileapi::FileSystemMountOption(),
+      storage::kFileSystemTypeSyncable,
+      storage::FileSystemMountOption(),
       base::FilePath());
   ExternalMountPoints::GetSystemInstance()->RegisterFileSystem(
       kSyncableMountNameForInternalSync,
-      fileapi::kFileSystemTypeSyncableForInternalSync,
-      fileapi::FileSystemMountOption(),
+      storage::kFileSystemTypeSyncableForInternalSync,
+      storage::FileSystemMountOption(),
       base::FilePath());
 }
 
@@ -53,14 +53,14 @@ void RevokeSyncableFileSystem() {
 }
 
 GURL GetSyncableFileSystemRootURI(const GURL& origin) {
-  return GURL(fileapi::GetExternalFileSystemRootURIString(
-      origin, kSyncableMountName));
+  return GURL(
+      storage::GetExternalFileSystemRootURIString(origin, kSyncableMountName));
 }
 
 FileSystemURL CreateSyncableFileSystemURL(const GURL& origin,
                                           const base::FilePath& path) {
   base::FilePath path_for_url = path;
-  if (fileapi::VirtualPath::IsAbsolute(path.value()))
+  if (storage::VirtualPath::IsAbsolute(path.value()))
     path_for_url = base::FilePath(path.value().substr(1));
 
   return ExternalMountPoints::GetSystemInstance()->CreateExternalFileSystemURL(
@@ -68,7 +68,7 @@ FileSystemURL CreateSyncableFileSystemURL(const GURL& origin,
 }
 
 FileSystemURL CreateSyncableFileSystemURLForSync(
-    fileapi::FileSystemContext* file_system_context,
+    storage::FileSystemContext* file_system_context,
     const FileSystemURL& syncable_url) {
   return ExternalMountPoints::GetSystemInstance()->CreateExternalFileSystemURL(
       syncable_url.origin(),
@@ -78,7 +78,7 @@ FileSystemURL CreateSyncableFileSystemURLForSync(
 
 bool SerializeSyncableFileSystemURL(const FileSystemURL& url,
                                     std::string* serialized_url) {
-  if (!url.is_valid() || url.type() != fileapi::kFileSystemTypeSyncable)
+  if (!url.is_valid() || url.type() != storage::kFileSystemTypeSyncable)
     return false;
   *serialized_url =
       GetSyncableFileSystemRootURI(url.origin()).spec() +
@@ -95,7 +95,7 @@ bool DeserializeSyncableFileSystemURL(
   FileSystemURL deserialized =
       ExternalMountPoints::GetSystemInstance()->CrackURL(GURL(serialized_url));
   if (!deserialized.is_valid() ||
-      deserialized.type() != fileapi::kFileSystemTypeSyncable) {
+      deserialized.type() != storage::kFileSystemTypeSyncable) {
     return false;
   }
 

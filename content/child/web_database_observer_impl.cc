@@ -62,10 +62,9 @@ int DetermineHistogramResult(int websql_error, int sqlite_error) {
 
 }  // namespace
 
-WebDatabaseObserverImpl::WebDatabaseObserverImpl(
-    IPC::SyncMessageFilter* sender)
+WebDatabaseObserverImpl::WebDatabaseObserverImpl(IPC::SyncMessageFilter* sender)
     : sender_(sender),
-      open_connections_(new webkit_database::DatabaseConnectionsWrapper) {
+      open_connections_(new storage::DatabaseConnectionsWrapper) {
   DCHECK(sender);
 }
 

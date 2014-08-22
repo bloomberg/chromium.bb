@@ -46,7 +46,7 @@ void FileSystemNatives::GetIsolatedFileSystem(
       extensions::ScriptContext::GetDataSourceURLForFrame(webframe);
   CHECK(context_url.SchemeIs(extensions::kExtensionScheme));
 
-  std::string name(fileapi::GetIsolatedFileSystemName(context_url.GetOrigin(),
+  std::string name(storage::GetIsolatedFileSystemName(context_url.GetOrigin(),
                                                       file_system_id));
 
   // The optional second argument is the subfolder within the isolated file
@@ -57,7 +57,7 @@ void FileSystemNatives::GetIsolatedFileSystem(
     optional_root_name = *v8::String::Utf8Value(args[1]);
   }
 
-  GURL root_url(fileapi::GetIsolatedFileSystemRootURIString(
+  GURL root_url(storage::GetIsolatedFileSystemRootURIString(
       context_url.GetOrigin(), file_system_id, optional_root_name));
 
   args.GetReturnValue().Set(
@@ -74,7 +74,7 @@ void FileSystemNatives::GetFileEntry(
   DCHECK(args[0]->IsString());
   std::string type_string = *v8::String::Utf8Value(args[0]->ToString());
   blink::WebFileSystemType type;
-  bool is_valid_type = fileapi::GetFileSystemPublicType(type_string, &type);
+  bool is_valid_type = storage::GetFileSystemPublicType(type_string, &type);
   DCHECK(is_valid_type);
   if (is_valid_type == false) {
     return;
@@ -87,7 +87,7 @@ void FileSystemNatives::GetFileEntry(
   GURL file_system_root_url(*v8::String::Utf8Value(args[2]->ToString()));
   std::string file_path_string(*v8::String::Utf8Value(args[3]->ToString()));
   base::FilePath file_path = base::FilePath::FromUTF8Unsafe(file_path_string);
-  DCHECK(fileapi::VirtualPath::IsAbsolute(file_path.value()));
+  DCHECK(storage::VirtualPath::IsAbsolute(file_path.value()));
 
   DCHECK(args[4]->IsBoolean());
   blink::WebDOMFileSystem::EntryType entry_type =
@@ -115,7 +115,7 @@ void FileSystemNatives::CrackIsolatedFileSystemName(
   DCHECK(args[0]->IsString());
   std::string filesystem_name = *v8::String::Utf8Value(args[0]->ToString());
   std::string filesystem_id;
-  if (!fileapi::CrackIsolatedFileSystemName(filesystem_name, &filesystem_id))
+  if (!storage::CrackIsolatedFileSystemName(filesystem_name, &filesystem_id))
     return;
 
   args.GetReturnValue().Set(v8::String::NewFromUtf8(args.GetIsolate(),

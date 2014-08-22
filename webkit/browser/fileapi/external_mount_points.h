@@ -20,7 +20,7 @@ namespace base {
 class FilePath;
 }
 
-namespace fileapi {
+namespace storage {
 
 class FileSystemURL;
 
@@ -154,6 +154,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT ExternalMountPoints
   DISALLOW_COPY_AND_ASSIGN(ExternalMountPoints);
 };
 
-}  // namespace fileapi
+}  // namespace storage
 
 #endif  // WEBKIT_BROWSER_FILEAPI_EXTERNAL_MOUNT_POINTS_H_

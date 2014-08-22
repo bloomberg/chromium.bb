@@ -24,9 +24,9 @@ using content::BrowserThread;
 
 namespace {
 
-// Shorter names for fileapi::* constants.
-const fileapi::FileSystemType kTemporary = fileapi::kFileSystemTypeTemporary;
-const fileapi::FileSystemType kPersistent = fileapi::kFileSystemTypePersistent;
+// Shorter names for storage::* constants.
+const storage::FileSystemType kTemporary = storage::kFileSystemTypeTemporary;
+const storage::FileSystemType kPersistent = storage::kFileSystemTypePersistent;
 
 // We'll use these three distinct origins for testing, both as strings and as
 // GURLs in appropriate contexts.
@@ -92,7 +92,7 @@ class BrowsingDataFileSystemHelperTest : public testing::Test {
   }
 
   // Callback that should be executed in response to
-  // fileapi::FileSystemContext::OpenFileSystem.
+  // storage::FileSystemContext::OpenFileSystem.
   void OpenFileSystemCallback(const GURL& root,
                               const std::string& name,
                               base::File::Error error) {
@@ -101,8 +101,8 @@ class BrowsingDataFileSystemHelperTest : public testing::Test {
   }
 
   bool OpenFileSystem(const GURL& origin,
-                      fileapi::FileSystemType type,
-                      fileapi::OpenFileSystemMode open_mode) {
+                      storage::FileSystemType type,
+                      storage::OpenFileSystemMode open_mode) {
     BrowserContext::GetDefaultStoragePartition(profile_.get())->
         GetFileSystemContext()->OpenFileSystem(
             origin, type, open_mode,
@@ -113,15 +113,15 @@ class BrowsingDataFileSystemHelperTest : public testing::Test {
     return open_file_system_result_ == base::File::FILE_OK;
   }
 
-  // Calls fileapi::FileSystemContext::OpenFileSystem with
+  // Calls storage::FileSystemContext::OpenFileSystem with
   // OPEN_FILE_SYSTEM_FAIL_IF_NONEXISTENT flag
   // to verify the existence of a file system for a specified type and origin,
   // blocks until a response is available, then returns the result
   // synchronously to it's caller.
   bool FileSystemContainsOriginAndType(const GURL& origin,
-                                       fileapi::FileSystemType type) {
-    return OpenFileSystem(origin, type,
-                          fileapi::OPEN_FILE_SYSTEM_FAIL_IF_NONEXISTENT);
+                                       storage::FileSystemType type) {
+    return OpenFileSystem(
+        origin, type, storage::OPEN_FILE_SYSTEM_FAIL_IF_NONEXISTENT);
   }
 
   // Callback that should be executed in response to StartFetching(), and stores
@@ -172,9 +172,9 @@ class BrowsingDataFileSystemHelperTest : public testing::Test {
   // Calls OpenFileSystem with OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT
   // to create a filesystem of a given type for a specified origin.
   void CreateDirectoryForOriginAndType(const GURL& origin,
-                                       fileapi::FileSystemType type) {
-    OpenFileSystem(origin, type,
-                   fileapi::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT);
+                                       storage::FileSystemType type) {
+    OpenFileSystem(
+        origin, type, storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT);
     EXPECT_EQ(base::File::FILE_OK, open_file_system_result_);
   }
 
@@ -219,7 +219,7 @@ TEST_F(BrowsingDataFileSystemHelperTest, FetchData) {
       EXPECT_FALSE(ContainsKey(info->usage_map, kPersistent));
       EXPECT_TRUE(ContainsKey(info->usage_map, kTemporary));
       EXPECT_EQ(kEmptyFileSystemSize,
-                info->usage_map[fileapi::kFileSystemTypeTemporary]);
+                info->usage_map[storage::kFileSystemTypeTemporary]);
     } else if (info->origin == kOrigin2) {
       EXPECT_FALSE(test_hosts_found[1]);
       test_hosts_found[1] = true;

@@ -13,7 +13,7 @@
 
 class GURL;
 
-namespace quota {
+namespace storage {
 
 // Special rights are granted to 'extensions' and 'applications'. The
 // storage subsystems query this interface to determine which origins
@@ -81,6 +81,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT SpecialStoragePolicy
   ObserverList<Observer> observers_;
 };
 
-}  // namespace quota
+}  // namespace storage
 
 #endif  // WEBKIT_BROWSER_QUOTA_SPECIAL_STORAGE_POLICY_H_

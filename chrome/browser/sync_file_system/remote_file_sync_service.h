@@ -28,7 +28,7 @@ namespace content {
 class BrowserContext;
 }
 
-namespace webkit_blob {
+namespace storage {
 class ScopedFile;
 }
 
@@ -122,8 +122,8 @@ class RemoteFileSyncService {
   typedef base::Callback<void(SyncStatusCode status,
                               const std::vector<Version>& versions)>
       RemoteVersionsCallback;
-  typedef base::Callback<void(SyncStatusCode status,
-                              webkit_blob::ScopedFile downloaded)>
+  typedef base::Callback<
+      void(SyncStatusCode status, storage::ScopedFile downloaded)>
       DownloadVersionCallback;
 
   // For DumpFile.

@@ -18,8 +18,8 @@
 #include "net/base/test_completion_callback.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using fileapi::FileStreamWriter;
-using fileapi::LocalFileStreamWriter;
+using storage::FileStreamWriter;
+using storage::LocalFileStreamWriter;
 
 namespace content {
 

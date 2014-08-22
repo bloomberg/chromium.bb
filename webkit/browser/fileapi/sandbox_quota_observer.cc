@@ -13,17 +13,18 @@
 #include "webkit/browser/quota/quota_manager_proxy.h"
 #include "webkit/common/fileapi/file_system_util.h"
 
-namespace fileapi {
+namespace storage {
 
 SandboxQuotaObserver::SandboxQuotaObserver(
-    quota::QuotaManagerProxy* quota_manager_proxy,
+    storage::QuotaManagerProxy* quota_manager_proxy,
     base::SequencedTaskRunner* update_notify_runner,
     ObfuscatedFileUtil* sandbox_file_util,
     FileSystemUsageCache* file_system_usage_cache)
     : quota_manager_proxy_(quota_manager_proxy),
       update_notify_runner_(update_notify_runner),
       sandbox_file_util_(sandbox_file_util),
-      file_system_usage_cache_(file_system_usage_cache) {}
+      file_system_usage_cache_(file_system_usage_cache) {
+}
 
 SandboxQuotaObserver::~SandboxQuotaObserver() {}
 
@@ -41,7 +42,7 @@ void SandboxQuotaObserver::OnUpdate(const FileSystemURL& url,
 
   if (quota_manager_proxy_.get()) {
     quota_manager_proxy_->NotifyStorageModified(
-        quota::QuotaClient::kFileSystem,
+        storage::QuotaClient::kFileSystem,
         url.origin(),
         FileSystemTypeToQuotaStorageType(url.type()),
         delta);
@@ -83,7 +84,7 @@ void SandboxQuotaObserver::OnEndUpdate(const FileSystemURL& url) {
 void SandboxQuotaObserver::OnAccess(const FileSystemURL& url) {
   if (quota_manager_proxy_.get()) {
     quota_manager_proxy_->NotifyStorageAccessed(
-        quota::QuotaClient::kFileSystem,
+        storage::QuotaClient::kFileSystem,
         url.origin(),
         FileSystemTypeToQuotaStorageType(url.type()));
   }
@@ -95,7 +96,7 @@ void SandboxQuotaObserver::SetUsageCacheEnabled(
     bool enabled) {
   if (quota_manager_proxy_.get()) {
     quota_manager_proxy_->SetUsageCacheEnabled(
-        quota::QuotaClient::kFileSystem,
+        storage::QuotaClient::kFileSystem,
         origin,
         FileSystemTypeToQuotaStorageType(type),
         enabled);
@@ -136,4 +137,4 @@ void SandboxQuotaObserver::UpdateUsageCacheFile(
     file_system_usage_cache_->AtomicUpdateUsageByDelta(usage_file_path, delta);
 }
 
-}  // namespace fileapi
+}  // namespace storage

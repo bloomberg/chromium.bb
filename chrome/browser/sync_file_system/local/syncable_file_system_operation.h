@@ -15,7 +15,7 @@
 #include "webkit/browser/fileapi/file_system_operation.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 
-namespace fileapi {
+namespace storage {
 class FileSystemContext;
 class FileSystemOperationContext;
 }
@@ -26,73 +26,75 @@ class SyncableFileOperationRunner;
 
 // A wrapper class of FileSystemOperation for syncable file system.
 class SyncableFileSystemOperation
-    : public NON_EXPORTED_BASE(fileapi::FileSystemOperation),
+    : public NON_EXPORTED_BASE(storage::FileSystemOperation),
       public base::NonThreadSafe {
  public:
   virtual ~SyncableFileSystemOperation();
 
-  // fileapi::FileSystemOperation overrides.
-  virtual void CreateFile(const fileapi::FileSystemURL& url,
+  // storage::FileSystemOperation overrides.
+  virtual void CreateFile(const storage::FileSystemURL& url,
                           bool exclusive,
                           const StatusCallback& callback) OVERRIDE;
-  virtual void CreateDirectory(const fileapi::FileSystemURL& url,
+  virtual void CreateDirectory(const storage::FileSystemURL& url,
                                bool exclusive,
                                bool recursive,
                                const StatusCallback& callback) OVERRIDE;
-  virtual void Copy(const fileapi::FileSystemURL& src_url,
-                    const fileapi::FileSystemURL& dest_url,
+  virtual void Copy(const storage::FileSystemURL& src_url,
+                    const storage::FileSystemURL& dest_url,
                     CopyOrMoveOption option,
                     const CopyProgressCallback& progress_callback,
                     const StatusCallback& callback) OVERRIDE;
-  virtual void Move(const fileapi::FileSystemURL& src_url,
-                    const fileapi::FileSystemURL& dest_url,
+  virtual void Move(const storage::FileSystemURL& src_url,
+                    const storage::FileSystemURL& dest_url,
                     CopyOrMoveOption option,
                     const StatusCallback& callback) OVERRIDE;
-  virtual void DirectoryExists(const fileapi::FileSystemURL& url,
+  virtual void DirectoryExists(const storage::FileSystemURL& url,
                                const StatusCallback& callback) OVERRIDE;
-  virtual void FileExists(const fileapi::FileSystemURL& url,
+  virtual void FileExists(const storage::FileSystemURL& url,
                           const StatusCallback& callback) OVERRIDE;
-  virtual void GetMetadata(const fileapi::FileSystemURL& url,
+  virtual void GetMetadata(const storage::FileSystemURL& url,
                            const GetMetadataCallback& callback) OVERRIDE;
-  virtual void ReadDirectory(const fileapi::FileSystemURL& url,
+  virtual void ReadDirectory(const storage::FileSystemURL& url,
                              const ReadDirectoryCallback& callback) OVERRIDE;
-  virtual void Remove(const fileapi::FileSystemURL& url, bool recursive,
+  virtual void Remove(const storage::FileSystemURL& url,
+                      bool recursive,
                       const StatusCallback& callback) OVERRIDE;
-  virtual void Write(const fileapi::FileSystemURL& url,
-                     scoped_ptr<fileapi::FileWriterDelegate> writer_delegate,
+  virtual void Write(const storage::FileSystemURL& url,
+                     scoped_ptr<storage::FileWriterDelegate> writer_delegate,
                      scoped_ptr<net::URLRequest> blob_request,
                      const WriteCallback& callback) OVERRIDE;
-  virtual void Truncate(const fileapi::FileSystemURL& url, int64 length,
+  virtual void Truncate(const storage::FileSystemURL& url,
+                        int64 length,
                         const StatusCallback& callback) OVERRIDE;
-  virtual void TouchFile(const fileapi::FileSystemURL& url,
+  virtual void TouchFile(const storage::FileSystemURL& url,
                          const base::Time& last_access_time,
                          const base::Time& last_modified_time,
                          const StatusCallback& callback) OVERRIDE;
-  virtual void OpenFile(const fileapi::FileSystemURL& url,
+  virtual void OpenFile(const storage::FileSystemURL& url,
                         int file_flags,
                         const OpenFileCallback& callback) OVERRIDE;
   virtual void Cancel(const StatusCallback& cancel_callback) OVERRIDE;
   virtual void CreateSnapshotFile(
-      const fileapi::FileSystemURL& path,
+      const storage::FileSystemURL& path,
       const SnapshotFileCallback& callback) OVERRIDE;
   virtual void CopyInForeignFile(const base::FilePath& src_local_disk_path,
-                                 const fileapi::FileSystemURL& dest_url,
+                                 const storage::FileSystemURL& dest_url,
                                  const StatusCallback& callback) OVERRIDE;
-  virtual void RemoveFile(const fileapi::FileSystemURL& url,
+  virtual void RemoveFile(const storage::FileSystemURL& url,
                           const StatusCallback& callback) OVERRIDE;
-  virtual void RemoveDirectory(const fileapi::FileSystemURL& url,
+  virtual void RemoveDirectory(const storage::FileSystemURL& url,
                                const StatusCallback& callback) OVERRIDE;
-  virtual void CopyFileLocal(const fileapi::FileSystemURL& src_url,
-                             const fileapi::FileSystemURL& dest_url,
+  virtual void CopyFileLocal(const storage::FileSystemURL& src_url,
+                             const storage::FileSystemURL& dest_url,
                              CopyOrMoveOption option,
                              const CopyFileProgressCallback& progress_callback,
                              const StatusCallback& callback) OVERRIDE;
-  virtual void MoveFileLocal(const fileapi::FileSystemURL& src_url,
-                             const fileapi::FileSystemURL& dest_url,
+  virtual void MoveFileLocal(const storage::FileSystemURL& src_url,
+                             const storage::FileSystemURL& dest_url,
                              CopyOrMoveOption option,
                              const StatusCallback& callback) OVERRIDE;
   virtual base::File::Error SyncGetPlatformPath(
-      const fileapi::FileSystemURL& url,
+      const storage::FileSystemURL& url,
       base::FilePath* platform_path) OVERRIDE;
 
  private:
@@ -103,9 +105,9 @@ class SyncableFileSystemOperation
   friend class SyncFileSystemBackend;
 
   SyncableFileSystemOperation(
-      const fileapi::FileSystemURL& url,
-      fileapi::FileSystemContext* file_system_context,
-      scoped_ptr<fileapi::FileSystemOperationContext> operation_context);
+      const storage::FileSystemURL& url,
+      storage::FileSystemContext* file_system_context,
+      scoped_ptr<storage::FileSystemOperationContext> operation_context);
 
   void DidFinish(base::File::Error status);
   void DidWrite(const WriteCallback& callback,
@@ -115,11 +117,11 @@ class SyncableFileSystemOperation
 
   void OnCancelled();
 
-  const fileapi::FileSystemURL url_;
+  const storage::FileSystemURL url_;
 
-  scoped_ptr<fileapi::FileSystemOperation> impl_;
+  scoped_ptr<storage::FileSystemOperation> impl_;
   base::WeakPtr<SyncableFileOperationRunner> operation_runner_;
-  std::vector<fileapi::FileSystemURL> target_paths_;
+  std::vector<storage::FileSystemURL> target_paths_;
 
   StatusCallback completion_callback_;
 

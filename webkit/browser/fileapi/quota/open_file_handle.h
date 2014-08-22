@@ -14,7 +14,7 @@ namespace base {
 class FilePath;
 }
 
-namespace fileapi {
+namespace storage {
 
 class QuotaReservation;
 class OpenFileHandleContext;
@@ -65,6 +65,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT OpenFileHandle {
   DISALLOW_COPY_AND_ASSIGN(OpenFileHandle);
 };
 
-}  // namespace fileapi
+}  // namespace storage
 
 #endif  // WEBKIT_BROWSER_FILEAPI_QUOTA_OPEN_FILE_HANDLE_H_

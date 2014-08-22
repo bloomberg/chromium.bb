@@ -408,11 +408,11 @@ class LocalFileSystemExtensionApiTest : public FileSystemExtensionApiTestBase {
 
   // FileSystemExtensionApiTestBase OVERRIDE.
   virtual void AddTestMountPoint() OVERRIDE {
-    EXPECT_TRUE(content::BrowserContext::GetMountPoints(browser()->profile())->
-        RegisterFileSystem(kLocalMountPointName,
-                           fileapi::kFileSystemTypeNativeLocal,
-                           fileapi::FileSystemMountOption(),
-                           mount_point_dir_));
+    EXPECT_TRUE(content::BrowserContext::GetMountPoints(browser()->profile())
+                    ->RegisterFileSystem(kLocalMountPointName,
+                                         storage::kFileSystemTypeNativeLocal,
+                                         storage::FileSystemMountOption(),
+                                         mount_point_dir_));
     VolumeManager::Get(browser()->profile())->AddVolumeInfoForTesting(
         mount_point_dir_, VOLUME_TYPE_TESTING, chromeos::DEVICE_TYPE_UNKNOWN);
   }
@@ -438,11 +438,12 @@ class RestrictedFileSystemExtensionApiTest
 
   // FileSystemExtensionApiTestBase OVERRIDE.
   virtual void AddTestMountPoint() OVERRIDE {
-    EXPECT_TRUE(content::BrowserContext::GetMountPoints(browser()->profile())->
-        RegisterFileSystem(kRestrictedMountPointName,
-                           fileapi::kFileSystemTypeRestrictedNativeLocal,
-                           fileapi::FileSystemMountOption(),
-                           mount_point_dir_));
+    EXPECT_TRUE(
+        content::BrowserContext::GetMountPoints(browser()->profile())
+            ->RegisterFileSystem(kRestrictedMountPointName,
+                                 storage::kFileSystemTypeRestrictedNativeLocal,
+                                 storage::FileSystemMountOption(),
+                                 mount_point_dir_));
     VolumeManager::Get(browser()->profile())->AddVolumeInfoForTesting(
         mount_point_dir_, VOLUME_TYPE_TESTING, chromeos::DEVICE_TYPE_UNKNOWN);
   }
@@ -627,8 +628,8 @@ class LocalAndDriveFileSystemExtensionApiTest
   virtual void AddTestMountPoint() OVERRIDE {
     EXPECT_TRUE(content::BrowserContext::GetMountPoints(browser()->profile())
                     ->RegisterFileSystem(kLocalMountPointName,
-                                         fileapi::kFileSystemTypeNativeLocal,
-                                         fileapi::FileSystemMountOption(),
+                                         storage::kFileSystemTypeNativeLocal,
+                                         storage::FileSystemMountOption(),
                                          local_mount_point_dir_));
     VolumeManager::Get(browser()->profile())
         ->AddVolumeInfoForTesting(local_mount_point_dir_,

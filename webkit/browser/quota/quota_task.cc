@@ -15,7 +15,7 @@
 
 using base::TaskRunner;
 
-namespace quota {
+namespace storage {
 
 // QuotaTask ---------------------------------------------------------------
 
@@ -76,4 +76,4 @@ void QuotaTaskObserver::UnregisterTask(QuotaTask* task) {
   running_quota_tasks_.erase(task);
 }
 
-}  // namespace quota
+}  // namespace storage

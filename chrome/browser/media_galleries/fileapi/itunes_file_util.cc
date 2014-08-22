@@ -21,7 +21,7 @@
 #include "webkit/common/blob/shareable_file_reference.h"
 #include "webkit/common/fileapi/file_system_util.h"
 
-using fileapi::DirectoryEntry;
+using storage::DirectoryEntry;
 
 namespace itunes {
 
@@ -35,7 +35,7 @@ base::File::Error MakeDirectoryFileInfo(base::File::Info* file_info) {
 }
 
 std::vector<std::string> GetVirtualPathComponents(
-    const fileapi::FileSystemURL& url) {
+    const storage::FileSystemURL& url) {
   ImportedMediaGalleryRegistry* imported_registry =
       ImportedMediaGalleryRegistry::GetInstance();
   base::FilePath root = imported_registry->ImportedRoot().AppendASCII("itunes");
@@ -45,7 +45,7 @@ std::vector<std::string> GetVirtualPathComponents(
   root.AppendRelativePath(url.path(), &virtual_path);
 
   std::vector<std::string> result;
-  fileapi::VirtualPath::GetComponentsUTF8Unsafe(virtual_path, &result);
+  storage::VirtualPath::GetComponentsUTF8Unsafe(virtual_path, &result);
   return result;
 }
 
@@ -66,8 +66,8 @@ ITunesFileUtil::~ITunesFileUtil() {
 }
 
 void ITunesFileUtil::GetFileInfoOnTaskRunnerThread(
-    scoped_ptr<fileapi::FileSystemOperationContext> context,
-    const fileapi::FileSystemURL& url,
+    scoped_ptr<storage::FileSystemOperationContext> context,
+    const storage::FileSystemURL& url,
     const GetFileInfoCallback& callback) {
   ITunesDataProvider* data_provider = GetDataProvider();
   // |data_provider| may be NULL if the file system was revoked before this
@@ -83,8 +83,8 @@ void ITunesFileUtil::GetFileInfoOnTaskRunnerThread(
 }
 
 void ITunesFileUtil::ReadDirectoryOnTaskRunnerThread(
-    scoped_ptr<fileapi::FileSystemOperationContext> context,
-    const fileapi::FileSystemURL& url,
+    scoped_ptr<storage::FileSystemOperationContext> context,
+    const storage::FileSystemURL& url,
     const ReadDirectoryCallback& callback) {
   ITunesDataProvider* data_provider = GetDataProvider();
   // |data_provider| may be NULL if the file system was revoked before this
@@ -100,8 +100,8 @@ void ITunesFileUtil::ReadDirectoryOnTaskRunnerThread(
 }
 
 void ITunesFileUtil::CreateSnapshotFileOnTaskRunnerThread(
-    scoped_ptr<fileapi::FileSystemOperationContext> context,
-    const fileapi::FileSystemURL& url,
+    scoped_ptr<storage::FileSystemOperationContext> context,
+    const storage::FileSystemURL& url,
     const CreateSnapshotFileCallback& callback) {
   ITunesDataProvider* data_provider = GetDataProvider();
   // |data_provider| may be NULL if the file system was revoked before this
@@ -124,8 +124,8 @@ void ITunesFileUtil::CreateSnapshotFileOnTaskRunnerThread(
 //   /iTunes Media/Music/<Artist>/<Album>/<Track>     - tracks
 //
 base::File::Error ITunesFileUtil::GetFileInfoSync(
-    fileapi::FileSystemOperationContext* context,
-    const fileapi::FileSystemURL& url,
+    storage::FileSystemOperationContext* context,
+    const storage::FileSystemURL& url,
     base::File::Info* file_info,
     base::FilePath* platform_path) {
   std::vector<std::string> components = GetVirtualPathComponents(url);
@@ -140,7 +140,7 @@ base::File::Error ITunesFileUtil::GetFileInfoSync(
     base::FilePath file_path = GetDataProvider()->library_path();
     if (platform_path)
       *platform_path = file_path;
-    return fileapi::NativeFileUtil::GetFileInfo(file_path, file_info);
+    return storage::NativeFileUtil::GetFileInfo(file_path, file_info);
   }
 
   if (components[0] != kITunesMediaDir)
@@ -185,8 +185,8 @@ base::File::Error ITunesFileUtil::GetFileInfoSync(
 }
 
 base::File::Error ITunesFileUtil::ReadDirectorySync(
-    fileapi::FileSystemOperationContext* context,
-    const fileapi::FileSystemURL& url,
+    storage::FileSystemOperationContext* context,
+    const storage::FileSystemURL& url,
     EntryList* file_list) {
   DCHECK(file_list->empty());
   std::vector<std::string> components = GetVirtualPathComponents(url);
@@ -282,23 +282,23 @@ base::File::Error ITunesFileUtil::ReadDirectorySync(
 }
 
 base::File::Error ITunesFileUtil::DeleteDirectorySync(
-    fileapi::FileSystemOperationContext* context,
-    const fileapi::FileSystemURL& url) {
+    storage::FileSystemOperationContext* context,
+    const storage::FileSystemURL& url) {
   return base::File::FILE_ERROR_SECURITY;
 }
 
 base::File::Error ITunesFileUtil::DeleteFileSync(
-    fileapi::FileSystemOperationContext* context,
-    const fileapi::FileSystemURL& url) {
+    storage::FileSystemOperationContext* context,
+    const storage::FileSystemURL& url) {
   return base::File::FILE_ERROR_SECURITY;
 }
 
 base::File::Error ITunesFileUtil::CreateSnapshotFileSync(
-    fileapi::FileSystemOperationContext* context,
-    const fileapi::FileSystemURL& url,
+    storage::FileSystemOperationContext* context,
+    const storage::FileSystemURL& url,
     base::File::Info* file_info,
     base::FilePath* platform_path,
-    scoped_refptr<webkit_blob::ShareableFileReference>* file_ref) {
+    scoped_refptr<storage::ShareableFileReference>* file_ref) {
   std::vector<std::string> components = GetVirtualPathComponents(url);
   if (components.size() != 1 || components[0] != kITunesLibraryXML) {
     return NativeMediaFileUtil::CreateSnapshotFileSync(context, url, file_info,
@@ -311,13 +311,13 @@ base::File::Error ITunesFileUtil::CreateSnapshotFileSync(
   // file. The only way to get here is by way of
   // CreateSnapshotFileWithFreshDataProvider() so the file has already been
   // parsed and deemed valid.
-  *file_ref = scoped_refptr<webkit_blob::ShareableFileReference>();
+  *file_ref = scoped_refptr<storage::ShareableFileReference>();
   return GetFileInfoSync(context, url, file_info, platform_path);
 }
 
 base::File::Error ITunesFileUtil::GetLocalFilePath(
-    fileapi::FileSystemOperationContext* context,
-    const fileapi::FileSystemURL& url,
+    storage::FileSystemOperationContext* context,
+    const storage::FileSystemURL& url,
     base::FilePath* local_file_path) {
   std::vector<std::string> components = GetVirtualPathComponents(url);
 
@@ -355,8 +355,8 @@ base::File::Error ITunesFileUtil::GetLocalFilePath(
 }
 
 void ITunesFileUtil::GetFileInfoWithFreshDataProvider(
-    scoped_ptr<fileapi::FileSystemOperationContext> context,
-    const fileapi::FileSystemURL& url,
+    scoped_ptr<storage::FileSystemOperationContext> context,
+    const storage::FileSystemURL& url,
     const GetFileInfoCallback& callback,
     bool valid_parse) {
   if (!valid_parse) {
@@ -374,8 +374,8 @@ void ITunesFileUtil::GetFileInfoWithFreshDataProvider(
 }
 
 void ITunesFileUtil::ReadDirectoryWithFreshDataProvider(
-    scoped_ptr<fileapi::FileSystemOperationContext> context,
-    const fileapi::FileSystemURL& url,
+    scoped_ptr<storage::FileSystemOperationContext> context,
+    const storage::FileSystemURL& url,
     const ReadDirectoryCallback& callback,
     bool valid_parse) {
   if (!valid_parse) {
@@ -392,15 +392,15 @@ void ITunesFileUtil::ReadDirectoryWithFreshDataProvider(
 }
 
 void ITunesFileUtil::CreateSnapshotFileWithFreshDataProvider(
-    scoped_ptr<fileapi::FileSystemOperationContext> context,
-    const fileapi::FileSystemURL& url,
+    scoped_ptr<storage::FileSystemOperationContext> context,
+    const storage::FileSystemURL& url,
     const CreateSnapshotFileCallback& callback,
     bool valid_parse) {
   if (!valid_parse) {
     if (!callback.is_null()) {
       base::File::Info file_info;
       base::FilePath platform_path;
-      scoped_refptr<webkit_blob::ShareableFileReference> file_ref;
+      scoped_refptr<storage::ShareableFileReference> file_ref;
       content::BrowserThread::PostTask(
           content::BrowserThread::IO,
           FROM_HERE,

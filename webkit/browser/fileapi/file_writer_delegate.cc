@@ -16,7 +16,7 @@
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/common/fileapi/file_system_util.h"
 
-namespace fileapi {
+namespace storage {
 
 static const int kReadBufSize = 32768;
 
@@ -241,4 +241,4 @@ void FileWriterDelegate::OnFlushed(base::File::Error error,
   write_callback_.Run(error, bytes_written, progress_status);
 }
 
-}  // namespace fileapi
+}  // namespace storage

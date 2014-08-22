@@ -23,7 +23,7 @@ using content::BrowserThread;
 using content::ChildProcessSecurityPolicy;
 using content::WebContents;
 using extensions::PageCaptureSaveAsMHTMLFunction;
-using webkit_blob::ShareableFileReference;
+using storage::ShareableFileReference;
 
 namespace SaveAsMHTML = extensions::api::page_capture::SaveAsMHTML;
 
@@ -43,7 +43,7 @@ PageCaptureSaveAsMHTMLFunction::PageCaptureSaveAsMHTMLFunction() {
 
 PageCaptureSaveAsMHTMLFunction::~PageCaptureSaveAsMHTMLFunction() {
   if (mhtml_file_.get()) {
-    webkit_blob::ShareableFileReference* to_release = mhtml_file_.get();
+    storage::ShareableFileReference* to_release = mhtml_file_.get();
     to_release->AddRef();
     mhtml_file_ = NULL;
     BrowserThread::ReleaseSoon(BrowserThread::IO, FROM_HERE, to_release);

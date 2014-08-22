@@ -35,7 +35,7 @@ class SupportedImageTypeValidator : public AVScanningFileValidator {
 
   base::FilePath path_;
   scoped_refptr<ImageDecoder> decoder_;
-  fileapi::CopyOrMoveFileValidator::ResultCallback callback_;
+  storage::CopyOrMoveFileValidator::ResultCallback callback_;
   base::WeakPtrFactory<SupportedImageTypeValidator> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SupportedImageTypeValidator);

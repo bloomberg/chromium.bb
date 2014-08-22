@@ -8,7 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "webkit/browser/fileapi/file_system_backend.h"
 
-namespace fileapi {
+namespace storage {
 
 class AsyncFileUtilAdapter;
 
@@ -33,8 +33,8 @@ class IsolatedFileSystemBackend : public FileSystemBackend {
       base::File::Error* error_code) const OVERRIDE;
   virtual bool SupportsStreaming(const FileSystemURL& url) const OVERRIDE;
   virtual bool HasInplaceCopyImplementation(
-      fileapi::FileSystemType type) const OVERRIDE;
-  virtual scoped_ptr<webkit_blob::FileStreamReader> CreateFileStreamReader(
+      storage::FileSystemType type) const OVERRIDE;
+  virtual scoped_ptr<storage::FileStreamReader> CreateFileStreamReader(
       const FileSystemURL& url,
       int64 offset,
       const base::Time& expected_modification_time,
@@ -51,6 +51,6 @@ class IsolatedFileSystemBackend : public FileSystemBackend {
   scoped_ptr<AsyncFileUtilAdapter> transient_file_util_;
 };
 
-}  // namespace fileapi
+}  // namespace storage
 
 #endif  // WEBKIT_BROWSER_FILEAPI_ISOLATED_FILE_SYSTEM_BACKEND_H_

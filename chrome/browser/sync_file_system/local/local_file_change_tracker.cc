@@ -21,11 +21,11 @@
 #include "webkit/browser/fileapi/file_system_operation_context.h"
 #include "webkit/common/fileapi/file_system_util.h"
 
-using fileapi::FileSystemContext;
-using fileapi::FileSystemFileUtil;
-using fileapi::FileSystemOperationContext;
-using fileapi::FileSystemURL;
-using fileapi::FileSystemURLSet;
+using storage::FileSystemContext;
+using storage::FileSystemFileUtil;
+using storage::FileSystemOperationContext;
+using storage::FileSystemURL;
+using storage::FileSystemURLSet;
 
 namespace sync_file_system {
 
@@ -172,14 +172,14 @@ void LocalFileChangeTracker::ClearChangesForURL(const FileSystemURL& url) {
 }
 
 void LocalFileChangeTracker::CreateFreshMirrorForURL(
-    const fileapi::FileSystemURL& url) {
+    const storage::FileSystemURL& url) {
   DCHECK(file_task_runner_->RunsTasksOnCurrentThread());
   DCHECK(!ContainsKey(mirror_changes_, url));
   mirror_changes_[url] = ChangeInfo();
 }
 
 void LocalFileChangeTracker::RemoveMirrorAndCommitChangesForURL(
-    const fileapi::FileSystemURL& url) {
+    const storage::FileSystemURL& url) {
   DCHECK(file_task_runner_->RunsTasksOnCurrentThread());
   FileChangeMap::iterator found = mirror_changes_.find(url);
   if (found == mirror_changes_.end())
@@ -194,7 +194,7 @@ void LocalFileChangeTracker::RemoveMirrorAndCommitChangesForURL(
 }
 
 void LocalFileChangeTracker::ResetToMirrorAndCommitChangesForURL(
-    const fileapi::FileSystemURL& url) {
+    const storage::FileSystemURL& url) {
   DCHECK(file_task_runner_->RunsTasksOnCurrentThread());
   FileChangeMap::iterator found = mirror_changes_.find(url);
   if (found == mirror_changes_.end() || found->second.change_list.empty()) {
@@ -214,7 +214,7 @@ void LocalFileChangeTracker::ResetToMirrorAndCommitChangesForURL(
 }
 
 void LocalFileChangeTracker::DemoteChangesForURL(
-    const fileapi::FileSystemURL& url) {
+    const storage::FileSystemURL& url) {
   DCHECK(file_task_runner_->RunsTasksOnCurrentThread());
 
   FileChangeMap::iterator found = changes_.find(url);
@@ -228,7 +228,7 @@ void LocalFileChangeTracker::DemoteChangesForURL(
 }
 
 void LocalFileChangeTracker::PromoteDemotedChangesForURL(
-    const fileapi::FileSystemURL& url) {
+    const storage::FileSystemURL& url) {
   DCHECK(file_task_runner_->RunsTasksOnCurrentThread());
 
   FileChangeMap::iterator iter = demoted_changes_.find(url);
@@ -251,7 +251,7 @@ bool LocalFileChangeTracker::PromoteDemotedChanges() {
   if (demoted_changes_.empty())
     return false;
   while (!demoted_changes_.empty()) {
-    fileapi::FileSystemURL url = demoted_changes_.begin()->first;
+    storage::FileSystemURL url = demoted_changes_.begin()->first;
     PromoteDemotedChangesForURL(url);
   }
   UpdateNumChanges();
@@ -270,14 +270,13 @@ SyncStatusCode LocalFileChangeTracker::Initialize(
   return status;
 }
 
-void LocalFileChangeTracker::ResetForFileSystem(
-    const GURL& origin,
-    fileapi::FileSystemType type) {
+void LocalFileChangeTracker::ResetForFileSystem(const GURL& origin,
+                                                storage::FileSystemType type) {
   DCHECK(file_task_runner_->RunsTasksOnCurrentThread());
   scoped_ptr<leveldb::WriteBatch> batch(new leveldb::WriteBatch);
   for (FileChangeMap::iterator iter = changes_.begin();
        iter != changes_.end();) {
-    fileapi::FileSystemURL url = iter->first;
+    storage::FileSystemURL url = iter->first;
     int change_seq = iter->second.change_seq;
     // Advance |iter| before calling ResetForURL to avoid the iterator
     // invalidation in it.
@@ -288,7 +287,7 @@ void LocalFileChangeTracker::ResetForFileSystem(
 
   for (FileChangeMap::iterator iter = demoted_changes_.begin();
        iter != demoted_changes_.end();) {
-    fileapi::FileSystemURL url = iter->first;
+    storage::FileSystemURL url = iter->first;
     int change_seq = iter->second.change_seq;
     // Advance |iter| before calling ResetForURL to avoid the iterator
     // invalidation in it.
@@ -364,7 +363,7 @@ SyncStatusCode LocalFileChangeTracker::CollectLastDirtyChanges(
   while (!dirty_files.empty()) {
     const FileSystemURL url = dirty_files.front();
     dirty_files.pop();
-    DCHECK_EQ(url.type(), fileapi::kFileSystemTypeSyncable);
+    DCHECK_EQ(url.type(), storage::kFileSystemTypeSyncable);
 
     switch (file_util->GetFileInfo(context.get(), url,
                                    &file_info, &platform_path)) {
@@ -445,7 +444,7 @@ void LocalFileChangeTracker::RecordChangeToChangeMaps(
     (*change_seqs)[info.change_seq] = url;
 }
 
-void LocalFileChangeTracker::ResetForURL(const fileapi::FileSystemURL& url,
+void LocalFileChangeTracker::ResetForURL(const storage::FileSystemURL& url,
                                          int change_seq,
                                          leveldb::WriteBatch* batch) {
   mirror_changes_.erase(url);
@@ -474,8 +473,8 @@ SyncStatusCode LocalFileChangeTracker::TrackerDB::Init(
   if (db_.get() && db_status_ == SYNC_STATUS_OK)
     return SYNC_STATUS_OK;
 
-  std::string path = fileapi::FilePathToString(
-      base_path_.Append(kDatabaseName));
+  std::string path =
+      storage::FilePathToString(base_path_.Append(kDatabaseName));
   leveldb::Options options;
   options.max_open_files = 0;  // Use minimum.
   options.create_if_missing = true;

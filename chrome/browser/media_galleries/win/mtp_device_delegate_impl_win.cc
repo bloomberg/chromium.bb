@@ -180,7 +180,7 @@ base::File::Error GetFileInfoOnBlockingPoolThread(
 base::File::Error ReadDirectoryOnBlockingPoolThread(
     const MTPDeviceDelegateImplWin::StorageDeviceInfo& device_info,
     const base::FilePath& root,
-    fileapi::AsyncFileUtil::EntryList* entries) {
+    storage::AsyncFileUtil::EntryList* entries) {
   base::ThreadRestrictions::AssertIOAllowed();
   DCHECK(!root.empty());
   DCHECK(entries);
@@ -200,9 +200,9 @@ base::File::Error ReadDirectoryOnBlockingPoolThread(
     return error;
 
   while (!(current = file_enum->Next()).empty()) {
-    fileapi::DirectoryEntry entry;
+    storage::DirectoryEntry entry;
     entry.is_directory = file_enum->IsDirectory();
-    entry.name = fileapi::VirtualPath::BaseName(current).value();
+    entry.name = storage::VirtualPath::BaseName(current).value();
     entry.size = file_enum->Size();
     entry.last_modified_time = file_enum->LastModifiedTime();
     entries->push_back(entry);
@@ -402,8 +402,8 @@ void MTPDeviceDelegateImplWin::ReadDirectory(
     const ErrorCallback& error_callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(!root.empty());
-  fileapi::AsyncFileUtil::EntryList* entries =
-      new fileapi::AsyncFileUtil::EntryList;
+  storage::AsyncFileUtil::EntryList* entries =
+      new storage::AsyncFileUtil::EntryList;
   EnsureInitAndRunTask(
       PendingTaskInfo(FROM_HERE,
                       base::Bind(&ReadDirectoryOnBlockingPoolThread,
@@ -546,7 +546,7 @@ void MTPDeviceDelegateImplWin::OnGetFileInfo(
 void MTPDeviceDelegateImplWin::OnDidReadDirectory(
     const ReadDirectorySuccessCallback& success_callback,
     const ErrorCallback& error_callback,
-    fileapi::AsyncFileUtil::EntryList* file_list,
+    storage::AsyncFileUtil::EntryList* file_list,
     base::File::Error error) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(file_list);

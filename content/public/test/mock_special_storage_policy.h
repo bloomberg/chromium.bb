@@ -11,11 +11,11 @@
 #include "url/gurl.h"
 #include "webkit/browser/quota/special_storage_policy.h"
 
-using quota::SpecialStoragePolicy;
+using storage::SpecialStoragePolicy;
 
 namespace content {
 
-class MockSpecialStoragePolicy : public quota::SpecialStoragePolicy {
+class MockSpecialStoragePolicy : public storage::SpecialStoragePolicy {
  public:
   MockSpecialStoragePolicy();
 

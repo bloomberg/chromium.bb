@@ -271,7 +271,7 @@ content::BrowserPluginGuestManager* AwBrowserContext::GetGuestManager() {
   return NULL;
 }
 
-quota::SpecialStoragePolicy* AwBrowserContext::GetSpecialStoragePolicy() {
+storage::SpecialStoragePolicy* AwBrowserContext::GetSpecialStoragePolicy() {
   // Intentionally returning NULL as 'Extensions' and 'Apps' not supported.
   return NULL;
 }

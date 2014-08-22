@@ -36,7 +36,7 @@ class SupportedAudioVideoChecker : public AVScanningFileValidator {
   void OnFileOpen(base::File file);
 
   base::FilePath path_;
-  fileapi::CopyOrMoveFileValidator::ResultCallback callback_;
+  storage::CopyOrMoveFileValidator::ResultCallback callback_;
   scoped_refptr<SafeAudioVideoChecker> safe_checker_;
   base::WeakPtrFactory<SupportedAudioVideoChecker> weak_factory_;
 

@@ -30,9 +30,9 @@ const char kTestIdentifierExtension[] =
 class BrowsingDataDatabaseHelperTest : public InProcessBrowserTest {
  public:
   virtual void CreateDatabases() {
-    webkit_database::DatabaseTracker* db_tracker =
-        BrowserContext::GetDefaultStoragePartition(browser()->profile())->
-            GetDatabaseTracker();
+    storage::DatabaseTracker* db_tracker =
+        BrowserContext::GetDefaultStoragePartition(browser()->profile())
+            ->GetDatabaseTracker();
     base::string16 db_name = base::ASCIIToUTF16("db");
     base::string16 description = base::ASCIIToUTF16("db_description");
     int64 size;
@@ -50,7 +50,7 @@ class BrowsingDataDatabaseHelperTest : public InProcessBrowserTest {
         db_tracker->GetFullDBFilePath(kTestIdentifierExtension, db_name);
     base::CreateDirectory(db_path2.DirName());
     ASSERT_EQ(0, base::WriteFile(db_path2, NULL, 0));
-    std::vector<webkit_database::OriginInfo> origins;
+    std::vector<storage::OriginInfo> origins;
     db_tracker->GetAllOriginsInfo(&origins);
     ASSERT_EQ(2U, origins.size());
   }

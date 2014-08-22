@@ -68,17 +68,17 @@ bool SyncFileSystemDeleteFileSystemFunction::RunAsync() {
   std::string url;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &url));
 
-  scoped_refptr<fileapi::FileSystemContext> file_system_context =
+  scoped_refptr<storage::FileSystemContext> file_system_context =
       BrowserContext::GetStoragePartition(GetProfile(),
                                           render_view_host()->GetSiteInstance())
           ->GetFileSystemContext();
-  fileapi::FileSystemURL file_system_url(
+  storage::FileSystemURL file_system_url(
       file_system_context->CrackURL(GURL(url)));
 
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
-      Bind(&fileapi::FileSystemContext::DeleteFileSystem,
+      Bind(&storage::FileSystemContext::DeleteFileSystem,
            file_system_context,
            source_url().GetOrigin(),
            file_system_url.type(),
@@ -120,18 +120,18 @@ bool SyncFileSystemRequestFileSystemFunction::RunAsync() {
 
   // Initializes sync context for this extension and continue to open
   // a new file system.
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      Bind(&fileapi::FileSystemContext::OpenFileSystem,
-           GetFileSystemContext(),
-           source_url().GetOrigin(),
-           fileapi::kFileSystemTypeSyncable,
-           fileapi::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
-           base::Bind(&self::DidOpenFileSystem, this)));
+  BrowserThread::PostTask(BrowserThread::IO,
+                          FROM_HERE,
+                          Bind(&storage::FileSystemContext::OpenFileSystem,
+                               GetFileSystemContext(),
+                               source_url().GetOrigin(),
+                               storage::kFileSystemTypeSyncable,
+                               storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
+                               base::Bind(&self::DidOpenFileSystem, this)));
   return true;
 }
 
-fileapi::FileSystemContext*
+storage::FileSystemContext*
 SyncFileSystemRequestFileSystemFunction::GetFileSystemContext() {
   DCHECK(render_view_host());
   return BrowserContext::GetStoragePartition(
@@ -171,11 +171,11 @@ bool SyncFileSystemGetFileStatusFunction::RunAsync() {
   std::string url;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &url));
 
-  scoped_refptr<fileapi::FileSystemContext> file_system_context =
+  scoped_refptr<storage::FileSystemContext> file_system_context =
       BrowserContext::GetStoragePartition(GetProfile(),
                                           render_view_host()->GetSiteInstance())
           ->GetFileSystemContext();
-  fileapi::FileSystemURL file_system_url(
+  storage::FileSystemURL file_system_url(
       file_system_context->CrackURL(GURL(url)));
 
   GetSyncFileSystemService(GetProfile())->GetFileSyncStatus(
@@ -211,7 +211,7 @@ bool SyncFileSystemGetFileStatusesFunction::RunAsync() {
   base::ListValue* file_entry_urls = NULL;
   EXTENSION_FUNCTION_VALIDATE(args_->GetList(0, &file_entry_urls));
 
-  scoped_refptr<fileapi::FileSystemContext> file_system_context =
+  scoped_refptr<storage::FileSystemContext> file_system_context =
       BrowserContext::GetStoragePartition(GetProfile(),
                                           render_view_host()->GetSiteInstance())
           ->GetFileSystemContext();
@@ -226,7 +226,7 @@ bool SyncFileSystemGetFileStatusesFunction::RunAsync() {
   for (unsigned int i = 0; i < num_expected_results_; i++) {
     std::string url;
     file_entry_urls->GetString(i, &url);
-    fileapi::FileSystemURL file_system_url(
+    storage::FileSystemURL file_system_url(
         file_system_context->CrackURL(GURL(url)));
 
     sync_file_system_service->GetFileSyncStatus(
@@ -239,7 +239,7 @@ bool SyncFileSystemGetFileStatusesFunction::RunAsync() {
 }
 
 void SyncFileSystemGetFileStatusesFunction::DidGetFileStatus(
-    const fileapi::FileSystemURL& file_system_url,
+    const storage::FileSystemURL& file_system_url,
     SyncStatusCode sync_status_code,
     SyncFileStatus sync_file_status) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -265,7 +265,7 @@ void SyncFileSystemGetFileStatusesFunction::DidGetFileStatus(
     base::DictionaryValue* dict = new base::DictionaryValue();
     status_array->Append(dict);
 
-    fileapi::FileSystemURL url = it->first;
+    storage::FileSystemURL url = it->first;
     SyncStatusCode file_error = it->second.first;
     api::sync_file_system::FileStatus file_status =
         SyncFileStatusToExtensionEnum(it->second.second);
@@ -287,14 +287,14 @@ bool SyncFileSystemGetUsageAndQuotaFunction::RunAsync() {
   std::string url;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &url));
 
-  scoped_refptr<fileapi::FileSystemContext> file_system_context =
+  scoped_refptr<storage::FileSystemContext> file_system_context =
       BrowserContext::GetStoragePartition(GetProfile(),
                                           render_view_host()->GetSiteInstance())
           ->GetFileSystemContext();
-  fileapi::FileSystemURL file_system_url(
+  storage::FileSystemURL file_system_url(
       file_system_context->CrackURL(GURL(url)));
 
-  scoped_refptr<quota::QuotaManager> quota_manager =
+  scoped_refptr<storage::QuotaManager> quota_manager =
       BrowserContext::GetStoragePartition(GetProfile(),
                                           render_view_host()->GetSiteInstance())
           ->GetQuotaManager();
@@ -302,10 +302,10 @@ bool SyncFileSystemGetUsageAndQuotaFunction::RunAsync() {
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
-      Bind(&quota::QuotaManager::GetUsageAndQuotaForWebApps,
+      Bind(&storage::QuotaManager::GetUsageAndQuotaForWebApps,
            quota_manager,
            source_url().GetOrigin(),
-           fileapi::FileSystemTypeToQuotaStorageType(file_system_url.type()),
+           storage::FileSystemTypeToQuotaStorageType(file_system_url.type()),
            Bind(&SyncFileSystemGetUsageAndQuotaFunction::DidGetUsageAndQuota,
                 this)));
 
@@ -313,7 +313,9 @@ bool SyncFileSystemGetUsageAndQuotaFunction::RunAsync() {
 }
 
 void SyncFileSystemGetUsageAndQuotaFunction::DidGetUsageAndQuota(
-      quota::QuotaStatusCode status, int64 usage, int64 quota) {
+    storage::QuotaStatusCode status,
+    int64 usage,
+    int64 quota) {
   // Repost to switch from IO thread to UI thread for SendResponse().
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -326,7 +328,7 @@ void SyncFileSystemGetUsageAndQuotaFunction::DidGetUsageAndQuota(
   }
 
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (status != quota::kQuotaStatusOk) {
+  if (status != storage::kQuotaStatusOk) {
     error_ = QuotaStatusCodeToString(status);
     SendResponse(false);
     return;

@@ -63,7 +63,7 @@ void ShowUsageAndExit(const std::string& arg0) {
 
 }  // namespace
 
-namespace fileapi {
+namespace storage {
 
 static void DumpDirectoryTree(const std::string& origin_name,
                               base::FilePath origin_dir) {
@@ -158,7 +158,7 @@ static void DumpFileSystem(const base::FilePath& file_system_dir) {
   }
 }
 
-}  // namespace fileapi
+}  // namespace storage
 
 int main(int argc, char* argv[]) {
   const char* arg0 = argv[0];
@@ -187,17 +187,17 @@ int main(int argc, char* argv[]) {
   if (argc < 2)
     ShowUsageAndExit(arg0);
 
-  const base::FilePath file_system_dir = fileapi::StringToFilePath(argv[1]);
+  const base::FilePath file_system_dir = storage::StringToFilePath(argv[1]);
   if (!base::DirectoryExists(file_system_dir)) {
-    ShowMessageAndExit(fileapi::FilePathToString(file_system_dir) +
+    ShowMessageAndExit(storage::FilePathToString(file_system_dir) +
                        " is not a filesystem directory");
   }
 
   if (argc == 2) {
-    fileapi::DumpFileSystem(file_system_dir);
+    storage::DumpFileSystem(file_system_dir);
   } else {
     for (int i = 2; i < argc; i++) {
-      fileapi::DumpOrigin(file_system_dir, argv[i]);
+      storage::DumpOrigin(file_system_dir, argv[i]);
     }
   }
   return 0;

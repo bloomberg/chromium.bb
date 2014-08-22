@@ -27,7 +27,7 @@ class NullableString16;
 class Time;
 }
 
-namespace quota {
+namespace storage {
 class SpecialStoragePolicy;
 }
 
@@ -91,11 +91,10 @@ class CONTENT_EXPORT DOMStorageContextImpl
 
   // |localstorage_directory| and |sessionstorage_directory| may be empty
   // for incognito browser contexts.
-  DOMStorageContextImpl(
-      const base::FilePath& localstorage_directory,
-      const base::FilePath& sessionstorage_directory,
-      quota::SpecialStoragePolicy* special_storage_policy,
-      DOMStorageTaskRunner* task_runner);
+  DOMStorageContextImpl(const base::FilePath& localstorage_directory,
+                        const base::FilePath& sessionstorage_directory,
+                        storage::SpecialStoragePolicy* special_storage_policy,
+                        DOMStorageTaskRunner* task_runner);
 
   // Returns the directory path for localStorage, or an empty directory, if
   // there is no backing on disk.
@@ -231,7 +230,7 @@ class CONTENT_EXPORT DOMStorageContextImpl
 
   bool is_shutdown_;
   bool force_keep_session_state_;
-  scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy_;
+  scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy_;
   scoped_refptr<SessionStorageDatabase> session_storage_database_;
 
   // For cleaning up unused namespaces gradually.

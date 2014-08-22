@@ -30,7 +30,7 @@
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 
-namespace webkit_blob {
+namespace storage {
 
 namespace {
 
@@ -50,7 +50,7 @@ BlobURLRequestJob::BlobURLRequestJob(
     net::URLRequest* request,
     net::NetworkDelegate* network_delegate,
     BlobData* blob_data,
-    fileapi::FileSystemContext* file_system_context,
+    storage::FileSystemContext* file_system_context,
     base::MessageLoopProxy* file_thread_proxy)
     : net::URLRequestJob(request, network_delegate),
       blob_data_(blob_data),
@@ -573,10 +573,12 @@ void BlobURLRequestJob::CreateFileStreamReader(size_t index,
       break;
     case BlobData::Item::TYPE_FILE_FILESYSTEM:
       reader = file_system_context_->CreateFileStreamReader(
-          fileapi::FileSystemURL(
-              file_system_context_->CrackURL(item.filesystem_url())),
-          item.offset() + additional_offset,
-          item.expected_modification_time()).release();
+                                         storage::FileSystemURL(
+                                             file_system_context_->CrackURL(
+                                                 item.filesystem_url())),
+                                         item.offset() + additional_offset,
+                                         item.expected_modification_time())
+                   .release();
       break;
     default:
       NOTREACHED();
@@ -585,4 +587,4 @@ void BlobURLRequestJob::CreateFileStreamReader(size_t index,
   index_to_reader_[index] = reader;
 }
 
-}  // namespace webkit_blob
+}  // namespace storage

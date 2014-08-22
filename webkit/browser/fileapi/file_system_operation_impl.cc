@@ -27,9 +27,9 @@
 #include "webkit/common/fileapi/file_system_util.h"
 #include "webkit/common/quota/quota_types.h"
 
-using webkit_blob::ScopedFile;
+using storage::ScopedFile;
 
-namespace fileapi {
+namespace storage {
 
 FileSystemOperation* FileSystemOperation::Create(
     const FileSystemURL& url,
@@ -341,7 +341,7 @@ void FileSystemOperationImpl::GetUsageAndQuotaThenRunTask(
     const FileSystemURL& url,
     const base::Closure& task,
     const base::Closure& error_callback) {
-  quota::QuotaManagerProxy* quota_manager_proxy =
+  storage::QuotaManagerProxy* quota_manager_proxy =
       file_system_context()->quota_manager_proxy();
   if (!quota_manager_proxy ||
       !file_system_context()->GetQuotaUtil(url.type())) {
@@ -364,9 +364,10 @@ void FileSystemOperationImpl::GetUsageAndQuotaThenRunTask(
 void FileSystemOperationImpl::DidGetUsageAndQuotaAndRunTask(
     const base::Closure& task,
     const base::Closure& error_callback,
-    quota::QuotaStatusCode status,
-    int64 usage, int64 quota) {
-  if (status != quota::kQuotaStatusOk) {
+    storage::QuotaStatusCode status,
+    int64 usage,
+    int64 quota) {
+  if (status != storage::kQuotaStatusOk) {
     LOG(WARNING) << "Got unexpected quota error : " << status;
     error_callback.Run();
     return;
@@ -555,4 +556,4 @@ bool FileSystemOperationImpl::SetPendingOperationType(OperationType type) {
   return true;
 }
 
-}  // namespace fileapi
+}  // namespace storage

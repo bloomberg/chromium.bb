@@ -13,7 +13,7 @@ namespace base {
 class FilePath;
 }
 
-namespace fileapi {
+namespace storage {
 
 class FileSystemURL;
 
@@ -49,6 +49,6 @@ class CopyOrMoveFileValidatorFactory {
       const base::FilePath& platform_path) = 0;
 };
 
-}  // namespace fileapi
+}  // namespace storage
 
 #endif  // WEBKIT_BROWSER_FILEAPI_COPY_OR_MOVE_FILE_VALIDATOR_H_

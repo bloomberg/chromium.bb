@@ -16,7 +16,7 @@ namespace content {
 class StorageMonitorTestBase;
 }
 
-namespace quota {
+namespace storage {
 
 class QuotaManager;
 
@@ -175,6 +175,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE StorageMonitor {
   DISALLOW_COPY_AND_ASSIGN(StorageMonitor);
 };
 
-}  // namespace quota
+}  // namespace storage
 
 #endif  // WEBKIT_BROWSER_QUOTA_STORAGE_MONITOR_H_

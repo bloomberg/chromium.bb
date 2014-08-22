@@ -11,10 +11,10 @@
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_operation_runner.h"
 
-using fileapi::FileSystemContext;
-using fileapi::FileSystemOperationRunner;
-using fileapi::FileSystemType;
-using fileapi::FileSystemURL;
+using storage::FileSystemContext;
+using storage::FileSystemOperationRunner;
+using storage::FileSystemType;
+using storage::FileSystemURL;
 
 namespace content {
 
@@ -56,7 +56,8 @@ class FileSystemOperationRunnerTest : public testing::Test {
 
   FileSystemURL URL(const std::string& path) {
     return file_system_context_->CreateCrackedFileSystemURL(
-        GURL("http://example.com"), fileapi::kFileSystemTypeTemporary,
+        GURL("http://example.com"),
+        storage::kFileSystemTypeTemporary,
         base::FilePath::FromUTF8Unsafe(path));
   }
 

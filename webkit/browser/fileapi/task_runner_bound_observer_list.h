@@ -13,7 +13,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/threading/thread.h"
 
-namespace fileapi {
+namespace storage {
 
 // A wrapper for dispatching method.
 template <class T, class Method, class Params>
@@ -94,6 +94,6 @@ typedef TaskRunnerBoundObserverList<FileAccessObserver> AccessObserverList;
 typedef TaskRunnerBoundObserverList<FileChangeObserver> ChangeObserverList;
 typedef TaskRunnerBoundObserverList<FileUpdateObserver> UpdateObserverList;
 
-}  // namespace fileapi
+}  // namespace storage
 
 #endif  // WEBKIT_BROWSER_FILEAPI_TASK_RUNNER_BOUND_OBSERVER_LIST_H_

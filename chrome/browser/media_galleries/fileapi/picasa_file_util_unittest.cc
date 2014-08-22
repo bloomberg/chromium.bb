@@ -37,9 +37,9 @@
 #include "webkit/browser/fileapi/isolated_context.h"
 #include "webkit/common/blob/shareable_file_reference.h"
 
-using fileapi::FileSystemOperationContext;
-using fileapi::FileSystemOperation;
-using fileapi::FileSystemURL;
+using storage::FileSystemOperationContext;
+using storage::FileSystemOperation;
+using storage::FileSystemURL;
 
 namespace picasa {
 
@@ -142,7 +142,7 @@ void ReadDirectoryTestHelperCallback(
   run_loop->Quit();
 }
 
-void ReadDirectoryTestHelper(fileapi::FileSystemOperationRunner* runner,
+void ReadDirectoryTestHelper(storage::FileSystemOperationRunner* runner,
                              const FileSystemURL& url,
                              FileSystemOperation::FileEntryList* contents,
                              bool* completed) {
@@ -171,7 +171,7 @@ void CreateSnapshotFileTestHelperCallback(
     base::File::Error result,
     const base::File::Info& file_info,
     const base::FilePath& platform_path,
-    const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref) {
+    const scoped_refptr<storage::ShareableFileReference>& file_ref) {
   DCHECK(run_loop);
   DCHECK(error);
   DCHECK(platform_path_result);
@@ -207,16 +207,16 @@ class TestMediaFileSystemBackend : public MediaFileSystemBackend {
                                MediaFileSystemBackend::MediaTaskRunner().get()),
         test_file_util_(picasa_file_util) {}
 
-  virtual fileapi::AsyncFileUtil*
-  GetAsyncFileUtil(fileapi::FileSystemType type) OVERRIDE {
-    if (type != fileapi::kFileSystemTypePicasa)
+  virtual storage::AsyncFileUtil* GetAsyncFileUtil(
+      storage::FileSystemType type) OVERRIDE {
+    if (type != storage::kFileSystemTypePicasa)
       return NULL;
 
     return test_file_util_.get();
   }
 
  private:
-  scoped_ptr<fileapi::AsyncFileUtil> test_file_util_;
+  scoped_ptr<storage::AsyncFileUtil> test_file_util_;
 };
 
 class PicasaFileUtilTest : public testing::Test {
@@ -230,7 +230,7 @@ class PicasaFileUtilTest : public testing::Test {
     ASSERT_TRUE(profile_dir_.CreateUniqueTempDir());
     ImportedMediaGalleryRegistry::GetInstance()->Initialize();
 
-    scoped_refptr<quota::SpecialStoragePolicy> storage_policy =
+    scoped_refptr<storage::SpecialStoragePolicy> storage_policy =
         new content::MockSpecialStoragePolicy();
 
     SynchronouslyRunOnMediaTaskRunner(base::Bind(
@@ -238,20 +238,20 @@ class PicasaFileUtilTest : public testing::Test {
 
     media_path_filter_.reset(new MediaPathFilter());
 
-    ScopedVector<fileapi::FileSystemBackend> additional_providers;
+    ScopedVector<storage::FileSystemBackend> additional_providers;
     additional_providers.push_back(new TestMediaFileSystemBackend(
         profile_dir_.path(),
         new TestPicasaFileUtil(media_path_filter_.get(),
                                picasa_data_provider_.get())));
 
-    file_system_context_ = new fileapi::FileSystemContext(
+    file_system_context_ = new storage::FileSystemContext(
         base::MessageLoopProxy::current().get(),
         base::MessageLoopProxy::current().get(),
-        fileapi::ExternalMountPoints::CreateRefCounted().get(),
+        storage::ExternalMountPoints::CreateRefCounted().get(),
         storage_policy.get(),
         NULL,
         additional_providers.Pass(),
-        std::vector<fileapi::URLRequestAutoMountHandler>(),
+        std::vector<storage::URLRequestAutoMountHandler>(),
         profile_dir_.path(),
         content::CreateAllowFileAccessOptions());
   }
@@ -363,15 +363,16 @@ class PicasaFileUtilTest : public testing::Test {
     virtual_path = virtual_path.AppendASCII("picasa");
     virtual_path = virtual_path.AppendASCII(path);
     return file_system_context_->CreateCrackedFileSystemURL(
-        GURL("http://www.example.com"), fileapi::kFileSystemTypePicasa,
+        GURL("http://www.example.com"),
+        storage::kFileSystemTypePicasa,
         virtual_path);
   }
 
-  fileapi::FileSystemOperationRunner* operation_runner() const {
+  storage::FileSystemOperationRunner* operation_runner() const {
     return file_system_context_->operation_runner();
   }
 
-  scoped_refptr<fileapi::FileSystemContext> file_system_context() const {
+  scoped_refptr<storage::FileSystemContext> file_system_context() const {
     return file_system_context_;
   }
 
@@ -381,7 +382,7 @@ class PicasaFileUtilTest : public testing::Test {
 
   base::ScopedTempDir profile_dir_;
 
-  scoped_refptr<fileapi::FileSystemContext> file_system_context_;
+  scoped_refptr<storage::FileSystemContext> file_system_context_;
   scoped_ptr<PicasaDataProvider> picasa_data_provider_;
   scoped_ptr<MediaPathFilter> media_path_filter_;
 
@@ -583,7 +584,7 @@ TEST_F(PicasaFileUtilTest, AlbumContents) {
   base::RunLoop loop;
   base::File::Error error;
   base::FilePath platform_path_result;
-  fileapi::FileSystemOperationRunner::SnapshotFileCallback snapshot_callback =
+  storage::FileSystemOperationRunner::SnapshotFileCallback snapshot_callback =
       base::Bind(&CreateSnapshotFileTestHelperCallback,
                  &loop,
                  &error,

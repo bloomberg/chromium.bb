@@ -26,7 +26,7 @@ class SequencedTaskRunner;
 class SingleThreadTaskRunner;
 }
 
-namespace quota {
+namespace storage {
 class QuotaManagerProxy;
 }
 
@@ -63,7 +63,7 @@ class CONTENT_EXPORT ServiceWorkerStorage
       base::WeakPtr<ServiceWorkerContextCore> context,
       const scoped_refptr<base::SequencedTaskRunner>& database_task_runner,
       const scoped_refptr<base::SingleThreadTaskRunner>& disk_cache_thread,
-      quota::QuotaManagerProxy* quota_manager_proxy);
+      storage::QuotaManagerProxy* quota_manager_proxy);
 
   // Used for DeleteAndStartOver. Creates new storage based on |old_storage|.
   static scoped_ptr<ServiceWorkerStorage> Create(
@@ -224,7 +224,7 @@ class CONTENT_EXPORT ServiceWorkerStorage
       base::WeakPtr<ServiceWorkerContextCore> context,
       const scoped_refptr<base::SequencedTaskRunner>& database_task_runner,
       const scoped_refptr<base::SingleThreadTaskRunner>& disk_cache_thread,
-      quota::QuotaManagerProxy* quota_manager_proxy);
+      storage::QuotaManagerProxy* quota_manager_proxy);
 
   base::FilePath GetDatabasePath();
   base::FilePath GetDiskCachePath();
@@ -377,7 +377,7 @@ class CONTENT_EXPORT ServiceWorkerStorage
 
   scoped_refptr<base::SequencedTaskRunner> database_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> disk_cache_thread_;
-  scoped_refptr<quota::QuotaManagerProxy> quota_manager_proxy_;
+  scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy_;
   scoped_ptr<ServiceWorkerDiskCache> disk_cache_;
   std::deque<int64> purgeable_resource_ids_;
   bool is_purge_pending_;

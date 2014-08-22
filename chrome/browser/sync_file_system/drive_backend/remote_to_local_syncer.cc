@@ -33,10 +33,9 @@ namespace drive_backend {
 
 namespace {
 
-bool BuildFileSystemURL(
-    MetadataDatabase* metadata_database,
-    const FileTracker& tracker,
-    fileapi::FileSystemURL* url) {
+bool BuildFileSystemURL(MetadataDatabase* metadata_database,
+                        const FileTracker& tracker,
+                        storage::FileSystemURL* url) {
   base::FilePath path;
   if (!metadata_database->BuildPathForTracker(
           tracker.tracker_id(), &path))
@@ -80,16 +79,14 @@ scoped_ptr<FileMetadata> GetFileMetadata(MetadataDatabase* database,
 
 // Creates a temporary file in |dir_path|.  This must be called on an
 // IO-allowed task runner, and the runner must be given as |file_task_runner|.
-webkit_blob::ScopedFile CreateTemporaryFile(
-    base::TaskRunner* file_task_runner) {
+storage::ScopedFile CreateTemporaryFile(base::TaskRunner* file_task_runner) {
   base::FilePath temp_file_path;
   if (!base::CreateTemporaryFile(&temp_file_path))
-    return webkit_blob::ScopedFile();
+    return storage::ScopedFile();
 
-  return webkit_blob::ScopedFile(
-      temp_file_path,
-      webkit_blob::ScopedFile::DELETE_ON_SCOPE_OUT,
-      file_task_runner);
+  return storage::ScopedFile(temp_file_path,
+                             storage::ScopedFile::DELETE_ON_SCOPE_OUT,
+                             file_task_runner);
 }
 
 }  // namespace
@@ -690,7 +687,7 @@ void RemoteToLocalSyncer::DeleteLocalFile(scoped_ptr<SyncTaskToken> token) {
 void RemoteToLocalSyncer::DownloadFile(scoped_ptr<SyncTaskToken> token) {
   DCHECK(sync_context_->GetWorkerTaskRunner()->RunsTasksOnCurrentThread());
 
-  webkit_blob::ScopedFile file = CreateTemporaryFile(
+  storage::ScopedFile file = CreateTemporaryFile(
       make_scoped_refptr(sync_context_->GetWorkerTaskRunner()));
 
   base::FilePath path = file.path();
@@ -704,7 +701,7 @@ void RemoteToLocalSyncer::DownloadFile(scoped_ptr<SyncTaskToken> token) {
 }
 
 void RemoteToLocalSyncer::DidDownloadFile(scoped_ptr<SyncTaskToken> token,
-                                          webkit_blob::ScopedFile file,
+                                          storage::ScopedFile file,
                                           google_apis::GDataErrorCode error,
                                           const base::FilePath&) {
   DCHECK(sync_context_->GetWorkerTaskRunner()->RunsTasksOnCurrentThread());
@@ -737,7 +734,7 @@ void RemoteToLocalSyncer::DidDownloadFile(scoped_ptr<SyncTaskToken> token,
 }
 
 void RemoteToLocalSyncer::DidApplyDownload(scoped_ptr<SyncTaskToken> token,
-                                           webkit_blob::ScopedFile,
+                                           storage::ScopedFile,
                                            SyncStatusCode status) {
   SyncCompleted(token.Pass(), status);
 }

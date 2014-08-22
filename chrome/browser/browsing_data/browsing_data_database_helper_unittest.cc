@@ -11,7 +11,7 @@
 
 namespace {
 
-using webkit_database::DatabaseIdentifier;
+using storage::DatabaseIdentifier;
 
 class CannedBrowsingDataDatabaseHelperTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;

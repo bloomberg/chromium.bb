@@ -11,7 +11,7 @@
 
 #include "base/basictypes.h"
 
-namespace quota {
+namespace storage {
 class SpecialStoragePolicy;
 }
 
@@ -41,7 +41,7 @@ class BrowsingDataHelper {
   // Returns true if the provided origin matches the provided mask.
   static bool DoesOriginMatchMask(const GURL& origin,
                                   int origin_set_mask,
-                                  quota::SpecialStoragePolicy* policy);
+                                  storage::SpecialStoragePolicy* policy);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(BrowsingDataHelper);

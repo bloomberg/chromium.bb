@@ -29,7 +29,7 @@
 #include "content/public/browser/web_ui.h"
 #include "grit/generated_resources.h"
 
-namespace fileapi {
+namespace storage {
 class FileSystemContext;
 }
 
@@ -192,7 +192,7 @@ void CookiesViewHandler::EnsureCookiesTreeModelCreated() {
         storage_partition->GetIndexedDBContext();
     content::ServiceWorkerContext* service_worker_context =
         storage_partition->GetServiceWorkerContext();
-    fileapi::FileSystemContext* file_system_context =
+    storage::FileSystemContext* file_system_context =
         storage_partition->GetFileSystemContext();
     LocalDataContainer* container = new LocalDataContainer(
         new BrowsingDataCookieHelper(profile->GetRequestContext()),

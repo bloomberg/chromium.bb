@@ -18,7 +18,7 @@
 #include "net/base/test_completion_callback.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using webkit_blob::LocalFileStreamReader;
+using storage::LocalFileStreamReader;
 
 namespace content {
 

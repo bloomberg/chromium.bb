@@ -143,28 +143,27 @@ TEST(FileSystemUtilTest, ExtractDrivePathFromFileSystemUrl) {
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
   base::MessageLoop message_loop;
-  scoped_refptr<fileapi::ExternalMountPoints> mount_points =
-      fileapi::ExternalMountPoints::CreateRefCounted();
-  scoped_refptr<fileapi::FileSystemContext> context(
-      new fileapi::FileSystemContext(
+  scoped_refptr<storage::ExternalMountPoints> mount_points =
+      storage::ExternalMountPoints::CreateRefCounted();
+  scoped_refptr<storage::FileSystemContext> context(
+      new storage::FileSystemContext(
           base::MessageLoopProxy::current().get(),
           base::MessageLoopProxy::current().get(),
           mount_points.get(),
           NULL,  // special_storage_policy
           NULL,  // quota_manager_proxy,
-          ScopedVector<fileapi::FileSystemBackend>(),
-          std::vector<fileapi::URLRequestAutoMountHandler>(),
+          ScopedVector<storage::FileSystemBackend>(),
+          std::vector<storage::URLRequestAutoMountHandler>(),
           temp_dir_.path(),  // partition_path
           content::CreateAllowFileAccessOptions()));
 
   // Type:"external" + virtual_path:"drive/foo/bar" resolves to "drive/foo/bar".
   const std::string& drive_mount_name =
       GetDriveMountPointPath(&profile).BaseName().AsUTF8Unsafe();
-  mount_points->RegisterFileSystem(
-      drive_mount_name,
-      fileapi::kFileSystemTypeDrive,
-      fileapi::FileSystemMountOption(),
-      GetDriveMountPointPath(&profile));
+  mount_points->RegisterFileSystem(drive_mount_name,
+                                   storage::kFileSystemTypeDrive,
+                                   storage::FileSystemMountOption(),
+                                   GetDriveMountPointPath(&profile));
   EXPECT_EQ(
       base::FilePath::FromUTF8Unsafe("drive/foo/bar"),
       ExtractDrivePathFromFileSystemUrl(context->CrackURL(GURL(
@@ -173,22 +172,20 @@ TEST(FileSystemUtilTest, ExtractDrivePathFromFileSystemUrl) {
 
   // Virtual mount name should not affect the extracted path.
   mount_points->RevokeFileSystem(drive_mount_name);
-  mount_points->RegisterFileSystem(
-      "drive2",
-      fileapi::kFileSystemTypeDrive,
-      fileapi::FileSystemMountOption(),
-      GetDriveMountPointPath(&profile));
+  mount_points->RegisterFileSystem("drive2",
+                                   storage::kFileSystemTypeDrive,
+                                   storage::FileSystemMountOption(),
+                                   GetDriveMountPointPath(&profile));
   EXPECT_EQ(
       base::FilePath::FromUTF8Unsafe("drive/foo/bar"),
       ExtractDrivePathFromFileSystemUrl(context->CrackURL(GURL(
           "filesystem:chrome-extension://dummy-id/external/drive2/foo/bar"))));
 
   // Type:"external" + virtual_path:"Downloads/foo" is not a Drive path.
-  mount_points->RegisterFileSystem(
-      "Downloads",
-      fileapi::kFileSystemTypeNativeLocal,
-      fileapi::FileSystemMountOption(),
-      temp_dir_.path());
+  mount_points->RegisterFileSystem("Downloads",
+                                   storage::kFileSystemTypeNativeLocal,
+                                   storage::FileSystemMountOption(),
+                                   temp_dir_.path());
   EXPECT_EQ(
       base::FilePath(),
       ExtractDrivePathFromFileSystemUrl(context->CrackURL(GURL(
@@ -197,8 +194,8 @@ TEST(FileSystemUtilTest, ExtractDrivePathFromFileSystemUrl) {
   // Type:"isolated" + virtual_path:"isolated_id/name" mapped on a Drive path.
   std::string isolated_name;
   std::string isolated_id =
-      fileapi::IsolatedContext::GetInstance()->RegisterFileSystemForPath(
-          fileapi::kFileSystemTypeNativeForPlatformApp,
+      storage::IsolatedContext::GetInstance()->RegisterFileSystemForPath(
+          storage::kFileSystemTypeNativeForPlatformApp,
           std::string(),
           GetDriveMountPointPath(&profile).AppendASCII("bar/buz"),
           &isolated_name);

@@ -16,7 +16,7 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job.h"
 
-namespace webkit_blob {
+namespace storage {
 class BlobDataHandle;
 class BlobStorageContext;
 }
@@ -36,7 +36,7 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate,
       base::WeakPtr<ServiceWorkerProviderHost> provider_host,
-      base::WeakPtr<webkit_blob::BlobStorageContext> blob_storage_context,
+      base::WeakPtr<storage::BlobStorageContext> blob_storage_context,
       scoped_refptr<ResourceRequestBody> body);
 
   // Sets the response type.
@@ -142,12 +142,12 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob
 
   // Used when response type is FORWARD_TO_SERVICE_WORKER.
   scoped_ptr<ServiceWorkerFetchDispatcher> fetch_dispatcher_;
-  base::WeakPtr<webkit_blob::BlobStorageContext> blob_storage_context_;
+  base::WeakPtr<storage::BlobStorageContext> blob_storage_context_;
   scoped_ptr<net::URLRequest> blob_request_;
   // ResourceRequestBody has a collection of BlobDataHandles attached to it
   // using the userdata mechanism. So we have to keep it not to free the blobs.
   scoped_refptr<ResourceRequestBody> body_;
-  scoped_ptr<webkit_blob::BlobDataHandle> request_body_blob_data_handle_;
+  scoped_ptr<storage::BlobDataHandle> request_body_blob_data_handle_;
 
   base::WeakPtrFactory<ServiceWorkerURLRequestJob> weak_factory_;
 

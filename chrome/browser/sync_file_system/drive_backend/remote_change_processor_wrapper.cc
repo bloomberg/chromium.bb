@@ -15,7 +15,7 @@ RemoteChangeProcessorWrapper::RemoteChangeProcessorWrapper(
     : remote_change_processor_(remote_change_processor) {}
 
 void RemoteChangeProcessorWrapper::PrepareForProcessRemoteChange(
-    const fileapi::FileSystemURL& url,
+    const storage::FileSystemURL& url,
     const RemoteChangeProcessor::PrepareChangeCallback& callback) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
   remote_change_processor_->PrepareForProcessRemoteChange(url, callback);
@@ -24,7 +24,7 @@ void RemoteChangeProcessorWrapper::PrepareForProcessRemoteChange(
 void RemoteChangeProcessorWrapper::ApplyRemoteChange(
     const FileChange& change,
     const base::FilePath& local_path,
-    const fileapi::FileSystemURL& url,
+    const storage::FileSystemURL& url,
     const SyncStatusCallback& callback) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
   remote_change_processor_->ApplyRemoteChange(
@@ -32,7 +32,7 @@ void RemoteChangeProcessorWrapper::ApplyRemoteChange(
 }
 
 void RemoteChangeProcessorWrapper::FinalizeRemoteSync(
-    const fileapi::FileSystemURL& url,
+    const storage::FileSystemURL& url,
     bool clear_local_changes,
     const base::Closure& completion_callback) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
@@ -41,7 +41,7 @@ void RemoteChangeProcessorWrapper::FinalizeRemoteSync(
 }
 
 void RemoteChangeProcessorWrapper::RecordFakeLocalChange(
-    const fileapi::FileSystemURL& url,
+    const storage::FileSystemURL& url,
     const FileChange& change,
     const SyncStatusCallback& callback) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());

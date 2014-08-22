@@ -18,7 +18,7 @@
 #include "content/shell/browser/shell.h"
 #include "webkit/browser/quota/quota_manager.h"
 
-using quota::QuotaManager;
+using storage::QuotaManager;
 
 namespace content {
 
@@ -70,7 +70,7 @@ class FileSystemBrowserTestWithLowQuota : public FileSystemBrowserTest {
       return;
     }
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    qm->SetTemporaryGlobalOverrideQuota(bytes, quota::QuotaCallback());
+    qm->SetTemporaryGlobalOverrideQuota(bytes, storage::QuotaCallback());
     // Don't return until the quota has been set.
     scoped_refptr<base::ThreadTestHelper> helper(new base::ThreadTestHelper(
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB).get()));

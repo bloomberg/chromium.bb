@@ -15,7 +15,7 @@ namespace base {
 class FilePath;
 }
 
-namespace fileapi {
+namespace storage {
 class FileSystemURL;
 }
 
@@ -28,19 +28,19 @@ class MockRemoteChangeProcessor : public RemoteChangeProcessor {
 
   // RemoteChangeProcessor overrides.
   MOCK_METHOD2(PrepareForProcessRemoteChange,
-               void(const fileapi::FileSystemURL& url,
+               void(const storage::FileSystemURL& url,
                     const PrepareChangeCallback& callback));
   MOCK_METHOD4(ApplyRemoteChange,
                void(const FileChange& change,
                     const base::FilePath& local_path,
-                    const fileapi::FileSystemURL& url,
+                    const storage::FileSystemURL& url,
                     const SyncStatusCallback& callback));
   MOCK_METHOD3(FinalizeRemoteSync,
-               void(const fileapi::FileSystemURL& url,
+               void(const storage::FileSystemURL& url,
                     bool clear_local_changes,
                     const base::Closure& completion_callback));
   MOCK_METHOD3(RecordFakeLocalChange,
-               void(const fileapi::FileSystemURL& url,
+               void(const storage::FileSystemURL& url,
                     const FileChange& change,
                     const SyncStatusCallback& callback));
 

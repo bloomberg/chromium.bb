@@ -28,7 +28,7 @@ class FilePath;
 class SequencedTaskRunner;
 }
 
-namespace quota {
+namespace storage {
 class QuotaManagerProxy;
 class SpecialStoragePolicy;
 }
@@ -42,8 +42,8 @@ class CONTENT_EXPORT IndexedDBContextImpl
  public:
   // If |data_path| is empty, nothing will be saved to disk.
   IndexedDBContextImpl(const base::FilePath& data_path,
-                       quota::SpecialStoragePolicy* special_storage_policy,
-                       quota::QuotaManagerProxy* quota_manager_proxy,
+                       storage::SpecialStoragePolicy* special_storage_policy,
+                       storage::QuotaManagerProxy* quota_manager_proxy,
                        base::SequencedTaskRunner* task_runner);
 
   IndexedDBFactory* GetIDBFactory();
@@ -72,7 +72,7 @@ class CONTENT_EXPORT IndexedDBContextImpl
   bool WouldBeOverQuota(const GURL& origin_url, int64 additional_bytes);
   bool IsOverQuota(const GURL& origin_url);
 
-  quota::QuotaManagerProxy* quota_manager_proxy();
+  storage::QuotaManagerProxy* quota_manager_proxy();
 
   std::vector<GURL> GetAllOrigins();
   base::Time GetOriginLastModified(const GURL& origin_url);
@@ -123,7 +123,7 @@ class CONTENT_EXPORT IndexedDBContextImpl
   void EnsureDiskUsageCacheInitialized(const GURL& origin_url);
   void QueryDiskAndUpdateQuotaUsage(const GURL& origin_url);
   void GotUsageAndQuota(const GURL& origin_url,
-                        quota::QuotaStatusCode,
+                        storage::QuotaStatusCode,
                         int64 usage,
                         int64 quota);
   void GotUpdatedQuota(const GURL& origin_url, int64 usage, int64 quota);
@@ -144,8 +144,8 @@ class CONTENT_EXPORT IndexedDBContextImpl
   base::FilePath data_path_;
   // If true, nothing (not even session-only data) should be deleted on exit.
   bool force_keep_session_state_;
-  scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy_;
-  scoped_refptr<quota::QuotaManagerProxy> quota_manager_proxy_;
+  scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy_;
+  scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   scoped_ptr<std::set<GURL> > origin_set_;
   OriginToSizeMap origin_size_map_;

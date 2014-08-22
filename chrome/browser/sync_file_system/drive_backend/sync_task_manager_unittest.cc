@@ -19,7 +19,7 @@
 #include "webkit/common/fileapi/file_system_util.h"
 
 #define MAKE_PATH(path)                                       \
-  base::FilePath(fileapi::VirtualPath::GetNormalizedFilePath( \
+  base::FilePath(storage::VirtualPath::GetNormalizedFilePath( \
       base::FilePath(FILE_PATH_LITERAL(path))))
 
 namespace sync_file_system {
@@ -268,7 +268,7 @@ class BlockerUpdateTestHelper : public SyncTask {
     scoped_ptr<BlockingFactor> blocking_factor(new BlockingFactor);
     blocking_factor->app_id = app_id_;
     blocking_factor->paths.push_back(
-        base::FilePath(fileapi::VirtualPath::GetNormalizedFilePath(
+        base::FilePath(storage::VirtualPath::GetNormalizedFilePath(
             base::FilePath::FromUTF8Unsafe(updating_to))));
 
     SyncTaskManager::UpdateBlockingFactor(

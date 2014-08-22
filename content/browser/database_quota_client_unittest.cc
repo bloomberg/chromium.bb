@@ -17,15 +17,15 @@
 #include "webkit/browser/database/database_util.h"
 #include "webkit/common/database/database_identifier.h"
 
-using webkit_database::DatabaseQuotaClient;
-using webkit_database::DatabaseTracker;
-using webkit_database::OriginInfo;
+using storage::DatabaseQuotaClient;
+using storage::DatabaseTracker;
+using storage::OriginInfo;
 
 namespace content {
 
 // Declared to shorten the line lengths.
-static const quota::StorageType kTemp = quota::kStorageTypeTemporary;
-static const quota::StorageType kPerm = quota::kStorageTypePersistent;
+static const storage::StorageType kTemp = storage::kStorageTypeTemporary;
+static const storage::StorageType kPerm = storage::kStorageTypePersistent;
 
 // Mock tracker class the mocks up those methods of the tracker
 // that are used by the QuotaClient.
@@ -41,7 +41,7 @@ class MockDatabaseTracker : public DatabaseTracker {
       OriginInfo* info) OVERRIDE {
     std::map<GURL, MockOriginInfo>::const_iterator found =
         mock_origin_infos_.find(
-            webkit_database::GetOriginFromIdentifier(origin_identifier));
+            storage::GetOriginFromIdentifier(origin_identifier));
     if (found == mock_origin_infos_.end())
       return false;
     *info = OriginInfo(found->second);
@@ -90,7 +90,7 @@ class MockDatabaseTracker : public DatabaseTracker {
 
   void AddMockDatabase(const GURL& origin,  const char* name, int size) {
     MockOriginInfo& info = mock_origin_infos_[origin];
-    info.set_origin(webkit_database::GetIdentifierFromOrigin(origin));
+    info.set_origin(storage::GetIdentifierFromOrigin(origin));
     info.AddMockDatabase(base::ASCIIToUTF16(name), size);
   }
 
@@ -137,10 +137,9 @@ class DatabaseQuotaClientTest : public testing::Test {
         weak_factory_(this) {
   }
 
-  int64 GetOriginUsage(
-      quota::QuotaClient* client,
-      const GURL& origin,
-      quota::StorageType type) {
+  int64 GetOriginUsage(storage::QuotaClient* client,
+                       const GURL& origin,
+                       storage::StorageType type) {
     usage_ = 0;
     client->GetOriginUsage(
         origin, type,
@@ -150,9 +149,8 @@ class DatabaseQuotaClientTest : public testing::Test {
     return usage_;
   }
 
-  const std::set<GURL>& GetOriginsForType(
-      quota::QuotaClient* client,
-      quota::StorageType type) {
+  const std::set<GURL>& GetOriginsForType(storage::QuotaClient* client,
+                                          storage::StorageType type) {
     origins_.clear();
     client->GetOriginsForType(
         type,
@@ -162,10 +160,9 @@ class DatabaseQuotaClientTest : public testing::Test {
     return origins_;
   }
 
-  const std::set<GURL>& GetOriginsForHost(
-      quota::QuotaClient* client,
-      quota::StorageType type,
-      const std::string& host) {
+  const std::set<GURL>& GetOriginsForHost(storage::QuotaClient* client,
+                                          storage::StorageType type,
+                                          const std::string& host) {
     origins_.clear();
     client->GetOriginsForHost(
         type, host,
@@ -175,17 +172,16 @@ class DatabaseQuotaClientTest : public testing::Test {
     return origins_;
   }
 
-  bool DeleteOriginData(
-      quota::QuotaClient* client,
-      quota::StorageType type,
-      const GURL& origin) {
-    delete_status_ = quota::kQuotaStatusUnknown;
+  bool DeleteOriginData(storage::QuotaClient* client,
+                        storage::StorageType type,
+                        const GURL& origin) {
+    delete_status_ = storage::kQuotaStatusUnknown;
     client->DeleteOriginData(
         origin, type,
         base::Bind(&DatabaseQuotaClientTest::OnDeleteOriginDataComplete,
                    weak_factory_.GetWeakPtr()));
     base::RunLoop().RunUntilIdle();
-    return delete_status_ == quota::kQuotaStatusOk;
+    return delete_status_ == storage::kQuotaStatusOk;
   }
 
   MockDatabaseTracker* mock_tracker() { return mock_tracker_.get(); }
@@ -200,14 +196,14 @@ class DatabaseQuotaClientTest : public testing::Test {
     origins_ = origins;
   }
 
-  void OnDeleteOriginDataComplete(quota::QuotaStatusCode status) {
+  void OnDeleteOriginDataComplete(storage::QuotaStatusCode status) {
     delete_status_ = status;
   }
 
   base::MessageLoop message_loop_;
   int64 usage_;
   std::set<GURL> origins_;
-  quota::QuotaStatusCode delete_status_;
+  storage::QuotaStatusCode delete_status_;
   scoped_refptr<MockDatabaseTracker> mock_tracker_;
   base::WeakPtrFactory<DatabaseQuotaClientTest> weak_factory_;
 };

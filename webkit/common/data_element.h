@@ -15,7 +15,7 @@
 #include "url/gurl.h"
 #include "webkit/common/webkit_common_export.h"
 
-namespace webkit_common {
+namespace storage {
 
 // Represents a base Web data element. This could be either one of
 // bytes, file or blob data.
@@ -122,6 +122,6 @@ inline bool operator!=(const DataElement& a, const DataElement& b) {
 }
 #endif  // defined(UNIT_TEST)
 
-}  // namespace webkit_common
+}  // namespace storage
 
 #endif  // WEBKIT_COMMON_DATA_ELEMENT_H_

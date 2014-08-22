@@ -412,7 +412,7 @@ class DeveloperPrivateLoadDirectoryFunction
   // ExtensionFunction:
   virtual bool RunAsync() OVERRIDE;
 
-  bool LoadByFileSystemAPI(const fileapi::FileSystemURL& directory_url);
+  bool LoadByFileSystemAPI(const storage::FileSystemURL& directory_url);
 
   void ClearExistingDirectoryContent(const base::FilePath& project_path);
 
@@ -423,7 +423,7 @@ class DeveloperPrivateLoadDirectoryFunction
       const base::FilePath& project_path,
       const base::FilePath& destination_path,
       base::File::Error result,
-      const fileapi::FileSystemOperation::FileEntryList& file_list,
+      const storage::FileSystemOperation::FileEntryList& file_list,
       bool has_more);
 
   void SnapshotFileCallback(
@@ -431,14 +431,14 @@ class DeveloperPrivateLoadDirectoryFunction
       base::File::Error result,
       const base::File::Info& file_info,
       const base::FilePath& platform_path,
-      const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref);
+      const scoped_refptr<storage::ShareableFileReference>& file_ref);
 
   void CopyFile(const base::FilePath& src_path,
                 const base::FilePath& dest_path);
 
   void Load();
 
-  scoped_refptr<fileapi::FileSystemContext> context_;
+  scoped_refptr<storage::FileSystemContext> context_;
 
   // syncfs url representing the root of the folder to be copied.
   std::string project_base_url_;

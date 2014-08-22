@@ -87,7 +87,7 @@ void DidCloseFile(const base::Closure& on_close_callback) {
 }
 
 void DidOpenFile(base::WeakPtr<PepperFileIOHost> file_host,
-                 fileapi::FileSystemOperation::OpenFileCallback callback,
+                 storage::FileSystemOperation::OpenFileCallback callback,
                  base::File file,
                  const base::Closure& on_close_callback) {
   if (file_host) {
@@ -186,13 +186,13 @@ int32_t PepperFileIOHost::OnHostMsgOpen(
 
     // Not all external file systems are fully supported yet.
     // Whitelist the supported ones.
-    if (file_system_url_.mount_type() == fileapi::kFileSystemTypeExternal) {
+    if (file_system_url_.mount_type() == storage::kFileSystemTypeExternal) {
       switch (file_system_url_.type()) {
-        case fileapi::kFileSystemTypeNativeMedia:
-        case fileapi::kFileSystemTypeDeviceMedia:
-        case fileapi::kFileSystemTypePicasa:
-        case fileapi::kFileSystemTypeItunes:
-        case fileapi::kFileSystemTypeIphoto:
+        case storage::kFileSystemTypeNativeMedia:
+        case storage::kFileSystemTypeDeviceMedia:
+        case storage::kFileSystemTypePicasa:
+        case storage::kFileSystemTypeItunes:
+        case storage::kFileSystemTypeIphoto:
           break;
         default:
           return PP_ERROR_NOACCESS;

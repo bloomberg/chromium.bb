@@ -66,11 +66,10 @@ class MockRemoteFileSyncService : public RemoteFileSyncService {
   void NotifyRemoteServiceStateUpdated(
       RemoteServiceState state,
       const std::string& description);
-  void NotifyFileStatusChanged(
-      const fileapi::FileSystemURL& url,
-      SyncFileStatus sync_status,
-      SyncAction action_taken,
-      SyncDirection direction);
+  void NotifyFileStatusChanged(const storage::FileSystemURL& url,
+                               SyncFileStatus sync_status,
+                               SyncAction action_taken,
+                               SyncDirection direction);
 
  private:
   void AddServiceObserverStub(Observer* observer);

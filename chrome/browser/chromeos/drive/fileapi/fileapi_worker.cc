@@ -71,12 +71,12 @@ void RunReadDirectoryCallbackWithEntries(
     scoped_ptr<ResourceEntryVector> resource_entries) {
   DCHECK(resource_entries);
 
-  std::vector<fileapi::DirectoryEntry> entries;
+  std::vector<storage::DirectoryEntry> entries;
   // Convert drive files to File API's directory entry.
   entries.reserve(resource_entries->size());
   for (size_t i = 0; i < resource_entries->size(); ++i) {
     const ResourceEntry& resource_entry = (*resource_entries)[i];
-    fileapi::DirectoryEntry entry;
+    storage::DirectoryEntry entry;
     entry.name = resource_entry.base_name();
 
     const PlatformFileInfoProto& file_info = resource_entry.file_info();
@@ -94,7 +94,8 @@ void RunReadDirectoryCallbackWithEntries(
 void RunReadDirectoryCallbackOnCompletion(const ReadDirectoryCallback& callback,
                                           FileError error) {
   callback.Run(FileErrorToBaseFileError(error),
-               std::vector<fileapi::DirectoryEntry>(), false /*has_more*/);
+               std::vector<storage::DirectoryEntry>(),
+               false /*has_more*/);
 }
 
 // Runs |callback| with arguments based on |error|, |local_path| and |entry|.
@@ -103,10 +104,10 @@ void RunCreateSnapshotFileCallback(const CreateSnapshotFileCallback& callback,
                                    const base::FilePath& local_path,
                                    scoped_ptr<ResourceEntry> entry) {
   if (error != FILE_ERROR_OK) {
-    callback.Run(
-        FileErrorToBaseFileError(error),
-        base::File::Info(), base::FilePath(),
-        webkit_blob::ScopedFile::ScopeOutPolicy());
+    callback.Run(FileErrorToBaseFileError(error),
+                 base::File::Info(),
+                 base::FilePath(),
+                 storage::ScopedFile::ScopeOutPolicy());
     return;
   }
 
@@ -125,10 +126,10 @@ void RunCreateSnapshotFileCallback(const CreateSnapshotFileCallback& callback,
   // If the file is a hosted document, a temporary JSON file is created to
   // represent the document. The JSON file is not cached and its lifetime
   // is managed by ShareableFileReference.
-  webkit_blob::ScopedFile::ScopeOutPolicy scope_out_policy =
-      entry->file_specific_info().is_hosted_document() ?
-      webkit_blob::ScopedFile::DELETE_ON_SCOPE_OUT :
-      webkit_blob::ScopedFile::DONT_DELETE_ON_SCOPE_OUT;
+  storage::ScopedFile::ScopeOutPolicy scope_out_policy =
+      entry->file_specific_info().is_hosted_document()
+          ? storage::ScopedFile::DELETE_ON_SCOPE_OUT
+          : storage::ScopedFile::DONT_DELETE_ON_SCOPE_OUT;
 
   callback.Run(base::File::FILE_OK, file_info, local_path, scope_out_policy);
 }
@@ -192,7 +193,7 @@ void OpenFileAfterFileSystemOpenFile(int file_flags,
 
 }  // namespace
 
-FileSystemInterface* GetFileSystemFromUrl(const fileapi::FileSystemURL& url) {
+FileSystemInterface* GetFileSystemFromUrl(const storage::FileSystemURL& url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   Profile* profile = util::ExtractProfileFromPath(url.path());

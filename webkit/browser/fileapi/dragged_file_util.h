@@ -9,7 +9,7 @@
 #include "webkit/browser/fileapi/local_file_util.h"
 #include "webkit/browser/webkit_storage_browser_export.h"
 
-namespace fileapi {
+namespace storage {
 
 class FileSystemOperationContext;
 
@@ -36,6 +36,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE DraggedFileUtil
   DISALLOW_COPY_AND_ASSIGN(DraggedFileUtil);
 };
 
-}  // namespace fileapi
+}  // namespace storage
 
 #endif  // WEBKIT_BROWSER_FILEAPI_DRAGGED_FILE_UTIL_H_

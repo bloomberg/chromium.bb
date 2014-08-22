@@ -22,7 +22,7 @@ class ShellBrowserContext : public content::ShellBrowserContext {
   virtual ~ShellBrowserContext();
 
   // content::BrowserContext implementation.
-  virtual quota::SpecialStoragePolicy* GetSpecialStoragePolicy() OVERRIDE;
+  virtual storage::SpecialStoragePolicy* GetSpecialStoragePolicy() OVERRIDE;
 
   // HACK: Pad the virtual function table so we trip an assertion if someone
   // tries to use |this| as a Profile.
@@ -43,7 +43,7 @@ class ShellBrowserContext : public content::ShellBrowserContext {
   virtual void ProfileFunctionCallOnNonProfileBrowserContext15();
 
  private:
-  scoped_refptr<quota::SpecialStoragePolicy> storage_policy_;
+  scoped_refptr<storage::SpecialStoragePolicy> storage_policy_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellBrowserContext);
 };

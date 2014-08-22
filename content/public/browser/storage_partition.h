@@ -19,7 +19,7 @@ namespace base {
 class Time;
 }
 
-namespace fileapi {
+namespace storage {
 class FileSystemContext;
 }
 
@@ -27,12 +27,12 @@ namespace net {
 class URLRequestContextGetter;
 }
 
-namespace quota {
+namespace storage {
 class QuotaManager;
 class SpecialStoragePolicy;
 }
 
-namespace webkit_database {
+namespace storage {
 class DatabaseTracker;
 }
 
@@ -55,10 +55,10 @@ class CONTENT_EXPORT StoragePartition {
   virtual base::FilePath GetPath() = 0;
   virtual net::URLRequestContextGetter* GetURLRequestContext() = 0;
   virtual net::URLRequestContextGetter* GetMediaURLRequestContext() = 0;
-  virtual quota::QuotaManager* GetQuotaManager() = 0;
+  virtual storage::QuotaManager* GetQuotaManager() = 0;
   virtual AppCacheService* GetAppCacheService() = 0;
-  virtual fileapi::FileSystemContext* GetFileSystemContext() = 0;
-  virtual webkit_database::DatabaseTracker* GetDatabaseTracker() = 0;
+  virtual storage::FileSystemContext* GetFileSystemContext() = 0;
+  virtual storage::DatabaseTracker* GetDatabaseTracker() = 0;
   virtual DOMStorageContext* GetDOMStorageContext() = 0;
   virtual IndexedDBContext* GetIndexedDBContext() = 0;
   virtual ServiceWorkerContext* GetServiceWorkerContext() = 0;
@@ -74,11 +74,11 @@ class CONTENT_EXPORT StoragePartition {
   static const uint32 REMOVE_DATA_MASK_SERVICE_WORKERS = 1 << 8;
   static const uint32 REMOVE_DATA_MASK_ALL             = 0xFFFFFFFF;
 
-  // Corresponds to quota::kStorageTypeTemporary.
+  // Corresponds to storage::kStorageTypeTemporary.
   static const uint32 QUOTA_MANAGED_STORAGE_MASK_TEMPORARY  = 1 << 0;
-  // Corresponds to quota::kStorageTypePersistent.
+  // Corresponds to storage::kStorageTypePersistent.
   static const uint32 QUOTA_MANAGED_STORAGE_MASK_PERSISTENT = 1 << 1;
-  // Corresponds to quota::kStorageTypeSyncable.
+  // Corresponds to storage::kStorageTypeSyncable.
   static const uint32 QUOTA_MANAGED_STORAGE_MASK_SYNCABLE   = 1 << 2;
   static const uint32 QUOTA_MANAGED_STORAGE_MASK_ALL        = 0xFFFFFFFF;
 
@@ -104,8 +104,7 @@ class CONTENT_EXPORT StoragePartition {
   // A callback type to check if a given origin matches a storage policy.
   // Can be passed empty/null where used, which means the origin will always
   // match.
-  typedef base::Callback<bool(const GURL&,
-                              quota::SpecialStoragePolicy*)>
+  typedef base::Callback<bool(const GURL&, storage::SpecialStoragePolicy*)>
       OriginMatcherFunction;
 
   // Similar to ClearDataForOrigin().

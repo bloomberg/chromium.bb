@@ -71,20 +71,20 @@ class FakeProvidedFileSystem : public ProvidedFileSystemInterface {
 
   // ProvidedFileSystemInterface overrides.
   virtual AbortCallback RequestUnmount(
-      const fileapi::AsyncFileUtil::StatusCallback& callback) OVERRIDE;
+      const storage::AsyncFileUtil::StatusCallback& callback) OVERRIDE;
   virtual AbortCallback GetMetadata(
       const base::FilePath& entry_path,
       const ProvidedFileSystemInterface::GetMetadataCallback& callback)
       OVERRIDE;
   virtual AbortCallback ReadDirectory(
       const base::FilePath& directory_path,
-      const fileapi::AsyncFileUtil::ReadDirectoryCallback& callback) OVERRIDE;
+      const storage::AsyncFileUtil::ReadDirectoryCallback& callback) OVERRIDE;
   virtual AbortCallback OpenFile(const base::FilePath& file_path,
                                  OpenFileMode mode,
                                  const OpenFileCallback& callback) OVERRIDE;
   virtual AbortCallback CloseFile(
       int file_handle,
-      const fileapi::AsyncFileUtil::StatusCallback& callback) OVERRIDE;
+      const storage::AsyncFileUtil::StatusCallback& callback) OVERRIDE;
   virtual AbortCallback ReadFile(
       int file_handle,
       net::IOBuffer* buffer,
@@ -95,32 +95,32 @@ class FakeProvidedFileSystem : public ProvidedFileSystemInterface {
       const base::FilePath& directory_path,
       bool exclusive,
       bool recursive,
-      const fileapi::AsyncFileUtil::StatusCallback& callback) OVERRIDE;
+      const storage::AsyncFileUtil::StatusCallback& callback) OVERRIDE;
   virtual AbortCallback DeleteEntry(
       const base::FilePath& entry_path,
       bool recursive,
-      const fileapi::AsyncFileUtil::StatusCallback& callback) OVERRIDE;
+      const storage::AsyncFileUtil::StatusCallback& callback) OVERRIDE;
   virtual AbortCallback CreateFile(
       const base::FilePath& file_path,
-      const fileapi::AsyncFileUtil::StatusCallback& callback) OVERRIDE;
+      const storage::AsyncFileUtil::StatusCallback& callback) OVERRIDE;
   virtual AbortCallback CopyEntry(
       const base::FilePath& source_path,
       const base::FilePath& target_path,
-      const fileapi::AsyncFileUtil::StatusCallback& callback) OVERRIDE;
+      const storage::AsyncFileUtil::StatusCallback& callback) OVERRIDE;
   virtual AbortCallback MoveEntry(
       const base::FilePath& source_path,
       const base::FilePath& target_path,
-      const fileapi::AsyncFileUtil::StatusCallback& callback) OVERRIDE;
+      const storage::AsyncFileUtil::StatusCallback& callback) OVERRIDE;
   virtual AbortCallback Truncate(
       const base::FilePath& file_path,
       int64 length,
-      const fileapi::AsyncFileUtil::StatusCallback& callback) OVERRIDE;
+      const storage::AsyncFileUtil::StatusCallback& callback) OVERRIDE;
   virtual AbortCallback WriteFile(
       int file_handle,
       net::IOBuffer* buffer,
       int64 offset,
       int length,
-      const fileapi::AsyncFileUtil::StatusCallback& callback) OVERRIDE;
+      const storage::AsyncFileUtil::StatusCallback& callback) OVERRIDE;
   virtual const ProvidedFileSystemInfo& GetFileSystemInfo() const OVERRIDE;
   virtual RequestManager* GetRequestManager() OVERRIDE;
   virtual base::WeakPtr<ProvidedFileSystemInterface> GetWeakPtr() OVERRIDE;
@@ -142,13 +142,13 @@ class FakeProvidedFileSystem : public ProvidedFileSystemInterface {
   // Aborts a request. |task_id| refers to a posted callback returning a
   // response for the operation, which will be cancelled, hence not called.
   void Abort(int task_id,
-             const fileapi::AsyncFileUtil::StatusCallback& callback);
+             const storage::AsyncFileUtil::StatusCallback& callback);
 
   // Aborts a request. |task_ids| refers to a vector of posted callbacks
   // returning a response for the operation, which will be cancelled, hence not
   // called.
   void AbortMany(const std::vector<int>& task_ids,
-                 const fileapi::AsyncFileUtil::StatusCallback& callback);
+                 const storage::AsyncFileUtil::StatusCallback& callback);
 
   ProvidedFileSystemInfo file_system_info_;
   Entries entries_;

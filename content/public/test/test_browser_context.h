@@ -25,7 +25,7 @@ class TestBrowserContext : public BrowserContext {
   // this object is destructed.
   base::FilePath TakePath();
 
-  void SetSpecialStoragePolicy(quota::SpecialStoragePolicy* policy);
+  void SetSpecialStoragePolicy(storage::SpecialStoragePolicy* policy);
 
   virtual base::FilePath GetPath() const OVERRIDE;
   virtual bool IsOffTheRecord() const OVERRIDE;
@@ -42,7 +42,7 @@ class TestBrowserContext : public BrowserContext {
           bool in_memory) OVERRIDE;
   virtual ResourceContext* GetResourceContext() OVERRIDE;
   virtual BrowserPluginGuestManager* GetGuestManager() OVERRIDE;
-  virtual quota::SpecialStoragePolicy* GetSpecialStoragePolicy() OVERRIDE;
+  virtual storage::SpecialStoragePolicy* GetSpecialStoragePolicy() OVERRIDE;
   virtual PushMessagingService* GetPushMessagingService() OVERRIDE;
   virtual SSLHostStateDelegate* GetSSLHostStateDelegate() OVERRIDE;
 
@@ -53,7 +53,7 @@ class TestBrowserContext : public BrowserContext {
   scoped_refptr<net::URLRequestContextGetter> request_context_;
   scoped_ptr<MockResourceContext> resource_context_;
   base::ScopedTempDir browser_context_dir_;
-  scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy_;
+  scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy_;
 
   DISALLOW_COPY_AND_ASSIGN(TestBrowserContext);
 };

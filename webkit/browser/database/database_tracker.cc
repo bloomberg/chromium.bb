@@ -27,7 +27,7 @@
 #include "webkit/browser/quota/special_storage_policy.h"
 #include "webkit/common/database/database_identifier.h"
 
-namespace webkit_database {
+namespace storage {
 
 const base::FilePath::CharType kDatabaseDirectoryName[] =
     FILE_PATH_LITERAL("databases");
@@ -82,8 +82,8 @@ OriginInfo::OriginInfo(const std::string& origin_identifier, int64 total_size)
 DatabaseTracker::DatabaseTracker(
     const base::FilePath& profile_path,
     bool is_incognito,
-    quota::SpecialStoragePolicy* special_storage_policy,
-    quota::QuotaManagerProxy* quota_manager_proxy,
+    storage::SpecialStoragePolicy* special_storage_policy,
+    storage::QuotaManagerProxy* quota_manager_proxy,
     base::MessageLoopProxy* db_tracker_thread)
     : is_initialized_(false),
       is_incognito_(is_incognito),
@@ -121,9 +121,9 @@ void DatabaseTracker::DatabaseOpened(const std::string& origin_identifier,
 
   if (quota_manager_proxy_.get())
     quota_manager_proxy_->NotifyStorageAccessed(
-        quota::QuotaClient::kDatabase,
-        webkit_database::GetOriginFromIdentifier(origin_identifier),
-        quota::kStorageTypeTemporary);
+        storage::QuotaClient::kDatabase,
+        storage::GetOriginFromIdentifier(origin_identifier),
+        storage::kStorageTypeTemporary);
 
   InsertOrUpdateDatabaseDetails(origin_identifier, database_name,
                                 database_description, estimated_size);
@@ -156,9 +156,9 @@ void DatabaseTracker::DatabaseClosed(const std::string& origin_identifier,
   // closed because we don't call it for read while open.
   if (quota_manager_proxy_.get())
     quota_manager_proxy_->NotifyStorageAccessed(
-        quota::QuotaClient::kDatabase,
-        webkit_database::GetOriginFromIdentifier(origin_identifier),
-        quota::kStorageTypeTemporary);
+        storage::QuotaClient::kDatabase,
+        storage::GetOriginFromIdentifier(origin_identifier),
+        storage::kStorageTypeTemporary);
 
   UpdateOpenDatabaseSizeAndNotify(origin_identifier, database_name);
   if (database_connections_.RemoveConnection(origin_identifier, database_name))
@@ -361,9 +361,9 @@ bool DatabaseTracker::DeleteClosedDatabase(
 
   if (quota_manager_proxy_.get() && db_file_size)
     quota_manager_proxy_->NotifyStorageModified(
-        quota::QuotaClient::kDatabase,
-        webkit_database::GetOriginFromIdentifier(origin_identifier),
-        quota::kStorageTypeTemporary,
+        storage::QuotaClient::kDatabase,
+        storage::GetOriginFromIdentifier(origin_identifier),
+        storage::kStorageTypeTemporary,
         -db_file_size);
 
   // Clean up the main database and invalidate the cached record.
@@ -421,9 +421,9 @@ bool DatabaseTracker::DeleteOrigin(const std::string& origin_identifier,
 
   if (quota_manager_proxy_.get() && deleted_size) {
     quota_manager_proxy_->NotifyStorageModified(
-        quota::QuotaClient::kDatabase,
-        webkit_database::GetOriginFromIdentifier(origin_identifier),
-        quota::kStorageTypeTemporary,
+        storage::QuotaClient::kDatabase,
+        storage::GetOriginFromIdentifier(origin_identifier),
+        storage::kStorageTypeTemporary,
         -deleted_size);
   }
 
@@ -608,9 +608,9 @@ int64 DatabaseTracker::UpdateOpenDatabaseInfoAndNotify(
       info->SetDatabaseSize(name, new_size);
     if (quota_manager_proxy_.get())
       quota_manager_proxy_->NotifyStorageModified(
-          quota::QuotaClient::kDatabase,
-          webkit_database::GetOriginFromIdentifier(origin_id),
-          quota::kStorageTypeTemporary,
+          storage::QuotaClient::kDatabase,
+          storage::GetOriginFromIdentifier(origin_id),
+          storage::kStorageTypeTemporary,
           new_size - old_size);
     FOR_EACH_OBSERVER(Observer, observers_, OnDatabaseSizeChanged(
         origin_id, name, new_size));
@@ -680,7 +680,7 @@ int DatabaseTracker::DeleteDataModifiedSince(
        ori != origins_identifiers.end(); ++ori) {
     if (special_storage_policy_.get() &&
         special_storage_policy_->IsStorageProtected(
-            webkit_database::GetOriginFromIdentifier(*ori))) {
+            storage::GetOriginFromIdentifier(*ori))) {
       continue;
     }
 
@@ -817,12 +817,12 @@ void DatabaseTracker::ClearSessionOnlyOrigins() {
   for (std::vector<std::string>::iterator origin =
            origin_identifiers.begin();
        origin != origin_identifiers.end(); ++origin) {
-    GURL origin_url = webkit_database::GetOriginFromIdentifier(*origin);
+    GURL origin_url = storage::GetOriginFromIdentifier(*origin);
     if (!special_storage_policy_->IsStorageSessionOnly(origin_url))
       continue;
     if (special_storage_policy_->IsStorageProtected(origin_url))
       continue;
-    webkit_database::OriginInfo origin_info;
+    storage::OriginInfo origin_info;
     std::vector<base::string16> databases;
     GetOriginInfo(*origin, &origin_info);
     origin_info.GetAllDatabaseNames(&databases);
@@ -866,4 +866,4 @@ void DatabaseTracker::SetForceKeepSessionState() {
   force_keep_session_state_ = true;
 }
 
-}  // namespace webkit_database
+}  // namespace storage

@@ -15,7 +15,7 @@ namespace base {
 class RunLoop;
 }
 
-namespace fileapi {
+namespace storage {
 class FileSystemURL;
 }
 
@@ -27,8 +27,8 @@ struct TypeTraits {
 };
 
 template <>
-struct TypeTraits<fileapi::FileSystemURL> {
-  typedef const fileapi::FileSystemURL& ParamType;
+struct TypeTraits<storage::FileSystemURL> {
+  typedef const storage::FileSystemURL& ParamType;
 };
 
 template <typename T>

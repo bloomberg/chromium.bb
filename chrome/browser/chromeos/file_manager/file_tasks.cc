@@ -37,7 +37,7 @@
 
 using extensions::Extension;
 using extensions::app_file_handler_util::FindFileHandlersForFiles;
-using fileapi::FileSystemURL;
+using storage::FileSystemURL;
 
 namespace file_manager {
 namespace file_tasks {

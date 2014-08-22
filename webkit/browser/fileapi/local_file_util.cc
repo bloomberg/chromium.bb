@@ -16,7 +16,7 @@
 #include "webkit/common/fileapi/file_system_types.h"
 #include "webkit/common/fileapi/file_system_util.h"
 
-namespace fileapi {
+namespace storage {
 
 AsyncFileUtil* AsyncFileUtil::CreateForLocalFileSystem() {
   return new AsyncFileUtilAdapter(new LocalFileUtil());
@@ -202,8 +202,10 @@ base::File::Error LocalFileUtil::CopyOrMoveFile(
     return error;
 
   return NativeFileUtil::CopyOrMoveFile(
-      src_file_path, dest_file_path, option,
-      fileapi::NativeFileUtil::CopyOrMoveModeForDestination(dest_url, copy));
+      src_file_path,
+      dest_file_path,
+      option,
+      storage::NativeFileUtil::CopyOrMoveModeForDestination(dest_url, copy));
 }
 
 base::File::Error LocalFileUtil::CopyInForeignFile(
@@ -219,8 +221,10 @@ base::File::Error LocalFileUtil::CopyInForeignFile(
   if (error != base::File::FILE_OK)
     return error;
   return NativeFileUtil::CopyOrMoveFile(
-      src_file_path, dest_file_path, FileSystemOperation::OPTION_NONE,
-      fileapi::NativeFileUtil::CopyOrMoveModeForDestination(dest_url,
+      src_file_path,
+      dest_file_path,
+      FileSystemOperation::OPTION_NONE,
+      storage::NativeFileUtil::CopyOrMoveModeForDestination(dest_url,
                                                             true /* copy */));
 }
 
@@ -244,7 +248,7 @@ base::File::Error LocalFileUtil::DeleteDirectory(
   return NativeFileUtil::DeleteDirectory(file_path);
 }
 
-webkit_blob::ScopedFile LocalFileUtil::CreateSnapshotFile(
+storage::ScopedFile LocalFileUtil::CreateSnapshotFile(
     FileSystemOperationContext* context,
     const FileSystemURL& url,
     base::File::Error* error,
@@ -255,7 +259,7 @@ webkit_blob::ScopedFile LocalFileUtil::CreateSnapshotFile(
   *error = GetFileInfo(context, url, file_info, platform_path);
   if (*error == base::File::FILE_OK && file_info->is_directory)
     *error = base::File::FILE_ERROR_NOT_A_FILE;
-  return webkit_blob::ScopedFile();
+  return storage::ScopedFile();
 }
 
-}  // namespace fileapi
+}  // namespace storage

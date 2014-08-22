@@ -12,7 +12,7 @@
 #include "url/gurl.h"
 #include "webkit/common/webkit_storage_common_export.h"
 
-namespace webkit_database {
+namespace storage {
 
 WEBKIT_STORAGE_COMMON_EXPORT std::string GetIdentifierFromOrigin(
     const GURL& origin);
@@ -49,6 +49,6 @@ class WEBKIT_STORAGE_COMMON_EXPORT DatabaseIdentifier {
   bool is_file_;
 };
 
-}  // namespace webkit_database
+}  // namespace storage
 
 #endif  // WEBKIT_COMMON_DATABASE_DATABASE_IDENTIFIER_H_

@@ -10,7 +10,7 @@
 
 // TODO(kinuko): Split this file into per-observer multiple files.
 
-namespace fileapi {
+namespace storage {
 
 class FileSystemURL;
 
@@ -78,6 +78,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileChangeObserver {
   DISALLOW_COPY_AND_ASSIGN(FileChangeObserver);
 };
 
-}  // namespace fileapi
+}  // namespace storage
 
 #endif  // WEBKIT_BROWSER_FILEAPI_FILE_OBSERVERS_H_

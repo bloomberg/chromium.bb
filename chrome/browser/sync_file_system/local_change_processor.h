@@ -8,7 +8,7 @@
 #include "base/callback_forward.h"
 #include "chrome/browser/sync_file_system/sync_callbacks.h"
 
-namespace fileapi {
+namespace storage {
 class FileSystemURL;
 }
 
@@ -31,12 +31,11 @@ class LocalChangeProcessor {
   // When SYNC_STATUS_HAS_CONFLICT is returned the implementation should
   // notify the backing RemoteFileSyncService of the existence of conflict
   // (as the remote service is supposed to maintain a list of conflict files).
-  virtual void ApplyLocalChange(
-      const FileChange& change,
-      const base::FilePath& local_file_path,
-      const SyncFileMetadata& local_file_metadata,
-      const fileapi::FileSystemURL& url,
-      const SyncStatusCallback& callback) = 0;
+  virtual void ApplyLocalChange(const FileChange& change,
+                                const base::FilePath& local_file_path,
+                                const SyncFileMetadata& local_file_metadata,
+                                const storage::FileSystemURL& url,
+                                const SyncStatusCallback& callback) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LocalChangeProcessor);

@@ -442,9 +442,11 @@ AppCacheStorageReference::~AppCacheStorageReference() {}
 
 // AppCacheServiceImpl -------
 
-AppCacheServiceImpl::AppCacheServiceImpl(quota::QuotaManagerProxy*
-    quota_manager_proxy)
-    : appcache_policy_(NULL), quota_client_(NULL), handler_factory_(NULL),
+AppCacheServiceImpl::AppCacheServiceImpl(
+    storage::QuotaManagerProxy* quota_manager_proxy)
+    : appcache_policy_(NULL),
+      quota_client_(NULL),
+      handler_factory_(NULL),
       quota_manager_proxy_(quota_manager_proxy),
       request_context_(NULL),
       force_keep_session_state_(false) {
@@ -561,7 +563,7 @@ void AppCacheServiceImpl::CheckAppCacheResponse(const GURL& manifest_url,
 }
 
 void AppCacheServiceImpl::set_special_storage_policy(
-    quota::SpecialStoragePolicy* policy) {
+    storage::SpecialStoragePolicy* policy) {
   special_storage_policy_ = policy;
 }
 

@@ -16,7 +16,7 @@
 #include "webkit/browser/quota/quota_manager_proxy.h"
 #include "webkit/common/fileapi/file_system_util.h"
 
-namespace fileapi {
+namespace storage {
 
 namespace {
 
@@ -114,7 +114,7 @@ void SandboxFileStreamWriter::DidCreateSnapshotFile(
     base::File::Error file_error,
     const base::File::Info& file_info,
     const base::FilePath& platform_path,
-    const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref) {
+    const scoped_refptr<storage::ShareableFileReference>& file_ref) {
   DCHECK(!file_ref.get());
 
   if (CancelIfRequested())
@@ -142,7 +142,7 @@ void SandboxFileStreamWriter::DidCreateSnapshotFile(
       initial_offset_,
       FileStreamWriter::OPEN_EXISTING_FILE));
 
-  quota::QuotaManagerProxy* quota_manager_proxy =
+  storage::QuotaManagerProxy* quota_manager_proxy =
       file_system_context_->quota_manager_proxy();
   if (!quota_manager_proxy) {
     // If we don't have the quota manager or the requested filesystem type
@@ -162,11 +162,12 @@ void SandboxFileStreamWriter::DidCreateSnapshotFile(
 
 void SandboxFileStreamWriter::DidGetUsageAndQuota(
     const net::CompletionCallback& callback,
-    quota::QuotaStatusCode status,
-    int64 usage, int64 quota) {
+    storage::QuotaStatusCode status,
+    int64 usage,
+    int64 quota) {
   if (CancelIfRequested())
     return;
-  if (status != quota::kQuotaStatusOk) {
+  if (status != storage::kQuotaStatusOk) {
     LOG(WARNING) << "Got unexpected quota error : " << status;
     callback.Run(net::ERR_FAILED);
     return;
@@ -243,4 +244,4 @@ int SandboxFileStreamWriter::Flush(const net::CompletionCallback& callback) {
   return local_file_writer_->Flush(callback);
 }
 
-}  // namespace fileapi
+}  // namespace storage

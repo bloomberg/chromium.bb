@@ -140,8 +140,9 @@ void DidReadMetadata(const base::File::Info& file_info,
   callbacks->didReadMetadata(web_file_info);
 }
 
-void DidReadDirectory(const std::vector<fileapi::DirectoryEntry>& entries,
-                      bool has_more, WebFileSystemCallbacks* callbacks) {
+void DidReadDirectory(const std::vector<storage::DirectoryEntry>& entries,
+                      bool has_more,
+                      WebFileSystemCallbacks* callbacks) {
   WebVector<WebFileSystemEntry> file_system_entries(entries.size());
   for (size_t i = 0; i < entries.size(); ++i) {
     file_system_entries[i].name =
@@ -156,13 +157,12 @@ void DidOpenFileSystem(const base::string16& name, const GURL& root,
   callbacks->didOpenFileSystem(name, root);
 }
 
-void DidResolveURL(
-    const base::string16& name,
-    const GURL& root_url,
-    fileapi::FileSystemType mount_type,
-    const base::string16& file_path,
-    bool is_directory,
-    WebFileSystemCallbacks* callbacks) {
+void DidResolveURL(const base::string16& name,
+                   const GURL& root_url,
+                   storage::FileSystemType mount_type,
+                   const base::string16& file_path,
+                   bool is_directory,
+                   WebFileSystemCallbacks* callbacks) {
   callbacks->didResolveURL(
       name,
       root_url,
@@ -172,7 +172,7 @@ void DidResolveURL(
 }
 
 void DidFail(base::File::Error error, WebFileSystemCallbacks* callbacks) {
-  callbacks->didFail(fileapi::FileErrorToWebFileError(error));
+  callbacks->didFail(storage::FileErrorToWebFileError(error));
 }
 
 // Run WebFileSystemCallbacks's |method| with |params|.
@@ -236,13 +236,14 @@ void OpenFileSystemCallbackAdapter(
       UNREGISTER_CALLBACKS);
 }
 
-void ResolveURLCallbackAdapter(
-    int thread_id, int callbacks_id,
-    WaitableCallbackResults* waitable_results,
-    const fileapi::FileSystemInfo& info,
-    const base::FilePath& file_path, bool is_directory) {
+void ResolveURLCallbackAdapter(int thread_id,
+                               int callbacks_id,
+                               WaitableCallbackResults* waitable_results,
+                               const storage::FileSystemInfo& info,
+                               const base::FilePath& file_path,
+                               bool is_directory) {
   base::FilePath normalized_path(
-      fileapi::VirtualPath::GetNormalizedFilePath(file_path));
+      storage::VirtualPath::GetNormalizedFilePath(file_path));
   CallbackFileSystemCallbacks(
       thread_id, callbacks_id, waitable_results,
       base::Bind(&DidResolveURL, base::UTF8ToUTF16(info.name), info.root_url,
@@ -277,8 +278,10 @@ void ReadMetadataCallbackAdapter(int thread_id, int callbacks_id,
 }
 
 void ReadDirectoryCallbackAdapter(
-    int thread_id, int callbacks_id, WaitableCallbackResults* waitable_results,
-    const std::vector<fileapi::DirectoryEntry>& entries,
+    int thread_id,
+    int callbacks_id,
+    WaitableCallbackResults* waitable_results,
+    const std::vector<storage::DirectoryEntry>& entries,
     bool has_more) {
   CallbackFileSystemCallbacks(
       thread_id, callbacks_id, waitable_results,
@@ -410,11 +413,15 @@ void WebFileSystemImpl::openFileSystem(
       main_thread_loop_.get(),
       &FileSystemDispatcher::OpenFileSystem,
       MakeTuple(GURL(storage_partition),
-                static_cast<fileapi::FileSystemType>(type),
+                static_cast<storage::FileSystemType>(type),
                 base::Bind(&OpenFileSystemCallbackAdapter,
-                           CurrentWorkerId(), callbacks_id, waitable_results),
+                           CurrentWorkerId(),
+                           callbacks_id,
+                           waitable_results),
                 base::Bind(&StatusCallbackAdapter,
-                           CurrentWorkerId(), callbacks_id, waitable_results)),
+                           CurrentWorkerId(),
+                           callbacks_id,
+                           waitable_results)),
       waitable_results.get());
 }
 
@@ -446,9 +453,11 @@ void WebFileSystemImpl::deleteFileSystem(
       main_thread_loop_.get(),
       &FileSystemDispatcher::DeleteFileSystem,
       MakeTuple(GURL(storage_partition),
-                static_cast<fileapi::FileSystemType>(type),
+                static_cast<storage::FileSystemType>(type),
                 base::Bind(&StatusCallbackAdapter,
-                           CurrentWorkerId(), callbacks_id, waitable_results)),
+                           CurrentWorkerId(),
+                           callbacks_id,
+                           waitable_results)),
       waitable_results.get());
 }
 

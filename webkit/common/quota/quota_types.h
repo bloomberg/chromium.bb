@@ -7,7 +7,7 @@
 
 #include "webkit/common/quota/quota_status_code.h"
 
-namespace quota {
+namespace storage {
 
 enum StorageType {
   kStorageTypeTemporary,
@@ -24,6 +24,6 @@ enum QuotaLimitType {
   kQuotaLimitTypeUnlimited,
 };
 
-}  // namespace quota
+}  // namespace storage
 
 #endif  // WEBKIT_COMMON_QUOTA_QUOTA_TYPES_H_

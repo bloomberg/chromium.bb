@@ -11,7 +11,7 @@
 
 // Common test data structures and test cases.
 
-namespace fileapi {
+namespace storage {
 class FileSystemFileUtil;
 }
 

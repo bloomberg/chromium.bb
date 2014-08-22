@@ -31,14 +31,14 @@
 #include "webkit/common/fileapi/file_system_util.h"
 
 using content::AsyncFileTestHelper;
-using fileapi::CopyOrMoveOperationDelegate;
-using fileapi::FileStreamWriter;
-using fileapi::FileSystemOperation;
-using fileapi::FileSystemURL;
+using storage::CopyOrMoveOperationDelegate;
+using storage::FileStreamWriter;
+using storage::FileSystemOperation;
+using storage::FileSystemURL;
 
 namespace content {
 
-typedef fileapi::FileSystemOperation::FileEntryList FileEntryList;
+typedef storage::FileSystemOperation::FileEntryList FileEntryList;
 
 namespace {
 
@@ -48,13 +48,13 @@ void ExpectOk(const GURL& origin_url,
   ASSERT_EQ(base::File::FILE_OK, error);
 }
 
-class TestValidatorFactory : public fileapi::CopyOrMoveFileValidatorFactory {
+class TestValidatorFactory : public storage::CopyOrMoveFileValidatorFactory {
  public:
   // A factory that creates validators that accept everything or nothing.
   TestValidatorFactory() {}
   virtual ~TestValidatorFactory() {}
 
-  virtual fileapi::CopyOrMoveFileValidator* CreateCopyOrMoveFileValidator(
+  virtual storage::CopyOrMoveFileValidator* CreateCopyOrMoveFileValidator(
       const FileSystemURL& /*src_url*/,
       const base::FilePath& /*platform_path*/) OVERRIDE {
     // Move arg management to TestValidator?
@@ -62,7 +62,7 @@ class TestValidatorFactory : public fileapi::CopyOrMoveFileValidatorFactory {
   }
 
  private:
-  class TestValidator : public fileapi::CopyOrMoveFileValidator {
+  class TestValidator : public storage::CopyOrMoveFileValidator {
    public:
     explicit TestValidator(bool pre_copy_valid,
                            bool post_copy_valid,
@@ -106,14 +106,14 @@ class TestValidatorFactory : public fileapi::CopyOrMoveFileValidatorFactory {
 
 // Records CopyProgressCallback invocations.
 struct ProgressRecord {
-  fileapi::FileSystemOperation::CopyProgressType type;
+  storage::FileSystemOperation::CopyProgressType type;
   FileSystemURL source_url;
   FileSystemURL dest_url;
   int64 size;
 };
 
 void RecordProgressCallback(std::vector<ProgressRecord>* records,
-                            fileapi::FileSystemOperation::CopyProgressType type,
+                            storage::FileSystemOperation::CopyProgressType type,
                             const FileSystemURL& source_url,
                             const FileSystemURL& dest_url,
                             int64 size) {
@@ -165,8 +165,8 @@ class ScopedThreadStopper {
 class CopyOrMoveOperationTestHelper {
  public:
   CopyOrMoveOperationTestHelper(const GURL& origin,
-                                fileapi::FileSystemType src_type,
-                                fileapi::FileSystemType dest_type)
+                                storage::FileSystemType src_type,
+                                storage::FileSystemType dest_type)
       : origin_(origin), src_type_(src_type), dest_type_(dest_type) {}
 
   ~CopyOrMoveOperationTestHelper() {
@@ -201,17 +201,17 @@ class CopyOrMoveOperationTestHelper {
         CreateFileSystemContextForTesting(quota_manager_proxy_.get(), base_dir);
 
     // Prepare the origin's root directory.
-    fileapi::FileSystemBackend* backend =
+    storage::FileSystemBackend* backend =
         file_system_context_->GetFileSystemBackend(src_type_);
     backend->ResolveURL(
         FileSystemURL::CreateForTest(origin_, src_type_, base::FilePath()),
-        fileapi::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
+        storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
         base::Bind(&ExpectOk));
     backend = file_system_context_->GetFileSystemBackend(dest_type_);
-    if (dest_type_ == fileapi::kFileSystemTypeTest) {
+    if (dest_type_ == storage::kFileSystemTypeTest) {
       TestFileSystemBackend* test_backend =
           static_cast<TestFileSystemBackend*>(backend);
-      scoped_ptr<fileapi::CopyOrMoveFileValidatorFactory> factory(
+      scoped_ptr<storage::CopyOrMoveFileValidatorFactory> factory(
           new TestValidatorFactory);
       test_backend->set_require_copy_or_move_validator(
           require_copy_or_move_validator);
@@ -220,18 +220,18 @@ class CopyOrMoveOperationTestHelper {
     }
     backend->ResolveURL(
         FileSystemURL::CreateForTest(origin_, dest_type_, base::FilePath()),
-        fileapi::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
+        storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
         base::Bind(&ExpectOk));
     base::RunLoop().RunUntilIdle();
 
     // Grant relatively big quota initially.
     quota_manager_->SetQuota(
         origin_,
-        fileapi::FileSystemTypeToQuotaStorageType(src_type_),
+        storage::FileSystemTypeToQuotaStorageType(src_type_),
         1024 * 1024);
     quota_manager_->SetQuota(
         origin_,
-        fileapi::FileSystemTypeToQuotaStorageType(dest_type_),
+        storage::FileSystemTypeToQuotaStorageType(dest_type_),
         1024 * 1024);
   }
 
@@ -373,23 +373,23 @@ class CopyOrMoveOperationTestHelper {
   }
 
  private:
-  void GetUsageAndQuota(fileapi::FileSystemType type,
+  void GetUsageAndQuota(storage::FileSystemType type,
                         int64* usage,
                         int64* quota) {
-    quota::QuotaStatusCode status = AsyncFileTestHelper::GetUsageAndQuota(
+    storage::QuotaStatusCode status = AsyncFileTestHelper::GetUsageAndQuota(
         quota_manager_.get(), origin_, type, usage, quota);
-    ASSERT_EQ(quota::kQuotaStatusOk, status);
+    ASSERT_EQ(storage::kQuotaStatusOk, status);
   }
 
  private:
   base::ScopedTempDir base_;
 
   const GURL origin_;
-  const fileapi::FileSystemType src_type_;
-  const fileapi::FileSystemType dest_type_;
+  const storage::FileSystemType src_type_;
+  const storage::FileSystemType dest_type_;
 
   base::MessageLoopForIO message_loop_;
-  scoped_refptr<fileapi::FileSystemContext> file_system_context_;
+  scoped_refptr<storage::FileSystemContext> file_system_context_;
   scoped_refptr<MockQuotaManagerProxy> quota_manager_proxy_;
   scoped_refptr<MockQuotaManager> quota_manager_;
 
@@ -398,8 +398,8 @@ class CopyOrMoveOperationTestHelper {
 
 TEST(LocalFileSystemCopyOrMoveOperationTest, CopySingleFile) {
   CopyOrMoveOperationTestHelper helper(GURL("http://foo"),
-                                       fileapi::kFileSystemTypeTemporary,
-                                       fileapi::kFileSystemTypePersistent);
+                                       storage::kFileSystemTypeTemporary,
+                                       storage::kFileSystemTypePersistent);
   helper.SetUp();
 
   FileSystemURL src = helper.SourceURL("a");
@@ -427,8 +427,8 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, CopySingleFile) {
 
 TEST(LocalFileSystemCopyOrMoveOperationTest, MoveSingleFile) {
   CopyOrMoveOperationTestHelper helper(GURL("http://foo"),
-                                       fileapi::kFileSystemTypeTemporary,
-                                       fileapi::kFileSystemTypePersistent);
+                                       storage::kFileSystemTypeTemporary,
+                                       storage::kFileSystemTypePersistent);
   helper.SetUp();
 
   FileSystemURL src = helper.SourceURL("a");
@@ -456,8 +456,8 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, MoveSingleFile) {
 
 TEST(LocalFileSystemCopyOrMoveOperationTest, CopySingleDirectory) {
   CopyOrMoveOperationTestHelper helper(GURL("http://foo"),
-                                       fileapi::kFileSystemTypeTemporary,
-                                       fileapi::kFileSystemTypePersistent);
+                                       storage::kFileSystemTypeTemporary,
+                                       storage::kFileSystemTypePersistent);
   helper.SetUp();
 
   FileSystemURL src = helper.SourceURL("a");
@@ -485,8 +485,8 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, CopySingleDirectory) {
 
 TEST(LocalFileSystemCopyOrMoveOperationTest, MoveSingleDirectory) {
   CopyOrMoveOperationTestHelper helper(GURL("http://foo"),
-                                       fileapi::kFileSystemTypeTemporary,
-                                       fileapi::kFileSystemTypePersistent);
+                                       storage::kFileSystemTypeTemporary,
+                                       storage::kFileSystemTypePersistent);
   helper.SetUp();
 
   FileSystemURL src = helper.SourceURL("a");
@@ -514,8 +514,8 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, MoveSingleDirectory) {
 
 TEST(LocalFileSystemCopyOrMoveOperationTest, CopyDirectory) {
   CopyOrMoveOperationTestHelper helper(GURL("http://foo"),
-                                       fileapi::kFileSystemTypeTemporary,
-                                       fileapi::kFileSystemTypePersistent);
+                                       storage::kFileSystemTypeTemporary,
+                                       storage::kFileSystemTypePersistent);
   helper.SetUp();
 
   FileSystemURL src = helper.SourceURL("a");
@@ -554,8 +554,8 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, CopyDirectory) {
 
 TEST(LocalFileSystemCopyOrMoveOperationTest, MoveDirectory) {
   CopyOrMoveOperationTestHelper helper(GURL("http://foo"),
-                                       fileapi::kFileSystemTypeTemporary,
-                                       fileapi::kFileSystemTypePersistent);
+                                       storage::kFileSystemTypeTemporary,
+                                       storage::kFileSystemTypePersistent);
   helper.SetUp();
 
   FileSystemURL src = helper.SourceURL("a");
@@ -592,8 +592,8 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, MoveDirectory) {
 TEST(LocalFileSystemCopyOrMoveOperationTest,
      MoveDirectoryFailPostWriteValidation) {
   CopyOrMoveOperationTestHelper helper(GURL("http://foo"),
-                                       fileapi::kFileSystemTypeTemporary,
-                                       fileapi::kFileSystemTypeTest);
+                                       storage::kFileSystemTypeTemporary,
+                                       storage::kFileSystemTypeTest);
   helper.SetUp();
 
   FileSystemURL src = helper.SourceURL("a");
@@ -625,8 +625,8 @@ TEST(LocalFileSystemCopyOrMoveOperationTest,
 
 TEST(LocalFileSystemCopyOrMoveOperationTest, CopySingleFileNoValidator) {
   CopyOrMoveOperationTestHelper helper(GURL("http://foo"),
-                                       fileapi::kFileSystemTypeTemporary,
-                                       fileapi::kFileSystemTypeTest);
+                                       storage::kFileSystemTypeTemporary,
+                                       storage::kFileSystemTypeTest);
   helper.SetUpNoValidator();
 
   FileSystemURL src = helper.SourceURL("a");
@@ -643,8 +643,8 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, CopySingleFileNoValidator) {
 
 TEST(LocalFileSystemCopyOrMoveOperationTest, ProgressCallback) {
   CopyOrMoveOperationTestHelper helper(GURL("http://foo"),
-                                       fileapi::kFileSystemTypeTemporary,
-                                       fileapi::kFileSystemTypePersistent);
+                                       storage::kFileSystemTypeTemporary,
+                                       storage::kFileSystemTypePersistent);
   helper.SetUp();
 
   FileSystemURL src = helper.SourceURL("a");
@@ -730,8 +730,8 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, StreamCopyHelper) {
   scoped_refptr<base::MessageLoopProxy> task_runner =
       file_thread.message_loop_proxy();
 
-  scoped_ptr<webkit_blob::FileStreamReader> reader(
-      webkit_blob::FileStreamReader::CreateForLocalFile(
+  scoped_ptr<storage::FileStreamReader> reader(
+      storage::FileStreamReader::CreateForLocalFile(
           task_runner.get(), source_path, 0, base::Time()));
 
   scoped_ptr<FileStreamWriter> writer(FileStreamWriter::CreateForLocalFile(
@@ -786,8 +786,8 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, StreamCopyHelperWithFlush) {
   scoped_refptr<base::MessageLoopProxy> task_runner =
       file_thread.message_loop_proxy();
 
-  scoped_ptr<webkit_blob::FileStreamReader> reader(
-      webkit_blob::FileStreamReader::CreateForLocalFile(
+  scoped_ptr<storage::FileStreamReader> reader(
+      storage::FileStreamReader::CreateForLocalFile(
           task_runner.get(), source_path, 0, base::Time()));
 
   scoped_ptr<FileStreamWriter> writer(FileStreamWriter::CreateForLocalFile(
@@ -837,8 +837,8 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, StreamCopyHelper_Cancel) {
   scoped_refptr<base::MessageLoopProxy> task_runner =
       file_thread.message_loop_proxy();
 
-  scoped_ptr<webkit_blob::FileStreamReader> reader(
-      webkit_blob::FileStreamReader::CreateForLocalFile(
+  scoped_ptr<storage::FileStreamReader> reader(
+      storage::FileStreamReader::CreateForLocalFile(
           task_runner.get(), source_path, 0, base::Time()));
 
   scoped_ptr<FileStreamWriter> writer(FileStreamWriter::CreateForLocalFile(

@@ -59,7 +59,7 @@
 using apps::SavedFileEntry;
 using apps::SavedFilesService;
 using apps::AppWindow;
-using fileapi::IsolatedContext;
+using storage::IsolatedContext;
 
 const char kInvalidCallingPage[] = "Invalid calling page. This function can't "
     "be called from a background page.";
@@ -349,7 +349,7 @@ bool FileSystemIsWritableEntryFunction::RunSync() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(1, &filesystem_path));
 
   std::string filesystem_id;
-  if (!fileapi::CrackIsolatedFileSystemName(filesystem_name, &filesystem_id)) {
+  if (!storage::CrackIsolatedFileSystemName(filesystem_name, &filesystem_id)) {
     error_ = app_file_handler_util::kInvalidParameters;
     return false;
   }
@@ -570,10 +570,10 @@ void FileSystemChooseEntryFunction::RegisterTempExternalFileSystemForTest(
   // For testing on Chrome OS, where to deal with remote and local paths
   // smoothly, all accessed paths need to be registered in the list of
   // external mount points.
-  fileapi::ExternalMountPoints::GetSystemInstance()->RegisterFileSystem(
+  storage::ExternalMountPoints::GetSystemInstance()->RegisterFileSystem(
       name,
-      fileapi::kFileSystemTypeNativeLocal,
-      fileapi::FileSystemMountOption(),
+      storage::kFileSystemTypeNativeLocal,
+      storage::FileSystemMountOption(),
       path);
 }
 

@@ -21,16 +21,16 @@
 #include "webkit/common/database/database_identifier.h"
 
 using base::ASCIIToUTF16;
-using webkit_database::DatabaseConnections;
-using webkit_database::DatabaseTracker;
-using webkit_database::OriginInfo;
+using storage::DatabaseConnections;
+using storage::DatabaseTracker;
+using storage::OriginInfo;
 
 namespace {
 
 const char kOrigin1Url[] = "http://origin1";
 const char kOrigin2Url[] = "http://protected_origin2";
 
-class TestObserver : public webkit_database::DatabaseTracker::Observer {
+class TestObserver : public storage::DatabaseTracker::Observer {
  public:
   TestObserver()
       : new_notification_received_(false),
@@ -96,32 +96,32 @@ void CheckNotificationReceived(TestObserver* observer,
             observer->GetNotificationDatabaseSize());
 }
 
-class TestQuotaManagerProxy : public quota::QuotaManagerProxy {
+class TestQuotaManagerProxy : public storage::QuotaManagerProxy {
  public:
   TestQuotaManagerProxy()
       : QuotaManagerProxy(NULL, NULL),
         registered_client_(NULL) {
   }
 
-  virtual void RegisterClient(quota::QuotaClient* client) OVERRIDE {
+  virtual void RegisterClient(storage::QuotaClient* client) OVERRIDE {
     EXPECT_FALSE(registered_client_);
     registered_client_ = client;
   }
 
-  virtual void NotifyStorageAccessed(quota::QuotaClient::ID client_id,
+  virtual void NotifyStorageAccessed(storage::QuotaClient::ID client_id,
                                      const GURL& origin,
-                                     quota::StorageType type) OVERRIDE {
-    EXPECT_EQ(quota::QuotaClient::kDatabase, client_id);
-    EXPECT_EQ(quota::kStorageTypeTemporary, type);
+                                     storage::StorageType type) OVERRIDE {
+    EXPECT_EQ(storage::QuotaClient::kDatabase, client_id);
+    EXPECT_EQ(storage::kStorageTypeTemporary, type);
     accesses_[origin] += 1;
   }
 
-  virtual void NotifyStorageModified(quota::QuotaClient::ID client_id,
+  virtual void NotifyStorageModified(storage::QuotaClient::ID client_id,
                                      const GURL& origin,
-                                     quota::StorageType type,
+                                     storage::StorageType type,
                                      int64 delta) OVERRIDE {
-    EXPECT_EQ(quota::QuotaClient::kDatabase, client_id);
-    EXPECT_EQ(quota::kStorageTypeTemporary, type);
+    EXPECT_EQ(storage::QuotaClient::kDatabase, client_id);
+    EXPECT_EQ(storage::kStorageTypeTemporary, type);
     modifications_[origin].first += 1;
     modifications_[origin].second += delta;
   }
@@ -129,14 +129,14 @@ class TestQuotaManagerProxy : public quota::QuotaManagerProxy {
   // Not needed for our tests.
   virtual void NotifyOriginInUse(const GURL& origin) OVERRIDE {}
   virtual void NotifyOriginNoLongerInUse(const GURL& origin) OVERRIDE {}
-  virtual void SetUsageCacheEnabled(quota::QuotaClient::ID client_id,
+  virtual void SetUsageCacheEnabled(storage::QuotaClient::ID client_id,
                                     const GURL& origin,
-                                    quota::StorageType type,
+                                    storage::StorageType type,
                                     bool enabled) OVERRIDE {}
   virtual void GetUsageAndQuota(
       base::SequencedTaskRunner* original_task_runner,
       const GURL& origin,
-      quota::StorageType type,
+      storage::StorageType type,
       const GetUsageAndQuotaCallback& callback) OVERRIDE {}
 
   void SimulateQuotaManagerDestroyed() {
@@ -160,7 +160,7 @@ class TestQuotaManagerProxy : public quota::QuotaManagerProxy {
     modifications_.clear();
   }
 
-  quota::QuotaClient* registered_client_;
+  storage::QuotaClient* registered_client_;
 
   // Map from origin to count of access notifications.
   std::map<GURL, int> accesses_;
@@ -211,9 +211,9 @@ class DatabaseTracker_TestHelper_Test {
     // Create and open three databases.
     int64 database_size = 0;
     const std::string kOrigin1 =
-        webkit_database::GetIdentifierFromOrigin(GURL(kOrigin1Url));
+        storage::GetIdentifierFromOrigin(GURL(kOrigin1Url));
     const std::string kOrigin2 =
-        webkit_database::GetIdentifierFromOrigin(GURL(kOrigin2Url));
+        storage::GetIdentifierFromOrigin(GURL(kOrigin2Url));
     const base::string16 kDB1 = ASCIIToUTF16("db1");
     const base::string16 kDB2 = ASCIIToUTF16("db2");
     const base::string16 kDB3 = ASCIIToUTF16("db3");
@@ -325,9 +325,9 @@ class DatabaseTracker_TestHelper_Test {
     // Open three new databases.
     int64 database_size = 0;
     const std::string kOrigin1 =
-        webkit_database::GetIdentifierFromOrigin(GURL(kOrigin1Url));
+        storage::GetIdentifierFromOrigin(GURL(kOrigin1Url));
     const std::string kOrigin2 =
-        webkit_database::GetIdentifierFromOrigin(GURL(kOrigin2Url));
+        storage::GetIdentifierFromOrigin(GURL(kOrigin2Url));
     const base::string16 kDB1 = ASCIIToUTF16("db1");
     const base::string16 kDB2 = ASCIIToUTF16("db2");
     const base::string16 kDB3 = ASCIIToUTF16("db3");
@@ -452,8 +452,7 @@ class DatabaseTracker_TestHelper_Test {
 
   static void DatabaseTrackerQuotaIntegration() {
     const GURL kOrigin(kOrigin1Url);
-    const std::string kOriginId =
-        webkit_database::GetIdentifierFromOrigin(kOrigin);
+    const std::string kOriginId = storage::GetIdentifierFromOrigin(kOrigin);
     const base::string16 kName = ASCIIToUTF16("name");
     const base::string16 kDescription = ASCIIToUTF16("description");
 
@@ -551,9 +550,9 @@ class DatabaseTracker_TestHelper_Test {
   static void DatabaseTrackerClearSessionOnlyDatabasesOnExit() {
     int64 database_size = 0;
     const std::string kOrigin1 =
-        webkit_database::GetIdentifierFromOrigin(GURL(kOrigin1Url));
+        storage::GetIdentifierFromOrigin(GURL(kOrigin1Url));
     const std::string kOrigin2 =
-        webkit_database::GetIdentifierFromOrigin(GURL(kOrigin2Url));
+        storage::GetIdentifierFromOrigin(GURL(kOrigin2Url));
     const base::string16 kDB1 = ASCIIToUTF16("db1");
     const base::string16 kDB2 = ASCIIToUTF16("db2");
     const base::string16 kDescription = ASCIIToUTF16("database_description");
@@ -631,9 +630,9 @@ class DatabaseTracker_TestHelper_Test {
   static void DatabaseTrackerSetForceKeepSessionState() {
     int64 database_size = 0;
     const std::string kOrigin1 =
-        webkit_database::GetIdentifierFromOrigin(GURL(kOrigin1Url));
+        storage::GetIdentifierFromOrigin(GURL(kOrigin1Url));
     const std::string kOrigin2 =
-        webkit_database::GetIdentifierFromOrigin(GURL(kOrigin2Url));
+        storage::GetIdentifierFromOrigin(GURL(kOrigin2Url));
     const base::string16 kDB1 = ASCIIToUTF16("db1");
     const base::string16 kDB2 = ASCIIToUTF16("db2");
     const base::string16 kDescription = ASCIIToUTF16("database_description");
@@ -708,8 +707,7 @@ class DatabaseTracker_TestHelper_Test {
 
   static void EmptyDatabaseNameIsValid() {
     const GURL kOrigin(kOrigin1Url);
-    const std::string kOriginId =
-        webkit_database::GetIdentifierFromOrigin(kOrigin);
+    const std::string kOriginId = storage::GetIdentifierFromOrigin(kOrigin);
     const base::string16 kEmptyName;
     const base::string16 kDescription(ASCIIToUTF16("description"));
     const base::string16 kChangedDescription(
@@ -757,8 +755,7 @@ class DatabaseTracker_TestHelper_Test {
 
   static void HandleSqliteError() {
     const GURL kOrigin(kOrigin1Url);
-    const std::string kOriginId =
-        webkit_database::GetIdentifierFromOrigin(kOrigin);
+    const std::string kOriginId = storage::GetIdentifierFromOrigin(kOrigin);
     const base::string16 kName(ASCIIToUTF16("name"));
     const base::string16 kDescription(ASCIIToUTF16("description"));
 

@@ -18,7 +18,7 @@
 #include "webkit/common/blob/shareable_file_reference.h"
 #include "webkit/common/fileapi/file_system_util.h"
 
-namespace fileapi {
+namespace storage {
 
 const int64 kFlushIntervalInBytes = 10 << 20;  // 10MB.
 
@@ -131,7 +131,7 @@ class SnapshotCopyOrMoveImpl
       base::File::Error error,
       const base::File::Info& file_info,
       const base::FilePath& platform_path,
-      const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref) {
+      const scoped_refptr<storage::ShareableFileReference>& file_ref) {
     if (cancel_requested_)
       error = base::File::FILE_ERROR_ABORT;
 
@@ -162,7 +162,7 @@ class SnapshotCopyOrMoveImpl
   void RunAfterPreWriteValidation(
       const base::FilePath& platform_path,
       const base::File::Info& file_info,
-      const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref,
+      const scoped_refptr<storage::ShareableFileReference>& file_ref,
       const CopyOrMoveOperationDelegate::StatusCallback& callback,
       base::File::Error error) {
     if (cancel_requested_)
@@ -183,7 +183,7 @@ class SnapshotCopyOrMoveImpl
 
   void RunAfterCopyInForeignFile(
       const base::File::Info& file_info,
-      const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref,
+      const scoped_refptr<storage::ShareableFileReference>& file_ref,
       const CopyOrMoveOperationDelegate::StatusCallback& callback,
       base::File::Error error) {
     if (cancel_requested_)
@@ -310,7 +310,7 @@ class SnapshotCopyOrMoveImpl
       base::File::Error error,
       const base::File::Info& file_info,
       const base::FilePath& platform_path,
-      const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref) {
+      const scoped_refptr<storage::ShareableFileReference>& file_ref) {
     if (cancel_requested_)
       error = base::File::FILE_ERROR_ABORT;
 
@@ -331,7 +331,7 @@ class SnapshotCopyOrMoveImpl
   // |file_ref| is unused; it is passed here to make sure the reference is
   // alive until after post-write validation is complete.
   void DidPostWriteValidation(
-      const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref,
+      const scoped_refptr<storage::ShareableFileReference>& file_ref,
       const CopyOrMoveOperationDelegate::StatusCallback& callback,
       base::File::Error error) {
     callback.Run(error);
@@ -370,7 +370,7 @@ class StreamCopyOrMoveImpl
       const FileSystemURL& src_url,
       const FileSystemURL& dest_url,
       CopyOrMoveOperationDelegate::CopyOrMoveOption option,
-      scoped_ptr<webkit_blob::FileStreamReader> reader,
+      scoped_ptr<storage::FileStreamReader> reader,
       scoped_ptr<FileStreamWriter> writer,
       const FileSystemOperation::CopyFileProgressCallback&
           file_progress_callback)
@@ -383,8 +383,7 @@ class StreamCopyOrMoveImpl
         writer_(writer.Pass()),
         file_progress_callback_(file_progress_callback),
         cancel_requested_(false),
-        weak_factory_(this) {
-  }
+        weak_factory_(this) {}
 
   virtual void Run(
       const CopyOrMoveOperationDelegate::StatusCallback& callback) OVERRIDE {
@@ -443,7 +442,7 @@ class StreamCopyOrMoveImpl
     }
 
     const bool need_flush = dest_url_.mount_option().copy_sync_option() ==
-        fileapi::COPY_SYNC_OPTION_SYNC;
+                            storage::COPY_SYNC_OPTION_SYNC;
 
     DCHECK(!copy_helper_);
     copy_helper_.reset(
@@ -520,7 +519,7 @@ class StreamCopyOrMoveImpl
   FileSystemURL src_url_;
   FileSystemURL dest_url_;
   CopyOrMoveOperationDelegate::CopyOrMoveOption option_;
-  scoped_ptr<webkit_blob::FileStreamReader> reader_;
+  scoped_ptr<storage::FileStreamReader> reader_;
   scoped_ptr<FileStreamWriter> writer_;
   FileSystemOperation::CopyFileProgressCallback file_progress_callback_;
   scoped_ptr<CopyOrMoveOperationDelegate::StreamCopyHelper> copy_helper_;
@@ -532,12 +531,11 @@ class StreamCopyOrMoveImpl
 }  // namespace
 
 CopyOrMoveOperationDelegate::StreamCopyHelper::StreamCopyHelper(
-    scoped_ptr<webkit_blob::FileStreamReader> reader,
+    scoped_ptr<storage::FileStreamReader> reader,
     scoped_ptr<FileStreamWriter> writer,
     bool need_flush,
     int buffer_size,
-    const FileSystemOperation::CopyFileProgressCallback&
-        file_progress_callback,
+    const FileSystemOperation::CopyFileProgressCallback& file_progress_callback,
     const base::TimeDelta& min_progress_callback_invocation_span)
     : reader_(reader.Pass()),
       writer_(writer.Pass()),
@@ -757,7 +755,7 @@ void CopyOrMoveOperationDelegate::ProcessFile(
     }
 
     if (!validator_factory) {
-      scoped_ptr<webkit_blob::FileStreamReader> reader =
+      scoped_ptr<storage::FileStreamReader> reader =
           file_system_context()->CreateFileStreamReader(
               src_url, 0, base::Time());
       scoped_ptr<FileStreamWriter> writer =
@@ -965,4 +963,4 @@ FileSystemURL CopyOrMoveOperationDelegate::CreateDestURL(
       relative);
 }
 
-}  // namespace fileapi
+}  // namespace storage

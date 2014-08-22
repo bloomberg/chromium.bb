@@ -18,7 +18,7 @@ namespace content {
 ServiceWorkerContextRequestHandler::ServiceWorkerContextRequestHandler(
     base::WeakPtr<ServiceWorkerContextCore> context,
     base::WeakPtr<ServiceWorkerProviderHost> provider_host,
-    base::WeakPtr<webkit_blob::BlobStorageContext> blob_storage_context,
+    base::WeakPtr<storage::BlobStorageContext> blob_storage_context,
     ResourceType resource_type)
     : ServiceWorkerRequestHandler(context,
                                   provider_host,

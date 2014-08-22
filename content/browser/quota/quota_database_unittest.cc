@@ -20,9 +20,9 @@
 #include "url/gurl.h"
 #include "webkit/browser/quota/quota_database.h"
 
-using quota::kStorageTypePersistent;
-using quota::kStorageTypeTemporary;
-using quota::QuotaDatabase;
+using storage::kStorageTypePersistent;
+using storage::kStorageTypeTemporary;
+using storage::QuotaDatabase;
 
 namespace content {
 namespace {

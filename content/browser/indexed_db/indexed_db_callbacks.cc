@@ -27,7 +27,7 @@
 #include "webkit/common/blob/blob_data.h"
 #include "webkit/common/blob/shareable_file_reference.h"
 
-using webkit_blob::ShareableFileReference;
+using storage::ShareableFileReference;
 
 namespace content {
 
@@ -223,12 +223,12 @@ void IndexedDBCallbacks::OnSuccess(scoped_ptr<IndexedDBConnection> connection,
 static std::string CreateBlobData(
     const IndexedDBBlobInfo& blob_info,
     scoped_refptr<IndexedDBDispatcherHost> dispatcher_host,
-    webkit_blob::BlobStorageContext* blob_storage_context,
+    storage::BlobStorageContext* blob_storage_context,
     base::TaskRunner* task_runner) {
   std::string uuid = blob_info.uuid();
   if (!uuid.empty()) {
     // We're sending back a live blob, not a reference into our backing store.
-    scoped_ptr<webkit_blob::BlobDataHandle> blob_data_handle(
+    scoped_ptr<storage::BlobDataHandle> blob_data_handle(
         blob_storage_context->GetBlobDataFromUUID(uuid));
     dispatcher_host->HoldBlobDataHandle(uuid, blob_data_handle.Pass());
     return uuid;
@@ -245,11 +245,10 @@ static std::string CreateBlobData(
   }
 
   uuid = base::GenerateGUID();
-  scoped_refptr<webkit_blob::BlobData> blob_data =
-      new webkit_blob::BlobData(uuid);
+  scoped_refptr<storage::BlobData> blob_data = new storage::BlobData(uuid);
   blob_data->AppendFile(
       blob_info.file_path(), 0, blob_info.size(), blob_info.last_modified());
-  scoped_ptr<webkit_blob::BlobDataHandle> blob_data_handle(
+  scoped_ptr<storage::BlobDataHandle> blob_data_handle(
       blob_storage_context->AddFinishedBlob(blob_data.get()));
   dispatcher_host->HoldBlobDataHandle(uuid, blob_data_handle.Pass());
 

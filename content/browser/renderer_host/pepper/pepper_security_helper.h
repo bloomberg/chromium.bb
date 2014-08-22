@@ -22,7 +22,7 @@ CONTENT_EXPORT bool CanOpenWithPepperFlags(int pp_open_flags,
 CONTENT_EXPORT bool CanOpenFileSystemURLWithPepperFlags(
     int pp_open_flags,
     int child_id,
-    const fileapi::FileSystemURL& url);
+    const storage::FileSystemURL& url);
 
 }  // namespace content
 

@@ -15,7 +15,7 @@
 #include "url/gurl.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 
-namespace fileapi {
+namespace storage {
 class FileSystemURL;
 class OpenFileHandle;
 class QuotaReservation;
@@ -36,12 +36,12 @@ class CONTENT_EXPORT QuotaReservation
  public:
   // Static method to facilitate construction on the file task runner.
   static scoped_refptr<QuotaReservation> Create(
-      scoped_refptr<fileapi::FileSystemContext> file_system_context,
+      scoped_refptr<storage::FileSystemContext> file_system_context,
       const GURL& origin_url,
-      fileapi::FileSystemType file_system_type);
+      storage::FileSystemType file_system_type);
 
   // Opens a file with the given id and path and returns its current size.
-  int64_t OpenFile(int32_t id, const fileapi::FileSystemURL& url);
+  int64_t OpenFile(int32_t id, const storage::FileSystemURL& url);
   // Closes the file opened by OpenFile with the given id.
   void CloseFile(int32_t id, const ppapi::FileGrowth& file_growth);
   // Refreshes the quota reservation to a new amount. A map that associates file
@@ -65,15 +65,15 @@ class CONTENT_EXPORT QuotaReservation
   friend class QuotaReservationTest;
 
   QuotaReservation(
-      scoped_refptr<fileapi::FileSystemContext> file_system_context,
+      scoped_refptr<storage::FileSystemContext> file_system_context,
       const GURL& origin_url,
-      fileapi::FileSystemType file_system_type);
+      storage::FileSystemType file_system_type);
 
   // For unit testing only. A QuotaReservation intended for unit testing will
   // have file_system_context_ == NULL.
-  QuotaReservation(scoped_refptr<fileapi::QuotaReservation> quota_reservation,
+  QuotaReservation(scoped_refptr<storage::QuotaReservation> quota_reservation,
                    const GURL& origin_url,
-                   fileapi::FileSystemType file_system_type);
+                   storage::FileSystemType file_system_type);
 
   ~QuotaReservation();
 
@@ -82,9 +82,9 @@ class CONTENT_EXPORT QuotaReservation
 
   void DeleteOnCorrectThread() const;
 
-  scoped_refptr<fileapi::FileSystemContext> file_system_context_;
-  scoped_refptr<fileapi::QuotaReservation> quota_reservation_;
-  typedef std::map<int32_t, fileapi::OpenFileHandle*> FileMap;
+  scoped_refptr<storage::FileSystemContext> file_system_context_;
+  scoped_refptr<storage::QuotaReservation> quota_reservation_;
+  typedef std::map<int32_t, storage::OpenFileHandle*> FileMap;
   FileMap files_;
 
   DISALLOW_COPY_AND_ASSIGN(QuotaReservation);

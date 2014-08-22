@@ -29,7 +29,7 @@ void CookieDeleted(bool success) {
 class SessionDataDeleter
     : public base::RefCountedThreadSafe<SessionDataDeleter> {
  public:
-  SessionDataDeleter(quota::SpecialStoragePolicy* storage_policy,
+  SessionDataDeleter(storage::SpecialStoragePolicy* storage_policy,
                      bool delete_only_by_session_only_policy);
 
   void Run(content::StoragePartition* storage_partition,
@@ -59,17 +59,18 @@ class SessionDataDeleter
   void DeleteSessionOnlyOriginCookies(const net::CookieList& cookies);
 
   scoped_refptr<net::CookieMonster> cookie_monster_;
-  scoped_refptr<quota::SpecialStoragePolicy> storage_policy_;
+  scoped_refptr<storage::SpecialStoragePolicy> storage_policy_;
   const bool delete_only_by_session_only_policy_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionDataDeleter);
 };
 
 SessionDataDeleter::SessionDataDeleter(
-    quota::SpecialStoragePolicy* storage_policy,
+    storage::SpecialStoragePolicy* storage_policy,
     bool delete_only_by_session_only_policy)
     : storage_policy_(storage_policy),
-      delete_only_by_session_only_policy_(delete_only_by_session_only_policy) {}
+      delete_only_by_session_only_policy_(delete_only_by_session_only_policy) {
+}
 
 void SessionDataDeleter::Run(content::StoragePartition* storage_partition,
                              ProfileIOData* profile_io_data) {

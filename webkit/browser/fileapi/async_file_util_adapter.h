@@ -8,7 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "webkit/browser/fileapi/async_file_util.h"
 
-namespace fileapi {
+namespace storage {
 
 class FileSystemFileUtil;
 
@@ -113,6 +113,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AsyncFileUtilAdapter
   DISALLOW_COPY_AND_ASSIGN(AsyncFileUtilAdapter);
 };
 
-}  // namespace fileapi
+}  // namespace storage
 
 #endif  // WEBKIT_BROWSER_FILEAPI_ASYNC_FILE_UTIL_ADAPTER_H_

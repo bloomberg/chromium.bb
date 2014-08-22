@@ -51,9 +51,8 @@ class ImageDecoderDelegateAdapter : public ImageDecoder::Delegate {
  public:
   ImageDecoderDelegateAdapter(
       scoped_ptr<std::string> data,
-      const fileapi::CopyOrMoveFileValidator::ResultCallback& callback)
-      : data_(data.Pass()),
-        callback_(callback) {
+      const storage::CopyOrMoveFileValidator::ResultCallback& callback)
+      : data_(data.Pass()), callback_(callback) {
     DCHECK(data_);
   }
 
@@ -75,7 +74,7 @@ class ImageDecoderDelegateAdapter : public ImageDecoder::Delegate {
 
  private:
   scoped_ptr<std::string> data_;
-  fileapi::CopyOrMoveFileValidator::ResultCallback callback_;
+  storage::CopyOrMoveFileValidator::ResultCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageDecoderDelegateAdapter);
 };

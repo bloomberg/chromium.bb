@@ -24,18 +24,18 @@
 #include "webkit/common/fileapi/file_system_types.h"
 
 using content::AsyncFileTestHelper;
-using fileapi::AsyncFileUtilAdapter;
-using fileapi::FileSystemContext;
-using fileapi::FileSystemOperationContext;
-using fileapi::FileSystemURL;
-using fileapi::LocalFileUtil;
+using storage::AsyncFileUtilAdapter;
+using storage::FileSystemContext;
+using storage::FileSystemOperationContext;
+using storage::FileSystemURL;
+using storage::LocalFileUtil;
 
 namespace content {
 
 namespace {
 
 const GURL kOrigin("http://foo/");
-const fileapi::FileSystemType kFileSystemType = fileapi::kFileSystemTypeTest;
+const storage::FileSystemType kFileSystemType = storage::kFileSystemTypeTest;
 
 }  // namespace
 

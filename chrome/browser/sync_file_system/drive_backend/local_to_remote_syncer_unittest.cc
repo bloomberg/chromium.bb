@@ -40,8 +40,7 @@ namespace drive_backend {
 
 namespace {
 
-fileapi::FileSystemURL URL(const GURL& origin,
-                           const std::string& path) {
+storage::FileSystemURL URL(const GURL& origin, const std::string& path) {
   return CreateSyncableFileSystemURL(
       origin, base::FilePath::FromUTF8Unsafe(path));
 }
@@ -167,7 +166,7 @@ class LocalToRemoteSyncerTest : public testing::Test {
   }
 
   SyncStatusCode RunLocalToRemoteSyncer(FileChange file_change,
-                           const fileapi::FileSystemURL& url) {
+                                        const storage::FileSystemURL& url) {
     SyncStatusCode status = SYNC_STATUS_UNKNOWN;
     base::FilePath local_path = base::FilePath::FromUTF8Unsafe("dummy");
     scoped_ptr<LocalToRemoteSyncer> syncer(new LocalToRemoteSyncer(

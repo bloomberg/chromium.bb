@@ -92,9 +92,9 @@ int32_t PepperFileSystemHost::OnHostMsgOpen(
     return PP_ERROR_INPROGRESS;
   called_open_ = true;
 
-  fileapi::FileSystemType file_system_type =
+  storage::FileSystemType file_system_type =
       PepperFileSystemTypeToFileSystemType(type_);
-  if (file_system_type == fileapi::kFileSystemTypeUnknown)
+  if (file_system_type == storage::kFileSystemTypeUnknown)
     return PP_ERROR_FAILED;
 
   GURL document_url = renderer_ppapi_host_->GetDocumentURL(pp_instance());
@@ -124,7 +124,7 @@ int32_t PepperFileSystemHost::OnHostMsgInitIsolatedFileSystem(
   called_open_ = true;
 
   // Do a sanity check.
-  if (!fileapi::ValidateIsolatedFileSystemId(fsid))
+  if (!storage::ValidateIsolatedFileSystemId(fsid))
     return PP_ERROR_BADARGUMENT;
 
   RenderView* view =
@@ -136,7 +136,7 @@ int32_t PepperFileSystemHost::OnHostMsgInitIsolatedFileSystem(
   const std::string root_name = ppapi::IsolatedFileSystemTypeToRootName(type);
   if (root_name.empty())
     return PP_ERROR_BADARGUMENT;
-  root_url_ = GURL(fileapi::GetIsolatedFileSystemRootURIString(
+  root_url_ = GURL(storage::GetIsolatedFileSystemRootURIString(
       url.GetOrigin(), fsid, root_name));
   opened_ = true;
   return PP_OK;

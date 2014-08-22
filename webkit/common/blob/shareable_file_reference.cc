@@ -11,7 +11,7 @@
 #include "base/task_runner.h"
 #include "base/threading/non_thread_safe.h"
 
-namespace webkit_blob {
+namespace storage {
 
 namespace {
 
@@ -85,7 +85,7 @@ scoped_refptr<ShareableFileReference> ShareableFileReference::GetOrCreate(
 
   typedef std::pair<ShareableFileMap::iterator, bool> InsertResult;
   // Required for VS2010: http://connect.microsoft.com/VisualStudio/feedback/details/520043/error-converting-from-null-to-a-pointer-type-in-std-pair
-  webkit_blob::ShareableFileReference* null_reference = NULL;
+  storage::ShareableFileReference* null_reference = NULL;
   InsertResult result = g_file_map.Get().Insert(
       ShareableFileMap::value_type(scoped_file.path(), null_reference));
   if (result.second == false) {
@@ -116,4 +116,4 @@ ShareableFileReference::~ShareableFileReference() {
   g_file_map.Get().Erase(path());
 }
 
-}  // namespace webkit_blob
+}  // namespace storage

@@ -15,7 +15,7 @@ namespace net {
 class URLRequest;
 }  // namespace net
 
-namespace webkit_blob {
+namespace storage {
 
 class BlobData;
 class BlobStorageContext;
@@ -52,6 +52,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT ViewBlobInternalsJob
   DISALLOW_COPY_AND_ASSIGN(ViewBlobInternalsJob);
 };
 
-}  // namespace webkit_blob
+}  // namespace storage
 
 #endif  // WEBKIT_BROWSER_BLOB_VIEW_BLOB_INTERNALS_JOB_H_

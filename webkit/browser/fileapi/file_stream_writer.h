@@ -18,7 +18,7 @@ namespace net {
 class IOBuffer;
 }
 
-namespace fileapi {
+namespace storage {
 
 // A generic interface for writing to a file-like object.
 class FileStreamWriter {
@@ -82,6 +82,6 @@ class FileStreamWriter {
   virtual int Flush(const net::CompletionCallback& callback) = 0;
 };
 
-}  // namespace fileapi
+}  // namespace storage
 
 #endif  // WEBKIT_BROWSER_FILEAPI_FILE_STREAM_WRITER_H_

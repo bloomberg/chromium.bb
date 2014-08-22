@@ -17,7 +17,7 @@ namespace {
 
 // Convert |input| into |output|. If parsing fails, then returns false.
 bool ConvertRequestValueToEntryList(scoped_ptr<RequestValue> value,
-                                    fileapi::AsyncFileUtil::EntryList* output) {
+                                    storage::AsyncFileUtil::EntryList* output) {
   using extensions::api::file_system_provider::EntryMetadata;
   using extensions::api::file_system_provider_internal::
       ReadDirectoryRequestedSuccess::Params;
@@ -29,7 +29,7 @@ bool ConvertRequestValueToEntryList(scoped_ptr<RequestValue> value,
   for (size_t i = 0; i < params->entries.size(); ++i) {
     const linked_ptr<EntryMetadata> entry_metadata = params->entries[i];
 
-    fileapi::DirectoryEntry output_entry;
+    storage::DirectoryEntry output_entry;
     output_entry.is_directory = entry_metadata->is_directory;
     output_entry.name = entry_metadata->name;
     output_entry.size = static_cast<int64>(entry_metadata->size);
@@ -56,7 +56,7 @@ ReadDirectory::ReadDirectory(
     extensions::EventRouter* event_router,
     const ProvidedFileSystemInfo& file_system_info,
     const base::FilePath& directory_path,
-    const fileapi::AsyncFileUtil::ReadDirectoryCallback& callback)
+    const storage::AsyncFileUtil::ReadDirectoryCallback& callback)
     : Operation(event_router, file_system_info),
       directory_path_(directory_path),
       callback_(callback) {
@@ -77,7 +77,7 @@ bool ReadDirectory::Execute(int request_id) {
 void ReadDirectory::OnSuccess(int /* request_id */,
                               scoped_ptr<RequestValue> result,
                               bool has_more) {
-  fileapi::AsyncFileUtil::EntryList entry_list;
+  storage::AsyncFileUtil::EntryList entry_list;
   const bool convert_result =
       ConvertRequestValueToEntryList(result.Pass(), &entry_list);
 
@@ -85,7 +85,7 @@ void ReadDirectory::OnSuccess(int /* request_id */,
     LOG(ERROR)
         << "Failed to parse a response for the read directory operation.";
     callback_.Run(base::File::FILE_ERROR_IO,
-                  fileapi::AsyncFileUtil::EntryList(),
+                  storage::AsyncFileUtil::EntryList(),
                   false /* has_more */);
     return;
   }
@@ -97,7 +97,7 @@ void ReadDirectory::OnError(int /* request_id */,
                             scoped_ptr<RequestValue> /* result */,
                             base::File::Error error) {
   callback_.Run(
-      error, fileapi::AsyncFileUtil::EntryList(), false /* has_more */);
+      error, storage::AsyncFileUtil::EntryList(), false /* has_more */);
 }
 
 }  // namespace operations

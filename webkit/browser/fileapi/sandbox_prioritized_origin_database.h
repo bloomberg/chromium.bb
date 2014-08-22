@@ -15,7 +15,7 @@ namespace leveldb {
 class Env;
 }
 
-namespace fileapi {
+namespace storage {
 
 class ObfuscatedFileUtil;
 class SandboxIsolatedOriginDatabase;
@@ -67,6 +67,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE SandboxPrioritizedOriginDatabase
   DISALLOW_COPY_AND_ASSIGN(SandboxPrioritizedOriginDatabase);
 };
 
-}  // namespace fileapi
+}  // namespace storage
 
 #endif  // WEBKIT_BROWSER_FILEAPI_SANDBOX_PRIORITIZED_ORIGIN_DATABASE_H_

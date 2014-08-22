@@ -37,8 +37,7 @@ namespace drive_backend {
 
 namespace {
 
-fileapi::FileSystemURL URL(const GURL& origin,
-                           const std::string& path) {
+storage::FileSystemURL URL(const GURL& origin, const std::string& path) {
   return CreateSyncableFileSystemURL(
       origin, base::FilePath::FromUTF8Unsafe(path));
 }
@@ -167,13 +166,13 @@ class RemoteToLocalSyncerTest : public testing::Test {
               fake_drive_helper_->DeleteResource(file_id));
   }
 
-  void CreateLocalFolder(const fileapi::FileSystemURL& url) {
+  void CreateLocalFolder(const storage::FileSystemURL& url) {
     remote_change_processor_->UpdateLocalFileMetadata(
         url, FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
                         SYNC_FILE_TYPE_DIRECTORY));
   }
 
-  void CreateLocalFile(const fileapi::FileSystemURL& url) {
+  void CreateLocalFile(const storage::FileSystemURL& url) {
     remote_change_processor_->UpdateLocalFileMetadata(
         url, FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
                         SYNC_FILE_TYPE_FILE));
@@ -228,7 +227,7 @@ class RemoteToLocalSyncerTest : public testing::Test {
     return status;
   }
 
-  void AppendExpectedChange(const fileapi::FileSystemURL& url,
+  void AppendExpectedChange(const storage::FileSystemURL& url,
                             FileChange::ChangeType change_type,
                             SyncFileType file_type) {
     expected_changes_[url].push_back(FileChange(change_type, file_type));

@@ -17,7 +17,7 @@
 #include "net/base/net_errors.h"
 #include "webkit/common/blob/shareable_file_reference.h"
 
-using webkit_blob::ShareableFileReference;
+using storage::ShareableFileReference;
 
 namespace {
 
@@ -121,7 +121,7 @@ class RedirectToFileResourceHandler::Writer {
 
   // We create a ShareableFileReference that's deletable for the temp file
   // created as a result of the download.
-  scoped_refptr<webkit_blob::ShareableFileReference> deletable_file_;
+  scoped_refptr<storage::ShareableFileReference> deletable_file_;
 
   DISALLOW_COPY_AND_ASSIGN(Writer);
 };

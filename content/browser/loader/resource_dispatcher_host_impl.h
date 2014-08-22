@@ -49,7 +49,7 @@ namespace net {
 class URLRequestJobFactory;
 }
 
-namespace webkit_blob {
+namespace storage {
 class ShareableFileReference;
 }
 
@@ -434,7 +434,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // Collection of temp files downloaded for child processes via
   // the download_to_file mechanism. We avoid deleting them until
   // the client no longer needs them.
-  typedef std::map<int, scoped_refptr<webkit_blob::ShareableFileReference> >
+  typedef std::map<int, scoped_refptr<storage::ShareableFileReference> >
       DeletableFilesMap;  // key is request id
   typedef std::map<int, DeletableFilesMap>
       RegisteredTempFiles;  // key is child process id

@@ -118,7 +118,7 @@ void IndexedDBActiveBlobRegistry::ReleaseBlobRefThreadSafe(
                                    blob_key));
 }
 
-webkit_blob::ShareableFileReference::FinalReleaseCallback
+storage::ShareableFileReference::FinalReleaseCallback
 IndexedDBActiveBlobRegistry::GetFinalReleaseCallback(int64 database_id,
                                                      int64 blob_key) {
   return base::Bind(

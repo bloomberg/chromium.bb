@@ -35,13 +35,13 @@ void LogValue(std::vector<T>* log, T value) {
 }
 
 // Fake internal file stream reader.
-class FakeFileStreamReader : public webkit_blob::FileStreamReader {
+class FakeFileStreamReader : public storage::FileStreamReader {
  public:
   FakeFileStreamReader(std::vector<int>* log, net::Error return_error)
       : log_(log), return_error_(return_error) {}
   virtual ~FakeFileStreamReader() {}
 
-  // webkit_blob::FileStreamReader overrides.
+  // storage::FileStreamReader overrides.
   virtual int Read(net::IOBuffer* buf,
                    int buf_len,
                    const net::CompletionCallback& callback) OVERRIDE {
@@ -89,7 +89,7 @@ class FileSystemProviderBufferingFileStreamReaderTest : public testing::Test {
 TEST_F(FileSystemProviderBufferingFileStreamReaderTest, Read) {
   std::vector<int> inner_read_log;
   BufferingFileStreamReader reader(
-      scoped_ptr<webkit_blob::FileStreamReader>(
+      scoped_ptr<storage::FileStreamReader>(
           new FakeFileStreamReader(&inner_read_log, net::OK)),
       kBufferSize);
 
@@ -162,7 +162,7 @@ TEST_F(FileSystemProviderBufferingFileStreamReaderTest, Read) {
 TEST_F(FileSystemProviderBufferingFileStreamReaderTest, Read_Directly) {
   std::vector<int> inner_read_log;
   BufferingFileStreamReader reader(
-      scoped_ptr<webkit_blob::FileStreamReader>(
+      scoped_ptr<storage::FileStreamReader>(
           new FakeFileStreamReader(&inner_read_log, net::OK)),
       kBufferSize);
 
@@ -222,7 +222,7 @@ TEST_F(FileSystemProviderBufferingFileStreamReaderTest,
        Read_MoreThanBufferSize) {
   std::vector<int> inner_read_log;
   BufferingFileStreamReader reader(
-      scoped_ptr<webkit_blob::FileStreamReader>(
+      scoped_ptr<storage::FileStreamReader>(
           new FakeFileStreamReader(&inner_read_log, net::OK)),
       kBufferSize);
   // First read couple of bytes, so the internal buffer is filled out.
@@ -261,7 +261,7 @@ TEST_F(FileSystemProviderBufferingFileStreamReaderTest,
 TEST_F(FileSystemProviderBufferingFileStreamReaderTest, Read_WithError) {
   std::vector<int> inner_read_log;
   BufferingFileStreamReader reader(
-      scoped_ptr<webkit_blob::FileStreamReader>(
+      scoped_ptr<storage::FileStreamReader>(
           new FakeFileStreamReader(&inner_read_log, net::ERR_ACCESS_DENIED)),
       kBufferSize);
 
@@ -279,7 +279,7 @@ TEST_F(FileSystemProviderBufferingFileStreamReaderTest, Read_WithError) {
 }
 
 TEST_F(FileSystemProviderBufferingFileStreamReaderTest, GetLength) {
-  BufferingFileStreamReader reader(scoped_ptr<webkit_blob::FileStreamReader>(
+  BufferingFileStreamReader reader(scoped_ptr<storage::FileStreamReader>(
                                        new FakeFileStreamReader(NULL, net::OK)),
                                    kBufferSize);
 

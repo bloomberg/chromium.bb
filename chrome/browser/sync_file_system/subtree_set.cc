@@ -26,7 +26,7 @@ SubtreeSet::~SubtreeSet() {}
 
 bool SubtreeSet::IsDisjointWith(const base::FilePath& subtree_root) const {
   base::FilePath::StringType normalized_subtree_root =
-      fileapi::VirtualPath::GetNormalizedFilePath(subtree_root);
+      storage::VirtualPath::GetNormalizedFilePath(subtree_root);
 
   // Check if |subtree_root| contains any of subtrees in the container.
   if (ContainsKey(inclusive_ancestors_of_subtree_roots_,
@@ -34,8 +34,8 @@ bool SubtreeSet::IsDisjointWith(const base::FilePath& subtree_root) const {
     return false;
 
   base::FilePath path(normalized_subtree_root);
-  while (!fileapi::VirtualPath::IsRootPath(path)) {
-    path = fileapi::VirtualPath::DirName(path);
+  while (!storage::VirtualPath::IsRootPath(path)) {
+    path = storage::VirtualPath::DirName(path);
 
     Subtrees::const_iterator found =
         inclusive_ancestors_of_subtree_roots_.find(path.value());
@@ -48,7 +48,7 @@ bool SubtreeSet::IsDisjointWith(const base::FilePath& subtree_root) const {
 
 bool SubtreeSet::insert(const base::FilePath& subtree_root) {
   base::FilePath::StringType normalized_subtree_root =
-      fileapi::VirtualPath::GetNormalizedFilePath(subtree_root);
+      storage::VirtualPath::GetNormalizedFilePath(subtree_root);
 
   if (!IsDisjointWith(subtree_root))
     return false;
@@ -56,8 +56,8 @@ bool SubtreeSet::insert(const base::FilePath& subtree_root) {
       = Node(true, 1);
 
   base::FilePath path(normalized_subtree_root);
-  while (!fileapi::VirtualPath::IsRootPath(path)) {
-    path = fileapi::VirtualPath::DirName(path);
+  while (!storage::VirtualPath::IsRootPath(path)) {
+    path = storage::VirtualPath::DirName(path);
     DCHECK(!inclusive_ancestors_of_subtree_roots_[path.value()]
                 .contained_as_subtree_root);
     ++(inclusive_ancestors_of_subtree_roots_[path.value()]
@@ -69,7 +69,7 @@ bool SubtreeSet::insert(const base::FilePath& subtree_root) {
 
 bool SubtreeSet::erase(const base::FilePath& subtree_root) {
   base::FilePath::StringType normalized_subtree_root =
-      fileapi::VirtualPath::GetNormalizedFilePath(subtree_root);
+      storage::VirtualPath::GetNormalizedFilePath(subtree_root);
 
   {
     Subtrees::iterator found =
@@ -83,8 +83,8 @@ bool SubtreeSet::erase(const base::FilePath& subtree_root) {
   }
 
   base::FilePath path(normalized_subtree_root);
-  while (!fileapi::VirtualPath::IsRootPath(path)) {
-    path = fileapi::VirtualPath::DirName(path);
+  while (!storage::VirtualPath::IsRootPath(path)) {
+    path = storage::VirtualPath::DirName(path);
 
     Subtrees::iterator found =
         inclusive_ancestors_of_subtree_roots_.find(path.value());
@@ -103,7 +103,7 @@ bool SubtreeSet::erase(const base::FilePath& subtree_root) {
 
 size_t SubtreeSet::size() const {
   Subtrees::const_iterator found =
-      inclusive_ancestors_of_subtree_roots_.find(fileapi::VirtualPath::kRoot);
+      inclusive_ancestors_of_subtree_roots_.find(storage::VirtualPath::kRoot);
   if (found == inclusive_ancestors_of_subtree_roots_.end())
     return 0;
   return found->second.number_of_subtrees_below;

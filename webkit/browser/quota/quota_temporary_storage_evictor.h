@@ -20,7 +20,7 @@ namespace content {
 class QuotaTemporaryStorageEvictorTest;
 }
 
-namespace quota {
+namespace storage {
 
 class QuotaEvictionHandler;
 struct UsageAndQuota;
@@ -129,6 +129,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE QuotaTemporaryStorageEvictor
   DISALLOW_COPY_AND_ASSIGN(QuotaTemporaryStorageEvictor);
 };
 
-}  // namespace quota
+}  // namespace storage
 
 #endif  // WEBKIT_BROWSER_QUOTA_QUOTA_TEMPORARY_STORAGE_EVICTOR_H_

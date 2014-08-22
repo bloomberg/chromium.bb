@@ -43,7 +43,7 @@
 //     file_util::DoAnother(local_path);
 //  }
 
-namespace fileapi {
+namespace storage {
 
 namespace {
 
@@ -73,7 +73,7 @@ int64 UsageForPath(size_t length) {
 }
 
 bool AllocateQuota(FileSystemOperationContext* context, int64 growth) {
-  if (context->allowed_bytes_growth() == quota::QuotaManager::kNoLimit)
+  if (context->allowed_bytes_growth() == storage::QuotaManager::kNoLimit)
     return true;
 
   int64 new_quota = context->allowed_bytes_growth() - growth;
@@ -227,7 +227,7 @@ class ObfuscatedOriginEnumerator
       origins_.pop_back();
     }
     current_ = record;
-    return webkit_database::GetOriginFromIdentifier(record.origin);
+    return storage::GetOriginFromIdentifier(record.origin);
   }
 
   // Returns the current origin's information.
@@ -250,7 +250,7 @@ class ObfuscatedOriginEnumerator
 };
 
 ObfuscatedFileUtil::ObfuscatedFileUtil(
-    quota::SpecialStoragePolicy* special_storage_policy,
+    storage::SpecialStoragePolicy* special_storage_policy,
     const base::FilePath& file_system_directory,
     leveldb::Env* env_override,
     base::SequencedTaskRunner* file_task_runner,
@@ -276,7 +276,7 @@ base::File ObfuscatedFileUtil::CreateOrOpen(
     const FileSystemURL& url, int file_flags) {
   base::File file = CreateOrOpenInternal(context, url, file_flags);
   if (file.IsValid() && file_flags & base::File::FLAG_WRITE &&
-      context->quota_limit_type() == quota::kQuotaLimitTypeUnlimited &&
+      context->quota_limit_type() == storage::kQuotaLimitTypeUnlimited &&
       sandbox_delegate_) {
     sandbox_delegate_->StickyInvalidateUsageCache(url.origin(), url.type());
   }
@@ -579,7 +579,7 @@ base::File::Error ObfuscatedFileUtil::CopyOrMoveFile(
           src_local_path,
           dest_local_path,
           option,
-          fileapi::NativeFileUtil::CopyOrMoveModeForDestination(
+          storage::NativeFileUtil::CopyOrMoveModeForDestination(
               dest_url, true /* copy */));
     } else {  // non-overwrite
       error = CreateFile(context, src_local_path, dest_url, &dest_file_info);
@@ -682,9 +682,10 @@ base::File::Error ObfuscatedFileUtil::CopyInForeignFile(
     base::FilePath dest_local_path =
         DataPathToLocalPath(dest_url, dest_file_info.data_path);
     error = NativeFileUtil::CopyOrMoveFile(
-        src_file_path, dest_local_path,
+        src_file_path,
+        dest_local_path,
         FileSystemOperation::OPTION_NONE,
-        fileapi::NativeFileUtil::CopyOrMoveModeForDestination(dest_url,
+        storage::NativeFileUtil::CopyOrMoveModeForDestination(dest_url,
                                                               true /* copy */));
   } else {
     error = CreateFile(context, src_file_path, dest_url, &dest_file_info);
@@ -777,7 +778,7 @@ base::File::Error ObfuscatedFileUtil::DeleteDirectory(
   return base::File::FILE_OK;
 }
 
-webkit_blob::ScopedFile ObfuscatedFileUtil::CreateSnapshotFile(
+storage::ScopedFile ObfuscatedFileUtil::CreateSnapshotFile(
     FileSystemOperationContext* context,
     const FileSystemURL& url,
     base::File::Error* error,
@@ -789,7 +790,7 @@ webkit_blob::ScopedFile ObfuscatedFileUtil::CreateSnapshotFile(
     *file_info = base::File::Info();
     *error = base::File::FILE_ERROR_NOT_A_FILE;
   }
-  return webkit_blob::ScopedFile();
+  return storage::ScopedFile();
 }
 
 scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator>
@@ -897,7 +898,7 @@ bool ObfuscatedFileUtil::DeleteDirectoryForOriginAndType(
   InitOriginDatabase(origin, false);
   if (origin_database_) {
     origin_database_->RemovePathForOrigin(
-        webkit_database::GetIdentifierFromOrigin(origin));
+        storage::GetIdentifierFromOrigin(origin));
   }
   if (!base::DeleteFile(origin_path, true /* recursive */))
     return false;
@@ -947,7 +948,7 @@ void ObfuscatedFileUtil::MaybePrepopulateDatabase(
   std::string origin_string = database.GetPrimaryOrigin();
   if (origin_string.empty() || !database.HasOriginPath(origin_string))
     return;
-  const GURL origin = webkit_database::GetOriginFromIdentifier(origin_string);
+  const GURL origin = storage::GetOriginFromIdentifier(origin_string);
 
   // Prepopulate the directory database(s) if and only if this instance
   // has primary origin and the directory database is already there.
@@ -1099,9 +1100,10 @@ base::File::Error ObfuscatedFileUtil::CreateFile(
     error = NativeFileUtil::EnsureFileExists(dest_local_path, &created);
   } else {
     error = NativeFileUtil::CopyOrMoveFile(
-        src_file_path, dest_local_path,
+        src_file_path,
+        dest_local_path,
         FileSystemOperation::OPTION_NONE,
-        fileapi::NativeFileUtil::CopyOrMoveModeForDestination(dest_url,
+        storage::NativeFileUtil::CopyOrMoveModeForDestination(dest_url,
                                                               true /* copy */));
     created = true;
   }
@@ -1148,8 +1150,7 @@ std::string ObfuscatedFileUtil::GetDirectoryDatabaseKey(
     return std::string();
   }
   // For isolated origin we just use a type string as a key.
-  return webkit_database::GetIdentifierFromOrigin(origin) +
-      type_string;
+  return storage::GetIdentifierFromOrigin(origin) + type_string;
 }
 
 // TODO(ericu): How to do the whole validation-without-creation thing?
@@ -1194,7 +1195,7 @@ base::FilePath ObfuscatedFileUtil::GetDirectoryForOrigin(
     return base::FilePath();
   }
   base::FilePath directory_name;
-  std::string id = webkit_database::GetIdentifierFromOrigin(origin);
+  std::string id = storage::GetIdentifierFromOrigin(origin);
 
   bool exists_in_db = origin_database_->HasOriginPath(id);
   if (!exists_in_db && !create) {
@@ -1287,7 +1288,7 @@ bool ObfuscatedFileUtil::InitOriginDatabase(const GURL& origin_hint,
     return true;
 
   const std::string isolated_origin_string =
-      webkit_database::GetIdentifierFromOrigin(origin_hint);
+      storage::GetIdentifierFromOrigin(origin_hint);
 
   // TODO(kinuko): Deprecate this after a few release cycles, e.g. around M33.
   base::FilePath isolated_origin_dir = file_system_directory_.Append(
@@ -1420,4 +1421,4 @@ bool ObfuscatedFileUtil::HasIsolatedStorage(const GURL& origin) {
       special_storage_policy_->HasIsolatedStorage(origin);
 }
 
-}  // namespace fileapi
+}  // namespace storage

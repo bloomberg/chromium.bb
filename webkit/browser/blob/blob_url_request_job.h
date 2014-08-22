@@ -19,7 +19,7 @@ namespace base {
 class MessageLoopProxy;
 }
 
-namespace fileapi {
+namespace storage {
 class FileSystemContext;
 }
 
@@ -28,7 +28,7 @@ class DrainableIOBuffer;
 class IOBuffer;
 }
 
-namespace webkit_blob {
+namespace storage {
 
 class FileStreamReader;
 
@@ -39,7 +39,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT BlobURLRequestJob
   BlobURLRequestJob(net::URLRequest* request,
                     net::NetworkDelegate* network_delegate,
                     BlobData* blob_data,
-                    fileapi::FileSystemContext* file_system_context,
+                    storage::FileSystemContext* file_system_context,
                     base::MessageLoopProxy* resolving_message_loop_proxy);
 
   // net::URLRequestJob methods.
@@ -98,7 +98,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT BlobURLRequestJob
   scoped_refptr<BlobData> blob_data_;
 
   // Variables for controlling read from |blob_data_|.
-  scoped_refptr<fileapi::FileSystemContext> file_system_context_;
+  scoped_refptr<storage::FileSystemContext> file_system_context_;
   scoped_refptr<base::MessageLoopProxy> file_thread_proxy_;
   std::vector<int64> item_length_list_;
   int64 total_size_;
@@ -124,6 +124,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT BlobURLRequestJob
   DISALLOW_COPY_AND_ASSIGN(BlobURLRequestJob);
 };
 
-}  // namespace webkit_blob
+}  // namespace storage
 
 #endif  // WEBKIT_BROWSER_BLOB_BLOB_URL_REQUEST_JOB_H_

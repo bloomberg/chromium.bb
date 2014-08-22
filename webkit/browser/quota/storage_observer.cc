@@ -4,7 +4,7 @@
 
 #include "webkit/browser/quota/storage_observer.h"
 
-namespace quota {
+namespace storage {
 
 // StorageObserver::Filter
 
@@ -62,4 +62,4 @@ bool StorageObserver::Event::operator==(const Event& other) const {
          quota == other.quota;
 }
 
-}  // namespace quota
+}  // namespace storage

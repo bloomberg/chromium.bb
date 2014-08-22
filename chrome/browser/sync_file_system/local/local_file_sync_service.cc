@@ -28,7 +28,7 @@
 #include "webkit/common/blob/scoped_file.h"
 
 using content::BrowserThread;
-using fileapi::FileSystemURL;
+using storage::FileSystemURL;
 
 namespace sync_file_system {
 
@@ -38,7 +38,7 @@ void PrepareForProcessRemoteChangeCallbackAdapter(
     const RemoteChangeProcessor::PrepareChangeCallback& callback,
     SyncStatusCode status,
     const LocalFileSyncInfo& sync_file_info,
-    webkit_blob::ScopedFile snapshot) {
+    storage::ScopedFile snapshot) {
   callback.Run(status, sync_file_info.metadata, sync_file_info.changes);
 }
 
@@ -131,7 +131,7 @@ void LocalFileSyncService::Shutdown() {
 
 void LocalFileSyncService::MaybeInitializeFileSystemContext(
     const GURL& app_origin,
-    fileapi::FileSystemContext* file_system_context,
+    storage::FileSystemContext* file_system_context,
     const SyncStatusCallback& callback) {
   sync_context_->MaybeInitializeFileSystemContext(
       app_origin, file_system_context,
@@ -247,9 +247,9 @@ void LocalFileSyncService::PrepareForProcessRemoteChange(
     GURL site_url =
         extensions::util::GetSiteForExtensionId(extension->id(), profile_);
     DCHECK(!site_url.is_empty());
-    scoped_refptr<fileapi::FileSystemContext> file_system_context =
-        content::BrowserContext::GetStoragePartitionForSite(
-            profile_, site_url)->GetFileSystemContext();
+    scoped_refptr<storage::FileSystemContext> file_system_context =
+        content::BrowserContext::GetStoragePartitionForSite(profile_, site_url)
+            ->GetFileSystemContext();
     MaybeInitializeFileSystemContext(
         url.origin(),
         file_system_context.get(),
@@ -357,7 +357,7 @@ LocalFileSyncService::LocalFileSyncService(Profile* profile,
 
 void LocalFileSyncService::DidInitializeFileSystemContext(
     const GURL& app_origin,
-    fileapi::FileSystemContext* file_system_context,
+    storage::FileSystemContext* file_system_context,
     const SyncStatusCallback& callback,
     SyncStatusCode status) {
   if (status != SYNC_STATUS_OK) {
@@ -386,7 +386,7 @@ void LocalFileSyncService::DidInitializeFileSystemContext(
 
 void LocalFileSyncService::DidInitializeForRemoteSync(
     const FileSystemURL& url,
-    fileapi::FileSystemContext* file_system_context,
+    storage::FileSystemContext* file_system_context,
     const PrepareChangeCallback& callback,
     SyncStatusCode status) {
   if (status != SYNC_STATUS_OK) {
@@ -423,7 +423,7 @@ void LocalFileSyncService::DidApplyRemoteChange(
 void LocalFileSyncService::DidGetFileForLocalSync(
     SyncStatusCode status,
     const LocalFileSyncInfo& sync_file_info,
-    webkit_blob::ScopedFile snapshot) {
+    storage::ScopedFile snapshot) {
   DCHECK(!local_sync_callback_.is_null());
   if (status != SYNC_STATUS_OK) {
     RunLocalSyncCallback(status, sync_file_info.url);
@@ -452,7 +452,7 @@ void LocalFileSyncService::DidGetFileForLocalSync(
 }
 
 void LocalFileSyncService::ProcessNextChangeForURL(
-    webkit_blob::ScopedFile snapshot,
+    storage::ScopedFile snapshot,
     const LocalFileSyncInfo& sync_file_info,
     const FileChange& processed_change,
     const FileChangeList& changes,

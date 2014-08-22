@@ -46,7 +46,8 @@ namespace {
 const int kStorageEventRateSec = 30;
 
 // The storage type to monitor.
-const quota::StorageType kMonitorStorageType = quota::kStorageTypePersistent;
+const storage::StorageType kMonitorStorageType =
+    storage::kStorageTypePersistent;
 
 // Set the thresholds for the first notification. Ephemeral apps have a lower
 // threshold than installed extensions and apps. Once a threshold is exceeded,
@@ -88,10 +89,9 @@ const Extension* GetExtensionById(content::BrowserContext* context,
 // the IO thread. When a threshold is exceeded, a message will be posted to the
 // UI thread, which displays the notification.
 class StorageEventObserver
-    : public base::RefCountedThreadSafe<
-          StorageEventObserver,
-          BrowserThread::DeleteOnIOThread>,
-      public quota::StorageObserver {
+    : public base::RefCountedThreadSafe<StorageEventObserver,
+                                        BrowserThread::DeleteOnIOThread>,
+      public storage::StorageObserver {
  public:
   explicit StorageEventObserver(
       base::WeakPtr<ExtensionStorageMonitor> storage_monitor)
@@ -100,7 +100,7 @@ class StorageEventObserver
 
   // Register as an observer for the extension's storage events.
   void StartObservingForExtension(
-      scoped_refptr<quota::QuotaManager> quota_manager,
+      scoped_refptr<storage::QuotaManager> quota_manager,
       const std::string& extension_id,
       const GURL& site_url,
       int64 next_threshold,
@@ -114,11 +114,8 @@ class StorageEventObserver
     state.extension_id = extension_id;
     state.next_threshold = next_threshold;
 
-    quota::StorageObserver::MonitorParams params(
-        kMonitorStorageType,
-        origin,
-        base::TimeDelta::FromSeconds(rate),
-        false);
+    storage::StorageObserver::MonitorParams params(
+        kMonitorStorageType, origin, base::TimeDelta::FromSeconds(rate), false);
     quota_manager->AddStorageObserver(this, params);
   }
 
@@ -144,7 +141,7 @@ class StorageEventObserver
     for (OriginStorageStateMap::iterator it = origin_state_map_.begin();
          it != origin_state_map_.end(); ) {
       if (it->second.extension_id == extension_id) {
-        quota::StorageObserver::Filter filter(kMonitorStorageType, it->first);
+        storage::StorageObserver::Filter filter(kMonitorStorageType, it->first);
         it->second.quota_manager->RemoveStorageObserverForFilter(this, filter);
         origin_state_map_.erase(it++);
       } else {
@@ -170,7 +167,7 @@ class StorageEventObserver
       content::BrowserThread::IO>;
 
   struct StorageState {
-    scoped_refptr<quota::QuotaManager> quota_manager;
+    scoped_refptr<storage::QuotaManager> quota_manager;
     std::string extension_id;
     int64 next_threshold;
 
@@ -183,7 +180,7 @@ class StorageEventObserver
     StopObserving();
   }
 
-  // quota::StorageObserver implementation.
+  // storage::StorageObserver implementation.
   virtual void OnStorageEvent(const Event& event) OVERRIDE {
     OriginStorageStateMap::iterator state =
         origin_state_map_.find(event.filter.origin);
@@ -471,7 +468,7 @@ void ExtensionStorageMonitor::StartMonitoringStorage(
   content::StoragePartition* storage_partition =
       content::BrowserContext::GetStoragePartitionForSite(context_, site_url);
   DCHECK(storage_partition);
-  scoped_refptr<quota::QuotaManager> quota_manager(
+  scoped_refptr<storage::QuotaManager> quota_manager(
       storage_partition->GetQuotaManager());
 
   GURL storage_origin(site_url.GetOrigin());

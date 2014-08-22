@@ -20,7 +20,7 @@ class ProvidedFileSystemInterface;
 
 // Implements a streamed file reader. It is lazily initialized by the first call
 // to Read().
-class FileStreamReader : public webkit_blob::FileStreamReader {
+class FileStreamReader : public storage::FileStreamReader {
  public:
   typedef base::Callback<
       void(base::WeakPtr<ProvidedFileSystemInterface> file_system,
@@ -28,14 +28,14 @@ class FileStreamReader : public webkit_blob::FileStreamReader {
            int file_handle,
            base::File::Error result)> OpenFileCompletedCallback;
 
-  FileStreamReader(fileapi::FileSystemContext* context,
-                   const fileapi::FileSystemURL& url,
+  FileStreamReader(storage::FileSystemContext* context,
+                   const storage::FileSystemURL& url,
                    int64 initial_offset,
                    const base::Time& expected_modification_time);
 
   virtual ~FileStreamReader();
 
-  // webkit_blob::FileStreamReader overrides.
+  // storage::FileStreamReader overrides.
   virtual int Read(net::IOBuffer* buf,
                    int buf_len,
                    const net::CompletionCallback& callback) OVERRIDE;
@@ -94,7 +94,7 @@ class FileStreamReader : public webkit_blob::FileStreamReader {
   // Same as GetLength(), but called after initializing is completed.
   void GetLengthAfterInitialized(const net::Int64CompletionCallback& callback);
 
-  fileapi::FileSystemURL url_;
+  storage::FileSystemURL url_;
   int64 current_offset_;
   int64 current_length_;
   base::Time expected_modification_time_;

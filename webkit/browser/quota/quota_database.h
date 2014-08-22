@@ -30,7 +30,7 @@ class MetaTable;
 
 class GURL;
 
-namespace quota {
+namespace storage {
 
 class SpecialStoragePolicy;
 
@@ -185,6 +185,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE QuotaDatabase {
   DISALLOW_COPY_AND_ASSIGN(QuotaDatabase);
 };
 
-}  // namespace quota
+}  // namespace storage
 
 #endif  // WEBKIT_BROWSER_QUOTA_QUOTA_DATABASE_H_

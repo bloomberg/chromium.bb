@@ -49,7 +49,7 @@ class PepperFileIOHost : public ppapi::host::ResourceHost,
     UIThreadStuff();
     ~UIThreadStuff();
     base::ProcessId resolved_render_process_id;
-    scoped_refptr<fileapi::FileSystemContext> file_system_context;
+    scoped_refptr<storage::FileSystemContext> file_system_context;
   };
 
  private:
@@ -126,8 +126,8 @@ class PepperFileIOHost : public ppapi::host::ResourceHost,
   base::WeakPtr<PepperFileSystemBrowserHost> file_system_host_;
 
   // Valid only for PP_FILESYSTEMTYPE_LOCAL{PERSISTENT,TEMPORARY}.
-  scoped_refptr<fileapi::FileSystemContext> file_system_context_;
-  fileapi::FileSystemURL file_system_url_;
+  scoped_refptr<storage::FileSystemContext> file_system_context_;
+  storage::FileSystemURL file_system_url_;
   base::Closure on_close_callback_;
   int64_t max_written_offset_;
   bool check_quota_;

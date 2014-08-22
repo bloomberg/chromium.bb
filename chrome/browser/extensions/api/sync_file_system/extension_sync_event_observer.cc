@@ -85,7 +85,7 @@ void ExtensionSyncEventObserver::OnSyncStateUpdated(
 }
 
 void ExtensionSyncEventObserver::OnFileSynced(
-    const fileapi::FileSystemURL& url,
+    const storage::FileSystemURL& url,
     sync_file_system::SyncFileStatus status,
     sync_file_system::SyncAction action,
     sync_file_system::SyncDirection direction) {

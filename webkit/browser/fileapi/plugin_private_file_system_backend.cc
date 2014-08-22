@@ -22,7 +22,7 @@
 #include "webkit/browser/fileapi/quota/quota_reservation.h"
 #include "webkit/common/fileapi/file_system_util.h"
 
-namespace fileapi {
+namespace storage {
 
 class PluginPrivateFileSystemBackend::FileSystemIDToPluginMap {
  public:
@@ -87,12 +87,12 @@ base::File::Error OpenFileSystemOnFileTaskRunner(
 PluginPrivateFileSystemBackend::PluginPrivateFileSystemBackend(
     base::SequencedTaskRunner* file_task_runner,
     const base::FilePath& profile_path,
-    quota::SpecialStoragePolicy* special_storage_policy,
+    storage::SpecialStoragePolicy* special_storage_policy,
     const FileSystemOptions& file_system_options)
     : file_task_runner_(file_task_runner),
       file_system_options_(file_system_options),
-      base_path_(profile_path.Append(
-          kFileSystemDirectory).Append(kPluginPrivateDirectory)),
+      base_path_(profile_path.Append(kFileSystemDirectory)
+                     .Append(kPluginPrivateDirectory)),
       plugin_map_(new FileSystemIDToPluginMap(file_task_runner)),
       weak_factory_(this) {
   file_util_.reset(
@@ -179,22 +179,22 @@ FileSystemOperation* PluginPrivateFileSystemBackend::CreateFileSystemOperation(
 }
 
 bool PluginPrivateFileSystemBackend::SupportsStreaming(
-    const fileapi::FileSystemURL& url) const {
+    const storage::FileSystemURL& url) const {
   return false;
 }
 
 bool PluginPrivateFileSystemBackend::HasInplaceCopyImplementation(
-    fileapi::FileSystemType type) const {
+    storage::FileSystemType type) const {
   return false;
 }
 
-scoped_ptr<webkit_blob::FileStreamReader>
+scoped_ptr<storage::FileStreamReader>
 PluginPrivateFileSystemBackend::CreateFileStreamReader(
     const FileSystemURL& url,
     int64 offset,
     const base::Time& expected_modification_time,
     FileSystemContext* context) const {
-  return scoped_ptr<webkit_blob::FileStreamReader>();
+  return scoped_ptr<storage::FileStreamReader>();
 }
 
 scoped_ptr<FileStreamWriter>
@@ -212,7 +212,7 @@ FileSystemQuotaUtil* PluginPrivateFileSystemBackend::GetQuotaUtil() {
 base::File::Error
 PluginPrivateFileSystemBackend::DeleteOriginDataOnFileTaskRunner(
     FileSystemContext* context,
-    quota::QuotaManagerProxy* proxy,
+    storage::QuotaManagerProxy* proxy,
     const GURL& origin_url,
     FileSystemType type) {
   if (!CanHandleType(type))
@@ -303,4 +303,4 @@ ObfuscatedFileUtil* PluginPrivateFileSystemBackend::obfuscated_file_util() {
       static_cast<AsyncFileUtilAdapter*>(file_util_.get())->sync_file_util());
 }
 
-}  // namespace fileapi
+}  // namespace storage

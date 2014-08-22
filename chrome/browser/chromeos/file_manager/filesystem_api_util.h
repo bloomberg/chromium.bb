@@ -20,9 +20,9 @@ namespace base {
 class FilePath;
 }  // namespace base
 
-namespace fileapi {
+namespace storage {
 class FileSystemURL;
-}  // namespace fileapi
+}  // namespace storage
 
 namespace file_manager {
 namespace util {

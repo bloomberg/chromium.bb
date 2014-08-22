@@ -31,8 +31,9 @@ class CONTENT_EXPORT IndexedDBActiveBlobRegistry {
   // Use DatabaseMetaDataKey::AllBlobsKey for "the whole database".
   bool MarkDeletedCheckIfUsed(int64 database_id, int64 blob_key);
 
-  webkit_blob::ShareableFileReference::FinalReleaseCallback
-      GetFinalReleaseCallback(int64 database_id, int64 blob_key);
+  storage::ShareableFileReference::FinalReleaseCallback GetFinalReleaseCallback(
+      int64 database_id,
+      int64 blob_key);
   // This closure holds a raw pointer to the IndexedDBActiveBlobRegistry,
   // and may not be called after it is deleted.
   base::Closure GetAddBlobRefCallback(int64 database_id, int64 blob_key);

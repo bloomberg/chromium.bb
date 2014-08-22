@@ -9,7 +9,7 @@
 #include "webkit/browser/fileapi/sandbox_isolated_origin_database.h"
 #include "webkit/browser/fileapi/sandbox_origin_database.h"
 
-using fileapi::SandboxIsolatedOriginDatabase;
+using storage::SandboxIsolatedOriginDatabase;
 
 namespace content {
 

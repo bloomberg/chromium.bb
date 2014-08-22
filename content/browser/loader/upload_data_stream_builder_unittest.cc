@@ -20,9 +20,9 @@
 #include "url/gurl.h"
 #include "webkit/browser/blob/blob_storage_context.h"
 
-using webkit_blob::BlobData;
-using webkit_blob::BlobDataHandle;
-using webkit_blob::BlobStorageContext;
+using storage::BlobData;
+using storage::BlobDataHandle;
+using storage::BlobStorageContext;
 
 namespace content {
 namespace {

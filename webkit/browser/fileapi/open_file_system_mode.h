@@ -5,7 +5,7 @@
 #ifndef WEBKIT_BROWSER_FILEAPI_OPEN_FILE_SYSTEM_MODE_H_
 #define WEBKIT_BROWSER_FILEAPI_OPEN_FILE_SYSTEM_MODE_H_
 
-namespace fileapi {
+namespace storage {
 
 // Determines the behavior on OpenFileSystem when a specified
 // FileSystem does not exist.
@@ -17,6 +17,6 @@ enum OpenFileSystemMode {
   OPEN_FILE_SYSTEM_FAIL_IF_NONEXISTENT,
 };
 
-}  // namespace fileapi
+}  // namespace storage
 
 #endif  // WEBKIT_BROWSER_FILEAPI_OPEN_FILE_SYSTEM_MODE_H_

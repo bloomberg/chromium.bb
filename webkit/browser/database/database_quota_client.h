@@ -14,7 +14,7 @@
 #include "webkit/browser/webkit_storage_browser_export.h"
 #include "webkit/common/quota/quota_types.h"
 
-namespace webkit_database {
+namespace storage {
 
 class DatabaseTracker;
 
@@ -22,7 +22,7 @@ class DatabaseTracker;
 // with the quota  management system. This interface is used
 // on the IO thread by the quota manager.
 class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE DatabaseQuotaClient
-    : public quota::QuotaClient {
+    : public storage::QuotaClient {
  public:
   DatabaseQuotaClient(
       base::MessageLoopProxy* tracker_thread,
@@ -33,17 +33,18 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE DatabaseQuotaClient
   virtual ID id() const OVERRIDE;
   virtual void OnQuotaManagerDestroyed() OVERRIDE;
   virtual void GetOriginUsage(const GURL& origin_url,
-                              quota::StorageType type,
+                              storage::StorageType type,
                               const GetUsageCallback& callback) OVERRIDE;
-  virtual void GetOriginsForType(quota::StorageType type,
+  virtual void GetOriginsForType(storage::StorageType type,
                                  const GetOriginsCallback& callback) OVERRIDE;
-  virtual void GetOriginsForHost(quota::StorageType type,
+  virtual void GetOriginsForHost(storage::StorageType type,
                                  const std::string& host,
                                  const GetOriginsCallback& callback) OVERRIDE;
   virtual void DeleteOriginData(const GURL& origin,
-                                quota::StorageType type,
+                                storage::StorageType type,
                                 const DeletionCallback& callback) OVERRIDE;
-  virtual bool DoesSupport(quota::StorageType type) const OVERRIDE;
+  virtual bool DoesSupport(storage::StorageType type) const OVERRIDE;
+
  private:
   scoped_refptr<base::MessageLoopProxy> db_tracker_thread_;
   scoped_refptr<DatabaseTracker> db_tracker_;  // only used on its thread
@@ -51,6 +52,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE DatabaseQuotaClient
   DISALLOW_COPY_AND_ASSIGN(DatabaseQuotaClient);
 };
 
-}  // namespace webkit_database
+}  // namespace storage
 
 #endif  // WEBKIT_BROWSER_DATABASE_DATABASE_QUOTA_CLIENT_H_

@@ -8,7 +8,7 @@
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_operation_runner.h"
 
-namespace fileapi {
+namespace storage {
 
 RemoveOperationDelegate::RemoveOperationDelegate(
     FileSystemContext* file_system_context,
@@ -79,4 +79,4 @@ void RemoveOperationDelegate::DidRemoveFile(const StatusCallback& callback,
   callback.Run(error);
 }
 
-}  // namespace fileapi
+}  // namespace storage

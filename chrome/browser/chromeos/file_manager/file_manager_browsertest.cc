@@ -312,15 +312,15 @@ class FakeTestVolume : public LocalTestVolume {
   virtual bool Mount(Profile* profile) OVERRIDE {
     if (!CreateRootDirectory(profile))
       return false;
-    fileapi::ExternalMountPoints* const mount_points =
-        fileapi::ExternalMountPoints::GetSystemInstance();
+    storage::ExternalMountPoints* const mount_points =
+        storage::ExternalMountPoints::GetSystemInstance();
 
     // First revoke the existing mount point (if any).
     mount_points->RevokeFileSystem(name());
     const bool result =
         mount_points->RegisterFileSystem(name(),
-                                         fileapi::kFileSystemTypeNativeLocal,
-                                         fileapi::FileSystemMountOption(),
+                                         storage::kFileSystemTypeNativeLocal,
+                                         storage::FileSystemMountOption(),
                                          root_path());
     if (!result)
       return false;

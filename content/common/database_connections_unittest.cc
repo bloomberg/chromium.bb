@@ -10,8 +10,8 @@
 #include "webkit/common/database/database_connections.h"
 
 using base::ASCIIToUTF16;
-using webkit_database::DatabaseConnections;
-using webkit_database::DatabaseConnectionsWrapper;
+using storage::DatabaseConnections;
+using storage::DatabaseConnectionsWrapper;
 
 namespace content {
 

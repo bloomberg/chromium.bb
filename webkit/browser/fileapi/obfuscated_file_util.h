@@ -34,13 +34,13 @@ class ObfuscatedFileUtilTest;
 class QuotaBackendImplTest;
 }
 
-namespace quota {
+namespace storage {
 class SpecialStoragePolicy;
 }
 
 class GURL;
 
-namespace fileapi {
+namespace storage {
 
 class FileSystemOperationContext;
 class SandboxOriginDatabaseInterface;
@@ -101,14 +101,13 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE ObfuscatedFileUtil
   // for any known type exists the origin directory may get deleted when
   // one origin/type pair is deleted.
   //
-  ObfuscatedFileUtil(
-      quota::SpecialStoragePolicy* special_storage_policy,
-      const base::FilePath& file_system_directory,
-      leveldb::Env* env_override,
-      base::SequencedTaskRunner* file_task_runner,
-      const GetTypeStringForURLCallback& get_type_string_for_url,
-      const std::set<std::string>& known_type_strings,
-      SandboxFileSystemBackendDelegate* sandbox_delegate);
+  ObfuscatedFileUtil(storage::SpecialStoragePolicy* special_storage_policy,
+                     const base::FilePath& file_system_directory,
+                     leveldb::Env* env_override,
+                     base::SequencedTaskRunner* file_task_runner,
+                     const GetTypeStringForURLCallback& get_type_string_for_url,
+                     const std::set<std::string>& known_type_strings,
+                     SandboxFileSystemBackendDelegate* sandbox_delegate);
   virtual ~ObfuscatedFileUtil();
 
   // FileSystemFileUtil overrides.
@@ -161,7 +160,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE ObfuscatedFileUtil
   virtual base::File::Error DeleteDirectory(
       FileSystemOperationContext* context,
       const FileSystemURL& url) OVERRIDE;
-  virtual webkit_blob::ScopedFile CreateSnapshotFile(
+  virtual storage::ScopedFile CreateSnapshotFile(
       FileSystemOperationContext* context,
       const FileSystemURL& url,
       base::File::Error* error,
@@ -237,7 +236,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE ObfuscatedFileUtil
   // (temporary, persistent) file systems. Used only for testing.
   // Note: this is implemented in sandbox_file_system_backend_delegate.cc.
   static ObfuscatedFileUtil* CreateForTesting(
-      quota::SpecialStoragePolicy* special_storage_policy,
+      storage::SpecialStoragePolicy* special_storage_policy,
       const base::FilePath& file_system_directory,
       leveldb::Env* env_override,
       base::SequencedTaskRunner* file_task_runner);
@@ -336,7 +335,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE ObfuscatedFileUtil
   typedef std::map<std::string, SandboxDirectoryDatabase*> DirectoryMap;
   DirectoryMap directories_;
   scoped_ptr<SandboxOriginDatabaseInterface> origin_database_;
-  scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy_;
+  scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy_;
   base::FilePath file_system_directory_;
   leveldb::Env* env_override_;
 
@@ -355,6 +354,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE ObfuscatedFileUtil
   DISALLOW_COPY_AND_ASSIGN(ObfuscatedFileUtil);
 };
 
-}  // namespace fileapi
+}  // namespace storage
 
 #endif  // WEBKIT_BROWSER_FILEAPI_OBFUSCATED_FILE_UTIL_H_

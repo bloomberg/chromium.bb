@@ -67,7 +67,7 @@ class WebDatabaseObserverImpl : public blink::WebDatabaseObserver {
                          int error);
 
   scoped_refptr<IPC::SyncMessageFilter> sender_;
-  scoped_refptr<webkit_database::DatabaseConnectionsWrapper> open_connections_;
+  scoped_refptr<storage::DatabaseConnectionsWrapper> open_connections_;
 
   DISALLOW_COPY_AND_ASSIGN(WebDatabaseObserverImpl);
 };

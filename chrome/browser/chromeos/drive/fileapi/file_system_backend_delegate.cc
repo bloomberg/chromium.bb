@@ -30,50 +30,54 @@ FileSystemBackendDelegate::FileSystemBackendDelegate()
 FileSystemBackendDelegate::~FileSystemBackendDelegate() {
 }
 
-fileapi::AsyncFileUtil* FileSystemBackendDelegate::GetAsyncFileUtil(
-    fileapi::FileSystemType type) {
+storage::AsyncFileUtil* FileSystemBackendDelegate::GetAsyncFileUtil(
+    storage::FileSystemType type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK_EQ(fileapi::kFileSystemTypeDrive, type);
+  DCHECK_EQ(storage::kFileSystemTypeDrive, type);
   return async_file_util_.get();
 }
 
-scoped_ptr<webkit_blob::FileStreamReader>
+scoped_ptr<storage::FileStreamReader>
 FileSystemBackendDelegate::CreateFileStreamReader(
-    const fileapi::FileSystemURL& url,
+    const storage::FileSystemURL& url,
     int64 offset,
     const base::Time& expected_modification_time,
-    fileapi::FileSystemContext* context) {
+    storage::FileSystemContext* context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK_EQ(fileapi::kFileSystemTypeDrive, url.type());
+  DCHECK_EQ(storage::kFileSystemTypeDrive, url.type());
 
   base::FilePath file_path = util::ExtractDrivePathFromFileSystemUrl(url);
   if (file_path.empty())
-    return scoped_ptr<webkit_blob::FileStreamReader>();
+    return scoped_ptr<storage::FileStreamReader>();
 
-  return scoped_ptr<webkit_blob::FileStreamReader>(
+  return scoped_ptr<storage::FileStreamReader>(
       new internal::WebkitFileStreamReaderImpl(
           base::Bind(&fileapi_internal::GetFileSystemFromUrl, url),
           context->default_file_task_runner(),
-          file_path, offset, expected_modification_time));
+          file_path,
+          offset,
+          expected_modification_time));
 }
 
-scoped_ptr<fileapi::FileStreamWriter>
+scoped_ptr<storage::FileStreamWriter>
 FileSystemBackendDelegate::CreateFileStreamWriter(
-    const fileapi::FileSystemURL& url,
+    const storage::FileSystemURL& url,
     int64 offset,
-    fileapi::FileSystemContext* context) {
+    storage::FileSystemContext* context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK_EQ(fileapi::kFileSystemTypeDrive, url.type());
+  DCHECK_EQ(storage::kFileSystemTypeDrive, url.type());
 
   base::FilePath file_path = util::ExtractDrivePathFromFileSystemUrl(url);
   // Hosted documents don't support stream writer.
   if (file_path.empty() || util::HasHostedDocumentExtension(file_path))
-    return scoped_ptr<fileapi::FileStreamWriter>();
+    return scoped_ptr<storage::FileStreamWriter>();
 
-  return scoped_ptr<fileapi::FileStreamWriter>(
+  return scoped_ptr<storage::FileStreamWriter>(
       new internal::WebkitFileStreamWriterImpl(
           base::Bind(&fileapi_internal::GetFileSystemFromUrl, url),
-          context->default_file_task_runner(),file_path, offset));
+          context->default_file_task_runner(),
+          file_path,
+          offset));
 }
 
 }  // namespace drive

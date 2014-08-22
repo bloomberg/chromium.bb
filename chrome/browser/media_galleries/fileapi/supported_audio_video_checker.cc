@@ -63,7 +63,7 @@ bool SupportedAudioVideoChecker::SupportsFileType(const base::FilePath& path) {
 }
 
 void SupportedAudioVideoChecker::StartPreWriteValidation(
-    const fileapi::CopyOrMoveFileValidator::ResultCallback& result_callback) {
+    const storage::CopyOrMoveFileValidator::ResultCallback& result_callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(callback_.is_null());
   callback_ = result_callback;

@@ -732,53 +732,51 @@ void DidGetHostUsage(
   barrier.Run();
 }
 
-void DidGetQuotaValue(
-    base::DictionaryValue* dictionary,
-    const std::string& item_name,
-    const base::Closure& barrier,
-    quota::QuotaStatusCode status,
-    int64 value) {
-  if (status == quota::kQuotaStatusOk)
+void DidGetQuotaValue(base::DictionaryValue* dictionary,
+                      const std::string& item_name,
+                      const base::Closure& barrier,
+                      storage::QuotaStatusCode status,
+                      int64 value) {
+  if (status == storage::kQuotaStatusOk)
     dictionary->SetDouble(item_name, value);
   barrier.Run();
 }
 
-void DidGetUsageAndQuotaForWebApps(
-    base::DictionaryValue* quota,
-    const std::string& item_name,
-    const base::Closure& barrier,
-    quota::QuotaStatusCode status,
-    int64 used_bytes,
-    int64 quota_in_bytes) {
-  if (status == quota::kQuotaStatusOk)
+void DidGetUsageAndQuotaForWebApps(base::DictionaryValue* quota,
+                                   const std::string& item_name,
+                                   const base::Closure& barrier,
+                                   storage::QuotaStatusCode status,
+                                   int64 used_bytes,
+                                   int64 quota_in_bytes) {
+  if (status == storage::kQuotaStatusOk)
     quota->SetDouble(item_name, quota_in_bytes);
   barrier.Run();
 }
 
-std::string GetStorageTypeName(quota::StorageType type) {
+std::string GetStorageTypeName(storage::StorageType type) {
   switch (type) {
-    case quota::kStorageTypeTemporary:
+    case storage::kStorageTypeTemporary:
       return devtools::Page::Usage::kParamTemporary;
-    case quota::kStorageTypePersistent:
+    case storage::kStorageTypePersistent:
       return devtools::Page::Usage::kParamPersistent;
-    case quota::kStorageTypeSyncable:
+    case storage::kStorageTypeSyncable:
       return devtools::Page::Usage::kParamSyncable;
-    case quota::kStorageTypeQuotaNotManaged:
-    case quota::kStorageTypeUnknown:
+    case storage::kStorageTypeQuotaNotManaged:
+    case storage::kStorageTypeUnknown:
       NOTREACHED();
   }
   return "";
 }
 
-std::string GetQuotaClientName(quota::QuotaClient::ID id) {
+std::string GetQuotaClientName(storage::QuotaClient::ID id) {
   switch (id) {
-    case quota::QuotaClient::kFileSystem:
+    case storage::QuotaClient::kFileSystem:
       return devtools::Page::UsageItem::Id::kEnumFilesystem;
-    case quota::QuotaClient::kDatabase:
+    case storage::QuotaClient::kDatabase:
       return devtools::Page::UsageItem::Id::kEnumDatabase;
-    case quota::QuotaClient::kAppcache:
+    case storage::QuotaClient::kAppcache:
       return devtools::Page::UsageItem::Id::kEnumAppcache;
-    case quota::QuotaClient::kIndexedDatabase:
+    case storage::QuotaClient::kIndexedDatabase:
       return devtools::Page::UsageItem::Id::kEnumIndexeddatabase;
     default:
       NOTREACHED();
@@ -787,25 +785,22 @@ std::string GetQuotaClientName(quota::QuotaClient::ID id) {
 }
 
 void QueryUsageAndQuotaOnIOThread(
-    scoped_refptr<quota::QuotaManager> quota_manager,
+    scoped_refptr<storage::QuotaManager> quota_manager,
     const GURL& security_origin,
     const ResponseCallback& callback) {
   scoped_ptr<base::DictionaryValue> quota(new base::DictionaryValue);
   scoped_ptr<base::DictionaryValue> usage(new base::DictionaryValue);
 
-  static quota::QuotaClient::ID kQuotaClients[] = {
-      quota::QuotaClient::kFileSystem,
-      quota::QuotaClient::kDatabase,
-      quota::QuotaClient::kAppcache,
-      quota::QuotaClient::kIndexedDatabase
-  };
+  static storage::QuotaClient::ID kQuotaClients[] = {
+      storage::QuotaClient::kFileSystem, storage::QuotaClient::kDatabase,
+      storage::QuotaClient::kAppcache, storage::QuotaClient::kIndexedDatabase};
 
-  static const size_t kStorageTypeCount = quota::kStorageTypeUnknown;
-  std::map<quota::StorageType, base::ListValue*> storage_type_lists;
+  static const size_t kStorageTypeCount = storage::kStorageTypeUnknown;
+  std::map<storage::StorageType, base::ListValue*> storage_type_lists;
 
   for (size_t i = 0; i != kStorageTypeCount; i++) {
-    const quota::StorageType type = static_cast<quota::StorageType>(i);
-    if (type == quota::kStorageTypeQuotaNotManaged)
+    const storage::StorageType type = static_cast<storage::StorageType>(i);
+    if (type == storage::kStorageTypeQuotaNotManaged)
       continue;
     storage_type_lists[type] = new base::ListValue;
     usage->Set(GetStorageTypeName(type), storage_type_lists[type]);
@@ -826,9 +821,11 @@ void QueryUsageAndQuotaOnIOThread(
 
   quota_manager->GetUsageAndQuotaForWebApps(
       security_origin,
-      quota::kStorageTypeTemporary,
-      base::Bind(&DidGetUsageAndQuotaForWebApps, quota_raw_ptr,
-                 std::string(devtools::Page::Quota::kParamTemporary), barrier));
+      storage::kStorageTypeTemporary,
+      base::Bind(&DidGetUsageAndQuotaForWebApps,
+                 quota_raw_ptr,
+                 std::string(devtools::Page::Quota::kParamTemporary),
+                 barrier));
 
   quota_manager->GetPersistentHostQuota(
       host,
@@ -837,10 +834,10 @@ void QueryUsageAndQuotaOnIOThread(
                  barrier));
 
   for (size_t i = 0; i != arraysize(kQuotaClients); i++) {
-    std::map<quota::StorageType, base::ListValue*>::const_iterator iter;
+    std::map<storage::StorageType, base::ListValue*>::const_iterator iter;
     for (iter = storage_type_lists.begin();
          iter != storage_type_lists.end(); ++iter) {
-      const quota::StorageType type = (*iter).first;
+      const storage::StorageType type = (*iter).first;
       if (!quota_manager->IsTrackingHostUsage(type, kQuotaClients[i])) {
         barrier.Run();
         continue;
@@ -876,7 +873,7 @@ RendererOverridesHandler::PageQueryUsageAndQuota(
   if (!host_)
     return command->InternalErrorResponse("Could not connect to view");
 
-  scoped_refptr<quota::QuotaManager> quota_manager =
+  scoped_refptr<storage::QuotaManager> quota_manager =
       host_->GetProcess()->GetStoragePartition()->GetQuotaManager();
 
   BrowserThread::PostTask(

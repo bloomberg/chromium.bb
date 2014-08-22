@@ -15,7 +15,7 @@
 #include "webkit/browser/fileapi/native_file_util.h"
 #include "webkit/common/blob/shareable_file_reference.h"
 
-namespace fileapi {
+namespace storage {
 
 typedef IsolatedContext::MountPointInfo FileInfo;
 
@@ -102,4 +102,4 @@ scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator>
   return scoped_ptr<AbstractFileEnumerator>(new SetFileEnumerator(toplevels));
 }
 
-}  // namespace fileapi
+}  // namespace storage

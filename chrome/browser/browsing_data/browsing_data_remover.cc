@@ -106,9 +106,10 @@ BrowsingDataRemover::CompletionInhibitor*
 
 // Helper to create callback for BrowsingDataRemover::DoesOriginMatchMask.
 // Static.
-bool DoesOriginMatchMask(int origin_set_mask,
-                         const GURL& origin,
-                         quota::SpecialStoragePolicy* special_storage_policy) {
+bool DoesOriginMatchMask(
+    int origin_set_mask,
+    const GURL& origin,
+    storage::SpecialStoragePolicy* special_storage_policy) {
   return BrowsingDataHelper::DoesOriginMatchMask(
       origin, origin_set_mask, special_storage_policy);
 }

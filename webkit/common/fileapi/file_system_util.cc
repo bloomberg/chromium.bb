@@ -16,7 +16,7 @@
 #include "url/gurl.h"
 #include "webkit/common/database/database_identifier.h"
 
-namespace fileapi {
+namespace storage {
 
 const char kPersistentDir[] = "/persistent";
 const char kTemporaryDir[] = "/temporary";
@@ -237,42 +237,41 @@ GURL GetFileSystemRootURI(const GURL& origin_url, FileSystemType type) {
 }
 
 std::string GetFileSystemName(const GURL& origin_url, FileSystemType type) {
-  std::string origin_identifier =
-      webkit_database::GetIdentifierFromOrigin(origin_url);
+  std::string origin_identifier = storage::GetIdentifierFromOrigin(origin_url);
   std::string type_string = GetFileSystemTypeString(type);
   DCHECK(!type_string.empty());
   return origin_identifier + ":" + type_string;
 }
 
 FileSystemType QuotaStorageTypeToFileSystemType(
-    quota::StorageType storage_type) {
+    storage::StorageType storage_type) {
   switch (storage_type) {
-    case quota::kStorageTypeTemporary:
+    case storage::kStorageTypeTemporary:
       return kFileSystemTypeTemporary;
-    case quota::kStorageTypePersistent:
+    case storage::kStorageTypePersistent:
       return kFileSystemTypePersistent;
-    case quota::kStorageTypeSyncable:
+    case storage::kStorageTypeSyncable:
       return kFileSystemTypeSyncable;
-    case quota::kStorageTypeQuotaNotManaged:
-    case quota::kStorageTypeUnknown:
+    case storage::kStorageTypeQuotaNotManaged:
+    case storage::kStorageTypeUnknown:
       return kFileSystemTypeUnknown;
   }
   return kFileSystemTypeUnknown;
 }
 
-quota::StorageType FileSystemTypeToQuotaStorageType(FileSystemType type) {
+storage::StorageType FileSystemTypeToQuotaStorageType(FileSystemType type) {
   switch (type) {
     case kFileSystemTypeTemporary:
-      return quota::kStorageTypeTemporary;
+      return storage::kStorageTypeTemporary;
     case kFileSystemTypePersistent:
-      return quota::kStorageTypePersistent;
+      return storage::kStorageTypePersistent;
     case kFileSystemTypeSyncable:
     case kFileSystemTypeSyncableForInternalSync:
-      return quota::kStorageTypeSyncable;
+      return storage::kStorageTypeSyncable;
     case kFileSystemTypePluginPrivate:
-      return quota::kStorageTypeQuotaNotManaged;
+      return storage::kStorageTypeQuotaNotManaged;
     default:
-      return quota::kStorageTypeUnknown;
+      return storage::kStorageTypeUnknown;
   }
 }
 
@@ -403,8 +402,8 @@ bool GetFileSystemPublicType(
 
 std::string GetIsolatedFileSystemName(const GURL& origin_url,
                                       const std::string& filesystem_id) {
-  std::string name(fileapi::GetFileSystemName(
-      origin_url, fileapi::kFileSystemTypeIsolated));
+  std::string name(
+      storage::GetFileSystemName(origin_url, storage::kFileSystemTypeIsolated));
   name.append("_");
   name.append(filesystem_id);
   return name;
@@ -509,4 +508,4 @@ base::File::Error NetErrorToFileError(int error) {
   }
 }
 
-}  // namespace fileapi
+}  // namespace storage

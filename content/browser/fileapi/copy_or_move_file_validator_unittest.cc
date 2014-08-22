@@ -22,17 +22,17 @@
 #include "webkit/common/fileapi/file_system_util.h"
 
 using content::AsyncFileTestHelper;
-using fileapi::CopyOrMoveFileValidator;
-using fileapi::CopyOrMoveFileValidatorFactory;
-using fileapi::FileSystemURL;
+using storage::CopyOrMoveFileValidator;
+using storage::CopyOrMoveFileValidatorFactory;
+using storage::FileSystemURL;
 
 namespace content {
 
 namespace {
 
-const fileapi::FileSystemType kNoValidatorType =
-    fileapi::kFileSystemTypeTemporary;
-const fileapi::FileSystemType kWithValidatorType = fileapi::kFileSystemTypeTest;
+const storage::FileSystemType kNoValidatorType =
+    storage::kFileSystemTypeTemporary;
+const storage::FileSystemType kWithValidatorType = storage::kFileSystemTypeTest;
 
 void ExpectOk(const GURL& origin_url,
               const std::string& name,
@@ -43,8 +43,8 @@ void ExpectOk(const GURL& origin_url,
 class CopyOrMoveFileValidatorTestHelper {
  public:
   CopyOrMoveFileValidatorTestHelper(const GURL& origin,
-                                    fileapi::FileSystemType src_type,
-                                    fileapi::FileSystemType dest_type)
+                                    storage::FileSystemType src_type,
+                                    storage::FileSystemType dest_type)
       : origin_(origin), src_type_(src_type), dest_type_(dest_type) {}
 
   ~CopyOrMoveFileValidatorTestHelper() {
@@ -59,17 +59,17 @@ class CopyOrMoveFileValidatorTestHelper {
     file_system_context_ = CreateFileSystemContextForTesting(NULL, base_dir);
 
     // Set up TestFileSystemBackend to require CopyOrMoveFileValidator.
-    fileapi::FileSystemBackend* test_file_system_backend =
+    storage::FileSystemBackend* test_file_system_backend =
         file_system_context_->GetFileSystemBackend(kWithValidatorType);
     static_cast<TestFileSystemBackend*>(test_file_system_backend)->
         set_require_copy_or_move_validator(true);
 
     // Sets up source.
-    fileapi::FileSystemBackend* src_file_system_backend =
+    storage::FileSystemBackend* src_file_system_backend =
         file_system_context_->GetFileSystemBackend(src_type_);
     src_file_system_backend->ResolveURL(
         FileSystemURL::CreateForTest(origin_, src_type_, base::FilePath()),
-        fileapi::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
+        storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
         base::Bind(&ExpectOk));
     base::RunLoop().RunUntilIdle();
     ASSERT_EQ(base::File::FILE_OK, CreateDirectory(SourceURL("")));
@@ -93,7 +93,7 @@ class CopyOrMoveFileValidatorTestHelper {
   }
 
   void SetMediaCopyOrMoveFileValidatorFactory(
-      scoped_ptr<fileapi::CopyOrMoveFileValidatorFactory> factory) {
+      scoped_ptr<storage::CopyOrMoveFileValidatorFactory> factory) {
     TestFileSystemBackend* backend = static_cast<TestFileSystemBackend*>(
         file_system_context_->GetFileSystemBackend(kWithValidatorType));
     backend->InitializeCopyOrMoveFileValidatorFactory(factory.Pass());
@@ -167,13 +167,13 @@ class CopyOrMoveFileValidatorTestHelper {
 
   const GURL origin_;
 
-  const fileapi::FileSystemType src_type_;
-  const fileapi::FileSystemType dest_type_;
+  const storage::FileSystemType src_type_;
+  const storage::FileSystemType dest_type_;
   std::string src_fsid_;
   std::string dest_fsid_;
 
   base::MessageLoop message_loop_;
-  scoped_refptr<fileapi::FileSystemContext> file_system_context_;
+  scoped_refptr<storage::FileSystemContext> file_system_context_;
 
   FileSystemURL copy_src_;
   FileSystemURL copy_dest_;
@@ -191,7 +191,7 @@ enum Validity {
 };
 
 class TestCopyOrMoveFileValidatorFactory
-    : public fileapi::CopyOrMoveFileValidatorFactory {
+    : public storage::CopyOrMoveFileValidatorFactory {
  public:
   // A factory that creates validators that accept everything or nothing.
   // TODO(gbillock): switch args to enum or something
@@ -199,7 +199,7 @@ class TestCopyOrMoveFileValidatorFactory
       : validity_(validity) {}
   virtual ~TestCopyOrMoveFileValidatorFactory() {}
 
-  virtual fileapi::CopyOrMoveFileValidator* CreateCopyOrMoveFileValidator(
+  virtual storage::CopyOrMoveFileValidator* CreateCopyOrMoveFileValidator(
       const FileSystemURL& /*src_url*/,
       const base::FilePath& /*platform_path*/) OVERRIDE {
     return new TestCopyOrMoveFileValidator(validity_);

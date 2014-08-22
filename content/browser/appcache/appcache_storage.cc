@@ -105,8 +105,9 @@ void AppCacheStorage::UpdateUsageMapAndNotify(
     usage_map_.erase(origin);
   if (new_usage != old_usage && service()->quota_manager_proxy()) {
     service()->quota_manager_proxy()->NotifyStorageModified(
-        quota::QuotaClient::kAppcache,
-        origin, quota::kStorageTypeTemporary,
+        storage::QuotaClient::kAppcache,
+        origin,
+        storage::kStorageTypeTemporary,
         new_usage - old_usage);
   }
 }
@@ -116,8 +117,9 @@ void AppCacheStorage::ClearUsageMapAndNotify() {
     for (UsageMap::const_iterator iter = usage_map_.begin();
          iter != usage_map_.end(); ++iter) {
       service()->quota_manager_proxy()->NotifyStorageModified(
-          quota::QuotaClient::kAppcache,
-          iter->first, quota::kStorageTypeTemporary,
+          storage::QuotaClient::kAppcache,
+          iter->first,
+          storage::kStorageTypeTemporary,
           -(iter->second));
     }
   }
@@ -128,8 +130,9 @@ void AppCacheStorage::NotifyStorageAccessed(const GURL& origin) {
   if (service()->quota_manager_proxy() &&
       usage_map_.find(origin) != usage_map_.end())
     service()->quota_manager_proxy()->NotifyStorageAccessed(
-        quota::QuotaClient::kAppcache,
-        origin, quota::kStorageTypeTemporary);
+        storage::QuotaClient::kAppcache,
+        origin,
+        storage::kStorageTypeTemporary);
 }
 
 }  // namespace content

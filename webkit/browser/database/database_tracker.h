@@ -36,12 +36,12 @@ class Connection;
 class MetaTable;
 }
 
-namespace quota {
+namespace storage {
 class QuotaManagerProxy;
 class SpecialStoragePolicy;
 }
 
-namespace webkit_database {
+namespace storage {
 
 WEBKIT_STORAGE_BROWSER_EXPORT extern const base::FilePath::CharType
     kDatabaseDirectoryName[];
@@ -103,8 +103,8 @@ class WEBKIT_STORAGE_BROWSER_EXPORT DatabaseTracker
 
   DatabaseTracker(const base::FilePath& profile_path,
                   bool is_incognito,
-                  quota::SpecialStoragePolicy* special_storage_policy,
-                  quota::QuotaManagerProxy* quota_manager_proxy,
+                  storage::SpecialStoragePolicy* special_storage_policy,
+                  storage::QuotaManagerProxy* quota_manager_proxy,
                   base::MessageLoopProxy* db_tracker_thread);
 
   void DatabaseOpened(const std::string& origin_identifier,
@@ -137,7 +137,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT DatabaseTracker
   virtual bool GetAllOriginsInfo(std::vector<OriginInfo>* origins_info);
 
   // Safe to call on any thread.
-  quota::QuotaManagerProxy* quota_manager_proxy() const {
+  storage::QuotaManagerProxy* quota_manager_proxy() const {
     return quota_manager_proxy_.get();
   }
 
@@ -290,9 +290,9 @@ class WEBKIT_STORAGE_BROWSER_EXPORT DatabaseTracker
   PendingDeletionCallbacks deletion_callbacks_;
 
   // Apps and Extensions can have special rights.
-  scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy_;
+  scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy_;
 
-  scoped_refptr<quota::QuotaManagerProxy> quota_manager_proxy_;
+  scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy_;
 
   // The database tracker thread we're supposed to run file IO on.
   scoped_refptr<base::MessageLoopProxy> db_tracker_thread_;
@@ -314,6 +314,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT DatabaseTracker
   FRIEND_TEST_ALL_PREFIXES(DatabaseTracker, TestHelper);
 };
 
-}  // namespace webkit_database
+}  // namespace storage
 
 #endif  // WEBKIT_BROWSER_DATABASE_DATABASE_TRACKER_H_

@@ -22,11 +22,11 @@ class Extension;
 // Special rights are granted to 'extensions' and 'applications'. The
 // storage subsystems and the browsing data remover query this interface
 // to determine which origins have these rights.
-class ExtensionSpecialStoragePolicy : public quota::SpecialStoragePolicy {
+class ExtensionSpecialStoragePolicy : public storage::SpecialStoragePolicy {
  public:
   explicit ExtensionSpecialStoragePolicy(CookieSettings* cookie_settings);
 
-  // quota::SpecialStoragePolicy methods used by storage subsystems and the
+  // storage::SpecialStoragePolicy methods used by storage subsystems and the
   // browsing data remover. These methods are safe to call on any thread.
   virtual bool IsStorageProtected(const GURL& origin) OVERRIDE;
   virtual bool IsStorageUnlimited(const GURL& origin) OVERRIDE;

@@ -6,7 +6,7 @@
 
 #include "base/time/time.h"
 
-namespace webkit_blob {
+namespace storage {
 
 // Verify if the underlying file has not been modified.
 bool FileStreamReader::VerifySnapshotTime(
@@ -17,4 +17,4 @@ bool FileStreamReader::VerifySnapshotTime(
              file_info.last_modified.ToTimeT();
 }
 
-}  // namespace webkit_blob
+}  // namespace storage

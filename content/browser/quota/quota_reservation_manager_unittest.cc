@@ -15,17 +15,17 @@
 #include "webkit/browser/fileapi/quota/open_file_handle.h"
 #include "webkit/browser/fileapi/quota/quota_reservation.h"
 
-using fileapi::kFileSystemTypeTemporary;
-using fileapi::OpenFileHandle;
-using fileapi::QuotaReservation;
-using fileapi::QuotaReservationManager;
+using storage::kFileSystemTypeTemporary;
+using storage::OpenFileHandle;
+using storage::QuotaReservation;
+using storage::QuotaReservationManager;
 
 namespace content {
 
 namespace {
 
 const char kOrigin[] = "http://example.com";
-const fileapi::FileSystemType kType = kFileSystemTypeTemporary;
+const storage::FileSystemType kType = kFileSystemTypeTemporary;
 const int64 kInitialFileSize = 1;
 
 typedef QuotaReservationManager::ReserveQuotaCallback ReserveQuotaCallback;
@@ -50,7 +50,7 @@ class FakeBackend : public QuotaReservationManager::QuotaBackend {
   virtual ~FakeBackend() {}
 
   virtual void ReserveQuota(const GURL& origin,
-                            fileapi::FileSystemType type,
+                            storage::FileSystemType type,
                             int64 delta,
                             const ReserveQuotaCallback& callback) OVERRIDE {
     EXPECT_EQ(GURL(kOrigin), origin);
@@ -62,7 +62,7 @@ class FakeBackend : public QuotaReservationManager::QuotaBackend {
   }
 
   virtual void ReleaseReservedQuota(const GURL& origin,
-                                    fileapi::FileSystemType type,
+                                    storage::FileSystemType type,
                                     int64 size) OVERRIDE {
     EXPECT_LE(0, size);
     EXPECT_EQ(GURL(kOrigin), origin);
@@ -71,7 +71,7 @@ class FakeBackend : public QuotaReservationManager::QuotaBackend {
   }
 
   virtual void CommitQuotaUsage(const GURL& origin,
-                                fileapi::FileSystemType type,
+                                storage::FileSystemType type,
                                 int64 delta) OVERRIDE {
     EXPECT_EQ(GURL(kOrigin), origin);
     EXPECT_EQ(kType, type);
@@ -80,9 +80,9 @@ class FakeBackend : public QuotaReservationManager::QuotaBackend {
   }
 
   virtual void IncrementDirtyCount(const GURL& origin,
-                                   fileapi::FileSystemType type) OVERRIDE {}
+                                   storage::FileSystemType type) OVERRIDE {}
   virtual void DecrementDirtyCount(const GURL& origin,
-                                   fileapi::FileSystemType type) OVERRIDE {}
+                                   storage::FileSystemType type) OVERRIDE {}
 
   int64 on_memory_usage() { return on_memory_usage_; }
   int64 on_disk_usage() { return on_disk_usage_; }

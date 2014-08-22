@@ -4,7 +4,7 @@
 
 #include "webkit/browser/fileapi/sandbox_origin_database_interface.h"
 
-namespace fileapi {
+namespace storage {
 
 SandboxOriginDatabaseInterface::OriginRecord::OriginRecord() {
 }
@@ -17,4 +17,4 @@ SandboxOriginDatabaseInterface::OriginRecord::OriginRecord(
 SandboxOriginDatabaseInterface::OriginRecord::~OriginRecord() {
 }
 
-}  // namespace fileapi
+}  // namespace storage

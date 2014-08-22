@@ -23,7 +23,7 @@
 #include "webkit/common/fileapi/directory_entry.h"
 #include "webkit/common/fileapi/file_system_util.h"
 
-using fileapi::DirectoryEntry;
+using storage::DirectoryEntry;
 
 namespace iphoto {
 
@@ -48,7 +48,7 @@ bool ContainsElement(const std::vector<T>& collection, const T& key) {
 }
 
 std::vector<std::string> GetVirtualPathComponents(
-    const fileapi::FileSystemURL& url) {
+    const storage::FileSystemURL& url) {
   ImportedMediaGalleryRegistry* imported_registry =
       ImportedMediaGalleryRegistry::GetInstance();
   base::FilePath root = imported_registry->ImportedRoot().AppendASCII("iphoto");
@@ -58,7 +58,7 @@ std::vector<std::string> GetVirtualPathComponents(
   root.AppendRelativePath(url.path(), &virtual_path);
 
   std::vector<std::string> result;
-  fileapi::VirtualPath::GetComponentsUTF8Unsafe(virtual_path, &result);
+  storage::VirtualPath::GetComponentsUTF8Unsafe(virtual_path, &result);
   return result;
 }
 
@@ -77,8 +77,8 @@ IPhotoFileUtil::~IPhotoFileUtil() {
 }
 
 void IPhotoFileUtil::GetFileInfoOnTaskRunnerThread(
-    scoped_ptr<fileapi::FileSystemOperationContext> context,
-    const fileapi::FileSystemURL& url,
+    scoped_ptr<storage::FileSystemOperationContext> context,
+    const storage::FileSystemURL& url,
     const GetFileInfoCallback& callback) {
   IPhotoDataProvider* data_provider = GetDataProvider();
   // |data_provider| may be NULL if the file system was revoked before this
@@ -94,8 +94,8 @@ void IPhotoFileUtil::GetFileInfoOnTaskRunnerThread(
 }
 
 void IPhotoFileUtil::ReadDirectoryOnTaskRunnerThread(
-    scoped_ptr<fileapi::FileSystemOperationContext> context,
-    const fileapi::FileSystemURL& url,
+    scoped_ptr<storage::FileSystemOperationContext> context,
+    const storage::FileSystemURL& url,
     const ReadDirectoryCallback& callback) {
   IPhotoDataProvider* data_provider = GetDataProvider();
   // |data_provider| may be NULL if the file system was revoked before this
@@ -111,8 +111,8 @@ void IPhotoFileUtil::ReadDirectoryOnTaskRunnerThread(
 }
 
 void IPhotoFileUtil::CreateSnapshotFileOnTaskRunnerThread(
-    scoped_ptr<fileapi::FileSystemOperationContext> context,
-    const fileapi::FileSystemURL& url,
+    scoped_ptr<storage::FileSystemOperationContext> context,
+    const storage::FileSystemURL& url,
     const CreateSnapshotFileCallback& callback) {
   IPhotoDataProvider* data_provider = GetDataProvider();
   // |data_provider| may be NULL if the file system was revoked before this
@@ -129,8 +129,8 @@ void IPhotoFileUtil::CreateSnapshotFileOnTaskRunnerThread(
 }
 
 void IPhotoFileUtil::GetFileInfoWithFreshDataProvider(
-    scoped_ptr<fileapi::FileSystemOperationContext> context,
-    const fileapi::FileSystemURL& url,
+    scoped_ptr<storage::FileSystemOperationContext> context,
+    const storage::FileSystemURL& url,
     const GetFileInfoCallback& callback,
     bool valid_parse) {
   if (!valid_parse) {
@@ -147,8 +147,8 @@ void IPhotoFileUtil::GetFileInfoWithFreshDataProvider(
 }
 
 void IPhotoFileUtil::ReadDirectoryWithFreshDataProvider(
-    scoped_ptr<fileapi::FileSystemOperationContext> context,
-    const fileapi::FileSystemURL& url,
+    scoped_ptr<storage::FileSystemOperationContext> context,
+    const storage::FileSystemURL& url,
     const ReadDirectoryCallback& callback,
     bool valid_parse) {
   if (!valid_parse) {
@@ -165,15 +165,15 @@ void IPhotoFileUtil::ReadDirectoryWithFreshDataProvider(
 }
 
 void IPhotoFileUtil::CreateSnapshotFileWithFreshDataProvider(
-    scoped_ptr<fileapi::FileSystemOperationContext> context,
-    const fileapi::FileSystemURL& url,
+    scoped_ptr<storage::FileSystemOperationContext> context,
+    const storage::FileSystemURL& url,
     const CreateSnapshotFileCallback& callback,
     bool valid_parse) {
   if (!valid_parse) {
     if (!callback.is_null()) {
       base::File::Info file_info;
       base::FilePath platform_path;
-      scoped_refptr<webkit_blob::ShareableFileReference> file_ref;
+      scoped_refptr<storage::ShareableFileReference> file_ref;
       content::BrowserThread::PostTask(
           content::BrowserThread::IO,
           FROM_HERE,
@@ -189,8 +189,8 @@ void IPhotoFileUtil::CreateSnapshotFileWithFreshDataProvider(
 // Begin actual implementation.
 
 base::File::Error IPhotoFileUtil::GetFileInfoSync(
-    fileapi::FileSystemOperationContext* context,
-    const fileapi::FileSystemURL& url,
+    storage::FileSystemOperationContext* context,
+    const storage::FileSystemURL& url,
     base::File::Info* file_info,
     base::FilePath* platform_path) {
   std::vector<std::string> components = GetVirtualPathComponents(url);
@@ -238,8 +238,8 @@ base::File::Error IPhotoFileUtil::GetFileInfoSync(
 }
 
 base::File::Error IPhotoFileUtil::ReadDirectorySync(
-    fileapi::FileSystemOperationContext* context,
-    const fileapi::FileSystemURL& url,
+    storage::FileSystemOperationContext* context,
+    const storage::FileSystemURL& url,
     EntryList* file_list) {
   DCHECK(file_list->empty());
   std::vector<std::string> components = GetVirtualPathComponents(url);
@@ -309,21 +309,20 @@ base::File::Error IPhotoFileUtil::ReadDirectorySync(
 }
 
 base::File::Error IPhotoFileUtil::DeleteDirectorySync(
-    fileapi::FileSystemOperationContext* context,
-    const fileapi::FileSystemURL& url) {
+    storage::FileSystemOperationContext* context,
+    const storage::FileSystemURL& url) {
   return base::File::FILE_ERROR_SECURITY;
 }
 
 base::File::Error IPhotoFileUtil::DeleteFileSync(
-    fileapi::FileSystemOperationContext* context,
-    const fileapi::FileSystemURL& url) {
+    storage::FileSystemOperationContext* context,
+    const storage::FileSystemURL& url) {
   return base::File::FILE_ERROR_SECURITY;
 }
 
-
 base::File::Error IPhotoFileUtil::GetLocalFilePath(
-    fileapi::FileSystemOperationContext* context,
-    const fileapi::FileSystemURL& url,
+    storage::FileSystemOperationContext* context,
+    const storage::FileSystemURL& url,
     base::FilePath* local_file_path) {
   std::vector<std::string> components = GetVirtualPathComponents(url);
 

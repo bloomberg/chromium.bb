@@ -60,7 +60,7 @@ class ProvidedFileSystemInterface {
                               base::File::Error result)> GetMetadataCallback;
 
   typedef base::Callback<void(
-      const fileapi::AsyncFileUtil::StatusCallback& callback)> AbortCallback;
+      const storage::AsyncFileUtil::StatusCallback& callback)> AbortCallback;
 
   // Mode of opening a file. Used by OpenFile().
   enum OpenFileMode { OPEN_FILE_MODE_READ, OPEN_FILE_MODE_WRITE };
@@ -70,7 +70,7 @@ class ProvidedFileSystemInterface {
   // Requests unmounting of the file system. The callback is called when the
   // request is accepted or rejected, with an error code.
   virtual AbortCallback RequestUnmount(
-      const fileapi::AsyncFileUtil::StatusCallback& callback) = 0;
+      const storage::AsyncFileUtil::StatusCallback& callback) = 0;
 
   // Requests metadata of the passed |entry_path|. It can be either a file
   // or a directory.
@@ -81,7 +81,7 @@ class ProvidedFileSystemInterface {
   // can be called multiple times until |has_more| is set to false.
   virtual AbortCallback ReadDirectory(
       const base::FilePath& directory_path,
-      const fileapi::AsyncFileUtil::ReadDirectoryCallback& callback) = 0;
+      const storage::AsyncFileUtil::ReadDirectoryCallback& callback) = 0;
 
   // Requests opening a file at |file_path|. If the file doesn't exist, then the
   // operation will fail.
@@ -93,7 +93,7 @@ class ProvidedFileSystemInterface {
   // |file_handle|. For either succes or error |callback| must be called.
   virtual AbortCallback CloseFile(
       int file_handle,
-      const fileapi::AsyncFileUtil::StatusCallback& callback) = 0;
+      const storage::AsyncFileUtil::StatusCallback& callback) = 0;
 
   // Requests reading a file previously opened with |file_handle|. The callback
   // can be called multiple times until |has_more| is set to false. On success
@@ -112,40 +112,40 @@ class ProvidedFileSystemInterface {
       const base::FilePath& directory_path,
       bool exclusive,
       bool recursive,
-      const fileapi::AsyncFileUtil::StatusCallback& callback) = 0;
+      const storage::AsyncFileUtil::StatusCallback& callback) = 0;
 
   // Requests creating a file. If the entry already exists, then the
   // FILE_ERROR_EXISTS error must be returned.
   virtual AbortCallback CreateFile(
       const base::FilePath& file_path,
-      const fileapi::AsyncFileUtil::StatusCallback& callback) = 0;
+      const storage::AsyncFileUtil::StatusCallback& callback) = 0;
 
   // Requests deleting a directory. If |recursive| is passed and the entry is
   // a directory, then all contents of it (recursively) will be deleted too.
   virtual AbortCallback DeleteEntry(
       const base::FilePath& entry_path,
       bool recursive,
-      const fileapi::AsyncFileUtil::StatusCallback& callback) = 0;
+      const storage::AsyncFileUtil::StatusCallback& callback) = 0;
 
   // Requests copying an entry (recursively in case of a directory) within the
   // same file system.
   virtual AbortCallback CopyEntry(
       const base::FilePath& source_path,
       const base::FilePath& target_path,
-      const fileapi::AsyncFileUtil::StatusCallback& callback) = 0;
+      const storage::AsyncFileUtil::StatusCallback& callback) = 0;
 
   // Requests moving an entry (recursively in case of a directory) within the
   // same file system.
   virtual AbortCallback MoveEntry(
       const base::FilePath& source_path,
       const base::FilePath& target_path,
-      const fileapi::AsyncFileUtil::StatusCallback& callback) = 0;
+      const storage::AsyncFileUtil::StatusCallback& callback) = 0;
 
   // Requests truncating a file to the desired length.
   virtual AbortCallback Truncate(
       const base::FilePath& file_path,
       int64 length,
-      const fileapi::AsyncFileUtil::StatusCallback& callback) = 0;
+      const storage::AsyncFileUtil::StatusCallback& callback) = 0;
 
   // Requests writing to a file previously opened with |file_handle|.
   virtual AbortCallback WriteFile(
@@ -153,7 +153,7 @@ class ProvidedFileSystemInterface {
       net::IOBuffer* buffer,
       int64 offset,
       int length,
-      const fileapi::AsyncFileUtil::StatusCallback& callback) = 0;
+      const storage::AsyncFileUtil::StatusCallback& callback) = 0;
 
   // Returns a provided file system info for this file system.
   virtual const ProvidedFileSystemInfo& GetFileSystemInfo() const = 0;

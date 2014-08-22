@@ -49,7 +49,7 @@ namespace content {
 class WebUI;
 }
 
-namespace fileapi {
+namespace storage {
 class FileSystemContext;
 }
 

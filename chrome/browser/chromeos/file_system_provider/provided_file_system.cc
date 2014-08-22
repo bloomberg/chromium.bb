@@ -62,7 +62,7 @@ ProvidedFileSystem::~ProvidedFileSystem() {
 }
 
 ProvidedFileSystem::AbortCallback ProvidedFileSystem::RequestUnmount(
-    const fileapi::AsyncFileUtil::StatusCallback& callback) {
+    const storage::AsyncFileUtil::StatusCallback& callback) {
   const int request_id = request_manager_.CreateRequest(
       REQUEST_UNMOUNT,
       scoped_ptr<RequestManager::HandlerInterface>(
@@ -94,7 +94,7 @@ ProvidedFileSystem::AbortCallback ProvidedFileSystem::GetMetadata(
 
 ProvidedFileSystem::AbortCallback ProvidedFileSystem::ReadDirectory(
     const base::FilePath& directory_path,
-    const fileapi::AsyncFileUtil::ReadDirectoryCallback& callback) {
+    const storage::AsyncFileUtil::ReadDirectoryCallback& callback) {
   const int request_id = request_manager_.CreateRequest(
       READ_DIRECTORY,
       scoped_ptr<RequestManager::HandlerInterface>(
@@ -102,7 +102,7 @@ ProvidedFileSystem::AbortCallback ProvidedFileSystem::ReadDirectory(
               event_router_, file_system_info_, directory_path, callback)));
   if (!request_id) {
     callback.Run(base::File::FILE_ERROR_SECURITY,
-                 fileapi::AsyncFileUtil::EntryList(),
+                 storage::AsyncFileUtil::EntryList(),
                  false /* has_more */);
     return AbortCallback();
   }
@@ -159,7 +159,7 @@ ProvidedFileSystem::AbortCallback ProvidedFileSystem::OpenFile(
 
 ProvidedFileSystem::AbortCallback ProvidedFileSystem::CloseFile(
     int file_handle,
-    const fileapi::AsyncFileUtil::StatusCallback& callback) {
+    const storage::AsyncFileUtil::StatusCallback& callback) {
   const int request_id = request_manager_.CreateRequest(
       CLOSE_FILE,
       scoped_ptr<RequestManager::HandlerInterface>(new operations::CloseFile(
@@ -177,7 +177,7 @@ ProvidedFileSystem::AbortCallback ProvidedFileSystem::CreateDirectory(
     const base::FilePath& directory_path,
     bool exclusive,
     bool recursive,
-    const fileapi::AsyncFileUtil::StatusCallback& callback) {
+    const storage::AsyncFileUtil::StatusCallback& callback) {
   const int request_id = request_manager_.CreateRequest(
       CREATE_DIRECTORY,
       scoped_ptr<RequestManager::HandlerInterface>(
@@ -199,7 +199,7 @@ ProvidedFileSystem::AbortCallback ProvidedFileSystem::CreateDirectory(
 ProvidedFileSystem::AbortCallback ProvidedFileSystem::DeleteEntry(
     const base::FilePath& entry_path,
     bool recursive,
-    const fileapi::AsyncFileUtil::StatusCallback& callback) {
+    const storage::AsyncFileUtil::StatusCallback& callback) {
   const int request_id = request_manager_.CreateRequest(
       DELETE_ENTRY,
       scoped_ptr<RequestManager::HandlerInterface>(new operations::DeleteEntry(
@@ -215,7 +215,7 @@ ProvidedFileSystem::AbortCallback ProvidedFileSystem::DeleteEntry(
 
 ProvidedFileSystem::AbortCallback ProvidedFileSystem::CreateFile(
     const base::FilePath& file_path,
-    const fileapi::AsyncFileUtil::StatusCallback& callback) {
+    const storage::AsyncFileUtil::StatusCallback& callback) {
   const int request_id = request_manager_.CreateRequest(
       CREATE_FILE,
       scoped_ptr<RequestManager::HandlerInterface>(new operations::CreateFile(
@@ -232,7 +232,7 @@ ProvidedFileSystem::AbortCallback ProvidedFileSystem::CreateFile(
 ProvidedFileSystem::AbortCallback ProvidedFileSystem::CopyEntry(
     const base::FilePath& source_path,
     const base::FilePath& target_path,
-    const fileapi::AsyncFileUtil::StatusCallback& callback) {
+    const storage::AsyncFileUtil::StatusCallback& callback) {
   const int request_id = request_manager_.CreateRequest(
       COPY_ENTRY,
       scoped_ptr<RequestManager::HandlerInterface>(
@@ -255,7 +255,7 @@ ProvidedFileSystem::AbortCallback ProvidedFileSystem::WriteFile(
     net::IOBuffer* buffer,
     int64 offset,
     int length,
-    const fileapi::AsyncFileUtil::StatusCallback& callback) {
+    const storage::AsyncFileUtil::StatusCallback& callback) {
   TRACE_EVENT1("file_system_provider",
                "ProvidedFileSystem::WriteFile",
                "length",
@@ -282,7 +282,7 @@ ProvidedFileSystem::AbortCallback ProvidedFileSystem::WriteFile(
 ProvidedFileSystem::AbortCallback ProvidedFileSystem::MoveEntry(
     const base::FilePath& source_path,
     const base::FilePath& target_path,
-    const fileapi::AsyncFileUtil::StatusCallback& callback) {
+    const storage::AsyncFileUtil::StatusCallback& callback) {
   const int request_id = request_manager_.CreateRequest(
       MOVE_ENTRY,
       scoped_ptr<RequestManager::HandlerInterface>(
@@ -303,7 +303,7 @@ ProvidedFileSystem::AbortCallback ProvidedFileSystem::MoveEntry(
 ProvidedFileSystem::AbortCallback ProvidedFileSystem::Truncate(
     const base::FilePath& file_path,
     int64 length,
-    const fileapi::AsyncFileUtil::StatusCallback& callback) {
+    const storage::AsyncFileUtil::StatusCallback& callback) {
   const int request_id = request_manager_.CreateRequest(
       TRUNCATE,
       scoped_ptr<RequestManager::HandlerInterface>(new operations::Truncate(
@@ -331,7 +331,7 @@ base::WeakPtr<ProvidedFileSystemInterface> ProvidedFileSystem::GetWeakPtr() {
 
 void ProvidedFileSystem::Abort(
     int operation_request_id,
-    const fileapi::AsyncFileUtil::StatusCallback& callback) {
+    const storage::AsyncFileUtil::StatusCallback& callback) {
   request_manager_.RejectRequest(operation_request_id,
                                  make_scoped_ptr(new RequestValue()),
                                  base::File::FILE_ERROR_ABORT);

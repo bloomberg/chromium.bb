@@ -14,7 +14,7 @@
 #include "webkit/browser/webkit_storage_browser_export.h"
 #include "webkit/common/quota/quota_types.h"
 
-namespace quota {
+namespace storage {
 
 // An abstract interface for quota manager clients.
 // Each storage API must provide an implementation of this interface and
@@ -76,6 +76,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT QuotaClient {
 // TODO(dmikurube): Replace it to std::vector for efficiency.
 typedef std::list<QuotaClient*> QuotaClientList;
 
-}  // namespace quota
+}  // namespace storage
 
 #endif  // WEBKIT_BROWSER_QUOTA_QUOTA_CLIENT_H_

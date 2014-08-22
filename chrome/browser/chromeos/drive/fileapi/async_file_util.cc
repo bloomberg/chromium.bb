@@ -108,17 +108,15 @@ void RunCreateSnapshotFileCallback(
     base::File::Error error,
     const base::File::Info& file_info,
     const base::FilePath& local_path,
-    webkit_blob::ScopedFile::ScopeOutPolicy scope_out_policy) {
+    storage::ScopedFile::ScopeOutPolicy scope_out_policy) {
   // ShareableFileReference is thread *unsafe* class. So it is necessary to
   // create the instance (by invoking GetOrCreate) on IO thread, though
   // most drive file system related operations run on UI thread.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  scoped_refptr<webkit_blob::ShareableFileReference> file_reference =
-      webkit_blob::ShareableFileReference::GetOrCreate(webkit_blob::ScopedFile(
-          local_path,
-          scope_out_policy,
-          BrowserThread::GetBlockingPool()));
+  scoped_refptr<storage::ShareableFileReference> file_reference =
+      storage::ShareableFileReference::GetOrCreate(storage::ScopedFile(
+          local_path, scope_out_policy, BrowserThread::GetBlockingPool()));
   callback.Run(error, file_info, local_path, file_reference);
 }
 
@@ -131,8 +129,8 @@ AsyncFileUtil::~AsyncFileUtil() {
 }
 
 void AsyncFileUtil::CreateOrOpen(
-    scoped_ptr<fileapi::FileSystemOperationContext> context,
-    const fileapi::FileSystemURL& url,
+    scoped_ptr<storage::FileSystemOperationContext> context,
+    const storage::FileSystemURL& url,
     int file_flags,
     const CreateOrOpenCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -156,8 +154,8 @@ void AsyncFileUtil::CreateOrOpen(
 }
 
 void AsyncFileUtil::EnsureFileExists(
-    scoped_ptr<fileapi::FileSystemOperationContext> context,
-    const fileapi::FileSystemURL& url,
+    scoped_ptr<storage::FileSystemOperationContext> context,
+    const storage::FileSystemURL& url,
     const EnsureFileExistsCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
@@ -177,8 +175,8 @@ void AsyncFileUtil::EnsureFileExists(
 }
 
 void AsyncFileUtil::CreateDirectory(
-    scoped_ptr<fileapi::FileSystemOperationContext> context,
-    const fileapi::FileSystemURL& url,
+    scoped_ptr<storage::FileSystemOperationContext> context,
+    const storage::FileSystemURL& url,
     bool exclusive,
     bool recursive,
     const StatusCallback& callback) {
@@ -199,8 +197,8 @@ void AsyncFileUtil::CreateDirectory(
 }
 
 void AsyncFileUtil::GetFileInfo(
-    scoped_ptr<fileapi::FileSystemOperationContext> context,
-    const fileapi::FileSystemURL& url,
+    scoped_ptr<storage::FileSystemOperationContext> context,
+    const storage::FileSystemURL& url,
     const GetFileInfoCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
@@ -219,8 +217,8 @@ void AsyncFileUtil::GetFileInfo(
 }
 
 void AsyncFileUtil::ReadDirectory(
-    scoped_ptr<fileapi::FileSystemOperationContext> context,
-    const fileapi::FileSystemURL& url,
+    scoped_ptr<storage::FileSystemOperationContext> context,
+    const storage::FileSystemURL& url,
     const ReadDirectoryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
@@ -239,8 +237,8 @@ void AsyncFileUtil::ReadDirectory(
 }
 
 void AsyncFileUtil::Touch(
-    scoped_ptr<fileapi::FileSystemOperationContext> context,
-    const fileapi::FileSystemURL& url,
+    scoped_ptr<storage::FileSystemOperationContext> context,
+    const storage::FileSystemURL& url,
     const base::Time& last_access_time,
     const base::Time& last_modified_time,
     const StatusCallback& callback) {
@@ -261,8 +259,8 @@ void AsyncFileUtil::Touch(
 }
 
 void AsyncFileUtil::Truncate(
-    scoped_ptr<fileapi::FileSystemOperationContext> context,
-    const fileapi::FileSystemURL& url,
+    scoped_ptr<storage::FileSystemOperationContext> context,
+    const storage::FileSystemURL& url,
     int64 length,
     const StatusCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -281,9 +279,9 @@ void AsyncFileUtil::Truncate(
 }
 
 void AsyncFileUtil::CopyFileLocal(
-    scoped_ptr<fileapi::FileSystemOperationContext> context,
-    const fileapi::FileSystemURL& src_url,
-    const fileapi::FileSystemURL& dest_url,
+    scoped_ptr<storage::FileSystemOperationContext> context,
+    const storage::FileSystemURL& src_url,
+    const storage::FileSystemURL& dest_url,
     CopyOrMoveOption option,
     const CopyFileProgressCallback& progress_callback,
     const StatusCallback& callback) {
@@ -306,16 +304,17 @@ void AsyncFileUtil::CopyFileLocal(
       base::Bind(&fileapi_internal::GetFileSystemFromUrl, dest_url),
       base::Bind(
           &fileapi_internal::Copy,
-          src_path, dest_path,
-          option == fileapi::FileSystemOperation::OPTION_PRESERVE_LAST_MODIFIED,
+          src_path,
+          dest_path,
+          option == storage::FileSystemOperation::OPTION_PRESERVE_LAST_MODIFIED,
           google_apis::CreateRelayCallback(callback)),
       base::Bind(callback, base::File::FILE_ERROR_FAILED));
 }
 
 void AsyncFileUtil::MoveFileLocal(
-    scoped_ptr<fileapi::FileSystemOperationContext> context,
-    const fileapi::FileSystemURL& src_url,
-    const fileapi::FileSystemURL& dest_url,
+    scoped_ptr<storage::FileSystemOperationContext> context,
+    const storage::FileSystemURL& src_url,
+    const storage::FileSystemURL& dest_url,
     CopyOrMoveOption option,
     const StatusCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -339,9 +338,9 @@ void AsyncFileUtil::MoveFileLocal(
 }
 
 void AsyncFileUtil::CopyInForeignFile(
-    scoped_ptr<fileapi::FileSystemOperationContext> context,
+    scoped_ptr<storage::FileSystemOperationContext> context,
     const base::FilePath& src_file_path,
-    const fileapi::FileSystemURL& dest_url,
+    const storage::FileSystemURL& dest_url,
     const StatusCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
@@ -360,8 +359,8 @@ void AsyncFileUtil::CopyInForeignFile(
 }
 
 void AsyncFileUtil::DeleteFile(
-    scoped_ptr<fileapi::FileSystemOperationContext> context,
-    const fileapi::FileSystemURL& url,
+    scoped_ptr<storage::FileSystemOperationContext> context,
+    const storage::FileSystemURL& url,
     const StatusCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
@@ -380,8 +379,8 @@ void AsyncFileUtil::DeleteFile(
 }
 
 void AsyncFileUtil::DeleteDirectory(
-    scoped_ptr<fileapi::FileSystemOperationContext> context,
-    const fileapi::FileSystemURL& url,
+    scoped_ptr<storage::FileSystemOperationContext> context,
+    const storage::FileSystemURL& url,
     const StatusCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
@@ -400,8 +399,8 @@ void AsyncFileUtil::DeleteDirectory(
 }
 
 void AsyncFileUtil::DeleteRecursively(
-    scoped_ptr<fileapi::FileSystemOperationContext> context,
-    const fileapi::FileSystemURL& url,
+    scoped_ptr<storage::FileSystemOperationContext> context,
+    const storage::FileSystemURL& url,
     const StatusCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
@@ -420,8 +419,8 @@ void AsyncFileUtil::DeleteRecursively(
 }
 
 void AsyncFileUtil::CreateSnapshotFile(
-    scoped_ptr<fileapi::FileSystemOperationContext> context,
-    const fileapi::FileSystemURL& url,
+    scoped_ptr<storage::FileSystemOperationContext> context,
+    const storage::FileSystemURL& url,
     const CreateSnapshotFileCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
@@ -430,7 +429,7 @@ void AsyncFileUtil::CreateSnapshotFile(
     callback.Run(base::File::FILE_ERROR_NOT_FOUND,
                  base::File::Info(),
                  base::FilePath(),
-                 scoped_refptr<webkit_blob::ShareableFileReference>());
+                 scoped_refptr<storage::ShareableFileReference>());
     return;
   }
 
@@ -444,7 +443,7 @@ void AsyncFileUtil::CreateSnapshotFile(
                  base::File::FILE_ERROR_FAILED,
                  base::File::Info(),
                  base::FilePath(),
-                 scoped_refptr<webkit_blob::ShareableFileReference>()));
+                 scoped_refptr<storage::ShareableFileReference>()));
 }
 
 }  // namespace internal

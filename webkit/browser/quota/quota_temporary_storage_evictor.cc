@@ -29,7 +29,7 @@ const int kThresholdOfErrorsToStopEviction = 5;
 const int kHistogramReportIntervalMinutes = 60;
 }
 
-namespace quota {
+namespace storage {
 
 const int QuotaTemporaryStorageEvictor::
     kMinAvailableDiskSpaceToStartEvictionNotSpecified = -1;
@@ -258,4 +258,4 @@ void QuotaTemporaryStorageEvictor::OnEvictionComplete(
   }
 }
 
-}  // namespace quota
+}  // namespace storage

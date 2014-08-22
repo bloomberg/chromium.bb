@@ -24,9 +24,9 @@
 #include "webkit/common/fileapi/file_system_util.h"
 
 using base::FilePath;
-using fileapi::DirectoryEntry;
-using fileapi::FileSystemOperationContext;
-using fileapi::FileSystemURL;
+using storage::DirectoryEntry;
+using storage::FileSystemOperationContext;
+using storage::FileSystemURL;
 
 namespace picasa {
 
@@ -50,7 +50,7 @@ base::File::Error FindAlbumInfo(const std::string& key,
 }
 
 std::vector<std::string> GetVirtualPathComponents(
-    const fileapi::FileSystemURL& url) {
+    const storage::FileSystemURL& url) {
   ImportedMediaGalleryRegistry* imported_registry =
       ImportedMediaGalleryRegistry::GetInstance();
   base::FilePath root = imported_registry->ImportedRoot().AppendASCII("picasa");
@@ -60,12 +60,12 @@ std::vector<std::string> GetVirtualPathComponents(
   root.AppendRelativePath(url.path(), &virtual_path);
 
   std::vector<std::string> result;
-  fileapi::VirtualPath::GetComponentsUTF8Unsafe(virtual_path, &result);
+  storage::VirtualPath::GetComponentsUTF8Unsafe(virtual_path, &result);
   return result;
 }
 
 PicasaDataProvider::DataType GetDataTypeForURL(
-    const fileapi::FileSystemURL& url) {
+    const storage::FileSystemURL& url) {
   std::vector<std::string> components = GetVirtualPathComponents(url);
   if (components.size() >= 2 && components[0] == kPicasaDirAlbums)
     return PicasaDataProvider::ALBUMS_IMAGES_DATA;
@@ -86,8 +86,8 @@ PicasaFileUtil::PicasaFileUtil(MediaPathFilter* media_path_filter)
 PicasaFileUtil::~PicasaFileUtil() {}
 
 void PicasaFileUtil::GetFileInfoOnTaskRunnerThread(
-    scoped_ptr<fileapi::FileSystemOperationContext> context,
-    const fileapi::FileSystemURL& url,
+    scoped_ptr<storage::FileSystemOperationContext> context,
+    const storage::FileSystemURL& url,
     const GetFileInfoCallback& callback) {
   PicasaDataProvider* data_provider = GetDataProvider();
   // |data_provider| may be NULL if the file system was revoked before this
@@ -106,8 +106,8 @@ void PicasaFileUtil::GetFileInfoOnTaskRunnerThread(
 }
 
 void PicasaFileUtil::ReadDirectoryOnTaskRunnerThread(
-    scoped_ptr<fileapi::FileSystemOperationContext> context,
-    const fileapi::FileSystemURL& url,
+    scoped_ptr<storage::FileSystemOperationContext> context,
+    const storage::FileSystemURL& url,
     const ReadDirectoryCallback& callback) {
   PicasaDataProvider* data_provider = GetDataProvider();
   // |data_provider| may be NULL if the file system was revoked before this
@@ -184,8 +184,8 @@ base::File::Error PicasaFileUtil::GetFileInfoSync(
 }
 
 base::File::Error PicasaFileUtil::ReadDirectorySync(
-    fileapi::FileSystemOperationContext* context,
-    const fileapi::FileSystemURL& url,
+    storage::FileSystemOperationContext* context,
+    const storage::FileSystemURL& url,
     EntryList* file_list) {
   DCHECK(context);
   DCHECK(file_list);
@@ -256,11 +256,11 @@ base::File::Error PicasaFileUtil::ReadDirectorySync(
         for (AlbumImages::const_iterator it = album_images->begin();
              it != album_images->end();
              ++it) {
-          fileapi::DirectoryEntry entry;
+          storage::DirectoryEntry entry;
           base::File::Info info;
 
           // Simply skip files that we can't get info on.
-          if (fileapi::NativeFileUtil::GetFileInfo(it->second, &info) !=
+          if (storage::NativeFileUtil::GetFileInfo(it->second, &info) !=
               base::File::FILE_OK) {
             continue;
           }
@@ -291,14 +291,14 @@ base::File::Error PicasaFileUtil::ReadDirectorySync(
 }
 
 base::File::Error PicasaFileUtil::DeleteDirectorySync(
-    fileapi::FileSystemOperationContext* context,
-    const fileapi::FileSystemURL& url) {
+    storage::FileSystemOperationContext* context,
+    const storage::FileSystemURL& url) {
   return base::File::FILE_ERROR_SECURITY;
 }
 
 base::File::Error PicasaFileUtil::DeleteFileSync(
-    fileapi::FileSystemOperationContext* context,
-    const fileapi::FileSystemURL& url) {
+    storage::FileSystemOperationContext* context,
+    const storage::FileSystemURL& url) {
   return base::File::FILE_ERROR_SECURITY;
 }
 
@@ -369,8 +369,8 @@ base::File::Error PicasaFileUtil::GetLocalFilePath(
 }
 
 void PicasaFileUtil::GetFileInfoWithFreshDataProvider(
-    scoped_ptr<fileapi::FileSystemOperationContext> context,
-    const fileapi::FileSystemURL& url,
+    scoped_ptr<storage::FileSystemOperationContext> context,
+    const storage::FileSystemURL& url,
     const GetFileInfoCallback& callback,
     bool success) {
   if (!success) {
@@ -385,8 +385,8 @@ void PicasaFileUtil::GetFileInfoWithFreshDataProvider(
 }
 
 void PicasaFileUtil::ReadDirectoryWithFreshDataProvider(
-    scoped_ptr<fileapi::FileSystemOperationContext> context,
-    const fileapi::FileSystemURL& url,
+    scoped_ptr<storage::FileSystemOperationContext> context,
+    const storage::FileSystemURL& url,
     const ReadDirectoryCallback& callback,
     bool success) {
   if (!success) {

@@ -28,7 +28,7 @@ class MockAppCacheService : public AppCacheServiceImpl {
       const GURL& origin,
       const net::CompletionCallback& callback) OVERRIDE;
 
-  void set_quota_manager_proxy(quota::QuotaManagerProxy* proxy) {
+  void set_quota_manager_proxy(storage::QuotaManagerProxy* proxy) {
     quota_manager_proxy_ = proxy;
   }
 

@@ -14,7 +14,7 @@ namespace base {
 class FilePath;
 }
 
-namespace fileapi {
+namespace storage {
 class FileSystemURL;
 }
 
@@ -48,7 +48,7 @@ class RemoteChangeProcessor {
   // on conflict resolution, but NOT for applying local changes to the remote,
   // which is supposed to be done by LocalChangeProcessor)
   virtual void PrepareForProcessRemoteChange(
-      const fileapi::FileSystemURL& url,
+      const storage::FileSystemURL& url,
       const PrepareChangeCallback& callback) = 0;
 
   // This is called to apply the remote |change|. If the change type is
@@ -58,31 +58,28 @@ class RemoteChangeProcessor {
   // This may fail with an error but should NOT result in a conflict
   // (as we must have checked the change status in PrepareRemoteSync and
   // have disabled any further writing).
-  virtual void ApplyRemoteChange(
-      const FileChange& change,
-      const base::FilePath& local_path,
-      const fileapi::FileSystemURL& url,
-      const SyncStatusCallback& callback) = 0;
+  virtual void ApplyRemoteChange(const FileChange& change,
+                                 const base::FilePath& local_path,
+                                 const storage::FileSystemURL& url,
+                                 const SyncStatusCallback& callback) = 0;
 
   // Finalizes the remote sync started by PrepareForProcessRemoteChange.
   // This clears sync flag on |url| to unlock the file for future writes/sync.
   // Clears all local changes if |clear_local_changes| is true.
   // This should be set to true when the remote sync service reconciled or
   // processed the existing local changes while processing a remote change.
-  virtual void FinalizeRemoteSync(
-      const fileapi::FileSystemURL& url,
-      bool clear_local_changes,
-      const base::Closure& completion_callback) = 0;
+  virtual void FinalizeRemoteSync(const storage::FileSystemURL& url,
+                                  bool clear_local_changes,
+                                  const base::Closure& completion_callback) = 0;
 
   // Records a fake local change so that the change will be processed in the
   // next local sync.
   // This is called when the remote side wants to trigger a local sync
   // to propagate the local change to the remote change (e.g. to
   // resolve a conflict by uploading the local file).
-  virtual void RecordFakeLocalChange(
-      const fileapi::FileSystemURL& url,
-      const FileChange& change,
-      const SyncStatusCallback& callback) = 0;
+  virtual void RecordFakeLocalChange(const storage::FileSystemURL& url,
+                                     const FileChange& change,
+                                     const SyncStatusCallback& callback) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RemoteChangeProcessor);

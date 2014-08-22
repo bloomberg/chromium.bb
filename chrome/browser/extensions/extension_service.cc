@@ -1096,9 +1096,9 @@ void ExtensionService::NotifyExtensionUnloaded(
   // storage partition may get destroyed only after the extension gets unloaded.
   GURL site =
       extensions::util::GetSiteForExtensionId(extension->id(), profile_);
-  fileapi::FileSystemContext* filesystem_context =
-      BrowserContext::GetStoragePartitionForSite(profile_, site)->
-          GetFileSystemContext();
+  storage::FileSystemContext* filesystem_context =
+      BrowserContext::GetStoragePartitionForSite(profile_, site)
+          ->GetFileSystemContext();
   if (filesystem_context && filesystem_context->external_backend()) {
     filesystem_context->external_backend()->
         RevokeAccessForExtension(extension->id());

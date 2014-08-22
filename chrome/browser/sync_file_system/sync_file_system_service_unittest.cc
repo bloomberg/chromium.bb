@@ -34,8 +34,8 @@
 #include "webkit/browser/fileapi/file_system_context.h"
 
 using content::BrowserThread;
-using fileapi::FileSystemURL;
-using fileapi::FileSystemURLSet;
+using storage::FileSystemURL;
+using storage::FileSystemURLSet;
 using ::testing::AnyNumber;
 using ::testing::AtLeast;
 using ::testing::InSequence;
@@ -91,7 +91,7 @@ class MockSyncEventObserver : public SyncEventObserver {
                     SyncServiceState state,
                     const std::string& description));
   MOCK_METHOD4(OnFileSynced,
-               void(const fileapi::FileSystemURL& url,
+               void(const storage::FileSystemURL& url,
                     SyncFileStatus status,
                     SyncAction action,
                     SyncDirection direction));

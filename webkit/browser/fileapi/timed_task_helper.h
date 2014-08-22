@@ -17,7 +17,7 @@ namespace base {
 class SequencedTaskRunner;
 }
 
-namespace fileapi {
+namespace storage {
 
 // Works similarly as base::Timer, but takes SequencedTaskRunner and
 // runs tasks on it (instead of implicitly bound to a thread).
@@ -54,6 +54,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT TimedTaskHelper {
   DISALLOW_COPY_AND_ASSIGN(TimedTaskHelper);
 };
 
-}  // namespace fileapi
+}  // namespace storage
 
 #endif  // WEBKIT_BROWSER_FILEAPI_TIMED_TASK_HELPER_H_

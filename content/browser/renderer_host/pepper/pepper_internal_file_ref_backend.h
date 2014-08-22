@@ -44,7 +44,7 @@ class PepperInternalFileRefBackend : public PepperFileRefBackend {
       OVERRIDE;
   virtual int32_t GetAbsolutePath(ppapi::host::ReplyMessageContext context)
       OVERRIDE;
-  virtual fileapi::FileSystemURL GetFileSystemURL() const OVERRIDE;
+  virtual storage::FileSystemURL GetFileSystemURL() const OVERRIDE;
   virtual base::FilePath GetExternalFilePath() const OVERRIDE;
 
   virtual int32_t CanRead() const OVERRIDE;
@@ -64,12 +64,12 @@ class PepperInternalFileRefBackend : public PepperFileRefBackend {
                            const base::File::Info& file_info);
   void ReadDirectoryComplete(
       ppapi::host::ReplyMessageContext context,
-      fileapi::FileSystemOperation::FileEntryList* accumulated_file_list,
+      storage::FileSystemOperation::FileEntryList* accumulated_file_list,
       base::File::Error error,
-      const fileapi::FileSystemOperation::FileEntryList& file_list,
+      const storage::FileSystemOperation::FileEntryList& file_list,
       bool has_more);
 
-  scoped_refptr<fileapi::FileSystemContext> GetFileSystemContext() const;
+  scoped_refptr<storage::FileSystemContext> GetFileSystemContext() const;
 
   ppapi::host::PpapiHost* host_;
   int render_process_id_;
@@ -77,7 +77,7 @@ class PepperInternalFileRefBackend : public PepperFileRefBackend {
   PP_FileSystemType fs_type_;
   std::string path_;
 
-  mutable fileapi::FileSystemURL fs_url_;
+  mutable storage::FileSystemURL fs_url_;
 
   base::WeakPtrFactory<PepperInternalFileRefBackend> weak_factory_;
 

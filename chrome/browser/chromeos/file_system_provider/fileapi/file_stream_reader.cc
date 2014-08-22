@@ -33,7 +33,7 @@ void Int64ToIntCompletionCallback(net::CompletionCallback callback,
 // Opens a file for reading and calls the completion callback. Must be called
 // on UI thread.
 void OpenFileOnUIThread(
-    const fileapi::FileSystemURL& url,
+    const storage::FileSystemURL& url,
     const FileStreamReader::OpenFileCompletedCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -141,8 +141,8 @@ void OnGetMetadataReceivedOnUIThread(
 
 }  // namespace
 
-FileStreamReader::FileStreamReader(fileapi::FileSystemContext* context,
-                                   const fileapi::FileSystemURL& url,
+FileStreamReader::FileStreamReader(storage::FileSystemContext* context,
+                                   const storage::FileSystemURL& url,
                                    int64 initial_offset,
                                    const base::Time& expected_modification_time)
     : url_(url),

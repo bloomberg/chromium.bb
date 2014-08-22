@@ -11,7 +11,7 @@
 #include "webkit/browser/quota/quota_manager.h"
 #include "webkit/common/quota/quota_status_code.h"
 
-namespace quota {
+namespace storage {
 
 // StorageObserverList:
 
@@ -376,4 +376,4 @@ void StorageMonitor::NotifyUsageChange(
   it->second->NotifyUsageChange(filter, delta);
 }
 
-}  // namespace quota
+}  // namespace storage

@@ -11,7 +11,7 @@
 #include "webkit/browser/quota/quota_client.h"
 #include "webkit/common/quota/quota_types.h"
 
-namespace quota {
+namespace storage {
 
 // This interface is implemented by observers that wish to monitor storage
 // events, such as changes in quota or usage.
@@ -74,6 +74,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT StorageObserver {
   virtual ~StorageObserver() {}
 };
 
-}  // namespace quota
+}  // namespace storage
 
 #endif  // WEBKIT_BROWSER_QUOTA_STORAGE_OBSERVER_H_

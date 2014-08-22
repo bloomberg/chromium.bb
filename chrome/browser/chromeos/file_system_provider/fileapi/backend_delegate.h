@@ -9,9 +9,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/fileapi/file_system_backend_delegate.h"
 
-namespace fileapi {
+namespace storage {
 class AsyncFileUtil;
-}  // namespace fileapi
+}  // namespace storage
 
 namespace chromeos {
 namespace file_system_provider {
@@ -24,20 +24,20 @@ class BackendDelegate : public chromeos::FileSystemBackendDelegate {
   virtual ~BackendDelegate();
 
   // FileSystemBackend::Delegate overrides.
-  virtual fileapi::AsyncFileUtil* GetAsyncFileUtil(fileapi::FileSystemType type)
-      OVERRIDE;
-  virtual scoped_ptr<webkit_blob::FileStreamReader> CreateFileStreamReader(
-      const fileapi::FileSystemURL& url,
+  virtual storage::AsyncFileUtil* GetAsyncFileUtil(
+      storage::FileSystemType type) OVERRIDE;
+  virtual scoped_ptr<storage::FileStreamReader> CreateFileStreamReader(
+      const storage::FileSystemURL& url,
       int64 offset,
       const base::Time& expected_modification_time,
-      fileapi::FileSystemContext* context) OVERRIDE;
-  virtual scoped_ptr<fileapi::FileStreamWriter> CreateFileStreamWriter(
-      const fileapi::FileSystemURL& url,
+      storage::FileSystemContext* context) OVERRIDE;
+  virtual scoped_ptr<storage::FileStreamWriter> CreateFileStreamWriter(
+      const storage::FileSystemURL& url,
       int64 offset,
-      fileapi::FileSystemContext* context) OVERRIDE;
+      storage::FileSystemContext* context) OVERRIDE;
 
  private:
-  scoped_ptr<fileapi::AsyncFileUtil> async_file_util_;
+  scoped_ptr<storage::AsyncFileUtil> async_file_util_;
 
   DISALLOW_COPY_AND_ASSIGN(BackendDelegate);
 };

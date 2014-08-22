@@ -37,7 +37,7 @@ namespace base {
 class SequencedTaskRunner;
 }
 
-namespace fileapi {
+namespace storage {
 class FileWriterDelegate;
 }
 
@@ -191,7 +191,7 @@ class CONTENT_EXPORT IndexedDBBackingStore
       int64 object_store_id,
       const IndexedDBKey& key,
       IndexedDBValue* value,
-      ScopedVector<webkit_blob::BlobDataHandle>* handles,
+      ScopedVector<storage::BlobDataHandle>* handles,
       RecordIdentifier* record) WARN_UNUSED_RESULT;
   virtual leveldb::Status ClearObjectStore(
       IndexedDBBackingStore::Transaction* transaction,
@@ -379,14 +379,14 @@ class CONTENT_EXPORT IndexedDBBackingStore
     const std::vector<IndexedDBBlobInfo>& blob_info() const {
       return blob_info_;
     }
-    void SetHandles(ScopedVector<webkit_blob::BlobDataHandle>* handles);
+    void SetHandles(ScopedVector<storage::BlobDataHandle>* handles);
     scoped_ptr<BlobChangeRecord> Clone() const;
 
    private:
     std::string key_;
     int64 object_store_id_;
     std::vector<IndexedDBBlobInfo> blob_info_;
-    ScopedVector<webkit_blob::BlobDataHandle> handles_;
+    ScopedVector<storage::BlobDataHandle> handles_;
     DISALLOW_COPY_AND_ASSIGN(BlobChangeRecord);
   };
   typedef std::map<std::string, BlobChangeRecord*> BlobChangeMap;
@@ -410,12 +410,12 @@ class CONTENT_EXPORT IndexedDBBackingStore
         int64 object_store_id,
         const std::string& object_store_data_key,
         std::vector<IndexedDBBlobInfo>*,
-        ScopedVector<webkit_blob::BlobDataHandle>* handles);
+        ScopedVector<storage::BlobDataHandle>* handles);
     void PutBlobInfo(int64 database_id,
                      int64 object_store_id,
                      const std::string& object_store_data_key,
                      std::vector<IndexedDBBlobInfo>*,
-                     ScopedVector<webkit_blob::BlobDataHandle>* handles);
+                     ScopedVector<storage::BlobDataHandle>* handles);
 
     LevelDBTransaction* transaction() { return transaction_; }
 
@@ -463,7 +463,7 @@ class CONTENT_EXPORT IndexedDBBackingStore
         : public base::RefCountedThreadSafe<ChainedBlobWriter> {
      public:
       virtual void set_delegate(
-          scoped_ptr<fileapi::FileWriterDelegate> delegate) = 0;
+          scoped_ptr<storage::FileWriterDelegate> delegate) = 0;
 
       // TODO(ericu): Add a reason in the event of failure.
       virtual void ReportWriteCompletion(bool succeeded,

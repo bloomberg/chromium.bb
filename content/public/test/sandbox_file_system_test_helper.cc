@@ -20,22 +20,22 @@
 #include "webkit/browser/quota/quota_manager_proxy.h"
 #include "webkit/common/fileapi/file_system_util.h"
 
-using fileapi::FileSystemContext;
-using fileapi::FileSystemOperationContext;
-using fileapi::FileSystemOperationRunner;
-using fileapi::FileSystemURL;
+using storage::FileSystemContext;
+using storage::FileSystemOperationContext;
+using storage::FileSystemOperationRunner;
+using storage::FileSystemURL;
 
 namespace content {
 
 SandboxFileSystemTestHelper::SandboxFileSystemTestHelper(
     const GURL& origin,
-    fileapi::FileSystemType type)
+    storage::FileSystemType type)
     : origin_(origin), type_(type), file_util_(NULL) {
 }
 
 SandboxFileSystemTestHelper::SandboxFileSystemTestHelper()
     : origin_(GURL("http://foo.com")),
-      type_(fileapi::kFileSystemTypeTemporary),
+      type_(storage::kFileSystemTypeTemporary),
       file_util_(NULL) {
 }
 
@@ -55,7 +55,7 @@ void SandboxFileSystemTestHelper::SetUp(
 
 void SandboxFileSystemTestHelper::SetUp(
     const base::FilePath& base_dir,
-    quota::QuotaManagerProxy* quota_manager_proxy) {
+    storage::QuotaManagerProxy* quota_manager_proxy) {
   file_system_context_ = CreateFileSystemContextForTesting(
       quota_manager_proxy, base_dir);
 
@@ -106,7 +106,7 @@ int64 SandboxFileSystemTestHelper::ComputeCurrentOriginUsage() {
   usage_cache()->CloseCacheFiles();
   int64 size = base::ComputeDirectorySize(GetOriginRootPath());
   if (base::PathExists(GetUsageCachePath()))
-    size -= fileapi::FileSystemUsageCache::kUsageFileSize;
+    size -= storage::FileSystemUsageCache::kUsageFileSize;
   return size;
 }
 
@@ -131,12 +131,12 @@ SandboxFileSystemTestHelper::NewOperationContext() {
 }
 
 void SandboxFileSystemTestHelper::AddFileChangeObserver(
-    fileapi::FileChangeObserver* observer) {
+    storage::FileChangeObserver* observer) {
   file_system_context_->sandbox_backend()->GetQuotaUtil()->
       AddFileChangeObserver(type_, observer, NULL);
 }
 
-fileapi::FileSystemUsageCache* SandboxFileSystemTestHelper::usage_cache() {
+storage::FileSystemUsageCache* SandboxFileSystemTestHelper::usage_cache() {
   return file_system_context()->sandbox_delegate()->usage_cache();
 }
 

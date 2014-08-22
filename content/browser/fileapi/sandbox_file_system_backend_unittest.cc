@@ -20,9 +20,9 @@
 #include "webkit/browser/fileapi/sandbox_file_system_backend_delegate.h"
 #include "webkit/common/fileapi/file_system_util.h"
 
-using fileapi::FileSystemURL;
-using fileapi::SandboxFileSystemBackend;
-using fileapi::SandboxFileSystemBackendDelegate;
+using storage::FileSystemURL;
+using storage::SandboxFileSystemBackend;
+using storage::SandboxFileSystemBackendDelegate;
 
 // PS stands for path separator.
 #if defined(FILE_PATH_USES_WIN_SEPARATORS)
@@ -36,38 +36,28 @@ namespace content {
 namespace {
 
 const struct RootPathTest {
-  fileapi::FileSystemType type;
+  storage::FileSystemType type;
   const char* origin_url;
   const char* expected_path;
 } kRootPathTestCases[] = {
-  { fileapi::kFileSystemTypeTemporary, "http://foo:1/",
-    "000" PS "t" },
-  { fileapi::kFileSystemTypePersistent, "http://foo:1/",
-    "000" PS "p" },
-  { fileapi::kFileSystemTypeTemporary, "http://bar.com/",
-    "001" PS "t" },
-  { fileapi::kFileSystemTypePersistent, "http://bar.com/",
-    "001" PS "p" },
-  { fileapi::kFileSystemTypeTemporary, "https://foo:2/",
-    "002" PS "t" },
-  { fileapi::kFileSystemTypePersistent, "https://foo:2/",
-    "002" PS "p" },
-  { fileapi::kFileSystemTypeTemporary, "https://bar.com/",
-    "003" PS "t" },
-  { fileapi::kFileSystemTypePersistent, "https://bar.com/",
-    "003" PS "p" },
+      {storage::kFileSystemTypeTemporary, "http://foo:1/", "000" PS "t"},
+      {storage::kFileSystemTypePersistent, "http://foo:1/", "000" PS "p"},
+      {storage::kFileSystemTypeTemporary, "http://bar.com/", "001" PS "t"},
+      {storage::kFileSystemTypePersistent, "http://bar.com/", "001" PS "p"},
+      {storage::kFileSystemTypeTemporary, "https://foo:2/", "002" PS "t"},
+      {storage::kFileSystemTypePersistent, "https://foo:2/", "002" PS "p"},
+      {storage::kFileSystemTypeTemporary, "https://bar.com/", "003" PS "t"},
+      {storage::kFileSystemTypePersistent, "https://bar.com/", "003" PS "p"},
 };
 
 const struct RootPathFileURITest {
-  fileapi::FileSystemType type;
+  storage::FileSystemType type;
   const char* origin_url;
   const char* expected_path;
   const char* virtual_path;
 } kRootPathFileURITestCases[] = {
-  { fileapi::kFileSystemTypeTemporary, "file:///",
-    "000" PS "t", NULL },
-  { fileapi::kFileSystemTypePersistent, "file:///",
-    "000" PS "p", NULL },
+      {storage::kFileSystemTypeTemporary, "file:///", "000" PS "t", NULL},
+      {storage::kFileSystemTypePersistent, "file:///", "000" PS "p", NULL},
 };
 
 void DidOpenFileSystem(base::File::Error* error_out,
@@ -86,7 +76,7 @@ class SandboxFileSystemBackendTest : public testing::Test {
     SetUpNewDelegate(CreateAllowFileAccessOptions());
   }
 
-  void SetUpNewDelegate(const fileapi::FileSystemOptions& options) {
+  void SetUpNewDelegate(const storage::FileSystemOptions& options) {
     delegate_.reset(new SandboxFileSystemBackendDelegate(
         NULL /* quota_manager_proxy */,
         base::MessageLoopProxy::current().get(),
@@ -95,18 +85,18 @@ class SandboxFileSystemBackendTest : public testing::Test {
         options));
   }
 
-  void SetUpNewBackend(const fileapi::FileSystemOptions& options) {
+  void SetUpNewBackend(const storage::FileSystemOptions& options) {
     SetUpNewDelegate(options);
     backend_.reset(new SandboxFileSystemBackend(delegate_.get()));
   }
 
-  fileapi::SandboxFileSystemBackendDelegate::OriginEnumerator*
+  storage::SandboxFileSystemBackendDelegate::OriginEnumerator*
   CreateOriginEnumerator() const {
     return backend_->CreateOriginEnumerator();
   }
 
   void CreateOriginTypeDirectory(const GURL& origin,
-                                 fileapi::FileSystemType type) {
+                                 storage::FileSystemType type) {
     base::FilePath target = delegate_->
         GetBaseDirectoryForOriginAndType(origin, type, true);
     ASSERT_TRUE(!target.empty());
@@ -114,8 +104,8 @@ class SandboxFileSystemBackendTest : public testing::Test {
   }
 
   bool GetRootPath(const GURL& origin_url,
-                   fileapi::FileSystemType type,
-                   fileapi::OpenFileSystemMode mode,
+                   storage::FileSystemType type,
+                   storage::OpenFileSystemMode mode,
                    base::FilePath* root_path) {
     base::File::Error error = base::File::FILE_OK;
       backend_->ResolveURL(
@@ -140,8 +130,8 @@ class SandboxFileSystemBackendTest : public testing::Test {
 
   base::ScopedTempDir data_dir_;
   base::MessageLoop message_loop_;
-  scoped_ptr<fileapi::SandboxFileSystemBackendDelegate> delegate_;
-  scoped_ptr<fileapi::SandboxFileSystemBackend> backend_;
+  scoped_ptr<storage::SandboxFileSystemBackendDelegate> delegate_;
+  scoped_ptr<storage::SandboxFileSystemBackend> backend_;
 };
 
 TEST_F(SandboxFileSystemBackendTest, Empty) {
@@ -170,12 +160,12 @@ TEST_F(SandboxFileSystemBackendTest, EnumerateOrigins) {
   std::set<GURL> temporary_set, persistent_set;
   for (size_t i = 0; i < temporary_size; ++i) {
     CreateOriginTypeDirectory(GURL(temporary_origins[i]),
-        fileapi::kFileSystemTypeTemporary);
+                              storage::kFileSystemTypeTemporary);
     temporary_set.insert(GURL(temporary_origins[i]));
   }
   for (size_t i = 0; i < persistent_size; ++i) {
     CreateOriginTypeDirectory(GURL(persistent_origins[i]),
-        fileapi::kFileSystemTypePersistent);
+                              storage::kFileSystemTypePersistent);
     persistent_set.insert(GURL(persistent_origins[i]));
   }
 
@@ -186,11 +176,11 @@ TEST_F(SandboxFileSystemBackendTest, EnumerateOrigins) {
   GURL current;
   while (!(current = enumerator->Next()).is_empty()) {
     SCOPED_TRACE(testing::Message() << "EnumerateOrigin " << current.spec());
-    if (enumerator->HasFileSystemType(fileapi::kFileSystemTypeTemporary)) {
+    if (enumerator->HasFileSystemType(storage::kFileSystemTypeTemporary)) {
       ASSERT_TRUE(temporary_set.find(current) != temporary_set.end());
       ++temporary_actual_size;
     }
-    if (enumerator->HasFileSystemType(fileapi::kFileSystemTypePersistent)) {
+    if (enumerator->HasFileSystemType(storage::kFileSystemTypePersistent)) {
       ASSERT_TRUE(persistent_set.find(current) != persistent_set.end());
       ++persistent_actual_size;
     }
@@ -213,7 +203,7 @@ TEST_F(SandboxFileSystemBackendTest, GetRootPathCreateAndExamine) {
     base::FilePath root_path;
     EXPECT_TRUE(GetRootPath(GURL(kRootPathTestCases[i].origin_url),
                             kRootPathTestCases[i].type,
-                            fileapi::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
+                            storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
                             &root_path));
 
     base::FilePath expected = file_system_path().AppendASCII(
@@ -233,7 +223,7 @@ TEST_F(SandboxFileSystemBackendTest, GetRootPathCreateAndExamine) {
     base::FilePath root_path;
     EXPECT_TRUE(GetRootPath(GURL(kRootPathTestCases[i].origin_url),
                             kRootPathTestCases[i].type,
-                            fileapi::OPEN_FILE_SYSTEM_FAIL_IF_NONEXISTENT,
+                            storage::OPEN_FILE_SYSTEM_FAIL_IF_NONEXISTENT,
                             &root_path));
     ASSERT_TRUE(returned_root_path.size() > i);
     EXPECT_EQ(returned_root_path[i].value(), root_path.value());
@@ -249,14 +239,16 @@ TEST_F(SandboxFileSystemBackendTest,
   GURL origin_url("http://foo.com:1/");
 
   base::FilePath root_path1;
-  EXPECT_TRUE(GetRootPath(origin_url, fileapi::kFileSystemTypeTemporary,
-                          fileapi::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
+  EXPECT_TRUE(GetRootPath(origin_url,
+                          storage::kFileSystemTypeTemporary,
+                          storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
                           &root_path1));
 
   SetUpNewBackend(CreateDisallowFileAccessOptions());
   base::FilePath root_path2;
-  EXPECT_TRUE(GetRootPath(origin_url, fileapi::kFileSystemTypeTemporary,
-                          fileapi::OPEN_FILE_SYSTEM_FAIL_IF_NONEXISTENT,
+  EXPECT_TRUE(GetRootPath(origin_url,
+                          storage::kFileSystemTypeTemporary,
+                          storage::OPEN_FILE_SYSTEM_FAIL_IF_NONEXISTENT,
                           &root_path2));
 
   EXPECT_EQ(root_path1.value(), root_path2.value());
@@ -271,7 +263,7 @@ TEST_F(SandboxFileSystemBackendTest, GetRootPathGetWithoutCreate) {
                  << kRootPathTestCases[i].expected_path);
     EXPECT_FALSE(GetRootPath(GURL(kRootPathTestCases[i].origin_url),
                              kRootPathTestCases[i].type,
-                             fileapi::OPEN_FILE_SYSTEM_FAIL_IF_NONEXISTENT,
+                             storage::OPEN_FILE_SYSTEM_FAIL_IF_NONEXISTENT,
                              NULL));
   }
 }
@@ -283,11 +275,10 @@ TEST_F(SandboxFileSystemBackendTest, GetRootPathInIncognito) {
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kRootPathTestCases); ++i) {
     SCOPED_TRACE(testing::Message() << "RootPath (incognito) #" << i << " "
                  << kRootPathTestCases[i].expected_path);
-    EXPECT_FALSE(
-        GetRootPath(GURL(kRootPathTestCases[i].origin_url),
-                    kRootPathTestCases[i].type,
-                    fileapi::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
-                    NULL));
+    EXPECT_FALSE(GetRootPath(GURL(kRootPathTestCases[i].origin_url),
+                             kRootPathTestCases[i].type,
+                             storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
+                             NULL));
   }
 }
 
@@ -296,11 +287,10 @@ TEST_F(SandboxFileSystemBackendTest, GetRootPathFileURI) {
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kRootPathFileURITestCases); ++i) {
     SCOPED_TRACE(testing::Message() << "RootPathFileURI (disallow) #"
                  << i << " " << kRootPathFileURITestCases[i].expected_path);
-    EXPECT_FALSE(
-        GetRootPath(GURL(kRootPathFileURITestCases[i].origin_url),
-                    kRootPathFileURITestCases[i].type,
-                    fileapi::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
-                    NULL));
+    EXPECT_FALSE(GetRootPath(GURL(kRootPathFileURITestCases[i].origin_url),
+                             kRootPathFileURITestCases[i].type,
+                             storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
+                             NULL));
   }
 }
 
@@ -312,7 +302,7 @@ TEST_F(SandboxFileSystemBackendTest, GetRootPathFileURIWithAllowFlag) {
     base::FilePath root_path;
     EXPECT_TRUE(GetRootPath(GURL(kRootPathFileURITestCases[i].origin_url),
                             kRootPathFileURITestCases[i].type,
-                            fileapi::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
+                            storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
                             &root_path));
     base::FilePath expected = file_system_path().AppendASCII(
         kRootPathFileURITestCases[i].expected_path);

@@ -13,9 +13,9 @@
 #include "webkit/browser/blob/blob_data_handle.h"
 #include "webkit/browser/blob/blob_storage_context.h"
 
-using webkit_blob::BlobData;
-using webkit_blob::BlobDataHandle;
-using webkit_blob::BlobStorageContext;
+using storage::BlobData;
+using storage::BlobDataHandle;
+using storage::BlobStorageContext;
 
 namespace content {
 namespace {
@@ -65,11 +65,11 @@ class FileElementReader : public net::UploadFileElementReader {
 
 void ResolveBlobReference(
     ResourceRequestBody* body,
-    webkit_blob::BlobStorageContext* blob_context,
+    storage::BlobStorageContext* blob_context,
     const ResourceRequestBody::Element& element,
     std::vector<const ResourceRequestBody::Element*>* resolved_elements) {
   DCHECK(blob_context);
-  scoped_ptr<webkit_blob::BlobDataHandle> handle =
+  scoped_ptr<storage::BlobDataHandle> handle =
       blob_context->GetBlobDataFromUUID(element.blob_uuid());
   DCHECK(handle);
   if (!handle)
@@ -97,7 +97,7 @@ void ResolveBlobReference(
 scoped_ptr<net::UploadDataStream> UploadDataStreamBuilder::Build(
     ResourceRequestBody* body,
     BlobStorageContext* blob_context,
-    fileapi::FileSystemContext* file_system_context,
+    storage::FileSystemContext* file_system_context,
     base::TaskRunner* file_task_runner) {
   // Resolve all blob elements.
   std::vector<const ResourceRequestBody::Element*> resolved_elements;

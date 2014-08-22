@@ -128,12 +128,11 @@ class SyncEngine : public RemoteFileSyncService,
   virtual void PromoteDemotedChanges(const base::Closure& callback) OVERRIDE;
 
   // LocalChangeProcessor overrides.
-  virtual void ApplyLocalChange(
-      const FileChange& local_change,
-      const base::FilePath& local_path,
-      const SyncFileMetadata& local_metadata,
-      const fileapi::FileSystemURL& url,
-      const SyncStatusCallback& callback) OVERRIDE;
+  virtual void ApplyLocalChange(const FileChange& local_change,
+                                const base::FilePath& local_path,
+                                const SyncFileMetadata& local_metadata,
+                                const storage::FileSystemURL& url,
+                                const SyncStatusCallback& callback) OVERRIDE;
 
   // drive::DriveNotificationObserver overrides.
   virtual void OnNotificationReceived() OVERRIDE;
@@ -174,7 +173,7 @@ class SyncEngine : public RemoteFileSyncService,
 
   // Called by WorkerObserver.
   void OnPendingFileListUpdated(int item_count);
-  void OnFileStatusChanged(const fileapi::FileSystemURL& url,
+  void OnFileStatusChanged(const storage::FileSystemURL& url,
                            SyncFileStatus file_status,
                            SyncAction sync_action,
                            SyncDirection direction);

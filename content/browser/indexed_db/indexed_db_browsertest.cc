@@ -38,8 +38,8 @@
 #include "webkit/browser/quota/quota_manager.h"
 
 using base::ASCIIToUTF16;
-using quota::QuotaManager;
-using webkit_database::DatabaseUtil;
+using storage::QuotaManager;
+using storage::DatabaseUtil;
 
 namespace content {
 
@@ -125,7 +125,7 @@ class IndexedDBBrowserTest : public ContentBrowserTest {
       return;
     }
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    qm->SetTemporaryGlobalOverrideQuota(bytes, quota::QuotaCallback());
+    qm->SetTemporaryGlobalOverrideQuota(bytes, storage::QuotaCallback());
     // Don't return until the quota has been set.
     scoped_refptr<base::ThreadTestHelper> helper(new base::ThreadTestHelper(
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB)));

@@ -24,7 +24,7 @@ namespace base {
 class SequencedTaskRunner;
 }
 
-namespace fileapi {
+namespace storage {
 class FileSystemContext;
 class FileSystemURL;
 }
@@ -39,9 +39,8 @@ namespace sync_file_system {
 // Tracks local file changes for cloud-backed file systems.
 // All methods must be called on the file_task_runner given to the constructor.
 // Owned by FileSystemContext.
-class LocalFileChangeTracker
-    : public fileapi::FileUpdateObserver,
-      public fileapi::FileChangeObserver {
+class LocalFileChangeTracker : public storage::FileUpdateObserver,
+                               public storage::FileChangeObserver {
  public:
   // |file_task_runner| must be the one where the observee file operations run.
   // (So that we can make sure DB operations are done before actual update
@@ -52,54 +51,54 @@ class LocalFileChangeTracker
   virtual ~LocalFileChangeTracker();
 
   // FileUpdateObserver overrides.
-  virtual void OnStartUpdate(const fileapi::FileSystemURL& url) OVERRIDE;
-  virtual void OnUpdate(
-      const fileapi::FileSystemURL& url, int64 delta) OVERRIDE {}
-  virtual void OnEndUpdate(const fileapi::FileSystemURL& url) OVERRIDE;
+  virtual void OnStartUpdate(const storage::FileSystemURL& url) OVERRIDE;
+  virtual void OnUpdate(const storage::FileSystemURL& url,
+                        int64 delta) OVERRIDE {}
+  virtual void OnEndUpdate(const storage::FileSystemURL& url) OVERRIDE;
 
   // FileChangeObserver overrides.
-  virtual void OnCreateFile(const fileapi::FileSystemURL& url) OVERRIDE;
-  virtual void OnCreateFileFrom(const fileapi::FileSystemURL& url,
-                                const fileapi::FileSystemURL& src) OVERRIDE;
-  virtual void OnRemoveFile(const fileapi::FileSystemURL& url) OVERRIDE;
-  virtual void OnModifyFile(const fileapi::FileSystemURL& url) OVERRIDE;
-  virtual void OnCreateDirectory(const fileapi::FileSystemURL& url) OVERRIDE;
-  virtual void OnRemoveDirectory(const fileapi::FileSystemURL& url) OVERRIDE;
+  virtual void OnCreateFile(const storage::FileSystemURL& url) OVERRIDE;
+  virtual void OnCreateFileFrom(const storage::FileSystemURL& url,
+                                const storage::FileSystemURL& src) OVERRIDE;
+  virtual void OnRemoveFile(const storage::FileSystemURL& url) OVERRIDE;
+  virtual void OnModifyFile(const storage::FileSystemURL& url) OVERRIDE;
+  virtual void OnCreateDirectory(const storage::FileSystemURL& url) OVERRIDE;
+  virtual void OnRemoveDirectory(const storage::FileSystemURL& url) OVERRIDE;
 
   // Retrieves an array of |url| which have more than one pending changes.
   // If |max_urls| is non-zero (recommended in production code) this
   // returns URLs up to the number from the ones that have smallest
   // change_seq numbers (i.e. older changes).
-  void GetNextChangedURLs(std::deque<fileapi::FileSystemURL>* urls,
+  void GetNextChangedURLs(std::deque<storage::FileSystemURL>* urls,
                           int max_urls);
 
   // Returns all changes recorded for the given |url|.
   // Note that this also returns demoted changes.
   // This should be called after writing is disabled.
-  void GetChangesForURL(const fileapi::FileSystemURL& url,
+  void GetChangesForURL(const storage::FileSystemURL& url,
                         FileChangeList* changes);
 
   // Clears the pending changes recorded in this tracker for |url|.
-  void ClearChangesForURL(const fileapi::FileSystemURL& url);
+  void ClearChangesForURL(const storage::FileSystemURL& url);
 
   // Creates a fresh (empty) in-memory record for |url|.
   // Note that new changes are recorded to the mirror too.
-  void CreateFreshMirrorForURL(const fileapi::FileSystemURL& url);
+  void CreateFreshMirrorForURL(const storage::FileSystemURL& url);
 
   // Removes a mirror for |url|, and commits the change status to database.
-  void RemoveMirrorAndCommitChangesForURL(const fileapi::FileSystemURL& url);
+  void RemoveMirrorAndCommitChangesForURL(const storage::FileSystemURL& url);
 
   // Resets the changes to the ones recorded in mirror for |url|, and
   // commits the updated change status to database.
-  void ResetToMirrorAndCommitChangesForURL(const fileapi::FileSystemURL& url);
+  void ResetToMirrorAndCommitChangesForURL(const storage::FileSystemURL& url);
 
   // Re-inserts changes into the separate demoted_changes_ queue. They won't
   // be fetched by GetNextChangedURLs() unless PromoteDemotedChanges() is
   // called.
-  void DemoteChangesForURL(const fileapi::FileSystemURL& url);
+  void DemoteChangesForURL(const storage::FileSystemURL& url);
 
   // Promotes demoted changes for |url| to the normal queue.
-  void PromoteDemotedChangesForURL(const fileapi::FileSystemURL& url);
+  void PromoteDemotedChangesForURL(const storage::FileSystemURL& url);
 
   // Promotes all demoted changes to the normal queue. Returns true if it has
   // promoted any changes.
@@ -107,12 +106,12 @@ class LocalFileChangeTracker
 
   // Called by FileSyncService at the startup time to restore last dirty changes
   // left after the last shutdown (if any).
-  SyncStatusCode Initialize(fileapi::FileSystemContext* file_system_context);
+  SyncStatusCode Initialize(storage::FileSystemContext* file_system_context);
 
   // Resets all the changes recorded for the given |origin| and |type|.
   // TODO(kinuko,nhiroki): Ideally this should be automatically called in
   // DeleteFileSystem via QuotaUtil::DeleteOriginDataOnFileThread.
-  void ResetForFileSystem(const GURL& origin, fileapi::FileSystemType type);
+  void ResetForFileSystem(const GURL& origin, storage::FileSystemType type);
 
   // This method is (exceptionally) thread-safe.
   int64 num_changes() const {
@@ -135,37 +134,37 @@ class LocalFileChangeTracker
     int64 change_seq;
   };
 
-  typedef std::map<fileapi::FileSystemURL, ChangeInfo,
-      fileapi::FileSystemURL::Comparator>
-          FileChangeMap;
-  typedef std::map<int64, fileapi::FileSystemURL> ChangeSeqMap;
+  typedef std::map<storage::FileSystemURL,
+                   ChangeInfo,
+                   storage::FileSystemURL::Comparator> FileChangeMap;
+  typedef std::map<int64, storage::FileSystemURL> ChangeSeqMap;
 
   void UpdateNumChanges();
 
   // This does mostly same as calling GetNextChangedURLs with max_url=0
   // except that it returns urls in set rather than in deque.
   // Used only in testings.
-  void GetAllChangedURLs(fileapi::FileSystemURLSet* urls);
+  void GetAllChangedURLs(storage::FileSystemURLSet* urls);
 
   // Used only in testings.
   void DropAllChanges();
 
   // Database related methods.
-  SyncStatusCode MarkDirtyOnDatabase(const fileapi::FileSystemURL& url);
-  SyncStatusCode ClearDirtyOnDatabase(const fileapi::FileSystemURL& url);
+  SyncStatusCode MarkDirtyOnDatabase(const storage::FileSystemURL& url);
+  SyncStatusCode ClearDirtyOnDatabase(const storage::FileSystemURL& url);
 
   SyncStatusCode CollectLastDirtyChanges(
-      fileapi::FileSystemContext* file_system_context);
-  void RecordChange(const fileapi::FileSystemURL& url,
+      storage::FileSystemContext* file_system_context);
+  void RecordChange(const storage::FileSystemURL& url,
                     const FileChange& change);
 
-  static void RecordChangeToChangeMaps(const fileapi::FileSystemURL& url,
+  static void RecordChangeToChangeMaps(const storage::FileSystemURL& url,
                                        const FileChange& change,
                                        int change_seq,
                                        FileChangeMap* changes,
                                        ChangeSeqMap* change_seqs);
 
-  void ResetForURL(const fileapi::FileSystemURL& url,
+  void ResetForURL(const storage::FileSystemURL& url,
                    int change_seq,
                    leveldb::WriteBatch* batch);
 

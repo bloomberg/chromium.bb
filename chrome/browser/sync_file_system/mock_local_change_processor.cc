@@ -31,7 +31,7 @@ void MockLocalChangeProcessor::ApplyLocalChangeStub(
     const FileChange& change,
     const base::FilePath& local_file_path,
     const SyncFileMetadata& local_file_metadata,
-    const fileapi::FileSystemURL& url,
+    const storage::FileSystemURL& url,
     const SyncStatusCallback& callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(callback, SYNC_STATUS_OK));

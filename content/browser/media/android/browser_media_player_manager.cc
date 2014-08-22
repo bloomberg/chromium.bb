@@ -291,7 +291,7 @@ BrowserMediaPlayerManager::GetMediaResourceGetter() {
     RenderProcessHost* host = web_contents()->GetRenderProcessHost();
     BrowserContext* context = host->GetBrowserContext();
     StoragePartition* partition = host->GetStoragePartition();
-    fileapi::FileSystemContext* file_system_context =
+    storage::FileSystemContext* file_system_context =
         partition ? partition->GetFileSystemContext() : NULL;
     // Eventually this needs to be fixed to pass the correct frame rather
     // than just using the main frame.

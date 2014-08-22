@@ -15,12 +15,12 @@
 
 class GURL;
 
-namespace fileapi {
+namespace storage {
 class FileSystemMountOption;
 class FileSystemURL;
 }
 
-namespace fileapi {
+namespace storage {
 
 // Represents a set of mount points for File API.
 class WEBKIT_STORAGE_BROWSER_EXPORT MountPoints {
@@ -65,7 +65,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT MountPoints {
   // registered in this context, returns empty, invalid FileSystemURL.
   virtual FileSystemURL CreateCrackedFileSystemURL(
       const GURL& origin,
-      fileapi::FileSystemType type,
+      storage::FileSystemType type,
       const base::FilePath& path) const = 0;
 
   // Returns the mount point root path registered for a given |mount_name|.
@@ -103,6 +103,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT MountPoints {
   DISALLOW_COPY_AND_ASSIGN(MountPoints);
 };
 
-}  // namespace fileapi
+}  // namespace storage
 
 #endif  // WEBKIT_BROWSER_FILEAPI_MOUNT_POINTS_H_

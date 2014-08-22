@@ -16,14 +16,14 @@
 
 class GURL;
 
-namespace webkit_blob {
+namespace storage {
 class BlobDataHandle;
 class BlobStorageHost;
 class BlobStorageContext;
 }
 
-using webkit_blob::BlobStorageContext;
-using webkit_blob::BlobData;
+using storage::BlobStorageContext;
+using storage::BlobData;
 
 namespace content {
 

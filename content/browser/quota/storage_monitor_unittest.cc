@@ -17,20 +17,20 @@
 #include "webkit/browser/quota/storage_monitor.h"
 #include "webkit/browser/quota/storage_observer.h"
 
-using quota::HostStorageObservers;
-using quota::kQuotaErrorNotSupported;
-using quota::kQuotaStatusOk;
-using quota::kStorageTypePersistent;
-using quota::kStorageTypeTemporary;
-using quota::QuotaClient;
-using quota::QuotaManager;
-using quota::QuotaStatusCode;
-using quota::SpecialStoragePolicy;
-using quota::StorageMonitor;
-using quota::StorageObserver;
-using quota::StorageObserverList;
-using quota::StorageType;
-using quota::StorageTypeObservers;
+using storage::HostStorageObservers;
+using storage::kQuotaErrorNotSupported;
+using storage::kQuotaStatusOk;
+using storage::kStorageTypePersistent;
+using storage::kStorageTypeTemporary;
+using storage::QuotaClient;
+using storage::QuotaManager;
+using storage::QuotaStatusCode;
+using storage::SpecialStoragePolicy;
+using storage::StorageMonitor;
+using storage::StorageObserver;
+using storage::StorageObserverList;
+using storage::StorageType;
+using storage::StorageTypeObservers;
 
 namespace content {
 

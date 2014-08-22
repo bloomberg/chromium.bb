@@ -8,7 +8,7 @@
 #include "webkit/browser/fileapi/quota/open_file_handle.h"
 #include "webkit/browser/fileapi/quota/quota_reservation_buffer.h"
 
-namespace fileapi {
+namespace storage {
 
 void QuotaReservation::RefreshReservation(
     int64 size,
@@ -124,4 +124,4 @@ bool QuotaReservation::DidUpdateReservedQuota(
   return true;
 }
 
-}  // namespace fileapi
+}  // namespace storage

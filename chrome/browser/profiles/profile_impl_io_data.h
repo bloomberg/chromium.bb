@@ -43,9 +43,9 @@ class ProxyConfig;
 class SDCHManager;
 }  // namespace net
 
-namespace quota {
+namespace storage {
 class SpecialStoragePolicy;
-}  // namespace quota
+}  // namespace storage
 
 class DataReductionProxyChromeConfigurator;
 
@@ -58,27 +58,26 @@ class ProfileImplIOData : public ProfileIOData {
 
     // Init() must be called before ~Handle(). It records most of the
     // parameters needed to construct a ChromeURLRequestContextGetter.
-    void Init(const base::FilePath& cookie_path,
-              const base::FilePath& channel_id_path,
-              const base::FilePath& cache_path,
-              int cache_max_size,
-              const base::FilePath& media_cache_path,
-              int media_cache_max_size,
-              const base::FilePath& extensions_cookie_path,
-              const base::FilePath& profile_path,
-              const base::FilePath& infinite_cache_path,
-              chrome_browser_net::Predictor* predictor,
-              content::CookieStoreConfig::SessionCookieMode
-                  session_cookie_mode,
-              quota::SpecialStoragePolicy* special_storage_policy,
-              scoped_ptr<domain_reliability::DomainReliabilityMonitor>
-                  domain_reliability_monitor,
-              const base::Callback<void(bool)>&
-                  data_reduction_proxy_unavailable,
-              scoped_ptr<DataReductionProxyChromeConfigurator>
-                  data_reduction_proxy_chrome_configurator,
-              scoped_ptr<data_reduction_proxy::DataReductionProxyParams>
-                  data_reduction_proxy_params);
+    void Init(
+        const base::FilePath& cookie_path,
+        const base::FilePath& channel_id_path,
+        const base::FilePath& cache_path,
+        int cache_max_size,
+        const base::FilePath& media_cache_path,
+        int media_cache_max_size,
+        const base::FilePath& extensions_cookie_path,
+        const base::FilePath& profile_path,
+        const base::FilePath& infinite_cache_path,
+        chrome_browser_net::Predictor* predictor,
+        content::CookieStoreConfig::SessionCookieMode session_cookie_mode,
+        storage::SpecialStoragePolicy* special_storage_policy,
+        scoped_ptr<domain_reliability::DomainReliabilityMonitor>
+            domain_reliability_monitor,
+        const base::Callback<void(bool)>& data_reduction_proxy_unavailable,
+        scoped_ptr<DataReductionProxyChromeConfigurator>
+            data_reduction_proxy_chrome_configurator,
+        scoped_ptr<data_reduction_proxy::DataReductionProxyParams>
+            data_reduction_proxy_params);
 
     // These Create*ContextGetter() functions are only exposed because the
     // circular relationship between Profile, ProfileIOData::Handle, and the
@@ -175,7 +174,7 @@ class ProfileImplIOData : public ProfileIOData {
     base::FilePath extensions_cookie_path;
     base::FilePath infinite_cache_path;
     content::CookieStoreConfig::SessionCookieMode session_cookie_mode;
-    scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy;
+    scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy;
   };
 
   ProfileImplIOData();

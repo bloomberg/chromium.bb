@@ -35,7 +35,7 @@ class CreateDirectory : public Operation {
                   const base::FilePath& directory_path,
                   bool exclusive,
                   bool recursive,
-                  const fileapi::AsyncFileUtil::StatusCallback& callback);
+                  const storage::AsyncFileUtil::StatusCallback& callback);
   virtual ~CreateDirectory();
 
   // Operation overrides.
@@ -52,7 +52,7 @@ class CreateDirectory : public Operation {
   ProvidedFileSystemInterface::OpenFileMode mode_;
   bool exclusive_;
   bool recursive_;
-  const fileapi::AsyncFileUtil::StatusCallback callback_;
+  const storage::AsyncFileUtil::StatusCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(CreateDirectory);
 };

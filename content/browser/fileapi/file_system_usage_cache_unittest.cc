@@ -10,7 +10,7 @@
 #include "base/message_loop/message_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using fileapi::FileSystemUsageCache;
+using storage::FileSystemUsageCache;
 
 namespace content {
 

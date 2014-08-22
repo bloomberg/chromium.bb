@@ -32,7 +32,7 @@ class CreateFile : public Operation {
   CreateFile(extensions::EventRouter* event_router,
              const ProvidedFileSystemInfo& file_system_info,
              const base::FilePath& file_path,
-             const fileapi::AsyncFileUtil::StatusCallback& callback);
+             const storage::AsyncFileUtil::StatusCallback& callback);
   virtual ~CreateFile();
 
   // Operation overrides.
@@ -46,7 +46,7 @@ class CreateFile : public Operation {
 
  private:
   base::FilePath file_path_;
-  const fileapi::AsyncFileUtil::StatusCallback callback_;
+  const storage::AsyncFileUtil::StatusCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(CreateFile);
 };

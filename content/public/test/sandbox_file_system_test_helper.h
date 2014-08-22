@@ -21,11 +21,11 @@ namespace base {
 class FilePath;
 }
 
-namespace quota {
+namespace storage {
 class QuotaManagerProxy;
 }
 
-namespace fileapi {
+namespace storage {
 class FileSystemContext;
 class FileSystemFileUtil;
 class FileSystemOperationContext;
@@ -39,7 +39,7 @@ namespace content {
 // file systems (Temporary or Persistent).
 class SandboxFileSystemTestHelper {
  public:
-  SandboxFileSystemTestHelper(const GURL& origin, fileapi::FileSystemType type);
+  SandboxFileSystemTestHelper(const GURL& origin, storage::FileSystemType type);
   SandboxFileSystemTestHelper();
   ~SandboxFileSystemTestHelper();
 
@@ -48,9 +48,9 @@ class SandboxFileSystemTestHelper {
   // a single base directory, they have to share a context, so that they don't
   // have multiple databases fighting over the lock to the origin directory
   // [deep down inside ObfuscatedFileUtil].
-  void SetUp(fileapi::FileSystemContext* file_system_context);
+  void SetUp(storage::FileSystemContext* file_system_context);
   void SetUp(const base::FilePath& base_dir,
-             quota::QuotaManagerProxy* quota_manager_proxy);
+             storage::QuotaManagerProxy* quota_manager_proxy);
   void TearDown();
 
   base::FilePath GetOriginRootPath();
@@ -60,8 +60,8 @@ class SandboxFileSystemTestHelper {
   // Returns empty path if filesystem type is neither temporary nor persistent.
   base::FilePath GetUsageCachePath() const;
 
-  fileapi::FileSystemURL CreateURL(const base::FilePath& path) const;
-  fileapi::FileSystemURL CreateURLFromUTF8(const std::string& utf8) const {
+  storage::FileSystemURL CreateURL(const base::FilePath& path) const;
+  storage::FileSystemURL CreateURLFromUTF8(const std::string& utf8) const {
     return CreateURL(base::FilePath::FromUTF8Unsafe(utf8));
   }
 
@@ -73,31 +73,31 @@ class SandboxFileSystemTestHelper {
 
   int64 ComputeCurrentDirectoryDatabaseUsage();
 
-  fileapi::FileSystemOperationRunner* operation_runner();
-  fileapi::FileSystemOperationContext* NewOperationContext();
+  storage::FileSystemOperationRunner* operation_runner();
+  storage::FileSystemOperationContext* NewOperationContext();
 
-  void AddFileChangeObserver(fileapi::FileChangeObserver* observer);
+  void AddFileChangeObserver(storage::FileChangeObserver* observer);
 
-  fileapi::FileSystemContext* file_system_context() const {
+  storage::FileSystemContext* file_system_context() const {
     return file_system_context_.get();
   }
 
   const GURL& origin() const { return origin_; }
-  fileapi::FileSystemType type() const { return type_; }
-  quota::StorageType storage_type() const {
-    return fileapi::FileSystemTypeToQuotaStorageType(type_);
+  storage::FileSystemType type() const { return type_; }
+  storage::StorageType storage_type() const {
+    return storage::FileSystemTypeToQuotaStorageType(type_);
   }
-  fileapi::FileSystemFileUtil* file_util() const { return file_util_; }
-  fileapi::FileSystemUsageCache* usage_cache();
+  storage::FileSystemFileUtil* file_util() const { return file_util_; }
+  storage::FileSystemUsageCache* usage_cache();
 
  private:
   void SetUpFileSystem();
 
-  scoped_refptr<fileapi::FileSystemContext> file_system_context_;
+  scoped_refptr<storage::FileSystemContext> file_system_context_;
 
   const GURL origin_;
-  const fileapi::FileSystemType type_;
-  fileapi::FileSystemFileUtil* file_util_;
+  const storage::FileSystemType type_;
+  storage::FileSystemFileUtil* file_util_;
 };
 
 }  // namespace content

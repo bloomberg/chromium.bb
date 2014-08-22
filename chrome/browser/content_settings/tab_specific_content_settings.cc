@@ -442,12 +442,12 @@ void TabSpecificContentSettings::OnFileSystemAccessed(
     const GURL& url,
     bool blocked_by_policy) {
   if (blocked_by_policy) {
-    blocked_local_shared_objects_.file_systems()->AddFileSystem(url,
-        fileapi::kFileSystemTypeTemporary, 0);
+    blocked_local_shared_objects_.file_systems()->AddFileSystem(
+        url, storage::kFileSystemTypeTemporary, 0);
     OnContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES);
   } else {
-    allowed_local_shared_objects_.file_systems()->AddFileSystem(url,
-        fileapi::kFileSystemTypeTemporary, 0);
+    allowed_local_shared_objects_.file_systems()->AddFileSystem(
+        url, storage::kFileSystemTypeTemporary, 0);
     OnContentAllowed(CONTENT_SETTINGS_TYPE_COOKIES);
   }
 

@@ -12,9 +12,9 @@
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/browser/fileapi/isolated_context.h"
 
-using webkit_blob::ScopedFile;
+using storage::ScopedFile;
 
-namespace fileapi {
+namespace storage {
 
 namespace {
 
@@ -52,4 +52,4 @@ ScopedFile TransientFileUtil::CreateSnapshotFile(
   return scoped_file.Pass();
 }
 
-}  // namespace fileapi
+}  // namespace storage

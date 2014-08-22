@@ -21,7 +21,7 @@ namespace content {
 class QuotaReservationManagerTest;
 }
 
-namespace fileapi {
+namespace storage {
 
 class QuotaReservation;
 class QuotaReservationBuffer;
@@ -122,6 +122,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT QuotaReservationManager {
   DISALLOW_COPY_AND_ASSIGN(QuotaReservationManager);
 };
 
-}  // namespace fileapi
+}  // namespace storage
 
 #endif  // WEBKIT_BROWSER_FILEAPI_QUOTA_QUOTA_RESERVATION_MANAGER_H_

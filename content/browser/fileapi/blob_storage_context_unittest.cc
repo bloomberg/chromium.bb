@@ -13,7 +13,7 @@
 #include "webkit/browser/blob/blob_data_handle.h"
 #include "webkit/browser/blob/blob_storage_context.h"
 
-using webkit_blob::BlobDataHandle;
+using storage::BlobDataHandle;
 
 namespace content {
 

@@ -25,11 +25,11 @@ FakeRemoteChangeProcessor::~FakeRemoteChangeProcessor() {
 }
 
 void FakeRemoteChangeProcessor::PrepareForProcessRemoteChange(
-    const fileapi::FileSystemURL& url,
+    const storage::FileSystemURL& url,
     const PrepareChangeCallback& callback) {
   SyncFileMetadata local_metadata;
 
-  if (fileapi::VirtualPath::IsRootPath(url.path())) {
+  if (storage::VirtualPath::IsRootPath(url.path())) {
     // Origin root directory case.
     local_metadata = SyncFileMetadata(
         SYNC_FILE_TYPE_DIRECTORY, 0, base::Time::Now());
@@ -66,12 +66,12 @@ void FakeRemoteChangeProcessor::PrepareForProcessRemoteChange(
 void FakeRemoteChangeProcessor::ApplyRemoteChange(
     const FileChange& change,
     const base::FilePath& local_path,
-    const fileapi::FileSystemURL& url,
+    const storage::FileSystemURL& url,
     const SyncStatusCallback& callback) {
   SyncStatusCode status = SYNC_STATUS_UNKNOWN;
-  base::FilePath ancestor = fileapi::VirtualPath::DirName(url.path());
+  base::FilePath ancestor = storage::VirtualPath::DirName(url.path());
   while (true) {
-    fileapi::FileSystemURL ancestor_url =
+    storage::FileSystemURL ancestor_url =
         CreateSyncableFileSystemURL(url.origin(), ancestor);
     if (!ancestor_url.is_valid())
       break;
@@ -87,7 +87,7 @@ void FakeRemoteChangeProcessor::ApplyRemoteChange(
       }
     }
 
-    base::FilePath ancestor_parent = fileapi::VirtualPath::DirName(ancestor);
+    base::FilePath ancestor_parent = storage::VirtualPath::DirName(ancestor);
     if (ancestor == ancestor_parent)
       break;
     ancestor = ancestor_parent;
@@ -101,14 +101,14 @@ void FakeRemoteChangeProcessor::ApplyRemoteChange(
 }
 
 void FakeRemoteChangeProcessor::FinalizeRemoteSync(
-    const fileapi::FileSystemURL& url,
+    const storage::FileSystemURL& url,
     bool clear_local_changes,
     const base::Closure& completion_callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, completion_callback);
 }
 
 void FakeRemoteChangeProcessor::RecordFakeLocalChange(
-    const fileapi::FileSystemURL& url,
+    const storage::FileSystemURL& url,
     const FileChange& change,
     const SyncStatusCallback& callback) {
   local_changes_[url].Update(change);
@@ -117,7 +117,7 @@ void FakeRemoteChangeProcessor::RecordFakeLocalChange(
 }
 
 void FakeRemoteChangeProcessor::UpdateLocalFileMetadata(
-    const fileapi::FileSystemURL& url,
+    const storage::FileSystemURL& url,
     const FileChange& change) {
   if (change.IsAddOrUpdate()) {
     local_file_metadata_[url] = SyncFileMetadata(
@@ -129,7 +129,7 @@ void FakeRemoteChangeProcessor::UpdateLocalFileMetadata(
 }
 
 void FakeRemoteChangeProcessor::ClearLocalChanges(
-    const fileapi::FileSystemURL& url) {
+    const storage::FileSystemURL& url) {
   local_changes_.erase(url);
 }
 
@@ -143,7 +143,7 @@ void FakeRemoteChangeProcessor::VerifyConsistency(
   EXPECT_EQ(expected_changes.size(), applied_changes_.size());
   for (URLToFileChangesMap::const_iterator itr = applied_changes_.begin();
        itr != applied_changes_.end(); ++itr) {
-    const fileapi::FileSystemURL& url = itr->first;
+    const storage::FileSystemURL& url = itr->first;
     URLToFileChangesMap::const_iterator found = expected_changes.find(url);
     if (found == expected_changes.end()) {
       EXPECT_TRUE(found != expected_changes.end())

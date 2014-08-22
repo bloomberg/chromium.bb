@@ -86,10 +86,11 @@ void SyncFileSystemInternalsHandler::OnSyncStateUpdated(
 }
 
 void SyncFileSystemInternalsHandler::OnFileSynced(
-    const fileapi::FileSystemURL& url,
+    const storage::FileSystemURL& url,
     sync_file_system::SyncFileStatus status,
     sync_file_system::SyncAction action,
-    sync_file_system::SyncDirection direction) {}
+    sync_file_system::SyncDirection direction) {
+}
 
 void SyncFileSystemInternalsHandler::OnLogRecorded(
     const sync_file_system::TaskLogger::TaskLog& task_log) {

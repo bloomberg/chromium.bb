@@ -21,9 +21,9 @@ using base::Bind;
 using base::Callback;
 using base::Owned;
 using base::Unretained;
-using webkit_blob::ShareableFileReference;
+using storage::ShareableFileReference;
 
-namespace fileapi {
+namespace storage {
 
 namespace {
 
@@ -79,7 +79,7 @@ class GetFileInfoHelper {
   base::File::Error error_;
   base::File::Info file_info_;
   base::FilePath platform_path_;
-  webkit_blob::ScopedFile scoped_file_;
+  storage::ScopedFile scoped_file_;
   DISALLOW_COPY_AND_ASSIGN(GetFileInfoHelper);
 };
 
@@ -349,4 +349,4 @@ void AsyncFileUtilAdapter::CreateSnapshotFile(
   DCHECK(success);
 }
 
-}  // namespace fileapi
+}  // namespace storage

@@ -22,7 +22,7 @@ namespace tracked_objects {
 class Location;
 }
 
-namespace fileapi {
+namespace storage {
 
 // All methods of this class other than the constructor may be used only from
 // the browser's FILE thread.  The constructor may be used on any thread.
@@ -72,6 +72,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE SandboxOriginDatabase
   DISALLOW_COPY_AND_ASSIGN(SandboxOriginDatabase);
 };
 
-}  // namespace fileapi
+}  // namespace storage
 
 #endif  // WEBKIT_BROWSER_FILEAPI_SANDBOX_ORIGIN_DATABASE_H_

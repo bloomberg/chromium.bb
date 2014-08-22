@@ -1070,10 +1070,10 @@ bool DeveloperPrivateLoadDirectoryFunction::RunAsync() {
 
   // Directory url is non empty only for syncfilesystem.
   if (directory_url_str != "") {
-    fileapi::FileSystemURL directory_url =
+    storage::FileSystemURL directory_url =
         context_->CrackURL(GURL(directory_url_str));
     if (!directory_url.is_valid() ||
-        directory_url.type() != fileapi::kFileSystemTypeSyncable) {
+        directory_url.type() != storage::kFileSystemTypeSyncable) {
       SetError("DirectoryEntry of unsupported filesystem.");
       return false;
     }
@@ -1093,21 +1093,21 @@ bool DeveloperPrivateLoadDirectoryFunction::RunAsync() {
     // points to a non-native local directory.
     std::string filesystem_id;
     bool cracked =
-        fileapi::CrackIsolatedFileSystemName(filesystem_name, &filesystem_id);
+        storage::CrackIsolatedFileSystemName(filesystem_name, &filesystem_id);
     CHECK(cracked);
     base::FilePath virtual_path =
-        fileapi::IsolatedContext::GetInstance()
+        storage::IsolatedContext::GetInstance()
             ->CreateVirtualRootPath(filesystem_id)
             .Append(base::FilePath::FromUTF8Unsafe(filesystem_path));
-    fileapi::FileSystemURL directory_url = context_->CreateCrackedFileSystemURL(
+    storage::FileSystemURL directory_url = context_->CreateCrackedFileSystemURL(
         extensions::Extension::GetBaseURLFromExtensionId(extension_id()),
-        fileapi::kFileSystemTypeIsolated,
+        storage::kFileSystemTypeIsolated,
         virtual_path);
 
     if (directory_url.is_valid() &&
-        directory_url.type() != fileapi::kFileSystemTypeNativeLocal &&
-        directory_url.type() != fileapi::kFileSystemTypeRestrictedNativeLocal &&
-        directory_url.type() != fileapi::kFileSystemTypeDragged) {
+        directory_url.type() != storage::kFileSystemTypeNativeLocal &&
+        directory_url.type() != storage::kFileSystemTypeRestrictedNativeLocal &&
+        directory_url.type() != storage::kFileSystemTypeDragged) {
       return LoadByFileSystemAPI(directory_url);
     }
 
@@ -1118,7 +1118,7 @@ bool DeveloperPrivateLoadDirectoryFunction::RunAsync() {
 }
 
 bool DeveloperPrivateLoadDirectoryFunction::LoadByFileSystemAPI(
-    const fileapi::FileSystemURL& directory_url) {
+    const storage::FileSystemURL& directory_url) {
   std::string directory_url_str = directory_url.ToGURL().spec();
 
   size_t pos = 0;
@@ -1176,7 +1176,7 @@ void DeveloperPrivateLoadDirectoryFunction::ReadDirectoryByFileSystemAPI(
     const base::FilePath& project_path,
     const base::FilePath& destination_path) {
   GURL project_url = GURL(project_base_url_ + destination_path.AsUTF8Unsafe());
-  fileapi::FileSystemURL url = context_->CrackURL(project_url);
+  storage::FileSystemURL url = context_->CrackURL(project_url);
 
   context_->operation_runner()->ReadDirectory(
       url, base::Bind(&DeveloperPrivateLoadDirectoryFunction::
@@ -1188,9 +1188,8 @@ void DeveloperPrivateLoadDirectoryFunction::ReadDirectoryByFileSystemAPICb(
     const base::FilePath& project_path,
     const base::FilePath& destination_path,
     base::File::Error status,
-    const fileapi::FileSystemOperation::FileEntryList& file_list,
+    const storage::FileSystemOperation::FileEntryList& file_list,
     bool has_more) {
-
   if (status != base::File::FILE_OK) {
     DLOG(ERROR) << "Error in copying files from sync filesystem.";
     return;
@@ -1214,7 +1213,7 @@ void DeveloperPrivateLoadDirectoryFunction::ReadDirectoryByFileSystemAPICb(
 
     GURL project_url = GURL(project_base_url_ +
         destination_path.Append(file_list[i].name).AsUTF8Unsafe());
-    fileapi::FileSystemURL url = context_->CrackURL(project_url);
+    storage::FileSystemURL url = context_->CrackURL(project_url);
 
     base::FilePath target_path = project_path;
     target_path = target_path.Append(file_list[i].name);
@@ -1245,7 +1244,7 @@ void DeveloperPrivateLoadDirectoryFunction::SnapshotFileCallback(
     base::File::Error result,
     const base::File::Info& file_info,
     const base::FilePath& src_path,
-    const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref) {
+    const scoped_refptr<storage::ShareableFileReference>& file_ref) {
   if (result != base::File::FILE_OK) {
     SetError("Error in copying files from sync filesystem.");
     success_ = false;

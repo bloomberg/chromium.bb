@@ -14,7 +14,7 @@ namespace sql {
 class Connection;
 }
 
-namespace webkit_database {
+namespace storage {
 
 struct WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE DatabaseDetails {
   DatabaseDetails();
@@ -49,6 +49,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE DatabasesTable {
   sql::Connection* db_;
 };
 
-}  // namespace webkit_database
+}  // namespace storage
 
 #endif  // WEBKIT_BROWSER_DATABASE_DATABASES_TABLE_H_

@@ -19,7 +19,7 @@ namespace IPC {
 class Sender;
 }
 
-namespace webkit_blob {
+namespace storage {
 class BlobStorageContext;
 }
 
@@ -93,7 +93,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // the request doesn't require special handling.
   scoped_ptr<ServiceWorkerRequestHandler> CreateRequestHandler(
       ResourceType resource_type,
-      base::WeakPtr<webkit_blob::BlobStorageContext> blob_storage_context,
+      base::WeakPtr<storage::BlobStorageContext> blob_storage_context,
       scoped_refptr<ResourceRequestBody> body);
 
   // Returns true if |registration| can be associated with this provider.

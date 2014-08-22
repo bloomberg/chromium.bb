@@ -13,13 +13,14 @@
 namespace content {
 
 MockBlobURLRequestContext::MockBlobURLRequestContext(
-    fileapi::FileSystemContext* file_system_context)
-    : blob_storage_context_(new webkit_blob::BlobStorageContext) {
+    storage::FileSystemContext* file_system_context)
+    : blob_storage_context_(new storage::BlobStorageContext) {
   // Job factory owns the protocol handler.
   job_factory_.SetProtocolHandler(
-      "blob", new webkit_blob::BlobProtocolHandler(blob_storage_context_.get(),
-                                      file_system_context,
-                                      base::MessageLoopProxy::current()));
+      "blob",
+      new storage::BlobProtocolHandler(blob_storage_context_.get(),
+                                       file_system_context,
+                                       base::MessageLoopProxy::current()));
   set_job_factory(&job_factory_);
 }
 
@@ -34,8 +35,7 @@ ScopedTextBlob::ScopedTextBlob(
     : blob_id_(blob_id),
       context_(request_context.blob_storage_context()) {
   DCHECK(context_);
-  scoped_refptr<webkit_blob::BlobData> blob_data(
-      new webkit_blob::BlobData(blob_id_));
+  scoped_refptr<storage::BlobData> blob_data(new storage::BlobData(blob_id_));
   if (!data.empty())
     blob_data->AppendData(data);
   handle_ = context_->AddFinishedBlob(blob_data);
@@ -44,7 +44,7 @@ ScopedTextBlob::ScopedTextBlob(
 ScopedTextBlob::~ScopedTextBlob() {
 }
 
-scoped_ptr<webkit_blob::BlobDataHandle> ScopedTextBlob::GetBlobDataHandle() {
+scoped_ptr<storage::BlobDataHandle> ScopedTextBlob::GetBlobDataHandle() {
   return context_->GetBlobDataFromUUID(blob_id_);
 }
 

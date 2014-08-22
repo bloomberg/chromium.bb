@@ -5,7 +5,7 @@
 #include "base/logging.h"
 #include "webkit/common/quota/quota_status_code.h"
 
-namespace quota {
+namespace storage {
 
 const char* QuotaStatusCodeToString(QuotaStatusCode status) {
   switch (status) {
@@ -26,4 +26,4 @@ const char* QuotaStatusCodeToString(QuotaStatusCode status) {
   return "Unknown error.";
 }
 
-}  // namespace quota
+}  // namespace storage

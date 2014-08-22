@@ -18,7 +18,7 @@ namespace base {
 class FilePath;
 }
 
-namespace fileapi {
+namespace storage {
 class ExternalMountPoints;
 }
 
@@ -26,7 +26,7 @@ namespace net {
 class URLRequestContextGetter;
 }
 
-namespace quota {
+namespace storage {
 class SpecialStoragePolicy;
 }
 
@@ -53,7 +53,7 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   // Returns BrowserContext specific external mount points. It may return NULL
   // if the context doesn't have any BrowserContext specific external mount
   // points. Currenty, non-NULL value is returned only on ChromeOS.
-  static fileapi::ExternalMountPoints* GetMountPoints(BrowserContext* context);
+  static storage::ExternalMountPoints* GetMountPoints(BrowserContext* context);
 
   static content::StoragePartition* GetStoragePartition(
       BrowserContext* browser_context, SiteInstance* site_instance);
@@ -154,7 +154,7 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   virtual BrowserPluginGuestManager* GetGuestManager() = 0;
 
   // Returns a special storage policy implementation, or NULL.
-  virtual quota::SpecialStoragePolicy* GetSpecialStoragePolicy() = 0;
+  virtual storage::SpecialStoragePolicy* GetSpecialStoragePolicy() = 0;
 
   // Returns a push messaging service. The embedder owns the service, and is
   // responsible for ensuring that it outlives RenderProcessHost. It's valid to

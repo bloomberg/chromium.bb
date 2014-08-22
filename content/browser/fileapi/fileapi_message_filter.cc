@@ -40,12 +40,12 @@
 #include "webkit/common/fileapi/file_system_types.h"
 #include "webkit/common/fileapi/file_system_util.h"
 
-using fileapi::FileSystemFileUtil;
-using fileapi::FileSystemBackend;
-using fileapi::FileSystemOperation;
-using fileapi::FileSystemURL;
-using webkit_blob::BlobData;
-using webkit_blob::BlobStorageContext;
+using storage::FileSystemFileUtil;
+using storage::FileSystemBackend;
+using storage::FileSystemOperation;
+using storage::FileSystemURL;
+using storage::BlobData;
+using storage::BlobStorageContext;
 
 namespace content {
 
@@ -66,11 +66,11 @@ void RevokeFilePermission(int child_id, const base::FilePath& path) {
 FileAPIMessageFilter::FileAPIMessageFilter(
     int process_id,
     net::URLRequestContextGetter* request_context_getter,
-    fileapi::FileSystemContext* file_system_context,
+    storage::FileSystemContext* file_system_context,
     ChromeBlobStorageContext* blob_storage_context,
     StreamContext* stream_context)
-    : BrowserMessageFilter(
-          kFilteredMessageClasses, arraysize(kFilteredMessageClasses)),
+    : BrowserMessageFilter(kFilteredMessageClasses,
+                           arraysize(kFilteredMessageClasses)),
       process_id_(process_id),
       context_(file_system_context),
       security_policy_(ChildProcessSecurityPolicyImpl::GetInstance()),
@@ -87,11 +87,11 @@ FileAPIMessageFilter::FileAPIMessageFilter(
 FileAPIMessageFilter::FileAPIMessageFilter(
     int process_id,
     net::URLRequestContext* request_context,
-    fileapi::FileSystemContext* file_system_context,
+    storage::FileSystemContext* file_system_context,
     ChromeBlobStorageContext* blob_storage_context,
     StreamContext* stream_context)
-    : BrowserMessageFilter(
-          kFilteredMessageClasses, arraysize(kFilteredMessageClasses)),
+    : BrowserMessageFilter(kFilteredMessageClasses,
+                           arraysize(kFilteredMessageClasses)),
       process_id_(process_id),
       context_(file_system_context),
       security_policy_(ChildProcessSecurityPolicyImpl::GetInstance()),
@@ -203,15 +203,15 @@ void FileAPIMessageFilter::BadMessageReceived() {
 
 void FileAPIMessageFilter::OnOpenFileSystem(int request_id,
                                             const GURL& origin_url,
-                                            fileapi::FileSystemType type) {
+                                            storage::FileSystemType type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (type == fileapi::kFileSystemTypeTemporary) {
+  if (type == storage::kFileSystemTypeTemporary) {
     RecordAction(base::UserMetricsAction("OpenFileSystemTemporary"));
-  } else if (type == fileapi::kFileSystemTypePersistent) {
+  } else if (type == storage::kFileSystemTypePersistent) {
     RecordAction(base::UserMetricsAction("OpenFileSystemPersistent"));
   }
-  fileapi::OpenFileSystemMode mode =
-      fileapi::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT;
+  storage::OpenFileSystemMode mode =
+      storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT;
   context_->OpenFileSystem(origin_url, type, mode, base::Bind(
       &FileAPIMessageFilter::DidOpenFileSystem, this, request_id));
 }
@@ -233,10 +233,9 @@ void FileAPIMessageFilter::OnResolveURL(
       &FileAPIMessageFilter::DidResolveURL, this, request_id));
 }
 
-void FileAPIMessageFilter::OnDeleteFileSystem(
-    int request_id,
-    const GURL& origin_url,
-    fileapi::FileSystemType type) {
+void FileAPIMessageFilter::OnDeleteFileSystem(int request_id,
+                                              const GURL& origin_url,
+                                              storage::FileSystemType type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   context_->DeleteFileSystem(origin_url, type, base::Bind(
       &FileAPIMessageFilter::DidDeleteFileSystem, this, request_id));
@@ -260,8 +259,9 @@ void FileAPIMessageFilter::OnMove(
   }
 
   operations_[request_id] = operation_runner()->Move(
-      src_url, dest_url,
-      fileapi::FileSystemOperation::OPTION_NONE,
+      src_url,
+      dest_url,
+      storage::FileSystemOperation::OPTION_NONE,
       base::Bind(&FileAPIMessageFilter::DidFinish, this, request_id));
 }
 
@@ -282,9 +282,10 @@ void FileAPIMessageFilter::OnCopy(
   }
 
   operations_[request_id] = operation_runner()->Copy(
-      src_url, dest_url,
-      fileapi::FileSystemOperation::OPTION_NONE,
-      fileapi::FileSystemOperationRunner::CopyProgressCallback(),
+      src_url,
+      dest_url,
+      storage::FileSystemOperation::OPTION_NONE,
+      storage::FileSystemOperationRunner::CopyProgressCallback(),
       base::Bind(&FileAPIMessageFilter::DidFinish, this, request_id));
 }
 
@@ -406,7 +407,7 @@ void FileAPIMessageFilter::OnWrite(
     return;
   }
 
-  scoped_ptr<webkit_blob::BlobDataHandle> blob =
+  scoped_ptr<storage::BlobDataHandle> blob =
       blob_storage_context_->context()->GetBlobDataFromUUID(blob_uuid);
 
   operations_[request_id] = operation_runner()->Write(
@@ -726,7 +727,7 @@ void FileAPIMessageFilter::DidGetMetadataForStreaming(
 void FileAPIMessageFilter::DidReadDirectory(
     int request_id,
     base::File::Error result,
-    const std::vector<fileapi::DirectoryEntry>& entries,
+    const std::vector<storage::DirectoryEntry>& entries,
     bool has_more) {
   if (result == base::File::FILE_OK) {
     if (!entries.empty() || !has_more)
@@ -771,19 +772,21 @@ void FileAPIMessageFilter::DidOpenFileSystem(int request_id,
 void FileAPIMessageFilter::DidResolveURL(
     int request_id,
     base::File::Error result,
-    const fileapi::FileSystemInfo& info,
+    const storage::FileSystemInfo& info,
     const base::FilePath& file_path,
-    fileapi::FileSystemContext::ResolvedEntryType type) {
+    storage::FileSystemContext::ResolvedEntryType type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (result == base::File::FILE_OK &&
-      type == fileapi::FileSystemContext::RESOLVED_ENTRY_NOT_FOUND)
+      type == storage::FileSystemContext::RESOLVED_ENTRY_NOT_FOUND)
     result = base::File::FILE_ERROR_NOT_FOUND;
 
   if (result == base::File::FILE_OK) {
     DCHECK(info.root_url.is_valid());
     Send(new FileSystemMsg_DidResolveURL(
-        request_id, info, file_path,
-        type == fileapi::FileSystemContext::RESOLVED_ENTRY_DIRECTORY));
+        request_id,
+        info,
+        file_path,
+        type == storage::FileSystemContext::RESOLVED_ENTRY_DIRECTORY));
   } else {
     Send(new FileSystemMsg_DidFail(request_id, result));
   }
@@ -803,11 +806,11 @@ void FileAPIMessageFilter::DidDeleteFileSystem(
 
 void FileAPIMessageFilter::DidCreateSnapshot(
     int request_id,
-    const fileapi::FileSystemURL& url,
+    const storage::FileSystemURL& url,
     base::File::Error result,
     const base::File::Info& info,
     const base::FilePath& platform_path,
-    const scoped_refptr<webkit_blob::ShareableFileReference>& /* unused */) {
+    const scoped_refptr<storage::ShareableFileReference>& /* unused */) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   operations_.erase(request_id);
 
@@ -816,8 +819,8 @@ void FileAPIMessageFilter::DidCreateSnapshot(
     return;
   }
 
-  scoped_refptr<webkit_blob::ShareableFileReference> file_ref =
-      webkit_blob::ShareableFileReference::Get(platform_path);
+  scoped_refptr<storage::ShareableFileReference> file_ref =
+      storage::ShareableFileReference::Get(platform_path);
   if (!security_policy_->CanReadFile(process_id_, platform_path)) {
     // Give per-file read permission to the snapshot file if it hasn't it yet.
     // In order for the renderer to be able to read the file via File object,
@@ -831,9 +834,9 @@ void FileAPIMessageFilter::DidCreateSnapshot(
     // is dropped.
     if (!file_ref.get()) {
       // Create a reference for temporary permission handling.
-      file_ref = webkit_blob::ShareableFileReference::GetOrCreate(
+      file_ref = storage::ShareableFileReference::GetOrCreate(
           platform_path,
-          webkit_blob::ShareableFileReference::DONT_DELETE_ON_FINAL_RELEASE,
+          storage::ShareableFileReference::DONT_DELETE_ON_FINAL_RELEASE,
           context_->default_file_task_runner());
     }
     file_ref->AddFinalReleaseCallback(
@@ -851,7 +854,8 @@ void FileAPIMessageFilter::DidCreateSnapshot(
 }
 
 bool FileAPIMessageFilter::ValidateFileSystemURL(
-    int request_id, const fileapi::FileSystemURL& url) {
+    int request_id,
+    const storage::FileSystemURL& url) {
   if (!FileSystemURLIsValid(context_, url)) {
     Send(new FileSystemMsg_DidFail(request_id,
                                    base::File::FILE_ERROR_INVALID_URL));
@@ -861,7 +865,7 @@ bool FileAPIMessageFilter::ValidateFileSystemURL(
   // Deny access to files in PluginPrivate FileSystem from JavaScript.
   // TODO(nhiroki): Move this filter somewhere else since this is not for
   // validation.
-  if (url.type() == fileapi::kFileSystemTypePluginPrivate) {
+  if (url.type() == storage::kFileSystemTypePluginPrivate) {
     Send(new FileSystemMsg_DidFail(request_id,
                                    base::File::FILE_ERROR_SECURITY));
     return false;

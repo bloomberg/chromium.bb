@@ -29,8 +29,8 @@
 
 #define FPL(x) FILE_PATH_LITERAL(x)
 
-using fileapi::FileSystemOperation;
-using fileapi::FileSystemURL;
+using storage::FileSystemOperation;
+using storage::FileSystemURL;
 
 namespace {
 
@@ -119,26 +119,26 @@ class NativeMediaFileUtilTest : public testing::Test {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
     ASSERT_TRUE(base::CreateDirectory(root_path()));
 
-    scoped_refptr<quota::SpecialStoragePolicy> storage_policy =
+    scoped_refptr<storage::SpecialStoragePolicy> storage_policy =
         new content::MockSpecialStoragePolicy();
 
-    ScopedVector<fileapi::FileSystemBackend> additional_providers;
+    ScopedVector<storage::FileSystemBackend> additional_providers;
     additional_providers.push_back(new MediaFileSystemBackend(
         data_dir_.path(), base::MessageLoopProxy::current().get()));
 
-    file_system_context_ = new fileapi::FileSystemContext(
+    file_system_context_ = new storage::FileSystemContext(
         base::MessageLoopProxy::current().get(),
         base::MessageLoopProxy::current().get(),
-        fileapi::ExternalMountPoints::CreateRefCounted().get(),
+        storage::ExternalMountPoints::CreateRefCounted().get(),
         storage_policy.get(),
         NULL,
         additional_providers.Pass(),
-        std::vector<fileapi::URLRequestAutoMountHandler>(),
+        std::vector<storage::URLRequestAutoMountHandler>(),
         data_dir_.path(),
         content::CreateAllowFileAccessOptions());
 
     filesystem_id_ = isolated_context()->RegisterFileSystemForPath(
-        fileapi::kFileSystemTypeNativeMedia, std::string(), root_path(), NULL);
+        storage::kFileSystemTypeNativeMedia, std::string(), root_path(), NULL);
 
     isolated_context()->AddReference(filesystem_id_);
   }
@@ -149,19 +149,19 @@ class NativeMediaFileUtilTest : public testing::Test {
   }
 
  protected:
-  fileapi::FileSystemContext* file_system_context() {
+  storage::FileSystemContext* file_system_context() {
     return file_system_context_.get();
   }
 
   FileSystemURL CreateURL(const base::FilePath::CharType* test_case_path) {
     return file_system_context_->CreateCrackedFileSystemURL(
         origin(),
-        fileapi::kFileSystemTypeIsolated,
+        storage::kFileSystemTypeIsolated,
         GetVirtualPath(test_case_path));
   }
 
-  fileapi::IsolatedContext* isolated_context() {
-    return fileapi::IsolatedContext::GetInstance();
+  storage::IsolatedContext* isolated_context() {
+    return storage::IsolatedContext::GetInstance();
   }
 
   base::FilePath root_path() {
@@ -179,11 +179,9 @@ class NativeMediaFileUtilTest : public testing::Test {
     return GURL("http://example.com");
   }
 
-  fileapi::FileSystemType type() {
-    return fileapi::kFileSystemTypeNativeMedia;
-  }
+  storage::FileSystemType type() { return storage::kFileSystemTypeNativeMedia; }
 
-  fileapi::FileSystemOperationRunner* operation_runner() {
+  storage::FileSystemOperationRunner* operation_runner() {
     return file_system_context_->operation_runner();
   }
 
@@ -192,7 +190,7 @@ class NativeMediaFileUtilTest : public testing::Test {
   content::TestBrowserThread io_thread_;
 
   base::ScopedTempDir data_dir_;
-  scoped_refptr<fileapi::FileSystemContext> file_system_context_;
+  scoped_refptr<storage::FileSystemContext> file_system_context_;
 
   std::string filesystem_id_;
 
@@ -304,9 +302,10 @@ TEST_F(NativeMediaFileUtilTest, CopySourceFiltering) {
         expectation = base::File::FILE_ERROR_INVALID_OPERATION;
       }
       operation_runner()->Copy(
-          url, dest_url,
-          fileapi::FileSystemOperation::OPTION_NONE,
-          fileapi::FileSystemOperationRunner::CopyProgressCallback(),
+          url,
+          dest_url,
+          storage::FileSystemOperation::OPTION_NONE,
+          storage::FileSystemOperationRunner::CopyProgressCallback(),
           base::Bind(&ExpectEqHelper, test_name, expectation));
       base::MessageLoop::current()->RunUntilIdle();
     }
@@ -369,9 +368,10 @@ TEST_F(NativeMediaFileUtilTest, CopyDestFiltering) {
         }
       }
       operation_runner()->Copy(
-          src_url, url,
-          fileapi::FileSystemOperation::OPTION_NONE,
-          fileapi::FileSystemOperationRunner::CopyProgressCallback(),
+          src_url,
+          url,
+          storage::FileSystemOperation::OPTION_NONE,
+          storage::FileSystemOperationRunner::CopyProgressCallback(),
           base::Bind(&ExpectEqHelper, test_name, expectation));
       base::MessageLoop::current()->RunUntilIdle();
     }
@@ -409,7 +409,9 @@ TEST_F(NativeMediaFileUtilTest, MoveSourceFiltering) {
         expectation = base::File::FILE_ERROR_INVALID_OPERATION;
       }
       operation_runner()->Move(
-          url, dest_url, fileapi::FileSystemOperation::OPTION_NONE,
+          url,
+          dest_url,
+          storage::FileSystemOperation::OPTION_NONE,
           base::Bind(&ExpectEqHelper, test_name, expectation));
       base::MessageLoop::current()->RunUntilIdle();
     }
@@ -474,7 +476,9 @@ TEST_F(NativeMediaFileUtilTest, MoveDestFiltering) {
         }
       }
       operation_runner()->Move(
-          src_url, url, fileapi::FileSystemOperation::OPTION_NONE,
+          src_url,
+          url,
+          storage::FileSystemOperation::OPTION_NONE,
           base::Bind(&ExpectEqHelper, test_name, expectation));
       base::MessageLoop::current()->RunUntilIdle();
     }
@@ -544,7 +548,7 @@ void CreateSnapshotCallback(
     base::File::Error result,
     const base::File::Info&,
     const base::FilePath&,
-    const scoped_refptr<webkit_blob::ShareableFileReference>&) {
+    const scoped_refptr<storage::ShareableFileReference>&) {
   *error = result;
 }
 

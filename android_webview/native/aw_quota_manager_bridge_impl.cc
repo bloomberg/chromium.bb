@@ -22,8 +22,8 @@
 using base::android::AttachCurrentThread;
 using content::BrowserThread;
 using content::StoragePartition;
-using quota::QuotaClient;
-using quota::QuotaManager;
+using storage::QuotaClient;
+using storage::QuotaManager;
 
 namespace android_webview {
 
@@ -46,10 +46,10 @@ class GetOriginsTask : public base::RefCountedThreadSafe<GetOriginsTask> {
   ~GetOriginsTask();
 
   void OnOriginsObtained(const std::set<GURL>& origins,
-                         quota::StorageType type);
+                         storage::StorageType type);
 
   void OnUsageAndQuotaObtained(const GURL& origin,
-                               quota::QuotaStatusCode status_code,
+                               storage::QuotaStatusCode status_code,
                                int64 usage,
                                int64 quota);
 
@@ -86,13 +86,13 @@ void GetOriginsTask::Run() {
       FROM_HERE,
       base::Bind(&QuotaManager::GetOriginsModifiedSince,
                  quota_manager_,
-                 quota::kStorageTypeTemporary,
-                 base::Time()  /* Since beginning of time. */,
+                 storage::kStorageTypeTemporary,
+                 base::Time() /* Since beginning of time. */,
                  base::Bind(&GetOriginsTask::OnOriginsObtained, this)));
 }
 
-void GetOriginsTask::OnOriginsObtained(
-    const std::set<GURL>& origins, quota::StorageType type) {
+void GetOriginsTask::OnOriginsObtained(const std::set<GURL>& origins,
+                                       storage::StorageType type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   num_callbacks_to_wait_ = origins.size();
   num_callbacks_received_ = 0u;
@@ -109,12 +109,13 @@ void GetOriginsTask::OnOriginsObtained(
   CheckDone();
 }
 
-void GetOriginsTask::OnUsageAndQuotaObtained(const GURL& origin,
-                                             quota::QuotaStatusCode status_code,
-                                             int64 usage,
-                                             int64 quota) {
+void GetOriginsTask::OnUsageAndQuotaObtained(
+    const GURL& origin,
+    storage::QuotaStatusCode status_code,
+    int64 usage,
+    int64 quota) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (status_code == quota::kQuotaStatusOk) {
+  if (status_code == storage::kQuotaStatusOk) {
     origin_.push_back(origin.spec());
     usage_.push_back(usage);
     quota_.push_back(quota);
@@ -286,11 +287,11 @@ namespace {
 
 void OnUsageAndQuotaObtained(
     const AwQuotaManagerBridgeImpl::QuotaUsageCallback& ui_callback,
-    quota::QuotaStatusCode status_code,
+    storage::QuotaStatusCode status_code,
     int64 usage,
     int64 quota) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (status_code != quota::kQuotaStatusOk) {
+  if (status_code != storage::kQuotaStatusOk) {
     usage = 0;
     quota = 0;
   }
@@ -334,7 +335,7 @@ void AwQuotaManagerBridgeImpl::GetUsageAndQuotaForOriginOnUiThread(
       base::Bind(&QuotaManager::GetUsageAndQuota,
                  GetQuotaManager(),
                  GURL(origin),
-                 quota::kStorageTypeTemporary,
+                 storage::kStorageTypeTemporary,
                  base::Bind(&OnUsageAndQuotaObtained, ui_callback)));
 }
 
