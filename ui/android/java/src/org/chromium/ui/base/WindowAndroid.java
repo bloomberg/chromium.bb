@@ -57,6 +57,14 @@ public class WindowAndroid {
     };
 
     /**
+     * @return true if onVSync handler is executing.
+     * @see org.chromium.ui.VSyncMonitor#isInsideVSync().
+     */
+    public boolean isInsideVSync() {
+        return mVSyncMonitor.isInsideVSync();
+    }
+
+    /**
      * @param context The application context.
      */
     @SuppressLint("UseSparseArrays")
