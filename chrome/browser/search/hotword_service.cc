@@ -142,14 +142,15 @@ ExtensionService* GetExtensionService(Profile* profile) {
 }
 
 std::string GetCurrentLocale(Profile* profile) {
-  std::string locale =
 #if defined(OS_CHROMEOS)
-      // On ChromeOS locale is per-profile.
+  std::string profile_locale =
       profile->GetPrefs()->GetString(prefs::kApplicationLocale);
-#else
-      g_browser_process->GetApplicationLocale();
+  if (!profile_locale.empty()) {
+    // On ChromeOS locale is per-profile, but only if set.
+    return profile_locale;
+  }
 #endif
-  return locale;
+  return g_browser_process->GetApplicationLocale();
 }
 
 }  // namespace
