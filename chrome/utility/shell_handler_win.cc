@@ -23,6 +23,8 @@ bool ShellHandler::OnMessageReceived(const IPC::Message& message) {
                         OnOpenItemViaShell)
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_GetOpenFileName,
                         OnGetOpenFileName)
+    IPC_MESSAGE_HANDLER(ChromeUtilityMsg_GetSaveFileName,
+                        OnGetSaveFileName)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -55,4 +57,33 @@ void ShellHandler::OnGetOpenFileName(
     content::UtilityThread::Get()->Send(
         new ChromeUtilityHostMsg_GetOpenFileName_Failed());
   }
+}
+
+void ShellHandler::OnGetSaveFileName(
+    const ChromeUtilityMsg_GetSaveFileName_Params& params) {
+  ui::win::OpenFileName open_file_name(params.owner, params.flags);
+  open_file_name.SetInitialSelection(params.initial_directory,
+                                     params.suggested_filename);
+  open_file_name.GetOPENFILENAME()->nFilterIndex =
+      params.one_based_filter_index;
+  open_file_name.GetOPENFILENAME()->lpstrDefExt =
+      params.default_extension.c_str();
+
+  open_file_name.MaybeInstallWindowPositionHookForSaveAsOnXP();
+
+  if (::GetSaveFileName(open_file_name.GetOPENFILENAME())) {
+    content::UtilityThread::Get()->Send(
+        new ChromeUtilityHostMsg_GetSaveFileName_Result(
+            base::FilePath(open_file_name.GetOPENFILENAME()->lpstrFile),
+            open_file_name.GetOPENFILENAME()->nFilterIndex));
+    return;
+  }
+
+  // Zero means the dialog was closed, otherwise we had an error.
+  DWORD error_code = ::CommDlgExtendedError();
+  if (error_code != 0)
+    NOTREACHED() << "GetSaveFileName failed with code: " << error_code;
+
+  content::UtilityThread::Get()->Send(
+      new ChromeUtilityHostMsg_GetSaveFileName_Failed());
 }

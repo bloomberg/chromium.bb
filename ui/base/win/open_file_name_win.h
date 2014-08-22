@@ -40,6 +40,12 @@ class UI_BASE_EXPORT OpenFileName {
   void SetInitialSelection(const base::FilePath& initial_directory,
                            const base::FilePath& initial_filename);
 
+  // The save as dialog on Windows XP remembers its last position, and if the
+  // screen resolution has changed it may be off screen. This method will check
+  // if we are running on XP and if so install a hook to reposition the dialog
+  // if necessary.
+  void MaybeInstallWindowPositionHookForSaveAsOnXP();
+
   // Returns the single selected file, or an empty path if there are more or
   // less than one results.
   base::FilePath GetSingleResult();

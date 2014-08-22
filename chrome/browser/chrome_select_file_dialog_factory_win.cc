@@ -25,6 +25,29 @@
 
 namespace {
 
+bool CallMetroOPENFILENAMEMethod(const char* method_name, OPENFILENAME* ofn) {
+  typedef BOOL (*MetroOPENFILENAMEMethod)(OPENFILENAME*);
+  MetroOPENFILENAMEMethod metro_method = NULL;
+  HMODULE metro_module = base::win::GetMetroModule();
+
+  if (metro_module != NULL) {
+    metro_method = reinterpret_cast<MetroOPENFILENAMEMethod>(
+        ::GetProcAddress(metro_module, method_name));
+  }
+
+  if (metro_method != NULL)
+    return metro_method(ofn) == TRUE;
+
+  NOTREACHED();
+
+  return false;
+}
+
+bool ShouldIsolateShellOperations() {
+  return base::FieldTrialList::FindFullName("IsolateShellOperations") ==
+         "Enabled";
+}
+
 // Receives the GetOpenFileName result from the utility process.
 class GetOpenFileNameClient : public content::UtilityProcessHostClient {
  public:
@@ -117,7 +140,7 @@ void DoInvokeGetOpenFileName(
   utility_process_host->DisableSandbox();
   utility_process_host->Send(new ChromeUtilityMsg_GetOpenFileName(
       ofn->hwndOwner,
-      ofn->Flags,
+      ofn->Flags & ~OFN_ENABLEHOOK,  // We can't send a hook function over IPC.
       ui::win::OpenFileName::GetFilters(ofn),
       base::FilePath(ofn->lpstrInitialDir ? ofn->lpstrInitialDir
                                           : base::string16()),
@@ -149,26 +172,150 @@ bool GetOpenFileNameInUtilityProcess(
 bool GetOpenFileNameImpl(
     const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner,
     OPENFILENAME* ofn) {
-  HMODULE metro_module = base::win::GetMetroModule();
-  if (metro_module != NULL) {
-    typedef BOOL (*MetroGetOpenFileName)(OPENFILENAME*);
-    MetroGetOpenFileName metro_get_open_file_name =
-        reinterpret_cast<MetroGetOpenFileName>(
-            ::GetProcAddress(metro_module, "MetroGetOpenFileName"));
-    if (metro_get_open_file_name == NULL) {
-      NOTREACHED();
-      return false;
-    }
+  if (base::win::IsMetroProcess())
+    return CallMetroOPENFILENAMEMethod("MetroGetOpenFileName", ofn);
 
-    return metro_get_open_file_name(ofn) == TRUE;
-  }
-
-  if (base::FieldTrialList::FindFullName("IsolateShellOperations") ==
-      "Enabled") {
+  if (ShouldIsolateShellOperations())
     return GetOpenFileNameInUtilityProcess(blocking_task_runner, ofn);
-  }
 
   return ::GetOpenFileName(ofn) == TRUE;
+}
+
+class GetSaveFileNameClient : public content::UtilityProcessHostClient {
+ public:
+  GetSaveFileNameClient();
+
+  // Blocks until the GetSaveFileName result is received (including failure to
+  // launch or a crash of the utility process).
+  void WaitForCompletion();
+
+  // Returns the selected path.
+  const base::FilePath& path() const { return path_; }
+
+  // Returns the index of the user-selected filter.
+  int one_based_filter_index() const { return one_based_filter_index_; }
+
+  // UtilityProcessHostClient implementation
+  virtual void OnProcessCrashed(int exit_code) OVERRIDE;
+  virtual void OnProcessLaunchFailed() OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+
+ protected:
+  virtual ~GetSaveFileNameClient();
+
+ private:
+  void OnResult(const base::FilePath& path, int one_based_filter_index);
+  void OnFailure();
+
+  base::FilePath path_;
+  int one_based_filter_index_;
+  base::WaitableEvent event_;
+
+  DISALLOW_COPY_AND_ASSIGN(GetSaveFileNameClient);
+};
+
+GetSaveFileNameClient::GetSaveFileNameClient()
+    : event_(true, false), one_based_filter_index_(0) {
+}
+
+void GetSaveFileNameClient::WaitForCompletion() {
+  event_.Wait();
+}
+
+void GetSaveFileNameClient::OnProcessCrashed(int exit_code) {
+  event_.Signal();
+}
+
+void GetSaveFileNameClient::OnProcessLaunchFailed() {
+  event_.Signal();
+}
+
+bool GetSaveFileNameClient::OnMessageReceived(const IPC::Message& message) {
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(GetSaveFileNameClient, message)
+    IPC_MESSAGE_HANDLER(ChromeUtilityHostMsg_GetSaveFileName_Failed,
+                        OnFailure)
+    IPC_MESSAGE_HANDLER(ChromeUtilityHostMsg_GetSaveFileName_Result,
+                        OnResult)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  return handled;
+}
+
+GetSaveFileNameClient::~GetSaveFileNameClient() {}
+
+void GetSaveFileNameClient::OnResult(const base::FilePath& path,
+                                     int one_based_filter_index) {
+  path_ = path;
+  one_based_filter_index_ = one_based_filter_index;
+  event_.Signal();
+}
+
+void GetSaveFileNameClient::OnFailure() {
+  event_.Signal();
+}
+
+// Initiates IPC with a new utility process using |client|. Instructs the
+// utility process to call GetSaveFileName with |ofn|. |current_task_runner|
+// must be the currently executing task runner.
+void DoInvokeGetSaveFileName(
+    OPENFILENAME* ofn,
+    scoped_refptr<GetSaveFileNameClient> client,
+    const scoped_refptr<base::SequencedTaskRunner>& current_task_runner) {
+  DCHECK(current_task_runner->RunsTasksOnCurrentThread());
+
+  base::WeakPtr<content::UtilityProcessHost> utility_process_host(
+      content::UtilityProcessHost::Create(client, current_task_runner)
+      ->AsWeakPtr());
+  utility_process_host->DisableSandbox();
+  ChromeUtilityMsg_GetSaveFileName_Params params;
+  params.owner = ofn->hwndOwner;
+  // We can't pass the hook function over IPC.
+  params.flags = ofn->Flags & ~OFN_ENABLEHOOK;
+  params.filters = ui::win::OpenFileName::GetFilters(ofn);
+  params.one_based_filter_index = ofn->nFilterIndex;
+  params.suggested_filename = base::FilePath(ofn->lpstrFile);
+  params.initial_directory = base::FilePath(
+      ofn->lpstrInitialDir ? ofn->lpstrInitialDir : base::string16());
+  params.default_extension =
+      ofn->lpstrDefExt ? base::string16(ofn->lpstrDefExt) : base::string16();
+
+  utility_process_host->Send(new ChromeUtilityMsg_GetSaveFileName(params));
+}
+
+// Invokes GetSaveFileName in a utility process. Blocks until the result is
+// received. Uses |blocking_task_runner| for IPC.
+bool GetSaveFileNameInUtilityProcess(
+    const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner,
+    OPENFILENAME* ofn) {
+  scoped_refptr<GetSaveFileNameClient> client(new GetSaveFileNameClient);
+  blocking_task_runner->PostTask(
+      FROM_HERE,
+      base::Bind(&DoInvokeGetSaveFileName,
+                 base::Unretained(ofn), client, blocking_task_runner));
+  client->WaitForCompletion();
+
+  if (client->path().empty())
+    return false;
+
+  base::wcslcpy(ofn->lpstrFile, client->path().value().c_str(), ofn->nMaxFile);
+  ofn->nFilterIndex = client->one_based_filter_index();
+
+  return true;
+}
+
+// Implements GetSaveFileName for CreateWinSelectFileDialog by delegating either
+// to Metro or a utility process.
+bool GetSaveFileNameImpl(
+    const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner,
+    OPENFILENAME* ofn) {
+  if (base::win::IsMetroProcess())
+    return CallMetroOPENFILENAMEMethod("MetroGetSaveFileName", ofn);
+
+  if (ShouldIsolateShellOperations())
+    return GetSaveFileNameInUtilityProcess(blocking_task_runner, ofn);
+
+  return ::GetSaveFileName(ofn) == TRUE;
 }
 
 }  // namespace
@@ -186,5 +333,6 @@ ui::SelectFileDialog* ChromeSelectFileDialogFactory::Create(
   return ui::CreateWinSelectFileDialog(
       listener,
       policy,
-      base::Bind(GetOpenFileNameImpl, blocking_task_runner_));
+      base::Bind(GetOpenFileNameImpl, blocking_task_runner_),
+      base::Bind(GetSaveFileNameImpl, blocking_task_runner_));
 }

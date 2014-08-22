@@ -22,6 +22,8 @@ class FilePath;
 typedef std::vector<Tuple2<base::string16, base::string16> >
     GetOpenFileNameFilter;
 
+struct ChromeUtilityMsg_GetSaveFileName_Params;
+
 // Handles requests to execute shell operations. Used to protect the browser
 // process from instability due to 3rd-party shell extensions. Must be invoked
 // in a non-sandboxed utility process.
@@ -35,12 +37,15 @@ class ShellHandler : public UtilityMessageHandler {
 
  private:
   void OnOpenItemViaShell(const base::FilePath& full_path);
+
   void OnGetOpenFileName(
     HWND owner,
     DWORD flags,
     const GetOpenFileNameFilter& filter,
     const base::FilePath& initial_directory,
     const base::FilePath& filename);
+
+  void OnGetSaveFileName(const ChromeUtilityMsg_GetSaveFileName_Params& params);
 
   DISALLOW_COPY_AND_ASSIGN(ShellHandler);
 };
