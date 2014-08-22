@@ -64,11 +64,6 @@ public:
     virtual LayoutUnit pageLogicalWidth() const;
     virtual LayoutUnit pageLogicalHeight() const;
 
-    LayoutUnit logicalTopOfFlowThreadContentRect(const LayoutRect&) const;
-    LayoutUnit logicalBottomOfFlowThreadContentRect(const LayoutRect&) const;
-    LayoutUnit logicalTopForFlowThreadContent() const { return logicalTopOfFlowThreadContentRect(flowThreadPortionRect()); };
-    LayoutUnit logicalBottomForFlowThreadContent() const { return logicalBottomOfFlowThreadContentRect(flowThreadPortionRect()); };
-
     virtual bool canHaveChildren() const OVERRIDE FINAL { return false; }
     virtual bool canHaveGeneratedChildren() const OVERRIDE FINAL { return true; }
 

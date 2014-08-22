@@ -1683,27 +1683,6 @@ int RenderListMarker::baselinePosition(FontBaseline baselineType, bool firstLine
     return RenderBox::baselinePosition(baselineType, firstLine, direction, linePositionMode);
 }
 
-String RenderListMarker::suffix() const
-{
-    EListStyleType type = style()->listStyleType();
-    const UChar suffix = listMarkerSuffix(type, m_listItem->value());
-
-    if (suffix == ' ')
-        return String(" ");
-
-    // If the suffix is not ' ', an extra space is needed
-    UChar data[2];
-    if (style()->isLeftToRightDirection()) {
-        data[0] = suffix;
-        data[1] = ' ';
-    } else {
-        data[0] = ' ';
-        data[1] = suffix;
-    }
-
-    return String(data, 2);
-}
-
 bool RenderListMarker::isInside() const
 {
     return m_listItem->notInList() || style()->listStylePosition() == INSIDE;
