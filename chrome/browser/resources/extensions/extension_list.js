@@ -195,7 +195,7 @@ cr.define('options', function() {
         options.addEventListener('click', function(e) {
           if (this.data_.enableEmbeddedExtensionOptions) {
             extensions.ExtensionOptionsOverlay.getInstance().
-                setExtensionAndShowOverlay([extension.id], extension.name);
+                setExtensionAndShowOverlay(extension.id, extension.name);
           } else {
             chrome.send('extensionSettingsOptions', [extension.id]);
           }
