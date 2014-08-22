@@ -25,6 +25,7 @@
 #include "cc/output/compositor_frame_ack.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/output/copy_output_result.h"
+#include "cc/output/viewport_selection_bound.h"
 #include "cc/resources/single_release_callback.h"
 #include "cc/trees/layer_tree_host.h"
 #include "content/browser/accessibility/browser_accessibility_manager_android.h"
@@ -770,31 +771,32 @@ void RenderWidgetHostViewAndroid::SelectionBoundsChanged(
   if (!selection_controller_)
     return;
 
-  gfx::RectF anchor_rect(params.anchor_rect);
-  gfx::RectF focus_rect(params.focus_rect);
+  gfx::RectF start_rect(params.anchor_rect);
+  gfx::RectF end_rect(params.focus_rect);
   if (params.is_anchor_first)
-    std::swap(anchor_rect, focus_rect);
+    std::swap(start_rect, end_rect);
 
-  TouchHandleOrientation anchor_orientation(TOUCH_HANDLE_ORIENTATION_UNDEFINED);
-  TouchHandleOrientation focus_orientation(TOUCH_HANDLE_ORIENTATION_UNDEFINED);
+  cc::ViewportSelectionBound start_bound, end_bound;
+  start_bound.visible = true;
+  end_bound.visible = true;
+  start_bound.edge_top = start_rect.origin();
+  start_bound.edge_bottom = start_rect.bottom_left();
+  end_bound.edge_top = end_rect.origin();
+  end_bound.edge_bottom = end_rect.bottom_left();
+
   if (params.anchor_rect == params.focus_rect) {
     if (params.anchor_rect.x() && params.anchor_rect.y())
-      anchor_orientation = focus_orientation = TOUCH_HANDLE_CENTER;
+      start_bound.type = end_bound.type = cc::SELECTION_BOUND_CENTER;
   } else {
-    anchor_orientation = params.anchor_dir == blink::WebTextDirectionRightToLeft
-                             ? TOUCH_HANDLE_LEFT
-                             : TOUCH_HANDLE_RIGHT;
-    focus_orientation = params.focus_dir == blink::WebTextDirectionRightToLeft
-                            ? TOUCH_HANDLE_RIGHT
-                            : TOUCH_HANDLE_LEFT;
+    start_bound.type = params.anchor_dir == blink::WebTextDirectionRightToLeft
+                           ? cc::SELECTION_BOUND_LEFT
+                           : cc::SELECTION_BOUND_RIGHT;
+    end_bound.type = params.focus_dir == blink::WebTextDirectionRightToLeft
+                         ? cc::SELECTION_BOUND_RIGHT
+                         : cc::SELECTION_BOUND_LEFT;
   }
 
-  selection_controller_->OnSelectionBoundsChanged(anchor_rect,
-                                                  anchor_orientation,
-                                                  true,
-                                                  focus_rect,
-                                                  focus_orientation,
-                                                  true);
+  selection_controller_->OnSelectionBoundsChanged(start_bound, end_bound);
 }
 
 void RenderWidgetHostViewAndroid::SetBackgroundOpaque(bool opaque) {
@@ -1539,15 +1541,17 @@ void RenderWidgetHostViewAndroid::OnShowingPastePopup(
   // of the region have been updated, explicitly set the properties now.
   // TODO(jdduke): Remove this workaround when auxiliary paste popup
   // notifications are no longer required, crbug.com/398170.
-  gfx::RectF rect(point, gfx::SizeF());
-  TouchHandleOrientation orientation = TOUCH_HANDLE_CENTER;
-  const bool visible = true;
+  cc::ViewportSelectionBound insertion_bound;
+  insertion_bound.type = cc::SELECTION_BOUND_LEFT;
+  insertion_bound.visible = true;
+  insertion_bound.edge_top = point;
+  insertion_bound.edge_bottom = point;
   HideTextHandles();
   ShowSelectionHandlesAutomatically();
   selection_controller_->OnSelectionEditable(true);
   selection_controller_->OnSelectionEmpty(true);
-  selection_controller_->OnSelectionBoundsChanged(
-      rect, orientation, visible, rect, orientation, visible);
+  selection_controller_->OnSelectionBoundsChanged(insertion_bound,
+                                                  insertion_bound);
 }
 
 SkColor RenderWidgetHostViewAndroid::GetCachedBackgroundColor() const {

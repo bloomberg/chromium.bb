@@ -7,7 +7,7 @@
 
 #include "cc/base/cc_export.h"
 #include "cc/input/selection_bound_type.h"
-#include "ui/gfx/geometry/rect_f.h"
+#include "ui/gfx/geometry/point_f.h"
 
 namespace cc {
 
@@ -17,7 +17,8 @@ struct CC_EXPORT ViewportSelectionBound {
   ~ViewportSelectionBound();
 
   SelectionBoundType type;
-  gfx::RectF viewport_rect;
+  gfx::PointF edge_top;
+  gfx::PointF edge_bottom;
   bool visible;
 };
 

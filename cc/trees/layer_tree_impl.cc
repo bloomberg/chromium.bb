@@ -1334,31 +1334,50 @@ void LayerTreeImpl::RegisterSelection(const LayerSelectionBound& start,
 }
 
 static ViewportSelectionBound ComputeViewportSelection(
-    const LayerSelectionBound& bound,
+    const LayerSelectionBound& layer_bound,
     LayerImpl* layer,
     float device_scale_factor) {
-  ViewportSelectionBound result;
-  result.type = bound.type;
+  ViewportSelectionBound viewport_bound;
+  viewport_bound.type = layer_bound.type;
 
-  if (!layer || bound.type == SELECTION_BOUND_EMPTY)
-    return result;
+  if (!layer || layer_bound.type == SELECTION_BOUND_EMPTY)
+    return viewport_bound;
 
-  gfx::RectF layer_scaled_rect = gfx::ScaleRect(
-      bound.layer_rect, layer->contents_scale_x(), layer->contents_scale_y());
-  gfx::RectF screen_rect = MathUtil::ProjectClippedRect(
-      layer->screen_space_transform(), layer_scaled_rect);
+  gfx::PointF layer_scaled_top = gfx::ScalePoint(layer_bound.edge_top,
+                                                 layer->contents_scale_x(),
+                                                 layer->contents_scale_y());
+  gfx::PointF layer_scaled_bottom = gfx::ScalePoint(layer_bound.edge_bottom,
+                                                    layer->contents_scale_x(),
+                                                    layer->contents_scale_y());
 
-  // The bottom left of the bound is used for visibility because 1) the bound
-  // edge rect is one-dimensional (no width), and 2) the bottom is the logical
+  bool clipped = false;
+  gfx::PointF screen_top = MathUtil::MapPoint(
+      layer->screen_space_transform(), layer_scaled_top, &clipped);
+  gfx::PointF screen_bottom = MathUtil::MapPoint(
+      layer->screen_space_transform(), layer_scaled_bottom, &clipped);
+
+  const float inv_scale = 1.f / device_scale_factor;
+  viewport_bound.edge_top = gfx::ScalePoint(screen_top, inv_scale);
+  viewport_bound.edge_bottom = gfx::ScalePoint(screen_bottom, inv_scale);
+
+  // The bottom edge point is used for visibility testing as it is the logical
   // focal point for bound selection handles (this may change in the future).
-  const gfx::PointF& visibility_point = screen_rect.bottom_left();
+  // Shifting the visibility point fractionally inward ensures that neighboring
+  // or logically coincident layers aligned to integral DPI coordinates will not
+  // spuriously occlude the bound.
+  gfx::Vector2dF visibility_offset = layer_scaled_top - layer_scaled_bottom;
+  visibility_offset.Scale(device_scale_factor / visibility_offset.Length());
+  gfx::PointF visibility_point = layer_scaled_bottom + visibility_offset;
+  if (visibility_point.x() <= 0)
+    visibility_point.set_x(visibility_point.x() + device_scale_factor);
+  visibility_point = MathUtil::MapPoint(
+      layer->screen_space_transform(), visibility_point, &clipped);
+
   float intersect_distance = 0.f;
-  result.visible = PointHitsLayer(layer, visibility_point, &intersect_distance);
+  viewport_bound.visible =
+      PointHitsLayer(layer, visibility_point, &intersect_distance);
 
-  screen_rect.Scale(1.f / device_scale_factor);
-  result.viewport_rect = screen_rect;
-
-  return result;
+  return viewport_bound;
 }
 
 void LayerTreeImpl::GetViewportSelection(ViewportSelectionBound* start,

@@ -85,24 +85,25 @@ bool GetSwitchValueAsInt(
 }
 
 cc::LayerSelectionBound ConvertWebSelectionBound(
-    const WebSelectionBound& bound) {
-  DCHECK(bound.layerId);
+    const WebSelectionBound& web_bound) {
+  DCHECK(web_bound.layerId);
 
-  cc::LayerSelectionBound result;
-  switch (bound.type) {
+  cc::LayerSelectionBound cc_bound;
+  switch (web_bound.type) {
     case blink::WebSelectionBound::Caret:
-      result.type = cc::SELECTION_BOUND_CENTER;
+      cc_bound.type = cc::SELECTION_BOUND_CENTER;
       break;
     case blink::WebSelectionBound::SelectionLeft:
-      result.type = cc::SELECTION_BOUND_LEFT;
+      cc_bound.type = cc::SELECTION_BOUND_LEFT;
       break;
     case blink::WebSelectionBound::SelectionRight:
-      result.type = cc::SELECTION_BOUND_RIGHT;
+      cc_bound.type = cc::SELECTION_BOUND_RIGHT;
       break;
   }
-  result.layer_id = bound.layerId;
-  result.layer_rect = gfx::Rect(bound.edgeRectInLayer);
-  return result;
+  cc_bound.layer_id = web_bound.layerId;
+  cc_bound.edge_top = gfx::Point(web_bound.edgeTopInLayer);
+  cc_bound.edge_bottom = gfx::Point(web_bound.edgeBottomInLayer);
+  return cc_bound;
 }
 
 gfx::Size CalculateDefaultTileSize() {

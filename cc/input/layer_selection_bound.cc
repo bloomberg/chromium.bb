@@ -16,7 +16,7 @@ LayerSelectionBound::~LayerSelectionBound() {
 bool operator==(const LayerSelectionBound& lhs,
                 const LayerSelectionBound& rhs) {
   return lhs.type == rhs.type && lhs.layer_id == rhs.layer_id &&
-         lhs.layer_rect == rhs.layer_rect;
+         lhs.edge_top == rhs.edge_top && lhs.edge_bottom == rhs.edge_bottom;
 }
 
 bool operator!=(const LayerSelectionBound& lhs,

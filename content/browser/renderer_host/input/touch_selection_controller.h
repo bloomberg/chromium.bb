@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_INPUT_TOUCH_SELECTION_CONTROLLER_H_
 #define CONTENT_BROWSER_RENDERER_HOST_INPUT_TOUCH_SELECTION_CONTROLLER_H_
 
+#include "cc/output/viewport_selection_bound.h"
 #include "content/browser/renderer_host/input/selection_event_type.h"
 #include "content/browser/renderer_host/input/touch_handle.h"
 #include "content/common/content_export.h"
@@ -46,12 +47,8 @@ class CONTENT_EXPORT TouchSelectionController : public TouchHandleClient {
   // To be called when the selection bounds have changed.
   // Note that such updates will trigger handle updates only if preceded
   // by an appropriate call to allow automatic showing.
-  void OnSelectionBoundsChanged(const gfx::RectF& start_rect,
-                                TouchHandleOrientation start_orientation,
-                                bool start_visible,
-                                const gfx::RectF& end_rect,
-                                TouchHandleOrientation end_orientation,
-                                bool end_visible);
+  void OnSelectionBoundsChanged(const cc::ViewportSelectionBound& start,
+                                const cc::ViewportSelectionBound& end);
 
   // Allows touch-dragging of the handle.
   // Returns true iff the event was consumed, in which case the caller should
@@ -107,10 +104,10 @@ class CONTENT_EXPORT TouchSelectionController : public TouchHandleClient {
   void DeactivateSelection();
   void ResetCachedValuesIfInactive();
 
-  gfx::PointF GetStartPosition() const;
-  gfx::PointF GetEndPosition() const;
-  float GetStartLineHeight() const;
-  float GetEndLineHeight() const;
+  const gfx::PointF& GetStartPosition() const;
+  const gfx::PointF& GetEndPosition() const;
+  gfx::Vector2dF GetStartLineOffset() const;
+  gfx::Vector2dF GetEndLineOffset() const;
   bool GetStartVisible() const;
   bool GetEndVisible() const;
   TouchHandle::AnimationStyle GetAnimationStyle(bool was_active) const;
@@ -119,12 +116,10 @@ class CONTENT_EXPORT TouchSelectionController : public TouchHandleClient {
 
   InputEventType response_pending_input_event_;
 
-  gfx::RectF start_rect_;
+  cc::ViewportSelectionBound start_;
+  cc::ViewportSelectionBound end_;
   TouchHandleOrientation start_orientation_;
-  bool start_visible_;
-  gfx::RectF end_rect_;
   TouchHandleOrientation end_orientation_;
-  bool end_visible_;
 
   scoped_ptr<TouchHandle> insertion_handle_;
   bool is_insertion_active_;

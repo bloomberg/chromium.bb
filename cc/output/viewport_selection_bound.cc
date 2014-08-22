@@ -16,7 +16,7 @@ ViewportSelectionBound::~ViewportSelectionBound() {
 bool operator==(const ViewportSelectionBound& lhs,
                 const ViewportSelectionBound& rhs) {
   return lhs.type == rhs.type && lhs.visible == rhs.visible &&
-         lhs.viewport_rect == rhs.viewport_rect;
+         lhs.edge_top == rhs.edge_top && lhs.edge_bottom == rhs.edge_bottom;
 }
 
 bool operator!=(const ViewportSelectionBound& lhs,
