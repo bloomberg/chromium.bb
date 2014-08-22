@@ -404,7 +404,6 @@ void PepperMediaStreamVideoTrackHost::OnVideoFrame(
     return;
   }
 
-  CHECK(frame->coded_size() == source_frame_size_) << "Frame size is changed";
   CHECK_EQ(ppformat, source_frame_format_) << "Frame format is changed.";
 
   gfx::Size size = GetTargetSize(source_frame_size_, plugin_frame_size_);
