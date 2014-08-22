@@ -6,7 +6,7 @@ class Metric(object):
   """Base class for all the metrics that are used by telemetry measurements.
 
   The Metric class represents a way of measuring something. Metrics are
-  helper classes used by PageMeasurements. Each PageMeasurement may use
+  helper classes used by PageTests. Each PageTest may use
   multiple metrics; each metric should be focussed on collecting data
   about one thing.
   """
@@ -35,7 +35,7 @@ class Metric(object):
     """Add the data collected into the results object for a measurement.
 
     Metrics may implement AddResults to provide a common way to add results
-    to the PageTestResults in PageMeasurement.AddMeasurement --
+    to the PageTestResults in PageTest.ValidateOrMeasurePage --
     results should be added with results.AddValue(...).
     """
     raise NotImplementedError()

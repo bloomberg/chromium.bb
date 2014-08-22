@@ -148,7 +148,7 @@ def AddResultsForProcesses(results, memory_stats, chart_trace_name='final',
   """Adds memory stats for browser, renderer and gpu processes.
 
   Args:
-    results: A PageMeasurement results object.
+    results: A telemetry.results.PageTestResults object.
     memory_stats: System memory stats collected.
     chart_trace_name: Trace to identify memory metrics. Default is 'final'.
     metric_trace_name: Trace to identify the metric results per test page.

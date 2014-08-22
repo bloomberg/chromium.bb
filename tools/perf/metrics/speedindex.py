@@ -32,7 +32,7 @@ class SpeedIndexMetric(Metric):
     """Start recording events.
 
     This method should be called in the WillNavigateToPage method of
-    a PageMeasurement, so that all the events can be captured. If it's called
+    a PageTest, so that all the events can be captured. If it's called
     in DidNavigateToPage, that will be too late.
     """
     self._impl = (VideoSpeedIndexImpl() if tab.video_capture_supported else
