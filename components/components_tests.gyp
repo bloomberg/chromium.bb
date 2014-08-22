@@ -179,7 +179,6 @@
             'search_provider_logos/logo_cache_unittest.cc',
             'search_provider_logos/logo_tracker_unittest.cc',
             'sessions/serialized_navigation_entry_unittest.cc',
-            'signin/core/browser/account_tracker_service_unittest.cc',
             'signin/core/browser/mutable_profile_oauth2_token_service_unittest.cc',
             'signin/core/browser/signin_error_controller_unittest.cc',
             'signin/core/browser/webdata/token_service_table_unittest.cc',
