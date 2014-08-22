@@ -610,7 +610,7 @@ gfx::Vector2dF LayerImpl::FixedContainerSizeDelta() const {
   float scale_delta = layer_tree_impl()->page_scale_delta();
   float scale = layer_tree_impl()->page_scale_factor();
 
-  gfx::Vector2dF delta_from_scroll = scroll_clip_layer_->BoundsDelta();
+  gfx::Vector2dF delta_from_scroll = scroll_clip_layer_->bounds_delta();
   delta_from_scroll.Scale(1.f / scale);
 
   // The delta-from-pinch component requires some explanation: A viewport of
@@ -770,9 +770,10 @@ bool LayerImpl::IsActive() const {
   return layer_tree_impl_->IsActiveTree();
 }
 
-// TODO(wjmaclean) Convert so that bounds returns SizeF.
+// TODO(aelias): Convert so that bounds returns SizeF.
 gfx::Size LayerImpl::bounds() const {
-  return ToCeiledSize(temporary_impl_bounds_);
+  return gfx::ToCeiledSize(gfx::SizeF(bounds_.width() + bounds_delta_.x(),
+                                      bounds_.height() + bounds_delta_.y()));
 }
 
 void LayerImpl::SetBounds(const gfx::Size& bounds) {
@@ -780,7 +781,6 @@ void LayerImpl::SetBounds(const gfx::Size& bounds) {
     return;
 
   bounds_ = bounds;
-  temporary_impl_bounds_ = bounds;
 
   ScrollbarParametersDidChange();
   if (masks_to_bounds())
@@ -789,11 +789,11 @@ void LayerImpl::SetBounds(const gfx::Size& bounds) {
     NoteLayerPropertyChanged();
 }
 
-void LayerImpl::SetTemporaryImplBounds(const gfx::SizeF& bounds) {
-  if (temporary_impl_bounds_ == bounds)
+void LayerImpl::SetBoundsDelta(const gfx::Vector2dF& bounds_delta) {
+  if (bounds_delta_ == bounds_delta)
     return;
 
-  temporary_impl_bounds_ = bounds;
+  bounds_delta_ = bounds_delta;
 
   ScrollbarParametersDidChange();
   if (masks_to_bounds())
@@ -1275,8 +1275,7 @@ void LayerImpl::SetScrollbarPosition(ScrollbarLayerImplBase* scrollbar_layer,
     current_offset.Scale(layer_tree_impl()->total_page_scale_factor());
   }
 
-  scrollbar_layer->SetVerticalAdjust(
-      layer_tree_impl()->VerticalAdjust(scrollbar_clip_layer->id()));
+  scrollbar_layer->SetVerticalAdjust(scrollbar_clip_layer->bounds_delta().y());
   if (scrollbar_layer->orientation() == HORIZONTAL) {
     float visible_ratio = clip_rect.width() / scroll_rect.width();
     scrollbar_layer->SetCurrentPos(current_offset.x());

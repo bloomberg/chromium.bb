@@ -563,11 +563,12 @@ gfx::Size RenderWidgetHostViewAndroid::GetPhysicalBackingSize() const {
   return content_view_core_->GetPhysicalBackingSize();
 }
 
-float RenderWidgetHostViewAndroid::GetOverdrawBottomHeight() const {
+float RenderWidgetHostViewAndroid::GetTopControlsLayoutHeight() const {
   if (!content_view_core_)
     return 0.f;
 
-  return content_view_core_->GetOverdrawBottomHeightDip();
+  // The amount that the viewport size given to Blink is shrunk by the URL-bar.
+  return content_view_core_->GetTopControlsLayoutHeightDip();
 }
 
 void RenderWidgetHostViewAndroid::UpdateCursor(const WebCursor& cursor) {
@@ -997,13 +998,11 @@ void RenderWidgetHostViewAndroid::ComputeContentsSize(
     const cc::CompositorFrameMetadata& frame_metadata) {
   // Calculate the content size.  This should be 0 if the texture_size is 0.
   gfx::Vector2dF offset;
-  if (texture_size_in_layer_.GetArea() > 0)
-    offset = frame_metadata.location_bar_content_translation;
-  offset.set_y(offset.y() + frame_metadata.overdraw_bottom_height);
-  offset.Scale(frame_metadata.device_scale_factor);
-  content_size_in_layer_ =
-      gfx::Size(texture_size_in_layer_.width() - offset.x(),
-                texture_size_in_layer_.height() - offset.y());
+  if (texture_size_in_layer_.IsEmpty())
+    content_size_in_layer_ = gfx::Size();
+  content_size_in_layer_ = gfx::ToCeiledSize(gfx::ScaleSize(
+      frame_metadata.scrollable_viewport_size,
+      frame_metadata.device_scale_factor * frame_metadata.page_scale_factor));
 
   if (overscroll_effect_) {
     overscroll_effect_->UpdateDisplayParameters(
@@ -1204,8 +1203,7 @@ void RenderWidgetHostViewAndroid::OnFrameMetadataUpdated(
       frame_metadata.root_layer_size,
       frame_metadata.scrollable_viewport_size,
       frame_metadata.location_bar_offset,
-      frame_metadata.location_bar_content_translation,
-      frame_metadata.overdraw_bottom_height);
+      frame_metadata.location_bar_content_translation);
 #if defined(VIDEO_HOLE)
   if (host_ && host_->IsRenderView()) {
     RenderViewHostImpl* rvhi = static_cast<RenderViewHostImpl*>(

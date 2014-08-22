@@ -250,7 +250,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       zero_budget_(false),
       device_scale_factor_(1.f),
       overhang_ui_resource_id_(0),
-      overdraw_bottom_height_(0.f),
+      top_controls_layout_height_(0.f),
       resourceless_software_draw_(false),
       begin_impl_frame_interval_(BeginFrameArgs::DefaultInterval()),
       animation_registrar_(AnimationRegistrar::Create()),
@@ -435,7 +435,8 @@ void LayerTreeHostImpl::StartPageScaleAnimation(
 
   gfx::Vector2dF scroll_total = active_tree_->TotalScrollOffset();
   gfx::SizeF scaled_scrollable_size = active_tree_->ScrollableSize();
-  gfx::SizeF viewport_size = UnscaledScrollableViewportSize();
+  gfx::SizeF viewport_size =
+      active_tree_->InnerViewportContainerLayer()->bounds();
 
   // Easing constants experimentally determined.
   scoped_ptr<TimingFunction> timing_function =
@@ -1469,7 +1470,6 @@ CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata() const {
         gfx::Vector2dF(0.f, top_controls_manager_->controls_top_offset());
     metadata.location_bar_content_translation =
         gfx::Vector2dF(0.f, top_controls_manager_->content_top_offset());
-    metadata.overdraw_bottom_height = overdraw_bottom_height_;
   }
 
   active_tree_->GetViewportSelection(&metadata.selection_start,
@@ -1682,46 +1682,16 @@ void LayerTreeHostImpl::WillBeginImplFrame(const BeginFrameArgs& args) {
   begin_impl_frame_interval_ = args.interval;
 }
 
-gfx::SizeF LayerTreeHostImpl::ComputeInnerViewportContainerSize() const {
-  gfx::SizeF dip_size =
-      gfx::ScaleSize(device_viewport_size_, 1.f / device_scale_factor());
-
-  float top_offset =
-      top_controls_manager_ ? top_controls_manager_->content_top_offset() : 0.f;
-
-  return gfx::SizeF(dip_size.width(),
-                    dip_size.height() - top_offset - overdraw_bottom_height_);
-}
-
 void LayerTreeHostImpl::UpdateInnerViewportContainerSize() {
   LayerImpl* container_layer = active_tree_->InnerViewportContainerLayer();
   if (!container_layer)
     return;
 
-  // We pass the value returned from UnscaledScrollableViewportSize() here as
-  // it accounts for scrollbar dimensions when
-  // container_layer->masks_to_bounds() is set.
-  container_layer->SetTemporaryImplBounds(UnscaledScrollableViewportSize());
-}
-
-gfx::SizeF LayerTreeHostImpl::UnscaledScrollableViewportSize() const {
-  // Use the root container layer bounds if it clips to them, otherwise, the
-  // true viewport size should be used.
-  LayerImpl* container_layer = active_tree_->InnerViewportContainerLayer();
-  if (container_layer && container_layer->masks_to_bounds()) {
-    DCHECK(!top_controls_manager_);
-    DCHECK_EQ(0, overdraw_bottom_height_);
-    return container_layer->bounds();
-  }
-
-  return ComputeInnerViewportContainerSize();
-}
-
-float LayerTreeHostImpl::VerticalAdjust() const {
-  if (!active_tree_->InnerViewportContainerLayer())
-    return 0;
-
-  return active_tree_->InnerViewportContainerLayer()->BoundsDelta().y();
+  if (top_controls_manager_)
+    container_layer->SetBoundsDelta(
+        gfx::Vector2dF(0,
+                       top_controls_layout_height_ -
+                           top_controls_manager_->content_top_offset()));
 }
 
 void LayerTreeHostImpl::DidLoseOutputSurface() {
@@ -2198,10 +2168,11 @@ void LayerTreeHostImpl::SetViewportSize(const gfx::Size& device_viewport_size) {
   active_tree_->set_needs_update_draw_properties();
 }
 
-void LayerTreeHostImpl::SetOverdrawBottomHeight(float overdraw_bottom_height) {
-  if (overdraw_bottom_height == overdraw_bottom_height_)
+void LayerTreeHostImpl::SetTopControlsLayoutHeight(
+    float top_controls_layout_height) {
+  if (top_controls_layout_height_ == top_controls_layout_height)
     return;
-  overdraw_bottom_height_ = overdraw_bottom_height;
+  top_controls_layout_height_ = top_controls_layout_height;
 
   UpdateInnerViewportContainerSize();
   SetFullRootLayerDamage();
@@ -2219,7 +2190,6 @@ void LayerTreeHostImpl::SetDeviceScaleFactor(float device_scale_factor) {
     return;
   device_scale_factor_ = device_scale_factor;
 
-  UpdateInnerViewportContainerSize();
   SetFullRootLayerDamage();
 }
 

@@ -196,10 +196,9 @@ class CC_EXPORT LayerTreeHost {
   bool UseGpuRasterization() const;
 
   void SetViewportSize(const gfx::Size& device_viewport_size);
-  void SetOverdrawBottomHeight(float overdraw_bottom_height);
+  void SetTopControlsLayoutHeight(float top_controls_layout_height);
 
   gfx::Size device_viewport_size() const { return device_viewport_size_; }
-  float overdraw_bottom_height() const { return overdraw_bottom_height_; }
 
   void ApplyPageScaleDeltaFromImplSide(float page_scale_delta);
   void SetPageScaleFactorAndLimits(float page_scale_factor,
@@ -388,7 +387,7 @@ class CC_EXPORT LayerTreeHost {
   LayerTreeDebugState debug_state_;
 
   gfx::Size device_viewport_size_;
-  float overdraw_bottom_height_;
+  float top_controls_layout_height_;
   float device_scale_factor_;
 
   bool visible_;

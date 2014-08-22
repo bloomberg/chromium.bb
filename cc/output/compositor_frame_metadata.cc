@@ -10,8 +10,7 @@ CompositorFrameMetadata::CompositorFrameMetadata()
     : device_scale_factor(0.f),
       page_scale_factor(0.f),
       min_page_scale_factor(0.f),
-      max_page_scale_factor(0.f),
-      overdraw_bottom_height(0.f) {
+      max_page_scale_factor(0.f) {
 }
 
 CompositorFrameMetadata::~CompositorFrameMetadata() {

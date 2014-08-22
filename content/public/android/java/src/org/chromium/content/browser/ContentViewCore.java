@@ -260,9 +260,7 @@ public class ContentViewCore
     private int mViewportHeightPix;
     private int mPhysicalBackingWidthPix;
     private int mPhysicalBackingHeightPix;
-    private int mOverdrawBottomHeightPix;
-    private int mViewportSizeOffsetWidthPix;
-    private int mViewportSizeOffsetHeightPix;
+    private int mTopControlsLayoutHeightPix;
 
     // Cached copy of all positions and scales as reported by the renderer.
     private final RenderCoordinates mRenderCoordinates;
@@ -397,17 +395,19 @@ public class ContentViewCore
         return mWebContents;
     }
 
-    /**
-     * Specifies how much smaller the WebKit layout size should be relative to the size of this
-     * view.
-     * @param offsetXPix The X amount in pixels to shrink the viewport by.
-     * @param offsetYPix The Y amount in pixels to shrink the viewport by.
-     */
+    /* TODO(aelias): Remove this after downstream callers switch to setTopControlsLayoutHeight. */
     public void setViewportSizeOffset(int offsetXPix, int offsetYPix) {
-        if (offsetXPix != mViewportSizeOffsetWidthPix ||
-                offsetYPix != mViewportSizeOffsetHeightPix) {
-            mViewportSizeOffsetWidthPix = offsetXPix;
-            mViewportSizeOffsetHeightPix = offsetYPix;
+        setTopControlsLayoutHeight(offsetYPix);
+    }
+
+    /**
+     * Specifies how much smaller the Blink layout size should be relative to the size of this
+     * view.
+     * @param topControlsLayoutHeightPix The Y amount in pixels to shrink the viewport by.
+     */
+    public void setTopControlsLayoutHeight(int topControlsLayoutHeightPix) {
+        if (topControlsLayoutHeightPix != mTopControlsLayoutHeightPix) {
+            mTopControlsLayoutHeightPix = topControlsLayoutHeightPix;
             if (mNativeContentViewCore != 0) nativeWasResized(mNativeContentViewCore);
         }
     }
@@ -932,22 +932,10 @@ public class ContentViewCore
     public int getPhysicalBackingHeightPix() { return mPhysicalBackingHeightPix; }
 
     /**
-     * @return Amount the output surface extends past the bottom of the window viewport.
+     * @return The amount that the viewport size given to Blink is shrunk by the URL-bar..
      */
     @CalledByNative
-    public int getOverdrawBottomHeightPix() { return mOverdrawBottomHeightPix; }
-
-    /**
-     * @return The amount to shrink the viewport relative to {@link #getViewportWidthPix()}.
-     */
-    @CalledByNative
-    public int getViewportSizeOffsetWidthPix() { return mViewportSizeOffsetWidthPix; }
-
-    /**
-     * @return The amount to shrink the viewport relative to {@link #getViewportHeightPix()}.
-     */
-    @CalledByNative
-    public int getViewportSizeOffsetHeightPix() { return mViewportSizeOffsetHeightPix; }
+    public int getTopControlsLayoutHeightPix() { return mTopControlsLayoutHeightPix; }
 
     /**
      * @see android.webkit.WebView#getContentHeight()
@@ -1580,18 +1568,8 @@ public class ContentViewCore
         }
     }
 
-    /**
-     * Called when the amount the surface is overdrawing off the bottom has changed.
-     * @param overdrawHeightPix The overdraw height.
-     */
+    /* TODO(aelias): Remove this after downstream callers disappear. */
     public void onOverdrawBottomHeightChanged(int overdrawHeightPix) {
-        if (mOverdrawBottomHeightPix == overdrawHeightPix) return;
-
-        mOverdrawBottomHeightPix = overdrawHeightPix;
-
-        if (mNativeContentViewCore != 0) {
-            nativeWasResized(mNativeContentViewCore);
-        }
     }
 
     private void updateAfterSizeChanged() {
@@ -2220,8 +2198,7 @@ public class ContentViewCore
             float pageScaleFactor, float minPageScaleFactor, float maxPageScaleFactor,
             float contentWidth, float contentHeight,
             float viewportWidth, float viewportHeight,
-            float controlsOffsetYCss, float contentOffsetYCss,
-            float overdrawBottomHeightCss) {
+            float controlsOffsetYCss, float contentOffsetYCss) {
         TraceEvent.begin("ContentViewCore:updateFrameInfo");
         // Adjust contentWidth/Height to be always at least as big as
         // the actual viewport (as set by onSizeChanged).
@@ -2280,9 +2257,9 @@ public class ContentViewCore
 
         // Update offsets for fullscreen.
         final float controlsOffsetPix = controlsOffsetYCss * deviceScale;
-        final float overdrawBottomHeightPix = overdrawBottomHeightCss * deviceScale;
+        // TODO(aelias): Remove last argument after downstream removes it.
         getContentViewClient().onOffsetsForFullscreenChanged(
-                controlsOffsetPix, contentOffsetYPix, overdrawBottomHeightPix);
+                controlsOffsetPix, contentOffsetYPix, 0);
 
         if (mBrowserAccessibilityManager != null) {
             mBrowserAccessibilityManager.notifyFrameInfoInitialized();

@@ -227,12 +227,6 @@ class CC_EXPORT LayerTreeHostImpl
   // Viewport rect in view space used for tiling prioritization.
   const gfx::Rect ViewportRectForTilePriority() const;
 
-  // Viewport size for scrolling and fixed-position compensation. This value
-  // excludes the URL bar and non-overlay scrollbars and is in DIP (and
-  // invariant relative to page scale).
-  gfx::SizeF UnscaledScrollableViewportSize() const;
-  float VerticalAdjust() const;
-
   // RendererClient implementation.
   virtual void SetFullRootLayerDamage() OVERRIDE;
   virtual void RunOnDemandRasterTask(Task* on_demand_raster_task) OVERRIDE;
@@ -350,8 +344,10 @@ class CC_EXPORT LayerTreeHostImpl
   void SetViewportSize(const gfx::Size& device_viewport_size);
   gfx::Size device_viewport_size() const { return device_viewport_size_; }
 
-  void SetOverdrawBottomHeight(float overdraw_bottom_height);
-  float overdraw_bottom_height() const { return overdraw_bottom_height_; }
+  void SetTopControlsLayoutHeight(float top_controls_layout_height);
+  float top_controls_layout_height() const {
+    return top_controls_layout_height_;
+  }
 
   void SetOverhangUIResource(UIResourceId overhang_ui_resource_id,
                              const gfx::Size& overhang_ui_resource_size);
@@ -499,7 +495,6 @@ class CC_EXPORT LayerTreeHostImpl
       SharedBitmapManager* manager,
       int id);
 
-  gfx::SizeF ComputeInnerViewportContainerSize() const;
   void UpdateInnerViewportContainerSize();
 
   // Virtual for testing.
@@ -675,11 +670,8 @@ class CC_EXPORT LayerTreeHostImpl
   UIResourceId overhang_ui_resource_id_;
   gfx::Size overhang_ui_resource_size_;
 
-  // Vertical amount of the viewport size that's known to covered by a
-  // browser-side UI element, such as an on-screen-keyboard.  This affects
-  // scrollable size since we want to still be able to scroll to the bottom of
-  // the page when the keyboard is up.
-  float overdraw_bottom_height_;
+  // Height of the top controls as known by Blink.
+  float top_controls_layout_height_;
 
   // Optional top-level constraints that can be set by the OutputSurface.
   // - external_transform_ applies a transform above the root layer

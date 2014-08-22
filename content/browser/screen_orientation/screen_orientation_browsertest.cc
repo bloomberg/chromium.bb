@@ -70,7 +70,7 @@ class ScreenOrientationBrowserTest : public ContentBrowserTest  {
     params.screen_info = screen_info;
     params.new_size = gfx::Size(0, 0);
     params.physical_backing_size = gfx::Size(300, 300);
-    params.overdraw_bottom_height = 0.f;
+    params.top_controls_layout_height = 0.f;
     params.resizer_rect = gfx::Rect();
     params.is_fullscreen = false;
     rwh->Send(new ViewMsg_Resize(rwh->GetRoutingID(), params));

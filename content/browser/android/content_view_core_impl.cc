@@ -379,8 +379,7 @@ void ContentViewCoreImpl::UpdateFrameInfo(
     const gfx::SizeF& content_size,
     const gfx::SizeF& viewport_size,
     const gfx::Vector2dF& controls_offset,
-    const gfx::Vector2dF& content_offset,
-    float overdraw_bottom_height) {
+    const gfx::Vector2dF& content_offset) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (obj.is_null())
@@ -401,8 +400,7 @@ void ContentViewCoreImpl::UpdateFrameInfo(
       viewport_size.width(),
       viewport_size.height(),
       controls_offset.y(),
-      content_offset.y(),
-      overdraw_bottom_height);
+      content_offset.y());
 }
 
 void ContentViewCoreImpl::SetTitle(const base::string16& title) {
@@ -723,8 +721,7 @@ void ContentViewCoreImpl::DidStopFlinging() {
 
 gfx::Size ContentViewCoreImpl::GetViewSize() const {
   gfx::Size size = GetViewportSizeDip();
-  gfx::Size offset = GetViewportSizeOffsetDip();
-  size.Enlarge(-offset.width(), -offset.height());
+  size.Enlarge(0, -GetTopControlsLayoutHeightDip());
   return size;
 }
 
@@ -748,14 +745,12 @@ gfx::Size ContentViewCoreImpl::GetViewportSizePix() const {
       Java_ContentViewCore_getViewportHeightPix(env, j_obj.obj()));
 }
 
-gfx::Size ContentViewCoreImpl::GetViewportSizeOffsetPix() const {
+int ContentViewCoreImpl::GetTopControlsLayoutHeightPix() const {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);
   if (j_obj.is_null())
-    return gfx::Size();
-  return gfx::Size(
-      Java_ContentViewCore_getViewportSizeOffsetWidthPix(env, j_obj.obj()),
-      Java_ContentViewCore_getViewportSizeOffsetHeightPix(env, j_obj.obj()));
+    return 0;
+  return Java_ContentViewCore_getTopControlsLayoutHeightPix(env, j_obj.obj());
 }
 
 gfx::Size ContentViewCoreImpl::GetViewportSizeDip() const {
@@ -763,18 +758,8 @@ gfx::Size ContentViewCoreImpl::GetViewportSizeDip() const {
       gfx::ScaleSize(GetViewportSizePix(), 1.0f / dpi_scale()));
 }
 
-gfx::Size ContentViewCoreImpl::GetViewportSizeOffsetDip() const {
-  return gfx::ToCeiledSize(
-      gfx::ScaleSize(GetViewportSizeOffsetPix(), 1.0f / dpi_scale()));
-}
-
-float ContentViewCoreImpl::GetOverdrawBottomHeightDip() const {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);
-  if (j_obj.is_null())
-    return 0.f;
-  return Java_ContentViewCore_getOverdrawBottomHeightPix(env, j_obj.obj())
-      / dpi_scale();
+float ContentViewCoreImpl::GetTopControlsLayoutHeightDip() const {
+  return GetTopControlsLayoutHeightPix() / dpi_scale();
 }
 
 void ContentViewCoreImpl::AttachLayer(scoped_refptr<cc::Layer> layer) {

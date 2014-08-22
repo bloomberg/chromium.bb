@@ -355,7 +355,7 @@ void RenderViewTest::Resize(gfx::Size new_size,
   params.screen_info = blink::WebScreenInfo();
   params.new_size = new_size;
   params.physical_backing_size = new_size;
-  params.overdraw_bottom_height = 0.f;
+  params.top_controls_layout_height = 0.f;
   params.resizer_rect = resizer_rect;
   params.is_fullscreen = is_fullscreen;
   scoped_ptr<IPC::Message> resize_message(new ViewMsg_Resize(0, params));

@@ -401,7 +401,7 @@ gfx::Size RenderWidgetHostViewBase::GetPhysicalBackingSize() const {
                                           display.device_scale_factor()));
 }
 
-float RenderWidgetHostViewBase::GetOverdrawBottomHeight() const {
+float RenderWidgetHostViewBase::GetTopControlsLayoutHeight() const {
   return 0.f;
 }
 

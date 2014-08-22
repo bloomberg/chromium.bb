@@ -232,14 +232,10 @@ void RendererOverridesHandler::InnerSwapCompositorFrame() {
   // TODO(vkuzkokov): do not use previous frame metadata.
   cc::CompositorFrameMetadata& metadata = last_compositor_frame_metadata_;
 
-  float page_scale = metadata.page_scale_factor;
   gfx::SizeF viewport_size_dip = gfx::ScaleSize(
-      metadata.scrollable_viewport_size, page_scale);
-
-  float total_bar_height_dip = metadata.location_bar_content_translation.y() +
-                                   metadata.overdraw_bottom_height;
-  gfx::SizeF screen_size_dip(viewport_size_dip.width(),
-                             viewport_size_dip.height() + total_bar_height_dip);
+      metadata.scrollable_viewport_size, metadata.page_scale_factor);
+  gfx::SizeF screen_size_dip = gfx::ScaleSize(view->GetPhysicalBackingSize(),
+                                              1 / metadata.device_scale_factor);
 
   std::string format;
   int quality = kDefaultScreenshotQuality;
@@ -638,6 +634,16 @@ void RendererOverridesHandler::ScreencastFrameCaptured(
   if (metadata.device_scale_factor != 0) {
     base::DictionaryValue* response_metadata = new base::DictionaryValue();
 
+    RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
+        host_->GetView());
+    if (!view)
+      return;
+
+    gfx::SizeF viewport_size_dip = gfx::ScaleSize(
+        metadata.scrollable_viewport_size, metadata.page_scale_factor);
+    gfx::SizeF screen_size_dip = gfx::ScaleSize(
+        view->GetPhysicalBackingSize(), 1 / metadata.device_scale_factor);
+
     response_metadata->SetDouble(
         devtools::Page::ScreencastFrameMetadata::kParamDeviceScaleFactor,
         metadata.device_scale_factor);
@@ -655,7 +661,9 @@ void RendererOverridesHandler::ScreencastFrameCaptured(
         metadata.location_bar_content_translation.y());
     response_metadata->SetDouble(
         devtools::Page::ScreencastFrameMetadata::kParamOffsetBottom,
-        metadata.overdraw_bottom_height);
+        screen_size_dip.height() -
+            metadata.location_bar_content_translation.y() -
+            viewport_size_dip.height());
 
     base::DictionaryValue* viewport = new base::DictionaryValue();
     viewport->SetDouble(devtools::DOM::Rect::kParamX,
@@ -669,16 +677,12 @@ void RendererOverridesHandler::ScreencastFrameCaptured(
     response_metadata->Set(
         devtools::Page::ScreencastFrameMetadata::kParamViewport, viewport);
 
-    gfx::SizeF viewport_size_dip = gfx::ScaleSize(
-        metadata.scrollable_viewport_size, metadata.page_scale_factor);
     response_metadata->SetDouble(
         devtools::Page::ScreencastFrameMetadata::kParamDeviceWidth,
-        viewport_size_dip.width());
+        screen_size_dip.width());
     response_metadata->SetDouble(
         devtools::Page::ScreencastFrameMetadata::kParamDeviceHeight,
-        viewport_size_dip.height() +
-            metadata.location_bar_content_translation.y() +
-            metadata.overdraw_bottom_height);
+        screen_size_dip.height());
     response_metadata->SetDouble(
         devtools::Page::ScreencastFrameMetadata::kParamScrollOffsetX,
         metadata.root_scroll_offset.x());

@@ -230,8 +230,7 @@ class ContentViewCoreImpl : public ContentViewCore,
                        const gfx::SizeF& content_size,
                        const gfx::SizeF& viewport_size,
                        const gfx::Vector2dF& controls_offset,
-                       const gfx::Vector2dF& content_offset,
-                       float overdraw_bottom_height);
+                       const gfx::Vector2dF& content_offset);
 
   void UpdateImeAdapter(long native_ime_adapter,
                         int text_input_type,
@@ -291,8 +290,7 @@ class ContentViewCoreImpl : public ContentViewCore,
 
   gfx::Size GetPhysicalBackingSize() const;
   gfx::Size GetViewportSizeDip() const;
-  gfx::Size GetViewportSizeOffsetDip() const;
-  float GetOverdrawBottomHeightDip() const;
+  float GetTopControlsLayoutHeightDip() const;
 
   void AttachLayer(scoped_refptr<cc::Layer> layer);
   void RemoveLayer(scoped_refptr<cc::Layer> layer);
@@ -324,7 +322,7 @@ class ContentViewCoreImpl : public ContentViewCore,
       blink::WebInputEvent::Type type, int64 time_ms, float x, float y) const;
 
   gfx::Size GetViewportSizePix() const;
-  gfx::Size GetViewportSizeOffsetPix() const;
+  int GetTopControlsLayoutHeightPix() const;
 
   void SendGestureEvent(const blink::WebGestureEvent& event);
 

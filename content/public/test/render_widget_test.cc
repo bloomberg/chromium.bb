@@ -42,7 +42,7 @@ void RenderWidgetTest::TestOnResize() {
   resize_params.screen_info = blink::WebScreenInfo();
   resize_params.new_size = gfx::Size();
   resize_params.physical_backing_size = gfx::Size();
-  resize_params.overdraw_bottom_height = 0.f;
+  resize_params.top_controls_layout_height = 0.f;
   resize_params.resizer_rect = gfx::Rect();
   resize_params.is_fullscreen = false;
   widget->OnResize(resize_params);

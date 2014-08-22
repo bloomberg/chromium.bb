@@ -458,9 +458,9 @@ void RenderWidgetCompositor::UpdateTopControlsState(
                                            animate);
 }
 
-void RenderWidgetCompositor::SetOverdrawBottomHeight(
-    float overdraw_bottom_height) {
-  layer_tree_host_->SetOverdrawBottomHeight(overdraw_bottom_height);
+void RenderWidgetCompositor::SetTopControlsLayoutHeight(
+    float top_controls_layout_height) {
+  layer_tree_host_->SetTopControlsLayoutHeight(top_controls_layout_height);
 }
 
 void RenderWidgetCompositor::SetNeedsRedrawRect(gfx::Rect damage_rect) {

@@ -361,12 +361,9 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   // them from the other values.
 
   void SetBounds(const gfx::Size& bounds);
-  void SetTemporaryImplBounds(const gfx::SizeF& bounds);
   gfx::Size bounds() const;
-  gfx::Vector2dF BoundsDelta() const {
-    return gfx::Vector2dF(temporary_impl_bounds_.width() - bounds_.width(),
-                          temporary_impl_bounds_.height() - bounds_.height());
-  }
+  void SetBoundsDelta(const gfx::Vector2dF& bounds_delta);
+  gfx::Vector2dF bounds_delta() const { return bounds_delta_; }
 
   void SetContentBounds(const gfx::Size& content_bounds);
   gfx::Size content_bounds() const { return draw_properties_.content_bounds; }
@@ -606,7 +603,7 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   // Properties synchronized from the associated Layer.
   gfx::Point3F transform_origin_;
   gfx::Size bounds_;
-  gfx::SizeF temporary_impl_bounds_;
+  gfx::Vector2dF bounds_delta_;
   gfx::Vector2d scroll_offset_;
   ScrollOffsetDelegate* scroll_offset_delegate_;
   LayerImpl* scroll_clip_layer_;

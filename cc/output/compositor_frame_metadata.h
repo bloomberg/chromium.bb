@@ -39,7 +39,6 @@ class CC_EXPORT CompositorFrameMetadata {
   // precise position is computed by the renderer compositor.
   gfx::Vector2dF location_bar_offset;
   gfx::Vector2dF location_bar_content_translation;
-  float overdraw_bottom_height;
 
   // Provides selection region updates relative to the current viewport. If the
   // selection is empty or otherwise unused, the bound types will indicate such.

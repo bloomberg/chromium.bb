@@ -106,7 +106,7 @@ LayerTreeHost::LayerTreeHost(LayerTreeHostClient* client,
       num_failed_recreate_attempts_(0),
       settings_(settings),
       debug_state_(settings.initial_debug_state),
-      overdraw_bottom_height_(0.f),
+      top_controls_layout_height_(0.f),
       device_scale_factor_(1.f),
       visible_(true),
       page_scale_factor_(1.f),
@@ -351,7 +351,7 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
   RecordGpuRasterizationHistogram();
 
   host_impl->SetViewportSize(device_viewport_size_);
-  host_impl->SetOverdrawBottomHeight(overdraw_bottom_height_);
+  host_impl->SetTopControlsLayoutHeight(top_controls_layout_height_);
   host_impl->SetDeviceScaleFactor(device_scale_factor_);
   host_impl->SetDebugState(debug_state_);
   if (pending_page_scale_animation_) {
@@ -627,11 +627,12 @@ void LayerTreeHost::SetViewportSize(const gfx::Size& device_viewport_size) {
   SetNeedsCommit();
 }
 
-void LayerTreeHost::SetOverdrawBottomHeight(float overdraw_bottom_height) {
-  if (overdraw_bottom_height_ == overdraw_bottom_height)
+void LayerTreeHost::SetTopControlsLayoutHeight(
+    float top_controls_layout_height) {
+  if (top_controls_layout_height_ == top_controls_layout_height)
     return;
 
-  overdraw_bottom_height_ = overdraw_bottom_height;
+  top_controls_layout_height_ = top_controls_layout_height;
   SetNeedsCommit();
 }
 

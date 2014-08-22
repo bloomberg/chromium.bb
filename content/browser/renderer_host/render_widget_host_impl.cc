@@ -168,7 +168,7 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
       repaint_ack_pending_(false),
       resize_ack_pending_(false),
       screen_info_out_of_date_(false),
-      overdraw_bottom_height_(0.f),
+      top_controls_layout_height_(0.f),
       should_auto_resize_(false),
       waiting_for_screen_rects_ack_(false),
       needs_repainting_on_restore_(false),
@@ -562,8 +562,10 @@ void RenderWidgetHostImpl::WasResized() {
   physical_backing_size_ = view_->GetPhysicalBackingSize();
   bool was_fullscreen = is_fullscreen_;
   is_fullscreen_ = IsFullscreen();
-  float old_overdraw_bottom_height = overdraw_bottom_height_;
-  overdraw_bottom_height_ = view_->GetOverdrawBottomHeight();
+  float old_top_controls_layout_height =
+      top_controls_layout_height_;
+  top_controls_layout_height_ =
+      view_->GetTopControlsLayoutHeight();
   gfx::Size old_visible_viewport_size = visible_viewport_size_;
   visible_viewport_size_ = view_->GetVisibleViewportSize();
 
@@ -572,7 +574,8 @@ void RenderWidgetHostImpl::WasResized() {
       screen_info_out_of_date_ ||
       old_physical_backing_size != physical_backing_size_ ||
       was_fullscreen != is_fullscreen_ ||
-      old_overdraw_bottom_height != overdraw_bottom_height_ ||
+      old_top_controls_layout_height !=
+          top_controls_layout_height_ ||
       old_visible_viewport_size != visible_viewport_size_;
 
   if (!size_changed && !side_payload_changed)
@@ -592,7 +595,7 @@ void RenderWidgetHostImpl::WasResized() {
   params.screen_info = *screen_info_;
   params.new_size = new_size;
   params.physical_backing_size = physical_backing_size_;
-  params.overdraw_bottom_height = overdraw_bottom_height_;
+  params.top_controls_layout_height = top_controls_layout_height_;
   params.visible_viewport_size = visible_viewport_size_;
   params.resizer_rect = GetRootWindowResizerRect();
   params.is_fullscreen = is_fullscreen_;

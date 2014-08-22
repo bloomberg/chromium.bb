@@ -272,14 +272,6 @@ void LayerTreeImpl::ClearCurrentlyScrollingLayer() {
   scrolling_layer_id_from_previous_tree_ = 0;
 }
 
-float LayerTreeImpl::VerticalAdjust(const int clip_layer_id) const {
-  LayerImpl* container_layer = InnerViewportContainerLayer();
-  if (!container_layer || clip_layer_id != container_layer->id())
-    return 0.f;
-
-  return layer_tree_host_impl_->VerticalAdjust();
-}
-
 namespace {
 
 void ForceScrollbarParameterUpdateAfterScaleChange(LayerImpl* current_layer) {
@@ -355,12 +347,11 @@ void LayerTreeImpl::SetPageScaleValues(float page_scale_factor,
 }
 
 gfx::SizeF LayerTreeImpl::ScrollableViewportSize() const {
-  if (outer_viewport_scroll_layer_)
-    return layer_tree_host_impl_->UnscaledScrollableViewportSize();
-  else
-    return gfx::ScaleSize(
-        layer_tree_host_impl_->UnscaledScrollableViewportSize(),
-        1.0f / total_page_scale_factor());
+  if (!InnerViewportContainerLayer())
+    return gfx::SizeF();
+
+  return gfx::ScaleSize(InnerViewportContainerLayer()->bounds(),
+                        1.0f / total_page_scale_factor());
 }
 
 gfx::Rect LayerTreeImpl::RootScrollLayerDeviceViewportBounds() const {
