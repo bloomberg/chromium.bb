@@ -13,12 +13,14 @@ from future import Future
 from gitiles_file_system import (_CreateStatInfo,
                                  _ParseGitilesJson,
                                  GitilesFileSystem)
+from path_util import IsDirectory
 from test_file_system import TestFileSystem
 from test_util import ReadFile
 
 
 _BASE_URL = ''
 _REAL_DATA_DIR = 'chrome/common/extensions/docs/templates/public/extensions/'
+_TEST_DATA = (SERVER2, 'test_data', 'gitiles_file_system', 'public_extensions')
 # GitilesFileSystem expects file content to be encoded in base64.
 _TEST_FS = {
   'test1.txt': base64.b64encode('test1'),
@@ -54,8 +56,7 @@ class _FakeGitilesFetcher(object):
       # Fetch urls are of the form <base_url>/<path>. We only want <path>.
       path = path.split('/', 1)[1]
       if path == _REAL_DATA_DIR:
-        return _Response(ReadFile(SERVER2, 'test_data', 'gitiles_file_system',
-            'public_extensions'))
+        return _Response(ReadFile(*_TEST_DATA))
       # ALWAYS skip not found here.
       content = self._fs.Read((path,),
                               skip_not_found=True).Get().get(path, None)
@@ -65,7 +66,11 @@ class _FakeGitilesFetcher(object):
       # GitilesFS expects directory content as a JSON string.
       if 'JSON' in fmt:
         content = json.dumps({
-          'entries': [{'name': name} for name in content]
+          'entries': [{
+            # GitilesFS expects directory names to not have a trailing '/'.
+            'name': name.rstrip('/'),
+            'type': 'tree' if IsDirectory(name) else 'blob'
+          } for name in content]
         })
       return _Response(content)
     return Future(callback=resolve)
@@ -74,7 +79,7 @@ class _FakeGitilesFetcher(object):
 class GitilesFileSystemTest(unittest.TestCase):
   def setUp(self):
     fetcher = _FakeGitilesFetcher(TestFileSystem(_TEST_FS))
-    self._gitiles_fs = GitilesFileSystem(fetcher, _BASE_URL, '', '')
+    self._gitiles_fs = GitilesFileSystem(fetcher, _BASE_URL, 'master', None)
 
   def testParseGitilesJson(self):
     test_json = '\n'.join([
@@ -144,6 +149,15 @@ class GitilesFileSystemTest(unittest.TestCase):
     self.assertEqual(self._gitiles_fs.Stat(_REAL_DATA_DIR).version,
                      'ec21e736a3f00db2c0580e3cf71d91951656caec')
 
+  def testGetIdentity(self):
+    # Test that file systems at different commits still have the same identity.
+    other_gitiles_fs = GitilesFileSystem.Create(commit='abcdefghijklmnop')
+    self.assertEqual(self._gitiles_fs.GetIdentity(),
+                     other_gitiles_fs.GetIdentity())
+
+    yet_another_gitiles_fs = GitilesFileSystem.Create(branch='different')
+    self.assertNotEqual(self._gitiles_fs.GetIdentity(),
+                        yet_another_gitiles_fs.GetIdentity())
 
 if __name__ == '__main__':
   unittest.main()

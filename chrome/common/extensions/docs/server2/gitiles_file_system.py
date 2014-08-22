@@ -16,7 +16,7 @@ from file_system import (FileNotFoundError,
                          FileSystemError,
                          StatInfo)
 from future import All, Future
-from path_util import AssertIsValid, IsDirectory, SplitParent, ToDirectory
+from path_util import AssertIsValid, IsDirectory, ToDirectory
 from third_party.json_schema_compiler.memoize import memoize
 from url_constants import GITILES_BASE, GITILES_BRANCH_BASE
 
@@ -104,9 +104,11 @@ class GitilesFileSystem(FileSystem):
     #         "name": ".gitignore"
     #       },
     #       ...
+    #     ]
     #   }
     def list_dir(json_data):
-      return [e['name'] for e in _ParseGitilesJson(json_data)['entries']]
+      entries = _ParseGitilesJson(json_data).get('entries', [])
+      return [e['name'] + ('/' if e['type'] == 'tree' else '') for e in entries]
 
     def fixup_url_format(path):
       # By default, Gitiles URLs display resources in HTML. To get resources
@@ -135,8 +137,29 @@ class GitilesFileSystem(FileSystem):
     return Future(value=())
 
   @memoize
-  def GetCommitID(self):
-    '''Returns a future that resolves to the commit ID for this branch.
+  def _GetCommitInfo(self, key):
+    '''Gets the commit information specified by |key|.
+
+    The JSON view for commit info looks like:
+      {
+        "commit": "8fd578e1a7b142cd10a4387861f05fb9459b69e2", # Commit ID.
+        "tree": "3ade65d8a91eadd009a6c9feea8f87db2c528a53",   # Tree ID.
+        "parents": [
+          "a477c787fe847ae0482329f69b39ce0fde047359" # Previous commit ID.
+        ],
+        "author": {
+          "name": "...",
+          "email": "...",
+          "time": "Tue Aug 12 17:17:21 2014"
+        },
+        "committer": {
+          "name": "...",
+          "email": "...",
+          "time": "Tue Aug 12 17:18:28 2014"
+        },
+        "message": "...",
+        "tree_diff": [...]
+      }
     '''
     # Commit information for a branch is obtained by appending '?format=JSON'
     # to the branch URL. Note that '<gitiles_url>/<branch>?format=JSON' is
@@ -145,17 +168,12 @@ class GitilesFileSystem(FileSystem):
     # commit info JSON content.
     fetch_future = self._fetcher.FetchAsync(self._base_url + _JSON_FORMAT)
     content_future = self._ResolveFetchContent(self._base_url, fetch_future)
-    # The commit info JSON looks like:
-    #
-    #   {
-    #     "commit": "8fd578e1a7b142cd10a4387861f05fb9459b69e2", # Commit ID.
-    #     "tree": "3ade65d8a91eadd009a6c9feea8f87db2c528a53",   # Tree ID.
-    #     "author": {...},
-    #     "committer": {...},
-    #     "message": <codereview message>,
-    #     ...
-    #   }
-    return content_future.Then(lambda json: _ParseGitilesJson(json)['commit'])
+    return content_future.Then(lambda json: _ParseGitilesJson(json)[key])
+
+  def GetCommitID(self):
+    '''Returns a future that resolves to the commit ID for this branch.
+    '''
+    return self._GetCommitInfo('commit')
 
   def StatAsync(self, path):
     dir_, filename = posixpath.split(path)
@@ -173,5 +191,10 @@ class GitilesFileSystem(FileSystem):
     return self._ResolveFetchContent(path, fetch_future).Then(stat)
 
   def GetIdentity(self):
-    return '@'.join((self.__class__.__name__,
-                     StringIdentity(self._commit or self._branch)))
+    # NOTE: Do not use commit information to create the string identity.
+    # Doing so will mess up caching.
+    if self._commit is None and self._branch != 'master':
+      str_id = GITILES_BRANCH_BASE
+    else:
+      str_id = GITILES_BASE
+    return '@'.join((self.__class__.__name__, StringIdentity(str_id)))

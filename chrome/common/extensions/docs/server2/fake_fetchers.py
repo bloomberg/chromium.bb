@@ -79,14 +79,20 @@ class _FakeSubversionServer(_FakeFetcher):
 
 _GITILES_BASE_RE = re.escape(url_constants.GITILES_BASE)
 _GITILES_BRANCH_BASE_RE = re.escape(url_constants.GITILES_BRANCH_BASE)
-_GITILES_URL_TO_PATH_PATTERN = re.compile(
-    r'(' + _GITILES_BASE_RE + r'|' + _GITILES_BRANCH_BASE_RE + r').+?/(.*)')
+# NOTE: _GITILES_BRANCH_BASE_RE must be first, because _GITILES_BASE_RE is
+# a more general pattern.
+_GITILES_URL_RE = r'(%s|%s)/' % (_GITILES_BRANCH_BASE_RE, _GITILES_BASE_RE)
+_GITILES_URL_TO_COMMIT_PATTERN = re.compile(
+    r'%s[^/]+\?format=JSON' % _GITILES_URL_RE)
+_GITILES_URL_TO_PATH_PATTERN = re.compile(r'%s.+?/(.*)' % _GITILES_URL_RE)
 def _ExtractPathFromGitilesUrl(url):
   return _GITILES_URL_TO_PATH_PATTERN.match(url).group(2)
 
 
 class _FakeGitilesServer(_FakeFetcher):
   def fetch(self, url):
+    if _GITILES_URL_TO_COMMIT_PATTERN.match(url) is not None:
+      return json.dumps({'commit': '1' * 40})
     path = _ExtractPathFromGitilesUrl(url)
     chromium_path = ChromiumPath(path)
     if self._IsDir(chromium_path):
@@ -97,9 +103,11 @@ class _FakeGitilesServer(_FakeFetcher):
       for f in self._ListDir(chromium_path):
         if f.startswith('.'):
           continue
+        f_path = os.path.join(chromium_path, f)
         jsn['entries'].append({
-          'id': self._Stat(os.path.join(chromium_path, f)),
-          'name': f
+          'id': self._Stat(f_path),
+          'name': f,
+          'type': 'tree' if self._IsDir(f_path) else 'blob'
         })
       return json.dumps(jsn)
     try:
