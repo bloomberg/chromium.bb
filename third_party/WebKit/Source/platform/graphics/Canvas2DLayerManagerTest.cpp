@@ -236,12 +236,13 @@ protected:
 
     void doDeferredFrameTestTask(FakeCanvas2DLayerBridge* layer, bool skipCommands)
     {
+        FloatRect invalidationRect(0, 0, 1, 1);
         EXPECT_FALSE(Canvas2DLayerManager::get().m_taskObserverActive);
-        layer->finalizeFrame();
+        layer->finalizeFrame(invalidationRect);
         layer->storageAllocatedForRecordingChanged(1);
         EXPECT_TRUE(Canvas2DLayerManager::get().m_taskObserverActive);
         if (skipCommands) {
-            layer->finalizeFrame();
+            layer->finalizeFrame(invalidationRect);
             layer->skippedPendingDrawCommands();
         }
         Platform::current()->currentThread()->exitRunLoop();

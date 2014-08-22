@@ -236,7 +236,7 @@ void HTMLCanvasElement::didProcessTask()
         didFinalizeFrame();
     } else {
         ASSERT(hasImageBuffer());
-        m_imageBuffer->finalizeFrame();
+        m_imageBuffer->finalizeFrame(m_dirtyRect);
     }
     ASSERT(m_dirtyRect.isEmpty());
 }

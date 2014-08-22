@@ -102,7 +102,7 @@ PassRefPtr<SkPicture> RecordingImageBufferSurface::getPicture()
     return nullptr;
 }
 
-void RecordingImageBufferSurface::finalizeFrame()
+void RecordingImageBufferSurface::finalizeFrame(const FloatRect &)
 {
     if (!finalizeFrameInternal() && !m_rasterCanvas) {
         fallBackToRasterCanvas();

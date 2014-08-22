@@ -46,6 +46,7 @@ namespace blink {
 
 class ImageBuffer;
 class WebLayer;
+class FloatRect;
 
 enum OpacityMode {
     NonOpaque,
@@ -73,7 +74,7 @@ public:
     virtual void setImageBuffer(ImageBuffer*) { }
     virtual PassRefPtr<SkPicture> getPicture();
     virtual void didClearCanvas() { }
-    virtual void finalizeFrame() { }
+    virtual void finalizeFrame(const FloatRect &dirtyRect) { }
 
     OpacityMode opacityMode() const { return m_opacityMode; }
     const IntSize& size() const { return m_size; }

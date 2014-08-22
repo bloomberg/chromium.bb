@@ -52,7 +52,8 @@ public:
     virtual void didProcessTask() OVERRIDE
     {
         ASSERT_TRUE(m_isDirty);
-        m_imageBuffer->finalizeFrame();
+        FloatRect dirtyRect(0, 0, 1, 1);
+        m_imageBuffer->finalizeFrame(dirtyRect);
         ASSERT_FALSE(m_isDirty);
     }
 

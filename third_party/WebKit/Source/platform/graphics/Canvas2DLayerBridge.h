@@ -66,7 +66,7 @@ public:
     virtual void skippedPendingDrawCommands() OVERRIDE;
 
     // ImageBufferSurface implementation
-    void finalizeFrame();
+    void finalizeFrame(const FloatRect &dirtyRect);
     void willAccessPixels();
     SkCanvas* canvas() const { return m_canvas.get(); }
     bool checkSurfaceValid();
