@@ -88,10 +88,9 @@ private:
     // These members can be accessed from any thread.
     WebThread* m_mainThread;
 
-    // This mutex protects calls to the pending task queues.
+    // This mutex protects calls to the pending task queue.
     Mutex m_pendingTasksMutex;
-    DoubleBufferedDeque<TracedTask> m_pendingInputTasks;
-    DoubleBufferedDeque<TracedTask> m_pendingCompositorTasks;
+    DoubleBufferedDeque<TracedTask> m_pendingHighPriorityTasks;
 
     volatile int m_highPriorityTaskCount;
 };

@@ -139,7 +139,7 @@ void Scheduler::postTask(const TraceLocation& location, const Task& task)
 void Scheduler::postInputTask(const TraceLocation& location, const Task& task)
 {
     Locker<Mutex> lock(m_pendingTasksMutex);
-    m_pendingInputTasks.append(TracedTask(task, location));
+    m_pendingHighPriorityTasks.append(TracedTask(task, location));
     atomicIncrement(&m_highPriorityTaskCount);
     m_mainThread->postTask(new MainThreadPendingHighPriorityTaskRunner());
 }
@@ -147,7 +147,7 @@ void Scheduler::postInputTask(const TraceLocation& location, const Task& task)
 void Scheduler::postCompositorTask(const TraceLocation& location, const Task& task)
 {
     Locker<Mutex> lock(m_pendingTasksMutex);
-    m_pendingCompositorTasks.append(TracedTask(task, location));
+    m_pendingHighPriorityTasks.append(TracedTask(task, location));
     atomicIncrement(&m_highPriorityTaskCount);
     m_mainThread->postTask(new MainThreadPendingHighPriorityTaskRunner());
 }
@@ -178,18 +178,12 @@ void Scheduler::runHighPriorityTasks()
     // These locks guard against another thread posting input or compositor tasks while we swap the buffers.
     // One the buffers have been swapped we can safely access the returned deque without having to lock.
     m_pendingTasksMutex.lock();
-    Deque<TracedTask>& inputTasks = m_pendingInputTasks.swapBuffers();
-    Deque<TracedTask>& compositorTasks = m_pendingCompositorTasks.swapBuffers();
+    Deque<TracedTask>& highPriorityTasks = m_pendingHighPriorityTasks.swapBuffers();
     m_pendingTasksMutex.unlock();
 
     int highPriorityTasksExecuted = 0;
-    while (!inputTasks.isEmpty()) {
-        inputTasks.takeFirst().run();
-        highPriorityTasksExecuted++;
-    }
-
-    while (!compositorTasks.isEmpty()) {
-        compositorTasks.takeFirst().run();
+    while (!highPriorityTasks.isEmpty()) {
+        highPriorityTasks.takeFirst().run();
         highPriorityTasksExecuted++;
     }
 

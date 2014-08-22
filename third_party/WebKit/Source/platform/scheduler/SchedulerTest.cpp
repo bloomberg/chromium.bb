@@ -256,13 +256,13 @@ TEST_F(SchedulerTest, TestTaskPrioritization)
     m_scheduler->postTask(FROM_HERE, WTF::bind(&SchedulerTest::appendToVector, this, string("L1")));
     m_scheduler->postTask(FROM_HERE, WTF::bind(&SchedulerTest::appendToVector, this, string("L2")));
     m_scheduler->postInputTask(FROM_HERE, WTF::bind(&SchedulerTest::appendToVector, this, string("I1")));
-    m_scheduler->postInputTask(FROM_HERE, WTF::bind(&SchedulerTest::appendToVector, this, string("I2")));
     m_scheduler->postCompositorTask(FROM_HERE, WTF::bind(&SchedulerTest::appendToVector, this, string("C1")));
+    m_scheduler->postInputTask(FROM_HERE, WTF::bind(&SchedulerTest::appendToVector, this, string("I2")));
     m_scheduler->postCompositorTask(FROM_HERE, WTF::bind(&SchedulerTest::appendToVector, this, string("C2")));
 
     runPendingTasks();
     EXPECT_THAT(m_order, testing::ElementsAre(
-        string("I1"), string("I2"), string("C1"), string("C2"), string("L1"), string("L2")));
+        string("I1"), string("C1"), string("I2"), string("C2"), string("L1"), string("L2")));
 }
 
 TEST_F(SchedulerTest, TestRentrantTask)
