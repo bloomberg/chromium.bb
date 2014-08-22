@@ -9,18 +9,19 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.os.SystemClock;
-import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.view.MotionEvent;
 import android.view.View;
 
 import org.chromium.base.test.util.Feature;
+import org.chromium.content_shell_apk.ContentShellTestBase;
 
 /**
  * Tests for PopupZoomer.
  */
-public class PopupZoomerTest extends InstrumentationTestCase {
+public class PopupZoomerTest extends ContentShellTestBase {
     private CustomCanvasPopupZoomer mPopupZoomer;
+    private ContentViewCore mContentViewCore;
 
     private static class CustomCanvasPopupZoomer extends PopupZoomer {
         Canvas mCanvas;
@@ -72,8 +73,11 @@ public class PopupZoomerTest extends InstrumentationTestCase {
     }
 
     @Override
-    public void setUp() {
+    public void setUp() throws Exception {
+        super.setUp();
         mPopupZoomer = createPopupZoomerForTest(getInstrumentation().getTargetContext());
+        mContentViewCore = new ContentViewCore(getActivity());
+        mContentViewCore.setPopupZoomerForTest(mPopupZoomer);
     }
 
     @SmallTest
@@ -171,5 +175,30 @@ public class PopupZoomerTest extends InstrumentationTestCase {
         // The view should still be visible as no OnTapListener is set.
         assertEquals(View.VISIBLE, mPopupZoomer.getVisibility());
         assertTrue(mPopupZoomer.isShowing());
+    }
+
+    @SmallTest
+    @Feature({"Navigation"})
+    public void testHidePopupOnLosingFocus() throws Exception {
+        mPopupZoomer.setBitmap(
+                        Bitmap.createBitmap(10, 10, Bitmap.Config.ALPHA_8));
+        mPopupZoomer.show(new Rect(0, 0, 5, 5));
+
+        // Wait for the animation to finish.
+        mPopupZoomer.finishPendingDraws();
+
+        // The view should be visible.
+        assertEquals(View.VISIBLE, mPopupZoomer.getVisibility());
+        assertTrue(mPopupZoomer.isShowing());
+
+        // Simulate losing the focus.
+        mContentViewCore.onFocusChanged(false);
+
+        // Wait for the hide animation to finish.
+        mPopupZoomer.finishPendingDraws();
+
+        // Now that another view has been focused, the view should be invisible.
+        assertEquals(View.INVISIBLE, mPopupZoomer.getVisibility());
+        assertFalse(mPopupZoomer.isShowing());
     }
 }

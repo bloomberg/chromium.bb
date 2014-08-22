@@ -521,9 +521,7 @@ public class ContentViewCore
                 new ImeAdapter.ImeAdapterDelegate() {
                     @Override
                     public void onImeEvent() {
-                        if (mPopupZoomer.isShowing()) {
-                            mPopupZoomer.hide(true);
-                        }
+                        mPopupZoomer.hide(true);
                         getContentViewClient().onImeEvent();
                         hideTextHandles();
                     }
@@ -752,6 +750,11 @@ public class ContentViewCore
             }
         };
         mPopupZoomer.setOnTapListener(listener);
+    }
+
+    @VisibleForTesting
+    public void setPopupZoomerForTest(PopupZoomer popupZoomer) {
+        mPopupZoomer = popupZoomer;
     }
 
     /**
@@ -1434,6 +1437,7 @@ public class ContentViewCore
         hidePastePopup();
         hideSelectPopup();
         hideTextHandles();
+        mPopupZoomer.hide(false);
     }
 
     public void hideSelectActionBar() {
@@ -1627,6 +1631,7 @@ public class ContentViewCore
             cancelRequestToScrollFocusedEditableNodeIntoView();
             hidePastePopup();
             hideTextHandles();
+            mPopupZoomer.hide(false);
         }
         if (mNativeContentViewCore != 0) nativeSetFocus(mNativeContentViewCore, gainFocus);
     }
