@@ -982,3 +982,5 @@ function tryDownloadUpdatedPeriodically() {
 
 // Add handlers to HTML elements.
 window.addEventListener('DOMContentLoaded', load);
+
+preventDefaultOnPoundLinkClicks();  // From util.js.
