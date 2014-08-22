@@ -523,7 +523,10 @@ Gnubby.prototype.sync = function(cb) {
   }
 
   function sendInitSentinel() {
-    var cid = Gnubby.BROADCAST_CID;
+    var cid = self.cid;
+    if (cid == Gnubby.defaultChannelId_(self.gnubbyInstance, self.which)) {
+      cid = Gnubby.BROADCAST_CID;
+    }
     var cmd = GnubbyDevice.CMD_INIT;
     self.dev.queueCommand(cid, cmd, nonce);
   }
@@ -628,8 +631,7 @@ Gnubby.prototype.sync = function(cb) {
     completionAction = syncCompletionAction;
   }
 
-  if (Gnubby.gnubbies_.isSharedAccess(this.which) &&
-      this.cid == Gnubby.defaultChannelId_(this.gnubbyInstance, this.which)) {
+  if (Gnubby.gnubbies_.isSharedAccess(this.which)) {
     setInit();
   } else {
     setSync();
