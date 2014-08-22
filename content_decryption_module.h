@@ -115,7 +115,7 @@ enum Error {
   kInvalidAccessError = 15,
   kQuotaExceededError = 22,
 
-  // Additional exceptions that don't have assigned codes.
+  // Additional exceptions that do not have assigned codes.
   // There are other non-EME-specific values, not included in this list.
   kUnknownError = 30,
 
@@ -376,9 +376,12 @@ enum SessionType {
 // FileIO interface provides a way for the CDM to store data in a file in
 // persistent storage. This interface aims only at providing basic read/write
 // capabilities and should not be used as a full fledged file IO API.
-// Each domain (e.g. "example.com") and each CDM has it's own persistent
-// storage. All instances of a given CDM associated with a given domain share
-// the same persistent storage.
+// Each CDM and origin (e.g. HTTPS, "foo.example.com", 443) combination has
+// its own persistent storage. All instances of a given CDM associated with a
+// given origin share the same persistent storage.
+// Note to implementors of this interface:
+// Per-origin storage and the ability for users to clear it are important.
+// See http://www.w3.org/TR/encrypted-media/#privacy-storedinfo.
 class FileIO {
  public:
   // Opens the file with |file_name| for read and write.
@@ -431,7 +434,7 @@ class FileIOClient {
   // - kSuccess indicates that all contents of the file has been successfully
   //   read. In this case, 0 |data_size| means that the file is empty.
   // - kInUse indicates that there are other read/write operations pending.
-  // - kError indicates read failure, e.g. the storage isn't open or cannot be
+  // - kError indicates read failure, e.g. the storage is not open or cannot be
   //   fully read.
   virtual void OnReadComplete(Status status,
                               const uint8_t* data, uint32_t data_size) = 0;
@@ -440,7 +443,7 @@ class FileIOClient {
   // - kSuccess indicates that all the data has been written into the file
   //   successfully.
   // - kInUse indicates that there are other read/write operations pending.
-  // - kError indicates write failure, e.g. the storage isn't open or cannot be
+  // - kError indicates write failure, e.g. the storage is not open or cannot be
   //   fully written. Upon write failure, the contents of the file should be
   //   regarded as corrupt and should not used.
   virtual void OnWriteComplete(Status status) = 0;
@@ -816,7 +819,7 @@ class ContentDecryptionModule_6 {
 
   // Requests the key IDs for keys in the session that the CDM knows are
   // currently usable to decrypt media data. The CDM must respond by calling
-  // either Host::OnResolveGetUsableKeyIdsPromise() or Host::OnRejectPromise().
+  // either Host::OnResolveKeyIdsPromise() or Host::OnRejectPromise().
   virtual void GetUsableKeyIds(
       uint32_t promise_id,
       const char* web_session_id, uint32_t web_session_id_length) = 0;
