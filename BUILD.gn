@@ -158,7 +158,13 @@ group("root") {
 
   if (is_android) {
     deps += [
-      "//ui/android:ui_java"
+      "//ui/android:ui_java",
+      "//third_party/guava:guava_javalib",
+      "//third_party/android_tools:android_gcm_java",
+      "//third_party/android_tools:uiautomator_java",
+      "//third_party/android_tools:android_support_v13_java",
+      "//third_party/android_tools:android_support_v7_appcompat_java",
+      "//third_party/android_tools:android_support_v7_mediarouter_java",
     ]
 
     deps -= [

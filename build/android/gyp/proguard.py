@@ -13,7 +13,9 @@ from util import build_utils
 def DoProguard(options):
   injars = options.input_path
   outjars = options.output_path
-  classpath = build_utils.ParseGypList(options.classpath)
+  classpath = []
+  for arg in options.classpath:
+    classpath += build_utils.ParseGypList(arg)
   classpath = list(set(classpath))
   libraryjars = ':'.join(classpath)
   # proguard does its own dependency checking, which can be avoided by deleting
@@ -29,8 +31,10 @@ def DoProguard(options):
   build_utils.CheckOutput(proguard_cmd, print_stdout=True)
 
 
-def main():
+def main(args):
+  args = build_utils.ExpandFileArgs(args)
   parser = optparse.OptionParser()
+  build_utils.AddDepfileOption(parser)
   parser.add_option('--proguard-path',
                     help='Path to the proguard executable.')
   parser.add_option('--input-path',
@@ -38,16 +42,22 @@ def main():
   parser.add_option('--output-path', help='Path to the generated .jar file.')
   parser.add_option('--proguard-config',
                     help='Path to the proguard configuration file.')
-  parser.add_option('--classpath', help="Classpath for proguard.")
+  parser.add_option('--classpath', action='append',
+                    help="Classpath for proguard.")
   parser.add_option('--stamp', help='Path to touch on success.')
 
-  options, _ = parser.parse_args()
+  options, _ = parser.parse_args(args)
 
   DoProguard(options)
+
+  if options.depfile:
+    build_utils.WriteDepfile(
+        options.depfile,
+        build_utils.GetPythonDependencies())
 
   if options.stamp:
     build_utils.Touch(options.stamp)
 
 
 if __name__ == '__main__':
-  sys.exit(main())
+  sys.exit(main(sys.argv[1:]))

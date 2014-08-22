@@ -400,4 +400,7 @@ android_library("guava_javalib") {
     "src/guava/src/com/google/common/eventbus/EventBus.java",
     "src/guava/src/com/google/common/eventbus/AsyncEventBus.java",
   ]
+
+  proguard_preprocess = true
+  proguard_config = "proguard.flags"
 }

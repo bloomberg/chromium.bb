@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/android/rules.gni")
+
 config("cpu_features_include") {
   include_dirs = [ "ndk/sources/android/cpufeatures" ]
 }
@@ -14,4 +16,48 @@ source_set("cpu_features") {
 
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
+}
+
+android_java_prebuilt("android_gcm_java") {
+  jar_path = "$android_sdk_root/extras/google/gcm/gcm-client/dist/gcm.jar"
+}
+
+android_java_prebuilt("uiautomator_java") {
+  jar_path = "$android_sdk/uiautomator.jar"
+}
+
+android_java_prebuilt("android_support_v13_java") {
+  jar_path = "$android_sdk_root/extras/android/support/v13/android-support-v13.jar"
+}
+
+android_resources("android_support_v7_appcompat_resources") {
+  v14_verify_only = true
+  resource_dirs = [
+    "$android_sdk_root/extras/android/support/v7/appcompat/res"
+  ]
+  custom_package = "android.support.v7.appcompat"
+}
+
+android_java_prebuilt("android_support_v7_appcompat_java") {
+  deps = [ ":android_support_v7_appcompat_resources" ]
+  jar_path = "$android_sdk_root/extras/android/support/v7/appcompat/libs/android-support-v7-appcompat.jar"
+}
+
+android_resources("android_support_v7_mediarouter_resources") {
+  v14_verify_only = true
+  resource_dirs = [
+    "$android_sdk_root/extras/android/support/v7/mediarouter/res"
+  ]
+  deps = [
+    ":android_support_v7_appcompat_resources",
+  ]
+  custom_package = "android.support.v7.mediarouter"
+}
+
+android_java_prebuilt("android_support_v7_mediarouter_java") {
+  deps = [
+    ":android_support_v7_mediarouter_resources",
+    ":android_support_v7_appcompat_java",
+  ]
+  jar_path = "$android_sdk_root/extras/android/support/v7/mediarouter/libs/android-support-v7-mediarouter.jar"
 }

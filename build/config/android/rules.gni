@@ -408,6 +408,9 @@ template("java_strings_grd") {
 #   chromium_code: If true, extra static analysis warning/errors will be enabled.
 #   jar_excluded_patterns: List of patterns of .class files to exclude from the
 #     final jar.
+#   proguard_preprocess: If true, proguard preprocessing will be run. This can
+#     be used to remove unwanted parts of the library.
+#   proguard_config: Path to the proguard config for preprocessing.
 #
 # Example
 #   android_library("foo_java") {
@@ -454,6 +457,11 @@ template("android_library") {
     java_files = invoker.java_files
     build_config = build_config
 
+    if (defined(invoker.proguard_preprocess) && invoker.proguard_preprocess) {
+      proguard_preprocess = true
+      proguard_config = invoker.proguard_config
+    }
+
     if (defined(invoker.jar_excluded_patterns)) {
       jar_excluded_patterns = invoker.jar_excluded_patterns
     }
@@ -463,6 +471,72 @@ template("android_library") {
     }
   }
 }
+
+
+# Declare an Android library target for a prebuilt jar
+#
+# This target creates an Android library containing java code and Android
+# resources.
+#
+# Variables
+#   deps: Specifies the dependencies of this target. Java targets in this list
+#     will be added to the javac classpath. Android resources in dependencies
+#     will be used when building this library.
+#   jar_path: Path to the prebuilt jar.
+#   proguard_preprocess: If true, proguard preprocessing will be run. This can
+#     be used to remove unwanted parts of the library.
+#   proguard_config: Path to the proguard config for preprocessing.
+#
+# Example
+#   android_java_prebuilt("foo_java") {
+#     jar_path = "foo.jar"
+#     deps = [
+#       ":foo_resources",
+#       ":bar_java"
+#     ]
+#   }
+template("android_java_prebuilt") {
+  assert(defined(invoker.jar_path))
+  _base_path = "${target_gen_dir}/$target_name"
+  _jar_path = _base_path + ".jar"
+  _dex_path = _base_path + ".dex.jar"
+  _build_config = _base_path + ".build_config"
+
+  write_build_config("${target_name}__build_config") {
+    type = "android_library"
+
+    deps = []
+    if (defined(invoker.deps)) {
+      deps += invoker.deps
+    }
+    build_config = _build_config
+    jar_path = _jar_path
+    dex_path = _dex_path
+  }
+
+  java_prebuilt("${target_name}__process_jar") {
+    if (defined(invoker.proguard_preprocess) && invoker.proguard_preprocess) {
+      proguard_preprocess = true
+      proguard_config = invoker.proguard_config
+    }
+
+    build_config = _build_config
+    input_jar_path = invoker.jar_path
+    output_jar_path = _jar_path
+  }
+
+  dex("${target_name}__dex") {
+    sources = [_jar_path]
+    output = _dex_path
+  }
+
+  group(target_name) {
+    deps = [
+      ":${target_name}__dex",
+    ]
+  }
+}
+
 
 
 # Declare an Android apk target

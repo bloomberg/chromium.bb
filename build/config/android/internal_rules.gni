@@ -11,6 +11,9 @@ rebased_android_sdk = rebase_path(android_sdk, root_build_dir)
 rebased_android_sdk_root = rebase_path(android_sdk_root, root_build_dir)
 rebased_android_sdk_build_tools = rebase_path(android_sdk_build_tools, root_build_dir)
 
+android_sdk_jar = "$android_sdk/android.jar"
+rebased_android_sdk_jar = rebase_path(android_sdk_jar, root_build_dir)
+
 template("android_lint") {
   jar_path = invoker.jar_path
   android_manifest = invoker.android_manifest
@@ -332,6 +335,72 @@ template("create_apk") {
   }
 }
 
+template("java_prebuilt") {
+  _input_jar_path = invoker.input_jar_path
+  _output_jar_path = invoker.output_jar_path
+  _jar_toc_path = _output_jar_path + ".TOC"
+
+  assert(invoker.build_config != "")
+
+  if (defined(invoker.proguard_preprocess) && invoker.proguard_preprocess) {
+    _proguard_jar_path = "$android_sdk_root/tools/proguard/lib/proguard.jar"
+    _proguard_config_path = invoker.proguard_config
+    _build_config = invoker.build_config
+    _rebased_build_config = rebase_path(_build_config, root_build_dir)
+    action("${target_name}__proguard_process") {
+      script = "//build/android/gyp/proguard.py"
+      inputs = [
+        android_sdk_jar,
+        _proguard_jar_path,
+        _build_config,
+        _input_jar_path,
+        _proguard_config_path,
+      ]
+      depfile = "${target_gen_dir}/${target_name}.d"
+      outputs = [
+        depfile,
+        _output_jar_path,
+      ]
+      args = [
+        "--depfile", rebase_path(depfile, root_build_dir),
+        "--proguard-path", rebase_path(_proguard_jar_path, root_build_dir),
+        "--input-path", rebase_path(_input_jar_path, root_build_dir),
+        "--output-path", rebase_path(_output_jar_path, root_build_dir),
+        "--proguard-config", rebase_path(_proguard_config_path, root_build_dir),
+        "--classpath", rebased_android_sdk_jar,
+        "--classpath=@FileArg($_rebased_build_config:javac:classpath)",
+      ]
+    }
+  } else {
+    copy("${target_name}__copy_jar") {
+      sources = [_input_jar_path]
+      outputs = [_output_jar_path]
+    }
+  }
+
+  action("${target_name}__jar_toc") {
+    script = "//build/android/gyp/jar_toc.py"
+    depfile = "$target_gen_dir/$target_name.d"
+    outputs = [
+      depfile,
+      _jar_toc_path,
+      _jar_toc_path + ".md5.stamp"
+    ]
+    inputs = [ _output_jar_path ]
+    args = [
+      "--depfile", rebase_path(depfile, root_build_dir),
+      "--jar-path", rebase_path(_output_jar_path, root_build_dir),
+      "--toc-path", rebase_path(_jar_toc_path, root_build_dir),
+    ]
+  }
+
+  group(target_name) {
+    deps = [
+      ":${target_name}__jar_toc"
+    ]
+  }
+}
+
 # Compiles and jars a set of java files.
 #
 # Outputs:
@@ -352,93 +421,83 @@ template("java_library") {
   assert(defined(invoker.build_config))
   assert(defined(invoker.jar_path))
 
-  java_files = invoker.java_files
-  jar_path = invoker.jar_path
-  jar_toc_path = jar_path + ".TOC"
+  _java_files = invoker.java_files
+  _final_jar_path = invoker.jar_path
+  _intermediate_jar_path = "$target_gen_dir/$target_name.initial.jar"
 
-  build_config = invoker.build_config
+  _build_config = invoker.build_config
 
-  jar_excluded_patterns = []
+  _jar_excluded_patterns = []
   if (defined(invoker.jar_excluded_patterns)) {
-    jar_excluded_patterns += invoker.jar_excluded_patterns
+    _jar_excluded_patterns += invoker.jar_excluded_patterns
   }
 
-  chromium_code = false
+  _chromium_code = false
   if (defined(invoker.chromium_code)) {
-    chromium_code = chromium_code || invoker.chromium_code
+    _chromium_code = invoker.chromium_code
   }
 
-  srcjar_deps = []
+  _srcjar_deps = []
   if (defined(invoker.srcjar_deps)) {
-    srcjar_deps += invoker.srcjar_deps
+    _srcjar_deps += invoker.srcjar_deps
   }
 
-  java_srcjars = []
-  foreach(dep, srcjar_deps) {
-    dep_gen_dir = get_label_info(dep, "target_gen_dir")
-    dep_name = get_label_info(dep, "name")
-    java_srcjars += [ "$dep_gen_dir/$dep_name.srcjar" ]
+  _java_srcjars = []
+  foreach(dep, _srcjar_deps) {
+    _dep_gen_dir = get_label_info(dep, "target_gen_dir")
+    _dep_name = get_label_info(dep, "name")
+    _java_srcjars += [ "$_dep_gen_dir/$_dep_name.srcjar" ]
   }
   # Mark srcjar_deps as used.
-  assert(srcjar_deps == [] || srcjar_deps != [])
+  assert(_srcjar_deps == [] || true)
 
-  rebase_jar_path = rebase_path(jar_path, root_build_dir)
-
-  system_jars = [ "${android_sdk}/android.jar" ]
+  _system_jars = [ android_sdk_jar ]
   action("${target_name}__javac") {
     script = "//build/android/gyp/javac.py"
     depfile = "$target_gen_dir/$target_name.d"
     outputs = [
       depfile,
-      jar_path,
-      jar_path + ".md5.stamp"
+      _intermediate_jar_path,
+      _intermediate_jar_path + ".md5.stamp"
     ]
-    sources = java_files + java_srcjars
-    inputs = system_jars + [ build_config ]
+    sources = _java_files + _java_srcjars
+    inputs = _system_jars + [ _build_config ]
 
-    rebase_system_jars = rebase_path(system_jars, root_build_dir)
-    rebase_java_srcjars = rebase_path(java_srcjars, root_build_dir)
-    rebase_build_config = rebase_path(build_config, root_build_dir)
-    rebase_depfile = rebase_path(depfile, root_build_dir)
+    _rebased_system_jars = rebase_path(_system_jars, root_build_dir)
+    _rebased_java_srcjars = rebase_path(_java_srcjars, root_build_dir)
+    _rebased_build_config = rebase_path(_build_config, root_build_dir)
+    _rebased_depfile = rebase_path(depfile, root_build_dir)
+    _rebased_jar_path = rebase_path(_intermediate_jar_path, root_build_dir)
     args = [
-      "--depfile=$rebase_depfile",
-      "--classpath=$rebase_system_jars",
-      "--classpath=@FileArg($rebase_build_config:javac:classpath)",
-      "--jar-path=$rebase_jar_path",
-      "--java-srcjars=$rebase_java_srcjars",
-      "--java-srcjars=@FileArg($rebase_build_config:javac:srcjars)",
-      "--jar-excluded-classes=$jar_excluded_patterns",
+      "--depfile=$_rebased_depfile",
+      "--classpath=$_rebased_system_jars",
+      "--classpath=@FileArg($_rebased_build_config:javac:classpath)",
+      "--jar-path=$_rebased_jar_path",
+      "--java-srcjars=$_rebased_java_srcjars",
+      "--java-srcjars=@FileArg($_rebased_build_config:javac:srcjars)",
+      "--jar-excluded-classes=$_jar_excluded_patterns",
     ]
-    if (chromium_code) {
+    if (_chromium_code) {
       args += [ "--chromium-code" ]
     }
 
-    args += rebase_path(java_files, root_build_dir)
+    args += rebase_path(_java_files, root_build_dir)
   }
 
-  # TODO(cjhopman): proguard
-
-  rebase_jar_toc_path = rebase_path(jar_toc_path, root_build_dir)
-  action("${target_name}__jar_toc") {
-    script = "//build/android/gyp/jar_toc.py"
-    depfile = "$target_gen_dir/$target_name.d"
-    outputs = [
-      depfile,
-      jar_toc_path,
-      jar_toc_path + ".md5.stamp"
-    ]
-    inputs = [ jar_path ]
-    args = [
-      "--depfile", rebase_path(depfile, root_build_dir),
-      "--jar-path=${rebase_jar_path}",
-      "--toc-path=${rebase_jar_toc_path}",
-    ]
+  java_prebuilt("${target_name}__finish") {
+    build_config = _build_config
+    input_jar_path = _intermediate_jar_path
+    output_jar_path = _final_jar_path
+    if (defined(invoker.proguard_preprocess) && invoker.proguard_preprocess) {
+      proguard_preprocess = invoker.proguard_preprocess
+      proguard_config = invoker.proguard_config
+    }
   }
 
   group(target_name) {
     deps = [
       ":${target_name}__javac",
-      ":${target_name}__jar_toc",
+      ":${target_name}__finish",
     ]
   }
 }
@@ -476,6 +535,10 @@ template("android_java_library") {
     if (defined(invoker.srcjar_deps)) {
       srcjar_deps = invoker.srcjar_deps
     }
+    if (defined(invoker.proguard_preprocess) && invoker.proguard_preprocess) {
+      proguard_preprocess = invoker.proguard_preprocess
+      proguard_config = invoker.proguard_config
+    }
   }
 
   if (defined(invoker.chromium_code) && invoker.chromium_code) {
@@ -499,7 +562,6 @@ template("android_java_library") {
     ] + _final_deps
   }
 }
-
 
 # Runs process_resources.py
 template("process_resources") {
