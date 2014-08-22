@@ -23,16 +23,14 @@
 #include "net/quic/quic_time_wait_list_manager.h"
 
 namespace net {
-
-class QuicConfig;
-class QuicCryptoServerConfig;
-class QuicSession;
-
 namespace test {
 class QuicDispatcherPeer;
 }  // namespace test
 
 class DeleteSessionsAlarm;
+class QuicConfig;
+class QuicCryptoServerConfig;
+class QuicSession;
 
 class ProcessPacketInterface {
  public:

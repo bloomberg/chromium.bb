@@ -23,23 +23,26 @@ TEST(QuicSustainedBandwidthRecorderTest, BandwidthEstimates) {
   QuicBandwidth bandwidth =
       QuicBandwidth::FromBitsPerSecond(kBandwidthBitsPerSecond);
 
+  bool in_recovery = false;
+  bool in_slow_start = false;
+
   // This triggers recording, but should not yield a valid estimate yet.
-  recorder.RecordEstimate(true, false, bandwidth, estimate_time, wall_time,
-                          srtt);
+  recorder.RecordEstimate(in_recovery, in_slow_start, bandwidth, estimate_time,
+                          wall_time, srtt);
   EXPECT_FALSE(recorder.HasEstimate());
 
   // Send a second reading, again this should not result in a valid estimate,
   // as not enough time has passed.
   estimate_time = estimate_time.Add(srtt);
-  recorder.RecordEstimate(true, false, bandwidth, estimate_time, wall_time,
-                          srtt);
+  recorder.RecordEstimate(in_recovery, in_slow_start, bandwidth, estimate_time,
+                          wall_time, srtt);
   EXPECT_FALSE(recorder.HasEstimate());
 
   // Now 3 * kSRTT has elapsed since first recording, expect a valid estimate.
   estimate_time = estimate_time.Add(srtt);
   estimate_time = estimate_time.Add(srtt);
-  recorder.RecordEstimate(true, false, bandwidth, estimate_time, wall_time,
-                          srtt);
+  recorder.RecordEstimate(in_recovery, in_slow_start, bandwidth, estimate_time,
+                          wall_time, srtt);
   EXPECT_TRUE(recorder.HasEstimate());
   EXPECT_EQ(recorder.BandwidthEstimate(), bandwidth);
   EXPECT_EQ(recorder.BandwidthEstimate(), recorder.MaxBandwidthEstimate());
@@ -48,19 +51,21 @@ TEST(QuicSustainedBandwidthRecorderTest, BandwidthEstimates) {
   // a further 3 * kSRTT has passed.
   QuicBandwidth second_bandwidth =
       QuicBandwidth::FromBitsPerSecond(2 * kBandwidthBitsPerSecond);
-  // Reset the recorder by passing in an unreliable measurement.
-  recorder.RecordEstimate(false, false, second_bandwidth, estimate_time,
+  // Reset the recorder by passing in a measurement while in recovery.
+  in_recovery = true;
+  recorder.RecordEstimate(in_recovery, in_slow_start, bandwidth, estimate_time,
                           wall_time, srtt);
-  recorder.RecordEstimate(true, false, second_bandwidth, estimate_time,
+  in_recovery = false;
+  recorder.RecordEstimate(in_recovery, in_slow_start, bandwidth, estimate_time,
                           wall_time, srtt);
   EXPECT_EQ(recorder.BandwidthEstimate(), bandwidth);
 
   estimate_time = estimate_time.Add(srtt.Multiply(3));
-  const int32 kSeconds = 556677;
+  const int64 kSeconds = 556677;
   QuicWallTime second_bandwidth_wall_time =
       QuicWallTime::FromUNIXSeconds(kSeconds);
-  recorder.RecordEstimate(true, false, second_bandwidth, estimate_time,
-                          second_bandwidth_wall_time, srtt);
+  recorder.RecordEstimate(in_recovery, in_slow_start, second_bandwidth,
+                          estimate_time, second_bandwidth_wall_time, srtt);
   EXPECT_EQ(recorder.BandwidthEstimate(), second_bandwidth);
   EXPECT_EQ(recorder.BandwidthEstimate(), recorder.MaxBandwidthEstimate());
   EXPECT_EQ(recorder.MaxBandwidthTimestamp(), kSeconds);
@@ -69,15 +74,15 @@ TEST(QuicSustainedBandwidthRecorderTest, BandwidthEstimates) {
   QuicBandwidth third_bandwidth =
       QuicBandwidth::FromBitsPerSecond(0.5 * kBandwidthBitsPerSecond);
   // Reset the recorder by passing in an unreliable measurement.
-  recorder.RecordEstimate(false, false, third_bandwidth, estimate_time,
-                          wall_time, srtt);
-  recorder.RecordEstimate(true, false, third_bandwidth, estimate_time,
-                          wall_time, srtt);
-  EXPECT_EQ(recorder.BandwidthEstimate(), second_bandwidth);
+  recorder.RecordEstimate(in_recovery, in_slow_start, third_bandwidth,
+                          estimate_time, wall_time, srtt);
+  recorder.RecordEstimate(in_recovery, in_slow_start, third_bandwidth,
+                          estimate_time, wall_time, srtt);
+  EXPECT_EQ(recorder.BandwidthEstimate(), third_bandwidth);
 
   estimate_time = estimate_time.Add(srtt.Multiply(3));
-  recorder.RecordEstimate(true, false, third_bandwidth, estimate_time,
-                          wall_time, srtt);
+  recorder.RecordEstimate(in_recovery, in_slow_start, third_bandwidth,
+                          estimate_time, wall_time, srtt);
   EXPECT_EQ(recorder.BandwidthEstimate(), third_bandwidth);
 
   // Max bandwidth should not have changed.
@@ -98,15 +103,16 @@ TEST(QuicSustainedBandwidthRecorderTest, SlowStart) {
   QuicBandwidth bandwidth =
       QuicBandwidth::FromBitsPerSecond(kBandwidthBitsPerSecond);
 
+  bool in_recovery = false;
   bool in_slow_start = true;
 
   // This triggers recording, but should not yield a valid estimate yet.
-  recorder.RecordEstimate(true, in_slow_start, bandwidth, estimate_time,
+  recorder.RecordEstimate(in_recovery, in_slow_start, bandwidth, estimate_time,
                           wall_time, srtt);
 
   // Now 3 * kSRTT has elapsed since first recording, expect a valid estimate.
   estimate_time = estimate_time.Add(srtt.Multiply(3));
-  recorder.RecordEstimate(true, in_slow_start, bandwidth, estimate_time,
+  recorder.RecordEstimate(in_recovery, in_slow_start, bandwidth, estimate_time,
                           wall_time, srtt);
   EXPECT_TRUE(recorder.HasEstimate());
   EXPECT_TRUE(recorder.EstimateRecordedDuringSlowStart());
@@ -114,7 +120,7 @@ TEST(QuicSustainedBandwidthRecorderTest, SlowStart) {
   // Now send another estimate, this time not in slow start.
   estimate_time = estimate_time.Add(srtt.Multiply(3));
   in_slow_start = false;
-  recorder.RecordEstimate(true, in_slow_start, bandwidth, estimate_time,
+  recorder.RecordEstimate(in_recovery, in_slow_start, bandwidth, estimate_time,
                           wall_time, srtt);
   EXPECT_TRUE(recorder.HasEstimate());
   EXPECT_FALSE(recorder.EstimateRecordedDuringSlowStart());

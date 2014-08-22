@@ -36,8 +36,10 @@ class EntropyTrackerPeer {
   static bool IsTrackingPacket(
       const QuicReceivedPacketManager::EntropyTracker& tracker,
       QuicPacketSequenceNumber sequence_number) {
-    return tracker.packets_entropy_.find(sequence_number) !=
-        tracker.packets_entropy_.end();
+    return sequence_number >= tracker.first_gap_ &&
+        sequence_number <
+            (tracker.first_gap_ + tracker.packets_entropy_.size()) &&
+        tracker.packets_entropy_[sequence_number - tracker.first_gap_].second;
   }
 };
 
@@ -71,7 +73,7 @@ TEST(EntropyTrackerTest, FillGaps) {
 
   EXPECT_EQ(1u, EntropyTrackerPeer::first_gap(tracker));
   EXPECT_EQ(9u, EntropyTrackerPeer::largest_observed(tracker));
-  EXPECT_EQ(4, EntropyTrackerPeer::packets_entropy_size(tracker));
+  EXPECT_EQ(9, EntropyTrackerPeer::packets_entropy_size(tracker));
 
   EXPECT_EQ(5, tracker.EntropyHash(2));
   EXPECT_EQ(5 ^ 17, tracker.EntropyHash(5));
@@ -89,7 +91,7 @@ TEST(EntropyTrackerTest, FillGaps) {
 
   EXPECT_EQ(3u, EntropyTrackerPeer::first_gap(tracker));
   EXPECT_EQ(9u, EntropyTrackerPeer::largest_observed(tracker));
-  EXPECT_EQ(3, EntropyTrackerPeer::packets_entropy_size(tracker));
+  EXPECT_EQ(7, EntropyTrackerPeer::packets_entropy_size(tracker));
 
   EXPECT_EQ(2 ^ 5 ^ 17, tracker.EntropyHash(5));
   EXPECT_EQ(2 ^ 5 ^ 17 ^ 23, tracker.EntropyHash(6));
@@ -106,7 +108,7 @@ TEST(EntropyTrackerTest, FillGaps) {
 
   EXPECT_EQ(3u, EntropyTrackerPeer::first_gap(tracker));
   EXPECT_EQ(9u, EntropyTrackerPeer::largest_observed(tracker));
-  EXPECT_EQ(4, EntropyTrackerPeer::packets_entropy_size(tracker));
+  EXPECT_EQ(7, EntropyTrackerPeer::packets_entropy_size(tracker));
 
   EXPECT_EQ(5, tracker.EntropyHash(4));
   EXPECT_EQ(5 ^ 17, tracker.EntropyHash(5));
@@ -124,7 +126,7 @@ TEST(EntropyTrackerTest, FillGaps) {
 
   EXPECT_EQ(7u, EntropyTrackerPeer::first_gap(tracker));
   EXPECT_EQ(9u, EntropyTrackerPeer::largest_observed(tracker));
-  EXPECT_EQ(1, EntropyTrackerPeer::packets_entropy_size(tracker));
+  EXPECT_EQ(3, EntropyTrackerPeer::packets_entropy_size(tracker));
 
   EXPECT_EQ(2 ^ 5 ^ 17 ^ 23 ^ 42, tracker.EntropyHash(9));
 
@@ -155,13 +157,13 @@ TEST(EntropyTrackerTest, SetCumulativeEntropyUpTo) {
 
   EXPECT_EQ(1u, EntropyTrackerPeer::first_gap(tracker));
   EXPECT_EQ(9u, EntropyTrackerPeer::largest_observed(tracker));
-  EXPECT_EQ(4, EntropyTrackerPeer::packets_entropy_size(tracker));
+  EXPECT_EQ(9, EntropyTrackerPeer::packets_entropy_size(tracker));
 
   // Inform the tracker about value of the hash at a gap.
   tracker.SetCumulativeEntropyUpTo(3, 7);
   EXPECT_EQ(3u, EntropyTrackerPeer::first_gap(tracker));
   EXPECT_EQ(9u, EntropyTrackerPeer::largest_observed(tracker));
-  EXPECT_EQ(3, EntropyTrackerPeer::packets_entropy_size(tracker));
+  EXPECT_EQ(7, EntropyTrackerPeer::packets_entropy_size(tracker));
 
   EXPECT_EQ(7 ^ 17, tracker.EntropyHash(5));
   EXPECT_EQ(7 ^ 17 ^ 23, tracker.EntropyHash(6));
@@ -171,7 +173,7 @@ TEST(EntropyTrackerTest, SetCumulativeEntropyUpTo) {
   tracker.SetCumulativeEntropyUpTo(6, 1);
   EXPECT_EQ(7u, EntropyTrackerPeer::first_gap(tracker));
   EXPECT_EQ(9u, EntropyTrackerPeer::largest_observed(tracker));
-  EXPECT_EQ(1, EntropyTrackerPeer::packets_entropy_size(tracker));
+  EXPECT_EQ(3, EntropyTrackerPeer::packets_entropy_size(tracker));
 
   EXPECT_EQ(1 ^ 23 ^ 42, tracker.EntropyHash(9));
 

@@ -8,6 +8,8 @@
 #ifndef NET_QUIC_QUIC_SENT_ENTROPY_MANAGER_H_
 #define NET_QUIC_QUIC_SENT_ENTROPY_MANAGER_H_
 
+#include <deque>
+
 #include "net/base/linked_hash_map.h"
 #include "net/quic/quic_framer.h"
 #include "net/quic/quic_protocol.h"
@@ -31,32 +33,53 @@ class NET_EXPORT_PRIVATE QuicSentEntropyManager {
   void RecordPacketEntropyHash(QuicPacketSequenceNumber sequence_number,
                                QuicPacketEntropyHash entropy_hash);
 
-  QuicPacketEntropyHash EntropyHash(
-      QuicPacketSequenceNumber sequence_number) const;
+  // Retrieves the cumulative entropy up to |sequence_number|.
+  // Must always be called with a monotonically increasing |sequence_number|.
+  QuicPacketEntropyHash GetCumulativeEntropy(
+      QuicPacketSequenceNumber sequence_number);
 
   // Returns true if |entropy_hash| matches the expected sent entropy hash
-  // up to |sequence_number| removing sequence numbers from |missing_packets|.
-  bool IsValidEntropy(QuicPacketSequenceNumber sequence_number,
+  // up to |largest_observed| removing sequence numbers from |missing_packets|.
+  // Must always be called with a monotonically increasing |largest_observed|.
+  bool IsValidEntropy(QuicPacketSequenceNumber largest_observed,
                       const SequenceNumberSet& missing_packets,
-                      QuicPacketEntropyHash entropy_hash) const;
+                      QuicPacketEntropyHash entropy_hash);
 
-  // Removes not required entries from |packets_entropy_| before
-  // |sequence_number|.
+  // Removes unnecessary entries before |sequence_number|.
   void ClearEntropyBefore(QuicPacketSequenceNumber sequence_number);
 
  private:
   friend class test::QuicConnectionPeer;
 
-  typedef linked_hash_map<QuicPacketSequenceNumber,
-                          std::pair<QuicPacketEntropyHash,
-                               QuicPacketEntropyHash> > SentEntropyMap;
+  typedef std::deque<QuicPacketEntropyHash> SentEntropyMap;
 
-  // Linked hash map from sequence numbers to the sent entropy hash up to the
-  // sequence number in the key.
+  struct CumulativeEntropy {
+    CumulativeEntropy() : sequence_number(0), entropy(0) {}
+
+    QuicPacketSequenceNumber sequence_number;
+    QuicPacketEntropyHash entropy;
+  };
+
+  // Convenience methods to get the largest and smallest packets with entropies.
+  QuicPacketSequenceNumber GetLargestPacketWithEntropy() const;
+  QuicPacketSequenceNumber GetSmallestPacketWithEntropy() const;
+  // Convenience method to get the entropy hash for |sequence_number|.
+  QuicPacketEntropyHash GetPacketEntropy(
+      QuicPacketSequenceNumber sequence_number) const;
+
+  // Update the cumulative entropy to |sequence_number|.
+  void UpdateCumulativeEntropy(QuicPacketSequenceNumber sequence_number,
+                               CumulativeEntropy* cumulative) const;
+
+  // Maps sequence numbers to the sent entropy hash for the sequence number.
   SentEntropyMap packets_entropy_;
+  QuicPacketSequenceNumber map_offset_;
 
-  // Cumulative hash of entropy of all sent packets.
-  QuicPacketEntropyHash packets_entropy_hash_;
+  // Cache the cumulative entropy for IsValidEntropy.
+  CumulativeEntropy last_valid_entropy_;
+
+  // Cache the cumulative entropy for the sequence number used by EntropyHash.
+  CumulativeEntropy last_cumulative_entropy_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicSentEntropyManager);
 };

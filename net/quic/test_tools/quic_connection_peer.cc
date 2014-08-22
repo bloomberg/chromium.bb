@@ -107,15 +107,18 @@ bool QuicConnectionPeer::IsRetransmission(
 QuicPacketEntropyHash QuicConnectionPeer::GetSentEntropyHash(
     QuicConnection* connection,
     QuicPacketSequenceNumber sequence_number) {
-  return connection->sent_entropy_manager_.EntropyHash(sequence_number);
+  QuicSentEntropyManager::CumulativeEntropy last_entropy_copy =
+      connection->sent_entropy_manager_.last_cumulative_entropy_;
+  connection->sent_entropy_manager_.UpdateCumulativeEntropy(sequence_number,
+                                                            &last_entropy_copy);
+  return last_entropy_copy.entropy;
 }
 
 // static
 QuicPacketEntropyHash QuicConnectionPeer::PacketEntropy(
     QuicConnection* connection,
     QuicPacketSequenceNumber sequence_number) {
-  return
-      connection->sent_entropy_manager_.packets_entropy_[sequence_number].first;
+  return connection->sent_entropy_manager_.GetPacketEntropy(sequence_number);
 }
 
 // static

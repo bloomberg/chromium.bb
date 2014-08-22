@@ -94,6 +94,9 @@ class NET_EXPORT_PRIVATE QuicConnectionVisitorInterface {
   // Called when a blocked socket becomes writable.
   virtual void OnCanWrite() = 0;
 
+  // Called when the connection experiences a change in congestion window.
+  virtual void OnCongestionWindowChange(QuicTime now) = 0;
+
   // Called to ask if the visitor wants to schedule write resumption as it both
   // has pending data to write, and is able to write (e.g. based on flow control
   // limits).
@@ -222,7 +225,8 @@ class NET_EXPORT_PRIVATE QuicConnectionHelperInterface {
 class NET_EXPORT_PRIVATE QuicConnection
     : public QuicFramerVisitorInterface,
       public QuicBlockedWriterInterface,
-      public QuicPacketGenerator::DelegateInterface {
+      public QuicPacketGenerator::DelegateInterface,
+      public QuicSentPacketManager::NetworkChangeVisitor {
  public:
   enum PacketType {
     NORMAL,
@@ -321,8 +325,9 @@ class NET_EXPORT_PRIVATE QuicConnection
   // writes to happen.
   virtual void OnCanWrite() OVERRIDE;
 
-  // Called when a packet has been finally sent to the network.
-  bool OnPacketSent(WriteResult result);
+  // Called when an error occurs while attempting to write a packet to the
+  // network.
+  void OnWriteError(int error_code);
 
   // If the socket is not blocked, writes queued packets.
   void WriteIfNotBlocked();
@@ -373,6 +378,10 @@ class NET_EXPORT_PRIVATE QuicConnection
   virtual QuicCongestionFeedbackFrame* CreateFeedbackFrame() OVERRIDE;
   virtual QuicStopWaitingFrame* CreateStopWaitingFrame() OVERRIDE;
   virtual bool OnSerializedPacket(const SerializedPacket& packet) OVERRIDE;
+
+  // QuicSentPacketManager::NetworkChangeVisitor
+  virtual void OnCongestionWindowChange(
+      QuicByteCount congestion_window) OVERRIDE;
 
   // Called by the crypto stream when the handshake completes. In the server's
   // case this is when the SHLO has been ACKed. Clients call this on receipt of
@@ -544,10 +553,6 @@ class NET_EXPORT_PRIVATE QuicConnection
 
   bool peer_port_changed() const { return peer_port_changed_; }
 
-  const QuicReceivedPacketManager& received_packet_manager() const {
-    return received_packet_manager_;
-  }
-
   QuicPacketSequenceNumber sequence_number_of_last_sent_packet() const {
     return sequence_number_of_last_sent_packet_;
   }
@@ -713,9 +718,6 @@ class NET_EXPORT_PRIVATE QuicConnection
   // they are added to this list.  All corresponding frames are in
   // unacked_packets_ if they are to be retransmitted.
   QueuedPacketList queued_packets_;
-
-  // Contains information about the current write in progress, if any.
-  scoped_ptr<QueuedPacket> pending_write_;
 
   // Contains the connection close packet if the connection has been closed.
   scoped_ptr<QuicEncryptedPacket> connection_close_packet_;

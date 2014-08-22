@@ -56,7 +56,7 @@ class QuicCryptoServerConfigPeer {
       QuicRandom* rand,
       QuicWallTime now) {
     return server_config_->NewSourceAddressToken(
-        *GetConfig(config_id), ip, rand, now);
+        *GetConfig(config_id), ip, rand, now, NULL);
   }
 
   HandshakeFailureReason ValidateSourceAddressToken(string config_id,

@@ -184,7 +184,7 @@ void QuicUnackedPacketMap::MaybeRemoveRetransmittableFrames(
 
 void QuicUnackedPacketMap::IncreaseLargestObserved(
     QuicPacketSequenceNumber largest_observed) {
-  DCHECK_LT(largest_observed_, largest_observed);
+  DCHECK_LE(largest_observed_, largest_observed);
   largest_observed_ = largest_observed;
   UnackedPacketMap::iterator it = unacked_packets_.begin();
   while (it != unacked_packets_.end() && it->first <= largest_observed_) {

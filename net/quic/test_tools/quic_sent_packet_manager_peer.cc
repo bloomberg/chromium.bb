@@ -140,5 +140,11 @@ QuicSentPacketManager::NetworkChangeVisitor*
   return sent_packet_manager->network_change_visitor_;
 }
 
+// static
+QuicSustainedBandwidthRecorder& QuicSentPacketManagerPeer::GetBandwidthRecorder(
+    QuicSentPacketManager* sent_packet_manager) {
+  return sent_packet_manager->sustained_bandwidth_recorder_;
+}
+
 }  // namespace test
 }  // namespace net

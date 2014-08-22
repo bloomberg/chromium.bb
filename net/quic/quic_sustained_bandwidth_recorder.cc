@@ -19,16 +19,15 @@ QuicSustainedBandwidthRecorder::QuicSustainedBandwidthRecorder()
       max_bandwidth_timestamp_(0),
       start_time_(QuicTime::Zero()) {}
 
-void QuicSustainedBandwidthRecorder::RecordEstimate(bool is_reliable_estimate,
+void QuicSustainedBandwidthRecorder::RecordEstimate(bool in_recovery,
                                                     bool in_slow_start,
                                                     QuicBandwidth bandwidth,
                                                     QuicTime estimate_time,
                                                     QuicWallTime wall_time,
                                                     QuicTime::Delta srtt) {
-  if (!is_reliable_estimate) {
+  if (in_recovery) {
     is_recording_ = false;
-    DVLOG(1) << "Stopped recording due to unreliable estimate at: "
-             << estimate_time.ToDebuggingValue();
+    DVLOG(1) << "Stopped recording at: " << estimate_time.ToDebuggingValue();
     return;
   }
 

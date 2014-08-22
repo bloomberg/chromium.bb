@@ -65,8 +65,9 @@ void QuicDefaultPacketWriter::SetWritable() {
 void QuicDefaultPacketWriter::OnWriteComplete(int rv) {
   DCHECK_NE(rv, ERR_IO_PENDING);
   write_blocked_ = false;
-  WriteResult result(rv < 0 ? WRITE_STATUS_ERROR : WRITE_STATUS_OK, rv);
-  connection_->OnPacketSent(result);
+  if (rv < 0) {
+    connection_->OnWriteError(rv);
+  }
   connection_->OnCanWrite();
 }
 

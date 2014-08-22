@@ -64,6 +64,10 @@ class VisitorShim : public QuicConnectionVisitorInterface {
     session_->PostProcessAfterData();
   }
 
+  virtual void OnCongestionWindowChange(QuicTime now) OVERRIDE {
+    session_->OnCongestionWindowChange(now);
+  }
+
   virtual void OnSuccessfulVersionNegotiation(
       const QuicVersion& version) OVERRIDE {
     session_->OnSuccessfulVersionNegotiation(version);

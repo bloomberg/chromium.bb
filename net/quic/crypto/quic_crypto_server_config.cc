@@ -775,8 +775,10 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
   out->SetStringPiece(kSourceAddressTokenTag,
                       NewSourceAddressToken(
                           *requested_config,
-                          client_address, rand,
-                          info.now));
+                          client_address,
+                          rand,
+                          info.now,
+                          NULL));
   QuicSocketAddressCoder address_coder(client_address);
   out->SetStringPiece(kCADR, address_coder.Encode());
   out->SetStringPiece(kPUBS, forward_secure_public_value);
@@ -1044,6 +1046,7 @@ bool QuicCryptoServerConfig::BuildServerConfigUpdateMessage(
     const QuicClock* clock,
     QuicRandom* rand,
     const QuicCryptoNegotiatedParameters& params,
+    const CachedNetworkParameters* cached_network_params,
     CryptoHandshakeMessage* out) const {
   base::AutoLock locked(configs_lock_);
   out->set_tag(kSCUP);
@@ -1052,7 +1055,8 @@ bool QuicCryptoServerConfig::BuildServerConfigUpdateMessage(
                       NewSourceAddressToken(*primary_config_,
                                             client_ip,
                                             rand,
-                                            clock->WallNow()));
+                                            clock->WallNow(),
+                                            cached_network_params));
 
   if (proof_source_ == NULL) {
     // Insecure QUIC, can send SCFG without proof.
@@ -1091,7 +1095,8 @@ void QuicCryptoServerConfig::BuildRejection(
                           config,
                           info.client_ip,
                           rand,
-                          info.now));
+                          info.now,
+                          NULL));
   if (replay_protection_) {
     out->SetStringPiece(kServerNonceTag, NewServerNonce(rand, info.now));
   }
@@ -1409,17 +1414,22 @@ void QuicCryptoServerConfig::AcquirePrimaryConfigChangedCb(
   primary_config_changed_cb_.reset(cb);
 }
 
-string QuicCryptoServerConfig::NewSourceAddressToken(const Config& config,
-                                                     const IPEndPoint& ip,
-                                                     QuicRandom* rand,
-                                                     QuicWallTime now) const {
-  SourceAddressToken source_address_token;
+string QuicCryptoServerConfig::NewSourceAddressToken(
+    const Config& config,
+    const IPEndPoint& ip,
+    QuicRandom* rand,
+    QuicWallTime now,
+    const CachedNetworkParameters* cached_network_params) const {
   IPAddressNumber ip_address = ip.address();
   if (ip.GetSockAddrFamily() == AF_INET) {
     ip_address = ConvertIPv4NumberToIPv6Number(ip_address);
   }
+  SourceAddressToken source_address_token;
   source_address_token.set_ip(IPAddressToPackedString(ip_address));
   source_address_token.set_timestamp(now.ToUNIXSeconds());
+  if (cached_network_params != NULL) {
+    source_address_token.set_cached_network_parameters(*cached_network_params);
+  }
 
   return config.source_address_token_boxer->Box(
       rand, source_address_token.SerializeAsString());

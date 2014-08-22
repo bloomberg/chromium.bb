@@ -106,6 +106,7 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<QuicVersion> {
         is_https_(false),
         privacy_mode_(PRIVACY_MODE_DISABLED) {
     factory_.set_require_confirmation(false);
+    clock_->AdvanceTime(QuicTime::Delta::FromSeconds(1));
   }
 
   scoped_ptr<QuicHttpStream> CreateIfSessionExists(

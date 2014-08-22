@@ -21,6 +21,7 @@
 #include "net/quic/congestion_control/send_algorithm_interface.h"
 #include "net/quic/quic_ack_notifier_manager.h"
 #include "net/quic/quic_protocol.h"
+#include "net/quic/quic_sustained_bandwidth_recorder.h"
 #include "net/quic/quic_unacked_packet_map.h"
 
 namespace net {
@@ -197,8 +198,10 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   // Returns the estimated bandwidth calculated by the congestion algorithm.
   QuicBandwidth BandwidthEstimate() const;
 
-  // Returns true if the current bandwidth estimate is reliable.
+  // Returns true if the current instantaneous bandwidth estimate is reliable.
   bool HasReliableBandwidthEstimate() const;
+
+  const QuicSustainedBandwidthRecorder& SustainedBandwidthRecorder() const;
 
   // Returns the size of the current congestion window in bytes.  Note, this is
   // not the *available* window.  Some send algorithms may not use a congestion
@@ -220,7 +223,11 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   }
 
   QuicPacketSequenceNumber largest_observed() const {
-    return largest_observed_;
+    return unacked_packets_.largest_observed();
+  }
+
+  QuicPacketSequenceNumber least_packet_awaited_by_peer() {
+    return least_packet_awaited_by_peer_;
   }
 
   void set_network_change_visitor(NetworkChangeVisitor* visitor) {
@@ -257,6 +264,9 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
 
   typedef linked_hash_map<QuicPacketSequenceNumber,
                           TransmissionType> PendingRetransmissionMap;
+
+  // Updates the least_packet_awaited_by_peer.
+  void UpdatePacketInformationReceivedByPeer(const QuicAckFrame& ack_frame);
 
   // Process the incoming ack looking for newly ack'd data packets.
   void HandleAckForSentPackets(const QuicAckFrame& ack_frame);
@@ -348,9 +358,8 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   scoped_ptr<SendAlgorithmInterface> send_algorithm_;
   scoped_ptr<LossDetectionInterface> loss_algorithm_;
 
-  // The largest sequence number which we have sent and received an ACK for
-  // from the peer.
-  QuicPacketSequenceNumber largest_observed_;
+  // Least sequence number which the peer is still waiting for.
+  QuicPacketSequenceNumber least_packet_awaited_by_peer_;
 
   // Tracks the first RTO packet.  If any packet before that packet gets acked,
   // it indicates the RTO was spurious and should be reversed(F-RTO).
@@ -376,6 +385,10 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   // the crypto stream (i.e. SCUP messages) are treated like normal
   // retransmittable frames.
   bool handshake_confirmed_;
+
+  // Records bandwidth from server to client in normal operation, over periods
+  // of time with no loss events.
+  QuicSustainedBandwidthRecorder sustained_bandwidth_recorder_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicSentPacketManager);
 };

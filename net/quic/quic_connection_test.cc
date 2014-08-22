@@ -649,10 +649,18 @@ class QuicConnectionTest : public ::testing::TestWithParam<QuicVersion> {
         Return(kMaxPacketSize));
     ON_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _))
         .WillByDefault(Return(true));
+    EXPECT_CALL(*send_algorithm_, HasReliableBandwidthEstimate())
+        .Times(AnyNumber());
+    EXPECT_CALL(*send_algorithm_, BandwidthEstimate())
+        .Times(AnyNumber())
+        .WillRepeatedly(Return(QuicBandwidth::Zero()));
+    EXPECT_CALL(*send_algorithm_, InSlowStart()).Times(AnyNumber());
+    EXPECT_CALL(*send_algorithm_, InRecovery()).Times(AnyNumber());
     EXPECT_CALL(visitor_, WillingAndAbleToWrite()).Times(AnyNumber());
     EXPECT_CALL(visitor_, HasPendingHandshake()).Times(AnyNumber());
     EXPECT_CALL(visitor_, OnCanWrite()).Times(AnyNumber());
     EXPECT_CALL(visitor_, HasOpenDataStreams()).WillRepeatedly(Return(false));
+    EXPECT_CALL(visitor_, OnCongestionWindowChange(_)).Times(AnyNumber());
 
     EXPECT_CALL(*loss_algorithm_, GetLossTimeout())
         .WillRepeatedly(Return(QuicTime::Zero()));
@@ -1125,11 +1133,10 @@ TEST_P(QuicConnectionTest, TruncatedAck) {
   EXPECT_CALL(*send_algorithm_, OnCongestionEvent(true, _, _, _));
   ProcessAckPacket(&frame);
 
-  QuicReceivedPacketManager* received_packet_manager =
-      QuicConnectionPeer::GetReceivedPacketManager(&connection_);
+  const QuicSentPacketManager& sent_packet_manager =
+      connection_.sent_packet_manager();
   // A truncated ack will not have the true largest observed.
-  EXPECT_GT(num_packets,
-            received_packet_manager->peer_largest_observed_packet());
+  EXPECT_GT(num_packets, sent_packet_manager.largest_observed());
 
   AckPacket(192, &frame);
 
@@ -1139,8 +1146,7 @@ TEST_P(QuicConnectionTest, TruncatedAck) {
       .WillOnce(Return(SequenceNumberSet()));
   EXPECT_CALL(*send_algorithm_, OnCongestionEvent(true, _, _, _));
   ProcessAckPacket(&frame);
-  EXPECT_EQ(num_packets,
-            received_packet_manager->peer_largest_observed_packet());
+  EXPECT_EQ(num_packets, sent_packet_manager.largest_observed());
 }
 
 TEST_P(QuicConnectionTest, AckReceiptCausesAckSendBadEntropy) {
@@ -1932,29 +1938,13 @@ TEST_P(QuicConnectionTest, QueueAfterTwoRTOs) {
 TEST_P(QuicConnectionTest, WriteBlockedThenSent) {
   BlockOnNextWrite();
   writer_->set_is_write_blocked_data_buffered(true);
-  connection_.SendStreamDataWithString(1, "foo", 0, !kFin, NULL);
-  EXPECT_FALSE(connection_.GetRetransmissionAlarm()->IsSet());
-
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(1);
-  connection_.OnPacketSent(WriteResult(WRITE_STATUS_OK, 0));
-  EXPECT_TRUE(connection_.GetRetransmissionAlarm()->IsSet());
-}
-
-TEST_P(QuicConnectionTest, WriteBlockedAckedThenSent) {
-  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
-  BlockOnNextWrite();
-  writer_->set_is_write_blocked_data_buffered(true);
   connection_.SendStreamDataWithString(1, "foo", 0, !kFin, NULL);
-  EXPECT_FALSE(connection_.GetRetransmissionAlarm()->IsSet());
+  EXPECT_TRUE(connection_.GetRetransmissionAlarm()->IsSet());
 
-  // Ack the sent packet before the callback returns, which happens in
-  // rare circumstances with write blocked sockets.
-  QuicAckFrame ack = InitAckFrame(1);
-  ProcessAckPacket(&ack);
-
-  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(0);
-  connection_.OnPacketSent(WriteResult(WRITE_STATUS_OK, 0));
-  EXPECT_FALSE(connection_.GetRetransmissionAlarm()->IsSet());
+  writer_->SetWritable();
+  connection_.OnCanWrite();
+  EXPECT_TRUE(connection_.GetRetransmissionAlarm()->IsSet());
 }
 
 TEST_P(QuicConnectionTest, RetransmitWriteBlockedAckedOriginalThenSent) {
@@ -1976,7 +1966,8 @@ TEST_P(QuicConnectionTest, RetransmitWriteBlockedAckedOriginalThenSent) {
   EXPECT_CALL(*send_algorithm_, RevertRetransmissionTimeout());
   ProcessAckPacket(&ack);
 
-  connection_.OnPacketSent(WriteResult(WRITE_STATUS_OK, 0));
+  writer_->SetWritable();
+  connection_.OnCanWrite();
   // There is now a pending packet, but with no retransmittable frames.
   EXPECT_TRUE(connection_.GetRetransmissionAlarm()->IsSet());
   EXPECT_FALSE(connection_.sent_packet_manager().HasRetransmittableFrames(2));

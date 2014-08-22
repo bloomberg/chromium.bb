@@ -9,13 +9,14 @@
 
 #include "base/basictypes.h"
 #include "base/strings/string_piece.h"
+#include "net/base/net_export.h"
 
 namespace net {
 
 // TODO(rtenneti): sync with server more rationally.
 // CachedNetworkParameters contains data that can be used to choose appropriate
 // connection parameters (initial RTT, initial CWND, etc.) in new connections.
-class CachedNetworkParameters {
+class NET_EXPORT_PRIVATE CachedNetworkParameters {
  public:
   // Describes the state of the connection during which the supplied network
   // parameters were calculated.
@@ -98,7 +99,7 @@ class CachedNetworkParameters {
 // TODO(rtenneti): sync with server more rationally.
 // A SourceAddressToken is serialised, encrypted and sent to clients so that
 // they can prove ownership of an IP address.
-class SourceAddressToken {
+class NET_EXPORT_PRIVATE SourceAddressToken {
  public:
   SourceAddressToken();
   ~SourceAddressToken();

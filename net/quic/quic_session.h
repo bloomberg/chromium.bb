@@ -71,6 +71,7 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   virtual void OnSuccessfulVersionNegotiation(
       const QuicVersion& version) OVERRIDE;
   virtual void OnCanWrite() OVERRIDE;
+  virtual void OnCongestionWindowChange(QuicTime now) OVERRIDE {}
   virtual bool WillingAndAbleToWrite() const OVERRIDE;
   virtual bool HasPendingHandshake() const OVERRIDE;
   virtual bool HasOpenDataStreams() const OVERRIDE;

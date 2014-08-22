@@ -78,7 +78,7 @@ QuicSentPacketManager::QuicSentPacketManager(
                                                      congestion_control_type,
                                                      stats)),
       loss_algorithm_(LossDetectionInterface::Create(loss_type)),
-      largest_observed_(0),
+      least_packet_awaited_by_peer_(1),
       first_rto_transmission_(0),
       consecutive_rto_count_(0),
       consecutive_tlp_count_(0),
@@ -113,8 +113,13 @@ void QuicSentPacketManager::SetFromConfig(const QuicConfig& config) {
     send_algorithm_.reset(
         SendAlgorithmInterface::Create(clock_, &rtt_stats_, kReno, stats_));
   }
-  if (config.HasReceivedConnectionOptions() &&
-      ContainsQuicTag(config.ReceivedConnectionOptions(), kPACE)) {
+  if (is_server_) {
+    if (config.HasReceivedConnectionOptions() &&
+        ContainsQuicTag(config.ReceivedConnectionOptions(), kPACE)) {
+      EnablePacing();
+    }
+  } else if (config.HasSendConnectionOptions() &&
+             ContainsQuicTag(config.SendConnectionOptions(), kPACE)) {
     EnablePacing();
   }
   // TODO(ianswett): Remove the "HasReceivedLossDetection" branch once
@@ -179,16 +184,24 @@ void QuicSentPacketManager::OnIncomingAck(const QuicAckFrame& ack_frame,
                                           QuicTime ack_receive_time) {
   QuicByteCount bytes_in_flight = unacked_packets_.bytes_in_flight();
 
+  UpdatePacketInformationReceivedByPeer(ack_frame);
   // We rely on delta_time_largest_observed to compute an RTT estimate, so
   // we only update rtt when the largest observed gets acked.
   bool largest_observed_acked = MaybeUpdateRTT(ack_frame, ack_receive_time);
-  if (largest_observed_ < ack_frame.largest_observed) {
-    largest_observed_ = ack_frame.largest_observed;
-    unacked_packets_.IncreaseLargestObserved(largest_observed_);
-  }
+  DCHECK_GE(ack_frame.largest_observed, unacked_packets_.largest_observed());
+  unacked_packets_.IncreaseLargestObserved(ack_frame.largest_observed);
+
   HandleAckForSentPackets(ack_frame);
   InvokeLossDetection(ack_receive_time);
   MaybeInvokeCongestionEvent(largest_observed_acked, bytes_in_flight);
+
+  sustained_bandwidth_recorder_.RecordEstimate(
+      send_algorithm_->InRecovery(),
+      send_algorithm_->InSlowStart(),
+      send_algorithm_->BandwidthEstimate(),
+      ack_receive_time,
+      clock_->WallNow(),
+      rtt_stats_.SmoothedRtt());
 
   // If we have received a truncated ack, then we need to clear out some
   // previous transmissions to allow the peer to actually ACK new packets.
@@ -209,9 +222,18 @@ void QuicSentPacketManager::OnIncomingAck(const QuicAckFrame& ack_frame,
   if (debug_delegate_ != NULL) {
     debug_delegate_->OnIncomingAck(ack_frame,
                                    ack_receive_time,
-                                   largest_observed_,
+                                   unacked_packets_.largest_observed(),
                                    largest_observed_acked,
                                    GetLeastUnackedSentPacket());
+  }
+}
+
+void QuicSentPacketManager::UpdatePacketInformationReceivedByPeer(
+    const QuicAckFrame& ack_frame) {
+  if (ack_frame.missing_packets.empty()) {
+    least_packet_awaited_by_peer_ = ack_frame.largest_observed + 1;
+  } else {
+    least_packet_awaited_by_peer_ = *(ack_frame.missing_packets.begin());
   }
 }
 
@@ -501,14 +523,10 @@ bool QuicSentPacketManager::OnPacketSent(
     TransmissionType transmission_type,
     HasRetransmittableData has_retransmittable_data) {
   DCHECK_LT(0u, sequence_number);
+  DCHECK(unacked_packets_.IsUnacked(sequence_number));
   LOG_IF(DFATAL, bytes == 0) << "Cannot send empty packets.";
   if (pending_timer_transmission_count_ > 0) {
     --pending_timer_transmission_count_;
-  }
-  // In rare circumstances, the packet could be serialized, sent, and then acked
-  // before OnPacketSent is called.
-  if (!unacked_packets_.IsUnacked(sequence_number)) {
-    return false;
   }
 
   if (unacked_packets_.bytes_in_flight() == 0) {
@@ -680,7 +698,7 @@ void QuicSentPacketManager::InvokeLossDetection(QuicTime time) {
   SequenceNumberSet lost_packets =
       loss_algorithm_->DetectLostPackets(unacked_packets_,
                                          time,
-                                         largest_observed_,
+                                         unacked_packets_.largest_observed(),
                                          rtt_stats_);
   for (SequenceNumberSet::const_iterator it = lost_packets.begin();
        it != lost_packets.end(); ++it) {
@@ -849,6 +867,11 @@ QuicBandwidth QuicSentPacketManager::BandwidthEstimate() const {
 
 bool QuicSentPacketManager::HasReliableBandwidthEstimate() const {
   return send_algorithm_->HasReliableBandwidthEstimate();
+}
+
+const QuicSustainedBandwidthRecorder&
+QuicSentPacketManager::SustainedBandwidthRecorder() const {
+  return sustained_bandwidth_recorder_;
 }
 
 QuicByteCount QuicSentPacketManager::GetCongestionWindow() const {

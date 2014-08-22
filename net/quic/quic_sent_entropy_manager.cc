@@ -13,10 +13,33 @@ using std::min;
 
 namespace net {
 
-QuicSentEntropyManager::QuicSentEntropyManager()
-    : packets_entropy_hash_(0) {}
+QuicSentEntropyManager::QuicSentEntropyManager() : map_offset_(1) {}
 
 QuicSentEntropyManager::~QuicSentEntropyManager() {}
+
+QuicPacketEntropyHash QuicSentEntropyManager::GetPacketEntropy(
+    QuicPacketSequenceNumber sequence_number) const {
+  return packets_entropy_[sequence_number - map_offset_];
+}
+
+QuicPacketSequenceNumber
+QuicSentEntropyManager::GetLargestPacketWithEntropy() const {
+  return map_offset_ + packets_entropy_.size() - 1;
+}
+
+QuicPacketSequenceNumber
+QuicSentEntropyManager::GetSmallestPacketWithEntropy() const {
+  return map_offset_;
+}
+
+void QuicSentEntropyManager::UpdateCumulativeEntropy(
+    QuicPacketSequenceNumber sequence_number,
+    CumulativeEntropy* cumulative) const {
+  while (cumulative->sequence_number < sequence_number) {
+    ++cumulative->sequence_number;
+    cumulative->entropy ^= GetPacketEntropy(cumulative->sequence_number);
+  }
+}
 
 void QuicSentEntropyManager::RecordPacketEntropyHash(
     QuicPacketSequenceNumber sequence_number,
@@ -25,47 +48,43 @@ void QuicSentEntropyManager::RecordPacketEntropyHash(
     // Ensure packets always are recorded in order.
     // Every packet's entropy is recorded, even if it's not sent, so there
     // are not sequence number gaps.
-    DCHECK_LT(packets_entropy_.back().first, sequence_number);
+    DCHECK_LT(GetLargestPacketWithEntropy(), sequence_number);
   }
-  packets_entropy_hash_ ^= entropy_hash;
-  packets_entropy_.insert(
-      make_pair(sequence_number,
-                make_pair(entropy_hash, packets_entropy_hash_)));
-  DVLOG(2) << "setting cumulative sent entropy hash to: "
-           << static_cast<int>(packets_entropy_hash_)
-           << " updated with sequence number " << sequence_number
-           << " entropy hash: " << static_cast<int>(entropy_hash);
+  packets_entropy_.push_back(entropy_hash);
+  DVLOG(2) << "Recorded sequence number " << sequence_number
+           << " with entropy hash: " << static_cast<int>(entropy_hash);
 }
 
-QuicPacketEntropyHash QuicSentEntropyManager::EntropyHash(
-    QuicPacketSequenceNumber sequence_number) const {
-  SentEntropyMap::const_iterator it =
-      packets_entropy_.find(sequence_number);
-  if (it == packets_entropy_.end()) {
-    // Should only happen when we have not received ack for any packet.
-    DCHECK_EQ(0u, sequence_number);
-    return 0;
-  }
-  return it->second.second;
+QuicPacketEntropyHash QuicSentEntropyManager::GetCumulativeEntropy(
+    QuicPacketSequenceNumber sequence_number) {
+  DCHECK_LE(last_cumulative_entropy_.sequence_number, sequence_number);
+  DCHECK_GE(GetLargestPacketWithEntropy(), sequence_number);
+  // First the entropy for largest_observed sequence number should be updated.
+  UpdateCumulativeEntropy(sequence_number, &last_cumulative_entropy_);
+  return last_cumulative_entropy_.entropy;
 }
 
 bool QuicSentEntropyManager::IsValidEntropy(
-    QuicPacketSequenceNumber sequence_number,
+    QuicPacketSequenceNumber largest_observed,
     const SequenceNumberSet& missing_packets,
-    QuicPacketEntropyHash entropy_hash) const {
-  SentEntropyMap::const_iterator entropy_it =
-      packets_entropy_.find(sequence_number);
-  if (entropy_it == packets_entropy_.end()) {
-    DCHECK_EQ(0u, sequence_number);
-    // Close connection if something goes wrong.
-    return 0 == sequence_number;
+    QuicPacketEntropyHash entropy_hash) {
+  DCHECK_GE(largest_observed, last_valid_entropy_.sequence_number);
+  // Ensure the largest and smallest sequence numbers are in range.
+  if (largest_observed > GetLargestPacketWithEntropy()) {
+    return false;
   }
-  QuicPacketEntropyHash expected_entropy_hash = entropy_it->second.second;
+  if (!missing_packets.empty() &&
+      *missing_packets.begin() < GetSmallestPacketWithEntropy()) {
+    return false;
+  }
+  // First the entropy for largest_observed sequence number should be updated.
+  UpdateCumulativeEntropy(largest_observed, &last_valid_entropy_);
+
+  // Now XOR out all the missing entropies.
+  QuicPacketEntropyHash expected_entropy_hash = last_valid_entropy_.entropy;
   for (SequenceNumberSet::const_iterator it = missing_packets.begin();
        it != missing_packets.end(); ++it) {
-    entropy_it = packets_entropy_.find(*it);
-    DCHECK(entropy_it != packets_entropy_.end());
-    expected_entropy_hash ^= entropy_it->second.first;
+    expected_entropy_hash ^= GetPacketEntropy(*it);
   }
   DLOG_IF(WARNING, entropy_hash != expected_entropy_hash)
       << "Invalid entropy hash: " << static_cast<int>(entropy_hash)
@@ -75,17 +94,19 @@ bool QuicSentEntropyManager::IsValidEntropy(
 
 void QuicSentEntropyManager::ClearEntropyBefore(
     QuicPacketSequenceNumber sequence_number) {
-  if (packets_entropy_.empty()) {
-    return;
+  // Don't discard entropy before updating the cumulative entropy used to
+  // calculate EntropyHash and IsValidEntropy.
+  if (last_cumulative_entropy_.sequence_number < sequence_number) {
+    UpdateCumulativeEntropy(sequence_number, &last_cumulative_entropy_);
   }
-  SentEntropyMap::iterator it = packets_entropy_.begin();
-  while (it->first < sequence_number) {
-    packets_entropy_.erase(it);
-    it = packets_entropy_.begin();
-    DCHECK(it != packets_entropy_.end());
+  if (last_valid_entropy_.sequence_number < sequence_number) {
+    UpdateCumulativeEntropy(sequence_number, &last_valid_entropy_);
   }
-  DVLOG(2) << "Cleared entropy before: "
-           << packets_entropy_.begin()->first;
+  while (map_offset_ < sequence_number) {
+    packets_entropy_.pop_front();
+    ++map_offset_;
+  }
+  DVLOG(2) << "Cleared entropy before: " << sequence_number;
 }
 
 }  // namespace net

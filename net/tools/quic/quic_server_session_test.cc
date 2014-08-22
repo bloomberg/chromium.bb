@@ -6,13 +6,17 @@
 
 #include "net/quic/crypto/quic_crypto_server_config.h"
 #include "net/quic/crypto/quic_random.h"
+#include "net/quic/crypto/source_address_token.h"
 #include "net/quic/quic_connection.h"
+#include "net/quic/quic_crypto_server_stream.h"
 #include "net/quic/quic_flags.h"
 #include "net/quic/quic_utils.h"
 #include "net/quic/test_tools/quic_config_peer.h"
 #include "net/quic/test_tools/quic_connection_peer.h"
 #include "net/quic/test_tools/quic_data_stream_peer.h"
+#include "net/quic/test_tools/quic_sent_packet_manager_peer.h"
 #include "net/quic/test_tools/quic_session_peer.h"
+#include "net/quic/test_tools/quic_sustained_bandwidth_recorder_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/tools/quic/quic_spdy_server_stream.h"
 #include "net/tools/quic/test_tools/quic_test_utils.h"
@@ -24,7 +28,9 @@ using net::test::MockConnection;
 using net::test::QuicConfigPeer;
 using net::test::QuicConnectionPeer;
 using net::test::QuicDataStreamPeer;
+using net::test::QuicSentPacketManagerPeer;
 using net::test::QuicSessionPeer;
+using net::test::QuicSustainedBandwidthRecorderPeer;
 using net::test::SupportedVersions;
 using net::test::ValueRestore;
 using net::test::kClientDataStreamId1;
@@ -47,6 +53,10 @@ class QuicServerSessionPeer {
   static QuicDataStream* GetDataStream(QuicServerSession* s, QuicStreamId id) {
     return s->GetDataStream(id);
   }
+  static void SetCryptoStream(QuicServerSession* s,
+                              QuicCryptoServerStream* crypto_stream) {
+    s->crypto_stream_.reset(crypto_stream);
+  }
 };
 
 namespace {
@@ -68,6 +78,10 @@ class QuicServerSessionTest : public ::testing::TestWithParam<QuicVersion> {
     connection_ =
         new StrictMock<MockConnection>(true, SupportedVersions(GetParam()));
     session_.reset(new QuicServerSession(config_, connection_, &owner_));
+    MockClock clock;
+    handshake_message_.reset(crypto_config_.AddDefaultConfig(
+        QuicRandom::GetInstance(), &clock,
+        QuicCryptoServerConfig::ConfigOptions()));
     session_->InitializeSession(crypto_config_);
     visitor_ = QuicConnectionPeer::GetVisitor(connection_);
   }
@@ -79,8 +93,25 @@ class QuicServerSessionTest : public ::testing::TestWithParam<QuicVersion> {
   QuicConfig config_;
   QuicCryptoServerConfig crypto_config_;
   scoped_ptr<QuicServerSession> session_;
+  scoped_ptr<CryptoHandshakeMessage> handshake_message_;
   QuicConnectionVisitorInterface* visitor_;
 };
+
+// Compares CachedNetworkParameters.
+MATCHER_P(EqualsProto, network_params, "") {
+  CachedNetworkParameters reference(network_params);
+  return (arg->bandwidth_estimate_bytes_per_second() ==
+          reference.bandwidth_estimate_bytes_per_second() &&
+          arg->bandwidth_estimate_bytes_per_second() ==
+          reference.bandwidth_estimate_bytes_per_second() &&
+          arg->max_bandwidth_estimate_bytes_per_second() ==
+          reference.max_bandwidth_estimate_bytes_per_second() &&
+          arg->max_bandwidth_timestamp_seconds() ==
+          reference.max_bandwidth_timestamp_seconds() &&
+          arg->min_rtt_ms() == reference.min_rtt_ms() &&
+          arg->previous_connection_state() ==
+          reference.previous_connection_state());
+}
 
 INSTANTIATE_TEST_CASE_P(Tests, QuicServerSessionTest,
                         ::testing::ValuesIn(QuicSupportedVersions()));
@@ -205,6 +236,86 @@ TEST_P(QuicServerSessionTest, SetFecProtectionFromConfig) {
       session_.get(), kClientDataStreamId1);
   ASSERT_TRUE(stream);
   EXPECT_EQ(FEC_PROTECT_OPTIONAL, stream->fec_policy());
+}
+
+class MockQuicCryptoServerStream : public QuicCryptoServerStream {
+ public:
+  explicit MockQuicCryptoServerStream(
+      const QuicCryptoServerConfig& crypto_config, QuicSession* session)
+      : QuicCryptoServerStream(crypto_config, session) {}
+  virtual ~MockQuicCryptoServerStream() {}
+
+  MOCK_METHOD1(SendServerConfigUpdate,
+               void(const CachedNetworkParameters* cached_network_parameters));
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockQuicCryptoServerStream);
+};
+
+TEST_P(QuicServerSessionTest, BandwidthEstimates) {
+  if (version() <= QUIC_VERSION_21) {
+    return;
+  }
+  // Test that bandwidth estimate updates are sent to the client, only after the
+  // bandwidth estimate has changes sufficiently, and enough time has passed.
+
+  int32 bandwidth_estimate_kbytes_per_second = 123;
+  int32 max_bandwidth_estimate_kbytes_per_second = 134;
+  int32 max_bandwidth_estimate_timestamp = 1122334455;
+  const string serving_region = "not a real region";
+  session_->set_serving_region(serving_region);
+
+  MockQuicCryptoServerStream* crypto_stream =
+      new MockQuicCryptoServerStream(crypto_config_, session_.get());
+  QuicServerSessionPeer::SetCryptoStream(session_.get(), crypto_stream);
+
+  // Set some initial bandwidth values.
+  QuicSentPacketManager* sent_packet_manager =
+      QuicConnectionPeer::GetSentPacketManager(session_->connection());
+  QuicSustainedBandwidthRecorder& bandwidth_recorder =
+      QuicSentPacketManagerPeer::GetBandwidthRecorder(sent_packet_manager);
+  QuicSustainedBandwidthRecorderPeer::SetBandwidthEstimate(
+      &bandwidth_recorder, bandwidth_estimate_kbytes_per_second);
+  QuicSustainedBandwidthRecorderPeer::SetMaxBandwidthEstimate(
+      &bandwidth_recorder, max_bandwidth_estimate_kbytes_per_second,
+      max_bandwidth_estimate_timestamp);
+
+  // There will be no update sent yet - not enough time has passed.
+  QuicTime now = QuicTime::Zero();
+  session_->OnCongestionWindowChange(now);
+
+  // Bandwidth estimate has now changed sufficiently but not enough time has
+  // passed to send a Server Config Update.
+  bandwidth_estimate_kbytes_per_second =
+      bandwidth_estimate_kbytes_per_second * 1.6;
+  session_->OnCongestionWindowChange(now);
+
+  // Bandwidth estimate has now changed sufficiently and enough time has passed.
+  int64 srtt_ms =
+      sent_packet_manager->GetRttStats()->SmoothedRtt().ToMilliseconds();
+  now = now.Add(QuicTime::Delta::FromMilliseconds(
+      kMinIntervalBetweenServerConfigUpdatesRTTs * srtt_ms));
+
+  // Verify that the proto has exactly the values we expect.
+  CachedNetworkParameters expected_network_params;
+  expected_network_params.set_bandwidth_estimate_bytes_per_second(
+      bandwidth_recorder.BandwidthEstimate().ToBytesPerSecond());
+  expected_network_params.set_max_bandwidth_estimate_bytes_per_second(
+      bandwidth_recorder.MaxBandwidthEstimate().ToBytesPerSecond());
+  expected_network_params.set_max_bandwidth_timestamp_seconds(
+      bandwidth_recorder.MaxBandwidthTimestamp());
+  expected_network_params.set_min_rtt_ms(session_->connection()
+                                             ->sent_packet_manager()
+                                             .GetRttStats()
+                                             ->min_rtt()
+                                             .ToMilliseconds());
+  expected_network_params.set_previous_connection_state(
+      CachedNetworkParameters::CONGESTION_AVOIDANCE);
+  expected_network_params.set_serving_region(serving_region);
+
+  EXPECT_CALL(*crypto_stream,
+              SendServerConfigUpdate(EqualsProto(expected_network_params)))
+      .Times(1);
+  session_->OnCongestionWindowChange(now);
 }
 
 }  // namespace

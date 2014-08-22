@@ -11,6 +11,10 @@
 
 namespace net {
 
+namespace test {
+class QuicSustainedBandwidthRecorderPeer;
+}  // namespace test
+
 // This class keeps track of a sustained bandwidth estimate to ultimately send
 // to the client in a server config update message. A sustained bandwidth
 // estimate is only marked as valid if the QuicSustainedBandwidthRecorder has
@@ -19,11 +23,11 @@ class NET_EXPORT_PRIVATE QuicSustainedBandwidthRecorder {
  public:
   QuicSustainedBandwidthRecorder();
 
-  // As long as |is_reliable_estimate| is consistently true, multiple calls to
-  // this method over a 3 * srtt period results in storage of a valid sustained
+  // As long as |in_recovery| is consistently false, multiple calls to this
+  // method over a 3 * srtt period results in storage of a valid sustained
   // bandwidth estimate.
   // |time_now| is used as a max bandwidth timestamp if needed.
-  void RecordEstimate(bool is_reliable_estimate,
+  void RecordEstimate(bool in_recovery,
                       bool in_slow_start,
                       QuicBandwidth bandwidth,
                       QuicTime estimate_time,
@@ -44,7 +48,7 @@ class NET_EXPORT_PRIVATE QuicSustainedBandwidthRecorder {
     return max_bandwidth_estimate_;
   }
 
-  int32 MaxBandwidthTimestamp() const {
+  int64 MaxBandwidthTimestamp() const {
     DCHECK(has_estimate_);
     return max_bandwidth_timestamp_;
   }
@@ -55,6 +59,8 @@ class NET_EXPORT_PRIVATE QuicSustainedBandwidthRecorder {
   }
 
  private:
+  friend class test::QuicSustainedBandwidthRecorderPeer;
+
   // True if we have been able to calculate sustained bandwidth, over at least
   // one recording period (3 * rtt).
   bool has_estimate_;
@@ -73,7 +79,7 @@ class NET_EXPORT_PRIVATE QuicSustainedBandwidthRecorder {
   QuicBandwidth max_bandwidth_estimate_;
 
   // Timestamp indicating when the max_bandwidth_estimate_ was seen.
-  int32 max_bandwidth_timestamp_;
+  int64 max_bandwidth_timestamp_;
 
   // Timestamp marking the beginning of the latest recording period.
   QuicTime start_time_;

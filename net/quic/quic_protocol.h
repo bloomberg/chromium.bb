@@ -116,6 +116,12 @@ const int64 kDefaultMaxTimeForCryptoHandshakeSecs = 5;  // 5 secs.
 // Default ping timeout.
 const int64 kPingTimeoutSecs = 15;  // 15 secs.
 
+// Minimum number of RTTs between Server Config Updates (SCUP) sent to client.
+const int kMinIntervalBetweenServerConfigUpdatesRTTs = 10;
+
+// Minimum time between Server Config Updates (SCUP) sent to client.
+const int kMinIntervalBetweenServerConfigUpdatesMs = 1000;
+
 // We define an unsigned 16-bit floating point value, inspired by IEEE floats
 // (http://en.wikipedia.org/wiki/Half_precision_floating-point_format),
 // with 5-bit exponent (bias 1), 11-bit mantissa (effective 12 with hidden

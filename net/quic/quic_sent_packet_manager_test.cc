@@ -53,6 +53,14 @@ class QuicSentPacketManagerTest : public ::testing::TestWithParam<bool> {
     // Advance the time 1s so the send times are never QuicTime::Zero.
     clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(1000));
     manager_.set_network_change_visitor(network_change_visitor_.get());
+
+    EXPECT_CALL(*send_algorithm_, HasReliableBandwidthEstimate())
+        .Times(AnyNumber());
+    EXPECT_CALL(*send_algorithm_, BandwidthEstimate())
+        .Times(AnyNumber())
+        .WillRepeatedly(Return(QuicBandwidth::Zero()));
+    EXPECT_CALL(*send_algorithm_, InSlowStart()).Times(AnyNumber());
+    EXPECT_CALL(*send_algorithm_, InRecovery()).Times(AnyNumber());
   }
 
   virtual ~QuicSentPacketManagerTest() OVERRIDE {

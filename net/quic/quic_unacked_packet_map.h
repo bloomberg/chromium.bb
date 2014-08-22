@@ -59,6 +59,11 @@ class NET_EXPORT_PRIVATE QuicUnackedPacketMap {
     return largest_sent_packet_;
   }
 
+  // Returns the largest sequence number that has been acked.
+  QuicPacketSequenceNumber largest_observed() const {
+    return largest_observed_;
+  }
+
   // Returns the sum of bytes from all packets in flight.
   QuicByteCount bytes_in_flight() const {
     return bytes_in_flight_;

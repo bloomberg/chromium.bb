@@ -29,14 +29,13 @@ class QuicSession;
 
 namespace tools {
 
+class DeleteSessionsAlarm;
+class QuicEpollConnectionHelper;
 class QuicPacketWriterWrapper;
 
 namespace test {
 class QuicDispatcherPeer;
 }  // namespace test
-
-class DeleteSessionsAlarm;
-class QuicEpollConnectionHelper;
 
 class ProcessPacketInterface {
  public:

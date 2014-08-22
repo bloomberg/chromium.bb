@@ -255,15 +255,14 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
 
   void set_client_initial_stream_flow_control_receive_window(uint32 window) {
     CHECK(client_.get() == NULL);
-    DLOG(INFO) << "Setting client initial stream flow control window: "
-               << window;
+    DVLOG(1) << "Setting client initial stream flow control window: " << window;
     client_config_.SetInitialStreamFlowControlWindowToSend(window);
   }
 
   void set_client_initial_session_flow_control_receive_window(uint32 window) {
     CHECK(client_.get() == NULL);
-    DLOG(INFO) << "Setting client initial session flow control window: "
-               << window;
+    DVLOG(1) << "Setting client initial session flow control window: "
+             << window;
     client_config_.SetInitialSessionFlowControlWindowToSend(window);
   }
 
@@ -275,15 +274,15 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
 
   void set_server_initial_stream_flow_control_receive_window(uint32 window) {
     CHECK(server_thread_.get() == NULL);
-    DLOG(INFO) << "Setting server initial stream flow control window: "
-               << window;
+    DVLOG(1) << "Setting server initial stream flow control window: "
+             << window;
     server_config_.SetInitialStreamFlowControlWindowToSend(window);
   }
 
   void set_server_initial_session_flow_control_receive_window(uint32 window) {
     CHECK(server_thread_.get() == NULL);
-    DLOG(INFO) << "Setting server initial session flow control window: "
-               << window;
+    DVLOG(1) << "Setting server initial session flow control window: "
+             << window;
     server_config_.SetInitialSessionFlowControlWindowToSend(window);
   }
 

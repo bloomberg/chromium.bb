@@ -239,6 +239,7 @@ class MockConnectionVisitor : public QuicConnectionVisitorInterface {
   MOCK_METHOD2(OnConnectionClosed, void(QuicErrorCode error, bool from_peer));
   MOCK_METHOD0(OnWriteBlocked, void());
   MOCK_METHOD0(OnCanWrite, void());
+  MOCK_METHOD1(OnCongestionWindowChange, void(QuicTime now));
   MOCK_CONST_METHOD0(WillingAndAbleToWrite, bool());
   MOCK_CONST_METHOD0(HasPendingHandshake, bool());
   MOCK_CONST_METHOD0(HasOpenDataStreams, bool());

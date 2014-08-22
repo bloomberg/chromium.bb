@@ -50,7 +50,9 @@ void QuicPerConnectionPacketWriter::SetWritable() {
 }
 
 void QuicPerConnectionPacketWriter::OnWriteComplete(WriteResult result) {
-  connection_->OnPacketSent(result);
+  if (result.status == WRITE_STATUS_ERROR) {
+    connection_->OnWriteError(result.error_code);
+  }
 }
 
 }  // namespace net

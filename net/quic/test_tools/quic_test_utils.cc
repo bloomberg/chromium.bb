@@ -632,8 +632,8 @@ QuicPacketWriter* TestWriterFactory::Create(QuicServerPacketWriter* writer,
 }
 
 void TestWriterFactory::OnPacketSent(WriteResult result) {
-  if (current_writer_ != NULL) {
-    current_writer_->connection()->OnPacketSent(result);
+  if (current_writer_ != NULL && result.status == WRITE_STATUS_ERROR) {
+    current_writer_->connection()->OnWriteError(result.error_code);
     current_writer_ = NULL;
   }
 }
