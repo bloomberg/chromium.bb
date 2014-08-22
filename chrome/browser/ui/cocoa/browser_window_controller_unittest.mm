@@ -828,7 +828,8 @@ void WaitForFullScreenTransition() {
   observer.Wait();
 }
 
-TEST_F(BrowserWindowFullScreenControllerTest, TestFullscreen) {
+// http://crbug.com/53586
+TEST_F(BrowserWindowFullScreenControllerTest, DISABLED_TestFullscreen) {
   [controller_ showWindow:nil];
   EXPECT_FALSE([controller_ isFullscreen]);
 
