@@ -1200,6 +1200,13 @@ wl_display_read_events(struct wl_display *display)
 
 	pthread_mutex_lock(&display->mutex);
 
+	if (display->last_error) {
+		pthread_mutex_unlock(&display->mutex);
+
+		errno = display->last_error;
+		return -1;
+	}
+
 	ret = read_events(display);
 
 	pthread_mutex_unlock(&display->mutex);
