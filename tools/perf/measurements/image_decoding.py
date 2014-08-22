@@ -35,15 +35,18 @@ class ImageDecoding(page_test.PageTest):
 
     options = tracing_options.TracingOptions()
     options.enable_chrome_trace = True
-    # FIXME: bare 'devtools' is for compatibility with older reference versions
-    # only and may eventually be removed.
+    # FIXME: Remove the timeline category when impl-side painting is on
+    # everywhere.
     category_filter = tracing_category_filter.TracingCategoryFilter(
-        'disabled-by-default-devtools.timeline*')
+        'disabled-by-default-devtools.timeline')
 
     # FIXME: Remove webkit.console when blink.console lands in chromium and
     # the ref builds are updated. crbug.com/386847
+    # FIXME: Remove the devtools.timeline category when impl-side painting is
+    # on everywhere.
     categories = [
-        'devtools',
+        'blink',
+        'devtools.timeline',
         'webkit.console',
         'blink.console'
     ]
@@ -67,7 +70,11 @@ class ImageDecoding(page_test.PageTest):
     def _IsDone():
       return tab.EvaluateJavaScript('isDone')
 
-    decode_image_events = timeline_model.GetAllEventsOfName('Decode Image')
+    decode_image_events = timeline_model.GetAllEventsOfName(
+        'ImageFrameGenerator::decode')
+    # FIXME: Remove this when impl-side painting is on everywhere.
+    if not decode_image_events:
+      decode_image_events = timeline_model.GetAllEventsOfName('Decode Image')
 
     # If it is a real image page, then store only the last-minIterations
     # decode tasks.
@@ -79,7 +86,7 @@ class ImageDecoding(page_test.PageTest):
       decode_image_events = decode_image_events[-min_iterations:]
 
     durations = [d.duration for d in decode_image_events]
-    assert durations, 'Failed to find "Decode Image" trace events.'
+    assert durations, 'Failed to find image decode trace events.'
 
     image_decoding_avg = sum(durations) / len(durations)
     results.AddValue(scalar.ScalarValue(
