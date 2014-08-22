@@ -308,20 +308,6 @@ def BuildScript(status, context):
       SCons(context, args=['large_tests', 'force_sel_ldr=' + gn_sel_ldr])
   ### END GN tests ###
 
-  if not context['no_gyp']:
-    # Build with ragel-based validator using GYP.
-    gyp_defines_save = context.GetEnv('GYP_DEFINES')
-    context.SetEnv('GYP_DEFINES',
-                   ' '.join([gyp_defines_save, 'nacl_validator_ragel=0']))
-    with Step('gyp_compile_noragel', status):
-      # Clobber GYP build to recompile necessary files with new preprocessor macro
-      # definitions.  It is done because some build systems (such as GNU Make,
-      # MSBuild etc.) do not consider compiler arguments as a dependency.
-      RemoveGypBuildDirectories()
-      CommandGypGenerate(context)
-      CommandGypBuild(context)
-    context.SetEnv('GYP_DEFINES', gyp_defines_save)
-
   # Build with ragel-based validator using scons.
   with Step('scons_compile_noragel', status):
     SCons(context, parallel=True, args=['validator_ragel=0'])
