@@ -303,6 +303,7 @@ const RSA_METHOD android_rsa_method = {
     RsaMethodSignRaw,
     RsaMethodDecrypt,
     RsaMethodVerifyRaw,
+    NULL /* private_transform */,
     NULL /* mod_exp */,
     NULL /* bn_mod_exp */,
     RSA_FLAG_OPAQUE,
