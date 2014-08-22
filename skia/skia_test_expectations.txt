@@ -48,4 +48,7 @@
 #
 # START OVERRIDES HERE
 
+# Suppressed while we investigate a fix.
+crbug.com/406425 virtual/implsidepainting/inspector/timeline/tracing/paint-command-log-nodes.html [ Failure Pass ]
+
 # END OVERRIDES HERE (this line ensures that the file is newline-terminated)
