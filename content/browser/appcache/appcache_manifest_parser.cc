@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -29,7 +29,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "content/browser/appcache/manifest_parser.h"
+#include "content/browser/appcache/appcache_manifest_parser.h"
 
 #include "base/command_line.h"
 #include "base/i18n/icu_string_conversions.h"
