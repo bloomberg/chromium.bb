@@ -689,19 +689,20 @@ VideoFrame::~VideoFrame() {
     base::ResetAndReturn(&no_longer_needed_cb_).Run();
 }
 
-bool VideoFrame::IsValidPlane(size_t plane) const {
-  return (plane < NumPlanes(format_));
+// static
+bool VideoFrame::IsValidPlane(size_t plane, VideoFrame::Format format) {
+  return (plane < NumPlanes(format));
 }
 
 int VideoFrame::stride(size_t plane) const {
-  DCHECK(IsValidPlane(plane));
+  DCHECK(IsValidPlane(plane, format_));
   return strides_[plane];
 }
 
-int VideoFrame::row_bytes(size_t plane) const {
-  DCHECK(IsValidPlane(plane));
-  int width = coded_size_.width();
-  switch (format_) {
+// static
+int VideoFrame::RowBytes(size_t plane, VideoFrame::Format format, int width) {
+  DCHECK(IsValidPlane(plane, format));
+  switch (format) {
     case VideoFrame::YV24:
       switch (plane) {
         case kYPlane:
@@ -754,13 +755,17 @@ int VideoFrame::row_bytes(size_t plane) const {
     case VideoFrame::NATIVE_TEXTURE:
       break;
   }
-  NOTREACHED() << "Unsupported video frame format/plane: "
-               << format_ << "/" << plane;
+  NOTREACHED() << "Unsupported video frame format/plane: " << format << "/"
+               << plane;
   return 0;
 }
 
+int VideoFrame::row_bytes(size_t plane) const {
+  return RowBytes(plane, format_, coded_size_.width());
+}
+
 int VideoFrame::rows(size_t plane) const {
-  DCHECK(IsValidPlane(plane));
+  DCHECK(IsValidPlane(plane, format_));
   int height = coded_size_.height();
   switch (format_) {
     case VideoFrame::YV24:
@@ -822,7 +827,7 @@ int VideoFrame::rows(size_t plane) const {
 }
 
 uint8* VideoFrame::data(size_t plane) const {
-  DCHECK(IsValidPlane(plane));
+  DCHECK(IsValidPlane(plane, format_));
   return data_[plane];
 }
 
@@ -854,7 +859,7 @@ int VideoFrame::dmabuf_fd(size_t plane) const {
 
 void VideoFrame::HashFrameForTesting(base::MD5Context* context) {
   for (int plane = 0; plane < kMaxPlanes; ++plane) {
-    if (!IsValidPlane(plane))
+    if (!IsValidPlane(plane, format_))
       break;
     for (int row = 0; row < rows(plane); ++row) {
       base::MD5Update(context, base::StringPiece(

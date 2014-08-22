@@ -214,6 +214,7 @@ void V4L2ImageProcessor::DestroyTask() {
 }
 
 bool V4L2ImageProcessor::CreateInputBuffers() {
+  DVLOG(3) << __func__;
   DCHECK(child_message_loop_proxy_->BelongsToCurrentThread());
   DCHECK(!input_streamon_);
 
@@ -284,6 +285,7 @@ bool V4L2ImageProcessor::CreateInputBuffers() {
 }
 
 bool V4L2ImageProcessor::CreateOutputBuffers() {
+  DVLOG(3) << __func__;
   DCHECK(child_message_loop_proxy_->BelongsToCurrentThread());
   DCHECK(!output_streamon_);
 

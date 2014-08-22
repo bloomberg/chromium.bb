@@ -219,6 +219,10 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // Returns horizontal bits per pixel for given |plane| and |format|.
   static int PlaneHorizontalBitsPerPixel(Format format, size_t plane);
 
+  // Returns the number of bytes per row for the given plane, format, and width.
+  // The width may be aligned to format requirements.
+  static int RowBytes(size_t plane, Format format, int width);
+
   Format format() const { return format_; }
 
   const gfx::Size& coded_size() const { return coded_size_; }
@@ -284,6 +288,11 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
 
  private:
   friend class base::RefCountedThreadSafe<VideoFrame>;
+
+  // Returns true if |plane| is a valid plane number for the given format. This
+  // can be used to DCHECK() plane parameters.
+  static bool IsValidPlane(size_t plane, VideoFrame::Format format);
+
   // Clients must use the static CreateFrame() method to create a new frame.
   VideoFrame(Format format,
              const gfx::Size& coded_size,
@@ -295,9 +304,6 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   virtual ~VideoFrame();
 
   void AllocateYUV();
-
-  // Used to DCHECK() plane parameters.
-  bool IsValidPlane(size_t plane) const;
 
   // Frame format.
   const Format format_;

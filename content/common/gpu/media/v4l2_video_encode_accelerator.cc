@@ -860,6 +860,7 @@ bool V4L2VideoEncodeAccelerator::SetOutputFormat(
 
 bool V4L2VideoEncodeAccelerator::NegotiateInputFormat(
     media::VideoFrame::Format input_format) {
+  DVLOG(3) << "NegotiateInputFormat()";
   DCHECK(child_message_loop_proxy_->BelongsToCurrentThread());
   DCHECK(!input_streamon_);
   DCHECK(!output_streamon_);
