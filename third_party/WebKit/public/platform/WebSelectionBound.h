@@ -5,6 +5,7 @@
 #ifndef WebSelectionBound_h
 #define WebSelectionBound_h
 
+#include "public/platform/WebPoint.h"
 #include "public/platform/WebRect.h"
 
 namespace blink {
@@ -32,7 +33,14 @@ struct WebSelectionBound {
 
     // The one-dimensional rect of the bound's edge in layer coordinates, not to
     // be confused with the selection region.
+    // FIXME: Remove when downstream code uses |edge{Top|Bottom}InLayer|,
+    // crbug.com/405666.
     WebRect edgeRectInLayer;
+
+    // The bottom and top coordinates of the edge (caret), in layer coordinates,
+    // that define the selection bound.
+    WebPoint edgeTopInLayer;
+    WebPoint edgeBottomInLayer;
 };
 
 } // namespace blink
