@@ -34,6 +34,11 @@ class CHROMEOS_EXPORT BluetoothSocketChromeOS
       public device::BluetoothAdapter::Observer,
       public BluetoothProfileServiceProvider::Delegate {
  public:
+  enum SecurityLevel {
+    SECURITY_LEVEL_LOW,
+    SECURITY_LEVEL_MEDIUM
+  };
+
   static scoped_refptr<BluetoothSocketChromeOS> CreateBluetoothSocket(
       scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
       scoped_refptr<device::BluetoothSocketThread> socket_thread);
@@ -45,6 +50,7 @@ class CHROMEOS_EXPORT BluetoothSocketChromeOS
   // with a message explaining the cause of the failure.
   virtual void Connect(const BluetoothDeviceChromeOS* device,
                        const device::BluetoothUUID& uuid,
+                       SecurityLevel security_level,
                        const base::Closure& success_callback,
                        const ErrorCompletionCallback& error_callback);
 

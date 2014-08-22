@@ -942,6 +942,7 @@ enum HistogramValue {
   EASYUNLOCKPRIVATE_SETREMOTEDEVICES,
   EASYUNLOCKPRIVATE_GETREMOTEDEVICES,
   FILESYSTEMPROVIDER_GETALL,
+  EASYUNLOCKPRIVATE_CONNECTTOBLUETOOTHSERVICEINSECURELY,
   // Last entry: Add new entries above and ensure to update
   // tools/metrics/histograms/histograms.xml.
   ENUM_BOUNDARY

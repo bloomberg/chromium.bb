@@ -8,6 +8,11 @@
 #include <string>
 
 #include "base/callback_forward.h"
+#include "device/bluetooth/bluetooth_device.h"
+
+namespace device {
+class BluetoothUUID;
+}
 
 namespace extensions {
 namespace api {
@@ -27,6 +32,13 @@ typedef base::Callback<void(const SeekDeviceResult& result)> SeekDeviceCallback;
 // success or an error message on failure.
 void SeekBluetoothDeviceByAddress(const std::string& device_address,
                                   const SeekDeviceCallback& callback);
+
+void ConnectToBluetoothServiceInsecurely(
+    device::BluetoothDevice* device,
+    const device::BluetoothUUID& uuid,
+    const device::BluetoothDevice::ConnectToServiceCallback& callback,
+    const device::BluetoothDevice::ConnectToServiceErrorCallback&
+        error_callback);
 
 }  // namespace easy_unlock
 }  // namespace api

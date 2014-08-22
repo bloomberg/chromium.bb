@@ -403,6 +403,26 @@ void EasyUnlockPrivateSeekBluetoothDeviceByAddressFunction::OnSeekCompleted(
   }
 }
 
+EasyUnlockPrivateConnectToBluetoothServiceInsecurelyFunction::
+    EasyUnlockPrivateConnectToBluetoothServiceInsecurelyFunction() {}
+
+EasyUnlockPrivateConnectToBluetoothServiceInsecurelyFunction::
+    ~EasyUnlockPrivateConnectToBluetoothServiceInsecurelyFunction() {}
+
+void EasyUnlockPrivateConnectToBluetoothServiceInsecurelyFunction::
+    ConnectToService(device::BluetoothDevice* device,
+                     const device::BluetoothUUID& uuid) {
+  easy_unlock::ConnectToBluetoothServiceInsecurely(
+      device,
+      uuid,
+      base::Bind(&EasyUnlockPrivateConnectToBluetoothServiceInsecurelyFunction::
+                     OnConnect,
+                 this),
+      base::Bind(&EasyUnlockPrivateConnectToBluetoothServiceInsecurelyFunction::
+                     OnConnectError,
+                 this));
+}
+
 EasyUnlockPrivateUpdateScreenlockStateFunction::
     EasyUnlockPrivateUpdateScreenlockStateFunction() {}
 

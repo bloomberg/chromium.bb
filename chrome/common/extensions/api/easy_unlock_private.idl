@@ -217,6 +217,20 @@
     static void seekBluetoothDeviceByAddress(DOMString deviceAddress,
                                              optional EmptyCallback callback);
 
+    // Connects the socket to a remote Bluetooth device over an insecure
+    // connection, i.e. a connection that requests no bonding and no
+    // man-in-the-middle protection. Other than the reduced security setting,
+    // behaves identically to the chrome.bluetoothSocket.connect() function.
+    // |socketId|: The socket identifier, as issued by the
+    //     chrome.bluetoothSocket API.
+    // |deviceAddress|: The Bluetooth address of the device to connect to.
+    // |uuid|: The UUID of the service to connect to.
+    // |callback|: Called when the connect attempt is complete.
+    static void connectToBluetoothServiceInsecurely(long socketId,
+                                                    DOMString deviceAddress,
+                                                    DOMString uuid,
+                                                    EmptyCallback callback);
+
     // Updates the screenlock state to reflect the Easy Unlock app state.
     static void updateScreenlockState(State state,
                                       optional EmptyCallback callback);

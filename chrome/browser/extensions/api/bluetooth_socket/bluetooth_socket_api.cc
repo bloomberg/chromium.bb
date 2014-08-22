@@ -436,11 +436,13 @@ void BluetoothSocketListenUsingL2capFunction::CreateResults() {
   results_ = bluetooth_socket::ListenUsingL2cap::Results::Create();
 }
 
-BluetoothSocketConnectFunction::BluetoothSocketConnectFunction() {}
+BluetoothSocketAbstractConnectFunction::
+    BluetoothSocketAbstractConnectFunction() {}
 
-BluetoothSocketConnectFunction::~BluetoothSocketConnectFunction() {}
+BluetoothSocketAbstractConnectFunction::
+    ~BluetoothSocketAbstractConnectFunction() {}
 
-bool BluetoothSocketConnectFunction::Prepare() {
+bool BluetoothSocketAbstractConnectFunction::Prepare() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   params_ = bluetooth_socket::Connect::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
@@ -449,13 +451,13 @@ bool BluetoothSocketConnectFunction::Prepare() {
   return socket_event_dispatcher_ != NULL;
 }
 
-void BluetoothSocketConnectFunction::AsyncWorkStart() {
+void BluetoothSocketAbstractConnectFunction::AsyncWorkStart() {
   DCHECK(BrowserThread::CurrentlyOn(work_thread_id()));
   device::BluetoothAdapterFactory::GetAdapter(
-      base::Bind(&BluetoothSocketConnectFunction::OnGetAdapter, this));
+      base::Bind(&BluetoothSocketAbstractConnectFunction::OnGetAdapter, this));
 }
 
-void BluetoothSocketConnectFunction::OnGetAdapter(
+void BluetoothSocketAbstractConnectFunction::OnGetAdapter(
     scoped_refptr<device::BluetoothAdapter> adapter) {
   DCHECK(BrowserThread::CurrentlyOn(work_thread_id()));
   BluetoothApiSocket* socket = GetSocket(params_->socket_id);
@@ -486,13 +488,10 @@ void BluetoothSocketConnectFunction::OnGetAdapter(
     return;
   }
 
-  device->ConnectToService(
-      uuid,
-      base::Bind(&BluetoothSocketConnectFunction::OnConnect, this),
-      base::Bind(&BluetoothSocketConnectFunction::OnConnectError, this));
+  ConnectToService(device, uuid);
 }
 
-void BluetoothSocketConnectFunction::OnConnect(
+void BluetoothSocketAbstractConnectFunction::OnConnect(
     scoped_refptr<device::BluetoothSocket> socket) {
   DCHECK(BrowserThread::CurrentlyOn(work_thread_id()));
 
@@ -516,11 +515,24 @@ void BluetoothSocketConnectFunction::OnConnect(
   AsyncWorkCompleted();
 }
 
-void BluetoothSocketConnectFunction::OnConnectError(
+void BluetoothSocketAbstractConnectFunction::OnConnectError(
     const std::string& message) {
   DCHECK(BrowserThread::CurrentlyOn(work_thread_id()));
   error_ = message;
   AsyncWorkCompleted();
+}
+
+BluetoothSocketConnectFunction::BluetoothSocketConnectFunction() {}
+
+BluetoothSocketConnectFunction::~BluetoothSocketConnectFunction() {}
+
+void BluetoothSocketConnectFunction::ConnectToService(
+    device::BluetoothDevice* device,
+    const device::BluetoothUUID& uuid) {
+  device->ConnectToService(
+      uuid,
+      base::Bind(&BluetoothSocketConnectFunction::OnConnect, this),
+      base::Bind(&BluetoothSocketConnectFunction::OnConnectError, this));
 }
 
 BluetoothSocketDisconnectFunction::BluetoothSocketDisconnectFunction() {}

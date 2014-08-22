@@ -432,7 +432,21 @@ void BluetoothDeviceChromeOS::ConnectToService(
   scoped_refptr<BluetoothSocketChromeOS> socket =
       BluetoothSocketChromeOS::CreateBluetoothSocket(
           ui_task_runner_, socket_thread_);
-  socket->Connect(this, uuid, base::Bind(callback, socket), error_callback);
+  socket->Connect(this, uuid, BluetoothSocketChromeOS::SECURITY_LEVEL_MEDIUM,
+                  base::Bind(callback, socket), error_callback);
+}
+
+void BluetoothDeviceChromeOS::ConnectToServiceInsecurely(
+    const BluetoothUUID& uuid,
+    const ConnectToServiceCallback& callback,
+    const ConnectToServiceErrorCallback& error_callback) {
+  VLOG(1) << object_path_.value() << ": Connecting insecurely to service: "
+          << uuid.canonical_value();
+  scoped_refptr<BluetoothSocketChromeOS> socket =
+      BluetoothSocketChromeOS::CreateBluetoothSocket(
+          ui_task_runner_, socket_thread_);
+  socket->Connect(this, uuid, BluetoothSocketChromeOS::SECURITY_LEVEL_LOW,
+                  base::Bind(callback, socket), error_callback);
 }
 
 void BluetoothDeviceChromeOS::CreateGattConnection(

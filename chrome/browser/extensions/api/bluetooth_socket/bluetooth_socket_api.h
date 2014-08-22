@@ -208,7 +208,35 @@ class BluetoothSocketListenUsingL2capFunction
   scoped_ptr<bluetooth_socket::ListenUsingL2cap::Params> params_;
 };
 
-class BluetoothSocketConnectFunction : public BluetoothSocketAsyncApiFunction {
+class BluetoothSocketAbstractConnectFunction :
+    public BluetoothSocketAsyncApiFunction {
+ public:
+  BluetoothSocketAbstractConnectFunction();
+
+ protected:
+  virtual ~BluetoothSocketAbstractConnectFunction();
+
+  // BluetoothSocketAsyncApiFunction:
+  virtual bool Prepare() OVERRIDE;
+  virtual void AsyncWorkStart() OVERRIDE;
+
+  // Subclasses should implement this method to connect to the service
+  // registered with |uuid| on the |device|.
+  virtual void ConnectToService(device::BluetoothDevice* device,
+                                const device::BluetoothUUID& uuid) = 0;
+
+  virtual void OnConnect(scoped_refptr<device::BluetoothSocket> socket);
+  virtual void OnConnectError(const std::string& message);
+
+ private:
+  virtual void OnGetAdapter(scoped_refptr<device::BluetoothAdapter> adapter);
+
+  scoped_ptr<bluetooth_socket::Connect::Params> params_;
+  BluetoothSocketEventDispatcher* socket_event_dispatcher_;
+};
+
+class BluetoothSocketConnectFunction :
+    public BluetoothSocketAbstractConnectFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("bluetoothSocket.connect",
                              BLUETOOTHSOCKET_CONNECT);
@@ -218,17 +246,9 @@ class BluetoothSocketConnectFunction : public BluetoothSocketAsyncApiFunction {
  protected:
   virtual ~BluetoothSocketConnectFunction();
 
-  // BluetoothSocketAsyncApiFunction:
-  virtual bool Prepare() OVERRIDE;
-  virtual void AsyncWorkStart() OVERRIDE;
-
- private:
-  virtual void OnGetAdapter(scoped_refptr<device::BluetoothAdapter> adapter);
-  virtual void OnConnect(scoped_refptr<device::BluetoothSocket> socket);
-  virtual void OnConnectError(const std::string& message);
-
-  scoped_ptr<bluetooth_socket::Connect::Params> params_;
-  BluetoothSocketEventDispatcher* socket_event_dispatcher_;
+  // BluetoothSocketAbstractConnectFunction:
+  virtual void ConnectToService(device::BluetoothDevice* device,
+                                const device::BluetoothUUID& uuid) OVERRIDE;
 };
 
 class BluetoothSocketDisconnectFunction

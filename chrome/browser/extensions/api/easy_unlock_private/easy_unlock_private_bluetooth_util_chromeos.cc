@@ -20,6 +20,7 @@
 #include "base/time/time.h"
 #include "content/public/browser/browser_thread.h"
 #include "device/bluetooth/bluetooth_device.h"
+#include "device/bluetooth/bluetooth_device_chromeos.h"
 #include "net/socket/socket_descriptor.h"
 
 // The bluez headers are (intentionally) not available within the Chromium
@@ -135,6 +136,15 @@ void SeekBluetoothDeviceByAddress(const std::string& device_address,
       FROM_HERE,
       base::Bind(&SeekBluetoothDeviceByAddressImpl, device_address),
       callback);
+}
+
+void ConnectToBluetoothServiceInsecurely(
+    device::BluetoothDevice* device,
+    const device::BluetoothUUID& uuid,
+    const BluetoothDevice::ConnectToServiceCallback& callback,
+    const BluetoothDevice::ConnectToServiceErrorCallback& error_callback) {
+  static_cast<chromeos::BluetoothDeviceChromeOS*>(device)
+      ->ConnectToServiceInsecurely(uuid, callback, error_callback);
 }
 
 }  // namespace easy_unlock

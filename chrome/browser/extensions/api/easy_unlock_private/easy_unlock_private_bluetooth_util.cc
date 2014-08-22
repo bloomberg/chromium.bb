@@ -6,6 +6,8 @@
 
 #include "base/callback.h"
 
+using device::BluetoothDevice;
+
 namespace extensions {
 namespace api {
 namespace easy_unlock {
@@ -23,6 +25,14 @@ void SeekBluetoothDeviceByAddress(const std::string& device_address,
   result.success = false;
   result.error_message = kApiUnavailable;
   callback.Run(result);
+}
+
+void ConnectToBluetoothServiceInsecurely(
+    device::BluetoothDevice* device,
+    const device::BluetoothUUID& uuid,
+    const BluetoothDevice::ConnectToServiceCallback& callback,
+    const BluetoothDevice::ConnectToServiceErrorCallback& error_callback) {
+  error_callback.Run(kApiUnavailable);
 }
 #endif  // !defined(OS_CHROMEOS)
 
