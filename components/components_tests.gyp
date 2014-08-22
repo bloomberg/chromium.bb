@@ -399,6 +399,7 @@
 
             # Dependencies of variations
             'components.gyp:variations',
+            'components.gyp:variations_http_provider',
           ],
           'conditions': [
             ['toolkit_views == 1', {

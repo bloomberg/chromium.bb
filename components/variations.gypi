@@ -12,9 +12,10 @@
         '..',
       ],
       'dependencies': [
+        # List of dependencies is intentionally very minimal. Please avoid
+        # adding extra dependencies without first checking with OWNERS.
         '../base/base.gyp:base',
         '../third_party/mt19937ar/mt19937ar.gyp:mt19937ar',
-        'components.gyp:google_core_browser',
       ],
       'sources': [
         'variations/active_field_trials.cc',
@@ -41,8 +42,6 @@
         'variations/study_filtering.h',
         'variations/variations_associated_data.cc',
         'variations/variations_associated_data.h',
-        'variations/variations_http_header_provider.cc',
-        'variations/variations_http_header_provider.h',
         'variations/variations_seed_processor.cc',
         'variations/variations_seed_processor.h',
         'variations/variations_seed_simulator.cc',
@@ -59,6 +58,23 @@
             'variations_jni_headers',
           ],
         }],
+      ],
+    },
+    {
+      # GN version: //components/variations_http_provider
+      'target_name': 'variations_http_provider',
+      'type': 'static_library',
+      'include_dirs': [
+        '..',
+      ],
+      'dependencies': [
+        '../base/base.gyp:base',
+        'components.gyp:google_core_browser',
+        'variations',
+      ],
+      'sources': [
+        'variations/variations_http_header_provider.cc',
+        'variations/variations_http_header_provider.h',
       ],
     },
   ],
