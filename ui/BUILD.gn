@@ -1,0 +1,177 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/ui.gni")
+
+test("ui_unittests") {
+  sources = [
+    "base/layout_unittest.cc",
+    "base/l10n/l10n_util_mac_unittest.mm",
+    "base/l10n/l10n_util_unittest.cc",
+    "base/l10n/l10n_util_win_unittest.cc",
+    "base/l10n/time_format_unittest.cc",
+    "base/models/tree_node_iterator_unittest.cc",
+    "base/resource/data_pack_literal.cc",
+    "base/resource/data_pack_unittest.cc",
+    "base/resource/resource_bundle_unittest.cc",
+    "base/test/run_all_unittests.cc",
+  ]
+
+  if (is_ios) {
+    # Compile this Mac file on iOS as well.
+    set_sources_assignment_filter([])
+    sources += [ "base/l10n/l10n_util_mac_unittest.mm" ]
+    set_sources_assignment_filter(sources_assignment_filter)
+  } else {  # !is_ios
+    sources += [
+      "base/accelerators/accelerator_manager_unittest.cc",
+      "base/accelerators/menu_label_accelerator_util_linux_unittest.cc",
+      "base/clipboard/custom_data_helper_unittest.cc",
+      "base/cocoa/base_view_unittest.mm",
+      "base/cocoa/cocoa_base_utils_unittest.mm",
+      "base/cocoa/controls/blue_label_button_unittest.mm",
+      "base/cocoa/controls/hover_image_menu_button_unittest.mm",
+      "base/cocoa/controls/hyperlink_button_cell_unittest.mm",
+      "base/cocoa/focus_tracker_unittest.mm",
+      "base/cocoa/fullscreen_window_manager_unittest.mm",
+      "base/cocoa/hover_image_button_unittest.mm",
+      "base/cocoa/menu_controller_unittest.mm",
+      "base/cocoa/nsgraphics_context_additions_unittest.mm",
+      "base/cocoa/tracking_area_unittest.mm",
+      "base/dragdrop/os_exchange_data_provider_aurax11_unittest.cc",
+      "base/ime/candidate_window_unittest.cc",
+      "base/ime/chromeos/character_composer_unittest.cc",
+      "base/ime/composition_text_util_pango_unittest.cc",
+      "base/ime/input_method_base_unittest.cc",
+      "base/ime/input_method_chromeos_unittest.cc",
+      "base/ime/remote_input_method_win_unittest.cc",
+      "base/ime/win/imm32_manager_unittest.cc",
+      "base/ime/win/tsf_input_scope_unittest.cc",
+      "base/models/list_model_unittest.cc",
+      "base/models/list_selection_model_unittest.cc",
+      "base/models/tree_node_model_unittest.cc",
+      "base/test/data/resource.h",
+      "base/text/bytes_formatting_unittest.cc",
+      "base/view_prop_unittest.cc",
+      "base/webui/web_ui_util_unittest.cc",
+      "base/x/selection_requestor_unittest.cc",
+    ]
+
+    if (!use_x11) {
+      sources -= [
+        "base/ime/chromeos/character_composer_unittest.cc",
+        "base/ime/input_method_chromeos_unittest.cc",
+        "base/ime/composition_text_util_pango_unittest.cc",
+      ]
+    }
+  }
+
+  deps = [
+    "//base",
+    "//base/allocator",
+    "//base/test:test_support",
+    "//net",
+    "//skia",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//third_party/icu",
+    "//ui/base",
+    "//ui/base:test_support",
+    "//ui/events:events_base",
+    "//ui/events:test_support",
+    "//ui/gfx:test_support",
+    "//ui/resources",
+    "//ui/resources:ui_test_pak",
+    "//ui/strings",
+    "//url",
+  ]
+
+  if (is_ios) {
+    # TODO(GYP) lots of iOS-only steps for ui_unittests
+  }
+
+  if (is_win) {
+    sources += [
+      "base/dragdrop/os_exchange_data_win_unittest.cc",
+      "base/win/hwnd_subclass_unittest.cc",
+      "base/win/open_file_name_win_unittest.cc",
+    ]
+
+    ldflags = [
+      "/DELAYLOAD:d2d1.dll",
+      "/DELAYLOAD:d3d10_1.dll",
+    ]
+    libs = [
+      "d2d1.lib",
+      "d3d10_1.lib",
+      "imm32.lib",
+      "oleacc.lib",
+    ]
+
+    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+    cflags = [ "/wd4267" ]
+  }
+
+  if (is_android) {
+    deps += [
+      #"testing/android/native_test.gyp:native_test_native_code"  TODO(GYP)
+    ]
+  }
+
+  if (use_pango) {
+    configs += [ "//build/config/linux:pangocairo" ]
+  }
+
+  if (use_x11) {
+    sources += [ "base/cursor/cursor_loader_x11_unittest.cc" ]
+    configs += [ "//build/config/linux:x11" ]
+    deps += [
+      "//ui/events/platform/x11",
+      "//ui/gfx/x",
+    ]
+    datadeps = [ "//tools/xdisplaycheck" ]
+  }
+
+  if (!is_win || !use_aura) {
+    sources -= [ "base/view_prop_unittest.cc" ]
+  }
+
+  if (is_mac) {
+    deps += [
+      #'../third_party/mozilla/mozilla.gyp:mozilla',  TODO(GYP)
+      #'ui_unittests_bundle',  TODO(GYP)
+    ]
+    if (!is_component_build) {
+      # Needed for mozilla.gyp.
+      ldflags = [ "-Wl,-ObjC" ]
+    }
+  }
+
+  if (use_aura || toolkit_views) {
+    sources += [ "base/dragdrop/os_exchange_data_unittest.cc" ]
+    deps += [
+      "//ui/events",
+      "//ui/events/platform",
+    ]
+  }
+
+  if (is_chromeos) {
+    sources += [
+      "chromeos/touch_exploration_controller_unittest.cc",
+    ]
+    sources -= [
+      "base/dragdrop/os_exchange_data_provider_aurax11_unittest.cc",
+      "base/x/selection_requestor_unittest.cc",
+    ]
+    deps += [
+      "//ui/aura:test_support",
+      #'../chromeos/chromeos.gyp:chromeos',  TODO(GYP)
+      #'chromeos/ui_chromeos.gyp:ui_chromeos',
+      #'events/events.gyp:gesture_detection',
+    ]
+  }
+
+}
+
+# TODO(GYP) Mac (ui_unittest_bundle) and Android (ui_unittests_apk).
