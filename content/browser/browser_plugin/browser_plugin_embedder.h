@@ -75,6 +75,8 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver {
 
   BrowserPluginGuestManager* GetBrowserPluginGuestManager() const;
 
+  void ClearGuestDragStateIfApplicable();
+
   bool DidSendScreenRectsCallback(WebContents* guest_web_contents);
 
   bool SetZoomLevelCallback(double level, WebContents* guest_web_contents);
@@ -105,6 +107,9 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver {
   // Pointer to the guest that started the drag, used to forward necessary drag
   // status messages to the correct guest.
   base::WeakPtr<BrowserPluginGuest> guest_started_drag_;
+
+  // Keeps track of "dragend" state.
+  bool guest_drag_ending_;
 
   base::WeakPtrFactory<BrowserPluginEmbedder> weak_ptr_factory_;
 

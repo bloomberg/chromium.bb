@@ -28,6 +28,7 @@ namespace content {
 
 BrowserPluginEmbedder::BrowserPluginEmbedder(WebContentsImpl* web_contents)
     : WebContentsObserver(web_contents),
+      guest_drag_ending_(false),
       weak_ptr_factory_(this) {
 }
 
@@ -54,6 +55,7 @@ void BrowserPluginEmbedder::DragLeftGuest(BrowserPluginGuest* guest) {
 
 void BrowserPluginEmbedder::StartDrag(BrowserPluginGuest* guest) {
   guest_started_drag_ = guest->AsWeakPtr();
+  guest_drag_ending_ = false;
 }
 
 WebContentsImpl* BrowserPluginEmbedder::GetWebContents() const {
@@ -63,6 +65,20 @@ WebContentsImpl* BrowserPluginEmbedder::GetWebContents() const {
 BrowserPluginGuestManager*
 BrowserPluginEmbedder::GetBrowserPluginGuestManager() const {
   return GetWebContents()->GetBrowserContext()->GetGuestManager();
+}
+
+void BrowserPluginEmbedder::ClearGuestDragStateIfApplicable() {
+  // The order at which we observe SystemDragEnded() and DragSourceEndedAt() is
+  // platform dependent.
+  // In OSX, we see SystemDragEnded() first, where in aura, we see
+  // DragSourceEndedAt() first. For this reason, we check if both methods were
+  // called before resetting |guest_started_drag_|.
+  if (guest_drag_ending_) {
+    if (guest_started_drag_)
+      guest_started_drag_.reset();
+  } else {
+    guest_drag_ending_ = true;
+  }
 }
 
 bool BrowserPluginEmbedder::DidSendScreenRectsCallback(
@@ -93,22 +109,23 @@ bool BrowserPluginEmbedder::OnMessageReceived(const IPC::Message& message) {
 
 void BrowserPluginEmbedder::DragSourceEndedAt(int client_x, int client_y,
     int screen_x, int screen_y, blink::WebDragOperation operation) {
-  if (guest_started_drag_.get()) {
+  if (guest_started_drag_) {
     gfx::Point guest_offset =
         guest_started_drag_->GetScreenCoordinates(gfx::Point());
     guest_started_drag_->DragSourceEndedAt(client_x - guest_offset.x(),
         client_y - guest_offset.y(), screen_x, screen_y, operation);
   }
+  ClearGuestDragStateIfApplicable();
 }
 
 void BrowserPluginEmbedder::SystemDragEnded() {
   // When the embedder's drag/drop operation ends, we need to pass the message
   // to the guest that initiated the drag/drop operation. This will ensure that
   // the guest's RVH state is reset properly.
-  if (guest_started_drag_.get())
+  if (guest_started_drag_)
     guest_started_drag_->EndSystemDrag();
-  guest_started_drag_.reset();
   guest_dragging_over_.reset();
+  ClearGuestDragStateIfApplicable();
 }
 
 void BrowserPluginEmbedder::OnUpdateDragCursor(bool* handled) {
