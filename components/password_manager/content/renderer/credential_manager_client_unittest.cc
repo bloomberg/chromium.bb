@@ -21,7 +21,11 @@ class CredentialManagerClientTest : public testing::Test {
  public:
   CredentialManagerClientTest()
       : callback_errored_(false),
-        callback_succeeded_(false) {}
+        callback_succeeded_(false) {
+    blink::WebString string = blink::WebString::fromUTF8("");
+    GURL url("https://example.com/image");
+    credential_.reset(new blink::WebCredential(string, string, url));
+  }
   virtual ~CredentialManagerClientTest() {}
 
   static void SetUpTestCase() { content::SetUpBlinkTestEnvironment(); }
@@ -29,6 +33,8 @@ class CredentialManagerClientTest : public testing::Test {
   static void TearDownTestCase() { content::TearDownBlinkTestEnvironment(); }
 
   IPC::TestSink& sink() { return render_thread_.sink(); }
+
+  blink::WebCredential* credential() { return credential_.get(); }
 
   // The browser's response to any of the messages the client sends must contain
   // a request ID so that the client knows which request is being serviced. This
@@ -95,6 +101,8 @@ class CredentialManagerClientTest : public testing::Test {
   // pending Blink-side Promise.
   bool callback_errored_;
   bool callback_succeeded_;
+
+  scoped_ptr<blink::WebCredential> credential_;
 };
 
 class TestNotificationCallbacks
@@ -144,11 +152,9 @@ TEST_F(CredentialManagerClientTest, SendNotifyFailedSignIn) {
   EXPECT_FALSE(ExtractRequestId(CredentialManagerHostMsg_NotifyFailedSignIn::ID,
                                 request_id));
 
-  blink::WebCredential credential(
-      "id", "user", GURL("https://example.com/img.png"));
   scoped_ptr<TestNotificationCallbacks> callbacks(
       new TestNotificationCallbacks(this));
-  client_.dispatchFailedSignIn(credential, callbacks.release());
+  client_.dispatchFailedSignIn(*credential(), callbacks.release());
 
   EXPECT_TRUE(ExtractRequestId(CredentialManagerHostMsg_NotifyFailedSignIn::ID,
                                request_id));
@@ -163,11 +169,9 @@ TEST_F(CredentialManagerClientTest, SendNotifySignedIn) {
   EXPECT_FALSE(ExtractRequestId(CredentialManagerHostMsg_NotifySignedIn::ID,
                                 request_id));
 
-  blink::WebCredential credential(
-      "id", "user", GURL("https://example.com/img.png"));
   scoped_ptr<TestNotificationCallbacks> callbacks(
       new TestNotificationCallbacks(this));
-  client_.dispatchSignedIn(credential, callbacks.release());
+  client_.dispatchSignedIn(*credential(), callbacks.release());
 
   EXPECT_TRUE(ExtractRequestId(CredentialManagerHostMsg_NotifySignedIn::ID,
                                request_id));
