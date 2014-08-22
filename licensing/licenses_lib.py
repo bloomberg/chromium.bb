@@ -255,7 +255,7 @@ class PackageInfo(object):
     #
     # These define the package uniquely.
     #
-    self.board = None
+    self.board = None  # This field is optional, based on entry path.
     self.category = None
     self.name = None
     self.version = None
@@ -287,6 +287,7 @@ class PackageInfo(object):
 
   @property
   def fullnamerev(self):
+    """e.g. libnl/libnl-3.2.24-r12"""
     s = '%s-%s' % (self.fullname, self.version)
     if self.revision:
       s += '-r%s' % self.revision
@@ -294,11 +295,15 @@ class PackageInfo(object):
 
   @property
   def fullname(self):
+    """e.g. libnl/libnl-3.2.24"""
     return '%s/%s' % (self.category, self.name)
 
   @property
   def license_dump_path(self):
-    """e.g. /build/x86-alex//var/db/pkg/sys-apps/dtc-1.4.0/license.yaml."""
+    """e.g. /build/x86-alex/var/db/pkg/sys-apps/dtc-1.4.0/license.yaml.
+
+    Only valid for packages that have already been emerged.
+    """
     return os.path.join(cros_build_lib.GetSysroot(self.board),
                         PER_PKG_LICENSE_DIR, self.fullnamerev, 'license.yaml')
 
@@ -312,7 +317,6 @@ class PackageInfo(object):
     Returns:
       ebuild command output
     """
-
     return cros_build_lib.RunCommand(
         ['ebuild-%s' % self.board, ebuild_path] + phases, print_cmd=debug,
         redirect_stdout=True)
@@ -550,24 +554,19 @@ being scraped currently).""",
     Raises:
       AssertionError if it can't be discovered for some reason.
     """
-    # By default, equery returns the latest version of the package. A
-    # build may have used an older version than what is currently
-    # available in the source tree (a build dependency can be pinned
-    # to an older version of a package for compatibility
-    # reasons). Therefore we need to tell equery that we want the
-    # exact version number used in the image build as opposed to the
-    # latest available in the source tree.
     args = ['equery-%s' % self.board, '-q', '-C', 'which', self.fullnamerev]
     try:
       path = cros_build_lib.RunCommand(args, print_cmd=True,
                                        redirect_stdout=True).output.strip()
-      if not path:
-        raise AssertionError
-    except:
+    except cros_build_lib.RunCommandError:
+      path = None
+
+    # Path can be false because of an exception, or a command result.
+    if not path:
       raise AssertionError('_FindEbuildPath for %s failed.\n'
-                           'Is your tree clean? Delete %s and rebuild' %
-                           (self.name,
-                            cros_build_lib.GetSysroot(board=self.board)))
+                           'Is your tree clean? Try a rebuild?' %
+                           self.fullnamerev)
+
     logging.debug("%s -> %s", " ".join(args), path)
 
     if not os.access(path, os.F_OK):
@@ -576,7 +575,11 @@ being scraped currently).""",
     return path
 
   def _ReadEbuildMetadata(self):
-    """Read package metadata retrieved via portageq."""
+    """Read package metadata retrieved via portageq.
+
+    Returns:
+      Tuple of: ([List of homepage URLs], [List of license names])
+    """
     args = ['portageq-%s' % self.board, 'metadata',
             cros_build_lib.GetSysroot(board=self.board), 'ebuild',
             self.fullnamerev, 'HOMEPAGE', 'LICENSE']
@@ -607,7 +610,11 @@ being scraped currently).""",
     return bool(lines)
 
   def GetLicenses(self, build_info_dir, src_dir):
-    """Get licenses from the ebuild field and the unpacked source code.
+    """Populate the license related fields.
+
+    Fields populated:
+      license_names, license_text_scanned, homepages,
+      skip, licensing_failed
 
     Some packages have static license mappings applied to them that get
     retrieved from the ebuild.
@@ -1234,8 +1241,8 @@ def HookPackageProcess(pkg_build_path):
   pkg = PackageInfo()
   pkg.GetPackageInfo(fullnamewithrev)
   if not pkg.skip:
-    src_dir = "%s/work" % pkg_build_path
+    src_dir = os.path.join(pkg_build_path, 'work')
     pkg.GetLicenses(build_info_dir, src_dir)
 
-  pkg.SaveLicenseDump("%s/build-info/license.yaml" % pkg_build_path)
-
+  pkg.SaveLicenseDump(os.path.join(pkg_build_path, 'build-info',
+                      'license.yaml'))
