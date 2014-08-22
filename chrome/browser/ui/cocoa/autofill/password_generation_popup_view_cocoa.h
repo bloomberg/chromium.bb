@@ -7,6 +7,7 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/mac/scoped_nsobject.h"
 #include "chrome/browser/ui/autofill/password_generation_popup_controller.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_popup_base_view_cocoa.h"
 
@@ -23,9 +24,12 @@ class AutofillPopupController;
   // The cross-platform controller for this view.
   __weak autofill::PasswordGenerationPopupController* controller_;
 
-  __weak NSTextField* passwordField_;
-  __weak NSTextField* passwordSubtextField_;
-  __weak HyperlinkTextView* helpTextView_;
+  base::scoped_nsobject<NSView> passwordSection_;
+  base::scoped_nsobject<NSTextField> passwordField_;
+  base::scoped_nsobject<NSTextField> passwordTitleField_;
+  base::scoped_nsobject<NSImageView> keyIcon_;
+  base::scoped_nsobject<NSBox> divider_;
+  base::scoped_nsobject<HyperlinkTextView> helpTextView_;
 }
 
 // Designated initializer.
@@ -33,9 +37,16 @@ class AutofillPopupController;
     (autofill::PasswordGenerationPopupController*)controller
                    frame:(NSRect)frame;
 
+// Determines whether |point| falls inside the password section of the popup.
+// |point| needs to be in the popup's coordinate system.
+- (BOOL)isPointInPasswordBounds:(NSPoint)point;
+
 // Informs the view that its controller has been (or will imminently be)
 // destroyed.
 - (void)controllerDestroyed;
+
+// The preferred size for the popup.
+- (NSSize)preferredSize;
 
 @end
 

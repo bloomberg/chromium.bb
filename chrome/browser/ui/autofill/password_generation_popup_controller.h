@@ -22,6 +22,9 @@ class PasswordGenerationPopupController : public AutofillPopupViewDelegate {
   // Spacing between the border of the popup and any text.
   static const int kHorizontalPadding = 10;
 
+  // Desired height of the password section.
+  static const int kPopupPasswordSectionHeight = 62;
+
   // Called by the view when the saved passwords link is clicked.
   virtual void OnSavedPasswordsLinkClicked() = 0;
 

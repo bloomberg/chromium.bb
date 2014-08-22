@@ -4,6 +4,8 @@
 
 #import "chrome/browser/ui/cocoa/autofill/password_generation_popup_view_cocoa.h"
 
+#include <cmath>
+
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
@@ -14,6 +16,7 @@
 #import "chrome/browser/ui/cocoa/hyperlink_text_view.h"
 #import "chrome/browser/ui/cocoa/l10n_util.h"
 #include "components/autofill/core/browser/popup_item_ids.h"
+#include "grit/theme_resources.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/font_list.h"
@@ -24,10 +27,18 @@
 #include "ui/gfx/text_constants.h"
 
 using autofill::AutofillPopupView;
+using autofill::PasswordGenerationPopupController;
 using autofill::PasswordGenerationPopupView;
 using base::scoped_nsobject;
 
 namespace {
+
+// The height of the divider between the password and help sections, in pixels.
+const CGFloat kDividerHeight = 1;
+
+// The amount of whitespace, in pixels, between lines of text in the password
+// section.
+const CGFloat kPasswordSectionVerticalSeparation = 5;
 
 NSColor* DividerColor() {
   return gfx::SkColorToCalibratedNSColor(
@@ -65,30 +76,52 @@ NSColor* HelpLinkColor() {
   if (self = [super initWithDelegate:controller frame:frame]) {
     controller_ = controller;
 
-    passwordField_ = [self textFieldWithText:controller_->password()
-                                       color:[self nameColor]
-                                   alignment:NSLeftTextAlignment];
-    [self addSubview:passwordField_];
+    passwordSection_.reset([[NSView alloc] initWithFrame:NSZeroRect]);
+    [self addSubview:passwordSection_];
 
-    passwordSubtextField_ = [self textFieldWithText:controller_->SuggestedText()
-                                              color:[self subtextColor]
-                                          alignment:NSRightTextAlignment];
-    [self addSubview:passwordSubtextField_];
+    passwordField_.reset(
+        [[self textFieldWithText:controller_->password()
+                      attributes:[self passwordAttributes]] retain]);
+    [passwordSection_ addSubview:passwordField_];
 
-    scoped_nsobject<HyperlinkTextView> helpTextView(
-        [[HyperlinkTextView alloc] initWithFrame:NSZeroRect]);
-    [helpTextView setMessage:base::SysUTF16ToNSString(controller_->HelpText())
-                    withFont:[self textFont]
-                messageColor:HelpTextColor()];
-    [helpTextView addLinkRange:controller_->HelpTextLinkRange().ToNSRange()
-                      withName:@""
-                     linkColor:HelpLinkColor()];
-    [helpTextView setDelegate:self];
-    [[helpTextView textContainer] setLineFragmentPadding:0.0f];
-    [helpTextView setVerticallyResizable:YES];
-    [self addSubview:helpTextView];
-    helpTextView_ = helpTextView.get();
-  }
+    passwordTitleField_.reset(
+        [[self textFieldWithText:controller_->SuggestedText()
+                      attributes:[self passwordTitleAttributes]] retain]);
+    [passwordSection_ addSubview:passwordTitleField_];
+
+    keyIcon_.reset([[NSImageView alloc] initWithFrame:NSZeroRect]);
+    NSImage* keyImage = ResourceBundle::GetSharedInstance()
+        .GetImageNamed(IDR_GENERATE_PASSWORD_KEY)
+        .ToNSImage();
+    [keyIcon_ setImage:keyImage];
+    [passwordSection_ addSubview:keyIcon_];
+
+    divider_.reset([[NSBox alloc] initWithFrame:NSZeroRect]);
+    [divider_ setBoxType:NSBoxCustom];
+    [divider_ setBorderType:NSLineBorder];
+    [divider_ setBorderColor:DividerColor()];
+    [self addSubview:divider_];
+
+    helpTextView_.reset([[HyperlinkTextView alloc] initWithFrame:NSZeroRect]);
+    [helpTextView_ setMessage:base::SysUTF16ToNSString(controller_->HelpText())
+                     withFont:[self textFont]
+                 messageColor:HelpTextColor()];
+    [helpTextView_ addLinkRange:controller_->HelpTextLinkRange().ToNSRange()
+                       withName:@""
+                      linkColor:HelpLinkColor()];
+    [helpTextView_ setDelegate:self];
+    [helpTextView_ setDrawsBackground:YES];
+    [helpTextView_ setBackgroundColor:HelpTextBackgroundColor()];
+    [helpTextView_
+        setTextContainerInset:NSMakeSize(controller_->kHorizontalPadding,
+                                         controller_->kHelpVerticalPadding)];
+    // Remove the underlining.
+    NSTextStorage* text = [helpTextView_ textStorage];
+    [text addAttribute:NSUnderlineStyleAttributeName
+                 value:@(NSUnderlineStyleNone)
+                 range:controller_->HelpTextLinkRange().ToNSRange()];
+    [self addSubview:helpTextView_];
+}
 
   return self;
 }
@@ -96,6 +129,8 @@ NSColor* HelpLinkColor() {
 #pragma mark NSView implementation:
 
 - (void)drawRect:(NSRect)dirtyRect {
+  [super drawRect:dirtyRect];
+
   // If the view is in the process of being destroyed, don't bother drawing.
   if (!controller_)
     return;
@@ -104,28 +139,118 @@ NSColor* HelpLinkColor() {
 
   if (controller_->password_selected()) {
     // Draw a highlight under the suggested password.
-    NSRect highlightBounds = [self passwordBounds];
+    NSRect highlightBounds = [passwordSection_ frame];
     [[self highlightColor] set];
     [NSBezierPath fillRect:highlightBounds];
   }
-
-  // Render the background of the help text.
-  [HelpTextBackgroundColor() set];
-  [NSBezierPath fillRect:[self helpBounds]];
-
-  // Render the divider.
-  [DividerColor() set];
-  [NSBezierPath fillRect:[self dividerBounds]];
 }
 
 #pragma mark Public API:
 
+- (NSSize)preferredSize {
+  const NSSize passwordTitleSize =
+      [base::SysUTF16ToNSString(controller_->SuggestedText())
+          sizeWithAttributes:@{ NSFontAttributeName : [self boldFont] }];
+  const NSSize passwordSize = [base::SysUTF16ToNSString(controller_->password())
+      sizeWithAttributes:@{ NSFontAttributeName : [self textFont] }];
+
+  CGFloat width =
+      autofill::kPopupBorderThickness +
+      controller_->kHorizontalPadding +
+      [[keyIcon_ image] size].width +
+      controller_->kHorizontalPadding +
+      std::max(passwordSize.width, passwordTitleSize.width) +
+      controller_->kHorizontalPadding +
+      autofill::kPopupBorderThickness;
+
+  width = std::max(width, (CGFloat)controller_->GetMinimumWidth());
+
+  CGFloat height =
+      autofill::kPopupBorderThickness +
+      controller_->kHelpVerticalPadding +
+      [self helpSizeForPopupWidth:width].height +
+      controller_->kHelpVerticalPadding +
+      autofill::kPopupBorderThickness;
+
+  if (controller_->display_password())
+    height += controller_->kPopupPasswordSectionHeight;
+
+  return NSMakeSize(width, height);
+}
+
 - (void)updateBoundsAndRedrawPopup {
-  [self positionView:passwordField_ inRect:[self passwordBounds]];
-  [self positionView:passwordSubtextField_ inRect:[self passwordBounds]];
-  [self positionView:helpTextView_ inRect:[self helpBounds]];
+  const CGFloat popupWidth = controller_->popup_bounds().width();
+  const CGFloat contentWidth =
+      popupWidth - (2 * autofill::kPopupBorderThickness);
+  const CGFloat contentHeight = controller_->popup_bounds().height() -
+                                (2 * autofill::kPopupBorderThickness);
+
+  if (controller_->display_password()) {
+    // The password can change while the bubble is shown: If the user has
+    // accepted the password and then selects the form again and starts deleting
+    // the password, the field will be initially invisible and then become
+    // visible.
+    [self updatePassword];
+
+    // Lay out the password section, which includes the key icon, the title, and
+    // the suggested password.
+    [passwordSection_
+        setFrame:NSMakeRect(autofill::kPopupBorderThickness,
+                            autofill::kPopupBorderThickness,
+                            contentWidth,
+                            controller_->kPopupPasswordSectionHeight)];
+
+    // The key icon falls to the left of the title and password.
+    const NSSize imageSize = [[keyIcon_ image] size];
+    const CGFloat keyX = controller_->kHorizontalPadding;
+    const CGFloat keyY =
+        std::ceil((controller_->kPopupPasswordSectionHeight / 2.0) -
+                  (imageSize.height / 2.0));
+    [keyIcon_ setFrameOrigin:NSMakePoint(keyX, keyY)];
+    [keyIcon_ sizeToFit];
+
+    // The title and password fall to the right of the key icon and are centered
+    // vertically as a group with some padding in between.
+    [passwordTitleField_ sizeToFit];
+    [passwordField_ sizeToFit];
+    const CGFloat groupHeight = NSHeight([passwordField_ frame]) +
+                                kPasswordSectionVerticalSeparation +
+                                NSHeight([passwordTitleField_ frame]);
+    const CGFloat groupX =
+        NSMaxX([keyIcon_ frame]) + controller_->kHorizontalPadding;
+    const CGFloat groupY =
+        std::ceil((controller_->kPopupPasswordSectionHeight / 2.0) -
+                  (groupHeight / 2.0));
+    [passwordField_ setFrameOrigin:NSMakePoint(groupX, groupY)];
+    const CGFloat titleY = groupY +
+                           NSHeight([passwordField_ frame]) +
+                           kPasswordSectionVerticalSeparation;
+    [passwordTitleField_ setFrameOrigin:NSMakePoint(groupX, titleY)];
+
+    // Layout the divider, which falls immediately below the password section.
+    const CGFloat dividerX = autofill::kPopupBorderThickness;
+    const CGFloat dividerY = NSMaxY([passwordSection_ frame]);
+    NSRect dividerFrame =
+        NSMakeRect(dividerX, dividerY, contentWidth, kDividerHeight);
+    [divider_ setFrame:dividerFrame];
+  }
+
+  // Layout the help section beneath the divider (if applicable, otherwise
+  // beneath the border).
+  const CGFloat helpX = autofill::kPopupBorderThickness;
+  const CGFloat helpY = controller_->display_password()
+      ? NSMaxY([divider_ frame])
+      : autofill::kPopupBorderThickness;
+  const CGFloat helpHeight = contentHeight -
+                             NSHeight([passwordSection_ frame]) -
+                             NSHeight([divider_ frame]);
+  [helpTextView_ setFrame:NSMakeRect(helpX, helpY, contentWidth, helpHeight)];
 
   [super updateBoundsAndRedrawPopup];
+}
+
+- (BOOL)isPointInPasswordBounds:(NSPoint)point {
+  return NSPointInRect(point, [passwordSection_ frame]);
 }
 
 - (void)controllerDestroyed {
@@ -144,27 +269,45 @@ NSColor* HelpLinkColor() {
 
 #pragma mark Private helpers:
 
-- (NSTextField*)textFieldWithText:(const base::string16&)text
-                            color:(NSColor*)color
-                        alignment:(NSTextAlignment)alignment {
+- (void)updatePassword {
+  base::scoped_nsobject<NSMutableAttributedString> updatedPassword(
+      [[NSMutableAttributedString alloc]
+          initWithString:base::SysUTF16ToNSString(controller_->password())
+              attributes:[self passwordAttributes]]);
+  [passwordField_ setAttributedStringValue:updatedPassword];
+}
+
+- (NSDictionary*)passwordTitleAttributes {
   scoped_nsobject<NSMutableParagraphStyle> paragraphStyle(
       [[NSMutableParagraphStyle alloc] init]);
-  [paragraphStyle setAlignment:alignment];
-
-  NSDictionary* textAttributes = @{
-    NSFontAttributeName : [self textFont],
-    NSForegroundColorAttributeName : color,
-    NSParagraphStyleAttributeName : paragraphStyle
+  [paragraphStyle setAlignment:NSLeftTextAlignment];
+  return @{
+    NSFontAttributeName : [self boldFont],
+    NSForegroundColorAttributeName : [self nameColor],
+    NSParagraphStyleAttributeName : paragraphStyle.autorelease()
   };
+}
 
+- (NSDictionary*)passwordAttributes {
+  scoped_nsobject<NSMutableParagraphStyle> paragraphStyle(
+      [[NSMutableParagraphStyle alloc] init]);
+  [paragraphStyle setAlignment:NSLeftTextAlignment];
+  return @{
+    NSFontAttributeName : [self textFont],
+    NSForegroundColorAttributeName : [self nameColor],
+    NSParagraphStyleAttributeName : paragraphStyle.autorelease()
+  };
+}
+
+- (NSTextField*)textFieldWithText:(const base::string16&)text
+                       attributes:(NSDictionary*)attributes {
+  NSTextField* textField =
+      [[[NSTextField alloc] initWithFrame:NSZeroRect] autorelease];
   scoped_nsobject<NSAttributedString> attributedString(
       [[NSAttributedString alloc]
           initWithString:base::SysUTF16ToNSString(text)
-              attributes:textAttributes]);
-
-  NSTextField* textField =
-      [[[NSTextField alloc] initWithFrame:NSZeroRect] autorelease];
-  [textField setAttributedStringValue:attributedString];
+              attributes:attributes]);
+  [textField setAttributedStringValue:attributedString.autorelease()];
   [textField setEditable:NO];
   [textField setSelectable:NO];
   [textField setDrawsBackground:NO];
@@ -172,31 +315,25 @@ NSColor* HelpLinkColor() {
   return textField;
 }
 
-- (void)positionView:(NSView*)view inRect:(NSRect)bounds {
-  NSRect frame = NSInsetRect(bounds, controller_->kHorizontalPadding, 0);
-  [view setFrame:frame];
-
-  // Center the text vertically within the bounds.
-  NSSize delta = cocoa_l10n_util::WrapOrSizeToFit(view);
-  [view setFrameOrigin:
-      NSInsetRect(frame, 0, floor(-delta.height/2)).origin];
+- (NSSize)helpSizeForPopupWidth:(CGFloat)width {
+  const CGFloat helpWidth = width -
+                            2 * controller_->kHorizontalPadding -
+                            2 * autofill::kPopupBorderThickness;
+  const NSSize size = NSMakeSize(helpWidth, MAXFLOAT);
+  NSRect textFrame = [base::SysUTF16ToNSString(controller_->HelpText())
+      boundingRectWithSize:size
+                   options:NSLineBreakByWordWrapping |
+                           NSStringDrawingUsesLineFragmentOrigin
+                attributes:@{ NSFontAttributeName : [self textFont] }];
+  return textFrame.size;
 }
 
-- (NSRect)passwordBounds {
-  return NSZeroRect;
-}
-
-- (NSRect)helpBounds {
-  return NSZeroRect;
-}
-
-- (NSRect)dividerBounds {
-  return NSZeroRect;
+- (NSFont*)boldFont {
+  return [NSFont boldSystemFontOfSize:[NSFont smallSystemFontSize]];
 }
 
 - (NSFont*)textFont {
-  return ResourceBundle::GetSharedInstance().GetFontList(
-      ResourceBundle::SmallFont).GetPrimaryFont().GetNativeFont();
+  return [NSFont systemFontOfSize:[NSFont smallSystemFontSize]];
 }
 
 @end

@@ -25,7 +25,6 @@ namespace {
 // The amount of whitespace that is present when there is no padding. Used
 // to get the proper spacing in the help section.
 const int kHelpVerticalOffset = 5;
-const int kPasswordSectionHeight = 62;
 
 // Wrapper around just the text portions of the generation UI (password and
 // prompting text).
@@ -173,7 +172,8 @@ gfx::Size PasswordGenerationPopupViewViews::GetPreferredSizeOfPasswordView() {
   int height = kPopupBorderThickness;
   if (controller_->display_password()) {
     // Add divider height as well.
-    height += kPasswordSectionHeight + 1;
+    height +=
+        PasswordGenerationPopupController::kPopupPasswordSectionHeight + 1;
   }
   int width = controller_->GetMinimumWidth();
   int popup_width = width - 2 * kPopupBorderThickness;
@@ -217,7 +217,10 @@ void PasswordGenerationPopupViewViews::Layout() {
     // it), but it can't change the other way around.
     CreatePasswordView();
     password_view_->SetBounds(
-        kPopupBorderThickness, y, popup_width, kPasswordSectionHeight);
+        kPopupBorderThickness,
+        y,
+        popup_width,
+        PasswordGenerationPopupController::kPopupPasswordSectionHeight);
     divider_bounds_ =
         gfx::Rect(kPopupBorderThickness, password_view_->bounds().bottom(),
                   popup_width, 1);

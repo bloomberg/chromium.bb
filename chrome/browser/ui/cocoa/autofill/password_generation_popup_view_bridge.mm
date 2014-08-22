@@ -9,8 +9,7 @@
 #include "base/logging.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
 #import "chrome/browser/ui/cocoa/autofill/password_generation_popup_view_cocoa.h"
-#include "ui/base/cocoa/window_size_constants.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/size.h"
 
 namespace autofill {
 
@@ -36,8 +35,7 @@ void PasswordGenerationPopupViewBridge::Show() {
 }
 
 gfx::Size PasswordGenerationPopupViewBridge::GetPreferredSizeOfPasswordView() {
-  // TODO(gcasto): Implement this function.
-  return gfx::Size();
+  return gfx::Size(NSSizeToCGSize([view_ preferredSize]));
 }
 
 void PasswordGenerationPopupViewBridge::UpdateBoundsAndRedrawPopup() {
@@ -50,8 +48,7 @@ void PasswordGenerationPopupViewBridge::PasswordSelectionUpdated() {
 
 bool PasswordGenerationPopupViewBridge::IsPointInPasswordBounds(
     const gfx::Point& point) {
-  // TODO(gcasto): Implement this function.
-  return true;
+  return [view_ isPointInPasswordBounds:NSPointFromCGPoint(point.ToCGPoint())];
 }
 
 PasswordGenerationPopupView* PasswordGenerationPopupView::Create(
