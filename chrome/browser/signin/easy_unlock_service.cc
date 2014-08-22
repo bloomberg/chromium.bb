@@ -290,7 +290,15 @@ void EasyUnlockService::Initialize() {
       base::Bind(&EasyUnlockService::OnPrefsChanged, base::Unretained(this)));
   OnPrefsChanged();
 
+#if defined(OS_CHROMEOS)
+  // Only start Bluetooth detection for ChromeOS since the feature is
+  // only offered on ChromeOS. Enabling this on non-ChromeOS platforms
+  // previously introduced a performance regression: http://crbug.com/404482
+  // Make sure not to reintroduce a performance regression if re-enabling on
+  // additional platforms.
+  // TODO(xiyuan): Revisit when non-chromeos platforms are supported.
   bluetooth_detector_->Initialize();
+#endif  // defined(OS_CHROMEOS)
 }
 
 void EasyUnlockService::LoadApp() {
