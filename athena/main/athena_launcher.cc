@@ -9,6 +9,7 @@
 #include "athena/content/public/app_registry.h"
 #include "athena/content/public/content_activity_factory.h"
 #include "athena/content/public/content_app_model_builder.h"
+#include "athena/extensions/public/extensions_delegate.h"
 #include "athena/home/public/home_card.h"
 #include "athena/home/public/home_card.h"
 #include "athena/input/public/input_manager.h"
@@ -126,6 +127,7 @@ void StartAthenaEnv(aura::Window* root_window,
 }
 
 void StartAthenaSessionWithContext(content::BrowserContext* context) {
+  athena::ExtensionsDelegate::CreateExtensionsDelegateForShell(context);
   StartAthenaSession(new athena::ContentActivityFactory(),
                      new athena::ContentAppModelBuilder(context));
   athena::VirtualKeyboardManager::Create(context);
@@ -156,6 +158,7 @@ void ShutdownAthena() {
   athena::ScreenManager::Shutdown();
   athena::InputManager::Shutdown();
   athena::SystemUI::Shutdown();
+  athena::ExtensionsDelegate::Shutdown();
 
   delete views::ViewsDelegate::views_delegate;
 }

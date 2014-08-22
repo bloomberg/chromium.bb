@@ -9,7 +9,6 @@
 #include "athena/content/public/app_content_control_delegate.h"
 #include "athena/content/public/app_registry.h"
 #include "athena/test/athena_test_base.h"
-#include "extensions/shell/browser/shell_app_window.h"
 #include "ui/aura/window.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"

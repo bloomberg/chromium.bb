@@ -6,25 +6,17 @@
 
 #include "athena/activity/public/activity_factory.h"
 #include "athena/activity/public/activity_manager.h"
+#include "athena/extensions/public/extensions_delegate.h"
 #include "extensions/browser/extension_icon_image.h"
 #include "extensions/common/constants.h"
-#include "extensions/common/extension.h"
+#include "extensions/common/extension_set.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
-#include "extensions/shell/browser/shell_extension_system.h"
 #include "ui/app_list/app_list_item.h"
 #include "ui/app_list/app_list_model.h"
-
-using extensions::ShellExtensionSystem;
 
 namespace athena {
 
 namespace {
-
-ShellExtensionSystem* GetShellExtensionSystem(
-    content::BrowserContext* context) {
-  return static_cast<ShellExtensionSystem*>(
-      extensions::ExtensionSystem::Get(context));
-}
 
 gfx::ImageSkia CreateFlatColorImage(SkColor color) {
   SkBitmap bitmap;
@@ -64,7 +56,7 @@ class DummyItem : public app_list::AppListItem {
 
 class AppItem : public app_list::AppListItem {
  public:
-  AppItem(scoped_refptr<extensions::Extension> extension,
+  AppItem(scoped_refptr<const extensions::Extension> extension,
           content::BrowserContext* browser_context)
       : app_list::AppListItem(extension->id()),
         extension_(extension),
@@ -84,12 +76,10 @@ class AppItem : public app_list::AppListItem {
  private:
   // Overridden from app_list::AppListItem:
   virtual void Activate(int event_flags) OVERRIDE {
-    // TODO(mukai): Pass |extension_| when the extension system supports
-    // multiple extensions.
-    GetShellExtensionSystem(browser_context_)->LaunchApp();
+    ExtensionsDelegate::Get(browser_context_)->LaunchApp(extension_->id());
   }
 
-  scoped_refptr<extensions::Extension> extension_;
+  scoped_refptr<const extensions::Extension> extension_;
   content::BrowserContext* browser_context_;
   extensions::IconImage icon_image_;
 
@@ -107,11 +97,13 @@ ContentAppModelBuilder::~ContentAppModelBuilder() {
 }
 
 void ContentAppModelBuilder::PopulateApps(app_list::AppListModel* model) {
-  ShellExtensionSystem* extension_system =
-      GetShellExtensionSystem(browser_context_);
-  if (extension_system && extension_system->extension()) {
+  ExtensionsDelegate* bridge = ExtensionsDelegate::Get(browser_context_);
+  const extensions::ExtensionSet& extensions = bridge->GetInstalledExtensions();
+  for (extensions::ExtensionSet::const_iterator iter = extensions.begin();
+       iter != extensions.end();
+       ++iter) {
     model->AddItem(scoped_ptr<app_list::AppListItem>(
-        new AppItem(extension_system->extension(), browser_context_)));
+        new AppItem(*iter, browser_context_)));
   }
 
   model->AddItem(scoped_ptr<app_list::AppListItem>(new DummyItem(

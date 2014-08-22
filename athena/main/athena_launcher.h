@@ -24,14 +24,14 @@ class ActivityFactory;
 class AppModelBuilder;
 class ScreenManagerDelegate;
 
-// Starts/shuts down the athena shell environment.
+// Starts down the athena shell environment.
 void StartAthenaEnv(aura::Window* root_window,
                     ScreenManagerDelegate* screen_manager_delegate,
                     scoped_refptr<base::TaskRunner> file_runner);
 
 void StartAthenaSessionWithContext(content::BrowserContext* context);
 
-// Starts/shuts down the athena shell environment.
+// Starts the athena session.
 void StartAthenaSession(ActivityFactory* activity_factory,
                         AppModelBuilder* app_model_builder);
 

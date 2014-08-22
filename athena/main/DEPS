@@ -1,6 +1,7 @@
 include_rules = [
   "+athena/activity/public",
   "+athena/content/public",
+  "+athena/extensions/public",
   "+athena/home/public",
   "+athena/input/public",
   "+athena/screen/public",
@@ -36,9 +37,6 @@ specific_include_rules = {
   ],
   "athena_app_window_controller\.*": [
     "+extensions/shell/browser",
-  ],
-  "athena_shell\.cc": [
-    "+athena/test",
   ],
 # TODO(oshima): Remove this.
   "placeholder\.*": [

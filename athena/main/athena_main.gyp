@@ -27,11 +27,9 @@
         '../../components/components.gyp:infobars_test_support',
         '../../components/components.gyp:omnibox',
         '../../components/components.gyp:search_engines',
-        '../../extensions/shell/app_shell.gyp:app_shell_lib',
         '../../skia/skia.gyp:skia',
         '../../ui/app_list/app_list.gyp:app_list',
         '../../ui/chromeos/ui_chromeos.gyp:ui_chromeos',
-        '../../ui/keyboard/keyboard.gyp:keyboard',
         '../../ui/native_theme/native_theme.gyp:native_theme',
         '../../ui/views/views.gyp:views',
         '../../url/url.gyp:url_lib',
@@ -40,8 +38,6 @@
         '../..',
       ],
       'sources': [
-        'athena_app_window_controller.cc',
-        'athena_app_window_controller.h',
         'athena_launcher.cc',
         'athena_launcher.h',
         'debug/debug_window.cc',
@@ -60,12 +56,15 @@
       'dependencies': [
         '../../ui/accessibility/accessibility.gyp:ax_gen',
         '../resources/athena_resources.gyp:athena_pak',
+	'../../extensions/shell/app_shell.gyp:app_shell_lib',
         'athena_main_lib',
       ],
       'include_dirs': [
         '../..',
       ],
       'sources': [
+        'athena_app_window_controller.cc',
+        'athena_app_window_controller.h',
         'athena_main.cc',
       ],
     }

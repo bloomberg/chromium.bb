@@ -4,6 +4,7 @@
 
 #include "athena/test/athena_test_helper.h"
 
+#include "athena/extensions/public/extensions_delegate.h"
 #include "athena/main/athena_launcher.h"
 #include "athena/screen/public/screen_manager.h"
 #include "athena/test/sample_activity_factory.h"
@@ -96,6 +97,7 @@ void AthenaTestHelper::SetUp(ui::ContextFactory* context_factory) {
 
   athena::StartAthenaEnv(root_window(), screen_manager_delegate_.get(),
                          file_thread_->message_loop_proxy());
+  athena::ExtensionsDelegate::CreateExtensionsDelegateForTest();
   athena::StartAthenaSession(new SampleActivityFactory(),
                              new TestAppModelBuilder());
 }
