@@ -36,7 +36,7 @@
 ActiveDOMObject
 CachedAttribute=*
 CallWith=ExecutionContext|ScriptState|ScriptArguments|ActiveWindow|FirstWindow|ThisValue
-CheckSecurity=Frame|Node
+CheckSecurity=Frame|Node|Window
 Clamp
 Conditional=*
 Constructor

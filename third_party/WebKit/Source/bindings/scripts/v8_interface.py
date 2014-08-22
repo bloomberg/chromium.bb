@@ -146,6 +146,10 @@ def interface_context(interface):
         'conditional_string': conditional_string(interface),  # [Conditional]
         'cpp_class': cpp_name(interface),
         'gc_type': this_gc_type,
+        # FIXME: Remove 'EventTarget' special handling, http://crbug.com/383699
+        'has_access_check_callbacks': (is_check_security and
+                                       interface.name != 'Window' and
+                                       interface.name != 'EventTarget'),
         'has_custom_legacy_call_as_function': has_extended_attribute_value(interface, 'Custom', 'LegacyCallAsFunction'),  # [Custom=LegacyCallAsFunction]
         'has_custom_to_v8': has_extended_attribute_value(interface, 'Custom', 'ToV8'),  # [Custom=ToV8]
         'has_custom_wrap': has_extended_attribute_value(interface, 'Custom', 'Wrap'),  # [Custom=Wrap]

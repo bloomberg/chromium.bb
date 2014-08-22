@@ -121,9 +121,16 @@ def method_context(interface, method):
     if is_custom_element_callbacks:
         includes.add('core/dom/custom/CustomElementCallbackDispatcher.h')
 
+    is_do_not_check_security = 'DoNotCheckSecurity' in extended_attributes
+
     is_check_security_for_frame = (
-        'CheckSecurity' in interface.extended_attributes and
-        'DoNotCheckSecurity' not in extended_attributes)
+        has_extended_attribute_value(interface, 'CheckSecurity', 'Frame') and
+        not is_do_not_check_security)
+
+    is_check_security_for_window = (
+        has_extended_attribute_value(interface, 'CheckSecurity', 'Window') and
+        not is_do_not_check_security)
+
     is_raises_exception = 'RaisesException' in extended_attributes
 
     arguments_need_try_catch = (
@@ -154,7 +161,7 @@ def method_context(interface, method):
         'has_exception_state':
             is_raises_exception or
             is_check_security_for_frame or
-            interface.name == 'EventTarget' or  # FIXME: merge with is_check_security_for_frame http://crbug.com/383699
+            is_check_security_for_window or
             any(argument for argument in arguments
                 if argument.idl_type.name == 'SerializedScriptValue' or
                    argument.idl_type.may_raise_exception_on_conversion),
@@ -164,9 +171,10 @@ def method_context(interface, method):
         'is_call_with_script_state': is_call_with_script_state,
         'is_check_security_for_frame': is_check_security_for_frame,
         'is_check_security_for_node': is_check_security_for_node,
+        'is_check_security_for_window': is_check_security_for_window,
         'is_custom': 'Custom' in extended_attributes,
         'is_custom_element_callbacks': is_custom_element_callbacks,
-        'is_do_not_check_security': 'DoNotCheckSecurity' in extended_attributes,
+        'is_do_not_check_security': is_do_not_check_security,
         'is_do_not_check_signature': 'DoNotCheckSignature' in extended_attributes,
         'is_explicit_nullable': idl_type.is_explicit_nullable,
         'is_implemented_in_private_script': is_implemented_in_private_script,

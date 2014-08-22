@@ -19,6 +19,7 @@
  */
 
 [
+    CheckSecurity=Window,
     Custom=ToV8,
     WillBeGarbageCollected,
 ] interface EventTarget {

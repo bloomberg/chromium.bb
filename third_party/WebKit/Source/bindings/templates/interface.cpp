@@ -110,7 +110,7 @@ static void {{cpp_class}}ForceSetAttributeOnThisCallback(v8::Local<v8::String> n
 
 {##############################################################################}
 {% block security_check_functions %}
-{% if is_check_security and interface_name != 'Window' %}
+{% if has_access_check_callbacks %}
 bool indexedSecurityCheck(v8::Local<v8::Object> host, uint32_t index, v8::AccessType type, v8::Local<v8::Value>)
 {
     {{cpp_class}}* impl = {{v8_class}}::toNative(host);
@@ -917,7 +917,7 @@ static void install{{v8_class}}Template(v8::Handle<v8::FunctionTemplate> functio
     {% endif %}
     v8::Local<v8::ObjectTemplate> instanceTemplate ALLOW_UNUSED = functionTemplate->InstanceTemplate();
     v8::Local<v8::ObjectTemplate> prototypeTemplate ALLOW_UNUSED = functionTemplate->PrototypeTemplate();
-    {% if is_check_security and interface_name != 'Window' %}
+    {% if has_access_check_callbacks %}
     instanceTemplate->SetAccessCheckCallbacks({{cpp_class}}V8Internal::namedSecurityCheck, {{cpp_class}}V8Internal::indexedSecurityCheck, v8::External::New(isolate, const_cast<WrapperTypeInfo*>(&{{v8_class}}::wrapperTypeInfo)));
     {% endif %}
     {% for attribute in attributes
