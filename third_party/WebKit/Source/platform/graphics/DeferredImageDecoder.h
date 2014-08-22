@@ -27,6 +27,7 @@
 #define DeferredImageDecoder_h
 
 #include "SkBitmap.h"
+#include "SkPixelRef.h"
 #include "platform/PlatformExport.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/ImageFrameGenerator.h"

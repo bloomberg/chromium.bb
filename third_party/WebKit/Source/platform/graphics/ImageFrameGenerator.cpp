@@ -73,7 +73,7 @@ ImageFrameGenerator::ImageFrameGenerator(const SkISize& fullSize, PassRefPtr<Sha
     : m_fullSize(fullSize)
     , m_isMultiFrame(isMultiFrame)
     , m_decodeFailedAndEmpty(false)
-    , m_decodeCount(ScaledImageFragment::FirstPartialImage)
+    , m_decodeCount(0)
 {
     setData(data.get(), allDataReceived);
 }
@@ -110,7 +110,7 @@ bool ImageFrameGenerator::decodeAndScale(const SkImageInfo& info, size_t index, 
     if (m_decodeFailedAndEmpty)
         return 0;
 
-    TRACE_EVENT2("blink", "ImageFrameGenerator::decodeAndScale", "generator", this, "decodeCount", static_cast<int>(m_decodeCount));
+    TRACE_EVENT2("blink", "ImageFrameGenerator::decodeAndScale", "generator", this, "decodeCount", m_decodeCount);
 
     m_externalAllocator = adoptPtr(new ExternalMemoryAllocator(info, pixels, rowBytes));
 
@@ -175,7 +175,7 @@ SkBitmap ImageFrameGenerator::tryToResumeDecode(const SkISize& scaledSize, size_
         else
             ImageDecodingStore::instance()->unlockDecoder(this, decoder);
     } else if (!removeDecoder) {
-        ImageDecodingStore::instance()->insertDecoder(this, decoderContainer.release(), false);
+        ImageDecodingStore::instance()->insertDecoder(this, decoderContainer.release());
     }
     return fullSizeImage;
 }

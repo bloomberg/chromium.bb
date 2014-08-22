@@ -78,8 +78,6 @@ bool DeferredImageDecoder::isLazyDecoded(const SkBitmap& bitmap)
 void DeferredImageDecoder::setEnabled(bool enabled)
 {
     s_enabled = enabled;
-    if (enabled)
-        ImageDecodingStore::setImageCachingEnabled(false);
 }
 
 bool DeferredImageDecoder::enabled()

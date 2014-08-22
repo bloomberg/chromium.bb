@@ -96,17 +96,12 @@ private:
     // |complete| will be true if decoding was complete.
     SkBitmap decode(size_t index, ImageDecoder**, bool* complete);
 
-    // Return the next generation ID of a new image object. This is used
-    // to identify images of the same frame from different stages of
-    // progressive decode.
-    size_t nextGenerationId() { return m_decodeCount++; }
-
     SkISize m_fullSize;
     ThreadSafeDataTransport m_data;
     bool m_isMultiFrame;
     bool m_decodeFailedAndEmpty;
     Vector<bool> m_hasAlpha;
-    size_t m_decodeCount;
+    int m_decodeCount;
     OwnPtr<ExternalMemoryAllocator> m_externalAllocator;
 
     OwnPtr<ImageDecoderFactory> m_imageDecoderFactory;
