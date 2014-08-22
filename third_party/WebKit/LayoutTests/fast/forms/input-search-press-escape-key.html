@@ -26,7 +26,7 @@ if (window.testRunner && window.eventSender) {
     searchEventObserved = false;
     input.focus();
     setInputAttributes(input, "foo", enabled);
-    eventSender.keyDown("\x1B");
+    eventSender.keyDown("escape");
     shouldBeEqualToString('input.value', "");
     shouldBe('searchEventObserved', 'true');
     input.blur();
@@ -34,7 +34,7 @@ if (window.testRunner && window.eventSender) {
     searchEventObserved = false;
     input.focus();
     setInputAttributes(input, "", enabled);
-    eventSender.keyDown("\x1B");
+    eventSender.keyDown("escape");
     shouldBeEqualToString('input.value', "");
     shouldBe('searchEventObserved', 'true');
     input.blur();
@@ -42,7 +42,7 @@ if (window.testRunner && window.eventSender) {
     searchEventObserved = false;
     input.focus();
     setInputAttributes(input, "foo", enabled, readonly);
-    eventSender.keyDown("\x1B");
+    eventSender.keyDown("escape");
     shouldBeEqualToString('input.value', "foo");
     shouldBe('searchEventObserved', 'false');
     input.blur();
@@ -50,7 +50,7 @@ if (window.testRunner && window.eventSender) {
     searchEventObserved = false;
     input.focus();
     setInputAttributes(input, "foo", disabled);
-    eventSender.keyDown("\x1B");
+    eventSender.keyDown("escape");
     shouldBeEqualToString('input.value', "foo");
     shouldBe('searchEventObserved', 'false');
     input.blur();
@@ -58,7 +58,7 @@ if (window.testRunner && window.eventSender) {
     searchEventObserved = false;
     input.focus();
     setInputAttributes(input, "foo", disabled, readonly);
-    eventSender.keyDown("\x1B");
+    eventSender.keyDown("escape");
     shouldBeEqualToString('input.value', "foo");
     shouldBe('searchEventObserved', 'false');
     input.blur();

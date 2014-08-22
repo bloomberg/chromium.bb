@@ -22,7 +22,7 @@ function test(platform, selectionExpected, result)
     eventSender.mouseMoveTo(x, y);
     eventSender.contextClick();
     // esc key to kill the context menu
-    eventSender.keyDown(String.fromCharCode(0x001B), null);
+    eventSender.keyDown("escape", null);
 
     var resultElement = document.getElementById(result);
     var selectionType = window.getSelection().type;

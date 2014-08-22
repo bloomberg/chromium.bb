@@ -63,36 +63,36 @@ function test() {
         return;
 
     debug('Top dialog event listener should prevent closing.');
-    eventSender.keyDown("\x1B");
+    eventSender.keyDown("escape");
     shouldBeTrue('topDialog.open');
     shouldBeTrue('bottomDialog.open');
 
     debug('Top dialog should close.');
-    eventSender.keyDown("\x1B");
+    eventSender.keyDown("escape");
     shouldBeFalse('topDialog.open');
     shouldBeTrue('bottomDialog.open');
 
     debug('Input should swallow Escape mechanism.');
     swallowInput.focus();
-    eventSender.keyDown("\x1B");
-    eventSender.keyDown("\x1B");
-    eventSender.keyDown("\x1B");
+    eventSender.keyDown("escape");
+    eventSender.keyDown("escape");
+    eventSender.keyDown("escape");
     shouldBeFalse('topDialog.open');
     shouldBeTrue('bottomDialog.open');
 
     normalInput.focus();
     debug('Bottom dialog event listener should prevent closing.');
-    eventSender.keyDown("\x1B");
+    eventSender.keyDown("escape");
     shouldBeFalse('topDialog.open');
     shouldBeTrue('bottomDialog.open');
 
     debug('Bottom dialog should close.');
-    eventSender.keyDown("\x1B");
+    eventSender.keyDown("escape");
     shouldBeFalse('topDialog.open');
     shouldBeFalse('bottomDialog.open');
 
     debug('Pressing Escape now should do nothing.');
-    eventSender.keyDown("\x1B");
+    eventSender.keyDown("escape");
     shouldBeFalse('topDialog.open');
     shouldBeFalse('bottomDialog.open');
 

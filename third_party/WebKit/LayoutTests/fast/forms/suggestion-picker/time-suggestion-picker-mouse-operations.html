@@ -45,14 +45,14 @@ window.onload = function() {
 
 function test1() {
     debug('Check that page popup exists.');
-    shouldBe('popupWindow.pagePopupController.toString()', '"[object PagePopupController]"');
+    shouldBeEqualToString('popupWindow.pagePopupController.toString()', '[object PagePopupController]');
 
     debug('Check that page popup exists.');
-    shouldBe('popupWindow.pagePopupController.toString()', '"[object PagePopupController]"');
+    shouldBeEqualToString('popupWindow.pagePopupController.toString()', '[object PagePopupController]');
 
     debug('Check that hovering over an entry highlights it.');
     hoverOverElement(popupWindow.document.querySelector(".suggestion-list-entry:nth-child(2)"));
-    shouldBe('highlightedEntry()', '"01:02"');
+    shouldBeEqualToString('highlightedEntry()', '01:02');
 
     debug('Check that moving the mouse outside the popup de-highlights entries.');
     hoverOverElement(document.getElementById('description'));
@@ -65,7 +65,7 @@ function test1() {
 
 function test1AfterClosing() {
     shouldBeNull('document.getElementById("mock-page-popup")');
-    shouldBe('document.getElementById("time").value', '"01:03"');
+    shouldBeEqualToString('document.getElementById("time").value', '01:03');
 
     openPicker($('time'), test2);
 }
@@ -89,7 +89,7 @@ function test2() {
     shouldBeTrue('scrollTopBeforeWheelEvent > scrollTopAfterWheelEvent');
 
     popupWindow.focus();
-    eventSender.keyDown('\x1B');
+    eventSender.keyDown('escape');
     waitUntilClosing(test2AfterClosing);
 }
 

@@ -30,7 +30,7 @@ initSpellTest("destination", "wellcome home.", function(textNode) {
         eventSender.mouseMoveTo(x, y);
         contextMenuElements = eventSender.contextClick();
         // Esc key to hide the context menu.
-        eventSender.keyDown(String.fromCharCode(0x001B), null);
+        eventSender.keyDown("escape", null);
 
         spellingMarkerRange = internals.markerRangeForNode(textNode, "spelling", 0);
         shouldBeEqualToString("spellingMarkerRange.toString()", "wellcome");
@@ -46,7 +46,7 @@ initSpellTest("destination", "wellcome home.", function(textNode) {
         eventSender.mouseMoveTo(x, y);
         contextMenuElements = eventSender.contextClick();
         // Esc key to hide the context menu.
-        eventSender.keyDown(String.fromCharCode(0x001B), null);
+        eventSender.keyDown("escape", null);
 
         // Context click should select correctly spelled words only with "win" editing behavior.
         if (behaviors[i] == "mac")

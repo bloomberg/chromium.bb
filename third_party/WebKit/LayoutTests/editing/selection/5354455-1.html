@@ -23,7 +23,7 @@ function test(platform, result) {
     // Right click on the paragraph break to select it.
     eventSender.contextClick();
     // esc key to kill the context menu.
-    eventSender.keyDown(String.fromCharCode(0x001B), null);
+    eventSender.keyDown("escape", null);
     
     document.getElementById(result).innerHTML = window.getSelection().type;
 }

@@ -31,7 +31,7 @@ initSpellTest("destination", "wellcome home.", function(textNode) {
         eventSender.keyDown("menu");
 
         // Esc to close the context menu.
-        eventSender.keyDown(String.fromCharCode(0x001B));
+        eventSender.keyDown("escape");
 
         shouldBeEqualToString("window.getSelection().toString()", "wellcome");
     }

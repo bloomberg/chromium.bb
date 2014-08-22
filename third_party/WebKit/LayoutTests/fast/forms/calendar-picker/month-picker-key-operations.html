@@ -19,7 +19,7 @@ openPicker(document.getElementById('month'), test1);
 
 function test1() {
     debug('Check that page popup exists.');
-    shouldBe('popupWindow.pagePopupController.toString()', '"[object PagePopupController]"');
+    shouldBeEqualToString('popupWindow.pagePopupController.toString()', '[object PagePopupController]');
 
     shouldBeFalse('isCalendarTableScrollingWithAnimation()');
     shouldBeEqualToString('currentMonth()', '2000-01');
@@ -153,18 +153,18 @@ function test1() {
     shouldBeEqualToString('selectedDayCells()', '2000-02-01,2000-02-02,2000-02-03,2000-02-04,2000-02-05,2000-02-06,2000-02-07,2000-02-08,2000-02-09,2000-02-10,2000-02-11,2000-02-12,2000-02-13,2000-02-14,2000-02-15,2000-02-16,2000-02-17,2000-02-18,2000-02-19,2000-02-20,2000-02-21,2000-02-22,2000-02-23,2000-02-24,2000-02-25,2000-02-26,2000-02-27,2000-02-28,2000-02-29');
     shouldBeEqualToString('highlightedValue()', '2000-02');
     shouldBeEqualToString('highlightedDayCells()', '2000-02-01,2000-02-02,2000-02-03,2000-02-04,2000-02-05,2000-02-06,2000-02-07,2000-02-08,2000-02-09,2000-02-10,2000-02-11,2000-02-12,2000-02-13,2000-02-14,2000-02-15,2000-02-16,2000-02-17,2000-02-18,2000-02-19,2000-02-20,2000-02-21,2000-02-22,2000-02-23,2000-02-24,2000-02-25,2000-02-26,2000-02-27,2000-02-28,2000-02-29');
-    shouldBe('document.getElementById("month").value', '"2000-02"');
+    shouldBeEqualToString('document.getElementById("month").value', '2000-02');
 
     debug('Check if tabbing works.');
-    shouldBe('focusedElement()', '".list-view calendar-table-view"');
+    shouldBeEqualToString('focusedElement()', '.list-view calendar-table-view');
     eventSender.keyDown('\t', ['shiftKey']);
-    shouldBe('focusedElement()', '".calendar-navigation-button"');
+    shouldBeEqualToString('focusedElement()', '.calendar-navigation-button');
     eventSender.keyDown('\t', ['shiftKey']);
-    shouldBe('focusedElement()', '".calendar-navigation-button today-button"');
+    shouldBeEqualToString('focusedElement()', '.calendar-navigation-button today-button');
     eventSender.keyDown('\t', ['shiftKey']);
-    shouldBe('focusedElement()', '".calendar-navigation-button"');
+    shouldBeEqualToString('focusedElement()', '.calendar-navigation-button');
     eventSender.keyDown('\t', ['shiftKey']);
-    shouldBe('focusedElement()', '".month-popup-button"');
+    shouldBeEqualToString('focusedElement()', '.month-popup-button');
 
     debug('open the month popup');
     eventSender.keyDown('\n');
@@ -228,7 +228,7 @@ function test1() {
     shouldBeTrue('testToday() || testToday()');
 
     debug("press esc");
-    eventSender.keyDown('\x1B');
+    eventSender.keyDown('escape');
     waitUntilClosing(test2AfterClosing);
 }
 

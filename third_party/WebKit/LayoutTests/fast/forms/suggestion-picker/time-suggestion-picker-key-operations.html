@@ -84,11 +84,11 @@ debug('Check that page popup doesn\'t exist at first.');
 shouldBeNull('document.getElementById("mock-page-popup")');
 
 openPicker(document.getElementById('time'), test1);
-shouldBe('popupWindow.pagePopupController.toString()', '"[object PagePopupController]"');
+shouldBeEqualToString('popupWindow.pagePopupController.toString()', '[object PagePopupController]');
 
 function test1() {
     debug('Check that page popup exists.');
-    shouldBe('popupWindow.pagePopupController.toString()', '"[object PagePopupController]"');
+    shouldBeEqualToString('popupWindow.pagePopupController.toString()', '[object PagePopupController]');
     popupWindow.focus();
 
     popupWindow.removeEventListener("resize", test1, false);
@@ -96,44 +96,44 @@ function test1() {
     debug('Check that up/down arrow keys work.');
     shouldBeNull('highlightedEntry()');
     eventSender.keyDown('downArrow');
-    shouldBe('highlightedEntry()', '"01:01"');
+    shouldBeEqualToString('highlightedEntry()', '01:01');
     eventSender.keyDown('downArrow');
-    shouldBe('highlightedEntry()', '"01:02"');
+    shouldBeEqualToString('highlightedEntry()', '01:02');
     eventSender.keyDown('upArrow');
-    shouldBe('highlightedEntry()', '"01:01"');
+    shouldBeEqualToString('highlightedEntry()', '01:01');
 
     debug('Check that up arrow key at top of list does nothing.');
     eventSender.keyDown('upArrow');
-    shouldBe('highlightedEntry()', '"01:01"');
+    shouldBeEqualToString('highlightedEntry()', '01:01');
     eventSender.keyDown('downArrow');
-    shouldBe('highlightedEntry()', '"01:02"');
+    shouldBeEqualToString('highlightedEntry()', '01:02');
 
     debug('Check that page up/down arrow keys work.');
     eventSender.keyDown('pageDown');
-    shouldBe('highlightedEntry()', '"01:40"');
+    shouldBeEqualToString('highlightedEntry()', '01:40');
     eventSender.keyDown('pageDown');
-    shouldBe('highlightedEntry()', '"02:00"');
+    shouldBeEqualToString('highlightedEntry()', '02:00');
     eventSender.keyDown('pageUp');
-    shouldBe('highlightedEntry()', '"01:21"');
+    shouldBeEqualToString('highlightedEntry()', '01:21');
     eventSender.keyDown('pageDown');
-    shouldBe('highlightedEntry()', '"02:00"');
+    shouldBeEqualToString('highlightedEntry()', '02:00');
     eventSender.keyDown('pageDown');
-    shouldBe('highlightedEntry()', '"02:08"');
+    shouldBeEqualToString('highlightedEntry()', '02:08');
 
     debug('Check that down arrow key at bottom of list does nothing.');
     eventSender.keyDown('downArrow');
-    shouldBe('highlightedEntry()', '"02:08"');
+    shouldBeEqualToString('highlightedEntry()', '02:08');
     
     debug('Check that enter key sets the highlighted value.');
     eventSender.keyDown('upArrow');
-    shouldBe('highlightedEntry()', '"02:07"');
+    shouldBeEqualToString('highlightedEntry()', '02:07');
     eventSender.keyDown("\n");
     waitUntilClosing(test1AfterClosing);
 }
 
 function test1AfterClosing() {
     shouldBeNull('document.getElementById("mock-page-popup")');
-    shouldBe('document.getElementById("time").value', '"02:07"');
+    shouldBeEqualToString('document.getElementById("time").value', '02:07');
 
     debug('Reopen popup.');
     openPicker(document.getElementById('time'));
@@ -146,13 +146,13 @@ function test2() {
     popupWindow.focus();
 
     debug('Check that escape key closes the popup.');
-    eventSender.keyDown('\x1B');
+    eventSender.keyDown('escape');
     waitUntilClosing(test2AfterClosing);
 }
 
 function test2AfterClosing() {
     shouldBeNull('document.getElementById("mock-page-popup")');
-    shouldBe('document.getElementById("time").value', '"02:07"');
+    shouldBeEqualToString('document.getElementById("time").value', '02:07');
 
     sendKey(document.getElementById('time'), "F4");
     if (document.getElementById('mock-page-popup'))

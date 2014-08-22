@@ -176,7 +176,7 @@ function test3() {
     shouldBeTrue('popupWindow.document.getElementById("main").firstChild.classList.contains("calendar-picker")');
 
     debug('Check that escape key closes the popup.');
-    eventSender.keyDown('\x1B');
+    eventSender.keyDown('escape');
     waitUntilClosing(test3AfterClosing);
 }
 

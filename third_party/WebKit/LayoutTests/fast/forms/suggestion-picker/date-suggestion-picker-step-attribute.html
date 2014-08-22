@@ -51,7 +51,7 @@ function test1() {
     shouldBeEqualToString('entryValues()[5]', '2012-01-31');
     shouldBeEqualToString('entryValues()[6]', '@openCalendarPicker');
 
-    eventSender.keyDown('\x1B'); // Close picker.
+    eventSender.keyDown('escape'); // Close picker.
     waitUntilClosing(test1AfterClosing);
 }
 
@@ -69,7 +69,7 @@ function test2() {
     shouldBeEqualToString('entryValues()[2]', '2012-01-31');
     shouldBeEqualToString('entryValues()[3]', '@openCalendarPicker');
 
-    eventSender.keyDown('\x1B'); // Close picker.
+    eventSender.keyDown('escape'); // Close picker.
     waitUntilClosing(test2AfterClosing);
 }
 

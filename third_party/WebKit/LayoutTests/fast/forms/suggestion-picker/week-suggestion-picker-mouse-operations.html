@@ -132,7 +132,7 @@ function test2() {
     shouldBeTrue('scrollTopBeforeWheelEvent > scrollTopAfterWheelEvent');
 
     popupWindow.focus();
-    eventSender.keyDown('\x1B');
+    eventSender.keyDown('escape');
     waitUntilClosing(test2AfterClosing);
 }
 

@@ -93,50 +93,50 @@ var expectingDidHideEvent = false;
 
 function test1() {
     debug('Check that page popup exists.');
-    shouldBe('popupWindow.pagePopupController.toString()', '"[object PagePopupController]"');
+    shouldBeEqualToString('popupWindow.pagePopupController.toString()', '[object PagePopupController]');
     popupWindow.focus();
 
     debug('Check that up/down arrow keys work.');
     shouldBeNull('highlightedEntry()');
     eventSender.keyDown('downArrow');
-    shouldBe('highlightedEntry()', '"2012-01-01"');
+    shouldBeEqualToString('highlightedEntry()', '2012-01-01');
     eventSender.keyDown('downArrow');
-    shouldBe('highlightedEntry()', '"2012-01-02"');
+    shouldBeEqualToString('highlightedEntry()', '2012-01-02');
     eventSender.keyDown('upArrow');
-    shouldBe('highlightedEntry()', '"2012-01-01"');
+    shouldBeEqualToString('highlightedEntry()', '2012-01-01');
 
     debug('Check that up arrow key at top of list does nothing.');
     eventSender.keyDown('upArrow');
-    shouldBe('highlightedEntry()', '"2012-01-01"');
+    shouldBeEqualToString('highlightedEntry()', '2012-01-01');
     eventSender.keyDown('downArrow');
-    shouldBe('highlightedEntry()', '"2012-01-02"');
+    shouldBeEqualToString('highlightedEntry()', '2012-01-02');
 
     debug('Check that page up/down arrow keys work.');
     eventSender.keyDown('pageDown');
-    shouldBe('highlightedEntry()', '"2012-02-09"');
+    shouldBeEqualToString('highlightedEntry()', '2012-02-09');
     eventSender.keyDown('pageDown');
-    shouldBe('highlightedEntry()', '"2012-02-29"');
+    shouldBeEqualToString('highlightedEntry()', '2012-02-29');
     eventSender.keyDown('pageUp');
-    shouldBe('highlightedEntry()', '"2012-01-21"');
+    shouldBeEqualToString('highlightedEntry()', '2012-01-21');
     eventSender.keyDown('pageDown');
-    shouldBe('highlightedEntry()', '"2012-02-29"');
+    shouldBeEqualToString('highlightedEntry()', '2012-02-29');
     eventSender.keyDown('pageDown');
-    shouldBe('highlightedEntry()', '"@openCalendarPicker"');
+    shouldBeEqualToString('highlightedEntry()', '@openCalendarPicker');
 
     debug('Check that down arrow key at bottom of list does nothing.');
     eventSender.keyDown('downArrow');
-    shouldBe('highlightedEntry()', '"@openCalendarPicker"');
+    shouldBeEqualToString('highlightedEntry()', '@openCalendarPicker');
     
     debug('Check that enter key sets the highlighted value.');
     eventSender.keyDown('upArrow');
-    shouldBe('highlightedEntry()', '"2012-03-08"');
+    shouldBeEqualToString('highlightedEntry()', '2012-03-08');
     eventSender.keyDown("\n");
     waitUntilClosing(test1AfterClosing);
 }
 
 function test1AfterClosing() {
     shouldBeNull('document.getElementById("mock-page-popup")');
-    shouldBe('document.getElementById("date").value', '"2012-03-08"');
+    shouldBeEqualToString('document.getElementById("date").value', '2012-03-08');
 
     debug('Reopen popup.');
     openPicker(document.getElementById('date'), test2);
@@ -148,7 +148,7 @@ function test2() {
     eventSender.keyDown('pageDown');
     eventSender.keyDown('pageDown');
     eventSender.keyDown('pageDown');
-    shouldBe('highlightedEntry()', '"@openCalendarPicker"');
+    shouldBeEqualToString('highlightedEntry()', '@openCalendarPicker');
 
     debug('Open calendar picker.');
     expectingDidHideEvent = true;
@@ -173,13 +173,13 @@ function test3() {
     shouldBeTrue('popupWindow.document.getElementById("main").firstChild.classList.contains("calendar-picker")');
 
     debug('Check that escape key closes the popup.');
-    eventSender.keyDown('\x1B');
+    eventSender.keyDown('escape');
     waitUntilClosing(test3AfterClosing);
 }
 
 function test3AfterClosing() {
     shouldBeNull('document.getElementById("mock-page-popup")');
-    shouldBe('document.getElementById("date").value', '"2012-03-08"');
+    shouldBeEqualToString('document.getElementById("date").value', '2012-03-08');
 
     sendKey(document.getElementById('date'), "F4");
     if (document.getElementById('mock-page-popup'))

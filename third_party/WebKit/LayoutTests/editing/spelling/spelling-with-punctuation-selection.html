@@ -35,7 +35,7 @@ initSpellTest("destination", "wellcome!", function(textNode) {
     eventSender.mouseMoveTo(x, y);
     contextMenuElements = eventSender.contextClick();
     // Esc key to hide the context menu.
-    eventSender.keyDown(String.fromCharCode(0x001B), null);
+    eventSender.keyDown("escape", null);
 
     spellingMarkerRange = internals.markerRangeForNode(textNode, "spelling", 0);
     shouldBeEqualToString("spellingMarkerRange.toString()", "wellcome");

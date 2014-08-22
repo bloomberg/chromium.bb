@@ -10,7 +10,7 @@ function sendDeleteWordKey()
     else
         deleteWordModifiers = ["ctrlKey"];
     if (window.eventSender)
-        eventSender.keyDown(String.fromCharCode(8), deleteWordModifiers);
+        eventSender.keyDown("backspace", deleteWordModifiers);
 }
 
 var input = document.getElementById("input");

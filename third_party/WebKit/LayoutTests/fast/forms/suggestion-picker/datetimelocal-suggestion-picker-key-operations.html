@@ -145,7 +145,7 @@ function test2() {
     popupWindow.focus();
 
     debug('Check that escape key closes the popup.');
-    eventSender.keyDown('\x1B');
+    eventSender.keyDown('escape');
     waitUntilClosing(test2AfterClosing);
 }
 

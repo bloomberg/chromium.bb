@@ -50,7 +50,7 @@ function testIt() {
             testPassed('scrollable.scrollTop > 0');
             lastScrollTop = scrollable.scrollTop;
             // Cancel drag and drop by ESC key.
-            eventSender.keyDown('\x1B');
+            eventSender.keyDown('escape');
             retryCount = 0;
             window.setTimeout(checkStopped, 50);
             return;

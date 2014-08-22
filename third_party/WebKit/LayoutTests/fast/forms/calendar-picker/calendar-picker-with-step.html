@@ -23,7 +23,7 @@ function test1() {
     shouldBeEqualToString('availableDayCells()', '2011-05-08,2011-05-17,2011-05-26,2011-06-04');
 
     // Close popup
-    eventSender.keyDown('\x1B');
+    eventSender.keyDown('escape');
     waitUntilClosing(test1AfterClose);
 }
 
@@ -36,13 +36,13 @@ function test2() {
     shouldBeEqualToString('availableDayCells()', '2011-05-02,2011-05-11,2011-05-20,2011-05-29');
 
     // Close popup
-    eventSender.keyDown('\x1B');
+    eventSender.keyDown('escape');
     waitUntilClosing(test2AfterClose);
 }
 
 function test2AfterClose() {
     document.getElementById('date').min = '2011-05-01';
-    
+
     // Reopen popup
     openPicker(document.getElementById('date'), test3);
 }

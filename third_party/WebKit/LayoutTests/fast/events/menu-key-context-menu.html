@@ -32,7 +32,7 @@ function test() {
     eventSender.mouseMoveTo(x, y);
     eventSender.contextClick();
     // Esc key to hide context menu
-    eventSender.keyDown(String.fromCharCode(0x001B));
+    eventSender.keyDown("escape");
     anchor.focus();
     eventSender.keyDown("menu");
 

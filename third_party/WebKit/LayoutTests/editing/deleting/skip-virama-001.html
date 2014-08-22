@@ -12,7 +12,7 @@ function log(str) {
 }
 function sendBackwardDeleteKey() {
     if (window.eventSender)
-        eventSender.keyDown(String.fromCharCode(0x0008), null);
+        eventSender.keyDown("backspace", null);
 }
 function editingTest() {
     if (window.testRunner)

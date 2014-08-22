@@ -37,7 +37,7 @@ function test1() {
     shouldBeEqualToString('entryValues()[0]', '01:00');
     shouldBeEqualToString('entryValues()[1]', '02:00');
 
-    eventSender.keyDown('\x1B'); // Close picker.
+    eventSender.keyDown('escape'); // Close picker.
     waitUntilClosing(test1AfterClosing);
 }
 
@@ -55,7 +55,7 @@ function test2() {
     shouldBeEqualToString('entryValues()[2]', '02:00');
     shouldBeEqualToString('entryValues()[3]', '02:01');
 
-    eventSender.keyDown('\x1B'); // Close picker.
+    eventSender.keyDown('escape'); // Close picker.
     waitUntilClosing(test2AfterClosing);
 }
 
@@ -74,7 +74,7 @@ function test3() {
     shouldBeEqualToString('entryValues()[3]', '02:00');
     shouldBeEqualToString('entryValues()[4]', '02:01');
 
-    eventSender.keyDown('\x1B'); // Close picker.
+    eventSender.keyDown('escape'); // Close picker.
     waitUntilClosing(test3AfterClosing);
 }
 

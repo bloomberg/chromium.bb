@@ -19,7 +19,7 @@ openPicker(document.getElementById('date'), test1);
 
 function test1() {
     debug('Check that page popup exists.');
-    shouldBe('popupWindow.pagePopupController.toString()', '"[object PagePopupController]"');
+    shouldBeEqualToString('popupWindow.pagePopupController.toString()', '[object PagePopupController]');
 
     shouldBeFalse('isCalendarTableScrollingWithAnimation()');
     shouldBeEqualToString('currentMonth()', '2000-01');
@@ -244,7 +244,7 @@ function test2() {
     shouldBeTrue('testToday() || testToday()');
 
     debug("press esc");
-    eventSender.keyDown('\x1B');
+    eventSender.keyDown('escape');
     waitUntilClosing(test2AfterClosing);
 }
 
