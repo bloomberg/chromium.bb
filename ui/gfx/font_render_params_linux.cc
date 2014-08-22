@@ -4,6 +4,8 @@
 
 #include "ui/gfx/font_render_params.h"
 
+#include <fontconfig/fontconfig.h>
+
 #include "base/command_line.h"
 #include "base/containers/mru_cache.h"
 #include "base/hash.h"
@@ -16,8 +18,6 @@
 #include "ui/gfx/font.h"
 #include "ui/gfx/linux_font_delegate.h"
 #include "ui/gfx/switches.h"
-
-#include <fontconfig/fontconfig.h>
 
 namespace gfx {
 
