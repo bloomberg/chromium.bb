@@ -59,7 +59,7 @@ void MergeSessionHelper::ExternalCcResultFetcher::TimeoutForTests() {
 void
 MergeSessionHelper::ExternalCcResultFetcher::OnGetCheckConnectionInfoSuccess(
     const std::string& data) {
-  base::Value* value = base::JSONReader::Read(data);
+  scoped_ptr<base::Value> value(base::JSONReader::Read(data));
   const base::ListValue* list;
   if (!value || !value->GetAsList(&list))
     return;
