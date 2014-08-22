@@ -56,12 +56,6 @@ void CheckParse(ConstCommandsTestData data,
 
   // Now, test the parse of a platform dictionary suggested_key value.
   if (data.key[0] != '\0') {
-    input.reset(new base::DictionaryValue);
-    base::DictionaryValue* key_dict = new base::DictionaryValue();
-
-    for (size_t j = 0; j < platforms.size(); ++j)
-      key_dict->SetString(platforms[j], data.key);
-
     std::string current_platform = extensions::Command::CommandPlatform();
     if (platform_specific_only &&
         std::find(platforms.begin(), platforms.end(), current_platform) ==
@@ -71,6 +65,12 @@ void CheckParse(ConstCommandsTestData data,
       // for platform specific entries. Skip the test in this case.
       return;
     }
+
+    input.reset(new base::DictionaryValue);
+    base::DictionaryValue* key_dict = new base::DictionaryValue();
+
+    for (size_t j = 0; j < platforms.size(); ++j)
+      key_dict->SetString(platforms[j], data.key);
 
     input->Set("suggested_key", key_dict);
     input->SetString("description", data.description);
