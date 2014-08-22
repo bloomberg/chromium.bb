@@ -6,7 +6,7 @@
 import unittest
 
 from server_instance import ServerInstance
-from third_party.handlebar import Handlebar
+from third_party.motemplate import Motemplate
 
 
 class TemplateRendererTest(unittest.TestCase):
@@ -20,7 +20,7 @@ class TemplateRendererTest(unittest.TestCase):
     self._template_renderer = ServerInstance.ForLocal().template_renderer
 
   def testSimpleWiring(self):
-    template = Handlebar('hello {{?true}}{{strings.extension}}{{/}}')
+    template = Motemplate('hello {{?true}}{{strings.extension}}{{/}}')
     text, warnings = self._template_renderer.Render(template, None)
     self.assertEqual('hello extension', text)
     self.assertEqual([], warnings)

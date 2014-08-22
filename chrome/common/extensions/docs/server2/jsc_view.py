@@ -62,7 +62,7 @@ def _FormatValue(value):
 
 class JSCView(object):
   '''Uses a Model from the JSON Schema Compiler and generates a dict that
-  a Handlebar template can use for a data source.
+  a Motemplate template can use for a data source.
   '''
 
   def __init__(self,
@@ -550,7 +550,7 @@ class JSCView(object):
         if ext_type not in node.get('extension_types', (ext_type,)):
           continue
         # If there is a 'partial' argument and it hasn't already been
-        # converted to a Handlebar object, transform it to a template.
+        # converted to a Motemplate object, transform it to a template.
         if 'partial' in node:
           # Note: it's enough to copy() not deepcopy() because only a single
           # top-level key is being modified.

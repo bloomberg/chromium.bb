@@ -58,7 +58,7 @@ def main():
             '*-------------------------------------------------------------*\n')
 
 
-  CopyThirdParty(os.path.join(THIRD_PARTY_DIR, 'handlebar'), 'handlebar')
+  CopyThirdParty(os.path.join(THIRD_PARTY_DIR, 'motemplate'), 'motemplate')
   CopyThirdParty(os.path.join(THIRD_PARTY_DIR, 'markdown'), 'markdown',
                  make_init=False)
   CopyThirdParty(os.path.join(SRC_DIR, 'ppapi', 'generators'),
@@ -79,11 +79,11 @@ def main():
   CopyThirdParty(os.path.join(THIRD_PARTY_DIR, 'google_appengine_cloudstorage',
                  'cloudstorage'), 'cloudstorage')
 
-  # To be able to use the Handlebar class we need this import in __init__.py.
+  # To be able to use the Motemplate class we need this import in __init__.py.
   with open(os.path.join(LOCAL_THIRD_PARTY_DIR,
-                         'handlebar',
+                         'motemplate',
                          '__init__.py'), 'a') as f:
-    f.write('from handlebar import Handlebar\n')
+    f.write('from motemplate import Motemplate\n')
 
 if __name__ == '__main__':
   main()

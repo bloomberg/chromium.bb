@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 from data_source_registry import CreateDataSources
-from third_party.handlebar import Handlebar
+from third_party.motemplate import Motemplate
 from url_constants import GITHUB_BASE, EXTENSIONS_SAMPLES
 
 
@@ -27,7 +27,7 @@ class TemplateRenderer(object):
     Specify |additional_context| to inject additional template context when
     rendering the template.
     '''
-    assert isinstance(template, Handlebar), type(template)
+    assert isinstance(template, Motemplate), type(template)
     render_context = CreateDataSources(self._server_instance, request)
     if data_sources is not None:
       render_context = dict((name, d) for name, d in render_context.iteritems()

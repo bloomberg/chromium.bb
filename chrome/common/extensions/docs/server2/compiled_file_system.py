@@ -9,9 +9,9 @@ from docs_server_utils import ToUnicode
 from file_system import FileNotFoundError
 from future import Future
 from path_util import AssertIsDirectory, AssertIsFile, ToDirectory
-from third_party.handlebar import Handlebar
 from third_party.json_schema_compiler import json_parse
 from third_party.json_schema_compiler.memoize import memoize
+from third_party.motemplate import Motemplate
 
 
 _SINGLE_FILE_FUNCTIONS = set()
@@ -111,7 +111,7 @@ class CompiledFileSystem(object):
       '''
       return self.Create(
           file_system,
-          SingleFile(lambda path, text: Handlebar(ToUnicode(text), name=path)),
+          SingleFile(lambda path, text: Motemplate(ToUnicode(text), name=path)),
           CompiledFileSystem)
 
     @memoize

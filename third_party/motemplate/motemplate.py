@@ -12,18 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# TODO: New name, not "handlebar".
 # TODO: Escaping control characters somehow. e.g. \{{, \{{-.
 
 import json
 import re
 
-'''Handlebar templates are data binding templates more-than-loosely inspired by
+'''Motemplate templates are data binding templates more-than-loosely inspired by
 ctemplate. Use like:
 
-  from handlebar import Handlebar
+  from motemplate import Motemplate
 
-  template = Handlebar('hello {{#foo bar/}} world')
+  template = Motemplate('hello {{#foo bar/}} world')
   input = {
     'foo': [
       { 'bar': 1 },
@@ -33,14 +32,14 @@ ctemplate. Use like:
   }
   print(template.render(input).text)
 
-Handlebar will use get() on contexts to return values, so to create custom
+Motemplate will use get() on contexts to return values, so to create custom
 getters (for example, something that populates values lazily from keys), just
 provide an object with a get() method.
 
   class CustomContext(object):
     def get(self, key):
       return 10
-  print(Handlebar('hello {{world}}').render(CustomContext()).text)
+  print(Motemplate('hello {{world}}').render(CustomContext()).text)
 
 will print 'hello 10'.
 '''
@@ -648,11 +647,9 @@ class _JsonNode(_LeafNode):
   def __repr__(self):
     return '{{*%s}}' % self._id
 
-# TODO: Better common model of _PartialNodeWithArguments, _PartialNodeInContext,
-# and _PartialNode.
 class _PartialNodeWithArguments(_DecoratorNode):
   def __init__(self, partial, args):
-    if isinstance(partial, Handlebar):
+    if isinstance(partial, Motemplate):
       # Preserve any get() method that the caller has added.
       if hasattr(partial, 'get'):
         self.get = partial.get
@@ -666,7 +663,7 @@ class _PartialNodeWithArguments(_DecoratorNode):
 
 class _PartialNodeInContext(_DecoratorNode):
   def __init__(self, partial, context):
-    if isinstance(partial, Handlebar):
+    if isinstance(partial, Motemplate):
       # Preserve any get() method that the caller has added.
       if hasattr(partial, 'get'):
         self.get = partial.get
@@ -707,11 +704,11 @@ class _PartialNode(_LeafNode):
     if value is None:
       render_state.AddResolutionError(self._id)
       return
-    if not isinstance(value, (Handlebar, _Node)):
+    if not isinstance(value, (Motemplate, _Node)):
       render_state.AddResolutionError(self._id, description='not a partial')
       return
 
-    if isinstance(value, Handlebar):
+    if isinstance(value, Motemplate):
       node, name = value._top_node, value._name
     else:
       node, name = value, None
@@ -912,8 +909,8 @@ class _TokenStream(object):
   def __str__(self):
     return repr(self)
 
-class Handlebar(object):
-  '''A handlebar template.
+class Motemplate(object):
+  '''A motemplate template.
   '''
   def __init__(self, template, name=None):
     self.source = template

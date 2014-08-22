@@ -1,9 +1,9 @@
-Name: Handlebar, cross-platform data binding templates.
-Short Name: handlebar
+Name: Motemplate, cross-platform data binding templates.
+Short Name: motemplate
 URL: https://github.com/kalman/templates
 Version: 0
-Date: November 16, 2013
-Revision: commit 3e74633948a386d0a77a1c2b1df4c40546f4ec95
+Date: August 22, 2014
+Revision: commit 76237c8ece0272dc02d104eef24b66365b4feaf3
 License: Apache 2.0
 License File: NOT_SHIPPED
 Security Critical: no

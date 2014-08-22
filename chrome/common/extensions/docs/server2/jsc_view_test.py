@@ -31,7 +31,7 @@ from test_util import Server2Path
 class _FakeTemplateCache(object):
 
   def GetFromFile(self, key):
-    return Future(value='handlebar %s' % key)
+    return Future(value='motemplate %s' % key)
 
 
 class _FakeFeaturesBundle(object):
@@ -189,7 +189,7 @@ class JSCViewTest(unittest.TestCase):
       },
       { 'title': 'Availability',
         'content': [
-          { 'partial': 'handlebar chrome/common/extensions/docs/' +
+          { 'partial': 'motemplate chrome/common/extensions/docs/' +
                        'templates/private/intro_tables/stable_message.html',
             'version': 5,
             'scheduled': None
@@ -214,7 +214,7 @@ class JSCViewTest(unittest.TestCase):
       { 'title': 'Content Scripts',
         'content': [
           {
-            'partial': 'handlebar chrome/common/extensions/docs' +
+            'partial': 'motemplate chrome/common/extensions/docs' +
                        '/templates/private/intro_tables/content_scripts.html',
             'contentScriptSupport': {
               'name': 'tester',
@@ -247,7 +247,7 @@ class JSCViewTest(unittest.TestCase):
     expected_list[1] = {
       'title': 'Availability',
       'content': [
-        { 'partial': 'handlebar chrome/common/extensions/docs/' +
+        { 'partial': 'motemplate chrome/common/extensions/docs/' +
                      'templates/private/intro_tables/beta_message.html',
           'version': 27,
           'scheduled': 28
@@ -396,7 +396,7 @@ class JSCViewWithNodeAvailabilityTest(unittest.TestCase):
     self.assertEquals({
       'scheduled': None,
       'version': 26,
-      'partial': 'handlebar chrome/common/extensions/docs/templates/' +
+      'partial': 'motemplate chrome/common/extensions/docs/templates/' +
           'private/intro_tables/deprecated_message.html'
       }, model_dict['types'][2]['availability'])
 

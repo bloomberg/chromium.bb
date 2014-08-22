@@ -10,7 +10,7 @@ import unittest
 from extensions_paths import CHROME_EXTENSIONS
 from permissions_data_source import PermissionsDataSource
 from server_instance import ServerInstance
-from third_party.handlebar import Handlebar
+from third_party.motemplate import Motemplate
 from test_file_system import TestFileSystem
 
 
@@ -158,13 +158,13 @@ class PermissionsDataSourceTest(unittest.TestCase):
     #   - Sort keys. Since the tests don't use OrderedDicts we can't make
     #     assertions about the order, which is unfortunate. Oh well.
     #   - Render all of the Handlerbar instances so that we can use ==.
-    #     Handlebars don't implement __eq__, but they probably should.
+    #     Motemplates don't implement __eq__, but they probably should.
     for lst in (actual_apps, actual_extensions,
                 expected_apps, expected_extensions):
       lst.sort(key=itemgetter('name'))
       for mapping in lst:
         for key, value in mapping.iteritems():
-          if isinstance(value, Handlebar):
+          if isinstance(value, Motemplate):
             mapping[key] = value.Render().text
 
     self.assertEqual(expected_extensions, actual_extensions)

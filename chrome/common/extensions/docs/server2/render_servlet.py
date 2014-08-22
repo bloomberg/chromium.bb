@@ -13,7 +13,7 @@ from file_system import FileNotFoundError
 from redirector import Redirector
 from servlet import Servlet, Response
 from special_paths import SITE_VERIFICATION_FILE
-from third_party.handlebar import Handlebar
+from third_party.motemplate import Motemplate
 
 
 def _MakeHeaders(content_type, etag=None):
@@ -111,7 +111,7 @@ class RenderServlet(Servlet):
       logging.error('%s had empty content' % path)
 
     content = content_and_type.content
-    if isinstance(content, Handlebar):
+    if isinstance(content, Motemplate):
       template_content, template_warnings = (
           server_instance.template_renderer.Render(content, self._request))
       # HACK: the site verification file (google2ed...) doesn't have a title.

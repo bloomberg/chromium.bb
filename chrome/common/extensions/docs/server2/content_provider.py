@@ -15,8 +15,8 @@ from future import All, Future
 from path_canonicalizer import PathCanonicalizer
 from path_util import AssertIsValid, IsDirectory, Join, ToDirectory
 from special_paths import SITE_VERIFICATION_FILE
-from third_party.handlebar import Handlebar
 from third_party.markdown import markdown
+from third_party.motemplate import Motemplate
 
 
 _MIMETYPE_OVERRIDES = {
@@ -42,7 +42,7 @@ class ContentProvider(object):
 
   Typically the file contents will be either str (for binary content) or
   unicode (for text content). However, HTML files *may* be returned as
-  Handlebar templates (if |supports_templates| is True on construction), in
+  Motemplate templates (if |supports_templates| is True on construction), in
   which case the caller will presumably want to Render them.
 
   Zip file are automatically created and returned for .zip file extensions if
@@ -89,7 +89,7 @@ class ContentProvider(object):
       content = markdown(ToUnicode(text),
                          extensions=('extra', 'headerid', 'sane_lists'))
       if self._supports_templates:
-        content = Handlebar(content, name=path)
+        content = Motemplate(content, name=path)
       mimetype = 'text/html'
     elif mimetype is None:
       content = text
@@ -97,7 +97,7 @@ class ContentProvider(object):
     elif mimetype == 'text/html':
       content = ToUnicode(text)
       if self._supports_templates:
-        content = Handlebar(content, name=path)
+        content = Motemplate(content, name=path)
     elif (mimetype.startswith('text/') or
           mimetype in ('application/javascript', 'application/json')):
       content = ToUnicode(text)

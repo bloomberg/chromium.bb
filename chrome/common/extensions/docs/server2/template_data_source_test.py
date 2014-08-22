@@ -10,7 +10,7 @@ from extensions_paths import SERVER2
 from server_instance import ServerInstance
 from template_data_source import TemplateDataSource
 from test_util import DisableLogging, ReadFile
-from third_party.handlebar import Handlebar
+from third_party.motemplate import Motemplate
 
 def _ReadFile(*path):
   return ReadFile(SERVER2, 'test_data', 'template_data_source', *path)
@@ -38,12 +38,12 @@ class TemplateDataSourceTest(unittest.TestCase):
 
   def testSimple(self):
     test_data_source = _CreateTestDataSource('simple')
-    template_a1 = Handlebar(_ReadFile('simple', 'test1.html'))
+    template_a1 = Motemplate(_ReadFile('simple', 'test1.html'))
     context = [{}, {'templates': {}}]
     self.assertEqual(
         template_a1.Render(*context).text,
         test_data_source.get('test1').Render(*context).text)
-    template_a2 = Handlebar(_ReadFile('simple', 'test2.html'))
+    template_a2 = Motemplate(_ReadFile('simple', 'test2.html'))
     self.assertEqual(
         template_a2.Render(*context).text,
         test_data_source.get('test2').Render(*context).text)
