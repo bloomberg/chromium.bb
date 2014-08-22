@@ -21,8 +21,7 @@ class ClipboardApiTest : public ExtensionApiTest {
                      const std::string& launch_page);
   bool ExecuteCopyInSelectedTab();
   bool ExecutePasteInSelectedTab();
-  bool ExecuteCopyInIframeInSelectedTab();
-  bool ExecutePasteInIframeInSelectedTab();
+  bool ExecuteCommandInIframeInSelectedTab(const char* command);
 
  private:
   bool ExecuteScriptInSelectedTab(const std::string& script);
@@ -69,22 +68,14 @@ bool ClipboardApiTest::ExecutePasteInSelectedTab() {
   return ExecuteScriptInSelectedTab(kScript);
 }
 
-bool ClipboardApiTest::ExecuteCopyInIframeInSelectedTab() {
+bool ClipboardApiTest::ExecuteCommandInIframeInSelectedTab(
+    const char* command) {
   const char kScript[] =
       "var ifr = document.createElement('iframe');\n"
       "document.body.appendChild(ifr);\n"
-      "window.domAutomationController.send("
-          "ifr.contentDocument.execCommand('copy'));";
-  return ExecuteScriptInSelectedTab(kScript);
-}
-
-bool ClipboardApiTest::ExecutePasteInIframeInSelectedTab() {
-  const char kScript[] =
-      "var ifr = document.createElement('iframe');\n"
-      "document.body.appendChild(ifr);\n"
-      "window.domAutomationController.send("
-          "ifr.contentDocument.execCommand('paste'));";
-  return ExecuteScriptInSelectedTab(kScript);
+      "ifr.contentDocument.write('<script>parent.domAutomationController.send("
+          "document.execCommand(\"%s\"))</script>');";
+  return ExecuteScriptInSelectedTab(base::StringPrintf(kScript, command));
 }
 
 bool ClipboardApiTest::ExecuteScriptInSelectedTab(const std::string& script) {
@@ -114,8 +105,8 @@ IN_PROC_BROWSER_TEST_F(ClipboardApiTest, HostedApp) {
 
   EXPECT_TRUE(ExecuteCopyInSelectedTab()) << message_;
   EXPECT_TRUE(ExecutePasteInSelectedTab()) << message_;
-  EXPECT_TRUE(ExecuteCopyInIframeInSelectedTab()) << message_;
-  EXPECT_TRUE(ExecutePasteInIframeInSelectedTab()) << message_;
+  EXPECT_TRUE(ExecuteCommandInIframeInSelectedTab("copy")) << message_;
+  EXPECT_TRUE(ExecuteCommandInIframeInSelectedTab("paste")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(ClipboardApiTest, HostedAppNoPermission) {
@@ -124,7 +115,7 @@ IN_PROC_BROWSER_TEST_F(ClipboardApiTest, HostedAppNoPermission) {
 
   EXPECT_FALSE(ExecuteCopyInSelectedTab()) << message_;
   EXPECT_FALSE(ExecutePasteInSelectedTab()) << message_;
-  EXPECT_FALSE(ExecuteCopyInIframeInSelectedTab()) << message_;
-  EXPECT_FALSE(ExecutePasteInIframeInSelectedTab()) << message_;
+  EXPECT_FALSE(ExecuteCommandInIframeInSelectedTab("copy")) << message_;
+  EXPECT_FALSE(ExecuteCommandInIframeInSelectedTab("paste")) << message_;
 }
 

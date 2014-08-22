@@ -21,18 +21,21 @@ chrome.test.runTests([
   function copyInIframe() {
     var ifr = document.createElement('iframe');
     document.body.appendChild(ifr);
-    if (ifr.contentDocument.execCommand('copy'))
-      chrome.test.succeed();
-    else
-      chrome.test.fail('execCommand("copy") failed in iframe');
+    window.command = 'copy';
+    ifr.contentDocument.write('<script src="iframe.js"></script>');
   },
   function pasteInIframe() {
     var ifr = document.createElement('iframe');
     document.body.appendChild(ifr);
-    if (ifr.contentDocument.execCommand('paste'))
-      chrome.test.succeed();
-    else
-      chrome.test.fail('execCommand("paste") failed in iframe');
+    window.command = 'paste';
+    ifr.contentDocument.write('<script src="iframe.js"></script>');
   }
 ]);
 
+
+function testDone(result) {
+  if (result)
+    chrome.test.succeed();
+  else
+    chrome.test.fail();
+}
