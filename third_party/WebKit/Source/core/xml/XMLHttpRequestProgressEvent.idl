@@ -25,7 +25,7 @@
 
 // We should also inherit from LSProgressEvent when the idl is added.
 interface XMLHttpRequestProgressEvent : ProgressEvent {
-     [MeasureAs=XHRProgressEventPosition] readonly attribute unsigned long long position;
-     [MeasureAs=XHRProgressEventTotalSize] readonly attribute unsigned long long totalSize;
+     [DeprecateAs=XHRProgressEventPosition] readonly attribute unsigned long long position;
+     [DeprecateAs=XHRProgressEventTotalSize] readonly attribute unsigned long long totalSize;
 };
 

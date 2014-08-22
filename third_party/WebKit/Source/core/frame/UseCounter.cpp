@@ -788,6 +788,12 @@ String UseCounter::deprecationMessage(Feature feature)
     case PictureSourceSrc:
         return "<source src> with a <picture> parent is invalid and therefore ignored. Please use <source srcset> instead.";
 
+    case XHRProgressEventPosition:
+        return "The XMLHttpRequest progress event property 'position' is deprecated. Please use 'loaded' instead.";
+
+    case XHRProgressEventTotalSize:
+        return "The XMLHttpRequest progress event property 'totalSize' is deprecated. Please use 'total' instead.";
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
         return String();

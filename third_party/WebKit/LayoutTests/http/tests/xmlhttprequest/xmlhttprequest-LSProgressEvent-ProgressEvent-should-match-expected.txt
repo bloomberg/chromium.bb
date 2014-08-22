@@ -1,3 +1,5 @@
+CONSOLE WARNING: The XMLHttpRequest progress event property 'position' is deprecated. Please use 'loaded' instead.
+CONSOLE WARNING: The XMLHttpRequest progress event property 'totalSize' is deprecated. Please use 'total' instead.
 Test case for Bug 18655: [XHR] OnProgress needs more test case
 
 This test verify that we implement both interfaces and that they match.
