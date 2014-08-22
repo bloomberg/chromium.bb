@@ -127,11 +127,11 @@ describe('ct-results-panel', function() {
     });
 
     it('should show tests and results for selected test', function(done) {
-      var items = panel.shadowRoot.querySelectorAll('paper-item');
+      var items = panel.shadowRoot.querySelectorAll('core-menu > div');
       assert.lengthOf(items, 3);
-      assert.equal(items[0].label, 'plugins/gesture-events-scrolled.html');
-      assert.equal(items[1].label, 'plugins/transformed-events.html');
-      assert.equal(items[2].label, 'plugins/gesture-events.html');
+      assert.equal(items[0].textContent, 'plugins/gesture-events-scrolled.html');
+      assert.equal(items[1].textContent, 'plugins/transformed-events.html');
+      assert.equal(items[2].textContent, 'plugins/gesture-events.html');
 
       var results = panel.shadowRoot.querySelectorAll('ct-results-by-builder');
       assert.lengthOf(results, 1);
@@ -166,7 +166,7 @@ describe('ct-results-panel', function() {
     });
 
     it('should show step failure', function() {
-      var items = panel.shadowRoot.querySelectorAll('paper-item');
+      var items = panel.shadowRoot.querySelectorAll('core-menu > div');
       assert.lengthOf(items, 0);
 
       var results = panel.shadowRoot.querySelectorAll('ct-results-by-builder');
