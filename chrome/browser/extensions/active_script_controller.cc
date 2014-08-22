@@ -140,7 +140,7 @@ void ActiveScriptController::AlwaysRunOnVisibleOrigin(
 }
 
 bool ActiveScriptController::HasActiveScriptAction(const Extension* extension) {
-  return enabled_ && active_script_actions_.count(extension->id()) > 0;
+  return enabled_ && pending_requests_.count(extension->id()) > 0;
 }
 
 ExtensionAction* ActiveScriptController::GetActionForExtension(
