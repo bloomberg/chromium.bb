@@ -198,11 +198,7 @@ void Connector::CancelWait() {
 
 void Connector::NotifyError() {
   error_ = true;
-  // The error handler might destroyed |this|. Also, after an error, all method
-  // should end early.
-  if (destroyed_flag_) {
-    *destroyed_flag_ = true;  // Propagate flag.
-  }
+  CancelWait();
   if (error_handler_)
     error_handler_->OnConnectionError();
 }
