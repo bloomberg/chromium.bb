@@ -10,12 +10,14 @@ import collections
 from contextlib import contextmanager
 import itertools
 import os
+import random
 import re
 import shutil
 import stat
 import subprocess
 import sys
 import tempfile
+import time
 
 import TestCmd
 import TestCommon
@@ -552,7 +554,7 @@ class TestGypAndroid(TestGypBase):
     print stderr.read()
     self.fail_test()
 
-  def _call_adb(self, command):
+  def _call_adb(self, command, timeout=15, retry=3):
     """ Calls the provided adb command.
 
     If the command fails, the test fails.
@@ -571,23 +573,47 @@ class TestGypAndroid(TestGypBase):
         if is_shell:
           command = [command[0], '%s; echo "\n$?";' % ' '.join(command[1:])]
         adb_command += command
-        if subprocess.call(adb_command, stdout=adb_out, stderr=adb_err) != 0:
-          self._adb_failure(adb_command, None, adb_out, adb_err)
-        else:
+
+        for attempt in xrange(1, retry + 1):
           adb_out.seek(0)
-          output = adb_out.read()
-          if is_shell:
-            output = output.splitlines(True)
+          adb_out.truncate(0)
+          adb_err.seek(0)
+          adb_err.truncate(0)
+          proc = subprocess.Popen(adb_command, stdout=adb_out, stderr=adb_err)
+          deadline = time.time() + timeout
+          timed_out = False
+          while proc.poll() is None and not timed_out:
+            time.sleep(1)
+            timed_out = time.time() > deadline
+          if timed_out:
+            print 'Timeout for command %s (attempt %d of %s)' % (
+                adb_command, attempt, retry)
             try:
-              output[-2] = output[-2].rstrip('\r\n')
-              output, rc = (''.join(output[:-1]), int(output[-1]))
-            except ValueError:
-              self._adb_failure(adb_command, 'unexpected output format',
-                                adb_out, adb_err)
-            if rc != 0:
-              self._adb_failure(adb_command, 'exited with %d' % rc, adb_out,
-                                adb_err)
-          return output
+              proc.kill()
+            except:
+              pass
+          else:
+            break
+
+        if proc.returncode != 0:  # returncode is None in the case of a timeout.
+          self._adb_failure(
+              adb_command, 'retcode=%s' % proc.returncode, adb_out, adb_err)
+          return
+
+        adb_out.seek(0)
+        output = adb_out.read()
+        if is_shell:
+          output = output.splitlines(True)
+          try:
+            output[-2] = output[-2].rstrip('\r\n')
+            output, rc = (''.join(output[:-1]), int(output[-1]))
+          except ValueError:
+            self._adb_failure(adb_command, 'unexpected output format',
+                              adb_out, adb_err)
+          if rc != 0:
+            self._adb_failure(adb_command, 'exited with %d' % rc, adb_out,
+                              adb_err)
+        return output
 
   def run_built_executable(self, name, *args, **kw):
     """
@@ -620,7 +646,9 @@ class TestGypAndroid(TestGypBase):
 
       out = self._call_adb(
           ['shell', 'LD_LIBRARY_PATH=$LD_LIBRARY_PATH:%s' % storage,
-           device_executable])
+           device_executable],
+          timeout=60,
+          retry=1)
       out = out.replace('\r\n', '\n')
       self._complete(out, kw.pop('stdout', None), None, None, None, match)
     finally:
