@@ -735,7 +735,13 @@ TEST(XFormTest, BlendRotate) {
   }
 }
 
-TEST(XFormTest, BlendRotateFollowsShortestPath) {
+#if defined(_WIN64)
+// http://crbug.com/406574
+#define MAYBE_BlendRotateFollowsShortestPath DISABLED_BlendRotateFollowsShortestPath
+#else
+#define MAYBE_BlendRotateFollowsShortestPath BlendRotateFollowsShortestPath
+#endif
+TEST(XFormTest, MAYBE_BlendRotateFollowsShortestPath) {
   // Verify that we interpolate along the shortest path regardless of whether
   // this path crosses the 180-degree point.
   Vector3dF axes[] = {
@@ -802,7 +808,13 @@ TEST(XFormTest, CanBlend180DegreeRotation) {
   }
 }
 
-TEST(XFormTest, BlendScale) {
+#if defined(_WIN64)
+// http://crbug.com/406574
+#define MAYBE_BlendScale DISABLED_BlendScale
+#else
+#define MAYBE_BlendScale BlendScale
+#endif
+TEST(XFormTest, MAYBE_BlendScale) {
   Transform from;
   for (int i = -5; i < 15; ++i) {
     Transform to;
@@ -843,7 +855,13 @@ TEST(XFormTest, ExtrapolateSkew) {
   }
 }
 
-TEST(XFormTest, BlendPerspective) {
+#if defined(_WIN64)
+// http://crbug.com/406574
+#define MAYBE_BlendPerspective DISABLED_BlendPerspective
+#else
+#define MAYBE_BlendPerspective BlendPerspective
+#endif
+TEST(XFormTest, MAYBE_BlendPerspective) {
   Transform from;
   from.ApplyPerspectiveDepth(200);
   for (int i = -1; i < 3; ++i) {
@@ -1049,7 +1067,13 @@ TEST(XFormTest, VerifyBlendForSkewY) {
   EXPECT_ROW4_EQ(0.0f, 0.0f, 0.0f, 1.0f, to);
 }
 
-TEST(XFormTest, VerifyBlendForRotationAboutX) {
+#if defined(_WIN64)
+// http://crbug.com/406574
+#define MAYBE_VerifyBlendForRotationAboutX DISABLED_VerifyBlendForRotationAboutX
+#else
+#define MAYBE_VerifyBlendForRotationAboutX VerifyBlendForRotationAboutX
+#endif
+TEST(XFormTest, MAYBE_VerifyBlendForRotationAboutX) {
   // Even though.Blending uses quaternions, axis-aligned rotations should.
   // Blend the same with quaternions or Euler angles. So we can test
   // rotation.Blending by comparing against manually specified matrices from
@@ -1111,7 +1135,13 @@ TEST(XFormTest, VerifyBlendForRotationAboutX) {
   EXPECT_ROW4_EQ(0.0f, 0.0f, 0.0f, 1.0f, to);
 }
 
-TEST(XFormTest, VerifyBlendForRotationAboutY) {
+#if defined(_WIN64)
+// http://crbug.com/406574
+#define MAYBE_VerifyBlendForRotationAboutY DISABLED_VerifyBlendForRotationAboutY
+#else
+#define MAYBE_VerifyBlendForRotationAboutY VerifyBlendForRotationAboutY
+#endif
+TEST(XFormTest, MAYBE_VerifyBlendForRotationAboutY) {
   Transform from;
   from.RotateAbout(Vector3dF(0.0, 1.0, 0.0), 0.0);
 
@@ -1168,7 +1198,13 @@ TEST(XFormTest, VerifyBlendForRotationAboutY) {
   EXPECT_ROW4_EQ(0.0f, 0.0f, 0.0f, 1.0f, to);
 }
 
-TEST(XFormTest, VerifyBlendForRotationAboutZ) {
+#if defined(_WIN64)
+// http://crbug.com/406574
+#define MAYBE_VerifyBlendForRotationAboutZ DISABLED_VerifyBlendForRotationAboutZ
+#else
+#define MAYBE_VerifyBlendForRotationAboutZ VerifyBlendForRotationAboutZ
+#endif
+TEST(XFormTest, MAYBE_VerifyBlendForRotationAboutZ) {
   Transform from;
   from.RotateAbout(Vector3dF(0.0, 0.0, 1.0), 0.0);
 
