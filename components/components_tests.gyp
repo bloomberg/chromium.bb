@@ -411,6 +411,7 @@
               'sources': [
                 'autofill/content/renderer/renderer_save_password_progress_logger_unittest.cc',
                 'dom_distiller/content/dom_distiller_viewer_source_unittest.cc',
+                'password_manager/content/renderer/credential_manager_client_unittest.cc',
                 'power/origin_power_map_unittest.cc',
                 'usb_service/usb_context_unittest.cc',
                 'usb_service/usb_device_filter_unittest.cc',
@@ -434,6 +435,10 @@
 
                 # Dependencies of precache/content
                 'components.gyp:precache_content',
+
+                # Dependencies of password_manager
+                'components.gyp:password_manager_content_renderer',
+                'components.gyp:password_manager_content_renderer_test_support',
 
                 # Dependencies of power
                 'components.gyp:power',

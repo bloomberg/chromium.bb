@@ -369,6 +369,7 @@
             '<(DEPTH)/components/components.gyp:autofill_core_common',
             '<(DEPTH)/components/components.gyp:autofill_content_common',
             '<(DEPTH)/components/components.gyp:password_manager_core_common',
+            '<(DEPTH)/components/components.gyp:password_manager_content_common',
             '<(DEPTH)/components/components.gyp:signin_core_common',
             '<(DEPTH)/components/components.gyp:translate_content_common',
             '<(DEPTH)/components/components.gyp:visitedlink_common',

@@ -157,20 +157,83 @@
     ['OS != "ios"', {
       'targets': [
         {
+          # GN version: //components/password_manager/content/common
+          'target_name': 'password_manager_content_common',
+          'type': 'static_library',
+          'dependencies': [
+            '../base/base.gyp:base',
+            '../content/content.gyp:content_common',
+            '../ipc/ipc.gyp:ipc',
+            '../third_party/WebKit/public/blink.gyp:blink_minimal',
+            'password_manager_core_common',
+          ],
+          'include_dirs': [
+            '..',
+          ],
+          'sources': [
+            'password_manager/content/common/credential_manager_message_generator.cc',
+            'password_manager/content/common/credential_manager_message_generator.h',
+            'password_manager/content/common/credential_manager_messages.h',
+            'password_manager/content/common/credential_manager_types.cc',
+            'password_manager/content/common/credential_manager_types.h',
+          ],
+        },
+        {
+          # GN version: //components/password_manager/content/renderer
+          'target_name': 'password_manager_content_renderer',
+          'type': 'static_library',
+          'dependencies': [
+            '../base/base.gyp:base',
+            '../content/content.gyp:content_common',
+            '../ipc/ipc.gyp:ipc',
+            '../third_party/WebKit/public/blink.gyp:blink',
+            'password_manager_core_common',
+            'password_manager_content_common',
+          ],
+          'include_dirs': [
+            '..',
+          ],
+          'sources': [
+            'password_manager/content/renderer/credential_manager_client.cc',
+            'password_manager/content/renderer/credential_manager_client.h',
+          ],
+        },
+        {
+          # GN version: //components/password_manager/core/browser:test_support
+          'target_name': 'password_manager_content_renderer_test_support',
+          'type': 'static_library',
+          'dependencies': [
+            'password_manager_content_common',
+            '../base/base.gyp:base',
+            '../testing/gmock.gyp:gmock',
+            '../testing/gtest.gyp:gtest',
+            '../third_party/WebKit/public/blink.gyp:blink',
+          ],
+          'include_dirs': [
+            '..',
+          ],
+          'sources': [
+            # Note: sources list duplicated in GN build.
+            'password_manager/content/renderer/test_credential_manager_client.cc',
+            'password_manager/content/renderer/test_credential_manager_client.h',
+          ],
+        },
+        {
           # GN version: //components/password_manager/content/browser
           'target_name': 'password_manager_content_browser',
           'type': 'static_library',
           'dependencies': [
-            'autofill_content_browser',
-            'autofill_content_common',
-            'autofill_core_common',
-            'keyed_service_content',
-            'password_manager_core_browser',
             '../base/base.gyp:base',
             '../content/content.gyp:content_browser',
             '../content/content.gyp:content_common',
             '../ipc/ipc.gyp:ipc',
             '../net/net.gyp:net',
+            'autofill_content_browser',
+            'autofill_content_common',
+            'autofill_core_common',
+            'keyed_service_content',
+            'password_manager_core_browser',
+            'password_manager_content_common',
           ],
           'include_dirs': [
             '..',

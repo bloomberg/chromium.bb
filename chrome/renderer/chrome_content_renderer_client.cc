@@ -74,6 +74,7 @@
 #include "components/autofill/content/renderer/password_generation_agent.h"
 #include "components/dom_distiller/core/url_constants.h"
 #include "components/nacl/renderer/ppb_nacl_private_impl.h"
+#include "components/password_manager/content/renderer/credential_manager_client.h"
 #include "components/plugins/renderer/mobile_youtube_plugin.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "components/visitedlink/renderer/visitedlink_slave.h"
@@ -314,6 +315,9 @@ void ChromeContentRendererClient::RenderThreadStarted() {
 #endif
   search_bouncer_.reset(new SearchBouncer());
 
+  credential_manager_client_.reset(
+      new password_manager::CredentialManagerClient());
+
   thread->AddObserver(chrome_observer_.get());
   thread->AddObserver(extension_dispatcher_.get());
 #if defined(FULL_SAFE_BROWSING)
@@ -322,6 +326,7 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   thread->AddObserver(visited_link_slave_.get());
   thread->AddObserver(prerender_dispatcher_.get());
   thread->AddObserver(search_bouncer_.get());
+  thread->AddObserver(credential_manager_client_.get());
 
 #if defined(ENABLE_WEBRTC)
   thread->AddFilter(webrtc_logging_message_filter_.get());
@@ -493,6 +498,9 @@ void ChromeContentRendererClient::RenderViewCreated(
     new SearchBox(render_view);
 
   new ChromeRenderViewObserver(render_view, chrome_observer_.get());
+
+  if (credential_manager_client_)
+    credential_manager_client_->OnRenderViewCreated(render_view);
 }
 
 void ChromeContentRendererClient::SetNumberOfViews(int number_of_views) {

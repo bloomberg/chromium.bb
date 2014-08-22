@@ -11,6 +11,7 @@ include_rules = [
   "+components/dom_distiller/core",
   "+components/nacl/common",
   "+components/nacl/renderer",
+  "+components/password_manager/content/renderer",
   "+components/plugins/renderer",
   "+components/signin/core/common",
   "+components/translate/content/common",

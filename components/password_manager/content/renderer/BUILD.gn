@@ -1,0 +1,45 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+static_library("renderer") {
+  sources = [
+    "credential_manager_client.cc",
+    "credential_manager_client.h",
+  ]
+
+  deps = [
+    "//base",
+    "//components/strings",
+    "//ipc",
+    "//third_party/WebKit/public:blink",
+    "//url",
+  ]
+}
+
+static_library("test_support") {
+  sources = [
+    "test_credential_manager_client.cc",
+    "test_credential_manager_client.h",
+  ]
+
+  deps = [
+    "//testing/gmock",
+    "//third_party/WebKit/public:blink",
+  ]
+}
+
+source_set("unit_tests") {
+  sources = [
+    "credential_manager_client_unittest.cc"
+  ]
+
+  deps = [
+    ":renderer",
+    ":test_support",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//third_party/WebKit/public:blink",
+  ]
+}
+

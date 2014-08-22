@@ -87,6 +87,7 @@ static_library("common") {
       "//components/visitedlink/common",
       "//components/autofill/content/common",
       "//components/autofill/core/common",
+      "//components/password_manager/content/common",
       "//components/password_manager/core/common",
       "//components/signin/core/common",
       "//components/translate/content/common",
