@@ -10,27 +10,36 @@ cr.define('print_preview', function() {
    * @param {!print_preview.ticket_items.MediaSize} ticketItem Used to read and
    *     write the media size ticket item.
    * @constructor
-   * @extends {print_preview.Component}
+   * @extends {print_preview.SettingsSection}
    */
   function MediaSizeSettings(ticketItem) {
-    print_preview.Component.call(this);
+    print_preview.SettingsSection.call(this);
 
     /** @private {!print_preview.ticket_items.MediaSize} */
     this.ticketItem_ = ticketItem;
   };
 
   MediaSizeSettings.prototype = {
-    __proto__: print_preview.Component.prototype,
+    __proto__: print_preview.SettingsSection.prototype,
 
-    /** @param {boolean} isEnabled Whether this component is enabled. */
+    /** @override */
+    isAvailable: function() {
+      return this.ticketItem_.isCapabilityAvailable();
+    },
+
+    /** @override */
+    hasCollapsibleContent: function() {
+      return this.isAvailable();
+    },
+
+    /** @override */
     set isEnabled(isEnabled) {
       this.select_.disabled = !isEnabled;
     },
 
     /** @override */
     enterDocument: function() {
-      print_preview.Component.prototype.enterDocument.call(this);
-      fadeOutOption(this.getElement(), true);
+      print_preview.SettingsSection.prototype.enterDocument.call(this);
       this.tracker.add(this.select_, 'change', this.onSelectChange_.bind(this));
       this.tracker.add(
           this.ticketItem_,
@@ -54,7 +63,7 @@ cr.define('print_preview', function() {
      */
     updateSelect_: function() {
       var select = this.select_;
-      if (!this.ticketItem_.isCapabilityAvailable()) {
+      if (!this.isAvailable()) {
         select.innerHTML = '';
         return;
       }
@@ -125,12 +134,8 @@ cr.define('print_preview', function() {
      * @private
      */
     onTicketItemChange_: function() {
-      if (this.ticketItem_.isCapabilityAvailable()) {
-        this.updateSelect_();
-        fadeInOption(this.getElement());
-      } else {
-        fadeOutOption(this.getElement());
-      }
+      this.updateSelect_();
+      this.updateUiStateInternal();
     }
   };
 

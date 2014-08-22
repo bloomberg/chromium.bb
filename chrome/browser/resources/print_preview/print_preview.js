@@ -177,6 +177,23 @@ cr.define('print_preview', function() {
     this.addChild(this.advancedSettings_);
 
     /**
+     * Component representing more/less settings button.
+     * @type {!print_preview.MoreSettings}
+     * @private
+     */
+    this.moreSettings_ = new print_preview.MoreSettings([
+        this.destinationSettings_,
+        this.pageSettings_,
+        this.copiesSettings_,
+        this.mediaSizeSettings_,
+        this.layoutSettings_,
+        this.marginSettings_,
+        this.colorSettings_,
+        this.otherOptionsSettings_,
+        this.advancedOptionsSettings_]);
+    this.addChild(this.moreSettings_);
+
+    /**
      * Area of the UI that holds the print preview.
      * @type {!print_preview.PreviewArea}
      * @private
@@ -427,6 +444,7 @@ cr.define('print_preview', function() {
       this.otherOptionsSettings_.decorate($('other-options-settings'));
       this.advancedOptionsSettings_.decorate($('advanced-options-settings'));
       this.advancedSettings_.decorate($('advanced-settings'));
+      this.moreSettings_.decorate($('more-settings'));
       this.previewArea_.decorate($('preview-area'));
 
       setIsVisible($('open-pdf-in-preview-link'), cr.isMac);
@@ -1190,6 +1208,7 @@ cr.define('print_preview', function() {
 <include src="print_header.js"/>
 <include src="metrics.js"/>
 
+<include src="settings/settings_section.js"/>
 <include src="settings/page_settings.js"/>
 <include src="settings/copies_settings.js"/>
 <include src="settings/media_size_settings.js"/>
@@ -1201,6 +1220,7 @@ cr.define('print_preview', function() {
 <include src="settings/advanced_options_settings.js"/>
 <include src="settings/advanced_settings/advanced_settings.js"/>
 <include src="settings/advanced_settings/advanced_settings_item.js"/>
+<include src="settings/more_settings.js"/>
 
 <include src="previewarea/margin_control.js"/>
 <include src="previewarea/margin_control_container.js"/>

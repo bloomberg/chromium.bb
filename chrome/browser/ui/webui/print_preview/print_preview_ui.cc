@@ -363,6 +363,8 @@ content::WebUIDataSource* CreatePrintPreviewUISource() {
   source->SetDefaultResource(IDR_PRINT_PREVIEW_HTML);
   source->SetRequestFilter(base::Bind(&HandleRequestCallback));
   source->OverrideContentSecurityPolicyObjectSrc("object-src 'self';");
+  source->AddLocalizedString("moreOptionsLabel", IDS_MORE_OPTIONS_LABEL);
+  source->AddLocalizedString("lessOptionsLabel", IDS_LESS_OPTIONS_LABEL);
   return source;
 }
 

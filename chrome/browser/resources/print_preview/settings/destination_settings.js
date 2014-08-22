@@ -14,10 +14,10 @@ cr.define('print_preview', function() {
    * @param {!print_preview.DestinationStore} destinationStore Used to determine
    *     the selected destination.
    * @constructor
-   * @extends {print_preview.Component}
+   * @extends {print_preview.SettingsSection}
    */
   function DestinationSettings(destinationStore) {
-    print_preview.Component.call(this);
+    print_preview.SettingsSection.call(this);
 
     /**
      * Used to determine the selected destination.
@@ -64,9 +64,19 @@ cr.define('print_preview', function() {
   };
 
   DestinationSettings.prototype = {
-    __proto__: print_preview.Component.prototype,
+    __proto__: print_preview.SettingsSection.prototype,
 
-    /** @param {boolean} Whether the component is enabled. */
+    /** @override */
+    isAvailable: function() {
+      return true;
+    },
+
+    /** @override */
+    hasCollapsibleContent: function() {
+      return false;
+    },
+
+    /** @override */
     set isEnabled(isEnabled) {
       var changeButton = this.getElement().getElementsByClassName(
           DestinationSettings.Classes_.CHANGE_BUTTON)[0];
@@ -75,7 +85,7 @@ cr.define('print_preview', function() {
 
     /** @override */
     enterDocument: function() {
-      print_preview.Component.prototype.enterDocument.call(this);
+      print_preview.SettingsSection.prototype.enterDocument.call(this);
       var changeButton = this.getElement().getElementsByClassName(
           DestinationSettings.Classes_.CHANGE_BUTTON)[0];
       this.tracker.add(

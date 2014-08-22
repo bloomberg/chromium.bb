@@ -11,10 +11,10 @@ cr.define('print_preview', function() {
    * @param {!print_preview.ticket_items.MarginsType} marginsTypeTicketItem Used
    *     to read and write the margins type ticket item.
    * @constructor
-   * @extends {print_preview.Component}
+   * @extends {print_preview.SettingsSection}
    */
   function MarginSettings(marginsTypeTicketItem) {
-    print_preview.Component.call(this);
+    print_preview.SettingsSection.call(this);
 
     /**
      * Used to read and write the margins type ticket item.
@@ -34,17 +34,26 @@ cr.define('print_preview', function() {
   };
 
   MarginSettings.prototype = {
-    __proto__: print_preview.Component.prototype,
+    __proto__: print_preview.SettingsSection.prototype,
 
-    /** @param {boolean} isEnabled Whether this component is enabled. */
+    /** @override */
+    isAvailable: function() {
+      return this.marginsTypeTicketItem_.isCapabilityAvailable();
+    },
+
+    /** @override */
+    hasCollapsibleContent: function() {
+      return this.isAvailable();
+    },
+
+    /** @override */
     set isEnabled(isEnabled) {
       this.select_.disabled = !isEnabled;
     },
 
     /** @override */
     enterDocument: function() {
-      print_preview.Component.prototype.enterDocument.call(this);
-      fadeOutOption(this.getElement(), true);
+      print_preview.SettingsSection.prototype.enterDocument.call(this);
       this.tracker.add(
           this.select_, 'change', this.onSelectChange_.bind(this));
       this.tracker.add(
@@ -81,7 +90,7 @@ cr.define('print_preview', function() {
      * @private
      */
     onMarginsTypeTicketItemChange_: function() {
-      if (this.marginsTypeTicketItem_.isCapabilityAvailable()) {
+      if (this.isAvailable()) {
         var select = this.select_;
         var marginsType = this.marginsTypeTicketItem_.getValue();
         var selectedMarginsType =
@@ -91,10 +100,8 @@ cr.define('print_preview', function() {
           select.options[selectedMarginsType].selected = false;
           select.options[marginsType].selected = true;
         }
-        fadeInOption(this.getElement());
-      } else {
-        fadeOutOption(this.getElement());
       }
+      this.updateUiStateInternal();
     }
   };
 

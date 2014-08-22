@@ -11,10 +11,10 @@ cr.define('print_preview', function() {
    * @param {!print_preview.ticket_items.Landscape} landscapeTicketItem Used to
    *     get the layout written to the print ticket.
    * @constructor
-   * @extends {print_preview.Component}
+   * @extends {print_preview.SettingsSection}
    */
   function LayoutSettings(landscapeTicketItem) {
-    print_preview.Component.call(this);
+    print_preview.SettingsSection.call(this);
 
     /**
      * Used to get the layout written to the print ticket.
@@ -35,9 +35,19 @@ cr.define('print_preview', function() {
   };
 
   LayoutSettings.prototype = {
-    __proto__: print_preview.Component.prototype,
+    __proto__: print_preview.SettingsSection.prototype,
 
-    /** @param {boolean} isEnabled Whether this component is enabled. */
+    /** @override */
+    isAvailable: function() {
+      return this.landscapeTicketItem_.isCapabilityAvailable();
+    },
+
+    /** @override */
+    hasCollapsibleContent: function() {
+      return false;
+    },
+
+    /** @override */
     set isEnabled(isEnabled) {
       this.landscapeRadioButton_.disabled = !isEnabled;
       this.portraitRadioButton_.disabled = !isEnabled;
@@ -45,8 +55,7 @@ cr.define('print_preview', function() {
 
     /** @override */
     enterDocument: function() {
-      print_preview.Component.prototype.enterDocument.call(this);
-      fadeOutOption(this.getElement(), true);
+      print_preview.SettingsSection.prototype.enterDocument.call(this);
       this.tracker.add(
           this.portraitRadioButton_,
           'click',
@@ -94,14 +103,12 @@ cr.define('print_preview', function() {
      * @private
      */
     onLandscapeTicketItemChange_: function() {
-      if (this.landscapeTicketItem_.isCapabilityAvailable()) {
+      if (this.isAvailable()) {
         var isLandscapeEnabled = this.landscapeTicketItem_.getValue();
         this.portraitRadioButton_.checked = !isLandscapeEnabled;
         this.landscapeRadioButton_.checked = isLandscapeEnabled;
-        fadeInOption(this.getElement());
-      } else {
-        fadeOutOption(this.getElement());
       }
+      this.updateUiStateInternal();
     }
   };
 

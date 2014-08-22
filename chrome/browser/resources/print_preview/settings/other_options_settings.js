@@ -17,11 +17,11 @@ cr.define('print_preview', function() {
    * @param {!print_preview.ticket_items.HeaderFooter} headerFooter Header
    *     footer ticket item.
    * @constructor
-   * @extends {print_preview.Component}
+   * @extends {print_preview.SettingsSection}
    */
   function OtherOptionsSettings(
       duplex, fitToPage, cssBackground, selectionOnly, headerFooter) {
-    print_preview.Component.call(this);
+    print_preview.SettingsSection.call(this);
 
     /**
      * Duplex ticket item, used to read/write the duplex selection.
@@ -130,9 +130,26 @@ cr.define('print_preview', function() {
   };
 
   OtherOptionsSettings.prototype = {
-    __proto__: print_preview.Component.prototype,
+    __proto__: print_preview.SettingsSection.prototype,
 
-    /** @param {boolean} isEnabled Whether the settings is enabled. */
+    /** @override */
+    isAvailable: function() {
+      return this.headerFooterTicketItem_.isCapabilityAvailable() ||
+             this.fitToPageTicketItem_.isCapabilityAvailable() ||
+             this.duplexTicketItem_.isCapabilityAvailable() ||
+             this.cssBackgroundTicketItem_.isCapabilityAvailable() ||
+             this.selectionOnlyTicketItem_.isCapabilityAvailable();
+    },
+
+    /** @override */
+    hasCollapsibleContent: function() {
+      return this.headerFooterTicketItem_.isCapabilityAvailable() ||
+             this.fitToPageTicketItem_.isCapabilityAvailable() ||
+             this.cssBackgroundTicketItem_.isCapabilityAvailable() ||
+             this.selectionOnlyTicketItem_.isCapabilityAvailable();
+    },
+
+    /** @override */
     set isEnabled(isEnabled) {
       this.headerFooterCheckbox_.disabled = !isEnabled;
       this.fitToPageCheckbox_.disabled = !isEnabled;
@@ -142,8 +159,7 @@ cr.define('print_preview', function() {
 
     /** @override */
     enterDocument: function() {
-      print_preview.Component.prototype.enterDocument.call(this);
-      fadeOutOption(this.getElement(), true);
+      print_preview.SettingsSection.prototype.enterDocument.call(this);
       this.tracker.add(
           this.headerFooterCheckbox_,
           'click',
@@ -188,7 +204,7 @@ cr.define('print_preview', function() {
 
     /** @override */
     exitDocument: function() {
-      print_preview.Component.prototype.exitDocument.call(this);
+      print_preview.SettingsSection.prototype.exitDocument.call(this);
       this.headerFooterContainer_ = null;
       this.headerFooterCheckbox_ = null;
       this.fitToPageContainer_ = null;
@@ -225,30 +241,31 @@ cr.define('print_preview', function() {
           '.selection-only-checkbox');
     },
 
-    /**
-     * Updates the state of the entire other options settings area.
-     * @private
-     */
-    updateContainerState_: function() {
-      if (this.headerFooterTicketItem_.isCapabilityAvailable() ||
-          this.fitToPageTicketItem_.isCapabilityAvailable() ||
-          this.duplexTicketItem_.isCapabilityAvailable() ||
-          this.cssBackgroundTicketItem_.isCapabilityAvailable() ||
-          this.selectionOnlyTicketItem_.isCapabilityAvailable()) {
+    /** @override */
+    updateUiStateInternal: function() {
+      if (this.isAvailable()) {
         setIsVisible(this.headerFooterContainer_,
-                     this.headerFooterTicketItem_.isCapabilityAvailable());
+                     this.headerFooterTicketItem_.isCapabilityAvailable() &&
+                     !this.collapseContent);
         setIsVisible(this.fitToPageContainer_,
-                     this.fitToPageTicketItem_.isCapabilityAvailable());
+                     this.fitToPageTicketItem_.isCapabilityAvailable() &&
+                     !this.collapseContent);
         setIsVisible(this.duplexContainer_,
                      this.duplexTicketItem_.isCapabilityAvailable());
         setIsVisible(this.cssBackgroundContainer_,
-                     this.cssBackgroundTicketItem_.isCapabilityAvailable());
+                     this.cssBackgroundTicketItem_.isCapabilityAvailable() &&
+                     !this.collapseContent);
         setIsVisible(this.selectionOnlyContainer_,
-                     this.selectionOnlyTicketItem_.isCapabilityAvailable());
-        fadeInOption(this.getElement());
-      } else {
-        fadeOutOption(this.getElement());
+                     this.selectionOnlyTicketItem_.isCapabilityAvailable() &&
+                     !this.collapseContent);
       }
+      print_preview.SettingsSection.prototype.updateUiStateInternal.call(this);
+    },
+
+    /** @override */
+    isSectionVisibleInternal: function() {
+      return this.collapseContent ?
+          this.duplexTicketItem_.isCapabilityAvailable() : this.isAvailable();
     },
 
     /**
@@ -305,7 +322,7 @@ cr.define('print_preview', function() {
      */
     onDuplexChange_: function() {
       this.duplexCheckbox_.checked = this.duplexTicketItem_.getValue();
-      this.updateContainerState_();
+      this.updateUiStateInternal();
     },
 
     /**
@@ -315,7 +332,7 @@ cr.define('print_preview', function() {
      */
     onFitToPageChange_: function() {
       this.fitToPageCheckbox_.checked = this.fitToPageTicketItem_.getValue();
-      this.updateContainerState_();
+      this.updateUiStateInternal();
     },
 
     /**
@@ -326,7 +343,7 @@ cr.define('print_preview', function() {
     onCssBackgroundChange_: function() {
       this.cssBackgroundCheckbox_.checked =
           this.cssBackgroundTicketItem_.getValue();
-      this.updateContainerState_();
+      this.updateUiStateInternal();
     },
 
     /**
@@ -337,7 +354,7 @@ cr.define('print_preview', function() {
     onSelectionOnlyChange_: function() {
       this.selectionOnlyCheckbox_.checked =
           this.selectionOnlyTicketItem_.getValue();
-      this.updateContainerState_();
+      this.updateUiStateInternal();
     },
 
     /**
@@ -348,7 +365,7 @@ cr.define('print_preview', function() {
     onHeaderFooterChange_: function() {
       this.headerFooterCheckbox_.checked =
           this.headerFooterTicketItem_.getValue();
-      this.updateContainerState_();
+      this.updateUiStateInternal();
     }
   };
 

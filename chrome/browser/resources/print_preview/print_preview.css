@@ -89,9 +89,8 @@ header {
 
 .two-column.visible h1,
 .two-column.visible .right-column {
-  border-bottom: 1px solid #e9e9e9;
-  padding-bottom: 7px;
-  padding-top: 7px;
+  padding-bottom: 5px;
+  padding-top: 5px;
 }
 
 .two-column:not(.visible) select {

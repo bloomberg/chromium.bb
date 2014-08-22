@@ -12,10 +12,10 @@ cr.define('print_preview', function() {
    * @param {!print_preview.ticket_items.Collate} collateTicketItem Used to read
    *     and write the collate value.
    * @constructor
-   * @extends {print_preview.Component}
+   * @extends {print_preview.SettingsSection}
    */
   function CopiesSettings(copiesTicketItem, collateTicketItem) {
-    print_preview.Component.call(this);
+    print_preview.SettingsSection.call(this);
 
     /**
      * Used to read and write the copies value.
@@ -54,9 +54,19 @@ cr.define('print_preview', function() {
   CopiesSettings.TEXTFIELD_DELAY_ = 250;
 
   CopiesSettings.prototype = {
-    __proto__: print_preview.Component.prototype,
+    __proto__: print_preview.SettingsSection.prototype,
 
-    /** @param {boolean} isEnabled Whether the copies settings is enabled. */
+    /** @override */
+    isAvailable: function() {
+      return this.copiesTicketItem_.isCapabilityAvailable();
+    },
+
+    /** @override */
+    hasCollapsibleContent: function() {
+      return false;
+    },
+
+    /** @override */
     set isEnabled(isEnabled) {
       this.getChildElement('input.copies').disabled = !isEnabled;
       this.getChildElement('input.collate').disabled = !isEnabled;
@@ -71,8 +81,7 @@ cr.define('print_preview', function() {
 
     /** @override */
     enterDocument: function() {
-      print_preview.Component.prototype.enterDocument.call(this);
-      fadeOutOption(this.getElement(), true);
+      print_preview.SettingsSection.prototype.enterDocument.call(this);
       this.tracker.add(
           this.getChildElement('input.copies'),
           'keydown',
@@ -112,46 +121,40 @@ cr.define('print_preview', function() {
      * @private
      */
     updateState_: function() {
-      if (!this.copiesTicketItem_.isCapabilityAvailable()) {
-        fadeOutOption(this.getElement());
-        return;
-      }
+      if (this.isAvailable()) {
+        if (this.getChildElement('input.copies').value !=
+            this.copiesTicketItem_.getValue()) {
+          this.getChildElement('input.copies').value =
+              this.copiesTicketItem_.getValue();
+        }
 
-      if (this.getChildElement('input.copies').value !=
-          this.copiesTicketItem_.getValue()) {
-        this.getChildElement('input.copies').value =
-            this.copiesTicketItem_.getValue();
-      }
+        var currentValueGreaterThan1 = false;
+        if (this.copiesTicketItem_.isValid()) {
+          this.getChildElement('input.copies').classList.remove('invalid');
+          fadeOutElement(this.getChildElement('.hint'));
+          var currentValue = this.copiesTicketItem_.getValueAsNumber();
+          var currentValueGreaterThan1 = currentValue > 1;
+          this.getChildElement('button.increment').disabled =
+              !this.isEnabled_ ||
+              !this.copiesTicketItem_.wouldValueBeValid(currentValue + 1);
+          this.getChildElement('button.decrement').disabled =
+              !this.isEnabled_ ||
+              !this.copiesTicketItem_.wouldValueBeValid(currentValue - 1);
+        } else {
+          this.getChildElement('input.copies').classList.add('invalid');
+          fadeInElement(this.getChildElement('.hint'));
+          this.getChildElement('button.increment').disabled = true;
+          this.getChildElement('button.decrement').disabled = true;
+        }
 
-      var currentValueGreaterThan1 = false;
-      if (this.copiesTicketItem_.isValid()) {
-        this.getChildElement('input.copies').classList.remove('invalid');
-        fadeOutElement(this.getChildElement('.hint'));
-        this.getChildElement('.hint').setAttribute('aria-hidden', true);
-        var currentValue = this.copiesTicketItem_.getValueAsNumber();
-        var currentValueGreaterThan1 = currentValue > 1;
-        this.getChildElement('button.increment').disabled =
-            !this.isEnabled_ ||
-            !this.copiesTicketItem_.wouldValueBeValid(currentValue + 1);
-        this.getChildElement('button.decrement').disabled =
-            !this.isEnabled_ ||
-            !this.copiesTicketItem_.wouldValueBeValid(currentValue - 1);
-      } else {
-        this.getChildElement('input.copies').classList.add('invalid');
-        this.getChildElement('.hint').setAttribute('aria-hidden', false);
-        fadeInElement(this.getChildElement('.hint'));
-        this.getChildElement('button.increment').disabled = true;
-        this.getChildElement('button.decrement').disabled = true;
+        if (!(this.getChildElement('.collate-container').hidden =
+               !this.collateTicketItem_.isCapabilityAvailable() ||
+               !currentValueGreaterThan1)) {
+          this.getChildElement('input.collate').checked =
+              this.collateTicketItem_.getValue();
+        }
       }
-
-      if (!(this.getChildElement('.collate-container').hidden =
-             !this.collateTicketItem_.isCapabilityAvailable() ||
-             !currentValueGreaterThan1)) {
-        this.getChildElement('input.collate').checked =
-            this.collateTicketItem_.getValue();
-      }
-
-      fadeInOption(this.getElement());
+      this.updateUiStateInternal();
     },
 
     /**

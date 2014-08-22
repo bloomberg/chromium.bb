@@ -43,6 +43,7 @@ function fadeInElement(el) {
     return;
   el.classList.remove('closing');
   el.hidden = false;
+  el.setAttribute('aria-hidden', 'false');
   el.style.height = 'auto';
   var height = el.offsetHeight;
   el.style.height = height + 'px';
@@ -70,6 +71,7 @@ function fadeOutElement(el) {
       el, 'webkitTransitionEnd', onFadeOutTransitionEnd.bind(el), false);
   el.classList.add('closing');
   el.classList.remove('visible');
+  el.setAttribute('aria-hidden', 'true');
 }
 
 /**

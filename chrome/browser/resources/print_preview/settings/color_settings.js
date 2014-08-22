@@ -11,10 +11,10 @@ cr.define('print_preview', function() {
    * @param {!print_preview.ticket_item.Color} colorTicketItem Used for writing
    *     and reading color value.
    * @constructor
-   * @extends {print_preview.Component}
+   * @extends {print_preview.SettingsSection}
    */
   function ColorSettings(colorTicketItem) {
-    print_preview.Component.call(this);
+    print_preview.SettingsSection.call(this);
 
     /**
      * Used for reading/writing the color value.
@@ -25,8 +25,19 @@ cr.define('print_preview', function() {
   };
 
   ColorSettings.prototype = {
-    __proto__: print_preview.Component.prototype,
+    __proto__: print_preview.SettingsSection.prototype,
 
+    /** @override */
+    isAvailable: function() {
+      return this.colorTicketItem_.isCapabilityAvailable();
+    },
+
+    /** @override */
+    hasCollapsibleContent: function() {
+      return false;
+    },
+
+    /** @override */
     set isEnabled(isEnabled) {
       this.getChildElement('.color-option').disabled = !isEnabled;
       this.getChildElement('.bw-option').disabled = !isEnabled;
@@ -34,8 +45,7 @@ cr.define('print_preview', function() {
 
     /** @override */
     enterDocument: function() {
-      print_preview.Component.prototype.enterDocument.call(this);
-      fadeOutOption(this.getElement(), true);
+      print_preview.SettingsSection.prototype.enterDocument.call(this);
       this.tracker.add(
           this.getChildElement('.color-option'),
           'click',
@@ -55,16 +65,12 @@ cr.define('print_preview', function() {
      * @private
      */
     updateState_: function() {
-      var isColorCapAvailable = this.colorTicketItem_.isCapabilityAvailable();
-      if (isColorCapAvailable) {
-        fadeInOption(this.getElement());
+      if (this.isAvailable()) {
         var isColorEnabled = this.colorTicketItem_.getValue();
         this.getChildElement('.color-option').checked = isColorEnabled;
         this.getChildElement('.bw-option').checked = !isColorEnabled;
-      } else {
-        fadeOutOption(this.getElement());
       }
-      this.getElement().setAttribute('aria-hidden', !isColorCapAvailable);
+      this.updateUiStateInternal();
     }
   };
 

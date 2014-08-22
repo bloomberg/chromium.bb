@@ -8220,7 +8220,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Fit to page
         </message>
         <message name="IDS_PRINT_PREVIEW_OPTION_BACKGROUND_COLORS_AND_IMAGES" desc="Checkbox label shown in print preview page to print webpage backgrounds.">
-          Background colors and images
+          Background graphics
         </message>
         <message name="IDS_PRINT_PREVIEW_OPTION_SELECTION_ONLY" desc="Checkbox label shown in print preview page to print only selected content.">
           Selection only
@@ -8334,6 +8334,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
         <message name="IDS_PRINT_PREVIEW_NO_DESTS_PROMO_ADD_PRINTER_BUTTON_LABEL" desc="Label of button to setup Google Cloud Print printers.">
           Add a printer
+        </message>
+        <message name="IDS_MORE_OPTIONS_LABEL" desc="Label of the toggle element to switch between showing more or less printing options in the Print Preview.">
+          More options
+        </message>
+        <message name="IDS_LESS_OPTIONS_LABEL" desc="Label of the toggle element to switch between showing more or less printing options in the Print Preview.">
+          Fewer options
         </message>
         <message name="IDS_PRINT_PREVIEW_NO_DESTS_PROMO_NOT_NOW_BUTTON_LABEL" desc="Label of button to cancel the Google Cloud Print promotion.">
           Not now
