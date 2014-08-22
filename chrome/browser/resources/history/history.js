@@ -183,8 +183,8 @@ Visit.prototype.getResultDOM = function(propertyBag) {
   var useMonthDate = propertyBag.useMonthDate || false;
   var focusless = propertyBag.focusless || false;
   var node = createElementWithClassName('li', 'entry');
-  var time = createElementWithClassName('div', 'time');
-  var entryBox = createElementWithClassName('label', 'entry-box');
+  var time = createElementWithClassName('label', 'time');
+  var entryBox = createElementWithClassName('div', 'entry-box');
   var domain = createElementWithClassName('div', 'domain');
 
   this.id_ = this.model_.nextVisitId_++;
@@ -198,6 +198,7 @@ Visit.prototype.getResultDOM = function(propertyBag) {
     checkbox.id = 'checkbox-' + this.id_;
     checkbox.time = this.date.getTime();
     checkbox.addEventListener('click', checkboxClicked);
+    time.setAttribute('for', checkbox.id);
     entryBox.appendChild(checkbox);
 
     if (focusless)
@@ -2159,7 +2160,7 @@ function entryBoxClick(event) {
         return;
     }
   }
-  var checkbox = event.currentTarget.control;
+  var checkbox = $(event.currentTarget.getAttribute('for'));
   checkbox.checked = !checkbox.checked;
   handleCheckboxStateChange(checkbox, event.shiftKey);
   // We don't want to focus on the checkbox.
