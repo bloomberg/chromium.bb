@@ -296,7 +296,8 @@ IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE(VerifyPluginWindowRect)) {
 
 // Tests that creating a new instance of a plugin while another one is handling
 // a paint message doesn't cause deadlock.
-IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE(CreateInstanceInPaint)) {
+// http://crbug.com/406184
+IN_PROC_BROWSER_TEST_F(PluginTest, DISABLED_CreateInstanceInPaint) {
   LoadAndWait(GetURL("create_instance_in_paint.html"));
 }
 
@@ -308,7 +309,8 @@ IN_PROC_BROWSER_TEST_F(PluginTest, DISABLED_AlertInWindowMessage) {
   WaitForAppModalDialog(shell());
 }
 
-IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE(VerifyNPObjectLifetimeTest)) {
+// http://crbug.com/406184
+IN_PROC_BROWSER_TEST_F(PluginTest, DISABLED_VerifyNPObjectLifetimeTest) {
   LoadAndWait(GetURL("npobject_lifetime_test.html"));
 }
 
