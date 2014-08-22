@@ -124,8 +124,10 @@ void OffTheRecordProfileImpl::Init() {
   BrowserContextDependencyManager::GetInstance()->CreateBrowserContextServices(
       this);
 
-  DCHECK_NE(IncognitoModePrefs::DISABLED,
-            IncognitoModePrefs::GetAvailability(profile_->GetPrefs()));
+  // Guest profiles may always be OTR. Check IncognitoModePrefs otherwise.
+  DCHECK(profile_->IsGuestSession() ||
+         IncognitoModePrefs::GetAvailability(profile_->GetPrefs()) !=
+             IncognitoModePrefs::DISABLED);
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
   UseSystemProxy();

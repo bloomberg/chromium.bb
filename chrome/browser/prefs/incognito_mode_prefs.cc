@@ -82,6 +82,9 @@ bool IncognitoModePrefs::ShouldLaunchIncognito(
 
 // static
 bool IncognitoModePrefs::CanOpenBrowser(Profile* profile) {
+  if (profile->IsGuestSession())
+    return true;
+
   switch (GetAvailability(profile->GetPrefs())) {
     case IncognitoModePrefs::ENABLED:
       return true;
