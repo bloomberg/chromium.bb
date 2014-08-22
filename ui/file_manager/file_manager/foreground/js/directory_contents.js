@@ -663,6 +663,53 @@ DirectoryContents.prototype.scan = function(refresh) {
 };
 
 /**
+ * Adds/removes/updates items of file list.
+ * @param {Array.<Entry>} updatedEntries Entries of updated/added files.
+ * @param {Array.<string>} removedUrls URLs of removed files.
+ */
+DirectoryContents.prototype.update = function(updatedEntries, removedUrls) {
+  var removedMap = {};
+  for (var i = 0; i < removedUrls.length; i++) {
+    removedMap[removedUrls[i]] = true;
+  }
+
+  var updatedMap = {};
+  for (var i = 0; i < updatedEntries.length; i++) {
+    updatedMap[updatedEntries[i].toURL()] = updatedEntries[i];
+  }
+
+  var updatedList = [];
+  for (var i = 0; i < this.fileList_.length; i++) {
+    var url = this.fileList_.item(i).toURL();
+
+    if (url in removedMap) {
+      this.fileList_.splice(i, 1);
+      i--;
+      continue;
+    }
+
+    if (url in updatedMap) {
+      updatedList.push(updatedMap[url]);
+      delete updatedMap[url];
+    }
+  }
+
+  var addedList = [];
+  for (var url in updatedMap) {
+    addedList.push(updatedMap[url]);
+  }
+
+  if (removedUrls.length > 0)
+    this.fileList_.metadataCache_.clearByUrl(removedUrls, '*');
+
+  this.prefetchMetadata(updatedList, true, function() {
+    this.onNewEntries_(true, addedList);
+    this.onScanFinished_();
+    this.onScanCompleted_();
+  }.bind(this));
+};
+
+/**
  * Cancels the running scan.
  */
 DirectoryContents.prototype.cancelScan = function() {

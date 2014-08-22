@@ -171,21 +171,21 @@ DirectoryModel.prototype.onWatcherDirectoryChanged_ = function(event) {
   var directoryEntry = this.getCurrentDirEntry();
 
   if (event.changedFiles) {
-    var urls = event.changedFiles.map(function(change) { return change.url; });
-    util.URLsToEntries(urls).then(function(result) {
-      // Removes the metadata of invalid entries.
-      if (result.failureUrls.length > 0)
-        this.metadataCache_.clearByUrl(result.failureUrls, '*');
+    var addedOrUpdatedFileUrls = [];
+    var deletedFileUrls = [];
+    event.changedFiles.forEach(function(change) {
+      if (change.changes.length === 1 && change.changes[0] === 'delete')
+        deletedFileUrls.push(change.url);
+      else
+        addedOrUpdatedFileUrls.push(change.url);
+    });
 
-      // Rescans after force-refreshing the metadata of the changed entries.
-      var entries = result.entries;
-      if (entries.length) {
-        this.currentDirContents_.prefetchMetadata(entries, true, function() {
-          this.rescanSoon(false);
-        }.bind(this));
-      } else {
-        this.rescanSoon(false);
-      }
+    util.URLsToEntries(addedOrUpdatedFileUrls).then(function(result) {
+      deletedFileUrls = deletedFileUrls.concat(result.failureUrls);
+
+      // Passing the resolved entries and failed URLs as the removed files.
+      // The URLs are removed files and they chan't be resolved.
+      this.partialUpdate_(result.entries, deletedFileUrls);
     }.bind(this)).catch(function(error) {
       console.error('Error in proceeding the changed event.', error,
                     'Fallback to force-refresh');
@@ -446,6 +446,64 @@ DirectoryModel.prototype.clearAndScan_ = function(newDirContents,
 };
 
 /**
+ * Adds/removes/updates items of file list.
+ * @param {Array.<Entry>} updatedEntries Entries of updated/added files.
+ * @param {Array.<string>} removedUrls URLs of removed files.
+ * @private
+ */
+DirectoryModel.prototype.partialUpdate_ =
+    function(changedEntries, removedUrls) {
+  // This update should be included in the current running update.
+  if (this.pendingScan_)
+    return;
+
+  if (this.runningScan_) {
+    // Do update after the current scan is finished.
+    var previousScan = this.runningScan_;
+    var onPreviousScanCompleted = function() {
+      previousScan.removeEventListener('scan-completed',
+                                       onPreviousScanCompleted);
+      // Run the update asynchronously.
+      Promise.resolve().then(function() {
+        if (!this.runningScan_)
+          this.partialUpdate_(changedEntries, removedUrls);
+      }.bind(this));
+    }.bind(this);
+    previousScan.addEventListener('scan-completed', onPreviousScanCompleted);
+    return;
+  }
+
+  var onFinish = function() {
+    this.runningScan_ = null;
+
+    this.currentDirContents_.removeEventListener(
+        'scan-completed', onCompleted);
+    this.currentDirContents_.removeEventListener('scan-failed', onFailure);
+    this.currentDirContents_.removeEventListener(
+        'scan-cancelled', onCancelled);
+  }.bind(this);
+
+  var onCompleted = function() {
+    onFinish();
+    cr.dispatchSimpleEvent(this, 'rescan-completed');
+  }.bind(this);
+
+  var onFailure = function() {
+    onFinish();
+  };
+
+  var onCancelled = function() {
+    onFinish();
+  };
+
+  this.runningScan_ = this.currentDirContents_;
+  this.currentDirContents_.addEventListener('scan-completed', onCompleted);
+  this.currentDirContents_.addEventListener('scan-failed', onFailure);
+  this.currentDirContents_.addEventListener('scan-cancelled', onCancelled);
+  this.currentDirContents_.update(changedEntries, removedUrls);
+};
+
+/**
  * Perform a directory contents scan. Should be called only from rescan() and
  * clearAndScan_().
  *
@@ -480,7 +538,16 @@ DirectoryModel.prototype.scan_ = function(
     return false;
   }.bind(this);
 
+  var onFinished = function() {
+    dirContents.removeEventListener('scan-completed', onSuccess);
+    dirContents.removeEventListener('scan-updated', updatedCallback);
+    dirContents.removeEventListener('scan-failed', onFailure);
+    dirContents.removeEventListener('scan-cancelled', cancelledCallback);
+  };
+
   var onSuccess = function() {
+    onFinished();
+
     // Record metric for Downloads directory.
     if (!dirContents.isSearch()) {
       var locationInfo =
@@ -500,6 +567,8 @@ DirectoryModel.prototype.scan_ = function(
   }.bind(this);
 
   var onFailure = function() {
+    onFinished();
+
     this.runningScan_ = null;
     this.scanFailures_++;
     failureCallback();
@@ -511,12 +580,17 @@ DirectoryModel.prototype.scan_ = function(
       this.rescanLater(refresh);
   }.bind(this);
 
+  var onCancelled = function() {
+    onFinished();
+    cancelledCallback();
+  };
+
   this.runningScan_ = dirContents;
 
   dirContents.addEventListener('scan-completed', onSuccess);
   dirContents.addEventListener('scan-updated', updatedCallback);
   dirContents.addEventListener('scan-failed', onFailure);
-  dirContents.addEventListener('scan-cancelled', cancelledCallback);
+  dirContents.addEventListener('scan-cancelled', onCancelled);
   dirContents.scan(refresh);
 };
 
@@ -595,7 +669,7 @@ DirectoryModel.prototype.onEntriesChanged = function(kind, entries) {
             entriesToAdd.push(entries[i]);
           }
         }
-        this.getFileList().push.apply(this.getFileList(), entriesToAdd);
+        this.partialUpdate_(entriesToAdd, []);
       }.bind(this)).catch(function(error) {
         console.error(error.stack || error);
       });
@@ -603,11 +677,7 @@ DirectoryModel.prototype.onEntriesChanged = function(kind, entries) {
 
     case util.EntryChangedKind.DELETED:
       // This is the delete event.
-      for (var i = 0; i < entries.length; i++) {
-        var index = this.findIndexByEntry_(entries[i]);
-        if (index >= 0)
-          this.getFileList().splice(index, 1);
-      }
+      this.partialUpdate_([], util.entriesToURLs(entries));
       break;
 
     default:
