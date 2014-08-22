@@ -100,7 +100,7 @@
 
         'conditions': [
           # Compute the architecture that we're building on.
-          ['OS=="linux" or OS=="freebsd" or OS=="openbsd"', {
+          ['OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="android"', {
             # This handles the Linux platforms we generally deal with. Anything
             # else gets passed through, which probably won't work very well;
             # such hosts should pass an explicit target_arch to gyp.
@@ -308,7 +308,13 @@
             'cflags': ['-fPIC'],
           }],
           ['OS=="android"', {
-            'defines': ['NACL_ANDROID=1'],
+            'target_conditions': [
+              ['_toolset=="target"', {
+                'defines': ['NACL_ANDROID=1'],
+              }, {
+                'defines': ['NACL_ANDROID=0'],
+              }],
+            ],
            }, {
             'defines': ['NACL_ANDROID=0'],
             'link_settings': {

@@ -59,7 +59,7 @@
             '../../osx/nacl_signal_32.c',
           ] },
         ],
-        ['OS=="linux"', {
+        ['OS=="linux" or OS=="android"', {
           'sources' : [
             '../../linux/nacl_signal_32.c',
           ] },

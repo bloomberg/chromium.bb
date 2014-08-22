@@ -150,7 +150,7 @@ static int nc_load(ncfile *ncf, int fd) {
   ncf->phnum = phnum;
   ncf->pheaders = (Elf_Phdr *)calloc(phnum, sizeof(Elf_Phdr));
   if (NULL == ncf->pheaders) {
-    ncf->error_fn("nc_load(%s): calloc(%d, %"NACL_PRIdS") failed\n",
+    ncf->error_fn("nc_load(%s): calloc(%d, %"NACL_PRIuS") failed\n",
                   ncf->fname, phnum, sizeof(Elf_Phdr));
     return -1;
   }
@@ -238,7 +238,7 @@ static int nc_load(ncfile *ncf, int fd) {
   shsize = ncf->shnum * sizeof(*ncf->sheaders);
   ncf->sheaders = (Elf_Shdr *)calloc(1, shsize);
   if (NULL == ncf->sheaders) {
-    ncf->error_fn("nc_load(%s): calloc(1, %"NACL_PRIdS") failed\n",
+    ncf->error_fn("nc_load(%s): calloc(1, %"NACL_PRIuS") failed\n",
                   ncf->fname, shsize);
     return -1;
   }

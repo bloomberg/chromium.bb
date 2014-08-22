@@ -2680,6 +2680,17 @@ def SetUpAndroidEnv(env):
                                      'arm-linux-androideabi-4.6', 'prebuilt',
                                      '%s-x86_64' % host_os, 'bin')
     arch_cflags += ['-march=armv7-a', '-mfloat-abi=softfp']
+  elif env.Bit('build_x86_32'):
+    android_ndk_target_prefix = 'i686-linux-android'
+    android_ndk_version = '4.8'
+    android_app_abi = 'x86'
+    android_ndk_sysroot = os.path.join(android_ndk_root, 'platforms',
+                                       'android-14', 'arch-x86')
+    android_ndk_lib_dir = os.path.join('usr', 'lib')
+    android_toolchain = os.path.join(android_ndk_root, 'toolchains',
+                                     'x86-4.6', 'prebuilt',
+                                     '%s-x86_64' % host_os, 'bin')
+    arch_cflags += ['-m32', '-msse2']
   # TODO(sehr): add other android architecture platform settings here.
   android_ndk_include = os.path.join(android_ndk_sysroot, 'usr', 'include')
   android_ndk_lib = os.path.join(android_ndk_sysroot, android_ndk_lib_dir)

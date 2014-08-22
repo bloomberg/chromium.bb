@@ -94,9 +94,10 @@
     },
   ],
   'conditions': [
-    ['target_arch!="arm" and target_arch!="mipsel"', {
+    ['OS!="android" and target_arch!="arm" and target_arch!="mipsel"', {
       'targets': [
-        # Only build the tests on arm and mips, but don't try to run them
+        # If the target ABI is not compatible with host ABI,
+        # only build the tests, but don't try to run them.
         {
           'target_name': 'test_hello_world_nexe',
           'type': 'none',
