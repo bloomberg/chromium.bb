@@ -43,7 +43,7 @@ class ByteVectorGenerator {
  public:
   explicit ByteVectorGenerator(size_t byte_count);
 
-  ~ByteVectorGenerator();
+  virtual ~ByteVectorGenerator();
 
   // Generates a random byte vector where the bits are independent random
   // variables which are true with the given |probability|.
@@ -80,7 +80,7 @@ class HmacByteVectorGenerator : public ByteVectorGenerator {
                           const std::string& entropy_input,
                           const std::string& personalization_string);
 
-  ~HmacByteVectorGenerator();
+  virtual ~HmacByteVectorGenerator();
 
   // Generates a random string suitable for passing to the constructor as
   // |entropy_input|.
