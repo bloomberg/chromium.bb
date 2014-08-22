@@ -456,13 +456,22 @@ void RenderFrameHostManager::DidNavigateFrame(
 
 // TODO(creis): Take in RenderFrameHost instead, since frames can have openers.
 void RenderFrameHostManager::DidDisownOpener(RenderViewHost* render_view_host) {
-  // Notify all swapped out hosts, including the pending RVH.
+  // Notify all RenderViewHosts but the one that notified us.  This is necessary
+  // in case a process swap has occurred while the message was in flight.
   for (RenderFrameProxyHostMap::iterator iter = proxy_hosts_.begin();
        iter != proxy_hosts_.end();
        ++iter) {
     DCHECK_NE(iter->second->GetSiteInstance(),
               current_frame_host()->GetSiteInstance());
     iter->second->GetRenderViewHost()->DisownOpener();
+  }
+
+  if (render_frame_host_->render_view_host() != render_view_host)
+    render_frame_host_->render_view_host()->DisownOpener();
+
+  if (pending_render_frame_host_ &&
+      pending_render_frame_host_->render_view_host() != render_view_host) {
+    pending_render_frame_host_->render_view_host()->DisownOpener();
   }
 }
 
@@ -1052,7 +1061,7 @@ int RenderFrameHostManager::CreateRenderFrame(SiteInstance* instance,
 
   // Check if we've already created an RFH for this SiteInstance.  If so, try
   // to re-use the existing one, which has already been initialized.  We'll
-  // remove it from the list of swapped out hosts if it commits.
+  // remove it from the list of proxy hosts below if it will be active.
   RenderFrameProxyHost* proxy = GetRenderFrameProxyHost(instance);
 
   if (proxy) {

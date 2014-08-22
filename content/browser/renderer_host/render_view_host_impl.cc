@@ -1351,9 +1351,6 @@ WebPreferences RenderViewHostImpl::GetWebkitPreferences() {
 }
 
 void RenderViewHostImpl::DisownOpener() {
-  // This should only be called when swapped out.
-  DCHECK(IsSwappedOut());
-
   Send(new ViewMsg_DisownOpener(GetRoutingID()));
 }
 

@@ -411,10 +411,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
 
 // Test that setting the opener to null in a window affects cross-process
 // navigations, including those to existing entries.  http://crbug.com/156669.
-// Flaky on android: http://crbug.com/397185
-// Flaky on windows and mac: http://crbug.com/291249
-// This test also crashes under ThreadSanitizer, http://crbug.com/356758.
-#if defined(OS_ANDROID) || defined(OS_WIN) || defined(THREAD_SANITIZER) || defined(OS_MACOSX)
+// This test crashes under ThreadSanitizer, http://crbug.com/356758.
+#if defined(THREAD_SANITIZER)
 #define MAYBE_DisownOpener DISABLED_DisownOpener
 #else
 #define MAYBE_DisownOpener DisownOpener
@@ -444,6 +442,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, MAYBE_DisownOpener) {
       &success));
   EXPECT_TRUE(success);
   Shell* new_shell = new_shell_observer.GetShell();
+  EXPECT_TRUE(new_shell->web_contents()->HasOpener());
 
   // Wait for the navigation in the new tab to finish, if it hasn't.
   WaitForLoadStop(new_shell->web_contents());
@@ -460,10 +459,12 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, MAYBE_DisownOpener) {
   scoped_refptr<SiteInstance> new_site_instance(
       new_shell->web_contents()->GetSiteInstance());
   EXPECT_NE(orig_site_instance, new_site_instance);
+  EXPECT_TRUE(new_shell->web_contents()->HasOpener());
 
   // Now disown the opener.
   EXPECT_TRUE(ExecuteScript(new_shell->web_contents(),
                             "window.opener = null;"));
+  EXPECT_FALSE(new_shell->web_contents()->HasOpener());
 
   // Go back and ensure the opener is still null.
   {
@@ -477,6 +478,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, MAYBE_DisownOpener) {
       "window.domAutomationController.send(window.opener == null);",
       &success));
   EXPECT_TRUE(success);
+  EXPECT_FALSE(new_shell->web_contents()->HasOpener());
 
   // Now navigate forward again (creating a new process) and check opener.
   NavigateToURL(new_shell, GetCrossSiteURL("files/title1.html"));
@@ -486,6 +488,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, MAYBE_DisownOpener) {
       "window.domAutomationController.send(window.opener == null);",
       &success));
   EXPECT_TRUE(success);
+  EXPECT_FALSE(new_shell->web_contents()->HasOpener());
 }
 
 // Test that subframes can disown their openers.  http://crbug.com/225528.

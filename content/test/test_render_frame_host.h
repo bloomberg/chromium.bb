@@ -83,6 +83,8 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
       const std::vector<GURL>& redirects);
   void SendBeginNavigationWithURL(const GURL& url);
 
+  void DidDisownOpener();
+
   void set_contents_mime_type(const std::string& mime_type) {
     contents_mime_type_ = mime_type;
   }

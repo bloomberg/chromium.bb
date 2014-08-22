@@ -1159,6 +1159,130 @@ TEST_F(RenderFrameHostManagerTest, CreateSwappedOutOpenerRVHs) {
                    rvh3->GetSiteInstance()));
 }
 
+// Test that a page can disown the opener of the WebContents.
+TEST_F(RenderFrameHostManagerTest, DisownOpener) {
+  const GURL kUrl1("http://www.google.com/");
+  const GURL kUrl2("http://www.chromium.org/");
+
+  // Navigate to an initial URL.
+  contents()->NavigateAndCommit(kUrl1);
+  TestRenderFrameHost* rfh1 = main_test_rfh();
+
+  // Create a new tab and simulate having it be the opener for the main tab.
+  scoped_ptr<TestWebContents> opener1(
+      TestWebContents::Create(browser_context(), rfh1->GetSiteInstance()));
+  contents()->SetOpener(opener1.get());
+  EXPECT_TRUE(contents()->HasOpener());
+
+  // Navigate to a cross-site URL (different SiteInstance but same
+  // BrowsingInstance).
+  contents()->NavigateAndCommit(kUrl2);
+  TestRenderFrameHost* rfh2 = main_test_rfh();
+  EXPECT_NE(rfh1->GetSiteInstance(), rfh2->GetSiteInstance());
+
+  // Disown the opener from rfh2.
+  rfh2->DidDisownOpener();
+
+  // Ensure the opener is cleared.
+  EXPECT_FALSE(contents()->HasOpener());
+}
+
+// Test that a page can disown a same-site opener of the WebContents.
+TEST_F(RenderFrameHostManagerTest, DisownSameSiteOpener) {
+  const GURL kUrl1("http://www.google.com/");
+  const GURL kUrl2("http://www.chromium.org/");
+
+  // Navigate to an initial URL.
+  contents()->NavigateAndCommit(kUrl1);
+  TestRenderFrameHost* rfh1 = main_test_rfh();
+
+  // Create a new tab and simulate having it be the opener for the main tab.
+  scoped_ptr<TestWebContents> opener1(
+      TestWebContents::Create(browser_context(), rfh1->GetSiteInstance()));
+  contents()->SetOpener(opener1.get());
+  EXPECT_TRUE(contents()->HasOpener());
+
+  // Disown the opener from rfh1.
+  rfh1->DidDisownOpener();
+
+  // Ensure the opener is cleared even if it is in the same process.
+  EXPECT_FALSE(contents()->HasOpener());
+}
+
+// Test that a page can disown the opener just as a cross-process navigation is
+// in progress.
+TEST_F(RenderFrameHostManagerTest, DisownOpenerDuringNavigation) {
+  const GURL kUrl1("http://www.google.com/");
+  const GURL kUrl2("http://www.chromium.org/");
+
+  // Navigate to an initial URL.
+  contents()->NavigateAndCommit(kUrl1);
+  TestRenderFrameHost* rfh1 = main_test_rfh();
+
+  // Create a new tab and simulate having it be the opener for the main tab.
+  scoped_ptr<TestWebContents> opener1(
+      TestWebContents::Create(browser_context(), rfh1->GetSiteInstance()));
+  contents()->SetOpener(opener1.get());
+  EXPECT_TRUE(contents()->HasOpener());
+
+  // Navigate to a cross-site URL (different SiteInstance but same
+  // BrowsingInstance).
+  contents()->NavigateAndCommit(kUrl2);
+  TestRenderFrameHost* rfh2 = main_test_rfh();
+  EXPECT_NE(rfh1->GetSiteInstance(), rfh2->GetSiteInstance());
+
+  // Start a back navigation so that rfh1 becomes the pending RFH.
+  contents()->GetController().GoBack();
+  contents()->ProceedWithCrossSiteNavigation();
+
+  // Disown the opener from rfh2.
+  rfh2->DidDisownOpener();
+
+  // Ensure the opener is cleared.
+  EXPECT_FALSE(contents()->HasOpener());
+
+  // The back navigation commits.
+  const NavigationEntry* entry1 = contents()->GetController().GetPendingEntry();
+  rfh1->SendNavigate(entry1->GetPageID(), entry1->GetURL());
+
+  // Ensure the opener is still cleared.
+  EXPECT_FALSE(contents()->HasOpener());
+}
+
+// Test that a page can disown the opener just after a cross-process navigation
+// commits.
+TEST_F(RenderFrameHostManagerTest, DisownOpenerAfterNavigation) {
+  const GURL kUrl1("http://www.google.com/");
+  const GURL kUrl2("http://www.chromium.org/");
+
+  // Navigate to an initial URL.
+  contents()->NavigateAndCommit(kUrl1);
+  TestRenderFrameHost* rfh1 = main_test_rfh();
+
+  // Create a new tab and simulate having it be the opener for the main tab.
+  scoped_ptr<TestWebContents> opener1(
+      TestWebContents::Create(browser_context(), rfh1->GetSiteInstance()));
+  contents()->SetOpener(opener1.get());
+  EXPECT_TRUE(contents()->HasOpener());
+
+  // Navigate to a cross-site URL (different SiteInstance but same
+  // BrowsingInstance).
+  contents()->NavigateAndCommit(kUrl2);
+  TestRenderFrameHost* rfh2 = main_test_rfh();
+  EXPECT_NE(rfh1->GetSiteInstance(), rfh2->GetSiteInstance());
+
+  // Commit a back navigation before the DidDisownOpener message arrives.
+  // rfh1 will be kept alive because of the opener tab.
+  contents()->GetController().GoBack();
+  contents()->ProceedWithCrossSiteNavigation();
+  const NavigationEntry* entry1 = contents()->GetController().GetPendingEntry();
+  rfh1->SendNavigate(entry1->GetPageID(), entry1->GetURL());
+
+  // Disown the opener from rfh2.
+  rfh2->DidDisownOpener();
+  EXPECT_FALSE(contents()->HasOpener());
+}
+
 // Test that we clean up swapped out RenderViewHosts when a process hosting
 // those associated RenderViews crashes. http://crbug.com/258993
 TEST_F(RenderFrameHostManagerTest, CleanUpSwappedOutRVHOnProcessCrash) {

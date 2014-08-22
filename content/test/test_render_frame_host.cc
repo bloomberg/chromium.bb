@@ -179,4 +179,8 @@ void TestRenderFrameHost::SendBeginNavigationWithURL(const GURL& url) {
   OnBeginNavigation(params);
 }
 
+void TestRenderFrameHost::DidDisownOpener() {
+  OnDidDisownOpener();
+}
+
 }  // namespace content

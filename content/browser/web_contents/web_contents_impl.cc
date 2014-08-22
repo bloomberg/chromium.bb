@@ -3670,12 +3670,14 @@ void WebContentsImpl::DidAccessInitialDocument() {
 }
 
 void WebContentsImpl::DidDisownOpener(RenderFrameHost* render_frame_host) {
-  if (opener_) {
-    // Clear our opener so that future cross-process navigations don't have an
-    // opener assigned.
-    RemoveDestructionObserver(opener_);
-    opener_ = NULL;
-  }
+  // No action is necessary if the opener has already been cleared.
+  if (!opener_)
+    return;
+
+  // Clear our opener so that future cross-process navigations don't have an
+  // opener assigned.
+  RemoveDestructionObserver(opener_);
+  opener_ = NULL;
 
   // Notify all swapped out RenderViewHosts for this tab.  This is important
   // in case we go back to them, or if another window in those processes tries
