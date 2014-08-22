@@ -671,7 +671,7 @@ class ThreadSafeRefCountedGarbageCollected : public GarbageCollectedFinalized<T>
 public:
     ThreadSafeRefCountedGarbageCollected()
     {
-        m_keepAlive = adoptPtr(new CrossThreadPersistent<T>(static_cast<T*>(this)));
+        makeKeepAlive();
     }
 
     // Override ref to deal with a case where a reference count goes up
@@ -683,8 +683,7 @@ public:
     {
         MutexLocker lock(m_mutex);
         if (UNLIKELY(!refCount())) {
-            ASSERT(!m_keepAlive);
-            m_keepAlive = adoptPtr(new CrossThreadPersistent<T>(static_cast<T*>(this)));
+            makeKeepAlive();
         }
         WTF::ThreadSafeRefCountedBase::ref();
     }
@@ -706,6 +705,12 @@ protected:
     ~ThreadSafeRefCountedGarbageCollected() { }
 
 private:
+    void makeKeepAlive()
+    {
+        ASSERT(!m_keepAlive);
+        m_keepAlive = adoptPtr(new CrossThreadPersistent<T>(static_cast<T*>(this)));
+    }
+
     OwnPtr<CrossThreadPersistent<T> > m_keepAlive;
     mutable Mutex m_mutex;
 };
