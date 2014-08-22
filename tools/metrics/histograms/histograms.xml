@@ -23956,6 +23956,18 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Prerender.LocalPredictorPrefetchMatchPLT" units="milliseconds">
+  <owner>tburkard@chromium.org</owner>
+  <summary>
+    The PrerenderLocalPredictor uses local browsing history and the prerender
+    service to predict pages likely visited soon. Some of these URLs are
+    prefetched. When such prefetched likely next pages are visited, this
+    histogram records the PLT for such pages. In particular, this also happens
+    if prefetch is actually disabled, allowing (by pivoting on whether or not
+    prefetch is enabled) to compare the effect of prefetch on PLT.
+  </summary>
+</histogram>
+
 <histogram name="Prerender.LocalPredictorServiceLookupTime"
     units="milliseconds">
   <owner>tburkard@chromium.org</owner>

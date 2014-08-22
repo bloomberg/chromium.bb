@@ -455,10 +455,35 @@ class PrerenderLocalPredictor::PrefetchList {
       return_value = true;
     }
     // If the item has been seen in both the history and in tab contents,
-    // erase it from the map to make room for new prefetches.
-    if (it->second->seen_tabcontents_ && it->second->seen_history_)
+    // and the page load time has been recorded, erase it from the map to
+    // make room for new prefetches.
+    if (it->second->seen_tabcontents_ && it->second->seen_history_ &&
+        it->second->seen_plt_) {
       entries_.erase(url.spec().c_str());
+    }
     return return_value;
+  }
+
+  // Marks the PLT for the provided UR as seen. Returns true
+  // iff the item is currently in the list and the PLT had not been seen
+  // before, i.e. the sighting was successful.
+  bool MarkPLTSeen(const GURL& url, base::TimeDelta plt) {
+    ExpireOldItems();
+    base::hash_map<string, ListEntry*>::iterator it =
+        entries_.find(url.spec().c_str());
+    if (it == entries_.end() || it->second->seen_plt_ ||
+        it->second->add_time_ > GetCurrentTime() - plt) {
+      return false;
+    }
+    it->second->seen_plt_ = true;
+    // If the item has been seen in both the history and in tab contents,
+    // and the page load time has been recorded, erase it from the map to
+    // make room for new prefetches.
+    if (it->second->seen_tabcontents_ && it->second->seen_history_ &&
+        it->second->seen_plt_) {
+      entries_.erase(url.spec().c_str());
+    }
+    return true;
   }
 
  private:
@@ -467,12 +492,14 @@ class PrerenderLocalPredictor::PrefetchList {
         : url_(url),
           add_time_(GetCurrentTime()),
           seen_tabcontents_(false),
-          seen_history_(false) {
+          seen_history_(false),
+          seen_plt_(false) {
     }
     std::string url_;
     base::Time add_time_;
     bool seen_tabcontents_;
     bool seen_history_;
+    bool seen_plt_;
   };
 
   void ExpireOldItems() {
@@ -1119,6 +1146,14 @@ void PrerenderLocalPredictor::Init() {
 
 void PrerenderLocalPredictor::OnPLTEventForURL(const GURL& url,
                                                base::TimeDelta page_load_time) {
+  if (prefetch_list_->MarkPLTSeen(url, page_load_time)) {
+    UMA_HISTOGRAM_CUSTOM_TIMES("Prerender.LocalPredictorPrefetchMatchPLT",
+                               page_load_time,
+                               base::TimeDelta::FromMilliseconds(10),
+                               base::TimeDelta::FromSeconds(60),
+                               100);
+  }
+
   scoped_ptr<PrerenderProperties> prerender;
   if (DoesPrerenderMatchPLTRecord(last_swapped_in_prerender_.get(),
                                   url, page_load_time)) {
@@ -1338,8 +1373,19 @@ void PrerenderLocalPredictor::IssuePrerender(
     CandidatePrerenderInfo* info,
     LocalPredictorURLInfo* url_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (prefetch_list_->AddURL(url_info->url))
+  if (prefetch_list_->AddURL(url_info->url)) {
     RecordEvent(EVENT_PREFETCH_LIST_ADDED);
+    // If we are prefetching rather than prerendering, now is the time to launch
+    // the prefetch.
+    if (IsLocalPredictorPrerenderPrefetchEnabled()) {
+      // Obtain the render frame host that caused this prefetch.
+      RenderFrameHost* rfh = RenderFrameHost::FromID(info->render_process_id_,
+                                                     info->render_frame_id_);
+      // If it is still alive, launch the prefresh.
+      if (rfh)
+        rfh->Send(new PrefetchMsg_Prefetch(rfh->GetRoutingID(), url_info->url));
+    }
+  }
   PrerenderProperties* prerender_properties =
       GetIssuedPrerenderSlotForPriority(url_info->url, url_info->priority);
   if (!prerender_properties) {
@@ -1394,16 +1440,6 @@ void PrerenderLocalPredictor::IssuePrerender(
     if (new_prerender_handle) {
       new_prerender_handle->OnCancel();
       RecordEvent(EVENT_ISSUE_PRERENDER_CANCELLED_OLD_PRERENDER);
-    }
-    // If we are prefetching rather than prerendering, now is the time to launch
-    // the prefetch.
-    if (IsLocalPredictorPrerenderPrefetchEnabled()) {
-      // Obtain the render frame host that caused this prefetch.
-      RenderFrameHost* rfh = RenderFrameHost::FromID(info->render_process_id_,
-                                                     info->render_frame_id_);
-      // If it is still alive, launch the prefresh.
-      if (rfh)
-        rfh->Send(new PrefetchMsg_Prefetch(rfh->GetRoutingID(), url));
     }
   }
 
