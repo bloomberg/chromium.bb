@@ -981,6 +981,7 @@
         '../components/components.gyp:onc_component',
         '../components/components.gyp:url_matcher',
         '../components/components_strings.gyp:components_strings',
+        '../content/app/resources/content_resources.gyp:content_resources',
         '../content/content.gyp:content_browser',
         '../content/content.gyp:content_common',
         '../crypto/crypto.gyp:crypto',
@@ -1007,7 +1008,6 @@
         '../url/url.gyp:url_lib',
         '../webkit/storage_browser.gyp:webkit_storage_browser',
         '../webkit/storage_common.gyp:webkit_storage_common',
-        '../webkit/glue/resources/webkit_resources.gyp:webkit_resources',
       ],
       'include_dirs': [
         '..',

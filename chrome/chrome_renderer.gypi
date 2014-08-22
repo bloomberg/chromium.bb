@@ -284,6 +284,7 @@
         '../components/components.gyp:translate_core_common',
         '../components/components.gyp:translate_core_language_detection',
         '../components/components.gyp:visitedlink_renderer',
+        '../content/app/resources/content_resources.gyp:content_resources',
         '../content/app/strings/content_strings.gyp:content_strings',
         '../content/content.gyp:content_renderer',
         '../extensions/extensions.gyp:extensions_renderer',
@@ -299,7 +300,6 @@
         '../third_party/npapi/npapi.gyp:npapi',
         '../third_party/widevine/cdm/widevine_cdm.gyp:widevine_cdm_version_h',
         '../ui/surface/surface.gyp:surface',
-        '../webkit/glue/resources/webkit_resources.gyp:webkit_resources',
       ],
       'include_dirs': [
         '..',

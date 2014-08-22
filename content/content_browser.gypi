@@ -1587,6 +1587,7 @@
       ],
     }, {  # OS!="ios"
       'dependencies': [
+        'app/resources/content_resources.gyp:content_resources',
         'app/strings/content_strings.gyp:content_strings',
         'browser/devtools/devtools_resources.gyp:devtools_resources',
         'content_common_mojo_bindings',
@@ -1602,7 +1603,6 @@
         '../webkit/common/webkit_common.gyp:webkit_common',
         '../webkit/storage_browser.gyp:webkit_storage_browser',
         '../webkit/storage_common.gyp:webkit_storage_common',
-        '../webkit/glue/resources/webkit_resources.gyp:webkit_resources',
       ],
     }],
     ['enable_printing!=0', {

@@ -10,15 +10,14 @@
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/sdk_forward_declarations.h"
+#include "content/app/resources/grit/content_resources.h"
 #include "content/public/common/content_client.h"
-#include "grit/webkit_resources.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "third_party/WebKit/public/platform/WebCursorInfo.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/point_conversions.h"
 #include "ui/gfx/size_conversions.h"
-
 
 using blink::WebCursorInfo;
 using blink::WebSize;

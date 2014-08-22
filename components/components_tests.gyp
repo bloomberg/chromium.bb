@@ -866,6 +866,7 @@
             }],
             ['OS=="win"', {
               'resource_include_dirs': [
+                '<(SHARED_INTERMEDIATE_DIR)/content/app/resources',
                 '<(SHARED_INTERMEDIATE_DIR)/webkit',
               ],
               'sources': [
@@ -881,12 +882,12 @@
                 '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.rc',
               ],
               'dependencies': [
+                '<(DEPTH)/content/app/resources/content_resources.gyp:content_resources',
                 '<(DEPTH)/content/app/strings/content_strings.gyp:content_strings',
                 '<(DEPTH)/net/net.gyp:net_resources',
                 '<(DEPTH)/third_party/WebKit/public/blink_resources.gyp:blink_resources',
                 '<(DEPTH)/third_party/iaccessible2/iaccessible2.gyp:iaccessible2',
                 '<(DEPTH)/third_party/isimpledom/isimpledom.gyp:isimpledom',
-                '<(DEPTH)/webkit/glue/resources/webkit_resources.gyp:webkit_resources',
               ],
               'configurations': {
                 'Debug_Base': {

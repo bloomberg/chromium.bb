@@ -60,6 +60,7 @@
         '../components/components.gyp:variations',
         '../components/components.gyp:variations_http_provider',
         '../components/components_strings.gyp:components_strings',
+        '../content/app/resources/content_resources.gyp:content_resources',
         '../content/content.gyp:content_browser',
         '../content/content.gyp:content_common',
         '../crypto/crypto.gyp:crypto',
@@ -104,7 +105,6 @@
         '../v8/tools/gyp/v8.gyp:v8',
         '../webkit/storage_browser.gyp:webkit_storage_browser',
         '../webkit/storage_common.gyp:webkit_storage_common',
-        '../webkit/glue/resources/webkit_resources.gyp:webkit_resources',
         'chrome_resources.gyp:chrome_strings',
       ],
       'defines': [

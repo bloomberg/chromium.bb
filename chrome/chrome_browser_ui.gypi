@@ -2611,6 +2611,7 @@
             'installer_util',
             '../components/components.gyp:autofill_content_risk_proto',
             '../components/components.gyp:translate_content_common',
+            '../content/app/resources/content_resources.gyp:content_resources',
             '../media/media.gyp:media',
             '../mojo/mojo_base.gyp:mojo_system_impl',
             '../net/net.gyp:net_with_v8',
@@ -2626,7 +2627,6 @@
             '../v8/tools/gyp/v8.gyp:v8',
             '../webkit/storage_browser.gyp:webkit_storage_browser',
             '../webkit/storage_common.gyp:webkit_storage_common',
-            '../webkit/glue/resources/webkit_resources.gyp:webkit_resources',
           ],
           'defines': [
             '<@(nacl_defines)',

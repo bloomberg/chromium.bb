@@ -156,6 +156,7 @@ static_library("browser") {
       "//components/visitedlink/browser",
       "//components/visitedlink/common",
       "//components/web_modal",
+      "//content/app/resources",
       "//media",
       "//media/cast:net",
       "//mojo/environment:chromium",
@@ -179,7 +180,6 @@ static_library("browser") {
       "//webkit/browser:storage",
       "//webkit/common",
       "//webkit/common:storage",
-      "//webkit/glue/resources",
       #"apps",  TODO(GYP)
       ## TODO(tonyg): Remove this dependency (crbug.com/280157).
       #"../testing/perf/perf_test.gyp:*",  TODO(GYP)

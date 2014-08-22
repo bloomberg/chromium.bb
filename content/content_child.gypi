@@ -321,13 +321,13 @@
       ],
     }, {  # OS!="ios"
       'dependencies': [
+        'app/resources/content_resources.gyp:content_resources',
         'app/strings/content_strings.gyp:content_strings',
         '../third_party/WebKit/public/blink.gyp:blink',
         '../third_party/WebKit/public/blink_resources.gyp:blink_resources',
         '../third_party/npapi/npapi.gyp:npapi',
         '../webkit/child/webkit_child.gyp:webkit_child',
         '../webkit/common/webkit_common.gyp:webkit_common',
-        '../webkit/glue/resources/webkit_resources.gyp:webkit_resources',
       ],
     }],
     ['use_aura==1', {

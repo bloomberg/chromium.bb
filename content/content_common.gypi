@@ -598,7 +598,7 @@
     }],
     ['OS=="mac"', {
       'dependencies': [
-        '../webkit/glue/resources/webkit_resources.gyp:webkit_resources',
+        'app/resources/content_resources.gyp:content_resources',
       ],
       'sources': [
         'common/gpu/client/gpu_memory_buffer_impl_io_surface.cc',

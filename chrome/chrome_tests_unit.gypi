@@ -1999,6 +1999,7 @@
             '../components/components.gyp:component_metrics_proto',
             '../components/components.gyp:data_reduction_proxy_test_support',
             '../components/components_strings.gyp:components_strings',
+            '../content/app/resources/content_resources.gyp:content_resources',
             '../extensions/extensions_resources.gyp:extensions_resources',
             '../extensions/extensions_strings.gyp:extensions_strings',
             '../gpu/gpu.gyp:gpu_unittest_utils',
@@ -2011,7 +2012,6 @@
             '../tools/json_schema_compiler/test/json_schema_compiler_tests.gyp:json_schema_compiler_tests',
             '../ui/gl/gl.gyp:gl',
             '../v8/tools/gyp/v8.gyp:v8',
-            '../webkit/glue/resources/webkit_resources.gyp:webkit_resources',
           ],
           # TODO(scr): Use this in browser_tests too.
           'includes': [

@@ -111,10 +111,10 @@
                 # up actual Chromium functionality into this .dll.
                 'chrome_version_resources',
                 '../chrome/chrome_resources.gyp:chrome_unscaled_resources',
+                '../content/app/resources/content_resources.gyp:content_resources',
                 '../crypto/crypto.gyp:crypto',
                 '../net/net.gyp:net_resources',
                 '../ui/views/views.gyp:views',
-                '../webkit/glue/resources/webkit_resources.gyp:webkit_resources',
               ],
               'sources': [
                 'app/chrome_command_ids.h',

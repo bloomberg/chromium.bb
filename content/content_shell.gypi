@@ -27,6 +27,7 @@
         'chromium_code': 1,
       },
       'dependencies': [
+        'app/resources/content_resources.gyp:content_resources',
         'app/strings/content_strings.gyp:content_strings',
         'content.gyp:content_app_both',
         'content.gyp:content_browser',
@@ -64,7 +65,6 @@
         '../url/url.gyp:url_lib',
         '../v8/tools/gyp/v8.gyp:v8',
         '../webkit/storage_browser.gyp:webkit_storage_browser',
-        '../webkit/glue/resources/webkit_resources.gyp:webkit_resources',
       ],
       'include_dirs': [
         '..',
@@ -436,6 +436,7 @@
       'target_name': 'content_shell_pak',
       'type': 'none',
       'dependencies': [
+        'app/resources/content_resources.gyp:content_resources',
         'app/strings/content_strings.gyp:content_strings',
         'browser/tracing/tracing_resources.gyp:tracing_resources',
         'content_resources.gyp:content_resources',
@@ -444,7 +445,6 @@
         '<(DEPTH)/third_party/WebKit/public/blink_resources.gyp:blink_resources',
         '<(DEPTH)/ui/resources/ui_resources.gyp:ui_resources',
         '<(DEPTH)/ui/strings/ui_strings.gyp:ui_strings',
-        '<(DEPTH)/webkit/glue/resources/webkit_resources.gyp:webkit_resources',
       ],
       'conditions': [
         ['OS!="android"', {
@@ -459,6 +459,7 @@
           'variables': {
             'pak_inputs': [
               '<(SHARED_INTERMEDIATE_DIR)/blink/public/resources/blink_resources.pak',
+              '<(SHARED_INTERMEDIATE_DIR)/content/app/resources/content_resources_100_percent.pak',
               '<(SHARED_INTERMEDIATE_DIR)/content/app/strings/content_strings_en-US.pak',
               '<(SHARED_INTERMEDIATE_DIR)/content/browser/tracing/tracing_resources.pak',
               '<(SHARED_INTERMEDIATE_DIR)/content/content_resources.pak',
@@ -468,7 +469,6 @@
               '<(SHARED_INTERMEDIATE_DIR)/ui/resources/webui_resources.pak',
               '<(SHARED_INTERMEDIATE_DIR)/ui/strings/app_locale_settings_en-US.pak',
               '<(SHARED_INTERMEDIATE_DIR)/ui/strings/ui_strings_en-US.pak',
-              '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources_100_percent.pak',
             ],
             'conditions': [
               ['OS!="android"', {

@@ -14,7 +14,7 @@
     'conditions': [
       ['OS != "ios"', {
         'pak_inputs': [
-          '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources_100_percent.pak',
+          '<(SHARED_INTERMEDIATE_DIR)/content/app/resources/content_resources_100_percent.pak',
         ],
       }],
       ['use_ash==1', {

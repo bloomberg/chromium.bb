@@ -43,6 +43,7 @@ static_library("renderer") {
     "//components/translate/core/common",
     "//components/translate/core/language_detection",
     "//components/visitedlink/renderer",
+    "//content/app/resources",
     "//content/app/strings",
     "//content/public/renderer",
     "//extensions:extensions_resources",
@@ -62,7 +63,6 @@ static_library("renderer") {
     "//v8:v8",
     "//webkit/child",
     "//webkit/common",
-    "//webkit/glue/resources",
   ]
 
   if (enable_nacl) {

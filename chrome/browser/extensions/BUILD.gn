@@ -47,6 +47,7 @@ static_library("extensions") {
     "//components/onc",
     "//components/strings",
     "//components/url_matcher",
+    "//content/app/resources",
     "//content/public/browser",
     "//content/public/common",
     "//crypto",
@@ -72,7 +73,6 @@ static_library("extensions") {
     "//url",
     "//webkit/browser:storage",
     "//webkit/common:storage",
-    "//webkit/glue/resources",
     #"../third_party/webrtc/modules/modules.gyp:desktop_capture",  TODO(GYP)
   ]
 

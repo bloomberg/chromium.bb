@@ -4,6 +4,7 @@ include_rules = [
   # The subdirectories in content/ will manually allow their own include
   # directories in content/ so we disallow all of them.
   "-content",
+  "+content/app/resources/grit/content_resources.h",
   "+content/common",
   "+content/grit",
   "+content/public/common",
@@ -29,7 +30,6 @@ include_rules = [
   "+grit/blink_resources.h",
   "+grit/content_strings.h",
   "+grit/ui_strings.h",
-  "+grit/webkit_resources.h",
   "+grit/webui_resources.h",
   "+grit/webui_resources_map.h",
 

@@ -90,6 +90,7 @@ source_set("browser") {
     deps += [
       "//cc",
       "//cc/surfaces",
+      "//content/app/resources",
       "//content/app/strings",
       "//content/browser/devtools:resources",
       "//content/common:mojo_bindings",
@@ -107,7 +108,6 @@ source_set("browser") {
       "//webkit/browser:storage",
       "//webkit/common",
       "//webkit/common:storage",
-      "//webkit/glue/resources",
     ]
   }
 

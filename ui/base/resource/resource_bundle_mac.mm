@@ -51,16 +51,17 @@ base::FilePath GetResourcesPakFilePath(NSString* name, NSString* mac_locale) {
 void ResourceBundle::LoadCommonResources() {
   AddDataPackFromPath(GetResourcesPakFilePath(@"chrome_100_percent",
                         nil), SCALE_FACTOR_100P);
-  AddDataPackFromPath(GetResourcesPakFilePath(@"webkit_resources_100_percent",
+  AddDataPackFromPath(GetResourcesPakFilePath(@"content_resources_100_percent",
                         nil), SCALE_FACTOR_100P);
 
   // On Mac we load 1x and 2x resources and we let the UI framework decide
   // which one to use.
   if (IsScaleFactorSupported(SCALE_FACTOR_200P)) {
-    AddDataPackFromPath(GetResourcesPakFilePath(@"chrome_200_percent",
-                          nil), SCALE_FACTOR_200P);
-    AddDataPackFromPath(GetResourcesPakFilePath(@"webkit_resources_200_percent",
-                          nil), SCALE_FACTOR_200P);
+    AddDataPackFromPath(GetResourcesPakFilePath(@"chrome_200_percent", nil),
+                        SCALE_FACTOR_200P);
+    AddDataPackFromPath(
+        GetResourcesPakFilePath(@"content_resources_200_percent", nil),
+        SCALE_FACTOR_200P);
   }
 }
 

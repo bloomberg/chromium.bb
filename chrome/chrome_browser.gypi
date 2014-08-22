@@ -2935,6 +2935,7 @@
             '../components/components.gyp:visitedlink_browser',
             '../components/components.gyp:visitedlink_common',
             '../components/components.gyp:web_modal',
+            '../content/app/resources/content_resources.gyp:content_resources',
             '../media/cast/cast.gyp:cast_net',
             '../media/media.gyp:media',
             '../mojo/mojo_base.gyp:mojo_common_lib',
@@ -2959,7 +2960,6 @@
             '../v8/tools/gyp/v8.gyp:v8',
             '../webkit/storage_browser.gyp:webkit_storage_browser',
             '../webkit/storage_common.gyp:webkit_storage_common',
-            '../webkit/glue/resources/webkit_resources.gyp:webkit_resources',
           ],
           'sources': [
             '<@(chrome_browser_non_ios_sources)',

@@ -112,11 +112,11 @@ shared_library("main_dll") {
       # Chromium functionality into this .dll.
       #'chrome_version_resources',  TODO(GYP)
       "//chrome/app/theme:chrome_unscaled_resources",
+      "//content/app/resources",
       "//crypto",
       "//net:resources",
       "//third_party/wtl",
       "//ui/views",
-      "//webkit/glue/resources",
       #'<(DEPTH)/chrome_elf/chrome_elf.gyp:chrome_elf' ]  TODO(GYP)
     ]
     if (enable_configuration_policy) {

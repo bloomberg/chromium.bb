@@ -44,7 +44,7 @@
   "ui/resources/ui_unscaled_resources.grd": {
     "includes": [4500],
   },
-  "webkit/glue/resources/webkit_resources.grd": {
+  "content/app/resources/content_resources.grd": {
     "structures": [4700],
   },
   "ui/resources/ui_resources.grd": {

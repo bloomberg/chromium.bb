@@ -210,6 +210,7 @@ static_library("content_shell_lib") {
     "//components/breakpad/app",
     "//content:resources",
     "//content/app:both",
+    "//content/app/resources",
     "//content/app/strings",
     "//content/gpu",
     "//content/ppapi_plugin",
@@ -239,7 +240,6 @@ static_library("content_shell_lib") {
     "//url",
     "//v8",
     "//webkit/browser:storage",
-    "//webkit/glue/resources",
     #'copy_test_netscape_plugin',  TODO(GYP)
   ]
 
@@ -394,6 +394,7 @@ group("resources") {
 repack("pak") {
   sources = [
     "$root_gen_dir/blink/public/resources/blink_resources.pak",
+    "$root_gen_dir/content/app/resources/content_resources_100_percent.pak",
     "$root_gen_dir/content/app/strings/content_strings_en-US.pak",
     "$root_gen_dir/content/browser/tracing/tracing_resources.pak",
     "$root_gen_dir/content/content_resources.pak",
@@ -403,19 +404,18 @@ repack("pak") {
     "$root_gen_dir/ui/resources/webui_resources.pak",
     "$root_gen_dir/ui/strings/app_locale_settings_en-US.pak",
     "$root_gen_dir/ui/strings/ui_strings_en-US.pak",
-    "$root_gen_dir/webkit/webkit_resources_100_percent.pak",
   ]
 
   deps = [
     ":resources",
     "//content:resources",
+    "//content/app/resources",
     "//content/app/strings",
     "//content/browser/tracing:resources",
     "//net:net_resources",
     "//third_party/WebKit/public:resources",
     "//ui/resources",
     "//ui/strings",
-    "//webkit/glue/resources",
   ]
 
   if (is_android) {
