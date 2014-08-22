@@ -24,10 +24,8 @@ binding.registerCustomHook(function(bindingsAPI) {
     try {
       callback(response);
     } catch (e) {
-      var message = "Error in chrome.pageCapture.saveAsMHTML callback: " + e;
-      if (request.stack)
-        message += "\n" + request.stack;
-      handleUncaughtException(message, e);
+      handleUncaughtException(
+          'Error in chrome.pageCapture.saveAsMHTML callback', e, request.stack);
     } finally {
       // Notify the browser. Now that the blob is referenced from JavaScript,
       // the browser can drop its reference to it.

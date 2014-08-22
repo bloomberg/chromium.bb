@@ -41,7 +41,7 @@ const char kScript[] =
     "      var firstArgIndex = 0;\n"
     "      if (!isStatic) {\n"
     "        if (arguments.length == 0)\n"
-    "          throw 'There must be at least one argument, the recevier';\n"
+    "          throw 'There must be at least one argument, the receiver';\n"
     "        recv = arguments[0];\n"
     "        firstArgIndex = 1;\n"
     "      }\n"
@@ -63,7 +63,7 @@ const char kScript[] =
     "  Save(builtin.name, safe);\n"
     "}\n"
     "\n"
-    "// Save only what is needed to make tests that override builtins pass.\n"
+    "// Save only what is needed by the extension modules.\n"
     "saveBuiltin(Object,\n"
     "            ['hasOwnProperty'],\n"
     "            ['create', 'defineProperty', 'getOwnPropertyDescriptor',\n"
@@ -74,9 +74,12 @@ const char kScript[] =
     "            ['concat', 'forEach', 'indexOf', 'join', 'push', 'slice',\n"
     "             'splice', 'map', 'filter']);\n"
     "saveBuiltin(String,\n"
-    "            ['slice', 'split']);\n"
+    "            ['indexOf', 'slice', 'split']);\n"
     "saveBuiltin(RegExp,\n"
     "            ['test']);\n"
+    "saveBuiltin(Error,\n"
+    "            [],\n"
+    "            ['captureStackTrace']);\n"
     "\n"
     "// JSON is trickier because extensions can override toJSON in\n"
     "// incompatible ways, and we need to prevent that.\n"
@@ -228,6 +231,10 @@ v8::Local<v8::Object> SafeBuiltins::GetRegExp() const {
 
 v8::Local<v8::Object> SafeBuiltins::GetString() const {
   return Load("String", context_->v8_context());
+}
+
+v8::Local<v8::Object> SafeBuiltins::GetError() const {
+  return Load("Error", context_->v8_context());
 }
 
 }  //  namespace extensions

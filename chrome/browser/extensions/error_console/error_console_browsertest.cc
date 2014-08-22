@@ -448,22 +448,18 @@ IN_PROC_BROWSER_TEST_F(ErrorConsoleBrowserTest, BrowserActionRuntimeError) {
       extension->id(),
       script_url,
       false,  // not incognito
-      "Error in event handler for browserAction.onClicked: baz is not defined\n"
-          "Stack trace: ReferenceError: baz is not defined",
+      "Error in event handler for browserAction.onClicked: ReferenceError: "
+          "baz is not defined",
       logging::LOG_ERROR,
       extension->url().Resolve(kBackgroundPageName),
-      6u);
+      1u);
 
   const StackTrace& stack_trace = GetStackTraceFromError(errors[0]);
+  // Note: This test used to have a stack trace of length 6 that contains stack
+  // frames in the extension code, but since crbug.com/404406 was fixed only
+  // stack frames within user-defined extension code are printed.
 
   CheckStackFrame(stack_trace[0], script_url, kAnonymousFunction);
-  CheckStackFrame(stack_trace[1], event_bindings_str,
-                  "EventImpl.dispatchToListener");
-  CheckStackFrame(stack_trace[2], "extensions::utils",
-                  event_dispatch_to_listener_str);
-  CheckStackFrame(stack_trace[3], event_bindings_str, "EventImpl.dispatch_");
-  CheckStackFrame(stack_trace[4], event_bindings_str, "dispatchArgs");
-  CheckStackFrame(stack_trace[5], event_bindings_str, "dispatchEvent");
 }
 
 // Test that we can catch an error for calling an API with improper arguments.

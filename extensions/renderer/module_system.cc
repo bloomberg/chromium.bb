@@ -551,7 +551,7 @@ v8::Handle<v8::String> ModuleSystem::WrapSource(v8::Handle<v8::String> source) {
       GetIsolate(),
       "(function(define, require, requireNative, requireAsync, exports, "
       "console, privates,"
-      "$Array, $Function, $JSON, $Object, $RegExp, $String) {"
+      "$Array, $Function, $JSON, $Object, $RegExp, $String, $Error) {"
       "'use strict';");
   v8::Handle<v8::String> right = v8::String::NewFromUtf8(GetIsolate(), "\n})");
   return handle_scope.Escape(v8::Local<v8::String>(
@@ -624,6 +624,7 @@ v8::Handle<v8::Value> ModuleSystem::LoadModule(const std::string& module_name) {
       context_->safe_builtins()->GetObjekt(),
       context_->safe_builtins()->GetRegExp(),
       context_->safe_builtins()->GetString(),
+      context_->safe_builtins()->GetError(),
   };
   {
     v8::TryCatch try_catch;

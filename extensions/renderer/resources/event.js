@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+  var exceptionHandler = require('uncaught_exception_handler');
   var eventNatives = requireNative('event_natives');
-  var handleUncaughtException = require('uncaught_exception_handler').handle;
   var logging = requireNative('logging');
   var schemaRegistry = requireNative('schema_registry');
   var sendRequest = require('sendRequest').sendRequest;
@@ -381,10 +381,8 @@
         if (result !== undefined)
           $Array.push(results, result);
       } catch (e) {
-        handleUncaughtException(
-          'Error in event handler for ' +
-              (this.eventName ? this.eventName : '(unknown)') +
-              ': ' + e.message + '\nStack trace: ' + e.stack,
+        exceptionHandler.handle('Error in event handler for ' +
+            (this.eventName ? this.eventName : '(unknown)'),
           e);
       }
     }
@@ -411,7 +409,7 @@
   EventImpl.prototype.destroy_ = function() {
     this.listeners.length = 0;
     this.detach_();
-    this.destroyed = new Error().stack;
+    this.destroyed = exceptionHandler.getStackTrace();
   };
 
   EventImpl.prototype.addRules = function(rules, opt_cb) {

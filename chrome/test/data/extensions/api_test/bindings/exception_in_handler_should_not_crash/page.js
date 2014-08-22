@@ -2,23 +2,30 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// A named function that throws the error, used to verify that the error message
+// has a stack trace that contains the relevant stack frames.
+function throwNewError(message) {
+  throw new Error(message)
+}
+
 chrome.test.runTests([
   function tabsCreateThrowsError() {
-    chrome.test.setExceptionHandler(function(_, exception) {
+    chrome.test.setExceptionHandler(function(message, exception) {
+      chrome.test.assertTrue(message.indexOf('throwNewError') >= 0);
       chrome.test.assertEq('tata', exception.message);
       chrome.test.succeed();
     });
     chrome.tabs.create({}, function() {
-      throw new Error('tata');
+      throwNewError('tata');
     });
   },
 
   function tabsOnCreatedThrowsError() {
     var listener = function() {
-      throw new Error('hi');
+      throwNewError('hi');
     };
-    chrome.test.setExceptionHandler(function(_, exception) {
-      chrome.test.assertEq('hi', exception.message);
+    chrome.test.setExceptionHandler(function(message, exception) {
+      chrome.test.assertTrue(message.indexOf('throwNewError') >= 0);
       chrome.tabs.onCreated.removeListener(listener);
       chrome.test.succeed();
     });
@@ -29,12 +36,13 @@ chrome.test.runTests([
   function permissionsGetAllThrowsError() {
     // permissions.getAll has a custom callback, as do many other methods, but
     // this is easy to call.
-    chrome.test.setExceptionHandler(function(_, exception) {
+    chrome.test.setExceptionHandler(function(message, exception) {
+      chrome.test.assertTrue(message.indexOf('throwNewError') >= 0);
       chrome.test.assertEq('boom', exception.message);
       chrome.test.succeed();
     });
     chrome.permissions.getAll(function() {
-      throw new Error('boom');
+      throwNewError('boom');
     });
   }
 ]);

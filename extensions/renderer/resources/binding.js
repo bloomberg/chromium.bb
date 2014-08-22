@@ -5,6 +5,7 @@
 var Event = require('event_bindings').Event;
 var forEach = require('utils').forEach;
 var GetAvailability = requireNative('v8_context').GetAvailability;
+var exceptionHandler = require('uncaught_exception_handler');
 var lastError = require('lastError');
 var logActivity = requireNative('activityLogger');
 var logging = requireNative('logging');
@@ -69,14 +70,15 @@ APIFunctions.prototype.setHandleRequestWithPromise =
   return this.setHook_(apiName, 'handleRequest', function() {
       var name = prefix + '.' + apiName;
       logActivity.LogAPICall(extensionId, name, $Array.slice(arguments));
-      var stack = sendRequestHandler.getExtensionStackTrace();
+      var stack = exceptionHandler.getExtensionStackTrace();
       var callback = arguments[arguments.length - 1];
       var args = $Array.slice(arguments, 0, arguments.length - 1);
       $Function.apply(customizedFunction, this, args).then(function(result) {
         sendRequestHandler.safeCallbackApply(
             name, {'stack': stack}, callback, [result]);
       }).catch(function(error) {
-        lastError.run(name, error.message, stack, callback);
+        var message = exceptionHandler.safeErrorToString(error, true);
+        lastError.run(name, message, stack, callback);
       });
     });
 };
@@ -134,7 +136,7 @@ function getPlatform() {
 
 function isPlatformSupported(schemaNode, platform) {
   return !schemaNode.platforms ||
-      schemaNode.platforms.indexOf(platform) > -1;
+      $Array.indexOf(schemaNode.platforms, platform) > -1;
 }
 
 function isManifestVersionSupported(schemaNode, manifestVersion) {

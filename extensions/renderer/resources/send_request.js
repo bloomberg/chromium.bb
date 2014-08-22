@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var handleUncaughtException = require('uncaught_exception_handler').handle;
+var exceptionHandler = require('uncaught_exception_handler');
 var lastError = require('lastError');
 var logging = requireNative('logging');
 var natives = requireNative('sendRequest');
-var processNatives = requireNative('process');
 var validate = require('schemaUtils').validate;
 
 // All outstanding requests from sendRequest().
@@ -21,10 +20,7 @@ function safeCallbackApply(name, request, callback, args) {
   try {
     $Function.apply(callback, request, args);
   } catch (e) {
-    var errorMessage = "Error in response to " + name + ": " + e;
-    if (request.stack && request.stack != '')
-      errorMessage += "\n" + request.stack;
-    handleUncaughtException(errorMessage, e);
+    exceptionHandler.handle('Error in response to ' + name, e, request.stack);
   }
 }
 
@@ -93,17 +89,6 @@ function handleResponse(requestId, name, success, responseList, error) {
     if (callerChrome !== chrome)
       lastError.clear(callerChrome);
   }
-};
-
-function getExtensionStackTrace(call_name) {
-  var stack = $String.split(new Error().stack, '\n');
-  var id = processNatives.GetExtensionId();
-
-  // Remove stack frames before and after that weren't associated with the
-  // extension.
-  return $Array.join(stack.filter(function(line) {
-    return line.indexOf(id) != -1;
-  }), '\n');
 }
 
 function prepareRequest(args, argSchemas) {
@@ -140,7 +125,7 @@ function sendRequest(functionName, args, argSchemas, optArgs) {
   if (!optArgs)
     optArgs = {};
   var request = prepareRequest(args, argSchemas);
-  request.stack = getExtensionStackTrace();
+  request.stack = exceptionHandler.getExtensionStackTrace();
   if (optArgs.customCallback) {
     request.customCallback = optArgs.customCallback;
   }
@@ -172,7 +157,6 @@ exports.sendRequest = sendRequest;
 exports.getCalledSendRequest = getCalledSendRequest;
 exports.clearCalledSendRequest = clearCalledSendRequest;
 exports.safeCallbackApply = safeCallbackApply;
-exports.getExtensionStackTrace = getExtensionStackTrace;
 
 // Called by C++.
 exports.handleResponse = handleResponse;

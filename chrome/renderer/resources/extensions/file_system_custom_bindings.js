@@ -51,7 +51,7 @@ binding.registerCustomHook(function(bindingsAPI) {
     if (savedEntry) {
       sendRequest.safeCallbackApply(
           'fileSystem.isRestorable',
-          {'stack': sendRequest.getExtensionStackTrace()},
+          {},
           callback,
           [true]);
     } else {
@@ -68,7 +68,7 @@ binding.registerCustomHook(function(bindingsAPI) {
       // send a request to the browser to move it to the back of the LRU.
       sendRequest.safeCallbackApply(
           'fileSystem.restoreEntry',
-          {'stack': sendRequest.getExtensionStackTrace()},
+          {},
           callback,
           [savedEntry]);
       return [id, false, null];
