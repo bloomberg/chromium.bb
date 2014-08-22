@@ -1495,7 +1495,7 @@ def GetDefaultTryConfigs(bots=None):
       'android_aosp': ['compile'],
       'android_chromium_gn_compile_rel': ['compile'],
       'android_clang_dbg': ['slave_steps'],
-      'android_dbg': ['slave_steps'],
+      'android_dbg_tests_recipe': ['slave_steps'],
       'cros_x86': ['defaulttests'],
       'ios_dbg_simulator': [
           'compile',
@@ -1588,7 +1588,7 @@ def GetPreferredTryMasters(project, change):
     return GetDefaultTryConfigs([
         'android_aosp',
         'android_clang_dbg',
-        'android_dbg',
+        'android_dbg_tests_recipe',
     ])
   if all(re.search('[/_]ios[/_.]', f) for f in files):
     return GetDefaultTryConfigs(['ios_rel_device', 'ios_dbg_simulator'])
@@ -1596,7 +1596,7 @@ def GetPreferredTryMasters(project, change):
   builders = [
       'android_chromium_gn_compile_rel',
       'android_clang_dbg',
-      'android_dbg',
+      'android_dbg_tests_recipe',
       'ios_dbg_simulator',
       'ios_rel_device',
       'linux_chromium_chromeos_rel_swarming',
