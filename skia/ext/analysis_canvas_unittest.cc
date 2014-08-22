@@ -322,4 +322,35 @@ TEST(AnalysisCanvasTest, EarlyOutNotSolid) {
 
 }
 
+TEST(AnalysisCanvasTest, ClipComplexRegion) {
+  skia::AnalysisCanvas canvas(255, 255);
+
+  SkPath path;
+  path.moveTo(0, 0);
+  path.lineTo(128, 50);
+  path.lineTo(255, 0);
+  path.lineTo(255, 255);
+  path.lineTo(0, 255);
+  SkIRect pathBounds = path.getBounds().round();
+  SkRegion region;
+  region.setPath(path, SkRegion(pathBounds));
+
+  SkColor outputColor;
+  SolidColorFill(canvas);
+  canvas.clipRegion(region);
+  EXPECT_FALSE(canvas.GetColorIfSolid(&outputColor));
+
+  canvas.save();
+  EXPECT_FALSE(canvas.GetColorIfSolid(&outputColor));
+
+  canvas.clipRegion(region);
+  EXPECT_FALSE(canvas.GetColorIfSolid(&outputColor));
+
+  canvas.restore();
+  EXPECT_FALSE(canvas.GetColorIfSolid(&outputColor));
+
+  SolidColorFill(canvas);
+  EXPECT_FALSE(canvas.GetColorIfSolid(&outputColor));
+}
+
 }  // namespace skia

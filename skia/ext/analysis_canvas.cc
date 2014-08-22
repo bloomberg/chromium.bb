@@ -331,15 +331,8 @@ bool AnalysisCanvas::abortDrawing() {
   return false;
 }
 
-void AnalysisCanvas::onClipRect(const SkRect& rect, SkRegion::Op op, 
-                                ClipEdgeStyle edge_style) {
-
-  INHERITED::onClipRect(rect, op, edge_style);
-}
-
-void AnalysisCanvas::onClipPath(const SkPath& path, SkRegion::Op op,
-                                ClipEdgeStyle edge_style) {
-  // clipPaths can make our calls to IsFullQuad invalid (ie have false
+void AnalysisCanvas::OnComplexClip() {
+  // complex clips can make our calls to IsFullQuad invalid (ie have false
   // positives). As a precaution, force the setting to be non-solid
   // and non-transparent until we pop this
   if (force_not_solid_stack_level_ == kNoLayer) {
@@ -350,26 +343,37 @@ void AnalysisCanvas::onClipPath(const SkPath& path, SkRegion::Op op,
     force_not_transparent_stack_level_ = saved_stack_size_;
     SetForceNotTransparent(true);
   }
+}
 
+void AnalysisCanvas::onClipRect(const SkRect& rect,
+                                SkRegion::Op op,
+                                ClipEdgeStyle edge_style) {
+  INHERITED::onClipRect(rect, op, edge_style);
+}
+
+void AnalysisCanvas::onClipPath(const SkPath& path,
+                                SkRegion::Op op,
+                                ClipEdgeStyle edge_style) {
+  OnComplexClip();
   INHERITED::onClipRect(path.getBounds(), op, edge_style);
 }
 
 void AnalysisCanvas::onClipRRect(const SkRRect& rrect,
                                  SkRegion::Op op,
                                  ClipEdgeStyle edge_style) {
-  // clipRRect can make our calls to IsFullQuad invalid (ie have false
-  // positives). As a precaution, force the setting to be non-solid
-  // and non-transparent until we pop this
-  if (force_not_solid_stack_level_ == kNoLayer) {
-    force_not_solid_stack_level_ = saved_stack_size_;
-    SetForceNotSolid(true);
-  }
-  if (force_not_transparent_stack_level_ == kNoLayer) {
-    force_not_transparent_stack_level_ = saved_stack_size_;
-    SetForceNotTransparent(true);
-  }
-
+  OnComplexClip();
   INHERITED::onClipRect(rrect.getBounds(), op, edge_style);
+}
+
+void AnalysisCanvas::onClipRegion(const SkRegion& deviceRgn, SkRegion::Op op) {
+  const ClipEdgeStyle edge_style = kHard_ClipEdgeStyle;
+  if (deviceRgn.isRect()) {
+    onClipRect(SkRect::MakeFromIRect(deviceRgn.getBounds()), op, edge_style);
+    return;
+  }
+  OnComplexClip();
+  INHERITED::onClipRect(
+      SkRect::MakeFromIRect(deviceRgn.getBounds()), op, edge_style);
 }
 
 void AnalysisCanvas::willSave() {

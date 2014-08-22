@@ -84,6 +84,8 @@ class SK_API AnalysisCanvas : public SkCanvas, public SkDrawPictureCallback {
   virtual void onClipPath(const SkPath& path,
                           SkRegion::Op op,
                           ClipEdgeStyle edge_style) OVERRIDE;
+  virtual void onClipRegion(const SkRegion& deviceRgn,
+                            SkRegion::Op op) OVERRIDE;
 
   virtual void onDrawText(const void* text,
                           size_t byteLength,
@@ -108,7 +110,9 @@ class SK_API AnalysisCanvas : public SkCanvas, public SkDrawPictureCallback {
                             const SkRRect& inner,
                             const SkPaint&) OVERRIDE;
 
-private:
+  void OnComplexClip();
+
+ private:
   typedef SkCanvas INHERITED;
 
   int saved_stack_size_;
