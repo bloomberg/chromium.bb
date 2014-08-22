@@ -101,11 +101,18 @@ FullWindowVideoControls.prototype.showErrorMessage = function(message) {
 
 /**
  * Handles playback (decoder) errors.
+ * @param {MediaError} error Error object.
  * @private
  */
-FullWindowVideoControls.prototype.onPlaybackError_ = function() {
-  this.showErrorMessage('GALLERY_VIDEO_DECODING_ERROR');
-  this.decodeErrorOccured = true;
+FullWindowVideoControls.prototype.onPlaybackError_ = function(error) {
+  if (error.target &&
+      error.target.error.code === MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED) {
+    this.showErrorMessage('GALLERY_VIDEO_ERROR');
+    this.decodeErrorOccured = false;
+  } else {
+    this.showErrorMessage('GALLERY_VIDEO_DECODING_ERROR');
+    this.decodeErrorOccured = true;
+  }
 
   // Disable inactivity watcher, and disable the ui, by hiding tools manually.
   this.inactivityWatcher.disabled = true;
