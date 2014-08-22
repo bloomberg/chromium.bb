@@ -151,6 +151,10 @@ NON_EXECUTABLE_PATHS = (
   'chrome/test/data/extensions/uitest/plugins/plugin64.so',
   'chrome/test/data/extensions/uitest/plugins_private/plugin32.so',
   'chrome/test/data/extensions/uitest/plugins_private/plugin64.so',
+  'components/test/data/component_updater/ihfokbkgjpifnbbojhneepfflplebdkc/'
+      'ihfokbkgjpifnbbojhneepfflplebdkc_1/a_changing_binary_file',
+  'components/test/data/component_updater/ihfokbkgjpifnbbojhneepfflplebdkc/'
+      'ihfokbkgjpifnbbojhneepfflplebdkc_2/a_changing_binary_file',
   'courgette/testdata/elf-32-1',
   'courgette/testdata/elf-32-2',
   'courgette/testdata/elf-64',
