@@ -45,8 +45,6 @@ class RTCVideoDecoderTest : public ::testing::Test,
         .Times(1)
         .WillRepeatedly(Return(true));
     EXPECT_CALL(*mock_vda_, Destroy()).Times(1);
-    rtc_decoder_ =
-        RTCVideoDecoder::Create(webrtc::kVideoCodecVP8, mock_gpu_factories_);
   }
 
   virtual void TearDown() OVERRIDE {
@@ -65,9 +63,15 @@ class RTCVideoDecoderTest : public ::testing::Test,
     return WEBRTC_VIDEO_CODEC_OK;
   }
 
+  void CreateDecoder(webrtc::VideoCodecType codec_type) {
+    VLOG(2) << "CreateDecoder";
+    codec_.codecType = codec_type;
+    rtc_decoder_ =
+        RTCVideoDecoder::Create(codec_type, mock_gpu_factories_);
+  }
+
   void Initialize() {
     VLOG(2) << "Initialize";
-    codec_.codecType = webrtc::kVideoCodecVP8;
     EXPECT_EQ(WEBRTC_VIDEO_CODEC_OK, rtc_decoder_->InitDecode(&codec_, 1));
     EXPECT_EQ(WEBRTC_VIDEO_CODEC_OK,
               rtc_decoder_->RegisterDecodeCompleteCallback(this));
@@ -104,24 +108,32 @@ class RTCVideoDecoderTest : public ::testing::Test,
 };
 
 TEST_F(RTCVideoDecoderTest, CreateReturnsNullOnUnsupportedCodec) {
+  CreateDecoder(webrtc::kVideoCodecVP8);
   scoped_ptr<RTCVideoDecoder> null_rtc_decoder(
       RTCVideoDecoder::Create(webrtc::kVideoCodecI420, mock_gpu_factories_));
   EXPECT_EQ(NULL, null_rtc_decoder.get());
 }
 
+TEST_F(RTCVideoDecoderTest, CreateAndInitSucceedsForH264Codec) {
+  CreateDecoder(webrtc::kVideoCodecH264);
+  EXPECT_EQ(WEBRTC_VIDEO_CODEC_OK, rtc_decoder_->InitDecode(&codec_, 1));
+}
+
 TEST_F(RTCVideoDecoderTest, InitDecodeReturnsErrorOnFeedbackMode) {
-  codec_.codecType = webrtc::kVideoCodecVP8;
+  CreateDecoder(webrtc::kVideoCodecVP8);
   codec_.codecSpecific.VP8.feedbackModeOn = true;
   EXPECT_EQ(WEBRTC_VIDEO_CODEC_ERROR, rtc_decoder_->InitDecode(&codec_, 1));
 }
 
 TEST_F(RTCVideoDecoderTest, DecodeReturnsErrorWithoutInitDecode) {
+  CreateDecoder(webrtc::kVideoCodecVP8);
   webrtc::EncodedImage input_image;
   EXPECT_EQ(WEBRTC_VIDEO_CODEC_UNINITIALIZED,
             rtc_decoder_->Decode(input_image, false, NULL, NULL, 0));
 }
 
 TEST_F(RTCVideoDecoderTest, DecodeReturnsErrorOnIncompleteFrame) {
+  CreateDecoder(webrtc::kVideoCodecVP8);
   Initialize();
   webrtc::EncodedImage input_image;
   input_image._completeFrame = false;
@@ -130,6 +142,7 @@ TEST_F(RTCVideoDecoderTest, DecodeReturnsErrorOnIncompleteFrame) {
 }
 
 TEST_F(RTCVideoDecoderTest, DecodeReturnsErrorOnMissingFrames) {
+  CreateDecoder(webrtc::kVideoCodecVP8);
   Initialize();
   webrtc::EncodedImage input_image;
   input_image._completeFrame = true;
@@ -139,6 +152,7 @@ TEST_F(RTCVideoDecoderTest, DecodeReturnsErrorOnMissingFrames) {
 }
 
 TEST_F(RTCVideoDecoderTest, ResetReturnsOk) {
+  CreateDecoder(webrtc::kVideoCodecVP8);
   Initialize();
   EXPECT_CALL(*mock_vda_, Reset())
       .WillOnce(Invoke(this, &RTCVideoDecoderTest::NotifyResetDone));
@@ -146,6 +160,7 @@ TEST_F(RTCVideoDecoderTest, ResetReturnsOk) {
 }
 
 TEST_F(RTCVideoDecoderTest, ReleaseReturnsOk) {
+  CreateDecoder(webrtc::kVideoCodecVP8);
   Initialize();
   EXPECT_CALL(*mock_vda_, Reset())
       .WillOnce(Invoke(this, &RTCVideoDecoderTest::NotifyResetDone));
@@ -153,6 +168,7 @@ TEST_F(RTCVideoDecoderTest, ReleaseReturnsOk) {
 }
 
 TEST_F(RTCVideoDecoderTest, InitDecodeAfterRelease) {
+  CreateDecoder(webrtc::kVideoCodecVP8);
   EXPECT_CALL(*mock_vda_, Reset())
       .WillRepeatedly(Invoke(this, &RTCVideoDecoderTest::NotifyResetDone));
   Initialize();
@@ -162,6 +178,7 @@ TEST_F(RTCVideoDecoderTest, InitDecodeAfterRelease) {
 }
 
 TEST_F(RTCVideoDecoderTest, IsBufferAfterReset) {
+  CreateDecoder(webrtc::kVideoCodecVP8);
   EXPECT_TRUE(rtc_decoder_->IsBufferAfterReset(0, RTCVideoDecoder::ID_INVALID));
   EXPECT_TRUE(rtc_decoder_->IsBufferAfterReset(RTCVideoDecoder::ID_LAST,
                                                RTCVideoDecoder::ID_INVALID));
@@ -187,6 +204,7 @@ TEST_F(RTCVideoDecoderTest, IsBufferAfterReset) {
 }
 
 TEST_F(RTCVideoDecoderTest, IsFirstBufferAfterReset) {
+  CreateDecoder(webrtc::kVideoCodecVP8);
   EXPECT_TRUE(
       rtc_decoder_->IsFirstBufferAfterReset(0, RTCVideoDecoder::ID_INVALID));
   EXPECT_FALSE(

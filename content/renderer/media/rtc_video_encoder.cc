@@ -16,6 +16,7 @@
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
 #include "media/filters/gpu_video_accelerator_factories.h"
+#include "media/filters/h264_parser.h"
 #include "media/video/video_encode_accelerator.h"
 #include "third_party/webrtc/system_wrappers/interface/tick_util.h"
 
@@ -26,6 +27,42 @@
   } while (0)
 
 namespace content {
+
+namespace {
+
+// Populates struct webrtc::RTPFragmentationHeader for H264 codec.
+// Each entry specifies the offset and length (excluding start code) of a NALU.
+// Returns true if successful.
+bool GetRTPFragmentationHeaderH264(webrtc::RTPFragmentationHeader* header,
+                                   const uint8_t* data, uint32_t length) {
+  media::H264Parser parser;
+  parser.SetStream(data, length);
+
+  std::vector<media::H264NALU> nalu_vector;
+  while (true) {
+    media::H264NALU nalu;
+    const media::H264Parser::Result result = parser.AdvanceToNextNALU(&nalu);
+    if (result == media::H264Parser::kOk) {
+      nalu_vector.push_back(nalu);
+    } else if (result == media::H264Parser::kEOStream) {
+      break;
+    } else {
+      DLOG(ERROR) << "Unexpected H264 parser result";
+      return false;
+    }
+  }
+
+  header->VerifyAndAllocateFragmentationHeader(nalu_vector.size());
+  for (size_t i = 0; i < nalu_vector.size(); ++i) {
+    header->fragmentationOffset[i] = nalu_vector[i].data - data;
+    header->fragmentationLength[i] = nalu_vector[i].size;
+    header->fragmentationPlType[i] = 0;
+    header->fragmentationTimeDiff[i] = 0;
+  }
+  return true;
+}
+
+}  // namespace
 
 // This private class of RTCVideoEncoder does the actual work of communicating
 // with a media::VideoEncodeAccelerator for handling video encoding.  It can
@@ -648,6 +685,32 @@ void RTCVideoEncoder::ReturnEncodedImage(scoped_ptr<webrtc::EncodedImage> image,
   if (!encoded_image_callback_)
     return;
 
+  webrtc::RTPFragmentationHeader header;
+  memset(&header, 0, sizeof(header));
+  switch (video_codec_type_) {
+    case webrtc::kVideoCodecVP8:
+    case webrtc::kVideoCodecGeneric:
+      // Generate a header describing a single fragment.
+      // Note that webrtc treats the generic-type payload as an opaque buffer.
+      header.VerifyAndAllocateFragmentationHeader(1);
+      header.fragmentationOffset[0] = 0;
+      header.fragmentationLength[0] = image->_length;
+      header.fragmentationPlType[0] = 0;
+      header.fragmentationTimeDiff[0] = 0;
+      break;
+    case webrtc::kVideoCodecH264:
+      if (!GetRTPFragmentationHeaderH264(
+          &header, image->_buffer, image->_length)) {
+        DLOG(ERROR) << "Failed to get RTP fragmentation header for H264";
+        NotifyError(WEBRTC_VIDEO_CODEC_ERROR);
+        return;
+      }
+      break;
+    default:
+      NOTREACHED() << "Invalid video codec type";
+      return;
+  }
+
   webrtc::CodecSpecificInfo info;
   memset(&info, 0, sizeof(info));
   info.codecType = video_codec_type_;
@@ -656,15 +719,6 @@ void RTCVideoEncoder::ReturnEncodedImage(scoped_ptr<webrtc::EncodedImage> image,
     info.codecSpecific.VP8.tl0PicIdx = -1;
     info.codecSpecific.VP8.keyIdx = -1;
   }
-
-  // Generate a header describing a single fragment.
-  webrtc::RTPFragmentationHeader header;
-  memset(&header, 0, sizeof(header));
-  header.VerifyAndAllocateFragmentationHeader(1);
-  header.fragmentationOffset[0] = 0;
-  header.fragmentationLength[0] = image->_length;
-  header.fragmentationPlType[0] = 0;
-  header.fragmentationTimeDiff[0] = 0;
 
   int32_t retval = encoded_image_callback_->Encoded(*image, &info, &header);
   if (retval < 0) {

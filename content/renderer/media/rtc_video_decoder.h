@@ -103,6 +103,7 @@ class CONTENT_EXPORT RTCVideoDecoder
   FRIEND_TEST_ALL_PREFIXES(RTCVideoDecoderTest, IsFirstBufferAfterReset);
 
   RTCVideoDecoder(
+      webrtc::VideoCodecType type,
       const scoped_refptr<media::GpuVideoAcceleratorFactories>& factories);
 
   // Requests a buffer to be decoded by VDA.
@@ -190,6 +191,9 @@ class CONTENT_EXPORT RTCVideoDecoder
 
   // The hardware video decoder.
   scoped_ptr<media::VideoDecodeAccelerator> vda_;
+
+  // The video codec type, as reported by WebRTC.
+  const webrtc::VideoCodecType video_codec_type_;
 
   // The size of the incoming video frames.
   gfx::Size frame_size_;

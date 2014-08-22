@@ -71,8 +71,10 @@ RTCVideoDecoder::BufferData::BufferData() {}
 RTCVideoDecoder::BufferData::~BufferData() {}
 
 RTCVideoDecoder::RTCVideoDecoder(
+    webrtc::VideoCodecType type,
     const scoped_refptr<media::GpuVideoAcceleratorFactories>& factories)
-    : factories_(factories),
+    : video_codec_type_(type),
+      factories_(factories),
       decoder_texture_target_(0),
       next_picture_buffer_id_(0),
       state_(UNINITIALIZED),
@@ -116,13 +118,16 @@ scoped_ptr<RTCVideoDecoder> RTCVideoDecoder::Create(
     case webrtc::kVideoCodecVP8:
       profile = media::VP8PROFILE_ANY;
       break;
+    case webrtc::kVideoCodecH264:
+      profile = media::H264PROFILE_MAIN;
+      break;
     default:
       DVLOG(2) << "Video codec not supported:" << type;
       return decoder.Pass();
   }
 
   base::WaitableEvent waiter(true, false);
-  decoder.reset(new RTCVideoDecoder(factories));
+  decoder.reset(new RTCVideoDecoder(type, factories));
   decoder->factories_->GetTaskRunner()->PostTask(
       FROM_HERE,
       base::Bind(&RTCVideoDecoder::CreateVDA,
@@ -130,7 +135,7 @@ scoped_ptr<RTCVideoDecoder> RTCVideoDecoder::Create(
                  profile,
                  &waiter));
   waiter.Wait();
-  // vda can be NULL if VP8 is not supported.
+  // vda can be NULL if the codec is not supported.
   if (decoder->vda_ != NULL) {
     decoder->state_ = INITIALIZED;
   } else {
@@ -142,8 +147,9 @@ scoped_ptr<RTCVideoDecoder> RTCVideoDecoder::Create(
 int32_t RTCVideoDecoder::InitDecode(const webrtc::VideoCodec* codecSettings,
                                     int32_t /*numberOfCores*/) {
   DVLOG(2) << "InitDecode";
-  DCHECK_EQ(codecSettings->codecType, webrtc::kVideoCodecVP8);
-  if (codecSettings->codecSpecific.VP8.feedbackModeOn) {
+  DCHECK_EQ(video_codec_type_, codecSettings->codecType);
+  if (codecSettings->codecType == webrtc::kVideoCodecVP8 &&
+      codecSettings->codecSpecific.VP8.feedbackModeOn) {
     LOG(ERROR) << "Feedback mode not supported";
     return RecordInitDecodeUMA(WEBRTC_VIDEO_CODEC_ERROR);
   }
