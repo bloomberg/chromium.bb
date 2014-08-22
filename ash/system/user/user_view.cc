@@ -400,8 +400,11 @@ void UserView::AddUserCard(user::LoginStatus login) {
     max_card_width -= logout_button_->GetPreferredSize().width();
   user_card_view_ =
       new UserCardView(login, max_card_width, multiprofile_index_);
-  bool clickable = IsMultiProfileSupportedAndUserActive() ||
-                   IsMultiAccountSupportedAndUserActive();
+  // The entry is clickable when no system modal dialog is open and one of the
+  // multi user options is active.
+  bool clickable = !Shell::GetInstance()->IsSystemModalWindowOpen() &&
+                   (IsMultiProfileSupportedAndUserActive() ||
+                    IsMultiAccountSupportedAndUserActive());
   if (clickable) {
     // To allow the border to start before the icon, reduce the size before and
     // add an inset to the icon to get the spacing.

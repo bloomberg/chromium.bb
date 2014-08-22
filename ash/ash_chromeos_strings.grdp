@@ -134,6 +134,20 @@ Server message: <ph name="server_msg">$3<ex>Incorrect password</ex></ph>
     Activation of '<ph name="name">$1<ex>Generic Wireless</ex></ph>' requires a network connection.
   </message>
 
+  <!-- Ash multi-user warning dialog -->
+  <message name="IDS_DESKTOP_CASTING_ACTIVE_TITLE" desc="The title for the dialog which tells the user that desktop casting is in progress, asking if the casting should be stopped before switching - or - the switch should be aborted.">
+    Stop screen sharing?
+  </message>
+  <message name="IDS_DESKTOP_CASTING_ACTIVE_MESSAGE" desc="The message for the dialog which tells the user that desktop casting is in progress, asking if the casting should be stopped before switching - or - the switch should be aborted.">
+    Screen sharing will stop when you switch to another user. Do you want to continue?
+  </message>
+  <message name="IDS_DESKTOP_CASTING_ACTIVE_BUTTON_SWITCH_USER" desc="The button label for the dialog which tells the user that desktop casting is in progress. By selecting this button the casting will be stopped and the user will get switched.">
+    Yes
+  </message>
+  <message name="IDS_DESKTOP_CASTING_ACTIVE_BUTTON_ABORT_USER_SWITCH" desc="The button label for the dialog which tells the user that desktop casting is in progress. By selecting this button the user switch will be cancelled.">
+    No
+  </message>
+
   <!-- Network error strings -->
   <message name="IDS_CHROMEOS_NETWORK_ERROR_UNKNOWN" desc="Network error details in notifications: UNKNOWN">
     Unknown network error
