@@ -185,6 +185,12 @@ void ExtensionOptionsGuest::SetUpAutoSize() {
       true, gfx::Size(min_width, min_height), gfx::Size(max_width, max_height));
 }
 
+void ExtensionOptionsGuest::CloseContents(content::WebContents* source) {
+  DispatchEventToEmbedder(new extensions::GuestViewBase::Event(
+      extension_options_internal::OnClose::kEventName,
+      make_scoped_ptr(new base::DictionaryValue())));
+}
+
 bool ExtensionOptionsGuest::ShouldCreateWebContents(
     content::WebContents* web_contents,
     int route_id,

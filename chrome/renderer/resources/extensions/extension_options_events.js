@@ -10,6 +10,10 @@ var CreateEvent = function(name) {
 };
 
 var EXTENSION_OPTIONS_EVENTS = {
+  'close': {
+    evt: CreateEvent('extensionOptionsInternal.onClose'),
+    fields: []
+  },
   'load': {
     evt: CreateEvent('extensionOptionsInternal.onLoad'),
     fields: []

@@ -41,6 +41,7 @@ class ExtensionOptionsGuest
   virtual content::WebContents* GetAssociatedWebContents() const OVERRIDE;
 
   // content::WebContentsDelegate implementation.
+  virtual void CloseContents(content::WebContents* source) OVERRIDE;
   virtual bool ShouldCreateWebContents(
       content::WebContents* web_contents,
       int route_id,

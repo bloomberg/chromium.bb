@@ -5,6 +5,7 @@
 // Internal API for the &lt;extensiontoptions&gt; tag
 namespace extensionOptionsInternal {
   interface Events {
+    static void onClose();
     static void onLoad();
     static void onSizeChanged(long width, long height);
   };

@@ -223,6 +223,24 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebUITest, CanEmbedExtensionOptions) {
   ASSERT_TRUE(listener->WaitUntilSatisfied());
 }
 
+IN_PROC_BROWSER_TEST_F(ExtensionWebUITest, ReceivesExtensionOptionsOnClose) {
+  scoped_ptr<ExtensionTestMessageListener> listener(
+      new ExtensionTestMessageListener("ready", true));
+
+  const Extension* extension =
+      InstallExtension(test_data_dir_.AppendASCII("extension_options")
+          .AppendASCII("close_self"), 1);
+  ASSERT_TRUE(extension);
+
+  ASSERT_TRUE(
+      RunTestOnExtensionsFrame("receives_extension_options_on_close.js"));
+
+  ASSERT_TRUE(listener->WaitUntilSatisfied());
+  listener->Reply(extension->id());
+  listener.reset(new ExtensionTestMessageListener("onclose received", false));
+  ASSERT_TRUE(listener->WaitUntilSatisfied());
+}
+
 }  // namespace
 
 }  // namespace extensions

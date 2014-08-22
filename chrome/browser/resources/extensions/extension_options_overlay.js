@@ -47,9 +47,12 @@ cr.define('extensions', function() {
      */
     handleDismiss_: function(event) {
       this.setVisible_(false);
-      var extensionoptions = document.querySelector('extensionoptions');
+      var extensionoptions =
+          $('extension-options-overlay-guest')
+              .querySelector('extensionoptions');
+
       if (extensionoptions)
-        $('extension-options-overlay').removeChild(extensionoptions);
+        $('extension-options-overlay-guest').removeChild(extensionoptions);
     },
 
     /**
@@ -64,13 +67,17 @@ cr.define('extensions', function() {
       extensionoptions.extension = extensionId;
       extensionoptions.autosize = 'on';
 
+      extensionoptions.onclose = function() {
+        this.handleDismiss_();
+      }.bind(this);
+
       // TODO(ericzeng): Resize in a non-jarring way.
       extensionoptions.onsizechanged = function(evt) {
         $('extension-options-overlay').style.width = evt.width;
         $('extension-options-overlay').style.height = evt.height;
       }.bind(this);
 
-      $('extension-options-overlay').appendChild(extensionoptions);
+      $('extension-options-overlay-guest').appendChild(extensionoptions);
 
       $('extension-options-overlay-title').textContent = extensionName;
 
