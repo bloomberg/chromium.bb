@@ -76,9 +76,9 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/grit/chromium_strings.h"
+#include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_thread.h"
-#include "grit/chromium_strings.h"
-#include "grit/generated_resources.h"
 #include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
 

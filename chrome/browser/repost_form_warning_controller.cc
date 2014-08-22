@@ -4,9 +4,9 @@
 
 #include "chrome/browser/repost_form_warning_controller.h"
 
+#include "chrome/grit/generated_resources.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents.h"
-#include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 RepostFormWarningController::RepostFormWarningController(

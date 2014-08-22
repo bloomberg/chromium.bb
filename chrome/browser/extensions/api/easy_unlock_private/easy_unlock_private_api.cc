@@ -14,8 +14,8 @@
 #include "chrome/browser/signin/easy_unlock_screenlock_state_handler.h"
 #include "chrome/browser/signin/easy_unlock_service.h"
 #include "chrome/common/extensions/api/easy_unlock_private.h"
+#include "chrome/grit/generated_resources.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
-#include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)

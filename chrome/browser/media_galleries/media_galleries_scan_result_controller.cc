@@ -18,13 +18,13 @@
 #include "chrome/browser/media_galleries/media_gallery_context_menu.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/storage_monitor/storage_info.h"
 #include "components/storage_monitor/storage_monitor.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/permissions/media_galleries_permission.h"
 #include "extensions/common/permissions/permissions_data.h"
-#include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using storage_monitor::StorageInfo;

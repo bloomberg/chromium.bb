@@ -13,12 +13,12 @@
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/requirements_checker.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/file_util.h"
 #include "gpu/config/gpu_info.h"
-#include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace extensions {

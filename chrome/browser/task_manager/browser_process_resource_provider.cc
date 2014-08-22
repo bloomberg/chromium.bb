@@ -9,7 +9,7 @@
 #include "chrome/browser/task_manager/resource_provider.h"
 #include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/common/chrome_switches.h"
-#include "grit/generated_resources.h"
+#include "chrome/grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "net/proxy/proxy_resolver_v8.h"
 #include "third_party/sqlite/sqlite3.h"

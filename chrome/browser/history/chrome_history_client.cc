@@ -7,9 +7,9 @@
 #include "base/logging.h"
 #include "chrome/browser/ui/profile_error_dialog.h"
 #include "chrome/common/chrome_version_info.h"
+#include "chrome/grit/chromium_strings.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/bookmarks/browser/bookmark_model.h"
-#include "grit/chromium_strings.h"
-#include "grit/generated_resources.h"
 
 ChromeHistoryClient::ChromeHistoryClient(BookmarkModel* bookmark_model)
     : bookmark_model_(bookmark_model) {

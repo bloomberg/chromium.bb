@@ -5,7 +5,7 @@
 #include "chrome/browser/task_manager/task_manager_util.h"
 
 #include "base/basictypes.h"
-#include "grit/generated_resources.h"
+#include "chrome/grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace task_manager {

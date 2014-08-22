@@ -13,13 +13,13 @@
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_restrictions.h"
+#include "chrome/grit/chromium_strings.h"
 #include "components/autofill/core/common/password_form.h"
 #include "content/public/browser/browser_thread.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
 #include "dbus/object_proxy.h"
-#include "grit/chromium_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using autofill::PasswordForm;

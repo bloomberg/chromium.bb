@@ -6,8 +6,8 @@
 
 #include "chrome/browser/content_settings/permission_context_uma_util.h"
 #include "chrome/browser/content_settings/permission_queue_controller.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/infobars/core/infobar.h"
-#include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 PermissionInfobarDelegate::~PermissionInfobarDelegate() {

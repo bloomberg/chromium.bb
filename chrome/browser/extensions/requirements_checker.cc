@@ -6,12 +6,12 @@
 
 #include "base/bind.h"
 #include "chrome/browser/gpu/gpu_feature_checker.h"
+#include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_handlers/requirements_info.h"
 #include "gpu/config/gpu_feature_type.h"
-#include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_WIN)

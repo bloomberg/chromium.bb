@@ -11,6 +11,8 @@
 #include "chrome/browser/sync/glue/sync_start_util.h"
 #include "chrome/browser/ui/profile_error_dialog.h"
 #include "chrome/browser/webdata/autocomplete_syncable_service.h"
+#include "chrome/grit/chromium_strings.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/autofill/core/browser/autofill_country.h"
 #include "components/autofill/core/browser/webdata/autofill_profile_syncable_service.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
@@ -23,8 +25,6 @@
 #include "components/signin/core/browser/webdata/token_web_data.h"
 #include "components/webdata/common/webdata_constants.h"
 #include "content/public/browser/browser_thread.h"
-#include "grit/chromium_strings.h"
-#include "grit/generated_resources.h"
 
 #if defined(OS_WIN)
 #include "components/password_manager/core/browser/webdata/password_web_data_service_win.h"

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/media_galleries/media_gallery_context_menu.h"
-#include "grit/generated_resources.h"
+#include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/menu_model.h"
 

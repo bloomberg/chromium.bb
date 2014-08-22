@@ -13,8 +13,8 @@
 #include <signal.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/param.h>
 #include <sys/mount.h>
+#include <sys/param.h>
 
 #include "base/auto_reset.h"
 #include "base/basictypes.h"
@@ -24,8 +24,8 @@
 #include "base/mac/authorization_util.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/mac_logging.h"
-#include "base/mac/mach_logging.h"
 #import "base/mac/mac_util.h"
+#include "base/mac/mach_logging.h"
 #include "base/mac/scoped_authorizationref.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_ioobject.h"
@@ -36,8 +36,8 @@
 #import "chrome/browser/mac/keystone_glue.h"
 #include "chrome/browser/mac/relauncher.h"
 #include "chrome/common/chrome_constants.h"
-#include "grit/chromium_strings.h"
-#include "grit/generated_resources.h"
+#include "chrome/grit/chromium_strings.h"
+#include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 

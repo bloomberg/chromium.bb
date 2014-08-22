@@ -38,6 +38,7 @@
 #include "chrome/common/extensions/api/bookmarks.h"
 #include "chrome/common/importer/importer_data_types.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/user_prefs/user_prefs.h"
@@ -49,7 +50,6 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/common/permissions/permissions_data.h"
-#include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_WIN)

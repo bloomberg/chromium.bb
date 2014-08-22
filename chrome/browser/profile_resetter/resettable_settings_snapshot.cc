@@ -16,13 +16,13 @@
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/grit/generated_resources.h"
+#include "chrome/grit/google_chrome_strings.h"
 #include "components/feedback/feedback_data.h"
 #include "components/feedback/feedback_util.h"
 #include "components/search_engines/template_url_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_registry.h"
-#include "grit/generated_resources.h"
-#include "grit/google_chrome_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using feedback::FeedbackData;

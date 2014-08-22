@@ -17,7 +17,7 @@
 #include "chrome/browser/pref_service_flags_storage.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "grit/chromium_strings.h"
+#include "chrome/grit/chromium_strings.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libxml/chromium/libxml_utils.h"
 

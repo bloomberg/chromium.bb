@@ -7,13 +7,13 @@
 #include "base/metrics/histogram.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/infobars/core/infobar.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/page_transition_types.h"
-#include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 

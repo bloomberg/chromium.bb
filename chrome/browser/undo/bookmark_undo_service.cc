@@ -9,11 +9,11 @@
 #include "chrome/browser/undo/bookmark_renumber_observer.h"
 #include "chrome/browser/undo/bookmark_undo_service_factory.h"
 #include "chrome/browser/undo/undo_operation.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node_data.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/bookmarks/browser/scoped_group_bookmark_actions.h"
-#include "grit/generated_resources.h"
 
 using bookmarks::BookmarkNodeData;
 

@@ -4,8 +4,8 @@
 
 #include "chrome/browser/services/gcm/push_messaging_infobar_delegate.h"
 
+#include "chrome/grit/generated_resources.h"
 #include "components/infobars/core/infobar.h"
-#include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"

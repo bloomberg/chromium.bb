@@ -6,7 +6,7 @@
 
 #include "chrome/browser/content_settings/permission_context_base.h"
 #include "chrome/browser/content_settings/permission_context_uma_util.h"
-#include "grit/generated_resources.h"
+#include "chrome/grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"

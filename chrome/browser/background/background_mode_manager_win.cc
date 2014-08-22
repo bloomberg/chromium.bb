@@ -12,10 +12,10 @@
 #include "base/win/registry.h"
 #include "chrome/browser/background/background_mode_manager.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/grit/chromium_strings.h"
+#include "chrome/grit/generated_resources.h"
 #include "chrome/installer/util/auto_launch_util.h"
 #include "content/public/browser/browser_thread.h"
-#include "grit/chromium_strings.h"
-#include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image_skia.h"
 

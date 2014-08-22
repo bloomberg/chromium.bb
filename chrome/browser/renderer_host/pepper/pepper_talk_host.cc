@@ -5,10 +5,10 @@
 #include "chrome/browser/renderer_host/pepper/pepper_talk_host.h"
 
 #include "base/bind.h"
+#include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_ppapi_host.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
-#include "grit/generated_resources.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/host/dispatch_host_message.h"
 #include "ppapi/host/host_message_context.h"

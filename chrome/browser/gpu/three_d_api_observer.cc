@@ -7,10 +7,10 @@
 #include "base/metrics/histogram.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/tab_contents/tab_util.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/infobars/core/infobar.h"
 #include "content/public/browser/gpu_data_manager.h"
-#include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 

@@ -79,6 +79,7 @@
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/grit/chromium_strings.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/dom_distiller/content/dom_distiller_viewer_source.h"
 #include "components/dom_distiller/core/url_constants.h"
@@ -100,7 +101,6 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/page_zoom.h"
-#include "grit/chromium_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_ANDROID)

@@ -17,6 +17,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/crx_file/id_util.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -25,7 +26,6 @@
 #include "extensions/common/file_util.h"
 #include "extensions/common/manifest_constants.h"
 #include "grit/browser_resources.h"
-#include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -49,7 +49,7 @@
 #endif
 
 #if defined(ENABLE_APP_LIST)
-#include "grit/chromium_strings.h"
+#include "chrome/grit/chromium_strings.h"
 #endif
 
 using content::BrowserThread;
