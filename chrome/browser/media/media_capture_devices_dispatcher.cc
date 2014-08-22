@@ -100,6 +100,7 @@ const content::MediaStreamDevice* FindDeviceWithId(
 // 3. Flutter gesture recognition extension.
 // 4. TODO(smus): Airbender experiment 1.
 // 5. TODO(smus): Airbender experiment 2.
+// 6. Hotwording component extension.
 // Once http://crbug.com/292856 is fixed, remove this whitelist.
 bool IsMediaRequestWhitelistedForExtension(
     const extensions::Extension* extension) {
@@ -107,7 +108,8 @@ bool IsMediaRequestWhitelistedForExtension(
       extension->id() == "bepbmhgboaologfdajaanbcjmnhjmhfn" ||
       extension->id() == "jokbpnebhdcladagohdnfgjcpejggllo" ||
       extension->id() == "clffjmdilanldobdnedchkdbofoimcgb" ||
-      extension->id() == "nnckehldicaciogcbchegobnafnjkcne";
+      extension->id() == "nnckehldicaciogcbchegobnafnjkcne" ||
+      extension->id() == "nbpagnldghgfoolbancepceaanlmhfmd";
 }
 
 bool IsBuiltInExtension(const GURL& origin) {
