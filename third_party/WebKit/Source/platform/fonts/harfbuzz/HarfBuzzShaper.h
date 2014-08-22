@@ -120,14 +120,10 @@ private:
         float m_width;
     };
 
-    bool isWordEnd(unsigned);
     int determineWordBreakSpacing();
     // setPadding sets a number of pixels to be distributed across the TextRun.
     // WebKit uses this to justify text.
     void setPadding(int);
-
-    // In complex text word-spacing affects each line-break, space (U+0020) and non-breaking space (U+00A0).
-    static bool isCodepointSpace(UChar c) { return c == ' ' || c == noBreakSpace || c == '\n'; }
 
     void setFontFeatures();
 

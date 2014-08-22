@@ -386,10 +386,16 @@ HarfBuzzShaper::HarfBuzzShaper(const Font* font, const TextRun& run, ForTextEmph
     setFontFeatures();
 }
 
-bool HarfBuzzShaper::isWordEnd(unsigned index)
+// In complex text word-spacing affects each line-break, space (U+0020) and non-breaking space (U+00A0).
+static inline bool isCodepointSpace(UChar c)
+{
+    return c == ' ' || c == noBreakSpace || c == '\n';
+}
+
+static inline bool isWordEnd(const UChar* normalizedBuffer, unsigned index)
 {
     // This could refer a high-surrogate, but should work.
-    return index && isCodepointSpace(m_normalizedBuffer[index]);
+    return index && isCodepointSpace(normalizedBuffer[index]);
 }
 
 int HarfBuzzShaper::determineWordBreakSpacing()
@@ -423,7 +429,7 @@ void HarfBuzzShaper::setPadding(int padding)
     unsigned numWordEnds = 0;
 
     for (unsigned i = 0; i < m_normalizedBufferLength; i++) {
-        if (isWordEnd(i))
+        if (isWordEnd(m_normalizedBuffer.get(), i))
             numWordEnds++;
     }
 
@@ -912,7 +918,7 @@ void HarfBuzzShaper::setGlyphPositionsForHarfBuzzRun(HarfBuzzRun* currentRun, hb
         if (isClusterEnd && !Character::treatAsZeroWidthSpace(m_normalizedBuffer[currentCharacterIndex]))
             spacing += m_letterSpacing;
 
-        if (isClusterEnd && isWordEnd(currentCharacterIndex))
+        if (isClusterEnd && isWordEnd(m_normalizedBuffer.get(), currentCharacterIndex))
             spacing += determineWordBreakSpacing();
 
         if (currentFontData->isZeroWidthSpaceGlyph(glyph)) {
