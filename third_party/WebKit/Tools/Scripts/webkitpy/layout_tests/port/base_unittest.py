@@ -142,6 +142,12 @@ class PortTest(unittest.TestCase):
         self.assertIn('act.txt', diff)
         self.assertNotIn('nosuchthing', diff)
 
+        # Test for missing newline at end of file diff output.
+        content_a = "Hello\n\nWorld"
+        content_b = "Hello\n\nWorld\n\n\n"
+        expected = "--- exp.txt\n+++ act.txt\n@@ -1,3 +1,5 @@\n Hello\n \n-World\n\ No newline at end of file\n+World\n+\n+\n"
+        self.assertEqual(expected, port.diff_text(content_a, content_b, 'exp.txt', 'act.txt'))
+
     def test_setup_test_run(self):
         port = self.make_port()
         # This routine is a no-op. We just test it for coverage.
