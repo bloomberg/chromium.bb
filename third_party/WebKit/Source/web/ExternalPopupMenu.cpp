@@ -39,16 +39,17 @@
 #include "platform/text/TextDirection.h"
 #include "public/platform/WebVector.h"
 #include "public/web/WebExternalPopupMenu.h"
+#include "public/web/WebFrameClient.h"
 #include "public/web/WebMenuItemInfo.h"
 #include "public/web/WebPopupMenuInfo.h"
-#include "public/web/WebViewClient.h"
+#include "web/WebLocalFrameImpl.h"
 #include "web/WebViewImpl.h"
 
 namespace blink {
 
 ExternalPopupMenu::ExternalPopupMenu(LocalFrame& frame, PopupMenuClient* popupMenuClient, WebViewImpl& webView)
     : m_popupMenuClient(popupMenuClient)
-    , m_frameView(frame.view())
+    , m_localFrame(frame)
     , m_webView(webView)
     , m_dispatchEventTimer(this, &ExternalPopupMenu::dispatchEvent)
     , m_webExternalPopupMenu(0)
@@ -73,9 +74,10 @@ void ExternalPopupMenu::show(const FloatQuad& controlPosition, const IntSize&, i
     getPopupMenuInfo(&info);
     if (info.items.isEmpty())
         return;
-    m_webExternalPopupMenu = m_webView.client()->createExternalPopupMenu(info, this);
+    WebLocalFrameImpl* webframe = WebLocalFrameImpl::fromFrame(m_localFrame.get());
+    m_webExternalPopupMenu = webframe->client()->createExternalPopupMenu(info, this);
     if (m_webExternalPopupMenu) {
-        m_webExternalPopupMenu->show(m_frameView->contentsToWindow(rect));
+        m_webExternalPopupMenu->show(m_localFrame->view()->contentsToWindow(rect));
 #if OS(MACOSX)
         const WebInputEvent* currentEvent = WebViewImpl::currentInputEvent();
         if (currentEvent && currentEvent->type == WebInputEvent::MouseDown) {

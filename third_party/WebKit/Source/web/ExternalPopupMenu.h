@@ -40,15 +40,14 @@
 namespace blink {
 
 class FloatQuad;
-class LocalFrame;
-class FrameView;
 class IntRect;
 class IntSize;
+class LocalFrame;
 class PopupMenuClient;
 class WebExternalPopupMenu;
+class WebMouseEvent;
 class WebViewImpl;
 struct WebPopupMenuInfo;
-class WebMouseEvent;
 
 // The ExternalPopupMenu connects the actual implementation of the popup menu
 // to the WebCore popup menu.
@@ -78,7 +77,7 @@ private:
     int toExternalPopupMenuItemIndex(int index);
 
     PopupMenuClient* m_popupMenuClient;
-    RefPtr<FrameView> m_frameView;
+    RefPtr<LocalFrame> m_localFrame;
     WebViewImpl& m_webView;
     OwnPtr<WebMouseEvent> m_syntheticEvent;
     Timer<ExternalPopupMenu> m_dispatchEventTimer;

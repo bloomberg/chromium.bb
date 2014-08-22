@@ -53,8 +53,6 @@ class WebCompositorOutputSurface;
 class WebDateTimeChooserCompletion;
 class WebDragData;
 class WebElement;
-class WebExternalPopupMenu;
-class WebExternalPopupMenuClient;
 class WebFileChooserCompletion;
 class WebGestureEvent;
 class WebHitTestResult;
@@ -101,12 +99,9 @@ public:
         return 0;
     }
 
-    // Create a new WebPopupMenu.  In the second form, the client is
-    // responsible for rendering the contents of the popup menu.
+    // Create a new WebPopupMenu.
     virtual WebWidget* createPopupMenu(WebPopupType) { return 0; }
     virtual WebWidget* createPopupMenu(const WebPopupMenuInfo&) { return 0; }
-    virtual WebExternalPopupMenu* createExternalPopupMenu(
-        const WebPopupMenuInfo&, WebExternalPopupMenuClient*) { return 0; }
 
     // Create a session storage namespace object associated with this WebView.
     virtual WebStorageNamespace* createSessionStorageNamespace() { return 0; }

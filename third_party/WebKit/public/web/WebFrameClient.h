@@ -62,6 +62,8 @@ class WebContentDecryptionModule;
 class WebCookieJar;
 class WebDataSource;
 class WebDOMEvent;
+class WebExternalPopupMenu;
+class WebExternalPopupMenuClient;
 class WebFormElement;
 class WebGeolocationClient;
 class WebInputEvent;
@@ -90,6 +92,7 @@ struct WebColorSuggestion;
 struct WebConsoleMessage;
 struct WebContextMenuData;
 struct WebPluginParams;
+struct WebPopupMenuInfo;
 struct WebRect;
 struct WebSize;
 struct WebURLError;
@@ -115,6 +118,11 @@ public:
 
     // May return null.
     virtual WebWorkerPermissionClientProxy* createWorkerPermissionClientProxy(WebLocalFrame*) { return 0; }
+
+    // Create a new WebPopupMenu. In the "createExternalPopupMenu" form, the
+    // client is responsible for rendering the contents of the popup menu.
+    virtual WebExternalPopupMenu* createExternalPopupMenu(
+        const WebPopupMenuInfo&, WebExternalPopupMenuClient*) { return 0; }
 
 
     // Services ------------------------------------------------------------
