@@ -632,6 +632,8 @@
         'renderer/extensions_renderer_client.cc',
         'renderer/extensions_renderer_client.h',
         'renderer/extension_groups.h',
+        'renderer/guest_view/guest_view_internal_custom_bindings.cc',
+        'renderer/guest_view/guest_view_internal_custom_bindings.h',
         'renderer/file_system_natives.cc',
         'renderer/file_system_natives.h',
         'renderer/i18n_custom_bindings.cc',

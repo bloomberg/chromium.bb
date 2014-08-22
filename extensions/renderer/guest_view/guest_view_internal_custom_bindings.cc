@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/extensions/guest_view_internal_custom_bindings.h"
+#include "extensions/renderer/guest_view/guest_view_internal_custom_bindings.h"
 
 #include <string>
 
 #include "base/bind.h"
-#include "chrome/common/extensions/chrome_extension_messages.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/v8_value_converter.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_messages.h"
 #include "extensions/renderer/script_context.h"
 #include "v8/include/v8.h"
 
@@ -50,7 +50,7 @@ void GuestViewInternalCustomBindings::AttachGuest(
   }
 
   // Step 1, send the attach params to chrome/.
-  render_frame->Send(new ChromeExtensionHostMsg_AttachGuest(
+  render_frame->Send(new ExtensionHostMsg_AttachGuest(
       render_frame->GetRenderView()->GetRoutingID(),
       element_instance_id,
       guest_instance_id,

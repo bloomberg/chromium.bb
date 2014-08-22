@@ -50,11 +50,6 @@ class ChromeExtensionMessageFilter : public content::BrowserMessageFilter,
   void OnCanTriggerClipboardRead(const GURL& origin, bool* allowed);
   void OnCanTriggerClipboardWrite(const GURL& origin, bool* allowed);
 
-  void OnAttachGuest(int routing_id,
-                     int element_instance_id,
-                     int guest_instance_id,
-                     const base::DictionaryValue& attach_params);
-
   // TODO(jamescook): Move these functions into the extensions module. Ideally
   // this would be in extensions::ExtensionMessageFilter but that will require
   // resolving the MessageService and ActivityLog dependencies on src/chrome.

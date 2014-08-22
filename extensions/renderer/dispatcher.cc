@@ -54,6 +54,7 @@
 #include "extensions/renderer/extension_helper.h"
 #include "extensions/renderer/extensions_renderer_client.h"
 #include "extensions/renderer/file_system_natives.h"
+#include "extensions/renderer/guest_view/guest_view_internal_custom_bindings.h"
 #include "extensions/renderer/i18n_custom_bindings.h"
 #include "extensions/renderer/id_generator_custom_bindings.h"
 #include "extensions/renderer/lazy_background_page_native_handler.h"
@@ -594,6 +595,10 @@ void Dispatcher::RegisterNativeHandlers(ModuleSystem* module_system,
   module_system->RegisterNativeHandler(
       "document_natives",
       scoped_ptr<NativeHandler>(new DocumentCustomBindings(context)));
+  module_system->RegisterNativeHandler(
+      "guest_view_internal",
+      scoped_ptr<NativeHandler>(
+          new GuestViewInternalCustomBindings(context)));
   module_system->RegisterNativeHandler(
       "i18n", scoped_ptr<NativeHandler>(new I18NCustomBindings(context)));
   module_system->RegisterNativeHandler(

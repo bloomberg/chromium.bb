@@ -718,3 +718,11 @@ IPC_MESSAGE_ROUTED4(ExtensionHostMsg_DetailedConsoleMessageAdded,
                     base::string16 /* source */,
                     extensions::StackTrace /* stack trace */,
                     int32 /* severity level */)
+
+// Sent by the renderer to set initialization parameters of a Browser Plugin
+// that is identified by |element_instance_id|.
+IPC_MESSAGE_CONTROL4(ExtensionHostMsg_AttachGuest,
+                     int /* routing_id */,
+                     int /* element_instance_id */,
+                     int /* guest_instance_id */,
+                     base::DictionaryValue /* attach_params */)

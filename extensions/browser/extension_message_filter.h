@@ -60,6 +60,10 @@ class ExtensionMessageFilter : public content::BrowserMessageFilter {
                                  const std::string& event_name);
   void OnExtensionAddLazyListener(const std::string& extension_id,
                                   const std::string& event_name);
+  void OnExtensionAttachGuest(int routing_id,
+                              int element_instance_id,
+                              int guest_instance_id,
+                              const base::DictionaryValue& attach_params);
   void OnExtensionRemoveLazyListener(const std::string& extension_id,
                                      const std::string& event_name);
   void OnExtensionAddFilteredListener(const std::string& extension_id,

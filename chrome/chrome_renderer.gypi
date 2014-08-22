@@ -135,8 +135,6 @@
       'renderer/extensions/file_browser_handler_custom_bindings.h',
       'renderer/extensions/file_browser_private_custom_bindings.cc',
       'renderer/extensions/file_browser_private_custom_bindings.h',
-      'renderer/extensions/guest_view_internal_custom_bindings.cc',
-      'renderer/extensions/guest_view_internal_custom_bindings.h',
       'renderer/extensions/media_galleries_custom_bindings.cc',
       'renderer/extensions/media_galleries_custom_bindings.h',
       'renderer/extensions/notifications_native_handler.cc',

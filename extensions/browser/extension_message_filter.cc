@@ -12,6 +12,7 @@
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_function_dispatcher.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/guest_view/guest_view_manager.h"
 #include "extensions/browser/info_map.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/extension.h"
@@ -42,6 +43,7 @@ void ExtensionMessageFilter::OverrideThreadForMessage(
     BrowserThread::ID* thread) {
   switch (message.type()) {
     case ExtensionHostMsg_AddListener::ID:
+    case ExtensionHostMsg_AttachGuest::ID:
     case ExtensionHostMsg_RemoveListener::ID:
     case ExtensionHostMsg_AddLazyListener::ID:
     case ExtensionHostMsg_RemoveLazyListener::ID:
@@ -72,6 +74,8 @@ bool ExtensionMessageFilter::OnMessageReceived(const IPC::Message& message) {
                         OnExtensionRemoveListener)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_AddLazyListener,
                         OnExtensionAddLazyListener)
+    IPC_MESSAGE_HANDLER(ExtensionHostMsg_AttachGuest,
+                        OnExtensionAttachGuest)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_RemoveLazyListener,
                         OnExtensionRemoveLazyListener)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_AddFilteredListener,
@@ -143,6 +147,24 @@ void ExtensionMessageFilter::OnExtensionAddLazyListener(
   if (!router)
     return;
   router->AddLazyEventListener(event_name, extension_id);
+}
+
+void ExtensionMessageFilter::OnExtensionAttachGuest(
+    int routing_id,
+    int element_instance_id,
+    int guest_instance_id,
+    const base::DictionaryValue& params) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  extensions::GuestViewManager* manager =
+      extensions::GuestViewManager::FromBrowserContext(browser_context_);
+  if (!manager)
+    return;
+
+  manager->AttachGuest(render_process_id_,
+                       routing_id,
+                       element_instance_id,
+                       guest_instance_id,
+                       params);
 }
 
 void ExtensionMessageFilter::OnExtensionRemoveLazyListener(
