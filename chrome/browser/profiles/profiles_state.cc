@@ -93,15 +93,19 @@ base::string16 GetAvatarButtonTextForProfile(Profile* profile) {
 
 void UpdateProfileName(Profile* profile,
                        const base::string16& new_profile_name) {
-  PrefService* pref_service = profile->GetPrefs();
   ProfileInfoCache& cache =
       g_browser_process->profile_manager()->GetProfileInfoCache();
+  size_t profile_index = cache.GetIndexOfProfileWithPath(profile->GetPath());
+  if (profile_index == std::string::npos)
+    return;
+
+  if (new_profile_name == cache.GetNameOfProfileAtIndex(profile_index))
+    return;
 
   // This is only called when updating the profile name through the UI,
   // so we can assume the user has done this on purpose.
-  size_t profile_index = cache.GetIndexOfProfileWithPath(profile->GetPath());
-  if (profile_index != std::string::npos)
-    pref_service->SetBoolean(prefs::kProfileUsingDefaultName, false);
+  PrefService* pref_service = profile->GetPrefs();
+  pref_service->SetBoolean(prefs::kProfileUsingDefaultName, false);
 
   // Updating the profile preference will cause the cache to be updated for
   // this preference.

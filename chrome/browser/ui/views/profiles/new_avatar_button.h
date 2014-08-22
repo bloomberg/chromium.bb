@@ -42,6 +42,8 @@ class NewAvatarButton : public views::MenuButton,
   virtual void OnProfileNameChanged(
       const base::FilePath& profile_path,
       const base::string16& old_profile_name) OVERRIDE;
+  virtual void OnProfileAvatarChanged(
+      const base::FilePath& profile_path) OVERRIDE;
   virtual void OnProfileSupervisedUserIdChanged(
       const base::FilePath& profile_path) OVERRIDE;
 

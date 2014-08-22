@@ -127,6 +127,11 @@ void NewAvatarButton::OnProfileNameChanged(
   UpdateAvatarButtonAndRelayoutParent();
 }
 
+void NewAvatarButton::OnProfileAvatarChanged(
+      const base::FilePath& profile_path) {
+  UpdateAvatarButtonAndRelayoutParent();
+}
+
 void NewAvatarButton::OnProfileSupervisedUserIdChanged(
       const base::FilePath& profile_path) {
   UpdateAvatarButtonAndRelayoutParent();
