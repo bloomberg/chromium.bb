@@ -1085,17 +1085,27 @@ TEST_F(ProfileManagerTest, ProfileDisplayNamePreservesSignedInName) {
   EXPECT_EQ(default_profile_name,
             profiles::GetAvatarNameForProfile(profile1->GetPath()));
 
-  // We should display the actual profile name for signed in profiles.
+  // For a signed in profile with a default name we still display
+  // IDS_SINGLE_PROFILE_DISPLAY_NAME.
   cache.SetUserNameOfProfileAtIndex(0, ASCIIToUTF16("user@gmail.com"));
   EXPECT_EQ(profile_name1, cache.GetNameOfProfileAtIndex(0));
-  EXPECT_EQ(profile_name1,
+  EXPECT_EQ(default_profile_name,
             profiles::GetAvatarNameForProfile(profile1->GetPath()));
+
+  // For a signed in profile with a non-default Gaia given name we display the
+  // Gaia given name.
+  cache.SetUserNameOfProfileAtIndex(0, ASCIIToUTF16("user@gmail.com"));
+  const base::string16 gaia_given_name(ASCIIToUTF16("given name"));
+  cache.SetGAIAGivenNameOfProfileAtIndex(0, gaia_given_name);
+  EXPECT_EQ(gaia_given_name, cache.GetNameOfProfileAtIndex(0));
+  EXPECT_EQ(gaia_given_name,
+      profiles::GetAvatarNameForProfile(profile1->GetPath()));
 
   // Multiple profiles means displaying the actual profile names.
   const base::string16 profile_name2 = cache.ChooseNameForNewProfile(1);
   Profile* profile2 = AddProfileToCache(profile_manager,
                                         "path_2", profile_name2);
-  EXPECT_EQ(profile_name1,
+  EXPECT_EQ(gaia_given_name,
             profiles::GetAvatarNameForProfile(profile1->GetPath()));
   EXPECT_EQ(profile_name2,
             profiles::GetAvatarNameForProfile(profile2->GetPath()));
@@ -1105,7 +1115,7 @@ TEST_F(ProfileManagerTest, ProfileDisplayNamePreservesSignedInName) {
                                               ProfileManager::CreateCallback());
   // Spin the message loop so that all the callbacks can finish running.
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(profile_name1,
+  EXPECT_EQ(gaia_given_name,
             profiles::GetAvatarNameForProfile(profile1->GetPath()));
 }
 #endif  // !defined(OS_ANDROID) && !defined(OS_CHROMEOS)

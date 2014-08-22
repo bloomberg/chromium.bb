@@ -59,21 +59,19 @@ base::string16 GetAvatarNameForProfile(const base::FilePath& profile_path) {
     if (index == std::string::npos)
       return l10n_util::GetStringUTF16(IDS_SINGLE_PROFILE_DISPLAY_NAME);
 
-    // Using the --new-profile-management flag, there's a couple of rules
-    // about what the avatar button displays. If there's a single, local
-    // profile, with a default name (i.e. of the form Person %d), it should
-    // display IDS_SINGLE_PROFILE_DISPLAY_NAME. If this is a signed in profile,
-    // or the user has edited the profile name, or there are multiple profiles,
-    // it will return the actual name  of the profile.
+    // Using the --new-avatar-menu flag, there's a couple of rules about what
+    // the avatar button displays. If there's a single profile, with a default
+    // name (i.e. of the form Person %d) not manually set, it should display
+    // IDS_SINGLE_PROFILE_DISPLAY_NAME. Otherwise, it will return the actual
+    // name of the profile.
     base::string16 profile_name = cache.GetNameOfProfileAtIndex(index);
-    bool has_default_name = cache.ProfileIsUsingDefaultNameAtIndex(index);
+    bool has_default_name = cache.ProfileIsUsingDefaultNameAtIndex(index) &&
+        cache.IsDefaultProfileName(profile_name);
 
-    if (cache.GetNumberOfProfiles() == 1 && has_default_name &&
-        cache.GetUserNameOfProfileAtIndex(index).empty()) {
+    if (cache.GetNumberOfProfiles() == 1 && has_default_name)
       display_name = l10n_util::GetStringUTF16(IDS_SINGLE_PROFILE_DISPLAY_NAME);
-    } else {
+    else
       display_name = profile_name;
-    }
   }
   return display_name;
 }

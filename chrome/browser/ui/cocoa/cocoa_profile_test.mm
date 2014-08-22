@@ -46,7 +46,7 @@ void CocoaProfileTest::SetUp() {
 
   ASSERT_TRUE(profile_manager_.SetUp());
 
-  profile_ = profile_manager_.CreateTestingProfile("default");
+  profile_ = profile_manager_.CreateTestingProfile("Person 1");
   ASSERT_TRUE(profile_);
 
   // TODO(shess): These are needed in case someone creates a browser
