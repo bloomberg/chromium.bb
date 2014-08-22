@@ -77,6 +77,14 @@ Viewport.ZOOM_FACTORS = [0.25, 0.333, 0.5, 0.666, 0.75, 0.9, 1,
                          1.1, 1.25, 1.5, 1.75, 2, 2.5, 3, 4, 5];
 
 /**
+ * The minimum and maximum range to be used to clip zoom factor.
+ */
+Viewport.ZOOM_FACTOR_RANGE = {
+  min: Viewport.ZOOM_FACTORS[0],
+  max: Viewport.ZOOM_FACTORS[Viewport.ZOOM_FACTORS.length - 1]
+};
+
+/**
  * The width of the page shadow around pages in pixels.
  */
 Viewport.PAGE_SHADOW = {top: 3, bottom: 7, left: 5, right: 5};
@@ -231,6 +239,8 @@ Viewport.prototype = {
    * @param {number} newZoom the zoom level to zoom to.
    */
   setZoom: function(newZoom) {
+    newZoom = Math.max(Viewport.ZOOM_FACTOR_RANGE.min,
+                       Math.min(newZoom, Viewport.ZOOM_FACTOR_RANGE.max));
     this.mightZoom_(function() {
       this.setZoomInternal_(newZoom);
       this.updateViewport_();
