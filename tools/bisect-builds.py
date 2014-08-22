@@ -77,6 +77,9 @@ SEARCH_PATTERN = {
     'blink': BLINK_SEARCH_PATTERN,
 }
 
+CREDENTIAL_ERROR_MESSAGE = ('You are attempting to access protected data with '
+                            'no configured credentials')
+
 ###############################################################################
 
 import httplib
@@ -134,10 +137,10 @@ class PathContext(object):
     #   _binary_name = The name of the executable to run.
     if self.platform in ('linux', 'linux64', 'linux-arm'):
       self._binary_name = 'chrome'
-    elif self.platform == 'mac':
+    elif self.platform in ('mac', 'mac64'):
       self.archive_name = 'chrome-mac.zip'
       self._archive_extract_dir = 'chrome-mac'
-    elif self.platform == 'win':
+    elif self.platform in ('win', 'win64'):
       self.archive_name = 'chrome-win32.zip'
       self._archive_extract_dir = 'chrome-win32'
       self._binary_name = 'chrome.exe'
@@ -156,10 +159,17 @@ class PathContext(object):
       elif self.platform == 'mac':
         self._listing_platform_dir = 'mac/'
         self._binary_name = 'Google Chrome.app/Contents/MacOS/Google Chrome'
+      elif self.platform == 'mac64':
+        self._listing_platform_dir = 'mac64/'
+        self._binary_name = 'Google Chrome.app/Contents/MacOS/Google Chrome'
       elif self.platform == 'win':
         self._listing_platform_dir = 'win/'
         self.archive_name = 'chrome-win.zip'
         self._archive_extract_dir = 'chrome-win'
+      elif self.platform == 'win64':
+        self._listing_platform_dir = 'win64/'
+        self.archive_name = 'chrome-win64.zip'
+        self._archive_extract_dir = 'chrome-win64'
     else:
       if self.platform in ('linux', 'linux64', 'linux-arm'):
         self.archive_name = 'chrome-linux.zip'
@@ -424,7 +434,8 @@ class PathContext(object):
                                 env=None)
       stdout, stderr = gsutil.communicate()
       if gsutil.returncode:
-        if re.findall(r'status[ |=]40[1|3]', stderr):
+        if (re.findall(r'status[ |=]40[1|3]', stderr) or
+            stderr.startswith(CREDENTIAL_ERROR_MESSAGE)):
           print ('Follow these steps to configure your credentials and try'
                  ' running the bisect-builds.py again.:\n'
                  '  1. Run "python %s config" and follow its instructions.\n'
@@ -432,7 +443,7 @@ class PathContext(object):
                  '  3. For the project-id, just enter 0.' % gsutil_path)
           sys.exit(1)
         else:
-          raise Exception('Error running the gsutil command')
+          raise Exception('Error running the gsutil command: %s' % stderr)
       return stdout
 
     def GsutilList(bucket):
@@ -953,7 +964,7 @@ def main():
            'Tip: add "-- --no-first-run" to bypass the first run prompts.')
   parser = optparse.OptionParser(usage=usage)
   # Strangely, the default help output doesn't include the choice list.
-  choices = ['mac', 'win', 'linux', 'linux64', 'linux-arm']
+  choices = ['mac', 'mac64', 'win', 'win64', 'linux', 'linux64', 'linux-arm']
             # linux-chromiumos lacks a continuous archive http://crbug.com/78158
   parser.add_option('-a', '--archive',
                     choices=choices,
