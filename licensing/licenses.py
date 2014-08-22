@@ -135,12 +135,10 @@ from chromite.licensing import licenses_lib
 # sys-boot packages are listed as a partial work around for not having per-board
 # credits files (TODO(dgarrett): Remove when crbug.com/197970 fixed).
 EXTRA_PACKAGES = (
-    ('x11-base', 'X.Org', '1.9.3', ['http://www.x.org/'], ['X']),
-    ('sys-kernel', 'Linux', '2.6', ['http://www.kernel.org/'], ['GPL-2']),
-    ('sys-boot', 'u-boot', '2013.06', ['http://www.denx.de/wiki/U-Boot'],
-        ['GPL-2']),
-    ('sys-boot', 'coreboot', '2013.04', ['http://www.coreboot.org/'],
-        ['GPL-2']),
+    ('x11-base/X-Org-1.9.3', ['http://www.x.org/'], ['X']),
+    ('sys-kernel/Linux-2.6', ['http://www.kernel.org/'], ['GPL-2']),
+    ('sys-boot/u-boot-2013.06', ['http://www.denx.de/wiki/U-Boot'], ['GPL-2']),
+    ('sys-boot/coreboot-2013.04', ['http://www.coreboot.org/'], ['GPL-2']),
 )
 
 
@@ -169,7 +167,7 @@ def LoadPackageInfo(board, all_packages, generateMissing, packages):
                 '\n'.join(sorted(packages)))
   licensing = licenses_lib.Licensing(board, packages, generateMissing)
 
-  licensing.LoadPackageInfo(board)
+  licensing.LoadPackageInfo()
   logging.debug("Package list to skip:\n%s",
                 '\n'.join([p for p in sorted(packages)
                            if licensing.packages[p].skip]))
@@ -179,8 +177,8 @@ def LoadPackageInfo(board, all_packages, generateMissing, packages):
   licensing.ProcessPackageLicenses()
   if detect_packages:
     # If we detected 'all' packages, we have to add in these extras.
-    for extra_pkg in EXTRA_PACKAGES:
-      licensing.AddExtraPkg(extra_pkg)
+    for fullnamewithrev, homepages, license_names in EXTRA_PACKAGES:
+      licensing.AddExtraPkg(fullnamewithrev, homepages, license_names)
 
   if licensing.incomplete_packages:
     raise AssertionError("""

@@ -249,17 +249,43 @@ class PackageLicenseError(Exception):
 
 
 class PackageInfo(object):
-  """Package info containers, mostly for storing licenses."""
+  """Package specific information, mostly about licenses."""
 
-  def __init__(self):
+  def __init__(self, board, fullnamerev):
+    """Package info initializer.
+
+    Args:
+      board: The board this package was built for.
+      fullnamerev: package name of the form 'x11-base/X.Org-1.9.3-r23'
+    """
+
+    self.board = board  # This field may be None, based on entry path.
+
+    #
+    # Populate these fields from fullnamerev:
+    #   category, name, version, revision
+    #
+    try:
+      cpv = portage_utilities.SplitCPV(fullnamerev)
+    except TypeError:
+      cpv = None
+
+    # A bad package can either raise a TypeError exception or return None.
+    if not cpv:
+      raise AssertionError("portage couldn't find %s, missing version number?" %
+                           fullnamerev)
+
     #
     # These define the package uniquely.
     #
-    self.board = None  # This field is optional, based on entry path.
-    self.category = None
-    self.name = None
-    self.version = None
-    self.revision = None
+
+    self.category, self.name, self.version, self.revision = (
+        cpv.category, cpv.package, cpv.version_no_rev, cpv.rev)
+
+    if self.revision is not None:
+      self.revision = str(self.revision).lstrip('r')
+      if self.revision == '0':
+        self.revision = None
 
     #
     # These fields hold license information used to generate the credits page.
@@ -284,6 +310,9 @@ class PackageInfo(object):
     # If we failed to get licensing for this package, mark it as such so that
     # it can be flagged when the full license file is being generated.
     self.licensing_failed = False
+
+    # Intellegently populate initial skip information.
+    self.LookForSkip()
 
   @property
   def fullnamerev(self):
@@ -503,48 +532,28 @@ being scraped currently).""",
     # so let's disable this for now
     # self._RunEbuildPhases(['clean'])
 
-  def GetPackageInfo(self, fullnamewithrev):
-    """Populate PackageInfo with identify information.
+  def LookForSkip(self):
+    """Look for a reason to skip over this package.
 
-    This method fills in the fields that identify which package this PackageInfo
-    is describing, and will fill in the skip field for some easy cases.
+    Sets self.skip to True if a reason was found.
 
-    Args:
-      fullnamewithrev: e.g. dev-libs/libatomic_ops-7.2d
-
-    Raises:
-      AssertionError: on runtime errors
+    Returns:
+      True if a reason was found.
     """
-    try:
-      cpv = portage_utilities.SplitCPV(fullnamewithrev)
-      # A bad package can either raise a TypeError exception or return None,
-      # so we catch both cases.
-      if not cpv:
-        raise TypeError
-    except TypeError:
-      raise AssertionError("portage couldn't find %s, missing version number?" %
-                           fullnamewithrev)
-
-    self.category, self.name, self.version, self.revision = (
-        cpv.category, cpv.package, cpv.version_no_rev, cpv.rev)
-
-    if self.revision is not None:
-      self.revision = str(self.revision).lstrip('r')
-      if self.revision == '0':
-        self.revision = None
-
     if self.category in SKIPPED_CATEGORIES:
       logging.info("%s in SKIPPED_CATEGORIES, skip package", self.fullname)
       self.skip = True
-      return
 
     if self.fullname in SKIPPED_PACKAGES:
       logging.info("%s in SKIPPED_PACKAGES, skip package", self.fullname)
       self.skip = True
-      return
+
+    # TODO(dgarrett): There are additional reasons that should be handled here.
+
+    return self.skip
 
   def _FindEbuildPath(self):
-    """Discover the path to a packages associated ebuild.
+    """Discover the path to a package's associated ebuild.
 
     This method is not valid during the emerge hook process.
 
@@ -840,12 +849,10 @@ class Licensing(object):
     """Return list of packages using a given license."""
     return self.licenses[license_name]
 
-  def LoadPackageInfo(self, board):
+  def LoadPackageInfo(self):
     """Populate basic package info for all packages from their ebuild."""
     for package_name in self._package_fullnames:
-      pkg = PackageInfo()
-      pkg.board = board
-      pkg.GetPackageInfo(package_name)
+      pkg = PackageInfo(self.board, package_name)
       self.packages[package_name] = pkg
 
   def ProcessPackageLicenses(self):
@@ -901,23 +908,21 @@ class Licensing(object):
         logging.info("Package %s failed licensing", pkg.fullnamerev)
         self.incomplete_packages += [pkg.fullnamerev]
 
-  def AddExtraPkg(self, pkg_data):
+  def AddExtraPkg(self, fullnamerev, homepages, license_names):
     """Allow adding pre-created virtual packages.
 
     GetLicenses will not work on them, so add them after having run
     ProcessPackages.
 
     Args:
-      pkg_data: array of package data as defined below
+      fullnamerev: package name of the form x11-base/X.Org-1.9.3-r23
+      homepages: list of url strings.
+      license_names: list of license name strings.
     """
-    pkg = PackageInfo()
-    pkg.board = self.board
-    pkg.category = pkg_data[0]
-    pkg.name = pkg_data[1]
-    pkg.version = pkg_data[2]
-    pkg.homepages = pkg_data[3]      # this is a list
-    pkg.license_names = pkg_data[4]  # this is also a list
-    self.packages[pkg.fullnamerev] = pkg
+    pkg = PackageInfo(self.board, fullnamerev)
+    pkg.homepages = homepages          # this is a list
+    pkg.license_names = license_names  # this is also a list
+    self.packages[fullnamerev] = pkg
 
   # Called directly by src/repohooks/pre-upload.py
   @staticmethod
@@ -1011,7 +1016,8 @@ after fixing the license.""" %
 
     # This should get caught earlier, but one extra check.
     if not license_text + license_pointers:
-      raise AssertionError('Ended up with no license_text for %s', pkg.name)
+      raise AssertionError('Ended up with no license_text for %s' %
+                           pkg.fullnamerev)
 
     env = {
         'name': "%s-%s" % (pkg.name, pkg.version),
@@ -1211,8 +1217,8 @@ def ReadUnknownEncodedFile(file_path, logging_text=None):
 
 
 
-def _BuildInfo(pkg_build_path, filename):
-  filename = os.path.join(pkg_build_path, filename)
+def _BuildInfo(build_info_path, filename):
+  filename = os.path.join(build_info_path, filename)
 
   # Buildinfo properties we read are in US-ASCII, not Unicode.
   try:
@@ -1233,16 +1239,15 @@ def HookPackageProcess(pkg_build_path):
   """
   build_info_dir = os.path.join(pkg_build_path, 'build-info')
 
-  fullnamewithrev = "%s/%s" % (_BuildInfo(build_info_dir, "CATEGORY"),
+  fullnamerev = "%s/%s" % (_BuildInfo(build_info_dir, "CATEGORY"),
                                _BuildInfo(build_info_dir, "PF"))
   logging.debug("Computed package name %s from %s",
-      fullnamewithrev, pkg_build_path)
+      fullnamerev, pkg_build_path)
 
-  pkg = PackageInfo()
-  pkg.GetPackageInfo(fullnamewithrev)
-  if not pkg.skip:
-    src_dir = os.path.join(pkg_build_path, 'work')
-    pkg.GetLicenses(build_info_dir, src_dir)
+  pkg = PackageInfo(None, fullnamerev)
+
+  src_dir = os.path.join(pkg_build_path, 'work')
+  pkg.GetLicenses(build_info_dir, src_dir)
 
   pkg.SaveLicenseDump(os.path.join(pkg_build_path, 'build-info',
                       'license.yaml'))
