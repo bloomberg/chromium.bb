@@ -156,7 +156,6 @@
         'views_examples_with_content_lib',
       ],
       'sources': [
-        '../../../content/app/startup_helper_win.cc',
         'examples_with_content_main_exe.cc',
       ],
       'conditions': [
@@ -179,6 +178,7 @@
           },
           'dependencies': [
             '../../../sandbox/sandbox.gyp:sandbox',
+            '../../../content/content.gyp:content_startup_helper_win',
           ],
         }],
       ],

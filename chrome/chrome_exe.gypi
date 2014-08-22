@@ -66,6 +66,8 @@
         'app/client_util.h',
         'app/signature_validator_win.cc',
         'app/signature_validator_win.h',
+        # Note that due to InitializeSandboxInfo, this must be directly linked
+        # into chrome.exe, not into a dependent.
         '<(DEPTH)/content/app/startup_helper_win.cc',
         '<(DEPTH)/content/public/common/content_switches.cc',
       ],

@@ -84,7 +84,6 @@
       'public/test/unittest_test_suite.h',
       'public/test/web_contents_tester.cc',
       'public/test/web_contents_tester.h',
-      'app/startup_helper_win.cc',
       # TODO(phajdan.jr): All of those files should live in content/test (if
       # they're only used by content) or content/public/test (if they're used
       # by other embedders).
@@ -292,6 +291,7 @@
         ['OS == "win"', {
           'dependencies': [
             '../sandbox/sandbox.gyp:sandbox',
+            'content.gyp:content_startup_helper_win',
           ],
         }],
         ['enable_webrtc==1', {

@@ -715,7 +715,6 @@
       'test/ui_controls_factory_ash.h',
     ],
     'ash_shell_lib_sources': [
-      '../content/app/startup_helper_win.cc',
       '../ui/views/test/test_views_delegate_aura.cc',
       'shell/app_list.cc',
       'shell/bubble.cc',
@@ -1198,6 +1197,13 @@
       ],
       'sources': [
         '<@(ash_shell_lib_sources)',
+      ],
+      'conditions': [
+        ['OS=="win"', {
+          'dependencies': [
+            '../content/content.gyp:content_startup_helper_win',
+          ],
+        }],
       ],
     },
     {

@@ -28,6 +28,26 @@
         '../build/win_precompile.gypi',
       ],
     }],
+    ['OS == "win"', {
+      'targets': [
+        {
+          'target_name': 'content_startup_helper_win',
+          'type': 'static_library',
+          'include_dirs': [
+            '..',
+          ],
+          'dependencies': [
+            '../base/base.gyp:base',
+            '../base/base.gyp:base_i18n',
+            '../sandbox/sandbox.gyp:sandbox',
+          ],
+          'sources': [
+            'app/startup_helper_win.cc',
+            'public/app/startup_helper_win.h',
+          ],
+        }
+      ],
+    }],
     # In component mode, we build all of content as a single DLL.
     # However, in the static mode, we need to build content as multiple
     # targets in order to prevent dependencies from getting introduced

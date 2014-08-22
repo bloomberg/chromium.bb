@@ -284,7 +284,6 @@
           'target_name': 'app_list_demo',
           'type': 'executable',
           'sources': [
-            '../../content/app/startup_helper_win.cc',
             'demo/app_list_demo_views.cc',
           ],
           'dependencies': [
@@ -312,6 +311,7 @@
               },
               'dependencies': [
                 '../../sandbox/sandbox.gyp:sandbox',
+                '../../content/content.gyp:content_startup_helper_win',
               ],
             }],
           ],
