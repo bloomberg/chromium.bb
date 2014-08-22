@@ -805,7 +805,7 @@ class GitWrapper(SCMWrapper):
     else:
       depth = None
     mirror.populate(verbose=options.verbose, bootstrap=True, depth=depth,
-                    ignore_lock=options.ignore_locks)
+                    ignore_lock=getattr(options, 'ignore_locks', False))
     mirror.unlock()
 
   def _Clone(self, revision, url, options):
