@@ -73,12 +73,8 @@ void WebContentsViewGuest::OnGuestInitialized(WebContentsView* parent_view) {
 
 ContextMenuParams WebContentsViewGuest::ConvertContextMenuParams(
     const ContextMenuParams& params) const {
-#if defined(USE_AURA)
-  // Context menu uses ScreenPositionClient::ConvertPointToScreen() in aura
-  // to calculate popup position. Guest's native view
-  // (platform_view_->GetNativeView()) is part of the embedder's view hierarchy,
-  // but is placed at (0, 0) w.r.t. the embedder's position. Therefore, |offset|
-  // is added to |params|.
+  // We need to add |offset| of the guest from the embedder to position the
+  // menu properly.
   gfx::Rect embedder_bounds;
   guest_->embedder_web_contents()->GetView()->GetContainerBounds(
       &embedder_bounds);
@@ -90,9 +86,6 @@ ContextMenuParams WebContentsViewGuest::ConvertContextMenuParams(
   params_in_embedder.x += offset.x();
   params_in_embedder.y += offset.y();
   return params_in_embedder;
-#else
-  return params;
-#endif
 }
 
 void WebContentsViewGuest::GetContainerBounds(gfx::Rect* out) const {
