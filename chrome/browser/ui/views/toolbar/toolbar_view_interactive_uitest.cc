@@ -48,6 +48,7 @@ class ToolbarViewInteractiveUITest : public ExtensionBrowserTest {
   // InProcessBrowserTest:
   virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE;
   virtual void SetUpOnMainThread() OVERRIDE;
+  virtual void TearDownOnMainThread() OVERRIDE;
 
   ToolbarView* toolbar_view_;
 
@@ -125,6 +126,8 @@ void ToolbarViewInteractiveUITest::SetUpCommandLine(
   // are constructed.
   feature_override_.reset(new extensions::FeatureSwitch::ScopedOverride(
       extensions::FeatureSwitch::extension_action_redesign(), true));
+  BrowserActionsContainer::disable_animations_during_testing_ = true;
+  WrenchToolbarButton::g_open_wrench_immediately_for_testing = true;
 }
 
 void ToolbarViewInteractiveUITest::SetUpOnMainThread() {
@@ -134,11 +137,13 @@ void ToolbarViewInteractiveUITest::SetUpOnMainThread() {
   browser_actions_ = toolbar_view_->browser_actions();
 }
 
+void ToolbarViewInteractiveUITest::TearDownOnMainThread() {
+  BrowserActionsContainer::disable_animations_during_testing_ = false;
+  WrenchToolbarButton::g_open_wrench_immediately_for_testing = false;
+}
+
 IN_PROC_BROWSER_TEST_F(ToolbarViewInteractiveUITest,
                        MAYBE(TestWrenchMenuOpensOnDrag)) {
-  BrowserActionsContainer::disable_animations_during_testing_ = true;
-  WrenchToolbarButton::g_open_wrench_immediately_for_testing = true;
-
   // Load an extension that has a browser action.
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("api_test")
                                           .AppendASCII("browser_action")
