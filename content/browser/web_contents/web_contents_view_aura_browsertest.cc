@@ -870,9 +870,9 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, WebContentsViewReparent) {
   EXPECT_TRUE(rwhva->has_snapped_to_boundary());
 }
 
-// Flaky on Windows, likely for the same reason as other flaky overscroll tests.
-// http://crbug.com/305722
-#if defined(OS_WIN)
+// Flaky on some platforms, likely for the same reason as other flaky overscroll
+// tests. http://crbug.com/305722
+#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
 #define MAYBE_OverscrollNavigationTouchThrottling \
         DISABLED_OverscrollNavigationTouchThrottling
 #else
