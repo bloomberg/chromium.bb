@@ -734,6 +734,10 @@ class NotificationBridge : public WrenchMenuBadgeController::Delegate {
   return [self.view convertPoint:point toView:nil];
 }
 
+- (NSPoint)managePasswordsBubblePoint {
+  return locationBarView_->GetManagePasswordsBubblePoint();
+}
+
 - (NSPoint)translateBubblePoint {
   return locationBarView_->GetTranslateBubblePoint();
 }

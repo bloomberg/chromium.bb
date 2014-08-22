@@ -362,6 +362,10 @@ NSPoint LocationBarViewMac::GetTranslateBubblePoint() const {
   return [field_ bubblePointForDecoration:translate_decoration_.get()];
 }
 
+NSPoint LocationBarViewMac::GetManagePasswordsBubblePoint() const {
+  return [field_ bubblePointForDecoration:manage_passwords_decoration_.get()];
+}
+
 NSPoint LocationBarViewMac::GetPageInfoBubblePoint() const {
   if (origin_chip_decoration_ && origin_chip_decoration_->IsVisible()) {
     return [field_ bubblePointForDecoration:origin_chip_decoration_.get()];

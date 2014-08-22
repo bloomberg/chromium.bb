@@ -17,14 +17,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 
-namespace {
-void ClickMenuItem(BubbleCombobox* button, int index) {
-  // Skip the title if applicable.
-  [[button menu]
-      performActionForItemAtIndex:(button.pullsDown ? index + 1 : index)];
-}
-}  // namespace
-
 @interface ManagePasswordsBubblePendingViewTestDelegate
     : NSObject<ManagePasswordsBubblePendingViewDelegate> {
   BOOL dismissed_;
@@ -48,6 +40,14 @@ void ClickMenuItem(BubbleCombobox* button, int index) {
 }
 
 @end
+
+namespace {
+
+void ClickMenuItem(BubbleCombobox* button, int index) {
+  // Skip the title if applicable.
+  [[button menu]
+      performActionForItemAtIndex:(button.pullsDown ? index + 1 : index)];
+}
 
 class ManagePasswordsBubblePendingViewControllerTest
     : public ManagePasswordsControllerTest {
@@ -129,3 +129,5 @@ TEST_F(ManagePasswordsBubblePendingViewControllerTest,
   EXPECT_FALSE(ui_controller()->saved_password());
   EXPECT_FALSE(ui_controller()->never_saved_password());
 }
+
+}  // namespace

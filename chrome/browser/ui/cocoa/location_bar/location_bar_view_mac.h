@@ -112,6 +112,10 @@ class LocationBarViewMac : public LocationBar,
   // aim at.
   NSPoint GetTranslateBubblePoint() const;
 
+  // Get the point in window coordinates in the lock icon for the Manage
+  // Passwords bubble to aim at.
+  NSPoint GetManagePasswordsBubblePoint() const;
+
   // Get the point in window coordinates in the security icon at which the page
   // info bubble aims.
   NSPoint GetPageInfoBubblePoint() const;
