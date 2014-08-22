@@ -1849,7 +1849,7 @@ def GetChromeLKGM(revision):
   lkgm_url_path = '%s/+/%s/%s?format=text' % (
       constants.CHROMIUM_SRC_PROJECT, revision, constants.PATH_TO_CHROME_LKGM)
   contents_b64 = gob_util.FetchUrl(constants.EXTERNAL_GOB_HOST, lkgm_url_path)
-  return base64.b64decode(contents_b64).strip()
+  return base64.b64decode(contents_b64.read()).strip()
 
 
 def SyncChrome(build_root, chrome_root, useflags, tag=None, revision=None):
