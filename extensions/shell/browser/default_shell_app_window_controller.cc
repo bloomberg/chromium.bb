@@ -24,11 +24,12 @@ DefaultShellAppWindowController::~DefaultShellAppWindowController() {
 }
 
 ShellAppWindow* DefaultShellAppWindowController::CreateAppWindow(
-    content::BrowserContext* context) {
+    content::BrowserContext* context,
+    const Extension* extension) {
   aura::Window* root_window = shell_desktop_controller_->host()->window();
 
   app_window_.reset(new ShellAppWindow);
-  app_window_->Init(context, root_window->bounds().size());
+  app_window_->Init(context, extension, root_window->bounds().size());
 
   // Attach the web contents view to our window hierarchy.
   aura::Window* content = app_window_->GetNativeWindow();

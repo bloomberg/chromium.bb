@@ -11,13 +11,12 @@
 #include "components/user_prefs/user_prefs.h"
 #include "extensions/browser/app_sorting.h"
 #include "extensions/browser/extension_function_registry.h"
-#include "extensions/browser/extension_host_delegate.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/common/api/generated_api.h"
 #include "extensions/shell/browser/api/shell_extensions_api_client.h"
 #include "extensions/shell/browser/shell_app_sorting.h"
+#include "extensions/shell/browser/shell_extension_host_delegate.h"
 #include "extensions/shell/browser/shell_extension_system_factory.h"
-#include "extensions/shell/browser/shell_extension_web_contents_observer.h"
 #include "extensions/shell/browser/shell_runtime_api_delegate.h"
 #include "extensions/shell/common/api/generated_api.h"
 
@@ -29,51 +28,6 @@ namespace {
 // See chrome::RegisterProfilePrefs() in chrome/browser/prefs/browser_prefs.cc
 void RegisterPrefs(user_prefs::PrefRegistrySyncable* registry) {
   ExtensionPrefs::RegisterProfilePrefs(registry);
-}
-
-// A minimal ExtensionHostDelegate.
-class ShellExtensionHostDelegate : public ExtensionHostDelegate {
- public:
-  ShellExtensionHostDelegate() {}
-  virtual ~ShellExtensionHostDelegate() {}
-
-  // ExtensionHostDelegate implementation.
-  virtual void OnExtensionHostCreated(
-      content::WebContents* web_contents) OVERRIDE;
-
-  virtual void OnRenderViewCreatedForBackgroundPage(
-      ExtensionHost* host) OVERRIDE {}
-
-  virtual content::JavaScriptDialogManager* GetJavaScriptDialogManager()
-      OVERRIDE {
-    // TODO(jamescook): Create a JavaScriptDialogManager or reuse the one from
-    // content_shell.
-    NOTREACHED();
-    return NULL;
-  }
-
-  virtual void CreateTab(content::WebContents* web_contents,
-                         const std::string& extension_id,
-                         WindowOpenDisposition disposition,
-                         const gfx::Rect& initial_pos,
-                         bool user_gesture) OVERRIDE {
-    // TODO(jamescook): Should app_shell support opening popup windows?
-    NOTREACHED();
-  }
-
-  virtual void ProcessMediaAccessRequest(
-      content::WebContents* web_contents,
-      const content::MediaStreamRequest& request,
-      const content::MediaResponseCallback& callback,
-      const Extension* extension) OVERRIDE {
-    // app_shell does not support media capture.
-    NOTREACHED();
-  }
-};
-
-void ShellExtensionHostDelegate::OnExtensionHostCreated(
-    content::WebContents* web_contents) {
-  ShellExtensionWebContentsObserver::CreateForWebContents(web_contents);
 }
 
 }  // namespace

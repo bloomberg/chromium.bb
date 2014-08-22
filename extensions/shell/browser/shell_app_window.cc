@@ -9,6 +9,7 @@
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/view_type_utils.h"
 #include "extensions/common/extension_messages.h"
+#include "extensions/shell/browser/media_capture_util.h"
 #include "extensions/shell/browser/shell_extension_web_contents_observer.h"
 #include "ipc/ipc_message_macros.h"
 
@@ -17,13 +18,18 @@ using content::WebContents;
 
 namespace extensions {
 
-ShellAppWindow::ShellAppWindow() {
+ShellAppWindow::ShellAppWindow() : extension_(NULL) {
 }
 
 ShellAppWindow::~ShellAppWindow() {
 }
 
-void ShellAppWindow::Init(BrowserContext* context, gfx::Size initial_size) {
+void ShellAppWindow::Init(BrowserContext* context,
+                          const Extension* extension,
+                          gfx::Size initial_size) {
+  DCHECK(extension);
+  DCHECK(context);
+  extension_ = extension;
   extension_function_dispatcher_.reset(
       new ExtensionFunctionDispatcher(context, this));
 
@@ -33,6 +39,7 @@ void ShellAppWindow::Init(BrowserContext* context, gfx::Size initial_size) {
   web_contents_.reset(WebContents::Create(create_params));
 
   content::WebContentsObserver::Observe(web_contents_.get());
+  web_contents_->SetDelegate(this);
 
   // Add support for extension startup.
   ShellExtensionWebContentsObserver::CreateForWebContents(web_contents_.get());
@@ -52,6 +59,15 @@ aura::Window* ShellAppWindow::GetNativeWindow() {
 
 int ShellAppWindow::GetRenderViewRoutingID() {
   return web_contents_->GetRenderViewHost()->GetRoutingID();
+}
+
+void ShellAppWindow::RequestMediaAccessPermission(
+    content::WebContents* web_contents,
+    const content::MediaStreamRequest& request,
+    const content::MediaResponseCallback& callback) {
+  // Allow access to the first microphone and/or camera.
+  media_capture_util::GrantMediaStreamRequestWithFirstDevice(
+      web_contents, request, callback, extension_);
 }
 
 bool ShellAppWindow::OnMessageReceived(const IPC::Message& message) {

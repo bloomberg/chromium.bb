@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "extensions/browser/extension_function_dispatcher.h"
 
@@ -29,10 +30,12 @@ class Size;
 namespace extensions {
 
 class ExtensionFunctionDispatcher;
+class ShellWebContentsDelegate;
 
 // A simplified app window created by chrome.app.window.create(). Manages the
 // primary web contents for the app.
-class ShellAppWindow : public content::WebContentsObserver,
+class ShellAppWindow : public content::WebContentsDelegate,
+                       public content::WebContentsObserver,
                        public ExtensionFunctionDispatcher::Delegate {
  public:
   ShellAppWindow();
@@ -40,7 +43,9 @@ class ShellAppWindow : public content::WebContentsObserver,
 
   // Creates the web contents and attaches extension-specific helpers.
   // Passing a valid |initial_size| to avoid a web contents resize.
-  void Init(content::BrowserContext* context, gfx::Size initial_size);
+  void Init(content::BrowserContext* context,
+            const Extension* extension,
+            gfx::Size initial_size);
 
   // Starts loading |url| which must be an extension URL.
   void LoadURL(const GURL& url);
@@ -51,15 +56,24 @@ class ShellAppWindow : public content::WebContentsObserver,
   // Returns the routing ID of the render view host of |web_contents_|.
   int GetRenderViewRoutingID();
 
-  // content::WebContentsObserver implementation
+  // content::WebContentsDelegate overrides:
+  virtual void RequestMediaAccessPermission(
+      content::WebContents* web_contents,
+      const content::MediaStreamRequest& request,
+      const content::MediaResponseCallback& callback) OVERRIDE;
+
+  // content::WebContentsObserver overrides:
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
-  // ExtensionFunctionDispatcher::Delegate implementation
+  // ExtensionFunctionDispatcher::Delegate overrides:
   virtual content::WebContents* GetAssociatedWebContents() const OVERRIDE;
 
  private:
   // IPC handler.
   void OnRequest(const ExtensionHostMsg_Request_Params& params);
+
+  // The extension that spawned this window. Not owned.
+  const Extension* extension_;
 
   scoped_ptr<content::WebContents> web_contents_;
   scoped_ptr<ExtensionFunctionDispatcher> extension_function_dispatcher_;

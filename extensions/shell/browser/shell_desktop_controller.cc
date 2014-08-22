@@ -187,8 +187,9 @@ void ShellDesktopController::SetAppWindowController(
 }
 
 ShellAppWindow* ShellDesktopController::CreateAppWindow(
-    content::BrowserContext* context) {
-  return app_window_controller_->CreateAppWindow(context);
+    content::BrowserContext* context,
+    const Extension* extension) {
+  return app_window_controller_->CreateAppWindow(context, extension);
 }
 
 void ShellDesktopController::CloseAppWindows() {

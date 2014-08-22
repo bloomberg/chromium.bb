@@ -220,6 +220,17 @@
         - <ph name="WEBSITE_1">$1<ex>www.google.com</ex></ph>
       </message>
 
+      <!-- Media capture permissions. Please keep alphabetized. -->
+      <message name="IDS_EXTENSION_PROMPT_WARNING_AUDIO_CAPTURE" desc="Permission string for access to audio capture devices.">
+        Use your microphone
+      </message>
+      <message name="IDS_EXTENSION_PROMPT_WARNING_VIDEO_CAPTURE" desc="Permission string for access to video capture devices.">
+        Use your camera
+      </message>
+      <message name="IDS_EXTENSION_PROMPT_WARNING_AUDIO_AND_VIDEO_CAPTURE" desc="Permission string for access to both audio and video capture devices.">
+        Use your microphone and camera
+      </message>
+
       <!-- Media galleries strings. Please keep alphabetized. -->
       <message name="IDS_EXTENSION_PROMPT_WARNING_MEDIA_GALLERIES_READ" desc="Permission string for access to read all of the user's media galleries.">
         Access photos, music, and other media from your computer

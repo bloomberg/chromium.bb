@@ -24,6 +24,9 @@ APIPermission* CreateAPIPermission(const APIPermissionInfo* permission) {
 std::vector<APIPermissionInfo*> ExtensionsAPIPermissions::GetAllPermissions()
     const {
   APIPermissionInfo::InitInfo permissions_to_register[] = {
+      {APIPermission::kAudioCapture, "audioCapture",
+       APIPermissionInfo::kFlagNone, IDS_EXTENSION_PROMPT_WARNING_AUDIO_CAPTURE,
+       PermissionMessage::kAudioCapture},
       {APIPermission::kDns, "dns"},
       {APIPermission::kHid, "hid", APIPermissionInfo::kFlagNone,
        IDS_EXTENSION_PROMPT_WARNING_HID, PermissionMessage::kHid},
@@ -42,6 +45,9 @@ std::vector<APIPermissionInfo*> ExtensionsAPIPermissions::GetAllPermissions()
        IDS_EXTENSION_PROMPT_WARNING_USB, PermissionMessage::kUsb},
       {APIPermission::kUsbDevice, "usbDevices", APIPermissionInfo::kFlagNone, 0,
        PermissionMessage::kNone, &CreateAPIPermission<UsbDevicePermission>},
+      {APIPermission::kVideoCapture, "videoCapture",
+       APIPermissionInfo::kFlagNone, IDS_EXTENSION_PROMPT_WARNING_VIDEO_CAPTURE,
+       PermissionMessage::kVideoCapture},
   };
 
   std::vector<APIPermissionInfo*> permissions;

@@ -19,9 +19,10 @@ AthenaAppWindowController::~AthenaAppWindowController() {
 }
 
 extensions::ShellAppWindow* AthenaAppWindowController::CreateAppWindow(
-    content::BrowserContext* context) {
+    content::BrowserContext* context,
+    const extensions::Extension* extension) {
   extensions::ShellAppWindow* app_window = new extensions::ShellAppWindow();
-  app_window->Init(context, gfx::Size(100, 100));
+  app_window->Init(context, extension, gfx::Size(100, 100));
   ActivityManager::Get()->AddActivity(ActivityFactory::Get()->CreateAppActivity(
       app_window));
   return app_window;

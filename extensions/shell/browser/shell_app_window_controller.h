@@ -11,6 +11,7 @@ class BrowserContext;
 
 namespace extensions {
 
+class Extension;
 class ShellAppWindow;
 
 class ShellAppWindowController {
@@ -19,9 +20,11 @@ class ShellAppWindowController {
 
   // Creates a new app window and adds it to the desktop. This class should
   // maintain the ownership of the window.
-  virtual ShellAppWindow* CreateAppWindow(content::BrowserContext* context) = 0;
+  virtual ShellAppWindow* CreateAppWindow(content::BrowserContext* context,
+                                          const Extension* extension) = 0;
 
-  // Closes and destroys the app windows.
+  // Closes and destroys the app windows. Must be called before the extension
+  // is destroyed.
   virtual void CloseAppWindows() = 0;
 };
 

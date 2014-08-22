@@ -22,8 +22,8 @@ class DefaultShellAppWindowController : public ShellAppWindowController {
   virtual ~DefaultShellAppWindowController();
 
   // ShellAppWindowController implementation.
-  virtual ShellAppWindow* CreateAppWindow(
-      content::BrowserContext* context) OVERRIDE;
+  virtual ShellAppWindow* CreateAppWindow(content::BrowserContext* context,
+                                          const Extension* extension) OVERRIDE;
   virtual void CloseAppWindows() OVERRIDE;
 
  private:

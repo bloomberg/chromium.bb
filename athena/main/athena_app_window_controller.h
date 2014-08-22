@@ -19,7 +19,8 @@ class AthenaAppWindowController : public extensions::ShellAppWindowController {
 
   // Overridden from extensions::ShellAppWindowController:
   virtual extensions::ShellAppWindow* CreateAppWindow(
-      content::BrowserContext* context) OVERRIDE;
+      content::BrowserContext* context,
+      const extensions::Extension* extension) OVERRIDE;
   virtual void CloseAppWindows() OVERRIDE;
 
  private:

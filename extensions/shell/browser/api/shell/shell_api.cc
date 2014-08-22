@@ -49,7 +49,8 @@ ExtensionFunction::ResponseAction ShellCreateWindowFunction::Run() {
 
   // The desktop keeps ownership of the window.
   ShellAppWindow* app_window =
-      ShellDesktopController::instance()->CreateAppWindow(browser_context());
+      ShellDesktopController::instance()->CreateAppWindow(browser_context(),
+                                                          extension());
   app_window->LoadURL(url);
 
   // Create the reply to send to the renderer.

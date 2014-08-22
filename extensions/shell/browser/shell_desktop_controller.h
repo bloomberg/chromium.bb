@@ -50,6 +50,7 @@ class UserActivityDetector;
 
 namespace extensions {
 
+class Extension;
 class ShellAppWindow;
 class ShellAppWindowController;
 
@@ -80,8 +81,10 @@ class ShellDesktopController : public aura::client::WindowTreeClient,
   void SetAppWindowController(ShellAppWindowController* app_window_controller);
 
   // Creates a new app window and adds it to the desktop. The desktop maintains
-  // ownership of the window.
-  ShellAppWindow* CreateAppWindow(content::BrowserContext* context);
+  // ownership of the window. The window must be closed before |extension| is
+  // destroyed.
+  ShellAppWindow* CreateAppWindow(content::BrowserContext* context,
+                                  const Extension* extension);
 
   // Closes and destroys the app windows.
   void CloseAppWindows();

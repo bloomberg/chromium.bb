@@ -21,6 +21,25 @@
 // chrome/test/data/extensions/api_test/stubs_app/manifest.json
 
 {
+  "audioCapture": [
+    {
+      "channel": "stable",
+      "extension_types": ["platform_app"]
+    },
+    {
+      "channel": "stable",
+      "extension_types": ["extension"],
+      "whitelist": [
+        // http://crbug.com/292856
+        "3F50C3A83839D9C76334BCE81CDEC06174F266AF",
+        "09FDCB5851B8F3378DB630D06E316076E89C95A6",
+        "39BE69F11F68E4EED080DA3DC2394F7885B7AFF9",
+        "FF78670081967CE21DB86A04AD94A0498F01E20A",
+        // Hotword component extension
+        "62CCAAD339E6451BBF97C4BBDF758E934A05AD0B"
+      ]
+    }
+  ],
   "dns": [
     {
       "channel": "dev",
@@ -110,6 +129,22 @@
       "whitelist": [
         "496B6890097EB6E19809ADEADD095A8721FBB2E0",  // FIDO U2F APIs
         "E24F1786D842E91E74C27929B0B3715A4689A473"   // CryptoToken
+      ]
+    }
+  ],
+  "videoCapture": [
+    {
+      "channel": "stable",
+      "extension_types": ["platform_app"]
+    },
+    {
+      "channel": "stable",
+      "extension_types": ["extension"],
+      "whitelist": [
+        // http://crbug.com/292856
+        "3F50C3A83839D9C76334BCE81CDEC06174F266AF",
+        "09FDCB5851B8F3378DB630D06E316076E89C95A6",
+        "A434B90223C3C52F2B69DB494736B63C612C774D"
       ]
     }
   ]

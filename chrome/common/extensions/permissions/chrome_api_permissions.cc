@@ -296,12 +296,6 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
 
       // Platform-app permissions.
       {APIPermission::kAlwaysOnTopWindows, "app.window.alwaysOnTop"},
-      {APIPermission::kAudioCapture, "audioCapture",
-       APIPermissionInfo::kFlagNone, IDS_EXTENSION_PROMPT_WARNING_AUDIO_CAPTURE,
-       PermissionMessage::kAudioCapture},
-      {APIPermission::kVideoCapture, "videoCapture",
-       APIPermissionInfo::kFlagNone, IDS_EXTENSION_PROMPT_WARNING_VIDEO_CAPTURE,
-       PermissionMessage::kVideoCapture},
       // The permission string for "fileSystem" is only shown when
       // "write" or "directory" is present. Read-only access is only
       // granted after the user has been shown a file or directory
