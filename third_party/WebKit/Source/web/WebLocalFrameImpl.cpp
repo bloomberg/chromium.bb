@@ -1554,7 +1554,7 @@ void WebLocalFrameImpl::setCoreFrame(PassRefPtr<LocalFrame> frame)
             notificationPresenter->initialize(m_client->notificationPresenter());
 
         provideNotification(*m_frame, notificationPresenter.release());
-        proviceNotificationPermissionClientTo(*m_frame, NotificationPermissionClientImpl::create());
+        provideNotificationPermissionClientTo(*m_frame, NotificationPermissionClientImpl::create());
         provideUserMediaTo(*m_frame, &m_userMediaClientImpl);
         provideGeolocationTo(*m_frame, m_geolocationClientProxy.get());
         m_geolocationClientProxy->setController(GeolocationController::from(m_frame.get()));

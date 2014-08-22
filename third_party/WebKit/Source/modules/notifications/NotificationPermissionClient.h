@@ -28,7 +28,7 @@ public:
     static NotificationPermissionClient* from(ExecutionContext*);
 };
 
-void proviceNotificationPermissionClientTo(LocalFrame&, PassOwnPtrWillBeRawPtr<NotificationPermissionClient>);
+void provideNotificationPermissionClientTo(LocalFrame&, PassOwnPtrWillBeRawPtr<NotificationPermissionClient>);
 
 } // namespace blink
 

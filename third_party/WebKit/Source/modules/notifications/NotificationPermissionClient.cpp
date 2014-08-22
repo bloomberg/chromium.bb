@@ -30,7 +30,7 @@ NotificationPermissionClient* NotificationPermissionClient::from(ExecutionContex
     return static_cast<NotificationPermissionClient*>(WillBeHeapSupplement<LocalFrame>::from(document->frame(), supplementName()));
 }
 
-void proviceNotificationPermissionClientTo(LocalFrame& frame, PassOwnPtrWillBeRawPtr<NotificationPermissionClient> client)
+void provideNotificationPermissionClientTo(LocalFrame& frame, PassOwnPtrWillBeRawPtr<NotificationPermissionClient> client)
 {
     frame.provideSupplement(NotificationPermissionClient::supplementName(), client);
 }
