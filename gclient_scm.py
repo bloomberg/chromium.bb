@@ -11,7 +11,6 @@ import logging
 import os
 import posixpath
 import re
-import shlex
 import sys
 import tempfile
 import traceback
@@ -159,13 +158,19 @@ class SCMWrapper(object):
 
     return getattr(self, command)(options, args, file_list)
 
+  @staticmethod
+  def _get_first_remote_url(checkout_path):
+    log = scm.GIT.Capture(
+        ['config', '--local', '--get-regexp', r'remote.*.url'],
+        cwd=checkout_path)
+    # Get the second token of the first line of the log.
+    return log.splitlines()[0].split(' ', 1)[1]
+
   def GetActualRemoteURL(self, options):
     """Attempt to determine the remote URL for this SCMWrapper."""
     # Git
     if os.path.exists(os.path.join(self.checkout_path, '.git')):
-      actual_remote_url = shlex.split(scm.GIT.Capture(
-          ['config', '--local', '--get-regexp', r'remote.*.url'],
-          cwd=self.checkout_path))[1]
+      actual_remote_url = self._get_first_remote_url(self.checkout_path)
 
       # If a cache_dir is used, obtain the actual remote URL from the cache.
       if getattr(self, 'cache_dir', None):
@@ -173,9 +178,7 @@ class SCMWrapper(object):
         mirror = git_cache.Mirror(url)
         if (mirror.exists() and mirror.mirror_path.replace('\\', '/') ==
             actual_remote_url.replace('\\', '/')):
-          actual_remote_url = shlex.split(scm.GIT.Capture(
-              ['config', '--local', '--get-regexp', r'remote.*.url'],
-              cwd=mirror.mirror_path))[1]
+          actual_remote_url = self._get_first_remote_url(mirror.mirror_path)
       return actual_remote_url
 
     # Svn

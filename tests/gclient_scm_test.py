@@ -88,6 +88,33 @@ class BaseTestCase(GCBaseTestCase, SuperMoxTestBase):
     gclient_scm.GitWrapper.BinaryExists = self._original_GitBinaryExists
 
 
+class BasicTests(SuperMoxTestBase):
+  def setUp(self):
+    SuperMoxTestBase.setUp(self)
+
+  def testGetFirstRemoteUrl(self):
+    REMOTE_STRINGS = [('remote.origin.url E:\\foo\\bar', 'E:\\foo\\bar'),
+                      ('remote.origin.url /b/foo/bar', '/b/foo/bar'),
+                      ('remote.origin.url https://foo/bar', 'https://foo/bar'),
+                      ('remote.origin.url E:\\Fo Bar\\bax', 'E:\\Fo Bar\\bax'),
+                      ('remote.origin.url git://what/"do', 'git://what/"do')]
+    FAKE_PATH = '/fake/path'
+    self.mox.StubOutWithMock(gclient_scm.scm.GIT, 'Capture')
+    for question, _ in REMOTE_STRINGS:
+      gclient_scm.scm.GIT.Capture(
+          ['config', '--local', '--get-regexp', r'remote.*.url'],
+          cwd=FAKE_PATH).AndReturn(question)
+
+    self.mox.ReplayAll()
+
+    for _, answer in REMOTE_STRINGS:
+      self.assertEquals(gclient_scm.SCMWrapper._get_first_remote_url(FAKE_PATH),
+                        answer)
+
+  def tearDown(self):
+    SuperMoxTestBase.tearDown(self)
+
+
 class SVNWrapperTestCase(BaseTestCase):
   class OptionsObject(object):
     def __init__(self, verbose=False, revision=None, force=False):
