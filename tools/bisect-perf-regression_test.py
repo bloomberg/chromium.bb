@@ -62,6 +62,25 @@ class BisectPerfRegressionTest(unittest.TestCase):
     self._AssertConfidence(80.0, [1, 1, 0, 1, 1, 1, 0, 1], [0, 0, 1, 0, 1, 0])
     self._AssertConfidence(99.9, [1, 1, 1, 1, 1, 1, 1, 1], [0, 0, 0, 0, 0, 0])
 
+  def testConfidenceScore_RealWorldCases(self):
+    """This method contains a set of data from actual bisect results.
+
+    The confidence scores asserted below were all copied from the actual
+    results, so the purpose of this test method is mainly to show what the
+    results for real cases are, and compare when we change the confidence
+    score function in the future.
+    """
+    self._AssertConfidence(80, [133, 130, 132, 132, 130, 129], [129, 129, 125])
+    self._AssertConfidence(99.5, [668, 667], [498, 498, 499])
+    self._AssertConfidence(80, [67, 68], [65, 65, 67])
+    self._AssertConfidence(0, [514], [514])
+    self._AssertConfidence(90, [616, 613, 607, 615], [617, 619, 619, 617])
+    self._AssertConfidence(0, [3.5, 5.8, 4.7, 3.5, 3.6], [2.8])
+    self._AssertConfidence(90, [3, 3, 3], [2, 2, 2, 3])
+    self._AssertConfidence(0, [1999004, 1999627], [223355])
+    self._AssertConfidence(90, [1040, 934, 961], [876, 875, 789])
+    self._AssertConfidence(90, [309, 305, 304], [302, 302, 299, 303, 298])
+
   def testParseDEPSStringManually(self):
     """Tests DEPS parsing."""
     deps_file_contents = """
