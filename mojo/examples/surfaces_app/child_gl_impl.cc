@@ -32,6 +32,7 @@ namespace mojo {
 namespace examples {
 
 using cc::RenderPass;
+using cc::RenderPassId;
 using cc::DrawQuad;
 using cc::TextureDrawQuad;
 using cc::DelegatedFrameData;
@@ -142,7 +143,7 @@ void ChildGLImpl::Draw() {
   resource.is_software = false;
 
   gfx::Rect rect(size_);
-  RenderPass::Id id(1, 1);
+  RenderPassId id(1, 1);
   scoped_ptr<RenderPass> pass = RenderPass::Create();
   pass->SetNew(id, rect, rect, gfx::Transform());
 

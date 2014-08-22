@@ -404,7 +404,7 @@ static scoped_ptr<cc::DrawQuad> ReadDrawQuad(const Message* m,
 
 bool ParamTraits<cc::RenderPass>::Read(
     const Message* m, PickleIterator* iter, param_type* p) {
-  cc::RenderPass::Id id(-1, -1);
+  cc::RenderPassId id(-1, -1);
   gfx::Rect output_rect;
   gfx::Rect damage_rect;
   gfx::Transform transform_to_root_target;

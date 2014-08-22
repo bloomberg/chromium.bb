@@ -34,8 +34,8 @@ class CC_SURFACES_EXPORT SurfaceAggregator {
       std::set<SurfaceId>* contained_surfaces);
 
  private:
-  RenderPass::Id RemapPassId(RenderPass::Id surface_local_pass_id,
-                             SurfaceId surface_id);
+  RenderPassId RemapPassId(RenderPassId surface_local_pass_id,
+                           SurfaceId surface_id);
 
   void HandleSurfaceQuad(const SurfaceDrawQuad* surface_quad,
                          RenderPass* dest_pass);

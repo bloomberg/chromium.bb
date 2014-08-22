@@ -25,7 +25,7 @@ static void EmptyReleaseCallback(uint32 sync_point, bool lost_resource) {
 
 void TestRenderPass::AppendOneOfEveryQuadType(
     ResourceProvider* resource_provider,
-    RenderPass::Id child_pass) {
+    RenderPassId child_pass) {
   gfx::Rect rect(0, 0, 100, 100);
   gfx::Rect opaque_rect(10, 10, 80, 80);
   gfx::Rect visible_rect(0, 0, 100, 100);

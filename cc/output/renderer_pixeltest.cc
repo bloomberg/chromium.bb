@@ -27,7 +27,7 @@ namespace cc {
 namespace {
 
 #if !defined(OS_ANDROID)
-scoped_ptr<RenderPass> CreateTestRootRenderPass(RenderPass::Id id,
+scoped_ptr<RenderPass> CreateTestRootRenderPass(RenderPassId id,
                                                 const gfx::Rect& rect) {
   scoped_ptr<RenderPass> pass = RenderPass::Create();
   const gfx::Rect output_rect = rect;
@@ -38,7 +38,7 @@ scoped_ptr<RenderPass> CreateTestRootRenderPass(RenderPass::Id id,
 }
 
 scoped_ptr<RenderPass> CreateTestRenderPass(
-    RenderPass::Id id,
+    RenderPassId id,
     const gfx::Rect& rect,
     const gfx::Transform& transform_to_root_target) {
   scoped_ptr<RenderPass> pass = RenderPass::Create();
@@ -96,7 +96,7 @@ SharedQuadState* CreateTestSharedQuadStateClipped(
 
 void CreateTestRenderPassDrawQuad(const SharedQuadState* shared_state,
                                   const gfx::Rect& rect,
-                                  RenderPass::Id pass_id,
+                                  RenderPassId pass_id,
                                   RenderPass* render_pass) {
   RenderPassDrawQuad* quad =
       render_pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
@@ -207,7 +207,7 @@ bool FuzzyForSoftwareOnlyPixelComparator<RendererType>::Compare(
 TYPED_TEST(RendererPixelTest, SimpleGreenRect) {
   gfx::Rect rect(this->device_viewport_size_);
 
-  RenderPass::Id id(1, 1);
+  RenderPassId id(1, 1);
   scoped_ptr<RenderPass> pass = CreateTestRootRenderPass(id, rect);
 
   SharedQuadState* shared_state =
@@ -230,7 +230,7 @@ TYPED_TEST(RendererPixelTest, SimpleGreenRect_NonRootRenderPass) {
   gfx::Rect rect(this->device_viewport_size_);
   gfx::Rect small_rect(100, 100);
 
-  RenderPass::Id child_id(2, 1);
+  RenderPassId child_id(2, 1);
   scoped_ptr<RenderPass> child_pass =
       CreateTestRenderPass(child_id, small_rect, gfx::Transform());
 
@@ -241,7 +241,7 @@ TYPED_TEST(RendererPixelTest, SimpleGreenRect_NonRootRenderPass) {
       child_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
   color_quad->SetNew(child_shared_state, rect, rect, SK_ColorGREEN, false);
 
-  RenderPass::Id root_id(1, 1);
+  RenderPassId root_id(1, 1);
   scoped_ptr<RenderPass> root_pass =
       CreateTestRenderPass(root_id, rect, gfx::Transform());
 
@@ -267,7 +267,7 @@ TYPED_TEST(RendererPixelTest, SimpleGreenRect_NonRootRenderPass) {
 TYPED_TEST(RendererPixelTest, PremultipliedTextureWithoutBackground) {
   gfx::Rect rect(this->device_viewport_size_);
 
-  RenderPass::Id id(1, 1);
+  RenderPassId id(1, 1);
   scoped_ptr<RenderPass> pass = CreateTestRootRenderPass(id, rect);
 
   SharedQuadState* shared_state =
@@ -297,7 +297,7 @@ TYPED_TEST(RendererPixelTest, PremultipliedTextureWithoutBackground) {
 TYPED_TEST(RendererPixelTest, PremultipliedTextureWithBackground) {
   gfx::Rect rect(this->device_viewport_size_);
 
-  RenderPass::Id id(1, 1);
+  RenderPassId id(1, 1);
   scoped_ptr<RenderPass> pass = CreateTestRootRenderPass(id, rect);
 
   SharedQuadState* texture_quad_state =
@@ -331,7 +331,7 @@ TYPED_TEST(RendererPixelTest, PremultipliedTextureWithBackground) {
 TEST_F(GLRendererPixelTest, NonPremultipliedTextureWithoutBackground) {
   gfx::Rect rect(this->device_viewport_size_);
 
-  RenderPass::Id id(1, 1);
+  RenderPassId id(1, 1);
   scoped_ptr<RenderPass> pass = CreateTestRootRenderPass(id, rect);
 
   SharedQuadState* shared_state =
@@ -362,7 +362,7 @@ TEST_F(GLRendererPixelTest, NonPremultipliedTextureWithoutBackground) {
 TEST_F(GLRendererPixelTest, NonPremultipliedTextureWithBackground) {
   gfx::Rect rect(this->device_viewport_size_);
 
-  RenderPass::Id id(1, 1);
+  RenderPassId id(1, 1);
   scoped_ptr<RenderPass> pass = CreateTestRootRenderPass(id, rect);
 
   SharedQuadState* texture_quad_state =
@@ -546,7 +546,7 @@ class VideoGLRendererPixelTest : public GLRendererPixelTest {
 TEST_F(VideoGLRendererPixelTest, SimpleYUVRect) {
   gfx::Rect rect(this->device_viewport_size_);
 
-  RenderPass::Id id(1, 1);
+  RenderPassId id(1, 1);
   scoped_ptr<RenderPass> pass = CreateTestRootRenderPass(id, rect);
 
   SharedQuadState* shared_state =
@@ -570,7 +570,7 @@ TEST_F(VideoGLRendererPixelTest, SimpleYUVRect) {
 TEST_F(VideoGLRendererPixelTest, OffsetYUVRect) {
   gfx::Rect rect(this->device_viewport_size_);
 
-  RenderPass::Id id(1, 1);
+  RenderPassId id(1, 1);
   scoped_ptr<RenderPass> pass = CreateTestRootRenderPass(id, rect);
 
   SharedQuadState* shared_state =
@@ -595,7 +595,7 @@ TEST_F(VideoGLRendererPixelTest, OffsetYUVRect) {
 TEST_F(VideoGLRendererPixelTest, SimpleYUVRectBlack) {
   gfx::Rect rect(this->device_viewport_size_);
 
-  RenderPass::Id id(1, 1);
+  RenderPassId id(1, 1);
   scoped_ptr<RenderPass> pass = CreateTestRootRenderPass(id, rect);
 
   SharedQuadState* shared_state =
@@ -624,7 +624,7 @@ TEST_F(VideoGLRendererPixelTest, SimpleYUVRectBlack) {
 TEST_F(VideoGLRendererPixelTest, SimpleYUVJRect) {
   gfx::Rect rect(this->device_viewport_size_);
 
-  RenderPass::Id id(1, 1);
+  RenderPassId id(1, 1);
   scoped_ptr<RenderPass> pass = CreateTestRootRenderPass(id, rect);
 
   SharedQuadState* shared_state =
@@ -651,7 +651,7 @@ TEST_F(VideoGLRendererPixelTest, SimpleYUVJRect) {
 TEST_F(VideoGLRendererPixelTest, SimpleYUVJRectGrey) {
   gfx::Rect rect(this->device_viewport_size_);
 
-  RenderPass::Id id(1, 1);
+  RenderPassId id(1, 1);
   scoped_ptr<RenderPass> pass = CreateTestRootRenderPass(id, rect);
 
   SharedQuadState* shared_state =
@@ -679,7 +679,7 @@ TEST_F(VideoGLRendererPixelTest, SimpleYUVJRectGrey) {
 TEST_F(VideoGLRendererPixelTest, SimpleYUVARect) {
   gfx::Rect rect(this->device_viewport_size_);
 
-  RenderPass::Id id(1, 1);
+  RenderPassId id(1, 1);
   scoped_ptr<RenderPass> pass = CreateTestRootRenderPass(id, rect);
 
   SharedQuadState* shared_state =
@@ -707,7 +707,7 @@ TEST_F(VideoGLRendererPixelTest, SimpleYUVARect) {
 TEST_F(VideoGLRendererPixelTest, FullyTransparentYUVARect) {
   gfx::Rect rect(this->device_viewport_size_);
 
-  RenderPass::Id id(1, 1);
+  RenderPassId id(1, 1);
   scoped_ptr<RenderPass> pass = CreateTestRootRenderPass(id, rect);
 
   SharedQuadState* shared_state =
@@ -735,11 +735,11 @@ TEST_F(VideoGLRendererPixelTest, FullyTransparentYUVARect) {
 TYPED_TEST(RendererPixelTest, FastPassColorFilterAlpha) {
   gfx::Rect viewport_rect(this->device_viewport_size_);
 
-  RenderPass::Id root_pass_id(1, 1);
+  RenderPassId root_pass_id(1, 1);
   scoped_ptr<RenderPass> root_pass =
       CreateTestRootRenderPass(root_pass_id, viewport_rect);
 
-  RenderPass::Id child_pass_id(2, 2);
+  RenderPassId child_pass_id(2, 2);
   gfx::Rect pass_rect(this->device_viewport_size_);
   gfx::Transform transform_to_root;
   scoped_ptr<RenderPass> child_pass =
@@ -826,11 +826,11 @@ TYPED_TEST(RendererPixelTest, FastPassColorFilterAlpha) {
 TYPED_TEST(RendererPixelTest, FastPassSaturateFilter) {
   gfx::Rect viewport_rect(this->device_viewport_size_);
 
-  RenderPass::Id root_pass_id(1, 1);
+  RenderPassId root_pass_id(1, 1);
   scoped_ptr<RenderPass> root_pass =
       CreateTestRootRenderPass(root_pass_id, viewport_rect);
 
-  RenderPass::Id child_pass_id(2, 2);
+  RenderPassId child_pass_id(2, 2);
   gfx::Rect pass_rect(this->device_viewport_size_);
   gfx::Transform transform_to_root;
   scoped_ptr<RenderPass> child_pass =
@@ -895,11 +895,11 @@ TYPED_TEST(RendererPixelTest, FastPassSaturateFilter) {
 TYPED_TEST(RendererPixelTest, FastPassFilterChain) {
   gfx::Rect viewport_rect(this->device_viewport_size_);
 
-  RenderPass::Id root_pass_id(1, 1);
+  RenderPassId root_pass_id(1, 1);
   scoped_ptr<RenderPass> root_pass =
       CreateTestRootRenderPass(root_pass_id, viewport_rect);
 
-  RenderPass::Id child_pass_id(2, 2);
+  RenderPassId child_pass_id(2, 2);
   gfx::Rect pass_rect(this->device_viewport_size_);
   gfx::Transform transform_to_root;
   scoped_ptr<RenderPass> child_pass =
@@ -965,11 +965,11 @@ TYPED_TEST(RendererPixelTest, FastPassFilterChain) {
 TYPED_TEST(RendererPixelTest, FastPassColorFilterAlphaTranslation) {
   gfx::Rect viewport_rect(this->device_viewport_size_);
 
-  RenderPass::Id root_pass_id(1, 1);
+  RenderPassId root_pass_id(1, 1);
   scoped_ptr<RenderPass> root_pass =
       CreateTestRootRenderPass(root_pass_id, viewport_rect);
 
-  RenderPass::Id child_pass_id(2, 2);
+  RenderPassId child_pass_id(2, 2);
   gfx::Rect pass_rect(this->device_viewport_size_);
   gfx::Transform transform_to_root;
   scoped_ptr<RenderPass> child_pass =
@@ -1060,11 +1060,11 @@ TYPED_TEST(RendererPixelTest, FastPassColorFilterAlphaTranslation) {
 TYPED_TEST(RendererPixelTest, EnlargedRenderPassTexture) {
   gfx::Rect viewport_rect(this->device_viewport_size_);
 
-  RenderPass::Id root_pass_id(1, 1);
+  RenderPassId root_pass_id(1, 1);
   scoped_ptr<RenderPass> root_pass =
       CreateTestRootRenderPass(root_pass_id, viewport_rect);
 
-  RenderPass::Id child_pass_id(2, 2);
+  RenderPassId child_pass_id(2, 2);
   gfx::Rect pass_rect(this->device_viewport_size_);
   gfx::Transform transform_to_root;
   scoped_ptr<RenderPass> child_pass =
@@ -1109,11 +1109,11 @@ TYPED_TEST(RendererPixelTest, EnlargedRenderPassTexture) {
 TYPED_TEST(RendererPixelTest, EnlargedRenderPassTextureWithAntiAliasing) {
   gfx::Rect viewport_rect(this->device_viewport_size_);
 
-  RenderPass::Id root_pass_id(1, 1);
+  RenderPassId root_pass_id(1, 1);
   scoped_ptr<RenderPass> root_pass =
       CreateTestRootRenderPass(root_pass_id, viewport_rect);
 
-  RenderPass::Id child_pass_id(2, 2);
+  RenderPassId child_pass_id(2, 2);
   gfx::Rect pass_rect(this->device_viewport_size_);
   gfx::Transform transform_to_root;
   scoped_ptr<RenderPass> child_pass =
@@ -1173,13 +1173,13 @@ TYPED_TEST(RendererPixelTest, EnlargedRenderPassTextureWithAntiAliasing) {
 TYPED_TEST(RendererPixelTest, RenderPassAndMaskWithPartialQuad) {
   gfx::Rect viewport_rect(this->device_viewport_size_);
 
-  RenderPass::Id root_pass_id(1, 1);
+  RenderPassId root_pass_id(1, 1);
   scoped_ptr<RenderPass> root_pass =
       CreateTestRootRenderPass(root_pass_id, viewport_rect);
   SharedQuadState* root_pass_shared_state = CreateTestSharedQuadState(
       gfx::Transform(), viewport_rect, root_pass.get());
 
-  RenderPass::Id child_pass_id(2, 2);
+  RenderPassId child_pass_id(2, 2);
   gfx::Transform transform_to_root;
   scoped_ptr<RenderPass> child_pass =
       CreateTestRenderPass(child_pass_id, viewport_rect, transform_to_root);
@@ -1277,14 +1277,14 @@ class RendererPixelTestWithBackgroundFilter
   void SetUpRenderPassList() {
     gfx::Rect device_viewport_rect(this->device_viewport_size_);
 
-    RenderPass::Id root_id(1, 1);
+    RenderPassId root_id(1, 1);
     scoped_ptr<RenderPass> root_pass =
         CreateTestRootRenderPass(root_id, device_viewport_rect);
     root_pass->has_transparent_background = false;
 
     gfx::Transform identity_content_to_target_transform;
 
-    RenderPass::Id filter_pass_id(2, 1);
+    RenderPassId filter_pass_id(2, 1);
     gfx::Transform transform_to_root;
     scoped_ptr<RenderPass> filter_pass =
         CreateTestRenderPass(filter_pass_id,
@@ -1445,7 +1445,7 @@ TEST_F(ExternalStencilPixelTest, StencilTestEnabled) {
   // Draw a blue quad that covers the entire device viewport. It should be
   // clipped to the bottom left and top right corners by the external stencil.
   gfx::Rect rect(this->device_viewport_size_);
-  RenderPass::Id id(1, 1);
+  RenderPassId id(1, 1);
   scoped_ptr<RenderPass> pass = CreateTestRootRenderPass(id, rect);
   SharedQuadState* blue_shared_state =
       CreateTestSharedQuadState(gfx::Transform(), rect, pass.get());
@@ -1468,7 +1468,7 @@ TEST_F(ExternalStencilPixelTest, StencilTestDisabled) {
   // Draw a green quad that covers the entire device viewport. The stencil
   // buffer should be ignored.
   gfx::Rect rect(this->device_viewport_size_);
-  RenderPass::Id id(1, 1);
+  RenderPassId id(1, 1);
   scoped_ptr<RenderPass> pass = CreateTestRootRenderPass(id, rect);
   SharedQuadState* green_shared_state =
       CreateTestSharedQuadState(gfx::Transform(), rect, pass.get());
@@ -1492,12 +1492,12 @@ TEST_F(ExternalStencilPixelTest, RenderSurfacesIgnoreStencil) {
 
   gfx::Rect viewport_rect(this->device_viewport_size_);
 
-  RenderPass::Id root_pass_id(1, 1);
+  RenderPassId root_pass_id(1, 1);
   scoped_ptr<RenderPass> root_pass =
       CreateTestRootRenderPass(root_pass_id, viewport_rect);
   root_pass->has_transparent_background = false;
 
-  RenderPass::Id child_pass_id(2, 2);
+  RenderPassId child_pass_id(2, 2);
   gfx::Rect pass_rect(this->device_viewport_size_);
   gfx::Transform transform_to_root;
   scoped_ptr<RenderPass> child_pass =
@@ -1537,7 +1537,7 @@ TEST_F(ExternalStencilPixelTest, DeviceClip) {
   // Draw a blue quad that covers the entire device viewport. It should be
   // clipped to the bottom right corner by the device clip.
   gfx::Rect rect(this->device_viewport_size_);
-  RenderPass::Id id(1, 1);
+  RenderPassId id(1, 1);
   scoped_ptr<RenderPass> pass = CreateTestRootRenderPass(id, rect);
   SharedQuadState* blue_shared_state =
       CreateTestSharedQuadState(gfx::Transform(), rect, pass.get());
@@ -1557,7 +1557,7 @@ TEST_F(ExternalStencilPixelTest, DeviceClip) {
 TEST_F(GLRendererPixelTest, AntiAliasing) {
   gfx::Rect rect(this->device_viewport_size_);
 
-  RenderPass::Id id(1, 1);
+  RenderPassId id(1, 1);
   scoped_ptr<RenderPass> pass = CreateTestRootRenderPass(id, rect);
 
   gfx::Transform red_content_to_target_transform;
@@ -1599,7 +1599,7 @@ TEST_F(GLRendererPixelTest, AntiAliasing) {
 TEST_F(GLRendererPixelTest, AxisAligned) {
   gfx::Rect rect(this->device_viewport_size_);
 
-  RenderPass::Id id(1, 1);
+  RenderPassId id(1, 1);
   gfx::Transform transform_to_root;
   scoped_ptr<RenderPass> pass =
       CreateTestRenderPass(id, rect, transform_to_root);
@@ -1647,7 +1647,7 @@ TEST_F(GLRendererPixelTest, AxisAligned) {
 TEST_F(GLRendererPixelTest, ForceAntiAliasingOff) {
   gfx::Rect rect(this->device_viewport_size_);
 
-  RenderPass::Id id(1, 1);
+  RenderPassId id(1, 1);
   gfx::Transform transform_to_root;
   scoped_ptr<RenderPass> pass =
       CreateTestRenderPass(id, rect, transform_to_root);
@@ -1686,7 +1686,7 @@ TEST_F(GLRendererPixelTest, AntiAliasingPerspective) {
   gfx::Rect rect(this->device_viewport_size_);
 
   scoped_ptr<RenderPass> pass =
-      CreateTestRootRenderPass(RenderPass::Id(1, 1), rect);
+      CreateTestRootRenderPass(RenderPassId(1, 1), rect);
 
   gfx::Rect red_rect(0, 0, 180, 500);
   gfx::Transform red_content_to_target_transform(
@@ -1728,7 +1728,7 @@ TYPED_TEST(RendererPixelTest, PictureDrawQuadIdentityScale) {
   // TODO(enne): the renderer should figure this out on its own.
   ResourceFormat texture_format = RGBA_8888;
 
-  RenderPass::Id id(1, 1);
+  RenderPassId id(1, 1);
   gfx::Transform transform_to_root;
   scoped_ptr<RenderPass> pass =
       CreateTestRenderPass(id, viewport, transform_to_root);
@@ -1811,7 +1811,7 @@ TYPED_TEST(RendererPixelTest, PictureDrawQuadOpacity) {
   gfx::Rect viewport(this->device_viewport_size_);
   ResourceFormat texture_format = RGBA_8888;
 
-  RenderPass::Id id(1, 1);
+  RenderPassId id(1, 1);
   gfx::Transform transform_to_root;
   scoped_ptr<RenderPass> pass =
       CreateTestRenderPass(id, viewport, transform_to_root);
@@ -1902,7 +1902,7 @@ TYPED_TEST(RendererPixelTest, PictureDrawQuadDisableImageFiltering) {
   gfx::Rect viewport(this->device_viewport_size_);
   ResourceFormat texture_format = RGBA_8888;
 
-  RenderPass::Id id(1, 1);
+  RenderPassId id(1, 1);
   gfx::Transform transform_to_root;
   scoped_ptr<RenderPass> pass =
       CreateTestRenderPass(id, viewport, transform_to_root);
@@ -1958,7 +1958,7 @@ TYPED_TEST(RendererPixelTest, PictureDrawQuadNonIdentityScale) {
   // TODO(enne): the renderer should figure this out on its own.
   ResourceFormat texture_format = RGBA_8888;
 
-  RenderPass::Id id(1, 1);
+  RenderPassId id(1, 1);
   gfx::Transform transform_to_root;
   scoped_ptr<RenderPass> pass =
       CreateTestRenderPass(id, viewport, transform_to_root);
@@ -2113,7 +2113,7 @@ TEST_F(GLRendererPixelTest, PictureDrawQuadTexture4444) {
   gfx::Rect viewport(this->device_viewport_size_);
   ResourceFormat texture_format = RGBA_4444;
 
-  RenderPass::Id id(1, 1);
+  RenderPassId id(1, 1);
   gfx::Transform transform_to_root;
   scoped_ptr<RenderPass> pass =
       CreateTestRenderPass(id, viewport, transform_to_root);
@@ -2153,7 +2153,7 @@ TEST_F(GLRendererPixelTest, PictureDrawQuadTexture4444) {
 TYPED_TEST(RendererPixelTest, WrapModeRepeat) {
   gfx::Rect rect(this->device_viewport_size_);
 
-  RenderPass::Id id(1, 1);
+  RenderPassId id(1, 1);
   scoped_ptr<RenderPass> pass = CreateTestRootRenderPass(id, rect);
 
   SharedQuadState* shared_state =

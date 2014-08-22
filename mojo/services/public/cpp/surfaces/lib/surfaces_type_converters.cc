@@ -259,7 +259,7 @@ PassPtr TypeConverter<PassPtr, cc::RenderPass>::ConvertFrom(
 // static
 scoped_ptr<cc::RenderPass> ConvertTo(const PassPtr& input) {
   scoped_ptr<cc::RenderPass> pass = cc::RenderPass::Create();
-  pass->SetAll(cc::RenderPass::Id(1, input->id),
+  pass->SetAll(cc::RenderPassId(1, input->id),
                input->output_rect.To<gfx::Rect>(),
                input->damage_rect.To<gfx::Rect>(),
                input->transform_to_root_target.To<gfx::Transform>(),

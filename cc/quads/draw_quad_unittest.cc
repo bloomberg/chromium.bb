@@ -415,7 +415,7 @@ TEST(DrawQuadTest, CopyIOSurfaceDrawQuad) {
 
 TEST(DrawQuadTest, CopyRenderPassDrawQuad) {
   gfx::Rect visible_rect(40, 50, 30, 20);
-  RenderPass::Id render_pass_id(22, 64);
+  RenderPassId render_pass_id(22, 64);
   ResourceProvider::ResourceId mask_resource_id = 78;
   gfx::RectF mask_u_v_rect(-45.f, -21.f, 33.f, 19.f);
   FilterOperations filters;
@@ -425,7 +425,7 @@ TEST(DrawQuadTest, CopyRenderPassDrawQuad) {
   background_filters.Append(
       FilterOperation::CreateGrayscaleFilter(1.f));
 
-  RenderPass::Id copied_render_pass_id(235, 11);
+  RenderPassId copied_render_pass_id(235, 11);
   CREATE_SHARED_STATE();
 
   CREATE_QUAD_NEW_RP(RenderPassDrawQuad,
@@ -754,7 +754,7 @@ TEST_F(DrawQuadIteratorTest, IOSurfaceDrawQuad) {
 
 TEST_F(DrawQuadIteratorTest, RenderPassDrawQuad) {
   gfx::Rect visible_rect(40, 50, 30, 20);
-  RenderPass::Id render_pass_id(22, 64);
+  RenderPassId render_pass_id(22, 64);
   ResourceProvider::ResourceId mask_resource_id = 78;
   gfx::RectF mask_u_v_rect(-45.f, -21.f, 33.f, 19.f);
   FilterOperations filters;
@@ -764,7 +764,7 @@ TEST_F(DrawQuadIteratorTest, RenderPassDrawQuad) {
   background_filters.Append(
       FilterOperation::CreateGrayscaleFilter(1.f));
 
-  RenderPass::Id copied_render_pass_id(235, 11);
+  RenderPassId copied_render_pass_id(235, 11);
 
   CREATE_SHARED_STATE();
   CREATE_QUAD_NEW_RP(RenderPassDrawQuad,

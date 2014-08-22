@@ -10,7 +10,7 @@
 #include "cc/base/cc_export.h"
 #include "cc/output/filter_operations.h"
 #include "cc/quads/draw_quad.h"
-#include "cc/quads/render_pass.h"
+#include "cc/quads/render_pass_id.h"
 #include "cc/resources/resource_provider.h"
 
 namespace cc {
@@ -23,7 +23,7 @@ class CC_EXPORT RenderPassDrawQuad : public DrawQuad {
   void SetNew(const SharedQuadState* shared_quad_state,
               const gfx::Rect& rect,
               const gfx::Rect& visible_rect,
-              RenderPass::Id render_pass_id,
+              RenderPassId render_pass_id,
               ResourceProvider::ResourceId mask_resource_id,
               const gfx::RectF& mask_uv_rect,
               const FilterOperations& filters,
@@ -35,14 +35,14 @@ class CC_EXPORT RenderPassDrawQuad : public DrawQuad {
               const gfx::Rect& opaque_rect,
               const gfx::Rect& visible_rect,
               bool needs_blending,
-              RenderPass::Id render_pass_id,
+              RenderPassId render_pass_id,
               ResourceProvider::ResourceId mask_resource_id,
               const gfx::RectF& mask_uv_rect,
               const FilterOperations& filters,
               const gfx::Vector2dF& filters_scale,
               const FilterOperations& background_filters);
 
-  RenderPass::Id render_pass_id;
+  RenderPassId render_pass_id;
   ResourceProvider::ResourceId mask_resource_id;
   gfx::RectF mask_uv_rect;
 

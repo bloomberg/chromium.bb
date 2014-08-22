@@ -30,12 +30,6 @@ const size_t kDefaultNumQuadsToReserve = 128;
 
 namespace cc {
 
-void* RenderPass::Id::AsTracingId() const {
-  COMPILE_ASSERT(sizeof(size_t) <= sizeof(void*),  // NOLINT
-                 size_t_bigger_than_pointer);
-  return reinterpret_cast<void*>(base::HashPair(layer_id, index));
-}
-
 scoped_ptr<RenderPass> RenderPass::Create() {
   return make_scoped_ptr(new RenderPass());
 }
@@ -44,13 +38,14 @@ scoped_ptr<RenderPass> RenderPass::Create(size_t num_layers) {
   return make_scoped_ptr(new RenderPass(num_layers));
 }
 
-RenderPass::RenderPass() : id(Id(-1, -1)), has_transparent_background(true) {
+RenderPass::RenderPass()
+    : id(RenderPassId(-1, -1)), has_transparent_background(true) {
   shared_quad_state_list.reserve(kDefaultNumSharedQuadStatesToReserve);
   quad_list.reserve(kDefaultNumQuadsToReserve);
 }
 
 RenderPass::RenderPass(size_t num_layers)
-    : id(Id(-1, -1)), has_transparent_background(true) {
+    : id(RenderPassId(-1, -1)), has_transparent_background(true) {
   // Each layer usually produces one shared quad state, so the number of layers
   // is a good hint for what to reserve here.
   shared_quad_state_list.reserve(num_layers);
@@ -63,7 +58,7 @@ RenderPass::~RenderPass() {
       "cc::RenderPass", id.AsTracingId());
 }
 
-scoped_ptr<RenderPass> RenderPass::Copy(Id new_id) const {
+scoped_ptr<RenderPass> RenderPass::Copy(RenderPassId new_id) const {
   scoped_ptr<RenderPass> copy_pass(Create());
   copy_pass->SetAll(new_id,
                     output_rect,
@@ -121,7 +116,7 @@ void RenderPass::CopyAll(const ScopedPtrVector<RenderPass>& in,
   }
 }
 
-void RenderPass::SetNew(Id id,
+void RenderPass::SetNew(RenderPassId id,
                         const gfx::Rect& output_rect,
                         const gfx::Rect& damage_rect,
                         const gfx::Transform& transform_to_root_target) {
@@ -140,7 +135,7 @@ void RenderPass::SetNew(Id id,
   DCHECK(shared_quad_state_list.empty());
 }
 
-void RenderPass::SetAll(Id id,
+void RenderPass::SetAll(RenderPassId id,
                         const gfx::Rect& output_rect,
                         const gfx::Rect& damage_rect,
                         const gfx::Transform& transform_to_root_target,
@@ -201,7 +196,7 @@ SharedQuadState* RenderPass::CreateAndAppendSharedQuadState() {
 RenderPassDrawQuad* RenderPass::CopyFromAndAppendRenderPassDrawQuad(
     const RenderPassDrawQuad* quad,
     const SharedQuadState* shared_quad_state,
-    RenderPass::Id render_pass_id) {
+    RenderPassId render_pass_id) {
   RenderPassDrawQuad* copy_quad =
       CopyFromAndAppendTypedDrawQuad<RenderPassDrawQuad>(quad);
   copy_quad->shared_quad_state = shared_quad_state;

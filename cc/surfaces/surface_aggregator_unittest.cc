@@ -201,8 +201,8 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, MultiPassSurfaceReference) {
   SurfaceId embedded_surface_id = allocator_.GenerateId();
   factory_.Create(embedded_surface_id, SurfaceSize());
 
-  RenderPass::Id pass_ids[] = {RenderPass::Id(1, 1), RenderPass::Id(1, 2),
-                               RenderPass::Id(1, 3)};
+  RenderPassId pass_ids[] = {RenderPassId(1, 1), RenderPassId(1, 2),
+                             RenderPassId(1, 3)};
 
   test::Quad embedded_quads[][2] = {
       {test::Quad::SolidColorQuad(1), test::Quad::SolidColorQuad(2)},
@@ -239,7 +239,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, MultiPassSurfaceReference) {
   const RenderPassList& aggregated_pass_list = frame_data->render_pass_list;
 
   ASSERT_EQ(5u, aggregated_pass_list.size());
-  RenderPass::Id actual_pass_ids[] = {
+  RenderPassId actual_pass_ids[] = {
       aggregated_pass_list[0]->id, aggregated_pass_list[1]->id,
       aggregated_pass_list[2]->id, aggregated_pass_list[3]->id,
       aggregated_pass_list[4]->id};
@@ -432,7 +432,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, RenderPassIdMapping) {
   SurfaceId child_surface_id = allocator_.GenerateId();
   factory_.Create(child_surface_id, SurfaceSize());
 
-  RenderPass::Id child_pass_id[] = {RenderPass::Id(1, 1), RenderPass::Id(1, 2)};
+  RenderPassId child_pass_id[] = {RenderPassId(1, 1), RenderPassId(1, 2)};
   test::Quad child_quad[][1] = {{test::Quad::SolidColorQuad(SK_ColorGREEN)},
                                 {test::Quad::RenderPassQuad(child_pass_id[0])}};
   test::Pass surface_passes[] = {
@@ -442,8 +442,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, RenderPassIdMapping) {
   SubmitFrame(surface_passes, arraysize(surface_passes), child_surface_id);
 
   // Pass IDs from the parent surface may collide with ones from the child.
-  RenderPass::Id parent_pass_id[] = {RenderPass::Id(2, 1),
-                                     RenderPass::Id(1, 2)};
+  RenderPassId parent_pass_id[] = {RenderPassId(2, 1), RenderPassId(1, 2)};
   test::Quad parent_quad[][1] = {
       {test::Quad::SurfaceQuad(child_surface_id)},
       {test::Quad::RenderPassQuad(parent_pass_id[0])}};
@@ -464,9 +463,9 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, RenderPassIdMapping) {
   const RenderPassList& aggregated_pass_list = frame_data->render_pass_list;
 
   ASSERT_EQ(3u, aggregated_pass_list.size());
-  RenderPass::Id actual_pass_ids[] = {aggregated_pass_list[0]->id,
-                                      aggregated_pass_list[1]->id,
-                                      aggregated_pass_list[2]->id};
+  RenderPassId actual_pass_ids[] = {aggregated_pass_list[0]->id,
+                                    aggregated_pass_list[1]->id,
+                                    aggregated_pass_list[2]->id};
   // Make sure the aggregated frame's pass IDs are all unique.
   for (size_t i = 0; i < 3; ++i) {
     for (size_t j = 0; j < i; ++j) {
@@ -558,7 +557,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateSharedQuadStateProperties) {
                                           SkXfermode::kDstIn_Mode,    // 6
   };
 
-  RenderPass::Id pass_id(1, 1);
+  RenderPassId pass_id(1, 1);
   SurfaceId grandchild_surface_id = allocator_.GenerateId();
   factory_.Create(grandchild_surface_id, SurfaceSize());
   scoped_ptr<RenderPass> grandchild_pass = RenderPass::Create();
@@ -668,7 +667,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateSharedQuadStateProperties) {
 TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateMultiplePassWithTransform) {
   SurfaceId child_surface_id = allocator_.GenerateId();
   factory_.Create(child_surface_id, SurfaceSize());
-  RenderPass::Id child_pass_id[] = {RenderPass::Id(1, 1), RenderPass::Id(1, 2)};
+  RenderPassId child_pass_id[] = {RenderPassId(1, 1), RenderPassId(1, 2)};
   test::Quad child_quads[][1] = {
       {test::Quad::SolidColorQuad(SK_ColorGREEN)},
       {test::Quad::RenderPassQuad(child_pass_id[0])}};
@@ -852,7 +851,7 @@ void SubmitFrameWithResources(ResourceProvider::ResourceId* resource_ids,
                               SurfaceId surface_id) {
   scoped_ptr<DelegatedFrameData> frame_data(new DelegatedFrameData);
   scoped_ptr<RenderPass> pass = RenderPass::Create();
-  pass->id = RenderPass::Id(1, 1);
+  pass->id = RenderPassId(1, 1);
   SharedQuadState* sqs = pass->CreateAndAppendSharedQuadState();
   for (size_t i = 0u; i < num_resource_ids; ++i) {
     TransferableResource resource;

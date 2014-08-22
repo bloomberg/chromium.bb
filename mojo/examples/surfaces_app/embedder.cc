@@ -20,6 +20,7 @@ namespace mojo {
 namespace examples {
 
 using cc::RenderPass;
+using cc::RenderPassId;
 using cc::SurfaceDrawQuad;
 using cc::DrawQuad;
 using cc::SolidColorDrawQuad;
@@ -38,7 +39,7 @@ void Embedder::ProduceFrame(cc::SurfaceId child_one,
                             const gfx::Size& size,
                             int offset) {
   gfx::Rect rect(size);
-  RenderPass::Id pass_id(1, 1);
+  RenderPassId pass_id(1, 1);
   scoped_ptr<RenderPass> pass = RenderPass::Create();
   pass->SetNew(pass_id, rect, rect, gfx::Transform());
 

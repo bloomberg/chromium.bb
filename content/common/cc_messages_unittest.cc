@@ -28,6 +28,7 @@ using cc::FilterOperations;
 using cc::IOSurfaceDrawQuad;
 using cc::PictureDrawQuad;
 using cc::RenderPass;
+using cc::RenderPassId;
 using cc::RenderPassDrawQuad;
 using cc::ResourceProvider;
 using cc::SharedQuadState;
@@ -258,7 +259,7 @@ TEST_F(CCMessagesTest, AllQuads) {
   SkXfermode::Mode arbitrary_blend_mode3 = SkXfermode::kOverlay_Mode;
   IOSurfaceDrawQuad::Orientation arbitrary_orientation =
       IOSurfaceDrawQuad::UNFLIPPED;
-  RenderPass::Id arbitrary_id(10, 14);
+  RenderPassId arbitrary_id(10, 14);
   ResourceProvider::ResourceId arbitrary_resourceid1 = 55;
   ResourceProvider::ResourceId arbitrary_resourceid2 = 47;
   ResourceProvider::ResourceId arbitrary_resourceid3 = 23;
@@ -523,7 +524,7 @@ TEST_F(CCMessagesTest, AllQuads) {
 
 TEST_F(CCMessagesTest, UnusedSharedQuadStates) {
   scoped_ptr<RenderPass> pass_in = RenderPass::Create();
-  pass_in->SetAll(RenderPass::Id(1, 1),
+  pass_in->SetAll(RenderPassId(1, 1),
                   gfx::Rect(100, 100),
                   gfx::Rect(),
                   gfx::Transform(),
@@ -668,7 +669,7 @@ TEST_F(CCMessagesTest, Resources) {
 
   scoped_ptr<RenderPass> renderpass_in = RenderPass::Create();
   renderpass_in->SetNew(
-      RenderPass::Id(1, 1), gfx::Rect(), gfx::Rect(), gfx::Transform());
+      RenderPassId(1, 1), gfx::Rect(), gfx::Rect(), gfx::Transform());
 
   DelegatedFrameData frame_in;
   frame_in.resource_list.push_back(arbitrary_resource1);

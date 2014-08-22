@@ -13,23 +13,22 @@
 namespace cc {
 
 RenderPassDrawQuad::RenderPassDrawQuad()
-    : render_pass_id(RenderPass::Id(-1, -1)),
+    : render_pass_id(RenderPassId(-1, -1)),
       mask_resource_id(static_cast<ResourceProvider::ResourceId>(-1)) {
 }
 
 RenderPassDrawQuad::~RenderPassDrawQuad() {
 }
 
-void RenderPassDrawQuad::SetNew(
-    const SharedQuadState* shared_quad_state,
-    const gfx::Rect& rect,
-    const gfx::Rect& visible_rect,
-    RenderPass::Id render_pass_id,
-    ResourceProvider::ResourceId mask_resource_id,
-    const gfx::RectF& mask_uv_rect,
-    const FilterOperations& filters,
-    const gfx::Vector2dF& filters_scale,
-    const FilterOperations& background_filters) {
+void RenderPassDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
+                                const gfx::Rect& rect,
+                                const gfx::Rect& visible_rect,
+                                RenderPassId render_pass_id,
+                                ResourceProvider::ResourceId mask_resource_id,
+                                const gfx::RectF& mask_uv_rect,
+                                const FilterOperations& filters,
+                                const gfx::Vector2dF& filters_scale,
+                                const FilterOperations& background_filters) {
   DCHECK_GT(render_pass_id.layer_id, 0);
   DCHECK_GE(render_pass_id.index, 0);
 
@@ -48,18 +47,17 @@ void RenderPassDrawQuad::SetNew(
          background_filters);
 }
 
-void RenderPassDrawQuad::SetAll(
-    const SharedQuadState* shared_quad_state,
-    const gfx::Rect& rect,
-    const gfx::Rect& opaque_rect,
-    const gfx::Rect& visible_rect,
-    bool needs_blending,
-    RenderPass::Id render_pass_id,
-    ResourceProvider::ResourceId mask_resource_id,
-    const gfx::RectF& mask_uv_rect,
-    const FilterOperations& filters,
-    const gfx::Vector2dF& filters_scale,
-    const FilterOperations& background_filters) {
+void RenderPassDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
+                                const gfx::Rect& rect,
+                                const gfx::Rect& opaque_rect,
+                                const gfx::Rect& visible_rect,
+                                bool needs_blending,
+                                RenderPassId render_pass_id,
+                                ResourceProvider::ResourceId mask_resource_id,
+                                const gfx::RectF& mask_uv_rect,
+                                const FilterOperations& filters,
+                                const gfx::Vector2dF& filters_scale,
+                                const FilterOperations& background_filters) {
   DCHECK_GT(render_pass_id.layer_id, 0);
   DCHECK_GE(render_pass_id.index, 0);
 

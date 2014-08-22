@@ -298,6 +298,8 @@ component("cc") {
     "quads/render_pass.h",
     "quads/render_pass_draw_quad.cc",
     "quads/render_pass_draw_quad.h",
+    "quads/render_pass_id.cc",
+    "quads/render_pass_id.h",
     "quads/shared_quad_state.cc",
     "quads/shared_quad_state.h",
     "quads/solid_color_draw_quad.cc",

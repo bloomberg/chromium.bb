@@ -24,7 +24,6 @@
 #include "cc/layers/layer_position_constraint.h"
 #include "cc/layers/render_surface_impl.h"
 #include "cc/output/filter_operations.h"
-#include "cc/quads/render_pass.h"
 #include "cc/quads/shared_quad_state.h"
 #include "cc/resources/resource_provider.h"
 #include "skia/ext/refptr.h"
@@ -52,6 +51,8 @@ class LayerTreeImpl;
 class MicroBenchmarkImpl;
 template <typename LayerType>
 class OcclusionTracker;
+class RenderPass;
+class RenderPassId;
 class Renderer;
 class ScrollbarAnimationController;
 class ScrollbarLayerImplBase;
@@ -200,8 +201,8 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
 
   virtual bool HasDelegatedContent() const;
   virtual bool HasContributingDelegatedRenderPasses() const;
-  virtual RenderPass::Id FirstContributingRenderPassId() const;
-  virtual RenderPass::Id NextContributingRenderPassId(RenderPass::Id id) const;
+  virtual RenderPassId FirstContributingRenderPassId() const;
+  virtual RenderPassId NextContributingRenderPassId(RenderPassId id) const;
 
   virtual void UpdateTiles(
       const OcclusionTracker<LayerImpl>* occlusion_tracker) {}

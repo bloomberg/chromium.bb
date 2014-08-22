@@ -16,7 +16,7 @@
 namespace cc {
 
 TestRenderPass* AddRenderPass(RenderPassList* pass_list,
-                              RenderPass::Id id,
+                              RenderPassId id,
                               const gfx::Rect& output_rect,
                               const gfx::Transform& root_transform) {
   scoped_ptr<TestRenderPass> pass(TestRenderPass::Create());

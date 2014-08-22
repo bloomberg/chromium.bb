@@ -80,7 +80,7 @@ class LayerTreeHostDelegatedTest : public LayerTreeTest {
     scoped_ptr<DelegatedFrameData> frame(new DelegatedFrameData);
 
     scoped_ptr<RenderPass> root_pass(RenderPass::Create());
-    root_pass->SetNew(RenderPass::Id(1, 1),
+    root_pass->SetNew(RenderPassId(1, 1),
                       root_output_rect,
                       root_damage_rect,
                       gfx::Transform());
@@ -94,7 +94,7 @@ class LayerTreeHostDelegatedTest : public LayerTreeTest {
     scoped_ptr<DelegatedFrameData> frame(new DelegatedFrameData);
 
     scoped_ptr<RenderPass> root_pass(RenderPass::Create());
-    root_pass->SetNew(RenderPass::Id(1, 1),
+    root_pass->SetNew(RenderPassId(1, 1),
                       root_output_rect,
                       root_damage_rect,
                       gfx::Transform());
@@ -166,7 +166,7 @@ class LayerTreeHostDelegatedTest : public LayerTreeTest {
   }
 
   void AddRenderPass(DelegatedFrameData* frame,
-                     RenderPass::Id id,
+                     RenderPassId id,
                      const gfx::Rect& output_rect,
                      const gfx::Rect& damage_rect,
                      const FilterOperations& filters,

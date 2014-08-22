@@ -203,7 +203,7 @@ TEST(SurfaceLibTest, SharedQuadState) {
 
 TEST(SurfaceLibTest, RenderPass) {
   scoped_ptr<cc::RenderPass> pass = cc::RenderPass::Create();
-  cc::RenderPass::Id pass_id(1, 6);
+  cc::RenderPassId pass_id(1, 6);
   gfx::Rect output_rect(4, 9, 13, 71);
   gfx::Rect damage_rect(9, 17, 41, 45);
   gfx::Transform transform_to_root_target;

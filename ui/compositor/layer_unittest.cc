@@ -1342,7 +1342,7 @@ static scoped_ptr<cc::DelegatedFrameData> MakeFrameData(gfx::Size size) {
   scoped_ptr<cc::DelegatedFrameData> frame_data(new cc::DelegatedFrameData);
   scoped_ptr<cc::RenderPass> render_pass(cc::RenderPass::Create());
   render_pass->SetNew(
-      cc::RenderPass::Id(1, 1), gfx::Rect(size), gfx::Rect(), gfx::Transform());
+      cc::RenderPassId(1, 1), gfx::Rect(size), gfx::Rect(), gfx::Transform());
   frame_data->render_pass_list.push_back(render_pass.Pass());
   return frame_data.Pass();
 }

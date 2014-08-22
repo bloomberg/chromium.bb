@@ -7,15 +7,19 @@
 
 #include "base/basictypes.h"
 #include "cc/base/cc_export.h"
-#include "cc/quads/render_pass.h"
+#include "cc/base/scoped_ptr_vector.h"
 #include "cc/trees/layer_tree_host.h"
 
 namespace cc {
 
 class CompositorFrameAck;
 class CompositorFrameMetadata;
+class RenderPass;
+class RenderPassId;
 class ScopedResource;
 class Task;
+
+typedef ScopedPtrVector<RenderPass> RenderPassList;
 
 struct RendererCapabilitiesImpl {
   RendererCapabilitiesImpl();
@@ -50,7 +54,7 @@ class CC_EXPORT Renderer {
 
   virtual void DecideRenderPassAllocationsForFrame(
       const RenderPassList& render_passes_in_draw_order) {}
-  virtual bool HasAllocatedResourcesForTesting(RenderPass::Id id) const;
+  virtual bool HasAllocatedResourcesForTesting(RenderPassId id) const;
 
   // This passes ownership of the render passes to the renderer. It should
   // consume them, and empty the list. The parameters here may change from frame

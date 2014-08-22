@@ -138,7 +138,7 @@ IPC_ENUM_TRAITS_MAX_VALUE(SkXfermode::Mode, SkXfermode::kLastMode)
 IPC_ENUM_TRAITS_MAX_VALUE(cc::YUVVideoDrawQuad::ColorSpace,
                           cc::YUVVideoDrawQuad::COLOR_SPACE_LAST)
 
-IPC_STRUCT_TRAITS_BEGIN(cc::RenderPass::Id)
+IPC_STRUCT_TRAITS_BEGIN(cc::RenderPassId)
   IPC_STRUCT_TRAITS_MEMBER(layer_id)
   IPC_STRUCT_TRAITS_MEMBER(index)
 IPC_STRUCT_TRAITS_END()

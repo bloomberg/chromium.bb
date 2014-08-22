@@ -1524,17 +1524,17 @@ class LayerTreeHostTestSurfaceNotAllocatedForLayersOutsideMemoryLimit
 
   virtual void DrawLayersOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
     Renderer* renderer = host_impl->renderer();
-    RenderPass::Id surface1_render_pass_id = host_impl->active_tree()
-                                                 ->root_layer()
-                                                 ->children()[0]
-                                                 ->render_surface()
-                                                 ->RenderPassId();
-    RenderPass::Id surface2_render_pass_id = host_impl->active_tree()
-                                                 ->root_layer()
-                                                 ->children()[0]
-                                                 ->children()[0]
-                                                 ->render_surface()
-                                                 ->RenderPassId();
+    RenderPassId surface1_render_pass_id = host_impl->active_tree()
+                                               ->root_layer()
+                                               ->children()[0]
+                                               ->render_surface()
+                                               ->GetRenderPassId();
+    RenderPassId surface2_render_pass_id = host_impl->active_tree()
+                                               ->root_layer()
+                                               ->children()[0]
+                                               ->children()[0]
+                                               ->render_surface()
+                                               ->GetRenderPassId();
 
     switch (host_impl->active_tree()->source_frame_number()) {
       case 0:

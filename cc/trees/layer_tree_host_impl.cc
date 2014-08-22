@@ -799,8 +799,8 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(
            LayerIteratorType::Begin(frame->render_surface_layer_list);
        it != end;
        ++it) {
-    RenderPass::Id target_render_pass_id =
-        it.target_render_surface_layer()->render_surface()->RenderPassId();
+    RenderPassId target_render_pass_id =
+        it.target_render_surface_layer()->render_surface()->GetRenderPassId();
     RenderPass* target_render_pass =
         frame->render_passes_by_id[target_render_pass_id];
 
@@ -816,8 +816,8 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(
       }
     } else if (it.represents_contributing_render_surface() &&
                it->render_surface()->contributes_to_drawn_surface()) {
-      RenderPass::Id contributing_render_pass_id =
-          it->render_surface()->RenderPassId();
+      RenderPassId contributing_render_pass_id =
+          it->render_surface()->GetRenderPassId();
       RenderPass* contributing_render_pass =
           frame->render_passes_by_id[contributing_render_pass_id];
       AppendQuadsForRenderSurfaceLayer(target_render_pass,
@@ -836,7 +836,7 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(
         frame->will_draw_layers.push_back(*it);
 
         if (it->HasContributingDelegatedRenderPasses()) {
-          RenderPass::Id contributing_render_pass_id =
+          RenderPassId contributing_render_pass_id =
               it->FirstContributingRenderPassId();
           while (frame->render_passes_by_id.find(contributing_render_pass_id) !=
                  frame->render_passes_by_id.end()) {
@@ -985,14 +985,14 @@ void LayerTreeHostImpl::SetViewportDamage(const gfx::Rect& damage_rect) {
 }
 
 static inline RenderPass* FindRenderPassById(
-    RenderPass::Id render_pass_id,
+    RenderPassId render_pass_id,
     const LayerTreeHostImpl::FrameData& frame) {
   RenderPassIdHashMap::const_iterator it =
       frame.render_passes_by_id.find(render_pass_id);
   return it != frame.render_passes_by_id.end() ? it->second : NULL;
 }
 
-static void RemoveRenderPassesRecursive(RenderPass::Id remove_render_pass_id,
+static void RemoveRenderPassesRecursive(RenderPassId remove_render_pass_id,
                                         LayerTreeHostImpl::FrameData* frame) {
   RenderPass* remove_render_pass =
       FindRenderPassById(remove_render_pass_id, *frame);
@@ -1022,7 +1022,7 @@ static void RemoveRenderPassesRecursive(RenderPass::Id remove_render_pass_id,
     if (current_quad->material != DrawQuad::RENDER_PASS)
       continue;
 
-    RenderPass::Id next_remove_render_pass_id =
+    RenderPassId next_remove_render_pass_id =
         RenderPassDrawQuad::MaterialCast(current_quad)->render_pass_id;
     RemoveRenderPassesRecursive(next_remove_render_pass_id, frame);
   }

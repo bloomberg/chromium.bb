@@ -107,11 +107,11 @@ void RenderSurfaceImpl::ClearLayerLists() {
   contributing_delegated_render_pass_layer_list_.clear();
 }
 
-RenderPass::Id RenderSurfaceImpl::RenderPassId() {
+RenderPassId RenderSurfaceImpl::GetRenderPassId() {
   int layer_id = owning_layer_->id();
   int sub_id = 0;
   DCHECK_GT(layer_id, 0);
-  return RenderPass::Id(layer_id, sub_id);
+  return RenderPassId(layer_id, sub_id);
 }
 
 void RenderSurfaceImpl::AppendRenderPasses(RenderPassSink* pass_sink) {
@@ -124,7 +124,7 @@ void RenderSurfaceImpl::AppendRenderPasses(RenderPassSink* pass_sink) {
   }
 
   scoped_ptr<RenderPass> pass = RenderPass::Create(layer_list_.size());
-  pass->SetNew(RenderPassId(),
+  pass->SetNew(GetRenderPassId(),
                content_rect_,
                gfx::IntersectRects(content_rect_,
                                    damage_tracker_->current_damage_rect()),
@@ -137,7 +137,7 @@ void RenderSurfaceImpl::AppendQuads(
     const OcclusionTracker<LayerImpl>& occlusion_tracker,
     AppendQuadsData* append_quads_data,
     bool for_replica,
-    RenderPass::Id render_pass_id) {
+    RenderPassId render_pass_id) {
   DCHECK(!for_replica || owning_layer_->has_replica());
 
   const gfx::Transform& draw_transform =

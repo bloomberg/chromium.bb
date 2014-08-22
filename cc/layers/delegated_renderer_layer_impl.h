@@ -28,9 +28,9 @@ class CC_EXPORT DelegatedRendererLayerImpl : public LayerImpl {
       OVERRIDE;
   virtual bool HasDelegatedContent() const OVERRIDE;
   virtual bool HasContributingDelegatedRenderPasses() const OVERRIDE;
-  virtual RenderPass::Id FirstContributingRenderPassId() const OVERRIDE;
-  virtual RenderPass::Id NextContributingRenderPassId(
-      RenderPass::Id previous) const OVERRIDE;
+  virtual RenderPassId FirstContributingRenderPassId() const OVERRIDE;
+  virtual RenderPassId NextContributingRenderPassId(
+      RenderPassId previous) const OVERRIDE;
   virtual void ReleaseResources() OVERRIDE;
   virtual bool WillDraw(DrawMode draw_mode,
                         ResourceProvider* resource_provider) OVERRIDE;
@@ -75,9 +75,8 @@ class CC_EXPORT DelegatedRendererLayerImpl : public LayerImpl {
 
   // Returns |true| if the delegated_render_pass_id is part of the current
   // frame and can be converted.
-  bool ConvertDelegatedRenderPassId(
-      RenderPass::Id delegated_render_pass_id,
-      RenderPass::Id* output_render_pass_id) const;
+  bool ConvertDelegatedRenderPassId(RenderPassId delegated_render_pass_id,
+                                    RenderPassId* output_render_pass_id) const;
 
   void AppendRenderPassQuads(
       RenderPass* render_pass,
@@ -92,7 +91,7 @@ class CC_EXPORT DelegatedRendererLayerImpl : public LayerImpl {
   bool have_render_passes_to_push_;
   float inverse_device_scale_factor_;
   RenderPassList render_passes_in_draw_order_;
-  base::hash_map<RenderPass::Id, int> render_passes_index_by_id_;
+  base::hash_map<RenderPassId, int> render_passes_index_by_id_;
   ResourceProvider::ResourceIdArray resources_;
 
   int child_id_;

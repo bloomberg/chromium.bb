@@ -4,9 +4,11 @@
 
 #include "cc/output/renderer.h"
 
+#include "cc/quads/render_pass_id.h"
+
 namespace cc {
 
-bool Renderer::HasAllocatedResourcesForTesting(RenderPass::Id id) const {
+bool Renderer::HasAllocatedResourcesForTesting(RenderPassId id) const {
   return false;
 }
 

@@ -388,12 +388,12 @@ class LayerTreeHostTestHiddenSurfaceNotAllocatedForSubtreeCopyRequest
     // |parent| owns a surface, but it was hidden and not part of the copy
     // request so it should not allocate any resource.
     EXPECT_FALSE(renderer->HasAllocatedResourcesForTesting(
-        parent->render_surface()->RenderPassId()));
+        parent->render_surface()->GetRenderPassId()));
 
     // |copy_layer| should have been rendered to a texture since it was needed
     // for a copy request.
     EXPECT_TRUE(renderer->HasAllocatedResourcesForTesting(
-        copy_layer->render_surface()->RenderPassId()));
+        copy_layer->render_surface()->GetRenderPassId()));
 
     did_draw_ = true;
   }

@@ -21,6 +21,7 @@
 #include "cc/layers/painted_scrollbar_layer_impl.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/quads/debug_border_draw_quad.h"
+#include "cc/quads/render_pass.h"
 #include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/layer_tree_settings.h"
@@ -340,13 +341,12 @@ bool LayerImpl::HasContributingDelegatedRenderPasses() const {
   return false;
 }
 
-RenderPass::Id LayerImpl::FirstContributingRenderPassId() const {
-  return RenderPass::Id(0, 0);
+RenderPassId LayerImpl::FirstContributingRenderPassId() const {
+  return RenderPassId(0, 0);
 }
 
-RenderPass::Id LayerImpl::NextContributingRenderPassId(RenderPass::Id id)
-    const {
-  return RenderPass::Id(0, 0);
+RenderPassId LayerImpl::NextContributingRenderPassId(RenderPassId id) const {
+  return RenderPassId(0, 0);
 }
 
 ResourceProvider::ResourceId LayerImpl::ContentsResourceId() const {

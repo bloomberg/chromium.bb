@@ -116,7 +116,7 @@ TEST(RenderSurfaceTest, SanityCheckSurfaceCreatesCorrectSharedQuadState) {
                               occlusion_tracker,
                               &append_quads_data,
                               for_replica,
-                              RenderPass::Id(2, 0));
+                              RenderPassId(2, 0));
 
   ASSERT_EQ(1u, render_pass->shared_quad_state_list.size());
   SharedQuadState* shared_quad_state = render_pass->shared_quad_state_list[0];
@@ -176,7 +176,7 @@ TEST(RenderSurfaceTest, SanityCheckSurfaceCreatesCorrectRenderPass) {
   ASSERT_EQ(1u, pass_sink.RenderPasses().size());
   RenderPass* pass = pass_sink.RenderPasses()[0];
 
-  EXPECT_EQ(RenderPass::Id(2, 0), pass->id);
+  EXPECT_EQ(RenderPassId(2, 0), pass->id);
   EXPECT_RECT_EQ(content_rect, pass->output_rect);
   EXPECT_EQ(origin, pass->transform_to_root_target);
 }

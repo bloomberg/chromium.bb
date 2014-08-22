@@ -203,7 +203,7 @@ class LayerTreeHostNoMessageLoopDelegatedLayer
 
     scoped_ptr<RenderPass> root_pass(RenderPass::Create());
     root_pass->SetNew(
-        RenderPass::Id(1, 1), frame_rect, frame_rect, gfx::Transform());
+        RenderPassId(1, 1), frame_rect, frame_rect, gfx::Transform());
     frame->render_pass_list.push_back(root_pass.Pass());
 
     TransferableResource resource;

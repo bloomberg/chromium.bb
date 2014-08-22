@@ -700,18 +700,18 @@ class LayerTreeHostContextTestDontUseLostResources
     scoped_ptr<TestRenderPass> pass_for_quad = TestRenderPass::Create();
     pass_for_quad->SetNew(
         // AppendOneOfEveryQuadType() makes a RenderPass quad with this id.
-        RenderPass::Id(2, 1),
+        RenderPassId(2, 1),
         gfx::Rect(0, 0, 10, 10),
         gfx::Rect(0, 0, 10, 10),
         gfx::Transform());
 
     scoped_ptr<TestRenderPass> pass = TestRenderPass::Create();
-    pass->SetNew(RenderPass::Id(1, 1),
+    pass->SetNew(RenderPassId(1, 1),
                  gfx::Rect(0, 0, 10, 10),
                  gfx::Rect(0, 0, 10, 10),
                  gfx::Transform());
     pass->AppendOneOfEveryQuadType(child_resource_provider_.get(),
-                                   RenderPass::Id(2, 1));
+                                   RenderPassId(2, 1));
 
     frame_data->render_pass_list.push_back(pass_for_quad.PassAs<RenderPass>());
     frame_data->render_pass_list.push_back(pass.PassAs<RenderPass>());

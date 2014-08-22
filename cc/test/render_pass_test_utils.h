@@ -23,11 +23,10 @@ class TestRenderPass;
 
 // Adds a new render pass with the provided properties to the given
 // render pass list.
-TestRenderPass* AddRenderPass(
-    RenderPassList* pass_list,
-    RenderPass::Id id,
-    const gfx::Rect& output_rect,
-    const gfx::Transform& root_transform);
+TestRenderPass* AddRenderPass(RenderPassList* pass_list,
+                              RenderPassId id,
+                              const gfx::Rect& output_rect,
+                              const gfx::Transform& root_transform);
 
 // Adds a solid quad to a given render pass.
 SolidColorDrawQuad* AddQuad(TestRenderPass* pass,

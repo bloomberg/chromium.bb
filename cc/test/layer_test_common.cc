@@ -134,7 +134,7 @@ void LayerTestCommon::LayerImplTest::AppendQuadsWithOcclusion(
 
 void LayerTestCommon::LayerImplTest::AppendQuadsForPassWithOcclusion(
     LayerImpl* layer_impl,
-    const RenderPass::Id& id,
+    const RenderPassId& id,
     const gfx::Rect& occluded) {
   AppendQuadsData data(id);
 
@@ -156,7 +156,7 @@ void LayerTestCommon::LayerImplTest::AppendSurfaceQuadsWithOcclusion(
   occlusion_tracker_.set_occluded_target_rect_for_contributing_surface(
       occluded);
   bool for_replica = false;
-  RenderPass::Id id(1, 1);
+  RenderPassId id(1, 1);
   surface_impl->AppendQuads(
       render_pass_.get(), occlusion_tracker_, &data, for_replica, id);
 }

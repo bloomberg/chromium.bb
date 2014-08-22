@@ -5,16 +5,20 @@
 #ifndef CC_SURFACES_SURFACE_AGGREGATOR_TEST_HELPERS_H_
 #define CC_SURFACES_SURFACE_AGGREGATOR_TEST_HELPERS_H_
 
+#include "cc/base/scoped_ptr_vector.h"
 #include "cc/quads/draw_quad.h"
-#include "cc/quads/render_pass.h"
+#include "cc/quads/render_pass_id.h"
 #include "cc/surfaces/surface_id.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/size.h"
 
 namespace cc {
 
+class RenderPass;
 class Surface;
 class TestRenderPass;
+
+typedef ScopedPtrVector<RenderPass> RenderPassList;
 
 namespace test {
 
@@ -33,7 +37,7 @@ struct Quad {
     return quad;
   }
 
-  static Quad RenderPassQuad(RenderPass::Id id) {
+  static Quad RenderPassQuad(RenderPassId id) {
     Quad quad;
     quad.material = DrawQuad::RENDER_PASS;
     quad.render_pass_id = id;
@@ -46,7 +50,7 @@ struct Quad {
   // Set when material==DrawQuad::SOLID_COLOR.
   SkColor color;
   // Set when material==DrawQuad::RENDER_PASS.
-  RenderPass::Id render_pass_id;
+  RenderPassId render_pass_id;
 
  private:
   Quad()
@@ -56,14 +60,14 @@ struct Quad {
 };
 
 struct Pass {
-  Pass(Quad* quads, size_t quad_count, RenderPass::Id id)
+  Pass(Quad* quads, size_t quad_count, RenderPassId id)
       : quads(quads), quad_count(quad_count), id(id) {}
   Pass(Quad* quads, size_t quad_count)
       : quads(quads), quad_count(quad_count), id(1, 1) {}
 
   Quad* quads;
   size_t quad_count;
-  RenderPass::Id id;
+  RenderPassId id;
 };
 
 void AddSurfaceQuad(TestRenderPass* pass,

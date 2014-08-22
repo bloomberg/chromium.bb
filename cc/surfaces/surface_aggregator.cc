@@ -35,28 +35,27 @@ class SurfaceAggregator::RenderPassIdAllocator {
       : surface_id_(surface_id), next_index_(1) {}
   ~RenderPassIdAllocator() {}
 
-  void AddKnownPass(RenderPass::Id id) {
+  void AddKnownPass(RenderPassId id) {
     if (id_to_index_map_.find(id) != id_to_index_map_.end())
       return;
     id_to_index_map_[id] = next_index_++;
   }
 
-  RenderPass::Id Remap(RenderPass::Id id) {
+  RenderPassId Remap(RenderPassId id) {
     DCHECK(id_to_index_map_.find(id) != id_to_index_map_.end());
-    return RenderPass::Id(surface_id_.id, id_to_index_map_[id]);
+    return RenderPassId(surface_id_.id, id_to_index_map_[id]);
   }
 
  private:
-  base::hash_map<RenderPass::Id, int> id_to_index_map_;
+  base::hash_map<RenderPassId, int> id_to_index_map_;
   SurfaceId surface_id_;
   int next_index_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderPassIdAllocator);
 };
 
-RenderPass::Id SurfaceAggregator::RemapPassId(
-    RenderPass::Id surface_local_pass_id,
-    SurfaceId surface_id) {
+RenderPassId SurfaceAggregator::RemapPassId(RenderPassId surface_local_pass_id,
+                                            SurfaceId surface_id) {
   RenderPassIdAllocator* allocator = render_pass_allocator_map_.get(surface_id);
   if (!allocator) {
     allocator = new RenderPassIdAllocator(surface_id);
@@ -164,7 +163,7 @@ void SurfaceAggregator::HandleSurfaceQuad(const SurfaceDrawQuad* surface_quad,
 
     scoped_ptr<RenderPass> copy_pass(RenderPass::Create());
 
-    RenderPass::Id remapped_pass_id = RemapPassId(source.id, surface_id);
+    RenderPassId remapped_pass_id = RemapPassId(source.id, surface_id);
 
     copy_pass->SetAll(remapped_pass_id,
                       source.output_rect,
@@ -252,8 +251,8 @@ void SurfaceAggregator::CopyQuadsToPass(
       if (quad->material == DrawQuad::RENDER_PASS) {
         const RenderPassDrawQuad* pass_quad =
             RenderPassDrawQuad::MaterialCast(quad);
-        RenderPass::Id original_pass_id = pass_quad->render_pass_id;
-        RenderPass::Id remapped_pass_id =
+        RenderPassId original_pass_id = pass_quad->render_pass_id;
+        RenderPassId remapped_pass_id =
             RemapPassId(original_pass_id, surface_id);
 
         dest_pass->CopyFromAndAppendRenderPassDrawQuad(
@@ -275,7 +274,7 @@ void SurfaceAggregator::CopyPasses(const RenderPassList& source_pass_list,
 
     scoped_ptr<RenderPass> copy_pass(RenderPass::Create());
 
-    RenderPass::Id remapped_pass_id = RemapPassId(source.id, surface_id);
+    RenderPassId remapped_pass_id = RemapPassId(source.id, surface_id);
 
     copy_pass->SetAll(remapped_pass_id,
                       source.output_rect,

@@ -36,10 +36,8 @@ class DelegatedRendererLayerTestSimple : public DelegatedRendererLayerTest {
  public:
   DelegatedRendererLayerTestSimple() : DelegatedRendererLayerTest() {
     scoped_ptr<RenderPass> root_pass(RenderPass::Create());
-    root_pass->SetNew(RenderPass::Id(1, 1),
-                      gfx::Rect(1, 1),
-                      gfx::Rect(1, 1),
-                      gfx::Transform());
+    root_pass->SetNew(
+        RenderPassId(1, 1), gfx::Rect(1, 1), gfx::Rect(1, 1), gfx::Transform());
     scoped_ptr<DelegatedFrameData> frame_data(new DelegatedFrameData);
     frame_data->render_pass_list.push_back(root_pass.Pass());
     resources_ = new DelegatedFrameResourceCollection;
