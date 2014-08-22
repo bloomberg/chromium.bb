@@ -63,7 +63,7 @@ bool Connector::WaitForIncomingMessage() {
 }
 
 bool Connector::Accept(Message* message) {
-  MOJO_DCHECK(message_pipe_.is_valid());
+  MOJO_CHECK(message_pipe_.is_valid());
 
   if (error_)
     return false;
@@ -122,7 +122,7 @@ void Connector::CallOnHandleReady(void* closure, MojoResult result) {
 }
 
 void Connector::OnHandleReady(MojoResult result) {
-  MOJO_DCHECK(async_wait_id_ != 0);
+  MOJO_CHECK(async_wait_id_ != 0);
   async_wait_id_ = 0;
   if (result != MOJO_RESULT_OK) {
     NotifyError();
@@ -133,7 +133,7 @@ void Connector::OnHandleReady(MojoResult result) {
 }
 
 void Connector::WaitToReadMore() {
-  MOJO_DCHECK(!async_wait_id_);
+  MOJO_CHECK(!async_wait_id_);
   async_wait_id_ = waiter_->AsyncWait(message_pipe_.get().value(),
                                       MOJO_HANDLE_SIGNAL_READABLE,
                                       MOJO_DEADLINE_INDEFINITE,

@@ -65,7 +65,7 @@ class InterfaceImplState : public ErrorHandler {
   void Bind(ScopedMessagePipeHandle handle,
             bool instance_bound_to_pipe,
             const MojoAsyncWaiter* waiter) {
-    MOJO_DCHECK(!router_);
+    MOJO_CHECK(!router_);
 
     FilterChain filters;
     filters.Append<MessageHeaderValidator>();
