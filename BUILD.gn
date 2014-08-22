@@ -10,6 +10,17 @@
 
 import("//build/config/ui.gni")
 
+# Android GN build has some bugs: http://crbug.com/405686
+if (is_android) {
+
+group("root") {
+  deps = [
+    "//base",
+  ]
+}
+
+} else {
+
 # In GN, a "group" is a dummy target that just lists other targets.
 group("root") {
   # Note that some dependencies are commented out. These are things that are
@@ -231,4 +242,6 @@ group("root") {
       "//ui/ozone/demo",
     ]
   }
+}
+
 }
