@@ -138,6 +138,24 @@ class PowerMetric(Metric):
           results.current_page, 'board_temperature', 'celsius',
           board_temperature_c, important=False))
 
+    # Add CPU frequency measurements.
+    frequency_hz = whole_package_utilization.get('frequency_percent')
+    if frequency_hz is not None:
+      frequency_sum = 0.0
+      for freq, percent in frequency_hz.iteritems():
+        frequency_sum += freq * (percent / 100.0)
+      results.AddValue(scalar.ScalarValue(
+          results.current_page, 'cpu_average_frequency_hz', 'Hz',
+          frequency_sum, important=False))
+
+    # Add CPU c-state residency measurements.
+    cstate_percent = whole_package_utilization.get('cstate_residency_percent')
+    if cstate_percent is not None:
+      for state, percent in cstate_percent.iteritems():
+        results.AddValue(scalar.ScalarValue(
+            results.current_page, 'cpu_cstate_%s_residency_percent' % state,
+            '%', percent, important=False))
+
     self._results = None
 
 def _SubtractCpuStats(cpu_stats, start_cpu_stats):
