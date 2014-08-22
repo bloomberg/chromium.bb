@@ -796,7 +796,7 @@ class GitWrapper(SCMWrapper):
   @staticmethod
   def _UpdateMirror(mirror, options):
     """Update a git mirror by fetching the latest commits from the remote."""
-    if options.shallow:
+    if getattr(options, 'shallow', False):
       # HACK(hinoka): These repositories should be super shallow.
       if 'flash' in mirror.url:
         depth = 10
