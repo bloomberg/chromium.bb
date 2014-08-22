@@ -72,7 +72,7 @@ private:
         HarfBuzzRun(const HarfBuzzRun&);
         ~HarfBuzzRun();
 
-        static PassOwnPtr<HarfBuzzRun> create(const SimpleFontData* fontData, unsigned startIndex, unsigned numCharacters, TextDirection direction, hb_script_t script)
+        static PassOwnPtr<HarfBuzzRun> create(const SimpleFontData* fontData, unsigned startIndex, unsigned numCharacters, hb_direction_t direction, hb_script_t script)
         {
             return adoptPtr(new HarfBuzzRun(fontData, startIndex, numCharacters, direction, script));
         }
@@ -101,17 +101,18 @@ private:
             return &m_glyphToCharacterIndexes[0];
         }
         float width() { return m_width; }
-        bool rtl() { return m_direction == RTL; }
+        hb_direction_t direction() { return m_direction; }
+        bool rtl() { return m_direction == HB_DIRECTION_RTL; }
         hb_script_t script() { return m_script; }
 
     private:
-        HarfBuzzRun(const SimpleFontData*, unsigned startIndex, unsigned numCharacters, TextDirection, hb_script_t);
+        HarfBuzzRun(const SimpleFontData*, unsigned startIndex, unsigned numCharacters, hb_direction_t, hb_script_t);
 
         const SimpleFontData* m_fontData;
         unsigned m_startIndex;
         size_t m_numCharacters;
         unsigned m_numGlyphs;
-        TextDirection m_direction;
+        hb_direction_t m_direction;
         hb_script_t m_script;
         Vector<uint16_t, 256> m_glyphs;
         Vector<float, 256> m_advances;
