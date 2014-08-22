@@ -41,8 +41,14 @@ void HttpServerResponseInfo::SetBody(const std::string& body,
                                      const std::string& content_type) {
   DCHECK(body_.empty());
   body_ = body;
+  SetContentHeaders(body.length(), content_type);
+}
+
+void HttpServerResponseInfo::SetContentHeaders(
+    size_t content_length,
+    const std::string& content_type) {
   AddHeader(HttpRequestHeaders::kContentLength,
-            base::StringPrintf("%" PRIuS, body.length()));
+            base::StringPrintf("%" PRIuS, content_length));
   AddHeader(HttpRequestHeaders::kContentType, content_type);
 }
 

@@ -9,7 +9,28 @@
 #include "chrome/browser/ui/webui/devtools_ui.h"
 #include "chrome/common/chrome_paths.h"
 #include "content/public/browser/devtools_http_handler.h"
-#include "net/socket/tcp_listen_socket.h"
+#include "net/socket/tcp_server_socket.h"
+
+namespace {
+
+class TCPServerSocketFactory
+    : public content::DevToolsHttpHandler::ServerSocketFactory {
+ public:
+  TCPServerSocketFactory(const std::string& address, int port, int backlog)
+      : content::DevToolsHttpHandler::ServerSocketFactory(
+            address, port, backlog) {}
+
+ private:
+  // content::DevToolsHttpHandler::ServerSocketFactory.
+  virtual scoped_ptr<net::ServerSocket> Create() const OVERRIDE {
+    return scoped_ptr<net::ServerSocket>(
+        new net::TCPServerSocket(NULL, net::NetLog::Source()));
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(TCPServerSocketFactory);
+};
+
+}  // namespace
 
 RemoteDebuggingServer::RemoteDebuggingServer(
     chrome::HostDesktopType host_desktop_type,
@@ -24,8 +45,10 @@ RemoteDebuggingServer::RemoteDebuggingServer(
     DCHECK(result);
   }
 
+  scoped_ptr<content::DevToolsHttpHandler::ServerSocketFactory> factory(
+      new TCPServerSocketFactory(ip, port, 1));
   devtools_http_handler_ = content::DevToolsHttpHandler::Start(
-      new net::TCPListenSocketFactory(ip, port),
+      factory.Pass(),
       "",
       new BrowserListTabContentsProvider(host_desktop_type),
       output_dir);

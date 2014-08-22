@@ -27,6 +27,9 @@ class HttpServerResponseInfo {
 
   // This also adds an appropriate Content-Length header.
   void SetBody(const std::string& body, const std::string& content_type);
+  // Sets content-length and content-type. Body should be sent separately.
+  void SetContentHeaders(size_t content_length,
+                         const std::string& content_type);
 
   std::string Serialize() const;
 

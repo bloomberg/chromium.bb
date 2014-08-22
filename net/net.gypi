@@ -1555,6 +1555,7 @@
       'quic/quic_utils_test.cc',
       'quic/quic_write_blocked_list_test.cc',
       'quic/reliable_quic_stream_test.cc',
+      'server/http_connection_unittest.cc',
       'server/http_server_response_info_unittest.cc',
       'server/http_server_unittest.cc',
       'socket/client_socket_pool_base_unittest.cc',

@@ -17,9 +17,8 @@
 
 namespace content {
 
-DevToolsBrowserTarget::DevToolsBrowserTarget(
-    net::HttpServer* http_server,
-    int connection_id)
+DevToolsBrowserTarget::DevToolsBrowserTarget(net::HttpServer* http_server,
+                                             int connection_id)
     : message_loop_proxy_(base::MessageLoopProxy::current()),
       http_server_(http_server),
       connection_id_(connection_id),

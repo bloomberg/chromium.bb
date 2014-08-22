@@ -8,12 +8,13 @@
 #include <string>
 
 #include "base/files/file_path.h"
+#include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 
 class GURL;
 
 namespace net {
-class StreamListenSocketFactory;
+class ServerSocket;
 class URLRequestContextGetter;
 }
 
@@ -26,6 +27,32 @@ class DevToolsHttpHandlerDelegate;
 // this browser.
 class DevToolsHttpHandler {
  public:
+
+  // Factory of net::ServerSocket. This is to separate instantiating dev tools
+  // and instantiating server socket.
+  class CONTENT_EXPORT ServerSocketFactory {
+   public:
+    ServerSocketFactory(const std::string& address, int port, int backlog);
+    virtual ~ServerSocketFactory();
+
+    // Returns a new instance of ServerSocket or NULL if an error occurred.
+    // It calls ServerSocket::ListenWithAddressAndPort() with address, port and
+    // backlog passed to constructor.
+    virtual scoped_ptr<net::ServerSocket> CreateAndListen() const;
+
+   protected:
+    // Creates a server socket. ServerSocket::Listen() will be called soon
+    // unless it returns NULL.
+    virtual scoped_ptr<net::ServerSocket> Create() const = 0;
+
+    const std::string address_;
+    const int port_;
+    const int backlog_;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(ServerSocketFactory);
+  };
+
   // Returns true if the given protocol version is supported.
   CONTENT_EXPORT static bool IsSupportedProtocolVersion(
       const std::string& version);
@@ -40,7 +67,7 @@ class DevToolsHttpHandler {
   // port selected by the OS will be written to a well-known file in
   // the output directory.
   CONTENT_EXPORT static DevToolsHttpHandler* Start(
-      const net::StreamListenSocketFactory* socket_factory,
+      scoped_ptr<ServerSocketFactory> server_socket_factory,
       const std::string& frontend_url,
       DevToolsHttpHandlerDelegate* delegate,
       const base::FilePath& active_port_output_directory);
