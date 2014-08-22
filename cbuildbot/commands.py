@@ -312,8 +312,7 @@ def SetSharedUserPassword(buildroot, password):
 
 
 def SetupBoard(buildroot, board, usepkg, chrome_binhost_only=False,
-               extra_env=None, force=False, profile=None, quiet=False,
-               chroot_upgrade=True):
+               extra_env=None, force=False, profile=None, chroot_upgrade=True):
   """Wrapper around setup_board.
 
   Args:
@@ -325,7 +324,6 @@ def SetupBoard(buildroot, board, usepkg, chrome_binhost_only=False,
     extra_env: A dictionary of environmental variables to set during generation.
     force: Whether to remove the board prior to setting it up.
     profile: The profile to use with this board.
-    quiet: Don't print warnings when board already exists.
     chroot_upgrade: Whether to update the chroot. If the chroot is already up to
       date, you can specify chroot_upgrade=False.
   """
@@ -346,9 +344,6 @@ def SetupBoard(buildroot, board, usepkg, chrome_binhost_only=False,
 
   if chrome_binhost_only:
     cmd.append('--chrome_binhost_only')
-
-  if quiet:
-    cmd.append('--quiet')
 
   if force:
     cmd.append('--force')

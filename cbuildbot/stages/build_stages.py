@@ -226,21 +226,6 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
     # Sanity check: If we didn't check out Chrome, we should be building Chrome
     # from a binary package.
     if not self._run.options.managed_chrome:
-      # Some builders run setup_board with --nousepkg to build the toolchain
-      # from source, but then want to pull in binary packages during
-      # build_packages.
-      #
-      # When setup_board is called with --nousepkg, the toolchain is installed
-      # and built but the Chrome binhost is not set up. We call setup_board a
-      # second time here with --usepkg to set up the binhost for Chrome, so that
-      # VerifyBinpkg will do the right thing.
-      if not self._run.config.usepkg_setup_board:
-        commands.SetupBoard(
-            self._build_root, board=self._current_board, usepkg=True,
-            chrome_binhost_only=True, chroot_upgrade=False,
-            extra_env=self._portage_extra_env, quiet=True,
-            profile=self._run.options.profile or self._run.config.profile)
-
       commands.VerifyBinpkg(self._build_root,
                             self._current_board,
                             constants.CHROME_CP,
