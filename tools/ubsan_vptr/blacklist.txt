@@ -52,7 +52,7 @@ fun:*DatabaseContext*contextDestroyed*
 # static_cast into itself in the constructor.
 
 fun:*RefCountedGarbageCollected*makeKeepAlive*
-fun:*ThreadSafeRefCountedGarbageCollected*ThreadSafeRefCountedGarbageCollected*
+fun:*ThreadSafeRefCountedGarbageCollected*makeKeepAlive*
 
 #############################################################################
 # Accessing data in destructurors where the class has virtual inheritances.
