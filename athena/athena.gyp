@@ -182,6 +182,7 @@
       'sources': [
         'test/athena_unittests.cc',
         'activity/activity_manager_unittest.cc',
+        'common/fill_layout_manager_unittest.cc',
         'home/home_card_unittest.cc',
         'input/accelerator_manager_unittest.cc',
         'screen/screen_manager_unittest.cc',
