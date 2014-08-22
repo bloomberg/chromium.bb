@@ -32,7 +32,10 @@ found in the LICENSE file.
               builderMap[builder] = {};
             // This assumes that duplicate builder/master pairs all have the same
             // earliestFailingBuild.
-            builderMap[builder][result.masterUrl] = result.earliestFailingBuild;
+            builderMap[builder][result.masterUrl] = {
+              earliestFailingBuild: result.earliestFailingBuild,
+              failingBuildCount: result.failingBuildCount,
+            };
           }).bind(this));
         }, this);
 
@@ -40,8 +43,9 @@ found in the LICENSE file.
 
         Object.keys(builderMap).sort().forEach(function(builder) {
           Object.keys(builderMap[builder]).sort().forEach(function(masterUrl) {
+            var result = builderMap[builder][masterUrl];
             this._builders.push(new CTBuilder(masterUrl, builder,
-                builderMap[builder][masterUrl]));
+                result.earliestFailingBuild, result.failingBuildCount));
           }, this);
         }, this);
       },

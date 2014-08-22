@@ -20,17 +20,20 @@ var kExampleFailures = [
       "WebKit Win7 (dbg)": {
         "actual": "CRASH",
         "masterUrl": "http://master-one",
-        "earliestFailingBuild": "1",
+        "earliestFailingBuild": 1,
+        "failingBuildCount": 2,
       },
       "WebKit Mac10.6 (dbg)": {
         "actual": "CRASH",
         "masterUrl": "http://master-one",
-        "earliestFailingBuild": "2",
+        "earliestFailingBuild": 2,
+        "failingBuildCount": 1,
       },
       "WebKit Mac10.7": {
         "actual": "TEXT",
         "masterUrl": "http://master-one",
-        "earliestFailingBuild": "3",
+        "earliestFailingBuild": 3,
+        "failingBuildCount": 1,
       }
     }, 177164, 177165),
   new CTFailure('layout_tests', "plugins/transformed-events.html",
@@ -38,12 +41,14 @@ var kExampleFailures = [
       "WebKit Win7 (dbg)": {
         "actual": "TEXT",
         "masterUrl": "http://master-one",
-        "earliestFailingBuild": "1",
+        "earliestFailingBuild": 1,
+        "failingBuildCount": 2,
       },
       "WebKit Mac10.7": {
         "actual": "CRASH",
         "masterUrl": "http://master-two",
-        "earliestFailingBuild": "4",
+        "earliestFailingBuild": 4,
+        "failingBuildCount": 1,
       },
     }, 177164, 177165
   )
@@ -76,13 +81,13 @@ describe('ct-builder-grid', function() {
       var builders = grid.shadowRoot.querySelectorAll('ct-builder');
       assert.lengthOf(builders, 4);
       assert.deepEqual(builders[0].builder, new CTBuilder(
-          'http://master-one', 'WebKit Mac10.6 (dbg)', '2'));
+          'http://master-one', 'WebKit Mac10.6 (dbg)', 2, 1));
       assert.deepEqual(builders[1].builder, new CTBuilder(
-          'http://master-one', 'WebKit Mac10.7', '3'));
+          'http://master-one', 'WebKit Mac10.7', 3, 1));
       assert.deepEqual(builders[2].builder, new CTBuilder(
-          'http://master-two', 'WebKit Mac10.7', '4'));
+          'http://master-two', 'WebKit Mac10.7', 4, 1));
       assert.deepEqual(builders[3].builder, new CTBuilder(
-          'http://master-one', 'WebKit Win7 (dbg)', '1'));
+          'http://master-one', 'WebKit Win7 (dbg)', 1, 2));
     });
   });
 });

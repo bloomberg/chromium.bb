@@ -13,7 +13,7 @@ var assert = chai.assert;
 
 describe('ct-builder model', function() {
   it('should generate the build URL', function() {
-    var builder = new CTBuilder("http://master-one", "WebKit Mac10.6 (dbg)", "2");
+    var builder = new CTBuilder("http://master-one", "WebKit Mac10.6 (dbg)", 2, 3);
     assert.equal(builder.buildUrl, "http://master-one/builders/WebKit%20Mac10.6%20(dbg)/builds/2");
   });
 });

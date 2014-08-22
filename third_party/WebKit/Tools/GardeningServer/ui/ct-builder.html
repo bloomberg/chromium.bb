@@ -5,10 +5,11 @@ found in the LICENSE file.
 -->
 
 <polymer-element name="ct-builder" attributes="builder" noscript>
-  <!-- FIXME: This element doens't really provide value anymore. -->
   <template>
-    <a href="{{ builder.buildUrl }}">
-      <span>{{ builder.builder }}</span>
-    </a>
+    <a href="{{ builder.buildUrl }}">{{ builder.builder }}</a>
+    -
+    {{ builder.failingBuildCount }}
+    <template if="{{ builder.failingBuildCount != 1 }}">runs</template>
+    <template if="{{ builder.failingBuildCount == 1 }}">run</template>
   </template>
 </polymer-element>

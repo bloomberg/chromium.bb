@@ -12,25 +12,33 @@ found in the LICENSE file.
 var assert = chai.assert;
 
 describe('ct-builder', function() {
-  var builder;
-  var masterUrl = 'http://url';
-  var builderName = 'WebKit Linux (dbg)';
-  var firstFailingBuild = '1234';
-
-  beforeEach(function(done) {
-    builder = document.createElement('ct-builder');
-    builder.builder = new CTBuilder(masterUrl, builderName, firstFailingBuild);
-
-    setTimeout(done);
-  });
-
   describe('default builder UI', function() {
-    it('should link to the builder', function() {
-      var a = builder.shadowRoot.querySelector('a');
-      assert.ok(a);
-      assert(a.href.startsWith(masterUrl));
-      assert.include(a.href, encodeURIComponent(builderName));
-      assert.include(a.href, firstFailingBuild);
+    it('should link to builder and show right number of runs', function(done) {
+      var masterUrl = 'http://url';
+      var builderName = 'WebKit Linux (dbg)';
+      var firstFailingBuild = '1234';
+
+      var builder = document.createElement('ct-builder');
+      builder.builder = new CTBuilder(masterUrl, builderName, firstFailingBuild, 1);
+
+      setTimeout(function() {
+        var a = builder.shadowRoot.querySelector('a');
+        assert.ok(a);
+        assert(a.href.startsWith(masterUrl));
+        assert.include(a.href, encodeURIComponent(builderName));
+        assert.include(a.href, firstFailingBuild);
+
+        assert.equal(builder.shadowRoot.textContent.compact(),
+            'WebKit Linux (dbg) - 1 run');
+
+        builder.builder.failingBuildCount = 2;
+
+        setTimeout(function() {
+          assert.equal(builder.shadowRoot.textContent.compact(),
+              'WebKit Linux (dbg) - 2 runs');
+          done();
+        });
+      });
     });
   });
 });
