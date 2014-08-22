@@ -410,10 +410,15 @@ void SearchProvider::UpdateMatches() {
     // These blocks attempt to repair undesirable behavior by suggested
     // relevances with minimal impact, preserving other suggested relevances.
 
-    if ((providers_.GetKeywordProviderURL() != NULL) &&
+    const TemplateURL* keyword_url = providers_.GetKeywordProviderURL();
+    const bool is_extension_keyword = (keyword_url != NULL) &&
+        (keyword_url->GetType() == TemplateURL::OMNIBOX_API_EXTENSION);
+    if ((keyword_url != NULL) && !is_extension_keyword &&
         (FindTopMatch() == matches_.end())) {
-      // In keyword mode, disregard the keyword verbatim suggested relevance
-      // if necessary, so at least one match is allowed to be default.
+      // In non-extension keyword mode, disregard the keyword verbatim suggested
+      // relevance if necessary, so at least one match is allowed to be default.
+      // (In extension keyword mode this is not necessary because the extension
+      // will return a default match.)
       keyword_results_.verbatim_relevance = -1;
       ConvertResultsToAutocompleteMatches();
     }
@@ -428,15 +433,17 @@ void SearchProvider::UpdateMatches() {
       keyword_results_.verbatim_relevance = -1;
       ConvertResultsToAutocompleteMatches();
     }
-    if (FindTopMatch() == matches_.end()) {
-      // Guarantee that SearchProvider returns a legal default match.  (The
-      // omnibox always needs at least one legal default match, and it relies
-      // on SearchProvider to always return one.)
+    if (!is_extension_keyword && (FindTopMatch() == matches_.end())) {
+      // Guarantee that SearchProvider returns a legal default match (except
+      // when in extension-based keyword mode).  The omnibox always needs at
+      // least one legal default match, and it relies on SearchProvider in
+      // combination with KeywordProvider (for extension-based keywords) to
+      // always return one.
       ApplyCalculatedRelevance();
       ConvertResultsToAutocompleteMatches();
     }
     DCHECK(!IsTopMatchSearchWithURLInput());
-    DCHECK(FindTopMatch() != matches_.end());
+    DCHECK(is_extension_keyword || (FindTopMatch() != matches_.end()));
   }
   UMA_HISTOGRAM_CUSTOM_COUNTS(
       "Omnibox.SearchProviderMatches", matches_.size(), 1, 6, 7);
