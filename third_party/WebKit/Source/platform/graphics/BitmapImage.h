@@ -106,6 +106,8 @@ protected:
     virtual void draw(GraphicsContext*, const FloatRect& dstRect, const FloatRect& srcRect, CompositeOperator, WebBlendMode) OVERRIDE;
     virtual void draw(GraphicsContext*, const FloatRect& dstRect, const FloatRect& srcRect, CompositeOperator, WebBlendMode, RespectImageOrientationEnum) OVERRIDE;
 
+    // True if the image is animated (contains multiple frames)
+    bool isAnimated();
     size_t currentFrame() const { return m_currentFrame; }
     size_t frameCount();
     PassRefPtr<NativeImageSkia> frameAtIndex(size_t);

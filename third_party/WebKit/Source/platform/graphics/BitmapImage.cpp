@@ -368,7 +368,7 @@ PassRefPtr<NativeImageSkia> BitmapImage::nativeImageForCurrentFrame()
 
 PassRefPtr<Image> BitmapImage::imageForDefaultFrame()
 {
-    if (isBitmapImage() && maybeAnimated())
+    if (isAnimated())
         return BitmapImage::create(frameAtIndex(0));
 
     return Image::imageForDefaultFrame();
@@ -553,9 +553,15 @@ bool BitmapImage::maybeAnimated()
 {
     if (m_animationFinished)
         return false;
-    if (frameCount() > 1)
+    if (isAnimated())
         return true;
+
     return m_source.repetitionCount() != cAnimationNone;
+}
+
+bool BitmapImage::isAnimated()
+{
+    return frameCount() > 1;
 }
 
 void BitmapImage::advanceAnimation(Timer<BitmapImage>*)

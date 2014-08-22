@@ -12,19 +12,31 @@
         <script>
             description("When drawing an animated image to a canvas, the poster frame (or the first frame) should be printed.<br/>This test passes if the canvas is filled with the color rgb(64, 4, 30).");
 
+            if (window.testRunner) {
+                testRunner.waitUntilDone();
+            }
+
+
             function ready() {
                 var canvas = document.getElementById("canvas");
                 var image = document.getElementById("image");
 
                 var canvasContext = canvas.getContext("2d");
 
-                canvasContext.drawImage(image, 0, 0);
+                window.setTimeout(function() {
 
-                imageData = canvasContext.getImageData(0, 0, 1, 1);
+                    canvasContext.drawImage(image, 0, 0);
 
-                shouldBe("imageData.data[0]", "64");
-                shouldBe("imageData.data[1]", "4");
-                shouldBe("imageData.data[2]", "30");
+                    imageData = canvasContext.getImageData(0, 0, 1, 1);
+
+                    shouldBe("imageData.data[0]", "64");
+                    shouldBe("imageData.data[1]", "4");
+                    shouldBe("imageData.data[2]", "30");
+
+                    if (window.testRunner)
+                        testRunner.notifyDone();
+
+                }, 200);
             }
         </script>
 
