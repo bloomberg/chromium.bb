@@ -107,6 +107,8 @@ void ResourceLoader::releaseResources()
     if (m_state == Terminated)
         return;
     m_resource->clearLoader();
+    m_resource->deleteIfPossible();
+    m_resource = nullptr;
     m_host->willTerminateResourceLoader(this);
 
     ASSERT(m_state != Terminated);
@@ -130,12 +132,14 @@ void ResourceLoader::releaseResources()
 
 void ResourceLoader::init(const ResourceRequest& passedRequest)
 {
+    ASSERT(m_state != Terminated);
     ResourceRequest request(passedRequest);
     m_host->willSendRequest(m_resource->identifier(), request, ResourceResponse(), m_options.initiatorInfo);
     ASSERT(m_state != Terminated);
     ASSERT(!request.isNull());
     m_originalRequest = m_request = applyOptions(request);
     m_resource->updateRequest(request);
+    ASSERT(m_state != Terminated);
     m_host->didInitializeResourceLoader(this);
 }
 
@@ -206,9 +210,12 @@ void ResourceLoader::attachThreadedDataReceiver(PassOwnPtr<blink::WebThreadedDat
 
 void ResourceLoader::didDownloadData(blink::WebURLLoader*, int length, int encodedDataLength)
 {
+    ASSERT(m_state != Terminated);
     RefPtrWillBeRawPtr<ResourceLoader> protect(this);
     RELEASE_ASSERT(m_connectionState == ConnectionStateReceivedResponse);
     m_host->didDownloadData(m_resource, length, encodedDataLength);
+    if (m_state == Terminated)
+        return;
     m_resource->didDownloadData(length);
 }
 
@@ -229,6 +236,7 @@ void ResourceLoader::didChangePriority(ResourceLoadPriority loadPriority, int in
 {
     if (m_loader) {
         m_host->didChangeLoadingPriority(m_resource, loadPriority, intraPriorityValue);
+        ASSERT(m_state != Terminated);
         m_loader->didChangePriority(static_cast<blink::WebURLRequest::Priority>(loadPriority), intraPriorityValue);
     }
 }
@@ -285,6 +293,7 @@ void ResourceLoader::cancel(const ResourceError& error)
 
 void ResourceLoader::willSendRequest(blink::WebURLLoader*, blink::WebURLRequest& passedRequest, const blink::WebURLResponse& passedRedirectResponse)
 {
+    ASSERT(m_state != Terminated);
     RefPtrWillBeRawPtr<ResourceLoader> protect(this);
 
     ResourceRequest& request(applyOptions(passedRequest.toMutableResourceRequest()));
@@ -299,14 +308,17 @@ void ResourceLoader::willSendRequest(blink::WebURLLoader*, blink::WebURLRequest&
         cancel();
         return;
     }
+    ASSERT(m_state != Terminated);
 
     applyOptions(request); // canAccessRedirect() can modify m_options so we should re-apply it.
     m_host->redirectReceived(m_resource, redirectResponse);
+    ASSERT(m_state != Terminated);
     m_resource->willSendRequest(request, redirectResponse);
     if (request.isNull() || m_state == Terminated)
         return;
 
     m_host->willSendRequest(m_resource->identifier(), request, redirectResponse, m_options.initiatorInfo);
+    ASSERT(m_state != Terminated);
     ASSERT(!request.isNull());
     m_resource->updateRequest(request);
     m_request = request;
@@ -369,6 +381,8 @@ void ResourceLoader::didReceiveResponse(blink::WebURLLoader*, const blink::WebUR
         return;
 
     m_host->didReceiveResponse(m_resource, resourceResponse);
+    if (m_state == Terminated)
+        return;
 
     if (response.toResourceResponse().isMultipart()) {
         // We don't count multiParts in a ResourceFetcher's request count
@@ -381,8 +395,11 @@ void ResourceLoader::didReceiveResponse(blink::WebURLLoader*, const blink::WebUR
         // Since a subresource loader does not load multipart sections progressively, data was delivered to the loader all at once.
         // After the first multipart section is complete, signal to delegates that this load is "finished"
         m_host->subresourceLoaderFinishedLoadingOnePart(this);
+        ASSERT(m_state != Terminated);
         didFinishLoadingOnePart(0, blink::WebURLLoaderClient::kUnknownEncodedDataLength);
     }
+    if (m_state == Terminated)
+        return;
 
     if (m_resource->response().httpStatusCode() < 400 || m_resource->shouldIgnoreHTTPStatusCodeErrors())
         return;
@@ -393,12 +410,14 @@ void ResourceLoader::didReceiveResponse(blink::WebURLLoader*, const blink::WebUR
         m_host->didFailLoading(m_resource, ResourceError::cancelledError(m_request.url()));
     }
 
+    ASSERT(m_state != Terminated);
     m_resource->error(Resource::LoadError);
     cancel();
 }
 
 void ResourceLoader::didReceiveData(blink::WebURLLoader*, const char* data, int length, int encodedDataLength)
 {
+    ASSERT(m_state != Terminated);
     RELEASE_ASSERT(m_connectionState == ConnectionStateReceivedResponse || m_connectionState == ConnectionStateReceivingData);
     m_connectionState = ConnectionStateReceivingData;
 
@@ -416,6 +435,8 @@ void ResourceLoader::didReceiveData(blink::WebURLLoader*, const char* data, int 
     // However, with today's computers and networking speeds, this won't happen in practice.
     // Could be an issue with a giant local file.
     m_host->didReceiveData(m_resource, data, length, encodedDataLength);
+    if (m_state == Terminated)
+        return;
     m_resource->appendData(data, length);
 }
 
@@ -432,6 +453,8 @@ void ResourceLoader::didFinishLoading(blink::WebURLLoader*, double finishTime, i
     ResourcePtr<Resource> protectResource(m_resource);
     m_state = Finishing;
     didFinishLoadingOnePart(finishTime, encodedDataLength);
+    if (m_state == Terminated)
+        return;
     m_resource->finish(finishTime);
 
     // If the load has been cancelled by a delegate in response to didFinishLoad(), do not release
@@ -457,6 +480,8 @@ void ResourceLoader::didFail(blink::WebURLLoader*, const blink::WebURLError& err
         m_notifiedLoadComplete = true;
         m_host->didFailLoading(m_resource, error);
     }
+    if (m_state == Terminated)
+        return;
 
     m_resource->error(Resource::LoadError);
 
