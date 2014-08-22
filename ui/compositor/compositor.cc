@@ -136,6 +136,7 @@ Compositor::Compositor(gfx::AcceleratedWidget widget,
 
   settings.impl_side_painting = IsUIImplSidePaintingEnabled();
   settings.use_zero_copy = IsUIZeroCopyEnabled();
+  settings.single_thread_proxy_scheduler = false;
 
   base::TimeTicks before_create = base::TimeTicks::Now();
   if (compositor_thread_loop_) {

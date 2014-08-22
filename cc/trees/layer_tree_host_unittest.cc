@@ -1893,7 +1893,7 @@ class LayerTreeHostTestDeferCommits : public LayerTreeHostTest {
   int num_complete_commits_;
 };
 
-MULTI_THREAD_TEST_F(LayerTreeHostTestDeferCommits);
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestDeferCommits);
 
 class LayerTreeHostWithProxy : public LayerTreeHost {
  public:
@@ -1966,6 +1966,7 @@ TEST(LayerTreeHostTest, PartialUpdatesWithGLRenderer) {
 
   LayerTreeSettings settings;
   settings.max_partial_texture_updates = 4;
+  settings.single_thread_proxy_scheduler = false;
 
   scoped_ptr<SharedBitmapManager> shared_bitmap_manager(
       new TestSharedBitmapManager());
@@ -1985,6 +1986,7 @@ TEST(LayerTreeHostTest, PartialUpdatesWithSoftwareRenderer) {
 
   LayerTreeSettings settings;
   settings.max_partial_texture_updates = 4;
+  settings.single_thread_proxy_scheduler = false;
 
   scoped_ptr<SharedBitmapManager> shared_bitmap_manager(
       new TestSharedBitmapManager());
@@ -2004,6 +2006,7 @@ TEST(LayerTreeHostTest, PartialUpdatesWithDelegatingRendererAndGLContent) {
 
   LayerTreeSettings settings;
   settings.max_partial_texture_updates = 4;
+  settings.single_thread_proxy_scheduler = false;
 
   scoped_ptr<SharedBitmapManager> shared_bitmap_manager(
       new TestSharedBitmapManager());
@@ -2024,6 +2027,7 @@ TEST(LayerTreeHostTest,
 
   LayerTreeSettings settings;
   settings.max_partial_texture_updates = 4;
+  settings.single_thread_proxy_scheduler = false;
 
   scoped_ptr<SharedBitmapManager> shared_bitmap_manager(
       new TestSharedBitmapManager());
@@ -4572,7 +4576,7 @@ class LayerTreeHostTestBreakSwapPromiseForVisibilityAbortedCommit
   TestSwapPromiseResult swap_promise_result_;
 };
 
-MULTI_THREAD_TEST_F(
+SINGLE_AND_MULTI_THREAD_TEST_F(
     LayerTreeHostTestBreakSwapPromiseForVisibilityAbortedCommit);
 
 class LayerTreeHostTestBreakSwapPromiseForContextAbortedCommit
@@ -4623,7 +4627,8 @@ class LayerTreeHostTestBreakSwapPromiseForContextAbortedCommit
   TestSwapPromiseResult swap_promise_result_;
 };
 
-MULTI_THREAD_TEST_F(LayerTreeHostTestBreakSwapPromiseForContextAbortedCommit);
+SINGLE_AND_MULTI_THREAD_TEST_F(
+    LayerTreeHostTestBreakSwapPromiseForContextAbortedCommit);
 
 class SimpleSwapPromiseMonitor : public SwapPromiseMonitor {
  public:
@@ -4708,7 +4713,7 @@ class LayerTreeHostTestSimpleSwapPromiseMonitor : public LayerTreeHostTest {
   virtual void AfterTest() OVERRIDE {}
 };
 
-MULTI_THREAD_TEST_F(LayerTreeHostTestSimpleSwapPromiseMonitor);
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestSimpleSwapPromiseMonitor);
 
 class LayerTreeHostTestHighResRequiredAfterEvictingUIResources
     : public LayerTreeHostTest {
