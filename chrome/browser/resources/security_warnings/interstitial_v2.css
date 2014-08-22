@@ -139,8 +139,8 @@ input[type=checkbox] {
 
 .safe-browsing .icon {
   background-image: -webkit-image-set(
-      url(../safe_browsing/images/1x/stop_sign.png) 1x,
-      url(../safe_browsing/images/2x/stop_sign.png) 2x);
+      url(images/1x/stop_sign.png) 1x,
+      url(images/2x/stop_sign.png) 2x);
 }
 
 .small-link {
@@ -200,12 +200,6 @@ input[type=checkbox] {
 .yellow :-webkit-any(
     a, #details, #details-button, h1, .small-link) {
   color: black;
-}
-
-.yellow .icon {
-  background-image: -webkit-image-set(
-      url(images/1x/brokenssl_yellow.png) 1x,
-      url(images/2x/brokenssl_yellow.png) 2x);
 }
 
 @media (max-width: 700px) {

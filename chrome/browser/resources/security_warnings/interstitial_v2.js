@@ -6,6 +6,33 @@
 // used for both SSL interstitials and Safe Browsing interstitials.
 
 var expandedDetails = false;
+var keyPressState = 0;
+
+/*
+ * A convenience method for sending commands to the parent page.
+ * @param {string} cmd  The command to send.
+ */
+function sendCommand(cmd) {
+  window.domAutomationController.setAutomationId(1);
+  window.domAutomationController.send(cmd);
+}
+
+/*
+ * This allows errors to be skippped by typing "danger" into the page.
+ * @param {string} e The key that was just pressed.
+ */
+function handleKeypress(e) {
+  var BYPASS_SEQUENCE = 'danger';
+  if (BYPASS_SEQUENCE.charCodeAt(keyPressState) == e.keyCode) {
+    keyPressState++;
+    if (keyPressState == BYPASS_SEQUENCE.length) {
+      sendCommand(CMD_PROCEED);
+      keyPressState = 0;
+    }
+  } else {
+    keyPressState = 0;
+  }
+}
 
 function setupEvents() {
   var overridable = loadTimeData.getBoolean('overridable');
@@ -70,6 +97,7 @@ function setupEvents() {
 
   preventDefaultOnPoundLinkClicks();
   setupCheckbox();
+  document.addEventListener('keypress', handleKeypress);
 }
 
 document.addEventListener('DOMContentLoaded', setupEvents);
