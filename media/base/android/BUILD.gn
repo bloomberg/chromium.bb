@@ -45,7 +45,10 @@ source_set("android") {
     "webaudio_media_codec_info.h",
   ]
   configs += [ "//media:media_config" ]
-  deps = [ ":media_jni_headers" ]
+  deps = [
+    ":media_jni_headers",
+    "//third_party/widevine/cdm:version_h",
+  ]
 }
 
 source_set("unittests") {
@@ -59,6 +62,7 @@ source_set("unittests") {
     "//media/base:test_support",
     "//testing/gmock",
     "//testing/gtest",
+    "//third_party/widevine/cdm:version_h",
   ]
   configs += [ "//media:media_config" ]
 }
