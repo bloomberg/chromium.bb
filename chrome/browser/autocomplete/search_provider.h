@@ -16,6 +16,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/autocomplete/answers_cache.h"
 #include "chrome/browser/autocomplete/base_search_provider.h"
 #include "components/metrics/proto/omnibox_input_type.pb.h"
 #include "components/search_engines/template_url.h"
@@ -135,11 +136,6 @@ class SearchProvider : public BaseSearchProvider,
   };
 
   class CompareScoredResults;
-
-  struct AnswersQueryData {
-    base::string16 full_query_text;
-    base::string16 query_type;
-  };
 
   typedef std::vector<history::KeywordSearchTermVisit> HistoryResults;
 
@@ -362,8 +358,8 @@ class SearchProvider : public BaseSearchProvider,
   base::TimeTicks token_expiration_time_;
 
   // Answers prefetch management.
-  AnswersQueryData prefetch_data_;     // Data to use for query prefetching.
-  AnswersQueryData last_answer_seen_;  // Last answer seen.
+  AnswersCache answers_cache_;  // Cache for last answers seen.
+  AnswersQueryData prefetch_data_;  // Data to use for query prefetching.
 
   DISALLOW_COPY_AND_ASSIGN(SearchProvider);
 };

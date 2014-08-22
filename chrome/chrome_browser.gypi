@@ -122,6 +122,8 @@
       'browser/app_icon_win.h',
       'browser/app_mode/app_mode_utils.cc',
       'browser/app_mode/app_mode_utils.h',
+      'browser/autocomplete/answers_cache.h',
+      'browser/autocomplete/answers_cache.cc',
       'browser/autocomplete/autocomplete_classifier.cc',
       'browser/autocomplete/autocomplete_classifier.h',
       'browser/autocomplete/autocomplete_classifier_factory.cc',

@@ -136,7 +136,8 @@ SearchProvider::SearchProvider(AutocompleteProviderListener* listener,
                          AutocompleteProvider::TYPE_SEARCH),
       listener_(listener),
       suggest_results_pending_(0),
-      providers_(template_url_service) {
+      providers_(template_url_service),
+      answers_cache_(1) {
 }
 
 // static
@@ -669,9 +670,9 @@ net::URLFetcher* SearchProvider::CreateSuggestFetcher(
     search_term_args.session_token = GetSessionToken();
     if (!prefetch_data_.full_query_text.empty()) {
       search_term_args.prefetch_query =
-          base::UTF16ToUTF8(last_answer_seen_.full_query_text);
+          base::UTF16ToUTF8(prefetch_data_.full_query_text);
       search_term_args.prefetch_query_type =
-          base::UTF16ToUTF8(last_answer_seen_.query_type);
+          base::UTF16ToUTF8(prefetch_data_.query_type);
     }
   }
   GURL suggest_url(template_url->suggestions_url_ref().ReplaceSearchTerms(
@@ -1256,14 +1257,9 @@ void SearchProvider::RegisterDisplayedAnswers(
     return;
 
   // Valid answer encountered, cache it for further queries.
-  last_answer_seen_.full_query_text = match->fill_into_edit;
-  last_answer_seen_.query_type = match->answer_type;
+  answers_cache_.UpdateRecentAnswers(match->fill_into_edit, match->answer_type);
 }
 
 void SearchProvider::DoAnswersQuery(const AutocompleteInput& input) {
-  // If the query text starts with trimmed input, this is valid prefetch data.
-  prefetch_data_ = StartsWith(last_answer_seen_.full_query_text,
-                              base::CollapseWhitespace(input.text(), false),
-                              false) ?
-      last_answer_seen_ : AnswersQueryData();
+  prefetch_data_ = answers_cache_.GetTopAnswerEntry(input.text());
 }
