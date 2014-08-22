@@ -7,19 +7,19 @@ Sending GestureTap on top of iframe
 PASS sawClick is false
 
 Sending GestureTap above iframe
-Received click on IFRAME#frame
+Received click on DIV#container
 PASS sawClick is true
 
 Sending GestureTap to the left of iframe
-Received click on IFRAME#frame
+Received click on DIV#container
 PASS sawClick is true
 
 Sending GestureTap to the right of iframe
-Received click on IFRAME#frame
+Received click on DIV#container
 PASS sawClick is true
 
 Sending GestureTap below iframe
-Received click on IFRAME#frame
+Received click on DIV#container
 PASS sawClick is true
 
 PASS successfullyParsed is true
