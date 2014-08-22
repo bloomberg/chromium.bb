@@ -33,3 +33,22 @@ function useMockHighlight() {
     internals.settings.setMockGestureTapHighlightsEnabled(true);
 }
 
+function testHighlightTarget(id) {
+    useMockHighlight();
+
+    var clientRect = document.getElementById('highlightTarget').getBoundingClientRect();
+    x = (clientRect.left + clientRect.right) / 2;
+    y = (clientRect.top + clientRect.bottom) / 2;
+    if (window.testRunner) {
+        testRunner.dumpAsTextWithPixelResults();
+        testRunner.waitUntilDone();
+    }
+
+    if (window.eventSender) {
+        eventSender.gestureTapDown(x, y, 30, 30);
+        eventSender.gestureShowPress(x, y, 30, 30);
+        window.setTimeout(function() { window.testRunner.notifyDone(); }, 0);
+    } else {
+        debug("This test requires eventSender");
+    }
+}

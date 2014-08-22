@@ -2221,55 +2221,56 @@ bool EventHandler::handleGestureTap(const GestureEventWithHitTestResults& target
         modifierFlags |= PlatformEvent::ShiftKey;
     PlatformEvent::Modifiers modifiers = static_cast<PlatformEvent::Modifiers>(modifierFlags);
 
+    HitTestResult currentHitTest = targetedEvent.hitTestResult();
+
     // We use the adjusted position so the application isn't surprised to see a event with
     // co-ordinates outside the target's bounds.
     IntPoint adjustedPoint = m_frame->view()->windowToContents(gestureEvent.position());
 
-    // Do a new hit-test at the (adjusted) gesture co-ordinates. This is necessary because
-    // touch adjustment sometimes returns a different node than what hit testing would return
-    // for the same point.
-    // FIXME: Fix touch adjustment to avoid the need for a redundant hit test. http://crbug.com/398914
-    HitTestResult newHitTest = hitTestResultInFrame(m_frame, adjustedPoint, HitTestRequest::ReadOnly);
-
     PlatformMouseEvent fakeMouseMove(adjustedPoint, gestureEvent.globalPosition(),
         NoButton, PlatformEvent::MouseMoved, /* clickCount */ 0,
         modifiers, PlatformMouseEvent::FromTouch, gestureEvent.timestamp());
-    dispatchMouseEvent(EventTypeNames::mousemove, newHitTest.targetNode(), 0, fakeMouseMove, true);
+    dispatchMouseEvent(EventTypeNames::mousemove, currentHitTest.innerNode(), 0, fakeMouseMove, true);
 
     // Do a new hit-test in case the mousemove event changed the DOM.
+    // Note that if the original hit test wasn't over an element (eg. was over a scrollbar) we
+    // don't want to re-hit-test because it may be in the wrong frame (and there's no way the page
+    // could have seen the event anyway).
     // FIXME: Use a hit-test cache to avoid unnecessary hit tests. http://crbug.com/398920
-    newHitTest = hitTestResultInFrame(m_frame, adjustedPoint, HitTestRequest::ReadOnly);
-    m_clickNode = newHitTest.targetNode();
+    if (currentHitTest.innerNode())
+        currentHitTest = hitTestResultInFrame(m_frame, adjustedPoint, HitTestRequest::ReadOnly);
+    m_clickNode = currentHitTest.innerNode();
     if (m_clickNode && m_clickNode->isTextNode())
         m_clickNode = NodeRenderingTraversal::parent(m_clickNode.get());
 
     PlatformMouseEvent fakeMouseDown(adjustedPoint, gestureEvent.globalPosition(),
         LeftButton, PlatformEvent::MousePressed, gestureEvent.tapCount(),
         modifiers, PlatformMouseEvent::FromTouch,  gestureEvent.timestamp());
-    bool swallowMouseDownEvent = !dispatchMouseEvent(EventTypeNames::mousedown, newHitTest.targetNode(), gestureEvent.tapCount(), fakeMouseDown, true);
+    bool swallowMouseDownEvent = !dispatchMouseEvent(EventTypeNames::mousedown, currentHitTest.innerNode(), gestureEvent.tapCount(), fakeMouseDown, true);
     if (!swallowMouseDownEvent)
         swallowMouseDownEvent = handleMouseFocus(fakeMouseDown);
     if (!swallowMouseDownEvent)
-        swallowMouseDownEvent = handleMousePressEvent(MouseEventWithHitTestResults(fakeMouseDown, newHitTest));
+        swallowMouseDownEvent = handleMousePressEvent(MouseEventWithHitTestResults(fakeMouseDown, currentHitTest));
 
     // FIXME: Use a hit-test cache to avoid unnecessary hit tests. http://crbug.com/398920
-    newHitTest = hitTestResultInFrame(m_frame, adjustedPoint, HitTestRequest::ReadOnly);
+    if (currentHitTest.innerNode())
+        currentHitTest = hitTestResultInFrame(m_frame, adjustedPoint, HitTestRequest::ReadOnly);
     PlatformMouseEvent fakeMouseUp(adjustedPoint, gestureEvent.globalPosition(),
         LeftButton, PlatformEvent::MouseReleased, gestureEvent.tapCount(),
         modifiers, PlatformMouseEvent::FromTouch,  gestureEvent.timestamp());
-    bool swallowMouseUpEvent = !dispatchMouseEvent(EventTypeNames::mouseup, newHitTest.targetNode(), gestureEvent.tapCount(), fakeMouseUp, false);
+    bool swallowMouseUpEvent = !dispatchMouseEvent(EventTypeNames::mouseup, currentHitTest.innerNode(), gestureEvent.tapCount(), fakeMouseUp, false);
 
     bool swallowClickEvent = false;
     if (m_clickNode) {
-        if (newHitTest.targetNode()) {
-            Node* clickTargetNode = newHitTest.targetNode()->commonAncestor(*m_clickNode, parentForClickEvent);
+        if (currentHitTest.innerNode()) {
+            Node* clickTargetNode = currentHitTest.innerNode()->commonAncestor(*m_clickNode, parentForClickEvent);
             swallowClickEvent = !dispatchMouseEvent(EventTypeNames::click, clickTargetNode, gestureEvent.tapCount(), fakeMouseUp, true);
         }
         m_clickNode = nullptr;
     }
 
     if (!swallowMouseUpEvent)
-        swallowMouseUpEvent = handleMouseReleaseEvent(MouseEventWithHitTestResults(fakeMouseUp, newHitTest));
+        swallowMouseUpEvent = handleMouseReleaseEvent(MouseEventWithHitTestResults(fakeMouseUp, currentHitTest));
 
     return swallowMouseDownEvent | swallowMouseUpEvent | swallowClickEvent;
 }
@@ -2595,6 +2596,23 @@ GestureEventWithHitTestResults EventHandler::targetGestureEvent(const PlatformGe
     // type of event.
     PlatformGestureEvent adjustedEvent = gestureEvent;
     applyTouchAdjustment(&adjustedEvent, &hitTestResult);
+
+    // Do a new hit-test at the (adjusted) gesture co-ordinates. This is necessary because
+    // rect-based hit testing and touch adjustment sometimes return a different node than
+    // what a point-based hit test would return for the same point.
+    // FIXME: Fix touch adjustment to avoid the need for a redundant hit test. http://crbug.com/398914
+    if (shouldApplyTouchAdjustment(gestureEvent)) {
+        LocalFrame* hitFrame = hitTestResult.innerNodeFrame();
+        if (!hitFrame)
+            hitFrame = m_frame;
+        hitTestResult = hitTestResultInFrame(hitFrame, hitFrame->view()->windowToContents(adjustedEvent.position()), hitType | HitTestRequest::ReadOnly);
+        // FIXME: HitTest entry points should really check for main frame scrollbars themselves.
+        if (!hitTestResult.scrollbar()) {
+            if (FrameView* view = m_frame->view()) {
+                hitTestResult.setScrollbar(view->scrollbarAtPoint(gestureEvent.position()));
+            }
+        }
+    }
 
     // Now apply hover/active state to the final target.
     // FIXME: This is supposed to send mouseenter/mouseleave events, but doesn't because we

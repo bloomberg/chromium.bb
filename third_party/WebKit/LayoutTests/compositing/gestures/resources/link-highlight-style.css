@@ -13,6 +13,17 @@
   -webkit-tap-highlight-color: rgb(0, 255, 0);
 }
 
+.target {
+  cursor: pointer;  /* enables link highlighting */
+  -webkit-tap-highlight-color: rgb(0, 255, 0);
+  border: 2px solid grey;
+  box-sizing: border-box;
+}
+/* touch adjustment candidate */
+.target:active {
+  border-color: red;
+}
+
 .transparentHighlight {
   -webkit-tap-highlight-color: rgba(0, 255, 0, 0.5);
 }
