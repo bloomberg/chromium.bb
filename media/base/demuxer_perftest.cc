@@ -17,7 +17,7 @@
 
 namespace media {
 
-static const int kBenchmarkIterations = 500;
+static const int kBenchmarkIterations = 100;
 
 class DemuxerHostImpl : public media::DemuxerHost {
  public:
