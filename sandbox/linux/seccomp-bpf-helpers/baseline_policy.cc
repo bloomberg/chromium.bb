@@ -181,6 +181,9 @@ ResultExpr EvaluateSyscallImpl(int fs_denied_errno,
     return Error(fs_denied_errno);
   }
 
+  if (SyscallSets::IsSeccomp(sysno))
+    return Error(EPERM);
+
   if (SyscallSets::IsAnySystemV(sysno)) {
     return Error(EPERM);
   }

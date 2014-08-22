@@ -54,6 +54,7 @@ class SANDBOX_EXPORT SyscallSets {
   static bool IsAllowedAddressSpaceAccess(int sysno);
   static bool IsAllowedGeneralIo(int sysno);
   static bool IsPrctl(int sysno);
+  static bool IsSeccomp(int sysno);
   static bool IsAllowedBasicScheduler(int sysno);
   static bool IsAdminOperation(int sysno);
   static bool IsKernelModule(int sysno);

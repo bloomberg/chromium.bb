@@ -107,6 +107,9 @@ bool SyscallSets::IsFileSystem(int sysno) {
 #if defined(__i386__) || defined(__arm__) || defined(__mips__)
     case __NR_lstat64:
 #endif
+#if !defined(__mips__)
+    case __NR_memfd_create:
+#endif
     case __NR_mkdir:
     case __NR_mkdirat:
     case __NR_mknod:
@@ -117,6 +120,7 @@ bool SyscallSets::IsFileSystem(int sysno) {
     case __NR_readlinkat:
     case __NR_rename:
     case __NR_renameat:
+    case __NR_renameat2:
     case __NR_rmdir:
     case __NR_stat:  // EPERM not a valid errno.
 #if defined(__i386__)
@@ -564,6 +568,15 @@ bool SyscallSets::IsPrctl(int sysno) {
   }
 }
 
+bool SyscallSets::IsSeccomp(int sysno) {
+  switch (sysno) {
+    case __NR_seccomp:
+      return true;
+    default:
+      return false;
+  }
+}
+
 bool SyscallSets::IsAllowedBasicScheduler(int sysno) {
   switch (sysno) {
     case __NR_sched_yield:
@@ -605,6 +618,7 @@ bool SyscallSets::IsKernelModule(int sysno) {
 #endif
     case __NR_delete_module:
     case __NR_init_module:
+    case __NR_finit_module:
       return true;
     default:
       return false;
@@ -697,9 +711,7 @@ bool SyscallSets::IsDebug(int sysno) {
     case __NR_ptrace:
     case __NR_process_vm_readv:
     case __NR_process_vm_writev:
-#if defined(__i386__) || defined(__x86_64__) || defined(__mips__)
     case __NR_kcmp:
-#endif
       return true;
     default:
       return false;
@@ -828,10 +840,12 @@ bool SyscallSets::IsAdvancedScheduler(int sysno) {
     case __NR_sched_get_priority_max:
     case __NR_sched_get_priority_min:
     case __NR_sched_getaffinity:
+    case __NR_sched_getattr:
     case __NR_sched_getparam:
     case __NR_sched_getscheduler:
     case __NR_sched_rr_get_interval:
     case __NR_sched_setaffinity:
+    case __NR_sched_setattr:
     case __NR_sched_setparam:
     case __NR_sched_setscheduler:
       return true;
@@ -915,6 +929,9 @@ bool SyscallSets::IsExtendedAttributes(int sysno) {
 // TODO(jln): classify this better.
 bool SyscallSets::IsMisc(int sysno) {
   switch (sysno) {
+#if !defined(_mips_)
+    case __NR_getrandom:
+#endif
     case __NR_name_to_handle_at:
     case __NR_open_by_handle_at:
     case __NR_perf_event_open:

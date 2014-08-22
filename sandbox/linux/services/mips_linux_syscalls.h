@@ -1409,4 +1409,20 @@
 #define __NR_finit_module (__NR_Linux + 348)
 #endif
 
+#if !defined(__NR_sched_setattr)
+#define __NR_sched_setattr (__NR_Linux + 349)
+#endif
+
+#if !defined(__NR_sched_getattr)
+#define __NR_sched_getattr (__NR_Linux + 350)
+#endif
+
+#if !defined(__NR_renameat2)
+#define __NR_renameat2 (__NR_Linux + 351)
+#endif
+
+#if !defined(__NR_seccomp)
+#define __NR_seccomp (__NR_Linux + 352)
+#endif
+
 #endif  // SANDBOX_LINUX_SERVICES_MIPS_LINUX_SYSCALLS_H_
