@@ -83,7 +83,7 @@ public class ContentWrapperView extends FrameLayout {
      * XHDPI devices and above get a double-tall boundary.
      * @return The height of the boundary.
      */
-    private int getBoundaryHeight(Context context) {
+    static int getBoundaryHeight(Context context) {
         float density = context.getResources().getDisplayMetrics().density;
         return density < 2.0f ? 1 : 2;
     }

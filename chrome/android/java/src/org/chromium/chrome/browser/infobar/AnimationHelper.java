@@ -13,6 +13,7 @@ import android.os.Build;
 import android.view.View;
 import android.view.ViewTreeObserver;
 import android.view.animation.AccelerateDecelerateInterpolator;
+import android.widget.LinearLayout;
 
 import org.chromium.base.ApiCompatibilityUtils;
 
@@ -45,6 +46,7 @@ public class AnimationHelper implements ViewTreeObserver.OnGlobalLayoutListener 
     public static final int ANIMATION_TYPE_BOUNDARY = 3;
 
     private final InfoBarContainer mContainer;
+    private final LinearLayout mLinearLayout;
     private final InfoBar mInfoBar;
     private final ContentWrapperView mTargetWrapperView;
     private final AnimatorSet mAnimatorSet;
@@ -66,12 +68,13 @@ public class AnimationHelper implements ViewTreeObserver.OnGlobalLayoutListener 
     public AnimationHelper(InfoBarContainer container, ContentWrapperView target, InfoBar infoBar,
             View toShow, int animationType) {
         mContainer = container;
+        mLinearLayout = container.getLinearLayout();
         mInfoBar = infoBar;
         mTargetWrapperView = target;
         mAnimatorSet = new AnimatorSet();
         mAnimationType = animationType;
         mToShow = toShow;
-        assert mContainer.indexOfChild(mTargetWrapperView) != -1;
+        assert mLinearLayout.indexOfChild(mTargetWrapperView) != -1;
     }
 
     /**
@@ -124,7 +127,7 @@ public class AnimationHelper implements ViewTreeObserver.OnGlobalLayoutListener 
         if (mAnimationStarted) return;
         mAnimationStarted = true;
 
-        int indexOfWrapperView = mContainer.indexOfChild(mTargetWrapperView);
+        int indexOfWrapperView = mLinearLayout.indexOfChild(mTargetWrapperView);
         assert indexOfWrapperView != -1;
 
         ArrayList<Animator> animators = new ArrayList<Animator>();
@@ -145,8 +148,8 @@ public class AnimationHelper implements ViewTreeObserver.OnGlobalLayoutListener 
             cumulativeTopEnd = -heightDifference;
         }
 
-        for (int i = 0; i < mContainer.getChildCount(); ++i) {
-            View view = mContainer.getChildAt(i);
+        for (int i = 0; i < mLinearLayout.getChildCount(); ++i) {
+            View view = mLinearLayout.getChildAt(i);
 
             // At this point, the View being transitioned in shouldn't have been added to the
             // visible container, yet, and shouldn't affect calculations.
@@ -200,10 +203,10 @@ public class AnimationHelper implements ViewTreeObserver.OnGlobalLayoutListener 
 
         // Lock the InfoBarContainer's size at its largest during the animation to avoid
         // clipping issues.
-        int oldContainerTop = mContainer.getTop();
-        int newContainerTop = mContainer.getBottom() - cumulativeEndHeight;
+        int oldContainerTop = mLinearLayout.getTop();
+        int newContainerTop = mLinearLayout.getBottom() - cumulativeEndHeight;
         int biggestContainerTop = Math.min(oldContainerTop, newContainerTop);
-        mContainer.setTop(biggestContainerTop);
+        mLinearLayout.setTop(biggestContainerTop);
 
         // Set up and run all of the animations.
         mAnimatorSet.addListener(new AnimatorListenerAdapter() {
