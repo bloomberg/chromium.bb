@@ -49,7 +49,7 @@ namespace net {
 namespace test {
 namespace {
 
-const char kUploadData[] = "hello world!";
+const char kUploadData[] = "Really nifty data!";
 const char kServerHostname[] = "www.google.com";
 const uint16 kServerPort = 80;
 
@@ -500,6 +500,103 @@ TEST_P(QuicHttpStreamTest, SendChunkedPostRequest) {
   upload_data_stream.AppendChunk(kUploadData, chunk_size, true);
 
   // Ack both packets in the request.
+  ProcessPacket(ConstructAckPacket(1, 0, 0));
+
+  // Send the response headers (but not the body).
+  SetResponse("200 OK", std::string());
+  ProcessPacket(ConstructResponseHeadersPacket(2, !kFin));
+
+  // Since the headers have already arrived, this should return immediately.
+  ASSERT_EQ(OK, stream_->ReadResponseHeaders(callback_.callback()));
+  ASSERT_TRUE(response_.headers.get());
+  EXPECT_EQ(200, response_.headers->response_code());
+  EXPECT_TRUE(response_.headers->HasHeaderValue("Content-Type", "text/plain"));
+
+  // Send the response body.
+  const char kResponseBody[] = "Hello world!";
+  ProcessPacket(ConstructDataPacket(3, false, kFin, response_data_.length(),
+                                    kResponseBody));
+
+  // Since the body has already arrived, this should return immediately.
+  ASSERT_EQ(static_cast<int>(strlen(kResponseBody)),
+            stream_->ReadResponseBody(read_buffer_.get(), read_buffer_->size(),
+                                      callback_.callback()));
+
+  EXPECT_TRUE(stream_->IsResponseBodyComplete());
+  EXPECT_TRUE(AtEof());
+}
+
+TEST_P(QuicHttpStreamTest, SendChunkedPostRequestWithFinalEmptyDataPacket) {
+  SetRequest("POST", "/", DEFAULT_PRIORITY);
+  size_t chunk_size = strlen(kUploadData);
+  AddWrite(ConstructRequestHeadersPacket(1, !kFin));
+  AddWrite(ConstructDataPacket(2, kIncludeVersion, !kFin, 0, kUploadData));
+  AddWrite(ConstructDataPacket(3, kIncludeVersion, kFin, chunk_size, ""));
+  AddWrite(ConstructAckPacket(4, 3, 1));
+  Initialize();
+
+  UploadDataStream upload_data_stream(UploadDataStream::CHUNKED, 0);
+  upload_data_stream.AppendChunk(kUploadData, chunk_size, false);
+
+  request_.method = "POST";
+  request_.url = GURL("http://www.google.com/");
+  request_.upload_data_stream = &upload_data_stream;
+  ASSERT_EQ(OK, request_.upload_data_stream->Init(CompletionCallback()));
+
+  ASSERT_EQ(OK, stream_->InitializeStream(&request_, DEFAULT_PRIORITY,
+                                          net_log_, callback_.callback()));
+  ASSERT_EQ(ERR_IO_PENDING, stream_->SendRequest(headers_, &response_,
+                                                 callback_.callback()));
+
+  upload_data_stream.AppendChunk(NULL, 0, true);
+
+  ProcessPacket(ConstructAckPacket(1, 0, 0));
+
+  // Send the response headers (but not the body).
+  SetResponse("200 OK", std::string());
+  ProcessPacket(ConstructResponseHeadersPacket(2, !kFin));
+
+  // Since the headers have already arrived, this should return immediately.
+  ASSERT_EQ(OK, stream_->ReadResponseHeaders(callback_.callback()));
+  ASSERT_TRUE(response_.headers.get());
+  EXPECT_EQ(200, response_.headers->response_code());
+  EXPECT_TRUE(response_.headers->HasHeaderValue("Content-Type", "text/plain"));
+
+  // Send the response body.
+  const char kResponseBody[] = "Hello world!";
+  ProcessPacket(ConstructDataPacket(3, false, kFin, response_data_.length(),
+                                    kResponseBody));
+
+  // Since the body has already arrived, this should return immediately.
+  ASSERT_EQ(static_cast<int>(strlen(kResponseBody)),
+            stream_->ReadResponseBody(read_buffer_.get(), read_buffer_->size(),
+                                      callback_.callback()));
+
+  EXPECT_TRUE(stream_->IsResponseBodyComplete());
+  EXPECT_TRUE(AtEof());
+}
+
+TEST_P(QuicHttpStreamTest, SendChunkedPostRequestWithOneEmptyDataPacket) {
+  SetRequest("POST", "/", DEFAULT_PRIORITY);
+  AddWrite(ConstructRequestHeadersPacket(1, !kFin));
+  AddWrite(ConstructDataPacket(2, kIncludeVersion, kFin, 0, ""));
+  AddWrite(ConstructAckPacket(3, 3, 1));
+  Initialize();
+
+  UploadDataStream upload_data_stream(UploadDataStream::CHUNKED, 0);
+
+  request_.method = "POST";
+  request_.url = GURL("http://www.google.com/");
+  request_.upload_data_stream = &upload_data_stream;
+  ASSERT_EQ(OK, request_.upload_data_stream->Init(CompletionCallback()));
+
+  ASSERT_EQ(OK, stream_->InitializeStream(&request_, DEFAULT_PRIORITY,
+                                          net_log_, callback_.callback()));
+  ASSERT_EQ(ERR_IO_PENDING, stream_->SendRequest(headers_, &response_,
+                                                 callback_.callback()));
+
+  upload_data_stream.AppendChunk(NULL, 0, true);
+
   ProcessPacket(ConstructAckPacket(1, 0, 0));
 
   // Send the response headers (but not the body).
