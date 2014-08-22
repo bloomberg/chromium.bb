@@ -212,9 +212,15 @@ class SyncerTest : public testing::Test,
       const base::TimeDelta& new_interval) OVERRIDE {
     last_short_poll_interval_received_ = new_interval;
   }
-  virtual void OnReceivedSessionsCommitDelay(
-      const base::TimeDelta& new_delay) OVERRIDE {
-    last_sessions_commit_delay_seconds_ = new_delay;
+  virtual void OnReceivedCustomNudgeDelays(
+      const std::map<ModelType, base::TimeDelta>& delay_map) OVERRIDE {
+    std::map<ModelType, base::TimeDelta>::const_iterator iter =
+        delay_map.find(SESSIONS);
+    if (iter != delay_map.end() && iter->second > base::TimeDelta())
+      last_sessions_commit_delay_ = iter->second;
+    iter = delay_map.find(BOOKMARKS);
+    if (iter != delay_map.end() && iter->second > base::TimeDelta())
+      last_bookmarks_commit_delay_ = iter->second;
   }
   virtual void OnReceivedClientInvalidationHintBufferSize(
       int size) OVERRIDE {
@@ -592,7 +598,8 @@ class SyncerTest : public testing::Test,
   bool saw_syncer_event_;
   base::TimeDelta last_short_poll_interval_received_;
   base::TimeDelta last_long_poll_interval_received_;
-  base::TimeDelta last_sessions_commit_delay_seconds_;
+  base::TimeDelta last_sessions_commit_delay_;
+  base::TimeDelta last_bookmarks_commit_delay_;
   int last_client_invalidation_hint_buffer_size_;
   std::vector<scoped_refptr<ModelSafeWorker> > workers_;
 
@@ -3606,36 +3613,41 @@ TEST_F(SyncerTest, TestClientCommandDuringUpdate) {
   command->set_set_sync_poll_interval(8);
   command->set_set_sync_long_poll_interval(800);
   command->set_sessions_commit_delay_seconds(3141);
+  sync_pb::CustomNudgeDelay* bookmark_delay =
+      command->add_custom_nudge_delays();
+  bookmark_delay->set_datatype_id(
+      GetSpecificsFieldNumberFromModelType(BOOKMARKS));
+  bookmark_delay->set_delay_ms(950);
   command->set_client_invalidation_hint_buffer_size(11);
   mock_server_->AddUpdateDirectory(1, 0, "in_root", 1, 1,
                                    foreign_cache_guid(), "-1");
   mock_server_->SetGUClientCommand(command);
   SyncShareNudge();
 
-  EXPECT_TRUE(TimeDelta::FromSeconds(8) ==
-              last_short_poll_interval_received_);
-  EXPECT_TRUE(TimeDelta::FromSeconds(800) ==
-              last_long_poll_interval_received_);
-  EXPECT_TRUE(TimeDelta::FromSeconds(3141) ==
-              last_sessions_commit_delay_seconds_);
+  EXPECT_EQ(TimeDelta::FromSeconds(8), last_short_poll_interval_received_);
+  EXPECT_EQ(TimeDelta::FromSeconds(800), last_long_poll_interval_received_);
+  EXPECT_EQ(TimeDelta::FromSeconds(3141), last_sessions_commit_delay_);
+  EXPECT_EQ(TimeDelta::FromMilliseconds(950), last_bookmarks_commit_delay_);
   EXPECT_EQ(11, last_client_invalidation_hint_buffer_size_);
 
   command = new ClientCommand();
   command->set_set_sync_poll_interval(180);
   command->set_set_sync_long_poll_interval(190);
   command->set_sessions_commit_delay_seconds(2718);
+  bookmark_delay = command->add_custom_nudge_delays();
+  bookmark_delay->set_datatype_id(
+      GetSpecificsFieldNumberFromModelType(BOOKMARKS));
+  bookmark_delay->set_delay_ms(1050);
   command->set_client_invalidation_hint_buffer_size(9);
-  mock_server_->AddUpdateDirectory(1, 0, "in_root", 1, 1,
-                                   foreign_cache_guid(), "-1");
+  mock_server_->AddUpdateDirectory(
+      1, 0, "in_root", 1, 1, foreign_cache_guid(), "-1");
   mock_server_->SetGUClientCommand(command);
   SyncShareNudge();
 
-  EXPECT_TRUE(TimeDelta::FromSeconds(180) ==
-              last_short_poll_interval_received_);
-  EXPECT_TRUE(TimeDelta::FromSeconds(190) ==
-              last_long_poll_interval_received_);
-  EXPECT_TRUE(TimeDelta::FromSeconds(2718) ==
-              last_sessions_commit_delay_seconds_);
+  EXPECT_EQ(TimeDelta::FromSeconds(180), last_short_poll_interval_received_);
+  EXPECT_EQ(TimeDelta::FromSeconds(190), last_long_poll_interval_received_);
+  EXPECT_EQ(TimeDelta::FromSeconds(2718), last_sessions_commit_delay_);
+  EXPECT_EQ(TimeDelta::FromMilliseconds(1050), last_bookmarks_commit_delay_);
   EXPECT_EQ(9, last_client_invalidation_hint_buffer_size_);
 }
 
@@ -3646,34 +3658,39 @@ TEST_F(SyncerTest, TestClientCommandDuringCommit) {
   command->set_set_sync_poll_interval(8);
   command->set_set_sync_long_poll_interval(800);
   command->set_sessions_commit_delay_seconds(3141);
+  sync_pb::CustomNudgeDelay* bookmark_delay =
+      command->add_custom_nudge_delays();
+  bookmark_delay->set_datatype_id(
+      GetSpecificsFieldNumberFromModelType(BOOKMARKS));
+  bookmark_delay->set_delay_ms(950);
   command->set_client_invalidation_hint_buffer_size(11);
   CreateUnsyncedDirectory("X", "id_X");
   mock_server_->SetCommitClientCommand(command);
   SyncShareNudge();
 
-  EXPECT_TRUE(TimeDelta::FromSeconds(8) ==
-              last_short_poll_interval_received_);
-  EXPECT_TRUE(TimeDelta::FromSeconds(800) ==
-              last_long_poll_interval_received_);
-  EXPECT_TRUE(TimeDelta::FromSeconds(3141) ==
-              last_sessions_commit_delay_seconds_);
+  EXPECT_EQ(TimeDelta::FromSeconds(8), last_short_poll_interval_received_);
+  EXPECT_EQ(TimeDelta::FromSeconds(800), last_long_poll_interval_received_);
+  EXPECT_EQ(TimeDelta::FromSeconds(3141), last_sessions_commit_delay_);
+  EXPECT_EQ(TimeDelta::FromMilliseconds(950), last_bookmarks_commit_delay_);
   EXPECT_EQ(11, last_client_invalidation_hint_buffer_size_);
 
   command = new ClientCommand();
   command->set_set_sync_poll_interval(180);
   command->set_set_sync_long_poll_interval(190);
   command->set_sessions_commit_delay_seconds(2718);
+  bookmark_delay = command->add_custom_nudge_delays();
+  bookmark_delay->set_datatype_id(
+      GetSpecificsFieldNumberFromModelType(BOOKMARKS));
+  bookmark_delay->set_delay_ms(1050);
   command->set_client_invalidation_hint_buffer_size(9);
   CreateUnsyncedDirectory("Y", "id_Y");
   mock_server_->SetCommitClientCommand(command);
   SyncShareNudge();
 
-  EXPECT_TRUE(TimeDelta::FromSeconds(180) ==
-              last_short_poll_interval_received_);
-  EXPECT_TRUE(TimeDelta::FromSeconds(190) ==
-              last_long_poll_interval_received_);
-  EXPECT_TRUE(TimeDelta::FromSeconds(2718) ==
-              last_sessions_commit_delay_seconds_);
+  EXPECT_EQ(TimeDelta::FromSeconds(180), last_short_poll_interval_received_);
+  EXPECT_EQ(TimeDelta::FromSeconds(190), last_long_poll_interval_received_);
+  EXPECT_EQ(TimeDelta::FromSeconds(2718), last_sessions_commit_delay_);
+  EXPECT_EQ(TimeDelta::FromMilliseconds(1050), last_bookmarks_commit_delay_);
   EXPECT_EQ(9, last_client_invalidation_hint_buffer_size_);
 }
 

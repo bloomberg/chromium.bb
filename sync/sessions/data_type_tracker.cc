@@ -20,8 +20,9 @@ DataTypeTracker::DataTypeTracker()
 
 DataTypeTracker::~DataTypeTracker() { }
 
-void DataTypeTracker::RecordLocalChange() {
+base::TimeDelta DataTypeTracker::RecordLocalChange() {
   local_nudge_count_++;
+  return nudge_delay_;
 }
 
 void DataTypeTracker::RecordLocalRefreshRequest() {
@@ -216,6 +217,10 @@ void DataTypeTracker::UpdateThrottleState(base::TimeTicks now) {
   if (now >= unthrottle_time_) {
     unthrottle_time_ = base::TimeTicks();
   }
+}
+
+void DataTypeTracker::UpdateLocalNudgeDelay(base::TimeDelta delay) {
+  nudge_delay_ = delay;
 }
 
 }  // namespace sessions

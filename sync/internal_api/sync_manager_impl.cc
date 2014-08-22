@@ -61,12 +61,6 @@ using syncable::UNIQUE_POSITION;
 
 namespace {
 
-// Delays for syncer nudges.
-static const int kDefaultNudgeDelayMilliseconds = 200;
-static const int kSlowNudgeDelayMilliseconds = 2000;
-static const int kSyncRefreshDelayMsec = 500;
-static const int kSyncSchedulerDelayMsec = 250;
-
 GetUpdatesCallerInfo::GetUpdatesSource GetSourceFromReason(
     ConfigureReason reason) {
   switch (reason) {
@@ -88,84 +82,6 @@ GetUpdatesCallerInfo::GetUpdatesSource GetSourceFromReason(
 }
 
 }  // namespace
-
-// A class to calculate nudge delays for types.
-class NudgeStrategy {
- public:
-  static TimeDelta GetNudgeDelayTimeDelta(const ModelType& model_type,
-                                          SyncManagerImpl* core) {
-    NudgeDelayStrategy delay_type = GetNudgeDelayStrategy(model_type);
-    return GetNudgeDelayTimeDeltaFromType(delay_type,
-                                          model_type,
-                                          core);
-  }
-
- private:
-  // Possible types of nudge delay for datatypes.
-  // Note: These are just hints. If a sync happens then all dirty entries
-  // would be committed as part of the sync.
-  enum NudgeDelayStrategy {
-    // Sync right away.
-    IMMEDIATE,
-
-    // Sync this change while syncing another change.
-    ACCOMPANY_ONLY,
-
-    // The datatype does not use one of the predefined wait times but defines
-    // its own wait time logic for nudge.
-    CUSTOM,
-  };
-
-  static NudgeDelayStrategy GetNudgeDelayStrategy(const ModelType& type) {
-    switch (type) {
-     case AUTOFILL:
-       return ACCOMPANY_ONLY;
-     case BOOKMARKS:
-     case PREFERENCES:
-     case SESSIONS:
-     case FAVICON_IMAGES:
-     case FAVICON_TRACKING:
-       return CUSTOM;
-     default:
-       return IMMEDIATE;
-    }
-  }
-
-  static TimeDelta GetNudgeDelayTimeDeltaFromType(
-      const NudgeDelayStrategy& delay_type, const ModelType& model_type,
-      const SyncManagerImpl* core) {
-    CHECK(core);
-    TimeDelta delay = TimeDelta::FromMilliseconds(
-       kDefaultNudgeDelayMilliseconds);
-    switch (delay_type) {
-     case IMMEDIATE:
-       delay = TimeDelta::FromMilliseconds(
-           kDefaultNudgeDelayMilliseconds);
-       break;
-     case ACCOMPANY_ONLY:
-       delay = TimeDelta::FromSeconds(kDefaultShortPollIntervalSeconds);
-       break;
-     case CUSTOM:
-       switch (model_type) {
-         case BOOKMARKS:
-         case PREFERENCES:
-           delay = TimeDelta::FromMilliseconds(kSlowNudgeDelayMilliseconds);
-           break;
-         case SESSIONS:
-         case FAVICON_IMAGES:
-         case FAVICON_TRACKING:
-           delay = core->scheduler()->GetSessionsCommitDelay();
-           break;
-         default:
-           NOTREACHED();
-       }
-       break;
-     default:
-       NOTREACHED();
-    }
-    return delay;
-  }
-};
 
 SyncManagerImpl::SyncManagerImpl(const std::string& name)
     : name_(name),
@@ -882,23 +798,12 @@ void SyncManagerImpl::HandleCalculateChangesChangeEventFromSyncer(
   }
 }
 
-TimeDelta SyncManagerImpl::GetNudgeDelayTimeDelta(
-    const ModelType& model_type) {
-  return NudgeStrategy::GetNudgeDelayTimeDelta(model_type, this);
-}
-
 void SyncManagerImpl::RequestNudgeForDataTypes(
     const tracked_objects::Location& nudge_location,
     ModelTypeSet types) {
   debug_info_event_listener_.OnNudgeFromDatatype(types.First().Get());
 
-  // TODO(lipalani) : Calculate the nudge delay based on all types.
-  base::TimeDelta nudge_delay = NudgeStrategy::GetNudgeDelayTimeDelta(
-      types.First().Get(),
-      this);
-  scheduler_->ScheduleLocalNudge(nudge_delay,
-                                 types,
-                                 nudge_location);
+  scheduler_->ScheduleLocalNudge(types, nudge_location);
 }
 
 void SyncManagerImpl::NudgeForInitialDownload(syncer::ModelType type) {
@@ -998,7 +903,6 @@ void SyncManagerImpl::OnIncomingInvalidation(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   scheduler_->ScheduleInvalidationNudge(
-      TimeDelta::FromMilliseconds(kSyncSchedulerDelayMsec),
       type,
       invalidation.Pass(),
       FROM_HERE);
@@ -1010,7 +914,6 @@ void SyncManagerImpl::RefreshTypes(ModelTypeSet types) {
     LOG(WARNING) << "Sync received refresh request with no types specified.";
   } else {
     scheduler_->ScheduleLocalRefreshRequest(
-        TimeDelta::FromMilliseconds(kSyncRefreshDelayMsec),
         types, FROM_HERE);
   }
 }
@@ -1142,16 +1045,6 @@ bool SyncManagerImpl::HasDirectoryTypeDebugInfoObserver(
 
 void SyncManagerImpl::RequestEmitDebugInfo() {
   model_type_registry_->RequestEmitDebugInfo();
-}
-
-// static.
-int SyncManagerImpl::GetDefaultNudgeDelay() {
-  return kDefaultNudgeDelayMilliseconds;
-}
-
-// static.
-int SyncManagerImpl::GetSlowNudgeDelay() {
-  return kSlowNudgeDelayMilliseconds;
 }
 
 }  // namespace syncer

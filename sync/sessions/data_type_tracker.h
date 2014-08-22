@@ -31,7 +31,8 @@ class DataTypeTracker {
   // constructor and assignment operator.
 
   // Tracks that a local change has been made to this type.
-  void RecordLocalChange();
+  // Returns the current local change nudge delay for this type.
+  base::TimeDelta RecordLocalChange();
 
   // Tracks that a local refresh request has been made for this type.
   void RecordLocalRefreshRequest();
@@ -96,6 +97,9 @@ class DataTypeTracker {
   // Unthrottles the type if |now| >= the throttle expiry time.
   void UpdateThrottleState(base::TimeTicks now);
 
+  // Update the local change nudge delay for this type.
+  void UpdateLocalNudgeDelay(base::TimeDelta delay);
+
  private:
   // Number of local change nudges received for this type since the last
   // successful sync cycle.
@@ -124,6 +128,10 @@ class DataTypeTracker {
 
   // A helper to keep track invalidations we dropped due to overflow.
   scoped_ptr<InvalidationInterface> last_dropped_invalidation_;
+
+  // The amount of time to delay a sync cycle by when a local change for this
+  // type occurs.
+  base::TimeDelta nudge_delay_;
 
   DISALLOW_COPY_AND_ASSIGN(DataTypeTracker);
 };

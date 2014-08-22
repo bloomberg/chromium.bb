@@ -14,6 +14,11 @@ option retain_unknown_fields = true;
 
 package sync_pb;
 
+message CustomNudgeDelay {
+  optional int32 datatype_id = 1;  // Datatype id.
+  optional int32 delay_ms = 2;     // Delay in milliseconds.
+};
+
 message ClientCommand {
   // Time to wait before sending any requests to the server.
   optional int32 set_sync_poll_interval = 1;  // in seconds
@@ -21,9 +26,8 @@ message ClientCommand {
 
   optional int32 max_commit_batch_size = 3;
 
-  // Number of seconds to delay between a sessions
-  // action and sending a commit message to the
-  // server
+  // Number of seconds to delay between a sessions action and sending a commit
+  // message to the server. Can be overridden by |custom_nudge_delays|.
   optional int32 sessions_commit_delay_seconds = 4;
 
   // Number of seconds to delay before the throttled client should retry.
@@ -34,4 +38,10 @@ message ClientCommand {
 
   // Time to wait before issuing a retry GU.
   optional int32 gu_retry_delay_seconds = 7;
+
+  // A dictionary of custom nudge delays.
+  // Note: if a SESSIONS value is present, this will override
+  // |sessions_commit_delay_seconds|
+  // New in M39.
+  repeated CustomNudgeDelay custom_nudge_delays = 8;
 };

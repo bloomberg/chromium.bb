@@ -126,8 +126,8 @@ class SyncSchedulerTest : public testing::Test {
     delay_ = NULL;
     extensions_activity_ = new ExtensionsActivity();
 
-    routing_info_[BOOKMARKS] = GROUP_UI;
-    routing_info_[AUTOFILL] = GROUP_DB;
+    routing_info_[THEMES] = GROUP_UI;
+    routing_info_[TYPED_URLS] = GROUP_DB;
     routing_info_[THEMES] = GROUP_UI;
     routing_info_[NIGORI] = GROUP_PASSIVE;
 
@@ -159,6 +159,7 @@ class SyncSchedulerTest : public testing::Test {
             BackoffDelayProvider::FromDefaults(),
             context(),
             syncer_));
+    scheduler_->SetDefaultNudgeDelay(default_delay());
   }
 
   SyncSchedulerImpl* scheduler() { return scheduler_.get(); }
@@ -166,7 +167,7 @@ class SyncSchedulerTest : public testing::Test {
   MockSyncer* syncer() { return syncer_; }
   MockDelayProvider* delay() { return delay_; }
   MockConnectionManager* connection() { return connection_.get(); }
-  TimeDelta zero() { return TimeDelta::FromSeconds(0); }
+  TimeDelta default_delay() { return TimeDelta::FromSeconds(0); }
   TimeDelta timeout() {
     return TestTimeouts::action_timeout();
   }
@@ -206,10 +207,10 @@ class SyncSchedulerTest : public testing::Test {
   }
 
   bool RunAndGetBackoff() {
-    ModelTypeSet nudge_types(BOOKMARKS);
+    ModelTypeSet nudge_types(THEMES);
     StartSyncScheduler(SyncScheduler::NORMAL_MODE);
 
-    scheduler()->ScheduleLocalNudge(zero(), nudge_types, FROM_HERE);
+    scheduler()->ScheduleLocalNudge(nudge_types, FROM_HERE);
     RunLoop();
 
     return scheduler()->IsBackingOff();
@@ -298,7 +299,7 @@ ACTION(QuitLoopNowAction) {
 // Test nudge scheduling.
 TEST_F(SyncSchedulerTest, Nudge) {
   SyncShareTimes times;
-  ModelTypeSet model_types(BOOKMARKS);
+  ModelTypeSet model_types(THEMES);
 
   EXPECT_CALL(*syncer(), NormalSyncShare(_,_,_))
       .WillOnce(DoAll(Invoke(sessions::test_util::SimulateNormalSuccess),
@@ -307,19 +308,19 @@ TEST_F(SyncSchedulerTest, Nudge) {
 
   StartSyncScheduler(SyncScheduler::NORMAL_MODE);
 
-  scheduler()->ScheduleLocalNudge(zero(), model_types, FROM_HERE);
+  scheduler()->ScheduleLocalNudge(model_types, FROM_HERE);
   RunLoop();
 
   Mock::VerifyAndClearExpectations(syncer());
 
   // Make sure a second, later, nudge is unaffected by first (no coalescing).
   SyncShareTimes times2;
-  model_types.Remove(BOOKMARKS);
-  model_types.Put(AUTOFILL);
+  model_types.Remove(THEMES);
+  model_types.Put(TYPED_URLS);
   EXPECT_CALL(*syncer(), NormalSyncShare(_,_,_))
       .WillOnce(DoAll(Invoke(sessions::test_util::SimulateNormalSuccess),
                       RecordSyncShare(&times2)));
-  scheduler()->ScheduleLocalNudge(zero(), model_types, FROM_HERE);
+  scheduler()->ScheduleLocalNudge(model_types, FROM_HERE);
   RunLoop();
 }
 
@@ -327,7 +328,7 @@ TEST_F(SyncSchedulerTest, Nudge) {
 // errors.
 TEST_F(SyncSchedulerTest, Config) {
   SyncShareTimes times;
-  const ModelTypeSet model_types(BOOKMARKS);
+  const ModelTypeSet model_types(THEMES);
 
   EXPECT_CALL(*syncer(), ConfigureSyncShare(_,_,_))
       .WillOnce(DoAll(Invoke(sessions::test_util::SimulateConfigureSuccess),
@@ -355,7 +356,7 @@ TEST_F(SyncSchedulerTest, ConfigWithBackingOff) {
   EXPECT_CALL(*delay(), GetDelay(_))
       .WillRepeatedly(Return(TimeDelta::FromMilliseconds(20)));
   SyncShareTimes times;
-  const ModelTypeSet model_types(BOOKMARKS);
+  const ModelTypeSet model_types(THEMES);
 
   StartSyncScheduler(SyncScheduler::CONFIGURATION_MODE);
 
@@ -401,7 +402,7 @@ TEST_F(SyncSchedulerTest, ConfigWithStop) {
   EXPECT_CALL(*delay(), GetDelay(_))
       .WillRepeatedly(Return(TimeDelta::FromMilliseconds(20)));
   SyncShareTimes times;
-  const ModelTypeSet model_types(BOOKMARKS);
+  const ModelTypeSet model_types(THEMES);
 
   StartSyncScheduler(SyncScheduler::CONFIGURATION_MODE);
 
@@ -429,7 +430,7 @@ TEST_F(SyncSchedulerTest, ConfigWithStop) {
 // Issue a nudge when the config has failed. Make sure both the config and
 // nudge are executed.
 TEST_F(SyncSchedulerTest, NudgeWithConfigWithBackingOff) {
-  const ModelTypeSet model_types(BOOKMARKS);
+  const ModelTypeSet model_types(THEMES);
   UseMockDelayProvider();
   EXPECT_CALL(*delay(), GetDelay(_))
       .WillRepeatedly(Return(TimeDelta::FromMilliseconds(50)));
@@ -459,7 +460,7 @@ TEST_F(SyncSchedulerTest, NudgeWithConfigWithBackingOff) {
   EXPECT_CALL(*syncer(), ConfigureSyncShare(_,_,_))
       .WillOnce(DoAll(Invoke(sessions::test_util::SimulateConfigureFailed),
                       RecordSyncShare(&times)));
-  scheduler()->ScheduleLocalNudge(zero(), model_types, FROM_HERE);
+  scheduler()->ScheduleLocalNudge(model_types, FROM_HERE);
   RunLoop();
   // Note that we're not RunLoop()ing for the NUDGE we just scheduled, but
   // for the first retry attempt from the config job (after
@@ -489,11 +490,10 @@ TEST_F(SyncSchedulerTest, NudgeCoalescing) {
   EXPECT_CALL(*syncer(), NormalSyncShare(_,_,_))
       .WillOnce(DoAll(Invoke(sessions::test_util::SimulateNormalSuccess),
                       RecordSyncShare(&times)));
-  const ModelTypeSet types1(BOOKMARKS), types2(AUTOFILL), types3(THEMES);
-  TimeDelta delay = zero();
-  TimeTicks optimal_time = TimeTicks::Now() + delay;
-  scheduler()->ScheduleLocalNudge(delay, types1, FROM_HERE);
-  scheduler()->ScheduleLocalNudge(zero(), types2, FROM_HERE);
+  const ModelTypeSet types1(THEMES), types2(TYPED_URLS), types3(THEMES);
+  TimeTicks optimal_time = TimeTicks::Now() + default_delay();
+  scheduler()->ScheduleLocalNudge(types1, FROM_HERE);
+  scheduler()->ScheduleLocalNudge(types2, FROM_HERE);
   RunLoop();
 
   ASSERT_EQ(1U, times.size());
@@ -505,7 +505,7 @@ TEST_F(SyncSchedulerTest, NudgeCoalescing) {
   EXPECT_CALL(*syncer(), NormalSyncShare(_,_,_))
       .WillOnce(DoAll(Invoke(sessions::test_util::SimulateNormalSuccess),
                       RecordSyncShare(&times2)));
-  scheduler()->ScheduleLocalNudge(zero(), types3, FROM_HERE);
+  scheduler()->ScheduleLocalNudge(types3, FROM_HERE);
   RunLoop();
 }
 
@@ -517,13 +517,16 @@ TEST_F(SyncSchedulerTest, NudgeCoalescingWithDifferentTimings) {
   EXPECT_CALL(*syncer(), NormalSyncShare(_,_,_))
       .WillOnce(DoAll(Invoke(sessions::test_util::SimulateNormalSuccess),
                       RecordSyncShare(&times)));
-  ModelTypeSet types1(BOOKMARKS), types2(AUTOFILL), types3;
+  ModelTypeSet types1(THEMES), types2(TYPED_URLS), types3;
 
   // Create a huge time delay.
   TimeDelta delay = TimeDelta::FromDays(1);
 
-  scheduler()->ScheduleLocalNudge(delay, types1, FROM_HERE);
-  scheduler()->ScheduleLocalNudge(zero(), types2, FROM_HERE);
+  std::map<ModelType, TimeDelta> delay_map;
+  delay_map[types1.First().Get()] = delay;
+  scheduler()->OnReceivedCustomNudgeDelays(delay_map);
+  scheduler()->ScheduleLocalNudge(types1, FROM_HERE);
+  scheduler()->ScheduleLocalNudge(types2, FROM_HERE);
 
   TimeTicks min_time = TimeTicks::Now();
   TimeTicks max_time = TimeTicks::Now() + delay;
@@ -547,7 +550,7 @@ TEST_F(SyncSchedulerTest, NudgeWithStates) {
                       RecordSyncShare(&times1)))
       .RetiresOnSaturation();
   scheduler()->ScheduleInvalidationNudge(
-      zero(), BOOKMARKS, BuildInvalidation(10, "test"), FROM_HERE);
+      THEMES, BuildInvalidation(10, "test"), FROM_HERE);
   RunLoop();
 
   Mock::VerifyAndClearExpectations(syncer());
@@ -558,7 +561,7 @@ TEST_F(SyncSchedulerTest, NudgeWithStates) {
       .WillOnce(DoAll(Invoke(sessions::test_util::SimulateNormalSuccess),
                       RecordSyncShare(&times2)));
   scheduler()->ScheduleInvalidationNudge(
-      zero(), AUTOFILL, BuildInvalidation(10, "test2"), FROM_HERE);
+      TYPED_URLS, BuildInvalidation(10, "test2"), FROM_HERE);
   RunLoop();
 }
 
@@ -631,37 +634,9 @@ TEST_F(SyncSchedulerTest, PollIntervalUpdate) {
   AnalyzePollRun(times, kMinNumSamples, optimal_start, poll2);
 }
 
-// Test that the sessions commit delay is updated when needed.
-TEST_F(SyncSchedulerTest, SessionsCommitDelay) {
-  SyncShareTimes times;
-  TimeDelta delay1(TimeDelta::FromMilliseconds(120));
-  TimeDelta delay2(TimeDelta::FromMilliseconds(30));
-  scheduler()->OnReceivedSessionsCommitDelay(delay1);
-
-  EXPECT_CALL(*syncer(), NormalSyncShare(_,_,_))
-      .WillOnce(
-          DoAll(
-              WithArgs<0,1,2>(
-                  sessions::test_util::SimulateSessionsCommitDelayUpdate(
-                      delay2)),
-              Invoke(sessions::test_util::SimulateNormalSuccess),
-              QuitLoopNowAction()));
-
-  EXPECT_EQ(delay1, scheduler()->GetSessionsCommitDelay());
-  StartSyncScheduler(SyncScheduler::NORMAL_MODE);
-
-  EXPECT_EQ(delay1, scheduler()->GetSessionsCommitDelay());
-  const ModelTypeSet model_types(BOOKMARKS);
-  scheduler()->ScheduleLocalNudge(zero(), model_types, FROM_HERE);
-  RunLoop();
-
-  EXPECT_EQ(delay2, scheduler()->GetSessionsCommitDelay());
-  StopSyncScheduler();
-}
-
 // Test that no syncing occurs when throttled.
 TEST_F(SyncSchedulerTest, ThrottlingDoesThrottle) {
-  const ModelTypeSet types(BOOKMARKS);
+  const ModelTypeSet types(THEMES);
   TimeDelta poll(TimeDelta::FromMilliseconds(20));
   TimeDelta throttle(TimeDelta::FromMinutes(10));
   scheduler()->OnReceivedLongPollIntervalUpdate(poll);
@@ -674,8 +649,7 @@ TEST_F(SyncSchedulerTest, ThrottlingDoesThrottle) {
 
   StartSyncScheduler(SyncScheduler::NORMAL_MODE);
 
-  scheduler()->ScheduleLocalNudge(
-      TimeDelta::FromMicroseconds(1), types, FROM_HERE);
+  scheduler()->ScheduleLocalNudge(types, FROM_HERE);
   PumpLoop();
 
   StartSyncScheduler(SyncScheduler::CONFIGURATION_MODE);
@@ -738,9 +712,9 @@ TEST_F(SyncSchedulerTest, ThrottlingExpiresFromNudge) {
       .WillOnce(DoAll(Invoke(sessions::test_util::SimulateNormalSuccess),
                       QuitLoopNowAction()));
 
-  const ModelTypeSet types(BOOKMARKS);
+  const ModelTypeSet types(THEMES);
   StartSyncScheduler(SyncScheduler::NORMAL_MODE);
-  scheduler()->ScheduleLocalNudge(zero(), types, FROM_HERE);
+  scheduler()->ScheduleLocalNudge(types, FROM_HERE);
 
   PumpLoop(); // To get PerformDelayedNudge called.
   PumpLoop(); // To get TrySyncSessionJob called
@@ -767,7 +741,7 @@ TEST_F(SyncSchedulerTest, ThrottlingExpiresFromConfigure) {
       .WillOnce(DoAll(Invoke(sessions::test_util::SimulateConfigureSuccess),
                       QuitLoopNowAction()));
 
-  const ModelTypeSet types(BOOKMARKS);
+  const ModelTypeSet types(THEMES);
   StartSyncScheduler(SyncScheduler::CONFIGURATION_MODE);
 
   CallbackCounter ready_counter;
@@ -793,13 +767,13 @@ TEST_F(SyncSchedulerTest, ThrottlingExpiresFromConfigure) {
 TEST_F(SyncSchedulerTest, TypeThrottlingBlocksNudge) {
   UseMockDelayProvider();
   EXPECT_CALL(*delay(), GetDelay(_))
-      .WillRepeatedly(Return(zero()));
+      .WillRepeatedly(Return(default_delay()));
 
   TimeDelta poll(TimeDelta::FromDays(1));
   TimeDelta throttle1(TimeDelta::FromSeconds(60));
   scheduler()->OnReceivedLongPollIntervalUpdate(poll);
 
-  const ModelTypeSet types(BOOKMARKS);
+  const ModelTypeSet types(THEMES);
 
   ::testing::InSequence seq;
   EXPECT_CALL(*syncer(), NormalSyncShare(_,_,_))
@@ -810,13 +784,13 @@ TEST_F(SyncSchedulerTest, TypeThrottlingBlocksNudge) {
       .RetiresOnSaturation();
 
   StartSyncScheduler(SyncScheduler::NORMAL_MODE);
-  scheduler()->ScheduleLocalNudge(zero(), types, FROM_HERE);
+  scheduler()->ScheduleLocalNudge(types, FROM_HERE);
   PumpLoop(); // To get PerformDelayedNudge called.
   PumpLoop(); // To get TrySyncSessionJob called
   EXPECT_TRUE(GetThrottledTypes().HasAll(types));
 
   // This won't cause a sync cycle because the types are throttled.
-  scheduler()->ScheduleLocalNudge(zero(), types, FROM_HERE);
+  scheduler()->ScheduleLocalNudge(types, FROM_HERE);
   PumpLoop();
 
   StopSyncScheduler();
@@ -825,14 +799,14 @@ TEST_F(SyncSchedulerTest, TypeThrottlingBlocksNudge) {
 TEST_F(SyncSchedulerTest, TypeThrottlingDoesBlockOtherSources) {
   UseMockDelayProvider();
   EXPECT_CALL(*delay(), GetDelay(_))
-      .WillRepeatedly(Return(zero()));
+      .WillRepeatedly(Return(default_delay()));
 
   SyncShareTimes times;
   TimeDelta poll(TimeDelta::FromDays(1));
   TimeDelta throttle1(TimeDelta::FromSeconds(60));
   scheduler()->OnReceivedLongPollIntervalUpdate(poll);
 
-  const ModelTypeSet throttled_types(BOOKMARKS);
+  const ModelTypeSet throttled_types(THEMES);
   const ModelTypeSet unthrottled_types(PREFERENCES);
 
   ::testing::InSequence seq;
@@ -845,18 +819,18 @@ TEST_F(SyncSchedulerTest, TypeThrottlingDoesBlockOtherSources) {
       .RetiresOnSaturation();
 
   StartSyncScheduler(SyncScheduler::NORMAL_MODE);
-  scheduler()->ScheduleLocalNudge(zero(), throttled_types, FROM_HERE);
+  scheduler()->ScheduleLocalNudge(throttled_types, FROM_HERE);
   PumpLoop(); // To get PerformDelayedNudge called.
   PumpLoop(); // To get TrySyncSessionJob called
   EXPECT_TRUE(GetThrottledTypes().HasAll(throttled_types));
 
   // Ignore invalidations for throttled types.
   scheduler()->ScheduleInvalidationNudge(
-      zero(), BOOKMARKS, BuildInvalidation(10, "test"), FROM_HERE);
+      THEMES, BuildInvalidation(10, "test"), FROM_HERE);
   PumpLoop();
 
   // Ignore refresh requests for throttled types.
-  scheduler()->ScheduleLocalRefreshRequest(zero(), throttled_types, FROM_HERE);
+  scheduler()->ScheduleLocalRefreshRequest(throttled_types, FROM_HERE);
   PumpLoop();
 
   Mock::VerifyAndClearExpectations(syncer());
@@ -865,7 +839,7 @@ TEST_F(SyncSchedulerTest, TypeThrottlingDoesBlockOtherSources) {
   EXPECT_CALL(*syncer(), NormalSyncShare(_,_,_))
       .WillRepeatedly(DoAll(Invoke(sessions::test_util::SimulateNormalSuccess),
                             RecordSyncShare(&times)));
-  scheduler()->ScheduleLocalNudge(zero(), unthrottled_types, FROM_HERE);
+  scheduler()->ScheduleLocalNudge(unthrottled_types, FROM_HERE);
   RunLoop();
   Mock::VerifyAndClearExpectations(syncer());
 
@@ -880,11 +854,11 @@ TEST_F(SyncSchedulerTest, ConfigurationMode) {
 
   StartSyncScheduler(SyncScheduler::CONFIGURATION_MODE);
 
-  const ModelTypeSet nudge_types(AUTOFILL);
-  scheduler()->ScheduleLocalNudge(zero(), nudge_types, FROM_HERE);
-  scheduler()->ScheduleLocalNudge(zero(), nudge_types, FROM_HERE);
+  const ModelTypeSet nudge_types(TYPED_URLS);
+  scheduler()->ScheduleLocalNudge(nudge_types, FROM_HERE);
+  scheduler()->ScheduleLocalNudge(nudge_types, FROM_HERE);
 
-  const ModelTypeSet config_types(BOOKMARKS);
+  const ModelTypeSet config_types(THEMES);
 
   EXPECT_CALL(*syncer(), ConfigureSyncShare(_,_,_))
       .WillOnce(DoAll(Invoke(sessions::test_util::SimulateConfigureSuccess),
@@ -993,7 +967,7 @@ TEST_F(BackoffTriggersSyncSchedulerTest, FailGetEncryptionKey) {
               QuitLoopNowAction()));
   StartSyncScheduler(SyncScheduler::CONFIGURATION_MODE);
 
-  ModelTypeSet types(BOOKMARKS);
+  ModelTypeSet types(THEMES);
   CallbackCounter ready_counter;
   CallbackCounter retry_counter;
   ConfigurationParams params(
@@ -1012,7 +986,7 @@ TEST_F(BackoffTriggersSyncSchedulerTest, FailGetEncryptionKey) {
 TEST_F(SyncSchedulerTest, BackoffDropsJobs) {
   SyncShareTimes times;
   TimeDelta poll(TimeDelta::FromMilliseconds(10));
-  const ModelTypeSet types(BOOKMARKS);
+  const ModelTypeSet types(THEMES);
   scheduler()->OnReceivedLongPollIntervalUpdate(poll);
   UseMockDelayProvider();
 
@@ -1026,7 +1000,7 @@ TEST_F(SyncSchedulerTest, BackoffDropsJobs) {
 
   // This nudge should fail and put us into backoff.  Thanks to our mock
   // GetDelay() setup above, this will be a long backoff.
-  scheduler()->ScheduleLocalNudge(zero(), types, FROM_HERE);
+  scheduler()->ScheduleLocalNudge(types, FROM_HERE);
   RunLoop();
 
   // From this point forward, no SyncShare functions should be invoked.
@@ -1036,10 +1010,7 @@ TEST_F(SyncSchedulerTest, BackoffDropsJobs) {
   PumpLoopFor(poll * 10);
 
   // Try (and fail) to schedule a nudge.
-  scheduler()->ScheduleLocalNudge(
-      base::TimeDelta::FromMilliseconds(10),
-      types,
-      FROM_HERE);
+  scheduler()->ScheduleLocalNudge(types, FROM_HERE);
 
   Mock::VerifyAndClearExpectations(syncer());
   Mock::VerifyAndClearExpectations(delay());
@@ -1092,7 +1063,7 @@ TEST_F(SyncSchedulerTest, BackoffElevation) {
   StartSyncScheduler(SyncScheduler::NORMAL_MODE);
 
   // Run again with a nudge.
-  scheduler()->ScheduleLocalNudge(zero(), ModelTypeSet(BOOKMARKS), FROM_HERE);
+  scheduler()->ScheduleLocalNudge(ModelTypeSet(THEMES), FROM_HERE);
   RunLoop();
 
   ASSERT_EQ(kMinNumSamples, times.size());
@@ -1120,7 +1091,7 @@ TEST_F(SyncSchedulerTest, BackoffRelief) {
   EXPECT_CALL(*syncer(), NormalSyncShare(_,_,_))
       .WillOnce(DoAll(Invoke(sessions::test_util::SimulateCommitFailed),
                       RecordSyncShare(&times)));
-  scheduler()->ScheduleLocalNudge(zero(), ModelTypeSet(BOOKMARKS), FROM_HERE);
+  scheduler()->ScheduleLocalNudge(ModelTypeSet(THEMES), FROM_HERE);
   RunLoop();
   Mock::VerifyAndClearExpectations(syncer());
   TimeTicks optimal_job_time = optimal_start;
@@ -1192,7 +1163,7 @@ TEST_F(SyncSchedulerTest, StartWhenNotConnected) {
                     Return(true)));
   StartSyncScheduler(SyncScheduler::NORMAL_MODE);
 
-  scheduler()->ScheduleLocalNudge(zero(), ModelTypeSet(BOOKMARKS), FROM_HERE);
+  scheduler()->ScheduleLocalNudge(ModelTypeSet(THEMES), FROM_HERE);
   // Should save the nudge for until after the server is reachable.
   base::MessageLoop::current()->RunUntilIdle();
 
@@ -1217,7 +1188,7 @@ TEST_F(SyncSchedulerTest, ServerConnectionChangeDuringBackoff) {
     .WillOnce(DoAll(Invoke(sessions::test_util::SimulateNormalSuccess),
                     Return(true)));
 
-  scheduler()->ScheduleLocalNudge(zero(), ModelTypeSet(BOOKMARKS), FROM_HERE);
+  scheduler()->ScheduleLocalNudge(ModelTypeSet(THEMES), FROM_HERE);
   PumpLoop(); // To get PerformDelayedNudge called.
   PumpLoop(); // Run the nudge, that will fail and schedule a quick retry.
   ASSERT_TRUE(scheduler()->IsBackingOff());
@@ -1249,7 +1220,7 @@ TEST_F(SyncSchedulerTest, ConnectionChangeCanaryPreemptedByNudge) {
     .WillOnce(DoAll(Invoke(sessions::test_util::SimulateNormalSuccess),
                     QuitLoopNowAction()));
 
-  scheduler()->ScheduleLocalNudge(zero(), ModelTypeSet(BOOKMARKS), FROM_HERE);
+  scheduler()->ScheduleLocalNudge(ModelTypeSet(THEMES), FROM_HERE);
 
   PumpLoop(); // To get PerformDelayedNudge called.
   PumpLoop(); // Run the nudge, that will fail and schedule a quick retry.
@@ -1260,7 +1231,7 @@ TEST_F(SyncSchedulerTest, ConnectionChangeCanaryPreemptedByNudge) {
   PumpLoop();
   connection()->SetServerReachable();
   connection()->UpdateConnectionStatus();
-  scheduler()->ScheduleLocalNudge(zero(), ModelTypeSet(BOOKMARKS), FROM_HERE);
+  scheduler()->ScheduleLocalNudge(ModelTypeSet(THEMES), FROM_HERE);
   base::MessageLoop::current()->RunUntilIdle();
 }
 
@@ -1275,7 +1246,7 @@ TEST_F(SyncSchedulerTest, DoubleCanaryInConfigure) {
   connection()->SetServerNotReachable();
   connection()->UpdateConnectionStatus();
 
-  ModelTypeSet model_types(BOOKMARKS);
+  ModelTypeSet model_types(THEMES);
   CallbackCounter ready_counter;
   CallbackCounter retry_counter;
   ConfigurationParams params(
@@ -1381,8 +1352,7 @@ TEST_F(SyncSchedulerTest, ReceiveNewRetryDelay) {
   base::TimeDelta delay1 = base::TimeDelta::FromMilliseconds(100);
   base::TimeDelta delay2 = base::TimeDelta::FromMilliseconds(200);
 
-  scheduler()->ScheduleLocalRefreshRequest(zero(), ModelTypeSet(BOOKMARKS),
-                                           FROM_HERE);
+  scheduler()->ScheduleLocalNudge(ModelTypeSet(THEMES), FROM_HERE);
   scheduler()->OnReceivedGuRetryDelay(delay1);
   EXPECT_EQ(delay1, GetRetryTimerDelay());
 

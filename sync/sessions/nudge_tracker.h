@@ -12,6 +12,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/time/time.h"
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/base/invalidation_interface.h"
 #include "sync/internal_api/public/base/model_type.h"
@@ -53,14 +54,18 @@ class SYNC_EXPORT_PRIVATE NudgeTracker {
   void RecordSuccessfulSyncCycle();
 
   // Takes note of a local change.
-  void RecordLocalChange(ModelTypeSet types);
+  // Returns the shortest nudge delay from the tracker of each type in |types|.
+  base::TimeDelta RecordLocalChange(ModelTypeSet types);
 
   // Takes note of a locally issued request to refresh a data type.
-  void RecordLocalRefreshRequest(ModelTypeSet types);
+  // Returns the current nudge delay for a local refresh.
+  base::TimeDelta RecordLocalRefreshRequest(ModelTypeSet types);
 
   // Takes note of the receipt of an invalidation notice from the server.
-  void RecordRemoteInvalidation(syncer::ModelType type,
-                                scoped_ptr<InvalidationInterface> invalidation);
+  // Returns the current nudge delay for a remote invalidation.
+  base::TimeDelta RecordRemoteInvalidation(
+      syncer::ModelType type,
+      scoped_ptr<InvalidationInterface> invalidation);
 
   // Take note that an initial sync is pending for this type.
   void RecordInitialSyncRequired(syncer::ModelType type);
@@ -141,6 +146,13 @@ class SYNC_EXPORT_PRIVATE NudgeTracker {
   // SetSyncCycleStartTime() is called at the start of the *next* sync cycle.
   void SetNextRetryTime(base::TimeTicks next_retry_time);
 
+  // Update the per-datatype local change nudge delays.
+  void OnReceivedCustomNudgeDelays(
+      const std::map<ModelType, base::TimeDelta>& delay_map);
+
+  // Update the default nudge delay.
+  void SetDefaultNudgeDelay(base::TimeDelta nudge_delay);
+
  private:
   typedef std::map<ModelType, DataTypeTracker*> TypeTrackerMap;
 
@@ -185,6 +197,11 @@ class SYNC_EXPORT_PRIVATE NudgeTracker {
   // SetSyncCycleStartTime().  This may contain a stale value if we're not
   // currently in a sync cycle.
   base::TimeTicks sync_cycle_start_time_;
+
+  // Nudge delays for various events.
+  base::TimeDelta minimum_local_nudge_delay_;
+  base::TimeDelta local_refresh_nudge_delay_;
+  base::TimeDelta remote_invalidation_nudge_delay_;
 
   DISALLOW_COPY_AND_ASSIGN(NudgeTracker);
 };

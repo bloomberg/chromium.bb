@@ -728,6 +728,85 @@ TEST_F(NudgeTrackerTest, IsRetryRequired_FailedCycleIncludesUpdate) {
   nudge_tracker_.RecordSuccessfulSyncCycle();
 }
 
+// Test the default nudge delays for various types.
+TEST_F(NudgeTrackerTest, NudgeDelayTest) {
+  // Set to a known value to compare against.
+  nudge_tracker_.SetDefaultNudgeDelay(base::TimeDelta());
+
+  // Bookmarks and preference both have "slow nudge" delays.
+  EXPECT_EQ(nudge_tracker_.RecordLocalChange(ModelTypeSet(BOOKMARKS)),
+            nudge_tracker_.RecordLocalChange(ModelTypeSet(PREFERENCES)));
+
+  // Typed URLs has a default delay.
+  EXPECT_EQ(nudge_tracker_.RecordLocalChange(ModelTypeSet(TYPED_URLS)),
+            base::TimeDelta());
+
+  // "Slow nudge" delays are longer than the default.
+  EXPECT_GT(nudge_tracker_.RecordLocalChange(ModelTypeSet(BOOKMARKS)),
+            base::TimeDelta());
+
+  // Sessions is longer than "slow nudge".
+  EXPECT_GT(nudge_tracker_.RecordLocalChange(ModelTypeSet(SESSIONS)),
+            nudge_tracker_.RecordLocalChange(ModelTypeSet(BOOKMARKS)));
+
+  // Favicons have the same delay as sessions.
+  EXPECT_EQ(nudge_tracker_.RecordLocalChange(ModelTypeSet(SESSIONS)),
+            nudge_tracker_.RecordLocalChange(ModelTypeSet(FAVICON_TRACKING)));
+
+  // Autofill has the longer delay of all.
+  EXPECT_GT(nudge_tracker_.RecordLocalChange(ModelTypeSet(AUTOFILL)),
+            nudge_tracker_.RecordLocalChange(ModelTypeSet(SESSIONS)));
+
+  // A nudge with no types takes the longest delay.
+  EXPECT_EQ(nudge_tracker_.RecordLocalChange(ModelTypeSet(AUTOFILL)),
+            nudge_tracker_.RecordLocalChange(ModelTypeSet()));
+
+  // The actual nudge delay should be the shortest of the set.
+  EXPECT_EQ(
+      nudge_tracker_.RecordLocalChange(ModelTypeSet(TYPED_URLS)),
+      nudge_tracker_.RecordLocalChange(ModelTypeSet(TYPED_URLS, AUTOFILL)));
+}
+
+// Test that custom nudge delays are used over the defaults.
+TEST_F(NudgeTrackerTest, CustomDelayTest) {
+  // Set some custom delays.
+  std::map<ModelType, base::TimeDelta> delay_map;
+  delay_map[BOOKMARKS] = base::TimeDelta::FromSeconds(10);
+  delay_map[SESSIONS] = base::TimeDelta::FromSeconds(2);
+  nudge_tracker_.OnReceivedCustomNudgeDelays(delay_map);
+
+  // Only those with custom delays should be affected, not another type.
+  EXPECT_NE(nudge_tracker_.RecordLocalChange(ModelTypeSet(BOOKMARKS)),
+            nudge_tracker_.RecordLocalChange(ModelTypeSet(PREFERENCES)));
+
+  EXPECT_EQ(base::TimeDelta::FromSeconds(10),
+            nudge_tracker_.RecordLocalChange(ModelTypeSet(BOOKMARKS)));
+  EXPECT_EQ(base::TimeDelta::FromSeconds(2),
+            nudge_tracker_.RecordLocalChange(ModelTypeSet(SESSIONS)));
+}
+
+// Check that custom nudge delays can never result in a value shorter than the
+// minimum nudge delay.
+TEST_F(NudgeTrackerTest, NoTypesShorterThanDefault) {
+  // Set delay to a known value.
+  nudge_tracker_.SetDefaultNudgeDelay(base::TimeDelta::FromMilliseconds(500));
+
+  std::map<ModelType, base::TimeDelta> delay_map;
+  ModelTypeSet protocol_types = syncer::ProtocolTypes();
+  for (ModelTypeSet::Iterator iter = protocol_types.First(); iter.Good();
+       iter.Inc()) {
+    delay_map[iter.Get()] = base::TimeDelta();
+  }
+  nudge_tracker_.OnReceivedCustomNudgeDelays(delay_map);
+
+  // All types should still have a nudge greater than or equal to the minimum.
+  for (ModelTypeSet::Iterator iter = protocol_types.First(); iter.Good();
+       iter.Inc()) {
+    EXPECT_GE(nudge_tracker_.RecordLocalChange(ModelTypeSet(iter.Get())),
+              base::TimeDelta::FromMilliseconds(500));
+  }
+}
+
 class NudgeTrackerAckTrackingTest : public NudgeTrackerTest {
  public:
   NudgeTrackerAckTrackingTest() {}

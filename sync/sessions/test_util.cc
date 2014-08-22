@@ -122,7 +122,9 @@ void SimulateSessionsCommitDelayUpdateImpl(
     sessions::SyncSession* session,
     const base::TimeDelta& new_delay) {
   SimulateNormalSuccess(requested_types, nudge_tracker, session);
-  session->delegate()->OnReceivedSessionsCommitDelay(new_delay);
+  std::map<ModelType, base::TimeDelta> delay_map;
+  delay_map[SESSIONS] = new_delay;
+  session->delegate()->OnReceivedCustomNudgeDelays(delay_map);
 }
 
 void SimulateGuRetryDelayCommandImpl(sessions::SyncSession* session,

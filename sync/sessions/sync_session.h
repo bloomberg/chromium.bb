@@ -71,10 +71,9 @@ class SYNC_EXPORT_PRIVATE SyncSession {
     virtual void OnReceivedLongPollIntervalUpdate(
         const base::TimeDelta& new_interval) = 0;
 
-    // The client has been instructed to change its sessions commit
-    // delay.
-    virtual void OnReceivedSessionsCommitDelay(
-        const base::TimeDelta& new_delay) = 0;
+    // The client has been instructed to change a nudge delay.
+    virtual void OnReceivedCustomNudgeDelays(
+        const std::map<ModelType, base::TimeDelta>& nudge_delays) = 0;
 
     // Called for the syncer to respond to the error sent by the server.
     virtual void OnSyncProtocolError(

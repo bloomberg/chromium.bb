@@ -96,7 +96,6 @@ class SYNC_EXPORT_PRIVATE SyncScheduler
   // The LocalNudge indicates that we've made a local change, and that the
   // syncer should plan to commit this to the server some time soon.
   virtual void ScheduleLocalNudge(
-      const base::TimeDelta& desired_delay,
       ModelTypeSet types,
       const tracked_objects::Location& nudge_location) = 0;
 
@@ -105,7 +104,6 @@ class SYNC_EXPORT_PRIVATE SyncScheduler
   // uses is to fetch the latest tab sync data when it's relevant to the UI on
   // platforms where tab sync is not registered for invalidations.
   virtual void ScheduleLocalRefreshRequest(
-      const base::TimeDelta& desired_delay,
       ModelTypeSet types,
       const tracked_objects::Location& nudge_location) = 0;
 
@@ -114,7 +112,6 @@ class SYNC_EXPORT_PRIVATE SyncScheduler
   // careful to pass along the "hints" delivered with those invalidations) in
   // order to fetch the update.
   virtual void ScheduleInvalidationNudge(
-      const base::TimeDelta& desired_delay,
       syncer::ModelType type,
       scoped_ptr<InvalidationInterface> invalidation,
       const tracked_objects::Location& nudge_location) = 0;
@@ -129,8 +126,6 @@ class SYNC_EXPORT_PRIVATE SyncScheduler
 
   // Change status of notifications in the SyncSessionContext.
   virtual void SetNotificationsEnabled(bool notifications_enabled) = 0;
-
-  virtual base::TimeDelta GetSessionsCommitDelay() const = 0;
 
   // Called when credentials are updated by the user.
   virtual void OnCredentialsUpdated() = 0;

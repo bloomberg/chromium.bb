@@ -420,9 +420,10 @@ SyncerError SyncerProtoUtil::PostClientToServerMessage(
     }
 
     if (command.has_sessions_commit_delay_seconds()) {
-      session->delegate()->OnReceivedSessionsCommitDelay(
-          base::TimeDelta::FromSeconds(
-              command.sessions_commit_delay_seconds()));
+      std::map<ModelType, base::TimeDelta> delay_map;
+      delay_map[SESSIONS] =
+          base::TimeDelta::FromSeconds(command.sessions_commit_delay_seconds());
+      session->delegate()->OnReceivedCustomNudgeDelays(delay_map);
     }
 
     if (command.has_client_invalidation_hint_buffer_size()) {
@@ -433,6 +434,22 @@ SyncerError SyncerProtoUtil::PostClientToServerMessage(
     if (command.has_gu_retry_delay_seconds()) {
       session->delegate()->OnReceivedGuRetryDelay(
           base::TimeDelta::FromSeconds(command.gu_retry_delay_seconds()));
+    }
+
+    if (command.custom_nudge_delays_size() > 0) {
+      // Note that because this happens after the sessions_commit_delay_seconds
+      // handling, any SESSIONS value in this map will override the one in
+      // sessions_commit_delay_seconds.
+      std::map<ModelType, base::TimeDelta> delay_map;
+      for (int i = 0; i < command.custom_nudge_delays_size(); ++i) {
+        ModelType type = GetModelTypeFromSpecificsFieldNumber(
+            command.custom_nudge_delays(i).datatype_id());
+        if (ProtocolTypes().Has(type)) {
+          delay_map[type] = base::TimeDelta::FromMilliseconds(
+              command.custom_nudge_delays(i).delay_ms());
+        }
+      }
+      session->delegate()->OnReceivedCustomNudgeDelays(delay_map);
     }
   }
 

@@ -32,6 +32,20 @@ using sync_pb::GetUpdatesCallerInfo;
 
 namespace {
 
+bool IsConfigRelatedUpdateSourceValue(
+    GetUpdatesCallerInfo::GetUpdatesSource source) {
+  switch (source) {
+    case GetUpdatesCallerInfo::RECONFIGURATION:
+    case GetUpdatesCallerInfo::MIGRATION:
+    case GetUpdatesCallerInfo::NEW_CLIENT:
+    case GetUpdatesCallerInfo::NEWLY_SUPPORTED_DATATYPE:
+    case GetUpdatesCallerInfo::PROGRAMMATIC:
+      return true;
+    default:
+      return false;
+  }
+}
+
 bool ShouldRequestEarlyExit(const SyncProtocolError& error) {
   switch (error.error_type) {
     case SYNC_SUCCESS:
@@ -65,6 +79,7 @@ bool IsActionableError(
     const SyncProtocolError& error) {
   return (error.action != UNKNOWN_ACTION);
 }
+
 }  // namespace
 
 ConfigurationParams::ConfigurationParams()
@@ -132,26 +147,6 @@ GetUpdatesCallerInfo::GetUpdatesSource GetUpdatesFromNudgeSource(
 #define SDVLOG_LOC(from_here, verbose_level)             \
   DVLOG_LOC(from_here, verbose_level) << name_ << ": "
 
-namespace {
-
-const int kDefaultSessionsCommitDelaySeconds = 10;
-
-bool IsConfigRelatedUpdateSourceValue(
-    GetUpdatesCallerInfo::GetUpdatesSource source) {
-  switch (source) {
-    case GetUpdatesCallerInfo::RECONFIGURATION:
-    case GetUpdatesCallerInfo::MIGRATION:
-    case GetUpdatesCallerInfo::NEW_CLIENT:
-    case GetUpdatesCallerInfo::NEWLY_SUPPORTED_DATATYPE:
-    case GetUpdatesCallerInfo::PROGRAMMATIC:
-      return true;
-    default:
-      return false;
-  }
-}
-
-}  // namespace
-
 SyncSchedulerImpl::SyncSchedulerImpl(const std::string& name,
                                      BackoffDelayProvider* delay_provider,
                                      sessions::SyncSessionContext* context,
@@ -162,8 +157,6 @@ SyncSchedulerImpl::SyncSchedulerImpl(const std::string& name,
           TimeDelta::FromSeconds(kDefaultShortPollIntervalSeconds)),
       syncer_long_poll_interval_seconds_(
           TimeDelta::FromSeconds(kDefaultLongPollIntervalSeconds)),
-      sessions_commit_delay_(
-          TimeDelta::FromSeconds(kDefaultSessionsCommitDelaySeconds)),
       mode_(NORMAL_MODE),
       delay_provider_(delay_provider),
       syncer_(syncer),
@@ -357,7 +350,6 @@ bool SyncSchedulerImpl::CanRunNudgeJobNow(JobPriority priority) {
 }
 
 void SyncSchedulerImpl::ScheduleLocalNudge(
-    const TimeDelta& desired_delay,
     ModelTypeSet types,
     const tracked_objects::Location& nudge_location) {
   DCHECK(CalledOnValidThread());
@@ -367,12 +359,11 @@ void SyncSchedulerImpl::ScheduleLocalNudge(
       << "Scheduling sync because of local change to "
       << ModelTypeSetToString(types);
   UpdateNudgeTimeRecords(types);
-  nudge_tracker_.RecordLocalChange(types);
-  ScheduleNudgeImpl(desired_delay, nudge_location);
+  base::TimeDelta nudge_delay = nudge_tracker_.RecordLocalChange(types);
+  ScheduleNudgeImpl(nudge_delay, nudge_location);
 }
 
 void SyncSchedulerImpl::ScheduleLocalRefreshRequest(
-    const TimeDelta& desired_delay,
     ModelTypeSet types,
     const tracked_objects::Location& nudge_location) {
   DCHECK(CalledOnValidThread());
@@ -381,12 +372,11 @@ void SyncSchedulerImpl::ScheduleLocalRefreshRequest(
   SDVLOG_LOC(nudge_location, 2)
       << "Scheduling sync because of local refresh request for "
       << ModelTypeSetToString(types);
-  nudge_tracker_.RecordLocalRefreshRequest(types);
-  ScheduleNudgeImpl(desired_delay, nudge_location);
+  base::TimeDelta nudge_delay = nudge_tracker_.RecordLocalRefreshRequest(types);
+  ScheduleNudgeImpl(nudge_delay, nudge_location);
 }
 
 void SyncSchedulerImpl::ScheduleInvalidationNudge(
-    const TimeDelta& desired_delay,
     syncer::ModelType model_type,
     scoped_ptr<InvalidationInterface> invalidation,
     const tracked_objects::Location& nudge_location) {
@@ -395,8 +385,9 @@ void SyncSchedulerImpl::ScheduleInvalidationNudge(
   SDVLOG_LOC(nudge_location, 2)
       << "Scheduling sync because we received invalidation for "
       << ModelTypeToString(model_type);
-  nudge_tracker_.RecordRemoteInvalidation(model_type, invalidation.Pass());
-  ScheduleNudgeImpl(desired_delay, nudge_location);
+  base::TimeDelta nudge_delay =
+      nudge_tracker_.RecordRemoteInvalidation(model_type, invalidation.Pass());
+  ScheduleNudgeImpl(nudge_delay, nudge_location);
 }
 
 void SyncSchedulerImpl::ScheduleInitialSyncNudge(syncer::ModelType model_type) {
@@ -460,6 +451,11 @@ const char* SyncSchedulerImpl::GetModeString(SyncScheduler::Mode mode) {
     ENUM_CASE(NORMAL_MODE);
   }
   return "";
+}
+
+void SyncSchedulerImpl::SetDefaultNudgeDelay(base::TimeDelta delay_ms) {
+  DCHECK(CalledOnValidThread());
+  nudge_tracker_.SetDefaultNudgeDelay(delay_ms);
 }
 
 void SyncSchedulerImpl::DoNudgeSyncSessionJob(JobPriority priority) {
@@ -863,10 +859,10 @@ void SyncSchedulerImpl::OnReceivedLongPollIntervalUpdate(
   syncer_long_poll_interval_seconds_ = new_interval;
 }
 
-void SyncSchedulerImpl::OnReceivedSessionsCommitDelay(
-    const base::TimeDelta& new_delay) {
+void SyncSchedulerImpl::OnReceivedCustomNudgeDelays(
+    const std::map<ModelType, base::TimeDelta>& nudge_delays) {
   DCHECK(CalledOnValidThread());
-  sessions_commit_delay_ = new_delay;
+  nudge_tracker_.OnReceivedCustomNudgeDelays(nudge_delays);
 }
 
 void SyncSchedulerImpl::OnReceivedClientInvalidationHintBufferSize(int size) {
@@ -910,11 +906,6 @@ void SyncSchedulerImpl::SetNotificationsEnabled(bool notifications_enabled) {
     nudge_tracker_.OnInvalidationsEnabled();
   else
     nudge_tracker_.OnInvalidationsDisabled();
-}
-
-base::TimeDelta SyncSchedulerImpl::GetSessionsCommitDelay() const {
-  DCHECK(CalledOnValidThread());
-  return sessions_commit_delay_;
 }
 
 #undef SDVLOG_LOC
