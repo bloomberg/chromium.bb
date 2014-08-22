@@ -53,9 +53,7 @@ void RenderFrameProxyHost::SetChildRWHView(RenderWidgetHostView* view) {
 }
 
 RenderViewHostImpl* RenderFrameProxyHost::GetRenderViewHost() {
-  if (render_frame_host_.get())
-    return render_frame_host_->render_view_host();
-  return NULL;
+  return frame_tree_node_->frame_tree()->GetRenderViewHost(site_instance_);
 }
 
 scoped_ptr<RenderFrameHostImpl> RenderFrameProxyHost::PassFrameHostOwnership() {
