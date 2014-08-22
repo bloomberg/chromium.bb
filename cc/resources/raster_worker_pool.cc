@@ -6,12 +6,10 @@
 
 #include <algorithm>
 
-#include "base/atomic_sequence_num.h"
 #include "base/debug/trace_event_synthetic_delay.h"
 #include "base/lazy_instance.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/simple_thread.h"
-#include "base/threading/thread_local.h"
 #include "cc/base/scoped_ptr_deque.h"
 
 namespace cc {
@@ -50,34 +48,13 @@ class RasterTaskGraphRunner : public TaskGraphRunner,
 
   virtual ~RasterTaskGraphRunner() { NOTREACHED(); }
 
-  size_t GetPictureCloneIndexForCurrentThread() {
-    // Use index 0 if called on non-raster thread.
-    ThreadLocalState* thread_local_state = current_tls_.Get();
-    return thread_local_state ? current_tls_.Get()->picture_clone_index : 0;
-  }
-
  private:
-  struct ThreadLocalState {
-    explicit ThreadLocalState(size_t picture_clone_index)
-        : picture_clone_index(picture_clone_index) {}
-
-    size_t picture_clone_index;
-  };
-
   // Overridden from base::DelegateSimpleThread::Delegate:
   virtual void Run() OVERRIDE {
-    // Use picture clone index 0..num_threads.
-    int picture_clone_index = picture_clone_index_sequence_.GetNext();
-    DCHECK_LE(0, picture_clone_index);
-    DCHECK_GT(RasterWorkerPool::GetNumRasterThreads(), picture_clone_index);
-    current_tls_.Set(new ThreadLocalState(picture_clone_index));
-
     TaskGraphRunner::Run();
   }
 
   ScopedPtrDeque<base::DelegateSimpleThread> workers_;
-  base::AtomicSequenceNumber picture_clone_index_sequence_;
-  base::ThreadLocalPointer<ThreadLocalState> current_tls_;
 };
 
 base::LazyInstance<RasterTaskGraphRunner>::Leaky g_task_graph_runner =
@@ -195,11 +172,6 @@ int RasterWorkerPool::GetNumRasterThreads() {
 // static
 TaskGraphRunner* RasterWorkerPool::GetTaskGraphRunner() {
   return g_task_graph_runner.Pointer();
-}
-
-// static
-size_t RasterWorkerPool::GetPictureCloneIndexForCurrentThread() {
-  return g_task_graph_runner.Pointer()->GetPictureCloneIndexForCurrentThread();
 }
 
 // static

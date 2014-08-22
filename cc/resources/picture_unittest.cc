@@ -57,7 +57,6 @@ TEST(PictureTest, AsBase64String) {
                         &content_layer_client,
                         tile_grid_info,
                         false,
-                        0,
                         kRecordingModes[i]);
     scoped_ptr<base::Value> serialized_one_rect(one_rect_picture->AsValue());
 
@@ -76,8 +75,7 @@ TEST(PictureTest, AsBase64String) {
               one_rect_picture_check->LayerRect());
     EXPECT_EQ(one_rect_picture->OpaqueRect(),
               one_rect_picture_check->OpaqueRect());
-    EXPECT_TRUE(memcmp(one_rect_buffer, one_rect_buffer_check, 4 * 100 * 100) ==
-                0);
+    EXPECT_EQ(0, memcmp(one_rect_buffer, one_rect_buffer_check, 4 * 100 * 100));
   }
 
   // Two rect picture.
@@ -89,7 +87,6 @@ TEST(PictureTest, AsBase64String) {
                         &content_layer_client,
                         tile_grid_info,
                         false,
-                        0,
                         Picture::RECORD_NORMALLY);
 
     scoped_ptr<base::Value> serialized_two_rect(two_rect_picture->AsValue());
@@ -109,8 +106,7 @@ TEST(PictureTest, AsBase64String) {
               two_rect_picture_check->LayerRect());
     EXPECT_EQ(two_rect_picture->OpaqueRect(),
               two_rect_picture_check->OpaqueRect());
-    EXPECT_TRUE(memcmp(two_rect_buffer, two_rect_buffer_check, 4 * 100 * 100) ==
-                0);
+    EXPECT_EQ(0, memcmp(two_rect_buffer, two_rect_buffer_check, 4 * 100 * 100));
   }
 }
 
@@ -152,7 +148,6 @@ TEST(PictureTest, PixelRefIterator) {
                                                    &content_layer_client,
                                                    tile_grid_info,
                                                    true,
-                                                   0,
                                                    Picture::RECORD_NORMALLY);
 
   // Default iterator does not have any pixel refs
@@ -253,7 +248,6 @@ TEST(PictureTest, PixelRefIteratorNonZeroLayer) {
                                                    &content_layer_client,
                                                    tile_grid_info,
                                                    true,
-                                                   0,
                                                    Picture::RECORD_NORMALLY);
 
   // Default iterator does not have any pixel refs
@@ -377,7 +371,6 @@ TEST(PictureTest, PixelRefIteratorOnePixelQuery) {
                                                    &content_layer_client,
                                                    tile_grid_info,
                                                    true,
-                                                   0,
                                                    Picture::RECORD_NORMALLY);
 
   for (int y = 0; y < 4; ++y) {
@@ -427,7 +420,6 @@ TEST(PictureTest, CreateFromSkpValue) {
                       &content_layer_client,
                       tile_grid_info,
                       false,
-                      0,
                       Picture::RECORD_NORMALLY);
   scoped_ptr<base::Value> serialized_one_rect(
       one_rect_picture->AsValue());
@@ -467,7 +459,6 @@ TEST(PictureTest, RecordingModes) {
                                                    &content_layer_client,
                                                    tile_grid_info,
                                                    false,
-                                                   0,
                                                    Picture::RECORD_NORMALLY);
   EXPECT_TRUE(content_layer_client.last_canvas() != NULL);
   EXPECT_EQ(ContentLayerClient::GRAPHICS_CONTEXT_ENABLED,
@@ -478,7 +469,6 @@ TEST(PictureTest, RecordingModes) {
                             &content_layer_client,
                             tile_grid_info,
                             false,
-                            0,
                             Picture::RECORD_WITH_SK_NULL_CANVAS);
   EXPECT_TRUE(content_layer_client.last_canvas() != NULL);
   EXPECT_EQ(ContentLayerClient::GRAPHICS_CONTEXT_ENABLED,
@@ -489,7 +479,6 @@ TEST(PictureTest, RecordingModes) {
                             &content_layer_client,
                             tile_grid_info,
                             false,
-                            0,
                             Picture::RECORD_WITH_PAINTING_DISABLED);
   EXPECT_TRUE(content_layer_client.last_canvas() != NULL);
   EXPECT_EQ(ContentLayerClient::GRAPHICS_CONTEXT_DISABLED,
@@ -500,7 +489,6 @@ TEST(PictureTest, RecordingModes) {
                             &content_layer_client,
                             tile_grid_info,
                             false,
-                            0,
                             Picture::RECORD_WITH_SKRECORD);
   EXPECT_TRUE(content_layer_client.last_canvas() != NULL);
   EXPECT_TRUE(picture);

@@ -89,14 +89,12 @@ scoped_refptr<Picture> Picture::Create(
     ContentLayerClient* client,
     const SkTileGridFactory::TileGridInfo& tile_grid_info,
     bool gather_pixel_refs,
-    int num_raster_threads,
     RecordingMode recording_mode) {
   scoped_refptr<Picture> picture = make_scoped_refptr(new Picture(layer_rect));
 
   picture->Record(client, tile_grid_info, recording_mode);
   if (gather_pixel_refs)
     picture->GatherPixelRefs(tile_grid_info);
-  picture->CloneForDrawing(num_raster_threads);
 
   return picture;
 }
@@ -192,18 +190,6 @@ Picture::~Picture() {
     TRACE_DISABLED_BY_DEFAULT("cc.debug"), "cc::Picture", this);
 }
 
-Picture* Picture::GetCloneForDrawingOnThread(unsigned thread_index) {
-  // We don't need clones to draw from multiple threads with SkRecord.
-  if (playback_) {
-    return this;
-  }
-
-  // SkPicture is not thread-safe to rasterize with, this returns a clone
-  // to rasterize with on a specific thread.
-  CHECK_GE(clones_.size(), thread_index);
-  return thread_index == clones_.size() ? this : clones_[thread_index].get();
-}
-
 bool Picture::IsSuitableForGpuRasterization() const {
   DCHECK(picture_);
 
@@ -220,35 +206,6 @@ bool Picture::IsSuitableForGpuRasterization() const {
 bool Picture::HasText() const {
   DCHECK(picture_);
   return picture_->hasText();
-}
-
-void Picture::CloneForDrawing(int num_threads) {
-  TRACE_EVENT1("cc", "Picture::CloneForDrawing", "num_threads", num_threads);
-
-  // We don't need clones to draw from multiple threads with SkRecord.
-  if (playback_) {
-    return;
-  }
-
-  DCHECK(picture_);
-  DCHECK(clones_.empty());
-
-  // We can re-use this picture for one raster worker thread.
-  raster_thread_checker_.DetachFromThread();
-
-  if (num_threads > 1) {
-    for (int i = 0; i < num_threads - 1; i++) {
-      scoped_refptr<Picture> clone =
-          new Picture(skia::AdoptRef(picture_->clone()),
-                      layer_rect_,
-                      opaque_rect_,
-                      pixel_refs_);
-      clones_.push_back(clone);
-
-      clone->EmitTraceSnapshotAlias(this);
-      clone->raster_thread_checker_.DetachFromThread();
-    }
-  }
 }
 
 void Picture::Record(ContentLayerClient* painter,
@@ -386,13 +343,10 @@ void Picture::GatherPixelRefs(
   max_pixel_cell_ = gfx::Point(max_x, max_y);
 }
 
-int Picture::Raster(
-    SkCanvas* canvas,
-    SkDrawPictureCallback* callback,
-    const Region& negated_content_region,
-    float contents_scale) {
-  if (!playback_)
-    DCHECK(raster_thread_checker_.CalledOnValidThread());
+int Picture::Raster(SkCanvas* canvas,
+                    SkDrawPictureCallback* callback,
+                    const Region& negated_content_region,
+                    float contents_scale) const {
   TRACE_EVENT_BEGIN1(
       "cc",
       "Picture::Raster",
@@ -423,8 +377,6 @@ int Picture::Raster(
 }
 
 void Picture::Replay(SkCanvas* canvas) {
-  if (!playback_)
-    DCHECK(raster_thread_checker_.CalledOnValidThread());
   TRACE_EVENT_BEGIN0("cc", "Picture::Replay");
   DCHECK(picture_);
 

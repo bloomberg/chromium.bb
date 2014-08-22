@@ -35,10 +35,6 @@ class CC_EXPORT RasterWorkerPool {
   // Returns a pointer to the global TaskGraphRunner instance.
   static TaskGraphRunner* GetTaskGraphRunner();
 
-  // Returns a unique clone index for the current thread. Guaranteed to be a
-  // value between 0 and GetNumRasterThreads() - 1.
-  static size_t GetPictureCloneIndexForCurrentThread();
-
   // Utility function that can be used to create a "raster finished" task that
   // posts |callback| to |task_runner| when run.
   static scoped_refptr<RasterizerTask> CreateRasterFinishedTask(

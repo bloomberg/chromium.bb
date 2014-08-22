@@ -71,7 +71,6 @@ class CC_SURFACES_EXPORT Display : public OutputSurfaceClient,
 
   // RendererClient implementation.
   virtual void SetFullRootLayerDamage() OVERRIDE {}
-  virtual void RunOnDemandRasterTask(Task* on_demand_raster_task) OVERRIDE {}
 
   // SurfaceDamageObserver implementation.
   virtual void OnSurfaceDamaged(SurfaceId surface) OVERRIDE;

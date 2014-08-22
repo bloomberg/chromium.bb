@@ -27,7 +27,6 @@
 #include "cc/quads/stream_video_draw_quad.h"
 #include "cc/quads/texture_draw_quad.h"
 #include "cc/resources/layer_quad.h"
-#include "cc/resources/raster_worker_pool.h"
 #include "cc/resources/scoped_resource.h"
 #include "cc/resources/texture_mailbox_deleter.h"
 #include "gpu/GLES2/gl2extchromium.h"
@@ -78,44 +77,6 @@ class FallbackFence : public ResourceProvider::Fence {
   bool has_passed_;
 
   DISALLOW_COPY_AND_ASSIGN(FallbackFence);
-};
-
-class OnDemandRasterTaskImpl : public Task {
- public:
-  OnDemandRasterTaskImpl(PicturePileImpl* picture_pile,
-                         SkBitmap* bitmap,
-                         gfx::Rect content_rect,
-                         float contents_scale)
-      : picture_pile_(picture_pile),
-        bitmap_(bitmap),
-        content_rect_(content_rect),
-        contents_scale_(contents_scale) {
-    DCHECK(picture_pile_);
-    DCHECK(bitmap_);
-  }
-
-  // Overridden from Task:
-  virtual void RunOnWorkerThread() OVERRIDE {
-    TRACE_EVENT0("cc", "OnDemandRasterTaskImpl::RunOnWorkerThread");
-    SkCanvas canvas(*bitmap_);
-
-    PicturePileImpl* picture_pile = picture_pile_->GetCloneForDrawingOnThread(
-        RasterWorkerPool::GetPictureCloneIndexForCurrentThread());
-    DCHECK(picture_pile);
-
-    picture_pile->RasterToBitmap(&canvas, content_rect_, contents_scale_, NULL);
-  }
-
- protected:
-  virtual ~OnDemandRasterTaskImpl() {}
-
- private:
-  PicturePileImpl* picture_pile_;
-  SkBitmap* bitmap_;
-  const gfx::Rect content_rect_;
-  const float contents_scale_;
-
-  DISALLOW_COPY_AND_ASSIGN(OnDemandRasterTaskImpl);
 };
 
 bool NeedsIOSurfaceReadbackWorkaround() {
@@ -1938,13 +1899,9 @@ void GLRenderer::DrawPictureQuad(const DrawingFrame* frame,
         quad->texture_format);
   }
 
-  // Create and run on-demand raster task for tile.
-  scoped_refptr<Task> on_demand_raster_task(
-      new OnDemandRasterTaskImpl(quad->picture_pile,
-                                 &on_demand_tile_raster_bitmap_,
-                                 quad->content_rect,
-                                 quad->contents_scale));
-  client_->RunOnDemandRasterTask(on_demand_raster_task.get());
+  SkCanvas canvas(on_demand_tile_raster_bitmap_);
+  quad->picture_pile->RasterToBitmap(
+      &canvas, quad->content_rect, quad->contents_scale, NULL);
 
   uint8_t* bitmap_pixels = NULL;
   SkBitmap on_demand_tile_raster_bitmap_dest;

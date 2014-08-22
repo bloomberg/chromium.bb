@@ -545,7 +545,6 @@ class FakeRendererClient : public RendererClient {
  public:
   // RendererClient methods.
   virtual void SetFullRootLayerDamage() OVERRIDE {}
-  virtual void RunOnDemandRasterTask(Task* on_demand_raster_task) OVERRIDE {}
 };
 
 class MockOverlayScheduler {

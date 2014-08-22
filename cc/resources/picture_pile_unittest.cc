@@ -128,7 +128,7 @@ TEST_F(PicturePileTest, LargeInvalidateInflated) {
 
   int expected_inflation = pile_->buffer_pixels();
 
-  Picture* base_picture = picture_info.GetPicture();
+  const Picture* base_picture = picture_info.GetPicture();
   gfx::Rect base_picture_rect(pile_->tiling_size());
   base_picture_rect.Inset(-expected_inflation, -expected_inflation);
   EXPECT_EQ(base_picture_rect.ToString(),

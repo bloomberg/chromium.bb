@@ -40,7 +40,6 @@ struct RendererCapabilitiesImpl {
 class CC_EXPORT RendererClient {
  public:
   virtual void SetFullRootLayerDamage() = 0;
-  virtual void RunOnDemandRasterTask(Task* on_demand_raster_task) = 0;
 };
 
 class CC_EXPORT Renderer {

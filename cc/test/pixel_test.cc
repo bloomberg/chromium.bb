@@ -149,30 +149,6 @@ void PixelTest::EnableExternalStencilTest() {
       ->set_has_external_stencil_test(true);
 }
 
-void PixelTest::RunOnDemandRasterTask(Task* on_demand_raster_task) {
-  TaskGraphRunner task_graph_runner;
-  NamespaceToken on_demand_task_namespace =
-      task_graph_runner.GetNamespaceToken();
-
-  // Construct a task graph that contains this single raster task.
-  TaskGraph graph;
-  graph.nodes.push_back(
-      TaskGraph::Node(on_demand_raster_task,
-                      RasterWorkerPool::kOnDemandRasterTaskPriority,
-                      0u));
-
-  // Schedule task and wait for task graph runner to finish running it.
-  task_graph_runner.ScheduleTasks(on_demand_task_namespace, &graph);
-  task_graph_runner.RunUntilIdle();
-
-  // Collect task now that it has finished running.
-  Task::Vector completed_tasks;
-  task_graph_runner.CollectCompletedTasks(on_demand_task_namespace,
-                                          &completed_tasks);
-  DCHECK_EQ(1u, completed_tasks.size());
-  DCHECK_EQ(completed_tasks[0], on_demand_raster_task);
-}
-
 void PixelTest::SetUpSoftwareRenderer() {
   scoped_ptr<SoftwareOutputDevice> device(new PixelTestSoftwareOutputDevice());
   output_surface_.reset(new PixelTestOutputSurface(device.Pass()));

@@ -51,7 +51,6 @@ class SoftwareRendererTest : public testing::Test, public RendererClient {
 
   // RendererClient implementation.
   virtual void SetFullRootLayerDamage() OVERRIDE {}
-  virtual void RunOnDemandRasterTask(Task* on_demand_raster_task) OVERRIDE {}
 
   scoped_ptr<SkBitmap> DrawAndCopyOutput(RenderPassList* list,
                                          float device_scale_factor,

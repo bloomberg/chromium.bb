@@ -16,7 +16,6 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/threading/thread_checker.h"
 #include "cc/base/cc_export.h"
 #include "cc/base/region.h"
 #include "skia/ext/refptr.h"
@@ -59,16 +58,12 @@ class CC_EXPORT Picture
       ContentLayerClient* client,
       const SkTileGridFactory::TileGridInfo& tile_grid_info,
       bool gather_pixels_refs,
-      int num_raster_threads,
       RecordingMode recording_mode);
   static scoped_refptr<Picture> CreateFromValue(const base::Value* value);
   static scoped_refptr<Picture> CreateFromSkpValue(const base::Value* value);
 
   gfx::Rect LayerRect() const { return layer_rect_; }
   gfx::Rect OpaqueRect() const { return opaque_rect_; }
-
-  // Get thread-safe clone for rasterizing with on a specific thread.
-  Picture* GetCloneForDrawingOnThread(unsigned thread_index);
 
   // Has Record() been called yet?
   bool HasRecording() const { return picture_.get() != NULL; }
@@ -84,7 +79,7 @@ class CC_EXPORT Picture
   int Raster(SkCanvas* canvas,
              SkDrawPictureCallback* callback,
              const Region& negated_content_region,
-             float contents_scale);
+             float contents_scale) const;
 
   // Draw the picture directly into the given canvas, without applying any
   // clip/scale/layer transformations.
@@ -147,9 +142,6 @@ class CC_EXPORT Picture
           const gfx::Rect& opaque_rect);
   ~Picture();
 
-  // Make thread-safe clones for rasterizing with.
-  void CloneForDrawing(int num_threads);
-
   // Record a paint operation. To be able to safely use this SkPicture for
   // playback on a different thread this can only be called once.
   void Record(ContentLayerClient* client,
@@ -164,9 +156,6 @@ class CC_EXPORT Picture
   skia::RefPtr<SkPicture> picture_;
   scoped_ptr<const EXPERIMENTAL::SkPlayback> playback_;
 
-  typedef std::vector<scoped_refptr<Picture> > PictureVector;
-  PictureVector clones_;
-
   PixelRefMap pixel_refs_;
   gfx::Point min_pixel_cell_;
   gfx::Point max_pixel_cell_;
@@ -176,8 +165,6 @@ class CC_EXPORT Picture
     AsTraceableRasterData(float scale) const;
   scoped_refptr<base::debug::ConvertableToTraceFormat>
     AsTraceableRecordData() const;
-
-  base::ThreadChecker raster_thread_checker_;
 
   friend class base::RefCountedThreadSafe<Picture>;
   friend class PixelRefIterator;

@@ -38,9 +38,6 @@ class BenchmarkRasterTask : public Task {
 
   // Overridden from Task:
   virtual void RunOnWorkerThread() OVERRIDE {
-    PicturePileImpl* picture_pile = picture_pile_->GetCloneForDrawingOnThread(
-        RasterWorkerPool::GetPictureCloneIndexForCurrentThread());
-
     // Parameters for LapTimer.
     const int kTimeLimitMillis = 1;
     const int kWarmupRuns = 0;
@@ -59,9 +56,9 @@ class BenchmarkRasterTask : public Task {
         SkCanvas canvas(bitmap);
         PicturePileImpl::Analysis analysis;
 
-        picture_pile->AnalyzeInRect(
+        picture_pile_->AnalyzeInRect(
             content_rect_, contents_scale_, &analysis, NULL);
-        picture_pile->RasterToBitmap(
+        picture_pile_->RasterToBitmap(
             &canvas, content_rect_, contents_scale_, NULL);
 
         is_solid_color_ = analysis.is_solid_color;

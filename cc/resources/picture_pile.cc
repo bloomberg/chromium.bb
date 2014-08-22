@@ -345,13 +345,12 @@ bool PicturePile::UpdateAndExpandInvalidation(
 
     int repeat_count = std::max(1, slow_down_raster_scale_factor_for_debug_);
     scoped_refptr<Picture> picture;
-    int num_raster_threads = RasterWorkerPool::GetNumRasterThreads();
 
     // Note: Currently, gathering of pixel refs when using a single
     // raster thread doesn't provide any benefit. This might change
     // in the future but we avoid it for now to reduce the cost of
     // Picture::Create.
-    bool gather_pixel_refs = num_raster_threads > 1;
+    bool gather_pixel_refs = RasterWorkerPool::GetNumRasterThreads() > 1;
 
     {
       base::TimeDelta best_duration = base::TimeDelta::Max();
@@ -361,7 +360,6 @@ bool PicturePile::UpdateAndExpandInvalidation(
                                   painter,
                                   tile_grid_info_,
                                   gather_pixel_refs,
-                                  num_raster_threads,
                                   recording_mode);
         // Note the '&&' with previous is-suitable state.
         // This means that once a picture-pile becomes unsuitable for gpu

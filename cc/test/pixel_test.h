@@ -62,7 +62,6 @@ class PixelTest : public testing::Test, RendererClient {
 
   // RendererClient implementation.
   virtual void SetFullRootLayerDamage() OVERRIDE {}
-  virtual void RunOnDemandRasterTask(Task* on_demand_raster_task) OVERRIDE;
 
  private:
   void ReadbackResult(base::Closure quit_run_loop,

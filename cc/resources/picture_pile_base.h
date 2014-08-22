@@ -30,7 +30,6 @@ class CC_EXPORT PicturePileBase : public base::RefCounted<PicturePileBase> {
  public:
   PicturePileBase();
   explicit PicturePileBase(const PicturePileBase* other);
-  PicturePileBase(const PicturePileBase* other, unsigned thread_index);
 
   gfx::Size tiling_size() const { return tiling_.tiling_size(); }
   void SetMinContentsScale(float min_contents_scale);
@@ -72,9 +71,8 @@ class CC_EXPORT PicturePileBase : public base::RefCounted<PicturePileBase> {
 
     bool Invalidate(int frame_number);
     bool NeedsRecording(int frame_number, int distance_to_visible);
-    PictureInfo CloneForThread(int thread_index) const;
     void SetPicture(scoped_refptr<Picture> picture);
-    Picture* GetPicture() const;
+    const Picture* GetPicture() const;
 
     float GetInvalidationFrequencyForTesting() const {
       return GetInvalidationFrequency();
@@ -85,7 +83,7 @@ class CC_EXPORT PicturePileBase : public base::RefCounted<PicturePileBase> {
     float GetInvalidationFrequency() const;
 
     int last_frame_number_;
-    scoped_refptr<Picture> picture_;
+    scoped_refptr<const Picture> picture_;
     std::bitset<INVALIDATION_FRAMES_TRACKED> invalidation_history_;
   };
 
@@ -97,8 +95,8 @@ class CC_EXPORT PicturePileBase : public base::RefCounted<PicturePileBase> {
   int buffer_pixels() const { return tiling_.border_texels(); }
   void Clear();
 
-  gfx::Rect PaddedRect(const PictureMapKey& key);
-  gfx::Rect PadRect(const gfx::Rect& rect);
+  gfx::Rect PaddedRect(const PictureMapKey& key) const;
+  gfx::Rect PadRect(const gfx::Rect& rect) const;
 
   // An internal CanRaster check that goes to the picture_map rather than
   // using the recorded_viewport hint.

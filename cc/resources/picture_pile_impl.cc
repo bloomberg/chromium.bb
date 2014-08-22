@@ -9,7 +9,6 @@
 #include "cc/base/region.h"
 #include "cc/debug/debug_colors.h"
 #include "cc/resources/picture_pile_impl.h"
-#include "cc/resources/raster_worker_pool.h"
 #include "skia/ext/analysis_canvas.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
@@ -20,18 +19,6 @@
 
 namespace cc {
 
-PicturePileImpl::ClonesForDrawing::ClonesForDrawing(
-    const PicturePileImpl* pile, int num_threads) {
-  for (int i = 0; i < num_threads; i++) {
-    scoped_refptr<PicturePileImpl> clone =
-        PicturePileImpl::CreateCloneForDrawing(pile, i);
-    clones_.push_back(clone);
-  }
-}
-
-PicturePileImpl::ClonesForDrawing::~ClonesForDrawing() {
-}
-
 scoped_refptr<PicturePileImpl> PicturePileImpl::Create() {
   return make_scoped_refptr(new PicturePileImpl);
 }
@@ -41,34 +28,14 @@ scoped_refptr<PicturePileImpl> PicturePileImpl::CreateFromOther(
   return make_scoped_refptr(new PicturePileImpl(other));
 }
 
-scoped_refptr<PicturePileImpl> PicturePileImpl::CreateCloneForDrawing(
-    const PicturePileImpl* other, unsigned thread_index) {
-  return make_scoped_refptr(new PicturePileImpl(other, thread_index));
-}
-
-PicturePileImpl::PicturePileImpl()
-    : clones_for_drawing_(ClonesForDrawing(this, 0)) {
+PicturePileImpl::PicturePileImpl() {
 }
 
 PicturePileImpl::PicturePileImpl(const PicturePileBase* other)
-    : PicturePileBase(other),
-      clones_for_drawing_(ClonesForDrawing(
-                              this, RasterWorkerPool::GetNumRasterThreads())) {
-}
-
-PicturePileImpl::PicturePileImpl(
-    const PicturePileImpl* other, unsigned thread_index)
-    : PicturePileBase(other, thread_index),
-      clones_for_drawing_(ClonesForDrawing(this, 0)) {
+    : PicturePileBase(other) {
 }
 
 PicturePileImpl::~PicturePileImpl() {
-}
-
-PicturePileImpl* PicturePileImpl::GetCloneForDrawingOnThread(
-    unsigned thread_index) const {
-  CHECK_GT(clones_for_drawing_.clones_.size(), thread_index);
-  return clones_for_drawing_.clones_[thread_index].get();
 }
 
 void PicturePileImpl::RasterDirect(
@@ -88,7 +55,7 @@ void PicturePileImpl::RasterForAnalysis(
     skia::AnalysisCanvas* canvas,
     const gfx::Rect& canvas_rect,
     float contents_scale,
-    RenderingStatsInstrumentation* stats_instrumentation) {
+    RenderingStatsInstrumentation* stats_instrumentation) const {
   RasterCommon(
       canvas, canvas, canvas_rect, contents_scale, stats_instrumentation, true);
 }
@@ -97,7 +64,7 @@ void PicturePileImpl::RasterToBitmap(
     SkCanvas* canvas,
     const gfx::Rect& canvas_rect,
     float contents_scale,
-    RenderingStatsInstrumentation* rendering_stats_instrumentation) {
+    RenderingStatsInstrumentation* rendering_stats_instrumentation) const {
   canvas->discard();
   if (clear_canvas_with_debug_color_) {
     // Any non-painted areas in the content bounds will be left in this color.
@@ -166,7 +133,7 @@ void PicturePileImpl::RasterToBitmap(
 void PicturePileImpl::CoalesceRasters(const gfx::Rect& canvas_rect,
                                       const gfx::Rect& content_rect,
                                       float contents_scale,
-                                      PictureRegionMap* results) {
+                                      PictureRegionMap* results) const {
   DCHECK(results);
   // Rasterize the collection of relevant picture piles.
   gfx::Rect layer_rect = gfx::ScaleToEnclosingRect(
@@ -197,11 +164,11 @@ void PicturePileImpl::CoalesceRasters(const gfx::Rect& canvas_rect,
   for (TilingData::Iterator tile_iter(&tiling_, layer_rect, include_borders);
        tile_iter;
        ++tile_iter) {
-    PictureMap::iterator map_iter = picture_map_.find(tile_iter.index());
+    PictureMap::const_iterator map_iter = picture_map_.find(tile_iter.index());
     if (map_iter == picture_map_.end())
       continue;
-    PictureInfo& info = map_iter->second;
-    Picture* picture = info.GetPicture();
+    const PictureInfo& info = map_iter->second;
+    const Picture* picture = info.GetPicture();
     if (!picture)
       continue;
 
@@ -264,7 +231,7 @@ void PicturePileImpl::RasterCommon(
     const gfx::Rect& canvas_rect,
     float contents_scale,
     RenderingStatsInstrumentation* rendering_stats_instrumentation,
-    bool is_analysis) {
+    bool is_analysis) const {
   DCHECK(contents_scale >= min_contents_scale_);
 
   canvas->translate(-canvas_rect.x(), -canvas_rect.y());
@@ -288,7 +255,7 @@ void PicturePileImpl::RasterCommon(
   for (PictureRegionMap::iterator it = picture_region_map.begin();
        it != picture_region_map.end();
        ++it) {
-    Picture* picture = it->first;
+    const Picture* picture = it->first;
     Region negated_clip_region = it->second;
 
 #ifndef NDEBUG
@@ -356,10 +323,9 @@ skia::RefPtr<SkPicture> PicturePileImpl::GetFlattenedPicture() {
   return picture;
 }
 
-void PicturePileImpl::AnalyzeInRect(
-    const gfx::Rect& content_rect,
-    float contents_scale,
-    PicturePileImpl::Analysis* analysis) {
+void PicturePileImpl::AnalyzeInRect(const gfx::Rect& content_rect,
+                                    float contents_scale,
+                                    PicturePileImpl::Analysis* analysis) const {
   AnalyzeInRect(content_rect, contents_scale, analysis, NULL);
 }
 
@@ -367,7 +333,7 @@ void PicturePileImpl::AnalyzeInRect(
     const gfx::Rect& content_rect,
     float contents_scale,
     PicturePileImpl::Analysis* analysis,
-    RenderingStatsInstrumentation* stats_instrumentation) {
+    RenderingStatsInstrumentation* stats_instrumentation) const {
   DCHECK(analysis);
   TRACE_EVENT0("cc", "PicturePileImpl::AnalyzeInRect");
 
@@ -444,11 +410,11 @@ void PicturePileImpl::PixelRefIterator::AdvanceToTilePictureWithPixelRefs() {
 }
 
 void PicturePileImpl::DidBeginTracing() {
-  std::set<void*> processed_pictures;
+  std::set<const void*> processed_pictures;
   for (PictureMap::iterator it = picture_map_.begin();
        it != picture_map_.end();
        ++it) {
-    Picture* picture = it->second.GetPicture();
+    const Picture* picture = it->second.GetPicture();
     if (picture && (processed_pictures.count(picture) == 0)) {
       picture->EmitTraceSnapshot();
       processed_pictures.insert(picture);

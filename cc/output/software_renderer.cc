@@ -20,7 +20,6 @@
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/quads/texture_draw_quad.h"
 #include "cc/quads/tile_draw_quad.h"
-#include "cc/resources/raster_worker_pool.h"
 #include "skia/ext/opacity_draw_filter.h"
 #include "third_party/skia/include/core/SkBitmapDevice.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -34,45 +33,7 @@
 #include "ui/gfx/transform.h"
 
 namespace cc {
-
 namespace {
-
-class OnDemandRasterTaskImpl : public Task {
- public:
-  OnDemandRasterTaskImpl(PicturePileImpl* picture_pile,
-                         SkCanvas* canvas,
-                         gfx::Rect content_rect,
-                         float contents_scale)
-      : picture_pile_(picture_pile),
-        canvas_(canvas),
-        content_rect_(content_rect),
-        contents_scale_(contents_scale) {
-    DCHECK(picture_pile_);
-    DCHECK(canvas_);
-  }
-
-  // Overridden from Task:
-  virtual void RunOnWorkerThread() OVERRIDE {
-    TRACE_EVENT0("cc", "OnDemandRasterTaskImpl::RunOnWorkerThread");
-
-    PicturePileImpl* picture_pile = picture_pile_->GetCloneForDrawingOnThread(
-        RasterWorkerPool::GetPictureCloneIndexForCurrentThread());
-    DCHECK(picture_pile);
-
-    picture_pile->RasterDirect(canvas_, content_rect_, contents_scale_, NULL);
-  }
-
- protected:
-  virtual ~OnDemandRasterTaskImpl() {}
-
- private:
-  PicturePileImpl* picture_pile_;
-  SkCanvas* canvas_;
-  const gfx::Rect content_rect_;
-  const float contents_scale_;
-
-  DISALLOW_COPY_AND_ASSIGN(OnDemandRasterTaskImpl);
-};
 
 static inline bool IsScalarNearlyInteger(SkScalar scalar) {
   return SkScalarNearlyZero(scalar - SkScalarRoundToScalar(scalar));
@@ -389,13 +350,8 @@ void SoftwareRenderer::DrawPictureQuad(const DrawingFrame* frame,
   TRACE_EVENT0("cc",
                "SoftwareRenderer::DrawPictureQuad");
 
-  // Create and run on-demand raster task for tile.
-  scoped_refptr<Task> on_demand_raster_task(
-      new OnDemandRasterTaskImpl(quad->picture_pile,
-                                 current_canvas_,
-                                 quad->content_rect,
-                                 quad->contents_scale));
-  client_->RunOnDemandRasterTask(on_demand_raster_task.get());
+  quad->picture_pile->RasterDirect(
+      current_canvas_, quad->content_rect, quad->contents_scale, NULL);
 
   current_canvas_->setDrawFilter(NULL);
 }

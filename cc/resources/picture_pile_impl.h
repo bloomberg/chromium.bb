@@ -26,17 +26,12 @@ class CC_EXPORT PicturePileImpl : public PicturePileBase {
   static scoped_refptr<PicturePileImpl> CreateFromOther(
       const PicturePileBase* other);
 
-  // Get paint-safe version of this picture for a specific thread.
-  PicturePileImpl* GetCloneForDrawingOnThread(unsigned thread_index) const;
-
-  // Raster a subrect of this PicturePileImpl into the given canvas.
-  // It's only safe to call paint on a cloned version.  It is assumed
-  // that contents_scale has already been applied to this canvas.
+  // Raster a subrect of this PicturePileImpl into the given canvas. It is
+  // assumed that contents_scale has already been applied to this canvas.
   // Writes the total number of pixels rasterized and the time spent
-  // rasterizing to the stats if the respective pointer is not
-  // NULL. When slow-down-raster-scale-factor is set to a value
-  // greater than 1, the reported rasterize time is the minimum
-  // measured value over all runs.
+  // rasterizing to the stats if the respective pointer is not NULL. When
+  // slow-down-raster-scale-factor is set to a value greater than 1, the
+  // reported rasterize time is the minimum measured value over all runs.
   void RasterDirect(
       SkCanvas* canvas,
       const gfx::Rect& canvas_rect,
@@ -51,7 +46,7 @@ class CC_EXPORT PicturePileImpl : public PicturePileBase {
       SkCanvas* canvas,
       const gfx::Rect& canvas_rect,
       float contents_scale,
-      RenderingStatsInstrumentation* stats_instrumentation);
+      RenderingStatsInstrumentation* stats_instrumentation) const;
 
   // Called when analyzing a tile. We can use AnalysisCanvas as
   // SkDrawPictureCallback, which allows us to early out from analysis.
@@ -59,7 +54,7 @@ class CC_EXPORT PicturePileImpl : public PicturePileBase {
       skia::AnalysisCanvas* canvas,
       const gfx::Rect& canvas_rect,
       float contents_scale,
-      RenderingStatsInstrumentation* stats_instrumentation);
+      RenderingStatsInstrumentation* stats_instrumentation) const;
 
   skia::RefPtr<SkPicture> GetFlattenedPicture();
 
@@ -73,12 +68,13 @@ class CC_EXPORT PicturePileImpl : public PicturePileBase {
 
   void AnalyzeInRect(const gfx::Rect& content_rect,
                      float contents_scale,
-                     Analysis* analysis);
+                     Analysis* analysis) const;
 
-  void AnalyzeInRect(const gfx::Rect& content_rect,
-                     float contents_scale,
-                     Analysis* analysis,
-                     RenderingStatsInstrumentation* stats_instrumentation);
+  void AnalyzeInRect(
+      const gfx::Rect& content_rect,
+      float contents_scale,
+      Analysis* analysis,
+      RenderingStatsInstrumentation* stats_instrumentation) const;
 
   class CC_EXPORT PixelRefIterator {
    public:
@@ -113,26 +109,12 @@ class CC_EXPORT PicturePileImpl : public PicturePileBase {
   virtual ~PicturePileImpl();
 
  private:
-  class ClonesForDrawing {
-   public:
-    ClonesForDrawing(const PicturePileImpl* pile, int num_threads);
-    ~ClonesForDrawing();
+  typedef std::map<const Picture*, Region> PictureRegionMap;
 
-    typedef std::vector<scoped_refptr<PicturePileImpl> > PicturePileVector;
-    PicturePileVector clones_;
-  };
-
-  static scoped_refptr<PicturePileImpl> CreateCloneForDrawing(
-      const PicturePileImpl* other, unsigned thread_index);
-
-  PicturePileImpl(const PicturePileImpl* other, unsigned thread_index);
-
- private:
-  typedef std::map<Picture*, Region> PictureRegionMap;
   void CoalesceRasters(const gfx::Rect& canvas_rect,
                        const gfx::Rect& content_rect,
                        float contents_scale,
-                       PictureRegionMap* result);
+                       PictureRegionMap* result) const;
 
   void RasterCommon(
       SkCanvas* canvas,
@@ -140,13 +122,7 @@ class CC_EXPORT PicturePileImpl : public PicturePileBase {
       const gfx::Rect& canvas_rect,
       float contents_scale,
       RenderingStatsInstrumentation* rendering_stats_instrumentation,
-      bool is_analysis);
-
-  // Once instantiated, |clones_for_drawing_| can't be modified.  This
-  // guarantees thread-safe access during the life time of a PicturePileImpl
-  // instance.  This member variable must be last so that other member
-  // variables have already been initialized and can be clonable.
-  const ClonesForDrawing clones_for_drawing_;
+      bool is_analysis) const;
 
   DISALLOW_COPY_AND_ASSIGN(PicturePileImpl);
 };

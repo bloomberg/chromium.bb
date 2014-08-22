@@ -111,7 +111,7 @@ void PictureRecordBenchmark::RunOnLayer(PictureLayer* layer) {
         base::TimeTicks start = base::TimeTicks::HighResNow();
 
         scoped_refptr<Picture> picture = Picture::Create(
-            rect, painter, tile_grid_info, false, 0, Picture::RECORD_NORMALLY);
+            rect, painter, tile_grid_info, false, Picture::RECORD_NORMALLY);
 
         base::TimeTicks end = base::TimeTicks::HighResNow();
         base::TimeDelta duration = end - start;

@@ -130,7 +130,7 @@ void RasterizeAndRecordBenchmark::RunOnLayer(PictureLayer* layer) {
                      kTimeCheckInterval);
       do {
         scoped_refptr<Picture> picture = Picture::Create(
-            visible_content_rect, painter, tile_grid_info, false, 0, mode);
+            visible_content_rect, painter, tile_grid_info, false, mode);
         timer.NextLap();
       } while (!timer.HasTimeLimitExpired());
       base::TimeDelta duration =

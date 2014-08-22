@@ -229,7 +229,6 @@ class CC_EXPORT LayerTreeHostImpl
 
   // RendererClient implementation.
   virtual void SetFullRootLayerDamage() OVERRIDE;
-  virtual void RunOnDemandRasterTask(Task* on_demand_raster_task) OVERRIDE;
 
   // TileManagerClient implementation.
   virtual const std::vector<PictureLayerImpl*>& GetPictureLayers()
@@ -595,10 +594,6 @@ class CC_EXPORT LayerTreeHostImpl
   scoped_ptr<ResourcePool> resource_pool_;
   scoped_ptr<ResourcePool> staging_resource_pool_;
   scoped_ptr<Renderer> renderer_;
-
-  TaskGraphRunner synchronous_task_graph_runner_;
-  TaskGraphRunner* on_demand_task_graph_runner_;
-  NamespaceToken on_demand_task_namespace_;
 
   GlobalStateThatImpactsTilePriority global_tile_state_;
 

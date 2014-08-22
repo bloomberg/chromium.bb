@@ -15,7 +15,6 @@ class FakeRendererClient : public RendererClient {
 
   // RendererClient methods.
   virtual void SetFullRootLayerDamage() OVERRIDE;
-  virtual void RunOnDemandRasterTask(Task* on_demand_raster_task) OVERRIDE {}
 
   // Methods added for test.
   int set_full_root_layer_damage_count() const {

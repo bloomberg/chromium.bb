@@ -17,7 +17,7 @@
 #include "cc/debug/frame_viewer_instrumentation.h"
 #include "cc/debug/traced_value.h"
 #include "cc/layers/picture_layer_impl.h"
-#include "cc/resources/raster_worker_pool.h"
+#include "cc/resources/rasterizer.h"
 #include "cc/resources/tile.h"
 #include "skia/ext/paint_simplifier.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -66,10 +66,16 @@ class RasterTaskImpl : public RasterTask {
     TRACE_EVENT0("cc", "RasterizerTaskImpl::RunOnWorkerThread");
 
     DCHECK(picture_pile_);
-    if (canvas_) {
-      AnalyzeAndRaster(picture_pile_->GetCloneForDrawingOnThread(
-          RasterWorkerPool::GetPictureCloneIndexForCurrentThread()));
+    if (!canvas_)
+      return;
+
+    if (analyze_picture_) {
+      Analyze(picture_pile_.get());
+      if (analysis_.is_solid_color)
+        return;
     }
+
+    Raster(picture_pile_.get());
   }
 
   // Overridden from RasterizerTask:
@@ -90,20 +96,7 @@ class RasterTaskImpl : public RasterTask {
   virtual ~RasterTaskImpl() { DCHECK(!canvas_); }
 
  private:
-  void AnalyzeAndRaster(PicturePileImpl* picture_pile) {
-    DCHECK(picture_pile);
-    DCHECK(canvas_);
-
-    if (analyze_picture_) {
-      Analyze(picture_pile);
-      if (analysis_.is_solid_color)
-        return;
-    }
-
-    Raster(picture_pile);
-  }
-
-  void Analyze(PicturePileImpl* picture_pile) {
+  void Analyze(const PicturePileImpl* picture_pile) {
     frame_viewer_instrumentation::ScopedAnalyzeTask analyze_task(
         tile_id_, tile_resolution_, source_frame_number_, layer_id_);
 
@@ -120,7 +113,7 @@ class RasterTaskImpl : public RasterTask {
     analysis_.is_solid_color &= kUseColorEstimator;
   }
 
-  void Raster(PicturePileImpl* picture_pile) {
+  void Raster(const PicturePileImpl* picture_pile) {
     frame_viewer_instrumentation::ScopedRasterTask raster_task(
         tile_id_,
         tile_resolution_,

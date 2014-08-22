@@ -13,7 +13,6 @@
 #include "cc/output/renderer.h"
 #include "cc/resources/resource_provider.h"
 #include "cc/resources/scoped_resource.h"
-#include "cc/resources/task_graph_runner.h"
 
 namespace cc {
 
