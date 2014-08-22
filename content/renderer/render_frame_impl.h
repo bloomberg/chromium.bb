@@ -149,9 +149,6 @@ class CONTENT_EXPORT RenderFrameImpl
   // spot.
   void Initialize();
 
-  // Notification from RenderView.
-  virtual void OnStop();
-
   // Notifications from RenderWidget.
   void WasHidden();
   void WasShown();
@@ -491,6 +488,7 @@ class CONTENT_EXPORT RenderFrameImpl
   // content/common/*_messages.h for the message that the function is handling.
   void OnBeforeUnload();
   void OnSwapOut(int proxy_routing_id);
+  void OnStop();
   void OnShowContextMenu(const gfx::Point& location);
   void OnContextMenuClosed(const CustomContextMenuContext& custom_context);
   void OnCustomContextMenuAction(const CustomContextMenuContext& custom_context,

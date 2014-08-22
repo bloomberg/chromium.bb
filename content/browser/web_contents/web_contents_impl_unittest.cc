@@ -1158,7 +1158,7 @@ TEST_F(WebContentsImplTest, CrossSiteNotPreemptedDuringBeforeUnload) {
   EXPECT_TRUE(orig_rfh->GetRenderViewHost()->is_waiting_for_beforeunload_ack());
 
   // Suppose the first navigation tries to commit now, with a
-  // ViewMsg_Stop in flight.  This should not cancel the pending navigation,
+  // FrameMsg_Stop in flight.  This should not cancel the pending navigation,
   // but it should act as if the beforeunload ack arrived.
   orig_rfh->SendNavigate(1, GURL("chrome://blah"));
   EXPECT_TRUE(contents()->cross_navigation_pending());

@@ -371,6 +371,9 @@ IPC_MESSAGE_ROUTED0(FrameMsg_BeforeUnload)
 IPC_MESSAGE_ROUTED1(FrameMsg_SwapOut,
                     int /* proxy_routing_id */)
 
+// Instructs the frame to stop the load in progress, if any.
+IPC_MESSAGE_ROUTED0(FrameMsg_Stop)
+
 // Request for the renderer to insert CSS into the frame.
 IPC_MESSAGE_ROUTED1(FrameMsg_CSSInsertRequest,
                     std::string  /* css */)

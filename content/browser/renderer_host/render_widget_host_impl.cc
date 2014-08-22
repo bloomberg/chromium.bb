@@ -1925,10 +1925,6 @@ void RenderWidgetHostImpl::StartUserGesture() {
   OnUserGesture();
 }
 
-void RenderWidgetHostImpl::Stop() {
-  Send(new ViewMsg_Stop(GetRoutingID()));
-}
-
 void RenderWidgetHostImpl::SetBackgroundOpaque(bool opaque) {
   Send(new ViewMsg_SetBackgroundOpaque(GetRoutingID(), opaque));
 }

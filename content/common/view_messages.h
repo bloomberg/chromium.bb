@@ -629,8 +629,6 @@ IPC_MESSAGE_ROUTED2(ViewMsg_ShowContextMenu,
                     ui::MenuSourceType,
                     gfx::Point /* location where menu should be shown */)
 
-IPC_MESSAGE_ROUTED0(ViewMsg_Stop)
-
 // Sent when the user wants to search for a word on the page (find in page).
 IPC_MESSAGE_ROUTED3(ViewMsg_Find,
                     int /* request_id */,

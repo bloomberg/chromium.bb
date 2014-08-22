@@ -39,16 +39,10 @@ RenderFrameProxy* RenderFrameProxy::CreateProxyToReplaceFrame(
   scoped_ptr<RenderFrameProxy> proxy(
       new RenderFrameProxy(routing_id, frame_to_replace->GetRoutingID()));
 
-  blink::WebRemoteFrame* web_frame = NULL;
-  if (frame_to_replace->GetWebFrame()->parent() &&
-      frame_to_replace->GetWebFrame()->parent()->isWebRemoteFrame()) {
-    blink::WebRemoteFrame* parent_web_frame =
-        frame_to_replace->GetWebFrame()->parent()->toWebRemoteFrame();
-    web_frame = parent_web_frame->createRemoteChild("", proxy.get());
-  } else {
-    web_frame = blink::WebRemoteFrame::create(proxy.get());
-  }
-
+  // When a RenderFrame is replaced by a RenderProxy, the WebRemoteFrame should
+  // always come from WebRemoteFrame::create and a call to WebFrame::swap must
+  // follow later.
+  blink::WebRemoteFrame* web_frame = blink::WebRemoteFrame::create(proxy.get());
   proxy->Init(web_frame, frame_to_replace->render_view());
   return proxy.release();
 }

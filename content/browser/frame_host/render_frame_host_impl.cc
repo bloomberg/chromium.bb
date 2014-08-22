@@ -580,7 +580,7 @@ void RenderFrameHostImpl::OnNavigate(const IPC::Message& msg) {
 
   // If we're waiting for a cross-site beforeunload ack from this renderer and
   // we receive a Navigate message from the main frame, then the renderer was
-  // navigating already and sent it before hearing the ViewMsg_Stop message.
+  // navigating already and sent it before hearing the FrameMsg_Stop message.
   // We do not want to cancel the pending navigation in this case, since the
   // old page will soon be stopped.  Instead, treat this as a beforeunload ack
   // to allow the pending navigation to continue.
@@ -1070,6 +1070,10 @@ void RenderFrameHostImpl::NavigateToURL(const GURL& url) {
   params.navigation_type = FrameMsg_Navigate_Type::NORMAL;
   params.browser_navigation_start = base::TimeTicks::Now();
   Navigate(params);
+}
+
+void RenderFrameHostImpl::Stop() {
+  Send(new FrameMsg_Stop(routing_id_));
 }
 
 void RenderFrameHostImpl::DispatchBeforeUnload(bool for_cross_site_transition) {
