@@ -193,6 +193,11 @@
     {
       "test": "display_unittests",
       "platforms": ["linux"]
+    },
+    {
+      "test": "ozone_unittests",
+      "platforms": ["linux"],
+      "chromium_configs": ["chromium_chromeos_ozone"]
     }
   ],
 
