@@ -317,6 +317,15 @@ void LaunchDateAndTimeSettings() {
 #endif
 }
 
+bool IsErrorDueToBadClock(const base::Time& now, int error) {
+  if (SSLErrorInfo::NetErrorToErrorType(error) !=
+          SSLErrorInfo::CERT_DATE_INVALID) {
+    return false;
+  }
+  return SSLErrorClassification::IsUserClockInThePast(now) ||
+      SSLErrorClassification::IsUserClockInTheFuture(now);
+}
+
 }  // namespace
 
 // Note that we always create a navigation entry with SSL errors.
@@ -439,20 +448,21 @@ std::string SSLBlockingPage::GetHTMLContents() {
       "tabTitle", l10n_util::GetStringUTF16(IDS_SSL_V2_TITLE));
   load_time_data.SetString(
       "heading", l10n_util::GetStringUTF16(IDS_SSL_V2_HEADING));
-  if ((SSLErrorClassification::IsUserClockInThePast(
-      base::Time::NowFromSystemTime()))
-      && (SSLErrorInfo::NetErrorToErrorType(cert_error_) ==
-          SSLErrorInfo::CERT_DATE_INVALID)) {
+
+  base::Time now = base::Time::NowFromSystemTime();
+  bool bad_clock = IsErrorDueToBadClock(now, cert_error_);
+  if (bad_clock) {
     load_time_data.SetString("primaryParagraph",
                              l10n_util::GetStringFUTF16(
                                  IDS_SSL_CLOCK_ERROR,
                                  url,
-                                 base::TimeFormatShortDate(base::Time::Now())));
+                                 base::TimeFormatShortDate(now)));
   } else {
     load_time_data.SetString(
         "primaryParagraph",
         l10n_util::GetStringFUTF16(IDS_SSL_V2_PRIMARY_PARAGRAPH, url));
   }
+
   load_time_data.SetString(
      "openDetails",
      l10n_util::GetStringUTF16(IDS_SSL_V2_OPEN_DETAILS_BUTTON));
@@ -461,22 +471,27 @@ std::string SSLBlockingPage::GetHTMLContents() {
      l10n_util::GetStringUTF16(IDS_SSL_V2_CLOSE_DETAILS_BUTTON));
   load_time_data.SetString("errorCode", net::ErrorToString(cert_error_));
 
-  if (overridable_) {  // Overridable.
+  if (overridable_) {
     SSLErrorInfo error_info =
         SSLErrorInfo::CreateError(
             SSLErrorInfo::NetErrorToErrorType(cert_error_),
             ssl_info_.cert.get(),
             request_url_);
-    load_time_data.SetString(
-        "explanationParagraph", error_info.details());
+    if (bad_clock) {
+      load_time_data.SetString("explanationParagraph",
+                               l10n_util::GetStringFUTF16(
+                                   IDS_SSL_CLOCK_ERROR_EXPLANATION, url));
+    } else {
+      load_time_data.SetString("explanationParagraph", error_info.details());
+    }
     load_time_data.SetString(
         "primaryButtonText",
         l10n_util::GetStringUTF16(IDS_SSL_OVERRIDABLE_SAFETY_BUTTON));
     load_time_data.SetString(
         "finalParagraph",
-        l10n_util::GetStringFUTF16(IDS_SSL_OVERRIDABLE_PROCEED_PARAGRAPH, url));
-  } else {  // Non-overridable.
-    load_time_data.SetBoolean("overridable", false);
+        l10n_util::GetStringFUTF16(IDS_SSL_OVERRIDABLE_PROCEED_PARAGRAPH,
+                                   url));
+  } else {
     SSLErrorInfo::ErrorType type =
         SSLErrorInfo::NetErrorToErrorType(cert_error_);
     if (type == SSLErrorInfo::CERT_INVALID && SSLErrorClassification::
@@ -485,6 +500,10 @@ std::string SSLBlockingPage::GetHTMLContents() {
           "explanationParagraph",
           l10n_util::GetStringFUTF16(
               IDS_SSL_NONOVERRIDABLE_MORE_INVALID_SP3, url));
+    } else if (bad_clock) {
+      load_time_data.SetString("explanationParagraph",
+                               l10n_util::GetStringFUTF16(
+                                   IDS_SSL_CLOCK_ERROR_EXPLANATION, url));
     } else {
       load_time_data.SetString("explanationParagraph",
                                l10n_util::GetStringFUTF16(

@@ -1174,12 +1174,18 @@ Signing in anyway will merge Chrome information like bookmarks, history, and oth
       <!-- SSL Interstitial V2 strings -->
       <if expr="is_android or is_ios">
         <message name="IDS_SSL_CLOCK_ERROR" desc="Paragraph explaining that the SSL interstitial is probably caused by an incorrect clock.">
-          Chrome can't establish a private connection to &lt;strong&gt;<ph name="DOMAIN">$1<ex>paypal.com</ex></ph>&lt;/strong&gt;. This is probably because your device's date is set incorrectly (<ph name="DATE">$2<ex>Jan 1, 1970</ex></ph>). You should refresh this page after <ph name="BEGIN_LINK">&lt;a href="#" id="clock-link"&gt;</ph>you update your device's date and time<ph name="END_LINK">&lt;/a&gt;</ph>.
+          Chrome can't establish a private connection to &lt;strong&gt;<ph name="DOMAIN">$1<ex>paypal.com</ex></ph>&lt;/strong&gt;. This is probably because your device's date is set incorrectly. (Your device has the date set to <ph name="DATE">$2<ex>Jan 1, 1970</ex></ph>.) You should refresh this page after <ph name="BEGIN_LINK">&lt;a href="#" id="clock-link"&gt;</ph>you update your device's date and time<ph name="END_LINK">&lt;/a&gt;</ph>.
+        </message>
+        <message name="IDS_SSL_CLOCK_ERROR_EXPLANATION" desc="Body text for the explanation shown for when the computer's clock is wrong.">
+        To establish a secure network connection, your device needs a correct clock. This is because the certificates websites use to identify themselves when establishing a secure connection are only valid for a specific time period. Since your device's clock is wrong, Chrome cannot properly check certificates.
         </message>
       </if>
       <if expr="not is_android and not is_ios">
         <message name="IDS_SSL_CLOCK_ERROR" desc="Paragraph explaining that the SSL interstitial is probably caused by an incorrect clock.">
-          Chrome can't establish a private connection to &lt;strong&gt;<ph name="DOMAIN">$1<ex>paypal.com</ex></ph>&lt;/strong&gt;. This is probably because your computer's date is set incorrectly (<ph name="DATE">$2<ex>Jan 1, 1970</ex></ph>). You should refresh this page after <ph name="BEGIN_LINK">&lt;a href="#" id="clock-link"&gt;</ph>you update your computer's date and time<ph name="END_LINK">&lt;/a&gt;</ph>.
+          Chrome can't establish a private connection to &lt;strong&gt;<ph name="DOMAIN">$1<ex>paypal.com</ex></ph>&lt;/strong&gt;. This is probably because your computer's date is set incorrectly (Your computer has the date set to <ph name="DATE">$2<ex>Jan 1, 1970</ex></ph>.) You should refresh this page after <ph name="BEGIN_LINK">&lt;a href="#" id="clock-link"&gt;</ph>you update your computer's date and time<ph name="END_LINK">&lt;/a&gt;</ph>.
+        </message>
+        <message name="IDS_SSL_CLOCK_ERROR_EXPLANATION" desc="Body text for the explanation shown for when the computer's clock is wrong.">
+        To establish a secure network connection, your computer needs a correct clock. This is because the certificates websites use to identify themselves when establishing a secure connection are only valid for a specific time period. Since your computer's clock is wrong, Chrome cannot properly check certificates.
         </message>
       </if>
       <message name="IDS_SSL_NONOVERRIDABLE_MORE_INVALID_SP3" desc="Body text for the explanation shown if the user clicks on the details windows, the certificate is invalid and the user has an old version of Windows (before WINDOWS XP SP3) running.">
