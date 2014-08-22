@@ -22,6 +22,7 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/omnibox/omnibox_field_trial.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -58,7 +59,8 @@ KeyedService* BookmarkModelFactory::BuildServiceInstanceFor(
   Profile* profile = static_cast<Profile*>(context);
   ChromeBookmarkClient* bookmark_client =
       ChromeBookmarkClientFactory::GetForProfile(profile);
-  BookmarkModel* bookmark_model = new BookmarkModel(bookmark_client);
+  BookmarkModel* bookmark_model = new BookmarkModel(
+      bookmark_client, OmniboxFieldTrial::BookmarksIndexURLsValue());
   bookmark_client->Init(bookmark_model);
   bookmark_model->Load(profile->GetPrefs(),
                        profile->GetPrefs()->GetString(prefs::kAcceptLanguages),

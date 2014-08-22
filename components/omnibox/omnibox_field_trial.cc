@@ -306,6 +306,12 @@ bool OmniboxFieldTrial::HQPAllowMatchInSchemeValue() {
       kHQPAllowMatchInSchemeRule) == "true";
 }
 
+bool OmniboxFieldTrial::BookmarksIndexURLsValue() {
+  return variations::GetVariationParamValue(
+      kBundledExperimentFieldTrialName,
+      kBookmarksIndexURLsRule) == "true";
+}
+
 bool OmniboxFieldTrial::DisableInlining() {
   return variations::GetVariationParamValue(
       kBundledExperimentFieldTrialName,
@@ -349,6 +355,7 @@ const char OmniboxFieldTrial::kHQPAllowMatchInSchemeRule[] =
     "HQPAllowMatchInScheme";
 const char OmniboxFieldTrial::kZeroSuggestRule[] = "ZeroSuggest";
 const char OmniboxFieldTrial::kZeroSuggestVariantRule[] = "ZeroSuggestVariant";
+const char OmniboxFieldTrial::kBookmarksIndexURLsRule[] = "BookmarksIndexURLs";
 const char OmniboxFieldTrial::kDisableInliningRule[] = "DisableInlining";
 const char OmniboxFieldTrial::kAnswersInSuggestRule[] = "AnswersInSuggest";
 const char OmniboxFieldTrial::kAddUWYTMatchEvenIfPromotedURLsRule[] =

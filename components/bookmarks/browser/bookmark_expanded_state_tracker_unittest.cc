@@ -57,7 +57,7 @@ BookmarkExpandedStateTrackerTest::~BookmarkExpandedStateTrackerTest() {}
 
 void BookmarkExpandedStateTrackerTest::SetUp() {
   prefs_ = PrefServiceForTesting();
-  model_.reset(new BookmarkModel(&client_));
+  model_.reset(new BookmarkModel(&client_, false));
   model_->Load(prefs_.get(),
                std::string(),
                base::FilePath(),

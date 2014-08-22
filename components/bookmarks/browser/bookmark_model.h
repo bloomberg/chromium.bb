@@ -66,7 +66,9 @@ class BookmarkModel : public KeyedService {
     base::string16 title;
   };
 
-  explicit BookmarkModel(bookmarks::BookmarkClient* client);
+  // |index_urls| says whether URLs should be stored in the BookmarkIndex
+  // in addition to bookmark titles.
+  BookmarkModel(bookmarks::BookmarkClient* client, bool index_urls);
   virtual ~BookmarkModel();
 
   // KeyedService:
@@ -412,6 +414,10 @@ class BookmarkModel : public KeyedService {
   scoped_ptr<bookmarks::BookmarkStorage> store_;
 
   scoped_ptr<bookmarks::BookmarkIndex> index_;
+
+  // True if URLs are stored in the BookmarkIndex in addition to bookmark
+  // titles.
+  const bool index_urls_;
 
   base::WaitableEvent loaded_signal_;
 

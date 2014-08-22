@@ -19,7 +19,7 @@ class TestBookmarkClient : public bookmarks::BookmarkClient {
 
   // Create a BookmarkModel using this object as its client. The returned
   // BookmarkModel* is owned by the caller.
-  scoped_ptr<BookmarkModel> CreateModel();
+  scoped_ptr<BookmarkModel> CreateModel(bool index_urls);
 
   // Sets the list of extra nodes to be returned by the next call to
   // CreateModel() or GetLoadExtraNodesCallback().

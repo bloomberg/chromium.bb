@@ -30,8 +30,11 @@ struct BookmarkMatch;
 // BookmarkNodes that contain that string in their title or URL.
 class BookmarkIndex {
  public:
-  // |languages| is used to help parse IDNs in URLs for the bookmark index.
+  // |index_urls| says whether URLs should be stored in the index in addition
+  // to bookmark titles.  |languages| used to help parse IDNs in URLs for the
+  // bookmark index.
   BookmarkIndex(BookmarkClient* client,
+                bool index_urls,
                 const std::string& languages);
   ~BookmarkIndex();
 
@@ -110,6 +113,9 @@ class BookmarkIndex {
 
   // Languages used to help parse IDNs in URLs for the bookmark index.
   const std::string languages_;
+
+  // True if URLs are stored in the index as well as bookmark titles.
+  const bool index_urls_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkIndex);
 };

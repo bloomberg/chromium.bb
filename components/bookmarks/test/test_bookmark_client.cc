@@ -17,8 +17,8 @@ TestBookmarkClient::TestBookmarkClient() {}
 
 TestBookmarkClient::~TestBookmarkClient() {}
 
-scoped_ptr<BookmarkModel> TestBookmarkClient::CreateModel() {
-  scoped_ptr<BookmarkModel> bookmark_model(new BookmarkModel(this));
+scoped_ptr<BookmarkModel> TestBookmarkClient::CreateModel(bool index_urls) {
+  scoped_ptr<BookmarkModel> bookmark_model(new BookmarkModel(this, index_urls));
   scoped_ptr<bookmarks::BookmarkLoadDetails> details =
       bookmark_model->CreateLoadDetails(std::string());
   details->LoadExtraNodes();

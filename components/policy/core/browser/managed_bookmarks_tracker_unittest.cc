@@ -57,7 +57,7 @@ class ManagedBookmarksTrackerTest : public testing::Test {
     extra_nodes.push_back(managed_node);
     client_.SetExtraNodesToLoad(extra_nodes.Pass());
 
-    model_.reset(new BookmarkModel(&client_));
+    model_.reset(new BookmarkModel(&client_, false));
     model_->AddObserver(&observer_);
     EXPECT_CALL(observer_, BookmarkModelLoaded(model_.get(), _));
     model_->Load(&prefs_,
