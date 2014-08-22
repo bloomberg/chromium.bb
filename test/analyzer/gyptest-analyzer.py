@@ -305,7 +305,7 @@ EnsureContains(matched=True, build_targets={'a', 'b'})
 
 _CreateConfigFile(['c.c', 'e.c'], [])
 run_analyzer3()
-EnsureContains(matched=True, build_targets={'a', 'b'})
+EnsureContains(matched=True, build_targets={'a', 'b', 'c', 'e'})
 
 _CreateConfigFile(['d.c'], ['a'])
 run_analyzer3()
@@ -342,11 +342,11 @@ EnsureContains(matched=True, build_targets={'a', 'b'})
 # Assertions around test4.gyp.
 _CreateConfigFile(['f.c'], [])
 run_analyzer4()
-EnsureContains(matched=True, build_targets={'e'})
+EnsureContains(matched=True, build_targets={'e', 'f'})
 
 _CreateConfigFile(['d.c'], [])
 run_analyzer4()
-EnsureContains(matched=True, build_targets={'a'})
+EnsureContains(matched=True, build_targets={'a', 'b', 'c', 'd'})
 
 _CreateConfigFile(['i.c'], [])
 run_analyzer4()

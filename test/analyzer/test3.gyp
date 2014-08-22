@@ -61,7 +61,7 @@
     },
     {
       'target_name': 'f',
-      'type': 'executable',
+      'type': 'static_library',
       'sources': [
         'f.c',
       ],

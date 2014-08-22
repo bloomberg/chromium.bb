@@ -178,7 +178,8 @@ class Target(object):
     See _DoesTargetTypeRequireBuild for details.
   added_to_compile_targets: used when determining if the target was added to the
     set of targets that needs to be built.
-  in_roots: true if this target is a descendant of one of the root nodes."""
+  in_roots: true if this target is a descendant of one of the root nodes.
+  is_executable: true if the type of target is executable."""
   def __init__(self, name):
     self.deps = set()
     self.match_status = MATCH_STATUS_TBD
@@ -190,6 +191,7 @@ class Target(object):
     self.requires_build = False
     self.added_to_compile_targets = False
     self.in_roots = False
+    self.is_executable = False
 
 
 class Config(object):
@@ -302,6 +304,7 @@ def _GenerateTargets(data, target_list, target_dicts, toplevel_dir, files,
     target.visited = True
     target.requires_build = _DoesTargetTypeRequireBuild(
         target_dicts[target_name])
+    target.is_executable = target_dicts[target_name]['type'] == 'executable'
 
     build_file = gyp.common.ParseQualifiedTarget(target_name)[0]
     if not build_file in build_file_in_files:
@@ -404,8 +407,13 @@ def _AddBuildTargets(target, roots, add_if_no_ancestor, result):
     target.added_to_compile_targets |= back_dep_target.added_to_compile_targets
     target.in_roots |= back_dep_target.in_roots
 
-  if not target.added_to_compile_targets and target.in_roots and \
-        (add_if_no_ancestor or target.requires_build):
+  # Always add 'executable' targets. Even though they may be built by other
+  # targets that depend upon them it makes detection of what is going to be
+  # built easier.
+  if target.in_roots and \
+        (target.is_executable or
+         (not target.added_to_compile_targets and
+          (add_if_no_ancestor or target.requires_build))):
     result.add(target)
     target.added_to_compile_targets = True
 
