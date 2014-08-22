@@ -12,7 +12,6 @@
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
-#include "base/memory/singleton.h"
 #include "base/message_loop/message_loop.h"
 #include "base/observer_list.h"
 #include "base/stl_util.h"
@@ -55,15 +54,20 @@ DeviceSocketManager* device_socket_manager_instance_ = NULL;
 // A singleton instance for managing all connections to sockets.
 class DeviceSocketManager {
  public:
-  static void Create(scoped_refptr<base::TaskRunner> io_task_runner) {
-    device_socket_manager_instance_ =
-        new DeviceSocketManager(io_task_runner);
+  static void Create(scoped_refptr<base::TaskRunner> file_task_runner) {
+    device_socket_manager_instance_ = new DeviceSocketManager(file_task_runner);
   }
 
   static void Shutdown() {
     CHECK(device_socket_manager_instance_);
-    delete device_socket_manager_instance_;
+    device_socket_manager_instance_->ScheduleDelete();
+    // Once scheduled to be deleted, no-one should be
+    // able to access it.
     device_socket_manager_instance_ = NULL;
+  }
+
+  static DeviceSocketManager* GetInstanceUnsafe() {
+    return device_socket_manager_instance_;
   }
 
   static DeviceSocketManager* GetInstance() {
@@ -94,8 +98,6 @@ class DeviceSocketManager {
   void OnEOF(const std::string& socket_path);
 
  private:
-  friend struct DefaultSingletonTraits<DeviceSocketManager>;
-
   struct SocketData {
     SocketData()
         : fd(-1) {
@@ -107,26 +109,29 @@ class DeviceSocketManager {
     scoped_ptr<DeviceSocketReader> watcher;
   };
 
-  DeviceSocketManager(scoped_refptr<base::TaskRunner> io_task_runner)
-      : io_task_runner_(io_task_runner) {
-  }
+  static void DeleteOnFILE(DeviceSocketManager* manager) { delete manager; }
+
+  DeviceSocketManager(scoped_refptr<base::TaskRunner> file_task_runner)
+      : file_task_runner_(file_task_runner) {}
 
   ~DeviceSocketManager() {
     STLDeleteContainerPairSecondPointers(socket_data_.begin(),
                                          socket_data_.end());
   }
 
-  void StartListeningOnIO(const std::string& socket_path,
-                          size_t data_size,
-                          DeviceSocketListener* listener);
+  void ScheduleDelete();
 
-  void StopListeningOnIO(const std::string& socket_path,
-                         DeviceSocketListener* listener);
+  void StartListeningOnFILE(const std::string& socket_path,
+                            size_t data_size,
+                            DeviceSocketListener* listener);
+
+  void StopListeningOnFILE(const std::string& socket_path,
+                           DeviceSocketListener* listener);
 
   void CloseSocket(const std::string& socket_path);
 
   std::map<std::string, SocketData*> socket_data_;
-  scoped_refptr<base::TaskRunner> io_task_runner_;
+  scoped_refptr<base::TaskRunner> file_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceSocketManager);
 };
@@ -162,23 +167,31 @@ void DeviceSocketReader::OnFileCanWriteWithoutBlocking(int fd) {
 void DeviceSocketManager::StartListening(const std::string& socket_path,
                                          size_t data_size,
                                          DeviceSocketListener* listener) {
-  io_task_runner_->PostTask(FROM_HERE,
-      base::Bind(&DeviceSocketManager::StartListeningOnIO,
-                 base::Unretained(this), socket_path, data_size, listener));
+  file_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&DeviceSocketManager::StartListeningOnFILE,
+                 base::Unretained(this),
+                 socket_path,
+                 data_size,
+                 listener));
 }
 
 void DeviceSocketManager::StopListening(const std::string& socket_path,
                                         DeviceSocketListener* listener) {
-  io_task_runner_->PostTask(FROM_HERE,
-      base::Bind(&DeviceSocketManager::StopListeningOnIO,
-                 base::Unretained(this), socket_path, listener));
+  file_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&DeviceSocketManager::StopListeningOnFILE,
+                 base::Unretained(this),
+                 socket_path,
+                 listener));
 }
 
 void DeviceSocketManager::OnDataAvailable(const std::string& socket_path,
                                           const void* data) {
   CHECK_GT(socket_data_.count(socket_path), 0UL);
   DeviceSocketListeners& listeners = socket_data_[socket_path]->observers;
-  FOR_EACH_OBSERVER(DeviceSocketListener, listeners, OnDataAvailableOnIO(data));
+  FOR_EACH_OBSERVER(
+      DeviceSocketListener, listeners, OnDataAvailableOnFILE(data));
 }
 
 void DeviceSocketManager::CloseSocket(const std::string& socket_path) {
@@ -202,10 +215,10 @@ void DeviceSocketManager::OnEOF(const std::string& socket_path) {
   CloseSocket(socket_path);
 }
 
-void DeviceSocketManager::StartListeningOnIO(const std::string& socket_path,
-                                             size_t data_size,
-                                             DeviceSocketListener* listener) {
-  CHECK(io_task_runner_->RunsTasksOnCurrentThread());
+void DeviceSocketManager::StartListeningOnFILE(const std::string& socket_path,
+                                               size_t data_size,
+                                               DeviceSocketListener* listener) {
+  CHECK(file_task_runner_->RunsTasksOnCurrentThread());
   SocketData* socket_data = NULL;
   if (!socket_data_.count(socket_path)) {
     int socket_fd = -1;
@@ -237,18 +250,26 @@ void DeviceSocketManager::StartListeningOnIO(const std::string& socket_path,
   socket_data->observers.AddObserver(listener);
 }
 
-void DeviceSocketManager::StopListeningOnIO(const std::string& socket_path,
-                                            DeviceSocketListener* listener) {
+void DeviceSocketManager::StopListeningOnFILE(const std::string& socket_path,
+                                              DeviceSocketListener* listener) {
   if (!socket_data_.count(socket_path))
     return;  // Happens if unable to create a socket.
 
-  CHECK(io_task_runner_->RunsTasksOnCurrentThread());
+  CHECK(file_task_runner_->RunsTasksOnCurrentThread());
   DeviceSocketListeners& listeners = socket_data_[socket_path]->observers;
   listeners.RemoveObserver(listener);
   if (!listeners.might_have_observers()) {
     // All listeners for this socket has been removed. Close the socket.
     CloseSocket(socket_path);
   }
+}
+
+void DeviceSocketManager::ScheduleDelete() {
+  // Schedule a task to delete on FILE thread because
+  // there may be a task scheduled on |file_task_runner_|.
+  file_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&DeleteOnFILE, base::Unretained(this)));
 }
 
 }  // namespace
@@ -265,8 +286,8 @@ DeviceSocketListener::~DeviceSocketListener() {
 
 // static
 void DeviceSocketListener::CreateSocketManager(
-    scoped_refptr<base::TaskRunner> io_task_runner) {
-  DeviceSocketManager::Create(io_task_runner);
+    scoped_refptr<base::TaskRunner> file_task_runner) {
+  DeviceSocketManager::Create(file_task_runner);
 }
 
 // static
@@ -281,7 +302,9 @@ void DeviceSocketListener::StartListening() {
 }
 
 void DeviceSocketListener::StopListening() {
-  DeviceSocketManager::GetInstance()->StopListening(socket_path_, this);
+  DeviceSocketManager* instance = DeviceSocketManager::GetInstanceUnsafe();
+  if (instance)
+    instance->StopListening(socket_path_, this);
 }
 
 }  // namespace athena

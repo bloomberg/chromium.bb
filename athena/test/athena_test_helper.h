@@ -11,6 +11,7 @@
 
 namespace base {
 class MessageLoopForUI;
+class Thread;
 }
 
 namespace ui {
@@ -68,6 +69,7 @@ class AthenaTestHelper {
   scoped_ptr<aura::client::FocusClient> focus_client_;
   scoped_ptr< ::wm::InputMethodEventFilter> input_method_filter_;
   scoped_ptr<ui::ScopedAnimationDurationScaleMode> zero_duration_mode_;
+  scoped_ptr<base::Thread> file_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(AthenaTestHelper);
 };

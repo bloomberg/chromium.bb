@@ -11,6 +11,7 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "content/public/app/content_main.h"
+#include "content/public/browser/browser_thread.h"
 #include "extensions/shell/app/shell_main_delegate.h"
 #include "extensions/shell/browser/shell_browser_main_delegate.h"
 #include "extensions/shell/browser/shell_content_browser_client.h"
@@ -94,7 +95,9 @@ class AthenaBrowserMainDelegate : public extensions::ShellBrowserMainDelegate {
     screen_manager_delegate_.reset(
         new AthenaScreenManagerDelegate(desktop_controller));
     athena::StartAthenaEnv(desktop_controller->host()->window(),
-                           screen_manager_delegate_.get());
+                           screen_manager_delegate_.get(),
+                           content::BrowserThread::GetMessageLoopProxyForThread(
+                               content::BrowserThread::FILE));
     athena::StartAthenaSessionWithContext(context);
   }
 

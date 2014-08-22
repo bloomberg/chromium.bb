@@ -12,6 +12,7 @@
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/threading/thread.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "ui/app_list/app_list_switches.h"
 #include "ui/aura/client/aura_constants.h"
@@ -50,6 +51,9 @@ AthenaTestHelper::~AthenaTestHelper() {
 
 void AthenaTestHelper::SetUp(ui::ContextFactory* context_factory) {
   setup_called_ = true;
+  file_thread_.reset(new base::Thread("FileThread"));
+  base::Thread::Options options(base::MessageLoop::TYPE_IO, 0);
+  file_thread_->StartWithOptions(options);
 
   // Force showing in the experimental app-list view.
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
@@ -90,7 +94,8 @@ void AthenaTestHelper::SetUp(ui::ContextFactory* context_factory) {
   // Ensure width != height so tests won't confuse them.
   host()->SetBounds(gfx::Rect(host_size));
 
-  athena::StartAthenaEnv(root_window(), screen_manager_delegate_.get());
+  athena::StartAthenaEnv(root_window(), screen_manager_delegate_.get(),
+                         file_thread_->message_loop_proxy());
   athena::StartAthenaSession(new SampleActivityFactory(),
                              new TestAppModelBuilder());
 }

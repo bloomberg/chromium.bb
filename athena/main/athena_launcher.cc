@@ -22,7 +22,6 @@
 #include "athena/wm/public/window_manager.h"
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
-#include "content/public/browser/browser_thread.h"
 #include "ui/app_list/app_list_switches.h"
 #include "ui/aura/window_property.h"
 #include "ui/keyboard/keyboard_controller.h"
@@ -92,7 +91,8 @@ class AthenaViewsDelegate : public views::ViewsDelegate {
 };
 
 void StartAthenaEnv(aura::Window* root_window,
-                    athena::ScreenManagerDelegate* delegate) {
+                    athena::ScreenManagerDelegate* delegate,
+                    scoped_refptr<base::TaskRunner> file_runner) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 
   // Force showing in the experimental app-list view.
@@ -113,9 +113,7 @@ void StartAthenaEnv(aura::Window* root_window,
   aura::client::SetVisibilityClient(root_window,
                                     env_state->visibility_client.get());
 
-  athena::SystemUI::Create(
-      content::BrowserThread::GetMessageLoopProxyForThread(
-          content::BrowserThread::FILE));
+  athena::SystemUI::Create(file_runner);
   athena::InputManager::Create()->OnRootWindowCreated(root_window);
   athena::ScreenManager::Create(delegate, root_window);
   athena::WindowManager::Create();
