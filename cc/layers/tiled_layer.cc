@@ -10,6 +10,7 @@
 #include "base/auto_reset.h"
 #include "base/basictypes.h"
 #include "build/build_config.h"
+#include "cc/base/simple_enclosed_region.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/layers/tiled_layer_impl.h"
 #include "cc/resources/layer_updater.h"
@@ -639,11 +640,11 @@ void TiledLayer::SetTexturePriorities(const PriorityCalculator& priority_calc) {
   }
 }
 
-Region TiledLayer::VisibleContentOpaqueRegion() const {
+SimpleEnclosedRegion TiledLayer::VisibleContentOpaqueRegion() const {
   if (skips_draw_)
-    return Region();
+    return SimpleEnclosedRegion();
   if (contents_opaque())
-    return visible_content_rect();
+    return SimpleEnclosedRegion(visible_content_rect());
   return tiler_->OpaqueRegionInContentRect(visible_content_rect());
 }
 

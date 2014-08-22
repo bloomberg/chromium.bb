@@ -137,7 +137,7 @@ class CC_EXPORT TextureLayer : public Layer {
   virtual bool Update(ResourceUpdateQueue* queue,
                       const OcclusionTracker<Layer>* occlusion) OVERRIDE;
   virtual void PushPropertiesTo(LayerImpl* layer) OVERRIDE;
-  virtual Region VisibleContentOpaqueRegion() const OVERRIDE;
+  virtual SimpleEnclosedRegion VisibleContentOpaqueRegion() const OVERRIDE;
 
  protected:
   explicit TextureLayer(TextureLayerClient* client);

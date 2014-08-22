@@ -180,14 +180,14 @@ void TextureLayerImpl::AppendQuads(
                flipped_);
 }
 
-Region TextureLayerImpl::VisibleContentOpaqueRegion() const {
+SimpleEnclosedRegion TextureLayerImpl::VisibleContentOpaqueRegion() const {
   if (contents_opaque())
-    return visible_content_rect();
+    return SimpleEnclosedRegion(visible_content_rect());
 
   if (blend_background_color_ && (SkColorGetA(background_color()) == 0xFF))
-    return visible_content_rect();
+    return SimpleEnclosedRegion(visible_content_rect());
 
-  return Region();
+  return SimpleEnclosedRegion();
 }
 
 void TextureLayerImpl::ReleaseResources() {

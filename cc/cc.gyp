@@ -83,6 +83,8 @@
         'base/scoped_ptr_algorithm.h',
         'base/scoped_ptr_deque.h',
         'base/scoped_ptr_vector.h',
+        'base/simple_enclosed_region.cc',
+        'base/simple_enclosed_region.h',
         'base/swap_promise.h',
         'base/swap_promise_monitor.cc',
         'base/swap_promise_monitor.h',

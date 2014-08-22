@@ -60,6 +60,7 @@ class PriorityCalculator;
 class RenderingStatsInstrumentation;
 class ResourceUpdateQueue;
 class ScrollbarLayerInterface;
+class SimpleEnclosedRegion;
 struct AnimationEvent;
 template <typename LayerType>
 class OcclusionTracker;
@@ -417,7 +418,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   void RemoveLayerAnimationEventObserver(
       LayerAnimationEventObserver* animation_observer);
 
-  virtual Region VisibleContentOpaqueRegion() const;
+  virtual SimpleEnclosedRegion VisibleContentOpaqueRegion() const;
 
   virtual ScrollbarLayerInterface* ToScrollbarLayer();
 

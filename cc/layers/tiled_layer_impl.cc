@@ -8,6 +8,7 @@
 #include "base/debug/trace_event_argument.h"
 #include "base/strings/stringprintf.h"
 #include "cc/base/math_util.h"
+#include "cc/base/simple_enclosed_region.h"
 #include "cc/debug/debug_colors.h"
 #include "cc/layers/append_quads_data.h"
 #include "cc/quads/checkerboard_draw_quad.h"
@@ -301,11 +302,11 @@ void TiledLayerImpl::PushInvalidTile(int i, int j) {
   tile->set_contents_swizzled(false);
 }
 
-Region TiledLayerImpl::VisibleContentOpaqueRegion() const {
+SimpleEnclosedRegion TiledLayerImpl::VisibleContentOpaqueRegion() const {
   if (skips_draw_)
-    return Region();
+    return SimpleEnclosedRegion();
   if (contents_opaque())
-    return visible_content_rect();
+    return SimpleEnclosedRegion(visible_content_rect());
   return tiler_->OpaqueRegionInContentRect(visible_content_rect());
 }
 

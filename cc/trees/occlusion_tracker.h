@@ -9,12 +9,13 @@
 
 #include "base/basictypes.h"
 #include "cc/base/cc_export.h"
-#include "cc/base/region.h"
+#include "cc/base/simple_enclosed_region.h"
 #include "cc/layers/layer_iterator.h"
 #include "ui/gfx/rect.h"
 
 namespace cc {
 class LayerImpl;
+class Region;
 class RenderSurfaceImpl;
 class Layer;
 class RenderSurface;
@@ -64,11 +65,7 @@ class CC_EXPORT OcclusionTracker {
       const gfx::Transform& draw_transform) const;
 
   // Gives the region of the screen that is not occluded by something opaque.
-  Region ComputeVisibleRegionInScreen() const {
-    DCHECK(!stack_.back().target->parent());
-    return SubtractRegions(screen_space_clip_rect_,
-                           stack_.back().occlusion_from_inside_target);
-  }
+  Region ComputeVisibleRegionInScreen() const;
 
   void set_minimum_tracking_size(const gfx::Size& size) {
     minimum_tracking_size_ = size;
@@ -89,8 +86,8 @@ class CC_EXPORT OcclusionTracker {
     StackObject() : target(0) {}
     explicit StackObject(const LayerType* target) : target(target) {}
     const LayerType* target;
-    Region occlusion_from_outside_target;
-    Region occlusion_from_inside_target;
+    SimpleEnclosedRegion occlusion_from_outside_target;
+    SimpleEnclosedRegion occlusion_from_inside_target;
   };
 
   // The stack holds occluded regions for subtrees in the

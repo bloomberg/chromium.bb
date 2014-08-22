@@ -3,8 +3,10 @@
 // found in the LICENSE file.
 
 #include "cc/base/region.h"
+
 #include "base/debug/trace_event_argument.h"
 #include "base/values.h"
+#include "cc/base/simple_enclosed_region.h"
 
 namespace cc {
 
@@ -78,6 +80,13 @@ void Region::Subtract(const gfx::Rect& rect) {
 
 void Region::Subtract(const Region& region) {
   skregion_.op(region.skregion_, SkRegion::kDifference_Op);
+}
+
+void Region::Subtract(const SimpleEnclosedRegion& region) {
+  for (size_t i = 0; i < region.GetRegionComplexity(); ++i) {
+    skregion_.op(gfx::RectToSkIRect(region.GetRect(i)),
+                 SkRegion::kDifference_Op);
+  }
 }
 
 void Region::Union(const gfx::Rect& rect) {

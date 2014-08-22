@@ -8,6 +8,7 @@
 #include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/synchronization/lock.h"
+#include "cc/base/simple_enclosed_region.h"
 #include "cc/layers/texture_layer_client.h"
 #include "cc/layers/texture_layer_impl.h"
 #include "cc/resources/single_release_callback.h"
@@ -254,14 +255,14 @@ void TextureLayer::PushPropertiesTo(LayerImpl* layer) {
   }
 }
 
-Region TextureLayer::VisibleContentOpaqueRegion() const {
+SimpleEnclosedRegion TextureLayer::VisibleContentOpaqueRegion() const {
   if (contents_opaque())
-    return visible_content_rect();
+    return SimpleEnclosedRegion(visible_content_rect());
 
   if (blend_background_color_ && (SkColorGetA(background_color()) == 0xFF))
-    return visible_content_rect();
+    return SimpleEnclosedRegion(visible_content_rect());
 
-  return Region();
+  return SimpleEnclosedRegion();
 }
 
 TextureLayer::TextureMailboxHolder::MainThreadReference::MainThreadReference(

@@ -41,7 +41,7 @@ class TestOcclusionTracker : public OcclusionTracker<Layer> {
     stack_.back().target = render_target;
   }
 
-  void SetOcclusion(const Region& occlusion) {
+  void SetOcclusion(const SimpleEnclosedRegion& occlusion) {
     stack_.back().occlusion_from_inside_target = occlusion;
   }
 };
@@ -315,7 +315,7 @@ TEST_F(TiledLayerTest, PushOccludedDirtyTiles) {
     // Invalidates part of the top tile...
     layer->InvalidateContentRect(gfx::Rect(0, 0, 50, 50));
     // ....but the area is occluded.
-    occluded.SetOcclusion(gfx::Rect(0, 0, 50, 50));
+    occluded.SetOcclusion(SimpleEnclosedRegion(gfx::Rect(0, 0, 50, 50)));
     CalcDrawProps(&render_surface_layer_list);
     UpdateAndPush(layer, layer_impl);
 
@@ -558,7 +558,7 @@ TEST_F(TiledLayerTest, PushIdlePaintedOccludedTiles) {
 
   // The tile size is 100x100, so this invalidates one occluded tile, culls it
   // during paint, but prepaints it.
-  occluded.SetOcclusion(gfx::Rect(0, 0, 100, 100));
+  occluded.SetOcclusion(SimpleEnclosedRegion(gfx::Rect(0, 0, 100, 100)));
 
   layer->SetBounds(gfx::Size(100, 100));
   CalcDrawProps(&render_surface_layer_list);
@@ -1204,7 +1204,7 @@ TEST_F(TiledLayerTest, TilesPaintedWithOcclusion) {
   layer->SetBounds(gfx::Size(600, 600));
   CalcDrawProps(&render_surface_layer_list);
 
-  occluded.SetOcclusion(gfx::Rect(200, 200, 300, 100));
+  occluded.SetOcclusion(SimpleEnclosedRegion(gfx::Rect(200, 200, 300, 100)));
   layer->draw_properties().drawable_content_rect =
       gfx::Rect(layer->content_bounds());
   layer->draw_properties().visible_content_rect =
@@ -1221,7 +1221,7 @@ TEST_F(TiledLayerTest, TilesPaintedWithOcclusion) {
   layer->SetTexturePriorities(priority_calculator_);
   resource_manager_->PrioritizeTextures();
 
-  occluded.SetOcclusion(gfx::Rect(250, 200, 300, 100));
+  occluded.SetOcclusion(SimpleEnclosedRegion(gfx::Rect(250, 200, 300, 100)));
   layer->InvalidateContentRect(gfx::Rect(0, 0, 600, 600));
   layer->SavePaintProperties();
   layer->Update(queue_.get(), &occluded);
@@ -1231,7 +1231,7 @@ TEST_F(TiledLayerTest, TilesPaintedWithOcclusion) {
   layer->SetTexturePriorities(priority_calculator_);
   resource_manager_->PrioritizeTextures();
 
-  occluded.SetOcclusion(gfx::Rect(250, 250, 300, 100));
+  occluded.SetOcclusion(SimpleEnclosedRegion(gfx::Rect(250, 250, 300, 100)));
   layer->InvalidateContentRect(gfx::Rect(0, 0, 600, 600));
   layer->SavePaintProperties();
   layer->Update(queue_.get(), &occluded);
@@ -1255,7 +1255,7 @@ TEST_F(TiledLayerTest, TilesPaintedWithOcclusionAndVisiblityConstraints) {
 
   // The partially occluded tiles (by the 150 occlusion height) are visible
   // beyond the occlusion, so not culled.
-  occluded.SetOcclusion(gfx::Rect(200, 200, 300, 150));
+  occluded.SetOcclusion(SimpleEnclosedRegion(gfx::Rect(200, 200, 300, 150)));
   layer->draw_properties().drawable_content_rect = gfx::Rect(0, 0, 600, 360);
   layer->draw_properties().visible_content_rect = gfx::Rect(0, 0, 600, 360);
   layer->InvalidateContentRect(gfx::Rect(0, 0, 600, 600));
@@ -1270,7 +1270,7 @@ TEST_F(TiledLayerTest, TilesPaintedWithOcclusionAndVisiblityConstraints) {
 
   // Now the visible region stops at the edge of the occlusion so the partly
   // visible tiles become fully occluded.
-  occluded.SetOcclusion(gfx::Rect(200, 200, 300, 150));
+  occluded.SetOcclusion(SimpleEnclosedRegion(gfx::Rect(200, 200, 300, 150)));
   layer->draw_properties().drawable_content_rect = gfx::Rect(0, 0, 600, 350);
   layer->draw_properties().visible_content_rect = gfx::Rect(0, 0, 600, 350);
   layer->InvalidateContentRect(gfx::Rect(0, 0, 600, 600));
@@ -1284,7 +1284,7 @@ TEST_F(TiledLayerTest, TilesPaintedWithOcclusionAndVisiblityConstraints) {
 
   // Now the visible region is even smaller than the occlusion, it should have
   // the same result.
-  occluded.SetOcclusion(gfx::Rect(200, 200, 300, 150));
+  occluded.SetOcclusion(SimpleEnclosedRegion(gfx::Rect(200, 200, 300, 150)));
   layer->draw_properties().drawable_content_rect = gfx::Rect(0, 0, 600, 340);
   layer->draw_properties().visible_content_rect = gfx::Rect(0, 0, 600, 340);
   layer->InvalidateContentRect(gfx::Rect(0, 0, 600, 600));
@@ -1310,7 +1310,7 @@ TEST_F(TiledLayerTest, TilesNotPaintedWithoutInvalidation) {
   layer->SetBounds(gfx::Size(600, 600));
   CalcDrawProps(&render_surface_layer_list);
 
-  occluded.SetOcclusion(gfx::Rect(200, 200, 300, 100));
+  occluded.SetOcclusion(SimpleEnclosedRegion(gfx::Rect(200, 200, 300, 100)));
   layer->draw_properties().drawable_content_rect = gfx::Rect(0, 0, 600, 600);
   layer->draw_properties().visible_content_rect = gfx::Rect(0, 0, 600, 600);
   layer->InvalidateContentRect(gfx::Rect(0, 0, 600, 600));
@@ -1353,7 +1353,7 @@ TEST_F(TiledLayerTest, TilesPaintedWithOcclusionAndTransforms) {
   layer->draw_properties().screen_space_transform = screen_transform;
   layer->draw_properties().target_space_transform = screen_transform;
 
-  occluded.SetOcclusion(gfx::Rect(100, 100, 150, 50));
+  occluded.SetOcclusion(SimpleEnclosedRegion(gfx::Rect(100, 100, 150, 50)));
   layer->draw_properties().drawable_content_rect =
       gfx::Rect(layer->content_bounds());
   layer->draw_properties().visible_content_rect =
@@ -1395,7 +1395,7 @@ TEST_F(TiledLayerTest, TilesPaintedWithOcclusionAndScaling) {
             layer->content_bounds().ToString());
 
   // No tiles are covered by the 300x50 occlusion.
-  occluded.SetOcclusion(gfx::Rect(200, 200, 300, 50));
+  occluded.SetOcclusion(SimpleEnclosedRegion(gfx::Rect(200, 200, 300, 50)));
   layer->draw_properties().drawable_content_rect =
       gfx::Rect(layer->bounds());
   layer->draw_properties().visible_content_rect =
@@ -1411,7 +1411,7 @@ TEST_F(TiledLayerTest, TilesPaintedWithOcclusionAndScaling) {
   layer->fake_layer_updater()->ClearUpdateCount();
 
   // The occlusion of 300x100 will be cover 3 tiles as tiles are 100x100 still.
-  occluded.SetOcclusion(gfx::Rect(200, 200, 300, 100));
+  occluded.SetOcclusion(SimpleEnclosedRegion(gfx::Rect(200, 200, 300, 100)));
   layer->draw_properties().drawable_content_rect =
       gfx::Rect(layer->bounds());
   layer->draw_properties().visible_content_rect =
@@ -1435,7 +1435,7 @@ TEST_F(TiledLayerTest, TilesPaintedWithOcclusionAndScaling) {
   layer->draw_properties().target_space_transform = screen_transform;
 
   // An occlusion of 150x100 will cover 3*2 = 6 tiles.
-  occluded.SetOcclusion(gfx::Rect(100, 100, 150, 100));
+  occluded.SetOcclusion(SimpleEnclosedRegion(gfx::Rect(100, 100, 150, 100)));
 
   gfx::Rect layer_bounds_rect(layer->bounds());
   layer->draw_properties().drawable_content_rect =
@@ -1465,7 +1465,7 @@ TEST_F(TiledLayerTest, VisibleContentOpaqueRegion) {
   // various ways.
 
   gfx::Rect opaque_paint_rect;
-  Region opaque_contents;
+  SimpleEnclosedRegion opaque_contents;
 
   gfx::Rect content_bounds = gfx::Rect(0, 0, 100, 200);
   gfx::Rect visible_bounds = gfx::Rect(0, 0, 100, 150);

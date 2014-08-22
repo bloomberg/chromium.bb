@@ -24,19 +24,20 @@ class TestLayer : public Layer {
     if (!occlusion)
       return false;
 
-    // Gain access to internals of the OcclusionTracker.
     const TestOcclusionTracker<Layer>* test_occlusion =
         static_cast<const TestOcclusionTracker<Layer>*>(occlusion);
-    occlusion_ = UnionRegions(
+    occlusion_ = UnionSimpleEnclosedRegions(
         test_occlusion->occlusion_from_inside_target(),
         test_occlusion->occlusion_from_outside_target());
     return false;
   }
 
-  const Region& occlusion() const { return occlusion_; }
-  const Region& expected_occlusion() const { return expected_occlusion_; }
-  void set_expected_occlusion(const Region& occlusion) {
-    expected_occlusion_ = occlusion;
+  const SimpleEnclosedRegion& occlusion() const { return occlusion_; }
+  const SimpleEnclosedRegion& expected_occlusion() const {
+    return expected_occlusion_;
+  }
+  void set_expected_occlusion(const gfx::Rect& occlusion) {
+    expected_occlusion_ = SimpleEnclosedRegion(occlusion);
   }
 
  private:
@@ -45,8 +46,8 @@ class TestLayer : public Layer {
   }
   virtual ~TestLayer() {}
 
-  Region occlusion_;
-  Region expected_occlusion_;
+  SimpleEnclosedRegion occlusion_;
+  SimpleEnclosedRegion expected_occlusion_;
 };
 
 class LayerTreeHostOcclusionTest : public LayerTreeTest {
@@ -415,11 +416,6 @@ class LayerTreeHostOcclusionTestOcclusionOpacityFilter
     : public LayerTreeHostOcclusionTest {
  public:
   virtual void SetupTree() OVERRIDE {
-    gfx::Transform child_transform;
-    child_transform.Translate(250.0, 250.0);
-    child_transform.Rotate(90.0);
-    child_transform.Translate(-250.0, -250.0);
-
     FilterOperations filters;
     filters.Append(FilterOperation::CreateOpacityFilter(0.5f));
 
@@ -429,23 +425,36 @@ class LayerTreeHostOcclusionTestOcclusionOpacityFilter
     SetLayerPropertiesForTesting(
         root_.get(), NULL, identity_matrix_,
         gfx::PointF(0.f, 0.f), gfx::Size(200, 200), true);
-    SetLayerPropertiesForTesting(
-        child_.get(), root_.get(), child_transform,
-        gfx::PointF(30.f, 30.f), gfx::Size(500, 500), true);
-    SetLayerPropertiesForTesting(
-        grand_child_.get(), child_.get(), identity_matrix_,
-        gfx::PointF(10.f, 10.f), gfx::Size(500, 500), true);
-    SetLayerPropertiesForTesting(
-        child2_.get(), root_.get(), identity_matrix_,
-        gfx::PointF(10.f, 70.f), gfx::Size(500, 500), true);
+    SetLayerPropertiesForTesting(child_.get(),
+                                 root_.get(),
+                                 identity_matrix_,
+                                 gfx::PointF(0.f, 0.f),
+                                 gfx::Size(500, 500),
+                                 true);
+    SetLayerPropertiesForTesting(grand_child_.get(),
+                                 child_.get(),
+                                 identity_matrix_,
+                                 gfx::PointF(0.f, 0.f),
+                                 gfx::Size(500, 500),
+                                 true);
+    SetLayerPropertiesForTesting(child2_.get(),
+                                 root_.get(),
+                                 identity_matrix_,
+                                 gfx::PointF(10.f, 10.f),
+                                 gfx::Size(30, 30),
+                                 true);
 
     child_->SetMasksToBounds(true);
     child_->SetFilters(filters);
 
-    grand_child_->set_expected_occlusion(gfx::Rect(40, 330, 130, 190));
-    child_->set_expected_occlusion(UnionRegions(
-        gfx::Rect(10, 330, 160, 170), gfx::Rect(40, 500, 130, 20)));
-    root_->set_expected_occlusion(gfx::Rect(10, 70, 190, 130));
+    // child2_ occludes grand_child_, showing it does occlude inside child_'s
+    // subtree.
+    grand_child_->set_expected_occlusion(gfx::Rect(10, 10, 30, 30));
+    // grand_child_ occludes child_, showing there is more occlusion in
+    // child_'s subtree.
+    child_->set_expected_occlusion(gfx::Rect(0, 0, 200, 200));
+    // child2_'s occlusion reaches the root, but child_'s subtree does not.
+    root_->set_expected_occlusion(gfx::Rect(10, 10, 30, 30));
 
     layer_tree_host()->SetRootLayer(root_);
     LayerTreeTest::SetupTree();

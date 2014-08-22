@@ -43,7 +43,7 @@ class CC_EXPORT TiledLayerImpl : public LayerImpl {
                           bool contents_swizzled);
   void PushInvalidTile(int i, int j);
 
-  virtual Region VisibleContentOpaqueRegion() const OVERRIDE;
+  virtual SimpleEnclosedRegion VisibleContentOpaqueRegion() const OVERRIDE;
   virtual void ReleaseResources() OVERRIDE;
 
   const LayerTilingData* TilingForTesting() const { return tiler_.get(); }

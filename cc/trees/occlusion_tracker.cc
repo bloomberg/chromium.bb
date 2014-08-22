@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "cc/base/math_util.h"
+#include "cc/base/region.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/layers/render_surface.h"
@@ -65,13 +66,13 @@ static gfx::Rect ScreenSpaceClipRectInTargetSurface(
 }
 
 template <typename RenderSurfaceType>
-static Region TransformSurfaceOpaqueRegion(
-    const Region& region,
+static SimpleEnclosedRegion TransformSurfaceOpaqueRegion(
+    const SimpleEnclosedRegion& region,
     bool have_clip_rect,
     const gfx::Rect& clip_rect_in_new_target,
     const gfx::Transform& transform) {
   if (region.IsEmpty())
-    return Region();
+    return region;
 
   // Verify that rects within the |surface| will remain rects in its target
   // surface after applying |transform|. If this is true, then apply |transform|
@@ -79,15 +80,13 @@ static Region TransformSurfaceOpaqueRegion(
 
   // TODO(danakj): Find a rect interior to each transformed quad.
   if (!transform.Preserves2dAxisAlignment())
-    return Region();
+    return SimpleEnclosedRegion();
 
-  // TODO(danakj): If the Region is too complex, degrade gracefully here by
-  // skipping rects in it.
-  Region transformed_region;
-  for (Region::Iterator rects(region); rects.has_rect(); rects.next()) {
+  SimpleEnclosedRegion transformed_region;
+  for (size_t i = 0; i < region.GetRegionComplexity(); ++i) {
     bool clipped;
     gfx::QuadF transformed_quad =
-        MathUtil::MapQuad(transform, gfx::QuadF(rects.rect()), &clipped);
+        MathUtil::MapQuad(transform, gfx::QuadF(region.GetRect(i)), &clipped);
     gfx::Rect transformed_rect =
         gfx::ToEnclosedRect(transformed_quad.BoundingBox());
     DCHECK(!clipped);  // We only map if the transform preserves axis alignment.
@@ -240,11 +239,12 @@ void OcclusionTracker<LayerType>::FinishedRenderTarget(
 }
 
 template <typename LayerType>
-static void ReduceOcclusionBelowSurface(LayerType* contributing_layer,
-                                        const gfx::Rect& surface_rect,
-                                        const gfx::Transform& surface_transform,
-                                        LayerType* render_target,
-                                        Region* occlusion_from_inside_target) {
+static void ReduceOcclusionBelowSurface(
+    LayerType* contributing_layer,
+    const gfx::Rect& surface_rect,
+    const gfx::Transform& surface_transform,
+    LayerType* render_target,
+    SimpleEnclosedRegion* occlusion_from_inside_target) {
   if (surface_rect.IsEmpty())
     return;
 
@@ -265,13 +265,12 @@ static void ReduceOcclusionBelowSurface(LayerType* contributing_layer,
   // to expand outside the clip.
   affected_area_in_target.Inset(
       -outset_left, -outset_top, -outset_right, -outset_bottom);
-  Region affected_occlusion = IntersectRegions(*occlusion_from_inside_target,
-                                               affected_area_in_target);
-  Region::Iterator affected_occlusion_rects(affected_occlusion);
+  SimpleEnclosedRegion affected_occlusion = *occlusion_from_inside_target;
+  affected_occlusion.Intersect(affected_area_in_target);
 
   occlusion_from_inside_target->Subtract(affected_area_in_target);
-  for (; affected_occlusion_rects.has_rect(); affected_occlusion_rects.next()) {
-    gfx::Rect occlusion_rect = affected_occlusion_rects.rect();
+  for (size_t i = 0; i < affected_occlusion.GetRegionComplexity(); ++i) {
+    gfx::Rect occlusion_rect = affected_occlusion.GetRect(i);
 
     // Shrink the rect by expanding the non-opaque pixels outside the rect.
 
@@ -309,7 +308,7 @@ void OcclusionTracker<LayerType>::LeaveToRenderTarget(
   const typename LayerType::RenderSurfaceType* old_surface =
       old_target->render_surface();
 
-  Region old_occlusion_from_inside_target_in_new_target =
+  SimpleEnclosedRegion old_occlusion_from_inside_target_in_new_target =
       TransformSurfaceOpaqueRegion<typename LayerType::RenderSurfaceType>(
           stack_[last_index].occlusion_from_inside_target,
           old_surface->is_clipped(),
@@ -324,7 +323,7 @@ void OcclusionTracker<LayerType>::LeaveToRenderTarget(
             old_surface->replica_draw_transform()));
   }
 
-  Region old_occlusion_from_outside_target_in_new_target =
+  SimpleEnclosedRegion old_occlusion_from_outside_target_in_new_target =
       TransformSurfaceOpaqueRegion<typename LayerType::RenderSurfaceType>(
           stack_[last_index].occlusion_from_outside_target,
           false,
@@ -400,8 +399,6 @@ void OcclusionTracker<LayerType>::MarkOccludedBehindLayer(
     const LayerType* layer) {
   DCHECK(!stack_.empty());
   DCHECK_EQ(layer->render_target(), stack_.back().target);
-  if (stack_.empty())
-    return;
 
   if (!LayerOpacityKnown(layer) || layer->draw_opacity() < 1)
     return;
@@ -415,7 +412,7 @@ void OcclusionTracker<LayerType>::MarkOccludedBehindLayer(
   if (!LayerTransformsToTargetKnown(layer))
     return;
 
-  Region opaque_contents = layer->VisibleContentOpaqueRegion();
+  SimpleEnclosedRegion opaque_contents = layer->VisibleContentOpaqueRegion();
   if (opaque_contents.IsEmpty())
     return;
 
@@ -434,14 +431,12 @@ void OcclusionTracker<LayerType>::MarkOccludedBehindLayer(
         layer->render_target()->render_surface()->content_rect());
   }
 
-  for (Region::Iterator opaque_content_rects(opaque_contents);
-       opaque_content_rects.has_rect();
-       opaque_content_rects.next()) {
+  for (size_t i = 0; i < opaque_contents.GetRegionComplexity(); ++i) {
     bool clipped;
-    gfx::QuadF transformed_quad = MathUtil::MapQuad(
-        layer->draw_transform(),
-        gfx::QuadF(opaque_content_rects.rect()),
-        &clipped);
+    gfx::QuadF transformed_quad =
+        MathUtil::MapQuad(layer->draw_transform(),
+                          gfx::QuadF(opaque_contents.GetRect(i)),
+                          &clipped);
     gfx::Rect transformed_rect =
         gfx::ToEnclosedRect(transformed_quad.BoundingBox());
     DCHECK(!clipped);  // We only map if the transform preserves axis alignment.
@@ -468,8 +463,9 @@ void OcclusionTracker<LayerType>::MarkOccludedBehindLayer(
   if (!non_occluding_screen_space_rects_)
     return;
 
-  Region non_opaque_contents =
-      SubtractRegions(gfx::Rect(layer->content_bounds()), opaque_contents);
+  Region non_opaque_contents(gfx::Rect(layer->content_bounds()));
+  non_opaque_contents.Subtract(opaque_contents);
+
   for (Region::Iterator non_opaque_content_rects(non_opaque_contents);
        non_opaque_content_rects.has_rect();
        non_opaque_content_rects.next()) {
@@ -514,24 +510,24 @@ bool OcclusionTracker<LayerType>::Occluded(
   DCHECK(render_target->render_surface());
   DCHECK_EQ(render_target, stack_.back().target);
 
-  if (stack_.back().occlusion_from_inside_target.IsEmpty() &&
-      stack_.back().occlusion_from_outside_target.IsEmpty()) {
+  const StackObject& back = stack_.back();
+  if (back.occlusion_from_inside_target.IsEmpty() &&
+      back.occlusion_from_outside_target.IsEmpty()) {
     return false;
   }
 
   // Take the ToEnclosingRect at each step, as we want to contain any unoccluded
   // partial pixels in the resulting Rect.
-  Region unoccluded_region_in_target_surface =
+  gfx::Rect unoccluded_rect_in_target_surface =
       MathUtil::MapEnclosingClippedRect(draw_transform, content_rect);
-  unoccluded_region_in_target_surface.Subtract(
-      stack_.back().occlusion_from_inside_target);
-  gfx::RectF unoccluded_rect_in_target_surface_without_outside_occlusion =
-      unoccluded_region_in_target_surface.bounds();
-  unoccluded_region_in_target_surface.Subtract(
-      stack_.back().occlusion_from_outside_target);
-
-  gfx::RectF unoccluded_rect_in_target_surface =
-      unoccluded_region_in_target_surface.bounds();
+  DCHECK_LE(back.occlusion_from_inside_target.GetRegionComplexity(), 1u);
+  DCHECK_LE(back.occlusion_from_outside_target.GetRegionComplexity(), 1u);
+  // These subtract operations are more lossy than if we did both operations at
+  // once.
+  unoccluded_rect_in_target_surface.Subtract(
+      stack_.back().occlusion_from_inside_target.bounds());
+  unoccluded_rect_in_target_surface.Subtract(
+      stack_.back().occlusion_from_outside_target.bounds());
 
   return unoccluded_rect_in_target_surface.IsEmpty();
 }
@@ -540,13 +536,13 @@ template <typename LayerType>
 gfx::Rect OcclusionTracker<LayerType>::UnoccludedContentRect(
     const gfx::Rect& content_rect,
     const gfx::Transform& draw_transform) const {
-  if (stack_.empty())
-    return content_rect;
+  DCHECK(!stack_.empty());
   if (content_rect.IsEmpty())
     return content_rect;
 
-  if (stack_.back().occlusion_from_inside_target.IsEmpty() &&
-      stack_.back().occlusion_from_outside_target.IsEmpty()) {
+  const StackObject& back = stack_.back();
+  if (back.occlusion_from_inside_target.IsEmpty() &&
+      back.occlusion_from_outside_target.IsEmpty()) {
     return content_rect;
   }
 
@@ -556,18 +552,20 @@ gfx::Rect OcclusionTracker<LayerType>::UnoccludedContentRect(
 
   // Take the ToEnclosingRect at each step, as we want to contain any unoccluded
   // partial pixels in the resulting Rect.
-  Region unoccluded_region_in_target_surface =
+  gfx::Rect unoccluded_rect_in_target_surface =
       MathUtil::MapEnclosingClippedRect(draw_transform, content_rect);
-  unoccluded_region_in_target_surface.Subtract(
-      stack_.back().occlusion_from_inside_target);
-  unoccluded_region_in_target_surface.Subtract(
-      stack_.back().occlusion_from_outside_target);
+  DCHECK_LE(back.occlusion_from_inside_target.GetRegionComplexity(), 1u);
+  DCHECK_LE(back.occlusion_from_outside_target.GetRegionComplexity(), 1u);
+  // These subtract operations are more lossy than if we did both operations at
+  // once.
+  unoccluded_rect_in_target_surface.Subtract(
+      back.occlusion_from_inside_target.bounds());
+  unoccluded_rect_in_target_surface.Subtract(
+      back.occlusion_from_outside_target.bounds());
 
-  if (unoccluded_region_in_target_surface.IsEmpty())
+  if (unoccluded_rect_in_target_surface.IsEmpty())
     return gfx::Rect();
 
-  gfx::Rect unoccluded_rect_in_target_surface =
-      unoccluded_region_in_target_surface.bounds();
   gfx::Rect unoccluded_rect = MathUtil::ProjectEnclosingClippedRect(
       inverse_draw_transform, unoccluded_rect_in_target_surface);
   unoccluded_rect.Intersect(content_rect);
@@ -590,7 +588,6 @@ gfx::Rect OcclusionTracker<LayerType>::UnoccludedContributingSurfaceContentRect(
     return content_rect;
 
   const StackObject& second_last = stack_[stack_.size() - 2];
-
   if (second_last.occlusion_from_inside_target.IsEmpty() &&
       second_last.occlusion_from_outside_target.IsEmpty())
     return content_rect;
@@ -601,23 +598,37 @@ gfx::Rect OcclusionTracker<LayerType>::UnoccludedContributingSurfaceContentRect(
 
   // Take the ToEnclosingRect at each step, as we want to contain any unoccluded
   // partial pixels in the resulting Rect.
-  Region unoccluded_region_in_target_surface =
+  gfx::Rect unoccluded_rect_in_target_surface =
       MathUtil::MapEnclosingClippedRect(draw_transform, content_rect);
-  unoccluded_region_in_target_surface.Subtract(
-      second_last.occlusion_from_inside_target);
-  unoccluded_region_in_target_surface.Subtract(
-      second_last.occlusion_from_outside_target);
+  DCHECK_LE(second_last.occlusion_from_inside_target.GetRegionComplexity(), 1u);
+  DCHECK_LE(second_last.occlusion_from_outside_target.GetRegionComplexity(),
+            1u);
+  // These subtract operations are more lossy than if we did both operations at
+  // once.
+  unoccluded_rect_in_target_surface.Subtract(
+      second_last.occlusion_from_inside_target.bounds());
+  unoccluded_rect_in_target_surface.Subtract(
+      second_last.occlusion_from_outside_target.bounds());
 
-  if (unoccluded_region_in_target_surface.IsEmpty())
+  if (unoccluded_rect_in_target_surface.IsEmpty())
     return gfx::Rect();
 
-  gfx::Rect unoccluded_rect_in_target_surface =
-      unoccluded_region_in_target_surface.bounds();
   gfx::Rect unoccluded_rect = MathUtil::ProjectEnclosingClippedRect(
       inverse_draw_transform, unoccluded_rect_in_target_surface);
   unoccluded_rect.Intersect(content_rect);
 
   return unoccluded_rect;
+}
+
+template <typename LayerType>
+Region OcclusionTracker<LayerType>::ComputeVisibleRegionInScreen() const {
+  DCHECK(!stack_.back().target->parent());
+  const SimpleEnclosedRegion& occluded =
+      stack_.back().occlusion_from_inside_target;
+  Region visible_region(screen_space_clip_rect_);
+  for (size_t i = 0; i < occluded.GetRegionComplexity(); ++i)
+    visible_region.Subtract(occluded.GetRect(i));
+  return visible_region;
 }
 
 // Instantiate (and export) templates here for the linker.

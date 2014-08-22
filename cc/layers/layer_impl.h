@@ -55,6 +55,7 @@ class OcclusionTracker;
 class Renderer;
 class ScrollbarAnimationController;
 class ScrollbarLayerImplBase;
+class SimpleEnclosedRegion;
 class Tile;
 
 struct AppendQuadsData;
@@ -492,7 +493,7 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
     return layer_animation_controller_.get();
   }
 
-  virtual Region VisibleContentOpaqueRegion() const;
+  virtual SimpleEnclosedRegion VisibleContentOpaqueRegion() const;
 
   virtual void DidBecomeActive();
 

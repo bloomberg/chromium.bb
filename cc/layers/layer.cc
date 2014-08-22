@@ -17,6 +17,7 @@
 #include "cc/animation/animation_registrar.h"
 #include "cc/animation/keyframed_animation_curve.h"
 #include "cc/animation/layer_animation_controller.h"
+#include "cc/base/simple_enclosed_region.h"
 #include "cc/layers/layer_client.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/layers/scrollbar_layer_interface.h"
@@ -1179,10 +1180,10 @@ void Layer::RemoveLayerAnimationEventObserver(
   layer_animation_controller_->RemoveEventObserver(animation_observer);
 }
 
-Region Layer::VisibleContentOpaqueRegion() const {
+SimpleEnclosedRegion Layer::VisibleContentOpaqueRegion() const {
   if (contents_opaque())
-    return visible_content_rect();
-  return Region();
+    return SimpleEnclosedRegion(visible_content_rect());
+  return SimpleEnclosedRegion();
 }
 
 ScrollbarLayerInterface* Layer::ToScrollbarLayer() {

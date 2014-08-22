@@ -31,7 +31,7 @@ class CC_EXPORT TextureLayerImpl : public LayerImpl {
   virtual void AppendQuads(RenderPass* render_pass,
                            const OcclusionTracker<LayerImpl>& occlusion_tracker,
                            AppendQuadsData* append_quads_data) OVERRIDE;
-  virtual Region VisibleContentOpaqueRegion() const OVERRIDE;
+  virtual SimpleEnclosedRegion VisibleContentOpaqueRegion() const OVERRIDE;
   virtual void ReleaseResources() OVERRIDE;
 
   // These setter methods don't cause any implicit damage, so the texture client

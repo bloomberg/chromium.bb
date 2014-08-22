@@ -12,7 +12,7 @@
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
-#include "cc/base/region.h"
+#include "cc/base/simple_enclosed_region.h"
 #include "cc/base/tiling_data.h"
 #include "ui/gfx/rect.h"
 
@@ -91,7 +91,7 @@ class CC_EXPORT LayerTilingData {
                                 int* bottom) const;
   gfx::Rect TileRect(const Tile* tile) const;
 
-  Region OpaqueRegionInContentRect(const gfx::Rect& rect) const;
+  SimpleEnclosedRegion OpaqueRegionInContentRect(const gfx::Rect& rect) const;
 
   void reset() { tiles_.clear(); }
 
