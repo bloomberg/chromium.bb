@@ -63,7 +63,7 @@ namespace {
 
 // Delays for syncer nudges.
 static const int kDefaultNudgeDelayMilliseconds = 200;
-static const int kPreferencesNudgeDelayMilliseconds = 2000;
+static const int kSlowNudgeDelayMilliseconds = 2000;
 static const int kSyncRefreshDelayMsec = 500;
 static const int kSyncSchedulerDelayMsec = 250;
 
@@ -120,6 +120,7 @@ class NudgeStrategy {
     switch (type) {
      case AUTOFILL:
        return ACCOMPANY_ONLY;
+     case BOOKMARKS:
      case PREFERENCES:
      case SESSIONS:
      case FAVICON_IMAGES:
@@ -146,9 +147,9 @@ class NudgeStrategy {
        break;
      case CUSTOM:
        switch (model_type) {
+         case BOOKMARKS:
          case PREFERENCES:
-           delay = TimeDelta::FromMilliseconds(
-               kPreferencesNudgeDelayMilliseconds);
+           delay = TimeDelta::FromMilliseconds(kSlowNudgeDelayMilliseconds);
            break;
          case SESSIONS:
          case FAVICON_IMAGES:
@@ -1149,8 +1150,8 @@ int SyncManagerImpl::GetDefaultNudgeDelay() {
 }
 
 // static.
-int SyncManagerImpl::GetPreferencesNudgeDelay() {
-  return kPreferencesNudgeDelayMilliseconds;
+int SyncManagerImpl::GetSlowNudgeDelay() {
+  return kSlowNudgeDelayMilliseconds;
 }
 
 }  // namespace syncer

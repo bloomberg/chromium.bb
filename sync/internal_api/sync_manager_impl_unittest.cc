@@ -1610,17 +1610,20 @@ TEST_F(SyncManagerTest, SetPassphraseWithEmptyPasswordNode) {
 }
 
 TEST_F(SyncManagerTest, NudgeDelayTest) {
-  EXPECT_EQ(sync_manager_.GetNudgeDelayTimeDelta(BOOKMARKS),
-      base::TimeDelta::FromMilliseconds(
-          SyncManagerImpl::GetDefaultNudgeDelay()));
+  EXPECT_EQ(
+      sync_manager_.GetNudgeDelayTimeDelta(BOOKMARKS),
+      base::TimeDelta::FromMilliseconds(SyncManagerImpl::GetSlowNudgeDelay()));
 
   EXPECT_EQ(sync_manager_.GetNudgeDelayTimeDelta(AUTOFILL),
-      base::TimeDelta::FromSeconds(
-          kDefaultShortPollIntervalSeconds));
+            base::TimeDelta::FromSeconds(kDefaultShortPollIntervalSeconds));
 
-  EXPECT_EQ(sync_manager_.GetNudgeDelayTimeDelta(PREFERENCES),
-      base::TimeDelta::FromMilliseconds(
-          SyncManagerImpl::GetPreferencesNudgeDelay()));
+  EXPECT_EQ(
+      sync_manager_.GetNudgeDelayTimeDelta(PREFERENCES),
+      base::TimeDelta::FromMilliseconds(SyncManagerImpl::GetSlowNudgeDelay()));
+
+  EXPECT_EQ(sync_manager_.GetNudgeDelayTimeDelta(EXTENSIONS),
+            base::TimeDelta::FromMilliseconds(
+                SyncManagerImpl::GetDefaultNudgeDelay()));
 }
 
 // Friended by WriteNode, so can't be in an anonymouse namespace.

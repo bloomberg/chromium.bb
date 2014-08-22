@@ -131,7 +131,7 @@ class SYNC_EXPORT_PRIVATE SyncManagerImpl
       base::Time explicit_passphrase_time) OVERRIDE;
 
   static int GetDefaultNudgeDelay();
-  static int GetPreferencesNudgeDelay();
+  static int GetSlowNudgeDelay();
 
   // SyncEngineEventListener implementation.
   virtual void OnSyncCycleEvent(const SyncCycleEvent& event) OVERRIDE;
