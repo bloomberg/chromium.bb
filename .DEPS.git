@@ -81,7 +81,7 @@ vars = {
     'llvm_url':
          'http://src.chromium.org/llvm-project',
     'webrtc_revision':
-         '6905',
+         '6955',
     'v8_revision':
          '23287'
 }
@@ -154,7 +154,7 @@ deps = {
     'src/third_party/libexif/sources':
         Var('git_url') + '/chromium/deps/libexif/sources.git@ed98343daabd7b4497f97fda972e132e6877c48a',
     'src/third_party/libjingle/source/talk':
-        Var('git_url') + '/external/webrtc/trunk/talk.git@3541181607ffe656d8db759a6095864d9f72248d',
+        Var('git_url') + '/external/webrtc/trunk/talk.git@9460de62505246d2f0a8b89319b946457c9ef086',
     'src/third_party/libjpeg_turbo':
         Var('git_url') + '/chromium/deps/libjpeg_turbo.git@7a076b517c739af5197cad380b110f0ffc085d89',
     'src/third_party/libphonenumber/src/phonenumbers':
@@ -214,7 +214,7 @@ deps = {
     'src/third_party/webpagereplay':
         Var('git_url') + '/external/web-page-replay.git@b62c02d3b64cf00a2f65a82cca0721aa42c3d6ad',
     'src/third_party/webrtc':
-        Var('git_url') + '/external/webrtc/trunk/webrtc.git@c1696da9a74c7ed4ed793ce993352bd370cfc414',
+        Var('git_url') + '/external/webrtc/trunk/webrtc.git@f854f30d7981795f687f9b4379100c037934535d',
     'src/third_party/yasm/source/patched-yasm':
         Var('git_url') + '/chromium/deps/yasm/patched-yasm.git@c960eb11ccda80b10ed50be39df4f0663b371d1d',
     'src/tools/deps2git':
