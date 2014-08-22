@@ -1091,8 +1091,10 @@ void V4L2VideoDecodeAccelerator::Dequeue() {
       output_record.at_client = true;
       DVLOG(3) << "Dequeue(): returning input_id=" << dqbuf.timestamp.tv_sec
                << " as picture_id=" << output_record.picture_id;
-      const media::Picture& picture = media::Picture(
-          output_record.picture_id, dqbuf.timestamp.tv_sec, frame_buffer_size_);
+      const media::Picture& picture =
+          media::Picture(output_record.picture_id,
+                         dqbuf.timestamp.tv_sec,
+                         gfx::Rect(frame_buffer_size_));
       pending_picture_ready_.push(
           PictureRecord(output_record.cleared, picture));
       SendPictureReady();
