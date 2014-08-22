@@ -149,6 +149,8 @@ using blink::WebData;
 using blink::WebDataSource;
 using blink::WebDocument;
 using blink::WebElement;
+using blink::WebExternalPopupMenu;
+using blink::WebExternalPopupMenuClient;
 using blink::WebFrame;
 using blink::WebHistoryItem;
 using blink::WebHTTPBody;
@@ -159,6 +161,7 @@ using blink::WebNavigationPolicy;
 using blink::WebNavigationType;
 using blink::WebNode;
 using blink::WebPluginParams;
+using blink::WebPopupMenuInfo;
 using blink::WebRange;
 using blink::WebReferrerPolicy;
 using blink::WebScriptSource;
@@ -1561,6 +1564,13 @@ RenderFrameImpl::createWorkerPermissionClientProxy(
   DCHECK(!frame_ || frame_ == frame);
   return GetContentClient()->renderer()->CreateWorkerPermissionClientProxy(
       this, frame);
+}
+
+WebExternalPopupMenu* RenderFrameImpl::createExternalPopupMenu(
+    const WebPopupMenuInfo& popup_menu_info,
+    WebExternalPopupMenuClient* popup_menu_client) {
+  return render_view_->createExternalPopupMenu(popup_menu_info,
+                                               popup_menu_client);
 }
 
 blink::WebCookieJar* RenderFrameImpl::cookieJar(blink::WebLocalFrame* frame) {

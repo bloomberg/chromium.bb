@@ -37,6 +37,8 @@ class TransportDIB;
 struct FrameMsg_Navigate_Params;
 
 namespace blink {
+class WebExternalPopupMenu;
+class WebExternalPopupMenuClient;
 class WebGeolocationClient;
 class WebInputEvent;
 class WebMouseEvent;
@@ -48,6 +50,7 @@ class WebSecurityOrigin;
 struct WebCompositionUnderline;
 struct WebContextMenuData;
 struct WebCursorInfo;
+struct WebPopupMenuInfo;
 }
 
 namespace gfx {
@@ -282,6 +285,9 @@ class CONTENT_EXPORT RenderFrameImpl
       blink::WebApplicationCacheHostClient* client);
   virtual blink::WebWorkerPermissionClientProxy*
       createWorkerPermissionClientProxy(blink::WebLocalFrame* frame);
+  virtual blink::WebExternalPopupMenu* createExternalPopupMenu(
+      const blink::WebPopupMenuInfo& popup_menu_info,
+      blink::WebExternalPopupMenuClient* popup_menu_client);
   virtual blink::WebCookieJar* cookieJar(blink::WebLocalFrame* frame);
   virtual blink::WebServiceWorkerProvider* createServiceWorkerProvider(
       blink::WebLocalFrame* frame);
