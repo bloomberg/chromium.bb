@@ -162,7 +162,7 @@ template<int heapIndex>
 struct HeapIndexTraitBase {
     typedef ThreadHeap<FinalizedHeapObjectHeader> HeapType;
     static const int finalizedIndex = heapIndex;
-    static const int nonFinalizedIndex = heapIndex + NonFinalizedHeapOffset;
+    static const int nonFinalizedIndex = heapIndex + static_cast<int>(NonFinalizedHeapOffset);
     static int index(bool isFinalized)
     {
         return isFinalized ? finalizedIndex : nonFinalizedIndex;
