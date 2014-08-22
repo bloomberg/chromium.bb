@@ -20,6 +20,7 @@
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "chrome/browser/sync/backend_unrecoverable_error_handler.h"
 #include "chrome/browser/sync/backup_rollback_controller.h"
 #include "chrome/browser/sync/glue/local_device_info_provider.h"
@@ -775,8 +776,12 @@ class ProfileSyncService : public ProfileSyncServiceBase,
     return backend_mode_;
   }
 
-  void SetClearingBrowseringDataForTesting(
-      base::Callback<void(Profile*, base::Time, base::Time)> c);
+  // Helpers for testing rollback.
+  void SetBrowsingDataRemoverObserverForTesting(
+      BrowsingDataRemover::Observer* observer);
+  void SetClearingBrowseringDataForTesting(base::Callback<
+      void(BrowsingDataRemover::Observer*, Profile*, base::Time, base::Time)>
+                                               c);
 
   // Return the base URL of the Sync Server.
   static GURL GetSyncServiceURL(const base::CommandLine& command_line);
@@ -1149,11 +1154,15 @@ class ProfileSyncService : public ProfileSyncServiceBase,
 
   base::Time backup_start_time_;
 
-  base::Callback<void(Profile*, base::Time, base::Time)> clear_browsing_data_;
+  base::Callback<
+      void(BrowsingDataRemover::Observer*, Profile*, base::Time, base::Time)>
+      clear_browsing_data_;
 
   // Last time when pre-sync data was saved. NULL pointer means backup data
   // state is unknown. If time value is null, backup data doesn't exist.
   scoped_ptr<base::Time> last_backup_time_;
+
+  BrowsingDataRemover::Observer* browsing_data_remover_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileSyncService);
 };

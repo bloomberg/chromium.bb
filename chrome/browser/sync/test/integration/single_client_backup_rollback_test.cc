@@ -7,6 +7,8 @@
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"
 #include "base/run_loop.h"
+#include "base/test/test_timeouts.h"
+#include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/test/integration/bookmarks_helper.h"
@@ -72,41 +74,86 @@ class SingleClientBackupRollbackTest : public SyncTest {
   DISALLOW_COPY_AND_ASSIGN(SingleClientBackupRollbackTest);
 };
 
-class SyncBackendStoppedChecker {
+// Waits until the ProfileSyncService's backend is in IDLE mode.
+class SyncBackendStoppedChecker : public ProfileSyncServiceBase::Observer {
  public:
-  explicit SyncBackendStoppedChecker(ProfileSyncService* service,
-                                     base::TimeDelta timeout)
+  explicit SyncBackendStoppedChecker(ProfileSyncService* service)
       : pss_(service),
-        timeout_(timeout) {}
+        timeout_(TestTimeouts::action_max_timeout()),
+        done_(false) {}
 
-  bool Wait() {
-    expiration_ = base::TimeTicks::Now() + timeout_;
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&SyncBackendStoppedChecker::PeriodicCheck,
-                   base::Unretained(this)),
-        base::TimeDelta::FromSeconds(1));
-    base::MessageLoop::current()->Run();
-    return ProfileSyncService::IDLE == pss_->backend_mode();
-  }
-
- private:
-  void PeriodicCheck() {
-    if (ProfileSyncService::IDLE == pss_->backend_mode() ||
-        base::TimeTicks::Now() > expiration_) {
-      base::MessageLoop::current()->Quit();
-    } else {
-      base::MessageLoop::current()->PostDelayedTask(
-          FROM_HERE,
-          base::Bind(&SyncBackendStoppedChecker::PeriodicCheck,
-                     base::Unretained(this)),
-          base::TimeDelta::FromSeconds(1));
+  virtual void OnStateChanged() OVERRIDE {
+    if (ProfileSyncService::IDLE == pss_->backend_mode()) {
+      done_ = true;
+      run_loop_.Quit();
     }
   }
 
-  ProfileSyncService* pss_;
-  base::TimeDelta timeout_;
-  base::TimeTicks expiration_;
+  bool Wait() {
+    pss_->AddObserver(this);
+    if (ProfileSyncService::IDLE == pss_->backend_mode())
+      return true;
+    base::MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        run_loop_.QuitClosure(),
+        timeout_);
+    run_loop_.Run();
+    pss_->RemoveObserver(this);
+    return done_;
+  }
+
+ private:
+
+  ProfileSyncService* const pss_;
+  const base::TimeDelta timeout_;
+  base::RunLoop run_loop_;
+  bool done_;
+};
+
+// Waits until a rollback finishes.
+class SyncRollbackChecker : public ProfileSyncServiceBase::Observer,
+                            public BrowsingDataRemover::Observer {
+ public:
+  explicit SyncRollbackChecker(ProfileSyncService* service)
+      : pss_(service),
+        timeout_(TestTimeouts::action_max_timeout()),
+        rollback_started_(false),
+        clear_done_(false) {}
+
+  // ProfileSyncServiceBase::Observer implementation.
+  virtual void OnStateChanged() OVERRIDE {
+    if (ProfileSyncService::ROLLBACK == pss_->backend_mode()) {
+      rollback_started_ = true;
+      if (clear_done_)
+        run_loop_.Quit();
+    }
+  }
+
+  // BrowsingDataRemoverObserver::Observer implementation.
+  virtual void OnBrowsingDataRemoverDone() OVERRIDE {
+    clear_done_ = true;
+    if (rollback_started_) {
+      run_loop_.Quit();
+    }
+  }
+
+  bool Wait() {
+    pss_->AddObserver(this);
+    pss_->SetBrowsingDataRemoverObserverForTesting(this);
+    base::MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        run_loop_.QuitClosure(),
+        timeout_);
+    run_loop_.Run();
+    pss_->RemoveObserver(this);
+    return rollback_started_ && clear_done_;
+  }
+
+  ProfileSyncService* const pss_;
+  const base::TimeDelta timeout_;
+  base::RunLoop run_loop_;
+  bool rollback_started_;
+  bool clear_done_;
 };
 
 #if defined(ENABLE_PRE_SYNC_BACKUP)
@@ -192,9 +239,10 @@ IN_PROC_BROWSER_TEST_F(SingleClientBackupRollbackTest,
   Remove(0, tier1_b, 0);
 
   // Wait for rollback to finish and sync backend is completely shut down.
-  SyncBackendStoppedChecker checker(GetSyncService(0),
-                                    base::TimeDelta::FromSeconds(5));
-  ASSERT_TRUE(checker.Wait());
+  SyncRollbackChecker rollback_checker(GetSyncService(0));
+  ASSERT_TRUE(rollback_checker.Wait());
+  SyncBackendStoppedChecker shutdown_checker(GetSyncService(0));
+  ASSERT_TRUE(shutdown_checker.Wait());
 
   // Verify bookmarks are restored.
   ASSERT_EQ(1, tier1_a->child_count());
@@ -204,10 +252,6 @@ IN_PROC_BROWSER_TEST_F(SingleClientBackupRollbackTest,
   ASSERT_EQ(1, tier1_b->child_count());
   const BookmarkNode* url2 = tier1_b->GetChild(0);
   ASSERT_EQ(GURL("http://www.nhl.com"), url2->url());
-
-  // Backup DB should be deleted after rollback is done.
-  ASSERT_FALSE(base::PathExists(
-      GetProfile(0)->GetPath().Append(FILE_PATH_LITERAL("Sync Data Backup"))));
 }
 
 #if defined(ENABLE_PRE_SYNC_BACKUP)
@@ -248,20 +292,15 @@ IN_PROC_BROWSER_TEST_F(SingleClientBackupRollbackTest,
   // Make another change to trigger downloading of rollback command.
   Remove(0, GetOtherNode(0), 0);
 
-  // Wait for rollback to finish and sync backend is completely shut down.
-  SyncBackendStoppedChecker checker(GetSyncService(0),
-                                    base::TimeDelta::FromSeconds(5));
-  ASSERT_TRUE(checker.Wait());
+  // Wait for sync backend is completely shut down.
+  SyncBackendStoppedChecker shutdown_checker(GetSyncService(0));
+  ASSERT_TRUE(shutdown_checker.Wait());
 
   // With rollback disabled, bookmarks in backup DB should not be restored.
   // Only bookmark added during sync is present.
   ASSERT_EQ(1, GetOtherNode(0)->child_count());
   ASSERT_EQ(GURL("http://www.yahoo.com"),
             GetOtherNode(0)->GetChild(0)->url());
-
-  // Backup DB should be deleted after.
-  ASSERT_FALSE(base::PathExists(
-      GetProfile(0)->GetPath().Append(FILE_PATH_LITERAL("Sync Data Backup"))));
 }
 
 #if defined(ENABLE_PRE_SYNC_BACKUP)
@@ -300,19 +339,14 @@ IN_PROC_BROWSER_TEST_F(SingleClientBackupRollbackTest,
   // Make another change to trigger downloading of rollback command.
   Remove(0, GetOtherNode(0), 0);
 
-  // Wait for rollback to finish and sync backend is completely shut down.
-  SyncBackendStoppedChecker checker(GetSyncService(0),
-                                    base::TimeDelta::FromSeconds(5));
-  ASSERT_TRUE(checker.Wait());
+  // Wait sync backend is completely shut down.
+  SyncBackendStoppedChecker shutdown_checker(GetSyncService(0));
+  ASSERT_TRUE(shutdown_checker.Wait());
 
   // Shouldn't restore bookmarks with sign-out only.
   ASSERT_EQ(1, GetOtherNode(0)->child_count());
   ASSERT_EQ(GURL("http://www.yahoo.com"),
             GetOtherNode(0)->GetChild(0)->url());
-
-  // Backup DB should be deleted after.
-  ASSERT_FALSE(base::PathExists(
-      GetProfile(0)->GetPath().Append(FILE_PATH_LITERAL("Sync Data Backup"))));
 }
 
 #if defined(ENABLE_PRE_SYNC_BACKUP)
@@ -350,9 +384,10 @@ IN_PROC_BROWSER_TEST_F(SingleClientBackupRollbackTest,
   // Make another change to trigger downloading of rollback command.
   Remove(0, GetOtherNode(0), 0);
 
-  // Wait for backend to completely shut down.
-  SyncBackendStoppedChecker checker(GetSyncService(0),
-                                    base::TimeDelta::FromSeconds(15));
+  // Wait for rollback to finish and sync backend is completely shut down.
+  SyncRollbackChecker rollback_checker(GetSyncService(0));
+  ASSERT_TRUE(rollback_checker.Wait());
+  SyncBackendStoppedChecker checker(GetSyncService(0));
   ASSERT_TRUE(checker.Wait());
 
   // Without backup DB, bookmarks remain at the state when sync stops.
@@ -393,9 +428,10 @@ IN_PROC_BROWSER_TEST_F(SingleClientBackupRollbackTest,
   Remove(0, sub_folder, 0);
 
   // Wait for rollback to finish and sync backend is completely shut down.
-  SyncBackendStoppedChecker checker(GetSyncService(0),
-                                    base::TimeDelta::FromSeconds(5));
-  ASSERT_TRUE(checker.Wait());
+  SyncRollbackChecker rollback_checker(GetSyncService(0));
+  ASSERT_TRUE(rollback_checker.Wait());
+  SyncBackendStoppedChecker shutdown_checker(GetSyncService(0));
+  ASSERT_TRUE(shutdown_checker.Wait());
 
   // Verify bookmarks are unchanged.
   ASSERT_EQ(3, sub_folder->child_count());

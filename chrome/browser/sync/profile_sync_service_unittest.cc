@@ -287,7 +287,9 @@ class ProfileSyncServiceTest : public ::testing::Test {
     return components_factory_;
   }
 
-  void ClearBrowsingDataCallback(Profile* profile, base::Time start,
+  void ClearBrowsingDataCallback(BrowsingDataRemover::Observer* observer,
+                                 Profile* profile,
+                                 base::Time start,
                                  base::Time end) {
     EXPECT_EQ(profile_, profile);
     clear_browsing_date_start_ = start;

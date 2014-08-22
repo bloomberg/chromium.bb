@@ -26,7 +26,6 @@
 #include "chrome/browser/bookmarks/enhanced_bookmarks_features.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
-#include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
@@ -171,10 +170,15 @@ static const base::FilePath::CharType kSyncBackupDataFolderName[] =
 
 namespace {
 
-void ClearBrowsingData(Profile* profile, base::Time start, base::Time end) {
+void ClearBrowsingData(BrowsingDataRemover::Observer* observer,
+                       Profile* profile,
+                       base::Time start,
+                       base::Time end) {
   // BrowsingDataRemover deletes itself when it's done.
   BrowsingDataRemover* remover = BrowsingDataRemover::CreateForRange(
       profile, start, end);
+  if (observer)
+    remover->AddObserver(observer);
   remover->Remove(BrowsingDataRemover::REMOVE_ALL,
                   BrowsingDataHelper::ALL);
 
@@ -243,7 +247,8 @@ ProfileSyncService::ProfileSyncService(
       backend_mode_(IDLE),
       need_backup_(false),
       backup_finished_(false),
-      clear_browsing_data_(base::Bind(&ClearBrowsingData)) {
+      clear_browsing_data_(base::Bind(&ClearBrowsingData)),
+      browsing_data_remover_observer_(NULL) {
   DCHECK(profile);
   syncer::SyncableService::StartSyncFlare flare(
       sync_start_util::GetFlareForSyncableService(profile->GetPath()));
@@ -725,6 +730,8 @@ void ProfileSyncService::StartUpSlowBackendComponents(
   InitializeBackend(ShouldDeleteSyncFolder());
 
   UpdateFirstSyncTimePref();
+
+  NotifyObservers();
 }
 
 void ProfileSyncService::OnGetTokenSuccess(
@@ -2657,11 +2664,22 @@ void ProfileSyncService::ClearBrowsingDataSinceFirstSync() {
   if (first_sync_time.is_null())
     return;
 
-  clear_browsing_data_.Run(profile_, first_sync_time, base::Time::Now());
+  clear_browsing_data_.Run(browsing_data_remover_observer_,
+                           profile_,
+                           first_sync_time,
+                           base::Time::Now());
+}
+
+void ProfileSyncService::SetBrowsingDataRemoverObserverForTesting(
+    BrowsingDataRemover::Observer* observer) {
+  browsing_data_remover_observer_ = observer;
 }
 
 void ProfileSyncService::SetClearingBrowseringDataForTesting(
-    base::Callback<void(Profile*, base::Time, base::Time)> c) {
+    base::Callback<void(BrowsingDataRemover::Observer* observer,
+                        Profile*,
+                        base::Time,
+                        base::Time)> c) {
   clear_browsing_data_ = c;
 }
 
