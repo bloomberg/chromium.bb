@@ -253,7 +253,7 @@ void WebViewGuest::DidAttachToEmbedder() {
   SetUpAutoSize();
 
   std::string name;
-  if (extra_params()->GetString(webview::kName, &name)) {
+  if (attach_params()->GetString(webview::kName, &name)) {
     // If the guest window's name is empty, then the WebView tag's name is
     // assigned. Otherwise, the guest window's name takes precedence over the
     // WebView tag's name.
@@ -263,15 +263,15 @@ void WebViewGuest::DidAttachToEmbedder() {
   ReportFrameNameChange(name_);
 
   std::string user_agent_override;
-  if (extra_params()->GetString(webview::kParameterUserAgentOverride,
-                                &user_agent_override)) {
+  if (attach_params()->GetString(webview::kParameterUserAgentOverride,
+                                 &user_agent_override)) {
     SetUserAgentOverride(user_agent_override);
   } else {
     SetUserAgentOverride("");
   }
 
   std::string src;
-  if (extra_params()->GetString("src", &src) && !src.empty())
+  if (attach_params()->GetString("src", &src) && !src.empty())
     NavigateGuest(src);
 
   if (GetOpener()) {
@@ -935,17 +935,17 @@ bool WebViewGuest::HandleKeyboardShortcuts(
 void WebViewGuest::SetUpAutoSize() {
   // Read the autosize parameters passed in from the embedder.
   bool auto_size_enabled = false;
-  extra_params()->GetBoolean(webview::kAttributeAutoSize, &auto_size_enabled);
+  attach_params()->GetBoolean(webview::kAttributeAutoSize, &auto_size_enabled);
 
   int max_height = 0;
   int max_width = 0;
-  extra_params()->GetInteger(webview::kAttributeMaxHeight, &max_height);
-  extra_params()->GetInteger(webview::kAttributeMaxWidth, &max_width);
+  attach_params()->GetInteger(webview::kAttributeMaxHeight, &max_height);
+  attach_params()->GetInteger(webview::kAttributeMaxWidth, &max_width);
 
   int min_height = 0;
   int min_width = 0;
-  extra_params()->GetInteger(webview::kAttributeMinHeight, &min_height);
-  extra_params()->GetInteger(webview::kAttributeMinWidth, &min_width);
+  attach_params()->GetInteger(webview::kAttributeMinHeight, &min_height);
+  attach_params()->GetInteger(webview::kAttributeMinWidth, &min_width);
 
   // Call SetAutoSize to apply all the appropriate validation and clipping of
   // values.
@@ -1070,7 +1070,7 @@ void WebViewGuest::RequestNewWindowPermission(
   request_info.Set(webview::kTargetURL,
                    new base::StringValue(new_window_info.url.spec()));
   request_info.Set(webview::kName, new base::StringValue(new_window_info.name));
-  request_info.SetInteger(webview::kWindowID, guest->GetGuestInstanceID());
+  request_info.SetInteger(webview::kWindowID, guest->guest_instance_id());
   // We pass in partition info so that window-s created through newwindow
   // API can use it to set their partition attribute.
   request_info.Set(webview::kStoragePartitionId,
@@ -1084,7 +1084,7 @@ void WebViewGuest::RequestNewWindowPermission(
                         request_info,
                         base::Bind(&WebViewGuest::OnWebViewNewWindowResponse,
                                    base::Unretained(this),
-                                   guest->GetGuestInstanceID()),
+                                   guest->guest_instance_id()),
                                    false /* allowed_by_default */);
 }
 

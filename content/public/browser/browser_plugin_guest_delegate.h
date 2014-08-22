@@ -28,17 +28,13 @@ class CONTENT_EXPORT BrowserPluginGuestDelegate {
 
   // Notification that the embedder will begin attachment. This is called
   // prior to resuming resource loads.
-  virtual void WillAttach(content::WebContents* embedder_web_contents,
-                          const base::DictionaryValue& extra_params) {}
+  virtual void WillAttach(content::WebContents* embedder_web_contents) {}
 
   virtual WebContents* CreateNewGuestWindow(
       const WebContents::CreateParams& create_params);
 
   // Notification that the embedder has completed attachment.
   virtual void DidAttach() {}
-
-  // Requests the instance ID associated with the delegate.
-  virtual int GetGuestInstanceID() const;
 
   // Notification that the BrowserPlugin has resized.
   virtual void ElementSizeChanged(const gfx::Size& old_size,

@@ -33,8 +33,9 @@ class CONTENT_EXPORT BrowserPlugin :
  public:
   RenderViewImpl* render_view() const { return render_view_.get(); }
   int render_view_routing_id() const { return render_view_routing_id_; }
-  int guest_instance_id() const { return guest_instance_id_; }
+  int browser_plugin_instance_id() const { return browser_plugin_instance_id_; }
   bool attached() const { return attached_; }
+  bool ready() const { return attached_ || attach_pending_; }
   BrowserPluginManager* browser_plugin_manager() const {
     return browser_plugin_manager_.get();
   }
@@ -63,8 +64,6 @@ class CONTENT_EXPORT BrowserPlugin :
 
   // Returns whether the guest process has crashed.
   bool guest_crashed() const { return guest_crashed_; }
-  // Returns whether this BrowserPlugin has allocated an instance ID.
-  bool HasGuestInstanceID() const;
 
   // Informs the guest of an updated focus state.
   void UpdateGuestFocusState();
@@ -79,14 +78,14 @@ class CONTENT_EXPORT BrowserPlugin :
   void EnableCompositing(bool enable);
 
   // Provided that a guest instance ID has been allocated, this method attaches
-  // this BrowserPlugin instance to that guest. |extra_params| are parameters
-  // passed in by the content embedder to the browser process.
-  void Attach(int guest_instance_id,
-              scoped_ptr<base::DictionaryValue> extra_params);
+  // this BrowserPlugin instance to that guest.
+  void Attach();
 
   // Notify the plugin about a compositor commit so that frame ACKs could be
   // sent, if needed.
   void DidCommitCompositorFrame();
+
+  static BrowserPlugin* FromNode(blink::WebNode& node);
 
   // Returns whether a message should be forwarded to BrowserPlugin.
   static bool ShouldForwardToBrowserPlugin(const IPC::Message& message);
@@ -163,8 +162,9 @@ class CONTENT_EXPORT BrowserPlugin :
   // A BrowserPlugin object is a controller that represents an instance of a
   // browser plugin within the embedder renderer process. Once a BrowserPlugin
   // does an initial navigation or is attached to a newly created guest, it
-  // acquires a guest_instance_id as well. The guest instance ID uniquely
-  // identifies a guest WebContents that's hosted by this BrowserPlugin.
+  // acquires a browser_plugin_instance_id as well. The guest instance ID
+  // uniquely identifies a guest WebContents that's hosted by this
+  // BrowserPlugin.
   BrowserPlugin(RenderViewImpl* render_view,
                 blink::WebFrame* frame,
                 bool auto_navigate);
@@ -196,7 +196,7 @@ class CONTENT_EXPORT BrowserPlugin :
   // IPC message handlers.
   // Please keep in alphabetical order.
   void OnAdvanceFocus(int instance_id, bool reverse);
-  void OnAttachACK(int instance_id);
+  void OnAttachACK(int browser_plugin_instance_id);
   void OnBuffersSwapped(int instance_id,
                         const FrameMsg_BuffersSwapped_Params& params);
   void OnCompositorFrameSwapped(const IPC::Message& message);
@@ -213,12 +213,10 @@ class CONTENT_EXPORT BrowserPlugin :
   void OnUpdateRect(int instance_id,
                     const BrowserPluginMsg_UpdateRect_Params& params);
 
-  // This is the browser-process-allocated instance ID that uniquely identifies
-  // a guest WebContents.
-  int guest_instance_id_;
   // This indicates whether this BrowserPlugin has been attached to a
   // WebContents.
   bool attached_;
+  bool attach_pending_;
   const base::WeakPtr<RenderViewImpl> render_view_;
   // We cache the |render_view_|'s routing ID because we need it on destruction.
   // If the |render_view_| is destroyed before the BrowserPlugin is destroyed
@@ -256,6 +254,9 @@ class CONTENT_EXPORT BrowserPlugin :
 
   // Used to identify the plugin to WebBindings.
   scoped_ptr<struct _NPP> npp_;
+
+  // URL for the embedder frame.
+  int browser_plugin_instance_id_;
 
   std::vector<EditCommand> edit_commands_;
 

@@ -34,13 +34,13 @@ bool BrowserPluginManagerImpl::Send(IPC::Message* msg) {
 bool BrowserPluginManagerImpl::OnMessageReceived(
     const IPC::Message& message) {
   if (BrowserPlugin::ShouldForwardToBrowserPlugin(message)) {
-    int guest_instance_id = browser_plugin::kInstanceIDNone;
-    // All allowed messages must have |guest_instance_id| as their first
-    // parameter.
+    int browser_plugin_instance_id = browser_plugin::kInstanceIDNone;
+    // All allowed messages must have |browser_plugin_instance_id| as their
+    // first parameter.
     PickleIterator iter(message);
-    bool success = iter.ReadInt(&guest_instance_id);
+    bool success = iter.ReadInt(&browser_plugin_instance_id);
     DCHECK(success);
-    BrowserPlugin* plugin = GetBrowserPlugin(guest_instance_id);
+    BrowserPlugin* plugin = GetBrowserPlugin(browser_plugin_instance_id);
     if (plugin && plugin->OnMessageReceived(message))
       return true;
   }

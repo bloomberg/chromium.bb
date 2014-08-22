@@ -464,9 +464,7 @@ WebContentsImpl* WebContentsImpl::CreateWithOpener(
   if (params.guest_delegate) {
     // This makes |new_contents| act as a guest.
     // For more info, see comment above class BrowserPluginGuest.
-    BrowserPluginGuest::Create(params.guest_delegate->GetGuestInstanceID(),
-                               new_contents,
-                               params.guest_delegate);
+    BrowserPluginGuest::Create(new_contents, params.guest_delegate);
     // We are instantiating a WebContents for browser plugin. Set its subframe
     // bit to true.
     new_contents->is_subframe_ = true;

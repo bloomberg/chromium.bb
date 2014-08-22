@@ -111,7 +111,7 @@ WebViewInternal.prototype.maybeHandleContextMenu = function(e, webViewEvent) {
       validateCall();
       // TODO(lazyboy): WebViewShowContextFunction doesn't do anything useful
       // with |items|, implement.
-      WebView.showContextMenu(self.instanceId, requestId, items);
+      WebView.showContextMenu(self.guestInstanceId, requestId, items);
     }
   };
   webViewEvent.menu = menu;
@@ -123,7 +123,7 @@ WebViewInternal.prototype.maybeHandleContextMenu = function(e, webViewEvent) {
   if (!defaultPrevented) {
     actionTaken = true;
     // The default action is equivalent to just showing the context menu as is.
-    WebView.showContextMenu(self.instanceId, requestId, undefined);
+    WebView.showContextMenu(self.guestInstanceId, requestId, undefined);
 
     // TODO(lazyboy): Figure out a way to show warning message only when
     // listeners are registered for this event.
@@ -141,7 +141,7 @@ WebViewInternal.prototype.maybeGetExperimentalPermissions = function() {
 
 /** @private */
 WebViewInternal.prototype.captureVisibleRegion = function(spec, callback) {
-  WebView.captureVisibleRegion(this.instanceId, spec, callback);
+  WebView.captureVisibleRegion(this.guestInstanceId, spec, callback);
 };
 
 WebViewInternal.maybeRegisterExperimentalAPIs = function(proto) {

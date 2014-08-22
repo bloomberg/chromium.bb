@@ -168,7 +168,7 @@ void AppViewGuest::CreateWebContents(
   }
 
   pending_response_map.Get().insert(
-      std::make_pair(GetGuestInstanceID(),
+      std::make_pair(guest_instance_id(),
                      make_linked_ptr(new ResponseInfo(
                                         guest_extension,
                                         weak_ptr_factory_.GetWeakPtr(),
@@ -247,7 +247,7 @@ void AppViewGuest::LaunchAppAndFireEvent(
   }
 
   scoped_ptr<base::DictionaryValue> embed_request(new base::DictionaryValue());
-  embed_request->SetInteger(appview::kGuestInstanceID, GetGuestInstanceID());
+  embed_request->SetInteger(appview::kGuestInstanceID, guest_instance_id());
   embed_request->SetString(appview::kEmbedderID, embedder_extension_id());
   embed_request->Set(appview::kData, data.release());
   AppRuntimeEventRouter::DispatchOnEmbedRequestedEvent(

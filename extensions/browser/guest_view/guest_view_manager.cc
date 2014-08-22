@@ -7,6 +7,7 @@
 #include "base/strings/stringprintf.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/result_codes.h"
@@ -60,6 +61,53 @@ content::WebContents* GuestViewManager::GetGuestByInstanceIDSafely(
   return GetGuestByInstanceID(guest_instance_id);
 }
 
+void GuestViewManager::AttachGuest(
+    int embedder_render_process_id,
+    int embedder_routing_id,
+    int element_instance_id,
+    int guest_instance_id,
+    const base::DictionaryValue& attach_params) {
+  content::WebContents* guest_web_contents =
+      GetGuestByInstanceIDSafely(guest_instance_id, embedder_render_process_id);
+  if (!guest_web_contents)
+    return;
+
+  GuestViewBase* guest_view =
+      GuestViewBase::FromWebContents(guest_web_contents);
+  DCHECK(guest_view);
+
+  content::RenderViewHost* rvh =
+      content::RenderViewHost::FromID(embedder_render_process_id,
+                                      embedder_routing_id);
+  content::WebContents* embedder_web_contents =
+      content::WebContents::FromRenderViewHost(rvh);
+  if (!embedder_web_contents)
+    return;
+  ElementInstanceKey key(embedder_web_contents, element_instance_id);
+
+  GuestInstanceIDMap::iterator it = instance_id_map_.find(key);
+  if (it != instance_id_map_.end()) {
+    int old_guest_instance_id = it->second;
+    // Reattachment to the same guest is not currently supported.
+    if (old_guest_instance_id == guest_instance_id)
+      return;
+
+    content::WebContents* old_guest_web_contents =
+        GetGuestByInstanceIDSafely(old_guest_instance_id,
+                                   embedder_render_process_id);
+    if (!old_guest_web_contents)
+      return;
+
+    GuestViewBase* old_guest_view =
+        GuestViewBase::FromWebContents(old_guest_web_contents);
+
+    old_guest_view->Destroy();
+  }
+  instance_id_map_[key] = guest_instance_id;
+  reverse_instance_id_map_.insert(std::make_pair(guest_instance_id, key));
+  guest_view->SetAttachParams(attach_params);
+}
+
 int GuestViewManager::GetNextInstanceID() {
   return ++current_instance_id_;
 }
@@ -101,9 +149,15 @@ content::WebContents* GuestViewManager::CreateGuestWithWebContentsParams(
 }
 
 void GuestViewManager::MaybeGetGuestByInstanceIDOrKill(
-    int guest_instance_id,
-    int embedder_render_process_id,
+    content::WebContents* embedder_web_contents,
+    int element_instance_id,
     const GuestByInstanceIDCallback& callback) {
+  int guest_instance_id = GetGuestInstanceIDForPluginID(embedder_web_contents,
+                                                        element_instance_id);
+  if (guest_instance_id == guestview::kInstanceIDNone)
+    return;
+  int embedder_render_process_id =
+      embedder_web_contents->GetRenderProcessHost()->GetID();
   if (!CanEmbedderAccessInstanceIDMaybeKill(embedder_render_process_id,
                                             guest_instance_id)) {
     // If we kill the embedder, then don't bother calling back.
@@ -112,6 +166,16 @@ void GuestViewManager::MaybeGetGuestByInstanceIDOrKill(
   content::WebContents* guest_web_contents =
       GetGuestByInstanceID(guest_instance_id);
   callback.Run(guest_web_contents);
+}
+
+int GuestViewManager::GetGuestInstanceIDForPluginID(
+    content::WebContents* embedder_web_contents,
+    int element_instance_id) {
+  GuestInstanceIDMap::iterator iter = instance_id_map_.find(
+      ElementInstanceKey(embedder_web_contents, element_instance_id));
+  if (iter == instance_id_map_.end())
+    return guestview::kInstanceIDNone;
+  return iter->second;
 }
 
 SiteInstance* GuestViewManager::GetGuestSiteInstance(
@@ -153,6 +217,14 @@ void GuestViewManager::RemoveGuest(int guest_instance_id) {
       guest_web_contents_by_instance_id_.find(guest_instance_id);
   DCHECK(it != guest_web_contents_by_instance_id_.end());
   guest_web_contents_by_instance_id_.erase(it);
+
+  GuestInstanceIDReverseMap::iterator id_iter =
+      reverse_instance_id_map_.find(guest_instance_id);
+  if (id_iter != reverse_instance_id_map_.end()) {
+    const ElementInstanceKey& instance_id_key = id_iter->second;
+    instance_id_map_.erase(instance_id_map_.find(instance_id_key));
+    reverse_instance_id_map_.erase(id_iter);
+  }
 
   // All the instance IDs that lie within [0, last_instance_id_removed_]
   // are invalid.

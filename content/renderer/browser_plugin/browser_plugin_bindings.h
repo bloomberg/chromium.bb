@@ -13,7 +13,6 @@
 namespace content {
 
 class BrowserPlugin;
-class BrowserPluginMethodBinding;
 class BrowserPluginPropertyBinding;
 
 class BrowserPluginBindings {
@@ -54,8 +53,6 @@ class BrowserPluginBindings {
   // The NPObject we use to expose postMessage to JavaScript.
   BrowserPluginNPObject* np_object_;
 
-  typedef ScopedVector<BrowserPluginMethodBinding> BindingList;
-  BindingList method_bindings_;
   typedef ScopedVector<BrowserPluginPropertyBinding> PropertyBindingList;
   PropertyBindingList property_bindings_;
 

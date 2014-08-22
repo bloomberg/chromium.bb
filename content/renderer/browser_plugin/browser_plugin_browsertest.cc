@@ -137,7 +137,8 @@ MockBrowserPlugin* BrowserPluginTest::GetCurrentPluginWithAttachParams(
       browser_plugin_manager())->last_plugin();
   if (!browser_plugin)
     return NULL;
-  browser_plugin_manager()->AllocateInstanceID(browser_plugin);
+
+  browser_plugin->Attach();
 
   int instance_id = 0;
   const IPC::Message* msg =
@@ -176,7 +177,7 @@ TEST_F(BrowserPluginTest, ResizeFlowControl) {
   LoadHTML(GetHTMLForBrowserPluginObject().c_str());
   MockBrowserPlugin* browser_plugin = GetCurrentPlugin();
   ASSERT_TRUE(browser_plugin);
-  int instance_id = browser_plugin->guest_instance_id();
+  int instance_id = browser_plugin->browser_plugin_instance_id();
   // Send an UpdateRect to the BrowserPlugin to make sure the browser sees a
   // resize related (SetAutoSize) message.
   {

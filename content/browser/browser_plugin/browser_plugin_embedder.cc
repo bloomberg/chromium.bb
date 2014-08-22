@@ -116,28 +116,26 @@ void BrowserPluginEmbedder::OnUpdateDragCursor(bool* handled) {
 }
 
 void BrowserPluginEmbedder::OnGuestCallback(
-    int instance_id,
+    int browser_plugin_instance_id,
     const BrowserPluginHostMsg_Attach_Params& params,
-    const base::DictionaryValue* extra_params,
     WebContents* guest_web_contents) {
   BrowserPluginGuest* guest = guest_web_contents ?
       static_cast<WebContentsImpl*>(guest_web_contents)->
           GetBrowserPluginGuest() : NULL;
   if (guest)
-    guest->Attach(GetWebContents(), params, *extra_params);
+    guest->Attach(browser_plugin_instance_id, GetWebContents(), params);
 }
 
 void BrowserPluginEmbedder::OnAttach(
-    int instance_id,
-    const BrowserPluginHostMsg_Attach_Params& params,
-    const base::DictionaryValue& extra_params) {
+    int browser_plugin_instance_id,
+    const BrowserPluginHostMsg_Attach_Params& params) {
   GetBrowserPluginGuestManager()->MaybeGetGuestByInstanceIDOrKill(
-      instance_id, GetWebContents()->GetRenderProcessHost()->GetID(),
+      web_contents(),
+      browser_plugin_instance_id,
       base::Bind(&BrowserPluginEmbedder::OnGuestCallback,
                  base::Unretained(this),
-                 instance_id,
-                 params,
-                 &extra_params));
+                 browser_plugin_instance_id,
+                 params));
 }
 
 bool BrowserPluginEmbedder::HandleKeyboardEvent(

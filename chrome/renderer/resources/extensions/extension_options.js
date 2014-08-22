@@ -9,6 +9,7 @@ var GuestViewInternal =
     require('binding').Binding.create('guestViewInternal').generate();
 var IdGenerator = requireNative('id_generator');
 var utils = require('utils');
+var guestViewInternalNatives = requireNative('guest_view_internal');
 
 // Mapping of the autosize attribute names to default values
 var AUTO_SIZE_ATTRIBUTES = {
@@ -41,8 +42,8 @@ function ExtensionOptionsInternal(extensionoptionsNode) {
     this.init();
 };
 
-ExtensionOptionsInternal.prototype.attachWindow = function(instanceId) {
-  this.instanceId = instanceId;
+ExtensionOptionsInternal.prototype.attachWindow = function(guestInstanceId) {
+  this.guestInstanceId = guestInstanceId;
   var params = {
     'autosize': this.autosize,
     'instanceId': this.viewInstanceId,
@@ -50,8 +51,11 @@ ExtensionOptionsInternal.prototype.attachWindow = function(instanceId) {
     'maxwidth': parseInt(this.maxwidth || 0),
     'minheight': parseInt(this.minheight || 0),
     'minwidth': parseInt(this.minwidth || 0)
-  }
-  return this.browserPluginNode['-internal-attach'](instanceId, params);
+  };
+  return guestViewInternalNatives.AttachGuest(
+      parseInt(this.browserPluginNode.getAttribute('internalinstanceid')),
+      guestInstanceId,
+      params);
 };
 
 ExtensionOptionsInternal.prototype.createBrowserPluginNode = function() {
@@ -67,15 +71,15 @@ ExtensionOptionsInternal.prototype.createGuest = function() {
   GuestViewInternal.createGuest(
       'extensionoptions',
       params,
-      function(instanceId) {
-        if (instanceId == 0) {
+      function(guestInstanceId) {
+        if (guestInstanceId == 0) {
           // Fire a createfailed event here rather than in ExtensionOptionsGuest
           // because the guest will not be created, and cannot fire an event.
           this.initCalled = false;
           var createFailedEvent = new Event('createfailed', { bubbles: true });
           this.dispatchEvent(createFailedEvent);
         } else {
-          this.attachWindow(instanceId);
+          this.attachWindow(guestInstanceId);
         }
       }.bind(this));
 };
@@ -98,7 +102,7 @@ ExtensionOptionsInternal.prototype.handleExtensionOptionsAttributeMutation =
   if (name == 'extension') {
     this.extensionId = newValue;
     // Create new guest view if one hasn't been created for this element.
-    if (!this.instanceId && this.parseExtensionAttribute())
+    if (!this.guestInstanceId && this.parseExtensionAttribute())
       this.init();
     // TODO(ericzeng): Implement navigation to another guest view if we want
     // that functionality.
@@ -106,10 +110,10 @@ ExtensionOptionsInternal.prototype.handleExtensionOptionsAttributeMutation =
     this[name] = newValue;
     this.resetSizeConstraintsIfInvalid();
 
-    if (!this.instanceId)
+    if (!this.guestInstanceId)
       return;
 
-    GuestViewInternal.setAutoSize(this.instanceId, {
+    GuestViewInternal.setAutoSize(this.guestInstanceId, {
       'enableAutoSize': this.extensionoptionsNode.hasAttribute('autosize'),
       'min': {
         'width': parseInt(this.minwidth || 0),

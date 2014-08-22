@@ -38,7 +38,6 @@
 #include "ui/gfx/rect.h"
 
 class SkBitmap;
-struct BrowserPluginHostMsg_AutoSize_Params;
 struct BrowserPluginHostMsg_Attach_Params;
 struct BrowserPluginHostMsg_ResizeGuest_Params;
 struct FrameHostMsg_CompositorFrameSwappedACK_Params;
@@ -87,10 +86,8 @@ class CONTENT_EXPORT BrowserPluginGuest : public WebContentsObserver {
   // type of WebContentsView to construct on initialization. The content
   // embedder needs to be aware of |guest_site_instance| on the guest's
   // construction and so we pass it in here.
-  static BrowserPluginGuest* Create(
-      int instance_id,
-      WebContentsImpl* web_contents,
-      BrowserPluginGuestDelegate* delegate);
+  static BrowserPluginGuest* Create(WebContentsImpl* web_contents,
+                                    BrowserPluginGuestDelegate* delegate);
 
   // Returns whether the given WebContents is a BrowserPlugin guest.
   static bool IsGuest(WebContentsImpl* web_contents);
@@ -122,7 +119,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public WebContentsObserver {
 
   // Returns the identifier that uniquely identifies a browser plugin guest
   // within an embedder.
-  int instance_id() const { return instance_id_; }
+  int browser_plugin_instance_id() const { return browser_plugin_instance_id_; }
 
   bool OnMessageReceivedFromEmbedder(const IPC::Message& message);
 
@@ -172,12 +169,10 @@ class CONTENT_EXPORT BrowserPluginGuest : public WebContentsObserver {
   // Attaches this BrowserPluginGuest to the provided |embedder_web_contents|
   // and initializes the guest with the provided |params|. Attaching a guest
   // to an embedder implies that this guest's lifetime is no longer managed
-  // by its opener, and it can begin loading resources. |extra_params| are
-  // parameters passed into BrowserPlugin from JavaScript to be forwarded to
-  // the content embedder.
-  void Attach(WebContentsImpl* embedder_web_contents,
-              const BrowserPluginHostMsg_Attach_Params& params,
-              const base::DictionaryValue& extra_params);
+  // by its opener, and it can begin loading resources.
+  void Attach(int browser_plugin_instance_id,
+              WebContentsImpl* embedder_web_contents,
+              const BrowserPluginHostMsg_Attach_Params& params);
 
   // Returns whether BrowserPluginGuest is interested in receiving the given
   // |message|.
@@ -201,16 +196,15 @@ class CONTENT_EXPORT BrowserPluginGuest : public WebContentsObserver {
 
   // BrowserPluginGuest is a WebContentsObserver of |web_contents| and
   // |web_contents| has to stay valid for the lifetime of BrowserPluginGuest.
-  BrowserPluginGuest(int instance_id,
-                     bool has_render_view,
+  BrowserPluginGuest(bool has_render_view,
                      WebContentsImpl* web_contents,
                      BrowserPluginGuestDelegate* delegate);
 
   void WillDestroy();
 
-  void Initialize(const BrowserPluginHostMsg_Attach_Params& params,
-                  WebContentsImpl* embedder_web_contents,
-                  const base::DictionaryValue& extra_params);
+  void Initialize(int browser_plugin_instance_id,
+                  const BrowserPluginHostMsg_Attach_Params& params,
+                  WebContentsImpl* embedder_web_contents);
 
   bool InAutoSizeBounds(const gfx::Size& size) const;
 
@@ -328,9 +322,8 @@ class CONTENT_EXPORT BrowserPluginGuest : public WebContentsObserver {
   scoped_ptr<EmbedderWebContentsObserver> embedder_web_contents_observer_;
   WebContentsImpl* embedder_web_contents_;
 
-  // An identifier that uniquely identifies a browser plugin guest within an
-  // embedder.
-  const int instance_id_;
+  // An identifier that uniquely identifies a browser plugin within an embedder.
+  int browser_plugin_instance_id_;
   float guest_device_scale_factor_;
   gfx::Rect guest_window_rect_;
   gfx::Rect guest_screen_rect_;

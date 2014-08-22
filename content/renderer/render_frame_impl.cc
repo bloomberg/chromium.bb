@@ -1451,6 +1451,10 @@ bool RenderFrameImpl::IsFTPDirectoryListing() {
   return extra_data ? extra_data->is_ftp_directory_listing() : false;
 }
 
+void RenderFrameImpl::AttachGuest(int element_instance_id) {
+  render_view_->GetBrowserPluginManager()->Attach(element_instance_id);
+}
+
 // blink::WebFrameClient implementation ----------------------------------------
 
 blink::WebPlugin* RenderFrameImpl::createPlugin(

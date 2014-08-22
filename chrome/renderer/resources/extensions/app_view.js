@@ -6,6 +6,7 @@ var DocumentNatives = requireNative('document_natives');
 var GuestViewInternal =
     require('binding').Binding.create('guestViewInternal').generate();
 var IdGenerator = requireNative('id_generator');
+var guestViewInternalNatives = requireNative('guest_view_internal');
 
 function AppViewInternal(appviewNode) {
   privates(appviewNode).internal = this;
@@ -48,32 +49,35 @@ AppViewInternal.prototype.connect = function(app, data, callback) {
   GuestViewInternal.createGuest(
     'appview',
     createParams,
-    function(instanceId) {
-      if (!instanceId) {
-        self.browserPluginNode.style.visibility = 'hidden';
+    function(guestInstanceId) {
+      if (!guestInstanceId) {
+        this.browserPluginNode.style.visibility = 'hidden';
         var errorMsg = 'Unable to connect to app "' + app + '".';
         window.console.warn(errorMsg);
-        self.getErrorNode().innerText = errorMsg;
+        this.getErrorNode().innerText = errorMsg;
         if (callback) {
           callback(false);
         }
         return;
       }
-      self.attachWindow(instanceId);
+      this.attachWindow(guestInstanceId);
       if (callback) {
         callback(true);
       }
-    }
+    }.bind(this)
   );
 };
 
-AppViewInternal.prototype.attachWindow = function(instanceId) {
-  this.instanceId = instanceId;
+AppViewInternal.prototype.attachWindow = function(guestInstanceId) {
+  this.guestInstanceId = guestInstanceId;
   var params = {
     'instanceId': this.viewInstanceId,
   };
   this.browserPluginNode.style.visibility = 'visible';
-  return this.browserPluginNode['-internal-attach'](instanceId, params);
+  return guestViewInternalNatives.AttachGuest(
+      parseInt(this.browserPluginNode.getAttribute('internalinstanceid')),
+      guestInstanceId,
+      params);
 };
 
 function registerBrowserPluginElement() {

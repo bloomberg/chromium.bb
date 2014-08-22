@@ -60,7 +60,7 @@ void GuestViewInternalCreateGuestFunction::CreateGuestCallback(
   int guest_instance_id = 0;
   if (guest_web_contents) {
     GuestViewBase* guest = GuestViewBase::FromWebContents(guest_web_contents);
-    guest_instance_id = guest->GetGuestInstanceID();
+    guest_instance_id = guest->guest_instance_id();
   }
   SetResult(new base::FundamentalValue(guest_instance_id));
   SendResponse(true);

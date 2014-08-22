@@ -176,7 +176,7 @@ void RenderWidgetHostViewGuest::AcceleratedSurfaceBuffersSwapped(
   guest_params.gpu_route_id = params.route_id;
   guest_params.gpu_host_id = gpu_host_id;
   guest_->SendMessageToEmbedder(
-      new BrowserPluginMsg_BuffersSwapped(guest_->instance_id(),
+      new BrowserPluginMsg_BuffersSwapped(guest_->browser_plugin_instance_id(),
                                           guest_params));
 }
 
@@ -223,8 +223,8 @@ void RenderWidgetHostViewGuest::OnSwapCompositorFrame(
   guest_params.shared_memory_handle = software_frame_handle;
 
   guest_->SendMessageToEmbedder(
-      new BrowserPluginMsg_CompositorFrameSwapped(guest_->instance_id(),
-                                                  guest_params));
+      new BrowserPluginMsg_CompositorFrameSwapped(
+          guest_->browser_plugin_instance_id(), guest_params));
 }
 
 bool RenderWidgetHostViewGuest::OnMessageReceived(const IPC::Message& msg) {

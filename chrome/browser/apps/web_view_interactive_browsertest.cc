@@ -54,8 +54,7 @@ class TestGuestViewManager : public extensions::GuestViewManager {
   // GuestViewManager override:
   virtual void AddGuest(int guest_instance_id,
                         content::WebContents* guest_web_contents) OVERRIDE{
-    extensions::GuestViewManager::AddGuest(
-        guest_instance_id, guest_web_contents);
+    GuestViewManager::AddGuest(guest_instance_id, guest_web_contents);
     web_contents_ = guest_web_contents;
 
     if (message_loop_runner_)
@@ -334,7 +333,7 @@ class WebViewInteractiveTest
 
   class PopupCreatedObserver {
    public:
-    explicit PopupCreatedObserver()
+    PopupCreatedObserver()
         : initial_widget_count_(0),
           last_render_widget_host_(NULL),
           seen_new_widget_(false) {}

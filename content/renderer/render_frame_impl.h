@@ -264,6 +264,7 @@ class CONTENT_EXPORT RenderFrameImpl
   virtual bool IsHidden() OVERRIDE;
   virtual ServiceRegistry* GetServiceRegistry() OVERRIDE;
   virtual bool IsFTPDirectoryListing() OVERRIDE;
+  virtual void AttachGuest(int element_instance_id) OVERRIDE;
 
   // blink::WebFrameClient implementation:
   virtual blink::WebPlugin* createPlugin(blink::WebLocalFrame* frame,

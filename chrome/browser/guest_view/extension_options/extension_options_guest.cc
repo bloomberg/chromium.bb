@@ -164,20 +164,20 @@ bool ExtensionOptionsGuest::IsAutoSizeSupported() const {
 void ExtensionOptionsGuest::SetUpAutoSize() {
   // Read the autosize parameters passed in from the embedder.
   bool auto_size_enabled = false;
-  extra_params()->GetBoolean(extensionoptions::kAttributeAutoSize,
+  attach_params()->GetBoolean(extensionoptions::kAttributeAutoSize,
                              &auto_size_enabled);
 
   int max_height = 0;
   int max_width = 0;
-  extra_params()->GetInteger(extensionoptions::kAttributeMaxHeight,
-                             &max_height);
-  extra_params()->GetInteger(extensionoptions::kAttributeMaxWidth, &max_width);
+  attach_params()->GetInteger(extensionoptions::kAttributeMaxHeight,
+                              &max_height);
+  attach_params()->GetInteger(extensionoptions::kAttributeMaxWidth, &max_width);
 
   int min_height = 0;
   int min_width = 0;
-  extra_params()->GetInteger(extensionoptions::kAttributeMinHeight,
-                             &min_height);
-  extra_params()->GetInteger(extensionoptions::kAttributeMinWidth, &min_width);
+  attach_params()->GetInteger(extensionoptions::kAttributeMinHeight,
+                              &min_height);
+  attach_params()->GetInteger(extensionoptions::kAttributeMinWidth, &min_width);
 
   // Call SetAutoSize to apply all the appropriate validation and clipping of
   // values.

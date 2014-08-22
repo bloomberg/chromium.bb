@@ -22,6 +22,7 @@ class WebFrame;
 }
 
 namespace content {
+class RenderFrame;
 class RenderView;
 }
 
@@ -72,6 +73,10 @@ class ScriptContext : public RequestSender::Source, public gin::Runner {
   // Returns the RenderView associated with this context. Can return NULL if the
   // context is in the process of being destroyed.
   content::RenderView* GetRenderView() const;
+
+  // Returns the RenderFrame associated with this context. Can return NULL if
+  // the context is in the process of being destroyed.
+  content::RenderFrame* GetRenderFrame() const;
 
   // Runs |function| with appropriate scopes. Doesn't catch exceptions, callers
   // must do that if they want.

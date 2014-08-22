@@ -22,6 +22,8 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/guest_view/guest_view_base.h"
+#include "extensions/browser/guest_view/guest_view_manager.h"
 #include "extensions/common/api/messaging/message.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_messages.h"
@@ -88,6 +90,7 @@ bool ChromeExtensionMessageFilter::OnMessageReceived(
     const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ChromeExtensionMessageFilter, message)
+    IPC_MESSAGE_HANDLER(ChromeExtensionHostMsg_AttachGuest, OnAttachGuest)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_CanTriggerClipboardRead,
                         OnCanTriggerClipboardRead)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_CanTriggerClipboardWrite,
@@ -116,6 +119,7 @@ bool ChromeExtensionMessageFilter::OnMessageReceived(
 void ChromeExtensionMessageFilter::OverrideThreadForMessage(
     const IPC::Message& message, BrowserThread::ID* thread) {
   switch (message.type()) {
+    case ChromeExtensionHostMsg_AttachGuest::ID:
     case ExtensionHostMsg_PostMessage::ID:
     case ExtensionHostMsg_CloseChannel::ID:
       *thread = BrowserThread::UI;
@@ -146,6 +150,24 @@ void ChromeExtensionMessageFilter::OnCanTriggerClipboardWrite(
   *allowed = (origin.SchemeIs(extensions::kExtensionScheme) ||
       extension_info_map_->SecurityOriginHasAPIPermission(
           origin, render_process_id_, APIPermission::kClipboardWrite));
+}
+
+void ChromeExtensionMessageFilter::OnAttachGuest(
+    int routing_id,
+    int element_instance_id,
+    int guest_instance_id,
+    const base::DictionaryValue& params) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  extensions::GuestViewManager* manager =
+      extensions::GuestViewManager::FromBrowserContext(profile_);
+  if (!manager)
+    return;
+
+  manager->AttachGuest(render_process_id_,
+                       routing_id,
+                       element_instance_id,
+                       guest_instance_id,
+                       params);
 }
 
 void ChromeExtensionMessageFilter::OnOpenChannelToExtension(

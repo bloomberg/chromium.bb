@@ -51,27 +51,6 @@ std::string StringFromNPVariant(const NPVariant& variant) {
   return std::string(np_string.UTF8Characters, np_string.UTF8Length);
 }
 
-// Depending on where the attribute comes from it could be a string, int32,
-// or a double. Javascript tends to produce an int32 or a string, but setting
-// the value from the developer tools console may also produce a double.
-int IntFromNPVariant(const NPVariant& variant) {
-  int value = 0;
-  switch (variant.type) {
-    case NPVariantType_Double:
-      value = NPVARIANT_TO_DOUBLE(variant);
-      break;
-    case NPVariantType_Int32:
-      value = NPVARIANT_TO_INT32(variant);
-      break;
-    case NPVariantType_String:
-      base::StringToInt(StringFromNPVariant(variant), &value);
-      break;
-    default:
-      break;
-  }
-  return value;
-}
-
 //------------------------------------------------------------------------------
 // Implementations of NPClass functions.  These are here to:
 // - Implement src attribute.
@@ -87,27 +66,7 @@ void BrowserPluginBindingsDeallocate(NPObject* object) {
 }
 
 bool BrowserPluginBindingsHasMethod(NPObject* np_obj, NPIdentifier name) {
-  if (!np_obj)
-    return false;
-
-  BrowserPluginBindings* bindings = GetBindings(np_obj);
-  if (!bindings)
-    return false;
-
-  return bindings->HasMethod(name);
-}
-
-bool BrowserPluginBindingsInvoke(NPObject* np_obj, NPIdentifier name,
-                                 const NPVariant* args, uint32 arg_count,
-                                 NPVariant* result) {
-  if (!np_obj)
-    return false;
-
-  BrowserPluginBindings* bindings = GetBindings(np_obj);
-  if (!bindings)
-    return false;
-
-  return bindings->InvokeMethod(name, args, arg_count, result);
+  return false;
 }
 
 bool BrowserPluginBindingsInvokeDefault(NPObject* np_obj,
@@ -177,7 +136,7 @@ NPClass browser_plugin_message_class = {
   &BrowserPluginBindingsDeallocate,
   NULL,
   &BrowserPluginBindingsHasMethod,
-  &BrowserPluginBindingsInvoke,
+  NULL,
   &BrowserPluginBindingsInvokeDefault,
   &BrowserPluginBindingsHasProperty,
   &BrowserPluginBindingsGetProperty,
@@ -187,75 +146,6 @@ NPClass browser_plugin_message_class = {
 };
 
 }  // namespace
-
-// BrowserPluginMethodBinding --------------------------------------------------
-
-class BrowserPluginMethodBinding {
- public:
-  BrowserPluginMethodBinding(const char name[], uint32 arg_count)
-      : name_(name),
-        arg_count_(arg_count) {
-  }
-
-  virtual ~BrowserPluginMethodBinding() {}
-
-  bool MatchesName(NPIdentifier name) const {
-    return WebBindings::getStringIdentifier(name_.c_str()) == name;
-  }
-
-  uint32 arg_count() const { return arg_count_; }
-
-  virtual bool Invoke(BrowserPluginBindings* bindings,
-                      const NPVariant* args,
-                      NPVariant* result) = 0;
-
- private:
-  std::string name_;
-  uint32 arg_count_;
-
-  DISALLOW_COPY_AND_ASSIGN(BrowserPluginMethodBinding);
-};
-
-class BrowserPluginBindingAttach: public BrowserPluginMethodBinding {
- public:
-  BrowserPluginBindingAttach()
-      : BrowserPluginMethodBinding(browser_plugin::kMethodInternalAttach, 2) {}
-
-  virtual bool Invoke(BrowserPluginBindings* bindings,
-                      const NPVariant* args,
-                      NPVariant* result) OVERRIDE {
-    bool attached = InvokeHelper(bindings, args);
-    BOOLEAN_TO_NPVARIANT(attached, *result);
-    return true;
-  }
-
- private:
-  bool InvokeHelper(BrowserPluginBindings* bindings, const NPVariant* args) {
-    if (!bindings->instance()->render_view())
-      return false;
-
-    int instance_id = IntFromNPVariant(args[0]);
-    if (!instance_id)
-      return false;
-
-    scoped_ptr<V8ValueConverter> converter(V8ValueConverter::create());
-    v8::Handle<v8::Value> obj(blink::WebBindings::toV8Value(&args[1]));
-    scoped_ptr<base::Value> value(
-        converter->FromV8Value(obj, bindings->instance()->render_view()->
-            GetWebView()->mainFrame()->mainWorldScriptContext()));
-    if (!value)
-      return false;
-
-    if (!value->IsType(base::Value::TYPE_DICTIONARY))
-      return false;
-
-    scoped_ptr<base::DictionaryValue> extra_params(
-        static_cast<base::DictionaryValue*>(value.release()));
-    bindings->instance()->Attach(instance_id, extra_params.Pass());
-    return true;
-  }
-  DISALLOW_COPY_AND_ASSIGN(BrowserPluginBindingAttach);
-};
 
 // BrowserPluginPropertyBinding ------------------------------------------------
 
@@ -365,8 +255,6 @@ BrowserPluginBindings::BrowserPluginBindings(BrowserPlugin* instance)
   np_object_ = static_cast<BrowserPluginBindings::BrowserPluginNPObject*>(obj);
   np_object_->message_channel = weak_ptr_factory_.GetWeakPtr();
 
-  method_bindings_.push_back(new BrowserPluginBindingAttach);
-
   property_bindings_.push_back(
       new BrowserPluginPropertyBindingAllowTransparency);
   property_bindings_.push_back(new BrowserPluginPropertyBindingContentWindow);
@@ -374,29 +262,6 @@ BrowserPluginBindings::BrowserPluginBindings(BrowserPlugin* instance)
 
 BrowserPluginBindings::~BrowserPluginBindings() {
   WebBindings::releaseObject(np_object_);
-}
-
-bool BrowserPluginBindings::HasMethod(NPIdentifier name) const {
-  for (BindingList::const_iterator iter = method_bindings_.begin();
-       iter != method_bindings_.end();
-       ++iter) {
-    if ((*iter)->MatchesName(name))
-      return true;
-  }
-  return false;
-}
-
-bool BrowserPluginBindings::InvokeMethod(NPIdentifier name,
-                                         const NPVariant* args,
-                                         uint32 arg_count,
-                                         NPVariant* result) {
-  for (BindingList::iterator iter = method_bindings_.begin();
-       iter != method_bindings_.end();
-       ++iter) {
-    if ((*iter)->MatchesName(name) && (*iter)->arg_count() == arg_count)
-      return (*iter)->Invoke(this, args, result);
-  }
-  return false;
 }
 
 bool BrowserPluginBindings::HasProperty(NPIdentifier name) const {

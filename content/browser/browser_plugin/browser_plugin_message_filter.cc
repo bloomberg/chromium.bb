@@ -70,20 +70,22 @@ static void BrowserPluginGuestMessageCallback(const IPC::Message& message,
 void BrowserPluginMessageFilter::ForwardMessageToGuest(
     const IPC::Message& message) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  RenderProcessHostImpl* host = static_cast<RenderProcessHostImpl*>(
-      RenderProcessHost::FromID(render_process_id_));
-  if (!host)
+  RenderViewHost* rvh = RenderViewHost::FromID(render_process_id_,
+                                               message.routing_id());
+  if (!rvh)
     return;
 
-  int instance_id = 0;
+  WebContents* embedder_web_contents = WebContents::FromRenderViewHost(rvh);
+
+  int browser_plugin_instance_id = 0;
   // All allowed messages must have instance_id as their first parameter.
   PickleIterator iter(message);
-  bool success = iter.ReadInt(&instance_id);
+  bool success = iter.ReadInt(&browser_plugin_instance_id);
   DCHECK(success);
-  host->GetBrowserContext()->GetGuestManager()->
+  embedder_web_contents->GetBrowserContext()->GetGuestManager()->
       MaybeGetGuestByInstanceIDOrKill(
-          instance_id,
-          render_process_id_,
+          embedder_web_contents,
+          browser_plugin_instance_id,
           base::Bind(&BrowserPluginGuestMessageCallback,
                      message));
 }

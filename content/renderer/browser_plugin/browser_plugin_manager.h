@@ -12,8 +12,13 @@
 #include "content/public/renderer/render_view_observer.h"
 #include "ipc/ipc_sender.h"
 
+namespace base {
+class DictionaryValue;
+}
+
 namespace blink {
 class WebFrame;
+class WebNode;
 struct WebPluginParams;
 }
 
@@ -49,12 +54,17 @@ class CONTENT_EXPORT BrowserPluginManager
       blink::WebFrame* frame,
       bool auto_navigate) = 0;
 
-  void AddBrowserPlugin(int guest_instance_id, BrowserPlugin* browser_plugin);
-  void RemoveBrowserPlugin(int guest_instance_id);
-  BrowserPlugin* GetBrowserPlugin(int guest_instance_id) const;
+  void Attach(int browser_plugin_instance_id);
+
+  void AddBrowserPlugin(int browser_plugin_instance_id,
+                        BrowserPlugin* browser_plugin);
+  void RemoveBrowserPlugin(int browser_plugin_instance_id);
+  BrowserPlugin* GetBrowserPlugin(int browser_plugin_instance_id) const;
+
   void UpdateDeviceScaleFactor(float device_scale_factor);
   void UpdateFocusState();
   RenderViewImpl* render_view() const { return render_view_.get(); }
+  int GetNextInstanceID();
 
   // RenderViewObserver implementation.
 
@@ -77,6 +87,7 @@ class CONTENT_EXPORT BrowserPluginManager
   virtual ~BrowserPluginManager();
   // This map is keyed by guest instance IDs.
   IDMap<BrowserPlugin> instances_;
+  int current_instance_id_;
   base::WeakPtr<RenderViewImpl> render_view_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginManager);

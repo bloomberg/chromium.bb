@@ -310,16 +310,18 @@ void GuestViewBase::ElementSizeChanged(const gfx::Size& old_size,
   element_size_ = new_size;
 }
 
-int GuestViewBase::GetGuestInstanceID() const {
-  return guest_instance_id_;
-}
-
 void GuestViewBase::GuestSizeChanged(const gfx::Size& old_size,
                                      const gfx::Size& new_size) {
   if (!auto_size_enabled_)
     return;
   guest_size_ = new_size;
   GuestSizeChangedDueToAutoSize(old_size, new_size);
+}
+
+void GuestViewBase::SetAttachParams(const base::DictionaryValue& params) {
+  attach_params_.reset(params.DeepCopy());
+  attach_params_->GetInteger(guestview::kParameterInstanceId,
+                             &view_instance_id_);
 }
 
 void GuestViewBase::SetOpener(GuestViewBase* guest) {
@@ -335,8 +337,7 @@ void GuestViewBase::RegisterDestructionCallback(
   destruction_callback_ = callback;
 }
 
-void GuestViewBase::WillAttach(content::WebContents* embedder_web_contents,
-                               const base::DictionaryValue& extra_params) {
+void GuestViewBase::WillAttach(content::WebContents* embedder_web_contents) {
   // After attachment, this GuestViewBase's lifetime is restricted to the
   // lifetime of its embedder WebContents. Observing the RenderProcessHost
   // of the embedder is no longer necessary.
@@ -344,8 +345,6 @@ void GuestViewBase::WillAttach(content::WebContents* embedder_web_contents,
   embedder_web_contents_ = embedder_web_contents;
   embedder_web_contents_observer_.reset(
       new EmbedderWebContentsObserver(this));
-  extra_params.GetInteger(guestview::kParameterInstanceId, &view_instance_id_);
-  extra_params_.reset(extra_params.DeepCopy());
 
   WillAttachToEmbedder();
 }

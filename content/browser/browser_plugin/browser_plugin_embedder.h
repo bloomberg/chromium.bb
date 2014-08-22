@@ -85,14 +85,12 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver {
   // |instance_id|.
   void OnGuestCallback(int instance_id,
                        const BrowserPluginHostMsg_Attach_Params& params,
-                       const base::DictionaryValue* extra_params,
                        WebContents* guest_web_contents);
 
   // Message handlers.
 
   void OnAttach(int instance_id,
-                const BrowserPluginHostMsg_Attach_Params& params,
-                const base::DictionaryValue& extra_params);
+                const BrowserPluginHostMsg_Attach_Params& params);
   void OnPluginAtPositionResponse(int instance_id,
                                   int request_id,
                                   const gfx::Point& position);

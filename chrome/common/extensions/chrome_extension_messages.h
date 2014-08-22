@@ -11,6 +11,7 @@
 #include <string>
 
 #include "base/strings/string16.h"
+#include "base/values.h"
 #include "chrome/common/extensions/api/webstore/webstore_api_constants.h"
 #include "chrome/common/extensions/webstore_install_result.h"
 #include "chrome/common/web_application_info.h"
@@ -89,3 +90,11 @@ IPC_MESSAGE_ROUTED5(ExtensionHostMsg_InlineWebstoreInstall,
 
 IPC_MESSAGE_ROUTED1(ChromeExtensionHostMsg_DidGetApplicationInfo,
                     WebApplicationInfo)
+
+// Sent by the renderer to set initialization parameters of a Browser Plugin
+// that is identified by |element_instance_id|.
+IPC_MESSAGE_CONTROL4(ChromeExtensionHostMsg_AttachGuest,
+                     int /* routing_id */,
+                     int /* element_instance_id */,
+                     int /* guest_instance_id */,
+                     base::DictionaryValue /* attach_params */)

@@ -92,7 +92,7 @@ int ChildFrameCompositingHelper::GetInstanceID() {
   if (!browser_plugin_)
     return 0;
 
-  return browser_plugin_->guest_instance_id();
+  return browser_plugin_->browser_plugin_instance_id();
 }
 
 void ChildFrameCompositingHelper::SendCompositorFrameSwappedACKToBrowser(

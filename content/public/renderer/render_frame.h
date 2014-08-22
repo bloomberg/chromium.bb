@@ -95,6 +95,10 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
   // Returns true if this frame is a FTP directory listing.
   virtual bool IsFTPDirectoryListing() = 0;
 
+  // Attaches the browser plugin identified by |element_instance_id| to guest
+  // content created by the embedder.
+  virtual void AttachGuest(int element_instance_id) = 0;
+
  protected:
   virtual ~RenderFrame() {}
 

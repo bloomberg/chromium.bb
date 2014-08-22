@@ -14,6 +14,7 @@ var IdGenerator = requireNative('id_generator');
 // something else.
 var WebView = require('webViewInternal').WebView;
 var WebViewEvents = require('webViewEvents').WebViewEvents;
+var guestViewInternalNatives = requireNative('guest_view_internal');
 
 var WEB_VIEW_ATTRIBUTE_AUTOSIZE = 'autosize';
 var WEB_VIEW_ATTRIBUTE_MAXHEIGHT = 'maxheight';
@@ -29,8 +30,6 @@ var AUTO_SIZE_ATTRIBUTES = [
 ];
 
 var WEB_VIEW_ATTRIBUTE_PARTITION = 'partition';
-
-var PLUGIN_METHOD_ATTACH = '-internal-attach';
 
 var ERROR_MSG_ALREADY_NAVIGATED =
     'The object has already navigated, so its partition cannot be changed.';
@@ -149,18 +148,27 @@ WebViewInternal.prototype.createBrowserPluginNode = function() {
   return browserPluginNode;
 };
 
-WebViewInternal.prototype.getInstanceId = function() {
-  return this.instanceId;
+WebViewInternal.prototype.getGuestInstanceId = function() {
+  return this.guestInstanceId;
 };
 
 /**
  * Resets some state upon reattaching <webview> element to the DOM.
  */
-WebViewInternal.prototype.resetUponReattachment = function() {
-  this.instanceId = undefined;
-  this.beforeFirstNavigation = true;
-  this.validPartitionId = true;
-  this.partition.validPartitionId = true;
+WebViewInternal.prototype.reset = function() {
+  // If guestInstanceId is defined then the <webview> has navigated and has
+  // already picked up a partition ID. Thus, we need to reset the initialization
+  // state. However, it may be the case that beforeFirstNavigation is false BUT
+  // guestInstanceId has yet to be initialized. This means that we have not
+  // heard back from createGuest yet. We will not reset the flag in this case so
+  // that we don't end up allocating a second guest.
+  if (this.guestInstanceId) {
+    this.guestInstanceId = undefined;
+    this.beforeFirstNavigation = true;
+    this.validPartitionId = true;
+    this.partition.validPartitionId = true;
+  }
+  this.internalInstanceId = 0;
 };
 
 // Sets <webview>.request property.
@@ -227,10 +235,10 @@ WebViewInternal.prototype.canGoForward = function() {
  * @private
  */
 WebViewInternal.prototype.clearData = function() {
-  if (!this.instanceId) {
+  if (!this.guestInstanceId) {
     return;
   }
-  var args = $Array.concat([this.instanceId], $Array.slice(arguments));
+  var args = $Array.concat([this.guestInstanceId], $Array.slice(arguments));
   $Function.apply(WebView.clearData, null, args);
 };
 
@@ -245,10 +253,10 @@ WebViewInternal.prototype.getProcessId = function() {
  * @private
  */
 WebViewInternal.prototype.go = function(relativeIndex) {
-  if (!this.instanceId) {
+  if (!this.guestInstanceId) {
     return;
   }
-  WebView.go(this.instanceId, relativeIndex);
+  WebView.go(this.guestInstanceId, relativeIndex);
 };
 
 /**
@@ -262,30 +270,30 @@ WebViewInternal.prototype.print = function() {
  * @private
  */
 WebViewInternal.prototype.reload = function() {
-  if (!this.instanceId) {
+  if (!this.guestInstanceId) {
     return;
   }
-  WebView.reload(this.instanceId);
+  WebView.reload(this.guestInstanceId);
 };
 
 /**
  * @private
  */
 WebViewInternal.prototype.stop = function() {
-  if (!this.instanceId) {
+  if (!this.guestInstanceId) {
     return;
   }
-  WebView.stop(this.instanceId);
+  WebView.stop(this.guestInstanceId);
 };
 
 /**
  * @private
  */
 WebViewInternal.prototype.terminate = function() {
-  if (!this.instanceId) {
+  if (!this.guestInstanceId) {
     return;
   }
-  WebView.terminate(this.instanceId);
+  WebView.terminate(this.guestInstanceId);
 };
 
 /**
@@ -294,7 +302,7 @@ WebViewInternal.prototype.terminate = function() {
 WebViewInternal.prototype.validateExecuteCodeCall  = function() {
   var ERROR_MSG_CANNOT_INJECT_SCRIPT = '<webview>: ' +
       'Script cannot be injected into content until the page has loaded.';
-  if (!this.instanceId) {
+  if (!this.guestInstanceId) {
     throw new Error(ERROR_MSG_CANNOT_INJECT_SCRIPT);
   }
 };
@@ -304,7 +312,7 @@ WebViewInternal.prototype.validateExecuteCodeCall  = function() {
  */
 WebViewInternal.prototype.executeScript = function(var_args) {
   this.validateExecuteCodeCall();
-  var args = $Array.concat([this.instanceId, this.src],
+  var args = $Array.concat([this.guestInstanceId, this.src],
                            $Array.slice(arguments));
   $Function.apply(WebView.executeScript, null, args);
 };
@@ -314,7 +322,7 @@ WebViewInternal.prototype.executeScript = function(var_args) {
  */
 WebViewInternal.prototype.insertCSS = function(var_args) {
   this.validateExecuteCodeCall();
-  var args = $Array.concat([this.instanceId, this.src],
+  var args = $Array.concat([this.guestInstanceId, this.src],
                            $Array.slice(arguments));
   $Function.apply(WebView.insertCSS, null, args);
 };
@@ -469,12 +477,12 @@ WebViewInternal.prototype.handleWebviewAttributeMutation =
   // details.
   if (AUTO_SIZE_ATTRIBUTES.indexOf(name) > -1) {
     this[name] = newValue;
-    if (!this.instanceId) {
+    if (!this.guestInstanceId) {
       return;
     }
     // Convert autosize attribute to boolean.
     var autosize = this.webviewNode.hasAttribute(WEB_VIEW_ATTRIBUTE_AUTOSIZE);
-    GuestViewInternal.setAutoSize(this.instanceId, {
+    GuestViewInternal.setAutoSize(this.guestInstanceId, {
       'enableAutoSize': autosize,
       'min': {
         'width': parseInt(this.minwidth || 0),
@@ -496,10 +504,10 @@ WebViewInternal.prototype.handleWebviewAttributeMutation =
       return;
     }
     this.name = newValue;
-    if (!this.instanceId) {
+    if (!this.guestInstanceId) {
       return;
     }
-    WebView.setName(this.instanceId, newValue);
+    WebView.setName(this.guestInstanceId, newValue);
     return;
   } else if (name == 'src') {
     // We treat null attribute (attribute removed) and the empty string as
@@ -552,20 +560,20 @@ WebViewInternal.prototype.handleWebviewAttributeMutation =
  */
 WebViewInternal.prototype.handleBrowserPluginAttributeMutation =
     function(name, oldValue, newValue) {
-  if (name == 'internalbindings' && !oldValue && newValue) {
-    this.browserPluginNode.removeAttribute('internalbindings');
-
-    if (this.deferredAttachState) {
-      var self = this;
-      // A setTimeout is necessary for the binding to be initialized properly.
+  if (name == 'internalinstanceid' && !oldValue && !!newValue) {
+    this.browserPluginNode.removeAttribute('internalinstanceid');
+    this.internalInstanceId = parseInt(newValue);
+    if (this.deferredAttachState && !!this.guestInstanceId &&
+            this.guestInstanceId != 0) {
       window.setTimeout(function() {
-        if (self.hasBindings()) {
-          var params = self.buildAttachParams(
-              self.deferredAttachState.isNewWindow);
-          self.browserPluginNode[PLUGIN_METHOD_ATTACH](self.instanceId, params);
-          self.deferredAttachState = null;
-        }
-      }, 0);
+        var isNewWindow = this.deferredAttachState ?
+            this.deferredAttachState.isNewWindow : false;
+        var params = this.buildAttachParams(isNewWindow);
+        guestViewInternalNatives.AttachGuest(
+            this.internalInstanceId,
+            this.guestInstanceId,
+            params);
+      }.bind(this), 0);
     }
     return;
   }
@@ -652,10 +660,9 @@ WebViewInternal.prototype.onSizeChanged = function(webViewEvent) {
   }
 };
 
-// Returns true if Browser Plugin bindings is available.
-// Bindings are unavailable if <object> is not in the render tree.
-WebViewInternal.prototype.hasBindings = function() {
-  return 'function' == typeof this.browserPluginNode[PLUGIN_METHOD_ATTACH];
+// Returns if <object> is in the render tree.
+WebViewInternal.prototype.isPluginInRenderTree = function() {
+  return !!this.internalInstanceId && this.internalInstanceId != 0;
 };
 
 WebViewInternal.prototype.hasNavigated = function() {
@@ -687,7 +694,7 @@ WebViewInternal.prototype.parseSrcAttribute = function(result) {
   }
 
   // Navigate to this.src.
-  WebView.navigate(this.instanceId, this.src);
+  WebView.navigate(this.guestInstanceId, this.src);
   return true;
 };
 
@@ -700,7 +707,7 @@ WebViewInternal.prototype.parseAttributes = function() {
 };
 
 WebViewInternal.prototype.hasGuestInstanceID = function() {
-  return this.instanceId != undefined;
+  return this.guestInstanceId != undefined;
 };
 
 WebViewInternal.prototype.allocateInstanceId = function() {
@@ -714,10 +721,10 @@ WebViewInternal.prototype.allocateInstanceId = function() {
   GuestViewInternal.createGuest(
       'webview',
       params,
-      function(instanceId) {
+      function(guestInstanceId) {
         // TODO(lazyboy): Make sure this.autoNavigate_ stuff correctly updated
         // |self.src| at this point.
-        self.attachWindow(instanceId, false);
+        self.attachWindow(guestInstanceId, false);
       });
 };
 
@@ -794,43 +801,43 @@ WebViewInternal.prototype.isUserAgentOverridden = function() {
 /** @private */
 WebViewInternal.prototype.setUserAgentOverride = function(userAgentOverride) {
   this.userAgentOverride = userAgentOverride;
-  if (!this.instanceId) {
+  if (!this.guestInstanceId) {
     // If we are not attached yet, then we will pick up the user agent on
     // attachment.
     return;
   }
-  WebView.overrideUserAgent(this.instanceId, userAgentOverride);
+  WebView.overrideUserAgent(this.guestInstanceId, userAgentOverride);
 };
 
 /** @private */
 WebViewInternal.prototype.find = function(search_text, options, callback) {
-  if (!this.instanceId) {
+  if (!this.guestInstanceId) {
     return;
   }
-  WebView.find(this.instanceId, search_text, options, callback);
+  WebView.find(this.guestInstanceId, search_text, options, callback);
 };
 
 /** @private */
 WebViewInternal.prototype.stopFinding = function(action) {
-  if (!this.instanceId) {
+  if (!this.guestInstanceId) {
     return;
   }
-  WebView.stopFinding(this.instanceId, action);
+  WebView.stopFinding(this.guestInstanceId, action);
 };
 
 /** @private */
 WebViewInternal.prototype.setZoom = function(zoomFactor, callback) {
-  if (!this.instanceId) {
+  if (!this.guestInstanceId) {
     return;
   }
-  WebView.setZoom(this.instanceId, zoomFactor, callback);
+  WebView.setZoom(this.guestInstanceId, zoomFactor, callback);
 };
 
 WebViewInternal.prototype.getZoom = function(callback) {
-  if (!this.instanceId) {
+  if (!this.guestInstanceId) {
     return;
   }
-  WebView.getZoom(this.instanceId, callback);
+  WebView.getZoom(this.guestInstanceId, callback);
 };
 
 WebViewInternal.prototype.buildAttachParams = function(isNewWindow) {
@@ -852,19 +859,21 @@ WebViewInternal.prototype.buildAttachParams = function(isNewWindow) {
   return params;
 };
 
-WebViewInternal.prototype.attachWindow = function(instanceId, isNewWindow) {
-  this.instanceId = instanceId;
+WebViewInternal.prototype.attachWindow = function(guestInstanceId,
+                                                  isNewWindow) {
+  this.guestInstanceId = guestInstanceId;
   var params = this.buildAttachParams(isNewWindow);
 
-  if (!this.hasBindings()) {
-    // No bindings means that the plugin isn't there (display: none), we defer
-    // attachWindow in this case.
+  if (!this.isPluginInRenderTree()) {
     this.deferredAttachState = {isNewWindow: isNewWindow};
     return false;
   }
 
   this.deferredAttachState = null;
-  return this.browserPluginNode[PLUGIN_METHOD_ATTACH](this.instanceId, params);
+  return guestViewInternalNatives.AttachGuest(
+      this.internalInstanceId,
+      this.guestInstanceId,
+      params);
 };
 
 // Registers browser plugin <object> custom element.
@@ -873,6 +882,7 @@ function registerBrowserPluginElement() {
 
   proto.createdCallback = function() {
     this.setAttribute('type', 'application/browser-plugin');
+    this.setAttribute('id', 'browser-plugin-' + IdGenerator.GetNextId());
     // The <object> node fills in the <webview> container.
     this.style.width = '100%';
     this.style.height = '100%';
@@ -923,6 +933,7 @@ function registerWebViewElement() {
       return;
     }
     internal.elementAttached = false;
+    internal.reset();
   };
 
   proto.attachedCallback = function() {
@@ -932,7 +943,6 @@ function registerWebViewElement() {
     }
     if (!internal.elementAttached) {
       internal.elementAttached = true;
-      internal.resetUponReattachment();
       internal.parseAttributes();
     }
   };
@@ -1019,7 +1029,7 @@ WebViewInternal.prototype.maybeHandleContextMenu = function(e, webViewEvent) {
   // Setting |params| = undefined will show the context menu unmodified, hence
   // the 'contextmenu' API is disabled for stable channel.
   var params = undefined;
-  WebView.showContextMenu(this.instanceId, requestId, params);
+  WebView.showContextMenu(this.guestInstanceId, requestId, params);
 };
 
 /**

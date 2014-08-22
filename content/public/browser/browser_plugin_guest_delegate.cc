@@ -11,8 +11,4 @@ WebContents* BrowserPluginGuestDelegate::CreateNewGuestWindow(
   return NULL;
 }
 
-int BrowserPluginGuestDelegate::GetGuestInstanceID() const {
-  return 0;
-}
-
 }  // namespace content

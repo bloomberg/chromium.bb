@@ -10,6 +10,7 @@
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/v8_value_converter.h"
 #include "extensions/common/extension.h"
@@ -69,8 +70,13 @@ const std::string& ScriptContext::GetExtensionID() const {
 content::RenderView* ScriptContext::GetRenderView() const {
   if (web_frame_ && web_frame_->view())
     return content::RenderView::FromWebView(web_frame_->view());
-  else
-    return NULL;
+  return NULL;
+}
+
+content::RenderFrame* ScriptContext::GetRenderFrame() const {
+  if (web_frame_)
+    return content::RenderFrame::FromWebFrame(web_frame_);
+  return NULL;
 }
 
 v8::Local<v8::Value> ScriptContext::CallFunction(

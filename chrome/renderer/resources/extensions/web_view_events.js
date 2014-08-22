@@ -333,19 +333,20 @@ WebViewEvents.prototype.handleDialogEvent = function(event, webViewEvent) {
     actionTaken = true;
   };
 
-  var getInstanceId = function() {
-    return self.webViewInternal.getInstanceId();
+  var getGuestInstanceId = function() {
+    return self.webViewInternal.getGuestInstanceId();
   };
 
   var dialog = {
     ok: function(user_input) {
       validateCall();
       user_input = user_input || '';
-      WebView.setPermission(getInstanceId(), requestId, 'allow', user_input);
+      WebView.setPermission(getGuestInstanceId(), requestId, 'allow',
+                            user_input);
     },
     cancel: function() {
       validateCall();
-      WebView.setPermission(getInstanceId(), requestId, 'deny');
+      WebView.setPermission(getGuestInstanceId(), requestId, 'deny');
     }
   };
   webViewEvent.dialog = dialog;
@@ -364,7 +365,7 @@ WebViewEvents.prototype.handleDialogEvent = function(event, webViewEvent) {
         return;
       }
       WebView.setPermission(
-          getInstanceId(), requestId, 'default', '', function(allowed) {
+          getGuestInstanceId(), requestId, 'default', '', function(allowed) {
         if (allowed) {
           return;
         }
@@ -375,7 +376,7 @@ WebViewEvents.prototype.handleDialogEvent = function(event, webViewEvent) {
     actionTaken = true;
     // The default action is equivalent to canceling the dialog.
     WebView.setPermission(
-        getInstanceId(), requestId, 'default', '', function(allowed) {
+        getGuestInstanceId(), requestId, 'default', '', function(allowed) {
       if (allowed) {
         return;
       }
@@ -419,8 +420,8 @@ WebViewEvents.prototype.handleNewWindowEvent = function(event, webViewEvent) {
   var requestId = event.requestId;
   var actionTaken = false;
   var self = this;
-  var getInstanceId = function() {
-    return self.webViewInternal.getInstanceId();
+  var getGuestInstanceId = function() {
+    return self.webViewInternal.getGuestInstanceId();
   };
 
   var validateCall = function () {
@@ -457,12 +458,12 @@ WebViewEvents.prototype.handleNewWindowEvent = function(event, webViewEvent) {
         // was rejected. The permission API plumbing is used here to clean
         // up the state created for the new window if attaching fails.
         WebView.setPermission(
-            getInstanceId(), requestId, attached ? 'allow' : 'deny');
+            getGuestInstanceId(), requestId, attached ? 'allow' : 'deny');
       }, 0);
     },
     discard: function() {
       validateCall();
-      WebView.setPermission(getInstanceId(), requestId, 'deny');
+      WebView.setPermission(getGuestInstanceId(), requestId, 'deny');
     }
   };
   webViewEvent.window = windowObj;
@@ -480,7 +481,7 @@ WebViewEvents.prototype.handleNewWindowEvent = function(event, webViewEvent) {
         return;
       }
       WebView.setPermission(
-          getInstanceId(), requestId, 'default', '', function(allowed) {
+          getGuestInstanceId(), requestId, 'default', '', function(allowed) {
         if (allowed) {
           return;
         }
@@ -491,7 +492,7 @@ WebViewEvents.prototype.handleNewWindowEvent = function(event, webViewEvent) {
     actionTaken = true;
     // The default action is to discard the window.
     WebView.setPermission(
-        getInstanceId(), requestId, 'default', '', function(allowed) {
+        getGuestInstanceId(), requestId, 'default', '', function(allowed) {
       if (allowed) {
         return;
       }
@@ -526,14 +527,14 @@ WebViewEvents.prototype.handlePermissionEvent =
 
   var requestId = event.requestId;
   var self = this;
-  var getInstanceId = function() {
-    return self.webViewInternal.getInstanceId();
+  var getGuestInstanceId = function() {
+    return self.webViewInternal.getGuestInstanceId();
   };
 
   if (this.getPermissionTypes().indexOf(event.permission) < 0) {
     // The permission type is not allowed. Trigger the default response.
     WebView.setPermission(
-        getInstanceId(), requestId, 'default', '', function(allowed) {
+        getGuestInstanceId(), requestId, 'default', '', function(allowed) {
       if (allowed) {
         return;
       }
@@ -554,11 +555,11 @@ WebViewEvents.prototype.handlePermissionEvent =
   var request = {
     allow: function() {
       validateCall();
-      WebView.setPermission(getInstanceId(), requestId, 'allow');
+      WebView.setPermission(getGuestInstanceId(), requestId, 'allow');
     },
     deny: function() {
       validateCall();
-      WebView.setPermission(getInstanceId(), requestId, 'deny');
+      WebView.setPermission(getGuestInstanceId(), requestId, 'deny');
     }
   };
   webViewEvent.request = request;
@@ -576,7 +577,7 @@ WebViewEvents.prototype.handlePermissionEvent =
         return;
       }
       WebView.setPermission(
-          getInstanceId(), requestId, 'default', '', function(allowed) {
+          getGuestInstanceId(), requestId, 'default', '', function(allowed) {
         if (allowed) {
           return;
         }
@@ -586,12 +587,13 @@ WebViewEvents.prototype.handlePermissionEvent =
   } else {
     decisionMade = true;
     WebView.setPermission(
-        getInstanceId(), requestId, 'default', '', function(allowed) {
-      if (allowed) {
-        return;
-      }
-      showWarningMessage(event.permission);
-    });
+        getGuestInstanceId(), requestId, 'default', '',
+        function(allowed) {
+          if (allowed) {
+            return;
+          }
+          showWarningMessage(event.permission);
+        });
   }
 };
 

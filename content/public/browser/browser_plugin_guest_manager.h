@@ -35,8 +35,8 @@ class CONTENT_EXPORT BrowserPluginGuestManager {
   // not own the requested guest, then the embedder will be killed,
   // and the |callback| will not be called.
   virtual void MaybeGetGuestByInstanceIDOrKill(
-      int guest_instance_id,
-      int embedder_render_process_id,
+      WebContents* embedder_web_contents,
+      int browser_plugin_instance_id,
       const GuestByInstanceIDCallback& callback) {}
 
   // Iterates over all WebContents belonging to a given |embedder_web_contents|,
