@@ -19,6 +19,7 @@
       "content_unittests",
       "display_unittests",
       "gfx_unittests",
+      "google_apis_unittests",
       "ipc_tests",
       "media_unittests",
       "ppapi_unittests",
