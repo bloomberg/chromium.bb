@@ -576,6 +576,12 @@ base::string16 Browser::GetWindowTitleForCurrentTab() const {
   // |contents| can be NULL because GetWindowTitleForCurrentTab is called by the
   // window during the window's creation (before tabs have been added).
   if (contents) {
+    // Streamlined hosted apps use the host instead of the title.
+    if (is_app() && CommandLine::ForCurrentProcess()->HasSwitch(
+                        switches::kEnableStreamlinedHostedApps)) {
+      return base::UTF8ToUTF16(contents->GetURL().host());
+    }
+
     title = contents->GetTitle();
     FormatTitleForDisplay(&title);
   }
