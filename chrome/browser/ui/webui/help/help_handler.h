@@ -71,6 +71,9 @@ class HelpHandler : public content::WebUIMessageHandler,
   void RelaunchAndPowerwash(const base::ListValue* args);
 #endif
 
+  // Checks for and applies update.
+  void RequestUpdate(const base::ListValue* args);
+
   // Callback method which forwards status updates to the page.
   void SetUpdateStatus(VersionUpdater::Status status, int progress,
                        const base::string16& fail_message);

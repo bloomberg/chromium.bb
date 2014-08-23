@@ -5083,6 +5083,9 @@ Battery full
   </message>
 
   <!-- About Chrome page -->
+  <message name="IDS_UPGRADE_BUTTON" desc="The button label to check for updates and apply (download and install) if found">
+    Check for and apply updates
+  </message>
   <message name="IDS_UPGRADE_OFFLINE" desc="Status label: Currently offline">
     You are currently offline.
   </message>

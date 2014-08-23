@@ -21,6 +21,9 @@ class VersionUpdaterCros : public VersionUpdater,
   virtual void GetChannel(bool get_current_channel,
                           const ChannelCallback& callback) OVERRIDE;
 
+  // Gets the last update status, without triggering a new check or download.
+  void GetUpdateStatus(const StatusCallback& callback);
+
  protected:
   friend class VersionUpdater;
 

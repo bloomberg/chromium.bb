@@ -24,17 +24,68 @@ GEN('#if defined(OS_LINUX) || defined(GOOGLE_CHROME_BUILD)');
 
 // Test that repeated calls to setUpdateStatus work.
 TEST_F('HelpPageWebUITest', 'testUpdateState', function() {
+  var relaunch = $('relaunch');
+  var container = $('update-status-container');
+  var update = $('request-update');
+
+  help.HelpPage.setUpdateStatus('updated', '');
+  expectTrue(relaunch.hidden);
+  expectTrue(cr.isChromeOS == container.hidden);
+  expectTrue(!cr.isChromeOS || !update.hidden && !update.disabled);
+
   help.HelpPage.setUpdateStatus('disabled', '');
-  expectTrue($('relaunch').hidden);
-  expectTrue($('update-status-container').hidden);
+  expectTrue(relaunch.hidden);
+  expectTrue(container.hidden);
+  expectTrue(!cr.isChromeOS || update.hidden);
 
   help.HelpPage.setUpdateStatus('nearly_updated', '');
-  expectTrue(!$('relaunch').hidden);
-  expectTrue(!$('update-status-container').hidden);
+  expectTrue(!relaunch.hidden);
+  expectTrue(!container.hidden);
+  expectTrue(!cr.isChromeOS || update.hidden);
 
   help.HelpPage.setUpdateStatus('disabled', '');
   expectTrue($('relaunch').hidden);
   expectTrue($('update-status-container').hidden);
+  expectTrue(!cr.isChromeOS || update.hidden);
+});
+
+GEN('#endif');
+
+GEN('#if defined(OS_CHROMEOS)');
+
+// Test that the request update button is shown and hidden properly.
+TEST_F('HelpPageWebUITest', 'testRequestUpdate', function() {
+  var container = $('update-status-container');
+  var update = $('request-update');
+
+  help.HelpPage.setUpdateStatus('updated', '');
+  expectTrue(container.hidden);
+  expectTrue(!update.hidden && !update.disabled);
+
+  update.click();
+  expectTrue(!update.hidden && update.disabled);
+  expectFalse(container.hidden);
+
+  help.HelpPage.setUpdateStatus('checking', '');
+  expectFalse(container.hidden);
+  expectTrue(!update.hidden && update.disabled);
+
+  help.HelpPage.setUpdateStatus('failed', 'Error');
+  expectFalse(container.hidden);
+  expectTrue(!update.hidden && !update.disabled);
+
+  update.click();
+  help.HelpPage.setUpdateStatus('checking', '');
+  expectFalse(container.hidden);
+  expectTrue(!update.hidden && update.disabled);
+
+  help.HelpPage.setUpdateStatus('nearly_updated', '');
+  expectFalse(container.hidden);
+  expectTrue(update.hidden);
+
+  help.HelpPage.setUpdateStatus('updated', '');
+  expectFalse(container.hidden);
+  expectTrue(!update.hidden && update.disabled);
 });
 
 GEN('#endif');

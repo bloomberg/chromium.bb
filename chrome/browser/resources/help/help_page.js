@@ -107,6 +107,13 @@ cr.define('help', function() {
       }
 
       if (cr.isChromeOS) {
+        // Add event listener for the check for and apply updates button.
+        this.maybeSetOnClick_($('request-update'), function() {
+          self.setUpdateStatus_('checking');
+          $('request-update').disabled = true;
+          chrome.send('requestUpdate');
+        });
+
         // Add event listener for the close button when shown as an overlay.
         if ($('about-done')) {
           $('about-done').addEventListener('click', function() {
@@ -276,11 +283,32 @@ cr.define('help', function() {
         $('relaunch-and-powerwash').hidden = relaunchAndPowerwashHidden;
       }
 
+      if (cr.isChromeOS) {
+        // Only enable the update button if it hasn't been used yet or the
+        // status isn't 'updated'.
+        if (!$('request-update').disabled || status != 'updated') {
+          // Disable the button if an update is already in progress.
+          $('request-update').disabled =
+            ['checking', 'updating', 'nearly_updated'].indexOf(status) > -1;
+        }
+      }
+
       var container = $('update-status-container');
       if (container) {
         container.hidden = status == 'disabled';
         $('relaunch').hidden =
             (status != 'nearly_updated') || !relaunchAndPowerwashHidden;
+
+        if (cr.isChromeOS) {
+          // Assume the "updated" status is stale if we haven't checked yet.
+          if (status == 'updated' && !$('request-update').disabled)
+            container.hidden = true;
+
+          // Hide the request update button if auto-updating is disabled or
+          // a relaunch button is showing.
+          $('request-update').hidden = status == 'disabled' ||
+            !$('relaunch').hidden || !relaunchAndPowerwashHidden;
+        }
 
         if (!cr.isMac)
           $('update-percentage').hidden = status != 'updating';
