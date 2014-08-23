@@ -15,6 +15,7 @@
 #include "media/filters/ffmpeg_video_decoder.h"
 #include "media/filters/file_data_source.h"
 #include "media/filters/opus_audio_decoder.h"
+#include "media/filters/renderer_impl.h"
 #include "media/filters/vpx_video_decoder.h"
 
 using ::testing::_;
@@ -37,10 +38,6 @@ PipelineIntegrationTestBase::PipelineIntegrationTestBase()
       last_video_frame_format_(VideoFrame::UNKNOWN),
       hardware_config_(AudioParameters(), AudioParameters()) {
   base::MD5Init(&md5_context_);
-
-  // Prevent non-deterministic buffering state callbacks from firing (e.g., slow
-  // machine, valgrind).
-  pipeline_->set_underflow_disabled_for_testing(true);
 }
 
 PipelineIntegrationTestBase::~PipelineIntegrationTestBase() {
@@ -132,10 +129,6 @@ bool PipelineIntegrationTestBase::Start(const base::FilePath& file_path,
                                         kTestType test_type) {
   hashing_enabled_ = test_type == kHashed;
   clockless_playback_ = test_type == kClockless;
-  if (clockless_playback_) {
-    pipeline_->SetTimeDeltaInterpolatorForTesting(
-        new TimeDeltaInterpolator(&dummy_clock_));
-  }
   return Start(file_path, expected_status);
 }
 
@@ -256,7 +249,7 @@ PipelineIntegrationTestBase::CreateFilterCollection(
       new FFmpegVideoDecoder(message_loop_.message_loop_proxy()));
 
   // Disable frame dropping if hashing is enabled.
-  scoped_ptr<VideoRenderer> renderer(new VideoRendererImpl(
+  scoped_ptr<VideoRenderer> video_renderer(new VideoRendererImpl(
       message_loop_.message_loop_proxy(),
       video_decoders.Pass(),
       base::Bind(&PipelineIntegrationTestBase::SetDecryptor,
@@ -265,7 +258,6 @@ PipelineIntegrationTestBase::CreateFilterCollection(
       base::Bind(&PipelineIntegrationTestBase::OnVideoRendererPaint,
                  base::Unretained(this)),
       false));
-  collection->SetVideoRenderer(renderer.Pass());
 
   if (!clockless_playback_) {
     audio_sink_ = new NullAudioSink(message_loop_.message_loop_proxy());
@@ -286,7 +278,7 @@ PipelineIntegrationTestBase::CreateFilterCollection(
                              512);
   hardware_config_.UpdateOutputConfig(out_params);
 
-  AudioRendererImpl* audio_renderer_impl = new AudioRendererImpl(
+  scoped_ptr<AudioRenderer> audio_renderer(new AudioRendererImpl(
       message_loop_.message_loop_proxy(),
       (clockless_playback_)
           ? static_cast<AudioRendererSink*>(clockless_audio_sink_.get())
@@ -295,11 +287,26 @@ PipelineIntegrationTestBase::CreateFilterCollection(
       base::Bind(&PipelineIntegrationTestBase::SetDecryptor,
                  base::Unretained(this),
                  decryptor),
-      &hardware_config_);
+      &hardware_config_));
   if (hashing_enabled_)
     audio_sink_->StartAudioHashForTesting();
-  scoped_ptr<AudioRenderer> audio_renderer(audio_renderer_impl);
-  collection->SetAudioRenderer(audio_renderer.Pass());
+
+  scoped_ptr<RendererImpl> renderer_impl(
+      new RendererImpl(message_loop_.message_loop_proxy(),
+                       demuxer_.get(),
+                       audio_renderer.Pass(),
+                       video_renderer.Pass()));
+
+  // Prevent non-deterministic buffering state callbacks from firing (e.g., slow
+  // machine, valgrind).
+  renderer_impl->DisableUnderflowForTesting();
+
+  if (clockless_playback_) {
+    renderer_impl->SetTimeDeltaInterpolatorForTesting(
+        new TimeDeltaInterpolator(&dummy_clock_));
+  }
+
+  collection->SetRenderer(renderer_impl.PassAs<Renderer>());
 
   return collection.Pass();
 }

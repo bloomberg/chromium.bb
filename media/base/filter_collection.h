@@ -10,16 +10,15 @@
 
 namespace media {
 
-class AudioRenderer;
 class Demuxer;
+class Renderer;
 class TextRenderer;
-class VideoRenderer;
 
-// Represents a set of uninitialized demuxer and audio/video decoders and
-// renderers. Used to start a Pipeline object for media playback.
+// Represents a set of uninitialized demuxer and renderers. Used to start a
+// Pipeline object for media playback.
 //
-// TODO(scherkus): Replace FilterCollection with something sensible, see
-// http://crbug.com/110800
+// TODO(xhwang): Create TextRenderer in Pipeline, pass Demuxer and Renderer to
+// Pipeline, and remove FilterCollection, see http://crbug.com/110800
 class MEDIA_EXPORT FilterCollection {
  public:
   FilterCollection();
@@ -28,19 +27,15 @@ class MEDIA_EXPORT FilterCollection {
   void SetDemuxer(Demuxer* demuxer);
   Demuxer* GetDemuxer();
 
-  void SetAudioRenderer(scoped_ptr<AudioRenderer> audio_renderer);
-  scoped_ptr<AudioRenderer> GetAudioRenderer();
-
-  void SetVideoRenderer(scoped_ptr<VideoRenderer> video_renderer);
-  scoped_ptr<VideoRenderer> GetVideoRenderer();
+  void SetRenderer(scoped_ptr<Renderer> renderer);
+  scoped_ptr<Renderer> GetRenderer();
 
   void SetTextRenderer(scoped_ptr<TextRenderer> text_renderer);
   scoped_ptr<TextRenderer> GetTextRenderer();
 
  private:
   Demuxer* demuxer_;
-  scoped_ptr<AudioRenderer> audio_renderer_;
-  scoped_ptr<VideoRenderer> video_renderer_;
+  scoped_ptr<Renderer> renderer_;
   scoped_ptr<TextRenderer> text_renderer_;
 
   DISALLOW_COPY_AND_ASSIGN(FilterCollection);

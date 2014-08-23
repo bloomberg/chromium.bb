@@ -140,6 +140,7 @@ class VideoRendererImplTest : public ::testing::Test {
   void Destroy() {
     SCOPED_TRACE("Destroy()");
     renderer_.reset();
+    message_loop_.RunUntilIdle();
   }
 
   // Parses a string representation of video frames and generates corresponding
@@ -541,7 +542,7 @@ TEST_F(VideoRendererImplTest, Underflow) {
     WaitableMessageLoopEvent event;
     EXPECT_CALL(mock_cb_, BufferingStateChange(BUFFERING_HAVE_NOTHING))
         .WillOnce(RunClosure(event.GetClosure()));
-    AdvanceTimeInMs(3000); // Must match kTimeToDeclareHaveNothing.
+    AdvanceTimeInMs(3000);  // Must match kTimeToDeclareHaveNothing.
     event.RunAndWait();
   }
 

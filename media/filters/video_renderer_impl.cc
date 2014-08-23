@@ -11,6 +11,7 @@
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/platform_thread.h"
+#include "media/base/bind_to_current_loop.h"
 #include "media/base/buffers.h"
 #include "media/base/limits.h"
 #include "media/base/pipeline.h"
@@ -126,7 +127,10 @@ void VideoRendererImpl::Initialize(DemuxerStream* stream,
 
   low_delay_ = low_delay;
 
-  init_cb_ = init_cb;
+  // Always post |init_cb_| because |this| could be destroyed if initialization
+  // failed.
+  init_cb_ = BindToCurrentLoop(init_cb);
+
   statistics_cb_ = statistics_cb;
   max_time_cb_ = max_time_cb;
   buffering_state_cb_ = buffering_state_cb;
@@ -292,6 +296,7 @@ void VideoRendererImpl::DropNextReadyFrame_Locked() {
 
 void VideoRendererImpl::FrameReady(VideoFrameStream::Status status,
                                    const scoped_refptr<VideoFrame>& frame) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
   base::AutoLock auto_lock(lock_);
   DCHECK_NE(state_, kUninitialized);
   DCHECK_NE(state_, kFlushed);
@@ -305,7 +310,7 @@ void VideoRendererImpl::FrameReady(VideoFrameStream::Status status,
     PipelineStatus error = PIPELINE_ERROR_DECODE;
     if (status == VideoFrameStream::DECRYPT_ERROR)
       error = PIPELINE_ERROR_DECRYPT;
-    error_cb_.Run(error);
+    task_runner_->PostTask(FROM_HERE, base::Bind(error_cb_, error));
     return;
   }
 

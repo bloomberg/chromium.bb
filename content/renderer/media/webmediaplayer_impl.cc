@@ -58,6 +58,7 @@
 #include "media/filters/gpu_video_accelerator_factories.h"
 #include "media/filters/gpu_video_decoder.h"
 #include "media/filters/opus_audio_decoder.h"
+#include "media/filters/renderer_impl.h"
 #include "media/filters/video_renderer_impl.h"
 #include "media/filters/vpx_video_decoder.h"
 #include "third_party/WebKit/public/platform/WebContentDecryptionModule.h"
@@ -1173,6 +1174,56 @@ void WebMediaPlayerImpl::NotifyDownloading(bool is_downloading) {
           "is_downloading_data", is_downloading));
 }
 
+// TODO(xhwang): Move this to a factory class so that we can create different
+// renderers.
+scoped_ptr<media::Renderer> WebMediaPlayerImpl::CreateRenderer() {
+  media::SetDecryptorReadyCB set_decryptor_ready_cb =
+      BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::SetDecryptorReadyCB);
+
+  // Create our audio decoders and renderer.
+  ScopedVector<media::AudioDecoder> audio_decoders;
+
+  media::LogCB log_cb = base::Bind(&LogMediaSourceError, media_log_);
+  audio_decoders.push_back(new media::FFmpegAudioDecoder(media_loop_, log_cb));
+  audio_decoders.push_back(new media::OpusAudioDecoder(media_loop_));
+
+  scoped_ptr<media::AudioRenderer> audio_renderer(new media::AudioRendererImpl(
+      media_loop_,
+      audio_source_provider_.get(),
+      audio_decoders.Pass(),
+      set_decryptor_ready_cb,
+      RenderThreadImpl::current()->GetAudioHardwareConfig()));
+
+  // Create our video decoders and renderer.
+  ScopedVector<media::VideoDecoder> video_decoders;
+
+  if (gpu_factories_.get()) {
+    video_decoders.push_back(
+        new media::GpuVideoDecoder(gpu_factories_, media_log_));
+  }
+
+#if !defined(MEDIA_DISABLE_LIBVPX)
+  video_decoders.push_back(new media::VpxVideoDecoder(media_loop_));
+#endif  // !defined(MEDIA_DISABLE_LIBVPX)
+
+  video_decoders.push_back(new media::FFmpegVideoDecoder(media_loop_));
+
+  scoped_ptr<media::VideoRenderer> video_renderer(
+      new media::VideoRendererImpl(
+          media_loop_,
+          video_decoders.Pass(),
+          set_decryptor_ready_cb,
+          base::Bind(&WebMediaPlayerImpl::FrameReady, base::Unretained(this)),
+          true));
+
+  // Create renderer.
+  return scoped_ptr<media::Renderer>(new media::RendererImpl(
+      media_loop_,
+      demuxer_.get(),
+      audio_renderer.Pass(),
+      video_renderer.Pass()));
+}
+
 void WebMediaPlayerImpl::StartPipeline() {
   DCHECK(main_loop_->BelongsToCurrentThread());
   const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
@@ -1209,46 +1260,7 @@ void WebMediaPlayerImpl::StartPipeline() {
   scoped_ptr<media::FilterCollection> filter_collection(
       new media::FilterCollection());
   filter_collection->SetDemuxer(demuxer_.get());
-
-  media::SetDecryptorReadyCB set_decryptor_ready_cb =
-      BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::SetDecryptorReadyCB);
-
-  // Create our audio decoders and renderer.
-  ScopedVector<media::AudioDecoder> audio_decoders;
-  audio_decoders.push_back(new media::FFmpegAudioDecoder(media_loop_,
-                                                         mse_log_cb));
-  audio_decoders.push_back(new media::OpusAudioDecoder(media_loop_));
-
-  scoped_ptr<media::AudioRenderer> audio_renderer(new media::AudioRendererImpl(
-      media_loop_,
-      audio_source_provider_.get(),
-      audio_decoders.Pass(),
-      set_decryptor_ready_cb,
-      RenderThreadImpl::current()->GetAudioHardwareConfig()));
-  filter_collection->SetAudioRenderer(audio_renderer.Pass());
-
-  // Create our video decoders and renderer.
-  ScopedVector<media::VideoDecoder> video_decoders;
-
-  if (gpu_factories_.get()) {
-    video_decoders.push_back(
-        new media::GpuVideoDecoder(gpu_factories_, media_log_));
-  }
-
-#if !defined(MEDIA_DISABLE_LIBVPX)
-  video_decoders.push_back(new media::VpxVideoDecoder(media_loop_));
-#endif  // !defined(MEDIA_DISABLE_LIBVPX)
-
-  video_decoders.push_back(new media::FFmpegVideoDecoder(media_loop_));
-
-  scoped_ptr<media::VideoRenderer> video_renderer(
-      new media::VideoRendererImpl(
-          media_loop_,
-          video_decoders.Pass(),
-          set_decryptor_ready_cb,
-          base::Bind(&WebMediaPlayerImpl::FrameReady, base::Unretained(this)),
-          true));
-  filter_collection->SetVideoRenderer(video_renderer.Pass());
+  filter_collection->SetRenderer(CreateRenderer());
 
   if (cmd_line->HasSwitch(switches::kEnableInbandTextTracks)) {
     scoped_ptr<media::TextRenderer> text_renderer(

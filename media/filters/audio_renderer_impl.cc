@@ -258,7 +258,10 @@ void AudioRendererImpl::Initialize(DemuxerStream* stream,
 
   state_ = kInitializing;
 
-  init_cb_ = init_cb;
+  // Always post |init_cb_| because |this| could be destroyed if initialization
+  // failed.
+  init_cb_ = BindToCurrentLoop(init_cb);
+
   time_cb_ = time_cb;
   buffering_state_cb_ = buffering_state_cb;
   ended_cb_ = ended_cb;
@@ -348,7 +351,6 @@ void AudioRendererImpl::OnAudioBufferStreamInitialized(bool success) {
   }
 
   DCHECK(!sink_playing_);
-
   base::ResetAndReturn(&init_cb_).Run(PIPELINE_OK);
 }
 

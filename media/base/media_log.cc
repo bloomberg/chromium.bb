@@ -46,10 +46,8 @@ const char* MediaLog::EventTypeToString(MediaLogEvent::Type type) {
       return "TOTAL_BYTES_SET";
     case MediaLogEvent::NETWORK_ACTIVITY_SET:
       return "NETWORK_ACTIVITY_SET";
-    case MediaLogEvent::AUDIO_ENDED:
-      return "AUDIO_ENDED";
-    case MediaLogEvent::VIDEO_ENDED:
-      return "VIDEO_ENDED";
+    case MediaLogEvent::ENDED:
+      return "ENDED";
     case MediaLogEvent::TEXT_ENDED:
       return "TEXT_ENDED";
     case MediaLogEvent::BUFFERED_EXTENTS_CHANGED:

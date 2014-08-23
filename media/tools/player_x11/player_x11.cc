@@ -30,6 +30,7 @@
 #include "media/filters/ffmpeg_demuxer.h"
 #include "media/filters/ffmpeg_video_decoder.h"
 #include "media/filters/file_data_source.h"
+#include "media/filters/renderer_impl.h"
 #include "media/filters/video_renderer_impl.h"
 #include "media/tools/player_x11/data_source_logger.h"
 
@@ -114,13 +115,12 @@ void InitPipeline(
 
   ScopedVector<media::VideoDecoder> video_decoders;
   video_decoders.push_back(new media::FFmpegVideoDecoder(task_runner));
-  scoped_ptr<media::VideoRenderer> video_renderer(new media::VideoRendererImpl(
-      task_runner,
-      video_decoders.Pass(),
-      media::SetDecryptorReadyCB(),
-      paint_cb,
-      true));
-  collection->SetVideoRenderer(video_renderer.Pass());
+  scoped_ptr<media::VideoRenderer> video_renderer(
+      new media::VideoRendererImpl(task_runner,
+                                   video_decoders.Pass(),
+                                   media::SetDecryptorReadyCB(),
+                                   paint_cb,
+                                   true));
 
   ScopedVector<media::AudioDecoder> audio_decoders;
   audio_decoders.push_back(new media::FFmpegAudioDecoder(task_runner,
@@ -140,16 +140,21 @@ void InitPipeline(
                                    media::SetDecryptorReadyCB(),
                                    &hardware_config));
 
-  collection->SetAudioRenderer(audio_renderer.Pass());
+  scoped_ptr<media::Renderer> renderer(new media::RendererImpl(
+      task_runner, demuxer, audio_renderer.Pass(), video_renderer.Pass()));
+
+  collection->SetRenderer(renderer.Pass());
 
   base::WaitableEvent event(true, false);
   media::PipelineStatus status;
 
-  pipeline->Start(
-      collection.Pass(), base::Bind(&DoNothing), base::Bind(&OnStatus),
-      base::Bind(&SaveStatusAndSignal, &event, &status),
-      base::Bind(&OnMetadata), base::Bind(&OnBufferingStateChanged),
-      base::Bind(&DoNothing));
+  pipeline->Start(collection.Pass(),
+                  base::Bind(&DoNothing),
+                  base::Bind(&OnStatus),
+                  base::Bind(&SaveStatusAndSignal, &event, &status),
+                  base::Bind(&OnMetadata),
+                  base::Bind(&OnBufferingStateChanged),
+                  base::Bind(&DoNothing));
 
   // Wait until the pipeline is fully initialized.
   event.Wait();

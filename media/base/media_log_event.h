@@ -70,9 +70,10 @@ struct MediaLogEvent {
     TOTAL_BYTES_SET,
     NETWORK_ACTIVITY_SET,
 
-    // Audio/Video/Text stream playback has ended.
-    AUDIO_ENDED,
-    VIDEO_ENDED,
+    // Audio/Video stream playback has ended.
+    ENDED,
+
+    // Text stream playback has ended.
     TEXT_ENDED,
 
     // The extents of the sliding buffer have changed.

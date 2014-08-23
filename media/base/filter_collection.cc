@@ -4,10 +4,9 @@
 
 #include "media/base/filter_collection.h"
 
-#include "media/base/audio_renderer.h"
 #include "media/base/demuxer.h"
+#include "media/base/renderer.h"
 #include "media/base/text_renderer.h"
-#include "media/base/video_renderer.h"
 
 namespace media {
 
@@ -23,26 +22,15 @@ Demuxer* FilterCollection::GetDemuxer() {
   return demuxer_;
 }
 
-void FilterCollection::SetAudioRenderer(
-    scoped_ptr<AudioRenderer> audio_renderer) {
-  audio_renderer_ = audio_renderer.Pass();
+void FilterCollection::SetRenderer(scoped_ptr<Renderer> renderer) {
+  renderer_ = renderer.Pass();
 }
 
-scoped_ptr<AudioRenderer> FilterCollection::GetAudioRenderer() {
-  return audio_renderer_.Pass();
+scoped_ptr<Renderer> FilterCollection::GetRenderer() {
+  return renderer_.Pass();
 }
 
-void FilterCollection::SetVideoRenderer(
-    scoped_ptr<VideoRenderer> video_renderer) {
-  video_renderer_ = video_renderer.Pass();
-}
-
-scoped_ptr<VideoRenderer> FilterCollection::GetVideoRenderer() {
-  return video_renderer_.Pass();
-}
-
-void FilterCollection::SetTextRenderer(
-    scoped_ptr<TextRenderer> text_renderer) {
+void FilterCollection::SetTextRenderer(scoped_ptr<TextRenderer> text_renderer) {
   text_renderer_ = text_renderer.Pass();
 }
 

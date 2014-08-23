@@ -202,6 +202,9 @@ class WebMediaPlayerImpl
   // Called when the data source is downloading or paused.
   void NotifyDownloading(bool is_downloading);
 
+  // Creates a media::Renderer that will be used by the |pipeline_|.
+  scoped_ptr<media::Renderer> CreateRenderer();
+
   // Finishes starting the pipeline due to a call to load().
   void StartPipeline();
 

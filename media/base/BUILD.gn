@@ -99,6 +99,8 @@ source_set("base") {
     "player_tracker.h",
     "ranges.cc",
     "ranges.h",
+    "renderer.cc",
+    "renderer.h",
     "sample_format.cc",
     "sample_format.h",
     "scoped_histogram_timer.h",

@@ -70,6 +70,10 @@ MockAudioRenderer::MockAudioRenderer() {}
 
 MockAudioRenderer::~MockAudioRenderer() {}
 
+MockRenderer::MockRenderer() {}
+
+MockRenderer::~MockRenderer() {}
+
 MockTimeSource::MockTimeSource() {}
 
 MockTimeSource::~MockTimeSource() {}
