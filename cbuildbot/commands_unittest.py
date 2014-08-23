@@ -10,6 +10,8 @@ import base64
 import os
 import sys
 
+from StringIO import StringIO
+
 import constants
 sys.path.insert(0, constants.SOURCE_ROOT)
 from chromite.cbuildbot import commands
@@ -392,7 +394,7 @@ f6b0b80d5f2d9a2fb41ebb6e2cee7ad8 *./updater4.sh
         constants.PATH_TO_CHROME_LKGM)
     with mock.patch.object(
         gob_util, 'FetchUrl',
-        return_value=base64.b64encode(chrome_lkgm)) as patcher:
+        return_value=StringIO(base64.b64encode(chrome_lkgm))) as patcher:
       self.assertEqual(chrome_lkgm, commands.GetChromeLKGM(chrome_revision))
       patcher.assert_called_with(constants.EXTERNAL_GOB_HOST, url)
 
