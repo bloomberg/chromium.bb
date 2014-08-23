@@ -1316,10 +1316,12 @@ been automagically updated.  The previous version is available at %s.old.
     # Return a new GClient instance based on the new content.
     new_content = ast2str(a)
     dot_gclient_fn = os.path.join(path, options.config_filename)
-    os.rename(dot_gclient_fn, dot_gclient_fn + '.old')
-    fh = open(dot_gclient_fn, 'w')
-    fh.write(new_content)
-    fh.close()
+    try:
+      os.rename(dot_gclient_fn, dot_gclient_fn + '.old')
+    except OSError:
+      pass
+    with open(dot_gclient_fn, 'w') as fh:
+      fh.write(new_content)
     client = GClient(path, options)
     client.SetConfig(new_content)
     return client
