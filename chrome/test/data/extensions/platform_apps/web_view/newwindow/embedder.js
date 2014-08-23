@@ -258,6 +258,41 @@ function testNewWindowClose() {
   embedder.setUpNewWindowRequest_(webview, 'guest.html', '', testName);
 }
 
+// Checks that calling event.window.attach() with a <webview> that is not
+// in the DOM works properly.
+// This tests the deferred attachment code path in web_view.js.
+function testNewWindowDeferredAttachment() {
+  var testName = 'testNewWindowDeferredAttachment';
+  var webview = embedder.setUpGuest_('foobar');
+
+  var onNewWindow = function(e) {
+    chrome.test.log('Embedder notified on newwindow');
+    embedder.assertCorrectEvent_(e, '');
+
+    var newwebview = document.createElement('webview');
+
+    newwebview.addEventListener('loadstop', function() {
+      chrome.test.log('Guest in newwindow got loadstop.');
+      embedder.test.succeed();
+    });
+
+    try {
+      e.window.attach(newwebview);
+    } catch (e) {
+      embedder.test.fail();
+    }
+
+    // Append the <webview> in DOM later.
+    window.setTimeout(function() {
+      document.querySelector('#webview-tag-container').appendChild(newwebview);
+    }, 0);
+  };
+  webview.addEventListener('newwindow', onNewWindow);
+
+  // Load a new window with the given name.
+  embedder.setUpNewWindowRequest_(webview, 'guest.html', '', testName);
+};
+
 function testNewWindowExecuteScript() {
   var testName = 'testNewWindowExecuteScript';
   var webview = embedder.setUpGuest_('foobar');
@@ -461,6 +496,7 @@ embedder.test.testList = {
   'testNoName': testNoName,
   'testNewWindowRedirect':  testNewWindowRedirect,
   'testNewWindowClose': testNewWindowClose,
+  'testNewWindowDeferredAttachment': testNewWindowDeferredAttachment,
   'testNewWindowExecuteScript': testNewWindowExecuteScript,
   'testNewWindowOpenInNewTab': testNewWindowOpenInNewTab,
   'testNewWindowDeclarativeWebRequest': testNewWindowDeclarativeWebRequest,

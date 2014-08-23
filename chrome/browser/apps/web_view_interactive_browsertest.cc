@@ -763,6 +763,12 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, NewWindow_Close) {
              NEEDS_TEST_SERVER);
 }
 
+IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, NewWindow_DeferredAttachment) {
+  TestHelper("testNewWindowDeferredAttachment",
+             "web_view/newwindow",
+             NEEDS_TEST_SERVER);
+}
+
 IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, NewWindow_ExecuteScript) {
   TestHelper("testNewWindowExecuteScript",
              "web_view/newwindow",

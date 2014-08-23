@@ -866,7 +866,7 @@ WebViewInternal.prototype.attachWindow = function(guestInstanceId,
 
   if (!this.isPluginInRenderTree()) {
     this.deferredAttachState = {isNewWindow: isNewWindow};
-    return false;
+    return true;
   }
 
   this.deferredAttachState = null;
