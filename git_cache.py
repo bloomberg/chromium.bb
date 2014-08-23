@@ -12,6 +12,7 @@ import optparse
 import os
 import re
 import tempfile
+import threading
 import time
 import shutil
 import subprocess
@@ -144,6 +145,7 @@ class Mirror(object):
   gsutil_exe = os.path.join(
     os.path.dirname(os.path.abspath(__file__)),
     'third_party', 'gsutil', 'gsutil')
+  cachepath_lock = threading.Lock()
 
   def __init__(self, url, refs=None, print_func=None):
     self.url = url
@@ -202,6 +204,7 @@ class Mirror(object):
 
   @classmethod
   def GetCachePath(cls):
+    cls.cachepath_lock.acquire()
     if not hasattr(cls, 'cachepath'):
       try:
         cachepath = subprocess.check_output(
@@ -209,8 +212,10 @@ class Mirror(object):
       except subprocess.CalledProcessError:
         cachepath = None
       if not cachepath:
+        cls.cachepath_lock.release()
         raise RuntimeError('No global cache.cachepath git configuration found.')
       setattr(cls, 'cachepath', cachepath)
+      cls.cachepath_lock.release()
     return getattr(cls, 'cachepath')
 
   def RunGit(self, cmd, **kwargs):
