@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/printing/print_job.h"
+
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/printing/print_job.h"
 #include "chrome/browser/printing/print_job_worker.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/common/child_process_host.h"
 #include "printing/printed_pages_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -24,8 +26,9 @@ class TestSource : public printing::PrintedPagesSource {
 class TestPrintJobWorker : public printing::PrintJobWorker {
  public:
   explicit TestPrintJobWorker(printing::PrintJobWorkerOwner* owner)
-      : printing::PrintJobWorker(owner) {
-  }
+      : printing::PrintJobWorker(content::ChildProcessHost::kInvalidUniqueID,
+                                 content::ChildProcessHost::kInvalidUniqueID,
+                                 owner) {}
   friend class TestOwner;
 };
 

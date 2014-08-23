@@ -258,49 +258,6 @@ content::WebContents* PrintingMessageFilter::GetWebContentsForRenderView(
   return view ? content::WebContents::FromRenderViewHost(view) : NULL;
 }
 
-struct PrintingMessageFilter::GetPrintSettingsForRenderViewParams {
-  PrinterQuery::GetSettingsAskParam ask_user_for_settings;
-  int expected_page_count;
-  bool has_selection;
-  MarginType margin_type;
-};
-
-void PrintingMessageFilter::GetPrintSettingsForRenderView(
-    int render_view_id,
-    GetPrintSettingsForRenderViewParams params,
-    const base::Closure& callback,
-    scoped_refptr<PrinterQuery> printer_query) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  content::WebContents* wc = GetWebContentsForRenderView(render_view_id);
-  if (wc) {
-    scoped_ptr<PrintingUIWebContentsObserver> wc_observer(
-        new PrintingUIWebContentsObserver(wc));
-    BrowserThread::PostTask(BrowserThread::IO,
-                            FROM_HERE,
-                            base::Bind(&PrinterQuery::GetSettings,
-                                       printer_query,
-                                       params.ask_user_for_settings,
-                                       base::Passed(&wc_observer),
-                                       params.expected_page_count,
-                                       params.has_selection,
-                                       params.margin_type,
-                                       callback));
-  } else {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::Bind(&PrintingMessageFilter::OnGetPrintSettingsFailed, this,
-                   callback, printer_query));
-  }
-}
-
-void PrintingMessageFilter::OnGetPrintSettingsFailed(
-    const base::Closure& callback,
-    scoped_refptr<PrinterQuery> printer_query) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  printer_query->GetSettingsDone(PrintSettings(), PrintingContext::FAILED);
-  callback.Run();
-}
-
 void PrintingMessageFilter::OnIsPrintingEnabled(bool* is_enabled) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   *is_enabled = profile_io_data_->printing_enabled()->GetValue();
@@ -315,23 +272,22 @@ void PrintingMessageFilter::OnGetDefaultPrintSettings(IPC::Message* reply_msg) {
     return;
   }
   printer_query = queue_->PopPrinterQuery(0);
-  if (!printer_query)
-    printer_query = queue_->CreatePrinterQuery();
+  if (!printer_query) {
+    printer_query =
+        queue_->CreatePrinterQuery(render_process_id_, reply_msg->routing_id());
+  }
 
   // Loads default settings. This is asynchronous, only the IPC message sender
   // will hang until the settings are retrieved.
-  GetPrintSettingsForRenderViewParams params;
-  params.ask_user_for_settings = PrinterQuery::DEFAULTS;
-  params.expected_page_count = 0;
-  params.has_selection = false;
-  params.margin_type = DEFAULT_MARGINS;
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&PrintingMessageFilter::GetPrintSettingsForRenderView, this,
-          reply_msg->routing_id(), params,
-          base::Bind(&PrintingMessageFilter::OnGetDefaultPrintSettingsReply,
-              this, printer_query, reply_msg),
-          printer_query));
+  printer_query->GetSettings(
+      PrinterQuery::DEFAULTS,
+      0,
+      false,
+      DEFAULT_MARGINS,
+      base::Bind(&PrintingMessageFilter::OnGetDefaultPrintSettingsReply,
+                 this,
+                 printer_query,
+                 reply_msg));
 }
 
 void PrintingMessageFilter::OnGetDefaultPrintSettingsReply(
@@ -363,21 +319,19 @@ void PrintingMessageFilter::OnScriptedPrint(
     IPC::Message* reply_msg) {
   scoped_refptr<PrinterQuery> printer_query =
       queue_->PopPrinterQuery(params.cookie);
-  if (!printer_query)
-    printer_query = queue_->CreatePrinterQuery();
-  GetPrintSettingsForRenderViewParams settings_params;
-  settings_params.ask_user_for_settings = PrinterQuery::ASK_USER;
-  settings_params.expected_page_count = params.expected_pages_count;
-  settings_params.has_selection = params.has_selection;
-  settings_params.margin_type = params.margin_type;
-
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&PrintingMessageFilter::GetPrintSettingsForRenderView, this,
-                 reply_msg->routing_id(), settings_params,
-                 base::Bind(&PrintingMessageFilter::OnScriptedPrintReply, this,
-                            printer_query, reply_msg),
-                 printer_query));
+  if (!printer_query) {
+    printer_query =
+        queue_->CreatePrinterQuery(render_process_id_, reply_msg->routing_id());
+  }
+  printer_query->GetSettings(
+      PrinterQuery::ASK_USER,
+      params.expected_pages_count,
+      params.has_selection,
+      params.margin_type,
+      base::Bind(&PrintingMessageFilter::OnScriptedPrintReply,
+                 this,
+                 printer_query,
+                 reply_msg));
 }
 
 void PrintingMessageFilter::OnScriptedPrintReply(
@@ -440,8 +394,10 @@ void PrintingMessageFilter::OnUpdatePrintSettings(
     return;
   }
   printer_query = queue_->PopPrinterQuery(document_cookie);
-  if (!printer_query)
-    printer_query = queue_->CreatePrinterQuery();
+  if (!printer_query) {
+    printer_query =
+        queue_->CreatePrinterQuery(render_process_id_, reply_msg->routing_id());
+  }
   printer_query->SetSettings(
       new_settings.Pass(),
       base::Bind(&PrintingMessageFilter::OnUpdatePrintSettingsReply, this,

@@ -32,7 +32,6 @@ namespace printing {
 class PrintJobManager;
 class PrintQueriesQueue;
 class PrinterQuery;
-class PrintingUIWebContentsObserver;
 
 // This class filters out incoming printing related IPC messages for the
 // renderer process on the IPC thread.
@@ -83,16 +82,6 @@ class PrintingMessageFilter : public content::BrowserMessageFilter {
   // struct to avoid running into issues with too many params
   // to base::Bind.
   struct GetPrintSettingsForRenderViewParams;
-
-  // Retrieve print settings.  Uses |render_view_id| to get a parent
-  // for any UI created if needed.
-  void GetPrintSettingsForRenderView(int render_view_id,
-                                     GetPrintSettingsForRenderViewParams params,
-                                     const base::Closure& callback,
-                                     scoped_refptr<PrinterQuery> printer_query);
-
-  void OnGetPrintSettingsFailed(const base::Closure& callback,
-                                scoped_refptr<PrinterQuery> printer_query);
 
   // Checks if printing is enabled.
   void OnIsPrintingEnabled(bool* is_enabled);

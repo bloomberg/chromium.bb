@@ -22,11 +22,16 @@
 namespace printing {
 
 // This test is automatically disabled if no printer is available.
-class PrintingContextTest : public PrintingTest<testing::Test> {
+class PrintingContextTest : public PrintingTest<testing::Test>,
+                            public PrintingContext::Delegate {
  public:
   void PrintSettingsCallback(PrintingContext::Result result) {
     result_ = result;
   }
+
+  // PrintingContext::Delegate methods.
+  virtual gfx::NativeView GetParentView() OVERRIDE { return NULL; }
+  virtual std::string GetAppLocale() OVERRIDE { return std::string(); }
 
  protected:
   PrintingContext::Result result() const { return result_; }
@@ -37,7 +42,7 @@ class PrintingContextTest : public PrintingTest<testing::Test> {
 
 class MockPrintingContextWin : public PrintingContextWin {
  public:
-  MockPrintingContextWin() : PrintingContextWin("") {}
+  MockPrintingContextWin(Delegate* delegate) : PrintingContextWin(delegate) {}
 
  protected:
   // This is a fake PrintDlgEx implementation that sets the right fields in
@@ -159,7 +164,7 @@ TEST_F(PrintingContextTest, Base) {
   PrintSettings settings;
   settings.set_device_name(GetDefaultPrinter());
   // Initialize it.
-  scoped_ptr<PrintingContext> context(PrintingContext::Create(std::string()));
+  scoped_ptr<PrintingContext> context(PrintingContext::Create(this));
   EXPECT_EQ(PrintingContext::OK, context->InitWithSettings(settings));
 
   // The print may lie to use and may not support world transformation.
@@ -174,10 +179,12 @@ TEST_F(PrintingContextTest, PrintAll) {
   if (IsTestCaseDisabled())
     return;
 
-  MockPrintingContextWin context;
+  MockPrintingContextWin context(this);
   context.AskUserForSettings(
-      NULL, 123, false, base::Bind(&PrintingContextTest::PrintSettingsCallback,
-                                   base::Unretained(this)));
+      123,
+      false,
+      base::Bind(&PrintingContextTest::PrintSettingsCallback,
+                 base::Unretained(this)));
   EXPECT_EQ(PrintingContext::OK, result());
   PrintSettings settings = context.settings();
   EXPECT_EQ(settings.ranges().size(), 0);
