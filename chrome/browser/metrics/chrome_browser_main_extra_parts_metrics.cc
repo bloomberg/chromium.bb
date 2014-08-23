@@ -30,7 +30,9 @@
 #include <gnu/libc-version.h>
 
 #include "base/version.h"
+#if defined(USE_X11)
 #include "ui/base/x/x11_util.h"
+#endif
 #endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
 
 #if defined(OS_WIN)
@@ -133,7 +135,7 @@ void RecordLinuxGlibcVersion() {
 }
 
 void RecordLinuxWindowManager() {
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#if defined(USE_X11) && !defined(OS_CHROMEOS)
   ui::WindowManagerName name = ui::GuessWindowManager();
   UMALinuxWindowManager uma_name = UMA_LINUX_WINDOW_MANAGER_OTHER;
   switch (name) {
