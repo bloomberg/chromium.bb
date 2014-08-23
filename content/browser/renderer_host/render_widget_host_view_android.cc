@@ -1266,7 +1266,9 @@ void RenderWidgetHostViewAndroid::RequestVSyncUpdate(uint32 requests) {
 
 void RenderWidgetHostViewAndroid::StartObservingRootWindow() {
   DCHECK(content_view_core_);
-  DCHECK(!observing_root_window_);
+  if (observing_root_window_)
+    return;
+
   observing_root_window_ = true;
   content_view_core_->GetWindowAndroid()->AddObserver(this);
 
