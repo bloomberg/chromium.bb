@@ -181,34 +181,19 @@ cr.define('cr.ui.pageManager', function() {
       var isRootPageLocked =
           rootPage && rootPage.sticky && targetPage.parentPage;
 
-      var allPageNames = Array.prototype.concat.call(
-          Object.keys(this.registeredPages),
-          Object.keys(this.registeredOverlayPages));
-
       // Notify pages if they will be hidden.
-      // TODO(michaelpg): Resolve code duplication.
-      for (var i = 0; i < allPageNames.length; ++i) {
-        var name = allPageNames[i];
-        var page = this.registeredPages[name] ||
-                   this.registeredOverlayPages[name];
-        if (!page.parentPage && isRootPageLocked)
-          continue;
-        if (page.willHidePage && name != pageName &&
+      this.forEachPage_(!isRootPageLocked, function(page) {
+        if (page.willHidePage && page.name != pageName &&
             !this.isAncestorOfPage(page, targetPage)) {
           page.willHidePage();
         }
-      }
+      });
 
       // Update visibilities to show only the hierarchy of the target page.
-      for (var i = 0; i < allPageNames.length; ++i) {
-        var name = allPageNames[i];
-        var page = this.registeredPages[name] ||
-                   this.registeredOverlayPages[name];
-        if (!page.parentPage && isRootPageLocked)
-          continue;
-        page.visible = name == pageName ||
+      this.forEachPage_(!isRootPageLocked, function(page) {
+        page.visible = page.name == pageName ||
                        this.isAncestorOfPage(page, targetPage);
-      }
+      });
 
       // Update the history and current location.
       if (opt_updateHistory)
@@ -222,17 +207,13 @@ cr.define('cr.ui.pageManager', function() {
       }
 
       // Notify pages if they were shown.
-      for (var i = 0; i < allPageNames.length; ++i) {
-        var name = allPageNames[i];
-        var page = this.registeredPages[name] ||
-                   this.registeredOverlayPages[name];
-        if (!page.parentPage && isRootPageLocked)
-          continue;
+      this.forEachPage_(!isRootPageLocked, function(page) {
         if (!targetPageWasVisible && page.didShowPage &&
-            (name == pageName || this.isAncestorOfPage(page, targetPage))) {
+            (page.name == pageName ||
+             this.isAncestorOfPage(page, targetPage))) {
           page.didShowPage();
         }
-      }
+      });
 
       // Update the document title. Do this after didShowPage was called, in
       // case a page decides to change its title.
@@ -713,6 +694,24 @@ cr.define('cr.ui.pageManager', function() {
         var scrollLeft = scrollLeftForDocument(document);
         e.style.left = this.horizontalOffset - scrollLeft + 'px';
       }
+    },
+
+    /**
+     * Calls the given callback with each registered page.
+     * @param {boolean} includeRootPages Whether the callback should be called
+     *     for the root pages.
+     * @param {function(cr.ui.pageManager.Page)} callback The callback.
+     * @private
+     */
+    forEachPage_: function(includeRootPages, callback) {
+      var pageNames = Object.keys(this.registeredOverlayPages);
+      if (includeRootPages)
+        pageNames = Object.keys(this.registeredPages).concat(pageNames);
+
+      pageNames.forEach(function(name) {
+        callback.call(this, this.registeredOverlayPages[name] ||
+                            this.registeredPages[name]);
+      }, this);
     },
   };
 
