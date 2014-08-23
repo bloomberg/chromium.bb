@@ -17,14 +17,9 @@ if (enable_webrtc || !is_android) {
       "//base",
       "//base/third_party/dynamic_annotations",
       "//net",
-      # '../third_party/libjingle/libjingle.gyp:libjingle',  # TODO(GYP)
+      "//third_party/libjingle",
     ]
-    # 'export_dependent_settings': [
-    #   '../third_party/libjingle/libjingle.gyp:libjingle',
-    # ],
-
-    # TODO(GYP): Replace this with a proper dependency on libjingle.
-    direct_dependent_configs = [ "//content:libjingle_stub_config", ]
+    forward_dependent_configs_from = [ "//third_party/libjingle" ]
   }
 
   # A library for sending and receiving peer-issued notifications.
@@ -88,13 +83,9 @@ if (enable_webrtc || !is_android) {
       "//third_party/expat",
       "//url",
       ":jingle_glue",
-      # '../third_party/libjingle/libjingle.gyp:libjingle',  # TODO(GYP)
+      "//third_party/libjingle",
     ]
-    # 'export_dependent_settings': [
-    #   '../third_party/libjingle/libjingle.gyp:libjingle',
-    # ],
-    # TODO(GYP): Replace this with a proper dependency on libjingle.
-    direct_dependent_configs = [ "//content:libjingle_stub_config", ]
+    forward_dependent_configs_from = [ "//third_party/libjingle" ]
   }
 
   # GYP version: jingle/jingle.gyp:notifier_test_util
@@ -166,13 +157,9 @@ if (enable_webrtc || !is_android) {
       "//net:test_support",
       "//testing/gmock",
       "//testing/gtest",
-      # '../third_party/libjingle/libjingle.gyp:libjingle',  # TODO(GYP)
+      "//third_party/libjingle",
     ]
-    # 'export_dependent_settings': [
-    #   '../third_party/libjingle/libjingle.gyp:libjingle',
-    # ],
-    # TODO(GYP): Replace this with a proper dependency on libjingle.
-    direct_dependent_configs = [ "//content:libjingle_stub_config", ]
+    forward_dependent_configs_from = [ "//third_party/libjingle" ]
   }
 } else {
   # !enable_webrtc and is_android

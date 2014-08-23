@@ -88,7 +88,6 @@ static_library("ui") {
       "//chrome/common/extensions/api:api",
       "//chrome/installer/util",
       "//components/autofill/content/browser:risk_proto",
-      "//content/app/resources",
       "//device/bluetooth",
       "//device/nfc",
       "//media",
@@ -100,6 +99,7 @@ static_library("ui") {
       "//third_party/hunspell",
       "//third_party/leveldatabase",
       "//third_party/npapi",
+      "//third_party/libjingle",
       "//third_party/re2",
       "//ui/compositor",
       "//ui/surface",
@@ -108,7 +108,6 @@ static_library("ui") {
       "//webkit/browser:storage",
       "//webkit/common",
       "//webkit/common:storage",
-      #'../third_party/libjingle/libjingle.gyp:libjingle',  TODO(GYP)
     ]
     # TODO(GYP)
     #'defines': [

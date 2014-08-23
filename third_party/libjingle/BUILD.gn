@@ -1,0 +1,344 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/crypto.gni")
+
+# From third_party/libjingle/libjingle.gyp's target_defaults.
+config("jingle_unexported_configs") {
+  defines = [
+    "EXPAT_RELATIVE_PATH",
+    "FEATURE_ENABLE_SSL",
+    "GTEST_RELATIVE_PATH",
+    "HAVE_SRTP",
+    "HAVE_WEBRTC_VIDEO",
+    "HAVE_WEBRTC_VOICE",
+    "LOGGING_INSIDE_WEBRTC",
+    "NO_MAIN_THREAD_WRAPPING",
+    "NO_SOUND_SYSTEM",
+    "SRTP_RELATIVE_PATH",
+    "USE_WEBRTC_DEV_BRANCH",
+    "ENABLE_EXTERNAL_AUTH",
+  ]
+
+  include_dirs = [
+    "overrides",
+    "../../third_party/webrtc/overrides",
+    "source",
+    "../../testing/gtest/include",
+    "../../third_party",
+    "../../third_party/libyuv/include",
+    "../../third_party/usrsctp",
+  ]
+
+  # Assumes libpeer is linked statically.
+  defines += [ "LIBPEERCONNECTION_LIB=1" ]
+
+  if (is_win && cpu_arch == "x86") {
+    defines += [ "_USE_32BIT_TIME_T" ]
+  }
+
+  if (use_openssl) {
+    defines += [
+      "SSL_USE_OPENSSL",
+      "HAVE_OPENSSL_SSL_H",
+    ]
+  } else {
+    defines += [
+      "SSL_USE_NSS",
+      "HAVE_NSS_SSL_H",
+      "SSL_USE_NSS_RNG",
+    ]
+  }
+
+}
+
+# From third_party/libjingle/libjingle.gyp's target_defaults.
+config("jingle_direct_dependent_configs") {
+  include_dirs = [
+    "../../third_party/webrtc/overrides",
+    "overrides",
+    "source",
+    "../../testing/gtest/include",
+    "../../third_party",
+  ]
+  defines = [
+    "FEATURE_ENABLE_SSL",
+    "FEATURE_ENABLE_VOICEMAIL",
+    "EXPAT_RELATIVE_PATH",
+    "GTEST_RELATIVE_PATH",
+    "NO_MAIN_THREAD_WRAPPING",
+    "NO_SOUND_SYSTEM",
+  ]
+  # TODO(GYP): Port is_win blocks.
+  if (is_linux) {
+    defines += [ "LINUX", "WEBRTC_LINUX" ]
+  }
+  if (is_mac) {
+    defines += [ "OSX", "WEBRTC_MAC" ]
+  }
+  if (is_ios) {
+    defines += [ "IOS", "WEBRTC_MAC", "WEBRTC_IOS" ]
+  }
+  if (is_win) {
+    defines += [ "WEBRTC_WIN" ]
+  }
+  if (is_android) {
+    defines += [ "ANDROID" ]
+  }
+  if (is_posix) {
+    defines += [ "POSIX", "WEBRTC_POSIX" ]
+  }
+  # TODO(GYP): Support these in GN.
+  # if (is_bsd) {
+  #   defines += [ "BSD" ]
+  # }
+  # if (is_openbsd) {
+  #   defines += [ "OPENBSD" ]
+  # }
+  # if (is_freebsd) {
+  #   defines += [ "FREEBSD" ]
+  # }
+  if (is_chromeos) {
+    defines += [ "CHROMEOS" ]
+  }
+}
+
+# From third_party/libjingle/libjingle.gyp's target_defaults.
+config("jingle_all_dependent_configs") {
+  if (is_debug) {
+    # TODO(sergeyu): Fix libjingle to use NDEBUG instead of
+    # _DEBUG and remove this define. See GYP file as well.
+    defines = [ "_DEBUG" ]
+  }
+}
+
+# From third_party/libjingle/libjingle.gyp's target_defaults.
+group("jingle_deps") {
+  deps = [
+    "//base",
+    "//net",
+    "//third_party/expat",
+    "//crypto:platform",
+  ]
+  forward_dependent_configs_from = [
+    "//third_party/expat",
+  ]
+}
+
+# GYP version: third_party/libjingle.gyp:libjingle
+static_library("libjingle") {
+  sources = [
+    # List from third_party/libjingle/libjingle_common.gypi
+    "source/talk/p2p/base/asyncstuntcpsocket.cc",
+    "source/talk/p2p/base/asyncstuntcpsocket.h",
+    "source/talk/p2p/base/basicpacketsocketfactory.cc",
+    "source/talk/p2p/base/basicpacketsocketfactory.h",
+    "source/talk/p2p/base/candidate.h",
+    "source/talk/p2p/base/common.h",
+    "source/talk/p2p/base/constants.cc",
+    "source/talk/p2p/base/constants.h",
+    "source/talk/p2p/base/dtlstransport.h",
+    "source/talk/p2p/base/dtlstransportchannel.cc",
+    "source/talk/p2p/base/dtlstransportchannel.h",
+    "source/talk/p2p/base/p2ptransport.cc",
+    "source/talk/p2p/base/p2ptransport.h",
+    "source/talk/p2p/base/p2ptransportchannel.cc",
+    "source/talk/p2p/base/p2ptransportchannel.h",
+    "source/talk/p2p/base/parsing.cc",
+    "source/talk/p2p/base/parsing.h",
+    "source/talk/p2p/base/port.cc",
+    "source/talk/p2p/base/port.h",
+    "source/talk/p2p/base/portallocator.cc",
+    "source/talk/p2p/base/portallocator.h",
+    "source/talk/p2p/base/portallocatorsessionproxy.cc",
+    "source/talk/p2p/base/portallocatorsessionproxy.h",
+    "source/talk/p2p/base/portproxy.cc",
+    "source/talk/p2p/base/portproxy.h",
+    "source/talk/p2p/base/pseudotcp.cc",
+    "source/talk/p2p/base/pseudotcp.h",
+    "source/talk/p2p/base/rawtransport.cc",
+    "source/talk/p2p/base/rawtransport.h",
+    "source/talk/p2p/base/rawtransportchannel.cc",
+    "source/talk/p2p/base/rawtransportchannel.h",
+    "source/talk/p2p/base/relayport.cc",
+    "source/talk/p2p/base/relayport.h",
+    "source/talk/p2p/base/session.cc",
+    "source/talk/p2p/base/session.h",
+    "source/talk/p2p/base/sessionclient.h",
+    "source/talk/p2p/base/sessiondescription.cc",
+    "source/talk/p2p/base/sessiondescription.h",
+    "source/talk/p2p/base/sessionid.h",
+    "source/talk/p2p/base/sessionmanager.cc",
+    "source/talk/p2p/base/sessionmanager.h",
+    "source/talk/p2p/base/sessionmessages.cc",
+    "source/talk/p2p/base/sessionmessages.h",
+    "source/talk/p2p/base/stun.cc",
+    "source/talk/p2p/base/stun.h",
+    "source/talk/p2p/base/stunport.cc",
+    "source/talk/p2p/base/stunport.h",
+    "source/talk/p2p/base/stunrequest.cc",
+    "source/talk/p2p/base/stunrequest.h",
+    "source/talk/p2p/base/tcpport.cc",
+    "source/talk/p2p/base/tcpport.h",
+    "source/talk/p2p/base/transport.cc",
+    "source/talk/p2p/base/transport.h",
+    "source/talk/p2p/base/transportchannel.cc",
+    "source/talk/p2p/base/transportchannel.h",
+    "source/talk/p2p/base/transportchannelimpl.h",
+    "source/talk/p2p/base/transportchannelproxy.cc",
+    "source/talk/p2p/base/transportchannelproxy.h",
+    "source/talk/p2p/base/transportdescription.cc",
+    "source/talk/p2p/base/transportdescription.h",
+    "source/talk/p2p/base/transportdescriptionfactory.cc",
+    "source/talk/p2p/base/transportdescriptionfactory.h",
+    "source/talk/p2p/base/turnport.cc",
+    "source/talk/p2p/base/turnport.h",
+    "source/talk/p2p/client/basicportallocator.cc",
+    "source/talk/p2p/client/basicportallocator.h",
+    "source/talk/p2p/client/httpportallocator.cc",
+    "source/talk/p2p/client/httpportallocator.h",
+    "source/talk/p2p/client/sessionmanagertask.h",
+    "source/talk/p2p/client/sessionsendtask.h",
+    "source/talk/p2p/client/socketmonitor.cc",
+    "source/talk/p2p/client/socketmonitor.h",
+    "source/talk/xmllite/qname.cc",
+    "source/talk/xmllite/qname.h",
+    "source/talk/xmllite/xmlbuilder.cc",
+    "source/talk/xmllite/xmlbuilder.h",
+    "source/talk/xmllite/xmlconstants.cc",
+    "source/talk/xmllite/xmlconstants.h",
+    "source/talk/xmllite/xmlelement.cc",
+    "source/talk/xmllite/xmlelement.h",
+    "source/talk/xmllite/xmlnsstack.cc",
+    "source/talk/xmllite/xmlnsstack.h",
+    "source/talk/xmllite/xmlparser.cc",
+    "source/talk/xmllite/xmlparser.h",
+    "source/talk/xmllite/xmlprinter.cc",
+    "source/talk/xmllite/xmlprinter.h",
+    "source/talk/xmpp/asyncsocket.h",
+    "source/talk/xmpp/constants.cc",
+    "source/talk/xmpp/constants.h",
+    "source/talk/xmpp/jid.cc",
+    "source/talk/xmpp/jid.h",
+    "source/talk/xmpp/plainsaslhandler.h",
+    "source/talk/xmpp/prexmppauth.h",
+    "source/talk/xmpp/saslcookiemechanism.h",
+    "source/talk/xmpp/saslhandler.h",
+    "source/talk/xmpp/saslmechanism.cc",
+    "source/talk/xmpp/saslmechanism.h",
+    "source/talk/xmpp/saslplainmechanism.h",
+    "source/talk/xmpp/xmppclient.cc",
+    "source/talk/xmpp/xmppclient.h",
+    "source/talk/xmpp/xmppclientsettings.h",
+    "source/talk/xmpp/xmppengine.h",
+    "source/talk/xmpp/xmppengineimpl.cc",
+    "source/talk/xmpp/xmppengineimpl.h",
+    "source/talk/xmpp/xmppengineimpl_iq.cc",
+    "source/talk/xmpp/xmpplogintask.cc",
+    "source/talk/xmpp/xmpplogintask.h",
+    "source/talk/xmpp/xmppstanzaparser.cc",
+    "source/talk/xmpp/xmppstanzaparser.h",
+    "source/talk/xmpp/xmpptask.cc",
+    "source/talk/xmpp/xmpptask.h",
+  ]
+  sources -= [
+    # Compiled as part of libjingle_p2p_constants.
+    "source/talk/p2p/base/constants.cc",
+    "source/talk/p2p/base/constants.h",
+  ]
+  deps = [
+    # TODO(GYP): Uncomment when WebRTC GN build has settled.
+    # "//third_party/webrtc/base:webrtc_base",
+    ":libjingle_p2p_constants",
+    ":jingle_deps"
+  ]
+
+  # From libjingle_common.gypi's conditions list.
+  if (is_win && !nacl_untrusted_build) {
+    cflags += [ "/wd4005", "\wd4267" ]
+  }
+
+  forward_dependent_configs_from = [
+    ":jingle_deps"
+  ]
+  configs += [
+    ":jingle_unexported_configs"
+  ]
+  direct_dependent_configs = [
+    ":jingle_direct_dependent_configs",
+  ]
+  all_dependent_configs = [
+    ":jingle_all_dependent_configs",
+  ]
+}
+
+# This has to be is a separate project due to a bug in MSVS 2008 and the
+# current toolset on android.  The problem is that we have two files named
+# "constants.cc" and MSVS/android doesn't handle this properly.
+# GYP currently has guards to catch this, so if you want to remove it,
+# run GYP and if GYP has removed the validation check, then we can assume
+# that the toolchains have been fixed (we currently use VS2010 and later,
+# so VS2008 isn't a concern anymore).
+#
+# GYP version: third_party/libjingle.gyp:libjingle_p2p_constants
+static_library("libjingle_p2p_constants") {
+  sources = [
+    "source/talk/p2p/base/constants.cc",
+    "source/talk/p2p/base/constants.h",
+  ]
+  deps = [
+    ":jingle_deps",
+  ]
+  forward_dependent_configs_from = [
+    ":jingle_deps",
+  ]
+  configs += [
+    ":jingle_unexported_configs"
+  ]
+  direct_dependent_configs = [
+    ":jingle_direct_dependent_configs",
+  ]
+  all_dependent_configs = [
+    ":jingle_all_dependent_configs",
+  ]
+}
+
+# GYP version: third_party/libjingle.gyp:peerconnnection_server
+#TODO(GYP): Switch to executable when WebRTC dependency is resolved.
+source_set("peerconnnection_server") {
+  sources = [
+    "source/talk/examples/peerconnection/server/data_socket.cc",
+    "source/talk/examples/peerconnection/server/data_socket.h",
+    "source/talk/examples/peerconnection/server/main.cc",
+    "source/talk/examples/peerconnection/server/peer_channel.cc",
+    "source/talk/examples/peerconnection/server/peer_channel.h",
+    "source/talk/examples/peerconnection/server/utils.cc",
+    "source/talk/examples/peerconnection/server/utils.h",
+  ]
+  include_dirs = [
+    "source",
+  ]
+  deps = [
+    ":libjingle",
+    ":jingle_deps",
+  ]
+  forward_dependent_configs_from = [
+    ":jingle_deps",
+  ]
+  configs += [
+    ":jingle_unexported_configs"
+  ]
+  direct_dependent_configs = [
+    ":jingle_direct_dependent_configs",
+  ]
+  all_dependent_configs = [
+    ":jingle_all_dependent_configs",
+  ]
+  if (is_win) {
+    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+    cflags += [ "/wd4309" ]
+  }
+}
+
+# TODO(GYP): Port libjingle.gyp's enable_webrtc condition block.

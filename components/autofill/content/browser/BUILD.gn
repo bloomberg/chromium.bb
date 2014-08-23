@@ -58,11 +58,11 @@ static_library("browser") {
     "//sql",
     "//third_party/icu",
     "//third_party/libphonenumber",
+    "//third_party/libjingle",
     "//ui/base",
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//url",
-    #"../third_party/libjingle/libjingle.gyp:libjingle",  TODO(GYP)
   ]
 
   forward_dependent_configs_from = [

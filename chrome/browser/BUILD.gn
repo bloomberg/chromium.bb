@@ -76,12 +76,14 @@ static_library("browser") {
     "//courgette:courgette_lib",
     "//crypto",
     "//google_apis",
+    "//jingle:notifier",
     "//skia",
     "//sql",
     "//sync",
     "//third_party/cacheinvalidation",
     "//third_party/icu",
     "//third_party/libxml",
+    "//third_party/libjingle",
     "//third_party/widevine/cdm:version_h",
     "//third_party/zlib",
     "//third_party/zlib:minizip",
@@ -107,8 +109,6 @@ static_library("browser") {
     #"../components/components.gyp:search_engines",
     #"../components/components.gyp:search_provider_logos",
     #"../components/components.gyp:sync_driver",
-    #"../jingle/jingle.gyp:notifier",
-    #"../third_party/libjingle/libjingle.gyp:libjingle",
   ]
 
   forward_dependent_configs_from = [

@@ -149,15 +149,13 @@ static_library("browser") {
     "//third_party/icu",
     "//third_party/libaddressinput:util",
     "//third_party/libphonenumber",
+    "//third_party/libjingle",
     "//ui/base",
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//url",
-    # TODO(GYP) also remove libjingle_stub_config below when this is added:
-    #'../third_party/libjingle/libjingle.gyp:libjingle',  TODO(GYP)
   ]
 
-  configs += [ "//content:libjingle_stub_config" ]
   direct_dependent_configs = [ ":autofill_browser_config" ]
 
   if (autofill_enable_sync) {
@@ -235,8 +233,6 @@ source_set("unit_tests") {
     "webdata/web_data_service_unittest.cc",
   ]
 
-  configs += [ "//content:libjingle_stub_config" ]
-
   deps = [
     ":browser",
     ":test_support",
@@ -244,6 +240,6 @@ source_set("unit_tests") {
     "//components/strings",
     "//testing/gmock",
     "//third_party/libphonenumber",
-    #'../third_party/libjingle/libjingle.gyp:libjingle',  TODO(GYP)
+    "//third_party/libjingle"
   ]
 }

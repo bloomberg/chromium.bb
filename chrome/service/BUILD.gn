@@ -59,7 +59,7 @@ static_library("service") {
     "//net",
     "//printing",
     "//skia",
-    #'../third_party/libjingle/libjingle.gyp:libjingle',  TODO(GYP)
+    "//third_party/libjingle"
   ]
 
   if (use_cups) {

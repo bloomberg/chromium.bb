@@ -37,6 +37,7 @@ source_set("renderer") {
     "//net",
     "//skia",
     "//third_party/icu",
+    "//third_party/libjingle",
     "//third_party/npapi",
     "//third_party/WebKit/public:blink",
     "//third_party/widevine/cdm:version_h",
@@ -49,7 +50,6 @@ source_set("renderer") {
     "//webkit/common",
     "//webkit/common:storage",
     "//webkit/common/gpu",
-    #'../third_party/libjingle/libjingle.gyp:libjingle',  TODO(GYP)
   ]
 
   if (!enable_notifications) {

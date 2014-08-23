@@ -21,7 +21,6 @@ source_set("common") {
 
   configs += [
     "//content:content_implementation",
-    "//content:libjingle_stub_config",
   ]
 
   deps = [
@@ -40,8 +39,7 @@ source_set("common") {
     "//ui/shell_dialogs",
     "//url",
     "//third_party/WebKit/public:blink_headers",
-    # TODO(GYP) convert these dependencies.
-    #'../third_party/libjingle/libjingle.gyp:libjingle',
+    "//third_party/libjingle",
   ]
 
   if (!is_ios) {

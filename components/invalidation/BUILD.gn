@@ -76,9 +76,6 @@ static_library("invalidation") {
     ]
   }
 
-  # TODO(GYP) remove this when libjingle is added.
-  configs += [ "//content:libjingle_stub_config" ]
-
   deps = [
     "//base",
     "//components/gcm_driver",
