@@ -984,6 +984,15 @@ fi
 readonly COMMANDS=$TMPDIR/gdb.init
 log "Generating GDB initialization commands file: $COMMANDS"
 echo -n "" > $COMMANDS
+echo "set print pretty 1" >> $COMMANDS
+echo "python" >> $COMMANDS
+echo "import sys" >> $COMMANDS
+echo "sys.path.insert(0, '$CHROMIUM_SRC/tools/gdb/')" >> $COMMANDS
+echo "try:" >> $COMMANDS
+echo "  import gdb_chrome" >> $COMMANDS
+echo "finally:" >> $COMMANDS
+echo "  sys.path.pop(0)" >> $COMMANDS
+echo "end" >> $COMMANDS
 echo "file $TMPDIR/$GDBEXEC" >> $COMMANDS
 echo "directory $CHROMIUM_SRC" >> $COMMANDS
 echo "set solib-absolute-prefix $PULL_LIBS_DIR" >> $COMMANDS
