@@ -56,7 +56,7 @@ class SurfaceFactoryTest : public testing::Test {
     }
     scoped_ptr<CompositorFrame> frame(new CompositorFrame);
     frame->delegated_frame_data = frame_data.Pass();
-    factory_.SubmitFrame(surface_id_, frame.Pass());
+    factory_.SubmitFrame(surface_id_, frame.Pass(), base::Closure());
   }
 
   void UnrefResources(ResourceProvider::ResourceId* ids_to_unref,

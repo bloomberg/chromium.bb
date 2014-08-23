@@ -41,6 +41,8 @@ class SurfaceDisplayOutputSurface : public cc::OutputSurface,
       const cc::ReturnedResourceArray& resources) OVERRIDE;
 
  private:
+  void SwapBuffersComplete();
+
   cc::Display* display_;
   cc::SurfaceManager* surface_manager_;
   cc::SurfaceFactory factory_;

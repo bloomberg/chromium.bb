@@ -116,6 +116,13 @@ bool Display::Draw() {
                        disable_picture_quad_image_filtering);
   CompositorFrameMetadata metadata;
   renderer_->SwapBuffers(metadata);
+  for (std::set<SurfaceId>::iterator it = contained_surfaces_.begin();
+       it != contained_surfaces_.end();
+       ++it) {
+    Surface* surface = manager_->GetSurfaceForId(*it);
+    if (surface)
+      surface->RunDrawCallbacks();
+  }
   return true;
 }
 

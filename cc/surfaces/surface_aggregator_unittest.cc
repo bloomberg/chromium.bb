@@ -118,7 +118,7 @@ class SurfaceAggregatorValidSurfaceTest : public SurfaceAggregatorTest {
     scoped_ptr<CompositorFrame> frame(new CompositorFrame);
     frame->delegated_frame_data = frame_data.Pass();
 
-    factory_.SubmitFrame(surface_id, frame.Pass());
+    factory_.SubmitFrame(surface_id, frame.Pass(), base::Closure());
   }
 
   void QueuePassAsFrame(scoped_ptr<RenderPass> pass, SurfaceId surface_id) {
@@ -128,7 +128,7 @@ class SurfaceAggregatorValidSurfaceTest : public SurfaceAggregatorTest {
     scoped_ptr<CompositorFrame> child_frame(new CompositorFrame);
     child_frame->delegated_frame_data = delegated_frame_data.Pass();
 
-    factory_.SubmitFrame(surface_id, child_frame.Pass());
+    factory_.SubmitFrame(surface_id, child_frame.Pass(), base::Closure());
   }
 
  protected:
@@ -700,7 +700,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateMultiplePassWithTransform) {
   scoped_ptr<CompositorFrame> child_frame(new CompositorFrame);
   child_frame->delegated_frame_data = child_frame_data.Pass();
 
-  factory_.SubmitFrame(child_surface_id, child_frame.Pass());
+  factory_.SubmitFrame(child_surface_id, child_frame.Pass(), base::Closure());
 
   test::Quad root_quads[] = {test::Quad::SolidColorQuad(1),
                              test::Quad::SurfaceQuad(child_surface_id)};
@@ -725,7 +725,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateMultiplePassWithTransform) {
   scoped_ptr<CompositorFrame> root_frame(new CompositorFrame);
   root_frame->delegated_frame_data = root_frame_data.Pass();
 
-  factory_.SubmitFrame(root_surface_id_, root_frame.Pass());
+  factory_.SubmitFrame(root_surface_id_, root_frame.Pass(), base::Closure());
 
   std::set<SurfaceId> surface_set;
   scoped_ptr<CompositorFrame> aggregated_frame =
@@ -887,7 +887,7 @@ void SubmitFrameWithResources(ResourceProvider::ResourceId* resource_ids,
   frame_data->render_pass_list.push_back(pass.Pass());
   scoped_ptr<CompositorFrame> frame(new CompositorFrame);
   frame->delegated_frame_data = frame_data.Pass();
-  factory->SubmitFrame(surface_id, frame.Pass());
+  factory->SubmitFrame(surface_id, frame.Pass(), base::Closure());
 }
 
 TEST_F(SurfaceAggregatorWithResourcesTest, TakeResourcesOneSurface) {

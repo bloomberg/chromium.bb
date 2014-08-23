@@ -379,7 +379,12 @@ void DelegatedFrameHost::SwapDelegatedFrame(
       scoped_ptr<cc::CompositorFrame> compositor_frame =
           make_scoped_ptr(new cc::CompositorFrame());
       compositor_frame->delegated_frame_data = frame_data.Pass();
-      surface_factory_->SubmitFrame(surface_id_, compositor_frame.Pass());
+      surface_factory_->SubmitFrame(
+          surface_id_,
+          compositor_frame.Pass(),
+          base::Bind(&DelegatedFrameHost::SendDelegatedFrameAck,
+                     AsWeakPtr(),
+                     output_surface_id));
     } else {
       if (!resource_collection_) {
         resource_collection_ = new cc::DelegatedFrameResourceCollection;
@@ -416,9 +421,9 @@ void DelegatedFrameHost::SwapDelegatedFrame(
   pending_delegated_ack_count_++;
 
   ui::Compositor* compositor = client_->GetCompositor();
-  if (!compositor || !modified_layers) {
+  if (!compositor) {
     SendDelegatedFrameAck(output_surface_id);
-  } else {
+  } else if (!use_surfaces_) {
     std::vector<ui::LatencyInfo>::const_iterator it;
     for (it = latency_info.begin(); it != latency_info.end(); ++it)
       compositor->SetLatencyInfo(*it);

@@ -49,7 +49,8 @@ void SurfacesImpl::SubmitFrame(SurfaceIdPtr id, FramePtr frame_ptr) {
                << " should be namespace " << id_namespace_;
     return;
   }
-  factory_.SubmitFrame(id.To<cc::SurfaceId>(), mojo::ConvertTo(frame_ptr));
+  factory_.SubmitFrame(
+      id.To<cc::SurfaceId>(), mojo::ConvertTo(frame_ptr), base::Closure());
   client_->FrameSubmitted();
 }
 

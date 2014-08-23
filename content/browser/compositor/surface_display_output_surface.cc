@@ -48,10 +48,13 @@ void SurfaceDisplayOutputSurface::SwapBuffers(cc::CompositorFrame* frame) {
 
   scoped_ptr<cc::CompositorFrame> frame_copy(new cc::CompositorFrame());
   frame->AssignTo(frame_copy.get());
-  factory_.SubmitFrame(surface_id_, frame_copy.Pass());
+  factory_.SubmitFrame(
+      surface_id_,
+      frame_copy.Pass(),
+      base::Bind(&SurfaceDisplayOutputSurface::SwapBuffersComplete,
+                 base::Unretained(this)));
 
   client_->DidSwapBuffers();
-  client_->DidSwapBuffersComplete();
 }
 
 void SurfaceDisplayOutputSurface::ReturnResources(
@@ -60,6 +63,10 @@ void SurfaceDisplayOutputSurface::ReturnResources(
   ack.resources = resources;
   if (client_)
     client_->ReclaimResources(&ack);
+}
+
+void SurfaceDisplayOutputSurface::SwapBuffersComplete() {
+  client_->DidSwapBuffersComplete();
 }
 
 }  // namespace content

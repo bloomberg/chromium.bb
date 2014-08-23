@@ -23,7 +23,8 @@ Surface::~Surface() {
   }
 }
 
-void Surface::QueueFrame(scoped_ptr<CompositorFrame> frame) {
+void Surface::QueueFrame(scoped_ptr<CompositorFrame> frame,
+                         const base::Closure& callback) {
   scoped_ptr<CompositorFrame> previous_frame = current_frame_.Pass();
   current_frame_ = frame.Pass();
   factory_->ReceiveFromChild(
@@ -36,10 +37,21 @@ void Surface::QueueFrame(scoped_ptr<CompositorFrame> frame) {
         &previous_resources);
     factory_->UnrefResources(previous_resources);
   }
+  if (!draw_callback_.is_null())
+    draw_callback_.Run();
+  draw_callback_ = callback;
 }
 
 const CompositorFrame* Surface::GetEligibleFrame() {
   return current_frame_.get();
+}
+
+void Surface::RunDrawCallbacks() {
+  if (!draw_callback_.is_null()) {
+    base::Closure callback = draw_callback_;
+    draw_callback_ = base::Closure();
+    callback.Run();
+  }
 }
 
 }  // namespace cc
