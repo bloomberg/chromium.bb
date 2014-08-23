@@ -106,6 +106,8 @@ class CONTENT_EXPORT LevelDBTransaction
     void DataChanged();
 
    private:
+    enum Direction { FORWARD, REVERSE };
+
     explicit TransactionIterator(scoped_refptr<LevelDBTransaction> transaction);
     void HandleConflictsAndDeletes();
     void SetCurrentIteratorToSmallestKey();
@@ -120,10 +122,6 @@ class CONTENT_EXPORT LevelDBTransaction
     scoped_ptr<LevelDBIterator> db_iterator_;
     LevelDBIterator* current_;
 
-    enum Direction {
-      FORWARD,
-      REVERSE
-    };
     Direction direction_;
     mutable bool data_changed_;
 

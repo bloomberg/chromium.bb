@@ -14,6 +14,8 @@
 namespace content {
 
 struct IndexedDBIndexMetadata {
+  static const int64 kInvalidId = -1;
+
   IndexedDBIndexMetadata() {}
   IndexedDBIndexMetadata(const base::string16& name,
                          int64 id,
@@ -30,11 +32,13 @@ struct IndexedDBIndexMetadata {
   IndexedDBKeyPath key_path;
   bool unique;
   bool multi_entry;
-
-  static const int64 kInvalidId = -1;
 };
 
 struct CONTENT_EXPORT IndexedDBObjectStoreMetadata {
+  typedef std::map<int64, IndexedDBIndexMetadata> IndexMap;
+
+  static const int64 kInvalidId = -1;
+
   IndexedDBObjectStoreMetadata();
   IndexedDBObjectStoreMetadata(const base::string16& name,
                                int64 id,
@@ -48,9 +52,6 @@ struct CONTENT_EXPORT IndexedDBObjectStoreMetadata {
   bool auto_increment;
   int64 max_index_id;
 
-  static const int64 kInvalidId = -1;
-
-  typedef std::map<int64, IndexedDBIndexMetadata> IndexMap;
   IndexMap indexes;
 };
 

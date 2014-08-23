@@ -99,9 +99,9 @@ class LevelDBTraceTansaction : public LevelDBTransaction {
   }
 
  private:
-  virtual ~LevelDBTraceTansaction() {}
-
   static const std::string s_class_name;
+
+  virtual ~LevelDBTraceTansaction() {}
 
   FunctionTracer commit_tracer_;
   FunctionTracer get_tracer_;
@@ -123,6 +123,8 @@ class LevelDBTraceIteratorImpl : public LevelDBIteratorImpl {
   virtual ~LevelDBTraceIteratorImpl() {}
 
  private:
+  static const std::string s_class_name;
+
   virtual bool IsValid() const OVERRIDE {
     is_valid_tracer_.log_call();
     return LevelDBIteratorImpl::IsValid();
@@ -151,8 +153,6 @@ class LevelDBTraceIteratorImpl : public LevelDBIteratorImpl {
     value_tracer_.log_call();
     return LevelDBIteratorImpl::Value();
   }
-
-  static const std::string s_class_name;
 
   mutable FunctionTracer is_valid_tracer_;
   mutable FunctionTracer seek_to_last_tracer_;

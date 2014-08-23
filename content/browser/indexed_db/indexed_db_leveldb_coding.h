@@ -90,19 +90,6 @@ CONTENT_EXPORT int Compare(const base::StringPiece& a,
 
 class KeyPrefix {
  public:
-  KeyPrefix();
-  explicit KeyPrefix(int64 database_id);
-  KeyPrefix(int64 database_id, int64 object_store_id);
-  KeyPrefix(int64 database_id, int64 object_store_id, int64 index_id);
-  static KeyPrefix CreateWithSpecialIndex(int64 database_id,
-                                          int64 object_store_id,
-                                          int64 index_id);
-
-  static bool Decode(base::StringPiece* slice, KeyPrefix* result);
-  std::string Encode() const;
-  static std::string EncodeEmpty();
-  int Compare(const KeyPrefix& other) const;
-
   // These are serialized to disk; any new items must be appended, and none can
   // be deleted.
   enum Type {
@@ -138,6 +125,21 @@ class KeyPrefix {
   static const int64 kMaxIndexId =
       (1ULL << kMaxIndexIdBits) - 1;  // max signed int32
 
+  static const int64 kInvalidId = -1;
+
+  KeyPrefix();
+  explicit KeyPrefix(int64 database_id);
+  KeyPrefix(int64 database_id, int64 object_store_id);
+  KeyPrefix(int64 database_id, int64 object_store_id, int64 index_id);
+  static KeyPrefix CreateWithSpecialIndex(int64 database_id,
+                                          int64 object_store_id,
+                                          int64 index_id);
+
+  static bool Decode(base::StringPiece* slice, KeyPrefix* result);
+  std::string Encode() const;
+  static std::string EncodeEmpty();
+  int Compare(const KeyPrefix& other) const;
+
   CONTENT_EXPORT static bool IsValidDatabaseId(int64 database_id);
   static bool IsValidObjectStoreId(int64 index_id);
   static bool IsValidIndexId(int64 index_id);
@@ -158,17 +160,16 @@ class KeyPrefix {
   int64 object_store_id_;
   int64 index_id_;
 
-  static const int64 kInvalidId = -1;
-
  private:
-  static std::string EncodeInternal(int64 database_id,
-                                    int64 object_store_id,
-                                    int64 index_id);
   // Special constructor for CreateWithSpecialIndex()
   KeyPrefix(enum Type,
             int64 database_id,
             int64 object_store_id,
             int64 index_id);
+
+  static std::string EncodeInternal(int64 database_id,
+                                    int64 object_store_id,
+                                    int64 index_id);
 };
 
 class SchemaVersionKey {
@@ -378,6 +379,11 @@ class IndexNamesKey {
 
 class ObjectStoreDataKey {
  public:
+  static const int64 kSpecialIndexNumber;
+
+  ObjectStoreDataKey();
+  ~ObjectStoreDataKey();
+
   static bool Decode(base::StringPiece* slice, ObjectStoreDataKey* result);
   CONTENT_EXPORT static std::string Encode(int64 database_id,
                                            int64 object_store_id,
@@ -386,10 +392,6 @@ class ObjectStoreDataKey {
                             int64 object_store_id,
                             const IndexedDBKey& user_key);
   scoped_ptr<IndexedDBKey> user_key() const;
-  static const int64 kSpecialIndexNumber;
-  ObjectStoreDataKey();
-  ~ObjectStoreDataKey();
-
  private:
   std::string encoded_user_key_;
 };
@@ -408,9 +410,9 @@ class ExistsEntryKey {
                             const IndexedDBKey& user_key);
   scoped_ptr<IndexedDBKey> user_key() const;
 
+ private:
   static const int64 kSpecialIndexNumber;
 
- private:
   std::string encoded_user_key_;
   DISALLOW_COPY_AND_ASSIGN(ExistsEntryKey);
 };
@@ -433,9 +435,9 @@ class BlobEntryKey {
   int64 database_id() const { return database_id_; }
   int64 object_store_id() const { return object_store_id_; }
 
+ private:
   static const int64 kSpecialIndexNumber;
 
- private:
   static std::string Encode(int64 database_id,
                             int64 object_store_id,
                             const std::string& encoded_user_key);

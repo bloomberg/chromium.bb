@@ -40,6 +40,17 @@ class IndexedDBConnection;
 class CONTENT_EXPORT IndexedDBContextImpl
     : NON_EXPORTED_BASE(public IndexedDBContext) {
  public:
+  // Recorded in histograms, so append only.
+  enum ForceCloseReason {
+    FORCE_CLOSE_DELETE_ORIGIN = 0,
+    FORCE_CLOSE_BACKING_STORE_FAILURE,
+    FORCE_CLOSE_INTERNALS_PAGE,
+    FORCE_CLOSE_REASON_MAX
+  };
+
+  // The indexed db directory.
+  static const base::FilePath::CharType kIndexedDBDirectory[];
+
   // If |data_path| is empty, nothing will be saved to disk.
   IndexedDBContextImpl(const base::FilePath& data_path,
                        storage::SpecialStoragePolicy* special_storage_policy,
@@ -47,9 +58,6 @@ class CONTENT_EXPORT IndexedDBContextImpl
                        base::SequencedTaskRunner* task_runner);
 
   IndexedDBFactory* GetIDBFactory();
-
-  // The indexed db directory.
-  static const base::FilePath::CharType kIndexedDBDirectory[];
 
   // Disables the exit-time deletion of session-only data.
   void SetForceKeepSessionState() { force_keep_session_state_ = true; }
@@ -77,14 +85,6 @@ class CONTENT_EXPORT IndexedDBContextImpl
   std::vector<GURL> GetAllOrigins();
   base::Time GetOriginLastModified(const GURL& origin_url);
   base::ListValue* GetAllOriginsDetails();
-
-  // Recorded in histograms, so append only.
-  enum ForceCloseReason {
-    FORCE_CLOSE_DELETE_ORIGIN = 0,
-    FORCE_CLOSE_BACKING_STORE_FAILURE,
-    FORCE_CLOSE_INTERNALS_PAGE,
-    FORCE_CLOSE_REASON_MAX
-  };
 
   // ForceClose takes a value rather than a reference since it may release the
   // owning object.

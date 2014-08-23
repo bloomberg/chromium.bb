@@ -31,9 +31,9 @@ class CONTENT_EXPORT IndexedDBKey {
   explicit IndexedDBKey(const base::string16& string);
   IndexedDBKey(double number,
                blink::WebIDBKeyType type);  // must be date or number
+  IndexedDBKey(const IndexedDBKey& other);
   ~IndexedDBKey();
 
-  IndexedDBKey(const IndexedDBKey& other);
   IndexedDBKey& operator=(const IndexedDBKey& other);
 
   bool IsValid() const;

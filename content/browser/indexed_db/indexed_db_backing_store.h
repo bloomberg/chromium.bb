@@ -56,98 +56,12 @@ struct IndexedDBValue;
 class CONTENT_EXPORT IndexedDBBackingStore
     : public base::RefCounted<IndexedDBBackingStore> {
  public:
-  class CONTENT_EXPORT Transaction;
-
   class CONTENT_EXPORT Comparator : public LevelDBComparator {
    public:
     virtual int Compare(const base::StringPiece& a,
                         const base::StringPiece& b) const OVERRIDE;
     virtual const char* Name() const OVERRIDE;
   };
-
-  const GURL& origin_url() const { return origin_url_; }
-  IndexedDBFactory* factory() const { return indexed_db_factory_; }
-  base::SequencedTaskRunner* task_runner() const { return task_runner_.get(); }
-  base::OneShotTimer<IndexedDBBackingStore>* close_timer() {
-    return &close_timer_;
-  }
-  IndexedDBActiveBlobRegistry* active_blob_registry() {
-    return &active_blob_registry_;
-  }
-
-  static scoped_refptr<IndexedDBBackingStore> Open(
-      IndexedDBFactory* indexed_db_factory,
-      const GURL& origin_url,
-      const base::FilePath& path_base,
-      net::URLRequestContext* request_context,
-      blink::WebIDBDataLoss* data_loss,
-      std::string* data_loss_message,
-      bool* disk_full,
-      base::SequencedTaskRunner* task_runner,
-      bool clean_journal,
-      leveldb::Status* status);
-  static scoped_refptr<IndexedDBBackingStore> Open(
-      IndexedDBFactory* indexed_db_factory,
-      const GURL& origin_url,
-      const base::FilePath& path_base,
-      net::URLRequestContext* request_context,
-      blink::WebIDBDataLoss* data_loss,
-      std::string* data_loss_message,
-      bool* disk_full,
-      LevelDBFactory* leveldb_factory,
-      base::SequencedTaskRunner* task_runner,
-      bool clean_journal,
-      leveldb::Status* status);
-  static scoped_refptr<IndexedDBBackingStore> OpenInMemory(
-      const GURL& origin_url,
-      base::SequencedTaskRunner* task_runner,
-      leveldb::Status* status);
-  static scoped_refptr<IndexedDBBackingStore> OpenInMemory(
-      const GURL& origin_url,
-      LevelDBFactory* leveldb_factory,
-      base::SequencedTaskRunner* task_runner,
-      leveldb::Status* status);
-
-  void GrantChildProcessPermissions(int child_process_id);
-
-  // Compact is public for testing.
-  virtual void Compact();
-  virtual std::vector<base::string16> GetDatabaseNames(leveldb::Status*);
-  virtual leveldb::Status GetIDBDatabaseMetaData(
-      const base::string16& name,
-      IndexedDBDatabaseMetadata* metadata,
-      bool* success) WARN_UNUSED_RESULT;
-  virtual leveldb::Status CreateIDBDatabaseMetaData(
-      const base::string16& name,
-      const base::string16& version,
-      int64 int_version,
-      int64* row_id);
-  virtual bool UpdateIDBDatabaseIntVersion(
-      IndexedDBBackingStore::Transaction* transaction,
-      int64 row_id,
-      int64 int_version);
-  virtual leveldb::Status DeleteDatabase(const base::string16& name);
-
-  // Assumes caller has already closed the backing store.
-  static leveldb::Status DestroyBackingStore(const base::FilePath& path_base,
-                                             const GURL& origin_url);
-  static bool RecordCorruptionInfo(const base::FilePath& path_base,
-                                   const GURL& origin_url,
-                                   const std::string& message);
-  leveldb::Status GetObjectStores(
-      int64 database_id,
-      IndexedDBDatabaseMetadata::ObjectStoreMap* map) WARN_UNUSED_RESULT;
-  virtual leveldb::Status CreateObjectStore(
-      IndexedDBBackingStore::Transaction* transaction,
-      int64 database_id,
-      int64 object_store_id,
-      const base::string16& name,
-      const IndexedDBKeyPath& key_path,
-      bool auto_increment);
-  virtual leveldb::Status DeleteObjectStore(
-      IndexedDBBackingStore::Transaction* transaction,
-      int64 database_id,
-      int64 object_store_id) WARN_UNUSED_RESULT;
 
   class CONTENT_EXPORT RecordIdentifier {
    public:
@@ -179,199 +93,11 @@ class CONTENT_EXPORT IndexedDBBackingStore
     virtual ~BlobWriteCallback() {}
   };
 
-  virtual leveldb::Status GetRecord(
-      IndexedDBBackingStore::Transaction* transaction,
-      int64 database_id,
-      int64 object_store_id,
-      const IndexedDBKey& key,
-      IndexedDBValue* record) WARN_UNUSED_RESULT;
-  virtual leveldb::Status PutRecord(
-      IndexedDBBackingStore::Transaction* transaction,
-      int64 database_id,
-      int64 object_store_id,
-      const IndexedDBKey& key,
-      IndexedDBValue* value,
-      ScopedVector<storage::BlobDataHandle>* handles,
-      RecordIdentifier* record) WARN_UNUSED_RESULT;
-  virtual leveldb::Status ClearObjectStore(
-      IndexedDBBackingStore::Transaction* transaction,
-      int64 database_id,
-      int64 object_store_id) WARN_UNUSED_RESULT;
-  virtual leveldb::Status DeleteRecord(
-      IndexedDBBackingStore::Transaction* transaction,
-      int64 database_id,
-      int64 object_store_id,
-      const RecordIdentifier& record) WARN_UNUSED_RESULT;
-  virtual leveldb::Status DeleteRange(
-      IndexedDBBackingStore::Transaction* transaction,
-      int64 database_id,
-      int64 object_store_id,
-      const IndexedDBKeyRange&) WARN_UNUSED_RESULT;
-  virtual leveldb::Status GetKeyGeneratorCurrentNumber(
-      IndexedDBBackingStore::Transaction* transaction,
-      int64 database_id,
-      int64 object_store_id,
-      int64* current_number) WARN_UNUSED_RESULT;
-  virtual leveldb::Status MaybeUpdateKeyGeneratorCurrentNumber(
-      IndexedDBBackingStore::Transaction* transaction,
-      int64 database_id,
-      int64 object_store_id,
-      int64 new_state,
-      bool check_current) WARN_UNUSED_RESULT;
-  virtual leveldb::Status KeyExistsInObjectStore(
-      IndexedDBBackingStore::Transaction* transaction,
-      int64 database_id,
-      int64 object_store_id,
-      const IndexedDBKey& key,
-      RecordIdentifier* found_record_identifier,
-      bool* found) WARN_UNUSED_RESULT;
-
-  virtual leveldb::Status CreateIndex(
-      IndexedDBBackingStore::Transaction* transaction,
-      int64 database_id,
-      int64 object_store_id,
-      int64 index_id,
-      const base::string16& name,
-      const IndexedDBKeyPath& key_path,
-      bool is_unique,
-      bool is_multi_entry) WARN_UNUSED_RESULT;
-  virtual leveldb::Status DeleteIndex(
-      IndexedDBBackingStore::Transaction* transaction,
-      int64 database_id,
-      int64 object_store_id,
-      int64 index_id) WARN_UNUSED_RESULT;
-  virtual leveldb::Status PutIndexDataForRecord(
-      IndexedDBBackingStore::Transaction* transaction,
-      int64 database_id,
-      int64 object_store_id,
-      int64 index_id,
-      const IndexedDBKey& key,
-      const RecordIdentifier& record) WARN_UNUSED_RESULT;
-  virtual leveldb::Status GetPrimaryKeyViaIndex(
-      IndexedDBBackingStore::Transaction* transaction,
-      int64 database_id,
-      int64 object_store_id,
-      int64 index_id,
-      const IndexedDBKey& key,
-      scoped_ptr<IndexedDBKey>* primary_key) WARN_UNUSED_RESULT;
-  virtual leveldb::Status KeyExistsInIndex(
-      IndexedDBBackingStore::Transaction* transaction,
-      int64 database_id,
-      int64 object_store_id,
-      int64 index_id,
-      const IndexedDBKey& key,
-      scoped_ptr<IndexedDBKey>* found_primary_key,
-      bool* exists) WARN_UNUSED_RESULT;
-
-  // Public for IndexedDBActiveBlobRegistry::ReleaseBlobRef.
-  virtual void ReportBlobUnused(int64 database_id, int64 blob_key);
-
-  base::FilePath GetBlobFileName(int64 database_id, int64 key);
-
-  class Cursor {
-   public:
-    virtual ~Cursor();
-
-    enum IteratorState {
-      READY = 0,
-      SEEK
-    };
-
-    struct CursorOptions {
-      CursorOptions();
-      ~CursorOptions();
-      int64 database_id;
-      int64 object_store_id;
-      int64 index_id;
-      std::string low_key;
-      bool low_open;
-      std::string high_key;
-      bool high_open;
-      bool forward;
-      bool unique;
-    };
-
-    const IndexedDBKey& key() const { return *current_key_; }
-    bool Continue(leveldb::Status* s) { return Continue(NULL, NULL, SEEK, s); }
-    bool Continue(const IndexedDBKey* key,
-                  IteratorState state,
-                  leveldb::Status* s) {
-      return Continue(key, NULL, state, s);
-    }
-    bool Continue(const IndexedDBKey* key,
-                  const IndexedDBKey* primary_key,
-                  IteratorState state,
-                  leveldb::Status*);
-    bool Advance(uint32 count, leveldb::Status*);
-    bool FirstSeek(leveldb::Status*);
-
-    virtual Cursor* Clone() = 0;
-    virtual const IndexedDBKey& primary_key() const;
-    virtual IndexedDBValue* value() = 0;
-    virtual const RecordIdentifier& record_identifier() const;
-    virtual bool LoadCurrentRow() = 0;
-
-   protected:
-    Cursor(scoped_refptr<IndexedDBBackingStore> backing_store,
-           Transaction* transaction,
-           int64 database_id,
-           const CursorOptions& cursor_options);
-    explicit Cursor(const IndexedDBBackingStore::Cursor* other);
-
-    virtual std::string EncodeKey(const IndexedDBKey& key) = 0;
-    virtual std::string EncodeKey(const IndexedDBKey& key,
-                                  const IndexedDBKey& primary_key) = 0;
-
-    bool IsPastBounds() const;
-    bool HaveEnteredRange() const;
-
-    IndexedDBBackingStore* backing_store_;
-    Transaction* transaction_;
-    int64 database_id_;
-    const CursorOptions cursor_options_;
-    scoped_ptr<LevelDBIterator> iterator_;
-    scoped_ptr<IndexedDBKey> current_key_;
-    IndexedDBBackingStore::RecordIdentifier record_identifier_;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(Cursor);
-  };
-
-  virtual scoped_ptr<Cursor> OpenObjectStoreKeyCursor(
-      IndexedDBBackingStore::Transaction* transaction,
-      int64 database_id,
-      int64 object_store_id,
-      const IndexedDBKeyRange& key_range,
-      blink::WebIDBCursorDirection,
-      leveldb::Status*);
-  virtual scoped_ptr<Cursor> OpenObjectStoreCursor(
-      IndexedDBBackingStore::Transaction* transaction,
-      int64 database_id,
-      int64 object_store_id,
-      const IndexedDBKeyRange& key_range,
-      blink::WebIDBCursorDirection,
-      leveldb::Status*);
-  virtual scoped_ptr<Cursor> OpenIndexKeyCursor(
-      IndexedDBBackingStore::Transaction* transaction,
-      int64 database_id,
-      int64 object_store_id,
-      int64 index_id,
-      const IndexedDBKeyRange& key_range,
-      blink::WebIDBCursorDirection,
-      leveldb::Status*);
-  virtual scoped_ptr<Cursor> OpenIndexCursor(
-      IndexedDBBackingStore::Transaction* transaction,
-      int64 database_id,
-      int64 object_store_id,
-      int64 index_id,
-      const IndexedDBKeyRange& key_range,
-      blink::WebIDBCursorDirection,
-      leveldb::Status*);
-
   class BlobChangeRecord {
    public:
     BlobChangeRecord(const std::string& key, int64 object_store_id);
     ~BlobChangeRecord();
+
     const std::string& key() const { return key_; }
     int64 object_store_id() const { return object_store_id_; }
     void SetBlobInfo(std::vector<IndexedDBBlobInfo>* blob_info);
@@ -391,10 +117,11 @@ class CONTENT_EXPORT IndexedDBBackingStore
   };
   typedef std::map<std::string, BlobChangeRecord*> BlobChangeMap;
 
-  class Transaction {
+  class CONTENT_EXPORT Transaction {
    public:
     explicit Transaction(IndexedDBBackingStore* backing_store);
     virtual ~Transaction();
+
     virtual void Begin();
     // The callback will be called eventually on success or failure, or
     // immediately if phase one is complete due to lack of any blobs to write.
@@ -503,8 +230,279 @@ class CONTENT_EXPORT IndexedDBBackingStore
     scoped_refptr<ChainedBlobWriter> chained_blob_writer_;
   };
 
+  class Cursor {
+   public:
+    enum IteratorState { READY = 0, SEEK };
+
+    virtual ~Cursor();
+
+    struct CursorOptions {
+      CursorOptions();
+      ~CursorOptions();
+      int64 database_id;
+      int64 object_store_id;
+      int64 index_id;
+      std::string low_key;
+      bool low_open;
+      std::string high_key;
+      bool high_open;
+      bool forward;
+      bool unique;
+    };
+
+    const IndexedDBKey& key() const { return *current_key_; }
+    bool Continue(leveldb::Status* s) { return Continue(NULL, NULL, SEEK, s); }
+    bool Continue(const IndexedDBKey* key,
+                  IteratorState state,
+                  leveldb::Status* s) {
+      return Continue(key, NULL, state, s);
+    }
+    bool Continue(const IndexedDBKey* key,
+                  const IndexedDBKey* primary_key,
+                  IteratorState state,
+                  leveldb::Status*);
+    bool Advance(uint32 count, leveldb::Status*);
+    bool FirstSeek(leveldb::Status*);
+
+    virtual Cursor* Clone() = 0;
+    virtual const IndexedDBKey& primary_key() const;
+    virtual IndexedDBValue* value() = 0;
+    virtual const RecordIdentifier& record_identifier() const;
+    virtual bool LoadCurrentRow() = 0;
+
+   protected:
+    Cursor(scoped_refptr<IndexedDBBackingStore> backing_store,
+           Transaction* transaction,
+           int64 database_id,
+           const CursorOptions& cursor_options);
+    explicit Cursor(const IndexedDBBackingStore::Cursor* other);
+
+    virtual std::string EncodeKey(const IndexedDBKey& key) = 0;
+    virtual std::string EncodeKey(const IndexedDBKey& key,
+                                  const IndexedDBKey& primary_key) = 0;
+
+    bool IsPastBounds() const;
+    bool HaveEnteredRange() const;
+
+    IndexedDBBackingStore* backing_store_;
+    Transaction* transaction_;
+    int64 database_id_;
+    const CursorOptions cursor_options_;
+    scoped_ptr<LevelDBIterator> iterator_;
+    scoped_ptr<IndexedDBKey> current_key_;
+    IndexedDBBackingStore::RecordIdentifier record_identifier_;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(Cursor);
+  };
+
+  const GURL& origin_url() const { return origin_url_; }
+  IndexedDBFactory* factory() const { return indexed_db_factory_; }
+  base::SequencedTaskRunner* task_runner() const { return task_runner_.get(); }
+  base::OneShotTimer<IndexedDBBackingStore>* close_timer() {
+    return &close_timer_;
+  }
+  IndexedDBActiveBlobRegistry* active_blob_registry() {
+    return &active_blob_registry_;
+  }
+
+  static scoped_refptr<IndexedDBBackingStore> Open(
+      IndexedDBFactory* indexed_db_factory,
+      const GURL& origin_url,
+      const base::FilePath& path_base,
+      net::URLRequestContext* request_context,
+      blink::WebIDBDataLoss* data_loss,
+      std::string* data_loss_message,
+      bool* disk_full,
+      base::SequencedTaskRunner* task_runner,
+      bool clean_journal,
+      leveldb::Status* status);
+  static scoped_refptr<IndexedDBBackingStore> Open(
+      IndexedDBFactory* indexed_db_factory,
+      const GURL& origin_url,
+      const base::FilePath& path_base,
+      net::URLRequestContext* request_context,
+      blink::WebIDBDataLoss* data_loss,
+      std::string* data_loss_message,
+      bool* disk_full,
+      LevelDBFactory* leveldb_factory,
+      base::SequencedTaskRunner* task_runner,
+      bool clean_journal,
+      leveldb::Status* status);
+  static scoped_refptr<IndexedDBBackingStore> OpenInMemory(
+      const GURL& origin_url,
+      base::SequencedTaskRunner* task_runner,
+      leveldb::Status* status);
+  static scoped_refptr<IndexedDBBackingStore> OpenInMemory(
+      const GURL& origin_url,
+      LevelDBFactory* leveldb_factory,
+      base::SequencedTaskRunner* task_runner,
+      leveldb::Status* status);
+
+  void GrantChildProcessPermissions(int child_process_id);
+
+  // Compact is public for testing.
+  virtual void Compact();
+  virtual std::vector<base::string16> GetDatabaseNames(leveldb::Status*);
+  virtual leveldb::Status GetIDBDatabaseMetaData(
+      const base::string16& name,
+      IndexedDBDatabaseMetadata* metadata,
+      bool* success) WARN_UNUSED_RESULT;
+  virtual leveldb::Status CreateIDBDatabaseMetaData(
+      const base::string16& name,
+      const base::string16& version,
+      int64 int_version,
+      int64* row_id);
+  virtual bool UpdateIDBDatabaseIntVersion(
+      IndexedDBBackingStore::Transaction* transaction,
+      int64 row_id,
+      int64 int_version);
+  virtual leveldb::Status DeleteDatabase(const base::string16& name);
+
+  // Assumes caller has already closed the backing store.
+  static leveldb::Status DestroyBackingStore(const base::FilePath& path_base,
+                                             const GURL& origin_url);
+  static bool RecordCorruptionInfo(const base::FilePath& path_base,
+                                   const GURL& origin_url,
+                                   const std::string& message);
+  leveldb::Status GetObjectStores(
+      int64 database_id,
+      IndexedDBDatabaseMetadata::ObjectStoreMap* map) WARN_UNUSED_RESULT;
+  virtual leveldb::Status CreateObjectStore(
+      IndexedDBBackingStore::Transaction* transaction,
+      int64 database_id,
+      int64 object_store_id,
+      const base::string16& name,
+      const IndexedDBKeyPath& key_path,
+      bool auto_increment);
+  virtual leveldb::Status DeleteObjectStore(
+      IndexedDBBackingStore::Transaction* transaction,
+      int64 database_id,
+      int64 object_store_id) WARN_UNUSED_RESULT;
+
+  virtual leveldb::Status GetRecord(
+      IndexedDBBackingStore::Transaction* transaction,
+      int64 database_id,
+      int64 object_store_id,
+      const IndexedDBKey& key,
+      IndexedDBValue* record) WARN_UNUSED_RESULT;
+  virtual leveldb::Status PutRecord(
+      IndexedDBBackingStore::Transaction* transaction,
+      int64 database_id,
+      int64 object_store_id,
+      const IndexedDBKey& key,
+      IndexedDBValue* value,
+      ScopedVector<storage::BlobDataHandle>* handles,
+      RecordIdentifier* record) WARN_UNUSED_RESULT;
+  virtual leveldb::Status ClearObjectStore(
+      IndexedDBBackingStore::Transaction* transaction,
+      int64 database_id,
+      int64 object_store_id) WARN_UNUSED_RESULT;
+  virtual leveldb::Status DeleteRecord(
+      IndexedDBBackingStore::Transaction* transaction,
+      int64 database_id,
+      int64 object_store_id,
+      const RecordIdentifier& record) WARN_UNUSED_RESULT;
+  virtual leveldb::Status DeleteRange(
+      IndexedDBBackingStore::Transaction* transaction,
+      int64 database_id,
+      int64 object_store_id,
+      const IndexedDBKeyRange&) WARN_UNUSED_RESULT;
+  virtual leveldb::Status GetKeyGeneratorCurrentNumber(
+      IndexedDBBackingStore::Transaction* transaction,
+      int64 database_id,
+      int64 object_store_id,
+      int64* current_number) WARN_UNUSED_RESULT;
+  virtual leveldb::Status MaybeUpdateKeyGeneratorCurrentNumber(
+      IndexedDBBackingStore::Transaction* transaction,
+      int64 database_id,
+      int64 object_store_id,
+      int64 new_state,
+      bool check_current) WARN_UNUSED_RESULT;
+  virtual leveldb::Status KeyExistsInObjectStore(
+      IndexedDBBackingStore::Transaction* transaction,
+      int64 database_id,
+      int64 object_store_id,
+      const IndexedDBKey& key,
+      RecordIdentifier* found_record_identifier,
+      bool* found) WARN_UNUSED_RESULT;
+
+  virtual leveldb::Status CreateIndex(
+      IndexedDBBackingStore::Transaction* transaction,
+      int64 database_id,
+      int64 object_store_id,
+      int64 index_id,
+      const base::string16& name,
+      const IndexedDBKeyPath& key_path,
+      bool is_unique,
+      bool is_multi_entry) WARN_UNUSED_RESULT;
+  virtual leveldb::Status DeleteIndex(
+      IndexedDBBackingStore::Transaction* transaction,
+      int64 database_id,
+      int64 object_store_id,
+      int64 index_id) WARN_UNUSED_RESULT;
+  virtual leveldb::Status PutIndexDataForRecord(
+      IndexedDBBackingStore::Transaction* transaction,
+      int64 database_id,
+      int64 object_store_id,
+      int64 index_id,
+      const IndexedDBKey& key,
+      const RecordIdentifier& record) WARN_UNUSED_RESULT;
+  virtual leveldb::Status GetPrimaryKeyViaIndex(
+      IndexedDBBackingStore::Transaction* transaction,
+      int64 database_id,
+      int64 object_store_id,
+      int64 index_id,
+      const IndexedDBKey& key,
+      scoped_ptr<IndexedDBKey>* primary_key) WARN_UNUSED_RESULT;
+  virtual leveldb::Status KeyExistsInIndex(
+      IndexedDBBackingStore::Transaction* transaction,
+      int64 database_id,
+      int64 object_store_id,
+      int64 index_id,
+      const IndexedDBKey& key,
+      scoped_ptr<IndexedDBKey>* found_primary_key,
+      bool* exists) WARN_UNUSED_RESULT;
+
+  // Public for IndexedDBActiveBlobRegistry::ReleaseBlobRef.
+  virtual void ReportBlobUnused(int64 database_id, int64 blob_key);
+
+  base::FilePath GetBlobFileName(int64 database_id, int64 key);
+
+  virtual scoped_ptr<Cursor> OpenObjectStoreKeyCursor(
+      IndexedDBBackingStore::Transaction* transaction,
+      int64 database_id,
+      int64 object_store_id,
+      const IndexedDBKeyRange& key_range,
+      blink::WebIDBCursorDirection,
+      leveldb::Status*);
+  virtual scoped_ptr<Cursor> OpenObjectStoreCursor(
+      IndexedDBBackingStore::Transaction* transaction,
+      int64 database_id,
+      int64 object_store_id,
+      const IndexedDBKeyRange& key_range,
+      blink::WebIDBCursorDirection,
+      leveldb::Status*);
+  virtual scoped_ptr<Cursor> OpenIndexKeyCursor(
+      IndexedDBBackingStore::Transaction* transaction,
+      int64 database_id,
+      int64 object_store_id,
+      int64 index_id,
+      const IndexedDBKeyRange& key_range,
+      blink::WebIDBCursorDirection,
+      leveldb::Status*);
+  virtual scoped_ptr<Cursor> OpenIndexCursor(
+      IndexedDBBackingStore::Transaction* transaction,
+      int64 database_id,
+      int64 object_store_id,
+      int64 index_id,
+      const IndexedDBKeyRange& key_range,
+      blink::WebIDBCursorDirection,
+      leveldb::Status*);
+
  protected:
   friend class base::RefCounted<IndexedDBBackingStore>;
+
   IndexedDBBackingStore(IndexedDBFactory* indexed_db_factory,
                         const GURL& origin_url,
                         const base::FilePath& blob_path,

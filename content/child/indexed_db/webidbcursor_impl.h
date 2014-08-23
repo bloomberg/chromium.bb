@@ -59,6 +59,11 @@ class CONTENT_EXPORT WebIDBCursorImpl
   FRIEND_TEST_ALL_PREFIXES(WebIDBCursorImplTest, PrefetchReset);
   FRIEND_TEST_ALL_PREFIXES(WebIDBCursorImplTest, PrefetchTest);
 
+  enum { kInvalidCursorId = -1 };
+  enum { kPrefetchContinueThreshold = 2 };
+  enum { kMinPrefetchAmount = 5 };
+  enum { kMaxPrefetchAmount = 100 };
+
   int32 ipc_cursor_id_;
   int64 transaction_id_;
 
@@ -81,11 +86,6 @@ class CONTENT_EXPORT WebIDBCursorImpl
   int prefetch_amount_;
 
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
-
-  enum { kInvalidCursorId = -1 };
-  enum { kPrefetchContinueThreshold = 2 };
-  enum { kMinPrefetchAmount = 5 };
-  enum { kMaxPrefetchAmount = 100 };
 };
 
 }  // namespace content

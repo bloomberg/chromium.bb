@@ -30,6 +30,14 @@ class CONTENT_EXPORT IndexedDBTransaction
  public:
   typedef base::Callback<void(IndexedDBTransaction*)> Operation;
 
+  enum State {
+    CREATED,     // Created, but not yet started by coordinator.
+    STARTED,     // Started by the coordinator.
+    COMMITTING,  // In the process of committing, possibly waiting for blobs
+                 // to be written.
+    FINISHED,    // Either aborted or committed.
+  };
+
   IndexedDBTransaction(
       int64 id,
       scoped_refptr<IndexedDBDatabaseCallbacks> callbacks,
@@ -67,14 +75,6 @@ class CONTENT_EXPORT IndexedDBTransaction
 
   IndexedDBDatabase* database() const { return database_; }
   IndexedDBDatabaseCallbacks* connection() const { return callbacks_; }
-
-  enum State {
-    CREATED,     // Created, but not yet started by coordinator.
-    STARTED,     // Started by the coordinator.
-    COMMITTING,  // In the process of committing, possibly waiting for blobs
-                 // to be written.
-    FINISHED,    // Either aborted or committed.
-  };
 
   State state() const { return state_; }
   bool IsTimeoutTimerRunning() const { return timeout_timer_.IsRunning(); }

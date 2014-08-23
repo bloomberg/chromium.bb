@@ -55,6 +55,9 @@ class RegistryTestMockFactory : public MockIndexedDBFactory {
 
 class MockIDBBackingStore : public IndexedDBFakeBackingStore {
  public:
+  typedef std::pair<int64, int64> KeyPair;
+  typedef std::set<KeyPair> KeyPairSet;
+
   MockIDBBackingStore(IndexedDBFactory* factory,
                       base::SequencedTaskRunner* task_runner)
       : IndexedDBFakeBackingStore(factory, task_runner),
@@ -64,8 +67,6 @@ class MockIDBBackingStore : public IndexedDBFakeBackingStore {
     unused_blobs_.insert(std::make_pair(database_id, blob_key));
   }
 
-  typedef std::pair<int64, int64> KeyPair;
-  typedef std::set<KeyPair> KeyPairSet;
   bool CheckUnusedBlobsEmpty() const {
     return !duplicate_calls_ && !unused_blobs_.size();
   }
@@ -89,6 +90,14 @@ class MockIDBBackingStore : public IndexedDBFakeBackingStore {
 // Base class for our test fixtures.
 class IndexedDBActiveBlobRegistryTest : public testing::Test {
  public:
+  typedef storage::ShareableFileReference::FinalReleaseCallback
+      ReleaseCallback;
+
+  static const int64 kDatabaseId0 = 7;
+  static const int64 kDatabaseId1 = 12;
+  static const int64 kBlobKey0 = 77;
+  static const int64 kBlobKey1 = 14;
+
   IndexedDBActiveBlobRegistryTest()
       : task_runner_(new base::TestSimpleTaskRunner),
         factory_(new RegistryTestMockFactory),
@@ -99,13 +108,6 @@ class IndexedDBActiveBlobRegistryTest : public testing::Test {
   RegistryTestMockFactory* factory() const { return factory_.get(); }
   MockIDBBackingStore* backing_store() const { return backing_store_.get(); }
   IndexedDBActiveBlobRegistry* registry() const { return registry_.get(); }
-
-  static const int64 kDatabaseId0 = 7;
-  static const int64 kDatabaseId1 = 12;
-  static const int64 kBlobKey0 = 77;
-  static const int64 kBlobKey1 = 14;
-
-  typedef storage::ShareableFileReference::FinalReleaseCallback ReleaseCallback;
 
  private:
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;

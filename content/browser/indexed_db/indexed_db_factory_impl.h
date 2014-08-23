@@ -104,6 +104,11 @@ class CONTENT_EXPORT IndexedDBFactoryImpl : public IndexedDBFactory {
   FRIEND_TEST_ALL_PREFIXES(IndexedDBTest,
                            ForceCloseOpenDatabasesOnCommitFailure);
 
+  typedef std::map<IndexedDBDatabase::Identifier, IndexedDBDatabase*>
+      IndexedDBDatabaseMap;
+  typedef std::map<GURL, scoped_refptr<IndexedDBBackingStore> >
+      IndexedDBBackingStoreMap;
+
   // Called internally after a database is closed, with some delay. If this
   // factory has the last reference, it will be released.
   void MaybeCloseBackingStore(const GURL& origin_url);
@@ -117,13 +122,8 @@ class CONTENT_EXPORT IndexedDBFactoryImpl : public IndexedDBFactory {
 
   IndexedDBContextImpl* context_;
 
-  typedef std::map<IndexedDBDatabase::Identifier, IndexedDBDatabase*>
-      IndexedDBDatabaseMap;
   IndexedDBDatabaseMap database_map_;
   OriginDBMap origin_dbs_;
-
-  typedef std::map<GURL, scoped_refptr<IndexedDBBackingStore> >
-      IndexedDBBackingStoreMap;
   IndexedDBBackingStoreMap backing_store_map_;
 
   std::set<scoped_refptr<IndexedDBBackingStore> > session_only_backing_stores_;

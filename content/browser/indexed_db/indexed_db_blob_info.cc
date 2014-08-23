@@ -14,8 +14,6 @@ IndexedDBBlobInfo::IndexedDBBlobInfo()
     : is_file_(false), size_(-1), key_(DatabaseMetaDataKey::kInvalidBlobKey) {
 }
 
-IndexedDBBlobInfo::~IndexedDBBlobInfo() {}
-
 IndexedDBBlobInfo::IndexedDBBlobInfo(const std::string& uuid,
                                      const base::string16& type,
                                      int64 size)
@@ -50,6 +48,8 @@ IndexedDBBlobInfo::IndexedDBBlobInfo(int64 key,
                                      const base::string16& file_name)
     : is_file_(true), type_(type), size_(-1), file_name_(file_name), key_(key) {
 }
+
+IndexedDBBlobInfo::~IndexedDBBlobInfo() {}
 
 void IndexedDBBlobInfo::set_size(int64 size) {
   DCHECK_EQ(-1, size_);
