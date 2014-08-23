@@ -418,12 +418,6 @@ RenderWidgetHostImpl* RenderWidgetHostViewMac::GetHost() {
   return render_widget_host_;
 }
 
-void RenderWidgetHostViewMac::SchedulePaintInRect(
-    const gfx::Rect& damage_rect_in_dip) {
-  DCHECK(GetLayer());
-  GetLayer()->SchedulePaint(damage_rect_in_dip);
-}
-
 bool RenderWidgetHostViewMac::IsVisible() {
   return !render_widget_host_->is_hidden();
 }

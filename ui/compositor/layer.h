@@ -318,6 +318,10 @@ class COMPOSITOR_EXPORT Layer
   // Notifies the layer that the device scale factor has changed.
   void OnDeviceScaleFactorChanged(float device_scale_factor);
 
+  // Notifies the layer that one of its children has received a new
+  // delegated frame.
+  void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip);
+
   // Requets a copy of the layer's output as a texture or bitmap.
   void RequestCopyOfOutput(scoped_ptr<cc::CopyOutputRequest> request);
 

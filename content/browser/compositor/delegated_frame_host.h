@@ -46,7 +46,6 @@ class CONTENT_EXPORT DelegatedFrameHostClient {
   virtual ui::Compositor* GetCompositor() const = 0;
   virtual ui::Layer* GetLayer() = 0;
   virtual RenderWidgetHostImpl* GetHost() = 0;
-  virtual void SchedulePaintInRect(const gfx::Rect& damage_rect_in_dip) = 0;
   virtual bool IsVisible() = 0;
   virtual scoped_ptr<ResizeLock> CreateResizeLock(
       bool defer_compositor_lock) = 0;

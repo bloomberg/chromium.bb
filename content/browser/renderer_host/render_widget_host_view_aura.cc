@@ -2455,11 +2455,6 @@ RenderWidgetHostImpl* RenderWidgetHostViewAura::GetHost() {
   return host_;
 }
 
-void RenderWidgetHostViewAura::SchedulePaintInRect(
-    const gfx::Rect& damage_rect_in_dip) {
-  window_->SchedulePaintInRect(damage_rect_in_dip);
-}
-
 bool RenderWidgetHostViewAura::IsVisible() {
   return IsShowing();
 }

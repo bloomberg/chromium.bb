@@ -133,6 +133,10 @@ void OverscanCalibrator::OnPaintLayer(gfx::Canvas* canvas) {
   DrawTriangle(center.x() + horizontal_offset, center.y(), -90, canvas);
 }
 
+void OverscanCalibrator::OnDelegatedFrameDamage(
+    const gfx::Rect& damage_rect_in_dip) {
+}
+
 void OverscanCalibrator::OnDeviceScaleFactorChanged(
     float device_scale_factor) {
   // TODO(mukai): Cancel the overscan calibration when the device

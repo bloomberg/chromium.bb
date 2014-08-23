@@ -84,8 +84,9 @@ void VideoDetector::OnWindowInitialized(aura::Window* window) {
   observer_manager_.Add(window);
 }
 
-void VideoDetector::OnWindowPaintScheduled(aura::Window* window,
-                                           const gfx::Rect& region) {
+void VideoDetector::OnDelegatedFrameDamage(
+    aura::Window* window,
+    const gfx::Rect& damage_rect_in_dip) {
   if (is_shutting_down_)
     return;
   linked_ptr<WindowInfo>& info = window_infos_[window];
@@ -94,7 +95,7 @@ void VideoDetector::OnWindowPaintScheduled(aura::Window* window,
 
   base::TimeTicks now =
       !now_for_test_.is_null() ? now_for_test_ : base::TimeTicks::Now();
-  if (info->RecordUpdateAndCheckForVideo(region, now))
+  if (info->RecordUpdateAndCheckForVideo(damage_rect_in_dip, now))
     MaybeNotifyObservers(window, now);
 }
 

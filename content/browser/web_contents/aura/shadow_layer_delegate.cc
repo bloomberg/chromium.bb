@@ -51,6 +51,10 @@ void ShadowLayerDelegate::OnPaintLayer(gfx::Canvas* canvas) {
   canvas->sk_canvas()->drawRect(gfx::RectToSkRect(paint_rect), paint);
 }
 
+void ShadowLayerDelegate::OnDelegatedFrameDamage(
+    const gfx::Rect& damage_rect_in_dip) {
+}
+
 void ShadowLayerDelegate::OnDeviceScaleFactorChanged(float scale_factor) {
 }
 

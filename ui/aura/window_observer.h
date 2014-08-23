@@ -86,9 +86,9 @@ class AURA_EXPORT WindowObserver {
   // has changed.
   virtual void OnWindowStackingChanged(Window* window) {}
 
-  // Invoked when a region of |window| is scheduled to be redrawn.
-  virtual void OnWindowPaintScheduled(Window* window,
-                                      const gfx::Rect& region) {}
+  // Invoked when a region of |window| has damage from a new delegated frame.
+  virtual void OnDelegatedFrameDamage(Window* window,
+                                      const gfx::Rect& damage_rect_in_dip) {}
 
   // Invoked when the Window is being destroyed (i.e. from the start of its
   // destructor). This is called before the window is removed from its parent.

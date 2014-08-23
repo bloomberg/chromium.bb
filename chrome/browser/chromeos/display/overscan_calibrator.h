@@ -42,6 +42,8 @@ class OverscanCalibrator : public ui::LayerDelegate {
  private:
   // ui::LayerDelegate overrides:
   virtual void OnPaintLayer(gfx::Canvas* canvas) OVERRIDE;
+  virtual void OnDelegatedFrameDamage(
+      const gfx::Rect& damage_rect_in_dip) OVERRIDE;
   virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE;
   virtual base::Closure PrepareForLayerBoundsChange() OVERRIDE;
 

@@ -407,10 +407,10 @@ void DelegatedFrameHost::SwapDelegatedFrame(
   current_frame_size_in_dip_ = frame_size_in_dip;
   CheckResizeLock();
 
-  if (modified_layers) {
+  if (modified_layers && !damage_rect_in_dip.IsEmpty()) {
     // TODO(jbauman): Need to always tell the window observer about the
     // damage.
-    client_->SchedulePaintInRect(damage_rect_in_dip);
+    client_->GetLayer()->OnDelegatedFrameDamage(damage_rect_in_dip);
   }
 
   pending_delegated_ack_count_++;

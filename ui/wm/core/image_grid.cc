@@ -272,6 +272,10 @@ void ImageGrid::ImagePainter::OnPaintLayer(gfx::Canvas* canvas) {
   canvas->DrawImageInt(image_, 0, 0);
 }
 
+void ImageGrid::ImagePainter::OnDelegatedFrameDamage(
+    const gfx::Rect& damage_rect_in_dip) {
+}
+
 void ImageGrid::ImagePainter::OnDeviceScaleFactorChanged(
     float device_scale_factor) {
   // Redrawing will take care of scale factor change.

@@ -81,6 +81,9 @@ class ActionButton : public ui::LayerDelegate {
                                       shadow);
   }
 
+  virtual void OnDelegatedFrameDamage(
+      const gfx::Rect& damage_rect_in_dip) OVERRIDE {}
+
   virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE {}
   virtual base::Closure PrepareForLayerBoundsChange() OVERRIDE {
     return base::Closure();

@@ -69,7 +69,7 @@ class ASH_EXPORT VideoDetector : public aura::EnvObserver,
   virtual void OnWindowInitialized(aura::Window* window) OVERRIDE;
 
   // WindowObserver overrides.
-  virtual void OnWindowPaintScheduled(aura::Window* window,
+  virtual void OnDelegatedFrameDamage(aura::Window* window,
                                       const gfx::Rect& region) OVERRIDE;
   virtual void OnWindowDestroyed(aura::Window* window) OVERRIDE;
 

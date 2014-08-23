@@ -1465,6 +1465,10 @@ void View::OnPaintLayer(gfx::Canvas* canvas) {
   PaintCommon(canvas, CullSet());
 }
 
+void View::OnDelegatedFrameDamage(
+    const gfx::Rect& damage_rect_in_dip) {
+}
+
 void View::OnDeviceScaleFactorChanged(float device_scale_factor) {
   snap_layer_to_pixel_boundary_ =
       (device_scale_factor - std::floor(device_scale_factor)) != 0.0f;

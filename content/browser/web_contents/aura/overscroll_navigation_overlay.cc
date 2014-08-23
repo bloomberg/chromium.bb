@@ -50,6 +50,9 @@ class ImageLayerDelegate : public ui::LayerDelegate {
     }
   }
 
+  virtual void OnDelegatedFrameDamage(
+      const gfx::Rect& damage_rect_in_dip) OVERRIDE {}
+
   // Called when the layer's device scale factor has changed.
   virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE {
   }

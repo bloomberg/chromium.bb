@@ -66,6 +66,9 @@ class ColoredLayer : public Layer, public LayerDelegate {
     }
   }
 
+  virtual void OnDelegatedFrameDamage(
+      const gfx::Rect& damage_rect_in_dip) OVERRIDE {}
+
   virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE {
   }
 

@@ -307,7 +307,7 @@ class FullscreenLayoutManager : public aura::LayoutManager {
 
 class MockWindowObserver : public aura::WindowObserver {
  public:
-  MOCK_METHOD2(OnWindowPaintScheduled, void(aura::Window*, const gfx::Rect&));
+  MOCK_METHOD2(OnDelegatedFrameDamage, void(aura::Window*, const gfx::Rect&));
 };
 
 }  // namespace
@@ -1231,12 +1231,12 @@ TEST_F(RenderWidgetHostViewAuraTest, SwapNotifiesWindow) {
   view_->window_->AddObserver(&observer);
 
   // Delegated renderer path
-  EXPECT_CALL(observer, OnWindowPaintScheduled(view_->window_, view_rect));
+  EXPECT_CALL(observer, OnDelegatedFrameDamage(view_->window_, view_rect));
   view_->OnSwapCompositorFrame(
       0, MakeDelegatedFrame(1.f, view_size, view_rect));
   testing::Mock::VerifyAndClearExpectations(&observer);
 
-  EXPECT_CALL(observer, OnWindowPaintScheduled(view_->window_,
+  EXPECT_CALL(observer, OnDelegatedFrameDamage(view_->window_,
                                                gfx::Rect(5, 5, 5, 5)));
   view_->OnSwapCompositorFrame(
       0, MakeDelegatedFrame(1.f, view_size, gfx::Rect(5, 5, 5, 5)));
@@ -1347,7 +1347,7 @@ TEST_F(RenderWidgetHostViewAuraTest, SkippedDelegatedFrames) {
   view_->window_->AddObserver(&observer);
 
   // A full frame of damage.
-  EXPECT_CALL(observer, OnWindowPaintScheduled(view_->window_, view_rect));
+  EXPECT_CALL(observer, OnDelegatedFrameDamage(view_->window_, view_rect));
   view_->OnSwapCompositorFrame(
       0, MakeDelegatedFrame(1.f, frame_size, view_rect));
   testing::Mock::VerifyAndClearExpectations(&observer);
@@ -1356,7 +1356,7 @@ TEST_F(RenderWidgetHostViewAuraTest, SkippedDelegatedFrames) {
   // A partial damage frame.
   gfx::Rect partial_view_rect(30, 30, 20, 20);
   EXPECT_CALL(observer,
-              OnWindowPaintScheduled(view_->window_, partial_view_rect));
+              OnDelegatedFrameDamage(view_->window_, partial_view_rect));
   view_->OnSwapCompositorFrame(
       0, MakeDelegatedFrame(1.f, frame_size, partial_view_rect));
   testing::Mock::VerifyAndClearExpectations(&observer);
@@ -1368,14 +1368,14 @@ TEST_F(RenderWidgetHostViewAuraTest, SkippedDelegatedFrames) {
 
   // This frame is dropped.
   gfx::Rect dropped_damage_rect_1(10, 20, 30, 40);
-  EXPECT_CALL(observer, OnWindowPaintScheduled(_, _)).Times(0);
+  EXPECT_CALL(observer, OnDelegatedFrameDamage(_, _)).Times(0);
   view_->OnSwapCompositorFrame(
       0, MakeDelegatedFrame(1.f, frame_size, dropped_damage_rect_1));
   testing::Mock::VerifyAndClearExpectations(&observer);
   view_->RunOnCompositingDidCommit();
 
   gfx::Rect dropped_damage_rect_2(40, 50, 10, 20);
-  EXPECT_CALL(observer, OnWindowPaintScheduled(_, _)).Times(0);
+  EXPECT_CALL(observer, OnDelegatedFrameDamage(_, _)).Times(0);
   view_->OnSwapCompositorFrame(
       0, MakeDelegatedFrame(1.f, frame_size, dropped_damage_rect_2));
   testing::Mock::VerifyAndClearExpectations(&observer);
@@ -1386,7 +1386,7 @@ TEST_F(RenderWidgetHostViewAuraTest, SkippedDelegatedFrames) {
 
   gfx::Rect new_damage_rect(5, 6, 10, 10);
   EXPECT_CALL(observer,
-              OnWindowPaintScheduled(view_->window_, view_rect));
+              OnDelegatedFrameDamage(view_->window_, view_rect));
   view_->OnSwapCompositorFrame(
       0, MakeDelegatedFrame(1.f, frame_size, new_damage_rect));
   testing::Mock::VerifyAndClearExpectations(&observer);
@@ -1394,7 +1394,7 @@ TEST_F(RenderWidgetHostViewAuraTest, SkippedDelegatedFrames) {
 
   // A partial damage frame, this should not be dropped.
   EXPECT_CALL(observer,
-              OnWindowPaintScheduled(view_->window_, partial_view_rect));
+              OnDelegatedFrameDamage(view_->window_, partial_view_rect));
   view_->OnSwapCompositorFrame(
       0, MakeDelegatedFrame(1.f, frame_size, partial_view_rect));
   testing::Mock::VerifyAndClearExpectations(&observer);
@@ -1410,7 +1410,7 @@ TEST_F(RenderWidgetHostViewAuraTest, SkippedDelegatedFrames) {
   view_->SetSize(view_rect.size());
 
   // This frame should not be dropped.
-  EXPECT_CALL(observer, OnWindowPaintScheduled(view_->window_, view_rect));
+  EXPECT_CALL(observer, OnDelegatedFrameDamage(view_->window_, view_rect));
   view_->OnSwapCompositorFrame(
       0, MakeDelegatedFrame(1.f, view_rect.size(), view_rect));
   testing::Mock::VerifyAndClearExpectations(&observer);
@@ -1434,14 +1434,14 @@ TEST_F(RenderWidgetHostViewAuraTest, OutputSurfaceIdChange) {
   view_->window_->AddObserver(&observer);
 
   // Swap a frame.
-  EXPECT_CALL(observer, OnWindowPaintScheduled(view_->window_, view_rect));
+  EXPECT_CALL(observer, OnDelegatedFrameDamage(view_->window_, view_rect));
   view_->OnSwapCompositorFrame(
       0, MakeDelegatedFrame(1.f, frame_size, view_rect));
   testing::Mock::VerifyAndClearExpectations(&observer);
   view_->RunOnCompositingDidCommit();
 
   // Swap a frame with a different surface id.
-  EXPECT_CALL(observer, OnWindowPaintScheduled(view_->window_, view_rect));
+  EXPECT_CALL(observer, OnDelegatedFrameDamage(view_->window_, view_rect));
   view_->OnSwapCompositorFrame(
       1, MakeDelegatedFrame(1.f, frame_size, view_rect));
   testing::Mock::VerifyAndClearExpectations(&observer);
@@ -1454,7 +1454,7 @@ TEST_F(RenderWidgetHostViewAuraTest, OutputSurfaceIdChange) {
   view_->RunOnCompositingDidCommit();
 
   // Swap another frame, with a different surface id.
-  EXPECT_CALL(observer, OnWindowPaintScheduled(view_->window_, view_rect));
+  EXPECT_CALL(observer, OnDelegatedFrameDamage(view_->window_, view_rect));
   view_->OnSwapCompositorFrame(3,
                                MakeDelegatedFrame(1.f, frame_size, view_rect));
   testing::Mock::VerifyAndClearExpectations(&observer);

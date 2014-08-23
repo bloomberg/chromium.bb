@@ -109,7 +109,7 @@ TEST_F(VideoDetectorTest, Basic) {
       gfx::Size(VideoDetector::kMinUpdateWidth - 1,
                 VideoDetector::kMinUpdateHeight));
   for (int i = 0; i < VideoDetector::kMinFramesPerSecond; ++i)
-    detector_->OnWindowPaintScheduled(window.get(), update_region);
+    detector_->OnDelegatedFrameDamage(window.get(), update_region);
   EXPECT_EQ(0, observer_->num_invocations());
 
   // Send not-quite-enough adaquately-sized updates.
@@ -119,16 +119,16 @@ TEST_F(VideoDetectorTest, Basic) {
       gfx::Size(VideoDetector::kMinUpdateWidth,
                 VideoDetector::kMinUpdateHeight));
   for (int i = 0; i < VideoDetector::kMinFramesPerSecond - 1; ++i)
-    detector_->OnWindowPaintScheduled(window.get(), update_region);
+    detector_->OnDelegatedFrameDamage(window.get(), update_region);
   EXPECT_EQ(0, observer_->num_invocations());
 
   // We should get notified after the next update, but not in response to
   // additional updates.
-  detector_->OnWindowPaintScheduled(window.get(), update_region);
+  detector_->OnDelegatedFrameDamage(window.get(), update_region);
   EXPECT_EQ(1, observer_->num_invocations());
   EXPECT_EQ(0, observer_->num_fullscreens());
   EXPECT_EQ(1, observer_->num_not_fullscreens());
-  detector_->OnWindowPaintScheduled(window.get(), update_region);
+  detector_->OnDelegatedFrameDamage(window.get(), update_region);
   EXPECT_EQ(1, observer_->num_invocations());
   EXPECT_EQ(0, observer_->num_fullscreens());
   EXPECT_EQ(1, observer_->num_not_fullscreens());
@@ -137,7 +137,7 @@ TEST_F(VideoDetectorTest, Basic) {
   // over a one-second window that the observer should be notified.
   observer_->reset_stats();
   AdvanceTime(base::TimeDelta::FromSeconds(2));
-  detector_->OnWindowPaintScheduled(window.get(), update_region);
+  detector_->OnDelegatedFrameDamage(window.get(), update_region);
   EXPECT_EQ(0, observer_->num_invocations());
 
   AdvanceTime(base::TimeDelta::FromMilliseconds(500));
@@ -146,14 +146,14 @@ TEST_F(VideoDetectorTest, Basic) {
       base::TimeDelta::FromMilliseconds(1000 / kNumFrames);
   for (int i = 0; i < kNumFrames; ++i) {
     AdvanceTime(kInterval);
-    detector_->OnWindowPaintScheduled(window.get(), update_region);
+    detector_->OnDelegatedFrameDamage(window.get(), update_region);
   }
   EXPECT_EQ(1, observer_->num_invocations());
 
   // Keep going and check that the observer is notified again.
   for (int i = 0; i < kNumFrames; ++i) {
     AdvanceTime(kInterval);
-    detector_->OnWindowPaintScheduled(window.get(), update_region);
+    detector_->OnDelegatedFrameDamage(window.get(), update_region);
   }
   EXPECT_EQ(2, observer_->num_invocations());
 
@@ -162,7 +162,7 @@ TEST_F(VideoDetectorTest, Basic) {
       1000 / (VideoDetector::kMinFramesPerSecond - 2));
   for (int i = 0; i < kNumFrames; ++i) {
     AdvanceTime(kSlowInterval);
-    detector_->OnWindowPaintScheduled(window.get(), update_region);
+    detector_->OnDelegatedFrameDamage(window.get(), update_region);
   }
   EXPECT_EQ(2, observer_->num_invocations());
 }
@@ -179,7 +179,7 @@ TEST_F(VideoDetectorTest, Shutdown) {
   // It should not detect video during the shutdown.
   Shell::GetInstance()->OnAppTerminating();
   for (int i = 0; i < VideoDetector::kMinFramesPerSecond; ++i)
-    detector_->OnWindowPaintScheduled(window.get(), update_region);
+    detector_->OnDelegatedFrameDamage(window.get(), update_region);
   EXPECT_EQ(0, observer_->num_invocations());
 }
 
@@ -199,7 +199,7 @@ TEST_F(VideoDetectorTest, WindowNotVisible) {
       gfx::Size(VideoDetector::kMinUpdateWidth,
                 VideoDetector::kMinUpdateHeight));
   for (int i = 0; i < VideoDetector::kMinFramesPerSecond; ++i)
-    detector_->OnWindowPaintScheduled(window.get(), update_region);
+    detector_->OnDelegatedFrameDamage(window.get(), update_region);
   EXPECT_EQ(0, observer_->num_invocations());
 
   // Make the window visible and send more updates.
@@ -207,7 +207,7 @@ TEST_F(VideoDetectorTest, WindowNotVisible) {
   AdvanceTime(base::TimeDelta::FromSeconds(2));
   window->Show();
   for (int i = 0; i < VideoDetector::kMinFramesPerSecond; ++i)
-    detector_->OnWindowPaintScheduled(window.get(), update_region);
+    detector_->OnDelegatedFrameDamage(window.get(), update_region);
   EXPECT_EQ(1, observer_->num_invocations());
   EXPECT_EQ(0, observer_->num_fullscreens());
   EXPECT_EQ(1, observer_->num_not_fullscreens());
@@ -221,7 +221,7 @@ TEST_F(VideoDetectorTest, WindowNotVisible) {
   window->SetBounds(offscreen_bounds);
   ASSERT_EQ(offscreen_bounds, window->bounds());
   for (int i = 0; i < VideoDetector::kMinFramesPerSecond; ++i)
-    detector_->OnWindowPaintScheduled(window.get(), update_region);
+    detector_->OnDelegatedFrameDamage(window.get(), update_region);
   EXPECT_EQ(0, observer_->num_invocations());
 }
 
@@ -240,9 +240,9 @@ TEST_F(VideoDetectorTest, MultipleWindows) {
       gfx::Size(VideoDetector::kMinUpdateWidth,
                 VideoDetector::kMinUpdateHeight));
   for (int i = 0; i < VideoDetector::kMinFramesPerSecond; ++i)
-    detector_->OnWindowPaintScheduled(window1.get(), update_region);
+    detector_->OnDelegatedFrameDamage(window1.get(), update_region);
   for (int i = 0; i < VideoDetector::kMinFramesPerSecond; ++i)
-    detector_->OnWindowPaintScheduled(window2.get(), update_region);
+    detector_->OnDelegatedFrameDamage(window2.get(), update_region);
   EXPECT_EQ(1, observer_->num_invocations());
   EXPECT_EQ(0, observer_->num_fullscreens());
   EXPECT_EQ(1, observer_->num_not_fullscreens());
@@ -259,7 +259,7 @@ TEST_F(VideoDetectorTest, RepeatedNotifications) {
       gfx::Size(VideoDetector::kMinUpdateWidth,
                 VideoDetector::kMinUpdateHeight));
   for (int i = 0; i < VideoDetector::kMinFramesPerSecond; ++i)
-    detector_->OnWindowPaintScheduled(window.get(), update_region);
+    detector_->OnDelegatedFrameDamage(window.get(), update_region);
   EXPECT_EQ(1, observer_->num_invocations());
   EXPECT_EQ(0, observer_->num_fullscreens());
   EXPECT_EQ(1, observer_->num_not_fullscreens());
@@ -268,7 +268,7 @@ TEST_F(VideoDetectorTest, RepeatedNotifications) {
   AdvanceTime(base::TimeDelta::FromSeconds(
       static_cast<int64>(VideoDetector::kNotifyIntervalSec + 1)));
   for (int i = 0; i < VideoDetector::kMinFramesPerSecond; ++i)
-    detector_->OnWindowPaintScheduled(window.get(), update_region);
+    detector_->OnDelegatedFrameDamage(window.get(), update_region);
   EXPECT_EQ(1, observer_->num_invocations());
   EXPECT_EQ(0, observer_->num_fullscreens());
   EXPECT_EQ(1, observer_->num_not_fullscreens());
@@ -294,7 +294,7 @@ TEST_F(VideoDetectorTest, FullscreenWindow) {
       gfx::Size(VideoDetector::kMinUpdateWidth,
                 VideoDetector::kMinUpdateHeight));
   for (int i = 0; i < VideoDetector::kMinFramesPerSecond; ++i)
-    detector_->OnWindowPaintScheduled(window.get(), kUpdateRegion);
+    detector_->OnDelegatedFrameDamage(window.get(), kUpdateRegion);
   EXPECT_EQ(1, observer_->num_invocations());
   EXPECT_EQ(1, observer_->num_fullscreens());
   EXPECT_EQ(0, observer_->num_not_fullscreens());
@@ -317,7 +317,7 @@ TEST_F(VideoDetectorTest, FullscreenWindow) {
   observer_->reset_stats();
   AdvanceTime(base::TimeDelta::FromSeconds(2));
   for (int i = 0; i < VideoDetector::kMinFramesPerSecond; ++i)
-    detector_->OnWindowPaintScheduled(window.get(), kUpdateRegion);
+    detector_->OnDelegatedFrameDamage(window.get(), kUpdateRegion);
   EXPECT_EQ(1, observer_->num_invocations());
   EXPECT_EQ(1, observer_->num_fullscreens());
   EXPECT_EQ(0, observer_->num_not_fullscreens());
@@ -329,7 +329,7 @@ TEST_F(VideoDetectorTest, FullscreenWindow) {
   observer_->reset_stats();
   AdvanceTime(base::TimeDelta::FromSeconds(2));
   for (int i = 0; i < VideoDetector::kMinFramesPerSecond; ++i)
-    detector_->OnWindowPaintScheduled(window.get(), kUpdateRegion);
+    detector_->OnDelegatedFrameDamage(window.get(), kUpdateRegion);
   EXPECT_EQ(1, observer_->num_invocations());
   EXPECT_EQ(0, observer_->num_fullscreens());
   EXPECT_EQ(1, observer_->num_not_fullscreens());

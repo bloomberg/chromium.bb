@@ -66,6 +66,9 @@ class ColoredLayer : public Layer, public LayerDelegate {
     canvas->DrawColor(color_);
   }
 
+  virtual void OnDelegatedFrameDamage(
+      const gfx::Rect& damage_rect_in_dip) OVERRIDE {}
+
   virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE {
   }
 
@@ -240,6 +243,9 @@ class TestLayerDelegate : public LayerDelegate {
     scale_y_ = matrix.getScaleY();
   }
 
+  virtual void OnDelegatedFrameDamage(
+      const gfx::Rect& damage_rect_in_dip) OVERRIDE {}
+
   virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE {
     device_scale_factor_ = device_scale_factor;
   }
@@ -283,6 +289,8 @@ class DrawTreeLayerDelegate : public LayerDelegate {
   virtual void OnPaintLayer(gfx::Canvas* canvas) OVERRIDE {
     painted_ = true;
   }
+  virtual void OnDelegatedFrameDamage(
+      const gfx::Rect& damage_rect_in_dip) OVERRIDE {}
   virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE {
   }
   virtual base::Closure PrepareForLayerBoundsChange() OVERRIDE {
@@ -302,10 +310,10 @@ class NullLayerDelegate : public LayerDelegate {
 
  private:
   // Overridden from LayerDelegate:
-  virtual void OnPaintLayer(gfx::Canvas* canvas) OVERRIDE {
-  }
-  virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE {
-  }
+  virtual void OnPaintLayer(gfx::Canvas* canvas) OVERRIDE {}
+  virtual void OnDelegatedFrameDamage(
+      const gfx::Rect& damage_rect_in_dip) OVERRIDE {}
+  virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE {}
   virtual base::Closure PrepareForLayerBoundsChange() OVERRIDE {
     return base::Closure();
   }
@@ -1121,6 +1129,9 @@ class SchedulePaintLayerDelegate : public LayerDelegate {
       last_clip_rect_ = gfx::SkRectToRectF(sk_clip_rect);
   }
 
+  virtual void OnDelegatedFrameDamage(
+      const gfx::Rect& damage_rect_in_dip) OVERRIDE {}
+
   virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE {
   }
 
@@ -1589,6 +1600,49 @@ TEST_F(LayerWithRealCompositorTest, SnapLayerToPixels) {
   // 0.5 / 1.5 = 0.333...
   EXPECT_EQ("0.33 0.33",
             Vector2dFTo100thPercisionString(c11->subpixel_position_offset()));
+}
+
+class FrameDamageCheckingDelegate : public TestLayerDelegate {
+ public:
+  FrameDamageCheckingDelegate() : delegated_frame_damage_called_(false) {}
+
+  virtual void OnDelegatedFrameDamage(
+      const gfx::Rect& damage_rect_in_dip) OVERRIDE {
+    delegated_frame_damage_called_ = true;
+    delegated_frame_damage_rect_ = damage_rect_in_dip;
+  }
+
+  const gfx::Rect& delegated_frame_damage_rect() const {
+    return delegated_frame_damage_rect_;
+  }
+  bool delegated_frame_damage_called() const {
+    return delegated_frame_damage_called_;
+  }
+
+ private:
+  gfx::Rect delegated_frame_damage_rect_;
+  bool delegated_frame_damage_called_;
+
+  DISALLOW_COPY_AND_ASSIGN(FrameDamageCheckingDelegate);
+};
+
+TEST(LayerDelegateTest, DelegatedFrameDamage) {
+  scoped_ptr<Layer> layer(new Layer(LAYER_TEXTURED));
+  gfx::Rect damage_rect(2, 1, 5, 3);
+
+  FrameDamageCheckingDelegate delegate;
+  layer->set_delegate(&delegate);
+  scoped_refptr<cc::DelegatedFrameResourceCollection> resource_collection =
+      new cc::DelegatedFrameResourceCollection;
+  scoped_refptr<cc::DelegatedFrameProvider> frame_provider(
+      new cc::DelegatedFrameProvider(resource_collection.get(),
+                                     MakeFrameData(gfx::Size(10, 10))));
+  layer->SetShowDelegatedContent(frame_provider, gfx::Size(10, 10));
+
+  EXPECT_FALSE(delegate.delegated_frame_damage_called());
+  layer->OnDelegatedFrameDamage(damage_rect);
+  EXPECT_TRUE(delegate.delegated_frame_damage_called());
+  EXPECT_EQ(damage_rect, delegate.delegated_frame_damage_rect());
 }
 
 }  // namespace ui

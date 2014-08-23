@@ -99,6 +99,9 @@ class ArrowLayerDelegate : public ui::LayerDelegate {
                          (kArrowHeight - image_.Height()) / 2);
   }
 
+  virtual void OnDelegatedFrameDamage(
+      const gfx::Rect& damage_rect_in_dip) OVERRIDE {}
+
   virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE {}
 
   virtual base::Closure PrepareForLayerBoundsChange() OVERRIDE {

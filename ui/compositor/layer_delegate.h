@@ -10,6 +10,7 @@
 
 namespace gfx {
 class Canvas;
+class Rect;
 }
 
 namespace ui {
@@ -20,6 +21,10 @@ class COMPOSITOR_EXPORT LayerDelegate {
   // Paint content for the layer to the specified canvas. It has already been
   // clipped to the Layer's invalid rect.
   virtual void OnPaintLayer(gfx::Canvas* canvas) = 0;
+
+  // A notification that this layer has had a delegated frame swap and
+  // will be repainted.
+  virtual void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) = 0;
 
   // Called when the layer's device scale factor has changed.
   virtual void OnDeviceScaleFactorChanged(float device_scale_factor) = 0;

@@ -491,9 +491,8 @@ void Window::SchedulePaintInRect(const gfx::Rect& rect) {
       parent_rect.Offset(bounds().origin().OffsetFromOrigin());
       parent_->SchedulePaintInRect(parent_rect);
     }
-  } else if (layer() && layer()->SchedulePaint(rect)) {
-    FOR_EACH_OBSERVER(
-        WindowObserver, observers_, OnWindowPaintScheduled(this, rect));
+  } else if (layer()) {
+    layer()->SchedulePaint(rect);
   }
 }
 
@@ -1354,6 +1353,13 @@ bool Window::CleanupGestureState() {
 
 void Window::OnPaintLayer(gfx::Canvas* canvas) {
   Paint(canvas);
+}
+
+void Window::OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) {
+  DCHECK(layer());
+  FOR_EACH_OBSERVER(WindowObserver,
+                    observers_,
+                    OnDelegatedFrameDamage(this, damage_rect_in_dip));
 }
 
 base::Closure Window::PrepareForLayerBoundsChange() {

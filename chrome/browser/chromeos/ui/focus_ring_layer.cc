@@ -124,6 +124,10 @@ void FocusRingLayer::OnPaintLayer(gfx::Canvas* canvas) {
   }
 }
 
+void FocusRingLayer::OnDelegatedFrameDamage(
+    const gfx::Rect& damage_rect_in_dip) {
+}
+
 void FocusRingLayer::OnDeviceScaleFactorChanged(float device_scale_factor) {
   Update();
 }

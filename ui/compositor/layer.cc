@@ -690,6 +690,13 @@ void Layer::OnDeviceScaleFactorChanged(float device_scale_factor) {
     layer_mask_->OnDeviceScaleFactorChanged(device_scale_factor);
 }
 
+void Layer::OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) {
+  DCHECK(delegated_renderer_layer_ || surface_layer_);
+  if (!delegate_)
+    return;
+  delegate_->OnDelegatedFrameDamage(damage_rect_in_dip);
+}
+
 void Layer::RequestCopyOfOutput(scoped_ptr<cc::CopyOutputRequest> request) {
   cc_layer_->RequestCopyOfOutput(request.Pass());
 }
