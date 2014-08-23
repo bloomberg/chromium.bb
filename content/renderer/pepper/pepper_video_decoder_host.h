@@ -70,7 +70,7 @@ class CONTENT_EXPORT PepperVideoDecoderHost
   int32_t OnHostMsgInitialize(ppapi::host::HostMessageContext* context,
                               const ppapi::HostResource& graphics_context,
                               PP_VideoProfile profile,
-                              bool allow_software_fallback);
+                              PP_HardwareAcceleration acceleration);
   int32_t OnHostMsgGetShm(ppapi::host::HostMessageContext* context,
                           uint32_t shm_id,
                           uint32_t shm_size);

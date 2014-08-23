@@ -11,8 +11,6 @@
 
 REGISTER_TEST_CASE(VideoDecoder);
 
-static const bool kAllowSoftwareFallback = true;
-
 bool TestVideoDecoder::Init() {
   video_decoder_interface_ = static_cast<const PPB_VideoDecoder_0_1*>(
       pp::Module::Get()->GetBrowserInterface(PPB_VIDEODECODER_INTERFACE_0_1));
@@ -37,10 +35,11 @@ std::string TestVideoDecoder::TestCreate() {
 
     TestCompletionCallback callback(instance_->pp_instance(), callback_type());
     pp::Graphics3D null_graphics_3d;
-    callback.WaitForResult(video_decoder.Initialize(null_graphics_3d,
-                                                    PP_VIDEOPROFILE_VP8_ANY,
-                                                    kAllowSoftwareFallback,
-                                                    callback.GetCallback()));
+    callback.WaitForResult(
+        video_decoder.Initialize(null_graphics_3d,
+                                 PP_VIDEOPROFILE_VP8_ANY,
+                                 PP_HARDWAREACCELERATION_WITHFALLBACK,
+                                 callback.GetCallback()));
     ASSERT_EQ(PP_ERROR_BADRESOURCE, callback.result());
   }
   // Test that Initialize fails with a bad profile enum value.
@@ -48,10 +47,11 @@ std::string TestVideoDecoder::TestCreate() {
     pp::VideoDecoder video_decoder(instance_);
     TestCompletionCallback callback(instance_->pp_instance(), callback_type());
     const PP_VideoProfile kInvalidProfile = static_cast<PP_VideoProfile>(-1);
-    callback.WaitForResult(video_decoder.Initialize(graphics_3d_,
-                                                    kInvalidProfile,
-                                                    kAllowSoftwareFallback,
-                                                    callback.GetCallback()));
+    callback.WaitForResult(
+        video_decoder.Initialize(graphics_3d_,
+                                 kInvalidProfile,
+                                 PP_HARDWAREACCELERATION_WITHFALLBACK,
+                                 callback.GetCallback()));
     ASSERT_EQ(PP_ERROR_BADARGUMENT, callback.result());
   }
   // Test that Initialize succeeds if we can create a Graphics3D resources and
@@ -59,10 +59,11 @@ std::string TestVideoDecoder::TestCreate() {
   if (!graphics_3d_.is_null()) {
     pp::VideoDecoder video_decoder(instance_);
     TestCompletionCallback callback(instance_->pp_instance(), callback_type());
-    callback.WaitForResult(video_decoder.Initialize(graphics_3d_,
-                                                    PP_VIDEOPROFILE_VP8_ANY,
-                                                    kAllowSoftwareFallback,
-                                                    callback.GetCallback()));
+    callback.WaitForResult(
+        video_decoder.Initialize(graphics_3d_,
+                                 PP_VIDEOPROFILE_VP8_ANY,
+                                 PP_HARDWAREACCELERATION_WITHFALLBACK,
+                                 callback.GetCallback()));
     ASSERT_EQ(PP_OK, callback.result());
   }
 

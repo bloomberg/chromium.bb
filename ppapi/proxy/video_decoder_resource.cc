@@ -85,10 +85,23 @@ PPB_VideoDecoder_API* VideoDecoderResource::AsPPB_VideoDecoder_API() {
   return this;
 }
 
-int32_t VideoDecoderResource::Initialize(
+int32_t VideoDecoderResource::Initialize0_1(
     PP_Resource graphics_context,
     PP_VideoProfile profile,
     PP_Bool allow_software_fallback,
+    scoped_refptr<TrackedCallback> callback) {
+  return Initialize(graphics_context,
+                    profile,
+                    allow_software_fallback
+                        ? PP_HARDWAREACCELERATION_WITHFALLBACK
+                        : PP_HARDWAREACCELERATION_ONLY,
+                    callback);
+}
+
+int32_t VideoDecoderResource::Initialize(
+    PP_Resource graphics_context,
+    PP_VideoProfile profile,
+    PP_HardwareAcceleration acceleration,
     scoped_refptr<TrackedCallback> callback) {
   if (initialized_)
     return PP_ERROR_FAILED;
@@ -128,7 +141,7 @@ int32_t VideoDecoderResource::Initialize(
   Call<PpapiPluginMsg_VideoDecoder_InitializeReply>(
       RENDERER,
       PpapiHostMsg_VideoDecoder_Initialize(
-          host_resource, profile, PP_ToBool(allow_software_fallback)),
+          host_resource, profile, acceleration),
       base::Bind(&VideoDecoderResource::OnPluginMsgInitializeComplete, this));
 
   return PP_OK_COMPLETIONPENDING;

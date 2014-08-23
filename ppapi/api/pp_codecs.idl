@@ -24,6 +24,25 @@ enum PP_VideoProfile {
 };
 
 /**
+ * Hardware acceleration options.
+ */
+enum PP_HardwareAcceleration {
+  /** Create a hardware accelerated resource only. */
+  PP_HARDWAREACCELERATION_ONLY = 0,
+
+  /**
+   * Create a hardware accelerated resource if possible. Otherwise, fall back
+   * to the software implementation.
+   */
+  PP_HARDWAREACCELERATION_WITHFALLBACK = 1,
+
+  /** Create the software implementation only. */
+  PP_HARDWAREACCELERATION_NONE = 2,
+
+  PP_HARDWAREACCELERATION_LAST = PP_HARDWAREACCELERATION_NONE
+};
+
+/**
  * Struct describing a decoded video picture. The decoded picture data is stored
  * in the GL texture corresponding to |texture_id|. The plugin can determine
  * which Decode call generated the picture using |decode_id|.

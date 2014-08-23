@@ -61,14 +61,13 @@ class VideoDecoder : public Resource {
   /// Initializes a video decoder resource. This should be called after Create()
   /// and before any other functions.
   ///
-  /// @param[in] video_decoder A <code>PP_Resource</code> identifying the video
-  /// decoder.
+  /// @param[in] graphics3d_context A <code>PPB_Graphics3D</code> resource to
+  /// use during decoding.
   /// @param[in] profile A <code>PP_VideoProfile</code> specifying the video
   /// codec profile.
-  /// @param[in] allow_software_fallback A <code>PP_Bool</code> specifying
-  /// whether the decoder can fall back to software decoding if a suitable
-  /// hardware decoder isn't available.
-  /// @param[in] callback A <code>CompletionCallback</code> to be called on
+  /// @param[in] acceleration A <code>PP_HardwareAcceleration</code> specifying
+  /// whether to use a hardware accelerated or a software implementation.
+  /// @param[in] callback A <code>PP_CompletionCallback</code> to be called upon
   /// completion.
   ///
   /// @return An int32_t containing an error code from <code>pp_errors.h</code>.
@@ -77,7 +76,7 @@ class VideoDecoder : public Resource {
   /// Initialize() again with different parameters to find a good configuration.
   int32_t Initialize(const Graphics3D& graphics3d_context,
                      PP_VideoProfile profile,
-                     bool allow_software_fallback,
+                     PP_HardwareAcceleration acceleration,
                      const CompletionCallback& callback);
 
   /// Decodes a bitstream buffer. Copies |size| bytes of data from the plugin's
@@ -120,8 +119,6 @@ class VideoDecoder : public Resource {
   /// When the plugin is finished using the picture, it should return it to the
   /// system by calling RecyclePicture().
   ///
-  /// @param[in] video_decoder A <code>PP_Resource</code> identifying the video
-  /// decoder.
   /// @param[in] callback A <code>CompletionCallbackWithOutput</code> to be
   /// called on completion, and on success, to hold the picture descriptor.
   ///

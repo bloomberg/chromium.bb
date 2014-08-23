@@ -111,7 +111,7 @@ int32_t PepperVideoDecoderHost::OnHostMsgInitialize(
     ppapi::host::HostMessageContext* context,
     const ppapi::HostResource& graphics_context,
     PP_VideoProfile profile,
-    bool allow_software_fallback) {
+    PP_HardwareAcceleration acceleration) {
   if (initialized_)
     return PP_ERROR_FAILED;
 
@@ -128,23 +128,24 @@ int32_t PepperVideoDecoderHost::OnHostMsgInitialize(
 
   media::VideoCodecProfile media_profile = PepperToMediaVideoProfile(profile);
 
-  // This is not synchronous, but subsequent IPC messages will be buffered, so
-  // it is okay to immediately send IPC messages through the returned channel.
-  GpuChannelHost* channel = graphics3d->channel();
-  DCHECK(channel);
-  decoder_ = channel->CreateVideoDecoder(command_buffer_route_id);
-  if (decoder_ && decoder_->Initialize(media_profile, this)) {
-    initialized_ = true;
-    return PP_OK;
+  if (acceleration != PP_HARDWAREACCELERATION_NONE) {
+    // This is not synchronous, but subsequent IPC messages will be buffered, so
+    // it is okay to immediately send IPC messages through the returned channel.
+    GpuChannelHost* channel = graphics3d->channel();
+    DCHECK(channel);
+    decoder_ = channel->CreateVideoDecoder(command_buffer_route_id);
+    if (decoder_ && decoder_->Initialize(media_profile, this)) {
+      initialized_ = true;
+      return PP_OK;
+    }
+    decoder_.reset();
+    if (acceleration == PP_HARDWAREACCELERATION_ONLY)
+      return PP_ERROR_NOTSUPPORTED;
   }
-  decoder_.reset();
 
 #if defined(OS_ANDROID)
   return PP_ERROR_NOTSUPPORTED;
 #else
-  if (!allow_software_fallback)
-    return PP_ERROR_NOTSUPPORTED;
-
   decoder_.reset(new VideoDecoderShim(this));
   initialize_reply_context_ = context->MakeReplyMessageContext();
   decoder_->Initialize(media_profile, this);

@@ -19,9 +19,13 @@ class PPAPI_THUNK_EXPORT PPB_VideoDecoder_API {
  public:
   virtual ~PPB_VideoDecoder_API() {}
 
-  virtual int32_t Initialize(PP_Resource context,
+  virtual int32_t Initialize0_1(PP_Resource graphics3d_context,
+                                PP_VideoProfile profile,
+                                PP_Bool allow_software_fallback,
+                                scoped_refptr<TrackedCallback> callback) = 0;
+  virtual int32_t Initialize(PP_Resource graphics3d_context,
                              PP_VideoProfile profile,
-                             PP_Bool allow_software_fallback,
+                             PP_HardwareAcceleration acceleration,
                              scoped_refptr<TrackedCallback> callback) = 0;
   virtual int32_t Decode(uint32_t decode_id,
                          uint32_t size,

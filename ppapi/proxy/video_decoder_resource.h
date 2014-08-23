@@ -43,9 +43,14 @@ class PPAPI_PROXY_EXPORT VideoDecoderResource
   virtual thunk::PPB_VideoDecoder_API* AsPPB_VideoDecoder_API() OVERRIDE;
 
   // PPB_VideoDecoder_API implementation.
+  virtual int32_t Initialize0_1(
+      PP_Resource graphics_context,
+      PP_VideoProfile profile,
+      PP_Bool allow_software_fallback,
+      scoped_refptr<TrackedCallback> callback) OVERRIDE;
   virtual int32_t Initialize(PP_Resource graphics_context,
                              PP_VideoProfile profile,
-                             PP_Bool allow_software_fallback,
+                             PP_HardwareAcceleration acceleration,
                              scoped_refptr<TrackedCallback> callback) OVERRIDE;
   virtual int32_t Decode(uint32_t decode_id,
                          uint32_t size,
