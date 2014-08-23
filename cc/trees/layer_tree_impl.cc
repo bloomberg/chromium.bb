@@ -819,6 +819,7 @@ AnimationRegistrar* LayerTreeImpl::animationRegistrar() const {
 
 void LayerTreeImpl::AsValueInto(base::debug::TracedValue* state) const {
   TracedValue::MakeDictIntoImplicitSnapshot(state, "cc::LayerTreeImpl", this);
+  state->SetInteger("source_frame_number", source_frame_number_);
 
   state->BeginDictionary("root_layer");
   root_layer_->AsValueInto(state);
