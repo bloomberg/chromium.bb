@@ -167,6 +167,11 @@ class TestGettingSheriffEmails(cros_test_lib.MockTestCase):
     self.assertEqual(tree_status.GetSheriffEmailAddresses('build'),
                      ['taco@google.com', 'burrito@google.com'])
 
+    # Test parsing when sheriff is None.
+    raw_line = "document.write('None (channel is sheriff)')"
+    self.PatchObject(tree_status, '_OpenSheriffURL', return_value=raw_line)
+    self.assertEqual(tree_status.GetSheriffEmailAddresses('lab'), [])
+
 
 if __name__ == '__main__':
   cros_test_lib.main()

@@ -212,7 +212,7 @@ def GetSheriffEmailAddresses(sheriff_type):
     raw_line = _OpenSheriffURL(url)
     if raw_line is not None:
       match = re.search(r'\'(.*)\'', raw_line)
-      if match:
+      if match and match.group(1) != 'None (channel is sheriff)':
         sheriffs.extend(x.strip() for x in match.group(1).split(','))
 
   return ['%s%s' % (x, constants.GOOGLE_EMAIL) for x in sheriffs]
