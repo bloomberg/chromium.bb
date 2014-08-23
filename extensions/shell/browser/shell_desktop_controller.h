@@ -12,6 +12,7 @@
 #include "ui/aura/window_tree_host_observer.h"
 
 #if defined(OS_CHROMEOS)
+#include "chromeos/dbus/power_manager_client.h"
 #include "ui/display/chromeos/display_configurator.h"
 #endif
 
@@ -56,12 +57,11 @@ class ShellAppWindowController;
 
 // Handles desktop-related tasks for app_shell.
 class ShellDesktopController : public aura::client::WindowTreeClient,
-                               public aura::WindowTreeHostObserver
 #if defined(OS_CHROMEOS)
-                               ,
-                               public ui::DisplayConfigurator::Observer
+                               public chromeos::PowerManagerClient::Observer,
+                               public ui::DisplayConfigurator::Observer,
 #endif
-                               {
+                               public aura::WindowTreeHostObserver {
  public:
   ShellDesktopController();
   virtual ~ShellDesktopController();
@@ -72,9 +72,6 @@ class ShellDesktopController : public aura::client::WindowTreeClient,
   static ShellDesktopController* instance();
 
   aura::WindowTreeHost* host() { return host_.get(); }
-
-  // Creates the window that hosts the app.
-  void CreateRootWindow();
 
   // Sets the controller to create/close the app windows. Takes the ownership of
   // |app_window_controller|.
@@ -92,12 +89,17 @@ class ShellDesktopController : public aura::client::WindowTreeClient,
   // Sets the screen's work area insets.
   void SetDisplayWorkAreaInsets(const gfx::Insets& insets);
 
-  // Overridden from aura::client::WindowTreeClient:
+  // aura::client::WindowTreeClient overrides:
   virtual aura::Window* GetDefaultParent(aura::Window* context,
                                          aura::Window* window,
                                          const gfx::Rect& bounds) OVERRIDE;
 
 #if defined(OS_CHROMEOS)
+  // chromeos::PowerManagerClient::Observer overrides:
+  virtual void PowerButtonEventReceived(bool down,
+                                        const base::TimeTicks& timestamp)
+      OVERRIDE;
+
   // ui::DisplayConfigurator::Observer overrides.
   virtual void OnDisplayModeChanged(const std::vector<
       ui::DisplayConfigurator::DisplayState>& displays) OVERRIDE;
@@ -115,6 +117,9 @@ class ShellDesktopController : public aura::client::WindowTreeClient,
   virtual wm::FocusRules* CreateFocusRules();
 
  private:
+  // Creates the window that hosts the app.
+  void CreateRootWindow();
+
   // Closes and destroys the root window hosting the app.
   void DestroyRootWindow();
 

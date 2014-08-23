@@ -198,15 +198,22 @@
         '<(DEPTH)/extensions/extensions.gyp:extensions_shell_and_test_pak',
         '<(DEPTH)/extensions/extensions.gyp:extensions_test_support',
         '<(DEPTH)/testing/gtest.gyp:gtest',
+        '<(DEPTH)/ui/aura/aura.gyp:aura_test_support',
       ],
       'sources': [
         '../test/extensions_unittests_main.cc',
+        'browser/shell_desktop_controller_unittest.cc',
         'browser/shell_nacl_browser_delegate_unittest.cc',
       ],
       'conditions': [
         ['disable_nacl==1', {
           'sources!': [
             'browser/shell_nacl_browser_delegate_unittest.cc',
+          ],
+        }],
+        ['chromeos==1', {
+          'dependencies': [
+            '<(DEPTH)/chromeos/chromeos.gyp:chromeos_test_support_without_gmock',
           ],
         }],
       ],

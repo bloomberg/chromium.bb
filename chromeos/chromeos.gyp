@@ -491,6 +491,10 @@
     {
       'target_name': 'chromeos_test_support_without_gmock',
       'type': 'static_library',
+      'export_dependent_settings': [
+        # fake_power_manager_client.h includes pb.h files.
+        'power_manager_proto',
+      ],
       'dependencies': [
         '../build/linux/system.gyp:dbus',
         '../crypto/crypto.gyp:crypto',

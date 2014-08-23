@@ -8,6 +8,7 @@
 #include "base/run_loop.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/omaha_query_params/omaha_query_params.h"
+#include "content/public/browser/context_factory.h"
 #include "content/public/common/result_codes.h"
 #include "content/shell/browser/shell_devtools_delegate.h"
 #include "content/shell/browser/shell_net_log.h"
@@ -22,6 +23,7 @@
 #include "extensions/shell/browser/shell_omaha_query_params_delegate.h"
 #include "extensions/shell/common/shell_extensions_client.h"
 #include "extensions/shell/common/switches.h"
+#include "ui/aura/env.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/ime/input_method_initializer.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -95,8 +97,9 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   // Initialize our "profile" equivalent.
   browser_context_.reset(new ShellBrowserContext);
 
+  aura::Env::GetInstance()->set_context_factory(content::GetContextFactory());
+
   desktop_controller_.reset(browser_main_delegate_->CreateDesktopController());
-  desktop_controller_->CreateRootWindow();
 
   // NOTE: Much of this is culled from chrome/test/base/chrome_test_suite.cc
   // TODO(jamescook): Initialize user_manager::UserManager.

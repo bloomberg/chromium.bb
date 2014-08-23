@@ -24,18 +24,13 @@ class FakePowerManagerClient : public PowerManagerClient {
   virtual ~FakePowerManagerClient();
 
   power_manager::PowerManagementPolicy& policy() { return policy_; }
-  int num_request_restart_calls() const {
-    return num_request_restart_calls_;
-  }
-  int num_set_policy_calls() const {
-    return num_set_policy_calls_;
-  }
+  int num_request_restart_calls() const { return num_request_restart_calls_; }
+  int num_request_shutdown_calls() const { return num_request_shutdown_calls_; }
+  int num_set_policy_calls() const { return num_set_policy_calls_; }
   int num_set_is_projecting_calls() const {
     return num_set_is_projecting_calls_;
   }
-  bool is_projecting() const {
-    return is_projecting_;
-  }
+  bool is_projecting() const { return is_projecting_; }
 
   // PowerManagerClient overrides
   virtual void Init(dbus::Bus* bus) OVERRIDE;
@@ -68,19 +63,19 @@ class FakePowerManagerClient : public PowerManagerClient {
   void SendSuspendDone();
   void SendDarkSuspendImminent();
 
+  // Notifies observers that the power button has been pressed or released.
+  void SendPowerButtonEvent(bool down, const base::TimeTicks& timestamp);
+
  private:
   ObserverList<Observer> observers_;
 
   // Last policy passed to SetPolicy().
   power_manager::PowerManagementPolicy policy_;
 
-  // Number of times that RequestRestart() has been called.
+  // Number of times that various methods have been called.
   int num_request_restart_calls_;
-
-  // Number of times that SetPolicy() has been called.
+  int num_request_shutdown_calls_;
   int num_set_policy_calls_;
-
-  // Count the number of times SetIsProjecting() has been called.
   int num_set_is_projecting_calls_;
 
   // Last projecting state set in SetIsProjecting().

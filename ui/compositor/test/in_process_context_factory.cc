@@ -20,7 +20,10 @@ namespace ui {
 
 InProcessContextFactory::InProcessContextFactory()
     : shared_bitmap_manager_(new cc::TestSharedBitmapManager()) {
-  DCHECK_NE(gfx::GetGLImplementation(), gfx::kGLImplementationNone);
+  DCHECK_NE(gfx::GetGLImplementation(), gfx::kGLImplementationNone)
+      << "If running tests, ensure that main() is calling "
+      << "gfx::GLSurface::InitializeOneOffForTests()";
+
 #if defined(OS_CHROMEOS)
   bool use_thread = !CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kUIDisableThreadedCompositing);

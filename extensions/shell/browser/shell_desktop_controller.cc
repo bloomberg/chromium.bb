@@ -5,12 +5,10 @@
 #include "extensions/shell/browser/shell_desktop_controller.h"
 
 #include "base/command_line.h"
-#include "content/public/browser/context_factory.h"
 #include "extensions/shell/browser/shell_app_window_controller.h"
 #include "extensions/shell/common/switches.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/default_capture_client.h"
-#include "ui/aura/env.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/test/test_screen.h"
 #include "ui/aura/window.h"
@@ -31,6 +29,7 @@
 #include "ui/wm/core/user_activity_detector.h"
 
 #if defined(OS_CHROMEOS)
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "ui/chromeos/user_activity_power_manager_notifier.h"
 #include "ui/display/types/chromeos/display_mode.h"
 #include "ui/display/types/chromeos/display_snapshot.h"
@@ -157,14 +156,18 @@ ShellDesktopController* g_instance = NULL;
 }  // namespace
 
 ShellDesktopController::ShellDesktopController() {
+  CHECK(!g_instance) << "ShellDesktopController already exists";
+
 #if defined(OS_CHROMEOS)
+  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
+      AddObserver(this);
   display_configurator_.reset(new ui::DisplayConfigurator);
   display_configurator_->Init(false);
   display_configurator_->ForceInitialConfigure(0);
   display_configurator_->AddObserver(this);
 #endif
-  aura::Env::CreateInstance(true);
-  aura::Env::GetInstance()->set_context_factory(content::GetContextFactory());
+
+  CreateRootWindow();
 
   g_instance = this;
 }
@@ -173,7 +176,10 @@ ShellDesktopController::~ShellDesktopController() {
   app_window_controller_.reset();
   g_instance = NULL;
   DestroyRootWindow();
-  aura::Env::DeleteInstance();
+#if defined(OS_CHROMEOS)
+  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
+      RemoveObserver(this);
+#endif
 }
 
 // static
@@ -210,6 +216,15 @@ aura::Window* ShellDesktopController::GetDefaultParent(
 }
 
 #if defined(OS_CHROMEOS)
+void ShellDesktopController::PowerButtonEventReceived(
+    bool down,
+    const base::TimeTicks& timestamp) {
+  if (down) {
+    chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
+        RequestShutdown();
+  }
+}
+
 void ShellDesktopController::OnDisplayModeChanged(
     const std::vector<ui::DisplayConfigurator::DisplayState>& displays) {
   gfx::Size size = GetPrimaryDisplaySize();
@@ -224,40 +239,6 @@ void ShellDesktopController::OnHostCloseRequested(
   CloseAppWindows();
   base::MessageLoop::current()->PostTask(FROM_HERE,
                                          base::MessageLoop::QuitClosure());
-}
-
-void ShellDesktopController::CreateRootWindow() {
-  // Set up basic pieces of ui::wm.
-  gfx::Size size;
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kAppShellHostWindowBounds)) {
-    const std::string size_str =
-        command_line->GetSwitchValueASCII(switches::kAppShellHostWindowBounds);
-    int width, height;
-    CHECK_EQ(2, sscanf(size_str.c_str(), "%dx%d", &width, &height));
-    size = gfx::Size(width, height);
-  } else {
-    size = GetPrimaryDisplaySize();
-  }
-  if (size.IsEmpty())
-    size = gfx::Size(1280, 720);
-
-  test_screen_.reset(aura::TestScreen::Create(size));
-  // TODO(jamescook): Replace this with a real Screen implementation.
-  gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, test_screen_.get());
-  // TODO(mukai): Set up input method.
-
-  host_.reset(test_screen_->CreateHostForPrimaryDisplay());
-  host_->InitHost();
-  aura::client::SetWindowTreeClient(host_->window(), this);
-  root_window_event_filter_.reset(new wm::CompoundEventFilter);
-  host_->window()->AddPreTargetHandler(root_window_event_filter_.get());
-  InitWindowManager();
-
-  host_->AddObserver(this);
-
-  // Ensure the X window gets mapped.
-  host_->Show();
 }
 
 void ShellDesktopController::InitWindowManager() {
@@ -298,6 +279,40 @@ void ShellDesktopController::InitWindowManager() {
 
 wm::FocusRules* ShellDesktopController::CreateFocusRules() {
   return new AppsFocusRules();
+}
+
+void ShellDesktopController::CreateRootWindow() {
+  // Set up basic pieces of ui::wm.
+  gfx::Size size;
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kAppShellHostWindowBounds)) {
+    const std::string size_str =
+        command_line->GetSwitchValueASCII(switches::kAppShellHostWindowBounds);
+    int width, height;
+    CHECK_EQ(2, sscanf(size_str.c_str(), "%dx%d", &width, &height));
+    size = gfx::Size(width, height);
+  } else {
+    size = GetPrimaryDisplaySize();
+  }
+  if (size.IsEmpty())
+    size = gfx::Size(1280, 720);
+
+  test_screen_.reset(aura::TestScreen::Create(size));
+  // TODO(jamescook): Replace this with a real Screen implementation.
+  gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, test_screen_.get());
+  // TODO(mukai): Set up input method.
+
+  host_.reset(test_screen_->CreateHostForPrimaryDisplay());
+  host_->InitHost();
+  aura::client::SetWindowTreeClient(host_->window(), this);
+  root_window_event_filter_.reset(new wm::CompoundEventFilter);
+  host_->window()->AddPreTargetHandler(root_window_event_filter_.get());
+  InitWindowManager();
+
+  host_->AddObserver(this);
+
+  // Ensure the X window gets mapped.
+  host_->Show();
 }
 
 void ShellDesktopController::DestroyRootWindow() {
