@@ -232,7 +232,7 @@ env.AddNodeToTestSuite(node, ['small_tests'],
 nacl_host_desc_big_file_nexe = env.ComponentProgram(
   'nacl_host_desc_big_file_test',
   ['nacl_host_desc_big_file_test.c'],
-  EXTRA_LIBS=['platform'])
+  EXTRA_LIBS=['platform', 'nrd_xfer'])
 
 d = os.path.join(str(env.Dir('${TARGET_ROOT}')), 'large_temporary_files')
 try:

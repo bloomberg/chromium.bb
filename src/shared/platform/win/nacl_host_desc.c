@@ -28,6 +28,7 @@
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
 #include "native_client/src/shared/platform/win/xlate_system_error.h"
 #include "native_client/src/trusted/desc/nacl_desc_effector.h"
+#include "native_client/src/trusted/desc/nacl_desc_effector_trusted_mem.h"
 
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 #include "native_client/src/trusted/service_runtime/internal_errno.h"
@@ -828,13 +829,34 @@ uintptr_t NaClHostDescMap(struct NaClHostDesc *d,
             ", addr + chunk_offset %"NACL_PRIxPTR"\n",
             map_result, chunk_addr, (addr + chunk_offset));
     if ((addr + chunk_offset) != map_result) {
+      /*
+       * MapViewOfFileEx() failed.  If we are mapping into untrusted
+       * address space, we opened an mmap hole.  We didn't expect the
+       * failure, and it's difficult to restore the old mappings that we
+       * removed, so for safety we must abort with LOG_FATAL.
+       *
+       * Otherwise, if this is a trusted mapping, we can return an error
+       * gracefully.  NaClElfFileMapSegment() currently triggers errors
+       * here by mapping beyond the file's extent: see
+       * https://crbug.com/406632.
+       */
+      int log_type =
+          effp == NaClDescEffectorTrustedMem() ? LOG_ERROR : LOG_FATAL;
       DWORD err = GetLastError();
-      NaClLog(LOG_FATAL,
+      size_t unmap_offset;
+      NaClLog(log_type,
               "MapViewOfFileEx failed at 0x%08"NACL_PRIxPTR
               ", got 0x%08"NACL_PRIxPTR", err %x\n",
               addr + chunk_offset,
               map_result,
               err);
+      for (unmap_offset = 0;
+           unmap_offset < chunk_offset;
+           unmap_offset += NACL_MAP_PAGESIZE) {
+        (void) UnmapViewOfFile((void *) (addr + unmap_offset));
+      }
+      retval = (uintptr_t) -NaClXlateSystemError(err);
+      goto cleanup;
     }
     if (!VirtualProtect((void *) map_result,
                         NaClRoundPage(chunk_size),

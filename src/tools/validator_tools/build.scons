@@ -21,4 +21,5 @@ env.Append(CCFLAGS=['-DNACL_TRUSTED_BUT_NOT_TCB'])
 env.ComponentProgram(
     'ncval_stubout',
     'ncstubout.c',
-    EXTRA_LIBS=['validators', env.NaClTargetArchSuffix('ncvalidate_verbose')])
+    EXTRA_LIBS=['validators', env.NaClTargetArchSuffix('ncvalidate_verbose'),
+                'nrd_xfer'])

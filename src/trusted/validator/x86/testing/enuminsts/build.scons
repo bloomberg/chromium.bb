@@ -34,7 +34,7 @@ vdiff = test_env.ComponentProgram(
               'validators',
               env.NaClTargetArchSuffix('ncvalidate'),
               env.NaClTargetArchSuffix('dfa_validate_caller'),
-              'platform', 'gio', 'utils',
+              'platform', 'nrd_xfer', 'gio', 'utils',
              ])
 
 # NOTE: can't use stdout_golden here because the test runs too long,

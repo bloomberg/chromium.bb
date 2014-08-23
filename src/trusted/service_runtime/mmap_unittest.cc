@@ -16,16 +16,20 @@
 #include "gtest/gtest.h"
 
 #include "native_client/src/include/portability_io.h"
+#include "native_client/src/trusted/desc/nacl_desc_effector_trusted_mem.h"
 #include "native_client/src/trusted/desc/nacl_desc_imc_shm.h"
 #include "native_client/src/trusted/desc/nacl_desc_io.h"
 #include "native_client/src/trusted/desc/nrd_all_modules.h"
 #include "native_client/src/trusted/service_runtime/include/bits/mman.h"
+#include "native_client/src/trusted/service_runtime/include/sys/errno.h"
 #include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
 #include "native_client/src/trusted/service_runtime/mmap_test_check.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/sel_addrspace.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/sys_memory.h"
+
+static const int kTestFillByte = 0x42;
 
 class MmapTest : public testing::Test {
  protected:
@@ -39,6 +43,46 @@ void MmapTest::SetUp() {
 
 void MmapTest::TearDown() {
   NaClNrdAllModulesFini();
+}
+
+// Creates a temporary file and returns an FD for it.
+static int MakeTempFileFd() {
+  int host_fd;
+#if NACL_WINDOWS
+  // Open temporary file that is deleted automatically.
+  const char *temp_prefix = "nacl_mmap_test_temp_";
+  char *temp_filename = _tempnam("C:\\Windows\\Temp", temp_prefix);
+  EXPECT_EQ(_sopen_s(&host_fd, temp_filename,
+                     _O_RDWR | _O_CREAT | _O_TEMPORARY,
+                     _SH_DENYNO, _S_IREAD | _S_IWRITE), 0);
+#else
+  char temp_filename[] = "/tmp/nacl_mmap_test_temp_XXXXXX";
+  host_fd = mkstemp(temp_filename);
+  EXPECT_GE(host_fd, 0);
+#endif
+  EXPECT_EQ(remove(temp_filename), 0);
+  return host_fd;
+}
+
+// Creates a temporary file of the given size and returns a NaClDesc for it.
+static struct NaClDesc *MakeTempFileNaClDesc(size_t file_size) {
+  int host_fd = MakeTempFileFd();
+
+  struct NaClHostDesc *host_desc =
+      (struct NaClHostDesc *) malloc(sizeof(*host_desc));
+  EXPECT_TRUE(host_desc);
+  EXPECT_EQ(NaClHostDescPosixTake(host_desc, host_fd, NACL_ABI_O_RDWR), 0);
+  struct NaClDesc *desc = (struct NaClDesc *) NaClDescIoDescMake(host_desc);
+
+  // Fill the file.  On Windows, this is necessary to ensure that NaCl
+  // gives us mappings from the file instead of PROT_NONE-fill.
+  char *buf = new char[file_size];
+  memset(buf, kTestFillByte, file_size);
+  ssize_t written = NACL_VTBL(NaClDesc, desc)->Write(desc, buf, file_size);
+  EXPECT_EQ(written, (ssize_t) file_size);
+  delete[] buf;
+
+  return desc;
 }
 
 // These tests are disabled for ARM/MIPS because the ARM/MIPS sandboxes are
@@ -84,35 +128,7 @@ void MapShmFd(struct NaClApp *nap, uintptr_t addr, size_t shm_size) {
 }
 
 void MapFileFd(struct NaClApp *nap, uintptr_t addr, size_t file_size) {
-  int host_fd;
-#if NACL_WINDOWS
-  // Open temporary file that is deleted automatically.
-  const char *temp_prefix = "nacl_mmap_test_temp_";
-  char *temp_filename = _tempnam("C:\\Windows\\Temp", temp_prefix);
-  ASSERT_EQ(_sopen_s(&host_fd, temp_filename,
-                     _O_RDWR | _O_CREAT | _O_TEMPORARY,
-                     _SH_DENYNO, _S_IREAD | _S_IWRITE), 0);
-#else
-  char temp_filename[] = "/tmp/nacl_mmap_test_temp_XXXXXX";
-  host_fd = mkstemp(temp_filename);
-  ASSERT_GE(host_fd, 0);
-#endif
-  ASSERT_EQ(remove(temp_filename), 0);
-
-  struct NaClHostDesc *host_desc =
-      (struct NaClHostDesc *) malloc(sizeof(*host_desc));
-  ASSERT_TRUE(host_desc);
-  ASSERT_EQ(NaClHostDescPosixTake(host_desc, host_fd, NACL_ABI_O_RDWR), 0);
-  struct NaClDesc *desc = (struct NaClDesc *) NaClDescIoDescMake(host_desc);
-
-  // Fill the file.  On Windows, this is necessary to ensure that NaCl
-  // gives us mappings from the file instead of PROT_NONE-fill.
-  char *buf = new char[file_size];
-  memset(buf, 0, file_size);
-  ssize_t written = NACL_VTBL(NaClDesc, desc)->Write(desc, buf, file_size);
-  ASSERT_EQ(written, (ssize_t) file_size);
-  delete[] buf;
-
+  struct NaClDesc *desc = MakeTempFileNaClDesc(file_size);
   int fd = NaClAppSetDescAvail(nap, desc);
 
   uintptr_t mapping_addr = (uint32_t) NaClSysMmapIntern(
@@ -398,3 +414,56 @@ TEST_F(MmapTest, TestProtectAnonymousMemory) {
 }
 
 #endif /* NACL_ARCH(NACL_BUILD_ARCH) != NACL_arm */
+
+static void AssertArrayFilled(const char *array, size_t size) {
+  for (size_t i = 0; i < size; ++i)
+    EXPECT_EQ(array[i], kTestFillByte);
+}
+
+TEST_F(MmapTest, TestTrustedMapBeyondFileExtent) {
+  int file_size = 0x10099;
+  int file_size_rounded_up = 0x20000;
+  int file_offset = 0;
+  struct NaClDesc *desc = MakeTempFileNaClDesc(file_size);
+  uintptr_t map_result;
+
+  // Map() should work with a non-page-aligned size.
+  map_result = NACL_VTBL(NaClDesc, desc)->Map(
+      desc,
+      NaClDescEffectorTrustedMem(),
+      (void *) NULL,
+      file_size,
+      NACL_ABI_PROT_READ,
+      NACL_ABI_MAP_PRIVATE,
+      file_offset);
+  ASSERT_FALSE(NaClPtrIsNegErrno(&map_result));
+  AssertArrayFilled((char *) map_result, file_size);
+  NaClDescUnmapUnsafe(desc, (void *) map_result, file_size);
+
+  // Check the behaviour of Map() when given a rounded-up (page-aligned)
+  // size that goes beyond the file's extent.
+  map_result = NACL_VTBL(NaClDesc, desc)->Map(
+      desc,
+      NaClDescEffectorTrustedMem(),
+      (void *) NULL,
+      file_size_rounded_up,
+      NACL_ABI_PROT_READ,
+      NACL_ABI_MAP_PRIVATE,
+      file_offset);
+  if (NACL_WINDOWS) {
+    // On Windows, using a size beyond the file's extent is not allowed,
+    // even within a page, so we expect an error.
+    //
+    // This tests that we get a graceful error rather than a LOG_FATAL.
+    // This is a partial regression test for https://crbug.com/406632:
+    // NaClElfFileMapSegment() currently depends on the error being
+    // graceful.
+    ASSERT_TRUE(NaClPtrIsNegErrno(&map_result));
+    ASSERT_EQ(-(intptr_t) map_result, NACL_ABI_EACCES);
+  } else {
+    // On Unix, the Map() should succeed.
+    ASSERT_FALSE(NaClPtrIsNegErrno(&map_result));
+    AssertArrayFilled((char *) map_result, file_size);
+    NaClDescUnmapUnsafe(desc, (void *) map_result, file_size_rounded_up);
+  }
+}
