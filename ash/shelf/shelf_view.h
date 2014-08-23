@@ -369,8 +369,6 @@ class ASH_EXPORT ShelfView : public views::View,
 
   scoped_ptr<views::FocusSearch> focus_search_;
 
-  scoped_ptr<ui::MenuModel> list_menu_model_;
-
   scoped_ptr<ui::MenuModel> context_menu_model_;
 
   scoped_ptr<views::MenuRunner> launcher_menu_runner_;

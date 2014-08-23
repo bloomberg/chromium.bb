@@ -22,6 +22,8 @@ class ChromeLauncherAppMenuItemBrowser : public content::NotificationObserver,
                                    const gfx::Image* icon,
                                    Browser* browser,
                                    bool has_leading_separator);
+  virtual ~ChromeLauncherAppMenuItemBrowser();
+
   virtual bool IsActive() const OVERRIDE;
   virtual bool IsEnabled() const OVERRIDE;
   virtual void Execute(int event_flags) OVERRIDE;

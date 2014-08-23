@@ -20,9 +20,12 @@ ChromeLauncherAppMenuItemBrowser::ChromeLauncherAppMenuItemBrowser(
     bool has_leading_separator)
     : ChromeLauncherAppMenuItem(title, icon, has_leading_separator),
       browser_(browser) {
+  DCHECK(browser);
   registrar_.Add(this,
                  chrome::NOTIFICATION_BROWSER_CLOSING,
                  content::Source<Browser>(browser));
+}
+ChromeLauncherAppMenuItemBrowser::~ChromeLauncherAppMenuItemBrowser() {
 }
 
 bool ChromeLauncherAppMenuItemBrowser::IsActive() const {

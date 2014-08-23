@@ -1715,14 +1715,15 @@ bool ShelfView::ShowListMenuForView(const ShelfItem& item,
                                     const ui::Event& event) {
   ShelfItemDelegate* item_delegate =
       item_manager_->GetShelfItemDelegate(item.id);
-  list_menu_model_.reset(item_delegate->CreateApplicationMenu(event.flags()));
+  scoped_ptr<ui::MenuModel> list_menu_model(
+      item_delegate->CreateApplicationMenu(event.flags()));
 
   // Make sure we have a menu and it has at least two items in addition to the
   // application title and the 3 spacing separators.
-  if (!list_menu_model_.get() || list_menu_model_->GetItemCount() <= 5)
+  if (!list_menu_model.get() || list_menu_model->GetItemCount() <= 5)
     return false;
 
-  ShowMenu(list_menu_model_.get(),
+  ShowMenu(list_menu_model.get(),
            source,
            gfx::Point(),
            false,
