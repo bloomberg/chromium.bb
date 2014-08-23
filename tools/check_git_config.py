@@ -381,7 +381,7 @@ def check_gclient_config(conf):
     return
   current = {
     'name': 'src',
-    'deps_file': conf['gclient_deps'],
+    'deps_file': conf['gclient_deps'] or 'DEPS',
     'managed': conf['gclient_managed'] or False,
     'url': conf['gclient_url'],
   }
