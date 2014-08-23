@@ -70,6 +70,51 @@ int GpuProcessHost::swiftshader_crash_count_ = 0;
 
 namespace {
 
+// Command-line switches to propagate to the GPU process.
+static const char* const kSwitchNames[] = {
+  switches::kDisableAcceleratedVideoDecode,
+  switches::kDisableBreakpad,
+  switches::kDisableGpuSandbox,
+  switches::kDisableGpuWatchdog,
+  switches::kDisableLogging,
+  switches::kDisableSeccompFilterSandbox,
+#if defined(ENABLE_WEBRTC)
+  switches::kDisableWebRtcHWEncoding,
+#endif
+  switches::kEnableLogging,
+  switches::kEnableShareGroupAsyncTextureUpload,
+#if defined(OS_CHROMEOS)
+  switches::kDisableVaapiAcceleratedVideoEncode,
+#endif
+  switches::kGpuStartupDialog,
+  switches::kGpuSandboxAllowSysVShm,
+  switches::kGpuSandboxFailuresFatal,
+  switches::kGpuSandboxStartEarly,
+  switches::kIgnoreResolutionLimitsForAcceleratedVideoDecode,
+  switches::kLoggingLevel,
+  switches::kLowEndDeviceMode,
+  switches::kNoSandbox,
+  switches::kTestGLLib,
+  switches::kTraceStartup,
+  switches::kTraceToConsole,
+  switches::kV,
+  switches::kVModule,
+#if defined(OS_MACOSX)
+  switches::kEnableRemoteCoreAnimation,
+  switches::kEnableSandboxLogging,
+#endif
+#if defined(USE_AURA)
+  switches::kUIPrioritizeInGpuProcess,
+#endif
+#if defined(USE_OZONE)
+  switches::kOzonePlatform,
+  switches::kOzoneUseSurfaceless,
+#endif
+#if defined(USE_X11) && !defined(OS_CHROMEOS)
+  switches::kX11Display,
+#endif
+};
+
 enum GPUProcessLifetimeEvent {
   LAUNCHED,
   DIED_FIRST_TIME,
@@ -830,50 +875,8 @@ bool GpuProcessHost::LaunchGpuProcess(const std::string& channel_id) {
   if (kind_ == GPU_PROCESS_KIND_UNSANDBOXED)
     cmd_line->AppendSwitch(switches::kDisableGpuSandbox);
 
-  // Propagate relevant command line switches.
-  static const char* const kSwitchNames[] = {
-    switches::kDisableAcceleratedVideoDecode,
-    switches::kDisableBreakpad,
-    switches::kDisableGpuSandbox,
-    switches::kDisableGpuWatchdog,
-    switches::kDisableLogging,
-    switches::kDisableSeccompFilterSandbox,
-#if defined(ENABLE_WEBRTC)
-    switches::kDisableWebRtcHWEncoding,
-#endif
-    switches::kEnableLogging,
-    switches::kEnableShareGroupAsyncTextureUpload,
-#if defined(OS_CHROMEOS)
-    switches::kDisableVaapiAcceleratedVideoEncode,
-#endif
-    switches::kGpuStartupDialog,
-    switches::kGpuSandboxAllowSysVShm,
-    switches::kGpuSandboxFailuresFatal,
-    switches::kGpuSandboxStartEarly,
-    switches::kIgnoreResolutionLimitsForAcceleratedVideoDecode,
-    switches::kLoggingLevel,
-    switches::kLowEndDeviceMode,
-    switches::kNoSandbox,
-    switches::kTestGLLib,
-    switches::kTraceStartup,
-    switches::kTraceToConsole,
-    switches::kV,
-    switches::kVModule,
-#if defined(OS_MACOSX)
-    switches::kEnableRemoteCoreAnimation,
-    switches::kEnableSandboxLogging,
-#endif
-#if defined(USE_AURA)
-    switches::kUIPrioritizeInGpuProcess,
-#endif
-#if defined(USE_OZONE)
-    switches::kOzonePlatform,
-    switches::kOzoneUseSurfaceless,
-#endif
-#if defined(USE_X11) && !defined(OS_CHROMEOS)
-    switches::kX11Display,
-#endif
-  };
+  // If you want a browser command-line switch passed to the GPU process
+  // you need to add it to |kSwitchNames| at the beginning of this file.
   cmd_line->CopySwitchesFrom(browser_command_line, kSwitchNames,
                              arraysize(kSwitchNames));
   cmd_line->CopySwitchesFrom(
@@ -941,8 +944,8 @@ void GpuProcessHost::RecordProcessCrash() {
   if (gpu_crash_recorded_)
     return;
 
-  // Maximum number of times the gpu process is allowed to crash in a session.
-  // Once this limit is reached, any request to launch the gpu process will
+  // Maximum number of times the GPU process is allowed to crash in a session.
+  // Once this limit is reached, any request to launch the GPU process will
   // fail.
   const int kGpuMaxCrashCount = 3;
 
@@ -992,7 +995,7 @@ void GpuProcessHost::RecordProcessCrash() {
            !disable_crash_limit) ||
           !initialized_) {
 #if !defined(OS_CHROMEOS)
-        // The gpu process is too unstable to use. Disable it for current
+        // The GPU process is too unstable to use. Disable it for current
         // session.
         hardware_gpu_enabled_ = false;
         GpuDataManagerImpl::GetInstance()->DisableHardwareAcceleration();
