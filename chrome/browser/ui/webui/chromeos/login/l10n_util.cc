@@ -53,9 +53,9 @@ scoped_ptr<base::DictionaryValue> CreateInputMethodsEntry(
 }
 
 // Returns true if element was inserted.
-bool InsertString(const std::string& str, std::set<std::string>& to) {
+bool InsertString(const std::string& str, std::set<std::string>* to) {
   const std::pair<std::set<std::string>::iterator, bool> result =
-      to.insert(str);
+      to->insert(str);
   return result.second;
 }
 
@@ -309,7 +309,7 @@ void GetKeyboardLayoutsForResolvedLocale(
        it != layouts.end(); ++it) {
     const input_method::InputMethodDescriptor* ime =
         util->GetInputMethodDescriptorFromId(*it);
-    if (!InsertString(ime->id(), input_methods_added))
+    if (!InsertString(ime->id(), &input_methods_added))
       continue;
     input_methods_list->Append(
         CreateInputMethodsEntry(*ime, selected).release());
@@ -446,7 +446,7 @@ scoped_ptr<base::ListValue> GetAndActivateLoginKeyboardLayouts(
   for (size_t i = 0; i < input_methods->size(); ++i) {
     // Makes sure the id is in legacy xkb id format.
     const std::string& ime_id = (*input_methods)[i].id();
-    if (!InsertString(ime_id, input_methods_added))
+    if (!InsertString(ime_id, &input_methods_added))
       continue;
     if (!optgroup_added) {
       optgroup_added = true;

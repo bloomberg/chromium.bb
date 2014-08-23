@@ -5,12 +5,13 @@
 #ifndef CHROME_BROWSER_UI_ASH_MULTI_USER_MULTI_USER_WARNING_DIALOG_H_
 #define CHROME_BROWSER_UI_ASH_MULTI_USER_MULTI_USER_WARNING_DIALOG_H_
 
-#include "base/callback.h"
+#include "base/callback_forward.h"
 
 namespace chromeos {
 
 // Creates and shows dialog with introduction.
-void ShowMultiprofilesWarningDialog(const base::Callback<void(bool)> on_accept);
+void ShowMultiprofilesWarningDialog(
+    const base::Callback<void(bool)>& on_accept);
 
 }  // namespace chromeos
 

@@ -50,7 +50,6 @@ const char kJsApiNetworkOnTimezoneChanged[] = "networkOnTimezoneChanged";
 // "selected" only if loaded_locale is a backup for "requested_locale".
 std::string CalculateSelectedLanguage(const std::string& requested_locale,
                                       const std::string& loaded_locale) {
-
   std::string resolved_locale;
   if (!l10n_util::CheckAndResolveLocale(requested_locale, &resolved_locale))
     return loaded_locale;
@@ -243,10 +242,10 @@ void NetworkScreenHandler::HandleOnExit() {
 
 struct NetworkScreenHandlerOnLanguageChangedCallbackData {
   explicit NetworkScreenHandlerOnLanguageChangedCallbackData(
-      base::WeakPtr<NetworkScreenHandler>& handler)
-      : handler_(handler) {}
+      const base::WeakPtr<NetworkScreenHandler>& handler)
+      : handler(handler) {}
 
-  base::WeakPtr<NetworkScreenHandler> handler_;
+  base::WeakPtr<NetworkScreenHandler> handler;
 
   // Block UI while resource bundle is being reloaded.
   chromeos::InputEventsBlocker input_events_blocker;
@@ -258,10 +257,10 @@ void NetworkScreenHandler::OnLanguageChangedCallback(
     const std::string& requested_locale,
     const std::string& loaded_locale,
     const bool success) {
-  if (!context or !context->handler_)
+  if (!context || !context->handler)
     return;
 
-  NetworkScreenHandler* const self = context->handler_.get();
+  NetworkScreenHandler* const self = context->handler.get();
 
   if (success) {
     if (requested_locale == loaded_locale) {
