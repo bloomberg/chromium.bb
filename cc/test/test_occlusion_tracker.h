@@ -52,6 +52,21 @@ class TestOcclusionTracker : public OcclusionTracker<LayerType> {
     OcclusionTracker<LayerType>::stack_.back().occlusion_from_inside_target =
         region;
   }
+
+  void set_occlusion_on_contributing_surface_from_outside_target(
+      const SimpleEnclosedRegion& region) {
+    size_t stack_size = OcclusionTracker<LayerType>::stack_.size();
+    DCHECK_GE(stack_size, 2u);
+    OcclusionTracker<LayerType>::stack_[stack_size - 2]
+        .occlusion_from_outside_target = region;
+  }
+  void set_occlusion_on_contributing_surface_from_inside_target(
+      const SimpleEnclosedRegion& region) {
+    size_t stack_size = OcclusionTracker<LayerType>::stack_.size();
+    DCHECK_GE(stack_size, 2u);
+    OcclusionTracker<LayerType>::stack_[stack_size - 2]
+        .occlusion_from_inside_target = region;
+  }
 };
 
 }  // namespace cc
