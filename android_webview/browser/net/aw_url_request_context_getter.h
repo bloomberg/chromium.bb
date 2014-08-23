@@ -11,7 +11,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/content_browser_client.h"
 #include "net/http/http_network_session.h"
-#include "net/ssl/channel_id_service.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_job_factory.h"
 
@@ -75,7 +74,6 @@ class AwURLRequestContextGetter : public net::URLRequestContextGetter {
       data_reduction_proxy_auth_request_handler_;
   scoped_ptr<net::URLRequestJobFactory> job_factory_;
   scoped_ptr<net::HttpTransactionFactory> main_http_factory_;
-  scoped_ptr<net::ChannelIDService> channel_id_service_;
 
   // ProtocolHandlers and interceptors are stored here between
   // SetHandlersAndInterceptors() and the first GetURLRequestContext() call.
