@@ -206,6 +206,11 @@ class ProfileInfoCache : public ProfileInfoInterface,
   void OnAvatarPictureSaved(const std::string& file_name,
                             const base::FilePath& profile_path);
 
+  // Migrate any legacy profile names ("First user", "Default Profile") to
+  // new style default names ("Person 1"), and download and high-res avatars
+  // used by the profiles.
+  void MigrateLegacyProfileNamesAndDownloadAvatars();
+
   PrefService* prefs_;
   std::vector<std::string> sorted_keys_;
   base::FilePath user_data_dir_;
