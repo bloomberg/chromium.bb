@@ -5,51 +5,51 @@
 // The structures here roughly mirror those from autocomplete.
 
 struct AutocompleteAdditionalInfo {
-  string key;
-  string value;
+  string? key;
+  string? value;
 };
 
 struct AutocompleteMatchMojo {
-  string provider_name;
+  string? provider_name;
   // Only meaningful if |provider_name| is valid.
   bool provider_done;
   int32 relevance;
   bool deletable;
-  string fill_into_edit;
-  string inline_autocompletion;
-  string destination_url;
-  string contents;
-  string description;
+  string? fill_into_edit;
+  string? inline_autocompletion;
+  string? destination_url;
+  string? contents;
+  string? description;
   int32 transition;
   bool is_history_what_you_typed_match;
   bool allowed_to_be_default_match;
-  string type;
-  string associated_keyword;
-  string keyword;
+  string? type;
+  string? associated_keyword;
+  string? keyword;
   bool starred;
   int32 duplicates;
   bool from_previous;
-  AutocompleteAdditionalInfo[] additional_info;
+  AutocompleteAdditionalInfo?[]? additional_info;
 };
 
 struct AutocompleteResultsForProviderMojo {
-  string provider_name;
-  AutocompleteMatchMojo[] results;
+  string? provider_name;
+  AutocompleteMatchMojo?[]? results;
 };
 
 struct OmniboxResultMojo {
   bool done;
   // Time delta since the request was started, in milliseconds.
   int32 time_since_omnibox_started_ms;
-  string host;
+  string? host;
   bool is_typed_host;
-  AutocompleteMatchMojo[] combined_results;
-  AutocompleteResultsForProviderMojo[] results_by_provider;
+  AutocompleteMatchMojo?[]? combined_results;
+  AutocompleteResultsForProviderMojo?[]? results_by_provider;
 };
 
 [Client=OmniboxPage]
 interface OmniboxUIHandlerMojo {
-  StartOmniboxQuery(string input_string,
+  StartOmniboxQuery(string? input_string,
                     int32 cursor_position,
                     bool prevent_inline_autocomplete,
                     bool prefer_keyword,
@@ -57,5 +57,5 @@ interface OmniboxUIHandlerMojo {
 };
 
 interface OmniboxPage {
-  HandleNewAutocompleteResult(OmniboxResultMojo result);
+  HandleNewAutocompleteResult(OmniboxResultMojo? result);
 };
