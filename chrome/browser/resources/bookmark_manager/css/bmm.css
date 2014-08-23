@@ -259,6 +259,7 @@ header {
 header h2 {
   flex: 1;
   font-weight: normal;
+  line-height: 1;  /* TODO(dbeam): include chrome_shared.css on this page. */
 }
 
 header form {

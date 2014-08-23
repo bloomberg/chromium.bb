@@ -148,7 +148,7 @@ Downloads.prototype.updateSummary = function() {
     this.summary_.textContent = loadTimeData.getStringF('searchresultsfor',
                                                         this.searchText_);
   } else {
-    this.summary_.textContent = loadTimeData.getString('downloads');
+    this.summary_.textContent = '';
   }
 
   var hasDownloads = false;
@@ -890,13 +890,6 @@ function load() {
     chrome.send('openDownloadsFolder');
   };
   openDownloadsFolderLink.oncontextmenu = function() { return false; };
-
-  $('search-link').onclick = function(e) {
-    setSearch('');
-    e.preventDefault();
-    $('term').value = '';
-    return false;
-  };
 
   $('term').onsearch = function(e) {
     setSearch($('term').value);

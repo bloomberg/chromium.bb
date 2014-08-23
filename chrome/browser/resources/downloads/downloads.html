@@ -11,17 +11,14 @@
   <script src="chrome://downloads/downloads.js"></script>
 </head>
 <body i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
-  <div class="header">
-    <a id="search-link" href="">
-      <img src="../downloads_section.png"
-          width="32" height="32" class="logo" border="0">
-    </a>
+  <header>
+    <h2 i18n-content="downloads"></h2>
     <input id="term" type="search" tabindex=1
-        i18n-values="placeholder:searchbutton" class="form" autofocus incremental>
-  </div>
+        i18n-values="placeholder:searchbutton" autofocus incremental>
+  </header>
   <div class="main">
     <div id="downloads-summary">
-      <span id="downloads-summary-text" i18n-content="downloads"></span>
+      <span id="downloads-summary-text"></span>
       <span id="downloads-actions">
         <a id="open-downloads-folder" href="#"
             i18n-content="open_downloads_folder">
