@@ -200,25 +200,23 @@ class Mirror(object):
 
   @classmethod
   def SetCachePath(cls, cachepath):
-    cls.cachepath_lock.acquire()
-    setattr(cls, 'cachepath', cachepath)
-    cls.cachepath_lock.release()
+    with cls.cachepath_lock:
+      setattr(cls, 'cachepath', cachepath)
 
   @classmethod
   def GetCachePath(cls):
-    cls.cachepath_lock.acquire()
-    if not hasattr(cls, 'cachepath'):
-      try:
-        cachepath = subprocess.check_output(
-            [cls.git_exe, 'config', '--global', 'cache.cachepath']).strip()
-      except subprocess.CalledProcessError:
-        cachepath = None
-      if not cachepath:
-        cls.cachepath_lock.release()
-        raise RuntimeError('No global cache.cachepath git configuration found.')
-      setattr(cls, 'cachepath', cachepath)
-    cls.cachepath_lock.release()
-    return getattr(cls, 'cachepath')
+    with cls.cachepath_lock:
+      if not hasattr(cls, 'cachepath'):
+        try:
+          cachepath = subprocess.check_output(
+              [cls.git_exe, 'config', '--global', 'cache.cachepath']).strip()
+        except subprocess.CalledProcessError:
+          cachepath = None
+        if not cachepath:
+          raise RuntimeError(
+              'No global cache.cachepath git configuration found.')
+        setattr(cls, 'cachepath', cachepath)
+      return getattr(cls, 'cachepath')
 
   def RunGit(self, cmd, **kwargs):
     """Run git in a subprocess."""
