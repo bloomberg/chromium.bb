@@ -7,13 +7,21 @@
   "manifest_version": 2,
 
   "background": {
-    "scripts": ["manager.js"],
+    "scripts": [
+      "chrome://resources/js/cr.js",
+      "chrome://resources/js/util.js",
+      "chrome://resources/js/cr/event_target.js",
+      "constants.js",
+      "nacl_manager.js",
+      "manager.js"
+    ],
     "persistent": false
   },
 
   "permissions": [
     "*://*.google.com/*",
     "chrome://newtab/",
+    "chrome://resources/",
     "hotwordPrivate",
     "tabs"
   ],
