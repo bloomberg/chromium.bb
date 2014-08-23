@@ -18,62 +18,70 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/javascript_message_type.h"
-#include "extensions/browser/extension_system.h"
-#include "extensions/browser/process_manager.h"
 #include "grit/generated_resources.h"
 #include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if defined(ENABLE_EXTENSIONS)
+#include "extensions/browser/extension_system.h"
+#include "extensions/browser/process_manager.h"
+#endif  // defined(ENABLE_EXTENSIONS)
+
 using content::BrowserContext;
 using content::JavaScriptDialogManager;
 using content::WebContents;
+
+#if defined(ENABLE_EXTENSIONS)
 using extensions::Extension;
+#endif  // defined(ENABLE_EXTENSIONS)
 
 namespace {
 
+#if defined(ENABLE_EXTENSIONS)
 // Returns the ProcessManager for the browser context from |web_contents|.
 extensions::ProcessManager* GetExtensionsProcessManager(
     WebContents* web_contents) {
-#if defined(ENABLE_EXTENSIONS)
   return extensions::ExtensionSystem::Get(
       web_contents->GetBrowserContext())->process_manager();
-#else
-  return NULL;
-#endif  // defined(ENABLE_EXTENSIONS)
 }
 
 // Returns the extension associated with |web_contents| or NULL if there is no
 // associated extension (or extensions are not supported).
 const Extension* GetExtensionForWebContents(WebContents* web_contents) {
-#if defined(ENABLE_EXTENSIONS)
   extensions::ProcessManager* pm = GetExtensionsProcessManager(web_contents);
   return pm->GetExtensionForRenderViewHost(web_contents->GetRenderViewHost());
-#else
-  return NULL;
-#endif  // defined(ENABLE_EXTENSIONS)
 }
+#endif  // defined(ENABLE_EXTENSIONS)
 
 // Keeps an |extension| from shutting down its lazy background page. If an
 // extension opens a dialog its lazy background page must stay alive until the
 // dialog closes.
-void IncrementLazyKeepaliveCount(const Extension* extension,
-                                 WebContents* web_contents) {
-  DCHECK(extension);
+void IncrementLazyKeepaliveCount(WebContents* web_contents) {
+#if defined(ENABLE_EXTENSIONS)
+  const Extension* extension = GetExtensionForWebContents(web_contents);
+  if (extension == NULL)
+    return;
+
   DCHECK(web_contents);
   extensions::ProcessManager* pm = GetExtensionsProcessManager(web_contents);
   if (pm)
     pm->IncrementLazyKeepaliveCount(extension);
+#endif  // defined(ENABLE_EXTENSIONS)
 }
 
 // Allows an |extension| to shut down its lazy background page after a dialog
 // closes (if nothing else is keeping it open).
-void DecrementLazyKeepaliveCount(const Extension* extension,
-                                 WebContents* web_contents) {
-  DCHECK(extension);
+void DecrementLazyKeepaliveCount(WebContents* web_contents) {
+#if defined(ENABLE_EXTENSIONS)
+  const Extension* extension = GetExtensionForWebContents(web_contents);
+  if (extension == NULL)
+    return;
+
   DCHECK(web_contents);
   extensions::ProcessManager* pm = GetExtensionsProcessManager(web_contents);
   if (pm)
     pm->DecrementLazyKeepaliveCount(extension);
+#endif  // defined(ENABLE_EXTENSIONS)
 }
 
 class ChromeJavaScriptDialogManager : public JavaScriptDialogManager {
@@ -181,9 +189,7 @@ void ChromeJavaScriptDialogManager::RunJavaScriptDialog(
   base::string16 dialog_title =
       GetTitle(web_contents, origin_url, accept_lang, is_alert);
 
-  const Extension* extension = GetExtensionForWebContents(web_contents);
-  if (extension)
-    IncrementLazyKeepaliveCount(extension, web_contents);
+  IncrementLazyKeepaliveCount(web_contents);
 
   AppModalDialogQueue::GetInstance()->AddDialog(new JavaScriptAppModalDialog(
       web_contents,
@@ -212,9 +218,7 @@ void ChromeJavaScriptDialogManager::RunBeforeUnloadDialog(
   base::string16 full_message =
       message_text + base::ASCIIToUTF16("\n\n") + footer;
 
-  const Extension* extension = GetExtensionForWebContents(web_contents);
-  if (extension)
-    IncrementLazyKeepaliveCount(extension, web_contents);
+  IncrementLazyKeepaliveCount(web_contents);
 
   AppModalDialogQueue::GetInstance()->AddDialog(new JavaScriptAppModalDialog(
       web_contents,
@@ -272,11 +276,13 @@ base::string16 ChromeJavaScriptDialogManager::GetTitle(
 
   // For extensions, show the extension name, but only if the origin of
   // the alert matches the top-level WebContents.
+#if defined(ENABLE_EXTENSIONS)
   const Extension* extension = GetExtensionForWebContents(web_contents);
   if (extension &&
       web_contents->GetLastCommittedURL().GetOrigin() == origin_url) {
     return base::UTF8ToUTF16(extension->name());
   }
+#endif  // defined(ENABLE_EXTENSIONS)
 
   // Otherwise, return the formatted URL.
   // In this case, force URL to have LTR directionality.
@@ -308,9 +314,7 @@ void ChromeJavaScriptDialogManager::OnDialogClosed(
   // If an extension opened this dialog then the extension may shut down its
   // lazy background page after the dialog closes. (Dialogs are closed before
   // their WebContents is destroyed so |web_contents| is still valid here.)
-  const Extension* extension = GetExtensionForWebContents(web_contents);
-  if (extension)
-    DecrementLazyKeepaliveCount(extension, web_contents);
+  DecrementLazyKeepaliveCount(web_contents);
 
   callback.Run(success, user_input);
 }
