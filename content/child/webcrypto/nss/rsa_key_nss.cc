@@ -55,24 +55,24 @@ bool CreatePrivateKeyAlgorithm(const blink::WebCryptoAlgorithm& algorithm,
 }
 
 #if defined(USE_NSS) && !defined(OS_CHROMEOS)
-Status ErrorRsaKeyImportNotSupported() {
+Status ErrorRsaPrivateKeyImportNotSupported() {
   return Status::ErrorUnsupported(
-      "NSS version must be at least 3.16.2 for RSA key import. See "
+      "NSS version must be at least 3.16.2 for RSA private key import. See "
       "http://crbug.com/380424");
 }
 
 // Prior to NSS 3.16.2 RSA key parameters were not validated. This is
 // a security problem for RSA private key import from JWK which uses a
 // CKA_ID based on the public modulus to retrieve the private key.
-Status NssSupportsRsaKeyImport() {
+Status NssSupportsRsaPrivateKeyImport() {
   if (!NSS_VersionCheck("3.16.2"))
-    return ErrorRsaKeyImportNotSupported();
+    return ErrorRsaPrivateKeyImportNotSupported();
 
   // Also ensure that the version of Softoken is 3.16.2 or later.
   crypto::ScopedPK11Slot slot(PK11_GetInternalSlot());
   CK_SLOT_INFO info = {};
   if (PK11_GetSlotInfo(slot.get(), &info) != SECSuccess)
-    return ErrorRsaKeyImportNotSupported();
+    return ErrorRsaPrivateKeyImportNotSupported();
 
   // CK_SLOT_INFO.hardwareVersion contains the major.minor
   // version info for Softoken in the corresponding .major/.minor
@@ -86,10 +86,10 @@ Status NssSupportsRsaKeyImport() {
     return Status::Success();
   }
 
-  return ErrorRsaKeyImportNotSupported();
+  return ErrorRsaPrivateKeyImportNotSupported();
 }
 #else
-Status NssSupportsRsaKeyImport() {
+Status NssSupportsRsaPrivateKeyImport() {
   return Status::Success();
 }
 #endif
@@ -346,7 +346,7 @@ Status ImportRsaPrivateKey(const blink::WebCryptoAlgorithm& algorithm,
                            blink::WebCryptoKeyUsageMask usage_mask,
                            const JwkRsaInfo& params,
                            blink::WebCryptoKey* key) {
-  Status status = NssSupportsRsaKeyImport();
+  Status status = NssSupportsRsaPrivateKeyImport();
   if (status.IsError())
     return status;
 
@@ -649,7 +649,7 @@ Status RsaHashedAlgorithm::ImportKeyPkcs8(
     bool extractable,
     blink::WebCryptoKeyUsageMask usage_mask,
     blink::WebCryptoKey* key) const {
-  Status status = NssSupportsRsaKeyImport();
+  Status status = NssSupportsRsaPrivateKeyImport();
   if (status.IsError())
     return status;
 
@@ -709,10 +709,6 @@ Status RsaHashedAlgorithm::ImportKeySpki(
     bool extractable,
     blink::WebCryptoKeyUsageMask usage_mask,
     blink::WebCryptoKey* key) const {
-  Status status = NssSupportsRsaKeyImport();
-  if (status.IsError())
-    return status;
-
   if (!key_data.byte_length())
     return Status::ErrorImportEmptyKeyData();
 
@@ -740,7 +736,7 @@ Status RsaHashedAlgorithm::ImportKeySpki(
 
   // TODO(eroman): This is probably going to be the same as the input.
   std::vector<uint8_t> spki_data;
-  status = ExportKeySpkiNss(sec_public_key.get(), &spki_data);
+  Status status = ExportKeySpkiNss(sec_public_key.get(), &spki_data);
   if (status.IsError())
     return status;
 

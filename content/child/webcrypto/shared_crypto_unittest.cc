@@ -122,7 +122,7 @@ bool SupportsRsaOaep() {
 #endif
 }
 
-bool SupportsRsaKeyImport() {
+bool SupportsRsaPrivateKeyImport() {
 // TODO(eroman): Exclude version test for OS_CHROMEOS
 #if defined(USE_NSS)
   crypto::EnsureNSSInit();
@@ -1841,9 +1841,6 @@ TEST(WebCryptoAesCbcTest, ImportJwkInconsistentKLength2) {
 }
 
 TEST(WebCryptoRsaSsaTest, ImportExportJwkRsaPublicKey) {
-  if (!SupportsRsaKeyImport())
-    return;
-
   struct TestCase {
     const blink::WebCryptoAlgorithmId hash;
     const blink::WebCryptoKeyUsageMask usage;
@@ -1907,9 +1904,6 @@ TEST(WebCryptoRsaSsaTest, ImportExportJwkRsaPublicKey) {
 }
 
 TEST(WebCryptoRsaOaepTest, ImportExportJwkRsaPublicKey) {
-  if (!SupportsRsaKeyImport())
-    return;
-
   if (!SupportsRsaOaep()) {
     LOG(WARNING) << "RSA-OAEP support not present; skipping.";
     return;
@@ -2395,9 +2389,6 @@ TEST(WebCryptoHmacTest, ExportJwkEmptyKey) {
 }
 
 TEST(WebCryptoRsaSsaTest, ImportExportSpki) {
-  if (!SupportsRsaKeyImport())
-    return;
-
   // Passing case: Import a valid RSA key in SPKI format.
   blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
   ASSERT_EQ(Status::Success(),
@@ -2484,7 +2475,7 @@ TEST(WebCryptoRsaSsaTest, ImportExportSpki) {
 }
 
 TEST(WebCryptoRsaSsaTest, ImportExportPkcs8) {
-  if (!SupportsRsaKeyImport())
+  if (!SupportsRsaPrivateKeyImport())
     return;
 
   // Passing case: Import a valid RSA key in PKCS#8 format.
@@ -2551,7 +2542,7 @@ TEST(WebCryptoRsaSsaTest, ImportExportPkcs8) {
 
 // Tests importing of PKCS8 data that does not define a valid RSA key.
 TEST(WebCryptoRsaSsaTest, ImportInvalidPkcs8) {
-  if (!SupportsRsaKeyImport())
+  if (!SupportsRsaPrivateKeyImport())
     return;
 
   // kPrivateKeyPkcs8DerHex defines an RSA private key in PKCS8 format, whose
@@ -2605,7 +2596,7 @@ TEST(WebCryptoRsaSsaTest, ImportInvalidPkcs8) {
 //
 //   PKCS8 --> JWK --> PKCS8
 TEST(WebCryptoRsaSsaTest, ImportRsaPrivateKeyJwkToPkcs8RoundTrip) {
-  if (!SupportsRsaKeyImport())
+  if (!SupportsRsaPrivateKeyImport())
     return;
 
   blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
@@ -2673,7 +2664,7 @@ TEST(WebCryptoRsaSsaTest, ImportRsaPrivateKeyJwkToPkcs8RoundTrip) {
 // be imported correctly, however every key after that would actually import
 // the first key.
 TEST(WebCryptoRsaSsaTest, ImportMultipleRSAPrivateKeysJwk) {
-  if (!SupportsRsaKeyImport())
+  if (!SupportsRsaPrivateKeyImport())
     return;
 
   scoped_ptr<base::ListValue> key_list;
@@ -2837,7 +2828,7 @@ TEST(WebCryptoRsaSsaTest, ImportRsaPrivateKeyJwkMissingOptionalParams) {
 // accept them, but are not required to. Chromium's WebCrypto does
 // not allow such degenerate keys.
 TEST(WebCryptoRsaSsaTest, ImportRsaPrivateKeyJwkIncorrectOptionalEmpty) {
-  if (!SupportsRsaKeyImport())
+  if (!SupportsRsaPrivateKeyImport())
     return;
 
   blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
@@ -2935,7 +2926,7 @@ TEST(WebCryptoRsaSsaTest, GenerateKeyPairRsa) {
       Status::Success(),
       ExportKey(blink::WebCryptoKeyFormatSpki, public_key, &public_key_spki));
 
-  if (SupportsRsaKeyImport()) {
+  if (SupportsRsaPrivateKeyImport()) {
     public_key = blink::WebCryptoKey::createNull();
     EXPECT_EQ(Status::Success(),
               ImportKey(blink::WebCryptoKeyFormatSpki,
@@ -3139,7 +3130,7 @@ TEST(WebCryptoRsaSsaTest, GenerateKeyPairRsaBadExponent) {
 }
 
 TEST(WebCryptoRsaSsaTest, SignVerifyFailures) {
-  if (!SupportsRsaKeyImport())
+  if (!SupportsRsaPrivateKeyImport())
     return;
 
   // Import a key pair.
@@ -3271,7 +3262,7 @@ TEST(WebCryptoRsaSsaTest, SignVerifyFailures) {
 }
 
 TEST(WebCryptoRsaSsaTest, SignVerifyKnownAnswer) {
-  if (!SupportsRsaKeyImport())
+  if (!SupportsRsaPrivateKeyImport())
     return;
 
   scoped_ptr<base::ListValue> tests;
@@ -4750,7 +4741,7 @@ TEST(WebCryptoRsaSsaTest, GenerateKeyPairIntersectUsages) {
 // key pair (using SPKI format for public key, PKCS8 format for private key).
 // Then unwrap the wrapped key pair and verify that the key data is the same.
 TEST(WebCryptoAesCbcTest, WrapUnwrapRoundtripSpkiPkcs8) {
-  if (!SupportsRsaKeyImport())
+  if (!SupportsRsaPrivateKeyImport())
     return;
 
   // Generate the wrapping key.
