@@ -64,8 +64,15 @@
   -webkit-margin-start: 8px;
 }
 
-.website-property {
+.website-property-area {
   -webkit-margin-after: 22px;
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+}
+
+.website-property-button {
+  -webkit-margin-after: 9em;
 }
 
 #website-title {

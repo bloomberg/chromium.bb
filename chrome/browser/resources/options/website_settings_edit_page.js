@@ -29,6 +29,10 @@ cr.define('options.WebsiteSettings', function() {
     initializePage: function() {
       Page.prototype.initializePage.call(this);
 
+      $('website-settings-storage-delete-button').onclick = function(event) {
+        chrome.send('deleteLocalStorage');
+      };
+
       $('websiteSettingsEditorCancelButton').onclick =
           PageManager.closeOverlay.bind(PageManager);
 
@@ -55,13 +59,14 @@ cr.define('options.WebsiteSettings', function() {
 
     /**
      * Populates and displays the page with given origin information.
-     * @param {string} local_storage A string describing the local storage use.
+     * @param {string} localStorage A string describing the local storage use.
      * @param {Object} permissions A dictionary of permissions to their
      *     available and current settings, and if it is editable.
+     * @param {boolean} showPage If the page should raised.
      * @private
      */
-    populateOrigin_: function(local_storage, permissions) {
-      $('local-storage-title').textContent = local_storage;
+    populateOrigin_: function(localStorage, permissions, showPage) {
+      $('local-storage-title').textContent = localStorage;
       for (var key in permissions) {
         var selector = $(key + '-select-option');
 
@@ -77,7 +82,8 @@ cr.define('options.WebsiteSettings', function() {
         selector.originalValue = permissions[key].setting;
         selector.disabled = !permissions[key].editable;
       }
-      PageManager.showPageByName('websiteEdit', false);
+      if (showPage)
+        PageManager.showPageByName('websiteEdit', false);
     },
 
     updatePermissions: function() {
@@ -91,9 +97,11 @@ cr.define('options.WebsiteSettings', function() {
     },
   };
 
-  WebsiteSettingsEditor.populateOrigin = function(local_storage, permissions) {
-    WebsiteSettingsEditor.getInstance().populateOrigin_(local_storage,
-                                                        permissions);
+  WebsiteSettingsEditor.populateOrigin = function(localStorage, permissions,
+      showPage) {
+    WebsiteSettingsEditor.getInstance().populateOrigin_(localStorage,
+                                                        permissions,
+                                                        showPage);
   };
 
   // Export

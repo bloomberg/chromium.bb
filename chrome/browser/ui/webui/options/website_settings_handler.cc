@@ -4,10 +4,20 @@
 
 #include "chrome/browser/ui/webui/options/website_settings_handler.h"
 
+#include "apps/app_window_registry.h"
 #include "chrome/browser/content_settings/content_settings_utils.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_iterator.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "content/public/browser/dom_storage_context.h"
+#include "content/public/browser/storage_partition.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
+#include "extensions/browser/extension_registry.h"
+#include "extensions/common/constants.h"
+#include "extensions/common/extension.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/time_format.h"
@@ -53,6 +63,7 @@ void WebsiteSettingsHandler::GetLocalizedValues(
        IDS_WEBSITE_SETTINGS_MEDIASTREAM_DESCRIPTION},
       {"websitesNotificationsDescription",
        IDS_WEBSITE_SETTINGS_NOTIFICATIONS_DESCRIPTION},
+      {"websitesButtonClear", IDS_WEBSITE_SETTINGS_STORAGE_CLEAR_BUTTON},
   };
 
   RegisterStrings(localized_strings, resources, arraysize(resources));
@@ -95,6 +106,16 @@ void WebsiteSettingsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "maybeShowEditPage",
       base::Bind(&WebsiteSettingsHandler::HandleMaybeShowEditPage,
+                 base::Unretained(this)));
+
+  web_ui()->RegisterMessageCallback(
+      "deleteLocalStorage",
+      base::Bind(&WebsiteSettingsHandler::HandleDeleteLocalStorage,
+                 base::Unretained(this)));
+
+  web_ui()->RegisterMessageCallback(
+      "stopOrigin",
+      base::Bind(&WebsiteSettingsHandler::HandleStopOrigin,
                  base::Unretained(this)));
 }
 
@@ -164,7 +185,8 @@ void WebsiteSettingsHandler::HandleMaybeShowEditPage(
 void WebsiteSettingsHandler::OnLocalStorageFetched(const std::list<
     BrowsingDataLocalStorageHelper::LocalStorageInfo>& storage) {
   local_storage_list_ = storage;
-  UpdateLocalStorage();
+  Update();
+  GetInfoForOrigin(last_site_, false);
 }
 
 void WebsiteSettingsHandler::Update() {
@@ -256,7 +278,7 @@ void WebsiteSettingsHandler::HandleGetOriginInfo(const base::ListValue* args) {
   if (!origin.is_valid())
     return;
 
-  GetInfoForOrigin(origin);
+  GetInfoForOrigin(origin, true);
 }
 
 void WebsiteSettingsHandler::HandleSetOriginPermission(
@@ -324,7 +346,19 @@ void WebsiteSettingsHandler::HandleSetOriginPermission(
                                   info);
 }
 
-void WebsiteSettingsHandler::GetInfoForOrigin(const GURL& site_url) {
+void WebsiteSettingsHandler::HandleDeleteLocalStorage(
+    const base::ListValue* args) {
+  DCHECK(!last_site_.is_empty());
+  DeleteLocalStorage(last_site_);
+}
+
+void WebsiteSettingsHandler::HandleStopOrigin(const base::ListValue* args) {
+  DCHECK(!last_site_.is_empty());
+  StopOrigin(last_site_);
+}
+
+void WebsiteSettingsHandler::GetInfoForOrigin(const GURL& site_url,
+                                              bool show_page) {
   Profile* profile = Profile::FromWebUI(web_ui());
   HostContentSettingsMap* map = profile->GetHostContentSettingsMap();
 
@@ -396,8 +430,10 @@ void WebsiteSettingsHandler::GetInfoForOrigin(const GURL& site_url) {
   base::Value* storage_used = new base::StringValue(l10n_util::GetStringFUTF16(
       IDS_WEBSITE_SETTINGS_STORAGE_USED, ui::FormatBytes(storage)));
 
-  web_ui()->CallJavascriptFunction(
-      "WebsiteSettingsEditor.populateOrigin", *storage_used, *permissions);
+  web_ui()->CallJavascriptFunction("WebsiteSettingsEditor.populateOrigin",
+                                   *storage_used,
+                                   *permissions,
+                                   base::FundamentalValue(show_page));
 }
 
 void WebsiteSettingsHandler::UpdateLocalStorage() {
@@ -419,6 +455,54 @@ void WebsiteSettingsHandler::UpdateLocalStorage() {
   }
   web_ui()->CallJavascriptFunction("WebsiteSettingsManager.populateOrigins",
                                    local_storage_map);
+}
+
+void WebsiteSettingsHandler::StopOrigin(const GURL& site_url) {
+  Profile* profile = Profile::FromWebUI(web_ui());
+  if (site_url.SchemeIs(extensions::kExtensionScheme)) {
+    const extensions::Extension* extension =
+        extensions::ExtensionRegistry::Get(profile)
+            ->enabled_extensions()
+            .GetHostedAppByURL(site_url);
+    if (extension) {
+      apps::AppWindowRegistry::Get(profile)
+          ->CloseAllAppWindowsForApp(extension->id());
+    }
+  }
+
+  for (chrome::BrowserIterator it; !it.done(); it.Next()) {
+    Browser* browser = *it;
+    TabStripModel* model = browser->tab_strip_model();
+    for (int idx = 0; idx < model->count(); idx++) {
+      content::WebContents* web_contents = model->GetWebContentsAt(idx);
+      // Can't discard tabs that are already discarded or active.
+      if (model->IsTabDiscarded(idx) || (model->active_index() == idx))
+        continue;
+
+      // Don't discard tabs that belong to other profiles or other origins.
+      if (web_contents->GetLastCommittedURL().GetOrigin() != site_url ||
+          profile !=
+              Profile::FromBrowserContext(web_contents->GetBrowserContext())) {
+        continue;
+      }
+      model->DiscardWebContentsAt(idx);
+    }
+  }
+}
+
+void WebsiteSettingsHandler::DeleteLocalStorage(const GURL& site_url) {
+  Profile* profile = Profile::FromWebUI(web_ui());
+  content::DOMStorageContext* dom_storage_context_ =
+      content::BrowserContext::GetDefaultStoragePartition(profile)
+          ->GetDOMStorageContext();
+  dom_storage_context_->DeleteLocalStorage(site_url);
+
+  // Load a new BrowsingDataLocalStorageHelper to update.
+  local_storage_ = new BrowsingDataLocalStorageHelper(profile);
+
+  local_storage_->StartFetching(
+      base::Bind(&WebsiteSettingsHandler::OnLocalStorageFetched,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 }  // namespace options

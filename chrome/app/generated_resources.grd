@@ -7983,6 +7983,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_WEBSITE_SETTINGS_STORAGE_USED" desc="The status text for how much local storage a website origin is using.">
         <ph name="USAGE">$1<ex>2.0 KB</ex></ph> stored data
       </message>
+      <message name="IDS_WEBSITE_SETTINGS_STORAGE_CLEAR_BUTTON" desc="The 'Clear' button in the Website Settings single site view dialog.">
+        Clear
+      </message>
+
 
       <!-- Automatic updates -->
       <if expr="is_macosx">
@@ -12995,7 +12999,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
     </message>
     <message name="IDS_DISALLOW_AUTOFILL_SYNC_CREDENTIAL_FOR_REAUTH" desc="The text for the choice to not allow autofilling for reauth pages in about:flags">
       Disallow for reauth
-    </message>    
+    </message>
 
     <!-- Update Recommended dialog -->
     <if expr="not chromeos">
