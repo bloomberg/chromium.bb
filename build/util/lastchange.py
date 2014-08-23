@@ -99,6 +99,8 @@ def FetchGitRevision(directory):
   Returns:
     A VersionInfo object or None on error.
   """
+  # TODO(agable): Re-add the commit position after the lastchange value can
+  # accept strings longer than 64 characters. See crbug.com/406783.
   hsh = ''
   proc = RunGitCommand(directory, ['rev-parse', 'HEAD'])
   if proc:
@@ -107,17 +109,7 @@ def FetchGitRevision(directory):
       hsh = output
   if not hsh:
     return None
-  pos = ''
-  proc = RunGitCommand(directory, ['show', '-s', '--format=%B', 'HEAD'])
-  if proc:
-    output = proc.communicate()[0]
-    if proc.returncode == 0 and output:
-      for line in reversed(output.splitlines()):
-        if line.startswith('Cr-Commit-Position:'):
-          pos = line.rsplit()[-1].strip()
-  if not pos:
-    return VersionInfo('git', hsh)
-  return VersionInfo('git', '%s-%s' % (hsh, pos))
+  return VersionInfo('git', hsh)
 
 
 def FetchGitSVNURLAndRevision(directory, svn_url_regex):
