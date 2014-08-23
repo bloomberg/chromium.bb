@@ -1675,6 +1675,14 @@ def _SetupCidb(options):
     cidb.CIDBConnectionFactory.SetupNoCidb()
     return
 
+  # TODO(akeshet): This is a temporary workaround to make sure that the cidb
+  # is not used on waterfalls that the db schema does not support (in particular
+  # the chromeos.chrome waterfall).
+  waterfall = os.environ.get('BUILDBOT_MASTERNAME', '')
+  if not waterfall in ('chromeos', 'chromiumos', 'chromiumos.tryserver'):
+    cidb.CIDBConnectionFactory.SetupNoCidb()
+    return
+
   if options.debug:
     cidb.CIDBConnectionFactory.SetupDebugCidb()
   else:
