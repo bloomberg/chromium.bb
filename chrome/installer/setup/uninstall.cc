@@ -11,8 +11,8 @@
 #include <vector>
 
 #include "base/base_paths.h"
-#include "base/file_util.h"
 #include "base/files/file_enumerator.h"
+#include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/process/kill.h"
 #include "base/strings/string16.h"

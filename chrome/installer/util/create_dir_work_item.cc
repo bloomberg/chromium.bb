@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/logging.h"
 #include "chrome/installer/util/create_dir_work_item.h"
 #include "chrome/installer/util/logging_installer.h"

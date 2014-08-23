@@ -7,7 +7,7 @@
 #include <fstream>
 
 #include "base/base_paths.h"
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -19,59 +19,61 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
-  class CopyTreeWorkItemTest : public testing::Test {
-   protected:
-    virtual void SetUp() {
-      ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-      ASSERT_TRUE(test_dir_.CreateUniqueTempDir());
-    }
 
-    virtual void TearDown() {
-      logging::CloseLogFile();
-    }
-
-    // the path to temporary directory used to contain the test operations
-    base::ScopedTempDir test_dir_;
-    base::ScopedTempDir temp_dir_;
-  };
-
-  // Simple function to dump some text into a new file.
-  void CreateTextFile(const std::wstring& filename,
-                      const std::wstring& contents) {
-    std::ofstream file;
-    file.open(filename.c_str());
-    ASSERT_TRUE(file.is_open());
-    file << contents;
-    file.close();
+class CopyTreeWorkItemTest : public testing::Test {
+ protected:
+  virtual void SetUp() {
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+    ASSERT_TRUE(test_dir_.CreateUniqueTempDir());
   }
 
-  bool IsFileInUse(const base::FilePath& path) {
-    if (!base::PathExists(path))
-      return false;
-
-    HANDLE handle = ::CreateFile(path.value().c_str(), FILE_ALL_ACCESS,
-                                 NULL, NULL, OPEN_EXISTING, NULL, NULL);
-    if (handle  == INVALID_HANDLE_VALUE)
-      return true;
-
-    CloseHandle(handle);
-    return false;
+  virtual void TearDown() {
+    logging::CloseLogFile();
   }
 
-  // Simple function to read text from a file.
-  std::wstring ReadTextFile(const std::wstring& filename) {
-    WCHAR contents[64];
-    std::wifstream file;
-    file.open(filename.c_str());
-    EXPECT_TRUE(file.is_open());
-    file.getline(contents, 64);
-    file.close();
-    return std::wstring(contents);
-  }
-
-  wchar_t text_content_1[] = L"Gooooooooooooooooooooogle";
-  wchar_t text_content_2[] = L"Overwrite Me";
+  // the path to temporary directory used to contain the test operations
+  base::ScopedTempDir test_dir_;
+  base::ScopedTempDir temp_dir_;
 };
+
+// Simple function to dump some text into a new file.
+void CreateTextFile(const std::wstring& filename,
+                    const std::wstring& contents) {
+  std::ofstream file;
+  file.open(filename.c_str());
+  ASSERT_TRUE(file.is_open());
+  file << contents;
+  file.close();
+}
+
+bool IsFileInUse(const base::FilePath& path) {
+  if (!base::PathExists(path))
+    return false;
+
+  HANDLE handle = ::CreateFile(path.value().c_str(), FILE_ALL_ACCESS,
+                               NULL, NULL, OPEN_EXISTING, NULL, NULL);
+  if (handle  == INVALID_HANDLE_VALUE)
+    return true;
+
+  CloseHandle(handle);
+  return false;
+}
+
+// Simple function to read text from a file.
+std::wstring ReadTextFile(const std::wstring& filename) {
+  WCHAR contents[64];
+  std::wifstream file;
+  file.open(filename.c_str());
+  EXPECT_TRUE(file.is_open());
+  file.getline(contents, 64);
+  file.close();
+  return std::wstring(contents);
+}
+
+const wchar_t text_content_1[] = L"Gooooooooooooooooooooogle";
+const wchar_t text_content_2[] = L"Overwrite Me";
+
+}  // namespace
 
 // Copy one file from source to destination.
 TEST_F(CopyTreeWorkItemTest, CopyFile) {

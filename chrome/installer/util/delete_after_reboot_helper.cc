@@ -15,8 +15,8 @@
 #include <string>
 #include <vector>
 
-#include "base/file_util.h"
 #include "base/files/file_enumerator.h"
+#include "base/files/file_util.h"
 #include "base/strings/string_util.h"
 #include "base/win/registry.h"
 
@@ -81,10 +81,10 @@ bool ScheduleFileSystemEntityForDeletion(const base::FilePath& path) {
                                 GENERIC_READ | GENERIC_WRITE, 0, NULL,
                                 OPEN_EXISTING, 0, NULL);
     if (file != INVALID_HANDLE_VALUE) {
-      LOG(INFO) << " file not in use: " << path.value();
+      VLOG(1) << " file not in use: " << path.value();
       ::CloseHandle(file);
     } else {
-      PLOG(INFO) << " file in use (or not found?): " << path.value();
+      PLOG(WARNING) << " file in use (or not found?): " << path.value();
     }
   }
 #endif

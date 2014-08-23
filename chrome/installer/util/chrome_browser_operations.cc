@@ -5,8 +5,8 @@
 #include "chrome/installer/util/chrome_browser_operations.h"
 
 #include "base/command_line.h"
-#include "base/file_util.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "chrome/installer/util/browser_distribution.h"

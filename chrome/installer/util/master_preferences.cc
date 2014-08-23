@@ -5,7 +5,7 @@
 #include "chrome/installer/util/master_preferences.h"
 
 #include "base/environment.h"
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"

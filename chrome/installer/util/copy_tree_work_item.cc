@@ -6,7 +6,7 @@
 
 #include <shlwapi.h>
 
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/logging.h"
 #include "chrome/installer/util/logging_installer.h"
 

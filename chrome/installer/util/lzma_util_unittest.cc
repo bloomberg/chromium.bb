@@ -4,7 +4,7 @@
 
 #include <windows.h>
 
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
 #include "chrome/common/chrome_paths.h"
@@ -12,6 +12,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
+
 class LzmaUtilTest : public testing::Test {
  protected:
   virtual void SetUp() {
@@ -27,7 +28,8 @@ class LzmaUtilTest : public testing::Test {
   // The path to input data used in tests.
   base::FilePath data_dir_;
 };
-};
+
+}  // namespace
 
 // Test that we can open archives successfully.
 TEST_F(LzmaUtilTest, OpenArchiveTest) {

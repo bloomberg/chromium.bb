@@ -9,9 +9,9 @@
 #include <utility>
 
 #include "base/command_line.h"
-#include "base/file_util.h"
 #include "base/file_version_info.h"
 #include "base/files/file_enumerator.h"
+#include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"

@@ -6,7 +6,7 @@
 
 #include <fstream>
 
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"

@@ -7,7 +7,7 @@
 #include <fstream>
 
 #include "base/base_paths.h"
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -18,29 +18,30 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
-  class DeleteTreeWorkItemTest : public testing::Test {
-   protected:
-    virtual void SetUp() {
-      ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    }
 
-    // The temporary directory used to contain the test operations.
-    base::ScopedTempDir temp_dir_;
-  };
-
-  // Simple function to dump some text into a new file.
-  void CreateTextFile(const std::wstring& filename,
-                      const std::wstring& contents) {
-    std::ofstream file;
-    file.open(filename.c_str());
-    ASSERT_TRUE(file.is_open());
-    file << contents;
-    file.close();
+class DeleteTreeWorkItemTest : public testing::Test {
+ protected:
+  virtual void SetUp() {
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   }
 
-  wchar_t text_content_1[] = L"delete me";
-  wchar_t text_content_2[] = L"delete me as well";
+  // The temporary directory used to contain the test operations.
+  base::ScopedTempDir temp_dir_;
 };
+
+// Simple function to dump some text into a new file.
+void CreateTextFile(const std::wstring& filename,
+                    const std::wstring& contents) {
+  std::ofstream file;
+  file.open(filename.c_str());
+  ASSERT_TRUE(file.is_open());
+  file << contents;
+  file.close();
+}
+
+const wchar_t text_content_1[] = L"delete me";
+
+}  // namespace
 
 // Delete a tree without key path. Everything should be deleted.
 TEST_F(DeleteTreeWorkItemTest, DeleteTreeNoKeyPath) {

@@ -4,7 +4,7 @@
 
 #include "chrome/installer/util/eula_util.h"
 
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/install_util.h"

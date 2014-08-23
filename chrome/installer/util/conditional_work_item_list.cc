@@ -4,7 +4,7 @@
 
 #include "chrome/installer/util/conditional_work_item_list.h"
 
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/logging.h"
 
 ConditionalWorkItemList::ConditionalWorkItemList(Condition* condition)

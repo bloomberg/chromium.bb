@@ -5,8 +5,8 @@
 // Boilerplate for an upgrade scenario test.  The mini_installer.exe residing in
 // the same directory as the host executable is re-versioned.
 
-#include "base/file_util.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "chrome/installer/test/alternate_version_generator.h"
 #include "testing/gtest/include/gtest/gtest.h"

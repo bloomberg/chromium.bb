@@ -5,7 +5,7 @@
 #include <windows.h>
 #include <shlobj.h>
 
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/win/registry.h"

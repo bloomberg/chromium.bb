@@ -6,7 +6,7 @@
 
 #include <windows.h>
 
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/logging.h"
 #include "chrome/installer/util/delete_after_reboot_helper.h"
 

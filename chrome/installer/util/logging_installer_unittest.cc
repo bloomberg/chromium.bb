@@ -4,9 +4,9 @@
 
 #include <string>
 
-#include "base/file_util.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/win/scoped_handle.h"
 #include "chrome/installer/util/logging_installer.h"
