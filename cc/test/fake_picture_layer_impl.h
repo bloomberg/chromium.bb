@@ -75,6 +75,9 @@ class FakePictureLayerImpl : public PictureLayerImpl {
   float raster_page_scale() const { return raster_page_scale_; }
   void set_raster_page_scale(float scale) { raster_page_scale_ = scale; }
 
+  float ideal_contents_scale() const { return ideal_contents_scale_; }
+  float raster_contents_scale() const { return raster_contents_scale_; }
+
   PictureLayerTiling* HighResTiling() const;
   PictureLayerTiling* LowResTiling() const;
   size_t num_tilings() const { return tilings_->num_tilings(); }
