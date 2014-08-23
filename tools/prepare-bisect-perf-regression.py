@@ -5,7 +5,7 @@
 
 """Prepare Performance Test Bisect Tool
 
-This script is used by a trybot to create a working directory and sync an
+This script is used by a try bot to create a working directory and sync an
 initial copy of the depot for use in bisecting performance regressions.
 
 An example usage:
@@ -27,7 +27,7 @@ def main():
   """Does an initial checkout of Chromium then exits."""
 
   usage = ('%prog [options] [-- chromium-options]\n'
-           'Prepares a temporary depot for use on a trybot.')
+           'Prepares a temporary depot for use on a try bot.')
 
   parser = optparse.OptionParser(usage=usage)
 

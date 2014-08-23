@@ -85,7 +85,7 @@ REPO_PARAMS = [
 
 
 def OutputAnnotationStepStart(name):
-  """Outputs annotation to signal the start of a step to a trybot.
+  """Outputs annotation to signal the start of a step to a try bot.
 
   Args:
     name: The name of the step.
@@ -99,7 +99,7 @@ def OutputAnnotationStepStart(name):
 
 
 def OutputAnnotationStepClosed():
-  """Outputs annotation to signal the closing of a step to a trybot."""
+  """Outputs annotation to signal the closing of a step to a try bot."""
   print
   print '@@@STEP_CLOSED@@@'
   print
@@ -111,7 +111,7 @@ def OutputAnnotationStepLink(label, url):
 
   Args:
     label: The name to print.
-    url: The url to print.
+    url: The URL to print.
   """
   print
   print '@@@STEP_LINK@%s@%s@@@' % (label, url)
@@ -172,10 +172,10 @@ def _CreateAndChangeToSourceDirectory(working_directory):
 
 
 def _SubprocessCall(cmd, cwd=None):
-  """Runs a subprocess with specified parameters.
+  """Runs a command in a subprocess.
 
   Args:
-    params: A list of parameters to pass to gclient.
+    cmd: The command to run.
     cwd: Working directory to run from.
 
   Returns:

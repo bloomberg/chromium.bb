@@ -5,7 +5,7 @@
 
 """Run Performance Test Bisect Tool
 
-This script is used by a trybot to run the src/tools/bisect-perf-regression.py
+This script is used by a try bot to run the src/tools/bisect-perf-regression.py
 script with the parameters specified in run-bisect-perf-regression.cfg. It will
 check out a copy of the depot in a subdirectory 'bisect' of the working
 directory provided, and run the bisect-perf-regression.py script there.
@@ -220,7 +220,7 @@ def _CreateBisectOptionsFromConfig(config):
       opts_dict['cros_board'] = os.environ[CROS_BOARD_ENV]
       opts_dict['cros_remote_ip'] = os.environ[CROS_IP_ENV]
     else:
-      raise RuntimeError('Cros build selected, but BISECT_CROS_IP or'
+      raise RuntimeError('CrOS build selected, but BISECT_CROS_IP or'
           'BISECT_CROS_BOARD undefined.')
   elif 'android' in config['command']:
     if 'android-chrome-shell' in config['command']:
@@ -271,7 +271,7 @@ def _RunPerformanceTest(config, path_to_file):
   bisect_utils.OutputAnnotationStepStart('Reverting Patch')
   # TODO: When this is re-written to recipes, this should use bot_update's
   # revert mechanism to fully revert the client. But for now, since we know that
-  # the perf trybot currently only supports src/ and src/third_party/WebKit, we
+  # the perf try bot currently only supports src/ and src/third_party/WebKit, we
   # simply reset those two directories.
   bisect_utils.CheckRunGit(['reset', '--hard'])
   bisect_utils.CheckRunGit(['reset', '--hard'],
@@ -301,11 +301,11 @@ def _RunPerformanceTest(config, path_to_file):
       if 'storage.googleapis.com/chromium-telemetry/html-results/' in t]
   if cloud_file_link:
     # What we're getting here is basically "View online at http://..." so parse
-    # out just the url portion.
+    # out just the URL portion.
     cloud_file_link = cloud_file_link[0]
     cloud_file_link = [t for t in cloud_file_link.split(' ')
         if 'storage.googleapis.com/chromium-telemetry/html-results/' in t]
-    assert cloud_file_link, "Couldn't parse url from output."
+    assert cloud_file_link, 'Couldn\'t parse URL from output.'
     cloud_file_link = cloud_file_link[0]
   else:
     cloud_file_link = ''
@@ -442,8 +442,8 @@ def _RunBisectionScript(
     cmd.extend(['--extra_src', path_to_extra_src])
 
   # These flags are used to download build archives from cloud storage if
-  # available, otherwise will post a try_job_http request to build it on
-  # tryserver.
+  # available, otherwise will post a try_job_http request to build it on the
+  # try server.
   if config.get('gs_bucket'):
     if config.get('builder_host') and config.get('builder_port'):
       cmd.extend(['--gs_bucket', config['gs_bucket'],
@@ -483,7 +483,7 @@ def _PrintConfigStep(config):
 def _OptionParser():
   """Returns the options parser for run-bisect-perf-regression.py."""
   usage = ('%prog [options] [-- chromium-options]\n'
-           'Used by a trybot to run the bisection script using the parameters'
+           'Used by a try bot to run the bisection script using the parameters'
            ' provided in the run-bisect-perf-regression.cfg file.')
   parser = optparse.OptionParser(usage=usage)
   parser.add_option('-w', '--working_directory',

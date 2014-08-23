@@ -36,10 +36,10 @@ class SourceControl(object):
   def SyncToRevisionWithGClient(self, revision):
     """Uses gclient to sync to the specified revision.
 
-    ie. gclient sync --revision <revision>
+    This is like running gclient sync --revision <revision>.
 
     Args:
-      revision: The git SHA1 or svn CL (depending on workflow).
+      revision: A git SHA1 hash or SVN revision number (depending on workflow).
 
     Returns:
       The return code of the call.
@@ -48,11 +48,11 @@ class SourceControl(object):
         '--delete_unversioned_trees', '--nohooks', '--revision', revision])
 
   def SyncToRevisionWithRepo(self, timestamp):
-    """Uses repo to sync all the underlying git depots to the specified
-    time.
+    """Uses the repo command to sync all the underlying git depots to the
+    specified time.
 
     Args:
-      timestamp: The unix timestamp to sync to.
+      timestamp: The Unix timestamp to sync to.
 
     Returns:
       The return code of the call.
@@ -227,6 +227,7 @@ class GitSourceControl(SourceControl):
 
     Args:
       revision: Revision you want to gather information on.
+
     Returns:
       A dict in the following format:
       {
@@ -259,7 +260,7 @@ class GitSourceControl(SourceControl):
         ['checkout', revision, file_name], cwd=cwd)[1]
 
   def RevertFileToHead(self, file_name):
-    """Unstages a file and returns it to HEAD.
+    """Un-stages a file and resets the file's state to HEAD.
 
     Returns:
       True if successful.

@@ -13,19 +13,17 @@ suspected to occur as a result of WebKit/V8 changes, the script will
 further bisect changes to those depots and attempt to narrow down the revision
 range.
 
-
-An example usage (using svn cl's):
+Example usage using SVN revisions:
 
 ./tools/bisect-perf-regression.py -c\
   "out/Release/performance_ui_tests --gtest_filter=ShutdownTest.SimpleUserQuit"\
   -g 168222 -b 168232 -m shutdown/simple-user-quit
 
-Be aware that if you're using the git workflow and specify an svn revision,
-the script will attempt to find the git SHA1 where svn changes up to that
+Be aware that if you're using the git workflow and specify an SVN revision,
+the script will attempt to find the git SHA1 where SVN changes up to that
 revision were merged in.
 
-
-An example usage (using git hashes):
+Example usage using git hashes:
 
 ./tools/bisect-perf-regression.py -c\
   "out/Release/performance_ui_tests --gtest_filter=ShutdownTest.SimpleUserQuit"\
@@ -159,9 +157,9 @@ BUILD_RESULT_SUCCEED = 0
 BUILD_RESULT_FAIL = 1
 BUILD_RESULT_SKIPPED = 2
 
-# Maximum time in seconds to wait after posting build request to tryserver.
+# Maximum time in seconds to wait after posting build request to the try server.
 # TODO: Change these values based on the actual time taken by buildbots on
-# the tryserver.
+# the try server.
 MAX_MAC_BUILD_TIME = 14400
 MAX_WIN_BUILD_TIME = 14400
 MAX_LINUX_BUILD_TIME = 14400
@@ -171,8 +169,8 @@ HIGH_CONFIDENCE = 95
 
 # Patch template to add a new file, DEPS.sha under src folder.
 # This file contains SHA1 value of the DEPS changes made while bisecting
-# dependency repositories. This patch send along with DEPS patch to tryserver.
-# When a build requested is posted with a patch, bisect builders on tryserver,
+# dependency repositories. This patch send along with DEPS patch to try server.
+# When a build requested is posted with a patch, bisect builders on try server,
 # once build is produced, it reads SHA value from this file and appends it
 # to build archive filename.
 DEPS_SHA_PATCH = """diff --git src/DEPS.sha src/DEPS.sha
@@ -217,7 +215,7 @@ To run locally:
 $%(command)s"""
 
 REPRO_STEPS_TRYJOB = """
-To reproduce on Performance trybot:
+To reproduce on a performance try bot:
 1. Create new git branch or check out existing branch.
 2. Edit tools/run-perf-test.cfg (instructions in file) or \
 third_party/WebKit/Tools/run-perf-test.cfg.
@@ -230,7 +228,7 @@ relative path names.
 committed locally to run-perf-test.cfg.
    Note: *DO NOT* commit run-perf-test.cfg changes to the project repository.
    $ git cl upload --bypass-hooks
-4. Send your try job to the tryserver. \
+4. Send your try job to the try server. \
 [Please make sure to use appropriate bot to reproduce]
    $ git cl try -m tryserver.chromium.perf -b <bot>
 
@@ -309,13 +307,13 @@ def GetZipFileName(build_revision=None, target_arch='ia32', patch_sha=None):
   def PlatformName():
     """Return a string to be used in paths for the platform."""
     if bisect_utils.IsWindowsHost():
-      # Build archive for x64 is still stored with 'win32'suffix
-      # (chromium_utils.PlatformName()).
+      # Build archive for x64 is still stored with the "win32" suffix.
+      # See chromium_utils.PlatformName().
       if bisect_utils.Is64BitWindows() and target_arch == 'x64':
         return 'win32'
       return 'win32'
     if bisect_utils.IsLinuxHost():
-      # Android builds too are archived with full-build-linux* prefix.
+      # Android builds are also archived with the "full-build-linux prefix.
       return 'linux'
     if bisect_utils.IsMacHost():
       return 'mac'
@@ -331,9 +329,9 @@ def GetZipFileName(build_revision=None, target_arch='ia32', patch_sha=None):
 
 def GetRemoteBuildPath(build_revision, target_platform='chromium',
                        target_arch='ia32', patch_sha=None):
-  """Compute the url to download the build from."""
+  """Returns the URL to download the build from."""
   def GetGSRootFolderName(target_platform):
-    """Gets Google Cloud Storage root folder names"""
+    """Returns the Google Cloud Storage root folder name."""
     if bisect_utils.IsWindowsHost():
       if bisect_utils.Is64BitWindows() and target_arch == 'x64':
         return 'Win x64 Builder'
@@ -361,7 +359,7 @@ def FetchFromCloudStorage(bucket_name, source_path, destination_path):
     destination_path: Destination file path.
 
   Returns:
-    Downloaded file path if exisits, otherwise None.
+    Downloaded file path if exists, otherwise None.
   """
   target_file = os.path.join(destination_path, os.path.basename(source_path))
   try:
@@ -380,7 +378,7 @@ def FetchFromCloudStorage(bucket_name, source_path, destination_path):
   return None
 
 
-# This is copied from Chromium's project build/scripts/common/chromium_utils.py.
+# This is copied from build/scripts/common/chromium_utils.py.
 def MaybeMakeDirectory(*path):
   """Creates an entire path, if it doesn't already exist."""
   file_path = os.path.join(*path)
@@ -392,7 +390,7 @@ def MaybeMakeDirectory(*path):
   return True
 
 
-# This is copied from Chromium's project build/scripts/common/chromium_utils.py.
+# This was copied from build/scripts/common/chromium_utils.py.
 def ExtractZip(filename, output_dir, verbose=True):
   """ Extract the zip archive in the output directory."""
   MaybeMakeDirectory(output_dir)
@@ -402,8 +400,8 @@ def ExtractZip(filename, output_dir, verbose=True):
   # easier then trying to do that with ZipInfo options.
   #
   # The Mac Version of unzip unfortunately does not support Zip64, whereas
-  # the python module does, so we have to fallback to the python zip module
-  # on Mac if the filesize is greater than 4GB.
+  # the python module does, so we have to fall back to the python zip module
+  # on Mac if the file size is greater than 4GB.
   #
   # On Windows, try to use 7z if it is installed, otherwise fall back to python
   # zip module and pray we don't have files larger than 512MB to unzip.
@@ -440,6 +438,7 @@ def ExtractZip(filename, output_dir, verbose=True):
 
 
 def WriteStringToFile(text, file_name):
+  """Writes text to a file, raising an RuntimeError on failure."""
   try:
     with open(file_name, 'wb') as f:
       f.write(text)
@@ -448,6 +447,7 @@ def WriteStringToFile(text, file_name):
 
 
 def ReadStringFromFile(file_name):
+  """Writes text to a file, raising an RuntimeError on failure."""
   try:
     with open(file_name) as f:
       return f.read()
@@ -456,25 +456,25 @@ def ReadStringFromFile(file_name):
 
 
 def ChangeBackslashToSlashInPatch(diff_text):
-  """Formats file paths in the given text to unix-style paths."""
-  if diff_text:
-    diff_lines = diff_text.split('\n')
-    for i in range(len(diff_lines)):
-      if (diff_lines[i].startswith('--- ') or
-          diff_lines[i].startswith('+++ ')):
-        diff_lines[i] = diff_lines[i].replace('\\', '/')
-    return '\n'.join(diff_lines)
-  return None
+  """Formats file paths in the given patch text to Unix-style paths."""
+  if not diff_text:
+    return None
+  diff_lines = diff_text.split('\n')
+  for i in range(len(diff_lines)):
+    line = diff_lines[i]
+    if line.startswith('--- ') or line.startswith('+++ '):
+      diff_lines[i] = line.replace('\\', '/')
+  return '\n'.join(diff_lines)
 
 
 def _ParseRevisionsFromDEPSFileManually(deps_file_contents):
-  """Parses the vars section of the DEPS file with regex.
+  """Parses the vars section of the DEPS file using regular expressions.
 
   Args:
     deps_file_contents: The DEPS file contents as a string.
 
   Returns:
-    A dict in the format {depot:revision} if successful, otherwise None.
+    A dictionary in the format {depot: revision} if successful, otherwise None.
   """
   # We'll parse the "vars" section of the DEPS file.
   rxp = re.compile('vars = {(?P<vars_body>[^}]+)', re.MULTILINE)
@@ -497,24 +497,24 @@ def _ParseRevisionsFromDEPSFileManually(deps_file_contents):
 def _WaitUntilBuildIsReady(
     fetch_build, bot_name, builder_host, builder_port, build_request_id,
     max_timeout):
-  """Waits until build is produced by bisect builder on tryserver.
+  """Waits until build is produced by bisect builder on try server.
 
   Args:
     fetch_build: Function to check and download build from cloud storage.
-    bot_name: Builder bot name on tryserver.
-    builder_host Tryserver hostname.
-    builder_port: Tryserver port.
-    build_request_id: A unique ID of the build request posted to tryserver.
+    bot_name: Builder bot name on try server.
+    builder_host Try server host name.
+    builder_port: Try server port.
+    build_request_id: A unique ID of the build request posted to try server.
     max_timeout: Maximum time to wait for the build.
 
   Returns:
      Downloaded archive file path if exists, otherwise None.
   """
-  # Build number on the tryserver.
+  # Build number on the try server.
   build_num = None
   # Interval to check build on cloud storage.
   poll_interval = 60
-  # Interval to check build status on tryserver.
+  # Interval to check build status on try server in seconds.
   status_check_interval = 600
   last_status_check = time.time()
   start_time = time.time()
@@ -524,17 +524,17 @@ def _WaitUntilBuildIsReady(
     if res:
       return (res, 'Build successfully found')
     elapsed_status_check = time.time() - last_status_check
-    # To avoid overloading tryserver with status check requests, we check
-    # build status for every 10 mins.
+    # To avoid overloading try server with status check requests, we check
+    # build status for every 10 minutes.
     if elapsed_status_check > status_check_interval:
       last_status_check = time.time()
       if not build_num:
-        # Get the build number on tryserver for the current build.
+        # Get the build number on try server for the current build.
         build_num = bisect_builder.GetBuildNumFromBuilder(
             build_request_id, bot_name, builder_host, builder_port)
       # Check the status of build using the build number.
       # Note: Build is treated as PENDING if build number is not found
-      # on the the tryserver.
+      # on the the try server.
       build_status, status_link = bisect_builder.GetBuildStatus(
           build_num, bot_name, builder_host, builder_port)
       if build_status == bisect_builder.FAILED:
@@ -783,14 +783,14 @@ def _GenerateProfileIfNecessary(command_args):
 
 
 def _AddRevisionsIntoRevisionData(revisions, depot, sort, revision_data):
-  """Adds new revisions to the revision_data dict and initializes them.
+  """Adds new revisions to the revision_data dictionary and initializes them.
 
   Args:
     revisions: List of revisions to add.
     depot: Depot that's currently in use (src, webkit, etc...)
     sort: Sorting key for displaying revisions.
-    revision_data: A dict to add the new revisions into. Existing revisions
-      will have their sort keys offset.
+    revision_data: A dictionary to add the new revisions into.
+        Existing revisions will have their sort keys adjusted.
   """
   num_depot_revisions = len(revisions)
 
@@ -857,7 +857,7 @@ def _FindOtherRegressions(revision_data_sorted, bad_greater_than_good):
   """Compiles a list of other possible regressions from the revision data.
 
   Args:
-    revision_data_sorted: Sorted list of (revision, revision data dict) pairs.
+    revision_data_sorted: Sorted list of (revision, revision data) pairs.
     bad_greater_than_good: Whether the result value at the "bad" revision is
         numerically greater than the result value at the "good" revision.
 
@@ -1087,7 +1087,7 @@ class BisectPerformanceMetrics(object):
             if re_results:
               results[depot_name] = re_results.group('revision')
             else:
-              warning_text = ('Couldn\'t parse revision for %s while bisecting '
+              warning_text = ('Could not parse revision for %s while bisecting '
                               '%s' % (depot_name, depot))
               if not warning_text in self.warnings:
                 self.warnings.append(warning_text)
@@ -1112,8 +1112,11 @@ class BisectPerformanceMetrics(object):
   def _Get3rdPartyRevisions(self, depot):
     """Parses the DEPS file to determine WebKit/v8/etc... versions.
 
+    Args:
+      depot: A depot name. Should be in the DEPOT_NAMES list.
+
     Returns:
-      A dict in the format {depot:revision} if successful, otherwise None.
+      A dict in the format {depot: revision} if successful, otherwise None.
     """
     cwd = os.getcwd()
     self.ChangeToDepotWorkingDirectory(depot)
@@ -1301,7 +1304,7 @@ class BisectPerformanceMetrics(object):
     return False
 
   def PostBuildRequestAndWait(self, revision, fetch_build, patch=None):
-    """POSTs the build request job to the tryserver instance.
+    """POSTs the build request job to the try server instance.
 
     A try job build request is posted to tryserver.chromium.perf master,
     and waits for the binaries to be produced and archived on cloud storage.
@@ -1345,8 +1348,8 @@ class BisectPerformanceMetrics(object):
        self.opts.target_platform, self.opts.target_arch)
     builder_host = self.opts.builder_host
     builder_port = self.opts.builder_port
-    # Create a unique ID for each build request posted to tryserver builders.
-    # This ID is added to "Reason" property in build's json.
+    # Create a unique ID for each build request posted to try server builders.
+    # This ID is added to "Reason" property of the build.
     build_request_id = GetSHA1HexDigest(
         '%s-%s-%s' % (svn_revision, patch, time.time()))
 
@@ -1372,7 +1375,7 @@ class BisectPerformanceMetrics(object):
     return None
 
   def IsDownloadable(self, depot):
-    """Checks if build is downloadable based on target platform and depot."""
+    """Checks if build can be downloaded based on target platform and depot."""
     if (self.opts.target_platform in ['chromium', 'android'] and
         self.opts.gs_bucket):
       return (depot == 'chromium' or
@@ -1537,7 +1540,7 @@ class BisectPerformanceMetrics(object):
     # Prior to crrev.com/274857 *only* android-chromium-testshell
     # Then until crrev.com/276628 *both* (android-chromium-testshell and
     # android-chrome-shell) work. After that rev 276628 *only*
-    # android-chrome-shell works. bisect-perf-reggresion.py script should
+    # android-chrome-shell works. bisect-perf-regression.py script should
     # handle these cases and set appropriate browser type based on revision.
     if self.opts.target_platform in ['android']:
       # When its a third_party depot, get the chromium revision.
@@ -1703,13 +1706,14 @@ class BisectPerformanceMetrics(object):
     return (values, success_code, output_of_all_runs)
 
   def FindAllRevisionsToSync(self, revision, depot):
-    """Finds all dependant revisions and depots that need to be synced for a
-    given revision. This is only useful in the git workflow, as an svn depot
-    may be split into multiple mirrors.
+    """Finds all dependent revisions and depots that need to be synced.
 
-    ie. skia is broken up into 3 git mirrors over skia/src, skia/gyp, and
-    skia/include. To sync skia/src properly, one has to find the proper
-    revisions in skia/gyp and skia/include.
+    For example skia is broken up into 3 git mirrors over skia/src,
+    skia/gyp, and skia/include. To sync skia/src properly, one has to find
+    the proper revisions in skia/gyp and skia/include.
+
+    This is only useful in the git workflow, as an SVN depot may be split into
+    multiple mirrors.
 
     Args:
       revision: The revision to sync to.
@@ -1725,7 +1729,7 @@ class BisectPerformanceMetrics(object):
 
     # Some SVN depots were split into multiple git depots, so we need to
     # figure out for each mirror which git revision to grab. There's no
-    # guarantee that the SVN revision will exist for each of the dependant
+    # guarantee that the SVN revision will exist for each of the dependent
     # depots, so we have to grep the git logs and grab the next earlier one.
     if (not is_base
         and DEPOT_DEPS_NAME[depot]['depends']
@@ -1752,12 +1756,11 @@ class BisectPerformanceMetrics(object):
     return revisions_to_sync
 
   def PerformPreBuildCleanup(self):
-    """Performs necessary cleanup between runs."""
+    """Performs cleanup between runs."""
     print 'Cleaning up between runs.'
     print
 
-    # Having these pyc files around between runs can confuse the
-    # perf tests and cause them to crash.
+    # Leaving these .pyc files around between runs may disrupt some perf tests.
     for (path, _, files) in os.walk(self.src_cwd):
       for cur_file in files:
         if cur_file.endswith('.pyc'):
@@ -1765,7 +1768,9 @@ class BisectPerformanceMetrics(object):
           os.remove(path_to_file)
 
   def PerformWebkitDirectoryCleanup(self, revision):
-    """If the script is switching between Blink and WebKit during bisect,
+    """Cleans up the Webkit directory before syncing another revision.
+
+    If the script is switching between Blink and WebKit during bisect,
     its faster to just delete the directory rather than leave it up to git
     to sync.
 
@@ -1797,7 +1802,7 @@ class BisectPerformanceMetrics(object):
     """Deletes the chroot.
 
     Returns:
-        True if successful.
+      True if successful.
     """
     cwd = os.getcwd()
     self.ChangeToDepotWorkingDirectory('cros')
@@ -1810,7 +1815,7 @@ class BisectPerformanceMetrics(object):
     """Creates a new chroot.
 
     Returns:
-        True if successful.
+      True if successful.
     """
     cwd = os.getcwd()
     self.ChangeToDepotWorkingDirectory('cros')
@@ -1832,7 +1837,7 @@ class BisectPerformanceMetrics(object):
       if not bisect_utils.RemoveThirdPartyDirectory('libjingle'):
         return False
       # Removes third_party/skia. At some point, skia was causing
-      #  issues syncing when using the git workflow (crbug.com/377951).
+      # issues syncing when using the git workflow (crbug.com/377951).
       if not bisect_utils.RemoveThirdPartyDirectory('skia'):
         return False
       if depot == 'chromium':
@@ -1862,7 +1867,9 @@ class BisectPerformanceMetrics(object):
     return True
 
   def ShouldSkipRevision(self, depot, revision):
-    """Some commits can be safely skipped (such as a DEPS roll), since the tool
+    """Checks whether a particular revision can be safely skipped.
+
+    Some commits can be safely skipped (such as a DEPS roll), since the tool
     is git based those changes would have no effect.
 
     Args:
@@ -1907,7 +1914,7 @@ class BisectPerformanceMetrics(object):
     revisions_to_sync = self.FindAllRevisionsToSync(revision, depot)
 
     if not revisions_to_sync:
-      return ('Failed to resolve dependant depots.', BUILD_RESULT_FAIL)
+      return ('Failed to resolve dependent depots.', BUILD_RESULT_FAIL)
 
     if not self.PerformPreSyncCleanup(revision, depot):
       return ('Failed to perform pre-sync cleanup.', BUILD_RESULT_FAIL)
@@ -1923,7 +1930,7 @@ class BisectPerformanceMetrics(object):
 
         # If you're using gclient to sync, you need to specify the depot you
         # want so that all the dependencies sync properly as well.
-        # ie. gclient sync src@<SHA1>
+        # i.e. gclient sync src@<SHA1>
         current_revision = r[1]
         if sync_client == 'gclient':
           current_revision = '%s@%s' % (DEPOT_DEPS_NAME[depot]['src'],
@@ -1950,7 +1957,7 @@ class BisectPerformanceMetrics(object):
           results = self.RunPerformanceTestAndParseResults(command_to_run,
                                                            metric)
           # Restore build output directory once the tests are done, to avoid
-          # any descrepancy.
+          # any discrepancies.
           if self.IsDownloadable(depot) and revision:
             self.BackupOrRestoreOutputdirectory(restore=True)
 
@@ -2237,7 +2244,7 @@ class BisectPerformanceMetrics(object):
 
       return good_commit_time <= bad_commit_time
     else:
-      # Cros/svn use integers
+      # CrOS and SVN use integers.
       return int(good_revision) <= int(bad_revision)
 
   def CanPerformBisect(self, revision_to_check):
@@ -2258,7 +2265,7 @@ class BisectPerformanceMetrics(object):
       if (bisect_utils.IsStringInt(revision_to_check)
           and revision_to_check < 265549):
         return {'error': (
-            'Bisect cannot conitnue for the given revision range.\n'
+            'Bisect cannot continue for the given revision range.\n'
             'It is impossible to bisect Android regressions '
             'prior to r265549, which allows the bisect bot to '
             'rely on Telemetry to do apk installation of the most recently '
@@ -2286,7 +2293,7 @@ class BisectPerformanceMetrics(object):
       'passed': Represents whether the performance test was successful at
           that revision. Possible values include: 1 (passed), 0 (failed),
           '?' (skipped), 'F' (build failed).
-      'depot': The depot that this revision is from (ie. WebKit)
+      'depot': The depot that this revision is from (i.e. WebKit)
       'external': If the revision is a 'src' revision, 'external' contains
           the revisions of each of the external libraries.
       'sort': A sort value for sorting the dict in order of commits.
@@ -2298,10 +2305,10 @@ class BisectPerformanceMetrics(object):
         {
           'CL #1':
           {
-            'passed':False,
-            'depot':'chromium',
-            'external':None,
-            'sort':0
+            'passed': False,
+            'depot': 'chromium',
+            'external': None,
+            'sort': 0
           }
         }
       }
@@ -2324,7 +2331,7 @@ class BisectPerformanceMetrics(object):
     cwd = os.getcwd()
     self.ChangeToDepotWorkingDirectory(target_depot)
 
-    # If they passed SVN CL's, etc... we can try match them to git SHA1's.
+    # If they passed SVN revisions, we can try match them to git SHA1 hashes.
     bad_revision = self.source_control.ResolveToRevision(
         bad_revision_in, target_depot, DEPOT_DEPS_NAME, 100)
     good_revision = self.source_control.ResolveToRevision(
@@ -2333,11 +2340,11 @@ class BisectPerformanceMetrics(object):
     os.chdir(cwd)
 
     if bad_revision is None:
-      results['error'] = 'Could\'t resolve [%s] to SHA1.' % (bad_revision_in,)
+      results['error'] = 'Couldn\'t resolve [%s] to SHA1.' % bad_revision_in
       return results
 
     if good_revision is None:
-      results['error'] = 'Could\'t resolve [%s] to SHA1.' % (good_revision_in,)
+      results['error'] = 'Couldn\'t resolve [%s] to SHA1.' % good_revision_in
       return results
 
     # Check that they didn't accidentally swap good and bad revisions.
@@ -2622,7 +2629,7 @@ class BisectPerformanceMetrics(object):
     if commit_link:
       commit_info = '\nLink    : %s' % commit_link
     else:
-      commit_info = ('\nFailed to parse svn revision from body:\n%s' %
+      commit_info = ('\nFailed to parse SVN revision from body:\n%s' %
                      info['body'])
     print RESULTS_REVISION_INFO % {
         'subject': info['subject'],
@@ -3060,7 +3067,7 @@ class BisectOptions(object):
     """
     usage = ('%prog [options] [-- chromium-options]\n'
              'Perform binary search on revision history to find a minimal '
-             'range of revisions where a peformance metric regressed.\n')
+             'range of revisions where a performance metric regressed.\n')
 
     parser = optparse.OptionParser(usage=usage)
 
@@ -3228,11 +3235,11 @@ class BisectOptions(object):
         if not cloud_storage.List(opts.gs_bucket):
           raise RuntimeError('Invalid Google Storage: gs://%s' % opts.gs_bucket)
         if not opts.builder_host:
-          raise RuntimeError('Must specify try server hostname, when '
-                             'gs_bucket is used: --builder_host')
+          raise RuntimeError('Must specify try server host name using '
+                             '--builder_host when gs_bucket is used.')
         if not opts.builder_port:
-          raise RuntimeError('Must specify try server port number, when '
-                             'gs_bucket is used: --builder_port')
+          raise RuntimeError('Must specify try server port number using '
+                             '--builder_port when gs_bucket is used.')
       if opts.target_platform == 'cros':
         # Run sudo up front to make sure credentials are cached for later.
         print 'Sudo is required to build cros:'
@@ -3271,8 +3278,7 @@ class BisectOptions(object):
 
   @staticmethod
   def FromDict(values):
-    """Creates an instance of BisectOptions with the values parsed from a
-    .cfg file.
+    """Creates an instance of BisectOptions from a dictionary.
 
     Args:
       values: a dict containing options to set.

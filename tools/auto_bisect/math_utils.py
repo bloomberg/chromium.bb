@@ -16,7 +16,7 @@ def TruncatedMean(data_set, truncate_percent):
 
   Args:
     data_set: Non-empty list of values.
-    truncate_percent: The % from the upper and lower portions of the data set
+    truncate_percent: How much of the upper and lower portions of the data set
         to discard, expressed as a value in [0, 1].
 
   Returns:
