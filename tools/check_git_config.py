@@ -60,7 +60,7 @@ TEST_REPO_URL = 'https://chromium.googlesource.com/a/playground/access_test'
 # Git-compatible gclient solution.
 GOOD_GCLIENT_SOLUTION = {
   'name': 'src',
-  'deps_file': '.DEPS.git',
+  'deps_file': 'DEPS',
   'managed': False,
   'url': 'https://chromium.googlesource.com/chromium/src.git',
 }
