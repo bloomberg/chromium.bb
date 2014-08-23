@@ -757,7 +757,7 @@
             'services/public/cpp/view_manager/lib/view_manager_unittests.cc',
           ],
           'conditions': [
-            ['OS=="linux"', {
+            ['OS=="linux" or OS=="win"', {
               'dependencies': [
                 '../third_party/mesa/mesa.gyp:osmesa',
                 'mojo_native_viewport_service_lib',

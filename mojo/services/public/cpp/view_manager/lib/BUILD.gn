@@ -17,7 +17,7 @@ source_set("run_unittests") {
     "//base/test:test_support",
     "//ui/gl",
   ]
-  if (is_linux) {
+  if (is_linux || is_win) {
     deps += [
       "//third_party/mesa:osmesa",
       "//mojo/services/native_viewport",
