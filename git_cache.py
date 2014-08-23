@@ -200,7 +200,9 @@ class Mirror(object):
 
   @classmethod
   def SetCachePath(cls, cachepath):
+    cls.cachepath_lock.acquire()
     setattr(cls, 'cachepath', cachepath)
+    cls.cachepath_lock.release()
 
   @classmethod
   def GetCachePath(cls):
@@ -215,7 +217,7 @@ class Mirror(object):
         cls.cachepath_lock.release()
         raise RuntimeError('No global cache.cachepath git configuration found.')
       setattr(cls, 'cachepath', cachepath)
-      cls.cachepath_lock.release()
+    cls.cachepath_lock.release()
     return getattr(cls, 'cachepath')
 
   def RunGit(self, cmd, **kwargs):
