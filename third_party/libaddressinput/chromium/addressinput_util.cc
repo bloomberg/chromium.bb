@@ -57,7 +57,9 @@ void ValidateRequiredFields(
       ::i18n::addressinput::SORTING_CODE,
       ::i18n::addressinput::POSTAL_CODE,
       ::i18n::addressinput::STREET_ADDRESS,
-      ::i18n::addressinput::RECIPIENT};
+      // ORGANIZATION is never required.
+      ::i18n::addressinput::RECIPIENT
+  };
 
   for (size_t i = 0; i < arraysize(kFields); ++i) {
     AddressField field = kFields[i];

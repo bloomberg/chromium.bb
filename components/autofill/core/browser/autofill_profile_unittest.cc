@@ -365,13 +365,13 @@ TEST(AutofillProfileTest, CreateInferredLabelsI18n_CH) {
     "H. R. Giger, Brandschenkestrasse 110",
     "H. R. Giger, Brandschenkestrasse 110, Zurich",
     "H. R. Giger, Brandschenkestrasse 110, CH-8002 Zurich",
-    "H. R. Giger, Brandschenkestrasse 110, CH-8002 Zurich, Switzerland",
-    "H. R. Giger, Brandschenkestrasse 110, CH-8002 Zurich, Switzerland, "
-        "hrgiger@beispiel.com",
-    "H. R. Giger, Brandschenkestrasse 110, CH-8002 Zurich, Switzerland, "
-        "hrgiger@beispiel.com, +41446681800",
-    "H. R. Giger, Brandschenkestrasse 110, CH-8002 Zurich, Switzerland, "
-        "hrgiger@beispiel.com, +41446681800, Beispiel Inc",
+    "Beispiel Inc, H. R. Giger, Brandschenkestrasse 110, CH-8002 Zurich",
+    "Beispiel Inc, H. R. Giger, Brandschenkestrasse 110, CH-8002 Zurich, "
+        "Switzerland",
+    "Beispiel Inc, H. R. Giger, Brandschenkestrasse 110, CH-8002 Zurich, "
+        "Switzerland, hrgiger@beispiel.com",
+    "Beispiel Inc, H. R. Giger, Brandschenkestrasse 110, CH-8002 Zurich, "
+        "Switzerland, hrgiger@beispiel.com, +41446681800",
   };
 
   std::vector<base::string16> labels;
@@ -410,13 +410,16 @@ TEST(AutofillProfileTest, CreateInferredLabelsI18n_FR) {
       "Antoine de Saint-Exupéry, 8 Rue de Londres, Paris",
       "Antoine de Saint-Exupéry, 8 Rue de Londres, 75009 Paris",
       "Antoine de Saint-Exupéry, 8 Rue de Londres, 75009 Paris CEDEX",
-      "Antoine de Saint-Exupéry, 8 Rue de Londres, 75009 Paris CEDEX, France",
-      "Antoine de Saint-Exupéry, 8 Rue de Londres, 75009 Paris CEDEX, France, "
-          "antoine@exemple.com",
-      "Antoine de Saint-Exupéry, 8 Rue de Londres, 75009 Paris CEDEX, France, "
-          "antoine@exemple.com, +33142685300",
-      "Antoine de Saint-Exupéry, 8 Rue de Londres, 75009 Paris CEDEX, France, "
-          "antoine@exemple.com, +33142685300, Exemple Inc",
+      "Exemple Inc, Antoine de Saint-Exupéry, 8 Rue de Londres, 75009 Paris "
+          "CEDEX",
+      "Exemple Inc, Antoine de Saint-Exupéry, 8 Rue de Londres, 75009 Paris "
+          "CEDEX, France",
+      "Exemple Inc, Antoine de Saint-Exupéry, 8 Rue de Londres, 75009 Paris "
+          "CEDEX, France, antoine@exemple.com",
+      "Exemple Inc, Antoine de Saint-Exupéry, 8 Rue de Londres, 75009 Paris "
+          "CEDEX, France, antoine@exemple.com, +33142685300",
+      "Exemple Inc, Antoine de Saint-Exupéry, 8 Rue de Londres, 75009 Paris "
+          "CEDEX, France, antoine@exemple.com, +33142685300",
   };
 
   std::vector<base::string16> labels;
@@ -460,16 +463,16 @@ TEST(AutofillProfileTest, CreateInferredLabelsI18n_KR) {
           "Gangnam-Gu, Seoul",
       "Park Jae-sang, Gangnam Finance Center, 152 Teheran-ro, Yeoksam-Dong, "
           "Gangnam-Gu, Seoul, 135-984",
-      "Park Jae-sang, Gangnam Finance Center, 152 Teheran-ro, Yeoksam-Dong, "
-          "Gangnam-Gu, Seoul, 135-984, South Korea",
-      "Park Jae-sang, Gangnam Finance Center, 152 Teheran-ro, Yeoksam-Dong, "
-          "Gangnam-Gu, Seoul, 135-984, South Korea, park@yeleul.com",
-      "Park Jae-sang, Gangnam Finance Center, 152 Teheran-ro, Yeoksam-Dong, "
-          "Gangnam-Gu, Seoul, 135-984, South Korea, park@yeleul.com, "
-          "+8225319000",
-      "Park Jae-sang, Gangnam Finance Center, 152 Teheran-ro, Yeoksam-Dong, "
-          "Gangnam-Gu, Seoul, 135-984, South Korea, park@yeleul.com, "
-          "+8225319000, Yeleul Inc",
+      "Park Jae-sang, Yeleul Inc, Gangnam Finance Center, 152 Teheran-ro, "
+          "Yeoksam-Dong, Gangnam-Gu, Seoul, 135-984",
+      "Park Jae-sang, Yeleul Inc, Gangnam Finance Center, 152 Teheran-ro, "
+          "Yeoksam-Dong, Gangnam-Gu, Seoul, 135-984, South Korea",
+      "Park Jae-sang, Yeleul Inc, Gangnam Finance Center, 152 Teheran-ro, "
+          "Yeoksam-Dong, Gangnam-Gu, Seoul, 135-984, South Korea, "
+          "park@yeleul.com",
+      "Park Jae-sang, Yeleul Inc, Gangnam Finance Center, 152 Teheran-ro, "
+          "Yeoksam-Dong, Gangnam-Gu, Seoul, 135-984, South Korea, "
+          "park@yeleul.com, +8225319000",
   };
 
   std::vector<base::string16> labels;
@@ -508,14 +511,14 @@ TEST(AutofillProfileTest, CreateInferredLabelsI18n_JP_Latn) {
         "Tokyo",
     "Miku Hatsune, Roppongi Hills Mori Tower, 6-10-1 Roppongi, Minato-ku, "
         "Tokyo, 106-6126",
-    "Miku Hatsune, Roppongi Hills Mori Tower, 6-10-1 Roppongi, Minato-ku, "
-        "Tokyo, 106-6126, Japan",
-    "Miku Hatsune, Roppongi Hills Mori Tower, 6-10-1 Roppongi, Minato-ku, "
-        "Tokyo, 106-6126, Japan, miku@rei.com",
-    "Miku Hatsune, Roppongi Hills Mori Tower, 6-10-1 Roppongi, Minato-ku, "
-        "Tokyo, 106-6126, Japan, miku@rei.com, +81363849000",
-    "Miku Hatsune, Roppongi Hills Mori Tower, 6-10-1 Roppongi, Minato-ku, "
-        "Tokyo, 106-6126, Japan, miku@rei.com, +81363849000, Rei Inc",
+    "Miku Hatsune, Rei Inc, Roppongi Hills Mori Tower, 6-10-1 Roppongi, "
+        "Minato-ku, Tokyo, 106-6126",
+    "Miku Hatsune, Rei Inc, Roppongi Hills Mori Tower, 6-10-1 Roppongi, "
+        "Minato-ku, Tokyo, 106-6126, Japan",
+    "Miku Hatsune, Rei Inc, Roppongi Hills Mori Tower, 6-10-1 Roppongi, "
+        "Minato-ku, Tokyo, 106-6126, Japan, miku@rei.com",
+    "Miku Hatsune, Rei Inc, Roppongi Hills Mori Tower, 6-10-1 Roppongi, "
+        "Minato-ku, Tokyo, 106-6126, Japan, miku@rei.com, +81363849000",
   };
 
   std::vector<base::string16> labels;
@@ -552,13 +555,12 @@ TEST(AutofillProfileTest, CreateInferredLabelsI18n_JP_ja) {
     "港区六本木ヒルズ森タワー六本木 6-10-1ミク 初音",
     "東京都港区六本木ヒルズ森タワー六本木 6-10-1ミク 初音",
     "〒106-6126東京都港区六本木ヒルズ森タワー六本木 6-10-1ミク 初音",
-    "〒106-6126東京都港区六本木ヒルズ森タワー六本木 6-10-1ミク 初音, Japan",
-    "〒106-6126東京都港区六本木ヒルズ森タワー六本木 6-10-1ミク 初音, Japan, "
+    "〒106-6126東京都港区六本木ヒルズ森タワー六本木 6-10-1例ミク 初音",
+    "〒106-6126東京都港区六本木ヒルズ森タワー六本木 6-10-1例ミク 初音, Japan",
+    "〒106-6126東京都港区六本木ヒルズ森タワー六本木 6-10-1例ミク 初音, Japan, "
         "miku@rei.com",
-    "〒106-6126東京都港区六本木ヒルズ森タワー六本木 6-10-1ミク 初音, Japan, "
+    "〒106-6126東京都港区六本木ヒルズ森タワー六本木 6-10-1例ミク 初音, Japan, "
         "miku@rei.com, 0363849000",
-    "〒106-6126東京都港区六本木ヒルズ森タワー六本木 6-10-1ミク 初音, Japan, "
-        "miku@rei.com, 0363849000, 例",
   };
 
   std::vector<base::string16> labels;
@@ -1193,6 +1195,7 @@ TEST(AutofillProfileTest, FullAddress) {
   AutofillType full_address(HTML_TYPE_FULL_ADDRESS, HTML_MODE_NONE);
   base::string16 formatted_address(ASCIIToUTF16(
       "Marion Mitchell Morrison\n"
+      "Fox\n"
       "123 Zoo St.\n"
       "unit 5\n"
       "Hollywood, CA 91601"));
@@ -1209,6 +1212,7 @@ TEST(AutofillProfileTest, FullAddress) {
                   base::string16(),
                   "en-US");
   EXPECT_EQ(ASCIIToUTF16("Marion Mitchell Morrison\n"
+                         "Fox\n"
                          "123 Zoo St.\n"
                          "Hollywood, CA 91601"),
             profile.GetInfo(full_address, "en-US"));

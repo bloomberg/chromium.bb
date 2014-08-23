@@ -26,6 +26,7 @@ using ::i18n::addressinput::ADMIN_AREA;
 using ::i18n::addressinput::COUNTRY;
 using ::i18n::addressinput::DEPENDENT_LOCALITY;
 using ::i18n::addressinput::LOCALITY;
+using ::i18n::addressinput::ORGANIZATION;
 using ::i18n::addressinput::POSTAL_CODE;
 using ::i18n::addressinput::RECIPIENT;
 using ::i18n::addressinput::SORTING_CODE;
@@ -44,6 +45,7 @@ TEST(AddressI18nTest, FieldTypeMirrorConversions) {
     {true, ADDRESS_BILLING_SORTING_CODE, SORTING_CODE},
     {true, ADDRESS_BILLING_ZIP, POSTAL_CODE},
     {true, ADDRESS_BILLING_STREET_ADDRESS, STREET_ADDRESS},
+    {true, COMPANY_NAME, ORGANIZATION},
     {true, NAME_BILLING_FULL, RECIPIENT},
     {false, ADDRESS_HOME_COUNTRY, COUNTRY},
     {false, ADDRESS_HOME_STATE, ADMIN_AREA},
@@ -52,6 +54,7 @@ TEST(AddressI18nTest, FieldTypeMirrorConversions) {
     {false, ADDRESS_HOME_SORTING_CODE, SORTING_CODE},
     {false, ADDRESS_HOME_ZIP, POSTAL_CODE},
     {false, ADDRESS_HOME_STREET_ADDRESS, STREET_ADDRESS},
+    {false, COMPANY_NAME, ORGANIZATION},
     {false, NAME_FULL, RECIPIENT},
   };
 
@@ -115,6 +118,7 @@ TEST(AddressI18nTest, CreateAddressDataFromAutofillProfile) {
   expected.locality = "Elysium";
   expected.postal_code = "91111";
   expected.language_code = "en";
+  expected.organization = "Underworld";
   expected.recipient = "John H. Doe";
 
   EXPECT_EQ(expected, *actual);

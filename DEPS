@@ -36,7 +36,7 @@ vars = {
   'boringssl_git': 'https://boringssl.googlesource.com',
   # After changing nacl_revision, run 'glient sync' and check native_client/DEPS
   # to update other nacl_*_revision's.
-  'libaddressinput_revision': '5e0f1290b83e59c0b3b0b3d23c060f1b134a1364',
+  'libaddressinput_revision': 'b52a2aeb63a28914850f3ed81cd7fd26ecdd4cdc', # from svn revision 333
   'libvpx_revision': 'ace65784417788374f0b19ce5a8abd06c9ccd007',
   'sfntly_revision': '1bdaae8fc788a5ac8936d68bf24f37d977a13dac',
   'skia_revision': '3e42a4638559d71481ba598857f2d0c715c8d4b3',

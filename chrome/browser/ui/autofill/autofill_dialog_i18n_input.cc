@@ -60,6 +60,9 @@ void BuildAddressInputs(common::AddressType address_type,
 
   for (size_t i = 0; i < components.size(); ++i) {
     const AddressUiComponent& component = components[i];
+    // Interactive autofill dialog does not display organization.
+    if (component.field == ::i18n::addressinput::ORGANIZATION)
+      continue;
     ServerFieldType server_type = i18n::TypeForField(component.field, billing);
     DetailInput::Length length = LengthFromHint(component.length_hint);
     base::string16 placeholder = base::UTF8ToUTF16(component.name);

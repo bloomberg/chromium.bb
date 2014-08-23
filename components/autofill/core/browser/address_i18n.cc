@@ -34,6 +34,8 @@ scoped_ptr<AddressData> CreateAddressData(
   scoped_ptr<AddressData> address_data(new AddressData());
   address_data->recipient = base::UTF16ToUTF8(
       get_info.Run(AutofillType(NAME_FULL)));
+  address_data->organization = base::UTF16ToUTF8(
+      get_info.Run(AutofillType(COMPANY_NAME)));
   address_data->region_code = base::UTF16ToUTF8(
       get_info.Run(AutofillType(HTML_TYPE_COUNTRY_CODE, HTML_MODE_NONE)));
   address_data->administrative_area = base::UTF16ToUTF8(
@@ -81,6 +83,8 @@ ServerFieldType TypeForField(AddressField address_field, bool billing) {
     case ::i18n::addressinput::STREET_ADDRESS:
       return billing ? ADDRESS_BILLING_STREET_ADDRESS
                      : ADDRESS_HOME_STREET_ADDRESS;
+    case ::i18n::addressinput::ORGANIZATION:
+        return COMPANY_NAME;
     case ::i18n::addressinput::RECIPIENT:
       return billing ? NAME_BILLING_FULL : NAME_FULL;
   }
@@ -128,6 +132,10 @@ bool FieldForType(ServerFieldType server_type, AddressField* field) {
     case ADDRESS_HOME_LINE2:
       if (field)
         *field = ::i18n::addressinput::STREET_ADDRESS;
+      return true;
+    case COMPANY_NAME:
+      if (field)
+        *field = ::i18n::addressinput::ORGANIZATION;
       return true;
     case NAME_BILLING_FULL:
     case NAME_FULL:

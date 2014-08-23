@@ -128,6 +128,9 @@ void GetAddressComponents(const std::string& country_code,
       case i18n::addressinput::STREET_ADDRESS:
         component->SetString(kField, kAddressLineField);
         break;
+      case i18n::addressinput::ORGANIZATION:
+        component->SetString(kField, kCompanyNameField);
+        break;
       case i18n::addressinput::RECIPIENT:
         component->SetString(kField, kFullNameField);
         component->SetString(

@@ -61,6 +61,8 @@ bool DataModelWrapper::GetDisplayText(
       i18n::CreateAddressData(
           base::Bind(&DataModelWrapper::GetInfo, base::Unretained(this)));
   address_data->language_code = GetLanguageCode();
+  // Interactive autofill dialog does not display organization field.
+  address_data->organization.clear();
   std::vector<std::string> lines;
   ::i18n::addressinput::GetFormattedNationalAddress(*address_data, &lines);
 
