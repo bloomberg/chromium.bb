@@ -603,11 +603,7 @@ const PictureLayerTiling* PictureLayerImpl::GetTwinTiling(
     const PictureLayerTiling* tiling) const {
   if (!twin_layer_)
     return NULL;
-  for (size_t i = 0; i < twin_layer_->tilings_->num_tilings(); ++i)
-    if (twin_layer_->tilings_->tiling_at(i)->contents_scale() ==
-        tiling->contents_scale())
-      return twin_layer_->tilings_->tiling_at(i);
-  return NULL;
+  return twin_layer_->tilings_->TilingAtScale(tiling->contents_scale());
 }
 
 size_t PictureLayerImpl::GetMaxTilesForInterestArea() const {
