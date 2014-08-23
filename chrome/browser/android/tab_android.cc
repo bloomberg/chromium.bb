@@ -306,6 +306,17 @@ void TabAndroid::SwapTabContents(content::WebContents* old_contents,
       did_finish_load);
 }
 
+void TabAndroid::OnWebContentsInstantSupportDisabled(
+    const content::WebContents* contents) {
+  DCHECK(contents);
+  if (web_contents() != contents)
+    return;
+
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_Tab_onWebContentsInstantSupportDisabled(env,
+                                               weak_java_tab_.get(env).obj());
+}
+
 void TabAndroid::Observe(int type,
                          const content::NotificationSource& source,
                          const content::NotificationDetails& details) {
@@ -371,6 +382,7 @@ void TabAndroid::InitWebContents(JNIEnv* env,
   WindowAndroidHelper::FromWebContents(web_contents())->
       SetWindowAndroid(content_view_core->GetWindowAndroid());
   CoreTabHelper::FromWebContents(web_contents())->set_delegate(this);
+  SearchTabHelper::FromWebContents(web_contents())->set_delegate(this);
   web_contents_delegate_.reset(
       new chrome::android::ChromeWebContentsDelegateAndroid(
           env, jweb_contents_delegate));
