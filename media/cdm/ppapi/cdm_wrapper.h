@@ -56,12 +56,14 @@ class CdmWrapper {
                              uint32_t web_session_id_size,
                              const uint8_t* response,
                              uint32_t response_size) = 0;
-  virtual void CloseSession(uint32_t promise_id,
+  // TODO(jrummell): Remove return value when CDM4/5 are removed.
+  virtual bool CloseSession(uint32_t promise_id,
                             const char* web_session_id,
                             uint32_t web_session_id_size) = 0;
-  virtual bool RemoveSession(uint32_t promise_id,
+  virtual void RemoveSession(uint32_t promise_id,
                              const char* web_session_id,
                              uint32_t web_session_id_size) = 0;
+  // TODO(jrummell): Remove return value when CDM4/5 are removed.
   virtual bool GetUsableKeyIds(uint32_t promise_id,
                                const char* web_session_id,
                                uint32_t web_session_id_size) = 0;
@@ -226,17 +228,17 @@ class CdmWrapperImpl : public CdmWrapper {
     return true;
   }
 
-  virtual void CloseSession(uint32_t promise_id,
+  virtual bool CloseSession(uint32_t promise_id,
                             const char* web_session_id,
                             uint32_t web_session_id_size) OVERRIDE {
     cdm_->CloseSession(promise_id, web_session_id, web_session_id_size);
+    return true;
   }
 
-  virtual bool RemoveSession(uint32_t promise_id,
+  virtual void RemoveSession(uint32_t promise_id,
                              const char* web_session_id,
                              uint32_t web_session_id_size) OVERRIDE {
     cdm_->RemoveSession(promise_id, web_session_id, web_session_id_size);
-    return true;
   }
 
   virtual void TimerExpired(void* context) OVERRIDE {
@@ -454,7 +456,15 @@ void CdmWrapperImpl<cdm::ContentDecryptionModule_4>::UpdateSession(
 }
 
 template <>
-void CdmWrapperImpl<cdm::ContentDecryptionModule_4>::CloseSession(
+bool CdmWrapperImpl<cdm::ContentDecryptionModule_4>::CloseSession(
+    uint32_t promise_id,
+    const char* web_session_id,
+    uint32_t web_session_id_size) {
+  return false;
+}
+
+template <>
+void CdmWrapperImpl<cdm::ContentDecryptionModule_4>::RemoveSession(
     uint32_t promise_id,
     const char* web_session_id,
     uint32_t web_session_id_size) {
@@ -462,14 +472,6 @@ void CdmWrapperImpl<cdm::ContentDecryptionModule_4>::CloseSession(
   uint32_t session_id = LookupSessionId(web_session_str);
   RegisterPromise(session_id, promise_id);
   cdm_->ReleaseSession(session_id);
-}
-
-template <>
-bool CdmWrapperImpl<cdm::ContentDecryptionModule_4>::RemoveSession(
-    uint32_t promise_id,
-    const char* web_session_id,
-    uint32_t web_session_id_size) {
-  return false;
 }
 
 template <>
@@ -572,19 +574,19 @@ void CdmWrapperImpl<cdm::ContentDecryptionModule_5>::UpdateSession(
 }
 
 template <>
-void CdmWrapperImpl<cdm::ContentDecryptionModule_5>::CloseSession(
-    uint32_t promise_id,
-    const char* web_session_id,
-    uint32_t web_session_id_size) {
-  cdm_->ReleaseSession(promise_id, web_session_id, web_session_id_size);
-}
-
-template <>
-bool CdmWrapperImpl<cdm::ContentDecryptionModule_5>::RemoveSession(
+bool CdmWrapperImpl<cdm::ContentDecryptionModule_5>::CloseSession(
     uint32_t promise_id,
     const char* web_session_id,
     uint32_t web_session_id_size) {
   return false;
+}
+
+template <>
+void CdmWrapperImpl<cdm::ContentDecryptionModule_5>::RemoveSession(
+    uint32_t promise_id,
+    const char* web_session_id,
+    uint32_t web_session_id_size) {
+  cdm_->ReleaseSession(promise_id, web_session_id, web_session_id_size);
 }
 
 template <>

@@ -383,19 +383,19 @@ void CdmAdapter::UpdateSession(uint32_t promise_id,
                       response_size);
 }
 
-void CdmAdapter::ReleaseSession(uint32_t promise_id,
-                                const std::string& web_session_id) {
-  cdm_->CloseSession(
-      promise_id, web_session_id.data(), web_session_id.length());
-}
-
-void CdmAdapter::RemoveSession(uint32_t promise_id,
-                               const std::string& web_session_id) {
-  if (!cdm_->RemoveSession(
+void CdmAdapter::CloseSession(uint32_t promise_id,
+                              const std::string& web_session_id) {
+  if (!cdm_->CloseSession(
           promise_id, web_session_id.data(), web_session_id.length())) {
     // CDM_4 and CDM_5 don't support this method, so reject the promise.
     RejectPromise(promise_id, cdm::kNotSupportedError, 0, "Not implemented.");
   }
+}
+
+void CdmAdapter::ReleaseSession(uint32_t promise_id,
+                                const std::string& web_session_id) {
+  cdm_->RemoveSession(
+      promise_id, web_session_id.data(), web_session_id.length());
 }
 
 void CdmAdapter::GetUsableKeyIds(uint32_t promise_id,

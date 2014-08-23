@@ -67,12 +67,13 @@ class CdmAdapter : public pp::Instance,
   virtual void UpdateSession(uint32_t promise_id,
                              const std::string& web_session_id,
                              pp::VarArrayBuffer response) OVERRIDE;
-  // TODO(jrummell): Rename to CloseSession().
+  // TODO(jrummell): Pass this function through Pepper and add OVERRIDE.
+  virtual void CloseSession(uint32_t promise_id,
+                            const std::string& web_session_id);
+  // TODO(jrummell): Rename to RemoveSession().
   virtual void ReleaseSession(uint32_t promise_id,
                               const std::string& web_session_id) OVERRIDE;
-  // TODO(jrummell): Pass these 2 functions through Pepper and add OVERRIDE.
-  virtual void RemoveSession(uint32_t promise_id,
-                             const std::string& web_session_id);
+  // TODO(jrummell): Pass this function through Pepper and add OVERRIDE.
   virtual void GetUsableKeyIds(uint32_t promise_id,
                                const std::string& web_session_id);
   virtual void Decrypt(
