@@ -604,9 +604,6 @@ class TestRunner : public WebTestRunner,
 
   WorkQueue work_queue_;
 
-  // Used by a number of layout tests in http/tests/security/dataURL.
-  bool global_flag_;
-
   // Bound variable to return the name of this platform (chromium).
   std::string platform_name_;
 

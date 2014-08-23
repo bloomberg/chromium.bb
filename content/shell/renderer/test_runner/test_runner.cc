@@ -292,8 +292,6 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
                                 const std::string& registration_id);
   void SetMockPushClientError(const std::string& message);
 
-  bool GlobalFlag();
-  void SetGlobalFlag(bool value);
   std::string PlatformName();
   std::string TooltipText();
   bool DisableNotifyDone();
@@ -536,9 +534,6 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
                  &TestRunnerBindings::SetMockPushClientError)
 
       // Properties.
-      .SetProperty("globalFlag",
-                   &TestRunnerBindings::GlobalFlag,
-                   &TestRunnerBindings::SetGlobalFlag)
       .SetProperty("platformName", &TestRunnerBindings::PlatformName)
       .SetProperty("tooltipText", &TestRunnerBindings::TooltipText)
       .SetProperty("disableNotifyDone", &TestRunnerBindings::DisableNotifyDone)
@@ -1388,17 +1383,6 @@ void TestRunnerBindings::SetMockPushClientError(const std::string& message) {
   runner_->SetMockPushClientError(message);
 }
 
-bool TestRunnerBindings::GlobalFlag() {
-  if (runner_)
-    return runner_->global_flag_;
-  return false;
-}
-
-void TestRunnerBindings::SetGlobalFlag(bool value) {
-  if (runner_)
-    runner_->global_flag_ = value;
-}
-
 std::string TestRunnerBindings::PlatformName() {
   if (runner_)
     return runner_->platform_name_;
@@ -1627,7 +1611,6 @@ void TestRunner::Reset() {
 
   http_headers_to_clear_.clear();
 
-  global_flag_ = false;
   platform_name_ = "chromium";
   tooltip_text_ = std::string();
   disable_notify_done_ = false;
