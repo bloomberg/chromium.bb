@@ -18,6 +18,10 @@ namespace chromecast {
 
 class CastService;
 
+namespace metrics {
+class CastMetricsServiceClient;
+}  // namespace metrics
+
 namespace shell {
 
 class CastBrowserContext;
@@ -46,6 +50,7 @@ class CastBrowserMainParts : public content::BrowserMainParts {
  private:
   scoped_ptr<CastBrowserContext> browser_context_;
   scoped_ptr<CastService> cast_service_;
+  scoped_ptr<metrics::CastMetricsServiceClient> metrics_service_client_;
   scoped_ptr<RemoteDebuggingServer> dev_tools_;
   URLRequestContextFactory* const url_request_context_factory_;
 

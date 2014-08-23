@@ -42,6 +42,33 @@
       ],
     },
     {
+      'target_name': 'cast_metrics',
+      'type': '<(component)',
+      'dependencies': [
+        '../components/components.gyp:component_metrics_proto',
+        '../components/components.gyp:metrics',
+        '../components/components.gyp:metrics_net',
+      ],
+      'sources': [
+        'metrics/cast_metrics_prefs.cc',
+        'metrics/cast_metrics_prefs.h',
+        'metrics/cast_metrics_service_client.cc',
+        'metrics/cast_metrics_service_client.h',
+        'metrics/platform_metrics_providers.h',
+      ],
+      'conditions': [
+        ['chromecast_branding=="Chrome"', {
+          'dependencies': [
+            '<(cast_internal_gyp):cast_metrics_internal',
+          ],
+        }, {
+          'sources': [
+            'metrics/platform_metrics_providers_simple.cc',
+          ],
+        }],
+      ],
+    },
+    {
       'target_name': 'cast_service',
       'type': '<(component)',
       'dependencies': [
@@ -128,16 +155,18 @@
       'type': 'executable',
       'dependencies': [
         'cast_common',
+        'cast_metrics',
         'cast_service',
         'cast_shell_pak',
         'cast_shell_resources',
         'cast_version_header',
         'chromecast_locales.gyp:chromecast_locales_pak',
         'chromecast_locales.gyp:chromecast_settings',
-        '../ui/aura/aura.gyp:aura_test_support',
+        '../components/components.gyp:component_metrics_proto',
         '../content/content.gyp:content',
         '../content/content.gyp:content_app_browser',
         '../skia/skia.gyp:skia',
+        '../ui/aura/aura.gyp:aura_test_support',
       ],
       'sources': [
         'net/network_change_notifier_cast.cc',
