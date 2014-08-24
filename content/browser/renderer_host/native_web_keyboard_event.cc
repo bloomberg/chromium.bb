@@ -17,7 +17,7 @@ int GetModifiersFromNativeWebKeyboardEvent(
     modifiers |= ui::EF_CONTROL_DOWN;
   if (event.modifiers & NativeWebKeyboardEvent::AltKey)
     modifiers |= ui::EF_ALT_DOWN;
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
   if (event.modifiers & NativeWebKeyboardEvent::MetaKey)
     modifiers |= ui::EF_COMMAND_DOWN;
 #endif

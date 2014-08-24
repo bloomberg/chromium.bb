@@ -256,6 +256,14 @@
     "extension_types": ["extension", "legacy_packaged_app", "platform_app"],
     "location": "component"
   },
+  "commands.accessibility": {
+    "channel": "stable",
+    "extension_types": ["extension", "legacy_packaged_app", "platform_app"],
+    "whitelist": [
+      "2FCBCE08B34CCA1728A85F1EFBD9A34DD2558B2E",  // http://crbug.com/404768
+      "75C7F4B720314B6CB1B5817CD86089DB95CD2461"  // http://crbug.com/404768
+    ]
+  },
   "contentSettings": {
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app"]

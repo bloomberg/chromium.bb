@@ -184,6 +184,8 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
       {APIPermission::kCast, "cast", APIPermissionInfo::kFlagCannotBeOptional},
       {APIPermission::kChromeosInfoPrivate, "chromeosInfoPrivate",
        APIPermissionInfo::kFlagCannotBeOptional},
+      {APIPermission::kCommandsAccessibility, "commands.accessibility",
+       APIPermissionInfo::kFlagCannotBeOptional},
       {APIPermission::kCommandLinePrivate, "commandLinePrivate",
        APIPermissionInfo::kFlagCannotBeOptional},
       {APIPermission::kDeveloperPrivate, "developerPrivate",

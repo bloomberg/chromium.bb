@@ -565,6 +565,10 @@ bool CommandService::CanAutoAssign(const Command &command,
         command.command_name() == manifest_values::kPageActionCommandEvent)
       return false;  // Browser and page actions are not global in nature.
 
+    if (extension->permissions_data()->HasAPIPermission(
+            APIPermission::kCommandsAccessibility))
+      return true;
+
     // Global shortcuts are restricted to (Ctrl|Command)+Shift+[0-9].
 #if defined OS_MACOSX
     if (!command.accelerator().IsCmdDown())

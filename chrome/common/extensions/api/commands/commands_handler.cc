@@ -10,6 +10,7 @@
 #include "chrome/common/extensions/command.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/manifest_constants.h"
+#include "extensions/common/manifest_handlers/permissions_parser.h"
 
 namespace extensions {
 
@@ -97,7 +98,9 @@ bool CommandsHandler::Parse(Extension* extension, base::string16* error) {
       if (!Command::IsMediaKey(binding->accelerator()))
         ++keybindings_found;
 
-      if (keybindings_found > kMaxCommandsWithKeybindingPerExtension) {
+      if (keybindings_found > kMaxCommandsWithKeybindingPerExtension &&
+          !PermissionsParser::HasAPIPermission(
+              extension, APIPermission::kCommandsAccessibility)) {
         *error = ErrorUtils::FormatErrorMessageUTF16(
             manifest_errors::kInvalidKeyBindingTooMany,
             base::IntToString(kMaxCommandsWithKeybindingPerExtension));
