@@ -109,7 +109,9 @@ def FetchGitRevision(directory):
       hsh = output
   if not hsh:
     return None
-  return VersionInfo('git', hsh)
+  # TODO(agable): Figure out a way to use the full hash instead of just a
+  # 12-character short hash. See crbug.com/406783.
+  return VersionInfo('git', hsh[:12])
 
 
 def FetchGitSVNURLAndRevision(directory, svn_url_regex):
