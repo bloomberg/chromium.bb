@@ -208,7 +208,6 @@ class HomeCardGestureManager {
       smaller_top = top;
     }
 
-    NOTREACHED();
     return last_state_;
   }
 
@@ -250,7 +249,6 @@ class HomeCardGestureManager {
       }
       smaller_bounds = bounds;
     }
-    NOTREACHED();
   }
 
   Delegate* delegate_;

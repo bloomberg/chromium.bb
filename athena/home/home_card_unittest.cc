@@ -88,10 +88,10 @@ TEST_F(HomeCardTest, MouseClick) {
 
   // Mouse click at the bottom of the screen should invokes overview mode and
   // changes the state to BOTTOM.
-  ui::test::EventGenerator generator(root_window());
   gfx::Rect screen_rect(root_window()->bounds());
-  generator.MoveMouseTo(gfx::Point(
-      screen_rect.x() + screen_rect.width() / 2, screen_rect.bottom() - 1));
+  ui::test::EventGenerator generator(
+      root_window(), gfx::Point(
+          screen_rect.x() + screen_rect.width() / 2, screen_rect.bottom() - 1));
   generator.ClickLeftButton();
 
   EXPECT_EQ(HomeCard::VISIBLE_BOTTOM, HomeCard::Get()->GetState());
@@ -101,6 +101,85 @@ TEST_F(HomeCardTest, MouseClick) {
   generator.ClickLeftButton();
   EXPECT_EQ(HomeCard::VISIBLE_BOTTOM, HomeCard::Get()->GetState());
   EXPECT_TRUE(WindowManager::GetInstance()->IsOverviewModeActive());
+}
+
+TEST_F(HomeCardTest, Gestures) {
+  ASSERT_EQ(HomeCard::VISIBLE_MINIMIZED, HomeCard::Get()->GetState());
+  ui::test::EventGenerator generator(root_window());
+  gfx::Rect screen_rect(root_window()->bounds());
+
+  const int bottom = screen_rect.bottom();
+  const int x = screen_rect.x() + 1;
+
+  generator.GestureScrollSequence(gfx::Point(x, bottom - 1),
+                                  gfx::Point(x, bottom - 40),
+                                  base::TimeDelta::FromSeconds(1),
+                                  10);
+  EXPECT_EQ(HomeCard::VISIBLE_BOTTOM, HomeCard::Get()->GetState());
+  EXPECT_TRUE(WindowManager::GetInstance()->IsOverviewModeActive());
+
+  // Too short moves. Nothing has changed.
+  generator.GestureScrollSequence(gfx::Point(x, bottom - 40),
+                                  gfx::Point(x, bottom - 80),
+                                  base::TimeDelta::FromSeconds(1),
+                                  10);
+  EXPECT_EQ(HomeCard::VISIBLE_BOTTOM, HomeCard::Get()->GetState());
+  EXPECT_TRUE(WindowManager::GetInstance()->IsOverviewModeActive());
+
+  generator.GestureScrollSequence(gfx::Point(x, bottom - 40),
+                                  gfx::Point(x, bottom - 20),
+                                  base::TimeDelta::FromSeconds(1),
+                                  10);
+  EXPECT_EQ(HomeCard::VISIBLE_BOTTOM, HomeCard::Get()->GetState());
+  EXPECT_TRUE(WindowManager::GetInstance()->IsOverviewModeActive());
+
+  // Swipe up to the centered state.
+  generator.GestureScrollSequence(gfx::Point(x, bottom - 40),
+                                  gfx::Point(x, bottom - 300),
+                                  base::TimeDelta::FromSeconds(1),
+                                  10);
+  EXPECT_EQ(HomeCard::VISIBLE_CENTERED, HomeCard::Get()->GetState());
+  EXPECT_TRUE(WindowManager::GetInstance()->IsOverviewModeActive());
+
+  // Swipe up from centered; nothing has to be changed.
+  generator.GestureScrollSequence(gfx::Point(x, bottom - 300),
+                                  gfx::Point(x, bottom - 350),
+                                  base::TimeDelta::FromSeconds(1),
+                                  10);
+  EXPECT_EQ(HomeCard::VISIBLE_CENTERED, HomeCard::Get()->GetState());
+  EXPECT_TRUE(WindowManager::GetInstance()->IsOverviewModeActive());
+
+  // Swipe down slightly; nothing has to be changed.
+  generator.GestureScrollSequence(gfx::Point(x, bottom - 300),
+                                  gfx::Point(x, bottom - 250),
+                                  base::TimeDelta::FromSeconds(1),
+                                  10);
+  EXPECT_EQ(HomeCard::VISIBLE_CENTERED, HomeCard::Get()->GetState());
+  EXPECT_TRUE(WindowManager::GetInstance()->IsOverviewModeActive());
+
+  // Swipe down to the bottom state.
+  generator.GestureScrollSequence(gfx::Point(x, 10),
+                                  gfx::Point(x, bottom - 40),
+                                  base::TimeDelta::FromSeconds(1),
+                                  10);
+  EXPECT_EQ(HomeCard::VISIBLE_BOTTOM, HomeCard::Get()->GetState());
+  EXPECT_TRUE(WindowManager::GetInstance()->IsOverviewModeActive());
+
+  generator.GestureScrollSequence(gfx::Point(x, bottom - 40),
+                                  gfx::Point(x, bottom - 300),
+                                  base::TimeDelta::FromSeconds(1),
+                                  10);
+  EXPECT_EQ(HomeCard::VISIBLE_CENTERED, HomeCard::Get()->GetState());
+  EXPECT_TRUE(WindowManager::GetInstance()->IsOverviewModeActive());
+
+  // Swipe down to the minimized state.
+  generator.GestureScrollSequence(gfx::Point(x, 10),
+                                  gfx::Point(x, bottom - 1),
+                                  base::TimeDelta::FromSeconds(1),
+                                  10);
+  EXPECT_EQ(HomeCard::VISIBLE_MINIMIZED, HomeCard::Get()->GetState());
+  EXPECT_FALSE(WindowManager::GetInstance()->IsOverviewModeActive());
+
 }
 
 }  // namespace athena
