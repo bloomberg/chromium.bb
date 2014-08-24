@@ -115,7 +115,6 @@ public:
     virtual void invalidateContentsAndRootView(const IntRect&) OVERRIDE;
     virtual void invalidateContentsForSlowScroll(const IntRect&) OVERRIDE;
     virtual void scheduleAnimation() OVERRIDE;
-    virtual void scroll() OVERRIDE;
     virtual IntRect rootViewToScreen(const IntRect&) const OVERRIDE;
     virtual WebScreenInfo screenInfo() const OVERRIDE;
     virtual void contentsSizeChanged(LocalFrame*, const IntSize&) const OVERRIDE;

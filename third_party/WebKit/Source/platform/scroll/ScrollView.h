@@ -273,7 +273,7 @@ protected:
 
     virtual void scrollContentsIfNeeded();
     // Scroll the content by via the compositor.
-    virtual bool scrollContentsFastPath(const IntSize& scrollDelta);
+    virtual bool scrollContentsFastPath(const IntSize& scrollDelta) { return true; }
     // Scroll the content by invalidating everything.
     virtual void scrollContentsSlowPath(const IntRect& updateRect);
 

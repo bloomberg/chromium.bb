@@ -3956,11 +3956,6 @@ void WebViewImpl::scheduleCompositingLayerSync()
     m_layerTreeView->setNeedsAnimate();
 }
 
-void WebViewImpl::scrollRootLayer()
-{
-    updateLayerTreeViewport();
-}
-
 void WebViewImpl::invalidateRect(const IntRect& rect)
 {
     if (m_isAcceleratedCompositingActive) {

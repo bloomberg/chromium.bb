@@ -408,7 +408,6 @@ public:
     GraphicsLayer* rootGraphicsLayer();
     void setRootGraphicsLayer(GraphicsLayer*);
     void scheduleCompositingLayerSync();
-    void scrollRootLayer();
     GraphicsLayerFactory* graphicsLayerFactory() const;
     RenderLayerCompositor* compositor() const;
     void registerForAnimations(WebLayer*);

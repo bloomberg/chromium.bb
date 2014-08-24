@@ -73,12 +73,6 @@ void Chrome::invalidateContentsForSlowScroll(const IntRect& updateRect)
     m_client->invalidateContentsForSlowScroll(updateRect);
 }
 
-void Chrome::scroll()
-{
-    m_client->scroll();
-    InspectorInstrumentation::didScroll(m_page);
-}
-
 IntRect Chrome::rootViewToScreen(const IntRect& rect) const
 {
     return m_client->rootViewToScreen(rect);

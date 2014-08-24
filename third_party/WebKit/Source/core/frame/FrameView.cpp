@@ -1251,7 +1251,7 @@ bool FrameView::scrollContentsFastPath(const IntSize& scrollDelta)
         return false;
 
     if (!m_viewportConstrainedObjects || m_viewportConstrainedObjects->isEmpty()) {
-        hostWindow()->scroll();
+        InspectorInstrumentation::didScroll(page());
         return true;
     }
 
@@ -1294,7 +1294,7 @@ bool FrameView::scrollContentsFastPath(const IntSize& scrollDelta)
         }
     }
 
-    hostWindow()->scroll();
+    InspectorInstrumentation::didScroll(page());
 
     // Invalidate the old and new locations of fixed position elements that are drawn into the RenderView.
     Vector<IntRect> subRectsToUpdate = regionToUpdate.rects();

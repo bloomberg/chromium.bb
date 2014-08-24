@@ -485,12 +485,6 @@ void ChromeClientImpl::scheduleAnimation()
     m_webView->scheduleAnimation();
 }
 
-void ChromeClientImpl::scroll()
-{
-    if (m_webView->isAcceleratedCompositingActive())
-        m_webView->scrollRootLayer();
-}
-
 IntRect ChromeClientImpl::rootViewToScreen(const IntRect& rect) const
 {
     IntRect screenRect(rect);

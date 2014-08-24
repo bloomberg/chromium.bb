@@ -386,12 +386,6 @@ void WebPopupMenuImpl::scheduleAnimation()
 {
 }
 
-void WebPopupMenuImpl::scroll()
-{
-    if (m_rootLayer)
-        m_rootLayer->layer()->invalidate();
-}
-
 IntRect WebPopupMenuImpl::rootViewToScreen(const IntRect& rect) const
 {
     notImplemented();

@@ -560,12 +560,6 @@ void ScrollView::scrollContents(const IntSize& scrollDelta)
     frameRectsChanged();
 }
 
-bool ScrollView::scrollContentsFastPath(const IntSize& scrollDelta)
-{
-    hostWindow()->scroll();
-    return true;
-}
-
 void ScrollView::scrollContentsSlowPath(const IntRect& updateRect)
 {
     hostWindow()->invalidateContentsForSlowScroll(updateRect);
