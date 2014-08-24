@@ -113,7 +113,7 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
                     NULL);
     policy_map_.Set(key::kChromeOsMultiProfileUserBehavior,
                     POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                    new base::StringValue("not-allowed"),
+                    new base::StringValue("primary-only"),
                     NULL);
     expected_bundle_.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
         .CopyFrom(policy_map_);
