@@ -581,7 +581,10 @@ or verify this branch is set up to track another (via the --track argument to
     if self.upstream_branch is None:
       remote, upstream_branch = self.FetchUpstreamTuple(self.GetBranch())
       if remote is not '.':
-        upstream_branch = upstream_branch.replace('heads', 'remotes/' + remote)
+        upstream_branch = upstream_branch.replace('refs/heads/',
+                                                  'refs/remotes/%s/' % remote)
+        upstream_branch = upstream_branch.replace('refs/branch-heads/',
+                                                  'refs/remotes/branch-heads/')
       self.upstream_branch = upstream_branch
     return self.upstream_branch
 
@@ -615,6 +618,8 @@ or verify this branch is set up to track another (via the --track argument to
         branch = 'HEAD'
       if branch.startswith('refs/remotes'):
         self._remote = (remote, branch)
+      elif branch.startswith('refs/branch-heads/'):
+        self._remote = (remote, branch.replace('refs/', 'refs/remotes/'))
       else:
         self._remote = (remote, 'refs/remotes/%s/%s' % (remote, branch))
     return self._remote
