@@ -91,6 +91,7 @@ public:
 private:
     friend class BitmapImageTest;
 
+    void resetDecoder();
     void updateSize() const;
 
 protected:

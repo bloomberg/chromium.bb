@@ -303,6 +303,13 @@ void BitmapImage::draw(GraphicsContext* ctxt, const FloatRect& dstRect, const Fl
         observer->didDraw(this);
 }
 
+void BitmapImage::resetDecoder()
+{
+    ASSERT(isMainThread());
+
+    m_source.resetDecoder();
+}
+
 size_t BitmapImage::frameCount()
 {
     if (!m_haveFrameCount) {

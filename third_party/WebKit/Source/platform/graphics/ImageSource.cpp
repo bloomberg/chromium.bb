@@ -53,6 +53,11 @@ bool ImageSource::initialized() const
     return m_decoder;
 }
 
+void ImageSource::resetDecoder()
+{
+    m_decoder.clear();
+}
+
 void ImageSource::setData(SharedBuffer& data, bool allDataReceived)
 {
     // Create a decoder by sniffing the encoded data. If insufficient data bytes are available to
