@@ -17,7 +17,7 @@ import sys
 
 def _GenerateCompileCommands(files, include_paths):
   """Returns a JSON string containing a compilation database for the input."""
-  include_path_flags = ''.join('-I %s' % include_path
+  include_path_flags = ' '.join('-I %s' % include_path
                                for include_path in include_paths)
   return json.dumps([{'directory': '.',
                       'command': 'clang++ -fsyntax-only %s -c %s' % (
@@ -52,6 +52,12 @@ def main(argv):
   include_paths = []
   include_paths.append(
       os.path.realpath(os.path.join(tools_clang_directory, '../..')))
+  # Many gtest headers expect to have testing/gtest/include in the include
+  # search path.
+  include_paths.append(
+      os.path.realpath(os.path.join(tools_clang_directory,
+                                    '../..',
+                                    'testing/gtest/include')))
 
   try:
     # Set up the test environment.
