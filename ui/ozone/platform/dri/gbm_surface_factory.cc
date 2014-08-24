@@ -6,6 +6,7 @@
 
 #include <gbm.h>
 
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "third_party/khronos/EGL/egl.h"
 #include "ui/ozone/platform/dri/gbm_buffer.h"
@@ -13,9 +14,54 @@
 #include "ui/ozone/platform/dri/gbm_surfaceless.h"
 #include "ui/ozone/platform/dri/screen_manager.h"
 #include "ui/ozone/public/native_pixmap.h"
+#include "ui/ozone/public/overlay_candidates_ozone.h"
+#include "ui/ozone/public/ozone_switches.h"
 #include "ui/ozone/public/surface_ozone_egl.h"
 
 namespace ui {
+namespace {
+
+class SingleOverlay : public OverlayCandidatesOzone {
+ public:
+  SingleOverlay() {}
+  virtual ~SingleOverlay() {}
+
+  virtual void CheckOverlaySupport(OverlaySurfaceCandidateList* candidates) {
+    if (candidates->size() == 2) {
+      OverlayCandidatesOzone::OverlaySurfaceCandidate* first =
+          &(*candidates)[0];
+      OverlayCandidatesOzone::OverlaySurfaceCandidate* second =
+          &(*candidates)[1];
+      OverlayCandidatesOzone::OverlaySurfaceCandidate* overlay;
+      if (first->plane_z_order == 0) {
+        overlay = second;
+      } else if (second->plane_z_order == 0) {
+        overlay = first;
+      } else {
+        NOTREACHED();
+        return;
+      }
+      if (overlay->plane_z_order > 0 &&
+          IsTransformSupported(overlay->transform)) {
+        overlay->overlay_handled = true;
+      }
+    }
+  }
+
+ private:
+  bool IsTransformSupported(gfx::OverlayTransform transform) {
+    switch (transform) {
+      case gfx::OVERLAY_TRANSFORM_NONE:
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(SingleOverlay);
+};
+
+}  // namespace
 
 GbmSurfaceFactory::GbmSurfaceFactory(bool allow_surfaceless)
     : DriSurfaceFactory(NULL, NULL),
@@ -123,6 +169,14 @@ scoped_refptr<ui::NativePixmap> GbmSurfaceFactory::CreateNativePixmap(
     return NULL;
 
   return scoped_refptr<GbmPixmap>(new GbmPixmap(buffer));
+}
+
+OverlayCandidatesOzone* GbmSurfaceFactory::GetOverlayCandidates(
+    gfx::AcceleratedWidget w) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kOzoneTestSingleOverlaySupport))
+    return new SingleOverlay();
+  return NULL;
 }
 
 bool GbmSurfaceFactory::ScheduleOverlayPlane(

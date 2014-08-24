@@ -16,4 +16,8 @@ const char kOzoneDumpFile[] = "ozone-dump-file";
 // mode there is no EGL surface.
 const char kOzoneUseSurfaceless[] = "ozone-use-surfaceless";
 
+// Enable support for a single overlay plane.
+const char kOzoneTestSingleOverlaySupport[] =
+    "ozone-test-single-overlay-support";
+
 }  // namespace switches

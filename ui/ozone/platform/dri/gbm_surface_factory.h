@@ -34,6 +34,8 @@ class GbmSurfaceFactory : public DriSurfaceFactory {
   virtual scoped_refptr<ui::NativePixmap> CreateNativePixmap(
       gfx::Size size,
       BufferFormat format) OVERRIDE;
+  virtual OverlayCandidatesOzone* GetOverlayCandidates(
+      gfx::AcceleratedWidget w) OVERRIDE;
   virtual bool ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
                                     int plane_z_order,
                                     gfx::OverlayTransform plane_transform,
