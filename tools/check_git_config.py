@@ -385,7 +385,9 @@ def check_gclient_config(conf):
     'managed': conf['gclient_managed'] or False,
     'url': conf['gclient_url'],
   }
-  good = GOOD_GCLIENT_SOLUTION
+  # After depot_tools r291592 both DEPS and .DEPS.git are valid.
+  good = GOOD_GCLIENT_SOLUTION.copy()
+  good['deps_file'] = current['deps_file']
   if current == good:
     return
   # Show big warning if url or deps_file is wrong.
