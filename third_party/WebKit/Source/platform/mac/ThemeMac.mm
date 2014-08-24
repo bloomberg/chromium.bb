@@ -91,13 +91,6 @@ NSRect focusRingClipRect;
 
 namespace blink {
 
-enum {
-    topMargin,
-    rightMargin,
-    bottomMargin,
-    leftMargin
-};
-
 Theme* platformTheme()
 {
     DEFINE_STATIC_LOCAL(ThemeMac, themeMac, ());
@@ -204,22 +197,47 @@ static ThemeDrawState convertControlStatesToThemeDrawState(ThemeButtonKind kind,
     return kThemeStateActive;
 }
 
-static IntRect inflateRect(const IntRect& zoomedRect, const IntSize& zoomedSize, const int* margins, float zoomFactor)
+// static
+IntRect ThemeMac::inflateRect(const IntRect& zoomedRect, const IntSize& zoomedSize, const int* margins, float zoomFactor)
 {
     // Only do the inflation if the available width/height are too small.  Otherwise try to
     // fit the glow/check space into the available box's width/height.
-    int widthDelta = zoomedRect.width() - (zoomedSize.width() + margins[leftMargin] * zoomFactor + margins[rightMargin] * zoomFactor);
-    int heightDelta = zoomedRect.height() - (zoomedSize.height() + margins[topMargin] * zoomFactor + margins[bottomMargin] * zoomFactor);
+    int widthDelta = zoomedRect.width() - (zoomedSize.width() + margins[LeftMargin] * zoomFactor + margins[RightMargin] * zoomFactor);
+    int heightDelta = zoomedRect.height() - (zoomedSize.height() + margins[TopMargin] * zoomFactor + margins[BottomMargin] * zoomFactor);
     IntRect result(zoomedRect);
     if (widthDelta < 0) {
-        result.setX(result.x() - margins[leftMargin] * zoomFactor);
+        result.setX(result.x() - margins[LeftMargin] * zoomFactor);
         result.setWidth(result.width() - widthDelta);
     }
     if (heightDelta < 0) {
-        result.setY(result.y() - margins[topMargin] * zoomFactor);
+        result.setY(result.y() - margins[TopMargin] * zoomFactor);
         result.setHeight(result.height() - heightDelta);
     }
     return result;
+}
+
+// static
+IntRect ThemeMac::inflateRectForAA(const IntRect& rect) {
+  const int margin = 2;
+  return IntRect(rect.x() - margin, rect.y() - margin, rect.width() + 2 * margin, rect.height() + 2 * margin);
+}
+
+// static
+IntRect ThemeMac::inflateRectForFocusRing(const IntRect& rect) {
+#if BUTTON_CELL_DRAW_WITH_FRAME_DRAWS_FOCUS_RING
+    // Just put a margin of 16 units around the rect. The UI elements that use this don't appropriately
+    // scale their focus rings appropriately (e.g, paint pickers), or switch to non-native widgets when
+    // scaled (e.g, check boxes and radio buttons).
+    const int margin = 16;
+    IntRect result;
+    result.setX(rect.x() - margin);
+    result.setY(rect.y() - margin);
+    result.setWidth(rect.width() + 2 * margin);
+    result.setHeight(rect.height() + 2 * margin);
+    return result;
+#else
+    return rect;
+#endif
 }
 
 // Checkboxes
@@ -284,7 +302,7 @@ static void paintCheckbox(ControlStates states, GraphicsContext* context, const 
     IntSize zoomedSize = checkboxSizes()[controlSize];
     zoomedSize.setWidth(zoomedSize.width() * zoomFactor);
     zoomedSize.setHeight(zoomedSize.height() * zoomFactor);
-    IntRect inflatedRect = inflateRect(zoomedRect, zoomedSize, checkboxMargins(controlSize), zoomFactor);
+    IntRect inflatedRect = ThemeMac::inflateRect(zoomedRect, zoomedSize, checkboxMargins(controlSize), zoomFactor);
     
     if (zoomFactor != 1.0f) {
         inflatedRect.setWidth(inflatedRect.width() / zoomFactor);
@@ -294,7 +312,7 @@ static void paintCheckbox(ControlStates states, GraphicsContext* context, const 
         context->translate(-inflatedRect.x(), -inflatedRect.y());
     }
 
-    LocalCurrentGraphicsContext localContext(context);
+    LocalCurrentGraphicsContext localContext(context, ThemeMac::inflateRectForFocusRing(inflatedRect));
     NSView *view = ThemeMac::ensuredView(scrollView);
     [checkboxCell drawWithFrame:NSRect(inflatedRect) inView:view];
 #if !BUTTON_CELL_DRAW_WITH_FRAME_DRAWS_FOCUS_RING
@@ -364,7 +382,7 @@ static void paintRadio(ControlStates states, GraphicsContext* context, const Int
     IntSize zoomedSize = radioSizes()[controlSize];
     zoomedSize.setWidth(zoomedSize.width() * zoomFactor);
     zoomedSize.setHeight(zoomedSize.height() * zoomFactor);
-    IntRect inflatedRect = inflateRect(zoomedRect, zoomedSize, radioMargins(controlSize), zoomFactor);
+    IntRect inflatedRect = ThemeMac::inflateRect(zoomedRect, zoomedSize, radioMargins(controlSize), zoomFactor);
     
     if (zoomFactor != 1.0f) {
         inflatedRect.setWidth(inflatedRect.width() / zoomFactor);
@@ -374,7 +392,7 @@ static void paintRadio(ControlStates states, GraphicsContext* context, const Int
         context->translate(-inflatedRect.x(), -inflatedRect.y());
     }
 
-    LocalCurrentGraphicsContext localContext(context);
+    LocalCurrentGraphicsContext localContext(context, ThemeMac::inflateRectForFocusRing(inflatedRect));
     BEGIN_BLOCK_OBJC_EXCEPTIONS
     NSView *view = ThemeMac::ensuredView(scrollView);
     [radioCell drawWithFrame:NSRect(inflatedRect) inView:view];
@@ -456,7 +474,7 @@ static void paintButton(ControlPart part, ControlStates states, GraphicsContext*
         }
 
         // Now inflate it to account for the shadow.
-        inflatedRect = inflateRect(inflatedRect, zoomedSize, buttonMargins(controlSize), zoomFactor);
+        inflatedRect = ThemeMac::inflateRect(inflatedRect, zoomedSize, buttonMargins(controlSize), zoomFactor);
 
         if (zoomFactor != 1.0f) {
             inflatedRect.setWidth(inflatedRect.width() / zoomFactor);
@@ -467,7 +485,7 @@ static void paintButton(ControlPart part, ControlStates states, GraphicsContext*
         }
     } 
 
-    LocalCurrentGraphicsContext localContext(context);
+    LocalCurrentGraphicsContext localContext(context, ThemeMac::inflateRectForFocusRing(inflatedRect));
     NSView *view = ThemeMac::ensuredView(scrollView);
 
     [buttonCell drawWithFrame:NSRect(inflatedRect) inView:view];
@@ -536,7 +554,7 @@ static void paintStepper(ControlStates states, GraphicsContext* context, const I
         backgroundBounds.origin.y = bounds.origin.y + (heightDiff / 2) + 1;
     }
 
-    LocalCurrentGraphicsContext localContext(context);
+    LocalCurrentGraphicsContext localContext(context, rect);
     HIThemeDrawButton(&backgroundBounds, &drawInfo, localContext.cgContext(), kHIThemeOrientationNormal, 0);
 }
 

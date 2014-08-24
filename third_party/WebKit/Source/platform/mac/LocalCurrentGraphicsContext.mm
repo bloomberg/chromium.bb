@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "platform/mac/LocalCurrentGraphicsContext.h"
+#include "platform/mac/ThemeMac.h"
 
 #include <AppKit/NSGraphicsContext.h>
 #include "platform/graphics/GraphicsContext.h"
@@ -26,9 +27,9 @@
 
 namespace blink {
 
-LocalCurrentGraphicsContext::LocalCurrentGraphicsContext(GraphicsContext* graphicsContext)
+LocalCurrentGraphicsContext::LocalCurrentGraphicsContext(GraphicsContext* graphicsContext, IntRect dirtyRect)
     : m_didSetGraphicsContext(false)
-    , m_skiaBitLocker(graphicsContext->canvas())
+    , m_skiaBitLocker(graphicsContext->canvas(), ThemeMac::inflateRectForAA(dirtyRect))
 {
     m_savedGraphicsContext = graphicsContext;
     graphicsContext->save();

@@ -151,20 +151,6 @@ namespace blink {
 
 using namespace HTMLNames;
 
-enum {
-    topMargin,
-    rightMargin,
-    bottomMargin,
-    leftMargin
-};
-
-enum {
-    topPadding,
-    rightPadding,
-    bottomPadding,
-    leftPadding
-};
-
 RenderThemeChromiumMac::RenderThemeChromiumMac()
     : m_notificationObserver(AdoptNS, [[WebCoreRenderThemeNotificationObserver alloc] initWithTheme:this])
 {
@@ -554,28 +540,10 @@ void RenderThemeChromiumMac::adjustPaintInvalidationRect(const RenderObject* o, 
         IntSize size = popupButtonSizes()[[popupButton() controlSize]];
         size.setHeight(size.height() * zoomLevel);
         size.setWidth(r.width());
-        r = inflateRect(r, size, popupButtonMargins(), zoomLevel);
+        r = ThemeMac::inflateRect(r, size, popupButtonMargins(), zoomLevel);
     } else if (part == SliderThumbHorizontalPart || part == SliderThumbVerticalPart) {
         r.setHeight(r.height() + sliderThumbShadowBlur);
     }
-}
-
-IntRect RenderThemeChromiumMac::inflateRect(const IntRect& r, const IntSize& size, const int* margins, float zoomLevel) const
-{
-    // Only do the inflation if the available width/height are too small.  Otherwise try to
-    // fit the glow/check space into the available box's width/height.
-    int widthDelta = r.width() - (size.width() + margins[leftMargin] * zoomLevel + margins[rightMargin] * zoomLevel);
-    int heightDelta = r.height() - (size.height() + margins[topMargin] * zoomLevel + margins[bottomMargin] * zoomLevel);
-    IntRect result(r);
-    if (widthDelta < 0) {
-        result.setX(result.x() - margins[leftMargin] * zoomLevel);
-        result.setWidth(result.width() - widthDelta);
-    }
-    if (heightDelta < 0) {
-        result.setY(result.y() - margins[topMargin] * zoomLevel);
-        result.setHeight(result.height() - heightDelta);
-    }
-    return result;
 }
 
 FloatRect RenderThemeChromiumMac::convertToPaintingRect(const RenderObject* inputRenderer, const RenderObject* partRenderer, const FloatRect& inputRect, const IntRect& r) const
@@ -739,7 +707,7 @@ NSControlSize RenderThemeChromiumMac::controlSizeForSystemFont(RenderStyle* styl
 
 bool RenderThemeChromiumMac::paintTextField(RenderObject* o, const PaintInfo& paintInfo, const IntRect& r)
 {
-    LocalCurrentGraphicsContext localContext(paintInfo.context);
+    LocalCurrentGraphicsContext localContext(paintInfo.context, r);
 
 #if __MAC_OS_X_VERSION_MIN_REQUIRED <= 1070
     bool useNSTextFieldCell = o->style()->hasAppearance()
@@ -771,7 +739,7 @@ bool RenderThemeChromiumMac::paintTextField(RenderObject* o, const PaintInfo& pa
 bool RenderThemeChromiumMac::paintCapsLockIndicator(RenderObject*, const PaintInfo& paintInfo, const IntRect& r)
 {
     // This draws the caps lock indicator as it was done by WKDrawCapsLockIndicator.
-    LocalCurrentGraphicsContext localContext(paintInfo.context);
+    LocalCurrentGraphicsContext localContext(paintInfo.context, r);
     CGContextRef c = localContext.cgContext();
     CGMutablePathRef shape = CGPathCreateMutable();
 
@@ -829,7 +797,7 @@ bool RenderThemeChromiumMac::paintCapsLockIndicator(RenderObject*, const PaintIn
 
 bool RenderThemeChromiumMac::paintTextArea(RenderObject* o, const PaintInfo& paintInfo, const IntRect& r)
 {
-    LocalCurrentGraphicsContext localContext(paintInfo.context);
+    LocalCurrentGraphicsContext localContext(paintInfo.context, r);
     _NSDrawCarbonThemeListBox(r, isEnabled(o) && !isReadOnlyControl(o), YES, YES);
     return false;
 }
@@ -864,7 +832,6 @@ const int* RenderThemeChromiumMac::popupButtonPadding(NSControlSize size) const
 
 bool RenderThemeChromiumMac::paintMenuList(RenderObject* o, const PaintInfo& paintInfo, const IntRect& r)
 {
-    LocalCurrentGraphicsContext localContext(paintInfo.context);
     setPopupButtonCellState(o, r);
 
     NSPopUpButtonCell* popupButton = this->popupButton();
@@ -877,8 +844,9 @@ bool RenderThemeChromiumMac::paintMenuList(RenderObject* o, const PaintInfo& pai
     // Now inflate it to account for the shadow.
     IntRect inflatedRect = r;
     if (r.width() >= minimumMenuListSize(o->style()))
-        inflatedRect = inflateRect(inflatedRect, size, popupButtonMargins(), zoomLevel);
+        inflatedRect = ThemeMac::inflateRect(inflatedRect, size, popupButtonMargins(), zoomLevel);
 
+    LocalCurrentGraphicsContext localContext(paintInfo.context, ThemeMac::inflateRectForFocusRing(inflatedRect));
     GraphicsContextStateSaver stateSaver(*paintInfo.context);
 
     // On Leopard, the cell will draw outside of the given rect, so we have to clip to the rect
@@ -920,7 +888,7 @@ bool RenderThemeChromiumMac::paintMeter(RenderObject* renderObject, const PaintI
     if (!renderObject->isMeter())
         return true;
 
-    LocalCurrentGraphicsContext localContext(paintInfo.context);
+    LocalCurrentGraphicsContext localContext(paintInfo.context, rect);
 
     NSLevelIndicatorCell* cell = levelIndicatorFor(toRenderMeter(renderObject));
     GraphicsContextStateSaver stateSaver(*paintInfo.context);
@@ -1049,7 +1017,7 @@ bool RenderThemeChromiumMac::paintProgressBar(RenderObject* renderObject, const 
     // Now inflate it to account for the shadow.
     IntRect inflatedRect = rect;
     if (rect.height() <= minimumProgressBarHeight(renderObject->style()))
-        inflatedRect = inflateRect(inflatedRect, size, progressBarMargins(controlSize), zoomLevel);
+        inflatedRect = ThemeMac::inflateRect(inflatedRect, size, progressBarMargins(controlSize), zoomLevel);
 
     RenderProgress* renderProgress = toRenderProgress(renderObject);
     HIThemeTrackDrawInfo trackInfo;
@@ -1185,7 +1153,7 @@ int RenderThemeChromiumMac::popupInternalPaddingLeft(RenderStyle* style) const
         return autofillPopupHorizontalPadding;
 
     if (style->appearance() == MenulistPart)
-        return popupButtonPadding(controlSizeForFont(style))[leftPadding] * style->effectiveZoom();
+        return popupButtonPadding(controlSizeForFont(style))[ThemeMac::LeftMargin] * style->effectiveZoom();
     if (style->appearance() == MenulistButtonPart)
         return styledPopupPaddingLeft * style->effectiveZoom();
     return 0;
@@ -1197,7 +1165,7 @@ int RenderThemeChromiumMac::popupInternalPaddingRight(RenderStyle* style) const
         return autofillPopupHorizontalPadding;
 
     if (style->appearance() == MenulistPart)
-        return popupButtonPadding(controlSizeForFont(style))[rightPadding] * style->effectiveZoom();
+        return popupButtonPadding(controlSizeForFont(style))[ThemeMac::RightMargin] * style->effectiveZoom();
     if (style->appearance() == MenulistButtonPart) {
         float fontScale = style->fontSize() / baseFontSize;
         float arrowWidth = baseArrowWidth * fontScale;
@@ -1209,7 +1177,7 @@ int RenderThemeChromiumMac::popupInternalPaddingRight(RenderStyle* style) const
 int RenderThemeChromiumMac::popupInternalPaddingTop(RenderStyle* style) const
 {
     if (style->appearance() == MenulistPart)
-        return popupButtonPadding(controlSizeForFont(style))[topPadding] * style->effectiveZoom();
+        return popupButtonPadding(controlSizeForFont(style))[ThemeMac::TopMargin] * style->effectiveZoom();
     if (style->appearance() == MenulistButtonPart)
         return styledPopupPaddingTop * style->effectiveZoom();
     return 0;
@@ -1218,7 +1186,7 @@ int RenderThemeChromiumMac::popupInternalPaddingTop(RenderStyle* style) const
 int RenderThemeChromiumMac::popupInternalPaddingBottom(RenderStyle* style) const
 {
     if (style->appearance() == MenulistPart)
-        return popupButtonPadding(controlSizeForFont(style))[bottomPadding] * style->effectiveZoom();
+        return popupButtonPadding(controlSizeForFont(style))[ThemeMac::BottomMargin] * style->effectiveZoom();
     if (style->appearance() == MenulistButtonPart)
         return styledPopupPaddingBottom * style->effectiveZoom();
     return 0;
@@ -1425,7 +1393,7 @@ bool RenderThemeChromiumMac::paintSliderThumb(RenderObject* o, const PaintInfo& 
 
 bool RenderThemeChromiumMac::paintSearchField(RenderObject* o, const PaintInfo& paintInfo, const IntRect& r)
 {
-    LocalCurrentGraphicsContext localContext(paintInfo.context);
+    LocalCurrentGraphicsContext localContext(paintInfo.context, r);
 
     NSSearchFieldCell* search = this->search();
     setSearchCellState(o, r);
@@ -1644,7 +1612,7 @@ bool RenderThemeChromiumMac::paintSearchFieldResultsDecoration(RenderObject* o, 
         paintInfo.context->translate(-unzoomedRect.x(), -unzoomedRect.y());
     }
 
-    LocalCurrentGraphicsContext localContext(paintInfo.context);
+    LocalCurrentGraphicsContext localContext(paintInfo.context, r);
 
     NSSearchFieldCell* search = this->search();
     setSearchCellState(input->renderer(), r);

@@ -1088,6 +1088,17 @@ crbug.com/394230 [ Debug ] inspector/sources/debugger/debugger-script-preprocess
 
 crbug.com/392853 fast/css/css-selector-deeply-nested.html [ Crash Pass ]
 
+# Changes in rendering to intermediate surfaces caused small pixel differences that need to be rebaselined.
+crbug.com/247716 [ Mac ] fast/forms/search-cancel-button-style-sharing.html [ NeedsRebaseline ]
+crbug.com/247716 [ Mac ] fast/forms/placeholder-position.html [ NeedsRebaseline ]
+crbug.com/247716 [ Mac ] fast/layers/scroll-with-transform-layer.html [ NeedsRebaseline ]
+crbug.com/247716 [ Mac ] fast/replaced/width100percent-searchfield.html [ NeedsRebaseline ]
+crbug.com/247716 [ Mac ] fast/forms/search-rtl.html [ NeedsRebaseline ]
+
+# Failures that need further investigation.
+crbug.com/247716 [ Mac ] fast/frames/iframe-scaling-with-scroll.html [ NeedsManualRebaseline ]
+crbug.com/247716 [ Mac ] editing/spelling/inline-spelling-markers-hidpi-composited.html [ NeedsManualRebaseline ]
+
 crbug.com/381730 http/tests/navigation/pending-location-change-assert.html [ Pass Failure ]
 
 crbug.com/381464 fast/dom/Window/Location/window-shadow-location-using-string.html [ Pass Failure ]
