@@ -29,9 +29,9 @@ HidReportDescriptor::~HidReportDescriptor() {}
 void HidReportDescriptor::GetDetails(
     std::vector<HidCollectionInfo>* top_level_collections,
     bool* has_report_id,
-    int* max_input_report_size,
-    int* max_output_report_size,
-    int* max_feature_report_size) {
+    uint16_t* max_input_report_size,
+    uint16_t* max_output_report_size,
+    uint16_t* max_feature_report_size) {
   DCHECK(top_level_collections);
   DCHECK(max_input_report_size);
   DCHECK(max_output_report_size);
@@ -45,13 +45,13 @@ void HidReportDescriptor::GetDetails(
 
   // Global tags data:
   HidUsageAndPage::Page current_usage_page = HidUsageAndPage::kPageUndefined;
-  int current_report_count = 0;
-  int cached_report_count = 0;
-  int current_report_size = 0;
-  int cached_report_size = 0;
-  int current_input_report_size = 0;
-  int current_output_report_size = 0;
-  int current_feature_report_size = 0;
+  uint16_t current_report_count = 0;
+  uint16_t cached_report_count = 0;
+  uint16_t current_report_size = 0;
+  uint16_t cached_report_size = 0;
+  uint16_t current_input_report_size = 0;
+  uint16_t current_output_report_size = 0;
+  uint16_t current_feature_report_size = 0;
 
   // Local tags data:
   uint16_t current_usage = 0;
