@@ -13,7 +13,7 @@ var assert = chai.assert;
 
 describe('ct-builder', function() {
   describe('default builder UI', function() {
-    it('should link to builder and show right number of runs', function(done) {
+    it('should link to builder', function(done) {
       var masterUrl = 'http://url';
       var builderName = 'WebKit Linux (dbg)';
       var firstFailingBuild = '1234';
@@ -28,16 +28,7 @@ describe('ct-builder', function() {
         assert.include(a.href, encodeURIComponent(builderName));
         assert.include(a.href, firstFailingBuild);
 
-        assert.equal(builder.shadowRoot.textContent.compact(),
-            'WebKit Linux (dbg) - 1 run');
-
-        builder.builder.failingBuildCount = 2;
-
-        setTimeout(function() {
-          assert.equal(builder.shadowRoot.textContent.compact(),
-              'WebKit Linux (dbg) - 2 runs');
-          done();
-        });
+        done();
       });
     });
   });

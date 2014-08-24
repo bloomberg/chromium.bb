@@ -7,9 +7,5 @@ found in the LICENSE file.
 <polymer-element name="ct-builder" attributes="builder" noscript>
   <template>
     <a href="{{ builder.buildUrl }}">{{ builder.builder }}</a>
-    -
-    {{ builder.failingBuildCount }}
-    <template if="{{ builder.failingBuildCount != 1 }}">runs</template>
-    <template if="{{ builder.failingBuildCount == 1 }}">run</template>
   </template>
 </polymer-element>
