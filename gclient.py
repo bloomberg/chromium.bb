@@ -1290,19 +1290,6 @@ http://www.chromium.org/developers/how-tos/get-the-code
         url_val.s = CHROMIUM_SRC_URL
         modified = True
 
-      # Check for obsolete deps_file
-      if url_val.s == CHROMIUM_SRC_URL:
-        deps_file_idx = ast_dict_index(solution, 'deps_file')
-        if deps_file_idx == -1:
-          continue
-        deps_file_val = solution.values[deps_file_idx]
-        if type(deps_file_val) is not ast.Str:
-          continue
-        if deps_file_val.s == '.DEPS.git':
-          solution.keys[deps_file_idx:deps_file_idx + 1] = []
-          solution.values[deps_file_idx:deps_file_idx + 1] = []
-          modified = True
-
     if not modified:
       return self
 
