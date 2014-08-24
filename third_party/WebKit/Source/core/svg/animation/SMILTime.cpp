@@ -31,10 +31,6 @@
 
 using namespace blink;
 
-const double SMILTime::unresolvedValue = DBL_MAX;
-// Just a big value smaller than DBL_MAX. Our times are relative to 0, we don't really need the full range.
-const double SMILTime::indefiniteValue = FLT_MAX;
-
 SMILTime blink::operator+(const SMILTime& a, const SMILTime& b)
 {
     if (a.isUnresolved() || b.isUnresolved())

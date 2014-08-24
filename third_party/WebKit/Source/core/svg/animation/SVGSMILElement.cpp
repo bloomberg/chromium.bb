@@ -490,9 +490,11 @@ void SVGSMILElement::parseBeginOrEnd(const String& parseString, BeginOrEnd begin
     Vector<SMILTimeWithOrigin>& timeList = beginOrEnd == Begin ? m_beginTimes : m_endTimes;
     if (beginOrEnd == End)
         m_hasEndEventConditions = false;
-    HashSet<double> existing;
-    for (unsigned n = 0; n < timeList.size(); ++n)
-        existing.add(timeList[n].time().value());
+    HashSet<SMILTime> existing;
+    for (unsigned n = 0; n < timeList.size(); ++n) {
+        if (!timeList[n].time().isUnresolved())
+            existing.add(timeList[n].time().value());
+    }
     Vector<String> splitString;
     parseString.split(';', splitString);
     for (unsigned n = 0; n < splitString.size(); ++n) {
@@ -806,7 +808,6 @@ SMILTime SVGSMILElement::simpleDuration() const
 
 void SVGSMILElement::addBeginTime(SMILTime eventTime, SMILTime beginTime, SMILTimeWithOrigin::Origin origin)
 {
-    ASSERT(!std::isnan(beginTime.value()));
     m_beginTimes.append(SMILTimeWithOrigin(beginTime, origin));
     sortTimeList(m_beginTimes);
     beginListChanged(eventTime);
@@ -814,7 +815,6 @@ void SVGSMILElement::addBeginTime(SMILTime eventTime, SMILTime beginTime, SMILTi
 
 void SVGSMILElement::addEndTime(SMILTime eventTime, SMILTime endTime, SMILTimeWithOrigin::Origin origin)
 {
-    ASSERT(!std::isnan(endTime.value()));
     m_endTimes.append(SMILTimeWithOrigin(endTime, origin));
     sortTimeList(m_endTimes);
     endListChanged(eventTime);
@@ -872,8 +872,11 @@ SMILTime SVGSMILElement::repeatingDuration() const
     SMILTime simpleDuration = this->simpleDuration();
     if (!simpleDuration || (repeatDur.isUnresolved() && repeatCount.isUnresolved()))
         return simpleDuration;
+    repeatDur = std::min(repeatDur, SMILTime::indefinite());
     SMILTime repeatCountDuration = simpleDuration * repeatCount;
-    return std::min(repeatCountDuration, std::min(repeatDur, SMILTime::indefinite()));
+    if (!repeatCountDuration.isUnresolved())
+        return std::min(repeatDur, repeatCountDuration);
+    return repeatDur;
 }
 
 SMILTime SVGSMILElement::resolveActiveEnd(SMILTime resolvedBegin, SMILTime resolvedEnd) const
@@ -940,7 +943,7 @@ void SVGSMILElement::resolveFirstInterval()
     if (!firstInterval.begin.isUnresolved() && firstInterval != m_interval) {
         m_interval = firstInterval;
         notifyDependentsIntervalChanged();
-        m_nextProgressTime = std::min(m_nextProgressTime, m_interval.begin);
+        m_nextProgressTime = m_nextProgressTime.isUnresolved() ? m_interval.begin : std::min(m_nextProgressTime, m_interval.begin);
 
         if (m_timeContainer)
             m_timeContainer->notifyIntervalsChanged();
@@ -955,7 +958,7 @@ bool SVGSMILElement::resolveNextInterval()
     if (!nextInterval.begin.isUnresolved() && nextInterval.begin != m_interval.begin) {
         m_interval = nextInterval;
         notifyDependentsIntervalChanged();
-        m_nextProgressTime = std::min(m_nextProgressTime, m_interval.begin);
+        m_nextProgressTime = m_nextProgressTime.isUnresolved() ? m_interval.begin : std::min(m_nextProgressTime, m_interval.begin);
         return true;
     }
 
@@ -1274,10 +1277,13 @@ void SVGSMILElement::createInstanceTimesFromSyncbase(SVGSMILElement* syncBase)
                 time = syncBase->m_interval.end + condition->offset();
             if (!time.isFinite())
                 continue;
+            SMILTime elapsed = this->elapsed();
+            if (elapsed.isUnresolved())
+                continue;
             if (condition->beginOrEnd() == Begin)
-                addBeginTime(elapsed(), time);
+                addBeginTime(elapsed, time);
             else
-                addEndTime(elapsed(), time);
+                addEndTime(elapsed, time);
         }
     }
 }
@@ -1300,6 +1306,8 @@ void SVGSMILElement::handleConditionEvent(Event* event, Condition* condition)
         return;
 
     SMILTime elapsed = this->elapsed();
+    if (elapsed.isUnresolved())
+        return;
     if (condition->beginOrEnd() == Begin)
         addBeginTime(elapsed, elapsed + condition->offset());
     else
@@ -1309,6 +1317,8 @@ void SVGSMILElement::handleConditionEvent(Event* event, Condition* condition)
 void SVGSMILElement::beginByLinkActivation()
 {
     SMILTime elapsed = this->elapsed();
+    if (elapsed.isUnresolved())
+        return;
     addBeginTime(elapsed, elapsed);
 }
 

@@ -27,6 +27,7 @@
 #define SMILTime_h
 
 #include "wtf/Assertions.h"
+#include "wtf/HashTraits.h"
 #include "wtf/MathExtras.h"
 
 namespace blink {
@@ -34,23 +35,18 @@ namespace blink {
 class SMILTime {
 public:
     SMILTime() : m_time(0) { }
-    SMILTime(double time) : m_time(time) { ASSERT(!std::isnan(time)); }
-    SMILTime(const SMILTime& o) : m_time(o.m_time) { }
+    SMILTime(double time) : m_time(time) { }
 
-    static SMILTime unresolved() { return unresolvedValue; }
-    static SMILTime indefinite() { return indefiniteValue; }
+    static SMILTime unresolved() { return std::numeric_limits<double>::quiet_NaN(); }
+    static SMILTime indefinite() { return std::numeric_limits<double>::infinity(); }
 
-    SMILTime& operator=(const SMILTime& o) { m_time = o.m_time; return *this; }
     double value() const { return m_time; }
 
-    bool isFinite() const { return m_time < indefiniteValue; }
-    bool isIndefinite() const { return m_time == indefiniteValue; }
-    bool isUnresolved() const { return m_time == unresolvedValue; }
+    bool isFinite() const { return std::isfinite(m_time); }
+    bool isIndefinite() const { return std::isinf(m_time); }
+    bool isUnresolved() const { return std::isnan(m_time); }
 
 private:
-    static const double unresolvedValue;
-    static const double indefiniteValue;
-
     double m_time;
 };
 
@@ -88,13 +84,16 @@ struct SMILInterval {
     SMILTime end;
 };
 
-inline bool operator==(const SMILTime& a, const SMILTime& b) { return a.isFinite() && a.value() == b.value(); }
+inline bool operator==(const SMILTime& a, const SMILTime& b) { return (a.isUnresolved() && b.isUnresolved()) || a.value() == b.value(); }
 inline bool operator!(const SMILTime& a) { return !a.isFinite() || !a.value(); }
 inline bool operator!=(const SMILTime& a, const SMILTime& b) { return !operator==(a, b); }
-inline bool operator>(const SMILTime& a, const SMILTime& b) { return a.value() > b.value(); }
-inline bool operator<(const SMILTime& a, const SMILTime& b) { return a.value() < b.value(); }
-inline bool operator>=(const SMILTime& a, const SMILTime& b) { return a.value() > b.value() || operator==(a, b); }
-inline bool operator<=(const SMILTime& a, const SMILTime& b) { return a.value() < b.value() || operator==(a, b); }
+
+// Ordering of SMILTimes has to follow: finite < indefinite (Inf) < unresolved (NaN). The first comparison is handled by IEEE754 but
+// NaN values must be checked explicitly to guarantee that unresolved is ordered correctly too.
+inline bool operator>(const SMILTime& a, const SMILTime& b) { return a.isUnresolved() || (a.value() > b.value()); }
+inline bool operator<(const SMILTime& a, const SMILTime& b) { return operator>(b, a); }
+inline bool operator>=(const SMILTime& a, const SMILTime& b) { return operator>(a, b) || operator==(a, b); }
+inline bool operator<=(const SMILTime& a, const SMILTime& b) { return operator<(a, b) || operator==(a, b); }
 inline bool operator<(const SMILTimeWithOrigin& a, const SMILTimeWithOrigin& b) { return a.time() < b.time(); }
 
 SMILTime operator+(const SMILTime&, const SMILTime&);
@@ -109,6 +108,26 @@ inline bool operator!=(const SMILInterval& a, const SMILInterval& b)
     return a.begin.value() != b.begin.value() || a.end.value() != b.end.value();
 }
 
-}
+struct SMILTimeHash {
+    static unsigned hash(const SMILTime& key) { return WTF::FloatHash<double>::hash(key.value()); }
+    static bool equal(const SMILTime& a, const SMILTime& b) { return WTF::FloatHash<double>::equal(a.value(), b.value()); }
+    static const bool safeToCompareToEmptyOrDeleted = true;
+};
+
+} // namespace blink
+
+namespace WTF {
+
+template<> struct DefaultHash<blink::SMILTime> {
+    typedef blink::SMILTimeHash Hash;
+};
+
+template<> struct HashTraits<blink::SMILTime> : GenericHashTraits<blink::SMILTime> {
+    static blink::SMILTime emptyValue() { return blink::SMILTime::unresolved(); }
+    static void constructDeletedValue(blink::SMILTime& slot) { slot = -std::numeric_limits<double>::infinity(); }
+    static bool isDeletedValue(blink::SMILTime value) { return value == -std::numeric_limits<double>::infinity(); }
+};
+
+} // namespace WTF
 
 #endif // SMILTime_h
