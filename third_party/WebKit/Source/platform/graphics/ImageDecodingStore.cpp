@@ -186,7 +186,7 @@ int ImageDecodingStore::decoderCacheEntries()
 
 void ImageDecodingStore::prune()
 {
-    TRACE_EVENT0("blink", "ImageDecodingStore::prune");
+    TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("blink.image_decoding"), "ImageDecodingStore::prune");
 
     Vector<OwnPtr<CacheEntry> > cacheEntriesToDelete;
     {
@@ -228,8 +228,8 @@ void ImageDecodingStore::insertCacheInternal(PassOwnPtr<T> cacheEntry, U* cacheM
     result.storedValue->value.add(key);
     cacheMap->add(key, cacheEntry);
 
-    TRACE_COUNTER1("blink", "ImageDecodingStoreHeapMemoryUsageBytes", m_heapMemoryUsageInBytes);
-    TRACE_COUNTER1("blink", "ImageDecodingStoreNumOfDecoders", m_decoderCacheMap.size());
+    TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink.image_decoding"), "ImageDecodingStoreHeapMemoryUsageBytes", m_heapMemoryUsageInBytes);
+    TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink.image_decoding"), "ImageDecodingStoreNumOfDecoders", m_decoderCacheMap.size());
 }
 
 template<class T, class U, class V>
@@ -249,8 +249,8 @@ void ImageDecodingStore::removeFromCacheInternal(const T* cacheEntry, U* cacheMa
     // Remove entry from cache map.
     deletionList->append(cacheMap->take(cacheEntry->cacheKey()));
 
-    TRACE_COUNTER1("blink", "ImageDecodingStoreHeapMemoryUsageBytes", m_heapMemoryUsageInBytes);
-    TRACE_COUNTER1("blink", "ImageDecodingStoreNumOfDecoders", m_decoderCacheMap.size());
+    TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink.image_decoding"), "ImageDecodingStoreHeapMemoryUsageBytes", m_heapMemoryUsageInBytes);
+    TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink.image_decoding"), "ImageDecodingStoreNumOfDecoders", m_decoderCacheMap.size());
 }
 
 void ImageDecodingStore::removeFromCacheInternal(const CacheEntry* cacheEntry, Vector<OwnPtr<CacheEntry> >* deletionList)
