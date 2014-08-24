@@ -67,7 +67,7 @@ public:
     virtual bool getHotSpot(IntPoint&) const OVERRIDE;
 
     virtual bool dataChanged(bool allDataReceived) OVERRIDE;
-    bool isAllDataReceived() const;
+    bool isAllDataReceived() const { return m_allDataReceived; }
     bool hasColorProfile() const;
     virtual String filenameExtension() const OVERRIDE;
 
