@@ -72,7 +72,8 @@ static int kCaptureRetryLimit = 2;
 }  // namespace
 
 RendererOverridesHandler::RendererOverridesHandler()
-    : has_last_compositor_frame_metadata_(false),
+    : page_domain_enabled_(false),
+      has_last_compositor_frame_metadata_(false),
       capture_retry_count_(0),
       touch_emulation_enabled_(false),
       color_picker_enabled_(false),
@@ -99,6 +100,10 @@ RendererOverridesHandler::RendererOverridesHandler()
       base::Bind(
           &RendererOverridesHandler::ClearBrowserCookies,
           base::Unretained(this)));
+  RegisterCommandHandler(
+      devtools::Page::enable::kName,
+      base::Bind(
+          &RendererOverridesHandler::PageEnable, base::Unretained(this)));
   RegisterCommandHandler(
       devtools::Page::disable::kName,
       base::Bind(
@@ -214,6 +219,16 @@ void RendererOverridesHandler::ClearRenderViewHost() {
     host_->RemoveMouseEventCallback(mouse_event_callback_);
   host_ = NULL;
   ResetColorPickerFrame();
+}
+
+void RendererOverridesHandler::DidAttachInterstitialPage() {
+  if (page_domain_enabled_)
+    SendNotification(devtools::Page::interstitialShown::kName, NULL);
+}
+
+void RendererOverridesHandler::DidDetachInterstitialPage() {
+  if (page_domain_enabled_)
+    SendNotification(devtools::Page::interstitialHidden::kName, NULL);
 }
 
 void RendererOverridesHandler::InnerSwapCompositorFrame() {
@@ -341,9 +356,19 @@ RendererOverridesHandler::ClearBrowserCookies(
 // Page agent handlers  -------------------------------------------------------
 
 scoped_refptr<DevToolsProtocol::Response>
+RendererOverridesHandler::PageEnable(
+    scoped_refptr<DevToolsProtocol::Command> command) {
+  page_domain_enabled_ = true;
+  // Fall through to the renderer.
+  return NULL;
+}
+
+scoped_refptr<DevToolsProtocol::Response>
 RendererOverridesHandler::PageDisable(
     scoped_refptr<DevToolsProtocol::Command> command) {
+  page_domain_enabled_ = false;
   OnClientDetached();
+  // Fall through to the renderer.
   return NULL;
 }
 

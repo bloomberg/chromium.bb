@@ -46,6 +46,8 @@ class CONTENT_EXPORT RendererOverridesHandler
   void OnVisibilityChanged(bool visible);
   void SetRenderViewHost(RenderViewHostImpl* host);
   void ClearRenderViewHost();
+  void DidAttachInterstitialPage();
+  void DidDetachInterstitialPage();
 
  private:
   void InnerSwapCompositorFrame();
@@ -64,6 +66,8 @@ class CONTENT_EXPORT RendererOverridesHandler
       scoped_refptr<DevToolsProtocol::Command> command);
 
   // Page domain.
+  scoped_refptr<DevToolsProtocol::Response> PageEnable(
+      scoped_refptr<DevToolsProtocol::Command> command);
   scoped_refptr<DevToolsProtocol::Response> PageDisable(
       scoped_refptr<DevToolsProtocol::Command> command);
   scoped_refptr<DevToolsProtocol::Response> PageHandleJavaScriptDialog(
@@ -122,6 +126,7 @@ class CONTENT_EXPORT RendererOverridesHandler
   void UpdateTouchEventEmulationState();
 
   RenderViewHostImpl* host_;
+  bool page_domain_enabled_;
   scoped_refptr<DevToolsProtocol::Command> screencast_command_;
   bool has_last_compositor_frame_metadata_;
   cc::CompositorFrameMetadata last_compositor_frame_metadata_;

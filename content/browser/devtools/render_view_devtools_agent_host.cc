@@ -319,6 +319,8 @@ bool RenderViewDevToolsAgentHost::OnMessageReceived(
 }
 
 void RenderViewDevToolsAgentHost::DidAttachInterstitialPage() {
+  overrides_handler_->DidAttachInterstitialPage();
+
   if (!render_view_host_)
     return;
   // The rvh set in AboutToNavigateRenderView turned out to be interstitial.
@@ -329,6 +331,10 @@ void RenderViewDevToolsAgentHost::DidAttachInterstitialPage() {
     return;
   DisconnectRenderViewHost();
   ConnectRenderViewHost(web_contents->GetRenderViewHost());
+}
+
+void RenderViewDevToolsAgentHost::DidDetachInterstitialPage() {
+  overrides_handler_->DidDetachInterstitialPage();
 }
 
 void RenderViewDevToolsAgentHost::Observe(int type,
