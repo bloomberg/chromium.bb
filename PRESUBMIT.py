@@ -1281,50 +1281,6 @@ def _CommonChecks(input_api, output_api):
   return results
 
 
-def _CheckSubversionConfig(input_api, output_api):
-  """Verifies the subversion config file is correctly setup.
-
-  Checks that autoprops are enabled, returns an error otherwise.
-  """
-  join = input_api.os_path.join
-  if input_api.platform == 'win32':
-    appdata = input_api.environ.get('APPDATA', '')
-    if not appdata:
-      return [output_api.PresubmitError('%APPDATA% is not configured.')]
-    path = join(appdata, 'Subversion', 'config')
-  else:
-    home = input_api.environ.get('HOME', '')
-    if not home:
-      return [output_api.PresubmitError('$HOME is not configured.')]
-    path = join(home, '.subversion', 'config')
-
-  error_msg = (
-      'Please look at http://dev.chromium.org/developers/coding-style to\n'
-      'configure your subversion configuration file. This enables automatic\n'
-      'properties to simplify the project maintenance.\n'
-      'Pro-tip: just download and install\n'
-      'http://src.chromium.org/viewvc/chrome/trunk/tools/build/slave/config\n')
-
-  try:
-    lines = open(path, 'r').read().splitlines()
-    # Make sure auto-props is enabled and check for 2 Chromium standard
-    # auto-prop.
-    if (not '*.cc = svn:eol-style=LF' in lines or
-        not '*.pdf = svn:mime-type=application/pdf' in lines or
-        not 'enable-auto-props = yes' in lines):
-      return [
-          output_api.PresubmitNotifyResult(
-              'It looks like you have not configured your subversion config '
-              'file or it is not up-to-date.\n' + error_msg)
-      ]
-  except (OSError, IOError):
-    return [
-        output_api.PresubmitNotifyResult(
-            'Can\'t find your subversion config file.\n' + error_msg)
-    ]
-  return []
-
-
 def _CheckAuthorizedAuthor(input_api, output_api):
   """For non-googler/chromites committers, verify the author's email address is
   in AUTHORS.
@@ -1564,7 +1520,6 @@ def CheckChangeOnCommit(input_api, output_api):
       input_api, output_api))
   results.extend(input_api.canned_checks.CheckChangeHasDescription(
       input_api, output_api))
-  results.extend(_CheckSubversionConfig(input_api, output_api))
   return results
 
 
