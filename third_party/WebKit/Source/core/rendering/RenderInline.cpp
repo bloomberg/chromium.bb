@@ -162,23 +162,21 @@ static void updateStyleOfAnonymousBlockContinuations(RenderObject* block, const 
         if (!toRenderBlock(block)->isAnonymousBlockContinuation())
             continue;
 
-        RenderInline* cont = toRenderBlock(block)->inlineElementContinuation();
-        RefPtr<RenderStyle> blockStyle = RenderStyle::createAnonymousStyleWithDisplay(block->style(), BLOCK);
-
         if (!block->style()->isOutlineEquivalent(newStyle)) {
-            blockStyle->setOutlineWidth(newStyle->outlineWidth());
-            blockStyle->setOutlineStyle(newStyle->outlineStyle());
-            blockStyle->setOutlineOffset(newStyle->outlineOffset());
-            blockStyle->setOutlineColor(block->resolveColor(newStyle, CSSPropertyOutlineColor));
-            blockStyle->setOutlineStyleIsAuto(newStyle->outlineStyleIsAuto());
+            RefPtr<RenderStyle> blockStyle = RenderStyle::clone(block->style());
+            blockStyle->setOutlineFromStyle(*newStyle);
             block->setStyle(blockStyle);
         }
 
         if (block->style()->position() != newStyle->position()) {
             // If we are no longer in-flow positioned but our descendant block(s) still have an in-flow positioned ancestor then
             // their containing anonymous block should keep its in-flow positioning.
-            if (oldStyle->hasInFlowPosition() && inFlowPositionedInlineAncestor(cont))
+            if (oldStyle->hasInFlowPosition()
+                && inFlowPositionedInlineAncestor(toRenderBlock(block)->inlineElementContinuation()))
                 continue;
+            // FIXME: We should share blockStyle with the outline case, but it fails layout tests
+            // for dynamic position change of inlines containing block continuations. crbug.com/405222.
+            RefPtr<RenderStyle> blockStyle = RenderStyle::createAnonymousStyleWithDisplay(block->style(), BLOCK);
             blockStyle->setPosition(newStyle->position());
             block->setStyle(blockStyle);
         }
@@ -223,6 +221,18 @@ void RenderInline::styleDidChange(StyleDifference diff, const RenderStyle* oldSt
         }
         setAlwaysCreateLineBoxes(alwaysCreateLineBoxesNew);
     }
+}
+
+void RenderInline::setContinuation(RenderBoxModelObject* continuation)
+{
+    RenderBoxModelObject::setContinuation(continuation);
+    if (continuation && continuation->isAnonymousBlock() && !continuation->style()->isOutlineEquivalent(style())) {
+        // Push outline style to the block continuation.
+        RefPtr<RenderStyle> blockStyle = RenderStyle::clone(continuation->style());
+        blockStyle->setOutlineFromStyle(*style());
+        continuation->setStyle(blockStyle);
+    }
+    // FIXME: What if continuation is added when the inline has relative position? crbug.com/405222.
 }
 
 void RenderInline::updateAlwaysCreateLineBoxes(bool fullLayout)

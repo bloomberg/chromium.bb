@@ -1092,6 +1092,11 @@ public:
             return !hasOutline();
         return m_background->outline().visuallyEqual(otherStyle->m_background->outline());
     }
+    void setOutlineFromStyle(const RenderStyle& o)
+    {
+        ASSERT(!isOutlineEquivalent(&o));
+        m_background.access()->m_outline = o.m_background->m_outline;
+    }
 
     void setOverflowX(EOverflow v) { noninherited_flags.overflowX = v; }
     void setOverflowY(EOverflow v) { noninherited_flags.overflowY = v; }
