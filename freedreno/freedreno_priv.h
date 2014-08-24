@@ -148,9 +148,6 @@ struct fd_bo {
 	time_t free_time;        /* time when added to bucket-list */
 };
 
-struct fd_bo *fd_bo_from_handle(struct fd_device *dev,
-		uint32_t handle, uint32_t size);
-
 #define ALIGN(v,a) (((v) + (a) - 1) & ~((a) - 1))
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
 
