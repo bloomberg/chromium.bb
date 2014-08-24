@@ -53,6 +53,8 @@ cr.define('extensions', function() {
 
       if (extensionoptions)
         $('extension-options-overlay-guest').removeChild(extensionoptions);
+
+      $('extension-options-overlay-icon').removeAttribute('src');
     },
 
     /**
@@ -61,9 +63,15 @@ cr.define('extensions', function() {
      *     should be displayed in the overlay.
      * @param {string} extensionName The name of the extension, which is used
      *     as the header of the overlay.
+     * @param {string} extensionIcon The URL of the extension's icon.
      */
-    setExtensionAndShowOverlay: function(extensionId, extensionName) {
+    setExtensionAndShowOverlay: function(extensionId,
+                                         extensionName,
+                                         extensionIcon) {
       $('extension-options-overlay-title').textContent = extensionName;
+      $('extension-options-overlay-icon').src = extensionIcon;
+
+      this.setVisible_(true);
 
       var extensionoptions = new ExtensionOptions();
       extensionoptions.extension = extensionId;
@@ -74,7 +82,7 @@ cr.define('extensions', function() {
       // max height, but the maxheight does not include our header height
       // (title and close button), so we need to subtract that to get the
       // max height for the extension options.
-      var headerHeight = $('extension-options-overlay-title').offsetHeight;
+      var headerHeight = $('extension-options-overlay-header').offsetHeight;
       var overlayMaxHeight =
           parseInt($('extension-options-overlay').style.maxHeight);
       extensionoptions.maxheight = overlayMaxHeight - headerHeight;
@@ -131,7 +139,6 @@ cr.define('extensions', function() {
           window.outerWidth + 'px';
 
       $('extension-options-overlay-guest').appendChild(extensionoptions);
-      this.setVisible_(true);
     },
 
     /**
