@@ -1322,6 +1322,3 @@ crbug.com/402379 [ Win7 Debug ] storage/indexeddb/cursor-continue-validity.html 
 crbug.com/402379 [ Win7 Debug ] storage/indexeddb/mozilla/indexes.html [ Pass Slow ]
 
 crbug.com/402801 [ XP Release ] http/tests/misc/location-replace-crossdomain.html [ Pass Slow ]
-
-crbug.com/388780 fast/dom/geometry-interfaces-dom-matrix-scale.html [ NeedsRebaseline ]
-crbug.com/388780 fast/dom/geometry-interfaces-dom-matrix-translate.html [ NeedsRebaseline ]
