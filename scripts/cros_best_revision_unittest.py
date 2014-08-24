@@ -18,7 +18,6 @@ from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot import tree_status
 from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
-from chromite.lib import gclient
 from chromite.lib import gs_unittest
 from chromite.lib import osutils
 from chromite.lib import partial_mock
@@ -32,7 +31,7 @@ class BaseChromeCommitterTest(cros_test_lib.MockTempDirTestCase):
   def setUp(self):
     """Common set up method for all tests."""
     self.committer = cros_best_revision.ChromeCommitter(self.tempdir, False)
-    self.lkgm_file = os.path.join(self.tempdir, constants.CHROME_LKGM_FILE)
+    self.lkgm_file = os.path.join(self.tempdir, constants.PATH_TO_CHROME_LKGM)
     self.pass_status = manifest_version.BuilderStatus(
         manifest_version.BuilderStatus.STATUS_PASSED, None)
     self.fail_status = manifest_version.BuilderStatus(
@@ -69,13 +68,10 @@ class ChromeCommitterTester(cros_build_lib_unittest.RunCommandTestCase,
     "Tests that we can read/obtain the old LKGM from mocked out SVN."
     # Write out an old lkgm file as if we got it from svn update.
     old_lkgm = '2098.0.0'
+    osutils.SafeMakedirs(os.path.dirname(self.lkgm_file))
     osutils.WriteFile(self.lkgm_file, old_lkgm)
     self.committer.CheckoutChromeLKGM()
     self.assertTrue(self.committer._old_lkgm, old_lkgm)
-    self.assertCommandContains([
-        '%s/%s' % (gclient.CHROME_COMMITTER_URL,
-                   os.path.dirname(constants.SVN_CHROME_LKGM))])
-    self.assertCommandContains([constants.CHROME_LKGM_FILE])
 
   def _TestFindNewLKGM(self, all_results, lkgm):
     """Stubs out methods used by FindNewLKGM."""
@@ -118,14 +114,15 @@ class ChromeCommitterTester(cros_build_lib_unittest.RunCommandTestCase,
 
   def testCommitNewLKGM(self):
     """Tests that we can commit a new LKGM file."""
+    osutils.SafeMakedirs(os.path.dirname(self.lkgm_file))
     self.committer._lkgm = '4.0.0'
     self.PatchObject(tree_status, 'IsTreeOpen', return_value=True)
     self.committer.CommitNewLKGM()
 
     # Check the file was actually written out correctly.
     self.assertEqual(osutils.ReadFile(self.lkgm_file), self.committer._lkgm)
-    self.assertCommandContains([constants.CHROME_LKGM_FILE])
-    self.assertCommandContains(['commit'])
+    self.assertCommandContains(['git', 'cl', 'upload'])
+    self.assertCommandContains(['git', 'cl', 'land'])
 
 
 if __name__ == '__main__':

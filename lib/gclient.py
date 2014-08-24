@@ -12,8 +12,7 @@ from chromite.lib import cros_build_lib
 from chromite.lib import git
 from chromite.lib import osutils
 
-CHROME_COMMITTER_URL = 'svn://svn.chromium.org/chrome'
-SVN_MIRROR_URL = 'svn://svn-mirror.golo.chromium.org'
+CHROME_COMMITTER_URL = 'https://chromium.googlesource.com/chromium/src'
 STATUS_URL = 'https://chromium-status.appspot.com/current?format=json'
 
 

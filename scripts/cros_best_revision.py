@@ -11,8 +11,6 @@ checks in a LKGM version for Chrome OS for other consumers.
 import distutils.version
 import logging
 import os
-import shutil
-import tempfile
 from chromite.cbuildbot import archive_lib
 from chromite.cbuildbot import cbuildbot_config
 from chromite.cbuildbot import constants
@@ -52,18 +50,25 @@ class ChromeCommitter(object):
 
   def CheckoutChromeLKGM(self):
     """Checkout chromeos LKGM file for chrome into tmp checkout dir."""
-    # We function only on an empty directory.
-    lkgm_dir = '/'.join([gclient.CHROME_COMMITTER_URL,
-                         os.path.dirname(constants.SVN_CHROME_LKGM)])
+    if not os.path.exists(self._checkout_dir):
+      cros_build_lib.RunCommand(
+          ['git', 'clone', constants.CHROMIUM_GOB_URL,
+           self._checkout_dir])
+    else:
+      cros_build_lib.RunCommand(
+          ['git', 'fetch', 'origin'], cwd=self._checkout_dir)
+      cros_build_lib.RunCommand(
+          ['git', 'checkout', '-f', 'origin/master'], cwd=self._checkout_dir)
 
-    # We checkout the bare necessities to get the .svn/file needed to commit.
-    cros_build_lib.RunCommand(['svn', 'checkout', '--depth=empty', lkgm_dir,
-                               self._checkout_dir])
-    cros_build_lib.RunCommand(['svn', 'update', constants.CHROME_LKGM_FILE],
-                              cwd=self._checkout_dir)
+    cros_build_lib.RunCommand(
+        ['git', 'branch', '-D', 'lkgm-roll'], cwd=self._checkout_dir,
+        error_code_ok=True)
+    cros_build_lib.RunCommand(
+        ['git', 'checkout', '-b', 'lkgm-roll', 'origin/master'],
+        cwd=self._checkout_dir)
 
     self._old_lkgm = osutils.ReadFile(
-        os.path.join(self._checkout_dir, constants.CHROME_LKGM_FILE))
+        os.path.join(self._checkout_dir, constants.PATH_TO_CHROME_LKGM))
 
   @cros_build_lib.MemoizedSingleCall
   def _GetLatestCanaryVersions(self):
@@ -124,30 +129,36 @@ class ChromeCommitter(object):
     if not self._lkgm and not lv(self._lkgm) < lv(self._old_lkgm):
       raise LKGMNotFound('No valid LKGM found. Did you run FindNewLKGM?')
 
-    # Add the new versioned file.
-    osutils.WriteFile(
-        os.path.join(self._checkout_dir, constants.CHROME_LKGM_FILE),
-        self._lkgm)
+    try:
+      # Add the new versioned file.
+      osutils.WriteFile(
+          os.path.join(self._checkout_dir, constants.PATH_TO_CHROME_LKGM),
+          self._lkgm)
+      cros_build_lib.RunCommand(
+          ['git', 'add', constants.PATH_TO_CHROME_LKGM], cwd=self._checkout_dir)
 
-    add_cmd = ['svn', 'add', constants.CHROME_LKGM_FILE]
-    cros_build_lib.RunCommand(add_cmd, cwd=self._checkout_dir)
-
-    # Commit it!
-    commit_cmd = ['svn', 'commit', '--message',
-                  self. _COMMIT_MSG % dict(version=self._lkgm)]
+      # Commit it!
+      cros_build_lib.RunCommand(
+          ['git', 'commit', '-m', self. _COMMIT_MSG % dict(version=self._lkgm)],
+          cwd=self._checkout_dir)
+    except cros_build_lib.RunCommandError as e:
+      raise LKGMNotCommitted(
+          'Could not create git commit with new LKGM: %r' % e)
 
     if not tree_status.IsTreeOpen(status_url=gclient.STATUS_URL,
         period=self._SLEEP_TIMEOUT, timeout=self._TREE_TIMEOUT):
       raise LKGMNotCommitted('Chromium Tree is closed')
 
-    # Sadly svn commit does not have a dryrun option.
     if not self._dryrun:
       try:
-        cros_build_lib.RunCommand(commit_cmd, cwd=self._checkout_dir)
+        cros_build_lib.RunCommand(
+            ['git', 'cl', 'upload', '--bypass-hooks'],
+            cwd=self._checkout_dir)
+        cros_build_lib.RunCommand(
+            ['git', 'cl', 'land', '--bypass-hooks'],
+            cwd=self._checkout_dir)
       except cros_build_lib.RunCommandError as e:
         raise LKGMNotCommitted('Could not submit LKGM: %r' % e)
-    else:
-      logging.info('Would have run: %s', ' '.join(commit_cmd))
 
   def UpdateLatestFilesForBot(self, config, versions):
     """Update the LATEST files, for a given bot, in Google Storage.
@@ -192,6 +203,10 @@ def _GetParser():
   parser = commandline.ArgumentParser(usage=__doc__, caching=True)
   parser.add_argument('--dryrun', action='store_true', default=False,
                       help="Find the next LKGM but don't commit it.")
+  parser.add_argument('--workdir', default=os.path.join(os.getcwd(), 'src'),
+                      help=("Path to a checkout of chromium/src. "
+                            "Defaults to PWD/src"))
+
   return parser
 
 
@@ -199,13 +214,9 @@ def main(argv):
   parser = _GetParser()
   args = parser.parse_args(argv)
 
-  checkout_dir = tempfile.mkdtemp(prefix='cbr_chrome_checkout')
-  try:
-    committer = ChromeCommitter(checkout_dir, dryrun=args.dryrun)
-    committer.CheckoutChromeLKGM()
-    committer.UpdateLatestFiles()
-    committer.FindNewLKGM()
-    committer.CommitNewLKGM()
-    return 0
-  finally:
-    shutil.rmtree(checkout_dir)
+  committer = ChromeCommitter(args.workdir, dryrun=args.dryrun)
+  committer.CheckoutChromeLKGM()
+  committer.UpdateLatestFiles()
+  committer.FindNewLKGM()
+  committer.CommitNewLKGM()
+  return 0
