@@ -1294,6 +1294,20 @@ http://www.chromium.org/developers/how-tos/get-the-code
         url_val.s = CHROMIUM_SRC_URL
         modified = True
 
+      # Ensure deps_file is set to .DEPS.git.  We enforce this here to smooth
+      # over switching between pre-git-migration and post-git-migration
+      # revisions.
+      #   - For pre-migration revisions, .DEPS.git must be explicitly set.
+      #   - For post-migration revisions, .DEPS.git is not present, so gclient
+      #     will correctly fall back to DEPS.
+      if url_val.s == CHROMIUM_SRC_URL:
+        deps_file_idx = ast_dict_index(solution, 'deps_file')
+        if deps_file_idx != -1:
+          continue
+        solution.keys.append(ast.Str('deps_file'))
+        solution.values.append(ast.Str('.DEPS.git'))
+        modified = True
+
     if not modified:
       return self
 
