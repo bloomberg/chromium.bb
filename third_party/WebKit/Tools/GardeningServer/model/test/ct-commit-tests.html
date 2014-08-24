@@ -48,10 +48,10 @@ describe('ct-commit model', function() {
           "R=jochen@chromium.org\n" +
           "CC=abarth@chromium.org\n" +
           "\n" +
+          "Revert of Cr-Commit-Position: refs/heads/master@{#158000}" +
           "Review URL: https://chromiumcodereview.appspot.com/25022002\n" +
           "\n" +
-          "git-svn-id: svn://svn.chromium.org/chrome/trunk@158545 bbb929c8-8fbe-4397-9dbb-9b2b20218538";
-
+          "Cr-Commit-Position: refs/heads/master@{#158545}\n"
       url = "http://mockbase.com?{revision}";
       author = "mkwst@chromium.org";
       repository = 'chromium';
@@ -66,6 +66,7 @@ describe('ct-commit model', function() {
           "R=jochen@chromium.org\n" +
           "CC=abarth@chromium.org\n" +
           "\n" +
+          "Revert of git-svn-id: svn://svn.chromium.org/blink/trunk@158000 bbb929c8-8fbe-4397-9dbb-9b2b20218538" +
           "Review URL: https://chromiumcodereview.appspot.com/25022002\n" +
           "\n" +
           "git-svn-id: svn://svn.chromium.org/blink/trunk@158545 bbb929c8-8fbe-4397-9dbb-9b2b20218538";

@@ -27,10 +27,13 @@ CTCommit.createIncomplete = function(baseUrl, revision, repository) {
 }
 
 CTCommit.findRevision = function(message) {
-  // FIXME: This needs to be updated post git-migration to
-  // use the new commit numbers (ideally not git hashes!).
-  var regexp = /git-svn-id:[^@]*@(\d+)/;
-  var match = regexp.exec(message);
+  var svnRegexp = /^git-svn-id:[^@]*@(\d+).*$/m;
+  var gitRegexp = /^Cr-Commit-Position\:\ refs\/heads\/master@\{#(\d+)\}.*$/m;
+
+  var match = svnRegexp.exec(message);
+  if (!match)
+    match = gitRegexp.exec(message);
+
   if (match)
     return parseInt(match[1], 10);
   return null;
