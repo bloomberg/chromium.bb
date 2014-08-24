@@ -8,6 +8,8 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "platform/transforms/TransformationMatrix.h"
+#include "wtf/Float32Array.h"
+#include "wtf/Float64Array.h"
 
 namespace blink {
 
@@ -47,6 +49,9 @@ public:
     DOMMatrix* scale3d(double scale, double ox = 0, double oy = 0, double oz = 0);
     DOMMatrix* scaleNonUniform(double sx, double sy = 1, double sz = 1,
         double ox = 0, double oy = 0, double oz = 0);
+
+    PassRefPtr<Float32Array> toFloat32Array() const;
+    PassRefPtr<Float64Array> toFloat64Array() const;
 
     const TransformationMatrix& matrix() const { return m_matrix; }
 

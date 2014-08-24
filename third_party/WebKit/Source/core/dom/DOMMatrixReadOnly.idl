@@ -52,4 +52,6 @@
                               optional unrestricted double ox = 0,
                               optional unrestricted double oy = 0,
                               optional unrestricted double oz = 0);
+    Float32Array toFloat32Array();
+    Float64Array toFloat64Array();
 };

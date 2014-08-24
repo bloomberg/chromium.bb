@@ -7,166 +7,158 @@
 <body>
 <script>
 
-function toArray(matrix)
-{
-  return [ matrix.m11, matrix.m21, matrix.m31, matrix.m41,
-  matrix.m12, matrix.m22, matrix.m32, matrix.m42,
-  matrix.m13, matrix.m23, matrix.m33, matrix.m43,
-  matrix.m14, matrix.m24, matrix.m34, matrix.m44 ];
-}
-
 test(function() {
   var matrix = new DOMMatrix();
   assert_true(matrix.is2D);
   assert_true(matrix.isIdentity);
-  assert_array_equals(toArray(matrix), [ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 ]);
+  assert_array_equals(matrix.toFloat64Array(), [ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 ]);
   var result = matrix.scale(3);
   assert_true(result.is2D);
   assert_false(result.isIdentity);
-  assert_array_equals(toArray(result), [ 3, 0, 0, 0, 0, 3, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 ]);
+  assert_array_equals(result.toFloat64Array(), [ 3, 0, 0, 0, 0, 3, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 ]);
   assert_true(matrix.is2D);
   assert_true(matrix.isIdentity);
-  assert_array_equals(toArray(matrix), [ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 ]);
+  assert_array_equals(matrix.toFloat64Array(), [ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 ]);
 }, "DOMMatrix.scale(scale)");
 
 test(function() {
   var matrix = new DOMMatrix();
   assert_true(matrix.is2D);
   assert_true(matrix.isIdentity);
-  assert_array_equals(toArray(matrix), [ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 ]);
+  assert_array_equals(matrix.toFloat64Array(), [ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 ]);
   var result = matrix.scale(3, 4, 2);
   assert_true(result.is2D);
   assert_false(result.isIdentity);
-  assert_array_equals(toArray(result), [ 3, 0, 0, -8, 0, 3, 0, -4, 0, 0, 1, 0, 0, 0, 0, 1 ]);
+  assert_array_equals(result.toFloat64Array(), [ 3, 0, 0, 0, 0, 3, 0, 0, 0, 0, 1, 0, -8, -4, 0, 1 ]);
   assert_true(matrix.is2D);
   assert_true(matrix.isIdentity);
-  assert_array_equals(toArray(matrix), [ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 ]);
+  assert_array_equals(matrix.toFloat64Array(), [ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 ]);
 }, "DOMMatrix.scale(scale, ox, oy)");
 
 test(function() {
   var matrix = new DOMMatrix();
   assert_true(matrix.is2D);
   assert_true(matrix.isIdentity);
-  assert_array_equals(toArray(matrix), [ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 ]);
+  assert_array_equals(matrix.toFloat64Array(), [ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 ]);
   var result = matrix.scale3d(3);
   assert_false(result.is2D);
   assert_false(result.isIdentity);
-  assert_array_equals(toArray(result), [ 3, 0, 0, 0, 0, 3, 0, 0, 0, 0, 3, 0, 0, 0, 0, 1 ]);
+  assert_array_equals(result.toFloat64Array(), [ 3, 0, 0, 0, 0, 3, 0, 0, 0, 0, 3, 0, 0, 0, 0, 1 ]);
   assert_true(matrix.is2D);
   assert_true(matrix.isIdentity);
-  assert_array_equals(toArray(matrix), [ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 ]);
+  assert_array_equals(matrix.toFloat64Array(), [ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 ]);
 }, "DOMMatrix.scale3d(scale)");
 
 test(function() {
   var matrix = new DOMMatrix();
   assert_true(matrix.is2D);
   assert_true(matrix.isIdentity);
-  assert_array_equals(toArray(matrix), [ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 ]);
+  assert_array_equals(matrix.toFloat64Array(), [ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 ]);
   var result = matrix.scale3d(3, 2, 7, -1);
   assert_false(result.is2D);
   assert_false(result.isIdentity);
-  assert_array_equals(toArray(result), [ 3, 0, 0, -4, 0, 3, 0, -14, 0, 0, 3, 2, 0, 0, 0, 1 ]);
+  assert_array_equals(result.toFloat64Array(), [ 3, 0, 0, 0, 0, 3, 0, 0, 0, 0, 3, 0, -4, -14, 2, 1 ]);
   assert_true(matrix.is2D);
   assert_true(matrix.isIdentity);
-  assert_array_equals(toArray(matrix), [ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 ]);
+  assert_array_equals(matrix.toFloat64Array(), [ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 ]);
 }, "DOMMatrix.scale3d(scale, ox, oy, oz)");
 
 test(function() {
   var matrix = new DOMMatrix();
   assert_true(matrix.is2D);
   assert_true(matrix.isIdentity);
-  assert_array_equals(toArray(matrix), [ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 ]);
+  assert_array_equals(matrix.toFloat64Array(), [ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 ]);
   var result = matrix.scaleNonUniform(2, 3, 0.5, 2, -4, -1);
   assert_false(result.is2D);
   assert_false(result.isIdentity);
-  assert_array_equals(toArray(result), [ 2, 0, 0, -2, 0, 3, 0, 8, 0, 0, 0.5, -0.5, 0, 0, 0, 1 ]);
+  assert_array_equals(result.toFloat64Array(), [ 2, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0.5, 0, -2, 8, -0.5, 1 ]);
   assert_true(matrix.is2D);
   assert_true(matrix.isIdentity);
-  assert_array_equals(toArray(matrix), [ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 ]);
+  assert_array_equals(matrix.toFloat64Array(), [ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 ]);
 }, "DOMMatrix.scaleNonUniform(sx, sy, sz, ox, oy, oz)");
 
 test(function() {
   var matrix = new DOMMatrix();
   assert_true(matrix.is2D);
   assert_true(matrix.isIdentity);
-  assert_array_equals(toArray(matrix), [ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 ]);
+  assert_array_equals(matrix.toFloat64Array(), [ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 ]);
   var result = matrix.scaleSelf(3);
   assert_true(result.is2D);
   assert_false(result.isIdentity);
-  assert_array_equals(toArray(result), [ 3, 0, 0, 0, 0, 3, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 ]);
+  assert_array_equals(result.toFloat64Array(), [ 3, 0, 0, 0, 0, 3, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 ]);
   assert_true(matrix.is2D);
   assert_false(matrix.isIdentity);
-  assert_array_equals(toArray(matrix), [ 3, 0, 0, 0, 0, 3, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 ]);
+  assert_array_equals(matrix.toFloat64Array(), [ 3, 0, 0, 0, 0, 3, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 ]);
 }, "DOMMatrix.scaleSelf(scale)");
 
 test(function() {
   var matrix = new DOMMatrix();
   assert_true(matrix.is2D);
   assert_true(matrix.isIdentity);
-  assert_array_equals(toArray(matrix), [ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 ]);
+  assert_array_equals(matrix.toFloat64Array(), [ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 ]);
   var result = matrix.scaleSelf(3, 4, 2);
   assert_true(result.is2D);
   assert_false(result.isIdentity);
-  assert_array_equals(toArray(result), [ 3, 0, 0, -8, 0, 3, 0, -4, 0, 0, 1, 0, 0, 0, 0, 1 ]);
+  assert_array_equals(result.toFloat64Array(), [ 3, 0, 0, 0, 0, 3, 0, 0, 0, 0, 1, 0, -8, -4, 0, 1 ]);
   assert_true(matrix.is2D);
   assert_false(matrix.isIdentity);
-  assert_array_equals(toArray(matrix), [ 3, 0, 0, -8, 0, 3, 0, -4, 0, 0, 1, 0, 0, 0, 0, 1 ]);
+  assert_array_equals(matrix.toFloat64Array(), [ 3, 0, 0, 0, 0, 3, 0, 0, 0, 0, 1, 0, -8, -4, 0, 1 ]);
 }, "DOMMatrix.scaleSelf(scale)");
 
 test(function() {
   var matrix = new DOMMatrix();
   assert_true(matrix.is2D);
   assert_true(matrix.isIdentity);
-  assert_array_equals(toArray(matrix), [ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 ]);
+  assert_array_equals(matrix.toFloat64Array(), [ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 ]);
   var result = matrix.scale3dSelf(3);
   assert_false(result.is2D);
   assert_false(result.isIdentity);
-  assert_array_equals(toArray(result), [ 3, 0, 0, 0, 0, 3, 0, 0, 0, 0, 3, 0, 0, 0, 0, 1 ]);
+  assert_array_equals(result.toFloat64Array(), [ 3, 0, 0, 0, 0, 3, 0, 0, 0, 0, 3, 0, 0, 0, 0, 1 ]);
   assert_false(matrix.is2D);
   assert_false(matrix.isIdentity);
-  assert_array_equals(toArray(matrix), [ 3, 0, 0, 0, 0, 3, 0, 0, 0, 0, 3, 0, 0, 0, 0, 1 ]);
+  assert_array_equals(matrix.toFloat64Array(), [ 3, 0, 0, 0, 0, 3, 0, 0, 0, 0, 3, 0, 0, 0, 0, 1 ]);
 }, "DOMMatrix.scale3dSelf(scale)");
 
 test(function() {
   var matrix = new DOMMatrix();
   assert_true(matrix.is2D);
   assert_true(matrix.isIdentity);
-  assert_array_equals(toArray(matrix), [ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 ]);
+  assert_array_equals(matrix.toFloat64Array(), [ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 ]);
   var result = matrix.scale3dSelf(3, 2, 7, -1);
   assert_false(result.is2D);
   assert_false(result.isIdentity);
-  assert_array_equals(toArray(result), [ 3, 0, 0, -4, 0, 3, 0, -14, 0, 0, 3, 2, 0, 0, 0, 1 ]);
+  assert_array_equals(result.toFloat64Array(), [ 3, 0, 0, 0, 0, 3, 0, 0, 0, 0, 3, 0, -4, -14, 2, 1 ]);
   assert_false(matrix.is2D);
   assert_false(matrix.isIdentity);
-  assert_array_equals(toArray(matrix), [ 3, 0, 0, -4, 0, 3, 0, -14, 0, 0, 3, 2, 0, 0, 0, 1 ]);
+  assert_array_equals(matrix.toFloat64Array(), [ 3, 0, 0, 0, 0, 3, 0, 0, 0, 0, 3, 0, -4, -14, 2, 1 ]);
 }, "DOMMatrix.scale3dSelf(scale, ox, oy, oz)");
 
 test(function() {
   var matrix = new DOMMatrix();
   assert_true(matrix.is2D);
   assert_true(matrix.isIdentity);
-  assert_array_equals(toArray(matrix), [ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 ]);
+  assert_array_equals(matrix.toFloat64Array(), [ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 ]);
   var result = matrix.scaleNonUniformSelf(2, 3, 0.5, 2, -4, -1);
   assert_false(result.is2D);
   assert_false(result.isIdentity);
-  assert_array_equals(toArray(result), [ 2, 0, 0, -2, 0, 3, 0, 8, 0, 0, 0.5, -0.5, 0, 0, 0, 1 ]);
+  assert_array_equals(result.toFloat64Array(), [ 2, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0.5, 0, -2, 8, -0.5, 1 ]);
   assert_false(matrix.is2D);
   assert_false(matrix.isIdentity);
-  assert_array_equals(toArray(matrix), [ 2, 0, 0, -2, 0, 3, 0, 8, 0, 0, 0.5, -0.5, 0, 0, 0, 1 ]);
+  assert_array_equals(matrix.toFloat64Array(), [ 2, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0.5, 0, -2, 8, -0.5, 1 ]);
 }, "DOMMatrix.scaleNonUniformSelf(sx, sy, sz, ox, oy, oz)");
 
 test(function() {
   var matrix = new DOMMatrix();
   assert_true(matrix.is2D);
   assert_true(matrix.isIdentity);
-  assert_array_equals(toArray(matrix), [ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 ]);
+  assert_array_equals(matrix.toFloat64Array(), [ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 ]);
   var result = matrix.scaleNonUniformSelf(1, 1, 1, 2, -4, -1);
   assert_false(result.is2D);
   assert_true(result.isIdentity);
-  assert_array_equals(toArray(result), [ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 ]);
+  assert_array_equals(result.toFloat64Array(), [ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 ]);
   assert_false(matrix.is2D);
   assert_true(matrix.isIdentity);
-  assert_array_equals(toArray(matrix), [ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 ]);
+  assert_array_equals(matrix.toFloat64Array(), [ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 ]);
 }, "DOMMatrix.scaleNonUniformSelf(1, 1, 1, ox, oy, oz)");
 
 </script>

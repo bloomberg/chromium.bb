@@ -7,26 +7,18 @@
 <body>
 <script>
 
-function toArray(matrix)
-{
-  return [ matrix.m11, matrix.m21, matrix.m31, matrix.m41,
-  matrix.m12, matrix.m22, matrix.m32, matrix.m42,
-  matrix.m13, matrix.m23, matrix.m33, matrix.m43,
-  matrix.m14, matrix.m24, matrix.m34, matrix.m44 ];
-}
-
 test(function() {
   var matrix = new DOMMatrix();
   assert_true(matrix.is2D);
   assert_true(matrix.isIdentity);
-  assert_array_equals(toArray(matrix), [ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 ]);
+  assert_array_equals(matrix.toFloat64Array(), [ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 ]);
   var result = matrix.translate(2, 3);
   assert_true(result.is2D);
   assert_false(result.isIdentity);
-  assert_array_equals(toArray(result), [ 1, 0, 0, 2, 0, 1, 0, 3, 0, 0, 1, 0, 0, 0, 0, 1 ]);
+  assert_array_equals(result.toFloat64Array(), [ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 2, 3, 0, 1 ]);
   assert_true(matrix.is2D);
   assert_true(matrix.isIdentity);
-  assert_array_equals(toArray(matrix), [ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 ]);
+  assert_array_equals(matrix.toFloat64Array(), [ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 ]);
 }, "DOMMatrix.translate(tx, ty)");
 
 test(function() {
@@ -34,42 +26,42 @@ test(function() {
   matrix.translateSelf(2, 3);
   assert_true(matrix.is2D);
   assert_false(matrix.isIdentity);
-  assert_array_equals(toArray(matrix), [ 1, 0, 0, 2, 0, 1, 0, 3, 0, 0, 1, 0, 0, 0, 0, 1 ]);
+  assert_array_equals(matrix.toFloat64Array(), [ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 2, 3, 0, 1 ]);
   var result = matrix.translate(4, 2);
   assert_true(result.is2D);
   assert_false(result.isIdentity);
-  assert_array_equals(toArray(result), [ 1, 0, 0, 6, 0, 1, 0, 5, 0, 0, 1, 0, 0, 0, 0, 1 ]);
+  assert_array_equals(result.toFloat64Array(), [ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 6, 5, 0, 1 ]);
   assert_true(matrix.is2D);
   assert_false(matrix.isIdentity);
-  assert_array_equals(toArray(matrix), [ 1, 0, 0, 2, 0, 1, 0, 3, 0, 0, 1, 0, 0, 0, 0, 1 ]);
+  assert_array_equals(matrix.toFloat64Array(), [ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 2, 3, 0, 1 ]);
 }, "DOMMatrix.translate(tx, ty) with non-identity");
 
 test(function() {
   var matrix = new DOMMatrix();
   assert_true(matrix.is2D);
   assert_true(matrix.isIdentity);
-  assert_array_equals(toArray(matrix), [ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 ]);
+  assert_array_equals(matrix.toFloat64Array(), [ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 ]);
   var result = matrix.translateSelf(4, 2);
   assert_true(result.is2D);
   assert_false(result.isIdentity);
-  assert_array_equals(toArray(result), [ 1, 0, 0, 4, 0, 1, 0, 2, 0, 0, 1, 0, 0, 0, 0, 1 ]);
+  assert_array_equals(result.toFloat64Array(), [ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 4, 2, 0, 1 ]);
   assert_true(matrix.is2D);
   assert_false(matrix.isIdentity);
-  assert_array_equals(toArray(matrix), [ 1, 0, 0, 4, 0, 1, 0, 2, 0, 0, 1, 0, 0, 0, 0, 1 ]);
+  assert_array_equals(matrix.toFloat64Array(), [ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 4, 2, 0, 1 ]);
 }, "DOMMatrix.translateSelf(tx, ty)");
 
 test(function() {
   var matrix = new DOMMatrix();
   assert_true(matrix.is2D);
   assert_true(matrix.isIdentity);
-  assert_array_equals(toArray(matrix), [ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 ]);
+  assert_array_equals(matrix.toFloat64Array(), [ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 ]);
   var result = matrix.translate(2, 3, 4);
   assert_false(result.is2D);
   assert_false(result.isIdentity);
-  assert_array_equals(toArray(result), [ 1, 0, 0, 2, 0, 1, 0, 3, 0, 0, 1, 4, 0, 0, 0, 1 ]);
+  assert_array_equals(result.toFloat64Array(), [ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 2, 3, 4, 1 ]);
   assert_true(matrix.is2D);
   assert_true(matrix.isIdentity);
-  assert_array_equals(toArray(matrix), [ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 ]);
+  assert_array_equals(matrix.toFloat64Array(), [ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 ]);
 }, "DOMMatrix.translate(tx, ty, tz)");
 
 test(function() {
@@ -77,28 +69,28 @@ test(function() {
   matrix.translateSelf(2, 3);
   assert_true(matrix.is2D);
   assert_false(matrix.isIdentity);
-  assert_array_equals(toArray(matrix), [ 1, 0, 0, 2, 0, 1, 0, 3, 0, 0, 1, 0, 0, 0, 0, 1 ]);
+  assert_array_equals(matrix.toFloat64Array(), [ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 2, 3, 0, 1 ]);
   var result = matrix.translate(4, 2, 3);
   assert_false(result.is2D);
   assert_false(result.isIdentity);
-  assert_array_equals(toArray(result), [ 1, 0, 0, 6, 0, 1, 0, 5, 0, 0, 1, 3, 0, 0, 0, 1 ]);
+  assert_array_equals(result.toFloat64Array(), [ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 6, 5, 3, 1 ]);
   assert_true(matrix.is2D);
   assert_false(matrix.isIdentity);
-  assert_array_equals(toArray(matrix), [ 1, 0, 0, 2, 0, 1, 0, 3, 0, 0, 1, 0, 0, 0, 0, 1 ]);
+  assert_array_equals(matrix.toFloat64Array(), [ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 2, 3, 0, 1 ]);
 }, "DOMMatrix.translate(tx, ty, tz) with non-identity");
 
 test(function() {
   var matrix = new DOMMatrix();
   assert_true(matrix.is2D);
   assert_true(matrix.isIdentity);
-  assert_array_equals(toArray(matrix), [ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 ]);
+  assert_array_equals(matrix.toFloat64Array(), [ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 ]);
   var result = matrix.translateSelf(4, 2, 3);
   assert_false(result.is2D);
   assert_false(result.isIdentity);
-  assert_array_equals(toArray(result), [ 1, 0, 0, 4, 0, 1, 0, 2, 0, 0, 1, 3, 0, 0, 0, 1 ]);
+  assert_array_equals(result.toFloat64Array(), [ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 4, 2, 3, 1 ]);
   assert_false(matrix.is2D);
   assert_false(matrix.isIdentity);
-  assert_array_equals(toArray(matrix), [ 1, 0, 0, 4, 0, 1, 0, 2, 0, 0, 1, 3, 0, 0, 0, 1 ]);
+  assert_array_equals(matrix.toFloat64Array(), [ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 4, 2, 3, 1 ]);
 }, "DOMMatrix.translateSelf(tx, ty, tz)");
 
 test(function() {
@@ -111,11 +103,11 @@ test(function() {
   matrix.m44 = 7;
   assert_false(matrix.is2D);
   assert_false(matrix.isIdentity);
-  assert_array_equals(toArray(matrix), [ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 2, 3, 4, 7 ]);
+  assert_array_equals(matrix.toFloat64Array(), [ 1, 0, 0, 2, 0, 1, 0, 3, 0, 0, 1, 4, 0, 0, 0, 7 ]);
   matrix.translateSelf(7, -8, 2);
   assert_false(matrix.is2D);
   assert_false(matrix.isIdentity);
-  assert_array_equals(toArray(matrix), [ 1, 0, 0, 7, 0, 1, 0, -8, 0, 0, 1, 2, 2, 3, 4, 5 ]);
+  assert_array_equals(matrix.toFloat64Array(), [ 1, 0, 0, 2, 0, 1, 0, 3, 0, 0, 1, 4, 7, -8, 2, 5 ]);
 }, "DOMMatrix.translateSelf(tx, ty, tz) Homogeneous Coordinates");
 
 </script>
