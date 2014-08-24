@@ -728,10 +728,6 @@ crbug.com/339373 http/tests/websocket/deflate-frame-parameter.html [ Skip ]
 crbug.com/339373 http/tests/websocket/deflate-frame-set-bfinal.html [ Skip ]
 crbug.com/339373 http/tests/websocket/handshake-fail-by-no-cr.html [ Skip ]
 
-crbug.com/404890 fast/repaint/outline-change-continuations.html [ NeedsRebaseline ]
-crbug.com/404890 fast/inline/continuation-outlines-with-layers-2.html [ NeedsRebaseline ]
-crbug.com/404890 fast/inline/continuation-outlines-with-layers.html [ NeedsRebaseline ]
-
 crbug.com/393217 [ Debug ] editing/selection/move-by-word-visually-crash-test-5.html [ Pass Crash Timeout ]
 
 crbug.com/339778 [ Debug ] fast/dom/timer-throttling-hidden-page.html [ Failure Pass ]
