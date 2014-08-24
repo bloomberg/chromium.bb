@@ -225,6 +225,28 @@ asm(// We need to be able to tell the kernel exactly where we made a
     ".set    pop\n"
     ".end    SyscallAsm\n"
     ".size   SyscallAsm,.-SyscallAsm\n"
+#elif defined(__aarch64__)
+    ".text\n"
+    ".align 2\n"
+    ".type SyscallAsm, %function\n"
+    "SyscallAsm:\n"
+    ".cfi_startproc\n"
+    "cmp x0, #0\n"
+    "b.ge 1f\n"
+    "adr x0,2f\n"
+    "b 2f\n"
+    "1:ldr x5, [x6, #40]\n"
+    "ldr x4, [x6, #32]\n"
+    "ldr x3, [x6, #24]\n"
+    "ldr x2, [x6, #16]\n"
+    "ldr x1, [x6, #8]\n"
+    "mov x8, x0\n"
+    "ldr x0, [x6, #0]\n"
+    // Enter the kernel
+    "svc 0\n"
+    "2:ret\n"
+    ".cfi_endproc\n"
+    ".size SyscallAsm, .-SyscallAsm\n"
 #endif
     );  // asm
 
@@ -341,6 +363,18 @@ intptr_t Syscall::Call(int nr,
     // more like it would on other architectures.
     ret = -ret;
   }
+#elif defined(__aarch64__)
+  intptr_t ret;
+  {
+    register intptr_t inout __asm__("x0") = nr;
+    register const intptr_t* data __asm__("x6") = args;
+    asm volatile("bl SyscallAsm\n"
+                 : "=r"(inout)
+                 : "0"(inout), "r"(data)
+                 : "memory", "x1", "x2", "x3", "x4", "x5", "x8", "x30");
+    ret = inout;
+  }
+
 #else
 #error "Unimplemented architecture"
 #endif

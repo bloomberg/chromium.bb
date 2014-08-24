@@ -268,11 +268,13 @@
       'type': 'none',
       'sources': [
         'services/android_arm_ucontext.h',
+        'services/android_arm64_ucontext.h',
         'services/android_futex.h',
         'services/android_ucontext.h',
         'services/android_i386_ucontext.h',
         'services/android_mips_ucontext.h',
         'services/arm_linux_syscalls.h',
+        'services/arm64_linux_syscalls.h',
         'services/mips_linux_syscalls.h',
         'services/linux_syscalls.h',
         'services/x86_32_linux_syscalls.h',

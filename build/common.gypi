@@ -2297,13 +2297,14 @@
         'host_cxx': '<!(which g++)',
       }],
 
-      # The seccomp-bpf sandbox is only supported on four architectures
+      # The seccomp-bpf sandbox is only supported on five architectures
       # currently.
       # Do not disable seccomp_bpf anywhere without talking to
       # security@chromium.org!
       ['((OS=="linux" or OS=="android") and '
            '(target_arch=="ia32" or target_arch=="x64" or '
-             'target_arch=="arm" or target_arch=="mipsel"))', {
+             'target_arch=="arm" or target_arch=="mipsel" or '
+             'target_arch=="arm64"))', {
          'use_seccomp_bpf%': 1,
       }, {
          'use_seccomp_bpf%': 0,

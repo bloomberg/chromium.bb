@@ -120,6 +120,13 @@ ResultExpr EvaluateSyscallImpl(int fs_denied_errno,
     return Allow();
   }
 
+#if defined(__aarch64__)
+  // These are needed for thread creation.
+  // TODO(leecam): Check jln's fix for this and remove these 'allows'.
+  if (sysno == __NR_sigaltstack || sysno == __NR_setpriority)
+    return Allow();
+#endif
+
   if (sysno == __NR_clone) {
     return RestrictCloneToThreadsAndEPERMFork();
   }
@@ -132,11 +139,13 @@ ResultExpr EvaluateSyscallImpl(int fs_denied_errno,
     return RestrictFcntlCommands();
 #endif
 
+#if !defined(__aarch64__)
   // fork() is never used as a system call (clone() is used instead), but we
   // have seen it in fallback code on Android.
   if (sysno == __NR_fork) {
     return Error(EPERM);
   }
+#endif
 
   if (sysno == __NR_futex)
     return RestrictFutex();
@@ -147,7 +156,8 @@ ResultExpr EvaluateSyscallImpl(int fs_denied_errno,
     return If(advice == MADV_DONTNEED, Allow()).Else(Error(EPERM));
   }
 
-#if defined(__i386__) || defined(__x86_64__) || defined(__mips__)
+#if defined(__i386__) || defined(__x86_64__) || defined(__mips__) || \
+    defined(__aarch64__)
   if (sysno == __NR_mmap)
     return RestrictMmapFlags();
 #endif
@@ -163,7 +173,8 @@ ResultExpr EvaluateSyscallImpl(int fs_denied_errno,
   if (sysno == __NR_prctl)
     return sandbox::RestrictPrctl();
 
-#if defined(__x86_64__) || defined(__arm__) || defined(__mips__)
+#if defined(__x86_64__) || defined(__arm__) || defined(__mips__) || \
+    defined(__aarch64__)
   if (sysno == __NR_socketpair) {
     // Only allow AF_UNIX, PF_UNIX. Crash if anything else is seen.
     COMPILE_ASSERT(AF_UNIX == PF_UNIX, af_unix_pf_unix_different);

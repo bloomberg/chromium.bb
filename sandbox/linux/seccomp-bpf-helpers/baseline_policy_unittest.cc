@@ -176,7 +176,7 @@ BPF_TEST_C(BaselinePolicy, Socketpair, BaselinePolicy) {
 }
 
 // Not all architectures can restrict the domain for socketpair().
-#if defined(__x86_64__) || defined(__arm__)
+#if defined(__x86_64__) || defined(__arm__) || defined(__aarch64__)
 BPF_DEATH_TEST_C(BaselinePolicy,
                  SocketpairWrongDomain,
                  DEATH_SEGV_MESSAGE(GetErrorMessageContentForTests()),
@@ -185,7 +185,7 @@ BPF_DEATH_TEST_C(BaselinePolicy,
   ignore_result(socketpair(AF_INET, SOCK_STREAM, 0, sv));
   _exit(1);
 }
-#endif  // defined(__x86_64__) || defined(__arm__)
+#endif  // defined(__x86_64__) || defined(__arm__) || defined(__aarch64__)
 
 BPF_TEST_C(BaselinePolicy, EPERM_open, BaselinePolicy) {
   errno = 0;
@@ -231,26 +231,29 @@ BPF_DEATH_TEST_C(BaselinePolicy,
     _exit(1);                                                            \
   }
 
-TEST_BASELINE_SIGSYS(__NR_syslog);
-TEST_BASELINE_SIGSYS(__NR_sched_setaffinity);
-TEST_BASELINE_SIGSYS(__NR_timer_create);
-TEST_BASELINE_SIGSYS(__NR_io_cancel);
-TEST_BASELINE_SIGSYS(__NR_ptrace);
-TEST_BASELINE_SIGSYS(__NR_eventfd);
-TEST_BASELINE_SIGSYS(__NR_fgetxattr);
-TEST_BASELINE_SIGSYS(__NR_fanotify_init);
-TEST_BASELINE_SIGSYS(__NR_swapon);
-TEST_BASELINE_SIGSYS(__NR_chroot);
 TEST_BASELINE_SIGSYS(__NR_acct);
-TEST_BASELINE_SIGSYS(__NR_sysinfo);
-TEST_BASELINE_SIGSYS(__NR_inotify_init);
+TEST_BASELINE_SIGSYS(__NR_chroot);
+TEST_BASELINE_SIGSYS(__NR_fanotify_init);
+TEST_BASELINE_SIGSYS(__NR_fgetxattr);
+TEST_BASELINE_SIGSYS(__NR_getcpu);
+TEST_BASELINE_SIGSYS(__NR_getitimer);
 TEST_BASELINE_SIGSYS(__NR_init_module);
+TEST_BASELINE_SIGSYS(__NR_io_cancel);
 TEST_BASELINE_SIGSYS(__NR_keyctl);
 TEST_BASELINE_SIGSYS(__NR_mq_open);
-TEST_BASELINE_SIGSYS(__NR_vserver);
-TEST_BASELINE_SIGSYS(__NR_getcpu);
+TEST_BASELINE_SIGSYS(__NR_ptrace);
+TEST_BASELINE_SIGSYS(__NR_sched_setaffinity);
 TEST_BASELINE_SIGSYS(__NR_setpgid);
-TEST_BASELINE_SIGSYS(__NR_getitimer);
+TEST_BASELINE_SIGSYS(__NR_swapon);
+TEST_BASELINE_SIGSYS(__NR_sysinfo);
+TEST_BASELINE_SIGSYS(__NR_syslog);
+TEST_BASELINE_SIGSYS(__NR_timer_create);
+
+#if !defined(__aarch64__)
+TEST_BASELINE_SIGSYS(__NR_eventfd);
+TEST_BASELINE_SIGSYS(__NR_inotify_init);
+TEST_BASELINE_SIGSYS(__NR_vserver);
+#endif
 
 #if !defined(OS_ANDROID)
 BPF_DEATH_TEST_C(BaselinePolicy,

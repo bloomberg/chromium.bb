@@ -42,6 +42,9 @@
 #ifndef EM_MIPS
 #define EM_MIPS   8
 #endif
+#ifndef EM_AARCH64
+#define EM_AARCH64 183
+#endif
 
 #ifndef __AUDIT_ARCH_64BIT
 #define __AUDIT_ARCH_64BIT 0x80000000
@@ -60,6 +63,9 @@
 #endif
 #ifndef AUDIT_ARCH_MIPSEL
 #define AUDIT_ARCH_MIPSEL (EM_MIPS|__AUDIT_ARCH_LE)
+#endif
+#ifndef AUDIT_ARCH_AARCH64
+#define AUDIT_ARCH_AARCH64 (EM_AARCH64 | __AUDIT_ARCH_64BIT | __AUDIT_ARCH_LE)
 #endif
 
 // For prctl.h
@@ -354,6 +360,51 @@ struct regs_struct {
 #define SECCOMP_PT_PARM3(_regs)   (_regs).REG_a2
 #define SECCOMP_PT_PARM4(_regs)   (_regs).REG_a3
 
+#elif defined(__aarch64__)
+struct regs_struct {
+  unsigned long long regs[31];
+  unsigned long long sp;
+  unsigned long long pc;
+  unsigned long long pstate;
+};
+
+#define MIN_SYSCALL 0u
+#define MAX_PUBLIC_SYSCALL 279u
+#define MAX_SYSCALL MAX_PUBLIC_SYSCALL
+#define SECCOMP_ARCH AUDIT_ARCH_AARCH64
+
+#define SECCOMP_REG(_ctx, _reg) ((_ctx)->uc_mcontext.regs[_reg])
+
+#define SECCOMP_RESULT(_ctx) SECCOMP_REG(_ctx, 0)
+#define SECCOMP_SYSCALL(_ctx) SECCOMP_REG(_ctx, 8)
+#define SECCOMP_IP(_ctx) (_ctx)->uc_mcontext.pc
+#define SECCOMP_PARM1(_ctx) SECCOMP_REG(_ctx, 0)
+#define SECCOMP_PARM2(_ctx) SECCOMP_REG(_ctx, 1)
+#define SECCOMP_PARM3(_ctx) SECCOMP_REG(_ctx, 2)
+#define SECCOMP_PARM4(_ctx) SECCOMP_REG(_ctx, 3)
+#define SECCOMP_PARM5(_ctx) SECCOMP_REG(_ctx, 4)
+#define SECCOMP_PARM6(_ctx) SECCOMP_REG(_ctx, 5)
+
+#define SECCOMP_NR_IDX (offsetof(struct arch_seccomp_data, nr))
+#define SECCOMP_ARCH_IDX (offsetof(struct arch_seccomp_data, arch))
+#define SECCOMP_IP_MSB_IDX \
+  (offsetof(struct arch_seccomp_data, instruction_pointer) + 4)
+#define SECCOMP_IP_LSB_IDX \
+  (offsetof(struct arch_seccomp_data, instruction_pointer) + 0)
+#define SECCOMP_ARG_MSB_IDX(nr) \
+  (offsetof(struct arch_seccomp_data, args) + 8 * (nr) + 4)
+#define SECCOMP_ARG_LSB_IDX(nr) \
+  (offsetof(struct arch_seccomp_data, args) + 8 * (nr) + 0)
+
+#define SECCOMP_PT_RESULT(_regs) (_regs).regs[0]
+#define SECCOMP_PT_SYSCALL(_regs) (_regs).regs[8]
+#define SECCOMP_PT_IP(_regs) (_regs).pc
+#define SECCOMP_PT_PARM1(_regs) (_regs).regs[0]
+#define SECCOMP_PT_PARM2(_regs) (_regs).regs[1]
+#define SECCOMP_PT_PARM3(_regs) (_regs).regs[2]
+#define SECCOMP_PT_PARM4(_regs) (_regs).regs[3]
+#define SECCOMP_PT_PARM5(_regs) (_regs).regs[4]
+#define SECCOMP_PT_PARM6(_regs) (_regs).regs[5]
 #else
 #error Unsupported target platform
 

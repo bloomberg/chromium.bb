@@ -248,7 +248,9 @@ ErrorCode ErrnoTestPolicy::EvaluateSyscall(SandboxBPF*, int sysno) const {
   DCHECK(SandboxBPF::IsValidSyscallNumber(sysno));
   switch (sysno) {
     case __NR_dup3:    // dup2 is a wrapper of dup3 in android
+#if defined(__NR_dup2)
     case __NR_dup2:
+#endif
       // Pretend that dup2() worked, but don't actually do anything.
       return ErrorCode(0);
     case __NR_setuid:
@@ -762,12 +764,16 @@ intptr_t BrokerOpenTrapHandler(const struct arch_seccomp_data& args,
       BPF_ASSERT(static_cast<int>(args.args[0]) == AT_FDCWD);
       return broker_process->Access(reinterpret_cast<const char*>(args.args[1]),
                                     static_cast<int>(args.args[2]));
+#if defined(__NR_access)
     case __NR_access:
       return broker_process->Access(reinterpret_cast<const char*>(args.args[0]),
                                     static_cast<int>(args.args[1]));
+#endif
+#if defined(__NR_open)
     case __NR_open:
       return broker_process->Open(reinterpret_cast<const char*>(args.args[0]),
                                   static_cast<int>(args.args[1]));
+#endif
     case __NR_openat:
       // We only call open() so if we arrive here, it's because glibc uses
       // the openat() system call.
@@ -789,8 +795,12 @@ ErrorCode DenyOpenPolicy(SandboxBPF* sandbox,
 
   switch (sysno) {
     case __NR_faccessat:
+#if defined(__NR_access)
     case __NR_access:
+#endif
+#if defined(__NR_open)
     case __NR_open:
+#endif
     case __NR_openat:
       // We get a InitializedOpenBroker class, but our trap handler wants
       // the BrokerProcess object.
@@ -869,13 +879,14 @@ ErrorCode SimpleCondTestPolicy::EvaluateSyscall(SandboxBPF* sandbox,
   // to return more traditional values.
   int flags_argument_position = -1;
   switch (sysno) {
+#if defined(__NR_open)
     case __NR_open:
+      flags_argument_position = 1;
+#endif
     case __NR_openat:  // open can be a wrapper for openat(2).
-      if (sysno == __NR_open) {
-        flags_argument_position = 1;
-      } else if (sysno == __NR_openat) {
+      if (sysno == __NR_openat)
         flags_argument_position = 2;
-      }
+
       // Allow opening files for reading, but don't allow writing.
       COMPILE_ASSERT(O_RDONLY == 0, O_RDONLY_must_be_all_zero_bits);
       return sandbox->Cond(flags_argument_position,
@@ -1213,7 +1224,11 @@ class EqualityStressTest {
   // Don't increase these values. We are pushing the limits of the maximum
   // BPF program that the kernel will allow us to load. If the values are
   // increased too much, the test will start failing.
+#if defined(__aarch64__)
+  static const int kNumTestCases = 30;
+#else
   static const int kNumTestCases = 40;
+#endif
   static const int kMaxFanOut = 3;
   static const int kMaxArgs = 6;
 };
@@ -1930,6 +1945,18 @@ BPF_TEST_C(SandboxBPF, PthreadBitMask, PthreadPolicyBitMask) {
 #endif
 #endif
 
+#if defined(__aarch64__)
+#ifndef PTRACE_GETREGS
+#define PTRACE_GETREGS 12
+#endif
+#endif
+
+#if defined(__aarch64__)
+#ifndef PTRACE_SETREGS
+#define PTRACE_SETREGS 13
+#endif
+#endif
+
 // Changes the syscall to run for a child being sandboxed using seccomp-bpf with
 // PTRACE_O_TRACESECCOMP.  Should only be called when the child is stopped on
 // PTRACE_EVENT_SECCOMP.
@@ -1973,8 +2000,10 @@ SANDBOX_TEST(SandboxBPF, DISABLE_ON_TSAN(SeccompRetTrace)) {
     return;
   }
 
-#if defined(__arm__)
-  printf("This test is currently disabled on ARM due to a kernel bug.");
+// This test is disabled on arm due to a kernel bug.
+// See https://code.google.com/p/chromium/issues/detail?id=383977
+#if defined(__arm__) || defined(__aarch64__)
+  printf("This test is currently disabled on ARM32/64 due to a kernel bug.");
   return;
 #endif
 
