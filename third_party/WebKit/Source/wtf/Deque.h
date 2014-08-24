@@ -227,15 +227,6 @@ namespace WTF {
     }
 
     template<typename T, size_t inlineCapacity, typename Allocator>
-    void deleteAllValues(const Deque<T, inlineCapacity, Allocator>& collection)
-    {
-        typedef typename Deque<T, inlineCapacity, Allocator>::const_iterator iterator;
-        iterator end = collection.end();
-        for (iterator it = collection.begin(); it != end; ++it)
-            delete *it;
-    }
-
-    template<typename T, size_t inlineCapacity, typename Allocator>
     inline Deque<T, 0, Allocator>& Deque<T, inlineCapacity, Allocator>::operator=(const Deque& other)
     {
         Deque<T> copy(other);
