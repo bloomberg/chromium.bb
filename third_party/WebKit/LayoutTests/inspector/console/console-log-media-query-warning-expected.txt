@@ -1,4 +1,4 @@
 Tests warning on dpi values in media query (see http://crbug/336276).
 
-Consider using 'dppx' units, as in CSS 'dpi' means dots-per-CSS-inch, not dots-per-physical-inch, so does not correspond to the actual 'dpi' of a screen. In media query expression: only screen and (min-resolution: 192dpi) console-log-media-query-warning.html:24
+console-log-media-query-warning.html:24 Consider using 'dppx' units, as in CSS 'dpi' means dots-per-CSS-inch, not dots-per-physical-inch, so does not correspond to the actual 'dpi' of a screen. In media query expression: only screen and (min-resolution: 192dpi)
 

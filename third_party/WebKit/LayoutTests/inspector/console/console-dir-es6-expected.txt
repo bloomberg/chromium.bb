@@ -2,12 +2,12 @@ CONSOLE MESSAGE: line 15: [object Object]
 CONSOLE MESSAGE: line 18: Symbol()
 Tests that console logging dumps proper messages.
 
-Object
+console-dir-es6.html:15 Object
     a: 1
     Symbol(): 2
     Symbol(Symbol.iterator): Symbol(foo)
     Symbol(a): 3
     Symbol(a): Symbol(Symbol.iterator)
-    __proto__: Object console-dir-es6.html:15
-Symbol() console-dir-es6.html:18
+    __proto__: Object
+console-dir-es6.html:18 Symbol()
 

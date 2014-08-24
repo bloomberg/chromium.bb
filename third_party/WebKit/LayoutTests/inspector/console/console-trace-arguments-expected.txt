@@ -1,5 +1,5 @@
 CONSOLE MESSAGE: line 9: 1
 Tests that console.trace dumps arguments alongside the stack trace.
 
-1 2 3 console-trace-arguments.html:9a console-trace-arguments.html:9
+console-trace-arguments.html:9 1 2 3console-trace-arguments.html:9 a
 

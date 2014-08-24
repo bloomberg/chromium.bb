@@ -2,5 +2,5 @@ CONSOLE ERROR: line 19: Failed to execute 'postMessage' on 'DOMWindow': The targ
 Tests that cross origin errors are logged with source url and line number.
 
 
-Failed to execute 'postMessage' on 'DOMWindow': The target origin provided ('http://127.0.0.1:8000') does not match the recipient window's origin ('http://localhost:8000'). console-cross-origin-iframe-logging.html:19
+console-cross-origin-iframe-logging.html:19 Failed to execute 'postMessage' on 'DOMWindow': The target origin provided ('http://127.0.0.1:8000') does not match the recipient window's origin ('http://localhost:8000').
 

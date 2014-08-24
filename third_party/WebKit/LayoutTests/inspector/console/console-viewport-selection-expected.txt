@@ -156,21 +156,21 @@ Viewport contains 13 messages
 
 Running: testSelectionSingleLineText
 Selected text:<<<EOL
-ssage
+nsole
 EOL
 first visible message index: 75   viewport is covered: YES
 
 Running: testReversedSelectionSingleLineText
 Selected text:<<<EOL
-ssage
+nsole
 EOL
 first visible message index: 75   viewport is covered: YES
 
 Running: testSelectionMultiLineText
 Selected text:<<<EOL
-age #74 console-viewport-selection.html:9
-Message #75 console-viewport-selection.html:9
-Message
+ole-viewport-selection.html:9 Message #74
+console-viewport-selection.html:9 Message #75
+console
 EOL
 first visible message index: 74   viewport is covered: YES
 

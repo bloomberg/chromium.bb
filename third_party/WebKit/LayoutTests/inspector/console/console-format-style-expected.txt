@@ -2,9 +2,9 @@ CONSOLE MESSAGE: line 8: %cBlue!.
 CONSOLE MESSAGE: line 9: %cBlue! %cRed!
 Tests that console logging dumps properly styled messages.
 
-Blue!. console-format-style.html:8
+console-format-style.html:8 Blue!.
 Styled text #0: color: blue;
-Blue! Red! console-format-style.html:9
+console-format-style.html:9 Blue! Red!
 Styled text #0: color: blue;
 Styled text #1: color: red;
 

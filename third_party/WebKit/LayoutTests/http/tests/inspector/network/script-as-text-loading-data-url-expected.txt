@@ -1,5 +1,5 @@
 Tests that long data: URLs are correctly trimmed in MIME type console warnings.
 
 Bug 100083
-Resource interpreted as Script but transferred with MIME type text/plain: "data:text/plain;base64,dmFyIGpvaG5xdW90ZSA9ICJCZWNhdXNlIG9mIHRoZSBuYXR1cmUg…JlbHkgY29tcGV0ZW50IHByb2dyYW1tZXIgc29tZSBudW1iZXIgb2YgeWVhcnMgbGF0ZXIuIjs=". script-as-text-loading-data-url.html:10
+script-as-text-loading-data-url.html:10 Resource interpreted as Script but transferred with MIME type text/plain: "data:text/plain;base64,dmFyIGpvaG5xdW90ZSA9ICJCZWNhdXNlIG9mIHRoZSBuYXR1cmUg…JlbHkgY29tcGV0ZW50IHByb2dyYW1tZXIgc29tZSBudW1iZXIgb2YgeWVhcnMgbGF0ZXIuIjs=".
 

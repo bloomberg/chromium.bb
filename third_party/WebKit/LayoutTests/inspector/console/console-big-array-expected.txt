@@ -6,7 +6,7 @@ CONSOLE MESSAGE: line 42: %O
 CONSOLE MESSAGE: line 52: %O
 Tests that console logging dumps large arrays properly.
 
-Array[101]
+console-big-array.html:13 Array[101]
     [0 … 19]
     0: 0
     1: 1
@@ -54,8 +54,8 @@ Array[101]
     41: 41
     100: 100
     length: 101
-    __proto__: Array[0] console-big-array.html:13
-Array[10]
+    __proto__: Array[0]
+console-big-array.html:18 Array[10]
     0: undefined
     1: undefined
     2: undefined
@@ -67,8 +67,8 @@ Array[10]
     8: undefined
     9: undefined
     length: 10
-    __proto__: Array[0] console-big-array.html:18
-Array[101]
+    __proto__: Array[0]
+console-big-array.html:24 Array[101]
     0: 0
     1: 1
     2: 2
@@ -81,8 +81,8 @@ Array[101]
     9: 9
     100: 100
     length: 101
-    __proto__: Array[0] console-big-array.html:24
-Array[405]
+    __proto__: Array[0]
+console-big-array.html:29 Array[405]
     [0 … 399]
     [0 … 19]
     [20 … 39]
@@ -111,8 +111,8 @@ Array[405]
     403: 403
     404: 404
     length: 405
-    __proto__: Array[0] console-big-array.html:29
-Array[124]
+    __proto__: Array[0]
+console-big-array.html:42 Array[124]
     0: 0
     1: 1
     2: 2
@@ -132,8 +132,8 @@ Array[124]
     -123: -123
     NaN: NaN
     length: 124
-    __proto__: Array[0] console-big-array.html:42
-Array[4294967295]
+    __proto__: Array[0]
+console-big-array.html:52 Array[4294967295]
     [0 … 19]
     0: 0
     1: 1
@@ -189,5 +189,5 @@ Array[4294967295]
     4294967296: 4294967296
     8589934592: 8589934592
     length: 4294967295
-    __proto__: Array[0] console-big-array.html:52
+    __proto__: Array[0]
 

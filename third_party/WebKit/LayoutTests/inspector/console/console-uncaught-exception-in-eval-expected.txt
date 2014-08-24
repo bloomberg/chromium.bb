@@ -2,6 +2,6 @@ CONSOLE ERROR: line 5: Uncaught Error: Exception in eval:with sourceURL
 CONSOLE ERROR: line 5: Uncaught Error: Exception in eval:anonymous
 Tests that when uncaught exception in eval'ed script ending with //# sourceURL=url is logged into console, its stack trace will have the url as the script source. Bug 47252.
 
-Uncaught Error: Exception in eval:with sourceURL evalURL.js:5b evalURL.js:5a evalURL.js:10evalSource evalURL.js:13(anonymous function) evalURL.js:14
-Uncaught Error: Exception in eval:anonymous VM:5b VM:5a VM:10evalSource VM:13(anonymous function) VM:14
+evalURL.js:5 Uncaught Error: Exception in eval:with sourceURLevalURL.js:5 bevalURL.js:10 aevalURL.js:13 evalSourceevalURL.js:14 (anonymous function)
+VM:5 Uncaught Error: Exception in eval:anonymousVM:5 bVM:10 aVM:13 evalSourceVM:14 (anonymous function)
 

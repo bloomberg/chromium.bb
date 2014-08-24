@@ -3,21 +3,21 @@ Tests that evaluating 'throw undefined|1|string|object|Error' in the console won
 
 Running: testThrowUndefined
 throw undefined
-Uncaught undefined VM:2
+VM:2 Uncaught undefined
 
 Running: testThrowNumber
 throw 1
-Uncaught 1 VM:2
+VM:2 Uncaught 1
 
 Running: testThrowString
 throw 'asdf'
-Uncaught asdf VM:2
+VM:2 Uncaught asdf
 
 Running: testThrowObject
 throw {a:42}
-Uncaught Object {a: 42} VM:2
+VM:2 Uncaught Object {a: 42}
 
 Running: testThrowError
 throw new Error('asdf')
-Uncaught Error: asdf VM:2
+VM:2 Uncaught Error: asdf
 

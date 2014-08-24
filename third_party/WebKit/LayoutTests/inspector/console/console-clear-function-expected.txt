@@ -5,9 +5,9 @@ Tests that console is cleared via console.clear() method
 
 Bug 101021
 === Before clear ===
-one console-clear-function.html:10
-two console-clear-function.html:11
-three console-clear-function.html:12
+console-clear-function.html:10 one
+console-clear-function.html:11 two
+console-clear-function.html:12 three
 === After clear ===
-Console was cleared console-clear-function.html:19
+console-clear-function.html:19 Console was cleared
 

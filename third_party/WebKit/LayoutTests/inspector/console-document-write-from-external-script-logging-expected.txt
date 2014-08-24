@@ -1,5 +1,5 @@
 CONSOLE WARNING: Failed to execute 'write' on 'Document': It isn't possible to write into a document from an asynchronously-loaded external script unless it is explicitly opened.
 Tests that ignored document.write() called from an external asynchronously loaded script is reported to console as a warning
 
-Failed to execute 'write' on 'Document': It isn't possible to write into a document from an asynchronously-loaded external script unless it is explicitly opened. external-script-with-document-write.js:2
+external-script-with-document-write.js:2 Failed to execute 'write' on 'Document': It isn't possible to write into a document from an asynchronously-loaded external script unless it is explicitly opened.
 

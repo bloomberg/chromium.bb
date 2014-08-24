@@ -2,6 +2,6 @@ CONSOLE MESSAGE: line 10: direct console.log()
 CONSOLE MESSAGE: line 7: framework log
 Tests console.log() anchor location when the skip-stack-frames feature is enabled.
 
-direct console.log() console-log-wrapped-in-framework.html:10
-framework log console-log-wrapped-in-framework.html:11
+console-log-wrapped-in-framework.html:10 direct console.log()
+console-log-wrapped-in-framework.html:11 framework log
 

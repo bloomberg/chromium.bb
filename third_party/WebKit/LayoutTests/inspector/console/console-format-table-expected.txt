@@ -46,35 +46,35 @@ CONSOLE MESSAGE: line 42: Missing column name
 CONSOLE MESSAGE: line 43: [object Object],[object Object]
 Tests console.table.
 
- console-format-table.html:10
-Array of arrays console-format-table.html:12
- console-format-table.html:13
-Large array of arrays console-format-table.html:15
- console-format-table.html:16
-Array or array and object console-format-table.html:18
- console-format-table.html:19
-Object table console-format-table.html:21
- console-format-table.html:22
-Null as columns console-format-table.html:24
- console-format-table.html:25
-Digit as columns console-format-table.html:27
- console-format-table.html:28
-String as columns console-format-table.html:30
- console-format-table.html:31
-Random string as columns console-format-table.html:33
- console-format-table.html:34
-Array of strings as columns console-format-table.html:36
- console-format-table.html:37
-Good and bad column names console-format-table.html:39
- console-format-table.html:40
-Missing column name console-format-table.html:42
- console-format-table.html:43
- console-format-table.html:10
-Array of arrays console-format-table.html:12
+console-format-table.html:10 
+console-format-table.html:12 Array of arrays
+console-format-table.html:13 
+console-format-table.html:15 Large array of arrays
+console-format-table.html:16 
+console-format-table.html:18 Array or array and object
+console-format-table.html:19 
+console-format-table.html:21 Object table
+console-format-table.html:22 
+console-format-table.html:24 Null as columns
+console-format-table.html:25 
+console-format-table.html:27 Digit as columns
+console-format-table.html:28 
+console-format-table.html:30 String as columns
+console-format-table.html:31 
+console-format-table.html:33 Random string as columns
+console-format-table.html:34 
+console-format-table.html:36 Array of strings as columns
+console-format-table.html:37 
+console-format-table.html:39 Good and bad column names
+console-format-table.html:40 
+console-format-table.html:42 Missing column name
+console-format-table.html:43 
+console-format-table.html:10 
+console-format-table.html:12 Array of arrays
 HEADER (index) | 0 | 1 | 2 | 
 ROW 1 | 2 | 3 | 
 ROW 4 | 5 | 6 | 
-Large array of arrays console-format-table.html:15
+console-format-table.html:15 Large array of arrays
 HEADER (index) | 0 | 1 | 2 | 
 ROW 1 | 2 | 3 | 
 ROW 4 | 5 | 6 | 
@@ -84,36 +84,36 @@ ROW 1 | 2 | 3 |
 ROW 4 | 5 | 6 | 
 ROW 1 | 2 | 3 | 
 ROW 4 | 5 | 6 | 
-Array or array and object console-format-table.html:18
+console-format-table.html:18 Array or array and object
 HEADER (index) | 0 | 1 | 2 | a | b | c | 
 ROW 1 | 2 | 3 | 
 ROW 1 | 2 | 3 | 
-Object table console-format-table.html:21
+console-format-table.html:21 Object table
 HEADER (index) | a | b | 
 ROW 1 | 2 | 
 ROW 3 | 4 | 
-Null as columns console-format-table.html:24
+console-format-table.html:24 Null as columns
 HEADER (index) | 0 | 1 | 2 | 
 ROW 1 | 2 | 3 | 
 ROW 4 | 5 | 6 | 
-Digit as columns console-format-table.html:27
+console-format-table.html:27 Digit as columns
 HEADER (index) | 0 | 1 | 2 | 
 ROW 1 | 2 | 3 | 
 ROW 4 | 5 | 6 | 
-String as columns console-format-table.html:30
+console-format-table.html:30 String as columns
 HEADER (index) | 0 | 
 ROW 1 | 
 ROW 4 | 
-Random string as columns console-format-table.html:33
+console-format-table.html:33 Random string as columns
 HEADER (index) | 
-Array of strings as columns console-format-table.html:36
+console-format-table.html:36 Array of strings as columns
 HEADER (index) | a | b | 
 ROW 1 | 2 | 
 ROW "foo" | "bar" | 
-Good and bad column names console-format-table.html:39
+console-format-table.html:39 Good and bad column names
 HEADER (index) | a | b | 
 ROW 1 | 2 | 
 ROW "foo" | 
-Missing column name console-format-table.html:42
+console-format-table.html:42 Missing column name
 HEADER (index) | 
 

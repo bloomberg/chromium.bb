@@ -21,21 +21,21 @@ CONSOLE MESSAGE: line 30: 1,2,3
 CONSOLE MESSAGE: line 31: /regexp.*/
 Tests that console logging dumps proper messages.
 
-log console-tests.html:9 console-message console-log-level
-debug console-tests.html:10 console-message console-debug-level
-info console-tests.html:11 console-message console-info-level
-warn console-tests.html:12 console-message console-warning-level
-error console-tests.html:13 console-message console-error-level
-5repeated console-tests.html:15 console-message console-log-level repeated-message
-count: 1 console-tests.html:17 console-message console-debug-level
-count: 2 console-tests.html:17 console-message console-debug-level
-group console-tests.html:18 console-message console-log-level console-group-title
-1 2 3 console-tests.html:20 console-message console-log-level
-groupCollapsed console-tests.html:21 console-message console-log-level console-group-title
-: 1 console-tests.html:33 console-message console-debug-level
-: 1 console-tests.html:34 console-message console-debug-level
-: 1 console-tests.html:35 console-message console-debug-level
-title: 1 console-tests.html:36 console-message console-debug-level
-title: 2 console-tests.html:37 console-message console-debug-level
-title: 3 console-tests.html:38 console-message console-debug-level
+console-tests.html:9 log console-message console-log-level
+console-tests.html:10 debug console-message console-debug-level
+console-tests.html:11 info console-message console-info-level
+console-tests.html:12 warn console-message console-warning-level
+console-tests.html:13 error console-message console-error-level
+5console-tests.html:15 repeated console-message console-log-level repeated-message
+console-tests.html:17 count: 1 console-message console-debug-level
+console-tests.html:17 count: 2 console-message console-debug-level
+console-tests.html:18 group console-message console-log-level console-group-title
+console-tests.html:20 1 2 3 console-message console-log-level
+console-tests.html:21 groupCollapsed console-message console-log-level console-group-title
+console-tests.html:33 : 1 console-message console-debug-level
+console-tests.html:34 : 1 console-message console-debug-level
+console-tests.html:35 : 1 console-message console-debug-level
+console-tests.html:36 title: 1 console-message console-debug-level
+console-tests.html:37 title: 2 console-message console-debug-level
+console-tests.html:38 title: 3 console-message console-debug-level
 

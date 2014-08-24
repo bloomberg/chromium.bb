@@ -82,154 +82,154 @@ CONSOLE MESSAGE: line 12: [object Uint16Array]
 CONSOLE MESSAGE: line 13: [object Uint16Array]
 Tests that console logging dumps proper messages.
 
- Array[10]0: "test"1: "test2"4: "test4"foo: Objectlength: 10__proto__: Array[0] console-format.html:26
-Array[10]0: "test"1: "test2"4: "test4"foo: Objectlength: 10__proto__: Array[0] console-format.html:27
-Array[10]0: "test"1: "test2"4: "test4"foo: Objectlength: 10__proto__: Array[0] console-format.html:28
-Test for zero "0" in formatter console-format.html:29
-% self-escape1 dummy console-format.html:30
-%s self-escape2 dummy console-format.html:31
-%ss self-escape3 dummy console-format.html:32
-%sdummy%s self-escape4 console-format.html:33
-%%% self-escape5 dummy console-format.html:34
-%dummy self-escape6 console-format.html:35
-/^url\(\s*(?:(?:"(?:[^\\\"]|(?:\\[\da-f]{1,6}\s?|\.))*"|'(?:[^\\\']|(?:\\[\da-f]{1,6}\s?|\.))*')|(?:[!#$%&*-~\w]|(?:\\[\da-f]{1,6}\s?|\.))*)\s*\)/i console-format.html:12
-[/^url\(\s*(?:(?:"(?:[^\\\"]|(?:\\[\da-f]{1,6}\s?|\…?:[!#$%&*-~\w]|(?:\\[\da-f]{1,6}\s?|\.))*)\s*\)/i]0: /^url\(\s*(?:(?:"(?:[^\\\"]|(?:\\[\da-f]{1,6}\s?|\.))*"|'(?:[^\\\']|(?:\\[\da-f]{1,6}\s?|\.))*')|(?:[!#$%&*-~\w]|(?:\\[\da-f]{1,6}\s?|\.))*)\s*\)/ilength: 1__proto__: Array[0] console-format.html:13
+ console-format.html:26 Array[10]0: "test"1: "test2"4: "test4"foo: Objectlength: 10__proto__: Array[0]
+console-format.html:27 Array[10]0: "test"1: "test2"4: "test4"foo: Objectlength: 10__proto__: Array[0]
+console-format.html:28 Array[10]0: "test"1: "test2"4: "test4"foo: Objectlength: 10__proto__: Array[0]
+console-format.html:29 Test for zero "0" in formatter
+console-format.html:30 % self-escape1 dummy
+console-format.html:31 %s self-escape2 dummy
+console-format.html:32 %ss self-escape3 dummy
+console-format.html:33 %sdummy%s self-escape4
+console-format.html:34 %%% self-escape5 dummy
+console-format.html:35 %dummy self-escape6
+console-format.html:12 /^url\(\s*(?:(?:"(?:[^\\\"]|(?:\\[\da-f]{1,6}\s?|\.))*"|'(?:[^\\\']|(?:\\[\da-f]{1,6}\s?|\.))*')|(?:[!#$%&*-~\w]|(?:\\[\da-f]{1,6}\s?|\.))*)\s*\)/i
+console-format.html:13 [/^url\(\s*(?:(?:"(?:[^\\\"]|(?:\\[\da-f]{1,6}\s?|\…?:[!#$%&*-~\w]|(?:\\[\da-f]{1,6}\s?|\.))*)\s*\)/i]0: /^url\(\s*(?:(?:"(?:[^\\\"]|(?:\\[\da-f]{1,6}\s?|\.))*"|'(?:[^\\\']|(?:\\[\da-f]{1,6}\s?|\.))*')|(?:[!#$%&*-~\w]|(?:\\[\da-f]{1,6}\s?|\.))*)\s*\)/ilength: 1__proto__: Array[0]
 globals[0]
 /^url\(\s*(?:(?:"(?:[^\\\"]|(?:\\[\da-f]{1,6}\s?|\.))*"|'(?:[^\\\']|(?:\\[\da-f]{1,6}\s?|\.))*')|(?:[!#$%&*-~\w]|(?:\\[\da-f]{1,6}\s?|\.))*)\s*\)/i
-/foo\\bar\sbaz/i console-format.html:12
-[/foo\\bar\sbaz/i]0: /foo\\bar\sbaz/ilength: 1__proto__: Array[0] console-format.html:13
+console-format.html:12 /foo\\bar\sbaz/i
+console-format.html:13 [/foo\\bar\sbaz/i]0: /foo\\bar\sbaz/ilength: 1__proto__: Array[0]
 globals[1]
 /foo\\bar\sbaz/i
-test console-format.html:12
-["test"] console-format.html:13
+console-format.html:12 test
+console-format.html:13 ["test"]
 globals[2]
 "test"
-test named "test" console-format.html:12
-["test named "test""] console-format.html:13
+console-format.html:12 test named "test"
+console-format.html:13 ["test named "test""]
 globals[3]
 "test named "test""
-Error {stack: (...)}stack: (...)get stack: function () { [native code] }set stack: function () { [native code] }__proto__: d console-format.html:12
-[Error]0: Errorlength: 1__proto__: Array[0] console-format.html:13
+console-format.html:12 Error {stack: (...)}stack: (...)get stack: function () { [native code] }set stack: function () { [native code] }__proto__: d
+console-format.html:13 [Error]0: Errorlength: 1__proto__: Array[0]
 globals[4]
 Error {stack: (...)}stack: (...)get stack: function () { [native code] }set stack: function () { [native code] }__proto__: d
-Error: my error message {stack: (...), message: "my error message"}message: "my error message"stack: (...)get stack: function () { [native code] }set stack: function () { [native code] }__proto__: d console-format.html:12
-[Error: my error message]0: Error: my error messagelength: 1__proto__: Array[0] console-format.html:13
+console-format.html:12 Error: my error message {stack: (...), message: "my error message"}message: "my error message"stack: (...)get stack: function () { [native code] }set stack: function () { [native code] }__proto__: d
+console-format.html:13 [Error: my error message]0: Error: my error messagelength: 1__proto__: Array[0]
 globals[5]
 Error: my error message {stack: (...), message: "my error message"}message: "my error message"stack: (...)get stack: function () { [native code] }set stack: function () { [native code] }__proto__: d
-<p id="p">Tests that console logging dumps proper messages.</p> console-format.html:12
-[p#p]0: p#plength: 1__proto__: Array[0] console-format.html:13
+console-format.html:12 <p id="p">Tests that console logging dumps proper messages.</p>
+console-format.html:13 [p#p]0: p#plength: 1__proto__: Array[0]
 globals[6]
 <p id="p">Tests that console logging dumps proper messages.</p>
-function () { return 1; } console-format.html:12
-[function]0: function () { return 1; }length: 1__proto__: Array[0] console-format.html:13
+console-format.html:12 function () { return 1; }
+console-format.html:13 [function]0: function () { return 1; }length: 1__proto__: Array[0]
 globals[7]
-function () { return 1; } console-format.html:45
-function () {
+console-format.html:45 function () { return 1; }
+console-format.html:12 function () {
         return 2;
-    } console-format.html:12
-[function]0: function () {length: 1__proto__: Array[0] console-format.html:13
+    }
+console-format.html:13 [function]0: function () {length: 1__proto__: Array[0]
 globals[8]
-function () {
+console-format.html:46 function () {
         return 2;
-    } console-format.html:46
-0.12 console-format.html:12
-[0.12] console-format.html:13
+    }
+console-format.html:12 0.12
+console-format.html:13 [0.12]
 globals[9]
 0.12
-http://webkit.org/ console-format.html:12
-["http://webkit.org/"] console-format.html:13
+console-format.html:12 http://webkit.org/
+console-format.html:13 ["http://webkit.org/"]
 globals[10]
 "http://webkit.org/"
-null console-format.html:12
-[null] console-format.html:13
+console-format.html:12 null
+console-format.html:13 [null]
 globals[11]
 null
-undefined console-format.html:12
-[undefined] console-format.html:13
+console-format.html:12 undefined
+console-format.html:13 [undefined]
 globals[12]
 undefined
-attr="" console-format.html:12
-[attr]0: attrlength: 1__proto__: Array[0] console-format.html:13
+console-format.html:12 attr=""
+console-format.html:13 [attr]0: attrlength: 1__proto__: Array[0]
 globals[13]
 attr=""
-attr="value""value" console-format.html:12
-[attr]0: attrlength: 1__proto__: Array[0] console-format.html:13
+console-format.html:12 attr="value""value"
+console-format.html:13 [attr]0: attrlength: 1__proto__: Array[0]
 globals[14]
 attr="value""value"
-id="x""x" console-format.html:12
-[id]0: idlength: 1__proto__: Array[0] console-format.html:13
+console-format.html:12 id="x""x"
+console-format.html:13 [id]0: idlength: 1__proto__: Array[0]
 globals[15]
 id="x""x"
-Object {length: (...)}length: (...)get length: function length() { throw "Length called"; }__proto__: Object console-format.html:12
-[Object]0: Objectlength: 1__proto__: Array[0] console-format.html:13
+console-format.html:12 Object {length: (...)}length: (...)get length: function length() { throw "Length called"; }__proto__: Object
+console-format.html:13 [Object]0: Objectlength: 1__proto__: Array[0]
 globals[16]
 Object {length: (...)}length: (...)get length: function length() { throw "Length called"; }__proto__: Object
-NaN console-format.html:12
-[NaN] console-format.html:13
+console-format.html:12 NaN
+console-format.html:13 [NaN]
 globals[17]
 NaN
-Infinity console-format.html:12
-[Infinity] console-format.html:13
+console-format.html:12 Infinity
+console-format.html:13 [Infinity]
 globals[18]
 Infinity
--Infinity console-format.html:12
-[-Infinity] console-format.html:13
+console-format.html:12 -Infinity
+console-format.html:13 [-Infinity]
 globals[19]
 -Infinity
-["test", "test2", 4: "test4", foo: Object]0: "test"1: "test2"4: "test4"foo: Objectlength: 10__proto__: Array[0] console-format.html:12
-[Array[10]]0: Array[10]length: 1__proto__: Array[0] console-format.html:13
+console-format.html:12 ["test", "test2", 4: "test4", foo: Object]0: "test"1: "test2"4: "test4"foo: Objectlength: 10__proto__: Array[0]
+console-format.html:13 [Array[10]]0: Array[10]length: 1__proto__: Array[0]
 globals[20]
 ["test", "test2", undefined × 2, "test4", undefined × 5]
-Object {} console-format.html:12
-[Object]0: Objectlength: 1__proto__: Array[0] console-format.html:13
+console-format.html:12 Object {}
+console-format.html:13 [Object]0: Objectlength: 1__proto__: Array[0]
 globals[21]
 Object {}
-[function]0: function () {}length: 1__proto__: Array[0] console-format.html:12
-[Array[1]]0: Array[1]length: 1__proto__: Array[0] console-format.html:13
+console-format.html:12 [function]0: function () {}length: 1__proto__: Array[0]
+console-format.html:13 [Array[1]]0: Array[1]length: 1__proto__: Array[0]
 globals[22]
 [function () {}]
-Object {bar: "bar", foo: "foo"} console-format.html:12
-[Object]0: Objectlength: 1__proto__: Array[0] console-format.html:13
+console-format.html:12 Object {bar: "bar", foo: "foo"}
+console-format.html:13 [Object]0: Objectlength: 1__proto__: Array[0]
 globals[23]
 Object {bar: "bar", foo: "foo"}
-<svg id="svg-node"></svg> console-format.html:12
-[svg#svg-node]0: svg#svg-nodelength: 1__proto__: Array[0] console-format.html:13
+console-format.html:12 <svg id="svg-node"></svg>
+console-format.html:13 [svg#svg-node]0: svg#svg-nodelength: 1__proto__: Array[0]
 globals[24]
 <svg id="svg-node"></svg>
-Object {bar: (...), foo: 1}bar: (...)get bar: function () { return this.bar; }set bar: function (x) { this.bar = x; }getFoo: function () { return this.foo; }__proto__: Object console-format.html:12
-[Object]0: Objectlength: 1__proto__: Array[0] console-format.html:13
+console-format.html:12 Object {bar: (...), foo: 1}bar: (...)get bar: function () { return this.bar; }set bar: function (x) { this.bar = x; }getFoo: function () { return this.foo; }__proto__: Object
+console-format.html:13 [Object]0: Objectlength: 1__proto__: Array[0]
 globals[25]
 Object {bar: (...), foo: 1}bar: (...)get bar: function () { return this.bar; }set bar: function (x) { this.bar = x; }getFoo: function () { return this.foo; }__proto__: Object
--0 console-format.html:12
-[-0] console-format.html:13
+console-format.html:12 -0
+console-format.html:13 [-0]
 globals[26]
 -0
-Object {} console-format.html:12
-[Object]0: Objectlength: 1__proto__: Array[0] console-format.html:13
+console-format.html:12 Object {}
+console-format.html:13 [Object]0: Objectlength: 1__proto__: Array[0]
 globals[27]
 Object {}
-function Object() { [native code] } console-format.html:12
-[function]0: function Object() { [native code] }length: 1__proto__: Array[0] console-format.html:13
+console-format.html:12 function Object() { [native code] }
+console-format.html:13 [function]0: function Object() { [native code] }length: 1__proto__: Array[0]
 globals[28]
 function Object() { [native code] }
-Object {} console-format.html:12
-[Object]0: Objectlength: 1__proto__: Array[0] console-format.html:13
+console-format.html:12 Object {}
+console-format.html:13 [Object]0: Objectlength: 1__proto__: Array[0]
 globals[29]
 Object {}
-function () {} console-format.html:12
-[function]0: function () {}length: 1__proto__: Array[0] console-format.html:13
+console-format.html:12 function () {}
+console-format.html:13 [function]0: function () {}length: 1__proto__: Array[0]
 globals[30]
-function () {} console-format.html:62
-Number {[[PrimitiveValue]]: 42} console-format.html:12
-[Number]0: Numberlength: 1__proto__: Array[0] console-format.html:13
+console-format.html:62 function () {}
+console-format.html:12 Number {[[PrimitiveValue]]: 42}
+console-format.html:13 [Number]0: Numberlength: 1__proto__: Array[0]
 globals[31]
 Number {[[PrimitiveValue]]: 42}
-String {0: "a", 1: "b", 2: "c", length: 3, [[PrimitiveValue]]: "abc"} console-format.html:12
-[String]0: Stringlength: 1__proto__: Array[0] console-format.html:13
+console-format.html:12 String {0: "a", 1: "b", 2: "c", length: 3, [[PrimitiveValue]]: "abc"}
+console-format.html:13 [String]0: Stringlength: 1__proto__: Array[0]
 globals[32]
 String {0: "a", 1: "b", 2: "c", length: 3, [[PrimitiveValue]]: "abc"}
-[1, 2, 3] console-format.html:12
-[Uint16Array[3]]0: Uint16Array[3]length: 1__proto__: Array[0] console-format.html:13
+console-format.html:12 [1, 2, 3]
+console-format.html:13 [Uint16Array[3]]0: Uint16Array[3]length: 1__proto__: Array[0]
 globals[33]
 [1, 2, 3]
 

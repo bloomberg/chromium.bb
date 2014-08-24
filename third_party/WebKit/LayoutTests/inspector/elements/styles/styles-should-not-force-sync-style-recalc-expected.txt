@@ -2,13 +2,13 @@ Tests that inspector doesn't force sync layout on operations with CSSOM.Bug 3158
 
 RecalculateStyles Properties:
 {
-    children : <object>
     data : {
         elementCount : 5
     }
     endTime : <number>
     frameId : <string>
     startTime : <number>
+    thread : <string>
     type : "RecalculateStyles"
 }
 

@@ -2,6 +2,6 @@ CONSOLE MESSAGE: line 9: [object Window]
 CONSOLE MESSAGE: line 10: [object ShadowRoot]
 Tests that console does not log deprecated warning messages while dir-dumping objects.
 
-Window console-dir-deprecated.html:9
-#document-fragment console-dir-deprecated.html:10
+console-dir-deprecated.html:9 Window
+console-dir-deprecated.html:10 #document-fragment
 

@@ -1,5 +1,5 @@
 CONSOLE MESSAGE: line 9: [object XMLDocument]
 Tests that XML document contents are logged using the correct case in the console.
 
-#document<MixedCase> Test </MixedCase> console-xml-document.html:9
+console-xml-document.html:9 #document<MixedCase> Test </MixedCase>
 

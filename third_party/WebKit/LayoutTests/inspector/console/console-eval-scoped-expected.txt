@@ -5,11 +5,11 @@ Tests that evaluating 'console.log()' in the console will have access to its out
 
 
 Running: testSnippet1
-with: Object property value VM:4
-eval in with: Object property value VM:1
+VM:4 with: Object property value
+VM:1 eval in with: Object property value
 
 Running: testSnippet2
-eval in function: Function parameter VM:1
+VM:1 eval in function: Function parameter
 
 Running: testConsoleEvalPrimitiveValue
 foo

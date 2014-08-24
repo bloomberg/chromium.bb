@@ -9,5 +9,5 @@ $x('/html/body/p').length
 "html"
 false
 1
-complete VM:1
+VM:1 complete
 
