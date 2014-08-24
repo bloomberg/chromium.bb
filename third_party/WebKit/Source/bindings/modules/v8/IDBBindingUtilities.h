@@ -33,18 +33,13 @@
 
 namespace blink {
 
-class WebBlobInfo;
-
-}
-
-namespace blink {
-
 class IDBAny;
 class IDBKey;
 class IDBKeyPath;
 class IDBKeyRange;
 class SerializedScriptValue;
 class SharedBuffer;
+class WebBlobInfo;
 
 // Exposed for unit testing:
 bool injectV8KeyIntoV8Value(v8::Isolate*, v8::Handle<v8::Value> key, v8::Handle<v8::Value>, const IDBKeyPath&);

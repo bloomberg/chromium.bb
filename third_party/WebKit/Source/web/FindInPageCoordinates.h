@@ -36,9 +36,6 @@
 namespace blink {
 class Range;
 class RenderObject;
-}
-
-namespace blink {
 
 // Find-in-page coordinate conversion methods.
 //

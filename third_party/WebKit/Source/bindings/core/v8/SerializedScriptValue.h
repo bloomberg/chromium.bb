@@ -36,12 +36,6 @@
 #include "wtf/ThreadSafeRefCounted.h"
 #include <v8.h>
 
-namespace blink {
-
-class WebBlobInfo;
-
-}
-
 namespace WTF {
 
 class ArrayBuffer;
@@ -54,6 +48,7 @@ namespace blink {
 class BlobDataHandle;
 class ExceptionState;
 class MessagePort;
+class WebBlobInfo;
 
 typedef WillBeHeapVector<RefPtrWillBeMember<MessagePort>, 1> MessagePortArray;
 typedef Vector<RefPtr<WTF::ArrayBuffer>, 1> ArrayBufferArray;
