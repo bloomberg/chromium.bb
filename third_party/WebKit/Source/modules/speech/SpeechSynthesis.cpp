@@ -153,12 +153,12 @@ void SpeechSynthesis::handleSpeakingCompleted(SpeechSynthesisUtterance* utteranc
 {
     ASSERT(utterance);
 
-    bool didJustFinishCurrentUtterance = false;
+    bool shouldStartSpeaking = false;
     // If the utterance that completed was the one we're currently speaking,
     // remove it from the queue and start speaking the next one.
     if (utterance == currentSpeechUtterance()) {
         m_utteranceQueue.removeFirst();
-        didJustFinishCurrentUtterance = true;
+        shouldStartSpeaking = !!m_utteranceQueue.size();
     }
 
     // Always fire the event, because the platform may have asynchronously
@@ -168,7 +168,7 @@ void SpeechSynthesis::handleSpeakingCompleted(SpeechSynthesisUtterance* utteranc
     fireEvent(errorOccurred ? EventTypeNames::error : EventTypeNames::end, utterance, 0, String());
 
     // Start the next utterance if we just finished one and one was pending.
-    if (didJustFinishCurrentUtterance && !m_utteranceQueue.isEmpty() && !utterance->startTime())
+    if (shouldStartSpeaking && !m_utteranceQueue.isEmpty())
         startSpeakingImmediately();
 }
 
