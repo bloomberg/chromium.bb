@@ -93,7 +93,8 @@ function test()
 
         function testScrollSelectionAwayDown(next)
         {
-            viewport.forceScrollItemToBeLast(messagesCount - 1);
+            consoleView._immediatelyScrollToBottom();
+            viewport.refresh();
             dumpSelectionModel();
             dumpViewportRenderedItems();
             next();
