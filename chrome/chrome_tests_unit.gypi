@@ -540,21 +540,15 @@
         '../extensions/browser/extension_icon_image_unittest.cc',
         '../extensions/browser/extension_protocols_unittest.cc',
         '../extensions/common/extension_l10n_util_unittest.cc',
-        '../extensions/common/extension_resource_unittest.cc',
-        '../extensions/common/extension_set_unittest.cc',
         '../extensions/common/features/base_feature_provider_unittest.cc',
         '../extensions/common/features/complex_feature_unittest.cc',
         '../extensions/common/features/simple_feature_unittest.cc',
         '../extensions/common/file_util_unittest.cc',
-        '../extensions/common/manifest_handler_unittest.cc',
         '../extensions/common/manifest_handlers/externally_connectable_unittest.cc',
         '../extensions/common/manifest_handlers/file_handler_manifest_unittest.cc',
         '../extensions/common/manifest_handlers/shared_module_manifest_unittest.cc',
-        '../extensions/common/message_bundle_unittest.cc',
         '../extensions/common/permissions/api_permission_set_unittest.cc',
         '../extensions/common/permissions/permissions_data_unittest.cc',
-        '../extensions/common/url_pattern_set_unittest.cc',
-        '../extensions/common/url_pattern_unittest.cc',
         # histograms.xml is analyzed by AboutFlagsHistogramTest, so this
         # dependency is needed to make commit bots run unit_tests on
         # histograms.xml changes.
