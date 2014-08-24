@@ -416,6 +416,8 @@ class Mirror(object):
     finally:
       if tempdir:
         try:
+          if os.path.exists(self.mirror_path):
+            gclient_utils.rmtree(self.mirror_path)
           os.rename(tempdir, self.mirror_path)
         except OSError as e:
           # This is somehow racy on Windows.
