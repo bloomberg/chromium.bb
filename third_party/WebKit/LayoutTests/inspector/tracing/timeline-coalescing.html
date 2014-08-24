@@ -1,0 +1,140 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/timeline-test.js"></script>
+<script>
+
+function initialize_TimelineCoalescing()
+{
+
+InspectorTest.dumpStats = function(presentationRecord)
+{
+    if (!presentationRecord.presentationParent())
+        return "";
+
+    var aggregatedStats = {};
+    var uiUtils = WebInspector.panels.timeline._uiUtils;
+    if (presentationRecord.coalesced()) {
+        var presentationChildren = presentationRecord.presentationChildren();
+        for (var i = 0; i < presentationChildren.length; ++i)
+            uiUtils.aggregateTimeForRecord(aggregatedStats, presentationChildren[i].record());
+    } else {
+        uiUtils.aggregateTimeForRecord(aggregatedStats, presentationRecord.record());
+    }
+
+    var timeByCategory = "";
+
+    for (category in aggregatedStats) {
+        if (timeByCategory)
+            timeByCategory += ", ";
+        timeByCategory += category + ": " + aggregatedStats[category].toFixed(5);
+    }
+    var duration = (presentationRecord.endTime() - presentationRecord.startTime()).toFixed(5);
+    var durationTillLastChild = (presentationRecord.endTime() - presentationRecord.startTime()).toFixed(5);
+    return "duration: " + duration + ":" + durationTillLastChild + (timeByCategory ? " (" + timeByCategory + ")" : "");
+}
+
+}
+
+function test()
+{
+    var sessionId = "4.20";
+    var mainThread = 1;
+    var pid = 100;
+
+    var testData = [
+        // Assure we coalesce records with short interval and don't coalesce records that stand apart.
+        {
+            "args": { "sessionId": sessionId },
+            "cat": "disabled-by-default-devtools.timeline",
+            "name": "TracingStartedInPage",
+            "ph": "I",
+            "pid": pid,
+            "tid": mainThread,
+            "ts": 100,
+        },
+        {"name": "Program", "ts": 1000000, "ph": "B", "tid": mainThread, "pid": pid, "cat":"disabled-by-default.devtools.timeline", "args": {}},
+            {"name": "FunctionCall", "ts": 1000000, "ph": "B", "tid": mainThread, "pid": pid, "cat":"disabled-by-default.devtools.timeline", "args":{"data":{"frame":"0x2","scriptId":"3","scriptLine":5,"scriptName":"http://example.com"}}},
+                {"name": "Layout", "ts": 1000001, "ph": "B", "tid": mainThread, "pid": pid, "cat":"disabled-by-default.devtools.timeline", "args":{"beginData":{"dirtyObjects":1,"frame":"0x2","partialLayout":false,"totalObjects":1}} },
+                    {"name": "CallStack", "ts": 1000002, "ph": "I", "tid": mainThread, "pid": pid, "cat":"disabled-by-default.devtools.timeline.stack", "args":{
+                        "stack":[
+                            {"functionName":"func","url":"http://example.com","lineNumber":42,"columnNumber":1,"scriptId":"10"}
+                        ]}
+                    },
+                {"name": "Layout", "ts": 1099900, "ph": "E", "tid": mainThread, "pid": pid, "cat":"disabled-by-default.devtools.timeline", "args":{"endData":{"root":[0,0,1570,0,1570,243,0,243],"rootNode":1}}},
+
+                {"name": "Layout", "ts": 1100001, "ph": "B", "tid": mainThread, "pid": pid, "cat":"disabled-by-default.devtools.timeline", "args":{"beginData":{"dirtyObjects":1,"frame":"0x2","partialLayout":false,"totalObjects":1}} },
+                {"name": "Layout", "ts": 1199900, "ph": "E", "tid": mainThread, "pid": pid, "cat":"disabled-by-default.devtools.timeline", "args":{"endData":{"root":[0,0,1570,0,1570,243,0,243],"rootNode":1}}},
+
+                {"name": "Layout", "ts": 1200001, "ph": "B", "tid": mainThread, "pid": pid, "cat":"disabled-by-default.devtools.timeline", "args":{"beginData":{"dirtyObjects":1,"frame":"0x2","partialLayout":false,"totalObjects":1}} },
+                {"name": "Layout", "ts": 1299900, "ph": "E", "tid": mainThread, "pid": pid, "cat":"disabled-by-default.devtools.timeline", "args":{"endData":{"root":[0,0,1570,0,1570,243,0,243],"rootNode":1}}},
+            {"name": "FunctionCall", "ts": 1299998, "ph": "E", "tid": mainThread, "pid": pid, "cat":"disabled-by-default.devtools.timeline", "args": {}},
+        {"name": "Program", "ts": 1299999, "ph": "E", "tid": mainThread, "pid": pid, "cat":"disabled-by-default.devtools.timeline", "args": {}},
+
+        {"name": "Program", "ts": 1300000, "ph": "B", "tid": mainThread, "pid": pid, "cat":"disabled-by-default.devtools.timeline", "args": {}},
+            {"name": "Layout", "ts": 1305001, "ph": "B", "tid": mainThread, "pid": pid, "cat":"disabled-by-default.devtools.timeline", "args":{"beginData":{"dirtyObjects":1,"frame":"0x2","partialLayout":false,"totalObjects":1}} },
+            {"name": "Layout", "ts": 1399900, "ph": "E", "tid": mainThread, "pid": pid, "cat":"disabled-by-default.devtools.timeline", "args":{"endData":{"root":[0,0,1570,0,1570,243,0,243],"rootNode":1}}},
+        {"name": "Program", "ts": 1399999, "ph": "E", "tid": mainThread, "pid": pid, "cat":"disabled-by-default.devtools.timeline", "args": {}},
+
+        // Assure we do coalesce on levels lower than root, but do not coalesce between different parents.
+        {"name": "Program", "ts": 2000000, "ph": "B", "tid": mainThread, "pid": pid, "cat":"disabled-by-default.devtools.timeline", "args": {}},
+            {"name": "FunctionCall", "ts": 2000001, "ph": "B", "tid": mainThread, "pid": pid, "cat":"disabled-by-default.devtools.timeline", "args":{"data":{"frame":"0x2","scriptId":"3","scriptLine":5,"scriptName":"http://example.com"}}},
+                {"name": "Decode Image", "ts": 2000002, "ph": "B", "tid": mainThread, "pid": pid, "cat":"disabled-by-default.devtools.timeline", "args":{"imageType":"JPEG"}},
+                {"name": "Decode Image", "ts": 2099900, "ph": "E", "tid": mainThread, "pid": pid, "cat":"disabled-by-default.devtools.timeline", "args": {}},
+                {"name": "Decode Image", "ts": 2100000, "ph": "B", "tid": mainThread, "pid": pid, "cat":"disabled-by-default.devtools.timeline", "args":{"imageType":"JPEG"}},
+                {"name": "Decode Image", "ts": 2199900, "ph": "E", "tid": mainThread, "pid": pid, "cat":"disabled-by-default.devtools.timeline", "args": {}},
+            {"name": "FunctionCall", "ts": 2199998, "ph": "E", "tid": mainThread, "pid": pid, "cat":"disabled-by-default.devtools.timeline", "args": {}},
+            {"name": "FunctionCall", "ts": 2200001, "ph": "B", "tid": mainThread, "pid": pid, "cat":"disabled-by-default.devtools.timeline", "args":{"data":{"frame":"0x2","scriptId":"3","scriptLine":5,"scriptName":"http://example.com"}}},
+                {"name": "Decode Image", "ts": 2200002, "ph": "B", "tid": mainThread, "pid": pid, "cat":"disabled-by-default.devtools.timeline", "args":{"imageType":"JPEG"}},
+                {"name": "Decode Image", "ts": 2299900, "ph": "E", "tid": mainThread, "pid": pid, "cat":"disabled-by-default.devtools.timeline", "args": {}},
+                {"name": "Decode Image", "ts": 2300000, "ph": "B", "tid": mainThread, "pid": pid, "cat":"disabled-by-default.devtools.timeline", "args":{"imageType":"JPEG"}},
+                {"name": "Decode Image", "ts": 2399900, "ph": "E", "tid": mainThread, "pid": pid, "cat":"disabled-by-default.devtools.timeline", "args": {}},
+            {"name": "FunctionCall", "ts": 2399998, "ph": "E", "tid": mainThread, "pid": pid, "cat":"disabled-by-default.devtools.timeline", "args": {}},
+        {"name": "Program", "ts": 2399999, "ph": "E", "tid": mainThread, "pid": pid, "cat":"disabled-by-default.devtools.timeline", "args": {}},
+
+        // Assure we only coalesce timestamp records with the same message.
+        {"name": "Program", "ts": 3100000, "ph": "B", "tid": mainThread, "pid": pid, "cat":"disabled-by-default.devtools.timeline", "args": {}},
+            {"name": "RasterTask", "ts": 3100001, "ph": "B", "tid": mainThread, "pid": pid, "cat":"disabled-by-default.devtools.timeline", "args":{"layerId":11}},
+            {"name": "RasterTask", "ts": 3199900, "ph": "E", "tid": mainThread, "pid": pid, "cat":"disabled-by-default.devtools.timeline", "args":{}},
+        {"name": "Program", "ts": 3199999, "ph": "E", "tid": mainThread, "pid": pid, "cat":"disabled-by-default.devtools.timeline", "args": {}},
+        {"name": "Program", "ts": 3200000, "ph": "B", "tid": mainThread, "pid": pid, "cat":"disabled-by-default.devtools.timeline", "args": {}},
+            {"name": "RasterTask", "ts": 3200001, "ph": "B", "tid": mainThread, "pid": pid, "cat":"disabled-by-default.devtools.timeline", "args":{"layerId":11}},
+            {"name": "RasterTask", "ts": 3299900, "ph": "E", "tid": mainThread, "pid": pid, "cat":"disabled-by-default.devtools.timeline", "args":{}},
+        {"name": "Program", "ts": 3299999, "ph": "E", "tid": mainThread, "pid": pid, "cat":"disabled-by-default.devtools.timeline", "args": {}},
+        {"name": "Program", "ts": 3300000, "ph": "B", "tid": mainThread, "pid": pid, "cat":"disabled-by-default.devtools.timeline", "args": {}},
+            {"name": "RasterTask", "ts": 3300001, "ph": "B", "tid": mainThread, "pid": pid, "cat":"disabled-by-default.devtools.timeline", "args":{"layerId":11}},
+            {"name": "RasterTask", "ts": 3399900, "ph": "E", "tid": mainThread, "pid": pid, "cat":"disabled-by-default.devtools.timeline", "args":{}},
+        {"name": "Program", "ts": 3399999, "ph": "E", "tid": mainThread, "pid": pid, "cat":"disabled-by-default.devtools.timeline", "args": {}},
+
+        // Assure we only coalesce event records with the same type.
+        {"name": "Program", "ts": 4100000, "ph": "B", "tid": mainThread, "pid": pid, "cat":"disabled-by-default.devtools.timeline", "args": {}},
+            {"name": "Paint", "ts": 4100001, "dur": 99899, "ph": "X", "tid": mainThread, "pid": pid, "cat":"disabled-by-default.devtools.timeline", "args":{"data":{"clip":[-15,-15,512,-15,512,512,-15,512],"frame":"0x2","layerId":11,"nodeId":2,   "type": "mouseover" }}},
+        {"name": "Program", "ts": 4199999, "ph": "E", "tid": mainThread, "pid": pid, "cat":"disabled-by-default.devtools.timeline", "args": {}},
+        {"name": "Program", "ts": 4200000, "ph": "B", "tid": mainThread, "pid": pid, "cat":"disabled-by-default.devtools.timeline", "args": {}},
+            {"name": "Paint", "ts": 4200001, "dur": 99899, "ph": "X", "tid": mainThread, "pid": pid, "cat":"disabled-by-default.devtools.timeline", "args":{"data":{"clip":[-15,-15,512,-15,512,512,-15,512],"frame":"0x2","layerId":11,"nodeId":2,   "type": "mouseover" }}},
+        {"name": "Program", "ts": 4299999, "ph": "E", "tid": mainThread, "pid": pid, "cat":"disabled-by-default.devtools.timeline", "args": {}},
+        {"name": "Program", "ts": 4300000, "ph": "B", "tid": mainThread, "pid": pid, "cat":"disabled-by-default.devtools.timeline", "args": {}},
+            {"name": "Paint", "ts": 4300001, "dur": 99899, "ph": "X", "tid": mainThread, "pid": pid, "cat":"disabled-by-default.devtools.timeline", "args":{"data":{"clip":[-15,-15,512,-15,512,512,-15,512],"frame":"0x2","layerId":11,"nodeId":2,   "type": "keydown" }}},
+        {"name": "Program", "ts": 4399999, "ph": "E", "tid": mainThread, "pid": pid, "cat":"disabled-by-default.devtools.timeline", "args": {}}
+    ];
+
+    InspectorTest.timelineModel().setEventsForTest(sessionId, testData);
+
+    var rootRecord = InspectorTest.timelinePresentationModel().rootRecord();
+    InspectorTest.dumpPresentationRecord(rootRecord, InspectorTest.dumpStats);
+    var coalesced = rootRecord.presentationChildren()[0];
+    InspectorTest.addResult("coalesced record's hasWarnings(): " + coalesced.hasWarnings());
+    InspectorTest.addResult("coalesced record's childHasWarnings(): " + coalesced.childHasWarnings());
+    InspectorTest.completeTest();
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Test timeline records coalescing
+</p>
+
+</body>
+</html>

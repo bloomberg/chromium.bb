@@ -1,0 +1,55 @@
+Tests the Timeline window filter.
+
+It applies different ranges to the OverviewGrid and expects that current view reflects the change.
+
+Also it detects that after switching to another view it gets the proper time range.
+
+OverviewPane:
+divider offsets: [500, 1000]. We are expecting round numbers.
+
+mode = Events
+range = 0 - 1
+time range = 1122673092.068 - 1122674564.291
+records count: 107
+divider offsets: [0, 500, 1000, 1500]. We are expecting round numbers.
+
+mode = Events
+range = 0.25 - 0.75
+time range = 1122673460.12375 - 1122674196.23525
+records count: 48
+divider offsets: [400, 600, 800, 1000, 1200]. We are expecting round numbers.
+
+mode = Events
+range = 0.33 - 0.66
+time range = 1122673577.90159 - 1122674063.73518
+records count: 24
+divider offsets: [500, 600, 700, 800, 900, 1000]. We are expecting round numbers.
+
+mode = Frames
+range = 0 - 1
+time range = 1122673092.068 - 1122674564.291
+records count: 107
+divider offsets: [0, 500, 1000, 1500]. We are expecting round numbers.
+
+mode = Frames
+range = 0.25 - 0.75
+time range = 1122673460.12375 - 1122674196.23525
+records count: 48
+divider offsets: [400, 600, 800, 1000, 1200]. We are expecting round numbers.
+
+mode = Frames
+range = 0.33 - 0.66
+time range = 1122673577.90159 - 1122674063.73518
+records count: 24
+divider offsets: [500, 600, 700, 800, 900, 1000]. We are expecting round numbers.
+
+--------------------------------------------------------
+mode = Frames
+time range = 1122673239.2903001 - 1122674417.0686998
+
+mode = Events
+time range = 1122673239.2903001 - 1122674417.0686998
+
+mode = Frames
+time range = 1122673239.2903001 - 1122674417.0686998
+

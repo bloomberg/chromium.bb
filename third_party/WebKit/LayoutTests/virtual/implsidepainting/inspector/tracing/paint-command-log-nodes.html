@@ -1,0 +1,107 @@
+<html>
+<head>
+<style>
+</style>
+<script src="../../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../../http/tests/inspector/timeline-test.js"></script>
+<script src="../../../../inspector/tracing-test.js"></script>
+<script>
+
+function doActions(callback)
+{
+    document.getElementById("a").style.visibility = "visible";
+    requestAnimationFrame(function() {
+        testRunner.displayAsyncThen(callback);
+    });
+}
+
+function test()
+{
+    var imageCount = 0;
+
+    InspectorTest.invokeWithTracing("doActions", onTracingComplete, "disabled-by-default-blink.graphics_context_annotations");
+
+    var inFlightPictures = 0;
+    function onTracingComplete()
+    {
+        var events = InspectorTest.tracingTimelineModel.inspectedTargetEvents();
+        for (var i = 0; i < events.length; ++i) {
+            var event = events[i];
+            if (event.name !== WebInspector.TracingTimelineModel.RecordType.Paint)
+                continue;
+            if (!event.picture)
+                continue;
+            ++inFlightPictures;
+            processPicture(event.picture);
+        }
+        if (!inFlightPictures)
+            InspectorTest.completeTest();
+    }
+
+    function processPicture(picture)
+    {
+        WebInspector.PaintProfilerSnapshot.load(WebInspector.targetManager.targets()[0], picture, onSnapshotLoaded);
+    }
+
+    function onSnapshotLoaded(snapshot)
+    {
+        snapshot.commandLog(onGotLog);
+    }
+
+    function onGotLog(log)
+    {
+        var seenNodes = {};
+        for (var i = 0; i < log.length; ++i) {
+            if (!log[i].annotations)
+                continue;
+            var nodeId = Number(log[i].annotations["INSPECTOR_ID"]);
+            if (nodeId)
+                seenNodes[nodeId] = true;
+        }
+        var requestedNodes = Object.keys(seenNodes).map(function(value) { return Number(value); });
+        var domModel = WebInspector.targetManager.mainTarget().domModel;
+        WebInspector.targetManager.mainTarget().domModel.pushNodesByBackendIdsToFrontend(requestedNodes, onNodesResolved.bind(this, log, requestedNodes));
+    }
+
+    function onNodesResolved(log, requestedNodes, resolvedNodes)
+    {
+        InspectorTest.assertEquals(requestedNodes.length, resolvedNodes.length);
+        var nodeMap = {};
+        var domModel = WebInspector.targetManager.mainTarget().domModel;
+        for (var i = 0; i < requestedNodes.length; ++i) {
+            if (resolvedNodes[i])
+                nodeMap[requestedNodes[i]] = domModel.nodeForId(resolvedNodes[i]);
+        }
+        InspectorTest.addResult("Paint command log:");
+        for (var i = 0; i < log.length; ++i) {
+            if (!log[i].annotations)
+                continue;
+            if (!/^draw/.test(log[i].method))
+                continue;
+            var nodeId = Number(log[i].annotations["INSPECTOR_ID"]);
+            if (!nodeId)
+                continue;
+            InspectorTest.addResult("    " + WebInspector.DOMPresentationUtils.simpleSelector(nodeMap[nodeId]) + " " + log[i].method);
+        }
+        if (!--inFlightPictures)
+            InspectorTest.completeTest();
+    }
+
+}
+
+</script>
+</head>
+
+<body onload="runTestAfterDisplay()">
+<p>
+Tests snapshot command log for trace-based Timeline paint event
+</p>
+<div id="a" style="visibility:hidden; -webkit-transform: translateZ(0px); background-color:blue; width:100px; height:100px;">
+    <div id="b" style="width:50px; height:50px; background-color:red;"></div>
+    <img id="c" src="../timeline/resources/test.png">
+    <svg id="d">
+        <rect id="e" x="0" y="0" width="10" height="10" style="opacity:0.5"/>
+    </svg>
+</div>
+</body>
+</html>

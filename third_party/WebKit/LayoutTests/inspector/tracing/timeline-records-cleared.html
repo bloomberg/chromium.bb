@@ -1,0 +1,48 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/timeline-test.js"></script>
+<script src="resources/timeline-data.js"></script>
+<script>
+
+function test()
+{
+    var timelineData = InspectorTest.timelineData();
+
+    WebInspector.inspectorView.showPanel("timeline");
+    var timeline = WebInspector.panels.timeline;
+
+    var model = timeline._model;
+
+    function createFileReader(file, delegate)
+    {
+        return new InspectorTest.FakeFileReader(timelineData, delegate, model.saveToFile.bind(model));
+    }
+
+    InspectorTest.override(model, "_createFileReader", createFileReader);
+
+    model.loadFromFile({}, new WebInspector.Progress());
+    timeline._overviewModeSetting.set("Frames");
+    timeline._onModeChanged();
+    timeline._model.reset();
+    console.log("Expected count of barTimes is zero: " + timeline._overviewControls[0]._barTimes.length);
+
+    InspectorTest.completeTest();
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Test that check RecordsCleared event in TimelineFramesOverview.
+</p>
+
+<p>
+We expect that TFO paints nothing after RecordsCleared event.
+The check point is the length of _barTimes array.
+</p>
+
+</body>
+</html>
+

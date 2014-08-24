@@ -1,0 +1,18 @@
+CONSOLE MESSAGE: line 1: SCRIPT TAG
+Tests the Timeline API instrumentation of a script tag with an external script.
+
+EvaluateScript Properties:
+{
+    children : <object>
+    data : {
+        frame : <string>
+        lineNumber : <number>
+        url : .../inspector/tracing/timeline-script-tag-2.js
+    }
+    endTime : <number>
+    frameId : <string>
+    startTime : <number>
+    thread : <string>
+    type : "EvaluateScript"
+}
+

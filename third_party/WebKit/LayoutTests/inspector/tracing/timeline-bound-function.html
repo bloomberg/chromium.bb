@@ -1,0 +1,46 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/timeline-test.js"></script>
+<script>
+
+function original() { }
+
+function performActions()
+{
+    var b = document.getElementById("btn");
+    var foo = original.bind();
+    b.onclick = foo;
+    b.click();
+}
+
+function test()
+{
+    InspectorTest.evaluateWithTimeline("performActions()", finish);
+
+    function finish()
+    {
+        function formatter(record)
+        {
+            if (record.type() === "FunctionCall") {
+                var scriptName = record.data().scriptName;
+                var scriptNameShort = scriptName.substring(scriptName.lastIndexOf("/") + 1);
+                if (scriptNameShort !== "InjectedScript")
+                    InspectorTest.addResult(record.type() + " " + scriptNameShort + ":" + record.data().scriptLine);
+            }
+        }
+        InspectorTest.printTimelineRecords(null, formatter);
+        InspectorTest.completeTest();
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests extracting information about original functions from bound ones
+</p>
+<button id="btn"></button>
+</body>
+</html>

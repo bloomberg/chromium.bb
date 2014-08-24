@@ -1,0 +1,55 @@
+Tests the Timeline API instrumentation of a DOM Dispatch (mousedown)
+
+Test Mouse Target
+EventDispatch Properties:
+{
+    data : {
+        type : "mouseover"
+    }
+    endTime : <number>
+    startTime : <number>
+    thread : <string>
+    type : "EventDispatch"
+}
+EventDispatch Properties:
+{
+    data : {
+        type : "mousemove"
+    }
+    endTime : <number>
+    startTime : <number>
+    thread : <string>
+    type : "EventDispatch"
+}
+EventDispatch Properties:
+{
+    children : <object>
+    data : {
+        type : "mousedown"
+    }
+    endTime : <number>
+    startTime : <number>
+    thread : <string>
+    type : "EventDispatch"
+}
+EventDispatch Properties:
+{
+    data : {
+        type : "selectstart"
+    }
+    endTime : <number>
+    startTime : <number>
+    thread : <string>
+    type : "EventDispatch"
+}
+EventDispatch Properties:
+{
+    data : {
+        type : "selectionchange"
+    }
+    endTime : <number>
+    startTime : <number>
+    thread : <string>
+    type : "EventDispatch"
+}
+

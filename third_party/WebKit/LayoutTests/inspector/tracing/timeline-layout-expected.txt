@@ -1,0 +1,48 @@
+Tests the Timeline API instrumentation of a Layout event
+
+text
+text
+text
+text
+text
+Layout Properties:
+{
+    data : {
+        beginData : {
+            dirtyObjects : 3
+            frame : <string>
+            partialLayout : true
+            totalObjects : 8
+        }
+        endData : {
+            root : <object>
+            rootNode : <number>
+        }
+    }
+    endTime : <number>
+    stackTrace : <object>
+    startTime : <number>
+    thread : <string>
+    type : "Layout"
+}
+Layout Properties:
+{
+    data : {
+        beginData : {
+            dirtyObjects : 2
+            frame : <string>
+            partialLayout : true
+            totalObjects : 11
+        }
+        endData : {
+            root : <object>
+            rootNode : <number>
+        }
+    }
+    endTime : <number>
+    stackTrace : <object>
+    startTime : <number>
+    thread : <string>
+    type : "Layout"
+}
+

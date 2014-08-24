@@ -1,0 +1,28 @@
+Test timeline records coalescing
+
+Root 
+----> FunctionCall duration: 299.99800:299.99800 (other: 0.00100, scripting: 0.30100, rendering: 299.69700)
+--------> Layout x 3 duration: 299.89900:299.89900 (rendering: 299.69700)
+------------> Layout duration: 99.89900:99.89900 (rendering: 99.89900)
+------------> Layout duration: 99.89900:99.89900 (rendering: 99.89900)
+------------> Layout duration: 99.89900:99.89900 (rendering: 99.89900)
+----> Layout duration: 94.89900:94.89900 (rendering: 94.89900)
+----> FunctionCall duration: 199.99700:199.99700 (scripting: 0.19900, painting: 199.79800)
+--------> Decode Image x 2 duration: 199.89800:199.89800 (painting: 199.79800)
+------------> Decode Image duration: 99.89800:99.89800 (painting: 99.89800)
+------------> Decode Image duration: 99.90000:99.90000 (painting: 99.90000)
+----> FunctionCall duration: 199.99700:199.99700 (scripting: 0.19900, painting: 199.79800)
+--------> Decode Image x 2 duration: 199.89800:199.89800 (painting: 199.79800)
+------------> Decode Image duration: 99.89800:99.89800 (painting: 99.89800)
+------------> Decode Image duration: 99.90000:99.90000 (painting: 99.90000)
+----> RasterTask x 3 duration: 299.89900:299.89900 (painting: 299.69700)
+--------> RasterTask duration: 99.89900:99.89900 (painting: 99.89900)
+--------> RasterTask duration: 99.89900:99.89900 (painting: 99.89900)
+--------> RasterTask duration: 99.89900:99.89900 (painting: 99.89900)
+----> Paint x 3 duration: 299.89900:299.89900 (painting: 299.69700)
+--------> Paint duration: 99.89900:99.89900 (painting: 99.89900)
+--------> Paint duration: 99.89900:99.89900 (painting: 99.89900)
+--------> Paint duration: 99.89900:99.89900 (painting: 99.89900)
+coalesced record's hasWarnings(): false
+coalesced record's childHasWarnings(): true
+

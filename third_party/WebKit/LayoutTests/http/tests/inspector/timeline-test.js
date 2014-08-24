@@ -19,11 +19,14 @@ InspectorTest.timelinePropertyFormatters = {
     lineNumber: "formatAsTypeName",
     columnNumber: "formatAsTypeName",
     frameId: "formatAsTypeName",
+    frame: "formatAsTypeName",
     encodedDataLength: "formatAsTypeName",
     identifier: "formatAsTypeName",
     clip: "formatAsTypeName",
     root: "formatAsTypeName",
     backendNodeId: "formatAsTypeName",
+    nodeId: "formatAsTypeName",
+    rootNode: "formatAsTypeName",
     networkTime: "formatAsTypeName",
     thread: "formatAsTypeName"
 };
@@ -251,6 +254,8 @@ InspectorTest.printTimelineRecordProperties = function(record)
     }
     if (record.children().length)
         object["children"] = [];
+    if (!record.data() && record instanceof WebInspector.TracingTimelineModel.TraceEventRecord)
+        object["data"] = record.traceEvent().args;
     InspectorTest.addObject(object, InspectorTest.timelinePropertyFormatters);
 };
 

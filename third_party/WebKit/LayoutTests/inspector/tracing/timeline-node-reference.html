@@ -1,0 +1,82 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/timeline-test.js"></script>
+<style>
+.relayout-boundary {
+    overflow: hidden;
+    width: 100px;
+    height: 100px;
+}
+</style>
+<script>
+
+function performActions()
+{
+    var element = document.getElementById("invalidate1");
+    element.style.marginTop = "10px";
+    var unused = element.offsetHeight;
+}
+
+function test()
+{
+    // Force panel load.
+    WebInspector.inspectorView.panel("elements");
+
+    InspectorTest.evaluateInPage("var unused = document.body.offsetWidth;", function() {
+         InspectorTest.evaluateWithTimeline("performActions()", onTimelineRecorded);
+    });
+
+    function clickValueLink(record, row)
+    {
+        var panel = WebInspector.inspectorView.panel("timeline");
+        var helper = panel._uiUtils.generateDetailsContent(record, panel._model, new WebInspector.Linkifier(), onDetailsContentReady);
+
+        function onDetailsContentReady(element)
+        {
+            var rows = element.querySelectorAll(".timeline-details-view-row");
+            for (var i = 0; i < rows.length; ++i) {
+                if (rows[i].firstChild.textContent.indexOf(row) !== -1) {
+                    rows[i].lastChild.firstChild.click();
+                    return;
+                }
+            }
+        }
+    }
+
+    function onTimelineRecorded(records)
+    {
+        var layoutRecord = InspectorTest.findFirstTimelineRecord("Layout");
+        WebInspector.notifications.addEventListener(WebInspector.NotificationService.Events.SelectedNodeChanged, onSelectedNodeChanged);
+        clickValueLink(layoutRecord, "Layout root");
+    }
+
+    function onSelectedNodeChanged()
+    {
+        // avoid using WebInspector.inspectorView.panel("elements"), as we get first event from constructor,
+        // and this call would cause another instance to get constructed.
+        var node = WebInspector.panels.elements.selectedDOMNode();
+        // We may first get an old selected node while switching to the Elements panel.
+        if (node.nodeName() === "BODY")
+            return;
+        WebInspector.notifications.removeEventListener(WebInspector.NotificationService.Events.SelectedNodeChanged, onSelectedNodeChanged);
+        InspectorTest.addResult("Layout root node id: " + node.getAttribute("id"));
+        InspectorTest.completeTest();
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests the Timeline API instrumentation of a Layout event
+</p>
+<div id="boundary" class="relayout-boundary">
+    <div>
+        <div id="invalidate1"><div>text</div></div>
+    </div>
+</div>
+
+</body>
+</html>

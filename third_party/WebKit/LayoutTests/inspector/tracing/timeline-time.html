@@ -1,0 +1,104 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/timeline-test.js"></script>
+<script>
+
+function simpleConsoleTime()
+{
+    console.time("a");
+    console.timeEnd("a");
+}
+
+function nestedConsoleTime()
+{
+    console.time("a");
+    {
+        console.time("b");
+        console.timeEnd("b");
+        {
+            console.time("c");
+            {
+                console.time("d");
+                console.timeEnd("d");
+            }
+            console.timeEnd("c");
+        }
+    }
+    console.timeEnd("a");
+}
+
+
+function unbalancedConsoleTime()
+{
+    console.time("a");
+    console.time("b");
+    console.timeEnd("a");
+    console.timeEnd("b");
+}
+
+function consoleTimeWithoutConsoleTimeEnd()
+{
+    console.timeStamp("Foo");
+    console.time("a");
+    console.timeStamp("Bar");
+    console.time("b");
+    console.time("c");
+    console.time("d");
+    console.timeStamp("Baz");
+    console.timeEnd("d");
+}
+
+function test()
+{
+    InspectorTest.startDumpingProtocolMessages();
+    InspectorTest.runTestSuite([
+        function testSimpleConsoleTime(next)
+        {
+            performActions("simpleConsoleTime()", next);
+        },
+
+        function testNestedConsoleTime(next)
+        {
+            performActions("nestedConsoleTime()", next);
+        },
+
+        function testUnbalancedConsoleTime(next)
+        {
+            performActions("unbalancedConsoleTime()", next);
+        },
+
+        function testConsoleTimeWithoutConsoleTimeEnd(next)
+        {
+            performActions("consoleTimeWithoutConsoleTimeEnd()", next);
+        }
+    ]);
+
+    function performActions(actions, next)
+    {
+        function callback()
+        {
+            function printRecord(record)
+            {
+                var title = WebInspector.TracingTimelineUIUtils.eventTitle(record.traceEvent(), InspectorTest.timelineModel());
+                InspectorTest.addResult("    " + title);
+            }
+            var rootRecord = InspectorTest.timelinePresentationModel().rootRecord();
+            InspectorTest.dumpPresentationRecord(rootRecord, undefined, undefined, ["FunctionCall", "ConsoleTime", "TimeStamp"]);
+            InspectorTest.addResult("Marker records:");
+            InspectorTest.printTimestampRecords(null, printRecord);
+            InspectorTest.timelinePresentationModel().reset();
+            next();
+        }
+        InspectorTest.evaluateWithTimeline(actions, callback)
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>Test nesting of time/timeEnd records on Timeline</p>
+
+</body>
+</html>

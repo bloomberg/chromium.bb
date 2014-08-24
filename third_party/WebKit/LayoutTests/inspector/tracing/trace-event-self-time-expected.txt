@@ -1,0 +1,9 @@
+TracingStartedInPage: undefined(0)
+Program: 100(50)
+InvalidateLayout: undefined(0)
+Layout: 50(50)
+Program: 100(40)
+EventDispatch: 60(40)
+FunctionCall: 10(10)
+FunctionCall: 10(10)
+

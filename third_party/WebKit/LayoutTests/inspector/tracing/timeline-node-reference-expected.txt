@@ -1,0 +1,5 @@
+Tests the Timeline API instrumentation of a Layout event
+
+text
+Layout root node id: boundary
+

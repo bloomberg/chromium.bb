@@ -1,0 +1,70 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/timeline-test.js"></script>
+<script type="text/javascript">
+
+var test = function()
+{
+    WebInspector.inspectorView.showPanel("timeline");
+
+    function dumper(record)
+    {
+        InspectorTest.addResult(record.type());
+    }
+
+    var sessionId = "4.20";
+    var mainThread = 1;
+    var pid = 100;
+
+    var testData = [
+        {
+            "args": { "sessionId": sessionId },
+            "cat": "disabled-by-default-devtools.timeline",
+            "name": "TracingStartedInPage",
+            "ph": "I",
+            "pid": pid,
+            "tid": mainThread,
+            "ts": 100,
+        },
+        {"name": "a", "ts": 1000000, "ph": "B", "tid": mainThread, "pid": pid, "cat":"disabled-by-default.devtools.timeline", "args": {}},
+            {"name": "aa", "ts": 1000001, "ph": "B", "tid": mainThread, "pid": pid, "cat":"disabled-by-default.devtools.timeline", "args":{}},
+                {"name": "aaa", "ts": 1200000, "ph": "I", "tid": mainThread, "pid": pid, "cat":"disabled-by-default.devtools.timeline", "args":{}},
+                {"name": "aab", "ts": 1300000, "ph": "I", "tid": mainThread, "pid": pid, "cat":"disabled-by-default.devtools.timeline", "args":{}},
+            {"name": "aa", "ts": 1400000, "ph": "E", "tid": mainThread, "pid": pid, "cat":"disabled-by-default.devtools.timeline", "args": {}},
+            {"name": "ab", "ts": 1500001, "ph": "B", "tid": mainThread, "pid": pid, "cat":"disabled-by-default.devtools.timeline", "args":{}},
+                {"name": "aba", "ts": 1600000, "ph": "I", "tid": mainThread, "pid": pid, "cat":"disabled-by-default.devtools.timeline", "args":{}},
+                {"name": "abb", "ts": 1700000, "ph": "I", "tid": mainThread, "pid": pid, "cat":"disabled-by-default.devtools.timeline", "args":{}},
+            {"name": "ab", "ts": 1800000, "ph": "E", "tid": mainThread, "pid": pid, "cat":"disabled-by-default.devtools.timeline", "args": {}},
+        {"name": "a", "ts": 2000000, "ph": "E", "tid": mainThread, "pid": pid, "cat":"disabled-by-default.devtools.timeline", "args": {}},
+        {"name": "b", "ts": 3000000, "ph": "B", "tid": mainThread, "pid": pid, "cat":"disabled-by-default.devtools.timeline", "args": {}},
+            {"name": "ba", "ts": 3000001, "ph": "B", "tid": mainThread, "pid": pid, "cat":"disabled-by-default.devtools.timeline", "args":{}},
+                {"name": "baa", "ts": 3200000, "ph": "I", "tid": mainThread, "pid": pid, "cat":"disabled-by-default.devtools.timeline", "args":{}},
+                {"name": "bab", "ts": 3300000, "ph": "I", "tid": mainThread, "pid": pid, "cat":"disabled-by-default.devtools.timeline", "args":{}},
+            {"name": "ba", "ts": 3400000, "ph": "E", "tid": mainThread, "pid": pid, "cat":"disabled-by-default.devtools.timeline", "args": {}},
+            {"name": "bb", "ts": 3500001, "ph": "B", "tid": mainThread, "pid": pid, "cat":"disabled-by-default.devtools.timeline", "args":{}},
+                {"name": "bba", "ts": 3600000, "ph": "I", "tid": mainThread, "pid": pid, "cat":"disabled-by-default.devtools.timeline", "args":{}},
+                {"name": "bbb", "ts": 3700000, "ph": "I", "tid": mainThread, "pid": pid, "cat":"disabled-by-default.devtools.timeline", "args":{}},
+            {"name": "bb", "ts": 3800000, "ph": "E", "tid": mainThread, "pid": pid, "cat":"disabled-by-default.devtools.timeline", "args": {}},
+        {"name": "b", "ts": 4000000, "ph": "E", "tid": mainThread, "pid": pid, "cat":"disabled-by-default.devtools.timeline", "args": {}}
+    ];
+
+    // Reset filter to accept all records.
+    InspectorTest.timelineModel()._recordFilter = new WebInspector.TimelineModel.Filter();
+    InspectorTest.timelineModel().setEventsForTest(sessionId, testData);
+
+    InspectorTest.addResult("DFS preorder:");
+    InspectorTest.timelineModel().forAllRecords(dumper);
+    InspectorTest.addResult("");
+
+    InspectorTest.addResult("DFS postorder:");
+    InspectorTest.timelineModel().forAllRecords(null, dumper);
+    InspectorTest.completeTest();
+}
+
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests TimelineModel.forAllRecords function.</p>
+</body>
+</html>

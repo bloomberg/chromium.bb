@@ -1,0 +1,20 @@
+Tests the Timeline API instrumentation of a paint event
+
+
+Paint Properties:
+{
+    children : <object>
+    data : {
+        clip : <object>
+        frame : <string>
+        layerId : <number>
+        nodeId : <number>
+    }
+    endTime : <number>
+    frameId : <string>
+    stackTrace : <object>
+    startTime : <number>
+    thread : <string>
+    type : "Paint"
+}
+

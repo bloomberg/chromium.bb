@@ -1,0 +1,48 @@
+Tests the Timeline API instrumentation of a network resource load
+
+Script resource loaded
+
+ResourceSendRequest Properties:
+{
+    data : {
+        frame : <string>
+        requestId : <string>
+        requestMethod : "GET"
+        url : .../inspector/tracing/timeline-network-resource.js
+    }
+    endTime : <number>
+    frameId : <string>
+    stackTrace : <object>
+    startTime : <number>
+    thread : <string>
+    type : "ResourceSendRequest"
+}
+
+ResourceReceiveResponse Properties:
+{
+    data : {
+        frame : <string>
+        mimeType : <string>
+        requestId : <string>
+        statusCode : 0
+    }
+    endTime : <number>
+    frameId : <string>
+    startTime : <number>
+    thread : <string>
+    type : "ResourceReceiveResponse"
+}
+
+ResourceFinish Properties:
+{
+    data : {
+        didFail : false
+        networkTime : <number>
+        requestId : <string>
+    }
+    endTime : <number>
+    startTime : <number>
+    thread : <string>
+    type : "ResourceFinish"
+}
+

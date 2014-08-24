@@ -1,0 +1,10 @@
+Test auto-recording of Timeline.
+
+Reloading page on console panel
+Page reloaded.
+Reloading page on timeline panel
+Recording started
+Initiated by user: false
+Page reloaded.
+Recording stopped
+

@@ -1,0 +1,50 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/timeline-test.js"></script>
+<script>
+
+function test()
+{
+    var panel = WebInspector.inspectorView.panel("timeline");
+    var model = panel._model;
+
+    var callbackBarrier = new CallbackBarrier();
+    model.addEventListener(WebInspector.TimelineModel.Events.RecordingStarted, recordingStarted);
+    model.addEventListener(WebInspector.TimelineModel.Events.RecordingStopped, callbackBarrier.createCallback());
+
+    WebInspector.inspectorView.showPanel("console");
+    InspectorTest.runWhenPageLoads(step1);
+    InspectorTest.addResult("Reloading page on console panel");
+    WebInspector.resourceTreeModel.reloadPage();
+
+    function step1()
+    {
+        WebInspector.inspectorView.showPanel("timeline");
+        InspectorTest.runWhenPageLoads(callbackBarrier.createCallback());
+        callbackBarrier.callWhenDone(recordingStopped);
+        InspectorTest.addResult("Reloading page on timeline panel");
+        WebInspector.resourceTreeModel.reloadPage();
+    }
+
+    function recordingStarted()
+    {
+        InspectorTest.addResult("Recording started");
+        InspectorTest.addResult("Initiated by user: " + panel._userInitiatedRecording);
+    }
+
+    function recordingStopped()
+    {
+        InspectorTest.addResult("Recording stopped");
+        InspectorTest.completeTest();
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>Test auto-recording of Timeline.</p>
+
+</body>
+</html>

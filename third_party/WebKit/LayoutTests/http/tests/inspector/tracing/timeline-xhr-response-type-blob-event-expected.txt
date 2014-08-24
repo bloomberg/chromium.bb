@@ -1,0 +1,72 @@
+Tests the Timeline events for XMLHttpReqeust with responseType="blob"
+
+XHRReadyStateChange Properties:
+{
+    data : {
+        frame : <string>
+        readyState : 1
+        url : .../inspector/tracing/network/resources/resource.php
+    }
+    endTime : <number>
+    frameId : <string>
+    stackTrace : <object>
+    startTime : <number>
+    thread : <string>
+    type : "XHRReadyStateChange"
+}
+XHRReadyStateChange Properties:
+{
+    children : <object>
+    data : {
+        frame : <string>
+        readyState : 2
+        url : .../inspector/tracing/network/resources/resource.php
+    }
+    endTime : <number>
+    frameId : <string>
+    startTime : <number>
+    thread : <string>
+    type : "XHRReadyStateChange"
+}
+XHRReadyStateChange Properties:
+{
+    children : <object>
+    data : {
+        frame : <string>
+        readyState : 3
+        url : .../inspector/tracing/network/resources/resource.php
+    }
+    endTime : <number>
+    frameId : <string>
+    startTime : <number>
+    thread : <string>
+    type : "XHRReadyStateChange"
+}
+XHRReadyStateChange Properties:
+{
+    children : <object>
+    data : {
+        frame : <string>
+        readyState : 4
+        url : .../inspector/tracing/network/resources/resource.php
+    }
+    endTime : <number>
+    frameId : <string>
+    startTime : <number>
+    thread : <string>
+    type : "XHRReadyStateChange"
+}
+XHRLoad Properties:
+{
+    children : <object>
+    data : {
+        frame : <string>
+        url : .../inspector/tracing/network/resources/resource.php
+    }
+    endTime : <number>
+    frameId : <string>
+    startTime : <number>
+    thread : <string>
+    type : "XHRLoad"
+}
+

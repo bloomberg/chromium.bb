@@ -1,0 +1,208 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../tracing-test.js"></script>
+<script>
+function test()
+{
+    var sessionId = "6.23";
+    var rawTraceEvents = [
+    {
+        "args": {
+          "name": "Renderer"
+        },
+        "cat": "__metadata",
+        "name": "process_name",
+        "ph": "M",
+        "pid": 17851,
+        "tid": 23,
+        "ts": 0
+    },
+    {
+        "args": {
+            "name": "CrRendererMain"
+        },
+        "cat": "__metadata",
+        "name": "thread_name",
+        "ph": "M",
+        "pid": 17851,
+        "tid": 23,
+        "ts": 0
+    },
+    {
+        "args": {
+            "sessionId": sessionId
+        },
+        "cat": "disabled-by-default-devtools.timeline",
+        "name": "TracingStartedInPage",
+        "ph": "I",
+        "pid": 17851,
+        "tid": 23,
+        "ts": 100000,
+        "tts": 606543
+    },
+    {
+        "args": {},
+        "cat": "disabled-by-default-devtools.timeline",
+        "name": "Program",
+        "ph": "B",
+        "pid": 17851,
+        "tid": 23,
+        "ts": 200000,
+        "tts": 5612442
+    },
+    {
+        "args": {
+          "frame": "0x2f7b63884000"
+        },
+        "cat": "disabled-by-default-devtools.timeline",
+        "name": "InvalidateLayout",
+        "ph": "I",
+        "pid": 17851,
+        "tid": 23,
+        "ts": 210000,
+        "tts": 5612442
+    },
+    {
+        "args": {
+          "beginData": {
+            "dirtyObjects": 10,
+            "frame": "0x2f7b63884000",
+            "partialLayout": true,
+            "totalObjects": 179
+          }
+        },
+        "cat": "disabled-by-default-devtools.timeline",
+        "name": "Layout",
+        "ph": "B",
+        "pid": 17851,
+        "tid": 23,
+        "ts": 220000,
+        "tts": 1758056
+    },
+    {
+        "args": {
+          "endData": {
+            "root": [
+              0,
+              286,
+              1681,
+              286,
+              1681,
+              1371,
+              0,
+              1371
+            ],
+            "rootNode": 9
+          }
+        },
+        "cat": "disabled-by-default-devtools.timeline",
+        "name": "Layout",
+        "ph": "E",
+        "pid": 17851,
+        "tid": 23,
+        "ts": 270000,
+        "tts": 1758430
+    },
+    {
+        "args": {},
+        "cat": "disabled-by-default-devtools.timeline",
+        "name": "Program",
+        "ph": "E",
+        "pid": 17851,
+        "tid": 23,
+        "ts": 300000,
+        "tts": 5612451
+    },
+    {
+        "args": {},
+        "cat": "disabled-by-default-devtools.timeline",
+        "name": "Program",
+        "ph": "B",
+        "pid": 17851,
+        "tid": 23,
+        "ts": 400000,
+        "tts": 5612504
+    },
+    {
+        "args": {
+          "type": "blur"
+        },
+        "cat": "disabled-by-default-devtools.timeline",
+        "dur": 60000,
+        "name": "EventDispatch",
+        "ph": "X",
+        "pid": 17851,
+        "tdur": 60,
+        "tid": 23,
+        "ts": 410000,
+        "tts": 1769084
+    },
+    {
+        "args": {
+          "data": {
+            "frame": "0x2f7b63884000",
+            "scriptId": "52",
+            "scriptLine": 539,
+            "scriptName": "chrome-devtools://devtools/bundled/ui/UIUtils.js"
+          }
+        },
+        "cat": "disabled-by-default-devtools.timeline",
+        "dur": 10000,
+        "name": "FunctionCall",
+        "ph": "X",
+        "pid": 17851,
+        "tdur": 74,
+        "tid": 23,
+        "ts": 420000,
+        "tts": 1769136
+    },
+    {
+        "args": {
+          "data": {
+            "frame": "0x2f7b63884000",
+            "scriptId": "52",
+            "scriptLine": 539,
+            "scriptName": "chrome-devtools://devtools/bundled/ui/UIUtils.js"
+          }
+        },
+        "cat": "disabled-by-default-devtools.timeline",
+        "dur": 10000,
+        "name": "FunctionCall",
+        "ph": "X",
+        "pid": 17851,
+        "tdur": 74,
+        "tid": 23,
+        "ts": 440000,
+        "tts": 1769136
+    },
+    {
+        "args": {},
+        "cat": "disabled-by-default-devtools.timeline",
+        "name": "Program",
+        "ph": "E",
+        "pid": 17851,
+        "tid": 23,
+        "ts": 500000,
+        "tts": 5612506
+    }
+    ];
+
+    var tracingTimelineModel = InspectorTest.tracingTimelineModel;
+    tracingTimelineModel.setEventsForTest(sessionId, rawTraceEvents);
+    var events = tracingTimelineModel.inspectedTargetEvents();
+    InspectorTest.assertEquals(8, events.length);
+    var eventTimes = events.map(function(e)
+    {
+        return e.name + ": " + e.duration + "(" + e.selfTime + ")";
+    });
+    InspectorTest.addResult(eventTimes.join("\n"));
+    InspectorTest.completeTest();
+}
+
+</script>
+</head>
+<body onload="runTest()">
+</body>
+</html>
+

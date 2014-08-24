@@ -1,0 +1,156 @@
+Tests the Timeline events for Timers
+
+TimerInstall Properties:
+{
+    data : {
+        frame : <string>
+        singleShot : true
+        timeout : 10
+        timerId : <number>
+    }
+    endTime : <number>
+    frameId : <string>
+    stackTrace : <object>
+    startTime : <number>
+    thread : <string>
+    type : "TimerInstall"
+}
+TimerInstall Properties:
+{
+    data : {
+        frame : <string>
+        singleShot : false
+        timeout : 20
+        timerId : <number>
+    }
+    endTime : <number>
+    frameId : <string>
+    stackTrace : <object>
+    startTime : <number>
+    thread : <string>
+    type : "TimerInstall"
+}
+TimerFire Properties:
+{
+    children : <object>
+    data : {
+        frame : <string>
+        timerId : <number>
+    }
+    endTime : <number>
+    frameId : <string>
+    startTime : <number>
+    thread : <string>
+    type : "TimerFire"
+}
+TimerFire Properties:
+{
+    children : <object>
+    data : {
+        frame : <string>
+        timerId : <number>
+    }
+    endTime : <number>
+    frameId : <string>
+    startTime : <number>
+    thread : <string>
+    type : "TimerFire"
+}
+TimerFire Properties:
+{
+    children : <object>
+    data : {
+        frame : <string>
+        timerId : <number>
+    }
+    endTime : <number>
+    frameId : <string>
+    startTime : <number>
+    thread : <string>
+    type : "TimerFire"
+}
+TimerRemove Properties:
+{
+    data : {
+        frame : <string>
+        timerId : <number>
+    }
+    endTime : <number>
+    frameId : <string>
+    stackTrace : <object>
+    startTime : <number>
+    thread : <string>
+    type : "TimerRemove"
+}
+FunctionCall Properties:
+{
+    data : {
+        frame : <string>
+        scriptId : <string>
+        scriptLine : <number>
+        scriptName : <string>
+    }
+    endTime : <number>
+    frameId : <string>
+    startTime : <number>
+    thread : <string>
+    type : "FunctionCall"
+}
+FunctionCall Properties:
+{
+    children : <object>
+    data : {
+        frame : <string>
+        scriptId : <string>
+        scriptLine : <number>
+        scriptName : <string>
+    }
+    endTime : <number>
+    frameId : <string>
+    startTime : <number>
+    thread : <string>
+    type : "FunctionCall"
+}
+FunctionCall Properties:
+{
+    data : {
+        frame : <string>
+        scriptId : <string>
+        scriptLine : <number>
+        scriptName : <string>
+    }
+    endTime : <number>
+    frameId : <string>
+    startTime : <number>
+    thread : <string>
+    type : "FunctionCall"
+}
+FunctionCall Properties:
+{
+    children : <object>
+    data : {
+        frame : <string>
+        scriptId : <string>
+        scriptLine : <number>
+        scriptName : <string>
+    }
+    endTime : <number>
+    frameId : <string>
+    startTime : <number>
+    thread : <string>
+    type : "FunctionCall"
+}
+EvaluateScript Properties:
+{
+    data : {
+        frame : <string>
+        lineNumber : <number>
+        url : 
+    }
+    endTime : <number>
+    frameId : <string>
+    startTime : <number>
+    thread : <string>
+    type : "EvaluateScript"
+}
+

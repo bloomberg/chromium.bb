@@ -1,0 +1,49 @@
+Test nesting of time/timeEnd records on Timeline
+
+
+Running: testSimpleConsoleTime
+Root
+----> FunctionCall
+----> FunctionCall
+Marker records:
+    Console Time: a
+    Console Time End: a
+
+Running: testNestedConsoleTime
+Root
+----> FunctionCall
+Marker records:
+    Console Time: a
+    Console Time: b
+    Console Time End: b
+    Console Time: c
+    Console Time: d
+    Console Time End: d
+    Console Time End: c
+    Console Time End: a
+
+Running: testUnbalancedConsoleTime
+Root
+----> FunctionCall
+Marker records:
+    Console Time: a
+    Console Time: b
+    Console Time End: a
+    Console Time End: b
+
+Running: testConsoleTimeWithoutConsoleTimeEnd
+Root
+----> FunctionCall
+--------> TimeStamp : Foo
+--------> TimeStamp : Bar
+--------> TimeStamp : Baz
+Marker records:
+    Foo
+    Console Time: a
+    Bar
+    Console Time: b
+    Console Time: c
+    Console Time: d
+    Baz
+    Console Time End: d
+

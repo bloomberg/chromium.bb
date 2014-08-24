@@ -1,0 +1,32 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/timeline-test.js"></script>
+<script>
+
+function test()
+{
+    InspectorTest.startTimeline(function() { InspectorTest.reloadPage(pageReloaded); });
+
+    function pageReloaded()
+    {
+        InspectorTest.stopTimeline(finish);
+    }
+
+    function finish()
+    {
+        InspectorTest.printTimestampRecords("MarkDOMContent");
+        InspectorTest.completeTest();
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests the DOM content loaded event.
+</p>
+
+</body>
+</html>

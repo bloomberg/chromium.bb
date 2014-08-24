@@ -1,0 +1,38 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/timeline-test.js"></script>
+<script>
+
+function produceGarbageForGCEvents(callback)
+{
+    if (window.testRunner) {
+        window.gc();
+        testRunner.displayAsyncThen(callback);
+    }
+}
+
+function test()
+{
+    InspectorTest.invokeAsyncWithTimeline("produceGarbageForGCEvents", validate);
+
+    function validate()
+    {
+        var gcRecord = InspectorTest.findFirstTimelineRecord(WebInspector.TimelineModel.RecordType.GCEvent);
+        if (gcRecord)
+            InspectorTest.addResult("SUCCESS: Found expected GC event record");
+        else
+            InspectorTest.addResult("FAIL: GC event record wasn't found");
+        InspectorTest.completeTest();
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests the Timeline API instrumentation of a gc event
+</p>
+</body>
+</html>

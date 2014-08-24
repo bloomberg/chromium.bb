@@ -1,0 +1,85 @@
+<html>
+<head>
+<style>
+div#img-container {
+    position: relative;
+    width: 99px;
+    height: 99px;
+    overflow: clip;
+}
+</style>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/timeline-test.js"></script>
+<script src="../tracing-test.js"></script>
+<script>
+
+var images = [
+    ["../timeline/resources/test.bmp", "25", "25"],
+    ["../timeline/resources/test.gif", "25", "25"],
+    ["../timeline/resources/test.ico", "25", "25"],
+    ["../timeline/resources/test.jpg", "25", "25"],
+    ["../timeline/resources/test.png", "25", "25"],
+    ["../timeline/resources/test.webp", "25", "25"],
+    ["../timeline/resources/big.png", "150", "150"]
+];
+
+function showImages(callback)
+{
+    var nextImageIndex = 0;
+    var imgElement = document.getElementById("img-container").firstElementChild;
+
+    imgElement.addEventListener("load", imageLoaded);
+    addImages();
+
+    function addImages()
+    {
+        if (nextImageIndex >= images.length) {
+            imgElement.removeEventListener("load", imageLoaded);
+            callback();
+            return;
+        }
+
+        var image = images[nextImageIndex++];
+
+        imgElement.width = image[1];
+        imgElement.height = image[2];
+        imgElement.src = image[0];
+    }
+
+    function imageLoaded()
+    {
+        testRunner.displayAsyncThen(addImages);
+    }
+}
+
+
+function test()
+{
+    var imageCount = 0;
+
+    InspectorTest.invokeWithTracing("showImages", onTracingComplete);
+    function onTracingComplete()
+    {
+        var events = InspectorTest.tracingTimelineModel.inspectedTargetEvents();
+        for (var i = 0; i < events.length; ++i) {
+            var event = events[i];
+            if (events[i].name !== WebInspector.TracingTimelineModel.RecordType.DecodeImage)
+                continue;
+            InspectorTest.addResult("event: " + event.name);
+            InspectorTest.addResult("imageURL: " + InspectorTest.formatters.formatAsURL(event.imageURL));
+            InspectorTest.addResult("backendNodeId: " + (event.backendNodeId > 0 ? "present" : "absent"));
+        }
+        InspectorTest.completeTest();
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests the instrumentation of a DecodeImage and ResizeImage events
+</p>
+<div id="img-container"><img></div>
+</body>
+</html>

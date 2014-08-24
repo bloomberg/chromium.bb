@@ -1,0 +1,6 @@
+Test that check RecordsCleared event in TimelineFramesOverview.
+
+We expect that TFO paints nothing after RecordsCleared event. The check point is the length of _barTimes array.
+
+log: Expected count of barTimes is zero: 0
+

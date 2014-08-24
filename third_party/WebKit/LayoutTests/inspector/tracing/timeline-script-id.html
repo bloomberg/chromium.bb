@@ -1,0 +1,63 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/timeline-test.js"></script>
+<script>
+
+function test()
+{
+    function performActions(callback)
+    {
+        var timerOne = setTimeout("1 + 1", 10);
+        var timerTwo = setInterval(intervalTimerWork, 20);
+        var iteration = 0;
+
+        function intervalTimerWork()
+        {
+            if (++iteration < 2)
+                return;
+            clearInterval(timerTwo);
+            callback();
+        }
+    }
+
+    var source = performActions.toString();
+    source += "\n//@ sourceURL=performActions.js";
+    InspectorTest.evaluateInPage(source);
+
+    InspectorTest.invokeAsyncWithTimeline("performActions", finish);
+
+    var linkifier = new WebInspector.Linkifier();
+
+    var recordTypes = ["TimerInstall", "TimerRemove", "FunctionCall"];
+    function formatter(record)
+    {
+        if (recordTypes.indexOf(record.type()) === -1)
+            return;
+
+        var details = WebInspector.TimelineUIUtilsImpl.buildDetailsNode(record, linkifier, false);
+        if (details)
+            InspectorTest.addResult("details.textContent for " + record.type() + " event: '" + details.textContent + "'");
+    }
+
+    function finish()
+    {
+        InspectorTest.printTimelinePresentationRecords(null, formatter);
+        InspectorTest.completeTest();
+    }
+}
+
+if (!window.testRunner)
+    setTimeout(performActions, 2000);
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Test that checks location resolving mechanics for TimerInstall TimerRemove and FunctionCall events with scriptId.
+</p><p>
+It expects two FunctionCall for InjectedScript, two TimerInstall events, two FunctionCall events and one TimerRemove event to be logged with performActions.js script name and some line number.
+</p>
+</body>
+</html>

@@ -1,0 +1,52 @@
+<html>
+<head>
+<style>
+.layer {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    -webkit-transform: translateZ(10px);
+}
+</style>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/timeline-test.js"></script>
+<script src="../tracing-test.js"></script>
+<script>
+
+function doActions(callback)
+{
+    var layer = document.createElement("div");
+    layer.classList.add("layer");
+    document.getElementById("parent-layer").appendChild(layer);
+
+    requestAnimationFrame(callback);
+}
+
+function test()
+{
+    InspectorTest.invokeWithTracing("doActions", onTracingComplete);
+    function onTracingComplete()
+    {
+        var events = InspectorTest.tracingTimelineModel.inspectedTargetEvents();
+        for (var i = 0; i < events.length; ++i) {
+            var event = events[i];
+            if (events[i].name === WebInspector.TracingTimelineModel.RecordType.UpdateLayerTree) {
+                InspectorTest.addResult("Got UpdateLayerTree event");
+                break;
+            }
+        }
+        InspectorTest.addResult("Done");
+        InspectorTest.completeTest();
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests the instrumentation of UpdateLayerTree event
+</p>
+<div id="parent-layer"></div>
+</body>
+</html>

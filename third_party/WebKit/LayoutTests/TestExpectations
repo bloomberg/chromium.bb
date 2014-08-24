@@ -554,7 +554,7 @@ crbug.com/369615 virtual/gpu/fast/canvas/canvas-overflow-hidden-animation.html [
 # worked on actively. Rebaseline after impl-side painting becomes stable.
 crbug.com/24182 crbug.com/318490 [ Win Linux Android ] virtual/implsidepainting/inspector/timeline/timeline-decode-resize.html [ Crash Pass ]
 crbug.com/24182 crbug.com/318490 crbug.com/372213 [ Mac ] virtual/implsidepainting/inspector/timeline/timeline-decode-resize.html [ Crash Pass Timeout ]
-crbug.com/24182 crbug.com/318490 crbug.com/372213 [ Mac ] virtual/deferred/inspector/timeline/tracing/decode-resize.html [ Pass Failure Slow ]
+crbug.com/24182 crbug.com/318490 crbug.com/372213 [ Mac ] virtual/deferred/inspector/tracing/decode-resize.html [ Pass Failure Slow ]
 
 # Flaky on several platforms.
 crbug.com/320139 fast/repaint/block-layout-inline-children-replaced.html [ Failure Pass ]
@@ -1097,8 +1097,8 @@ crbug.com/371276 [ Linux ] virtual/deferred/inspector/timeline/timeline-window-f
 crbug.com/371276 [ Linux ] virtual/implsidepainting/inspector/timeline/timeline-window-filter.html [ Pass Timeout ]
 
 crbug.com/372917 http/tests/security/contentSecurityPolicy/connect-src-beacon-redirect-to-blocked.html [ Failure ]
-crbug.com/381373 [ Mac Win ] virtual/implsidepainting/inspector/timeline/tracing/decode-resize.html [ Pass Timeout Failure ]
-crbug.com/381373 [ Linux ] virtual/implsidepainting/inspector/timeline/tracing/decode-resize.html [ Pass Timeout ]
+crbug.com/381373 [ Mac Win ] virtual/implsidepainting/inspector/tracing/decode-resize.html [ Pass Timeout Failure ]
+crbug.com/381373 [ Linux ] virtual/implsidepainting/inspector/tracing/decode-resize.html [ Pass Timeout ]
 
 crbug.com/361729 [ MountainLion ] printing/return-from-printing-mode.html [ ImageOnlyFailure ]
 
@@ -1293,9 +1293,9 @@ crbug.com/405847 [ XP ] http/tests/serviceworker/install-phase-event-waituntil.h
 crbug.com/397321 compositing/repaint/should-not-repaint-composited-opacity.html [ Crash Pass ]
 crbug.com/397321 svg/custom/pattern-3-step-cycle.html [ Crash Pass ]
 crbug.com/397321 svg/filters/filter-refresh.svg [ Crash Pass ]
-crbug.com/399507 inspector/timeline/tracing/update-layer-tree.html [ Failure Pass ]
-crbug.com/399507 virtual/deferred/inspector/timeline/tracing/update-layer-tree.html [ Failure Pass ]
-crbug.com/399507 virtual/implsidepainting/inspector/timeline/tracing/update-layer-tree.html [ Failure Pass ]
+crbug.com/399507 inspector/tracing/update-layer-tree.html [ Failure Pass ]
+crbug.com/399507 virtual/deferred/inspector/tracing/update-layer-tree.html [ Failure Pass ]
+crbug.com/399507 virtual/implsidepainting/inspector/tracing/update-layer-tree.html [ Failure Pass ]
 
 crbug.com/357462 http/tests/security/contentSecurityPolicy/1.1/frame-ancestors/frame-ancestors-nested-cross-in-cross-none-block.html [ Failure Pass Timeout ]
 crbug.com/357462 http/tests/security/contentSecurityPolicy/1.1/frame-ancestors/frame-ancestors-nested-cross-in-cross-self-block.html [ Failure Pass Timeout ]

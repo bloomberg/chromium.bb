@@ -1,0 +1,30 @@
+Tests the load event.
+
+Page reloaded.
+Model records:
+Timestamp records:
+MarkDOMContent Properties:
+{
+    data : {
+        frame : <string>
+        isMainFrame : true
+    }
+    endTime : <number>
+    frameId : <string>
+    startTime : <number>
+    thread : <string>
+    type : "MarkDOMContent"
+}
+MarkLoad Properties:
+{
+    data : {
+        frame : <string>
+        isMainFrame : true
+    }
+    endTime : <number>
+    frameId : <string>
+    startTime : <number>
+    thread : <string>
+    type : "MarkLoad"
+}
+

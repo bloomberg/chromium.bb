@@ -1,0 +1,16 @@
+Tests the DOM content loaded event.
+
+Page reloaded.
+MarkDOMContent Properties:
+{
+    data : {
+        frame : <string>
+        isMainFrame : true
+    }
+    endTime : <number>
+    frameId : <string>
+    startTime : <number>
+    thread : <string>
+    type : "MarkDOMContent"
+}
+

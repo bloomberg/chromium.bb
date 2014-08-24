@@ -1,0 +1,48 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/timeline-test.js"></script>
+<script src="resources/timeline-data.js"></script>
+<script>
+
+function test()
+{
+    WebInspector.inspectorView.showPanel("network");
+    var timelineData = InspectorTest.timelineData();
+
+    var timeline = WebInspector.inspectorView.showPanel("timeline");
+    timeline._overviewModeSetting.set(WebInspector.TimelinePanel.OverviewMode.Frames);
+    timeline._flameChartEnabledSetting.set(true);
+    timeline._onModeChanged();
+    timeline._currentViews[0]._automaticallySizeWindow = true;
+
+    function requestWindowTimesHook(startTime, endTime)
+    {
+        if (startTime)
+            InspectorTest.addResult("time delta: " + (endTime - startTime));
+    }
+
+    timeline.requestWindowTimes = requestWindowTimesHook;
+    var model = timeline._model;
+
+    function createFileReader(file, delegate)
+    {
+        return new InspectorTest.FakeFileReader(timelineData, delegate, model.saveToFile.bind(model));
+    }
+
+    InspectorTest.override(model, "_createFileReader", createFileReader);
+
+    model.loadFromFile({}, new WebInspector.Progress());
+    InspectorTest.completeTest();
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests the TimelineFlameChart automatically sized window.
+</p>
+
+</body>
+</html>

@@ -1,0 +1,81 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/timeline-test.js"></script>
+<script>
+
+function initialize_CategoryFilterTest()
+{
+    InspectorTest.dumpVisibleRecords = function()
+    {
+        var presentationModel = InspectorTest.timelinePresentationModel();
+        var records = presentationModel.filteredRecords();
+        for (var i = 0; i < records.length; ++i)
+            InspectorTest.addResult(records[i].record().type());
+    }
+}
+
+function test()
+{
+    var sessionId = "4.20";
+    var mainThread = 1;
+    var pid = 100;
+
+    var testData = [
+        {
+            "args": { "sessionId": sessionId },
+            "cat": "disabled-by-default-devtools.timeline",
+            "name": "TracingStartedInPage",
+            "ph": "I",
+            "pid": pid,
+            "tid": mainThread,
+            "ts": 100,
+        },
+        {"name": "Program", "ts": 1000000, "ph": "B", "tid": mainThread, "pid": pid, "cat":"disabled-by-default.devtools.timeline", "args": {}},
+        {"name": "FunctionCall", "ts": 1000001, "ph": "B", "tid": mainThread, "pid": pid, "cat":"disabled-by-default.devtools.timeline", "args":{"data":{"frame":"0x2","scriptId":"3","scriptLine":5,"scriptName":"http://example.com"}}},
+
+        {"name":"ResourceSendRequest","ts":1000002,"tid":mainThread,"pid":pid,"cat":"disabled-by-default-devtools.timeline","ph":"I","s":"g","args":{"data":{"frame":"0x2","requestId":"44.1","requestMethod":"GET","url":"http://example.com/foo.js"}}},
+
+        {"name": "RecalculateStyles", "ts": 1000003, "ph": "B", "tid": mainThread, "pid": pid, "cat":"disabled-by-default.devtools.timeline", "args":{"frame":"0x2"} },
+        {"name": "RecalculateStyles", "ts": 1009999, "ph": "E", "tid": mainThread, "pid": pid, "cat":"disabled-by-default.devtools.timeline", "args":{"elementCount":3}},
+
+        {"name": "Layout", "ts": 1010000, "ph": "B", "tid": mainThread, "pid": pid, "cat":"disabled-by-default.devtools.timeline", "args":{"beginData":{"dirtyObjects":1,"frame":"0x2","partialLayout":false,"totalObjects":1}} },
+        {"name": "Layout", "ts": 1020999, "ph": "E", "tid": mainThread, "pid": pid, "cat":"disabled-by-default.devtools.timeline", "args":{"endData":{"root":[0,0,1570,0,1570,243,0,243],"rootNode":1}}},
+
+        {"name": "FunctionCall", "ts": 1099999, "ph": "E", "tid": mainThread, "pid": pid, "cat":"disabled-by-default.devtools.timeline", "args": {}},
+        {"name": "Program", "ts": 1099999, "ph": "E", "tid": mainThread, "pid": pid, "cat":"disabled-by-default.devtools.timeline", "args": {}}
+    ];
+
+    InspectorTest.timelineModel().setEventsForTest(sessionId, testData);
+
+    var rootRecord = InspectorTest.timelinePresentationModel().rootRecord();
+    for (var i = 0; i < rootRecord.presentationChildren().length; ++i)
+        rootRecord.presentationChildren()[i].setCollapsed(false);
+
+    InspectorTest.addResult("Original records");
+    WebInspector.panels.timeline._categoryFilter.notifyFilterChanged();
+    InspectorTest.dumpVisibleRecords();
+
+    InspectorTest.addResult("Visible records when 'loading' is disabled");
+    WebInspector.TimelineUIUtils.categories().loading.hidden = true;
+    WebInspector.panels.timeline._categoryFilter.notifyFilterChanged();
+    InspectorTest.dumpVisibleRecords();
+
+    InspectorTest.addResult("Visible records when 'scripting' is disabled");
+    WebInspector.TimelineUIUtils.categories().scripting.hidden = true;
+    WebInspector.panels.timeline._categoryFilter.notifyFilterChanged();
+    InspectorTest.dumpVisibleRecords();
+
+    InspectorTest.completeTest();
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Test the set of visible records is correctly update when category filter changes</a>
+</p>
+
+</body>
+</html>

@@ -1,0 +1,39 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/timeline-test.js"></script>
+
+<style>
+.test-style {
+    color: red;
+}
+</style>
+
+<script>
+
+function performActions()
+{
+    var element = document.createElement("div");
+    element.className = "test-style";
+    element.innerHTML = "<span>Test data</span>";
+    document.querySelector('section > div').appendChild(element);
+    var unused = element.offsetWidth;
+}
+
+function test()
+{
+    InspectorTest.performActionsAndPrint("performActions()", "RecalculateStyles");
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests the Timeline API instrumentation of a style recalculation event
+</p>
+<section>
+    <div></div>
+</section>
+</body>
+</html>

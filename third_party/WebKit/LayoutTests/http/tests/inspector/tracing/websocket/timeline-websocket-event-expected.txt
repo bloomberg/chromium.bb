@@ -1,0 +1,54 @@
+CONSOLE WARNING: 'WebSocket.URL' is deprecated. Please use 'WebSocket.url' instead.
+Tests the Timeline events for WebSocket
+
+WebSocketCreate Properties:
+{
+    data : {
+        frame : <string>
+        identifier : <number>
+        url : ws://127.0.0.1:8880/simple
+    }
+    endTime : <number>
+    frameId : <string>
+    stackTrace : <object>
+    startTime : <number>
+    thread : <string>
+    type : "WebSocketCreate"
+}
+WebSocketSendHandshakeRequest Properties:
+{
+    data : {
+        frame : <string>
+        identifier : <number>
+    }
+    endTime : <number>
+    frameId : <string>
+    startTime : <number>
+    thread : <string>
+    type : "WebSocketSendHandshakeRequest"
+}
+WebSocketReceiveHandshakeResponse Properties:
+{
+    data : {
+        frame : <string>
+        identifier : <number>
+    }
+    endTime : <number>
+    frameId : <string>
+    startTime : <number>
+    thread : <string>
+    type : "WebSocketReceiveHandshakeResponse"
+}
+WebSocketDestroy Properties:
+{
+    data : {
+        frame : <string>
+        identifier : <number>
+    }
+    endTime : <number>
+    frameId : <string>
+    startTime : <number>
+    thread : <string>
+    type : "WebSocketDestroy"
+}
+
