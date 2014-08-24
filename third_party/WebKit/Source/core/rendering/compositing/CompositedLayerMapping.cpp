@@ -458,7 +458,7 @@ bool CompositedLayerMapping::updateGraphicsLayerConfiguration()
 
     updateBackgroundColor();
 
-    if (isDirectlyCompositedImage())
+    if (renderer->isImage() && isDirectlyCompositedImage())
         updateImageContents();
 
     if (WebLayer* layer = platformLayerForPlugin(renderer)) {
@@ -1700,7 +1700,7 @@ bool CompositedLayerMapping::containsPaintedContent() const
     if (paintsIntoCompositedAncestor() || m_owningLayer.isReflection())
         return false;
 
-    if (isDirectlyCompositedImage())
+    if (renderer()->isImage() && isDirectlyCompositedImage())
         return false;
 
     RenderObject* renderObject = renderer();
@@ -1744,9 +1744,10 @@ bool CompositedLayerMapping::containsPaintedContent() const
 // that require painting. Direct compositing saves backing store.
 bool CompositedLayerMapping::isDirectlyCompositedImage() const
 {
-    RenderObject* renderObject = renderer();
+    ASSERT(renderer()->isImage());
 
-    if (!renderObject->isImage() || m_owningLayer.hasBoxDecorationsOrBackground() || renderObject->hasClip())
+    RenderObject* renderObject = renderer();
+    if (m_owningLayer.hasBoxDecorationsOrBackground() || renderObject->hasClip())
         return false;
 
     RenderImage* imageRenderer = toRenderImage(renderObject);
@@ -1763,7 +1764,7 @@ bool CompositedLayerMapping::isDirectlyCompositedImage() const
 
 void CompositedLayerMapping::contentChanged(ContentChangeType changeType)
 {
-    if ((changeType == ImageChanged) && isDirectlyCompositedImage()) {
+    if ((changeType == ImageChanged) && renderer()->isImage() && isDirectlyCompositedImage()) {
         updateImageContents();
         return;
     }
@@ -1793,6 +1794,8 @@ void CompositedLayerMapping::updateImageContents()
 
     // This is a no-op if the layer doesn't have an inner layer for the image.
     m_graphicsLayer->setContentsToImage(image);
+
+    // Prevent double-drawing: https://bugs.webkit.org/show_bug.cgi?id=58632
     updateDrawsContent();
 
     // Image animation is "lazy", in that it automatically stops unless someone is drawing
