@@ -18,6 +18,8 @@
 #  IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 #  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+include Makefile.sources
+
 ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 
 pkgconfigdir = @pkgconfigdir@
@@ -62,18 +64,10 @@ libdrm_la_CPPFLAGS = -I$(top_srcdir)/include/drm
 AM_CFLAGS = \
 	$(VALGRIND_CFLAGS)
 
-libdrm_la_SOURCES =				\
-	xf86drm.c				\
-	xf86drmHash.c				\
-	xf86drmRandom.c				\
-	xf86drmSL.c				\
-	xf86drmMode.c				\
-	xf86atomic.h				\
-	libdrm.h				\
-	libdrm_lists.h
+libdrm_la_SOURCES = $(LIBDRM_FILES)
 
 libdrmincludedir = ${includedir}
-libdrminclude_HEADERS = xf86drm.h xf86drmMode.h
+libdrminclude_HEADERS = $(LIBDRM_H_FILES)
 
 EXTRA_DIST = libdrm.pc.in include/drm/*
 

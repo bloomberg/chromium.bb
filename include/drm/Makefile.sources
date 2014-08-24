@@ -1,0 +1,18 @@
+LIBDRM_INCLUDE_H_FILES := \
+	drm.h \
+	drm_mode.h \
+	drm_fourcc.h \
+	drm_sarea.h \
+	i915_drm.h \
+	mga_drm.h \
+	nouveau_drm.h \
+	r128_drm.h \
+	radeon_drm.h \
+	savage_drm.h \
+	sis_drm.h \
+	via_drm.h \
+	mach64_drm.h \
+	qxl_drm.h
+
+LIBDRM_INCLUDE_VMWGFX_H_FILES := \
+	vmwgfx_drm.h

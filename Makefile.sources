@@ -1,0 +1,13 @@
+LIBDRM_FILES := \
+	xf86drm.c \
+	xf86drmHash.c \
+	xf86drmRandom.c \
+	xf86drmSL.c \
+	xf86drmMode.c \
+	xf86atomic.h \
+	libdrm.h \
+	libdrm_lists.h
+
+LIBDRM_H_FILES := \
+	xf86drm.h \
+	xf86drmMode.h
