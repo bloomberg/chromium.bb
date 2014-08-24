@@ -680,6 +680,10 @@ void InlineTextBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, 
     if (paintSelectedTextOnly || paintSelectedTextSeparately)
         selectionStartEnd(sPos, ePos);
 
+    bool respectHyphen = ePos == m_len && hasHyphen();
+    if (respectHyphen)
+        ePos = textRun.length();
+
     if (m_truncation != cNoTruncation) {
         sPos = std::min<int>(sPos, m_truncation);
         ePos = std::min<int>(ePos, m_truncation);
