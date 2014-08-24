@@ -95,7 +95,7 @@ bool CustomElementConstructorBuilder::validateOptions(const AtomicString& type, 
     }
 
     AtomicString extends;
-    bool extendsProvidedAndNonNull = DictionaryHelper::get(*m_options, "extends", extends);
+    bool extendsProvidedAndNonNull = DictionaryHelper::get(*m_options, "extends", extends) && extends != "null";
 
     if (tryCatch.HasCaught()) {
         tryCatch.ReThrow();

@@ -144,8 +144,6 @@ crbug.com/330083 w3c/web-platform-tests/custom-elements/concepts/custom-elements
 crbug.com/330083 w3c/web-platform-tests/custom-elements/concepts/custom-elements-type-naming.html [ Failure ]
 crbug.com/330083 w3c/web-platform-tests/custom-elements/creating-and-passing-registries/no-registry-test.html [ Failure ]
 crbug.com/330083 w3c/web-platform-tests/custom-elements/instantiating-custom-elements/extensions-to-document-interface/create-element-interface-type-is-a-type-extension.html [ Failure ]
-crbug.com/330083 w3c/web-platform-tests/custom-elements/registering-custom-elements/definition-construction-algorithm-name-is-null.html [ Failure ]
-crbug.com/330083 w3c/web-platform-tests/custom-elements/registering-custom-elements/definition-construction-algorithm-svg-namespace-name-is-null.html [ Failure ]
 
 crbug.com/330083 w3c/web-platform-tests/webrtc/simplecall.html [ Failure ]
 

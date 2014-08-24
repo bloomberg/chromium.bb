@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+PASS type extension from null should be treated as if "extends" is not given 
+Harness: the test ran to completion.
+
