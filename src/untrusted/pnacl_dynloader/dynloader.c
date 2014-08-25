@@ -244,8 +244,71 @@ static int load_elf_file_from_fd(int fd, void **pso_root) {
                   segment_index);
         }
         prev_segment_end = segment_end;
-        void *segment_addr = (void *) (load_bias + segment_start);
+
+        /* Handle the BSS (zero-initialized data). */
+        if (ph->p_memsz < ph->p_filesz) {
+          NaClLog(LOG_FATAL, "Bad ELF segment %d: p_memsz < p_filesz\n",
+                  segment_index);
+        }
+        if (ph->p_memsz > ph->p_filesz) {
+          if ((ph->p_flags & PF_W) == 0) {
+            NaClLog(LOG_FATAL,
+                    "Bad ELF segment %d: non-writable segment with BSS\n",
+                    segment_index);
+          }
+          /*
+           * NaCl's mmap() interface has a quirk when mapping the last 64k
+           * page of a file.  Within the page, NaCl maps the 4k pages
+           * beyond the file's extent as PROT_NONE.  This is due to
+           * Windows' limitations.  For background, see:
+           * https://code.google.com/p/nativeclient/issues/detail?id=1068
+           * This affects how we handle the BSS in the RW data segment.
+           *
+           * The RW data segment consists of two parts:
+           *   * data initialized from the file
+           *     -- offsets 0 to p_filesz from the segment's start
+           *   * zero-initialized data, known as the "BSS"
+           *     -- offsets p_filesz to p_memsz from the segment's start
+           *
+           * Usually there will be one corner-case 64k page in memory that
+           * overlaps both of those parts.  A normal Unix dynamic linker
+           * would map this corner-case page from the file and then zero
+           * the BSS within this mapping using memset().  But that memset()
+           * can crash, since the BSS can go beyond the file's extent.
+           *
+           * Instead, we mmap() this corner-case page as anonymous memory
+           * and copy in initialized data from the file using pread().
+           * This is potentially slightly faster than the memset()
+           * approach, anyway, because it avoids trapping to the kernel to
+           * do a copy-on-write of the corner-case page.
+           */
+          uintptr_t bss_map_start =
+              page_size_round_down(ph->p_vaddr + ph->p_filesz);
+          uintptr_t offset_into_segment = bss_map_start - ph->p_vaddr;
+
+          void *map_addr = (void *) (load_bias + bss_map_start);
+          void *map_result = mmap(
+              map_addr, segment_end - bss_map_start,
+              prot, MAP_PRIVATE | MAP_ANONYMOUS | MAP_FIXED, -1, 0);
+          if (map_result != map_addr) {
+            NaClLog(LOG_FATAL,
+                    "Failed to map BSS for ELF segment %d: errno=%d\n",
+                    segment_index, errno);
+          }
+          ssize_t bytes_to_copy = ph->p_filesz - offset_into_segment;
+          CHECK(bytes_to_copy >= 0);
+          bytes_read = pread(fd, map_addr, bytes_to_copy,
+                             ph->p_offset + offset_into_segment);
+          if (bytes_read != bytes_to_copy) {
+            NaClLog(LOG_FATAL, "Failed to pread() bytes before BSS: errno=%d\n",
+                    errno);
+          }
+          /* Reduce the range that we will mmap() in from the file. */
+          segment_end = bss_map_start;
+        }
+
         if (segment_end != segment_start) {
+          void *segment_addr = (void *) (load_bias + segment_start);
           void *map_result = mmap(segment_addr, segment_end - segment_start,
                                   prot, MAP_PRIVATE | MAP_FIXED, fd,
                                   page_size_round_down(ph->p_offset));
@@ -266,53 +329,6 @@ static int load_elf_file_from_fd(int fd, void **pso_root) {
             ph->p_vaddr <= ehdr.e_entry &&
             ehdr.e_entry < ph->p_vaddr + ph->p_filesz) {
           pso_root_is_valid = true;
-        }
-
-        /* Handle the BSS. */
-        if (ph->p_memsz < ph->p_filesz) {
-          NaClLog(LOG_FATAL, "Bad ELF segment %d: p_memsz < p_filesz\n",
-                  segment_index);
-        }
-        if (ph->p_memsz > ph->p_filesz) {
-          if ((ph->p_flags & PF_W) == 0) {
-            NaClLog(LOG_FATAL,
-                    "Bad ELF segment %d: non-writable segment with BSS\n",
-                    segment_index);
-          }
-
-          uintptr_t bss_start = ph->p_vaddr + ph->p_filesz;
-          uintptr_t bss_map_start = page_size_round_up(bss_start);
-          /*
-           * Zero the BSS.
-           *
-           * Note that Linux dynamic loaders sometimes need to zero beyond
-           * p_memsz, to the end of the page, in order to support the brk()
-           * heap (which starts out pointing to the end of the initial
-           * executable's BSS).  However, we don't need to support any
-           * brk() heap here.
-           *
-           * TODO(mseaborn): This does not correctly handle the case where
-           * the segment is in the last 64k page of the file.  Within the
-           * 64k page, NaCl maps the 4k pages beyond the file's extent as
-           * PROT_NONE.  This is due to Windows' limitations.  memset()
-           * would crash on those pages.  For background, see:
-           * https://code.google.com/p/nativeclient/issues/detail?id=1068
-           */
-          memset((void *) (load_bias + bss_start), 0,
-                 bss_map_start - bss_start);
-
-          if (bss_map_start < segment_end) {
-            void *map_addr = (void *) (load_bias + bss_map_start);
-            void *map_result = mmap(
-                map_addr, segment_end - bss_map_start,
-                prot, MAP_PRIVATE | MAP_ANONYMOUS | MAP_FIXED,
-                -1, 0);
-            if (map_result != map_addr) {
-              NaClLog(LOG_FATAL,
-                      "Failed to map BSS for ELF segment %d: errno=%d\n",
-                      segment_index, errno);
-            }
-          }
         }
       }
     }

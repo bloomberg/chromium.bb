@@ -48,22 +48,26 @@ def MakeAndTranslatePso(dest, bitcode_file, do_simplify):
   return translated_dso
 
 
-data_only_pso_bc = env.Command(
-    'data_only_pso.bc', ['data_only_pso.ll'],
-    [Action('${ASCOM}', '${ASCOMSTR}')])
+def PsoFromLLVMAssembly(base_name):
+  bitcode_file = env.Command(
+      '%s.bc' % base_name, ['%s.ll' % base_name],
+      [Action('${ASCOM}', '${ASCOMSTR}')])
+  return MakeAndTranslatePso(base_name, [bitcode_file],
+                             # Skip PNaCl passes because they add TLS functions.
+                             do_simplify=False)
+
 
 dso1 = MakeAndTranslatePso('test_pso', [env.ComponentObject('test_pso.c')],
                            do_simplify=True)
-dso2 = MakeAndTranslatePso('data_only_pso', [data_only_pso_bc],
-                           # Skip PNaCl passes because they add TLS functions.
-                           do_simplify=False)
+dso2 = PsoFromLLVMAssembly('data_only_pso')
+dso3 = PsoFromLLVMAssembly('data_only_pso_largebss')
 
 dynloader_test = env.ComponentProgram(
     'dynloader_test', ['dynloader_test.c'],
     EXTRA_LIBS=['${NONIRT_LIBS}', 'pnacl_dynloader', 'platform'])
 
 node = env.CommandSelLdrTestNacl(
-    'dynloader_test.out', dynloader_test, [dso1, dso2],
+    'dynloader_test.out', dynloader_test, [dso1, dso2, dso3],
     # Add '-a' to enable filesystem access for opening DSOs.
     sel_ldr_flags=['-a'])
 env.AddNodeToTestSuite(

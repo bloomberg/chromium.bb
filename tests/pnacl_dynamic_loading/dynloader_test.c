@@ -12,13 +12,20 @@
 #include "native_client/tests/pnacl_dynamic_loading/test_pso.h"
 
 
+static void assert_buffer_is_zeroed(const char *array, size_t size) {
+  size_t i;
+  for (i = 0; i < size; i++)
+    ASSERT_EQ(array[i], 0);
+}
+
 int main(int argc, char **argv) {
-  if (argc != 3) {
+  if (argc != 4) {
     fprintf(stderr, "Usage: dynloader_test <ELF file>...\n");
     return 1;
   }
   const char *test_dso_file = argv[1];
   const char *data_only_dso_file = argv[2];
+  const char *data_only_dso_largebss_file = argv[3];
 
   void *pso_root;
   int err;
@@ -32,9 +39,7 @@ int main(int argc, char **argv) {
   ASSERT_EQ(result, 1001234);
   ASSERT_EQ(*root->get_var(), 2345);
   /* Test that a variable in the BSS is properly zero-initialized. */
-  int i;
-  for (i = 0; i < BSS_VAR_SIZE; i++)
-    ASSERT_EQ(root->bss_var[i], 0);
+  assert_buffer_is_zeroed(root->bss_var, BSS_VAR_SIZE);
 
   /*
    * Each call to pnacl_load_elf_file() should create a fresh instantiation
@@ -56,6 +61,12 @@ int main(int argc, char **argv) {
   uint32_t *ptr = pso_root;
   ASSERT_EQ(ptr[0], 0x44332211);
   ASSERT_EQ(ptr[1], 0xDDCCBBAA);
+
+  printf("Testing %s...\n", data_only_dso_largebss_file);
+  err = pnacl_load_elf_file(data_only_dso_largebss_file, &pso_root);
+  ASSERT_EQ(err, 0);
+  char **bss_var_ptr = pso_root;
+  assert_buffer_is_zeroed(*bss_var_ptr, 1000000);
 
   return 0;
 }
