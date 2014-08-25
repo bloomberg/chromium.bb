@@ -28,6 +28,8 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/posix/eintr_wrapper.h"
+#include "base/synchronization/waitable_event.h"
+#include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "sandbox/linux/seccomp-bpf/bpf_tests.h"
 #include "sandbox/linux/seccomp-bpf/syscall.h"
@@ -151,16 +153,19 @@ class BlacklistNanosleepPolicy : public SandboxBPFPolicy {
     }
   }
 
+  static void AssertNanosleepFails() {
+    const struct timespec ts = {0, 0};
+    errno = 0;
+    BPF_ASSERT_EQ(-1, HANDLE_EINTR(syscall(__NR_nanosleep, &ts, NULL)));
+    BPF_ASSERT_EQ(EACCES, errno);
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(BlacklistNanosleepPolicy);
 };
 
 BPF_TEST_C(SandboxBPF, ApplyBasicBlacklistPolicy, BlacklistNanosleepPolicy) {
-  // nanosleep() should be denied
-  const struct timespec ts = {0, 0};
-  errno = 0;
-  BPF_ASSERT(syscall(__NR_nanosleep, &ts, NULL) == -1);
-  BPF_ASSERT(errno == EACCES);
+  BlacklistNanosleepPolicy::AssertNanosleepFails();
 }
 
 // Now do a simple whitelist test
@@ -2173,6 +2178,85 @@ BPF_TEST_C(SandboxBPF, Pread64, TrapPread64Policy) {
 }
 
 #endif  // !defined(OS_ANDROID)
+
+void* TsyncApplyToTwoThreadsFunc(void* cond_ptr) {
+  base::WaitableEvent* event = static_cast<base::WaitableEvent*>(cond_ptr);
+
+  // Wait for the main thread to signal that the filter has been applied.
+  if (!event->IsSignaled()) {
+    event->Wait();
+  }
+
+  BPF_ASSERT(event->IsSignaled());
+
+  BlacklistNanosleepPolicy::AssertNanosleepFails();
+
+  return NULL;
+}
+
+SANDBOX_TEST(SandboxBPF, Tsync) {
+  if (SandboxBPF::SupportsSeccompThreadFilterSynchronization() !=
+          SandboxBPF::STATUS_AVAILABLE) {
+    return;
+  }
+
+  base::WaitableEvent event(true, false);
+
+  // Create a thread on which to invoke the blocked syscall.
+  pthread_t thread;
+  BPF_ASSERT_EQ(0,
+      pthread_create(&thread, NULL, &TsyncApplyToTwoThreadsFunc, &event));
+
+  // Test that nanoseelp success.
+  const struct timespec ts = {0, 0};
+  BPF_ASSERT_EQ(0, HANDLE_EINTR(syscall(__NR_nanosleep, &ts, NULL)));
+
+  // Engage the sandbox.
+  SandboxBPF sandbox;
+  sandbox.SetSandboxPolicy(new BlacklistNanosleepPolicy());
+  BPF_ASSERT(sandbox.StartSandbox(SandboxBPF::PROCESS_MULTI_THREADED));
+
+  // This thread should have the filter applied as well.
+  BlacklistNanosleepPolicy::AssertNanosleepFails();
+
+  // Signal the condition to invoke the system call.
+  event.Signal();
+
+  // Wait for the thread to finish.
+  BPF_ASSERT_EQ(0, pthread_join(thread, NULL));
+}
+
+class AllowAllPolicy : public SandboxBPFPolicy {
+ public:
+  AllowAllPolicy() : SandboxBPFPolicy() {}
+  virtual ~AllowAllPolicy() {}
+
+  virtual ErrorCode EvaluateSyscall(SandboxBPF* sandbox,
+                                    int sysno) const OVERRIDE {
+    return ErrorCode(ErrorCode::ERR_ALLOWED);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(AllowAllPolicy);
+};
+
+SANDBOX_DEATH_TEST(SandboxBPF, StartMultiThreadedAsSingleThreaded,
+    DEATH_MESSAGE("Cannot start sandbox; process is already multi-threaded")) {
+  base::Thread thread("sandbox.linux.StartMultiThreadedAsSingleThreaded");
+  BPF_ASSERT(thread.Start());
+
+  SandboxBPF sandbox;
+  sandbox.SetSandboxPolicy(new AllowAllPolicy());
+  BPF_ASSERT(!sandbox.StartSandbox(SandboxBPF::PROCESS_SINGLE_THREADED));
+}
+
+SANDBOX_DEATH_TEST(SandboxBPF, StartSingleThreadedAsMultiThreaded,
+    DEATH_MESSAGE("Cannot start sandbox; process may be single-threaded when "
+                  "reported as not")) {
+  SandboxBPF sandbox;
+  sandbox.SetSandboxPolicy(new AllowAllPolicy());
+  BPF_ASSERT(!sandbox.StartSandbox(SandboxBPF::PROCESS_MULTI_THREADED));
+}
 
 }  // namespace
 

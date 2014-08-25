@@ -30,6 +30,7 @@
 #include "sandbox/linux/seccomp-bpf/syscall.h"
 #include "sandbox/linux/seccomp-bpf/syscall_iterator.h"
 #include "sandbox/linux/seccomp-bpf/verifier.h"
+#include "sandbox/linux/services/linux_syscalls.h"
 
 namespace sandbox {
 
@@ -378,6 +379,7 @@ bool SandboxBPF::KernelSupportSeccompBPF() {
              scoped_ptr<SandboxBPFPolicy>(new AllowAllPolicy()));
 }
 
+// static
 SandboxBPF::SandboxStatus SandboxBPF::SupportsSeccompSandbox(int proc_fd) {
   // It the sandbox is currently active, we clearly must have support for
   // sandboxing.
@@ -433,6 +435,27 @@ SandboxBPF::SandboxStatus SandboxBPF::SupportsSeccompSandbox(int proc_fd) {
   return status_;
 }
 
+// static
+SandboxBPF::SandboxStatus
+SandboxBPF::SupportsSeccompThreadFilterSynchronization() {
+  // Applying NO_NEW_PRIVS, a BPF filter, and synchronizing the filter across
+  // the thread group are all handled atomically by this syscall.
+  int rv = syscall(__NR_seccomp);
+
+  // The system call should have failed with EINVAL.
+  if (rv != -1) {
+    NOTREACHED();
+    return STATUS_UNKNOWN;
+  }
+
+  if (errno == EINVAL || errno == EFAULT)
+    return STATUS_AVAILABLE;
+
+  // errno is probably ENOSYS, indicating the system call is not available.
+  DCHECK_EQ(errno, ENOSYS);
+  return STATUS_UNSUPPORTED;
+}
+
 void SandboxBPF::set_proc_fd(int proc_fd) { proc_fd_ = proc_fd; }
 
 bool SandboxBPF::StartSandbox(SandboxThreadState thread_state) {
@@ -458,9 +481,25 @@ bool SandboxBPF::StartSandbox(SandboxThreadState thread_state) {
     // In the future, we might want to tighten this requirement.
   }
 
-  if (thread_state == PROCESS_SINGLE_THREADED && !IsSingleThreaded(proc_fd_)) {
-    SANDBOX_DIE("Cannot start sandbox, if process is already multi-threaded");
-    return false;
+  bool supports_tsync =
+      SupportsSeccompThreadFilterSynchronization() == STATUS_AVAILABLE;
+
+  if (thread_state == PROCESS_SINGLE_THREADED) {
+    if (!IsSingleThreaded(proc_fd_)) {
+      SANDBOX_DIE("Cannot start sandbox; process is already multi-threaded");
+      return false;
+    }
+  } else if (thread_state == PROCESS_MULTI_THREADED) {
+    if (IsSingleThreaded(proc_fd_)) {
+      SANDBOX_DIE("Cannot start sandbox; "
+                  "process may be single-threaded when reported as not");
+      return false;
+    }
+    if (!supports_tsync) {
+      SANDBOX_DIE("Cannot start sandbox; kernel does not support synchronizing "
+                  "filters for a threadgroup");
+      return false;
+    }
   }
 
   // We no longer need access to any files in /proc. We want to do this
@@ -475,7 +514,7 @@ bool SandboxBPF::StartSandbox(SandboxThreadState thread_state) {
   }
 
   // Install the filters.
-  InstallFilter(thread_state);
+  InstallFilter(supports_tsync || thread_state == PROCESS_MULTI_THREADED);
 
   // We are now inside the sandbox.
   status_ = STATUS_ENABLED;
@@ -500,7 +539,7 @@ void SandboxBPF::SetSandboxPolicy(SandboxBPFPolicy* policy) {
   policy_.reset(policy);
 }
 
-void SandboxBPF::InstallFilter(SandboxThreadState thread_state) {
+void SandboxBPF::InstallFilter(bool must_sync_threads) {
   // We want to be very careful in not imposing any requirements on the
   // policies that are set with SetSandboxPolicy(). This means, as soon as
   // the sandbox is active, we shouldn't be relying on libraries that could
@@ -527,28 +566,23 @@ void SandboxBPF::InstallFilter(SandboxThreadState thread_state) {
   conds_ = NULL;
   policy_.reset();
 
-  // Install BPF filter program
   if (prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0)) {
     SANDBOX_DIE(quiet_ ? NULL : "Kernel refuses to enable no-new-privs");
+  }
+
+  // Install BPF filter program. If the thread state indicates multi-threading
+  // support, then the kernel hass the seccomp system call. Otherwise, fall
+  // back on prctl, which requires the process to be single-threaded.
+  if (must_sync_threads) {
+    int rv = syscall(__NR_seccomp, SECCOMP_SET_MODE_FILTER,
+        SECCOMP_FILTER_FLAG_TSYNC, reinterpret_cast<const char*>(&prog));
+    if (rv) {
+      SANDBOX_DIE(quiet_ ? NULL :
+          "Kernel refuses to turn on and synchronize threads for BPF filters");
+    }
   } else {
     if (prctl(PR_SET_SECCOMP, SECCOMP_MODE_FILTER, &prog)) {
       SANDBOX_DIE(quiet_ ? NULL : "Kernel refuses to turn on BPF filters");
-    }
-  }
-
-  // TODO(rsesek): Always try to engage the sandbox with the
-  // PROCESS_MULTI_THREADED path first, and if that fails, assert that the
-  // process IsSingleThreaded() or SANDBOX_DIE.
-
-  if (thread_state == PROCESS_MULTI_THREADED) {
-    // TODO(rsesek): Move these to a more reasonable place once the kernel
-    // patch has landed upstream and these values are formalized.
-    #define PR_SECCOMP_EXT 41
-    #define SECCOMP_EXT_ACT 1
-    #define SECCOMP_EXT_ACT_TSYNC 1
-    if (prctl(PR_SECCOMP_EXT, SECCOMP_EXT_ACT, SECCOMP_EXT_ACT_TSYNC, 0, 0)) {
-      SANDBOX_DIE(quiet_ ? NULL : "Kernel refuses to synchronize threadgroup "
-                                  "BPF filters.");
     }
   }
 

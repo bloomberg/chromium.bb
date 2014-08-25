@@ -97,6 +97,16 @@
 #define SECCOMP_MODE_FILTER           2  // User user-supplied filter
 #endif
 
+#ifndef SECCOMP_SET_MODE_STRICT
+#define SECCOMP_SET_MODE_STRICT 0
+#endif
+#ifndef SECCOMP_SET_MODE_FILTER
+#define SECCOMP_SET_MODE_FILTER 1
+#endif
+#ifndef SECCOMP_FILTER_FLAG_TSYNC
+#define SECCOMP_FILTER_FLAG_TSYNC 1
+#endif
+
 #ifndef SECCOMP_RET_KILL
 // Return values supported for BPF filter programs. Please note that the
 // "illegal" SECCOMP_RET_INVALID is not supported by the kernel, should only

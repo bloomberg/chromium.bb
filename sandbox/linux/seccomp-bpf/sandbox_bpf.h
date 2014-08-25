@@ -95,6 +95,10 @@ class SANDBOX_EXPORT SandboxBPF {
   // provided by the caller.
   static SandboxStatus SupportsSeccompSandbox(int proc_fd);
 
+  // Determines if the kernel has support for the seccomp() system call to
+  // synchronize BPF filters across a thread group.
+  static SandboxStatus SupportsSeccompThreadFilterSynchronization();
+
   // The sandbox needs to be able to access files in "/proc/self". If this
   // directory is not accessible when "startSandbox()" gets called, the caller
   // can provide an already opened file descriptor by calling "set_proc_fd()".
@@ -221,7 +225,7 @@ class SANDBOX_EXPORT SandboxBPF {
 
   // Assembles and installs a filter based on the policy that has previously
   // been configured with SetSandboxPolicy().
-  void InstallFilter(SandboxThreadState thread_state);
+  void InstallFilter(bool must_sync_threads);
 
   // Verify the correctness of a compiled program by comparing it against the
   // current policy. This function should only ever be called by unit tests and
