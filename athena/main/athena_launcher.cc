@@ -9,6 +9,7 @@
 #include "athena/content/public/app_registry.h"
 #include "athena/content/public/content_activity_factory.h"
 #include "athena/content/public/content_app_model_builder.h"
+#include "athena/env/public/athena_env.h"
 #include "athena/extensions/public/extensions_delegate.h"
 #include "athena/home/public/home_card.h"
 #include "athena/home/public/home_card.h"
@@ -26,6 +27,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "ui/app_list/app_list_switches.h"
 #include "ui/aura/window_property.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_controller_observer.h"
 #include "ui/native_theme/native_theme_switches.h"
@@ -92,9 +94,9 @@ class AthenaViewsDelegate : public views::ViewsDelegate {
   DISALLOW_COPY_AND_ASSIGN(AthenaViewsDelegate);
 };
 
-void StartAthenaEnv(aura::Window* root_window,
-                    athena::ScreenManagerDelegate* delegate,
-                    scoped_refptr<base::TaskRunner> file_runner) {
+void StartAthenaEnv(scoped_refptr<base::TaskRunner> file_runner) {
+  athena::AthenaEnv::Create();
+
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 
   // Force showing in the experimental app-list view.
@@ -111,13 +113,14 @@ void StartAthenaEnv(aura::Window* root_window,
 
   // Setup VisibilityClient
   env_state->visibility_client.reset(new ::wm::VisibilityController);
+  aura::Window* root_window = athena::AthenaEnv::Get()->GetHost()->window();
 
   aura::client::SetVisibilityClient(root_window,
                                     env_state->visibility_client.get());
 
   athena::SystemUI::Create(file_runner);
   athena::InputManager::Create()->OnRootWindowCreated(root_window);
-  athena::ScreenManager::Create(delegate, root_window);
+  athena::ScreenManager::Create(root_window);
   athena::WindowManager::Create();
   athena::AppRegistry::Create();
   SetupBackgroundImage();
@@ -159,6 +162,7 @@ void ShutdownAthena() {
   athena::InputManager::Shutdown();
   athena::SystemUI::Shutdown();
   athena::ExtensionsDelegate::Shutdown();
+  athena::AthenaEnv::Shutdown();
 
   delete views::ViewsDelegate::views_delegate;
 }

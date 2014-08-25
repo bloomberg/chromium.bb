@@ -2,20 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "athena/activity/public/activity_factory.h"
+#include "athena/activity/public/activity_manager.h"
 #include "athena/content/public/web_contents_view_delegate_creator.h"
-#include "athena/main/athena_app_window_controller.h"
+#include "athena/env/public/athena_env.h"
 #include "athena/main/athena_launcher.h"
 #include "athena/screen/public/screen_manager.h"
-#include "athena/screen/public/screen_manager_delegate.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "content/public/app/content_main.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/shell/app/shell_main_delegate.h"
+#include "extensions/shell/browser/desktop_controller.h"
+#include "extensions/shell/browser/shell_app_window.h"
 #include "extensions/shell/browser/shell_browser_main_delegate.h"
 #include "extensions/shell/browser/shell_content_browser_client.h"
-#include "extensions/shell/browser/shell_desktop_controller.h"
 #include "extensions/shell/browser/shell_extension_system.h"
 #include "extensions/shell/common/switches.h"
 #include "ui/aura/window_tree_host.h"
@@ -31,40 +33,33 @@ const char kDefaultAppPath[] =
 
 }  // namespace athena
 
-class AthenaDesktopController : public extensions::ShellDesktopController {
+class AthenaDesktopController : public extensions::DesktopController {
  public:
   AthenaDesktopController() {}
   virtual ~AthenaDesktopController() {}
 
  private:
-  // extensions::ShellDesktopController:
-  virtual wm::FocusRules* CreateFocusRules() OVERRIDE {
-    return athena::ScreenManager::CreateFocusRules();
+  // extensions::DesktopController:
+  virtual aura::WindowTreeHost* GetHost() OVERRIDE {
+    return athena::AthenaEnv::Get()->GetHost();
   }
+
+  // Creates a new app window and adds it to the desktop. The desktop maintains
+  // ownership of the window.
+  virtual extensions::ShellAppWindow* CreateAppWindow(
+      content::BrowserContext* context,
+      const extensions::Extension* extension) OVERRIDE {
+    extensions::ShellAppWindow* app_window = new extensions::ShellAppWindow();
+    app_window->Init(context, extension, gfx::Size(100, 100));
+    athena::ActivityManager::Get()->AddActivity(
+        athena::ActivityFactory::Get()->CreateAppActivity(app_window));
+    return app_window;
+  }
+
+  // Closes and destroys the app windows.
+  virtual void CloseAppWindows() OVERRIDE {}
 
   DISALLOW_COPY_AND_ASSIGN(AthenaDesktopController);
-};
-
-class AthenaScreenManagerDelegate : public athena::ScreenManagerDelegate {
- public:
-  explicit AthenaScreenManagerDelegate(
-      extensions::ShellDesktopController* controller)
-      : controller_(controller) {
-  }
-
-  virtual ~AthenaScreenManagerDelegate() {
-  }
-
- private:
-  // athena::ScreenManagerDelegate:
-  virtual void SetWorkAreaInsets(const gfx::Insets& insets) OVERRIDE {
-    controller_->SetDisplayWorkAreaInsets(insets);
-  }
-
-  // Not owned.
-  extensions::ShellDesktopController* controller_;
-
-  DISALLOW_COPY_AND_ASSIGN(AthenaScreenManagerDelegate);
 };
 
 class AthenaBrowserMainDelegate : public extensions::ShellBrowserMainDelegate {
@@ -90,14 +85,8 @@ class AthenaBrowserMainDelegate : public extensions::ShellBrowserMainDelegate {
       extension_system->LoadApp(app_absolute_dir);
     }
 
-    extensions::ShellDesktopController* desktop_controller =
-        extensions::ShellDesktopController::instance();
-    screen_manager_delegate_.reset(
-        new AthenaScreenManagerDelegate(desktop_controller));
-    athena::StartAthenaEnv(desktop_controller->host()->window(),
-                           screen_manager_delegate_.get(),
-                           content::BrowserThread::GetMessageLoopProxyForThread(
-                               content::BrowserThread::FILE));
+    athena::StartAthenaEnv(content::BrowserThread::GetMessageLoopProxyForThread(
+        content::BrowserThread::FILE));
     athena::StartAthenaSessionWithContext(context);
   }
 
@@ -105,18 +94,11 @@ class AthenaBrowserMainDelegate : public extensions::ShellBrowserMainDelegate {
     athena::ShutdownAthena();
   }
 
-  virtual extensions::ShellDesktopController* CreateDesktopController()
-      OVERRIDE {
-    // TODO(mukai): create Athena's own ShellDesktopController subclass so that
-    // it can initialize its own window manager logic.
-    extensions::ShellDesktopController* desktop = new AthenaDesktopController();
-    desktop->SetAppWindowController(new athena::AthenaAppWindowController());
-    return desktop;
+  virtual extensions::DesktopController* CreateDesktopController() OVERRIDE {
+    return new AthenaDesktopController();
   }
 
  private:
-  scoped_ptr<AthenaScreenManagerDelegate> screen_manager_delegate_;
-
   DISALLOW_COPY_AND_ASSIGN(AthenaBrowserMainDelegate);
 };
 

@@ -8,6 +8,7 @@
 #include <limits>
 
 #include "athena/common/container_priorities.h"
+#include "athena/env/public/athena_env.h"
 #include "athena/home/app_list_view_delegate.h"
 #include "athena/home/athena_start_page_view.h"
 #include "athena/home/minimized_home.h"
@@ -526,7 +527,7 @@ void HomeCardImpl::Init() {
   int work_area_bottom_inset =
       GetBoundsForState(GetNativeWindow()->bounds(),
                         HomeCard::VISIBLE_MINIMIZED).height();
-  ScreenManager::Get()->SetWorkAreaInsets(
+  AthenaEnv::Get()->SetDisplayWorkAreaInsets(
       gfx::Insets(0, 0, work_area_bottom_inset, 0));
 }
 

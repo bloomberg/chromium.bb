@@ -63,8 +63,6 @@
         '../..',
       ],
       'sources': [
-        'athena_app_window_controller.cc',
-        'athena_app_window_controller.h',
         'athena_main.cc',
       ],
     }

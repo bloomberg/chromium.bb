@@ -7,8 +7,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "extensions/common/extension.h"
+#include "extensions/shell/browser/desktop_controller.h"
 #include "extensions/shell/browser/shell_app_window.h"
-#include "extensions/shell/browser/shell_desktop_controller.h"
 #include "extensions/shell/common/api/shell.h"
 
 using base::DictionaryValue;
@@ -54,9 +54,8 @@ ExtensionFunction::ResponseAction ShellCreateWindowFunction::Run() {
     return RespondNow(Error(kInvalidArguments));
 
   // The desktop keeps ownership of the window.
-  ShellAppWindow* app_window =
-      ShellDesktopController::instance()->CreateAppWindow(browser_context(),
-                                                          extension());
+  ShellAppWindow* app_window = DesktopController::instance()->CreateAppWindow(
+      browser_context(), extension());
   app_window->LoadURL(url);
 
   // Create the reply to send to the renderer.

@@ -22,12 +22,9 @@ class BrowserContext;
 namespace athena {
 class ActivityFactory;
 class AppModelBuilder;
-class ScreenManagerDelegate;
 
 // Starts down the athena shell environment.
-void StartAthenaEnv(aura::Window* root_window,
-                    ScreenManagerDelegate* screen_manager_delegate,
-                    scoped_refptr<base::TaskRunner> file_runner);
+void StartAthenaEnv(scoped_refptr<base::TaskRunner> file_runner);
 
 void StartAthenaSessionWithContext(content::BrowserContext* context);
 

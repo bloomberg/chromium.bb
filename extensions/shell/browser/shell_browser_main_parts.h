@@ -27,9 +27,9 @@ class NetLog;
 
 namespace extensions {
 
+class DesktopController;
 class ShellBrowserContext;
 class ShellBrowserMainDelegate;
-class ShellDesktopController;
 class ShellExtensionsBrowserClient;
 class ShellExtensionsClient;
 class ShellExtensionSystem;
@@ -67,7 +67,7 @@ class ShellBrowserMainParts : public content::BrowserMainParts {
 #if defined(OS_CHROMEOS)
   scoped_ptr<ShellNetworkController> network_controller_;
 #endif
-  scoped_ptr<ShellDesktopController> desktop_controller_;
+  scoped_ptr<DesktopController> desktop_controller_;
   scoped_ptr<ShellBrowserContext> browser_context_;
   scoped_ptr<ShellExtensionsClient> extensions_client_;
   scoped_ptr<ShellExtensionsBrowserClient> extensions_browser_client_;

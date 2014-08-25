@@ -7,7 +7,6 @@
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
-#include "extensions/shell/browser/default_shell_app_window_controller.h"
 #include "extensions/shell/browser/shell_desktop_controller.h"
 #include "extensions/shell/browser/shell_extension_system.h"
 #include "extensions/shell/common/switches.h"
@@ -42,11 +41,8 @@ void DefaultShellBrowserMainDelegate::Start(
 void DefaultShellBrowserMainDelegate::Shutdown() {
 }
 
-ShellDesktopController*
-DefaultShellBrowserMainDelegate::CreateDesktopController() {
-  ShellDesktopController* desktop = new ShellDesktopController();
-  desktop->SetAppWindowController(new DefaultShellAppWindowController(desktop));
-  return desktop;
+DesktopController* DefaultShellBrowserMainDelegate::CreateDesktopController() {
+  return new ShellDesktopController();
 }
 
 }  // namespace extensions

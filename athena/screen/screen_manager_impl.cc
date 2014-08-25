@@ -8,7 +8,6 @@
 #include "athena/common/fill_layout_manager.h"
 #include "athena/input/public/accelerator_manager.h"
 #include "athena/screen/background_controller.h"
-#include "athena/screen/public/screen_manager_delegate.h"
 #include "athena/screen/screen_accelerator_handler.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -25,6 +24,7 @@
 #include "ui/gfx/screen.h"
 #include "ui/wm/core/base_focus_rules.h"
 #include "ui/wm/core/capture_controller.h"
+#include "ui/wm/core/focus_controller.h"
 
 namespace athena {
 namespace {
@@ -192,14 +192,13 @@ class AthenaEventTargeter : public aura::WindowTargeter,
 
 class ScreenManagerImpl : public ScreenManager {
  public:
-  ScreenManagerImpl(ScreenManagerDelegate* delegate, aura::Window* root_window);
+  ScreenManagerImpl(aura::Window* root_window);
   virtual ~ScreenManagerImpl();
 
   void Init();
 
  private:
   // ScreenManager:
-  virtual void SetWorkAreaInsets(const gfx::Insets& insets) OVERRIDE;
   virtual aura::Window* CreateDefaultContainer(
       const ContainerParams& params) OVERRIDE;
   virtual aura::Window* CreateContainer(const ContainerParams& params) OVERRIDE;
@@ -209,10 +208,10 @@ class ScreenManagerImpl : public ScreenManager {
   virtual ui::LayerAnimator* GetScreenAnimator() OVERRIDE;
 
   // Not owned.
-  ScreenManagerDelegate* delegate_;
   aura::Window* root_window_;
   aura::Window* background_window_;
 
+  scoped_ptr<aura::client::FocusClient> focus_client_;
   scoped_ptr<BackgroundController> background_controller_;
   scoped_ptr<aura::client::WindowTreeClient> window_tree_client_;
   scoped_ptr<AcceleratorHandler> accelerator_handler_;
@@ -222,10 +221,8 @@ class ScreenManagerImpl : public ScreenManager {
   DISALLOW_COPY_AND_ASSIGN(ScreenManagerImpl);
 };
 
-ScreenManagerImpl::ScreenManagerImpl(ScreenManagerDelegate* delegate,
-                                     aura::Window* root_window)
-    : delegate_(delegate),
-      root_window_(root_window) {
+ScreenManagerImpl::ScreenManagerImpl(aura::Window* root_window)
+    : root_window_(root_window) {
   DCHECK(root_window_);
   DCHECK(!instance);
   instance = this;
@@ -234,10 +231,23 @@ ScreenManagerImpl::ScreenManagerImpl(ScreenManagerDelegate* delegate,
 ScreenManagerImpl::~ScreenManagerImpl() {
   aura::client::SetScreenPositionClient(root_window_, NULL);
   aura::client::SetWindowTreeClient(root_window_, NULL);
+  wm::FocusController* focus_controller =
+      static_cast<wm::FocusController*>(focus_client_.get());
+  root_window_->RemovePreTargetHandler(focus_controller);
+  aura::client::SetActivationClient(root_window_, NULL);
+  aura::client::SetFocusClient(root_window_, NULL);
   instance = NULL;
 }
 
 void ScreenManagerImpl::Init() {
+  wm::FocusController* focus_controller =
+      new wm::FocusController(new AthenaFocusRules());
+
+  aura::client::SetFocusClient(root_window_, focus_controller);
+  root_window_->AddPreTargetHandler(focus_controller);
+  aura::client::SetActivationClient(root_window_, focus_controller);
+  focus_client_.reset(focus_controller);
+
   // TODO(oshima): Move the background out from ScreenManager.
   root_window_->SetLayoutManager(new FillLayoutManager(root_window_));
   background_window_ =
@@ -249,10 +259,6 @@ void ScreenManagerImpl::Init() {
 
   capture_client_.reset(new ::wm::ScopedCaptureClient(root_window_));
   accelerator_handler_.reset(new ScreenAcceleratorHandler(root_window_));
-}
-
-void ScreenManagerImpl::SetWorkAreaInsets(const gfx::Insets& insets) {
-  delegate_->SetWorkAreaInsets(insets);
 }
 
 aura::Window* ScreenManagerImpl::CreateDefaultContainer(
@@ -365,9 +371,8 @@ ScreenManager::ContainerParams::ContainerParams(const std::string& n,
 }
 
 // static
-ScreenManager* ScreenManager::Create(ScreenManagerDelegate* delegate,
-                                     aura::Window* root_window) {
-  (new ScreenManagerImpl(delegate, root_window))->Init();
+ScreenManager* ScreenManager::Create(aura::Window* root_window) {
+  (new ScreenManagerImpl(root_window))->Init();
   DCHECK(instance);
   return instance;
 }
@@ -383,11 +388,6 @@ void ScreenManager::Shutdown() {
   DCHECK(instance);
   delete instance;
   DCHECK(!instance);
-}
-
-// static
-wm::FocusRules* ScreenManager::CreateFocusRules() {
-  return new AthenaFocusRules();
 }
 
 }  // namespace athena

@@ -34,8 +34,8 @@ class AthenaTestBase : public testing::Test {
   scoped_ptr<aura::Window> CreateTestWindow(aura::WindowDelegate* delegate,
                                             const gfx::Rect& bounds);
 
-  aura::Window* root_window() { return helper_->root_window(); }
-  aura::WindowTreeHost* host() { return helper_->host(); }
+  aura::Window* root_window() { return helper_->GetRootWindow(); }
+  aura::WindowTreeHost* host() { return helper_->GetHost(); }
 
  private:
   bool setup_called_;

@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "extensions/shell/browser/desktop_controller.h"
 #include "ui/aura/client/window_tree_client.h"
 #include "ui/aura/window_tree_host_observer.h"
 
@@ -31,7 +32,6 @@ class BrowserContext;
 }
 
 namespace gfx {
-class Insets;
 class Size;
 }
 
@@ -44,7 +44,6 @@ class UserActivityPowerManagerNotifier;
 namespace wm {
 class CompoundEventFilter;
 class CursorManager;
-class FocusRules;
 class InputMethodEventFilter;
 class UserActivityDetector;
 }
@@ -56,7 +55,8 @@ class ShellAppWindow;
 class ShellAppWindowController;
 
 // Handles desktop-related tasks for app_shell.
-class ShellDesktopController : public aura::client::WindowTreeClient,
+class ShellDesktopController : public DesktopController,
+                               public aura::client::WindowTreeClient,
 #if defined(OS_CHROMEOS)
                                public chromeos::PowerManagerClient::Observer,
                                public ui::DisplayConfigurator::Observer,
@@ -66,28 +66,11 @@ class ShellDesktopController : public aura::client::WindowTreeClient,
   ShellDesktopController();
   virtual ~ShellDesktopController();
 
-  // Returns the single instance of the desktop. (Stateless functions like
-  // ShellAppWindowCreateFunction need to be able to access the desktop, so
-  // we need a singleton somewhere).
-  static ShellDesktopController* instance();
-
-  aura::WindowTreeHost* host() { return host_.get(); }
-
-  // Sets the controller to create/close the app windows. Takes the ownership of
-  // |app_window_controller|.
-  void SetAppWindowController(ShellAppWindowController* app_window_controller);
-
-  // Creates a new app window and adds it to the desktop. The desktop maintains
-  // ownership of the window. The window must be closed before |extension| is
-  // destroyed.
-  ShellAppWindow* CreateAppWindow(content::BrowserContext* context,
-                                  const Extension* extension);
-
-  // Closes and destroys the app windows.
-  void CloseAppWindows();
-
-  // Sets the screen's work area insets.
-  void SetDisplayWorkAreaInsets(const gfx::Insets& insets);
+  // DesktopController:
+  virtual aura::WindowTreeHost* GetHost() OVERRIDE;
+  virtual ShellAppWindow* CreateAppWindow(content::BrowserContext* context,
+                                          const Extension* extension) OVERRIDE;
+  virtual void CloseAppWindows() OVERRIDE;
 
   // aura::client::WindowTreeClient overrides:
   virtual aura::Window* GetDefaultParent(aura::Window* context,
@@ -112,9 +95,6 @@ class ShellDesktopController : public aura::client::WindowTreeClient,
   // Creates and sets the aura clients and window manager stuff. Subclass may
   // initialize different sets of the clients.
   virtual void InitWindowManager();
-
-  // Creates a focus rule that is to be used in the InitWindowManager.
-  virtual wm::FocusRules* CreateFocusRules();
 
  private:
   // Creates the window that hosts the app.
@@ -151,7 +131,7 @@ class ShellDesktopController : public aura::client::WindowTreeClient,
 #endif
 
   // The desktop supports a single app window.
-  scoped_ptr<ShellAppWindowController> app_window_controller_;
+  scoped_ptr<ShellAppWindow> app_window_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellDesktopController);
 };

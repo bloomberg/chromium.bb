@@ -5,7 +5,7 @@
 #include "extensions/shell/browser/shell_desktop_controller.h"
 
 #include "base/command_line.h"
-#include "extensions/shell/browser/shell_app_window_controller.h"
+#include "extensions/shell/browser/shell_app_window.h"
 #include "extensions/shell/common/switches.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/default_capture_client.h"
@@ -151,13 +151,9 @@ class AppsFocusRules : public wm::BaseFocusRules {
   DISALLOW_COPY_AND_ASSIGN(AppsFocusRules);
 };
 
-ShellDesktopController* g_instance = NULL;
-
 }  // namespace
 
 ShellDesktopController::ShellDesktopController() {
-  CHECK(!g_instance) << "ShellDesktopController already exists";
-
 #if defined(OS_CHROMEOS)
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
       AddObserver(this);
@@ -168,13 +164,10 @@ ShellDesktopController::ShellDesktopController() {
 #endif
 
   CreateRootWindow();
-
-  g_instance = this;
 }
 
 ShellDesktopController::~ShellDesktopController() {
-  app_window_controller_.reset();
-  g_instance = NULL;
+  app_window_.reset();
   DestroyRootWindow();
 #if defined(OS_CHROMEOS)
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
@@ -182,30 +175,28 @@ ShellDesktopController::~ShellDesktopController() {
 #endif
 }
 
-// static
-ShellDesktopController* ShellDesktopController::instance() {
-  return g_instance;
-}
-
-void ShellDesktopController::SetAppWindowController(
-    ShellAppWindowController* app_window_controller) {
-  app_window_controller_.reset(app_window_controller);
+aura::WindowTreeHost* ShellDesktopController::GetHost() {
+  return host_.get();
 }
 
 ShellAppWindow* ShellDesktopController::CreateAppWindow(
     content::BrowserContext* context,
     const Extension* extension) {
-  return app_window_controller_->CreateAppWindow(context, extension);
+  aura::Window* root_window = GetHost()->window();
+
+  app_window_.reset(new ShellAppWindow);
+  app_window_->Init(context, extension, root_window->bounds().size());
+
+  // Attach the web contents view to our window hierarchy.
+  aura::Window* content = app_window_->GetNativeWindow();
+  root_window->AddChild(content);
+  content->Show();
+
+  return app_window_.get();
 }
 
 void ShellDesktopController::CloseAppWindows() {
-  if (app_window_controller_)
-    app_window_controller_->CloseAppWindows();
-}
-
-void ShellDesktopController::SetDisplayWorkAreaInsets(
-    const gfx::Insets& insets) {
-  test_screen_->SetWorkAreaInsets(insets);
+  app_window_.reset();
 }
 
 aura::Window* ShellDesktopController::GetDefaultParent(
@@ -243,7 +234,7 @@ void ShellDesktopController::OnHostCloseRequested(
 
 void ShellDesktopController::InitWindowManager() {
   wm::FocusController* focus_controller =
-      new wm::FocusController(CreateFocusRules());
+      new wm::FocusController(new AppsFocusRules());
   aura::client::SetFocusClient(host_->window(), focus_controller);
   host_->window()->AddPreTargetHandler(focus_controller);
   aura::client::SetActivationClient(host_->window(), focus_controller);
@@ -275,10 +266,6 @@ void ShellDesktopController::InitWindowManager() {
   user_activity_notifier_.reset(
       new ui::UserActivityPowerManagerNotifier(user_activity_detector_.get()));
 #endif
-}
-
-wm::FocusRules* ShellDesktopController::CreateFocusRules() {
-  return new AppsFocusRules();
 }
 
 void ShellDesktopController::CreateRootWindow() {

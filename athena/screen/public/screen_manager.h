@@ -51,15 +51,11 @@ class ATHENA_EXPORT ScreenManager {
 
   // Creates, returns and deletes the singleton object of the ScreenManager
   // implementation.
-  static ScreenManager* Create(ScreenManagerDelegate* delegate,
-                               aura::Window* root);
+  static ScreenManager* Create(aura::Window* root);
   static ScreenManager* Get();
   static void Shutdown();
 
   virtual ~ScreenManager() {}
-
-  // Sets the screen's work area insets.
-  virtual void SetWorkAreaInsets(const gfx::Insets& insets) = 0;
 
   // Creates the container window that is used when creating a normal
   // widget without specific parent.
@@ -83,10 +79,6 @@ class ATHENA_EXPORT ScreenManager {
   // Returns the LayerAnimator to use to animate the entire screen (e.g. fade
   // screen to white).
   virtual ui::LayerAnimator* GetScreenAnimator() = 0;
-
-  // Create a focus rules.
-  // TODO(oshima): Make this virtual function.
-  static wm::FocusRules* CreateFocusRules();
 };
 
 }  // namespace athena

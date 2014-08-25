@@ -1,0 +1,9 @@
+include_rules = [
+  "+chromeos/dbus",
+  "+ui/aura",
+  "+ui/base",
+  "+ui/chromeos",
+  "+ui/display",
+  "+ui/gfx",
+  "+ui/wm",
+]

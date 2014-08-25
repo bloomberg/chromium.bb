@@ -34,7 +34,6 @@ class InputMethodEventFilter;
 
 namespace athena {
 namespace test {
-class TestScreenManagerDelegate;
 
 // A helper class owned by tests that does common initialization required for
 // Athena use. This class creates a root window with clients and other objects
@@ -54,8 +53,8 @@ class AthenaTestHelper {
   // Flushes message loop.
   void RunAllPendingInMessageLoop();
 
-  aura::Window* root_window() { return host_->window(); }
-  aura::WindowTreeHost* host() { return host_.get(); }
+  aura::Window* GetRootWindow();
+  aura::WindowTreeHost* GetHost();
 
  private:
   bool setup_called_;
@@ -63,11 +62,6 @@ class AthenaTestHelper {
 
   base::MessageLoopForUI* message_loop_;
 
-  scoped_ptr<aura::WindowTreeHost> host_;
-  scoped_ptr<aura::TestScreen> test_screen_;
-  scoped_ptr<TestScreenManagerDelegate> screen_manager_delegate_;
-  scoped_ptr<aura::client::FocusClient> focus_client_;
-  scoped_ptr< ::wm::InputMethodEventFilter> input_method_filter_;
   scoped_ptr<ui::ScopedAnimationDurationScaleMode> zero_duration_mode_;
   scoped_ptr<base::Thread> file_thread_;
 

@@ -11,7 +11,7 @@ class BrowserContext;
 
 namespace extensions {
 
-class ShellDesktopController;
+class DesktopController;
 
 class ShellBrowserMainDelegate {
  public:
@@ -28,7 +28,7 @@ class ShellBrowserMainDelegate {
   // Creates the ShellDesktopController instance to initialize the root window
   // and window manager. Subclass may return its subclass to customize the
   // windo manager.
-  virtual ShellDesktopController* CreateDesktopController() = 0;
+  virtual DesktopController* CreateDesktopController() = 0;
 };
 
 }  // namespace extensions

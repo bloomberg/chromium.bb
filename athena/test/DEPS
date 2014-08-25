@@ -1,10 +1,11 @@
 include_rules = [
   "+athena/activity/public",
   "+athena/content/public",
+  "+athena/env/public",
   "+athena/extensions/public",
   "+athena/home/public",
-  "+athena/main",
   "+athena/screen/public",
+  "+athena/main",
   "+chromeos/dbus",
   "+third_party/skia/include",
   "+ui/app_list",
