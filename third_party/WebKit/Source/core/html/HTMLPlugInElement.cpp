@@ -484,7 +484,7 @@ bool HTMLPlugInElement::loadPlugin(const KURL& url, const String& mimeType, cons
 
     RefPtr<Widget> widget = m_persistedPluginWidget;
     if (!widget) {
-        bool loadManually = document().isPluginDocument() && !document().containsPlugins() && toPluginDocument(document()).shouldLoadPluginManually();
+        bool loadManually = document().isPluginDocument() && !document().containsPlugins();
         FrameLoaderClient::DetachedPluginPolicy policy = requireRenderer ? FrameLoaderClient::FailOnDetachedPlugin : FrameLoaderClient::AllowDetachedPlugin;
         widget = frame->loader().client()->createPlugin(this, url, paramNames, paramValues, mimeType, loadManually, policy);
     }

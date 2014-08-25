@@ -156,7 +156,6 @@ PluginView* PluginDocumentParser::pluginView() const
 
 PluginDocument::PluginDocument(const DocumentInit& initializer)
     : HTMLDocument(initializer, PluginDocumentClass)
-    , m_shouldLoadPluginManually(true)
 {
     setCompatibilityMode(QuirksMode);
     lockCompatibilityMode();

@@ -46,8 +46,6 @@ public:
 
     virtual void detach(const AttachContext& = AttachContext()) OVERRIDE;
 
-    bool shouldLoadPluginManually() { return m_shouldLoadPluginManually; }
-
     virtual void trace(Visitor*) OVERRIDE;
 
 private:
@@ -55,9 +53,6 @@ private:
 
     virtual PassRefPtrWillBeRawPtr<DocumentParser> createParser() OVERRIDE;
 
-    void setShouldLoadPluginManually(bool loadManually) { m_shouldLoadPluginManually = loadManually; }
-
-    bool m_shouldLoadPluginManually;
     RefPtrWillBeMember<Node> m_pluginNode;
 };
 
