@@ -757,6 +757,7 @@ void AvatarMenuBubbleView::InitSupervisedUserContents(
                        ui::ResourceBundle::GetSharedInstance().GetFontList(
                            ui::ResourceBundle::SmallFont));
   supervised_user_info_->SetMultiLine(true);
+  supervised_user_info_->SetAllowCharacterBreak(true);
   supervised_user_info_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   supervised_user_info_->SetBackgroundColor(color());
   AddChildView(supervised_user_info_);

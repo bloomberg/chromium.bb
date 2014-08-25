@@ -1294,6 +1294,7 @@ views::View* ProfileChooserView::CreateSupervisedUserDisclaimerView() {
   views::Label* disclaimer = new views::Label(
       avatar_menu_->GetSupervisedUserInformation());
   disclaimer->SetMultiLine(true);
+  disclaimer->SetAllowCharacterBreak(true);
   disclaimer->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
   disclaimer->SetFontList(rb->GetFontList(ui::ResourceBundle::SmallFont));
