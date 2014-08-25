@@ -27,7 +27,8 @@ const wchar_t kSfxMultiFail[] = L"-multifail";
 
 const wchar_t* const kChannels[] = {
   installer::kChromeChannelBeta,
-  installer::kChromeChannelDev
+  installer::kChromeChannelDev,
+  installer::kChromeChannelStableExplicit
 };
 
 const wchar_t* const kModifiers[] = {
@@ -168,7 +169,11 @@ bool ChannelInfo::GetChannelName(std::wstring* channel_name) const {
              *const* end = &kChannels[arraysize(kChannels)]; scan != end;
          ++scan) {
       if (value_.find(*scan) != std::wstring::npos) {
-        channel_name->assign(*scan);
+        // Report channels with "stable" in them as stable (empty string).
+        if (*scan == installer::kChromeChannelStableExplicit)
+          channel_name->erase();
+        else
+          channel_name->assign(*scan);
         return true;
       }
     }

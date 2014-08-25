@@ -50,6 +50,16 @@ TEST(ChannelInfoTest, Channels) {
   EXPECT_TRUE(ci.GetChannelName(&channel));
   EXPECT_EQ(kChannelDev, channel);
 
+  ci.set_value(L"x64-dev");
+  EXPECT_TRUE(ci.GetChannelName(&channel));
+  EXPECT_EQ(kChannelDev, channel);
+  ci.set_value(L"x64-beta");
+  EXPECT_TRUE(ci.GetChannelName(&channel));
+  EXPECT_EQ(kChannelBeta, channel);
+  ci.set_value(L"x64-stable");
+  EXPECT_TRUE(ci.GetChannelName(&channel));
+  EXPECT_EQ(kChannelStable, channel);
+
   ci.set_value(L"fuzzy");
   EXPECT_FALSE(ci.GetChannelName(&channel));
 }

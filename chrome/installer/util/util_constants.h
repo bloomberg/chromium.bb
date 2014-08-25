@@ -256,6 +256,7 @@ extern const wchar_t kChromeChannelCanary[];
 extern const wchar_t kChromeChannelDev[];
 extern const wchar_t kChromeChannelBeta[];
 extern const wchar_t kChromeChannelStable[];
+extern const wchar_t kChromeChannelStableExplicit[];
 
 extern const size_t kMaxAppModelIdLength;
 

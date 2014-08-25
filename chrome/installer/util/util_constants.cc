@@ -263,6 +263,7 @@ const wchar_t kChromeChannelCanary[] = L"canary";
 const wchar_t kChromeChannelDev[] = L"dev";
 const wchar_t kChromeChannelBeta[] = L"beta";
 const wchar_t kChromeChannelStable[] = L"";
+const wchar_t kChromeChannelStableExplicit[] = L"stable";
 
 const size_t kMaxAppModelIdLength = 64U;
 
