@@ -1283,6 +1283,8 @@ crbug.com/406283 [ Mac Win ] inspector/console/console-format.html [ Failure Pas
 crbug.com/406283 [ Mac Win ] inspector/console/console-filter-level-test.html [ Failure Pass ]
 crbug.com/406283 [ Mac Win ] inspector/console/console-clear.html [ Failure Pass ]
 crbug.com/406283 [ Win ] inspector/console/console-xml-document.html [ Failure Pass ]
+crbug.com/406283 [ Mac Win ] inspector/console/console-log-linkify-links.html [ Failure Pass ]
+crbug.com/406283 [ Linux ] inspector/console/console-nested-group.html [ Failure Pass ]
 
 crbug.com/396936 [ Lion ] fast/writing-mode/broken-ideograph-small-caps.html [ Crash ]
 crbug.com/396936 [ Lion ] fast/writing-mode/broken-ideographic-font.html [ Crash ]
