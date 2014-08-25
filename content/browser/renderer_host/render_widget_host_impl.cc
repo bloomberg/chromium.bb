@@ -1207,7 +1207,7 @@ void RenderWidgetHostImpl::RendererExited(base::TerminationStatus status,
   // We need to at least make sure that the RenderProcessHost is notified about
   // the |is_hidden_| change, so that the renderer will have correct visibility
   // set when respawned.
-  if (!is_hidden_) {
+  if (is_hidden_) {
     process_->WidgetRestored();
     is_hidden_ = false;
   }
