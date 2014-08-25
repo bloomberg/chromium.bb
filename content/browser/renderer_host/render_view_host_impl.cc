@@ -83,9 +83,7 @@
 #include "url/url_constants.h"
 #include "webkit/browser/fileapi/isolated_context.h"
 
-#if defined(OS_MACOSX)
-#include "content/browser/renderer_host/popup_menu_helper_mac.h"
-#elif defined(OS_WIN)
+#if defined(OS_WIN)
 #include "base/win/win_util.h"
 #endif
 
@@ -904,10 +902,6 @@ bool RenderViewHostImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_FocusedNodeChanged, OnFocusedNodeChanged)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ClosePage_ACK, OnClosePageACK)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidZoomURL, OnDidZoomURL)
-#if defined(OS_MACOSX) || defined(OS_ANDROID)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_ShowPopup, OnShowPopup)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_HidePopup, OnHidePopup)
-#endif
     IPC_MESSAGE_HANDLER(ViewHostMsg_RunFileChooser, OnRunFileChooser)
     IPC_MESSAGE_HANDLER(ViewHostMsg_FocusedNodeTouched, OnFocusedNodeTouched)
     // Have the super handle all other messages.
@@ -1323,29 +1317,6 @@ void RenderViewHostImpl::ForwardKeyboardEvent(
   RenderWidgetHostImpl::ForwardKeyboardEvent(key_event);
 }
 
-#if defined(OS_ANDROID)
-void RenderViewHostImpl::DidSelectPopupMenuItems(
-    const std::vector<int>& selected_indices) {
-  Send(new ViewMsg_SelectPopupMenuItems(GetRoutingID(), false,
-                                        selected_indices));
-}
-
-void RenderViewHostImpl::DidCancelPopupMenu() {
-  Send(new ViewMsg_SelectPopupMenuItems(GetRoutingID(), true,
-                                        std::vector<int>()));
-}
-#endif
-
-#if defined(OS_MACOSX)
-void RenderViewHostImpl::DidSelectPopupMenuItem(int selected_index) {
-  Send(new ViewMsg_SelectPopupMenuItem(GetRoutingID(), selected_index));
-}
-
-void RenderViewHostImpl::DidCancelPopupMenu() {
-  Send(new ViewMsg_SelectPopupMenuItem(GetRoutingID(), -1));
-}
-#endif
-
 bool RenderViewHostImpl::IsWaitingForUnloadACK() const {
   return rvh_state_ == STATE_WAITING_FOR_CLOSE ||
          rvh_state_ == STATE_PENDING_SHUTDOWN ||
@@ -1478,28 +1449,6 @@ void RenderViewHostImpl::OnFocusedNodeTouched(bool editable) {
   }
 #endif
 }
-
-#if defined(OS_MACOSX) || defined(OS_ANDROID)
-void RenderViewHostImpl::OnShowPopup(
-    const ViewHostMsg_ShowPopup_Params& params) {
-  RenderViewHostDelegateView* view = delegate_->GetDelegateView();
-  if (view) {
-    view->ShowPopupMenu(params.bounds,
-                        params.item_height,
-                        params.item_font_size,
-                        params.selected_item,
-                        params.popup_items,
-                        params.right_aligned,
-                        params.allow_multiple_selection);
-  }
-}
-
-void RenderViewHostImpl::OnHidePopup() {
-  RenderViewHostDelegateView* view = delegate_->GetDelegateView();
-  if (view)
-    view->HidePopupMenu();
-}
-#endif
 
 void RenderViewHostImpl::SetState(RenderViewHostImplState rvh_state) {
   // We update the number of RenderViews in a SiteInstance when the

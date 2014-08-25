@@ -58,6 +58,7 @@
 #include "content/renderer/devtools/devtools_agent.h"
 #include "content/renderer/dom_automation_controller.h"
 #include "content/renderer/dom_utils.h"
+#include "content/renderer/external_popup_menu.h"
 #include "content/renderer/geolocation_dispatcher.h"
 #include "content/renderer/history_controller.h"
 #include "content/renderer/history_serialization.h"
@@ -722,6 +723,14 @@ bool RenderFrameImpl::Send(IPC::Message* message) {
   return RenderThread::Get()->Send(message);
 }
 
+#if defined(OS_MACOSX) || defined(OS_ANDROID)
+void RenderFrameImpl::DidHideExternalPopupMenu() {
+  // We need to clear external_popup_menu_ as soon as ExternalPopupMenu::close
+  // is called. Otherwise, createExternalPopupMenu() for new popup will fail.
+  external_popup_menu_.reset();
+}
+#endif
+
 bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
   // TODO(kenrb): document() should not be null, but as a transitional step
   // we have RenderFrameProxy 'wrapping' a RenderFrameImpl, passing messages
@@ -778,7 +787,10 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameMsg_SetAccessibilityMode,
                         OnSetAccessibilityMode)
     IPC_MESSAGE_HANDLER(FrameMsg_DisownOpener, OnDisownOpener)
-#if defined(OS_MACOSX)
+#if defined(OS_ANDROID)
+    IPC_MESSAGE_HANDLER(FrameMsg_SelectPopupMenuItems, OnSelectPopupMenuItems)
+#elif defined(OS_MACOSX)
+    IPC_MESSAGE_HANDLER(FrameMsg_SelectPopupMenuItem, OnSelectPopupMenuItem)
     IPC_MESSAGE_HANDLER(InputMsg_CopyToFindPboard, OnCopyToFindPboard)
 #endif
   IPC_END_MESSAGE_MAP()
@@ -1283,6 +1295,31 @@ void RenderFrameImpl::OnDisownOpener() {
     frame_->setOpener(NULL);
 }
 
+#if defined(OS_ANDROID)
+void RenderFrameImpl::OnSelectPopupMenuItems(
+    bool canceled,
+    const std::vector<int>& selected_indices) {
+  // It is possible to receive more than one of these calls if the user presses
+  // a select faster than it takes for the show-select-popup IPC message to make
+  // it to the browser UI thread. Ignore the extra-messages.
+  // TODO(jcivelli): http:/b/5793321 Implement a better fix, as detailed in bug.
+  if (!external_popup_menu_)
+    return;
+
+  external_popup_menu_->DidSelectItems(canceled, selected_indices);
+  external_popup_menu_.reset();
+}
+#endif
+
+#if defined(OS_MACOSX)
+void RenderFrameImpl::OnSelectPopupMenuItem(int selected_index) {
+  if (external_popup_menu_ == NULL)
+    return;
+  external_popup_menu_->DidSelectItem(selected_index);
+  external_popup_menu_.reset();
+}
+#endif
+
 void RenderFrameImpl::OnReload(bool ignore_cache) {
   frame_->reload(ignore_cache);
 }
@@ -1579,8 +1616,26 @@ RenderFrameImpl::createWorkerPermissionClientProxy(
 WebExternalPopupMenu* RenderFrameImpl::createExternalPopupMenu(
     const WebPopupMenuInfo& popup_menu_info,
     WebExternalPopupMenuClient* popup_menu_client) {
-  return render_view_->createExternalPopupMenu(popup_menu_info,
-                                               popup_menu_client);
+#if defined(OS_MACOSX) || defined(OS_ANDROID)
+  // An IPC message is sent to the browser to build and display the actual
+  // popup. The user could have time to click a different select by the time
+  // the popup is shown. In that case external_popup_menu_ is non NULL.
+  // By returning NULL in that case, we instruct Blink to cancel that new
+  // popup. So from the user perspective, only the first one will show, and
+  // will have to close the first one before another one can be shown.
+  if (external_popup_menu_)
+    return NULL;
+  external_popup_menu_.reset(
+      new ExternalPopupMenu(this, popup_menu_info, popup_menu_client));
+  if (render_view_->screen_metrics_emulator_) {
+    render_view_->SetExternalPopupOriginAdjustmentsForEmulation(
+        external_popup_menu_.get(),
+        render_view_->screen_metrics_emulator_.get());
+  }
+  return external_popup_menu_.get();
+#else
+  return NULL;
+#endif
 }
 
 blink::WebCookieJar* RenderFrameImpl::cookieJar(blink::WebLocalFrame* frame) {

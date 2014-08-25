@@ -334,32 +334,6 @@ IPC_STRUCT_BEGIN(ViewHostMsg_SelectionBounds_Params)
   IPC_STRUCT_MEMBER(bool, is_anchor_first)
 IPC_STRUCT_END()
 
-// This message is used for supporting popup menus on Mac OS X using native
-// Cocoa controls. The renderer sends us this message which we use to populate
-// the popup menu.
-IPC_STRUCT_BEGIN(ViewHostMsg_ShowPopup_Params)
-  // Position on the screen.
-  IPC_STRUCT_MEMBER(gfx::Rect, bounds)
-
-  // The height of each item in the menu.
-  IPC_STRUCT_MEMBER(int, item_height)
-
-  // The size of the font to use for those items.
-  IPC_STRUCT_MEMBER(double, item_font_size)
-
-  // The currently selected (displayed) item in the menu.
-  IPC_STRUCT_MEMBER(int, selected_item)
-
-  // The entire list of items in the popup menu.
-  IPC_STRUCT_MEMBER(std::vector<content::MenuItem>, popup_items)
-
-  // Whether items should be right-aligned.
-  IPC_STRUCT_MEMBER(bool, right_aligned)
-
-  // Whether this is a multi-select popup.
-  IPC_STRUCT_MEMBER(bool, allow_multiple_selection)
-IPC_STRUCT_END()
-
 IPC_STRUCT_BEGIN(ViewHostMsg_TextInputState_Params)
   // The type of input field
   IPC_STRUCT_MEMBER(ui::TextInputType, type)
@@ -909,11 +883,6 @@ IPC_MESSAGE_CONTROL1(ViewMsg_SetWebKitSharedTimersSuspended,
 IPC_MESSAGE_ROUTED1(ViewMsg_FindMatchRects,
                     int /* current_version */)
 
-// External popup menus.
-IPC_MESSAGE_ROUTED2(ViewMsg_SelectPopupMenuItems,
-                    bool /* user canceled the popup */,
-                    std::vector<int> /* selected indices */)
-
 // Notifies the renderer whether hiding/showing the top controls is enabled
 // and whether or not to animate to the proper state.
 IPC_MESSAGE_ROUTED3(ViewMsg_UpdateTopControlsState,
@@ -955,10 +924,6 @@ IPC_MESSAGE_ROUTED1(ViewMsg_SetInLiveResize,
 IPC_MESSAGE_ROUTED2(ViewMsg_PluginImeCompositionCompleted,
                     base::string16 /* text */,
                     int /* plugin_id */)
-
-// External popup menus.
-IPC_MESSAGE_ROUTED1(ViewMsg_SelectPopupMenuItem,
-                    int /* selected index, -1 means no selection */)
 #endif
 
 // Sent by the browser as a reply to ViewHostMsg_SwapCompositorFrame.
@@ -1079,13 +1044,6 @@ IPC_MESSAGE_ROUTED0(ViewHostMsg_UpdateScreenRects_ACK)
 // the browser may ignore this message.
 IPC_MESSAGE_ROUTED1(ViewHostMsg_RequestMove,
                     gfx::Rect /* position */)
-
-#if defined(OS_MACOSX) || defined(OS_ANDROID)
-// Message to show/hide a popup menu using native controls.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_ShowPopup,
-                    ViewHostMsg_ShowPopup_Params)
-IPC_MESSAGE_ROUTED0(ViewHostMsg_HidePopup)
-#endif
 
 // Result of string search in the page.
 // Response to ViewMsg_Find with the results of the requested find-in-page

@@ -36,20 +36,6 @@ class CONTENT_EXPORT RenderViewHostDelegateView {
   virtual void ShowContextMenu(RenderFrameHost* render_frame_host,
                                const ContextMenuParams& params) {}
 
-  // Shows a popup menu with the specified items.
-  // This method should call RenderViewHost::DidSelectPopupMenuItem[s]() or
-  // RenderViewHost::DidCancelPopupMenu() based on the user action.
-  virtual void ShowPopupMenu(const gfx::Rect& bounds,
-                             int item_height,
-                             double item_font_size,
-                             int selected_item,
-                             const std::vector<MenuItem>& items,
-                             bool right_aligned,
-                             bool allow_multiple_selection) {};
-
-  // Hides a popup menu opened by ShowPopupMenu().
-  virtual void HidePopupMenu() {};
-
   // The user started dragging content of the specified type within the
   // RenderView. Contextual information about the dragged content is supplied
   // by DropData. If the delegate's view cannot start the drag for /any/
@@ -72,6 +58,23 @@ class CONTENT_EXPORT RenderViewHostDelegateView {
   // the browser's chrome. If reverse is true, it means the focus was
   // retrieved by doing a Shift-Tab.
   virtual void TakeFocus(bool reverse) {}
+
+#if defined(OS_MACOSX) || defined(OS_ANDROID)
+  // Shows a popup menu with the specified items.
+  // This method should call RenderFrameHost::DidSelectPopupMenuItem[s]() or
+  // RenderFrameHost::DidCancelPopupMenu() based on the user action.
+  virtual void ShowPopupMenu(RenderFrameHost* render_frame_host,
+                             const gfx::Rect& bounds,
+                             int item_height,
+                             double item_font_size,
+                             int selected_item,
+                             const std::vector<MenuItem>& items,
+                             bool right_aligned,
+                             bool allow_multiple_selection) {};
+
+  // Hides a popup menu opened by ShowPopupMenu().
+  virtual void HidePopupMenu() {};
+#endif
 
  protected:
   virtual ~RenderViewHostDelegateView() {}

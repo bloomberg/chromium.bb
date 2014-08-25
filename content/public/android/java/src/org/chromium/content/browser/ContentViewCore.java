@@ -237,6 +237,7 @@ public class ContentViewCore
 
     private PopupZoomer mPopupZoomer;
     private SelectPopup mSelectPopup;
+    private long mNativeSelectPopupSourceFrame = 0;
 
     private Runnable mFakeMouseMoveRunnable = null;
 
@@ -1919,8 +1920,10 @@ public class ContentViewCore
 
     public void selectPopupMenuItems(int[] indices) {
         if (mNativeContentViewCore != 0) {
-            nativeSelectPopupMenuItems(mNativeContentViewCore, indices);
+            nativeSelectPopupMenuItems(mNativeContentViewCore, mNativeSelectPopupSourceFrame,
+                                       indices);
         }
+        mNativeSelectPopupSourceFrame = 0;
         mSelectPopup = null;
     }
 
@@ -2311,6 +2314,7 @@ public class ContentViewCore
 
     /**
      * Called (from native) when the <select> popup needs to be shown.
+     * @param nativeSelectPopupSourceFrame The native RenderFrameHost that owns the popup.
      * @param items           Items to show.
      * @param enabled         POPUP_ITEM_TYPEs for items.
      * @param multiple        Whether the popup menu should support multi-select.
@@ -2318,8 +2322,8 @@ public class ContentViewCore
      */
     @SuppressWarnings("unused")
     @CalledByNative
-    private void showSelectPopup(Rect bounds, String[] items, int[] enabled, boolean multiple,
-            int[] selectedIndices) {
+    private void showSelectPopup(long nativeSelectPopupSourceFrame, Rect bounds, String[] items,
+            int[] enabled, boolean multiple, int[] selectedIndices) {
         if (mContainerView.getParent() == null || mContainerView.getVisibility() != View.VISIBLE) {
             selectPopupMenuItems(null);
             return;
@@ -2336,6 +2340,7 @@ public class ContentViewCore
         } else {
             mSelectPopup = new SelectPopupDialog(this, popupItems, multiple, selectedIndices);
         }
+        mNativeSelectPopupSourceFrame = nativeSelectPopupSourceFrame;
         mSelectPopup.show();
     }
 
@@ -3178,7 +3183,8 @@ public class ContentViewCore
     private native void nativeSetMultiTouchZoomSupportEnabled(
             long nativeContentViewCoreImpl, boolean enabled);
 
-    private native void nativeSelectPopupMenuItems(long nativeContentViewCoreImpl, int[] indices);
+    private native void nativeSelectPopupMenuItems(long nativeContentViewCoreImpl,
+            long nativeSelectPopupSourceFrame, int[] indices);
 
     private native void nativeClearHistory(long nativeContentViewCoreImpl);
 

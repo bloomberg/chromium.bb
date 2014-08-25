@@ -43,7 +43,7 @@ struct BrowserPluginHostMsg_ResizeGuest_Params;
 struct FrameHostMsg_CompositorFrameSwappedACK_Params;
 struct FrameHostMsg_ReclaimCompositorResources_Params;
 #if defined(OS_MACOSX)
-struct ViewHostMsg_ShowPopup_Params;
+struct FrameHostMsg_ShowPopup_Params;
 #endif
 struct ViewHostMsg_TextInputState_Params;
 struct ViewHostMsg_UpdateRect_Params;
@@ -153,6 +153,8 @@ class CONTENT_EXPORT BrowserPluginGuest : public WebContentsObserver {
   virtual void RenderViewReady() OVERRIDE;
   virtual void RenderProcessGone(base::TerminationStatus status) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message,
+                                 RenderFrameHost* render_frame_host) OVERRIDE;
 
   // Exposes the protected web_contents() from WebContentsObserver.
   WebContentsImpl* GetWebContents() const;
@@ -304,10 +306,11 @@ class CONTENT_EXPORT BrowserPluginGuest : public WebContentsObserver {
       InputEventAckState ack_result);
   void OnHasTouchEventHandlers(bool accept);
   void OnSetCursor(const WebCursor& cursor);
-  // On MacOSX popups are painted by the browser process. We handle them here
-  // so that they are positioned correctly.
 #if defined(OS_MACOSX)
-  void OnShowPopup(const ViewHostMsg_ShowPopup_Params& params);
+  // On MacOS X popups are painted by the browser process. We handle them here
+  // so that they are positioned correctly.
+  void OnShowPopup(RenderFrameHost* render_frame_host,
+                   const FrameHostMsg_ShowPopup_Params& params);
 #endif
   void OnShowWidget(int route_id, const gfx::Rect& initial_pos);
   void OnTakeFocus(bool reverse);

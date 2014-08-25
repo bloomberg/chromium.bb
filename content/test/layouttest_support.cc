@@ -27,7 +27,7 @@
 #include "third_party/WebKit/public/web/WebHistoryItem.h"
 
 #if defined(OS_MACOSX)
-#include "content/browser/renderer_host/popup_menu_helper_mac.h"
+#include "content/browser/frame_host/popup_menu_helper_mac.h"
 #endif
 
 using blink::WebBatteryStatus;

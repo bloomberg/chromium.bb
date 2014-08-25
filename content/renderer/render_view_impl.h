@@ -121,10 +121,10 @@ struct SelectedFileInfo;
 }
 
 namespace content {
+
 class BrowserPluginManager;
 class DevToolsAgent;
 class DocumentState;
-class ExternalPopupMenu;
 class FaviconHelper;
 class HistoryController;
 class HistoryEntry;
@@ -150,7 +150,7 @@ class WebMediaPlayerProxyAndroid;
 
 //
 // RenderView is an object that manages a WebView object, and provides a
-// communication interface with an embedding application process
+// communication interface with an embedding application process.
 //
 class CONTENT_EXPORT RenderViewImpl
     : public RenderWidget,
@@ -246,9 +246,6 @@ class CONTENT_EXPORT RenderViewImpl
 
 #if defined(OS_ANDROID)
   void DismissDateTimeDialog();
-#endif
-#if defined(OS_MACOSX) || defined(OS_ANDROID)
-  void DidHideExternalPopupMenu();
 #endif
 
   bool is_loading() const { return frames_in_progress_ != 0; }
@@ -376,9 +373,6 @@ class CONTENT_EXPORT RenderViewImpl
                                      blink::WebNavigationPolicy policy,
                                      bool suppress_opener);
   virtual blink::WebWidget* createPopupMenu(blink::WebPopupType popup_type);
-  virtual blink::WebExternalPopupMenu* createExternalPopupMenu(
-      const blink::WebPopupMenuInfo& popup_menu_info,
-      blink::WebExternalPopupMenuClient* popup_menu_client);
   virtual blink::WebStorageNamespace* createSessionStorageNamespace();
   virtual void printPage(blink::WebLocalFrame* frame);
   virtual bool enumerateChosenDirectory(
@@ -565,7 +559,6 @@ class CONTENT_EXPORT RenderViewImpl
 
  private:
   // For unit tests.
-  friend class ExternalPopupMenuTest;
   friend class PepperDeviceTest;
   friend class RenderViewImplTest;
   friend class RenderViewTest;
@@ -576,10 +569,6 @@ class CONTENT_EXPORT RenderViewImpl
   // code away from this class.
   friend class RenderFrameImpl;
 
-  FRIEND_TEST_ALL_PREFIXES(ExternalPopupMenuDisplayNoneTest, SelectItem);
-  FRIEND_TEST_ALL_PREFIXES(ExternalPopupMenuRemoveTest, RemoveOnChange);
-  FRIEND_TEST_ALL_PREFIXES(ExternalPopupMenuTest, NormalCase);
-  FRIEND_TEST_ALL_PREFIXES(ExternalPopupMenuTest, ShowPopupThenNavigate);
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, DecideNavigationPolicyForWebUI);
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest,
                            DidFailProvisionalLoadWithErrorForError);
@@ -740,8 +729,6 @@ class CONTENT_EXPORT RenderViewImpl
 #if defined(OS_ANDROID)
   void OnActivateNearestFindResult(int request_id, float x, float y);
   void OnFindMatchRects(int current_version);
-  void OnSelectPopupMenuItems(bool canceled,
-                              const std::vector<int>& selected_indices);
   void OnUndoScrollFocusedEditableNodeIntoRect();
   void OnUpdateTopControlsState(bool enable_hiding,
                                 bool enable_showing,
@@ -751,7 +738,6 @@ class CONTENT_EXPORT RenderViewImpl
   void OnGetRenderedText();
   void OnPluginImeCompositionCompleted(const base::string16& text,
                                        int plugin_id);
-  void OnSelectPopupMenuItem(int selected_index);
   void OnSetInLiveResize(bool in_live_resize);
   void OnSetWindowVisibility(bool visible);
   void OnWindowFrameChanged(const gfx::Rect& window_frame,
@@ -1109,11 +1095,6 @@ class CONTENT_EXPORT RenderViewImpl
   // Stores edit commands associated to the next key event.
   // Shall be cleared as soon as the next key event is processed.
   EditCommands edit_commands_;
-
-#if defined(OS_MACOSX) || defined(OS_ANDROID)
-  // The external popup for the currently showing select popup.
-  scoped_ptr<ExternalPopupMenu> external_popup_menu_;
-#endif
 
   // All the registered observers.  We expect this list to be small, so vector
   // is fine.

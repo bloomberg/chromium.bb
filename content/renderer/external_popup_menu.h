@@ -17,11 +17,11 @@ class WebExternalPopupMenuClient;
 }
 
 namespace content {
-class RenderViewImpl;
+class RenderFrameImpl;
 
 class ExternalPopupMenu : public blink::WebExternalPopupMenu {
  public:
-  ExternalPopupMenu(RenderViewImpl* render_view,
+  ExternalPopupMenu(RenderFrameImpl* render_frame,
                     const blink::WebPopupMenuInfo& popup_menu_info,
                     blink::WebExternalPopupMenuClient* popup_menu_client);
 
@@ -46,7 +46,7 @@ class ExternalPopupMenu : public blink::WebExternalPopupMenu {
   virtual void close();
 
  private:
-  RenderViewImpl* render_view_;
+  RenderFrameImpl* render_frame_;
   blink::WebPopupMenuInfo popup_menu_info_;
   blink::WebExternalPopupMenuClient* popup_menu_client_;
 

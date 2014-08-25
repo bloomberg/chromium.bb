@@ -28,7 +28,9 @@ class WindowAndroid;
 }
 
 namespace content {
+
 class GinJavaBridgeDispatcherHost;
+class RenderFrameHost;
 class RenderWidgetHostViewAndroid;
 struct MenuItem;
 
@@ -78,7 +80,9 @@ class ContentViewCoreImpl : public ContentViewCore,
 
   // Notifies the ContentViewCore that items were selected in the currently
   // showing select popup.
-  void SelectPopupMenuItems(JNIEnv* env, jobject obj, jintArray indices);
+  void SelectPopupMenuItems(JNIEnv* env, jobject obj,
+                            jlong selectPopupSourceFrame,
+                            jintArray indices);
 
   void LoadUrl(
       JNIEnv* env, jobject obj,
@@ -216,7 +220,8 @@ class ContentViewCoreImpl : public ContentViewCore,
   // |multiple| defines if it should support multi-select.
   // If not |multiple|, |selected_item| sets the initially selected item.
   // Otherwise, item's "checked" flag selects it.
-  void ShowSelectPopupMenu(const gfx::Rect& bounds,
+  void ShowSelectPopupMenu(RenderFrameHost* frame,
+                           const gfx::Rect& bounds,
                            const std::vector<MenuItem>& items,
                            int selected_item,
                            bool multiple);

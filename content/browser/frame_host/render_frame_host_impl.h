@@ -32,6 +32,9 @@ struct FrameHostMsg_DidFailProvisionalLoadWithError_Params;
 struct FrameHostMsg_OpenURL_Params;
 struct FrameHostMsg_BeginNavigation_Params;
 struct FrameMsg_Navigate_Params;
+#if defined(OS_MACOSX) || defined(OS_ANDROID)
+struct FrameHostMsg_ShowPopup_Params;
+#endif
 
 namespace base {
 class FilePath;
@@ -272,6 +275,13 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void SetParentNativeViewAccessible(
       gfx::NativeViewAccessible accessible_parent);
   gfx::NativeViewAccessible GetParentNativeViewAccessible() const;
+#elif defined(OS_MACOSX)
+  // Select popup menu related methods (for external popup menus).
+  void DidSelectPopupMenuItem(int selected_index);
+  void DidCancelPopupMenu();
+#elif defined(OS_ANDROID)
+  void DidSelectPopupMenuItems(const std::vector<int>& selected_indices);
+  void DidCancelPopupMenu();
 #endif
 
  protected:
@@ -349,6 +359,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
       const std::vector<AccessibilityHostMsg_EventParams>& params);
   void OnAccessibilityLocationChanges(
       const std::vector<AccessibilityHostMsg_LocationChangeParams>& params);
+
+#if defined(OS_MACOSX) || defined(OS_ANDROID)
+  void OnShowPopup(const FrameHostMsg_ShowPopup_Params& params);
+  void OnHidePopup();
+#endif
 
   // Returns whether the given URL is allowed to commit in the current process.
   // This is a more conservative check than RenderProcessHost::FilterURL, since

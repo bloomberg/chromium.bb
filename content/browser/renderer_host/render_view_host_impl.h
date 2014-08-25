@@ -29,10 +29,9 @@
 
 class SkBitmap;
 class FrameMsg_Navigate;
+struct FrameMsg_Navigate_Params;
 struct MediaPlayerAction;
 struct ViewHostMsg_CreateWindow_Params;
-struct ViewHostMsg_ShowPopup_Params;
-struct FrameMsg_Navigate_Params;
 struct ViewMsg_PostMessage_Params;
 
 namespace base {
@@ -336,21 +335,10 @@ class CONTENT_EXPORT RenderViewHostImpl
   // Creates a full screen RenderWidget.
   void CreateNewFullscreenWidget(int route_id);
 
-#if defined(OS_MACOSX)
-  // Select popup menu related methods (for external popup menus).
-  void DidSelectPopupMenuItem(int selected_index);
-  void DidCancelPopupMenu();
-#endif
-
 #if defined(ENABLE_BROWSER_CDMS)
   MediaWebContentsObserver* media_web_contents_observer() {
     return media_web_contents_observer_.get();
   }
-#endif
-
-#if defined(OS_ANDROID)
-  void DidSelectPopupMenuItems(const std::vector<int>& selected_indices);
-  void DidCancelPopupMenu();
 #endif
 
   int main_frame_routing_id() const {
@@ -437,11 +425,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   void OnDidZoomURL(double zoom_level, const GURL& url);
   void OnRunFileChooser(const FileChooserParams& params);
   void OnFocusedNodeTouched(bool editable);
-
-#if defined(OS_MACOSX) || defined(OS_ANDROID)
-  void OnShowPopup(const ViewHostMsg_ShowPopup_Params& params);
-  void OnHidePopup();
-#endif
 
  private:
   // TODO(nasko): Temporarily friend RenderFrameHostImpl, so we don't duplicate

@@ -4,19 +4,19 @@
 
 #include "content/renderer/external_popup_menu.h"
 
-#include "content/common/view_messages.h"
+#include "content/common/frame_messages.h"
 #include "content/renderer/menu_item_builder.h"
-#include "content/renderer/render_view_impl.h"
+#include "content/renderer/render_frame_impl.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/WebKit/public/web/WebExternalPopupMenuClient.h"
 
 namespace content {
 
 ExternalPopupMenu::ExternalPopupMenu(
-    RenderViewImpl* render_view,
+    RenderFrameImpl* render_frame,
     const blink::WebPopupMenuInfo& popup_menu_info,
     blink::WebExternalPopupMenuClient* popup_menu_client)
-    : render_view_(render_view),
+    : render_frame_(render_frame),
       popup_menu_info_(popup_menu_info),
       popup_menu_client_(popup_menu_client),
       origin_scale_for_emulation_(0) {
@@ -37,7 +37,7 @@ void ExternalPopupMenu::show(const blink::WebRect& bounds) {
   rect.x += origin_offset_for_emulation_.x();
   rect.y += origin_offset_for_emulation_.y();
 
-  ViewHostMsg_ShowPopup_Params popup_params;
+  FrameHostMsg_ShowPopup_Params popup_params;
   popup_params.bounds = rect;
   popup_params.item_height = popup_menu_info_.itemHeight;
   popup_params.item_font_size = popup_menu_info_.itemFontSize;
@@ -49,13 +49,14 @@ void ExternalPopupMenu::show(const blink::WebRect& bounds) {
   popup_params.right_aligned = popup_menu_info_.rightAligned;
   popup_params.allow_multiple_selection =
       popup_menu_info_.allowMultipleSelection;
-  render_view_->Send(
-      new ViewHostMsg_ShowPopup(render_view_->routing_id(), popup_params));
+  render_frame_->Send(
+      new FrameHostMsg_ShowPopup(render_frame_->GetRoutingID(), popup_params));
 }
 
 void ExternalPopupMenu::close()  {
-  render_view_->Send(new ViewHostMsg_HidePopup(render_view_->routing_id()));
-  render_view_->DidHideExternalPopupMenu();
+  render_frame_->Send(
+      new FrameHostMsg_HidePopup(render_frame_->GetRoutingID()));
+  render_frame_->DidHideExternalPopupMenu();
   // |this| was deleted.
 }
 

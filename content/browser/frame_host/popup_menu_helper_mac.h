@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_POPUP_MENU_HELPER_MAC_H_
-#define CONTENT_BROWSER_RENDERER_HOST_POPUP_MENU_HELPER_MAC_H_
+#ifndef CONTENT_BROWSER_FRAME_HOST_POPUP_MENU_HELPER_MAC_H_
+#define CONTENT_BROWSER_FRAME_HOST_POPUP_MENU_HELPER_MAC_H_
 
 #include <vector>
 
@@ -20,21 +20,21 @@ class WebMenuRunner;
 #endif
 
 namespace content {
-class RenderViewHost;
-class RenderViewHostImpl;
+
+class RenderFrameHost;
+class RenderFrameHostImpl;
 class RenderWidgetHostViewMac;
 struct MenuItem;
 
 class PopupMenuHelper : public NotificationObserver {
  public:
-  // Creates a PopupMenuHelper that will notify |render_view_host| when a user
+  // Creates a PopupMenuHelper that will notify |render_frame_host| when a user
   // selects or cancels the popup.
-  explicit PopupMenuHelper(RenderViewHost* render_view_host);
+  explicit PopupMenuHelper(RenderFrameHost* render_frame_host);
   void Hide();
 
-  // Shows the popup menu and notifies the RenderViewHost of the selection/
-  // cancel.
-  // This call is blocking.
+  // Shows the popup menu and notifies the RenderFrameHost of the selection/
+  // cancellation. This call is blocking.
   void ShowPopupMenu(const gfx::Rect& bounds,
                      int item_height,
                      double item_font_size,
@@ -55,7 +55,7 @@ class PopupMenuHelper : public NotificationObserver {
                        const NotificationDetails& details) OVERRIDE;
 
   NotificationRegistrar notification_registrar_;
-  RenderViewHostImpl* render_view_host_;
+  RenderFrameHostImpl* render_frame_host_;
   WebMenuRunner* menu_runner_;
   bool popup_was_hidden_;
 
@@ -64,4 +64,4 @@ class PopupMenuHelper : public NotificationObserver {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_POPUP_MENU_HELPER_MAC_H_
+#endif  // CONTENT_BROWSER_FRAME_HOST_POPUP_MENU_HELPER_MAC_H_

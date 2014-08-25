@@ -4,14 +4,15 @@
 
 #include "content/browser/browser_plugin/browser_plugin_popup_menu_helper_mac.h"
 
+#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_mac.h"
 
 namespace content {
 
 BrowserPluginPopupMenuHelper::BrowserPluginPopupMenuHelper(
-    RenderViewHost* embedder_rvh, RenderViewHost* guest_rvh)
-    : PopupMenuHelper(guest_rvh),
+    RenderViewHost* embedder_rvh, RenderFrameHost* guest_rfh)
+    : PopupMenuHelper(guest_rfh),
       embedder_rvh_(static_cast<RenderViewHostImpl*>(embedder_rvh)) {
 }
 

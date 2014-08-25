@@ -78,7 +78,6 @@
 #include "content/renderer/disambiguation_popup_helper.h"
 #include "content/renderer/dom_storage/webstoragenamespace_impl.h"
 #include "content/renderer/drop_data_builder.h"
-#include "content/renderer/external_popup_menu.h"
 #include "content/renderer/gpu/render_widget_compositor.h"
 #include "content/renderer/history_controller.h"
 #include "content/renderer/history_serialization.h"
@@ -245,8 +244,6 @@ using blink::WebDragData;
 using blink::WebDragOperation;
 using blink::WebDragOperationsMask;
 using blink::WebElement;
-using blink::WebExternalPopupMenu;
-using blink::WebExternalPopupMenuClient;
 using blink::WebFileChooserCompletion;
 using blink::WebFindOptions;
 using blink::WebFormControlElement;
@@ -275,7 +272,6 @@ using blink::WebPluginAction;
 using blink::WebPluginContainer;
 using blink::WebPluginDocument;
 using blink::WebPoint;
-using blink::WebPopupMenuInfo;
 using blink::WebRange;
 using blink::WebRect;
 using blink::WebReferrerPolicy;
@@ -1371,7 +1367,6 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(InputMsg_ActivateNearestFindResult,
                         OnActivateNearestFindResult)
     IPC_MESSAGE_HANDLER(ViewMsg_FindMatchRects, OnFindMatchRects)
-    IPC_MESSAGE_HANDLER(ViewMsg_SelectPopupMenuItems, OnSelectPopupMenuItems)
     IPC_MESSAGE_HANDLER(ViewMsg_UpdateTopControlsState,
                         OnUpdateTopControlsState)
     IPC_MESSAGE_HANDLER(ViewMsg_ExtractSmartClipData, OnExtractSmartClipData)
@@ -1380,7 +1375,6 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
                         OnGetRenderedText)
     IPC_MESSAGE_HANDLER(ViewMsg_PluginImeCompositionCompleted,
                         OnPluginImeCompositionCompleted)
-    IPC_MESSAGE_HANDLER(ViewMsg_SelectPopupMenuItem, OnSelectPopupMenuItem)
     IPC_MESSAGE_HANDLER(ViewMsg_SetInLiveResize, OnSetInLiveResize)
     IPC_MESSAGE_HANDLER(ViewMsg_SetWindowVisibility, OnSetWindowVisibility)
     IPC_MESSAGE_HANDLER(ViewMsg_WindowFrameChanged, OnWindowFrameChanged)
@@ -1716,30 +1710,6 @@ WebWidget* RenderViewImpl::createPopupMenu(blink::WebPopupType popup_type) {
         screen_metrics_emulator_.get());
   }
   return widget->webwidget();
-}
-
-WebExternalPopupMenu* RenderViewImpl::createExternalPopupMenu(
-    const WebPopupMenuInfo& popup_menu_info,
-    WebExternalPopupMenuClient* popup_menu_client) {
-#if defined(OS_MACOSX) || defined(OS_ANDROID)
-  // An IPC message is sent to the browser to build and display the actual
-  // popup.  The user could have time to click a different select by the time
-  // the popup is shown.  In that case external_popup_menu_ is non NULL.
-  // By returning NULL in that case, we instruct WebKit to cancel that new
-  // popup.  So from the user perspective, only the first one will show, and
-  // will have to close the first one before another one can be shown.
-  if (external_popup_menu_)
-    return NULL;
-  external_popup_menu_.reset(
-      new ExternalPopupMenu(this, popup_menu_info, popup_menu_client));
-  if (screen_metrics_emulator_) {
-    SetExternalPopupOriginAdjustmentsForEmulation(
-        external_popup_menu_.get(), screen_metrics_emulator_.get());
-  }
-  return external_popup_menu_.get();
-#else
-  return NULL;
-#endif
 }
 
 WebStorageNamespace* RenderViewImpl::createSessionStorageNamespace() {
@@ -4042,39 +4012,6 @@ void RenderViewImpl::DismissDateTimeDialog() {
 }
 
 #endif  // defined(OS_ANDROID)
-
-#if defined(OS_MACOSX)
-void RenderViewImpl::OnSelectPopupMenuItem(int selected_index) {
-  if (external_popup_menu_ == NULL)
-    return;
-  external_popup_menu_->DidSelectItem(selected_index);
-  external_popup_menu_.reset();
-}
-#endif
-
-#if defined(OS_ANDROID)
-void RenderViewImpl::OnSelectPopupMenuItems(
-    bool canceled,
-    const std::vector<int>& selected_indices) {
-  // It is possible to receive more than one of these calls if the user presses
-  // a select faster than it takes for the show-select-popup IPC message to make
-  // it to the browser UI thread.  Ignore the extra-messages.
-  // TODO(jcivelli): http:/b/5793321 Implement a better fix, as detailed in bug.
-  if (!external_popup_menu_)
-    return;
-
-  external_popup_menu_->DidSelectItems(canceled, selected_indices);
-  external_popup_menu_.reset();
-}
-#endif
-
-#if defined(OS_MACOSX) || defined(OS_ANDROID)
-void RenderViewImpl::DidHideExternalPopupMenu() {
-  // We need to clear external_popup_menu_ as soon as ExternalPopupMenu::close
-  // is called. Otherwise, createExternalPopupMenu() for new popup will fail.
-  external_popup_menu_.reset();
-}
-#endif
 
 void RenderViewImpl::OnShowContextMenu(
     ui::MenuSourceType source_type, const gfx::Point& location) {

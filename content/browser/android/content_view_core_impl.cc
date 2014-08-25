@@ -25,6 +25,7 @@
 #include "content/browser/frame_host/interstitial_page_impl.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
+#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/geolocation/geolocation_dispatcher_host.h"
 #include "content/browser/media/media_web_contents_observer.h"
 #include "content/browser/renderer_host/compositor_impl_android.h"
@@ -423,8 +424,12 @@ void ContentViewCoreImpl::OnBackgroundColorChanged(SkColor color) {
   Java_ContentViewCore_onBackgroundColorChanged(env, obj.obj(), color);
 }
 
-void ContentViewCoreImpl::ShowSelectPopupMenu(const gfx::Rect& bounds,
-    const std::vector<MenuItem>& items, int selected_item, bool multiple) {
+void ContentViewCoreImpl::ShowSelectPopupMenu(
+    RenderFrameHost* frame,
+    const gfx::Rect& bounds,
+    const std::vector<MenuItem>& items,
+    int selected_item,
+    bool multiple) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);
   if (j_obj.is_null())
@@ -468,7 +473,9 @@ void ContentViewCoreImpl::ShowSelectPopupMenu(const gfx::Rect& bounds,
   }
   ScopedJavaLocalRef<jobjectArray> items_array(
       base::android::ToJavaArrayOfStrings(env, labels));
-  Java_ContentViewCore_showSelectPopup(env, j_obj.obj(),
+  Java_ContentViewCore_showSelectPopup(env,
+                                       j_obj.obj(),
+                                       reinterpret_cast<intptr_t>(frame),
                                        bounds_rect.obj(),
                                        items_array.obj(),
                                        enabled_array.obj(),
@@ -810,12 +817,13 @@ scoped_refptr<cc::Layer> ContentViewCoreImpl::GetLayer() const {
 
 void ContentViewCoreImpl::SelectPopupMenuItems(JNIEnv* env,
                                                jobject obj,
+                                               jlong selectPopupSourceFrame,
                                                jintArray indices) {
-  RenderViewHostImpl* rvhi = static_cast<RenderViewHostImpl*>(
-      web_contents_->GetRenderViewHost());
-  DCHECK(rvhi);
+  RenderFrameHostImpl* rfhi =
+      reinterpret_cast<RenderFrameHostImpl*>(selectPopupSourceFrame);
+  DCHECK(rfhi);
   if (indices == NULL) {
-    rvhi->DidCancelPopupMenu();
+    rfhi->DidCancelPopupMenu();
     return;
   }
 
@@ -825,7 +833,7 @@ void ContentViewCoreImpl::SelectPopupMenuItems(JNIEnv* env,
   for (int i = 0; i < selected_count; ++i)
     selected_indices.push_back(indices_ptr[i]);
   env->ReleaseIntArrayElements(indices, indices_ptr, JNI_ABORT);
-  rvhi->DidSelectPopupMenuItems(selected_indices);
+  rfhi->DidSelectPopupMenuItems(selected_indices);
 }
 
 void ContentViewCoreImpl::LoadUrl(

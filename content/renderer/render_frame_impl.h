@@ -37,8 +37,6 @@ class TransportDIB;
 struct FrameMsg_Navigate_Params;
 
 namespace blink {
-class WebExternalPopupMenu;
-class WebExternalPopupMenuClient;
 class WebGeolocationClient;
 class WebInputEvent;
 class WebMouseEvent;
@@ -50,7 +48,6 @@ class WebSecurityOrigin;
 struct WebCompositionUnderline;
 struct WebContextMenuData;
 struct WebCursorInfo;
-struct WebPopupMenuInfo;
 }
 
 namespace gfx {
@@ -62,6 +59,7 @@ class Rect;
 namespace content {
 
 class ChildFrameCompositingHelper;
+class ExternalPopupMenu;
 class GeolocationDispatcher;
 class MediaStreamDispatcher;
 class MediaStreamImpl;
@@ -237,6 +235,10 @@ class CONTENT_EXPORT RenderFrameImpl
   // May return NULL in some cases, especially if userMediaClient() returns
   // NULL.
   MediaStreamDispatcher* GetMediaStreamDispatcher();
+
+#if defined(OS_MACOSX) || defined(OS_ANDROID)
+  void DidHideExternalPopupMenu();
+#endif
 
   // IPC::Sender
   virtual bool Send(IPC::Message* msg) OVERRIDE;
@@ -456,6 +458,10 @@ class CONTENT_EXPORT RenderFrameImpl
  private:
   friend class RenderFrameObserver;
   friend class RendererAccessibilityTest;
+  FRIEND_TEST_ALL_PREFIXES(ExternalPopupMenuDisplayNoneTest, SelectItem);
+  FRIEND_TEST_ALL_PREFIXES(ExternalPopupMenuRemoveTest, RemoveOnChange);
+  FRIEND_TEST_ALL_PREFIXES(ExternalPopupMenuTest, NormalCase);
+  FRIEND_TEST_ALL_PREFIXES(ExternalPopupMenuTest, ShowPopupThenNavigate);
   FRIEND_TEST_ALL_PREFIXES(RendererAccessibilityTest,
                            AccessibilityMessagesQueueWhileSwappedOut);
   FRIEND_TEST_ALL_PREFIXES(RenderFrameImplTest,
@@ -521,7 +527,11 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnBeginExitTransition(const std::string& css_selector);
   void OnSetAccessibilityMode(AccessibilityMode new_mode);
   void OnDisownOpener();
-#if defined(OS_MACOSX)
+#if defined(OS_ANDROID)
+  void OnSelectPopupMenuItems(bool canceled,
+                              const std::vector<int>& selected_indices);
+#elif defined(OS_MACOSX)
+  void OnSelectPopupMenuItem(int selected_index);
   void OnCopyToFindPboard();
 #endif
 
@@ -714,6 +724,11 @@ class CONTENT_EXPORT RenderFrameImpl
   // Only valid if |accessibility_mode_| is anything other than
   // AccessibilityModeOff.
   RendererAccessibility* renderer_accessibility_;
+
+#if defined(OS_MACOSX) || defined(OS_ANDROID)
+  // The external popup for the currently showing select popup.
+  scoped_ptr<ExternalPopupMenu> external_popup_menu_;
+#endif
 
   base::WeakPtrFactory<RenderFrameImpl> weak_factory_;
 

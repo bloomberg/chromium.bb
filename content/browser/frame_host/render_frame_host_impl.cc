@@ -25,6 +25,8 @@
 #include "content/browser/renderer_host/input/input_router.h"
 #include "content/browser/renderer_host/input/timeout_monitor.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
+#include "content/browser/renderer_host/render_view_host_delegate.h"
+#include "content/browser/renderer_host/render_view_host_delegate_view.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
@@ -51,6 +53,10 @@
 #include "content/public/common/url_utils.h"
 #include "ui/accessibility/ax_tree.h"
 #include "url/gurl.h"
+
+#if defined(OS_MACOSX)
+#include "content/browser/frame_host/popup_menu_helper_mac.h"
+#endif
 
 using base::TimeDelta;
 
@@ -364,6 +370,10 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(AccessibilityHostMsg_Events, OnAccessibilityEvents)
     IPC_MESSAGE_HANDLER(AccessibilityHostMsg_LocationChanges,
                         OnAccessibilityLocationChanges)
+#if defined(OS_MACOSX) || defined(OS_ANDROID)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_ShowPopup, OnShowPopup)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_HidePopup, OnHidePopup)
+#endif
   IPC_END_MESSAGE_MAP()
 
   return handled;
@@ -998,6 +1008,31 @@ void RenderFrameHostImpl::OnAccessibilityLocationChanges(
   }
 }
 
+#if defined(OS_MACOSX) || defined(OS_ANDROID)
+void RenderFrameHostImpl::OnShowPopup(
+    const FrameHostMsg_ShowPopup_Params& params) {
+  RenderViewHostDelegateView* view =
+      render_view_host_->delegate_->GetDelegateView();
+  if (view) {
+    view->ShowPopupMenu(this,
+                        params.bounds,
+                        params.item_height,
+                        params.item_font_size,
+                        params.selected_item,
+                        params.popup_items,
+                        params.right_aligned,
+                        params.allow_multiple_selection);
+  }
+}
+
+void RenderFrameHostImpl::OnHidePopup() {
+  RenderViewHostDelegateView* view =
+      render_view_host_->delegate_->GetDelegateView();
+  if (view)
+    view->HidePopupMenu();
+}
+#endif
+
 void RenderFrameHostImpl::SetPendingShutdown(const base::Closure& on_swap_out) {
   render_view_host_->SetPendingShutdown(on_swap_out);
 }
@@ -1198,6 +1233,7 @@ BrowserAccessibilityManager*
 }
 
 #if defined(OS_WIN)
+
 void RenderFrameHostImpl::SetParentNativeViewAccessible(
     gfx::NativeViewAccessible accessible_parent) {
   RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
@@ -1210,7 +1246,30 @@ gfx::NativeViewAccessible
 RenderFrameHostImpl::GetParentNativeViewAccessible() const {
   return delegate_->GetParentNativeViewAccessible();
 }
-#endif  // defined(OS_WIN)
+
+#elif defined(OS_MACOSX)
+
+void RenderFrameHostImpl::DidSelectPopupMenuItem(int selected_index) {
+  Send(new FrameMsg_SelectPopupMenuItem(routing_id_, selected_index));
+}
+
+void RenderFrameHostImpl::DidCancelPopupMenu() {
+  Send(new FrameMsg_SelectPopupMenuItem(routing_id_, -1));
+}
+
+#elif defined(OS_ANDROID)
+
+void RenderFrameHostImpl::DidSelectPopupMenuItems(
+    const std::vector<int>& selected_indices) {
+  Send(new FrameMsg_SelectPopupMenuItems(routing_id_, false, selected_indices));
+}
+
+void RenderFrameHostImpl::DidCancelPopupMenu() {
+  Send(new FrameMsg_SelectPopupMenuItems(
+      routing_id_, true, std::vector<int>()));
+}
+
+#endif
 
 void RenderFrameHostImpl::ClearPendingTransitionRequestData() {
   BrowserThread::PostTask(

@@ -305,6 +305,33 @@ IPC_STRUCT_BEGIN(FrameHostMsg_BeginNavigation_Params)
   IPC_STRUCT_MEMBER(bool, allow_download)
 IPC_STRUCT_END()
 
+#if defined(OS_MACOSX) || defined(OS_ANDROID)
+// This message is used for supporting popup menus on Mac OS X and Android using
+// native controls. See the FrameHostMsg_ShowPopup message.
+IPC_STRUCT_BEGIN(FrameHostMsg_ShowPopup_Params)
+  // Position on the screen.
+  IPC_STRUCT_MEMBER(gfx::Rect, bounds)
+
+  // The height of each item in the menu.
+  IPC_STRUCT_MEMBER(int, item_height)
+
+  // The size of the font to use for those items.
+  IPC_STRUCT_MEMBER(double, item_font_size)
+
+  // The currently selected (displayed) item in the menu.
+  IPC_STRUCT_MEMBER(int, selected_item)
+
+  // The entire list of items in the popup menu.
+  IPC_STRUCT_MEMBER(std::vector<content::MenuItem>, popup_items)
+
+  // Whether items should be right-aligned.
+  IPC_STRUCT_MEMBER(bool, right_aligned)
+
+  // Whether this is a multi-select popup.
+  IPC_STRUCT_MEMBER(bool, allow_multiple_selection)
+IPC_STRUCT_END()
+#endif
+
 // -----------------------------------------------------------------------------
 // Messages sent from the browser to the renderer.
 
@@ -438,6 +465,21 @@ IPC_MESSAGE_ROUTED1(FrameMsg_AddStyleSheetByURL, std::string)
 // Change the accessibility mode in the renderer process.
 IPC_MESSAGE_ROUTED1(FrameMsg_SetAccessibilityMode,
                     AccessibilityMode)
+
+#if defined(OS_ANDROID)
+
+// External popup menus.
+IPC_MESSAGE_ROUTED2(FrameMsg_SelectPopupMenuItems,
+                    bool /* user canceled the popup */,
+                    std::vector<int> /* selected indices */)
+
+#elif defined(OS_MACOSX)
+
+// External popup menus.
+IPC_MESSAGE_ROUTED1(FrameMsg_SelectPopupMenuItem,
+                    int /* selected index, -1 means no selection */)
+
+#endif
 
 // -----------------------------------------------------------------------------
 // Messages sent from the renderer to the browser.
@@ -718,3 +760,12 @@ IPC_MESSAGE_ROUTED1(FrameHostMsg_BeginNavigation,
 // Sent once a paint happens after the first non empty layout. In other words
 // after the frame has painted something.
 IPC_MESSAGE_ROUTED0(FrameHostMsg_DidFirstVisuallyNonEmptyPaint)
+
+#if defined(OS_MACOSX) || defined(OS_ANDROID)
+
+// Message to show/hide a popup menu using native controls.
+IPC_MESSAGE_ROUTED1(FrameHostMsg_ShowPopup,
+                    FrameHostMsg_ShowPopup_Params)
+IPC_MESSAGE_ROUTED0(FrameHostMsg_HidePopup)
+
+#endif

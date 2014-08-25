@@ -4,11 +4,12 @@
 
 #import <Carbon/Carbon.h>
 
-#include "content/browser/renderer_host/popup_menu_helper_mac.h"
+#include "content/browser/frame_host/popup_menu_helper_mac.h"
 
 #include "base/mac/scoped_nsobject.h"
 #import "base/mac/scoped_sending_event.h"
 #include "base/message_loop/message_loop.h"
+#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_mac.h"
 #include "content/browser/renderer_host/webmenurunner_mac.h"
@@ -24,13 +25,13 @@ bool g_allow_showing_popup_menus = true;
 
 }  // namespace
 
-PopupMenuHelper::PopupMenuHelper(RenderViewHost* render_view_host)
-    : render_view_host_(static_cast<RenderViewHostImpl*>(render_view_host)),
+PopupMenuHelper::PopupMenuHelper(RenderFrameHost* render_frame_host)
+    : render_frame_host_(static_cast<RenderFrameHostImpl*>(render_frame_host)),
       menu_runner_(nil),
       popup_was_hidden_(false) {
   notification_registrar_.Add(
       this, NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
-      Source<RenderWidgetHost>(render_view_host));
+      Source<RenderWidgetHost>(render_frame_host->GetRenderViewHost()));
 }
 
 void PopupMenuHelper::ShowPopupMenu(
@@ -79,8 +80,8 @@ void PopupMenuHelper::ShowPopupMenu(
                    initialIndex:selected_item];
   }
 
-  if (!render_view_host_) {
-    // Bad news, the RenderViewHost got deleted while we were off running the
+  if (!render_frame_host_) {
+    // Bad news, the RenderFrameHost got deleted while we were off running the
     // menu. Nothing to do.
     [menu_runner_ release];
     menu_runner_ = nil;
@@ -89,10 +90,10 @@ void PopupMenuHelper::ShowPopupMenu(
 
   if (!popup_was_hidden_) {
     if ([menu_runner_ menuItemWasChosen]) {
-      render_view_host_->DidSelectPopupMenuItem(
+      render_frame_host_->DidSelectPopupMenuItem(
           [menu_runner_ indexOfSelectedItem]);
     } else {
-      render_view_host_->DidCancelPopupMenu();
+      render_frame_host_->DidCancelPopupMenu();
     }
   }
   [menu_runner_ release];
@@ -111,15 +112,17 @@ void PopupMenuHelper::DontShowPopupMenuForTesting() {
 }
 
 RenderWidgetHostViewMac* PopupMenuHelper::GetRenderWidgetHostView() const {
-  return static_cast<RenderWidgetHostViewMac*>(render_view_host_->GetView());
+  return static_cast<RenderWidgetHostViewMac*>(
+      render_frame_host_->GetRenderViewHost()->GetView());
 }
 
 void PopupMenuHelper::Observe(int type,
                               const NotificationSource& source,
                               const NotificationDetails& details) {
   DCHECK(type == NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED);
-  DCHECK(Source<RenderWidgetHost>(source).ptr() == render_view_host_);
-  render_view_host_ = NULL;
+  DCHECK_EQ(Source<RenderWidgetHost>(source).ptr(),
+            render_frame_host_->GetRenderViewHost());
+  render_frame_host_ = NULL;
 }
 
 }  // namespace content

@@ -24,6 +24,7 @@
 #include "content/common/browser_plugin/browser_plugin_messages.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/drag_messages.h"
+#include "content/common/frame_messages.h"
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_context.h"
@@ -445,12 +446,6 @@ bool BrowserPluginGuest::OnMessageReceived(const IPC::Message& message) {
                         OnHasTouchEventHandlers)
     IPC_MESSAGE_HANDLER(ViewHostMsg_LockMouse, OnLockMouse)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SetCursor, OnSetCursor)
- #if defined(OS_MACOSX)
-    // MacOSX creates and populates platform-specific select drop-down menus
-    // whereas other platforms merely create a popup window that the guest
-    // renderer process paints inside.
-    IPC_MESSAGE_HANDLER(ViewHostMsg_ShowPopup, OnShowPopup)
- #endif
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShowWidget, OnShowWidget)
     IPC_MESSAGE_HANDLER(ViewHostMsg_TakeFocus, OnTakeFocus)
     IPC_MESSAGE_HANDLER(ViewHostMsg_TextInputStateChanged,
@@ -460,6 +455,32 @@ bool BrowserPluginGuest::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
+}
+
+bool BrowserPluginGuest::OnMessageReceived(const IPC::Message& message,
+                                           RenderFrameHost* render_frame_host) {
+  // This will eventually be the home for more IPC handlers that depend on
+  // RenderFrameHost. Until more are moved here, though, the IPC_* macros won't
+  // compile if there are no handlers for a platform. So we have both #if guards
+  // around the whole thing (unfortunate but temporary), and #if guards where
+  // they belong, only around the one IPC handler. TODO(avi): Move more of the
+  // frame-based handlers to this function and remove the outer #if layer.
+#if defined(OS_MACOSX)
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(BrowserPluginGuest, message,
+                                   render_frame_host)
+#if defined(OS_MACOSX)
+    // MacOS X creates and populates platform-specific select drop-down menus
+    // whereas other platforms merely create a popup window that the guest
+    // renderer process paints inside.
+    IPC_MESSAGE_HANDLER(FrameHostMsg_ShowPopup, OnShowPopup)
+#endif
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  return handled;
+#else
+  return false;
+#endif
 }
 
 void BrowserPluginGuest::Attach(
@@ -783,12 +804,12 @@ void BrowserPluginGuest::OnSetCursor(const WebCursor& cursor) {
 
 #if defined(OS_MACOSX)
 void BrowserPluginGuest::OnShowPopup(
-    const ViewHostMsg_ShowPopup_Params& params) {
+    RenderFrameHost* render_frame_host,
+    const FrameHostMsg_ShowPopup_Params& params) {
   gfx::Rect translated_bounds(params.bounds);
   translated_bounds.Offset(guest_window_rect_.OffsetFromOrigin());
   BrowserPluginPopupMenuHelper popup_menu_helper(
-      embedder_web_contents_->GetRenderViewHost(),
-      GetWebContents()->GetRenderViewHost());
+      embedder_web_contents_->GetRenderViewHost(), render_frame_host);
   popup_menu_helper.ShowPopupMenu(translated_bounds,
                                   params.item_height,
                                   params.item_font_size,
