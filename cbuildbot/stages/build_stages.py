@@ -14,6 +14,7 @@ from chromite.cbuildbot import failures_lib
 from chromite.cbuildbot import repository
 from chromite.cbuildbot.stages import generic_stages
 from chromite.cbuildbot.stages import test_stages
+from chromite.lib import cidb
 from chromite.lib import cros_build_lib
 from chromite.lib import git
 from chromite.lib import osutils
@@ -255,9 +256,17 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
       # Extract firmware version information from the newly created updater.
       main, ec = commands.GetFirmwareVersions(self._build_root,
                                               self._current_board)
+      update_dict = {'main-firmware-version': main, 'ec-firmware-version': ec}
       self._run.attrs.metadata.UpdateBoardDictWithDict(
-          self._current_board,
-          {'main-firmware-version': main, 'ec-firmware-version': ec})
+          self._current_board, update_dict)
+
+      # Write board metadata update to cidb
+      if cidb.CIDBConnectionFactory.IsCIDBSetup():
+        db = cidb.CIDBConnectionFactory.GetCIDBConnectionForBuilder()
+        if db:
+          build_id = self._run.attrs.metadata.GetValue('build_id')
+          db.UpdateBoardPerBuildMetadata(build_id, self._current_board,
+                                         update_dict)
 
 
 class BuildImageStage(BuildPackagesStage):
