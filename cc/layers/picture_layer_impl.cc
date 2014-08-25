@@ -298,7 +298,14 @@ void PictureLayerImpl::AppendQuads(
           gfx::Rect opaque_rect = iter->opaque_rect();
           opaque_rect.Intersect(geometry_rect);
 
-          if (iter->contents_scale() != ideal_contents_scale_ &&
+          // The raster_contents_scale_ is the best scale that the layer is
+          // trying to produce, even though it may not be ideal. Since that's
+          // the best the layer can promise in the future, consider those as
+          // complete. But if a tile is ideal scale, we don't want to consider
+          // it incomplete and trying to replace it with a tile at a worse
+          // scale.
+          if (iter->contents_scale() != raster_contents_scale_ &&
+              iter->contents_scale() != ideal_contents_scale_ &&
               geometry_rect.Intersects(scaled_viewport_for_tile_priority)) {
             append_quads_data->num_incomplete_tiles++;
           }

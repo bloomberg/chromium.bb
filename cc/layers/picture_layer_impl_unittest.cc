@@ -13,6 +13,7 @@
 #include "cc/layers/append_quads_data.h"
 #include "cc/layers/picture_layer.h"
 #include "cc/quads/draw_quad.h"
+#include "cc/quads/tile_draw_quad.h"
 #include "cc/test/begin_frame_args_test.h"
 #include "cc/test/fake_content_layer_client.h"
 #include "cc/test/fake_impl_proxy.h"
@@ -1546,6 +1547,154 @@ TEST_F(PictureLayerImplTest, TileOutsideOfViewportForTilePriorityNotRequired) {
   active_layer_->DidDraw(NULL);
 
   // All tiles in activation rect is ready to draw.
+  EXPECT_EQ(0u, data.num_missing_tiles);
+  EXPECT_EQ(0u, data.num_incomplete_tiles);
+}
+
+TEST_F(PictureLayerImplTest, HighResTileIsComplete) {
+  base::TimeTicks time_ticks;
+  time_ticks += base::TimeDelta::FromMilliseconds(1);
+  host_impl_.SetCurrentBeginFrameArgs(
+      CreateBeginFrameArgsForTesting(time_ticks));
+
+  gfx::Size tile_size(100, 100);
+  gfx::Size layer_bounds(200, 200);
+
+  host_impl_.SetViewportSize(layer_bounds);
+
+  scoped_refptr<FakePicturePileImpl> pending_pile =
+      FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
+  SetupPendingTree(pending_pile);
+  ActivateTree();
+
+  // All high res tiles have resources.
+  active_layer_->set_fixed_tile_size(tile_size);
+  host_impl_.active_tree()->UpdateDrawProperties();
+  std::vector<Tile*> tiles =
+      active_layer_->tilings()->tiling_at(0)->AllTilesForTesting();
+  host_impl_.tile_manager()->InitializeTilesWithResourcesForTesting(tiles);
+
+  MockOcclusionTracker<LayerImpl> occlusion_tracker;
+  scoped_ptr<RenderPass> render_pass = RenderPass::Create();
+  AppendQuadsData data;
+  active_layer_->WillDraw(DRAW_MODE_SOFTWARE, NULL);
+  active_layer_->AppendQuads(render_pass.get(), occlusion_tracker, &data);
+  active_layer_->DidDraw(NULL);
+
+  // All high res tiles drew, nothing was incomplete.
+  EXPECT_EQ(9u, render_pass->quad_list.size());
+  EXPECT_EQ(0u, data.num_missing_tiles);
+  EXPECT_EQ(0u, data.num_incomplete_tiles);
+}
+
+TEST_F(PictureLayerImplTest, LowResTileIsIncomplete) {
+  base::TimeTicks time_ticks;
+  time_ticks += base::TimeDelta::FromMilliseconds(1);
+  host_impl_.SetCurrentBeginFrameArgs(
+      CreateBeginFrameArgsForTesting(time_ticks));
+
+  gfx::Size tile_size(100, 100);
+  gfx::Size layer_bounds(200, 200);
+
+  host_impl_.SetViewportSize(layer_bounds);
+
+  scoped_refptr<FakePicturePileImpl> pending_pile =
+      FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
+  SetupPendingTree(pending_pile);
+  ActivateTree();
+
+  // All high res tiles have resources except one.
+  active_layer_->set_fixed_tile_size(tile_size);
+  host_impl_.active_tree()->UpdateDrawProperties();
+  std::vector<Tile*> high_tiles =
+      active_layer_->tilings()->tiling_at(0)->AllTilesForTesting();
+  high_tiles.erase(high_tiles.begin());
+  host_impl_.tile_manager()->InitializeTilesWithResourcesForTesting(high_tiles);
+
+  // All low res tiles have resources.
+  std::vector<Tile*> low_tiles =
+      active_layer_->tilings()->tiling_at(1)->AllTilesForTesting();
+  host_impl_.tile_manager()->InitializeTilesWithResourcesForTesting(low_tiles);
+
+  MockOcclusionTracker<LayerImpl> occlusion_tracker;
+  scoped_ptr<RenderPass> render_pass = RenderPass::Create();
+  AppendQuadsData data;
+  active_layer_->WillDraw(DRAW_MODE_SOFTWARE, NULL);
+  active_layer_->AppendQuads(render_pass.get(), occlusion_tracker, &data);
+  active_layer_->DidDraw(NULL);
+
+  // The missing high res tile was replaced by a low res tile.
+  EXPECT_EQ(9u, render_pass->quad_list.size());
+  EXPECT_EQ(0u, data.num_missing_tiles);
+  EXPECT_EQ(1u, data.num_incomplete_tiles);
+}
+
+TEST_F(PictureLayerImplTest,
+       HighResAndIdealResTileIsCompleteWhenRasterScaleIsNotIdeal) {
+  base::TimeTicks time_ticks;
+  time_ticks += base::TimeDelta::FromMilliseconds(1);
+  host_impl_.SetCurrentBeginFrameArgs(
+      CreateBeginFrameArgsForTesting(time_ticks));
+
+  gfx::Size tile_size(100, 100);
+  gfx::Size layer_bounds(200, 200);
+
+  host_impl_.SetViewportSize(layer_bounds);
+
+  scoped_refptr<FakePicturePileImpl> pending_pile =
+      FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
+  scoped_refptr<FakePicturePileImpl> active_pile =
+      FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
+  SetupTrees(pending_pile, active_pile);
+
+  active_layer_->set_fixed_tile_size(tile_size);
+
+  active_layer_->draw_properties().visible_content_rect =
+      gfx::Rect(layer_bounds);
+  SetupDrawPropertiesAndUpdateTiles(active_layer_, 2.f, 1.f, 1.f, 1.f, false);
+
+  // One ideal tile exists, this will get used when drawing.
+  std::vector<Tile*> ideal_tiles;
+  EXPECT_EQ(2.f, active_layer_->HighResTiling()->contents_scale());
+  ideal_tiles.push_back(active_layer_->HighResTiling()->TileAt(0, 0));
+  host_impl_.tile_manager()->InitializeTilesWithResourcesForTesting(
+      ideal_tiles);
+
+  // Due to layer scale throttling, the raster contents scale is changed to 1,
+  // while the ideal is still 2.
+  SetupDrawPropertiesAndUpdateTiles(active_layer_, 1.f, 1.f, 1.f, 1.f, false);
+  SetupDrawPropertiesAndUpdateTiles(active_layer_, 2.f, 1.f, 1.f, 1.f, false);
+
+  EXPECT_EQ(1.f, active_layer_->HighResTiling()->contents_scale());
+  EXPECT_EQ(1.f, active_layer_->raster_contents_scale());
+  EXPECT_EQ(2.f, active_layer_->ideal_contents_scale());
+
+  // Both tilings still exist.
+  EXPECT_EQ(2.f, active_layer_->tilings()->tiling_at(0)->contents_scale());
+  EXPECT_EQ(1.f, active_layer_->tilings()->tiling_at(1)->contents_scale());
+
+  // All high res tiles have resources.
+  std::vector<Tile*> high_tiles =
+      active_layer_->HighResTiling()->AllTilesForTesting();
+  host_impl_.tile_manager()->InitializeTilesWithResourcesForTesting(high_tiles);
+
+  MockOcclusionTracker<LayerImpl> occlusion_tracker;
+  scoped_ptr<RenderPass> render_pass = RenderPass::Create();
+  AppendQuadsData data;
+  active_layer_->WillDraw(DRAW_MODE_SOFTWARE, NULL);
+  active_layer_->AppendQuads(render_pass.get(), occlusion_tracker, &data);
+  active_layer_->DidDraw(NULL);
+
+  // All high res tiles drew, and the one ideal res tile drew.
+  ASSERT_GT(render_pass->quad_list.size(), 9u);
+  EXPECT_EQ(gfx::SizeF(99.f, 99.f),
+            TileDrawQuad::MaterialCast(render_pass->quad_list[0])
+                ->tex_coord_rect.size());
+  EXPECT_EQ(gfx::SizeF(49.5f, 49.5f),
+            TileDrawQuad::MaterialCast(render_pass->quad_list[1])
+                ->tex_coord_rect.size());
+
+  // Neither the high res nor the ideal tiles were considered as incomplete.
   EXPECT_EQ(0u, data.num_missing_tiles);
   EXPECT_EQ(0u, data.num_incomplete_tiles);
 }
