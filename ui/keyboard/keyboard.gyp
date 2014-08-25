@@ -54,7 +54,6 @@
         '../../base/base.gyp:base',
         '../../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../../content/content.gyp:content_browser',
-        '../../content/content_resources.gyp:content_resources',
         '../../ipc/ipc.gyp:ipc',
         '../../mojo/mojo_base.gyp:mojo_cpp_bindings',
         '../../mojo/mojo_base.gyp:mojo_environment_chromium',

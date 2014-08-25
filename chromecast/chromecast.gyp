@@ -121,7 +121,6 @@
         '../content/app/resources/content_resources.gyp:content_resources',
         '../content/app/strings/content_strings.gyp:content_strings',
         '../content/browser/devtools/devtools_resources.gyp:devtools_resources',
-        '../content/content_resources.gyp:content_resources',
         '../net/net.gyp:net_resources',
         '../third_party/WebKit/public/blink_resources.gyp:blink_resources',
         '../ui/resources/ui_resources.gyp:ui_resources',

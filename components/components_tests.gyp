@@ -464,7 +464,6 @@
                 # Dependencies of visitedlink
                 'components.gyp:visitedlink_browser',
                 'components.gyp:visitedlink_renderer',
-                '../content/content_resources.gyp:content_resources',
 
                 # Dependencies of web_modal
                 'components.gyp:web_modal',
@@ -826,7 +825,6 @@
             '../content/content.gyp:content_gpu',
             '../content/content.gyp:content_plugin',
             '../content/content.gyp:content_renderer',
-            '../content/content_resources.gyp:content_resources',
             '../content/content_shell_and_tests.gyp:content_browser_test_support',
             '../content/content_shell_and_tests.gyp:content_shell_lib',
             '../content/content_shell_and_tests.gyp:content_shell_pak',

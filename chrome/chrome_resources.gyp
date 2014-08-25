@@ -447,7 +447,6 @@
           'dependencies': [
             '<(DEPTH)/content/app/resources/content_resources.gyp:content_resources',
             '<(DEPTH)/content/app/strings/content_strings.gyp:content_strings',
-            '<(DEPTH)/content/content_resources.gyp:content_resources',
             '<(DEPTH)/third_party/WebKit/public/blink_resources.gyp:blink_resources',
           ],
         }],

@@ -64,7 +64,6 @@
       'type': 'none',
       'dependencies': [
         '<(DEPTH)/content/app/resources/content_resources.gyp:content_resources',
-        '<(DEPTH)/content/content_resources.gyp:content_resources',
         '<(DEPTH)/net/net.gyp:net_resources',
         '<(DEPTH)/third_party/WebKit/public/blink_resources.gyp:blink_resources',
         '<(DEPTH)/ui/resources/ui_resources.gyp:ui_resources',
