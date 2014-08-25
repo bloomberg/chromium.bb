@@ -7,6 +7,7 @@
 import json
 import logging
 import os
+import time
 
 from chromite.cbuildbot import commands
 from chromite.cbuildbot import failures_lib
@@ -334,7 +335,8 @@ class PaygenStage(artifact_stages.ArchivingStage):
                                     channel_notifier)
 
   def _RunPaygenInProcess(self, channel, board, version, debug,
-                          skip_test_payloads, skip_delta_payloads):
+                          skip_test_payloads, skip_delta_payloads,
+                          wait_for_consistency=True):
     """Helper for PaygenStage that invokes payload generation.
 
     This method is intended to be safe to invoke inside a process.
@@ -346,6 +348,7 @@ class PaygenStage(artifact_stages.ArchivingStage):
       debug: Flag telling if this is a real run, or a test run.
       skip_test_payloads: Skip generating test payloads, and auto tests.
       skip_delta_payloads: Skip generating delta payloads.
+      wait_for_consistency: We delay for GS consistency, but not during tests.
     """
     # TODO(dgarrett): Remove when crbug.com/341152 is fixed.
     # These modules are imported here because they aren't always available at
@@ -357,6 +360,13 @@ class PaygenStage(artifact_stages.ArchivingStage):
     except  ImportError:
       # We can't generate payloads without crostools.
       raise PaygenCrostoolsNotAvailableError()
+
+    if wait_for_consistency:
+      # TODO(dgarrett): If this works, remove and do a retry on failures.
+      #
+      # After signing completes, we need to give GS some time for
+      # eventual consistency to happen.
+      time.sleep(5 * 60)
 
     # Convert to release tools naming for channels.
     if not channel.endswith('-channel'):

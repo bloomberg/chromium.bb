@@ -424,7 +424,8 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTest):
       # Call the method under test.
       stage = self.ConstructStage()
       stage._RunPaygenInProcess('foo', 'foo-board', 'foo-version',
-                                False, False, False)
+                                False, False, False,
+                                wait_for_consistency=False)
 
       # Ensure arguments are properly converted and passed along.
       create_payloads.assert_called_with(gspaths.Build(version='foo-version',
@@ -447,7 +448,8 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTest):
       # Use release tools channel naming, and a board name including a variant.
       stage = self.ConstructStage()
       stage._RunPaygenInProcess('foo-channel', 'foo-board-variant',
-                                'foo-version', True, True, True)
+                                'foo-version', True, True, True,
+                                wait_for_consistency=False)
 
       # Ensure arguments are properly converted and passed along.
       create_payloads.assert_called_with(
