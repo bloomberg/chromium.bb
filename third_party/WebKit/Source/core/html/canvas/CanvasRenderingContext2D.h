@@ -313,7 +313,7 @@ private:
     void applyStrokePattern();
     void applyFillPattern();
 
-    void drawImageInternal(CanvasImageSource*, float sx, float sy, float sw, float sh, float dx, float dy, float dw, float dh, ExceptionState&, CompositeOperator, blink::WebBlendMode);
+    void drawImageInternal(CanvasImageSource*, float sx, float sy, float sw, float sh, float dx, float dy, float dw, float dh, ExceptionState&, CompositeOperator, blink::WebBlendMode, GraphicsContext* = 0);
     void drawVideo(HTMLVideoElement*, FloatRect srcRect, FloatRect dstRect);
 
     void fillInternal(const Path&, const String& windingRuleString);

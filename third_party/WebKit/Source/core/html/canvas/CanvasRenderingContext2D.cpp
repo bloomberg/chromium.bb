@@ -1470,13 +1470,13 @@ void CanvasRenderingContext2D::drawImage(CanvasImageSource* imageSource,
     GraphicsContext* c = drawingContext(); // Do not exit yet if !c because we may need to throw exceptions first
     CompositeOperator op = c ? c->compositeOperation() : CompositeSourceOver;
     blink::WebBlendMode blendMode = c ? c->blendModeOperation() : blink::WebBlendModeNormal;
-    drawImageInternal(imageSource, sx, sy, sw, sh, dx, dy, dw, dh, exceptionState, op, blendMode);
+    drawImageInternal(imageSource, sx, sy, sw, sh, dx, dy, dw, dh, exceptionState, op, blendMode, c);
 }
 
 void CanvasRenderingContext2D::drawImageInternal(CanvasImageSource* imageSource,
     float sx, float sy, float sw, float sh,
     float dx, float dy, float dw, float dh, ExceptionState& exceptionState,
-    CompositeOperator op, blink::WebBlendMode blendMode)
+    CompositeOperator op, blink::WebBlendMode blendMode, GraphicsContext* c)
 {
     RefPtr<Image> image;
     SourceImageStatus sourceImageStatus = InvalidSourceImageStatus;
@@ -1489,7 +1489,8 @@ void CanvasRenderingContext2D::drawImageInternal(CanvasImageSource* imageSource,
             return;
     }
 
-    GraphicsContext* c = drawingContext();
+    if (!c)
+        c = drawingContext();
     if (!c)
         return;
 
