@@ -5349,8 +5349,10 @@ launch_desktop_shell_process(void *data)
 						 shell->client,
 						 desktop_shell_sigchld);
 
-	if (!shell->child.client)
+	if (!shell->child.client) {
 		weston_log("not able to start %s\n", shell->client);
+		return;
+	}
 
 	shell->child.client_destroy_listener.notify =
 		desktop_shell_client_destroy;
