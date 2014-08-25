@@ -1,0 +1,84 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+template("python_binary_module") {
+  # Only available on linux for now.
+  assert(is_linux)
+  assert(defined(invoker.sources))
+  assert(defined(invoker.python_base_module))
+
+  cython_root = "//third_party/cython"
+  cython_script = "$cython_root/src/cython.py"
+  cython_output = "${target_out_dir}/${target_name}.cc"
+
+  generator_target_name = target_name + "_cython_compiler"
+  shared_library_name = target_name + "_shared_library"
+  config_name = target_name + "_python_config"
+
+  if (is_linux) {
+    shared_library_prefix = "lib"
+    shared_library_suffix = ".so"
+    python_module_suffix = ".so"
+  }
+
+  target_visibility = [
+    ":$generator_target_name",
+    ":$shared_library_name",
+    ":$target_name",
+  ]
+
+  action(generator_target_name) {
+    visibility = target_visibility
+    script = cython_script
+    sources = invoker.sources
+    outputs = [ cython_output ]
+    args = [
+      "--cplus",
+      "-I", rebase_path("//", root_build_dir),
+      "-o", rebase_path(cython_output, root_build_dir),
+    ] + rebase_path(sources, root_build_dir)
+  }
+
+  config(config_name) {
+    visibility = target_visibility
+    python_flags = "//third_party/cython/python_flags.py"
+    include_dirs = exec_script(python_flags,
+                               [ "--gn", "--includes" ],
+                               "list lines")
+    libs = exec_script(python_flags,
+                       [ "--gn", "--libraries" ],
+                       "list lines")
+    lib_dirs = exec_script(python_flags,
+                           [ "--gn", "--library_dirs" ],
+                           "list lines")
+  }
+
+  shared_library(shared_library_name) {
+    visibility = target_visibility
+    deps = [
+      ":$generator_target_name",
+    ]
+    if (defined(invoker.deps)) {
+      deps += invoker.deps
+    }
+    if (defined(invoker.datadeps)) {
+      datadeps = invoker.datadeps
+    }
+    sources = [ cython_output ]
+    configs += [ ":$config_name" ]
+  }
+
+  copy(target_name) {
+    python_base_module = invoker.python_base_module
+    sources = [
+      "$root_out_dir/${shared_library_prefix}${shared_library_name}${shared_library_suffix}"
+    ]
+    outputs = [
+      "$root_out_dir/python/$python_base_module/${target_name}${python_module_suffix}"
+    ]
+    deps = [
+      ":$shared_library_name"
+    ]
+  }
+}

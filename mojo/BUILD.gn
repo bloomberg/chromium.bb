@@ -13,6 +13,12 @@ group("mojo") {
     "//mojo/services",
     "//mojo/shell:mojo_shell",
   ]
+
+  if (is_linux) {
+    deps += [
+      "//mojo/python",
+    ]
+  }
 }
 
 group("tests") {
