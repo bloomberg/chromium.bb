@@ -1328,7 +1328,7 @@ function continueInitializeBookmarkManager(localizedStrings) {
 
   $('term').addEventListener('search', handleSearch);
 
-  document.querySelector('.summary > button').addEventListener(
+  document.querySelector('.summary button').addEventListener(
       'click', handleOrganizeButtonClick);
 
   document.addEventListener('canExecute', handleCanExecuteForDocument);

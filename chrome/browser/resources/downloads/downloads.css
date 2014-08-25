@@ -2,36 +2,10 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-header {
-  align-items: center;
-  display: flex;
-  margin: 0 12px;
-}
-
-header h2 {
-  flex: 1;
-  font-size: 1.5em;
-  margin: 15px 0;
-}
-
-#term {
-  flex: none;
-}
-
-#downloads-summary {
-  background-color: rgb(235, 239, 249);
-  border-top: 1px solid rgb(156, 194, 239);
-  display: flex;
-  padding: 5px 10px;
-}
+<include src="../search_header.css">
 
 #downloads-summary-text {
-  flex: 1;
   font-weight: bold;
-}
-
-#downloads-actions {
-  flex: none;
 }
 
 .disabled-link {
