@@ -214,7 +214,7 @@ RenderViewHostImpl::RenderViewHostImpl(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&ResourceDispatcherHostImpl::OnRenderViewHostCreated,
                    base::Unretained(ResourceDispatcherHostImpl::Get()),
-                   GetProcess()->GetID(), GetRoutingID()));
+                   GetProcess()->GetID(), GetRoutingID(), !is_hidden()));
   }
 
 #if defined(ENABLE_BROWSER_CDMS)
@@ -948,6 +948,30 @@ void RenderViewHostImpl::Shutdown() {
   }
 
   RenderWidgetHostImpl::Shutdown();
+}
+
+void RenderViewHostImpl::WasHidden() {
+  if (ResourceDispatcherHostImpl::Get()) {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&ResourceDispatcherHostImpl::OnRenderViewHostWasHidden,
+                   base::Unretained(ResourceDispatcherHostImpl::Get()),
+                   GetProcess()->GetID(), GetRoutingID()));
+  }
+
+  RenderWidgetHostImpl::WasHidden();
+}
+
+void RenderViewHostImpl::WasShown(const ui::LatencyInfo& latency_info) {
+  if (ResourceDispatcherHostImpl::Get()) {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&ResourceDispatcherHostImpl::OnRenderViewHostWasShown,
+                   base::Unretained(ResourceDispatcherHostImpl::Get()),
+                   GetProcess()->GetID(), GetRoutingID()));
+  }
+
+  RenderWidgetHostImpl::WasShown(latency_info);
 }
 
 bool RenderViewHostImpl::IsRenderView() const {

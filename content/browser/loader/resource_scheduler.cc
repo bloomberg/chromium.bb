@@ -229,9 +229,9 @@ void ResourceScheduler::RequestQueue::Insert(
 // Each client represents a tab.
 class ResourceScheduler::Client {
  public:
-  explicit Client(ResourceScheduler* scheduler)
+  explicit Client(ResourceScheduler* scheduler, bool is_visible)
       : is_audible_(false),
-        is_visible_(false),
+        is_visible_(is_visible),
         is_loaded_(false),
         is_paused_(false),
         has_body_(false),
@@ -288,6 +288,8 @@ class ResourceScheduler::Client {
 
   bool is_loaded() const { return is_loaded_; }
 
+  bool IsVisible() const { return is_visible_; }
+
   void OnAudibilityChanged(bool is_audible) {
     if (is_audible == is_audible_) {
       return;
@@ -319,7 +321,9 @@ class ResourceScheduler::Client {
 
   void UpdateThrottleState() {
     ClientThrottleState old_throttle_state = throttle_state_;
-    if (is_active() && !is_loaded_) {
+    if (!scheduler_->should_throttle()) {
+      SetThrottleState(UNTHROTTLED);
+    } else if (is_active() && !is_loaded_) {
       SetThrottleState(ACTIVE_AND_LOADING);
     } else if (is_active()) {
       SetThrottleState(UNTHROTTLED);
@@ -780,12 +784,14 @@ void ResourceScheduler::RemoveRequest(ScheduledResourceRequest* request) {
   client->RemoveRequest(request);
 }
 
-void ResourceScheduler::OnClientCreated(int child_id, int route_id) {
+void ResourceScheduler::OnClientCreated(int child_id,
+                                        int route_id,
+                                        bool is_visible) {
   DCHECK(CalledOnValidThread());
   ClientId client_id = MakeClientId(child_id, route_id);
   DCHECK(!ContainsKey(client_map_, client_id));
 
-  Client* client = new Client(this);
+  Client* client = new Client(this, is_visible);
   client_map_[client_id] = client;
 
   // TODO(aiolos): set Client visibility/audibility when signals are added
@@ -880,6 +886,12 @@ void ResourceScheduler::OnLoadingStateChanged(int child_id,
   Client* client = GetClient(child_id, route_id);
   DCHECK(client);
   client->OnLoadingStateChanged(is_loaded);
+}
+
+bool ResourceScheduler::IsClientVisibleForTesting(int child_id, int route_id) {
+  Client* client = GetClient(child_id, route_id);
+  DCHECK(client);
+  return client->IsVisible();
 }
 
 ResourceScheduler::Client* ResourceScheduler::GetClient(int child_id,

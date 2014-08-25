@@ -1320,8 +1320,9 @@ ResourceRequestInfoImpl* ResourceDispatcherHostImpl::CreateRequestInfo(
 
 void ResourceDispatcherHostImpl::OnRenderViewHostCreated(
     int child_id,
-    int route_id) {
-  scheduler_->OnClientCreated(child_id, route_id);
+    int route_id,
+    bool is_visible) {
+  scheduler_->OnClientCreated(child_id, route_id, is_visible);
 }
 
 void ResourceDispatcherHostImpl::OnRenderViewHostDeleted(
@@ -1329,6 +1330,18 @@ void ResourceDispatcherHostImpl::OnRenderViewHostDeleted(
     int route_id) {
   scheduler_->OnClientDeleted(child_id, route_id);
   CancelRequestsForRoute(child_id, route_id);
+}
+
+void ResourceDispatcherHostImpl::OnRenderViewHostWasHidden(
+    int child_id,
+    int route_id) {
+  scheduler_->OnVisibilityChanged(child_id, route_id, false);
+}
+
+void ResourceDispatcherHostImpl::OnRenderViewHostWasShown(
+    int child_id,
+    int route_id) {
+  scheduler_->OnVisibilityChanged(child_id, route_id, true);
 }
 
 // This function is only used for saving feature.

@@ -308,6 +308,8 @@ class CONTENT_EXPORT RenderViewHostImpl
   // RenderWidgetHost public overrides.
   virtual void Init() OVERRIDE;
   virtual void Shutdown() OVERRIDE;
+  virtual void WasHidden() OVERRIDE;
+  virtual void WasShown(const ui::LatencyInfo& latency_info) OVERRIDE;
   virtual bool IsRenderView() const OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
   virtual void GotFocus() OVERRIDE;
