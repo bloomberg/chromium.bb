@@ -1774,7 +1774,7 @@ void ProfileSyncService::UpdateSelectedTypesHistogram(
   // Only log the data types that are shown in the sync settings ui.
   // Note: the order of these types must match the ordering of
   // the respective types in ModelType
-const sync_driver::user_selectable_type::UserSelectableSyncType
+  const sync_driver::user_selectable_type::UserSelectableSyncType
       user_selectable_types[] = {
     sync_driver::user_selectable_type::BOOKMARKS,
     sync_driver::user_selectable_type::PREFERENCES,
@@ -1886,7 +1886,9 @@ syncer::ModelTypeSet ProfileSyncService::GetPreferredDataTypes() const {
   const syncer::ModelTypeSet registered_types = GetRegisteredDataTypes();
   const syncer::ModelTypeSet preferred_types =
       sync_prefs_.GetPreferredDataTypes(registered_types);
-  return preferred_types;
+  const syncer::ModelTypeSet enforced_types =
+      Intersection(GetDataTypesFromPreferenceProviders(), registered_types);
+  return Union(preferred_types, enforced_types);
 }
 
 syncer::ModelTypeSet
@@ -1895,13 +1897,22 @@ ProfileSyncService::GetPreferredDirectoryDataTypes() const {
       GetRegisteredDirectoryDataTypes();
   const syncer::ModelTypeSet preferred_types =
       sync_prefs_.GetPreferredDataTypes(registered_directory_types);
-
-  return Union(preferred_types, GetDataTypesFromPreferenceProviders());
+  const syncer::ModelTypeSet enforced_types =
+      Intersection(GetDataTypesFromPreferenceProviders(),
+                   registered_directory_types);
+  return Union(preferred_types, enforced_types);
 }
 
 syncer::ModelTypeSet
 ProfileSyncService::GetPreferredNonBlockingDataTypes() const {
   return sync_prefs_.GetPreferredDataTypes(GetRegisteredNonBlockingDataTypes());
+}
+
+syncer::ModelTypeSet ProfileSyncService::GetForcedDataTypes() const {
+  // TODO(treib,zea): When SyncPrefs also implements SyncTypePreferenceProvider,
+  // we'll need another way to distinguish user-choosable types from
+  // programmatically-enabled types.
+  return GetDataTypesFromPreferenceProviders();
 }
 
 syncer::ModelTypeSet ProfileSyncService::GetRegisteredDataTypes() const {

@@ -634,6 +634,10 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   // Returns the set of off-thread types which are preferred for enabling.
   virtual syncer::ModelTypeSet GetPreferredNonBlockingDataTypes() const;
 
+  // Returns the set of types which are enforced programmatically and can not
+  // be disabled by the user.
+  virtual syncer::ModelTypeSet GetForcedDataTypes() const;
+
   // Gets the set of all data types that could be allowed (the set that
   // should be advertised to the user).  These will typically only change
   // via a command-line option.  See class comment for more on what it means

@@ -25,7 +25,13 @@ cr.define('options', function() {
   // the "Sync everything" menu-item is selected, and unchecked and disabled
   // when "Sync nothing" is selected. When "Choose what to sync" is selected,
   // the boxes are restored to their most recent checked state from this cache.
-  var dataTypeBoxes_ = {};
+  var dataTypeBoxesChecked_ = {};
+
+  // A dictionary that maps the sync data type checkbox names to their disabled
+  // state (when a data type is enabled programmatically without user choice).
+  // Initialized when the advanced settings dialog is first brought up, and
+  // reset when the dialog is closed.
+  var dataTypeBoxesDisabled_ = {};
 
   // Used to determine whether to bring the OK button / passphrase field into
   // focus.
@@ -95,7 +101,8 @@ cr.define('options', function() {
 
     closeOverlay_: function() {
       this.syncConfigureArgs_ = null;
-      this.dataTypeBoxes_ = {};
+      this.dataTypeBoxesChecked_ = {};
+      this.dataTypeBoxesDisabled_ = {};
 
       var overlay = $('sync-setup-overlay');
       if (!overlay.hidden)
@@ -147,8 +154,8 @@ cr.define('options', function() {
      * @private
      */
     restoreDataTypeCheckboxes_: function() {
-      for (dataType in dataTypeBoxes_) {
-        $(dataType).checked = dataTypeBoxes_[dataType];
+      for (dataType in dataTypeBoxesChecked_) {
+        $(dataType).checked = dataTypeBoxesChecked_[dataType];
       }
     },
 
@@ -159,9 +166,8 @@ cr.define('options', function() {
      * @private
      */
     setDataTypeCheckboxesEnabled_: function(enabled) {
-      var checkboxes = $('choose-data-types-body').querySelectorAll('input');
-      for (var i = 0; i < checkboxes.length; i++) {
-        checkboxes[i].disabled = !enabled;
+      for (dataType in dataTypeBoxesDisabled_) {
+        $(dataType).disabled = !enabled || dataTypeBoxesDisabled_[dataType];
       }
     },
 
@@ -300,8 +306,9 @@ cr.define('options', function() {
 
     /**
      * Shows or hides the sync data type checkboxes in the advanced sync
-     * settings dialog. Also initializes |dataTypeBoxes_| with their values, and
-     * makes their onclick handlers update |dataTypeBoxes_|.
+     * settings dialog. Also initializes |dataTypeBoxesChecked_| and
+     * |dataTypeBoxedDisabled_| with their values, and makes their onclick
+     * handlers update |dataTypeBoxesChecked_|.
      * @param {Object} args The configuration data used to show/hide UI.
      * @private
      */
@@ -312,20 +319,24 @@ cr.define('options', function() {
                                          DataTypeSelection.CHOOSE_WHAT_TO_SYNC;
 
       $('bookmarks-checkbox').checked = args.bookmarksSynced;
-      dataTypeBoxes_['bookmarks-checkbox'] = args.bookmarksSynced;
+      dataTypeBoxesChecked_['bookmarks-checkbox'] = args.bookmarksSynced;
+      dataTypeBoxesDisabled_['bookmarks-checkbox'] = args.bookmarksEnforced;
       $('bookmarks-checkbox').onclick = this.handleDataTypeClick_;
 
       $('preferences-checkbox').checked = args.preferencesSynced;
-      dataTypeBoxes_['preferences-checkbox'] = args.preferencesSynced;
+      dataTypeBoxesChecked_['preferences-checkbox'] = args.preferencesSynced;
+      dataTypeBoxesDisabled_['preferences-checkbox'] = args.preferencesEnforced;
       $('preferences-checkbox').onclick = this.handleDataTypeClick_;
 
       $('themes-checkbox').checked = args.themesSynced;
-      dataTypeBoxes_['themes-checkbox'] = args.themesSynced;
+      dataTypeBoxesChecked_['themes-checkbox'] = args.themesSynced;
+      dataTypeBoxesDisabled_['themes-checkbox'] = args.themesEnforced;
       $('themes-checkbox').onclick = this.handleDataTypeClick_;
 
       if (args.passwordsRegistered) {
         $('passwords-checkbox').checked = args.passwordsSynced;
-        dataTypeBoxes_['passwords-checkbox'] = args.passwordsSynced;
+        dataTypeBoxesChecked_['passwords-checkbox'] = args.passwordsSynced;
+        dataTypeBoxesDisabled_['passwords-checkbox'] = args.passwordsEnforced;
         $('passwords-checkbox').onclick = this.handleDataTypeClick_;
         $('passwords-item').hidden = false;
       } else {
@@ -333,7 +344,8 @@ cr.define('options', function() {
       }
       if (args.autofillRegistered) {
         $('autofill-checkbox').checked = args.autofillSynced;
-        dataTypeBoxes_['autofill-checkbox'] = args.autofillSynced;
+        dataTypeBoxesChecked_['autofill-checkbox'] = args.autofillSynced;
+        dataTypeBoxesDisabled_['autofill-checkbox'] = args.autofillEnforced;
         $('autofill-checkbox').onclick = this.handleDataTypeClick_;
         $('autofill-item').hidden = false;
       } else {
@@ -341,7 +353,8 @@ cr.define('options', function() {
       }
       if (args.extensionsRegistered) {
         $('extensions-checkbox').checked = args.extensionsSynced;
-        dataTypeBoxes_['extensions-checkbox'] = args.extensionsSynced;
+        dataTypeBoxesChecked_['extensions-checkbox'] = args.extensionsSynced;
+        dataTypeBoxesDisabled_['extensions-checkbox'] = args.extensionsEnforced;
         $('extensions-checkbox').onclick = this.handleDataTypeClick_;
         $('extensions-item').hidden = false;
       } else {
@@ -349,7 +362,8 @@ cr.define('options', function() {
       }
       if (args.typedUrlsRegistered) {
         $('typed-urls-checkbox').checked = args.typedUrlsSynced;
-        dataTypeBoxes_['typed-urls-checkbox'] = args.typedUrlsSynced;
+        dataTypeBoxesChecked_['typed-urls-checkbox'] = args.typedUrlsSynced;
+        dataTypeBoxesDisabled_['typed-urls-checkbox'] = args.typedUrlsEnforced;
         $('typed-urls-checkbox').onclick = this.handleDataTypeClick_;
         $('omnibox-item').hidden = false;
       } else {
@@ -357,7 +371,8 @@ cr.define('options', function() {
       }
       if (args.appsRegistered) {
         $('apps-checkbox').checked = args.appsSynced;
-        dataTypeBoxes_['apps-checkbox'] = args.appsSynced;
+        dataTypeBoxesChecked_['apps-checkbox'] = args.appsSynced;
+        dataTypeBoxesDisabled_['apps-checkbox'] = args.appsEnforced;
         $('apps-checkbox').onclick = this.handleDataTypeClick_;
         $('apps-item').hidden = false;
       } else {
@@ -365,7 +380,8 @@ cr.define('options', function() {
       }
       if (args.tabsRegistered) {
         $('tabs-checkbox').checked = args.tabsSynced;
-        dataTypeBoxes_['tabs-checkbox'] = args.tabsSynced;
+        dataTypeBoxesChecked_['tabs-checkbox'] = args.tabsSynced;
+        dataTypeBoxesDisabled_['tabs-checkbox'] = args.tabsEnforced;
         $('tabs-checkbox').onclick = this.handleDataTypeClick_;
         $('tabs-item').hidden = false;
       } else {
@@ -377,11 +393,12 @@ cr.define('options', function() {
 
     /**
      * Updates the cached values of the sync data type checkboxes stored in
-     * |dataTypeBoxes_|. Used as an onclick handler for each data type checkbox.
+     * |dataTypeBoxesChecked_|. Used as an onclick handler for each data type
+     * checkbox.
      * @private
      */
     handleDataTypeClick_: function() {
-      dataTypeBoxes_[this.id] = this.checked;
+      dataTypeBoxesChecked_[this.id] = this.checked;
       chrome.send('coreOptionsUserMetricsAction',
                   ['Options_SyncToggleDataType']);
     },
