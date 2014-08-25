@@ -197,11 +197,7 @@ bool IsImplSidePaintingEnabled() {
       switches::kEnableBleedingEdgeRenderingFastPaths))
     return true;
 
-#if defined(OS_MACOSX)
-  return false;
-#else
   return true;
-#endif
 }
 
 bool IsGpuRasterizationEnabled() {
