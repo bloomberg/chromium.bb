@@ -228,6 +228,7 @@ KeyboardController::KeyboardController(KeyboardControllerProxy* proxy)
     : proxy_(proxy),
       input_method_(NULL),
       keyboard_visible_(false),
+      show_on_resize_(false),
       lock_keyboard_(false),
       type_(ui::TEXT_INPUT_TYPE_NONE),
       weak_factory_(this) {
