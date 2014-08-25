@@ -5,16 +5,29 @@
 import cgi
 import ConfigParser
 import json
-import logging
 import os
 import time
-import urllib2
 
 from common import utils
 from result import Result
 
 
 INFINITY = float('inf')
+
+
+def GetRepositoryType(revision_number):
+  """Returns the repository type of this revision number.
+
+  Args:
+    revision_number: A revision number or git hash.
+
+  Returns:
+    'git' or 'svn', depending on the revision_number.
+  """
+  if utils.IsGitHash(revision_number):
+    return 'git'
+  else:
+    return 'svn'
 
 
 def ParseURLsFromConfig(file_name):
@@ -41,21 +54,20 @@ def ParseURLsFromConfig(file_name):
                                   file_name)
   config.read(config_file_path)
   if not config:
-    logging.error('Config file with URLs does not exist.')
     return None
 
   # Iterate through the config file, check for sections.
-  parsed_config = {}
+  config_dict = {}
   for section in config.sections():
     # These two do not need another layer of dictionary, so add it and go
     # to next section.
     if ':' not in section:
       for option in config.options(section):
-        if section not in parsed_config:
-          parsed_config[section] = {}
+        if section not in config_dict:
+          config_dict[section] = {}
 
         url = config.get(section, option)
-        parsed_config[section][option] = url
+        config_dict[section][option] = url
 
       continue
 
@@ -65,9 +77,9 @@ def ParseURLsFromConfig(file_name):
     component_path = repository_type_and_component[1]
 
     # Add 'svn' as the key, if it is not already there.
-    if repository_type not in parsed_config:
-      parsed_config[repository_type] = {}
-    url_map_for_repository = parsed_config[repository_type]
+    if repository_type not in config_dict:
+      config_dict[repository_type] = {}
+    url_map_for_repository = config_dict[repository_type]
 
     # Add the path to the 'svn', if it is not already there.
     if component_path not in url_map_for_repository:
@@ -79,11 +91,11 @@ def ParseURLsFromConfig(file_name):
       url = config.get(section, option)
       type_to_url[option] = url
 
-  return parsed_config
+  return config_dict
 
 
-def NormalizePathLinux(path, parsed_deps):
-  """Normalizes linux path.
+def NormalizePath(path, parsed_deps):
+  """Normalizes the path.
 
   Args:
     path: A string representing a path.
@@ -92,43 +104,53 @@ def NormalizePathLinux(path, parsed_deps):
 
   Returns:
     A tuple containing a component this path is in (e.g blink, skia, etc)
-    and a path in that component's repository.
+    and a path in that component's repository. Returns None if the component
+    repository is not supported, i.e from googlecode.
   """
-  # First normalize the path by retreiving the absolute path.
-  normalized_path = os.path.abspath(path)
+  # First normalize the path by retreiving the normalized path.
+  normalized_path = os.path.normpath(path.replace('\\', '/'))
 
   # Iterate through all component paths in the parsed DEPS, in the decreasing
   # order of the length of the file path.
   for component_path in sorted(parsed_deps,
                                key=(lambda path: -len(path))):
-    # New_path is the component path with 'src/' removed.
-    new_path = component_path
-    if new_path.startswith('src/') and new_path != 'src/':
-      new_path = new_path[len('src/'):]
+    # new_component_path is the component path with 'src/' removed.
+    new_component_path = component_path
+    if new_component_path.startswith('src/') and new_component_path != 'src/':
+      new_component_path = new_component_path[len('src/'):]
+
+    # We need to consider when the lowercased component path is in the path,
+    # because syzyasan build returns lowercased file path.
+    lower_component_path = new_component_path.lower()
 
     # If this path is the part of file path, this file must be from this
     # component.
-    if new_path in normalized_path:
+    if new_component_path in normalized_path or \
+        lower_component_path in normalized_path:
 
-      # Currently does not support googlecode.
-      if 'googlecode' in parsed_deps[component_path]['repository']:
-        return (None, '', '')
+      # Case when the retreived path is in lowercase.
+      if lower_component_path in normalized_path:
+        current_component_path = lower_component_path
+      else:
+        current_component_path = new_component_path
 
       # Normalize the path by stripping everything off the component's relative
       # path.
-      normalized_path = normalized_path.split(new_path,1)[1]
+      normalized_path = normalized_path.split(current_component_path, 1)[1]
+      lower_normalized_path = normalized_path.lower()
 
       # Add 'src/' or 'Source/' at the front of the normalized path, depending
       # on what prefix the component path uses. For example, blink uses
       # 'Source' but chromium uses 'src/', and blink component path is
       # 'src/third_party/WebKit/Source', so add 'Source/' in front of the
       # normalized path.
-      if not (normalized_path.startswith('src/') or
-          normalized_path.startswith('Source/')):
+      if not (lower_normalized_path.startswith('src/') or
+              lower_normalized_path.startswith('source/')):
 
-        if (new_path.lower().endswith('src/') or
-            new_path.lower().endswith('source/')):
-          normalized_path = new_path.split('/')[-2] + '/' + normalized_path
+        if (lower_component_path.endswith('src/') or
+            lower_component_path.endswith('source/')):
+          normalized_path = (current_component_path.split('/')[-2] + '/' +
+                             normalized_path)
 
         else:
           normalized_path = 'src/' + normalized_path
@@ -160,9 +182,16 @@ def SplitRange(regression):
   if len(revisions) != 2:
     return None
 
-  # Strip 'r' from both start and end range.
-  range_start = revisions[0].lstrip('r')
-  range_end = revisions[1].lstrip('r')
+  range_start = revisions[0]
+  range_end = revisions[1]
+
+  # Strip 'r' off the range start/end. Not using lstrip to avoid the case when
+  # the range is in git hash and it starts with 'r'.
+  if range_start.startswith('r'):
+    range_start = range_start[1:]
+
+  if range_end.startswith('r'):
+    range_end = range_end[1:]
 
   return [range_start, range_end]
 
@@ -201,7 +230,7 @@ def GetDataFromURL(url, retries=10, sleep_time=0.1, timeout=5):
     count += 1
     # Retrieves data from URL.
     try:
-      _, data = utils.GetHttpClient().Get(url)
+      _, data = utils.GetHttpClient().Get(url, timeout=timeout)
       return data
     except IOError:
       if count < retries:
@@ -214,7 +243,8 @@ def GetDataFromURL(url, retries=10, sleep_time=0.1, timeout=5):
   return None
 
 
-def FindMinLineDistance(crashed_line_list, changed_line_numbers):
+def FindMinLineDistance(crashed_line_list, changed_line_numbers,
+                        line_range=3):
   """Calculates how far the changed line is from one of the crashes.
 
   Finds the minimum distance between the lines that the file crashed on
@@ -224,6 +254,7 @@ def FindMinLineDistance(crashed_line_list, changed_line_numbers):
   Args:
     crashed_line_list: A list of lines that the file crashed on.
     changed_line_numbers: A list of lines that the file changed.
+    line_range: Number of lines to look back for.
 
   Returns:
     The minimum distance. If either of the input lists is empty,
@@ -231,16 +262,26 @@ def FindMinLineDistance(crashed_line_list, changed_line_numbers):
 
   """
   min_distance = INFINITY
+  crashed_line = -1
+  changed_line = -1
 
-  for line in crashed_line_list:
+  crashed_line_numbers = set()
+  for crashed_line_range in crashed_line_list:
+    for crashed_line in crashed_line_range:
+      for line in range(crashed_line - line_range, crashed_line + 1):
+        crashed_line_numbers.add(line)
+
+  for line in crashed_line_numbers:
     for distance in changed_line_numbers:
       # Find the current distance and update the min if current distance is
       # less than current min.
       current_distance = abs(line - distance)
       if current_distance < min_distance:
         min_distance = current_distance
+        crashed_line = line
+        changed_line = distance
 
-  return min_distance
+  return (min_distance, crashed_line, changed_line)
 
 
 def GuessIfSameSubPath(path1, path2):
@@ -335,7 +376,7 @@ def PrettifyFiles(file_list):
 
 
 def Intersection(crashed_line_list, stack_frame_index, changed_line_numbers,
-                 line_range=3):
+                 function, line_range=3):
   """Finds the overlap betwee changed lines and crashed lines.
 
   Finds the intersection of the lines that caused the crash and
@@ -346,42 +387,52 @@ def Intersection(crashed_line_list, stack_frame_index, changed_line_numbers,
     crashed_line_list: A list of lines that the file crashed on.
     stack_frame_index: A list of positions in stack for each of the lines.
     changed_line_numbers: A list of lines that the file changed.
+    function: A list of functions that the file crashed on.
     line_range: Number of lines to look backwards from crashed lines.
 
   Returns:
-    line_intersection: Intersection between crashed_line_list and
+    line_number_intersection: Intersection between crashed_line_list and
                        changed_line_numbers.
     stack_frame_index_intersection: Stack number for each of the intersections.
   """
-  line_intersection = []
+  line_number_intersection = []
   stack_frame_index_intersection = []
+  function_intersection = []
 
   # Iterate through the crashed lines, and its occurence in stack.
-  for (line, stack_frame_index) in zip(crashed_line_list, stack_frame_index):
-    # Also check previous 'line_range' lines.
-    line_minus_n = range(line - line_range, line + 1)
+  for (lines, stack_frame_index, function_name) in zip(
+      crashed_line_list, stack_frame_index, function):
+    # Also check previous 'line_range' lines. Create a set of all changed lines
+    # and lines within 3 lines range before the crashed line.
+    line_minus_n = set()
+    for line in lines:
+      for line_in_range in range(line - line_range, line + 1):
+        line_minus_n.add(line_in_range)
 
     for changed_line in changed_line_numbers:
       # If a CL does not change crahsed line, check next line.
       if changed_line not in line_minus_n:
         continue
 
+      intersected_line = set()
       # If the changed line is exactly the crashed line, add that line.
-      if line in changed_line_numbers:
-        intersected_line = line
+      for line in lines:
+        if line in changed_line_numbers:
+          intersected_line.add(line)
 
-      # If the changed line is in 3 lines of the crashed line, add the line.
-      else:
-        intersected_line = changed_line
+        # If the changed line is in 3 lines of the crashed line, add the line.
+        else:
+          intersected_line.add(changed_line)
 
       # Avoid adding the same line twice.
-      if intersected_line not in line_intersection:
-        line_intersection.append(intersected_line)
+      if intersected_line not in line_number_intersection:
+        line_number_intersection.append(list(intersected_line))
         stack_frame_index_intersection.append(stack_frame_index)
-
+        function_intersection.append(function_name)
       break
 
-  return (line_intersection, stack_frame_index_intersection)
+  return (line_number_intersection, stack_frame_index_intersection,
+          function_intersection)
 
 
 def MatchListToResultList(matches):
@@ -406,9 +457,10 @@ def MatchListToResultList(matches):
     reviewers = match.reviewers
     # For matches, line content do not exist.
     line_content = None
+    message = match.message
 
     result = Result(suspected_cl, revision_url, component_name, author, reason,
-                    review_url, reviewers, line_content)
+                    review_url, reviewers, line_content, message)
     result_list.append(result)
 
   return result_list
@@ -431,15 +483,16 @@ def BlameListToResultList(blame_list):
     component_name = blame.component_name
     author = blame.author
     reason = (
-        'The CL changes line %s of file %s from stack %d.' %
+        'The CL last changed line %s of file %s, which is stack frame %d.' %
         (blame.line_number, blame.file, blame.stack_frame_index))
     # Blame object does not have review url and reviewers.
     review_url = None
     reviewers = None
     line_content = blame.line_content
+    message = blame.message
 
     result = Result(suspected_cl, revision_url, component_name, author, reason,
-                    review_url, reviewers, line_content)
+                    review_url, reviewers, line_content, message)
     result_list.append(result)
 
   return result_list

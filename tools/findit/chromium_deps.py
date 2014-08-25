@@ -5,6 +5,8 @@
 import base64
 import json
 import os
+import time
+import urllib2
 
 from common import utils
 
@@ -64,9 +66,22 @@ def _GetComponentName(path, host_dirs):
   return '_'.join(path.split('/'))
 
 
-def _GetContentOfDEPS(url):
-  _, content = utils.GetHttpClient().Get(url, timeout=60)
-  return content
+def _GetContentOfDEPS(url, retries=5, sleep_time=0.1):
+  count = 0
+  while True:
+    count += 1
+    try:
+      _, content = utils.GetHttpClient().Get(url, timeout=60)
+      return content
+
+    # TODO(jeun): Handle HTTP Errors, such as 404.
+    except urllib2.HTTPError:
+      if count < retries:
+        time.sleep(sleep_time)
+      else:
+        break
+
+  return ''
 
 
 def GetChromiumComponents(chromium_revision,

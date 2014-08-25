@@ -1,4 +1,4 @@
-# Copyright 2014 The Chromium Authors. All rights reserved.
+# Copyright (c) 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -79,13 +79,15 @@ def GenerateMatchEntry(
 
   # Find the intersection between the lines that this file crashed on and
   # the changed lines.
-  (line_number_intersection, stack_frame_index_intersection) = (
+  (line_number_intersection, stack_frame_index_intersection, functions) = (
       crash_utils.Intersection(
-          crashed_line_numbers, stack_frame_indices, changed_line_numbers))
+          crashed_line_numbers, stack_frame_indices, changed_line_numbers,
+          function))
 
   # Find the minimum distance between the changed lines and crashed lines.
-  min_distance = crash_utils.FindMinLineDistance(crashed_line_numbers,
-                                                 changed_line_numbers)
+  (min_distance, min_crashed_line, min_changed_line) = \
+      crash_utils.FindMinLineDistance(crashed_line_numbers,
+                                      changed_line_numbers)
 
   # Check whether this CL changes the crashed lines or not.
   if line_number_intersection:
@@ -103,15 +105,17 @@ def GenerateMatchEntry(
     # Update the min distance only if it is less than the current one.
     if min_distance < match.min_distance:
       match.min_distance = min_distance
+      match.min_distance_info = (file_name, min_crashed_line, min_changed_line)
 
     # If this CL does not change the crashed line, all occurrence of this
     # file in the stack has the same priority.
     if not stack_frame_index_intersection:
       stack_frame_index_intersection = stack_frame_indices
+      functions = function
     match.stack_frame_indices.append(stack_frame_index_intersection)
     match.changed_file_urls.append(diff_url)
     match.priorities.append(priority)
-    match.function_list.append(function)
+    match.function_list.append(functions)
 
 
 def FindMatch(revisions_info_map, file_to_revision_info, file_to_crash_info,
@@ -145,14 +149,13 @@ def FindMatch(revisions_info_map, file_to_revision_info, file_to_crash_info,
 
     # If the file in the stacktrace is not changed in any commits, continue.
     for changed_file_path in file_to_revision_info:
-      changed_file_name = changed_file_path.split('/')[-1]
-      crashed_file_name = crashed_file_path.split('/')[-1]
-
+      changed_file_name = changed_file_path.split('/')[-1].lower()
+      crashed_file_name = crashed_file_path.split('/')[-1].lower()
       if changed_file_name != crashed_file_name:
         continue
 
       if not crash_utils.GuessIfSameSubPath(
-          changed_file_path, crashed_file_path):
+          changed_file_path.lower(), crashed_file_path.lower()):
         continue
 
       crashed_line_numbers = file_to_crash_info.GetCrashedLineNumbers(
@@ -356,9 +359,10 @@ def SortMatchesFunction(match_with_stack_priority):
 
   return (min(match.priorities),
           stack_priority,
+          match.min_distance,
           crash_utils.FindMinStackFrameNumber(match.stack_frame_indices,
                                               match.priorities),
-          -len(match.changed_files), match.min_distance)
+          -len(match.changed_files))
 
 
 def SortAndFilterMatches(matches, num_important_frames=5):
@@ -379,7 +383,6 @@ def SortAndFilterMatches(matches, num_important_frames=5):
   is_important_frame = False
   highest_priority_stack = crash_utils.INFINITY
   matches.sort(key=SortMatchesFunction)
-
   # Iterate through the matches to find out what results are significant.
   for stack_priority, cl, match in matches:
     # Check if the current match changes crashed line.
@@ -434,47 +437,56 @@ def GenerateReasonForMatches(matches):
     # (how the file is modified).
     match_by_priority = zip(
         match.priorities, match.crashed_line_numbers, match.changed_files,
-        match.changed_file_urls)
+        match.stack_frame_indices, match.function_list)
 
     # Sort the zipped changed files in the match by their priority so that the
     # changed lines comes first in the reason.
     match_by_priority.sort(
-        key=lambda (priority, crashed_line_number, file_name, url): priority)
+        key=lambda (priority, crashed_line_numbers, file_name,
+                    stack_frame_indices, function_list): priority)
 
     # Iterate through the sorted match.
     for i in range(len(match_by_priority)):
-      (priority, crashed_line_number, file_name, file_url) = \
-          match_by_priority[i]
+      (priority, crashed_line_numbers, file_name, stack_frame_indices,
+       function_list) = match_by_priority[i]
 
       # If the file in the match is a line change, append a explanation.
       if priority == LINE_CHANGE_PRIORITY:
+        crashed_line_numbers = [crashed_line_number
+                                for lines in crashed_line_numbers
+                                for crashed_line_number in lines]
         reason.append(
-            'Line %s of file %s      which potentially caused the crash '
-            'according to the stacktrace, is changed in this cl.\n' %
-            (crash_utils.PrettifyList(crashed_line_number),
-             crash_utils.PrettifyFiles([(file_name, file_url)])))
+            'Line %s of file %s which potentially caused the crash '
+            'according to the stacktrace, is changed in this cl'
+            ' (From stack frame %s, function %s).' %
+            (crash_utils.PrettifyList(crashed_line_numbers),
+             file_name,
+             crash_utils.PrettifyList(stack_frame_indices),
+             crash_utils.PrettifyList(function_list)))
 
       else:
         # Get all the files that are not line change.
         rest_of_the_files = match_by_priority[i:]
 
         if len(rest_of_the_files) == 1:
-          file_string = 'File %s      is changed in this cl.\n'
+          file_string = 'File %s is changed in this cl '
         else:
-          file_string = 'Files %s      are changed in this cl.\n'
+          file_string = 'Files %s are changed in this cl '
 
-        # Create a list of file name and its url, and prettify the list.
-        file_name_with_url = [(file_name, file_url)
-                              for (_, _, file_name, file_url)
-                              in rest_of_the_files]
-        pretty_file_name_url = crash_utils.PrettifyFiles(file_name_with_url)
+        # Create a list of file names, and prettify the list.
+        file_names = [
+            file_name for (_, _, file_name, _, _) in rest_of_the_files]
+        pretty_file_names = crash_utils.PrettifyList(file_names)
 
         # Add the reason, break because we took care of the rest of the files.
-        reason.append(file_string % pretty_file_name_url)
+        file_string += ('(From stack frames %s, functions %s)' %
+                        (crash_utils.PrettifyList(stack_frame_indices),
+                         crash_utils.PrettifyList(function_list)))
+        reason.append(file_string % pretty_file_names)
         break
 
     # Set the reason as string.
-    match.reason = ''.join(reason)
+    match.reason = '\n'.join(reason)
 
 
 def CombineMatches(matches):
@@ -505,6 +517,17 @@ def CombineMatches(matches):
 
     # Combine the reason if the current match is already in there.
     found_match.reason += match.reason
+    if match.min_distance < found_match.min_distance:
+      found_match.min_distance = match.min_distance
+      found_match.min_distance_info = match.min_distance_info
+
+  for stack_index, cl, match in combined_matches:
+    if match.min_distance_info:
+      file_name, min_crashed_line, min_changed_line = match.min_distance_info
+      match.reason += \
+          ('\nMininimum distance from crashed line to changed line: %d. '
+           '(File: %s, Crashed on: %d, Changed: %d).' %
+           (match.min_distance, file_name, min_crashed_line, min_changed_line))
 
   return combined_matches
 
@@ -535,7 +558,6 @@ def ParseCrashComponents(main_stack):
 
   Args:
     main_stack: Main stack from the stacktrace.
-    top_n_frames: A number of frames to regard as crashing frame.
 
   Returns:
     A set of components.
@@ -564,10 +586,14 @@ def GenerateAndFilterBlameList(callstack, component_to_crash_revision_dict,
   Returns:
     A list of blame results.
   """
+  if component_to_regression_dict:
+    parsed_deps = component_to_regression_dict
+  else:
+    parsed_deps = component_to_crash_revision_dict
+
   # Setup parser objects to use for parsing blame information.
   svn_parser = svn_repository_parser.SVNParser(CONFIG['svn'])
-  git_parser = git_repository_parser.GitParser(component_to_regression_dict,
-                                               CONFIG['git'])
+  git_parser = git_repository_parser.GitParser(parsed_deps, CONFIG['git'])
   parsers = {}
   parsers['svn'] = svn_parser
   parsers['git'] = git_parser
@@ -602,12 +628,16 @@ def FindItForCrash(stacktrace_list,
   """
   # If regression information is not available, return blame information.
   if not component_to_regression_dict:
-    return_message = (
-        'Regression information is not available. The result is '
-        'the blame information.')
     result = GenerateAndFilterBlameList(callstack,
                                         component_to_crash_revision_dict,
                                         component_to_regression_dict)
+    if result:
+      return_message = (
+          'Regression information is not available. The result is '
+          'the blame information.')
+    else:
+      return_message = ('Findit could not find any suspected CLs.')
+
     return (return_message, result)
 
   for stacktrace in stacktrace_list:
@@ -622,24 +652,33 @@ def FindItForCrash(stacktrace_list,
 
     result_for_stacktrace = FindMatchForStacktrace(
         stacktrace, components, component_to_regression_dict)
+    filtered_result = FilterAndGenerateReasonForMatches(result_for_stacktrace)
 
     # If the result is empty, check the next stacktrace. Else, return the
     # filtered result.
-    if not result_for_stacktrace:
+    if not filtered_result:
       continue
 
     return_message = (
         'The result is a list of CLs that change the crashed files.')
-    result = FilterAndGenerateReasonForMatches(result_for_stacktrace)
-    return (return_message, result)
+    return (return_message, filtered_result)
 
   # If no match is found, return the blame information for the input
   # callstack.
-  return_message = (
-      'There are no CLs that change the crashed files. The result is the '
-      'blame information.')
   result = GenerateAndFilterBlameList(
       callstack, component_to_crash_revision_dict,
       component_to_regression_dict)
+
+  if result:
+    return_message = (
+        'No CL in the regression changes the crashed files. The result is '
+        'the blame information.')
+
+  # When findit could not find any CL that changes file in stacktrace or if
+  # if cannot get any blame information, return a message saying that no
+  # results are available.
+  else:
+    return_message = ('Findit could not find any suspected CLs.')
+
   return (return_message, result)
 

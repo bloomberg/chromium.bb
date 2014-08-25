@@ -5,6 +5,7 @@
 from threading import Lock, Thread
 
 from common import utils
+import crash_utils
 
 
 class Blame(object):
@@ -28,7 +29,7 @@ class Blame(object):
   """
 
   def __init__(self, line_content, component_name, stack_frame_index,
-               file_name, line_number, author, revision,
+               file_name, line_number, author, revision, message,
                url, range_start, range_end):
     # Set all the variables from the arguments.
     self.line_content = line_content
@@ -38,6 +39,7 @@ class Blame(object):
     self.line_number = line_number
     self.author = author
     self.revision = revision
+    self.message = message
     self.url = url
     self.range_start = range_start
     self.range_end = range_end
@@ -56,7 +58,8 @@ class BlameList(object):
   def __getitem__(self, index):
     return self.blame_list[index]
 
-  def FindBlame(self, callstack, crash_revision_dict, regression_dict, parsers,
+  def FindBlame(self, callstack, component_to_crash_revision_dict,
+                component_to_regression_dict, parsers,
                 top_n_frames=10):
     """Given a stack within a stacktrace, retrieves blame information.
 
@@ -65,10 +68,10 @@ class BlameList(object):
 
     Args:
       callstack: The list of stack frames.
-      crash_revision_dict: A dictionary that maps component to its crash
-                          revision.
-      regression_dict: A dictionary that maps component to its revision
-                          range.
+      component_to_crash_revision_dict: A dictionary that maps component to its
+                                        crash revision.
+      component_to_regression_dict: A dictionary that maps component to its
+                                    revision range.
       parsers: A list of two parsers, svn_parser and git_parser
       top_n_frames: A number of stack frames to show the blame result for.
     """
@@ -80,23 +83,22 @@ class BlameList(object):
       # If the component this line is from does not have a crash revision,
       # it is not possible to get blame information, so ignore this line.
       component_path = stack_frame.component_path
-      if component_path not in crash_revision_dict:
+      if component_path not in component_to_crash_revision_dict:
         continue
 
-      crash_revision = crash_revision_dict[component_path]['revision']
+      crash_revision = component_to_crash_revision_dict[
+          component_path]['revision']
       range_start = None
       range_end = None
-      is_git = utils.IsGitHash(crash_revision)
-      if is_git:
-        repository_parser = parsers['git']
-      else:
-        repository_parser = parsers['svn']
+      repository_type = crash_utils.GetRepositoryType(crash_revision)
+      repository_parser = parsers[repository_type]
 
       # If the revision is in SVN, and if regression information is available,
       # get it. For Git, we cannot know the ordering between hash numbers.
-      if not is_git:
-        if regression_dict and component_path in regression_dict:
-          component_object = regression_dict[component_path]
+      if repository_type == 'svn':
+        if component_to_regression_dict and \
+            component_path in component_to_regression_dict:
+          component_object = component_to_regression_dict[component_path]
           range_start = int(component_object['old_revision'])
           range_end = int(component_object['new_revision'])
 
@@ -120,20 +122,20 @@ class BlameList(object):
     component_name = stack_frame.component_name
     file_name = stack_frame.file_name
     file_path = stack_frame.file_path
-    crashed_line_number = stack_frame.crashed_line_number
+    crashed_line_number = stack_frame.crashed_line_range[0]
 
     # Parse blame information.
     parsed_blame_info = repository_parser.ParseBlameInfo(
         component_path, file_path, crashed_line_number, crash_revision)
 
     # If it fails to retrieve information, do not do anything.
-    if not parsed_blame_info or len(parsed_blame_info) != 4:
+    if not parsed_blame_info:
       return
 
     # Create blame object from the parsed info and add it to the list.
-    (line_content, revision, author, url) = parsed_blame_info
+    (line_content, revision, author, url, message) = parsed_blame_info
     blame = Blame(line_content, component_name, stack_frame_index, file_name,
-                  crashed_line_number, author, revision, url,
+                  crashed_line_number, author, revision, message, url,
                   range_start, range_end)
 
     with self.blame_list_lock:

@@ -1,9 +1,7 @@
-# Copyright 2014 The Chromium Authors. All rights reserved.
+# Copyright (c) 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import logging
-import os
 import xml.dom.minidom as minidom
 from xml.parsers.expat import ExpatError
 
@@ -41,7 +39,6 @@ class SVNParser(ParserInterface):
 
     url_map = self.component_to_urls_map.get(component)
     if not url_map:
-      logging.error('Component %s is not currently supported.', component)
       return (revision_map, file_to_revision_map)
 
     # Retrieve data from the url, return empty map if fails.
@@ -49,16 +46,12 @@ class SVNParser(ParserInterface):
     url = url_map['changelog_url'] % revision_range_str
     response = crash_utils.GetDataFromURL(url)
     if not response:
-      logging.error('Failed to retrieve changelog from %s, range %s.',
-                    url, revision_range_str)
       return (revision_map, file_to_revision_map)
 
     # Parse xml out of the returned string. If it fails, return empty map.
     try:
       xml_revisions = minidom.parseString(response)
     except ExpatError:
-      logging.error('Failed to parse changelog from %s, range %s.',
-                    url, revision_range_str)
       return (revision_map, file_to_revision_map)
 
     # Iterate through the returned XML object.
@@ -78,16 +71,18 @@ class SVNParser(ParserInterface):
       paths = revision.getElementsByTagName('paths')
       if paths:
         for changed_path in paths[0].getElementsByTagName('path'):
-          # Get path, file action and file name from the xml.
+          # Get path and file change type from the xml.
           file_path = changed_path.firstChild.nodeValue
-          file_action = changed_path.getAttribute('action')
-          changed_file = os.path.basename(file_path)
+          file_change_type = changed_path.getAttribute('action')
+
+          if file_path.startswith('/trunk/'):
+            file_path = file_path[len('/trunk/'):]
 
           # Add file to the map.
-          if changed_file not in file_to_revision_map:
-            file_to_revision_map[changed_file] = []
-          file_to_revision_map[changed_file].append(
-              (revision_number, file_action, file_path))
+          if file_path not in file_to_revision_map:
+            file_to_revision_map[file_path] = []
+          file_to_revision_map[file_path].append(
+              (revision_number, file_change_type))
 
       # Set commit message of the CL.
       revision_object['message'] = revision.getElementsByTagName('msg')[
@@ -102,18 +97,17 @@ class SVNParser(ParserInterface):
 
     return (revision_map, file_to_revision_map)
 
-  def ParseLineDiff(self, path, component, file_action, revision_number):
+  def ParseLineDiff(self, path, component, file_change_type, revision_number):
     changed_line_numbers = []
     changed_line_contents = []
 
     url_map = self.component_to_urls_map.get(component)
     if not url_map:
-      logging.error('Component %s is not currently supported.', component)
       return (None, None, None)
 
     # If the file is added (not modified), treat it as if it is not changed.
     backup_url = url_map['revision_url'] % revision_number
-    if file_action == 'A':
+    if file_change_type == 'A':
       return (backup_url, changed_line_numbers, changed_line_contents)
 
     # Retrieve data from the url. If no data is retrieved, return empty lists.
@@ -121,7 +115,6 @@ class SVNParser(ParserInterface):
                                  revision_number, revision_number)
     data = crash_utils.GetDataFromURL(url)
     if not data:
-      logging.error('Failed to get line changes from %s.', url)
       return (backup_url, changed_line_numbers, changed_line_contents)
 
     line_diff_html = minidom.parseString(data)
@@ -129,8 +122,6 @@ class SVNParser(ParserInterface):
     # If there are not NUM_TABLES tables in the html page, there should be an
     # error in the html page.
     if len(tables) != NUM_TABLES_IN_LINEDIFF_PAGE:
-      logging.error('Failed to retrieve the diff of revision %d from %s.',
-                    revision_number, url)
       return (backup_url, changed_line_numbers, changed_line_contents)
 
     # Diff content is in the second table. Each line of the diff content
@@ -163,8 +154,6 @@ class SVNParser(ParserInterface):
 
       # If there aren't 3 tds, this line does should not contain line diff.
       if len(tds) != NUM_TDS_IN_LINEDIFF_PAGE:
-        logging.warning('Failed to get a line of new file in revision %d.',
-                        revision_number)
         continue
 
       # If line number information is not in hyperlink, ignore this line.
@@ -173,8 +162,6 @@ class SVNParser(ParserInterface):
         left_diff_type = tds[1].getAttribute('class')[prefix_len:]
         right_diff_type = tds[2].getAttribute('class')[prefix_len:]
       except IndexError:
-        logging.warning('Failed to get a line of file in revision %d.',
-                        revision_number)
         continue
 
       # Treat the line as modified only if both left and right diff has type
@@ -198,15 +185,12 @@ class SVNParser(ParserInterface):
   def ParseBlameInfo(self, component, file_path, line, revision):
     url_map = self.component_to_urls_map.get(component)
     if not url_map:
-      logging.error('Component %s is not currently supported.', component)
       return None
 
     # Retrieve blame data from url, return None if fails.
     url = url_map['blame_url'] % (file_path, revision, revision)
     data = crash_utils.GetDataFromURL(url)
     if not data:
-      logging.error('Failed to retrieve annotation information from %s.',
-                    url)
       return None
 
     blame_html = minidom.parseString(data)
@@ -214,17 +198,18 @@ class SVNParser(ParserInterface):
     title = blame_html.getElementsByTagName('title')
     # If the returned html page is an exception page, return None.
     if title[0].firstChild.nodeValue == 'ViewVC Exception':
-      logging.error('Failed to retrieve blame information from %s.', url)
       return None
 
     # Each of the blame result is in <tr>.
     blame_results = blame_html.getElementsByTagName('tr')
-    blame_result = blame_results[line]
+    try:
+      blame_result = blame_results[line]
+    except IndexError:
+      return None
 
     # There must be 4 <td> for each <tr>. If not, this page is wrong.
     tds = blame_result.getElementsByTagName('td')
     if len(tds) != 4:
-      logging.error('Failed to retrieve blame information from %s.', url)
       return None
 
     # The third <td> has the line content, separated by <span>s. Combine
@@ -257,6 +242,9 @@ class SVNParser(ParserInterface):
     except IndexError:
       revision = tds[2].firstChild.nodeValue
 
+    (revision_info, _) = self.ParseChangelog(component, revision, revision)
+    message = revision_info[int(revision)]['message']
+
     # Return the parsed information.
     revision_url = url_map['revision_url'] % int(revision)
-    return (line_content, revision, author, revision_url)
+    return (line_content, revision, author, revision_url, message)

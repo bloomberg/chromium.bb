@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import logging
 import re
 
 from threading import Lock
@@ -10,7 +9,7 @@ from threading import Lock
 import crash_utils
 
 
-REVIEW_URL_PATTERN = re.compile(r'Review URL:( *)(.*)')
+REVIEW_URL_PATTERN = re.compile(r'Review URL:( *)(.*?)/(\d+)')
 
 
 class Match(object):
@@ -20,7 +19,7 @@ class Match(object):
   contains information about files it changes, their authors, etc.
 
   Attributes:
-    is_reverted: True if this CL is reverted by other CL.
+    is_revert: True if this CL is reverted by other CL.
     revert_of: If this CL is a revert of some other CL, a revision number/
                git hash of that CL.
     crashed_line_numbers: The list of lines that caused crash for this CL.
@@ -33,10 +32,9 @@ class Match(object):
     component_name: The name of the component that this CL belongs to.
     stack_frame_indices: For files that caused crash, list of where in the
                          stackframe they occur.
-    rank: The highest priority among the files the CL changes. Priority = 1
-          if it changes the crashed line, and priority = 2 if it is a simple
-          file change.
-    priorities: A list of priorities for each of the changed file.
+    priorities: A list of priorities for each of the changed file. A priority
+                is 1 if the file changes a crashed line, and 2 if it changes
+                the file but not the crashed line.
     reivision_url: The revision URL of the CL.
     review_url: The codereview URL that reviews this CL.
     reviewers: The list of people that reviewed this CL.
@@ -45,17 +43,18 @@ class Match(object):
   REVERT_PATTERN = re.compile(r'(revert\w*) r?(\d+)', re.I)
 
   def __init__(self, revision, component_name):
-    self.is_reverted = False
+    self.is_revert = False
     self.revert_of = None
+    self.message = None
     self.crashed_line_numbers = []
     self.function_list = []
     self.min_distance = crash_utils.INFINITY
+    self.min_distance_info = None
     self.changed_files = []
     self.changed_file_urls = []
     self.author = revision['author']
     self.component_name = component_name
     self.stack_frame_indices = []
-    self.rank = crash_utils.INFINITY
     self.priorities = []
     self.revision_url = revision['url']
     self.review_url = ''
@@ -72,6 +71,7 @@ class Match(object):
       message: The message to parse.
       codereview_api_url: URL to retrieve codereview data from.
     """
+    self.message = message
     for line in message.splitlines():
       line = line.strip()
       review_url_line_match = REVIEW_URL_PATTERN.match(line)
@@ -80,14 +80,12 @@ class Match(object):
       if review_url_line_match:
 
         # Get review number for the code review site from the line.
-        issue_number = review_url_line_match.group(2)
+        issue_number = review_url_line_match.group(3)
 
         # Get JSON from the code review site, ignore the line if it fails.
         url = codereview_api_url % issue_number
         json_string = crash_utils.GetDataFromURL(url)
         if not json_string:
-          logging.warning('Failed to retrieve code review information from %s',
-                          url)
           continue
 
         # Load the JSON from the string, and get the list of reviewers.
@@ -97,7 +95,7 @@ class Match(object):
 
       # Check if this CL is a revert of other CL.
       if line.lower().startswith('revert'):
-        self.is_reverted = True
+        self.is_revert = True
 
         # Check if the line says what CL this CL is a revert of.
         revert = self.REVERT_PATTERN.match(line)

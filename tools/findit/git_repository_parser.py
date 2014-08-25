@@ -1,15 +1,19 @@
-# Copyright 2014 The Chromium Authors. All rights reserved.
+# Copyright (c) 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 import base64
-import logging
-import os
 import xml.dom.minidom as minidom
 from xml.parsers.expat import ExpatError
 
 import crash_utils
 from repository_parser_interface import ParserInterface
+
+FILE_CHANGE_TYPE_MAP = {
+    'add': 'A',
+    'delete': 'D',
+    'modify': 'M'
+}
 
 
 class GitParser(ParserInterface):
@@ -39,14 +43,16 @@ class GitParser(ParserInterface):
     html_url = url + '?pretty=fuller'
     response = crash_utils.GetDataFromURL(html_url)
     if not response:
-      logging.error('Failed to retrieve changelog from %s', html_url)
       return (revision_map, file_to_revision_map)
 
-    # Parse xml out of the returned string. If it failes, return empty map.
+    # Parse xml out of the returned string. If it failes, Try parsing
+    # from JSON objects.
     try:
       dom = minidom.parseString(response)
     except ExpatError:
-      logging.error('Failed to parse changelog from %s', url)
+      self.ParseChangelogFromJSON(range_start, range_end, changelog_url,
+                                  revision_url, revision_map,
+                                  file_to_revision_map)
       return (revision_map, file_to_revision_map)
 
     # The revisions information are in from the third divs to the second
@@ -93,22 +99,16 @@ class GitParser(ParserInterface):
       for li in lis:
         # Retrieve path and action of the changed file
         file_path = li.getElementsByTagName('a')[0].firstChild.nodeValue
-        file_action = li.getElementsByTagName('span')[0].getAttribute('class')
+        file_change_type = li.getElementsByTagName('span')[
+            0].getAttribute('class')
 
         # Normalize file action so that it is same as SVN parser.
-        if file_action == 'add':
-          file_action = 'A'
-        elif file_action == 'delete':
-          file_action = 'D'
-        elif file_action == 'modify':
-          file_action = 'M'
+        file_change_type = FILE_CHANGE_TYPE_MAP[file_change_type]
 
         # Add the changed file to the map.
-        changed_file = os.path.basename(file_path)
-        if changed_file not in file_to_revision_map:
-          file_to_revision_map[changed_file] = []
-        file_to_revision_map[changed_file].append((githash, file_action,
-                                                   file_path))
+        if file_path not in file_to_revision_map:
+          file_to_revision_map[file_path] = []
+        file_to_revision_map[file_path].append((githash, file_change_type))
 
       # Add this revision object to the map.
       revision_map[githash] = revision
@@ -137,14 +137,12 @@ class GitParser(ParserInterface):
     json_url = changelog_url + '?format=json'
     response = crash_utils.GetDataFromURL(json_url)
     if not response:
-      logging.error('Failed to retrieve changelog from %s.', json_url)
       return
 
     # Parse changelog from the returned object. The returned string should
     # start with ")}]'\n", so start from the 6th character.
     revisions = crash_utils.LoadJSON(response[5:])
     if not revisions:
-      logging.error('Failed to parse changelog from %s.', json_url)
       return
 
     # Parse individual revision in the log.
@@ -165,13 +163,11 @@ class GitParser(ParserInterface):
     url = revision_url % githash
     response = crash_utils.GetDataFromURL(url + '?format=json')
     if not response:
-      logging.warning('Failed to retrieve revision from %s.', url)
       return
 
     # Load JSON object from the string. If it fails, terminate the function.
     json_revision = crash_utils.LoadJSON(response[5:])
     if not json_revision:
-      logging.warning('Failed to parse revision from %s.', url)
       return
 
     # Create a map representing object and get githash from the JSON object.
@@ -186,43 +182,35 @@ class GitParser(ParserInterface):
     # Iterate through the changed files.
     for diff in json_revision['tree_diff']:
       file_path = diff['new_path']
-      file_action = diff['type']
+      file_change_type = diff['type']
 
       # Normalize file action so that it fits with svn_repository_parser.
-      if file_action == 'add':
-        file_action = 'A'
-      elif file_action == 'delete':
-        file_action = 'D'
-      elif file_action == 'modify':
-        file_action = 'M'
+      file_change_type = FILE_CHANGE_TYPE_MAP[file_change_type]
 
       # Add the file to the map.
-      changed_file = os.path.basename(file_path)
-      if changed_file not in file_to_revision_map:
-        file_to_revision_map[changed_file] = []
-      file_to_revision_map[changed_file].append(
-          (githash, file_action, file_path))
+      if file_path not in file_to_revision_map:
+        file_to_revision_map[file_path] = []
+      file_to_revision_map[file_path].append((githash, file_change_type))
 
     # Add this CL to the map.
     revision_map[githash] = revision
 
     return
 
-  def ParseLineDiff(self, path, component, file_action, githash):
+  def ParseLineDiff(self, path, component, file_change_type, githash):
     changed_line_numbers = []
     changed_line_contents = []
     base_url = self.component_to_url_map[component]['repository']
     backup_url = (base_url + self.url_parts_map['revision_url']) % githash
 
     # If the file is added (not modified), treat it as if it is not changed.
-    if file_action == 'A':
+    if file_change_type == 'A':
       return (backup_url, changed_line_numbers, changed_line_contents)
 
     # Retrieves the diff data from URL, and if it fails, return emptry lines.
     url = (base_url + self.url_parts_map['diff_url']) % (githash, path)
     data = crash_utils.GetDataFromURL(url + '?format=text')
     if not data:
-      logging.error('Failed to get diff from %s.', url)
       return (backup_url, changed_line_numbers, changed_line_contents)
 
     # Decode the returned object to line diff info
@@ -260,16 +248,12 @@ class GitParser(ParserInterface):
     blame_url = base_url + url_part
     json_string = crash_utils.GetDataFromURL(blame_url)
     if not json_string:
-      logging.error('Failed to retrieve annotation information from %s.',
-                    blame_url)
       return
 
     # Parse JSON object from the string. The returned string should
     # start with ")}]'\n", so start from the 6th character.
     annotation = crash_utils.LoadJSON(json_string[5:])
     if not annotation:
-      logging.error('Failed to parse annotation information from %s.',
-                    blame_url)
       return
 
     # Go through the regions, which is a list of consecutive lines with same
@@ -289,7 +273,9 @@ class GitParser(ParserInterface):
         # TODO(jeun): Add a way to get content from JSON object.
         content = None
 
-        return (content, revision, author, revision_url)
+        (revision_info, _) = self.ParseChangelog(component, revision, revision)
+        message = revision_info[revision]['message']
+        return (content, revision, author, revision_url, message)
 
     # Return none if the region does not exist.
     return None

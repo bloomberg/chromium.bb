@@ -2,10 +2,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import os
 import re
 
 import crash_utils
+
+
+SYZYASAN_STACK_FRAME_PATTERN = re.compile(
+    r'(CF: )?(.*?)( \(FPO: .*\) )?( \(CONV: .*\) )?\[(.*) @ (\d+)\]')
+FILE_PATH_AND_LINE_PATTERN = re.compile(r'(.*?):(\d+)(:\d+)?')
 
 
 class StackFrame(object):
@@ -18,18 +22,18 @@ class StackFrame(object):
     file_name: The name of the file that crashed.
     function: The function that caused the crash.
     file_path: The path of the crashed file.
-    crashed_line_number: The line of the file that caused the crash.
+    crashed_line_range: The line of the file that caused the crash.
   """
 
   def __init__(self, stack_frame_index, component_path, component_name,
-               file_name, function, file_path, crashed_line_number):
+               file_name, function, file_path, crashed_line_range):
     self.index = stack_frame_index
     self.component_path = component_path
     self.component_name = component_name
     self.file_name = file_name
     self.function = function
     self.file_path = file_path
-    self.crashed_line_number = crashed_line_number
+    self.crashed_line_range = crashed_line_range
 
 
 class CallStack(object):
@@ -59,10 +63,9 @@ class Stacktrace(object):
 
   def __init__(self, stacktrace, build_type, parsed_deps):
     self.stack_list = None
-    self.parsed_deps = parsed_deps
-    self.ParseStacktrace(stacktrace, build_type)
+    self.ParseStacktrace(stacktrace, build_type, parsed_deps)
 
-  def ParseStacktrace(self, stacktrace, build_type):
+  def ParseStacktrace(self, stacktrace, build_type, parsed_deps):
     """Parses stacktrace and normalizes it.
 
     If there are multiple callstacks within the stacktrace,
@@ -72,11 +75,11 @@ class Stacktrace(object):
     Args:
       stacktrace: A string containing stacktrace.
       build_type: A string containing the build type of the crash.
+      parsed_deps: A parsed DEPS file to normalize path with.
     """
     # If the passed in string is empty, the object does not represent anything.
     if not stacktrace:
       return
-
     # Reset the stack list.
     self.stack_list = []
     reached_new_callstack = False
@@ -84,14 +87,13 @@ class Stacktrace(object):
     # position of a frame within a callstack. The reason for not extracting
     # index from a line is that some stack frames do not have index.
     stack_frame_index = 0
-    current_stack = None
+    current_stack = CallStack(-1)
 
     for line in stacktrace:
+      line = line.strip()
       (is_new_callstack, stack_priority) = self.__IsStartOfNewCallStack(
           line, build_type)
-
       if is_new_callstack:
-
         # If this callstack is crash stack, update the boolean.
         if not reached_new_callstack:
           reached_new_callstack = True
@@ -107,7 +109,7 @@ class Stacktrace(object):
 
       # Generate stack frame object from the line.
       parsed_stack_frame = self.__GenerateStackFrame(
-          stack_frame_index, line, build_type)
+          stack_frame_index, line, build_type, parsed_deps)
 
       # If the line does not represent the stack frame, ignore this line.
       if not parsed_stack_frame:
@@ -135,11 +137,7 @@ class Stacktrace(object):
       True if the line is the start of new callstack, False otherwise. If True,
       it also returns the priority of the line.
     """
-    # Currently not supported.
-    if 'android' in build_type:
-      pass
-
-    elif 'syzyasan' in build_type:
+    if 'syzyasan' in build_type:
       # In syzyasan build, new stack starts with 'crash stack:',
       # 'freed stack:', etc.
       callstack_start_pattern = re.compile(r'^(.*) stack:$')
@@ -160,8 +158,11 @@ class Stacktrace(object):
 
     elif 'tsan' in build_type:
       # Create patterns for each callstack type.
-      crash_callstack_start_pattern = re.compile(
+      crash_callstack_start_pattern1 = re.compile(
           r'^(Read|Write) of size \d+')
+
+      crash_callstack_start_pattern2 = re.compile(
+          r'^[A-Z]+: ThreadSanitizer')
 
       allocation_callstack_start_pattern = re.compile(
           r'^Previous (write|read) of size \d+')
@@ -170,7 +171,8 @@ class Stacktrace(object):
           r'^Location is heap block of size \d+')
 
       # Crash stack gets priority 0.
-      if crash_callstack_start_pattern.match(line):
+      if (crash_callstack_start_pattern1.match(line) or
+          crash_callstack_start_pattern2.match(line)):
         return (True, 0)
 
       # All other stacks get priority 1.
@@ -183,9 +185,10 @@ class Stacktrace(object):
     else:
       # In asan and other build types, crash stack can start
       # in two different ways.
-      crash_callstack_start_pattern1 = re.compile(r'^==\d+== ?ERROR:')
+      crash_callstack_start_pattern1 = re.compile(r'^==\d+== ?[A-Z]+:')
       crash_callstack_start_pattern2 = re.compile(
           r'^(READ|WRITE) of size \d+ at')
+      crash_callstack_start_pattern3 = re.compile(r'^backtrace:')
 
       freed_callstack_start_pattern = re.compile(
           r'^freed by thread T\d+ (.* )?here:')
@@ -198,7 +201,8 @@ class Stacktrace(object):
 
       # Crash stack gets priority 0.
       if (crash_callstack_start_pattern1.match(line) or
-          crash_callstack_start_pattern2.match(line)):
+          crash_callstack_start_pattern2.match(line) or
+          crash_callstack_start_pattern3.match(line)):
         return (True, 0)
 
       # All other callstack gets priority 1.
@@ -215,7 +219,8 @@ class Stacktrace(object):
     # stack priority.
     return (False, -1)
 
-  def __GenerateStackFrame(self, stack_frame_index, line, build_type):
+  def __GenerateStackFrame(self, stack_frame_index, line, build_type,
+                           parsed_deps):
     """Extracts information from a line in stacktrace.
 
     Args:
@@ -223,32 +228,59 @@ class Stacktrace(object):
       line: A stacktrace string to extract data from.
       build_type: A string containing the build type
                     of this crash (e.g. linux_asan_chrome_mp).
+      parsed_deps: A parsed DEPS file to normalize path with.
 
     Returns:
       A triple containing the name of the function, the path of the file and
       the crashed line number.
     """
     line_parts = line.split()
-
     try:
-      # Filter out lines that are not stack frame.
-      stack_frame_index_pattern = re.compile(r'#(\d+)')
-      if not stack_frame_index_pattern.match(line_parts[0]):
-        return None
 
-      # Tsan has different stack frame style from other builds.
-      if build_type.startswith('linux_tsan'):
-        file_path_and_line = line_parts[-2]
-        function = ' '.join(line_parts[1:-2])
+      if 'syzyasan' in build_type:
+        stack_frame_match = SYZYASAN_STACK_FRAME_PATTERN.match(line)
+
+        if not stack_frame_match:
+          return None
+        file_path = stack_frame_match.group(5)
+        crashed_line_range = [int(stack_frame_match.group(6))]
+        function = stack_frame_match.group(2)
 
       else:
-        file_path_and_line = line_parts[-1]
-        function = ' '.join(line_parts[3:-1])
+        if not line_parts[0].startswith('#'):
+          return None
 
-      # Get file path and line info from the line.
-      file_path_and_line = file_path_and_line.split(':')
-      file_path = file_path_and_line[0]
-      crashed_line_number = int(file_path_and_line[1])
+        if 'tsan' in build_type:
+          file_path_and_line = line_parts[-2]
+          function = ' '.join(line_parts[1:-2])
+        else:
+          file_path_and_line = line_parts[-1]
+          function = ' '.join(line_parts[3:-1])
+
+        # Get file path and line info from the line.
+        file_path_and_line_match = FILE_PATH_AND_LINE_PATTERN.match(
+            file_path_and_line)
+
+        # Return None if the file path information is not available
+        if not file_path_and_line_match:
+          return None
+
+        file_path = file_path_and_line_match.group(1)
+
+        # Get the crashed line range. For example, file_path:line_number:range.
+        crashed_line_range_num = file_path_and_line_match.group(3)
+
+        if crashed_line_range_num:
+          # Strip ':' prefix.
+          crashed_line_range_num = int(crashed_line_range_num[1:])
+        else:
+          crashed_line_range_num = 0
+
+        crashed_line_number = int(file_path_and_line_match.group(2))
+        # For example, 655:1 has crashed lines 655 and 656.
+        crashed_line_range = \
+            range(crashed_line_number,
+                  crashed_line_number + crashed_line_range_num + 1)
 
     # Return None if the line is malformed.
     except IndexError:
@@ -257,17 +289,13 @@ class Stacktrace(object):
       return None
 
     # Normalize the file path so that it can be compared to repository path.
-    file_name = os.path.basename(file_path)
     (component_path, component_name, file_path) = (
-        crash_utils.NormalizePathLinux(file_path, self.parsed_deps))
-
-    # If this component is not supported, ignore this line.
-    if not component_path:
-      return None
+        crash_utils.NormalizePath(file_path, parsed_deps))
 
     # Return a new stack frame object with the parsed information.
+    file_name = file_path.split('/')[-1]
     return StackFrame(stack_frame_index, component_path, component_name,
-                      file_name, function, file_path, crashed_line_number)
+                      file_name, function, file_path, crashed_line_range)
 
   def __getitem__(self, index):
     return self.stack_list[index]

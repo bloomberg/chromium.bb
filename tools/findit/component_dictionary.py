@@ -2,8 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import os
-
 
 class FileDictionary(object):
   """Maps file in a stacktrace to its crash information.
@@ -16,52 +14,41 @@ class FileDictionary(object):
     """Initializes the file dictionary."""
     self.file_dict = {}
 
-  def AddFile(self, file_name, file_path, crashed_line_number,
-              stack_frame_index, function):
+  def AddFile(self, file_path, crashed_line_range, stack_frame_index,
+              function):
     """Adds file and its crash information to the map.
 
     Args:
-      file_name: The name of the crashed file.
       file_path: The path of the crashed file.
-      crashed_line_number: The crashed line of the file.
+      crashed_line_range: The crashed line of the file.
       stack_frame_index: The file's position in the callstack.
       function: The name of the crashed function.
     """
-    # Populate the dictionary if this file/path has not been added before.
-    if file_name not in self.file_dict:
-      self.file_dict[file_name] = {}
-
-    if file_path not in self.file_dict[file_name]:
-      self.file_dict[file_name][file_path] = {}
-      self.file_dict[file_name][file_path]['line_numbers'] = []
-      self.file_dict[file_name][file_path]['stack_frame_indices'] = []
-      self.file_dict[file_name][file_path]['function'] = []
+    # Populate the dictionary if this file path has not been added before.
+    if file_path not in self.file_dict:
+      self.file_dict[file_path] = {}
+      self.file_dict[file_path]['line_numbers'] = []
+      self.file_dict[file_path]['stack_frame_indices'] = []
+      self.file_dict[file_path]['function'] = []
 
     # Add the crashed line, frame index and function name.
-    self.file_dict[file_name][file_path]['line_numbers'].append(
-        crashed_line_number)
-    self.file_dict[file_name][file_path]['stack_frame_indices'].append(
+    self.file_dict[file_path]['line_numbers'].append(
+        crashed_line_range)
+    self.file_dict[file_path]['stack_frame_indices'].append(
         stack_frame_index)
-    self.file_dict[file_name][file_path]['function'].append(function)
-
-  def GetPathDic(self, file_name):
-    """Returns file's path and crash information."""
-    return self.file_dict[file_name]
+    self.file_dict[file_path]['function'].append(function)
 
   def GetCrashedLineNumbers(self, file_path):
     """Returns crashed line numbers given a file path."""
-    file_name = os.path.basename(file_path)
-    return self.file_dict[file_name][file_path]['line_numbers']
+    return self.file_dict[file_path]['line_numbers']
 
-  def GetCrashStackFrameindex(self, file_path):
+  def GetCrashStackFrameIndices(self, file_path):
     """Returns stack frame indices given a file path."""
-    file_name = os.path.basename(file_path)
-    return self.file_dict[file_name][file_path]['stack_frame_indices']
+    return self.file_dict[file_path]['stack_frame_indices']
 
-  def GetCrashFunction(self, file_path):
+  def GetCrashFunctions(self, file_path):
     """Returns list of crashed functions given a file path."""
-    file_name = os.path.basename(file_path)
-    return self.file_dict[file_name][file_path]['function']
+    return self.file_dict[file_path]['function']
 
   def __iter__(self):
     return iter(self.file_dict)
@@ -99,18 +86,17 @@ class ComponentDictionary(object):
         continue
 
       # Get values of the variables
-      file_name = stack_frame.file_name
       file_path = stack_frame.file_path
-      crashed_line_number = stack_frame.crashed_line_number
+      crashed_line_range = stack_frame.crashed_line_range
       stack_frame_index = stack_frame.index
       function = stack_frame.function
 
       # Add the file to this component's dictionary of files.
       file_dict = self.component_dict[component_path]
-      file_dict.AddFile(file_name, file_path, crashed_line_number,
-                        stack_frame_index, function)
+      file_dict.AddFile(file_path, crashed_line_range, stack_frame_index,
+                        function)
 
-  def __CreateFileDictFromCallstack(self, callstack, top_n_frames=15):
+  def __CreateFileDictFromCallstack(self, callstack, top_n_frames=10):
     """Creates a file dict that maps a file to the occurrence in the stack.
 
     Args:
