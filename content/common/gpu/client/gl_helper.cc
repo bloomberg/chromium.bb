@@ -142,7 +142,7 @@ class GLHelper::CopyTextureToImpl
       const gfx::Rect& src_subrect,
       const gfx::Size& dst_size,
       unsigned char* out,
-      const SkColorType color_type,
+      const SkColorType out_color_type,
       const base::Callback<void(bool)>& callback,
       GLHelper::ScalerQuality quality);
 
@@ -325,6 +325,25 @@ class GLHelper::CopyTextureToImpl
                       SkColorType color_type,
                       GLHelper::ScalerQuality quality);
 
+  // Converts each four consecutive pixels of the source texture into one pixel
+  // in the result texture with each pixel channel representing the grayscale
+  // color of one of the four original pixels:
+  // R1G1B1A1 R2G2B2A2 R3G3B3A3 R4G4B4A4 -> X1X2X3X4
+  // The resulting texture is still an RGBA texture (which is ~4 times narrower
+  // than the original). If rendered directly, it wouldn't show anything useful,
+  // but the data in it can be used to construct a grayscale image.
+  // |encoded_texture_size| is the exact size of the resulting RGBA texture. It
+  // is equal to src_size.width()/4 rounded upwards. Some channels in the last
+  // pixel ((-src_size.width()) % 4) to be exact) are padding and don't contain
+  // useful data.
+  // If swizzle is set to true, the transformed pixels are reordered:
+  // R1G1B1A1 R2G2B2A2 R3G3B3A3 R4G4B4A4 -> X3X2X1X4.
+  GLuint EncodeTextureAsGrayscale(GLuint src_texture,
+                                  const gfx::Size& src_size,
+                                  gfx::Size* const encoded_texture_size,
+                                  bool vertically_flip_texture,
+                                  bool swizzle);
+
   static void nullcallback(bool success) {}
   void ReadbackDone(Request *request, int bytes_per_pixel);
   void FinishRequest(Request* request, bool result);
@@ -333,6 +352,7 @@ class GLHelper::CopyTextureToImpl
   static const float kRGBtoYColorWeights[];
   static const float kRGBtoUColorWeights[];
   static const float kRGBtoVColorWeights[];
+  static const float kRGBtoGrayscaleColorWeights[];
 
   GLES2Interface* gl_;
   gpu::ContextSupport* context_support_;
@@ -404,6 +424,43 @@ GLuint GLHelper::CopyTextureToImpl::ScaleTexture(
   return dst_texture;
 }
 
+GLuint GLHelper::CopyTextureToImpl::EncodeTextureAsGrayscale(
+    GLuint src_texture,
+    const gfx::Size& src_size,
+    gfx::Size* const encoded_texture_size,
+    bool vertically_flip_texture,
+    bool swizzle) {
+  GLuint dst_texture = 0u;
+  gl_->GenTextures(1, &dst_texture);
+  // The size of the encoded texture.
+  *encoded_texture_size =
+      gfx::Size((src_size.width() + 3) / 4, src_size.height());
+  {
+    ScopedTextureBinder<GL_TEXTURE_2D> texture_binder(gl_, dst_texture);
+    gl_->TexImage2D(GL_TEXTURE_2D,
+                    0,
+                    GL_RGBA,
+                    encoded_texture_size->width(),
+                    encoded_texture_size->height(),
+                    0,
+                    GL_RGBA,
+                    GL_UNSIGNED_BYTE,
+                    NULL);
+  }
+
+  helper_->InitScalerImpl();
+  scoped_ptr<ScalerInterface> grayscale_scaler(
+      helper_->scaler_impl_.get()->CreatePlanarScaler(
+          src_size,
+          gfx::Rect(0, 0, (src_size.width() + 3) & ~3, src_size.height()),
+          *encoded_texture_size,
+          vertically_flip_texture,
+          swizzle,
+          kRGBtoGrayscaleColorWeights));
+  grayscale_scaler->Scale(src_texture, dst_texture);
+  return dst_texture;
+}
+
 void GLHelper::CopyTextureToImpl::ReadbackAsync(
     const gfx::Size& dst_size,
     int32 bytes_per_row,
@@ -443,33 +500,86 @@ void GLHelper::CopyTextureToImpl::ReadbackAsync(
       base::Bind(&CopyTextureToImpl::ReadbackDone, AsWeakPtr(),
                  request, bytes_per_pixel));
 }
+
 void GLHelper::CopyTextureToImpl::CropScaleReadbackAndCleanTexture(
     GLuint src_texture,
     const gfx::Size& src_size,
     const gfx::Rect& src_subrect,
     const gfx::Size& dst_size,
     unsigned char* out,
-    const SkColorType color_type,
+    const SkColorType out_color_type,
     const base::Callback<void(bool)>& callback,
     GLHelper::ScalerQuality quality) {
   GLenum format, type;
   size_t bytes_per_pixel;
-  FormatSupport supported =
-      GetReadbackConfig(color_type, true, &format, &type, &bytes_per_pixel);
+  SkColorType readback_color_type = out_color_type;
+  // Single-component textures are not supported by all GPUs, so  we implement
+  // kAlpha_8_SkColorType support here via a special encoding (see below) using
+  // a 32-bit texture to represent an 8-bit image.
+  // Thus we use generic 32-bit readback in this case.
+  if (out_color_type == kAlpha_8_SkColorType) {
+    readback_color_type = kRGBA_8888_SkColorType;
+  }
+
+  FormatSupport supported = GetReadbackConfig(
+      readback_color_type, true, &format, &type, &bytes_per_pixel);
+
   if (supported == GLHelperReadbackSupport::NOT_SUPPORTED) {
     callback.Run(false);
     return;
   }
 
-  GLuint texture = ScaleTexture(src_texture,
-                                src_size,
-                                src_subrect,
-                                dst_size,
-                                true,
-                                (supported == GLHelperReadbackSupport::SWIZZLE),
-                                color_type,
-                                quality);
-  DCHECK(texture);
+  GLuint texture = src_texture;
+
+  // Scale texture if needed
+  // Optimization: SCALER_QUALITY_FAST is just a single bilinear pass, which we
+  // can do just as well in EncodeTextureAsGrayscale, which we will do if
+  // out_color_type is kAlpha_8_SkColorType, so let's skip the scaling step
+  // in that case.
+  bool scale_texture = out_color_type != kAlpha_8_SkColorType ||
+                       quality != GLHelper::SCALER_QUALITY_FAST;
+  if (scale_texture) {
+    // Don't swizzle during the scale step for kAlpha_8_SkColorType.
+    // We will swizzle in the encode step below if needed.
+    bool scale_swizzle = out_color_type == kAlpha_8_SkColorType
+                             ? false
+                             : supported == GLHelperReadbackSupport::SWIZZLE;
+    texture =
+        ScaleTexture(src_texture,
+                     src_size,
+                     src_subrect,
+                     dst_size,
+                     true,
+                     scale_swizzle,
+                     out_color_type == kAlpha_8_SkColorType ? kN32_SkColorType
+                                                            : out_color_type,
+                     quality);
+    DCHECK(texture);
+  }
+
+  gfx::Size readback_texture_size = dst_size;
+  // Encode texture to grayscale if needed.
+  if (out_color_type == kAlpha_8_SkColorType) {
+    // Do the vertical flip here if we haven't already done it when we scaled
+    // the texture.
+    bool encode_as_grayscale_vertical_flip = !scale_texture;
+    // EncodeTextureAsGrayscale by default creates a texture which should be
+    // read back as RGBA, so need to swizzle if the readback format is BGRA.
+    bool encode_as_grayscale_swizzle = format == GL_BGRA_EXT;
+    GLuint tmp_texture =
+        EncodeTextureAsGrayscale(texture,
+                                 dst_size,
+                                 &readback_texture_size,
+                                 encode_as_grayscale_vertical_flip,
+                                 encode_as_grayscale_swizzle);
+    // If the scaled texture was created - delete it
+    if (scale_texture)
+      gl_->DeleteTextures(1, &texture);
+    texture = tmp_texture;
+    DCHECK(texture);
+  }
+
+  // Readback the pixels of the resulting texture
   ScopedFramebuffer dst_framebuffer(gl_);
   ScopedFramebufferBinder<GL_FRAMEBUFFER> framebuffer_binder(gl_,
                                                              dst_framebuffer);
@@ -479,9 +589,14 @@ void GLHelper::CopyTextureToImpl::CropScaleReadbackAndCleanTexture(
                             GL_TEXTURE_2D,
                             texture,
                             0);
-  ReadbackAsync(dst_size,
-                dst_size.width() * bytes_per_pixel,
-                dst_size.width() * bytes_per_pixel,
+
+  int32 bytes_per_row = out_color_type == kAlpha_8_SkColorType
+                            ? dst_size.width()
+                            : dst_size.width() * bytes_per_pixel;
+
+  ReadbackAsync(readback_texture_size,
+                bytes_per_row,
+                bytes_per_row,
                 out,
                 format,
                 type,
@@ -656,19 +771,18 @@ void GLHelper::CropScaleReadbackAndCleanTexture(
     const gfx::Rect& src_subrect,
     const gfx::Size& dst_size,
     unsigned char* out,
-    const SkColorType color_type,
+    const SkColorType out_color_type,
     const base::Callback<void(bool)>& callback,
     GLHelper::ScalerQuality quality) {
   InitCopyTextToImpl();
-  copy_texture_to_impl_->CropScaleReadbackAndCleanTexture(
-      src_texture,
-      src_size,
-      src_subrect,
-      dst_size,
-      out,
-      color_type,
-      callback,
-      quality);
+  copy_texture_to_impl_->CropScaleReadbackAndCleanTexture(src_texture,
+                                                          src_size,
+                                                          src_subrect,
+                                                          dst_size,
+                                                          out,
+                                                          out_color_type,
+                                                          callback,
+                                                          quality);
 }
 
 void GLHelper::CropScaleReadbackAndCleanMailbox(
@@ -678,15 +792,18 @@ void GLHelper::CropScaleReadbackAndCleanMailbox(
     const gfx::Rect& src_subrect,
     const gfx::Size& dst_size,
     unsigned char* out,
-    const SkColorType color_type,
+    const SkColorType out_color_type,
     const base::Callback<void(bool)>& callback,
     GLHelper::ScalerQuality quality) {
   GLuint mailbox_texture = ConsumeMailboxToTexture(src_mailbox, sync_point);
-  CropScaleReadbackAndCleanTexture(
-      mailbox_texture, src_size, src_subrect, dst_size, out,
-      color_type,
-      callback,
-      quality);
+  CropScaleReadbackAndCleanTexture(mailbox_texture,
+                                   src_size,
+                                   src_subrect,
+                                   dst_size,
+                                   out,
+                                   out_color_type,
+                                   callback,
+                                   quality);
   gl_->DeleteTextures(1, &mailbox_texture);
 }
 
@@ -901,6 +1018,8 @@ const float GLHelper::CopyTextureToImpl::kRGBtoUColorWeights[] = {
     -0.148f, -0.291f, 0.439f, 0.5f};
 const float GLHelper::CopyTextureToImpl::kRGBtoVColorWeights[] = {
     0.439f, -0.368f, -0.071f, 0.5f};
+const float GLHelper::CopyTextureToImpl::kRGBtoGrayscaleColorWeights[] = {
+    0.213f, 0.715f, 0.072f, 0.0f};
 
 // YUV readback constructors. Initiates the main scaler pipeline and
 // one planar scaler for each of the Y, U and V planes.
