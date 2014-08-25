@@ -351,6 +351,50 @@ class SchemaVersionedMySQLConnection(object):
     r = self._Execute(upd, values)
     return r.rowcount
 
+  def _Select(self, table, row_id, columns):
+    """Create and execute a one-row one-table SELECT query by primary key.
+
+    Args:
+      table: Table name to select from.
+      row_id: Primary key value of row to select.
+      columns: List of column names to select.
+
+    Returns:
+      A column name to column value dict for the row found, if a row was found.
+      None if no row was.
+    """
+    self._ReflectToMetadata()
+    primary_key = self._GetPrimaryKey(table)
+    table_m = self._meta.tables[table]
+    columns_m = [table_m.c[col_name] for col_name in columns]
+    sel = sqlalchemy.sql.select(columns_m).where(primary_key==row_id)
+    r = self._Execute(sel).fetchall()
+    if r:
+      assert len(r) == 1, 'Query by primary key returned more than 1 row.'
+      return dict(zip(columns, r[0]))
+    else:
+      return None
+
+  def _SelectWhere(self, table, where, columns):
+    """Create and execute a one-table SELECT query with a custom where clause.
+
+    Args:
+      table: Table name to update.
+      where: Raw SQL for the where clause, in string form, e.g.
+             'build_id = 1 and board = "tomato"'
+      columns: List of column names to select.
+
+    Returns:
+      A list of column name to column value dictionaries each representing
+      a row that was selected.
+    """
+    self._ReflectToMetadata()
+    table_m = self._meta.tables[table]
+    columns_m = [table_m.c[col_name] for col_name in columns]
+    sel = sqlalchemy.sql.select(columns_m).where(where)
+    r = self._Execute(sel)
+    return [dict(zip(columns, values)) for values in r.fetchall()]
+
   def _Execute(self, query, *args, **kwargs):
     """Execute a query using engine, with retires.
 
@@ -616,6 +660,23 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
                                           'status' : status,
                                           'status_pickle' : status_pickle,
                                           'final' : True})
+
+  @minimum_schema(2)
+  def GetSlaveStatuses(self, master_build_id):
+    """Gets the statuses of slave builders to given build.
+
+    Args:
+      master_build_id: build id of the master build to fetch the slave
+                       statuses for.
+
+    Returns:
+      A list containing, for each slave build (row) found, a dictionary
+      with keys (id, build_config, start_time, finish_time, status).
+    """
+    return self._SelectWhere('buildTable',
+                             'master_build_id = %s' % master_build_id,
+                             ['id', 'build_config', 'start_time',
+                              'finish_time', 'status'])
 
 
 class CIDBConnectionFactory(object):

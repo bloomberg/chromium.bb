@@ -221,6 +221,16 @@ class DataSeries0Test(CIDBIntegrationTest):
         'select COUNT(distinct build_config) from buildTable').fetchall()[0][0]
     self.assertEqual(build_config_count, 30)
 
+    # Test the _Select method, and verify that the first inserted
+    # build is a master-paladin build.
+    first_row = readonly_db._Select('buildTable', 1, ['id', 'build_config'])
+    self.assertEqual(first_row['build_config'], 'master-paladin')
+
+    # First master build has 29 slaves. Build with id 2 is a slave
+    # build with no slaves of its own.
+    self.assertEqual(len(readonly_db.GetSlaveStatuses(1)), 29)
+    self.assertEqual(len(readonly_db.GetSlaveStatuses(2)), 0)
+
   def _cl_action_checks(self, db):
     """Sanity checks that correct cl actions were recorded."""
     submitted_cl_count = db._GetEngine().execute(
