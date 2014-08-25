@@ -13,17 +13,19 @@ html.apps-v2 body:not(.fullscreen) {
   border: 1px solid gray;  /* This is the window border. */
 }
 
-html.apps-v2 .title-bar {
-  border-bottom: 1px solid gray;
+.title-bar {
   z-index: 100;
+  width: 100%;
+  background-color: #c4c4c4;
 }
 
-.window-title,
-.window-controls-hover-target {
-  height: 32px;
+.window-controls-and-title {
+  display: flex;
+}
+
+.window-title {
   line-height: 32px;
   font-size: 14px;
-  background-color: #c4c4c4;
 }
 
 .title-bar .window-title {
@@ -31,29 +33,16 @@ html.apps-v2 .title-bar {
   width: 100%;
   display: inline-block;
   -webkit-app-region: drag;
-}
-
-.window-controls-hover-target {
-  -webkit-app-region: no-drag;
-  position: fixed;
-  top: 1px;
-  __MSG_@@bidi_end_edge__: 1px;
-}
-
-.window-controls-hover-target {
-  display: table;
-}
-
-.window-controls-hover-target > div:first-child {
-  display: table-row;
+  flex: 1;
 }
 
 .window-control {
-  height: 32px;
   width: 32px;
+  height: 32px;
+  padding-top: 9px;
+  padding-right: 1px;
   text-align: center;
   display: inline-block;
-  border-__MSG_@@bidi_start_edge__: 1px solid rgba(0, 0, 0, 0.2);
 }
 
 .window-control > span.menu-button-activator {
@@ -76,10 +65,9 @@ html.apps-v2 .title-bar {
 
 .window-controls-stub {
   display: none;
-  -webkit-column-span: all;
-  line-height: 3px;
+  height: 8px;
   background: url("drag.webp");
-  border-top: 1px solid rgba(0, 0, 0, 0.2);
+  background-position: 2px 1px;
 }
 
 #scroller {
@@ -90,30 +78,42 @@ html.apps-v2 .title-bar {
 }
 
 html.apps-v2 #scroller {
-  height: calc(100% - 32px);  /** Allow space for the title-bar */
+  height: calc(100% - 32px);  /* Allow space for the title-bar */
 }
 
 /* Add an etched border to the window controls, title bar and stub */
-.title-bar,
+.window-title,
 .window-control,
 .window-controls-stub {
   position: relative;
 }
 
-.title-bar:after,
-.window-control:after,
-.window-controls-stub:after {
+.window-title::after,
+.window-control::after,
+.window-controls-stub::after {
   content: "";
   width: 100%;
   height: 100%;
   position: absolute;
   top: 0;
   left: 0;
-  border-left: 1px solid rgba(255, 255, 255, 0.2);
+  border-right: 1px solid rgba(0, 0, 0, 0.2);
   border-top: 1px solid rgba(255, 255, 255, 0.2);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.3);  /* darken bottom slightly */
+  border-left: 1px solid rgba(255, 255, 255, 0.2);
   pointer-events: none;
+  box-sizing: border-box;
 }
 
+/* Remove dark borders for elements that are adjacent an existing border. */
+.window-close::after {
+  border-right: none;
+}
+
+.window-controls-stub::after {
+  border-bottom: none;
+  border-right: none;
+}
 
 /* The Disconnect and Options buttons are only displayed when connected. */
 body:not(.connected) .window-disconnect,
@@ -127,7 +127,7 @@ body:not(.connected) .window-options {
  * - The scroll-bars are removed.
  * - The window controls have a border (so the left-border of the first button
  *   is not needed).
- * - The title-bar (and its bottom border) are not displayed.
+ * - The window title is not displayed.
  * - The stub is visible.
  * - The window controls gain transition effects for position and opacity and
  *   auto-hide behind the top edge of the screen.
@@ -141,12 +141,8 @@ html.apps-v2 body.fullscreen #scroller {
   overflow: hidden;
 }
 
-body.fullscreen .window-controls-hover-target {
+body.fullscreen .title-bar {
   border: 1px solid #a6a6a6;
-}
-
-body.fullscreen .window-control:first-child {
-  border-__MSG_@@bidi_start_edge__: none;
 }
 
 body.fullscreen .window-title {
@@ -154,14 +150,19 @@ body.fullscreen .window-title {
 }
 
 body.fullscreen .title-bar {
-  border-bottom: none;
+  position: fixed;
+  width: initial;  /* Override the 100% width when windowed. */
+}
+
+body.fullscreen .window-controls-and-title {
+  display: inline-flex;
 }
 
 body.fullscreen .window-controls-stub {
-  display: table-cell;
+  display: block;
 }
 
-body.fullscreen .window-controls-hover-target {
+body.fullscreen .title-bar {
   transition-property: opacity, box-shadow, top;
   transition-duration: 0.3s;
   opacity: 0.7;
@@ -169,15 +170,15 @@ body.fullscreen .window-controls-hover-target {
   __MSG_@@bidi_end_edge__: 8px;
 }
 
-body.fullscreen .window-controls-hover-target:hover,
-body.fullscreen .window-controls-hover-target.menu-opened,
-body.fullscreen .window-controls-hover-target.opened,
-body.fullscreen .window-controls-hover-target.preview {
+body.fullscreen .title-bar:hover,
+body.fullscreen .title-bar.menu-opened,
+body.fullscreen .title-bar.opened,
+body.fullscreen .title-bar.preview {
   top: -4px;
   opacity: 1.0;
   box-shadow: 1px 1px 10px rgba(0, 0, 0, 0.5);
 }
 
-.fullscreen .window-controls-hover-target.opened .window-controls-stub {
+.fullscreen .title-bar.opened .window-controls-stub {
   background-color: #a6a6a6;
 }
