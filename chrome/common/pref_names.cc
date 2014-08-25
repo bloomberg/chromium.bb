@@ -1427,14 +1427,6 @@ const char kBrowserWindowPlacementPopup[] = "browser.window_placement_popup";
 // manager window to restore on startup.
 const char kTaskManagerWindowPlacement[] = "task_manager.window_placement";
 
-// A collection of position, size, and other data relating to the keyword
-// editor window to restore on startup.
-const char kKeywordEditorWindowPlacement[] = "keyword_editor.window_placement";
-
-// A collection of position, size, and other data relating to the preferences
-// window to restore on startup.
-const char kPreferencesWindowPlacement[] = "preferences.window_placement";
-
 // An integer specifying the total number of bytes to be used by the
 // renderer's in-memory cache of objects.
 const char kMemoryCacheSize[] = "renderer.memory_cache.size";

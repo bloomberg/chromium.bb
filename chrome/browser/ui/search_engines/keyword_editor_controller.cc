@@ -25,13 +25,6 @@ KeywordEditorController::KeywordEditorController(Profile* profile)
 KeywordEditorController::~KeywordEditorController() {
 }
 
-// static
-// TODO(rsesek): Other platforms besides Mac should remember window
-// placement. http://crbug.com/22269
-void KeywordEditorController::RegisterPrefs(PrefRegistrySimple* registry) {
-  registry->RegisterDictionaryPref(prefs::kKeywordEditorWindowPlacement);
-}
-
 int KeywordEditorController::AddTemplateURL(const base::string16& title,
                                             const base::string16& keyword,
                                             const std::string& url) {

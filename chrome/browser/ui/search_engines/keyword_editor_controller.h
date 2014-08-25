@@ -22,8 +22,6 @@ class KeywordEditorController {
   explicit KeywordEditorController(Profile* profile);
   ~KeywordEditorController();
 
-  static void RegisterPrefs(PrefRegistrySimple* registry);
-
   // Invoked when the user succesfully fills out the add keyword dialog.
   // Propagates the change to the TemplateURLService and updates the table
   // model.  Returns the index of the added URL.
