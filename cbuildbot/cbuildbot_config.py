@@ -1392,6 +1392,7 @@ _arm_release_boards = frozenset([
   'peach_pi',
   'peach_pit',
   'rush',
+  'veyron_pinky',
 ])
 _arm_full_boards = _arm_release_boards | frozenset([
   'arm-generic',
@@ -1998,6 +1999,12 @@ internal_notest_paladin.add_config('storm-paladin',
   paladin_builder_name='storm paladin',
 )
 
+internal_notest_paladin.add_config('veyron_pinky-paladin',
+  boards=['veyron_pinky'],
+  paladin_builder_name='veyron_pinky paladin',
+  important=False,
+)
+
 internal_notest_paladin.add_config('nyan_freon-paladin',
   boards=['nyan_freon'],
   paladin_builder_name='nyan_freon paladin',
@@ -2315,6 +2322,11 @@ _arm_release.add_config('nyan_blaze-release',
   boards=['nyan_blaze'],
   useflags=_release['useflags'] + ['highdpi'],
   important=True,
+)
+
+_arm_release.add_config('veyron_pinky-release',
+  boards=['veyron_pinky'],
+  hw_tests=[],
 )
 
 # Now generate generic release configs if we haven't created anything more
