@@ -151,7 +151,7 @@ TEST_F(AppCacheDiskCacheTest, DISABLED_DisableWithEntriesOpen) {
   const char* kData = "Hello";
   const int kDataLen = strlen(kData) + 1;
   scoped_refptr<net::IOBuffer> write_buf(new net::WrappedIOBuffer(kData));
-  entry1->Write(0, 0, write_buf, kDataLen, completion_callback_);
+  entry1->Write(0, 0, write_buf.get(), kDataLen, completion_callback_);
   FlushCacheTasks();
 
   // Queue up a read and a write.

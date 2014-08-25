@@ -111,60 +111,60 @@ TEST_F(AppCacheGroupTest, AddRemoveCache) {
   cache1->set_complete(true);
   cache1->set_update_time(now);
   group->AddCache(cache1.get());
-  EXPECT_EQ(cache1, group->newest_complete_cache());
+  EXPECT_EQ(cache1.get(), group->newest_complete_cache());
 
   // Adding older cache does not change newest complete cache.
   scoped_refptr<AppCache> cache2(new AppCache(service.storage(), 222));
   cache2->set_complete(true);
   cache2->set_update_time(now - base::TimeDelta::FromDays(1));
   group->AddCache(cache2.get());
-  EXPECT_EQ(cache1, group->newest_complete_cache());
+  EXPECT_EQ(cache1.get(), group->newest_complete_cache());
 
   // Adding newer cache does change newest complete cache.
   scoped_refptr<AppCache> cache3(new AppCache(service.storage(), 333));
   cache3->set_complete(true);
   cache3->set_update_time(now + base::TimeDelta::FromDays(1));
   group->AddCache(cache3.get());
-  EXPECT_EQ(cache3, group->newest_complete_cache());
+  EXPECT_EQ(cache3.get(), group->newest_complete_cache());
 
   // Adding cache with same update time uses one with larger ID.
   scoped_refptr<AppCache> cache4(new AppCache(service.storage(), 444));
   cache4->set_complete(true);
   cache4->set_update_time(now + base::TimeDelta::FromDays(1));  // same as 3
   group->AddCache(cache4.get());
-  EXPECT_EQ(cache4, group->newest_complete_cache());
+  EXPECT_EQ(cache4.get(), group->newest_complete_cache());
 
   // smaller id
   scoped_refptr<AppCache> cache5(new AppCache(service.storage(), 55));
   cache5->set_complete(true);
   cache5->set_update_time(now + base::TimeDelta::FromDays(1));  // same as 4
   group->AddCache(cache5.get());
-  EXPECT_EQ(cache4, group->newest_complete_cache());  // no change
+  EXPECT_EQ(cache4.get(), group->newest_complete_cache());  // no change
 
   // Old caches can always be removed.
   group->RemoveCache(cache1.get());
   EXPECT_FALSE(cache1->owning_group());
-  EXPECT_EQ(cache4, group->newest_complete_cache());  // newest unchanged
+  EXPECT_EQ(cache4.get(), group->newest_complete_cache());  // newest unchanged
 
   // Remove rest of caches.
   group->RemoveCache(cache2.get());
   EXPECT_FALSE(cache2->owning_group());
-  EXPECT_EQ(cache4, group->newest_complete_cache());  // newest unchanged
+  EXPECT_EQ(cache4.get(), group->newest_complete_cache());  // newest unchanged
   group->RemoveCache(cache3.get());
   EXPECT_FALSE(cache3->owning_group());
-  EXPECT_EQ(cache4, group->newest_complete_cache());  // newest unchanged
+  EXPECT_EQ(cache4.get(), group->newest_complete_cache());  // newest unchanged
   group->RemoveCache(cache5.get());
   EXPECT_FALSE(cache5->owning_group());
-  EXPECT_EQ(cache4, group->newest_complete_cache());  // newest unchanged
+  EXPECT_EQ(cache4.get(), group->newest_complete_cache());  // newest unchanged
   group->RemoveCache(cache4.get());                   // newest removed
   EXPECT_FALSE(cache4->owning_group());
   EXPECT_FALSE(group->newest_complete_cache());       // no more newest cache
 
   // Can remove newest cache if there are older caches.
   group->AddCache(cache1.get());
-  EXPECT_EQ(cache1, group->newest_complete_cache());
+  EXPECT_EQ(cache1.get(), group->newest_complete_cache());
   group->AddCache(cache4.get());
-  EXPECT_EQ(cache4, group->newest_complete_cache());
+  EXPECT_EQ(cache4.get(), group->newest_complete_cache());
   group->RemoveCache(cache4.get());  // remove newest
   EXPECT_FALSE(cache4->owning_group());
   EXPECT_FALSE(group->newest_complete_cache());  // newest removed

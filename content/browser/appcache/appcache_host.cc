@@ -442,7 +442,7 @@ void AppCacheHost::ObserveGroupBeingUpdated(AppCacheGroup* group) {
 }
 
 void AppCacheHost::OnUpdateComplete(AppCacheGroup* group) {
-  DCHECK_EQ(group, group_being_updated_);
+  DCHECK_EQ(group, group_being_updated_.get());
   group->RemoveUpdateObserver(this);
 
   // Add a reference to the newest complete cache.
@@ -499,7 +499,7 @@ void AppCacheHost::PrepareForTransfer() {
   // This can only happen prior to the document having been loaded.
   DCHECK(!associated_cache());
   DCHECK(!is_selection_pending());
-  DCHECK(!group_being_updated_);
+  DCHECK(!group_being_updated_.get());
   host_id_ = kAppCacheNoHostId;
   frontend_ = NULL;
 }

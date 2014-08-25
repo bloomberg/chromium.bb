@@ -797,7 +797,7 @@ class AppCacheRequestHandlerTest : public testing::Test {
     EXPECT_TRUE(job_->is_waiting());
     EXPECT_FALSE(job_->has_been_started());
 
-    job_factory_->SetJob(job_);
+    job_factory_->SetJob(job_.get());
     request_->Start();
     EXPECT_TRUE(job_->has_been_started());
 

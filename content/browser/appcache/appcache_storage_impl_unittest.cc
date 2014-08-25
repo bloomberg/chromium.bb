@@ -710,7 +710,7 @@ class AppCacheStorageImplTest : public testing::Test {
         base::Unretained(this), now));
 
     // Conduct the test.
-    EXPECT_EQ(cache_, group_->newest_complete_cache());
+    EXPECT_EQ(cache_.get(), group_->newest_complete_cache());
     storage()->StoreGroupAndNewestCache(group_.get(), cache_.get(), delegate());
     EXPECT_FALSE(delegate()->stored_group_success_);
   }
@@ -718,7 +718,7 @@ class AppCacheStorageImplTest : public testing::Test {
   void Verify_StoreExistingGroupExistingCache(
       base::Time expected_update_time) {
     EXPECT_TRUE(delegate()->stored_group_success_);
-    EXPECT_EQ(cache_, group_->newest_complete_cache());
+    EXPECT_EQ(cache_.get(), group_->newest_complete_cache());
 
     AppCacheDatabase::CacheRecord cache_record;
     EXPECT_TRUE(database()->FindCache(1, &cache_record));
@@ -1798,7 +1798,7 @@ class AppCacheStorageImplTest : public testing::Test {
       EXPECT_TRUE(frontend_.error_event_was_raised_);
       AppCacheHost* host1 = backend_->GetHost(1);
       EXPECT_FALSE(host1->associated_cache());
-      EXPECT_FALSE(host1->group_being_updated_);
+      EXPECT_FALSE(host1->group_being_updated_.get());
       EXPECT_TRUE(host1->disabled_storage_reference_.get());
     } else {
       ASSERT_EQ(CORRUPT_CACHE_ON_LOAD_EXISTING, test_case);

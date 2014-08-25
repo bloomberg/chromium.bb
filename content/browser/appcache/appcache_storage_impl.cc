@@ -82,7 +82,7 @@ void ClearSessionOnlyOrigins(
     return;
 
   bool has_session_only_appcaches =
-      special_storage_policy &&
+      special_storage_policy.get() &&
       special_storage_policy->HasSessionOnlyOrigins();
 
   // Clearning only session-only databases, and there are none.
@@ -101,7 +101,7 @@ void ClearSessionOnlyOrigins(
   }
 
   std::set<GURL>::const_iterator origin;
-  DCHECK(special_storage_policy);
+  DCHECK(special_storage_policy.get());
   for (origin = origins.begin(); origin != origins.end(); ++origin) {
     if (!special_storage_policy->IsStorageSessionOnly(*origin))
       continue;
@@ -1351,7 +1351,7 @@ void AppCacheStorageImpl::Initialize(
     const base::FilePath& cache_directory,
     const scoped_refptr<base::SingleThreadTaskRunner>& db_thread,
     const scoped_refptr<base::SingleThreadTaskRunner>& cache_thread) {
-  DCHECK(db_thread);
+  DCHECK(db_thread.get());
 
   cache_directory_ = cache_directory;
   is_incognito_ = cache_directory_.empty();

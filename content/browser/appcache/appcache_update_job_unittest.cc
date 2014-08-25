@@ -3018,7 +3018,7 @@ class AppCacheUpdateJobTest : public testing::Test,
   }
 
   virtual void OnUpdateComplete(AppCacheGroup* group) OVERRIDE {
-    ASSERT_EQ(group_, group);
+    ASSERT_EQ(group_.get(), group);
     protect_newest_cache_ = group->newest_complete_cache();
     UpdateFinished();
   }
@@ -3192,7 +3192,7 @@ class AppCacheUpdateJobTest : public testing::Test,
     if (tested_manifest_) {
       AppCache* cache = group_->newest_complete_cache();
       ASSERT_TRUE(cache != NULL);
-      EXPECT_EQ(group_, cache->owning_group());
+      EXPECT_EQ(group_.get(), cache->owning_group());
       EXPECT_TRUE(cache->is_complete());
 
       switch (tested_manifest_) {
