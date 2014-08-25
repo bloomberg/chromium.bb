@@ -14,13 +14,8 @@ namespace content {
 class WebContents;
 }
 
-namespace chrome {
-void ShowManagePasswordsBubble(content::WebContents* webContents);
-}
-
 @class ManagePasswordsBubbleController;
 @class ManagePasswordsBubbleCocoaNotificationBridge;
-class ManagePasswordsIcon;
 
 // Cocoa implementation of the platform-independent password bubble interface.
 class ManagePasswordsBubbleCocoa : public ManagePasswordsBubble {
@@ -28,8 +23,7 @@ class ManagePasswordsBubbleCocoa : public ManagePasswordsBubble {
   // Creates and shows the bubble, which owns itself. Does nothing if the bubble
   // is already shown.
   static void ShowBubble(content::WebContents* webContents,
-                         DisplayReason displayReason,
-                         ManagePasswordsIcon* icon);
+                         DisplayReason displayReason);
 
   // Closes and deletes the bubble.
   void Close();
@@ -39,22 +33,15 @@ class ManagePasswordsBubbleCocoa : public ManagePasswordsBubble {
 
  private:
   friend class ManagePasswordsBubbleCocoaTest;
-  friend class ManagePasswordsBubbleTest;
-  friend void chrome::ShowManagePasswordsBubble(
-      content::WebContents* webContents);
 
   // Instance-specific logic. Clients should use the static interface.
   ManagePasswordsBubbleCocoa(content::WebContents* webContents,
-                             DisplayReason displayReason,
-                             ManagePasswordsIcon* icon);
+                             DisplayReason displayReason);
   virtual ~ManagePasswordsBubbleCocoa();
   void Show();
 
   // Cleans up state and deletes itself. Called when the bubble is closed.
   void OnClose();
-
-  // The location bar icon corresponding to the bubble.
-  ManagePasswordsIcon* icon_;
 
   // Whether there is currently a close operation taking place. Prevents
   // multiple attempts to close the window.

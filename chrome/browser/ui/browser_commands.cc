@@ -797,12 +797,15 @@ void Translate(Browser* browser) {
 }
 
 void ManagePasswordsForPage(Browser* browser) {
+// TODO(mkwst): Implement this feature on Mac: http://crbug.com/261628
+#if !defined(OS_MACOSX)
   if (!browser->window()->IsActive())
     return;
 
   WebContents* web_contents =
       browser->tab_strip_model()->GetActiveWebContents();
   chrome::ShowManagePasswordsBubble(web_contents);
+#endif
 }
 
 void TogglePagePinnedToStartScreen(Browser* browser) {

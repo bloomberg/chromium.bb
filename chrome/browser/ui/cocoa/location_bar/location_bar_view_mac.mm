@@ -133,7 +133,7 @@ LocationBarViewMac::LocationBarViewMac(AutocompleteTextField* field,
           new GeneratedCreditCardDecoration(this)),
       search_button_decoration_(new SearchButtonDecoration(this)),
       manage_passwords_decoration_(
-          new ManagePasswordsDecoration(command_updater, this)),
+          new ManagePasswordsDecoration(command_updater)),
       browser_(browser),
       weak_ptr_factory_(this) {
   for (size_t i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
@@ -222,7 +222,6 @@ void LocationBarViewMac::UpdateManagePasswordsIconAndBubble() {
     return;
   ManagePasswordsUIController::FromWebContents(web_contents)
       ->UpdateIconAndBubbleState(manage_passwords_decoration_->icon());
-  OnDecorationsChanged();
 }
 
 void LocationBarViewMac::UpdatePageActions() {
@@ -527,7 +526,6 @@ NSPoint LocationBarViewMac::GetPageActionBubblePoint(
 }
 
 void LocationBarViewMac::Update(const WebContents* contents) {
-  UpdateManagePasswordsIconAndBubble();
   UpdateStarDecorationVisibility();
   UpdateTranslateDecoration();
   UpdateZoomDecoration();

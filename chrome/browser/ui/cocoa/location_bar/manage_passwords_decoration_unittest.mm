@@ -53,8 +53,7 @@ bool ImagesEqual(NSImage* left, NSImage* right) {
 class ManagePasswordsDecorationTest : public CocoaTest {
  public:
   ManagePasswordsDecorationTest()
-      : commandUpdater_(&commandDelegate_),
-        decoration_(&commandUpdater_, NULL) {
+      : commandUpdater_(&commandDelegate_), decoration_(&commandUpdater_) {
     commandUpdater_.UpdateCommandEnabled(IDC_MANAGE_PASSWORDS_FOR_PAGE, true);
   }
 
@@ -70,7 +69,7 @@ class ManagePasswordsDecorationTest : public CocoaTest {
 
 TEST_F(ManagePasswordsDecorationTest, ExecutesManagePasswordsCommandOnClick) {
   EXPECT_TRUE(decoration()->AcceptsMousePress());
-  EXPECT_FALSE(decoration()->OnMousePressed(NSRect(), NSPoint()));
+  EXPECT_TRUE(decoration()->OnMousePressed(NSRect(), NSPoint()));
   EXPECT_EQ(IDC_MANAGE_PASSWORDS_FOR_PAGE, commandDelegate()->id());
 }
 
