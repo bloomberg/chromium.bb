@@ -111,7 +111,7 @@ class CHROME_DBUS_EXPORT Message {
   std::string GetMember();
   std::string GetErrorName();
   std::string GetSender();
-  std::string GetDataSignature();
+  std::string GetSignature();
   // Gets the serial and reply serial numbers. Returns 0 if not set.
   uint32 GetSerial();
   uint32 GetReplySerial();

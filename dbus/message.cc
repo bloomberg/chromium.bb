@@ -262,7 +262,7 @@ std::string Message::ToString() {
   AppendStringHeader("member", GetMember(), &headers);
   AppendStringHeader("error_name", GetErrorName(), &headers);
   AppendStringHeader("sender", GetSender(), &headers);
-  AppendStringHeader("signature", GetDataSignature(), &headers);
+  AppendStringHeader("signature", GetSignature(), &headers);
   AppendUint32Header("serial", GetSerial(), &headers);
   AppendUint32Header("reply_serial", GetReplySerial(), &headers);
 
@@ -333,7 +333,7 @@ std::string Message::GetSender() {
   return sender ? sender : "";
 }
 
-std::string Message::GetDataSignature() {
+std::string Message::GetSignature() {
   const char* signature = dbus_message_get_signature(raw_message_);
   return signature ? signature : "";
 }
