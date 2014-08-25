@@ -509,11 +509,9 @@ DrawResult SingleThreadProxy::DoComposite(base::TimeTicks frame_begin_time,
         layer_tree_host_impl_->CurrentBeginFrameArgs().frame_time);
     UpdateBackgroundAnimateTicking();
 
-    if (!layer_tree_host_impl_->IsContextLost()) {
-      layer_tree_host_impl_->PrepareToDraw(frame);
-      layer_tree_host_impl_->DrawLayers(frame, frame_begin_time);
-      layer_tree_host_impl_->DidDrawAllLayers(*frame);
-    }
+    layer_tree_host_impl_->PrepareToDraw(frame);
+    layer_tree_host_impl_->DrawLayers(frame, frame_begin_time);
+    layer_tree_host_impl_->DidDrawAllLayers(*frame);
 
     bool start_ready_animations = true;
     layer_tree_host_impl_->UpdateAnimationState(start_ready_animations);
@@ -526,22 +524,18 @@ DrawResult SingleThreadProxy::DoComposite(base::TimeTicks frame_begin_time,
   {
     DebugScopedSetImplThread impl(this);
 
-    if (layer_tree_host_impl_->IsContextLost()) {
-      DidLoseOutputSurfaceOnImplThread();
-    } else {
-      // This CapturePostTasks should be destroyed before
-      // DidCommitAndDrawFrame() is called since that goes out to the
-      // embedder,
-      // and we want the embedder to receive its callbacks before that.
-      // NOTE: This maintains consistent ordering with the ThreadProxy since
-      // the DidCommitAndDrawFrame() must be post-tasked from the impl thread
-      // there as the main thread is not blocked, so any posted tasks inside
-      // the swap buffers will execute first.
-      DebugScopedSetMainThreadBlocked main_thread_blocked(this);
+    // This CapturePostTasks should be destroyed before
+    // DidCommitAndDrawFrame() is called since that goes out to the
+    // embedder,
+    // and we want the embedder to receive its callbacks before that.
+    // NOTE: This maintains consistent ordering with the ThreadProxy since
+    // the DidCommitAndDrawFrame() must be post-tasked from the impl thread
+    // there as the main thread is not blocked, so any posted tasks inside
+    // the swap buffers will execute first.
+    DebugScopedSetMainThreadBlocked main_thread_blocked(this);
 
-      BlockingTaskRunner::CapturePostTasks blocked;
-      layer_tree_host_impl_->SwapBuffers(*frame);
-    }
+    BlockingTaskRunner::CapturePostTasks blocked;
+    layer_tree_host_impl_->SwapBuffers(*frame);
   }
   DidCommitAndDrawFrame();
 
@@ -628,11 +622,6 @@ void SingleThreadProxy::BeginMainFrameAbortedOnImplThread() {
 
 DrawResult SingleThreadProxy::ScheduledActionDrawAndSwapIfPossible() {
   DebugScopedSetImplThread impl(this);
-  if (layer_tree_host_impl_->IsContextLost()) {
-    DidCommitAndDrawFrame();
-    return DRAW_SUCCESS;
-  }
-
   LayerTreeHostImpl::FrameData frame;
   return DoComposite(layer_tree_host_impl_->CurrentBeginFrameArgs().frame_time,
                      &frame);

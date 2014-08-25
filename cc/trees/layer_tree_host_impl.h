@@ -282,7 +282,6 @@ class CC_EXPORT LayerTreeHostImpl
   int SourceAnimationFrameNumber() const;
 
   virtual bool InitializeRenderer(scoped_ptr<OutputSurface> output_surface);
-  bool IsContextLost();
   TileManager* tile_manager() { return tile_manager_.get(); }
   void SetUseGpuRasterization(bool use_gpu);
   bool use_gpu_rasterization() const { return use_gpu_rasterization_; }
@@ -694,7 +693,6 @@ class CC_EXPORT LayerTreeHostImpl
   MicroBenchmarkControllerImpl micro_benchmark_controller_;
 
   bool need_to_update_visible_tiles_before_draw_;
-  bool have_valid_output_surface_;
 
   // Optional callback to notify of new tree activations.
   base::Closure tree_activation_callback_;

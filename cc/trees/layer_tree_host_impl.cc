@@ -256,7 +256,6 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       rendering_stats_instrumentation_(rendering_stats_instrumentation),
       micro_benchmark_controller_(this),
       need_to_update_visible_tiles_before_draw_(false),
-      have_valid_output_surface_(false),
       shared_bitmap_manager_(manager),
       id_(id),
       transfer_buffer_memory_limit_(0u) {
@@ -1615,13 +1614,6 @@ void LayerTreeHostImpl::FinishAllRendering() {
     renderer_->Finish();
 }
 
-bool LayerTreeHostImpl::IsContextLost() {
-  DCHECK(proxy_->IsImplThread());
-  // To avoid races, rely only on the lost-surface callback.
-  // See crbug.com/392891.
-  return !have_valid_output_surface_;
-}
-
 void LayerTreeHostImpl::SetUseGpuRasterization(bool use_gpu) {
   if (use_gpu == use_gpu_rasterization_)
     return;
@@ -1694,16 +1686,9 @@ void LayerTreeHostImpl::UpdateInnerViewportContainerSize() {
 }
 
 void LayerTreeHostImpl::DidLoseOutputSurface() {
-  if (!have_valid_output_surface_)
-    return;
-  have_valid_output_surface_ = false;
   if (resource_provider_)
     resource_provider_->DidLoseOutputSurface();
-  // TODO(jamesr): The renderer_ check is needed to make some of the
-  // LayerTreeHostContextTest tests pass, but shouldn't be necessary (or
-  // important) in production. We should adjust the test to not need this.
-  if (renderer_)
-    client_->DidLoseOutputSurfaceOnImplThread();
+  client_->DidLoseOutputSurfaceOnImplThread();
 }
 
 bool LayerTreeHostImpl::HaveRootScrollLayer() const {
@@ -2062,7 +2047,6 @@ bool LayerTreeHostImpl::InitializeRenderer(
     return false;
 
   output_surface_ = output_surface.Pass();
-  have_valid_output_surface_ = true;
   resource_provider_ =
       ResourceProvider::Create(output_surface_.get(),
                                shared_bitmap_manager_,
