@@ -259,6 +259,7 @@
       'win/WebFontRendering.cpp',
     ],
     'web_unittest_files': [
+      'ExternalPopupMenuTest.cpp',
       'WebNodeTest.cpp',
       # FIXME: Move the tests from web/tests/ to appropriate places.
       # crbug.com/353585

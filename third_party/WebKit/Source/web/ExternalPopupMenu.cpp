@@ -71,7 +71,7 @@ void ExternalPopupMenu::show(const FloatQuad& controlPosition, const IntSize&, i
     }
 
     WebPopupMenuInfo info;
-    getPopupMenuInfo(&info);
+    getPopupMenuInfo(info, *m_popupMenuClient);
     if (info.items.isEmpty())
         return;
     WebLocalFrameImpl* webframe = WebLocalFrameImpl::fromFrame(m_localFrame.get());
@@ -126,7 +126,7 @@ void ExternalPopupMenu::disconnectClient()
 void ExternalPopupMenu::didChangeSelection(int index)
 {
     if (m_popupMenuClient)
-        m_popupMenuClient->selectionChanged(toPopupMenuItemIndex(index));
+        m_popupMenuClient->selectionChanged(toPopupMenuItemIndex(index, *m_popupMenuClient));
 }
 
 void ExternalPopupMenu::didAcceptIndex(int index)
@@ -134,7 +134,7 @@ void ExternalPopupMenu::didAcceptIndex(int index)
     // Calling methods on the PopupMenuClient might lead to this object being
     // derefed. This ensures it does not get deleted while we are running this
     // method.
-    int popupMenuItemIndex = toPopupMenuItemIndex(index);
+    int popupMenuItemIndex = toPopupMenuItemIndex(index, *m_popupMenuClient);
     RefPtr<ExternalPopupMenu> guard(this);
 
     if (m_popupMenuClient) {
@@ -160,7 +160,7 @@ void ExternalPopupMenu::didAcceptIndices(const WebVector<int>& indices)
         m_popupMenuClient->valueChanged(static_cast<unsigned>(-1), true);
     else {
         for (size_t i = 0; i < indices.size(); ++i)
-            m_popupMenuClient->listBoxSelectItem(toPopupMenuItemIndex(indices[i]), (i > 0), false, (i == indices.size() - 1));
+            m_popupMenuClient->listBoxSelectItem(toPopupMenuItemIndex(indices[i], *m_popupMenuClient), (i > 0), false, (i == indices.size() - 1));
     }
 
     // The call to valueChanged above might have lead to a call to
@@ -181,49 +181,51 @@ void ExternalPopupMenu::didCancel()
     m_webExternalPopupMenu = 0;
 }
 
-void ExternalPopupMenu::getPopupMenuInfo(WebPopupMenuInfo* info)
+void ExternalPopupMenu::getPopupMenuInfo(WebPopupMenuInfo& info, PopupMenuClient& popupMenuClient)
 {
-    int itemCount = m_popupMenuClient->listSize();
+    int itemCount = popupMenuClient.listSize();
     int count = 0;
     Vector<WebMenuItemInfo> items(static_cast<size_t>(itemCount));
     for (int i = 0; i < itemCount; ++i) {
-        PopupMenuStyle style = m_popupMenuClient->itemStyle(i);
+        PopupMenuStyle style = popupMenuClient.itemStyle(i);
         if (style.isDisplayNone())
             continue;
 
         WebMenuItemInfo& popupItem = items[count++];
-        popupItem.label = m_popupMenuClient->itemText(i);
-        popupItem.toolTip = m_popupMenuClient->itemToolTip(i);
-        if (m_popupMenuClient->itemIsSeparator(i))
+        popupItem.label = popupMenuClient.itemText(i);
+        popupItem.toolTip = popupMenuClient.itemToolTip(i);
+        if (popupMenuClient.itemIsSeparator(i))
             popupItem.type = WebMenuItemInfo::Separator;
-        else if (m_popupMenuClient->itemIsLabel(i))
+        else if (popupMenuClient.itemIsLabel(i))
             popupItem.type = WebMenuItemInfo::Group;
         else
             popupItem.type = WebMenuItemInfo::Option;
-        popupItem.enabled = m_popupMenuClient->itemIsEnabled(i);
-        popupItem.checked = m_popupMenuClient->itemIsSelected(i);
+        popupItem.enabled = popupMenuClient.itemIsEnabled(i);
+        popupItem.checked = popupMenuClient.itemIsSelected(i);
         popupItem.textDirection = toWebTextDirection(style.textDirection());
         popupItem.hasTextDirectionOverride = style.hasTextDirectionOverride();
     }
 
-    info->itemHeight = m_popupMenuClient->menuStyle().font().fontMetrics().height();
-    info->itemFontSize = static_cast<int>(m_popupMenuClient->menuStyle().font().fontDescription().computedSize());
-    info->selectedIndex = toExternalPopupMenuItemIndex(m_popupMenuClient->selectedIndex());
-    info->rightAligned = m_popupMenuClient->menuStyle().textDirection() == RTL;
-    info->allowMultipleSelection = m_popupMenuClient->multiple();
-    info->items = items;
+    info.itemHeight = popupMenuClient.menuStyle().font().fontMetrics().height();
+    info.itemFontSize = static_cast<int>(popupMenuClient.menuStyle().font().fontDescription().computedSize());
+    info.selectedIndex = toExternalPopupMenuItemIndex(popupMenuClient.selectedIndex(), popupMenuClient);
+    info.rightAligned = popupMenuClient.menuStyle().textDirection() == RTL;
+    info.allowMultipleSelection = popupMenuClient.multiple();
+    if (count < itemCount)
+        items.shrink(count);
+    info.items = items;
+
 }
 
-int ExternalPopupMenu::toPopupMenuItemIndex(int externalPopupMenuItemIndex)
+int ExternalPopupMenu::toPopupMenuItemIndex(int externalPopupMenuItemIndex, PopupMenuClient& popupMenuClient)
 {
-    ASSERT(m_popupMenuClient);
     if (externalPopupMenuItemIndex < 0)
         return externalPopupMenuItemIndex;
 
-    int itemCount = m_popupMenuClient->listSize();
+    int itemCount = popupMenuClient.listSize();
     int indexTracker = 0;
     for (int i = 0; i < itemCount ; ++i) {
-        if (m_popupMenuClient->itemStyle(i).isDisplayNone())
+        if (popupMenuClient.itemStyle(i).isDisplayNone())
             continue;
         if (indexTracker++ == externalPopupMenuItemIndex)
             return i;
@@ -231,16 +233,15 @@ int ExternalPopupMenu::toPopupMenuItemIndex(int externalPopupMenuItemIndex)
     return -1;
 }
 
-int ExternalPopupMenu::toExternalPopupMenuItemIndex(int popupMenuItemIndex)
+int ExternalPopupMenu::toExternalPopupMenuItemIndex(int popupMenuItemIndex, PopupMenuClient& popupMenuClient)
 {
-    ASSERT(m_popupMenuClient);
     if (popupMenuItemIndex < 0)
         return popupMenuItemIndex;
 
-    int itemCount = m_popupMenuClient->listSize();
+    int itemCount = popupMenuClient.listSize();
     int indexTracker = 0;
     for (int i = 0; i < itemCount; ++i) {
-        if (m_popupMenuClient->itemStyle(i).isDisplayNone())
+        if (popupMenuClient.itemStyle(i).isDisplayNone())
             continue;
         if (popupMenuItemIndex == i)
             return indexTracker;
