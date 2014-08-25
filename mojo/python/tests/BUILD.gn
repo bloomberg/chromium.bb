@@ -1,0 +1,24 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//third_party/cython/rules.gni")
+
+group("tests") {
+  deps = [
+    ":test_core",
+  ]
+}
+
+action("test_core") {
+  script = "test_core.py"
+  outputs = [
+    "$root_out_dir/no_file",
+  ]
+  inputs = []
+  deps = [
+    "//mojo/public/python:system",
+    "//mojo/python:embedder",
+  ]
+  args = [ rebase_path("$root_out_dir/python", root_build_dir) ]
+}
