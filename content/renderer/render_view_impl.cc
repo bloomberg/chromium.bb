@@ -1061,8 +1061,6 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   settings->setViewportEnabled(prefs.viewport_enabled);
   settings->setLoadWithOverviewMode(prefs.initialize_at_minimum_page_scale);
   settings->setViewportMetaEnabled(prefs.viewport_meta_enabled);
-  settings->setUseExpandedHeuristicsForGpuRasterization(
-      prefs.use_expanded_heuristics_for_gpu_rasterization);
   settings->setMainFrameResizesAreOrientationChanges(
       prefs.main_frame_resizes_are_orientation_changes);
 

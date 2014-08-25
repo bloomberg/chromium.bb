@@ -38,9 +38,6 @@ GpuBlacklist* GpuBlacklist::Create() {
                             GPU_FEATURE_TYPE_PANEL_FITTING);
   list->AddSupportedFeature("gpu_rasterization",
                             GPU_FEATURE_TYPE_GPU_RASTERIZATION);
-  list->AddSupportedFeature(
-      "gpu_rasterization_expanded_heuristics",
-      GPU_FEATURE_TYPE_GPU_RASTERIZATION_EXPANDED_HEURISTICS);
   list->set_supports_feature_type_all(true);
   return list;
 }

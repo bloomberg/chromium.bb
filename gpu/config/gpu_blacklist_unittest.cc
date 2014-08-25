@@ -128,9 +128,4 @@ GPU_BLACKLIST_FEATURE_TEST(GpuRasterization,
                            "gpu_rasterization",
                            GPU_FEATURE_TYPE_GPU_RASTERIZATION)
 
-GPU_BLACKLIST_FEATURE_TEST(
-    GpuRasterizationExpandedHeuristics,
-    "gpu_rasterization_expanded_heuristics",
-    GPU_FEATURE_TYPE_GPU_RASTERIZATION_EXPANDED_HEURISTICS)
-
 }  // namespace gpu
