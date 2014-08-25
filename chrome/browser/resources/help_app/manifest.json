@@ -6,5 +6,26 @@
   "default_locale": "en",
   "manifest_version": 2,
   "content_security_policy": "default-src 'self'; img-src 'self' data:;",
+  "background": {
+    "scripts": [
+      "js/background-bundle.js"
+    ],
+    "persistent": false
+  },
+  "content_scripts": [
+    {
+      "js": ["js/content_script_head.js"],
+      "matches": ["https://support.google.com/chromebook/*"],
+      "run_at": "document_start"
+    },
+    {
+      "js": ["js/content_script_foot.js"],
+      "matches": ["https://support.google.com/chromebook/*"],
+      "run_at": "document_idle"
+    }
+  ],
+  "permissions": [
+    "storage"
+  ],
   "incognito": "split"
 }
