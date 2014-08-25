@@ -357,9 +357,31 @@ IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest,
-                       EstablishAudioVideoCallAndVerifyMutingWorks) {
+                       EstablishAudioVideoCallAndVerifyRemoteMutingWorks) {
   MakeAudioDetectingPeerConnectionCall(base::StringPrintf(
-      "callAndEnsureAudioTrackMutingWorks(%s);", kUseLenientAudioChecking));
+      "callAndEnsureRemoteAudioTrackMutingWorks(%s);",
+      kUseLenientAudioChecking));
+}
+
+IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest,
+                       EstablishAudioVideoCallAndVerifyLocalMutingWorks) {
+  MakeAudioDetectingPeerConnectionCall(base::StringPrintf(
+      "callAndEnsureLocalAudioTrackMutingWorks(%s);",
+      kUseLenientAudioChecking));
+}
+
+IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest,
+                       EnsureLocalVideoMuteDoesntMuteAudio) {
+  MakeAudioDetectingPeerConnectionCall(base::StringPrintf(
+      "callAndEnsureLocalVideoMutingDoesntMuteAudio(%s);",
+      kUseLenientAudioChecking));
+}
+
+IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest,
+                       EnsureRemoteVideoMuteDoesntMuteAudio) {
+  MakeAudioDetectingPeerConnectionCall(base::StringPrintf(
+      "callAndEnsureRemoteVideoMutingDoesntMuteAudio(%s);",
+      kUseLenientAudioChecking));
 }
 
 // Flaky on TSAN v2: http://crbug.com/373637

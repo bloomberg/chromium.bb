@@ -159,7 +159,7 @@
       waitForVideo('remote-view-2');
     });
   }
-  
+
   // Test that we can setup call with an audio and video track and
   // simulate that the remote peer don't support MSID.
   function callWithoutMsidAndBundle() {
@@ -325,55 +325,69 @@
         offerOptions);
   }
 
-  function enableRemoteVideo(peerConnection, enabled) {
-    remoteStream = peerConnection.getRemoteStreams()[0];
-    remoteVideoTrack = remoteStream.getVideoTracks()[0];
-    remoteVideoTrack.enabled = enabled;
-  }
-
-  function enableRemoteAudio(peerConnection, enabled) {
-    remoteStream = peerConnection.getRemoteStreams()[0];
-    remoteAudioTrack = remoteStream.getAudioTracks()[0];
-    remoteAudioTrack.enabled = enabled;
-  }
-
   function callAndEnsureAudioIsPlaying(beLenient, constraints) {
     createConnections(null);
-    navigator.webkitGetUserMedia(constraints,
-      addStreamToBothConnectionsAndNegotiate, printGetUserMediaError);
 
-    // Wait until we have gathered samples and can conclude if audio is playing.
-    addExpectedEvent();
+    // Add the local stream to gFirstConnection to play one-way audio.
+    navigator.webkitGetUserMedia(constraints,
+      addStreamToTheFirstConnectionAndNegotiate, printGetUserMediaError);
+
     var onCallEstablished = function() {
-      // Gather 50 samples per second for 2 seconds.
-      gatherAudioLevelSamples(gSecondConnection, 100, 50, function(samples) {
-        verifyAudioIsPlaying(samples, beLenient);
-        eventOccured();
-      });
+      ensureAudioPlaying(gSecondConnection, beLenient);
     };
 
     waitForConnectionToStabilize(gFirstConnection, onCallEstablished);
   }
 
-  function callAndEnsureAudioTrackMutingWorks(beLenient) {
+  function enableRemoteVideo(peerConnection, enabled) {
+    remoteStream = peerConnection.getRemoteStreams()[0];
+    remoteStream.getVideoTracks()[0].enabled = enabled;
+  }
+
+  function enableRemoteAudio(peerConnection, enabled) {
+    remoteStream = peerConnection.getRemoteStreams()[0];
+    remoteStream.getAudioTracks()[0].enabled = enabled;
+  }
+
+  function enableLocalVideo(peerConnection, enabled) {
+    localStream = peerConnection.getLocalStreams()[0];
+    localStream.getVideoTracks()[0].enabled = enabled;
+  }
+
+  function enableLocalAudio(peerConnection, enabled) {
+    localStream = peerConnection.getLocalStreams()[0];
+    localStream.getAudioTracks()[0].enabled = enabled;
+  }
+
+  function callAndEnsureRemoteAudioTrackMutingWorks(beLenient) {
     callAndEnsureAudioIsPlaying(beLenient, {audio: true, video: true});
     setAllEventsOccuredHandler(function() {
-      // Call is up, now mute the track and check everything goes silent (give
-      // it a small delay though, we don't expect it to happen instantly).
-      enableRemoteAudio(gSecondConnection, false);
+      setAllEventsOccuredHandler(reportTestSuccess);
 
-      setTimeout(function() {
-        gatherAudioLevelSamples(gSecondConnection, 100, 50, function(samples) {
-          verifyIsSilent(samples);
-          reportTestSuccess();
-        });
-      }, 500);
+      // Call is up, now mute the remote track and check we stop playing out
+      // audio (after a small delay, we don't expect it to happen instantly).
+      enableRemoteAudio(gSecondConnection, false);
+      ensureSilence(gSecondConnection);
+    });
+  }
+
+  function callAndEnsureLocalAudioTrackMutingWorks(beLenient) {
+    callAndEnsureAudioIsPlaying(beLenient, {audio: true, video: true});
+    setAllEventsOccuredHandler(function() {
+      setAllEventsOccuredHandler(reportTestSuccess);
+
+      // Call is up, now mute the local track of the sending side and ensure
+      // the receiving side stops receiving audio.
+      enableLocalAudio(gFirstConnection, false);
+      ensureSilence(gSecondConnection);
     });
   }
 
   function callAndEnsureAudioTrackUnmutingWorks(beLenient) {
     callAndEnsureAudioIsPlaying(beLenient, {audio: true, video: true});
     setAllEventsOccuredHandler(function() {
+      setAllEventsOccuredHandler(reportTestSuccess);
+
       // Mute, wait a while, unmute, verify audio gets back up.
       // (Also, ensure video muting doesn't affect audio).
       enableRemoteAudio(gSecondConnection, false);
@@ -384,13 +398,26 @@
       }, 500);
 
       setTimeout(function() {
-        // Sample for four seconds here; it can take a bit of time for audio to
-        // get back up after the unmute.
-        gatherAudioLevelSamples(gSecondConnection, 200, 50, function(samples) {
-          verifyAudioIsPlaying(samples, beLenient);
-          reportTestSuccess();
-        });
+        ensureAudioPlaying(gSecondConnection, beLenient);
       }, 1500);
+    });
+  }
+
+  function callAndEnsureLocalVideoMutingDoesntMuteAudio(beLenient) {
+    callAndEnsureAudioIsPlaying(beLenient, {audio: true, video: true});
+    setAllEventsOccuredHandler(function() {
+      setAllEventsOccuredHandler(reportTestSuccess);
+      enableLocalVideo(gFirstConnection, false);
+      ensureAudioPlaying(gSecondConnection, beLenient);
+    });
+  }
+
+  function callAndEnsureRemoteVideoMutingDoesntMuteAudio(beLenient) {
+    callAndEnsureAudioIsPlaying(beLenient, {audio: true, video: true});
+    setAllEventsOccuredHandler(function() {
+      setAllEventsOccuredHandler(reportTestSuccess);
+      enableRemoteVideo(gSecondConnection, false);
+      ensureAudioPlaying(gSecondConnection, beLenient);
     });
   }
 
@@ -753,7 +780,7 @@
   }
 
   function receiveOffer(offerSdp, caller, callee) {
-    console.log("Receiving offer...\n" + offerSdp);
+    console.log("Receiving offer...");
     offerSdp = transformRemoteSdp(offerSdp);
 
     var parsedOffer = new RTCSessionDescription({ type: 'offer',
@@ -874,16 +901,16 @@
       <td>Remote Stream for Connection 4</td>
     </tr>
     <tr>
-      <td><video width="320" height="240" id="local-view"
-          autoplay="autoplay"></video></td>
-      <td><video width="320" height="240" id="remote-view-1"
-          autoplay="autoplay"></video></td>
-      <td><video width="320" height="240" id="remote-view-2"
-          autoplay="autoplay"></video></td>
-      <td><video width="320" height="240" id="remote-view-3"
-          autoplay="autoplay"></video></td>
-      <td><video width="320" height="240" id="remote-view-4"
-          autoplay="autoplay"></video></td>
+      <td><video width="320" height="240" id="local-view" autoplay muted>
+          </video></td>
+      <td><video width="320" height="240" id="remote-view-1" autoplay>
+          </video></td>
+      <td><video width="320" height="240" id="remote-view-2" autoplay>
+          </video></td>
+      <td><video width="320" height="240" id="remote-view-3" autoplay>
+          </video></td>
+      <td><video width="320" height="240" id="remote-view-4" autoplay>
+          </video></td>
       <!-- Canvases are named after their corresponding video elements. -->
       <td><canvas width="320" height="240" id="remote-view-1-canvas"
           style="display:none"></canvas></td>
