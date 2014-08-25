@@ -283,19 +283,20 @@ class CrosMarkChromeAsStable(cros_test_lib.MoxTempDirTestCase):
     self.mox.StubOutWithMock(portage_utilities.EBuild, 'CommitChange')
     stable_candidate = cros_mark_chrome_as_stable.ChromeEBuild(old_ebuild_path)
     unstable_ebuild = cros_mark_chrome_as_stable.ChromeEBuild(self.unstable)
+    chrome_pn = 'chromeos-chrome'
     chrome_version = new_version
     commit = None
-    overlay_dir = self.mock_chrome_dir
+    package_dir = self.mock_chrome_dir
 
-    git.RunGit(overlay_dir, ['add', new_ebuild_path])
-    git.RunGit(overlay_dir, ['rm', old_ebuild_path])
+    git.RunGit(package_dir, ['add', new_ebuild_path])
+    git.RunGit(package_dir, ['rm', old_ebuild_path])
     portage_utilities.EBuild.CommitChange(
-        mox.StrContains(commit_string_indicator), overlay_dir)
+        mox.StrContains(commit_string_indicator), package_dir)
 
     self.mox.ReplayAll()
     cros_mark_chrome_as_stable.MarkChromeEBuildAsStable(
-        stable_candidate, unstable_ebuild, chrome_rev, chrome_version, commit,
-        overlay_dir)
+        stable_candidate, unstable_ebuild, chrome_pn, chrome_rev,
+        chrome_version, commit, package_dir)
     self.mox.VerifyAll()
 
   def testStickyMarkAsStable(self):

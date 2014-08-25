@@ -37,11 +37,10 @@ _CHROME_VERSION_REGEX = r'\d+\.\d+\.\d+\.\d+'
 _NON_STICKY_REGEX = r'%s[(_rc.*)|(_alpha.*)]+' % _CHROME_VERSION_REGEX
 
 # Dir where all the action happens.
-_CHROME_OVERLAY_DIR = ('%(srcroot)s/third_party/chromiumos-overlay/' +
-                       constants.CHROME_CP)
+_OVERLAY_DIR = '%(srcroot)s/third_party/chromiumos-overlay/'
 
-_GIT_COMMIT_MESSAGE = ('Marking %(chrome_rev)s for chrome ebuild with version '
-                       '%(chrome_version)s as stable.')
+_GIT_COMMIT_MESSAGE = ('Marking %(chrome_rev)s for %(chrome_pn)s ebuild '
+                       'with version %(chrome_version)s as stable.')
 
 # URLs that print lists of chrome revisions between two versions of the browser.
 _CHROME_VERSION_URL = ('http://omahaproxy.appspot.com/changelog?'
@@ -195,8 +194,8 @@ def _GetStickyEBuild(stable_ebuilds):
 
 class ChromeEBuild(portage_utilities.EBuild):
   """Thin sub-class of EBuild that adds a chrome_version field."""
-  chrome_version_re = re.compile(r'.*%s-(%s|9999).*' % (
-      constants.CHROME_PN, _CHROME_VERSION_REGEX))
+  chrome_version_re = re.compile(r'.*-(%s|9999).*' % (
+      _CHROME_VERSION_REGEX))
   chrome_version = ''
 
   def __init__(self, path):
@@ -209,11 +208,11 @@ class ChromeEBuild(portage_utilities.EBuild):
     return self.ebuild_path
 
 
-def FindChromeCandidates(overlay_dir):
+def FindChromeCandidates(package_dir):
   """Return a tuple of chrome's unstable ebuild and stable ebuilds.
 
   Args:
-    overlay_dir: The path to chrome's portage overlay dir.
+    package_dir: The path to where the package ebuild is stored.
 
   Returns:
     Tuple [unstable_ebuild, stable_ebuilds].
@@ -224,7 +223,7 @@ def FindChromeCandidates(overlay_dir):
   stable_ebuilds = []
   unstable_ebuilds = []
   for path in [
-      os.path.join(overlay_dir, entry) for entry in os.listdir(overlay_dir)]:
+      os.path.join(package_dir, entry) for entry in os.listdir(package_dir)]:
     if path.endswith('.ebuild'):
       ebuild = ChromeEBuild(path)
       if not ebuild.chrome_version:
@@ -237,9 +236,9 @@ def FindChromeCandidates(overlay_dir):
 
   # Apply some sanity checks.
   if not unstable_ebuilds:
-    raise Exception('Missing 9999 ebuild for %s' % overlay_dir)
+    raise Exception('Missing 9999 ebuild for %s' % package_dir)
   if not stable_ebuilds:
-    cros_build_lib.Warning('Missing stable ebuild for %s' % overlay_dir)
+    cros_build_lib.Warning('Missing stable ebuild for %s' % package_dir)
 
   return portage_utilities.BestEBuild(unstable_ebuilds), stable_ebuilds
 
@@ -336,8 +335,8 @@ def GetChromeRevisionListLink(old_chrome, new_chrome, chrome_rev):
                                            new_chrome.chrome_version)
 
 
-def MarkChromeEBuildAsStable(stable_candidate, unstable_ebuild, chrome_rev,
-                             chrome_version, commit, overlay_dir):
+def MarkChromeEBuildAsStable(stable_candidate, unstable_ebuild, chrome_pn,
+                             chrome_rev, chrome_version, commit, package_dir):
   r"""Uprevs the chrome ebuild specified by chrome_rev.
 
   This is the main function that uprevs the chrome_rev from a stable candidate
@@ -348,6 +347,7 @@ def MarkChromeEBuildAsStable(stable_candidate, unstable_ebuild, chrome_rev,
       revving from.  If None, builds the a new ebuild given the version
       and logic for chrome_rev type with revision set to 1.
     unstable_ebuild: ebuild corresponding to the unstable ebuild for chrome.
+    chrome_pn: package name.
     chrome_rev: one of constants.VALID_CHROME_REVISIONS or LOCAL
       constants.CHROME_REV_SPEC -  Requires commit value.  Revs the ebuild for
         the specified version and uses the portage suffix of _alpha.
@@ -360,7 +360,7 @@ def MarkChromeEBuildAsStable(stable_candidate, unstable_ebuild, chrome_rev,
       constants.CHROME_REV_STICKY -  Revs the sticky version.
     chrome_version: The \d.\d.\d.\d version of Chrome.
     commit: Used with constants.CHROME_REV_TOT.  The git revision of chrome.
-    overlay_dir: Path to the chromeos-chrome package dir.
+    package_dir: Path to the chromeos-chrome package dir.
 
   Returns:
     Full portage version atom (including rc's, etc) that was revved.
@@ -390,8 +390,8 @@ def MarkChromeEBuildAsStable(stable_candidate, unstable_ebuild, chrome_rev,
         stable_candidate.current_revision + 1)
   else:
     suffix = 'rc' if mark_stable else 'alpha'
-    pf = '%s-%s_%s-r1' % (constants.CHROME_PN, chrome_version, suffix)
-    new_ebuild_path = os.path.join(overlay_dir, '%s.ebuild' % pf)
+    pf = '%s-%s_%s-r1' % (chrome_pn, chrome_version, suffix)
+    new_ebuild_path = os.path.join(package_dir, '%s.ebuild' % pf)
 
   chrome_variables = dict()
   if commit:
@@ -415,14 +415,15 @@ def MarkChromeEBuildAsStable(stable_candidate, unstable_ebuild, chrome_rev,
                                                 new_ebuild,
                                                 chrome_rev))
 
-  git.RunGit(overlay_dir, ['add', new_ebuild_path])
+  git.RunGit(package_dir, ['add', new_ebuild_path])
   if stable_candidate and not stable_candidate.IsSticky():
-    git.RunGit(overlay_dir, ['rm', stable_candidate.ebuild_path])
+    git.RunGit(package_dir, ['rm', stable_candidate.ebuild_path])
 
   portage_utilities.EBuild.CommitChange(
-      _GIT_COMMIT_MESSAGE % {'chrome_rev': chrome_rev,
+      _GIT_COMMIT_MESSAGE % {'chrome_pn': chrome_pn,
+                             'chrome_rev': chrome_rev,
                              'chrome_version': chrome_version},
-      overlay_dir)
+      package_dir)
 
   return '%s-%s' % (new_ebuild.package, new_ebuild.version)
 
@@ -452,14 +453,14 @@ def main(_argv):
     parser.error('--force_version is not compatible with the %r '
                  'option.' % (args[0],))
 
-  overlay_dir = os.path.abspath(_CHROME_OVERLAY_DIR %
-                                {'srcroot': options.srcroot})
+  overlay_dir = os.path.abspath(_OVERLAY_DIR % {'srcroot': options.srcroot})
+  chrome_package_dir = os.path.join(overlay_dir, constants.CHROME_CP)
   chrome_rev = args[0]
   version_to_uprev = None
   commit_to_use = None
   sticky_branch = None
 
-  (unstable_ebuild, stable_ebuilds) = FindChromeCandidates(overlay_dir)
+  (unstable_ebuild, stable_ebuilds) = FindChromeCandidates(chrome_package_dir)
 
   if chrome_rev == constants.CHROME_REV_LOCAL:
     if 'CHROME_ROOT' in os.environ:
@@ -506,22 +507,43 @@ def main(_argv):
     cros_build_lib.Info('No stable candidate found.')
 
   tracking_branch = 'remotes/m/%s' % os.path.basename(options.tracking_branch)
-  existing_branch = git.GetCurrentBranch(overlay_dir)
+  existing_branch = git.GetCurrentBranch(chrome_package_dir)
   work_branch = cros_mark_as_stable.GitBranch(constants.STABLE_EBUILD_BRANCH,
-                                              tracking_branch, overlay_dir)
+                                              tracking_branch,
+                                              chrome_package_dir)
   work_branch.CreateBranch()
 
   # In the case of uprevving overlays that have patches applied to them,
   # include the patched changes in the stabilizing branch.
   if existing_branch:
-    git.RunGit(overlay_dir, ['rebase', existing_branch])
+    git.RunGit(chrome_package_dir, ['rebase', existing_branch])
 
   chrome_version_atom = MarkChromeEBuildAsStable(
-      stable_candidate, unstable_ebuild, chrome_rev, version_to_uprev,
-      commit_to_use, overlay_dir)
-  # Explicit print to communicate to caller.
+      stable_candidate, unstable_ebuild, 'chromeos-chrome', chrome_rev,
+      version_to_uprev, commit_to_use, chrome_package_dir)
   if chrome_version_atom:
     if options.boards:
       cros_mark_as_stable.CleanStalePackages(options.boards.split(':'),
                                              [chrome_version_atom])
+
+    # If we did rev Chrome, now is a good time to uprev other packages.
+    for other_ebuild in constants.OTHER_CHROME_PACKAGES:
+      other_ebuild_name = os.path.basename(other_ebuild)
+      other_package_dir = os.path.join(overlay_dir, other_ebuild)
+      (other_unstable_ebuild, other_stable_ebuilds) = FindChromeCandidates(
+          other_package_dir)
+      other_stable_candidate = FindChromeUprevCandidate(other_stable_ebuilds,
+                                                        chrome_rev,
+                                                        sticky_branch)
+      revved_atom = MarkChromeEBuildAsStable(other_stable_candidate,
+                                             other_unstable_ebuild,
+                                             other_ebuild_name,
+                                             chrome_rev, version_to_uprev,
+                                             commit_to_use, other_package_dir)
+      if revved_atom and options.boards:
+        cros_mark_as_stable.CleanStalePackages(options.boards.split(':'),
+                                               [revved_atom])
+
+  # Explicit print to communicate to caller.
+  if chrome_version_atom:
     print 'CHROME_VERSION_ATOM=%s' % chrome_version_atom
