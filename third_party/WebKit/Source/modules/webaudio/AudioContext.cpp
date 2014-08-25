@@ -745,7 +745,7 @@ void AudioContext::registerLiveAudioSummingJunction(AudioSummingJunction& juncti
 AudioContext::AudioSummingJunctionDisposer::~AudioSummingJunctionDisposer()
 {
     ASSERT(isMainThread());
-    m_junction.context()->removeMarkedSummingJunction(&m_junction);
+    m_junction.dispose();
 }
 
 void AudioContext::unmarkDirtyNode(AudioNode& node)
@@ -783,7 +783,7 @@ void AudioContext::handleDirtyAudioSummingJunctions()
 {
     ASSERT(isGraphOwner());
 
-    for (HashSet<AudioSummingJunction* >::iterator i = m_dirtySummingJunctions.begin(); i != m_dirtySummingJunctions.end(); ++i)
+    for (HashSet<AudioSummingJunction*>::iterator i = m_dirtySummingJunctions.begin(); i != m_dirtySummingJunctions.end(); ++i)
         (*i)->updateRenderingState();
 
     m_dirtySummingJunctions.clear();

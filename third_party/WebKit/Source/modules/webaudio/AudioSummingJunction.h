@@ -41,6 +41,7 @@ class AudioSummingJunction : public GarbageCollectedFinalized<AudioSummingJuncti
 public:
     virtual ~AudioSummingJunction();
     virtual void trace(Visitor*);
+    void dispose();
 
     // Can be called from any thread.
     AudioContext* context() { return m_context.get(); }
@@ -83,6 +84,8 @@ protected:
 
     // m_renderingStateNeedUpdating keeps track if m_outputs is modified.
     bool m_renderingStateNeedUpdating;
+
+    bool m_didCallDispose;
 };
 
 } // namespace blink

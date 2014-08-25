@@ -37,9 +37,16 @@ namespace blink {
 AudioSummingJunction::AudioSummingJunction(AudioContext* context)
     : m_context(context)
     , m_renderingStateNeedUpdating(false)
+    , m_didCallDispose(false)
 {
     ASSERT(context);
     m_context->registerLiveAudioSummingJunction(*this);
+}
+
+void AudioSummingJunction::dispose()
+{
+    m_didCallDispose = true;
+    m_context->removeMarkedSummingJunction(this);
 }
 
 AudioSummingJunction::~AudioSummingJunction()
@@ -54,7 +61,7 @@ void AudioSummingJunction::trace(Visitor* visitor)
 void AudioSummingJunction::changedOutputs()
 {
     ASSERT(context()->isGraphOwner());
-    if (!m_renderingStateNeedUpdating && canUpdateState()) {
+    if (!m_renderingStateNeedUpdating && !m_didCallDispose) {
         context()->markSummingJunctionDirty(this);
         m_renderingStateNeedUpdating = true;
     }
