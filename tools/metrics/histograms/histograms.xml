@@ -294,52 +294,52 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="appcache.CheckResponseResult"
     enum="AppCacheCheckResponseResult">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>michaeln@chromium.org</owner>
   <summary>AppCache check response result code.</summary>
 </histogram>
 
 <histogram name="appcache.CompletionQueueTime" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>michaeln@chromium.org</owner>
   <summary>
     Time elapsed between a completion task being queued and run.
   </summary>
 </histogram>
 
 <histogram name="appcache.CompletionRunTime" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>michaeln@chromium.org</owner>
   <summary>
     The amount of time taken to run a completion task on the IO thread.
   </summary>
 </histogram>
 
 <histogram name="appcache.CorruptionDetected">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>michaeln@chromium.org</owner>
   <summary>
     Tracks the number of times corruption is detected in the sql database.
   </summary>
 </histogram>
 
 <histogram name="appcache.InitResult" enum="AppCacheInitResult">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>michaeln@chromium.org</owner>
   <summary>AppCache initialization result code.</summary>
 </histogram>
 
 <histogram name="appcache.JobStartDelay.AppCache" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>michaeln@chromium.org</owner>
   <summary>
     How long URLRequests to be retrieved from the appcache are delayed.
   </summary>
 </histogram>
 
 <histogram name="appcache.JobStartDelay.Error" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>michaeln@chromium.org</owner>
   <summary>
     How long URLRequests that result in a synthesized error are delayed.
   </summary>
 </histogram>
 
 <histogram name="appcache.JobStartDelay.Network" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>michaeln@chromium.org</owner>
   <summary>
     How long URLRequests to be retrieved over the network are delayed.
   </summary>
@@ -354,12 +354,12 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="appcache.MissingManifestDetectedAtCallsite"
     enum="AppCacheErrorSite">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>michaeln@chromium.org</owner>
   <summary>Identifies where a missing manifest was detected occured.</summary>
 </histogram>
 
 <histogram name="appcache.MissingManifestEntry" enum="BooleanSuccess">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>michaeln@chromium.org</owner>
   <summary>
     Logged on each occurrence of there being no record for the manifest file in
     the entries table.
@@ -367,7 +367,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="appcache.ReinitAttempt">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>michaeln@chromium.org</owner>
   <summary>
     Tracks the number of times the appcache reinit process occurs. The boolean
     value indicates whether it was a repeated attempt to reinitialize during a
@@ -383,19 +383,19 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="appcache.TaskQueueTime" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>michaeln@chromium.org</owner>
   <summary>
     Time elapsed between a background task being queued and run.
   </summary>
 </histogram>
 
 <histogram name="appcache.TaskRunTime" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>michaeln@chromium.org</owner>
   <summary>The amount of time taken to run a background task.</summary>
 </histogram>
 
 <histogram name="appcache.UpdateJobResult" enum="AppCacheUpdateJobResult">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>michaeln@chromium.org</owner>
   <summary>AppCache update job result code.</summary>
 </histogram>
 
