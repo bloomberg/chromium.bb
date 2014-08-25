@@ -1373,9 +1373,25 @@ void RenderInline::imageChanged(WrappedImagePtr, const IntRect*)
     setShouldDoFullPaintInvalidation(true);
 }
 
+namespace {
+
+class AbsoluteRectsIgnoringEmptyRectsGeneratorContext : public AbsoluteRectsGeneratorContext {
+public:
+    AbsoluteRectsIgnoringEmptyRectsGeneratorContext(Vector<IntRect>& rects, const LayoutPoint& accumulatedOffset)
+        : AbsoluteRectsGeneratorContext(rects, accumulatedOffset) { }
+
+    void operator()(const FloatRect& rect)
+    {
+        if (!rect.isEmpty())
+            AbsoluteRectsGeneratorContext::operator()(rect);
+    }
+};
+
+} // unnamed namespace
+
 void RenderInline::addFocusRingRects(Vector<IntRect>& rects, const LayoutPoint& additionalOffset, const RenderLayerModelObject* paintContainer) const
 {
-    AbsoluteRectsGeneratorContext context(rects, additionalOffset);
+    AbsoluteRectsIgnoringEmptyRectsGeneratorContext context(rects, additionalOffset);
     generateLineBoxRects(context);
 
     addChildFocusRingRects(rects, additionalOffset, paintContainer);
