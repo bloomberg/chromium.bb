@@ -18,6 +18,7 @@
 
 namespace content {
 
+class DevToolsAgentHost;
 class DevToolsAgentHostImpl;
 class EmbeddedWorkerDevToolsAgentHost;
 class ServiceWorkerContextCore;
@@ -58,6 +59,8 @@ class CONTENT_EXPORT EmbeddedWorkerDevToolsManager {
 
   DevToolsAgentHostImpl* GetDevToolsAgentHostForWorker(int worker_process_id,
                                                    int worker_route_id);
+
+  std::vector<scoped_refptr<DevToolsAgentHost> > GetOrCreateAllAgentHosts();
 
   // Returns true when the worker must be paused on start because a DevTool
   // window for the same former SharedWorkerInstance is still opened.

@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/devtools_agent_host_client.h"
+#include "url/gurl.h"
 
 namespace content {
 
@@ -23,6 +24,20 @@ class WebContents;
 class CONTENT_EXPORT DevToolsAgentHost
     : public base::RefCounted<DevToolsAgentHost> {
  public:
+  enum Type {
+    // Agent host associated with WebContents.
+    TYPE_WEB_CONTENTS,
+
+    // Agent host associated with shared worker.
+    TYPE_SHARED_WORKER,
+
+    // Agent host associated with service worker.
+    TYPE_SERVICE_WORKER,
+
+    // Agent host associated with DevToolsExternalAgentProxyDelegate.
+    TYPE_EXTERNAL,
+  };
+
   // Returns DevToolsAgentHost with a given |id| or NULL of it does not exist.
   static scoped_refptr<DevToolsAgentHost> GetForId(const std::string& id);
 
@@ -48,8 +63,10 @@ class CONTENT_EXPORT DevToolsAgentHost
 
   static bool IsDebuggerAttached(WebContents* web_contents);
 
-  // Returns a list of all existing WebContents that can be debugged.
-  static std::vector<WebContents*> GetInspectableWebContents();
+  typedef std::vector<scoped_refptr<DevToolsAgentHost> > List;
+
+  // Returns all possible DevToolsAgentHosts.
+  static List GetOrCreateAll();
 
   // Client attaches to this agent host to start debugging it.
   virtual void AttachClient(DevToolsAgentHostClient* client) = 0;
@@ -81,6 +98,21 @@ class CONTENT_EXPORT DevToolsAgentHost
 
   // Returns true if DevToolsAgentHost is for worker.
   virtual bool IsWorker() const = 0;
+
+  // Returns agent host type.
+  virtual Type GetType() = 0;
+
+  // Returns agent host title.
+  virtual std::string GetTitle() = 0;
+
+  // Returns url associated with agent host.
+  virtual GURL GetURL() = 0;
+
+  // Activates agent host. Returns false if the operation failed.
+  virtual bool Activate() = 0;
+
+  // Closes agent host. Returns false if the operation failed.
+  virtual bool Close() = 0;
 
   // Terminates all debugging sessions and detaches all clients.
   static void DetachAllClients();

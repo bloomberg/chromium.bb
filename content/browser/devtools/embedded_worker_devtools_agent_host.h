@@ -29,6 +29,11 @@ class EmbeddedWorkerDevToolsAgentHost : public IPCDevToolsAgentHost,
 
   // DevToolsAgentHost override.
   virtual bool IsWorker() const OVERRIDE;
+  virtual Type GetType() OVERRIDE;
+  virtual std::string GetTitle() OVERRIDE;
+  virtual GURL GetURL() OVERRIDE;
+  virtual bool Activate() OVERRIDE;
+  virtual bool Close() OVERRIDE;
 
   // IPCDevToolsAgentHost implementation.
   virtual void SendMessageToAgent(IPC::Message* message) OVERRIDE;
@@ -45,9 +50,7 @@ class EmbeddedWorkerDevToolsAgentHost : public IPCDevToolsAgentHost,
   void WorkerDestroyed();
   bool Matches(const SharedWorkerInstance& other);
   bool Matches(const ServiceWorkerIdentifier& other);
-
-  virtual GURL GetURL();
-  virtual bool Close();
+  bool IsTerminated();
 
  private:
   friend class EmbeddedWorkerDevToolsManagerTest;

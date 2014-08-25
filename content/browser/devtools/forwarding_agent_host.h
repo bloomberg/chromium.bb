@@ -31,6 +31,13 @@ class ForwardingAgentHost
   virtual void Detach() OVERRIDE;
   virtual void DispatchProtocolMessage(const std::string& message) OVERRIDE;
 
+  // DevToolsAgentHost implementation
+  virtual Type GetType() OVERRIDE;
+  virtual std::string GetTitle() OVERRIDE;
+  virtual GURL GetURL() OVERRIDE;
+  virtual bool Activate() OVERRIDE;
+  virtual bool Close() OVERRIDE;
+
   scoped_ptr<DevToolsExternalAgentProxyDelegate> delegate_;
 };
 

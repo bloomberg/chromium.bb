@@ -6,6 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/lazy_instance.h"
+#include "base/strings/utf_string_conversions.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/devtools/devtools_manager_impl.h"
 #include "content/browser/devtools/devtools_power_handler.h"
@@ -24,6 +25,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_widget_host_iterator.h"
+#include "content/public/browser/web_contents_delegate.h"
 
 #if defined(OS_ANDROID)
 #include "content/browser/power_save_blocker_impl.h"
@@ -72,7 +74,7 @@ bool DevToolsAgentHost::IsDebuggerAttached(WebContents* web_contents) {
 }
 
 //static
-std::vector<WebContents*> DevToolsAgentHost::GetInspectableWebContents() {
+std::vector<WebContents*> DevToolsAgentHostImpl::GetInspectableWebContents() {
   std::set<WebContents*> set;
   scoped_ptr<RenderWidgetHostIterator> widgets(
       RenderWidgetHost::GetRenderWidgetHosts());
@@ -375,6 +377,39 @@ void RenderViewDevToolsAgentHost::DisconnectWebContents() {
 
 void RenderViewDevToolsAgentHost::ConnectWebContents(WebContents* wc) {
   ConnectRenderViewHost(wc->GetRenderViewHost());
+}
+
+DevToolsAgentHost::Type RenderViewDevToolsAgentHost::GetType() {
+  return TYPE_WEB_CONTENTS;
+}
+
+std::string RenderViewDevToolsAgentHost::GetTitle() {
+  if (WebContents* web_contents = GetWebContents())
+    return base::UTF16ToUTF8(web_contents->GetTitle());
+  return "";
+}
+
+GURL RenderViewDevToolsAgentHost::GetURL() {
+  if (WebContents* web_contents = GetWebContents())
+    return web_contents->GetVisibleURL();
+  return render_view_host_ ?
+      render_view_host_->GetMainFrame()->GetLastCommittedURL() : GURL();
+}
+
+bool RenderViewDevToolsAgentHost::Activate() {
+  if (render_view_host_) {
+    render_view_host_->GetDelegate()->Activate();
+    return true;
+  }
+  return false;
+}
+
+bool RenderViewDevToolsAgentHost::Close() {
+  if (render_view_host_) {
+    render_view_host_->ClosePage();
+    return true;
+  }
+  return false;
 }
 
 void RenderViewDevToolsAgentHost::ConnectRenderViewHost(RenderViewHost* rvh) {

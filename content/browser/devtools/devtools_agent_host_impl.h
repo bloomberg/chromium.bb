@@ -22,6 +22,9 @@ class BrowserContext;
 // Describes interface for managing devtools agents from the browser process.
 class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost {
  public:
+  // Returns a list of all existing WebContents that can be debugged.
+  static std::vector<WebContents*> GetInspectableWebContents();
+
   // Informs the hosted agent that a client host has attached.
   virtual void Attach() = 0;
 

@@ -49,6 +49,11 @@ class CONTENT_EXPORT RenderViewDevToolsAgentHost
   virtual void DisconnectWebContents() OVERRIDE;
   virtual void ConnectWebContents(WebContents* web_contents) OVERRIDE;
   virtual WebContents* GetWebContents() OVERRIDE;
+  virtual Type GetType() OVERRIDE;
+  virtual std::string GetTitle() OVERRIDE;
+  virtual GURL GetURL() OVERRIDE;
+  virtual bool Activate() OVERRIDE;
+  virtual bool Close() OVERRIDE;
 
  private:
   friend class DevToolsAgentHost;

@@ -37,4 +37,24 @@ void ForwardingAgentHost::DispatchProtocolMessage(
   delegate_->SendMessageToBackend(message);
 }
 
+DevToolsAgentHost::Type ForwardingAgentHost::GetType() {
+  return TYPE_EXTERNAL;
+}
+
+std::string ForwardingAgentHost::GetTitle() {
+  return "";
+}
+
+GURL ForwardingAgentHost::GetURL() {
+  return GURL();
+}
+
+bool ForwardingAgentHost::Activate() {
+  return false;
+}
+
+bool ForwardingAgentHost::Close() {
+  return false;
+}
+
 }  // content

@@ -32,19 +32,33 @@ const char kFrontEndURL[] =
 const char kSocketNameFormat[] = "webview_devtools_remote_%d";
 
 const char kTargetTypePage[] = "page";
+const char kTargetTypeServiceWorker[] = "service_worker";
+const char kTargetTypeOther[] = "other";
 
 std::string GetViewDescription(WebContents* web_contents);
 
 class Target : public content::DevToolsTarget {
  public:
-  explicit Target(WebContents* web_contents);
+  explicit Target(scoped_refptr<DevToolsAgentHost> agent_host);
 
-  virtual std::string GetId() const OVERRIDE { return id_; }
+  virtual std::string GetId() const OVERRIDE { return agent_host_->GetId(); }
   virtual std::string GetParentId() const OVERRIDE { return std::string(); }
-  virtual std::string GetType() const OVERRIDE { return kTargetTypePage; }
-  virtual std::string GetTitle() const OVERRIDE { return title_; }
+  virtual std::string GetType() const OVERRIDE {
+    switch (agent_host_->GetType()) {
+      case DevToolsAgentHost::TYPE_WEB_CONTENTS:
+        return kTargetTypePage;
+      case DevToolsAgentHost::TYPE_SERVICE_WORKER:
+        return kTargetTypeServiceWorker;
+      default:
+        break;
+    }
+    return kTargetTypeOther;
+  }
+  virtual std::string GetTitle() const OVERRIDE {
+    return agent_host_->GetTitle();
+  }
   virtual std::string GetDescription() const OVERRIDE { return description_; }
-  virtual GURL GetURL() const OVERRIDE { return url_; }
+  virtual GURL GetURL() const OVERRIDE { return agent_host_->GetURL(); }
   virtual GURL GetFaviconURL() const OVERRIDE { return GURL(); }
   virtual base::TimeTicks GetLastActivityTime() const OVERRIDE {
     return last_activity_time_;
@@ -55,26 +69,21 @@ class Target : public content::DevToolsTarget {
   virtual scoped_refptr<DevToolsAgentHost> GetAgentHost() const OVERRIDE {
     return agent_host_;
   }
-  virtual bool Activate() const OVERRIDE { return false; }
-  virtual bool Close() const OVERRIDE { return false; }
+  virtual bool Activate() const OVERRIDE { return agent_host_->Activate(); }
+  virtual bool Close() const OVERRIDE { return agent_host_->Close(); }
 
  private:
   scoped_refptr<DevToolsAgentHost> agent_host_;
-  std::string id_;
-  std::string title_;
   std::string description_;
-  GURL url_;
   base::TimeTicks last_activity_time_;
 };
 
-Target::Target(WebContents* web_contents) {
-  agent_host_ =
-      DevToolsAgentHost::GetOrCreateFor(web_contents);
-  id_ = agent_host_->GetId();
-  description_ = GetViewDescription(web_contents);
-  title_ = base::UTF16ToUTF8(web_contents->GetTitle());
-  url_ = web_contents->GetURL();
-  last_activity_time_ = web_contents->GetLastActiveTime();
+Target::Target(scoped_refptr<DevToolsAgentHost> agent_host)
+    : agent_host_(agent_host) {
+  if (WebContents* web_contents = agent_host->GetWebContents()) {
+    description_ = GetViewDescription(web_contents);
+    last_activity_time_ = web_contents->GetLastActiveTime();
+  }
 }
 
 // Delegate implementation for the devtools http handler for WebView. A new
@@ -106,10 +115,9 @@ class AwDevToolsServerDelegate : public content::DevToolsHttpHandlerDelegate {
 
   virtual void EnumerateTargets(TargetCallback callback) OVERRIDE {
     TargetList targets;
-    std::vector<WebContents*> wc_list =
-        DevToolsAgentHost::GetInspectableWebContents();
-    for (std::vector<WebContents*>::iterator it = wc_list.begin();
-         it != wc_list.end(); ++it) {
+    DevToolsAgentHost::List agents = DevToolsAgentHost::GetOrCreateAll();
+    for (DevToolsAgentHost::List::iterator it = agents.begin();
+        it != agents.end(); ++it) {
       targets.push_back(new Target(*it));
     }
     callback.Run(targets);

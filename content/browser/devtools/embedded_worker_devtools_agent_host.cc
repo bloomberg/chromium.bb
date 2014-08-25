@@ -4,6 +4,7 @@
 
 #include "content/browser/devtools/embedded_worker_devtools_agent_host.h"
 
+#include "base/strings/utf_string_conversions.h"
 #include "content/browser/devtools/devtools_manager_impl.h"
 #include "content/browser/devtools/devtools_protocol.h"
 #include "content/browser/devtools/devtools_protocol_constants.h"
@@ -63,12 +64,24 @@ bool EmbeddedWorkerDevToolsAgentHost::IsWorker() const {
   return true;
 }
 
+DevToolsAgentHost::Type EmbeddedWorkerDevToolsAgentHost::GetType() {
+  return shared_worker_ ? TYPE_SHARED_WORKER : TYPE_SERVICE_WORKER;
+}
+
+std::string EmbeddedWorkerDevToolsAgentHost::GetTitle() {
+  return shared_worker_ ? base::UTF16ToUTF8(shared_worker_->name()) : "";
+}
+
 GURL EmbeddedWorkerDevToolsAgentHost::GetURL() {
   if (shared_worker_)
     return shared_worker_->url();
   if (service_worker_)
     return service_worker_->url();
   return GURL();
+}
+
+bool EmbeddedWorkerDevToolsAgentHost::Activate() {
+  return false;
 }
 
 bool EmbeddedWorkerDevToolsAgentHost::Close() {
@@ -178,6 +191,10 @@ bool EmbeddedWorkerDevToolsAgentHost::Matches(
 bool EmbeddedWorkerDevToolsAgentHost::Matches(
     const ServiceWorkerIdentifier& other) {
   return service_worker_ && service_worker_->Matches(other);
+}
+
+bool EmbeddedWorkerDevToolsAgentHost::IsTerminated() {
+  return state_ == WORKER_TERMINATED;
 }
 
 EmbeddedWorkerDevToolsAgentHost::~EmbeddedWorkerDevToolsAgentHost() {

@@ -183,6 +183,18 @@ EmbeddedWorkerDevToolsManager::FindExistingServiceWorkerAgentHost(
   return it;
 }
 
+DevToolsAgentHost::List
+EmbeddedWorkerDevToolsManager::GetOrCreateAllAgentHosts() {
+  DevToolsAgentHost::List result;
+  EmbeddedWorkerDevToolsManager* instance = GetInstance();
+  for (AgentHostMap::iterator it = instance->workers_.begin();
+      it != instance->workers_.end(); ++it) {
+    if (!it->second->IsTerminated())
+      result.push_back(it->second);
+  }
+  return result;
+}
+
 void EmbeddedWorkerDevToolsManager::WorkerRestarted(
     const WorkerId& id,
     const AgentHostMap::iterator& it) {

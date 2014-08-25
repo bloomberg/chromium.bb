@@ -11,6 +11,7 @@
 #include "base/guid.h"
 #include "base/lazy_instance.h"
 #include "content/browser/devtools/devtools_manager_impl.h"
+#include "content/browser/devtools/embedded_worker_devtools_manager.h"
 #include "content/browser/devtools/forwarding_agent_host.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_manager_delegate.h"
@@ -27,6 +28,19 @@ base::LazyInstance<AgentStateCallbacks>::Leaky g_callbacks =
     LAZY_INSTANCE_INITIALIZER;
 }  // namespace
 
+// static
+DevToolsAgentHost::List DevToolsAgentHost::GetOrCreateAll() {
+  List result = EmbeddedWorkerDevToolsManager::GetInstance()
+      ->GetOrCreateAllAgentHosts();
+  std::vector<WebContents*> wc_list =
+      DevToolsAgentHostImpl::GetInspectableWebContents();
+  for (std::vector<WebContents*>::iterator it = wc_list.begin();
+      it != wc_list.end(); ++it) {
+    result.push_back(GetOrCreateFor(*it));
+  }
+  return result;
+}
+
 DevToolsAgentHostImpl::DevToolsAgentHostImpl()
     : id_(base::GenerateGUID()),
       client_(NULL) {
@@ -39,7 +53,7 @@ DevToolsAgentHostImpl::~DevToolsAgentHostImpl() {
   g_instances.Get().erase(g_instances.Get().find(id_));
 }
 
-//static
+// static
 scoped_refptr<DevToolsAgentHost> DevToolsAgentHost::GetForId(
     const std::string& id) {
   if (g_instances == NULL)

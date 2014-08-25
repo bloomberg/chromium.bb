@@ -66,6 +66,7 @@ const char kFrontEndURL[] =
 const char kTetheringSocketName[] = "chrome_devtools_tethering_%d_%d";
 
 const char kTargetTypePage[] = "page";
+const char kTargetTypeServiceWorker[] = "service_worker";
 const char kTargetTypeOther[] = "other";
 
 static GURL GetFaviconURLForContents(WebContents* web_contents) {
@@ -74,6 +75,20 @@ static GURL GetFaviconURLForContents(WebContents* web_contents) {
   if (entry != NULL && entry->GetURL().is_valid())
     return entry->GetFavicon().url;
   return GURL();
+}
+
+static GURL GetFaviconURLForAgentHost(
+    scoped_refptr<DevToolsAgentHost> agent_host) {
+  if (WebContents* web_contents = agent_host->GetWebContents())
+    return GetFaviconURLForContents(web_contents);
+  return GURL();
+}
+
+static base::TimeTicks GetLastActiveTimeForAgentHost(
+    scoped_refptr<DevToolsAgentHost> agent_host) {
+  if (WebContents* web_contents = agent_host->GetWebContents())
+    return web_contents->GetLastActiveTime();
+  return base::TimeTicks();
 }
 
 bool AuthorizeSocketAccessWithDebugPermission(
@@ -110,10 +125,17 @@ class TargetBase : public content::DevToolsTarget {
         last_activity_time_(web_contents->GetLastActiveTime()) {
   }
 
-  TargetBase(const base::string16& title, const GURL& url)
-      : title_(base::UTF16ToUTF8(title)),
-        url_(url)
-  {}
+  explicit TargetBase(scoped_refptr<DevToolsAgentHost> agent_host)
+      : title_(agent_host->GetTitle()),
+        url_(agent_host->GetURL()),
+        favicon_url_(GetFaviconURLForAgentHost(agent_host)),
+        last_activity_time_(GetLastActiveTimeForAgentHost(agent_host)) {
+  }
+
+  TargetBase(const std::string& title, const GURL& url)
+      : title_(title),
+        url_(url) {
+  }
 
  private:
   const std::string title_;
@@ -140,7 +162,9 @@ class TabTarget : public TargetBase {
     return base::IntToString(tab_id_);
   }
 
-  virtual std::string GetType() const OVERRIDE { return kTargetTypePage; }
+  virtual std::string GetType() const OVERRIDE {
+    return kTargetTypePage;
+  }
 
   virtual bool IsAttached() const OVERRIDE {
     TabModel* model;
@@ -195,7 +219,7 @@ class TabTarget : public TargetBase {
   }
 
   TabTarget(int tab_id, const base::string16& title, const GURL& url)
-      : TargetBase(title, url),
+      : TargetBase(base::UTF16ToUTF8(title), url),
         tab_id_(tab_id) {
   }
 
@@ -220,9 +244,9 @@ class TabTarget : public TargetBase {
 
 class NonTabTarget : public TargetBase {
  public:
-  explicit NonTabTarget(WebContents* web_contents)
-      : TargetBase(web_contents),
-        agent_host_(DevToolsAgentHost::GetOrCreateFor(web_contents)) {
+  explicit NonTabTarget(scoped_refptr<DevToolsAgentHost> agent_host)
+      : TargetBase(agent_host),
+        agent_host_(agent_host) {
   }
 
   // content::DevToolsTarget implementation:
@@ -231,10 +255,18 @@ class NonTabTarget : public TargetBase {
   }
 
   virtual std::string GetType() const OVERRIDE {
-    if (TabModelList::begin() == TabModelList::end()) {
-      // If there are no tab models we must be running in ChromeShell.
-      // Return the 'page' target type for backwards compatibility.
-      return kTargetTypePage;
+    switch (agent_host_->GetType()) {
+      case DevToolsAgentHost::TYPE_WEB_CONTENTS:
+        if (TabModelList::begin() == TabModelList::end()) {
+          // If there are no tab models we must be running in ChromeShell.
+          // Return the 'page' target type for backwards compatibility.
+          return kTargetTypePage;
+        }
+        break;
+      case DevToolsAgentHost::TYPE_SERVICE_WORKER:
+        return kTargetTypeServiceWorker;
+      default:
+        break;
     }
     return kTargetTypeOther;
   }
@@ -248,19 +280,11 @@ class NonTabTarget : public TargetBase {
   }
 
   virtual bool Activate() const OVERRIDE {
-    WebContents* web_contents = agent_host_->GetWebContents();
-    if (!web_contents)
-      return false;
-    web_contents->GetDelegate()->ActivateContents(web_contents);
-    return true;
+    return agent_host_->Activate();
   }
 
   virtual bool Close() const OVERRIDE {
-    WebContents* web_contents = agent_host_->GetWebContents();
-    if (!web_contents)
-      return false;
-    web_contents->GetRenderViewHost()->ClosePage();
-    return true;
+    return agent_host_->Close();
   }
 
  private:
@@ -351,13 +375,14 @@ class DevToolsServerDelegate : public content::DevToolsHttpHandlerDelegate {
     }
 
     // Add targets for WebContents not associated with any tabs.
-    std::vector<WebContents*> wc_list =
-        DevToolsAgentHost::GetInspectableWebContents();
-    for (std::vector<WebContents*>::iterator it = wc_list.begin();
-         it != wc_list.end();
-         ++it) {
-      if (tab_web_contents.find(*it) != tab_web_contents.end())
-        continue;
+    DevToolsAgentHost::List agents =
+        DevToolsAgentHost::GetOrCreateAll();
+    for (DevToolsAgentHost::List::iterator it = agents.begin();
+         it != agents.end(); ++it) {
+      if (WebContents* web_contents = (*it)->GetWebContents()) {
+        if (tab_web_contents.find(web_contents) != tab_web_contents.end())
+          continue;
+      }
       targets.push_back(new NonTabTarget(*it));
     }
 

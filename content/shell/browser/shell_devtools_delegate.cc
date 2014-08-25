@@ -43,6 +43,8 @@ const char kFrontEndURL[] =
     "http://chrome-devtools-frontend.appspot.com/serve_rev/%s/devtools.html";
 #endif
 const char kTargetTypePage[] = "page";
+const char kTargetTypeServiceWorker[] = "service_worker";
+const char kTargetTypeOther[] = "other";
 
 net::StreamListenSocketFactory* CreateSocketFactory() {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
@@ -76,14 +78,26 @@ net::StreamListenSocketFactory* CreateSocketFactory() {
 
 class Target : public content::DevToolsTarget {
  public:
-  explicit Target(WebContents* web_contents);
+  explicit Target(scoped_refptr<DevToolsAgentHost> agent_host);
 
-  virtual std::string GetId() const OVERRIDE { return id_; }
+  virtual std::string GetId() const OVERRIDE { return agent_host_->GetId(); }
   virtual std::string GetParentId() const OVERRIDE { return std::string(); }
-  virtual std::string GetType() const OVERRIDE { return kTargetTypePage; }
-  virtual std::string GetTitle() const OVERRIDE { return title_; }
+  virtual std::string GetType() const OVERRIDE {
+    switch (agent_host_->GetType()) {
+      case DevToolsAgentHost::TYPE_WEB_CONTENTS:
+        return kTargetTypePage;
+      case DevToolsAgentHost::TYPE_SERVICE_WORKER:
+        return kTargetTypeServiceWorker;
+      default:
+        break;
+    }
+    return kTargetTypeOther;
+  }
+  virtual std::string GetTitle() const OVERRIDE {
+    return agent_host_->GetTitle();
+  }
   virtual std::string GetDescription() const OVERRIDE { return std::string(); }
-  virtual GURL GetURL() const OVERRIDE { return url_; }
+  virtual GURL GetURL() const OVERRIDE { return agent_host_->GetURL(); }
   virtual GURL GetFaviconURL() const OVERRIDE { return favicon_url_; }
   virtual base::TimeTicks GetLastActivityTime() const OVERRIDE {
     return last_activity_time_;
@@ -99,39 +113,27 @@ class Target : public content::DevToolsTarget {
 
  private:
   scoped_refptr<DevToolsAgentHost> agent_host_;
-  std::string id_;
-  std::string title_;
-  GURL url_;
   GURL favicon_url_;
   base::TimeTicks last_activity_time_;
 };
 
-Target::Target(WebContents* web_contents) {
-  agent_host_ = DevToolsAgentHost::GetOrCreateFor(web_contents);
-  id_ = agent_host_->GetId();
-  title_ = base::UTF16ToUTF8(web_contents->GetTitle());
-  url_ = web_contents->GetURL();
-  content::NavigationController& controller = web_contents->GetController();
-  content::NavigationEntry* entry = controller.GetActiveEntry();
-  if (entry != NULL && entry->GetURL().is_valid())
-    favicon_url_ = entry->GetFavicon().url;
-  last_activity_time_ = web_contents->GetLastActiveTime();
+Target::Target(scoped_refptr<DevToolsAgentHost> agent_host)
+    : agent_host_(agent_host) {
+  if (WebContents* web_contents = agent_host_->GetWebContents()) {
+    content::NavigationController& controller = web_contents->GetController();
+    content::NavigationEntry* entry = controller.GetActiveEntry();
+    if (entry != NULL && entry->GetURL().is_valid())
+      favicon_url_ = entry->GetFavicon().url;
+    last_activity_time_ = web_contents->GetLastActiveTime();
+  }
 }
 
 bool Target::Activate() const {
-  WebContents* web_contents = agent_host_->GetWebContents();
-  if (!web_contents)
-    return false;
-  web_contents->GetDelegate()->ActivateContents(web_contents);
-  return true;
+  return agent_host_->Activate();
 }
 
 bool Target::Close() const {
-  WebContents* web_contents = agent_host_->GetWebContents();
-  if (!web_contents)
-    return false;
-  web_contents->GetRenderViewHost()->ClosePage();
-  return true;
+  return agent_host_->Close();
 }
 
 }  // namespace
@@ -189,16 +191,16 @@ ShellDevToolsDelegate::CreateNewTarget(const GURL& url) {
                                         NULL,
                                         MSG_ROUTING_NONE,
                                         gfx::Size());
-  return scoped_ptr<DevToolsTarget>(new Target(shell->web_contents()));
+  return scoped_ptr<DevToolsTarget>(
+      new Target(DevToolsAgentHost::GetOrCreateFor(shell->web_contents())));
 }
 
 void ShellDevToolsDelegate::EnumerateTargets(TargetCallback callback) {
   TargetList targets;
-  std::vector<WebContents*> wc_list =
-      content::DevToolsAgentHost::GetInspectableWebContents();
-  for (std::vector<WebContents*>::iterator it = wc_list.begin();
-       it != wc_list.end();
-       ++it) {
+  content::DevToolsAgentHost::List agents =
+      content::DevToolsAgentHost::GetOrCreateAll();
+  for (content::DevToolsAgentHost::List::iterator it = agents.begin();
+       it != agents.end(); ++it) {
     targets.push_back(new Target(*it));
   }
   callback.Run(targets);
