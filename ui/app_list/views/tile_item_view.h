@@ -30,8 +30,6 @@ class APP_LIST_EXPORT TileItemView : public views::CustomButton,
   void SetSearchResult(SearchResult* item);
 
  private:
-  class TileItemBackground;
-
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize() const OVERRIDE;
 
@@ -48,8 +46,6 @@ class APP_LIST_EXPORT TileItemView : public views::CustomButton,
 
   views::ImageView* icon_;  // Owned by views hierarchy.
   views::Label* title_;     // Owned by views hierarchy.
-
-  TileItemBackground* background_;
 
   DISALLOW_COPY_AND_ASSIGN(TileItemView);
 };
