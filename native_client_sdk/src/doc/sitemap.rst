@@ -43,6 +43,8 @@ Contents:
    community/security-contest/contest-announcement.rst
    community/security-contest/contest-terms.rst
    community/security-contest/contest-faq.rst
+   c-api.rst
+   cpp-api.rst
    pepper_stable/c/index.rst
    pepper_stable/cpp/index.rst
    pepper_beta/c/index.rst

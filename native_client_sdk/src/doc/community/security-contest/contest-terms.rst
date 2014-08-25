@@ -65,7 +65,7 @@ I. Binding Agreement
    will be asked to identify security Exploits in Google’s Native
    Client Software and enter those Exploits on Google’s `Native Client
    Issue Tracker <http://code.google.com/p/nativeclient/issues/list>`_
-   web site using the "Security Contest Template." At this point, the
+   website using the "Security Contest Template." At this point, the
    Exploit will become an Issue and will no longer be able to be
    identified by another Participant. Google will then verify that the
    Issue is reproducible. If so, that Issue will become a Verified
@@ -772,14 +772,14 @@ I. Binding Agreement
       Google further reserves the right to disqualify any Participant
       who tampers with the submission process or any other part of the
       Contest. Any attempt by a Participant to deliberately damage any
-      web site or undermine the legitimate operation of the Contest is
+      website or undermine the legitimate operation of the Contest is
       a violation of criminal and civil laws and should such an
       attempt be made, Google reserves the right to seek damages from
       any such Participant to the fullest extent of the applicable
       law.
 
    #. Internet Disclaimer. Google is not responsible for any
-      malfunction of the entire Contest, the web site displaying the
+      malfunction of the entire Contest, the website displaying the
       Contest terms and entry information, or any late, lost, damaged,
       misdirected, incomplete, illegible, undeliverable, or destroyed
       Exploits, Issues or Summaries due to system errors, failed,
@@ -789,7 +789,7 @@ I. Binding Agreement
       system/human errors and failures, technical malfunction(s) of
       any telephone network or lines, cable connections, satellite
       transmissions, servers or providers, or computer equipment,
-      traffic congestion on the Internet or at the web site displaying
+      traffic congestion on the Internet or at the website displaying
       the Contest or any combination thereof, including other
       telecommunication, cable, digital or satellite malfunctions
       which may limit an entrant’s ability to participate. Google is

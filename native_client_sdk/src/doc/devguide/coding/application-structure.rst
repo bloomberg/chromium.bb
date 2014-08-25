@@ -9,8 +9,8 @@ Application Structure
   :backlinks: none
   :depth: 2
 
-This chapter of the Developer's Guide describes the general structure of a
-Native Client application. The chapter assumes you are familiar with the
+This section of the Developer's Guide describes the general structure of a
+Native Client application. The section assumes you are familiar with the
 material presented in the :doc:`Technical Overview <../../overview>`.
 
 
@@ -250,6 +250,6 @@ issue a ``crash`` event
 
 While the ``CreateModule()`` factory function, the ``Module`` class, and the
 ``Instance`` class are required for a Native Client application, the code
-samples shown above don't actually do anything. Subsequent chapters in the
+samples shown above don't actually do anything. Subsequent sections in the
 Developer's Guide build on these code samples and add more interesting
 functionality.

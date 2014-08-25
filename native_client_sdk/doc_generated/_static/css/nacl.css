@@ -81,6 +81,23 @@ blockquote.indent-only {font-style: normal; color: #000; }
     display: block;
     margin: 1em auto 0;
     }
+#home .left-side {
+    float: left;
+    width: 54%;
+    background-color: #FFF;
+    }
+#home .left-side-inner {
+    padding-right: 40px;
+    }
+#home .pull-quote {
+    background-color: #f5f5f5;
+    border-bottom: 1px solid;
+    border-top: 1px solid;
+    font-size: 14px;
+    float: right;
+    margin: .5em 2em 2em 2em;
+    padding: 1em;
+}
 #home .right-side {
     float: right;
     width: 54%;

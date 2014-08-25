@@ -17,26 +17,26 @@ Client (PNaCl). This is a client-side application that uses HTML, JavaScript and
 a Native Client module written in C++. The PNaCl toolchain is used to enable
 running the Native Client module directly from a web page.
 
-It's recommended to read the :doc:`Native Client Technical Overview
+It's recommended that you read the :doc:`Native Client Technical Overview
 </overview>` prior to going through this tutorial.
 
 What the application in this tutorial does
 ------------------------------------------
 
 The application in this tutorial shows how to load a Native Client module in a
-web page, and how to send messages between JavaScript and the C++ code in the
-Native Client module. In this simple application, the JavaScript code in the web
-page sends a ``'hello'`` message to the Native Client module. When the Native
-Client module receives a message, it checks whether the message is equal to the
-string ``'hello'``. If it is, the Native Client module returns a message saying
-``'hello from NaCl'``. A JavaScript alert panel displays the message received
-from the Native Client module.
+web page, and how to send messages between JavaScript and the Native Client 
+module. In this simple application, the JavaScript sends a ``'hello'`` message 
+to the Native Client module. When the Native Client module receives a message, 
+it checks whether the message is equal to the string ``'hello'``. If it is, the
+Native Client module returns a message saying ``'hello from NaCl'``. A 
+JavaScript alert panel displays the message received from the Native Client 
+module.
 
 Communication between JavaScript and Native Client modules
 ----------------------------------------------------------
 
 The Native Client programming model supports bidirectional communication between
-JavaScript and the Native Client module (C/C++ code). Both sides can initiate
+JavaScript and the Native Client module. Both sides can initiate
 and respond to messages. In all cases, the communication is asynchronous: The
 caller (JavaScript or the Native Client module) sends a message, but the caller
 does not wait for, or may not even expect, a response. This behavior is
@@ -76,8 +76,8 @@ rule called ``serve`` is the easiest way to invoke it:
   :doc:`versioning information </version>`). In the sample invocation above
   ``pepper_$(VERSION)`` refers to the specific version you want to use. For
   example, ``pepper_31``. If you don't know which version you need, use the
-  one labeled ``(stable)`` by ``naclsdk list``. See :doc:`Download the Native
-  Client SDK </sdk/download>` for more details.
+  one labeled ``(stable)`` by the ``naclsdk list`` command. See 
+  :doc:`Download the Native Client SDK </sdk/download>` for more details.
 
 If no port number is specified, the server defaults to port 5103, and can be
 accessed at ``http://localhost:5103``.
@@ -280,7 +280,7 @@ Next steps
 ==========
 
 * See the :doc:`Application Structure </devguide/coding/application-structure>`
-  chapter in the Developer's Guide for information about how to structure a
+  section in the Developer's Guide for information about how to structure a
   Native Client module.
 * Check the `C++ Reference </native-client/pepper_stable/cpp>`_ for details
   about how to use the Pepper APIs.

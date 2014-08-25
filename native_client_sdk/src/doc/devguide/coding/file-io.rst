@@ -12,7 +12,7 @@ File I/O
 Introduction
 ============
 
-This chapter describes how to use the `FileIO API
+This section describes how to use the `FileIO API
 </native-client/pepper_stable/cpp/classpp_1_1_file_i_o>`_ to read and write
 files using a local secure data store.
 
@@ -28,7 +28,7 @@ data download and caching solution for your NaCl applications. For example:
 #. Load the file into memory using the File IO API when needed by your
    application.
 
-The example discussed in this chapter is included in the SDK in the directory
+The example discussed in this section is included in the SDK in the directory
 ``examples/api/file_io``.
 
 Reference information

@@ -6,57 +6,52 @@
 Each example demonstrates one or two key Native Client programming concepts.
 After you&#8217;ve <a class="reference internal" href="/native-client/sdk/download.html"><em>downloaded the SDK</em></a>, follow the instructions
 on this page to build and run the examples.</p>
-<h2 id="configure-the-google-chrome-browser">Configure the Google Chrome Browser</h2>
+<p>Your version of Chrome must be equal to or greater than the version of your SDK
+bundle. For example, if you&#8217;re developing with the <code>pepper_31</code> bundle, you
+must use Google Chrome version 31 or greater. To find out what version of Chrome
+you&#8217;re using, type <code>about:chrome</code> or <code>about:version</code> in the Chrome address
+bar.</p>
+<h2 id="enable-native-client">Enable Native Client</h2>
+<aside class="note">
+If you are using Chrome 31 or later, you can skip this section.
+</aside>
+<p>To run Portable Native Client applications you must specifically enable Native
+Client in Chrome:</p>
 <ol class="arabic">
-<li><p class="first">Your version of Chrome must be equal to or greater than the version of
-your SDK bundle. For example, if you&#8217;re developing with the <code>pepper_31</code>
-bundle, you must use Google Chrome version 31 or greater. To find out what
-version of Chrome you&#8217;re using, type <code>about:chrome</code> or <code>about:version</code>
-in the Chrome address bar.</p>
-</li>
-<li><p class="first">For Portable Native Client, no extra Chrome flags are needed as of
-Chrome version 31.</p>
-<p>For other Native Client applications, or to <strong>debug</strong> Portable Native
-Client applications by translating the <strong>pexe</strong> to a <strong>nexe</strong> ahead of
-time, enable the Native Client flag. Native Client is enabled by default
-only for applications distributed through the Chrome Web Store. To run
-Native Client applications that are not distributed through the Chrome
-Web Store, like the SDK examples, you must specifically enable the Native
-Client flag in Chrome:</p>
+<li><p class="first">Type <code>about:flags</code> in the Chrome address bar and scroll down to &#8220;Native
+Client&#8221;.</p>
 <ul class="small-gap">
-<li><p class="first">Type <code>about:flags</code> in the Chrome address bar and scroll down to
-&#8220;Native Client&#8221;.</p>
-</li>
 <li><p class="first">If the link below &#8220;Native Client&#8221; says &#8220;Disable&#8221;, then Native Client is
 already enabled and you don&#8217;t need to do anything else.</p>
 </li>
-<li><p class="first">If the link below &#8220;Native Client&#8221; says &#8220;Enable&#8221;, click the &#8220;Enable&#8221;
-link, scroll down to the bottom of the page, and click the &#8220;Relaunch
-Now&#8221; button. All browser windows will restart when you relaunch Chrome.</p>
-</li>
 </ul>
-</li>
-<li><p class="first">Disable the Chrome cache. Chrome caches resources aggressively; when you
-are building a Native Client application you should disable the cache to
-make sure that Chrome loads the latest version:</p>
 <ul class="small-gap">
-<li><p class="first">Open Chrome&#8217;s developer tools by clicking the menu icon <img alt="menu-icon" src="/native-client/images/menu-icon.png" /> and
-choosing Tools &gt; Developer tools.</p>
-</li>
-<li><p class="first">Click the gear icon <img alt="gear-icon" src="/native-client/images/gear-icon.png" /> in the bottom right corner of the
-Chrome window.</p>
-</li>
-<li><p class="first">Under the &#8220;General&#8221; settings, check the box next to &#8220;Disable cache&#8221;.</p>
+<li><p class="first">If the link below &#8220;Native Client&#8221; says &#8220;Enable&#8221;, click the &#8220;Enable&#8221;
+link.</p>
 </li>
 </ul>
+</li>
+<li><p class="first">Scroll down to the bottom of the page, and click &#8220;Relaunch Now&#8221;. All browser
+windows will restart when you relaunch Chrome.</p>
 </li>
 </ol>
+<h2 id="disable-the-chrome-cache">Disable the Chrome cache</h2>
+<p>Chrome caches resources aggressively. When you are building a Native Client
+application you should disable the cache to make sure that Chrome loads the
+latest version.</p>
+<ol class="arabic simple">
+<li>Open Chrome&#8217;s developer tools by clicking the menu icon <img alt="menu-icon" src="/native-client/images/menu-icon.png" /> and
+choosing Tools &gt; Developer tools.</li>
+<li>Click the gear icon <img alt="gear-icon" src="/native-client/images/gear-icon.png" /> in the bottom right corner of the Chrome
+window.</li>
+<li>Under the &#8220;General&#8221; settings, check the box next to &#8220;Disable cache&#8221;.</li>
+</ol>
 <h2 id="build-the-sdk-examples">Build the SDK examples</h2>
-<p>Starting with the <code>pepper_24</code> bundle, the Makefile scripts for the SDK
-examples build multiple versions of the examples using all three SDK
-toolchains (newlib, glibc, and PNaCl) and in both release and debug
-configurations.  (Note that some examples build only with the particular
-toolchains).</p>
+<p>The Makefile scripts for the SDK examples build multiple versions of the
+examples using all three SDK toolchains (newlib, glibc, and PNaCl) and in both
+release and debug configurations.  (Note that some examples build only with
+particular toolchains).</p>
+<h3 id="build-all-examples">Build all examples</h3>
 <p>To build all the examples, go to the examples directory in a specific SDK
 bundle and run <code>make</code>:</p>
 <pre class="prettyprint">
@@ -79,6 +74,7 @@ make[2]: Entering directory `pepper_31/examples/api/url_loader'
   CXX  newlib/Debug/url_loader_x86_32.o
 ...
 </pre>
+<h3 id="build-a-single-example">Build a single example</h3>
 <p>Calling <code>make</code> from inside a particular example&#8217;s directory will build only
 that example:</p>
 <pre class="prettyprint">
@@ -92,6 +88,7 @@ $ make
   LINK newlib/Debug/core_arm.nexe
   CREATE_NMF newlib/Debug/core.nmf
 </pre>
+<h3 id="override-defaults">Override defaults</h3>
 <p>You can call <code>make</code> with the <code>TOOLCHAIN</code> and <code>CONFIG</code> parameters to
 override the defaults:</p>
 <pre class="prettyprint">
@@ -136,12 +133,13 @@ make[1]: Entering directory `pepper_31/examples/api/core'
   LINK linux/Debug/core.so
 make[1]: Leaving directory `pepper_31/examples/api/core'
 </pre>
+<h2 id="build-results">Build results</h2>
 <p>After running <code>make</code>, each example directory will contain one or more of
 the following subdirectories:</p>
 <ul class="small-gap">
-<li>a <code>newlib</code> directory with subdirectories <code>Debug</code> and <code>Release</code>;</li>
-<li>a <code>glibc</code> directory with subdirectories <code>Debug</code> and <code>Release</code>;</li>
-<li>a <code>pnacl</code> directory with subdirectories <code>Debug</code> and <code>Release</code>;</li>
+<li><code>newlib</code> with subdirectories <code>Debug</code> and <code>Release</code>;</li>
+<li><code>glibc</code> with subdirectories <code>Debug</code> and <code>Release</code>;</li>
+<li><code>pnacl</code> with subdirectories <code>Debug</code> and <code>Release</code>;</li>
 </ul>
 <p>For the newlib and glibc toolchains the Debug and Release subdirectories
 contain .nexe files for all target architectures. For the PNaCl toolchain

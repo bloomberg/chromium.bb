@@ -21,8 +21,8 @@ client machine&#8217;s computational power to a much fuller extent than traditio
 web technologies, by running compiled C and C++ code at near-native speeds and
 taking advantage of multiple cores with shared memory.</p>
 <p>While Native Client provides operating system independence, it requires
-developers to generate architecture-specific executable modules
-(<strong>nexe</strong> modules) for each hardware platform. This is not only inconvenient
+developers to generate architecture-specific executable
+(<strong>nexe</strong>) modules for each hardware platform. This is not only inconvenient
 for developers, but architecture-specific machine code is not portable and thus
 not well-suited for the open web. The traditional method of application
 distribution on the web is through a self-contained bundle of HTML, CSS,
@@ -38,15 +38,14 @@ Chrome Web Store.</p>
 into two parts:</p>
 <ol class="arabic simple">
 <li>compiling the source code to a portable bitcode format, and</li>
-<li>translating the bitcode to a host-specific executable.</li>
+<li>translating the bitcode to a host-specific executable just before execution.</li>
 </ol>
-<p>PNaCl enables developers
-to distribute <strong>portable executables</strong> (<strong>pexe</strong> modules) that the hosting
-environment (e.g., the Chrome browser) can translate to native code before
-executing. This portability aligns Native Client with existing open web
-technologies such as JavaScript: A developer can distribute a <strong>pexe</strong>
-as part of an application (along with HTML, CSS, and JavaScript),
-and the user&#8217;s machine is simply able to run it.</p>
+<p>PNaCl enables developers to distribute <strong>portable executables</strong> (<strong>pexe</strong>)
+modules that the hosting environment (in other words, the Chrome browser) can
+translate to native code before executing. This portability aligns Native Client
+with existing open web technologies such as JavaScript. A developer can
+distribute a <strong>pexe</strong> as part of an application (along with HTML, CSS, and
+JavaScript), and the user&#8217;s machine is simply able to run it.</p>
 <p>With PNaCl, a developer generates a single <strong>pexe</strong> from source code,
 rather than multiple platform-specific nexes. The <strong>pexe</strong> provides both
 architecture- and OS-independence. Since the <strong>pexe</strong> uses an abstract,
@@ -54,15 +53,12 @@ architecture-independent format, it does not suffer from the portability
 problem described above. Future versions of hosting environments should
 have no problem executing the <strong>pexe</strong>, even on new architectures.
 Moreover, if an existing architecture is subsequently enhanced, the
-<strong>pexe</strong> doesn&#8217;t even have to be recompiled&#8212;in some cases the
+<strong>pexe</strong> doesn&#8217;t even have to be recompiled. In some cases the
 client-side translation will automatically be able to take advantage of
-the new capabilities.</p>
-<p><strong>In short, PNaCl combines the portability of existing web technologies with
-the performance and security benefits of Native Client.</strong></p>
-<p>With the advent of PNaCl, the distribution restriction of Native Client
-can be lifted. Specifically, a <strong>pexe</strong> module can be part of any web
-application&#8212;it does not have to be distributed through the Chrome Web
-Store.</p>
+the new capabilities. A <strong>pexe</strong> module can be part of any web
+application. It does not have to be distributed through the Chrome Web
+Store. In short, PNaCl combines the portability of existing web technologies
+with the performance and security benefits of Native Client.</p>
 <p>PNaCl is a new technology, and as such it still has a few limitations
 as compared to NaCl. These limitations are described below.</p>
 <h2 id="when-to-use-pnacl">When to use PNaCl</h2>
@@ -87,15 +83,15 @@ for all supported architectures.</p>
 these limitations are critical for your application, you should use
 non-portable NaCl:</p>
 <ul class="small-gap">
-<li>By its nature, PNaCl does not support architecture-specific
+<li>PNaCl does not support architecture-specific
 instructions in an application (i.e., inline assembly), but tries to
 offer high-performance portable equivalents. One such example is
 PNaCl&#8217;s <a class="reference internal" href="/native-client/reference/pnacl-c-cpp-language-support.html#portable-simd-vectors"><em>Portable SIMD Vectors</em></a>.</li>
-<li>Currently PNaCl only supports static linking with the <code>newlib</code>
+<li>PNaCl only supports static linking with the <code>newlib</code>
 C standard library (the Native Client SDK provides a PNaCl port of
 <code>newlib</code>). Dynamic linking and <code>glibc</code> are not yet supported.
 Work is under way to enable dynamic linking in future versions of PNaCl.</li>
-<li>In the initial release, PNaCl does not support some GNU extensions
+<li>PNaCl does not support some GNU extensions
 like taking the address of a label for computed <code>goto</code>, or nested
 functions.</li>
 </ul>

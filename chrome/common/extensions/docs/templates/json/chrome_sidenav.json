@@ -812,35 +812,15 @@
           },
           {
             "title": "Pepper API Reference",
-            "href": "/native-client/pepper_stable/index",
+            "href": "/native-client/c-api",
             "items": [
               {
-                "title": "Pepper C Interfaces",
-                "href": "/native-client/pepper_stable/c/group___interfaces"
+                "title": "Pepper C API",
+                "href": "/native-client/c-api"
               },
               {
-                "title": "Pepper C Structures",
-                "href": "/native-client/pepper_stable/c/group___structs"
-              },
-              {
-                "title": "Pepper C Functions",
-                "href": "/native-client/pepper_stable/c/group___functions"
-              },
-              {
-                "title": "Pepper C Enums",
-                "href": "/native-client/pepper_stable/c/group___enums"
-              },
-              {
-                "title": "Pepper C Typedefs",
-                "href": "/native-client/pepper_stable/c/group___typedefs"
-              },
-              {
-                "title": "Pepper C Macros",
-                "href": "/native-client/pepper_stable/c/global_defs"
-              },
-              {
-                "title": "Pepper C++ Classes",
-                "href": "/native-client/pepper_stable/cpp/inherits"
+                "title": "Pepper C++ API",
+                "href": "/native-client/cpp-api"
               }
             ]
           },

@@ -27,19 +27,19 @@
 Client (PNaCl). This is a client-side application that uses HTML, JavaScript and
 a Native Client module written in C++. The PNaCl toolchain is used to enable
 running the Native Client module directly from a web page.</p>
-<p>It&#8217;s recommended to read the <a class="reference internal" href="/native-client/overview.html"><em>Native Client Technical Overview</em></a> prior to going through this tutorial.</p>
+<p>It&#8217;s recommended that you read the <a class="reference internal" href="/native-client/overview.html"><em>Native Client Technical Overview</em></a> prior to going through this tutorial.</p>
 <h3 id="what-the-application-in-this-tutorial-does">What the application in this tutorial does</h3>
 <p>The application in this tutorial shows how to load a Native Client module in a
-web page, and how to send messages between JavaScript and the C++ code in the
-Native Client module. In this simple application, the JavaScript code in the web
-page sends a <code>'hello'</code> message to the Native Client module. When the Native
-Client module receives a message, it checks whether the message is equal to the
-string <code>'hello'</code>. If it is, the Native Client module returns a message saying
-<code>'hello from NaCl'</code>. A JavaScript alert panel displays the message received
-from the Native Client module.</p>
+web page, and how to send messages between JavaScript and the Native Client
+module. In this simple application, the JavaScript sends a <code>'hello'</code> message
+to the Native Client module. When the Native Client module receives a message,
+it checks whether the message is equal to the string <code>'hello'</code>. If it is, the
+Native Client module returns a message saying <code>'hello from NaCl'</code>. A
+JavaScript alert panel displays the message received from the Native Client
+module.</p>
 <h3 id="communication-between-javascript-and-native-client-modules">Communication between JavaScript and Native Client modules</h3>
 <p>The Native Client programming model supports bidirectional communication between
-JavaScript and the Native Client module (C/C++ code). Both sides can initiate
+JavaScript and the Native Client module. Both sides can initiate
 and respond to messages. In all cases, the communication is asynchronous: The
 caller (JavaScript or the Native Client module) sends a message, but the caller
 does not wait for, or may not even expect, a response. This behavior is
@@ -65,8 +65,8 @@ The SDK may consist of several &#8220;bundles&#8221;, one per Chrome/Pepper vers
 <a class="reference internal" href="/native-client/version.html"><em>versioning information</em></a>). In the sample invocation above
 <code>pepper_$(VERSION)</code> refers to the specific version you want to use. For
 example, <code>pepper_31</code>. If you don&#8217;t know which version you need, use the
-one labeled <code>(stable)</code> by <code>naclsdk list</code>. See <a class="reference internal" href="/native-client/sdk/download.html"><em>Download the Native
-Client SDK</em></a> for more details.
+one labeled <code>(stable)</code> by the <code>naclsdk list</code> command. See
+<a class="reference internal" href="/native-client/sdk/download.html"><em>Download the Native Client SDK</em></a> for more details.
 </aside>
 <p>If no port number is specified, the server defaults to port 5103, and can be
 accessed at <code>http://localhost:5103</code>.</p>
@@ -214,7 +214,7 @@ contains some useful information about handling error events.</li>
 <h2 id="next-steps">Next steps</h2>
 <ul class="small-gap">
 <li>See the <a class="reference internal" href="/native-client/devguide/coding/application-structure.html"><em>Application Structure</em></a>
-chapter in the Developer&#8217;s Guide for information about how to structure a
+section in the Developer&#8217;s Guide for information about how to structure a
 Native Client module.</li>
 <li>Check the <a class="reference external" href="/native-client/pepper_stable/cpp">C++ Reference</a> for details
 about how to use the Pepper APIs.</li>

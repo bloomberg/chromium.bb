@@ -3,7 +3,9 @@
 <section id="welcome-to-native-client">
 <h1 id="welcome-to-native-client">Welcome to Native Client</h1>
 <div id="home">
-<a class="button-nacl button-download" href="/native-client/sdk/download.html">Download SDK</a>
+<div class="pull-quote">To get the SDK and<br/>installation instructions<br/>
+<a href="/native-client/sdk/download.html">visit the SDK Download page</a>.
+</div>
 <div class="big-intro"><p><strong>Native Client</strong> is a sandbox for running compiled C and C++ code in the
 browser efficiently and securely, independent of the user&#8217;s operating system.
 <strong>Portable Native Client</strong> extends that technology with
@@ -14,33 +16,55 @@ of native code to modern web browsers, without sacrificing the <strong>security<
 <strong>portability</strong> of the web. Watch the video below for an overview of
 Native Client, including its goals, how it works, and how
 Portable Native Client lets developers run native compiled code on the web.</p>
+<aside class="note">
+This site uses several examples of Native Client. For the best experience,
+consider downloading the <a class="reference external" href="http://www.google.com/chrome/">latest version of Chrome</a>.
+When you come back, be sure to <a class="reference external" href="https://gonativeclient.appspot.com/demo">check out our demos</a>.
+</aside>
 </div>
 
-<iframe class="video" width="640" height="360"
+<iframe class="video" width="600" height="337"
 src="//www.youtube.com/embed/MvKEomoiKBA?rel=0" frameborder="0"></iframe>
+<div class="big-intro"><h2 id="two-types-of-modules">Two Types of Modules</h2>
+<p>Native Client comes in two flavors.</p>
+<ul class="small-gap">
+<li><strong>Portable Native Client (PNaCl)</strong>: Pronounced &#8216;pinnacle&#8217;, PNaCl runs single, portable (<strong>pexe</strong>) executables and is available
+in most implementations of Chrome. A translator built into Chrome
+translates the pexe into native code for the client hardware. The entire
+module is translated before any code is executed rather than as the code is
+executed. PNaCl modules can be hosted from any web server.</li>
+<li><strong>Native Client (NaCl)</strong>: Also called traditional or non-portable Native
+Client, NaCl runs
+architecture-dependent (<strong>nexe</strong>) modules, which are packaged into an
+application. At runtime, the browser decides which nexe to load based on the
+architecture of the client machine. NaCl modules must be run from the <a class="reference external" href="https://chrome.google.com/webstore/category/apps">Chrome
+Web Store (CWS)</a>.
+Fortunately, work from PNaCl modules can be used to create NaCl modules.</li>
+</ul>
+<p>These flavors are described in more depth in <a class="reference external" href="nacl-and-pnacl">PNaCl and NaCl</a></p>
+<div class="left-side">
+<div class="left-side-inner">
+<h2>Hello World</h2>
+<div class="big-intro"><p>To jump right in <a class="reference external" href="devguide/tutorial/tutorial-part1">take the tutorial</a> that walks you through a basic web
+application for Portable Native Client (PNaCl). This is a client-side
+application that uses HTML, JavaScript, and a Native Client module written in C++.</p>
+</div>
+</div>
+</div>
+<h2>A Little More Advanced</h2>
+<div class="big-intro"><p>If you&#8217;ve already got the basics down, you&#8217;re probably trying to get a real application ready for production. You&#8217;re <a class="reference external" href="/devguide/devcycle/building">building</a>, <a class="reference external" href="/devguide/devcycle/debugging">debugging</a> or <a class="reference external" href="/devguide/distributing">ready to distribute</a>.</p>
+</div>
 
-<div class="right-side">
-<div class="right-side-inner">
-<h2>Guiding principles of Native Client</h2>
-<div class="big-intro">
-<ul>
-  <li>Developer flexibility to program in any language.</li>
-  <li>Running close to the metal to allow access to performance gains.</li>
-  <li>Protecting users from malicious code and malware.</li>
-  <li>Write-once, run-anywhere code portability across all user architectures.</li>
-</ul></div>
+<div class="left-side">
+<div class="left-side-inner">
+<h2>Nuts and Bolts</h2>
+<div class="big-intro"><p>You&#8217;ve been working on a Native Client module for a while now and you&#8217;ve run into an arcane problem. You may need to refer to the <a class="reference external" href="/reference/pnacl-bitcode-abi">PNaCl Bitcode Reference</a> or the <a class="reference external" href="/sandbox_internals/index">Sandbox internals</a>.</p>
 </div>
-</div><h2 id="get-started-with-native-client">Get started with Native Client</h2>
-<div class="big-intro"><ol class="arabic simple">
-<li><a class="reference internal" href="/native-client/sdk/download.html"><em>Download the Native Client SDK</em></a>.</li>
-<li>Read the <a class="reference internal" href="/native-client/overview.html"><em>Technical Overview</em></a>.</li>
-<li>Learn how to use the SDK and build both a web app and a Chrome app in the
-<a class="reference internal" href="/native-client/devguide/tutorial/tutorial-part1.html"><em>Getting Started Tutorial</em></a>.</li>
-</ol>
 </div>
+</div><h2 id="i-want-to-know-everything">I Want to Know Everything</h2>
+<p>So, you like to read now and try later. Start with our <a class="reference external" href="/overview">Technical Overview</a></p>
 <div class="big-intro" style="clear: both;"><p>Send us questions, comments, and feedback:
 <a class="reference external" href="https://groups.google.com/forum/#!forum/native-client-discuss">native-client-discuss</a>.</p>
-</div>
 </div></section>
 
 {{/partials.standard_nacl_article}}

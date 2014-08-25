@@ -12,11 +12,11 @@ URL Loading
 Introduction
 ============
 
-This chapter describes how to use the `URLLoader API
+This section describes how to use the `URLLoader API
 </native-client/pepper_stable/cpp/classpp_1_1_u_r_l_loader>`_ to load resources
 such as images and sound files from a server into your application.
 
-The example discussed in this chapter is included in the SDK in the directory
+The example discussed in this section is included in the SDK in the directory
 ``examples/api/url_loader``.
 
 Reference information
@@ -41,7 +41,7 @@ When a user launches your Native Client web application, Chrome downloads and
 caches your application's HTML file, manifest file (.nmf), and Native Client
 module (.pexe or .nexe). If your application needs additional assets, such as
 images and sound files, it must explicitly load those assets. You can use the
-Pepper APIs described in this chapter to load assets from a URL into your
+Pepper APIs described in this section to load assets from a URL into your
 application.
 
 After you've loaded assets into your application, Chrome will cache those

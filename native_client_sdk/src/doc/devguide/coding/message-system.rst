@@ -9,13 +9,13 @@ Messaging System
   :backlinks: none
   :depth: 2
 
-This chapter describes the messaging system used to communicate between the
+This section describes the messaging system used to communicate between the
 JavaScript code and the Native Client module's C or C++ code in a
 Native Client application. It introduces the concept of asynchronous
 programming and the basic steps required to set up a Native Client module
-that sends messages to and receive messages from JavaScript. This chapter
+that sends messages to and receive messages from JavaScript. This section
 assumes you are familiar with the material presented in the
-:doc:`Application Structure <application-structure>` chapter.
+:doc:`Application Structure <application-structure>` section.
 
 .. Note::
   :class: note

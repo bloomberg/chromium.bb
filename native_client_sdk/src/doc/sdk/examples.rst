@@ -8,52 +8,61 @@ Each example demonstrates one or two key Native Client programming concepts.
 After you've :doc:`downloaded the SDK <download>`, follow the instructions
 on this page to build and run the examples.
 
-Configure the Google Chrome Browser
------------------------------------
+Your version of Chrome must be equal to or greater than the version of your SDK
+bundle. For example, if you're developing with the ``pepper_31`` bundle, you
+must use Google Chrome version 31 or greater. To find out what version of Chrome
+you're using, type ``about:chrome`` or ``about:version`` in the Chrome address
+bar.
 
-#. Your version of Chrome must be equal to or greater than the version of
-   your SDK bundle. For example, if you're developing with the ``pepper_31``
-   bundle, you must use Google Chrome version 31 or greater. To find out what
-   version of Chrome you're using, type ``about:chrome`` or ``about:version``
-   in the Chrome address bar.
+   
+Enable Native Client
+--------------------
 
-#. For Portable Native Client, no extra Chrome flags are needed as of
-   Chrome version 31.
+.. note::
+   :class: note
+   
+   If you are using Chrome 31 or later, you can skip this section.
 
-   For other Native Client applications, or to **debug** Portable Native
-   Client applications by translating the **pexe** to a **nexe** ahead of
-   time, enable the Native Client flag. Native Client is enabled by default
-   only for applications distributed through the Chrome Web Store. To run
-   Native Client applications that are not distributed through the Chrome
-   Web Store, like the SDK examples, you must specifically enable the Native
-   Client flag in Chrome:
+To run Portable Native Client applications you must specifically enable Native
+Client in Chrome:
 
-   * Type ``about:flags`` in the Chrome address bar and scroll down to
-     "Native Client".
-   * If the link below "Native Client" says "Disable", then Native Client is
+#. Type ``about:flags`` in the Chrome address bar and scroll down to "Native
+   Client".
+   
+   - If the link below "Native Client" says "Disable", then Native Client is
      already enabled and you don't need to do anything else.
+   
    * If the link below "Native Client" says "Enable", click the "Enable"
-     link, scroll down to the bottom of the page, and click the "Relaunch
-     Now" button. All browser windows will restart when you relaunch Chrome.
+     link.
+     
+#. Scroll down to the bottom of the page, and click "Relaunch Now". All browser
+   windows will restart when you relaunch Chrome.
 
-#. Disable the Chrome cache. Chrome caches resources aggressively; when you
-   are building a Native Client application you should disable the cache to
-   make sure that Chrome loads the latest version:
+Disable the Chrome cache
+------------------------
 
-   * Open Chrome's developer tools by clicking the menu icon |menu-icon| and
-     choosing Tools > Developer tools.
-   * Click the gear icon |gear-icon| in the bottom right corner of the
-     Chrome window.
-   * Under the "General" settings, check the box next to "Disable cache".
+Chrome caches resources aggressively. When you are building a Native Client
+application you should disable the cache to make sure that Chrome loads the 
+latest version.
+
+#. Open Chrome's developer tools by clicking the menu icon |menu-icon| and
+   choosing Tools > Developer tools.
+   
+#. Click the gear icon |gear-icon| in the bottom right corner of the Chrome
+   window.
+   
+#. Under the "General" settings, check the box next to "Disable cache".
 
 Build the SDK examples
 ----------------------
 
-Starting with the ``pepper_24`` bundle, the Makefile scripts for the SDK
-examples build multiple versions of the examples using all three SDK
-toolchains (newlib, glibc, and PNaCl) and in both release and debug
-configurations.  (Note that some examples build only with the particular
-toolchains).
+The Makefile scripts for the SDK examples build multiple versions of the
+examples using all three SDK toolchains (newlib, glibc, and PNaCl) and in both
+release and debug configurations.  (Note that some examples build only with
+particular toolchains).
+
+Build all examples
+^^^^^^^^^^^^^^^^^^
 
 To build all the examples, go to the examples directory in a specific SDK
 bundle and run ``make``::
@@ -76,6 +85,9 @@ bundle and run ``make``::
   make[2]: Entering directory `pepper_31/examples/api/url_loader'
     CXX  newlib/Debug/url_loader_x86_32.o
   ...
+  
+Build a single example
+^^^^^^^^^^^^^^^^^^^^^^
 
 Calling ``make`` from inside a particular example's directory will build only
 that example::
@@ -89,6 +101,9 @@ that example::
     CXX  newlib/Debug/core_arm.o
     LINK newlib/Debug/core_arm.nexe
     CREATE_NMF newlib/Debug/core.nmf
+
+Override defaults
+^^^^^^^^^^^^^^^^^
 
 You can call ``make`` with the ``TOOLCHAIN`` and ``CONFIG`` parameters to
 override the defaults::
@@ -135,13 +150,15 @@ all available toolchains::
     LINK linux/Debug/core.so
   make[1]: Leaving directory `pepper_31/examples/api/core'
 
+Build results
+-------------
 
 After running ``make``, each example directory will contain one or more of
 the following subdirectories:
 
-* a ``newlib`` directory with subdirectories ``Debug`` and ``Release``;
-* a ``glibc`` directory with subdirectories ``Debug`` and ``Release``;
-* a ``pnacl`` directory with subdirectories ``Debug`` and ``Release``;
+* ``newlib`` with subdirectories ``Debug`` and ``Release``;
+* ``glibc`` with subdirectories ``Debug`` and ``Release``;
+* ``pnacl`` with subdirectories ``Debug`` and ``Release``;
 
 For the newlib and glibc toolchains the Debug and Release subdirectories
 contain .nexe files for all target architectures. For the PNaCl toolchain

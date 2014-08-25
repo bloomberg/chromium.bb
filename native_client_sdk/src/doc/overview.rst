@@ -38,35 +38,33 @@ Why use Native Client?
 
 Native Client open-source technology is designed to run compiled code
 securely inside a browser at near-native speeds. Native Client puts web
-applications on the same playing field as traditional (locally-run)
-software---it provides the means to fully harness the client's computational
-resources for applications such as 3D games, multimedia editors, CAD modeling,
+applications on the same playing field as desktop software---it provides the
+means to fully harness the client's computational resources for applications
+such as 3D games, multimedia editors, CAD modeling,
 client-side data analytics, and interactive simulations. 
 Native Client also aims to give C and C++ (and eventually other languages) the
 same level of portability and safety that JavaScript provides on the web today.
 
-Here are a few of the key benefits that Native Client offers:
+Important benefits of Native Client include:
 
-* **Graphics, audio, and much more:** Run native code modules that render 2D
+* **Graphics, audio, and much more:** Running native code modules that render 2D
   and 3D graphics, play audio, respond to mouse and keyboard events, run on
   multiple threads, and access memory directly---all without requiring
   the user to install a plugin.
-* **Portability:** Write your applications once and you'll be able to run them
-  across operating systems (Windows, Linux, Mac, and Chrome OS) and CPU
-  architectures (x86 and ARM).
-* **Easy migration path to the web:** Many developers and companies have years
-  of work invested in existing desktop applications. Native Client makes the
-  transition from the desktop to a web application significantly easier because
-  it supports C and C++.
-* **Security:** Native Client uses a double sandbox model designed to protect
-  the user's system from malicious or buggy applications. This model offers the
-  safety of traditional web applications without sacrificing performance and
+* **Portability:** Writing your applications once and running them on operating
+  systems (Windows, Linux, Mac, and Chrome OS) and CPU architectures (x86 and
+  ARM).
+* **Easy migration path to the web:** Leveraging years of work in existing
+  desktop applications. Native Client makes the transition from the desktop to a
+  web application significantly easier because it supports C and C++.
+* **Security:** Protecting the user's system from malicious or buggy
+  applications through Native Client's double sandbox model. This model offers
+  the safety of traditional web applications without sacrificing performance and
   without requiring users to install a plugin.
-* **Performance:** Native Client allows web applications to run at speeds
-  comparable to desktop applications (within 5-15% of native speed).
-  Native Client also allows applications to harness all available CPU cores via
-  a threading API; this enables demanding applications such as console-quality
-  games to run inside the browser.
+* **Performance:** Running at speeds comparable to desktop applications (within
+  5-15% of native speed). Native Client also allows applications to harness all
+  available CPU cores via a threading API; this enables demanding applications
+  such as console-quality games to run inside the browser.
 
 Common use cases
 ================
@@ -74,17 +72,13 @@ Common use cases
 Typical use cases for Native Client include the following:
 
 * **Existing software components:** With support for C and C++, Native
-  Client enables you to reuse existing software modules in
-  web applications---you don't need to rewrite and debug code
-  that's already proven to work well.
+  Client lets you to reuse existing software modules in web applications. You 
+  don't need to rewrite and debug code that already works.
 * **Legacy desktop applications:** Native Client provides a smooth migration
   path from desktop applications to the web. You can port and recompile existing
   code for the computation engine of your application directly to Native Client,
-  and need repurpose only the user interface and event handling portions to the
-  new browser platform. Native Client allows you to embed existing functionality
-  directly into the browser. At the same time, your application can take
-  advantage of things the browser does well: handling user interaction and
-  processing events, based on the latest developments in HTML5.
+  and need rebuild only the user interface and event handling portions for the
+  browser. 
 * **Heavy computation in enterprise applications:** Native Client can handle the
   number crunching required by large-scale enterprise applications. To ensure
   protection of user data, Native Client enables you to build complex
@@ -102,20 +96,19 @@ Typical use cases for Native Client include the following:
 * **Any application that requires acceleration**: Native Client fits seamlessly
   into web applications---it's up to you to decide to what extent to use it.
   Use of Native Client covers the full spectrum from complete applications to
-  small optimized routines that accelerate vital parts of web apps.
+  small optimized routines that accelerate vital parts of web applications.
 
 .. _link_how_nacl_works:
 
 How Native Client works
 =======================
 
-Native Client is an umbrella name for a set of interrelated software components
-that work together to provide a way to develop C/C++ applications and run them
-securely on the web.
+Native Client is an umbrella name for a set of related software components that
+provide a way to develop C/C++ applications and run them securely on the web.
 
 At a high level, Native Client consists of:
 
-* **Toolchains**: collections of development tools (compilers, linkers, etc.)
+* **Toolchains**: Collections of development tools (compilers, linkers, etc.)
   that transform C/C++ code to Native Client modules.
 * **Runtime components**: components embedded in the browser or other
   host platforms that allow execution of  Native Client modules
@@ -129,10 +122,10 @@ The left side of the diagram shows how to use Portable Native Client
 (PNaCl, pronounced "pinnacle"). Developers use the PNaCl toolchain
 to produce a single, portable (**pexe**) module. At runtime, a translator
 built into the browser translates the pexe into native code for the
-relevant client architecture. 
+relevant client architecture. Translation occurs before any code is executed.
 
-The right side of the diagram shows how to use traditional (non-portable)
-Native Client. Developers use a nacl-gcc based toolchain to produce multiple
+The right side of the diagram shows how to use (non-portable) Native Client. 
+Developers use a nacl-gcc based toolchain to produce multiple
 architecture-dependent (**nexe**) modules, which are packaged into an
 application. At runtime, the browser decides which nexe to load based
 on the architecture of the client machine.

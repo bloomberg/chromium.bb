@@ -27,7 +27,7 @@ manifest file
   A file containing metadata or information about accompanying files.
 message events
   Events used to pass data between JavaScript and the Native Client
-  module (see the :doc:`Messaging System <devguide/coding/message-system>` chapter).
+  module (see the :doc:`Messaging System <devguide/coding/message-system>` section).
 module
   Depending on context, "module" may mean one of two things. First, it may be a
   general short-term for for "Native Client module"---compiled C/C++ code

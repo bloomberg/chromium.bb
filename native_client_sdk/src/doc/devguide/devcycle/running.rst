@@ -420,7 +420,7 @@ is how to do so:
    * Upload the application files (.html, .nmf, .nexe, .css, .js, image files,
      etc.) to the server on which the application is being hosted.
    * Use `Google Webmaster Tools <http://www.google.com/webmasters/tools/>`_ to
-     verify ownership of the web site on which the application runs.
+     verify ownership of the website on which the application runs.
 
 #. Log in to the `Chrome Web Store Developer Dashboard
    <https://chrome.google.com/webstore/developer/dashboard>`_.

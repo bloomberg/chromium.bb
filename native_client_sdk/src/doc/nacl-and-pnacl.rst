@@ -24,8 +24,8 @@ web technologies, by running compiled C and C++ code at near-native speeds and
 taking advantage of multiple cores with shared memory.
 
 While Native Client provides operating system independence, it requires
-developers to generate architecture-specific executable modules
-(**nexe** modules) for each hardware platform. This is not only inconvenient
+developers to generate architecture-specific executable 
+(**nexe**) modules for each hardware platform. This is not only inconvenient
 for developers, but architecture-specific machine code is not portable and thus
 not well-suited for the open web. The traditional method of application
 distribution on the web is through a self-contained bundle of HTML, CSS,
@@ -44,15 +44,14 @@ PNaCl solves the portability problem by splitting the compilation process
 into two parts:
 
 #. compiling the source code to a portable bitcode format, and
-#. translating the bitcode to a host-specific executable.
+#. translating the bitcode to a host-specific executable just before execution.
 
-PNaCl enables developers
-to distribute **portable executables** (**pexe** modules) that the hosting
-environment (e.g., the Chrome browser) can translate to native code before
-executing. This portability aligns Native Client with existing open web
-technologies such as JavaScript: A developer can distribute a **pexe**
-as part of an application (along with HTML, CSS, and JavaScript),
-and the user's machine is simply able to run it.
+PNaCl enables developers to distribute **portable executables** (**pexe**)
+modules that the hosting environment (in other words, the Chrome browser) can 
+translate to native code before executing. This portability aligns Native Client
+with existing open web technologies such as JavaScript. A developer can 
+distribute a **pexe** as part of an application (along with HTML, CSS, and
+JavaScript), and the user's machine is simply able to run it.
 
 With PNaCl, a developer generates a single **pexe** from source code,
 rather than multiple platform-specific nexes. The **pexe** provides both
@@ -61,17 +60,12 @@ architecture-independent format, it does not suffer from the portability
 problem described above. Future versions of hosting environments should
 have no problem executing the **pexe**, even on new architectures.
 Moreover, if an existing architecture is subsequently enhanced, the
-**pexe** doesn't even have to be recompiled---in some cases the
+**pexe** doesn't even have to be recompiled. In some cases the
 client-side translation will automatically be able to take advantage of
-the new capabilities.
-
-**In short, PNaCl combines the portability of existing web technologies with
-the performance and security benefits of Native Client.**
-
-With the advent of PNaCl, the distribution restriction of Native Client
-can be lifted. Specifically, a **pexe** module can be part of any web
-application---it does not have to be distributed through the Chrome Web
-Store.
+the new capabilities. A **pexe** module can be part of any web
+application. It does not have to be distributed through the Chrome Web
+Store. In short, PNaCl combines the portability of existing web technologies 
+with the performance and security benefits of Native Client.
 
 PNaCl is a new technology, and as such it still has a few limitations
 as compared to NaCl. These limitations are described below.
@@ -107,14 +101,14 @@ The limitations below apply to the current release of PNaCl. If any of
 these limitations are critical for your application, you should use
 non-portable NaCl:
 
-* By its nature, PNaCl does not support architecture-specific
+* PNaCl does not support architecture-specific
   instructions in an application (i.e., inline assembly), but tries to
   offer high-performance portable equivalents. One such example is
   PNaCl's :ref:`Portable SIMD Vectors <portable_simd_vectors>`.
-* Currently PNaCl only supports static linking with the ``newlib``
+* PNaCl only supports static linking with the ``newlib``
   C standard library (the Native Client SDK provides a PNaCl port of
   ``newlib``). Dynamic linking and ``glibc`` are not yet supported.
   Work is under way to enable dynamic linking in future versions of PNaCl.
-* In the initial release, PNaCl does not support some GNU extensions
+* PNaCl does not support some GNU extensions
   like taking the address of a label for computed ``goto``, or nested
   functions.

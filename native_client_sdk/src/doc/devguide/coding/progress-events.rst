@@ -13,9 +13,9 @@ Progress Events
 
 There are five types of events that developers can respond to in Native Client:
 progress, message, view change, focus, and input events (each described in the
-glossary below). This chapter describes how to monitor progress events (events
+glossary below). This section describes how to monitor progress events (events
 that occur during the loading and execution of a Native Client module). This
-chapter assumes you are familiar with the material presented in the
+section assumes you are familiar with the material presented in the
 :doc:`Technical Overview <../../overview>`.
 
 .. Note::
