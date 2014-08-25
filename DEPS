@@ -321,7 +321,7 @@ deps_os = {
 
     # NSS, for SSLClientSocketNSS.
     'src/third_party/nss':
-     Var('chromium_git') + '/chromium/deps/nss.git' + '@' + 'fda0701e18604c1be094244db73badd245fae41b',
+     Var('chromium_git') + '/chromium/deps/nss.git' + '@' + 'e2e35dbd9b41c0e5cb8485f13831cd61eb484196',
 
     'src/third_party/swig/win':
      Var('chromium_git') + '/chromium/deps/swig/win.git' + '@' + '986f013ba518541adf5c839811efb35630a31031',
@@ -346,7 +346,7 @@ deps_os = {
       Var('chromium_git') + '/external/google-toolbox-for-mac.git' + '@' + '704fb56df6a9a0884801045a158e021945d9d991',
 
     'src/third_party/nss':
-     Var('chromium_git') + '/chromium/deps/nss.git' + '@' + 'fda0701e18604c1be094244db73badd245fae41b',
+     Var('chromium_git') + '/chromium/deps/nss.git' + '@' + 'e2e35dbd9b41c0e5cb8485f13831cd61eb484196',
 
     # class-dump utility to generate header files for undocumented SDKs
     'src/testing/iossim/third_party/class-dump':
@@ -410,7 +410,7 @@ deps_os = {
 
     # NSS, for SSLClientSocketNSS.
     'src/third_party/nss':
-     Var('chromium_git') + '/chromium/deps/nss.git' + '@' + 'fda0701e18604c1be094244db73badd245fae41b',
+     Var('chromium_git') + '/chromium/deps/nss.git' + '@' + 'e2e35dbd9b41c0e5cb8485f13831cd61eb484196',
 
     'src/chrome/installer/mac/third_party/xz/xz':
      Var('chromium_git') + '/chromium/deps/xz.git' + '@' + 'eecaf55632ca72e90eb2641376bce7cdbc7284f7',
