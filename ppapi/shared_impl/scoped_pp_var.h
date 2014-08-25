@@ -47,7 +47,7 @@ class PPAPI_SHARED_EXPORT ScopedPPVar {
 
 // An array of PP_Vars which will be deallocated and have their references
 // decremented when they go out of scope.
-class PPAPI_SHARED_EXPORT ScopedPPVarArray {
+class ScopedPPVarArray {
  public:
   struct PassPPBMemoryAllocatedArray {};
 

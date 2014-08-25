@@ -40,12 +40,40 @@ class InstanceSO : public pp::deprecated::ScriptableObject {
 InstanceSO::InstanceSO(TestInstance* i)
     : test_instance_(i),
       testing_interface_(i->testing_interface()) {
-  if (testing_interface_->IsOutOfProcess() == PP_FALSE)
-    test_instance_->set_instance_object_destroyed(false);
+  // Set up a post-condition for the test so that we can ensure our destructor
+  // is called. This only works reliably in-process. Out-of-process, it only
+  // can work when the renderer stays alive a short while after the plugin
+  // instance is destroyed. If the renderer is being shut down, too much happens
+  // asynchronously for the out-of-process case to work reliably. In
+  // particular:
+  //   - The Var ReleaseObject message is asynchronous.
+  //   - The PPB_Var_Deprecated host-side proxy posts a task to actually release
+  //     the object when the ReleaseObject message is received.
+  //   - The PPP_Class Deallocate message is asynchronous.
+  // At time of writing this comment, if you modify the code so that the above
+  // happens synchronously, and you remove the restriction that the plugin can't
+  // be unblocked by a sync message, then this check actually passes reliably
+  // for out-of-process. But we don't want to make any of those changes, so we
+  // just skip the check.
+  if (testing_interface_->IsOutOfProcess() == PP_FALSE) {
+    i->instance()->AddPostCondition(
+      "window.document.getElementById('container').instance_object_destroyed"
+      );
+  }
 }
 
 InstanceSO::~InstanceSO() {
-  test_instance_->set_instance_object_destroyed(true);
+  if (testing_interface_->IsOutOfProcess() == PP_FALSE) {
+    // TODO(dmichael): It would probably be best to make in-process consistent
+    //                 with out-of-process. That would mean that the instance
+    //                 would already be destroyed at this point.
+    pp::Var ret = test_instance_->instance()->ExecuteScript(
+        "document.getElementById('container').instance_object_destroyed=true;");
+  } else {
+    // Out-of-process, this destructor might not actually get invoked. See the
+    // comment in InstanceSO's constructor for an explanation. Also, instance()
+    // has already been destroyed :-(. So we can't really do anything here.
+  }
 }
 
 bool InstanceSO::HasMethod(const pp::Var& name, pp::Var* exception) {
@@ -89,9 +117,8 @@ pp::Var InstanceSO::Call(const pp::Var& method_name,
 
 REGISTER_TEST_CASE(Instance);
 
-TestInstance::TestInstance(TestingInstance* instance)
-    : TestCase(instance),
-      instance_object_destroyed_(false) {}
+TestInstance::TestInstance(TestingInstance* instance) : TestCase(instance) {
+}
 
 bool TestInstance::Init() {
   return true;
@@ -99,32 +126,11 @@ bool TestInstance::Init() {
 
 TestInstance::~TestInstance() {
   ResetTestObject();
-  if (testing_interface_->IsOutOfProcess() == PP_FALSE) {
-    // This should cause the instance objects descructor to be called.
+  // When running tests in process, some post conditions check that teardown
+  // happened successfully. We need to run the garbage collector to ensure that
+  // vars get released.
+  if (testing_interface_->IsOutOfProcess() == PP_FALSE)
     testing_interface_->RunV8GC(instance_->pp_instance());
-
-    // Test a post-condition which ensures the instance objects destructor is
-    // called. This only works reliably in-process. Out-of-process, it only
-    // can work when the renderer stays alive a short while after the plugin
-    // instance is destroyed. If the renderer is being shut down, too much
-    // happens asynchronously for the out-of-process case to work reliably. In
-    // particular:
-    //   - The Var ReleaseObject message is asynchronous.
-    //   - The PPB_Var_Deprecated host-side proxy posts a task to actually
-    //     release the object when the ReleaseObject message is received.
-    //   - The PPP_Class Deallocate message is asynchronous.
-    // At time of writing this comment, if you modify the code so that the above
-    // happens synchronously, and you remove the restriction that the plugin
-    // can't be unblocked by a sync message, then this check actually passes
-    // reliably for out-of-process. But we don't want to make any of those
-    // changes so we just skip the check.
-    PP_DCHECK(instance_object_destroyed_);
-  } else {
-    // Out-of-process, this destructor might not actually get invoked. See the
-    // comment in InstanceSO's constructor for an explanation. Also, instance()
-    // has already been destroyed :-(. So we can't really do anything here.
-  }
-
   // Save the fact that we were destroyed in sessionStorage. This tests that
   // we can ExecuteScript at instance destruction without crashing. It also
   // allows us to check that ExecuteScript will run and succeed in certain

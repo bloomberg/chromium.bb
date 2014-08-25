@@ -6,7 +6,6 @@
 #define CONTENT_RENDERER_PEPPER_PEPPER_TRY_CATCH_H_
 
 #include "base/basictypes.h"
-#include "content/common/content_export.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/shared_impl/scoped_pp_var.h"
 #include "v8/include/v8.h"
@@ -16,7 +15,7 @@ namespace content {
 class PepperPluginInstanceImpl;
 
 // Base class for scripting TryCatch helpers.
-class CONTENT_EXPORT PepperTryCatch {
+class PepperTryCatch {
  public:
   PepperTryCatch(PepperPluginInstanceImpl* instance,
                  bool convert_objects);

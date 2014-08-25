@@ -26,10 +26,6 @@ class TestInstance : public TestCase {
   // happens on instance shutdown.
   void LeakReferenceAndIgnore(const pp::Var& leaked);
 
-  void set_instance_object_destroyed(bool destroyed) {
-    instance_object_destroyed_ = destroyed;
-  }
-
  protected:
   // Test case protected overrides.
   virtual pp::deprecated::ScriptableObject* CreateTestObject();
@@ -44,9 +40,6 @@ class TestInstance : public TestCase {
   // Value written by set_string which is called by the ScriptableObject. This
   // allows us to keep track of what was called.
   std::string string_;
-
-  // Whether the instance object for this instance has been destroyed.
-  bool instance_object_destroyed_;
 };
 
 #endif  // PPAPI_TESTS_TEST_INSTANCE_H_
