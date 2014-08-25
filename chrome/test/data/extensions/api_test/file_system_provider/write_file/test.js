@@ -316,7 +316,7 @@ function runTests() {
     },
 
     // Abort writing to a valid file with a registered abort handler. Should
-    // resurt in a gracefully terminated writing operation.
+    // result in a gracefully terminated writing operation.
     function abortWritingSuccess() {
       var onTestSuccess = chrome.test.callbackPass();
 

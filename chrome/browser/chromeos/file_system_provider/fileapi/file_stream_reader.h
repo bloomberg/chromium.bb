@@ -43,6 +43,11 @@ class FileStreamReader : public storage::FileStreamReader {
       const net::Int64CompletionCallback& callback) OVERRIDE;
 
  private:
+  // Helper class for executing operations on the provided file system. All
+  // of its methods must be called on UI thread. Callbacks are called on IO
+  // thread.
+  class OperationRunner;
+
   // State of the file stream reader.
   enum State { NOT_INITIALIZED, INITIALIZING, INITIALIZED, FAILED };
 
@@ -59,9 +64,6 @@ class FileStreamReader : public storage::FileStreamReader {
   void OnOpenFileCompleted(
       const base::Closure& pending_closure,
       const net::Int64CompletionCallback& error_callback,
-      base::WeakPtr<ProvidedFileSystemInterface> file_system,
-      const base::FilePath& file_path,
-      int file_handle,
       base::File::Error result);
 
   // Called when initialization is completed with either a success or an error.
@@ -98,12 +100,8 @@ class FileStreamReader : public storage::FileStreamReader {
   int64 current_offset_;
   int64 current_length_;
   base::Time expected_modification_time_;
+  scoped_refptr<OperationRunner> runner_;
   State state_;
-
-  // Set during initialization (in case of a success).
-  base::WeakPtr<ProvidedFileSystemInterface> file_system_;
-  base::FilePath file_path_;
-  int file_handle_;
 
   base::WeakPtrFactory<FileStreamReader> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(FileStreamReader);

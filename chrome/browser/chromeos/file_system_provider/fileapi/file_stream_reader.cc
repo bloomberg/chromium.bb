@@ -30,116 +30,179 @@ void Int64ToIntCompletionCallback(net::CompletionCallback callback,
   callback.Run(static_cast<int>(result));
 }
 
-// Opens a file for reading and calls the completion callback. Must be called
-// on UI thread.
-void OpenFileOnUIThread(
-    const storage::FileSystemURL& url,
-    const FileStreamReader::OpenFileCompletedCallback& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  util::FileSystemURLParser parser(url);
-  if (!parser.Parse()) {
-    callback.Run(base::WeakPtr<ProvidedFileSystemInterface>(),
-                 base::FilePath(),
-                 0 /* file_handle */,
-                 base::File::FILE_ERROR_SECURITY);
-    return;
-  }
-
-  parser.file_system()->OpenFile(
-      parser.file_path(),
-      ProvidedFileSystemInterface::OPEN_FILE_MODE_READ,
-      base::Bind(
-          callback, parser.file_system()->GetWeakPtr(), parser.file_path()));
-}
-
-// Forwards results of calling OpenFileOnUIThread back to the IO thread.
-void OnOpenFileCompletedOnUIThread(
-    const FileStreamReader::OpenFileCompletedCallback& callback,
-    base::WeakPtr<ProvidedFileSystemInterface> file_system,
-    const base::FilePath& file_path,
-    int file_handle,
-    base::File::Error result) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(callback, file_system, file_path, file_handle, result));
-}
-
-// Closes a file. Ignores result, since it is called from a constructor.
-// Must be called on UI thread.
-void CloseFileOnUIThread(base::WeakPtr<ProvidedFileSystemInterface> file_system,
-                         int file_handle) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (file_system.get())
-    file_system->CloseFile(file_handle, base::Bind(&EmptyStatusCallback));
-}
-
-// Requests reading contents of a file. In case of either success or a failure
-// |callback| is executed. It can be called many times, until |has_more| is set
-// to false. This function guarantees that it will succeed only if the file has
-// not been changed while reading. Must be called on UI thread.
-void ReadFileOnUIThread(
-    base::WeakPtr<ProvidedFileSystemInterface> file_system,
-    int file_handle,
-    scoped_refptr<net::IOBuffer> buffer,
-    int64 offset,
-    int length,
-    const ProvidedFileSystemInterface::ReadChunkReceivedCallback& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  // If the file system got unmounted, then abort the reading operation.
-  if (!file_system.get()) {
-    callback.Run(0, false /* has_more */, base::File::FILE_ERROR_ABORT);
-    return;
-  }
-
-  file_system->ReadFile(file_handle, buffer, offset, length, callback);
-}
-
-// Forward the completion callback to IO thread.
-void OnReadChunkReceivedOnUIThread(
-    const ProvidedFileSystemInterface::ReadChunkReceivedCallback&
-        chunk_received_callback,
-    int chunk_length,
-    bool has_more,
-    base::File::Error result) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(chunk_received_callback, chunk_length, has_more, result));
-}
-
-// Requests metadata of a file. In case of either succes or a failure,
-// |callback is executed. Must be called on UI thread.
-void GetMetadataOnUIThread(
-    base::WeakPtr<ProvidedFileSystemInterface> file_system,
-    const base::FilePath& file_path,
-    const ProvidedFileSystemInterface::GetMetadataCallback& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  // If the file system got unmounted, then abort the get length operation.
-  if (!file_system.get()) {
-    callback.Run(EntryMetadata(), base::File::FILE_ERROR_ABORT);
-    return;
-  }
-
-  file_system->GetMetadata(file_path, callback);
-}
-
-// Forward the completion callback to IO thread.
-void OnGetMetadataReceivedOnUIThread(
-    const ProvidedFileSystemInterface::GetMetadataCallback& callback,
-    const EntryMetadata& metadata,
-    base::File::Error result) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE, base::Bind(callback, metadata, result));
-}
-
 }  // namespace
+
+class FileStreamReader::OperationRunner
+    : public base::RefCountedThreadSafe<FileStreamReader::OperationRunner> {
+ public:
+  OperationRunner() : file_handle_(-1) {}
+
+  // Opens a file for reading and calls the completion callback. Must be called
+  // on UI thread.
+  void OpenFileOnUIThread(
+      const storage::FileSystemURL& url,
+      const storage::AsyncFileUtil::StatusCallback& callback) {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+    util::FileSystemURLParser parser(url);
+    if (!parser.Parse()) {
+      BrowserThread::PostTask(
+          BrowserThread::IO,
+          FROM_HERE,
+          base::Bind(callback, base::File::FILE_ERROR_SECURITY));
+      return;
+    }
+
+    file_system_ = parser.file_system()->GetWeakPtr();
+    file_path_ = parser.file_path();
+    abort_callback_ = parser.file_system()->OpenFile(
+        file_path_,
+        ProvidedFileSystemInterface::OPEN_FILE_MODE_READ,
+        base::Bind(
+            &OperationRunner::OnOpenFileCompletedOnUIThread, this, callback));
+  }
+
+  // Closes a file. Ignores result, since it is called from a constructor.
+  // Must be called on UI thread.
+  void CloseFileOnUIThread() {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    if (file_system_.get() && file_handle_ != -1) {
+      // Closing a file must not be aborted, since we could end up on files
+      // which are never closed.
+      file_system_->CloseFile(file_handle_, base::Bind(&EmptyStatusCallback));
+    }
+  }
+
+  // Requests reading contents of a file. In case of either success or a failure
+  // |callback| is executed. It can be called many times, until |has_more| is
+  // set to false. This function guarantees that it will succeed only if the
+  // file has not been changed while reading. Must be called on UI thread.
+  void ReadFileOnUIThread(
+      scoped_refptr<net::IOBuffer> buffer,
+      int64 offset,
+      int length,
+      const ProvidedFileSystemInterface::ReadChunkReceivedCallback& callback) {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+    // If the file system got unmounted, then abort the reading operation.
+    if (!file_system_.get()) {
+      BrowserThread::PostTask(
+          BrowserThread::IO,
+          FROM_HERE,
+          base::Bind(
+              callback, 0, false /* has_more */, base::File::FILE_ERROR_ABORT));
+      return;
+    }
+
+    abort_callback_ = file_system_->ReadFile(
+        file_handle_,
+        buffer,
+        offset,
+        length,
+        base::Bind(
+            &OperationRunner::OnReadFileCompletedOnUIThread, this, callback));
+  }
+
+  // Requests metadata of a file. In case of either succes or a failure,
+  // |callback| is executed. Must be called on UI thread.
+  void GetMetadataOnUIThread(
+      const ProvidedFileSystemInterface::GetMetadataCallback& callback) {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+    // If the file system got unmounted, then abort the get length operation.
+    if (!file_system_.get()) {
+      BrowserThread::PostTask(
+          BrowserThread::IO,
+          FROM_HERE,
+          base::Bind(callback, EntryMetadata(), base::File::FILE_ERROR_ABORT));
+      return;
+    }
+
+    abort_callback_ = file_system_->GetMetadata(
+        file_path_,
+        base::Bind(&OperationRunner::OnGetMetadataCompletedOnUIThread,
+                   this,
+                   callback));
+  }
+
+  // Aborts the most recent operation (if exists), and calls the callback.
+  void AbortOnUIThread(const storage::AsyncFileUtil::StatusCallback& callback) {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+    if (abort_callback_.is_null()) {
+      // No operation to be cancelled. At most a callback call, which will be
+      // discarded.
+      BrowserThread::PostTask(BrowserThread::IO,
+                              FROM_HERE,
+                              base::Bind(callback, base::File::FILE_OK));
+      return;
+    }
+
+    const ProvidedFileSystemInterface::AbortCallback abort_callback =
+        abort_callback_;
+    abort_callback_ = ProvidedFileSystemInterface::AbortCallback();
+    abort_callback.Run(base::Bind(
+        &OperationRunner::OnAbortCompletedOnUIThread, this, callback));
+  }
+
+ private:
+  friend class base::RefCountedThreadSafe<OperationRunner>;
+
+  virtual ~OperationRunner() {}
+
+  // Remembers a file handle for further operations and forwards the result to
+  // the IO thread.
+  void OnOpenFileCompletedOnUIThread(
+      const storage::AsyncFileUtil::StatusCallback& callback,
+      int file_handle,
+      base::File::Error result) {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+    file_handle_ = file_handle;
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE, base::Bind(callback, result));
+  }
+
+  // Forwards a metadata to the IO thread.
+  void OnGetMetadataCompletedOnUIThread(
+      const ProvidedFileSystemInterface::GetMetadataCallback& callback,
+      const EntryMetadata& metadata,
+      base::File::Error result) {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE, base::Bind(callback, metadata, result));
+  }
+
+  // Forwards a response of reading from a file to the IO thread.
+  void OnReadFileCompletedOnUIThread(
+      const ProvidedFileSystemInterface::ReadChunkReceivedCallback&
+          chunk_received_callback,
+      int chunk_length,
+      bool has_more,
+      base::File::Error result) {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    BrowserThread::PostTask(
+        BrowserThread::IO,
+        FROM_HERE,
+        base::Bind(chunk_received_callback, chunk_length, has_more, result));
+  }
+
+  // Forwards a response of aborting an operation to the IO thread.
+  void OnAbortCompletedOnUIThread(
+      const storage::AsyncFileUtil::StatusCallback& callback,
+      base::File::Error result) {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE, base::Bind(callback, result));
+  }
+
+  ProvidedFileSystemInterface::AbortCallback abort_callback_;
+  base::WeakPtr<ProvidedFileSystemInterface> file_system_;
+  base::FilePath file_path_;
+  int file_handle_;
+
+  DISALLOW_COPY_AND_ASSIGN(OperationRunner);
+};
 
 FileStreamReader::FileStreamReader(storage::FileSystemContext* context,
                                    const storage::FileSystemURL& url,
@@ -149,16 +212,24 @@ FileStreamReader::FileStreamReader(storage::FileSystemContext* context,
       current_offset_(initial_offset),
       current_length_(0),
       expected_modification_time_(expected_modification_time),
+      runner_(new OperationRunner),
       state_(NOT_INITIALIZED),
-      file_handle_(0),
       weak_ptr_factory_(this) {
 }
 
 FileStreamReader::~FileStreamReader() {
+  // FileStreamReader doesn't have a Cancel() method like in FileStreamWriter.
+  // Therefore, aborting is done from the destructor.
+  BrowserThread::PostTask(BrowserThread::UI,
+                          FROM_HERE,
+                          base::Bind(&OperationRunner::AbortOnUIThread,
+                                     runner_,
+                                     base::Bind(&EmptyStatusCallback)));
+
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
-      base::Bind(&CloseFileOnUIThread, file_system_, file_handle_));
+      base::Bind(&OperationRunner::CloseFileOnUIThread, runner_));
 }
 
 void FileStreamReader::Initialize(
@@ -170,21 +241,18 @@ void FileStreamReader::Initialize(
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
-      base::Bind(&OpenFileOnUIThread,
+      base::Bind(&OperationRunner::OpenFileOnUIThread,
+                 runner_,
                  url_,
-                 base::Bind(&OnOpenFileCompletedOnUIThread,
-                            base::Bind(&FileStreamReader::OnOpenFileCompleted,
-                                       weak_ptr_factory_.GetWeakPtr(),
-                                       pending_closure,
-                                       error_callback))));
+                 base::Bind(&FileStreamReader::OnOpenFileCompleted,
+                            weak_ptr_factory_.GetWeakPtr(),
+                            pending_closure,
+                            error_callback)));
 }
 
 void FileStreamReader::OnOpenFileCompleted(
     const base::Closure& pending_closure,
     const net::Int64CompletionCallback& error_callback,
-    base::WeakPtr<ProvidedFileSystemInterface> file_system,
-    const base::FilePath& file_path,
-    int file_handle,
     base::File::Error result) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_EQ(INITIALIZING, state_);
@@ -197,23 +265,18 @@ void FileStreamReader::OnOpenFileCompleted(
     return;
   }
 
-  file_system_ = file_system;
-  file_path_ = file_path;
-  file_handle_ = file_handle;
-  DCHECK_LT(0, file_handle);
+  DCHECK_EQ(base::File::FILE_OK, result);
 
   // Verify the last modification time.
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
-      base::Bind(&GetMetadataOnUIThread,
-                 file_system_,
-                 file_path_,
-                 base::Bind(&OnGetMetadataReceivedOnUIThread,
-                            base::Bind(&FileStreamReader::OnInitializeCompleted,
-                                       weak_ptr_factory_.GetWeakPtr(),
-                                       pending_closure,
-                                       error_callback))));
+      base::Bind(&OperationRunner::GetMetadataOnUIThread,
+                 runner_,
+                 base::Bind(&FileStreamReader::OnInitializeCompleted,
+                            weak_ptr_factory_.GetWeakPtr(),
+                            pending_closure,
+                            error_callback)));
 }
 
 void FileStreamReader::OnInitializeCompleted(
@@ -341,16 +404,14 @@ void FileStreamReader::ReadAfterInitialized(
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
-      base::Bind(&ReadFileOnUIThread,
-                 file_system_,
-                 file_handle_,
+      base::Bind(&OperationRunner::ReadFileOnUIThread,
+                 runner_,
                  buffer,
                  current_offset_,
                  buffer_length,
-                 base::Bind(&OnReadChunkReceivedOnUIThread,
-                            base::Bind(&FileStreamReader::OnReadChunkReceived,
-                                       weak_ptr_factory_.GetWeakPtr(),
-                                       callback))));
+                 base::Bind(&FileStreamReader::OnReadChunkReceived,
+                            weak_ptr_factory_.GetWeakPtr(),
+                            callback)));
 }
 
 void FileStreamReader::GetLengthAfterInitialized(
@@ -362,14 +423,11 @@ void FileStreamReader::GetLengthAfterInitialized(
       BrowserThread::UI,
       FROM_HERE,
       base::Bind(
-          &GetMetadataOnUIThread,
-          file_system_,
-          file_path_,
-          base::Bind(
-              &OnGetMetadataReceivedOnUIThread,
-              base::Bind(&FileStreamReader::OnGetMetadataForGetLengthReceived,
-                         weak_ptr_factory_.GetWeakPtr(),
-                         callback))));
+          &OperationRunner::GetMetadataOnUIThread,
+          runner_,
+          base::Bind(&FileStreamReader::OnGetMetadataForGetLengthReceived,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     callback)));
 }
 
 void FileStreamReader::OnReadChunkReceived(
