@@ -347,4 +347,37 @@ TEST_F(CreditCardFieldTest, ParseMonthControl) {
             field_type_map_[ASCIIToUTF16("date2")]);
 }
 
+// Verify that heuristics <input name="ccyear" maxlength="2"/> considers
+// *maxlength* attribute while parsing 2 Digit expiration year.
+TEST_F(CreditCardFieldTest, ParseCreditCardExpYear_2DigitMaxLength) {
+  FormFieldData field;
+  field.form_control_type = "text";
+
+  field.label = ASCIIToUTF16("Card Number");
+  field.name = ASCIIToUTF16("card_number");
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("number")));
+
+  field.label = ASCIIToUTF16("Expiration Date");
+  field.name = ASCIIToUTF16("ccmonth");
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("month")));
+
+  field.name = ASCIIToUTF16("ccyear");
+  field.max_length = 2;
+  list_.push_back(new AutofillField(field, ASCIIToUTF16("year")));
+
+  Parse();
+  ASSERT_NE(static_cast<CreditCardField*>(NULL), field_.get());
+  EXPECT_TRUE(ClassifyField());
+  ASSERT_TRUE(field_type_map_.find(ASCIIToUTF16("number")) !=
+              field_type_map_.end());
+  EXPECT_EQ(CREDIT_CARD_NUMBER, field_type_map_[ASCIIToUTF16("number")]);
+  ASSERT_TRUE(field_type_map_.find(ASCIIToUTF16("month")) !=
+              field_type_map_.end());
+  EXPECT_EQ(CREDIT_CARD_EXP_MONTH, field_type_map_[ASCIIToUTF16("month")]);
+  ASSERT_TRUE(field_type_map_.find(ASCIIToUTF16("year")) !=
+              field_type_map_.end());
+  EXPECT_EQ(CREDIT_CARD_EXP_2_DIGIT_YEAR,
+            field_type_map_[ASCIIToUTF16("year")]);
+}
+
 }  // namespace autofill
