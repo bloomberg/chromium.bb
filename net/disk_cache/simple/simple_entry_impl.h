@@ -11,7 +11,6 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "net/base/cache_type.h"
 #include "net/base/net_export.h"
@@ -40,13 +39,20 @@ struct SimpleEntryCreationResults;
 // disk cache. It proxies for the SimpleSynchronousEntry, which performs IO
 // on the worker thread.
 class NET_EXPORT_PRIVATE SimpleEntryImpl : public Entry,
-    public base::RefCounted<SimpleEntryImpl>,
-    public base::SupportsWeakPtr<SimpleEntryImpl> {
+    public base::RefCounted<SimpleEntryImpl> {
   friend class base::RefCounted<SimpleEntryImpl>;
  public:
   enum OperationsMode {
     NON_OPTIMISTIC_OPERATIONS,
     OPTIMISTIC_OPERATIONS,
+  };
+
+  // The Backend provides an |ActiveEntryProxy| instance to this entry when it
+  // is active, meaning it's the canonical entry for this |entry_hash_|. The
+  // entry can make itself inactive by deleting its proxy.
+  class ActiveEntryProxy {
+   public:
+    virtual ~ActiveEntryProxy() = 0;
   };
 
   SimpleEntryImpl(net::CacheType cache_type,
@@ -55,6 +61,9 @@ class NET_EXPORT_PRIVATE SimpleEntryImpl : public Entry,
                   OperationsMode operations_mode,
                   SimpleBackendImpl* backend,
                   net::NetLog* net_log);
+
+  void SetActiveEntryProxy(
+      scoped_ptr<ActiveEntryProxy> active_entry_proxy);
 
   // Adds another reader/writer to this entry, if possible, returning |this| to
   // |entry|.
@@ -149,10 +158,6 @@ class NET_EXPORT_PRIVATE SimpleEntryImpl : public Entry,
   // Return this entry to a user of the API in |out_entry|. Increments the user
   // count.
   void ReturnEntryToCaller(Entry** out_entry);
-
-  // Ensures that |this| is no longer referenced by our |backend_|, this
-  // guarantees that this entry cannot have OpenEntry/CreateEntry called again.
-  void RemoveSelfFromBackend();
 
   // An error occured, and the SimpleSynchronousEntry should have Doomed
   // us at this point. We need to remove |this| from the Backend and the
@@ -296,6 +301,8 @@ class NET_EXPORT_PRIVATE SimpleEntryImpl : public Entry,
                   int offset,
                   int length,
                   int stream_index);
+
+  scoped_ptr<ActiveEntryProxy> active_entry_proxy_;
 
   // All nonstatic SimpleEntryImpl methods should always be called on the IO
   // thread, in all cases. |io_thread_checker_| documents and enforces this.

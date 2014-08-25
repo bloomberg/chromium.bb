@@ -195,6 +195,34 @@ void RecordIndexLoad(net::CacheType cache_type,
 
 }  // namespace
 
+class SimpleBackendImpl::ActiveEntryProxy
+    : public SimpleEntryImpl::ActiveEntryProxy {
+ public:
+  virtual ~ActiveEntryProxy() {
+    if (backend_) {
+      DCHECK_EQ(1U, backend_->active_entries_.count(entry_hash_));
+      backend_->active_entries_.erase(entry_hash_);
+    }
+  }
+
+  static scoped_ptr<SimpleEntryImpl::ActiveEntryProxy> Create(
+      int64 entry_hash,
+      SimpleBackendImpl* backend) {
+    scoped_ptr<SimpleEntryImpl::ActiveEntryProxy>
+        proxy(new ActiveEntryProxy(entry_hash, backend));
+    return proxy.Pass();
+  }
+
+ private:
+  ActiveEntryProxy(uint64 entry_hash,
+                   SimpleBackendImpl* backend)
+      : entry_hash_(entry_hash),
+        backend_(backend->AsWeakPtr()) {}
+
+  uint64 entry_hash_;
+  base::WeakPtr<SimpleBackendImpl> backend_;
+};
+
 SimpleBackendImpl::SimpleBackendImpl(
     const FilePath& path,
     int max_bytes,
@@ -249,10 +277,6 @@ bool SimpleBackendImpl::SetMaxSize(int max_bytes) {
 
 int SimpleBackendImpl::GetMaxFileSize() const {
   return index_->max_size() / kMaxFileRatio;
-}
-
-void SimpleBackendImpl::OnDeactivated(const SimpleEntryImpl* entry) {
-  active_entries_.erase(entry->entry_hash());
 }
 
 void SimpleBackendImpl::OnDoomStart(uint64 entry_hash) {
@@ -512,18 +536,17 @@ scoped_refptr<SimpleEntryImpl> SimpleBackendImpl::CreateOrFindActiveEntry(
     const std::string& key) {
   DCHECK_EQ(entry_hash, simple_util::GetEntryHashKey(key));
   std::pair<EntryMap::iterator, bool> insert_result =
-      active_entries_.insert(std::make_pair(entry_hash,
-                                            base::WeakPtr<SimpleEntryImpl>()));
+      active_entries_.insert(EntryMap::value_type(entry_hash, NULL));
   EntryMap::iterator& it = insert_result.first;
-  if (insert_result.second)
-    DCHECK(!it->second.get());
-  if (!it->second.get()) {
-    SimpleEntryImpl* entry = new SimpleEntryImpl(
-        cache_type_, path_, entry_hash, entry_operations_mode_, this, net_log_);
+  const bool did_insert = insert_result.second;
+  if (did_insert) {
+    SimpleEntryImpl* entry = it->second =
+        new SimpleEntryImpl(cache_type_, path_, entry_hash,
+                            entry_operations_mode_,this, net_log_);
     entry->SetKey(key);
-    it->second = entry->AsWeakPtr();
+    entry->SetActiveEntryProxy(ActiveEntryProxy::Create(entry_hash, this));
   }
-  DCHECK(it->second.get());
+  DCHECK(it->second);
   // It's possible, but unlikely, that we have an entry hash collision with a
   // currently active entry.
   if (key != it->second->key()) {
@@ -531,7 +554,7 @@ scoped_refptr<SimpleEntryImpl> SimpleBackendImpl::CreateOrFindActiveEntry(
     DCHECK_EQ(0U, active_entries_.count(entry_hash));
     return CreateOrFindActiveEntry(entry_hash, key);
   }
-  return make_scoped_refptr(it->second.get());
+  return make_scoped_refptr(it->second);
 }
 
 int SimpleBackendImpl::OpenEntryFromHash(uint64 entry_hash,
@@ -640,19 +663,19 @@ void SimpleBackendImpl::OnEntryOpenedFromHash(
   }
   DCHECK(*entry);
   std::pair<EntryMap::iterator, bool> insert_result =
-      active_entries_.insert(std::make_pair(hash,
-                                            base::WeakPtr<SimpleEntryImpl>()));
+      active_entries_.insert(EntryMap::value_type(hash, simple_entry));
   EntryMap::iterator& it = insert_result.first;
   const bool did_insert = insert_result.second;
   if (did_insert) {
-    // There is no active entry corresponding to this hash. The entry created
-    // is put in the map of active entries and returned to the caller.
-    it->second = simple_entry->AsWeakPtr();
-    callback.Run(error_code);
+    // There was no active entry corresponding to this hash. We've already put
+    // the entry opened from hash in the |active_entries_|. We now provide the
+    // proxy object to the entry.
+    it->second->SetActiveEntryProxy(ActiveEntryProxy::Create(hash, this));
+    callback.Run(net::OK);
   } else {
-    // The entry was made active with the key while the creation from hash
-    // occurred. The entry created from hash needs to be closed, and the one
-    // coming from the key returned to the caller.
+    // The entry was made active while we waiting for the open from hash to
+    // finish. The entry created from hash needs to be closed, and the one
+    // in |active_entries_| can be returned to the caller.
     simple_entry->Close();
     it->second->OpenEntry(entry, callback);
   }
