@@ -237,7 +237,7 @@ Background.prototype.navigateToVolume = function(volumeId) {
     launchFileManager(
         {currentDirectoryURL: entry.toURL()},
         /* App ID */ null,
-        LaunchType.FOCUS_ANY_OR_CREATE);
+        LaunchType.FOCUS_SAME_OR_CREATE);
   }).catch(function(error) {
     console.error(error.stack || error);
   });

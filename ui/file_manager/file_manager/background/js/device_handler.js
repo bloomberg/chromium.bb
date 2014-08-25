@@ -139,6 +139,16 @@ DeviceHandler.Notification.DEVICE_FAIL = new DeviceHandler.Notification(
  * @type {DeviceHandler.Notification}
  * @const
  */
+DeviceHandler.Notification.DEVICE_FAIL_UNKNOWN = new DeviceHandler.Notification(
+    'deviceFail',
+    'REMOVABLE_DEVICE_DETECTION_TITLE',
+    'DEVICE_UNKNOWN_DEFAULT_MESSAGE',
+    'DEVICE_UNKNOWN_BUTTON_LABEL');
+
+/**
+ * @type {DeviceHandler.Notification}
+ * @const
+ */
 DeviceHandler.Notification.DEVICE_EXTERNAL_STORAGE_DISABLED =
     new DeviceHandler.Notification(
         'deviceFail',
@@ -349,6 +359,11 @@ DeviceHandler.prototype.onMountCompleted_ = function(event) {
             event.volumeMetadata.devicePath);
       }
     }
+  } else if (event.status === 'error_unknown_filesystem') {
+    // The volume id is necessary to navigate when users click start
+    // format button.
+    this.navigationVolumes_[event.volumeMetadata.devicePath] =
+        event.volumeMetadata.volumeId;
   }
 
   if (event.eventType === 'unmount') {
@@ -414,6 +429,9 @@ DeviceHandler.prototype.onMountCompleted_ = function(event) {
       message = volume.deviceLabel ?
           strf('MULTIPART_DEVICE_UNSUPPORTED_MESSAGE', volume.deviceLabel) :
           str('MULTIPART_DEVICE_UNSUPPORTED_DEFAULT_MESSAGE');
+      DeviceHandler.Notification.DEVICE_FAIL.show(
+          volume.devicePath,
+          message);
       break;
     case DeviceHandler.MountStatus.CHILD_ERROR:
     case DeviceHandler.MountStatus.ONLY_PARENT_ERROR:
@@ -421,16 +439,17 @@ DeviceHandler.prototype.onMountCompleted_ = function(event) {
         message = volume.deviceLabel ?
             strf('DEVICE_UNSUPPORTED_MESSAGE', volume.deviceLabel) :
             str('DEVICE_UNSUPPORTED_DEFAULT_MESSAGE');
+        DeviceHandler.Notification.DEVICE_FAIL.show(
+            volume.devicePath,
+            message);
       } else {
         message = volume.deviceLabel ?
             strf('DEVICE_UNKNOWN_MESSAGE', volume.deviceLabel) :
             str('DEVICE_UNKNOWN_DEFAULT_MESSAGE');
+        DeviceHandler.Notification.DEVICE_FAIL_UNKNOWN.show(
+            volume.devicePath,
+            message);
       }
-      break;
-  }
-  if (message) {
-    DeviceHandler.Notification.DEVICE_FAIL.hide(volume.devicePath);
-    DeviceHandler.Notification.DEVICE_FAIL.show(volume.devicePath, message);
   }
 };
 
@@ -440,11 +459,13 @@ DeviceHandler.prototype.onMountCompleted_ = function(event) {
  * @private
  */
 DeviceHandler.prototype.onNotificationButtonClicked_ = function(id) {
-  var match = /^deviceNavigation:(.*)$/.exec(id);
-  if (match) {
+  var pos = id.indexOf(':');
+  var type = id.substr(0, pos);
+  var path = id.substr(pos + 1);
+  if (type === 'deviceNavigation' || type === 'deviceFail') {
     chrome.notifications.clear(id, function() {});
     var event = new Event(DeviceHandler.VOLUME_NAVIGATION_REQUESTED);
-    event.volumeId = this.navigationVolumes_[match[1]];
+    event.volumeId = this.navigationVolumes_[path];
     this.dispatchEvent(event);
   }
 };

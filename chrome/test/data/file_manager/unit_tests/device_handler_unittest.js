@@ -56,7 +56,6 @@ function setUp() {
     },
     notifications: {
       create: function(id, params, callback) {
-        assertFalse(!!this.items[id]);
         this.items[id] = params;
         callback();
       },

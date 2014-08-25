@@ -3764,6 +3764,10 @@ Battery full
   <message name="IDS_DEVICE_UNKNOWN_MESSAGE" desc="Text of notification message which is shown when user inserts removable device (SD card, USB key...)">
    Sorry, the device <ph name="DEVICE_LABEL">$1<ex>My SD card</ex></ph> could not be recognized.
   </message>
+  <message name="IDS_DEVICE_UNKNOWN_BUTTON_LABEL" desc="Text of a button label in a notification to format the device. If user clicks the button, Files.app opens and 
+  focus on unknown the device.">
+    Format this device
+  </message>
   <message name="IDS_DEVICE_UNKNOWN_DEFAULT_MESSAGE" desc="Text of notification message which is shown when user inserts removable device (SD card, USB key...)">
    Sorry, your external storage device could not be recognized.
   </message>
