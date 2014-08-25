@@ -140,10 +140,10 @@ class AppViewTest : public extensions::PlatformAppBrowserTest {
 };
 
 // Tests that <appview> is able to navigate to another installed app.
-IN_PROC_BROWSER_TEST_F(AppViewTest, TestAppViewBasic) {
+IN_PROC_BROWSER_TEST_F(AppViewTest, TestAppViewWithUndefinedDataShouldSucceed) {
   const extensions::Extension* skeleton_app =
       InstallPlatformApp("app_view/shim/skeleton");
-  TestHelper("testAppViewBasic",
+  TestHelper("testAppViewWithUndefinedDataShouldSucceed",
              "app_view/shim",
              skeleton_app->id(),
              NO_TEST_SERVER);

@@ -43,7 +43,7 @@ AppViewInternal.prototype.createBrowserPluginNode = function() {
 AppViewInternal.prototype.connect = function(app, data, callback) {
   var createParams = {
     'appId': app,
-    'data': data
+    'data': data || {}
   };
   var self = this;
   GuestViewInternal.createGuest(

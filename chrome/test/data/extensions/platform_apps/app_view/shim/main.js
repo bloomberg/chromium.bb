@@ -68,12 +68,12 @@ embedder.test.assertFalse = function(condition) {
 };
 
 // Tests begin.
-function testAppViewBasic(appToEmbed) {
+function testAppViewWithUndefinedDataShouldSucceed(appToEmbed) {
   var appview = new AppView();
   LOG('appToEmbed  ' + appToEmbed);
   // Step 1: Attempt to connect to a non-existant app.
   LOG('attempting to connect to non-existant app.');
-  appview.connect('abc123', {}, function(success) {
+  appview.connect('abc123', undefined, function(success) {
     // Make sure we fail.
     if (success) {
       embedder.test.fail();
@@ -82,7 +82,7 @@ function testAppViewBasic(appToEmbed) {
     LOG('failed to connect to non-existant app.');
     LOG('attempting to connect to known app.');
     // Step 2: Attempt to connect to an app we know exists.
-    appview.connect(appToEmbed, {}, function(success) {
+    appview.connect(appToEmbed, undefined, function(success) {
       // Make sure we don't fail.
       if (!success) {
         embedder.test.fail();
@@ -126,7 +126,8 @@ function testAppViewGoodDataShouldSucceed(appToEmbed) {
 };
 
 embedder.test.testList = {
-  'testAppViewBasic': testAppViewBasic,
+  'testAppViewWithUndefinedDataShouldSucceed':
+      testAppViewWithUndefinedDataShouldSucceed,
   'testAppViewRefusedDataShouldFail': testAppViewRefusedDataShouldFail,
   'testAppViewGoodDataShouldSucceed': testAppViewGoodDataShouldSucceed
 };
