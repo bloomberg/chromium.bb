@@ -278,8 +278,8 @@ bool MockPeerConnectionImpl::GetStats(
           webrtc::StatsReport::kStatsValueNameFingerprint,
           "trackvalue"));
 
-  std::vector<webrtc::StatsReport> reports;
-  reports.push_back(report1);
+  webrtc::StatsReports reports;
+  reports.push_back(&report1);
 
   // If selector is given, we pass back one report.
   // If selector is not given, we pass back two.
@@ -291,7 +291,7 @@ bool MockPeerConnectionImpl::GetStats(
         webrtc::StatsReport::Value(
             webrtc::StatsReport::kStatsValueNameFingerprintAlgorithm,
             "somevalue"));
-    reports.push_back(report2);
+    reports.push_back(&report2);
   }
 
   // Note that the callback is synchronous, not asynchronous; it will
