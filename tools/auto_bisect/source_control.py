@@ -114,7 +114,7 @@ class GitSourceControl(SourceControl):
 
   def ResolveToRevision(self, revision_to_check, depot, depot_deps_dict,
                         search, cwd=None):
-    """If an SVN revision is supplied, try to resolve it to a git SHA1.
+    """Tries to resolve an SVN revision or commit position to a git SHA1.
 
     Args:
       revision_to_check: The user supplied revision string that may need to be
@@ -151,8 +151,9 @@ class GitSourceControl(SourceControl):
 
       for i in search_range:
         svn_pattern = 'git-svn-id: %s@%d' % (depot_svn, i)
+        commit_position_pattern = 'Cr-Commit-Position: .*@{#%d}' % i
         cmd = ['log', '--format=%H', '-1', '--grep', svn_pattern,
-               'origin/master']
+               '--grep', commit_position_pattern, 'origin/master']
 
         (log_output, return_code) = bisect_utils.RunGit(cmd, cwd=cwd)
 
