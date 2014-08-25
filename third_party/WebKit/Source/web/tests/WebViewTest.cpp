@@ -421,7 +421,7 @@ void WebViewTest::testAutoResize(const WebSize& minAutoResize, const WebSize& ma
     m_webViewHelper.reset(); // Explicitly reset to break dependency on locally scoped client.
 }
 
-TEST_F(WebViewTest, DISABLED_AutoResizeMinimumSize)
+TEST_F(WebViewTest, AutoResizeMinimumSize)
 {
     WebSize minAutoResize(91, 56);
     WebSize maxAutoResize(403, 302);
@@ -459,7 +459,7 @@ TEST_F(WebViewTest, AutoResizeFixedHeightAndWidthOverflow)
 
 // Next three tests disabled for https://bugs.webkit.org/show_bug.cgi?id=92318 .
 // It seems we can run three AutoResize tests, then the next one breaks.
-TEST_F(WebViewTest, DISABLED_AutoResizeInBetweenSizes)
+TEST_F(WebViewTest, AutoResizeInBetweenSizes)
 {
     WebSize minAutoResize(90, 95);
     WebSize maxAutoResize(200, 300);
@@ -471,7 +471,7 @@ TEST_F(WebViewTest, DISABLED_AutoResizeInBetweenSizes)
                    expectedWidth, expectedHeight, NoHorizontalScrollbar, NoVerticalScrollbar);
 }
 
-TEST_F(WebViewTest, DISABLED_AutoResizeOverflowSizes)
+TEST_F(WebViewTest, AutoResizeOverflowSizes)
 {
     WebSize minAutoResize(90, 95);
     WebSize maxAutoResize(200, 300);
@@ -483,7 +483,7 @@ TEST_F(WebViewTest, DISABLED_AutoResizeOverflowSizes)
                    expectedWidth, expectedHeight, VisibleHorizontalScrollbar, VisibleVerticalScrollbar);
 }
 
-TEST_F(WebViewTest, DISABLED_AutoResizeMaxSize)
+TEST_F(WebViewTest, AutoResizeMaxSize)
 {
     WebSize minAutoResize(90, 95);
     WebSize maxAutoResize(200, 300);
