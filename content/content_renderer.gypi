@@ -251,6 +251,10 @@
       'renderer/media/cdm_session_adapter.h',
       'renderer/media/crypto/content_decryption_module_factory.cc',
       'renderer/media/crypto/content_decryption_module_factory.h',
+      'renderer/media/crypto/encrypted_media_player_support.cc',
+      'renderer/media/crypto/encrypted_media_player_support.h',
+      'renderer/media/crypto/encrypted_media_player_support_impl.cc',
+      'renderer/media/crypto/encrypted_media_player_support_impl.h',
       'renderer/media/crypto/key_systems.cc',
       'renderer/media/crypto/key_systems.h',
       'renderer/media/crypto/key_systems_support_uma.cc',
@@ -756,6 +760,7 @@
         'renderer/accessibility/renderer_accessibility_focus_only.cc',
         'renderer/media/audio_decoder.cc',
         'renderer/media/filter_helpers.cc',
+        'renderer/media/crypto/encrypted_media_player_support_impl.cc',
         'renderer/media/webmediaplayer_impl.cc',
       ],
       'sources': [

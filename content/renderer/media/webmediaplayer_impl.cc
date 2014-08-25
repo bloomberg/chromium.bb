@@ -18,25 +18,21 @@
 #include "base/debug/trace_event.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "cc/blink/web_layer_impl.h"
 #include "cc/layers/video_layer.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/renderer/media/buffered_data_source.h"
-#include "content/renderer/media/crypto/key_systems.h"
+#include "content/renderer/media/crypto/encrypted_media_player_support.h"
 #include "content/renderer/media/render_media_log.h"
 #include "content/renderer/media/texttrack_impl.h"
 #include "content/renderer/media/webaudiosourceprovider_impl.h"
-#include "content/renderer/media/webcontentdecryptionmodule_impl.h"
 #include "content/renderer/media/webinbandtexttrack_impl.h"
 #include "content/renderer/media/webmediaplayer_delegate.h"
 #include "content/renderer/media/webmediaplayer_params.h"
 #include "content/renderer/media/webmediaplayer_util.h"
 #include "content/renderer/media/webmediasource_impl.h"
-#include "content/renderer/pepper/pepper_webplugin_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
@@ -61,23 +57,15 @@
 #include "media/filters/renderer_impl.h"
 #include "media/filters/video_renderer_impl.h"
 #include "media/filters/vpx_video_decoder.h"
-#include "third_party/WebKit/public/platform/WebContentDecryptionModule.h"
-#include "third_party/WebKit/public/platform/WebContentDecryptionModuleResult.h"
 #include "third_party/WebKit/public/platform/WebMediaSource.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
-#include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
-#include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
 #include "third_party/WebKit/public/web/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "v8/include/v8.h"
-
-#if defined(ENABLE_PEPPER_CDMS)
-#include "content/renderer/media/crypto/pepper_cdm_wrapper_impl.h"
-#endif
 
 using blink::WebCanvas;
 using blink::WebMediaPlayer;
@@ -117,9 +105,6 @@ const int kPlayerExtraMemory = 1024 * 1024;
 const double kMinRate = 0.0625;
 const double kMaxRate = 16.0;
 
-// Prefix for histograms related to Encrypted Media Extensions.
-const char* kMediaEme = "Media.EME.";
-
 class SyncPointClientImpl : public media::VideoFrame::SyncPointClient {
  public:
   explicit SyncPointClientImpl(
@@ -136,10 +121,6 @@ class SyncPointClientImpl : public media::VideoFrame::SyncPointClient {
  private:
   blink::WebGraphicsContext3D* web_graphics_context_;
 };
-
-// Used for calls to decryptor_ready_cb where the result can be ignored.
-void DoNothing(bool) {
-}
 
 }  // namespace
 
@@ -207,7 +188,9 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
           BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnNaturalSizeChanged),
           BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnOpacityChanged))),
       text_track_index_(0),
-      web_cdm_(NULL) {
+      encrypted_media_support_(EncryptedMediaPlayerSupport::Create(client)) {
+  DCHECK(encrypted_media_support_);
+
   media_log_->AddEvent(
       media_log_->CreateEvent(media::MediaLogEvent::WEBMEDIAPLAYER_CREATED));
 
@@ -670,152 +653,14 @@ bool WebMediaPlayerImpl::copyVideoTextureToPlatformTexture(
   return true;
 }
 
-// Helper functions to report media EME related stats to UMA. They follow the
-// convention of more commonly used macros UMA_HISTOGRAM_ENUMERATION and
-// UMA_HISTOGRAM_COUNTS. The reason that we cannot use those macros directly is
-// that UMA_* macros require the names to be constant throughout the process'
-// lifetime.
-static void EmeUMAHistogramEnumeration(const std::string& key_system,
-                                       const std::string& method,
-                                       int sample,
-                                       int boundary_value) {
-  base::LinearHistogram::FactoryGet(
-      kMediaEme + KeySystemNameForUMA(key_system) + "." + method,
-      1, boundary_value, boundary_value + 1,
-      base::Histogram::kUmaTargetedHistogramFlag)->Add(sample);
-}
-
-static void EmeUMAHistogramCounts(const std::string& key_system,
-                                  const std::string& method,
-                                  int sample) {
-  // Use the same parameters as UMA_HISTOGRAM_COUNTS.
-  base::Histogram::FactoryGet(
-      kMediaEme + KeySystemNameForUMA(key_system) + "." + method,
-      1, 1000000, 50, base::Histogram::kUmaTargetedHistogramFlag)->Add(sample);
-}
-
-// Helper enum for reporting generateKeyRequest/addKey histograms.
-enum MediaKeyException {
-  kUnknownResultId,
-  kSuccess,
-  kKeySystemNotSupported,
-  kInvalidPlayerState,
-  kMaxMediaKeyException
-};
-
-static MediaKeyException MediaKeyExceptionForUMA(
-    WebMediaPlayer::MediaKeyException e) {
-  switch (e) {
-    case WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported:
-      return kKeySystemNotSupported;
-    case WebMediaPlayer::MediaKeyExceptionInvalidPlayerState:
-      return kInvalidPlayerState;
-    case WebMediaPlayer::MediaKeyExceptionNoError:
-      return kSuccess;
-    default:
-      return kUnknownResultId;
-  }
-}
-
-// Helper for converting |key_system| name and exception |e| to a pair of enum
-// values from above, for reporting to UMA.
-static void ReportMediaKeyExceptionToUMA(const std::string& method,
-                                         const std::string& key_system,
-                                         WebMediaPlayer::MediaKeyException e) {
-  MediaKeyException result_id = MediaKeyExceptionForUMA(e);
-  DCHECK_NE(result_id, kUnknownResultId) << e;
-  EmeUMAHistogramEnumeration(
-      key_system, method, result_id, kMaxMediaKeyException);
-}
-
-// Convert a WebString to ASCII, falling back on an empty string in the case
-// of a non-ASCII string.
-static std::string ToASCIIOrEmpty(const blink::WebString& string) {
-  return base::IsStringASCII(string) ? base::UTF16ToASCII(string)
-                                     : std::string();
-}
-
 WebMediaPlayer::MediaKeyException
 WebMediaPlayerImpl::generateKeyRequest(const WebString& key_system,
                                        const unsigned char* init_data,
                                        unsigned init_data_length) {
-  DVLOG(1) << "generateKeyRequest: " << base::string16(key_system) << ": "
-           << std::string(reinterpret_cast<const char*>(init_data),
-                          static_cast<size_t>(init_data_length));
-
-  std::string ascii_key_system =
-      GetUnprefixedKeySystemName(ToASCIIOrEmpty(key_system));
-
-  WebMediaPlayer::MediaKeyException e =
-      GenerateKeyRequestInternal(ascii_key_system, init_data, init_data_length);
-  ReportMediaKeyExceptionToUMA("generateKeyRequest", ascii_key_system, e);
-  return e;
-}
-
-// Guess the type of |init_data|. This is only used to handle some corner cases
-// so we keep it as simple as possible without breaking major use cases.
-static std::string GuessInitDataType(const unsigned char* init_data,
-                                     unsigned init_data_length) {
-  // Most WebM files use KeyId of 16 bytes. MP4 init data are always >16 bytes.
-  if (init_data_length == 16)
-    return "video/webm";
-
-  return "video/mp4";
-}
-
-WebMediaPlayer::MediaKeyException
-WebMediaPlayerImpl::GenerateKeyRequestInternal(const std::string& key_system,
-                                               const unsigned char* init_data,
-                                               unsigned init_data_length) {
   DCHECK(main_loop_->BelongsToCurrentThread());
 
-  if (!IsConcreteSupportedKeySystem(key_system))
-    return WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
-
-  // We do not support run-time switching between key systems for now.
-  if (current_key_system_.empty()) {
-    if (!proxy_decryptor_) {
-      proxy_decryptor_.reset(new ProxyDecryptor(
-#if defined(ENABLE_PEPPER_CDMS)
-          // Create() must be called synchronously as |frame_| may not be
-          // valid afterwards.
-          base::Bind(&PepperCdmWrapperImpl::Create, frame_),
-#elif defined(ENABLE_BROWSER_CDMS)
-#error Browser side CDM in WMPI for prefixed EME API not supported yet.
-#endif
-          BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnKeyAdded),
-          BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnKeyError),
-          BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnKeyMessage)));
-    }
-
-    GURL security_origin(frame_->document().securityOrigin().toString());
-    if (!proxy_decryptor_->InitializeCDM(key_system, security_origin))
-      return WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
-
-    if (proxy_decryptor_ && !decryptor_ready_cb_.is_null()) {
-      base::ResetAndReturn(&decryptor_ready_cb_)
-          .Run(proxy_decryptor_->GetDecryptor(), base::Bind(DoNothing));
-    }
-
-    current_key_system_ = key_system;
-  } else if (key_system != current_key_system_) {
-    return WebMediaPlayer::MediaKeyExceptionInvalidPlayerState;
-  }
-
-  std::string init_data_type = init_data_type_;
-  if (init_data_type.empty())
-    init_data_type = GuessInitDataType(init_data, init_data_length);
-
-  // TODO(xhwang): We assume all streams are from the same container (thus have
-  // the same "type") for now. In the future, the "type" should be passed down
-  // from the application.
-  if (!proxy_decryptor_->GenerateKeyRequest(
-           init_data_type, init_data, init_data_length)) {
-    current_key_system_.clear();
-    return WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
-  }
-
-  return WebMediaPlayer::MediaKeyExceptionNoError;
+  return encrypted_media_support_->GenerateKeyRequest(
+      frame_, key_system, init_data, init_data_length);
 }
 
 WebMediaPlayer::MediaKeyException WebMediaPlayerImpl::addKey(
@@ -825,90 +670,25 @@ WebMediaPlayer::MediaKeyException WebMediaPlayerImpl::addKey(
     const unsigned char* init_data,
     unsigned init_data_length,
     const WebString& session_id) {
-  DVLOG(1) << "addKey: " << base::string16(key_system) << ": "
-           << std::string(reinterpret_cast<const char*>(key),
-                          static_cast<size_t>(key_length)) << ", "
-           << std::string(reinterpret_cast<const char*>(init_data),
-                          static_cast<size_t>(init_data_length)) << " ["
-           << base::string16(session_id) << "]";
+  DCHECK(main_loop_->BelongsToCurrentThread());
 
-  std::string ascii_key_system =
-      GetUnprefixedKeySystemName(ToASCIIOrEmpty(key_system));
-  std::string ascii_session_id = ToASCIIOrEmpty(session_id);
-
-  WebMediaPlayer::MediaKeyException e = AddKeyInternal(ascii_key_system,
-                                                       key,
-                                                       key_length,
-                                                       init_data,
-                                                       init_data_length,
-                                                       ascii_session_id);
-  ReportMediaKeyExceptionToUMA("addKey", ascii_key_system, e);
-  return e;
-}
-
-WebMediaPlayer::MediaKeyException WebMediaPlayerImpl::AddKeyInternal(
-    const std::string& key_system,
-    const unsigned char* key,
-    unsigned key_length,
-    const unsigned char* init_data,
-    unsigned init_data_length,
-    const std::string& session_id) {
-  DCHECK(key);
-  DCHECK_GT(key_length, 0u);
-
-  if (!IsConcreteSupportedKeySystem(key_system))
-    return WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
-
-  if (current_key_system_.empty() || key_system != current_key_system_)
-    return WebMediaPlayer::MediaKeyExceptionInvalidPlayerState;
-
-  proxy_decryptor_->AddKey(
-      key, key_length, init_data, init_data_length, session_id);
-  return WebMediaPlayer::MediaKeyExceptionNoError;
+  return encrypted_media_support_->AddKey(
+      key_system, key, key_length, init_data, init_data_length, session_id);
 }
 
 WebMediaPlayer::MediaKeyException WebMediaPlayerImpl::cancelKeyRequest(
     const WebString& key_system,
     const WebString& session_id) {
-  DVLOG(1) << "cancelKeyRequest: " << base::string16(key_system) << ": "
-           << " [" << base::string16(session_id) << "]";
+  DCHECK(main_loop_->BelongsToCurrentThread());
 
-  std::string ascii_key_system =
-      GetUnprefixedKeySystemName(ToASCIIOrEmpty(key_system));
-  std::string ascii_session_id = ToASCIIOrEmpty(session_id);
-
-  WebMediaPlayer::MediaKeyException e =
-      CancelKeyRequestInternal(ascii_key_system, ascii_session_id);
-  ReportMediaKeyExceptionToUMA("cancelKeyRequest", ascii_key_system, e);
-  return e;
-}
-
-WebMediaPlayer::MediaKeyException WebMediaPlayerImpl::CancelKeyRequestInternal(
-    const std::string& key_system,
-    const std::string& session_id) {
-  if (!IsConcreteSupportedKeySystem(key_system))
-    return WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
-
-  if (current_key_system_.empty() || key_system != current_key_system_)
-    return WebMediaPlayer::MediaKeyExceptionInvalidPlayerState;
-
-  proxy_decryptor_->CancelKeyRequest(session_id);
-  return WebMediaPlayer::MediaKeyExceptionNoError;
+  return encrypted_media_support_->CancelKeyRequest(key_system, session_id);
 }
 
 void WebMediaPlayerImpl::setContentDecryptionModule(
     blink::WebContentDecryptionModule* cdm) {
   DCHECK(main_loop_->BelongsToCurrentThread());
 
-  // TODO(xhwang): Support setMediaKeys(0) if necessary: http://crbug.com/330324
-  if (!cdm)
-    return;
-
-  web_cdm_ = ToWebContentDecryptionModuleImpl(cdm);
-
-  if (web_cdm_ && !decryptor_ready_cb_.is_null())
-    base::ResetAndReturn(&decryptor_ready_cb_)
-        .Run(web_cdm_->GetDecryptor(), base::Bind(DoNothing));
+  encrypted_media_support_->SetContentDecryptionModule(cdm);
 }
 
 void WebMediaPlayerImpl::setContentDecryptionModule(
@@ -916,51 +696,14 @@ void WebMediaPlayerImpl::setContentDecryptionModule(
     blink::WebContentDecryptionModuleResult result) {
   DCHECK(main_loop_->BelongsToCurrentThread());
 
-  // TODO(xhwang): Support setMediaKeys(0) if necessary: http://crbug.com/330324
-  if (!cdm) {
-    result.completeWithError(
-        blink::WebContentDecryptionModuleExceptionNotSupportedError,
-        0,
-        "Null MediaKeys object is not supported.");
-    return;
-  }
-
-  web_cdm_ = ToWebContentDecryptionModuleImpl(cdm);
-
-  if (web_cdm_ && !decryptor_ready_cb_.is_null()) {
-    base::ResetAndReturn(&decryptor_ready_cb_)
-        .Run(web_cdm_->GetDecryptor(),
-             BIND_TO_RENDER_LOOP1(
-                 &WebMediaPlayerImpl::ContentDecryptionModuleAttached, result));
-  } else {
-    // No pipeline/decoder connected, so resolve the promise. When something
-    // is connected, setting the CDM will happen in SetDecryptorReadyCB().
-    ContentDecryptionModuleAttached(result, true);
-  }
+  encrypted_media_support_->SetContentDecryptionModule(cdm, result);
 }
 
 void WebMediaPlayerImpl::setContentDecryptionModuleSync(
     blink::WebContentDecryptionModule* cdm) {
   DCHECK(main_loop_->BelongsToCurrentThread());
 
-  // Used when loading media and no pipeline/decoder attached yet.
-  DCHECK(decryptor_ready_cb_.is_null());
-
-  web_cdm_ = ToWebContentDecryptionModuleImpl(cdm);
-}
-
-void WebMediaPlayerImpl::ContentDecryptionModuleAttached(
-    blink::WebContentDecryptionModuleResult result,
-    bool success) {
-  if (success) {
-    result.complete();
-    return;
-  }
-
-  result.completeWithError(
-      blink::WebContentDecryptionModuleExceptionNotSupportedError,
-      0,
-      "Unable to set MediaKeys object");
+  encrypted_media_support_->SetContentDecryptionModuleSync(cdm);
 }
 
 void WebMediaPlayerImpl::OnPipelineSeeked(bool time_changed,
@@ -1006,7 +749,7 @@ void WebMediaPlayerImpl::OnPipelineError(PipelineStatus error) {
   SetNetworkState(PipelineErrorToNetworkState(error));
 
   if (error == media::PIPELINE_ERROR_DECRYPT)
-    EmeUMAHistogramCounts(current_key_system_, "DecryptError", 1);
+    encrypted_media_support_->OnPipelineDecryptError();
 }
 
 void WebMediaPlayerImpl::OnPipelineMetadata(
@@ -1061,35 +804,6 @@ void WebMediaPlayerImpl::OnDemuxerOpened() {
       chunk_demuxer_, base::Bind(&LogMediaSourceError, media_log_)));
 }
 
-void WebMediaPlayerImpl::OnKeyAdded(const std::string& session_id) {
-  DCHECK(main_loop_->BelongsToCurrentThread());
-  EmeUMAHistogramCounts(current_key_system_, "KeyAdded", 1);
-  client_->keyAdded(
-      WebString::fromUTF8(GetPrefixedKeySystemName(current_key_system_)),
-      WebString::fromUTF8(session_id));
-}
-
-void WebMediaPlayerImpl::OnNeedKey(const std::string& type,
-                                   const std::vector<uint8>& init_data) {
-  DCHECK(main_loop_->BelongsToCurrentThread());
-
-  // Do not fire NeedKey event if encrypted media is not enabled.
-  if (!blink::WebRuntimeFeatures::isPrefixedEncryptedMediaEnabled() &&
-      !blink::WebRuntimeFeatures::isEncryptedMediaEnabled()) {
-    return;
-  }
-
-  UMA_HISTOGRAM_COUNTS(kMediaEme + std::string("NeedKey"), 1);
-
-  DCHECK(init_data_type_.empty() || type.empty() || type == init_data_type_);
-  if (init_data_type_.empty())
-    init_data_type_ = type;
-
-  const uint8* init_data_ptr = init_data.empty() ? NULL : &init_data[0];
-  client_->keyNeeded(
-      WebString::fromUTF8(type), init_data_ptr, init_data.size());
-}
-
 void WebMediaPlayerImpl::OnAddTextTrack(
     const media::TextTrackConfig& config,
     const media::AddTextTrackDoneCB& done_cb) {
@@ -1112,44 +826,6 @@ void WebMediaPlayerImpl::OnAddTextTrack(
       new TextTrackImpl(main_loop_, client_, web_inband_text_track.Pass()));
 
   done_cb.Run(text_track.Pass());
-}
-
-void WebMediaPlayerImpl::OnKeyError(const std::string& session_id,
-                                    media::MediaKeys::KeyError error_code,
-                                    uint32 system_code) {
-  DCHECK(main_loop_->BelongsToCurrentThread());
-
-  EmeUMAHistogramEnumeration(current_key_system_, "KeyError",
-                             error_code, media::MediaKeys::kMaxKeyError);
-
-  unsigned short short_system_code = 0;
-  if (system_code > std::numeric_limits<unsigned short>::max()) {
-    LOG(WARNING) << "system_code exceeds unsigned short limit.";
-    short_system_code = std::numeric_limits<unsigned short>::max();
-  } else {
-    short_system_code = static_cast<unsigned short>(system_code);
-  }
-
-  client_->keyError(
-      WebString::fromUTF8(GetPrefixedKeySystemName(current_key_system_)),
-      WebString::fromUTF8(session_id),
-      static_cast<blink::WebMediaPlayerClient::MediaKeyErrorCode>(error_code),
-      short_system_code);
-}
-
-void WebMediaPlayerImpl::OnKeyMessage(const std::string& session_id,
-                                      const std::vector<uint8>& message,
-                                      const GURL& destination_url) {
-  DCHECK(main_loop_->BelongsToCurrentThread());
-
-  DCHECK(destination_url.is_empty() || destination_url.is_valid());
-
-  client_->keyMessage(
-      WebString::fromUTF8(GetPrefixedKeySystemName(current_key_system_)),
-      WebString::fromUTF8(session_id),
-      message.empty() ? NULL : &message[0],
-      message.size(),
-      destination_url);
 }
 
 void WebMediaPlayerImpl::DataSourceInitialized(bool success) {
@@ -1178,7 +854,7 @@ void WebMediaPlayerImpl::NotifyDownloading(bool is_downloading) {
 // renderers.
 scoped_ptr<media::Renderer> WebMediaPlayerImpl::CreateRenderer() {
   media::SetDecryptorReadyCB set_decryptor_ready_cb =
-      BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::SetDecryptorReadyCB);
+      encrypted_media_support_->CreateSetDecryptorReadyCB();
 
   // Create our audio decoders and renderer.
   ScopedVector<media::AudioDecoder> audio_decoders;
@@ -1233,6 +909,8 @@ void WebMediaPlayerImpl::StartPipeline() {
                         (load_type_ == LoadTypeMediaSource));
 
   media::LogCB mse_log_cb;
+  media::Demuxer::NeedKeyCB need_key_cb =
+      encrypted_media_support_->CreateNeedKeyCB();
 
   // Figure out which demuxer to use.
   if (load_type_ != LoadTypeMediaSource) {
@@ -1241,7 +919,7 @@ void WebMediaPlayerImpl::StartPipeline() {
 
     demuxer_.reset(new media::FFmpegDemuxer(
         media_loop_, data_source_.get(),
-        BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnNeedKey),
+        need_key_cb,
         media_log_));
   } else {
     DCHECK(!chunk_demuxer_);
@@ -1251,7 +929,7 @@ void WebMediaPlayerImpl::StartPipeline() {
 
     chunk_demuxer_ = new media::ChunkDemuxer(
         BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnDemuxerOpened),
-        BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnNeedKey),
+        need_key_cb,
         mse_log_cb,
         true);
     demuxer_.reset(chunk_demuxer_);
@@ -1362,43 +1040,6 @@ void WebMediaPlayerImpl::FrameReady(
       base::Bind(&VideoFrameCompositor::UpdateCurrentFrame,
                  base::Unretained(compositor_),
                  frame));
-}
-
-void WebMediaPlayerImpl::SetDecryptorReadyCB(
-     const media::DecryptorReadyCB& decryptor_ready_cb) {
-  DCHECK(main_loop_->BelongsToCurrentThread());
-
-  // Cancels the previous decryptor request.
-  if (decryptor_ready_cb.is_null()) {
-    if (!decryptor_ready_cb_.is_null()) {
-      base::ResetAndReturn(&decryptor_ready_cb_)
-          .Run(NULL, base::Bind(DoNothing));
-    }
-    return;
-  }
-
-  // TODO(xhwang): Support multiple decryptor notification request (e.g. from
-  // video and audio). The current implementation is okay for the current
-  // media pipeline since we initialize audio and video decoders in sequence.
-  // But WebMediaPlayerImpl should not depend on media pipeline's implementation
-  // detail.
-  DCHECK(decryptor_ready_cb_.is_null());
-
-  // Mixed use of prefixed and unprefixed EME APIs is disallowed by Blink.
-  DCHECK(!proxy_decryptor_ || !web_cdm_);
-
-  if (proxy_decryptor_) {
-    decryptor_ready_cb.Run(proxy_decryptor_->GetDecryptor(),
-                           base::Bind(DoNothing));
-    return;
-  }
-
-  if (web_cdm_) {
-    decryptor_ready_cb.Run(web_cdm_->GetDecryptor(), base::Bind(DoNothing));
-    return;
-  }
-
-  decryptor_ready_cb_ = decryptor_ready_cb;
 }
 
 static void GetCurrentFrameAndSignal(

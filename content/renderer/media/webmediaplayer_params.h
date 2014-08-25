@@ -39,6 +39,6 @@ class WebMediaPlayerParams {
   DISALLOW_IMPLICIT_CONSTRUCTORS(WebMediaPlayerParams);
 };
 
-}  // namespace media
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_MEDIA_WEBMEDIAPLAYER_PARAMS_H_

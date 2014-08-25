@@ -14,10 +14,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread.h"
 #include "content/renderer/media/buffered_data_source_host_impl.h"
-#include "content/renderer/media/crypto/proxy_decryptor.h"
 #include "content/renderer/media/video_frame_compositor.h"
 #include "media/base/audio_renderer_sink.h"
-#include "media/base/decryptor.h"
 // TODO(xhwang): Remove when we remove prefixed EME implementation.
 #include "media/base/media_keys.h"
 #include "media/base/pipeline.h"
@@ -25,16 +23,13 @@
 #include "media/filters/skcanvas_video_renderer.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/public/platform/WebAudioSourceProvider.h"
+#include "third_party/WebKit/public/platform/WebContentDecryptionModuleResult.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayer.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayerClient.h"
 #include "url/gurl.h"
 
-class RenderAudioSourceProvider;
-
 namespace blink {
-class WebContentDecryptionModule;
-class WebContentDecryptionModuleResult;
 class WebLocalFrame;
 }
 
@@ -55,9 +50,9 @@ class MediaLog;
 
 namespace content {
 class BufferedDataSource;
+class EncryptedMediaPlayerSupport;
 class VideoFrameCompositor;
 class WebAudioSourceProviderImpl;
-class WebContentDecryptionModuleImpl;
 class WebMediaPlayerDelegate;
 class WebMediaPlayerParams;
 class WebTextTrackImpl;
@@ -177,15 +172,6 @@ class WebMediaPlayerImpl
   void OnPipelineMetadata(media::PipelineMetadata metadata);
   void OnPipelineBufferingStateChanged(media::BufferingState buffering_state);
   void OnDemuxerOpened();
-  void OnKeyAdded(const std::string& session_id);
-  void OnKeyError(const std::string& session_id,
-                  media::MediaKeys::KeyError error_code,
-                  uint32 system_code);
-  void OnKeyMessage(const std::string& session_id,
-                    const std::vector<uint8>& message,
-                    const GURL& destination_url);
-  void OnNeedKey(const std::string& type,
-                 const std::vector<uint8>& init_data);
   void OnAddTextTrack(const media::TextTrackConfig& config,
                       const media::AddTextTrackDoneCB& done_cb);
 
@@ -216,20 +202,6 @@ class WebMediaPlayerImpl
   // Lets V8 know that player uses extra resources not managed by V8.
   void IncrementExternallyAllocatedMemory();
 
-  // Actually do the work for generateKeyRequest/addKey so they can easily
-  // report results to UMA.
-  MediaKeyException GenerateKeyRequestInternal(const std::string& key_system,
-                                               const unsigned char* init_data,
-                                               unsigned init_data_length);
-  MediaKeyException AddKeyInternal(const std::string& key_system,
-                                   const unsigned char* key,
-                                   unsigned key_length,
-                                   const unsigned char* init_data,
-                                   unsigned init_data_length,
-                                   const std::string& session_id);
-  MediaKeyException CancelKeyRequestInternal(const std::string& key_system,
-                                             const std::string& session_id);
-
   // Gets the duration value reported by the pipeline.
   double GetPipelineDuration() const;
 
@@ -241,12 +213,6 @@ class WebMediaPlayerImpl
   // Called by VideoRendererImpl on its internal thread with the new frame to be
   // painted.
   void FrameReady(const scoped_refptr<media::VideoFrame>& frame);
-
-  // Requests that this object notifies when a decryptor is ready through the
-  // |decryptor_ready_cb| provided.
-  // If |decryptor_ready_cb| is null, the existing callback will be fired with
-  // NULL immediately and reset.
-  void SetDecryptorReadyCB(const media::DecryptorReadyCB& decryptor_ready_cb);
 
   // Called when the ContentDecryptionModule has been attached to the
   // pipeline/decoders.
@@ -274,10 +240,6 @@ class WebMediaPlayerImpl
   scoped_refptr<base::MessageLoopProxy> media_loop_;
   scoped_refptr<media::MediaLog> media_log_;
   media::Pipeline pipeline_;
-
-  // The currently selected key system. Empty string means that no key system
-  // has been selected.
-  std::string current_key_system_;
 
   // The LoadType passed in the |load_type| parameter of the load() call.
   LoadType load_type_;
@@ -342,10 +304,6 @@ class WebMediaPlayerImpl
 
   BufferedDataSourceHostImpl buffered_data_source_host_;
 
-  // Temporary for EME v0.1. In the future the init data type should be passed
-  // through GenerateKeyRequest() directly from WebKit.
-  std::string init_data_type_;
-
   // Video rendering members.
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
   VideoFrameCompositor* compositor_;  // Deleted on |compositor_task_runner_|.
@@ -358,14 +316,7 @@ class WebMediaPlayerImpl
   // Text track objects get a unique index value when they're created.
   int text_track_index_;
 
-  // Manages decryption keys and decrypts encrypted frames.
-  scoped_ptr<ProxyDecryptor> proxy_decryptor_;
-
-  // Non-owned pointer to the CDM. Updated via calls to
-  // setContentDecryptionModule().
-  WebContentDecryptionModuleImpl* web_cdm_;
-
-  media::DecryptorReadyCB decryptor_ready_cb_;
+  scoped_ptr<EncryptedMediaPlayerSupport> encrypted_media_support_;
 
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerImpl);
 };
