@@ -373,6 +373,7 @@
 
             # Dependencies of search_engines
             'components.gyp:search_engines',
+            'components.gyp:search_engines_test_support',
 
             # Dependencies of search_provider_logos
             'components.gyp:search_provider_logos',

@@ -93,6 +93,8 @@
       'sources': [
         'search_engines/default_search_pref_test_util.cc',
         'search_engines/default_search_pref_test_util.h',
+        'search_engines/testing_search_terms_data.cc',
+        'search_engines/testing_search_terms_data.h',
       ],
     },
   ],

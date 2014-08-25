@@ -12,89 +12,10 @@
 #include "components/search_engines/search_engines_switches.h"
 #include "components/search_engines/search_terms_data.h"
 #include "components/search_engines/template_url.h"
+#include "components/search_engines/testing_search_terms_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::ASCIIToUTF16;
-
-// TestSearchTermsData --------------------------------------------------------
-
-// Simple implementation of SearchTermsData.
-class TestSearchTermsData : public SearchTermsData {
- public:
-  explicit TestSearchTermsData(const std::string& google_base_url);
-
-  virtual std::string GoogleBaseURLValue() const OVERRIDE;
-  virtual base::string16 GetRlzParameterValue(
-      bool from_app_list) const OVERRIDE;
-  virtual std::string GetSearchClient() const OVERRIDE;
-  virtual std::string GoogleImageSearchSource() const OVERRIDE;
-  virtual bool EnableAnswersInSuggest() const OVERRIDE;
-  virtual bool IsShowingSearchTermsOnSearchResultsPages() const OVERRIDE;
-  virtual int OmniboxStartMargin() const OVERRIDE;
-
-  void set_google_base_url(const std::string& google_base_url) {
-    google_base_url_ = google_base_url;
-  }
-  void set_search_client(const std::string& search_client) {
-    search_client_ = search_client;
-  }
-  void set_enable_answers_in_suggest(bool enable_answers_in_suggest) {
-    enable_answers_in_suggest_ = enable_answers_in_suggest;
-  }
-  void set_is_showing_search_terms_on_search_results_pages(bool value) {
-    is_showing_search_terms_on_search_results_pages_ = value;
-  }
-  void set_omnibox_start_margin(int omnibox_start_margin) {
-    omnibox_start_margin_ = omnibox_start_margin;
-  }
-
- private:
-  std::string google_base_url_;
-  std::string search_client_;
-  bool enable_answers_in_suggest_;
-  bool is_showing_search_terms_on_search_results_pages_;
-  int omnibox_start_margin_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestSearchTermsData);
-};
-
-TestSearchTermsData::TestSearchTermsData(const std::string& google_base_url)
-    : google_base_url_(google_base_url),
-      enable_answers_in_suggest_(false),
-      is_showing_search_terms_on_search_results_pages_(false) {
-}
-
-std::string TestSearchTermsData::GoogleBaseURLValue() const {
-  return google_base_url_;
-}
-
-base::string16 TestSearchTermsData::GetRlzParameterValue(
-    bool from_app_list) const {
-  return ASCIIToUTF16(
-      from_app_list ? "rlz_parameter_from_app_list" : "rlz_parameter");
-}
-
-std::string TestSearchTermsData::GetSearchClient() const {
-  return search_client_;
-}
-
-std::string TestSearchTermsData::GoogleImageSearchSource() const {
-  return "google_image_search_source";
-}
-
-bool TestSearchTermsData::EnableAnswersInSuggest() const {
-  return enable_answers_in_suggest_;
-}
-
-bool TestSearchTermsData::IsShowingSearchTermsOnSearchResultsPages() const {
-  return is_showing_search_terms_on_search_results_pages_;
-}
-
-int TestSearchTermsData::OmniboxStartMargin() const {
-  return omnibox_start_margin_;
-}
-
-// TemplateURLTest ------------------------------------------------------------
 
 class TemplateURLTest : public testing::Test {
  public:
@@ -102,18 +23,15 @@ class TemplateURLTest : public testing::Test {
   void CheckSuggestBaseURL(const std::string& base_url,
                            const std::string& base_suggest_url) const;
 
-  TestSearchTermsData search_terms_data_;
+  TestingSearchTermsData search_terms_data_;
 };
 
 void TemplateURLTest::CheckSuggestBaseURL(
     const std::string& base_url,
     const std::string& base_suggest_url) const {
-  TestSearchTermsData search_terms_data(base_url);
+  TestingSearchTermsData search_terms_data(base_url);
   EXPECT_EQ(base_suggest_url, search_terms_data.GoogleBaseSuggestURLValue());
 }
-
-
-// Actual tests ---------------------------------------------------------------
 
 TEST_F(TemplateURLTest, Defaults) {
   TemplateURLData data;
@@ -258,7 +176,7 @@ TEST_F(TemplateURLTest, URLRefTestImageURLWithPOST) {
   search_args.image_original_size = gfx::Size(10, 10);
   // Replacement operation with no post_data buffer should still return
   // the parsed URL.
-  TestSearchTermsData search_terms_data("http://X");
+  TestingSearchTermsData search_terms_data("http://X");
   GURL result(url.image_url_ref().ReplaceSearchTerms(
       search_args, search_terms_data));
   ASSERT_TRUE(result.is_valid());
@@ -383,7 +301,7 @@ TEST_F(TemplateURLTest, URLRefTestSearchTermsUsingTermsData) {
       "http://example.com/complete/" }
   };
 
-  TestSearchTermsData search_terms_data("http://example.com/e/");
+  TestingSearchTermsData search_terms_data("http://example.com/e/");
   TemplateURLData data;
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(search_term_cases); ++i) {
     const SearchTermsCase& value = search_term_cases[i];

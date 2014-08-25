@@ -37,30 +37,6 @@ using ::testing::StrictMock;
 
 namespace {
 
-// TestSearchTermsData --------------------------------------------------------
-
-// Simple implementation of SearchTermsData.
-class TestSearchTermsData : public SearchTermsData {
- public:
-  explicit TestSearchTermsData(const char* google_base_url);
-
-  virtual std::string GoogleBaseURLValue() const OVERRIDE;
-
- private:
-  std::string google_base_url_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestSearchTermsData);
-};
-
-TestSearchTermsData::TestSearchTermsData(const char* google_base_url)
-    : google_base_url_(google_base_url)  {
-}
-
-std::string TestSearchTermsData::GoogleBaseURLValue() const {
-  return google_base_url_;
-}
-
-
 // QueryHistoryCallbackImpl ---------------------------------------------------
 
 struct QueryHistoryCallbackImpl {

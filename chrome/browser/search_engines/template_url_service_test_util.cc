@@ -9,7 +9,6 @@
 #include "base/strings/string_split.h"
 #include "base/threading/thread.h"
 #include "chrome/browser/search_engines/chrome_template_url_service_client.h"
-#include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
 #include "chrome/browser/webdata/web_data_service_factory.h"
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/testing_profile.h"
@@ -17,20 +16,18 @@
 #include "components/search_engines/default_search_manager.h"
 #include "components/search_engines/default_search_pref_test_util.h"
 #include "components/search_engines/template_url_service.h"
+#include "components/search_engines/testing_search_terms_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/google/google_brand_chromeos.h"
-#endif
 
 // Trivial subclass of TemplateURLService that records the last invocation of
 // SetKeywordSearchTermsForURL.
 class TestingTemplateURLService : public TemplateURLService {
  public:
-  explicit TestingTemplateURLService(Profile* profile)
+  TestingTemplateURLService(Profile* profile,
+                            scoped_ptr<SearchTermsData> search_terms_data)
       : TemplateURLService(
             profile->GetPrefs(),
-            scoped_ptr<SearchTermsData>(new UIThreadSearchTermsData(profile)),
+            search_terms_data.Pass(),
             WebDataServiceFactory::GetKeywordWebDataForProfile(
                 profile, Profile::EXPLICIT_ACCESS),
             scoped_ptr<TemplateURLServiceClient>(
@@ -61,26 +58,23 @@ class TestingTemplateURLService : public TemplateURLService {
 
 TemplateURLServiceTestUtil::TemplateURLServiceTestUtil()
     : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
-      changed_count_(0) {
+      changed_count_(0),
+      search_terms_data_(NULL) {
   // Make unique temp directory.
   EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
   profile_.reset(new TestingProfile(temp_dir_.path()));
 
   profile()->CreateWebDataService();
 
-  model_.reset(new TestingTemplateURLService(profile()));
+  search_terms_data_ = new TestingSearchTermsData("http://www.google.com/");
+  model_.reset(new TestingTemplateURLService(
+      profile(), scoped_ptr<SearchTermsData>(search_terms_data_)));
   model_->AddObserver(this);
-
-#if defined(OS_CHROMEOS)
-  google_brand::chromeos::ClearBrandForCurrentSession();
-#endif
 }
 
 TemplateURLServiceTestUtil::~TemplateURLServiceTestUtil() {
   ClearModel();
   profile_.reset();
-
-  UIThreadSearchTermsData::SetGoogleBaseURL(std::string());
 
   // Flush the message loop to make application verifiers happy.
   base::RunLoop().RunUntilIdle();
@@ -120,12 +114,15 @@ void TemplateURLServiceTestUtil::ChangeModelToLoadState() {
 void TemplateURLServiceTestUtil::ClearModel() {
   model_->Shutdown();
   model_.reset();
+  search_terms_data_ = NULL;
 }
 
 void TemplateURLServiceTestUtil::ResetModel(bool verify_load) {
   if (model_)
     ClearModel();
-  model_.reset(new TestingTemplateURLService(profile()));
+  search_terms_data_ = new TestingSearchTermsData("http://www.google.com/");
+  model_.reset(new TestingTemplateURLService(
+      profile(), scoped_ptr<SearchTermsData>(search_terms_data_)));
   model()->AddObserver(this);
   changed_count_ = 0;
   if (verify_load)
@@ -138,8 +135,7 @@ base::string16 TemplateURLServiceTestUtil::GetAndClearSearchTerm() {
 
 void TemplateURLServiceTestUtil::SetGoogleBaseURL(const GURL& base_url) {
   DCHECK(base_url.is_valid());
-  UIThreadSearchTermsData data(profile());
-  UIThreadSearchTermsData::SetGoogleBaseURL(base_url.spec());
+  search_terms_data_->set_google_base_url(base_url.spec());
   model_->GoogleBaseURLChanged();
 }
 

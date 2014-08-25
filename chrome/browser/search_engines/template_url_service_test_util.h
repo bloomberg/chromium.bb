@@ -17,6 +17,7 @@
 class GURL;
 class TemplateURLService;
 class TestingProfile;
+class TestingSearchTermsData;
 class TestingTemplateURLService;
 
 class TemplateURLServiceTestUtil : public TemplateURLServiceObserver {
@@ -83,6 +84,7 @@ class TemplateURLServiceTestUtil : public TemplateURLServiceObserver {
   scoped_ptr<TestingProfile> profile_;
   base::ScopedTempDir temp_dir_;
   int changed_count_;
+  TestingSearchTermsData* search_terms_data_;
   scoped_ptr<TestingTemplateURLService> model_;
 
   DISALLOW_COPY_AND_ASSIGN(TemplateURLServiceTestUtil);
