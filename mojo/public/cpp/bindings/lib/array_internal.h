@@ -216,7 +216,11 @@ struct ArraySerializationHelper<Handle, true> {
     for (uint32_t i = 0; i < header->num_elements; ++i) {
       if (!element_is_nullable &&
           elements[i].value() == kEncodedInvalidHandleValue) {
-        ReportValidationError(VALIDATION_ERROR_UNEXPECTED_INVALID_HANDLE);
+        ReportValidationError(
+            VALIDATION_ERROR_UNEXPECTED_INVALID_HANDLE,
+            MakeMessageWithArrayIndex(
+                "invalid handle in array expecting valid handles",
+                header->num_elements, i).c_str());
         return false;
       }
       if (!bounds_checker->ClaimHandle(elements[i])) {
@@ -280,7 +284,11 @@ struct ArraySerializationHelper<P*, false> {
                                BoundsChecker* bounds_checker) {
     for (uint32_t i = 0; i < header->num_elements; ++i) {
       if (!element_is_nullable && !elements[i].offset) {
-        ReportValidationError(VALIDATION_ERROR_UNEXPECTED_NULL_POINTER);
+        ReportValidationError(
+            VALIDATION_ERROR_UNEXPECTED_NULL_POINTER,
+            MakeMessageWithArrayIndex(
+                "null in array expecting valid pointers",
+                header->num_elements, i).c_str());
         return false;
       }
       if (!ValidateEncodedPointer(&elements[i].offset)) {
@@ -356,7 +364,11 @@ class Array_Data {
     }
     if (Params::expected_num_elements != 0 &&
         header->num_elements != Params::expected_num_elements) {
-      ReportValidationError(VALIDATION_ERROR_UNEXPECTED_ARRAY_HEADER);
+      ReportValidationError(
+          VALIDATION_ERROR_UNEXPECTED_ARRAY_HEADER,
+          MakeMessageWithExpectedArraySize(
+              "fixed-size array has wrong number of elements",
+              header->num_elements, Params::expected_num_elements).c_str());
       return false;
     }
     if (!bounds_checker->ClaimMemory(data, header->num_bytes)) {

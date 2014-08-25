@@ -19,7 +19,8 @@
 {%-       if not kind|is_nullable_kind %}
   if (!object->{{name}}.offset) {
     ReportValidationError(
-        mojo::internal::VALIDATION_ERROR_UNEXPECTED_NULL_POINTER);
+        mojo::internal::VALIDATION_ERROR_UNEXPECTED_NULL_POINTER,
+        "null {{name}} field in {{struct.name}} struct");
     return false;
   }
 {%-       endif %}
@@ -43,7 +44,8 @@
 {%-       if not kind|is_nullable_kind %}
   if (object->{{name}}.value() == mojo::internal::kEncodedInvalidHandleValue) {
     ReportValidationError(
-        mojo::internal::VALIDATION_ERROR_UNEXPECTED_INVALID_HANDLE);
+        mojo::internal::VALIDATION_ERROR_UNEXPECTED_INVALID_HANDLE,
+        "invalid {{name}} field in {{struct.name}} struct");
     return false;
   }
 {%-       endif %}

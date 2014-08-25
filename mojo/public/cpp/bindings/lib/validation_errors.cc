@@ -44,11 +44,15 @@ const char* ValidationErrorToString(ValidationError error) {
   return "Unknown error";
 }
 
-void ReportValidationError(ValidationError error) {
-  if (g_validation_error_observer)
+void ReportValidationError(ValidationError error, const char* description) {
+  if (g_validation_error_observer) {
     g_validation_error_observer->set_last_error(error);
-  else
+  } else if (description) {
+    MOJO_LOG(ERROR) << "Invalid message: " << ValidationErrorToString(error)
+                    << " (" << description << ")";
+  } else {
     MOJO_LOG(ERROR) << "Invalid message: " << ValidationErrorToString(error);
+  }
 }
 
 ValidationErrorObserverForTesting::ValidationErrorObserverForTesting()
