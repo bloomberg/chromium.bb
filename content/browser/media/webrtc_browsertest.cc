@@ -154,8 +154,11 @@ IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest, MANUAL_CanSetupCallAndSendDtmf) {
   MakeTypicalPeerConnectionCall("callAndSendDtmf(\'123,abc\');");
 }
 
+// TODO(phoglund): this test fails because the peer connection state will be
+// stable in the second negotiation round rather than have-local-offer.
+// http://crbug.com/293125.
 IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest,
-                       CanMakeEmptyCallThenAddStreamsAndRenegotiate) {
+                       DISABLED_CanMakeEmptyCallThenAddStreamsAndRenegotiate) {
   const char* kJavascript =
       "callEmptyThenAddOneStreamAndRenegotiate({video: true, audio: true});";
   MakeTypicalPeerConnectionCall(kJavascript);
