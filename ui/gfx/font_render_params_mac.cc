@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,19 +11,15 @@ namespace gfx {
 
 namespace {
 
-// Returns the system's default settings.
+// Returns params that match SkiaTextRenderer's default render settings.
 FontRenderParams LoadDefaults() {
   FontRenderParams params;
   params.antialiasing = true;
-  params.autohinter = true;
+  params.autohinter = false;
   params.use_bitmaps = true;
-  params.subpixel_rendering = FontRenderParams::SUBPIXEL_RENDERING_NONE;
-
-  // Use subpixel text positioning to keep consistent character spacing when
-  // the page is scaled by a fractional factor.
+  params.subpixel_rendering = FontRenderParams::SUBPIXEL_RENDERING_RGB;
   params.subpixel_positioning = true;
-  // Slight hinting renders much better than normal hinting on Android.
-  params.hinting = FontRenderParams::HINTING_SLIGHT;
+  params.hinting = FontRenderParams::HINTING_MEDIUM;
 
   return params;
 }
@@ -32,7 +28,7 @@ FontRenderParams LoadDefaults() {
 
 FontRenderParams GetFontRenderParams(const FontRenderParamsQuery& query,
                                      std::string* family_out) {
-  // Customized font rendering settings are not supported, only defaults.
+  // TODO: Query the OS for font render settings instead of returning defaults.
   if (!query.is_empty() || family_out)
     NOTIMPLEMENTED();
   CR_DEFINE_STATIC_LOCAL(const gfx::FontRenderParams, params, (LoadDefaults()));

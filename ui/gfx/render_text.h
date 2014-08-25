@@ -178,6 +178,11 @@ struct Line {
 skia::RefPtr<SkTypeface> CreateSkiaTypeface(const std::string& family,
                                             int style);
 
+// Applies the given FontRenderParams to a Skia |paint|.
+void ApplyRenderParams(const FontRenderParams& params,
+                       bool background_is_transparent,
+                       SkPaint* paint);
+
 }  // namespace internal
 
 // RenderText represents an abstract model of styled text and its corresponding

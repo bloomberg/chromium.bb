@@ -213,12 +213,7 @@ void SkiaTextRenderer::SetDrawLooper(SkDrawLooper* draw_looper) {
 
 void SkiaTextRenderer::SetFontRenderParams(const FontRenderParams& params,
                                            bool background_is_transparent) {
-  paint_.setAntiAlias(params.antialiasing);
-  paint_.setLCDRenderText(!background_is_transparent &&
-      params.subpixel_rendering != FontRenderParams::SUBPIXEL_RENDERING_NONE);
-  paint_.setSubpixelText(params.subpixel_positioning);
-  paint_.setAutohinted(params.autohinter);
-  paint_.setHinting(FontRenderParamsHintingToSkPaintHinting(params.hinting));
+  ApplyRenderParams(params, background_is_transparent, &paint_);
 }
 
 void SkiaTextRenderer::SetTypeface(SkTypeface* typeface) {
@@ -414,6 +409,17 @@ skia::RefPtr<SkTypeface> CreateSkiaTypeface(const std::string& family,
                                             int style) {
   SkTypeface::Style skia_style = ConvertFontStyleToSkiaTypefaceStyle(style);
   return skia::AdoptRef(SkTypeface::CreateFromName(family.c_str(), skia_style));
+}
+
+void ApplyRenderParams(const FontRenderParams& params,
+                       bool background_is_transparent,
+                       SkPaint* paint) {
+  paint->setAntiAlias(params.antialiasing);
+  paint->setLCDRenderText(!background_is_transparent &&
+      params.subpixel_rendering != FontRenderParams::SUBPIXEL_RENDERING_NONE);
+  paint->setSubpixelText(params.subpixel_positioning);
+  paint->setAutohinted(params.autohinter);
+  paint->setHinting(FontRenderParamsHintingToSkPaintHinting(params.hinting));
 }
 
 }  // namespace internal

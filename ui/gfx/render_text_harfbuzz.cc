@@ -269,7 +269,10 @@ class HarfBuzzFace {
 };
 
 // Creates a HarfBuzz font from the given Skia face and text size.
-hb_font_t* CreateHarfBuzzFont(SkTypeface* skia_face, int text_size) {
+hb_font_t* CreateHarfBuzzFont(SkTypeface* skia_face,
+                              int text_size,
+                              const FontRenderParams& params,
+                              bool background_is_transparent) {
   typedef std::pair<HarfBuzzFace, GlyphCache> FaceCache;
 
   // TODO(ckocagil): This shouldn't grow indefinitely. Maybe use base::MRUCache?
@@ -285,6 +288,9 @@ hb_font_t* CreateHarfBuzzFont(SkTypeface* skia_face, int text_size) {
   FontData* hb_font_data = new FontData(&face_cache->second);
   hb_font_data->paint_.setTypeface(skia_face);
   hb_font_data->paint_.setTextSize(text_size);
+  // TODO(ckocagil): Do we need to update these params later?
+  internal::ApplyRenderParams(params, background_is_transparent,
+                              &hb_font_data->paint_);
   hb_font_set_funcs(harfbuzz_font, g_font_funcs.Get().get(), hb_font_data,
                     DeleteByType<FontData>);
   hb_font_make_immutable(harfbuzz_font);
@@ -871,13 +877,6 @@ void RenderTextHarfBuzz::DrawVisualText(Canvas* canvas) {
   internal::SkiaTextRenderer renderer(canvas);
   ApplyFadeEffects(&renderer);
   ApplyTextShadows(&renderer);
-
-#if defined(OS_WIN) || defined(OS_LINUX)
-  renderer.SetFontRenderParams(
-      font_list().GetPrimaryFont().GetFontRenderParams(),
-      background_is_transparent());
-#endif
-
   ApplyCompositionAndSelectionStyles();
 
   int current_x = 0;
@@ -886,6 +885,8 @@ void RenderTextHarfBuzz::DrawVisualText(Canvas* canvas) {
     const internal::TextRunHarfBuzz& run = *runs_[visual_to_logical_[i]];
     renderer.SetTypeface(run.skia_face.get());
     renderer.SetTextSize(run.font_size);
+    renderer.SetFontRenderParams(run.render_params,
+                                 background_is_transparent());
 
     Vector2d origin = line_offset + Vector2d(current_x, lines()[0].baseline);
     scoped_ptr<SkPoint[]> positions(new SkPoint[run.glyph_count]);
@@ -1113,8 +1114,13 @@ bool RenderTextHarfBuzz::ShapeRunWithFont(internal::TextRunHarfBuzz* run,
   if (skia_face == NULL)
     return false;
   run->skia_face = skia_face;
+  FontRenderParamsQuery query(false);
+  query.families.push_back(font_family);
+  query.pixel_size = run->font_size;
+  query.style = run->font_style;
+  run->render_params = GetFontRenderParams(query, NULL);
   hb_font_t* harfbuzz_font = CreateHarfBuzzFont(run->skia_face.get(),
-                                                run->font_size);
+      run->font_size, run->render_params, background_is_transparent());
 
   // Create a HarfBuzz buffer and add the string to be shaped. The HarfBuzz
   // buffer holds our text, run information to be used by the shaping engine,
@@ -1148,6 +1154,11 @@ bool RenderTextHarfBuzz::ShapeRunWithFont(internal::TextRunHarfBuzz* run,
     const int y_offset = SkFixedToScalar(hb_positions[i].y_offset);
     run->positions[i].set(run->width + x_offset, -y_offset);
     run->width += SkFixedToScalar(hb_positions[i].x_advance);
+#if defined(OS_LINUX)
+    // Match Pango's glyph rounding logic on Linux.
+    if (!run->render_params.subpixel_positioning)
+      run->width = std::floor(run->width + 0.5f);
+#endif
   }
 
   hb_buffer_destroy(buffer);
