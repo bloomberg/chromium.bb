@@ -9,9 +9,13 @@
 #include "base/compiler_specific.h"
 #include "base/mac/foundation_util.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_window.h"
+#import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #include "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
+#include "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
+#include "chrome/browser/ui/cocoa/location_bar/manage_passwords_decoration.h"
 #import "chrome/browser/ui/cocoa/passwords/manage_passwords_bubble_controller.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller_mock.h"
@@ -43,12 +47,18 @@ class ManagePasswordsBubbleCocoaTest : public CocoaProfileTest {
   content::WebContents* webContents() { return webContents_; }
 
   void ShowBubble() {
+    NSWindow* nativeWindow = browser()->window()->GetNativeWindow();
+    BrowserWindowController* bwc =
+        [BrowserWindowController browserWindowControllerForWindow:nativeWindow];
+    ManagePasswordsIcon* icon =
+        [bwc locationBarBridge]->manage_passwords_decoration()->icon();
+
     ManagePasswordsBubbleCocoa::ShowBubble(
-        webContents(), ManagePasswordsBubble::DisplayReason::AUTOMATIC);
+        webContents(), ManagePasswordsBubble::DisplayReason::AUTOMATIC, icon);
     // Disable animations so that closing happens immediately.
-    InfoBubbleWindow* window = base::mac::ObjCCast<InfoBubbleWindow>(
+    InfoBubbleWindow* bubbleWindow = base::mac::ObjCCast<InfoBubbleWindow>(
         [ManagePasswordsBubbleCocoa::instance()->controller_ window]);
-    [window setAllowedAnimations:info_bubble::kAnimateNone];
+    [bubbleWindow setAllowedAnimations:info_bubble::kAnimateNone];
   }
 
   void CloseBubble() {

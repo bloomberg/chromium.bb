@@ -4,16 +4,35 @@
 
 #include "chrome/browser/ui/views/passwords/manage_passwords_icon_view.h"
 
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/passwords/manage_passwords_icon.h"
+#include "chrome/browser/ui/passwords/manage_passwords_test.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller_mock.h"
-#include "chrome/browser/ui/views/passwords/manage_passwords_view_test.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/passwords/manage_passwords_icon_view.h"
+#include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "components/password_manager/core/common/password_manager_ui.h"
 #include "content/public/test/test_utils.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-typedef ManagePasswordsViewTest ManagePasswordsIconViewTest;
+class ManagePasswordsIconViewTest : public ManagePasswordsTest {
+ public:
+  ManagePasswordsIconViewTest() {}
+  virtual ~ManagePasswordsIconViewTest() {}
+
+  virtual ManagePasswordsIconView* view() OVERRIDE {
+    BrowserView* browser_view = static_cast<BrowserView*>(browser()->window());
+    return static_cast<ManagePasswordsIconView*>(
+        browser_view->GetToolbarView()
+            ->location_bar()
+            ->manage_passwords_icon_view());
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ManagePasswordsIconViewTest);
+};
 
 IN_PROC_BROWSER_TEST_F(ManagePasswordsIconViewTest, DefaultStateIsInactive) {
   EXPECT_EQ(password_manager::ui::INACTIVE_STATE, view()->state());

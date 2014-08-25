@@ -166,6 +166,9 @@ class LocationBarViewMac : public LocationBar,
 
   AutocompleteTextField* GetAutocompleteTextField() { return field_; }
 
+  ManagePasswordsDecoration* manage_passwords_decoration() {
+    return manage_passwords_decoration_.get();
+  }
 
   // content::NotificationObserver:
   virtual void Observe(int type,

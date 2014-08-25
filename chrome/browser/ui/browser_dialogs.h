@@ -114,12 +114,8 @@ void ShowSignedCertificateTimestampsViewer(
     content::WebContents* web_contents,
     const content::SignedCertificateTimestampIDStatusList& sct_ids_list);
 
-#if !defined(OS_MACOSX)
 // Shows the ManagePasswords bubble for a particular |web_contents|.
-//
-// TODO(mkwst): Implement this feature on Mac: http://crbug.com/261628
 void ShowManagePasswordsBubble(content::WebContents* web_contents);
-#endif
 
 }  // namespace chrome
 
