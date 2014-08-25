@@ -1,4 +1,3 @@
-CONSOLE ERROR: The specified value '0123456789XYZ' does not conform to the required format, 'yyyy-MM-dd'.
 Test setRangeText() method is not available in date inputs.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

@@ -586,6 +586,14 @@ String InputType::sanitizeValue(const String& proposedValue) const
     return proposedValue;
 }
 
+void InputType::warnIfValueIsInvalidAndElementIsVisible(const String& value) const
+{
+    // Don't warn if the value is set in Modernizr.
+    RenderStyle* style = element().renderStyle();
+    if (style && style->visibility() != HIDDEN)
+        warnIfValueIsInvalid(value);
+}
+
 void InputType::warnIfValueIsInvalid(const String&) const
 {
 }

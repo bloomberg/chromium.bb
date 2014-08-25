@@ -10,6 +10,7 @@ var parent = document.createElement('div');
 document.body.appendChild(parent);
 parent.innerHTML = '<input type=date id=date maxlength=1 pattern=x>';
 var input = document.getElementById('date');
+input.offsetLeft;
 
 function testIt(value, min, max, step)
 {

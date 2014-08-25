@@ -97,7 +97,7 @@ bool DateInputType::isDateField() const
 void DateInputType::warnIfValueIsInvalid(const String& value) const
 {
     if (value != element().sanitizeValue(value)) {
-        element().document().addConsoleMessage(ConsoleMessage::create(RenderingMessageSource, ErrorMessageLevel,
+        element().document().addConsoleMessage(ConsoleMessage::create(RenderingMessageSource, WarningMessageLevel,
             String::format("The specified value '%s' does not conform to the required format, 'yyyy-MM-dd'.", value.utf8().data())));
     }
 }

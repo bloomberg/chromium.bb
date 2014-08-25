@@ -1,5 +1,4 @@
-CONSOLE ERROR: line 20: The specified value 'text' does not conform to the required format, 'yyyy-MM-dd'.
-CONSOLE ERROR: line 20: The specified value 'text' does not conform to the required format, 'yyyy-MM-dd'.
+CONSOLE WARNING: line 20: The specified value 'text' does not conform to the required format, 'yyyy-MM-dd'.
 This test ensures the correctness of Spatial Navigation (SNav) algorithm over date input element (having shadow DOM).
 * Navigation steps:
 1) Loads this page, focus goes to "start" automatically.

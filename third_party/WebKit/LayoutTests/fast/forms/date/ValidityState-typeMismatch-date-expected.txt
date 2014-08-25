@@ -1,37 +1,3 @@
-CONSOLE ERROR: The specified value ' 2009-09-07 ' does not conform to the required format, 'yyyy-MM-dd'.
-CONSOLE ERROR: The specified value 'a' does not conform to the required format, 'yyyy-MM-dd'.
-CONSOLE ERROR: The specified value '-1-09-07' does not conform to the required format, 'yyyy-MM-dd'.
-CONSOLE ERROR: The specified value '0000-12-31' does not conform to the required format, 'yyyy-MM-dd'.
-CONSOLE ERROR: The specified value '0000-01-01' does not conform to the required format, 'yyyy-MM-dd'.
-CONSOLE ERROR: The specified value '275760-09-14' does not conform to the required format, 'yyyy-MM-dd'.
-CONSOLE ERROR: The specified value '2147483648-12-31' does not conform to the required format, 'yyyy-MM-dd'.
-CONSOLE ERROR: The specified value '2009/09/07' does not conform to the required format, 'yyyy-MM-dd'.
-CONSOLE ERROR: The specified value '20090907' does not conform to the required format, 'yyyy-MM-dd'.
-CONSOLE ERROR: The specified value '2009--2-07' does not conform to the required format, 'yyyy-MM-dd'.
-CONSOLE ERROR: The specified value '2009-00-07' does not conform to the required format, 'yyyy-MM-dd'.
-CONSOLE ERROR: The specified value '2009-13-07' does not conform to the required format, 'yyyy-MM-dd'.
-CONSOLE ERROR: The specified value '2009-xx-30' does not conform to the required format, 'yyyy-MM-dd'.
-CONSOLE ERROR: The specified value '2009-01-32' does not conform to the required format, 'yyyy-MM-dd'.
-CONSOLE ERROR: The specified value '2009-02-29' does not conform to the required format, 'yyyy-MM-dd'.
-CONSOLE ERROR: The specified value '2009-03-32' does not conform to the required format, 'yyyy-MM-dd'.
-CONSOLE ERROR: The specified value '2009-04-31' does not conform to the required format, 'yyyy-MM-dd'.
-CONSOLE ERROR: The specified value '2009-05-32' does not conform to the required format, 'yyyy-MM-dd'.
-CONSOLE ERROR: The specified value '2009-06-31' does not conform to the required format, 'yyyy-MM-dd'.
-CONSOLE ERROR: The specified value '2009-07-32' does not conform to the required format, 'yyyy-MM-dd'.
-CONSOLE ERROR: The specified value '2009-08-32' does not conform to the required format, 'yyyy-MM-dd'.
-CONSOLE ERROR: The specified value '2009-09-31' does not conform to the required format, 'yyyy-MM-dd'.
-CONSOLE ERROR: The specified value '2009-10-32' does not conform to the required format, 'yyyy-MM-dd'.
-CONSOLE ERROR: The specified value '2009-11-31' does not conform to the required format, 'yyyy-MM-dd'.
-CONSOLE ERROR: The specified value '2009-12-32' does not conform to the required format, 'yyyy-MM-dd'.
-CONSOLE ERROR: The specified value '2100-02-29' does not conform to the required format, 'yyyy-MM-dd'.
-CONSOLE ERROR: The specified value '2009-09-00' does not conform to the required format, 'yyyy-MM-dd'.
-CONSOLE ERROR: The specified value '2009-09-' does not conform to the required format, 'yyyy-MM-dd'.
-CONSOLE ERROR: The specified value '2009-09-7' does not conform to the required format, 'yyyy-MM-dd'.
-CONSOLE ERROR: The specified value '2009-09-001' does not conform to the required format, 'yyyy-MM-dd'.
-CONSOLE ERROR: The specified value '2009-09-xx' does not conform to the required format, 'yyyy-MM-dd'.
-CONSOLE ERROR: The specified value '2009-09' does not conform to the required format, 'yyyy-MM-dd'.
-CONSOLE ERROR: The specified value '2009' does not conform to the required format, 'yyyy-MM-dd'.
-CONSOLE ERROR: The specified value '2009-09' does not conform to the required format, 'yyyy-MM-dd'.
 This test aims to check for typeMismatch flag with type=date input fields
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
