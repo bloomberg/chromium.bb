@@ -8,6 +8,7 @@
 #include <stdint.h>  // for uint32_t
 
 namespace dbus {
+const char kDBusInterface[] = "org.freedesktop.DBus";
 const char kDBusServiceName[] = "org.freedesktop.DBus";
 const char kDBusServicePath[] = "/org/freedesktop/DBus";
 
