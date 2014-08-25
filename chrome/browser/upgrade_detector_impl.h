@@ -92,7 +92,7 @@ class UpgradeDetectorImpl :
 
   // When the upgrade was detected - either a software update or a variations
   // update, whichever happened first.
-  base::Time upgrade_detected_time_;
+  base::TimeTicks upgrade_detected_time_;
 
   // The date the binaries were built.
   base::Time build_date_;
