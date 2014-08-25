@@ -38,7 +38,7 @@ void webCoreInitializeScriptWrappableForInterface(blink::TestInterfaceGarbageCol
 }
 
 namespace blink {
-const WrapperTypeInfo V8TestInterfaceGarbageCollected::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceGarbageCollected::domTemplate, V8TestInterfaceGarbageCollected::derefObject, 0, V8TestInterfaceGarbageCollected::toEventTarget, 0, V8TestInterfaceGarbageCollected::installConditionallyEnabledMethods, V8TestInterfaceGarbageCollected::installConditionallyEnabledProperties, &V8EventTarget::wrapperTypeInfo, WrapperTypeObjectPrototype, GarbageCollectedObject };
+const WrapperTypeInfo V8TestInterfaceGarbageCollected::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceGarbageCollected::domTemplate, V8TestInterfaceGarbageCollected::refObject, V8TestInterfaceGarbageCollected::derefObject, 0, V8TestInterfaceGarbageCollected::toEventTarget, 0, V8TestInterfaceGarbageCollected::installConditionallyEnabledMethods, V8TestInterfaceGarbageCollected::installConditionallyEnabledProperties, &V8EventTarget::wrapperTypeInfo, WrapperTypeObjectPrototype, GarbageCollectedObject };
 
 namespace TestInterfaceGarbageCollectedV8Internal {
 
@@ -207,6 +207,11 @@ v8::Handle<v8::Object> V8TestInterfaceGarbageCollected::createWrapper(RawPtr<Tes
     installConditionallyEnabledProperties(wrapper, isolate);
     V8DOMWrapper::associateObjectWithWrapper<V8TestInterfaceGarbageCollected>(impl, &wrapperTypeInfo, wrapper, isolate, WrapperConfiguration::Independent);
     return wrapper;
+}
+
+
+void V8TestInterfaceGarbageCollected::refObject(ScriptWrappableBase* internalPointer)
+{
 }
 
 void V8TestInterfaceGarbageCollected::derefObject(ScriptWrappableBase* internalPointer)

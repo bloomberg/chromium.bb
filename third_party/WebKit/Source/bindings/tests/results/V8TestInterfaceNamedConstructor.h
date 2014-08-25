@@ -33,6 +33,7 @@ public:
     }
     static TestInterfaceNamedConstructor* toNativeWithTypeCheck(v8::Isolate*, v8::Handle<v8::Value>);
     static const WrapperTypeInfo wrapperTypeInfo;
+    static void refObject(ScriptWrappableBase* internalPointer);
     static void derefObject(ScriptWrappableBase* internalPointer);
     static ActiveDOMObject* toActiveDOMObject(v8::Handle<v8::Object>);
     static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 0;

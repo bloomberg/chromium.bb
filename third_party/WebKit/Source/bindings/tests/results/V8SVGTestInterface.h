@@ -27,6 +27,7 @@ public:
     }
     static SVGTestInterface* toNativeWithTypeCheck(v8::Isolate*, v8::Handle<v8::Value>);
     static const WrapperTypeInfo wrapperTypeInfo;
+    static void refObject(ScriptWrappableBase* internalPointer);
     static void derefObject(ScriptWrappableBase* internalPointer);
     static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 0;
     static inline ScriptWrappableBase* toInternalPointer(SVGTestInterface* impl)

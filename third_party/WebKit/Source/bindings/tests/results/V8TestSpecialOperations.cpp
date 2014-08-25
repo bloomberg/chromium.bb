@@ -42,7 +42,7 @@ void webCoreInitializeScriptWrappableForInterface(blink::TestSpecialOperations* 
 }
 
 namespace blink {
-const WrapperTypeInfo V8TestSpecialOperations::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestSpecialOperations::domTemplate, V8TestSpecialOperations::derefObject, 0, 0, 0, V8TestSpecialOperations::installConditionallyEnabledMethods, V8TestSpecialOperations::installConditionallyEnabledProperties, 0, WrapperTypeObjectPrototype, RefCountedObject };
+const WrapperTypeInfo V8TestSpecialOperations::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestSpecialOperations::domTemplate, V8TestSpecialOperations::refObject, V8TestSpecialOperations::derefObject, 0, 0, 0, V8TestSpecialOperations::installConditionallyEnabledMethods, V8TestSpecialOperations::installConditionallyEnabledProperties, 0, WrapperTypeObjectPrototype, RefCountedObject };
 
 namespace TestSpecialOperationsV8Internal {
 
@@ -236,6 +236,12 @@ v8::Handle<v8::Object> V8TestSpecialOperations::createWrapper(PassRefPtr<TestSpe
     installConditionallyEnabledProperties(wrapper, isolate);
     V8DOMWrapper::associateObjectWithWrapper<V8TestSpecialOperations>(impl, &wrapperTypeInfo, wrapper, isolate, WrapperConfiguration::Independent);
     return wrapper;
+}
+
+
+void V8TestSpecialOperations::refObject(ScriptWrappableBase* internalPointer)
+{
+    fromInternalPointer(internalPointer)->ref();
 }
 
 void V8TestSpecialOperations::derefObject(ScriptWrappableBase* internalPointer)

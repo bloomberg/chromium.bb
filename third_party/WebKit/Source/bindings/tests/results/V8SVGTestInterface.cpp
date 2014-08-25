@@ -38,7 +38,7 @@ void webCoreInitializeScriptWrappableForInterface(blink::SVGTestInterface* objec
 }
 
 namespace blink {
-const WrapperTypeInfo V8SVGTestInterface::wrapperTypeInfo = { gin::kEmbedderBlink, V8SVGTestInterface::domTemplate, V8SVGTestInterface::derefObject, 0, 0, 0, V8SVGTestInterface::installConditionallyEnabledMethods, V8SVGTestInterface::installConditionallyEnabledProperties, 0, WrapperTypeObjectPrototype, RefCountedObject };
+const WrapperTypeInfo V8SVGTestInterface::wrapperTypeInfo = { gin::kEmbedderBlink, V8SVGTestInterface::domTemplate, V8SVGTestInterface::refObject, V8SVGTestInterface::derefObject, 0, 0, 0, V8SVGTestInterface::installConditionallyEnabledMethods, V8SVGTestInterface::installConditionallyEnabledProperties, 0, WrapperTypeObjectPrototype, RefCountedObject };
 
 namespace SVGTestInterfaceV8Internal {
 
@@ -143,6 +143,12 @@ v8::Handle<v8::Object> V8SVGTestInterface::createWrapper(PassRefPtr<SVGTestInter
     installConditionallyEnabledProperties(wrapper, isolate);
     V8DOMWrapper::associateObjectWithWrapper<V8SVGTestInterface>(impl, &wrapperTypeInfo, wrapper, isolate, WrapperConfiguration::Dependent);
     return wrapper;
+}
+
+
+void V8SVGTestInterface::refObject(ScriptWrappableBase* internalPointer)
+{
+    fromInternalPointer(internalPointer)->ref();
 }
 
 void V8SVGTestInterface::derefObject(ScriptWrappableBase* internalPointer)

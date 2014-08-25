@@ -54,6 +54,7 @@ public:
 
     static TypedArray* toNative(v8::Handle<v8::Object>);
     static TypedArray* toNativeWithTypeCheck(v8::Isolate*, v8::Handle<v8::Value>);
+    static void refObject(ScriptWrappableBase* internalPointer);
     static void derefObject(ScriptWrappableBase* internalPointer);
     static const WrapperTypeInfo wrapperTypeInfo;
     static const int internalFieldCount = v8DefaultWrapperInternalFieldCount;
@@ -184,16 +185,22 @@ TypedArray* V8TypedArray<TypedArray>::toNativeWithTypeCheck(v8::Isolate* isolate
 template <typename TypedArray>
 const WrapperTypeInfo V8TypedArray<TypedArray>::wrapperTypeInfo = {
     gin::kEmbedderBlink,
-    0, V8TypedArray<TypedArray>::derefObject,
+    0,
+    V8TypedArray<TypedArray>::refObject, V8TypedArray<TypedArray>::derefObject,
     0, 0, 0, 0, 0, 0, WrapperTypeObjectPrototype, RefCountedObject
 };
+
+template <typename TypedArray>
+void V8TypedArray<TypedArray>::refObject(ScriptWrappableBase* internalPointer)
+{
+    fromInternalPointer(internalPointer)->ref();
+}
 
 template <typename TypedArray>
 void V8TypedArray<TypedArray>::derefObject(ScriptWrappableBase* internalPointer)
 {
     fromInternalPointer(internalPointer)->deref();
 }
-
 
 } // namespace WebCode
 

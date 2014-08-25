@@ -43,7 +43,7 @@ void webCoreInitializeScriptWrappableForInterface(blink::TestInterfaceEventConst
 }
 
 namespace blink {
-const WrapperTypeInfo V8TestInterfaceEventConstructor::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceEventConstructor::domTemplate, V8TestInterfaceEventConstructor::derefObject, 0, 0, 0, V8TestInterfaceEventConstructor::installConditionallyEnabledMethods, V8TestInterfaceEventConstructor::installConditionallyEnabledProperties, &V8Event::wrapperTypeInfo, WrapperTypeObjectPrototype, WillBeGarbageCollectedObject };
+const WrapperTypeInfo V8TestInterfaceEventConstructor::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceEventConstructor::domTemplate, V8TestInterfaceEventConstructor::refObject, V8TestInterfaceEventConstructor::derefObject, 0, 0, 0, V8TestInterfaceEventConstructor::installConditionallyEnabledMethods, V8TestInterfaceEventConstructor::installConditionallyEnabledProperties, &V8Event::wrapperTypeInfo, WrapperTypeObjectPrototype, WillBeGarbageCollectedObject };
 
 namespace TestInterfaceEventConstructorV8Internal {
 
@@ -409,6 +409,14 @@ v8::Handle<v8::Object> V8TestInterfaceEventConstructor::createWrapper(PassRefPtr
     installConditionallyEnabledProperties(wrapper, isolate);
     V8DOMWrapper::associateObjectWithWrapper<V8TestInterfaceEventConstructor>(impl, &wrapperTypeInfo, wrapper, isolate, WrapperConfiguration::Independent);
     return wrapper;
+}
+
+
+void V8TestInterfaceEventConstructor::refObject(ScriptWrappableBase* internalPointer)
+{
+#if !ENABLE(OILPAN)
+    fromInternalPointer(internalPointer)->ref();
+#endif // !ENABLE(OILPAN)
 }
 
 void V8TestInterfaceEventConstructor::derefObject(ScriptWrappableBase* internalPointer)

@@ -28,6 +28,7 @@ public:
     }
     static TestInterfaceDocument* toNativeWithTypeCheck(v8::Isolate*, v8::Handle<v8::Value>);
     static const WrapperTypeInfo wrapperTypeInfo;
+    static void refObject(ScriptWrappableBase* internalPointer);
     static void derefObject(ScriptWrappableBase* internalPointer);
     static EventTarget* toEventTarget(v8::Handle<v8::Object>);
 #if ENABLE(OILPAN)

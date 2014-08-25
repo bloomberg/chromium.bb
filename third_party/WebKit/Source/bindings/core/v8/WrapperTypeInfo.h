@@ -53,6 +53,7 @@ static const uint16_t v8DOMNodeClassId = 1;
 static const uint16_t v8DOMObjectClassId = 2;
 
 typedef v8::Handle<v8::FunctionTemplate> (*DomTemplateFunction)(v8::Isolate*);
+typedef void (*RefObjectFunction)(ScriptWrappableBase* internalPointer);
 typedef void (*DerefObjectFunction)(ScriptWrappableBase* internalPointer);
 typedef ActiveDOMObject* (*ToActiveDOMObjectFunction)(v8::Handle<v8::Object>);
 typedef EventTarget* (*ToEventTargetFunction)(v8::Handle<v8::Object>);
@@ -107,6 +108,12 @@ struct WrapperTypeInfo {
         return domTemplateFunction(isolate);
     }
 
+    void refObject(ScriptWrappableBase* internalPointer) const
+    {
+        if (refObjectFunction)
+            refObjectFunction(internalPointer);
+    }
+
     void installConditionallyEnabledMethods(v8::Handle<v8::Object> prototypeTemplate, v8::Isolate* isolate) const
     {
         if (installConditionallyEnabledMethodsFunction)
@@ -145,6 +152,7 @@ struct WrapperTypeInfo {
     const gin::GinEmbedder ginEmbedder;
 
     const DomTemplateFunction domTemplateFunction;
+    const RefObjectFunction refObjectFunction;
     const DerefObjectFunction derefObjectFunction;
     const ToActiveDOMObjectFunction toActiveDOMObjectFunction;
     const ToEventTargetFunction toEventTargetFunction;

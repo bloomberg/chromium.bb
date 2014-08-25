@@ -560,7 +560,7 @@ static void {{cpp_class}}OriginSafeMethodSetterCallback(v8::Local<v8::String> na
                               if is_active_dom_object else '0' %}
 {% set to_event_target = '%s::toEventTarget' % v8_class
                          if is_event_target else '0' %}
-const WrapperTypeInfo {{v8_class}}Constructor::wrapperTypeInfo = { gin::kEmbedderBlink, {{v8_class}}Constructor::domTemplate, {{v8_class}}::derefObject, {{to_active_dom_object}}, {{to_event_target}}, 0, {{v8_class}}::installConditionallyEnabledMethods, {{v8_class}}::installConditionallyEnabledProperties, 0, WrapperTypeObjectPrototype, {{gc_type}} };
+const WrapperTypeInfo {{v8_class}}Constructor::wrapperTypeInfo = { gin::kEmbedderBlink, {{v8_class}}Constructor::domTemplate, {{v8_class}}::refObject, {{v8_class}}::derefObject, {{to_active_dom_object}}, {{to_event_target}}, 0, {{v8_class}}::installConditionallyEnabledMethods, {{v8_class}}::installConditionallyEnabledProperties, 0, WrapperTypeObjectPrototype, {{gc_type}} };
 
 {{generate_constructor(named_constructor)}}
 v8::Handle<v8::FunctionTemplate> {{v8_class}}Constructor::domTemplate(v8::Isolate* isolate)
@@ -1342,6 +1342,18 @@ v8::Handle<v8::Object> {{v8_class}}::createWrapper({{pass_cpp_type}} impl, v8::H
 
 {##############################################################################}
 {% block deref_object_and_to_v8_no_inline %}
+
+void {{v8_class}}::refObject(ScriptWrappableBase* internalPointer)
+{
+{% if gc_type == 'RefCountedObject' %}
+    fromInternalPointer(internalPointer)->ref();
+{% elif gc_type == 'WillBeGarbageCollectedObject' %}
+{% filter conditional('!ENABLE(OILPAN)') %}
+    fromInternalPointer(internalPointer)->ref();
+{% endfilter %}
+{% endif %}
+}
+
 void {{v8_class}}::derefObject(ScriptWrappableBase* internalPointer)
 {
 {% if gc_type == 'RefCountedObject' %}

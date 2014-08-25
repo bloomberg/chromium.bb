@@ -37,7 +37,7 @@ void webCoreInitializeScriptWrappableForInterface(blink::TestInterfaceCheckSecur
 }
 
 namespace blink {
-const WrapperTypeInfo V8TestInterfaceCheckSecurity::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceCheckSecurity::domTemplate, V8TestInterfaceCheckSecurity::derefObject, 0, 0, 0, V8TestInterfaceCheckSecurity::installConditionallyEnabledMethods, V8TestInterfaceCheckSecurity::installConditionallyEnabledProperties, 0, WrapperTypeObjectPrototype, RefCountedObject };
+const WrapperTypeInfo V8TestInterfaceCheckSecurity::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceCheckSecurity::domTemplate, V8TestInterfaceCheckSecurity::refObject, V8TestInterfaceCheckSecurity::derefObject, 0, 0, 0, V8TestInterfaceCheckSecurity::installConditionallyEnabledMethods, V8TestInterfaceCheckSecurity::installConditionallyEnabledProperties, 0, WrapperTypeObjectPrototype, RefCountedObject };
 
 namespace TestInterfaceCheckSecurityV8Internal {
 
@@ -559,6 +559,12 @@ v8::Handle<v8::Object> V8TestInterfaceCheckSecurity::createWrapper(PassRefPtr<Te
     installConditionallyEnabledProperties(wrapper, isolate);
     V8DOMWrapper::associateObjectWithWrapper<V8TestInterfaceCheckSecurity>(impl, &wrapperTypeInfo, wrapper, isolate, WrapperConfiguration::Independent);
     return wrapper;
+}
+
+
+void V8TestInterfaceCheckSecurity::refObject(ScriptWrappableBase* internalPointer)
+{
+    fromInternalPointer(internalPointer)->ref();
 }
 
 void V8TestInterfaceCheckSecurity::derefObject(ScriptWrappableBase* internalPointer)

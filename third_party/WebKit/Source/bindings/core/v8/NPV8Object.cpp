@@ -52,7 +52,7 @@ namespace blink {
 
 const WrapperTypeInfo* npObjectTypeInfo()
 {
-    static const WrapperTypeInfo typeInfo = { gin::kEmbedderBlink, 0, 0, 0, 0, 0, 0, 0, 0, WrapperTypeObjectPrototype, RefCountedObject };
+    static const WrapperTypeInfo typeInfo = { gin::kEmbedderBlink, 0, 0, 0, 0, 0, 0, 0, 0, 0, WrapperTypeObjectPrototype, RefCountedObject };
     return &typeInfo;
 }
 

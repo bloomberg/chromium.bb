@@ -27,6 +27,7 @@ public:
     }
     static TestInterface2* toNativeWithTypeCheck(v8::Isolate*, v8::Handle<v8::Value>);
     static const WrapperTypeInfo wrapperTypeInfo;
+    static void refObject(ScriptWrappableBase* internalPointer);
     static void derefObject(ScriptWrappableBase* internalPointer);
     static void visitDOMWrapper(ScriptWrappableBase* internalPointer, const v8::Persistent<v8::Object>&, v8::Isolate*);
     static void constructorCallback(const v8::FunctionCallbackInfo<v8::Value>&);

@@ -38,7 +38,7 @@ void webCoreInitializeScriptWrappableForInterface(blink::TestInterfaceConstructo
 }
 
 namespace blink {
-const WrapperTypeInfo V8TestInterfaceConstructor4::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceConstructor4::domTemplate, V8TestInterfaceConstructor4::derefObject, 0, 0, 0, V8TestInterfaceConstructor4::installConditionallyEnabledMethods, V8TestInterfaceConstructor4::installConditionallyEnabledProperties, 0, WrapperTypeObjectPrototype, RefCountedObject };
+const WrapperTypeInfo V8TestInterfaceConstructor4::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceConstructor4::domTemplate, V8TestInterfaceConstructor4::refObject, V8TestInterfaceConstructor4::derefObject, 0, 0, 0, V8TestInterfaceConstructor4::installConditionallyEnabledMethods, V8TestInterfaceConstructor4::installConditionallyEnabledProperties, 0, WrapperTypeObjectPrototype, RefCountedObject };
 
 namespace TestInterfaceConstructor4V8Internal {
 
@@ -178,6 +178,12 @@ v8::Handle<v8::Object> V8TestInterfaceConstructor4::createWrapper(PassRefPtr<Tes
     installConditionallyEnabledProperties(wrapper, isolate);
     V8DOMWrapper::associateObjectWithWrapper<V8TestInterfaceConstructor4>(impl, &wrapperTypeInfo, wrapper, isolate, WrapperConfiguration::Independent);
     return wrapper;
+}
+
+
+void V8TestInterfaceConstructor4::refObject(ScriptWrappableBase* internalPointer)
+{
+    fromInternalPointer(internalPointer)->ref();
 }
 
 void V8TestInterfaceConstructor4::derefObject(ScriptWrappableBase* internalPointer)

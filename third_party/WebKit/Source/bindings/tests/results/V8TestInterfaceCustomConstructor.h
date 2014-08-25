@@ -27,6 +27,7 @@ public:
     }
     static TestInterfaceCustomConstructor* toNativeWithTypeCheck(v8::Isolate*, v8::Handle<v8::Value>);
     static const WrapperTypeInfo wrapperTypeInfo;
+    static void refObject(ScriptWrappableBase* internalPointer);
     static void derefObject(ScriptWrappableBase* internalPointer);
     static void constructorCallback(const v8::FunctionCallbackInfo<v8::Value>&);
     static void constructorCustom(const v8::FunctionCallbackInfo<v8::Value>&);
