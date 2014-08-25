@@ -246,6 +246,10 @@ void AutofillAgent::OrientationChangeEvent() {
   HidePopup();
 }
 
+void AutofillAgent::Resized() {
+  HidePopup();
+}
+
 void AutofillAgent::DidChangeScrollOffset(WebLocalFrame*) {
   HidePopup();
 }

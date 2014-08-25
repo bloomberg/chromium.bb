@@ -68,6 +68,7 @@ class AutofillAgent : public content::RenderViewObserver,
   virtual void DidChangeScrollOffset(blink::WebLocalFrame* frame) OVERRIDE;
   virtual void FocusedNodeChanged(const blink::WebNode& node) OVERRIDE;
   virtual void OrientationChangeEvent() OVERRIDE;
+  virtual void Resized() OVERRIDE;
 
   // PageClickListener:
   virtual void FormControlElementClicked(

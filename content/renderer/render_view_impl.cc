@@ -3290,6 +3290,10 @@ void RenderViewImpl::OnResize(const ViewMsg_Resize_Params& params) {
 
   if (old_visible_viewport_size != visible_viewport_size_)
     has_scrolled_focused_editable_node_into_rect_ = false;
+
+  FOR_EACH_OBSERVER(RenderViewObserver,
+                    observers_,
+                    Resized());
 }
 
 void RenderViewImpl::DidInitiatePaint() {

@@ -46,6 +46,9 @@ class AutocompleteHistoryManager : public WebDataServiceConsumer {
       const std::vector<int>& autofill_unique_ids);
   virtual void OnFormSubmitted(const FormData& form);
 
+  // Cancels the currently pending WebDataService query, if there is one.
+  void CancelPendingQuery();
+
   // Must be public for the external delegate to use.
   void OnRemoveAutocompleteEntry(const base::string16& name,
                                  const base::string16& value);
@@ -60,9 +63,6 @@ class AutocompleteHistoryManager : public WebDataServiceConsumer {
   void SendSuggestions(const std::vector<base::string16>* suggestions);
 
  private:
-  // Cancels the currently pending WebDataService query, if there is one.
-  void CancelPendingQuery();
-
   // Provides driver-level context. Must outlive this object.
   AutofillDriver* driver_;
   scoped_refptr<AutofillWebDataService> database_;
