@@ -60,11 +60,11 @@
       "title": "Open Help Article"
     },
     "hts": {
-        "matches": [
-          "https://support.google.com/chromeos-gethelp/rts",
-          "https://support.google.com/chromeos-gethelp/helpouts"
-        ],
-        "title": "Open HTS"
+      "matches": [
+        "https://support.google.com/chromeos-gethelp/rts*",
+        "https://support.google.com/chromeos-gethelp/helpouts*"
+      ],
+      "title": "Contact Support"
     },
     "home": {
       "matches": [
