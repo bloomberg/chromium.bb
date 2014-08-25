@@ -191,7 +191,9 @@ void NinjaBuildWriter::WritePhonyAndAllRules() {
   for (size_t i = 0; i < default_toolchain_targets_.size(); i++) {
     const Target* target = default_toolchain_targets_[i];
     const Label& label = target->label();
-    const OutputFile& target_file = target->dependency_output_file();
+    OutputFile target_file(target->dependency_output_file());
+    // The output files may have leading "./" so normalize those away.
+    NormalizePath(&target_file.value());
 
     // Write the long name "foo/bar:baz" for the target "//foo/bar:baz".
     std::string long_name = label.GetUserVisibleName(false);
