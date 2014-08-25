@@ -602,6 +602,7 @@ remoting.ClientSession.prototype.removePlugin = function() {
   } else {
     remoting.toolbar.setClientSession(null);
   }
+  document.body.classList.remove('connected');
 
   // Remove mediasource-rendering class from the container - this will also
   // hide the <video> element.
@@ -989,6 +990,7 @@ remoting.ClientSession.prototype.onConnectionStatusUpdate_ =
     } else {
       remoting.toolbar.setClientSession(this);
     }
+    document.body.classList.add('connected');
 
     this.container_.addEventListener('mousemove',
                                      this.updateMouseCursorPosition_,

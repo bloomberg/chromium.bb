@@ -619,6 +619,7 @@ button {
   top: 200px;
   left: 0;
   width: 100%;
+  z-index: 2;
 }
 
 .dialog-screen {
@@ -629,6 +630,15 @@ button {
   height: 100%;
   background-color: #fff;
   opacity: 0.75;
+  z-index: 1;
+}
+
+/* For apps v2, don't cover the 1px window border. */
+html.apps-v2 .dialog-screen {
+  width: calc(100% - 2px);
+  height: calc(100% - 2px);
+  top: 1px;
+  left: 1px;
 }
 
 /* TODO(jamiewalch): crbug.com/252796: Remove these once crbug.com/240772
@@ -745,6 +755,12 @@ html.apps-v2.scrollable {
   top: 0;
   left: 0;
   width: 100%;
+}
+
+/* Override full-height class until connected, otherwise it takes up 100% of
+ * the window height in addition to the home-screen UI. */
+body:not(.connected) #session-mode {
+  height: auto;
 }
 
 /* video-container needs relative position so that mediasource-video-output can

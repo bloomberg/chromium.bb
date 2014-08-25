@@ -111,12 +111,10 @@ remoting.WindowFrame.prototype.setClientSession = function(clientSession) {
   this.clientSession_ = clientSession;
   var windowTitle = document.head.querySelector('title');
   if (this.clientSession_) {
-    document.body.classList.add('connected');
     this.title_.innerText = clientSession.getHostDisplayName();
     windowTitle.innerText = clientSession.getHostDisplayName() + ' - ' +
         chrome.i18n.getMessage(/*i18n-content*/'PRODUCT_NAME');
   } else {
-    document.body.classList.remove('connected');
     this.title_.innerHTML = '&nbsp;';
     windowTitle.innerText =
         chrome.i18n.getMessage(/*i18n-content*/'PRODUCT_NAME');
