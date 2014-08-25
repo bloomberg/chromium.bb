@@ -121,7 +121,7 @@ class DevToolsAndroidBridge
 
     scoped_refptr<content::DevToolsAgentHost> GetAgentHost();
 
-    AndroidWebSocket* CreateWebSocket(
+    scoped_refptr<AndroidWebSocket> CreateWebSocket(
         const std::string& url,
         DevToolsAndroidBridge::AndroidWebSocket::Delegate* delegate);
 

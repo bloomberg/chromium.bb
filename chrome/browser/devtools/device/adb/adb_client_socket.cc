@@ -20,6 +20,9 @@ const char kOkayResponse[] = "OKAY";
 const char kHostTransportCommand[] = "host:transport:%s";
 const char kLocalhost[] = "127.0.0.1";
 
+typedef base::Callback<void(int, const std::string&)> CommandCallback;
+typedef base::Callback<void(int, net::StreamSocket*)> SocketCallback;
+
 std::string EncodeMessage(const std::string& message) {
   static const char kHexChars[] = "0123456789ABCDEF";
 
@@ -70,14 +73,14 @@ class AdbTransportSocket : public AdbClientSocket {
   void OnSocketAvailable(int result, const std::string& response) {
     if (!CheckNetResultOrDie(result))
       return;
-    callback_.Run(net::OK, socket_.Pass());
+    callback_.Run(net::OK, socket_.release());
     delete this;
   }
 
   bool CheckNetResultOrDie(int result) {
     if (result >= 0)
       return true;
-    callback_.Run(result, make_scoped_ptr<net::StreamSocket>(NULL));
+    callback_.Run(result, NULL);
     delete this;
     return false;
   }

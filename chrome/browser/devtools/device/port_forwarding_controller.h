@@ -77,6 +77,7 @@ class PortForwardingController
   void StopListening();
 
   void UpdateConnections();
+  void ShutdownConnections();
 
   void NotifyListeners(const DevicesStatus& status) const;
 
