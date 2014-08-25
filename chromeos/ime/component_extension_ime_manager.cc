@@ -108,10 +108,11 @@ bool ComponentExtensionIMEManager::LoadComponentExtensionIME(
     Profile* profile,
     const std::string& input_method_id) {
   ComponentExtensionIME ime;
-  if (FindEngineEntry(input_method_id, &ime))
-    return delegate_->Load(profile, ime.id, ime.manifest, ime.path);
-  else
-    return false;
+  if (FindEngineEntry(input_method_id, &ime)) {
+    delegate_->Load(profile, ime.id, ime.manifest, ime.path);
+    return true;
+  }
+  return false;
 }
 
 bool ComponentExtensionIMEManager::UnloadComponentExtensionIME(

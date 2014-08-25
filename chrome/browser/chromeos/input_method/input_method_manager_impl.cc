@@ -36,6 +36,8 @@
 #include "components/user_manager/user_manager.h"
 #include "third_party/icu/source/common/unicode/uloc.h"
 #include "ui/base/accelerators/accelerator.h"
+#include "ui/keyboard/keyboard_controller.h"
+#include "ui/keyboard/keyboard_util.h"
 
 namespace chromeos {
 namespace input_method {
@@ -920,8 +922,17 @@ void InputMethodManagerImpl::ChangeInputMethodInternal(
 
   IMEBridge::Get()->SetCurrentEngineHandler(engine);
 
-  if (engine)
+  if (engine) {
     engine->Enable(component_id);
+  } else {
+    // If no engine to enable, cancel the virtual keyboard url override so that
+    // it can use the fallback system virtual keyboard UI.
+    keyboard::SetOverrideContentUrl(GURL());
+    keyboard::KeyboardController* keyboard_controller =
+        keyboard::KeyboardController::GetInstance();
+    if (keyboard_controller)
+      keyboard_controller->Reload();
+  }
 
   // Change the keyboard layout to a preferred layout for the input method.
   if (!keyboard_->SetCurrentKeyboardLayoutByName(

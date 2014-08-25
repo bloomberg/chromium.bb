@@ -23,13 +23,12 @@ std::vector<ComponentExtensionIME>
   return ime_list_;
 }
 
-bool MockComponentExtIMEManagerDelegate::Load(Profile* profile,
+void MockComponentExtIMEManagerDelegate::Load(Profile* profile,
                                               const std::string& extension_id,
                                               const std::string& manifest,
                                               const base::FilePath& path) {
   last_loaded_extension_id_ = extension_id;
   load_call_count_++;
-  return true;
 }
 
 void MockComponentExtIMEManagerDelegate::Unload(Profile* profile,

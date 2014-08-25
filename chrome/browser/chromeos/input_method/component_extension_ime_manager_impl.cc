@@ -22,9 +22,11 @@
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/ime/extension_ime_util.h"
+#include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_l10n_util.h"
+#include "extensions/common/file_util.h"
 #include "extensions/common/manifest_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -238,10 +240,39 @@ extensions::ComponentLoader* GetComponentLoader(Profile* profile) {
   ExtensionService* extension_service = extension_system->extension_service();
   return extension_service->component_loader();
 }
+
+void DoLoadExtension(Profile* profile,
+                     const std::string& extension_id,
+                     const std::string& manifest,
+                     const base::FilePath& file_path) {
+  extensions::ExtensionSystem* extension_system =
+      extensions::ExtensionSystem::Get(profile);
+  ExtensionService* extension_service = extension_system->extension_service();
+  if (extension_service->GetExtensionById(extension_id, false))
+    return;
+  const std::string loaded_extension_id =
+      GetComponentLoader(profile)->Add(manifest, file_path);
+  DCHECK_EQ(loaded_extension_id, extension_id);
+}
+
+bool CheckFilePath(const base::FilePath* file_path) {
+  return base::PathExists(*file_path);
+}
+
+void OnFilePathChecked(Profile* profile,
+                       const std::string* extension_id,
+                       const std::string* manifest,
+                       const base::FilePath* file_path,
+                       bool result) {
+  if (result)
+    DoLoadExtension(profile, *extension_id, *manifest, *file_path);
+  else
+    LOG(ERROR) << "IME extension file path not exists: " << file_path->value();
+}
+
 }  // namespace
 
-ComponentExtensionIMEManagerImpl::ComponentExtensionIMEManagerImpl()
-    : weak_ptr_factory_(this) {
+ComponentExtensionIMEManagerImpl::ComponentExtensionIMEManagerImpl() {
   ReadComponentExtensionsInfo(&component_extension_list_);
 }
 
@@ -252,19 +283,31 @@ std::vector<ComponentExtensionIME> ComponentExtensionIMEManagerImpl::ListIME() {
   return component_extension_list_;
 }
 
-bool ComponentExtensionIMEManagerImpl::Load(Profile* profile,
+void ComponentExtensionIMEManagerImpl::Load(Profile* profile,
                                             const std::string& extension_id,
                                             const std::string& manifest,
                                             const base::FilePath& file_path) {
-  extensions::ExtensionSystem* extension_system =
-      extensions::ExtensionSystem::Get(profile);
-  ExtensionService* extension_service = extension_system->extension_service();
-  if (extension_service->GetExtensionById(extension_id, false))
-    return false;
-  const std::string loaded_extension_id =
-      GetComponentLoader(profile)->Add(manifest, file_path);
-  DCHECK_EQ(loaded_extension_id, extension_id);
-  return true;
+  if (base::SysInfo::IsRunningOnChromeOS()) {
+    // In the case of real Chrome OS device, the no need to check the file path
+    // for preinstalled files existence.
+    DoLoadExtension(profile, extension_id, manifest, file_path);
+    return;
+  }
+  // If current environment is linux_chromeos, check the existence of file path
+  // to avoid unnecessary extension loading and InputMethodEngine creation, so
+  // that the virtual keyboard web content url won't be override by IME
+  // component extensions.
+  base::FilePath* copied_file_path = new base::FilePath(file_path);
+  content::BrowserThread::PostTaskAndReplyWithResult(
+      content::BrowserThread::FILE,
+      FROM_HERE,
+      base::Bind(&CheckFilePath,
+                 base::Unretained(copied_file_path)),
+      base::Bind(&OnFilePathChecked,
+                 base::Unretained(profile),
+                 base::Owned(new std::string(extension_id)),
+                 base::Owned(new std::string(manifest)),
+                 base::Owned(copied_file_path)));
 }
 
 void ComponentExtensionIMEManagerImpl::Unload(Profile* profile,

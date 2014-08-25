@@ -28,7 +28,7 @@ class ComponentExtensionIMEManagerImpl
 
   // ComponentExtensionIMEManagerDelegate overrides:
   virtual std::vector<ComponentExtensionIME> ListIME() OVERRIDE;
-  virtual bool Load(Profile* profile,
+  virtual void Load(Profile* profile,
                     const std::string& extension_id,
                     const std::string& manifest,
                     const base::FilePath& file_path) OVERRIDE;
@@ -62,10 +62,6 @@ class ComponentExtensionIMEManagerImpl
 
   // The list of component extension IME.
   std::vector<ComponentExtensionIME> component_extension_list_;
-
-  // For checking the function should be called on UI thread.
-  base::ThreadChecker thread_checker_;
-  base::WeakPtrFactory<ComponentExtensionIMEManagerImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ComponentExtensionIMEManagerImpl);
 };

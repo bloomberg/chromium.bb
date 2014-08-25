@@ -54,7 +54,7 @@ class CHROMEOS_EXPORT ComponentExtensionIMEManagerDelegate {
 
   // Loads component extension IME associated with |extension_id|.
   // Returns false if it fails, otherwise returns true.
-  virtual bool Load(Profile* profile,
+  virtual void Load(Profile* profile,
                     const std::string& extension_id,
                     const std::string& manifest,
                     const base::FilePath& path) = 0;
