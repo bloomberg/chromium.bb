@@ -32,9 +32,9 @@ public class OAuth2TokenServiceIntegrationTest extends ChromeShellTestBase {
     private static final Account TEST_ACCOUNT2 =
             AccountManagerHelper.createAccountFromName("bar@gmail.com");
     private static final AccountHolder TEST_ACCOUNT_HOLDER_1 =
-            AccountHolder.create().account(TEST_ACCOUNT1).build();
+            AccountHolder.create().account(TEST_ACCOUNT1).alwaysAccept(true).build();
     private static final AccountHolder TEST_ACCOUNT_HOLDER_2 =
-            AccountHolder.create().account(TEST_ACCOUNT2).build();
+            AccountHolder.create().account(TEST_ACCOUNT2).alwaysAccept(true).build();
 
     private AdvancedMockContext mContext;
     private OAuth2TokenService mOAuth2TokenService;
