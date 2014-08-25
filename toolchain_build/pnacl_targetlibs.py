@@ -111,7 +111,7 @@ def LibStdcxxCflags(bias_arch):
 
 
 # Build a single object file as bitcode.
-def BuildTargetBitcodeCmd(source, output, bias_arch):
+def BuildTargetBitcodeCmd(source, output, bias_arch, output_dir='%(cwd)s'):
   flags = ['-Wall', '-Werror', '-O2', '-c']
   if bias_arch != 'portable':
     [flags.append(flag) for flag in BiasedBitcodeTargetFlag(bias_arch)]
@@ -120,7 +120,7 @@ def BuildTargetBitcodeCmd(source, output, bias_arch):
     [PnaclTool('clang', msys=False)] + flags + [
         '-isystem', '%(' + sysinclude + ')s/include',
      command.path.join('%(src)s', source),
-     '-o', command.path.join('%(output)s', output)])
+     '-o', command.path.join(output_dir, output)])
 
 
 # Build a single object file as native code.
@@ -409,21 +409,24 @@ def BitcodeLibs(bias_arch, is_canonical):
               command.Copy(command.path.join('%(src)s', 'crt1_for_eh.x'),
                            command.path.join('%(output)s', 'crt1_for_eh.x')),
               # Install crti.bc (empty _init/_fini)
-              BuildTargetBitcodeCmd('crti.c', 'crti.bc', bias_arch),
+              BuildTargetBitcodeCmd('crti.c', 'crti.bc', bias_arch,
+                                    output_dir='%(output)s'),
               # Install crtbegin bitcode (__cxa_finalize for C++)
-              BuildTargetBitcodeCmd('crtbegin.c', 'crtbegin.bc', bias_arch),
+              BuildTargetBitcodeCmd('crtbegin.c', 'crtbegin.bc', bias_arch,
+                                    output_dir='%(output)s'),
               # Stubs for _Unwind_* functions when libgcc_eh is not included in
               # the native link).
               BuildTargetBitcodeCmd('unwind_stubs.c', 'unwind_stubs.bc',
-                                    bias_arch),
+                                    bias_arch, output_dir='%(output)s'),
               BuildTargetBitcodeCmd('sjlj_eh_redirect.cc',
-                                    'sjlj_eh_redirect.bc', bias_arch),
+                                    'sjlj_eh_redirect.bc', bias_arch,
+                                    output_dir='%(output)s'),
               # libpnaclmm.a (__atomic_* library functions).
               BuildTargetBitcodeCmd('pnaclmm.c', 'pnaclmm.bc', bias_arch),
               command.Command([
                   PnaclTool('ar'), 'rc',
                   command.path.join('%(output)s', 'libpnaclmm.a'),
-                  command.path.join('%(output)s', 'pnaclmm.bc')]),
+                  'pnaclmm.bc']),
           ],
       },
   }
