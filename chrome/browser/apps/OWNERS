@@ -8,5 +8,5 @@ tapted@chromium.org
 
 per-file web_view_*.cc=fsamuel@chromium.org
 per-file web_view_*.cc=lazyboy@chromium.org
-per-file ad_view_*.cc=fsamuel@chromium.org
-per-file ad_view_*.cc=lazyboy@chromium.org
+per-file app_view_*.cc=fsamuel@chromium.org
+per-file app_view_*.cc=lazyboy@chromium.org
