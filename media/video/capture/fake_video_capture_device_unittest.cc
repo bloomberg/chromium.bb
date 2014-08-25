@@ -169,7 +169,8 @@ TEST_F(FakeVideoCaptureDeviceTest, GetDeviceSupportedFormats) {
   }
 }
 
-TEST_F(FakeVideoCaptureDeviceTest, CaptureVariableResolution) {
+// Disabled, http://crbug.com/407061 .
+TEST_F(FakeVideoCaptureDeviceTest, DISABLED_CaptureVariableResolution) {
   scoped_ptr<VideoCaptureDevice::Names> names(EnumerateDevices());
 
   VideoCaptureParams capture_params;
