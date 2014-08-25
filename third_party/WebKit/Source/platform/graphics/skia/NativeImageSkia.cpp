@@ -295,7 +295,7 @@ void NativeImageSkia::drawPattern(
 
     SkPaint paint;
     paint.setShader(shader.get());
-    paint.setXfermode(WebCoreCompositeToSkiaComposite(compositeOp, blendMode).get());
+    paint.setXfermodeMode(WebCoreCompositeToSkiaComposite(compositeOp, blendMode));
     paint.setColorFilter(context->colorFilter());
     paint.setFilterLevel(filterLevel);
 

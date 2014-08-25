@@ -465,7 +465,7 @@ void GraphicsContext::beginLayer(float opacity, CompositeOperator op, const Floa
 
     SkPaint layerPaint;
     layerPaint.setAlpha(static_cast<unsigned char>(opacity * 255));
-    layerPaint.setXfermode(WebCoreCompositeToSkiaComposite(op, m_paintState->blendMode()).get());
+    layerPaint.setXfermodeMode(WebCoreCompositeToSkiaComposite(op, m_paintState->blendMode()));
     layerPaint.setColorFilter(WebCoreColorFilterToSkiaColorFilter(colorFilter).get());
     layerPaint.setImageFilter(imageFilter);
 
@@ -1121,7 +1121,7 @@ void GraphicsContext::drawPicture(PassRefPtr<SkPicture> picture, const FloatRect
     layerScale.setScale(deviceDest.width() / src.width(), deviceDest.height() / src.height());
     RefPtr<SkMatrixImageFilter> matrixFilter = adoptRef(SkMatrixImageFilter::Create(layerScale, SkPaint::kLow_FilterLevel, pictureFilter.get()));
     SkPaint picturePaint;
-    picturePaint.setXfermode(WebCoreCompositeToSkiaComposite(op, blendMode).get());
+    picturePaint.setXfermodeMode(WebCoreCompositeToSkiaComposite(op, blendMode));
     picturePaint.setImageFilter(matrixFilter.get());
     SkRect layerBounds = SkRect::MakeWH(max(deviceDest.width(), sourceBounds.width()), max(deviceDest.height(), sourceBounds.height()));
     m_canvas->save();
@@ -1917,7 +1917,7 @@ void GraphicsContext::preparePaintForDrawRectToRect(
     bool isLazyDecoded,
     bool isDataComplete) const
 {
-    paint->setXfermode(WebCoreCompositeToSkiaComposite(compositeOp, blendMode).get());
+    paint->setXfermodeMode(WebCoreCompositeToSkiaComposite(compositeOp, blendMode));
     paint->setColorFilter(this->colorFilter());
     paint->setAlpha(this->getNormalizedAlpha());
     paint->setLooper(this->drawLooper());

@@ -35,7 +35,6 @@
 #include "platform/graphics/Path.h"
 #include "platform/graphics/Pattern.h"
 #include "platform/graphics/StrokeData.h"
-#include "platform/graphics/skia/SkiaUtils.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "wtf/PassOwnPtr.h"
@@ -129,7 +128,6 @@ public:
     void setCompositeOperation(CompositeOperator, WebBlendMode);
     CompositeOperator compositeOperator() const { return m_compositeOperator; }
     WebBlendMode blendMode() const { return m_blendMode; }
-    SkXfermode* xferMode() const { return m_xferMode.get(); }
 
     // Image interpolation control.
     InterpolationQuality interpolationQuality() const { return m_interpolationQuality; }
@@ -170,7 +168,6 @@ private:
     TextDrawingModeFlags m_textDrawingMode;
 
     int m_alpha;
-    RefPtr<SkXfermode> m_xferMode;
     RefPtr<SkColorFilter> m_colorFilter;
 
     CompositeOperator m_compositeOperator;

@@ -14,7 +14,6 @@ GraphicsContextState::GraphicsContextState()
     , m_fillRule(RULE_NONZERO)
     , m_textDrawingMode(TextModeFill)
     , m_alpha(256)
-    , m_xferMode(nullptr)
     , m_compositeOperator(CompositeSourceOver)
     , m_blendMode(WebBlendModeNormal)
     , m_interpolationQuality(InterpolationDefault)
@@ -46,7 +45,6 @@ GraphicsContextState::GraphicsContextState(const GraphicsContextState& other)
     , m_looper(other.m_looper)
     , m_textDrawingMode(other.m_textDrawingMode)
     , m_alpha(other.m_alpha)
-    , m_xferMode(other.m_xferMode)
     , m_colorFilter(other.m_colorFilter)
     , m_compositeOperator(other.m_compositeOperator)
     , m_blendMode(other.m_blendMode)
@@ -231,9 +229,9 @@ void GraphicsContextState::setCompositeOperation(CompositeOperator compositeOper
 {
     m_compositeOperator = compositeOperation;
     m_blendMode = blendMode;
-    m_xferMode = WebCoreCompositeToSkiaComposite(compositeOperation, blendMode);
-    m_strokePaint.setXfermode(m_xferMode.get());
-    m_fillPaint.setXfermode(m_xferMode.get());
+    SkXfermode::Mode xferMode = WebCoreCompositeToSkiaComposite(compositeOperation, blendMode);
+    m_strokePaint.setXfermodeMode(xferMode);
+    m_fillPaint.setXfermodeMode(xferMode);
 }
 
 void GraphicsContextState::setInterpolationQuality(InterpolationQuality quality)
