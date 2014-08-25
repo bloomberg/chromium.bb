@@ -115,6 +115,12 @@ class CC_EXPORT MathUtil {
   static gfx::RectF ProjectClippedRect(const gfx::Transform& transform,
                                        const gfx::RectF& rect);
 
+  // This function is only valid when the transform preserves 2d axis
+  // alignment and the resulting rect will not be clipped.
+  static gfx::Rect MapEnclosedRectWith2dAxisAlignedTransform(
+      const gfx::Transform& transform,
+      const gfx::Rect& rect);
+
   // Returns an array of vertices that represent the clipped polygon. After
   // returning, indexes from 0 to num_vertices_in_clipped_quad are valid in the
   // clipped_quad array. Note that num_vertices_in_clipped_quad may be zero,

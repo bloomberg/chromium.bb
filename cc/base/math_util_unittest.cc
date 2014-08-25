@@ -120,5 +120,78 @@ TEST(MathUtilTest, VectorProjection) {
             projected_vector.y() / target_vector.y());
 }
 
+TEST(MathUtilTest, MapEnclosedRectWith2dAxisAlignedTransform) {
+  gfx::Rect input(1, 2, 3, 4);
+  gfx::Rect output;
+  gfx::Transform transform;
+
+  // Identity.
+  output =
+      MathUtil::MapEnclosedRectWith2dAxisAlignedTransform(transform, input);
+  EXPECT_EQ(input, output);
+
+  // Integer translate.
+  transform.Translate(2.0, 3.0);
+  output =
+      MathUtil::MapEnclosedRectWith2dAxisAlignedTransform(transform, input);
+  EXPECT_EQ(gfx::Rect(3, 5, 3, 4), output);
+
+  // Non-integer translate.
+  transform.Translate(0.5, 0.5);
+  output =
+      MathUtil::MapEnclosedRectWith2dAxisAlignedTransform(transform, input);
+  EXPECT_EQ(gfx::Rect(4, 6, 2, 3), output);
+
+  // Scale.
+  transform = gfx::Transform();
+  transform.Scale(2.0, 3.0);
+  output =
+      MathUtil::MapEnclosedRectWith2dAxisAlignedTransform(transform, input);
+  EXPECT_EQ(gfx::Rect(2, 6, 6, 12), output);
+
+  // Rotate Z.
+  transform = gfx::Transform();
+  transform.Translate(1.0, 2.0);
+  transform.RotateAboutZAxis(90.0);
+  transform.Translate(-1.0, -2.0);
+  output =
+      MathUtil::MapEnclosedRectWith2dAxisAlignedTransform(transform, input);
+  EXPECT_EQ(gfx::Rect(-3, 2, 4, 3), output);
+
+  // Rotate X.
+  transform = gfx::Transform();
+  transform.RotateAboutXAxis(90.0);
+  output =
+      MathUtil::MapEnclosedRectWith2dAxisAlignedTransform(transform, input);
+  EXPECT_TRUE(output.IsEmpty());
+
+  transform = gfx::Transform();
+  transform.RotateAboutXAxis(180.0);
+  output =
+      MathUtil::MapEnclosedRectWith2dAxisAlignedTransform(transform, input);
+  EXPECT_EQ(gfx::Rect(1, -6, 3, 4), output);
+
+  // Rotate Y.
+  transform = gfx::Transform();
+  transform.RotateAboutYAxis(90.0);
+  output =
+      MathUtil::MapEnclosedRectWith2dAxisAlignedTransform(transform, input);
+  EXPECT_TRUE(output.IsEmpty());
+
+  transform = gfx::Transform();
+  transform.RotateAboutYAxis(180.0);
+  output =
+      MathUtil::MapEnclosedRectWith2dAxisAlignedTransform(transform, input);
+  EXPECT_EQ(gfx::Rect(-4, 2, 3, 4), output);
+
+  // Translate Z.
+  transform = gfx::Transform();
+  transform.ApplyPerspectiveDepth(10.0);
+  transform.Translate3d(0.0, 0.0, 5.0);
+  output =
+      MathUtil::MapEnclosedRectWith2dAxisAlignedTransform(transform, input);
+  EXPECT_EQ(gfx::Rect(2, 4, 6, 8), output);
+}
+
 }  // namespace
 }  // namespace cc

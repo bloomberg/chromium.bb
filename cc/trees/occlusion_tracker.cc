@@ -84,12 +84,9 @@ static SimpleEnclosedRegion TransformSurfaceOpaqueRegion(
 
   SimpleEnclosedRegion transformed_region;
   for (size_t i = 0; i < region.GetRegionComplexity(); ++i) {
-    bool clipped;
-    gfx::QuadF transformed_quad =
-        MathUtil::MapQuad(transform, gfx::QuadF(region.GetRect(i)), &clipped);
     gfx::Rect transformed_rect =
-        gfx::ToEnclosedRect(transformed_quad.BoundingBox());
-    DCHECK(!clipped);  // We only map if the transform preserves axis alignment.
+        MathUtil::MapEnclosedRectWith2dAxisAlignedTransform(transform,
+                                                            region.GetRect(i));
     if (have_clip_rect)
       transformed_rect.Intersect(clip_rect_in_new_target);
     transformed_region.Union(transformed_rect);
@@ -432,14 +429,9 @@ void OcclusionTracker<LayerType>::MarkOccludedBehindLayer(
   }
 
   for (size_t i = 0; i < opaque_contents.GetRegionComplexity(); ++i) {
-    bool clipped;
-    gfx::QuadF transformed_quad =
-        MathUtil::MapQuad(layer->draw_transform(),
-                          gfx::QuadF(opaque_contents.GetRect(i)),
-                          &clipped);
     gfx::Rect transformed_rect =
-        gfx::ToEnclosedRect(transformed_quad.BoundingBox());
-    DCHECK(!clipped);  // We only map if the transform preserves axis alignment.
+        MathUtil::MapEnclosedRectWith2dAxisAlignedTransform(
+            layer->draw_transform(), opaque_contents.GetRect(i));
     transformed_rect.Intersect(clip_rect_in_target);
     if (transformed_rect.width() < minimum_tracking_size_.width() &&
         transformed_rect.height() < minimum_tracking_size_.height())
@@ -450,6 +442,7 @@ void OcclusionTracker<LayerType>::MarkOccludedBehindLayer(
       continue;
 
     // Save the occluding area in screen space for debug visualization.
+    bool clipped;
     gfx::QuadF screen_space_quad = MathUtil::MapQuad(
         layer->render_target()->render_surface()->screen_space_transform(),
         gfx::QuadF(transformed_rect), &clipped);
@@ -469,11 +462,9 @@ void OcclusionTracker<LayerType>::MarkOccludedBehindLayer(
   for (Region::Iterator non_opaque_content_rects(non_opaque_contents);
        non_opaque_content_rects.has_rect();
        non_opaque_content_rects.next()) {
-    // We've already checked for clipping in the MapQuad call above, these calls
-    // should not clip anything further.
-    gfx::Rect transformed_rect = gfx::ToEnclosedRect(
-        MathUtil::MapClippedRect(layer->draw_transform(),
-                                 gfx::RectF(non_opaque_content_rects.rect())));
+    gfx::Rect transformed_rect =
+        MathUtil::MapEnclosedRectWith2dAxisAlignedTransform(
+            layer->draw_transform(), non_opaque_content_rects.rect());
     transformed_rect.Intersect(clip_rect_in_target);
     if (transformed_rect.IsEmpty())
       continue;
