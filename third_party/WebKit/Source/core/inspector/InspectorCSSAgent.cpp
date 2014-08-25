@@ -999,8 +999,11 @@ PassRefPtr<TypeBuilder::CSS::CSSMedia> InspectorCSSAgent::buildMediaObject(const
 
     const MediaQuerySet* queries = media->queries();
     const WillBeHeapVector<OwnPtrWillBeMember<MediaQuery> >& queryVector = queries->queryVector();
+    OwnPtr<MediaQueryEvaluator> mediaEvaluator = adoptPtr(new MediaQueryEvaluator(parentStyleSheet->ownerDocument()->frame()));
+
+    RefPtr<TypeBuilder::Array<TypeBuilder::CSS::MediaQuery> > mediaListArray = TypeBuilder::Array<TypeBuilder::CSS::MediaQuery>::create();
+    RefPtr<MediaValues> mediaValues = MediaValues::createDynamicIfFrameExists(parentStyleSheet->ownerDocument()->frame());
     bool hasMediaQueryItems = false;
-    RefPtr<TypeBuilder::Array<TypeBuilder::Array<TypeBuilder::CSS::MediaQueryExpression> > > mediaListArray = TypeBuilder::Array<TypeBuilder::Array<TypeBuilder::CSS::MediaQueryExpression> >::create();
     for (size_t i = 0; i < queryVector.size(); ++i) {
         MediaQuery* query = queryVector.at(i).get();
         const ExpressionHeapVector& expressions = query->expressions();
@@ -1016,7 +1019,7 @@ PassRefPtr<TypeBuilder::CSS::CSSMedia> InspectorCSSAgent::buildMediaObject(const
                 .setValue(expValue.value)
                 .setUnit(String(valueName))
                 .setFeature(mediaQueryExp->mediaFeature());
-            RefPtr<MediaValues> mediaValues = MediaValues::createDynamicIfFrameExists(parentStyleSheet->ownerDocument()->frame());
+
             int computedLength;
             if (mediaValues->computeLength(expValue.value, expValue.unit, computedLength))
                 mediaQueryExpression->setComputedLength(computedLength);
@@ -1024,10 +1027,13 @@ PassRefPtr<TypeBuilder::CSS::CSSMedia> InspectorCSSAgent::buildMediaObject(const
             expressionArray->addItem(mediaQueryExpression);
             hasExpressionItems = true;
         }
-        if (hasExpressionItems) {
-            mediaListArray->addItem(expressionArray);
-            hasMediaQueryItems = true;
-        }
+        if (!hasExpressionItems)
+            continue;
+        RefPtr<TypeBuilder::CSS::MediaQuery> mediaQuery = TypeBuilder::CSS::MediaQuery::create()
+            .setActive(mediaEvaluator->eval(query, nullptr))
+            .setExpressions(expressionArray);
+        mediaListArray->addItem(mediaQuery);
+        hasMediaQueryItems = true;
     }
 
     RefPtr<TypeBuilder::CSS::CSSMedia> mediaObject = TypeBuilder::CSS::CSSMedia::create()

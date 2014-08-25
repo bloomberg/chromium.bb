@@ -34,9 +34,10 @@ function test()
             }
             for (var j = 0; j < mediaRule.mediaList.length; ++j) {
                 var mediaQuery = mediaRule.mediaList[j];
-                InspectorTest.log("    mediaQuery #" + j);
-                for (var k = 0; k < mediaQuery.length; ++k) {
-                    var expression = mediaQuery[k];
+                var suffix = mediaRule.sourceURL.indexOf("active-media-queries.css") !== -1 ? " active: " + mediaQuery.active : "";
+                InspectorTest.log("    mediaQuery #" + j + suffix);
+                for (var k = 0; k < mediaQuery.expressions.length; ++k) {
+                    var expression = mediaQuery.expressions[k];
                     InspectorTest.log("        mediaExpression #" + k);
                     InspectorTest.log("            feature: " + expression.feature);
                     InspectorTest.log("            value: " + expression.value + expression.unit);
@@ -50,6 +51,7 @@ function test()
 };
 </script>
 <link rel="stylesheet" media="print and (min-width: 8.5in)" href="./resources/media-queries.css"></link>
+<link rel="stylesheet" href="./resources/active-media-queries.css"></link>
 <style>
 @media screen and (device-aspect-ratio: 16/9), screen and (device-aspect-ratio: 16/10) {
     * {

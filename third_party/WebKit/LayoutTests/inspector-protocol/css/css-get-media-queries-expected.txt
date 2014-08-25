@@ -1,4 +1,17 @@
 mediaRule #0
+    text: (max-width: 0px), (min-width: 1000em)
+    source: mediaRule
+    range: {"startLine":4,"startColumn":0,"endLine":4,"endColumn":52}
+    mediaQuery #0 active: false
+        mediaExpression #0
+            feature: max-width
+            value: 0px
+    mediaQuery #1 active: false
+        mediaExpression #0
+            feature: min-width
+            value: 1000em
+            computed length: 16000
+mediaRule #1
     text: (max-width: 100px), (max-width: 72em)
     source: mediaRule
     range: {"startLine":14,"startColumn":0,"endLine":14,"endColumn":44}
@@ -12,7 +25,20 @@ mediaRule #0
             feature: max-width
             value: 72em
             computed length: 1152
-mediaRule #1
+mediaRule #2
+    text: (max-width: 10px) and (min-width: 20px)
+    source: mediaRule
+    range: {"startLine":5,"startColumn":0,"endLine":5,"endColumn":46}
+    mediaQuery #0 active: false
+        mediaExpression #0
+            feature: max-width
+            value: 10px
+            computed length: 10
+        mediaExpression #1
+            feature: min-width
+            value: 20px
+            computed length: 20
+mediaRule #3
     text: (max-width: 200px) and (min-width: 100px)
     source: mediaRule
     range: {"startLine":6,"startColumn":4,"endLine":6,"endColumn":52}
@@ -25,7 +51,7 @@ mediaRule #1
             feature: min-width
             value: 100px
             computed length: 100
-mediaRule #2
+mediaRule #4
     text: (min-monochrome: 8)
     source: mediaRule
     range: {"startLine":15,"startColumn":4,"endLine":15,"endColumn":38}
@@ -33,12 +59,26 @@ mediaRule #2
         mediaExpression #0
             feature: min-monochrome
             value: 8
-mediaRule #3
+mediaRule #5
+    text: (min-width: 1px), (max-width: 1000em)
+    source: mediaRule
+    range: {"startLine":1,"startColumn":0,"endLine":1,"endColumn":52}
+    mediaQuery #0 active: true
+        mediaExpression #0
+            feature: min-width
+            value: 1px
+            computed length: 1
+    mediaQuery #1 active: true
+        mediaExpression #0
+            feature: max-width
+            value: 1000em
+            computed length: 16000
+mediaRule #6
     text: (orientation: portrait)
     source: mediaRule
     range: {"startLine":7,"startColumn":4,"endLine":7,"endColumn":42}
     mediaList is empty
-mediaRule #4
+mediaRule #7
     text: handheld and (min-width: 20em), screen and (min-width: 20em)
     source: mediaRule
     range: {"startLine":1,"startColumn":4,"endLine":1,"endColumn":71}
@@ -52,12 +92,12 @@ mediaRule #4
             feature: min-width
             value: 20em
             computed length: 320
-mediaRule #5
+mediaRule #8
     text: not all
     source: mediaRule
     range: {"startLine":22,"startColumn":0,"endLine":22,"endColumn":9}
     mediaList is empty
-mediaRule #6
+mediaRule #9
     text: print and (min-width: 8.5in)
     source: linkedSheet
     range: undefined
@@ -66,12 +106,12 @@ mediaRule #6
             feature: min-width
             value: 8.5in
             computed length: 816
-mediaRule #7
+mediaRule #10
     text: screen and (device-aspect-ratio: 16/9), screen and (device-aspect-ratio: 16/10)
     source: mediaRule
     range: {"startLine":1,"startColumn":0,"endLine":1,"endColumn":86}
     mediaList is empty
-mediaRule #8
+mediaRule #11
     text: screen and (min-resolution: 2dppx)
     source: mediaRule
     range: {"startLine":0,"startColumn":0,"endLine":0,"endColumn":41}

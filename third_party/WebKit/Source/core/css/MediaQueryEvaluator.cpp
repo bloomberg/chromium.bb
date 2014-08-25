@@ -117,6 +117,26 @@ static bool applyRestrictor(MediaQuery::Restrictor r, bool value)
     return r == MediaQuery::Not ? !value : value;
 }
 
+bool MediaQueryEvaluator::eval(const MediaQuery* query, MediaQueryResultList* viewportDependentMediaQueryResults) const
+{
+    if (!mediaTypeMatch(query->mediaType()))
+        return applyRestrictor(query->restrictor(), false);
+
+    const ExpressionHeapVector& expressions = query->expressions();
+    // Iterate through expressions, stop if any of them eval to false (AND semantics).
+    size_t i = 0;
+    for (; i < expressions.size(); ++i) {
+        bool exprResult = eval(expressions.at(i).get());
+        if (viewportDependentMediaQueryResults && expressions.at(i)->isViewportDependent())
+            viewportDependentMediaQueryResults->append(adoptRefWillBeNoop(new MediaQueryResult(*expressions.at(i), exprResult)));
+        if (!exprResult)
+            break;
+    }
+
+    // Assume true if we are at the end of the list, otherwise assume false.
+    return applyRestrictor(query->restrictor(), expressions.size() == i);
+}
+
 bool MediaQueryEvaluator::eval(const MediaQuerySet* querySet, MediaQueryResultList* viewportDependentMediaQueryResults) const
 {
     if (!querySet)
@@ -128,27 +148,8 @@ bool MediaQueryEvaluator::eval(const MediaQuerySet* querySet, MediaQueryResultLi
 
     // Iterate over queries, stop if any of them eval to true (OR semantics).
     bool result = false;
-    for (size_t i = 0; i < queries.size() && !result; ++i) {
-        MediaQuery* query = queries[i].get();
-
-        if (mediaTypeMatch(query->mediaType())) {
-            const ExpressionHeapVector& expressions = query->expressions();
-            // Iterate through expressions, stop if any of them eval to false (AND semantics).
-            size_t j = 0;
-            for (; j < expressions.size(); ++j) {
-                bool exprResult = eval(expressions.at(j).get());
-                if (viewportDependentMediaQueryResults && expressions.at(j)->isViewportDependent())
-                    viewportDependentMediaQueryResults->append(adoptRefWillBeNoop(new MediaQueryResult(*expressions.at(j), exprResult)));
-                if (!exprResult)
-                    break;
-            }
-
-            // Assume true if we are at the end of the list, otherwise assume false.
-            result = applyRestrictor(query->restrictor(), expressions.size() == j);
-        } else {
-            result = applyRestrictor(query->restrictor(), false);
-        }
-    }
+    for (size_t i = 0; i < queries.size() && !result; ++i)
+        result = eval(queries[i].get(), viewportDependentMediaQueryResults);
 
     return result;
 }
