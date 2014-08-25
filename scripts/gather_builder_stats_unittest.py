@@ -54,7 +54,8 @@ class TestCLActionLogic(unittest.TestCase):
     failed_status = {'status' : constants.FINAL_STATUS_FAILED}
 
     t = itertools.count()
-    bot_config = constants.CQ_MASTER if cq else constants.PRE_CQ_GROUP
+    bot_config = (constants.CQ_MASTER if cq
+                  else constants.PRE_CQ_GROUP_GS_LOCATION)
 
     # pylint: disable=W0212
     TEST_METADATA = [

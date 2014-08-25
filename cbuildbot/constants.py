@@ -529,7 +529,9 @@ SHERIFF_TYPE_TO_URL = {
 
 # Useful config targets.
 CQ_MASTER = 'master-paladin'
-PRE_CQ_GROUP = 'trybot-pre-cq-group'
+
+# Useful google storage locations.
+PRE_CQ_GROUP_GS_LOCATION = 'trybot-pre-cq-group'
 
 # Email validation regex. Not quite fully compliant with RFC 2822, but good
 # approximation.

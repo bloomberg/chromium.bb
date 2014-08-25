@@ -25,8 +25,10 @@ from chromite.lib import table
 
 # Useful config targets.
 CQ_MASTER = constants.CQ_MASTER
-PRE_CQ_GROUP = constants.PRE_CQ_GROUP
 PFQ_MASTER = 'x86-generic-chromium-pfq'
+
+# Useful google storage locations.
+PRE_CQ_GROUP_GS_LOCATION = constants.PRE_CQ_GROUP_GS_LOCATION
 
 # Bot types
 CQ = constants.CQ
@@ -854,7 +856,7 @@ class PreCQStats(StatsManager):
   GET_SHEETS_VERSION = False
 
   def __init__(self, **kwargs):
-    super(PreCQStats, self).__init__(PRE_CQ_GROUP, **kwargs)
+    super(PreCQStats, self).__init__(PRE_CQ_GROUP_GS_LOCATION, **kwargs)
 
 
 class CLStats(StatsManager):

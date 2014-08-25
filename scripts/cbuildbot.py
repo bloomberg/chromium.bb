@@ -1663,29 +1663,49 @@ def _ParseCommandLine(parser, argv):
   return options, args
 
 
-def _SetupCidb(options):
+def _SetupCidb(options, build_config):
   """Set up CIDB the appropriate Setup call.
 
   Args:
     options: Command line options structure.
+    build_config: Config object for this build.
   """
-  # Do not use cidb if not run with --buildbot
-  if not options.buildbot:
-    cidb.CIDBConnectionFactory.SetupNoCidb()
-    return
-
   # TODO(akeshet): This is a temporary workaround to make sure that the cidb
   # is not used on waterfalls that the db schema does not support (in particular
   # the chromeos.chrome waterfall).
+  # See crbug.com/406940
   waterfall = os.environ.get('BUILDBOT_MASTERNAME', '')
   if not waterfall in ('chromeos', 'chromiumos', 'chromiumos.tryserver'):
     cidb.CIDBConnectionFactory.SetupNoCidb()
     return
 
-  if options.debug:
-    cidb.CIDBConnectionFactory.SetupDebugCidb()
-  else:
-    cidb.CIDBConnectionFactory.SetupProdCidb()
+  # TODO(akeshet): Clean up this code once we have better defined flags to
+  # specify on-or-off waterfall and on-or-off production runs of cbuildbot.
+  # See crbug.com/331417
+
+  # --buildbot runs should use the production database, unless the --debug flag
+  # is also present in which case they should use the debug database.
+  if options.buildbot:
+    if options.debug:
+      cidb.CIDBConnectionFactory.SetupDebugCidb()
+      return
+    else:
+      cidb.CIDBConnectionFactory.SetupProdCidb()
+      return
+
+  # --remote-trybot runs should use the debug database. With the exception of
+  # pre-cq builds, which should use the production database.
+  if options.remote_trybot:
+    if build_config['pre_cq']:
+      cidb.CIDBConnectionFactory.SetupProdCidb()
+      return
+    else:
+      cidb.CIDBConnectionFactory.SetupDebugCidb()
+      return
+
+  # If neither --buildbot nor --remote-trybot flag was used, don't use the
+  # database.
+  cidb.CIDBConnectionFactory.SetupNoCidb()
 
 
 # TODO(build): This function is too damn long.
@@ -1858,6 +1878,6 @@ def main(argv):
                 '_FetchSlaveStatuses',
                 return_value=mock_statuses)
 
-    _SetupCidb(options)
+    _SetupCidb(options, build_config)
 
     _RunBuildStagesWrapper(options, build_config)
