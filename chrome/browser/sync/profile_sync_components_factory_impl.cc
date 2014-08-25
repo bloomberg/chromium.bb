@@ -238,16 +238,17 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
   // Favicon sync is enabled by default. Register unless explicitly disabled.
   if (!disabled_types.Has(syncer::FAVICON_IMAGES) &&
       !disabled_types.Has(syncer::FAVICON_TRACKING)) {
+    // crbug/384552. We disable error uploading for this data types for now.
     pss->RegisterDataTypeController(
         new UIDataTypeController(
             BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
-            base::Bind(&ChromeReportUnrecoverableError),
+            base::Closure(),
             syncer::FAVICON_IMAGES,
             this));
     pss->RegisterDataTypeController(
         new UIDataTypeController(
             BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
-            base::Bind(&ChromeReportUnrecoverableError),
+            base::Closure(),
             syncer::FAVICON_TRACKING,
             this));
   }
