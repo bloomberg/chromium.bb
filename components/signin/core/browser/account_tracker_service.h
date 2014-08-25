@@ -48,6 +48,13 @@ class AccountTrackerService : public KeyedService,
     virtual void OnAccountRemoved(const AccountInfo& info) = 0;
   };
 
+  // Possible values for the kAccountIdMigrationState preference.
+  enum AccountIdMigrationState {
+    MIGRATION_NOT_STARTED,
+    MIGRATION_IN_PROGRESS,
+    MIGRATION_DONE
+  };
+
   AccountTrackerService();
   virtual ~AccountTrackerService();
 
@@ -71,6 +78,9 @@ class AccountTrackerService : public KeyedService,
   // Indicates if all user information has been fetched. If the result is false,
   // there are still unfininshed fetchers.
   virtual bool IsAllUserInfoFetched() const;
+
+  AccountIdMigrationState GetMigrationState();
+  static AccountIdMigrationState GetMigrationState(PrefService* pref_service);
 
  private:
   friend class AccountInfoFetcher;

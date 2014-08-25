@@ -6,6 +6,11 @@
 
 namespace prefs {
 
+// An integer property indicating the state of account id migration from
+// email to gaia id for the the profile.  See account_tracker_service.h
+// for possible values.
+const char kAccountIdMigrationState[] = "account_id_migration_state";
+
 // Boolean identifying whether reverse auto-login is enabled.
 const char kAutologinEnabled[] = "autologin.enabled";
 

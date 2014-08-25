@@ -11,6 +11,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
+#include "components/signin/core/common/signin_pref_names.h"
 
 AccountTrackerServiceFactory::AccountTrackerServiceFactory()
     : BrowserContextKeyedServiceFactory(
@@ -38,6 +39,10 @@ void AccountTrackerServiceFactory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterListPref(
       AccountTrackerService::kAccountInfoPref,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterIntegerPref(
+      prefs::kAccountIdMigrationState,
+      AccountTrackerService::MIGRATION_NOT_STARTED,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 

@@ -9,6 +9,7 @@
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "components/signin/core/common/signin_pref_names.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
@@ -240,6 +241,18 @@ AccountTrackerService::FindAccountInfoByEmail(
   }
 
   return AccountInfo();
+}
+
+AccountTrackerService::AccountIdMigrationState
+AccountTrackerService::GetMigrationState() {
+  return GetMigrationState(pref_service_);
+}
+
+// static
+AccountTrackerService::AccountIdMigrationState
+AccountTrackerService::GetMigrationState(PrefService* pref_service) {
+  return static_cast<AccountTrackerService::AccountIdMigrationState>(
+      pref_service->GetInteger(prefs::kAccountIdMigrationState));
 }
 
 void AccountTrackerService::OnRefreshTokenAvailable(
