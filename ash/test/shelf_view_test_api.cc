@@ -114,6 +114,11 @@ int ShelfViewTestAPI::GetButtonSpacing() {
   return kShelfButtonSpacing;
 }
 
+void ShelfViewTestAPI::ButtonPressed(views::Button* sender,
+                                     const ui::Event& event) {
+  return shelf_view_->ButtonPressed(sender, event);
+}
+
 bool ShelfViewTestAPI::SameDragType(ShelfItemType typea,
                                     ShelfItemType typeb) const {
   return shelf_view_->SameDragType(typea, typeb);

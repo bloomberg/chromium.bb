@@ -1669,6 +1669,13 @@ void ShelfView::ButtonPressed(views::Button* sender, const ui::Event& event) {
   if (!IsUsableEvent(event))
     return;
 
+  // Don't activate the item twice on double-click. Otherwise the window starts
+  // animating open due to the first click, then immediately minimizes due to
+  // the second click. The user most likely intended to open or minimize the
+  // item once, not do both.
+  if (event.flags() & ui::EF_IS_DOUBLE_CLICK)
+    return;
+
   {
     ScopedTargetRootWindow scoped_target(
         sender->GetWidget()->GetNativeView()->GetRootWindow());

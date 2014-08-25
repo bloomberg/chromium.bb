@@ -13,6 +13,14 @@ class Rect;
 class Size;
 }
 
+namespace ui {
+class Event;
+}
+
+namespace views {
+class Button;
+}
+
 namespace ash {
 class OverflowBubble;
 class ShelfButton;
@@ -69,6 +77,9 @@ class ShelfViewTestAPI {
 
   // Returns the button space size.
   int GetButtonSpacing();
+
+  // Wrapper for ShelfView::ButtonPressed.
+  void ButtonPressed(views::Button* sender, const ui::Event& event);
 
   // Wrapper for ShelfView::SameDragType.
   bool SameDragType(ShelfItemType typea, ShelfItemType typeb) const;
