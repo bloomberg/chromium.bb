@@ -316,6 +316,10 @@ class GLRenderingVDAClient
   // The number of VDA::Decode calls per second. This is to simulate webrtc.
   int decode_calls_per_second_;
   bool render_as_thumbnails_;
+  // The number of frames that are not returned from rendering_helper_. We
+  // checks this count to ensure all frames are rendered before entering the
+  // CS_RESET state.
+  int frames_at_render_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(GLRenderingVDAClient);
 };
@@ -357,7 +361,8 @@ GLRenderingVDAClient::GLRenderingVDAClient(
       suppress_rendering_(suppress_rendering),
       delay_reuse_after_frame_num_(delay_reuse_after_frame_num),
       decode_calls_per_second_(decode_calls_per_second),
-      render_as_thumbnails_(render_as_thumbnails) {
+      render_as_thumbnails_(render_as_thumbnails),
+      frames_at_render_(0) {
   CHECK_GT(num_in_flight_decodes, 0);
   CHECK_GT(num_play_throughs, 0);
   // |num_in_flight_decodes_| is unsupported if |decode_calls_per_second_| > 0.
@@ -497,6 +502,7 @@ void GLRenderingVDAClient::PictureReady(const media::Picture& picture) {
                             base::Bind(&GLRenderingVDAClient::ReturnPicture,
                                        AsWeakPtr(),
                                        picture.picture_buffer_id()));
+  ++frames_at_render_;
 
   if (render_as_thumbnails_) {
     rendering_helper_->RenderThumbnail(video_frame->texture_target(),
@@ -509,6 +515,14 @@ void GLRenderingVDAClient::PictureReady(const media::Picture& picture) {
 void GLRenderingVDAClient::ReturnPicture(int32 picture_buffer_id) {
   if (decoder_deleted())
     return;
+
+  --frames_at_render_;
+  if (frames_at_render_ == 0 && state_ == CS_RESETTING) {
+    SetState(CS_RESET);
+    DeleteDecoder();
+    return;
+  }
+
   if (num_decoded_frames_ > delay_reuse_after_frame_num_) {
     base::MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
@@ -550,8 +564,6 @@ void GLRenderingVDAClient::NotifyResetDone() {
   if (decoder_deleted())
     return;
 
-  rendering_helper_->DropPendingFrames(window_id_);
-
   if (reset_after_frame_num_ == MID_STREAM_RESET) {
     reset_after_frame_num_ = END_OF_STREAM_RESET;
     DecodeNextFragment();
@@ -569,9 +581,12 @@ void GLRenderingVDAClient::NotifyResetDone() {
     return;
   }
 
-  SetState(CS_RESET);
-  if (!decoder_deleted())
+  rendering_helper_->Flush(window_id_);
+
+  if (frames_at_render_ == 0) {
+    SetState(CS_RESET);
     DeleteDecoder();
+  }
 }
 
 void GLRenderingVDAClient::NotifyError(VideoDecodeAccelerator::Error error) {

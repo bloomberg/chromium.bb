@@ -100,8 +100,9 @@ class RenderingHelper {
   void QueueVideoFrame(size_t window_id,
                        scoped_refptr<VideoFrameTexture> video_frame);
 
-  // Drops all the pending video frames of the specified window.
-  void DropPendingFrames(size_t window_id);
+  // Flushes the pending frames. Notify the rendering_helper there won't be
+  // more video frames.
+  void Flush(size_t window_id);
 
   // Delete |texture_id|.
   void DeleteTexture(uint32 texture_id);
@@ -129,6 +130,9 @@ class RenderingHelper {
     // client is falling behind on providing us with new frames during
     // timer-driven playback.
     bool last_frame_rendered;
+
+    // True if there won't be any new video frames comming.
+    bool is_flushing;
 
     // The video frames pending for rendering.
     std::queue<scoped_refptr<VideoFrameTexture> > pending_frames;

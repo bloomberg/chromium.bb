@@ -74,7 +74,8 @@ VideoFrameTexture::~VideoFrameTexture() {
   base::ResetAndReturn(&no_longer_needed_cb_).Run();
 }
 
-RenderingHelper::RenderedVideo::RenderedVideo() : last_frame_rendered(false) {
+RenderingHelper::RenderedVideo::RenderedVideo()
+    : last_frame_rendered(false), is_flushing(false) {
 }
 
 RenderingHelper::RenderedVideo::~RenderedVideo() {
@@ -395,6 +396,7 @@ void RenderingHelper::QueueVideoFrame(
     scoped_refptr<VideoFrameTexture> video_frame) {
   CHECK_EQ(base::MessageLoop::current(), message_loop_);
   RenderedVideo* video = &videos_[window_id];
+  DCHECK(!video->is_flushing);
 
   // Pop the last frame if it has been rendered.
   if (video->last_frame_rendered) {
@@ -406,13 +408,6 @@ void RenderingHelper::QueueVideoFrame(
   }
 
   video->pending_frames.push(video_frame);
-}
-
-void RenderingHelper::DropPendingFrames(size_t window_id) {
-  CHECK_EQ(base::MessageLoop::current(), message_loop_);
-  RenderedVideo* video = &videos_[window_id];
-  video->pending_frames = std::queue<scoped_refptr<VideoFrameTexture> >();
-  video->last_frame_rendered = false;
 }
 
 void RenderingHelper::RenderTexture(uint32 texture_target, uint32 texture_id) {
@@ -503,6 +498,10 @@ void RenderingHelper::GetThumbnailsAsRGB(std::vector<unsigned char>* rgb,
   done->Signal();
 }
 
+void RenderingHelper::Flush(size_t window_id) {
+  videos_[window_id].is_flushing = true;
+}
+
 void RenderingHelper::RenderContent() {
   CHECK_EQ(base::MessageLoop::current(), message_loop_);
   glUniform1i(glGetUniformLocation(program_, "tex_flip"), 1);
@@ -526,9 +525,10 @@ void RenderingHelper::RenderContent() {
       GLSetViewPort(video->render_area);
       RenderTexture(frame->texture_target(), frame->texture_id());
 
-      if (video->pending_frames.size() > 1) {
+      if (video->pending_frames.size() > 1 || video->is_flushing) {
         frames_to_be_returned.push_back(video->pending_frames.front());
         video->pending_frames.pop();
+        video->last_frame_rendered = false;
       } else {
         video->last_frame_rendered = true;
       }
