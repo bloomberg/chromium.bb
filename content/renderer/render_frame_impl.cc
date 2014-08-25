@@ -777,6 +777,7 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
                         OnAddStyleSheetByURL)
     IPC_MESSAGE_HANDLER(FrameMsg_SetAccessibilityMode,
                         OnSetAccessibilityMode)
+    IPC_MESSAGE_HANDLER(FrameMsg_DisownOpener, OnDisownOpener)
 #if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(InputMsg_CopyToFindPboard, OnCopyToFindPboard)
 #endif
@@ -1270,6 +1271,16 @@ void RenderFrameImpl::OnSetAccessibilityMode(AccessibilityMode new_mode) {
   else
     renderer_accessibility_ = new RendererAccessibilityFocusOnly(this);
 #endif
+}
+
+void RenderFrameImpl::OnDisownOpener() {
+  // TODO(creis): We should only see this for main frames for now.  To support
+  // disowning the opener on subframes, we will need to move WebContentsImpl's
+  // opener_ to FrameTreeNode.
+  CHECK(!frame_->parent());
+
+  if (frame_->opener())
+    frame_->setOpener(NULL);
 }
 
 void RenderFrameImpl::OnReload(bool ignore_cache) {

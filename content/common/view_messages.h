@@ -668,9 +668,6 @@ IPC_MESSAGE_ROUTED2(ViewMsg_PluginActionAt,
 IPC_MESSAGE_ROUTED1(ViewMsg_PostMessageEvent,
                     ViewMsg_PostMessage_Params)
 
-// Requests that the RenderView's main frame sets its opener to null.
-IPC_MESSAGE_ROUTED0(ViewMsg_DisownOpener)
-
 // Change the zoom level for the current main frame.  If the level actually
 // changes, a ViewHostMsg_DidZoomURL message will be sent back to the browser
 // telling it what url got zoomed and what its current zoom level is.

@@ -454,24 +454,24 @@ void RenderFrameHostManager::DidNavigateFrame(
   }
 }
 
-// TODO(creis): Take in RenderFrameHost instead, since frames can have openers.
-void RenderFrameHostManager::DidDisownOpener(RenderViewHost* render_view_host) {
-  // Notify all RenderViewHosts but the one that notified us.  This is necessary
+void RenderFrameHostManager::DidDisownOpener(
+    RenderFrameHost* render_frame_host) {
+  // Notify all RenderFrameHosts but the one that notified us. This is necessary
   // in case a process swap has occurred while the message was in flight.
   for (RenderFrameProxyHostMap::iterator iter = proxy_hosts_.begin();
        iter != proxy_hosts_.end();
        ++iter) {
     DCHECK_NE(iter->second->GetSiteInstance(),
               current_frame_host()->GetSiteInstance());
-    iter->second->GetRenderViewHost()->DisownOpener();
+    iter->second->DisownOpener();
   }
 
-  if (render_frame_host_->render_view_host() != render_view_host)
-    render_frame_host_->render_view_host()->DisownOpener();
+  if (render_frame_host_.get() != render_frame_host)
+    render_frame_host_->DisownOpener();
 
   if (pending_render_frame_host_ &&
-      pending_render_frame_host_->render_view_host() != render_view_host) {
-    pending_render_frame_host_->render_view_host()->DisownOpener();
+      pending_render_frame_host_.get() != render_frame_host) {
+    pending_render_frame_host_->DisownOpener();
   }
 }
 

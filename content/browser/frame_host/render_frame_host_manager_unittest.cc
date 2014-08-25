@@ -1190,7 +1190,6 @@ TEST_F(RenderFrameHostManagerTest, DisownOpener) {
 // Test that a page can disown a same-site opener of the WebContents.
 TEST_F(RenderFrameHostManagerTest, DisownSameSiteOpener) {
   const GURL kUrl1("http://www.google.com/");
-  const GURL kUrl2("http://www.chromium.org/");
 
   // Navigate to an initial URL.
   contents()->NavigateAndCommit(kUrl1);

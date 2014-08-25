@@ -357,9 +357,6 @@ class CONTENT_EXPORT RenderViewHostImpl
     return main_frame_routing_id_;
   }
 
-  // Set the opener to null in the renderer process.
-  void DisownOpener();
-
   bool is_waiting_for_beforeunload_ack() {
     return is_waiting_for_beforeunload_ack_;
   }

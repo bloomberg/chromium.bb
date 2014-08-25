@@ -221,6 +221,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // navigation. False means we're closing the entire tab.
   void DispatchBeforeUnload(bool for_cross_site_transition);
 
+  // Set the frame's opener to null in the renderer process in response to an
+  // action in another renderer process.
+  void DisownOpener();
+
   // Deletes the current selection plus the specified number of characters
   // before and after the selection or caret.
   void ExtendSelectionAndDelete(size_t before, size_t after);

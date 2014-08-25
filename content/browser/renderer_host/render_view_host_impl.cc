@@ -1374,10 +1374,6 @@ WebPreferences RenderViewHostImpl::GetWebkitPreferences() {
   return *web_preferences_;
 }
 
-void RenderViewHostImpl::DisownOpener() {
-  Send(new ViewMsg_DisownOpener(GetRoutingID()));
-}
-
 void RenderViewHostImpl::UpdateWebkitPreferences(const WebPreferences& prefs) {
   web_preferences_.reset(new WebPreferences(prefs));
   Send(new ViewMsg_UpdateWebPreferences(GetRoutingID(), prefs));

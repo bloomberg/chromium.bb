@@ -100,6 +100,10 @@ class RenderFrameProxyHost
     return cross_process_frame_connector_.get();
   }
 
+  // Set the frame's opener to null in the renderer process in response to an
+  // action in another renderer process.
+  void DisownOpener();
+
  private:
   // This RenderFrameProxyHost's routing id.
   int routing_id_;

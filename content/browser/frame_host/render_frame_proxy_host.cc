@@ -108,4 +108,9 @@ bool RenderFrameProxyHost::InitRenderFrameProxy() {
   return true;
 }
 
+void RenderFrameProxyHost::DisownOpener() {
+  Send(new FrameMsg_DisownOpener(GetRoutingID()));
+}
+
+
 }  // namespace content

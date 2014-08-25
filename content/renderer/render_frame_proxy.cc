@@ -149,6 +149,7 @@ bool RenderFrameProxy::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameMsg_BuffersSwapped, OnBuffersSwapped)
     IPC_MESSAGE_HANDLER_GENERIC(FrameMsg_CompositorFrameSwapped,
                                 OnCompositorFrameSwapped(msg))
+    IPC_MESSAGE_HANDLER(FrameMsg_DisownOpener, OnDisownOpener)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -218,6 +219,27 @@ void RenderFrameProxy::OnCompositorFrameSwapped(const IPC::Message& message) {
                                                 param.a.output_surface_id,
                                                 param.a.producing_host_id,
                                                 param.a.shared_memory_handle);
+}
+
+void RenderFrameProxy::OnDisownOpener() {
+  // TODO(creis): We should only see this for main frames for now.  To support
+  // disowning the opener on subframes, we will need to move WebContentsImpl's
+  // opener_ to FrameTreeNode.
+  CHECK(!web_frame_->parent());
+
+  // When there is a RenderFrame for this proxy, tell it to disown its opener.
+  // TODO(creis): Remove this when we only have WebRemoteFrames and make sure
+  // they know they have an opener.
+  RenderFrameImpl* render_frame =
+      RenderFrameImpl::FromRoutingID(frame_routing_id_);
+  if (render_frame) {
+    if (render_frame->GetWebFrame()->opener())
+      render_frame->GetWebFrame()->setOpener(NULL);
+    return;
+  }
+
+  if (web_frame_->opener())
+    web_frame_->setOpener(NULL);
 }
 
 }  // namespace

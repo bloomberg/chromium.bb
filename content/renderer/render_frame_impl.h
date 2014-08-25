@@ -520,6 +520,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnSetupTransitionView(const std::string& markup);
   void OnBeginExitTransition(const std::string& css_selector);
   void OnSetAccessibilityMode(AccessibilityMode new_mode);
+  void OnDisownOpener();
 #if defined(OS_MACOSX)
   void OnCopyToFindPboard();
 #endif

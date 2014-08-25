@@ -3682,7 +3682,7 @@ void WebContentsImpl::DidDisownOpener(RenderFrameHost* render_frame_host) {
   // Notify all swapped out RenderViewHosts for this tab.  This is important
   // in case we go back to them, or if another window in those processes tries
   // to access window.opener.
-  GetRenderManager()->DidDisownOpener(render_frame_host->GetRenderViewHost());
+  GetRenderManager()->DidDisownOpener(render_frame_host);
 }
 
 void WebContentsImpl::DocumentOnLoadCompleted(

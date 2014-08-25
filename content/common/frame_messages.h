@@ -341,6 +341,9 @@ IPC_MESSAGE_ROUTED2(FrameMsg_CustomContextMenuAction,
                     content::CustomContextMenuContext /* custom_context */,
                     unsigned /* action */)
 
+// Requests that the RenderFrame or RenderFrameProxy sets its opener to null.
+IPC_MESSAGE_ROUTED0(FrameMsg_DisownOpener)
+
 // Instructs the renderer to create a new RenderFrame object with |routing_id|.
 // The new frame should be created as a child of the object identified by
 // |parent_routing_id| or as top level if that is MSG_ROUTING_NONE.

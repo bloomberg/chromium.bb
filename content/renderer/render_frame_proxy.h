@@ -106,6 +106,7 @@ class CONTENT_EXPORT RenderFrameProxy
   void OnChildFrameProcessGone();
   void OnBuffersSwapped(const FrameMsg_BuffersSwapped_Params& params);
   void OnCompositorFrameSwapped(const IPC::Message& message);
+  void OnDisownOpener();
 
   // The routing ID by which this RenderFrameProxy is known.
   const int routing_id_;

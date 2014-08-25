@@ -249,7 +249,7 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
   void DidNavigateFrame(RenderFrameHostImpl* render_frame_host);
 
   // Called when a renderer sets its opener to null.
-  void DidDisownOpener(RenderViewHost* render_view_host);
+  void DidDisownOpener(RenderFrameHost* render_frame_host);
 
   // Helper method to create and initialize a RenderFrameHost.  If |swapped_out|
   // is true, it will be initially placed on the swapped out hosts list.
