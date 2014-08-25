@@ -93,6 +93,8 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   // Returns true if keyboard is currently visible.
   bool keyboard_visible() { return keyboard_visible_; }
 
+  bool show_on_resize() { return show_on_resize_; }
+
   // Returns the current keyboard bounds. When the keyboard is not shown,
   // an empty rectangle will get returned.
   const gfx::Rect& current_keyboard_bounds() {
@@ -153,6 +155,7 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
 
   ui::InputMethod* input_method_;
   bool keyboard_visible_;
+  bool show_on_resize_;
   bool lock_keyboard_;
   ui::TextInputType type_;
 

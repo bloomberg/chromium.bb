@@ -49,11 +49,11 @@ void KeyboardLayoutManager::SetChildBounds(aura::Window* child,
 
   gfx::Rect old_bounds = child->bounds();
   SetChildBoundsDirect(child, requested_bounds);
-  if (old_bounds.height() == 0 && child->bounds().height() != 0) {
-    // The window height is set to 0 initially. If the height of |old_bounds| is
-    // 0 and the new bounds is not 0, it probably means window.resizeTo is
-    // called to set the window height. We should try to show keyboard again in
-    // case the show keyboard request is called before the height is set.
+  if (old_bounds.height() == 0 && child->bounds().height() != 0 &&
+      controller_->show_on_resize()) {
+    // The window height is set to 0 initially or before switch to an IME in a
+    // different extension. Virtual keyboard window may wait for this bounds
+    // change to correctly animate in.
     controller_->ShowKeyboard(false);
   } else {
     // We need to send out this notification only if keyboard is visible since

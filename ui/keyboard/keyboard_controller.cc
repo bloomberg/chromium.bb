@@ -206,6 +206,7 @@ class WindowBoundsChangeObserver : public aura::WindowObserver {
   virtual void OnWindowBoundsChanged(aura::Window* window,
                                      const gfx::Rect& old_bounds,
                                      const gfx::Rect& new_bounds) OVERRIDE;
+  virtual void OnWindowDestroyed(aura::Window* window) OVERRIDE;
 };
 
 void WindowBoundsChangeObserver::OnWindowBoundsChanged(aura::Window* window,
@@ -213,6 +214,11 @@ void WindowBoundsChangeObserver::OnWindowBoundsChanged(aura::Window* window,
   KeyboardController* controller =  KeyboardController::GetInstance();
   if (controller)
     controller->UpdateWindowInsets(window);
+}
+
+void WindowBoundsChangeObserver::OnWindowDestroyed(aura::Window* window) {
+   if (window->HasObserver(this))
+     window->RemoveObserver(this);
 }
 
 // static
@@ -288,7 +294,10 @@ void KeyboardController::NotifyKeyboardBoundsChanging(
         // the render process crashed.
         if (view) {
           aura::Window *window = view->GetNativeView();
-          if (window != keyboard_window &&
+          // If virtual keyboard failed to load, a widget that displays error
+          // message will be created and adds as a child of the virtual keyboard
+          // window. We want to avoid add BoundsChangedObserver to that window.
+          if (GetFrameWindow(window) != keyboard_window &&
               window->GetRootWindow() == root_window) {
             gfx::Rect window_bounds = window->GetBoundsInScreen();
             gfx::Rect intersect = gfx::IntersectRects(window_bounds,
@@ -360,8 +369,12 @@ void KeyboardController::OnWindowHierarchyChanged(
 }
 
 void KeyboardController::Reload() {
-  if (proxy_->HasKeyboardWindow())
+  if (proxy_->HasKeyboardWindow()) {
+    // A reload should never try to show virtual keyboard. If keyboard is not
+    // visible before reload, it should keep invisible after reload.
+    show_on_resize_ = false;
     proxy_->ReloadKeyboardIfNeeded();
+  }
 }
 
 void KeyboardController::OnTextInputStateChanged(
@@ -453,8 +466,12 @@ void KeyboardController::ShowKeyboardInternal() {
 
   proxy_->ReloadKeyboardIfNeeded();
 
-  if (keyboard_visible_ || proxy_->GetKeyboardWindow()->bounds().height() == 0)
+  if (keyboard_visible_) {
     return;
+  } else if (proxy_->GetKeyboardWindow()->bounds().height() == 0) {
+    show_on_resize_ = true;
+    return;
+  }
 
   keyboard_visible_ = true;
 
