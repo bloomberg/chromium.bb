@@ -107,6 +107,7 @@ group("root") {
     "//third_party/snappy",
     "//third_party/speex",
     "//third_party/widevine/cdm:version_h",
+    "//third_party/webrtc",
     "//third_party/zlib",
     "//third_party:jpeg",
     "//tools/gn",
