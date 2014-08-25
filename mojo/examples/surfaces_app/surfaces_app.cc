@@ -18,6 +18,8 @@
 #include "mojo/services/public/cpp/surfaces/surfaces_type_converters.h"
 #include "mojo/services/public/interfaces/gpu/gpu.mojom.h"
 #include "mojo/services/public/interfaces/native_viewport/native_viewport.mojom.h"
+#include "mojo/services/public/interfaces/surfaces/surfaces.mojom.h"
+#include "mojo/services/public/interfaces/surfaces/surfaces_service.mojom.h"
 #include "ui/gfx/rect.h"
 
 namespace mojo {
@@ -41,8 +43,10 @@ class SurfacesApp : public ApplicationDelegate,
     connection->ConnectToService("mojo:mojo_native_viewport_service",
                                  &gpu_service_);
 
-    connection->ConnectToService("mojo:mojo_surfaces_service", &surfaces_);
-    surfaces_.set_client(this);
+    connection->ConnectToService("mojo:mojo_surfaces_service",
+                                 &surfaces_service_);
+    surfaces_service_->CreateSurfaceConnection(base::Bind(
+        &SurfacesApp::SurfaceConnectionCreated, base::Unretained(this)));
 
     size_ = gfx::Size(800, 600);
 
@@ -61,7 +65,6 @@ class SurfacesApp : public ApplicationDelegate,
                              Size::From(child_size_),
                              base::Bind(&SurfacesApp::ChildTwoProducedFrame,
                                         base::Unretained(this)));
-    embedder_.reset(new Embedder(surfaces_.get()));
     return true;
   }
 
@@ -91,8 +94,10 @@ class SurfacesApp : public ApplicationDelegate,
         base::TimeDelta::FromMilliseconds(50));
   }
 
-  // SurfaceClient implementation.
-  virtual void SetIdNamespace(uint32_t id_namespace) OVERRIDE {
+  void SurfaceConnectionCreated(SurfacePtr surface, uint32_t id_namespace) {
+    surface_ = surface.Pass();
+    surface_.set_client(this);
+    embedder_.reset(new Embedder(surface_.get()));
     allocator_.reset(new cc::SurfaceIdAllocator(id_namespace));
     CreateSurfaceIfReady();
   }
@@ -124,7 +129,7 @@ class SurfacesApp : public ApplicationDelegate,
     CommandBufferPtr cb;
     gpu_service_->CreateOnscreenGLES2Context(
         native_viewport_id_, Size::From(size_), Get(&cb));
-    surfaces_->CreateGLES2BoundSurface(
+    surface_->CreateGLES2BoundSurface(
         cb.Pass(), SurfaceId::From(onscreen_id_), Size::From(size_));
     Draw(10);
   }
@@ -136,7 +141,8 @@ class SurfacesApp : public ApplicationDelegate,
   }
 
  private:
-  SurfacePtr surfaces_;
+  SurfacesServicePtr surfaces_service_;
+  SurfacePtr surface_;
   cc::SurfaceId onscreen_id_;
   uint64_t native_viewport_id_;
   scoped_ptr<cc::SurfaceIdAllocator> allocator_;

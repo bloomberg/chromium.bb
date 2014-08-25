@@ -443,6 +443,8 @@
         'services/surfaces/surfaces_impl.h',
         'services/surfaces/surfaces_service_application.cc',
         'services/surfaces/surfaces_service_application.h',
+        'services/surfaces/surfaces_service_impl.cc',
+        'services/surfaces/surfaces_service_impl.h',
       ],
     },
     {
@@ -582,8 +584,9 @@
       'target_name': 'mojo_surfaces_bindings',
       'type': 'static_library',
       'sources': [
-        'services/public/interfaces/surfaces/surfaces.mojom',
         'services/public/interfaces/surfaces/surface_id.mojom',
+        'services/public/interfaces/surfaces/surfaces.mojom',
+        'services/public/interfaces/surfaces/surfaces_service.mojom',
         'services/public/interfaces/surfaces/quads.mojom',
       ],
       'includes': [ 'public/tools/bindings/mojom_bindings_generator.gypi' ],

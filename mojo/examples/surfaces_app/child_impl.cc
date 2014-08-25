@@ -28,13 +28,16 @@ using cc::SolidColorDrawQuad;
 using cc::DelegatedFrameData;
 using cc::CompositorFrame;
 
-ChildImpl::ChildImpl(ApplicationConnection* surfaces_service_connection) {
-  surfaces_service_connection->ConnectToService(&surface_);
-  surface_.set_client(this);
+ChildImpl::ChildImpl(ApplicationConnection* surfaces_service_connection)
+    : weak_factory_(this) {
+  surfaces_service_connection->ConnectToService(&surfaces_service_);
+  surfaces_service_->CreateSurfaceConnection(base::Bind(
+      &ChildImpl::SurfaceConnectionCreated, weak_factory_.GetWeakPtr()));
 }
 
 ChildImpl::~ChildImpl() {
-  surface_->DestroySurface(mojo::SurfaceId::From(id_));
+  if (surface_)
+    surface_->DestroySurface(mojo::SurfaceId::From(id_));
 }
 
 void ChildImpl::ProduceFrame(
@@ -48,7 +51,10 @@ void ChildImpl::ProduceFrame(
     Draw();
 }
 
-void ChildImpl::SetIdNamespace(uint32_t id_namespace) {
+void ChildImpl::SurfaceConnectionCreated(SurfacePtr surface,
+                                         uint32_t id_namespace) {
+  surface_ = surface.Pass();
+  surface_.set_client(this);
   allocator_.reset(new cc::SurfaceIdAllocator(id_namespace));
   if (!produce_callback_.is_null())
     Draw();

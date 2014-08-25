@@ -44,9 +44,12 @@ static void ContextLostThunk(void*) {
 
 ChildGLImpl::ChildGLImpl(ApplicationConnection* surfaces_service_connection,
                          CommandBufferPtr command_buffer)
-    : start_time_(base::TimeTicks::Now()), next_resource_id_(1) {
-  surfaces_service_connection->ConnectToService(&surface_);
-  surface_.set_client(this);
+    : start_time_(base::TimeTicks::Now()),
+      next_resource_id_(1),
+      weak_factory_(this) {
+  surfaces_service_connection->ConnectToService(&surfaces_service_);
+  surfaces_service_->CreateSurfaceConnection(base::Bind(
+      &ChildGLImpl::SurfaceConnectionCreated, weak_factory_.GetWeakPtr()));
   context_ =
       MojoGLES2CreateContext(command_buffer.PassMessagePipe().release().value(),
                              &ContextLostThunk,
@@ -71,14 +74,15 @@ void ChildGLImpl::ProduceFrame(
   cube_.set_color(
       SkColorGetR(color_), SkColorGetG(color_), SkColorGetB(color_));
   produce_callback_ = callback;
-  if (allocator_)
-    AllocateSurface();
+  AllocateSurface();
 }
 
-void ChildGLImpl::SetIdNamespace(uint32_t id_namespace) {
+void ChildGLImpl::SurfaceConnectionCreated(SurfacePtr surface,
+                                           uint32_t id_namespace) {
+  surface_ = surface.Pass();
+  surface_.set_client(this);
   allocator_.reset(new cc::SurfaceIdAllocator(id_namespace));
-  if (!produce_callback_.is_null())
-    AllocateSurface();
+  AllocateSurface();
 }
 
 void ChildGLImpl::ReturnResources(Array<ReturnedResourcePtr> resources) {

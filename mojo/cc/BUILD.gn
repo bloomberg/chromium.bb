@@ -9,12 +9,17 @@ source_set("cc") {
   deps = [
     "//base",
     "//cc",
+    "//cc/surfaces",
     "//skia",
     "//gpu/command_buffer/client:gles2_implementation",
+    "//mojo/services/public/cpp/surfaces",
+    "//mojo/services/public/interfaces/surfaces",
   ] + mojo_gles2_for_shared_library
 
   sources = [
     "context_provider_mojo.cc",
     "context_provider_mojo.h",
+    "output_surface_mojo.cc",
+    "output_surface_mojo.h",
   ]
 }

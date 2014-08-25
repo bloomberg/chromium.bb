@@ -7,6 +7,7 @@
 
 #include "base/containers/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "cc/surfaces/surface_id.h"
 #include "cc/surfaces/surface_id_allocator.h"
@@ -16,6 +17,7 @@
 #include "mojo/public/cpp/bindings/string.h"
 #include "mojo/services/public/interfaces/surfaces/surface_id.mojom.h"
 #include "mojo/services/public/interfaces/surfaces/surfaces.mojom.h"
+#include "mojo/services/public/interfaces/surfaces/surfaces_service.mojom.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/size.h"
 
@@ -37,7 +39,6 @@ class ChildGLImpl : public InterfaceImpl<Child>, public SurfaceClient {
   virtual ~ChildGLImpl();
 
   // SurfaceClient implementation
-  virtual void SetIdNamespace(uint32_t id_namespace) OVERRIDE;
   virtual void ReturnResources(Array<ReturnedResourcePtr> resources) OVERRIDE;
 
  private:
@@ -47,12 +48,14 @@ class ChildGLImpl : public InterfaceImpl<Child>, public SurfaceClient {
       SizePtr size,
       const mojo::Callback<void(SurfaceIdPtr id)>& callback) OVERRIDE;
 
+  void SurfaceConnectionCreated(SurfacePtr surface, uint32_t id_namespace);
   void AllocateSurface();
   void Draw();
 
   SkColor color_;
   gfx::Size size_;
   scoped_ptr<cc::SurfaceIdAllocator> allocator_;
+  SurfacesServicePtr surfaces_service_;
   SurfacePtr surface_;
   MojoGLES2Context context_;
   cc::SurfaceId id_;
@@ -61,6 +64,7 @@ class ChildGLImpl : public InterfaceImpl<Child>, public SurfaceClient {
   base::TimeTicks start_time_;
   uint32_t next_resource_id_;
   base::hash_map<uint32_t, GLuint> id_to_tex_map_;
+  base::WeakPtrFactory<ChildGLImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ChildGLImpl);
 };

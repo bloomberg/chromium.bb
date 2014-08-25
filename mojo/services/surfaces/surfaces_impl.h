@@ -37,9 +37,6 @@ class SurfacesImpl : public InterfaceImpl<Surface>,
                Client* client);
   virtual ~SurfacesImpl();
 
-  // InterfaceImpl<Surface> implementation.
-  virtual void OnConnectionEstablished() OVERRIDE;
-
   // Surface implementation.
   virtual void CreateSurface(SurfaceIdPtr id, mojo::SizePtr size) OVERRIDE;
   virtual void SubmitFrame(SurfaceIdPtr id, FramePtr frame) OVERRIDE;

@@ -1,0 +1,15 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+import "mojo/services/public/interfaces/surfaces/surfaces.mojom"
+
+module mojo {
+
+// Use this interface to request connections to the surfaces service. Each
+// connection is associated with an id namespace
+interface SurfacesService {
+  CreateSurfaceConnection() => (Surface surface, uint32 id_namespace);
+};
+
+}

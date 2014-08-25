@@ -52,13 +52,16 @@ struct Frame {
 };
 
 interface SurfaceClient {
-  SetIdNamespace(uint32 id);
   ReturnResources(ReturnedResource[] resources);
 };
 
 [Client=SurfaceClient]
 interface Surface {
+  // The id is created by the client and must be unique and contain the
+  // connection's namespace in the upper 32 bits.
   CreateSurface(SurfaceId id, Size size);
+
+  // The client can only submit frames to surfaces created with this connection.
   SubmitFrame(SurfaceId id, Frame frame);
   DestroySurface(SurfaceId id);
 

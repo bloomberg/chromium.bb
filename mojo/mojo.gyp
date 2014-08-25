@@ -369,13 +369,22 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../cc/cc.gyp:cc',
+        '../cc/cc.gyp:cc_surfaces',
         '../skia/skia.gyp:skia',
         '../gpu/gpu.gyp:gles2_implementation',
+        'mojo_geometry_lib',
+        'mojo_surfaces_bindings',
+        'mojo_surfaces_lib',
         '<(mojo_gles2_for_loadable_module)',
+      ],
+      'export_dependent_settings': [
+        'mojo_surfaces_bindings',
       ],
       'sources': [
         'cc/context_provider_mojo.cc',
         'cc/context_provider_mojo.h',
+        'cc/output_surface_mojo.cc',
+        'cc/output_surface_mojo.h',
       ],
     },
   ],

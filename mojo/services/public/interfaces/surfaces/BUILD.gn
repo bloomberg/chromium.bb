@@ -7,9 +7,10 @@ import("//mojo/public/tools/bindings/mojom.gni")
 # GYP version: mojo/mojo_services.gypi:mojo_surfaces_bindings
 mojom("surfaces") {
   sources = [
-    "surfaces.mojom",
-    "surface_id.mojom",
     "quads.mojom",
+    "surface_id.mojom",
+    "surfaces.mojom",
+    "surfaces_service.mojom",
   ]
 
   deps = [

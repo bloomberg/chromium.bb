@@ -8,13 +8,15 @@
 #include "base/macros.h"
 #include "cc/surfaces/surface_manager.h"
 #include "mojo/public/cpp/application/application_delegate.h"
+#include "mojo/public/cpp/application/interface_factory.h"
+#include "mojo/services/public/interfaces/surfaces/surfaces_service.mojom.h"
 #include "mojo/services/surfaces/surfaces_impl.h"
 
 namespace mojo {
 class ApplicationConnection;
 
 class SurfacesServiceApplication : public ApplicationDelegate,
-                                   public InterfaceFactory<Surface>,
+                                   public InterfaceFactory<SurfacesService>,
                                    public SurfacesImpl::Client {
  public:
   SurfacesServiceApplication();
@@ -24,9 +26,9 @@ class SurfacesServiceApplication : public ApplicationDelegate,
   virtual bool ConfigureIncomingConnection(
       ApplicationConnection* connection) OVERRIDE;
 
-  // InterfaceFactory<Surface> implementation.
+  // InterfaceFactory<SurfacsServicee> implementation.
   virtual void Create(ApplicationConnection* connection,
-                      InterfaceRequest<Surface> request) OVERRIDE;
+                      InterfaceRequest<SurfacesService> request) OVERRIDE;
 
   // SurfacesImpl::Client implementation.
   virtual void FrameSubmitted() OVERRIDE;

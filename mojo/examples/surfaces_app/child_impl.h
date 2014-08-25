@@ -6,12 +6,14 @@
 #define MOJO_EXAMPLES_SURFACES_APP_CHILD_IMPL_H_
 
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "cc/surfaces/surface_id.h"
 #include "cc/surfaces/surface_id_allocator.h"
 #include "mojo/examples/surfaces_app/child.mojom.h"
 #include "mojo/public/cpp/bindings/string.h"
 #include "mojo/services/public/interfaces/surfaces/surface_id.mojom.h"
 #include "mojo/services/public/interfaces/surfaces/surfaces.mojom.h"
+#include "mojo/services/public/interfaces/surfaces/surfaces_service.mojom.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/size.h"
 
@@ -41,7 +43,6 @@ class ChildImpl : public InterfaceImpl<Child>, public SurfaceClient {
   virtual ~ChildImpl();
 
   // SurfaceClient implementation
-  virtual void SetIdNamespace(uint32_t id_namespace) OVERRIDE;
   virtual void ReturnResources(
       Array<ReturnedResourcePtr> resources) OVERRIDE;
 
@@ -52,14 +53,17 @@ class ChildImpl : public InterfaceImpl<Child>, public SurfaceClient {
       SizePtr size,
       const mojo::Callback<void(SurfaceIdPtr id)>& callback) OVERRIDE;
 
+  void SurfaceConnectionCreated(SurfacePtr surface, uint32_t id_namespace);
   void Draw();
 
   SkColor color_;
   gfx::Size size_;
   scoped_ptr<cc::SurfaceIdAllocator> allocator_;
+  SurfacesServicePtr surfaces_service_;
   SurfacePtr surface_;
   cc::SurfaceId id_;
   mojo::Callback<void(SurfaceIdPtr id)> produce_callback_;
+  base::WeakPtrFactory<ChildImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ChildImpl);
 };

@@ -8,6 +8,7 @@
 
 #include "mojo/public/c/system/main.h"
 #include "mojo/public/cpp/application/application_runner_chromium.h"
+#include "mojo/services/surfaces/surfaces_service_impl.h"
 
 namespace mojo {
 
@@ -24,9 +25,10 @@ bool SurfacesServiceApplication::ConfigureIncomingConnection(
   return true;
 }
 
-void SurfacesServiceApplication::Create(ApplicationConnection* connection,
-                                        InterfaceRequest<Surface> request) {
-  BindToRequest(new SurfacesImpl(&manager_, next_id_namespace_++, this),
+void SurfacesServiceApplication::Create(
+    ApplicationConnection* connection,
+    InterfaceRequest<SurfacesService> request) {
+  BindToRequest(new SurfacesServiceImpl(&manager_, &next_id_namespace_, this),
                 &request);
 }
 

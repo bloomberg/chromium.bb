@@ -26,10 +26,6 @@ SurfacesImpl::SurfacesImpl(cc::SurfaceManager* manager,
 SurfacesImpl::~SurfacesImpl() {
 }
 
-void SurfacesImpl::OnConnectionEstablished() {
-  client()->SetIdNamespace(id_namespace_);
-}
-
 void SurfacesImpl::CreateSurface(SurfaceIdPtr id, mojo::SizePtr size) {
   cc::SurfaceId cc_id = id.To<cc::SurfaceId>();
   if (cc::SurfaceIdAllocator::NamespaceForId(cc_id) != id_namespace_) {

@@ -134,7 +134,7 @@ void InProcessDynamicServiceRunner::Run() {
     MojoMainFunction main_function = reinterpret_cast<MojoMainFunction>(
         app_library_.GetFunctionPointer("MojoMain"));
     if (!main_function) {
-      LOG(ERROR) << "Entrypoint MojoMain not found";
+      LOG(ERROR) << "Entrypoint MojoMain not found: " << app_path_.value();
       break;
     }
 
