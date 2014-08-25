@@ -177,6 +177,11 @@ void ScriptDebugServer::setPauseOnNextStatement(bool pause)
         v8::Debug::CancelDebugBreak(m_isolate);
 }
 
+bool ScriptDebugServer::pausingOnNextStatement()
+{
+    return v8::Debug::CheckDebugBreak(m_isolate);
+}
+
 bool ScriptDebugServer::canBreakProgram()
 {
     if (!m_breakpointsActivated)

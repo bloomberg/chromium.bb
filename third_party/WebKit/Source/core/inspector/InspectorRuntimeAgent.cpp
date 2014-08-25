@@ -141,13 +141,24 @@ void InspectorRuntimeAgent::getProperties(ErrorString* errorString, const String
 void InspectorRuntimeAgent::releaseObject(ErrorString*, const String& objectId)
 {
     InjectedScript injectedScript = m_injectedScriptManager->injectedScriptForObjectId(objectId);
-    if (!injectedScript.isEmpty())
-        injectedScript.releaseObject(objectId);
+    if (injectedScript.isEmpty())
+        return;
+    bool pausingOnNextStatement = m_scriptDebugServer->pausingOnNextStatement();
+    if (pausingOnNextStatement)
+        m_scriptDebugServer->setPauseOnNextStatement(false);
+    injectedScript.releaseObject(objectId);
+    if (pausingOnNextStatement)
+        m_scriptDebugServer->setPauseOnNextStatement(true);
 }
 
 void InspectorRuntimeAgent::releaseObjectGroup(ErrorString*, const String& objectGroup)
 {
+    bool pausingOnNextStatement = m_scriptDebugServer->pausingOnNextStatement();
+    if (pausingOnNextStatement)
+        m_scriptDebugServer->setPauseOnNextStatement(false);
     m_injectedScriptManager->releaseObjectGroup(objectGroup);
+    if (pausingOnNextStatement)
+        m_scriptDebugServer->setPauseOnNextStatement(true);
 }
 
 void InspectorRuntimeAgent::run(ErrorString*)

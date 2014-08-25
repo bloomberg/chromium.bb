@@ -70,6 +70,7 @@ public:
     void setPauseOnExceptionsState(PauseOnExceptionsState pauseOnExceptionsState);
 
     void setPauseOnNextStatement(bool pause);
+    bool pausingOnNextStatement();
     bool canBreakProgram();
     void breakProgram();
     void continueProgram();
