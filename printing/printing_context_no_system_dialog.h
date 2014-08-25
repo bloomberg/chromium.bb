@@ -17,11 +17,12 @@ namespace printing {
 
 class PRINTING_EXPORT PrintingContextNoSystemDialog : public PrintingContext {
  public:
-  explicit PrintingContextNoSystemDialog(Delegate* delegate);
+  explicit PrintingContextNoSystemDialog(const std::string& app_locale);
   virtual ~PrintingContextNoSystemDialog();
 
   // PrintingContext implementation.
   virtual void AskUserForSettings(
+      gfx::NativeView parent_view,
       int max_pages,
       bool has_selection,
       const PrintSettingsCallback& callback) OVERRIDE;

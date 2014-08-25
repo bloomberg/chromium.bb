@@ -49,11 +49,8 @@ scoped_refptr<PrinterQuery> PrintQueriesQueue::PopPrinterQuery(
   return NULL;
 }
 
-scoped_refptr<PrinterQuery> PrintQueriesQueue::CreatePrinterQuery(
-    int render_process_id,
-    int render_view_id) {
-  scoped_refptr<PrinterQuery> job =
-      new printing::PrinterQuery(render_process_id, render_view_id);
+scoped_refptr<PrinterQuery> PrintQueriesQueue::CreatePrinterQuery() {
+  scoped_refptr<PrinterQuery> job = new printing::PrinterQuery;
   base::AutoLock lock(lock_);
   job->SetWorkerDestination(destination_);
   return job;

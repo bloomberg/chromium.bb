@@ -22,13 +22,11 @@
 #include "ui/gfx/point.h"
 #include "ui/gfx/size.h"
 
-namespace printing {
-
 namespace {
 
 // This test is automatically disabled if no printer named "UnitTest Printer" is
 // available.
-class EmfPrintingTest : public testing::Test, public PrintingContext::Delegate {
+class EmfPrintingTest : public testing::Test {
  public:
   typedef testing::Test Parent;
   static bool IsTestCaseDisabled() {
@@ -39,15 +37,13 @@ class EmfPrintingTest : public testing::Test, public PrintingContext::Delegate {
     DeleteDC(hdc);
     return false;
   }
-
-  // PrintingContext::Delegate methods.
-  virtual gfx::NativeView GetParentView() OVERRIDE { return NULL; }
-  virtual std::string GetAppLocale() OVERRIDE { return std::string(); }
 };
 
 const uint32 EMF_HEADER_SIZE = 128;
 
 }  // namespace
+
+namespace printing {
 
 TEST(EmfTest, DC) {
   // Simplest use case.
@@ -87,7 +83,7 @@ TEST_F(EmfPrintingTest, Enumerate) {
   settings.set_device_name(L"UnitTest Printer");
 
   // Initialize it.
-  scoped_ptr<PrintingContext> context(PrintingContext::Create(this));
+  scoped_ptr<PrintingContext> context(PrintingContext::Create(std::string()));
   EXPECT_EQ(context->InitWithSettings(settings), PrintingContext::OK);
 
   base::FilePath emf_file;

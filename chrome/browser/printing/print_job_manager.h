@@ -10,7 +10,6 @@
 
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/non_thread_safe.h"
 #include "content/public/browser/notification_observer.h"
@@ -40,8 +39,7 @@ class PrintQueriesQueue : public base::RefCountedThreadSafe<PrintQueriesQueue> {
   scoped_refptr<PrinterQuery> PopPrinterQuery(int document_cookie);
 
   // Creates new query.
-  scoped_refptr<PrinterQuery> CreatePrinterQuery(int render_process_id,
-                                                 int render_view_id);
+  scoped_refptr<PrinterQuery> CreatePrinterQuery();
 
   void Shutdown();
 

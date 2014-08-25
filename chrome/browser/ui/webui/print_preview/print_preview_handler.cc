@@ -261,19 +261,10 @@ std::string GetDefaultPrinterOnFileThread() {
   return default_printer;
 }
 
-class PrintingContextDelegate : public printing::PrintingContext::Delegate {
- public:
-  // PrintingContext::Delegate methods.
-  virtual gfx::NativeView GetParentView() OVERRIDE { return NULL; }
-  virtual std::string GetAppLocale() OVERRIDE {
-    return g_browser_process->GetApplicationLocale();
-  }
-};
-
 gfx::Size GetDefaultPdfMediaSizeMicrons() {
-  PrintingContextDelegate delegate;
   scoped_ptr<printing::PrintingContext> printing_context(
-      printing::PrintingContext::Create(&delegate));
+      printing::PrintingContext::Create(
+          g_browser_process->GetApplicationLocale()));
   if (printing::PrintingContext::OK != printing_context->UsePdfSettings() ||
       printing_context->settings().device_units_per_inch() <= 0) {
     return gfx::Size();

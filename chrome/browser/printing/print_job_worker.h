@@ -9,11 +9,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread.h"
-#include "content/public/browser/browser_thread.h"
 #include "printing/page_number.h"
 #include "printing/print_destination_interface.h"
-#include "printing/print_job_constants.h"
 #include "printing/printing_context.h"
+#include "printing/print_job_constants.h"
 
 namespace base {
 class DictionaryValue;
@@ -25,6 +24,7 @@ class PrintJob;
 class PrintJobWorkerOwner;
 class PrintedDocument;
 class PrintedPage;
+class PrintingUIWebContentsObserver;
 
 // Worker thread code. It manages the PrintingContext, which can be blocking
 // and/or run a message loop. This is the object that generates most
@@ -33,9 +33,7 @@ class PrintedPage;
 // PrintJob always outlives its worker instance.
 class PrintJobWorker {
  public:
-  PrintJobWorker(int render_process_id,
-                 int render_view_id,
-                 PrintJobWorkerOwner* owner);
+  explicit PrintJobWorker(PrintJobWorkerOwner* owner);
   virtual ~PrintJobWorker();
 
   void SetNewOwner(PrintJobWorkerOwner* new_owner);
@@ -48,12 +46,14 @@ class PrintJobWorker {
   // Print... dialog box will be shown to ask the user his preference.
   void GetSettings(
       bool ask_user_for_settings,
+      scoped_ptr<PrintingUIWebContentsObserver> web_contents_observer,
       int document_page_count,
       bool has_selection,
       MarginType margin_type);
 
   // Set the new print settings.
-  void SetSettings(scoped_ptr<base::DictionaryValue> new_settings);
+  void SetSettings(
+      scoped_ptr<base::DictionaryValue> new_settings);
 
   // Starts the printing loop. Every pages are printed as soon as the data is
   // available. Makes sure the new_document is the right one.
@@ -112,6 +112,7 @@ class PrintJobWorker {
   // Required on Mac and Linux. Windows can display UI from non-main threads,
   // but sticks with this for consistency.
   void GetSettingsWithUI(
+      scoped_ptr<PrintingUIWebContentsObserver> web_contents_observer,
       int document_page_count,
       bool has_selection);
 
@@ -130,11 +131,6 @@ class PrintJobWorker {
   // displaying a dialog. So this needs to happen from the UI thread on these
   // systems.
   void UseDefaultSettings();
-
-  // Printing context delegate.
-  scoped_ptr<PrintingContext::Delegate,
-             content::BrowserThread::DeleteOnUIThread>
-      printing_context_delegate_;
 
   // Information about the printer setting.
   scoped_ptr<PrintingContext> printing_context_;

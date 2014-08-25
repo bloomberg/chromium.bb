@@ -61,8 +61,8 @@ void GetPageRanges(JNIEnv* env,
 namespace printing {
 
 // static
-scoped_ptr<PrintingContext> PrintingContext::Create(Delegate* delegate) {
-  return make_scoped_ptr<PrintingContext>(new PrintingContextAndroid(delegate));
+PrintingContext* PrintingContext::Create(const std::string& app_locale) {
+  return new PrintingContextAndroid(app_locale);
 }
 
 // static
@@ -71,8 +71,8 @@ void PrintingContextAndroid::PdfWritingDone(int fd, bool success) {
   Java_PrintingContext_pdfWritingDone(env, fd, success);
 }
 
-PrintingContextAndroid::PrintingContextAndroid(Delegate* delegate)
-    : PrintingContext(delegate) {
+PrintingContextAndroid::PrintingContextAndroid(const std::string& app_locale)
+    : PrintingContext(app_locale) {
   // The constructor is run in the IO thread.
 }
 
@@ -80,6 +80,7 @@ PrintingContextAndroid::~PrintingContextAndroid() {
 }
 
 void PrintingContextAndroid::AskUserForSettings(
+    gfx::NativeView parent_view,
     int max_pages,
     bool has_selection,
     const PrintSettingsCallback& callback) {
@@ -148,8 +149,7 @@ gfx::Size PrintingContextAndroid::GetPdfPaperSizeDeviceUnits() {
   int32_t width = 0;
   int32_t height = 0;
   UErrorCode error = U_ZERO_ERROR;
-  ulocdata_getPaperSize(
-      delegate_->GetAppLocale().c_str(), &height, &width, &error);
+  ulocdata_getPaperSize(app_locale_.c_str(), &height, &width, &error);
   if (error > U_ZERO_ERROR) {
     // If the call failed, assume a paper size of 8.5 x 11 inches.
     LOG(WARNING) << "ulocdata_getPaperSize failed, using 8.5 x 11, error: "

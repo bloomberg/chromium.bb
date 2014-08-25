@@ -68,12 +68,12 @@ PMPaper MatchPaper(CFArrayRef paper_list,
 }  // namespace
 
 // static
-scoped_ptr<PrintingContext> PrintingContext::Create(Delegate* delegate) {
-  return make_scoped_ptr<PrintingContext>(new PrintingContextMac(delegate));
+PrintingContext* PrintingContext::Create(const std::string& app_locale) {
+  return static_cast<PrintingContext*>(new PrintingContextMac(app_locale));
 }
 
-PrintingContextMac::PrintingContextMac(Delegate* delegate)
-    : PrintingContext(delegate),
+PrintingContextMac::PrintingContextMac(const std::string& app_locale)
+    : PrintingContext(app_locale),
       print_info_([[NSPrintInfo sharedPrintInfo] copy]),
       context_(NULL) {
 }
@@ -83,6 +83,7 @@ PrintingContextMac::~PrintingContextMac() {
 }
 
 void PrintingContextMac::AskUserForSettings(
+    gfx::NativeView parent_view,
     int max_pages,
     bool has_selection,
     const PrintSettingsCallback& callback) {
@@ -114,7 +115,6 @@ void PrintingContextMac::AskUserForSettings(
   [panel setOptions:options];
 
   // Set the print job title text.
-  gfx::NativeView parent_view = delegate_->GetParentView();
   if (parent_view) {
     NSString* job_title = [[parent_view window] title];
     if (job_title) {

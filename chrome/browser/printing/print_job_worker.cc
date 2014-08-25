@@ -17,8 +17,6 @@
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
-#include "content/public/browser/render_view_host.h"
-#include "content/public/browser/web_contents.h"
 #include "printing/print_job_constants.h"
 #include "printing/printed_document.h"
 #include "printing/printed_page.h"
@@ -37,66 +35,7 @@ void HoldRefCallback(const scoped_refptr<printing::PrintJobWorkerOwner>& owner,
   callback.Run();
 }
 
-class PrintingContextDelegate : public PrintingContext::Delegate {
- public:
-  PrintingContextDelegate(int render_process_id, int render_view_id);
-  virtual ~PrintingContextDelegate();
-
-  virtual gfx::NativeView GetParentView() OVERRIDE;
-  virtual std::string GetAppLocale() OVERRIDE;
-
- private:
-  void InitOnUiThread(int render_process_id, int render_view_id);
-
-  scoped_ptr<PrintingUIWebContentsObserver> web_contents_observer_;
-  base::WeakPtrFactory<PrintingContextDelegate> weak_ptr_factory_;
-};
-
-PrintingContextDelegate::PrintingContextDelegate(int render_process_id,
-                                                 int render_view_id)
-    : weak_ptr_factory_(this) {
-  InitOnUiThread(render_process_id, render_view_id);
-}
-
-PrintingContextDelegate::~PrintingContextDelegate() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-}
-
-gfx::NativeView PrintingContextDelegate::GetParentView() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!web_contents_observer_)
-    return NULL;
-  return web_contents_observer_->GetParentView();
-}
-
-std::string PrintingContextDelegate::GetAppLocale() {
-  return g_browser_process->GetApplicationLocale();
-}
-
-void PrintingContextDelegate::InitOnUiThread(int render_process_id,
-                                             int render_view_id) {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    // All data initialized here should be accessed on UI thread. Because object
-    // is being constructed now, anything that is going to access
-    // PrintingContextDelegate on UI thread would be scheduled after the tasks
-    // below.
-    BrowserThread::PostTask(BrowserThread::UI,
-                            FROM_HERE,
-                            base::Bind(&PrintingContextDelegate::InitOnUiThread,
-                                       weak_ptr_factory_.GetWeakPtr(),
-                                       render_process_id,
-                                       render_view_id));
-    return;
-  }
-  content::RenderViewHost* view =
-      content::RenderViewHost::FromID(render_process_id, render_view_id);
-  if (!view)
-    return;
-  content::WebContents* wc = content::WebContents::FromRenderViewHost(view);
-  if (!wc)
-    return;
-  web_contents_observer_.reset(new PrintingUIWebContentsObserver(wc));
-}
+}  // namespace
 
 void NotificationCallback(PrintJobWorkerOwner* print_job,
                           JobEventDetails::Type detail_type,
@@ -110,18 +49,13 @@ void NotificationCallback(PrintJobWorkerOwner* print_job,
       content::Details<JobEventDetails>(details));
 }
 
-}  // namespace
-
-PrintJobWorker::PrintJobWorker(int render_process_id,
-                               int render_view_id,
-                               PrintJobWorkerOwner* owner)
+PrintJobWorker::PrintJobWorker(PrintJobWorkerOwner* owner)
     : owner_(owner), thread_("Printing_Worker"), weak_factory_(this) {
   // The object is created in the IO thread.
   DCHECK(owner_->RunsTasksOnCurrentThread());
 
-  printing_context_delegate_.reset(
-      new PrintingContextDelegate(render_process_id, render_view_id));
-  printing_context_ = PrintingContext::Create(printing_context_delegate_.get());
+  printing_context_.reset(PrintingContext::Create(
+      g_browser_process->GetApplicationLocale()));
 }
 
 PrintJobWorker::~PrintJobWorker() {
@@ -144,6 +78,7 @@ void PrintJobWorker::SetPrintDestination(
 
 void PrintJobWorker::GetSettings(
     bool ask_user_for_settings,
+    scoped_ptr<PrintingUIWebContentsObserver> web_contents_observer,
     int document_page_count,
     bool has_selection,
     MarginType margin_type) {
@@ -166,9 +101,12 @@ void PrintJobWorker::GetSettings(
         base::Bind(&HoldRefCallback, make_scoped_refptr(owner_),
                    base::Bind(&PrintJobWorker::GetSettingsWithUI,
                               base::Unretained(this),
+                              base::Passed(&web_contents_observer),
                               document_page_count,
                               has_selection)));
   } else {
+    BrowserThread::DeleteSoon(
+        BrowserThread::UI, FROM_HERE, web_contents_observer.release());
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::Bind(&HoldRefCallback, make_scoped_refptr(owner_),
@@ -193,7 +131,6 @@ void PrintJobWorker::SetSettings(
 
 void PrintJobWorker::UpdatePrintSettings(
     scoped_ptr<base::DictionaryValue> new_settings) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   PrintingContext::Result result =
       printing_context_->UpdatePrintSettings(*new_settings);
   GetSettingsDone(result);
@@ -218,12 +155,18 @@ void PrintJobWorker::GetSettingsDone(PrintingContext::Result result) {
 }
 
 void PrintJobWorker::GetSettingsWithUI(
+    scoped_ptr<PrintingUIWebContentsObserver> web_contents_observer,
     int document_page_count,
     bool has_selection) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  gfx::NativeView parent_view = web_contents_observer->GetParentView();
+  if (!parent_view) {
+    GetSettingsWithUIDone(printing::PrintingContext::FAILED);
+    return;
+  }
   printing_context_->AskUserForSettings(
-      document_page_count,
-      has_selection,
+      parent_view, document_page_count, has_selection,
       base::Bind(&PrintJobWorker::GetSettingsWithUIDone,
                  base::Unretained(this)));
 }
@@ -373,7 +316,7 @@ void PrintJobWorker::OnDocumentDone() {
   }
 
   owner_->PostTask(FROM_HERE,
-                   base::Bind(&NotificationCallback,
+                   base::Bind(NotificationCallback,
                               make_scoped_refptr(owner_),
                               JobEventDetails::DOC_DONE,
                               document_,
@@ -389,7 +332,7 @@ void PrintJobWorker::SpoolPage(PrintedPage* page) {
 
   // Signal everyone that the page is about to be printed.
   owner_->PostTask(FROM_HERE,
-                   base::Bind(&NotificationCallback,
+                   base::Bind(NotificationCallback,
                               make_scoped_refptr(owner_),
                               JobEventDetails::NEW_PAGE,
                               document_,
@@ -428,7 +371,7 @@ void PrintJobWorker::SpoolPage(PrintedPage* page) {
 
   // Signal everyone that the page is printed.
   owner_->PostTask(FROM_HERE,
-                   base::Bind(&NotificationCallback,
+                   base::Bind(NotificationCallback,
                               make_scoped_refptr(owner_),
                               JobEventDetails::PAGE_DONE,
                               document_,
@@ -442,7 +385,7 @@ void PrintJobWorker::OnFailure() {
   scoped_refptr<PrintJobWorkerOwner> handle(owner_);
 
   owner_->PostTask(FROM_HERE,
-                   base::Bind(&NotificationCallback,
+                   base::Bind(NotificationCallback,
                               make_scoped_refptr(owner_),
                               JobEventDetails::FAILED,
                               document_,
