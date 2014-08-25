@@ -15,7 +15,7 @@
 #include "webkit/common/fileapi/file_system_info.h"
 #include "webkit/common/fileapi/file_system_types.h"
 #include "webkit/common/quota/quota_types.h"
-#include "webkit/common/webkit_storage_common_export.h"
+#include "webkit/common/storage_common_export.h"
 
 class GURL;
 

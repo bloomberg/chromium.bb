@@ -1006,8 +1006,8 @@
         '../ui/resources/ui_resources.gyp:ui_resources',
         '../ui/strings/ui_strings.gyp:ui_strings',
         '../url/url.gyp:url_lib',
-        '../webkit/storage_browser.gyp:webkit_storage_browser',
-        '../webkit/storage_common.gyp:webkit_storage_common',
+        '../webkit/storage_browser.gyp:storage',
+        '../webkit/storage_common.gyp:storage_common',
       ],
       'include_dirs': [
         '..',

@@ -13,7 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "url/gurl.h"
-#include "webkit/browser/webkit_storage_browser_export.h"
+#include "webkit/browser/storage_export.h"
 #include "webkit/common/fileapi/file_system_types.h"
 
 namespace storage {

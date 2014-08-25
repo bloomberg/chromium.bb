@@ -11,7 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "webkit/browser/blob/file_stream_reader.h"
 #include "webkit/browser/fileapi/file_system_url.h"
-#include "webkit/browser/webkit_storage_browser_export.h"
+#include "webkit/browser/storage_export.h"
 
 namespace base {
 class FilePath;

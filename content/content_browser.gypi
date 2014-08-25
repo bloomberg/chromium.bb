@@ -1601,8 +1601,8 @@
         '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
         '../ui/surface/surface.gyp:surface',
         '../webkit/common/webkit_common.gyp:webkit_common',
-        '../webkit/storage_browser.gyp:webkit_storage_browser',
-        '../webkit/storage_common.gyp:webkit_storage_common',
+        '../webkit/storage_browser.gyp:storage',
+        '../webkit/storage_common.gyp:storage_common',
       ],
     }],
     ['enable_printing!=0', {

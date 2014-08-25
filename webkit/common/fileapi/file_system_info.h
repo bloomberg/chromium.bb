@@ -9,7 +9,7 @@
 
 #include "url/gurl.h"
 #include "webkit/common/fileapi/file_system_types.h"
-#include "webkit/common/webkit_storage_common_export.h"
+#include "webkit/common/storage_common_export.h"
 
 namespace storage {
 

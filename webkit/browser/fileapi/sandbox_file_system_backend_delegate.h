@@ -20,7 +20,7 @@
 #include "webkit/browser/fileapi/file_system_backend.h"
 #include "webkit/browser/fileapi/file_system_options.h"
 #include "webkit/browser/fileapi/file_system_quota_util.h"
-#include "webkit/browser/webkit_storage_browser_export.h"
+#include "webkit/browser/storage_export.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -55,7 +55,7 @@ class SandboxQuotaObserver;
 
 // Delegate implementation of the some methods in Sandbox/SyncFileSystemBackend.
 // An instance of this class is created and owned by FileSystemContext.
-class WEBKIT_STORAGE_BROWSER_EXPORT SandboxFileSystemBackendDelegate
+class STORAGE_EXPORT SandboxFileSystemBackendDelegate
     : public FileSystemQuotaUtil {
  public:
   typedef FileSystemBackend::OpenFileSystemCallback OpenFileSystemCallback;

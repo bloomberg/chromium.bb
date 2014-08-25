@@ -17,7 +17,7 @@
 #include "webkit/browser/fileapi/sandbox_file_system_backend_delegate.h"
 #include "webkit/browser/fileapi/task_runner_bound_observer_list.h"
 #include "webkit/browser/quota/special_storage_policy.h"
-#include "webkit/browser/webkit_storage_browser_export.h"
+#include "webkit/browser/storage_export.h"
 
 namespace storage {
 
@@ -25,7 +25,7 @@ namespace storage {
 // profile directory in a sandboxed way.
 // This interface also lets one enumerate and remove storage for the origins
 // that use the filesystem.
-class WEBKIT_STORAGE_BROWSER_EXPORT SandboxFileSystemBackend
+class STORAGE_EXPORT SandboxFileSystemBackend
     : public FileSystemBackend {
  public:
   explicit SandboxFileSystemBackend(SandboxFileSystemBackendDelegate* delegate);

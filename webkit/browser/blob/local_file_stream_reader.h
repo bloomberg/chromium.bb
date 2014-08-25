@@ -12,7 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "webkit/browser/blob/file_stream_reader.h"
-#include "webkit/browser/webkit_storage_browser_export.h"
+#include "webkit/browser/storage_export.h"
 
 namespace base {
 class TaskRunner;
@@ -30,7 +30,7 @@ namespace storage {
 
 // A thin wrapper of net::FileStream with range support for sliced file
 // handling.
-class WEBKIT_STORAGE_BROWSER_EXPORT LocalFileStreamReader
+class STORAGE_EXPORT LocalFileStreamReader
     : public NON_EXPORTED_BASE(FileStreamReader) {
  public:
   virtual ~LocalFileStreamReader();

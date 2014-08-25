@@ -9,7 +9,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "webkit/browser/fileapi/file_system_file_util.h"
-#include "webkit/browser/webkit_storage_browser_export.h"
+#include "webkit/browser/storage_export.h"
 
 namespace base {
 class Time;
@@ -23,7 +23,7 @@ class FileSystemOperationContext;
 class FileSystemURL;
 
 // An instance of this class is created and owned by *FileSystemBackend.
-class WEBKIT_STORAGE_BROWSER_EXPORT LocalFileUtil
+class STORAGE_EXPORT LocalFileUtil
     : public FileSystemFileUtil {
  public:
   LocalFileUtil();

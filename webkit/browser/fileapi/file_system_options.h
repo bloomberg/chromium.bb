@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "webkit/browser/webkit_storage_browser_export.h"
+#include "webkit/browser/storage_export.h"
 
 namespace leveldb {
 class Env;
@@ -18,7 +18,7 @@ namespace storage {
 
 // Provides runtime options that may change FileSystem API behavior.
 // This object is copyable.
-class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemOptions {
+class STORAGE_EXPORT FileSystemOptions {
  public:
   enum ProfileMode {
     PROFILE_MODE_NORMAL = 0,

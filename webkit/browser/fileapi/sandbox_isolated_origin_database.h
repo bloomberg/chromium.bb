@@ -16,7 +16,7 @@ class SandboxOriginDatabase;
 
 // This origin database implementation supports only one origin
 // (therefore is expected to run very fast).
-class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE SandboxIsolatedOriginDatabase
+class STORAGE_EXPORT_PRIVATE SandboxIsolatedOriginDatabase
     : public SandboxOriginDatabaseInterface {
  public:
   static const base::FilePath::CharType kObsoleteOriginDirectory[];

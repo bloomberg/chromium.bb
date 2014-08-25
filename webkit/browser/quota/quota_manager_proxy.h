@@ -18,7 +18,7 @@
 #include "webkit/browser/quota/quota_manager.h"
 #include "webkit/browser/quota/quota_task.h"
 #include "webkit/browser/quota/special_storage_policy.h"
-#include "webkit/browser/webkit_storage_browser_export.h"
+#include "webkit/browser/storage_export.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -28,7 +28,7 @@ class SingleThreadTaskRunner;
 namespace storage {
 
 // The proxy may be called and finally released on any thread.
-class WEBKIT_STORAGE_BROWSER_EXPORT QuotaManagerProxy
+class STORAGE_EXPORT QuotaManagerProxy
     : public base::RefCountedThreadSafe<QuotaManagerProxy> {
  public:
   typedef QuotaManager::GetUsageAndQuotaCallback

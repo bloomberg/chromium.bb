@@ -8,7 +8,7 @@
 #include <string>
 #include "base/strings/string16.h"
 #include "url/gurl.h"
-#include "webkit/browser/webkit_storage_browser_export.h"
+#include "webkit/browser/storage_export.h"
 
 namespace base {
 class FilePath;
@@ -18,7 +18,7 @@ namespace storage {
 
 class DatabaseTracker;
 
-class WEBKIT_STORAGE_BROWSER_EXPORT DatabaseUtil {
+class STORAGE_EXPORT DatabaseUtil {
  public:
   static const char kJournalFileSuffix[];
 

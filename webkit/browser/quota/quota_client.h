@@ -11,7 +11,7 @@
 
 #include "base/callback.h"
 #include "url/gurl.h"
-#include "webkit/browser/webkit_storage_browser_export.h"
+#include "webkit/browser/storage_export.h"
 #include "webkit/common/quota/quota_types.h"
 
 namespace storage {
@@ -20,7 +20,7 @@ namespace storage {
 // Each storage API must provide an implementation of this interface and
 // register it to the quota manager.
 // All the methods are assumed to be called on the IO thread in the browser.
-class WEBKIT_STORAGE_BROWSER_EXPORT QuotaClient {
+class STORAGE_EXPORT QuotaClient {
  public:
   typedef base::Callback<void(int64 usage)> GetUsageCallback;
   typedef base::Callback<void(const std::set<GURL>& origins)>

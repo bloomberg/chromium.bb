@@ -5,7 +5,7 @@
 #ifndef WEBKIT_BROWSER_FILEAPI_FILE_PERMISSION_POLICY_H_
 #define WEBKIT_BROWSER_FILEAPI_FILE_PERMISSION_POLICY_H_
 
-#include "webkit/browser/webkit_storage_browser_export.h"
+#include "webkit/browser/storage_export.h"
 
 namespace storage {
 

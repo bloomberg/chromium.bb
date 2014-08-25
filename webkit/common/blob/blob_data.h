@@ -15,7 +15,7 @@
 #include "url/gurl.h"
 #include "webkit/common/blob/shareable_file_reference.h"
 #include "webkit/common/data_element.h"
-#include "webkit/common/webkit_storage_common_export.h"
+#include "webkit/common/storage_common_export.h"
 
 namespace storage {
 

@@ -3,9 +3,9 @@
 # found in the LICENSE file.
 
 component("storage") {
-  output_name = "webkit_storage_browser"
+  output_name = "storage"
   sources = [
-    "webkit_storage_browser_export.h",
+    "storage_export.h",
     "blob/blob_data_handle.cc",
     "blob/blob_data_handle.h",
     "blob/blob_storage_context.cc",

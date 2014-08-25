@@ -11,7 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "webkit/browser/fileapi/quota/quota_reservation_manager.h"
-#include "webkit/browser/webkit_storage_browser_export.h"
+#include "webkit/browser/storage_export.h"
 #include "webkit/common/fileapi/file_system_types.h"
 
 class GURL;
@@ -22,7 +22,7 @@ class QuotaReservationBuffer;
 class OpenFileHandle;
 
 // Represents a unit of quota reservation.
-class WEBKIT_STORAGE_BROWSER_EXPORT QuotaReservation
+class STORAGE_EXPORT QuotaReservation
     : public base::RefCounted<QuotaReservation> {
  public:
   typedef base::Callback<void(base::File::Error error)> StatusCallback;

@@ -14,7 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "webkit/browser/fileapi/file_permission_policy.h"
 #include "webkit/browser/fileapi/open_file_system_mode.h"
-#include "webkit/browser/webkit_storage_browser_export.h"
+#include "webkit/browser/storage_export.h"
 #include "webkit/common/fileapi/file_system_types.h"
 
 class GURL;
@@ -39,7 +39,7 @@ class FileSystemQuotaUtil;
 // NOTE: when you implement a new FileSystemBackend for your own
 // FileSystem module, please contact to kinuko@chromium.org.
 //
-class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemBackend {
+class STORAGE_EXPORT FileSystemBackend {
  public:
   // Callback for InitializeFileSystem.
   typedef base::Callback<void(const GURL& root_url,

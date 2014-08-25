@@ -12,7 +12,7 @@
 #include "base/files/file.h"
 #include "url/gurl.h"
 #include "webkit/browser/fileapi/task_runner_bound_observer_list.h"
-#include "webkit/browser/webkit_storage_browser_export.h"
+#include "webkit/browser/storage_export.h"
 #include "webkit/common/fileapi/file_system_types.h"
 
 namespace base {
@@ -32,7 +32,7 @@ class QuotaReservation;
 // for file_system_quota_client.
 // All the methods of this class are synchronous and need to be called on
 // the thread that the method name implies.
-class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemQuotaUtil {
+class STORAGE_EXPORT FileSystemQuotaUtil {
  public:
   virtual ~FileSystemQuotaUtil() {}
 

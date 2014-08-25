@@ -9,7 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/files/file.h"
 #include "net/base/completion_callback.h"
-#include "webkit/browser/webkit_storage_browser_export.h"
+#include "webkit/browser/storage_export.h"
 
 namespace base {
 class FilePath;
@@ -40,7 +40,7 @@ class FileStreamReader {
   // actual modification time to see if the file has been modified, and if
   // it does any succeeding read operations should fail with
   // ERR_UPLOAD_FILE_CHANGED error.
-  WEBKIT_STORAGE_BROWSER_EXPORT static FileStreamReader*
+  STORAGE_EXPORT static FileStreamReader*
       CreateForLocalFile(base::TaskRunner* task_runner,
                          const base::FilePath& file_path,
                          int64 initial_offset,
@@ -51,14 +51,14 @@ class FileStreamReader {
   // the value is non-null, the reader will check the underlying file's actual
   // modification time to see if the file has been modified, and if it does any
   // succeeding read operations should fail with ERR_UPLOAD_FILE_CHANGED error.
-  WEBKIT_STORAGE_BROWSER_EXPORT static FileStreamReader*
+  STORAGE_EXPORT static FileStreamReader*
       CreateForFileSystemFile(storage::FileSystemContext* context,
                               const storage::FileSystemURL& url,
                               int64 initial_offset,
                               const base::Time& expected_modification_time);
 
   // Verify if the underlying file has not been modified.
-  WEBKIT_STORAGE_BROWSER_EXPORT static bool VerifySnapshotTime(
+  STORAGE_EXPORT static bool VerifySnapshotTime(
       const base::Time& expected_modification_time,
       const base::File::Info& file_info);
 

@@ -16,7 +16,7 @@
 #include "base/memory/singleton.h"
 #include "base/synchronization/lock.h"
 #include "webkit/browser/fileapi/mount_points.h"
-#include "webkit/browser/webkit_storage_browser_export.h"
+#include "webkit/browser/storage_export.h"
 #include "webkit/common/fileapi/file_system_types.h"
 
 namespace storage {
@@ -37,9 +37,9 @@ namespace storage {
 //
 // Some methods of this class are virtual just for mocking.
 //
-class WEBKIT_STORAGE_BROWSER_EXPORT IsolatedContext : public MountPoints {
+class STORAGE_EXPORT IsolatedContext : public MountPoints {
  public:
-  class WEBKIT_STORAGE_BROWSER_EXPORT FileInfoSet {
+  class STORAGE_EXPORT FileInfoSet {
    public:
     FileInfoSet();
     ~FileInfoSet();

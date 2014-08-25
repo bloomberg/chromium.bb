@@ -30,7 +30,7 @@ namespace storage {
 
 class ObfuscatedFileUtil;
 
-class WEBKIT_STORAGE_BROWSER_EXPORT PluginPrivateFileSystemBackend
+class STORAGE_EXPORT PluginPrivateFileSystemBackend
     : public FileSystemBackend,
       public FileSystemQuotaUtil {
  public:

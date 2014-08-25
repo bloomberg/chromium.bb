@@ -12,7 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "webkit/browser/fileapi/mount_points.h"
-#include "webkit/browser/webkit_storage_browser_export.h"
+#include "webkit/browser/storage_export.h"
 #include "webkit/common/fileapi/file_system_mount_option.h"
 #include "webkit/common/fileapi/file_system_types.h"
 
@@ -30,7 +30,7 @@ class FileSystemURL;
 //
 //   filesystem:<origin>/external/<mount_name>/relative/path
 //
-class WEBKIT_STORAGE_BROWSER_EXPORT ExternalMountPoints
+class STORAGE_EXPORT ExternalMountPoints
     : public base::RefCountedThreadSafe<ExternalMountPoints>,
       public MountPoints {
  public:

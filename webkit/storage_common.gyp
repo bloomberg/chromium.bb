@@ -9,7 +9,7 @@
   'targets': [
     {
       # GN version: //webkit/common:storage
-      'target_name': 'webkit_storage_common',
+      'target_name': 'storage_common',
       'type': '<(component)',
       'variables': { 'enable_wexit_time_destructors': 1, },
       'dependencies': [
@@ -21,7 +21,7 @@
       ],
       'defines': ['WEBKIT_STORAGE_COMMON_IMPLEMENTATION'],
       'sources': [
-        'common/webkit_storage_common_export.h',
+        'common/storage_common_export.h',
         'common/blob/blob_data.cc',
         'common/blob/blob_data.h',
         'common/blob/scoped_file.cc',

@@ -22,7 +22,7 @@ class QuotaManager;
 
 // This class dispatches storage events to observers of a common
 // StorageObserver::Filter.
-class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE StorageObserverList {
+class STORAGE_EXPORT_PRIVATE StorageObserverList {
  public:
   StorageObserverList();
   virtual ~StorageObserverList();
@@ -47,7 +47,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE StorageObserverList {
   void ScheduleUpdateForObserver(StorageObserver* observer);
 
  private:
-  struct WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE ObserverState {
+  struct STORAGE_EXPORT_PRIVATE ObserverState {
     GURL origin;
     base::TimeTicks last_notification_time;
     base::TimeDelta rate;
@@ -71,7 +71,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE StorageObserverList {
 
 // Manages the storage observers of a common host. Caches the usage and quota of
 // the host to avoid accumulating for every change.
-class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE HostStorageObservers {
+class STORAGE_EXPORT_PRIVATE HostStorageObservers {
  public:
   explicit HostStorageObservers(QuotaManager* quota_manager);
   virtual ~HostStorageObservers();
@@ -118,7 +118,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE HostStorageObservers {
 
 
 // Manages the observers of a common storage type.
-class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE StorageTypeObservers {
+class STORAGE_EXPORT_PRIVATE StorageTypeObservers {
  public:
   explicit StorageTypeObservers(QuotaManager* quota_manager);
   virtual ~StorageTypeObservers();
@@ -147,7 +147,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE StorageTypeObservers {
 
 
 // Storage monitor manages observers and dispatches storage events to them.
-class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE StorageMonitor {
+class STORAGE_EXPORT_PRIVATE StorageMonitor {
  public:
   explicit StorageMonitor(QuotaManager* quota_manager);
   virtual ~StorageMonitor();

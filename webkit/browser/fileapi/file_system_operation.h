@@ -12,7 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/process/process.h"
 #include "webkit/browser/fileapi/file_system_operation_context.h"
-#include "webkit/browser/webkit_storage_browser_export.h"
+#include "webkit/browser/storage_export.h"
 #include "webkit/common/fileapi/directory_entry.h"
 
 namespace base {
@@ -58,7 +58,7 @@ class FileWriterDelegate;
 // it gets called.
 class FileSystemOperation {
  public:
-  WEBKIT_STORAGE_BROWSER_EXPORT static FileSystemOperation* Create(
+  STORAGE_EXPORT static FileSystemOperation* Create(
       const FileSystemURL& url,
       FileSystemContext* file_system_context,
       scoped_ptr<FileSystemOperationContext> operation_context);

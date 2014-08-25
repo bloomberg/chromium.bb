@@ -10,7 +10,7 @@
 
 #include "base/files/file_path.h"
 #include "url/gurl.h"
-#include "webkit/browser/webkit_storage_browser_export.h"
+#include "webkit/browser/storage_export.h"
 #include "webkit/common/fileapi/file_system_mount_option.h"
 #include "webkit/common/fileapi/file_system_types.h"
 
@@ -75,7 +75,7 @@ namespace storage {
 // illegal on the current platform.
 // To avoid problems, use VirtualPath::BaseName and
 // VirtualPath::GetComponents instead of the base::FilePath methods.
-class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemURL {
+class STORAGE_EXPORT FileSystemURL {
  public:
   FileSystemURL();
   ~FileSystemURL();
@@ -131,7 +131,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemURL {
     return !(*this == that);
   }
 
-  struct WEBKIT_STORAGE_BROWSER_EXPORT Comparator {
+  struct STORAGE_EXPORT Comparator {
     bool operator() (const FileSystemURL& lhs, const FileSystemURL& rhs) const;
   };
 

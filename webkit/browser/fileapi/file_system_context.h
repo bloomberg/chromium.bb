@@ -20,7 +20,7 @@
 #include "webkit/browser/fileapi/plugin_private_file_system_backend.h"
 #include "webkit/browser/fileapi/sandbox_file_system_backend_delegate.h"
 #include "webkit/browser/fileapi/task_runner_bound_observer_list.h"
-#include "webkit/browser/webkit_storage_browser_export.h"
+#include "webkit/browser/storage_export.h"
 #include "webkit/common/fileapi/file_system_types.h"
 
 namespace base {
@@ -83,7 +83,7 @@ typedef base::Callback<bool(
 
 // This class keeps and provides a file system context for FileSystem API.
 // An instance of this class is created and owned by profile.
-class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemContext
+class STORAGE_EXPORT FileSystemContext
     : public base::RefCountedThreadSafe<FileSystemContext,
                                         DefaultContextDeleter> {
  public:

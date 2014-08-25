@@ -6,7 +6,7 @@
 #define WEBKIT_COMMON_QUOTA_QUOTA_STATUS_CODE_H_
 
 #include "third_party/WebKit/public/platform/WebStorageQuotaError.h"
-#include "webkit/common/webkit_storage_common_export.h"
+#include "webkit/common/storage_common_export.h"
 
 namespace storage {
 

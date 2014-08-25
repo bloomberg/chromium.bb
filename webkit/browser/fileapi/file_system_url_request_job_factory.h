@@ -9,7 +9,7 @@
 
 #include "net/url_request/url_request_job_factory.h"
 
-#include "webkit/browser/webkit_storage_browser_export.h"
+#include "webkit/browser/storage_export.h"
 
 namespace base {
 class MessageLoopProxy;
@@ -22,7 +22,7 @@ class FileSystemContext;
 // |context|'s lifetime should exceed the lifetime of the ProtocolHandler.
 // Currently, this is only used by ProfileIOData which owns |context| and the
 // ProtocolHandler.
-WEBKIT_STORAGE_BROWSER_EXPORT net::URLRequestJobFactory::ProtocolHandler*
+STORAGE_EXPORT net::URLRequestJobFactory::ProtocolHandler*
     CreateFileSystemProtocolHandler(const std::string& storage_domain,
                                     FileSystemContext* context);
 

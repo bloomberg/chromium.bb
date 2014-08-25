@@ -10,7 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
-#include "webkit/browser/webkit_storage_browser_export.h"
+#include "webkit/browser/storage_export.h"
 #include "webkit/common/fileapi/file_system_util.h"
 
 class GURL;
@@ -23,9 +23,9 @@ class FileSystemURL;
 namespace storage {
 
 // Represents a set of mount points for File API.
-class WEBKIT_STORAGE_BROWSER_EXPORT MountPoints {
+class STORAGE_EXPORT MountPoints {
  public:
-  struct WEBKIT_STORAGE_BROWSER_EXPORT MountPointInfo {
+  struct STORAGE_EXPORT MountPointInfo {
     MountPointInfo();
     MountPointInfo(const std::string& name, const base::FilePath& path);
 

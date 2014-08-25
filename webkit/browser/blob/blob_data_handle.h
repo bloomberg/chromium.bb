@@ -10,7 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/supports_user_data.h"
-#include "webkit/browser/webkit_storage_browser_export.h"
+#include "webkit/browser/storage_export.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -25,7 +25,7 @@ class BlobStorageContext;
 // the underlying BlobData and its uuid remain in BlobStorageContext's
 // collection for the duration. This object has delete semantics and
 // maybe deleted on any thread.
-class WEBKIT_STORAGE_BROWSER_EXPORT BlobDataHandle
+class STORAGE_EXPORT BlobDataHandle
     : public base::SupportsUserData::Data {
  public:
   BlobDataHandle(const BlobDataHandle& other);  // May be copied on any thread.

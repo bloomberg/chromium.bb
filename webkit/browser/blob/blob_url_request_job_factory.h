@@ -10,7 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job_factory.h"
-#include "webkit/browser/webkit_storage_browser_export.h"
+#include "webkit/browser/storage_export.h"
 
 namespace base {
 class MessageLoopProxy;
@@ -30,7 +30,7 @@ class BlobData;
 class BlobDataHandle;
 class BlobStorageContext;
 
-class WEBKIT_STORAGE_BROWSER_EXPORT BlobProtocolHandler
+class STORAGE_EXPORT BlobProtocolHandler
     : public net::URLRequestJobFactory::ProtocolHandler {
  public:
   // A helper to manufacture an URLRequest to retrieve the given blob.

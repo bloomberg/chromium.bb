@@ -21,7 +21,7 @@ class ObfuscatedFileUtil;
 class SandboxIsolatedOriginDatabase;
 class SandboxOriginDatabase;
 
-class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE SandboxPrioritizedOriginDatabase
+class STORAGE_EXPORT_PRIVATE SandboxPrioritizedOriginDatabase
     : public SandboxOriginDatabaseInterface {
  public:
   SandboxPrioritizedOriginDatabase(const base::FilePath& file_system_directory,

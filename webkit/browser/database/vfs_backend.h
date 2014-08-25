@@ -8,7 +8,7 @@
 #include "base/files/file.h"
 #include "base/process/process.h"
 #include "base/strings/string16.h"
-#include "webkit/browser/webkit_storage_browser_export.h"
+#include "webkit/browser/storage_export.h"
 
 namespace base {
 class FilePath;
@@ -16,7 +16,7 @@ class FilePath;
 
 namespace storage {
 
-class WEBKIT_STORAGE_BROWSER_EXPORT VfsBackend {
+class STORAGE_EXPORT VfsBackend {
  public:
    static base::File OpenFile(const base::FilePath& file_path,
                               int desired_flags);

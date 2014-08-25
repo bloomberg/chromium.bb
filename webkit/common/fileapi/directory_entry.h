@@ -10,7 +10,7 @@
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
 #include "base/time/time.h"
-#include "webkit/common/webkit_storage_common_export.h"
+#include "webkit/common/storage_common_export.h"
 
 namespace storage {
 

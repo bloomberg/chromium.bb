@@ -9,7 +9,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
-#include "webkit/browser/webkit_storage_browser_export.h"
+#include "webkit/browser/storage_export.h"
 
 class GURL;
 
@@ -21,7 +21,7 @@ namespace storage {
 // is currently installed in the extensions system.
 // The IsSomething() methods must be thread-safe, however Observers should
 // only be notified, added, and removed on the IO thead.
-class WEBKIT_STORAGE_BROWSER_EXPORT SpecialStoragePolicy
+class STORAGE_EXPORT SpecialStoragePolicy
     : public base::RefCountedThreadSafe<SpecialStoragePolicy> {
  public:
   typedef int StoragePolicy;
@@ -30,7 +30,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT SpecialStoragePolicy
     STORAGE_UNLIMITED = 1 << 1,
   };
 
-  class WEBKIT_STORAGE_BROWSER_EXPORT Observer {
+  class STORAGE_EXPORT Observer {
    public:
     virtual void OnGranted(const GURL& origin, int change_flags) = 0;
     virtual void OnRevoked(const GURL& origin, int change_flags) = 0;

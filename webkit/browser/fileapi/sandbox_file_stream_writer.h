@@ -12,7 +12,7 @@
 #include "webkit/browser/fileapi/file_stream_writer.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/browser/fileapi/task_runner_bound_observer_list.h"
-#include "webkit/browser/webkit_storage_browser_export.h"
+#include "webkit/browser/storage_export.h"
 #include "webkit/common/blob/shareable_file_reference.h"
 #include "webkit/common/fileapi/file_system_types.h"
 #include "webkit/common/quota/quota_types.h"
@@ -23,7 +23,7 @@ class FileSystemContext;
 class FileSystemQuotaUtil;
 class FileStreamWriter;
 
-class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE SandboxFileStreamWriter
+class STORAGE_EXPORT_PRIVATE SandboxFileStreamWriter
     : public NON_EXPORTED_BASE(FileStreamWriter) {
  public:
   SandboxFileStreamWriter(FileSystemContext* file_system_context,

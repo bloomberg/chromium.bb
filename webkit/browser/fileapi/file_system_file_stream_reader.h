@@ -11,7 +11,7 @@
 #include "base/time/time.h"
 #include "webkit/browser/blob/file_stream_reader.h"
 #include "webkit/browser/fileapi/file_system_url.h"
-#include "webkit/browser/webkit_storage_browser_export.h"
+#include "webkit/browser/storage_export.h"
 #include "webkit/common/blob/shareable_file_reference.h"
 
 namespace base {
@@ -32,7 +32,7 @@ class FileSystemContext;
 // remote filesystem should implement its own reader rather than relying
 // on FileSystemOperation::GetSnapshotFile() which may force downloading
 // the entire contents for remote files.
-class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE FileSystemFileStreamReader
+class STORAGE_EXPORT_PRIVATE FileSystemFileStreamReader
     : public NON_EXPORTED_BASE(storage::FileStreamReader) {
  public:
   virtual ~FileSystemFileStreamReader();

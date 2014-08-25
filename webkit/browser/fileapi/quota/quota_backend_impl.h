@@ -9,7 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "webkit/browser/fileapi/quota/quota_reservation_manager.h"
 #include "webkit/browser/fileapi/sandbox_file_system_backend_delegate.h"
-#include "webkit/browser/webkit_storage_browser_export.h"
+#include "webkit/browser/storage_export.h"
 #include "webkit/common/quota/quota_status_code.h"
 
 namespace base {
@@ -30,7 +30,7 @@ class FileSystemUsageCache;
 class ObfuscatedFileUtil;
 
 // An instance of this class is owned by QuotaReservationManager.
-class WEBKIT_STORAGE_BROWSER_EXPORT QuotaBackendImpl
+class STORAGE_EXPORT QuotaBackendImpl
     : public QuotaReservationManager::QuotaBackend {
  public:
   typedef QuotaReservationManager::ReserveQuotaCallback

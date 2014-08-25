@@ -43,7 +43,7 @@ class CopyOrMoveOperationDelegate
 
   // Helper to copy a file by reader and writer streams.
   // Export for testing.
-  class WEBKIT_STORAGE_BROWSER_EXPORT StreamCopyHelper {
+  class STORAGE_EXPORT StreamCopyHelper {
    public:
     StreamCopyHelper(
         scoped_ptr<storage::FileStreamReader> reader,

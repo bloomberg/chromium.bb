@@ -14,7 +14,7 @@
 #include "webkit/browser/fileapi/file_system_operation_context.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/browser/fileapi/file_writer_delegate.h"
-#include "webkit/browser/webkit_storage_browser_export.h"
+#include "webkit/browser/storage_export.h"
 #include "webkit/common/blob/scoped_file.h"
 #include "webkit/common/quota/quota_types.h"
 
@@ -25,7 +25,7 @@ class FileSystemContext;
 class RecursiveOperationDelegate;
 
 // The default implementation of FileSystemOperation for file systems.
-class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemOperationImpl
+class STORAGE_EXPORT FileSystemOperationImpl
     : public NON_EXPORTED_BASE(FileSystemOperation) {
  public:
   virtual ~FileSystemOperationImpl();

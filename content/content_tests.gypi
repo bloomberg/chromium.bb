@@ -281,8 +281,8 @@
             '../ui/surface/surface.gyp:surface',
             '../v8/tools/gyp/v8.gyp:v8',
             '../webkit/common/gpu/webkit_gpu.gyp:webkit_gpu',
-            '../webkit/storage_browser.gyp:webkit_storage_browser',
-            '../webkit/storage_common.gyp:webkit_storage_common',
+            '../webkit/storage_browser.gyp:storage',
+            '../webkit/storage_common.gyp:storage_common',
           ],
           'export_dependent_settings': [
             '../third_party/WebKit/public/blink.gyp:blink',
@@ -751,8 +751,8 @@
             '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
             '../third_party/libjingle/libjingle.gyp:libjingle',
             '../ui/gl/gl.gyp:gl',
-            '../webkit/storage_browser.gyp:webkit_storage_browser',
-            '../webkit/storage_common.gyp:webkit_storage_common',
+            '../webkit/storage_browser.gyp:storage',
+            '../webkit/storage_common.gyp:storage_common',
           ],
         }],
         ['enable_plugins==0', {

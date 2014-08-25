@@ -16,7 +16,7 @@
 #include "webkit/browser/blob/blob_data_handle.h"
 #include "webkit/browser/fileapi/file_system_operation.h"
 #include "webkit/browser/fileapi/file_system_url.h"
-#include "webkit/browser/webkit_storage_browser_export.h"
+#include "webkit/browser/storage_export.h"
 
 namespace net {
 class URLRequestContext;
@@ -34,7 +34,7 @@ class FileSystemContext;
 // operation fails, in addition to dispatching the callback with an error
 // code (therefore in most cases the caller does not need to check the
 // returned operation ID).
-class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemOperationRunner
+class STORAGE_EXPORT FileSystemOperationRunner
     : public base::SupportsWeakPtr<FileSystemOperationRunner> {
  public:
   typedef FileSystemOperation::GetMetadataCallback GetMetadataCallback;

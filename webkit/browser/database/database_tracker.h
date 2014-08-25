@@ -19,7 +19,7 @@
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "net/base/completion_callback.h"
-#include "webkit/browser/webkit_storage_browser_export.h"
+#include "webkit/browser/storage_export.h"
 #include "webkit/common/database/database_connections.h"
 
 namespace base {
@@ -43,15 +43,15 @@ class SpecialStoragePolicy;
 
 namespace storage {
 
-WEBKIT_STORAGE_BROWSER_EXPORT extern const base::FilePath::CharType
+STORAGE_EXPORT extern const base::FilePath::CharType
     kDatabaseDirectoryName[];
-WEBKIT_STORAGE_BROWSER_EXPORT extern const base::FilePath::CharType
+STORAGE_EXPORT extern const base::FilePath::CharType
     kTrackerDatabaseFileName[];
 
 class DatabasesTable;
 
 // This class is used to store information about all databases in an origin.
-class WEBKIT_STORAGE_BROWSER_EXPORT OriginInfo {
+class STORAGE_EXPORT OriginInfo {
  public:
   OriginInfo();
   OriginInfo(const OriginInfo& origin_info);
@@ -85,7 +85,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT OriginInfo {
 // the disk. Therefore, in a multi-threaded application, all methods of this
 // class should be called on the thread dedicated to file operations (file
 // thread in the browser process, for example), if such a thread exists.
-class WEBKIT_STORAGE_BROWSER_EXPORT DatabaseTracker
+class STORAGE_EXPORT DatabaseTracker
     : public base::RefCountedThreadSafe<DatabaseTracker> {
  public:
   class Observer {

@@ -10,7 +10,7 @@
 #include "base/basictypes.h"
 #include "base/strings/string_piece.h"
 #include "url/gurl.h"
-#include "webkit/common/webkit_storage_common_export.h"
+#include "webkit/common/storage_common_export.h"
 
 namespace storage {
 

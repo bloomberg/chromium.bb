@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "webkit/browser/webkit_storage_browser_export.h"
+#include "webkit/browser/storage_export.h"
 
 namespace base {
 class FilePath;
@@ -23,7 +23,7 @@ class QuotaReservationBuffer;
 // Represents an open file like a file descriptor.
 // This should be alive while a consumer keeps a file opened and should be
 // deleted when the plugin closes the file.
-class WEBKIT_STORAGE_BROWSER_EXPORT OpenFileHandle {
+class STORAGE_EXPORT OpenFileHandle {
  public:
   ~OpenFileHandle();
 

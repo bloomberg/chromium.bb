@@ -14,7 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "url/gurl.h"
-#include "webkit/browser/webkit_storage_browser_export.h"
+#include "webkit/browser/storage_export.h"
 #include "webkit/common/fileapi/file_system_types.h"
 
 namespace content {
@@ -28,7 +28,7 @@ class QuotaReservationBuffer;
 class OpenFileHandle;
 class OpenFileHandleContext;
 
-class WEBKIT_STORAGE_BROWSER_EXPORT QuotaReservationManager {
+class STORAGE_EXPORT QuotaReservationManager {
  public:
   // Callback for ReserveQuota. When this callback returns false, ReserveQuota
   // operation should be reverted.
@@ -36,7 +36,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT QuotaReservationManager {
       ReserveQuotaCallback;
 
   // An abstraction of backing quota system.
-  class WEBKIT_STORAGE_BROWSER_EXPORT QuotaBackend {
+  class STORAGE_EXPORT QuotaBackend {
    public:
     QuotaBackend() {}
     virtual ~QuotaBackend() {}

@@ -14,7 +14,7 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "net/url_request/url_request_job.h"
 #include "webkit/browser/fileapi/file_system_url.h"
-#include "webkit/browser/webkit_storage_browser_export.h"
+#include "webkit/browser/storage_export.h"
 
 namespace storage {
 
@@ -22,7 +22,7 @@ class FileSystemContext;
 struct DirectoryEntry;
 
 // A request job that handles reading filesystem: URLs for directories.
-class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE FileSystemDirURLRequestJob
+class STORAGE_EXPORT_PRIVATE FileSystemDirURLRequestJob
     : public net::URLRequestJob {
  public:
   FileSystemDirURLRequestJob(

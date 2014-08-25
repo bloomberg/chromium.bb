@@ -32,7 +32,7 @@
     '../ui/surface/surface.gyp:surface',
     '../v8/tools/gyp/v8.gyp:v8',
     '../webkit/common/gpu/webkit_gpu.gyp:webkit_gpu',
-    '../webkit/storage_common.gyp:webkit_storage_common',
+    '../webkit/storage_common.gyp:storage_common',
   ],
   'include_dirs': [
     '..',

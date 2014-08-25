@@ -9,7 +9,7 @@
   'targets': [
     {
       # GN version: //webkit/browser:storage
-      'target_name': 'webkit_storage_browser',
+      'target_name': 'storage',
       'type': '<(component)',
       'variables': { 'enable_wexit_time_destructors': 1, },
       'dependencies': [
@@ -22,11 +22,11 @@
         '<(DEPTH)/third_party/sqlite/sqlite.gyp:sqlite',
         '<(DEPTH)/url/url.gyp:url_lib',
         '<(DEPTH)/webkit/common/webkit_common.gyp:webkit_common',
-        '<(DEPTH)/webkit/storage_common.gyp:webkit_storage_common',
+        '<(DEPTH)/webkit/storage_common.gyp:storage_common',
       ],
       'defines': ['WEBKIT_STORAGE_BROWSER_IMPLEMENTATION'],
       'sources': [
-        'browser/webkit_storage_browser_export.h',
+        'browser/storage_export.h',
         'browser/blob/blob_data_handle.cc',
         'browser/blob/blob_data_handle.h',
         'browser/blob/blob_storage_context.cc',
@@ -192,8 +192,8 @@
       ],
       'dependencies': [
         '<(DEPTH)/base/base.gyp:base',
-        '<(DEPTH)/webkit/storage_common.gyp:webkit_storage_common',
-        'webkit_storage_browser',
+        '<(DEPTH)/webkit/storage_common.gyp:storage_common',
+        'storage',
       ],
     },
   ],

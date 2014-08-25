@@ -26,7 +26,7 @@ namespace storage {
 
 // All methods of this class other than the constructor may be used only from
 // the browser's FILE thread.  The constructor may be used on any thread.
-class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE SandboxOriginDatabase
+class STORAGE_EXPORT_PRIVATE SandboxOriginDatabase
     : public SandboxOriginDatabaseInterface {
  public:
   // Only one instance of SandboxOriginDatabase should exist for a given path

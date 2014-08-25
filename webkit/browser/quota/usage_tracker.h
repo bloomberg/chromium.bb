@@ -19,7 +19,7 @@
 #include "webkit/browser/quota/quota_client.h"
 #include "webkit/browser/quota/quota_task.h"
 #include "webkit/browser/quota/special_storage_policy.h"
-#include "webkit/browser/webkit_storage_browser_export.h"
+#include "webkit/browser/storage_export.h"
 #include "webkit/common/quota/quota_types.h"
 
 namespace storage {
@@ -30,7 +30,7 @@ class StorageMonitor;
 // A helper class that gathers and tracks the amount of data stored in
 // all quota clients.
 // An instance of this class is created per storage type.
-class WEBKIT_STORAGE_BROWSER_EXPORT UsageTracker : public QuotaTaskObserver {
+class STORAGE_EXPORT UsageTracker : public QuotaTaskObserver {
  public:
   UsageTracker(const QuotaClientList& clients, StorageType type,
                SpecialStoragePolicy* special_storage_policy,

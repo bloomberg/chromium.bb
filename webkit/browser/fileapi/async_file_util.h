@@ -13,7 +13,7 @@
 #include "base/files/file_util_proxy.h"
 #include "base/memory/scoped_ptr.h"
 #include "webkit/browser/fileapi/file_system_operation.h"
-#include "webkit/browser/webkit_storage_browser_export.h"
+#include "webkit/browser/storage_export.h"
 #include "webkit/common/fileapi/directory_entry.h"
 
 namespace base {
@@ -84,7 +84,7 @@ class AsyncFileUtil {
   // Creates an AsyncFileUtil instance which performs file operations on
   // local native file system. The created instance assumes
   // FileSystemURL::path() has the target platform path.
-  WEBKIT_STORAGE_BROWSER_EXPORT static AsyncFileUtil*
+  STORAGE_EXPORT static AsyncFileUtil*
       CreateForLocalFileSystem();
 
   AsyncFileUtil() {}

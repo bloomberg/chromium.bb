@@ -64,7 +64,7 @@
         '../ui/gl/gl.gyp:gl',
         '../url/url.gyp:url_lib',
         '../v8/tools/gyp/v8.gyp:v8',
-        '../webkit/storage_browser.gyp:webkit_storage_browser',
+        '../webkit/storage_browser.gyp:storage',
       ],
       'include_dirs': [
         '..',

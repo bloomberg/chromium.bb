@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "net/base/completion_callback.h"
-#include "webkit/browser/webkit_storage_browser_export.h"
+#include "webkit/browser/storage_export.h"
 
 namespace base {
 class FilePath;
@@ -27,7 +27,7 @@ class FileStreamWriter {
 
   // Creates a writer for the existing file in the path |file_path| starting
   // from |initial_offset|. Uses |task_runner| for async file operations.
-  WEBKIT_STORAGE_BROWSER_EXPORT static FileStreamWriter* CreateForLocalFile(
+  STORAGE_EXPORT static FileStreamWriter* CreateForLocalFile(
       base::TaskRunner* task_runner,
       const base::FilePath& file_path,
       int64 initial_offset,

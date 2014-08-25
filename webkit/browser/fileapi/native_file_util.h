@@ -10,7 +10,7 @@
 #include "base/files/file_util_proxy.h"
 #include "base/memory/scoped_ptr.h"
 #include "webkit/browser/fileapi/file_system_file_util.h"
-#include "webkit/browser/webkit_storage_browser_export.h"
+#include "webkit/browser/storage_export.h"
 
 namespace base {
 class Time;
@@ -28,7 +28,7 @@ namespace storage {
 //
 // Note that all the methods of this class are static and this does NOT
 // inherit from FileSystemFileUtil.
-class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE NativeFileUtil {
+class STORAGE_EXPORT_PRIVATE NativeFileUtil {
  public:
   enum CopyOrMoveMode {
     COPY_NOSYNC,

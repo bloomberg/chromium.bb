@@ -16,7 +16,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "url/gurl.h"
-#include "webkit/browser/webkit_storage_browser_export.h"
+#include "webkit/browser/storage_export.h"
 #include "webkit/common/quota/quota_types.h"
 
 namespace content {
@@ -35,7 +35,7 @@ namespace storage {
 class SpecialStoragePolicy;
 
 // All the methods of this class must run on the DB thread.
-class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE QuotaDatabase {
+class STORAGE_EXPORT_PRIVATE QuotaDatabase {
  public:
   // Constants for {Get,Set}QuotaConfigValue keys.
   static const char kDesiredAvailableSpaceKey[];
@@ -92,7 +92,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE QuotaDatabase {
   bool SetOriginDatabaseBootstrapped(bool bootstrap_flag);
 
  private:
-  struct WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE QuotaTableEntry {
+  struct STORAGE_EXPORT_PRIVATE QuotaTableEntry {
     QuotaTableEntry();
     QuotaTableEntry(
         const std::string& host,
@@ -102,10 +102,10 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE QuotaDatabase {
     StorageType type;
     int64 quota;
   };
-  friend WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE bool operator <(
+  friend STORAGE_EXPORT_PRIVATE bool operator <(
       const QuotaTableEntry& lhs, const QuotaTableEntry& rhs);
 
-  struct WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE OriginInfoTableEntry {
+  struct STORAGE_EXPORT_PRIVATE OriginInfoTableEntry {
     OriginInfoTableEntry();
     OriginInfoTableEntry(
         const GURL& origin,
@@ -119,7 +119,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE QuotaDatabase {
     base::Time last_access_time;
     base::Time last_modified_time;
   };
-  friend WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE bool operator <(
+  friend STORAGE_EXPORT_PRIVATE bool operator <(
       const OriginInfoTableEntry& lhs, const OriginInfoTableEntry& rhs);
 
   // Structures used for CreateSchema.

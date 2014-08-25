@@ -24,7 +24,7 @@ class FileSystemOperationRunner;
 // In short, each subclass should override ProcessFile and ProcessDirectory
 // to process a directory or a file. To start the recursive operation it
 // should also call StartRecursiveOperation.
-class WEBKIT_STORAGE_BROWSER_EXPORT RecursiveOperationDelegate
+class STORAGE_EXPORT RecursiveOperationDelegate
     : public base::SupportsWeakPtr<RecursiveOperationDelegate> {
  public:
   typedef FileSystemOperation::StatusCallback StatusCallback;

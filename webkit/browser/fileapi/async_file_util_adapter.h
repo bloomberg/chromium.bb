@@ -22,7 +22,7 @@ class FileSystemFileUtil;
 //
 // This instance (as thus this->sync_file_util_) is guaranteed to be alive
 // as far as FileSystemOperationContext given to each operation is kept alive.
-class WEBKIT_STORAGE_BROWSER_EXPORT AsyncFileUtilAdapter
+class STORAGE_EXPORT AsyncFileUtilAdapter
     : public NON_EXPORTED_BASE(AsyncFileUtil) {
  public:
   // Creates a new AsyncFileUtil for |sync_file_util|. This takes the

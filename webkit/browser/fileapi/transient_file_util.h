@@ -7,13 +7,13 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "webkit/browser/fileapi/local_file_util.h"
-#include "webkit/browser/webkit_storage_browser_export.h"
+#include "webkit/browser/storage_export.h"
 
 namespace storage {
 
 class FileSystemOperationContext;
 
-class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE TransientFileUtil
+class STORAGE_EXPORT_PRIVATE TransientFileUtil
     : public LocalFileUtil {
  public:
   TransientFileUtil() {}
