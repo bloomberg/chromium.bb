@@ -1,7 +1,125 @@
 {
+  "compile_targets": [
+    "all"
+  ],
   "gtest_tests": [
-    "browser_tests",
-    "content_browsertests",
-    "interactive_ui_tests"
+    {
+      "test": "accessibility_unittests",
+      "exclude_builders": ["tryserver.chromium.linux:linux_browser_asan"]
+    },
+    {
+      "test": "base_unittests",
+      "exclude_builders": ["tryserver.chromium.linux:linux_browser_asan"]
+    },
+    {
+      "test": "browser_tests",
+      "exclude_builders": ["tryserver.chromium.linux:linux_asan"]
+    },
+    {
+      "test": "cacheinvalidation_unittests",
+      "exclude_builders": ["tryserver.chromium.linux:linux_browser_asan"]
+    },
+    {
+      "test": "cc_unittests",
+      "exclude_builders": ["tryserver.chromium.linux:linux_browser_asan"]
+    },
+    {
+      "test": "components_unittests",
+      "exclude_builders": ["tryserver.chromium.linux:linux_browser_asan"]
+    },
+    {
+      "test": "content_browsertests",
+      "exclude_builders": ["tryserver.chromium.linux:linux_asan"]
+    },
+    {
+      "test": "content_unittests",
+      "exclude_builders": ["tryserver.chromium.linux:linux_browser_asan"]
+    },
+    {
+      "test": "crypto_unittests",
+      "exclude_builders": ["tryserver.chromium.linux:linux_browser_asan"]
+    },
+    {
+      "test": "device_unittests",
+      "exclude_builders": ["tryserver.chromium.linux:linux_browser_asan"]
+    },
+    {
+      "test": "display_unittests",
+      "platforms": ["linux"],
+      "exclude_builders": ["tryserver.chromium.linux:linux_browser_asan"]
+    },
+    {
+      "test": "gcm_unit_tests",
+      "exclude_builders": ["tryserver.chromium.linux:linux_browser_asan"]
+    },
+    {
+      "test": "gfx_unittests",
+      "exclude_builders": ["tryserver.chromium.linux:linux_browser_asan"]
+    },
+    {
+      "test": "google_apis_unittests",
+      "exclude_builders": ["tryserver.chromium.linux:linux_browser_asan"]
+    },
+    {
+      "test": "gpu_unittests",
+      "exclude_builders": ["tryserver.chromium.linux:linux_browser_asan"]
+    },
+    {
+      "test": "interactive_ui_tests",
+      "exclude_builders": ["tryserver.chromium.linux:linux_asan"]
+    },
+    {
+      "test": "ipc_tests",
+      "exclude_builders": ["tryserver.chromium.linux:linux_browser_asan"]
+    },
+    {
+      "test": "jingle_unittests",
+      "exclude_builders": ["tryserver.chromium.linux:linux_browser_asan"]
+    },
+    {
+      "test": "media_unittests",
+      "exclude_builders": ["tryserver.chromium.linux:linux_browser_asan"]
+    },
+    {
+      "test": "net_unittests",
+      "exclude_builders": ["tryserver.chromium.linux:linux_browser_asan"]
+    },
+    {
+      "test": "ppapi_unittests",
+      "exclude_builders": ["tryserver.chromium.linux:linux_browser_asan"]
+    },
+    {
+      "test": "printing_unittests",
+      "exclude_builders": ["tryserver.chromium.linux:linux_browser_asan"]
+    },
+    {
+      "test": "remoting_unittests",
+      "exclude_builders": ["tryserver.chromium.linux:linux_browser_asan"]
+    },
+    {
+      "test": "sandbox_linux_unittests",
+      "platforms": ["linux"],
+      "exclude_builders": ["tryserver.chromium.linux:linux_browser_asan"]
+    },
+    {
+      "test": "sql_unittests",
+      "exclude_builders": ["tryserver.chromium.linux:linux_browser_asan"]
+    },
+    {
+      "test": "sync_unit_tests",
+      "exclude_builders": ["tryserver.chromium.linux:linux_browser_asan"]
+    },
+    {
+      "test": "ui_unittests",
+      "exclude_builders": ["tryserver.chromium.linux:linux_browser_asan"]
+    },
+    {
+      "test": "unit_tests",
+      "exclude_builders": ["tryserver.chromium.linux:linux_browser_asan"]
+    },
+    {
+      "test": "url_unittests",
+      "exclude_builders": ["tryserver.chromium.linux:linux_browser_asan"]
+    }
   ]
 }
