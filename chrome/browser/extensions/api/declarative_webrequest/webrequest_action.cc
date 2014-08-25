@@ -25,6 +25,7 @@
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+#include "net/http/http_util.h"
 #include "net/url_request/url_request.h"
 #include "third_party/re2/re2/re2.h"
 
@@ -172,11 +173,11 @@ scoped_refptr<const WebRequestAction> CreateSetRequestHeaderAction(
   std::string value;
   INPUT_FORMAT_VALIDATE(dict->GetString(keys::kNameKey, &name));
   INPUT_FORMAT_VALIDATE(dict->GetString(keys::kValueKey, &value));
-  if (!helpers::IsValidHeaderName(name)) {
+  if (!net::HttpUtil::IsValidHeaderName(name)) {
     *error = extension_web_request_api_constants::kInvalidHeaderName;
     return scoped_refptr<const WebRequestAction>(NULL);
   }
-  if (!helpers::IsValidHeaderValue(value)) {
+  if (!net::HttpUtil::IsValidHeaderValue(value)) {
     *error = ErrorUtils::FormatErrorMessage(
         extension_web_request_api_constants::kInvalidHeaderValue, name);
     return scoped_refptr<const WebRequestAction>(NULL);
@@ -194,7 +195,7 @@ scoped_refptr<const WebRequestAction> CreateRemoveRequestHeaderAction(
   CHECK(value->GetAsDictionary(&dict));
   std::string name;
   INPUT_FORMAT_VALIDATE(dict->GetString(keys::kNameKey, &name));
-  if (!helpers::IsValidHeaderName(name)) {
+  if (!net::HttpUtil::IsValidHeaderName(name)) {
     *error = extension_web_request_api_constants::kInvalidHeaderName;
     return scoped_refptr<const WebRequestAction>(NULL);
   }
@@ -213,11 +214,11 @@ scoped_refptr<const WebRequestAction> CreateAddResponseHeaderAction(
   std::string value;
   INPUT_FORMAT_VALIDATE(dict->GetString(keys::kNameKey, &name));
   INPUT_FORMAT_VALIDATE(dict->GetString(keys::kValueKey, &value));
-  if (!helpers::IsValidHeaderName(name)) {
+  if (!net::HttpUtil::IsValidHeaderName(name)) {
     *error = extension_web_request_api_constants::kInvalidHeaderName;
     return scoped_refptr<const WebRequestAction>(NULL);
   }
-  if (!helpers::IsValidHeaderValue(value)) {
+  if (!net::HttpUtil::IsValidHeaderValue(value)) {
     *error = ErrorUtils::FormatErrorMessage(
         extension_web_request_api_constants::kInvalidHeaderValue, name);
     return scoped_refptr<const WebRequestAction>(NULL);
@@ -237,11 +238,11 @@ scoped_refptr<const WebRequestAction> CreateRemoveResponseHeaderAction(
   std::string value;
   INPUT_FORMAT_VALIDATE(dict->GetString(keys::kNameKey, &name));
   bool has_value = dict->GetString(keys::kValueKey, &value);
-  if (!helpers::IsValidHeaderName(name)) {
+  if (!net::HttpUtil::IsValidHeaderName(name)) {
     *error = extension_web_request_api_constants::kInvalidHeaderName;
     return scoped_refptr<const WebRequestAction>(NULL);
   }
-  if (has_value && !helpers::IsValidHeaderValue(value)) {
+  if (has_value && !net::HttpUtil::IsValidHeaderValue(value)) {
     *error = ErrorUtils::FormatErrorMessage(
         extension_web_request_api_constants::kInvalidHeaderValue, name);
     return scoped_refptr<const WebRequestAction>(NULL);

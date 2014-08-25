@@ -75,6 +75,13 @@ class NET_EXPORT HttpUtil {
   // named |name|.
   static bool IsSafeHeader(const std::string& name);
 
+  // Returns true if |name| is a valid HTTP header name.
+  static bool IsValidHeaderName(const std::string& name);
+
+  // Returns false if |value| contains NUL or CRLF. This method does not perform
+  // a fully RFC-2616-compliant header value validation.
+  static bool IsValidHeaderValue(const std::string& value);
+
   // Strips all header lines from |headers| whose name matches
   // |headers_to_remove|. |headers_to_remove| is a list of null-terminated
   // lower-case header names, with array length |headers_to_remove_len|.

@@ -340,6 +340,19 @@ bool HttpUtil::IsSafeHeader(const std::string& name) {
 }
 
 // static
+bool HttpUtil::IsValidHeaderName(const std::string& name) {
+  // Check whether the header name is RFC 2616-compliant.
+  return HttpUtil::IsToken(name);
+}
+
+// static
+bool HttpUtil::IsValidHeaderValue(const std::string& value) {
+  // Just a sanity check: disallow NUL and CRLF.
+  return value.find('\0') == std::string::npos &&
+      value.find("\r\n") == std::string::npos;
+}
+
+// static
 std::string HttpUtil::StripHeaders(const std::string& headers,
                                    const char* const headers_to_remove[],
                                    size_t headers_to_remove_len) {

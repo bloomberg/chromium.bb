@@ -1242,15 +1242,4 @@ void NotifyWebRequestAPIUsed(
   }
 }
 
-bool IsValidHeaderName(const std::string& name) {
-  // Check whether the header name is RFC 2616-compliant.
-  return net::HttpUtil::IsToken(name);
-}
-
-bool IsValidHeaderValue(const std::string& value) {
-  // Just a sanity check: disallow NUL and CRLF.
-  return value.find('\0') == std::string::npos &&
-      value.find("\r\n") == std::string::npos;
-}
-
 }  // namespace extension_web_request_api_helpers

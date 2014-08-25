@@ -65,6 +65,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/upload_data_stream.h"
 #include "net/http/http_response_headers.h"
+#include "net/http/http_util.h"
 #include "net/url_request/url_request.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
@@ -2388,7 +2389,7 @@ bool WebRequestInternalEventHandledFunction::RunSync() {
                                                           serialized_header));
           return false;
         }
-        if (!helpers::IsValidHeaderName(name)) {
+        if (!net::HttpUtil::IsValidHeaderName(name)) {
           RespondWithError(event_name,
                            sub_event_name,
                            request_id,
@@ -2396,7 +2397,7 @@ bool WebRequestInternalEventHandledFunction::RunSync() {
                            keys::kInvalidHeaderName);
           return false;
         }
-        if (!helpers::IsValidHeaderValue(value)) {
+        if (!net::HttpUtil::IsValidHeaderValue(value)) {
           RespondWithError(event_name,
                            sub_event_name,
                            request_id,

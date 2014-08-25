@@ -34,6 +34,7 @@
 #include "content/public/common/user_agent.h"
 #include "extensions/common/constants.h"
 #include "gpu/config/gpu_info.h"
+#include "net/http/http_util.h"
 #include "ppapi/shared_impl/ppapi_permissions.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
@@ -418,8 +419,12 @@ std::string GetProduct() {
 
 std::string GetUserAgent() {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kUserAgent))
-    return command_line->GetSwitchValueASCII(switches::kUserAgent);
+  if (command_line->HasSwitch(switches::kUserAgent)) {
+    std::string ua = command_line->GetSwitchValueASCII(switches::kUserAgent);
+    if (net::HttpUtil::IsValidHeaderValue(ua))
+      return ua;
+    LOG(WARNING) << "Ignored invalid value for flag --" << switches::kUserAgent;
+  }
 
   std::string product = GetProduct();
 #if defined(OS_ANDROID)

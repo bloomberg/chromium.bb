@@ -1603,7 +1603,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
 
   for (size_t index = 0; index < arraysize(kUnsafeHeaders); ++index) {
     std::string download_url = test_server()->GetURL("slow?0").spec();
-    EXPECT_STREQ(errors::kInvalidHeader,
+    EXPECT_STREQ(errors::kInvalidHeaderUnsafe,
                   RunFunctionAndReturnError(new DownloadsDownloadFunction(),
                                             base::StringPrintf(
         "[{\"url\": \"%s\","
@@ -1615,6 +1615,35 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
         static_cast<int>(index),
         kUnsafeHeaders[index])).c_str());
   }
+}
+
+// Tests that invalid header names and values are rejected.
+IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
+                       DownloadExtensionTest_Download_InvalidHeaders) {
+  LoadExtension("downloads_split");
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  ASSERT_TRUE(test_server()->Start());
+  GoOnTheRecord();
+  std::string download_url = test_server()->GetURL("slow?0").spec();
+  EXPECT_STREQ(errors::kInvalidHeaderName,
+               RunFunctionAndReturnError(new DownloadsDownloadFunction(),
+                                         base::StringPrintf(
+      "[{\"url\": \"%s\","
+      "  \"filename\": \"unsafe-header-crlf.txt\","
+      "  \"headers\": [{"
+      "    \"name\": \"Header\\r\\nSec-Spoof: Hey\\r\\nX-Split:X\","
+      "    \"value\": \"unsafe\"}]}]",
+      download_url.c_str())).c_str());
+
+  EXPECT_STREQ(errors::kInvalidHeaderValue,
+               RunFunctionAndReturnError(new DownloadsDownloadFunction(),
+                                         base::StringPrintf(
+      "[{\"url\": \"%s\","
+      "  \"filename\": \"unsafe-header-crlf.txt\","
+      "  \"headers\": [{"
+      "    \"name\": \"Invalid-value\","
+      "    \"value\": \"hey\\r\\nSec-Spoof: Hey\"}]}]",
+      download_url.c_str())).c_str());
 }
 
 #if defined(OS_WIN)

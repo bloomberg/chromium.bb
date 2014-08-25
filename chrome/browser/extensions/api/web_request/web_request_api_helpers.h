@@ -326,11 +326,6 @@ void NotifyWebRequestAPIUsed(
     void* profile_id,
     scoped_refptr<const extensions::Extension> extension);
 
-// Whether a header is RFC 2616-compliant.
-bool IsValidHeaderName(const std::string& name);
-// Whether a header value does not contain NUL or CRLF.
-bool IsValidHeaderValue(const std::string& value);
-
 }  // namespace extension_web_request_api_helpers
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_WEB_REQUEST_WEB_REQUEST_API_HELPERS_H_

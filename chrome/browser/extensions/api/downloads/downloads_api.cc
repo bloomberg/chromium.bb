@@ -86,7 +86,9 @@ const char kIconNotFound[] = "Icon not found";
 const char kInvalidDangerType[] = "Invalid danger type";
 const char kInvalidFilename[] = "Invalid filename";
 const char kInvalidFilter[] = "Invalid query filter";
-const char kInvalidHeader[] = "Invalid request header";
+const char kInvalidHeaderName[] = "Invalid request header name";
+const char kInvalidHeaderUnsafe[] = "Unsafe request header name";
+const char kInvalidHeaderValue[] = "Invalid request header value";
 const char kInvalidId[] = "Invalid downloadId";
 const char kInvalidOrderBy[] = "Invalid orderBy field";
 const char kInvalidQueryLimit[] = "Invalid query limit";
@@ -1036,8 +1038,16 @@ bool DownloadsDownloadFunction::RunAsync() {
          iter != options.headers->end();
          ++iter) {
       const HeaderNameValuePair& name_value = **iter;
+      if (!net::HttpUtil::IsValidHeaderName(name_value.name)) {
+        error_ = errors::kInvalidHeaderName;
+        return false;
+      }
       if (!net::HttpUtil::IsSafeHeader(name_value.name)) {
-        error_ = errors::kInvalidHeader;
+        error_ = errors::kInvalidHeaderUnsafe;
+        return false;
+      }
+      if (!net::HttpUtil::IsValidHeaderValue(name_value.value)) {
+        error_ = errors::kInvalidHeaderValue;
         return false;
       }
       download_params->add_request_header(name_value.name, name_value.value);
