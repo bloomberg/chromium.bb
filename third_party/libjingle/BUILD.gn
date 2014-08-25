@@ -255,8 +255,8 @@ static_library("libjingle") {
   ]
 
   # From libjingle_common.gypi's conditions list.
-  if (is_win && !nacl_untrusted_build) {
-    cflags += [ "/wd4005", "\wd4267" ]
+  if (is_win) {
+    cflags = [ "/wd4005", "/wd4267" ]
   }
 
   forward_dependent_configs_from = [
@@ -337,7 +337,7 @@ source_set("peerconnnection_server") {
   ]
   if (is_win) {
     # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-    cflags += [ "/wd4309" ]
+    cflags = [ "/wd4309" ]
   }
 }
 

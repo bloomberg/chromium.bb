@@ -309,7 +309,7 @@ static_library("ui") {
     sources += rebase_path(gypi_values.chrome_browser_ui_win_sources,
                            ".", "//chrome")
     deps += [
-      "//chrome/browser/installer/util:strings",
+      "//chrome/installer/util:strings",
       "//third_party/wtl",
       "//third_party/iaccessible2",
       "//third_party/isimpledom",

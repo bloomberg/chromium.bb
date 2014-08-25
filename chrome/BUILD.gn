@@ -114,7 +114,7 @@ shared_library("main_dll") {
       "//chrome/app/theme:chrome_unscaled_resources",
       "//content/app/resources",
       "//crypto",
-      "//net:resources",
+      "//net:net_resources",
       "//third_party/wtl",
       "//ui/views",
       #'<(DEPTH)/chrome_elf/chrome_elf.gyp:chrome_elf' ]  TODO(GYP)
@@ -212,7 +212,9 @@ if (is_win) {
   # TODO(brettw) this duplicates "//chrome/common:version" which applies to
   # Linux.
   process_version("version_header") {
-    visibility = ":*"
+    # TODO(brettW) this should have more reduced visibility, but chrome/browser
+    # currently depends on this.
+    #visibility = ":*"
     source = "version.h.in"
     # TODO(brettw) this should move to $target_gen_dir/version.h and
     # source files including it should reference it via "chrome/version.h"
