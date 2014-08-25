@@ -76,6 +76,14 @@ function test()
             next();
         },
 
+        function testCaseSensitive(next)
+        {
+            lineSelection(0, 9, 13);
+            nextOccurrence(3);
+            dumpSelectionStats();
+            next();
+        },
+
         function testOccurrencesOnTheSameLine(next)
         {
             lineSelection(2, 13);

@@ -29,6 +29,9 @@ function submitWord(url) {
 Running: testNextFullWord
 'function': 3
 
+Running: testCaseSensitive
+'word': 2
+
 Running: testOccurrencesOnTheSameLine
 'original': 3
 
