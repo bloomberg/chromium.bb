@@ -87,7 +87,13 @@ DWORD SetDWValue(HKEY* key, const wchar_t* property, DWORD value) {
 
 bool GenerateStateFromBeaconAndAttemptCount(HKEY* key, DWORD blacklist_state) {
   LONG result = 0;
-  if (blacklist_state == blacklist::BLACKLIST_SETUP_RUNNING) {
+  if (blacklist_state == blacklist::BLACKLIST_ENABLED) {
+    // If the blacklist succeeded on the previous run reset the failure
+    // counter.
+    return (SetDWValue(key,
+                       blacklist::kBeaconAttemptCount,
+                       static_cast<DWORD>(0)) == ERROR_SUCCESS);
+  } else {
     // Some part of the blacklist setup failed last time.  If this has occured
     // blacklist::kBeaconMaxAttempts times in a row we switch the state to
     // failed and skip setting up the blacklist.
@@ -111,18 +117,10 @@ bool GenerateStateFromBeaconAndAttemptCount(HKEY* key, DWORD blacklist_state) {
     if (attempt_count >= blacklist::kBeaconMaxAttempts) {
       blacklist_state = blacklist::BLACKLIST_SETUP_FAILED;
       SetDWValue(key, blacklist::kBeaconState, blacklist_state);
-      return false;
     }
-  } else if (blacklist_state == blacklist::BLACKLIST_ENABLED) {
-    // If the blacklist succeeded on the previous run reset the failure
-    // counter.
-    result =
-        SetDWValue(key, blacklist::kBeaconAttemptCount, static_cast<DWORD>(0));
-    if (result != ERROR_SUCCESS) {
-      return false;
-    }
+
+    return false;
   }
-  return true;
 }
 
 }  // namespace
