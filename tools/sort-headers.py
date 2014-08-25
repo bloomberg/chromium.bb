@@ -53,6 +53,8 @@ def IncludeCompareKey(line):
     return '0'
   if line.startswith('<atlbase.h>'):  # Must be before atlapp.h.
     return '1' + line
+  if line.startswith('<ole2.h>'):  # Must be before e.g. intshcut.h
+    return '1' + line
   if line.startswith('<unknwn.h>'):  # Must be before e.g. intshcut.h
     return '1' + line
 
