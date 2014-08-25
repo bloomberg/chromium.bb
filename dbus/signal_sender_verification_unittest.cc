@@ -186,7 +186,8 @@ TEST_F(SignalSenderVerificationTest, TestSignalAccepted) {
   ASSERT_EQ(kMessage, test_signal_string_);
 }
 
-TEST_F(SignalSenderVerificationTest, TestSignalRejected) {
+// Disabled, http://crbug.com/407063 .
+TEST_F(SignalSenderVerificationTest, DISABLED_TestSignalRejected) {
   // To make sure the histogram instance is created.
   UMA_HISTOGRAM_COUNTS("DBus.RejectedSignalCount", 0);
   base::HistogramBase* reject_signal_histogram =
