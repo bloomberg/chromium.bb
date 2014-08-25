@@ -7,13 +7,13 @@
 #include <algorithm>
 
 #include "base/strings/utf_string_conversions.h"
-#include "grit/ui_strings.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_folder_item.h"
 #include "ui/app_list/views/app_list_folder_view.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/resources/grit/ui_resources.h"
+#include "ui/strings/grit/ui_strings.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/textfield/textfield.h"

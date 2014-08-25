@@ -29,7 +29,6 @@ include_rules = [
   "+crypto",
   "+grit/blink_resources.h",
   "+grit/content_strings.h",
-  "+grit/ui_strings.h",
   "+grit/webui_resources.h",
   "+grit/webui_resources_map.h",
 
@@ -91,6 +90,7 @@ include_rules = [
   "+ui/ozone/gpu",
   "+ui/ozone/public",
   "+ui/resources/grit/ui_resources.h",
+  "+ui/strings/grit/ui_strings.h",
   "+ui/shell_dialogs",
   "+ui/snapshot",
   "+ui/surface",

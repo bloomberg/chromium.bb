@@ -10,11 +10,11 @@
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
-#include "grit/ui_strings.h"
 #include "third_party/icu/source/common/unicode/unistr.h"
 #include "ui/base/l10n/formatter.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_export.h"
+#include "ui/strings/grit/ui_strings.h"
 
 using base::Time;
 using base::TimeDelta;

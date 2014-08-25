@@ -1,7 +1,6 @@
 include_rules = [
   # Infobars is a layered component; subdirectories must explicitly introduce
   # the ability to use the content layer as appropriate.
-  "+grit/ui_strings.h",
   "+ui",
   "+third_party/skia"
 ]

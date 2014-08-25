@@ -8,18 +8,18 @@
 
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/time/time.h"
-#include "grit/ui_strings.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "ui/base/cocoa/hover_image_button.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/resource/resource_bundle.h"
-#import "ui/message_center/cocoa/opaque_views.h"
 #import "ui/message_center/cocoa/notification_controller.h"
+#import "ui/message_center/cocoa/opaque_views.h"
 #import "ui/message_center/cocoa/settings_controller.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_style.h"
 #include "ui/message_center/notifier_settings.h"
 #include "ui/resources/grit/ui_resources.h"
+#include "ui/strings/grit/ui_strings.h"
 
 const int kBackButtonSize = 16;
 

@@ -5,7 +5,6 @@
 #include "ui/app_list/views/speech_view.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "grit/ui_strings.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/app_list/app_list_model.h"
 #include "ui/app_list/app_list_view_delegate.h"
@@ -15,6 +14,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/path.h"
 #include "ui/resources/grit/ui_resources.h"
+#include "ui/strings/grit/ui_strings.h"
 #include "ui/views/animation/bounds_animator.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/image_button.h"

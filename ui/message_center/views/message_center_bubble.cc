@@ -4,10 +4,10 @@
 
 #include "ui/message_center/views/message_center_bubble.h"
 
-#include "grit/ui_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/message_center/message_center_style.h"
 #include "ui/message_center/views/message_center_view.h"
+#include "ui/strings/grit/ui_strings.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget.h"
 

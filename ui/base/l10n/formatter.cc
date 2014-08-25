@@ -7,9 +7,9 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "grit/ui_strings.h"
 #include "third_party/icu/source/common/unicode/unistr.h"
 #include "ui/base/l10n/l10n_util_plurals.h"
+#include "ui/strings/grit/ui_strings.h"
 
 namespace ui {
 

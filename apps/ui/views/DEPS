@@ -2,5 +2,5 @@ include_rules = [
   # TODO(jamescook): Eliminate this by introducing apps_resources.grd, see
   # crbug.com/306688
   "+grit/theme_resources.h",
-  "+grit/ui_strings.h",
+  "+ui/strings/grit/ui_strings.h",
 ]

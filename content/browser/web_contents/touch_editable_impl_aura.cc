@@ -10,13 +10,13 @@
 #include "content/common/view_messages.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
-#include "grit/ui_strings.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/ui_base_switches_util.h"
 #include "ui/gfx/range/range.h"
+#include "ui/strings/grit/ui_strings.h"
 #include "ui/wm/public/activation_client.h"
 
 namespace content {

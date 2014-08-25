@@ -31,7 +31,6 @@
 #include "content/public/browser/user_metrics.h"
 #include "grit/ash_strings.h"
 #include "grit/theme_resources.h"
-#include "grit/ui_strings.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/clipboard/clipboard.h"
@@ -40,6 +39,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 #include "ui/snapshot/snapshot.h"
+#include "ui/strings/grit/ui_strings.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/drive/file_system_interface.h"

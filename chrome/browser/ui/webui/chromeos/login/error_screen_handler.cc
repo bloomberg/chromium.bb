@@ -29,7 +29,7 @@
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
-#include "grit/ui_strings.h"
+#include "ui/strings/grit/ui_strings.h"
 
 namespace {
 

@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "grit/ui_strings.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_folder_item.h"
@@ -22,6 +21,7 @@
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/events/event.h"
 #include "ui/gfx/rect_conversions.h"
+#include "ui/strings/grit/ui_strings.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/view_model.h"
 #include "ui/views/view_model_utils.h"

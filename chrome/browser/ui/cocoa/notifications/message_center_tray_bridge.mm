@@ -12,7 +12,6 @@
 #include "chrome/common/pref_names.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
-#include "grit/ui_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #import "ui/base/l10n/l10n_util_mac.h"
 #import "ui/message_center/cocoa/popup_collection.h"
@@ -21,6 +20,7 @@
 #import "ui/message_center/cocoa/tray_view_controller.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_tray.h"
+#include "ui/strings/grit/ui_strings.h"
 
 namespace message_center {
 

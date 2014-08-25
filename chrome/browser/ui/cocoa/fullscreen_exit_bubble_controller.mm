@@ -22,13 +22,13 @@
 #include "chrome/browser/ui/fullscreen/fullscreen_exit_bubble_type.h"
 #include "extensions/browser/extension_system.h"
 #include "grit/generated_resources.h"
-#include "grit/ui_strings.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMNSAnimation+Duration.h"
 #include "third_party/google_toolbox_for_mac/src/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #include "ui/base/accelerators/platform_accelerator_cocoa.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
+#include "ui/strings/grit/ui_strings.h"
 
 
 namespace {

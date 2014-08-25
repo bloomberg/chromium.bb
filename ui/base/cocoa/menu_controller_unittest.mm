@@ -7,7 +7,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "grit/ui_strings.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #import "ui/base/cocoa/menu_controller.h"
 #include "ui/base/models/simple_menu_model.h"
@@ -15,6 +14,7 @@
 #include "ui/gfx/image/image.h"
 #import "ui/gfx/test/ui_cocoa_test_helper.h"
 #include "ui/resources/grit/ui_resources.h"
+#include "ui/strings/grit/ui_strings.h"
 
 using base::ASCIIToUTF16;
 

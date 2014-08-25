@@ -21,9 +21,9 @@
 
 #include "content/public/browser/browser_thread.h"
 #include "grit/generated_resources.h"
-#include "grit/ui_strings.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/strings/grit/ui_strings.h"
 
 // These conflict with base/tracked_objects.h, so need to come last.
 #include <gdk/gdkx.h>

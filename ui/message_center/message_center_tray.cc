@@ -6,13 +6,13 @@
 
 #include "base/observer_list.h"
 #include "base/strings/utf_string_conversions.h"
-#include "grit/ui_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_tray_delegate.h"
 #include "ui/message_center/message_center_types.h"
 #include "ui/message_center/notification_blocker.h"
+#include "ui/strings/grit/ui_strings.h"
 
 namespace message_center {
 

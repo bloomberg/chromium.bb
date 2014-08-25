@@ -10,13 +10,13 @@
 #import "base/mac/scoped_nsobject.h"
 #include "base/stl_util.h"
 #include "base/strings/sys_string_conversions.h"
-#include "grit/ui_strings.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "ui/base/l10n/l10n_util.h"
 #import "ui/message_center/cocoa/opaque_views.h"
 #import "ui/message_center/cocoa/settings_entry_view.h"
 #import "ui/message_center/cocoa/tray_view_controller.h"
 #include "ui/message_center/message_center_style.h"
+#include "ui/strings/grit/ui_strings.h"
 
 using message_center::settings::kHorizontalMargin;
 using message_center::settings::kEntryHeight;

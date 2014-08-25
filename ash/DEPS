@@ -6,7 +6,6 @@ include_rules = [
   "+gpu/config",
   "+grit/ash_resources.h",
   "+grit/ash_strings.h",
-  "+grit/ui_strings.h",
   "+media",
   "+skia/ext",
   "+third_party/cros_system_api",

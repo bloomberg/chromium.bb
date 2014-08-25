@@ -7,7 +7,6 @@
 #include <string>
 
 #include "base/debug/trace_event.h"
-#include "grit/ui_strings.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/cursor/cursor.h"
@@ -22,6 +21,7 @@
 #include "ui/gfx/insets.h"
 #include "ui/gfx/screen.h"
 #include "ui/native_theme/native_theme.h"
+#include "ui/strings/grit/ui_strings.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/focusable_border.h"
 #include "ui/views/controls/label.h"

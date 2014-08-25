@@ -13,7 +13,6 @@
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/shell.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
-#include "grit/ui_strings.h"  // Accessibility names
 #include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
@@ -22,6 +21,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/point.h"
+#include "ui/strings/grit/ui_strings.h"  // Accessibility names
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 

@@ -37,11 +37,11 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "grit/theme_resources.h"
-#include "grit/ui_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 #include "ui/message_center/message_center_style.h"
+#include "ui/strings/grit/ui_strings.h"
 
 #if defined(OS_CHROMEOS)
 #include "ash/system/system_notifier.h"

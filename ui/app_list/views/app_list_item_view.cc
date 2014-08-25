@@ -7,7 +7,6 @@
 #include <algorithm>
 
 #include "base/strings/utf_string_conversions.h"
-#include "grit/ui_strings.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_folder_item.h"
@@ -27,6 +26,7 @@
 #include "ui/gfx/point.h"
 #include "ui/gfx/shadow_value.h"
 #include "ui/gfx/transform_util.h"
+#include "ui/strings/grit/ui_strings.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"

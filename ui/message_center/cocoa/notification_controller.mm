@@ -10,7 +10,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "grit/ui_strings.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "ui/base/cocoa/hover_image_button.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -22,6 +21,7 @@
 #include "ui/message_center/message_center_style.h"
 #include "ui/message_center/notification.h"
 #include "ui/resources/grit/ui_resources.h"
+#include "ui/strings/grit/ui_strings.h"
 
 
 @interface MCNotificationProgressBar : NSProgressIndicator
