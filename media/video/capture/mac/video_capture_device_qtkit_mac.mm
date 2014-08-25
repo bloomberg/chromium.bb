@@ -236,8 +236,8 @@
 
 - (void)stopCaptureOnUIThread:(id)dummy {
   if ([[captureSession_ inputs] count] > 0) {
-    [captureSession_ removeInput:captureDeviceInput_];
     DCHECK_EQ([[captureSession_ inputs] count], 1u);
+    [captureSession_ removeInput:captureDeviceInput_];
     [captureSession_ stopRunning];
   }
   if ([[captureSession_ outputs] count] > 0) {
