@@ -54,7 +54,7 @@
 // <0, 0, 0, 100, database id>
 //   => Existence implies the database id is in the free list
 //      [DatabaseFreeListKey]
-// <0, 0, 0, 201, origin, database name> => Database id [DatabaseNameKey]
+// <0, 0, 0, 201, origin, database name> => Database id (int) [DatabaseNameKey]
 //
 //
 // Database metadata: [DatabaseMetaDataKey]

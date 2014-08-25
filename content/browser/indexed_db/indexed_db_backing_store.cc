@@ -1179,7 +1179,7 @@ std::vector<base::string16> IndexedDBBackingStore::GetDatabaseNames(
     // Decode database id (in iterator value).
     int64 database_id = 0;
     StringPiece valueSlice(it->Value());
-    if (!DecodeVarInt(&valueSlice, &database_id) || !valueSlice.empty()) {
+    if (!DecodeInt(&valueSlice, &database_id) || !valueSlice.empty()) {
       INTERNAL_CONSISTENCY_ERROR_UNTESTED(GET_DATABASE_NAMES);
       continue;
     }
