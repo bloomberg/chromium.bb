@@ -10,9 +10,19 @@
 #include "mojo/shell/child_process.h"
 #include "mojo/shell/context.h"
 #include "mojo/shell/init.h"
-#include "mojo/shell/run.h"
 #include "mojo/shell/switches.h"
 #include "ui/gl/gl_surface.h"
+
+namespace {
+
+void RunApps(mojo::shell::Context* context, std::vector<GURL> app_urls) {
+  for (std::vector<GURL>::const_iterator it = app_urls.begin();
+       it != app_urls.end(); ++it) {
+    context->Run(*it);
+  }
+}
+
+}  // namespace
 
 int main(int argc, char** argv) {
   base::AtExitManager at_exit;
@@ -49,7 +59,7 @@ int main(int argc, char** argv) {
         app_urls.push_back(GURL(*it));
 
       message_loop.PostTask(FROM_HERE,
-                            base::Bind(mojo::shell::Run,
+                            base::Bind(RunApps,
                                        &shell_context,
                                        app_urls));
       message_loop.Run();

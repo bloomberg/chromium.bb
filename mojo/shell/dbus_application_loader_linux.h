@@ -11,7 +11,6 @@
 #include "base/memory/ref_counted.h"
 #include "mojo/application_manager/application_loader.h"
 #include "mojo/public/cpp/system/core.h"
-#include "mojo/shell/keep_alive.h"
 #include "url/gurl.h"
 
 namespace dbus {

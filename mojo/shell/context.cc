@@ -96,6 +96,14 @@ void InitContentHandlers(DynamicApplicationLoader* loader,
   }
 }
 
+class EmptyServiceProvider : public InterfaceImpl<ServiceProvider> {
+ private:
+  virtual void ConnectToService(const mojo::String& service_name,
+                                ScopedMessagePipeHandle client_handle)
+      MOJO_OVERRIDE {
+  }
+};
+
 }  // namespace
 
 class Context::NativeViewportApplicationLoader
@@ -153,7 +161,12 @@ Context::Context() {
   DCHECK(!base::MessageLoop::current());
 }
 
+Context::~Context() {
+  DCHECK(!base::MessageLoop::current());
+}
+
 void Context::Init() {
+  application_manager_.set_delegate(this);
   setup.Get();
   task_runners_.reset(
       new TaskRunners(base::MessageLoop::current()->message_loop_proxy()));
@@ -229,8 +242,29 @@ void Context::Init() {
 #endif
 }
 
-Context::~Context() {
-  DCHECK(!base::MessageLoop::current());
+void Context::OnApplicationError(const GURL& gurl) {
+  if (app_urls_.find(gurl) != app_urls_.end()) {
+    app_urls_.erase(gurl);
+    if (app_urls_.empty() && base::MessageLoop::current()->is_running())
+      base::MessageLoop::current()->Quit();
+  }
+}
+
+void Context::Run(const GURL& url) {
+  EmptyServiceProvider* sp = new EmptyServiceProvider;
+  ServiceProviderPtr spp;
+  BindToProxy(sp, &spp);
+
+  app_urls_.insert(url);
+  application_manager_.ConnectToApplication(url, GURL(), spp.Pass());
+}
+
+ScopedMessagePipeHandle Context::ConnectToServiceByName(
+    const GURL& application_url,
+    const std::string& service_name) {
+  app_urls_.insert(application_url);
+  return application_manager_.ConnectToServiceByName(
+      application_url, service_name).Pass();
 }
 
 }  // namespace shell

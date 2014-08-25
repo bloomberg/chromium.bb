@@ -44,8 +44,8 @@ class ShellTestBaseTest : public ShellTestBase {
   // Convenience helpers for use as callbacks in tests.
   template <typename T>
   base::Callback<void()> SetAndQuit(T* val, T result) {
-      return base::Bind(&ShellTestBaseTest::SetAndQuitImpl<T>,
-          base::Unretained(this), val, result);
+    return base::Bind(&ShellTestBaseTest::SetAndQuitImpl<T>,
+        base::Unretained(this), val, result);
   }
   template <typename T>
   base::Callback<void(T result)> SetAndQuit(T* val) {
@@ -57,9 +57,8 @@ class ShellTestBaseTest : public ShellTestBase {
   }
 
   void GetReport(std::vector<ServiceReport>* report) {
-    request_tracking_.Bind(
-        ConnectToService(GURL("mojo:mojo_test_request_tracker_app"),
-        TestTrackedRequestService::Name_).Pass());
+    ConnectToService(GURL("mojo:mojo_test_request_tracker_app"),
+                     &request_tracking_);
     request_tracking_->GetReport(base::Bind(&GetReportCallback,
         base::Unretained(message_loop()),
         base::Unretained(report)));
@@ -92,7 +91,7 @@ class QuitMessageLoopErrorHandler : public ErrorHandler {
 // Tests that we can connect to a single service within a single app.
 TEST_F(ShellTestBaseTest, ConnectBasic) {
   InterfacePtr<TestService> service;
-  service.Bind(ConnectToService(test_app_url(), TestService::Name_).Pass());
+  ConnectToService(test_app_url(), &service);
 
   bool was_run = false;
   service->Ping(SetAndQuit<bool>(&was_run, true));
@@ -112,8 +111,7 @@ TEST_F(ShellTestBaseTest, ConnectBasic) {
 // terminates if no services are running.
 TEST_F(ShellTestBaseTest, ConnectInvalidService) {
   InterfacePtr<TestService> test_service;
-  test_service.Bind(ConnectToService(GURL("mojo:non_existent_service"),
-                                     TestService::Name_).Pass());
+  ConnectToService(GURL("mojo:non_existent_service"), &test_service);
 
   bool was_run = false;
   test_service->Ping(SetAndQuit<bool>(&was_run, true));
@@ -139,8 +137,7 @@ TEST_F(ShellTestBaseTest, ConnectInvalidService) {
 // subsequent tests can't init properly.
 TEST_F(ShellTestBaseTest, DISABLED_ConnectBasicNetwork) {
   InterfacePtr<TestService> service;
-  service.Bind(ConnectToServiceViaNetwork(
-      test_app_url(), TestService::Name_).Pass());
+  ConnectToService(test_app_url(), &service);
 
   bool was_run = false;
   service->Ping(SetAndQuit<bool>(&was_run, true));
@@ -166,8 +163,7 @@ TEST_F(ShellTestBaseTest, DISABLED_ConnectBasicNetwork) {
 // subsequent tests can't init properly.
 TEST_F(ShellTestBaseTest, DISABLED_ConnectInvalidServiceNetwork) {
   InterfacePtr<TestService> test_service;
-  test_service.Bind(ConnectToServiceViaNetwork(
-      GURL("mojo:non_existent_service"), TestService::Name_).Pass());
+  ConnectToServiceViaNetwork(GURL("mojo:non_existent_service"), &test_service);
   QuitMessageLoopErrorHandler quitter;
   test_service.set_error_handler(&quitter);
   bool was_run = false;
@@ -187,8 +183,8 @@ TEST_F(ShellTestBaseTest, DISABLED_ConnectInvalidServiceNetwork) {
 TEST_F(ShellTestBaseTest, ConnectMultipleInstancesPerApp) {
   {
     TestServicePtr service1, service2;
-    service1.Bind(ConnectToService(test_app_url(), TestService::Name_).Pass());
-    service2.Bind(ConnectToService(test_app_url(), TestService::Name_).Pass());
+    ConnectToService(test_app_url(), &service1);
+    ConnectToService(test_app_url(), &service2);
 
     bool was_run1 = false;
     bool was_run2 = false;
@@ -210,15 +206,14 @@ TEST_F(ShellTestBaseTest, ConnectDifferentServicesInSingleApp) {
   // Have a TestService GetPartyTime on a TestTimeService in the same app.
   int64 time_message;
   TestServicePtr service;
-  service.Bind(ConnectToService(test_app_url(), TestService::Name_).Pass());
+  ConnectToService(test_app_url(), &service);
   service->ConnectToAppAndGetTime(test_app_url().spec(),
                                   SetAndQuit<int64>(&time_message));
   message_loop()->Run();
 
   // Verify by hitting the TimeService directly.
   TestTimeServicePtr time_service;
-  time_service.Bind(
-      ConnectToService(test_app_url(), TestTimeService::Name_).Pass());
+  ConnectToService(test_app_url(), &time_service);
   int64 party_time;
   time_service->GetPartyTime(SetAndQuit<int64>(&party_time));
   message_loop()->Run();
@@ -231,15 +226,14 @@ TEST_F(ShellTestBaseTest, ConnectDifferentServicesInSingleApp) {
 TEST_F(ShellTestBaseTest, ConnectDifferentServicesInDifferentApps) {
   int64 time_message;
   TestServicePtr service;
-  service.Bind(ConnectToService(test_app_url(), TestService::Name_).Pass());
+  ConnectToService(test_app_url(), &service);
   service->ConnectToAppAndGetTime("mojo:mojo_test_request_tracker_app",
                                   SetAndQuit<int64>(&time_message));
   message_loop()->Run();
 
   // Verify by hitting the TimeService in the request tracker app directly.
   TestTimeServicePtr time_service;
-  time_service.Bind(ConnectToService(GURL("mojo:mojo_test_request_tracker_app"),
-                    TestTimeService::Name_).Pass());
+  ConnectToService(GURL("mojo:mojo_test_request_tracker_app"), &time_service);
   int64 party_time;
   time_service->GetPartyTime(SetAndQuit<int64>(&party_time));
   message_loop()->Run();
@@ -250,7 +244,7 @@ TEST_F(ShellTestBaseTest, ConnectDifferentServicesInDifferentApps) {
 // Tests that service A in App 1 can be a client of service B in App 2.
 TEST_F(ShellTestBaseTest, ConnectServiceAsClientOfSeparateApp) {
   TestServicePtr service;
-  service.Bind(ConnectToService(test_app_url(), TestService::Name_).Pass());
+  ConnectToService(test_app_url(), &service);
   service->StartTrackingRequests(message_loop()->QuitWhenIdleClosure());
   service->Ping(mojo::Callback<void()>());
   message_loop()->Run();
@@ -278,7 +272,7 @@ TEST_F(ShellTestBaseTest, ConnectManyClientsAndServices) {
   // Make a request to the TestService and have it contact TimeService in the
   // tracking app. Do all this with tracking enabled, meaning both services
   // are connected as clients of the TrackedRequestService.
-  service.Bind(ConnectToService(test_app_url(), TestService::Name_).Pass());
+  ConnectToService(test_app_url(), &service);
   service->StartTrackingRequests(message_loop()->QuitWhenIdleClosure());
   message_loop()->Run();
   for (int i = 0; i < 5; i++)
@@ -289,8 +283,7 @@ TEST_F(ShellTestBaseTest, ConnectManyClientsAndServices) {
   message_loop()->Run();
 
   // Also make a few requests to the TimeService in the test_app.
-  time_service.Bind(
-      ConnectToService(test_app_url(), TestTimeService::Name_).Pass());
+  ConnectToService(test_app_url(), &time_service);
   time_service->StartTrackingRequests(message_loop()->QuitWhenIdleClosure());
   time_service->GetPartyTime(mojo::Callback<void(uint64_t)>());
   message_loop()->Run();

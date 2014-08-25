@@ -20,6 +20,14 @@ namespace mojo {
 
 class MOJO_APPLICATION_MANAGER_EXPORT ApplicationManager {
  public:
+  class MOJO_APPLICATION_MANAGER_EXPORT Delegate {
+   public:
+    virtual ~Delegate();
+    // Send when the Applicaiton holding the handle on the other end of the
+    // Shell pipe goes away.
+    virtual void OnApplicationError(const GURL& url) = 0;
+  };
+
   // API for testing.
   class MOJO_APPLICATION_MANAGER_EXPORT TestAPI {
    public:
@@ -53,6 +61,8 @@ class MOJO_APPLICATION_MANAGER_EXPORT ApplicationManager {
   // Returns a shared instance, creating it if necessary.
   static ApplicationManager* GetInstance();
 
+  void SetDelegate(Delegate* delegate) { delegate_ = delegate; }
+
   // Loads a service if necessary and establishes a new client connection.
   void ConnectToApplication(const GURL& application_url,
                             const GURL& requestor_url,
@@ -69,6 +79,8 @@ class MOJO_APPLICATION_MANAGER_EXPORT ApplicationManager {
   ScopedMessagePipeHandle ConnectToServiceByName(
       const GURL& application_url,
       const std::string& interface_name);
+
+  void set_delegate(Delegate* delegate) { delegate_ = delegate; }
 
   // Sets the default Loader to be used if not overridden by SetLoaderForURL()
   // or SetLoaderForScheme().
@@ -122,6 +134,7 @@ class MOJO_APPLICATION_MANAGER_EXPORT ApplicationManager {
   // Removes a ShellImpl when it encounters an error.
   void OnShellImplError(ShellImpl* shell_impl);
 
+  Delegate* delegate_;
   // Loader management.
   URLToLoaderMap url_to_loader_;
   SchemeToLoaderMap scheme_to_loader_;

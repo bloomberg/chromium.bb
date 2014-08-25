@@ -41,8 +41,7 @@ bool SetThunks(Thunks (*make_thunks)(),
 }
 
 InProcessDynamicServiceRunner::InProcessDynamicServiceRunner(
-    Context* context)
-    : keep_alive_(context) {
+    Context* context) {
 }
 
 InProcessDynamicServiceRunner::~InProcessDynamicServiceRunner() {

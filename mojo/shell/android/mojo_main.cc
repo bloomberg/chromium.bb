@@ -18,7 +18,6 @@
 #include "mojo/application_manager/application_manager.h"
 #include "mojo/shell/context.h"
 #include "mojo/shell/init.h"
-#include "mojo/shell/run.h"
 #include "ui/gl/gl_surface_egl.h"
 
 using base::LazyInstance;
@@ -37,9 +36,13 @@ LazyInstance<scoped_ptr<base::android::JavaHandlerThread> > g_shell_thread =
     LAZY_INSTANCE_INITIALIZER;
 
 void RunShell(std::vector<GURL> app_urls) {
-  g_context.Get()->Init();
-  g_context.Get()->set_ui_loop(g_java_message_loop.Get().get());
-  shell::Run(g_context.Get().get(), app_urls);
+  shell::Context* context = g_context.Pointer()->get();
+  context->Init();
+  context->set_ui_loop(g_java_message_loop.Get().get());
+  for (std::vector<GURL>::const_iterator it = app_urls.begin();
+       it != app_urls.end(); ++it) {
+    context->Run(*it);
+  }
 }
 
 }  // namespace

@@ -11,7 +11,6 @@
 #include "mojo/shell/app_child_process.mojom.h"
 #include "mojo/shell/app_child_process_host.h"
 #include "mojo/shell/dynamic_service_runner.h"
-#include "mojo/shell/keep_alive.h"
 
 namespace mojo {
 namespace shell {
@@ -36,7 +35,6 @@ class OutOfProcessDynamicServiceRunner
 
   Context* const context_;
 
-  KeepAlive keep_alive_;
   base::FilePath app_path_;
   ScopedMessagePipeHandle service_handle_;
   base::Closure app_completed_callback_;

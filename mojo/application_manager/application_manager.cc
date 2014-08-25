@@ -36,6 +36,8 @@ class StubServiceProvider : public InterfaceImpl<ServiceProvider> {
 
 }  // namespace
 
+ApplicationManager::Delegate::~Delegate() {}
+
 class ApplicationManager::LoadCallbacksImpl
     : public ApplicationLoader::LoadCallbacks {
  public:
@@ -148,7 +150,9 @@ bool ApplicationManager::TestAPI::HasFactoryForURL(const GURL& url) const {
 }
 
 ApplicationManager::ApplicationManager()
-    : interceptor_(NULL), weak_ptr_factory_(this) {
+    : delegate_(NULL),
+      interceptor_(NULL),
+      weak_ptr_factory_(this) {
 }
 
 ApplicationManager::~ApplicationManager() {
@@ -285,6 +289,8 @@ void ApplicationManager::OnShellImplError(ShellImpl* shell_impl) {
   ApplicationLoader* loader = GetLoaderForURL(url);
   if (loader)
     loader->OnServiceError(this, url);
+  if (delegate_)
+    delegate_->OnApplicationError(url);
 }
 
 ScopedMessagePipeHandle ApplicationManager::ConnectToServiceByName(

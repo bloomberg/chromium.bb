@@ -82,7 +82,10 @@ class ApplicationImpl : public InterfaceImpl<Application> {
 
   void BindShell(ScopedMessagePipeHandle shell_handle);
   void ClearConnections();
-  void OnShellError() { ClearConnections(); Terminate(); };
+  void OnShellError() {
+    ClearConnections();
+    Terminate();
+  };
 
   // Quits the main run loop for this application.
   static void Terminate();

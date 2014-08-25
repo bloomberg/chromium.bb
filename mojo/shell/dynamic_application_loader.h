@@ -8,12 +8,12 @@
 #include <map>
 
 #include "base/macros.h"
+#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "mojo/application_manager/application_loader.h"
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/services/public/interfaces/network/network_service.mojom.h"
 #include "mojo/shell/dynamic_service_runner.h"
-#include "mojo/shell/keep_alive.h"
 #include "url/gurl.h"
 
 namespace mojo {
@@ -21,6 +21,7 @@ namespace shell {
 
 class Context;
 class DynamicServiceRunnerFactory;
+class DynamicServiceRunner;
 
 // An implementation of ApplicationLoader that retrieves a dynamic library
 // containing the implementation of the service and loads/runs it (via a
@@ -55,9 +56,12 @@ class DynamicApplicationLoader : public ApplicationLoader {
                   scoped_refptr<LoadCallbacks> callbacks,
                   bool delete_file_after,
                   bool response_path_exists);
+  void OnRunLibraryComplete(DynamicServiceRunner* runner,
+                            const base::FilePath& temp_file);
 
   Context* const context_;
   scoped_ptr<DynamicServiceRunnerFactory> runner_factory_;
+  ScopedVector<DynamicServiceRunner> runners_;
   NetworkServicePtr network_service_;
   URLLoaderPtr url_loader_;
   MimeTypeToURLMap mime_type_to_url_;

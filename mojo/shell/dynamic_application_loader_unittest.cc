@@ -15,14 +15,21 @@ namespace shell {
 namespace {
 
 struct TestState {
-  TestState() : runner_was_started(false), runner_was_destroyed(false) {}
+  TestState()
+      : runner_was_created(false),
+        runner_was_started(false),
+        runner_was_destroyed(false) {}
+
+  bool runner_was_created;
   bool runner_was_started;
   bool runner_was_destroyed;
 };
 
 class TestDynamicServiceRunner : public DynamicServiceRunner {
  public:
-  explicit TestDynamicServiceRunner(TestState* state) : state_(state) {}
+  explicit TestDynamicServiceRunner(TestState* state) : state_(state) {
+    state_->runner_was_created = true;
+  }
   virtual ~TestDynamicServiceRunner() {
     state_->runner_was_destroyed = true;
     base::MessageLoop::current()->Quit();
@@ -79,9 +86,9 @@ TEST_F(DynamicApplicationLoaderTest, DoesNotExist) {
   scoped_refptr<ApplicationLoader::SimpleLoadCallbacks> callbacks(
       new ApplicationLoader::SimpleLoadCallbacks(pipe.handle0.Pass()));
   loader_->Load(context_.application_manager(), url, callbacks);
-  loop_.Run();
+  EXPECT_FALSE(state_.runner_was_created);
   EXPECT_FALSE(state_.runner_was_started);
-  EXPECT_TRUE(state_.runner_was_destroyed);
+  EXPECT_FALSE(state_.runner_was_destroyed);
 }
 
 }  // namespace shell

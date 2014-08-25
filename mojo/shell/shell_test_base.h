@@ -43,6 +43,19 @@ class ShellTestBase : public testing::Test {
       const GURL& application_url,
       const std::string& service_name);
 
+  template <typename Interface>
+  void ConnectToService(const GURL& application_url,
+                        InterfacePtr<Interface>* ptr) {
+    ptr->Bind(ConnectToService(application_url, Interface::Name_).Pass());
+  }
+
+  template <typename Interface>
+  void ConnectToServiceViaNetwork(const GURL& application_url,
+                        InterfacePtr<Interface>* ptr) {
+    ptr->Bind(
+        ConnectToServiceViaNetwork(application_url, Interface::Name_).Pass());
+  }
+
   base::MessageLoop* message_loop() { return &message_loop_; }
   Context* shell_context() { return &shell_context_; }
 

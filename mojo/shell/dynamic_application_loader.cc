@@ -14,23 +14,11 @@
 #include "mojo/common/data_pipe_utils.h"
 #include "mojo/services/public/interfaces/network/url_loader.mojom.h"
 #include "mojo/shell/context.h"
-#include "mojo/shell/keep_alive.h"
 #include "mojo/shell/switches.h"
 #include "net/base/filename_util.h"
 
 namespace mojo {
 namespace shell {
-
-namespace {
-
-void RunLibraryComplete(DynamicServiceRunner* runner,
-                        const base::FilePath& temp_file) {
-  delete runner;
-  if (!temp_file.empty())
-    base::DeleteFile(temp_file, false);
-}
-
-}  // namespace
 
 DynamicApplicationLoader::DynamicApplicationLoader(
     Context* context,
@@ -143,28 +131,40 @@ void DynamicApplicationLoader::RunLibrary(
     scoped_refptr<LoadCallbacks> callbacks,
     bool delete_file_after,
     bool path_exists) {
-  // TODO(aa): We need to create a runner, even if we're not going to use it,
-  // because it getting destroyed is what causes shell to shut down. If we don't
-  // create this, in the case where shell never successfully creates even one
-  // app, then shell will never shut down, because no runners are ever
-  // destroyed.
-  scoped_ptr<DynamicServiceRunner> runner(runner_factory_->Create(context_));
+
+  ScopedMessagePipeHandle shell_handle = callbacks->RegisterApplication();
+  if (!shell_handle.is_valid())
+    return;
+
   if (!path_exists) {
     DVLOG(1) << "Library not started because library path '"
              << path.value() << "' does not exist.";
     return;
   }
 
-  ScopedMessagePipeHandle shell_handle = callbacks->RegisterApplication();
-  if (!shell_handle.is_valid())
-    return;
+  scoped_ptr<DynamicServiceRunner> runner =
+      runner_factory_->Create(context_).Pass();
+  runner->Start(path,
+                shell_handle.Pass(),
+                base::Bind(&DynamicApplicationLoader::OnRunLibraryComplete,
+                           weak_ptr_factory_.GetWeakPtr(),
+                           base::Unretained(runner.get()),
+                           delete_file_after ? path : base::FilePath()));
+  runners_.push_back(runner.release());
+}
 
-  DynamicServiceRunner* runner_raw = runner.release();
-  runner_raw->Start(path,
-                    shell_handle.Pass(),
-                    base::Bind(&RunLibraryComplete,
-                               base::Unretained(runner_raw),
-                               delete_file_after ? path : base::FilePath()));
+void DynamicApplicationLoader::OnRunLibraryComplete(
+    DynamicServiceRunner* runner,
+    const base::FilePath& temp_file) {
+  for (ScopedVector<DynamicServiceRunner>::iterator it = runners_.begin();
+       it != runners_.end(); ++it) {
+    if (*it == runner) {
+      runners_.erase(it);
+      if (!temp_file.empty())
+        base::DeleteFile(temp_file, false);
+      return;
+    }
+  }
 }
 
 void DynamicApplicationLoader::OnServiceError(ApplicationManager* manager,
