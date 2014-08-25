@@ -35,6 +35,8 @@
 
     // FIXME: Should implement some methods (See: crbug.com/388780)
     // Mutable transform methods
+    DOMMatrix multiplySelf(DOMMatrix other);
+    DOMMatrix preMultiplySelf(DOMMatrix other);
     DOMMatrix translateSelf(unrestricted double tx,
                             unrestricted double ty,
                             optional unrestricted double tz = 0);

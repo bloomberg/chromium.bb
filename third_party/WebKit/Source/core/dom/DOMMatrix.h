@@ -38,6 +38,8 @@ public:
     void setM43(double value) { m_matrix.setM43(value); setIs2D(!value); }
     void setM44(double value) { m_matrix.setM44(value); setIs2D(value != 1); }
 
+    DOMMatrix* multiplySelf(DOMMatrix*);
+    DOMMatrix* preMultiplySelf(DOMMatrix*);
     DOMMatrix* translateSelf(double tx, double ty, double tz = 0);
     DOMMatrix* scaleSelf(double scale, double ox = 0, double oy = 0);
     DOMMatrix* scale3dSelf(double scale, double ox = 0, double oy = 0, double oz = 0);

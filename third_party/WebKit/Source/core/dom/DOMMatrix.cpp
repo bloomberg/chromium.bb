@@ -29,6 +29,26 @@ void DOMMatrix::setIs2D(bool value)
         m_is2D = value;
 }
 
+DOMMatrix* DOMMatrix::multiplySelf(DOMMatrix* other)
+{
+    if (!other->is2D())
+        m_is2D = false;
+
+    m_matrix = m_matrix * other->matrix();
+
+    return this;
+}
+
+DOMMatrix* DOMMatrix::preMultiplySelf(DOMMatrix* other)
+{
+    if (!other->is2D())
+        m_is2D = false;
+
+    m_matrix = other->matrix() * m_matrix;
+
+    return this;
+}
+
 DOMMatrix* DOMMatrix::translateSelf(double tx, double ty, double tz)
 {
     if (!tx && !ty && !tz)

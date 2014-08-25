@@ -17,6 +17,11 @@ bool DOMMatrixReadOnly::isIdentity() const
     return m_matrix.isIdentity();
 }
 
+DOMMatrix* DOMMatrixReadOnly::multiply(DOMMatrix* other)
+{
+    return DOMMatrix::create(this)->multiplySelf(other);
+}
+
 DOMMatrix* DOMMatrixReadOnly::translate(double tx, double ty, double tz)
 {
     return DOMMatrix::create(this)->translateSelf(tx, ty, tz);

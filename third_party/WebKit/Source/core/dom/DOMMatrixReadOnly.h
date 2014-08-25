@@ -44,6 +44,7 @@ public:
     bool is2D() const;
     bool isIdentity() const;
 
+    DOMMatrix* multiply(DOMMatrix*);
     DOMMatrix* translate(double tx, double ty, double tz = 0);
     DOMMatrix* scale(double scale, double ox = 0, double oy = 0);
     DOMMatrix* scale3d(double scale, double ox = 0, double oy = 0, double oz = 0);
