@@ -107,7 +107,6 @@
 #endif
 
 #if defined(ENABLE_EXTENSIONS)
-#include "apps/prefs.h"
 #include "chrome/browser/extensions/activity_log/activity_log.h"
 #include "chrome/browser/extensions/api/commands/command_service.h"
 #include "chrome/browser/extensions/api/tabs/tabs_api.h"
@@ -404,7 +403,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 #endif
 
 #if defined(ENABLE_EXTENSIONS)
-  apps::RegisterProfilePrefs(registry);
   EasyUnlockService::RegisterProfilePrefs(registry);
   extensions::ActivityLog::RegisterProfilePrefs(registry);
   extensions::launch_util::RegisterProfilePrefs(registry);
