@@ -137,7 +137,7 @@ class DataSeries0Test(CIDBIntegrationTest):
   """Simulate a set of 630 master/slave CQ builds."""
 
   def runTest(self):
-    """Simulate a set of 630 master/slave CQ builds, with database schema v4.
+    """Simulate a set of 630 master/slave CQ builds, with database schema v8.
 
     Note: This test takes about 2.5 minutes to populate its 630 builds
     and their corresponding cl actions into the test database.
@@ -149,7 +149,7 @@ class DataSeries0Test(CIDBIntegrationTest):
     # Migrate db to specified version. As new schema versions are added,
     # migrations to later version can be applied after the test builds are
     # simulated, to test that db contents are correctly migrated.
-    self._PrepareFreshDatabase(5)
+    self._PrepareFreshDatabase(8)
 
     bot_db = cidb.CIDBConnection(TEST_DB_CRED_BOT)
 
@@ -258,7 +258,7 @@ class DataSeries1Test(CIDBIntegrationTest):
     # Migrate db to specified version. As new schema versions are added,
     # migrations to later version can be applied after the test builds are
     # simulated, to test that db contents are correctly migrated.
-    self._PrepareFreshDatabase(7)
+    self._PrepareFreshDatabase(8)
 
     bot_db = cidb.CIDBConnection(TEST_DB_CRED_BOT)
 
