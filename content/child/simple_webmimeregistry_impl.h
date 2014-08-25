@@ -28,6 +28,8 @@ class CONTENT_EXPORT SimpleWebMimeRegistryImpl :
       const blink::WebString&);
   virtual blink::WebMimeRegistry::SupportsType supportsImageMIMEType(
       const blink::WebString&);
+  virtual blink::WebMimeRegistry::SupportsType supportsImagePrefixedMIMEType(
+      const blink::WebString&);
   virtual blink::WebMimeRegistry::SupportsType supportsJavaScriptMIMEType(
       const blink::WebString&);
   virtual blink::WebMimeRegistry::SupportsType supportsMediaMIMEType(

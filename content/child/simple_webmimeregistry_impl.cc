@@ -35,6 +35,16 @@ WebMimeRegistry::SupportsType SimpleWebMimeRegistryImpl::supportsImageMIMEType(
 }
 
 WebMimeRegistry::SupportsType
+    SimpleWebMimeRegistryImpl::supportsImagePrefixedMIMEType(
+    const WebString& mime_type) {
+    std::string ascii_mime_type = ToASCIIOrEmpty(mime_type);
+  return (net::IsSupportedImageMimeType(ascii_mime_type) ||
+          (StartsWithASCII(ascii_mime_type, "image/", true) &&
+           net::IsSupportedNonImageMimeType(ascii_mime_type))) ?
+      WebMimeRegistry::IsSupported : WebMimeRegistry::IsNotSupported;
+}
+
+WebMimeRegistry::SupportsType
     SimpleWebMimeRegistryImpl::supportsJavaScriptMIMEType(
     const WebString& mime_type) {
   return net::IsSupportedJavascriptMimeType(ToASCIIOrEmpty(mime_type)) ?

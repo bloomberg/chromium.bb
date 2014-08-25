@@ -636,6 +636,7 @@
         'child/npapi/plugin_lib_unittest.cc',
         'child/power_monitor_broadcast_source_unittest.cc',
         'child/resource_dispatcher_unittest.cc',
+        'child/simple_webmimeregistry_impl_unittest.cc',
         'child/site_isolation_policy_unittest.cc',
         'child/touch_fling_gesture_curve_unittest.cc',
         'child/web_url_loader_impl_unittest.cc',
