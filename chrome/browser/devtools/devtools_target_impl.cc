@@ -31,16 +31,16 @@ using content::RenderViewHost;
 using content::WebContents;
 using content::WorkerService;
 
-namespace {
+const char DevToolsTargetImpl::kTargetTypeApp[] = "app";
+const char DevToolsTargetImpl::kTargetTypeBackgroundPage[] = "background_page";
+const char DevToolsTargetImpl::kTargetTypePage[] = "page";
+const char DevToolsTargetImpl::kTargetTypeWorker[] = "worker";
+const char DevToolsTargetImpl::kTargetTypeWebView[] = "webview";
+const char DevToolsTargetImpl::kTargetTypeIFrame[] = "iframe";
+const char DevToolsTargetImpl::kTargetTypeOther[] = "other";
+const char DevToolsTargetImpl::kTargetTypeServiceWorker[] = "service_worker";
 
-const char kTargetTypeApp[] = "app";
-const char kTargetTypeBackgroundPage[] = "background_page";
-const char kTargetTypePage[] = "page";
-const char kTargetTypeWorker[] = "worker";
-const char kTargetTypeWebView[] = "webview";
-const char kTargetTypeIFrame[] = "iframe";
-const char kTargetTypeOther[] = "other";
-const char kTargetTypeServiceWorker[] = "service_worker";
+namespace {
 
 // WebContentsTarget --------------------------------------------------------
 

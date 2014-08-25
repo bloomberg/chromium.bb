@@ -470,11 +470,12 @@ DevToolsWindow* DevToolsWindow::ToggleDevToolsWindow(
 void DevToolsWindow::OpenExternalFrontend(
     Profile* profile,
     const std::string& frontend_url,
-    content::DevToolsAgentHost* agent_host) {
+    content::DevToolsAgentHost* agent_host,
+    bool isWorker) {
   DevToolsWindow* window = FindDevToolsWindow(agent_host);
   if (!window) {
     window = Create(profile, DevToolsUI::GetProxyURL(frontend_url), NULL,
-                    false, true, false, "");
+                    isWorker, true, false, "");
     window->bindings_->AttachTo(agent_host);
   }
   window->ScheduleShow(DevToolsToggleAction::Show());

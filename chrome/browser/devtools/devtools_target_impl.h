@@ -21,6 +21,15 @@ class WebContents;
 
 class DevToolsTargetImpl : public content::DevToolsTarget {
  public:
+  static const char kTargetTypeApp[];
+  static const char kTargetTypeBackgroundPage[];
+  static const char kTargetTypePage[];
+  static const char kTargetTypeWorker[];
+  static const char kTargetTypeWebView[];
+  static const char kTargetTypeIFrame[];
+  static const char kTargetTypeOther[];
+  static const char kTargetTypeServiceWorker[];
+
   explicit DevToolsTargetImpl(
       scoped_refptr<content::DevToolsAgentHost> agent_host);
   virtual ~DevToolsTargetImpl();

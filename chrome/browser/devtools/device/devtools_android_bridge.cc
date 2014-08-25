@@ -413,6 +413,7 @@ class RemotePageTarget : public DevToolsTargetImpl,
   std::string debug_url_;
   std::string frontend_url_;
   std::string remote_id_;
+  std::string remote_type_;
   DISALLOW_COPY_AND_ASSIGN(RemotePageTarget);
 };
 
@@ -448,7 +449,8 @@ RemotePageTarget::RemotePageTarget(
                              browser, GetDebugURL(value))),
       browser_(browser),
       debug_url_(GetDebugURL(value)),
-      remote_id_(GetStringProperty(value, "id")) {
+      remote_id_(GetStringProperty(value, "id")),
+      remote_type_(GetStringProperty(value, "type")) {
   set_type("adb_page");
   set_url(GURL(GetStringProperty(value, "url")));
   set_title(base::UTF16ToUTF8(net::UnescapeForHTML(base::UTF8ToUTF16(
@@ -488,8 +490,10 @@ static void NoOp(int, const std::string&) {}
 
 void RemotePageTarget::Inspect(Profile* profile) const {
   Activate();
-  DevToolsWindow::OpenExternalFrontend(profile, frontend_url_,
-                                       GetAgentHost());
+  bool isWorker = remote_type_ == kTargetTypeWorker ||
+                  remote_type_ == kTargetTypeServiceWorker;
+  DevToolsWindow::OpenExternalFrontend(profile, frontend_url_, GetAgentHost(),
+                                       isWorker);
 }
 
 bool RemotePageTarget::Activate() const {
