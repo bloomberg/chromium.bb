@@ -1222,7 +1222,7 @@ want to set 'managed': False in .gclient.
       cache_dir = os.path.join(self.root_dir, cache_dir)
       cache_dir = os.path.abspath(cache_dir)
       # If running on a bot, force break any stale git cache locks.
-      if os.environ.get('CHROME_HEADLESS'):
+      if os.path.exists(cache_dir) and os.environ.get('CHROME_HEADLESS'):
         subprocess2.check_call(['git', 'cache', 'unlock', '--cache-dir',
                                 cache_dir, '--force', '--all'])
     gclient_scm.GitWrapper.cache_dir = cache_dir
