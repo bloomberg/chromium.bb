@@ -576,8 +576,8 @@ egl_window_surface_release(struct toysurface *base)
 	if (!device)
 		return;
 
-	if (!eglMakeCurrent(surface->display->dpy, NULL, NULL,
-			    surface->display->argb_ctx))
+	if (!eglMakeCurrent(surface->display->dpy,
+			    EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT))
 		fprintf(stderr, "failed to make context current\n");
 
 	cairo_device_release(device);
