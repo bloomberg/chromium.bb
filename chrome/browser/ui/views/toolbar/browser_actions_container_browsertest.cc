@@ -217,6 +217,18 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, Visibility) {
   EXPECT_EQ(3, browser_actions_bar()->NumberOfBrowserActions());
   EXPECT_EQ(3, browser_actions_bar()->VisibleBrowserActions());
   EXPECT_EQ(idA, browser_actions_bar()->GetExtensionId(0));
+
+  // Shrink the browser actions bar to zero visible icons.
+  // No icons should be visible, but we *should* show the chevron and have a
+  // non-empty size.
+  browser_actions_bar()->SetIconVisibilityCount(0);
+  EXPECT_EQ(0, browser_actions_bar()->VisibleBrowserActions());
+  BrowserActionsContainer* container =
+      BrowserView::GetBrowserViewForBrowser(browser())
+          ->toolbar()->browser_actions();
+  ASSERT_TRUE(container->chevron());
+  EXPECT_TRUE(container->chevron()->visible());
+  EXPECT_FALSE(container->GetPreferredSize().IsEmpty());
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, ForceHide) {

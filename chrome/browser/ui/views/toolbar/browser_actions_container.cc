@@ -318,7 +318,10 @@ void BrowserActionsContainer::RemoveObserver(
 }
 
 gfx::Size BrowserActionsContainer::GetPreferredSize() const {
-  size_t icon_count = GetIconCount();
+  // Note: We can't use GetIconCount() for the main bar, since we may also
+  // have to include items that are in the chevron's overflow.
+  size_t icon_count =
+      in_overflow_mode() ? GetIconCount() : browser_action_views_.size();
 
   // If there are no actions to show, or we are in overflow mode and the main
   // container is already showing them all, then no further work is required.
