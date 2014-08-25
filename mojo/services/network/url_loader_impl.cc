@@ -327,7 +327,7 @@ void URLLoaderImpl::WaitToReadMore() {
 }
 
 void URLLoaderImpl::ReadMore() {
-  DCHECK(!pending_write_);
+  DCHECK(!pending_write_.get());
 
   pending_write_ = new PendingWriteToDataPipe(response_body_stream_.Pass());
 
@@ -347,10 +347,11 @@ void URLLoaderImpl::ReadMore() {
   }
   CHECK_GT(static_cast<uint32_t>(std::numeric_limits<int>::max()), num_bytes);
 
-  scoped_refptr<net::IOBuffer> buf = new DependentIOBuffer(pending_write_);
+  scoped_refptr<net::IOBuffer> buf =
+      new DependentIOBuffer(pending_write_.get());
 
   int bytes_read;
-  url_request_->Read(buf, static_cast<int>(num_bytes), &bytes_read);
+  url_request_->Read(buf.get(), static_cast<int>(num_bytes), &bytes_read);
 
   // Drop our reference to the buffer.
   buf = NULL;

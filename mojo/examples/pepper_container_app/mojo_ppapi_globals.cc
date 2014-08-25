@@ -155,7 +155,7 @@ PP_Module MojoPpapiGlobals::GetModuleForInstance(PP_Instance instance) {
 
 ppapi::MessageLoopShared* MojoPpapiGlobals::GetCurrentMessageLoop() {
   if (base::MessageLoopProxy::current().get() == GetMainThreadMessageLoop()) {
-    if (!main_thread_message_loop_resource_) {
+    if (!main_thread_message_loop_resource_.get()) {
       main_thread_message_loop_resource_ = new MainThreadMessageLoopResource(
           GetMainThreadMessageLoop());
     }

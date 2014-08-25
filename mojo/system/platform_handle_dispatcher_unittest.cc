@@ -84,7 +84,7 @@ TEST(PlatformHandleDispatcherTest, CreateEquivalentDispatcherAndClose) {
 
   scoped_refptr<Dispatcher> generic_dispatcher =
       transport.CreateEquivalentDispatcherAndClose();
-  ASSERT_TRUE(generic_dispatcher);
+  ASSERT_TRUE(generic_dispatcher.get());
 
   transport.End();
   EXPECT_TRUE(dispatcher->HasOneRef());

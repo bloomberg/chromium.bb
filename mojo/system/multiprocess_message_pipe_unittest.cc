@@ -59,7 +59,7 @@ class ChannelThread {
   }
 
   void Stop() {
-    if (channel_) {
+    if (channel_.get()) {
       // Hack to flush write buffers before quitting.
       // TODO(vtl): Remove this once |Channel| has a
       // |FlushWriteBufferAndShutdown()| (or whatever).
@@ -98,7 +98,7 @@ class ChannelThread {
   }
 
   void ShutdownChannelOnIOThread() {
-    CHECK(channel_);
+    CHECK(channel_.get());
     channel_->Shutdown();
     channel_ = NULL;
   }
@@ -442,7 +442,7 @@ TEST_F(MultiprocessMessagePipeTest, MAYBE_SharedBufferPassing) {
                 SharedBufferDispatcher::kDefaultCreateOptions,
                 100,
                 &dispatcher));
-  ASSERT_TRUE(dispatcher);
+  ASSERT_TRUE(dispatcher.get());
 
   // Make a mapping.
   scoped_ptr<embedder::PlatformSharedBufferMapping> mapping;

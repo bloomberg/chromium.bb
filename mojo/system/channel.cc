@@ -88,7 +88,7 @@ void Channel::Shutdown() {
       it->second.message_pipe->OnRemove(it->second.port);
       num_live++;
     } else {
-      DCHECK(!it->second.message_pipe);
+      DCHECK(!it->second.message_pipe.get());
       num_zombies++;
     }
   }
@@ -105,7 +105,7 @@ void Channel::WillShutdownSoon() {
 MessageInTransit::EndpointId Channel::AttachMessagePipeEndpoint(
     scoped_refptr<MessagePipe> message_pipe,
     unsigned port) {
-  DCHECK(message_pipe);
+  DCHECK(message_pipe.get());
   DCHECK(port == 0 || port == 1);
 
   MessageInTransit::EndpointId local_id;

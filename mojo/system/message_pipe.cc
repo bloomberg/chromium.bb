@@ -162,7 +162,7 @@ bool MessagePipe::Attach(unsigned port,
                          scoped_refptr<Channel> channel,
                          MessageInTransit::EndpointId local_id) {
   DCHECK(port == 0 || port == 1);
-  DCHECK(channel);
+  DCHECK(channel.get());
   DCHECK_NE(local_id, MessageInTransit::kInvalidEndpointId);
 
   base::AutoLock locker(lock_);

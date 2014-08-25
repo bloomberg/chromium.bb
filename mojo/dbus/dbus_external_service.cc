@@ -67,7 +67,7 @@ void DBusExternalServiceBase::ExportMethods() {
 }
 
 void DBusExternalServiceBase::InitializeDBus() {
-  CHECK(!bus_);
+  CHECK(!bus_.get());
   dbus::Bus::Options options;
   options.bus_type = dbus::Bus::SESSION;
   bus_ = new dbus::Bus(options);

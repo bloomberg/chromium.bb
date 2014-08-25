@@ -109,11 +109,11 @@ class RemoteMessagePipeTest : public testing::Test {
   void TearDownOnIOThread() {
     CHECK_EQ(base::MessageLoop::current(), io_thread()->message_loop());
 
-    if (channels_[0]) {
+    if (channels_[0].get()) {
       channels_[0]->Shutdown();
       channels_[0] = NULL;
     }
-    if (channels_[1]) {
+    if (channels_[1].get()) {
       channels_[1]->Shutdown();
       channels_[1] = NULL;
     }
@@ -122,7 +122,7 @@ class RemoteMessagePipeTest : public testing::Test {
   void CreateAndInitChannel(unsigned channel_index) {
     CHECK_EQ(base::MessageLoop::current(), io_thread()->message_loop());
     CHECK(channel_index == 0 || channel_index == 1);
-    CHECK(!channels_[channel_index]);
+    CHECK(!channels_[channel_index].get());
 
     channels_[channel_index] = new Channel(&platform_support_);
     CHECK(channels_[channel_index]->Init(
@@ -133,9 +133,9 @@ class RemoteMessagePipeTest : public testing::Test {
                                      scoped_refptr<MessagePipe> mp1) {
     CHECK_EQ(base::MessageLoop::current(), io_thread()->message_loop());
 
-    if (!channels_[0])
+    if (!channels_[0].get())
       CreateAndInitChannel(0);
-    if (!channels_[1])
+    if (!channels_[1].get())
       CreateAndInitChannel(1);
 
     MessageInTransit::EndpointId local_id0 =
@@ -591,7 +591,7 @@ TEST_F(RemoteMessagePipeTest, HandlePassing) {
   EXPECT_STREQ(kHello, read_buffer);
   EXPECT_EQ(1u, read_dispatchers.size());
   EXPECT_EQ(1u, read_num_dispatchers);
-  ASSERT_TRUE(read_dispatchers[0]);
+  ASSERT_TRUE(read_dispatchers[0].get());
   EXPECT_TRUE(read_dispatchers[0]->HasOneRef());
 
   EXPECT_EQ(Dispatcher::kTypeMessagePipe, read_dispatchers[0]->GetType());
@@ -711,7 +711,7 @@ TEST_F(RemoteMessagePipeTest, MAYBE_SharedBufferPassing) {
                 SharedBufferDispatcher::kDefaultCreateOptions,
                 100,
                 &dispatcher));
-  ASSERT_TRUE(dispatcher);
+  ASSERT_TRUE(dispatcher.get());
 
   // Make a mapping.
   scoped_ptr<embedder::PlatformSharedBufferMapping> mapping0;
@@ -779,7 +779,7 @@ TEST_F(RemoteMessagePipeTest, MAYBE_SharedBufferPassing) {
   EXPECT_STREQ(kHello, read_buffer);
   EXPECT_EQ(1u, read_dispatchers.size());
   EXPECT_EQ(1u, read_num_dispatchers);
-  ASSERT_TRUE(read_dispatchers[0]);
+  ASSERT_TRUE(read_dispatchers[0].get());
   EXPECT_TRUE(read_dispatchers[0]->HasOneRef());
 
   EXPECT_EQ(Dispatcher::kTypeSharedBuffer, read_dispatchers[0]->GetType());
@@ -905,7 +905,7 @@ TEST_F(RemoteMessagePipeTest, MAYBE_PlatformHandlePassing) {
   EXPECT_STREQ(kWorld, read_buffer);
   EXPECT_EQ(1u, read_dispatchers.size());
   EXPECT_EQ(1u, read_num_dispatchers);
-  ASSERT_TRUE(read_dispatchers[0]);
+  ASSERT_TRUE(read_dispatchers[0].get());
   EXPECT_TRUE(read_dispatchers[0]->HasOneRef());
 
   EXPECT_EQ(Dispatcher::kTypePlatformHandle, read_dispatchers[0]->GetType());

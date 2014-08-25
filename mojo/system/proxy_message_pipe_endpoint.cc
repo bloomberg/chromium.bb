@@ -83,7 +83,7 @@ void ProxyMessagePipeEndpoint::EnqueueMessage(
 
 void ProxyMessagePipeEndpoint::Attach(scoped_refptr<Channel> channel,
                                       MessageInTransit::EndpointId local_id) {
-  DCHECK(channel);
+  DCHECK(channel.get());
   DCHECK_NE(local_id, MessageInTransit::kInvalidEndpointId);
 
   DCHECK(!is_attached());

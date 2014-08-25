@@ -15,7 +15,7 @@ DataPipeConsumerDispatcher::DataPipeConsumerDispatcher() {
 }
 
 void DataPipeConsumerDispatcher::Init(scoped_refptr<DataPipe> data_pipe) {
-  DCHECK(data_pipe);
+  DCHECK(data_pipe.get());
   data_pipe_ = data_pipe;
 }
 
@@ -25,7 +25,7 @@ Dispatcher::Type DataPipeConsumerDispatcher::GetType() const {
 
 DataPipeConsumerDispatcher::~DataPipeConsumerDispatcher() {
   // |Close()|/|CloseImplNoLock()| should have taken care of the pipe.
-  DCHECK(!data_pipe_);
+  DCHECK(!data_pipe_.get());
 }
 
 void DataPipeConsumerDispatcher::CancelAllWaitersNoLock() {

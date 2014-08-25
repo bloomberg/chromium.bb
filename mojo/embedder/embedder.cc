@@ -89,7 +89,7 @@ void CreateChannelHelper(
       MakeChannel(core, platform_handle.Pass(), message_pipe);
 
   // Hand the channel back to the embedder.
-  if (callback_thread_task_runner) {
+  if (callback_thread_task_runner.get()) {
     callback_thread_task_runner->PostTask(
         FROM_HERE, base::Bind(callback, channel_info.release()));
   } else {
@@ -155,8 +155,8 @@ ScopedMessagePipeHandle CreateChannel(
                                                callback,
                                                callback_thread_task_runner));
   } else {
-    (callback_thread_task_runner ? callback_thread_task_runner
-                                 : io_thread_task_runner)
+    (callback_thread_task_runner.get() ? callback_thread_task_runner
+                                       : io_thread_task_runner)
         ->PostTask(FROM_HERE, base::Bind(callback, channel_info.release()));
   }
 
@@ -165,7 +165,7 @@ ScopedMessagePipeHandle CreateChannel(
 
 void DestroyChannelOnIOThread(ChannelInfo* channel_info) {
   DCHECK(channel_info);
-  if (!channel_info->channel) {
+  if (!channel_info->channel.get()) {
     // Presumably, |Init()| on the channel failed.
     return;
   }
@@ -177,9 +177,9 @@ void DestroyChannelOnIOThread(ChannelInfo* channel_info) {
 // TODO(vtl): Write tests for this.
 void DestroyChannel(ChannelInfo* channel_info) {
   DCHECK(channel_info);
-  DCHECK(channel_info->io_thread_task_runner);
+  DCHECK(channel_info->io_thread_task_runner.get());
 
-  if (!channel_info->channel) {
+  if (!channel_info->channel.get()) {
     // Presumably, |Init()| on the channel failed.
     return;
   }
@@ -223,7 +223,7 @@ MojoResult PassWrappedPlatformHandle(MojoHandle platform_handle_wrapper_handle,
   DCHECK(core);
   scoped_refptr<system::Dispatcher> dispatcher(
       core->GetDispatcher(platform_handle_wrapper_handle));
-  if (!dispatcher)
+  if (!dispatcher.get())
     return MOJO_RESULT_INVALID_ARGUMENT;
 
   if (dispatcher->GetType() != system::Dispatcher::kTypePlatformHandle)

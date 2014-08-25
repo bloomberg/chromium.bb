@@ -91,7 +91,7 @@ bool CommandBufferImpl::DoInitialize(
 
   // TODO(piman): virtual contexts, gpu preference.
   context_ = gfx::GLContext::CreateGLContext(
-      share_group_, surface_.get(), gfx::PreferIntegratedGpu);
+      share_group_.get(), surface_.get(), gfx::PreferIntegratedGpu);
   if (!context_.get())
     return false;
 
@@ -101,7 +101,7 @@ bool CommandBufferImpl::DoInitialize(
   // TODO(piman): ShaderTranslatorCache is currently per-ContextGroup but
   // only needs to be per-thread.
   scoped_refptr<gpu::gles2::ContextGroup> context_group =
-      new gpu::gles2::ContextGroup(mailbox_manager_,
+      new gpu::gles2::ContextGroup(mailbox_manager_.get(),
                                    new MemoryTrackerStub,
                                    new gpu::gles2::ShaderTranslatorCache,
                                    NULL,

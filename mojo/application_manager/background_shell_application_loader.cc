@@ -67,7 +67,7 @@ void BackgroundShellApplicationLoader::Load(
     thread_.reset(new base::DelegateSimpleThread(this, thread_name_));
     thread_->Start();
     message_loop_created_.Wait();
-    DCHECK(task_runner_);
+    DCHECK(task_runner_.get());
   }
 
   task_runner_->PostTask(

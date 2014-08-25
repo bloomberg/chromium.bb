@@ -48,13 +48,13 @@ void ContextFactoryImpl::RemoveReflector(
 
 scoped_refptr<cc::ContextProvider>
 ContextFactoryImpl::SharedMainThreadContextProvider() {
-  if (!shared_main_thread_contexts_ ||
+  if (!shared_main_thread_contexts_.get() ||
       shared_main_thread_contexts_->DestroyedOnMainThread()) {
     bool lose_context_when_out_of_memory = false;
     shared_main_thread_contexts_ =
         webkit::gpu::ContextProviderInProcess::CreateOffscreen(
             lose_context_when_out_of_memory);
-    if (shared_main_thread_contexts_ &&
+    if (shared_main_thread_contexts_.get() &&
         !shared_main_thread_contexts_->BindToCurrentThread())
       shared_main_thread_contexts_ = NULL;
   }

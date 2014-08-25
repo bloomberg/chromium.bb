@@ -50,7 +50,7 @@ class ChannelTest : public testing::Test {
     CHECK_EQ(base::MessageLoop::current(), io_thread()->message_loop());
 
     CHECK(raw_channel_);
-    CHECK(channel_);
+    CHECK(channel_.get());
     CHECK_EQ(init_result_, TRISTATE_UNKNOWN);
 
     init_result_ = BoolToTristate(channel_->Init(raw_channel_.Pass()));
@@ -59,7 +59,7 @@ class ChannelTest : public testing::Test {
   void ShutdownChannelOnIOThread() {
     CHECK_EQ(base::MessageLoop::current(), io_thread()->message_loop());
 
-    CHECK(channel_);
+    CHECK(channel_.get());
     channel_->Shutdown();
   }
 

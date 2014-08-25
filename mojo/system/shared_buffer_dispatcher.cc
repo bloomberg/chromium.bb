@@ -74,7 +74,7 @@ MojoResult SharedBufferDispatcher::Create(
 
   scoped_refptr<embedder::PlatformSharedBuffer> shared_buffer(
       platform_support->CreateSharedBuffer(static_cast<size_t>(num_bytes)));
-  if (!shared_buffer)
+  if (!shared_buffer.get())
     return MOJO_RESULT_RESOURCE_EXHAUSTED;
 
   *result = new SharedBufferDispatcher(shared_buffer);
@@ -126,7 +126,7 @@ scoped_refptr<SharedBufferDispatcher> SharedBufferDispatcher::Deserialize(
   scoped_refptr<embedder::PlatformSharedBuffer> shared_buffer(
       channel->platform_support()->CreateSharedBufferFromHandle(
           num_bytes, embedder::ScopedPlatformHandle(platform_handle)));
-  if (!shared_buffer) {
+  if (!shared_buffer.get()) {
     LOG(ERROR)
         << "Invalid serialized shared buffer dispatcher (invalid num_bytes?)";
     return scoped_refptr<SharedBufferDispatcher>();
@@ -139,7 +139,7 @@ scoped_refptr<SharedBufferDispatcher> SharedBufferDispatcher::Deserialize(
 SharedBufferDispatcher::SharedBufferDispatcher(
     scoped_refptr<embedder::PlatformSharedBuffer> shared_buffer)
     : shared_buffer_(shared_buffer) {
-  DCHECK(shared_buffer_);
+  DCHECK(shared_buffer_.get());
 }
 
 SharedBufferDispatcher::~SharedBufferDispatcher() {
@@ -179,14 +179,14 @@ MojoResult SharedBufferDispatcher::ValidateDuplicateOptions(
 
 void SharedBufferDispatcher::CloseImplNoLock() {
   lock().AssertAcquired();
-  DCHECK(shared_buffer_);
+  DCHECK(shared_buffer_.get());
   shared_buffer_ = NULL;
 }
 
 scoped_refptr<Dispatcher>
 SharedBufferDispatcher::CreateEquivalentDispatcherAndCloseImplNoLock() {
   lock().AssertAcquired();
-  DCHECK(shared_buffer_);
+  DCHECK(shared_buffer_.get());
   scoped_refptr<embedder::PlatformSharedBuffer> shared_buffer;
   shared_buffer.swap(shared_buffer_);
   return scoped_refptr<Dispatcher>(new SharedBufferDispatcher(shared_buffer));
@@ -212,7 +212,7 @@ MojoResult SharedBufferDispatcher::MapBufferImplNoLock(
     MojoMapBufferFlags flags,
     scoped_ptr<embedder::PlatformSharedBufferMapping>* mapping) {
   lock().AssertAcquired();
-  DCHECK(shared_buffer_);
+  DCHECK(shared_buffer_.get());
 
   if (offset > static_cast<uint64_t>(std::numeric_limits<size_t>::max()))
     return MOJO_RESULT_INVALID_ARGUMENT;
@@ -247,7 +247,7 @@ bool SharedBufferDispatcher::EndSerializeAndCloseImplNoLock(
     size_t* actual_size,
     embedder::PlatformHandleVector* platform_handles) {
   DCHECK(HasOneRef());  // Only one ref => no need to take the lock.
-  DCHECK(shared_buffer_);
+  DCHECK(shared_buffer_.get());
 
   SerializedSharedBufferDispatcher* serialization =
       static_cast<SerializedSharedBufferDispatcher*>(destination);

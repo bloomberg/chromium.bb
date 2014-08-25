@@ -102,7 +102,7 @@ class AppContext {
     base::Thread::Options io_thread_options(base::MessageLoop::TYPE_IO, 0);
     CHECK(io_thread_.StartWithOptions(io_thread_options));
     io_runner_ = io_thread_.message_loop_proxy().get();
-    CHECK(io_runner_);
+    CHECK(io_runner_.get());
 
     // Create and start our controller thread.
     base::Thread::Options controller_thread_options;
@@ -112,7 +112,7 @@ class AppContext {
         base::Bind(&common::MessagePumpMojo::Create);
     CHECK(controller_thread_.StartWithOptions(controller_thread_options));
     controller_runner_ = controller_thread_.message_loop_proxy().get();
-    CHECK(controller_runner_);
+    CHECK(controller_runner_.get());
   }
 
   void Shutdown() {
