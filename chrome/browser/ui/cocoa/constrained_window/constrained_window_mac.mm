@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/cocoa/constrained_window/constrained_window_mac.h"
 
 #include "base/logging.h"
-#include "chrome/browser/guest_view/web_view/web_view_guest.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_sheet.h"
@@ -15,6 +14,7 @@
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/guest_view/web_view/web_view_guest.h"
 
 using web_modal::WebContentsModalDialogManager;
 using web_modal::NativeWebContentsModalDialog;

@@ -2,23 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_GUEST_VIEW_WEB_VIEW_WEB_VIEW_GUEST_H_
-#define CHROME_BROWSER_GUEST_VIEW_WEB_VIEW_WEB_VIEW_GUEST_H_
+#ifndef EXTENSIONS_BROWSER_GUEST_VIEW_WEB_VIEW_WEB_VIEW_GUEST_H_
+#define EXTENSIONS_BROWSER_GUEST_VIEW_WEB_VIEW_WEB_VIEW_GUEST_H_
 
 #include <vector>
 
 #include "base/observer_list.h"
-#include "chrome/browser/guest_view/web_view/javascript_dialog_helper.h"
-#include "chrome/browser/guest_view/web_view/web_view_find_helper.h"
-#include "chrome/browser/guest_view/web_view/web_view_permission_helper.h"
-#include "chrome/browser/guest_view/web_view/web_view_permission_types.h"
 #include "content/public/browser/javascript_dialog_manager.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/guest_view/guest_view.h"
+#include "extensions/browser/guest_view/web_view/javascript_dialog_helper.h"
+#include "extensions/browser/guest_view/web_view/web_view_find_helper.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest_delegate.h"
+#include "extensions/browser/guest_view/web_view/web_view_permission_helper.h"
+#include "extensions/browser/guest_view/web_view/web_view_permission_types.h"
 #include "extensions/browser/script_executor.h"
-#include "third_party/WebKit/public/web/WebFindOptions.h"
+
+namespace blink {
+struct WebFindOptions;
+}  // nanespace blink
 
 namespace extensions {
 
@@ -357,4 +360,4 @@ class WebViewGuest : public GuestView<WebViewGuest>,
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_GUEST_VIEW_WEB_VIEW_WEB_VIEW_GUEST_H_
+#endif  // EXTENSIONS_BROWSER_GUEST_VIEW_WEB_VIEW_WEB_VIEW_GUEST_H_

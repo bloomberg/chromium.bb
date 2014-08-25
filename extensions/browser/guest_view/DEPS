@@ -1,0 +1,5 @@
+include_rules = [
+  # TODO(hanxi): Remove these.  http://crbug.com/352293.
+  "+chrome/browser/extensions/api/web_view/web_view_internal_api.h",
+  "+third_party/WebKit/public/web/WebFindOptions.h",
+]

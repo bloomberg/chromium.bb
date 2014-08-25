@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/guest_view/web_view/javascript_dialog_helper.h"
+#include "extensions/browser/guest_view/web_view/javascript_dialog_helper.h"
 
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/guest_view/web_view/web_view_constants.h"
-#include "chrome/browser/guest_view/web_view/web_view_guest.h"
-#include "chrome/browser/guest_view/web_view/web_view_permission_helper.h"
-#include "chrome/browser/guest_view/web_view/web_view_permission_types.h"
 #include "extensions/browser/guest_view/guest_view_constants.h"
+#include "extensions/browser/guest_view/web_view/web_view_constants.h"
+#include "extensions/browser/guest_view/web_view/web_view_guest.h"
+#include "extensions/browser/guest_view/web_view/web_view_permission_helper.h"
+#include "extensions/browser/guest_view/web_view/web_view_permission_types.h"
 
 namespace extensions {
 

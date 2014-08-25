@@ -7,8 +7,8 @@
 
 #include "chrome/browser/extensions/api/capture_web_contents_function.h"
 #include "chrome/browser/extensions/api/execute_code_function.h"
-#include "chrome/browser/guest_view/web_view/web_view_find_helper.h"
-#include "chrome/browser/guest_view/web_view/web_view_guest.h"
+#include "extensions/browser/guest_view/web_view/web_view_find_helper.h"
+#include "extensions/browser/guest_view/web_view/web_view_guest.h"
 
 // WARNING: WebViewInternal could be loaded in an unblessed context, thus any
 // new APIs must extend WebViewInternalExtensionFunction or

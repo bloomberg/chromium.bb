@@ -27,7 +27,7 @@
 #include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
 
 #if defined(ENABLE_EXTENSIONS)
-#include "chrome/browser/guest_view/web_view/web_view_renderer_state.h"
+#include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
 #endif
 
 #if defined(OS_WIN)

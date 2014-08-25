@@ -23,8 +23,8 @@
 #include "content/public/browser/render_process_host.h"
 
 #if defined(ENABLE_EXTENSIONS)
-#include "chrome/browser/guest_view/web_view/web_view_permission_helper.h"
-#include "chrome/browser/guest_view/web_view/web_view_renderer_state.h"
+#include "extensions/browser/guest_view/web_view/web_view_permission_helper.h"
+#include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
 #endif
 
 #if defined(ENABLE_TASK_MANAGER)
