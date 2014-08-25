@@ -188,6 +188,7 @@ class AndroidMkWriter(object):
     self.WriteLn('LOCAL_MODULE_TAGS := optional')
     if self.toolset == 'host':
       self.WriteLn('LOCAL_IS_HOST_MODULE := true')
+      self.WriteLn('LOCAL_MULTILIB := $(GYP_HOST_MULTILIB)')
     else:
       self.WriteLn('LOCAL_MODULE_TARGET_ARCH := '
                    '$(TARGET_$(GYP_VAR_PREFIX)ARCH)')
@@ -195,7 +196,7 @@ class AndroidMkWriter(object):
     # Grab output directories; needed for Actions and Rules.
     if self.toolset == 'host':
       self.WriteLn('gyp_intermediate_dir := '
-                   '$(call local-intermediates-dir)')
+                   '$(call local-intermediates-dir,,$(GYP_HOST_VAR_PREFIX))')
     else:
       self.WriteLn('gyp_intermediate_dir := '
                    '$(call local-intermediates-dir,,$(GYP_VAR_PREFIX))')
@@ -694,14 +695,15 @@ class AndroidMkWriter(object):
       path = '$(gyp_shared_intermediate_dir)'
     elif self.type == 'shared_library':
       if self.toolset == 'host':
-        path = '$(HOST_OUT_INTERMEDIATE_LIBRARIES)'
+        path = '$($(GYP_HOST_VAR_PREFIX)HOST_OUT_INTERMEDIATE_LIBRARIES)'
       else:
         path = '$($(GYP_VAR_PREFIX)TARGET_OUT_INTERMEDIATE_LIBRARIES)'
     else:
       # Other targets just get built into their intermediate dir.
       if self.toolset == 'host':
-        path = '$(call intermediates-dir-for,%s,%s,true)' % (self.android_class,
-                                                            self.android_module)
+        path = ('$(call intermediates-dir-for,%s,%s,true,,'
+                '$(GYP_HOST_VAR_PREFIX))' % (self.android_class,
+                                             self.android_module))
       else:
         path = ('$(call intermediates-dir-for,%s,%s,,,$(GYP_VAR_PREFIX))'
                 % (self.android_class, self.android_module))
@@ -887,6 +889,8 @@ class AndroidMkWriter(object):
       self.WriteLn('LOCAL_UNINSTALLABLE_MODULE := true')
       if self.toolset == 'target':
         self.WriteLn('LOCAL_2ND_ARCH_VAR_PREFIX := $(GYP_VAR_PREFIX)')
+      else:
+        self.WriteLn('LOCAL_2ND_ARCH_VAR_PREFIX := $(GYP_HOST_VAR_PREFIX)')
       self.WriteLn()
       self.WriteLn('include $(BUILD_SYSTEM)/base_rules.mk')
       self.WriteLn()
@@ -894,9 +898,8 @@ class AndroidMkWriter(object):
       self.WriteLn('\t$(hide) echo "Gyp timestamp: $@"')
       self.WriteLn('\t$(hide) mkdir -p $(dir $@)')
       self.WriteLn('\t$(hide) touch $@')
-      if self.toolset == 'target':
-        self.WriteLn()
-        self.WriteLn('LOCAL_2ND_ARCH_VAR_PREFIX :=')
+      self.WriteLn()
+      self.WriteLn('LOCAL_2ND_ARCH_VAR_PREFIX :=')
 
 
   def WriteList(self, value_list, variable=None, prefix='',
@@ -1080,6 +1083,8 @@ def GenerateOutput(target_list, target_dicts, data, params):
 
   root_makefile.write('GYP_CONFIGURATION ?= %s\n' % default_configuration)
   root_makefile.write('GYP_VAR_PREFIX ?=\n')
+  root_makefile.write('GYP_HOST_VAR_PREFIX ?=\n')
+  root_makefile.write('GYP_HOST_MULTILIB ?=\n')
 
   # Write out the sorted list of includes.
   root_makefile.write('\n')
