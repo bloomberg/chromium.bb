@@ -39,7 +39,7 @@ vars = {
   'libaddressinput_revision': 'b52a2aeb63a28914850f3ed81cd7fd26ecdd4cdc', # from svn revision 333
   'libvpx_revision': 'ace65784417788374f0b19ce5a8abd06c9ccd007',
   'sfntly_revision': '1bdaae8fc788a5ac8936d68bf24f37d977a13dac',
-  'skia_revision': '3e42a4638559d71481ba598857f2d0c715c8d4b3',
+  'skia_revision': '76db31a2ca11da4dd45016e964b2e49f39f3dd49',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and V8 without interference from each other.
