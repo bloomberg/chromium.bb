@@ -374,6 +374,18 @@ be one of the following 8 strings:
 .fi
 .RE
 .TP 7
+.BI "scale=" factor
+An integer, 1 by default, typically configured as 2 when needed, denoting
+the scale factor of the output. Applications that support it render at the
+appropriate scale. For other applications, weston will scale their output
+by this factor.
+.RE
+.RS
+.PP
+Use a value of 2 for outputs with high resolution. Such displays are often
+called "HiDPI" or "retina" displays.
+.RE
+.TP 7
 .BI "seat=" name
 The logical seat name that that this output should be associated with. If this
 is set then the seat's input will be confined to the output that has the seat
