@@ -152,6 +152,9 @@ class ChromeCommitter(object):
     if not self._dryrun:
       try:
         cros_build_lib.RunCommand(
+            ['git', 'cl', 'upload', '--bypass-hooks'],
+            cwd=self._checkout_dir)
+        cros_build_lib.RunCommand(
             ['git', 'cl', 'land', '--bypass-hooks'],
             cwd=self._checkout_dir)
       except cros_build_lib.RunCommandError as e:
