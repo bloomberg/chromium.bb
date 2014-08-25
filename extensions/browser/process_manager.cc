@@ -847,7 +847,7 @@ void ProcessManager::CreateStartupBackgroundHosts() {
 
     FOR_EACH_OBSERVER(ProcessManagerObserver,
                       observer_list_,
-                      OnBackgroundHostStartup(*extension));
+                      OnBackgroundHostStartup(extension->get()));
   }
 }
 

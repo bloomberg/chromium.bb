@@ -195,7 +195,7 @@ TEST_F(LazyBackgroundTaskQueueTest, ProcessPendingTasks) {
 
   // ProcessPendingTasks is a no-op if there are no tasks.
   scoped_refptr<Extension> extension = CreateSimpleExtension();
-  queue.ProcessPendingTasks(NULL, browser_context(), extension);
+  queue.ProcessPendingTasks(NULL, browser_context(), extension.get());
   EXPECT_EQ(0, task_run_count());
 
   // Schedule a task to run.
@@ -208,13 +208,13 @@ TEST_F(LazyBackgroundTaskQueueTest, ProcessPendingTasks) {
 
   // Trying to run tasks for an unrelated BrowserContext should do nothing.
   content::TestBrowserContext unrelated_context;
-  queue.ProcessPendingTasks(NULL, &unrelated_context, extension);
+  queue.ProcessPendingTasks(NULL, &unrelated_context, extension.get());
   EXPECT_EQ(0, task_run_count());
   EXPECT_EQ(1u, queue.extensions_with_pending_tasks());
 
   // Processing tasks when there is one pending runs the task and removes the
   // extension from the list of extensions with pending tasks.
-  queue.ProcessPendingTasks(NULL, browser_context(), extension);
+  queue.ProcessPendingTasks(NULL, browser_context(), extension.get());
   EXPECT_EQ(1, task_run_count());
   EXPECT_EQ(0u, queue.extensions_with_pending_tasks());
 }

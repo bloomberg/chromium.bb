@@ -69,12 +69,12 @@ TEST(ExtensionSetTest, ExtensionSet) {
   // Add an extension.
   EXPECT_TRUE(extensions.Insert(ext1));
   EXPECT_EQ(1u, extensions.size());
-  EXPECT_EQ(ext1, extensions.GetByID(ext1->id()));
+  EXPECT_EQ(ext1.get(), extensions.GetByID(ext1->id()));
 
   // Since extension2 has same ID, it should overwrite extension1.
   EXPECT_FALSE(extensions.Insert(ext2));
   EXPECT_EQ(1u, extensions.size());
-  EXPECT_EQ(ext2, extensions.GetByID(ext1->id()));
+  EXPECT_EQ(ext2.get(), extensions.GetByID(ext1->id()));
 
   // Add the other extensions.
   EXPECT_TRUE(extensions.Insert(ext3));
@@ -82,18 +82,23 @@ TEST(ExtensionSetTest, ExtensionSet) {
   EXPECT_EQ(3u, extensions.size());
 
   // Get extension by its chrome-extension:// URL
-  EXPECT_EQ(ext2, extensions.GetExtensionOrAppByURL(
-      ext2->GetResourceURL("test.html")));
-  EXPECT_EQ(ext3, extensions.GetExtensionOrAppByURL(
-      ext3->GetResourceURL("test.html")));
-  EXPECT_EQ(ext4, extensions.GetExtensionOrAppByURL(
-      ext4->GetResourceURL("test.html")));
+  EXPECT_EQ(
+      ext2.get(),
+      extensions.GetExtensionOrAppByURL(ext2->GetResourceURL("test.html")));
+  EXPECT_EQ(
+      ext3.get(),
+      extensions.GetExtensionOrAppByURL(ext3->GetResourceURL("test.html")));
+  EXPECT_EQ(
+      ext4.get(),
+      extensions.GetExtensionOrAppByURL(ext4->GetResourceURL("test.html")));
 
   // Get extension by web extent.
-  EXPECT_EQ(ext2, extensions.GetExtensionOrAppByURL(
-      GURL("http://code.google.com/p/chromium/monkey")));
-  EXPECT_EQ(ext3, extensions.GetExtensionOrAppByURL(
-      GURL("http://dev.chromium.org/design-docs/")));
+  EXPECT_EQ(ext2.get(),
+            extensions.GetExtensionOrAppByURL(
+                GURL("http://code.google.com/p/chromium/monkey")));
+  EXPECT_EQ(ext3.get(),
+            extensions.GetExtensionOrAppByURL(
+                GURL("http://dev.chromium.org/design-docs/")));
   EXPECT_FALSE(extensions.GetExtensionOrAppByURL(
       GURL("http://blog.chromium.org/")));
 

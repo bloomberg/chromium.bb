@@ -39,7 +39,8 @@ TEST_F(FileHandlersManifestTest, ValidFileHandlers) {
       LoadAndExpectSuccess("file_handlers_valid.json");
 
   ASSERT_TRUE(extension.get());
-  const FileHandlersInfo* handlers = FileHandlers::GetFileHandlers(extension);
+  const FileHandlersInfo* handlers =
+      FileHandlers::GetFileHandlers(extension.get());
   ASSERT_TRUE(handlers != NULL);
   ASSERT_EQ(2U, handlers->size());
 
@@ -64,7 +65,8 @@ TEST_F(FileHandlersManifestTest, NotPlatformApp) {
       LoadAndExpectSuccess("file_handlers_invalid_not_app.json");
 
   ASSERT_TRUE(extension.get());
-  const FileHandlersInfo* handlers = FileHandlers::GetFileHandlers(extension);
+  const FileHandlersInfo* handlers =
+      FileHandlers::GetFileHandlers(extension.get());
   ASSERT_TRUE(handlers == NULL);
 }
 

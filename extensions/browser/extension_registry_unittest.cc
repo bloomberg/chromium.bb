@@ -27,7 +27,7 @@ testing::AssertionResult HasSingleExtension(
     return testing::AssertionFailure() << list.size()
                                        << " extensions, expected 1";
   const Extension* did_load = list[0].get();
-  if (did_load != extension)
+  if (did_load != extension.get())
     return testing::AssertionFailure() << "Expected " << extension->id()
                                        << " found " << did_load->id();
   return testing::AssertionSuccess();
@@ -248,26 +248,27 @@ TEST_F(ExtensionRegistryTest, Observer) {
       test_util::CreateExtensionWithID("id");
 
   registry.TriggerOnWillBeInstalled(
-      extension, false, false, base::EmptyString());
+      extension.get(), false, false, base::EmptyString());
   EXPECT_TRUE(HasSingleExtension(observer.installed(), extension.get()));
 
   registry.AddEnabled(extension);
-  registry.TriggerOnLoaded(extension);
+  registry.TriggerOnLoaded(extension.get());
 
-  registry.TriggerOnWillBeInstalled(extension, true, false, "foo");
+  registry.TriggerOnWillBeInstalled(extension.get(), true, false, "foo");
 
   EXPECT_TRUE(HasSingleExtension(observer.loaded(), extension.get()));
   EXPECT_TRUE(observer.unloaded().empty());
   registry.Shutdown();
 
   registry.RemoveEnabled(extension->id());
-  registry.TriggerOnUnloaded(extension, UnloadedExtensionInfo::REASON_DISABLE);
+  registry.TriggerOnUnloaded(extension.get(),
+                             UnloadedExtensionInfo::REASON_DISABLE);
 
   EXPECT_TRUE(observer.loaded().empty());
   EXPECT_TRUE(HasSingleExtension(observer.unloaded(), extension.get()));
   registry.Shutdown();
 
-  registry.TriggerOnUninstalled(extension,
+  registry.TriggerOnUninstalled(extension.get(),
                                 extensions::UNINSTALL_REASON_FOR_TESTING);
   EXPECT_TRUE(observer.installed().empty());
   EXPECT_TRUE(HasSingleExtension(observer.uninstalled(), extension.get()));

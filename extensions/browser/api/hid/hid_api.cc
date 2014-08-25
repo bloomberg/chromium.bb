@@ -131,7 +131,7 @@ void HidConnectFunction::AsyncWorkStart() {
   DCHECK(hid_service);
   scoped_refptr<HidConnection> connection =
       hid_service->Connect(device_info.device_id);
-  if (!connection) {
+  if (!connection.get()) {
     CompleteWithError(kErrorFailedToOpenDevice);
     return;
   }

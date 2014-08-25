@@ -130,7 +130,8 @@ void PermissionsData::UpdateTabSpecificPermissions(
   if (iter == tab_specific_permissions_.end())
     tab_specific_permissions_[tab_id] = permissions;
   else
-    iter->second = PermissionSet::CreateUnion(iter->second, permissions);
+    iter->second =
+        PermissionSet::CreateUnion(iter->second.get(), permissions.get());
 }
 
 void PermissionsData::ClearTabSpecificPermissions(int tab_id) const {
@@ -294,7 +295,7 @@ bool PermissionsData::CanCaptureVisiblePage(int tab_id,
   if (tab_id >= 0) {
     scoped_refptr<const PermissionSet> tab_permissions =
         GetTabSpecificPermissions(tab_id);
-    if (tab_permissions &&
+    if (tab_permissions.get() &&
         tab_permissions->HasAPIPermission(APIPermission::kTab)) {
       return true;
     }

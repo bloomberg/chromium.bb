@@ -125,7 +125,7 @@ void UsbPrivateGetDeviceInfoFunction::AsyncWorkStart() {
 
   scoped_refptr<UsbDevice> device =
       service->GetDeviceById(parameters_->device_id);
-  if (!device) {
+  if (!device.get()) {
     CompleteWithError(kErrorNoDevice);
     return;
   }
@@ -146,7 +146,7 @@ void UsbPrivateGetDeviceInfoFunction::AsyncWorkStart() {
   }
 
   scoped_refptr<UsbDeviceHandle> device_handle = device->Open();
-  if (!device_handle) {
+  if (!device_handle.get()) {
     CompleteWithError(kErrorOpen);
     return;
   }

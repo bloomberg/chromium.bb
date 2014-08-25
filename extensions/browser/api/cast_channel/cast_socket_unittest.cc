@@ -386,11 +386,11 @@ class CastSocketTest : public testing::Test {
   }
 
   void CreateCastSocket() {
-    socket_ = TestCastSocket::Create(&mock_delegate_, logger_);
+    socket_ = TestCastSocket::Create(&mock_delegate_, logger_.get());
   }
 
   void CreateCastSocketSecure() {
-    socket_ = TestCastSocket::CreateSecure(&mock_delegate_, logger_);
+    socket_ = TestCastSocket::CreateSecure(&mock_delegate_, logger_.get());
   }
 
   // Sets up CastSocket::Connect to succeed.

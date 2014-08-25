@@ -24,7 +24,7 @@ class TestExtensionRegistryObserver::Waiter {
   void OnObserved() {
     observed_ = true;
 
-    if (runner_) {
+    if (runner_.get()) {
       runner_->Quit();
       runner_ = NULL;
     }

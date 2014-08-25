@@ -27,7 +27,7 @@ class DataReceiverTest : public ApiTestBase {
   }
 
   virtual void TearDown() OVERRIDE {
-    if (sender_) {
+    if (sender_.get()) {
       sender_->ShutDown();
       sender_ = NULL;
     }

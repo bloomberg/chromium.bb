@@ -79,10 +79,8 @@ bool AppViewGuest::CompletePendingRequest(
     return false;
   }
 
-  response_info->app_view_guest->
-      CompleteCreateWebContents(url,
-                                response_info->guest_extension,
-                                response_info->callback);
+  response_info->app_view_guest->CompleteCreateWebContents(
+      url, response_info->guest_extension.get(), response_info->callback);
 
   response_map->erase(guest_instance_id);
   return true;

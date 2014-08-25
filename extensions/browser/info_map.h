@@ -107,7 +107,7 @@ class InfoMap : public base::RefCountedThreadSafe<InfoMap> {
   bool AreNotificationsDisabled(const std::string& extension_id) const;
 
   void SetContentVerifier(ContentVerifier* verifier);
-  ContentVerifier* content_verifier() { return content_verifier_; }
+  ContentVerifier* content_verifier() { return content_verifier_.get(); }
 
  private:
   friend class base::RefCountedThreadSafe<InfoMap>;

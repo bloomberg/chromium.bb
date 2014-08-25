@@ -259,20 +259,19 @@ TEST(ExtensionPermissionsTest, IsRestrictedUrl) {
                                      kAllHostsPermission,
                                      Manifest::INTERNAL);
   // Chrome urls should be blocked for normal extensions.
-  CheckRestrictedUrls(extension, true);
+  CheckRestrictedUrls(extension.get(), true);
 
   scoped_refptr<const Extension> component =
       GetExtensionWithHostPermission("component",
                                      kAllHostsPermission,
                                      Manifest::COMPONENT);
   // Chrome urls should be accessible by component extensions.
-  CheckRestrictedUrls(component, false);
+  CheckRestrictedUrls(component.get(), false);
 
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kExtensionsOnChromeURLs);
   // Enabling the switch should allow all extensions to access chrome urls.
-  CheckRestrictedUrls(extension, false);
-
+  CheckRestrictedUrls(extension.get(), false);
 }
 
 TEST(ExtensionPermissionsTest, GetPermissionMessages_ManyAPIPermissions) {

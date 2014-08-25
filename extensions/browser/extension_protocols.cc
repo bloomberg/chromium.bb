@@ -219,7 +219,7 @@ class URLRequestExtensionJob : public net::URLRequestFileJob {
     // crbug.com/369895.
     std::string range_header;
     if (headers.GetHeader(net::HttpRequestHeaders::kRange, &range_header)) {
-      if (verify_job_)
+      if (verify_job_.get())
         verify_job_ = NULL;
     }
     URLRequestFileJob::SetExtraRequestHeaders(headers);
@@ -230,7 +230,7 @@ class URLRequestExtensionJob : public net::URLRequestFileJob {
     seek_position_ = result;
     // TODO(asargent) - we'll need to add proper support for range headers.
     // crbug.com/369895.
-    if (result > 0 && verify_job_)
+    if (result > 0 && verify_job_.get())
       verify_job_ = NULL;
   }
 
@@ -242,7 +242,7 @@ class URLRequestExtensionJob : public net::URLRequestFileJob {
                                   -result);
     if (result > 0) {
       bytes_read_ += result;
-      if (verify_job_) {
+      if (verify_job_.get()) {
         verify_job_->BytesRead(result, buffer->data());
         if (!remaining_bytes())
           verify_job_->DoneReading();

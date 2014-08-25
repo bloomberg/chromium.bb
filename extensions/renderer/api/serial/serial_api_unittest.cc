@@ -314,7 +314,7 @@ class SerialApiTest : public ApiTestBase {
   }
 
   virtual void TearDown() OVERRIDE {
-    if (io_handler_)
+    if (io_handler_.get())
       EXPECT_TRUE(io_handler_->HasOneRef());
     ApiTestBase::TearDown();
   }
@@ -323,7 +323,7 @@ class SerialApiTest : public ApiTestBase {
 
  private:
   scoped_refptr<device::SerialIoHandler> GetIoHandler() {
-    if (!io_handler_)
+    if (!io_handler_.get())
       io_handler_ = new TestIoHandlerBase;
     return io_handler_;
   }

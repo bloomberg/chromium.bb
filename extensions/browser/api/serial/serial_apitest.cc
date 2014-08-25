@@ -71,7 +71,7 @@ class FakeSerialConnectFunction : public core_api::SerialConnectFunction {
       const std::string& owner_extension_id) const OVERRIDE {
     scoped_refptr<FakeEchoSerialIoHandler> io_handler =
         new FakeEchoSerialIoHandler;
-    EXPECT_CALL(*io_handler, SetControlSignals(_)).Times(1).WillOnce(
+    EXPECT_CALL(*io_handler.get(), SetControlSignals(_)).Times(1).WillOnce(
         Return(true));
     SerialConnection* serial_connection =
         new SerialConnection(port, owner_extension_id);
