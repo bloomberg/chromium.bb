@@ -281,7 +281,7 @@ def RunGClientAndCreateConfig(opts, custom_deps=None, cwd=None):
     spec += GCLIENT_SPEC_ANDROID
 
   return_code = RunGClient(
-      ['config', '--spec=%s' % spec, '--git-deps'], cwd=cwd)
+      ['config', '--spec=%s' % spec], cwd=cwd)
   return return_code
 
 
