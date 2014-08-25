@@ -94,21 +94,6 @@
       ]
     },
     {
-      "id": "gallery",
-      "default_title": "__MSG_OPEN_ACTION__",
-      "default_icon": "common/images/file_types/200/image.png",
-      "file_filters": [
-        // Image formats
-        "filesystem:*.bmp",
-        "filesystem:*.gif",
-        "filesystem:*.ico",
-        "filesystem:*.jpg",
-        "filesystem:*.jpeg",
-        "filesystem:*.png",
-        "filesystem:*.webp"
-      ]
-    },
-    {
       "id": "open-hosted-generic",
       "default_title": "__MSG_HOSTED__",
       "default_icon": "common/images/file_types/200generic.png",

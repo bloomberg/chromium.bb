@@ -17,9 +17,6 @@
       <include name="IDR_FILE_MANAGER_MAIN_JS" file="file_manager/foreground/js/main_scripts.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_FILE_MANAGER_BKGND_JS" file="file_manager/background/js/background.js" type="BINDATA" />
 
-      <include name="IDR_FILE_MANAGER_GALLERY" file="file_manager/gallery.html" allowexternalscript="true" flattenhtml="true" type="BINDATA" />
-      <include name="IDR_FILE_MANAGER_GALLERY_JS" file="file_manager/foreground/js/photo/gallery_scripts.js" flattenhtml="true" type="BINDATA" />
-
       <!-- Scripts working in background page. -->
       <include name="IDR_FILE_MANAGER_ERROR_UTIL_JS" file="file_manager/common/js/error_util.js" flattenhtml="false" type="BINDATA" />
       <include name="IDR_FILE_MANAGER_ASYNC_UTIL_JS" file="file_manager/common/js/async_util.js" flattenhtml="false" type="BINDATA" />

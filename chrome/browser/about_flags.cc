@@ -425,14 +425,6 @@ const Experiment::Choice kEnableFileManagerMTPChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
     chromeos::switches::kEnableFileManagerMTP, "false" }
 };
-
-const Experiment::Choice kEnableFileManagerNewGalleryChoices[] = {
-  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", ""},
-  { IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED,
-    chromeos::switches::kFileManagerEnableNewGallery, "true"},
-  { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
-    chromeos::switches::kFileManagerEnableNewGallery, "false"}
-};
 #endif
 
 const Experiment::Choice kEnableSettingsWindowChoices[] = {
@@ -993,13 +985,6 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_DISABLE_BOOT_ANIMATION_DESCRIPTION,
     kOsCrOSOwnerOnly,
     SINGLE_VALUE_TYPE(chromeos::switches::kDisableBootAnimation),
-  },
-  {
-    "enable-new-gallery",
-    IDS_FLAGS_FILE_MANAGER_ENABLE_NEW_GALLERY_NAME,
-    IDS_FLAGS_FILE_MANAGER_ENABLE_NEW_GALLERY_DESCRIPTION,
-    kOsCrOS,
-    MULTI_VALUE_TYPE(kEnableFileManagerNewGalleryChoices)
   },
   {
     "enable-video-player-chromecast-support",

@@ -860,8 +860,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.dialogDom_.ownerDocument.defaultView.addEventListener(
         'resize', this.onResize_.bind(this));
 
-    this.filePopup_ = null;
-
     this.searchBoxWrapper_ = this.ui_.searchBox.element;
     this.searchBox_ = this.ui_.searchBox.inputElement;
     this.searchBox_.addEventListener(
@@ -1578,29 +1576,9 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         return;
 
       var task = null;
-      // Handle restoring after crash, or the gallery action.
-      // TODO(mtomasz): Use the gallery action instead of just the gallery
-      //     field.
-      if (this.params_.gallery ||
-          this.params_.action === 'gallery' ||
-          this.params_.action === 'gallery-video') {
-        if (!opt_selectionEntry) {
-          // Non-existent file or a directory.
-          // Reloading while the Gallery is open with empty or multiple
-          // selection. Open the Gallery when the directory is scanned.
-          task = function() {
-            new FileTasks(this, this.params_).openGallery([]);
-          }.bind(this);
-        } else {
-          // The file or the directory exists.
-          task = function() {
-            new FileTasks(this, this.params_).openGallery([opt_selectionEntry]);
-          }.bind(this);
-        }
-      } else {
-        // TODO(mtomasz): Implement remounting archives after crash.
-        //                See: crbug.com/333139
-      }
+
+      // TODO(mtomasz): Implement remounting archives after crash.
+      //                See: crbug.com/333139
 
       // If there is a task to be run, run it after the scan is completed.
       if (task) {
@@ -1873,64 +1851,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         window.close();
       }
     }
-  };
-
-  /**
-   * Shows a modal-like file viewer/editor on top of the File Manager UI.
-   *
-   * @param {HTMLElement} popup Popup element.
-   * @param {function()} closeCallback Function to call after the popup is
-   *     closed.
-   */
-  FileManager.prototype.openFilePopup = function(popup, closeCallback) {
-    this.closeFilePopup();
-    this.filePopup_ = popup;
-    this.filePopupCloseCallback_ = closeCallback;
-    this.dialogDom_.insertBefore(
-        this.filePopup_, this.dialogDom_.querySelector('#iframe-drag-area'));
-    this.filePopup_.focus();
-    this.document_.body.setAttribute('overlay-visible', '');
-    this.document_.querySelector('#iframe-drag-area').hidden = false;
-  };
-
-  /**
-   * Closes the modal-like file viewer/editor popup.
-   */
-  FileManager.prototype.closeFilePopup = function() {
-    if (this.filePopup_) {
-      this.document_.body.removeAttribute('overlay-visible');
-      this.document_.querySelector('#iframe-drag-area').hidden = true;
-      // The window resize would not be processed properly while the relevant
-      // divs had 'display:none', force resize after the layout fired.
-      setTimeout(this.onResize_.bind(this), 0);
-      if (this.filePopup_.contentWindow &&
-          this.filePopup_.contentWindow.unload) {
-        this.filePopup_.contentWindow.unload();
-      }
-
-      if (this.filePopupCloseCallback_) {
-        this.filePopupCloseCallback_();
-        this.filePopupCloseCallback_ = null;
-      }
-
-      // These operations have to be in the end, otherwise v8 crashes on an
-      // assert. See: crbug.com/224174.
-      this.dialogDom_.removeChild(this.filePopup_);
-      this.filePopup_ = null;
-    }
-  };
-
-  /**
-   * Updates visibility of the draggable app region in the modal-like file
-   * viewer/editor.
-   *
-   * @param {boolean} visible True for visible, false otherwise.
-   */
-  FileManager.prototype.onFilePopupAppRegionChanged = function(visible) {
-    if (!this.filePopup_)
-      return;
-
-    this.document_.querySelector('#iframe-drag-area').hidden = !visible;
   };
 
   /**
@@ -2430,10 +2350,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       this.directoryModel_.dispose();
     if (this.volumeManager_)
       this.volumeManager_.dispose();
-    if (this.filePopup_ &&
-        this.filePopup_.contentWindow &&
-        this.filePopup_.contentWindow.unload)
-      this.filePopup_.contentWindow.unload(true /* exiting */);
     if (this.progressCenterPanel_)
       this.backgroundPage_.background.progressCenter.removePanel(
           this.progressCenterPanel_);

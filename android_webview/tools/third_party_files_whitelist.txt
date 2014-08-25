@@ -163,8 +163,6 @@ ui/base/dragdrop/os_exchange_data_provider_win.cc
 # up from webkit/.
 ui/events/keycodes/keyboard_codes_posix.h
 # String 'copyright' used in code.
-ui/file_manager/file_manager/foreground/js/photo/gallery_scripts.js
-# String 'copyright' used in code.
 ui/file_manager/file_manager/foreground/js/main_scripts.js
 # String 'copyright' used in code.
 ui/file_manager/gallery/js/gallery_scripts.js

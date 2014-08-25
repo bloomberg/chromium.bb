@@ -1261,24 +1261,6 @@ body[drive] .dialog-container[connection='offline'] .dim-offline {
   opacity: 0.4;
 }
 
-/* Overlay pane covering the entire file manager window (e.g. image editor)*/
-.overlay-pane {
-  -webkit-app-region: no-drag;
-  border: none;
-  height: 100%;
-  left: 0;
-  position: absolute;
-  top: 0;
-  width: 100%;
-  z-index: 1000;  /* Must be above all elements in file manager container. */
-}
-
-/* When the overlay pane is visible hide everything else so that the tab order
-  is not confused. */
-body[overlay-visible] > :not(.overlay-pane) {
-  display: none !important;
-}
-
 /* Invisible container for elements representing files while dragging. */
 #drag-container {
   left: 0;
@@ -1603,17 +1585,6 @@ list.autocomplete-suggestions > [lead] > div.detail-text em {
 
 #gear-menu > menuitem:not(.menuitem-button) {
   -webkit-margin-end: 50px;
-}
-
-#iframe-drag-area {
-  -webkit-app-region: drag;
-  height: 48px;
-  left: 64px;
-  position: absolute;
-  right: 134px;
-  top: 0;
-  width: auto;
-  z-index: 101;
 }
 
 #suggest-app-dialog {

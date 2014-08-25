@@ -192,9 +192,7 @@ FileTasks.isInternalTask_ = function(taskId) {
   return (appId === chrome.runtime.id &&
           taskType === 'file' &&
           (actionId === 'play' ||
-           actionId === 'mount-archive' ||
-           actionId === 'gallery' ||
-           actionId === 'gallery-video'));
+           actionId === 'mount-archive'));
 };
 
 /**
@@ -236,10 +234,6 @@ FileTasks.prototype.processTasks_ = function(tasks) {
       } else if (taskParts[2] === 'mount-archive') {
         task.iconType = 'archive';
         task.title = loadTimeData.getString('MOUNT_ARCHIVE');
-      } else if (taskParts[2] === 'gallery' ||
-                 taskParts[2] === 'gallery-video') {
-        task.iconType = 'image';
-        task.title = loadTimeData.getString('ACTION_OPEN');
       } else if (taskParts[2] === 'open-hosted-generic') {
         if (this.entries_.length > 1)
           task.iconType = 'generic';
@@ -560,11 +554,6 @@ FileTasks.prototype.executeInternalTask_ = function(id, entries) {
     return;
   }
 
-  if (id === 'gallery' || id === 'gallery-video') {
-    this.openGalleryInternal_(entries);
-    return;
-  }
-
   console.error('Unexpected action ID: ' + id);
 };
 
@@ -620,103 +609,6 @@ FileTasks.prototype.mountArchivesInternal_ = function(entries) {
         }.bind(null, resolvedURLs[index]));
       }
   });
-};
-
-/**
- * Open the Gallery.
- *
- * @param {Array.<Entry>} entries List of selected entries.
- */
-FileTasks.prototype.openGallery = function(entries) {
-  FileTasks.recordViewingFileTypeUMA_(entries);
-  this.openGalleryInternal_(entries);
-};
-
-/**
- * The core implementation to open the Gallery.
- *
- * @param {Array.<Entry>} entries List of selected entries.
- * @private
- */
-FileTasks.prototype.openGalleryInternal_ = function(entries) {
-  var fm = this.fileManager_;
-
-  var allEntries =
-      fm.getAllEntriesInCurrentDirectory().filter(FileType.isImageOrVideo);
-
-  var galleryFrame = fm.document_.createElement('iframe');
-  galleryFrame.className = 'overlay-pane';
-  galleryFrame.scrolling = 'no';
-  galleryFrame.setAttribute('webkitallowfullscreen', true);
-
-  if (this.params_ && this.params_.gallery) {
-    // Remove the Gallery state from the location, we do not need it any more.
-    // TODO(mtomasz): Consider keeping the selection path.
-    util.updateAppState(
-        null, /* keep current directory */
-        '', /* remove current selection */
-        '' /* remove search. */);
-  }
-
-  var savedAppState = JSON.parse(JSON.stringify(window.appState));
-  var savedTitle = document.title;
-
-  // Push a temporary state which will be replaced every time the selection
-  // changes in the Gallery and popped when the Gallery is closed.
-  util.updateAppState();
-
-  var onBack = function(selectedEntries) {
-    fm.directoryModel.selectEntries(selectedEntries);
-    fm.closeFilePopup();  // Will call Gallery.unload.
-    window.appState = savedAppState;
-    util.saveAppState();
-    document.title = savedTitle;
-  };
-
-  var onAppRegionChanged = function(visible) {
-    fm.onFilePopupAppRegionChanged(visible);
-  };
-
-  galleryFrame.onload = function() {
-    galleryFrame.contentWindow.ImageUtil.metrics = metrics;
-
-    // TODO(haruki): isOnReadonlyDirectory() only checks the permission for the
-    // root. We should check more granular permission to know whether the file
-    // is writable or not.
-    var readonly = fm.isOnReadonlyDirectory();
-    var currentDir = fm.getCurrentDirectoryEntry();
-    var downloadsVolume = fm.volumeManager.getCurrentProfileVolumeInfo(
-            VolumeManagerCommon.RootType.DOWNLOADS);
-    var downloadsDir = downloadsVolume && downloadsVolume.fileSystem.root;
-
-    // TODO(mtomasz): Pass Entry instead of localized name. Conversion to a
-    //     display string should be done in gallery.js.
-    var readonlyDirName = null;
-    if (readonly && currentDir)
-      readonlyDirName = util.getEntryLabel(fm.volumeManager, currentDir);
-
-    var context = {
-      // We show the root label in readonly warning (e.g. archive name).
-      readonlyDirName: readonlyDirName,
-      curDirEntry: currentDir,
-      saveDirEntry: readonly ? downloadsDir : null,
-      searchResults: fm.directoryModel.isSearching(),
-      metadataCache: fm.metadataCache_,
-      pageState: this.params_,
-      appWindow: chrome.app.window.current(),
-      onBack: onBack,
-      onClose: fm.onClose.bind(fm),
-      onMaximize: fm.onMaximize.bind(fm),
-      onMinimize: fm.onMinimize.bind(fm),
-      onAppRegionChanged: onAppRegionChanged,
-      loadTimeData: fm.backgroundPage.background.stringData
-    };
-    galleryFrame.contentWindow.Gallery.open(
-        context, fm.volumeManager, allEntries, entries);
-  }.bind(this);
-
-  galleryFrame.src = 'gallery.html';
-  fm.openFilePopup(galleryFrame, fm.updateTitle_.bind(fm));
 };
 
 /**
