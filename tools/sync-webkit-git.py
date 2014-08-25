@@ -77,51 +77,13 @@ def GetWebKitRevFromTarball(version):
   return m.group(0)
 
 
-def FindSVNRev(branch_name, target_rev):
-  """Map an SVN revision to a git hash.
-  Like 'git svn find-rev' but without the git-svn bits."""
+def HasGitRev(target_rev):
+  """Finds if a git hash exists in the repository."""
 
-  # We iterate through the commit log looking for "git-svn-id" lines,
-  # which contain the SVN revision of that commit.  We can stop once
-  # we've found our target (or hit a revision number lower than what
-  # we're looking for, indicating not found).
-
-  target_rev = int(target_rev)
-
-  # regexp matching the "commit" line from the log.
-  commit_re = re.compile(r'^commit ([a-f\d]{40})$')
-  # regexp matching the git-svn line from the log.
-  git_svn_re = re.compile(r'^\s+git-svn-id: [^@]+@(\d+) ')
-  if not branch_name:
-    branch_name = 'origin/master'
-  cmd = ['git', 'log', '--no-color', '--first-parent', '--pretty=medium',
-         branch_name]
+  cmd = ['git', 'rev-list', '--max-count=1', target_rev]
   logging.info(' '.join(cmd))
-  log = subprocess.Popen(cmd, shell=(os.name == 'nt'), stdout=subprocess.PIPE)
-  # Track whether we saw a revision *later* than the one we're seeking.
-  saw_later = False
-  for line in log.stdout:
-    match = commit_re.match(line)
-    if match:
-      commit = match.group(1)
-      continue
-    match = git_svn_re.match(line)
-    if match:
-      rev = int(match.group(1))
-      if rev <= target_rev:
-        log.stdout.close()  # Break pipe.
-        if rev < target_rev:
-          if not saw_later:
-            return None  # Can't be sure whether this rev is ok.
-          print ("WARNING: r%d not found, so using next nearest earlier r%d" %
-                 (target_rev, rev))
-        return commit
-      else:
-        saw_later = True
-
-  print "Error: reached end of log without finding commit info."
-  print "Something has likely gone horribly wrong."
-  return None
+  result = subprocess.call(cmd, shell=(os.name == 'nt'), stdout=subprocess.PIPE)
+  return result == 0
 
 
 def GetRemote():
@@ -135,26 +97,24 @@ def GetRemote():
   return 'origin'
 
 
-def UpdateGClientBranch(branch_name, webkit_rev, magic_gclient_branch):
+def UpdateGClientBranch(webkit_rev, magic_gclient_branch):
   """Update the magic gclient branch to point at |webkit_rev|.
 
   Returns: true if the branch didn't need changes."""
-  target = FindSVNRev(branch_name, webkit_rev)
-  if not target:
-    print "r%s not available; fetching." % webkit_rev
+  if not HasGitRev(webkit_rev):
+    print "%s not available; fetching." % webkit_rev
     subprocess.check_call(['git', 'fetch', GetRemote()],
                           shell=(os.name == 'nt'))
-    target = FindSVNRev(branch_name, webkit_rev)
-  if not target:
-    print "ERROR: Couldn't map r%s to a git revision." % webkit_rev
-    sys.exit(1)
+    if not HasGitRev(webkit_rev):
+      print "ERROR: Couldn't find %s in the repository." % webkit_rev
+      sys.exit(1)
 
   current = RunGit(['show-ref', '--hash', magic_gclient_branch])
-  if current == target:
+  if current == webkit_rev:
     return False  # No change necessary.
 
   subprocess.check_call(['git', 'update-ref', '-m', 'gclient sync',
-                         magic_gclient_branch, target],
+                         magic_gclient_branch, webkit_rev],
                          shell=(os.name == 'nt'))
   return True
 
@@ -180,7 +140,6 @@ def main():
   parser.add_option('-v', '--verbose', action='store_true')
   parser.add_option('-r', '--revision', help="switch to desired revision")
   parser.add_option('-t', '--tarball', help="switch to desired tarball release")
-  parser.add_option('-b', '--branch', help="branch name that gclient generate")
   options, args = parser.parse_args()
   if options.verbose:
     logging.basicConfig(level=logging.INFO)
@@ -205,11 +164,10 @@ def main():
     else:
       webkit_rev = GetWebKitRev()
 
-  print 'Desired revision: r%s.' % webkit_rev
+  print 'Desired revision: %s.' % webkit_rev
   os.chdir('third_party/WebKit')
   magic_gclient_branch = GetGClientBranchName()
-  changed = UpdateGClientBranch(options.branch, webkit_rev,
-                                magic_gclient_branch)
+  changed = UpdateGClientBranch(webkit_rev, magic_gclient_branch)
   if changed:
     return UpdateCurrentCheckoutIfAppropriate(magic_gclient_branch)
   else:
