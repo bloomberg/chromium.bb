@@ -233,7 +233,8 @@ class ManagePasswordsBubbleView : public ManagePasswordsBubble,
 
   // Singleton instance of the Password bubble. The Password bubble can only be
   // shown on the active browser window, so there is no case in which it will be
-  // shown twice at the same time.
+  // shown twice at the same time. The instance is owned by the Bubble and will
+  // be deleted when the bubble closes.
   static ManagePasswordsBubbleView* manage_passwords_bubble_;
 
   ManagePasswordsIconView* anchor_view_;

@@ -27,7 +27,7 @@ class ManagePasswordsBubble {
   // ManagePasswordsBubbleModel; this class neither takes ownership of the
   // object nor stores the pointer.
   ManagePasswordsBubble(content::WebContents* contents, DisplayReason reason);
-  ~ManagePasswordsBubble();
+  virtual ~ManagePasswordsBubble();
 
   ManagePasswordsBubbleModel* model() { return model_.get(); }
   const ManagePasswordsBubbleModel* model() const { return model_.get(); }

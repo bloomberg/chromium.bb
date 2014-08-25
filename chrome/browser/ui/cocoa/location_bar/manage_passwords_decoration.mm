@@ -7,6 +7,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/ui/cocoa/omnibox/omnibox_view_mac.h"
+#include "chrome/browser/ui/cocoa/passwords/manage_passwords_bubble_cocoa.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
 // ManagePasswordsIconCocoa
@@ -58,7 +59,8 @@ void ManagePasswordsDecoration::UpdateVisibleUI() {
   if (icon_->state() == password_manager::ui::INACTIVE_STATE) {
     SetVisible(false);
     SetImage(nil);
-    // TODO(dconnelly): Hide the bubble once it is implemented.
+    if (ManagePasswordsBubbleCocoa::instance())
+      ManagePasswordsBubbleCocoa::instance()->Close();
     return;
   }
   SetVisible(true);

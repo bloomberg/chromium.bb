@@ -1624,6 +1624,7 @@
         'browser/ui/cocoa/one_click_signin_bubble_controller_unittest.mm',
         'browser/ui/cocoa/panels/panel_cocoa_unittest.mm',
         'browser/ui/cocoa/passwords/manage_password_item_view_controller_unittest.mm',
+        'browser/ui/cocoa/passwords/manage_passwords_bubble_cocoa_unittest.mm',
         'browser/ui/cocoa/passwords/manage_passwords_bubble_controller_unittest.mm',
         'browser/ui/cocoa/passwords/manage_passwords_bubble_pending_view_controller_unittest.mm',
         'browser/ui/cocoa/passwords/manage_passwords_controller_test.h',
