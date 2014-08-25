@@ -1156,16 +1156,15 @@ function error_(message) {
  * @param {string} color Color of the text.
  */
 function print_handler_(message, textField, color) {
-  if (color == 'red' )
-    throw new Error(message);
-
   if (color == 'green' )
     message += ' success';
 
   $(textField).innerHTML += '<span style="color:' + color + ';">' + message +
                             '</span><br>'
-
   console.log(message);
+
+  if (color == 'red' )
+    throw new Error(message);
 }
 
 /**
