@@ -786,6 +786,9 @@ pixman_renderer_output_destroy(struct weston_output *output)
 	if (po->hw_buffer)
 		pixman_image_unref(po->hw_buffer);
 
+	free(po->shadow_buffer);
+
+	po->shadow_buffer = NULL;
 	po->shadow_image = NULL;
 	po->hw_buffer = NULL;
 
