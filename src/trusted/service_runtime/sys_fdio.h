@@ -29,13 +29,13 @@ int32_t NaClSysDup2(struct NaClAppThread  *natp,
 
 int32_t NaClSysRead(struct NaClAppThread  *natp,
                     int                   d,
-                    void                  *buf,
-                    size_t                count);
+                    uint32_t              buf,
+                    uint32_t              count);
 
 int32_t NaClSysWrite(struct NaClAppThread *natp,
                      int                  d,
-                     void                 *buf,
-                     size_t               count);
+                     uint32_t             buf,
+                     uint32_t             count);
 
 int32_t NaClSysLseek(struct NaClAppThread *natp,
                      int                  d,

@@ -196,8 +196,8 @@ cleanup:
 
 int32_t NaClSysRead(struct NaClAppThread  *natp,
                     int                   d,
-                    void                  *buf,
-                    size_t                count) {
+                    uint32_t              buf,
+                    uint32_t              count) {
   struct NaClApp  *nap = natp->nap;
   int32_t         retval = -NACL_ABI_EINVAL;
   ssize_t         read_result = -NACL_ABI_EINVAL;
@@ -208,9 +208,9 @@ int32_t NaClSysRead(struct NaClAppThread  *natp,
 
   NaClLog(3,
           ("Entered NaClSysRead(0x%08"NACL_PRIxPTR", "
-           "%d, 0x%08"NACL_PRIxPTR", "
-           "%"NACL_PRIuS"[0x%"NACL_PRIxS"])\n"),
-          (uintptr_t) natp, d, (uintptr_t) buf, count, count);
+           "%d, 0x%08"NACL_PRIx32", "
+           "%"NACL_PRIu32"[0x%"NACL_PRIx32"])\n"),
+          (uintptr_t) natp, d, buf, count, count);
 
   ndp = NaClAppGetDesc(nap, d);
   if (NULL == ndp) {
@@ -218,7 +218,7 @@ int32_t NaClSysRead(struct NaClAppThread  *natp,
     goto cleanup;
   }
 
-  sysaddr = NaClUserToSysAddrRange(nap, (uintptr_t) buf, count);
+  sysaddr = NaClUserToSysAddrRange(nap, buf, count);
   if (kNaClBadAddress == sysaddr) {
     NaClDescUnref(ndp);
     retval = -NACL_ABI_EFAULT;
@@ -234,14 +234,10 @@ int32_t NaClSysRead(struct NaClAppThread  *natp,
     count = INT32_MAX;
   }
 
-  NaClVmIoWillStart(nap,
-                    (uint32_t) (uintptr_t) buf,
-                    (uint32_t) (((uintptr_t) buf) + count - 1));
+  NaClVmIoWillStart(nap, buf, buf + count - 1);
   read_result = (*((struct NaClDescVtbl const *) ndp->base.vtbl)->
                  Read)(ndp, (void *) sysaddr, count);
-  NaClVmIoHasEnded(nap,
-                    (uint32_t) (uintptr_t) buf,
-                    (uint32_t) (((uintptr_t) buf) + count - 1));
+  NaClVmIoHasEnded(nap, buf, buf + count - 1);
   if (read_result > 0) {
     NaClLog(4, "read returned %"NACL_PRIdS" bytes\n", read_result);
     log_bytes = (size_t) read_result;
@@ -270,8 +266,8 @@ cleanup:
 
 int32_t NaClSysWrite(struct NaClAppThread *natp,
                      int                  d,
-                     void                 *buf,
-                     size_t               count) {
+                     uint32_t             buf,
+                     uint32_t             count) {
   struct NaClApp  *nap = natp->nap;
   int32_t         retval = -NACL_ABI_EINVAL;
   ssize_t         write_result = -NACL_ABI_EINVAL;
@@ -282,9 +278,9 @@ int32_t NaClSysWrite(struct NaClAppThread *natp,
 
   NaClLog(3,
           "Entered NaClSysWrite(0x%08"NACL_PRIxPTR", "
-          "%d, 0x%08"NACL_PRIxPTR", "
-          "%"NACL_PRIuS"[0x%"NACL_PRIxS"])\n",
-          (uintptr_t) natp, d, (uintptr_t) buf, count, count);
+          "%d, 0x%08"NACL_PRIx32", "
+          "%"NACL_PRIu32"[0x%"NACL_PRIx32"])\n",
+          (uintptr_t) natp, d, buf, count, count);
 
   ndp = NaClAppGetDesc(nap, d);
   NaClLog(4, " ndp = %"NACL_PRIxPTR"\n", (uintptr_t) ndp);
@@ -293,7 +289,7 @@ int32_t NaClSysWrite(struct NaClAppThread *natp,
     goto cleanup;
   }
 
-  sysaddr = NaClUserToSysAddrRange(nap, (uintptr_t) buf, count);
+  sysaddr = NaClUserToSysAddrRange(nap, buf, count);
   if (kNaClBadAddress == sysaddr) {
     NaClDescUnref(ndp);
     retval = -NACL_ABI_EFAULT;
@@ -311,7 +307,7 @@ int32_t NaClSysWrite(struct NaClAppThread *natp,
       ellipsis = "...";
     }
   }
-  NaClLog(8, "In NaClSysWrite(%d, %.*s%s, %"NACL_PRIuS")\n",
+  NaClLog(8, "In NaClSysWrite(%d, %.*s%s, %"NACL_PRIu32")\n",
           d, (int) log_bytes, (char *) sysaddr, ellipsis, count);
 
   /*
@@ -323,14 +319,10 @@ int32_t NaClSysWrite(struct NaClAppThread *natp,
     count = INT32_MAX;
   }
 
-  NaClVmIoWillStart(nap,
-                    (uint32_t) (uintptr_t) buf,
-                    (uint32_t) (((uintptr_t) buf) + count - 1));
+  NaClVmIoWillStart(nap, buf, buf + count - 1);
   write_result = (*((struct NaClDescVtbl const *) ndp->base.vtbl)->
                   Write)(ndp, (void *) sysaddr, count);
-  NaClVmIoHasEnded(nap,
-                   (uint32_t) (uintptr_t) buf,
-                   (uint32_t) (((uintptr_t) buf) + count - 1));
+  NaClVmIoHasEnded(nap, buf, buf + count - 1);
 
   NaClDescUnref(ndp);
 
