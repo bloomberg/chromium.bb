@@ -234,8 +234,8 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_FullscreenEvents) {
 
 // Times out on Win dbg bots: http://crbug.com/177163
 // #if defined(OS_WIN) && !defined(NDEBUG)
-// Times out on all Win bots: http://crbug.com/294431
-#if defined(OS_WIN)
+// Times out on all Win bots, flaky on MSan bots: http://crbug.com/294431
+#if defined(OS_WIN) || defined(MEMORY_SANITIZER)
 #define MAYBE_GrantForChromePages DISABLED_GrantForChromePages
 #else
 #define MAYBE_GrantForChromePages GrantForChromePages
