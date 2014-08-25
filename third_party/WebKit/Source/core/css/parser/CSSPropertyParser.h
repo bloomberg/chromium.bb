@@ -283,19 +283,14 @@ private:
     bool parseFontFaceSrcURI(CSSValueList*);
     bool parseFontFaceSrcLocal(CSSValueList*);
 
-    enum PropertyType {
-        PropertyExplicit,
-        PropertyImplicit
-    };
-
     class ImplicitScope {
         STACK_ALLOCATED();
         WTF_MAKE_NONCOPYABLE(ImplicitScope);
     public:
-        ImplicitScope(CSSPropertyParser* parser, PropertyType propertyType)
+        ImplicitScope(CSSPropertyParser* parser)
             : m_parser(parser)
         {
-            m_parser->m_implicitShorthand = propertyType == CSSPropertyParser::PropertyImplicit;
+            m_parser->m_implicitShorthand = true;
         }
 
         ~ImplicitScope()

@@ -1985,7 +1985,7 @@ bool CSSPropertyParser::parseShorthand(CSSPropertyID propId, const StyleProperty
         return true;
 
     // Fill in any remaining properties with the initial value.
-    ImplicitScope implicitScope(this, PropertyImplicit);
+    ImplicitScope implicitScope(this);
     const StylePropertyShorthand* const* const propertiesForInitialization = shorthand.propertiesForInitialization();
     for (unsigned i = 0; i < shorthand.length(); ++i) {
         if (propertyFound[i])
@@ -2022,7 +2022,7 @@ bool CSSPropertyParser::parse4Values(CSSPropertyID propId, const CSSPropertyID *
             if (!parseValue(properties[0], important))
                 return false;
             CSSValue* value = m_parsedProperties.last().value();
-            ImplicitScope implicitScope(this, PropertyImplicit);
+            ImplicitScope implicitScope(this);
             addProperty(properties[1], value, important);
             addProperty(properties[2], value, important);
             addProperty(properties[3], value, important);
@@ -2032,7 +2032,7 @@ bool CSSPropertyParser::parse4Values(CSSPropertyID propId, const CSSPropertyID *
             if (!parseValue(properties[0], important) || !parseValue(properties[1], important))
                 return false;
             CSSValue* value = m_parsedProperties[m_parsedProperties.size() - 2].value();
-            ImplicitScope implicitScope(this, PropertyImplicit);
+            ImplicitScope implicitScope(this);
             addProperty(properties[2], value, important);
             value = m_parsedProperties[m_parsedProperties.size() - 2].value();
             addProperty(properties[3], value, important);
@@ -2042,7 +2042,7 @@ bool CSSPropertyParser::parse4Values(CSSPropertyID propId, const CSSPropertyID *
             if (!parseValue(properties[0], important) || !parseValue(properties[1], important) || !parseValue(properties[2], important))
                 return false;
             CSSValue* value = m_parsedProperties[m_parsedProperties.size() - 2].value();
-            ImplicitScope implicitScope(this, PropertyImplicit);
+            ImplicitScope implicitScope(this);
             addProperty(properties[3], value, important);
             break;
         }
@@ -6231,7 +6231,7 @@ bool CSSPropertyParser::parseBorderRadius(CSSPropertyID propId, bool important)
     } else
         completeBorderRadii(radii[1]);
 
-    ImplicitScope implicitScope(this, PropertyImplicit);
+    ImplicitScope implicitScope(this);
     addProperty(CSSPropertyBorderTopLeftRadius, createPrimitiveValuePair(radii[0][0].release(), radii[1][0].release()), important);
     addProperty(CSSPropertyBorderTopRightRadius, createPrimitiveValuePair(radii[0][1].release(), radii[1][1].release()), important);
     addProperty(CSSPropertyBorderBottomRightRadius, createPrimitiveValuePair(radii[0][2].release(), radii[1][2].release()), important);
@@ -8193,7 +8193,7 @@ bool CSSPropertyParser::parseSVGValue(CSSPropertyID propId, bool important)
     /* shorthand properties */
     case CSSPropertyMarker: {
         ShorthandScope scope(this, propId);
-        CSSPropertyParser::ImplicitScope implicitScope(this, PropertyImplicit);
+        CSSPropertyParser::ImplicitScope implicitScope(this);
         if (!parseValue(CSSPropertyMarkerStart, important))
             return false;
         if (m_valueList->current()) {
