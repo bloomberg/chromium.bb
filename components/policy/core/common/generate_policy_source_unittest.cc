@@ -20,6 +20,7 @@ namespace policy {
 
 namespace {
 
+#if defined(OS_CHROMEOS)
 // Checks if two schemas are the same or not. Note that this function doesn't
 // consider restrictions on integers and strings nor pattern properties.
 bool IsSameSchema(Schema a, Schema b) {
@@ -49,6 +50,7 @@ bool IsSameSchema(Schema a, Schema b) {
     return false;
   return IsSameSchema(a.GetAdditionalProperties(), b.GetAdditionalProperties());
 }
+#endif
 
 }  // namespace
 
