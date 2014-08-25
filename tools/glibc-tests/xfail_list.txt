@@ -189,6 +189,8 @@ posix/tst-regex
 posix/tst-regexloc
 posix/tst-rxspencer
 posix/tst-spawn
+posix/tst-truncate
+posix/tst-truncate64
 posix/tst-vfork3
 posix/wordexp-test
 resource/bug-ulimit1
