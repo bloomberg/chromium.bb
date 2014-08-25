@@ -278,8 +278,7 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     # device_management_backend.proto.
     if (self.GetUniqueParam('devicetype') != '2' or
         self.GetUniqueParam('apptype') != 'Chrome' or
-        len(self.GetUniqueParam('deviceid')) >= 64 or
-        len(self.GetUniqueParam('agent')) >= 64):
+        len(self.GetUniqueParam('deviceid')) >= 64):
       return (400, 'Invalid request parameter')
     if request_type == 'register':
       response = self.ProcessRegister(rmsg.register_request)

@@ -325,10 +325,10 @@ message PolicyFetchResponse {
   // public key on the client). If DMServer is unable to find matching key, it
   // will return an error instead of policy data.
   // In case hash was not specified, DMServer will leave verification signature
-  // field empty (legacy behavior).  
+  // field empty (legacy behavior).
   // In addition to the checks between new_public_key
   // and new_public_key_signature described above, Chrome also verifies
-  // new_public_key with the embedded public key and 
+  // new_public_key with the embedded public key and
   // new_public_key_verification_signature.
   optional bytes new_public_key_verification_signature = 7;
 }
@@ -643,7 +643,7 @@ message DeviceStateRetrievalResponse {
 //   * devicetype: MUST BE "1" for Android or "2" for Chrome OS.
 //   * apptype: MUST BE Android or Chrome.
 //   * deviceid: MUST BE no more than 64-char in [\x21-\x7E].
-//   * agent: MUST BE no more than 64-char long.
+//   * agent: MUST BE a string of characters.
 // * HTTP Authorization header MUST be in the following formats:
 //   * For register and ping requests
 //     Authorization: GoogleLogin auth=<auth cookie for Mobile Sync>
