@@ -19,7 +19,7 @@ class Infra(recipe_util.Recipe):
       'url'      : 'https://chromium.googlesource.com/infra/%s%s.git' % (
         path_infix + '/' if path_infix else '', name
       ),
-      'deps_file': 'DEPS',
+      'deps_file': '.DEPS.git',
       'managed'  : False,
     }
     spec = {
