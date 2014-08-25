@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<body onload="start()">
+<p>Load a video with an infinite duration. Start playback and ensure
+video.currentTime &lt; video.buffered.end(0) upon first timeupdate.</p>
+<video></video>
+<script src="video-test.js"></script>
+<script src="media-file.js"></script>
+<script>
+    waitForEventOnce('timeupdate', function() {
+        video.pause();
+
+        testExpected('video.duration', Infinity, '==');
+        testExpected('video.buffered.start(0)', 0, '>=');
+
+        // 10 seconds chosen arbitrarily as it's larger than the duration, but
+        // small enough to test for overflow of arithmetic performed on the
+        // infinite duration.
+        testExpected('video.buffered.end(0)', 10, '<');
+        test('video.currentTime <= video.buffered.end(0)');
+        endTest();
+    });
+
+    waitForEventOnce('loadeddata', function() {
+        testExpected('video.buffered.length', 1, '==');
+        testExpected('video.buffered.start(0)', 0, '>=');
+        testExpected('video.buffered.end(0)', Infinity, '!=');
+        testExpected('video.currentTime', 0, '==');
+        testExpected('video.duration', Infinity, '==');
+        video.play();
+    });
+
+    function start() {
+        video.src = 'resources/test-live.webm';
+    }
+</script>
+</body>
+</html>
