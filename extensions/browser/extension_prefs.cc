@@ -1995,6 +1995,12 @@ void ExtensionPrefs::RegisterProfilePrefs(
       kCorruptedDisableCount,
       0,  // default value
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+
+#if !defined(OS_MACOSX)
+  registry->RegisterBooleanPref(
+      pref_names::kAppFullscreenAllowed, true,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+#endif
 }
 
 template <class ExtensionIdContainer>

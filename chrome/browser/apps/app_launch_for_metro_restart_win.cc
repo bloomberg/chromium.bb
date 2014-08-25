@@ -5,7 +5,6 @@
 #include "chrome/browser/apps/app_launch_for_metro_restart_win.h"
 
 #include "apps/launcher.h"
-#include "apps/pref_names.h"
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/message_loop/message_loop.h"

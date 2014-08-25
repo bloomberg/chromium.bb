@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "apps/pref_names.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
