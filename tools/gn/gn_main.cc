@@ -13,9 +13,9 @@
 // Only the GN-generated build makes this header for now.
 // TODO(brettw) consider adding this if we need it in GYP.
 #if defined(GN_BUILD)
-#include "build/util/last_change.h"
+#include "tools/gn/last_commit_position.h"
 #else
-#define LAST_CHANGE "UNKNOWN"
+#define LAST_COMMIT_POSITION "UNKNOWN"
 #endif
 
 namespace {
@@ -50,7 +50,7 @@ int main(int argc, char** argv) {
     command = commands::kHelp;
   } else if (cmdline.HasSwitch("version")) {
     // Make "--version" print the version and exit.
-    OutputString(std::string(LAST_CHANGE) + "\n");
+    OutputString(std::string(LAST_COMMIT_POSITION) + "\n");
     exit(0);
   } else if (args.empty()) {
     // No command, print error and exit.

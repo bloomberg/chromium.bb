@@ -2,35 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# This target generates a "last_change.h" header file in the generated files
-# directory that contains a define of the last revision of the source tree
-# of the form:
-#  #define LAST_CHANGE "123456"
-#
-# The version is a string rather than an integer for extra flexibility (for
-# example, we may require git hashes in the future).
-#
-# All you need to do is depend on this target, and then from your source code:
-#  #include "build/util/last_change.h"
-action("last_change") {
-  script = "lastchange.py"
-
-  # Rerun the script any time this file changes.
-  inputs = [ "//build/util/LASTCHANGE" ]
-
-  output_header = "$target_gen_dir/last_change.h"
-  outputs = [ output_header ]
-
-  build_relative_src = rebase_path("//", root_build_dir)
-  build_relative_outputs = rebase_path(output_header, root_build_dir)
-
-  args = [
-    "--source-dir=$build_relative_src",
-    "--header=$build_relative_outputs",
-    "--version-macro=LAST_CHANGE",
-  ]
-}
-
 action("webkit_version") {
   script = "version.py"
 

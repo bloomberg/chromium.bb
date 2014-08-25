@@ -59,11 +59,14 @@ test("ui_unittests") {
     ]
 
     if (!use_x11) {
-      sources -= [
-        "base/ime/chromeos/character_composer_unittest.cc",
-        "base/ime/input_method_chromeos_unittest.cc",
-        "base/ime/composition_text_util_pango_unittest.cc",
-      ]
+      if (is_chromeos) {
+        # These were already removed in the chromeos case.
+        sources -= [
+          "base/ime/chromeos/character_composer_unittest.cc",
+          "base/ime/input_method_chromeos_unittest.cc",
+        ]
+      }
+      sources -= [ "base/ime/composition_text_util_pango_unittest.cc" ]
     }
   }
 
