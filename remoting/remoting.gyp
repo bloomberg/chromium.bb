@@ -177,6 +177,7 @@
           'webapp/host_list.js',
           'webapp/host_setup_dialog.js',
           'webapp/host_table_entry.js',
+          'webapp/options_menu.js',
           'webapp/manifest.json.jinja2',
           'webapp/paired_client_manager.js',
           'webapp/remoting.js',
