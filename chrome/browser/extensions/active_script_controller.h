@@ -58,13 +58,15 @@ class ActiveScriptController : public LocationBarController::ActionProvider,
   // |extension| permission to always run script injections on the origin.
   void AlwaysRunOnVisibleOrigin(const Extension* extension);
 
+  // Notifies the ActiveScriptController that the action for |extension| has
+  // been clicked, running any pending tasks that were previously shelved.
+  void OnClicked(const Extension* extension);
+
   // Returns true if there is an active script injection action for |extension|.
   bool HasActiveScriptAction(const Extension* extension);
 
   // LocationBarControllerProvider implementation.
   virtual ExtensionAction* GetActionForExtension(
-      const Extension* extension) OVERRIDE;
-  virtual ExtensionAction::ShowAction OnClicked(
       const Extension* extension) OVERRIDE;
   virtual void OnNavigated() OVERRIDE;
   virtual void OnExtensionUnloaded(const Extension* extension) OVERRIDE;
@@ -98,7 +100,6 @@ class ActiveScriptController : public LocationBarController::ActionProvider,
   void RequestScriptInjection(const Extension* extension,
                               const base::Closure& callback);
 
-  // Register a request for a script injection, to be executed by running
   // Runs any pending injections for the corresponding extension.
   void RunPendingForExtension(const Extension* extension);
 

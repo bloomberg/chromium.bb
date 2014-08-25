@@ -9,16 +9,17 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
+#include "chrome/browser/extensions/active_script_controller.h"
 #include "chrome/browser/extensions/api/extension_action/extension_page_actions_api_constants.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/extension_toolbar_model.h"
-#include "chrome/browser/extensions/location_bar_controller.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "chrome/common/render_messages.h"
 #include "content/public/browser/navigation_entry.h"
@@ -310,85 +311,57 @@ void ExtensionActionAPI::SetBrowserActionVisibility(
       content::Details<const std::string>(&extension_id));
 }
 
-// static
-void ExtensionActionAPI::BrowserActionExecuted(
-    content::BrowserContext* context,
-    const ExtensionAction& browser_action,
-    WebContents* web_contents) {
-  ExtensionActionExecuted(context, browser_action, web_contents);
-}
-
-// static
-void ExtensionActionAPI::PageActionExecuted(content::BrowserContext* context,
-                                            const ExtensionAction& page_action,
-                                            int tab_id,
-                                            const std::string& url,
-                                            int button) {
-  WebContents* web_contents = NULL;
-  if (!ExtensionTabUtil::GetTabById(
-           tab_id,
-           Profile::FromBrowserContext(context),
-           context->IsOffTheRecord(),
-           NULL,
-           NULL,
-           &web_contents,
-           NULL)) {
-    return;
-  }
-  ExtensionActionExecuted(context, page_action, web_contents);
-}
-
-// static
-void ExtensionActionAPI::DispatchEventToExtension(
-    content::BrowserContext* context,
-    const std::string& extension_id,
-    const std::string& event_name,
-    scoped_ptr<base::ListValue> event_args) {
-  if (!EventRouter::Get(context))
-    return;
-
-  scoped_ptr<Event> event(new Event(event_name, event_args.Pass()));
-  event->restrict_to_browser_context = context;
-  event->user_gesture = EventRouter::USER_GESTURE_ENABLED;
-  EventRouter::Get(context)
-      ->DispatchEventToExtension(extension_id, event.Pass());
-}
-
-// static
-void ExtensionActionAPI::ExtensionActionExecuted(
-    content::BrowserContext* context,
-    const ExtensionAction& extension_action,
-    WebContents* web_contents) {
-  const char* event_name = NULL;
-  switch (extension_action.action_type()) {
-    case ActionInfo::TYPE_BROWSER:
-      event_name = "browserAction.onClicked";
-      break;
-    case ActionInfo::TYPE_PAGE:
-      event_name = "pageAction.onClicked";
-      break;
-    case ActionInfo::TYPE_SYSTEM_INDICATOR:
-      // The System Indicator handles its own clicks.
-      break;
-  }
-
-  if (event_name) {
-    scoped_ptr<base::ListValue> args(new base::ListValue());
-    base::DictionaryValue* tab_value =
-        ExtensionTabUtil::CreateTabValue(web_contents);
-    args->Append(tab_value);
-
-    DispatchEventToExtension(
-        context, extension_action.extension_id(), event_name, args.Pass());
-  }
-}
-
 void ExtensionActionAPI::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
 }
 
 void ExtensionActionAPI::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
+}
+
+ExtensionAction::ShowAction ExtensionActionAPI::ExecuteExtensionAction(
+    const Extension* extension,
+    Browser* browser,
+    bool grant_active_tab_permissions) {
+  content::WebContents* web_contents =
+      browser->tab_strip_model()->GetActiveWebContents();
+  if (!web_contents)
+    return ExtensionAction::ACTION_NONE;
+
+  int tab_id = SessionTabHelper::IdForTab(web_contents);
+
+  ExtensionActionManager* action_manager =
+      ExtensionActionManager::Get(static_cast<Profile*>(browser_context_));
+  // TODO(devlin): Make a ExtensionActionManager::GetExtensionAction method.
+  ExtensionAction* extension_action =
+      action_manager->GetBrowserAction(*extension);
+  if (!extension_action)
+    extension_action = action_manager->GetPageAction(*extension);
+
+  // Anything that calls this should have a page or browser action.
+  DCHECK(extension_action);
+  if (!extension_action->GetIsVisible(tab_id))
+    return ExtensionAction::ACTION_NONE;
+
+  // Grant active tab if appropriate.
+  if (grant_active_tab_permissions) {
+    TabHelper::FromWebContents(web_contents)->active_tab_permission_granter()->
+        GrantIfRequested(extension);
+  }
+
+  // Notify ActiveScriptController that the action was clicked, if appropriate.
+  ActiveScriptController* active_script_controller =
+      ActiveScriptController::GetForWebContents(web_contents);
+  if (active_script_controller &&
+      active_script_controller->GetActionForExtension(extension)) {
+    active_script_controller->OnClicked(extension);
+  }
+
+  if (extension_action->HasPopup(tab_id))
+    return ExtensionAction::ACTION_SHOW_POPUP;
+
+  ExtensionActionExecuted(*extension_action, web_contents);
+  return ExtensionAction::ACTION_NONE;
 }
 
 void ExtensionActionAPI::NotifyChange(ExtensionAction* extension_action,
@@ -420,6 +393,51 @@ void ExtensionActionAPI::ClearAllValuesForTab(
       extension_action->ClearAllValuesForTab(tab_id);
       NotifyChange(extension_action, web_contents, browser_context);
     }
+  }
+}
+
+void ExtensionActionAPI::DispatchEventToExtension(
+    content::BrowserContext* context,
+    const std::string& extension_id,
+    const std::string& event_name,
+    scoped_ptr<base::ListValue> event_args) {
+  if (!EventRouter::Get(context))
+    return;
+
+  scoped_ptr<Event> event(new Event(event_name, event_args.Pass()));
+  event->restrict_to_browser_context = context;
+  event->user_gesture = EventRouter::USER_GESTURE_ENABLED;
+  EventRouter::Get(context)
+      ->DispatchEventToExtension(extension_id, event.Pass());
+}
+
+void ExtensionActionAPI::ExtensionActionExecuted(
+    const ExtensionAction& extension_action,
+    WebContents* web_contents) {
+  const char* event_name = NULL;
+  switch (extension_action.action_type()) {
+    case ActionInfo::TYPE_BROWSER:
+      event_name = "browserAction.onClicked";
+      break;
+    case ActionInfo::TYPE_PAGE:
+      event_name = "pageAction.onClicked";
+      break;
+    case ActionInfo::TYPE_SYSTEM_INDICATOR:
+      // The System Indicator handles its own clicks.
+      break;
+  }
+
+  if (event_name) {
+    scoped_ptr<base::ListValue> args(new base::ListValue());
+    base::DictionaryValue* tab_value =
+        ExtensionTabUtil::CreateTabValue(web_contents);
+    args->Append(tab_value);
+
+    DispatchEventToExtension(
+        web_contents->GetBrowserContext(),
+        extension_action.extension_id(),
+        event_name,
+        args.Pass());
   }
 }
 
@@ -491,9 +509,8 @@ void ExtensionActionStorageManager::WriteToStorage(
 
 void ExtensionActionStorageManager::ReadFromStorage(
     const std::string& extension_id, scoped_ptr<base::Value> value) {
-  const Extension* extension =
-      ExtensionSystem::Get(profile_)->extension_service()->
-      extensions()->GetByID(extension_id);
+  const Extension* extension = ExtensionRegistry::Get(profile_)->
+      enabled_extensions().GetByID(extension_id);
   if (!extension)
     return;
 

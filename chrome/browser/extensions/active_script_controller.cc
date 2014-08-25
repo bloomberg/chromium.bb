@@ -139,6 +139,11 @@ void ActiveScriptController::AlwaysRunOnVisibleOrigin(
   OnClicked(extension);
 }
 
+void ActiveScriptController::OnClicked(const Extension* extension) {
+  DCHECK(ContainsKey(pending_requests_, extension->id()));
+  RunPendingForExtension(extension);
+}
+
 bool ActiveScriptController::HasActiveScriptAction(const Extension* extension) {
   return enabled_ && pending_requests_.count(extension->id()) > 0;
 }
@@ -160,13 +165,6 @@ ExtensionAction* ActiveScriptController::GetActionForExtension(
 
   active_script_actions_[extension->id()] = action;
   return action.get();
-}
-
-ExtensionAction::ShowAction ActiveScriptController::OnClicked(
-    const Extension* extension) {
-  DCHECK(ContainsKey(pending_requests_, extension->id()));
-  RunPendingForExtension(extension);
-  return ExtensionAction::ACTION_NONE;
 }
 
 void ActiveScriptController::OnNavigated() {

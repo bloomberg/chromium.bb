@@ -89,18 +89,6 @@ class ExtensionToolbarModel : public content::NotificationObserver,
   // Moves the given |extension|'s icon to the given |index|.
   void MoveExtensionIcon(const Extension* extension, int index);
 
-  // Executes the browser action for an extension and returns the action that
-  // the UI should perform in response.
-  // |popup_url_out| will be set if the extension should show a popup, with
-  // the URL that should be shown, if non-NULL. |should_grant| controls whether
-  // the extension should be granted page tab permissions, which is what happens
-  // when the user clicks the browser action, but not, for example, when the
-  // showPopup API is called.
-  ExtensionAction::ShowAction ExecuteBrowserAction(const Extension* extension,
-                                                   Browser* browser,
-                                                   GURL* popup_url_out,
-                                                   bool should_grant);
-
   // Sets the number of extension icons that should be visible.
   // If count == size(), this will set the visible icon count to -1, meaning
   // "show all actions".

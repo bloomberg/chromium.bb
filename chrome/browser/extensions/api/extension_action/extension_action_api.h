@@ -66,18 +66,6 @@ class ExtensionActionAPI : public BrowserContextKeyedAPI {
                                          const std::string& extension_id,
                                          bool visible);
 
-  // Fires the onClicked event for page_action.
-  static void PageActionExecuted(content::BrowserContext* context,
-                                 const ExtensionAction& page_action,
-                                 int tab_id,
-                                 const std::string& url,
-                                 int button);
-
-  // Fires the onClicked event for browser_action.
-  static void BrowserActionExecuted(content::BrowserContext* context,
-                                    const ExtensionAction& browser_action,
-                                    content::WebContents* web_contents);
-
   // BrowserContextKeyedAPI implementation.
   static BrowserContextKeyedAPIFactory<ExtensionActionAPI>*
       GetFactoryInstance();
@@ -85,6 +73,15 @@ class ExtensionActionAPI : public BrowserContextKeyedAPI {
   // Add or remove observers.
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
+
+  // Executes the action of the given |extension| on the |browser|'s active
+  // web contents. If |grant_tab_permissions| is true, this will also grant
+  // activeTab to the extension (so this should only be done if this is through
+  // a direct user action). Returns the action that should be taken.
+  ExtensionAction::ShowAction ExecuteExtensionAction(
+      const Extension* extension,
+      Browser* browser,
+      bool grant_active_tab_permissions);
 
   void NotifyChange(ExtensionAction* extension_action,
                     content::WebContents* web_contents,
@@ -97,17 +94,16 @@ class ExtensionActionAPI : public BrowserContextKeyedAPI {
  private:
   friend class BrowserContextKeyedAPIFactory<ExtensionActionAPI>;
 
-  // The DispatchEvent methods forward events to the |profile|'s event router.
-  static void DispatchEventToExtension(content::BrowserContext* context,
-                                       const std::string& extension_id,
-                                       const std::string& event_name,
-                                       scoped_ptr<base::ListValue> event_args);
+  // The DispatchEvent methods forward events to the |context|'s event router.
+  void DispatchEventToExtension(content::BrowserContext* context,
+                                const std::string& extension_id,
+                                const std::string& event_name,
+                                scoped_ptr<base::ListValue> event_args);
 
   // Called when either a browser or page action is executed. Figures out which
   // event to send based on what the extension wants.
-  static void ExtensionActionExecuted(content::BrowserContext* context,
-                                      const ExtensionAction& extension_action,
-                                      content::WebContents* web_contents);
+  void ExtensionActionExecuted(const ExtensionAction& extension_action,
+                               content::WebContents* web_contents);
 
   // BrowserContextKeyedAPI implementation.
   virtual void Shutdown() OVERRIDE;

@@ -6,10 +6,8 @@
 
 #include "base/logging.h"
 #include "chrome/browser/extensions/api/commands/command_service.h"
+#include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/extension_action.h"
-#include "chrome/browser/extensions/extension_toolbar_model.h"
-#include "chrome/browser/extensions/location_bar_controller.h"
-#include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
@@ -17,7 +15,6 @@
 #include "chrome/browser/ui/views/extensions/extension_action_view_delegate.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/manifest_constants.h"
 #include "ui/views/controls/menu/menu_controller.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/view.h"
@@ -71,36 +68,15 @@ void ExtensionActionViewController::ExecuteActionByUser() {
 
 bool ExtensionActionViewController::ExecuteAction(
     ExtensionPopup::ShowAction show_action, bool grant_tab_permissions) {
-  GURL popup_url;
-  bool show_popup = false;
-  if (extension_action_->action_type() == ActionInfo::TYPE_BROWSER) {
-    extensions::ExtensionToolbarModel* toolbar_model =
-        extensions::ExtensionToolbarModel::Get(browser_->profile());
-    show_popup = toolbar_model->ExecuteBrowserAction(
-                     extension_, browser_, &popup_url, grant_tab_permissions) ==
-                 ExtensionAction::ACTION_SHOW_POPUP;
-  } else {  // PageAction
-    content::WebContents* web_contents = delegate_->GetCurrentWebContents();
-    if (!web_contents)
-      return false;
-    extensions::LocationBarController* controller =
-        extensions::TabHelper::FromWebContents(web_contents)->
-            location_bar_controller();
-    switch (controller->OnClicked(extension_action_)) {
-      case ExtensionAction::ACTION_NONE:
-        break;
-      case ExtensionAction::ACTION_SHOW_POPUP:
-        popup_url = extension_action_->GetPopupUrl(GetCurrentTabId());
-        show_popup = true;
-        break;
+  if (extensions::ExtensionActionAPI::Get(browser_->profile())->
+          ExecuteExtensionAction(extension_, browser_, grant_tab_permissions) ==
+      ExtensionAction::ACTION_SHOW_POPUP) {
+    GURL popup_url = extension_action_->GetPopupUrl(GetCurrentTabId());
+    if (ShowPopupWithUrl(show_action, popup_url)) {
+      delegate_->OnPopupShown(grant_tab_permissions);
+      return true;
     }
   }
-
-  if (show_popup && ShowPopupWithUrl(show_action, popup_url)) {
-    delegate_->OnPopupShown(grant_tab_permissions);
-    return true;
-  }
-
   return false;
 }
 

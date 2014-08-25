@@ -20,6 +20,10 @@ namespace content {
 class WebContents;
 }
 
+namespace extensions {
+class Extension;
+}
+
 // PageActionDecoration is used to display the icon for a given Page
 // Action and notify the extension when the icon is clicked.
 
@@ -67,6 +71,9 @@ class PageActionDecoration : public ImageDecoration,
   // Show the popup in the frame, with the given URL.
   void ShowPopup(const NSRect& frame, const GURL& popup_url);
 
+  // Returns the extension associated with the page action.
+  const extensions::Extension* GetExtension();
+
   // Overridden from NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
@@ -82,7 +89,6 @@ class PageActionDecoration : public ImageDecoration,
   // owned by us, it resides in the extension of this particular
   // profile.
   ExtensionAction* page_action_;
-
 
   // The object that will be used to get the page action icon for us.
   // It may load the icon asynchronously (in which case the initial icon

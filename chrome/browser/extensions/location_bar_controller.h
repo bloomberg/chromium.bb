@@ -37,10 +37,6 @@ class LocationBarController : public content::WebContentsObserver,
     virtual ExtensionAction* GetActionForExtension(
         const Extension* extension) = 0;
 
-    // Handles a click on an extension action.
-    virtual ExtensionAction::ShowAction OnClicked(
-        const Extension* extension) = 0;
-
     // A notification that the WebContents has navigated in the main frame (and
     // not in page), so any state relating to the current page should likely be
     // reset.
@@ -58,10 +54,6 @@ class LocationBarController : public content::WebContentsObserver,
 
   // Returns the actions which should be displayed in the location bar.
   std::vector<ExtensionAction*> GetCurrentActions();
-
-  // Notifies this that an ExtensionAction has been clicked, and returns the
-  // action which should be taken in response (if any).
-  ExtensionAction::ShowAction OnClicked(const ExtensionAction* action);
 
   // Notifies the window that the actions have changed.
   static void NotifyChange(content::WebContents* web_contents);

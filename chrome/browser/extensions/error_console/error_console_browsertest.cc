@@ -9,8 +9,8 @@
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
-#include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -249,8 +249,8 @@ class ErrorConsoleBrowserTest : public ExtensionBrowserTest {
         break;
       }
       case ACTION_BROWSER_ACTION: {
-        ExtensionToolbarModel::Get(profile())->ExecuteBrowserAction(
-            *extension, browser(), NULL, true);
+        ExtensionActionAPI::Get(profile())->ExecuteExtensionAction(
+            *extension, browser(), true);
         break;
       }
       case ACTION_NEW_TAB: {

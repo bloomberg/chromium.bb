@@ -277,7 +277,7 @@ testing::AssertionResult ActiveScriptTester::Verify() {
   DCHECK(action);
 
   // Grant permission by clicking on the extension action.
-  location_bar_controller->OnClicked(action);
+  controller->OnClicked(extension_);
 
   // Now, the extension should be able to inject the script.
   inject_success_listener_->WaitUntilSatisfied();

@@ -122,40 +122,6 @@ void ExtensionToolbarModel::MoveExtensionIcon(const Extension* extension,
   UpdatePrefs();
 }
 
-ExtensionAction::ShowAction ExtensionToolbarModel::ExecuteBrowserAction(
-    const Extension* extension,
-    Browser* browser,
-    GURL* popup_url_out,
-    bool should_grant) {
-  content::WebContents* web_contents = NULL;
-  int tab_id = 0;
-  if (!ExtensionTabUtil::GetDefaultTab(browser, &web_contents, &tab_id))
-    return ExtensionAction::ACTION_NONE;
-
-  ExtensionAction* browser_action =
-      ExtensionActionManager::Get(profile_)->GetBrowserAction(*extension);
-
-  // For browser actions, visibility == enabledness.
-  if (!browser_action->GetIsVisible(tab_id))
-    return ExtensionAction::ACTION_NONE;
-
-  if (should_grant) {
-    TabHelper::FromWebContents(web_contents)
-        ->active_tab_permission_granter()
-        ->GrantIfRequested(extension);
-  }
-
-  if (browser_action->HasPopup(tab_id)) {
-    if (popup_url_out)
-      *popup_url_out = browser_action->GetPopupUrl(tab_id);
-    return ExtensionAction::ACTION_SHOW_POPUP;
-  }
-
-  ExtensionActionAPI::BrowserActionExecuted(
-      browser->profile(), *browser_action, web_contents);
-  return ExtensionAction::ACTION_NONE;
-}
-
 void ExtensionToolbarModel::SetVisibleIconCount(int count) {
   visible_icon_count_ =
       count == static_cast<int>(toolbar_items_.size()) ? -1 : count;

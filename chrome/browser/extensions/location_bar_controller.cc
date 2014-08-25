@@ -57,27 +57,6 @@ std::vector<ExtensionAction*> LocationBarController::GetCurrentActions() {
   return current_actions;
 }
 
-ExtensionAction::ShowAction LocationBarController::OnClicked(
-    const ExtensionAction* action) {
-  const Extension* extension =
-      ExtensionRegistry::Get(web_contents_->GetBrowserContext())
-          ->enabled_extensions().GetByID(action->extension_id());
-  CHECK(extension) << action->extension_id();
-
-  ExtensionAction::ShowAction page_action =
-      page_action_controller_->GetActionForExtension(extension) ?
-          page_action_controller_->OnClicked(extension) :
-          ExtensionAction::ACTION_NONE;
-  ExtensionAction::ShowAction active_script_action =
-      active_script_controller_->GetActionForExtension(extension) ?
-          active_script_controller_->OnClicked(extension) :
-          ExtensionAction::ACTION_NONE;
-
-  // PageAction response takes priority.
-  return page_action != ExtensionAction::ACTION_NONE ? page_action :
-                                                       active_script_action;
-}
-
 // static
 void LocationBarController::NotifyChange(content::WebContents* web_contents) {
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);

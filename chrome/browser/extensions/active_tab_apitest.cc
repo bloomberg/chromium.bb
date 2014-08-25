@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/logging.h"
+#include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
-#include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "extensions/common/extension.h"
@@ -26,9 +26,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_ActiveTab) {
       LoadExtension(test_data_dir_.AppendASCII("active_tab"));
   ASSERT_TRUE(extension);
 
-  ExtensionToolbarModel* toolbar_model =
-      ExtensionToolbarModel::Get(browser()->profile());
-
   // Shouldn't be initially granted based on activeTab.
   {
     ResultCatcher catcher;
@@ -42,7 +39,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_ActiveTab) {
   // Granting to the extension should give it access to page.html.
   {
     ResultCatcher catcher;
-    toolbar_model->ExecuteBrowserAction(extension, browser(), NULL, true);
+    ExtensionActionAPI::Get(browser()->profile())->ExecuteExtensionAction(
+        extension, browser(), true);
     EXPECT_TRUE(catcher.GetNextResult()) << message_;
   }
 

@@ -40,29 +40,6 @@ ExtensionAction* PageActionController::GetActionForExtension(
   return ExtensionActionManager::Get(GetProfile())->GetPageAction(*extension);
 }
 
-ExtensionAction::ShowAction PageActionController::OnClicked(
-    const Extension* extension) {
-  ExtensionAction* page_action =
-      ExtensionActionManager::Get(GetProfile())->GetPageAction(*extension);
-  CHECK(page_action);
-
-  int tab_id = SessionTabHelper::IdForTab(web_contents_);
-  TabHelper::FromWebContents(web_contents_)->
-      active_tab_permission_granter()->GrantIfRequested(extension);
-
-  if (page_action->HasPopup(tab_id))
-    return ExtensionAction::ACTION_SHOW_POPUP;
-
-  ExtensionActionAPI::PageActionExecuted(
-      web_contents_->GetBrowserContext(),
-      *page_action,
-      tab_id,
-      web_contents_->GetLastCommittedURL().spec(),
-      1 /* Button indication. We only ever pass left-click. */);
-
-  return ExtensionAction::ACTION_NONE;
-}
-
 void PageActionController::OnNavigated() {
   // Clearing extension action values is handled in TabHelper, so nothing to
   // do here.

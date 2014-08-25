@@ -759,12 +759,13 @@ class ExtensionServiceObserverBridge
 - (BOOL)browserActionClicked:(BrowserActionButton*)button
                  shouldGrant:(BOOL)shouldGrant {
   const Extension* extension = [button extension];
-  GURL popupUrl;
-  switch (toolbarModel_->ExecuteBrowserAction(extension, browser_, &popupUrl,
-                                              shouldGrant)) {
+  switch (extensions::ExtensionActionAPI::Get(profile_)->ExecuteExtensionAction(
+              extension, browser_, shouldGrant)) {
     case ExtensionAction::ACTION_NONE:
       break;
     case ExtensionAction::ACTION_SHOW_POPUP: {
+      GURL popupUrl = extensions::ExtensionActionManager::Get(profile_)->
+          GetBrowserAction(*extension)->GetPopupUrl([self currentTabId]);
       NSPoint arrowPoint = [self popupPointForBrowserAction:extension];
       [ExtensionPopupController showURL:popupUrl
                               inBrowser:browser_

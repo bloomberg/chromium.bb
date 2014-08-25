@@ -58,10 +58,8 @@ IN_PROC_BROWSER_TEST_F(PageActionApiTest, Basic) {
   {
     // Simulate the page action being clicked.
     ResultCatcher catcher;
-    int tab_id = ExtensionTabUtil::GetTabId(
-        browser()->tab_strip_model()->GetActiveWebContents());
-    ExtensionActionAPI::PageActionExecuted(
-        browser()->profile(), *action, tab_id, std::string(), 0);
+    ExtensionActionAPI::Get(browser()->profile())->ExecuteExtensionAction(
+        extension, browser(), true);
     EXPECT_TRUE(catcher.GetNextResult());
   }
 
@@ -103,8 +101,8 @@ IN_PROC_BROWSER_TEST_F(PageActionApiTest, AddPopup) {
   // install a page action popup.
   {
     ResultCatcher catcher;
-    ExtensionActionAPI::PageActionExecuted(
-        browser()->profile(), *page_action, tab_id, std::string(), 1);
+    ExtensionActionAPI::Get(browser()->profile())->ExecuteExtensionAction(
+        extension, browser(), true);
     ASSERT_TRUE(catcher.GetNextResult());
   }
 
@@ -215,22 +213,25 @@ IN_PROC_BROWSER_TEST_F(PageActionApiTest, TestTriggerPageAction) {
   chrome::NewTab(browser());
   browser()->tab_strip_model()->ActivateTabAt(0, true);
 
+  // Give the extension time to show the page action on the tab.
+  WaitForPageActionVisibilityChangeTo(1);
+
   ExtensionAction* page_action = GetPageAction(*extension);
   ASSERT_TRUE(page_action);
+
+  WebContents* tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(tab);
+
+  EXPECT_TRUE(page_action->GetIsVisible(ExtensionTabUtil::GetTabId(tab)));
 
   {
     // Simulate the page action being clicked.
     ResultCatcher catcher;
-    int tab_id = ExtensionTabUtil::GetTabId(
-        browser()->tab_strip_model()->GetActiveWebContents());
-    ExtensionActionAPI::PageActionExecuted(
-        browser()->profile(), *page_action, tab_id, std::string(), 0);
+    ExtensionActionAPI::Get(browser()->profile())->ExecuteExtensionAction(
+        extension, browser(), true);
     EXPECT_TRUE(catcher.GetNextResult());
   }
-
-  WebContents* tab =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  EXPECT_TRUE(tab != NULL);
 
   // Verify that the browser action turned the background color red.
   const std::string script =

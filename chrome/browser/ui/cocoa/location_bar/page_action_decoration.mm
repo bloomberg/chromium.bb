@@ -8,10 +8,9 @@
 
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
-#include "chrome/browser/extensions/location_bar_controller.h"
-#include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -32,7 +31,6 @@
 
 using content::WebContents;
 using extensions::Extension;
-using extensions::LocationBarController;
 
 namespace {
 
@@ -103,11 +101,8 @@ bool PageActionDecoration::ActivatePageAction(NSRect frame) {
     return true;
   }
 
-  LocationBarController* controller =
-      extensions::TabHelper::FromWebContents(web_contents)->
-          location_bar_controller();
-
-  switch (controller->OnClicked(page_action_)) {
+  switch (extensions::ExtensionActionAPI::Get(browser_->profile())->
+              ExecuteExtensionAction(GetExtension(), browser_, true)) {
     case ExtensionAction::ACTION_NONE:
       break;
 
@@ -186,10 +181,7 @@ NSPoint PageActionDecoration::GetBubblePointInFrame(NSRect frame) {
 }
 
 NSMenu* PageActionDecoration::GetMenu() {
-  const Extension* extension = extensions::ExtensionRegistry::Get(
-      browser_->profile())->enabled_extensions().GetByID(
-          page_action_->extension_id());
-  DCHECK(extension);
+  const Extension* extension = GetExtension();
   if (!extension->ShowConfigureContextMenus())
     return nil;
 
@@ -215,6 +207,14 @@ void PageActionDecoration::ShowPopup(const NSRect& frame,
                          anchoredAt:anchor
                       arrowLocation:info_bubble::kTopRight
                             devMode:NO];
+}
+
+const Extension* PageActionDecoration::GetExtension() {
+  const Extension* extension = extensions::ExtensionRegistry::Get(
+      browser_->profile())->enabled_extensions().GetByID(
+          page_action_->extension_id());
+  DCHECK(extension);
+  return extension;
 }
 
 void PageActionDecoration::Observe(
