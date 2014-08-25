@@ -152,11 +152,10 @@ CanvasRenderingContext* HTMLCanvasElement::getContext(const String& type, Canvas
     // before creating a new 2D context. Vice versa when requesting a WebGL canvas. Requesting a
     // context with any other type string will destroy any existing context.
     enum ContextType {
-        Context2d,
-        ContextWebkit3d,
-        ContextExperimentalWebgl,
-        ContextWebgl,
-        // Only add new items to the end and keep the order of existing items.
+        // Do not change assigned numbers of existing items: add new features to the end of the list.
+        Context2d = 0,
+        ContextExperimentalWebgl = 2,
+        ContextWebgl = 3,
         ContextTypeCount,
     };
 
