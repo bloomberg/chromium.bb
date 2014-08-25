@@ -4,7 +4,9 @@
 
 #include "mojo/examples/apptest/example_service_application.h"
 
+#include "mojo/public/c/system/main.h"
 #include "mojo/public/cpp/application/application_connection.h"
+#include "mojo/public/cpp/application/application_runner.h"
 
 namespace mojo {
 
@@ -18,9 +20,9 @@ bool ExampleServiceApplication::ConfigureIncomingConnection(
   return true;
 }
 
-// static
-ApplicationDelegate* ApplicationDelegate::Create() {
-  return new ExampleServiceApplication();
-}
-
 }  // namespace mojo
+
+MojoResult MojoMain(MojoHandle shell_handle) {
+  mojo::ApplicationRunner runner(new mojo::ExampleServiceApplication());
+  return runner.Run(shell_handle);
+}
