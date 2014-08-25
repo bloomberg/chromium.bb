@@ -622,13 +622,13 @@ class DieSystemExit(SystemExit):
   """Custom Exception used so we can intercept this if necessary."""
 
 
-def Die(message, *args):
+def Die(message, *args, **kwargs):
   """Emits an error message with a stack trace and halts execution.
 
   Args:
     message: The message to be emitted before exiting.
   """
-  logger.error(message, *args)
+  logger.error(message, *args, **kwargs)
   raise DieSystemExit(1)
 
 
