@@ -24,6 +24,7 @@ TEST(MessageTest, AppendAndPopByte) {
   MessageReader reader(message.get());
   ASSERT_TRUE(reader.HasMoreData());  // Should have data to read.
   ASSERT_EQ(Message::BYTE, reader.GetDataType());
+  ASSERT_EQ("y", reader.GetDataSignature());
 
   bool bool_value = false;
   // Should fail as the type is not bool here.
@@ -70,17 +71,29 @@ TEST(MessageTest, AppendAndPopBasicDataTypes) {
 
   MessageReader reader(message.get());
   ASSERT_TRUE(reader.HasMoreData());
+  ASSERT_EQ("y", reader.GetDataSignature());
   ASSERT_TRUE(reader.PopByte(&byte_value));
+  ASSERT_EQ("b", reader.GetDataSignature());
   ASSERT_TRUE(reader.PopBool(&bool_value));
+  ASSERT_EQ("n", reader.GetDataSignature());
   ASSERT_TRUE(reader.PopInt16(&int16_value));
+  ASSERT_EQ("q", reader.GetDataSignature());
   ASSERT_TRUE(reader.PopUint16(&uint16_value));
+  ASSERT_EQ("i", reader.GetDataSignature());
   ASSERT_TRUE(reader.PopInt32(&int32_value));
+  ASSERT_EQ("u", reader.GetDataSignature());
   ASSERT_TRUE(reader.PopUint32(&uint32_value));
+  ASSERT_EQ("x", reader.GetDataSignature());
   ASSERT_TRUE(reader.PopInt64(&int64_value));
+  ASSERT_EQ("t", reader.GetDataSignature());
   ASSERT_TRUE(reader.PopUint64(&uint64_value));
+  ASSERT_EQ("d", reader.GetDataSignature());
   ASSERT_TRUE(reader.PopDouble(&double_value));
+  ASSERT_EQ("s", reader.GetDataSignature());
   ASSERT_TRUE(reader.PopString(&string_value));
+  ASSERT_EQ("o", reader.GetDataSignature());
   ASSERT_TRUE(reader.PopObjectPath(&object_path_value));
+  ASSERT_EQ("", reader.GetDataSignature());
   ASSERT_FALSE(reader.HasMoreData());
 
   // 0, 1, 2, 3, 4, 5, 6, 7, 8, "string", "/object/path" should be returned.
@@ -120,6 +133,8 @@ TEST(MessageTest, AppendAndPopFileDescriptor) {
 
   MessageReader reader(message.get());
   ASSERT_TRUE(reader.HasMoreData());
+  ASSERT_EQ(Message::UNIX_FD, reader.GetDataType());
+  ASSERT_EQ("h", reader.GetDataSignature());
   ASSERT_TRUE(reader.PopFileDescriptor(&fd_value));
   ASSERT_FALSE(reader.HasMoreData());
   // Descriptor is not valid until explicitly checked.
@@ -171,17 +186,29 @@ TEST(MessageTest, AppendAndPopVariantDataTypes) {
 
   MessageReader reader(message.get());
   ASSERT_TRUE(reader.HasMoreData());
+  ASSERT_EQ("v", reader.GetDataSignature());
   ASSERT_TRUE(reader.PopVariantOfByte(&byte_value));
+  ASSERT_EQ("v", reader.GetDataSignature());
   ASSERT_TRUE(reader.PopVariantOfBool(&bool_value));
+  ASSERT_EQ("v", reader.GetDataSignature());
   ASSERT_TRUE(reader.PopVariantOfInt16(&int16_value));
+  ASSERT_EQ("v", reader.GetDataSignature());
   ASSERT_TRUE(reader.PopVariantOfUint16(&uint16_value));
+  ASSERT_EQ("v", reader.GetDataSignature());
   ASSERT_TRUE(reader.PopVariantOfInt32(&int32_value));
+  ASSERT_EQ("v", reader.GetDataSignature());
   ASSERT_TRUE(reader.PopVariantOfUint32(&uint32_value));
+  ASSERT_EQ("v", reader.GetDataSignature());
   ASSERT_TRUE(reader.PopVariantOfInt64(&int64_value));
+  ASSERT_EQ("v", reader.GetDataSignature());
   ASSERT_TRUE(reader.PopVariantOfUint64(&uint64_value));
+  ASSERT_EQ("v", reader.GetDataSignature());
   ASSERT_TRUE(reader.PopVariantOfDouble(&double_value));
+  ASSERT_EQ("v", reader.GetDataSignature());
   ASSERT_TRUE(reader.PopVariantOfString(&string_value));
+  ASSERT_EQ("v", reader.GetDataSignature());
   ASSERT_TRUE(reader.PopVariantOfObjectPath(&object_path_value));
+  ASSERT_EQ("", reader.GetDataSignature());
   ASSERT_FALSE(reader.HasMoreData());
 
   // 0, 1, 2, 3, 4, 5, 6, 7, 8, "string", "/object/path" should be returned.
@@ -210,6 +237,7 @@ TEST(MessageTest, ArrayOfBytes) {
   MessageReader reader(message.get());
   const uint8* output_bytes = NULL;
   size_t length = 0;
+  ASSERT_EQ("ay", reader.GetDataSignature());
   ASSERT_TRUE(reader.PopArrayOfBytes(&output_bytes, &length));
   ASSERT_FALSE(reader.HasMoreData());
   ASSERT_EQ(3U, length);
@@ -227,6 +255,7 @@ TEST(MessageTest, ArrayOfBytes_Empty) {
   MessageReader reader(message.get());
   const uint8* output_bytes = NULL;
   size_t length = 0;
+  ASSERT_EQ("ay", reader.GetDataSignature());
   ASSERT_TRUE(reader.PopArrayOfBytes(&output_bytes, &length));
   ASSERT_FALSE(reader.HasMoreData());
   ASSERT_EQ(0U, length);
@@ -245,6 +274,7 @@ TEST(MessageTest, ArrayOfStrings) {
 
   MessageReader reader(message.get());
   std::vector<std::string> output_strings;
+  ASSERT_EQ("as", reader.GetDataSignature());
   ASSERT_TRUE(reader.PopArrayOfStrings(&output_strings));
   ASSERT_FALSE(reader.HasMoreData());
   ASSERT_EQ(4U, output_strings.size());
@@ -265,6 +295,7 @@ TEST(MessageTest, ArrayOfObjectPaths) {
 
   MessageReader reader(message.get());
   std::vector<ObjectPath> output_object_paths;
+  ASSERT_EQ("ao", reader.GetDataSignature());
   ASSERT_TRUE(reader.PopArrayOfObjectPaths(&output_object_paths));
   ASSERT_FALSE(reader.HasMoreData());
   ASSERT_EQ(3U, output_object_paths.size());
@@ -283,6 +314,7 @@ TEST(MessageTest, ProtoBuf) {
 
   MessageReader reader(message.get());
   TestProto receive_message;
+  ASSERT_EQ("ay", reader.GetDataSignature());
   ASSERT_TRUE(reader.PopArrayOfBytesAsProto(&receive_message));
   EXPECT_EQ(receive_message.text(), send_message.text());
   EXPECT_EQ(receive_message.number(), send_message.number());
@@ -304,6 +336,7 @@ TEST(MessageTest, OpenArrayAndPopArray) {
 
   MessageReader reader(message.get());
   ASSERT_EQ(Message::ARRAY, reader.GetDataType());
+  ASSERT_EQ("as", reader.GetDataSignature());
   MessageReader array_reader(NULL);
   ASSERT_TRUE(reader.PopArray(&array_reader));
   ASSERT_FALSE(reader.HasMoreData());  // Should not have more data to read.
@@ -397,11 +430,13 @@ TEST(MessageTest, CreateComplexMessageAndReadIt) {
             message->ToString());
 
   MessageReader reader(message.get());
+  ASSERT_EQ("av", reader.GetDataSignature());
   MessageReader array_reader(NULL);
   ASSERT_TRUE(reader.PopArray(&array_reader));
 
   // The first value in the array.
   bool bool_value = false;
+  ASSERT_EQ("v", array_reader.GetDataSignature());
   ASSERT_TRUE(array_reader.PopVariantOfBool(&bool_value));
   EXPECT_EQ(true, bool_value);
 
@@ -411,6 +446,7 @@ TEST(MessageTest, CreateComplexMessageAndReadIt) {
     ASSERT_TRUE(array_reader.PopVariant(&variant_reader));
     {
       MessageReader struct_reader(NULL);
+      ASSERT_EQ("(si)", variant_reader.GetDataSignature());
       ASSERT_TRUE(variant_reader.PopStruct(&struct_reader));
       std::string string_value;
       ASSERT_TRUE(struct_reader.PopString(&string_value));
@@ -429,6 +465,7 @@ TEST(MessageTest, CreateComplexMessageAndReadIt) {
     ASSERT_TRUE(array_reader.PopVariant(&variant_reader));
     {
       MessageReader dict_array_reader(NULL);
+      ASSERT_EQ("a{sx}", variant_reader.GetDataSignature());
       ASSERT_TRUE(variant_reader.PopArray(&dict_array_reader));
       {
         MessageReader dict_entry_reader(NULL);

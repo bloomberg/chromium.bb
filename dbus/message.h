@@ -111,7 +111,7 @@ class CHROME_DBUS_EXPORT Message {
   std::string GetMember();
   std::string GetErrorName();
   std::string GetSender();
-  std::string GetSignature();
+  std::string GetDataSignature();
   // Gets the serial and reply serial numbers. Returns 0 if not set.
   uint32 GetSerial();
   uint32 GetReplySerial();
@@ -462,6 +462,11 @@ class CHROME_DBUS_EXPORT MessageReader {
   // position. INVALID_DATA will be returned if the iterator points to the
   // end of the message.
   Message::DataType GetDataType();
+
+  // Get the DBus signature of the value at the current iterator position.
+  // An empty string will be returned if the iterator points to the end of
+  // the message.
+  std::string GetDataSignature();
 
  private:
   // Returns true if the data type at the current iterator position

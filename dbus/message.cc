@@ -262,7 +262,7 @@ std::string Message::ToString() {
   AppendStringHeader("member", GetMember(), &headers);
   AppendStringHeader("error_name", GetErrorName(), &headers);
   AppendStringHeader("sender", GetSender(), &headers);
-  AppendStringHeader("signature", GetSignature(), &headers);
+  AppendStringHeader("signature", GetDataSignature(), &headers);
   AppendUint32Header("serial", GetSerial(), &headers);
   AppendUint32Header("reply_serial", GetReplySerial(), &headers);
 
@@ -333,7 +333,7 @@ std::string Message::GetSender() {
   return sender ? sender : "";
 }
 
-std::string Message::GetSignature() {
+std::string Message::GetDataSignature() {
   const char* signature = dbus_message_get_signature(raw_message_);
   return signature ? signature : "";
 }
@@ -933,6 +933,16 @@ bool MessageReader::PopVariantOfObjectPath(ObjectPath* value) {
 Message::DataType MessageReader::GetDataType() {
   const int dbus_type = dbus_message_iter_get_arg_type(&raw_message_iter_);
   return static_cast<Message::DataType>(dbus_type);
+}
+
+std::string MessageReader::GetDataSignature() {
+  std::string signature;
+  char* raw_signature = dbus_message_iter_get_signature(&raw_message_iter_);
+  if (raw_signature) {
+    signature = raw_signature;
+    dbus_free(raw_signature);
+  }
+  return signature;
 }
 
 bool MessageReader::CheckDataType(int dbus_type) {
