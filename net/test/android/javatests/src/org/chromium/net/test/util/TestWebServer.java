@@ -422,7 +422,9 @@ public class TestWebServer {
             if (response.mResponseAction != null) response.mResponseAction.run();
 
             httpResponse = createResponse(HttpStatus.SC_OK);
-            httpResponse.setEntity(createEntity(response.mResponseData));
+            ByteArrayEntity entity = createEntity(response.mResponseData);
+            httpResponse.setEntity(entity);
+            httpResponse.setHeader("Content-Length", "" + entity.getContentLength());
             for (Pair<String, String> header : response.mResponseHeaders) {
                 httpResponse.addHeader(header.first, header.second);
             }
@@ -465,7 +467,9 @@ public class TestWebServer {
             buf.append("</title></head><body>");
             buf.append(reason);
             buf.append("</body></html>");
-            response.setEntity(createEntity(buf.toString().getBytes()));
+            ByteArrayEntity entity = createEntity(buf.toString().getBytes());
+            response.setEntity(entity);
+            response.setHeader("Content-Length", "" + entity.getContentLength());
         }
         return response;
     }
