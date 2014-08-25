@@ -44,7 +44,7 @@ class QuicInMemoryCache {
     ~Response();
 
     SpecialResponseType response_type() const { return response_type_; }
-    const HttpResponseHeaders& headers() const { return *headers_; }
+    const HttpResponseHeaders& headers() const { return *headers_.get(); }
     const base::StringPiece body() const { return base::StringPiece(body_); }
 
    private:

@@ -495,7 +495,7 @@ TEST_P(QuicStreamFactoryTest, HttpsPooling) {
   base::FilePath certs_dir = GetTestCertsDirectory();
   scoped_refptr<X509Certificate> test_cert(
       ImportCertFromFile(certs_dir, "spdy_pooling.pem"));
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), test_cert);
+  ASSERT_NE(static_cast<X509Certificate*>(NULL), test_cert.get());
   ProofVerifyDetailsChromium verify_details;
   verify_details.cert_verify_result.verified_cert = test_cert;
   verify_details.cert_verify_result.is_issued_by_known_root = true;
@@ -560,7 +560,7 @@ TEST_P(QuicStreamFactoryTest, NoHttpsPoolingWithCertMismatch) {
   base::FilePath certs_dir = GetTestCertsDirectory();
   scoped_refptr<X509Certificate> test_cert(
       ImportCertFromFile(certs_dir, "spdy_pooling.pem"));
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), test_cert);
+  ASSERT_NE(static_cast<X509Certificate*>(NULL), test_cert.get());
   ProofVerifyDetailsChromium verify_details;
   verify_details.cert_verify_result.verified_cert = test_cert;
   crypto_client_stream_factory_.set_proof_verify_details(&verify_details);
@@ -626,7 +626,7 @@ TEST_P(QuicStreamFactoryTest, HttpsPoolingWithMatchingPins) {
   base::FilePath certs_dir = GetTestCertsDirectory();
   scoped_refptr<X509Certificate> test_cert(
       ImportCertFromFile(certs_dir, "spdy_pooling.pem"));
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), test_cert);
+  ASSERT_NE(static_cast<X509Certificate*>(NULL), test_cert.get());
   ProofVerifyDetailsChromium verify_details;
   verify_details.cert_verify_result.verified_cert = test_cert;
   verify_details.cert_verify_result.is_issued_by_known_root = true;
@@ -697,7 +697,7 @@ TEST_P(QuicStreamFactoryTest, NoHttpsPoolingWithDifferentPins) {
   base::FilePath certs_dir = GetTestCertsDirectory();
   scoped_refptr<X509Certificate> test_cert(
       ImportCertFromFile(certs_dir, "spdy_pooling.pem"));
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), test_cert);
+  ASSERT_NE(static_cast<X509Certificate*>(NULL), test_cert.get());
   ProofVerifyDetailsChromium verify_details;
   verify_details.cert_verify_result.verified_cert = test_cert;
   verify_details.cert_verify_result.is_issued_by_known_root = true;

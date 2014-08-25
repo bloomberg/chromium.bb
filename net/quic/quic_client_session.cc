@@ -232,7 +232,7 @@ QuicClientSession::~QuicClientSession() {
 
   bool port_selected = stream_factory_->enable_port_selection();
   SSLInfo ssl_info;
-  if (!GetSSLInfo(&ssl_info) || !ssl_info.cert) {
+  if (!GetSSLInfo(&ssl_info) || !ssl_info.cert.get()) {
     if (port_selected) {
       UMA_HISTOGRAM_CUSTOM_COUNTS("Net.QuicSession.ConnectSelectPortForHTTP",
                                   round_trip_handshakes, 0, 3, 4);
@@ -485,7 +485,7 @@ int QuicClientSession::GetNumSentClientHellos() const {
 bool QuicClientSession::CanPool(const std::string& hostname) const {
   DCHECK(connection()->connected());
   SSLInfo ssl_info;
-  if (!GetSSLInfo(&ssl_info) || !ssl_info.cert) {
+  if (!GetSSLInfo(&ssl_info) || !ssl_info.cert.get()) {
     // We can always pool with insecure QUIC sessions.
     return true;
   }
@@ -761,7 +761,7 @@ base::Value* QuicClientSession::GetInfoAsValue(
   dict->SetInteger("packets_received", stats.packets_received);
   dict->SetInteger("packets_lost", stats.packets_lost);
   SSLInfo ssl_info;
-  dict->SetBoolean("secure", GetSSLInfo(&ssl_info) && ssl_info.cert);
+  dict->SetBoolean("secure", GetSSLInfo(&ssl_info) && ssl_info.cert.get());
 
   base::ListValue* alias_list = new base::ListValue();
   for (std::set<HostPortPair>::const_iterator it = aliases.begin();

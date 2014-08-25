@@ -98,7 +98,7 @@ string LoadTestCert(const string& file_name) {
   base::FilePath certs_dir = GetTestCertsDirectory();
   scoped_refptr<X509Certificate> cert =
       ImportCertFromFile(certs_dir, "quic_" + file_name);
-  CHECK_NE(static_cast<X509Certificate*>(NULL), cert);
+  CHECK_NE(static_cast<X509Certificate*>(NULL), cert.get());
 
   string der_bytes;
   CHECK(X509Certificate::GetDEREncoded(cert->os_cert_handle(), &der_bytes));

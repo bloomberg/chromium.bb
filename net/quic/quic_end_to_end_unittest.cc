@@ -54,7 +54,7 @@ class TestTransactionFactory : public HttpTransactionFactory {
   // HttpTransactionFactory methods
   virtual int CreateTransaction(RequestPriority priority,
                                 scoped_ptr<HttpTransaction>* trans) OVERRIDE {
-    trans->reset(new HttpNetworkTransaction(priority, session_));
+    trans->reset(new HttpNetworkTransaction(priority, session_.get()));
     return OK;
   }
 
@@ -62,9 +62,7 @@ class TestTransactionFactory : public HttpTransactionFactory {
     return NULL;
   }
 
-  virtual HttpNetworkSession* GetSession() OVERRIDE {
-    return session_;
-  };
+  virtual HttpNetworkSession* GetSession() OVERRIDE { return session_.get(); };
 
  private:
   scoped_refptr<HttpNetworkSession> session_;

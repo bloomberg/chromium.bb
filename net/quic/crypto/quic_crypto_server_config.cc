@@ -603,7 +603,8 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
       !info.client_nonce_well_formed ||
       !info.unique ||
       !requested_config.get()) {
-    BuildRejection(*primary_config, client_hello, info, rand, params, out);
+    BuildRejection(
+        *primary_config.get(), client_hello, info, rand, params, out);
     return QUIC_NO_ERROR;
   }
 
@@ -772,13 +773,10 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
         (QuicVersionToQuicTag(supported_versions[i]));
   }
   out->SetVector(kVER, supported_version_tags);
-  out->SetStringPiece(kSourceAddressTokenTag,
-                      NewSourceAddressToken(
-                          *requested_config,
-                          client_address,
-                          rand,
-                          info.now,
-                          NULL));
+  out->SetStringPiece(
+      kSourceAddressTokenTag,
+      NewSourceAddressToken(
+          *requested_config.get(), client_address, rand, info.now, NULL));
   QuicSocketAddressCoder address_coder(client_address);
   out->SetStringPiece(kCADR, address_coder.Encode());
   out->SetStringPiece(kPUBS, forward_secure_public_value);
@@ -845,13 +843,13 @@ void QuicCryptoServerConfig::SelectNewPrimaryConfig(
 
   sort(configs.begin(), configs.end(), ConfigPrimaryTimeLessThan);
 
-  Config* best_candidate = configs[0];
+  Config* best_candidate = configs[0].get();
 
   for (size_t i = 0; i < configs.size(); ++i) {
     const scoped_refptr<Config> config(configs[i]);
     if (!config->primary_time.IsAfter(now)) {
       if (config->primary_time.IsAfter(best_candidate->primary_time)) {
-        best_candidate = config;
+        best_candidate = config.get();
       }
       continue;
     }
@@ -948,11 +946,8 @@ void QuicCryptoServerConfig::EvaluateClientHello(
   HandshakeFailureReason source_address_token_error;
   StringPiece srct;
   if (client_hello.GetStringPiece(kSourceAddressTokenTag, &srct)) {
-    source_address_token_error =
-        ValidateSourceAddressToken(*requested_config,
-                                   srct,
-                                   info->client_ip,
-                                   info->now);
+    source_address_token_error = ValidateSourceAddressToken(
+        *requested_config.get(), srct, info->client_ip, info->now);
     info->valid_source_address_token =
         (source_address_token_error == HANDSHAKE_OK);
   } else {
@@ -1052,7 +1047,7 @@ bool QuicCryptoServerConfig::BuildServerConfigUpdateMessage(
   out->set_tag(kSCUP);
   out->SetStringPiece(kSCFG, primary_config_->serialized);
   out->SetStringPiece(kSourceAddressTokenTag,
-                      NewSourceAddressToken(*primary_config_,
+                      NewSourceAddressToken(*primary_config_.get(),
                                             client_ip,
                                             rand,
                                             clock->WallNow(),

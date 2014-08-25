@@ -137,7 +137,7 @@ void QuicSpdyServerStream::SendErrorResponse() {
   scoped_refptr<HttpResponseHeaders> headers
       = new HttpResponseHeaders(string("HTTP/1.1 500 Server Error") + '\0' +
                                 "content-length: 3" + '\0' + '\0');
-  SendHeadersAndBody(*headers, "bad");
+  SendHeadersAndBody(*headers.get(), "bad");
 }
 
 void QuicSpdyServerStream::SendHeadersAndBody(

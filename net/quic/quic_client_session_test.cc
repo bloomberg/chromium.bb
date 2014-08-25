@@ -153,7 +153,7 @@ TEST_P(QuicClientSessionTest, CanPool) {
   ProofVerifyDetailsChromium details;
   details.cert_verify_result.verified_cert =
       ImportCertFromFile(GetTestCertsDirectory(), "spdy_pooling.pem");
-  ASSERT_TRUE(details.cert_verify_result.verified_cert);
+  ASSERT_TRUE(details.cert_verify_result.verified_cert.get());
 
   session_.OnProofVerifyDetailsAvailable(details);
   CompleteCryptoHandshake();
@@ -174,7 +174,7 @@ TEST_P(QuicClientSessionTest, ConnectionPooledWithTlsChannelId) {
   ProofVerifyDetailsChromium details;
   details.cert_verify_result.verified_cert =
       ImportCertFromFile(GetTestCertsDirectory(), "spdy_pooling.pem");
-  ASSERT_TRUE(details.cert_verify_result.verified_cert);
+  ASSERT_TRUE(details.cert_verify_result.verified_cert.get());
 
   session_.OnProofVerifyDetailsAvailable(details);
   CompleteCryptoHandshake();
@@ -200,7 +200,7 @@ TEST_P(QuicClientSessionTest, ConnectionNotPooledWithDifferentPin) {
   details.cert_verify_result.public_key_hashes.push_back(
       GetTestHashValue(bad_pin));
 
-  ASSERT_TRUE(details.cert_verify_result.verified_cert);
+  ASSERT_TRUE(details.cert_verify_result.verified_cert.get());
 
   session_.OnProofVerifyDetailsAvailable(details);
   CompleteCryptoHandshake();
@@ -222,7 +222,7 @@ TEST_P(QuicClientSessionTest, ConnectionPooledWithMatchingPin) {
   details.cert_verify_result.public_key_hashes.push_back(
       GetTestHashValue(primary_pin));
 
-  ASSERT_TRUE(details.cert_verify_result.verified_cert);
+  ASSERT_TRUE(details.cert_verify_result.verified_cert.get());
 
   session_.OnProofVerifyDetailsAvailable(details);
   CompleteCryptoHandshake();

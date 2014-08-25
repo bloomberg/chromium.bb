@@ -41,7 +41,7 @@ class QuicCryptoServerConfigPeer {
  public:
   static string GetPrimaryOrbit(const QuicCryptoServerConfig& config) {
     base::AutoLock lock(config.configs_lock_);
-    CHECK(config.primary_config_ != NULL);
+    CHECK(config.primary_config_.get() != NULL);
     return string(reinterpret_cast<const char*>(config.primary_config_->orbit),
                   kOrbitSize);
   }

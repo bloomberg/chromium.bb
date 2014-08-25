@@ -62,7 +62,8 @@ int QuicHttpStream::InitializeStream(const HttpRequestInfo* request_info,
 
   if (request_info->url.SchemeIsSecure()) {
     SSLInfo ssl_info;
-    bool secure_session = session_->GetSSLInfo(&ssl_info) && ssl_info.cert;
+    bool secure_session =
+        session_->GetSSLInfo(&ssl_info) && ssl_info.cert.get();
     UMA_HISTOGRAM_BOOLEAN("Net.QuicSession.SecureResourceSecureSession",
                           secure_session);
     if (!secure_session)

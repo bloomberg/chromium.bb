@@ -3623,7 +3623,7 @@ TEST_P(QuicConnectionTest, AckNotifierTriggerCallback) {
 
   // Create a delegate which we expect to be called.
   scoped_refptr<MockAckNotifierDelegate> delegate(new MockAckNotifierDelegate);
-  EXPECT_CALL(*delegate, OnAckNotification(_, _, _, _, _)).Times(1);
+  EXPECT_CALL(*delegate.get(), OnAckNotification(_, _, _, _, _)).Times(1);
 
   // Send some data, which will register the delegate to be notified.
   connection_.SendStreamDataWithString(1, "foo", 0, !kFin, delegate.get());
@@ -3639,7 +3639,7 @@ TEST_P(QuicConnectionTest, AckNotifierFailToTriggerCallback) {
 
   // Create a delegate which we don't expect to be called.
   scoped_refptr<MockAckNotifierDelegate> delegate(new MockAckNotifierDelegate);
-  EXPECT_CALL(*delegate, OnAckNotification(_, _, _, _, _)).Times(0);
+  EXPECT_CALL(*delegate.get(), OnAckNotification(_, _, _, _, _)).Times(0);
 
   // Send some data, which will register the delegate to be notified. This will
   // not be ACKed and so the delegate should never be called.
@@ -3666,7 +3666,7 @@ TEST_P(QuicConnectionTest, AckNotifierCallbackAfterRetransmission) {
 
   // Create a delegate which we expect to be called.
   scoped_refptr<MockAckNotifierDelegate> delegate(new MockAckNotifierDelegate);
-  EXPECT_CALL(*delegate, OnAckNotification(_, _, _, _, _)).Times(1);
+  EXPECT_CALL(*delegate.get(), OnAckNotification(_, _, _, _, _)).Times(1);
 
   // Send four packets, and register to be notified on ACK of packet 2.
   connection_.SendStreamDataWithString(3, "foo", 0, !kFin, NULL);
@@ -3723,7 +3723,7 @@ TEST_P(QuicConnectionTest, AckNotifierCallbackForAckAfterRTO) {
 
   // Ack the original packet, which will revert the RTO.
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
-  EXPECT_CALL(*delegate, OnAckNotification(1, _, 1, _, _));
+  EXPECT_CALL(*delegate.get(), OnAckNotification(1, _, 1, _, _));
   EXPECT_CALL(*send_algorithm_, RevertRetransmissionTimeout());
   EXPECT_CALL(*send_algorithm_, OnCongestionEvent(true, _, _, _));
   QuicAckFrame ack_frame = InitAckFrame(1);
@@ -3765,7 +3765,7 @@ TEST_P(QuicConnectionTest, AckNotifierCallbackForAckOfNackedPacket) {
 
   // Now we get an ACK for packet 2, which was previously nacked.
   SequenceNumberSet no_lost_packets;
-  EXPECT_CALL(*delegate, OnAckNotification(1, _, 1, _, _));
+  EXPECT_CALL(*delegate.get(), OnAckNotification(1, _, 1, _, _));
   EXPECT_CALL(*loss_algorithm_, DetectLostPackets(_, _, _, _))
       .WillOnce(Return(no_lost_packets));
   QuicAckFrame second_ack_frame = InitAckFrame(4);
@@ -3786,7 +3786,7 @@ TEST_P(QuicConnectionTest, AckNotifierFECTriggerCallback) {
   // Create a delegate which we expect to be called.
   scoped_refptr<MockAckNotifierDelegate> delegate(
       new MockAckNotifierDelegate);
-  EXPECT_CALL(*delegate, OnAckNotification(_, _, _, _, _)).Times(1);
+  EXPECT_CALL(*delegate.get(), OnAckNotification(_, _, _, _, _)).Times(1);
 
   // Send some data, which will register the delegate to be notified.
   connection_.SendStreamDataWithString(1, "foo", 0, !kFin, delegate.get());
@@ -3809,7 +3809,7 @@ TEST_P(QuicConnectionTest, AckNotifierCallbackAfterFECRecovery) {
 
   // Create a delegate which we expect to be called.
   scoped_refptr<MockAckNotifierDelegate> delegate(new MockAckNotifierDelegate);
-  EXPECT_CALL(*delegate, OnAckNotification(_, _, _, _, _)).Times(1);
+  EXPECT_CALL(*delegate.get(), OnAckNotification(_, _, _, _, _)).Times(1);
 
   // Expect ACKs for 1 packet.
   EXPECT_CALL(*send_algorithm_, OnCongestionEvent(true, _, _, _));
