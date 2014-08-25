@@ -134,7 +134,8 @@ TEST_F(BootstrapSandboxTest, DistributedNotifications_Unsandboxed) {
 
 // Run the test with the sandbox enabled without notifications on the policy
 // whitelist.
-TEST_F(BootstrapSandboxTest, DistributedNotifications_SandboxDeny) {
+// Disabled, http://crbug.com/407066 .
+TEST_F(BootstrapSandboxTest, DISABLED_DistributedNotifications_SandboxDeny) {
   base::scoped_nsobject<DistributedNotificationObserver> observer(
       [[DistributedNotificationObserver alloc] init]);
 
