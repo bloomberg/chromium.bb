@@ -41,6 +41,8 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityUploader {
                             const GURL& upload_url,
                             const UploadCallback& callback) = 0;
 
+  virtual void set_discard_uploads(bool discard_uploads) = 0;
+
   static bool URLRequestIsUpload(const net::URLRequest& request);
 };
 

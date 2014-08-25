@@ -43,7 +43,8 @@ class DomainReliabilityUploaderImpl
  public:
   DomainReliabilityUploaderImpl(const scoped_refptr<
       net::URLRequestContextGetter>& url_request_context_getter)
-      : url_request_context_getter_(url_request_context_getter) {}
+      : url_request_context_getter_(url_request_context_getter),
+        discard_uploads_(true) {}
 
   virtual ~DomainReliabilityUploaderImpl() {
     // Delete any in-flight URLFetchers.
@@ -59,6 +60,12 @@ class DomainReliabilityUploaderImpl
     VLOG(1) << "Uploading report to " << upload_url;
     VLOG(2) << "Report JSON: " << report_json;
 
+    if (discard_uploads_) {
+      VLOG(1) << "Discarding report instead of uploading.";
+      callback.Run(true);
+      return;
+    }
+
     net::URLFetcher* fetcher =
         net::URLFetcher::Create(0, upload_url, net::URLFetcher::POST, this);
     fetcher->SetRequestContext(url_request_context_getter_);
@@ -72,6 +79,11 @@ class DomainReliabilityUploaderImpl
     fetcher->Start();
 
     upload_callbacks_[fetcher] = callback;
+  }
+
+  virtual void set_discard_uploads(bool discard_uploads) OVERRIDE {
+    discard_uploads_ = discard_uploads;
+    VLOG(1) << "Setting discard_uploads to " << discard_uploads;
   }
 
   // net::URLFetcherDelegate implementation:
@@ -100,6 +112,7 @@ class DomainReliabilityUploaderImpl
 
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
   UploadCallbackMap upload_callbacks_;
+  bool discard_uploads_;
 };
 
 }  // namespace

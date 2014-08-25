@@ -206,7 +206,7 @@ class ProfileImpl : public Profile {
   PrefProxyConfigTracker* CreateProxyConfigTracker();
 
   scoped_ptr<domain_reliability::DomainReliabilityMonitor>
-      CreateDomainReliabilityMonitor();
+      CreateDomainReliabilityMonitor(PrefService* local_state);
 
   scoped_ptr<content::HostZoomMap::Subscription> zoom_subscription_;
   PrefChangeRegistrar pref_change_registrar_;

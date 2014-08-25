@@ -116,6 +116,9 @@ ProfileImplIOData::Handle::~Handle() {
   if (io_data_->http_server_properties_manager_)
     io_data_->http_server_properties_manager_->ShutdownOnPrefThread();
 
+  if (io_data_->domain_reliability_monitor_)
+    io_data_->domain_reliability_monitor_->DestroyReportingPref();
+
   io_data_->ShutdownOnUIThread(GetAllContextGetters().Pass());
 }
 
@@ -168,6 +171,8 @@ void ProfileImplIOData::Handle::Init(
   io_data_->domain_reliability_monitor_ = domain_reliability_monitor.Pass();
 
   io_data_->InitializeMetricsEnabledStateOnUIThread();
+  if (io_data_->domain_reliability_monitor_)
+    io_data_->domain_reliability_monitor_->MoveToNetworkThread();
 
 #if defined(SPDY_PROXY_AUTH_ORIGIN)
   io_data_->data_reduction_proxy_unavailable_callback_ =
@@ -597,12 +602,11 @@ void ProfileImplIOData::InitializeInternal(
                                                              details));
 
   if (domain_reliability_monitor_) {
-    domain_reliability_monitor_->Init(
-        main_context,
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
-    domain_reliability_monitor_->AddBakedInConfigs();
-    network_delegate()->set_domain_reliability_monitor(
-        domain_reliability_monitor_.get());
+    domain_reliability::DomainReliabilityMonitor* monitor =
+        domain_reliability_monitor_.get();
+    monitor->InitURLRequestContext(main_context);
+    monitor->AddBakedInConfigs();
+    network_delegate()->set_domain_reliability_monitor(monitor);
   }
 
   lazy_params_.reset();

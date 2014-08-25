@@ -10,6 +10,7 @@
       'type': '<(component)',
       'dependencies': [
         '../base/base.gyp:base',
+        '../base/base.gyp:base_prefs',
         '../components/components.gyp:keyed_service_core',
         '../content/content.gyp:content_browser',
         '../net/net.gyp:net',

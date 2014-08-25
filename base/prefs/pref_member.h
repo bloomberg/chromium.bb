@@ -33,9 +33,9 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/prefs/base_prefs_export.h"
 #include "base/prefs/pref_observer.h"
+#include "base/single_thread_task_runner.h"
 #include "base/values.h"
 
 class PrefService;
@@ -66,7 +66,7 @@ class BASE_PREFS_EXPORT PrefMemberBase : public PrefObserver {
                      const base::Closure& callback) const;
 
     void MoveToThread(
-        const scoped_refptr<base::MessageLoopProxy>& message_loop);
+        const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
 
     // See PrefMember<> for description.
     bool IsManaged() const {
@@ -92,7 +92,7 @@ class BASE_PREFS_EXPORT PrefMemberBase : public PrefObserver {
 
     bool IsOnCorrectThread() const;
 
-    scoped_refptr<base::MessageLoopProxy> thread_loop_;
+    scoped_refptr<base::SingleThreadTaskRunner> thread_loop_;
     mutable bool is_managed_;
     mutable bool is_user_modifiable_;
 
@@ -112,7 +112,8 @@ class BASE_PREFS_EXPORT PrefMemberBase : public PrefObserver {
   // See PrefMember<> for description.
   void Destroy();
 
-  void MoveToThread(const scoped_refptr<base::MessageLoopProxy>& message_loop);
+  void MoveToThread(
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
 
   // PrefObserver
   virtual void OnPreferenceChanged(PrefService* service,
@@ -197,8 +198,9 @@ class PrefMember : public subtle::PrefMemberBase {
   // via PostTask.
   // This method should only be used from the thread the PrefMember is currently
   // on, which is the UI thread by default.
-  void MoveToThread(const scoped_refptr<base::MessageLoopProxy>& message_loop) {
-    subtle::PrefMemberBase::MoveToThread(message_loop);
+  void MoveToThread(
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
+    subtle::PrefMemberBase::MoveToThread(task_runner);
   }
 
   // Check whether the pref is managed, i.e. controlled externally through

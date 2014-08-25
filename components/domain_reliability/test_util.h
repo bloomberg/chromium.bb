@@ -48,13 +48,18 @@ class MockUploader : public DomainReliabilityUploader {
 
   virtual ~MockUploader();
 
+  virtual bool discard_uploads() const;
+
   // DomainReliabilityUploader implementation:
   virtual void UploadReport(const std::string& report_json,
                             const GURL& upload_url,
                             const UploadCallback& callback) OVERRIDE;
 
+  virtual void set_discard_uploads(bool discard_uploads) OVERRIDE;
+
  private:
   UploadRequestCallback callback_;
+  bool discard_uploads_;
 };
 
 class MockTime : public MockableTime {

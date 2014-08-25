@@ -7,10 +7,12 @@
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/location.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/prefs/pref_service.h"
 #include "base/value_conversions.h"
 
 using base::MessageLoopProxy;
+using base::SingleThreadTaskRunner;
 
 namespace subtle {
 
@@ -53,12 +55,12 @@ void PrefMemberBase::Destroy() {
 }
 
 void PrefMemberBase::MoveToThread(
-    const scoped_refptr<MessageLoopProxy>& message_loop) {
+    const scoped_refptr<SingleThreadTaskRunner>& task_runner) {
   VerifyValuePrefName();
   // Load the value from preferences if it hasn't been loaded so far.
   if (!internal())
     UpdateValueFromPref(base::Closure());
-  internal()->MoveToThread(message_loop);
+  internal()->MoveToThread(task_runner);
 }
 
 void PrefMemberBase::OnPreferenceChanged(PrefService* service,
@@ -127,9 +129,9 @@ void PrefMemberBase::Internal::UpdateValue(
 }
 
 void PrefMemberBase::Internal::MoveToThread(
-    const scoped_refptr<MessageLoopProxy>& message_loop) {
+    const scoped_refptr<SingleThreadTaskRunner>& task_runner) {
   CheckOnCorrectThread();
-  thread_loop_ = message_loop;
+  thread_loop_ = task_runner;
 }
 
 bool PrefMemberVectorStringUpdate(const base::Value& value,

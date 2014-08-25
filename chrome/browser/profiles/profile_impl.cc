@@ -691,7 +691,7 @@ void ProfileImpl::DoFinalInit() {
                 cache_max_size, media_cache_path, media_cache_max_size,
                 extensions_cookie_path, GetPath(), infinite_cache_path,
                 predictor_, session_cookie_mode, GetSpecialStoragePolicy(),
-                CreateDomainReliabilityMonitor(),
+                CreateDomainReliabilityMonitor(local_state),
                 data_reduction_proxy_unavailable,
                 chrome_configurator.Pass(),
                 data_reduction_proxy_params.Pass());
@@ -1450,7 +1450,7 @@ PrefProxyConfigTracker* ProfileImpl::CreateProxyConfigTracker() {
 }
 
 scoped_ptr<domain_reliability::DomainReliabilityMonitor>
-ProfileImpl::CreateDomainReliabilityMonitor() {
+ProfileImpl::CreateDomainReliabilityMonitor(PrefService* local_state) {
   domain_reliability::DomainReliabilityService* service =
       domain_reliability::DomainReliabilityServiceFactory::GetInstance()->
           GetForBrowserContext(this);
@@ -1458,5 +1458,7 @@ ProfileImpl::CreateDomainReliabilityMonitor() {
     return scoped_ptr<domain_reliability::DomainReliabilityMonitor>();
 
   return service->CreateMonitor(
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
+      local_state,
+      prefs::kMetricsReportingEnabled);
 }

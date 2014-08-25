@@ -87,14 +87,21 @@ void TestCallback::OnCalled() {
 }
 
 MockUploader::MockUploader(const UploadRequestCallback& callback)
-    : callback_(callback) {}
+    : callback_(callback),
+      discard_uploads_(true) {}
 
 MockUploader::~MockUploader() {}
+
+bool MockUploader::discard_uploads() const { return discard_uploads_; }
 
 void MockUploader::UploadReport(const std::string& report_json,
                                 const GURL& upload_url,
                                 const UploadCallback& callback) {
   callback_.Run(report_json, upload_url, callback);
+}
+
+void MockUploader::set_discard_uploads(bool discard_uploads) {
+  discard_uploads_ = discard_uploads;
 }
 
 MockTime::MockTime()

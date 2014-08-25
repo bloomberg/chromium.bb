@@ -28,7 +28,9 @@ class DomainReliabilityUploaderTest : public testing::Test {
         url_request_context_getter_(new net::TestURLRequestContextGetter(
             network_task_runner_)),
         uploader_(DomainReliabilityUploader::Create(
-            url_request_context_getter_)) {}
+            url_request_context_getter_)) {
+    uploader_->set_discard_uploads(false);
+  }
 
   DomainReliabilityUploader::UploadCallback MakeUploadCallback(size_t index) {
     return base::Bind(&DomainReliabilityUploaderTest::OnUploadComplete,
@@ -106,6 +108,19 @@ TEST_F(DomainReliabilityUploaderTest, FailedUpload) {
   fetcher->delegate()->OnURLFetchComplete(fetcher);
   EXPECT_TRUE(upload_complete_[0]);
   EXPECT_FALSE(upload_successful_[0]);
+}
+
+TEST_F(DomainReliabilityUploaderTest, DiscardedUpload) {
+  net::TestURLFetcher* fetcher;
+
+  uploader_->set_discard_uploads(true);
+
+  std::string report_json = "{}";
+  GURL upload_url = GURL("https://example/upload");
+  uploader_->UploadReport(report_json, upload_url, MakeUploadCallback(0));
+
+  fetcher = url_fetcher_factory_.GetFetcherByID(0);
+  EXPECT_FALSE(fetcher);
 }
 
 }  // namespace

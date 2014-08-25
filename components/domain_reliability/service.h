@@ -11,10 +11,12 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/sequenced_task_runner.h"
+#include "base/single_thread_task_runner.h"
 #include "components/domain_reliability/clear_mode.h"
 #include "components/domain_reliability/domain_reliability_export.h"
 #include "components/keyed_service/core/keyed_service.h"
+
+class PrefService;
 
 namespace base {
 class Value;
@@ -48,7 +50,9 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityService
   // called. The caller is responsible for destroying the Monitor on the given
   // task runner when it is no longer needed.
   virtual scoped_ptr<DomainReliabilityMonitor> CreateMonitor(
-      scoped_refptr<base::SequencedTaskRunner> network_task_runner) = 0;
+      scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
+      PrefService* pref_service,
+      const char* reporting_pref_name) = 0;
 
   // Clears browsing data on the associated Monitor. |Init()| must have been
   // called first.

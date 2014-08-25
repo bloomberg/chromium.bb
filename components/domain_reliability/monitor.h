@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/prefs/pref_member.h"
 #include "base/time/time.h"
 #include "components/domain_reliability/beacon.h"
 #include "components/domain_reliability/clear_mode.h"
@@ -23,6 +24,8 @@
 #include "net/base/load_timing_info.h"
 #include "net/http/http_response_info.h"
 #include "net/url_request/url_request_status.h"
+
+class PrefService;
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -42,18 +45,47 @@ namespace domain_reliability {
 // to the proper |DomainReliabilityContext|.
 class DOMAIN_RELIABILITY_EXPORT DomainReliabilityMonitor {
  public:
-  explicit DomainReliabilityMonitor(const std::string& upload_reporter_string);
-  DomainReliabilityMonitor(const std::string& upload_reporter_string,
-                           scoped_ptr<MockableTime> time);
+  // Creates a Monitor. |local_state_pref_service| must live on |pref_thread|
+  // (which should be the current thread); |network_thread| is the thread
+  // on which requests will actually be monitored and reported.
+  DomainReliabilityMonitor(
+      const std::string& upload_reporter_string,
+      scoped_refptr<base::SingleThreadTaskRunner> pref_thread,
+      scoped_refptr<base::SingleThreadTaskRunner> network_thread,
+      PrefService* local_state_pref_service,
+      const char* reporting_pref_name);
+
+  // Same, but specifies a mock interface for time functions for testing.
+  DomainReliabilityMonitor(
+      const std::string& upload_reporter_string,
+      scoped_refptr<base::SingleThreadTaskRunner> pref_thread,
+      scoped_refptr<base::SingleThreadTaskRunner> network_thread,
+      PrefService* local_state_pref_service,
+      const char* reporting_pref_name,
+      scoped_ptr<MockableTime> time);
+
+  // Must be called from the pref thread if |MoveToNetworkThread| was not
+  // called, or from the network thread if it was called.
   ~DomainReliabilityMonitor();
 
-  // Initializes the Monitor.
-  void Init(
-      net::URLRequestContext* url_request_context,
-      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
+  // Must be called before |InitURLRequestContext| on the same thread on which
+  // the Monitor was constructed. Moves (most of) the Monitor to the network
+  // thread passed in the constructor.
+  void MoveToNetworkThread();
+
+  // Must be called from the pref thread before the Monitor is destructed if
+  // |MoveToNetworkThread| was called.
+  void DestroyReportingPref();
+
+  // All public methods below this point must be called on the network thread:
+
+  // Initializes the Monitor's URLRequestContextGetter.
+  //
+  // Must be called on the network thread, after |MoveToNetworkThread|.
+  void InitURLRequestContext(net::URLRequestContext* url_request_context);
 
   // Same, but for unittests where the Getter is readily available.
-  void Init(
+  void InitURLRequestContext(
       scoped_refptr<net::URLRequestContextGetter> url_request_context_getter);
 
   // Populates the monitor with contexts that were configured at compile time.
@@ -114,15 +146,32 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityMonitor {
 
   DomainReliabilityContext* GetContextForHost(const std::string& host) const;
 
+  void InitReportingPref(
+      PrefService* local_state_pref_service,
+      const char* reporting_pref_name);
+  void OnReportingPrefChanged();
+
+  bool OnPrefThread() const {
+    return pref_task_runner_->BelongsToCurrentThread();
+  }
+  bool OnNetworkThread() const {
+    return network_task_runner_->BelongsToCurrentThread();
+  }
+
   base::WeakPtr<DomainReliabilityMonitor> MakeWeakPtr();
 
-  scoped_ptr<base::ThreadChecker> thread_checker_;
   scoped_ptr<MockableTime> time_;
   const std::string upload_reporter_string_;
   DomainReliabilityScheduler::Params scheduler_params_;
   DomainReliabilityDispatcher dispatcher_;
   scoped_ptr<DomainReliabilityUploader> uploader_;
   ContextMap contexts_;
+
+  scoped_refptr<base::SingleThreadTaskRunner> pref_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
+
+  BooleanPrefMember reporting_pref_;
+  bool moved_to_network_thread_;
 
   base::WeakPtrFactory<DomainReliabilityMonitor> weak_factory_;
 
