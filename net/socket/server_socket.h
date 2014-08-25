@@ -21,7 +21,7 @@ class NET_EXPORT ServerSocket {
   ServerSocket();
   virtual ~ServerSocket();
 
-  // Binds the socket and starts listening. Destroy the socket to stop
+  // Binds the socket and starts listening. Destroys the socket to stop
   // listening.
   virtual int Listen(const IPEndPoint& address, int backlog) = 0;
 

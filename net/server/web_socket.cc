@@ -15,6 +15,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/sys_byteorder.h"
 #include "net/server/http_connection.h"
+#include "net/server/http_server.h"
 #include "net/server/http_server_request_info.h"
 #include "net/server/http_server_response_info.h"
 
@@ -43,12 +44,14 @@ static uint32 WebSocketKeyFingerprint(const std::string& str) {
 
 class WebSocketHixie76 : public net::WebSocket {
  public:
-  static net::WebSocket* Create(HttpConnection* connection,
+  static net::WebSocket* Create(HttpServer* server,
+                                HttpConnection* connection,
                                 const HttpServerRequestInfo& request,
                                 size_t* pos) {
-    if (connection->recv_data().length() < *pos + kWebSocketHandshakeBodyLen)
+    if (connection->read_buf()->GetSize() <
+        static_cast<int>(*pos + kWebSocketHandshakeBodyLen))
       return NULL;
-    return new WebSocketHixie76(connection, request, pos);
+    return new WebSocketHixie76(server, connection, request, pos);
   }
 
   virtual void Accept(const HttpServerRequestInfo& request) OVERRIDE {
@@ -69,31 +72,33 @@ class WebSocketHixie76 : public net::WebSocket {
     std::string origin = request.GetHeaderValue("origin");
     std::string host = request.GetHeaderValue("host");
     std::string location = "ws://" + host + request.path;
-    connection_->Send(base::StringPrintf(
-        "HTTP/1.1 101 WebSocket Protocol Handshake\r\n"
-        "Upgrade: WebSocket\r\n"
-        "Connection: Upgrade\r\n"
-        "Sec-WebSocket-Origin: %s\r\n"
-        "Sec-WebSocket-Location: %s\r\n"
-        "\r\n",
-        origin.c_str(),
-        location.c_str()));
-    connection_->Send(reinterpret_cast<char*>(digest.a), 16);
+    server_->SendRaw(
+        connection_->id(),
+        base::StringPrintf("HTTP/1.1 101 WebSocket Protocol Handshake\r\n"
+                           "Upgrade: WebSocket\r\n"
+                           "Connection: Upgrade\r\n"
+                           "Sec-WebSocket-Origin: %s\r\n"
+                           "Sec-WebSocket-Location: %s\r\n"
+                           "\r\n",
+                           origin.c_str(),
+                           location.c_str()));
+    server_->SendRaw(connection_->id(),
+                     std::string(reinterpret_cast<char*>(digest.a), 16));
   }
 
   virtual ParseResult Read(std::string* message) OVERRIDE {
     DCHECK(message);
-    const std::string& data = connection_->recv_data();
-    if (data[0])
+    HttpConnection::ReadIOBuffer* read_buf = connection_->read_buf();
+    if (read_buf->StartOfBuffer()[0])
       return FRAME_ERROR;
 
+    base::StringPiece data(read_buf->StartOfBuffer(), read_buf->GetSize());
     size_t pos = data.find('\377', 1);
-    if (pos == std::string::npos)
+    if (pos == base::StringPiece::npos)
       return FRAME_INCOMPLETE;
 
-    std::string buffer(data.begin() + 1, data.begin() + pos);
-    message->swap(buffer);
-    connection_->Shift(pos + 1);
+    message->assign(data.data() + 1, pos - 1);
+    read_buf->DidConsume(pos + 1);
 
     return FRAME_OK;
   }
@@ -101,37 +106,42 @@ class WebSocketHixie76 : public net::WebSocket {
   virtual void Send(const std::string& message) OVERRIDE {
     char message_start = 0;
     char message_end = -1;
-    connection_->Send(&message_start, 1);
-    connection_->Send(message);
-    connection_->Send(&message_end, 1);
+    server_->SendRaw(connection_->id(), std::string(1, message_start));
+    server_->SendRaw(connection_->id(), message);
+    server_->SendRaw(connection_->id(), std::string(1, message_end));
   }
 
  private:
   static const int kWebSocketHandshakeBodyLen;
 
-  WebSocketHixie76(HttpConnection* connection,
+  WebSocketHixie76(HttpServer* server,
+                   HttpConnection* connection,
                    const HttpServerRequestInfo& request,
-                   size_t* pos) : WebSocket(connection) {
+                   size_t* pos)
+      : WebSocket(server, connection) {
     std::string key1 = request.GetHeaderValue("sec-websocket-key1");
     std::string key2 = request.GetHeaderValue("sec-websocket-key2");
 
     if (key1.empty()) {
-      connection->Send(HttpServerResponseInfo::CreateFor500(
-          "Invalid request format. Sec-WebSocket-Key1 is empty or isn't "
-          "specified."));
+      server->SendResponse(
+          connection->id(),
+          HttpServerResponseInfo::CreateFor500(
+              "Invalid request format. Sec-WebSocket-Key1 is empty or isn't "
+              "specified."));
       return;
     }
 
     if (key2.empty()) {
-      connection->Send(HttpServerResponseInfo::CreateFor500(
-          "Invalid request format. Sec-WebSocket-Key2 is empty or isn't "
-          "specified."));
+      server->SendResponse(
+          connection->id(),
+          HttpServerResponseInfo::CreateFor500(
+              "Invalid request format. Sec-WebSocket-Key2 is empty or isn't "
+              "specified."));
       return;
     }
 
-    key3_ = connection->recv_data().substr(
-        *pos,
-        *pos + kWebSocketHandshakeBodyLen);
+    key3_.assign(connection->read_buf()->StartOfBuffer() + *pos,
+                 kWebSocketHandshakeBodyLen);
     *pos += kWebSocketHandshakeBodyLen;
   }
 
@@ -169,7 +179,8 @@ const size_t kMaskingKeyWidthInBytes = 4;
 
 class WebSocketHybi17 : public WebSocket {
  public:
-  static WebSocket* Create(HttpConnection* connection,
+  static WebSocket* Create(HttpServer* server,
+                           HttpConnection* connection,
                            const HttpServerRequestInfo& request,
                            size_t* pos) {
     std::string version = request.GetHeaderValue("sec-websocket-version");
@@ -178,12 +189,14 @@ class WebSocketHybi17 : public WebSocket {
 
     std::string key = request.GetHeaderValue("sec-websocket-key");
     if (key.empty()) {
-      connection->Send(HttpServerResponseInfo::CreateFor500(
-          "Invalid request format. Sec-WebSocket-Key is empty or isn't "
-          "specified."));
+      server->SendResponse(
+          connection->id(),
+          HttpServerResponseInfo::CreateFor500(
+              "Invalid request format. Sec-WebSocket-Key is empty or isn't "
+              "specified."));
       return NULL;
     }
-    return new WebSocketHybi17(connection, request, pos);
+    return new WebSocketHybi17(server, connection, request, pos);
   }
 
   virtual void Accept(const HttpServerRequestInfo& request) OVERRIDE {
@@ -194,24 +207,24 @@ class WebSocketHybi17 : public WebSocket {
     std::string encoded_hash;
     base::Base64Encode(base::SHA1HashString(data), &encoded_hash);
 
-    std::string response = base::StringPrintf(
-        "HTTP/1.1 101 WebSocket Protocol Handshake\r\n"
-        "Upgrade: WebSocket\r\n"
-        "Connection: Upgrade\r\n"
-        "Sec-WebSocket-Accept: %s\r\n"
-        "\r\n",
-        encoded_hash.c_str());
-    connection_->Send(response);
+    server_->SendRaw(
+        connection_->id(),
+        base::StringPrintf("HTTP/1.1 101 WebSocket Protocol Handshake\r\n"
+                           "Upgrade: WebSocket\r\n"
+                           "Connection: Upgrade\r\n"
+                           "Sec-WebSocket-Accept: %s\r\n"
+                           "\r\n",
+                           encoded_hash.c_str()));
   }
 
   virtual ParseResult Read(std::string* message) OVERRIDE {
-    const std::string& frame = connection_->recv_data();
+    HttpConnection::ReadIOBuffer* read_buf = connection_->read_buf();
+    base::StringPiece frame(read_buf->StartOfBuffer(), read_buf->GetSize());
     int bytes_consumed = 0;
-
     ParseResult result =
         WebSocket::DecodeFrameHybi17(frame, true, &bytes_consumed, message);
     if (result == FRAME_OK)
-      connection_->Shift(bytes_consumed);
+      read_buf->DidConsume(bytes_consumed);
     if (result == FRAME_CLOSE)
       closed_ = true;
     return result;
@@ -220,25 +233,26 @@ class WebSocketHybi17 : public WebSocket {
   virtual void Send(const std::string& message) OVERRIDE {
     if (closed_)
       return;
-    std::string data = WebSocket::EncodeFrameHybi17(message, 0);
-    connection_->Send(data);
+    server_->SendRaw(connection_->id(),
+                     WebSocket::EncodeFrameHybi17(message, 0));
   }
 
  private:
-  WebSocketHybi17(HttpConnection* connection,
+  WebSocketHybi17(HttpServer* server,
+                  HttpConnection* connection,
                   const HttpServerRequestInfo& request,
                   size_t* pos)
-    : WebSocket(connection),
-      op_code_(0),
-      final_(false),
-      reserved1_(false),
-      reserved2_(false),
-      reserved3_(false),
-      masked_(false),
-      payload_(0),
-      payload_length_(0),
-      frame_end_(0),
-      closed_(false) {
+      : WebSocket(server, connection),
+        op_code_(0),
+        final_(false),
+        reserved1_(false),
+        reserved2_(false),
+        reserved3_(false),
+        masked_(false),
+        payload_(0),
+        payload_length_(0),
+        frame_end_(0),
+        closed_(false) {
   }
 
   OpCode op_code_;
@@ -257,21 +271,23 @@ class WebSocketHybi17 : public WebSocket {
 
 }  // anonymous namespace
 
-WebSocket* WebSocket::CreateWebSocket(HttpConnection* connection,
+WebSocket* WebSocket::CreateWebSocket(HttpServer* server,
+                                      HttpConnection* connection,
                                       const HttpServerRequestInfo& request,
                                       size_t* pos) {
-  WebSocket* socket = WebSocketHybi17::Create(connection, request, pos);
+  WebSocket* socket = WebSocketHybi17::Create(server, connection, request, pos);
   if (socket)
     return socket;
 
-  return WebSocketHixie76::Create(connection, request, pos);
+  return WebSocketHixie76::Create(server, connection, request, pos);
 }
 
 // static
-WebSocket::ParseResult WebSocket::DecodeFrameHybi17(const std::string& frame,
-                                                    bool client_frame,
-                                                    int* bytes_consumed,
-                                                    std::string* output) {
+WebSocket::ParseResult WebSocket::DecodeFrameHybi17(
+    const base::StringPiece& frame,
+    bool client_frame,
+    int* bytes_consumed,
+    std::string* output) {
   size_t data_length = frame.length();
   if (data_length < 2)
     return FRAME_INCOMPLETE;
@@ -349,8 +365,7 @@ WebSocket::ParseResult WebSocket::DecodeFrameHybi17(const std::string& frame,
     for (size_t i = 0; i < payload_length; ++i)  // Unmask the payload.
       (*output)[i] = payload[i] ^ masking_key[i % kMaskingKeyWidthInBytes];
   } else {
-    std::string buffer(p, p + payload_length);
-    output->swap(buffer);
+    output->assign(p, p + payload_length);
   }
 
   size_t pos = p + actual_masking_key_length + payload_length - buffer_begin;
@@ -400,7 +415,9 @@ std::string WebSocket::EncodeFrameHybi17(const std::string& message,
   return std::string(&frame[0], frame.size());
 }
 
-WebSocket::WebSocket(HttpConnection* connection) : connection_(connection) {
+WebSocket::WebSocket(HttpServer* server, HttpConnection* connection)
+    : server_(server),
+      connection_(connection) {
 }
 
 }  // namespace net

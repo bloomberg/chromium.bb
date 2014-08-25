@@ -14,7 +14,7 @@
 #include "net/base/net_errors.h"
 #include "net/server/http_server_request_info.h"
 #include "net/server/http_server_response_info.h"
-#include "net/socket/tcp_listen_socket.h"
+#include "net/socket/tcp_server_socket.h"
 #include "url/gurl.h"
 
 namespace mojo {
@@ -42,8 +42,10 @@ WebSocketServer::~WebSocketServer() {
 }
 
 bool WebSocketServer::Start() {
-  net::TCPListenSocketFactory factory("0.0.0.0", port_);
-  web_server_ = new net::HttpServer(factory, this);
+  scoped_ptr<net::ServerSocket> server_socket(
+      new net::TCPServerSocket(NULL, net::NetLog::Source()));
+  server_socket->ListenWithAddressAndPort("0.0.0.0", port_, 1);
+  web_server_.reset(new net::HttpServer(server_socket.Pass(), this));
   net::IPEndPoint address;
   int error = web_server_->GetLocalAddress(&address);
   port_ = address.port();
@@ -91,9 +93,7 @@ void WebSocketServer::OnWebSocketRequest(
     const net::HttpServerRequestInfo& info) {
   if (connection_id_ != kNotConnected) {
     // Reject connection since we already have our client.
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&net::HttpServer::Close, web_server_, connection_id));
+    web_server_->Close(connection_id);
     return;
   }
   // Accept the connection.
@@ -157,4 +157,3 @@ bool WebSocketServer::Connected() const {
 }
 
 }  // namespace mojo
-

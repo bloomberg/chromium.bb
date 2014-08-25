@@ -144,8 +144,7 @@ void WebSocketImpl::OnBytesRead(
     return;
   }
 
-  std::string data = std::string(response_buffer->data(), result);
-  response_buffer_ += data;
+  response_buffer_.append(response_buffer->data(), result);
 
   int bytes_consumed;
   std::string output;

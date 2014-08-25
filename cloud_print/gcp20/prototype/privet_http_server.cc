@@ -10,7 +10,7 @@
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/base/url_util.h"
-#include "net/socket/tcp_listen_socket.h"
+#include "net/socket/tcp_server_socket.h"
 #include "url/gurl.h"
 
 namespace {
@@ -105,10 +105,12 @@ bool PrivetHttpServer::Start(uint16 port) {
   if (server_)
     return true;
 
-  net::TCPListenSocketFactory factory("0.0.0.0", port);
-  server_ = new net::HttpServer(factory, this);
-  net::IPEndPoint address;
+  scoped_ptr<net::ServerSocket> server_socket(
+      new net::TCPServerSocket(NULL, net::NetLog::Source()));
+  server_socket->ListenWithAddressAndPort("0.0.0.0", port, 1);
+  server_.reset(new net::HttpServer(server_socket.Pass(), this));
 
+  net::IPEndPoint address;
   if (server_->GetLocalAddress(&address) != net::OK) {
     NOTREACHED() << "Cannot start HTTP server";
     return false;
@@ -122,7 +124,7 @@ void PrivetHttpServer::Shutdown() {
   if (!server_)
     return;
 
-  server_ = NULL;
+  server_.reset(NULL);
 }
 
 void PrivetHttpServer::OnHttpRequest(int connection_id,
