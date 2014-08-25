@@ -120,7 +120,6 @@ class ChromeCommitterTester(cros_build_lib_unittest.RunCommandTestCase,
 
     # Check the file was actually written out correctly.
     self.assertEqual(osutils.ReadFile(self.lkgm_file), self.committer._lkgm)
-    self.assertCommandContains(['git', 'cl', 'upload'])
     self.assertCommandContains(['git', 'cl', 'land'])
 
 

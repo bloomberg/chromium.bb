@@ -127,6 +127,7 @@ class ChromeCommitter(object):
     lv = distutils.version.LooseVersion
     if not self._lkgm and not lv(self._lkgm) < lv(self._old_lkgm):
       raise LKGMNotFound('No valid LKGM found. Did you run FindNewLKGM?')
+    commit_msg = self._COMMIT_MSG % dict(version=self._lkgm)
 
     try:
       # Add the new versioned file.
@@ -138,7 +139,7 @@ class ChromeCommitter(object):
 
       # Commit it!
       cros_build_lib.RunCommand(
-          ['git', 'commit', '-m', self. _COMMIT_MSG % dict(version=self._lkgm)],
+          ['git', 'commit', '-m', commit_msg],
           cwd=self._checkout_dir)
     except cros_build_lib.RunCommandError as e:
       raise LKGMNotCommitted(
@@ -151,10 +152,7 @@ class ChromeCommitter(object):
     if not self._dryrun:
       try:
         cros_build_lib.RunCommand(
-            ['git', 'cl', 'upload', '--bypass-hooks'],
-            cwd=self._checkout_dir)
-        cros_build_lib.RunCommand(
-            ['git', 'cl', 'land', '--bypass-hooks'],
+            ['git', 'cl', 'land', '-f', '--bypass-hooks', '-m', commit_msg],
             cwd=self._checkout_dir)
       except cros_build_lib.RunCommandError as e:
         raise LKGMNotCommitted('Could not submit LKGM: %r' % e)
