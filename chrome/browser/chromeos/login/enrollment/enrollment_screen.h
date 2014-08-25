@@ -32,7 +32,8 @@ class EnrollmentScreen
 
   void SetParameters(EnrollmentScreenActor::EnrollmentMode enrollment_mode,
                      const std::string& management_domain,
-                     const std::string& enrollment_user);
+                     const std::string& enrollment_user,
+                     const std::string& auth_token);
 
   // WizardScreen implementation:
   virtual void PrepareToShow() OVERRIDE;
@@ -61,6 +62,9 @@ class EnrollmentScreen
 
   // Kicks off the policy infrastructure to register with the service.
   void RegisterForDevicePolicy(const std::string& token);
+
+  // Sends an enrollment access token to a remote device.
+  void SendEnrollmentAuthToken(const std::string& token);
 
   // Handles enrollment completion. Logs a UMA sample and requests the actor to
   // show the specified enrollment status.
@@ -91,7 +95,9 @@ class EnrollmentScreen
   EnrollmentScreenActor* actor_;
   EnrollmentScreenActor::EnrollmentMode enrollment_mode_;
   bool enrollment_failed_once_;
+  bool remora_token_sent_;
   std::string user_;
+  std::string auth_token_;
   int lockbox_init_duration_;
   base::WeakPtrFactory<EnrollmentScreen> weak_ptr_factory_;
 

@@ -493,7 +493,7 @@ void WizardController::ShowEnrollmentScreen() {
     mode = EnrollmentScreenActor::ENROLLMENT_MODE_FORCED;
   }
 
-  screen->SetParameters(mode, enrollment_domain, user);
+  screen->SetParameters(mode, enrollment_domain, user, auth_token_);
   SetCurrentScreen(screen);
 }
 
@@ -636,6 +636,10 @@ void WizardController::OnUpdateCompleted() {
     ShowControllerPairingScreen();
   } else if (ShouldShowHostPairingScreen()) {
     ShowHostPairingScreen();
+  } else if (!auth_token_.empty()) {
+    // TODO(achuith): There is an issue with the auto enrollment check and
+    // remote enrollment. crbug.com/403147.
+    ShowEnrollmentScreen();
   } else {
     ShowAutoEnrollmentCheckScreen();
   }
@@ -1280,6 +1284,20 @@ bool WizardController::SetOnTimeZoneResolvedForTesting(
 
   on_timezone_resolved_for_testing_ = callback;
   return true;
+}
+
+void WizardController::OnEnrollmentAuthTokenReceived(
+    const std::string& token) {
+  // TODO(achuith, zork): This will be called via Bluetooth from a remote
+  // controller.
+  VLOG(1) << "OnEnrollmentAuthTokenReceived " << token;
+  if (ShouldAutoStartEnrollment() || ShouldRecoverEnrollment()) {
+    StartupUtils::MarkEulaAccepted();
+    auth_token_ = token;
+    InitiateOOBEUpdate();
+  } else {
+    LOG(WARNING) << "Not in device enrollment.";
+  }
 }
 
 }  // namespace chromeos

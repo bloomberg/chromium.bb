@@ -312,6 +312,9 @@ class WizardController : public ScreenObserver {
   // Returns false if timezone has already been resolved.
   bool SetOnTimeZoneResolvedForTesting(const base::Closure& callback);
 
+  // Callback for enrollment auth token.
+  void OnEnrollmentAuthTokenReceived(const std::string& auth_token);
+
   // Whether to skip any screens that may normally be shown after login
   // (registration, Terms of Service, user image selection).
   static bool skip_post_login_screens_;
@@ -344,6 +347,7 @@ class WizardController : public ScreenObserver {
 
   std::string username_;
   std::string password_;
+  std::string auth_token_;
 
   // True if running official BUILD.
   bool is_official_build_;

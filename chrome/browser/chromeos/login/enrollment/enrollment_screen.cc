@@ -10,6 +10,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/screens/screen_observer.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
@@ -17,6 +18,7 @@
 #include "chrome/browser/chromeos/policy/auto_enrollment_client.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_initializer.h"
+#include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -34,6 +36,7 @@ EnrollmentScreen::EnrollmentScreen(
       actor_(actor),
       enrollment_mode_(EnrollmentScreenActor::ENROLLMENT_MODE_MANUAL),
       enrollment_failed_once_(false),
+      remora_token_sent_(false),
       lockbox_init_duration_(0),
       weak_ptr_factory_(this) {
   // Init the TPM if it has not been done until now (in debug build we might
@@ -47,9 +50,11 @@ EnrollmentScreen::~EnrollmentScreen() {}
 void EnrollmentScreen::SetParameters(
     EnrollmentScreenActor::EnrollmentMode enrollment_mode,
     const std::string& management_domain,
-    const std::string& user) {
+    const std::string& user,
+    const std::string& auth_token) {
   enrollment_mode_ = enrollment_mode;
   user_ = user.empty() ? user : gaia::CanonicalizeEmail(user);
+  auth_token_ = auth_token;
   actor_->SetParameters(this, enrollment_mode_, management_domain);
 }
 
@@ -63,10 +68,14 @@ void EnrollmentScreen::Show() {
     UMA(policy::kMetricEnrollmentAutoStarted);
     actor_->ShowEnrollmentSpinnerScreen();
     actor_->FetchOAuthToken();
-  } else {
+  } else if (auth_token_.empty()) {
     UMA(policy::kMetricEnrollmentTriggered);
     actor_->ResetAuth(base::Bind(&EnrollmentScreen::ShowSigninScreen,
                                  weak_ptr_factory_.GetWeakPtr()));
+  } else {
+    actor_->Show();
+    actor_->ShowEnrollmentSpinnerScreen();
+    OnOAuthTokenAvailable(auth_token_);
   }
 }
 
@@ -129,7 +138,19 @@ void EnrollmentScreen::OnAuthError(const GoogleServiceAuthError& error) {
 }
 
 void EnrollmentScreen::OnOAuthTokenAvailable(const std::string& token) {
-  RegisterForDevicePolicy(token);
+  VLOG(1) << "OnOAuthTokenAvailable " << token;
+  const bool is_shark =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos()->
+          GetDeviceCloudPolicyManager()->IsSharkRequisition();
+
+  if (is_shark && !remora_token_sent_) {
+    // Fetch a second token for shark devices.
+    remora_token_sent_ = true;
+    SendEnrollmentAuthToken(token);
+    actor_->FetchOAuthToken();
+  } else {
+    RegisterForDevicePolicy(token);
+  }
 }
 
 void EnrollmentScreen::OnRetry() {
@@ -210,6 +231,10 @@ void EnrollmentScreen::RegisterForDevicePolicy(const std::string& token) {
       token, is_auto_enrollment(), device_modes,
       base::Bind(&EnrollmentScreen::ReportEnrollmentStatus,
                  weak_ptr_factory_.GetWeakPtr()));
+}
+
+void EnrollmentScreen::SendEnrollmentAuthToken(const std::string& token) {
+  // TODO(achuith, zork): Send token via Bluetooth to remote device.
 }
 
 void EnrollmentScreen::ShowEnrollmentStatusOnSuccess(
