@@ -135,6 +135,39 @@ protected:
         ::testing::Mock::VerifyAndClearExpectations(&mainMock);
     }
 
+    void noDrawOnContextLostTest()
+    {
+        MockCanvasContext mainMock;
+        OwnPtr<MockWebGraphicsContext3DProvider> mainMockProvider = adoptPtr(new MockWebGraphicsContext3DProvider(&mainMock));
+        RefPtr<SkSurface> surface = adoptRef(SkSurface::NewRasterPMColor(300, 150));
+        OwnPtr<SkDeferredCanvas> canvas = adoptPtr(SkDeferredCanvas::Create(surface.get()));
+
+        ::testing::Mock::VerifyAndClearExpectations(&mainMock);
+
+        {
+            Canvas2DLayerBridgePtr bridge(adoptRef(new Canvas2DLayerBridge(mainMockProvider.release(), canvas.release(), surface, 0, NonOpaque)));
+            ::testing::Mock::VerifyAndClearExpectations(&mainMock);
+            EXPECT_TRUE(bridge->checkSurfaceValid());
+            SkPaint paint;
+            uint32_t genID = surface->generationID();
+            bridge->canvas()->drawRect(SkRect::MakeXYWH(0, 0, 1, 1), paint);
+            EXPECT_EQ(genID, surface->generationID());
+            mainMock.fakeContextLost();
+            EXPECT_EQ(genID, surface->generationID());
+            bridge->canvas()->drawRect(SkRect::MakeXYWH(0, 0, 1, 1), paint);
+            EXPECT_EQ(genID, surface->generationID());
+            EXPECT_FALSE(bridge->checkSurfaceValid());
+            EXPECT_EQ(genID, surface->generationID());
+            bridge->canvas()->drawRect(SkRect::MakeXYWH(0, 0, 1, 1), paint);
+            EXPECT_EQ(genID, surface->generationID());
+            bridge->freeTransientResources();
+            EXPECT_EQ(genID, surface->generationID());
+            ::testing::Mock::VerifyAndClearExpectations(&mainMock);
+        }
+
+        ::testing::Mock::VerifyAndClearExpectations(&mainMock);
+    }
+
     void prepareMailboxWithBitmapTest()
     {
         MockCanvasContext mainMock;
@@ -155,6 +188,11 @@ namespace {
 TEST_F(Canvas2DLayerBridgeTest, testFullLifecycleSingleThreaded)
 {
     fullLifecycleTest();
+}
+
+TEST_F(Canvas2DLayerBridgeTest, testNoDrawOnContextLost)
+{
+    noDrawOnContextLostTest();
 }
 
 TEST_F(Canvas2DLayerBridgeTest, prepareMailboxWithBitmapTest)

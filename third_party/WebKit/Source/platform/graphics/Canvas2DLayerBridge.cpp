@@ -175,6 +175,8 @@ void Canvas2DLayerBridge::willAccessPixels()
 void Canvas2DLayerBridge::freeTransientResources()
 {
     ASSERT(!m_destructionInProgress);
+    if (!m_isSurfaceValid)
+        return;
     freeReleasedMailbox();
     flush();
     freeMemoryIfPossible(bytesAllocated());

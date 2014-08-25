@@ -37,6 +37,7 @@ class MockWebGraphicsContext3D : public WebGraphicsContext3D {
 public:
     MockWebGraphicsContext3D()
         : m_nextTextureId(1)
+        , m_contextLost(false)
     {
     }
 
@@ -48,7 +49,7 @@ public:
 
     virtual void synthesizeGLError(WGC3Denum) { }
 
-    virtual bool isContextLost() { return false; }
+    virtual bool isContextLost() { return m_contextLost; }
 
     virtual void* mapBufferSubDataCHROMIUM(WGC3Denum target, WGC3Dintptr offset, WGC3Dsizeiptr size, WGC3Denum access) { return 0; }
     virtual void unmapBufferSubDataCHROMIUM(const void*) { }
@@ -286,8 +287,10 @@ public:
 
     virtual WebString getTranslatedShaderSourceANGLE(WebGLId) { return WebString(); }
 
+    void fakeContextLost() { m_contextLost = true; }
 protected:
     unsigned m_nextTextureId;
+    bool m_contextLost;
     Attributes m_attrs;
 };
 
