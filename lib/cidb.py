@@ -9,10 +9,16 @@ import glob
 import logging
 import os
 import re
-import sqlalchemy
-import sqlalchemy.exc
-import sqlalchemy.interfaces
-from sqlalchemy import MetaData
+try:
+  import sqlalchemy
+  import sqlalchemy.exc
+  import sqlalchemy.interfaces
+  from sqlalchemy import MetaData
+except ImportError:
+  raise AssertionError(
+      'Unable to import sqlalchemy. Please install this package by running '
+      '`sudo apt-get install python-sqlalchemy` or similar.')
+
 import time
 
 from chromite.cbuildbot import constants
