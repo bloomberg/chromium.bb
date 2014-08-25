@@ -739,6 +739,7 @@
             '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
             '../cc/cc.gyp:cc',
             '../cc/cc_tests.gyp:cc_test_support',
+            '../gin/gin.gyp:gin',
             '../gpu/gpu.gyp:gpu',
             '../gpu/gpu.gyp:gpu_unittest_utils',
             '../ipc/ipc.gyp:test_support_ipc',
