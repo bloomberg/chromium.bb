@@ -5,32 +5,33 @@
 #include "ui/ozone/platform/dri/dri_vsync_provider.h"
 
 #include "base/time/time.h"
+#include "ui/ozone/platform/dri/dri_window_delegate.h"
 #include "ui/ozone/platform/dri/hardware_display_controller.h"
 
 namespace ui {
 
-DriVSyncProvider::DriVSyncProvider(
-    const base::WeakPtr<HardwareDisplayController>& controller)
-    : controller_(controller) {
+DriVSyncProvider::DriVSyncProvider(DriWindowDelegate* window_delegate)
+    : window_delegate_(window_delegate) {
 }
 
 DriVSyncProvider::~DriVSyncProvider() {}
 
 void DriVSyncProvider::GetVSyncParameters(const UpdateVSyncCallback& callback) {
-  if (!controller_)
+  HardwareDisplayController* controller = window_delegate_->GetController();
+  if (!controller)
     return;
 
   // The value is invalid, so we can't update the parameters.
-  if (controller_->get_time_of_last_flip() == 0 ||
-      controller_->get_mode().vrefresh == 0)
+  if (controller->get_time_of_last_flip() == 0 ||
+      controller->get_mode().vrefresh == 0)
     return;
 
   // Stores the time of the last refresh.
   base::TimeTicks timebase =
-      base::TimeTicks::FromInternalValue(controller_->get_time_of_last_flip());
+      base::TimeTicks::FromInternalValue(controller->get_time_of_last_flip());
   // Stores the refresh rate.
   base::TimeDelta interval =
-      base::TimeDelta::FromSeconds(1) / controller_->get_mode().vrefresh;
+      base::TimeDelta::FromSeconds(1) / controller->get_mode().vrefresh;
 
   callback.Run(timebase, interval);
 }

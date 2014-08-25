@@ -15,6 +15,7 @@
 namespace ui {
 
 class DriBuffer;
+class DriWindowManager;
 class DriWrapper;
 class ScreenManager;
 class SurfaceOzoneCanvas;
@@ -22,12 +23,14 @@ class SurfaceOzoneCanvas;
 // SurfaceFactoryOzone implementation on top of DRM/KMS using dumb buffers.
 // This implementation is used in conjunction with the software rendering
 // path.
-class DriSurfaceFactory : public ui::SurfaceFactoryOzone,
+class DriSurfaceFactory : public SurfaceFactoryOzone,
                           public HardwareCursorDelegate {
  public:
   static const gfx::AcceleratedWidget kDefaultWidgetHandle;
 
-  DriSurfaceFactory(DriWrapper* drm, ScreenManager* screen_manager);
+  DriSurfaceFactory(DriWrapper* drm,
+                    ScreenManager* screen_manager,
+                    DriWindowManager* window_manager);
   virtual ~DriSurfaceFactory();
 
   // Describes the state of the hardware after initialization.
@@ -38,22 +41,17 @@ class DriSurfaceFactory : public ui::SurfaceFactoryOzone,
   };
 
   // Open the display device.
-  virtual HardwareState InitializeHardware();
+  HardwareState InitializeHardware();
 
   // Close the display device.
-  virtual void ShutdownHardware();
+  void ShutdownHardware();
 
-  virtual scoped_ptr<ui::SurfaceOzoneCanvas> CreateCanvasForWidget(
-      gfx::AcceleratedWidget w) OVERRIDE;
+  // SurfaceFactoryOzone:
+  virtual scoped_ptr<SurfaceOzoneCanvas> CreateCanvasForWidget(
+      gfx::AcceleratedWidget widget) OVERRIDE;
   virtual bool LoadEGLGLES2Bindings(
       AddGLLibraryCallback add_gl_library,
       SetGLGetProcAddressProcCallback set_gl_get_proc_address) OVERRIDE;
-
-  // Create a new window/surface/widget identifier.
-  gfx::AcceleratedWidget GetAcceleratedWidget();
-
-  // Determine dimensions of a widget.
-  gfx::Size GetWidgetSize(gfx::AcceleratedWidget w);
 
   // HardwareCursorDelegate:
   virtual void SetHardwareCursor(gfx::AcceleratedWidget window,
@@ -68,10 +66,8 @@ class DriSurfaceFactory : public ui::SurfaceFactoryOzone,
 
   DriWrapper* drm_;  // Not owned.
   ScreenManager* screen_manager_;  // Not owned.
+  DriWindowManager* window_manager_;  // Not owned.
   HardwareState state_;
-
-  // Active outputs.
-  int allocated_widgets_;
 
   scoped_refptr<DriBuffer> cursor_buffers_[2];
   int cursor_frontbuffer_;

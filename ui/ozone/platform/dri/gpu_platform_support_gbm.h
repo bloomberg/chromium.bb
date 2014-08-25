@@ -50,15 +50,11 @@ class GpuPlatformSupportGbm : public GpuPlatformSupport {
                    const gfx::Point& location);
   void OnCursorMove(gfx::AcceleratedWidget widget, const gfx::Point& location);
 
-  typedef base::ScopedPtrHashMap<gfx::AcceleratedWidget, DriWindowDelegate>
-      WidgetToWindowDelegateMap;
-
   IPC::Sender* sender_;
   DriSurfaceFactory* dri_;
   DriWindowManager* window_manager_;
   ScreenManager* screen_manager_;
   ScopedVector<GpuPlatformSupport> handlers_;
-  WidgetToWindowDelegateMap window_delegate_owner_;
 };
 
 }  // namespace ui

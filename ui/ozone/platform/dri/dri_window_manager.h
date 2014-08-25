@@ -5,8 +5,7 @@
 #ifndef UI_OZONE_PLATFORM_DRI_DRI_WINDOW_MANAGER_H_
 #define UI_OZONE_PLATFORM_DRI_DRI_WINDOW_MANAGER_H_
 
-#include <map>
-
+#include "base/containers/scoped_ptr_hash_map.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace ui {
@@ -23,11 +22,12 @@ class DriWindowManager {
   // Adds a delegate for |widget|. Note: |widget| should not be associated with
   // a delegate when calling this function.
   void AddWindowDelegate(gfx::AcceleratedWidget widget,
-                         DriWindowDelegate* surface);
+                         scoped_ptr<DriWindowDelegate> surface);
 
   // Removes the delegate for |widget|. Note: |widget| must have a delegate
   // associated with it when calling this function.
-  void RemoveWindowDelegate(gfx::AcceleratedWidget widget);
+  scoped_ptr<DriWindowDelegate> RemoveWindowDelegate(
+      gfx::AcceleratedWidget widget);
 
   // Returns the delegate associated with |widget|. Note: This function should
   // be called only if a valid delegate has been associated with |widget|.
@@ -37,7 +37,7 @@ class DriWindowManager {
   bool HasWindowDelegate(gfx::AcceleratedWidget widget);
 
  private:
-  typedef std::map<gfx::AcceleratedWidget, DriWindowDelegate*>
+  typedef base::ScopedPtrHashMap<gfx::AcceleratedWidget, DriWindowDelegate>
       WidgetToDelegateMap;
 
   WidgetToDelegateMap delegate_map_;

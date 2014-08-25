@@ -66,21 +66,14 @@ void GpuPlatformSupportGbm::OnCreateWindowDelegate(
     scoped_ptr<DriWindowDelegate> delegate(
         new DriWindowDelegateImpl(widget, screen_manager_));
     delegate->Initialize();
-    window_manager_->AddWindowDelegate(widget, delegate.get());
-
-    std::pair<WidgetToWindowDelegateMap::iterator, bool> result =
-        window_delegate_owner_.add(widget, delegate.Pass());
-    DCHECK(result.second) << "Delegate already added.";
+    window_manager_->AddWindowDelegate(widget, delegate.Pass());
   }
 }
 
 void GpuPlatformSupportGbm::OnDestroyWindowDelegate(
     gfx::AcceleratedWidget widget) {
   scoped_ptr<DriWindowDelegate> delegate =
-      window_delegate_owner_.take_and_erase(widget);
-  DCHECK(delegate) << "Attempting to remove non-existing delegate.";
-
-  window_manager_->RemoveWindowDelegate(widget);
+      window_manager_->RemoveWindowDelegate(widget);
   delegate->Shutdown();
 }
 

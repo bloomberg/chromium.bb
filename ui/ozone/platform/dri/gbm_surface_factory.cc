@@ -9,6 +9,8 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "third_party/khronos/EGL/egl.h"
+#include "ui/ozone/platform/dri/dri_window_delegate_impl.h"
+#include "ui/ozone/platform/dri/dri_window_manager.h"
 #include "ui/ozone/platform/dri/gbm_buffer.h"
 #include "ui/ozone/platform/dri/gbm_surface.h"
 #include "ui/ozone/platform/dri/gbm_surfaceless.h"
@@ -64,18 +66,21 @@ class SingleOverlay : public OverlayCandidatesOzone {
 }  // namespace
 
 GbmSurfaceFactory::GbmSurfaceFactory(bool allow_surfaceless)
-    : DriSurfaceFactory(NULL, NULL),
+    : DriSurfaceFactory(NULL, NULL, NULL),
       device_(NULL),
       allow_surfaceless_(allow_surfaceless) {
 }
 
 GbmSurfaceFactory::~GbmSurfaceFactory() {}
 
-void GbmSurfaceFactory::InitializeGpu(
-    DriWrapper* dri, gbm_device* device, ScreenManager* screen_manager) {
+void GbmSurfaceFactory::InitializeGpu(DriWrapper* dri,
+                                      gbm_device* device,
+                                      ScreenManager* screen_manager,
+                                      DriWindowManager* window_manager) {
   drm_ = dri;
   device_ = device;
   screen_manager_ = screen_manager;
+  window_manager_ = window_manager;
 }
 
 intptr_t GbmSurfaceFactory::GetNativeDisplay() {
@@ -141,10 +146,12 @@ bool GbmSurfaceFactory::LoadEGLGLES2Bindings(
 scoped_ptr<SurfaceOzoneEGL> GbmSurfaceFactory::CreateEGLSurfaceForWidget(
     gfx::AcceleratedWidget widget) {
   DCHECK(state_ == INITIALIZED);
+
+  DriWindowDelegate* delegate = GetOrCreateWindowDelegate(widget);
+
   ResetCursor(widget);
 
-  scoped_ptr<GbmSurface> surface(new GbmSurface(
-      screen_manager_->GetDisplayController(widget), device_, drm_));
+  scoped_ptr<GbmSurface> surface(new GbmSurface(delegate, device_, drm_));
   if (!surface->Initialize())
     return scoped_ptr<SurfaceOzoneEGL>();
 
@@ -156,8 +163,9 @@ GbmSurfaceFactory::CreateSurfacelessEGLSurfaceForWidget(
     gfx::AcceleratedWidget widget) {
   if (!allow_surfaceless_)
     return scoped_ptr<SurfaceOzoneEGL>();
-  return scoped_ptr<SurfaceOzoneEGL>(
-      new GbmSurfaceless(screen_manager_->GetDisplayController(widget)));
+
+  DriWindowDelegate* delegate = GetOrCreateWindowDelegate(widget);
+  return scoped_ptr<SurfaceOzoneEGL>(new GbmSurfaceless(delegate));
 }
 
 scoped_refptr<ui::NativePixmap> GbmSurfaceFactory::CreateNativePixmap(
@@ -191,10 +199,11 @@ bool GbmSurfaceFactory::ScheduleOverlayPlane(
     LOG(ERROR) << "ScheduleOverlayPlane passed NULL buffer.";
     return false;
   }
-  base::WeakPtr<HardwareDisplayController> hdc =
-      screen_manager_->GetDisplayController(widget);
+  HardwareDisplayController* hdc =
+      window_manager_->GetWindowDelegate(widget)->GetController();
   if (!hdc)
     return true;
+
   hdc->QueueOverlayPlane(OverlayPlane(pixmap->buffer(),
                                       plane_z_order,
                                       plane_transform,
@@ -205,6 +214,18 @@ bool GbmSurfaceFactory::ScheduleOverlayPlane(
 
 bool GbmSurfaceFactory::CanShowPrimaryPlaneAsOverlay() {
   return allow_surfaceless_;
+}
+
+DriWindowDelegate* GbmSurfaceFactory::GetOrCreateWindowDelegate(
+    gfx::AcceleratedWidget widget) {
+  if (!window_manager_->HasWindowDelegate(widget)) {
+    scoped_ptr<DriWindowDelegate> delegate(
+        new DriWindowDelegateImpl(widget, screen_manager_));
+    delegate->Initialize();
+    window_manager_->AddWindowDelegate(widget, delegate.Pass());
+  }
+
+  return window_manager_->GetWindowDelegate(widget);
 }
 
 }  // namespace ui

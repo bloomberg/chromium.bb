@@ -14,6 +14,7 @@
 #include "ui/events/ozone/evdev/event_factory_evdev.h"
 #include "ui/ozone/platform/dri/cursor_factory_evdev_dri.h"
 #include "ui/ozone/platform/dri/dri_window.h"
+#include "ui/ozone/platform/dri/dri_window_delegate_proxy.h"
 #include "ui/ozone/platform/dri/dri_window_manager.h"
 #include "ui/ozone/platform/dri/dri_wrapper.h"
 #include "ui/ozone/platform/dri/gbm_buffer.h"
@@ -97,11 +98,16 @@ class OzonePlatformGbm : public OzonePlatform {
   virtual scoped_ptr<PlatformWindow> CreatePlatformWindow(
       PlatformWindowDelegate* delegate,
       const gfx::Rect& bounds) OVERRIDE {
-    return scoped_ptr<PlatformWindow>(
+    scoped_ptr<DriWindow> platform_window(
         new DriWindow(delegate,
                       bounds,
-                      surface_factory_ozone_.get(),
-                      event_factory_ozone_.get()));
+                      scoped_ptr<DriWindowDelegate>(new DriWindowDelegateProxy(
+                          ui_window_manager_.NextAcceleratedWidget(),
+                          gpu_platform_support_host_.get())),
+                      event_factory_ozone_.get(),
+                      &ui_window_manager_));
+    platform_window->Initialize();
+    return platform_window.PassAs<PlatformWindow>();
   }
 #if defined(OS_CHROMEOS)
   virtual scoped_ptr<NativeDisplayDelegate> CreateNativeDisplayDelegate()
@@ -120,7 +126,6 @@ class OzonePlatformGbm : public OzonePlatform {
     // Needed since the browser process creates the accelerated widgets and that
     // happens through SFO.
     surface_factory_ozone_.reset(new GbmSurfaceFactory(use_surfaceless_));
-
     device_manager_ = CreateDeviceManager();
     gpu_platform_support_host_.reset(new GpuPlatformSupportHostGbm());
     cursor_factory_ozone_.reset(
@@ -139,7 +144,8 @@ class OzonePlatformGbm : public OzonePlatform {
 
     surface_factory_ozone_->InitializeGpu(dri_.get(),
                                           buffer_generator_->device(),
-                                          screen_manager_.get());
+                                          screen_manager_.get(),
+                                          &gpu_window_manager_);
     gpu_platform_support_.reset(
         new GpuPlatformSupportGbm(surface_factory_ozone_.get(),
                                   &gpu_window_manager_,
@@ -173,6 +179,7 @@ class OzonePlatformGbm : public OzonePlatform {
   scoped_ptr<GpuPlatformSupportHostGbm> gpu_platform_support_host_;
 
   DriWindowManager gpu_window_manager_;
+  DriWindowManager ui_window_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(OzonePlatformGbm);
 };

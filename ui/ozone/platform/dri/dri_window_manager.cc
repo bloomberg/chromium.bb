@@ -4,6 +4,8 @@
 
 #include "ui/ozone/platform/dri/dri_window_manager.h"
 
+#include "ui/ozone/platform/dri/dri_window_delegate.h"
+
 namespace ui {
 
 DriWindowManager::DriWindowManager() : last_allocated_widget_(0) {
@@ -19,19 +21,19 @@ gfx::AcceleratedWidget DriWindowManager::NextAcceleratedWidget() {
   return ++last_allocated_widget_;
 }
 
-void DriWindowManager::AddWindowDelegate(gfx::AcceleratedWidget widget,
-                                         DriWindowDelegate* delegate) {
-  DCHECK(delegate_map_.find(widget) == delegate_map_.end())
-      << "Window delegate already added.";
-  delegate_map_.insert(std::make_pair(widget, delegate));
+void DriWindowManager::AddWindowDelegate(
+    gfx::AcceleratedWidget widget,
+    scoped_ptr<DriWindowDelegate> delegate) {
+  std::pair<WidgetToDelegateMap::iterator, bool> result =
+      delegate_map_.add(widget, delegate.Pass());
+  DCHECK(result.second) << "Delegate already added.";
 }
 
-void DriWindowManager::RemoveWindowDelegate(gfx::AcceleratedWidget widget) {
-  WidgetToDelegateMap::iterator it = delegate_map_.find(widget);
-  DCHECK(it != delegate_map_.end())
-      << "Attempting to remove non-existing delegate.";
-
-  delegate_map_.erase(it);
+scoped_ptr<DriWindowDelegate> DriWindowManager::RemoveWindowDelegate(
+    gfx::AcceleratedWidget widget) {
+  scoped_ptr<DriWindowDelegate> delegate = delegate_map_.take_and_erase(widget);
+  DCHECK(delegate) << "Attempting to remove non-existing delegate.";
+  return delegate.Pass();
 }
 
 DriWindowDelegate* DriWindowManager::GetWindowDelegate(

@@ -7,25 +7,38 @@
 #include "ui/events/event.h"
 #include "ui/events/ozone/evdev/event_factory_evdev.h"
 #include "ui/events/platform/platform_event_source.h"
-#include "ui/ozone/platform/dri/dri_surface_factory.h"
+#include "ui/ozone/platform/dri/dri_window_delegate.h"
+#include "ui/ozone/platform/dri/dri_window_manager.h"
 #include "ui/ozone/public/cursor_factory_ozone.h"
-#include "ui/ozone/public/surface_factory_ozone.h"
 #include "ui/platform_window/platform_window_delegate.h"
 
 namespace ui {
 
 DriWindow::DriWindow(PlatformWindowDelegate* delegate,
                      const gfx::Rect& bounds,
-                     DriSurfaceFactory* surface_factory,
-                     EventFactoryEvdev* event_factory)
-    : delegate_(delegate), bounds_(bounds), event_factory_(event_factory) {
-  widget_ = surface_factory->GetAcceleratedWidget();
-  delegate_->OnAcceleratedWidgetAvailable(widget_);
-  PlatformEventSource::GetInstance()->AddPlatformEventDispatcher(this);
+                     scoped_ptr<DriWindowDelegate> dri_window_delegate,
+                     EventFactoryEvdev* event_factory,
+                     DriWindowManager* window_manager)
+    : delegate_(delegate),
+      bounds_(bounds),
+      widget_(dri_window_delegate->GetAcceleratedWidget()),
+      dri_window_delegate_(dri_window_delegate.get()),
+      event_factory_(event_factory),
+      window_manager_(window_manager) {
+  window_manager_->AddWindowDelegate(widget_, dri_window_delegate.Pass());
 }
 
 DriWindow::~DriWindow() {
   PlatformEventSource::GetInstance()->RemovePlatformEventDispatcher(this);
+  dri_window_delegate_->Shutdown();
+  window_manager_->RemoveWindowDelegate(widget_);
+}
+
+void DriWindow::Initialize() {
+  dri_window_delegate_->Initialize();
+  dri_window_delegate_->OnBoundsChanged(bounds_);
+  delegate_->OnAcceleratedWidgetAvailable(widget_);
+  PlatformEventSource::GetInstance()->AddPlatformEventDispatcher(this);
 }
 
 void DriWindow::Show() {}
@@ -37,6 +50,7 @@ void DriWindow::Close() {}
 void DriWindow::SetBounds(const gfx::Rect& bounds) {
   bounds_ = bounds;
   delegate_->OnBoundsChanged(bounds);
+  dri_window_delegate_->OnBoundsChanged(bounds);
 }
 
 gfx::Rect DriWindow::GetBounds() {

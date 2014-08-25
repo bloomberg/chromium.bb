@@ -5,16 +5,15 @@
 #ifndef UI_OZONE_PLATFORM_DRI_GBM_SURFACELESS_H_
 #define UI_OZONE_PLATFORM_DRI_GBM_SURFACELESS_H_
 
-#include "base/memory/scoped_ptr.h"
-#include "ui/ozone/platform/dri/hardware_display_controller.h"
 #include "ui/ozone/public/surface_ozone_egl.h"
 
 namespace gfx {
 class Size;
-class Rect;
 }  // namespace gfx
 
 namespace ui {
+
+class DriWindowDelegate;
 
 // In surfaceless mode drawing and displaying happens directly through
 // NativePixmap buffers. CC would call into SurfaceFactoryOzone to allocate the
@@ -22,7 +21,7 @@ namespace ui {
 // presentation.
 class GbmSurfaceless : public SurfaceOzoneEGL {
  public:
-  GbmSurfaceless(const base::WeakPtr<HardwareDisplayController>& controller);
+  GbmSurfaceless(DriWindowDelegate* window_delegate);
   virtual ~GbmSurfaceless();
 
   // SurfaceOzoneEGL:
@@ -30,8 +29,9 @@ class GbmSurfaceless : public SurfaceOzoneEGL {
   virtual bool ResizeNativeWindow(const gfx::Size& viewport_size) OVERRIDE;
   virtual bool OnSwapBuffers() OVERRIDE;
   virtual scoped_ptr<gfx::VSyncProvider> CreateVSyncProvider() OVERRIDE;
+
  protected:
-  base::WeakPtr<HardwareDisplayController> controller_;
+  DriWindowDelegate* window_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(GbmSurfaceless);
 };

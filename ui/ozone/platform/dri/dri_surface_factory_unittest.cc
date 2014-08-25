@@ -13,6 +13,8 @@
 #include "ui/ozone/platform/dri/dri_buffer.h"
 #include "ui/ozone/platform/dri/dri_surface.h"
 #include "ui/ozone/platform/dri/dri_surface_factory.h"
+#include "ui/ozone/platform/dri/dri_window_delegate_impl.h"
+#include "ui/ozone/platform/dri/dri_window_manager.h"
 #include "ui/ozone/platform/dri/hardware_display_controller.h"
 #include "ui/ozone/platform/dri/screen_manager.h"
 #include "ui/ozone/platform/dri/test/mock_dri_wrapper.h"
@@ -63,6 +65,7 @@ class DriSurfaceFactoryTest : public testing::Test {
   scoped_ptr<ui::DriBufferGenerator> buffer_generator_;
   scoped_ptr<MockScreenManager> screen_manager_;
   scoped_ptr<ui::DriSurfaceFactory> factory_;
+  scoped_ptr<ui::DriWindowManager> window_manager_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DriSurfaceFactoryTest);
@@ -74,10 +77,23 @@ void DriSurfaceFactoryTest::SetUp() {
   buffer_generator_.reset(new ui::DriBufferGenerator(dri_.get()));
   screen_manager_.reset(new MockScreenManager(dri_.get(),
                                               buffer_generator_.get()));
-  factory_.reset(new ui::DriSurfaceFactory(dri_.get(), screen_manager_.get()));
+  window_manager_.reset(new ui::DriWindowManager());
+  factory_.reset(new ui::DriSurfaceFactory(
+      dri_.get(), screen_manager_.get(), window_manager_.get()));
+
+  scoped_ptr<ui::DriWindowDelegate> window_delegate(
+      new ui::DriWindowDelegateImpl(ui::DriSurfaceFactory::kDefaultWidgetHandle,
+                                    screen_manager_.get()));
+  window_delegate->Initialize();
+  window_manager_->AddWindowDelegate(
+      ui::DriSurfaceFactory::kDefaultWidgetHandle, window_delegate.Pass());
 }
 
 void DriSurfaceFactoryTest::TearDown() {
+  scoped_ptr<ui::DriWindowDelegate> delegate =
+      window_manager_->RemoveWindowDelegate(
+          ui::DriSurfaceFactory::kDefaultWidgetHandle);
+  delegate->Shutdown();
   factory_.reset();
   message_loop_.reset();
 }
@@ -96,20 +112,16 @@ TEST_F(DriSurfaceFactoryTest, SuccessfulWidgetRealization) {
   EXPECT_EQ(ui::DriSurfaceFactory::INITIALIZED,
             factory_->InitializeHardware());
 
-  gfx::AcceleratedWidget w = factory_->GetAcceleratedWidget();
-  EXPECT_EQ(ui::DriSurfaceFactory::kDefaultWidgetHandle, w);
-
-  EXPECT_TRUE(factory_->CreateCanvasForWidget(w));
+  EXPECT_TRUE(factory_->CreateCanvasForWidget(
+      ui::DriSurfaceFactory::kDefaultWidgetHandle));
 }
 
 TEST_F(DriSurfaceFactoryTest, SetCursorImage) {
   EXPECT_EQ(ui::DriSurfaceFactory::INITIALIZED,
             factory_->InitializeHardware());
 
-  gfx::AcceleratedWidget w = factory_->GetAcceleratedWidget();
-  EXPECT_EQ(ui::DriSurfaceFactory::kDefaultWidgetHandle, w);
-
-  scoped_ptr<ui::SurfaceOzoneCanvas> surf = factory_->CreateCanvasForWidget(w);
+  scoped_ptr<ui::SurfaceOzoneCanvas> surf = factory_->CreateCanvasForWidget(
+      ui::DriSurfaceFactory::kDefaultWidgetHandle);
   EXPECT_TRUE(surf);
 
   SkBitmap image;
@@ -118,7 +130,8 @@ TEST_F(DriSurfaceFactoryTest, SetCursorImage) {
   image.allocPixels(info);
   image.eraseColor(SK_ColorWHITE);
 
-  factory_->SetHardwareCursor(w, image, gfx::Point(4, 2));
+  factory_->SetHardwareCursor(
+      ui::DriSurfaceFactory::kDefaultWidgetHandle, image, gfx::Point(4, 2));
 
   SkBitmap cursor;
   // Buffers 0 and 1 are the cursor buffers.

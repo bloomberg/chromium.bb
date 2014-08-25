@@ -82,6 +82,7 @@ HardwareDisplayController::HardwareDisplayController(
     DriWrapper* drm,
     scoped_ptr<CrtcState> state)
     : drm_(drm),
+      is_disabled_(true),
       time_of_last_flip_(0),
       pending_page_flips_(0) {
   crtc_states_.push_back(state.release());
@@ -98,13 +99,16 @@ bool HardwareDisplayController::Modeset(const OverlayPlane& primary,
   DCHECK(primary.buffer);
   pending_page_flips_ = 0;
   bool status = true;
-  for (size_t i = 0; i < crtc_states_.size(); ++i)
+  for (size_t i = 0; i < crtc_states_.size(); ++i) {
     status &= ModesetCrtc(primary.buffer, mode, crtc_states_[i]);
+    crtc_states_[i]->set_is_disabled(false);
+  }
 
   // Since a subset of controllers may be actively using |primary|, just keep
   // track of it.
   current_planes_ = std::vector<OverlayPlane>(1, primary);
   pending_planes_.clear();
+  is_disabled_ = false;
   mode_ = mode;
   return status;
 }
@@ -129,6 +133,8 @@ void HardwareDisplayController::Disable() {
     drm_->DisableCrtc(crtc_states_[i]->crtc());
     crtc_states_[i]->set_is_disabled(true);
   }
+
+  is_disabled_ = true;
 }
 
 void HardwareDisplayController::QueueOverlayPlane(const OverlayPlane& plane) {
@@ -139,13 +145,12 @@ bool HardwareDisplayController::SchedulePageFlip() {
   DCHECK(!pending_planes_.empty());
   DCHECK_EQ(0u, pending_page_flips_);
 
-  bool status = true;
-  for (size_t i = 0; i < crtc_states_.size(); ++i) {
-    if (crtc_states_[i]->is_disabled())
-      continue;
+  if (is_disabled_)
+    return true;
 
+  bool status = true;
+  for (size_t i = 0; i < crtc_states_.size(); ++i)
     status &= SchedulePageFlipOnCrtc(pending_planes_, crtc_states_[i]);
-  }
 
   return status;
 }
@@ -186,11 +191,13 @@ void HardwareDisplayController::OnPageFlipEvent(unsigned int frame,
 bool HardwareDisplayController::SetCursor(scoped_refptr<ScanoutBuffer> buffer) {
   bool status = true;
   cursor_buffer_ = buffer;
+
+  if (is_disabled_)
+    return true;
+
   for (size_t i = 0; i < crtc_states_.size(); ++i) {
-    if (!crtc_states_[i]->is_disabled())
-      status &= drm_->SetCursor(crtc_states_[i]->crtc(),
-                                buffer->GetHandle(),
-                                buffer->GetSize());
+    status &= drm_->SetCursor(
+        crtc_states_[i]->crtc(), buffer->GetHandle(), buffer->GetSize());
   }
 
   return status;
@@ -206,10 +213,12 @@ bool HardwareDisplayController::UnsetCursor() {
 }
 
 bool HardwareDisplayController::MoveCursor(const gfx::Point& location) {
+  if (is_disabled_)
+    return true;
+
   bool status = true;
   for (size_t i = 0; i < crtc_states_.size(); ++i)
-    if (!crtc_states_[i]->is_disabled())
-      status &= drm_->MoveCursor(crtc_states_[i]->crtc(), location);
+    status &= drm_->MoveCursor(crtc_states_[i]->crtc(), location);
 
   return status;
 }
@@ -241,13 +250,12 @@ bool HardwareDisplayController::HasCrtc(uint32_t crtc) const {
   return false;
 }
 
-bool HardwareDisplayController::HasCrtcs() const {
-  return !crtc_states_.empty();
+bool HardwareDisplayController::IsMirrored() const {
+  return crtc_states_.size() > 1;
 }
 
-void HardwareDisplayController::RemoveMirroredCrtcs() {
-  if (crtc_states_.size() > 1)
-    crtc_states_.erase(crtc_states_.begin() + 1, crtc_states_.end());
+bool HardwareDisplayController::IsDisabled() const {
+  return is_disabled_;
 }
 
 bool HardwareDisplayController::ModesetCrtc(
@@ -267,7 +275,6 @@ bool HardwareDisplayController::ModesetCrtc(
     return false;
   }
 
-  state->set_is_disabled(false);
   return true;
 }
 

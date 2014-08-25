@@ -10,6 +10,7 @@
 #include "ui/ozone/platform/dri/crtc_state.h"
 #include "ui/ozone/platform/dri/dri_buffer.h"
 #include "ui/ozone/platform/dri/dri_surface.h"
+#include "ui/ozone/platform/dri/dri_window_delegate.h"
 #include "ui/ozone/platform/dri/hardware_display_controller.h"
 #include "ui/ozone/platform/dri/test/mock_dri_wrapper.h"
 
@@ -21,6 +22,36 @@ const drmModeModeInfo kDefaultMode =
 
 const uint32_t kDefaultCrtc = 1;
 const uint32_t kDefaultConnector = 2;
+
+class MockDriWindowDelegate : public ui::DriWindowDelegate {
+ public:
+  MockDriWindowDelegate(ui::DriWrapper* drm) {
+    controller_.reset(new ui::HardwareDisplayController(
+        drm,
+        make_scoped_ptr(
+            new ui::CrtcState(drm, kDefaultCrtc, kDefaultConnector))));
+    scoped_refptr<ui::DriBuffer> buffer(new ui::DriBuffer(drm));
+    SkImageInfo info = SkImageInfo::MakeN32Premul(kDefaultMode.hdisplay,
+                                                  kDefaultMode.vdisplay);
+    EXPECT_TRUE(buffer->Initialize(info));
+    EXPECT_TRUE(controller_->Modeset(ui::OverlayPlane(buffer), kDefaultMode));
+  }
+  virtual ~MockDriWindowDelegate() {}
+
+  // DriWindowDelegate:
+  virtual void Initialize() OVERRIDE {}
+  virtual void Shutdown() OVERRIDE {}
+  virtual gfx::AcceleratedWidget GetAcceleratedWidget() OVERRIDE { return 1; }
+  virtual ui::HardwareDisplayController* GetController() OVERRIDE {
+    return controller_.get();
+  }
+  virtual void OnBoundsChanged(const gfx::Rect& bounds) OVERRIDE {}
+
+ private:
+  scoped_ptr<ui::HardwareDisplayController> controller_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockDriWindowDelegate);
+};
 
 }  // namespace
 
@@ -34,7 +65,7 @@ class DriSurfaceTest : public testing::Test {
  protected:
   scoped_ptr<base::MessageLoop> message_loop_;
   scoped_ptr<ui::MockDriWrapper> drm_;
-  scoped_ptr<ui::HardwareDisplayController> controller_;
+  scoped_ptr<MockDriWindowDelegate> window_delegate_;
   scoped_ptr<ui::DriSurface> surface_;
 
  private:
@@ -44,25 +75,15 @@ class DriSurfaceTest : public testing::Test {
 void DriSurfaceTest::SetUp() {
   message_loop_.reset(new base::MessageLoopForUI);
   drm_.reset(new ui::MockDriWrapper(3));
-
-  controller_.reset(new ui::HardwareDisplayController(
-      drm_.get(),
-      scoped_ptr<ui::CrtcState>(
-          new ui::CrtcState(drm_.get(), kDefaultCrtc, kDefaultConnector))));
-  scoped_refptr<ui::DriBuffer> buffer(new ui::DriBuffer(drm_.get()));
-  SkImageInfo info = SkImageInfo::MakeN32Premul(kDefaultMode.hdisplay,
-                                                kDefaultMode.vdisplay);
-  EXPECT_TRUE(buffer->Initialize(info));
-  EXPECT_TRUE(controller_->Modeset(ui::OverlayPlane(buffer), kDefaultMode));
-
-  surface_.reset(new ui::DriSurface(drm_.get(), controller_->AsWeakPtr()));
+  window_delegate_.reset(new MockDriWindowDelegate(drm_.get()));
+  surface_.reset(new ui::DriSurface(window_delegate_.get(), drm_.get()));
   surface_->ResizeCanvas(gfx::Size(kDefaultMode.hdisplay,
                                    kDefaultMode.vdisplay));
 }
 
 void DriSurfaceTest::TearDown() {
   surface_.reset();
-  controller_.reset();
+  window_delegate_.reset();
   drm_.reset();
   message_loop_.reset();
 }

@@ -165,8 +165,8 @@ class HardwareDisplayController
   void AddCrtc(scoped_ptr<CrtcState> state);
   scoped_ptr<CrtcState> RemoveCrtc(uint32_t crtc);
   bool HasCrtc(uint32_t crtc) const;
-  bool HasCrtcs() const;
-  void RemoveMirroredCrtcs();
+  bool IsMirrored() const;
+  bool IsDisabled() const;
 
   gfx::Point origin() const { return origin_; }
   void set_origin(const gfx::Point& origin) { origin_ = origin; }
@@ -199,6 +199,7 @@ class HardwareDisplayController
   ScopedVector<CrtcState> crtc_states_;
   gfx::Point origin_;
   drmModeModeInfo mode_;
+  bool is_disabled_;
   uint64_t time_of_last_flip_;
 
   // Keeps track of the number of page flips scheduled but not yet serviced (in

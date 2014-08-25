@@ -8,8 +8,10 @@
 
 #include "base/logging.h"
 #include "ui/ozone/platform/dri/dri_buffer.h"
+#include "ui/ozone/platform/dri/dri_window_delegate.h"
 #include "ui/ozone/platform/dri/dri_wrapper.h"
 #include "ui/ozone/platform/dri/gbm_buffer_base.h"
+#include "ui/ozone/platform/dri/hardware_display_controller.h"
 #include "ui/ozone/platform/dri/scanout_buffer.h"
 
 namespace ui {
@@ -73,15 +75,15 @@ void GbmSurfaceBuffer::Destroy(gbm_bo* buffer, void* data) {
 
 }  // namespace
 
-GbmSurface::GbmSurface(
-    const base::WeakPtr<HardwareDisplayController>& controller,
-    gbm_device* device,
-    DriWrapper* dri)
-    : GbmSurfaceless(controller),
+GbmSurface::GbmSurface(DriWindowDelegate* window_delegate,
+                       gbm_device* device,
+                       DriWrapper* dri)
+    : GbmSurfaceless(window_delegate),
       gbm_device_(device),
       dri_(dri),
       native_surface_(NULL),
-      current_buffer_(NULL) {}
+      current_buffer_(NULL) {
+}
 
 GbmSurface::~GbmSurface() {
   if (current_buffer_)
@@ -92,19 +94,27 @@ GbmSurface::~GbmSurface() {
 }
 
 bool GbmSurface::Initialize() {
+  // If we're initializing the surface without a controller (possible on startup
+  // where the surface creation can happen before the native window delegate
+  // IPCs arrive), initialize the size to a valid value such that surface
+  // creation doesn't fail.
+  gfx::Size size(1, 1);
+  if (window_delegate_->GetController()) {
+    const drmModeModeInfo& mode = window_delegate_->GetController()->get_mode();
+    size.SetSize(mode.hdisplay, mode.vdisplay);
+  }
   // TODO(dnicoara) Check underlying system support for pixel format.
-  native_surface_ = gbm_surface_create(
-      gbm_device_,
-      controller_->get_mode().hdisplay,
-      controller_->get_mode().vdisplay,
-      GBM_BO_FORMAT_XRGB8888,
-      GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING);
+  native_surface_ =
+      gbm_surface_create(gbm_device_,
+                         size.width(),
+                         size.height(),
+                         GBM_BO_FORMAT_XRGB8888,
+                         GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING);
 
   if (!native_surface_)
     return false;
 
-  size_.SetSize(controller_->get_mode().hdisplay,
-                controller_->get_mode().vdisplay);
+  size_ = size;
   return true;
 }
 
@@ -135,7 +145,8 @@ bool GbmSurface::OnSwapBuffers() {
   }
 
   // The primary buffer is a special case.
-  controller_->QueueOverlayPlane(OverlayPlane(primary));
+  if (window_delegate_->GetController())
+    window_delegate_->GetController()->QueueOverlayPlane(OverlayPlane(primary));
 
   if (!GbmSurfaceless::OnSwapBuffers())
     return false;

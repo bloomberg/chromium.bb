@@ -12,6 +12,8 @@
 #include "ui/ozone/platform/dri/dri_buffer.h"
 #include "ui/ozone/platform/dri/dri_surface_factory.h"
 #include "ui/ozone/platform/dri/dri_window.h"
+#include "ui/ozone/platform/dri/dri_window_delegate_impl.h"
+#include "ui/ozone/platform/dri/dri_window_manager.h"
 #include "ui/ozone/platform/dri/dri_wrapper.h"
 #include "ui/ozone/platform/dri/screen_manager.h"
 #include "ui/ozone/platform/dri/virtual_terminal_manager.h"
@@ -62,11 +64,15 @@ class OzonePlatformDri : public OzonePlatform {
   virtual scoped_ptr<PlatformWindow> CreatePlatformWindow(
       PlatformWindowDelegate* delegate,
       const gfx::Rect& bounds) OVERRIDE {
-    return scoped_ptr<PlatformWindow>(
-        new DriWindow(delegate,
-                      bounds,
-                      surface_factory_ozone_.get(),
-                      event_factory_ozone_.get()));
+    scoped_ptr<DriWindow> platform_window(new DriWindow(
+        delegate,
+        bounds,
+        scoped_ptr<DriWindowDelegate>(new DriWindowDelegateImpl(
+            window_manager_.NextAcceleratedWidget(), screen_manager_.get())),
+        event_factory_ozone_.get(),
+        &window_manager_));
+    platform_window->Initialize();
+    return platform_window.PassAs<PlatformWindow>();
   }
 #if defined(OS_CHROMEOS)
   virtual scoped_ptr<NativeDisplayDelegate> CreateNativeDisplayDelegate()
@@ -81,8 +87,8 @@ class OzonePlatformDri : public OzonePlatform {
   }
 #endif
   virtual void InitializeUI() OVERRIDE {
-    surface_factory_ozone_.reset(
-        new DriSurfaceFactory(dri_.get(), screen_manager_.get()));
+    surface_factory_ozone_.reset(new DriSurfaceFactory(
+        dri_.get(), screen_manager_.get(), &window_manager_));
     cursor_factory_ozone_.reset(
         new CursorFactoryEvdevDri(surface_factory_ozone_.get()));
     event_factory_ozone_.reset(new EventFactoryEvdev(
@@ -105,6 +111,8 @@ class OzonePlatformDri : public OzonePlatform {
   scoped_ptr<DriSurfaceFactory> surface_factory_ozone_;
   scoped_ptr<CursorFactoryEvdevDri> cursor_factory_ozone_;
   scoped_ptr<EventFactoryEvdev> event_factory_ozone_;
+
+  DriWindowManager window_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(OzonePlatformDri);
 };
