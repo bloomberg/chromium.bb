@@ -343,11 +343,15 @@ void JingleSession::OnMessageResponse(
     JingleMessage::ActionType request_type,
     IqRequest* request,
     const buzz::XmlElement* response) {
-  std::string type_str = JingleMessage::GetActionName(request_type);
-
   // Delete the request from the list of pending requests.
   pending_requests_.erase(request);
   delete request;
+
+  // Ignore all responses after session was closed.
+  if (state_ == CLOSED || state_ == FAILED)
+    return;
+
+  std::string type_str = JingleMessage::GetActionName(request_type);
 
   // |response| will be NULL if the request timed out.
   if (!response) {
@@ -362,18 +366,9 @@ void JingleSession::OnMessageResponse(
                  << " message: \"" << response->Str()
                  << "\". Terminating the session.";
 
-      switch (request_type) {
-        case JingleMessage::SESSION_INFO:
-          // session-info is used for the new authentication protocol,
-          // and wasn't previously supported.
-          CloseInternal(INCOMPATIBLE_PROTOCOL);
-          break;
-
-        default:
-          // TODO(sergeyu): There may be different reasons for error
-          // here. Parse the response stanza to find failure reason.
-          CloseInternal(PEER_IS_OFFLINE);
-      }
+      // TODO(sergeyu): There may be different reasons for error
+      // here. Parse the response stanza to find failure reason.
+      CloseInternal(PEER_IS_OFFLINE);
     }
   }
 }
