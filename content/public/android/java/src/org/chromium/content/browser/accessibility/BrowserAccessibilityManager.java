@@ -370,8 +370,10 @@ public class BrowserAccessibilityManager {
     private void handlePageLoaded(int id) {
         if (mUserHasTouchExplored) return;
 
-        mAccessibilityFocusId = id;
-        sendAccessibilityEvent(id, AccessibilityEvent.TYPE_VIEW_ACCESSIBILITY_FOCUSED);
+        if (mContentViewCore.shouldSetAccessibilityFocusOnPageLoad()) {
+            mAccessibilityFocusId = id;
+            sendAccessibilityEvent(id, AccessibilityEvent.TYPE_VIEW_ACCESSIBILITY_FOCUSED);
+        }
     }
 
     @CalledByNative

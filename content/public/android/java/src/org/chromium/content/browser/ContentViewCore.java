@@ -295,6 +295,12 @@ public class ContentViewCore
     // Accessibility touch exploration state.
     private boolean mTouchExplorationEnabled;
 
+    // Whether accessibility focus should be set to the page when it finishes loading.
+    // This only applies if an accessibility service like TalkBack is running.
+    // This is desirable behavior for a browser window, but not for an embedded
+    // WebView.
+    private boolean mShouldSetAccessibilityFocusOnPageLoad;
+
     // Allows us to dynamically respond when the accessibility script injection flag changes.
     private ContentObserver mAccessibilityScriptInjectionObserver;
 
@@ -2876,6 +2882,23 @@ public class ContentViewCore
      */
     public void stopCurrentAccessibilityNotifications() {
         mAccessibilityInjector.onPageLostFocus();
+    }
+
+    /**
+     * Return whether or not we should set accessibility focus on page load.
+     */
+    public boolean shouldSetAccessibilityFocusOnPageLoad() {
+        return mShouldSetAccessibilityFocusOnPageLoad;
+    }
+
+    /**
+     * Return whether or not we should set accessibility focus on page load.
+     * This only applies if an accessibility service like TalkBack is running.
+     * This is desirable behavior for a browser window, but not for an embedded
+     * WebView.
+     */
+    public void setShouldSetAccessibilityFocusOnPageLoad(boolean on) {
+        mShouldSetAccessibilityFocusOnPageLoad = on;
     }
 
     /**
