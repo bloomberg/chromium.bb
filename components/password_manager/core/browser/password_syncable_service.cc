@@ -142,6 +142,13 @@ syncer::SyncMergeResult PasswordSyncableService::MergeDataAndStartSyncing(
     return merge_result;
   }
 
+  if (password_entries.size() != new_local_entries.size()) {
+    merge_result.set_error(sync_error_factory_->CreateAndUploadError(
+        FROM_HERE,
+        "There are passwords with identical sync tags in the database."));
+    return merge_result;
+  }
+
   merge_result.set_num_items_before_association(new_local_entries.size());
 
   // List that contains the entries that are known only to sync.
