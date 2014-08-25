@@ -16,6 +16,7 @@ import stat
 import unittest
 
 from chromite.lib import cros_build_lib
+from chromite.lib import filetype
 from chromite.lib import osutils
 from chromite.lib import perf_uploader
 
@@ -287,23 +288,24 @@ class BlacklistTest(NonForgivingImageTestCase):
         with open(full_name, 'rb') as f:
           if f.read(2) != '#!':
             continue
-          line = f.readline().strip()
+          line = '#!' + f.readline().strip()
 
-        # Ignore arguments to the interpreter.
-        interp = line.split(' ', 1)[0]
-        if interp.startswith('/'):
-          # Absolute path to the interpreter.
-          interp = os.path.join(ROOT_A, interp.lstrip('/'))
-          # Interpreter could be a symlink. Resolve it.
-          interp = osutils.ResolveSymlink(interp, ROOT_A)
-          if not os.path.isfile(interp):
-            failures.append('File %s uses non-existing interpreter %s.' %
-                            (full_name, interp))
-          elif (os.stat(interp).st_mode & 0111) == 0:
-            failures.append('Interpreter %s is not executable.' % interp)
-        else:
-          failures.append('File %s uses non-absolute interpreter path %s.' %
+        try:
+          # Ignore arguments to the interpreter.
+          interp, _ = filetype.SplitShebang(line)
+        except ValueError:
+          failures.append('File %s has an invalid interpreter path: "%s".' %
+                          (full_name, line))
+
+        # Absolute path to the interpreter.
+        interp = os.path.join(ROOT_A, interp.lstrip('/'))
+        # Interpreter could be a symlink. Resolve it.
+        interp = osutils.ResolveSymlink(interp, ROOT_A)
+        if not os.path.isfile(interp):
+          failures.append('File %s uses non-existing interpreter %s.' %
                           (full_name, interp))
+        elif (os.stat(interp).st_mode & 0111) == 0:
+          failures.append('Interpreter %s is not executable.' % interp)
 
     self.assertFalse(failures, '\n'.join(failures))
 

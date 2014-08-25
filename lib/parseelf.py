@@ -82,7 +82,7 @@ def ParseELFSymbols(elf):
   return imp, exp
 
 
-def ParseELF(root, rel_path, ldpaths=None):
+def ParseELF(root, rel_path, ldpaths=None, parse_symbols=True):
   """Parse the ELF file.
 
   Loads and parses the passed elf file.
@@ -92,6 +92,9 @@ def ParseELF(root, rel_path, ldpaths=None):
     rel_path: The path to the parsing file relative to root.
     ldpaths: The dict() with the ld path information. See lddtree.LoadLdpaths()
         for details.
+    parse_symbols: Whether the result includes the dynamic symbols 'imp_sym' and
+        'exp_sym' sections. Disabling it reduces the time for large files with
+        many symbols.
 
   Returns:
     If the passed file isn't a supported ELF file, returns None. Otherwise,
@@ -147,5 +150,6 @@ def ParseELF(root, rel_path, ldpaths=None):
   result['is_lib'] = ((result['interp'] is None or rel_path[-3:] == '.so') and
                       elf.header.e_type == 'ET_DYN')
 
-  result['imp_sym'], result['exp_sym'] = ParseELFSymbols(elf)
+  if parse_symbols:
+    result['imp_sym'], result['exp_sym'] = ParseELFSymbols(elf)
   return result

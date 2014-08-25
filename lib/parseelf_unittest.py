@@ -56,7 +56,16 @@ class ELFParsingTest(cros_test_lib.TempDirTestCase):
                           undefined_symbols=['fa', 'fb', 'fc'],
                           used_libs=['abc'])
 
+    # Test without symbols.
+    elf = parseelf.ParseELF(self.tempdir, 'libxyz.so', self._ldpaths,
+                            parse_symbols=False)
+    self.assertFalse('imp_sym' in elf)
+    self.assertFalse('exp_sym' in elf)
+
+    # Test with symbols by default.
     elf = parseelf.ParseELF(self.tempdir, 'libxyz.so', self._ldpaths)
+    self.assertTrue('imp_sym' in elf)
+    self.assertTrue('exp_sym' in elf)
     self.assertEquals(elf['imp_sym'], set(['fa', 'fb', 'fc']))
     self.assertEquals(set(k for k, (_, _, st_shndx)
                           in elf['exp_sym'].iteritems()

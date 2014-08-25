@@ -11,6 +11,7 @@ import sys
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                 '..', '..'))
 from chromite.lib import cros_test_lib
+from chromite.lib import osutils
 from chromite.lib import unittest_lib
 from chromite.scripts import dep_tracker
 
@@ -49,6 +50,26 @@ class DepTrackerTest(cros_test_lib.TempDirTestCase):
     dt.ComputeELFFileDeps()
 
     self.assertEquals(sorted(dt._files.keys()), ['abc_main', 'libabc.so'])
+
+  def testFiletypeSet(self):
+    """Tests that the 'ftype' member is set for ELF files first."""
+    unittest_lib.BuildELF(os.path.join(self.tempdir, 'libabc.so'),
+                          ['func_a', 'func_b', 'func_c'])
+    osutils.WriteFile(os.path.join(self.tempdir, 'pyscript'),
+                      "#!/usr/bin/python\nimport sys\nsys.exit(42)\n")
+    dt = dep_tracker.DepTracker(self.tempdir)
+    dt.Init()
+
+    # ComputeELFFileDeps() should compute the file type of ELF files so we
+    # don't need to parse them again.
+    dt.ComputeELFFileDeps()
+    self.assertTrue('ftype' in dt._files['libabc.so'])
+    self.assertFalse('ftype' in dt._files['pyscript'])
+
+    # ComputeFileTypes() shold compute the file type of every file.
+    dt.ComputeFileTypes()
+    self.assertTrue('ftype' in dt._files['libabc.so'])
+    self.assertTrue('ftype' in dt._files['pyscript'])
 
 
 if __name__ == '__main__':

@@ -14,7 +14,8 @@ read.
 
 This script currently discovers dependencies between ELF files for libraries
 required at load time (libraries loaded by the dynamic linker) but not
-libraries loaded at runtime with dlopen().
+libraries loaded at runtime with dlopen(). It also computes size and file type
+in several cases to help understand the contents of the built image.
 """
 
 import itertools
@@ -26,6 +27,7 @@ import stat
 
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
+from chromite.lib import filetype
 from chromite.lib import parseelf
 from chromite.scripts import lddtree
 
@@ -72,6 +74,7 @@ class DepTracker(object):
     if not stat.S_ISDIR(root_st.st_mode):
       raise Exception('root (%s) must be a directory' % root)
     self._root = root.rstrip('/') + '/'
+    self._file_type_decoder = filetype.FileTypeDecoder(root)
 
     # A wrapper to the multiprocess map function. We avoid launching a pool
     # of processes when jobs is 1 so python exceptions kill the main process,
@@ -89,7 +92,6 @@ class DepTracker(object):
     # to point to the lowest lexicographically file with the same inode.
     self._symlinks = {}
     self._hardlinks = {}
-
 
   def Init(self):
     """Generates the initial list of files."""
@@ -235,6 +237,13 @@ class DepTracker(object):
 
     for rel_path, elf in elfs.iteritems():
       file_data = self._files[rel_path]
+      # Fill in the ftype if not set yet. We complete this value at this point
+      # to avoid re-parsing the ELF file later.
+      if not 'ftype' in file_data:
+        ftype = self._file_type_decoder.GetType(rel_path, elf=elf)
+        if ftype:
+          file_data['ftype'] = ftype
+
       file_deps = file_data.get('deps', {})
       # Dependencies based on the result of ldd.
       for lib in elf.get('needed', []):
@@ -245,6 +254,15 @@ class DepTracker(object):
 
       if file_deps:
         file_data['deps'] = file_deps
+
+  def ComputeFileTypes(self):
+    """Computes all the missing file type for the files in the root."""
+    for rel_path, file_data in self._files.iteritems():
+      if 'ftype' in file_data:
+        continue
+      ftype = self._file_type_decoder.GetType(rel_path)
+      if ftype:
+        file_data['ftype'] = ftype
 
 
 def ParseArgs(argv):
@@ -279,6 +297,7 @@ def main(argv):
   dt.Init()
 
   dt.ComputeELFFileDeps()
+  dt.ComputeFileTypes()
 
   if opts.portage_db:
     dt.ComputeEbuildDeps(opts.portage_db)

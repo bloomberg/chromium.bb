@@ -15,7 +15,7 @@ class BuildELFError(Exception):
 
 
 def BuildELF(filename, defined_symbols=None, undefined_symbols=None,
-             used_libs=None, executable=False):
+             used_libs=None, executable=False, static=False):
   """Builds a dynamic ELF with the provided import and exports.
 
   Compiles and links a dynamic program that exports some functions, as libraries
@@ -29,6 +29,7 @@ def BuildELF(filename, defined_symbols=None, undefined_symbols=None,
     used_libs: The list of libraries this ELF loads dynamically, including only
         the name of the library. For example, 'bz2' rather than 'libbz2.so.1.0'.
     executable: Whether the file has a main() function.
+    static: Whether the file is statically linked (implies executable=True).
   """
   if defined_symbols is None:
     defined_symbols = []
@@ -36,6 +37,8 @@ def BuildELF(filename, defined_symbols=None, undefined_symbols=None,
     undefined_symbols = []
   if used_libs is None:
     used_libs = []
+  if static and not executable:
+    raise ValueError('static requires executable to be True.')
 
   source = ''.join('void %s();\n' % sym for sym in undefined_symbols)
   source += """
@@ -64,6 +67,8 @@ int main() {
   cmd = ['gcc', '-o', filename, source_fn]
   if not executable:
     cmd += ['-shared', '-fPIC']
+  if static:
+    cmd += ['-static']
   cmd += ['-L.', '-Wl,-rpath=./']
   cmd += ['-l%s' % lib for lib in used_libs]
   try:
