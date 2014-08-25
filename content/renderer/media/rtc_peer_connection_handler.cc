@@ -781,10 +781,6 @@ void RTCPeerConnectionHandler::GetStats(
   }
 }
 
-void RTCPeerConnectionHandler::CloseClientPeerConnection() {
-  client_->closePeerConnection();
-}
-
 blink::WebRTCDataChannelHandler* RTCPeerConnectionHandler::createDataChannel(
     const blink::WebString& label, const blink::WebRTCDataChannelInit& init) {
   DVLOG(1) << "createDataChannel label " << base::UTF16ToUTF8(label);
