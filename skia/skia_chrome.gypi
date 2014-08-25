@@ -27,6 +27,8 @@
     ],
   },
   'sources': [
+    'config/SkUserConfig.h',
+
     # Note: file list duplicated in GN build.
     'ext/analysis_canvas.cc',
     'ext/analysis_canvas.h',

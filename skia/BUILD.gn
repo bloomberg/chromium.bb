@@ -250,6 +250,7 @@ config("skia_library_config") {
 component("skia") {
   sources = [
     # Chrome sources.
+    "config/SkUserConfig.h",
     "ext/analysis_canvas.cc",
     "ext/analysis_canvas.h",
     "ext/benchmarking_canvas.cc",
