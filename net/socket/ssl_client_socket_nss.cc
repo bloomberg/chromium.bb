@@ -3451,7 +3451,7 @@ void SSLClientSocketNSS::VerifyCT() {
   // gets all the data it needs for SCT verification and does not do any
   // external communication.
   int result = cert_transparency_verifier_->Verify(
-      server_cert_verify_result_.verified_cert,
+      server_cert_verify_result_.verified_cert.get(),
       core_->state().stapled_ocsp_response,
       core_->state().sct_list_from_tls_extension,
       &ct_verify_result_,

@@ -433,7 +433,7 @@ int FakeBlockingStreamSocket::Write(IOBuffer* buf,
     return transport_->Write(buf, len, callback);
 
   // Schedule the write, but do nothing.
-  DCHECK(!pending_write_buf_);
+  DCHECK(!pending_write_buf_.get());
   DCHECK_EQ(-1, pending_write_len_);
   DCHECK(pending_write_callback_.is_null());
   DCHECK(!callback.is_null());
@@ -489,11 +489,11 @@ void FakeBlockingStreamSocket::UnblockWrite() {
 
   // Do nothing if UnblockWrite() was called after BlockWrite(),
   // without a Write() in between.
-  if (!pending_write_buf_)
+  if (!pending_write_buf_.get())
     return;
 
-  int rv = transport_->Write(pending_write_buf_, pending_write_len_,
-                             pending_write_callback_);
+  int rv = transport_->Write(
+      pending_write_buf_.get(), pending_write_len_, pending_write_callback_);
   pending_write_buf_ = NULL;
   pending_write_len_ = -1;
   if (rv == ERR_IO_PENDING) {
@@ -507,12 +507,12 @@ void FakeBlockingStreamSocket::WaitForWrite() {
   DCHECK(should_block_write_);
   DCHECK(!write_loop_);
 
-  if (pending_write_buf_)
+  if (pending_write_buf_.get())
     return;
   write_loop_.reset(new base::RunLoop);
   write_loop_->Run();
   write_loop_.reset();
-  DCHECK(pending_write_buf_);
+  DCHECK(pending_write_buf_.get());
 }
 
 void FakeBlockingStreamSocket::OnReadCompleted(int result) {
@@ -2345,7 +2345,7 @@ TEST_F(SSLClientSocketTest, VerifyReturnChainProperlyOrdered) {
   // Load and install the root for the validated chain.
   scoped_refptr<X509Certificate> root_cert = ImportCertFromFile(
       GetTestCertsDirectory(), "redundant-validated-chain-root.pem");
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), root_cert);
+  ASSERT_NE(static_cast<X509Certificate*>(NULL), root_cert.get());
   ScopedTestRoot scoped_root(root_cert.get());
 
   // Set up a test server with CERT_CHAIN_WRONG_ROOT.

@@ -440,7 +440,7 @@ int SocketLibevent::DoRead(IOBuffer* buf, int buf_len) {
 }
 
 void SocketLibevent::ReadCompleted() {
-  int rv = DoRead(read_buf_, read_buf_len_);
+  int rv = DoRead(read_buf_.get(), read_buf_len_);
   if (rv == ERR_IO_PENDING)
     return;
 
@@ -457,7 +457,7 @@ int SocketLibevent::DoWrite(IOBuffer* buf, int buf_len) {
 }
 
 void SocketLibevent::WriteCompleted() {
-  int rv = DoWrite(write_buf_, write_buf_len_);
+  int rv = DoWrite(write_buf_.get(), write_buf_len_);
   if (rv == ERR_IO_PENDING)
     return;
 

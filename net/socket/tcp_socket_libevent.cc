@@ -499,7 +499,7 @@ void TCPSocketLibevent::ReadCompleted(const scoped_refptr<IOBuffer>& buf,
   // TODO(rdsmith,jri): Change histogram name to indicate it could be called on
   // error.
   RecordFastOpenStatus();
-  callback.Run(HandleReadCompleted(buf, rv));
+  callback.Run(HandleReadCompleted(buf.get(), rv));
 }
 
 int TCPSocketLibevent::HandleReadCompleted(IOBuffer* buf, int rv) {
@@ -520,7 +520,7 @@ void TCPSocketLibevent::WriteCompleted(const scoped_refptr<IOBuffer>& buf,
                                        const CompletionCallback& callback,
                                        int rv) const {
   DCHECK_NE(ERR_IO_PENDING, rv);
-  callback.Run(HandleWriteCompleted(buf, rv));
+  callback.Run(HandleWriteCompleted(buf.get(), rv));
 }
 
 int TCPSocketLibevent::HandleWriteCompleted(IOBuffer* buf, int rv) const {

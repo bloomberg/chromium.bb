@@ -63,7 +63,7 @@ class FakeDataChannel {
 
   int Read(IOBuffer* buf, int buf_len, const CompletionCallback& callback) {
     DCHECK(read_callback_.is_null());
-    DCHECK(!read_buf_);
+    DCHECK(!read_buf_.get());
     if (closed_)
       return 0;
     if (data_.empty()) {

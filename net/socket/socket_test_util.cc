@@ -857,7 +857,7 @@ int MockTCPClientSocket::Read(IOBuffer* buf, int buf_len,
     return ERR_UNEXPECTED;
 
   // If the buffer is already in use, a read is already in progress!
-  DCHECK(pending_buf_ == NULL);
+  DCHECK(pending_buf_.get() == NULL);
 
   // Store our async IO data.
   pending_buf_ = buf;
@@ -965,7 +965,7 @@ bool MockTCPClientSocket::GetSSLInfo(SSLInfo* ssl_info) {
 
 void MockTCPClientSocket::OnReadComplete(const MockRead& data) {
   // There must be a read pending.
-  DCHECK(pending_buf_);
+  DCHECK(pending_buf_.get());
   // You can't complete a read with another ERR_IO_PENDING status code.
   DCHECK_NE(ERR_IO_PENDING, data.result);
   // Since we've been waiting for data, need_read_data_ should be true.
@@ -989,7 +989,7 @@ void MockTCPClientSocket::OnConnectComplete(const MockConnect& data) {
 }
 
 int MockTCPClientSocket::CompleteRead() {
-  DCHECK(pending_buf_);
+  DCHECK(pending_buf_.get());
   DCHECK(pending_buf_len_ > 0);
 
   was_used_to_convey_data_ = true;
@@ -1560,7 +1560,7 @@ int MockUDPClientSocket::Read(IOBuffer* buf,
     return ERR_UNEXPECTED;
 
   // If the buffer is already in use, a read is already in progress!
-  DCHECK(pending_buf_ == NULL);
+  DCHECK(pending_buf_.get() == NULL);
 
   // Store our async IO data.
   pending_buf_ = buf;
@@ -1637,7 +1637,7 @@ int MockUDPClientSocket::Connect(const IPEndPoint& address) {
 
 void MockUDPClientSocket::OnReadComplete(const MockRead& data) {
   // There must be a read pending.
-  DCHECK(pending_buf_);
+  DCHECK(pending_buf_.get());
   // You can't complete a read with another ERR_IO_PENDING status code.
   DCHECK_NE(ERR_IO_PENDING, data.result);
   // Since we've been waiting for data, need_read_data_ should be true.
@@ -1660,7 +1660,7 @@ void MockUDPClientSocket::OnConnectComplete(const MockConnect& data) {
 }
 
 int MockUDPClientSocket::CompleteRead() {
-  DCHECK(pending_buf_);
+  DCHECK(pending_buf_.get());
   DCHECK(pending_buf_len_ > 0);
 
   // Save the pending async IO data and reset our |pending_| state.

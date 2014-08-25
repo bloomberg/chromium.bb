@@ -97,8 +97,8 @@ TEST_F(UnixDomainServerSocketTest, AcceptWithForbiddenUser) {
   const int read_buffer_size = 10;
   scoped_refptr<IOBuffer> read_buffer(new IOBuffer(read_buffer_size));
   TestCompletionCallback read_callback;
-  rv = read_callback.GetResult(client_socket.Read(read_buffer, read_buffer_size,
-                                                  read_callback.callback()));
+  rv = read_callback.GetResult(client_socket.Read(
+      read_buffer.get(), read_buffer_size, read_callback.callback()));
 
   // The server should have disconnected gracefully, without sending any data.
   ASSERT_EQ(0, rv);
