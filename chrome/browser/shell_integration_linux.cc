@@ -260,6 +260,7 @@ void DeleteShortcutInApplicationsMenu(
   LaunchXdgUtility(argv, &exit_code);
 }
 
+#if defined(USE_GLIB)
 // Quote a string such that it appears as one verbatim argument for the Exec
 // key in a desktop file.
 std::string QuoteArgForDesktopFileExec(const std::string& arg) {
@@ -310,6 +311,7 @@ std::string QuoteCommandLineForDesktopFileExec(
 const char kDesktopEntry[] = "Desktop Entry";
 
 const char kXdgOpenShebang[] = "#!/usr/bin/env xdg-open";
+#endif
 
 const char kXdgSettings[] = "xdg-settings";
 const char kXdgSettingsDefaultBrowser[] = "default-web-browser";
