@@ -186,7 +186,7 @@ class UnitTestLauncherDelegate : public TestLauncherDelegate {
     test_launcher->LaunchChildGTestProcess(
         cmd_line,
         std::string(),
-        TestTimeouts::test_launcher_timeout(),
+        TestTimeouts::test_launcher_unit_timeout(),
         use_job_objects_ ? TestLauncher::USE_JOB_OBJECTS : 0,
         Bind(&UnitTestLauncherDelegate::SerialGTestCallback,
              Unretained(this),
@@ -218,7 +218,7 @@ class UnitTestLauncherDelegate : public TestLauncherDelegate {
     // Note: do NOT parse child's stdout to do that, it's known to be
     // unreliable (e.g. buffering issues can mix up the output).
     base::TimeDelta timeout =
-        test_names.size() * TestTimeouts::test_launcher_timeout();
+        test_names.size() * TestTimeouts::test_launcher_unit_timeout();
 
     GTestCallbackState callback_state;
     callback_state.test_launcher = test_launcher;
@@ -345,7 +345,7 @@ class UnitTestLauncherDelegate : public TestLauncherDelegate {
             // For consistent handling of tests independent of order and other
             // factors, mark them as timing out.
             if (test_result.elapsed_time >
-                TestTimeouts::test_launcher_timeout()) {
+                TestTimeouts::test_launcher_unit_timeout()) {
               test_result.status = TestResult::TEST_TIMEOUT;
             }
           }
