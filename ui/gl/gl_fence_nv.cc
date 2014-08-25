@@ -37,7 +37,7 @@ bool GLFenceNV::HasCompleted() {
 
 void GLFenceNV::ClientWait() {
   DCHECK(glIsFenceNV(fence_));
-  if (!flush_event_ || flush_event_->IsSignaled()) {
+  if (!flush_event_.get() || flush_event_->IsSignaled()) {
     glFinishFenceNV(fence_);
   } else {
     LOG(ERROR) << "Trying to wait for uncommitted fence. Skipping...";

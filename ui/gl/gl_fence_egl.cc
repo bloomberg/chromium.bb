@@ -32,7 +32,7 @@ bool GLFenceEGL::HasCompleted() {
 }
 
 void GLFenceEGL::ClientWait() {
-  if (!flush_event_ || flush_event_->IsSignaled()) {
+  if (!flush_event_.get() || flush_event_->IsSignaled()) {
     EGLint flags = 0;
     EGLTimeKHR time = EGL_FOREVER_KHR;
     eglClientWaitSyncKHR(display_, sync_, flags, time);
@@ -42,7 +42,7 @@ void GLFenceEGL::ClientWait() {
 }
 
 void GLFenceEGL::ServerWait() {
-  if (!flush_event_ || flush_event_->IsSignaled()) {
+  if (!flush_event_.get() || flush_event_->IsSignaled()) {
     EGLint flags = 0;
     eglWaitSyncKHR(display_, sync_, flags);
   } else {

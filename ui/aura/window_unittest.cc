@@ -3394,7 +3394,7 @@ TEST_F(WindowTest, WindowDestroyCompletesAnimations) {
   // Make sure destroying a Window completes the animation.
   {
     scoped_ptr<Window> window(CreateTestWindowWithId(1, root_window()));
-    window->layer()->SetAnimator(animator);
+    window->layer()->SetAnimator(animator.get());
 
     gfx::Transform transform;
     transform.Scale(0.5f, 0.5f);
@@ -3403,7 +3403,7 @@ TEST_F(WindowTest, WindowDestroyCompletesAnimations) {
     EXPECT_TRUE(animator->is_animating());
     EXPECT_FALSE(observer.animation_completed());
   }
-  EXPECT_TRUE(animator);
+  EXPECT_TRUE(animator.get());
   EXPECT_FALSE(animator->is_animating());
   EXPECT_TRUE(observer.animation_completed());
   EXPECT_FALSE(observer.animation_aborted());
@@ -3413,7 +3413,7 @@ TEST_F(WindowTest, WindowDestroyCompletesAnimations) {
   animator = ui::LayerAnimator::CreateImplicitAnimator();
   animator->AddObserver(&observer);
   ui::Layer layer;
-  layer.SetAnimator(animator);
+  layer.SetAnimator(animator.get());
   {
     scoped_ptr<Window> window(CreateTestWindowWithId(1, root_window()));
     window->layer()->Add(&layer);
@@ -3426,7 +3426,7 @@ TEST_F(WindowTest, WindowDestroyCompletesAnimations) {
     EXPECT_FALSE(observer.animation_completed());
   }
 
-  EXPECT_TRUE(animator);
+  EXPECT_TRUE(animator.get());
   EXPECT_FALSE(animator->is_animating());
   EXPECT_TRUE(observer.animation_completed());
   EXPECT_FALSE(observer.animation_aborted());

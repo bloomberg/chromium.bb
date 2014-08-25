@@ -15,7 +15,7 @@ GLImageRefCountedMemory::GLImageRefCountedMemory(const gfx::Size& size,
 }
 
 GLImageRefCountedMemory::~GLImageRefCountedMemory() {
-  DCHECK(!ref_counted_memory_);
+  DCHECK(!ref_counted_memory_.get());
 }
 
 bool GLImageRefCountedMemory::Initialize(
@@ -23,7 +23,7 @@ bool GLImageRefCountedMemory::Initialize(
   if (!HasValidFormat())
     return false;
 
-  DCHECK(!ref_counted_memory_);
+  DCHECK(!ref_counted_memory_.get());
   ref_counted_memory_ = ref_counted_memory;
   GLImageMemory::Initialize(ref_counted_memory_->front());
   return true;

@@ -33,7 +33,7 @@ bool GLFenceARB::HasCompleted() {
 
 void GLFenceARB::ClientWait() {
   DCHECK_EQ(GL_TRUE, glIsSync(sync_));
-  if (!flush_event_ || flush_event_->IsSignaled()) {
+  if (!flush_event_.get() || flush_event_->IsSignaled()) {
     glClientWaitSync(sync_, GL_SYNC_FLUSH_COMMANDS_BIT, GL_TIMEOUT_IGNORED);
   } else {
     LOG(ERROR) << "Trying to wait for uncommitted fence. Skipping...";
@@ -42,7 +42,7 @@ void GLFenceARB::ClientWait() {
 
 void GLFenceARB::ServerWait() {
   DCHECK_EQ(GL_TRUE, glIsSync(sync_));
-  if (!flush_event_ || flush_event_->IsSignaled()) {
+  if (!flush_event_.get() || flush_event_->IsSignaled()) {
     glWaitSync(sync_, 0, GL_TIMEOUT_IGNORED);
   } else {
     LOG(ERROR) << "Trying to wait for uncommitted fence. Skipping...";

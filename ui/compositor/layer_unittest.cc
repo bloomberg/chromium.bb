@@ -653,7 +653,7 @@ TEST_F(LayerWithNullDelegateTest, EscapedDebugNames) {
   layer->set_name(name);
   scoped_refptr<base::debug::ConvertableToTraceFormat> debug_info =
     layer->TakeDebugInfo();
-  EXPECT_TRUE(!!debug_info);
+  EXPECT_TRUE(!!debug_info.get());
   std::string json;
   debug_info->AppendAsTraceFormat(&json);
   base::JSONReader json_reader;
@@ -1375,7 +1375,7 @@ TEST_F(LayerWithDelegateTest, DelegatedLayer) {
   // Content matches layer size.
   frame_provider = new cc::DelegatedFrameProvider(
       resource_collection.get(), MakeFrameData(gfx::Size(10, 10)));
-  child->SetShowDelegatedContent(frame_provider, gfx::Size(10, 10));
+  child->SetShowDelegatedContent(frame_provider.get(), gfx::Size(10, 10));
   EXPECT_EQ(child->cc_layer()->bounds().ToString(),
             gfx::Size(10, 10).ToString());
 
@@ -1388,13 +1388,13 @@ TEST_F(LayerWithDelegateTest, DelegatedLayer) {
   child->SetBounds(gfx::Rect(0, 0, 10, 10));
   frame_provider = new cc::DelegatedFrameProvider(
       resource_collection.get(), MakeFrameData(gfx::Size(5, 5)));
-  child->SetShowDelegatedContent(frame_provider, gfx::Size(5, 5));
+  child->SetShowDelegatedContent(frame_provider.get(), gfx::Size(5, 5));
   EXPECT_EQ(child->cc_layer()->bounds().ToString(), gfx::Size(5, 5).ToString());
 
   // Hi-DPI content on low-DPI layer.
   frame_provider = new cc::DelegatedFrameProvider(
       resource_collection.get(), MakeFrameData(gfx::Size(20, 20)));
-  child->SetShowDelegatedContent(frame_provider, gfx::Size(10, 10));
+  child->SetShowDelegatedContent(frame_provider.get(), gfx::Size(10, 10));
   EXPECT_EQ(child->cc_layer()->bounds().ToString(),
             gfx::Size(10, 10).ToString());
 
@@ -1406,7 +1406,7 @@ TEST_F(LayerWithDelegateTest, DelegatedLayer) {
   // Low-DPI content on hi-DPI layer.
   frame_provider = new cc::DelegatedFrameProvider(
       resource_collection.get(), MakeFrameData(gfx::Size(10, 10)));
-  child->SetShowDelegatedContent(frame_provider, gfx::Size(10, 10));
+  child->SetShowDelegatedContent(frame_provider.get(), gfx::Size(10, 10));
   EXPECT_EQ(child->cc_layer()->bounds().ToString(),
             gfx::Size(10, 10).ToString());
 }
@@ -1423,7 +1423,7 @@ TEST_F(LayerWithDelegateTest, ExternalContent) {
   scoped_refptr<cc::Layer> before = child->cc_layer();
   child->SetShowPaintedContent();
   EXPECT_TRUE(child->cc_layer());
-  EXPECT_EQ(before, child->cc_layer());
+  EXPECT_EQ(before.get(), child->cc_layer());
 
   scoped_refptr<cc::DelegatedFrameResourceCollection> resource_collection =
       new cc::DelegatedFrameResourceCollection;
@@ -1433,15 +1433,15 @@ TEST_F(LayerWithDelegateTest, ExternalContent) {
 
   // Showing delegated content changes the underlying cc layer.
   before = child->cc_layer();
-  child->SetShowDelegatedContent(frame_provider, gfx::Size(10, 10));
+  child->SetShowDelegatedContent(frame_provider.get(), gfx::Size(10, 10));
   EXPECT_TRUE(child->cc_layer());
-  EXPECT_NE(before, child->cc_layer());
+  EXPECT_NE(before.get(), child->cc_layer());
 
   // Changing to painted content should change the underlying cc layer.
   before = child->cc_layer();
   child->SetShowPaintedContent();
   EXPECT_TRUE(child->cc_layer());
-  EXPECT_NE(before, child->cc_layer());
+  EXPECT_NE(before.get(), child->cc_layer());
 }
 
 // Tests Layer::AddThreadedAnimation and Layer::RemoveThreadedAnimation.
@@ -1637,7 +1637,7 @@ TEST(LayerDelegateTest, DelegatedFrameDamage) {
   scoped_refptr<cc::DelegatedFrameProvider> frame_provider(
       new cc::DelegatedFrameProvider(resource_collection.get(),
                                      MakeFrameData(gfx::Size(10, 10))));
-  layer->SetShowDelegatedContent(frame_provider, gfx::Size(10, 10));
+  layer->SetShowDelegatedContent(frame_provider.get(), gfx::Size(10, 10));
 
   EXPECT_FALSE(delegate.delegated_frame_damage_called());
   layer->OnDelegatedFrameDamage(damage_rect);

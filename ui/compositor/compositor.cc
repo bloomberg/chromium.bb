@@ -139,7 +139,7 @@ Compositor::Compositor(gfx::AcceleratedWidget widget,
   settings.single_thread_proxy_scheduler = false;
 
   base::TimeTicks before_create = base::TimeTicks::Now();
-  if (compositor_thread_loop_) {
+  if (compositor_thread_loop_.get()) {
     host_ = cc::LayerTreeHost::CreateThreaded(
         this,
         context_factory_->GetSharedBitmapManager(),
@@ -177,7 +177,7 @@ Compositor::~Compositor() {
 }
 
 void Compositor::ScheduleDraw() {
-  if (compositor_thread_loop_) {
+  if (compositor_thread_loop_.get()) {
     host_->SetNeedsCommit();
   } else if (!defer_draw_scheduling_) {
     defer_draw_scheduling_ = true;
@@ -206,7 +206,7 @@ void Compositor::SetHostHasTransparentBackground(
 }
 
 void Compositor::Draw() {
-  DCHECK(!compositor_thread_loop_);
+  DCHECK(!compositor_thread_loop_.get());
 
   defer_draw_scheduling_ = false;
   if (waiting_on_compositing_end_) {
@@ -357,7 +357,7 @@ void Compositor::DidCommitAndDrawFrame() {
 }
 
 void Compositor::DidCompleteSwapBuffers() {
-  if (compositor_thread_loop_) {
+  if (compositor_thread_loop_.get()) {
     NotifyEnd();
   } else {
     DCHECK_EQ(swap_state_, SWAP_POSTED);
@@ -376,13 +376,13 @@ void Compositor::ScheduleAnimation() {
 }
 
 void Compositor::DidPostSwapBuffers() {
-  DCHECK(!compositor_thread_loop_);
+  DCHECK(!compositor_thread_loop_.get());
   DCHECK_EQ(swap_state_, SWAP_NONE);
   swap_state_ = SWAP_POSTED;
 }
 
 void Compositor::DidAbortSwapBuffers() {
-  if (!compositor_thread_loop_) {
+  if (!compositor_thread_loop_.get()) {
     if (swap_state_ == SWAP_POSTED) {
       NotifyEnd();
       swap_state_ = SWAP_COMPLETED;
@@ -406,7 +406,7 @@ void Compositor::SetLayerTreeDebugState(
 scoped_refptr<CompositorLock> Compositor::GetCompositorLock() {
   if (!compositor_lock_) {
     compositor_lock_ = new CompositorLock(this);
-    if (compositor_thread_loop_)
+    if (compositor_thread_loop_.get())
       host_->SetDeferCommits(true);
     FOR_EACH_OBSERVER(CompositorObserver,
                       observer_list_,
@@ -418,7 +418,7 @@ scoped_refptr<CompositorLock> Compositor::GetCompositorLock() {
 void Compositor::UnlockCompositor() {
   DCHECK(compositor_lock_);
   compositor_lock_ = NULL;
-  if (compositor_thread_loop_)
+  if (compositor_thread_loop_.get())
     host_->SetDeferCommits(false);
   FOR_EACH_OBSERVER(CompositorObserver,
                     observer_list_,

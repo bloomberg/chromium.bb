@@ -174,7 +174,7 @@ void Layer::Add(Layer* child) {
 void Layer::Remove(Layer* child) {
   // Current bounds are used to calculate offsets when layers are reparented.
   // Stop (and complete) an ongoing animation to update the bounds immediately.
-  LayerAnimator* child_animator = child->animator_;
+  LayerAnimator* child_animator = child->animator_.get();
   if (child_animator)
     child_animator->StopAnimatingProperty(ui::LayerAnimationElement::BOUNDS);
   LayerAnimatorCollection* collection = GetLayerAnimatorCollection();
@@ -530,7 +530,7 @@ void Layer::SetTextureMailbox(
   DCHECK(!solid_color_layer_.get());
   DCHECK(mailbox.IsValid());
   DCHECK(release_callback);
-  if (!texture_layer_) {
+  if (!texture_layer_.get()) {
     scoped_refptr<cc::TextureLayer> new_layer =
         cc::TextureLayer::CreateForMailbox(this);
     new_layer->SetFlipped(true);
@@ -691,7 +691,7 @@ void Layer::OnDeviceScaleFactorChanged(float device_scale_factor) {
 }
 
 void Layer::OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) {
-  DCHECK(delegated_renderer_layer_ || surface_layer_);
+  DCHECK(delegated_renderer_layer_.get() || surface_layer_.get());
   if (!delegate_)
     return;
   delegate_->OnDelegatedFrameDamage(damage_rect_in_dip);
@@ -1038,7 +1038,7 @@ void Layer::RemoveAnimatorsInTreeFromCollection(
 }
 
 bool Layer::IsAnimating() const {
-  return animator_ && animator_->is_animating();
+  return animator_.get() && animator_->is_animating();
 }
 
 }  // namespace ui

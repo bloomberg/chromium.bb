@@ -74,7 +74,7 @@ void SnapshotAsync::ScaleCopyOutputResult(
   // be used here because it's not in content/public. Move the scaling code
   // somewhere so that it can be reused here.
   base::PostTaskAndReplyWithResult(
-      background_task_runner,
+      background_task_runner.get(),
       FROM_HERE,
       base::Bind(ScaleBitmap, *result->TakeBitmap(), target_size),
       base::Bind(&OnFrameScalingFinished, callback));
@@ -94,7 +94,7 @@ void SnapshotAsync::EncodeCopyOutputResult(
   // be used here because it's not in content/public. Move the scaling code
   // somewhere so that it can be reused here.
   base::PostTaskAndReplyWithResult(
-      background_task_runner,
+      background_task_runner.get(),
       FROM_HERE,
       base::Bind(EncodeBitmap, *result->TakeBitmap()),
       callback);
