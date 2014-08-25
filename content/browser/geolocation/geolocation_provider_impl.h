@@ -37,7 +37,7 @@ class CONTENT_EXPORT GeolocationProviderImpl
 
   // Gets a pointer to the singleton instance of the location relayer, which
   // is in turn bound to the browser's global context objects. This must only be
-  // called on the IO thread so that the GeolocationProviderImpl is always
+  // called on the UI thread so that the GeolocationProviderImpl is always
   // instantiated on the same thread. Ownership is NOT returned.
   static GeolocationProviderImpl* GetInstance();
 
