@@ -49,8 +49,8 @@
 #include "ui/gfx/screen.h"
 
 #if !defined(OS_MACOSX)
+#include "apps/pref_names.h"
 #include "base/prefs/pref_service.h"
-#include "extensions/browser/pref_names.h"
 #endif
 
 using content::BrowserContext;
@@ -593,7 +593,7 @@ void AppWindow::SetFullscreen(FullscreenType type, bool enable) {
       PrefService* prefs =
           extensions::ExtensionsBrowserClient::Get()->GetPrefServiceForContext(
               browser_context());
-      if (!prefs->GetBoolean(extensions::pref_names::kAppFullscreenAllowed))
+      if (!prefs->GetBoolean(prefs::kAppFullscreenAllowed))
         return;
     }
 #endif

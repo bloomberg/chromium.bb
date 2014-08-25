@@ -48,6 +48,10 @@
 #include "chrome/browser/download/download_dir_policy_handler.h"
 #endif
 
+#if !defined(OS_MACOSX) && !defined(OS_IOS)
+#include "apps/pref_names.h"
+#endif
+
 #if defined(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/api/messaging/native_messaging_policy_handler.h"
 #include "chrome/browser/extensions/policy_handlers.h"
@@ -366,7 +370,7 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     base::Value::TYPE_BOOLEAN },
 #if defined(ENABLE_EXTENSIONS)
   { key::kFullscreenAllowed,
-    extensions::pref_names::kAppFullscreenAllowed,
+    apps::prefs::kAppFullscreenAllowed,
     base::Value::TYPE_BOOLEAN },
 #endif  // defined(ENABLE_EXTENSIONS)
 #endif  // !defined(OS_MACOSX) && !defined(OS_IOS)
