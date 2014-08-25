@@ -83,9 +83,9 @@ void ProfileChooserViewBrowserTest::OpenProfileChooserView() {
 #define MAYBE_ViewProfileUMA ViewProfileUMA
 #endif
 
-// TODO(mlerman): Re-enable the test to MAYBE_ViewProfileUMA once there is a
-// launch plan for EnableAccountConsistency.
-IN_PROC_BROWSER_TEST_F(ProfileChooserViewBrowserTest, DISABLED_ViewProfileUMA) {
+IN_PROC_BROWSER_TEST_F(ProfileChooserViewBrowserTest, MAYBE_ViewProfileUMA) {
+  base::HistogramTester histograms;
+  // If multiprofile mode is not enabled, you can't switch between profiles.
   if (!profiles::IsMultipleProfilesEnabled())
     return;
 
@@ -93,4 +93,7 @@ IN_PROC_BROWSER_TEST_F(ProfileChooserViewBrowserTest, DISABLED_ViewProfileUMA) {
   profile->GetPrefs()->SetInteger(prefs::kProfileAvatarTutorialShown, 0);
 
   ASSERT_NO_FATAL_FAILURE(OpenProfileChooserView());
+
+  histograms.ExpectUniqueSample("Profile.NewAvatarMenu.Upgrade",
+      ProfileMetrics::PROFILE_AVATAR_MENU_UPGRADE_VIEW, 1);
 }
