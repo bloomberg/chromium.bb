@@ -233,10 +233,17 @@ bool CompositorAnimations::isCandidateForAnimationOnCompositor(const Timing& tim
     if (!CompositorAnimationsImpl::convertTimingForCompositor(timing, out))
         return false;
 
-    // FIXME: We should support non-linear timing functions in the compositor
-    // eventually.
-    if (timing.timingFunction->type() != TimingFunction::LinearFunction)
+    if (timing.timingFunction->type() != TimingFunction::LinearFunction) {
+        // Checks the of size of KeyframeVector instead of PropertySpecificKeyframeVector.
+        const KeyframeVector& keyframes = keyframeEffect.getFrames();
+        ASSERT(keyframes[0]->easing());
+        if (keyframes.size() == 2 && keyframes[0]->easing()->type() == TimingFunction::LinearFunction && timing.timingFunction->type() != TimingFunction::StepsFunction)
+            return true;
+
+        // FIXME: Support non-linear timing functions in the compositor for
+        // more than two keyframes and step timing functions in the compositor.
         return false;
+    }
 
     return true;
 }
@@ -410,17 +417,26 @@ void addKeyframeWithTimingFunction(PlatformAnimationCurveType& curve, const Plat
 
 } // namespace anoymous
 
-void CompositorAnimationsImpl::addKeyframesToCurve(WebCompositorAnimationCurve& curve, const PropertySpecificKeyframeVector& keyframes, bool reverse)
+void CompositorAnimationsImpl::addKeyframesToCurve(WebCompositorAnimationCurve& curve, const PropertySpecificKeyframeVector& keyframes, const Timing& timing, bool reverse)
 {
     for (size_t i = 0; i < keyframes.size(); i++) {
         RefPtr<TimingFunction> reversedTimingFunction;
         const TimingFunction* keyframeTimingFunction = 0;
         if (i < keyframes.size() - 1) { // Ignore timing function of last frame.
-            if (reverse) {
-                reversedTimingFunction = CompositorAnimationsTimingFunctionReverser::reverse(keyframes[i + 1]->easing());
-                keyframeTimingFunction = reversedTimingFunction.get();
+            if (keyframes.size() == 2 && keyframes[0]->easing()->type() == TimingFunction::LinearFunction) {
+                if (reverse) {
+                    reversedTimingFunction = CompositorAnimationsTimingFunctionReverser::reverse(timing.timingFunction.get());
+                    keyframeTimingFunction = reversedTimingFunction.get();
+                } else {
+                    keyframeTimingFunction = timing.timingFunction.get();
+                }
             } else {
-                keyframeTimingFunction = keyframes[i]->easing();
+                if (reverse) {
+                    reversedTimingFunction = CompositorAnimationsTimingFunctionReverser::reverse(keyframes[i + 1]->easing());
+                    keyframeTimingFunction = reversedTimingFunction.get();
+                } else {
+                    keyframeTimingFunction = keyframes[i]->easing();
+                }
             }
         }
 
@@ -481,21 +497,21 @@ void CompositorAnimationsImpl::getAnimationOnCompositor(const Timing& timing, do
             targetProperty = WebCompositorAnimation::TargetPropertyOpacity;
 
             WebFloatAnimationCurve* floatCurve = Platform::current()->compositorSupport()->createFloatAnimationCurve();
-            addKeyframesToCurve(*floatCurve, values, compositorTiming.reverse);
+            addKeyframesToCurve(*floatCurve, values, timing, compositorTiming.reverse);
             curve = adoptPtr(floatCurve);
             break;
         }
         case CSSPropertyWebkitFilter: {
             targetProperty = WebCompositorAnimation::TargetPropertyFilter;
             WebFilterAnimationCurve* filterCurve = Platform::current()->compositorSupport()->createFilterAnimationCurve();
-            addKeyframesToCurve(*filterCurve, values, compositorTiming.reverse);
+            addKeyframesToCurve(*filterCurve, values, timing, compositorTiming.reverse);
             curve = adoptPtr(filterCurve);
             break;
         }
         case CSSPropertyTransform: {
             targetProperty = WebCompositorAnimation::TargetPropertyTransform;
             WebTransformAnimationCurve* transformCurve = Platform::current()->compositorSupport()->createTransformAnimationCurve();
-            addKeyframesToCurve(*transformCurve, values, compositorTiming.reverse);
+            addKeyframesToCurve(*transformCurve, values, timing, compositorTiming.reverse);
             curve = adoptPtr(transformCurve);
             break;
         }

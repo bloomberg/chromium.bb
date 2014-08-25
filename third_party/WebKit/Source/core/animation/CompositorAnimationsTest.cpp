@@ -467,11 +467,11 @@ TEST_F(AnimationCompositorAnimationsTest, isCandidateForAnimationOnCompositorTim
 TEST_F(AnimationCompositorAnimationsTest, isCandidateForAnimationOnCompositorTimingFunctionCubic)
 {
     m_timing.timingFunction = m_cubicEaseTimingFunction;
-    EXPECT_FALSE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect2.get()));
+    EXPECT_TRUE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect2.get()));
     EXPECT_FALSE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect5.get()));
 
     m_timing.timingFunction = m_cubicCustomTimingFunction;
-    EXPECT_FALSE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect2.get()));
+    EXPECT_TRUE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect2.get()));
     EXPECT_FALSE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect5.get()));
 }
 
@@ -486,6 +486,17 @@ TEST_F(AnimationCompositorAnimationsTest, isCandidateForAnimationOnCompositorTim
 {
     EXPECT_TRUE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect2.get()));
     EXPECT_TRUE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect5.get()));
+}
+
+TEST_F(AnimationCompositorAnimationsTest, isCandidateForAnimationOnCompositorNonLinearTimingFunctionOnFirstFrame)
+{
+    m_timing.timingFunction = m_cubicEaseTimingFunction;
+
+    EXPECT_TRUE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect2.get()));
+
+    (*m_keyframeVector2)[0]->setEasing(m_cubicEaseTimingFunction.get());
+    m_keyframeAnimationEffect2 = AnimatableValueKeyframeEffectModel::create(*m_keyframeVector2);
+    EXPECT_FALSE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect2.get()));
 }
 
 TEST_F(AnimationCompositorAnimationsTest, isCandidateForAnimationOnCompositorTimingFunctionChainedCubicMatchingOffsets)

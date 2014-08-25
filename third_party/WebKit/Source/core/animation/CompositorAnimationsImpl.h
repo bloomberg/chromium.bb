@@ -52,7 +52,7 @@ private:
 
     static void getAnimationOnCompositor(const Timing&, double startTime, const KeyframeEffectModelBase&, Vector<OwnPtr<WebCompositorAnimation> >& animations);
 
-    static void addKeyframesToCurve(WebCompositorAnimationCurve&, const AnimatableValuePropertySpecificKeyframeVector&, bool reverse);
+    static void addKeyframesToCurve(WebCompositorAnimationCurve&, const AnimatableValuePropertySpecificKeyframeVector&, const Timing&, bool reverse);
 
     friend class CompositorAnimations;
     friend class AnimationCompositorAnimationsTest;
