@@ -245,7 +245,7 @@ def split_server_request_url(url):
   return urlhost, urlpath
 
 
-def get_http_service(urlhost, allow_cached=False, use_count_key=None):
+def get_http_service(urlhost, allow_cached=True, use_count_key=None):
   """Returns existing or creates new instance of HttpService that can send
   requests to given base urlhost.
   """
