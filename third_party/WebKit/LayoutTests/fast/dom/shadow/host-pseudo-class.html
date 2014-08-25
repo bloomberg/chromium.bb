@@ -1,6 +1,4 @@
- <!doctype html>
-<html>
-<head>
+<!DOCTYPE html>
 <script src="../../../resources/js-test.js"></script>
 <script src="resources/shadow-dom.js"></script>
 <style>
@@ -8,7 +6,6 @@
    background-color: red;
 }
 </style>
-</head>
 <body class='mytheme'>
   <div>
     <div id='sandbox'></div>
@@ -273,6 +270,17 @@ sandbox.appendChild(
                 document.createTextNode('Hello')))));
 
 backgroundColorShouldBe('host/target', 'rgb(0, 128, 0)');
+
+cleanUp();
+
+// :host.foo {} should never match (whereas :host(.foo) {} should).
+sandbox.appendChild(
+    createDOM('div', {'id': 'host', 'class': 'foo'},
+        createShadowRoot(
+            createDOM('style', {},
+                document.createTextNode(':host.foo { background-color: green; }')))));
+
+backgroundColorShouldBe('host', 'rgba(0, 0, 0, 0)');
 
 cleanUp();
 
