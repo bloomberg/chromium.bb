@@ -164,11 +164,9 @@ interface TestObject {
     [CachedAttribute=isStringDirty] attribute DOMString? cachedStringOrNoneAttribute;
     [CallWith=ExecutionContext] attribute any callWithExecutionContextAnyAttribute;
     [CallWith=ScriptState] attribute any callWithScriptStateAnyAttribute;
-    [CallWith=ExecutionContext|ScriptState] attribute any callWithExecutionContextAndScriptStateAnyAttribute;
+    [CallWith=(ExecutionContext,ScriptState)] attribute any callWithExecutionContextAndScriptStateAnyAttribute;
     [CheckSecurity=Node] readonly attribute Document checkSecurityForNodeReadonlyDocumentAttribute; // All uses are read only
     [Conditional=CONDITION] attribute long conditionalLongAttribute;
-    [Conditional=(CONDITION_1,CONDITION_2)] attribute long conditionalAndLongAttribute;
-    [Conditional=CONDITION_1|CONDITION_2] attribute long conditionalOrLongAttribute;
     // Constructors: FIXME: replace suffix with [ConstructorAttribute]
     attribute TestInterfaceEmptyConstructor testInterfaceEmptyConstructorAttribute;
     [DeprecateAs=deprecatedTestInterfaceEmptyConstructorAttribute] attribute TestInterfaceEmptyConstructor testInterfaceEmptyConstructorAttribute;
@@ -224,12 +222,12 @@ interface TestObject {
     [Reflect=class] attribute DOMString reflectedClass;
     // Limited value attributes and enumerated attributes
     [Reflect, ReflectOnly="unique"] attribute DOMString limitedToOnlyOneAttribute;
-    [Reflect, ReflectOnly="Per"|"Paal"|"Espen"] attribute DOMString limitedToOnlyAttribute;
-    [Reflect=other, ReflectOnly="Value1"|"Value2" ] attribute DOMString limitedToOnlyOtherAttribute;
-    [Reflect, ReflectOnly="rsa"|"dsa", ReflectMissing="rsa"] attribute DOMString limitedWithMissingDefaultAttribute;
-    [Reflect, ReflectOnly="ltr"|"rtl"|"auto", ReflectMissing="auto", ReflectInvalid="ltr"] attribute DOMString limitedWithInvalidMissingDefaultAttribute;
-    [Reflect, ReflectOnly="anonymous"|"use-credentials", ReflectEmpty="anonymous", ReflectInvalid="anonymous"] readonly attribute DOMString corsSettingAttribute;
-    [Reflect, ReflectOnly="empty"|"missing"|"invalid"|"a-normal", ReflectEmpty="empty", ReflectMissing="missing", ReflectInvalid="invalid"] readonly attribute DOMString limitedWithEmptyMissingInvalidAttribute;
+    [Reflect, ReflectOnly=("Per","Paal","Espen")] attribute DOMString limitedToOnlyAttribute;
+    [Reflect=other, ReflectOnly=("Value1","Value2")] attribute DOMString limitedToOnlyOtherAttribute;
+    [Reflect, ReflectOnly=("rsa","dsa"), ReflectMissing="rsa"] attribute DOMString limitedWithMissingDefaultAttribute;
+    [Reflect, ReflectOnly=("ltr","rtl","auto"), ReflectMissing="auto", ReflectInvalid="ltr"] attribute DOMString limitedWithInvalidMissingDefaultAttribute;
+    [Reflect, ReflectOnly=("anonymous","use-credentials"), ReflectEmpty="anonymous", ReflectInvalid="anonymous"] readonly attribute DOMString corsSettingAttribute;
+    [Reflect, ReflectOnly=("empty","missing","invalid","a-normal"), ReflectEmpty="empty", ReflectMissing="missing", ReflectInvalid="invalid"] readonly attribute DOMString limitedWithEmptyMissingInvalidAttribute;
 
     [Replaceable] readonly attribute long replaceableReadonlyLongAttribute;
     [Replaceable, PutForwards=href] readonly attribute TestNode locationReplaceable;
@@ -474,7 +472,6 @@ interface TestObject {
     [CallWith=(ActiveWindow,FirstWindow)] void callWithActiveWindowScriptWindow();
     [CheckSecurity=Node] void checkSecurityForNodeVoidMethod();
     [Conditional=CONDITION] void conditionalConditionVoidMethod();
-    [Conditional=(CONDITION_1,CONDITION_2)] void conditionalCondition1AndCondition2VoidMethod();
     [Conditional=CONDITION] static void conditionalConditionStaticVoidMethod();
     [Custom] void customVoidMethod();
     [Conditional=CONDITION, Custom] void conditionalConditionCustomVoidMethod();

@@ -60,7 +60,7 @@ from utilities import idl_filename_to_interface_name
 CONDITIONAL_PATTERN = re.compile(
     r'\['
     r'[^\]]*'
-    r'Conditional=([\_0-9a-zA-Z&|]*)'
+    r'Conditional=([\_0-9a-zA-Z]*)'
     r'[^\]]*'
     r'\]\s*'
     r'((callback|partial)\s+)?'
@@ -101,16 +101,6 @@ COPYRIGHT_TEMPLATE = """/*
 """
 
 
-def format_conditional(conditional):
-    """Wraps conditional with ENABLE() and replace '&','|' with '&&','||' if
-    more than one conditional is specified."""
-    def wrap_with_enable(s):
-        if s in ['|', '&']:
-            return s * 2
-        return 'ENABLE(' + s + ')'
-    return ' '.join(map(wrap_with_enable, conditional))
-
-
 def extract_conditional(idl_file_path):
     """Find [Conditional] interface extended attribute."""
     with open(idl_file_path) as idl_file:
@@ -119,8 +109,7 @@ def extract_conditional(idl_file_path):
     match = CONDITIONAL_PATTERN.search(idl_contents)
     if not match:
         return None
-    conditional = match.group(1)
-    return re.split('([|,])', conditional)
+    return match.group(1)
 
 
 def extract_meta_data(file_paths):
@@ -161,7 +150,7 @@ def generate_content(component_dir, files_meta_data_this_partition):
             if prev_conditional:
                 output.append('#endif\n')
             if conditional:
-                output.append('\n#if %s\n' % format_conditional(conditional))
+                output.append('\n#if ENABLE(%s)\n' % conditional)
         prev_conditional = conditional
 
         output.append('#include "bindings/%s/v8/V8%s.cpp"\n' %

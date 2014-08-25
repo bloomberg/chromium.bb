@@ -58,9 +58,10 @@ ACRONYMS = [
 # Extended attribute parsing
 ################################################################################
 
-def extended_attribute_value_contains(extended_attribute_value, value):
-    return (extended_attribute_value and
-            value in re.split('[|,]', extended_attribute_value))
+def extended_attribute_value_contains(extended_attribute_value, key):
+    return (extended_attribute_value == key or
+            (isinstance(extended_attribute_value, list) and
+             key in extended_attribute_value))
 
 
 def has_extended_attribute(definition_or_member, extended_attribute_list):
@@ -74,13 +75,14 @@ def has_extended_attribute_value(definition_or_member, name, value):
             extended_attribute_value_contains(extended_attributes[name], value))
 
 
-def sorted_extended_attribute_set(definition_or_member, name):
+def extended_attribute_value_as_list(definition_or_member, name):
     extended_attributes = definition_or_member.extended_attributes
     if name not in extended_attributes:
-        return []
-
-    attribute_values = re.split('[|,]', extended_attributes[name])
-    return sorted(attribute_values)
+        return None
+    value = extended_attributes[name]
+    if isinstance(value, list):
+        return value
+    return [value]
 
 
 ################################################################################
@@ -222,13 +224,7 @@ def conditional_string(definition_or_member):
     extended_attributes = definition_or_member.extended_attributes
     if 'Conditional' not in extended_attributes:
         return None
-    conditional = extended_attributes['Conditional']
-    for delimiter in ',|':
-        if delimiter in conditional:
-            conditions = conditional.split(delimiter)
-            operator_separator = ' %s ' % DELIMITER_TO_OPERATOR[delimiter]
-            return operator_separator.join('ENABLE(%s)' % expression for expression in sorted(conditions))
-    return 'ENABLE(%s)' % conditional
+    return 'ENABLE(%s)' % extended_attributes['Conditional']
 
 
 # [DeprecateAs]
@@ -251,7 +247,7 @@ EXPOSED_EXECUTION_CONTEXT_METHOD = {
 
 
 def exposed(definition_or_member, interface):
-    exposure_set = sorted_extended_attribute_set(definition_or_member, 'Exposed')
+    exposure_set = extended_attribute_value_as_list(definition_or_member, 'Exposed')
     if not exposure_set:
         return None
 
@@ -273,7 +269,7 @@ def exposed(definition_or_member, interface):
 
 
 def expanded_exposure_set_for_interface(interface):
-    exposure_set = sorted_extended_attribute_set(interface, 'Exposed')
+    exposure_set = extended_attribute_value_as_list(interface, 'Exposed')
 
     # "Worker" is an aggregation for the different kinds of workers.
     if 'Worker' in exposure_set:

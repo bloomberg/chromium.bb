@@ -1831,7 +1831,7 @@ void V8TestInterface::installConditionallyEnabledMethods(v8::Handle<v8::Object> 
     if (context && (context->isDocument())) {
         prototypeObject->Set(v8AtomicString(isolate, "windowExposedStaticMethod"), v8::FunctionTemplate::New(isolate, TestInterfaceImplementationV8Internal::windowExposedStaticMethodMethodCallback, v8Undefined(), defaultSignature, 0)->GetFunction());
     }
-    if (context && (context->isServiceWorkerGlobalScope() || context->isDocument())) {
+    if (context && (context->isDocument() || context->isServiceWorkerGlobalScope())) {
         prototypeObject->Set(v8AtomicString(isolate, "windowAndServiceWorkerExposedMethod"), v8::FunctionTemplate::New(isolate, TestInterfaceImplementationV8Internal::windowAndServiceWorkerExposedMethodMethodCallback, v8Undefined(), defaultSignature, 0)->GetFunction());
     }
     if (context && context->isDocument() && ContextFeatures::partialContextNameEnabled(toDocument(context))) {

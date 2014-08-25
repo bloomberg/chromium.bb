@@ -40,7 +40,7 @@ enum EndOfStreamError {
     Constructor,
     ConstructorCallWith=ExecutionContext,
     RuntimeEnabled=MediaSource,
-    TypeChecking=Interface|Unrestricted,
+    TypeChecking=(Interface,Unrestricted),
 ] interface MediaSource : EventTarget {
     // All the source buffers created by this object.
     readonly attribute SourceBufferList sourceBuffers;

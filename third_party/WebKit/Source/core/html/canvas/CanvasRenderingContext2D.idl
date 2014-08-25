@@ -38,7 +38,7 @@ typedef (HTMLImageElement or
 enum CanvasFillRule { "nonzero", "evenodd" };
 
 [
-    TypeChecking=Interface|Unrestricted,
+    TypeChecking=(Interface,Unrestricted),
     WillBeGarbageCollected,
 ] interface CanvasRenderingContext2D {
     // back-reference to the canvas

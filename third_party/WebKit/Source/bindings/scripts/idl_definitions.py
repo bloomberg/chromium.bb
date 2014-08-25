@@ -637,13 +637,14 @@ def ext_attributes_node_to_extended_attributes(idl_name, node):
     """
     Returns:
       Dictionary of {ExtAttributeName: ExtAttributeValue}.
-      Value is usually a string, with three exceptions:
+      Value is usually a string, with these exceptions:
       Constructors: value is a list of Arguments nodes, corresponding to
         possible signatures of the constructor.
       CustomConstructors: value is a list of Arguments nodes, corresponding to
         possible signatures of the custom constructor.
       NamedConstructor: value is a Call node, corresponding to the single
         signature of the named constructor.
+      SetWrapperReferenceTo: value is an Arguments node.
     """
     # Primarily just make a dictionary from the children.
     # The only complexity is handling various types of constructors:

@@ -26,7 +26,7 @@
 [
     ActiveDOMObject,
     RuntimeEnabled=Media,
-    SpecialWrapFor=HTMLAudioElement|HTMLVideoElement,
+    SpecialWrapFor=(HTMLAudioElement,HTMLVideoElement),
     TypeChecking=Unrestricted,
 ] interface HTMLMediaElement : HTMLElement {
 
@@ -36,7 +36,7 @@
     // network state
     [Reflect, URL] attribute DOMString src;
     [URL] readonly attribute DOMString currentSrc;
-    [Reflect, ReflectOnly="anonymous"|"use-credentials", ReflectEmpty="anonymous", ReflectInvalid="anonymous"] attribute DOMString crossOrigin;
+    [Reflect, ReflectOnly=("anonymous","use-credentials"), ReflectEmpty="anonymous", ReflectInvalid="anonymous"] attribute DOMString crossOrigin;
 
     const unsigned short NETWORK_EMPTY = 0;
     const unsigned short NETWORK_IDLE = 1;

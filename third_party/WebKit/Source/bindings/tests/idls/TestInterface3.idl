@@ -40,7 +40,7 @@
     [Custom] setter boolean (unsigned long index, Node value);
     [Custom] deleter boolean (unsigned long index);
 
-    [Custom=PropertyGetter|PropertyEnumerator|PropertyQuery] getter Node (DOMString name);
+    [Custom=(PropertyGetter,PropertyEnumerator,PropertyQuery)] getter Node (DOMString name);
     [Custom] setter Node (DOMString name, Node value);
     [Custom] deleter boolean (DOMString name);
 };

@@ -285,14 +285,15 @@ class BlinkIDLParser(IDLParser):
         if len(p) > 3:
             p[0] = ListFromConcat(p[2], p[3])
 
-    # [b51] Add ExtendedAttributeIdentAndOrIdent
+    # [b51] Add ExtendedAttributeStringLiteral and ExtendedAttributeStringLiteralList
     def p_ExtendedAttribute(self, p):
         """ExtendedAttribute : ExtendedAttributeNoArgs
                              | ExtendedAttributeArgList
                              | ExtendedAttributeIdent
                              | ExtendedAttributeIdentList
-                             | ExtendedAttributeStringLiteralList
-                             | ExtendedAttributeNamedArgList"""
+                             | ExtendedAttributeNamedArgList
+                             | ExtendedAttributeStringLiteral
+                             | ExtendedAttributeStringLiteralList"""
         p[0] = p[1]
 
     # [59]
@@ -333,44 +334,35 @@ class BlinkIDLParser(IDLParser):
         elif len(p) == 3:
             p[0] = ListFromConcat(self.BuildTrue('NULLABLE'), p[2])
 
-    # [b94] Add support for OR Extended Attribute values "A|B"
-    def p_ExtendedAttributeIdentList(self, p):
-        """ExtendedAttributeIdentList : identifier '=' '(' IdentifierList ')'
-                                      | identifier '=' identifier '|' IdentOrList"""
-        if type(p[4]) is list:
-            value = self.BuildAttribute('VALUE', ','.join(p[4]))
-        else:
-            value = self.BuildAttribute('VALUE', p[3] + p[4] + p[5])
+    # Blink extension: Add support for string literal Extended Attribute values
+    def p_ExtendedAttributeStringLiteral(self, p):
+        """ExtendedAttributeStringLiteral : identifier '=' StringLiteral """
+        def unwrap_string(ls):
+            """Reach in and grab the string literal's "NAME"."""
+            return ls[1].value
+
+        value = self.BuildAttribute('VALUE', unwrap_string(p[3]))
         p[0] = self.BuildNamed('ExtAttribute', p, 1, value)
 
-    # [b94.1] A|B|C
-    def p_IdentOrList(self, p):
-        """IdentOrList : identifier '|' IdentOrList
-                       | identifier"""
-        if len(p) > 3:
-            p[0] = p[1] + p[2] + p[3]
-        else:
-            p[0] = p[1]
-
-    # Blink extension: Add support for compound Extended Attribute values over string literals ("A"|"B")
+    # Blink extension: Add support for compound Extended Attribute values over string literals ("A","B")
     def p_ExtendedAttributeStringLiteralList(self, p):
-        """ExtendedAttributeStringLiteralList : identifier '=' StringLiteralOrList"""
-        value = self.BuildAttribute('VALUE', p[3])
+        """ExtendedAttributeStringLiteralList : identifier '=' '(' StringLiteralList ')' """
+        value = self.BuildAttribute('VALUE', p[4])
         p[0] = self.BuildNamed('ExtAttribute', p, 1, value)
 
     # Blink extension: one or more string literals. The values aren't propagated as literals,
     # but their by their value only.
-    def p_StringLiteralOrList(self, p):
-        """StringLiteralOrList : StringLiteral '|' StringLiteralOrList
-                               | StringLiteral"""
+    def p_StringLiteralList(self, p):
+        """StringLiteralList : StringLiteral ',' StringLiteralList
+                             | StringLiteral"""
         def unwrap_string(ls):
             """Reach in and grab the string literal's "NAME"."""
             return ls[1].value
 
         if len(p) > 3:
-            p[0] = unwrap_string(p[1]) + p[2] + p[3]
+            p[0] = ListFromConcat(unwrap_string(p[1]), p[3])
         else:
-            p[0] = unwrap_string(p[1])
+            p[0] = ListFromConcat(unwrap_string(p[1]))
 
     def __init__(self,
                  # common parameters

@@ -38,7 +38,9 @@ from idl_types import inherits_interface
 from v8_globals import includes, interfaces
 import v8_types
 import v8_utilities
-from v8_utilities import capitalize, cpp_name, has_extended_attribute, has_extended_attribute_value, scoped_name, strip_suffix, uncapitalize
+from v8_utilities import (capitalize, cpp_name, has_extended_attribute,
+                          has_extended_attribute_value, scoped_name, strip_suffix,
+                          uncapitalize, extended_attribute_value_as_list)
 
 
 def attribute_context(interface, attribute):
@@ -135,8 +137,7 @@ def attribute_context(interface, attribute):
         'reflect_empty': extended_attributes.get('ReflectEmpty'),
         'reflect_invalid': extended_attributes.get('ReflectInvalid', ''),
         'reflect_missing': extended_attributes.get('ReflectMissing'),
-        'reflect_only': extended_attributes['ReflectOnly'].split('|')
-            if 'ReflectOnly' in extended_attributes else None,
+        'reflect_only': extended_attribute_value_as_list(attribute, 'ReflectOnly'),
         'runtime_enabled_function': v8_utilities.runtime_enabled_function_name(attribute),  # [RuntimeEnabled]
         'setter_callback': setter_callback_name(interface, attribute),
         'should_be_exposed_to_script': not (is_implemented_in_private_script and is_only_exposed_to_private_script),

@@ -46,7 +46,9 @@ import v8_methods
 import v8_types
 from v8_types import cpp_ptr_type, cpp_template_type
 import v8_utilities
-from v8_utilities import capitalize, conditional_string, cpp_name, gc_type, has_extended_attribute_value, runtime_enabled_function_name
+from v8_utilities import (capitalize, conditional_string, cpp_name, gc_type,
+                          has_extended_attribute_value, runtime_enabled_function_name,
+                          extended_attribute_value_as_list)
 
 
 INTERFACE_H_INCLUDES = frozenset([
@@ -128,7 +130,7 @@ def interface_context(interface):
 
     # [SpecialWrapFor]
     if 'SpecialWrapFor' in extended_attributes:
-        special_wrap_for = extended_attributes['SpecialWrapFor'].split('|')
+        special_wrap_for = extended_attribute_value_as_list(interface, 'SpecialWrapFor')
     else:
         special_wrap_for = []
     for special_wrap_interface in special_wrap_for:

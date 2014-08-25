@@ -77,8 +77,10 @@ class IDLExtendedAttributeValidator(object):
             return
         if values_string is None:
             values = set([None])
+        elif isinstance(values_string, list):
+            values = set(values_string)
         else:
-            values = set(re.split('[|,]', values_string))
+            values = set([values_string])
         invalid_values = values - valid_values
         if invalid_values:
             invalid_value = invalid_values.pop()

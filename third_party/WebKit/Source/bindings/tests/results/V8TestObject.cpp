@@ -2102,82 +2102,6 @@ static void conditionalLongAttributeAttributeSetterCallback(v8::Local<v8::String
 }
 #endif // ENABLE(CONDITION)
 
-#if ENABLE(CONDITION_1) && ENABLE(CONDITION_2)
-static void conditionalAndLongAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    v8::Handle<v8::Object> holder = info.Holder();
-    TestObject* impl = V8TestObject::toNative(holder);
-    v8SetReturnValueInt(info, impl->conditionalAndLongAttribute());
-}
-#endif // ENABLE(CONDITION_1) && ENABLE(CONDITION_2)
-
-#if ENABLE(CONDITION_1) && ENABLE(CONDITION_2)
-static void conditionalAndLongAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
-    TestObjectV8Internal::conditionalAndLongAttributeAttributeGetter(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
-}
-#endif // ENABLE(CONDITION_1) && ENABLE(CONDITION_2)
-
-#if ENABLE(CONDITION_1) && ENABLE(CONDITION_2)
-static void conditionalAndLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
-{
-    v8::Handle<v8::Object> holder = info.Holder();
-    ExceptionState exceptionState(ExceptionState::SetterContext, "conditionalAndLongAttribute", "TestObject", holder, info.GetIsolate());
-    TestObject* impl = V8TestObject::toNative(holder);
-    TONATIVE_VOID_EXCEPTIONSTATE(int, cppValue, toInt32(v8Value, exceptionState), exceptionState);
-    impl->setConditionalAndLongAttribute(cppValue);
-}
-#endif // ENABLE(CONDITION_1) && ENABLE(CONDITION_2)
-
-#if ENABLE(CONDITION_1) && ENABLE(CONDITION_2)
-static void conditionalAndLongAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMSetter");
-    TestObjectV8Internal::conditionalAndLongAttributeAttributeSetter(v8Value, info);
-    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
-}
-#endif // ENABLE(CONDITION_1) && ENABLE(CONDITION_2)
-
-#if ENABLE(CONDITION_1) || ENABLE(CONDITION_2)
-static void conditionalOrLongAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    v8::Handle<v8::Object> holder = info.Holder();
-    TestObject* impl = V8TestObject::toNative(holder);
-    v8SetReturnValueInt(info, impl->conditionalOrLongAttribute());
-}
-#endif // ENABLE(CONDITION_1) || ENABLE(CONDITION_2)
-
-#if ENABLE(CONDITION_1) || ENABLE(CONDITION_2)
-static void conditionalOrLongAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
-    TestObjectV8Internal::conditionalOrLongAttributeAttributeGetter(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
-}
-#endif // ENABLE(CONDITION_1) || ENABLE(CONDITION_2)
-
-#if ENABLE(CONDITION_1) || ENABLE(CONDITION_2)
-static void conditionalOrLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
-{
-    v8::Handle<v8::Object> holder = info.Holder();
-    ExceptionState exceptionState(ExceptionState::SetterContext, "conditionalOrLongAttribute", "TestObject", holder, info.GetIsolate());
-    TestObject* impl = V8TestObject::toNative(holder);
-    TONATIVE_VOID_EXCEPTIONSTATE(int, cppValue, toInt32(v8Value, exceptionState), exceptionState);
-    impl->setConditionalOrLongAttribute(cppValue);
-}
-#endif // ENABLE(CONDITION_1) || ENABLE(CONDITION_2)
-
-#if ENABLE(CONDITION_1) || ENABLE(CONDITION_2)
-static void conditionalOrLongAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMSetter");
-    TestObjectV8Internal::conditionalOrLongAttributeAttributeSetter(v8Value, info);
-    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
-}
-#endif // ENABLE(CONDITION_1) || ENABLE(CONDITION_2)
-
 static void customObjectAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
@@ -8841,23 +8765,6 @@ static void conditionalConditionVoidMethodMethodCallback(const v8::FunctionCallb
 }
 #endif // ENABLE(CONDITION)
 
-#if ENABLE(CONDITION_1) && ENABLE(CONDITION_2)
-static void conditionalCondition1AndCondition2VoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestObject* impl = V8TestObject::toNative(info.Holder());
-    impl->conditionalCondition1AndCondition2VoidMethod();
-}
-#endif // ENABLE(CONDITION_1) && ENABLE(CONDITION_2)
-
-#if ENABLE(CONDITION_1) && ENABLE(CONDITION_2)
-static void conditionalCondition1AndCondition2VoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
-    TestObjectV8Internal::conditionalCondition1AndCondition2VoidMethodMethod(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
-}
-#endif // ENABLE(CONDITION_1) && ENABLE(CONDITION_2)
-
 #if ENABLE(CONDITION)
 static void conditionalConditionStaticVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
@@ -10372,12 +10279,6 @@ static const V8DOMConfiguration::AttributeConfiguration V8TestObjectAttributes[]
 #if ENABLE(CONDITION)
     {"conditionalLongAttribute", TestObjectV8Internal::conditionalLongAttributeAttributeGetterCallback, TestObjectV8Internal::conditionalLongAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance},
 #endif // ENABLE(CONDITION)
-#if ENABLE(CONDITION_1) && ENABLE(CONDITION_2)
-    {"conditionalAndLongAttribute", TestObjectV8Internal::conditionalAndLongAttributeAttributeGetterCallback, TestObjectV8Internal::conditionalAndLongAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance},
-#endif // ENABLE(CONDITION_1) && ENABLE(CONDITION_2)
-#if ENABLE(CONDITION_1) || ENABLE(CONDITION_2)
-    {"conditionalOrLongAttribute", TestObjectV8Internal::conditionalOrLongAttributeAttributeGetterCallback, TestObjectV8Internal::conditionalOrLongAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance},
-#endif // ENABLE(CONDITION_1) || ENABLE(CONDITION_2)
     {"testInterfaceEmptyConstructorAttribute", TestObjectV8Internal::TestObjectConstructorGetter, TestObjectV8Internal::TestObjectForceSetAttributeOnThisCallback, 0, 0, const_cast<WrapperTypeInfo*>(&V8TestInterfaceEmpty::wrapperTypeInfo), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::DontEnum), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance},
     {"testInterfaceEmptyConstructorAttribute", TestObjectV8Internal::testInterfaceEmptyConstructorAttributeConstructorGetterCallback, TestObjectV8Internal::TestObjectForceSetAttributeOnThisCallback, 0, 0, const_cast<WrapperTypeInfo*>(&V8TestInterfaceEmpty::wrapperTypeInfo), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::DontEnum), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance},
     {"measureAsFeatureNameTestInterfaceEmptyConstructorAttribute", TestObjectV8Internal::measureAsFeatureNameTestInterfaceEmptyConstructorAttributeConstructorGetterCallback, TestObjectV8Internal::TestObjectForceSetAttributeOnThisCallback, 0, 0, const_cast<WrapperTypeInfo*>(&V8TestInterfaceEmpty::wrapperTypeInfo), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::DontEnum), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance},
@@ -10631,9 +10532,6 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectMethods[] = {
 #if ENABLE(CONDITION)
     {"conditionalConditionVoidMethod", TestObjectV8Internal::conditionalConditionVoidMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
 #endif // ENABLE(CONDITION)
-#if ENABLE(CONDITION_1) && ENABLE(CONDITION_2)
-    {"conditionalCondition1AndCondition2VoidMethod", TestObjectV8Internal::conditionalCondition1AndCondition2VoidMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
-#endif // ENABLE(CONDITION_1) && ENABLE(CONDITION_2)
     {"customVoidMethod", TestObjectV8Internal::customVoidMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
 #if ENABLE(CONDITION)
     {"conditionalConditionCustomVoidMethod", TestObjectV8Internal::conditionalConditionCustomVoidMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},

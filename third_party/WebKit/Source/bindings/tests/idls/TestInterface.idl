@@ -34,12 +34,12 @@
 [
     ActiveDOMObject,
     Conditional=CONDITION,
-    Custom=LegacyCallAsFunction|ToV8,
+    Custom=(LegacyCallAsFunction,ToV8),
     DoNotCheckConstants,
     ImplementedAs=TestInterfaceImplementation,
     RuntimeEnabled=FeatureName,
     SetWrapperReferenceTo(TestInterface referencedName),
-    TypeChecking=Interface|Unrestricted,
+    TypeChecking=(Interface,Unrestricted),
     Exposed=(Worker,Window),
 ] interface TestInterface : TestInterfaceEmpty {
     // members needed to test [ImplementedAs], as this affect attribute
