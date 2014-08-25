@@ -81,11 +81,11 @@ void AudioDirectiveHandler::AddInstruction(const TokenInstruction& instruction,
       switch (instruction.medium()) {
         case AUDIO_ULTRASOUND_PASSBAND:
           transmits_list_inaudible_.AddDirective(op_id, ttl);
-          HandleToken(instruction.token_id(), false);
+          PlayToken(instruction.token_id(), false);
           break;
         case AUDIO_AUDIBLE_DTMF:
           transmits_list_audible_.AddDirective(op_id, ttl);
-          HandleToken(instruction.token_id(), true);
+          PlayToken(instruction.token_id(), true);
           break;
         default:
           NOTREACHED();
@@ -95,13 +95,12 @@ void AudioDirectiveHandler::AddInstruction(const TokenInstruction& instruction,
       DVLOG(2) << "Audio Receive Directive received. TTL="
                << ttl.InMilliseconds();
       receives_list_.AddDirective(op_id, ttl);
+      ProcessNextReceive();
       break;
     case UNKNOWN_TOKEN_INSTRUCTION_TYPE:
     default:
       LOG(WARNING) << "Unknown Audio Transmit Directive received.";
   }
-  // ExecuteNextTransmit will be called by directive_list_ when Add is done.
-  ProcessNextReceive();
 }
 
 void AudioDirectiveHandler::RemoveInstructions(const std::string& op_id) {
@@ -175,32 +174,30 @@ void AudioDirectiveHandler::ProcessNextReceive() {
   }
 }
 
-void AudioDirectiveHandler::HandleToken(const std::string token, bool audible) {
+void AudioDirectiveHandler::PlayToken(const std::string token, bool audible) {
   std::string valid_token = FromUrlSafe(token);
 
+  // If the token has been encoded already, use the cached samples.
   if (audible && samples_cache_audible_.HasKey(valid_token)) {
     current_token_audible_ = token;
     ProcessNextTransmit();
-    return;
-  }
-
-  if (!audible && samples_cache_inaudible_.HasKey(valid_token)) {
+  } else if (!audible && samples_cache_inaudible_.HasKey(valid_token)) {
     current_token_inaudible_ = token;
     ProcessNextTransmit();
-    return;
+  } else {
+    // Otherwise, encode the token and then play it.
+    encode_cb_.Run(valid_token,
+                   audible,
+                   base::Bind(&AudioDirectiveHandler::PlayEncodedToken,
+                              base::Unretained(this)));
   }
-
-  encode_cb_.Run(valid_token,
-                 audible,
-                 base::Bind(&AudioDirectiveHandler::OnTokenEncoded,
-                            base::Unretained(this)));
 }
 
-void AudioDirectiveHandler::OnTokenEncoded(
+void AudioDirectiveHandler::PlayEncodedToken(
     const std::string& token,
     bool audible,
     const scoped_refptr<media::AudioBusRefCounted>& samples) {
-  DVLOG(3) << "Token: " << token << "[audible:" << audible << "] encoded.";
+  DVLOG(3) << "Token " << token << "[audible:" << audible << "] encoded.";
   if (audible) {
     samples_cache_audible_.Add(token, samples);
     current_token_audible_ = token;

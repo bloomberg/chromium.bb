@@ -91,13 +91,14 @@ class AudioDirectiveHandler {
   // Processes the next active receive instruction.
   void ProcessNextReceive();
 
-  void HandleToken(const std::string token, bool audible);
+  void PlayToken(const std::string token, bool audible);
 
   // This is the method that the whispernet client needs to call to return
   // samples to us.
-  void OnTokenEncoded(const std::string& token,
-                      bool audible,
-                      const scoped_refptr<media::AudioBusRefCounted>& samples);
+  void PlayEncodedToken(
+      const std::string& token,
+      bool audible,
+      const scoped_refptr<media::AudioBusRefCounted>& samples);
 
   AudioDirectiveList transmits_list_audible_;
   AudioDirectiveList transmits_list_inaudible_;
