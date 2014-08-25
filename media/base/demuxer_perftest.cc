@@ -207,33 +207,26 @@ static void RunDemuxerBenchmark(const std::string& filename) {
                          true);
 }
 
-class DemuxerPerfTest : public testing::TestWithParam<const char*> {
-};
-
-const char* kDemuxerBenchmarks[] = {
-  "bear.ogv",
-  "bear-640x360.webm",
-  "sfx_s16le.wav",
+#if defined(OS_WIN)
+// http://crbug.com/399002
+#define MAYBE_Demuxer DISABLED_Demuxer
+#else
+#define MAYBE_Demuxer Demuxer
+#endif
+TEST(DemuxerPerfTest, MAYBE_Demuxer) {
+  RunDemuxerBenchmark("bear.ogv");
+  RunDemuxerBenchmark("bear-640x360.webm");
+  RunDemuxerBenchmark("sfx_s16le.wav");
 #if defined(USE_PROPRIETARY_CODECS)
-  "bear-1280x720.mp4",
-  "sfx.mp3",
+  RunDemuxerBenchmark("bear-1280x720.mp4");
+  RunDemuxerBenchmark("sfx.mp3");
 #endif
 #if defined(OS_CHROMEOS)
-  "bear.flac",
+  RunDemuxerBenchmark("bear.flac");
 #endif
 #if defined(USE_PROPRIETARY_CODECS) && defined(OS_CHROMEOS)
-  "bear.avi",
+  RunDemuxerBenchmark("bear.avi");
 #endif
-};
-
-TEST_P(DemuxerPerfTest, Demuxer) {
-  RunDemuxerBenchmark(GetParam());
 }
-
-#if !defined(OS_WIN)
-// http://crbug.com/399002
-INSTANTIATE_TEST_CASE_P(, DemuxerPerfTest,
-                        testing::ValuesIn(kDemuxerBenchmarks));
-#endif  // !defined(OS_WIN)
 
 }  // namespace media
