@@ -14,12 +14,6 @@ group("public") {
     "//mojo/public/js/bindings",
   ]
 
-  if (is_linux) {
-    deps += [
-      "//mojo/public/python",
-    ]
-  }
-
   if (is_android) {
     deps += [
       "//mojo/public/java:system",

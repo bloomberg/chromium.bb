@@ -87,13 +87,6 @@
             'mojo_dbus_echo_service',
           ],
         }],
-        ['component != "shared_library" and OS == "linux"', {
-          'dependencies': [
-            'mojo_python_embedder',
-            'mojo_python_system',
-            'mojo_python',
-          ],
-        }],
       ]
     },
     {
@@ -534,77 +527,6 @@
           ],
           'defines': [
             'MOJO_VIEWS_IMPLEMENTATION',
-          ],
-        },
-      ],
-    }],
-    ['component!="shared_library" and OS=="linux"', {
-      'targets': [
-        {
-          'target_name': 'mojo_python_system',
-          'variables': {
-            'python_base_module': 'mojo',
-            'python_cython_module': 'system',
-          },
-          'sources': [
-            'public/python/mojo/c_core.pxd',
-            'public/python/mojo/system.pyx',
-          ],
-          'dependencies': [
-            'mojo_base.gyp:mojo_system',
-          ],
-          'includes': [ '../third_party/cython/cython_compiler.gypi' ],
-        },
-        {
-          'target_name': 'mojo_python_embedder',
-          'type': 'loadable_module',
-          'variables': {
-            'python_base_module': 'mojo',
-            'python_cython_module': 'embedder',
-          },
-          'sources': [
-            'python/system/mojo/embedder.pyx',
-          ],
-          'dependencies': [
-            'mojo_base.gyp:mojo_system_impl',
-          ],
-          'includes': [ '../third_party/cython/cython_compiler.gypi' ],
-        },
-        {
-          'target_name': 'mojo_python',
-          'type': 'none',
-          'variables': {
-            'python_base_module': 'mojo',
-          },
-          'sources': [
-            'public/python/mojo/__init__.py',
-          ],
-          'dependencies': [
-            'mojo_python_embedder',
-            'mojo_python_system',
-          ],
-          'includes': [ '../third_party/cython/python_module.gypi' ],
-        },
-        {
-          'target_name': 'mojo_python_unittests',
-          'type': 'none',
-          'actions': [
-            {
-              'action_name': 'run_mojo_python_unittests',
-              'inputs': [
-                'python/tests/test_core.py',
-                '<(SHARED_INTERMEDIATE_DIR)/mojo_python_py_module.stamp',
-              ],
-              'outputs': [
-                'none',
-              ],
-              'action': [
-                'python', '<@(_inputs)', '<(PRODUCT_DIR)/python',
-              ],
-            },
-          ],
-          'dependency': [
-            'mojo_python',
           ],
         },
       ],
