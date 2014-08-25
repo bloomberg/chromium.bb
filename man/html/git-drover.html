@@ -770,25 +770,36 @@ sequence of commands to run.</p></div>
 <div class="sect1">
 <h2 id="_example">EXAMPLE</h2>
 <div class="sectionbody">
-<div class="paragraph"><p> Before working with branches, you must 'gclient sync --with_branch_heads' at least once to fetch the branches.</p></div><div class="listingblock"><div class="content"><pre><code><span style="font-weight: bold; color: #ffffff">$ git log -n 1 --pretty=fuller</span>
-commit 49fde8547a38bf27d38cbf3fac783cdf2ddc5f47
+<div class="paragraph"><p> Before working with branches, you must 'gclient sync --with_branch_heads' at least once to fetch the branches.</p></div><div class="listingblock"><div class="content"><pre><code># Make sure we have the most up-to-date branch sources.
+<span style="font-weight: bold; color: #ffffff">$ git fetch</span>
+
+# Here's the commit we want to 'drover'.
+<span style="font-weight: bold; color: #ffffff">$ git log -n 1 --pretty=fuller</span>
+commit 19b478428049b956b2dc389893c9ed7c05d1b175
 Author:     some.committer &lt;some.committer@chromium.org&gt;
 AuthorDate: Thu Apr 10 08:54:46 2014 +0000
 Commit:     some.committer &lt;some.committer@chromium.org&gt;
 CommitDate: Thu Apr 10 08:54:46 2014 +0000
 
     This change needs to go to branch 9999
+
+# Checkout the branch we want to 'drover' to.
 <span style="font-weight: bold; color: #ffffff">$ git checkout -b drover_9999 branch-heads/9999</span>
 Branch drover_9999 set up to track remote ref refs/branch-heads/9999.
-# DO NOT leave off the '-x' flag
-<span style="font-weight: bold; color: #ffffff">$ git cherry-pick -x 49fde8547a38bf27d38cbf3fac783cdf2ddc5f47</span>
-[drover_9999 1e33c2c] This change needs to go to branch 9999
+
+# Now do the 'drover'.
+# IMPORTANT!!! Do Not leave off the '-x' flag
+<span style="font-weight: bold; color: #ffffff">$ git cherry-pick -x 19b478428049b956b2dc389893c9ed7c05d1b175</span>
+[drover_9999 88e74e0] This change needs to go to branch 9999
  Author: some.committer &lt;some.committer@chromium.org&gt;
  Date: Thu Apr 10 08:54:46 2014 +0000
  1 file changed, 1 insertion(+)
  create mode 100644 modified_file
+
+# That took the code authored by some.commiter and commited it to the
+# branch by branch.maintainer (us).
 <span style="font-weight: bold; color: #ffffff">$ git log -n 1 --pretty=fuller</span>
-commit 1e33c2ccf642703a6c1c582210fe63980dc6c45b
+commit 88e74e0f2540eba7bc7bd4d6adb4b0d7923c9488
 Author:     some.committer &lt;some.committer@chromium.org&gt;
 AuthorDate: Thu Apr 10 08:54:46 2014 +0000
 Commit:     branch.maintainer &lt;branch.maintainer@chromium.org&gt;
@@ -796,10 +807,13 @@ CommitDate: Thu Apr 10 09:11:36 2014 +0000
 
     This change needs to go to branch 9999
 
-    (cherry picked from commit 49fde8547a38bf27d38cbf3fac783cdf2ddc5f47)
+    (cherry picked from commit 19b478428049b956b2dc389893c9ed7c05d1b175)
+
+# Looks good. Ship it!
 <span style="font-weight: bold; color: #ffffff">$ git cl upload</span>
 # Get LGTM or TBR.
 <span style="font-weight: bold; color: #ffffff">$ git cl land</span>
+# Or skip the LGTM/TBR and just 'git cl land --bypass-hooks'
 </code></pre></div></div><p><div class="paragraph"></p></div>
 </div>
 </div>
@@ -821,7 +835,7 @@ from <a href="https://chromium.googlesource.com/chromium/tools/depot_tools.git">
 <div id="footnotes"><hr /></div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2014-08-20 16:12:01 PDT
+Last updated 2014-08-25 16:45:38 PDT
 </div>
 </div>
 </body>

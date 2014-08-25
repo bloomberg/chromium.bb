@@ -2,12 +2,12 @@
 .\"     Title: git-drover
 .\"    Author: [FIXME: author] [see http://docbook.sf.net/el/author]
 .\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 08/20/2014
+.\"      Date: 08/25/2014
 .\"    Manual: Chromium depot_tools Manual
-.\"    Source: depot_tools b2c2b1c
+.\"    Source: depot_tools f0a4926
 .\"  Language: English
 .\"
-.TH "GIT\-DROVER" "1" "08/20/2014" "depot_tools b2c2b1c" "Chromium depot_tools Manual"
+.TH "GIT\-DROVER" "1" "08/25/2014" "depot_tools f0a4926" "Chromium depot_tools Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -46,25 +46,36 @@ Before working with branches, you must \*(Aqgclient sync \-\-with_branch_heads\*
 .RS 4
 .\}
 .nf
+# Make sure we have the most up\-to\-date branch sources\&.
+\fB$ git fetch\fR
+
+# Here\*(Aqs the commit we want to \*(Aqdrover\*(Aq\&.
 \fB$ git log \-n 1 \-\-pretty=fuller\fR
-commit d4bdf220b1b8d616ae71ab2d539f106f167c03e1
+commit fd935aae549962611c2f178dc9026f23ae2ad9bd
 Author:     some\&.committer <some\&.committer@chromium\&.org>
 AuthorDate: Thu Apr 10 08:54:46 2014 +0000
 Commit:     some\&.committer <some\&.committer@chromium\&.org>
 CommitDate: Thu Apr 10 08:54:46 2014 +0000
 
     This change needs to go to branch 9999
+
+# Checkout the branch we want to \*(Aqdrover\*(Aq to\&.
 \fB$ git checkout \-b drover_9999 branch\-heads/9999\fR
 Branch drover_9999 set up to track remote ref refs/branch\-heads/9999\&.
-# DO NOT leave off the \*(Aq\-x\*(Aq flag
-\fB$ git cherry\-pick \-x d4bdf220b1b8d616ae71ab2d539f106f167c03e1\fR
-[drover_9999 6356f5a] This change needs to go to branch 9999
+
+# Now do the \*(Aqdrover\*(Aq\&.
+# IMPORTANT!!! Do Not leave off the \*(Aq\-x\*(Aq flag
+\fB$ git cherry\-pick \-x fd935aae549962611c2f178dc9026f23ae2ad9bd\fR
+[drover_9999 0f36796] This change needs to go to branch 9999
  Author: some\&.committer <some\&.committer@chromium\&.org>
  Date: Thu Apr 10 08:54:46 2014 +0000
  1 file changed, 1 insertion(+)
  create mode 100644 modified_file
+
+# That took the code authored by some\&.commiter and commited it to the
+# branch by branch\&.maintainer (us)\&.
 \fB$ git log \-n 1 \-\-pretty=fuller\fR
-commit 6356f5a94785197320d59639e794b83783094329
+commit 0f3679662379e7032957abcc7d63e96cec444ec7
 Author:     some\&.committer <some\&.committer@chromium\&.org>
 AuthorDate: Thu Apr 10 08:54:46 2014 +0000
 Commit:     branch\&.maintainer <branch\&.maintainer@chromium\&.org>
@@ -72,10 +83,13 @@ CommitDate: Thu Apr 10 09:11:36 2014 +0000
 
     This change needs to go to branch 9999
 
-    (cherry picked from commit d4bdf220b1b8d616ae71ab2d539f106f167c03e1)
+    (cherry picked from commit fd935aae549962611c2f178dc9026f23ae2ad9bd)
+
+# Looks good\&. Ship it!
 \fB$ git cl upload\fR
 # Get LGTM or TBR\&.
 \fB$ git cl land\fR
+# Or skip the LGTM/TBR and just \*(Aqgit cl land \-\-bypass\-hooks\*(Aq
 .fi
 .if n \{\
 .RE

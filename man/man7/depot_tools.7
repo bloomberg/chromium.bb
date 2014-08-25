@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: depot_tools
 .\"    Author: [FIXME: author] [see http://docbook.sf.net/el/author]
-.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 04/10/2014
+.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
+.\"      Date: 08/25/2014
 .\"    Manual: Chromium depot_tools Manual
-.\"    Source: depot_tools 68b1017
+.\"    Source: depot_tools 19f1c45
 .\"  Language: English
 .\"
-.TH "DEPOT_TOOLS" "7" "04/10/2014" "depot_tools 68b1017" "Chromium depot_tools Manual"
+.TH "DEPOT_TOOLS" "7" "08/25/2014" "depot_tools 19f1c45" "Chromium depot_tools Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -41,6 +41,16 @@ A listing of both categories of tools follows\&.
 .SH "HELPER TOOLS"
 .sp
 A tutorial for these tools can be found at \fBdepot_tools_tutorial\fR(7)\&.
+.PP
+\fBgit-cherry-pick-upload\fR(1)
+.RS 4
+Upload the diff between a revision and its parent to rietveld\&.
+.RE
+.PP
+\fBgit-drover\fR(1)
+.RS 4
+Apply a commit from the trunk to a release branch, or from one release branch to another\&.
+.RE
 .PP
 \fBgit-freeze\fR(1)
 .RS 4
@@ -90,6 +100,11 @@ Rename a branch and correctly preserve all downstream relationships\&.
 \fBgit-reparent-branch\fR(1)
 .RS 4
 Alter the parentage (upstream) for the current branch\&.
+.RE
+.PP
+\fBgit-retry\fR(1)
+.RS 4
+Bootstrap function to retry a git command\&.
 .RE
 .PP
 \fBgit-squash-branch\fR(1)
