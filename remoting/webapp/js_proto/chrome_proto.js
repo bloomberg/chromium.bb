@@ -346,6 +346,8 @@ var AppWindow = function() {
   /** @type {Window} */
   this.contentWindow = null;
   /** @type {chrome.Event} */
+  this.onClosed = null;
+  /** @type {chrome.Event} */
   this.onRestored = null;
   /** @type {chrome.Event} */
   this.onMaximized = null;
@@ -360,6 +362,7 @@ AppWindow.prototype.drawAttention = function() {};
 AppWindow.prototype.maximize = function() {};
 AppWindow.prototype.minimize = function() {};
 AppWindow.prototype.restore = function() {};
+AppWindow.prototype.show = function() {};
 AppWindow.prototype.fullscreen = function() {};
 /** @return {boolean} */
 AppWindow.prototype.isFullscreen = function() {};

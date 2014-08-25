@@ -197,6 +197,8 @@
       'webapp/background/it2me_helpee_channel.js',
       'webapp/background/it2me_helper_channel.js',
       'webapp/background/it2me_service.js',
+      'webapp/background/message_window_helper.js',
+      'webapp/background/message_window_manager.js',
     ],
 
     # The JavaScript files required by wcs_sandbox.html.
@@ -211,6 +213,8 @@
       # JS files for main.html.
       '<@(remoting_webapp_main_html_js_files)',
       '<@(remoting_webapp_background_js_files)',
+      # JS files for message_window.html
+      'webapp/background/message_window.js',
       # JS files for wcs_sandbox.html.
       # Use r_w_js_wcs_sandbox_files instead of r_w_wcs_sandbox_html_js_files
       # so that we don't double include error.js and plugin_settings.js.
@@ -240,8 +244,10 @@
       'resources/reload.webp',
       'resources/tick.webp',
       'webapp/connection_stats.css',
+      'webapp/html/message_window.html',
       'webapp/main.css',
       'webapp/menu_button.css',
+      'webapp/message_window.css',
       'webapp/open_sans.css',
       'webapp/open_sans.woff',
       'webapp/scale-to-fit.webp',
