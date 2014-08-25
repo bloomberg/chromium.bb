@@ -33,6 +33,11 @@ class ManagePasswordsUIControllerMock
     return navigated_to_settings_page_;
   }
 
+  virtual void NavigateToAccountCentralManagementPage() OVERRIDE;
+  bool navigated_to_account_central_management_page() const {
+    return navigated_to_account_central_management_page_;
+  }
+
   // We don't have a FormManager in tests, so stub these out.
   virtual void SavePasswordInternal() OVERRIDE;
   bool saved_password() const { return saved_password_; }
@@ -58,6 +63,7 @@ class ManagePasswordsUIControllerMock
 
  private:
   bool navigated_to_settings_page_;
+  bool navigated_to_account_central_management_page_;
   bool saved_password_;
   bool never_saved_password_;
 

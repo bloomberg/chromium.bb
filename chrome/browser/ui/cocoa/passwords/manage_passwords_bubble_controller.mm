@@ -9,6 +9,7 @@
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #include "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
+#import "chrome/browser/ui/cocoa/passwords/manage_passwords_bubble_confirmation_view_controller.h"
 #include "ui/base/cocoa/window_size_constants.h"
 
 @interface ManagePasswordsBubbleController ()
@@ -46,6 +47,11 @@
   if (password_manager::ui::IsPendingState(model_->state())) {
     currentController_.reset(
         [[ManagePasswordsBubblePendingViewController alloc]
+            initWithModel:model_
+                 delegate:self]);
+  } else if (model_->state() == password_manager::ui::CONFIRMATION_STATE) {
+    currentController_.reset(
+        [[ManagePasswordsBubbleConfirmationViewController alloc]
             initWithModel:model_
                  delegate:self]);
   }
