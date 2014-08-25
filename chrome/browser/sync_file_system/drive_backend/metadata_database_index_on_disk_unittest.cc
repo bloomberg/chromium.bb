@@ -630,6 +630,11 @@ TEST_F(MetadataDatabaseIndexOnDiskTest, DirtyTrackersTest) {
   WriteToDB();
   EXPECT_EQ(1U, index()->CountDirtyTracker());
   EXPECT_EQ(kInvalidTrackerID, index()->PickDirtyTracker());
+
+  // Demoted trackers
+  EXPECT_TRUE(index()->HasDemotedDirtyTracker());
+  EXPECT_TRUE(index()->PromoteDemotedDirtyTrackers());
+  EXPECT_FALSE(index()->HasDemotedDirtyTracker());
 }
 
 }  // namespace drive_backend

@@ -539,9 +539,9 @@ void MetadataDatabaseIndexOnDisk::PromoteDemotedDirtyTracker(int64 tracker_id) {
 bool MetadataDatabaseIndexOnDisk::PromoteDemotedDirtyTrackers() {
   bool promoted = false;
   scoped_ptr<LevelDBWrapper::Iterator> itr(db_->NewIterator());
-  for (itr->Seek(kDirtyIDKeyPrefix); itr->Valid(); itr->Next()) {
+  for (itr->Seek(kDemotedDirtyIDKeyPrefix); itr->Valid(); itr->Next()) {
     std::string id_str;
-    if (!RemovePrefix(itr->key().ToString(), kDirtyIDKeyPrefix, &id_str))
+    if (!RemovePrefix(itr->key().ToString(), kDemotedDirtyIDKeyPrefix, &id_str))
       break;
 
     int64 tracker_id;
@@ -549,7 +549,7 @@ bool MetadataDatabaseIndexOnDisk::PromoteDemotedDirtyTrackers() {
       continue;
 
     db_->Delete(itr->key().ToString());
-    db_->Put(GenerateDemotedDirtyIDKey(tracker_id), std::string());
+    db_->Put(GenerateDirtyIDKey(tracker_id), std::string());
     promoted = true;
   }
   return promoted;
