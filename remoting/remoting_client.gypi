@@ -5,6 +5,7 @@
 {
   'targets': [
     {
+      # GN version: //remoting/client/plugin
       'target_name': 'remoting_client_plugin',
       'type': 'static_library',
       'variables': { 'enable_wexit_time_destructors': 1, },
@@ -29,6 +30,7 @@
     },  # end of target 'remoting_client_plugin'
 
     {
+      # GN version: //remoting/client
       'target_name': 'remoting_client',
       'type': 'static_library',
       'variables': { 'enable_wexit_time_destructors': 1, },
@@ -52,6 +54,7 @@
       'type': 'none',
       'actions': [
         {
+          # GN version: //remoting/webapp:html
           'action_name': 'Build Remoting Webapp main.html',
           'inputs': [
             'webapp/build-html.py',

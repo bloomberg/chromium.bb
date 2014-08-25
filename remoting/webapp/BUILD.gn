@@ -1,0 +1,196 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+action("html") {
+  script = "build-html.py"
+
+  remoting_webapp_template_main = "html/template_main.html"
+  remoting_webapp_template_files = [
+    "html/butterbar.html",
+    "html/client_plugin.html",
+    "html/dialog_auth.html",
+    "html/dialog_client_connect_failed.html",
+    "html/dialog_client_connecting.html",
+    "html/dialog_client_host_needs_upgrade.html",
+    "html/dialog_client_pin_prompt.html",
+    "html/dialog_client_session_finished.html",
+    "html/dialog_client_third_party_auth.html",
+    "html/dialog_client_unconnected.html",
+    "html/dialog_confirm_host_delete.html",
+    "html/dialog_connection_history.html",
+    "html/dialog_host.html",
+    "html/dialog_host_install.html",
+    "html/dialog_host_setup.html",
+    "html/dialog_manage_pairings.html",
+    "html/dialog_token_refresh_failed.html",
+    "html/toolbar.html",
+    "html/ui_header.html",
+    "html/ui_it2me.html",
+    "html/ui_me2me.html",
+    "html/window_frame.html",
+  ]
+
+  # Remoting core JavaScript files.
+  remoting_webapp_js_core_files = [
+    "base.js",
+    "error.js",
+    "event_handlers.js",
+    "plugin_settings.js",
+    # TODO(garykac) Split out UI client stuff from remoting.js.
+    "remoting.js",
+    "typecheck.js",
+    "xhr.js",
+  ]
+
+  # Auth (client to host) JavaScript files.
+  remoting_webapp_js_auth_client2host_files = [
+    "third_party_host_permissions.js",
+    "third_party_token_fetcher.js",
+  ]
+
+  # Auth (Google account) JavaScript files.
+  remoting_webapp_js_auth_google_files = [
+    "identity.js",
+    "oauth2.js",
+    "oauth2_api.js",
+  ]
+
+  # Client JavaScript files.
+  remoting_webapp_js_client_files = [
+    "client_plugin.js",
+    # TODO(garykac) For client_screen:
+    # * Split out pin/access code stuff into separate file.
+    # * Move client logic into session_connector
+    "client_screen.js",
+    "client_session.js",
+    "clipboard.js",
+    "hangout_session.js",
+    "media_source_renderer.js",
+    "session_connector.js",
+    "smart_reconnector.js",
+    "video_frame_recorder.js",
+  ]
+
+  # gnubby authentication JavaScript files.
+  remoting_webapp_js_gnubby_auth_files = [
+    "gnubby_auth_handler.js",
+  ]
+  # cast extension handler JavaScript files.
+  remoting_webapp_js_cast_extension_files = [
+    "cast_extension_handler.js",
+  ]
+
+  # Host JavaScript files.
+  # Includes both it2me and me2me files.
+  remoting_webapp_js_host_files = [
+    "host_controller.js",
+    "host_daemon_facade.js",
+    "it2me_host_facade.js",
+    "host_session.js",
+  ]
+
+  # Logging and stats JavaScript files.
+  remoting_webapp_js_logging_files = [
+    "format_iq.js",
+    "log_to_server.js",
+    "server_log_entry.js",
+    "stats_accumulator.js",
+  ]
+
+  # UI JavaScript files.
+  remoting_webapp_js_ui_files = [
+    "butter_bar.js",
+    "connection_stats.js",
+    "feedback.js",
+    "fullscreen.js",
+    "fullscreen_v1.js",
+    "fullscreen_v2.js",
+    "l10n.js",
+    "menu_button.js",
+    "options_menu.js",
+    "ui_mode.js",
+    "toolbar.js",
+    "window_frame.js",
+  ]
+
+  # UI files for controlling the local machine as a host.
+  remoting_webapp_js_ui_host_control_files = [
+    "host_screen.js",
+    "host_setup_dialog.js",
+    "host_install_dialog.js",
+    "host_installer.js",
+    "paired_client_manager.js",
+  ]
+
+  # UI files for displaying (in the client) info about available hosts.
+  remoting_webapp_js_ui_host_display_files = [
+    "host.js",
+    "host_list.js",
+    "host_settings.js",
+    "host_table_entry.js",
+  ]
+
+  # Remoting WCS container JavaScript files.
+  remoting_webapp_js_wcs_container_files = [
+    "wcs_sandbox_container.js",
+  ]
+
+  # Browser test JavaScript files (uncomment if used below).
+  #remoting_webapp_js_browser_test_files = [
+  #  "browser_test/browser_test.js",
+  #  "browser_test/bump_scroll_browser_test.js",
+  #  "browser_test/cancel_pin_browser_test.js",
+  #  "browser_test/invalid_pin_browser_test.js",
+  #  "browser_test/update_pin_browser_test.js",
+  #]
+
+  # The JavaScript files required by main.html.
+  remoting_webapp_main_html_js_files =
+      # Include the core files first as it is required by the other files.
+      # Otherwise, Jscompile will complain.
+      remoting_webapp_js_core_files +
+      remoting_webapp_js_auth_client2host_files +
+      remoting_webapp_js_auth_google_files +
+      remoting_webapp_js_client_files +
+      remoting_webapp_js_gnubby_auth_files +
+      remoting_webapp_js_cast_extension_files +
+      remoting_webapp_js_host_files +
+      remoting_webapp_js_logging_files +
+      remoting_webapp_js_ui_files +
+      remoting_webapp_js_ui_host_control_files +
+      remoting_webapp_js_ui_host_display_files +
+      remoting_webapp_js_wcs_container_files
+      # Uncomment this line to include browser test files in the web app
+      # to expedite debugging or local development.
+      #+ remoting_webapp_js_browser_test_files
+
+  inputs = [ remoting_webapp_template_main ] +
+      remoting_webapp_template_files +
+      remoting_webapp_main_html_js_files
+
+  outputs = [
+    "$root_gen_dir/main.html",
+  ]
+
+  # Template files are relative to this directory. This passes some template
+  # files to the script, and the script reads templates from the files on disk.
+  # They all have to be relative to the same directory. The GYP build made all
+  # of these relative to the remoting directory, so this does the same.
+  template_rel_dir = "//remoting"
+
+  # TODO(brettw) It's very bad to put this file named "main" in the root
+  # generated file directory.
+  args = [
+    rebase_path("$root_gen_dir/main.html", template_rel_dir),
+    rebase_path(remoting_webapp_template_main, template_rel_dir),
+  ]
+  args += [ "--template" ] +
+      rebase_path(remoting_webapp_template_files, template_rel_dir)
+  args += [ "--js" ] +
+      rebase_path(remoting_webapp_main_html_js_files, template_rel_dir)
+  args += [ "--dir-for-templates",
+            rebase_path(template_rel_dir, root_build_dir) ]
+}
+
+# TODO(GYP) wcs_sandbox.html

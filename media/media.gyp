@@ -47,6 +47,7 @@
   ],
   'targets': [
     {
+      # GN version: //media
       'target_name': 'media',
       'type': '<(component)',
       'dependencies': [
@@ -999,6 +1000,7 @@
       ],
     },
     {
+      # GN version: //media:media_unittests
       'target_name': 'media_unittests',
       'type': '<(gtest_target_type)',
       'dependencies': [
@@ -1287,6 +1289,7 @@
       ],
     },
     {
+      # GN version: //media:media_perftests
       'target_name': 'media_perftests',
       'type': '<(gtest_target_type)',
       'dependencies': [
@@ -1338,6 +1341,7 @@
       ],
     },
     {
+      # GN version: //media:test_support
       'target_name': 'media_test_support',
       'type': 'static_library',
       'dependencies': [
@@ -1386,6 +1390,7 @@
       # Minimal target for NaCl and other renderer side media clients which
       # only need to send audio data across the shared memory to the browser
       # process.
+      # GN version: //media:shared_memory_support
       'target_name': 'shared_memory_support',
       'type': '<(component)',
       'dependencies': [
@@ -1709,6 +1714,7 @@
     ['media_use_ffmpeg==1', {
       'targets': [
         {
+          # GN version: //media:ffmpeg_unittests
           'target_name': 'ffmpeg_unittests',
           'type': 'executable',
           'dependencies': [
@@ -1725,6 +1731,7 @@
           ],
         },
         {
+          # GN version: //media:ffmpeg_regression_tests
           'target_name': 'ffmpeg_regression_tests',
           'type': 'executable',
           'dependencies': [

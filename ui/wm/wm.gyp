@@ -28,6 +28,7 @@
         'WM_IMPLEMENTATION',
       ],
       'sources': [
+        # Note: sources list duplicated in GN build.
         'core/accelerator_delegate.h',
         'core/accelerator_filter.cc',
         'core/accelerator_filter.h',

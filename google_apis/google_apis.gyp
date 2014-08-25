@@ -39,6 +39,7 @@
         }],
         ['enable_extensions==1', {
           'sources': [
+            # Note: sources list duplicated in GN build.
             'drive/auth_service.cc',
             'drive/auth_service.h',
             'drive/auth_service_interface.h',
@@ -72,6 +73,7 @@
         }],
       ],
       'sources': [
+        # Note: sources list duplicated in GN build.
         'gaia/account_tracker.cc',
         'gaia/account_tracker.h',
         'gaia/gaia_auth_consumer.cc',

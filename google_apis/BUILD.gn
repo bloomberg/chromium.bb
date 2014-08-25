@@ -77,6 +77,8 @@ config("key_defines") {
 
 source_set("google_apis") {
   sources = [
+    "gaia/account_tracker.cc",
+    "gaia/account_tracker.h",
     "gaia/gaia_auth_consumer.cc",
     "gaia/gaia_auth_consumer.h",
     "gaia/gaia_auth_fetcher.cc",

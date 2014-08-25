@@ -1,0 +1,58 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+static_library("plugin") {
+  sources = [
+    "chromoting_instance.cc",
+    "chromoting_instance.h",
+    "delegating_signal_strategy.cc",
+    "delegating_signal_strategy.h",
+    "media_source_video_renderer.cc",
+    "media_source_video_renderer.h",
+    "normalizing_input_filter_cros.cc",
+    "normalizing_input_filter_cros.h",
+    "normalizing_input_filter_mac.cc",
+    "normalizing_input_filter_mac.h",
+    "pepper_address_resolver.cc",
+    "pepper_address_resolver.h",
+    "pepper_audio_player.cc",
+    "pepper_audio_player.h",
+    "pepper_input_handler.cc",
+    "pepper_input_handler.h",
+    "pepper_network_manager.cc",
+    "pepper_network_manager.h",
+    "pepper_packet_socket_factory.cc",
+    "pepper_packet_socket_factory.h",
+    "pepper_plugin_thread_delegate.cc",
+    "pepper_plugin_thread_delegate.h",
+    "pepper_port_allocator.cc",
+    "pepper_port_allocator.h",
+    "pepper_util.cc",
+    "pepper_util.h",
+    "pepper_view.cc",
+    "pepper_view.h",
+  ]
+
+  # TODO(brettw) when a nacl version of this target is made, these files
+  # won't be part of it.
+  sources += [
+    "pepper_entrypoints.cc",
+    "pepper_entrypoints.h",
+  ]
+
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
+
+  defines = [ "HAVE_STDINT_H" ]  # Required by on2_integer.h.
+
+  deps = [
+    "//net",
+    "//ppapi:ppapi_cpp_objects",
+    "//ppapi:ppapi_internal_module",
+    "//remoting/base",
+    "//remoting/client",
+    "//remoting/protocol",
+    #"//third_party/webrtc/modules/desktop_capture",  TODO(GYP)
+    "//ui/events:dom4_keycode_converter",
+  ]
+}

@@ -1,0 +1,97 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+static_library("base") {
+  sources = [
+    "auth_token_util.cc",
+    "auth_token_util.h",
+    "auto_thread.cc",
+    "auto_thread.h",
+    "auto_thread_task_runner.cc",
+    "auto_thread_task_runner.h",
+    "capabilities.cc",
+    "capabilities.h",
+    "compound_buffer.cc",
+    "compound_buffer.h",
+    "constants.cc",
+    "constants.h",
+    "plugin_thread_task_runner.cc",
+    "plugin_thread_task_runner.h",
+    "rate_counter.cc",
+    "rate_counter.h",
+    "resources.h",
+    "resources_linux.cc",
+    "resources_mac.cc",
+    "resources_win.cc",
+    "rsa_key_pair.cc",
+    "rsa_key_pair.h",
+    "running_average.cc",
+    "running_average.h",
+    "scoped_sc_handle_win.h",
+    "service_urls.cc",
+    "service_urls.h",
+    "socket_reader.cc",
+    "socket_reader.h",
+    "typed_buffer.h",
+    "url_request_context_getter.cc",
+    "url_request_context_getter.h",
+    "util.cc",
+    "util.h",
+    "vlog_net_log.cc",
+    "vlog_net_log.h",
+    "../codec/audio_decoder.cc",
+    "../codec/audio_decoder.h",
+    "../codec/audio_decoder_opus.cc",
+    "../codec/audio_decoder_opus.h",
+    "../codec/audio_decoder_verbatim.cc",
+    "../codec/audio_decoder_verbatim.h",
+    "../codec/audio_encoder.h",
+    "../codec/audio_encoder_opus.cc",
+    "../codec/audio_encoder_opus.h",
+    "../codec/audio_encoder_verbatim.cc",
+    "../codec/audio_encoder_verbatim.h",
+    "../codec/scoped_vpx_codec.cc",
+    "../codec/scoped_vpx_codec.h",
+    "../codec/video_decoder.h",
+    "../codec/video_decoder_verbatim.cc",
+    "../codec/video_decoder_verbatim.h",
+    "../codec/video_decoder_vpx.cc",
+    "../codec/video_decoder_vpx.h",
+    "../codec/video_encoder.h",
+    "../codec/video_encoder_verbatim.cc",
+    "../codec/video_encoder_verbatim.h",
+    "../codec/video_encoder_vpx.cc",
+    "../codec/video_encoder_vpx.h",
+  ]
+
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
+  # TODO(GYP) Remove when WebRTC is converted.
+  configs += [ "//content:webrtc_stub_config" ]
+
+  deps = [
+    "//base",
+    "//base/third_party/dynamic_annotations",
+    "//media",
+    "//media:shared_memory_support",
+    "//net",
+    "//remoting/proto",
+    "//remoting/resources",
+    #"//third_party/libvpx",  TODO(GYP)
+    "//third_party/libyuv",
+    "//third_party/opus",
+    "//third_party/protobuf:protobuf_lite",
+    #"//third_party/webrtc/modules/desktop_capture",  TODO(GYP)
+    "//ui/base",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
+  ]
+
+  forward_dependent_configs_from = [
+    "//base",
+    "//net",
+    "//remoting/proto",
+    "//third_party/protobuf:protobuf_lite",
+  ]
+}
+

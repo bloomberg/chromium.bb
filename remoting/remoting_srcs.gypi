@@ -5,6 +5,8 @@
 {
   'variables': {
     'remoting_base_sources': [
+      # Note: sources list duplicated in GN build.
+      # See remoting/base/BUILD.gn
       'base/auth_token_util.cc',
       'base/auth_token_util.h',
       'base/auto_thread.cc',
@@ -67,6 +69,8 @@
     ],
 
     'remoting_protocol_sources': [
+      # Note: sources list duplicated in GN build.
+      # See remoting/protocol/BUILD.gn
       'protocol/audio_reader.cc',
       'protocol/audio_reader.h',
       'protocol/audio_stub.h',
@@ -199,6 +203,8 @@
     ],
 
     'remoting_client_sources': [
+      # Note: sources list duplicated in GN build.
+      # See remoting/client/BUILD.gn
       'client/audio_decode_scheduler.cc',
       'client/audio_decode_scheduler.h',
       'client/audio_player.cc',
@@ -228,6 +234,8 @@
     ],
 
     'remoting_client_plugin_sources': [
+      # Note: sources list duplicated in GN build.
+      # See remoting/client/plugin/BUILD.gn
       'client/plugin/chromoting_instance.cc',
       'client/plugin/chromoting_instance.h',
       'client/plugin/delegating_signal_strategy.cc',

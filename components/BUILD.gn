@@ -64,6 +64,7 @@ group("all_components") {
     "//components/pref_registry",
     "//components/query_parser",
     "//components/rappor",
+    "//components/renderer_context_menu",
     "//components/resources:components_resources",
     "//components/search",
     "//components/search_engines",
@@ -144,6 +145,7 @@ group("all_components") {
       "//components/precache/content",  # Blocked on content.
       "//components/precache/core",  # Should work, needs checking.
       "//components/rappor",  # Should work, needs checking.
+      "//components/renderer_context_menu",  # Blocked on content.
       "//components/search_engines",  # Should work, needs checking.
       "//components/search_provider_logos",  # Should work, needs checking.
       "//components/sessions",  # Blocked on content.

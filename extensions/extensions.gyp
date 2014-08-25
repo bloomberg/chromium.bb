@@ -273,6 +273,7 @@
         '<(SHARED_INTERMEDIATE_DIR)/chrome',
       ],
       'sources': [
+        # Note: sources list duplicated in GN build.
         'browser/admin_policy.cc',
         'browser/admin_policy.h',
         # NOTE: When moving an API out of Chrome be sure to verify that the

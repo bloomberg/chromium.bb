@@ -32,11 +32,12 @@ class HtmlChecker(HTMLParser):
 
 
 class GenerateWebappHtml:
-  def __init__(self, template_files, js_files, instrumented_js_files):
+  def __init__(self, template_files, js_files, instrumented_js_files,
+               template_rel_dir):
 
     self.js_files = js_files
     self.instrumented_js_files = instrumented_js_files
-
+    self.template_rel_dir = template_rel_dir
 
     self.templates_expected = set()
     for template in template_files:
@@ -69,7 +70,8 @@ class GenerateWebappHtml:
     return False
 
   def processTemplate(self, output, template_file, indent):
-    with open(template_file, 'r') as input_template:
+    with open(os.path.join(self.template_rel_dir, template_file), 'r') as \
+        input_template:
       first_line = True
       skip_header_comment = False
 
@@ -128,6 +130,10 @@ def parseArgs():
     nargs='*',
     default=[],
     help='Javascript to include and instrument for code coverage')
+  parser.add_argument(
+    '--dir-for-templates',
+    default = ".",
+    help='Directory template references in html are relative to')
   parser.add_argument('output_file')
   parser.add_argument('input_template')
   return parser.parse_args(sys.argv[1:])
@@ -146,7 +152,8 @@ def main():
 
   # Generate the main HTML file from the templates.
   with open(out_file, 'w') as output:
-    gen = GenerateWebappHtml(args.templates, js_files, args.instrument_js)
+    gen = GenerateWebappHtml(args.templates, js_files, args.instrument_js,
+                             args.dir_for_templates)
     gen.processTemplate(output, args.input_template, 0)
 
     # Verify that all the expected templates were found.

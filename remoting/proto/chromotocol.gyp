@@ -8,6 +8,7 @@
   },
   'targets': [
     {
+      # GN version: //remoting/proto
       'target_name': 'chromotocol_proto_lib',
       'type': 'static_library',
       'sources': [

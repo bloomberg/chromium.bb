@@ -66,6 +66,7 @@ group("root") {
     "//pdf",
     "//ppapi:ppapi_c",
     "//printing",
+    "//remoting/client/plugin",
     "//sandbox",
     "//sdch",
     "//skia",
@@ -227,6 +228,7 @@ group("root") {
 
       # Not tested on Android yet:
       "//google_apis/gcm",
+      "//remoting/client/plugin",
       "//third_party/cld_2",
       "//third_party/libaddressinput",
       "//third_party/ffmpeg",

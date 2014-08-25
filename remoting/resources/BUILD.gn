@@ -1,0 +1,184 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//tools/grit/grit_rule.gni")
+
+# See also remoting_locales_with_underscores below.
+remoting_locales = [
+  "ar",
+  "bg",
+  "ca",
+  "cs",
+  "da",
+  "de",
+  "el",
+  "en",
+  "en-GB",
+  "es",
+  "es-419",
+  "et",
+  "fi",
+  "fil",
+  "fr",
+  "he",
+  "hi",
+  "hr",
+  "hu",
+  "id",
+  "it",
+  "ja",
+  "ko",
+  "lt",
+  "lv",
+  "nb",
+  "nl",
+  "pl",
+  "pt-BR",
+  "pt-PT",
+  "ro",
+  "ru",
+  "sk",
+  "sl",
+  "sr",
+  "sv",
+  "th",
+  "tr",
+  "uk",
+  "vi",
+  "zh-CN",
+  "zh-TW",
+]
+
+# Some locales have hyphens in the names but for some uses underscores are
+# needed.
+remoting_locales_with_underscores = remoting_locales
+remoting_locales_with_underscores -= [
+  "en-GB",
+  "es-419",
+  "pt-BR",
+  "pt-PT",
+  "zh-CN",
+  "zh-TW",
+]
+remoting_locales_with_underscores += [
+  "en_GB",
+  "es_419",
+  "pt_BR",
+  "pt_PT",
+  "zh_CN",
+  "zh_TW",
+]
+
+group("resources") {
+  deps = [
+    ":copy_locales",
+    ":strings",
+    #":verify_resources",  TODO(GYP) enable this.
+  ]
+}
+
+# TODO(GYP) enable verify_resources. The bots are complaining about
+# gen/main.html not being found but this doesn't seems to reproduce locally.
+if (false) {
+
+action("verify_resources") {
+  script = "//remoting/tools/verify_resources.py"
+
+  sources_to_verify = [
+    "$root_gen_dir/main.html",
+    "../base/resources_unittest.cc",
+    "../host/continue_window_mac.mm",
+    "../host/disconnect_window_mac.mm",
+    "../host/installer/mac/uninstaller/remoting_uninstaller-InfoPlist.strings.jinja2",
+    "../host/mac/me2me_preference_pane-InfoPlist.strings.jinja2",
+    "../host/win/core.rc.jinja2",
+    "../host/win/host_messages.mc.jinja2",
+    "../host/win/version.rc.jinja2",
+    "../resources/play_store_resources.cc",
+    "../webapp/background/background.js",
+    "../webapp/butter_bar.js",
+    "../webapp/client_screen.js",
+    "../webapp/error.js",
+    "../webapp/host_list.js",
+    "../webapp/host_setup_dialog.js",
+    "../webapp/host_table_entry.js",
+    "../webapp/manifest.json.jinja2",
+    "../webapp/paired_client_manager.js",
+    "../webapp/remoting.js",
+    "../webapp/window_frame.js",
+  ]
+
+  inputs = [
+    "remoting_strings.grd",
+  ] + sources_to_verify
+
+  stampfile = "$root_build_dir/remoting_resources_verified_stamp"
+  outputs = [ stampfile ]
+
+  args = [
+    "-t", rebase_path(stampfile, root_build_dir),
+    "-r", rebase_path("remoting_strings.grd", root_build_dir),
+  ] + rebase_path(sources_to_verify, root_build_dir)
+
+  deps = [ "//remoting/webapp:html" ]  # Generates main.html.
+}
+
+}  # if false
+
+grit("strings") {
+  source = "remoting_strings.grd"
+  output_name = "remoting_strings"
+
+  # The grd file encodes "remoting/..." in the name, so root everything in the
+  # generated file root.
+  output_dir = root_gen_dir
+
+  resource_ids = "resource_ids"
+
+  outputs = [
+    "remoting/base/string_resources.h",
+  ]
+
+  # The grd produces a *.pak file and a messages.json file (this one uses
+  # underscores instead of hyphens) for each locale.
+  outputs += process_file_template(
+      remoting_locales,
+      [ "remoting/resources/{{source_name_part}}.pak" ])
+  outputs += process_file_template(
+      remoting_locales_with_underscores,
+      [ "remoting/webapp/_locales/{{source_name_part}}/messages.json" ])
+}
+
+action("copy_locales") {
+  script = "../tools/build/remoting_copy_locales.py"
+
+  # The gyp build calls out to Python, but the Python just computes a simple
+  # replacement over the locales. Here, we can do this in GN script by
+  # pretending the locale list is a list of files. The {{source_name_part}}
+  # will just expand to the locale name.
+  inputs = process_file_template(
+      remoting_locales,
+      [ "$target_gen_dir/{{source_name_part}}.pak" ])
+
+  # Likewise, process the outputs in the same way as the inputs.
+  if (is_mac || is_ios) {
+    # On mac, use underscores instead of hyphens and put the files in a
+    # different place.
+    outputs = process_file_template(
+        remoting_locales_with_underscores,
+        [ "$root_build_dir/remoting/resources/{{source_name_part}}.lproj/locale.pak" ])
+  } else {
+    outputs = process_file_template(
+        remoting_locales,
+        [ "$root_build_dir/remoting_locales/{{source_name_part}}.pak" ])
+  }
+
+  args = [
+    "-p", os,
+    "-g", rebase_path(root_gen_dir, root_build_dir),
+    "-x", rebase_path(root_out_dir, root_build_dir),
+  ] + remoting_locales
+
+  deps = [ ":strings" ]
+}

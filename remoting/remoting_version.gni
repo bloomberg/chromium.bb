@@ -1,0 +1,56 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# TODO(brettw) Forking out to Python 4 times in serial just to get version
+# numbers is highly undesirable. Instead, there should be a build step to
+# generate an appropriate header so that the version can be generated at
+# build-time, and not at GN-time.
+
+# The |major|, |build| and |patch| versions are inherited from Chrome.
+# Since Chrome's |minor| version is always '0', we replace it with a
+# Chromoting-specific patch version.
+# Note that we check both the |chrome_version_path| file and the
+# |remoting_version_path| so that we can override the Chrome version
+# numbers if needed.
+_version_py_abspath = "//build/util/version.py"
+_remoting_version_abspath = "//remoting/VERSION"
+_chrome_version_abspath = "//chrome/VERSION"
+
+# Set these files as being input dependencies to the scripts, so the build will
+# be re-run if the files change.
+_script_deps = [ _remoting_version_abspath, _chrome_version_abspath ]
+
+_chrome_version_path = rebase_path(_chrome_version_abspath, root_build_dir)
+_remoting_version_path = rebase_path(_remoting_version_abspath, root_build_dir)
+
+version_major = exec_script(
+    _version_py_abspath,
+    [ "-f", _chrome_version_path,
+      "-f", _remoting_version_path,
+      "-t \"@MAJOR@\"" ],
+    "value",
+    _script_deps)
+
+version_minor = exec_script(
+    _version_py_abspath,
+    [ "-f", _remoting_version_path,
+      "-t \"@REMOTING_PATCH@\"" ],
+    "value",
+    _script_deps)
+
+version_short = "${version_major}.${version_minor}." + exec_script(
+    _version_py_abspath,
+    [ "-f", _chrome_version_path,
+      "-f", _remoting_version_path,
+      "-t \"@BUILD@\"" ],
+    "value",
+    _script_deps)
+
+version_full = "${version_short}." + exec_script(
+    _version_py_abspath,
+    [ "-f", _chrome_version_path,
+      "-f", _remoting_version_path,
+      "-t \"@PATCH@\"" ],
+    "value",
+    _script_deps)

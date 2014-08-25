@@ -22,7 +22,9 @@ declare_args() {
   enable_plugins = !is_android || !is_ios
 
   # Enables Native Client support.
-  enable_nacl = (!is_ios && !is_android)
+  # TODO(GYP) enable this when nacl works in GN.
+  enable_nacl = false
+  #enable_nacl = (!is_ios && !is_android)
 
   # If debug_devtools is set to true, JavaScript files for DevTools are stored
   # as is and loaded from disk. Otherwise, a concatenated file is stored in

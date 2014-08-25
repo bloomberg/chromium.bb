@@ -5,10 +5,12 @@
 # GYP version: components/metrics.gypi:metrics
 source_set("metrics") {
   sources = [
-    "compression_utils.cc",
-    "compression_utils.h",
+    "client_info.cc",
+    "client_info.h",
     "cloned_install_detector.cc",
     "cloned_install_detector.h",
+    "compression_utils.cc",
+    "compression_utils.h",
     "machine_id_provider.h",
     "machine_id_provider_stub.cc",
     "machine_id_provider_win.cc",
@@ -16,10 +18,10 @@ source_set("metrics") {
     "metrics_hashes.h",
     "metrics_log.cc",
     "metrics_log.h",
-    "metrics_log_uploader.cc",
-    "metrics_log_uploader.h",
     "metrics_log_manager.cc",
     "metrics_log_manager.h",
+    "metrics_log_uploader.cc",
+    "metrics_log_uploader.h",
     "metrics_pref_names.cc",
     "metrics_pref_names.h",
     "metrics_provider.h",

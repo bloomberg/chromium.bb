@@ -42,8 +42,10 @@ static_library("browser") {
     "//chrome/common",
     "//chrome/common/net",
     "//components/autofill/core/browser",
+    "//components/bookmarks/browser",
     "//components/captive_portal",
     "//components/cloud_devices/common",
+    "//components/component_updater",
     "//components/content_settings/core/common",
     "//components/crx_file",
     "//components/data_reduction_proxy/browser",
@@ -52,20 +54,33 @@ static_library("browser") {
     "//components/favicon/core",
     "//components/feedback",
     "//components/gcm_driver",
+    "//components/google/core/browser",
     "//components/history/core/browser",
     "//components/history/core/common",
+    "//components/infobars/core",
+    "//components/invalidation",
     "//components/metrics:net",
+    "//components/metrics/proto:proto",
     "//components/navigation_metrics",
+    "//components/network_time",
+    "//components/omaha_query_params",
     "//components/omnibox",
     "//components/os_crypt",
+    "//components/password_manager/core/browser",
+    "//components/password_manager/core/common",
     "//components/policy:policy_component",
+    "//components/precache/core",
     "//components/query_parser",
     "//components/rappor",
+    "//components/renderer_context_menu",
     "//components/search",
+    "//components/search_engines",
+    "//components/search_provider_logos",
     "//components/signin/core/browser",
     "//components/startup_metric_utils",
     "//components/strings",
     "//components/suggestions",
+    "//components/sync_driver",
     "//components/translate/core/browser",
     "//components/translate/core/common",
     "//components/url_fixer",
@@ -96,19 +111,6 @@ static_library("browser") {
     "//ui/shell_dialogs",
     "//ui/strings",
     "//ui/resources",
-    # TODO(GYP)
-    #"../components/components.gyp:bookmarks_browser",
-    #"../components/components.gyp:google_core_browser",
-    #"../components/components.gyp:infobars_core",
-    #"../components/components.gyp:invalidation",
-    #"../components/components.gyp:network_time",
-    #"../components/components.gyp:omaha_query_params",
-    #"../components/components.gyp:password_manager_core_browser",
-    #"../components/components.gyp:password_manager_core_common",
-    #"../components/components.gyp:precache_core",
-    #"../components/components.gyp:search_engines",
-    #"../components/components.gyp:search_provider_logos",
-    #"../components/components.gyp:sync_driver",
   ]
 
   forward_dependent_configs_from = [
@@ -137,6 +139,7 @@ static_library("browser") {
     configs += [ "//content:webrtc_stub_config" ]
 
     deps += [
+      "//apps",
       "//cc",
       "//chrome/browser/devtools",
       "//chrome/browser/performance_monitor",
@@ -180,7 +183,6 @@ static_library("browser") {
       "//webkit/browser:storage",
       "//webkit/common",
       "//webkit/common:storage",
-      #"apps",  TODO(GYP)
       ## TODO(tonyg): Remove this dependency (crbug.com/280157).
       #"../testing/perf/perf_test.gyp:*",  TODO(GYP)
       # Note: for this one also remove the webrtc_stub_config
