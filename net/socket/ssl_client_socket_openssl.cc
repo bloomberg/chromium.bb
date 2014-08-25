@@ -507,6 +507,8 @@ void SSLClientSocketOpenSSL::Disconnect() {
   cert_key_types_.clear();
   client_auth_cert_needed_ = false;
 
+  start_cert_verification_time_ = base::TimeTicks();
+
   npn_status_ = kNextProtoUnsupported;
   npn_proto_.clear();
 
@@ -598,11 +600,6 @@ bool SSLClientSocketOpenSSL::GetSSLInfo(SSLInfo* ssl_info) {
   ssl_info->channel_id_sent = WasChannelIDSent();
   ssl_info->pinning_failure_log = pinning_failure_log_;
 
-  RecordChannelIDSupport(channel_id_service_,
-                         channel_id_xtn_negotiated_,
-                         ssl_config_.channel_id_enabled,
-                         crypto::ECPrivateKey::IsSupported());
-
   const SSL_CIPHER* cipher = SSL_get_current_cipher(ssl_);
   CHECK(cipher);
   ssl_info->security_bits = SSL_CIPHER_get_bits(cipher, NULL);
@@ -611,11 +608,8 @@ bool SSLClientSocketOpenSSL::GetSSLInfo(SSLInfo* ssl_info) {
       SSL_CIPHER_get_id(cipher), 0 /* no compression */,
       GetNetSSLVersion(ssl_));
 
-  bool peer_supports_renego_ext = !!SSL_get_secure_renegotiation_support(ssl_);
-  if (!peer_supports_renego_ext)
+  if (!SSL_get_secure_renegotiation_support(ssl_))
     ssl_info->connection_status |= SSL_CONNECTION_NO_RENEGOTIATION_EXTENSION;
-  UMA_HISTOGRAM_ENUMERATION("Net.RenegotiationExtensionSupported",
-                            implicit_cast<int>(peer_supports_renego_ext), 2);
 
   if (ssl_config_.version_fallback)
     ssl_info->connection_status |= SSL_CONNECTION_VERSION_FALLBACK;
@@ -904,6 +898,11 @@ int SSLClientSocketOpenSSL::DoHandshake() {
       }
     }
 
+    RecordChannelIDSupport(channel_id_service_,
+                           channel_id_xtn_negotiated_,
+                           ssl_config_.channel_id_enabled,
+                           crypto::ECPrivateKey::IsSupported());
+
     // Verify the certificate.
     const bool got_cert = !!UpdateServerCert();
     DCHECK(got_cert);
@@ -993,6 +992,7 @@ int SSLClientSocketOpenSSL::DoChannelIDLookupComplete(int result) {
 
 int SSLClientSocketOpenSSL::DoVerifyCert(int result) {
   DCHECK(server_cert_.get());
+  DCHECK(start_cert_verification_time_.is_null());
   GotoState(STATE_VERIFY_CERT_COMPLETE);
 
   CertStatus cert_status;
@@ -1003,6 +1003,8 @@ int SSLClientSocketOpenSSL::DoVerifyCert(int result) {
     server_cert_verify_result_.verified_cert = server_cert_;
     return OK;
   }
+
+  start_cert_verification_time_ = base::TimeTicks::Now();
 
   int flags = 0;
   if (ssl_config_.rev_checking_enabled)
@@ -1029,6 +1031,16 @@ int SSLClientSocketOpenSSL::DoVerifyCert(int result) {
 
 int SSLClientSocketOpenSSL::DoVerifyCertComplete(int result) {
   verifier_.reset();
+
+  if (!start_cert_verification_time_.is_null()) {
+    base::TimeDelta verify_time =
+        base::TimeTicks::Now() - start_cert_verification_time_;
+    if (result == OK) {
+      UMA_HISTOGRAM_TIMES("Net.SSLCertVerificationTime", verify_time);
+    } else {
+      UMA_HISTOGRAM_TIMES("Net.SSLCertVerificationTimeError", verify_time);
+    }
+  }
 
   bool sni_available = ssl_config_.version_max >= SSL_PROTOCOL_VERSION_TLS1 ||
                        ssl_config_.version_fallback;

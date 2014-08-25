@@ -514,6 +514,11 @@ int SSLConnectJob::DoSSLConnectComplete(int result) {
                                 SSLConnectionStatusToCipherSuite(
                                     ssl_info.connection_status));
 
+    UMA_HISTOGRAM_BOOLEAN(
+        "Net.RenegotiationExtensionSupported",
+        (ssl_info.connection_status &
+         SSL_CONNECTION_NO_RENEGOTIATION_EXTENSION) == 0);
+
     if (ssl_info.handshake_type == SSLInfo::HANDSHAKE_RESUME) {
       UMA_HISTOGRAM_CUSTOM_TIMES("Net.SSL_Connection_Latency_Resume_Handshake",
                                  connect_duration,

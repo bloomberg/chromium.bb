@@ -17064,6 +17064,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Net.SSLv3FallbackToRenegoPatchedServer"
     enum="TLSRenegotiationPatched">
+  <obsolete>
+    Removed on 2014-08-20.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The number of times that we have performed SSLv3 fallback and found a TLS
