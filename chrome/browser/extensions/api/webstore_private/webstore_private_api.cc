@@ -26,9 +26,6 @@
 #include "chrome/browser/extensions/webstore_installer.h"
 #include "chrome/browser/gpu/gpu_feature_checker.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/browser/signin/signin_promo.h"
-#include "chrome/browser/signin/signin_tracker_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
@@ -37,8 +34,6 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "components/crx_file/id_util.h"
-#include "components/signin/core/browser/signin_manager.h"
-#include "components/signin/core/common/profile_management_switches.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
@@ -73,7 +68,6 @@ namespace InstallBundle = api::webstore_private::InstallBundle;
 namespace IsInIncognitoMode = api::webstore_private::IsInIncognitoMode;
 namespace LaunchEphemeralApp = api::webstore_private::LaunchEphemeralApp;
 namespace LaunchEphemeralAppResult = LaunchEphemeralApp::Results;
-namespace SignIn = api::webstore_private::SignIn;
 namespace SetStoreLogin = api::webstore_private::SetStoreLogin;
 
 namespace {
@@ -319,8 +313,6 @@ const char* WebstorePrivateBeginInstallWithManifest3Function::
       return "permission_denied";
     case INVALID_ICON_URL:
       return "invalid_icon_url";
-    case SIGNIN_FAILED:
-      return "signin_failed";
     case ALREADY_INSTALLED:
       return "already_installed";
   }
@@ -362,18 +354,16 @@ void WebstorePrivateBeginInstallWithManifest3Function::OnWebstoreParseSuccess(
     return;
   }
 
-  SigninManagerBase* signin_manager =
-      SigninManagerFactory::GetForProfile(GetProfile());
-  if (dummy_extension_->is_platform_app() &&
-      signin_manager &&
-      signin_manager->GetAuthenticatedUsername().empty() &&
-      signin_manager->AuthInProgress()) {
-    signin_tracker_ =
-        SigninTrackerFactory::CreateForProfile(GetProfile(), this);
+  content::WebContents* web_contents = GetAssociatedWebContents();
+  if (!web_contents)  // The browser window has gone away.
     return;
-  }
-
-  SigninCompletedOrNotNeeded();
+  install_prompt_.reset(new ExtensionInstallPrompt(web_contents));
+  install_prompt_->ConfirmWebstoreInstall(
+      this,
+      dummy_extension_.get(),
+      &icon_,
+      ExtensionInstallPrompt::GetDefaultShowDialogCallback());
+  // Control flow finishes up in InstallUIProceed or InstallUIAbort.
 }
 
 void WebstorePrivateBeginInstallWithManifest3Function::OnWebstoreParseFailure(
@@ -401,45 +391,6 @@ void WebstorePrivateBeginInstallWithManifest3Function::OnWebstoreParseFailure(
 
   // Matches the AddRef in RunAsync().
   Release();
-}
-
-void WebstorePrivateBeginInstallWithManifest3Function::SigninFailed(
-    const GoogleServiceAuthError& error) {
-  signin_tracker_.reset();
-
-  SetResultCode(SIGNIN_FAILED);
-  error_ = error.ToString();
-  SendResponse(false);
-
-  // Matches the AddRef in RunAsync().
-  Release();
-}
-
-void WebstorePrivateBeginInstallWithManifest3Function::SigninSuccess() {
-  signin_tracker_.reset();
-
-  SigninCompletedOrNotNeeded();
-}
-
-void WebstorePrivateBeginInstallWithManifest3Function::MergeSessionComplete(
-    const GoogleServiceAuthError& error) {
-  // TODO(rogerta): once the embeded inline flow is enabled, the code in
-  // WebstorePrivateBeginInstallWithManifest3Function::SigninSuccess()
-  // should move to here.
-}
-
-void WebstorePrivateBeginInstallWithManifest3Function::
-    SigninCompletedOrNotNeeded() {
-  content::WebContents* web_contents = GetAssociatedWebContents();
-  if (!web_contents)  // The browser window has gone away.
-    return;
-  install_prompt_.reset(new ExtensionInstallPrompt(web_contents));
-  install_prompt_->ConfirmWebstoreInstall(
-      this,
-      dummy_extension_.get(),
-      &icon_,
-      ExtensionInstallPrompt::GetDefaultShowDialogCallback());
-  // Control flow finishes up in InstallUIProceed or InstallUIAbort.
 }
 
 void WebstorePrivateBeginInstallWithManifest3Function::InstallUIProceed() {
@@ -684,103 +635,6 @@ bool WebstorePrivateIsInIncognitoModeFunction::RunSync() {
   results_ = IsInIncognitoMode::Results::Create(
       GetProfile() != GetProfile()->GetOriginalProfile());
   return true;
-}
-
-WebstorePrivateSignInFunction::WebstorePrivateSignInFunction()
-    : signin_manager_(NULL) {}
-WebstorePrivateSignInFunction::~WebstorePrivateSignInFunction() {}
-
-bool WebstorePrivateSignInFunction::RunAsync() {
-  scoped_ptr<SignIn::Params> params = SignIn::Params::Create(*args_);
-  EXTENSION_FUNCTION_VALIDATE(params);
-
-  // This API must be called only in response to a user gesture.
-  if (!user_gesture()) {
-    error_ = "user_gesture_required";
-    SendResponse(false);
-    return false;
-  }
-
-  // The |continue_url| is required, and must be hosted on the same origin as
-  // the calling page.
-  GURL continue_url(params->continue_url);
-  content::WebContents* web_contents = GetAssociatedWebContents();
-  if (!continue_url.is_valid() ||
-      continue_url.GetOrigin() !=
-          web_contents->GetLastCommittedURL().GetOrigin()) {
-    error_ = "invalid_continue_url";
-    SendResponse(false);
-    return false;
-  }
-
-  // If sign-in is disallowed, give up.
-  signin_manager_ = SigninManagerFactory::GetForProfile(GetProfile());
-  if (!signin_manager_ || !signin_manager_->IsSigninAllowed() ||
-      switches::IsEnableWebBasedSignin()) {
-    error_ = "signin_is_disallowed";
-    SendResponse(false);
-    return false;
-  }
-
-  // If the user is already signed in, there's nothing else to do.
-  if (!signin_manager_->GetAuthenticatedUsername().empty()) {
-    SendResponse(true);
-    return true;
-  }
-
-  // If an authentication is currently in progress, wait for it to complete.
-  if (signin_manager_->AuthInProgress()) {
-    SigninManagerFactory::GetInstance()->AddObserver(this);
-    signin_tracker_ =
-        SigninTrackerFactory::CreateForProfile(GetProfile(), this).Pass();
-    AddRef();  // Balanced in the sign-in observer methods below.
-    return true;
-  }
-
-  GURL signin_url =
-      signin::GetPromoURLWithContinueURL(signin::SOURCE_WEBSTORE_INSTALL,
-                                         false /* auto_close */,
-                                         false /* is_constrained */,
-                                         continue_url);
-  web_contents->GetController().LoadURL(signin_url,
-                                        content::Referrer(),
-                                        content::PAGE_TRANSITION_AUTO_TOPLEVEL,
-                                        std::string());
-
-  SendResponse(true);
-  return true;
-}
-
-void WebstorePrivateSignInFunction::SigninManagerShutdown(
-    SigninManagerBase* manager) {
-  if (manager == signin_manager_)
-    SigninFailed(GoogleServiceAuthError::AuthErrorNone());
-}
-
-void WebstorePrivateSignInFunction::SigninFailed(
-    const GoogleServiceAuthError& error) {
-  error_ = "signin_failed";
-  SendResponse(false);
-
-  SigninManagerFactory::GetInstance()->RemoveObserver(this);
-  Release();  // Balanced in RunAsync().
-}
-
-void WebstorePrivateSignInFunction::SigninSuccess() {
-  // Nothing to do yet. Keep waiting until MergeSessionComplete() is called.
-}
-
-void WebstorePrivateSignInFunction::MergeSessionComplete(
-    const GoogleServiceAuthError& error) {
-  if (error.state() == GoogleServiceAuthError::NONE) {
-    SendResponse(true);
-  } else {
-    error_ = "merge_session_failed";
-    SendResponse(false);
-  }
-
-  SigninManagerFactory::GetInstance()->RemoveObserver(this);
-  Release();  // Balanced in RunAsync().
 }
 
 WebstorePrivateLaunchEphemeralAppFunction::

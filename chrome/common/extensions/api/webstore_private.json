@@ -129,7 +129,7 @@
               {
                 "name": "result",
                 "type": "string",
-                "description": "A string result code, which will be empty upon success. The possible values in the case of errors include 'unknown_error', 'user_cancelled', 'manifest_error', 'icon_error', 'invalid_id', 'permission_denied', 'invalid_icon_url', 'signin_failed', and 'already_installed'."
+                "description": "A string result code, which will be empty upon success. The possible values in the case of errors include 'unknown_error', 'user_cancelled', 'manifest_error', 'icon_error', 'invalid_id', 'permission_denied', 'invalid_icon_url' and 'already_installed'."
               }
             ]
           }
@@ -255,24 +255,6 @@
             "parameters": [
               { "name": "is_incognito", "type": "boolean" }
             ]
-          }
-        ]
-      },
-      {
-        "name": "signIn",
-        "description": "Signs the user into Chrome.",
-        "parameters": [
-          {
-            "name": "continue_url",
-            "type": "string",
-            "description": "The continue URL to navigate to once sign-in completes."
-          },
-          {
-            "name": "callback",
-            "type": "function",
-            "description": "Called if the user is already signed in or if the sign-in method was invoked incorrectly (e.g. with an invalid continue URL), sign-in is unavailable (e.g. in Incognito), or the API was not called in response to a user gesture. Upon such a failure, chrome.runtime.lastError will be set to 'invalid_continue_url', 'signin_is_disallowed', 'signin_failed', 'merge_session_failed', or 'user_gesture_required'.",
-            "optional": true,
-            "parameters": []
           }
         ]
       },
