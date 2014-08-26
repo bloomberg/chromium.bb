@@ -410,9 +410,6 @@ class CanaryCompletionStage(MasterSlaveSyncCompletionStage):
     msgs.append('See %s' % self.ConstructDashboardURL())
     msg = '\n\n'.join(msgs)
     if not self.ShouldDisableAlerts():
-      # TODO(yjhong): The alert should be addressed to the tree
-      # sheriffs. For now, we send it to the build team instead to
-      # test the content and make improvements.
       alerts.SendEmail('%s failures' % (builder_name,),
                        tree_status.GetHealthAlertRecipients(self._run),
                        message=msg,
