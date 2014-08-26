@@ -283,7 +283,7 @@ class GitSourceControl(SourceControl):
         Returns a list of commits that touched this file.
     """
     cmd = ['log', '--format=%H', '%s~1..%s' % (revision_start, revision_end),
-           filename]
+           '--', filename]
     output = bisect_utils.CheckRunGit(cmd)
 
     return [o for o in output.split('\n') if o]

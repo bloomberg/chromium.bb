@@ -1067,7 +1067,11 @@ class BisectPerformanceMetrics(object):
           'Var': lambda _: deps_data["vars"][_],
           'From': lambda *args: None,
       }
-      execfile(bisect_utils.FILE_DEPS_GIT, {}, deps_data)
+
+      deps_file = bisect_utils.FILE_DEPS_GIT
+      if not os.path.exists(deps_file):
+        deps_file = bisect_utils.FILE_DEPS
+      execfile(deps_file, {}, deps_data)
       deps_data = deps_data['deps']
 
       rxp = re.compile(".git@(?P<revision>[a-fA-F0-9]+)")
@@ -1095,7 +1099,7 @@ class BisectPerformanceMetrics(object):
             results[depot_name] = None
       return results
     except ImportError:
-      deps_file_contents = ReadStringFromFile(bisect_utils.FILE_DEPS_GIT)
+      deps_file_contents = ReadStringFromFile(deps_file)
       parse_results = _ParseRevisionsFromDEPSFileManually(deps_file_contents)
       results = {}
       for depot_name, depot_revision in parse_results.iteritems():
@@ -1777,20 +1781,12 @@ class BisectPerformanceMetrics(object):
     Returns:
       True if successful.
     """
-    if not self.source_control.CheckoutFileAtRevision(
-        bisect_utils.FILE_DEPS_GIT, revision, cwd=self.src_cwd):
-      return False
-
     cwd = os.getcwd()
     os.chdir(self.src_cwd)
 
-    is_blink = bisect_utils.IsDepsFileBlink()
+    is_blink = bisect_utils.IsDepsFileBlink(revision)
 
     os.chdir(cwd)
-
-    if not self.source_control.RevertFileToHead(
-        bisect_utils.FILE_DEPS_GIT):
-      return False
 
     if self.was_blink != is_blink:
       self.was_blink = is_blink
@@ -2175,18 +2171,25 @@ class BisectPerformanceMetrics(object):
     if self.opts.output_buildbot_annotations:
       bisect_utils.OutputAnnotationStepClosed()
 
-  def NudgeRevisionsIfDEPSChange(self, bad_revision, good_revision):
+  def NudgeRevisionsIfDEPSChange(self, bad_revision, good_revision,
+                                 good_svn_revision=None):
     """Checks to see if changes to DEPS file occurred, and that the revision
     range also includes the change to .DEPS.git. If it doesn't, attempts to
     expand the revision range to include it.
 
     Args:
-      bad_rev: First known bad revision.
-      good_revision: Last known good revision.
+      bad_revision: First known bad git revision.
+      good_revision: Last known good git revision.
+      good_svn_revision: Last known good svn revision.
 
     Returns:
       A tuple with the new bad and good revisions.
     """
+    # DONOT perform nudge because at revision 291563 .DEPS.git was removed
+    # and source contain only DEPS file for dependency changes.
+    if good_svn_revision >= 291563:
+      return (bad_revision, good_revision)
+
     if self.source_control.IsGit() and self.opts.target_platform == 'chromium':
       changes_to_deps = self.source_control.QueryFileRevisionHistory(
           'DEPS', good_revision, bad_revision)
@@ -2208,7 +2211,7 @@ class BisectPerformanceMetrics(object):
           # next 15 minutes after the DEPS file change.
           cmd = ['log', '--format=%H', '-1',
               '--before=%d' % (commit_time + 900), '--after=%d' % commit_time,
-              'origin/master', bisect_utils.FILE_DEPS_GIT]
+              'origin/master', '--', bisect_utils.FILE_DEPS_GIT]
           output = bisect_utils.CheckRunGit(cmd)
           output = output.strip()
           if output:
@@ -2338,7 +2341,6 @@ class BisectPerformanceMetrics(object):
         good_revision_in, target_depot, DEPOT_DEPS_NAME, -100)
 
     os.chdir(cwd)
-
     if bad_revision is None:
       results['error'] = 'Couldn\'t resolve [%s] to SHA1.' % bad_revision_in
       return results
@@ -2353,10 +2355,8 @@ class BisectPerformanceMetrics(object):
       results['error'] = ('bad_revision < good_revision, did you swap these '
                           'by mistake?')
       return results
-
     bad_revision, good_revision = self.NudgeRevisionsIfDEPSChange(
-        bad_revision, good_revision)
-
+        bad_revision, good_revision, good_revision_in)
     if self.opts.output_buildbot_annotations:
       bisect_utils.OutputAnnotationStepStart('Gathering Revisions')
 
