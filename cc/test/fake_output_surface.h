@@ -141,8 +141,9 @@ class FakeOutputSurface : public OutputSurface {
   bool needs_begin_frame_;
   bool has_external_stencil_test_;
   TransferableResourceArray resources_held_by_parent_;
-  base::WeakPtrFactory<FakeOutputSurface> fake_weak_ptr_factory_;
   scoped_ptr<ManagedMemoryPolicy> memory_policy_to_set_at_bind_;
+
+  base::WeakPtrFactory<FakeOutputSurface> fake_weak_ptr_factory_;
 };
 
 }  // namespace cc
