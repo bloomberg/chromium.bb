@@ -72,40 +72,39 @@ gfx::Rect GetBoundsForState(const gfx::Rect& screen_bounds,
 // vertically.
 class HomeCardLayoutManager : public aura::LayoutManager {
  public:
-  class Delegate {
-   public:
-    virtual ~Delegate() {}
-
-    virtual HomeCard::State GetState() = 0;
-    virtual aura::Window* GetNativeWindow() = 0;
-  };
-
-  explicit HomeCardLayoutManager(Delegate* delegate)
-      : delegate_(delegate) {}
+  explicit HomeCardLayoutManager()
+      : home_card_(NULL) {}
 
   virtual ~HomeCardLayoutManager() {}
 
   void Layout() {
-    aura::Window* home_card = delegate_->GetNativeWindow();
     // |home_card| could be detached from the root window (e.g. when it is being
     // destroyed).
-    if (!home_card || !home_card->GetRootWindow())
+    if (!home_card_ || !home_card_->IsVisible() || !home_card_->GetRootWindow())
       return;
 
     {
       ui::ScopedLayerAnimationSettings settings(
-          home_card->layer()->GetAnimator());
+          home_card_->layer()->GetAnimator());
       settings.SetTweenType(gfx::Tween::EASE_IN_OUT);
-      SetChildBoundsDirect(home_card, GetBoundsForState(
-          home_card->GetRootWindow()->bounds(), delegate_->GetState()));
+      SetChildBoundsDirect(home_card_, GetBoundsForState(
+          home_card_->GetRootWindow()->bounds(), HomeCard::Get()->GetState()));
     }
   }
 
  private:
   // aura::LayoutManager:
   virtual void OnWindowResized() OVERRIDE { Layout(); }
-  virtual void OnWindowAddedToLayout(aura::Window* child) OVERRIDE { Layout(); }
-  virtual void OnWillRemoveWindowFromLayout(aura::Window* child) OVERRIDE {}
+  virtual void OnWindowAddedToLayout(aura::Window* child) OVERRIDE {
+    if (!home_card_) {
+      home_card_ = child;
+      Layout();
+    }
+  }
+  virtual void OnWillRemoveWindowFromLayout(aura::Window* child) OVERRIDE {
+    if (home_card_ == child)
+      home_card_ = NULL;
+  }
   virtual void OnWindowRemovedFromLayout(aura::Window* child) OVERRIDE {
     Layout();
   }
@@ -118,7 +117,7 @@ class HomeCardLayoutManager : public aura::LayoutManager {
     SetChildBoundsDirect(child, requested_bounds);
   }
 
-  Delegate* delegate_;
+  aura::Window* home_card_;
 
   DISALLOW_COPY_AND_ASSIGN(HomeCardLayoutManager);
 };
@@ -400,7 +399,6 @@ class HomeCardView : public views::WidgetDelegateView {
 
 class HomeCardImpl : public HomeCard,
                      public AcceleratorHandler,
-                     public HomeCardLayoutManager::Delegate,
                      public HomeCardGestureManager::Delegate,
                      public WindowManagerObserver,
                      public aura::client::ActivationChangeObserver {
@@ -428,9 +426,6 @@ class HomeCardImpl : public HomeCard,
   virtual bool IsCommandEnabled(int command_id) const OVERRIDE { return true; }
   virtual bool OnAcceleratorFired(int command_id,
                                   const ui::Accelerator& accelerator) OVERRIDE;
-
-  // HomeCardLayoutManager::Delegate:
-  virtual aura::Window* GetNativeWindow() OVERRIDE;
 
   // HomeCardGestureManager::Delegate:
   virtual void OnGestureEnded(State final_state) OVERRIDE;
@@ -498,7 +493,7 @@ void HomeCardImpl::Init() {
   ScreenManager::ContainerParams params("HomeCardContainer", CP_HOME_CARD);
   params.can_activate_children = true;
   aura::Window* container = ScreenManager::Get()->CreateContainer(params);
-  layout_manager_ = new HomeCardLayoutManager(this);
+  layout_manager_ = new HomeCardLayoutManager();
 
   container->SetLayoutManager(layout_manager_);
   wm::SetChildWindowVisibilityChangesAnimated(container);
@@ -525,7 +520,7 @@ void HomeCardImpl::Init() {
     activation_client_->AddObserver(this);
 
   int work_area_bottom_inset =
-      GetBoundsForState(GetNativeWindow()->bounds(),
+      GetBoundsForState(home_card_widget_->GetNativeWindow()->bounds(),
                         HomeCard::VISIBLE_MINIMIZED).height();
   AthenaEnv::Get()->SetDisplayWorkAreaInsets(
       gfx::Insets(0, 0, work_area_bottom_inset, 0));
@@ -594,13 +589,6 @@ bool HomeCardImpl::OnAcceleratorFired(int command_id,
   else if (state_ == VISIBLE_MINIMIZED)
     SetState(VISIBLE_CENTERED);
   return true;
-}
-
-aura::Window* HomeCardImpl::GetNativeWindow() {
-  if (state_ == HIDDEN)
-    return NULL;
-
-  return home_card_widget_ ? home_card_widget_->GetNativeWindow() : NULL;
 }
 
 void HomeCardImpl::OnGestureEnded(State final_state) {
