@@ -183,36 +183,24 @@ void HidReceiveFunction::AsyncWorkStart() {
   }
 
   scoped_refptr<device::HidConnection> connection = resource->connection();
-  has_report_id_ = connection->device_info().has_report_id;
-  int size = connection->device_info().max_input_report_size;
-  if (has_report_id_) {
-    ++size;  // One byte at the beginning of the buffer for the report ID.
-  }
-  buffer_ = new net::IOBufferWithSize(size);
-  connection->Read(buffer_, base::Bind(&HidReceiveFunction::OnFinished, this));
+  connection->Read(base::Bind(&HidReceiveFunction::OnFinished, this));
 }
 
-void HidReceiveFunction::OnFinished(bool success, size_t bytes) {
+void HidReceiveFunction::OnFinished(bool success,
+                                    scoped_refptr<net::IOBuffer> buffer,
+                                    size_t size) {
   if (!success) {
     CompleteWithError(kErrorTransfer);
     return;
   }
 
-  int report_id = 0;
-  const char* data = buffer_->data();
-  if (has_report_id_) {
-    if (bytes < 1) {
-      CompleteWithError(kErrorTransfer);
-      return;
-    }
-    report_id = data[0];
-    data++;
-    bytes--;
-  }
+  DCHECK_GE(size, 1u);
+  int report_id = reinterpret_cast<uint8_t*>(buffer->data())[0];
 
   scoped_ptr<base::ListValue> result(new base::ListValue());
   result->Append(new base::FundamentalValue(report_id));
-  result->Append(base::BinaryValue::CreateWithCopiedBuffer(data, bytes));
+  result->Append(
+      base::BinaryValue::CreateWithCopiedBuffer(buffer->data() + 1, size - 1));
   SetResultList(result.Pass());
   AsyncWorkCompleted();
 }
@@ -237,14 +225,15 @@ void HidSendFunction::AsyncWorkStart() {
   }
 
   scoped_refptr<net::IOBufferWithSize> buffer(
-      new net::IOBufferWithSize(parameters_->data.size()));
-  memcpy(buffer->data(), parameters_->data.c_str(), parameters_->data.size());
-  resource->connection()->Write(static_cast<uint8_t>(parameters_->report_id),
-                                buffer,
-                                base::Bind(&HidSendFunction::OnFinished, this));
+      new net::IOBufferWithSize(parameters_->data.size() + 1));
+  buffer->data()[0] = static_cast<uint8_t>(parameters_->report_id);
+  memcpy(
+      buffer->data() + 1, parameters_->data.c_str(), parameters_->data.size());
+  resource->connection()->Write(
+      buffer, buffer->size(), base::Bind(&HidSendFunction::OnFinished, this));
 }
 
-void HidSendFunction::OnFinished(bool success, size_t bytes) {
+void HidSendFunction::OnFinished(bool success) {
   if (!success) {
     CompleteWithError(kErrorTransfer);
     return;
@@ -272,21 +261,21 @@ void HidReceiveFeatureReportFunction::AsyncWorkStart() {
   }
 
   scoped_refptr<device::HidConnection> connection = resource->connection();
-  const int size = connection->device_info().max_feature_report_size;
-  buffer_ = new net::IOBufferWithSize(size);
   connection->GetFeatureReport(
       static_cast<uint8_t>(parameters_->report_id),
-      buffer_,
       base::Bind(&HidReceiveFeatureReportFunction::OnFinished, this));
 }
 
-void HidReceiveFeatureReportFunction::OnFinished(bool success, size_t bytes) {
+void HidReceiveFeatureReportFunction::OnFinished(
+    bool success,
+    scoped_refptr<net::IOBuffer> buffer,
+    size_t size) {
   if (!success) {
     CompleteWithError(kErrorTransfer);
     return;
   }
 
-  SetResult(base::BinaryValue::CreateWithCopiedBuffer(buffer_->data(), bytes));
+  SetResult(base::BinaryValue::CreateWithCopiedBuffer(buffer->data(), size));
   AsyncWorkCompleted();
 }
 
@@ -308,16 +297,19 @@ void HidSendFeatureReportFunction::AsyncWorkStart() {
     CompleteWithError(kErrorConnectionNotFound);
     return;
   }
+
   scoped_refptr<net::IOBufferWithSize> buffer(
-      new net::IOBufferWithSize(parameters_->data.size()));
-  memcpy(buffer->data(), parameters_->data.c_str(), parameters_->data.size());
+      new net::IOBufferWithSize(parameters_->data.size() + 1));
+  buffer->data()[0] = static_cast<uint8_t>(parameters_->report_id);
+  memcpy(
+      buffer->data() + 1, parameters_->data.c_str(), parameters_->data.size());
   resource->connection()->SendFeatureReport(
-      static_cast<uint8_t>(parameters_->report_id),
       buffer,
+      buffer->size(),
       base::Bind(&HidSendFeatureReportFunction::OnFinished, this));
 }
 
-void HidSendFeatureReportFunction::OnFinished(bool success, size_t bytes) {
+void HidSendFeatureReportFunction::OnFinished(bool success) {
   if (!success) {
     CompleteWithError(kErrorTransfer);
     return;

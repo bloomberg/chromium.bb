@@ -112,10 +112,10 @@ class HidReceiveFunction : public HidAsyncApiFunction {
  private:
   virtual ~HidReceiveFunction();
 
-  void OnFinished(bool success, size_t bytes);
+  void OnFinished(bool success,
+                  scoped_refptr<net::IOBuffer> buffer,
+                  size_t size);
 
-  bool has_report_id_;
-  scoped_refptr<net::IOBufferWithSize> buffer_;
   scoped_ptr<core_api::hid::Receive::Params> parameters_;
 
   DISALLOW_COPY_AND_ASSIGN(HidReceiveFunction);
@@ -134,7 +134,7 @@ class HidSendFunction : public HidAsyncApiFunction {
  private:
   virtual ~HidSendFunction();
 
-  void OnFinished(bool success, size_t bytes);
+  void OnFinished(bool success);
 
   scoped_ptr<core_api::hid::Send::Params> parameters_;
 
@@ -155,9 +155,10 @@ class HidReceiveFeatureReportFunction : public HidAsyncApiFunction {
  private:
   virtual ~HidReceiveFeatureReportFunction();
 
-  void OnFinished(bool success, size_t bytes);
+  void OnFinished(bool success,
+                  scoped_refptr<net::IOBuffer> buffer,
+                  size_t size);
 
-  scoped_refptr<net::IOBufferWithSize> buffer_;
   scoped_ptr<core_api::hid::ReceiveFeatureReport::Params> parameters_;
 
   DISALLOW_COPY_AND_ASSIGN(HidReceiveFeatureReportFunction);
@@ -176,7 +177,7 @@ class HidSendFeatureReportFunction : public HidAsyncApiFunction {
  private:
   virtual ~HidSendFeatureReportFunction();
 
-  void OnFinished(bool success, size_t bytes);
+  void OnFinished(bool success);
 
   scoped_ptr<core_api::hid::SendFeatureReport::Params> parameters_;
 

@@ -24,12 +24,23 @@ using net::IOBufferWithSize;
 class TestCompletionCallback {
  public:
   TestCompletionCallback()
-    : callback_(base::Bind(&TestCompletionCallback::SetResult,
-                base::Unretained(this))) {}
+      : read_callback_(base::Bind(&TestCompletionCallback::SetReadResult,
+                                  base::Unretained(this))),
+        write_callback_(base::Bind(&TestCompletionCallback::SetWriteResult,
+                                   base::Unretained(this))) {}
+  ~TestCompletionCallback() {}
 
-  void SetResult(bool success, size_t size) {
+  void SetReadResult(bool success,
+                     scoped_refptr<net::IOBuffer> buffer,
+                     size_t size) {
     result_ = success;
-    transferred_ = size;
+    buffer_ = buffer;
+    size_ = size;
+    run_loop_.Quit();
+  }
+
+  void SetWriteResult(bool success) {
+    result_ = success;
     run_loop_.Quit();
   }
 
@@ -38,14 +49,20 @@ class TestCompletionCallback {
     return result_;
   }
 
-  const HidConnection::IOCallback& callback() const { return callback_; }
-  size_t transferred() const { return transferred_; }
+  const HidConnection::ReadCallback& read_callback() { return read_callback_; }
+  const HidConnection::WriteCallback write_callback() {
+    return write_callback_;
+  }
+  scoped_refptr<net::IOBuffer> buffer() const { return buffer_; }
+  size_t size() const { return size_; }
 
  private:
-  const HidConnection::IOCallback callback_;
   base::RunLoop run_loop_;
   bool result_;
-  size_t transferred_;
+  size_t size_;
+  scoped_refptr<net::IOBuffer> buffer_;
+  HidConnection::ReadCallback read_callback_;
+  HidConnection::WriteCallback write_callback_;
 };
 
 }  // namespace
@@ -113,20 +130,24 @@ TEST_F(HidConnectionTest, ReadWrite) {
   ASSERT_TRUE(conn);
 
   for (int i = 0; i < 8; ++i) {
-    scoped_refptr<IOBufferWithSize> write_buffer(new IOBufferWithSize(8));
-    *(int64_t*)write_buffer->data() = i;
+    scoped_refptr<IOBufferWithSize> buffer(new IOBufferWithSize(9));
+    buffer->data()[0] = 0;
+    for (int j = 1; j < buffer->size(); ++j) {
+      buffer->data()[j] = i + j - 1;
+    }
 
     TestCompletionCallback write_callback;
-    conn->Write(0, write_buffer, write_callback.callback());
+    conn->Write(buffer, buffer->size(), write_callback.write_callback());
     ASSERT_TRUE(write_callback.WaitForResult());
-    ASSERT_EQ(8UL, write_callback.transferred());
 
-    scoped_refptr<IOBufferWithSize> read_buffer(new IOBufferWithSize(8));
     TestCompletionCallback read_callback;
-    conn->Read(read_buffer, read_callback.callback());
+    conn->Read(read_callback.read_callback());
     ASSERT_TRUE(read_callback.WaitForResult());
-    ASSERT_EQ(8UL, read_callback.transferred());
-    ASSERT_EQ(i, *(int64_t*)read_buffer->data());
+    ASSERT_EQ(9UL, read_callback.size());
+    ASSERT_EQ(0, read_callback.buffer()->data()[0]);
+    for (int j = 1; j < buffer->size(); ++j) {
+      ASSERT_EQ(i + j - 1, read_callback.buffer()->data()[j]);
+    }
   }
 }
 

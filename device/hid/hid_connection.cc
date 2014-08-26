@@ -12,8 +12,7 @@ namespace {
 
 // Functor used to filter collections by report ID.
 struct CollectionHasReportId {
-  explicit CollectionHasReportId(const uint8_t report_id)
-      : report_id_(report_id) {}
+  explicit CollectionHasReportId(uint8_t report_id) : report_id_(report_id) {}
 
   bool operator()(const HidCollectionInfo& info) const {
     if (info.report_ids.size() == 0 ||
@@ -40,7 +39,7 @@ struct CollectionIsProtected {
 };
 
 bool FindCollectionByReportId(const HidDeviceInfo& device_info,
-                              const uint8_t report_id,
+                              uint8_t report_id,
                               HidCollectionInfo* collection_info) {
   std::vector<HidCollectionInfo>::const_iterator collection_iter =
       std::find_if(device_info.collections.begin(),
@@ -73,103 +72,104 @@ HidConnection::~HidConnection() {
   DCHECK(thread_checker_.CalledOnValidThread());
 }
 
-void HidConnection::Read(scoped_refptr<net::IOBufferWithSize> buffer,
-                         const IOCallback& callback) {
+void HidConnection::Read(const ReadCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (device_info_.max_input_report_size == 0) {
-    // The device does not support input reports.
-    callback.Run(false, 0);
-    return;
-  }
-  int expected_buffer_size = device_info_.max_input_report_size;
-  if (device_info().has_report_id) {
-    expected_buffer_size++;
-  }
-  if (buffer->size() < expected_buffer_size) {
-    // Receive buffer is too small.
-    callback.Run(false, 0);
+    VLOG(1) << "This device does not support input reports.";
+    callback.Run(false, NULL, 0);
     return;
   }
 
-  PlatformRead(buffer, callback);
+  PlatformRead(callback);
 }
 
-void HidConnection::Write(uint8_t report_id,
-                          scoped_refptr<net::IOBufferWithSize> buffer,
-                          const IOCallback& callback) {
+void HidConnection::Write(scoped_refptr<net::IOBuffer> buffer,
+                          size_t size,
+                          const WriteCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (device_info_.max_output_report_size == 0) {
-    // The device does not support output reports.
-    callback.Run(false, 0);
+    VLOG(1) << "This device does not support output reports.";
+    callback.Run(false);
+    return;
+  }
+  DCHECK_GE(size, 1u);
+  uint8_t report_id = buffer->data()[0];
+  if (device_info().has_report_id != (report_id != 0)) {
+    VLOG(1) << "Invalid output report ID.";
+    callback.Run(false);
     return;
   }
   if (IsReportIdProtected(report_id)) {
-    callback.Run(false, 0);
+    VLOG(1) << "Attempt to set a protected output report.";
+    callback.Run(false);
     return;
   }
 
-  PlatformWrite(report_id, buffer, callback);
+  PlatformWrite(buffer, size, callback);
 }
 
-void HidConnection::GetFeatureReport(
-    uint8_t report_id,
-    scoped_refptr<net::IOBufferWithSize> buffer,
-    const IOCallback& callback) {
+void HidConnection::GetFeatureReport(uint8_t report_id,
+                                     const ReadCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (device_info_.max_feature_report_size == 0) {
-    // The device does not support feature reports.
-    callback.Run(false, 0);
+    VLOG(1) << "This device does not support feature reports.";
+    callback.Run(false, NULL, 0);
+    return;
+  }
+  if (device_info().has_report_id != (report_id != 0)) {
+    VLOG(1) << "Invalid feature report ID.";
+    callback.Run(false, NULL, 0);
     return;
   }
   if (IsReportIdProtected(report_id)) {
-    callback.Run(false, 0);
-    return;
-  }
-  int expected_buffer_size = device_info_.max_feature_report_size;
-  if (device_info().has_report_id) {
-    expected_buffer_size++;
-  }
-  if (buffer->size() < expected_buffer_size) {
-    // Receive buffer is too small.
-    callback.Run(false, 0);
+    VLOG(1) << "Attempt to get a protected feature report.";
+    callback.Run(false, NULL, 0);
     return;
   }
 
-  PlatformGetFeatureReport(report_id, buffer, callback);
+  PlatformGetFeatureReport(report_id, callback);
 }
 
-void HidConnection::SendFeatureReport(
-    uint8_t report_id,
-    scoped_refptr<net::IOBufferWithSize> buffer,
-    const IOCallback& callback) {
+void HidConnection::SendFeatureReport(scoped_refptr<net::IOBuffer> buffer,
+                                      size_t size,
+                                      const WriteCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (device_info_.max_feature_report_size == 0) {
-    // The device does not support feature reports.
-    callback.Run(false, 0);
+    VLOG(1) << "This device does not support feature reports.";
+    callback.Run(false);
+    return;
+  }
+  DCHECK_GE(size, 1u);
+  uint8_t report_id = buffer->data()[0];
+  if (device_info().has_report_id != (report_id != 0)) {
+    VLOG(1) << "Invalid feature report ID.";
+    callback.Run(false);
     return;
   }
   if (IsReportIdProtected(report_id)) {
-    callback.Run(false, 0);
+    VLOG(1) << "Attempt to set a protected feature report.";
+    callback.Run(false);
     return;
   }
 
-  PlatformSendFeatureReport(report_id, buffer, callback);
+  PlatformSendFeatureReport(buffer, size, callback);
 }
 
-bool HidConnection::CompleteRead(scoped_refptr<net::IOBufferWithSize> buffer,
-                                 int bytes_read,
-                                 const IOCallback& callback) {
-  DCHECK_LE(bytes_read, buffer->size());
-
-  if (bytes_read == 0 || IsReportIdProtected(buffer->data()[0])) {
+bool HidConnection::CompleteRead(scoped_refptr<net::IOBuffer> buffer,
+                                 size_t size,
+                                 const ReadCallback& callback) {
+  DCHECK_GE(size, 1u);
+  uint8_t report_id = buffer->data()[0];
+  if (IsReportIdProtected(report_id)) {
+    VLOG(1) << "Filtered a protected input report.";
     return false;
   }
 
-  callback.Run(true, bytes_read);
+  callback.Run(true, buffer, size);
   return true;
 }
 
-bool HidConnection::IsReportIdProtected(const uint8_t report_id) {
+bool HidConnection::IsReportIdProtected(uint8_t report_id) {
   HidCollectionInfo collection_info;
   if (FindCollectionByReportId(device_info_, report_id, &collection_info)) {
     return collection_info.usage.IsProtected();

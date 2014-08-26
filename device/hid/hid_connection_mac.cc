@@ -21,7 +21,7 @@ HidConnectionMac::HidConnectionMac(HidDeviceInfo device_info)
   if (device_info.has_report_id) {
     expected_report_size++;
   }
-  inbound_buffer_.reset((uint8_t*)malloc(expected_report_size));
+  inbound_buffer_.reset(new uint8_t[expected_report_size]);
   IOHIDDeviceRegisterInputReportCallback(device_.get(),
                                          inbound_buffer_.get(),
                                          expected_report_size,
@@ -35,54 +35,52 @@ HidConnectionMac::~HidConnectionMac() {
   Flush();
 }
 
-void HidConnectionMac::PlatformRead(scoped_refptr<net::IOBufferWithSize> buffer,
-                                    const IOCallback& callback) {
+void HidConnectionMac::PlatformRead(const ReadCallback& callback) {
   if (!device_) {
-    callback.Run(false, 0);
+    callback.Run(false, NULL, 0);
     return;
   }
 
   PendingHidRead pending_read;
-  pending_read.buffer = buffer;
   pending_read.callback = callback;
   pending_reads_.push(pending_read);
   ProcessReadQueue();
 }
 
-void HidConnectionMac::PlatformWrite(
-    uint8_t report_id,
-    scoped_refptr<net::IOBufferWithSize> buffer,
-    const IOCallback& callback) {
-  WriteReport(kIOHIDReportTypeOutput, report_id, buffer, callback);
+void HidConnectionMac::PlatformWrite(scoped_refptr<net::IOBuffer> buffer,
+                                     size_t size,
+                                     const WriteCallback& callback) {
+  WriteReport(kIOHIDReportTypeOutput, buffer, size, callback);
 }
 
-void HidConnectionMac::PlatformGetFeatureReport(
-    uint8_t report_id,
-    scoped_refptr<net::IOBufferWithSize> buffer,
-    const IOCallback& callback) {
+void HidConnectionMac::PlatformGetFeatureReport(uint8_t report_id,
+                                                const ReadCallback& callback) {
   if (!device_) {
-    callback.Run(false, 0);
+    callback.Run(false, NULL, 0);
     return;
   }
 
-  uint8_t* feature_report_buffer = reinterpret_cast<uint8_t*>(buffer->data());
+  scoped_refptr<net::IOBufferWithSize> buffer(
+      new net::IOBufferWithSize(device_info().max_feature_report_size));
   CFIndex report_size = buffer->size();
-  IOReturn result = IOHIDDeviceGetReport(device_,
-                                         kIOHIDReportTypeFeature,
-                                         report_id,
-                                         feature_report_buffer,
-                                         &report_size);
-  if (result == kIOReturnSuccess)
-    callback.Run(true, report_size);
-  else
-    callback.Run(false, 0);
+  IOReturn result =
+      IOHIDDeviceGetReport(device_,
+                           kIOHIDReportTypeFeature,
+                           report_id,
+                           reinterpret_cast<uint8_t*>(buffer->data()),
+                           &report_size);
+  if (result == kIOReturnSuccess) {
+    callback.Run(true, buffer, report_size);
+  } else {
+    callback.Run(false, NULL, 0);
+  }
 }
 
 void HidConnectionMac::PlatformSendFeatureReport(
-    uint8_t report_id,
-    scoped_refptr<net::IOBufferWithSize> buffer,
-    const IOCallback& callback) {
-  WriteReport(kIOHIDReportTypeFeature, report_id, buffer, callback);
+    scoped_refptr<net::IOBuffer> buffer,
+    size_t size,
+    const WriteCallback& callback) {
+  WriteReport(kIOHIDReportTypeFeature, buffer, size, callback);
 }
 
 void HidConnectionMac::InputReportCallback(void* context,
@@ -93,10 +91,16 @@ void HidConnectionMac::InputReportCallback(void* context,
                                            uint8_t* report_bytes,
                                            CFIndex report_length) {
   HidConnectionMac* connection = static_cast<HidConnectionMac*>(context);
-  // report_id is already contained in report_bytes
   scoped_refptr<net::IOBufferWithSize> buffer;
-  buffer = new net::IOBufferWithSize(report_length);
-  memcpy(buffer->data(), report_bytes, report_length);
+  if (connection->device_info().has_report_id) {
+    // report_id is already contained in report_bytes
+    buffer = new net::IOBufferWithSize(report_length);
+    memcpy(buffer->data(), report_bytes, report_length);
+  } else {
+    buffer = new net::IOBufferWithSize(report_length + 1);
+    buffer->data()[0] = 0;
+    memcpy(buffer->data() + 1, report_bytes, report_length);
+  }
 
   connection->message_loop_->PostTask(
       FROM_HERE,
@@ -104,39 +108,36 @@ void HidConnectionMac::InputReportCallback(void* context,
 }
 
 void HidConnectionMac::WriteReport(IOHIDReportType type,
-                                   uint8_t report_id,
-                                   scoped_refptr<net::IOBufferWithSize> buffer,
-                                   const IOCallback& callback) {
+                                   scoped_refptr<net::IOBuffer> buffer,
+                                   size_t size,
+                                   const WriteCallback& callback) {
   if (!device_) {
-    callback.Run(false, 0);
+    callback.Run(false);
     return;
   }
 
-  scoped_refptr<net::IOBufferWithSize> output_buffer;
-  if (report_id != 0) {
-    output_buffer = new net::IOBufferWithSize(buffer->size() + 1);
-    output_buffer->data()[0] = static_cast<uint8_t>(report_id);
-    memcpy(output_buffer->data() + 1, buffer->data(), buffer->size());
-  } else {
-    output_buffer = new net::IOBufferWithSize(buffer->size());
-    memcpy(output_buffer->data(), buffer->data(), buffer->size());
+  uint8_t* data = reinterpret_cast<uint8_t*>(buffer->data());
+  DCHECK(size >= 1);
+  uint8_t report_id = data[0];
+  if (report_id == 0) {
+    // OS X only expects the first byte of the buffer to be the report ID if the
+    // report ID is non-zero.
+    ++data;
+    --size;
   }
+
   IOReturn res =
-      IOHIDDeviceSetReport(device_.get(),
-                           type,
-                           report_id,
-                           reinterpret_cast<uint8_t*>(output_buffer->data()),
-                           output_buffer->size());
-  if (res != kIOReturnSuccess) {
-    callback.Run(false, 0);
+      IOHIDDeviceSetReport(device_.get(), type, report_id, data, size);
+  if (res == kIOReturnSuccess) {
+    callback.Run(true);
   } else {
-    callback.Run(true, output_buffer->size());
+    callback.Run(false);
   }
 }
 
 void HidConnectionMac::Flush() {
   while (!pending_reads_.empty()) {
-    pending_reads_.front().callback.Run(false, 0);
+    pending_reads_.front().callback.Run(false, NULL, 0);
     pending_reads_.pop();
   }
 }
@@ -146,6 +147,7 @@ void HidConnectionMac::ProcessInputReport(
   DCHECK(thread_checker().CalledOnValidThread());
   PendingHidReport report;
   report.buffer = buffer;
+  report.size = buffer->size();
   pending_reports_.push(report);
   ProcessReadQueue();
 }
@@ -156,16 +158,9 @@ void HidConnectionMac::ProcessReadQueue() {
     PendingHidRead read = pending_reads_.front();
     PendingHidReport report = pending_reports_.front();
 
-    if (read.buffer->size() < report.buffer->size()) {
-      read.callback.Run(false, 0);
+    pending_reports_.pop();
+    if (CompleteRead(report.buffer, report.size, read.callback)) {
       pending_reads_.pop();
-    } else {
-      memcpy(read.buffer->data(), report.buffer->data(), report.buffer->size());
-      pending_reports_.pop();
-
-      if (CompleteRead(read.buffer, report.buffer->size(), read.callback)) {
-        pending_reads_.pop();
-      }
     }
   }
 }

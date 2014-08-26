@@ -20,31 +20,37 @@ class HidConnectionWin : public HidConnection {
  public:
   explicit HidConnectionWin(const HidDeviceInfo& device_info);
 
-  // HidConnection implementation.
-  virtual void PlatformRead(scoped_refptr<net::IOBufferWithSize> buffer,
-                            const IOCallback& callback) OVERRIDE;
-  virtual void PlatformWrite(uint8_t report_id,
-                             scoped_refptr<net::IOBufferWithSize> buffer,
-                             const IOCallback& callback) OVERRIDE;
-  virtual void PlatformGetFeatureReport(
-      uint8_t report_id,
-      scoped_refptr<net::IOBufferWithSize> buffer,
-      const IOCallback& callback) OVERRIDE;
-  virtual void PlatformSendFeatureReport(
-      uint8_t report_id,
-      scoped_refptr<net::IOBufferWithSize> buffer,
-      const IOCallback& callback) OVERRIDE;
-
  private:
   friend class HidServiceWin;
   friend struct PendingHidTransfer;
 
   ~HidConnectionWin();
 
+  // HidConnection implementation.
+  virtual void PlatformRead(const ReadCallback& callback) OVERRIDE;
+  virtual void PlatformWrite(scoped_refptr<net::IOBuffer> buffer,
+                             size_t size,
+                             const WriteCallback& callback) OVERRIDE;
+  virtual void PlatformGetFeatureReport(uint8_t report_id,
+                                        const ReadCallback& callback) OVERRIDE;
+  virtual void PlatformSendFeatureReport(
+      scoped_refptr<net::IOBuffer> buffer,
+      size_t size,
+      const WriteCallback& callback) OVERRIDE;
+
   bool available() const { return file_.IsValid(); }
 
-  void OnTransferFinished(scoped_refptr<PendingHidTransfer> transfer);
-  void OnTransferCanceled(scoped_refptr<PendingHidTransfer> transfer);
+  void OnReadComplete(scoped_refptr<net::IOBuffer> buffer,
+                      const ReadCallback& callback,
+                      PendingHidTransfer* transfer,
+                      bool signaled);
+  void OnReadFeatureComplete(scoped_refptr<net::IOBuffer> buffer,
+                             const ReadCallback& callback,
+                             PendingHidTransfer* transfer,
+                             bool signaled);
+  void OnWriteComplete(const WriteCallback& callback,
+                       PendingHidTransfer* transfer,
+                       bool signaled);
 
   base::win::ScopedHandle file_;
 

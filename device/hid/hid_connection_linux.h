@@ -18,33 +18,30 @@ class HidConnectionLinux : public HidConnection,
  public:
   HidConnectionLinux(HidDeviceInfo device_info, std::string dev_node);
 
+ private:
+  friend class base::RefCountedThreadSafe<HidConnectionLinux>;
+  virtual ~HidConnectionLinux();
+
   // HidConnection implementation.
-  virtual void PlatformRead(scoped_refptr<net::IOBufferWithSize> buffer,
-                            const IOCallback& callback) OVERRIDE;
-  virtual void PlatformWrite(uint8_t report_id,
-                             scoped_refptr<net::IOBufferWithSize> buffer,
-                             const IOCallback& callback) OVERRIDE;
-  virtual void PlatformGetFeatureReport(
-      uint8_t report_id,
-      scoped_refptr<net::IOBufferWithSize> buffer,
-      const IOCallback& callback) OVERRIDE;
+  virtual void PlatformRead(const ReadCallback& callback) OVERRIDE;
+  virtual void PlatformWrite(scoped_refptr<net::IOBuffer> buffer,
+                             size_t size,
+                             const WriteCallback& callback) OVERRIDE;
+  virtual void PlatformGetFeatureReport(uint8_t report_id,
+                                        const ReadCallback& callback) OVERRIDE;
   virtual void PlatformSendFeatureReport(
-      uint8_t report_id,
-      scoped_refptr<net::IOBufferWithSize> buffer,
-      const IOCallback& callback) OVERRIDE;
+      scoped_refptr<net::IOBuffer> buffer,
+      size_t size,
+      const WriteCallback& callback) OVERRIDE;
 
   // base::MessagePumpLibevent::Watcher implementation.
   virtual void OnFileCanReadWithoutBlocking(int fd) OVERRIDE;
   virtual void OnFileCanWriteWithoutBlocking(int fd) OVERRIDE;
 
- private:
-  friend class base::RefCountedThreadSafe<HidConnectionLinux>;
-  virtual ~HidConnectionLinux();
-
   void Disconnect();
 
   void Flush();
-  void ProcessInputReport(scoped_refptr<net::IOBufferWithSize> buffer);
+  void ProcessInputReport(scoped_refptr<net::IOBuffer> buffer, size_t size);
   void ProcessReadQueue();
 
   base::File device_file_;
