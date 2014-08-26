@@ -80,11 +80,16 @@ def main(args):
     elif 'target_arch=ia32' in gyp_defines:
       host_arch = 'i386'
     else:
-      # Figure out host arch, like the host_arch variable in build/common.gypi.
-      machine_type = platform.machine()
-      if machine_type in ['amd64', 'x86_64']:
+      # Figure out host arch using build/detect_host_arch.py.
+      SRC_DIR = os.path.abspath(
+          os.path.join(SCRIPT_DIR, '..', '..', '..', '..'))
+      sys.path.append(os.path.join(SRC_DIR, 'build'))
+      import detect_host_arch
+
+      detected_host_arch = detect_host_arch.HostArch()
+      if detected_host_arch == 'x64':
         host_arch = 'amd64'
-      elif re.match('(i[3-6]86|i86pc)$', machine_type):
+      elif detected_host_arch == 'ia32':
         host_arch = 'i386'
     if host_arch != options.arch:
       return 0
