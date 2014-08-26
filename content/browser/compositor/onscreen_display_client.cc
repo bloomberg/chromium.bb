@@ -30,7 +30,7 @@ OnscreenDisplayClient::~OnscreenDisplayClient() {
 }
 
 scoped_ptr<cc::OutputSurface> OnscreenDisplayClient::CreateOutputSurface() {
-  if (!onscreen_context_provider_)
+  if (!onscreen_context_provider_.get())
     return software_surface_.Pass();
   return make_scoped_ptr(new cc::OutputSurface(onscreen_context_provider_))
       .Pass();

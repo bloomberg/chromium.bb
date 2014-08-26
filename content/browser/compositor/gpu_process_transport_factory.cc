@@ -159,9 +159,10 @@ scoped_ptr<cc::OutputSurface> GpuProcessTransportFactory::CreateOutputSurface(
         "Compositor");
   }
 
-  UMA_HISTOGRAM_BOOLEAN("Aura.CreatedGpuBrowserCompositor", !!context_provider);
+  UMA_HISTOGRAM_BOOLEAN("Aura.CreatedGpuBrowserCompositor",
+                        !!context_provider.get());
 
-  if (context_provider) {
+  if (context_provider.get()) {
     scoped_refptr<base::SingleThreadTaskRunner> compositor_thread_task_runner =
         GetCompositorMessageLoop();
     if (!compositor_thread_task_runner.get())
@@ -181,7 +182,7 @@ scoped_ptr<cc::OutputSurface> GpuProcessTransportFactory::CreateOutputSurface(
     // set up to draw to the display's surface.
     cc::SurfaceManager* manager = surface_manager_.get();
     scoped_ptr<cc::OutputSurface> software_surface;
-    if (!context_provider) {
+    if (!context_provider.get()) {
       software_surface =
           make_scoped_ptr(new SoftwareBrowserCompositorOutputSurface(
               output_surface_proxy_,
@@ -199,7 +200,7 @@ scoped_ptr<cc::OutputSurface> GpuProcessTransportFactory::CreateOutputSurface(
     // GpuHostMsg_UpdateVSyncParameters message.
 
     scoped_refptr<cc::ContextProvider> offscreen_context_provider;
-    if (context_provider) {
+    if (context_provider.get()) {
       offscreen_context_provider = ContextProviderCommandBuffer::Create(
           GpuProcessTransportFactory::CreateOffscreenCommandBufferContext(),
           "Offscreen-Compositor");
@@ -308,7 +309,7 @@ ui::ContextFactory* GpuProcessTransportFactory::GetContextFactory() {
 base::MessageLoopProxy* GpuProcessTransportFactory::GetCompositorMessageLoop() {
   if (!compositor_thread_)
     return NULL;
-  return compositor_thread_->message_loop_proxy();
+  return compositor_thread_->message_loop_proxy().get();
 }
 
 gfx::GLSurfaceHandle GpuProcessTransportFactory::GetSharedSurfaceHandle() {
@@ -372,7 +373,7 @@ GpuProcessTransportFactory::SharedMainThreadContextProvider() {
       GpuProcessTransportFactory::CreateOffscreenCommandBufferContext(),
       "Offscreen-MainThread");
 
-  if (shared_main_thread_contexts_) {
+  if (shared_main_thread_contexts_.get()) {
     shared_main_thread_contexts_->SetLostContextCallback(
         base::Bind(&GpuProcessTransportFactory::
                         OnLostMainThreadSharedContextInsideCallback,
@@ -417,7 +418,7 @@ GpuProcessTransportFactory::CreateContextCommon(int surface_id) {
       CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE;
   scoped_refptr<GpuChannelHost> gpu_channel_host(
       BrowserGpuChannelHostFactory::instance()->EstablishGpuChannelSync(cause));
-  if (!gpu_channel_host) {
+  if (!gpu_channel_host.get()) {
     LOG(ERROR) << "Failed to establish GPU channel.";
     return scoped_ptr<WebGraphicsContext3DCommandBufferImpl>();
   }

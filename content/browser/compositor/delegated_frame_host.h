@@ -122,7 +122,7 @@ class CONTENT_EXPORT DelegatedFrameHost
   }
   bool ShouldCreateResizeLockForTesting() { return ShouldCreateResizeLock(); }
   bool ReleasedFrontLockActiveForTesting() const {
-    return !!released_front_lock_;
+    return !!released_front_lock_.get();
   }
 
  private:

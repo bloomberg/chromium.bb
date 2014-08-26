@@ -201,7 +201,7 @@ void ReflectorImpl::AttachToOutputSurfaceOnImplThread(
 
 void ReflectorImpl::UpdateTextureSizeOnMainThread(gfx::Size size) {
   MainThreadData& main = GetMain();
-  if (!main.mirroring_layer || !main.mailbox ||
+  if (!main.mirroring_layer || !main.mailbox.get() ||
       main.mailbox->mailbox().IsZero())
     return;
   if (main.needs_set_mailbox) {

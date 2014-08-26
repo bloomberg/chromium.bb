@@ -63,7 +63,7 @@ DelegatedFrameHost::DelegatedFrameHost(DelegatedFrameHostClient* client)
 void DelegatedFrameHost::WasShown(const ui::LatencyInfo& latency_info) {
   delegated_frame_evictor_->SetVisible(true);
 
-  if (surface_id_.is_null() && !frame_provider_ &&
+  if (surface_id_.is_null() && !frame_provider_.get() &&
       !released_front_lock_.get()) {
     ui::Compositor* compositor = client_->GetCompositor();
     if (compositor)
@@ -386,7 +386,7 @@ void DelegatedFrameHost::SwapDelegatedFrame(
                      AsWeakPtr(),
                      output_surface_id));
     } else {
-      if (!resource_collection_) {
+      if (!resource_collection_.get()) {
         resource_collection_ = new cc::DelegatedFrameResourceCollection;
         resource_collection_->SetClient(this);
       }
@@ -449,7 +449,7 @@ void DelegatedFrameHost::SendDelegatedFrameAck(uint32 output_surface_id) {
   cc::CompositorFrameAck ack;
   if (!surface_returned_resources_.empty())
     ack.resources.swap(surface_returned_resources_);
-  if (resource_collection_)
+  if (resource_collection_.get())
     resource_collection_->TakeUnusedResourcesForChildCompositor(&ack.resources);
   RenderWidgetHostImpl::SendSwapCompositorFrameAck(host->GetRoutingID(),
                                                    output_surface_id,
@@ -474,7 +474,7 @@ void DelegatedFrameHost::SendReturnedDelegatedResources(
   if (!surface_returned_resources_.empty()) {
     ack.resources.swap(surface_returned_resources_);
   } else {
-    DCHECK(resource_collection_);
+    DCHECK(resource_collection_.get());
     resource_collection_->TakeUnusedResourcesForChildCompositor(&ack.resources);
   }
   DCHECK(!ack.resources.empty());
@@ -652,7 +652,7 @@ void DelegatedFrameHost::CopyFromCompositingSurfaceFinishedForVideo(
   if (release_callback) {
     // A release callback means the texture came from the compositor, so there
     // should be no |subscriber_texture|.
-    DCHECK(!subscriber_texture);
+    DCHECK(!subscriber_texture.get());
     bool lost_resource = sync_point == 0;
     release_callback->Run(sync_point, lost_resource);
   }
@@ -863,7 +863,7 @@ DelegatedFrameHost::~DelegatedFrameHost() {
   if (resource_collection_.get())
     resource_collection_->SetClient(NULL);
 
-  DCHECK(!vsync_manager_);
+  DCHECK(!vsync_manager_.get());
 }
 
 void DelegatedFrameHost::RunOnCommitCallbacks() {
@@ -890,7 +890,7 @@ void DelegatedFrameHost::AddOnCommitCallbackAndDisableLocks(
 void DelegatedFrameHost::AddedToWindow() {
   ui::Compositor* compositor = client_->GetCompositor();
   if (compositor) {
-    DCHECK(!vsync_manager_);
+    DCHECK(!vsync_manager_.get());
     vsync_manager_ = compositor->vsync_manager();
     vsync_manager_->AddObserver(this);
   }
@@ -904,19 +904,19 @@ void DelegatedFrameHost::RemovingFromWindow() {
   if (compositor && compositor->HasObserver(this))
     compositor->RemoveObserver(this);
 
-  if (vsync_manager_) {
+  if (vsync_manager_.get()) {
     vsync_manager_->RemoveObserver(this);
     vsync_manager_ = NULL;
   }
 }
 
 void DelegatedFrameHost::LockResources() {
-  DCHECK(frame_provider_ || !surface_id_.is_null());
+  DCHECK(frame_provider_.get() || !surface_id_.is_null());
   delegated_frame_evictor_->LockFrame();
 }
 
 void DelegatedFrameHost::UnlockResources() {
-  DCHECK(frame_provider_ || !surface_id_.is_null());
+  DCHECK(frame_provider_.get() || !surface_id_.is_null());
   delegated_frame_evictor_->UnlockFrame();
 }
 

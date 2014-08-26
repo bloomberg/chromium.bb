@@ -73,7 +73,7 @@ class ImageTransportFactoryTearDownBrowserTest : public ContentBrowserTest {
   ImageTransportFactoryTearDownBrowserTest() {}
 
   virtual void TearDown() {
-    if (mailbox_)
+    if (mailbox_.get())
       EXPECT_TRUE(mailbox_->mailbox().IsZero());
     ContentBrowserTest::TearDown();
   }
