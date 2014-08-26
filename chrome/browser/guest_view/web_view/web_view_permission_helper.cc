@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "extensions/browser/guest_view/web_view/web_view_permission_helper.h"
+#include "chrome/browser/guest_view/web_view/web_view_permission_helper.h"
 
+#include "chrome/browser/guest_view/web_view/chrome_web_view_permission_helper_delegate.h"
+#include "chrome/browser/guest_view/web_view/web_view_constants.h"
+#include "chrome/browser/guest_view/web_view/web_view_guest.h"
+#include "chrome/browser/guest_view/web_view/web_view_permission_types.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/user_metrics.h"
-#include "extensions/browser/api/extensions_api_client.h"
-#include "extensions/browser/guest_view/web_view/web_view_constants.h"
-#include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "extensions/browser/guest_view/web_view/web_view_permission_helper_delegate.h"
-#include "extensions/browser/guest_view/web_view/web_view_permission_types.h"
 
 using content::BrowserPluginGuestDelegate;
 using content::RenderViewHost;
@@ -134,9 +134,10 @@ WebViewPermissionHelper::WebViewPermissionHelper(WebViewGuest* web_view_guest)
     next_permission_request_id_(guestview::kInstanceIDNone),
     web_view_guest_(web_view_guest),
     weak_factory_(this) {
+      // TODO(hanxi) : Create the delegate through ExtensionsAPIClient after
+      // moving WebViewPermissionHelper to extensions.
       web_view_permission_helper_delegate_.reset(
-          ExtensionsAPIClient::Get()->CreateWebViewPermissionHelperDelegate(
-              this));
+          new ChromeWebViewPermissionHelperDelegate(this));
 }
 
 WebViewPermissionHelper::~WebViewPermissionHelper() {

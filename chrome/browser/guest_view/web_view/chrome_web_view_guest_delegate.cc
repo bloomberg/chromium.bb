@@ -5,16 +5,15 @@
 
 #include "chrome/browser/guest_view/web_view/chrome_web_view_guest_delegate.h"
 
-#include "chrome/browser/extensions/api/web_request/web_request_api.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
+#include "chrome/browser/guest_view/web_view/web_view_constants.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu.h"
 #include "chrome/browser/ui/pdf/pdf_tab_helper.h"
 #include "chrome/browser/ui/zoom/zoom_controller.h"
 #include "chrome/common/chrome_version_info.h"
 #include "components/renderer_context_menu/context_menu_delegate.h"
 #include "content/public/common/page_zoom.h"
-#include "extensions/browser/guest_view/web_view/web_view_constants.h"
 
 #if defined(ENABLE_PRINTING)
 #if defined(ENABLE_FULL_PRINTING)
@@ -25,25 +24,13 @@
 #endif  // defined(ENABLE_FULL_PRINTING)
 #endif  // defined(ENABLE_PRINTING)
 
-void RemoveWebViewEventListenersOnIOThread(
-    void* profile,
-    const std::string& extension_id,
-    int embedder_process_id,
-    int view_instance_id) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-  ExtensionWebRequestEventRouter::GetInstance()->RemoveWebViewEventListeners(
-      profile,
-      extension_id,
-      embedder_process_id,
-      view_instance_id);
-}
-
 ChromeWebViewGuestDelegate::ChromeWebViewGuestDelegate(
     extensions::WebViewGuest* web_view_guest)
-  : WebViewGuestDelegate(web_view_guest),
+  : WebViewGuestDelegate(),
     pending_context_menu_request_id_(0),
     chromevox_injected_(false),
-    current_zoom_factor_(1.0) {
+    current_zoom_factor_(1.0),
+    web_view_guest_(web_view_guest) {
 }
 
 ChromeWebViewGuestDelegate::~ChromeWebViewGuestDelegate() {
@@ -68,7 +55,7 @@ bool ChromeWebViewGuestDelegate::HandleContextMenu(
       MenuModelToValue(pending_menu_->menu_model());
   args->Set(webview::kContextMenuItems, items.release());
   args->SetInteger(webview::kRequestId, request_id);
-  web_view_guest()->DispatchEventToEmbedder(
+  web_view_guest_->DispatchEventToEmbedder(
       new extensions::GuestViewBase::Event(
           webview::kEventContextMenu, args.Pass()));
   return true;
@@ -98,25 +85,6 @@ void ChromeWebViewGuestDelegate::OnAttachWebViewHelpers(
 #endif  // defined(ENABLE_FULL_PRINTING)
 #endif  // defined(ENABLE_PRINTING)
   PDFTabHelper::CreateForWebContents(contents);
-}
-
-void ChromeWebViewGuestDelegate::OnEmbedderDestroyed() {
-  // TODO(fsamuel): WebRequest event listeners for <webview> should survive
-  // reparenting of a <webview> within a single embedder. Right now, we keep
-  // around the browser state for the listener for the lifetime of the embedder.
-  // Ideally, the lifetime of the listeners should match the lifetime of the
-  // <webview> DOM node. Once http://crbug.com/156219 is resolved we can move
-  // the call to RemoveWebViewEventListenersOnIOThread back to
-  // WebViewGuest::WebContentsDestroyed.
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(
-          &RemoveWebViewEventListenersOnIOThread,
-          web_view_guest()->browser_context(),
-          web_view_guest()->embedder_extension_id(),
-          web_view_guest()->embedder_render_process_id(),
-          web_view_guest()->view_instance_id()));
 }
 
 void ChromeWebViewGuestDelegate::OnDidCommitProvisionalLoadForFrame(
@@ -150,10 +118,10 @@ void ChromeWebViewGuestDelegate::OnDocumentLoadedInFrame(
 void ChromeWebViewGuestDelegate::OnGuestDestroyed() {
   // Clean up custom context menu items for this guest.
   extensions::MenuManager* menu_manager = extensions::MenuManager::Get(
-      Profile::FromBrowserContext(web_view_guest()->browser_context()));
+      Profile::FromBrowserContext(web_view_guest_->browser_context()));
   menu_manager->RemoveAllContextItems(extensions::MenuItem::ExtensionKey(
-      web_view_guest()->embedder_extension_id(),
-      web_view_guest()->view_instance_id()));
+      web_view_guest_->embedder_extension_id(),
+      web_view_guest_->view_instance_id()));
 }
 
 // static
@@ -182,7 +150,7 @@ void ChromeWebViewGuestDelegate::OnSetZoom(double zoom_factor) {
   scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
   args->SetDouble(webview::kOldZoomFactor, current_zoom_factor_);
   args->SetDouble(webview::kNewZoomFactor, zoom_factor);
-  web_view_guest()->DispatchEventToEmbedder(
+  web_view_guest_->DispatchEventToEmbedder(
       new extensions::GuestViewBase::Event(
           webview::kEventZoomChange, args.Pass()));
   current_zoom_factor_ = zoom_factor;

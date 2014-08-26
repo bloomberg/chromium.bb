@@ -14,8 +14,6 @@ class WebContents;
 
 namespace extensions {
 
-class WebViewGuest;
-
 namespace api {
 namespace web_view_internal{
 
@@ -27,7 +25,7 @@ struct ContextMenuItem;
 // A delegate class of WebViewGuest that are not a part of chrome.
 class WebViewGuestDelegate {
  public :
-  explicit WebViewGuestDelegate(WebViewGuest* web_view_guest);
+  WebViewGuestDelegate();
   virtual ~WebViewGuestDelegate();
 
   typedef std::vector<linked_ptr<api::web_view_internal::ContextMenuItem> >
@@ -41,9 +39,6 @@ class WebViewGuestDelegate {
 
   // Called to attach helpers just after additional initialization is performed.
   virtual void OnAttachWebViewHelpers(content::WebContents* contents) = 0;
-
-  // Called to perform some cleanup prior to destruction.
-  virtual void OnEmbedderDestroyed() = 0;
 
   // Called when the guest WebContents commits a provisional load in any frame.
   virtual void OnDidCommitProvisionalLoadForFrame(bool is_main_frame) = 0;
@@ -68,11 +63,7 @@ class WebViewGuestDelegate {
       int request_id,
       const MenuItemVector* items) = 0;
 
-  WebViewGuest* web_view_guest() const { return web_view_guest_; }
-
  private:
-  WebViewGuest* const web_view_guest_;
-
   DISALLOW_COPY_AND_ASSIGN(WebViewGuestDelegate);
 };
 

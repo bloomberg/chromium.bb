@@ -2,13 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "extensions/browser/guest_view/web_view/web_view_guest.h"
+#include "chrome/browser/guest_view/web_view/web_view_guest.h"
 
 #include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/extensions/api/web_request/web_request_api.h"
 #include "chrome/browser/extensions/api/web_view/web_view_internal_api.h"
-#include "content/public/browser/browser_context.h"
+#include "chrome/browser/guest_view/web_view/chrome_web_view_guest_delegate.h"
+#include "chrome/browser/guest_view/web_view/web_view_constants.h"
+#include "chrome/browser/guest_view/web_view/web_view_permission_helper.h"
+#include "chrome/browser/guest_view/web_view/web_view_permission_types.h"
+#include "chrome/browser/guest_view/web_view/web_view_renderer_state.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/native_web_keyboard_event.h"
@@ -30,19 +35,15 @@
 #include "content/public/common/result_codes.h"
 #include "content/public/common/stop_find_action.h"
 #include "content/public/common/url_constants.h"
-#include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/guest_view/guest_view_constants.h"
 #include "extensions/browser/guest_view/guest_view_manager.h"
-#include "extensions/browser/guest_view/web_view/web_view_constants.h"
-#include "extensions/browser/guest_view/web_view/web_view_permission_helper.h"
-#include "extensions/browser/guest_view/web_view/web_view_permission_types.h"
-#include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_messages.h"
 #include "ipc/ipc_message_macros.h"
 #include "net/base/escape.h"
 #include "net/base/net_errors.h"
+#include "third_party/WebKit/public/web/WebFindOptions.h"
 #include "ui/base/models/simple_menu_model.h"
 
 using base::UserMetricsAction;
@@ -99,6 +100,19 @@ std::string GetStoragePartitionIdFromSiteURL(const GURL& site_url) {
   const std::string& partition_id = site_url.query();
   bool persist_storage = site_url.path().find("persist") != std::string::npos;
   return (persist_storage ? webview::kPersistPrefix : "") + partition_id;
+}
+
+void RemoveWebViewEventListenersOnIOThread(
+    void* profile,
+    const std::string& extension_id,
+    int embedder_process_id,
+    int view_instance_id) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  ExtensionWebRequestEventRouter::GetInstance()->RemoveWebViewEventListeners(
+      profile,
+      extension_id,
+      embedder_process_id,
+      view_instance_id);
 }
 
 void ParsePartitionParam(const base::DictionaryValue& create_params,
@@ -311,8 +325,21 @@ void WebViewGuest::DidStopLoading() {
 }
 
 void WebViewGuest::EmbedderDestroyed() {
-  if (web_view_guest_delegate_)
-    web_view_guest_delegate_->OnEmbedderDestroyed();
+  // TODO(fsamuel): WebRequest event listeners for <webview> should survive
+  // reparenting of a <webview> within a single embedder. Right now, we keep
+  // around the browser state for the listener for the lifetime of the embedder.
+  // Ideally, the lifetime of the listeners should match the lifetime of the
+  // <webview> DOM node. Once http://crbug.com/156219 is resolved we can move
+  // the call to RemoveWebViewEventListenersOnIOThread back to
+  // WebViewGuest::WebContentsDestroyed.
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(
+          &RemoveWebViewEventListenersOnIOThread,
+          browser_context(), embedder_extension_id(),
+          embedder_render_process_id(),
+          view_instance_id()));
 }
 
 void WebViewGuest::GuestDestroyed() {
@@ -609,8 +636,7 @@ WebViewGuest::WebViewGuest(content::BrowserContext* browser_context,
       is_overriding_user_agent_(false),
       find_helper_(this),
       javascript_dialog_helper_(this) {
-  web_view_guest_delegate_.reset(
-      ExtensionsAPIClient::Get()->CreateWebViewGuestDelegate(this));
+  web_view_guest_delegate_.reset(new ChromeWebViewGuestDelegate(this));
 }
 
 WebViewGuest::~WebViewGuest() {

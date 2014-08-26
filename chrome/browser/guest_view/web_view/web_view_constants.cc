@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "extensions/browser/guest_view/web_view/web_view_constants.h"
+#include "chrome/browser/guest_view/web_view/web_view_constants.h"
 
 namespace webview {
 

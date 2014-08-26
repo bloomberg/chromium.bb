@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/guest_view/web_view/web_view_renderer_state.h"
 #include "content/public/browser/browser_thread.h"
-#include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
 
 using content::BrowserThread;
 

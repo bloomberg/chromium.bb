@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_GUEST_VIEW_WEB_VIEW_CHROME_WEB_VIEW_GUEST_DELEGATE_H_
 #define CHROME_BROWSER_GUEST_VIEW_WEB_VIEW_CHROME_WEB_VIEW_GUEST_DELEGATE_H_
 
-#include "extensions/browser/guest_view/web_view/web_view_guest.h"
+#include "chrome/browser/guest_view/web_view/web_view_guest.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest_delegate.h"
 
 #if defined(OS_CHROMEOS)
@@ -29,7 +29,6 @@ class ChromeWebViewGuestDelegate : public extensions::WebViewGuestDelegate {
   virtual bool HandleContextMenu(
       const content::ContextMenuParams& params) OVERRIDE;
   virtual void OnAttachWebViewHelpers(content::WebContents* contents) OVERRIDE;
-  virtual void OnEmbedderDestroyed() OVERRIDE;
   virtual void OnDidCommitProvisionalLoadForFrame(bool is_main_frame) OVERRIDE;
   virtual void OnDidInitialize() OVERRIDE;
   virtual void OnDocumentLoadedInFrame(
@@ -42,7 +41,7 @@ class ChromeWebViewGuestDelegate : public extensions::WebViewGuestDelegate {
 
  private:
   content::WebContents* guest_web_contents() const {
-    return web_view_guest()->guest_web_contents();
+    return web_view_guest_->guest_web_contents();
   }
 
   // Returns the top level items (ignoring submenus) as Value.
@@ -70,6 +69,8 @@ class ChromeWebViewGuestDelegate : public extensions::WebViewGuestDelegate {
   // Holds the RenderViewContextMenu that has been built but yet to be
   // shown. This is .Reset() after ShowContextMenu().
   scoped_ptr<RenderViewContextMenu> pending_menu_;
+
+  extensions::WebViewGuest* web_view_guest_;
 
 #if defined(OS_CHROMEOS)
   // Subscription to receive notifications on changes to a11y settings.

@@ -26,10 +26,6 @@ class HidService;
 namespace extensions {
 
 class AppViewGuestDelegate;
-class WebViewGuest;
-class WebViewGuestDelegate;
-class WebViewPermissionHelper;
-class WebViewPermissionHelperDelegate;
 class SettingsObserver;
 class SettingsStorageFactory;
 class ValueStoreCache;
@@ -78,17 +74,6 @@ class ExtensionsAPIClient {
 
   // Returns the HidService instance for this embedder.
   virtual device::HidService* GetHidService();
-
-  // Returns a delegate for some of WebViewGuest's behavior. The caller owns the
-  // returned WebViewGuestDelegate.
-  virtual WebViewGuestDelegate* CreateWebViewGuestDelegate (
-      WebViewGuest* web_view_guest) const;
-
-  // Returns a delegate for some of WebViewPermissionHelper's behavior. The
-  // caller owns the returned WebViewPermissionHelperDelegate.
-  virtual WebViewPermissionHelperDelegate*
-      CreateWebViewPermissionHelperDelegate (
-          WebViewPermissionHelper* web_view_permission_helper) const;
 
   virtual void RegisterGuestViewTypes() {}
 

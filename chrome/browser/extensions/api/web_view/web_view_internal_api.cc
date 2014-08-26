@@ -9,6 +9,7 @@
 #include "chrome/browser/extensions/api/context_menus/context_menus_api.h"
 #include "chrome/browser/extensions/api/context_menus/context_menus_api_helpers.h"
 #include "chrome/browser/extensions/tab_helper.h"
+#include "chrome/browser/guest_view/web_view/web_view_permission_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/web_view_internal.h"
 #include "content/public/browser/render_process_host.h"
@@ -16,7 +17,6 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/stop_find_action.h"
-#include "extensions/browser/guest_view/web_view/web_view_permission_helper.h"
 #include "extensions/common/error_utils.h"
 #include "third_party/WebKit/public/web/WebFindOptions.h"
 

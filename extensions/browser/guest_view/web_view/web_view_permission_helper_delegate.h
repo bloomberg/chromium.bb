@@ -8,7 +8,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/media_stream_request.h"
-#include "extensions/browser/guest_view/web_view/web_view_permission_helper.h"
 
 namespace extensions {
 
@@ -16,8 +15,7 @@ namespace extensions {
 // not a part of extensions.
 class WebViewPermissionHelperDelegate : public content::WebContentsObserver {
  public:
-  explicit WebViewPermissionHelperDelegate(
-      WebViewPermissionHelper* web_view_permission_helper);
+  explicit WebViewPermissionHelperDelegate(content::WebContents* contents);
   virtual ~WebViewPermissionHelperDelegate();
 
   virtual void RequestMediaAccessPermission(
@@ -85,13 +83,7 @@ class WebViewPermissionHelperDelegate : public content::WebContentsObserver {
       bool blocked_by_policy,
       IPC::Message* reply_msg) {}
 
-  WebViewPermissionHelper* web_view_permission_helper() const {
-    return web_view_permission_helper_;
-  }
-
  private:
-  WebViewPermissionHelper* const web_view_permission_helper_;
-
   DISALLOW_COPY_AND_ASSIGN(WebViewPermissionHelperDelegate);
 };
 
