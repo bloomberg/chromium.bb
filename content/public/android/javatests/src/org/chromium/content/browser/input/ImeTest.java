@@ -174,6 +174,16 @@ public class ImeTest extends ContentShellTestBase {
 
     @SmallTest
     @Feature({"TextInput"})
+    public void testSelectActionBarShownOnLongPressingInput() throws Exception {
+        DOMUtils.longPressNode(this, mContentViewCore, "input_text");
+        assertWaitForSelectActionBarStatus(false);
+        commitText(mConnection, "Sample Text", 1);
+        DOMUtils.longPressNode(this, mContentViewCore, "input_text");
+        assertWaitForSelectActionBarStatus(true);
+    }
+
+    @SmallTest
+    @Feature({"TextInput"})
     public void testImeCut() throws Exception {
         commitText(mConnection, "snarful", 1);
         waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 1, "snarful", 7, 7, -1, -1);
@@ -558,6 +568,16 @@ public class ImeTest extends ContentShellTestBase {
             public boolean isSatisfied() {
                 return show == getImeAdapter().mIsShowWithoutHideOutstanding &&
                         (!show || getAdapterInputConnection() != null);
+            }
+        }));
+    }
+
+    private void assertWaitForSelectActionBarStatus(
+            final boolean show) throws InterruptedException {
+        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return show == mContentViewCore.isSelectActionBarShowing();
             }
         }));
     }
