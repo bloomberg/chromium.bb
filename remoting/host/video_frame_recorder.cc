@@ -34,7 +34,7 @@ class VideoFrameRecorder::RecordingVideoEncoder : public VideoEncoder {
         enable_recording_(false),
         weak_factory_(this) {
     DCHECK(encoder_);
-    DCHECK(recorder_task_runner_);
+    DCHECK(recorder_task_runner_.get());
   }
 
   base::WeakPtr<RecordingVideoEncoder> AsWeakPtr() {
@@ -42,7 +42,7 @@ class VideoFrameRecorder::RecordingVideoEncoder : public VideoEncoder {
   }
 
   void SetEnableRecording(bool enable_recording) {
-    DCHECK(!encoder_task_runner_ ||
+    DCHECK(!encoder_task_runner_.get() ||
            encoder_task_runner_->BelongsToCurrentThread());
     enable_recording_ = enable_recording;
   }
@@ -58,7 +58,7 @@ class VideoFrameRecorder::RecordingVideoEncoder : public VideoEncoder {
       const webrtc::DesktopFrame& frame) OVERRIDE {
     // If this is the first Encode() then store the TaskRunner and inform the
     // VideoFrameRecorder so it can post SetEnableRecording() on it.
-    if (!encoder_task_runner_) {
+    if (!encoder_task_runner_.get()) {
       encoder_task_runner_ = base::ThreadTaskRunnerHandle::Get();
       recorder_task_runner_->PostTask(FROM_HERE,
           base::Bind(&VideoFrameRecorder::SetEncoderTaskRunner,
@@ -112,8 +112,8 @@ VideoFrameRecorder::~VideoFrameRecorder() {
 
 scoped_ptr<VideoEncoder> VideoFrameRecorder::WrapVideoEncoder(
     scoped_ptr<VideoEncoder> encoder) {
-  DCHECK(!encoder_task_runner_);
-  DCHECK(!caller_task_runner_);
+  DCHECK(!encoder_task_runner_.get());
+  DCHECK(!caller_task_runner_.get());
   caller_task_runner_ = base::ThreadTaskRunnerHandle::Get();
 
   scoped_ptr<RecordingVideoEncoder> recording_encoder(
@@ -126,7 +126,8 @@ scoped_ptr<VideoEncoder> VideoFrameRecorder::WrapVideoEncoder(
 }
 
 void VideoFrameRecorder::DetachVideoEncoderWrapper() {
-  DCHECK(!caller_task_runner_ || caller_task_runner_->BelongsToCurrentThread());
+  DCHECK(!caller_task_runner_.get() ||
+         caller_task_runner_->BelongsToCurrentThread());
 
   // Immediately detach the wrapper from this recorder.
   weak_factory_.InvalidateWeakPtrs();
@@ -136,7 +137,7 @@ void VideoFrameRecorder::DetachVideoEncoderWrapper() {
   content_bytes_ = 0;
 
   // Tell the wrapper to stop recording and posting frames to us.
-  if (encoder_task_runner_) {
+  if (encoder_task_runner_.get()) {
     encoder_task_runner_->PostTask(FROM_HERE,
         base::Bind(&RecordingVideoEncoder::SetEnableRecording,
                    recording_encoder_, false));
@@ -148,14 +149,15 @@ void VideoFrameRecorder::DetachVideoEncoderWrapper() {
 }
 
 void VideoFrameRecorder::SetEnableRecording(bool enable_recording) {
-  DCHECK(!caller_task_runner_ || caller_task_runner_->BelongsToCurrentThread());
+  DCHECK(!caller_task_runner_.get() ||
+         caller_task_runner_->BelongsToCurrentThread());
 
   if (enable_recording_ == enable_recording) {
     return;
   }
   enable_recording_ = enable_recording;
 
-  if (encoder_task_runner_) {
+  if (encoder_task_runner_.get()) {
     encoder_task_runner_->PostTask(FROM_HERE,
         base::Bind(&RecordingVideoEncoder::SetEnableRecording,
                    recording_encoder_,
@@ -164,7 +166,8 @@ void VideoFrameRecorder::SetEnableRecording(bool enable_recording) {
 }
 
 void VideoFrameRecorder::SetMaxContentBytes(int64_t max_content_bytes) {
-  DCHECK(!caller_task_runner_ || caller_task_runner_->BelongsToCurrentThread());
+  DCHECK(!caller_task_runner_.get() ||
+         caller_task_runner_->BelongsToCurrentThread());
   DCHECK_GE(max_content_bytes, 0);
 
   max_content_bytes_ = max_content_bytes;
@@ -187,13 +190,13 @@ scoped_ptr<webrtc::DesktopFrame> VideoFrameRecorder::NextFrame() {
 void VideoFrameRecorder::SetEncoderTaskRunner(
     scoped_refptr<base::TaskRunner> task_runner) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
-  DCHECK(!encoder_task_runner_);
-  DCHECK(task_runner);
+  DCHECK(!encoder_task_runner_.get());
+  DCHECK(task_runner.get());
 
   encoder_task_runner_ = task_runner;
 
   // If the caller already enabled recording, inform the recording encoder.
-  if (enable_recording_ && encoder_task_runner_) {
+  if (enable_recording_ && encoder_task_runner_.get()) {
     encoder_task_runner_->PostTask(FROM_HERE,
         base::Bind(&RecordingVideoEncoder::SetEnableRecording,
                    recording_encoder_,

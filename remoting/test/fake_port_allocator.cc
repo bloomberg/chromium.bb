@@ -91,7 +91,7 @@ void FakePortAllocatorSession::SendSessionRequest(
 scoped_ptr<FakePortAllocator> FakePortAllocator::Create(
     scoped_refptr<FakeNetworkDispatcher> fake_network_dispatcher) {
   scoped_ptr<FakePacketSocketFactory> socket_factory(
-      new FakePacketSocketFactory(fake_network_dispatcher));
+      new FakePacketSocketFactory(fake_network_dispatcher.get()));
   scoped_ptr<rtc::NetworkManager> network_manager(
       new FakeNetworkManager(socket_factory->GetAddress()));
 

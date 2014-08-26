@@ -326,7 +326,7 @@ CastExtensionSession::CastExtensionSession(
       worker_thread_wrapper_(NULL),
       worker_thread_(kWorkerThreadName) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
-  DCHECK(url_request_context_getter_);
+  DCHECK(url_request_context_getter_.get());
   DCHECK(client_session_control_);
   DCHECK(client_stub_);
 

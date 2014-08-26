@@ -38,7 +38,7 @@ OAuthTokenGetter::OAuthTokenGetter(
     bool auto_refresh)
     : oauth_credentials_(oauth_credentials.Pass()),
       gaia_oauth_client_(
-          new gaia::GaiaOAuthClient(url_request_context_getter)),
+          new gaia::GaiaOAuthClient(url_request_context_getter.get())),
       url_request_context_getter_(url_request_context_getter),
       refreshing_oauth_token_(false) {
   if (auto_refresh) {

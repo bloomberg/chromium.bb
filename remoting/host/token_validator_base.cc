@@ -146,7 +146,7 @@ void TokenValidatorBase::OnCertificatesSelected(
     for (size_t i = 0; i < selected_certs->size(); ++i) {
       if (issuer == kCertIssuerWildCard ||
           issuer == (*selected_certs)[i]->issuer().common_name) {
-        request_->ContinueWithCertificate((*selected_certs)[i]);
+        request_->ContinueWithCertificate((*selected_certs)[i].get());
         return;
       }
     }

@@ -142,21 +142,21 @@ void ClientSession::ControlVideo(const protocol::VideoControl& video_control) {
     VLOG(1) << "Received VideoControl (enable="
             << video_control.enable() << ")";
     pause_video_ = !video_control.enable();
-    if (video_scheduler_)
+    if (video_scheduler_.get())
       video_scheduler_->Pause(pause_video_);
   }
   if (video_control.has_lossless_encode()) {
     VLOG(1) << "Received VideoControl (lossless_encode="
             << video_control.lossless_encode() << ")";
     lossless_video_encode_ = video_control.lossless_encode();
-    if (video_scheduler_)
+    if (video_scheduler_.get())
       video_scheduler_->SetLosslessEncode(lossless_video_encode_);
   }
   if (video_control.has_lossless_color()) {
     VLOG(1) << "Received VideoControl (lossless_color="
             << video_control.lossless_color() << ")";
     lossless_video_color_ = video_control.lossless_color();
-    if (video_scheduler_)
+    if (video_scheduler_.get())
       video_scheduler_->SetLosslessColor(lossless_video_color_);
   }
 }
@@ -207,7 +207,7 @@ void ClientSession::SetCapabilities(
 
 void ClientSession::RequestPairing(
     const protocol::PairingRequest& pairing_request) {
-  if (pairing_registry_ && pairing_request.has_client_name()) {
+  if (pairing_registry_.get() && pairing_request.has_client_name()) {
     protocol::PairingRegistry::Pairing pairing =
         pairing_registry_->CreatePairing(pairing_request.client_name());
     protocol::PairingResponse pairing_response;

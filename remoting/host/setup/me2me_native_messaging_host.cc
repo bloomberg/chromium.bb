@@ -182,7 +182,7 @@ void Me2MeNativeMessagingHost::ProcessClearPairedClients(
     return;
   }
 
-  if (pairing_registry_) {
+  if (pairing_registry_.get()) {
     pairing_registry_->ClearAllPairings(
         base::Bind(&Me2MeNativeMessagingHost::SendBooleanResult, weak_ptr_,
                    base::Passed(&response)));
@@ -211,7 +211,7 @@ void Me2MeNativeMessagingHost::ProcessDeletePairedClient(
     return;
   }
 
-  if (pairing_registry_) {
+  if (pairing_registry_.get()) {
     pairing_registry_->DeletePairing(
         client_id, base::Bind(&Me2MeNativeMessagingHost::SendBooleanResult,
                               weak_ptr_, base::Passed(&response)));
@@ -294,7 +294,7 @@ void Me2MeNativeMessagingHost::ProcessGetPairedClients(
     scoped_ptr<base::DictionaryValue> response) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (pairing_registry_) {
+  if (pairing_registry_.get()) {
     pairing_registry_->GetAllPairings(
         base::Bind(&Me2MeNativeMessagingHost::SendPairedClientsResponse,
                    weak_ptr_, base::Passed(&response)));
