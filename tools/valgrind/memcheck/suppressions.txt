@@ -6283,9 +6283,3 @@
    fun:_ZN5blink11RenderBlock13paintContentsERNS_9PaintInfoERKNS_11LayoutPointE
    fun:_ZN5blink11RenderBlock11paintObjectERNS_9PaintInfoERKNS_11LayoutPointE
 }
-{
-   bug_407467
-   Memcheck:Uninitialized
-   fun:_ZN8keyboard21KeyboardLayoutManager14SetChildBounds*
-   fun:_ZN4aura6Window9SetBounds*
-}
