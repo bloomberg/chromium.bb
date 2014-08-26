@@ -136,8 +136,60 @@ def GetTestDataSeries(test_data_path):
 class DataSeries0Test(CIDBIntegrationTest):
   """Simulate a set of 630 master/slave CQ builds."""
 
-  def runTest(self):
-    """Simulate a set of 630 master/slave CQ builds, with database schema v8.
+  # TODO(akeshet): Once our prod and debug databases are migrated
+  # to schema 9, this test of the migration can be removed.
+  def testCQWithSchema8(self):
+    """Run the CQ test with schema version 8, then migrate to 9."""
+    # Run the CQ test at schema version 8
+    self._PrepareFreshDatabase(8)
+    self._runCQTest()
+
+    # Now migrate to schema version 9, and run sanity checks.
+    root_db = cidb.CIDBConnection(TEST_DB_CRED_ROOT)
+    root_db.ApplySchemaMigrations(9)
+
+    readonly_db = cidb.CIDBConnection(TEST_DB_CRED_READONLY)
+
+    # last_updated column should be 0 for all rows.
+    num_0_last_updated = readonly_db._GetEngine().execute(
+          'select count(*) from buildTable where last_updated = 0'
+          ).fetchall()[0][0]
+    self.assertEqual(num_0_last_updated, 630)
+
+    self._start_and_finish_time_checks(readonly_db)
+
+  def testCQWithSchema9(self):
+    """Run the CQ test with schema version 9."""
+    # Run the CQ test at schema version 8
+    self._PrepareFreshDatabase(9)
+    self._runCQTest()
+
+    readonly_db = cidb.CIDBConnection(TEST_DB_CRED_READONLY)
+
+    # We should have a diversity of last_updated times. Since the timestamp
+    # resolution is only 1 second, and we have lots of parallelism in the test,
+    # we won't have a distring last_updated time per row. But we will have at
+    # least 100 distinct last_updated times.
+    distinct_last_updated = readonly_db._GetEngine().execute(
+        'select count(distinct last_updated) from buildTable').fetchall()[0][0]
+    self.assertTrue(distinct_last_updated > 100)
+
+    ids_by_last_updated = readonly_db._GetEngine().execute(
+        'select id from buildTable order by last_updated').fetchall()
+
+    ids_by_last_updated = [id_tuple[0] for id_tuple in ids_by_last_updated]
+
+    # Build #1 should have been last updated before build # 200.
+    self.assertLess(ids_by_last_updated.index(1),
+                    ids_by_last_updated.index(200))
+
+    # However, build #1 (which was a master build) should have been last updated
+    # AFTER build #2 which was its slave.
+    self.assertGreater(ids_by_last_updated.index(1),
+                       ids_by_last_updated.index(2))
+
+  def _runCQTest(self):
+    """Simulate a set of 630 master/slave CQ builds.
 
     Note: This test takes about 2.5 minutes to populate its 630 builds
     and their corresponding cl actions into the test database.
@@ -145,11 +197,6 @@ class DataSeries0Test(CIDBIntegrationTest):
     metadatas = GetTestDataSeries(SERIES_0_TEST_DATA_PATH)
     self.assertEqual(len(metadatas), 630, 'Did not load expected amount of '
                                           'test data')
-
-    # Migrate db to specified version. As new schema versions are added,
-    # migrations to later version can be applied after the test builds are
-    # simulated, to test that db contents are correctly migrated.
-    self._PrepareFreshDatabase(8)
 
     bot_db = cidb.CIDBConnection(TEST_DB_CRED_BOT)
 
@@ -161,19 +208,7 @@ class DataSeries0Test(CIDBIntegrationTest):
     # as the readonly user.
     readonly_db = cidb.CIDBConnection(TEST_DB_CRED_READONLY)
 
-    # Sanity checks that correct data was recorded, and can be retrieved.
-    max_start_time = readonly_db._GetEngine().execute(
-        'select max(start_time) from buildTable').fetchall()[0][0]
-    min_start_time = readonly_db._GetEngine().execute(
-        'select min(start_time) from buildTable').fetchall()[0][0]
-    max_fin_time = readonly_db._GetEngine().execute(
-          'select max(finish_time) from buildTable').fetchall()[0][0]
-    min_fin_time = readonly_db._GetEngine().execute(
-          'select min(finish_time) from buildTable').fetchall()[0][0]
-    self.assertEqual(max_start_time, datetime.datetime(2014, 7, 7, 12, 49, 44))
-    self.assertEqual(min_start_time, datetime.datetime(2014, 7, 4, 16, 14, 28))
-    self.assertEqual(max_fin_time, datetime.datetime(2014, 7, 7, 14, 51, 38))
-    self.assertEqual(min_fin_time, datetime.datetime(2014, 7, 4, 16, 33, 10))
+    self._start_and_finish_time_checks(readonly_db)
 
     build_types = readonly_db._GetEngine().execute(
         'select build_type from buildTable').fetchall()
@@ -194,6 +229,21 @@ class DataSeries0Test(CIDBIntegrationTest):
     self.assertEqual(submitted_cl_count, 56)
     self.assertEqual(rejected_cl_count, 8)
     self.assertEqual(total_actions, 1877)
+
+  def _start_and_finish_time_checks(self, db):
+    """Sanity checks that correct data was recorded, and can be retrieved."""
+    max_start_time = db._GetEngine().execute(
+        'select max(start_time) from buildTable').fetchall()[0][0]
+    min_start_time = db._GetEngine().execute(
+        'select min(start_time) from buildTable').fetchall()[0][0]
+    max_fin_time = db._GetEngine().execute(
+          'select max(finish_time) from buildTable').fetchall()[0][0]
+    min_fin_time = db._GetEngine().execute(
+          'select min(finish_time) from buildTable').fetchall()[0][0]
+    self.assertEqual(max_start_time, datetime.datetime(2014, 7, 7, 12, 49, 44))
+    self.assertEqual(min_start_time, datetime.datetime(2014, 7, 4, 16, 14, 28))
+    self.assertEqual(max_fin_time, datetime.datetime(2014, 7, 7, 14, 51, 38))
+    self.assertEqual(min_fin_time, datetime.datetime(2014, 7, 4, 16, 33, 10))
 
   def simulate_builds(self, db, metadatas):
     """Simulate a serires of Commit Queue master and slave builds.
