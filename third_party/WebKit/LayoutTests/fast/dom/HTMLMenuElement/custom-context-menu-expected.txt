@@ -1,0 +1,29 @@
+Tests the custom context menu items.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS itemsWithCustomContextMenu.length - items.length is 21
+PASS itemsWithCustomContextMenu[0] is "Item1"
+PASS itemsWithCustomContextMenu[4] is "Submenu >"
+PASS itemsWithCustomContextMenu[5] is "_Item4"
+PASS itemsWithCustomContextMenu[6] is "_Deeper submenu >"
+PASS itemsWithCustomContextMenu[7] is "__Item5"
+PASS itemsWithCustomContextMenu[8] is "__---------"
+PASS itemsWithCustomContextMenu[10] is "Item7"
+PASS itemsWithCustomContextMenu[11] is "---------"
+PASS itemsWithCustomContextMenu[12] is "Item8"
+PASS itemsWithCustomContextMenu[13] is "---------"
+PASS itemsWithCustomContextMenu[14] is "Item9"
+PASS itemsWithCustomContextMenu[16] is "---------"
+PASS itemsWithCustomContextMenu[19] is "---------"
+PASS itemsWithCustomContextMenu[20] is "Item13"
+PASS items1.length - items.length is 0
+PASS items2.length - items.length is 0
+PASS items3.length - items.length is 0
+PASS items4.length - items.length is 0
+PASS successfullyParsed is true
+
+TEST COMPLETE
+   
+      

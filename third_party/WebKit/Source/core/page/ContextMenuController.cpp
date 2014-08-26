@@ -28,17 +28,22 @@
 #include "core/page/ContextMenuController.h"
 
 #include "core/dom/Document.h"
+#include "core/dom/Node.h"
 #include "core/events/Event.h"
 #include "core/events/MouseEvent.h"
-#include "core/dom/Node.h"
+#include "core/events/RelatedEvent.h"
 #include "core/frame/LocalFrame.h"
+#include "core/html/HTMLMenuElement.h"
 #include "core/page/ContextMenuClient.h"
 #include "core/page/ContextMenuProvider.h"
+#include "core/page/CustomContextMenuProvider.h"
 #include "core/page/EventHandler.h"
 #include "platform/ContextMenu.h"
 #include "platform/ContextMenuItem.h"
 
 namespace blink {
+
+using namespace HTMLNames;
 
 ContextMenuController::ContextMenuController(Page*, ContextMenuClient* client)
     : m_client(client)
@@ -79,12 +84,34 @@ void ContextMenuController::documentDetached(Document* document)
     }
 }
 
+void ContextMenuController::populateCustomContextMenu(const Event& event)
+{
+    if (!RuntimeEnabledFeatures::contextMenuEnabled())
+        return;
+
+    Node* node = event.target()->toNode();
+    if (!node || !node->isHTMLElement())
+        return;
+
+    HTMLElement& element = toHTMLElement(*node);
+    RefPtrWillBeRawPtr<HTMLMenuElement> menuElement = element.contextMenu();
+    if (!menuElement || !equalIgnoringCase(menuElement->fastGetAttribute(typeAttr), "popup"))
+        return;
+    RefPtrWillBeRawPtr<RelatedEvent> relatedEvent = RelatedEvent::create(EventTypeNames::show, true, true, node);
+    if (!menuElement->dispatchEvent(relatedEvent.release()))
+        return;
+    if (menuElement != element.contextMenu())
+        return;
+    m_menuProvider = CustomContextMenuProvider::create(*menuElement, element);
+    m_menuProvider->populateContextMenu(m_contextMenu.get());
+}
+
 void ContextMenuController::handleContextMenuEvent(Event* event)
 {
     m_contextMenu = createContextMenu(event);
     if (!m_contextMenu)
         return;
-
+    populateCustomContextMenu(*event);
     showContextMenu(event);
 }
 

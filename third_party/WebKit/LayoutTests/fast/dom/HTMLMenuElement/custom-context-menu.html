@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<head>
+<script src="../../../resources/js-test.js"></script>
+</head>
+<button id="button" style="height: 100px; width: 100px;">
+</button>
+<button id="button_with_contextmenu" contextmenu="menu_id" style="height: 100px; width: 100px;">
+    <menu id="menu_id" type="PopUp">
+        <!-- Test removal of separator at the start. -->
+        <hr>
+        <menuitem label="Item1"></menuitem>
+        <menuitem label="Item2"></menuitem>
+        <!-- Test addition of separator for <hr>. -->
+        <hr>
+        <menuitem label="Item3"></menuitem>
+        <!-- Test child menu with label. -->
+        <menu label="Submenu">
+            <menuitem label="Item4"></menuitem>
+            <menu label="Deeper submenu">
+                <!-- Test removal of separator at the start inside submenu. -->
+                <hr>
+                <menuitem label="Item5"></menuitem>
+                <hr>
+                <menuitem label="Item6"></menuitem>
+                <!-- Test removal of separator at the end inside submenu. -->
+                <hr>
+            </menu>
+        </menu>
+        <menuitem label="Item7"></menuitem>
+        <!-- Test child menu without label. -->
+        <menu>
+            <menuitem label="Item8"></menuitem>
+            <!-- Test child menu with empty label. -->
+            <menu label="">
+                <menuitem label="Item9"></menuitem>
+                <menuitem label="Item10"></menuitem>
+            </menu>
+            <!-- Test collapsing two or more adjacent separators. -->
+            <hr>
+            <menuitem label="Item11"></menuitem>
+            <menuitem label="Item12"></menuitem>
+        </menu>
+        <!-- Test collapsing two or more adjacent separators. -->
+        <hr>
+        <hr>
+        <hr>
+        <hr>
+        <!-- Test menuitem menu without label. -->
+        <menuitem></menuitem>
+        <!-- Test menuitem menu with empty label. -->
+        <menuitem label=""></menuitem>
+        <menuitem label="Item13"></menuitem>
+        <!-- Test removal of separator at the end. -->
+        <hr>
+    </menu>
+</button>
+<!-- Test with menu element without type attribute specified. -->
+<button id="button_1" contextmenu="menu_without_type" style="height: 100px; width: 100px;">
+    <menu id="menu_without_type">
+        <menuitem label="Item1"></menuitem>
+        <menuitem label="Item2"></menuitem>
+        <menuitem label="Item3"></menuitem>
+    </menu>
+</button>
+<!-- Test cancelling show event. -->
+<button id="button_2" contextmenu="menu_2" style="height: 100px; width: 100px;">
+    <menu id="menu_2" type="popup">
+        <menuitem label="Item1"></menuitem>
+        <menuitem label="Item2"></menuitem>
+        <menuitem label="Item3"></menuitem>
+    </menu>
+</button>
+<!-- Test removing menu element inside show event handler. -->
+<button id="button_3" contextmenu="menu_3" style="height: 100px; width: 100px;">
+    <menu id="menu_3" type="popup">
+        <menuitem label="Item1"></menuitem>
+        <menuitem label="Item2"></menuitem>
+        <menuitem label="Item3"></menuitem>
+    </menu>
+</button>
+<!-- Test with menu element without any children. -->
+<button id="button_4" contextmenu="menu_4" style="height: 100px; width: 100px;">
+    <menu id="menu_4" type="popup">
+    </menu>
+</button>
+<script>
+if (!window.eventSender)
+    debug("This test requires window.eventSender.")
+
+function contextClickAndGetMenuItems(element) {
+    var x = element.offsetParent.offsetLeft + element.offsetLeft + 4;
+    var y = element.offsetParent.offsetTop + element.offsetTop + element.offsetHeight / 2;
+    eventSender.mouseMoveTo(x, y);
+    return eventSender.contextClick();
+}
+
+function cancel(event) {
+    event.preventDefault();
+}
+
+function removeMenu(event) {
+    event.target.remove();
+}
+
+description("Tests the custom context menu items.");
+var button = document.getElementById("button");
+var items = contextClickAndGetMenuItems(button);
+
+// Esc key to hide the context menu.
+eventSender.keyDown("escape");
+
+var buttonWithContextMenu = document.getElementById("button_with_contextmenu");
+var itemsWithCustomContextMenu = contextClickAndGetMenuItems(buttonWithContextMenu);
+
+// Esc key to hide the context menu.
+eventSender.keyDown("escape");
+
+var button1 = document.getElementById("button_1");
+var items1 = contextClickAndGetMenuItems(button1);
+
+// Esc key to hide the context menu.
+eventSender.keyDown("escape");
+
+var button2 = document.getElementById("button_2");
+document.getElementById("menu_2").addEventListener("show", cancel, false);
+var items2 = contextClickAndGetMenuItems(button2);
+
+// Esc key to hide the context menu.
+eventSender.keyDown("escape");
+
+var button3 = document.getElementById("button_3");
+document.getElementById("menu_3").addEventListener("show", removeMenu, false);
+var items3 = contextClickAndGetMenuItems(button3);
+
+// Esc key to hide the context menu.
+eventSender.keyDown("escape");
+
+var button4 = document.getElementById("button_4");
+var items4 = contextClickAndGetMenuItems(button4);
+
+shouldBeEqualToNumber("itemsWithCustomContextMenu.length - items.length", 21);
+shouldBeEqualToString("itemsWithCustomContextMenu[0]", "Item1");
+shouldBeEqualToString("itemsWithCustomContextMenu[4]", "Submenu >");
+shouldBeEqualToString("itemsWithCustomContextMenu[5]", "_Item4");
+shouldBeEqualToString("itemsWithCustomContextMenu[6]", "_Deeper submenu >");
+shouldBeEqualToString("itemsWithCustomContextMenu[7]", "__Item5");
+shouldBeEqualToString("itemsWithCustomContextMenu[8]", "__---------");
+shouldBeEqualToString("itemsWithCustomContextMenu[10]", "Item7");
+shouldBeEqualToString("itemsWithCustomContextMenu[11]", "---------");
+shouldBeEqualToString("itemsWithCustomContextMenu[12]", "Item8");
+shouldBeEqualToString("itemsWithCustomContextMenu[13]", "---------");
+shouldBeEqualToString("itemsWithCustomContextMenu[14]", "Item9");
+shouldBeEqualToString("itemsWithCustomContextMenu[16]", "---------");
+shouldBeEqualToString("itemsWithCustomContextMenu[19]", "---------");
+shouldBeEqualToString("itemsWithCustomContextMenu[20]", "Item13");
+shouldBeEqualToNumber("items1.length - items.length", 0);
+shouldBeEqualToNumber("items2.length - items.length", 0);
+shouldBeEqualToNumber("items3.length - items.length", 0);
+shouldBeEqualToNumber("items4.length - items.length", 0);
+
+</script>

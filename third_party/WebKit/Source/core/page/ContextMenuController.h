@@ -68,6 +68,7 @@ namespace blink {
 
         PassOwnPtr<ContextMenu> createContextMenu(Event*);
         PassOwnPtr<ContextMenu> createContextMenu(LocalFrame*, const LayoutPoint&);
+        void populateCustomContextMenu(const Event&);
         void showContextMenu(Event*);
 
         ContextMenuClient* m_client;

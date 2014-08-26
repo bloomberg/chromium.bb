@@ -1425,6 +1425,8 @@
             'page/ContextMenuProvider.h',
             'page/CreateWindow.cpp',
             'page/CreateWindow.h',
+            'page/CustomContextMenuProvider.cpp',
+            'page/CustomContextMenuProvider.h',
             'page/DOMWindowPagePopup.cpp',
             'page/DOMWindowPagePopup.h',
             'page/DragController.cpp',

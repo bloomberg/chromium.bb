@@ -40,6 +40,7 @@ public:
     const ContextMenuItem* itemWithAction(unsigned) const;
     const Vector<ContextMenuItem>& items() const { return m_items; }
     void appendItem(const ContextMenuItem& item) { m_items.append(item); }
+    void removeLastItem() { m_items.removeLast(); }
 
 private:
     Vector<ContextMenuItem> m_items;
