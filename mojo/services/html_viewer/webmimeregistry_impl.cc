@@ -36,6 +36,17 @@ blink::WebMimeRegistry::SupportsType WebMimeRegistryImpl::supportsImageMIMEType(
 }
 
 blink::WebMimeRegistry::SupportsType
+WebMimeRegistryImpl::supportsImagePrefixedMIMEType(
+    const blink::WebString& mime_type) {
+  std::string ascii_mime_type = ToASCIIOrEmpty(mime_type);
+  return (net::IsSupportedImageMimeType(ascii_mime_type) ||
+          (StartsWithASCII(ascii_mime_type, "image/", true) &&
+           net::IsSupportedNonImageMimeType(ascii_mime_type)))
+             ? WebMimeRegistry::IsSupported
+             : WebMimeRegistry::IsNotSupported;
+}
+
+blink::WebMimeRegistry::SupportsType
     WebMimeRegistryImpl::supportsJavaScriptMIMEType(
     const blink::WebString& mime_type) {
   return net::IsSupportedJavascriptMimeType(ToASCIIOrEmpty(mime_type)) ?

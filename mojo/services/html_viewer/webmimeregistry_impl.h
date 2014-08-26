@@ -20,6 +20,8 @@ class WebMimeRegistryImpl : public blink::WebMimeRegistry {
       const blink::WebString& mime_type);
   virtual blink::WebMimeRegistry::SupportsType supportsImageMIMEType(
       const blink::WebString& mime_type);
+  virtual blink::WebMimeRegistry::SupportsType supportsImagePrefixedMIMEType(
+      const blink::WebString& mime_type);
   virtual blink::WebMimeRegistry::SupportsType supportsJavaScriptMIMEType(
       const blink::WebString& mime_type);
   virtual blink::WebMimeRegistry::SupportsType supportsMediaMIMEType(
