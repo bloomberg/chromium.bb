@@ -103,7 +103,7 @@ class FileWriterDelegateTest : public PlatformTest {
     base::File::Info file_info;
     EXPECT_EQ(base::File::FILE_OK,
               AsyncFileTestHelper::GetMetadata(
-                  file_system_context_, url, &file_info));
+                  file_system_context_.get(), url, &file_info));
     return file_info.size;
   }
 
@@ -249,8 +249,8 @@ void FileWriterDelegateTest::SetUp() {
   file_system_context_ = CreateFileSystemContextForTesting(
       NULL, dir_.path());
   ASSERT_EQ(base::File::FILE_OK,
-            AsyncFileTestHelper::CreateFile(
-                file_system_context_, GetFileSystemURL("test")));
+            AsyncFileTestHelper::CreateFile(file_system_context_.get(),
+                                            GetFileSystemURL("test")));
   job_factory_.reset(new BlobURLRequestJobFactory(&content_));
   empty_context_.set_job_factory(job_factory_.get());
 }
@@ -347,8 +347,8 @@ TEST_F(FileWriterDelegateTest, WriteSuccessWithoutQuotaLimitConcurrent) {
   scoped_ptr<net::URLRequest> request2;
 
   ASSERT_EQ(base::File::FILE_OK,
-            AsyncFileTestHelper::CreateFile(
-                file_system_context_, GetFileSystemURL("test2")));
+            AsyncFileTestHelper::CreateFile(file_system_context_.get(),
+                                            GetFileSystemURL("test2")));
 
   const GURL kBlobURL("blob:nolimitconcurrent");
   const GURL kBlobURL2("blob:nolimitconcurrent2");

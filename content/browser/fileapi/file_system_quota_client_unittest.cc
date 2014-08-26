@@ -121,7 +121,7 @@ class FileSystemQuotaClientTest : public testing::Test {
         GURL(origin_url), type, file_path);
 
     base::File::Error result =
-        AsyncFileTestHelper::CreateDirectory(file_system_context_, url);
+        AsyncFileTestHelper::CreateDirectory(file_system_context_.get(), url);
     return result == base::File::FILE_OK;
   }
 
@@ -138,12 +138,12 @@ class FileSystemQuotaClientTest : public testing::Test {
         GURL(origin_url), type, file_path);
 
     base::File::Error result =
-        AsyncFileTestHelper::CreateFile(file_system_context_, url);
+        AsyncFileTestHelper::CreateFile(file_system_context_.get(), url);
     if (result != base::File::FILE_OK)
       return false;
 
     result = AsyncFileTestHelper::TruncateFile(
-        file_system_context_, url, file_size);
+        file_system_context_.get(), url, file_size);
     return result == base::File::FILE_OK;
   }
 

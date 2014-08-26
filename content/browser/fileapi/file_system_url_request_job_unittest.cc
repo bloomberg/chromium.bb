@@ -215,8 +215,9 @@ class FileSystemURLRequestJobTest : public testing::Test {
         GURL("http://remote"),
         storage::kFileSystemTypeTemporary,
         base::FilePath().AppendASCII(dir_name));
-    ASSERT_EQ(base::File::FILE_OK, AsyncFileTestHelper::CreateDirectory(
-        file_system_context_, url));
+    ASSERT_EQ(
+        base::File::FILE_OK,
+        AsyncFileTestHelper::CreateDirectory(file_system_context_.get(), url));
   }
 
   void WriteFile(const base::StringPiece& file_name,
@@ -227,7 +228,7 @@ class FileSystemURLRequestJobTest : public testing::Test {
         base::FilePath().AppendASCII(file_name));
     ASSERT_EQ(base::File::FILE_OK,
               AsyncFileTestHelper::CreateFileWithData(
-                  file_system_context_, url, buf, buf_size));
+                  file_system_context_.get(), url, buf, buf_size));
   }
 
   GURL CreateFileSystemURL(const std::string& path) {

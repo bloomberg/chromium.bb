@@ -111,12 +111,12 @@ class FileSystemFileStreamReaderTest : public testing::Test {
 
     ASSERT_EQ(base::File::FILE_OK,
               content::AsyncFileTestHelper::CreateFileWithData(
-                  file_system_context_, url, buf, buf_size));
+                  file_system_context_.get(), url, buf, buf_size));
 
     base::File::Info file_info;
     ASSERT_EQ(base::File::FILE_OK,
               AsyncFileTestHelper::GetMetadata(
-                  file_system_context_, url, &file_info));
+                  file_system_context_.get(), url, &file_info));
     if (modification_time)
       *modification_time = file_info.last_modified;
   }
