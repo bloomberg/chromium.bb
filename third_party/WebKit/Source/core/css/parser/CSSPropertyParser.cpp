@@ -7934,8 +7934,7 @@ bool CSSPropertyParser::parseSVGValue(CSSPropertyID propId, bool important)
 
     case CSSPropertyBaselineShift:
     // baseline | super | sub | <percentage> | <length> | inherit
-        if (id == CSSValueBaseline || id == CSSValueSub
-            || id >= CSSValueSuper)
+        if (id == CSSValueBaseline || id == CSSValueSub || id == CSSValueSuper)
             validPrimitive = true;
         else
             validPrimitive = validUnit(value, FLength | FPercent, SVGAttributeMode);

@@ -295,17 +295,11 @@ PassRefPtr<SVGLength> SVGLength::fromCSSPrimitiveValue(CSSPrimitiveValue* value)
     case CSSPrimitiveValue::CSS_PT:
         svgType = LengthTypePT;
         break;
-    case CSSPrimitiveValue::CSS_PC:
+    default:
+        ASSERT(value->primitiveType() == CSSPrimitiveValue::CSS_PC);
         svgType = LengthTypePC;
         break;
-    case CSSPrimitiveValue::CSS_UNKNOWN:
-    default:
-        svgType = LengthTypeUnknown;
-        break;
     };
-
-    if (svgType == LengthTypeUnknown)
-        return SVGLength::create();
 
     RefPtr<SVGLength> length = SVGLength::create();
     length->newValueSpecifiedUnits(svgType, value->getFloatValue());

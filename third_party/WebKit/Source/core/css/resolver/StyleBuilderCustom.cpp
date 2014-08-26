@@ -1166,28 +1166,25 @@ void StyleBuilderFunctions::applyInheritCSSPropertyBaselineShift(StyleResolverSt
 
 void StyleBuilderFunctions::applyValueCSSPropertyBaselineShift(StyleResolverState& state, CSSValue* value)
 {
-    if (!value->isPrimitiveValue())
-        return;
-
     SVGRenderStyle& svgStyle = state.style()->accessSVGStyle();
     CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-    if (primitiveValue->getValueID()) {
-        switch (primitiveValue->getValueID()) {
-        case CSSValueBaseline:
-            svgStyle.setBaselineShift(BS_BASELINE);
-            break;
-        case CSSValueSub:
-            svgStyle.setBaselineShift(BS_SUB);
-            break;
-        case CSSValueSuper:
-            svgStyle.setBaselineShift(BS_SUPER);
-            break;
-        default:
-            break;
-        }
-    } else {
+    if (!primitiveValue->isValueID()) {
         svgStyle.setBaselineShift(BS_LENGTH);
         svgStyle.setBaselineShiftValue(SVGLength::fromCSSPrimitiveValue(primitiveValue));
+        return;
+    }
+    switch (primitiveValue->getValueID()) {
+    case CSSValueBaseline:
+        svgStyle.setBaselineShift(BS_BASELINE);
+        return;
+    case CSSValueSub:
+        svgStyle.setBaselineShift(BS_SUB);
+        return;
+    case CSSValueSuper:
+        svgStyle.setBaselineShift(BS_SUPER);
+        return;
+    default:
+        ASSERT_NOT_REACHED();
     }
 }
 
