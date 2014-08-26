@@ -5005,6 +5005,49 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="DOMStorage.clear" units="milliseconds">
+  <owner>michaeln@chromium.org</owner>
+  <summary>
+    Duration to execute localStorage.clear() or sessionStorage.clear().
+  </summary>
+</histogram>
+
+<histogram name="DOMStorage.getItem" units="milliseconds">
+  <owner>michaeln@chromium.org</owner>
+  <summary>
+    Duration to execute localStorage.getItem() or sessionStorage.getItem().
+  </summary>
+</histogram>
+
+<histogram name="DOMStorage.key" units="milliseconds">
+  <owner>michaeln@chromium.org</owner>
+  <summary>
+    Duration to execute localStorage.key() or sessionStorage.key().
+  </summary>
+</histogram>
+
+<histogram name="DOMStorage.length" units="milliseconds">
+  <owner>michaeln@chromium.org</owner>
+  <summary>
+    Duration to execute localStorage.length() or sessionStorage.length().
+  </summary>
+</histogram>
+
+<histogram name="DOMStorage.removeItem" units="milliseconds">
+  <owner>michaeln@chromium.org</owner>
+  <summary>
+    Duration to execute localStorage.removeItem() or
+    sessionStorage.removeItem().
+  </summary>
+</histogram>
+
+<histogram name="DOMStorage.setItem" units="milliseconds">
+  <owner>michaeln@chromium.org</owner>
+  <summary>
+    Duration to execute localStorage.setItem() or sessionStorage.setItem().
+  </summary>
+</histogram>
+
 <histogram name="Download.AcceptRangesBytes.KBytes" units="KB">
   <owner>asanka@chromium.org</owner>
   <summary>The length of downloads for serves that accept byte ranges.</summary>
@@ -10682,6 +10725,42 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <owner>noamsml@chromium.org</owner>
   <owner>vitalybuka@chromium.org</owner>
   <summary>Records events related to local discovery notifications.</summary>
+</histogram>
+
+<histogram name="LocalStorage.BrowserLocalStorageSizeInKB" units="KB">
+  <owner>michaeln@chromium.org</owner>
+  <summary>
+    Size of the HTML5 LocalStorage DB in KB in the browser-side cache.
+  </summary>
+</histogram>
+
+<histogram name="LocalStorage.BrowserTimeToPrimeLocalStorage">
+  <owner>michaeln@chromium.org</owner>
+  <summary>
+    Time to load HTML5 LocalStorage into the browser-side cache.
+  </summary>
+</histogram>
+
+<histogram name="LocalStorage.RendererLocalStorageSizeInKB" units="KB">
+  <owner>michaeln@chromium.org</owner>
+  <summary>
+    Size of the HTML5 LocalStorage DB in KB in the renderer-side cache.
+  </summary>
+</histogram>
+
+<histogram name="LocalStorage.RendererTimeToPrimeLocalStorage">
+  <owner>michaeln@chromium.org</owner>
+  <summary>
+    Time to load HTML5 LocalStorage into the renderer-side cache.
+  </summary>
+</histogram>
+
+<histogram name="LocalStorage.TimeToPrimeLocalStorage">
+  <owner>michaeln@chromium.org</owner>
+  <summary>
+    Time to load HTML5 LocalStorage into the renderer-side cache. Note that the
+    name is not 'Renderer' prefixed for continuity with the old naming.
+  </summary>
 </histogram>
 
 <histogram name="Login.ConsumerNewUsersAllowed" enum="LoginConsumerWhitelist">
@@ -28400,6 +28479,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <histogram name="SessionCrashed.Bubble" enum="SessionCrashedBubbleUserAction">
   <owner>yiyaoliu@chromium.org</owner>
   <summary>How did the user interact with the SessionCrashed Bubble?</summary>
+</histogram>
+
+<histogram name="SessionStorageDatabase.Open" enum="SessionStorageDatabaseOpen">
+  <owner>michaeln@chromium.org</owner>
+  <summary>
+    The result (success, failure, or database recreated) of trying to open the
+    LevelDB database for sessionStorage.
+  </summary>
 </histogram>
 
 <histogram name="Settings.DefaultSearchProvider" enum="OmniboxSearchEngine">
@@ -48912,6 +48999,16 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="3" label="Specified URLs"/>
 </enum>
 
+<enum name="SessionStorageDatabaseOpen" type="int">
+  <int value="0" label="OK">Succesfully opened the database.</int>
+  <int value="1" label="Recovered">
+    Failed to open the existing db, deleted it, and created a new empty db.
+  </int>
+  <int value="2" label="Total Fail">
+    Failed to open the database and also failed to delete and start over.
+  </int>
+</enum>
+
 <enum name="ShelfAlignmentValue" type="int">
   <summary>
     The alignment of the shelf area (see ash/launcher/launcher_view.cc).
@@ -52235,6 +52332,14 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="LockFile" label="LockFile"/>
   <affected-histogram name="LevelDBEnv.IDB.TimeTo"/>
   <affected-histogram name="LevelDBEnv.TimeTo"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="LocalStorageSizes" separator="">
+  <suffix name="Under100KB" label="DB size under 100KB"/>
+  <suffix name="100KBTo1MB" label="DB size between 100KB and 1MB"/>
+  <suffix name="1MBTo5MB" label="DB size between 1MB and 5MB"/>
+  <affected-histogram name="LocalStorage.BrowserTimeToPrimeLocalStorage"/>
+  <affected-histogram name="LocalStorage.RendererTimeToPrimeLocalStorage"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="MediaAudioInputControllerTime" separator=".">
