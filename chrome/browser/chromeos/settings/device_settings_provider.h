@@ -69,26 +69,6 @@ class DeviceSettingsProvider : public CrosSettingsProvider,
   // cache and is serialized once ownership is acquired.
   void SetInPolicy();
 
-  // Decode the various groups of policies.
-  void DecodeLoginPolicies(
-      const enterprise_management::ChromeDeviceSettingsProto& policy,
-      PrefValueMap* new_values_cache) const;
-  void DecodeKioskPolicies(
-      const enterprise_management::ChromeDeviceSettingsProto& policy,
-      PrefValueMap* new_values_cache) const;
-  void DecodeNetworkPolicies(
-      const enterprise_management::ChromeDeviceSettingsProto& policy,
-      PrefValueMap* new_values_cache) const;
-  void DecodeAutoUpdatePolicies(
-      const enterprise_management::ChromeDeviceSettingsProto& policy,
-      PrefValueMap* new_values_cache) const;
-  void DecodeReportingPolicies(
-      const enterprise_management::ChromeDeviceSettingsProto& policy,
-      PrefValueMap* new_values_cache) const;
-  void DecodeGenericPolicies(
-      const enterprise_management::ChromeDeviceSettingsProto& policy,
-      PrefValueMap* new_values_cache) const;
-
   // Parses the policy data and fills in |values_cache_|.
   void UpdateValuesCache(
       const enterprise_management::PolicyData& policy_data,

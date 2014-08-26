@@ -88,6 +88,349 @@ bool HasOldMetricsFile() {
   return GoogleUpdateSettings::GetCollectStatsConsent();
 }
 
+void DecodeLoginPolicies(
+    const em::ChromeDeviceSettingsProto& policy,
+    PrefValueMap* new_values_cache) {
+  // For all our boolean settings the following is applicable:
+  // true is default permissive value and false is safe prohibitive value.
+  // Exceptions:
+  //   kAccountsPrefEphemeralUsersEnabled has a default value of false.
+  //   kAccountsPrefSupervisedUsersEnabled has a default value of false
+  //     for enterprise devices and true for consumer devices.
+  //   kAccountsPrefTransferSAMLCookies has a default value of false.
+  if (policy.has_allow_new_users() &&
+      policy.allow_new_users().has_allow_new_users()) {
+    if (policy.allow_new_users().allow_new_users()) {
+      // New users allowed, user whitelist ignored.
+      new_values_cache->SetBoolean(kAccountsPrefAllowNewUser, true);
+    } else {
+      // New users not allowed, enforce user whitelist if present.
+      new_values_cache->SetBoolean(kAccountsPrefAllowNewUser,
+                                   !policy.has_user_whitelist());
+    }
+  } else {
+    // No configured allow-new-users value, enforce whitelist if non-empty.
+    new_values_cache->SetBoolean(
+        kAccountsPrefAllowNewUser,
+        policy.user_whitelist().user_whitelist_size() == 0);
+  }
+
+  new_values_cache->SetBoolean(
+      kAccountsPrefAllowGuest,
+      !policy.has_guest_mode_enabled() ||
+      !policy.guest_mode_enabled().has_guest_mode_enabled() ||
+      policy.guest_mode_enabled().guest_mode_enabled());
+
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  bool supervised_users_enabled = false;
+  if (connector->IsEnterpriseManaged()) {
+    supervised_users_enabled =
+        policy.has_supervised_users_settings() &&
+        policy.supervised_users_settings().has_supervised_users_enabled() &&
+        policy.supervised_users_settings().supervised_users_enabled();
+  } else {
+    supervised_users_enabled =
+        !policy.has_supervised_users_settings() ||
+        !policy.supervised_users_settings().has_supervised_users_enabled() ||
+        policy.supervised_users_settings().supervised_users_enabled();
+  }
+  new_values_cache->SetBoolean(
+      kAccountsPrefSupervisedUsersEnabled, supervised_users_enabled);
+
+  new_values_cache->SetBoolean(
+      kAccountsPrefShowUserNamesOnSignIn,
+      !policy.has_show_user_names() ||
+      !policy.show_user_names().has_show_user_names() ||
+      policy.show_user_names().show_user_names());
+
+  new_values_cache->SetBoolean(
+      kAccountsPrefEphemeralUsersEnabled,
+      policy.has_ephemeral_users_enabled() &&
+      policy.ephemeral_users_enabled().has_ephemeral_users_enabled() &&
+      policy.ephemeral_users_enabled().ephemeral_users_enabled());
+
+  base::ListValue* list = new base::ListValue();
+  const em::UserWhitelistProto& whitelist_proto = policy.user_whitelist();
+  const RepeatedPtrField<std::string>& whitelist =
+      whitelist_proto.user_whitelist();
+  for (RepeatedPtrField<std::string>::const_iterator it = whitelist.begin();
+       it != whitelist.end(); ++it) {
+    list->Append(new base::StringValue(*it));
+  }
+  new_values_cache->SetValue(kAccountsPrefUsers, list);
+
+  scoped_ptr<base::ListValue> account_list(new base::ListValue());
+  const em::DeviceLocalAccountsProto device_local_accounts_proto =
+      policy.device_local_accounts();
+  const RepeatedPtrField<em::DeviceLocalAccountInfoProto>& accounts =
+      device_local_accounts_proto.account();
+  RepeatedPtrField<em::DeviceLocalAccountInfoProto>::const_iterator entry;
+  for (entry = accounts.begin(); entry != accounts.end(); ++entry) {
+    scoped_ptr<base::DictionaryValue> entry_dict(new base::DictionaryValue());
+    if (entry->has_type()) {
+      if (entry->has_account_id()) {
+        entry_dict->SetStringWithoutPathExpansion(
+            kAccountsPrefDeviceLocalAccountsKeyId, entry->account_id());
+      }
+      entry_dict->SetIntegerWithoutPathExpansion(
+          kAccountsPrefDeviceLocalAccountsKeyType, entry->type());
+      if (entry->kiosk_app().has_app_id()) {
+        entry_dict->SetStringWithoutPathExpansion(
+            kAccountsPrefDeviceLocalAccountsKeyKioskAppId,
+            entry->kiosk_app().app_id());
+      }
+    } else if (entry->has_deprecated_public_session_id()) {
+      // Deprecated public session specification.
+      entry_dict->SetStringWithoutPathExpansion(
+          kAccountsPrefDeviceLocalAccountsKeyId,
+          entry->deprecated_public_session_id());
+      entry_dict->SetIntegerWithoutPathExpansion(
+          kAccountsPrefDeviceLocalAccountsKeyType,
+          policy::DeviceLocalAccount::TYPE_PUBLIC_SESSION);
+    }
+    account_list->Append(entry_dict.release());
+  }
+  new_values_cache->SetValue(kAccountsPrefDeviceLocalAccounts,
+                             account_list.release());
+
+  if (policy.has_device_local_accounts()) {
+    if (policy.device_local_accounts().has_auto_login_id()) {
+      new_values_cache->SetString(
+          kAccountsPrefDeviceLocalAccountAutoLoginId,
+          policy.device_local_accounts().auto_login_id());
+    }
+    if (policy.device_local_accounts().has_auto_login_delay()) {
+      new_values_cache->SetInteger(
+          kAccountsPrefDeviceLocalAccountAutoLoginDelay,
+          policy.device_local_accounts().auto_login_delay());
+    }
+  }
+
+  new_values_cache->SetBoolean(
+      kAccountsPrefDeviceLocalAccountAutoLoginBailoutEnabled,
+      policy.device_local_accounts().enable_auto_login_bailout());
+  new_values_cache->SetBoolean(
+      kAccountsPrefDeviceLocalAccountPromptForNetworkWhenOffline,
+      policy.device_local_accounts().prompt_for_network_when_offline());
+
+  if (policy.has_start_up_flags()) {
+    base::ListValue* list = new base::ListValue();
+    const em::StartUpFlagsProto& flags_proto = policy.start_up_flags();
+    const RepeatedPtrField<std::string>& flags = flags_proto.flags();
+    for (RepeatedPtrField<std::string>::const_iterator it = flags.begin();
+         it != flags.end(); ++it) {
+      list->Append(new base::StringValue(*it));
+    }
+    new_values_cache->SetValue(kStartUpFlags, list);
+  }
+
+  if (policy.has_saml_settings()) {
+    new_values_cache->SetBoolean(
+        kAccountsPrefTransferSAMLCookies,
+        policy.saml_settings().transfer_saml_cookies());
+  }
+}
+
+void DecodeKioskPolicies(
+    const em::ChromeDeviceSettingsProto& policy,
+    PrefValueMap* new_values_cache) {
+  if (policy.has_forced_logout_timeouts()) {
+    if (policy.forced_logout_timeouts().has_idle_logout_timeout()) {
+      new_values_cache->SetInteger(
+          kIdleLogoutTimeout,
+          policy.forced_logout_timeouts().idle_logout_timeout());
+    }
+
+    if (policy.forced_logout_timeouts().has_idle_logout_warning_duration()) {
+      new_values_cache->SetInteger(
+          kIdleLogoutWarningDuration,
+          policy.forced_logout_timeouts().idle_logout_warning_duration());
+    }
+  }
+
+  if (policy.has_login_screen_saver()) {
+    if (policy.login_screen_saver().has_screen_saver_timeout()) {
+      new_values_cache->SetInteger(
+          kScreenSaverTimeout,
+          policy.login_screen_saver().screen_saver_timeout());
+    }
+
+    if (policy.login_screen_saver().has_screen_saver_extension_id()) {
+      new_values_cache->SetString(
+          kScreenSaverExtensionId,
+          policy.login_screen_saver().screen_saver_extension_id());
+    }
+  }
+
+  if (policy.has_app_pack()) {
+    typedef RepeatedPtrField<em::AppPackEntryProto> proto_type;
+    base::ListValue* list = new base::ListValue;
+    const proto_type& app_pack = policy.app_pack().app_pack();
+    for (proto_type::const_iterator it = app_pack.begin();
+         it != app_pack.end(); ++it) {
+      base::DictionaryValue* entry = new base::DictionaryValue;
+      if (it->has_extension_id()) {
+        entry->SetStringWithoutPathExpansion(kAppPackKeyExtensionId,
+                                             it->extension_id());
+      }
+      if (it->has_update_url()) {
+        entry->SetStringWithoutPathExpansion(kAppPackKeyUpdateUrl,
+                                             it->update_url());
+      }
+      list->Append(entry);
+    }
+    new_values_cache->SetValue(kAppPack, list);
+  }
+
+  if (policy.has_start_up_urls()) {
+    base::ListValue* list = new base::ListValue();
+    const em::StartUpUrlsProto& urls_proto = policy.start_up_urls();
+    const RepeatedPtrField<std::string>& urls = urls_proto.start_up_urls();
+    for (RepeatedPtrField<std::string>::const_iterator it = urls.begin();
+         it != urls.end(); ++it) {
+      list->Append(new base::StringValue(*it));
+    }
+    new_values_cache->SetValue(kStartUpUrls, list);
+  }
+}
+
+void DecodeNetworkPolicies(
+    const em::ChromeDeviceSettingsProto& policy,
+    PrefValueMap* new_values_cache) {
+  // kSignedDataRoamingEnabled has a default value of false.
+  new_values_cache->SetBoolean(
+      kSignedDataRoamingEnabled,
+      policy.has_data_roaming_enabled() &&
+      policy.data_roaming_enabled().has_data_roaming_enabled() &&
+      policy.data_roaming_enabled().data_roaming_enabled());
+}
+
+void DecodeAutoUpdatePolicies(
+    const em::ChromeDeviceSettingsProto& policy,
+    PrefValueMap* new_values_cache) {
+  if (policy.has_auto_update_settings()) {
+    const em::AutoUpdateSettingsProto& au_settings_proto =
+        policy.auto_update_settings();
+    if (au_settings_proto.has_update_disabled()) {
+      new_values_cache->SetBoolean(kUpdateDisabled,
+                                   au_settings_proto.update_disabled());
+    }
+    const RepeatedField<int>& allowed_connection_types =
+        au_settings_proto.allowed_connection_types();
+    base::ListValue* list = new base::ListValue();
+    for (RepeatedField<int>::const_iterator i(allowed_connection_types.begin());
+         i != allowed_connection_types.end(); ++i) {
+      list->Append(new base::FundamentalValue(*i));
+    }
+    new_values_cache->SetValue(kAllowedConnectionTypesForUpdate, list);
+  }
+}
+
+void DecodeReportingPolicies(
+    const em::ChromeDeviceSettingsProto& policy,
+    PrefValueMap* new_values_cache) {
+  if (policy.has_device_reporting()) {
+    const em::DeviceReportingProto& reporting_policy =
+        policy.device_reporting();
+    if (reporting_policy.has_report_version_info()) {
+      new_values_cache->SetBoolean(
+          kReportDeviceVersionInfo,
+          reporting_policy.report_version_info());
+    }
+    if (reporting_policy.has_report_activity_times()) {
+      new_values_cache->SetBoolean(
+          kReportDeviceActivityTimes,
+          reporting_policy.report_activity_times());
+    }
+    if (reporting_policy.has_report_boot_mode()) {
+      new_values_cache->SetBoolean(
+          kReportDeviceBootMode,
+          reporting_policy.report_boot_mode());
+    }
+    if (reporting_policy.has_report_network_interfaces()) {
+      new_values_cache->SetBoolean(
+          kReportDeviceNetworkInterfaces,
+          reporting_policy.report_network_interfaces());
+    }
+    if (reporting_policy.has_report_users()) {
+      new_values_cache->SetBoolean(
+          kReportDeviceUsers,
+          reporting_policy.report_users());
+    }
+  }
+}
+
+void DecodeGenericPolicies(
+    const em::ChromeDeviceSettingsProto& policy,
+    PrefValueMap* new_values_cache) {
+  if (policy.has_metrics_enabled()) {
+    new_values_cache->SetBoolean(kStatsReportingPref,
+                                 policy.metrics_enabled().metrics_enabled());
+  } else {
+    new_values_cache->SetBoolean(kStatsReportingPref, HasOldMetricsFile());
+  }
+
+  if (!policy.has_release_channel() ||
+      !policy.release_channel().has_release_channel()) {
+    // Default to an invalid channel (will be ignored).
+    new_values_cache->SetString(kReleaseChannel, "");
+  } else {
+    new_values_cache->SetString(kReleaseChannel,
+                                policy.release_channel().release_channel());
+  }
+
+  new_values_cache->SetBoolean(
+      kReleaseChannelDelegated,
+      policy.has_release_channel() &&
+      policy.release_channel().has_release_channel_delegated() &&
+      policy.release_channel().release_channel_delegated());
+
+  if (policy.has_system_timezone()) {
+    if (policy.system_timezone().has_timezone()) {
+      new_values_cache->SetString(
+          kSystemTimezonePolicy,
+          policy.system_timezone().timezone());
+    }
+  }
+
+  if (policy.has_use_24hour_clock()) {
+    if (policy.use_24hour_clock().has_use_24hour_clock()) {
+      new_values_cache->SetBoolean(
+          kSystemUse24HourClock, policy.use_24hour_clock().use_24hour_clock());
+    }
+  }
+
+  if (policy.has_allow_redeem_offers()) {
+    new_values_cache->SetBoolean(
+        kAllowRedeemChromeOsRegistrationOffers,
+        policy.allow_redeem_offers().allow_redeem_offers());
+  } else {
+    new_values_cache->SetBoolean(
+        kAllowRedeemChromeOsRegistrationOffers,
+        true);
+  }
+
+  if (policy.has_variations_parameter()) {
+    new_values_cache->SetString(
+        kVariationsRestrictParameter,
+        policy.variations_parameter().parameter());
+  }
+
+  new_values_cache->SetBoolean(
+      kDeviceAttestationEnabled,
+      policy.attestation_settings().attestation_enabled());
+
+  if (policy.has_attestation_settings() &&
+      policy.attestation_settings().has_content_protection_enabled()) {
+    new_values_cache->SetBoolean(
+        kAttestationForContentProtectionEnabled,
+        policy.attestation_settings().content_protection_enabled());
+  } else {
+    new_values_cache->SetBoolean(kAttestationForContentProtectionEnabled, true);
+  }
+}
+
 }  // namespace
 
 DeviceSettingsProvider::DeviceSettingsProvider(
@@ -438,349 +781,6 @@ void DeviceSettingsProvider::SetInPolicy() {
     // pending operations immediately.
     if (!pending_changes_.empty())
       SetInPolicy();
-  }
-}
-
-void DeviceSettingsProvider::DecodeLoginPolicies(
-    const em::ChromeDeviceSettingsProto& policy,
-    PrefValueMap* new_values_cache) const {
-  // For all our boolean settings the following is applicable:
-  // true is default permissive value and false is safe prohibitive value.
-  // Exceptions:
-  //   kAccountsPrefEphemeralUsersEnabled has a default value of false.
-  //   kAccountsPrefSupervisedUsersEnabled has a default value of false
-  //     for enterprise devices and true for consumer devices.
-  //   kAccountsPrefTransferSAMLCookies has a default value of false.
-  if (policy.has_allow_new_users() &&
-      policy.allow_new_users().has_allow_new_users()) {
-    if (policy.allow_new_users().allow_new_users()) {
-      // New users allowed, user whitelist ignored.
-      new_values_cache->SetBoolean(kAccountsPrefAllowNewUser, true);
-    } else {
-      // New users not allowed, enforce user whitelist if present.
-      new_values_cache->SetBoolean(kAccountsPrefAllowNewUser,
-                                   !policy.has_user_whitelist());
-    }
-  } else {
-    // No configured allow-new-users value, enforce whitelist if non-empty.
-    new_values_cache->SetBoolean(
-        kAccountsPrefAllowNewUser,
-        policy.user_whitelist().user_whitelist_size() == 0);
-  }
-
-  new_values_cache->SetBoolean(
-      kAccountsPrefAllowGuest,
-      !policy.has_guest_mode_enabled() ||
-      !policy.guest_mode_enabled().has_guest_mode_enabled() ||
-      policy.guest_mode_enabled().guest_mode_enabled());
-
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  bool supervised_users_enabled = false;
-  if (connector->IsEnterpriseManaged()) {
-    supervised_users_enabled =
-        policy.has_supervised_users_settings() &&
-        policy.supervised_users_settings().has_supervised_users_enabled() &&
-        policy.supervised_users_settings().supervised_users_enabled();
-  } else {
-    supervised_users_enabled =
-        !policy.has_supervised_users_settings() ||
-        !policy.supervised_users_settings().has_supervised_users_enabled() ||
-        policy.supervised_users_settings().supervised_users_enabled();
-  }
-  new_values_cache->SetBoolean(
-      kAccountsPrefSupervisedUsersEnabled, supervised_users_enabled);
-
-  new_values_cache->SetBoolean(
-      kAccountsPrefShowUserNamesOnSignIn,
-      !policy.has_show_user_names() ||
-      !policy.show_user_names().has_show_user_names() ||
-      policy.show_user_names().show_user_names());
-
-  new_values_cache->SetBoolean(
-      kAccountsPrefEphemeralUsersEnabled,
-      policy.has_ephemeral_users_enabled() &&
-      policy.ephemeral_users_enabled().has_ephemeral_users_enabled() &&
-      policy.ephemeral_users_enabled().ephemeral_users_enabled());
-
-  base::ListValue* list = new base::ListValue();
-  const em::UserWhitelistProto& whitelist_proto = policy.user_whitelist();
-  const RepeatedPtrField<std::string>& whitelist =
-      whitelist_proto.user_whitelist();
-  for (RepeatedPtrField<std::string>::const_iterator it = whitelist.begin();
-       it != whitelist.end(); ++it) {
-    list->Append(new base::StringValue(*it));
-  }
-  new_values_cache->SetValue(kAccountsPrefUsers, list);
-
-  scoped_ptr<base::ListValue> account_list(new base::ListValue());
-  const em::DeviceLocalAccountsProto device_local_accounts_proto =
-      policy.device_local_accounts();
-  const RepeatedPtrField<em::DeviceLocalAccountInfoProto>& accounts =
-      device_local_accounts_proto.account();
-  RepeatedPtrField<em::DeviceLocalAccountInfoProto>::const_iterator entry;
-  for (entry = accounts.begin(); entry != accounts.end(); ++entry) {
-    scoped_ptr<base::DictionaryValue> entry_dict(new base::DictionaryValue());
-    if (entry->has_type()) {
-      if (entry->has_account_id()) {
-        entry_dict->SetStringWithoutPathExpansion(
-            kAccountsPrefDeviceLocalAccountsKeyId, entry->account_id());
-      }
-      entry_dict->SetIntegerWithoutPathExpansion(
-          kAccountsPrefDeviceLocalAccountsKeyType, entry->type());
-      if (entry->kiosk_app().has_app_id()) {
-        entry_dict->SetStringWithoutPathExpansion(
-            kAccountsPrefDeviceLocalAccountsKeyKioskAppId,
-            entry->kiosk_app().app_id());
-      }
-    } else if (entry->has_deprecated_public_session_id()) {
-      // Deprecated public session specification.
-      entry_dict->SetStringWithoutPathExpansion(
-          kAccountsPrefDeviceLocalAccountsKeyId,
-          entry->deprecated_public_session_id());
-      entry_dict->SetIntegerWithoutPathExpansion(
-          kAccountsPrefDeviceLocalAccountsKeyType,
-          policy::DeviceLocalAccount::TYPE_PUBLIC_SESSION);
-    }
-    account_list->Append(entry_dict.release());
-  }
-  new_values_cache->SetValue(kAccountsPrefDeviceLocalAccounts,
-                             account_list.release());
-
-  if (policy.has_device_local_accounts()) {
-    if (policy.device_local_accounts().has_auto_login_id()) {
-      new_values_cache->SetString(
-          kAccountsPrefDeviceLocalAccountAutoLoginId,
-          policy.device_local_accounts().auto_login_id());
-    }
-    if (policy.device_local_accounts().has_auto_login_delay()) {
-      new_values_cache->SetInteger(
-          kAccountsPrefDeviceLocalAccountAutoLoginDelay,
-          policy.device_local_accounts().auto_login_delay());
-    }
-  }
-
-  new_values_cache->SetBoolean(
-      kAccountsPrefDeviceLocalAccountAutoLoginBailoutEnabled,
-      policy.device_local_accounts().enable_auto_login_bailout());
-  new_values_cache->SetBoolean(
-      kAccountsPrefDeviceLocalAccountPromptForNetworkWhenOffline,
-      policy.device_local_accounts().prompt_for_network_when_offline());
-
-  if (policy.has_start_up_flags()) {
-    base::ListValue* list = new base::ListValue();
-    const em::StartUpFlagsProto& flags_proto = policy.start_up_flags();
-    const RepeatedPtrField<std::string>& flags = flags_proto.flags();
-    for (RepeatedPtrField<std::string>::const_iterator it = flags.begin();
-         it != flags.end(); ++it) {
-      list->Append(new base::StringValue(*it));
-    }
-    new_values_cache->SetValue(kStartUpFlags, list);
-  }
-
-  if (policy.has_saml_settings()) {
-    new_values_cache->SetBoolean(
-        kAccountsPrefTransferSAMLCookies,
-        policy.saml_settings().transfer_saml_cookies());
-  }
-}
-
-void DeviceSettingsProvider::DecodeKioskPolicies(
-    const em::ChromeDeviceSettingsProto& policy,
-    PrefValueMap* new_values_cache) const {
-  if (policy.has_forced_logout_timeouts()) {
-    if (policy.forced_logout_timeouts().has_idle_logout_timeout()) {
-      new_values_cache->SetInteger(
-          kIdleLogoutTimeout,
-          policy.forced_logout_timeouts().idle_logout_timeout());
-    }
-
-    if (policy.forced_logout_timeouts().has_idle_logout_warning_duration()) {
-      new_values_cache->SetInteger(
-          kIdleLogoutWarningDuration,
-          policy.forced_logout_timeouts().idle_logout_warning_duration());
-    }
-  }
-
-  if (policy.has_login_screen_saver()) {
-    if (policy.login_screen_saver().has_screen_saver_timeout()) {
-      new_values_cache->SetInteger(
-          kScreenSaverTimeout,
-          policy.login_screen_saver().screen_saver_timeout());
-    }
-
-    if (policy.login_screen_saver().has_screen_saver_extension_id()) {
-      new_values_cache->SetString(
-          kScreenSaverExtensionId,
-          policy.login_screen_saver().screen_saver_extension_id());
-    }
-  }
-
-  if (policy.has_app_pack()) {
-    typedef RepeatedPtrField<em::AppPackEntryProto> proto_type;
-    base::ListValue* list = new base::ListValue;
-    const proto_type& app_pack = policy.app_pack().app_pack();
-    for (proto_type::const_iterator it = app_pack.begin();
-         it != app_pack.end(); ++it) {
-      base::DictionaryValue* entry = new base::DictionaryValue;
-      if (it->has_extension_id()) {
-        entry->SetStringWithoutPathExpansion(kAppPackKeyExtensionId,
-                                             it->extension_id());
-      }
-      if (it->has_update_url()) {
-        entry->SetStringWithoutPathExpansion(kAppPackKeyUpdateUrl,
-                                             it->update_url());
-      }
-      list->Append(entry);
-    }
-    new_values_cache->SetValue(kAppPack, list);
-  }
-
-  if (policy.has_start_up_urls()) {
-    base::ListValue* list = new base::ListValue();
-    const em::StartUpUrlsProto& urls_proto = policy.start_up_urls();
-    const RepeatedPtrField<std::string>& urls = urls_proto.start_up_urls();
-    for (RepeatedPtrField<std::string>::const_iterator it = urls.begin();
-         it != urls.end(); ++it) {
-      list->Append(new base::StringValue(*it));
-    }
-    new_values_cache->SetValue(kStartUpUrls, list);
-  }
-}
-
-void DeviceSettingsProvider::DecodeNetworkPolicies(
-    const em::ChromeDeviceSettingsProto& policy,
-    PrefValueMap* new_values_cache) const {
-  // kSignedDataRoamingEnabled has a default value of false.
-  new_values_cache->SetBoolean(
-      kSignedDataRoamingEnabled,
-      policy.has_data_roaming_enabled() &&
-      policy.data_roaming_enabled().has_data_roaming_enabled() &&
-      policy.data_roaming_enabled().data_roaming_enabled());
-}
-
-void DeviceSettingsProvider::DecodeAutoUpdatePolicies(
-    const em::ChromeDeviceSettingsProto& policy,
-    PrefValueMap* new_values_cache) const {
-  if (policy.has_auto_update_settings()) {
-    const em::AutoUpdateSettingsProto& au_settings_proto =
-        policy.auto_update_settings();
-    if (au_settings_proto.has_update_disabled()) {
-      new_values_cache->SetBoolean(kUpdateDisabled,
-                                   au_settings_proto.update_disabled());
-    }
-    const RepeatedField<int>& allowed_connection_types =
-        au_settings_proto.allowed_connection_types();
-    base::ListValue* list = new base::ListValue();
-    for (RepeatedField<int>::const_iterator i(allowed_connection_types.begin());
-         i != allowed_connection_types.end(); ++i) {
-      list->Append(new base::FundamentalValue(*i));
-    }
-    new_values_cache->SetValue(kAllowedConnectionTypesForUpdate, list);
-  }
-}
-
-void DeviceSettingsProvider::DecodeReportingPolicies(
-    const em::ChromeDeviceSettingsProto& policy,
-    PrefValueMap* new_values_cache) const {
-  if (policy.has_device_reporting()) {
-    const em::DeviceReportingProto& reporting_policy =
-        policy.device_reporting();
-    if (reporting_policy.has_report_version_info()) {
-      new_values_cache->SetBoolean(
-          kReportDeviceVersionInfo,
-          reporting_policy.report_version_info());
-    }
-    if (reporting_policy.has_report_activity_times()) {
-      new_values_cache->SetBoolean(
-          kReportDeviceActivityTimes,
-          reporting_policy.report_activity_times());
-    }
-    if (reporting_policy.has_report_boot_mode()) {
-      new_values_cache->SetBoolean(
-          kReportDeviceBootMode,
-          reporting_policy.report_boot_mode());
-    }
-    if (reporting_policy.has_report_network_interfaces()) {
-      new_values_cache->SetBoolean(
-          kReportDeviceNetworkInterfaces,
-          reporting_policy.report_network_interfaces());
-    }
-    if (reporting_policy.has_report_users()) {
-      new_values_cache->SetBoolean(
-          kReportDeviceUsers,
-          reporting_policy.report_users());
-    }
-  }
-}
-
-void DeviceSettingsProvider::DecodeGenericPolicies(
-    const em::ChromeDeviceSettingsProto& policy,
-    PrefValueMap* new_values_cache) const {
-  if (policy.has_metrics_enabled()) {
-    new_values_cache->SetBoolean(kStatsReportingPref,
-                                 policy.metrics_enabled().metrics_enabled());
-  } else {
-    new_values_cache->SetBoolean(kStatsReportingPref, HasOldMetricsFile());
-  }
-
-  if (!policy.has_release_channel() ||
-      !policy.release_channel().has_release_channel()) {
-    // Default to an invalid channel (will be ignored).
-    new_values_cache->SetString(kReleaseChannel, "");
-  } else {
-    new_values_cache->SetString(kReleaseChannel,
-                                policy.release_channel().release_channel());
-  }
-
-  new_values_cache->SetBoolean(
-      kReleaseChannelDelegated,
-      policy.has_release_channel() &&
-      policy.release_channel().has_release_channel_delegated() &&
-      policy.release_channel().release_channel_delegated());
-
-  if (policy.has_system_timezone()) {
-    if (policy.system_timezone().has_timezone()) {
-      new_values_cache->SetString(
-          kSystemTimezonePolicy,
-          policy.system_timezone().timezone());
-    }
-  }
-
-  if (policy.has_use_24hour_clock()) {
-    if (policy.use_24hour_clock().has_use_24hour_clock()) {
-      new_values_cache->SetBoolean(
-          kSystemUse24HourClock, policy.use_24hour_clock().use_24hour_clock());
-    }
-  }
-
-  if (policy.has_allow_redeem_offers()) {
-    new_values_cache->SetBoolean(
-        kAllowRedeemChromeOsRegistrationOffers,
-        policy.allow_redeem_offers().allow_redeem_offers());
-  } else {
-    new_values_cache->SetBoolean(
-        kAllowRedeemChromeOsRegistrationOffers,
-        true);
-  }
-
-  if (policy.has_variations_parameter()) {
-    new_values_cache->SetString(
-        kVariationsRestrictParameter,
-        policy.variations_parameter().parameter());
-  }
-
-  new_values_cache->SetBoolean(
-      kDeviceAttestationEnabled,
-      policy.attestation_settings().attestation_enabled());
-
-  if (policy.has_attestation_settings() &&
-      policy.attestation_settings().has_content_protection_enabled()) {
-    new_values_cache->SetBoolean(
-        kAttestationForContentProtectionEnabled,
-        policy.attestation_settings().content_protection_enabled());
-  } else {
-    new_values_cache->SetBoolean(kAttestationForContentProtectionEnabled, true);
   }
 }
 
