@@ -117,7 +117,7 @@ class TestGetosWithTempdir(TestCaseExtended):
 
   def testGetSDKVersion(self):
     """correctly parses README to find SDK version."""
-    expected_version = (16, 196)
+    expected_version = (16, '196')
     with open(os.path.join(self.tempdir, 'README'), 'w') as out:
       out.write('Version: %s\n' % expected_version[0])
       out.write('Chrome Revision: %s\n' % expected_version[1])
