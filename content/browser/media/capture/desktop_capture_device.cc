@@ -15,6 +15,7 @@
 #include "content/browser/media/capture/desktop_capture_device_uma_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/desktop_media_id.h"
+#include "content/public/browser/power_save_blocker.h"
 #include "media/base/video_util.h"
 #include "third_party/libyuv/include/libyuv/scale_argb.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_and_cursor_composer.h"
@@ -124,6 +125,10 @@ class DesktopCaptureDevice::Core : public webrtc::DesktopCapturer::Callback {
 
   scoped_ptr<webrtc::BasicDesktopFrame> black_frame_;
 
+  // TODO(jiayl): Remove power_save_blocker_ when there is an API to keep the
+  // screen from sleeping for the drive-by web.
+  scoped_ptr<PowerSaveBlocker> power_save_blocker_;
+
   DISALLOW_COPY_AND_ASSIGN(Core);
 };
 
@@ -163,6 +168,10 @@ void DesktopCaptureDevice::Core::AllocateAndStart(
 
   // This capturer always outputs ARGB, non-interlaced.
   capture_format_.pixel_format = media::PIXEL_FORMAT_ARGB;
+
+  power_save_blocker_.reset(PowerSaveBlocker::Create(
+      PowerSaveBlocker::kPowerSaveBlockPreventDisplaySleep,
+      "DesktopCaptureDevice is running").release());
 
   desktop_capturer_->Start(this);
 

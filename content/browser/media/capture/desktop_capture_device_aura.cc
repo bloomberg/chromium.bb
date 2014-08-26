@@ -14,6 +14,7 @@
 #include "content/browser/media/capture/desktop_capture_device_uma_types.h"
 #include "content/common/gpu/client/gl_helper.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/power_save_blocker.h"
 #include "media/base/video_util.h"
 #include "media/video/capture/video_capture_types.h"
 #include "skia/ext/image_operations.h"
@@ -174,6 +175,10 @@ class DesktopVideoCaptureMachine
   gfx::Point cursor_hot_point_;
   SkBitmap scaled_cursor_bitmap_;
 
+  // TODO(jiayl): Remove power_save_blocker_ when there is an API to keep the
+  // screen from sleeping for the drive-by web.
+  scoped_ptr<PowerSaveBlocker> power_save_blocker_;
+
   DISALLOW_COPY_AND_ASSIGN(DesktopVideoCaptureMachine);
 };
 
@@ -213,6 +218,10 @@ bool DesktopVideoCaptureMachine::Start(
   if (desktop_window_->GetHost())
     desktop_window_->GetHost()->compositor()->AddObserver(this);
 
+  power_save_blocker_.reset(PowerSaveBlocker::Create(
+      PowerSaveBlocker::kPowerSaveBlockPreventDisplaySleep,
+      "DesktopCaptureDevice is running").release());
+
   // Starts timer.
   timer_.Start(FROM_HERE, oracle_proxy_->min_capture_period(),
                base::Bind(&DesktopVideoCaptureMachine::Capture, AsWeakPtr(),
@@ -224,6 +233,7 @@ bool DesktopVideoCaptureMachine::Start(
 
 void DesktopVideoCaptureMachine::Stop(const base::Closure& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  power_save_blocker_.reset();
 
   // Stop observing compositor and window events.
   if (desktop_window_) {
