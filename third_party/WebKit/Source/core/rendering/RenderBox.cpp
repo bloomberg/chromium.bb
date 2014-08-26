@@ -1968,12 +1968,11 @@ LayoutRect RenderBox::clippedOverflowRectForPaintInvalidation(const RenderLayerM
     }
 
     LayoutRect r = visualOverflowRect();
-    ViewportConstrainedPosition viewportConstraint = style()->position() == FixedPosition ? IsFixedPosition : IsNotFixedPosition;
-    mapRectToPaintInvalidationBacking(paintInvalidationContainer, r, viewportConstraint, paintInvalidationState);
+    mapRectToPaintInvalidationBacking(paintInvalidationContainer, r, paintInvalidationState);
     return r;
 }
 
-void RenderBox::mapRectToPaintInvalidationBacking(const RenderLayerModelObject* paintInvalidationContainer, LayoutRect& rect, ViewportConstrainedPosition, const PaintInvalidationState* paintInvalidationState) const
+void RenderBox::mapRectToPaintInvalidationBacking(const RenderLayerModelObject* paintInvalidationContainer, LayoutRect& rect, const PaintInvalidationState* paintInvalidationState) const
 {
     // The rect we compute at each step is shifted by our x/y offset in the parent container's coordinate space.
     // Only when we cross a writing mode boundary will we have to possibly flipForWritingMode (to convert into a more appropriate
@@ -2066,8 +2065,10 @@ void RenderBox::mapRectToPaintInvalidationBacking(const RenderLayerModelObject* 
         return;
     }
 
-    ViewportConstrainedPosition viewportConstraint = position == FixedPosition ? IsFixedPosition : IsNotFixedPosition;
-    o->mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, viewportConstraint, paintInvalidationState);
+    if (o->isRenderView())
+        toRenderView(o)->mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, position == FixedPosition ? RenderView::IsFixedPosition : RenderView::IsNotFixedPosition, paintInvalidationState);
+    else
+        o->mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, paintInvalidationState);
 }
 
 void RenderBox::inflatePaintInvalidationRectForReflectionAndFilter(LayoutRect& paintInvalidationRect) const

@@ -437,7 +437,7 @@ void RenderView::invalidateTreeIfNeeded(const PaintInvalidationState& paintInval
     LayoutRect dirtyRect = viewRect();
     if (doingFullPaintInvalidation() && !dirtyRect.isEmpty()) {
         const RenderLayerModelObject* paintInvalidationContainer = &paintInvalidationState.paintInvalidationContainer();
-        mapRectToPaintInvalidationBacking(paintInvalidationContainer, dirtyRect, IsNotFixedPosition, &paintInvalidationState);
+        mapRectToPaintInvalidationBacking(paintInvalidationContainer, dirtyRect, &paintInvalidationState);
         invalidatePaintUsingContainer(paintInvalidationContainer, dirtyRect, InvalidationFull);
     }
     RenderBlock::invalidateTreeIfNeeded(paintInvalidationState);
@@ -470,6 +470,11 @@ void RenderView::invalidatePaintForViewAndCompositedLayers()
         compositor()->fullyInvalidatePaint();
 }
 
+void RenderView::mapRectToPaintInvalidationBacking(const RenderLayerModelObject* paintInvalidationContainer, LayoutRect& rect, const PaintInvalidationState* invalidationState) const
+{
+    mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, IsNotFixedPosition, invalidationState);
+}
+
 void RenderView::mapRectToPaintInvalidationBacking(const RenderLayerModelObject* paintInvalidationContainer, LayoutRect& rect, ViewportConstrainedPosition viewportConstraint, const PaintInvalidationState* state) const
 {
     if (document().printing())
@@ -484,7 +489,6 @@ void RenderView::mapRectToPaintInvalidationBacking(const RenderLayerModelObject*
             rect.setX(viewWidth() - rect.maxX());
     }
 
-    ASSERT(viewportConstraint != ViewportConstraintDoesNotMatter);
     if (viewportConstraint == IsFixedPosition && m_frameView) {
         rect.move(m_frameView->scrollOffsetForFixedPosition());
         // If we have a pending scroll, invalidate the previous scroll position.
@@ -515,7 +519,7 @@ void RenderView::mapRectToPaintInvalidationBacking(const RenderLayerModelObject*
 
         // Adjust for frame border.
         rect.moveBy(obj->contentBoxRect().location());
-        obj->mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, IsNotFixedPosition, 0);
+        obj->mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, 0);
     }
 }
 

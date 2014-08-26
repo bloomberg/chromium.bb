@@ -126,12 +126,6 @@ enum InvalidationReason {
     InvalidationPaintRectangle
 };
 
-enum ViewportConstrainedPosition {
-    ViewportConstraintDoesNotMatter,
-    IsNotFixedPosition,
-    IsFixedPosition,
-};
-
 const int caretWidth = 1;
 
 struct AnnotatedRegionValue {
@@ -899,7 +893,7 @@ public:
     // that rect in the coordinate space of paintInvalidationContainer.
     // The ViewportConstrainedPosition parameter is only meaningful when this object is RenderView.
     // For other objects, the caller can just pass |ViewportConstraintDoesNotMatter|.
-    virtual void mapRectToPaintInvalidationBacking(const RenderLayerModelObject* paintInvalidationContainer, LayoutRect&, ViewportConstrainedPosition, const PaintInvalidationState*) const;
+    virtual void mapRectToPaintInvalidationBacking(const RenderLayerModelObject* paintInvalidationContainer, LayoutRect&, const PaintInvalidationState*) const;
     virtual void computeFloatRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer, FloatRect& paintInvalidationRect, const PaintInvalidationState*) const;
 
     // Return the offset to the column in which the specified point (in flow-thread coordinates)

@@ -1777,7 +1777,7 @@ LayoutRect RenderObject::clippedOverflowRectForPaintInvalidation(const RenderLay
     return LayoutRect();
 }
 
-void RenderObject::mapRectToPaintInvalidationBacking(const RenderLayerModelObject* paintInvalidationContainer, LayoutRect& rect, ViewportConstrainedPosition, const PaintInvalidationState* paintInvalidationState) const
+void RenderObject::mapRectToPaintInvalidationBacking(const RenderLayerModelObject* paintInvalidationContainer, LayoutRect& rect, const PaintInvalidationState* paintInvalidationState) const
 {
     if (paintInvalidationContainer == this)
         return;
@@ -1796,8 +1796,7 @@ void RenderObject::mapRectToPaintInvalidationBacking(const RenderLayerModelObjec
                 return;
         }
 
-        // RenderBox must override this method and pass correct ViewportConstrainedPosition for fixed-position.
-        o->mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, IsNotFixedPosition, paintInvalidationState);
+        o->mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, paintInvalidationState);
     }
 }
 

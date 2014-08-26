@@ -376,7 +376,7 @@ LayoutRect RenderSVGRoot::clippedOverflowRectForPaintInvalidation(const RenderLa
 
     // Compute the paint invalidation rect in the parent coordinate space.
     LayoutRect rect = enclosingIntRect(paintInvalidationRect);
-    RenderReplaced::mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, ViewportConstraintDoesNotMatter, paintInvalidationState);
+    RenderReplaced::mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, paintInvalidationState);
     return rect;
 }
 
@@ -391,7 +391,7 @@ void RenderSVGRoot::computeFloatRectForPaintInvalidation(const RenderLayerModelO
         paintInvalidationRect.intersect(pixelSnappedBorderBoxRect());
 
     LayoutRect rect = enclosingIntRect(paintInvalidationRect);
-    RenderReplaced::mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, ViewportConstraintDoesNotMatter, paintInvalidationState);
+    RenderReplaced::mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, paintInvalidationState);
     paintInvalidationRect = rect;
 }
 
