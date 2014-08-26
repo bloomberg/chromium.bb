@@ -67,6 +67,8 @@ class GenerateResourcesMapUnittest(unittest.TestCase):
 
 namespace chrome_variations {
 
+const size_t kNumResources = 4;
+
 const uint32_t kResourceHashes[] = {
     301430091U,  // IDS_BOOKMARKS_NO_ITEMS
     2654138887U,  // IDS_BOOKMARK_BAR_IMPORT_LINK
