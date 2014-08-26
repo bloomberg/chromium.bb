@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import os
 import unittest
 
 from auto_bisect import source_control as source_control_module
@@ -240,12 +241,34 @@ class BisectPerfRegressionTest(unittest.TestCase):
         bisect_options)
     bisect_instance = bisect_perf_module.BisectPerformanceMetrics(
         source_control, bisect_options)
+    bisect_instance.src_cwd = os.path.abspath(
+        os.path.join(os.path.dirname(__file__), '..'))
     results = bisect_instance.Run(bisect_options.command,
                                   bisect_options.bad_revision,
                                   bisect_options.good_revision,
                                   bisect_options.metric)
     bisect_instance.FormatAndPrintResults(results)
 
+  def testSVNFindRev(self):
+    """Determine numerical SVN revision or Commit Position."""
+    options_dict = {
+      'debug_ignore_build': True,
+      'debug_ignore_sync': True,
+      'debug_ignore_perf_test': True,
+      'command': 'fake_command',
+      'metric': 'fake/metric',
+      'good_revision': 280000,
+      'bad_revision': 280005,
+    }
+    bisect_options = bisect_perf_module.BisectOptions.FromDict(options_dict)
+    source_control = source_control_module.DetermineAndCreateSourceControl(
+        bisect_options)
+
+    cp_git_rev = '7017a81991de983e12ab50dfc071c70e06979531'
+    self.assertEqual(291915, source_control.SVNFindRev(cp_git_rev))
+
+    svn_git_rev = 'e6db23a037cad47299a94b155b95eebd1ee61a58'
+    self.assertEqual(291467, source_control.SVNFindRev(svn_git_rev))
 
 if __name__ == '__main__':
   unittest.main()

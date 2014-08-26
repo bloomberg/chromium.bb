@@ -300,7 +300,7 @@ def IsDepsFileBlink(git_revision=''):
   if ret_val:
     search_str = 'blink'
     search_key = 'webkit_trunk'
-    git_cmd = ['cat-file', 'blob', '%s:%s' %(git_revision, 'FILE_DEPS')]
+    git_cmd = ['cat-file', 'blob', '%s:%s' %(git_revision, FILE_DEPS)]
     (out_put, ret_val) = RunGit(git_cmd)
     if ret_val:
       print 'Error processing DEPS or .DEPS.git'

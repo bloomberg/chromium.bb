@@ -5,6 +5,7 @@
 """This module contains the SourceControl class and related functions."""
 
 import os
+import re
 
 from . import bisect_utils
 
@@ -202,23 +203,40 @@ class GitSourceControl(SourceControl):
 
     return log_output == "master"
 
-  def SVNFindRev(self, revision, cwd=None):
-    """Maps directly to the 'git svn find-rev' command.
+  def SVNFindRev(self, git_revision, cwd=None):
+    """Finds a SVN revision OR git number for the given git hash.
+
+    If "git svn find_rev <hash>" fails, then it runs
+    "git log --format=%b -1 origin/master <hash> and greps for
+    Cr-Commit-Position.
 
     Args:
-      revision: The git SHA1 to use.
+      git_revision: The git SHA1 to use.
 
     Returns:
-      An integer changelist #, otherwise None.
+      Git number (aka git commit position) OR an SVN revision as integer,
+      otherwise None.
     """
 
-    cmd = ['svn', 'find-rev', revision]
+    cmd = ['svn', 'find-rev', git_revision]
 
     output = bisect_utils.CheckRunGit(cmd, cwd)
     svn_revision = output.strip()
 
     if bisect_utils.IsStringInt(svn_revision):
       return int(svn_revision)
+
+    # Retrieve commit position number from git log body for the given revision.
+    # TODO(prasadv): Use an appropriate command to find commit position instead
+    # of parsing the log. Resolve this once 407316 is fixed.
+    commit_position_pattern = 'Cr-Commit-Position: .*@\{#(?P<commit>[0-9]+)\}'
+    cmd = ['log', '--format=%b', '-1', 'origin/master', git_revision]
+    output = bisect_utils.CheckRunGit(cmd, cwd=cwd)
+    if output:
+      version_re = re.compile(commit_position_pattern)
+      commit_reg = version_re.search(output)
+      if commit_reg and bisect_utils.IsStringInt(commit_reg.group('commit')):
+        return int(commit_reg.group('commit'))
 
     return None
 
