@@ -124,17 +124,18 @@ template("gcc_toolchain") {
 
     tool("solink") {
       soname = "{{target_output_name}}{{output_extension}}"  # e.g. "libfoo.so".
-      rspfile = soname + ".rsp"
+      sofile = "{{root_out_dir}}/$soname"  # Possibly including toolchain dir.
+      rspfile = sofile + ".rsp"
 
       # These variables are not built into GN but are helpers that implement
       # (1) linking to produce a .so, (2) extracting the symbols from that file
       # to a temporary file, (3) if the temporary file has differences from the
       # existing .TOC file, overwrite it, otherwise, don't change it.
-      tocname = soname + ".TOC"
-      temporary_tocname = soname + ".tmp"
-      link_command = "$ld -shared {{ldflags}} -o $soname -Wl,-soname=$soname @$rspfile"
-      toc_command = "{ readelf -d $soname | grep SONAME ; nm -gD -f p $soname | cut -f1-2 -d' '; } > $temporary_tocname"
-      replace_command = "if ! cmp -s $temporary_tocname $tocname; then mv $temporary_tocname $tocname; fi"
+      tocfile = sofile + ".TOC"
+      temporary_tocname = sofile + ".tmp"
+      link_command = "$ld -shared {{ldflags}} -o $sofile -Wl,-soname=$soname @$rspfile"
+      toc_command = "{ readelf -d $sofile | grep SONAME ; nm -gD -f p $soname | cut -f1-2 -d' '; } > $temporary_tocname"
+      replace_command = "if ! cmp -s $temporary_tocname $tocfile; then mv $temporary_tocname $tocfile; fi"
 
       command = "$link_command && $toc_command && $replace_command"
       if (defined(invoker.postsolink)) {
@@ -142,7 +143,7 @@ template("gcc_toolchain") {
       }
       rspfile_content = "-Wl,--whole-archive {{inputs}} {{solibs}} -Wl,--no-whole-archive $solink_libs_section_prefix {{libs}} $solink_libs_section_postfix"
 
-      description = "SOLINK $soname"
+      description = "SOLINK $sofile"
 
       # Use this for {{output_extension}} expansions unless a target manually
       # overrides it (in which case {{output_extension}} will be what the target
@@ -156,18 +157,18 @@ template("gcc_toolchain") {
       # dependencies should be recompiled.
       restat = true
 
-      # Tell GN about the output files. It will link to the soname but use the
-      # tocname for dependency management.
+      # Tell GN about the output files. It will link to the sofile but use the
+      # tocfile for dependency management.
       outputs = [
-        soname,
-        tocname,
+        sofile,
+        tocfile,
       ]
-      link_output = soname
-      depend_output = tocname
+      link_output = sofile
+      depend_output = tocfile
     }
 
     tool("link") {
-      outfile = "{{target_output_name}}{{output_extension}}"
+      outfile = "{{root_out_dir}}/{{target_output_name}}{{output_extension}}"
       rspfile = "$outfile.rsp"
       command = "$ld {{ldflags}} -o $outfile -Wl,--start-group @$rspfile {{solibs}} -Wl,--end-group $libs_section_prefix {{libs}} $libs_section_postfix"
       description = "LINK $outfile"

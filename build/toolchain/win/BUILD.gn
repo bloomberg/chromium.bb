@@ -87,8 +87,8 @@ template("msvc_toolchain") {
     }
 
     tool("solink") {
-      dllname = "{{target_output_name}}{{output_extension}}"  # e.g. foo.dll
-      libname = "{{target_output_name}}{{output_extension}}.lib"  # e.g. foo.dll.lib
+      dllname = "{{root_out_dir}}/{{target_output_name}}{{output_extension}}"  # e.g. foo.dll
+      libname = "{{root_out_dir}}/{{target_output_name}}{{output_extension}}.lib"  # e.g. foo.dll.lib
       rspfile = "${dllname}.rsp"
 
       link_command = "$python_path gyp-win-tool link-wrapper $env False link.exe /nologo /IMPLIB:$libname /DLL /OUT:$dllname /PDB:${dllname}.pdb @$rspfile"
@@ -122,7 +122,7 @@ template("msvc_toolchain") {
       default_output_extension = ".exe"
       description = "LINK {{output}}"
       outputs = [
-        "{{target_output_name}}{{output_extension}}",
+        "{{root_out_dir}}/{{target_output_name}}{{output_extension}}",
       ]
       # The use of inputs_newline is to work around a fixed per-line buffer
       # size in the linker.

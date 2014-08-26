@@ -27,5 +27,7 @@ shared_library("surfaces") {
     "surfaces_impl.h",
     "surfaces_service_application.cc",
     "surfaces_service_application.h",
+    "surfaces_service_impl.cc",
+    "surfaces_service_impl.h",
   ]
 }

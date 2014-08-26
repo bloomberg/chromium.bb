@@ -94,6 +94,7 @@
           'includes': [ '../build/java.gypi' ],
         },
         {
+          # GN version: //components/variations:variations_java
           'target_name': 'variations_jni_headers',
           'type': 'none',
           'sources': [

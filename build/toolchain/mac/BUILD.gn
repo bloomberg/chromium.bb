@@ -117,7 +117,7 @@ template("mac_clang_toolchain") {
     }
 
     tool("solink") {
-      dylib = "{{target_output_name}}{{output_extension}}"  # eg "libfoo.dylib"
+      dylib = "{{root_out_dir}}/{{target_output_name}}{{output_extension}}"  # eg "./libfoo.dylib"
       rspfile = dylib + ".rsp"
 
       # These variables are not build into GN but are helpers that implement
@@ -165,7 +165,7 @@ template("mac_clang_toolchain") {
     }
 
     tool("link") {
-      outfile = "{{target_output_name}}{{output_extension}}"
+      outfile = "{{root_out_dir}}/{{target_output_name}}{{output_extension}}"
       rspfile = "$outfile.rsp"
       command = "$ld {{ldflags}} -o $outfile -Wl,-filelist,$rspfile {{solibs}} {{libs}}"
       description = "LINK $outfile"
