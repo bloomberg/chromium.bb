@@ -11,6 +11,14 @@ module sample {
 const uint8 kTwelve = 12;
 const uint64 kTooBigForSignedInt64 = 9999999999999999999;
 
+const double kDoubleInfinity = double.INFINITY;
+const double kDoubleNegativeInfinity = double.NEGATIVE_INFINITY;
+const double kDoubleNaN = double.NAN;
+
+const float kFloatInfinity = float.INFINITY;
+const float kFloatNegativeInfinity = float.NEGATIVE_INFINITY;
+const float kFloatNaN = float.NAN;
+
 struct Bar {
   enum Type {
     VERTICAL = 1,
@@ -76,6 +84,13 @@ struct DefaultsTest {
   uint64 a23@23 = 0xFFFFFFFFFFFFFFFF;
   int64 a24@24 = 0x123456789;
   int64 a25@25 = -0x123456789;
+
+  double a26@26 = double.INFINITY;
+  double a27@27 = double.NEGATIVE_INFINITY;
+  double a28@28 = double.NAN;
+  float a29@29 = float.INFINITY;
+  float a30@30 = float.NEGATIVE_INFINITY;
+  float a31@31 = float.NAN;
 };
 
 struct StructWithHoleV1 {

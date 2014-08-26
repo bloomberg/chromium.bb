@@ -260,6 +260,19 @@ def ExpressionToText(context, token, kind_spec=''):
     if number >= 2 ** 63:
       number -= 2 ** 64
     return '%dL' % number
+  if isinstance(token, mojom.BuiltinValue):
+    if token.value == "double.INFINITY":
+      return "java.lang.Double.POSITIVE_INFINITY"
+    if token.value == "double.NEGATIVE_INFINITY":
+      return "java.lang.Double.NEGATIVE_INFINITY"
+    if token.value == "double.NAN":
+      return "java.lang.Double.NaN"
+    if token.value == "float.INFINITY":
+      return "java.lang.Float.POSITIVE_INFINITY"
+    if token.value == "float.NEGATIVE_INFINITY":
+      return "java.lang.Float.NEGATIVE_INFINITY"
+    if token.value == "float.NAN":
+      return "java.lang.Float.NaN"
   return token
 
 def IsPointerArrayKind(kind):

@@ -223,6 +223,16 @@ def TranslateConstants(token, kind):
     else:
       name.append(token.name)
     return "::".join(name)
+
+  if isinstance(token, mojom.BuiltinValue):
+    if token.value == "double.INFINITY" or token.value == "float.INFINITY":
+      return "INFINITY";
+    if token.value == "double.NEGATIVE_INFINITY" or \
+       token.value == "float.NEGATIVE_INFINITY":
+      return "-INFINITY";
+    if token.value == "double.NAN" or token.value == "float.NAN":
+      return "NAN";
+
   return '%s%s' % (token, _kind_to_cpp_literal_suffix.get(kind, ''))
 
 def ExpressionToText(value, kind=None):

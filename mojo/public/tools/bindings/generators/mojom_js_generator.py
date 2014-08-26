@@ -198,6 +198,16 @@ def TranslateConstants(token):
       name.append(token.enum_name)
     name.append(token.name)
     return ".".join(name)
+
+  if isinstance(token, mojom.BuiltinValue):
+    if token.value == "double.INFINITY" or token.value == "float.INFINITY":
+      return "Infinity";
+    if token.value == "double.NEGATIVE_INFINITY" or \
+       token.value == "float.NEGATIVE_INFINITY":
+      return "-Infinity";
+    if token.value == "double.NAN" or token.value == "float.NAN":
+      return "NaN";
+
   return token
 
 

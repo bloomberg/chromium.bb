@@ -5,9 +5,15 @@
 #if defined(__clang__)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-private-field"
+#elif defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable:4056)
+#pragma warning(disable:4756)
 #endif
 
 #include "{{module.path}}.h"
+
+#include <math.h>
 
 #include "mojo/public/cpp/bindings/lib/array_serialization.h"
 #include "mojo/public/cpp/bindings/lib/bindings_serialization.h"
@@ -83,4 +89,6 @@ const {{constant.kind|cpp_pod_type}} {{struct.name}}::{{constant.name}} = {{cons
 
 #if defined(__clang__)
 #pragma clang diagnostic pop
+#elif defined(_MSC_VER)
+#pragma warning(pop)
 #endif

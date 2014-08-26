@@ -42,6 +42,17 @@ def istr(index, string):
   rv.__index__ = index
   return rv
 
+builtin_values = frozenset([
+    "double.INFINITY",
+    "double.NEGATIVE_INFINITY",
+    "double.NAN",
+    "float.INFINITY",
+    "float.NEGATIVE_INFINITY",
+    "float.NAN"])
+
+def IsBuiltinValue(value):
+  return value in builtin_values
+
 def LookupKind(kinds, spec, scope):
   """Tries to find which Kind a spec refers to, given the scope in which its
   referenced. Starts checking from the narrowest scope to most general. For
@@ -85,11 +96,15 @@ def LookupValue(values, name, scope, kind):
   return values.get(name)
 
 def FixupExpression(module, value, scope, kind):
-  """Translates an IDENTIFIER into a structured Value object."""
+  """Translates an IDENTIFIER into a built-in value or structured NamedValue
+     object."""
   if isinstance(value, tuple) and value[0] == 'IDENTIFIER':
+    # Allow user defined values to shadow builtins.
     result = LookupValue(module.values, value[1], scope, kind)
     if result:
       return result
+    if IsBuiltinValue(value[1]):
+      return mojom.BuiltinValue(value[1])
   return value
 
 def KindToData(kind):

@@ -144,6 +144,11 @@ class NamedValue(object):
         self.name)
 
 
+class BuiltinValue(object):
+  def __init__(self, value):
+    self.value = value
+
+
 class EnumValue(NamedValue):
   def __init__(self, module, enum, field):
     NamedValue.__init__(self, module, enum.parent_kind, field.name)
