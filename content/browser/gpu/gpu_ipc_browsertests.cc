@@ -161,7 +161,7 @@ IN_PROC_BROWSER_TEST_F(BrowserGpuChannelHostFactoryTest,
       kInitCause,
       base::Bind(&BrowserGpuChannelHostFactoryTest::Signal, &event));
   EXPECT_TRUE(event);
-  EXPECT_EQ(gpu_channel, GetGpuChannel());
+  EXPECT_EQ(gpu_channel.get(), GetGpuChannel());
 }
 
 // Fails since UI Compositor establishes a GpuChannel.

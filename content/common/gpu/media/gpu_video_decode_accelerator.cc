@@ -496,7 +496,7 @@ void GpuVideoDecodeAccelerator::SetTextureCleared(
   gpu::gles2::TextureManager* texture_manager =
       stub_->decoder()->GetContextGroup()->texture_manager();
   DCHECK(!texture_ref->texture()->IsLevelCleared(target, 0));
-  texture_manager->SetLevelCleared(texture_ref, target, 0, true);
+  texture_manager->SetLevelCleared(texture_ref.get(), target, 0, true);
   uncleared_textures_.erase(it);
 }
 

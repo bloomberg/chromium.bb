@@ -216,7 +216,7 @@ BrowserGpuChannelHostFactory::BrowserGpuChannelHostFactory()
 
 BrowserGpuChannelHostFactory::~BrowserGpuChannelHostFactory() {
   DCHECK(IsMainThread());
-  if (pending_request_)
+  if (pending_request_.get())
     pending_request_->Cancel();
   for (size_t n = 0; n < established_callbacks_.size(); n++)
     established_callbacks_[n].Run();
@@ -301,7 +301,7 @@ GpuChannelHost* BrowserGpuChannelHostFactory::EstablishGpuChannelSync(
     CauseForGpuLaunch cause_for_gpu_launch) {
   EstablishGpuChannel(cause_for_gpu_launch, base::Closure());
 
-  if (pending_request_)
+  if (pending_request_.get())
     pending_request_->Wait();
 
   return gpu_channel_.get();
@@ -311,19 +311,19 @@ void BrowserGpuChannelHostFactory::EstablishGpuChannel(
     CauseForGpuLaunch cause_for_gpu_launch,
     const base::Closure& callback) {
   if (gpu_channel_.get() && gpu_channel_->IsLost()) {
-    DCHECK(!pending_request_);
+    DCHECK(!pending_request_.get());
     // Recreate the channel if it has been lost.
     gpu_channel_ = NULL;
   }
 
-  if (!gpu_channel_ && !pending_request_) {
+  if (!gpu_channel_.get() && !pending_request_.get()) {
     // We should only get here if the context was lost.
     pending_request_ = EstablishRequest::Create(
         cause_for_gpu_launch, gpu_client_id_, gpu_host_id_);
   }
 
   if (!callback.is_null()) {
-    if (gpu_channel_)
+    if (gpu_channel_.get())
       callback.Run();
     else
       established_callbacks_.push_back(callback);
@@ -331,17 +331,17 @@ void BrowserGpuChannelHostFactory::EstablishGpuChannel(
 }
 
 GpuChannelHost* BrowserGpuChannelHostFactory::GetGpuChannel() {
-  if (gpu_channel_ && !gpu_channel_->IsLost())
-    return gpu_channel_;
+  if (gpu_channel_.get() && !gpu_channel_->IsLost())
+    return gpu_channel_.get();
 
   return NULL;
 }
 
 void BrowserGpuChannelHostFactory::GpuChannelEstablished() {
   DCHECK(IsMainThread());
-  DCHECK(pending_request_);
+  DCHECK(pending_request_.get());
   if (pending_request_->channel_handle().name.empty()) {
-    DCHECK(!gpu_channel_);
+    DCHECK(!gpu_channel_.get());
   } else {
     GetContentClient()->SetGpuInfo(pending_request_->gpu_info());
     gpu_channel_ = GpuChannelHost::Create(this,

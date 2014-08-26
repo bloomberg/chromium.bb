@@ -348,7 +348,7 @@ int GpuMain(const MainFunctionParams& parameters) {
 
   gpu_process.set_main_thread(child_thread);
 
-  if (watchdog_thread)
+  if (watchdog_thread.get())
     watchdog_thread->AddPowerObserver();
 
   {

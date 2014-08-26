@@ -269,7 +269,7 @@ bool WebGraphicsContext3DCommandBufferImpl::CreateContext(bool onscreen) {
   bool bind_generates_resources = false;
   real_gl_.reset(
       new gpu::gles2::GLES2Implementation(gles2_helper_.get(),
-                                          gles2_share_group,
+                                          gles2_share_group.get(),
                                           transfer_buffer_.get(),
                                           bind_generates_resources,
                                           lose_context_when_out_of_memory_,

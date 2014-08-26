@@ -545,7 +545,7 @@ void ShaderDiskCache::Cache(const std::string& key, const std::string& shader) {
       new ShaderDiskCacheEntry(AsWeakPtr(), key, shader);
   shim->Cache();
 
-  entry_map_[shim] = shim;
+  entry_map_[shim.get()] = shim;
 }
 
 int ShaderDiskCache::Clear(

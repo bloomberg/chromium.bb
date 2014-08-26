@@ -983,7 +983,7 @@ void GpuCommandBufferStub::OnRegisterGpuMemoryBuffer(
           gfx::Size(width, height),
           internalformat,
           channel()->client_id());
-  if (!image)
+  if (!image.get())
     return;
 
   // For Android specific workaround.

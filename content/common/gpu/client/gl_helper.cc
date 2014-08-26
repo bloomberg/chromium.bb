@@ -1145,7 +1145,7 @@ void GLHelper::CopyTextureToImpl::ReadbackYUVImpl::ReadbackYUV(
       swizzle_,
       base::Bind(&CallbackKeepingVideoFrameAlive, target, callback));
   gl_->BindFramebuffer(GL_FRAMEBUFFER, 0);
-  media::LetterboxYUV(target, dst_subrect_);
+  media::LetterboxYUV(target.get(), dst_subrect_);
 }
 
 // YUV readback constructors. Initiates the main scaler pipeline and
@@ -1283,7 +1283,7 @@ void GLHelper::CopyTextureToImpl::ReadbackYUV_MRT::ReadbackYUV(
       swizzle_,
       base::Bind(&CallbackKeepingVideoFrameAlive, target, callback));
   gl_->BindFramebuffer(GL_FRAMEBUFFER, 0);
-  media::LetterboxYUV(target, dst_subrect_);
+  media::LetterboxYUV(target.get(), dst_subrect_);
 }
 
 bool GLHelper::IsReadbackConfigSupported(SkColorType color_type) {

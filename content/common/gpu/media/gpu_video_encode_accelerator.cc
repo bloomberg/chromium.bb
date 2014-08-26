@@ -245,7 +245,7 @@ void GpuVideoEncodeAccelerator::OnEncode(int32 frame_id,
                                 frame_id,
                                 base::Passed(&shm))));
 
-  if (!frame) {
+  if (!frame.get()) {
     DLOG(ERROR) << "GpuVideoEncodeAccelerator::OnEncode(): "
                    "could not create VideoFrame for frame_id=" << frame_id;
     NotifyError(media::VideoEncodeAccelerator::kPlatformFailureError);
