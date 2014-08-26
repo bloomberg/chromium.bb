@@ -1601,6 +1601,7 @@ void RenderWidgetHostViewAndroid::SetContentViewCore(
 
   bool resize = false;
   if (content_view_core != content_view_core_) {
+    overscroll_effect_.reset();
     selection_controller_.reset();
     ReleaseLocksOnSurface();
     resize = true;
@@ -1631,9 +1632,8 @@ void RenderWidgetHostViewAndroid::SetContentViewCore(
   if (!selection_controller_)
     selection_controller_.reset(new TouchSelectionController(this));
 
-  if (!content_view_core_)
-    overscroll_effect_.reset();
-  else if (overscroll_effect_enabled_ && !overscroll_effect_)
+  if (overscroll_effect_enabled_ && !overscroll_effect_ &&
+      content_view_core_->GetWindowAndroid()->GetCompositor())
     overscroll_effect_ = CreateOverscrollEffect(content_view_core_);
 }
 
@@ -1656,10 +1656,18 @@ void RenderWidgetHostViewAndroid::OnCompositingDidCommit() {
   RunAckCallbacks();
 }
 
+
+void RenderWidgetHostViewAndroid::OnAttachCompositor() {
+  DCHECK(content_view_core_);
+  if (overscroll_effect_enabled_ && !overscroll_effect_)
+    overscroll_effect_ = CreateOverscrollEffect(content_view_core_);
+}
+
 void RenderWidgetHostViewAndroid::OnDetachCompositor() {
   DCHECK(content_view_core_);
   DCHECK(!using_synchronous_compositor_);
   RunAckCallbacks();
+  overscroll_effect_.reset();
 }
 
 void RenderWidgetHostViewAndroid::OnVSync(base::TimeTicks frame_time,

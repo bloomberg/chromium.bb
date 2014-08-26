@@ -199,7 +199,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
 
   // ui::WindowAndroidObserver implementation.
   virtual void OnCompositingDidCommit() OVERRIDE;
-  virtual void OnAttachCompositor() OVERRIDE {}
+  virtual void OnAttachCompositor() OVERRIDE;
   virtual void OnDetachCompositor() OVERRIDE;
   virtual void OnVSync(base::TimeTicks frame_time,
                        base::TimeDelta vsync_period) OVERRIDE;
