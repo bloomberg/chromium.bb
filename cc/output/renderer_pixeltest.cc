@@ -536,7 +536,7 @@ class VideoGLRendererPixelTest : public GLRendererPixelTest {
   virtual void SetUp() OVERRIDE {
     GLRendererPixelTest::SetUp();
     video_resource_updater_.reset(new VideoResourceUpdater(
-        output_surface_->context_provider().get(), resource_provider_.get()));
+        output_surface_->context_provider(), resource_provider_.get()));
   }
 
  private:

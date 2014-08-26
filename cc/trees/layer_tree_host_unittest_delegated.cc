@@ -338,7 +338,7 @@ class LayerTreeHostDelegatedTestCreateChildId
         static_cast<FakeDelegatedRendererLayerImpl*>(root_impl->children()[0]);
 
     TestContextProvider* context_provider = static_cast<TestContextProvider*>(
-        host_impl->output_surface()->context_provider().get());
+        host_impl->output_surface()->context_provider());
 
     ++num_activates_;
     switch (num_activates_) {
@@ -419,7 +419,7 @@ class LayerTreeHostDelegatedTestInvalidFrameAfterContextLost
       return;
 
     TestContextProvider* context_provider = static_cast<TestContextProvider*>(
-        host_impl->output_surface()->context_provider().get());
+        host_impl->output_surface()->context_provider());
 
     ++num_activates_;
     switch (num_activates_) {

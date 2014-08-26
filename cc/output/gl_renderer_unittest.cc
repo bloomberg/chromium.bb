@@ -1647,8 +1647,8 @@ class MockOutputSurfaceTest : public GLRendererTest {
 
   OutputSurfaceMockContext* Context() {
     return static_cast<OutputSurfaceMockContext*>(
-        static_cast<TestContextProvider*>(
-            output_surface_.context_provider().get())->TestContext3d());
+        static_cast<TestContextProvider*>(output_surface_.context_provider())
+            ->TestContext3d());
   }
 
   LayerTreeSettings settings_;

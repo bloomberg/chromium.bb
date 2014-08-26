@@ -33,7 +33,8 @@ using std::vector;
 
 namespace cc {
 
-OutputSurface::OutputSurface(scoped_refptr<ContextProvider> context_provider)
+OutputSurface::OutputSurface(
+    const scoped_refptr<ContextProvider>& context_provider)
     : client_(NULL),
       context_provider_(context_provider),
       device_scale_factor_(-1),
@@ -49,8 +50,9 @@ OutputSurface::OutputSurface(scoped_ptr<SoftwareOutputDevice> software_device)
       weak_ptr_factory_(this) {
 }
 
-OutputSurface::OutputSurface(scoped_refptr<ContextProvider> context_provider,
-                             scoped_ptr<SoftwareOutputDevice> software_device)
+OutputSurface::OutputSurface(
+    const scoped_refptr<ContextProvider>& context_provider,
+    scoped_ptr<SoftwareOutputDevice> software_device)
     : client_(NULL),
       context_provider_(context_provider),
       software_device_(software_device.Pass()),

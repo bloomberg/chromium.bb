@@ -46,11 +46,12 @@ class CC_EXPORT OutputSurface {
     DEFAULT_MAX_FRAMES_PENDING = 2
   };
 
-  explicit OutputSurface(scoped_refptr<ContextProvider> context_provider);
+  explicit OutputSurface(
+      const scoped_refptr<ContextProvider>& context_provider);
 
   explicit OutputSurface(scoped_ptr<SoftwareOutputDevice> software_device);
 
-  OutputSurface(scoped_refptr<ContextProvider> context_provider,
+  OutputSurface(const scoped_refptr<ContextProvider>& context_provider,
                 scoped_ptr<SoftwareOutputDevice> software_device);
 
   virtual ~OutputSurface();
@@ -85,9 +86,7 @@ class CC_EXPORT OutputSurface {
   // surface. Either of these may return a null pointer, but not both.
   // In the event of a lost context, the entire output surface should be
   // recreated.
-  scoped_refptr<ContextProvider> context_provider() const {
-    return context_provider_.get();
-  }
+  ContextProvider* context_provider() const { return context_provider_.get(); }
   SoftwareOutputDevice* software_device() const {
     return software_device_.get();
   }

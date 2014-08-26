@@ -188,7 +188,7 @@ void CompositorOutputSurface::SwapBuffers(cc::CompositorFrame* frame) {
   if (frame->gl_frame_data) {
     context_provider()->ContextGL()->ShallowFlushCHROMIUM();
     ContextProviderCommandBuffer* provider_command_buffer =
-        static_cast<ContextProviderCommandBuffer*>(context_provider().get());
+        static_cast<ContextProviderCommandBuffer*>(context_provider());
     CommandBufferProxyImpl* command_buffer_proxy =
         provider_command_buffer->GetCommandBufferProxy();
     DCHECK(command_buffer_proxy);

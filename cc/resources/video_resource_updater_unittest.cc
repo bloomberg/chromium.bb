@@ -62,7 +62,7 @@ class VideoResourceUpdaterTest : public testing::Test {
 };
 
 TEST_F(VideoResourceUpdaterTest, SoftwareFrame) {
-  VideoResourceUpdater updater(output_surface3d_->context_provider().get(),
+  VideoResourceUpdater updater(output_surface3d_->context_provider(),
                                resource_provider3d_.get());
   scoped_refptr<media::VideoFrame> video_frame = CreateTestYUVVideoFrame();
 

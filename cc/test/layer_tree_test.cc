@@ -684,8 +684,8 @@ scoped_ptr<FakeOutputSurface> LayerTreeTest::CreateFakeOutputSurface(
 }
 
 TestWebGraphicsContext3D* LayerTreeTest::TestContext() {
-  return static_cast<TestContextProvider*>(
-      output_surface_->context_provider().get())->TestContext3d();
+  return static_cast<TestContextProvider*>(output_surface_->context_provider())
+      ->TestContext3d();
 }
 
 int LayerTreeTest::LastCommittedSourceFrameNumber(LayerTreeHostImpl* impl)

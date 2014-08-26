@@ -2287,12 +2287,12 @@ GLint ResourceProvider::GetActiveTextureUnit(GLES2Interface* gl) {
 }
 
 GLES2Interface* ResourceProvider::ContextGL() const {
-  ContextProvider* context_provider = output_surface_->context_provider().get();
+  ContextProvider* context_provider = output_surface_->context_provider();
   return context_provider ? context_provider->ContextGL() : NULL;
 }
 
 class GrContext* ResourceProvider::GrContext() const {
-  ContextProvider* context_provider = output_surface_->context_provider().get();
+  ContextProvider* context_provider = output_surface_->context_provider();
   return context_provider ? context_provider->GrContext() : NULL;
 }
 
