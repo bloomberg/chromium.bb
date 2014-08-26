@@ -140,6 +140,19 @@ public class ChromeShellToolbar extends LinearLayout {
                 }
             }
         });
+        mUrlTextView.setOnKeyListener(new OnKeyListener() {
+            @Override
+            public boolean onKey(View v, int keyCode, KeyEvent event) {
+                if (keyCode == KeyEvent.KEYCODE_BACK) {
+                    mUrlTextView.clearFocus();
+                    if (mTab != null) {
+                        mTab.getView().requestFocus();
+                    }
+                    return true;
+                }
+                return false;
+            }
+        });
 
         mSuggestionPopup = new SuggestionPopup(getContext(), mUrlTextView, this);
         mUrlTextView.addTextChangedListener(mSuggestionPopup);
