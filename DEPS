@@ -76,6 +76,22 @@ vars = {
   # the commit queue can handle CLs rolling BoringSSL
   # and whatever else without interference from each other.
   'boringssl_revision': '5213df4e9ed9ca130c40f142893cb91f2e18eee1',
+  # Three lines of non-changing comments so that
+  # the commit queue can handle CLs rolling nss
+  # and whatever else without interference from each other.
+  'nss_revision': 'e2e35dbd9b41c0e5cb8485f13831cd61eb484196',
+  # Three lines of non-changing comments so that
+  # the commit queue can handle CLs rolling google-toolbox-for-mac
+  # and whatever else without interference from each other.
+  'google_toolbox_for_mac_revision': '704fb56df6a9a0884801045a158e021945d9d991',
+  # Three lines of non-changing comments so that
+  # the commit queue can handle CLs rolling lighttpd
+  # and whatever else without interference from each other.
+  'lighttpd_revision': '9dfa55d15937a688a92cbf2b7a8621b0927d06eb',
+  # Three lines of non-changing comments so that
+  # the commit queue can handle CLs rolling lss
+  # and whatever else without interference from each other.
+  'lss_revision': '952107fa7cea0daaabead28c0e92d579bee517eb',
 }
 
 deps = {
@@ -313,7 +329,7 @@ deps_os = {
      Var('chromium_git') + '/chromium/deps/perl.git' + '@' + 'ac0d98b5cee6c024b0cffeb4f8f45b6fc5ccdb78',
 
     'src/third_party/lighttpd':
-     Var('chromium_git') + '/chromium/deps/lighttpd.git' + '@' + '9dfa55d15937a688a92cbf2b7a8621b0927d06eb',
+     Var('chromium_git') + '/chromium/deps/lighttpd.git' + '@' + Var('lighttpd_revision'),
 
     # Parses Windows PE/COFF executable format.
     'src/third_party/pefile':
@@ -321,7 +337,7 @@ deps_os = {
 
     # NSS, for SSLClientSocketNSS.
     'src/third_party/nss':
-     Var('chromium_git') + '/chromium/deps/nss.git' + '@' + 'e2e35dbd9b41c0e5cb8485f13831cd61eb484196',
+     Var('chromium_git') + '/chromium/deps/nss.git' + '@' + Var('nss_revision'),
 
     'src/third_party/swig/win':
      Var('chromium_git') + '/chromium/deps/swig/win.git' + '@' + '986f013ba518541adf5c839811efb35630a31031',
@@ -343,10 +359,10 @@ deps_os = {
   },
   'ios': {
     'src/third_party/google_toolbox_for_mac/src':
-      Var('chromium_git') + '/external/google-toolbox-for-mac.git' + '@' + '704fb56df6a9a0884801045a158e021945d9d991',
+      Var('chromium_git') + '/external/google-toolbox-for-mac.git' + '@' + Var('google_toolbox_for_mac_revision'),
 
     'src/third_party/nss':
-     Var('chromium_git') + '/chromium/deps/nss.git' + '@' + 'e2e35dbd9b41c0e5cb8485f13831cd61eb484196',
+     Var('chromium_git') + '/chromium/deps/nss.git' + '@' + Var('nss_revision'),
 
     # class-dump utility to generate header files for undocumented SDKs
     'src/testing/iossim/third_party/class-dump':
@@ -397,20 +413,21 @@ deps_os = {
      Var('chromium_git') + '/chromium/reference_builds/chrome_mac.git' + '@' + '8dc181329e7c5255f83b4b85dc2f71498a237955',
 
     'src/third_party/google_toolbox_for_mac/src':
-      Var('chromium_git') + '/external/google-toolbox-for-mac.git' + '@' + '704fb56df6a9a0884801045a158e021945d9d991',
+      Var('chromium_git') + '/external/google-toolbox-for-mac.git' + '@' + Var('google_toolbox_for_mac_revision'),
+
 
     'src/third_party/pdfsqueeze':
       Var('chromium_git') + '/external/pdfsqueeze.git' + '@' + '5936b871e6a087b7e50d4cbcb122378d8a07499f',
 
     'src/third_party/lighttpd':
-     Var('chromium_git') + '/chromium/deps/lighttpd.git' + '@' + '9dfa55d15937a688a92cbf2b7a8621b0927d06eb',
+     Var('chromium_git') + '/chromium/deps/lighttpd.git' + '@' + Var('lighttpd_revision'),
 
     'src/third_party/swig/mac':
      Var('chromium_git') + '/chromium/deps/swig/mac.git' + '@' + '1b182eef16df2b506f1d710b34df65d55c1ac44e',
 
     # NSS, for SSLClientSocketNSS.
     'src/third_party/nss':
-     Var('chromium_git') + '/chromium/deps/nss.git' + '@' + 'e2e35dbd9b41c0e5cb8485f13831cd61eb484196',
+     Var('chromium_git') + '/chromium/deps/nss.git' + '@' + Var('nss_revision'),
 
     'src/chrome/installer/mac/third_party/xz/xz':
      Var('chromium_git') + '/chromium/deps/xz.git' + '@' + 'eecaf55632ca72e90eb2641376bce7cdbc7284f7',
@@ -427,7 +444,7 @@ deps_os = {
      Var('chromium_git') + '/chromium/deps/swig/linux.git' + '@' + '866b8e0e0e0cfe99ebe608260030916ca0c3f92d',
 
     'src/third_party/lss':
-      Var('chromium_git') + '/external/linux-syscall-support/lss.git' + '@' + '952107fa7cea0daaabead28c0e92d579bee517eb',
+      Var('chromium_git') + '/external/linux-syscall-support/lss.git' + '@' + Var('lss_revision'),
 
     # For Linux and Chromium OS.
     'src/third_party/cros_system_api':
@@ -490,7 +507,7 @@ deps_os = {
       Var('chromium_git') + '/external/jsr-305.git' + '@' + '642c508235471f7220af6d5df2d3210e3bfc0919',
 
     'src/third_party/lss':
-      Var('chromium_git') + '/external/linux-syscall-support/lss.git' + '@' + '952107fa7cea0daaabead28c0e92d579bee517eb',
+      Var('chromium_git') + '/external/linux-syscall-support/lss.git' + '@' + Var('lss_revision'),
 
     'src/third_party/eyesfree/src/android/java/src/com/googlecode/eyesfree/braille':
       Var('chromium_git') + '/external/eyes-free/braille/client/src/com/googlecode/eyesfree/braille.git' + '@' + '77bf6edb0138e3a38a2772248696f130dab45e34',
