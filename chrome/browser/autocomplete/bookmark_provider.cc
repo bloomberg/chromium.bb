@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/prefs/pref_service.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/autocomplete/history_provider.h"
@@ -26,6 +27,30 @@
 using bookmarks::BookmarkMatch;
 
 typedef std::vector<BookmarkMatch> BookmarkMatches;
+
+namespace {
+
+// Removes leading spaces from |title| before displaying, otherwise it looks
+// funny.  In the process, corrects |title_match_positions| so the correct
+// characters are highlighted.
+void CorrectTitleAndMatchPositions(
+    base::string16* title,
+    BookmarkMatch::MatchPositions* title_match_positions) {
+  size_t leading_whitespace_chars = title->length();
+  base::TrimWhitespace(*title, base::TRIM_LEADING, title);
+  leading_whitespace_chars-= title->length();
+  if (leading_whitespace_chars == 0)
+    return;
+  for (query_parser::Snippet::MatchPositions::iterator it =
+           title_match_positions->begin();
+       it != title_match_positions->end(); ++it) {
+    (*it) = query_parser::Snippet::MatchPosition(
+        it->first - leading_whitespace_chars,
+        it->second - leading_whitespace_chars);
+  }
+}
+
+}  // namespace
 
 // BookmarkProvider ------------------------------------------------------------
 
@@ -147,6 +172,9 @@ AutocompleteMatch BookmarkProvider::BookmarkMatchToACMatch(
   AutocompleteMatch match(this, 0, false,
                           AutocompleteMatchType::BOOKMARK_TITLE);
   base::string16 title(bookmark_match.node->GetTitle());
+  BookmarkMatch::MatchPositions new_title_match_positions =
+      bookmark_match.title_match_positions;
+  CorrectTitleAndMatchPositions(&title, &new_title_match_positions);
   const GURL& url(bookmark_match.node->url());
   const base::string16& url_utf16 = base::UTF8ToUTF16(url.spec());
   size_t inline_autocomplete_offset = URLPrefix::GetInlineAutocompleteOffset(

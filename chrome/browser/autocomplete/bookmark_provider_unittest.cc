@@ -62,6 +62,8 @@ struct BookmarksTestInfo {
   {"worming burns #10", "http://www.burned.com/" },
   {"worming burns #20", "http://www.worms.com/" },
   {"jive music", "http://www.worms.com/" },
+  // For testing strange spacing in bookmark titles.
+  {" hello1  hello2  ", "http://whatever.com/" },
 };
 
 class BookmarkProviderTest : public testing::Test {
@@ -253,6 +255,8 @@ TEST_F(BookmarkProviderTest, Positions) {
     {"frankly frankly",       1, {{{0, 7}, {8, 15}, {0, 0}}}},
     {"foobar foo",            1, {{{0, 6}, {7, 13}, {0, 0}}}},
     {"foo foobar",            1, {{{0, 6}, {7, 13}, {0, 0}}}},
+    // This one makes sure that leading whitespace in the title is removed.
+    {"hello",                 1, {{{0, 5}, {7, 12}, {0, 0}}}},
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(query_data); ++i) {
