@@ -16,6 +16,7 @@
 #include "tools/gn/ninja_copy_target_writer.h"
 #include "tools/gn/ninja_group_target_writer.h"
 #include "tools/gn/ninja_utils.h"
+#include "tools/gn/output_file.h"
 #include "tools/gn/scheduler.h"
 #include "tools/gn/string_utils.h"
 #include "tools/gn/substitution_writer.h"
@@ -142,7 +143,7 @@ void NinjaTargetWriter::WriteSharedVars(const SubstitutionBits& bits) {
     out_ << std::endl;
 }
 
-std::string NinjaTargetWriter::WriteInputDepsStampAndGetDep(
+OutputFile NinjaTargetWriter::WriteInputDepsStampAndGetDep(
     const std::vector<const Target*>& extra_hard_deps) const {
   CHECK(target_->toolchain())
       << "Toolchain not set on target "
@@ -163,7 +164,7 @@ std::string NinjaTargetWriter::WriteInputDepsStampAndGetDep(
       target_->recursive_hard_deps().empty() &&
       (!list_sources_as_input_deps || target_->sources().empty()) &&
       target_->toolchain()->deps().empty())
-    return std::string();  // No input/hard deps.
+    return OutputFile();  // No input/hard deps.
 
   // One potential optimization is if there are few input dependencies (or
   // potentially few sources that depend on these) it's better to just write
@@ -178,11 +179,9 @@ std::string NinjaTargetWriter::WriteInputDepsStampAndGetDep(
   input_stamp_file.value().append(target_->label().name());
   input_stamp_file.value().append(".inputdeps.stamp");
 
-  std::ostringstream stamp_file_stream;
-  path_output_.WriteFile(stamp_file_stream, input_stamp_file);
-  std::string stamp_file_string = stamp_file_stream.str();
-
-  out_ << "build " << stamp_file_string << ": "
+  out_ << "build ";
+  path_output_.WriteFile(out_, input_stamp_file);
+  out_ << ": "
        << GetNinjaRulePrefixForToolchain(settings_)
        << Toolchain::ToolTypeToName(Toolchain::TYPE_STAMP);
 
@@ -236,7 +235,7 @@ std::string NinjaTargetWriter::WriteInputDepsStampAndGetDep(
   }
 
   out_ << "\n";
-  return " | " + stamp_file_string;
+  return input_stamp_file;
 }
 
 void NinjaTargetWriter::WriteStampForTarget(

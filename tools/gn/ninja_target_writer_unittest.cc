@@ -22,7 +22,7 @@ class TestingNinjaTargetWriter : public NinjaTargetWriter {
   virtual void Run() OVERRIDE {}
 
   // Make this public so the test can call it.
-  std::string WriteInputDepsStampAndGetDep(
+  OutputFile WriteInputDepsStampAndGetDep(
       const std::vector<const Target*>& extra_hard_deps) {
     return NinjaTargetWriter::WriteInputDepsStampAndGetDep(extra_hard_deps);
   }
@@ -65,10 +65,10 @@ TEST(NinjaTargetWriter, WriteInputDepsStampAndGetDep) {
   {
     std::ostringstream stream;
     TestingNinjaTargetWriter writer(&base_target, setup.toolchain(), stream);
-    std::string dep =
+    OutputFile dep =
         writer.WriteInputDepsStampAndGetDep(std::vector<const Target*>());
 
-    EXPECT_EQ(" | obj/foo/base.inputdeps.stamp", dep);
+    EXPECT_EQ("obj/foo/base.inputdeps.stamp", dep.value());
     EXPECT_EQ("build obj/foo/base.inputdeps.stamp: stamp "
                   "../../foo/script.py\n",
               stream.str());
@@ -78,10 +78,10 @@ TEST(NinjaTargetWriter, WriteInputDepsStampAndGetDep) {
   {
     std::ostringstream stream;
     TestingNinjaTargetWriter writer(&target, setup.toolchain(), stream);
-    std::string dep =
+    OutputFile dep =
         writer.WriteInputDepsStampAndGetDep(std::vector<const Target*>());
 
-    EXPECT_EQ(" | obj/foo/target.inputdeps.stamp", dep);
+    EXPECT_EQ("obj/foo/target.inputdeps.stamp", dep.value());
     EXPECT_EQ("build obj/foo/target.inputdeps.stamp: stamp "
                   "../../foo/input.txt obj/foo/base.stamp\n",
               stream.str());
@@ -92,10 +92,10 @@ TEST(NinjaTargetWriter, WriteInputDepsStampAndGetDep) {
   {
     std::ostringstream stream;
     TestingNinjaTargetWriter writer(&action, setup.toolchain(), stream);
-    std::string dep =
+    OutputFile dep =
         writer.WriteInputDepsStampAndGetDep(std::vector<const Target*>());
 
-    EXPECT_EQ(" | obj/foo/action.inputdeps.stamp", dep);
+    EXPECT_EQ("obj/foo/action.inputdeps.stamp", dep.value());
     EXPECT_EQ("build obj/foo/action.inputdeps.stamp: stamp ../../foo/script.py "
                   "../../foo/action_source.txt obj/foo/base.stamp\n",
               stream.str());
@@ -125,10 +125,10 @@ TEST(NinjaTargetWriter, WriteInputDepsStampAndGetDepWithToolchainDeps) {
 
   std::ostringstream stream;
   TestingNinjaTargetWriter writer(&target, setup.toolchain(), stream);
-  std::string dep =
+  OutputFile dep =
       writer.WriteInputDepsStampAndGetDep(std::vector<const Target*>());
 
-  EXPECT_EQ(" | obj/foo/target.inputdeps.stamp", dep);
+  EXPECT_EQ("obj/foo/target.inputdeps.stamp", dep.value());
   EXPECT_EQ("build obj/foo/target.inputdeps.stamp: stamp "
                 "obj/foo/setup.stamp\n",
             stream.str());

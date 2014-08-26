@@ -125,10 +125,18 @@ TEST(NinjaBinaryTargetWriter, SourceSet) {
   }
 }
 
-TEST(NinjaBinaryTargetWriter, ProductExtension) {
+// This tests that output extension overrides apply, and input dependencies
+// are applied.
+TEST(NinjaBinaryTargetWriter, ProductExtensionAndInputDeps) {
   TestWithScope setup;
   setup.build_settings()->SetBuildDir(SourceDir("//out/Debug/"));
   setup.settings()->set_target_os(Settings::LINUX);
+
+  // An action for our library to depend on.
+  Target action(setup.settings(), Label(SourceDir("//foo/"), "action"));
+  action.set_output_type(Target::ACTION_FOREACH);
+  action.SetToolchain(setup.toolchain());
+  action.OnResolved();
 
   // A shared library w/ the product_extension set to a custom value.
   Target target(setup.settings(), Label(SourceDir("//foo/"), "shlib"));
@@ -136,6 +144,7 @@ TEST(NinjaBinaryTargetWriter, ProductExtension) {
   target.set_output_extension(std::string("so.6"));
   target.sources().push_back(SourceFile("//foo/input1.cc"));
   target.sources().push_back(SourceFile("//foo/input2.cc"));
+  target.deps().push_back(LabelTargetPair(&action));
   target.SetToolchain(setup.toolchain());
   target.OnResolved();
 
@@ -155,11 +164,17 @@ TEST(NinjaBinaryTargetWriter, ProductExtension) {
       "target_out_dir = obj/foo\n"
       "target_output_name = libshlib\n"
       "\n"
-      "build obj/foo/libshlib.input1.o: cxx ../../foo/input1.cc\n"
-      "build obj/foo/libshlib.input2.o: cxx ../../foo/input2.cc\n"
+      "build obj/foo/shlib.inputdeps.stamp: stamp obj/foo/action.stamp\n"
+      "build obj/foo/libshlib.input1.o: cxx ../../foo/input1.cc"
+        " || obj/foo/shlib.inputdeps.stamp\n"
+      "build obj/foo/libshlib.input2.o: cxx ../../foo/input2.cc"
+        " || obj/foo/shlib.inputdeps.stamp\n"
       "\n"
       "build ./libshlib.so.6: solink obj/foo/libshlib.input1.o "
-          "obj/foo/libshlib.input2.o\n"
+      // The order-only dependency here is stricly unnecessary since the
+      // sources list this as an order-only dep. See discussion in the code
+      // that writes this.
+          "obj/foo/libshlib.input2.o || obj/foo/action.stamp\n"
       "  ldflags =\n"
       "  libs =\n"
       "  output_extension = .so.6\n";

@@ -12,6 +12,7 @@
 #include "tools/gn/substitution_type.h"
 
 class FileTemplate;
+class OutputFile;
 class Settings;
 class Target;
 
@@ -33,12 +34,11 @@ class NinjaTargetWriter {
   void WriteSharedVars(const SubstitutionBits& bits);
 
   // Writes to the output stream a stamp rule for input dependencies, and
-  // returns the string to be appended to source rules that encodes the
-  // order-only dependencies for the current target. This will include the "|"
-  // character so can just be appended to the source rules. If there are no
-  // implicit dependencies and no extra target dependencies passed in, returns
-  // the empty string.
-  std::string WriteInputDepsStampAndGetDep(
+  // returns the file to be appended to source rules that encodes the
+  // order-only dependencies for the current target. The returned OutputFile
+  // will be empty if there are no implicit dependencies and no extra target
+  // dependencies passed in.
+  OutputFile WriteInputDepsStampAndGetDep(
       const std::vector<const Target*>& extra_hard_deps) const;
 
   // Writes to the output file a final stamp rule for the target that stamps

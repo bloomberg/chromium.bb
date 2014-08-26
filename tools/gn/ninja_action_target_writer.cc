@@ -40,7 +40,7 @@ void NinjaActionTargetWriter::Run() {
   // build rule. This should probably be handled by WriteInputDepsStampAndGetDep
   // automatically if we supply a count of sources (so it can optimize based on
   // how many times things would be duplicated).
-  std::string implicit_deps = WriteInputDepsStampAndGetDep(extra_hard_deps);
+  OutputFile input_dep = WriteInputDepsStampAndGetDep(extra_hard_deps);
   out_ << std::endl;
 
   // Collects all output files for writing below.
@@ -48,7 +48,7 @@ void NinjaActionTargetWriter::Run() {
 
   if (target_->output_type() == Target::ACTION_FOREACH) {
     // Write separate build lines for each input source file.
-    WriteSourceRules(custom_rule_name, implicit_deps, &output_files);
+    WriteSourceRules(custom_rule_name, input_dep, &output_files);
   } else {
     DCHECK(target_->output_type() == Target::ACTION);
 
@@ -59,7 +59,14 @@ void NinjaActionTargetWriter::Run() {
         settings_, target_->action_values().outputs(), &output_files);
     path_output_.WriteFiles(out_, output_files);
 
-    out_ << ": " << custom_rule_name << implicit_deps << std::endl;
+    out_ << ": " << custom_rule_name;
+    if (!input_dep.value().empty()) {
+      // As in WriteSourceRules, we want to force this target to rebuild any
+      // time any of its dependencies change.
+      out_ << " | ";
+      path_output_.WriteFile(out_, input_dep);
+    }
+    out_ << std::endl;
     if (target_->action_values().has_depfile()) {
       out_ << "  depfile = ";
       WriteDepfile(SourceFile());
@@ -144,7 +151,7 @@ std::string NinjaActionTargetWriter::WriteRuleDefinition() {
 
 void NinjaActionTargetWriter::WriteSourceRules(
     const std::string& custom_rule_name,
-    const std::string& implicit_deps,
+    const OutputFile& input_dep,
     std::vector<OutputFile>* output_files) {
   EscapeOptions args_escape_options;
   args_escape_options.mode = ESCAPE_NINJA_COMMAND;
@@ -162,7 +169,15 @@ void NinjaActionTargetWriter::WriteSourceRules(
 
     out_ << ": " << custom_rule_name << " ";
     path_output_.WriteFile(out_, sources[i]);
-    out_ << implicit_deps << std::endl;
+    if (!input_dep.value().empty()) {
+      // Using "|" for the dependencies forces all implicit dependencies to be
+      // fully up-to-date before running the action, and will re-run this
+      // action if any input dependencies change. This is important because
+      // this action may consume the outputs of previous steps.
+      out_ << " | ";
+      path_output_.WriteFile(out_, input_dep);
+    }
+    out_ << std::endl;
 
     // Windows needs a unique ID for the response file.
     if (target_->settings()->IsWin())
