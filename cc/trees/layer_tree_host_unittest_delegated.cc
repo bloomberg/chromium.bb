@@ -563,7 +563,7 @@ class LayerTreeHostDelegatedTestLayerUsesFrameDamage
       case 17:
         // Make another layer that uses the same frame provider. The new layer
         // should be damaged.
-        delegated_copy_ = CreateDelegatedLayer(frame_provider_);
+        delegated_copy_ = CreateDelegatedLayer(frame_provider_.get());
         delegated_copy_->SetPosition(gfx::Point(5, 0));
 
         // Also set a new frame.

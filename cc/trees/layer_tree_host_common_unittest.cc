@@ -581,7 +581,7 @@ TEST_F(LayerTreeHostCommonTest, TransformsForSingleRenderSurface) {
 
   // Render surface should have been created now.
   ASSERT_TRUE(child->render_surface());
-  ASSERT_EQ(child, child->render_target());
+  ASSERT_EQ(child.get(), child->render_target());
 
   // The child layer's draw transform should refer to its new render surface.
   // The screen-space transform, however, should still refer to the root.
@@ -686,7 +686,7 @@ TEST_F(LayerTreeHostCommonTest, TransformsForReplica) {
 
   // Render surface should have been created now.
   ASSERT_TRUE(child->render_surface());
-  ASSERT_EQ(child, child->render_target());
+  ASSERT_EQ(child.get(), child->render_target());
 
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       replica_composite_transform,
@@ -889,17 +889,17 @@ TEST_F(LayerTreeHostCommonTest, TransformsForRenderSurfaceHierarchy) {
   ASSERT_FALSE(grand_child_of_rs2->render_surface());
 
   // Verify all render target accessors
-  EXPECT_EQ(root, parent->render_target());
-  EXPECT_EQ(root, child_of_root->render_target());
-  EXPECT_EQ(root, grand_child_of_root->render_target());
+  EXPECT_EQ(root.get(), parent->render_target());
+  EXPECT_EQ(root.get(), child_of_root->render_target());
+  EXPECT_EQ(root.get(), grand_child_of_root->render_target());
 
-  EXPECT_EQ(render_surface1, render_surface1->render_target());
-  EXPECT_EQ(render_surface1, child_of_rs1->render_target());
-  EXPECT_EQ(render_surface1, grand_child_of_rs1->render_target());
+  EXPECT_EQ(render_surface1.get(), render_surface1->render_target());
+  EXPECT_EQ(render_surface1.get(), child_of_rs1->render_target());
+  EXPECT_EQ(render_surface1.get(), grand_child_of_rs1->render_target());
 
-  EXPECT_EQ(render_surface2, render_surface2->render_target());
-  EXPECT_EQ(render_surface2, child_of_rs2->render_target());
-  EXPECT_EQ(render_surface2, grand_child_of_rs2->render_target());
+  EXPECT_EQ(render_surface2.get(), render_surface2->render_target());
+  EXPECT_EQ(render_surface2.get(), child_of_rs2->render_target());
+  EXPECT_EQ(render_surface2.get(), grand_child_of_rs2->render_target());
 
   // Verify layer draw transforms note that draw transforms are described with
   // respect to the nearest ancestor render surface but screen space transforms
@@ -2179,17 +2179,17 @@ TEST_F(LayerTreeHostCommonTest, AnimationsForRenderSurfaceHierarchy) {
   ASSERT_FALSE(grand_child_of_rs2->render_surface());
 
   // Verify all render target accessors
-  EXPECT_EQ(parent, parent->render_target());
-  EXPECT_EQ(parent, child_of_root->render_target());
-  EXPECT_EQ(parent, grand_child_of_root->render_target());
+  EXPECT_EQ(parent.get(), parent->render_target());
+  EXPECT_EQ(parent.get(), child_of_root->render_target());
+  EXPECT_EQ(parent.get(), grand_child_of_root->render_target());
 
-  EXPECT_EQ(render_surface1, render_surface1->render_target());
-  EXPECT_EQ(render_surface1, child_of_rs1->render_target());
-  EXPECT_EQ(render_surface1, grand_child_of_rs1->render_target());
+  EXPECT_EQ(render_surface1.get(), render_surface1->render_target());
+  EXPECT_EQ(render_surface1.get(), child_of_rs1->render_target());
+  EXPECT_EQ(render_surface1.get(), grand_child_of_rs1->render_target());
 
-  EXPECT_EQ(render_surface2, render_surface2->render_target());
-  EXPECT_EQ(render_surface2, child_of_rs2->render_target());
-  EXPECT_EQ(render_surface2, grand_child_of_rs2->render_target());
+  EXPECT_EQ(render_surface2.get(), render_surface2->render_target());
+  EXPECT_EQ(render_surface2.get(), child_of_rs2->render_target());
+  EXPECT_EQ(render_surface2.get(), grand_child_of_rs2->render_target());
 
   // Verify draw_opacity_is_animating values
   EXPECT_FALSE(parent->draw_opacity_is_animating());
@@ -4237,7 +4237,7 @@ TEST_F(LayerTreeHostCommonTest, SurfaceLayerTransformsInHighDPI) {
       root.get(), parent->bounds(), &render_surface_layer_list);
   inputs.device_scale_factor = device_scale_factor;
   inputs.page_scale_factor = page_scale_factor;
-  inputs.page_scale_application_layer = root;
+  inputs.page_scale_application_layer = root.get();
   inputs.can_adjust_raster_scales = true;
   LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
@@ -5564,18 +5564,18 @@ TEST_F(LayerTreeHostCommonTest, SubtreeSearch) {
   host->SetRootLayer(root);
 
   int nonexistent_id = -1;
-  EXPECT_EQ(root,
+  EXPECT_EQ(root.get(),
             LayerTreeHostCommon::FindLayerInSubtree(root.get(), root->id()));
-  EXPECT_EQ(child,
+  EXPECT_EQ(child.get(),
             LayerTreeHostCommon::FindLayerInSubtree(root.get(), child->id()));
   EXPECT_EQ(
-      grand_child,
+      grand_child.get(),
       LayerTreeHostCommon::FindLayerInSubtree(root.get(), grand_child->id()));
   EXPECT_EQ(
-      mask_layer,
+      mask_layer.get(),
       LayerTreeHostCommon::FindLayerInSubtree(root.get(), mask_layer->id()));
   EXPECT_EQ(
-      replica_layer,
+      replica_layer.get(),
       LayerTreeHostCommon::FindLayerInSubtree(root.get(), replica_layer->id()));
   EXPECT_EQ(
       0, LayerTreeHostCommon::FindLayerInSubtree(root.get(), nonexistent_id));
@@ -7362,11 +7362,11 @@ TEST_F(LayerTreeHostCommonTest, ClippedByOutOfOrderScrollGrandparent) {
   // correct clip, the layer lists should be unaffected.
   EXPECT_EQ(3u, root->render_surface()->layer_list().size());
   EXPECT_EQ(scroll_child.get(),
-            root->render_surface()->layer_list().at(0));
+            root->render_surface()->layer_list().at(0).get());
   EXPECT_EQ(scroll_parent.get(),
-            root->render_surface()->layer_list().at(1));
+            root->render_surface()->layer_list().at(1).get());
   EXPECT_EQ(scroll_grandparent.get(),
-            root->render_surface()->layer_list().at(2));
+            root->render_surface()->layer_list().at(2).get());
 }
 
 TEST_F(LayerTreeHostCommonTest, OutOfOrderClippingRequiresRSLLSorting) {

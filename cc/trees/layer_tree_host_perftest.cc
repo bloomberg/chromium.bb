@@ -184,7 +184,8 @@ class LayerTreeHostPerfTestLeafInvalidates
     // Find a leaf layer.
     for (layer_to_invalidate_ = layer_tree_host()->root_layer();
          layer_to_invalidate_->children().size();
-         layer_to_invalidate_ = layer_to_invalidate_->children()[0]) {}
+         layer_to_invalidate_ = layer_to_invalidate_->children()[0].get()) {
+    }
   }
 
   virtual void DidCommitAndDrawFrame() OVERRIDE {

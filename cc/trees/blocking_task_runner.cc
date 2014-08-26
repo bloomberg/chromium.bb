@@ -42,7 +42,7 @@ scoped_refptr<BlockingTaskRunner> BlockingTaskRunner::current() {
     }
   }
 
-  if (current_task_runner)
+  if (current_task_runner.get())
     return current_task_runner;
 
   scoped_refptr<BlockingTaskRunner> runner =

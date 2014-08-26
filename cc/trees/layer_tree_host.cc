@@ -71,8 +71,8 @@ scoped_ptr<LayerTreeHost> LayerTreeHost::CreateThreaded(
     const LayerTreeSettings& settings,
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner) {
-  DCHECK(main_task_runner);
-  DCHECK(impl_task_runner);
+  DCHECK(main_task_runner.get());
+  DCHECK(impl_task_runner.get());
   scoped_ptr<LayerTreeHost> layer_tree_host(
       new LayerTreeHost(client, manager, settings));
   layer_tree_host->InitializeThreaded(main_task_runner, impl_task_runner);
@@ -325,12 +325,12 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
   sync_tree->set_background_color(background_color_);
   sync_tree->set_has_transparent_background(has_transparent_background_);
 
-  if (page_scale_layer_ && inner_viewport_scroll_layer_) {
-    sync_tree->SetViewportLayersFromIds(
-        page_scale_layer_->id(),
-        inner_viewport_scroll_layer_->id(),
-        outer_viewport_scroll_layer_ ? outer_viewport_scroll_layer_->id()
-                                     : Layer::INVALID_ID);
+  if (page_scale_layer_.get() && inner_viewport_scroll_layer_.get()) {
+    sync_tree->SetViewportLayersFromIds(page_scale_layer_->id(),
+                                        inner_viewport_scroll_layer_->id(),
+                                        outer_viewport_scroll_layer_.get()
+                                            ? outer_viewport_scroll_layer_->id()
+                                            : Layer::INVALID_ID);
   } else {
     sync_tree->ClearViewportLayers();
   }
@@ -796,11 +796,11 @@ bool LayerTreeHost::UpdateLayers(Layer* root_layer,
     UpdateHudLayer();
 
     Layer* root_scroll = FindFirstScrollableLayer(root_layer);
-    Layer* page_scale_layer = page_scale_layer_;
+    Layer* page_scale_layer = page_scale_layer_.get();
     if (!page_scale_layer && root_scroll)
       page_scale_layer = root_scroll->parent();
 
-    if (hud_layer_) {
+    if (hud_layer_.get()) {
       hud_layer_->PrepareForCalculateDrawProperties(
           device_viewport_size(), device_scale_factor_);
     }
@@ -1079,12 +1079,12 @@ void LayerTreeHost::ApplyScrollAndScale(ScrollAndScaleSet* info) {
     // Preemptively apply the scroll offset and scale delta here before sending
     // it to the client.  If the client comes back and sets it to the same
     // value, then the layer can early out without needing a full commit.
-    DCHECK(inner_viewport_scroll_layer_);  // We should always have this.
+    DCHECK(inner_viewport_scroll_layer_.get());  // We should always have this.
 
     inner_viewport_scroll_layer_->SetScrollOffsetFromImplSide(
         inner_viewport_scroll_layer_->scroll_offset() +
         inner_viewport_scroll_delta);
-    if (outer_viewport_scroll_layer_) {
+    if (outer_viewport_scroll_layer_.get()) {
       outer_viewport_scroll_layer_->SetScrollOffsetFromImplSide(
           outer_viewport_scroll_layer_->scroll_offset() +
           outer_viewport_scroll_delta);

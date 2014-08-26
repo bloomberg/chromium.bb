@@ -616,8 +616,8 @@ TEST_F(TreeSynchronizerTest, SynchronizeScrollParent) {
   host_->SetRootLayer(layer_tree_root);
 
   // First child is the second and third child's scroll parent.
-  layer_tree_root->children()[1]->SetScrollParent(scroll_parent);
-  layer_tree_root->children()[2]->SetScrollParent(scroll_parent);
+  layer_tree_root->children()[1]->SetScrollParent(scroll_parent.get());
+  layer_tree_root->children()[2]->SetScrollParent(scroll_parent.get());
 
   scoped_ptr<LayerImpl> layer_impl_tree_root =
       TreeSynchronizer::SynchronizeTrees(layer_tree_root.get(),
@@ -650,7 +650,7 @@ TEST_F(TreeSynchronizerTest, SynchronizeScrollParent) {
   // Add an additional scroll layer.
   scoped_refptr<Layer> additional_scroll_child = Layer::Create();
   layer_tree_root->AddChild(additional_scroll_child);
-  additional_scroll_child->SetScrollParent(scroll_parent);
+  additional_scroll_child->SetScrollParent(scroll_parent.get());
   layer_impl_tree_root =
       TreeSynchronizer::SynchronizeTrees(layer_tree_root.get(),
                                          layer_impl_tree_root.Pass(),
@@ -693,8 +693,8 @@ TEST_F(TreeSynchronizerTest, SynchronizeClipParent) {
   host_->SetRootLayer(layer_tree_root);
 
   // First child is the second and third child's scroll parent.
-  clip_child1->SetClipParent(clip_parent);
-  clip_child2->SetClipParent(clip_parent);
+  clip_child1->SetClipParent(clip_parent.get());
+  clip_child2->SetClipParent(clip_parent.get());
 
   scoped_ptr<LayerImpl> layer_impl_tree_root =
       TreeSynchronizer::SynchronizeTrees(layer_tree_root.get(),
@@ -723,7 +723,7 @@ TEST_F(TreeSynchronizerTest, SynchronizeClipParent) {
   // Add an additional clip child.
   scoped_refptr<Layer> additional_clip_child = Layer::Create();
   intervening->AddChild(additional_clip_child);
-  additional_clip_child->SetClipParent(clip_parent);
+  additional_clip_child->SetClipParent(clip_parent.get());
   layer_impl_tree_root =
       TreeSynchronizer::SynchronizeTrees(layer_tree_root.get(),
                                          layer_impl_tree_root.Pass(),

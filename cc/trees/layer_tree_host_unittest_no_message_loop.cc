@@ -165,7 +165,8 @@ class LayerTreeHostNoMessageLoopDelegatedLayer
         resource_collection_.get(), CreateFrameDataWithResource(998));
 
     root_layer_ = Layer::Create();
-    delegated_layer_ = FakeDelegatedRendererLayer::Create(frame_provider_);
+    delegated_layer_ =
+        FakeDelegatedRendererLayer::Create(frame_provider_.get());
     delegated_layer_->SetBounds(size_);
     delegated_layer_->SetIsDrawable(true);
     root_layer_->AddChild(delegated_layer_);

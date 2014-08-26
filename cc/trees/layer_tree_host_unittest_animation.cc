@@ -1164,7 +1164,7 @@ class LayerTreeHostAnimationTestAnimationsAddedToNewAndExistingLayers
       layer_tree_host()->root_layer()->AddChild(layer);
       layer->set_layer_animation_delegate(this);
       layer->SetBounds(gfx::Size(4, 4));
-      AddOpacityTransitionToLayer(layer, 1, 0.f, 0.5f, true);
+      AddOpacityTransitionToLayer(layer.get(), 1, 0.f, 0.5f, true);
     }
   }
 

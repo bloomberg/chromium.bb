@@ -3939,7 +3939,7 @@ class LayerInvalidateCausesDraw : public LayerTreeHostTest {
   LayerInvalidateCausesDraw() : num_commits_(0), num_draws_(0) {}
 
   virtual void BeginTest() OVERRIDE {
-    ASSERT_TRUE(!!invalidate_layer_)
+    ASSERT_TRUE(!!invalidate_layer_.get())
         << "Derived tests must set this in SetupTree";
 
     // One initial commit.
@@ -4332,14 +4332,14 @@ class LayerTreeHostTestSetMemoryPolicyOnLostOutputSurface
 
   virtual scoped_ptr<FakeOutputSurface> CreateFakeOutputSurface(bool fallback)
       OVERRIDE {
-    if (!first_context_provider_) {
+    if (!first_context_provider_.get()) {
       first_context_provider_ = TestContextProvider::Create();
     } else {
-      EXPECT_FALSE(second_context_provider_);
+      EXPECT_FALSE(second_context_provider_.get());
       second_context_provider_ = TestContextProvider::Create();
     }
 
-    scoped_refptr<TestContextProvider> provider(second_context_provider_
+    scoped_refptr<TestContextProvider> provider(second_context_provider_.get()
                                                     ? second_context_provider_
                                                     : first_context_provider_);
     scoped_ptr<FakeOutputSurface> output_surface;
@@ -4349,8 +4349,8 @@ class LayerTreeHostTestSetMemoryPolicyOnLostOutputSurface
       output_surface = FakeOutputSurface::Create3d(provider);
     output_surface->SetMemoryPolicyToSetAtBind(
         make_scoped_ptr(new ManagedMemoryPolicy(
-            second_context_provider_ ? second_output_surface_memory_limit_
-                                     : first_output_surface_memory_limit_,
+            second_context_provider_.get() ? second_output_surface_memory_limit_
+                                           : first_output_surface_memory_limit_,
             gpu::MemoryAllocation::CUTOFF_ALLOW_NICE_TO_HAVE,
             ManagedMemoryPolicy::kDefaultNumResourcesLimit)));
     return output_surface.Pass();
@@ -4999,8 +4999,9 @@ class LayerTreeHostTestContinuousPainting : public LayerTreeHostTest {
   virtual void AfterTest() OVERRIDE {
     EXPECT_LE(kExpectedNumCommits, num_commits_);
     EXPECT_LE(kExpectedNumCommits, num_draws_);
-    int update_count = content_layer_ ? content_layer_->PaintContentsCount()
-                                      : picture_layer_->update_count();
+    int update_count = content_layer_.get()
+                           ? content_layer_->PaintContentsCount()
+                           : picture_layer_->update_count();
     EXPECT_LE(kExpectedNumCommits, update_count);
   }
 

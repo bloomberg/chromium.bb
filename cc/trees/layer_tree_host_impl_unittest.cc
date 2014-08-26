@@ -5566,8 +5566,8 @@ TEST_F(LayerTreeHostImplTest, ForcedDrawToSoftwareDeviceBasicRender) {
   EXPECT_EQ(1, software_device->frames_ended_);
 
   // Call other API methods that are likely to hit NULL pointer in this mode.
-  EXPECT_TRUE(host_impl_->AsValue());
-  EXPECT_TRUE(host_impl_->ActivationStateAsValue());
+  EXPECT_TRUE(host_impl_->AsValue().get());
+  EXPECT_TRUE(host_impl_->ActivationStateAsValue().get());
 }
 
 TEST_F(LayerTreeHostImplTest,

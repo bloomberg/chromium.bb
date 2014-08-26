@@ -50,7 +50,7 @@ class LayerTreeHostScrollTestScrollSimple : public LayerTreeHostScrollTest {
 
   virtual void Layout() OVERRIDE {
     Layer* root = layer_tree_host()->root_layer();
-    Layer* scroll_layer = root->children()[0];
+    Layer* scroll_layer = root->children()[0].get();
     if (!layer_tree_host()->source_frame_number()) {
       EXPECT_VECTOR_EQ(initial_scroll_, scroll_layer->scroll_offset());
     } else {
@@ -221,7 +221,8 @@ class LayerTreeHostScrollTestScrollAbortedCommit
 
   virtual void WillBeginMainFrame() OVERRIDE {
     num_will_begin_main_frames_++;
-    Layer* root_scroll_layer = layer_tree_host()->root_layer()->children()[0];
+    Layer* root_scroll_layer =
+        layer_tree_host()->root_layer()->children()[0].get();
     switch (num_will_begin_main_frames_) {
       case 1:
         // This will not be aborted because of the initial prop changes.
@@ -773,7 +774,7 @@ class ImplSidePaintingScrollTestSimple : public ImplSidePaintingScrollTest {
 
   virtual void Layout() OVERRIDE {
     Layer* root = layer_tree_host()->root_layer();
-    Layer* scroll_layer = root->children()[0];
+    Layer* scroll_layer = root->children()[0].get();
     if (!layer_tree_host()->source_frame_number()) {
       EXPECT_VECTOR_EQ(scroll_layer->scroll_offset(), initial_scroll_);
     } else {
@@ -901,7 +902,7 @@ class ImplSidePaintingScrollTestImplOnlyScroll
 
   virtual void WillCommit() OVERRIDE {
     Layer* root = layer_tree_host()->root_layer();
-    Layer* scroll_layer = root->children()[0];
+    Layer* scroll_layer = root->children()[0].get();
     switch (layer_tree_host()->source_frame_number()) {
       case 0:
         EXPECT_TRUE(scroll_layer->needs_push_properties());
