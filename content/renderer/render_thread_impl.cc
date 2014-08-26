@@ -1111,9 +1111,9 @@ RenderThreadImpl::GetGpuFactories() {
   scoped_refptr<base::MessageLoopProxy> media_loop_proxy =
       GetMediaThreadMessageLoopProxy();
   if (!cmd_line->HasSwitch(switches::kDisableAcceleratedVideoDecode)) {
-    if (!gpu_va_context_provider_ ||
+    if (!gpu_va_context_provider_.get() ||
         gpu_va_context_provider_->DestroyedOnMainThread()) {
-      if (!gpu_channel_host) {
+      if (!gpu_channel_host.get()) {
         gpu_channel_host = EstablishGpuChannelSync(
             CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE);
       }
@@ -1131,9 +1131,9 @@ RenderThreadImpl::GetGpuFactories() {
           "GPU-VideoAccelerator-Offscreen");
     }
   }
-  if (gpu_va_context_provider_) {
+  if (gpu_va_context_provider_.get()) {
     gpu_factories = RendererGpuVideoAcceleratorFactories::Create(
-        gpu_channel_host, media_loop_proxy, gpu_va_context_provider_);
+        gpu_channel_host.get(), media_loop_proxy, gpu_va_context_provider_);
   }
   return gpu_factories;
 }
@@ -1158,7 +1158,7 @@ RenderThreadImpl::CreateOffscreenContext3d() {
 scoped_refptr<webkit::gpu::ContextProviderWebContext>
 RenderThreadImpl::SharedMainThreadContextProvider() {
   DCHECK(IsMainThread());
-  if (!shared_main_thread_contexts_ ||
+  if (!shared_main_thread_contexts_.get() ||
       shared_main_thread_contexts_->DestroyedOnMainThread()) {
     shared_main_thread_contexts_ = NULL;
 #if defined(OS_ANDROID)
@@ -1168,11 +1168,11 @@ RenderThreadImpl::SharedMainThreadContextProvider() {
           GetOffscreenAttribs(), "Offscreen-MainThread");
     }
 #endif
-    if (!shared_main_thread_contexts_) {
+    if (!shared_main_thread_contexts_.get()) {
       shared_main_thread_contexts_ = ContextProviderCommandBuffer::Create(
           CreateOffscreenContext3d(), "Offscreen-MainThread");
     }
-    if (shared_main_thread_contexts_ &&
+    if (shared_main_thread_contexts_.get() &&
         !shared_main_thread_contexts_->BindToCurrentThread())
       shared_main_thread_contexts_ = NULL;
   }

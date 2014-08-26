@@ -1297,7 +1297,7 @@ void RenderWidget::QueueMessage(IPC::Message* msg,
   scoped_ptr<cc::SwapPromise> swap_promise =
       QueueMessageImpl(msg,
                        policy,
-                       frame_swap_message_queue_,
+                       frame_swap_message_queue_.get(),
                        RenderThreadImpl::current()->sync_message_filter(),
                        compositor_->commitRequested(),
                        compositor_->GetSourceFrameNumber());
@@ -2103,7 +2103,7 @@ RenderWidget::CreateGraphicsContext3D() {
       CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE;
   scoped_refptr<GpuChannelHost> gpu_channel_host(
       RenderThreadImpl::current()->EstablishGpuChannelSync(cause));
-  if (!gpu_channel_host)
+  if (!gpu_channel_host.get())
     return scoped_ptr<WebGraphicsContext3DCommandBufferImpl>();
 
   // Explicitly disable antialiasing for the compositor. As of the time of

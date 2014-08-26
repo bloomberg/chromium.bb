@@ -154,7 +154,7 @@ void EmbeddedWorkerContextClient::workerContextFailedToStart() {
 
 void EmbeddedWorkerContextClient::workerContextStarted(
     blink::WebServiceWorkerContextProxy* proxy) {
-  DCHECK(!worker_task_runner_);
+  DCHECK(!worker_task_runner_.get());
   worker_task_runner_ = new WorkerThreadTaskRunner(
       WorkerTaskRunner::Instance()->CurrentWorkerId());
   DCHECK_NE(0, WorkerTaskRunner::Instance()->CurrentWorkerId());

@@ -68,7 +68,7 @@ class QueueMessageSwapPromiseTest : public testing::Test {
                                                int source_frame_number) {
     return TestRenderWidget::QueueMessageImpl(msg,
                                               policy,
-                                              frame_swap_message_queue_,
+                                              frame_swap_message_queue_.get(),
                                               sync_message_filter_,
                                               commit_requested,
                                               source_frame_number).Pass();

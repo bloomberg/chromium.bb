@@ -242,10 +242,10 @@ RendererWebKitPlatformSupportImpl::RendererWebKitPlatformSupportImpl()
     sync_message_filter_ = ChildThread::current()->sync_message_filter();
     thread_safe_sender_ = ChildThread::current()->thread_safe_sender();
     quota_message_filter_ = ChildThread::current()->quota_message_filter();
-    blob_registry_.reset(new WebBlobRegistryImpl(thread_safe_sender_));
-    web_idb_factory_.reset(new WebIDBFactoryImpl(thread_safe_sender_));
+    blob_registry_.reset(new WebBlobRegistryImpl(thread_safe_sender_.get()));
+    web_idb_factory_.reset(new WebIDBFactoryImpl(thread_safe_sender_.get()));
     web_database_observer_impl_.reset(
-        new WebDatabaseObserverImpl(sync_message_filter_));
+        new WebDatabaseObserverImpl(sync_message_filter_.get()));
   }
 }
 
@@ -981,7 +981,7 @@ blink::WebGraphicsContext3DProvider* RendererWebKitPlatformSupportImpl::
     createSharedOffscreenGraphicsContext3DProvider() {
   scoped_refptr<webkit::gpu::ContextProviderWebContext> provider =
       RenderThreadImpl::current()->SharedMainThreadContextProvider();
-  if (!provider)
+  if (!provider.get())
     return NULL;
   return new WebGraphicsContext3DProviderImpl(provider);
 }

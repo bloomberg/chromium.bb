@@ -137,7 +137,7 @@ void RenderFrameProxy::Init(blink::WebRemoteFrame* web_frame,
 }
 
 void RenderFrameProxy::DidCommitCompositorFrame() {
-  if (compositing_helper_)
+  if (compositing_helper_.get())
     compositing_helper_->DidCommitCompositorFrame();
 }
 
@@ -182,13 +182,13 @@ void RenderFrameProxy::OnDeleteProxy() {
 }
 
 void RenderFrameProxy::OnChildFrameProcessGone() {
-  if (compositing_helper_)
+  if (compositing_helper_.get())
     compositing_helper_->ChildFrameGone();
 }
 
 void RenderFrameProxy::OnBuffersSwapped(
     const FrameMsg_BuffersSwapped_Params& params) {
-  if (!compositing_helper_) {
+  if (!compositing_helper_.get()) {
     compositing_helper_ =
         ChildFrameCompositingHelper::CreateForRenderFrameProxy(this);
     compositing_helper_->EnableCompositing(true);
@@ -209,7 +209,7 @@ void RenderFrameProxy::OnCompositorFrameSwapped(const IPC::Message& message) {
   scoped_ptr<cc::CompositorFrame> frame(new cc::CompositorFrame);
   param.a.frame.AssignTo(frame.get());
 
-  if (!compositing_helper_) {
+  if (!compositing_helper_.get()) {
     compositing_helper_ =
         ChildFrameCompositingHelper::CreateForRenderFrameProxy(this);
     compositing_helper_->EnableCompositing(true);

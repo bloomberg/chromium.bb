@@ -149,7 +149,7 @@ void BrowserPlugin::ParseAllowTransparencyAttribute() {
 
   bool opaque = !GetAllowTransparencyAttribute();
 
-  if (compositing_helper_)
+  if (compositing_helper_.get())
     compositing_helper_->SetContentsOpaque(opaque);
 
   browser_plugin_manager()->Send(new BrowserPluginHostMsg_SetContentsOpaque(
@@ -163,7 +163,7 @@ void BrowserPlugin::Attach() {
     attached_ = false;
     guest_crashed_ = false;
     EnableCompositing(false);
-    if (compositing_helper_) {
+    if (compositing_helper_.get()) {
       compositing_helper_->OnContainerDestroy();
       compositing_helper_ = NULL;
     }
@@ -233,7 +233,7 @@ void BrowserPlugin::OnCopyFromCompositingSurface(int browser_plugin_instance_id,
                                                  int request_id,
                                                  gfx::Rect source_rect,
                                                  gfx::Size dest_size) {
-  if (!compositing_helper_) {
+  if (!compositing_helper_.get()) {
     browser_plugin_manager()->Send(
         new BrowserPluginHostMsg_CopyFromCompositingSurfaceAck(
             render_view_routing_id_,
@@ -405,7 +405,7 @@ bool BrowserPlugin::initialize(WebPluginContainer* container) {
 }
 
 void BrowserPlugin::EnableCompositing(bool enable) {
-  bool enabled = !!compositing_helper_;
+  bool enabled = !!compositing_helper_.get();
   if (enabled == enable)
     return;
 
