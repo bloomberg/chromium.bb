@@ -347,6 +347,9 @@ class PowerManagerClientImpl : public PowerManagerClient {
             << (old_owner.empty() ? "[none]" : old_owner.c_str())
             << ", new owner is "
             << (new_owner.empty() ? "[none]" : new_owner.c_str()) << ")";
+    suspend_is_pending_ = false;
+    pending_suspend_id_ = -1;
+    suspending_from_dark_resume_ = false;
     if (!new_owner.empty()) {
       VLOG(1) << "Sending initial state to power manager";
       RegisterSuspendDelays();
