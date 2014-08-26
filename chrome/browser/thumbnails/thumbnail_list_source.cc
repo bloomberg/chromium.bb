@@ -94,6 +94,11 @@ void ThumbnailListSource::StartDataRequest(
     int render_process_id,
     int render_frame_id,
     const content::URLDataSource::GotDataCallback& callback) {
+  if (!profile_->GetTopSites()) {
+    callback.Run(NULL);
+    return;
+  }
+
   profile_->GetTopSites()->GetMostVisitedURLs(
       base::Bind(&ThumbnailListSource::OnMostVisitedURLsAvailable,
                  weak_ptr_factory_.GetWeakPtr(),
