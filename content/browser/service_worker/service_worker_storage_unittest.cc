@@ -351,9 +351,10 @@ TEST_F(ServiceWorkerStorageTest, StoreFindUpdateDeleteRegistration) {
   // Store something.
   scoped_refptr<ServiceWorkerRegistration> live_registration =
       new ServiceWorkerRegistration(
-          kScope, kScript, kRegistrationId, context_ptr_);
-  scoped_refptr<ServiceWorkerVersion> live_version = new ServiceWorkerVersion(
-      live_registration.get(), kVersionId, context_ptr_);
+          kScope, kRegistrationId, context_ptr_);
+  scoped_refptr<ServiceWorkerVersion> live_version =
+      new ServiceWorkerVersion(
+          live_registration.get(), kScript, kVersionId, context_ptr_);
   live_version->SetStatus(ServiceWorkerVersion::INSTALLED);
   live_registration->SetWaitingVersion(live_version.get());
   live_registration->set_last_update_check(kYesterday);
@@ -423,7 +424,7 @@ TEST_F(ServiceWorkerStorageTest, StoreFindUpdateDeleteRegistration) {
   // Trying to update a unstored registration to active should fail.
   scoped_refptr<ServiceWorkerRegistration> unstored_registration =
       new ServiceWorkerRegistration(
-          kScope, kScript, kRegistrationId + 1, context_ptr_);
+          kScope, kRegistrationId + 1, context_ptr_);
   EXPECT_EQ(SERVICE_WORKER_ERROR_NOT_FOUND,
             UpdateToActiveState(unstored_registration));
   unstored_registration = NULL;
@@ -470,9 +471,10 @@ TEST_F(ServiceWorkerStorageTest, InstallingRegistrationsAreFindable) {
   // Create an unstored registration.
   scoped_refptr<ServiceWorkerRegistration> live_registration =
       new ServiceWorkerRegistration(
-          kScope, kScript, kRegistrationId, context_ptr_);
-  scoped_refptr<ServiceWorkerVersion> live_version = new ServiceWorkerVersion(
-      live_registration.get(), kVersionId, context_ptr_);
+          kScope, kRegistrationId, context_ptr_);
+  scoped_refptr<ServiceWorkerVersion> live_version =
+      new ServiceWorkerVersion(
+          live_registration.get(), kScript, kVersionId, context_ptr_);
   live_version->SetStatus(ServiceWorkerVersion::INSTALLING);
   live_registration->SetWaitingVersion(live_version.get());
 
@@ -861,7 +863,7 @@ TEST_F(ServiceWorkerResourceStorageTest, UpdateRegistration) {
 
   // Make an updated registration.
   scoped_refptr<ServiceWorkerVersion> live_version = new ServiceWorkerVersion(
-      registration_.get(), storage()->NewVersionId(), context_ptr_);
+      registration_.get(), script_, storage()->NewVersionId(), context_ptr_);
   live_version->SetStatus(ServiceWorkerVersion::NEW);
   registration_->SetWaitingVersion(live_version.get());
 
@@ -912,9 +914,10 @@ TEST_F(ServiceWorkerStorageTest, FindRegistration_LongestScopeMatch) {
   const int64 kVersionId1 = 1;
   scoped_refptr<ServiceWorkerRegistration> live_registration1 =
       new ServiceWorkerRegistration(
-          kScope1, kScript1, kRegistrationId1, context_ptr_);
-  scoped_refptr<ServiceWorkerVersion> live_version1 = new ServiceWorkerVersion(
-      live_registration1.get(), kVersionId1, context_ptr_);
+          kScope1, kRegistrationId1, context_ptr_);
+  scoped_refptr<ServiceWorkerVersion> live_version1 =
+      new ServiceWorkerVersion(
+          live_registration1.get(), kScript1, kVersionId1, context_ptr_);
   live_version1->SetStatus(ServiceWorkerVersion::INSTALLED);
   live_registration1->SetWaitingVersion(live_version1.get());
 
@@ -925,9 +928,10 @@ TEST_F(ServiceWorkerStorageTest, FindRegistration_LongestScopeMatch) {
   const int64 kVersionId2 = 2;
   scoped_refptr<ServiceWorkerRegistration> live_registration2 =
       new ServiceWorkerRegistration(
-          kScope2, kScript2, kRegistrationId2, context_ptr_);
-  scoped_refptr<ServiceWorkerVersion> live_version2 = new ServiceWorkerVersion(
-      live_registration2.get(), kVersionId2, context_ptr_);
+          kScope2, kRegistrationId2, context_ptr_);
+  scoped_refptr<ServiceWorkerVersion> live_version2 =
+      new ServiceWorkerVersion(
+          live_registration2.get(), kScript2, kVersionId2, context_ptr_);
   live_version2->SetStatus(ServiceWorkerVersion::INSTALLED);
   live_registration2->SetWaitingVersion(live_version2.get());
 
@@ -938,9 +942,10 @@ TEST_F(ServiceWorkerStorageTest, FindRegistration_LongestScopeMatch) {
   const int64 kVersionId3 = 3;
   scoped_refptr<ServiceWorkerRegistration> live_registration3 =
       new ServiceWorkerRegistration(
-          kScope3, kScript3, kRegistrationId3, context_ptr_);
-  scoped_refptr<ServiceWorkerVersion> live_version3 = new ServiceWorkerVersion(
-      live_registration3.get(), kVersionId3, context_ptr_);
+          kScope3, kRegistrationId3, context_ptr_);
+  scoped_refptr<ServiceWorkerVersion> live_version3 =
+      new ServiceWorkerVersion(
+          live_registration3.get(), kScript3, kVersionId3, context_ptr_);
   live_version3->SetStatus(ServiceWorkerVersion::INSTALLED);
   live_registration3->SetWaitingVersion(live_version3.get());
 

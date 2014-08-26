@@ -22,6 +22,7 @@ ServiceWorkerVersionInfo::ServiceWorkerVersionInfo()
 ServiceWorkerVersionInfo::ServiceWorkerVersionInfo(
     ServiceWorkerVersion::RunningStatus running_status,
     ServiceWorkerVersion::Status status,
+    const GURL& script_url,
     int64 version_id,
     int process_id,
     int thread_id,
@@ -29,6 +30,7 @@ ServiceWorkerVersionInfo::ServiceWorkerVersionInfo(
     : is_null(false),
       running_status(running_status),
       status(status),
+      script_url(script_url),
       version_id(version_id),
       process_id(process_id),
       thread_id(thread_id),
@@ -40,14 +42,12 @@ ServiceWorkerVersionInfo::~ServiceWorkerVersionInfo() {}
 ServiceWorkerRegistrationInfo::ServiceWorkerRegistrationInfo() {}
 
 ServiceWorkerRegistrationInfo::ServiceWorkerRegistrationInfo(
-    const GURL& script_url,
     const GURL& pattern,
     int64 registration_id,
     const ServiceWorkerVersionInfo& active_version,
     const ServiceWorkerVersionInfo& waiting_version,
     const ServiceWorkerVersionInfo& installing_version)
-    : script_url(script_url),
-      pattern(pattern),
+    : pattern(pattern),
       registration_id(registration_id),
       active_version(active_version),
       waiting_version(waiting_version),

@@ -53,11 +53,11 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
     // These values are immutable for the life of a registration.
     int64 registration_id;
     GURL scope;
-    GURL script;
 
     // Versions are first stored once they successfully install and become
     // the waiting version. Then transition to the active version. The stored
     // version may be in the ACTIVATED state or in the INSTALLED state.
+    GURL script;
     int64 version_id;
     bool is_active;
     bool has_fetch_handler;

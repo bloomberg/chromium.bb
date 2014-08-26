@@ -41,9 +41,9 @@ class ServiceWorkerContextRequestHandlerTest : public testing::Test {
     scope_ = GURL("http://host/scope/");
     script_url_ = GURL("http://host/script.js");
     registration_ = new ServiceWorkerRegistration(
-        scope_, script_url_, 1L, context()->AsWeakPtr());
+        scope_, 1L, context()->AsWeakPtr());
     version_ = new ServiceWorkerVersion(
-        registration_.get(), 1L, context()->AsWeakPtr());
+        registration_.get(), script_url_, 1L, context()->AsWeakPtr());
 
     // An empty host.
     scoped_ptr<ServiceWorkerProviderHost> host(new ServiceWorkerProviderHost(

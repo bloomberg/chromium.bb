@@ -94,6 +94,8 @@ void ServiceWorkerJobCoordinator::Unregister(
 
 void ServiceWorkerJobCoordinator::Update(
     ServiceWorkerRegistration* registration) {
+  DCHECK(registration);
+  DCHECK(registration->GetNewestVersion());
   job_queues_[registration->pattern()].Push(
       make_scoped_ptr<ServiceWorkerRegisterJobBase>(
           new ServiceWorkerRegisterJob(context_, registration)));

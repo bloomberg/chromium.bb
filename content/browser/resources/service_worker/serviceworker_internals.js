@@ -96,7 +96,7 @@ cr.define('serviceworker', function() {
         }
         workers.push({
           'scope': registration.scope,
-          'url': registration.script_url,
+          'url': version.script_url,
           'partition_id': partition_id,
           'version_id': version.version_id,
           'process_id': version.process_id,

@@ -494,11 +494,11 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
   void SetUpRegistrationOnIOThread(const std::string& worker_url) {
     registration_ = new ServiceWorkerRegistration(
         embedded_test_server()->GetURL("/"),
-        embedded_test_server()->GetURL(worker_url),
         wrapper()->context()->storage()->NewRegistrationId(),
         wrapper()->context()->AsWeakPtr());
     version_ = new ServiceWorkerVersion(
         registration_.get(),
+        embedded_test_server()->GetURL(worker_url),
         wrapper()->context()->storage()->NewVersionId(),
         wrapper()->context()->AsWeakPtr());
     AssociateRendererProcessToWorker(version_->embedded_worker());
@@ -824,29 +824,23 @@ class ServiceWorkerBlackBoxBrowserTest : public ServiceWorkerBrowserTest {
 
   void FindRegistrationOnIO(const GURL& document_url,
                             ServiceWorkerStatusCode* status,
-                            GURL* script_url,
                             const base::Closure& continuation) {
     wrapper()->context()->storage()->FindRegistrationForDocument(
         document_url,
         base::Bind(&ServiceWorkerBlackBoxBrowserTest::FindRegistrationOnIO2,
                    this,
                    status,
-                   script_url,
                    continuation));
   }
 
   void FindRegistrationOnIO2(
       ServiceWorkerStatusCode* out_status,
-      GURL* script_url,
       const base::Closure& continuation,
       ServiceWorkerStatusCode status,
       const scoped_refptr<ServiceWorkerRegistration>& registration) {
     *out_status = status;
-    if (registration.get()) {
-      *script_url = registration->script_url();
-    } else {
+    if (!registration.get())
       EXPECT_NE(SERVICE_WORKER_OK, status);
-    }
     continuation.Run();
   }
 };
@@ -935,13 +929,11 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBlackBoxBrowserTest, MAYBE_Registration) {
   // Should not be able to find it.
   {
     ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
-    GURL script_url;
     RunOnIOThread(
         base::Bind(&ServiceWorkerBlackBoxBrowserTest::FindRegistrationOnIO,
                    this,
                    embedded_test_server()->GetURL("/service_worker/empty.html"),
-                   &status,
-                   &script_url));
+                   &status));
     EXPECT_EQ(SERVICE_WORKER_ERROR_NOT_FOUND, status);
   }
 }

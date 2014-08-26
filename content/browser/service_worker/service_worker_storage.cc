@@ -427,7 +427,7 @@ void ServiceWorkerStorage::StoreRegistration(
   ServiceWorkerDatabase::RegistrationData data;
   data.registration_id = registration->id();
   data.scope = registration->pattern();
-  data.script = registration->script_url();
+  data.script = version->script_url();
   data.has_fetch_handler = true;
   data.version_id = version->version_id();
   data.last_update_check = registration->last_update_check();
@@ -469,7 +469,7 @@ void ServiceWorkerStorage::UpdateToActiveState(
       base::Bind(&ServiceWorkerDatabase::UpdateVersionToActive,
                  base::Unretained(database_.get()),
                  registration->id(),
-                 registration->script_url().GetOrigin()),
+                 registration->pattern().GetOrigin()),
       base::Bind(&ServiceWorkerStorage::DidUpdateToActiveState,
                  weak_factory_.GetWeakPtr(),
                  callback));
@@ -489,7 +489,7 @@ void ServiceWorkerStorage::UpdateLastUpdateCheckTime(
           base::IgnoreResult(&ServiceWorkerDatabase::UpdateLastCheckTime),
           base::Unretained(database_.get()),
           registration->id(),
-          registration->script_url().GetOrigin(),
+          registration->pattern().GetOrigin(),
           registration->last_update_check()));
 }
 
@@ -876,7 +876,6 @@ void ServiceWorkerStorage::DidGetAllRegistrations(
 
     ServiceWorkerRegistrationInfo info;
     info.pattern = it->scope;
-    info.script_url = it->script;
     info.registration_id = it->registration_id;
     if (ServiceWorkerVersion* version =
             context_->GetLiveVersion(it->version_id)) {
@@ -969,7 +968,7 @@ ServiceWorkerStorage::GetOrCreateRegistration(
     return registration;
 
   registration = new ServiceWorkerRegistration(
-      data.scope, data.script, data.registration_id, context_);
+      data.scope, data.registration_id, context_);
   registration->set_last_update_check(data.last_update_check);
   if (pending_deletions_.find(data.registration_id) !=
       pending_deletions_.end()) {
@@ -978,8 +977,8 @@ ServiceWorkerStorage::GetOrCreateRegistration(
   scoped_refptr<ServiceWorkerVersion> version =
       context_->GetLiveVersion(data.version_id);
   if (!version.get()) {
-    version =
-        new ServiceWorkerVersion(registration.get(), data.version_id, context_);
+    version = new ServiceWorkerVersion(
+        registration.get(), data.script, data.version_id, context_);
     version->SetStatus(data.is_active ?
         ServiceWorkerVersion::ACTIVATED : ServiceWorkerVersion::INSTALLED);
     version->script_cache_map()->SetResources(resources);

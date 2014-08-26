@@ -715,9 +715,10 @@ TEST_F(ServiceWorkerJobTest, AbortAll_RegUnreg) {
 TEST_F(ServiceWorkerJobTest, UnregisterWaitingSetsRedundant) {
   scoped_refptr<ServiceWorkerRegistration> registration;
   bool called = false;
+  GURL script_url("http://www.example.com/service_worker.js");
   job_coordinator()->Register(
       GURL("http://www.example.com/"),
-      GURL("http://www.example.com/service_worker.js"),
+      script_url,
       render_process_id_,
       SaveRegistration(SERVICE_WORKER_OK, &called, &registration));
   base::RunLoop().RunUntilIdle();
@@ -727,7 +728,7 @@ TEST_F(ServiceWorkerJobTest, UnregisterWaitingSetsRedundant) {
   // Manually create the waiting worker since there is no way to become a
   // waiting worker until Update is implemented.
   scoped_refptr<ServiceWorkerVersion> version = new ServiceWorkerVersion(
-      registration.get(), 1L, helper_->context()->AsWeakPtr());
+      registration.get(), script_url, 1L, helper_->context()->AsWeakPtr());
   ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
   version->StartWorker(CreateReceiverOnCurrentThread(&status));
   base::RunLoop().RunUntilIdle();
@@ -1105,6 +1106,77 @@ TEST_F(ServiceWorkerJobTest, Update_NewVersion) {
             update_helper->state_change_log_[4].version_id);
   EXPECT_EQ(ServiceWorkerVersion::ACTIVATED,
             update_helper->state_change_log_[4].status);
+}
+
+TEST_F(ServiceWorkerJobTest, Update_NewestVersionChanged) {
+  bool called;
+  scoped_refptr<ServiceWorkerRegistration> registration;
+  job_coordinator()->Register(
+      GURL("http://www.example.com/one/"),
+      GURL("http://www.example.com/service_worker.js"),
+      render_process_id_,
+      SaveRegistration(SERVICE_WORKER_OK, &called, &registration));
+
+  EXPECT_FALSE(called);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(called);
+  ServiceWorkerVersion* active_version = registration->active_version();
+
+  // Queue an Update, it should abort when it starts and sees the new version.
+  job_coordinator()->Update(registration);
+
+  // Add a waiting version with new script.
+  scoped_refptr<ServiceWorkerVersion> version =
+      new ServiceWorkerVersion(registration,
+                               GURL("http://www.example.com/new_worker.js"),
+                               2L /* dummy version id */,
+                               helper_->context()->AsWeakPtr());
+  registration->SetWaitingVersion(version);
+
+  base::RunLoop().RunUntilIdle();
+
+  // Verify the registration was not modified by the Update.
+  EXPECT_EQ(active_version, registration->active_version());
+  EXPECT_EQ(version, registration->waiting_version());
+  EXPECT_EQ(NULL, registration->installing_version());
+}
+
+TEST_F(ServiceWorkerJobTest, Update_UninstallingRegistration) {
+  bool called;
+  scoped_refptr<ServiceWorkerRegistration> registration;
+  job_coordinator()->Register(
+      GURL("http://www.example.com/one/"),
+      GURL("http://www.example.com/service_worker.js"),
+      render_process_id_,
+      SaveRegistration(SERVICE_WORKER_OK, &called, &registration));
+
+  EXPECT_FALSE(called);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(called);
+
+  // Add a controllee and queue an unregister to force the uninstalling state.
+  scoped_ptr<ServiceWorkerProviderHost> host(
+      new ServiceWorkerProviderHost(33 /* dummy render_process id */,
+                                    1 /* dummy provider_id */,
+                                    helper_->context()->AsWeakPtr(),
+                                    NULL));
+  ServiceWorkerVersion* active_version = registration->active_version();
+  active_version->AddControllee(host.get());
+  job_coordinator()->Unregister(GURL("http://www.example.com/one/"),
+                                SaveUnregistration(SERVICE_WORKER_OK, &called));
+
+  // Update should abort after it starts and sees uninstalling.
+  job_coordinator()->Update(registration);
+
+  EXPECT_FALSE(called);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(called);
+
+  // Verify the registration was not modified by the Update.
+  EXPECT_TRUE(registration->is_uninstalling());
+  EXPECT_EQ(active_version, registration->active_version());
+  EXPECT_EQ(NULL, registration->waiting_version());
+  EXPECT_EQ(NULL, registration->installing_version());
 }
 
 }  // namespace content

@@ -95,6 +95,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   ServiceWorkerVersion(
       ServiceWorkerRegistration* registration,
+      const GURL& script_url,
       int64 version_id,
       base::WeakPtr<ServiceWorkerContextCore> context);
 

@@ -91,10 +91,12 @@ void RunErrorFetchCallback(const ServiceWorkerVersion::FetchCallback& callback,
 
 ServiceWorkerVersion::ServiceWorkerVersion(
     ServiceWorkerRegistration* registration,
+    const GURL& script_url,
     int64 version_id,
     base::WeakPtr<ServiceWorkerContextCore> context)
     : version_id_(version_id),
       registration_id_(kInvalidServiceWorkerVersionId),
+      script_url_(script_url),
       status_(NEW),
       context_(context),
       script_cache_map_(this, context),
@@ -104,7 +106,6 @@ ServiceWorkerVersion::ServiceWorkerVersion(
   DCHECK(registration);
   if (registration) {
     registration_id_ = registration->id();
-    script_url_ = registration->script_url();
     scope_ = registration->pattern();
   }
   context_->AddLiveVersion(this);
@@ -151,6 +152,7 @@ ServiceWorkerVersionInfo ServiceWorkerVersion::GetInfo() {
   return ServiceWorkerVersionInfo(
       running_status(),
       status(),
+      script_url(),
       version_id(),
       embedded_worker()->process_id(),
       embedded_worker()->thread_id(),
@@ -226,7 +228,7 @@ void ServiceWorkerVersion::StartUpdate() {
     return;
   ServiceWorkerRegistration* registration =
       context_->GetLiveRegistration(registration_id_);
-  if (!registration)
+  if (!registration || !registration->GetNewestVersion())
     return;
   context_->UpdateServiceWorker(registration);
 }

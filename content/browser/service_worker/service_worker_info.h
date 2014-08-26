@@ -18,6 +18,7 @@ class CONTENT_EXPORT ServiceWorkerVersionInfo {
   ServiceWorkerVersionInfo();
   ServiceWorkerVersionInfo(ServiceWorkerVersion::RunningStatus running_status,
                            ServiceWorkerVersion::Status status,
+                           const GURL& script_url,
                            int64 version_id,
                            int process_id,
                            int thread_id,
@@ -27,6 +28,7 @@ class CONTENT_EXPORT ServiceWorkerVersionInfo {
   bool is_null;
   ServiceWorkerVersion::RunningStatus running_status;
   ServiceWorkerVersion::Status status;
+  GURL script_url;
   int64 version_id;
   int process_id;
   int thread_id;
@@ -37,7 +39,6 @@ class CONTENT_EXPORT ServiceWorkerRegistrationInfo {
  public:
   ServiceWorkerRegistrationInfo();
   ServiceWorkerRegistrationInfo(
-      const GURL& script_url,
       const GURL& pattern,
       int64 registration_id,
       const ServiceWorkerVersionInfo& active_version,
@@ -45,7 +46,6 @@ class CONTENT_EXPORT ServiceWorkerRegistrationInfo {
       const ServiceWorkerVersionInfo& installing_version);
   ~ServiceWorkerRegistrationInfo();
 
-  GURL script_url;
   GURL pattern;
   int64 registration_id;
   ServiceWorkerVersionInfo controlling_version;

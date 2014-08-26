@@ -86,16 +86,15 @@ TEST_F(ServiceWorkerRegistrationTest, SetAndUnsetVersions) {
   scoped_refptr<ServiceWorkerRegistration> registration =
       new ServiceWorkerRegistration(
           kScope,
-          kScript,
           kRegistrationId,
           context_ptr_);
 
   const int64 version_1_id = 1L;
   const int64 version_2_id = 2L;
-  scoped_refptr<ServiceWorkerVersion> version_1 =
-      new ServiceWorkerVersion(registration.get(), version_1_id, context_ptr_);
-  scoped_refptr<ServiceWorkerVersion> version_2 =
-      new ServiceWorkerVersion(registration.get(), version_2_id, context_ptr_);
+  scoped_refptr<ServiceWorkerVersion> version_1 = new ServiceWorkerVersion(
+      registration.get(), kScript, version_1_id, context_ptr_);
+  scoped_refptr<ServiceWorkerVersion> version_2 = new ServiceWorkerVersion(
+      registration.get(), kScript, version_2_id, context_ptr_);
 
   RegistrationListener listener;
   registration->AddListener(&listener);
@@ -106,8 +105,8 @@ TEST_F(ServiceWorkerRegistrationTest, SetAndUnsetVersions) {
   EXPECT_EQ(ChangedVersionAttributesMask::ACTIVE_VERSION,
             listener.observed_changed_mask_.changed());
   EXPECT_EQ(kScope, listener.observed_info_.pattern);
-  EXPECT_EQ(kScript, listener.observed_info_.script_url);
   EXPECT_EQ(version_1_id, listener.observed_info_.active_version.version_id);
+  EXPECT_EQ(kScript, listener.observed_info_.active_version.script_url);
   EXPECT_TRUE(listener.observed_info_.installing_version.is_null);
   EXPECT_TRUE(listener.observed_info_.waiting_version.is_null);
   EXPECT_TRUE(listener.observed_info_.controlling_version.is_null);
@@ -150,13 +149,11 @@ TEST_F(ServiceWorkerRegistrationTest, SetAndUnsetVersions) {
 
 TEST_F(ServiceWorkerRegistrationTest, FailedRegistrationNoCrash) {
   const GURL kScope("http://www.example.not/");
-  const GURL kScript("http://www.example.not/service_worker.js");
   int64 kRegistrationId = 1L;
   int kProviderId = 1;
   scoped_refptr<ServiceWorkerRegistration> registration =
       new ServiceWorkerRegistration(
           kScope,
-          kScript,
           kRegistrationId,
           context_ptr_);
   scoped_ptr<ServiceWorkerRegistrationHandle> handle(

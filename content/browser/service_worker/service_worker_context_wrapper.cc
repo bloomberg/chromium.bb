@@ -166,7 +166,7 @@ void ServiceWorkerContextWrapper::DidGetAllRegistrationsForGetAllOrigins(
        it != registrations.end();
        ++it) {
     const ServiceWorkerRegistrationInfo& registration_info = *it;
-    GURL origin = registration_info.script_url.GetOrigin();
+    GURL origin = registration_info.pattern.GetOrigin();
 
     ServiceWorkerUsageInfo& usage_info = origins[origin];
     if (usage_info.origin.is_empty())
@@ -209,7 +209,7 @@ void ServiceWorkerContextWrapper::DidGetAllRegistrationsForDeleteForOrigin(
        it != registrations.end();
        ++it) {
     const ServiceWorkerRegistrationInfo& registration_info = *it;
-    if (origin == registration_info.script_url.GetOrigin()) {
+    if (origin == registration_info.pattern.GetOrigin()) {
       UnregisterServiceWorker(registration_info.pattern,
                               base::Bind(&EmptySuccessCallback));
     }

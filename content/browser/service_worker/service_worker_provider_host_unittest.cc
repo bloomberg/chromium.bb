@@ -36,9 +36,9 @@ class ServiceWorkerProviderHostTest : public testing::Test {
     scope_ = GURL("http://www.example.com/");
     script_url_ = GURL("http://www.example.com/service_worker.js");
     registration_ = new ServiceWorkerRegistration(
-        scope_, script_url_, 1L, context_->AsWeakPtr());
+        scope_, 1L, context_->AsWeakPtr());
     version_ = new ServiceWorkerVersion(
-        registration_.get(), 1L, context_->AsWeakPtr());
+        registration_.get(), script_url_, 1L, context_->AsWeakPtr());
 
     // Prepare provider hosts (for the same process).
     scoped_ptr<ServiceWorkerProviderHost> host1(new ServiceWorkerProviderHost(
@@ -194,10 +194,10 @@ TEST_F(ServiceWorkerProviderHostTest,
   VerifyVersionAttributes(provider_host1_, NULL, NULL, NULL);
   VerifyVersionAttributes(provider_host2_, NULL, NULL, NULL);
 
-  scoped_refptr<ServiceWorkerVersion> version1 =
-      new ServiceWorkerVersion(registration_.get(), 10L, context_->AsWeakPtr());
-  scoped_refptr<ServiceWorkerVersion> version2 =
-      new ServiceWorkerVersion(registration_.get(), 20L, context_->AsWeakPtr());
+  scoped_refptr<ServiceWorkerVersion> version1 = new ServiceWorkerVersion(
+      registration_.get(), script_url_, 10L, context_->AsWeakPtr());
+  scoped_refptr<ServiceWorkerVersion> version2 = new ServiceWorkerVersion(
+      registration_.get(), script_url_, 20L, context_->AsWeakPtr());
 
   registration_->SetInstallingVersion(version1.get());
   VerifyVersionAttributes(provider_host1_, version1.get(), NULL, NULL);

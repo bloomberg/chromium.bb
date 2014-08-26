@@ -24,11 +24,9 @@ ServiceWorkerVersionInfo GetVersionInfo(ServiceWorkerVersion* version) {
 
 ServiceWorkerRegistration::ServiceWorkerRegistration(
     const GURL& pattern,
-    const GURL& script_url,
     int64 registration_id,
     base::WeakPtr<ServiceWorkerContextCore> context)
     : pattern_(pattern),
-      script_url_(script_url),
       registration_id_(registration_id),
       is_deleted_(false),
       is_uninstalling_(false),
@@ -48,6 +46,14 @@ ServiceWorkerRegistration::~ServiceWorkerRegistration() {
     active_version()->RemoveListener(this);
 }
 
+ServiceWorkerVersion* ServiceWorkerRegistration::GetNewestVersion() const {
+  if (installing_version())
+    return installing_version();
+  if (waiting_version())
+    return waiting_version();
+  return active_version();
+}
+
 void ServiceWorkerRegistration::AddListener(Listener* listener) {
   listeners_.AddObserver(listener);
 }
@@ -63,7 +69,6 @@ void ServiceWorkerRegistration::NotifyRegistrationFailed() {
 ServiceWorkerRegistrationInfo ServiceWorkerRegistration::GetInfo() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   return ServiceWorkerRegistrationInfo(
-      script_url(),
       pattern(),
       registration_id_,
       GetVersionInfo(active_version_.get()),
@@ -155,7 +160,7 @@ void ServiceWorkerRegistration::ClearWhenReady() {
   context_->storage()->NotifyUninstallingRegistration(this);
   context_->storage()->DeleteRegistration(
       id(),
-      script_url().GetOrigin(),
+      pattern().GetOrigin(),
       base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
 
   if (!active_version() || !active_version()->HasControllee())
@@ -247,7 +252,7 @@ void ServiceWorkerRegistration::OnActivateEventFinished(
     if (!waiting_version()) {
       // Delete the records from the db.
       context_->storage()->DeleteRegistration(
-          id(), script_url().GetOrigin(),
+          id(), pattern().GetOrigin(),
           base::Bind(&ServiceWorkerRegistration::OnDeleteFinished, this));
       // But not from memory if there is a version in the pipeline.
       if (installing_version())

@@ -21,10 +21,9 @@ class ServiceWorkerRegistrationInfo;
 class ServiceWorkerVersion;
 
 // This class represents a service worker registration. The
-// scope and script url are constant for the life of the persistent
+// scope is constant for the life of the persistent
 // registration. It's refcounted to facillitate multiple controllees
-// being associated with the same registration. The class roughly
-// corresponds to navigator.serviceWorker.registgration.
+// being associated with the same registration.
 class CONTENT_EXPORT ServiceWorkerRegistration
     : NON_EXPORTED_BASE(public base::RefCounted<ServiceWorkerRegistration>),
       public ServiceWorkerVersion::Listener {
@@ -42,12 +41,10 @@ class CONTENT_EXPORT ServiceWorkerRegistration
   };
 
   ServiceWorkerRegistration(const GURL& pattern,
-                            const GURL& script_url,
                             int64 registration_id,
                             base::WeakPtr<ServiceWorkerContextCore> context);
 
   int64 id() const { return registration_id_; }
-  const GURL& script_url() const { return script_url_; }
   const GURL& pattern() const { return pattern_; }
 
   bool is_deleted() const { return is_deleted_; }
@@ -66,6 +63,8 @@ class CONTENT_EXPORT ServiceWorkerRegistration
   ServiceWorkerVersion* installing_version() const {
     return installing_version_.get();
   }
+
+  ServiceWorkerVersion* GetNewestVersion() const;
 
   void AddListener(Listener* listener);
   void RemoveListener(Listener* listener);
@@ -133,7 +132,6 @@ class CONTENT_EXPORT ServiceWorkerRegistration
                        ServiceWorkerStatusCode status);
 
   const GURL pattern_;
-  const GURL script_url_;
   const int64 registration_id_;
   bool is_deleted_;
   bool is_uninstalling_;

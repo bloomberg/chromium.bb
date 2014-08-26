@@ -44,7 +44,7 @@ ServiceWorkerRegisterJob::ServiceWorkerRegisterJob(
     : context_(context),
       job_type_(UPDATE_JOB),
       pattern_(registration->pattern()),
-      script_url_(registration->script_url()),
+      script_url_(registration->GetNewestVersion()->script_url()),
       phase_(INITIAL),
       is_promise_resolved_(false),
       promise_resolved_status_(SERVICE_WORKER_OK),
@@ -190,7 +190,7 @@ void ServiceWorkerRegisterJob::ContinueWithRegistration(
   existing_registration->AbortPendingClear();
 
   // "If scriptURL is equal to registration.[[ScriptURL]], then:"
-  if (existing_registration->script_url() == script_url_) {
+  if (existing_registration->GetNewestVersion()->script_url() == script_url_) {
     // Spec says to resolve with registration.[[GetNewestWorker]]. We come close
     // by resolving with the active version.
     set_registration(existing_registration.get());
@@ -214,7 +214,7 @@ void ServiceWorkerRegisterJob::ContinueWithRegistration(
   // controllees.
   context_->storage()->DeleteRegistration(
       existing_registration->id(),
-      existing_registration->script_url().GetOrigin(),
+      existing_registration->pattern().GetOrigin(),
       base::Bind(&ServiceWorkerRegisterJob::RegisterAndContinue,
                  weak_factory_.GetWeakPtr()));
 }
@@ -229,6 +229,14 @@ void ServiceWorkerRegisterJob::ContinueWithUpdate(
   }
 
   if (existing_registration.get() != registration()) {
+    Complete(SERVICE_WORKER_ERROR_NOT_FOUND);
+    return;
+  }
+
+  // A previous job may have unregistered or installed a new version to this
+  // registration.
+  if (registration()->is_uninstalling() ||
+      registration()->GetNewestVersion()->script_url() != script_url_) {
     Complete(SERVICE_WORKER_ERROR_NOT_FOUND);
     return;
   }
@@ -251,8 +259,7 @@ void ServiceWorkerRegisterJob::RegisterAndContinue(
   }
 
   set_registration(new ServiceWorkerRegistration(
-      pattern_, script_url_, context_->storage()->NewRegistrationId(),
-      context_));
+      pattern_, context_->storage()->NewRegistrationId(), context_));
   AssociateProviderHostsToRegistration(registration());
   UpdateAndContinue();
 }
@@ -269,8 +276,10 @@ void ServiceWorkerRegisterJob::UpdateAndContinue() {
 
   // "Let serviceWorker be a newly-created ServiceWorker object..." and start
   // the worker.
-  set_new_version(new ServiceWorkerVersion(
-      registration(), context_->storage()->NewVersionId(), context_));
+  set_new_version(new ServiceWorkerVersion(registration(),
+                                           script_url_,
+                                           context_->storage()->NewVersionId(),
+                                           context_));
 
   bool pause_after_download = job_type_ == UPDATE_JOB;
   if (pause_after_download)
@@ -387,7 +396,7 @@ void ServiceWorkerRegisterJob::CompleteInternal(
         registration()->NotifyRegistrationFailed();
         context_->storage()->DeleteRegistration(
             registration()->id(),
-            registration()->script_url().GetOrigin(),
+            registration()->pattern().GetOrigin(),
             base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
       }
     }

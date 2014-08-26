@@ -101,11 +101,13 @@ class ServiceWorkerURLRequestJobTest : public testing::Test {
 
     registration_ = new ServiceWorkerRegistration(
         GURL("http://example.com/"),
-        GURL("http://example.com/service_worker.js"),
         1L,
         helper_->context()->AsWeakPtr());
     version_ = new ServiceWorkerVersion(
-        registration_.get(), 1L, helper_->context()->AsWeakPtr());
+        registration_.get(),
+        GURL("http://example.com/service_worker.js"),
+        1L,
+        helper_->context()->AsWeakPtr());
 
     scoped_ptr<ServiceWorkerProviderHost> provider_host(
         new ServiceWorkerProviderHost(

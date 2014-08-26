@@ -197,6 +197,7 @@ void UpdateVersionInfo(const ServiceWorkerVersionInfo& version,
       info->SetString("status", "REDUNDANT");
       break;
   }
+  info->SetString("script_url", version.script_url.spec());
   info->SetString("version_id", base::Int64ToString(version.version_id));
   info->SetInteger("process_id", version.process_id);
   info->SetInteger("thread_id", version.thread_id);
@@ -213,7 +214,6 @@ ListValue* GetRegistrationListValue(
     const ServiceWorkerRegistrationInfo& registration = *it;
     DictionaryValue* registration_info = new DictionaryValue();
     registration_info->SetString("scope", registration.pattern.spec());
-    registration_info->SetString("script_url", registration.script_url.spec());
     registration_info->SetString(
         "registration_id", base::Int64ToString(registration.registration_id));
 
