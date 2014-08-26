@@ -31,9 +31,11 @@ const int kHttpPort = 80;
 const int kHttpsPort = 443;
 const char kPreferencesSource[] = "preference";
 const char kStorage[] = "storage";
-const ContentSettingsType kValidTypes[] = {CONTENT_SETTINGS_TYPE_GEOLOCATION,
-                                           CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
-                                           CONTENT_SETTINGS_TYPE_MEDIASTREAM};
+const ContentSettingsType kValidTypes[] = {
+    CONTENT_SETTINGS_TYPE_GEOLOCATION,
+    CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+    CONTENT_SETTINGS_TYPE_MEDIASTREAM,
+    CONTENT_SETTINGS_TYPE_COOKIES};
 const size_t kValidTypesLength = arraysize(kValidTypes);
 }  // namespace
 
@@ -59,6 +61,7 @@ void WebsiteSettingsHandler::GetLocalizedValues(
       {"websitesLabelMediaStream", IDS_WEBSITE_SETTINGS_TYPE_MEDIASTREAM},
       {"websitesLabelNotifications", IDS_WEBSITE_SETTINGS_TYPE_NOTIFICATIONS},
       {"websitesLabelStorage", IDS_WEBSITE_SETTINGS_TYPE_STORAGE},
+      {"websitesCookiesDescription", IDS_WEBSITE_SETTINGS_COOKIES_DESCRIPTION},
       {"websitesLocationDescription",
        IDS_WEBSITE_SETTINGS_LOCATION_DESCRIPTION},
       {"websitesMediastreamDescription",
@@ -319,6 +322,10 @@ void WebsiteSettingsHandler::HandleSetOriginPermission(
   ContentSettingsPattern primary_pattern;
   ContentSettingsPattern secondary_pattern;
   switch (settings_type) {
+    case CONTENT_SETTINGS_TYPE_COOKIES:
+      primary_pattern = ContentSettingsPattern::FromURLNoWildcard(last_site_);
+      secondary_pattern = ContentSettingsPattern::FromURLNoWildcard(last_site_);
+      break;
     case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
       primary_pattern = ContentSettingsPattern::FromURLNoWildcard(last_site_);
       secondary_pattern = ContentSettingsPattern::Wildcard();
@@ -400,6 +407,10 @@ void WebsiteSettingsHandler::GetInfoForOrigin(const GURL& site_url,
         content_settings::ContentSettingToString(CONTENT_SETTING_ALLOW));
     options->AppendString(
         content_settings::ContentSettingToString(CONTENT_SETTING_BLOCK));
+    if (permission_type == CONTENT_SETTINGS_TYPE_COOKIES) {
+      options->AppendString(content_settings::ContentSettingToString(
+          CONTENT_SETTING_SESSION_ONLY));
+    }
 
     ContentSetting permission;
     content_settings::SettingInfo info;

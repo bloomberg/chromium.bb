@@ -7959,6 +7959,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_WEBSITE_SETTINGS_EDIT_TITLE" desc="Title for Website Settings site edit dialog.">
         Site settings
       </message>
+      <message name="IDS_WEBSITE_SETTINGS_COOKIES_DESCRIPTION" desc="Label for granting cookies permission on the Website Settings single site view dialog.">
+        Stores data
+      </message>
       <message name="IDS_WEBSITE_SETTINGS_LOCATION_DESCRIPTION" desc="Label for granting geolocation permission on the Website Settings single site view dialog.">
         Knows device location
       </message>

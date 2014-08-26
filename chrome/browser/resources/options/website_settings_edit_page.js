@@ -16,7 +16,8 @@ cr.define('options.WebsiteSettings', function() {
     Page.call(this, 'websiteEdit',
                      loadTimeData.getString('websitesOptionsPageTabTitle'),
                      'website-settings-edit-page');
-    this.permissions = ['geolocation', 'notifications', 'media-stream'];
+    this.permissions = ['geolocation', 'notifications', 'media-stream',
+        'cookies'];
   }
 
   cr.addSingletonGetter(WebsiteSettingsEditor);
