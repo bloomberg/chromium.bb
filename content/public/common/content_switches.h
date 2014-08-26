@@ -197,6 +197,7 @@ CONTENT_EXPORT extern const char kRendererProcessLimit[];
 CONTENT_EXPORT extern const char kRendererStartupDialog[];
 extern const char kSandboxIPCProcess[];
 CONTENT_EXPORT extern const char kScrollEndEffect[];
+extern const char kSendV8IdleNotificationAfterCommit[];
 extern const char kShowPaintRects[];
 CONTENT_EXPORT extern const char kSingleProcess[];
 CONTENT_EXPORT extern const char kSitePerProcess[];

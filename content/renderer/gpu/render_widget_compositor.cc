@@ -38,6 +38,7 @@
 #include "third_party/WebKit/public/platform/WebCompositeAndReadbackAsyncCallback.h"
 #include "third_party/WebKit/public/platform/WebSelectionBound.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
+#include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebWidget.h"
 #include "ui/gfx/frame_time.h"
 #include "ui/gl/gl_switches.h"
@@ -414,7 +415,12 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
 RenderWidgetCompositor::RenderWidgetCompositor(RenderWidget* widget,
                                                bool threaded)
     : threaded_(threaded),
-      widget_(widget) {
+      widget_(widget),
+      send_v8_idle_notification_after_commit_(false) {
+  CommandLine* cmd = CommandLine::ForCurrentProcess();
+
+  if (cmd->HasSwitch(switches::kSendV8IdleNotificationAfterCommit))
+    send_v8_idle_notification_after_commit_ = true;
 }
 
 RenderWidgetCompositor::~RenderWidgetCompositor() {}
@@ -750,6 +756,8 @@ void RenderWidgetCompositor::DidBeginMainFrame() {
 }
 
 void RenderWidgetCompositor::BeginMainFrame(const cc::BeginFrameArgs& args) {
+  begin_main_frame_time_ = args.frame_time;
+  begin_main_frame_interval_ = args.interval;
   double frame_time = (args.frame_time - base::TimeTicks()).InSecondsF();
   WebBeginFrameArgs web_begin_frame_args = WebBeginFrameArgs(frame_time);
   widget_->webwidget()->beginFrame(web_begin_frame_args);
@@ -778,6 +786,18 @@ void RenderWidgetCompositor::WillCommit() {
 }
 
 void RenderWidgetCompositor::DidCommit() {
+  if (send_v8_idle_notification_after_commit_) {
+    base::TimeDelta idle_time = begin_main_frame_time_ +
+                                begin_main_frame_interval_ -
+                                gfx::FrameTime::Now();
+    if (idle_time > base::TimeDelta()) {
+      // Convert to 32-bit microseconds first to avoid costly 64-bit division.
+      int32 idle_time_in_us = idle_time.InMicroseconds();
+      int32 idle_time_in_ms = idle_time_in_us / 1000;
+      blink::mainThreadIsolate()->IdleNotification(idle_time_in_ms);
+    }
+  }
+
   widget_->DidCommitCompositorFrame();
   widget_->didBecomeReadyForAdditionalInput();
 }

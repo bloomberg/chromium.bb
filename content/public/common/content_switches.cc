@@ -685,6 +685,14 @@ const char kSandboxIPCProcess[]             = "sandbox-ipc";
 // Defaults to disabled.
 const char kScrollEndEffect[] = "scroll-end-effect";
 
+// Send a notification from RenderWidgetCompositor to V8 to do idle work
+// (e.g. garbage collection) after the commit until the beginning of the next
+// frame.  This moves the work off the critical path where compositor is waiting
+// for the main thread. The flag is experimental until the implementation of the
+// V8 idle handler is completed.
+const char kSendV8IdleNotificationAfterCommit[] =
+    "send-v8-idle-notification-after-commit";
+
 // Visibly render a border around paint rects in the web page to help debug
 // and study painting behavior.
 const char kShowPaintRects[]                = "show-paint-rects";

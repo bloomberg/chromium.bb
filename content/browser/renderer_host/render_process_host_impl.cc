@@ -1185,6 +1185,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kRegisterPepperPlugins,
     switches::kRendererAssertTest,
     switches::kRendererStartupDialog,
+    switches::kSendV8IdleNotificationAfterCommit,
     switches::kShowPaintRects,
     switches::kSitePerProcess,
     switches::kStatsCollectionController,
