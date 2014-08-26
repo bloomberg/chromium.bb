@@ -207,7 +207,8 @@ class SuggestionsServiceTest : public testing::Test {
     mock_thumbnail_manager_ = new StrictMock<MockImageManager>();
     mock_blacklist_store_ = new MockBlacklistStore();
     return new SuggestionsService(
-        request_context_, scoped_ptr<SuggestionsStore>(mock_suggestions_store_),
+        request_context_.get(),
+        scoped_ptr<SuggestionsStore>(mock_suggestions_store_),
         scoped_ptr<ImageManager>(mock_thumbnail_manager_),
         scoped_ptr<BlacklistStore>(mock_blacklist_store_));
   }

@@ -200,7 +200,7 @@ void DistillerImpl::OnFetchImageDone(int page_num,
                                      const std::string& response) {
   DCHECK(started_pages_index_.find(page_num) != started_pages_index_.end());
   DistilledPageData* page_data = GetPageAtIndex(started_pages_index_[page_num]);
-  DCHECK(page_data->distilled_page_proto);
+  DCHECK(page_data->distilled_page_proto.get());
   DCHECK(url_fetcher);
   ScopedVector<DistillerURLFetcher>::iterator fetcher_it =
       std::find(page_data->image_fetchers_.begin(),

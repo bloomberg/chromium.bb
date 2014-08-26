@@ -49,7 +49,7 @@ void TestSigninClient::ClearSigninScopedDeviceId() {
 }
 
 net::URLRequestContextGetter* TestSigninClient::GetURLRequestContext() {
-  return request_context_;
+  return request_context_.get();
 }
 
 void TestSigninClient::SetURLRequestContext(

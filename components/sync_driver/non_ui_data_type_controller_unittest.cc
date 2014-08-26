@@ -131,7 +131,7 @@ class NonUIDataTypeControllerFake
   }
 
   virtual SharedChangeProcessor* CreateSharedChangeProcessor() OVERRIDE {
-    return change_processor_;
+    return change_processor_.get();
   }
 
  protected:
@@ -196,7 +196,7 @@ class SyncNonUIDataTypeControllerTest : public testing::Test {
     non_ui_dtc_ =
         new NonUIDataTypeControllerFake(NULL,
                                         dtc_mock_.get(),
-                                        change_processor_,
+                                        change_processor_.get(),
                                         backend_thread_.message_loop_proxy());
   }
 

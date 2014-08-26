@@ -97,7 +97,7 @@ scoped_refptr<UsbDeviceHandle> UsbDeviceImpl::Open() {
   const int rv = libusb_open(platform_device_, &handle);
   if (LIBUSB_SUCCESS == rv) {
     scoped_refptr<UsbConfigDescriptor> interfaces = ListInterfaces();
-    if (!interfaces)
+    if (!interfaces.get())
       return NULL;
     scoped_refptr<UsbDeviceHandleImpl> device_handle =
         new UsbDeviceHandleImpl(context_, this, handle, interfaces);
@@ -114,7 +114,7 @@ bool UsbDeviceImpl::Close(scoped_refptr<UsbDeviceHandle> handle) {
 
   for (HandlesVector::iterator it = handles_.begin(); it != handles_.end();
        ++it) {
-    if (*it == handle) {
+    if (it->get() == handle.get()) {
       (*it)->InternalClose();
       handles_.erase(it);
       return true;

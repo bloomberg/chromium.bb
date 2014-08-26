@@ -70,7 +70,7 @@ class LogUploaderTest : public testing::Test {
 };
 
 TEST_F(LogUploaderTest, Success) {
-  TestLogUploader uploader(request_context_);
+  TestLogUploader uploader(request_context_.get());
 
   factory_.SetFakeResponse(GURL(kTestServerURL),
                            std::string(),
@@ -84,7 +84,7 @@ TEST_F(LogUploaderTest, Success) {
 }
 
 TEST_F(LogUploaderTest, Rejection) {
-  TestLogUploader uploader(request_context_);
+  TestLogUploader uploader(request_context_.get());
 
   factory_.SetFakeResponse(GURL(kTestServerURL),
                            std::string(),
@@ -98,7 +98,7 @@ TEST_F(LogUploaderTest, Rejection) {
 }
 
 TEST_F(LogUploaderTest, Failure) {
-  TestLogUploader uploader(request_context_);
+  TestLogUploader uploader(request_context_.get());
 
   factory_.SetFakeResponse(GURL(kTestServerURL),
                            std::string(),

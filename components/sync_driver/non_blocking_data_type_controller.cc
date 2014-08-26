@@ -116,7 +116,7 @@ bool NonBlockingDataTypeController::IsPreferred() const {
 }
 
 bool NonBlockingDataTypeController::IsSyncProxyConnected() const {
-  return task_runner_ != NULL;
+  return task_runner_.get() != NULL;
 }
 
 bool NonBlockingDataTypeController::IsSyncBackendConnected() const {

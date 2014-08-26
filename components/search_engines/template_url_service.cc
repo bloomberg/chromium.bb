@@ -236,7 +236,7 @@ TemplateURLService::TemplateURLService(const Initializer* initializers,
 
 TemplateURLService::~TemplateURLService() {
   // |web_data_service_| should be deleted during Shutdown().
-  DCHECK(!web_data_service_);
+  DCHECK(!web_data_service_.get());
   STLDeleteElements(&template_urls_);
 }
 
@@ -670,7 +670,7 @@ void TemplateURLService::IncrementUsageCount(TemplateURL* url) {
     return;
   ++url->data_.usage_count;
 
-  if (web_data_service_)
+  if (web_data_service_.get())
     web_data_service_->UpdateKeyword(url->data());
 }
 
@@ -808,7 +808,7 @@ void TemplateURLService::Load() {
   if (loaded_ || load_handle_)
     return;
 
-  if (web_data_service_)
+  if (web_data_service_.get())
     load_handle_ = web_data_service_->GetKeywords(this);
   else
     ChangeToLoadedState();
@@ -1680,7 +1680,7 @@ bool TemplateURLService::UpdateNoNotify(TemplateURL* existing_turl,
   if (!existing_turl->sync_guid().empty())
     guid_to_template_map_[existing_turl->sync_guid()] = existing_turl;
 
-  if (web_data_service_)
+  if (web_data_service_.get())
     web_data_service_->UpdateKeyword(existing_turl->data());
 
   // Inform sync of the update.
@@ -1997,7 +1997,7 @@ bool TemplateURLService::AddNoNotify(TemplateURL* template_url,
   if (newly_adding &&
       (template_url->GetType() !=
           TemplateURL::NORMAL_CONTROLLED_BY_EXTENSION)) {
-    if (web_data_service_)
+    if (web_data_service_.get())
       web_data_service_->AddKeyword(template_url->data());
 
     // Inform sync of the addition. Note that this will assign a GUID to
@@ -2024,7 +2024,7 @@ void TemplateURLService::RemoveNoNotify(TemplateURL* template_url) {
   template_urls_.erase(i);
 
   if (template_url->GetType() != TemplateURL::NORMAL_CONTROLLED_BY_EXTENSION) {
-    if (web_data_service_)
+    if (web_data_service_.get())
       web_data_service_->RemoveKeyword(template_url->id());
 
     // Inform sync of the deletion.
@@ -2103,7 +2103,7 @@ void TemplateURLService::UpdateProvidersCreatedByPolicy(
 
       RemoveFromMaps(template_url);
       i = template_urls->erase(i);
-      if (web_data_service_)
+      if (web_data_service_.get())
         web_data_service_->RemoveKeyword(template_url->id());
       delete template_url;
     } else {
@@ -2296,7 +2296,7 @@ void TemplateURLService::PatchMissingSyncGUIDs(
         (template_url->GetType() !=
             TemplateURL::NORMAL_CONTROLLED_BY_EXTENSION)) {
       template_url->data_.sync_guid = base::GenerateGUID();
-      if (web_data_service_)
+      if (web_data_service_.get())
         web_data_service_->UpdateKeyword(template_url->data());
     }
   }

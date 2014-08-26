@@ -136,7 +136,7 @@ PrecacheFetcher::PrecacheFetcher(
     : starting_urls_(starting_urls),
       request_context_(request_context),
       precache_delegate_(precache_delegate) {
-  DCHECK(request_context_);    // Request context must be non-NULL.
+  DCHECK(request_context_.get());  // Request context must be non-NULL.
   DCHECK(precache_delegate_);  // Precache delegate must be non-NULL.
 
   DCHECK_NE(GURL(), GetConfigURL())
@@ -155,7 +155,8 @@ void PrecacheFetcher::Start() {
   DCHECK(config_url.is_valid());
 
   // Fetch the precache configuration settings from the server.
-  fetcher_.reset(new Fetcher(request_context_, config_url,
+  fetcher_.reset(new Fetcher(request_context_.get(),
+                             config_url,
                              base::Bind(&PrecacheFetcher::OnConfigFetchComplete,
                                         base::Unretained(this))));
 }
@@ -164,7 +165,8 @@ void PrecacheFetcher::StartNextFetch() {
   if (!resource_urls_to_fetch_.empty()) {
     // Fetch the next resource URL.
     fetcher_.reset(
-        new Fetcher(request_context_, resource_urls_to_fetch_.front(),
+        new Fetcher(request_context_.get(),
+                    resource_urls_to_fetch_.front(),
                     base::Bind(&PrecacheFetcher::OnResourceFetchComplete,
                                base::Unretained(this))));
 
@@ -175,7 +177,8 @@ void PrecacheFetcher::StartNextFetch() {
   if (!manifest_urls_to_fetch_.empty()) {
     // Fetch the next manifest URL.
     fetcher_.reset(
-        new Fetcher(request_context_, manifest_urls_to_fetch_.front(),
+        new Fetcher(request_context_.get(),
+                    manifest_urls_to_fetch_.front(),
                     base::Bind(&PrecacheFetcher::OnManifestFetchComplete,
                                base::Unretained(this))));
 

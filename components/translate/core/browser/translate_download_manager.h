@@ -28,7 +28,9 @@ class TranslateDownloadManager {
 
   // The request context used to download the resources.
   // Should be set before this class can be used.
-  net::URLRequestContextGetter* request_context() { return request_context_; }
+  net::URLRequestContextGetter* request_context() {
+    return request_context_.get();
+  }
   void set_request_context(net::URLRequestContextGetter* context) {
       request_context_ = context;
   }

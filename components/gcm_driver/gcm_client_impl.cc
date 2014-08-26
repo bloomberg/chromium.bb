@@ -300,7 +300,7 @@ void GCMClientImpl::Initialize(
     scoped_ptr<Encryptor> encryptor,
     GCMClient::Delegate* delegate) {
   DCHECK_EQ(UNINITIALIZED, state_);
-  DCHECK(url_request_context_getter);
+  DCHECK(url_request_context_getter.get());
   DCHECK(delegate);
 
   url_request_context_getter_ = url_request_context_getter;
@@ -501,7 +501,7 @@ void GCMClientImpl::StartCheckin() {
                          kDefaultBackoffPolicy,
                          base::Bind(&GCMClientImpl::OnCheckinCompleted,
                                     weak_ptr_factory_.GetWeakPtr()),
-                         url_request_context_getter_,
+                         url_request_context_getter_.get(),
                          &recorder_));
   // Taking a snapshot of the accounts count here, as there might be an asynch
   // update of the account tokens while checkin is in progress.

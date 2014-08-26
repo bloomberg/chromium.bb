@@ -196,7 +196,7 @@ UsbDeviceHandleImpl::UsbDeviceHandleImpl(
       context_(context) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(handle) << "Cannot create device with NULL handle.";
-  DCHECK(interfaces_) << "Unable to list interfaces";
+  DCHECK(interfaces_.get()) << "Unable to list interfaces";
 }
 
 UsbDeviceHandleImpl::~UsbDeviceHandleImpl() {
@@ -532,7 +532,7 @@ void UsbDeviceHandleImpl::ControlTransfer(
   const size_t resized_length = LIBUSB_CONTROL_SETUP_SIZE + length;
   scoped_refptr<net::IOBuffer> resized_buffer(
       new net::IOBufferWithSize(static_cast<int>(resized_length)));
-  if (!resized_buffer) {
+  if (!resized_buffer.get()) {
     callback.Run(USB_TRANSFER_ERROR, buffer, 0);
     return;
   }
