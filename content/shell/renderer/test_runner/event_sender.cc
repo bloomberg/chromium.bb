@@ -124,6 +124,7 @@ const double kMultipleClickTimeSec = 1;
 const int kMultipleClickRadiusPixels = 5;
 const char kSubMenuDepthIdentifier[] = "_";
 const char kSubMenuIdentifier[] = " >";
+const char kSeparatorIdentifier[] = "---------";
 
 bool OutsideMultiClickRadius(const WebPoint& a, const WebPoint& b) {
   return ((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y)) >
@@ -133,7 +134,9 @@ bool OutsideMultiClickRadius(const WebPoint& a, const WebPoint& b) {
 void PopulateCustomItems(const WebVector<WebMenuItemInfo>& customItems,
     const std::string& prefix, std::vector<std::string>* strings) {
   for (size_t i = 0; i < customItems.size(); ++i) {
-    if (customItems[i].type == blink::WebMenuItemInfo::SubMenu) {
+    if (customItems[i].type == blink::WebMenuItemInfo::Separator) {
+      strings->push_back(prefix + kSeparatorIdentifier);
+    } else if (customItems[i].type == blink::WebMenuItemInfo::SubMenu) {
       strings->push_back(prefix + customItems[i].label.utf8() +
           kSubMenuIdentifier);
       PopulateCustomItems(customItems[i].subMenuItems, prefix +
