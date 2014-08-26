@@ -96,8 +96,8 @@ inline bool operator>=(const SMILTime& a, const SMILTime& b) { return operator>(
 inline bool operator<=(const SMILTime& a, const SMILTime& b) { return operator<(a, b) || operator==(a, b); }
 inline bool operator<(const SMILTimeWithOrigin& a, const SMILTimeWithOrigin& b) { return a.time() < b.time(); }
 
-SMILTime operator+(const SMILTime&, const SMILTime&);
-SMILTime operator-(const SMILTime&, const SMILTime&);
+inline SMILTime operator+(const SMILTime& a, const SMILTime& b) { return a.value() + b.value(); }
+inline SMILTime operator-(const SMILTime& a, const SMILTime& b) { return a.value() - b.value(); }
 // So multiplying times does not make too much sense but SMIL defines it for duration * repeatCount
 SMILTime operator*(const SMILTime&, const SMILTime&);
 
