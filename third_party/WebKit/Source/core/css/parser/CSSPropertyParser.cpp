@@ -357,6 +357,14 @@ static inline bool isComma(CSSParserValue* value)
     return value && value->unit == CSSParserValue::Operator && value->iValue == ',';
 }
 
+static bool consumeComma(CSSParserValueList* valueList)
+{
+    if (!isComma(valueList->current()))
+        return false;
+    valueList->next();
+    return true;
+}
+
 static inline bool isForwardSlashOperator(CSSParserValue* value)
 {
     ASSERT(value);
@@ -7045,39 +7053,35 @@ bool CSSPropertyParser::parseCrossfade(CSSParserValueList* valueList, RefPtrWill
     CSSParserValueList* args = valueList->current()->function->args.get();
     if (!args || args->size() != 5)
         return false;
-    CSSParserValue* a = args->current();
     RefPtrWillBeRawPtr<CSSValue> fromImageValue = nullptr;
     RefPtrWillBeRawPtr<CSSValue> toImageValue = nullptr;
 
     // The first argument is the "from" image. It is a fill image.
-    if (!a || !parseFillImage(args, fromImageValue))
+    if (!args->current() || !parseFillImage(args, fromImageValue))
         return false;
-    a = args->next();
+    args->next();
 
-    // Skip a comma
-    if (!isComma(a))
+    if (!consumeComma(args))
         return false;
-    a = args->next();
 
     // The second argument is the "to" image. It is a fill image.
-    if (!a || !parseFillImage(args, toImageValue))
+    if (!args->current() || !parseFillImage(args, toImageValue))
         return false;
-    a = args->next();
+    args->next();
 
-    // Skip a comma
-    if (!isComma(a))
+    if (!consumeComma(args))
         return false;
-    a = args->next();
 
     // The third argument is the crossfade value. It is a percentage or a fractional number.
     RefPtrWillBeRawPtr<CSSPrimitiveValue> percentage = nullptr;
-    if (!a)
+    CSSParserValue* value = args->current();
+    if (!value)
         return false;
 
-    if (a->unit == CSSPrimitiveValue::CSS_PERCENTAGE)
-        percentage = cssValuePool().createValue(clampTo<double>(a->fValue / 100, 0, 1), CSSPrimitiveValue::CSS_NUMBER);
-    else if (a->unit == CSSPrimitiveValue::CSS_NUMBER)
-        percentage = cssValuePool().createValue(clampTo<double>(a->fValue, 0, 1), CSSPrimitiveValue::CSS_NUMBER);
+    if (value->unit == CSSPrimitiveValue::CSS_PERCENTAGE)
+        percentage = cssValuePool().createValue(clampTo<double>(value->fValue / 100, 0, 1), CSSPrimitiveValue::CSS_NUMBER);
+    else if (value->unit == CSSPrimitiveValue::CSS_NUMBER)
+        percentage = cssValuePool().createValue(clampTo<double>(value->fValue, 0, 1), CSSPrimitiveValue::CSS_NUMBER);
     else
         return false;
 
@@ -7118,8 +7122,8 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseImageSet(CSSParserValue
 
     RefPtrWillBeRawPtr<CSSImageSetValue> imageSet = CSSImageSetValue::create();
 
-    CSSParserValue* arg = functionArgs->current();
-    while (arg) {
+    while (functionArgs->current()) {
+        CSSParserValue* arg = functionArgs->current();
         if (arg->unit != CSSPrimitiveValue::CSS_URI)
             return nullptr;
 
@@ -7145,18 +7149,15 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseImageSet(CSSParserValue
         if (imageScaleFactor <= 0)
             return nullptr;
         imageSet->append(cssValuePool().createValue(imageScaleFactor, CSSPrimitiveValue::CSS_NUMBER));
+        functionArgs->next();
 
         // If there are no more arguments, we're done.
-        arg = functionArgs->next();
-        if (!arg)
+        if (!functionArgs->current())
             break;
 
         // If there are more arguments, they should be after a comma.
-        if (!isComma(arg))
+        if (!consumeComma(functionArgs))
             return nullptr;
-
-        // Skip the comma and move on to the next argument.
-        arg = functionArgs->next();
     }
 
     return imageSet.release();
@@ -7168,20 +7169,16 @@ bool CSSPropertyParser::parseWillChange(bool important)
     if (m_valueList->current()->id == CSSValueAuto) {
         if (m_valueList->next())
             return false;
+        // FIXME: This will be read back as an empty string instead of auto
+        addProperty(CSSPropertyWillChange, values.release(), important);
+        return true;
     }
 
     // Every comma-separated list of CSS_IDENTs is a valid will-change value,
     // unless the list includes an explicitly disallowed CSS_IDENT.
-    bool expectComma = false;
-    for (CSSParserValue* currentValue = m_valueList->current(); currentValue; currentValue = m_valueList->next()) {
-        if (expectComma) {
-            if (!isComma(currentValue))
-                return false;
-            expectComma = false;
-            continue;
-        }
-
-        if (currentValue->unit != CSSPrimitiveValue::CSS_IDENT)
+    while (true) {
+        CSSParserValue* currentValue = m_valueList->current();
+        if (!currentValue || currentValue->unit != CSSPrimitiveValue::CSS_IDENT)
             return false;
 
         CSSPropertyID property = cssPropertyID(currentValue->string);
@@ -7208,7 +7205,11 @@ bool CSSPropertyParser::parseWillChange(bool important)
                 break;
             }
         }
-        expectComma = true;
+
+        if (!m_valueList->next())
+            break;
+        if (!consumeComma(m_valueList.get()))
+            return false;
     }
 
     addProperty(CSSPropertyWillChange, values.release(), important);
@@ -7719,20 +7720,16 @@ bool CSSPropertyParser::parseFontFeatureSettings(bool important)
     }
 
     RefPtrWillBeRawPtr<CSSValueList> settings = CSSValueList::createCommaSeparated();
-    for (CSSParserValue* value = m_valueList->current(); value; value = m_valueList->next()) {
-        if (!parseFontFeatureTag(settings.get()))
+    while (true) {
+        if (!m_valueList->current() || !parseFontFeatureTag(settings.get()))
             return false;
-
-        // If the list isn't parsed fully, the current value should be comma.
-        value = m_valueList->current();
-        if (value && !isComma(value))
+        if (!m_valueList->current())
+            break;
+        if (!consumeComma(m_valueList.get()))
             return false;
     }
-    if (settings->length()) {
-        addProperty(CSSPropertyWebkitFontFeatureSettings, settings.release(), important);
-        return true;
-    }
-    return false;
+    addProperty(CSSPropertyWebkitFontFeatureSettings, settings.release(), important);
+    return true;
 }
 
 bool CSSPropertyParser::parseFontVariantLigatures(bool important)
