@@ -620,6 +620,7 @@ class CIDBConnectionFactory(object):
   _CONNECTION_TYPE_DEBUG = 'debug' # debug database, used by --debug builds
   _CONNECTION_TYPE_MOCK = 'mock'   # mock connection, not backed by database
   _CONNECTION_TYPE_NONE = 'none'   # explicitly no connection
+  _CONNECTION_TYPE_INV = 'invalid' # invalidated connection
 
 
   @classmethod
@@ -627,6 +628,25 @@ class CIDBConnectionFactory(object):
     """Returns True iff GetCIDBConnectionForBuilder is ready to be called."""
     return cls._ConnectionIsSetup
 
+  @classmethod
+  def GetCIDBConnectionType(cls):
+    """Returns the type of db connection that is set up.
+
+    Returns:
+      One of ('prod', 'debug', 'mock', 'none', 'invalid', None)
+    """
+    return cls._ConnectionType
+
+  @classmethod
+  def InvalidateCIDBSetup(cls):
+    """Invalidate the CIDB connection factory.
+
+    This method may be called at any time, even after a setup method. Once
+    this is called, future calls to GetCIDBConnectionForBuilder will raise
+    an assertion error.
+    """
+    cls._ConnectionType = cls._CONNECTION_TYPE_INV
+    cls._CachedCIDB = None
 
   @classmethod
   def SetupProdCidb(cls):
@@ -705,6 +725,8 @@ class CIDBConnectionFactory(object):
       set up for that using SetupNoCidb.
     """
     assert cls._ConnectionIsSetup, 'CIDB has not be set up with a Setup call.'
+    assert cls._ConnectionType != cls._CONNECTION_TYPE_INV, (
+        'CIDB Connection factory has been invalidated.')
     if cls._ConnectionType == cls._CONNECTION_TYPE_MOCK:
       return cls._MockCIDB
     elif cls._ConnectionType == cls._CONNECTION_TYPE_NONE:

@@ -12,6 +12,7 @@ import sys
 sys.path.insert(0, os.path.abspath('%s/../../..' % os.path.dirname(__file__)))
 from chromite.cbuildbot import commands
 from chromite.cbuildbot import constants
+from chromite.cbuildbot import failures_lib
 from chromite.cbuildbot import validation_pool
 from chromite.cbuildbot.cbuildbot_unittest import BuilderRunMock
 from chromite.cbuildbot.stages import sync_stages
@@ -27,6 +28,72 @@ from chromite.lib import osutils
 # TODO(build): Finish test wrapper (http://crosbug.com/37517).
 # Until then, this has to be after the chromite imports.
 import mock
+
+
+# pylint: disable=R0901,W0212
+class BuildStartStageTest(generic_stages_unittest.AbstractStageTest):
+  """Tests that BuildStartStage behaves as expected."""
+
+  def setUp(self):
+    self.mock_cidb = mox.MockObject(cidb.CIDBConnection)
+    cidb.CIDBConnectionFactory.SetupMockCidb(self.mock_cidb)
+    os.environ['BUILDBOT_MASTERNAME'] = 'chromiumos'
+    self._Prepare(build_id = None)
+
+  def tearDown(self):
+    mox.Verify(self.mock_cidb)
+
+  def testUnknownWaterfall(self):
+    """Test that an assertion is thrown is master name is not valid."""
+    os.environ['BUILDBOT_MASTERNAME'] = 'gibberish'
+    self.assertRaises(failures_lib.StepFailure, self.RunStage)
+
+  def testPerformStage(self):
+    """Test that a normal run of the stage does a database insert."""
+    self.mock_cidb.InsertBuild(bot_hostname=mox.IgnoreArg(),
+                               build_config='x86-generic-paladin',
+                               build_number=1234321,
+                               builder_name=mox.IgnoreArg(),
+                               master_build_id=None,
+                               start_time=mox.IgnoreArg(),
+                               waterfall='chromiumos').AndReturn(31337)
+    mox.Replay(self.mock_cidb)
+    self.RunStage()
+    self.assertEqual(self._run.attrs.metadata.GetValue('build_id'), 31337)
+    self.assertEqual(self._run.attrs.metadata.GetValue('db_type'),
+                     cidb.CIDBConnectionFactory._CONNECTION_TYPE_MOCK)
+
+  def testHandleSkipWithInstanceChange(self):
+    """Test that HandleSkip disables cidb and dies when necessary."""
+    # This test verifies that switching to a 'mock' database type once
+    # metadata already has an id in 'previous_db_type' will fail.
+    self._run.attrs.metadata.UpdateWithDict({'build_id': 31337,
+                                             'db_type': 'previous_db_type'})
+    stage = self.ConstructStage()
+    self.assertRaises(AssertionError, stage.HandleSkip)
+    self.assertEqual(cidb.CIDBConnectionFactory.GetCIDBConnectionType(),
+                     cidb.CIDBConnectionFactory._CONNECTION_TYPE_INV)
+    # The above test has the side effect of invalidating CIDBConnectionFactory.
+    # Undo that side effect so other unit tests can run.
+    cidb.CIDBConnectionFactory._ClearCIDBSetup()
+    cidb.CIDBConnectionFactory.SetupMockCidb()
+
+  def testHandleSkipWithNoDbType(self):
+    """Test that HandleSkip passes when db_type is missing."""
+    self._run.attrs.metadata.UpdateWithDict({'build_id': 31337})
+    stage = self.ConstructStage()
+    stage.HandleSkip()
+
+  def testHandleSkipWithDbType(self):
+    """Test that HandleSkip passes when db_type is specified."""
+    self._run.attrs.metadata.UpdateWithDict(
+        {'build_id': 31337,
+         'db_type': cidb.CIDBConnectionFactory._CONNECTION_TYPE_MOCK})
+    stage = self.ConstructStage()
+    stage.HandleSkip()
+
+  def ConstructStage(self):
+    return report_stages.BuildStartStage(self._run)
 
 
 # pylint: disable=R0901,W0212

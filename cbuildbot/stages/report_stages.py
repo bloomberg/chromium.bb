@@ -85,6 +85,7 @@ class BuildStartStage(generic_stages.BuilderStage):
       return
 
     if cidb.CIDBConnectionFactory.IsCIDBSetup():
+      db_type = cidb.CIDBConnectionFactory.GetCIDBConnectionType()
       db = cidb.CIDBConnectionFactory.GetCIDBConnectionForBuilder()
       if db:
         waterfall = d['buildbot-master-name']
@@ -98,8 +99,26 @@ class BuildStartStage(generic_stages.BuilderStage):
              start_time=cros_build_lib.ParseUserDateTimeFormat(
                  d['time']['start']),
              master_build_id=d['master_build_id'])
-        self._run.attrs.metadata.UpdateWithDict({'build_id': build_id})
+        self._run.attrs.metadata.UpdateWithDict({'build_id': build_id,
+                                                 'db_type': db_type})
         logging.info('Inserted build_id %s into cidb database.', build_id)
+
+
+  def HandleSkip(self):
+    """Ensure that re-executions use the same db instance as initial db."""
+    metadata_dict = self._run.attrs.metadata.GetDict()
+    if 'build_id' in metadata_dict:
+      db_type = cidb.CIDBConnectionFactory.GetCIDBConnectionType()
+      if not 'db_type' in metadata_dict:
+        # This will only execute while this CL is in the commit queue. After
+        # this CL lands, this block can be removed.
+        self._run.attrs.metadata.UpdateWithDict({'db_type': db_type})
+        return
+
+      if db_type != metadata_dict['db_type']:
+        cidb.CIDBConnectionFactory.InvalidateCIDBSetup()
+        raise AssertionError('Invalid attempt to switch from database %s to '
+                             '%s.' % (metadata_dict['db_type'], db_type))
 
 
 class BuildReexecutionFinishedStage(generic_stages.BuilderStage,

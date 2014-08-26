@@ -139,7 +139,8 @@ class StageTest(cros_test_lib.MockOutputTestCase,
     # Construct a real BuilderRun using options and build_config.
     self._run = cbuildbot_run.BuilderRun(options, build_config, self._manager)
 
-    self._run.attrs.metadata.UpdateWithDict({'build_id': build_id})
+    if build_id is not None:
+      self._run.attrs.metadata.UpdateWithDict({'build_id': build_id})
 
     if self.RELEASE_TAG is not None:
       self._run.attrs.release_tag = self.RELEASE_TAG

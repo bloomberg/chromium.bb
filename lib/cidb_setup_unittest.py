@@ -71,6 +71,13 @@ class CIDBConnectionFactoryTest(unittest.TestCase):
     self.assertRaises(AssertionError, cidb.CIDBConnectionFactory.SetupMockCidb)
     self.assertRaises(AssertionError, cidb.CIDBConnectionFactory.SetupNoCidb)
 
+  def testInvalidateSetup(self):
+    """Test that cidb connection can be invalidated."""
+    cidb.CIDBConnectionFactory.SetupProdCidb()
+    cidb.CIDBConnectionFactory.InvalidateCIDBSetup()
+    self.assertRaises(AssertionError,
+                      cidb.CIDBConnectionFactory.GetCIDBConnectionForBuilder)
+
   def testSetupMock(self):
     """Test that SetupDebug behaves as expected."""
     # Set the CIDB to mock mode, but without supplying a mock
