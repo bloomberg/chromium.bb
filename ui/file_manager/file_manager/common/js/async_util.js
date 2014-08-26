@@ -255,6 +255,82 @@ AsyncUtil.Group.prototype.finish_ = function(task) {
 };
 
 /**
+ * Aggregates consecutive calls and executes the closure only once instead of
+ * several times. The first call is always called immediately, and the next
+ * consecutive ones are aggregated and the closure is called only once once
+ * |delay| amount of time passes after the last call to run().
+ *
+ * @param {function()} closure Closure to be aggregated.
+ * @param {number=} opt_delay Minimum aggregation time in milliseconds. Default
+ *     is 50 milliseconds.
+ * @constructor
+ */
+AsyncUtil.Aggregator = function(closure, opt_delay) {
+  /**
+   * @type {number}
+   * @private
+   */
+  this.delay_ = opt_delay || 50;
+
+  /**
+   * @type {function()}
+   * @private
+   */
+  this.closure_ = closure;
+
+  /**
+   * @type {number?}
+   * @private
+   */
+  this.scheduledRunsTimer_ = null;
+
+  /**
+   * @type {number}
+   * @private
+   */
+  this.lastRunTime_ = 0;
+};
+
+/**
+ * Runs a closure. Skips consecutive calls. The first call is called
+ * immediately.
+ */
+AsyncUtil.Aggregator.prototype.run = function() {
+  // If recently called, then schedule the consecutive call with a delay.
+  if (Date.now() - this.lastRunTime_ < this.delay_) {
+    this.cancelScheduledRuns_();
+    this.scheduledRunsTimer_ = setTimeout(this.runImmediately_.bind(this),
+                                          this.delay_ + 1);
+    this.lastRunTime_ = Date.now();
+    return;
+  }
+
+  // Otherwise, run immediately.
+  this.runImmediately_();
+};
+
+/**
+ * Calls the schedule immediately and cancels any scheduled calls.
+ * @private
+ */
+AsyncUtil.Aggregator.prototype.runImmediately_ = function() {
+  this.cancelScheduledRuns_();
+  this.closure_();
+  this.lastRunTime_ = Date.now();
+};
+
+/**
+ * Cancels all scheduled runs (if any).
+ * @private
+ */
+AsyncUtil.Aggregator.prototype.cancelScheduledRuns_ = function() {
+  if (this.scheduledRunsTimer_) {
+    clearTimeout(this.scheduledRunsTimer_);
+    this.scheduledRunsTimer_ = null;
+  }
+};
+
+/**
  * Samples calls so that they are not called too frequently.
  * The first call is always called immediately, and the following calls may
  * be skipped or delayed to keep each interval no less than |minInterval_|.

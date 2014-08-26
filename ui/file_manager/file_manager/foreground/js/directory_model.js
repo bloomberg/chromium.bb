@@ -33,6 +33,8 @@ function DirectoryModel(singleSelection, fileFilter, fileWatcher,
   this.changeDirectorySequence_ = 0;
 
   this.directoryChangeQueue_ = new AsyncUtil.Queue();
+  this.rescanAggregator_ = new AsyncUtil.Aggregator(
+      this.rescanSoon.bind(this, true), 500);
 
   this.fileFilter_ = fileFilter;
   this.fileFilter_.addEventListener('changed',
@@ -189,13 +191,13 @@ DirectoryModel.prototype.onWatcherDirectoryChanged_ = function(event) {
     }.bind(this)).catch(function(error) {
       console.error('Error in proceeding the changed event.', error,
                     'Fallback to force-refresh');
-      this.rescanSoon(true);
+      this.rescanAggregator_.run();
     }.bind(this));
   } else {
     // Invokes force refresh if the detailed information isn't provided.
     // This can occur very frequently (e.g. when copying files into Downlaods)
     // and rescan is heavy operation, so we keep some interval for each rescan.
-    this.rescanLater(true);
+    this.rescanAggregator_.run();
   }
 };
 
