@@ -49,7 +49,6 @@ const QuicTag kSRBF = TAG('S', 'R', 'B', 'F');   // Socket receive buffer
 
 // Congestion control feedback types
 const QuicTag kQBIC = TAG('Q', 'B', 'I', 'C');   // TCP cubic
-const QuicTag kTSTP = TAG('T', 'S', 'T', 'P');   // Timestamp
 
 // Connection options (COPT) values
 const QuicTag kTBBR = TAG('T', 'B', 'B', 'R');   // Reduced Buffer Bloat TCP

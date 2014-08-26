@@ -107,8 +107,8 @@ class QuicNetworkTransactionTest
       public ::testing::WithParamInterface<QuicVersion> {
  protected:
   QuicNetworkTransactionTest()
-      : maker_(GetParam(), 0),
-        clock_(new MockClock),
+      : clock_(new MockClock),
+        maker_(GetParam(), 0, clock_),
         ssl_config_service_(new SSLConfigServiceDefaults),
         proxy_service_(ProxyService::CreateDirect()),
         auth_handler_factory_(
@@ -304,11 +304,11 @@ class QuicNetworkTransactionTest
     socket_factory_.AddSocketDataProvider(&hanging_data_);
   }
 
+  MockClock* clock_;  // Owned by QuicStreamFactory after CreateSession.
   QuicTestPacketMaker maker_;
   scoped_refptr<HttpNetworkSession> session_;
   MockClientSocketFactory socket_factory_;
   MockCryptoClientStreamFactory crypto_client_stream_factory_;
-  MockClock* clock_;  // Owned by QuicStreamFactory after CreateSession.
   MockHostResolver host_resolver_;
   MockCertVerifier cert_verifier_;
   TransportSecurityState transport_security_state_;

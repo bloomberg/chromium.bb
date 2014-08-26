@@ -132,16 +132,6 @@ QuicSequenceNumberLength ReadSequenceNumberLength(uint8 flags) {
   }
 }
 
-bool CanTruncate(const QuicFrame& frame, size_t free_bytes) {
-  if ((frame.type == ACK_FRAME || frame.type == CONNECTION_CLOSE_FRAME) &&
-      free_bytes >=
-          QuicFramer::GetMinAckFrameSize(PACKET_6BYTE_SEQUENCE_NUMBER,
-                                         PACKET_6BYTE_SEQUENCE_NUMBER)) {
-    return true;
-  }
-  return false;
-}
-
 }  // namespace
 
 bool QuicFramerVisitorInterface::OnWindowUpdateFrame(
@@ -168,7 +158,8 @@ QuicFramer::QuicFramer(const QuicVersionVector& supported_versions,
       alternative_decrypter_latch_(false),
       is_server_(is_server),
       validate_flags_(true),
-      creation_time_(creation_time) {
+      creation_time_(creation_time),
+      last_timestamp_(QuicTime::Delta::Zero()) {
   DCHECK(!supported_versions.empty());
   quic_version_ = supported_versions_[0];
   decrypter_.reset(QuicDecrypter::Create(kNULL));
@@ -302,7 +293,10 @@ size_t QuicFramer::GetSerializedFrameLength(
   if (!first_frame) {
     return 0;
   }
-  if (CanTruncate(frame, free_bytes)) {
+  bool can_truncate = frame.type == ACK_FRAME &&
+      free_bytes >= GetMinAckFrameSize(PACKET_6BYTE_SEQUENCE_NUMBER,
+                                       PACKET_6BYTE_SEQUENCE_NUMBER);
+  if (can_truncate) {
     // Truncate the frame so the packet will not exceed kMaxPacketSize.
     // Note that we may not use every byte of the writer in this case.
     DVLOG(1) << "Truncating large frame, free bytes: " << free_bytes;
@@ -807,6 +801,30 @@ bool QuicFramer::AppendPacketHeader(const QuicPacketHeader& header,
   return true;
 }
 
+const QuicTime::Delta QuicFramer::CalculateTimestampFromWire(
+    uint32 time_delta_us) {
+  // The new time_delta might have wrapped to the next epoch, or it
+  // might have reverse wrapped to the previous epoch, or it might
+  // remain in the same epoch. Select the time closest to the previous
+  // time.
+  //
+  // epoch_delta is the delta between epochs. A delta is 4 bytes of
+  // microseconds.
+  const uint64 epoch_delta = GG_UINT64_C(1) << 32;
+  uint64 epoch = last_timestamp_.ToMicroseconds() & ~(epoch_delta - 1);
+  // Wrapping is safe here because a wrapped value will not be ClosestTo below.
+  uint64 prev_epoch = epoch - epoch_delta;
+  uint64 next_epoch = epoch + epoch_delta;
+
+  uint64 time = ClosestTo(last_timestamp_.ToMicroseconds(),
+                          epoch + time_delta_us,
+                          ClosestTo(last_timestamp_.ToMicroseconds(),
+                                    prev_epoch + time_delta_us,
+                                    next_epoch + time_delta_us));
+
+  return QuicTime::Delta::FromMicroseconds(time);
+}
+
 QuicPacketSequenceNumber QuicFramer::CalculatePacketSequenceNumberFromWire(
     QuicSequenceNumberLength sequence_number_length,
     QuicPacketSequenceNumber packet_sequence_number) const {
@@ -1110,8 +1128,12 @@ bool QuicFramer::ProcessFrameData(const QuicPacketHeader& header) {
 
       // Congestion Feedback Frame
       if (frame_type & kQuicFrameTypeCongestionFeedbackMask) {
+        if (quic_version_ > QUIC_VERSION_22) {
+          set_detailed_error("Congestion Feedback Frame has been deprecated.");
+          DLOG(WARNING) << "Congestion Feedback Frame has been deprecated.";
+        }
         QuicCongestionFeedbackFrame frame;
-        if (!ProcessQuicCongestionFeedbackFrame(&frame)) {
+        if (!ProcessCongestionFeedbackFrame(&frame)) {
           return RaiseError(QUIC_INVALID_CONGESTION_FEEDBACK_DATA);
         }
         if (!visitor_->OnCongestionFeedbackFrame(frame)) {
@@ -1333,6 +1355,10 @@ bool QuicFramer::ProcessAckFrame(uint8 frame_type, QuicAckFrame* ack_frame) {
         QuicTime::Delta::FromMicroseconds(delta_time_largest_observed_us);
   }
 
+  if (!ProcessTimestampsInAckFrame(ack_frame)) {
+    return false;
+  }
+
   if (!has_nacks) {
     return true;
   }
@@ -1386,6 +1412,64 @@ bool QuicFramer::ProcessAckFrame(uint8 frame_type, QuicAckFrame* ack_frame) {
   return true;
 }
 
+bool QuicFramer::ProcessTimestampsInAckFrame(QuicAckFrame* ack_frame) {
+  if (version() > QUIC_VERSION_22 && !ack_frame->is_truncated) {
+    uint8 num_received_packets;
+    if (!reader_->ReadBytes(&num_received_packets, 1)) {
+      set_detailed_error("Unable to read num received packets.");
+      return false;
+    }
+
+    if (num_received_packets > 0) {
+      uint8 delta_from_largest_observed;
+      if (!reader_->ReadBytes(&delta_from_largest_observed,
+                              PACKET_1BYTE_SEQUENCE_NUMBER)) {
+        set_detailed_error(
+            "Unable to read sequence delta in received packets.");
+        return false;
+      }
+      QuicPacketSequenceNumber seq_num = ack_frame->largest_observed -
+          delta_from_largest_observed;
+
+      // Time delta from the framer creation.
+      uint32 time_delta_us;
+      if (!reader_->ReadBytes(&time_delta_us, sizeof(time_delta_us))) {
+        set_detailed_error("Unable to read time delta in received packets.");
+        return false;
+      }
+
+      last_timestamp_ = CalculateTimestampFromWire(time_delta_us);
+
+      ack_frame->received_packet_times.push_back(
+          make_pair(seq_num, creation_time_.Add(last_timestamp_)));
+
+      for (uint8 i = 1; i < num_received_packets; ++i) {
+        if (!reader_->ReadBytes(&delta_from_largest_observed,
+                                PACKET_1BYTE_SEQUENCE_NUMBER)) {
+          set_detailed_error(
+              "Unable to read sequence delta in received packets.");
+          return false;
+        }
+        seq_num = ack_frame->largest_observed - delta_from_largest_observed;
+
+        // Time delta from the previous timestamp.
+        uint64 incremental_time_delta_us;
+        if (!reader_->ReadUFloat16(&incremental_time_delta_us)) {
+          set_detailed_error(
+              "Unable to read incremental time delta in received packets.");
+          return false;
+        }
+
+        last_timestamp_ = last_timestamp_.Add(
+            QuicTime::Delta::FromMicroseconds(incremental_time_delta_us));
+        ack_frame->received_packet_times.push_back(
+            make_pair(seq_num, creation_time_.Add(last_timestamp_)));
+      }
+    }
+  }
+  return true;
+}
+
 bool QuicFramer::ProcessStopWaitingFrame(const QuicPacketHeader& header,
                                          QuicStopWaitingFrame* stop_waiting) {
   if (!reader_->ReadBytes(&stop_waiting->entropy_hash, 1)) {
@@ -1406,7 +1490,7 @@ bool QuicFramer::ProcessStopWaitingFrame(const QuicPacketHeader& header,
   return true;
 }
 
-bool QuicFramer::ProcessQuicCongestionFeedbackFrame(
+bool QuicFramer::ProcessCongestionFeedbackFrame(
     QuicCongestionFeedbackFrame* frame) {
   uint8 feedback_type;
   if (!reader_->ReadBytes(&feedback_type, 1)) {
@@ -1417,10 +1501,6 @@ bool QuicFramer::ProcessQuicCongestionFeedbackFrame(
       static_cast<CongestionFeedbackType>(feedback_type);
 
   switch (frame->type) {
-    case kTimestamp: {
-      set_detailed_error("Timestamp feedback not supported.");
-      return false;
-    }
     case kTCP: {
       CongestionFeedbackMessageTCP* tcp = &frame->tcp;
       uint16 receive_window = 0;
@@ -1716,6 +1796,24 @@ size_t QuicFramer::GetAckFrameSize(
     ack_size += min(ack.revived_packets.size(),
                     kMaxRevivedPackets) * largest_observed_length;
   }
+
+  // In version 23, if the ack will be truncated due to too many nack ranges,
+  // then do not include the number of timestamps (1 byte).
+  if (version() > QUIC_VERSION_22 &&
+      ack_info.nack_ranges.size() <= kMaxNackRanges) {
+    // 1 byte for the number of timestamps.
+    ack_size += 1;
+    if (ack.received_packet_times.size() > 0) {
+      // 1 byte for sequence number, 4 bytes for timestamp for the first
+      // packet.
+      ack_size += 5;
+
+      // 1 byte for sequence number, 2 bytes for timestamp for the other
+      // packets.
+      ack_size += 3 * (ack.received_packet_times.size() - 1);
+    }
+  }
+
   return ack_size;
 }
 
@@ -1741,10 +1839,6 @@ size_t QuicFramer::ComputeFrameLength(
       len += 1;  // Congestion feedback type.
 
       switch (congestion_feedback.type) {
-        case kTimestamp: {
-          set_detailed_error("Timestamp feedback not supported.");
-          break;
-        }
         case kTCP:
           len += 2;  // Receive window.
           break;
@@ -1977,6 +2071,13 @@ bool QuicFramer::AppendAckFrameAndTypeByte(
     return false;
   }
 
+  // Timestamp goes at the end of the required fields.
+  if (version() > QUIC_VERSION_22 && !truncated) {
+    if (!AppendTimestampToAckFrame(frame, writer)) {
+      return false;
+    }
+  }
+
   if (ack_info.nack_ranges.empty()) {
     return true;
   }
@@ -2038,10 +2139,6 @@ bool QuicFramer::AppendCongestionFeedbackFrame(
   }
 
   switch (frame.type) {
-    case kTimestamp: {
-      // Timestamp feedback not supported.
-      return false;
-    }
     case kTCP: {
       const CongestionFeedbackMessageTCP& tcp = frame.tcp;
       DCHECK_LE(tcp.receive_window, 1u << 20);
@@ -2056,6 +2153,72 @@ bool QuicFramer::AppendCongestionFeedbackFrame(
       return false;
   }
 
+  return true;
+}
+
+bool QuicFramer::AppendTimestampToAckFrame(const QuicAckFrame& frame,
+                                           QuicDataWriter* writer) {
+  DCHECK_GE(version(), QUIC_VERSION_23);
+  DCHECK_GE(numeric_limits<uint8>::max(), frame.received_packet_times.size());
+  // num_received_packets is only 1 byte.
+  if (frame.received_packet_times.size() > numeric_limits<uint8>::max()) {
+    return false;
+  }
+
+  uint8 num_received_packets = frame.received_packet_times.size();
+
+  if (!writer->WriteBytes(&num_received_packets, 1)) {
+    return false;
+  }
+  if (num_received_packets == 0) {
+    return true;
+  }
+
+  PacketTimeList::const_iterator it = frame.received_packet_times.begin();
+  QuicPacketSequenceNumber sequence_number = it->first;
+  QuicPacketSequenceNumber delta_from_largest_observed =
+      frame.largest_observed - sequence_number;
+
+  DCHECK_GE(numeric_limits<uint8>::max(), delta_from_largest_observed);
+  if (delta_from_largest_observed > numeric_limits<uint8>::max()) {
+    return false;
+  }
+
+  if (!writer->WriteUInt8(
+    delta_from_largest_observed & k1ByteSequenceNumberMask)) {
+    return false;
+  }
+
+  // Use the lowest 4 bytes of the time delta from the creation_time_.
+  const uint64 time_epoch_delta_us = GG_UINT64_C(1) << 32;
+  uint32 time_delta_us =
+      static_cast<uint32>(it->second.Subtract(creation_time_).ToMicroseconds()
+                          & (time_epoch_delta_us - 1));
+  if (!writer->WriteBytes(&time_delta_us, sizeof(time_delta_us))) {
+    return false;
+  }
+
+  QuicTime prev_time = it->second;
+
+  for (++it; it != frame.received_packet_times.end(); ++it) {
+    sequence_number = it->first;
+    delta_from_largest_observed = frame.largest_observed - sequence_number;
+
+    if (delta_from_largest_observed > numeric_limits<uint8>::max()) {
+      return false;
+    }
+
+    if (!writer->WriteUInt8(
+            delta_from_largest_observed & k1ByteSequenceNumberMask)) {
+      return false;
+    }
+
+    uint64 time_delta_us = it->second.Subtract(prev_time).ToMicroseconds();
+    prev_time = it->second;
+    if (!writer->WriteUFloat16(time_delta_us)) {
+      return false;
+    }
+  }
   return true;
 }
 

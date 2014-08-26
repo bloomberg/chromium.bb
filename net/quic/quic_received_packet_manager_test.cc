@@ -188,7 +188,7 @@ TEST(EntropyTrackerTest, SetCumulativeEntropyUpTo) {
 
 class QuicReceivedPacketManagerTest : public ::testing::Test {
  protected:
-  QuicReceivedPacketManagerTest() : received_manager_(kTCP, &stats_) {}
+  QuicReceivedPacketManagerTest() : received_manager_(&stats_) {}
 
   void RecordPacketReceipt(QuicPacketSequenceNumber sequence_number,
                            QuicPacketEntropyHash entropy_hash) {

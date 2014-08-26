@@ -122,19 +122,6 @@ base::Value* NetLogQuicCongestionFeedbackFrameCallback(
     NetLog::LogLevel /* log_level */) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   switch (frame->type) {
-    case kTimestamp: {
-      dict->SetString("type", "Timestamp");
-      base::ListValue* received = new base::ListValue();
-      dict->Set("received_packets", received);
-      for (TimeMap::const_iterator it =
-               frame->timestamp.received_packet_times.begin();
-           it != frame->timestamp.received_packet_times.end(); ++it) {
-        string value = base::Uint64ToString(it->first) + "@" +
-            base::Uint64ToString(it->second.ToDebuggingValue());
-        received->AppendString(value);
-      }
-      break;
-    }
     case kTCP:
       dict->SetString("type", "TCP");
       dict->SetInteger("receive_window", frame->tcp.receive_window);

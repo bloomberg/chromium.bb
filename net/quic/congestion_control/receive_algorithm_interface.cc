@@ -14,9 +14,6 @@ ReceiveAlgorithmInterface* ReceiveAlgorithmInterface::Create(
   switch (type) {
     case kTCP:
       return new TcpReceiver();
-    case kTimestamp:
-      LOG(DFATAL) << "Timestamp congestion feedback is not supported";
-      return NULL;
   }
   return NULL;
 }

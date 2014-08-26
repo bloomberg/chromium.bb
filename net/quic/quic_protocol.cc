@@ -171,6 +171,8 @@ QuicTag QuicVersionToQuicTag(const QuicVersion version) {
       return MakeQuicTag('Q', '0', '2', '1');
     case QUIC_VERSION_22:
       return MakeQuicTag('Q', '0', '2', '2');
+    case QUIC_VERSION_23:
+      return MakeQuicTag('Q', '0', '2', '3');
     default:
       // This shold be an ERROR because we should never attempt to convert an
       // invalid QuicVersion to be written to the wire.
@@ -203,6 +205,7 @@ string QuicVersionToString(const QuicVersion version) {
     RETURN_STRING_LITERAL(QUIC_VERSION_20);
     RETURN_STRING_LITERAL(QUIC_VERSION_21);
     RETURN_STRING_LITERAL(QUIC_VERSION_22);
+    RETURN_STRING_LITERAL(QUIC_VERSION_23);
     default:
       return "QUIC_VERSION_UNSUPPORTED";
   }
@@ -273,11 +276,6 @@ QuicAckFrame::~QuicAckFrame() {}
 CongestionFeedbackMessageTCP::CongestionFeedbackMessageTCP()
     : receive_window(0) {
 }
-
-CongestionFeedbackMessageTimestamp::CongestionFeedbackMessageTimestamp() {
-}
-
-CongestionFeedbackMessageTimestamp::~CongestionFeedbackMessageTimestamp() {}
 
 QuicCongestionFeedbackFrame::QuicCongestionFeedbackFrame() : type(kTCP) {}
 
@@ -383,7 +381,6 @@ ostream& operator<<(ostream& os, const QuicStopWaitingFrame& sent_info) {
 
 ostream& operator<<(ostream& os, const QuicAckFrame& ack_frame) {
   os << "entropy_hash: " << static_cast<int>(ack_frame.entropy_hash)
-     << " is_truncated: " << ack_frame.is_truncated
      << " largest_observed: " << ack_frame.largest_observed
      << " delta_time_largest_observed: "
      << ack_frame.delta_time_largest_observed.ToMicroseconds()
@@ -392,10 +389,17 @@ ostream& operator<<(ostream& os, const QuicAckFrame& ack_frame) {
        it != ack_frame.missing_packets.end(); ++it) {
     os << *it << " ";
   }
-  os << " ] revived_packets: [ ";
+  os << " ] is_truncated: " << ack_frame.is_truncated;
+  os << " revived_packets: [ ";
   for (SequenceNumberSet::const_iterator it = ack_frame.revived_packets.begin();
        it != ack_frame.revived_packets.end(); ++it) {
     os << *it << " ";
+  }
+  os << " ] received_packets: [ ";
+  for (PacketTimeList::const_iterator it =
+           ack_frame.received_packet_times.begin();
+           it != ack_frame.received_packet_times.end(); ++it) {
+    os << it->first << " at " << it->second.ToDebuggingValue() << " ";
   }
   os << " ]";
   return os;
@@ -504,17 +508,6 @@ ostream& operator<<(ostream& os,
                     const QuicCongestionFeedbackFrame& congestion_frame) {
   os << "type: " << congestion_frame.type;
   switch (congestion_frame.type) {
-    case kTimestamp: {
-      const CongestionFeedbackMessageTimestamp& timestamp =
-          congestion_frame.timestamp;
-      os << " received packets: [ ";
-      for (TimeMap::const_iterator it = timestamp.received_packet_times.begin();
-           it != timestamp.received_packet_times.end(); ++it) {
-        os << it->first << "@" << it->second.ToDebuggingValue() << " ";
-      }
-      os << "]";
-      break;
-    }
     case kTCP: {
       const CongestionFeedbackMessageTCP& tcp = congestion_frame.tcp;
       os << " receive_window: " << tcp.receive_window;

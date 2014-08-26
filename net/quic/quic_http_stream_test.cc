@@ -150,12 +150,13 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
         read_buffer_(new IOBufferWithSize(4096)),
         connection_id_(2),
         stream_id_(kClientDataStreamId1),
-        maker_(GetParam(), connection_id_),
+        maker_(GetParam(), connection_id_, &clock_),
         random_generator_(0) {
     IPAddressNumber ip;
     CHECK(ParseIPLiteralToNumber("192.0.2.33", &ip));
     peer_addr_ = IPEndPoint(ip, 443);
     self_addr_ = IPEndPoint(ip, 8435);
+    clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(20));
   }
 
   ~QuicHttpStreamTest() {
@@ -243,7 +244,6 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
     stream_.reset(use_closing_stream_ ?
                   new AutoClosingStream(session_->GetWeakPtr()) :
                   new QuicHttpStream(session_->GetWeakPtr()));
-    clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(20));
   }
 
   void SetRequest(const std::string& method,

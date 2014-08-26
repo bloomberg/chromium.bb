@@ -2568,11 +2568,20 @@ TEST_P(QuicConnectionTest, WithQuicCongestionFeedbackFrame) {
   QuicCongestionFeedbackFrame info;
   info.type = kTCP;
   info.tcp.receive_window = 0x4030;
-  SetFeedback(&info);
 
-  SendAckPacketToPeer();
-  ASSERT_FALSE(writer_->feedback_frames().empty());
-  ASSERT_EQ(kTCP, writer_->feedback_frames()[0].type);
+  // After QUIC_VERSION_22, do not send TCP Congestion Feedback Frames anymore.
+  if (version() > QUIC_VERSION_22) {
+    SendAckPacketToPeer();
+    ASSERT_TRUE(writer_->feedback_frames().empty());
+  } else {
+    // Only SetFeedback in this case because SetFeedback will create a receive
+    // algorithm which is how the received_packet_manager checks if it should be
+    // creating TCP Congestion Feedback Frames.
+    SetFeedback(&info);
+    SendAckPacketToPeer();
+    ASSERT_FALSE(writer_->feedback_frames().empty());
+    ASSERT_EQ(kTCP, writer_->feedback_frames()[0].type);
+  }
 }
 
 TEST_P(QuicConnectionTest, UpdateQuicCongestionFeedbackFrame) {

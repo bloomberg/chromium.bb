@@ -45,6 +45,8 @@ const size_t kQuicEntropyHashSize = 1;
 // Size in bytes reserved for the delta time of the largest observed
 // sequence number in ack frames.
 const size_t kQuicDeltaTimeLargestObservedSize = 2;
+// Size in bytes reserved for the number of received packets with timestamps.
+const size_t kQuicNumTimestampsSize = 1;
 // Size in bytes reserved for the number of missing packets in ack frames.
 const size_t kNumberOfNackRangesSize = 1;
 // Maximum number of missing packet ranges that can fit within an ack frame.
@@ -409,9 +411,10 @@ class NET_EXPORT_PRIVATE QuicFramer {
   bool ProcessFrameData(const QuicPacketHeader& header);
   bool ProcessStreamFrame(uint8 frame_type, QuicStreamFrame* frame);
   bool ProcessAckFrame(uint8 frame_type, QuicAckFrame* frame);
+  bool ProcessTimestampsInAckFrame(QuicAckFrame* frame);
   bool ProcessStopWaitingFrame(const QuicPacketHeader& public_header,
                                QuicStopWaitingFrame* stop_waiting);
-  bool ProcessQuicCongestionFeedbackFrame(
+  bool ProcessCongestionFeedbackFrame(
       QuicCongestionFeedbackFrame* congestion_feedback);
   bool ProcessRstStreamFrame(QuicRstStreamFrame* frame);
   bool ProcessConnectionCloseFrame(QuicConnectionCloseFrame* frame);
@@ -427,6 +430,10 @@ class NET_EXPORT_PRIVATE QuicFramer {
   QuicPacketSequenceNumber CalculatePacketSequenceNumberFromWire(
       QuicSequenceNumberLength sequence_number_length,
       QuicPacketSequenceNumber packet_sequence_number) const;
+
+  // Returns the QuicTime::Delta corresponding to the time from when the framer
+  // was created.
+  const QuicTime::Delta CalculateTimestampFromWire(uint32 time_delta_us);
 
   // Computes the wire size in bytes of the |ack| frame, assuming no truncation.
   size_t GetAckFrameSize(const QuicAckFrame& ack,
@@ -463,6 +470,8 @@ class NET_EXPORT_PRIVATE QuicFramer {
                                  QuicDataWriter* builder);
   bool AppendCongestionFeedbackFrame(const QuicCongestionFeedbackFrame& frame,
                                      QuicDataWriter* builder);
+  bool AppendTimestampToAckFrame(const QuicAckFrame& frame,
+                                 QuicDataWriter* builder);
   bool AppendStopWaitingFrame(const QuicPacketHeader& header,
                               const QuicStopWaitingFrame& frame,
                               QuicDataWriter* builder);
@@ -527,6 +536,9 @@ class NET_EXPORT_PRIVATE QuicFramer {
   // The time this framer was created.  Time written to the wire will be
   // written as a delta from this value.
   QuicTime creation_time_;
+  // The time delta computed for the last timestamp frame. This is relative to
+  // the creation_time.
+  QuicTime::Delta last_timestamp_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicFramer);
 };

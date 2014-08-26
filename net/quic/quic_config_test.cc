@@ -80,7 +80,6 @@ TEST_F(QuicConfigTest, ToHandshakeMessage) {
 TEST_F(QuicConfigTest, ProcessClientHello) {
   QuicConfig client_config;
   QuicTagVector cgst;
-  cgst.push_back(kTSTP);
   cgst.push_back(kQBIC);
   client_config.set_congestion_feedback(cgst, kQBIC);
   client_config.set_idle_connection_state_lifetime(
@@ -256,7 +255,7 @@ TEST_F(QuicConfigTest, MultipleNegotiatedValuesInVectorTag) {
   QuicConfig server_config;
   QuicTagVector cgst;
   cgst.push_back(kQBIC);
-  cgst.push_back(kTSTP);
+  cgst.push_back(kTBBR);
   server_config.set_congestion_feedback(cgst, kQBIC);
 
   CryptoHandshakeMessage msg;
@@ -271,8 +270,8 @@ TEST_F(QuicConfigTest, NoOverLapInCGST) {
   QuicConfig server_config;
   server_config.SetDefaults();
   QuicTagVector cgst;
-  cgst.push_back(kTSTP);
-  server_config.set_congestion_feedback(cgst, kTSTP);
+  cgst.push_back(kTBBR);
+  server_config.set_congestion_feedback(cgst, kTBBR);
 
   CryptoHandshakeMessage msg;
   string error_details;

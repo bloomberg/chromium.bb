@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "net/base/request_priority.h"
 #include "net/quic/quic_protocol.h"
+#include "net/quic/test_tools/mock_clock.h"
 #include "net/quic/test_tools/mock_random.h"
 #include "net/spdy/spdy_framer.h"
 #include "net/spdy/spdy_protocol.h"
@@ -19,7 +20,9 @@ namespace test {
 
 class QuicTestPacketMaker {
  public:
-  QuicTestPacketMaker(QuicVersion version, QuicConnectionId connection_id);
+  QuicTestPacketMaker(QuicVersion version,
+                      QuicConnectionId connection_id,
+                      MockClock* clock);
   ~QuicTestPacketMaker();
 
   scoped_ptr<QuicEncryptedPacket> MakeRstPacket(
@@ -77,6 +80,7 @@ class QuicTestPacketMaker {
 
   QuicVersion version_;
   QuicConnectionId connection_id_;
+  MockClock* clock_;  // Owned by QuicStreamFactory.
   SpdyFramer spdy_request_framer_;
   SpdyFramer spdy_response_framer_;
   MockRandom random_generator_;

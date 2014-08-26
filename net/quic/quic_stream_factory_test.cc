@@ -90,8 +90,8 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<QuicVersion> {
  protected:
   QuicStreamFactoryTest()
       : random_generator_(0),
-        maker_(GetParam(), 0),
         clock_(new MockClock()),
+        maker_(GetParam(), 0, clock_),
         cert_verifier_(CertVerifier::CreateDefault()),
         channel_id_service_(new ChannelIDService(
             new DefaultChannelIDStore(NULL),
@@ -187,8 +187,8 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<QuicVersion> {
   DeterministicMockClientSocketFactory socket_factory_;
   MockCryptoClientStreamFactory crypto_client_stream_factory_;
   MockRandom random_generator_;
-  QuicTestPacketMaker maker_;
   MockClock* clock_;  // Owned by factory_.
+  QuicTestPacketMaker maker_;
   scoped_ptr<CertVerifier> cert_verifier_;
   scoped_ptr<ChannelIDService> channel_id_service_;
   TransportSecurityState transport_security_state_;

@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 #include <limits>
+#include <list>
 #include <map>
 #include <ostream>
 #include <set>
@@ -291,6 +292,7 @@ enum QuicVersion {
   QUIC_VERSION_20 = 20,  // Independent stream/connection flow control windows.
   QUIC_VERSION_21 = 21,  // Headers/crypto streams are flow controlled.
   QUIC_VERSION_22 = 22,  // Send Server Config Update messages on crypto stream.
+  QUIC_VERSION_23 = 23,  // Timestamp in the ack frame.
 };
 
 // This vector contains QUIC versions which we currently support.
@@ -300,7 +302,8 @@ enum QuicVersion {
 //
 // IMPORTANT: if you are adding to this list, follow the instructions at
 // http://sites/quic/adding-and-removing-versions
-static const QuicVersion kSupportedQuicVersions[] = {QUIC_VERSION_22,
+static const QuicVersion kSupportedQuicVersions[] = {QUIC_VERSION_23,
+                                                     QUIC_VERSION_22,
                                                      QUIC_VERSION_21,
                                                      QUIC_VERSION_20,
                                                      QUIC_VERSION_19,
@@ -644,8 +647,8 @@ struct NET_EXPORT_PRIVATE QuicStreamFrame {
 // TODO(ianswett): Re-evaluate the trade-offs of hash_set vs set when framing
 // is finalized.
 typedef std::set<QuicPacketSequenceNumber> SequenceNumberSet;
-// TODO(pwestin): Add a way to enforce the max size of this map.
-typedef std::map<QuicPacketSequenceNumber, QuicTime> TimeMap;
+
+typedef std::list<std::pair<QuicPacketSequenceNumber, QuicTime>> PacketTimeList;
 
 struct NET_EXPORT_PRIVATE QuicStopWaitingFrame {
   QuicStopWaitingFrame();
@@ -696,6 +699,9 @@ struct NET_EXPORT_PRIVATE QuicAckFrame {
   // Packets which have been revived via FEC.
   // All of these must also be in missing_packets.
   SequenceNumberSet revived_packets;
+
+  // List of <sequence_number, time> for when packets arrived.
+  PacketTimeList received_packet_times;
 };
 
 // True if the sequence number is greater than largest_observed or is listed
@@ -714,9 +720,9 @@ void NET_EXPORT_PRIVATE InsertMissingPacketsBetween(
 // Defines for all types of congestion feedback that will be negotiated in QUIC,
 // kTCP MUST be supported by all QUIC implementations to guarantee 100%
 // compatibility.
+// TODO(cyr): Remove this when removing QUIC_VERSION_22.
 enum CongestionFeedbackType {
   kTCP,  // Used to mimic TCP.
-  kTimestamp,  // Use additional inter arrival timestamp information.
 };
 
 // Defines for all types of congestion control algorithms that can be used in
@@ -734,21 +740,14 @@ enum LossDetectionType {
   kTime,  // Time based loss detection.
 };
 
+// TODO(cyr): Remove this when removing QUIC_VERSION_22.
 struct NET_EXPORT_PRIVATE CongestionFeedbackMessageTCP {
   CongestionFeedbackMessageTCP();
 
   QuicByteCount receive_window;
 };
 
-struct NET_EXPORT_PRIVATE CongestionFeedbackMessageTimestamp {
-  CongestionFeedbackMessageTimestamp();
-  ~CongestionFeedbackMessageTimestamp();
-
-  // The set of received packets since the last feedback was sent, along with
-  // their arrival times.
-  TimeMap received_packet_times;
-};
-
+// TODO(cyr): Remove this when removing QUIC_VERSION_22.
 struct NET_EXPORT_PRIVATE QuicCongestionFeedbackFrame {
   QuicCongestionFeedbackFrame();
   ~QuicCongestionFeedbackFrame();
@@ -760,7 +759,6 @@ struct NET_EXPORT_PRIVATE QuicCongestionFeedbackFrame {
   // This should really be a union, but since the timestamp struct
   // is non-trivial, C++ prohibits it.
   CongestionFeedbackMessageTCP tcp;
-  CongestionFeedbackMessageTimestamp timestamp;
 };
 
 struct NET_EXPORT_PRIVATE QuicRstStreamFrame {
@@ -861,7 +859,10 @@ struct NET_EXPORT_PRIVATE QuicFrame {
   explicit QuicFrame(QuicPaddingFrame* padding_frame);
   explicit QuicFrame(QuicStreamFrame* stream_frame);
   explicit QuicFrame(QuicAckFrame* frame);
+
+  // TODO(cyr): Remove this when removing QUIC_VERSION_22.
   explicit QuicFrame(QuicCongestionFeedbackFrame* frame);
+
   explicit QuicFrame(QuicRstStreamFrame* frame);
   explicit QuicFrame(QuicConnectionCloseFrame* frame);
   explicit QuicFrame(QuicStopWaitingFrame* frame);
@@ -878,8 +879,11 @@ struct NET_EXPORT_PRIVATE QuicFrame {
     QuicPaddingFrame* padding_frame;
     QuicStreamFrame* stream_frame;
     QuicAckFrame* ack_frame;
+
+    // TODO(cyr): Remove this when removing QUIC_VERSION_22.
     QuicCongestionFeedbackFrame* congestion_feedback_frame;
     QuicStopWaitingFrame* stop_waiting_frame;
+
     QuicPingFrame* ping_frame;
     QuicRstStreamFrame* rst_stream_frame;
     QuicConnectionCloseFrame* connection_close_frame;

@@ -11,6 +11,7 @@
 #include <deque>
 
 #include "net/quic/congestion_control/receive_algorithm_interface.h"
+#include "net/quic/quic_config.h"
 #include "net/quic/quic_framer.h"
 #include "net/quic/quic_protocol.h"
 
@@ -94,8 +95,7 @@ class NET_EXPORT_PRIVATE QuicReceivedPacketManager :
     DISALLOW_COPY_AND_ASSIGN(EntropyTracker);
   };
 
-  explicit QuicReceivedPacketManager(CongestionFeedbackType congestion_type,
-                                     QuicConnectionStats* stats);
+  explicit QuicReceivedPacketManager(QuicConnectionStats* stats);
   virtual ~QuicReceivedPacketManager();
 
   // Updates the internal state concerning which packets have been received.
@@ -171,6 +171,8 @@ class NET_EXPORT_PRIVATE QuicReceivedPacketManager :
   scoped_ptr<ReceiveAlgorithmInterface> receive_algorithm_;
 
   QuicConnectionStats* stats_;
+
+  PacketTimeList received_packet_times_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicReceivedPacketManager);
 };

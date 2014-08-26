@@ -81,7 +81,10 @@ void MockCryptoClientStream::SendOnCryptoHandshakeEvent(
 void MockCryptoClientStream::SetConfigNegotiated() {
   ASSERT_FALSE(session()->config()->negotiated());
   QuicTagVector cgst;
-  cgst.push_back(kTSTP);
+  // TODO(rtenneti): Enable the following code after BBR code is checked in.
+#if 0
+  cgst.push_back(kTBBR);
+#endif
   cgst.push_back(kQBIC);
   session()->config()->set_congestion_feedback(cgst, kQBIC);
   session()->config()->set_idle_connection_state_lifetime(

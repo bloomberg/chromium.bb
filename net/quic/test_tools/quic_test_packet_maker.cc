@@ -4,18 +4,24 @@
 
 #include "net/quic/test_tools/quic_test_packet_maker.h"
 
+#include <list>
+
 #include "net/quic/quic_framer.h"
 #include "net/quic/quic_http_utils.h"
 #include "net/quic/quic_utils.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 
+using std::make_pair;
+
 namespace net {
 namespace test {
 
 QuicTestPacketMaker::QuicTestPacketMaker(QuicVersion version,
-                                         QuicConnectionId connection_id)
+                                         QuicConnectionId connection_id,
+                                         MockClock* clock)
     : version_(version),
       connection_id_(connection_id),
+      clock_(clock),
       spdy_request_framer_(SPDY3),
       spdy_response_framer_(SPDY3) {
 }
@@ -63,10 +69,16 @@ scoped_ptr<QuicEncryptedPacket> QuicTestPacketMaker::MakeAckAndRstPacket(
 
   QuicAckFrame ack(MakeAckFrame(largest_received));
   ack.delta_time_largest_observed = QuicTime::Delta::Zero();
+  if (version_ > QUIC_VERSION_22) {
+    for (QuicPacketSequenceNumber i = least_unacked; i <= largest_received;
+         ++i) {
+      ack.received_packet_times.push_back(make_pair(i, clock_->Now()));
+    }
+  }
   QuicFrames frames;
   frames.push_back(QuicFrame(&ack));
   QuicCongestionFeedbackFrame feedback;
-  if (send_feedback) {
+  if (send_feedback && version_ <= QUIC_VERSION_22) {
     feedback.type = kTCP;
     feedback.tcp.receive_window = 256000;
 
@@ -80,7 +92,7 @@ scoped_ptr<QuicEncryptedPacket> QuicTestPacketMaker::MakeAckAndRstPacket(
   QuicRstStreamFrame rst(stream_id, error_code, 0);
   frames.push_back(QuicFrame(&rst));
 
-  QuicFramer framer(SupportedVersions(version_), QuicTime::Zero(), false);
+  QuicFramer framer(SupportedVersions(version_), clock_->Now(), false);
   scoped_ptr<QuicPacket> packet(
       BuildUnsizedDataPacket(&framer, header, frames).packet);
   return scoped_ptr<QuicEncryptedPacket>(framer.EncryptPacket(
@@ -122,15 +134,20 @@ scoped_ptr<QuicEncryptedPacket> QuicTestPacketMaker::MakeAckPacket(
 
   QuicAckFrame ack(MakeAckFrame(largest_received));
   ack.delta_time_largest_observed = QuicTime::Delta::Zero();
+  if (version_ > QUIC_VERSION_22) {
+    for (QuicPacketSequenceNumber i = least_unacked; i <= largest_received;
+         ++i) {
+      ack.received_packet_times.push_back(make_pair(i, clock_->Now()));
+    }
+  }
 
-  QuicCongestionFeedbackFrame feedback;
-  feedback.type = kTCP;
-  feedback.tcp.receive_window = 256000;
-
-  QuicFramer framer(SupportedVersions(version_), QuicTime::Zero(), false);
+  QuicFramer framer(SupportedVersions(version_), clock_->Now(), false);
   QuicFrames frames;
   frames.push_back(QuicFrame(&ack));
-  if (send_feedback) {
+  QuicCongestionFeedbackFrame feedback;
+  if (send_feedback && version_ <= QUIC_VERSION_22) {
+    feedback.type = kTCP;
+    feedback.tcp.receive_window = 256000;
     frames.push_back(QuicFrame(&feedback));
   }
 

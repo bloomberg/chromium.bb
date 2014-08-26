@@ -379,19 +379,20 @@ SerializedPacket QuicPacketCreator::SerializePacket() {
   size_t max_plaintext_size =
       framer_->GetMaxPlaintextSize(max_packet_length_);
   DCHECK_GE(max_plaintext_size, packet_size_);
-  // ACK Frames will be truncated only if they're the only frame in the packet,
-  // and if packet_size_ was set to max_plaintext_size. If truncation occurred,
-  // then GetSerializedFrameLength will have returned all bytes free.
-  bool possibly_truncated = packet_size_ == max_plaintext_size &&
-                            queued_frames_.size() == 1 &&
-                            queued_frames_.back().type == ACK_FRAME;
+  // ACK Frames will be truncated due to length only if they're the only frame
+  // in the packet, and if packet_size_ was set to max_plaintext_size. If
+  // truncation due to length occurred, then GetSerializedFrameLength will have
+  // returned all bytes free.
+  bool possibly_truncated_by_length = packet_size_ == max_plaintext_size &&
+      queued_frames_.size() == 1 &&
+      queued_frames_.back().type == ACK_FRAME;
   SerializedPacket serialized =
       framer_->BuildDataPacket(header, queued_frames_, packet_size_);
   LOG_IF(DFATAL, !serialized.packet)
       << "Failed to serialize " << queued_frames_.size() << " frames.";
   // Because of possible truncation, we can't be confident that our
   // packet size calculation worked correctly.
-  if (!possibly_truncated) {
+  if (!possibly_truncated_by_length) {
     DCHECK_EQ(packet_size_, serialized.packet->length());
   }
   packet_size_ = 0;

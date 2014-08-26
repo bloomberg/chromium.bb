@@ -211,7 +211,7 @@ QuicConnection::QuicConnection(QuicConnectionId connection_id,
       largest_seen_packet_with_ack_(0),
       largest_seen_packet_with_stop_waiting_(0),
       pending_version_negotiation_packet_(false),
-      received_packet_manager_(kTCP, &stats_),
+      received_packet_manager_(&stats_),
       ack_queued_(false),
       stop_waiting_count_(0),
       ack_alarm_(helper->CreateAlarm(new AckAlarm(this))),
@@ -269,7 +269,6 @@ QuicConnection::~QuicConnection() {
 void QuicConnection::SetFromConfig(const QuicConfig& config) {
   SetIdleNetworkTimeout(config.idle_connection_state_lifetime());
   sent_packet_manager_.SetFromConfig(config);
-  // TODO(satyamshekhar): Set congestion control and ICSL also.
 }
 
 bool QuicConnection::SelectMutualVersion(
@@ -1574,15 +1573,16 @@ void QuicConnection::SendPing() {
 void QuicConnection::SendAck() {
   ack_alarm_->Cancel();
   stop_waiting_count_ = 0;
-  // TODO(rch): delay this until the CreateFeedbackFrame
-  // method is invoked.  This requires changes SetShouldSendAck
-  // to be a no-arg method, and re-jiggering its implementation.
   bool send_feedback = false;
-  if (received_packet_manager_.GenerateCongestionFeedback(
-          &outgoing_congestion_feedback_)) {
-    DVLOG(1) << ENDPOINT << "Sending feedback: "
-             << outgoing_congestion_feedback_;
-    send_feedback = true;
+
+  // Deprecating the Congestion Feedback Frame after QUIC_VERSION_22.
+  if (version() <= QUIC_VERSION_22) {
+    if (received_packet_manager_.GenerateCongestionFeedback(
+            &outgoing_congestion_feedback_)) {
+      DVLOG(1) << ENDPOINT << "Sending feedback: "
+               << outgoing_congestion_feedback_;
+      send_feedback = true;
+    }
   }
 
   packet_generator_.SetShouldSendAck(send_feedback, true);
