@@ -2236,9 +2236,3 @@ content.dll!content::WebContentsImpl::CreateRenderViewForRenderManager
 content.dll!content::NavigationControllerImpl::LoadEntry
 ...
 *!extensions::ExtensionHost::LoadInitialURL
-
-UNINITIALIZED READ
-name=bug_407396
-blink_platform.dll!blink::ThreadHeap<>::sweepNormalPages
-blink_platform.dll!blink::ThreadHeap<>::sweep
-blink_platform.dll!blink::ThreadState::performPendingSweep
