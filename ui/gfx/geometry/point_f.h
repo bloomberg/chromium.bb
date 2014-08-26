@@ -67,7 +67,7 @@ inline PointF ScalePoint(const PointF& p, float scale) {
   return ScalePoint(p, scale, scale);
 }
 
-#if !defined(COMPILER_MSVC)
+#if !defined(COMPILER_MSVC) && !defined(__native_client__)
 extern template class PointBase<PointF, float, Vector2dF>;
 #endif
 

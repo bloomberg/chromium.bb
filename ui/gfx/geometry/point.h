@@ -84,7 +84,7 @@ inline Point PointAtOffsetFromOrigin(const Vector2d& offset_from_origin) {
   return Point(offset_from_origin.x(), offset_from_origin.y());
 }
 
-#if !defined(COMPILER_MSVC)
+#if !defined(COMPILER_MSVC) && !defined(__native_client__)
 extern template class PointBase<Point, int, Vector2d>;
 #endif
 

@@ -131,7 +131,7 @@ inline Rect ScaleToEnclosedRect(const Rect& rect, float scale) {
   return ScaleToEnclosedRect(rect, scale, scale);
 }
 
-#if !defined(COMPILER_MSVC)
+#if !defined(COMPILER_MSVC) && !defined(__native_client__)
 extern template class RectBase<Rect, Point, Size, Insets, Vector2d, int>;
 #endif
 

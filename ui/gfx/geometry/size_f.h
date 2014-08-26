@@ -46,7 +46,7 @@ inline SizeF ScaleSize(const SizeF& p, float scale) {
   return ScaleSize(p, scale, scale);
 }
 
-#if !defined(COMPILER_MSVC)
+#if !defined(COMPILER_MSVC) && !defined(__native_client__)
 extern template class SizeBase<SizeF, float>;
 #endif
 

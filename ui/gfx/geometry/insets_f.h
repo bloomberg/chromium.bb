@@ -24,7 +24,7 @@ class GFX_EXPORT InsetsF : public InsetsBase<InsetsF, float> {
   std::string ToString() const;
 };
 
-#if !defined(COMPILER_MSVC)
+#if !defined(COMPILER_MSVC) && !defined(__native_client__)
 extern template class InsetsBase<InsetsF, float>;
 #endif
 
