@@ -113,6 +113,12 @@ public:
     BLINK_EXPORT WebDOMEvent createEvent(const WebString& eventType);
     BLINK_EXPORT WebReferrerPolicy referrerPolicy() const;
     BLINK_EXPORT WebElement createElement(const WebString& tagName);
+    // Shorthand of frame()->scrollOffset().
+    BLINK_EXPORT WebSize scrollOffset() const;
+    // Shorthand of frame()->minimumScrollOffset().
+    BLINK_EXPORT WebSize minimumScrollOffset() const;
+    // Shorthand of frame()->maximumScrollOffset().
+    BLINK_EXPORT WebSize maximumScrollOffset() const;
     BLINK_EXPORT void setIsTransitionDocument();
     BLINK_EXPORT void beginExitTransition(const WebString& cssSelector);
 
