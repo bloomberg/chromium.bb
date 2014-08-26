@@ -44,6 +44,7 @@ CONTENT_EXPORT extern const char kDisableDelegatedRenderer[];
 extern const char kDisableDesktopNotifications[];
 extern const char kDisableDirectNPAPIRequests[];
 CONTENT_EXPORT extern const char kDisableDistanceFieldText[];
+CONTENT_EXPORT extern const char kDisableDisplayList2dCanvas[];
 extern const char kDisableDomainBlockingFor3DAPIs[];
 CONTENT_EXPORT extern const char kDisableExperimentalWebGL[];
 CONTENT_EXPORT extern const char kDisableFileSystem[];

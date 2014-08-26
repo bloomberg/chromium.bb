@@ -5,6 +5,7 @@
 #include "content/child/runtime_features.h"
 
 #include "base/command_line.h"
+#include "base/metrics/field_trial.h"
 #include "content/common/content_switches_internal.h"
 #include "content/public/common/content_switches.h"
 #include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
@@ -145,8 +146,15 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (command_line.HasSwitch(switches::kEnableExperimentalCanvasFeatures))
     WebRuntimeFeatures::enableExperimentalCanvasFeatures(true);
 
-  if (command_line.HasSwitch(switches::kEnableDisplayList2dCanvas))
+  if (command_line.HasSwitch(switches::kDisableDisplayList2dCanvas)) {
+    WebRuntimeFeatures::enableDisplayList2dCanvas(false);
+  } else if (command_line.HasSwitch(switches::kEnableDisplayList2dCanvas)) {
     WebRuntimeFeatures::enableDisplayList2dCanvas(true);
+  } else {
+    WebRuntimeFeatures::enableDisplayList2dCanvas(
+        base::FieldTrialList::FindFullName("DisplayList2dCanvas") == "Enabled"
+    );
+  }
 
   if (command_line.HasSwitch(switches::kEnableWebGLDraftExtensions))
     WebRuntimeFeatures::enableWebGLDraftExtensions(true);

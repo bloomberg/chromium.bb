@@ -60,6 +60,7 @@ void ChromeBrowserFieldTrials::InstantiateDynamicTrials() {
   base::FieldTrialList::FindValue("CLD1VsCLD2");
   base::FieldTrialList::FindValue("MouseEventPreconnect");
   base::FieldTrialList::FindValue("UnauthorizedPluginInfoBar");
+  base::FieldTrialList::FindValue("DisplayList2dCanvas");
   // Activate the autocomplete dynamic field trials.
   OmniboxFieldTrial::ActivateDynamicTrials();
 }

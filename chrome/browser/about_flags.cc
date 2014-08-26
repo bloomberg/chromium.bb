@@ -139,6 +139,14 @@ std::set<CommandLine::StringType> ExtractFlagsFromCommandLine(
   return flags;
 }
 
+const Experiment::Choice kEnableDisplayList2DcanvasChoices[] = {
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
+  { IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED,
+    switches::kEnableDisplayList2dCanvas, ""},
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
+    switches::kDisableDisplayList2dCanvas, ""},
+};
+
 const Experiment::Choice kEnableCompositingForTransitionChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
   { IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED,
@@ -568,7 +576,7 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_ENABLE_DISPLAY_LIST_2D_CANVAS_NAME,
     IDS_FLAGS_ENABLE_DISPLAY_LIST_2D_CANVAS_DESCRIPTION,
     kOsAll,
-    SINGLE_VALUE_TYPE(switches::kEnableDisplayList2dCanvas)
+    MULTI_VALUE_TYPE(kEnableDisplayList2DcanvasChoices)
   },
   {
     "composited-layer-borders",

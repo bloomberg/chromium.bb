@@ -44108,6 +44108,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="4271876776" label="disable-search-button-in-omnibox"/>
   <int value="4272422888" label="enable-video-player-chromecast-support"/>
   <int value="4289914356" label="enable-simplified-fullscreen"/>
+  <int value="4292595878" label="disable-display-list-2d-canvas"/>
 </enum>
 
 <enum name="LoginFailureReason" type="int">
