@@ -565,21 +565,19 @@ void CreateBackendDidCreate(const ServiceWorkerCache::ErrorCallback& callback,
 
 // static
 scoped_ptr<ServiceWorkerCache> ServiceWorkerCache::CreateMemoryCache(
-    const std::string& name,
     net::URLRequestContext* request_context,
     base::WeakPtr<storage::BlobStorageContext> blob_context) {
-  return make_scoped_ptr(new ServiceWorkerCache(
-      base::FilePath(), name, request_context, blob_context));
+  return make_scoped_ptr(
+      new ServiceWorkerCache(base::FilePath(), request_context, blob_context));
 }
 
 // static
 scoped_ptr<ServiceWorkerCache> ServiceWorkerCache::CreatePersistentCache(
     const base::FilePath& path,
-    const std::string& name,
     net::URLRequestContext* request_context,
     base::WeakPtr<storage::BlobStorageContext> blob_context) {
   return make_scoped_ptr(
-      new ServiceWorkerCache(path, name, request_context, blob_context));
+      new ServiceWorkerCache(path, request_context, blob_context));
 }
 
 ServiceWorkerCache::~ServiceWorkerCache() {
@@ -709,14 +707,11 @@ bool ServiceWorkerCache::HasCreatedBackend() const {
 
 ServiceWorkerCache::ServiceWorkerCache(
     const base::FilePath& path,
-    const std::string& name,
     net::URLRequestContext* request_context,
     base::WeakPtr<storage::BlobStorageContext> blob_context)
     : path_(path),
-      name_(name),
       request_context_(request_context),
       blob_storage_context_(blob_context),
-      id_(0),
       weak_ptr_factory_(this) {
 }
 

@@ -40,6 +40,10 @@ WebServiceWorkerCacheError ToWebServiceWorkerCacheError(
       // TODO(jkarlin): Update this to CACHE_STORAGE_ERROR_EMPTY_KEY once that's
       // added.
       return WebServiceWorkerCacheError::WebServiceWorkerCacheErrorNotFound;
+    case ServiceWorkerCacheStorage::CACHE_STORAGE_ERROR_CLOSING:
+      // TODO(jkarlin): Update this to CACHE_STORAGE_ERROR_CLOSING once that's
+      // added.
+      return WebServiceWorkerCacheError::WebServiceWorkerCacheErrorNotFound;
   }
   NOTREACHED();
   return WebServiceWorkerCacheError::WebServiceWorkerCacheErrorNotImplemented;

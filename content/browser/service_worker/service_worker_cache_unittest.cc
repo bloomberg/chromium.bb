@@ -66,14 +66,12 @@ class ServiceWorkerCacheTest : public testing::Test {
 
     if (MemoryOnly()) {
       cache_ = ServiceWorkerCache::CreateMemoryCache(
-          "test",
           url_request_context,
           blob_storage_context->context()->AsWeakPtr());
     } else {
       ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
       cache_ = ServiceWorkerCache::CreatePersistentCache(
           temp_dir_.path(),
-          "test",
           url_request_context,
           blob_storage_context->context()->AsWeakPtr());
     }

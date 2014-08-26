@@ -92,9 +92,9 @@ class ServiceWorkerCacheStorageManagerTest : public testing::Test {
     bool error = callback_error_ !=
                  ServiceWorkerCacheStorage::CACHE_STORAGE_ERROR_NO_ERROR;
     if (error)
-      EXPECT_EQ(0, callback_cache_id_);
+      EXPECT_EQ(ServiceWorkerCacheStorage::kInvalidCacheID, callback_cache_id_);
     else
-      EXPECT_LT(0, callback_cache_id_);
+      EXPECT_LE(0, callback_cache_id_);
     return !error;
   }
 
@@ -111,9 +111,9 @@ class ServiceWorkerCacheStorageManagerTest : public testing::Test {
     bool error = callback_error_ !=
                  ServiceWorkerCacheStorage::CACHE_STORAGE_ERROR_NO_ERROR;
     if (error)
-      EXPECT_EQ(0, callback_cache_id_);
+      EXPECT_EQ(ServiceWorkerCacheStorage::kInvalidCacheID, callback_cache_id_);
     else
-      EXPECT_LT(0, callback_cache_id_);
+      EXPECT_LE(0, callback_cache_id_);
     return !error;
   }
 
@@ -181,7 +181,7 @@ class ServiceWorkerCacheStorageManagerTest : public testing::Test {
   scoped_ptr<ServiceWorkerCacheStorageManager> cache_manager_;
 
   int callback_bool_;
-  int callback_cache_id_;
+  ServiceWorkerCacheStorage::CacheID callback_cache_id_;
   ServiceWorkerCacheStorage::CacheStorageError callback_error_;
   std::vector<std::string> callback_strings_;
 
@@ -221,6 +221,14 @@ TEST_P(ServiceWorkerCacheStorageManagerTestP, CreateDuplicateCache) {
 TEST_P(ServiceWorkerCacheStorageManagerTestP, CreateTwoCaches) {
   EXPECT_TRUE(CreateCache(origin1_, "foo"));
   EXPECT_TRUE(CreateCache(origin1_, "bar"));
+}
+
+TEST_P(ServiceWorkerCacheStorageManagerTestP, IDsDiffer) {
+  EXPECT_TRUE(CreateCache(origin1_, "foo"));
+  ServiceWorkerCacheStorage::CacheID id1 = callback_cache_id_;
+  EXPECT_TRUE(CreateCache(origin1_, "bar"));
+  ServiceWorkerCacheStorage::CacheID id2 = callback_cache_id_;
+  EXPECT_NE(id1, id2);
 }
 
 TEST_P(ServiceWorkerCacheStorageManagerTestP, Create2CachesSameNameDiffSWs) {

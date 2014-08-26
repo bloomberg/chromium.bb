@@ -10,7 +10,6 @@
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
-#include "base/id_map.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/service_worker/service_worker_cache.h"
 
@@ -33,8 +32,15 @@ namespace content {
 // ServiceWorkerCacheStorage holds the set of caches for a given origin. It is
 // owned by the ServiceWorkerCacheStorageManager. This class expects to be run
 // on the IO thread.
-class ServiceWorkerCacheStorage {
+class CONTENT_EXPORT ServiceWorkerCacheStorage {
  public:
+  // TODO(jkarlin): Convert this (and everything that uses it) to int64_t so
+  // that we don't run out of id space.
+  typedef int32_t CacheID;
+
+  // The CacheID returned on failed cache operations.
+  const static int kInvalidCacheID;
+
   enum CacheStorageError {
     CACHE_STORAGE_ERROR_NO_ERROR,
     CACHE_STORAGE_ERROR_NOT_IMPLEMENTED,
@@ -42,6 +48,7 @@ class ServiceWorkerCacheStorage {
     CACHE_STORAGE_ERROR_EXISTS,
     CACHE_STORAGE_ERROR_STORAGE,
     CACHE_STORAGE_ERROR_EMPTY_KEY,
+    CACHE_STORAGE_ERROR_CLOSING
   };
 
   typedef base::Callback<void(bool, CacheStorageError)> BoolAndErrorCallback;
@@ -87,12 +94,12 @@ class ServiceWorkerCacheStorage {
   class MemoryLoader;
   class SimpleCacheLoader;
   class CacheLoader;
+  struct CacheContext;
 
-  typedef IDMap<ServiceWorkerCache, IDMapOwnPointer> CacheMap;
-  typedef CacheMap::KeyType CacheID;
+  typedef std::map<CacheID, CacheContext*> CacheMap;
   typedef std::map<std::string, CacheID> NameMap;
 
-  ServiceWorkerCache* GetLoadedCache(const std::string& cache_name) const;
+  CacheContext* GetLoadedCache(const std::string& cache_name) const;
 
   // Initializer and its callback are below.
   void LazyInit(const base::Closure& closure);
@@ -103,14 +110,17 @@ class ServiceWorkerCacheStorage {
       const base::Closure& callback,
       scoped_ptr<std::vector<std::string> > indexed_cache_names,
       const std::vector<std::string>::const_iterator& iter,
+      const std::string& cache_name,
       scoped_ptr<ServiceWorkerCache> cache);
   void LazyInitDone();
 
   void DidCreateBackend(base::WeakPtr<ServiceWorkerCache> cache,
+                        CacheID cache_id,
                         const CacheAndErrorCallback& callback,
                         ServiceWorkerCache::ErrorType error);
 
-  void AddCacheToMaps(scoped_ptr<ServiceWorkerCache> cache);
+  CacheContext* AddCacheToMaps(const std::string& cache_name,
+                               scoped_ptr<ServiceWorkerCache> cache);
 
   // The CreateCache callbacks are below.
   void CreateCacheDidCreateCache(const std::string& cache_name,
@@ -118,6 +128,7 @@ class ServiceWorkerCacheStorage {
                                  scoped_ptr<ServiceWorkerCache> cache);
   void CreateCacheDidWriteIndex(const CacheAndErrorCallback& callback,
                                 base::WeakPtr<ServiceWorkerCache> cache,
+                                CacheID id,
                                 bool success);
 
   // The DeleteCache callbacks are below.
@@ -133,9 +144,11 @@ class ServiceWorkerCacheStorage {
   // The list of operations waiting on initialization.
   std::vector<base::Closure> init_callbacks_;
 
-  // The map of ServiceWorkerCache objects to their integer ids that
-  // ServiceWorkers reference.  Owns the cache objects.
+  // The map of CacheIDs to their CacheContext objects. Owns the CacheContext
+  // object. The CacheIDs are used by JavaScript to reference a
+  // ServiceWorkerCache.
   CacheMap cache_map_;
+  CacheID next_cache_id_;  // The next CacheID to use in cache_map_
 
   // The map of cache names to their integer ids.
   NameMap name_map_;

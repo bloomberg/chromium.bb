@@ -47,12 +47,10 @@ class CONTENT_EXPORT ServiceWorkerCache {
                               scoped_ptr<storage::BlobDataHandle>)>
       ResponseCallback;
   static scoped_ptr<ServiceWorkerCache> CreateMemoryCache(
-      const std::string& name,
       net::URLRequestContext* request_context,
       base::WeakPtr<storage::BlobStorageContext> blob_context);
   static scoped_ptr<ServiceWorkerCache> CreatePersistentCache(
       const base::FilePath& path,
-      const std::string& name,
       net::URLRequestContext* request_context,
       base::WeakPtr<storage::BlobStorageContext> blob_context);
 
@@ -88,25 +86,18 @@ class CONTENT_EXPORT ServiceWorkerCache {
   void set_backend(scoped_ptr<disk_cache::Backend> backend) {
     backend_ = backend.Pass();
   }
-  void set_name(const std::string& name) { name_ = name; }
-  const std::string& name() const { return name_; }
-  int32 id() const { return id_; }
-  void set_id(int32 id) { id_ = id; }
 
   base::WeakPtr<ServiceWorkerCache> AsWeakPtr();
 
  private:
   ServiceWorkerCache(const base::FilePath& path,
-                     const std::string& name,
                      net::URLRequestContext* request_context,
                      base::WeakPtr<storage::BlobStorageContext> blob_context);
 
   scoped_ptr<disk_cache::Backend> backend_;
   base::FilePath path_;
-  std::string name_;
   net::URLRequestContext* request_context_;
   base::WeakPtr<storage::BlobStorageContext> blob_storage_context_;
-  int32 id_;
 
   base::WeakPtrFactory<ServiceWorkerCache> weak_ptr_factory_;
 
