@@ -11,7 +11,20 @@ package content;
 message ServiceWorkerCacheStorageIndex {
   message Cache {
     required string name = 1;
-    required int32 size = 2;
+    optional int32 DEPRECATED_size = 2;
+    optional int64 size = 3;
   }
   repeated Cache cache = 1;
+}
+
+message ServiceWorkerRequestResponseHeaders {
+  message HeaderMap {
+    required string name = 1;
+    required string value = 2;
+  }
+  required string method = 1;
+  required int32 status_code = 2;
+  required string status_text = 3;
+  repeated HeaderMap request_headers = 4;
+  repeated HeaderMap response_headers = 5;
 }

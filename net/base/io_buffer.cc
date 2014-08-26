@@ -46,6 +46,13 @@ StringIOBuffer::StringIOBuffer(const std::string& s)
   data_ = const_cast<char*>(string_data_.data());
 }
 
+StringIOBuffer::StringIOBuffer(scoped_ptr<std::string> s)
+    : IOBuffer(static_cast<char*>(NULL)) {
+  CHECK_LT(s->size(), static_cast<size_t>(INT_MAX));
+  string_data_.swap(*s.get());
+  data_ = const_cast<char*>(string_data_.data());
+}
+
 StringIOBuffer::~StringIOBuffer() {
   // We haven't allocated the buffer, so remove it before the base class
   // destructor tries to delete[] it.

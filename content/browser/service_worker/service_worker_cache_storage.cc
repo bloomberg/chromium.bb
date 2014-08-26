@@ -63,7 +63,7 @@ class ServiceWorkerCacheStorage::CacheLoader
   friend class base::RefCountedThreadSafe<
       ServiceWorkerCacheStorage::CacheLoader>;
 
-  virtual ~CacheLoader() {};
+  virtual ~CacheLoader() {}
   virtual void LoadCacheImpl(const std::string&) {}
 
   scoped_refptr<base::SequencedTaskRunner> cache_task_runner_;
@@ -342,11 +342,11 @@ class ServiceWorkerCacheStorage::SimpleCacheLoader
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
     ServiceWorkerCacheStorageIndex index;
-    index.ParseFromString(serialized);
-
-    for (int i = 0, max = index.cache_size(); i < max; ++i) {
-      const ServiceWorkerCacheStorageIndex::Cache& cache = index.cache(i);
-      names->push_back(cache.name());
+    if (index.ParseFromString(serialized)) {
+      for (int i = 0, max = index.cache_size(); i < max; ++i) {
+        const ServiceWorkerCacheStorageIndex::Cache& cache = index.cache(i);
+        names->push_back(cache.name());
+      }
     }
 
     // TODO(jkarlin): Delete caches that are in the directory and not returned
@@ -446,6 +446,9 @@ void ServiceWorkerCacheStorage::GetCache(
     return;
   }
 
+  if (cache->HasCreatedBackend())
+    return callback.Run(cache->id(), CACHE_STORAGE_ERROR_NO_ERROR);
+
   cache->CreateBackend(base::Bind(&ServiceWorkerCacheStorage::DidCreateBackend,
                                   weak_factory_.GetWeakPtr(),
                                   cache->AsWeakPtr(),
@@ -533,15 +536,16 @@ void ServiceWorkerCacheStorage::EnumerateCaches(
 void ServiceWorkerCacheStorage::DidCreateBackend(
     base::WeakPtr<ServiceWorkerCache> cache,
     const CacheAndErrorCallback& callback,
-    bool success) {
+    ServiceWorkerCache::ErrorType error) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  if (!success || !cache) {
+  if (error != ServiceWorkerCache::ErrorTypeOK || !cache) {
     // TODO(jkarlin): This should delete the directory and try again in case
     // the cache is simply corrupt.
     callback.Run(0, CACHE_STORAGE_ERROR_STORAGE);
     return;
   }
+
   callback.Run(cache->id(), CACHE_STORAGE_ERROR_NO_ERROR);
 }
 
@@ -672,6 +676,7 @@ void ServiceWorkerCacheStorage::CreateCacheDidWriteIndex(
     callback.Run(false, CACHE_STORAGE_ERROR_STORAGE);
     return;
   }
+
   cache->CreateBackend(base::Bind(&ServiceWorkerCacheStorage::DidCreateBackend,
                                   weak_factory_.GetWeakPtr(),
                                   cache,

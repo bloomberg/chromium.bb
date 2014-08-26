@@ -114,6 +114,7 @@ class NET_EXPORT IOBufferWithSize : public IOBuffer {
 class NET_EXPORT StringIOBuffer : public IOBuffer {
  public:
   explicit StringIOBuffer(const std::string& s);
+  explicit StringIOBuffer(scoped_ptr<std::string> s);
 
   int size() const { return static_cast<int>(string_data_.size()); }
 

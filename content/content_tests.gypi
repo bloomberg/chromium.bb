@@ -589,6 +589,7 @@
         'browser/service_worker/embedded_worker_instance_unittest.cc',
         'browser/service_worker/embedded_worker_test_helper.cc',
         'browser/service_worker/embedded_worker_test_helper.h',
+        'browser/service_worker/service_worker_cache_unittest.cc',
         'browser/service_worker/service_worker_cache_storage_manager_unittest.cc',
         'browser/service_worker/service_worker_context_unittest.cc',
         'browser/service_worker/service_worker_controllee_request_handler_unittest.cc',

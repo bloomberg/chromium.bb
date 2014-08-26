@@ -12,6 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/id_map.h"
 #include "base/memory/weak_ptr.h"
+#include "content/browser/service_worker/service_worker_cache.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -26,7 +27,6 @@ class BlobStorageContext;
 }
 
 namespace content {
-class ServiceWorkerCache;
 
 // TODO(jkarlin): Constrain the total bytes used per origin.
 
@@ -108,7 +108,7 @@ class ServiceWorkerCacheStorage {
 
   void DidCreateBackend(base::WeakPtr<ServiceWorkerCache> cache,
                         const CacheAndErrorCallback& callback,
-                        bool success);
+                        ServiceWorkerCache::ErrorType error);
 
   void AddCacheToMaps(scoped_ptr<ServiceWorkerCache> cache);
 
