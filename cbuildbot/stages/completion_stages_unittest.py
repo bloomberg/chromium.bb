@@ -268,6 +268,16 @@ class CanaryCompletionStageTest(
     return completion_stages.CanaryCompletionStage(
         self._run, sync_stage, success=True)
 
+  def testComposeTreeStatusMessage(self):
+    """Tests that the status message is constructed as expected."""
+    failing = ['foo1', 'foo2', 'foo3', 'foo4', 'foo5']
+    inflight = ['bar']
+    no_stat = []
+    stage = self.ConstructStage()
+    self.assertEqual(
+        stage._ComposeTreeStatusMessage(failing, inflight, no_stat),
+        'bar timed out; foo1,foo2 and 3 others failed')
+
 
 class CommitQueueCompletionStageTest(
     generic_stages_unittest.AbstractStageTest):

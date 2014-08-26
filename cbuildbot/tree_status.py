@@ -23,7 +23,21 @@ CROS_TREE_STATUS_JSON_URL = '%s/current?format=json' % CROS_TREE_STATUS_URL
 CROS_TREE_STATUS_UPDATE_URL = '%s/status' % CROS_TREE_STATUS_URL
 
 _USER_NAME = 'buildbot@chromium.org'
-_PASSWORD_PATH = '/home/chrome-bot/.status_password'
+_PASSWORD_PATH = '/home/chrome-bot/.status_password_chromiumos'
+
+# The tree status json file contains the following keywords.
+TREE_STATUS_STATE = 'general_state'
+TREE_STATUS_USERNAME = 'username'
+TREE_STATUS_MESSAGE = 'message'
+TREE_STATUS_DATE = 'date'
+TREE_STATUS_CAN_COMMIT = 'can_commit_freely'
+
+# These keywords in a status message are detected automatically to
+# update the tree status.
+MESSAGE_KEYWORDS = ('open', 'throt', 'close', 'maint')
+
+# This is the delimiter to separate messages from different updates.
+MESSAGE_DELIMITER = '|'
 
 
 class PasswordFileDoesNotExist(Exception):
@@ -34,27 +48,62 @@ class InvalidTreeStatus(Exception):
   """Raised when user wants to set an invalid tree status."""
 
 
-def _GetStatus(status_url):
-  """Polls |status_url| and returns the retrieved tree status.
+def _GetStatusDict(status_url, raw_message=False):
+  """Polls |status_url| and returns the retrieved tree status dictionary.
 
-  This function gets a JSON response from |status_url|, and returns the
-  value associated with the 'general_state' key, if one exists and the
-  http request was successful.
+  This function gets a JSON response from |status_url|, and returns
+  the dictionary of the tree status, if one exists and the http
+  request was successful.
+
+  The tree status dictionary contains:
+    TREE_STATUS_USERNAME: User who posted the message (foo@chromium.org).
+    TREE_STATUS_MESSAGE: The status message ("Tree is Open (CQ is good)").
+    TREE_STATUS_CAN_COMMIT: Whether tree is commit ready ('true' or 'false').
+    TREE_STATUS_STATE: one of constants.VALID_TREE_STATUSES.
+
+  Args:
+    status_url: The URL of the tree status to check.
+    raw_message: Whether to return the raw message without stripping the
+      "Tree is open/throttled/closed" string. Defaults to always strip.
 
   Returns:
-    The tree status, as a string, if it was successfully retrieved. Otherwise
-    None.
+    The tree status as a dictionary, if it was successfully retrieved.
+    Otherwise None.
   """
   try:
     # Check for successful response code.
     response = urllib.urlopen(status_url)
     if response.getcode() == 200:
       data = json.load(response)
-      if data.has_key('general_state'):
-        return data['general_state']
+      if not raw_message:
+        # Tree status message is usually in the form:
+        #   "Tree is open/closed/throttled (reason for the tree closure)"
+        # We want only the reason enclosed in the parentheses.
+        # This is a best-effort parsing because user may post the message
+        # in a form that we don't recognize.
+        match = re.match(r'Tree is [\w\s\.]+\((.*)\)',
+                         data.get(TREE_STATUS_MESSAGE, ''))
+        data[TREE_STATUS_MESSAGE] = '' if not match else match.group(1)
+      return data
   # We remain robust against IOError's.
   except IOError as e:
     logging.error('Could not reach %s: %r', status_url, e)
+
+
+def _GetStatus(status_url):
+  """Polls |status_url| and returns the retrieved tree status.
+
+  This function gets a JSON response from |status_url|, and returns the
+  value associated with the TREE_STATUS_STATE, if one exists and the
+  http request was successful.
+
+  Returns:
+    The tree status, as a string, if it was successfully retrieved. Otherwise
+    None.
+  """
+  status_dict = _GetStatusDict(status_url)
+  if status_dict:
+    return status_dict.get(TREE_STATUS_STATE)
 
 
 def WaitForTreeStatus(status_url=None, period=1, timeout=1, throttled_ok=False):
@@ -157,13 +206,16 @@ def _UpdateTreeStatus(status_url, message):
     logging.info('Updated tree status to %s', message)
 
 
-def UpdateTreeStatus(status, message, status_url=None):
+def UpdateTreeStatus(status, message, announcer='cbuildbot', epilogue='',
+                     status_url=None):
   """Updates the tree status to |status| with additional |message|.
 
   Args:
     status: A status in constants.VALID_TREE_STATUSES.
     message: A string to display as part of the tree status.
-    status_url: The tree status URL.
+    announcer: The announcer the message.
+    epilogue: The string to append to |message|.
+    status_url: The URL of the tree status to update.
   """
   if status_url is None:
     status_url = CROS_TREE_STATUS_UPDATE_URL
@@ -171,11 +223,75 @@ def UpdateTreeStatus(status, message, status_url=None):
   if status not in constants.VALID_TREE_STATUSES:
     raise InvalidTreeStatus('%s is not a valid tree status.' % status)
 
-  status_text = 'Tree is %(status)s (cbuildbot: %(message)s)' % {
-      'status': status,
-      'message': message}
+  if status == 'maintenance':
+    # This is a special case because "Tree is maintenance" is
+    # grammatically incorrect.
+    status = 'under maintenance'
 
-  _UpdateTreeStatus(status_url, status_text)
+  text_dict = {
+      'status': status,
+      'epilogue': epilogue,
+      'announcer': announcer,
+      'message': message,
+      'delimiter': MESSAGE_DELIMITER
+  }
+  if epilogue:
+    text = ('Tree is %(status)s (%(announcer)s: %(message)s %(delimiter)s '
+            '%(epilogue)s)' % text_dict)
+  else:
+    text = 'Tree is %(status)s (%(announcer)s: %(message)s)' % text_dict
+
+  _UpdateTreeStatus(status_url, text)
+
+
+def ThrottleOrCloseTheTree(announcer, message):
+  """Throttle or close the tree with |message|.
+
+  By default, this function throttles the tree with an updated
+  message. If the tree is already not open, it will keep the original
+  status (closed, maintenance) and only update the message. This
+  ensures that we do not lower the severity of tree closure.
+
+  In the case where the tree is not open, the previous tree status
+  message is kept by prepending it to |message|, if possible. This
+  ensures that the cause of the previous tree closure remains visible.
+
+  Args:
+    announcer: The announcer the message.
+    message: A string to display as part of the tree status.
+
+  """
+  # Get current tree status.
+  status_dict = _GetStatusDict(CROS_TREE_STATUS_JSON_URL)
+  current_status = status_dict.get(TREE_STATUS_STATE)
+  current_msg = status_dict.get(TREE_STATUS_MESSAGE)
+
+  status = constants.TREE_THROTTLED
+  if (constants.VALID_TREE_STATUSES.index(current_status) >
+      constants.VALID_TREE_STATUSES.index(status)):
+    # Maintain the current status if it is more servere than throttled.
+    status = current_status
+
+  epilogue = ''
+  # Don't prepend the current status message if the tree is open.
+  if current_status != constants.TREE_OPEN and current_msg:
+    # Scan the current message and discard the text by the same
+    # announcer.
+    chunks = [x.strip() for x in current_msg.split(MESSAGE_DELIMITER)
+              if '%s:' % announcer not in x.strip()]
+    current_msg = MESSAGE_DELIMITER.join(chunks)
+
+    if any(x for x in MESSAGE_KEYWORDS if x.lower() in
+           current_msg.lower().split()):
+      # The waterfall scans the message for keywords to change the
+      # tree status. Don't prepend the current status message if it
+      # contains such keywords.
+      logging.warning('Cannot prepend the previous tree status message because '
+                      'there are keywords that may affect the tree state.')
+    else:
+      epilogue = current_msg
+
+  UpdateTreeStatus(status, message, announcer=announcer, epilogue=epilogue)
 
 
 def _OpenSheriffURL(sheriff_url):

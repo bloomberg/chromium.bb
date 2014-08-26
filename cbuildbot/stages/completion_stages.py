@@ -416,6 +416,37 @@ class CanaryCompletionStage(MasterSlaveSyncCompletionStage):
                        smtp_server=constants.GOLO_SMTP_SERVER,
                        extra_fields={'X-cbuildbot-alert': 'canary-fail-alert'})
 
+  def _ComposeTreeStatusMessage(self, failing, inflight, no_stat):
+    """Composes a tres status message.
+
+    Args:
+      failing: Names of the builders that failed.
+      inflight: Names of the builders that timed out.
+      no_stat: Set of builder names of slave builders that had status None.
+
+    Returns:
+      A string.
+    """
+    slave_status_list = [
+        ('did not start', no_stat),
+        ('timed out', inflight),
+        ('failed', failing),]
+    # Print maximum 2 slaves for each category to not clutter the
+    # message.
+    max_num = 2
+    messages = []
+    for status, slaves in slave_status_list:
+      if not slaves:
+        continue
+      slaves_str = ','.join(slaves[:max_num])
+      if len(slaves) <= max_num:
+        messages.append('%s %s' % (slaves_str, status))
+      else:
+        messages.append('%s and %d others %s' % (slaves_str,
+                                                 len(slaves) - max_num,
+                                                 status))
+    return '; '.join(messages)
+
   def CanaryMasterHandleFailure(self, failing, inflight, no_stat):
     """Handles the failure by sending out an alert email.
 
@@ -426,6 +457,11 @@ class CanaryCompletionStage(MasterSlaveSyncCompletionStage):
     """
     if self._run.manifest_branch == 'master':
       self.SendCanaryFailureAlert(failing, inflight, no_stat)
+      # Use "cbuildbot" on "Canary master" so that it is a clickable
+      # link on the waterfall.
+      tree_status.ThrottleOrCloseTheTree(
+          '"cbuildbot" on "Canary master"',
+          self._ComposeTreeStatusMessage(failing, inflight, no_stat))
 
 
 class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
