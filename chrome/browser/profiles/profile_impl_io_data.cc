@@ -383,13 +383,13 @@ ProfileImplIOData::Handle::GetAllContextGetters() {
   for (; iter != app_request_context_getter_map_.end(); ++iter)
     context_getters->push_back(iter->second);
 
-  if (extensions_request_context_getter_)
+  if (extensions_request_context_getter_.get())
     context_getters->push_back(extensions_request_context_getter_);
 
-  if (media_request_context_getter_)
+  if (media_request_context_getter_.get())
     context_getters->push_back(media_request_context_getter_);
 
-  if (main_request_context_getter_)
+  if (main_request_context_getter_.get())
     context_getters->push_back(main_request_context_getter_);
 
   return context_getters.Pass();

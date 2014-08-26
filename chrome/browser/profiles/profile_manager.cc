@@ -1111,7 +1111,7 @@ void ProfileManager::FinishDeletingProfile(const base::FilePath& profile_dir) {
     scoped_refptr<password_manager::PasswordStore> password_store =
         PasswordStoreFactory::GetForProfile(profile, Profile::EXPLICIT_ACCESS)
             .get();
-    if (password_store) {
+    if (password_store.get()) {
       password_store->RemoveLoginsCreatedBetween(base::Time(),
                                                  base::Time::Max());
     }

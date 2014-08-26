@@ -115,7 +115,7 @@ class ProfileBrowserTest : public InProcessBrowserTest {
   }
 
   void FlushIoTaskRunnerAndSpinThreads() {
-    FlushTaskRunner(profile_io_task_runner_);
+    FlushTaskRunner(profile_io_task_runner_.get());
     SpinThreads();
   }
 

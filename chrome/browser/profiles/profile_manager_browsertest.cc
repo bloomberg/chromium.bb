@@ -421,7 +421,7 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, DeletePasswords) {
   scoped_refptr<password_manager::PasswordStore> password_store =
       PasswordStoreFactory::GetForProfile(profile, Profile::EXPLICIT_ACCESS)
           .get();
-  ASSERT_TRUE(password_store);
+  ASSERT_TRUE(password_store.get());
 
   password_store->AddLogin(form);
   PasswordStoreConsumerVerifier verify_add;

@@ -1218,7 +1218,7 @@ void ProfileIOData::ShutdownOnUIThread(
   network_prediction_enabled_.Destroy();
   network_prediction_options_.Destroy();
   quick_check_enabled_.Destroy();
-  if (media_device_id_salt_)
+  if (media_device_id_salt_.get())
     media_device_id_salt_->ShutdownOnUIThread();
   session_startup_pref_.Destroy();
 #if defined(ENABLE_CONFIGURATION_POLICY)
