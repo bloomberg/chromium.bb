@@ -3,20 +3,14 @@
 // found in the LICENSE file.
 #include "content/browser/renderer_host/media/peer_connection_tracker_host.h"
 
-#include "base/power_monitor/power_monitor.h"
 #include "content/browser/media/webrtc_internals.h"
 #include "content/common/media/peer_connection_tracker_messages.h"
-#include "content/public/browser/render_process_host.h"
 
 namespace content {
 
 PeerConnectionTrackerHost::PeerConnectionTrackerHost(int render_process_id)
     : BrowserMessageFilter(PeerConnectionTrackerMsgStart),
-      render_process_id_(render_process_id) {
-  base::PowerMonitor* power_monitor = base::PowerMonitor::Get();
-  if (power_monitor)
-    power_monitor->AddObserver(this);
-}
+      render_process_id_(render_process_id) {}
 
 bool PeerConnectionTrackerHost::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
@@ -42,9 +36,6 @@ void PeerConnectionTrackerHost::OverrideThreadForMessage(
 }
 
 PeerConnectionTrackerHost::~PeerConnectionTrackerHost() {
-  base::PowerMonitor* power_monitor = base::PowerMonitor::Get();
-  if (power_monitor)
-    power_monitor->RemoveObserver(this);
 }
 
 void PeerConnectionTrackerHost::OnAddPeerConnection(
@@ -89,13 +80,6 @@ void PeerConnectionTrackerHost::OnGetUserMedia(
                                                  video,
                                                  audio_constraints,
                                                  video_constraints);
-}
-
-void PeerConnectionTrackerHost::OnSuspend() {
-  content::RenderProcessHost* host =
-      content::RenderProcessHost::FromID(render_process_id_);
-  if (host)
-    host->Send(new PeerConnectionTracker_OnSuspend());
 }
 
 }  // namespace content
