@@ -39,7 +39,7 @@ remoting.WindowFrame = function(titleBar) {
       titleBar.querySelector('.menu-resize-to-client'),
       titleBar.querySelector('.menu-shrink-to-fit'),
       titleBar.querySelector('.menu-new-connection'),
-      null,
+      titleBar.querySelector('.window-fullscreen'),
       titleBar.querySelector('.menu-start-stop-recording'));
 
   /**
@@ -162,13 +162,7 @@ remoting.WindowFrame.prototype.maximizeOrRestoreWindow_ = function() {
       chrome.app.window.current().isFullscreen() ||
       chrome.app.window.current().isMaximized();
   if (restore) {
-    // Restore twice: once to exit full-screen and once to exit maximized.
-    // If the app is not full-screen, or went full-screen without first
-    // being maximized, then the second restore has no effect.
     chrome.app.window.current().restore();
-    chrome.app.window.current().restore();
-  } else if (this.clientSession_) {
-    chrome.app.window.current().fullscreen();
   } else {
     chrome.app.window.current().maximize();
   }
@@ -202,8 +196,6 @@ remoting.WindowFrame.prototype.handleWindowStateChange_ = function() {
     tag = /*i18n-content*/'EXIT_FULL_SCREEN';
   } else if (chrome.app.window.current().isMaximized()) {
     tag = /*i18n-content*/'RESTORE_WINDOW';
-  } else if (this.clientSession_) {
-    tag = /*i18n-content*/'FULL_SCREEN';
   } else {
     tag = /*i18n-content*/'MAXIMIZE_WINDOW';
   }

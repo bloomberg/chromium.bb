@@ -115,8 +115,10 @@ html.apps-v2 #scroller {
   border-right: none;
 }
 
-/* The Disconnect and Options buttons are only displayed when connected. */
+/* The Disconnect, full-screen and options buttons are only displayed when
+   connected. */
 body:not(.connected) .window-disconnect,
+body:not(.connected) .window-fullscreen,
 body:not(.connected) .window-options {
   display: none;
 }
@@ -134,6 +136,7 @@ body:not(.connected) .window-options {
  * - A border is added to the window controls to ensure they stand out against
  *   any desktop.
  * - The window border is removed.
+ * - The full-screen button is removed.
  */
 
 html.apps-v2 body.fullscreen #scroller {
@@ -181,4 +184,8 @@ body.fullscreen .title-bar.preview {
 
 .fullscreen .title-bar.opened .window-controls-stub {
   background-color: #a6a6a6;
+}
+
+body.fullscreen .window-fullscreen {
+  display: none;
 }

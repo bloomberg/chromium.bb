@@ -75,9 +75,6 @@ remoting.FullscreenAppsV1.prototype.removeListener = function(callback) {
   this.eventSource_.removeEventListener(this.kEventName_, callback);
 };
 
-remoting.FullscreenAppsV1.prototype.syncWithMaximize = function(sync) {
-};
-
 /**
  * @private
  */

@@ -47,19 +47,5 @@ remoting.Fullscreen.prototype.addListener = function(callback) { };
  */
 remoting.Fullscreen.prototype.removeListener = function(callback) { };
 
-/**
- * Enable or disable automatic synchronization of full-screen and maximized
- * states. This allows the application to enter full-screen mode whenever its
- * window is maximized, regardless of how the user initiates this (clicking
- * the maximize control, double-clicking the title bar or using the tray menu,
- * for example). If the window is already maximized when this synchronization
- * is enabled, it is full-screened.
- *
- * This method is a no-op for apps v1.
- *
- * @param {boolean} sync True to enable synchronization; false to disable.
- */
-remoting.Fullscreen.prototype.syncWithMaximize = function(sync) { };
-
 /** @type {remoting.Fullscreen} */
 remoting.fullscreen = null;

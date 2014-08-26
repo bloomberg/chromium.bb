@@ -591,7 +591,6 @@ remoting.ClientSession.prototype.removePlugin = function() {
 
   // Leave full-screen mode, and stop listening for related events.
   var listener = this.callOnFullScreenChanged_;
-  remoting.fullscreen.syncWithMaximize(false);
   remoting.fullscreen.activate(
       false,
       function() {
@@ -984,7 +983,6 @@ remoting.ClientSession.prototype.onConnectionStatusUpdate_ =
     }
     // Activate full-screen related UX.
     remoting.fullscreen.addListener(this.callOnFullScreenChanged_);
-    remoting.fullscreen.syncWithMaximize(true);
     if (remoting.windowFrame) {
       remoting.windowFrame.setClientSession(this);
     } else {
