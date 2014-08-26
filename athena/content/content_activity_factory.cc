@@ -2,9 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "athena/content/public/content_activity_factory.h"
+#include "athena/content/content_activity_factory.h"
 
-#include "athena/content/app_activity.h"
 #include "athena/content/web_activity.h"
 #include "base/logging.h"
 
@@ -21,9 +20,8 @@ Activity* ContentActivityFactory::CreateWebActivity(
   return new WebActivity(browser_context, url);
 }
 
-Activity* ContentActivityFactory::CreateAppActivity(
-    extensions::ShellAppWindow* app_window) {
-  return new AppActivity(app_window);
+ActivityFactory* CreateContentActivityFactory() {
+  return new ContentActivityFactory();
 }
 
 }  // namespace athena

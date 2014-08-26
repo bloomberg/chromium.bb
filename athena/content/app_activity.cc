@@ -9,16 +9,14 @@
 #include "athena/content/public/app_content_control_delegate.h"
 #include "athena/content/public/app_registry.h"
 #include "content/public/browser/web_contents.h"
-#include "extensions/shell/browser/shell_app_window.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/widget/widget.h"
 
 namespace athena {
 
 // TODO(mukai): specifies the same accelerators of WebActivity.
-AppActivity::AppActivity(extensions::ShellAppWindow* app_window)
-    : app_window_(app_window),
-      web_view_(NULL),
+AppActivity::AppActivity()
+    : web_view_(NULL),
       current_state_(ACTIVITY_UNLOADED),
       app_activity_registry_(NULL) {
 }
@@ -116,8 +114,7 @@ bool AppActivity::UsesFrame() const {
 views::View* AppActivity::GetContentsView() {
   if (!web_view_) {
     // TODO(oshima): use apps::NativeAppWindowViews
-    content::WebContents* web_contents =
-        app_window_->GetAssociatedWebContents();
+    content::WebContents* web_contents = GetWebContents();
     web_view_ = new views::WebView(web_contents->GetBrowserContext());
     web_view_->SetWebContents(web_contents);
     SetCurrentState(ACTIVITY_INVISIBLE);
@@ -156,7 +153,7 @@ void AppActivity::DidStartNavigationToPendingEntry(
 // Note: This should only get called once for an |app_window| of the
 // |activity|.
 void AppActivity::RegisterActivity() {
-  content::WebContents* web_contents = app_window_->GetAssociatedWebContents();
+  content::WebContents* web_contents = GetWebContents();
   AppRegistry* app_registry = AppRegistry::Get();
   // Get the application's registry.
   app_activity_registry_ = app_registry->GetAppActivityRegistry(

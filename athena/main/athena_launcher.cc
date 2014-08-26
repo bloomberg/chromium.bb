@@ -7,11 +7,10 @@
 #include "athena/activity/public/activity_factory.h"
 #include "athena/activity/public/activity_manager.h"
 #include "athena/content/public/app_registry.h"
-#include "athena/content/public/content_activity_factory.h"
+#include "athena/content/public/content_activity_factory_creator.h"
 #include "athena/content/public/content_app_model_builder.h"
 #include "athena/env/public/athena_env.h"
 #include "athena/extensions/public/extensions_delegate.h"
-#include "athena/home/public/home_card.h"
 #include "athena/home/public/home_card.h"
 #include "athena/input/public/input_manager.h"
 #include "athena/main/debug/debug_window.h"
@@ -131,7 +130,7 @@ void StartAthenaEnv(scoped_refptr<base::TaskRunner> file_runner) {
 }
 
 void StartAthenaSessionWithContext(content::BrowserContext* context) {
-  StartAthenaSession(new athena::ContentActivityFactory(),
+  StartAthenaSession(athena::CreateContentActivityFactory(),
                      new athena::ContentAppModelBuilder(context));
   athena::VirtualKeyboardManager::Create(context);
   athena::HomeCard::Get()->RegisterSearchProvider(

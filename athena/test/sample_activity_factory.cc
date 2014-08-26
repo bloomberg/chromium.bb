@@ -42,5 +42,11 @@ Activity* SampleActivityFactory::CreateAppActivity(
       kDefaultAppColor, kDefaultAppContentColor, base::UTF8ToUTF16("App"));
 }
 
+Activity* SampleActivityFactory::CreateAppActivity(
+    apps::AppWindow* app_window) {
+  return new SampleActivity(
+      kDefaultAppColor, kDefaultAppContentColor, base::UTF8ToUTF16("App"));
+}
+
 }  // namespace test
 }  // namespace athena

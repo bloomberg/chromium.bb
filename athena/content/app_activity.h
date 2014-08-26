@@ -10,8 +10,8 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "ui/gfx/image/image_skia.h"
 
-namespace extensions {
-class ShellAppWindow;
+namespace contents {
+class WebContents;
 }
 
 namespace views {
@@ -27,7 +27,7 @@ class AppActivity : public Activity,
                     public ActivityViewModel,
                     public content::WebContentsObserver {
  public:
-  explicit AppActivity(extensions::ShellAppWindow* app_window);
+  AppActivity();
   virtual ~AppActivity();
 
   // Activity:
@@ -57,11 +57,13 @@ class AppActivity : public Activity,
         const GURL& url,
         content::NavigationController::ReloadType reload_type) OVERRIDE;
 
+ protected:
+  virtual content::WebContents* GetWebContents() = 0;
+
  private:
   // Register this activity with its application.
   void RegisterActivity();
 
-  scoped_ptr<extensions::ShellAppWindow> app_window_;
   views::WebView* web_view_;
 
   // The current state for this activity.

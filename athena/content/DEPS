@@ -17,10 +17,3 @@ include_rules = [
   # strictly enum/POD, header-only types, and some selected common code.
   "+third_party/WebKit/public/web/WebContextMenuData.h",
 ]
-
-specific_include_rules = {
-  # Remove this once app shell uses app_window.h (crbug.com/403726)
-  "app_activity\.cc": [
-    "+extensions/shell/browser/shell_app_window.h",
-  ],
-}

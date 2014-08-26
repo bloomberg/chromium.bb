@@ -21,6 +21,8 @@ class SampleActivityFactory : public ActivityFactory {
                                       const GURL& url) OVERRIDE;
   virtual Activity* CreateAppActivity(
       extensions::ShellAppWindow* app_window) OVERRIDE;
+  virtual Activity* CreateAppActivity(
+      apps::AppWindow* app_window) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SampleActivityFactory);

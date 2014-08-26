@@ -13,7 +13,6 @@
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
-
 namespace content {
 class BrowserContext;
 }
@@ -31,7 +30,7 @@ const char kDummyApp2[] = "bbbbbbb";
 class TestAppActivity : public AppActivity {
  public:
   explicit TestAppActivity(const std::string& app_id) :
-      AppActivity(NULL),
+      AppActivity(),
       app_id_(app_id),
       view_(new views::View()),
       current_state_(ACTIVITY_VISIBLE) {
@@ -65,6 +64,11 @@ class TestAppActivity : public AppActivity {
   }
   virtual aura::Window* GetWindow() OVERRIDE {
     return view_->GetWidget()->GetNativeWindow();
+  }
+
+  // AppActivity:
+  virtual content::WebContents* GetWebContents() OVERRIDE {
+    return NULL;
   }
 
   // ActivityViewModel:
