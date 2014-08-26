@@ -7,7 +7,6 @@
 #include <algorithm>
 
 #include "base/logging.h"
-#include "base/metrics/histogram.h"
 
 namespace {
 
@@ -89,48 +88,6 @@ void RemoveDeleted(ItemsT* items, const base::hash_set<int32>& del_set) {
   items->erase(end_iter, items->end());
 }
 
-// Remove prefixes which are in the same chunk as their fullhash.  This was a
-// mistake in earlier implementations.
-template <typename HashesT, typename PrefixesT>
-size_t KnockoutPrefixVolunteers(const HashesT& full_hashes,
-                                PrefixesT* prefixes) {
-  typename PrefixesT::iterator prefixes_process = prefixes->begin();
-  typename PrefixesT::iterator prefixes_out = prefixes->begin();
-  typename HashesT::const_iterator hashes_process = full_hashes.begin();
-
-  size_t skipped_count = 0;
-
-  while (hashes_process != full_hashes.end()) {
-    // Scan prefixes forward until an item is not less than the current hash.
-    while (prefixes_process != prefixes->end() &&
-           SBAddPrefixLess(*prefixes_process, *hashes_process)) {
-      if (prefixes_process != prefixes_out) {
-        *prefixes_out = *prefixes_process;
-      }
-      prefixes_out++;
-      prefixes_process++;
-    }
-
-    // If the current hash is also not less than the prefix, that implies they
-    // are equal.  Skip the prefix.
-    if (prefixes_process != prefixes->end() &&
-        !SBAddPrefixLess(*hashes_process, *prefixes_process)) {
-      skipped_count++;
-      prefixes_process++;
-    }
-
-    hashes_process++;
-  }
-
-  // If any prefixes were skipped, copy over the tail and erase the excess.
-  if (prefixes_process != prefixes_out) {
-    prefixes_out = std::copy(prefixes_process, prefixes->end(), prefixes_out);
-    prefixes->erase(prefixes_out, prefixes->end());
-  }
-
-  return skipped_count;
-}
-
 }  // namespace
 
 void SBProcessSubs(SBAddPrefixes* add_prefixes,
@@ -153,17 +110,6 @@ void SBProcessSubs(SBAddPrefixes* add_prefixes,
                 SBAddPrefixHashLess<SBAddFullHash,SBAddFullHash>));
   DCHECK(sorted(sub_full_hashes->begin(), sub_full_hashes->end(),
                 SBAddPrefixHashLess<SBSubFullHash,SBSubFullHash>));
-
-  // Earlier database code added prefixes when it saw fullhashes.  The protocol
-  // should never send a chunk of mixed prefixes and fullhashes, the following
-  // removes any such cases which are seen.
-  // TODO(shess): Remove this code once most databases have been processed.
-  // Chunk churn should clean up anyone left over.  This only takes a few ms to
-  // run through my current database, so it doesn't seem worthwhile to do much
-  // more than that.
-  size_t skipped = KnockoutPrefixVolunteers(*add_full_hashes, add_prefixes);
-  skipped += KnockoutPrefixVolunteers(*sub_full_hashes, sub_prefixes);
-  UMA_HISTOGRAM_COUNTS("SB2.VolunteerPrefixesRemoved", skipped);
 
   // Factor out the prefix subs.
   KnockoutSubs(sub_prefixes, add_prefixes,

@@ -92,7 +92,6 @@ class PrefixSet {
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingStoreFileTest, DeleteChunks);
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingStoreFileTest, DetectsCorruption);
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingStoreFileTest, Empty);
-  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingStoreFileTest, KnockoutPrefixVolunteers);
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingStoreFileTest, PrefixMinMax);
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingStoreFileTest, SubKnockout);
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingStoreFileTest, Version7);

@@ -27351,6 +27351,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SB2.VolunteerPrefixesRemoved">
   <owner>shess@chromium.org</owner>
+  <obsolete>
+    The operation this is tracking has been deleted as of 09/2014.
+  </obsolete>
   <summary>
     Older versions of the safe-browsing code incorrectly added additional
     SBPrefix items when receiving full hashes.  This caused errors when
