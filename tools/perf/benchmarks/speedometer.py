@@ -37,6 +37,12 @@ class SpeedometerMeasurement(page_test.PageTest):
 
   def ValidateAndMeasurePage(self, page, tab, results):
     tab.WaitForDocumentReadyStateToBeComplete()
+    iterationCount = 10
+    # A single iteration on android takes ~75 seconds, the benchmark times out
+    # when running for 10 iterations.
+    if tab.browser.platform.GetOSName() == 'android':
+      iterationCount = 3
+
     tab.ExecuteJavaScript("""
         // Store all the results in the benchmarkClient
         benchmarkClient._measuredValues = []
@@ -44,9 +50,9 @@ class SpeedometerMeasurement(page_test.PageTest):
           benchmarkClient._measuredValues.push(measuredValues);
           benchmarkClient._timeValues.push(measuredValues.total);
         };
-        benchmarkClient.iterationCount = 10;
+        benchmarkClient.iterationCount = %d;
         startTest();
-        """)
+        """ % iterationCount)
     tab.WaitForJavaScriptExpression(
         'benchmarkClient._finishedTestCount == benchmarkClient.testsCount', 600)
     results.AddValue(list_of_scalar_values.ListOfScalarValues(
@@ -66,7 +72,6 @@ class SpeedometerMeasurement(page_test.PageTest):
               suite_times;
               """ % suite_name), important=False))
 
-@benchmark.Disabled('android')  # Times out
 class Speedometer(benchmark.Benchmark):
   test = SpeedometerMeasurement
 
