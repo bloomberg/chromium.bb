@@ -283,17 +283,31 @@ void AppListServiceImpl::SetProfilePath(const base::FilePath& profile_path) {
 
 void AppListServiceImpl::CreateShortcut() {}
 
-// We need to watch for profile removal to keep kAppListProfile updated.
 void AppListServiceImpl::OnProfileWillBeRemoved(
     const base::FilePath& profile_path) {
-  // If the profile the app list uses just got deleted, reset it to the last
-  // used profile.
+  // We need to watch for profile removal to keep kAppListProfile updated, for
+  // the case that the deleted profile is being used by the app list.
   std::string app_list_last_profile = local_state_->GetString(
       prefs::kAppListProfile);
-  if (profile_path.BaseName().MaybeAsASCII() == app_list_last_profile) {
-    local_state_->SetString(prefs::kAppListProfile,
-        local_state_->GetString(prefs::kProfileLastUsed));
-  }
+  if (profile_path.BaseName().MaybeAsASCII() != app_list_last_profile)
+    return;
+
+  // Switch the app list over to a valid profile.
+  // Before ProfileInfoCache::DeleteProfileFromCache() calls this function,
+  // ProfileManager::ScheduleProfileForDeletion() will have checked to see if
+  // the deleted profile was also "last used", and updated that setting with
+  // something valid.
+  local_state_->SetString(prefs::kAppListProfile,
+                          local_state_->GetString(prefs::kProfileLastUsed));
+
+  // The Chrome AppListViewDelegate now needs to be torn down, because:
+  //  1. it has many references to the profile and can't be profile-keyed, and
+  //  2. the last used profile might not be loaded yet.
+  //    - this loading is sometimes done by the ProfileManager asynchronously,
+  //      so the app list can't just switch to that.
+  // Currently, the AppListViewDelegate is owned by the platform-specific
+  // AppListView, so just force-close the window.
+  DestroyAppList();
 }
 
 void AppListServiceImpl::Show() {

@@ -53,6 +53,10 @@ class AppListServiceImpl : public AppListService,
  protected:
   AppListServiceImpl();
 
+  // Destroy the app list. Called when the profile that the app list is showing
+  // is being deleted.
+  virtual void DestroyAppList() = 0;
+
   void InvalidatePendingProfileLoads();
   ProfileLoader& profile_loader() { return *profile_loader_; }
   const ProfileLoader& profile_loader() const { return *profile_loader_; }

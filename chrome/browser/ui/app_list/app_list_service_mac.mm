@@ -452,6 +452,17 @@ void AppListServiceMac::CreateShortcut() {
       g_browser_process->profile_manager()->user_data_dir()));
 }
 
+void AppListServiceMac::DestroyAppList() {
+  // Due to reference counting, Mac can't guarantee that the widget is deleted,
+  // but mac supports a visible app list with a NULL profile, so there's also no
+  // need to tear it down completely.
+  DismissAppList();
+  [[window_controller_ appListViewController]
+      setDelegate:scoped_ptr<app_list::AppListViewDelegate>()];
+
+  profile_ = NULL;
+}
+
 NSWindow* AppListServiceMac::GetAppListWindow() {
   return [window_controller_ window];
 }

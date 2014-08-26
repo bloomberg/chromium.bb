@@ -40,6 +40,9 @@ class AppListServiceViews : public AppListServiceImpl,
   virtual Profile* GetCurrentAppListProfile() OVERRIDE;
   virtual AppListControllerDelegate* GetControllerDelegate() OVERRIDE;
 
+  // AppListServiceImpl overrides:
+  virtual void DestroyAppList() OVERRIDE;
+
   // AppListShowerDelegate overrides:
   virtual AppListControllerDelegate* GetControllerDelegateForCreate() OVERRIDE;
 

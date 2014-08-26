@@ -6,6 +6,7 @@
 
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/scoped_keep_alive.h"
+#include "ui/app_list/views/app_list_view.h"
 
 AppListServiceViews::AppListServiceViews(
     scoped_ptr<AppListControllerDelegate> controller_delegate)
@@ -61,6 +62,16 @@ Profile* AppListServiceViews::GetCurrentAppListProfile() {
 
 AppListControllerDelegate* AppListServiceViews::GetControllerDelegate() {
   return controller_delegate_.get();
+}
+
+void AppListServiceViews::DestroyAppList() {
+  if (!shower_.HasView())
+    return;
+
+  // Use CloseNow(). This can't be asynchronous because the profile will be
+  // deleted once this function returns.
+  shower_.app_list()->GetWidget()->CloseNow();
+  DCHECK(!shower_.HasView());
 }
 
 AppListControllerDelegate*

@@ -52,13 +52,24 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
                             public SigninManagerBase::Observer,
                             public SigninManagerFactory::Observer {
  public:
+  // Constructs Chrome's AppListViewDelegate, initially for |profile|.
+  // Does not take ownership of |controller|. TODO(tapted): It should.
   AppListViewDelegate(Profile* profile,
                       AppListControllerDelegate* controller);
   virtual ~AppListViewDelegate();
 
  private:
-  // Updates the app list's current profile and ProfileMenuItems.
-  void OnProfileChanged();
+  // Configure the AppList for the given |profile|.
+  void SetProfile(Profile* profile);
+
+  // Updates the speech webview and start page for the current |profile_|.
+  void SetUpSearchUI();
+
+  // Updates the app list's ProfileMenuItems for the current |profile_|.
+  void SetUpProfileSwitcher();
+
+  // Updates the app list's custom launcher pages for the current |profile_|.
+  void SetUpCustomLauncherPages();
 
   // Overridden from app_list::AppListViewDelegate:
   virtual bool ForceNativeDesktop() const OVERRIDE;
@@ -130,7 +141,6 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
       const base::FilePath& profile_path,
       const base::string16& old_profile_name) OVERRIDE;
 
-  scoped_ptr<app_list::SearchController> search_controller_;
   // Unowned pointer to the controller.
   AppListControllerDelegate* controller_;
   // Unowned pointer to the associated profile. May change if SetProfileByPath
@@ -140,7 +150,9 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
   // if |profile_| changes.
   app_list::AppListModel* model_;
 
+  // Note: order ensures |search_controller_| is destroyed before |speech_ui_|.
   scoped_ptr<app_list::SpeechUIModel> speech_ui_;
+  scoped_ptr<app_list::SearchController> search_controller_;
 
   base::TimeDelta auto_launch_timeout_;
 

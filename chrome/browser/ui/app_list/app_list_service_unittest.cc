@@ -26,16 +26,22 @@ class TestingAppListServiceImpl : public AppListServiceImpl {
                             PrefService* local_state,
                             scoped_ptr<ProfileStore> profile_store)
       : AppListServiceImpl(command_line, local_state, profile_store.Pass()),
-        showing_for_profile_(NULL) {}
+        showing_for_profile_(NULL),
+        destroy_app_list_call_count_(0) {}
 
   Profile* showing_for_profile() const {
     return showing_for_profile_;
+  }
+
+  int destroy_app_list_call_count() const {
+    return destroy_app_list_call_count_;
   }
 
   void PerformStartupChecks(Profile* profile) {
     AppListServiceImpl::PerformStartupChecks(profile);
   }
 
+  // AppListService overrides:
   virtual Profile* GetCurrentAppListProfile() OVERRIDE {
     // We don't return showing_for_profile_ here because that is only defined if
     // the app list is visible.
@@ -66,8 +72,14 @@ class TestingAppListServiceImpl : public AppListServiceImpl {
     return NULL;
   }
 
+  // AppListServiceImpl overrides:
+  virtual void DestroyAppList() OVERRIDE { ++destroy_app_list_call_count_; }
+
  private:
   Profile* showing_for_profile_;
+  int destroy_app_list_call_count_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestingAppListServiceImpl);
 };
 
 class AppListServiceUnitTest : public testing::Test {
@@ -145,11 +157,18 @@ TEST_F(AppListServiceUnitTest,
        RemovedProfileResetsToLastUsedProfileIfExists) {
   local_state_->SetString(prefs::kProfileLastUsed, "last-used");
   EnableAppList();
+  EXPECT_EQ(0, service_->destroy_app_list_call_count());
   profile_store_->RemoveProfile(profile1_.get());
+
   base::FilePath last_used_profile_path =
       user_data_dir_.AppendASCII("last-used");
   EXPECT_EQ(last_used_profile_path,
             service_->GetProfilePath(profile_store_->GetUserDataDir()));
+
+  // Ensure a tear-down was triggered, since there would be references to the
+  // destroyed Profile, and the last-used profile could be getting loaded
+  // asynchronously.
+  EXPECT_EQ(1, service_->destroy_app_list_call_count());
 }
 
 TEST_F(AppListServiceUnitTest, SwitchingProfilesPersists) {

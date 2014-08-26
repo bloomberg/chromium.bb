@@ -64,6 +64,9 @@ class AppListServiceMac : public AppListServiceImpl,
   virtual Profile* GetCurrentAppListProfile() OVERRIDE;
   virtual void CreateShortcut() OVERRIDE;
 
+  // AppListServiceImpl overrides:
+  virtual void DestroyAppList() OVERRIDE;
+
   // AppShimHandler overrides:
   virtual void OnShimLaunch(apps::AppShimHandler::Host* host,
                             apps::AppShimLaunchType launch_type,

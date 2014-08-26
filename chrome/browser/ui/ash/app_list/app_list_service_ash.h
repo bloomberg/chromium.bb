@@ -36,6 +36,9 @@ class AppListServiceAsh : public AppListServiceImpl {
   virtual Profile* GetCurrentAppListProfile() OVERRIDE;
   virtual AppListControllerDelegate* GetControllerDelegate() OVERRIDE;
 
+  // ApplistServiceImpl overrides:
+  virtual void DestroyAppList() OVERRIDE;
+
   scoped_ptr<AppListControllerDelegateAsh> controller_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListServiceAsh);

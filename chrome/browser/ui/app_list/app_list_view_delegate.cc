@@ -157,7 +157,7 @@ void GetCustomLauncherPageUrls(content::BrowserContext* browser_context,
 AppListViewDelegate::AppListViewDelegate(Profile* profile,
                                          AppListControllerDelegate* controller)
     : controller_(controller),
-      profile_(profile),
+      profile_(NULL),
       model_(NULL),
       scoped_observer_(this) {
   CHECK(controller_);
@@ -181,11 +181,64 @@ AppListViewDelegate::AppListViewDelegate(Profile* profile,
   }
 
   profile_manager->GetProfileInfoCache().AddObserver(this);
+  SetProfile(profile);
+}
 
-  app_list::StartPageService* service =
+AppListViewDelegate::~AppListViewDelegate() {
+  SetProfile(NULL);
+  g_browser_process->profile_manager()->GetProfileInfoCache().RemoveObserver(
+      this);
+
+  SigninManagerFactory* factory = SigninManagerFactory::GetInstance();
+  if (factory)
+    factory->RemoveObserver(this);
+}
+
+void AppListViewDelegate::SetProfile(Profile* new_profile) {
+  if (profile_) {
+    // Note: |search_controller_| has a reference to |speech_ui_| so must be
+    // destroyed first.
+    search_controller_.reset();
+    speech_ui_.reset();
+    custom_page_contents_.clear();
+    app_list::StartPageService* start_page_service =
+        app_list::StartPageService::Get(profile_);
+    if (start_page_service)
+      start_page_service->RemoveObserver(this);
+#if defined(USE_ASH)
+    app_sync_ui_state_watcher_.reset();
+#endif
+    model_ = NULL;
+  }
+
+  profile_ = new_profile;
+  if (!profile_)
+    return;
+
+  model_ =
+      app_list::AppListSyncableServiceFactory::GetForProfile(profile_)->model();
+
+#if defined(USE_ASH)
+  app_sync_ui_state_watcher_.reset(new AppSyncUIStateWatcher(profile_, model_));
+#endif
+
+  SetUpSearchUI();
+  SetUpProfileSwitcher();
+  SetUpCustomLauncherPages();
+
+  // Clear search query.
+  model_->search_box()->SetText(base::string16());
+}
+
+void AppListViewDelegate::SetUpSearchUI() {
+  app_list::StartPageService* start_page_service =
       app_list::StartPageService::Get(profile_);
+  if (start_page_service)
+    start_page_service->AddObserver(this);
+
   speech_ui_.reset(new app_list::SpeechUIModel(
-      service ? service->state() : app_list::SPEECH_RECOGNITION_OFF));
+      start_page_service ? start_page_service->state()
+                         : app_list::SPEECH_RECOGNITION_OFF));
 
 #if defined(GOOGLE_CHROME_BUILD)
   speech_ui_->set_logo(
@@ -193,13 +246,32 @@ AppListViewDelegate::AppListViewDelegate(Profile* profile,
       GetImageSkiaNamed(IDR_APP_LIST_GOOGLE_LOGO_VOICE_SEARCH));
 #endif
 
-  OnProfileChanged();  // sets model_
-  if (service)
-    service->AddObserver(this);
+  search_controller_.reset(new app_list::SearchController(profile_,
+                                                          model_->search_box(),
+                                                          model_->results(),
+                                                          speech_ui_.get(),
+                                                          controller_));
+}
 
-  // Set up the custom launcher pages.
+void AppListViewDelegate::SetUpProfileSwitcher() {
+  // Don't populate the app list users if we are on the ash desktop.
+  chrome::HostDesktopType desktop = chrome::GetHostDesktopTypeForNativeWindow(
+      controller_->GetAppListWindow());
+  if (desktop == chrome::HOST_DESKTOP_TYPE_ASH)
+    return;
+
+  // Populate the app list users.
+  PopulateUsers(g_browser_process->profile_manager()->GetProfileInfoCache(),
+                profile_->GetPath(),
+                &users_);
+
+  FOR_EACH_OBSERVER(
+      app_list::AppListViewDelegateObserver, observers_, OnProfilesChanged());
+}
+
+void AppListViewDelegate::SetUpCustomLauncherPages() {
   std::vector<GURL> custom_launcher_page_urls;
-  GetCustomLauncherPageUrls(profile, &custom_launcher_page_urls);
+  GetCustomLauncherPageUrls(profile_, &custom_launcher_page_urls);
   for (std::vector<GURL>::const_iterator it = custom_launcher_page_urls.begin();
        it != custom_launcher_page_urls.end();
        ++it) {
@@ -208,25 +280,9 @@ AppListViewDelegate::AppListViewDelegate(Profile* profile,
         new apps::CustomLauncherPageContents(
             scoped_ptr<extensions::AppDelegate>(new ChromeAppDelegate),
             extension_id);
-    page_contents->Initialize(profile, *it);
+    page_contents->Initialize(profile_, *it);
     custom_page_contents_.push_back(page_contents);
   }
-}
-
-AppListViewDelegate::~AppListViewDelegate() {
-  app_list::StartPageService* service =
-      app_list::StartPageService::Get(profile_);
-  if (service)
-    service->RemoveObserver(this);
-  g_browser_process->
-      profile_manager()->GetProfileInfoCache().RemoveObserver(this);
-
-  SigninManagerFactory* factory = SigninManagerFactory::GetInstance();
-  if (factory)
-    factory->RemoveObserver(this);
-
-  // Ensure search controller is released prior to speech_ui_.
-  search_controller_.reset();
 }
 
 void AppListViewDelegate::OnHotwordStateChanged(bool started) {
@@ -258,43 +314,32 @@ void AppListViewDelegate::SigninManagerShutdown(SigninManagerBase* manager) {
 
 void AppListViewDelegate::GoogleSigninFailed(
     const GoogleServiceAuthError& error) {
-  OnProfileChanged();
+  SetUpProfileSwitcher();
 }
 
 void AppListViewDelegate::GoogleSigninSucceeded(const std::string& username,
                                                 const std::string& password) {
-  OnProfileChanged();
+  SetUpProfileSwitcher();
 }
 
 void AppListViewDelegate::GoogleSignedOut(const std::string& username) {
-  OnProfileChanged();
+  SetUpProfileSwitcher();
 }
 
-void AppListViewDelegate::OnProfileChanged() {
-  model_ = app_list::AppListSyncableServiceFactory::GetForProfile(
-      profile_)->model();
+void AppListViewDelegate::OnProfileAdded(const base::FilePath& profile_path) {
+  SetUpProfileSwitcher();
+}
 
-  search_controller_.reset(new app_list::SearchController(
-      profile_, model_->search_box(), model_->results(),
-      speech_ui_.get(), controller_));
+void AppListViewDelegate::OnProfileWasRemoved(
+    const base::FilePath& profile_path,
+    const base::string16& profile_name) {
+  SetUpProfileSwitcher();
+}
 
-#if defined(USE_ASH)
-  app_sync_ui_state_watcher_.reset(new AppSyncUIStateWatcher(profile_, model_));
-#endif
-
-  // Don't populate the app list users if we are on the ash desktop.
-  chrome::HostDesktopType desktop = chrome::GetHostDesktopTypeForNativeWindow(
-      controller_->GetAppListWindow());
-  if (desktop == chrome::HOST_DESKTOP_TYPE_ASH)
-    return;
-
-  // Populate the app list users.
-  PopulateUsers(g_browser_process->profile_manager()->GetProfileInfoCache(),
-                profile_->GetPath(), &users_);
-
-  FOR_EACH_OBSERVER(app_list::AppListViewDelegateObserver,
-                    observers_,
-                    OnProfilesChanged());
+void AppListViewDelegate::OnProfileNameChanged(
+    const base::FilePath& profile_path,
+    const base::string16& old_profile_name) {
+  SetUpProfileSwitcher();
 }
 
 bool AppListViewDelegate::ForceNativeDesktop() const {
@@ -303,16 +348,9 @@ bool AppListViewDelegate::ForceNativeDesktop() const {
 
 void AppListViewDelegate::SetProfileByPath(const base::FilePath& profile_path) {
   DCHECK(model_);
-
   // The profile must be loaded before this is called.
-  profile_ =
-      g_browser_process->profile_manager()->GetProfileByPath(profile_path);
-  DCHECK(profile_);
-
-  OnProfileChanged();
-
-  // Clear search query.
-  model_->search_box()->SetText(base::string16());
+  SetProfile(
+      g_browser_process->profile_manager()->GetProfileByPath(profile_path));
 }
 
 app_list::AppListModel* AppListViewDelegate::GetModel() {
@@ -497,21 +535,6 @@ void AppListViewDelegate::OnSpeechRecognitionStateChanged(
       hotword_service->RequestHotwordSession(this);
     }
   }
-}
-
-void AppListViewDelegate::OnProfileAdded(const base::FilePath& profile_path) {
-  OnProfileChanged();
-}
-
-void AppListViewDelegate::OnProfileWasRemoved(
-    const base::FilePath& profile_path, const base::string16& profile_name) {
-  OnProfileChanged();
-}
-
-void AppListViewDelegate::OnProfileNameChanged(
-    const base::FilePath& profile_path,
-    const base::string16& old_profile_name) {
-  OnProfileChanged();
 }
 
 #if defined(TOOLKIT_VIEWS)

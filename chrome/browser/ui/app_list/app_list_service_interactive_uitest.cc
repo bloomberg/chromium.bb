@@ -70,12 +70,14 @@ class AppListServiceInteractiveTest : public InProcessBrowserTest {
     DISABLED_SwitchAppListProfilesDuringSearch
 #define MAYBE_ShowAppListNonDefaultProfile \
     DISABLED_ShowAppListNonDefaultProfile
+#define MAYBE_DeleteShowingAppList DISABLED_DeleteShowingAppList
 #else
 #define MAYBE_ShowAndDismiss ShowAndDismiss
 #define MAYBE_SwitchAppListProfiles SwitchAppListProfiles
 #define MAYBE_SwitchAppListProfilesDuringSearch \
     SwitchAppListProfilesDuringSearch
 #define MAYBE_ShowAppListNonDefaultProfile ShowAppListNonDefaultProfile
+#define MAYBE_DeleteShowingAppList DeleteShowingAppList
 #endif
 
 // Show the app list, then dismiss it.
@@ -259,4 +261,27 @@ IN_PROC_BROWSER_TEST_F(ShowAppListNonDefaultInteractiveTest,
   EXPECT_EQ(2u, profile_manager->GetNumberOfProfiles());
 
   service->DismissAppList();
+}
+
+// Test showing the app list for a profile then deleting that profile while the
+// app list is visible.
+IN_PROC_BROWSER_TEST_F(ShowAppListNonDefaultInteractiveTest,
+                       MAYBE_DeleteShowingAppList) {
+  AppListService* service = test::GetAppListService();
+  EXPECT_TRUE(service->IsAppListVisible());
+  EXPECT_EQ(second_profile_name_.value(),
+            service->GetCurrentAppListProfile()->GetPath().BaseName().value());
+
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+
+  // Create a browser for the Default profile.
+  CreateBrowser(profile_manager->GetLastUsedProfile());
+
+  // Delete the profile being used by the app list.
+  profile_manager->ScheduleProfileForDeletion(
+      service->GetCurrentAppListProfile()->GetPath(),
+      ProfileManager::CreateCallback());
+
+  // App Launcher should get closed immediately and nothing should explode.
+  EXPECT_FALSE(service->IsAppListVisible());
 }
