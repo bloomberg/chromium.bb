@@ -51,4 +51,15 @@ device::HidService* ExtensionsAPIClient::GetHidService() {
   return NULL;
 }
 
+WebViewGuestDelegate* ExtensionsAPIClient::CreateWebViewGuestDelegate(
+    WebViewGuest* web_view_guest) const {
+  return NULL;
+}
+
+WebViewPermissionHelperDelegate* ExtensionsAPIClient::
+    CreateWebViewPermissionHelperDelegate(
+        WebViewPermissionHelper* web_view_permission_helper) const {
+  return NULL;
+}
+
 }  // namespace extensions

@@ -6,7 +6,8 @@
 
 namespace extensions {
 
-WebViewGuestDelegate::WebViewGuestDelegate() {
+WebViewGuestDelegate::WebViewGuestDelegate(WebViewGuest* web_view_guest)
+    : web_view_guest_(web_view_guest) {
 }
 
 WebViewGuestDelegate::~WebViewGuestDelegate() {

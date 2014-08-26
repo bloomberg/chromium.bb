@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "chrome/browser/extensions/api/web_view/web_view_internal_api.h"
-#include "chrome/browser/guest_view/web_view/web_view_constants.h"
+#include "extensions/browser/guest_view/web_view/web_view_constants.h"
 
 namespace extensions {
 

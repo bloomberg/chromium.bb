@@ -4,11 +4,15 @@
 
 #include "extensions/browser/guest_view/web_view/web_view_permission_helper_delegate.h"
 
+#include "extensions/browser/guest_view/web_view/web_view_guest.h"
+
 namespace extensions {
 
 WebViewPermissionHelperDelegate::WebViewPermissionHelperDelegate(
-    content::WebContents* contents)
-    : content::WebContentsObserver(contents) {
+    WebViewPermissionHelper* web_view_permission_helper)
+    : content::WebContentsObserver(
+        web_view_permission_helper->web_view_guest()->guest_web_contents()),
+      web_view_permission_helper_(web_view_permission_helper) {
 }
 
 WebViewPermissionHelperDelegate::~WebViewPermissionHelperDelegate() {

@@ -5,7 +5,9 @@
 #ifndef CHROME_BROWSER_GUEST_VIEW_WEB_VIEW_CHROME_WEB_VIEW_GUEST_DELEGATE_H_
 #define CHROME_BROWSER_GUEST_VIEW_WEB_VIEW_CHROME_WEB_VIEW_GUEST_DELEGATE_H_
 
-#include "chrome/browser/guest_view/web_view/web_view_guest.h"
+#include "chrome/browser/extensions/api/web_view/web_view_internal_api.h"
+#include "chrome/browser/guest_view/web_view/web_view_find_helper.h"
+#include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest_delegate.h"
 
 #if defined(OS_CHROMEOS)
@@ -25,23 +27,41 @@ class ChromeWebViewGuestDelegate : public extensions::WebViewGuestDelegate {
   virtual ~ChromeWebViewGuestDelegate();
 
   // WebViewGuestDelegate implementation.
+  virtual void Find(
+      const base::string16& search_text,
+      const blink::WebFindOptions& options,
+      extensions::WebViewInternalFindFunction* find_function)
+          OVERRIDE;
+  virtual void FindReply(content::WebContents* source,
+                         int request_id,
+                         int number_of_matches,
+                         const gfx::Rect& selection_rect,
+                         int active_match_ordinal,
+                         bool final_update) OVERRIDE;
   virtual double GetZoom() OVERRIDE;
   virtual bool HandleContextMenu(
       const content::ContextMenuParams& params) OVERRIDE;
   virtual void OnAttachWebViewHelpers(content::WebContents* contents) OVERRIDE;
+  virtual void OnEmbedderDestroyed() OVERRIDE;
   virtual void OnDidCommitProvisionalLoadForFrame(bool is_main_frame) OVERRIDE;
   virtual void OnDidInitialize() OVERRIDE;
   virtual void OnDocumentLoadedInFrame(
       content::RenderFrameHost* render_frame_host) OVERRIDE;
   virtual void OnGuestDestroyed() OVERRIDE;
+  virtual void OnRenderProcessGone() OVERRIDE;
   virtual void OnSetZoom(double zoom_factor) OVERRIDE;
   virtual void OnShowContextMenu(
       int request_id,
       const MenuItemVector* items) OVERRIDE;
+  virtual void StopFinding(content::StopFindAction) OVERRIDE;
 
  private:
+  friend void extensions::WebViewFindHelper::DispatchFindUpdateEvent(
+      bool canceled,
+      bool final_update);
+
   content::WebContents* guest_web_contents() const {
-    return web_view_guest_->guest_web_contents();
+    return web_view_guest()->guest_web_contents();
   }
 
   // Returns the top level items (ignoring submenus) as Value.
@@ -56,6 +76,9 @@ class ChromeWebViewGuestDelegate : public extensions::WebViewGuestDelegate {
       const chromeos::AccessibilityStatusEventDetails& details);
 #endif
 
+  // Handles find requests and replies for the webview find API.
+  extensions::WebViewFindHelper find_helper_;
+
   // A counter to generate a unique request id for a context menu request.
   // We only need the ids to be unique for a given WebViewGuest.
   int pending_context_menu_request_id_;
@@ -69,8 +92,6 @@ class ChromeWebViewGuestDelegate : public extensions::WebViewGuestDelegate {
   // Holds the RenderViewContextMenu that has been built but yet to be
   // shown. This is .Reset() after ShowContextMenu().
   scoped_ptr<RenderViewContextMenu> pending_menu_;
-
-  extensions::WebViewGuest* web_view_guest_;
 
 #if defined(OS_CHROMEOS)
   // Subscription to receive notifications on changes to a11y settings.

@@ -13,11 +13,11 @@
 #if defined(ENABLE_EXTENSIONS)
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/guest_view/web_view/context_menu_content_type_web_view.h"
-#include "chrome/browser/guest_view/web_view/web_view_guest.h"
 #include "chrome/browser/renderer_context_menu/context_menu_content_type_app_mode.h"
 #include "chrome/browser/renderer_context_menu/context_menu_content_type_extension_popup.h"
 #include "chrome/browser/renderer_context_menu/context_menu_content_type_panel.h"
 #include "chrome/browser/renderer_context_menu/context_menu_content_type_platform_app.h"
+#include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "extensions/browser/view_type_utils.h"
 #include "extensions/common/extension.h"
 #endif

@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_GUEST_VIEW_WEB_VIEW_WEB_VIEW_PERMISSION_HELPER_H_
-#define CHROME_BROWSER_GUEST_VIEW_WEB_VIEW_WEB_VIEW_PERMISSION_HELPER_H_
+#ifndef EXTENSIONS_BROWSER_GUEST_VIEW_WEB_VIEW_WEB_VIEW_PERMISSION_HELPER_H_
+#define EXTENSIONS_BROWSER_GUEST_VIEW_WEB_VIEW_WEB_VIEW_PERMISSION_HELPER_H_
 
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/user_metrics_action.h"
-#include "chrome/browser/guest_view/web_view/web_view_permission_types.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/media_stream_request.h"
 #include "extensions/browser/guest_view/guest_view_constants.h"
+#include "extensions/browser/guest_view/web_view/web_view_permission_types.h"
 
 using base::UserMetricsAction;
 
@@ -146,10 +146,10 @@ class WebViewPermissionHelper
 
   WebViewPermissionHelper::RequestMap pending_permission_requests_;
 
-  scoped_ptr<extensions::WebViewPermissionHelperDelegate>
+  scoped_ptr<WebViewPermissionHelperDelegate>
       web_view_permission_helper_delegate_;
 
-  WebViewGuest* web_view_guest_;
+  WebViewGuest* const web_view_guest_;
 
   base::WeakPtrFactory<WebViewPermissionHelper> weak_factory_;
 
@@ -158,4 +158,4 @@ class WebViewPermissionHelper
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_GUEST_VIEW_WEB_VIEW_WEB_VIEW_PERMISSION_HELPER_H_
+#endif  // EXTENSIONS_BROWSER_GUEST_VIEW_WEB_VIEW_WEB_VIEW_PERMISSION_HELPER_H_

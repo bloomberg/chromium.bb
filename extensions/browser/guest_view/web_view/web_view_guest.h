@@ -2,23 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_GUEST_VIEW_WEB_VIEW_WEB_VIEW_GUEST_H_
-#define CHROME_BROWSER_GUEST_VIEW_WEB_VIEW_WEB_VIEW_GUEST_H_
+#ifndef EXTENSIONS_BROWSER_GUEST_VIEW_WEB_VIEW_WEB_VIEW_GUEST_H_
+#define EXTENSIONS_BROWSER_GUEST_VIEW_WEB_VIEW_WEB_VIEW_GUEST_H_
 
 #include <vector>
 
 #include "base/observer_list.h"
-#include "chrome/browser/guest_view/web_view/javascript_dialog_helper.h"
-#include "chrome/browser/guest_view/web_view/web_view_find_helper.h"
-#include "chrome/browser/guest_view/web_view/web_view_permission_helper.h"
-#include "chrome/browser/guest_view/web_view/web_view_permission_types.h"
 #include "content/public/browser/javascript_dialog_manager.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/guest_view/guest_view.h"
+#include "extensions/browser/guest_view/web_view/javascript_dialog_helper.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest_delegate.h"
+#include "extensions/browser/guest_view/web_view/web_view_permission_helper.h"
+#include "extensions/browser/guest_view/web_view/web_view_permission_types.h"
 #include "extensions/browser/script_executor.h"
-#include "third_party/WebKit/public/web/WebFindOptions.h"
+
+namespace blink {
+struct WebFindOptions;
+}  // nanespace blink
 
 namespace extensions {
 
@@ -165,7 +167,7 @@ class WebViewGuest : public GuestView<WebViewGuest>,
   void Find(
       const base::string16& search_text,
       const blink::WebFindOptions& options,
-      scoped_refptr<WebViewInternalFindFunction> find_function);
+      WebViewInternalFindFunction* find_function);
 
   // Conclude a find request to clear highlighting.
   void StopFinding(content::StopFindAction);
@@ -323,9 +325,6 @@ class WebViewGuest : public GuestView<WebViewGuest>,
   // Stores the window name of the main frame of the guest.
   std::string name_;
 
-  // Handles find requests and replies for the webview find API.
-  WebViewFindHelper find_helper_;
-
   // Handles the JavaScript dialog requests.
   JavaScriptDialogHelper javascript_dialog_helper_;
 
@@ -333,9 +332,6 @@ class WebViewGuest : public GuestView<WebViewGuest>,
   scoped_ptr<WebViewPermissionHelper> web_view_permission_helper_;
 
   scoped_ptr<WebViewGuestDelegate> web_view_guest_delegate_;
-
-  friend void WebViewFindHelper::DispatchFindUpdateEvent(bool canceled,
-                                                         bool final_update);
 
   // Tracks the name, and target URL of the new window. Once the first
   // navigation commits, we no longer track this information.
@@ -357,4 +353,4 @@ class WebViewGuest : public GuestView<WebViewGuest>,
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_GUEST_VIEW_WEB_VIEW_WEB_VIEW_GUEST_H_
+#endif  // EXTENSIONS_BROWSER_GUEST_VIEW_WEB_VIEW_WEB_VIEW_GUEST_H_

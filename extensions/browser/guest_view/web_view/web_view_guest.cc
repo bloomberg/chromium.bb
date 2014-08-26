@@ -2,18 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/guest_view/web_view/web_view_guest.h"
+#include "extensions/browser/guest_view/web_view/web_view_guest.h"
 
 #include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/extensions/api/web_request/web_request_api.h"
-#include "chrome/browser/extensions/api/web_view/web_view_internal_api.h"
-#include "chrome/browser/guest_view/web_view/chrome_web_view_guest_delegate.h"
-#include "chrome/browser/guest_view/web_view/web_view_constants.h"
-#include "chrome/browser/guest_view/web_view/web_view_permission_helper.h"
-#include "chrome/browser/guest_view/web_view/web_view_permission_types.h"
-#include "chrome/browser/guest_view/web_view/web_view_renderer_state.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/native_web_keyboard_event.h"
@@ -35,15 +29,19 @@
 #include "content/public/common/result_codes.h"
 #include "content/public/common/stop_find_action.h"
 #include "content/public/common/url_constants.h"
+#include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/guest_view/guest_view_constants.h"
 #include "extensions/browser/guest_view/guest_view_manager.h"
+#include "extensions/browser/guest_view/web_view/web_view_constants.h"
+#include "extensions/browser/guest_view/web_view/web_view_permission_helper.h"
+#include "extensions/browser/guest_view/web_view/web_view_permission_types.h"
+#include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_messages.h"
 #include "ipc/ipc_message_macros.h"
 #include "net/base/escape.h"
 #include "net/base/net_errors.h"
-#include "third_party/WebKit/public/web/WebFindOptions.h"
 #include "ui/base/models/simple_menu_model.h"
 
 using base::UserMetricsAction;
@@ -100,19 +98,6 @@ std::string GetStoragePartitionIdFromSiteURL(const GURL& site_url) {
   const std::string& partition_id = site_url.query();
   bool persist_storage = site_url.path().find("persist") != std::string::npos;
   return (persist_storage ? webview::kPersistPrefix : "") + partition_id;
-}
-
-void RemoveWebViewEventListenersOnIOThread(
-    void* profile,
-    const std::string& extension_id,
-    int embedder_process_id,
-    int view_instance_id) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-  ExtensionWebRequestEventRouter::GetInstance()->RemoveWebViewEventListeners(
-      profile,
-      extension_id,
-      embedder_process_id,
-      view_instance_id);
 }
 
 void ParsePartitionParam(const base::DictionaryValue& create_params,
@@ -325,21 +310,8 @@ void WebViewGuest::DidStopLoading() {
 }
 
 void WebViewGuest::EmbedderDestroyed() {
-  // TODO(fsamuel): WebRequest event listeners for <webview> should survive
-  // reparenting of a <webview> within a single embedder. Right now, we keep
-  // around the browser state for the listener for the lifetime of the embedder.
-  // Ideally, the lifetime of the listeners should match the lifetime of the
-  // <webview> DOM node. Once http://crbug.com/156219 is resolved we can move
-  // the call to RemoveWebViewEventListenersOnIOThread back to
-  // WebViewGuest::WebContentsDestroyed.
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(
-          &RemoveWebViewEventListenersOnIOThread,
-          browser_context(), embedder_extension_id(),
-          embedder_render_process_id(),
-          view_instance_id()));
+  if (web_view_guest_delegate_)
+    web_view_guest_delegate_->OnEmbedderDestroyed();
 }
 
 void WebViewGuest::GuestDestroyed() {
@@ -409,8 +381,11 @@ void WebViewGuest::FindReply(WebContents* source,
                              const gfx::Rect& selection_rect,
                              int active_match_ordinal,
                              bool final_update) {
-  find_helper_.FindReply(request_id, number_of_matches, selection_rect,
-                         active_match_ordinal, final_update);
+  if (web_view_guest_delegate_) {
+    web_view_guest_delegate_->FindReply(
+        source, request_id, number_of_matches,
+        selection_rect, active_match_ordinal, final_update);
+  }
 }
 
 bool WebViewGuest::HandleContextMenu(
@@ -564,13 +539,14 @@ double WebViewGuest::GetZoom() {
 void WebViewGuest::Find(
     const base::string16& search_text,
     const blink::WebFindOptions& options,
-    scoped_refptr<WebViewInternalFindFunction> find_function) {
-  find_helper_.Find(guest_web_contents(), search_text, options, find_function);
+    WebViewInternalFindFunction* find_function) {
+  if (web_view_guest_delegate_)
+    web_view_guest_delegate_->Find(search_text, options, find_function);
 }
 
 void WebViewGuest::StopFinding(content::StopFindAction action) {
-  find_helper_.CancelAllFindSessions();
-  guest_web_contents()->StopFinding(action);
+  if (web_view_guest_delegate_)
+    web_view_guest_delegate_->StopFinding(action);
 }
 
 void WebViewGuest::Go(int relative_index) {
@@ -634,9 +610,9 @@ WebViewGuest::WebViewGuest(content::BrowserContext* browser_context,
                            int guest_instance_id)
     : GuestView<WebViewGuest>(browser_context, guest_instance_id),
       is_overriding_user_agent_(false),
-      find_helper_(this),
       javascript_dialog_helper_(this) {
-  web_view_guest_delegate_.reset(new ChromeWebViewGuestDelegate(this));
+  web_view_guest_delegate_.reset(
+      ExtensionsAPIClient::Get()->CreateWebViewGuestDelegate(this));
 }
 
 WebViewGuest::~WebViewGuest() {
@@ -646,8 +622,6 @@ void WebViewGuest::DidCommitProvisionalLoadForFrame(
     content::RenderFrameHost* render_frame_host,
     const GURL& url,
     content::PageTransition transition_type) {
-  find_helper_.CancelAllFindSessions();
-
   scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
   args->SetString(guestview::kUrl, url.spec());
   args->SetBoolean(guestview::kIsTopLevel, !render_frame_host->GetParent());
@@ -703,8 +677,8 @@ bool WebViewGuest::OnMessageReceived(const IPC::Message& message,
 }
 
 void WebViewGuest::RenderProcessGone(base::TerminationStatus status) {
-  // Cancel all find sessions in progress.
-  find_helper_.CancelAllFindSessions();
+  if (web_view_guest_delegate_)
+    web_view_guest_delegate_->OnRenderProcessGone();
 
   scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
   args->SetInteger(webview::kProcessId,
