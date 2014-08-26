@@ -61,7 +61,7 @@ public:
     ScriptValue value(ScriptState*);
     ScriptValue source(ScriptState*) const;
 
-    IDBRequest* update(ScriptState*, ScriptValue&, ExceptionState&);
+    IDBRequest* update(ScriptState*, const ScriptValue&, ExceptionState&);
     void advance(unsigned long, ExceptionState&);
     void continueFunction(ScriptState*, const ScriptValue& key, ExceptionState&);
     void continuePrimaryKey(ScriptState*, const ScriptValue& key, const ScriptValue& primaryKey, ExceptionState&);

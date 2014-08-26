@@ -86,7 +86,7 @@ void IDBCursor::trace(Visitor* visitor)
     visitor->trace(m_primaryKey);
 }
 
-IDBRequest* IDBCursor::update(ScriptState* scriptState, ScriptValue& value, ExceptionState& exceptionState)
+IDBRequest* IDBCursor::update(ScriptState* scriptState, const ScriptValue& value, ExceptionState& exceptionState)
 {
     IDB_TRACE("IDBCursor::update");
 

@@ -140,25 +140,25 @@ static void generateIndexKeysForValue(v8::Isolate* isolate, const IDBIndexMetada
     }
 }
 
-IDBRequest* IDBObjectStore::add(ScriptState* scriptState, ScriptValue& value, const ScriptValue& key, ExceptionState& exceptionState)
+IDBRequest* IDBObjectStore::add(ScriptState* scriptState, const ScriptValue& value, const ScriptValue& key, ExceptionState& exceptionState)
 {
     IDB_TRACE("IDBObjectStore::add");
     return put(scriptState, WebIDBPutModeAddOnly, IDBAny::create(this), value, key, exceptionState);
 }
 
-IDBRequest* IDBObjectStore::put(ScriptState* scriptState, ScriptValue& value, const ScriptValue& key, ExceptionState& exceptionState)
+IDBRequest* IDBObjectStore::put(ScriptState* scriptState, const ScriptValue& value, const ScriptValue& key, ExceptionState& exceptionState)
 {
     IDB_TRACE("IDBObjectStore::put");
     return put(scriptState, WebIDBPutModeAddOrUpdate, IDBAny::create(this), value, key, exceptionState);
 }
 
-IDBRequest* IDBObjectStore::put(ScriptState* scriptState, WebIDBPutMode putMode, IDBAny* source, ScriptValue& value, const ScriptValue& keyValue, ExceptionState& exceptionState)
+IDBRequest* IDBObjectStore::put(ScriptState* scriptState, WebIDBPutMode putMode, IDBAny* source, const ScriptValue& value, const ScriptValue& keyValue, ExceptionState& exceptionState)
 {
     IDBKey* key = keyValue.isUndefined() ? nullptr : scriptValueToIDBKey(scriptState->isolate(), keyValue);
     return put(scriptState, putMode, source, value, key, exceptionState);
 }
 
-IDBRequest* IDBObjectStore::put(ScriptState* scriptState, WebIDBPutMode putMode, IDBAny* source, ScriptValue& value, IDBKey* key, ExceptionState& exceptionState)
+IDBRequest* IDBObjectStore::put(ScriptState* scriptState, WebIDBPutMode putMode, IDBAny* source, const ScriptValue& value, IDBKey* key, ExceptionState& exceptionState)
 {
     if (isDeleted()) {
         exceptionState.throwDOMException(InvalidStateError, IDBDatabase::objectStoreDeletedErrorMessage);
@@ -186,7 +186,6 @@ IDBRequest* IDBObjectStore::put(ScriptState* scriptState, WebIDBPutMode putMode,
     // side effects (i.e. getters) are not triggered. Construct the
     // clone lazily since the operation may be expensive.
     ScriptValue clone;
-    value.clear();
 
     const IDBKeyPath& keyPath = m_metadata.keyPath;
     const bool usesInLineKeys = !keyPath.isNull();
