@@ -68,7 +68,8 @@ std::string ToString(const scoped_refptr<IOBuffer>& buffer, size_t size) {
 }
 
 std::string ToString(const WebSocketFrame* frame) {
-  return frame->data ? ToString(frame->data, frame->header.payload_length) : "";
+  return frame->data.get() ? ToString(frame->data, frame->header.payload_length)
+                           : "";
 }
 
 void AppendTo(ScopedVector<WebSocketFrame>* frames,

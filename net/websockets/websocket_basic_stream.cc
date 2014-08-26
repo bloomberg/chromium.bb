@@ -79,7 +79,7 @@ WebSocketBasicStream::WebSocketBasicStream(
       extensions_(extensions),
       generate_websocket_masking_key_(&GenerateWebSocketMaskingKey) {
   // http_read_buffer_ should not be set if it contains no data.
-  if (http_read_buffer_ && http_read_buffer_->offset() == 0)
+  if (http_read_buffer_.get() && http_read_buffer_->offset() == 0)
     http_read_buffer_ = NULL;
   DCHECK(connection_->is_initialized());
 }
@@ -91,7 +91,7 @@ int WebSocketBasicStream::ReadFrames(ScopedVector<WebSocketFrame>* frames,
   DCHECK(frames->empty());
   // If there is data left over after parsing the HTTP headers, attempt to parse
   // it as WebSocket frames.
-  if (http_read_buffer_) {
+  if (http_read_buffer_.get()) {
     DCHECK_GE(http_read_buffer_->offset(), 0);
     // We cannot simply copy the data into read_buffer_, as it might be too
     // large.
@@ -170,7 +170,7 @@ int WebSocketBasicStream::WriteFrames(ScopedVector<WebSocketFrame>* frames,
   DCHECK_EQ(0, remaining_size) << "Buffer size calculation was wrong; "
                                << remaining_size << " bytes left over.";
   scoped_refptr<DrainableIOBuffer> drainable_buffer(
-      new DrainableIOBuffer(combined_buffer, total_size));
+      new DrainableIOBuffer(combined_buffer.get(), total_size));
   return WriteEverything(drainable_buffer, callback);
 }
 
@@ -285,7 +285,7 @@ int WebSocketBasicStream::ConvertChunkToFrame(
     is_first_chunk = true;
     current_frame_header_.swap(chunk->header);
   }
-  const int chunk_size = chunk->data ? chunk->data->size() : 0;
+  const int chunk_size = chunk->data.get() ? chunk->data->size() : 0;
   DCHECK(current_frame_header_) << "Unexpected header-less chunk received "
                                 << "(final_chunk = " << chunk->final_chunk
                                 << ", data size = " << chunk_size
@@ -313,7 +313,7 @@ int WebSocketBasicStream::ConvertChunkToFrame(
     }
     if (!is_final_chunk) {
       DVLOG(2) << "Encountered a split control frame, opcode " << opcode;
-      if (incomplete_control_frame_body_) {
+      if (incomplete_control_frame_body_.get()) {
         DVLOG(3) << "Appending to an existing split control frame.";
         AddToIncompleteControlFrameBody(data_buffer);
       } else {
@@ -328,7 +328,7 @@ int WebSocketBasicStream::ConvertChunkToFrame(
       }
       return OK;
     }
-    if (incomplete_control_frame_body_) {
+    if (incomplete_control_frame_body_.get()) {
       DVLOG(2) << "Rejoining a split control frame, opcode " << opcode;
       AddToIncompleteControlFrameBody(data_buffer);
       const int body_size = incomplete_control_frame_body_->offset();
@@ -365,7 +365,7 @@ scoped_ptr<WebSocketFrame> WebSocketBasicStream::CreateFrame(
   scoped_ptr<WebSocketFrame> result_frame;
   const bool is_final_chunk_in_message =
       is_final_chunk && current_frame_header_->final;
-  const int data_size = data ? data->size() : 0;
+  const int data_size = data.get() ? data->size() : 0;
   const WebSocketFrameHeader::OpCode opcode = current_frame_header_->opcode;
   // Empty frames convey no useful information unless they are the first frame
   // (containing the type and flags) or have the "final" bit set.
@@ -398,7 +398,7 @@ scoped_ptr<WebSocketFrame> WebSocketBasicStream::CreateFrame(
 
 void WebSocketBasicStream::AddToIncompleteControlFrameBody(
     const scoped_refptr<IOBufferWithSize>& data_buffer) {
-  if (!data_buffer)
+  if (!data_buffer.get())
     return;
   const int new_offset =
       incomplete_control_frame_body_->offset() + data_buffer->size();

@@ -132,8 +132,9 @@ int WebSocketDeflateStream::Deflate(ScopedVector<WebSocketFrame>* frames) {
       frames_to_write.push_back(frame.release());
       current_writing_opcode_ = WebSocketFrameHeader::kOpCodeContinuation;
     } else {
-      if (frame->data && !deflater_.AddBytes(frame->data->data(),
-                                             frame->header.payload_length)) {
+      if (frame->data.get() &&
+          !deflater_.AddBytes(frame->data->data(),
+                              frame->header.payload_length)) {
         DVLOG(1) << "WebSocket protocol error. "
                  << "deflater_.AddBytes() returns an error.";
         return ERR_WS_PROTOCOL_ERROR;
@@ -202,7 +203,7 @@ int WebSocketDeflateStream::AppendCompressedFrame(
   const WebSocketFrameHeader::OpCode opcode = current_writing_opcode_;
   scoped_refptr<IOBufferWithSize> compressed_payload =
       deflater_.GetOutput(deflater_.CurrentOutputSize());
-  if (!compressed_payload) {
+  if (!compressed_payload.get()) {
     DVLOG(1) << "WebSocket protocol error. "
              << "deflater_.GetOutput() returns an error.";
     return ERR_WS_PROTOCOL_ERROR;
@@ -230,7 +231,7 @@ int WebSocketDeflateStream::AppendPossiblyCompressedMessage(
   const WebSocketFrameHeader::OpCode opcode = current_writing_opcode_;
   scoped_refptr<IOBufferWithSize> compressed_payload =
       deflater_.GetOutput(deflater_.CurrentOutputSize());
-  if (!compressed_payload) {
+  if (!compressed_payload.get()) {
     DVLOG(1) << "WebSocket protocol error. "
              << "deflater_.GetOutput() returns an error.";
     return ERR_WS_PROTOCOL_ERROR;
@@ -310,8 +311,9 @@ int WebSocketDeflateStream::Inflate(ScopedVector<WebSocketFrame>* frames) {
       frames_to_output.push_back(frame.release());
     } else {
       DCHECK_EQ(reading_state_, READING_COMPRESSED_MESSAGE);
-      if (frame->data && !inflater_.AddBytes(frame->data->data(),
-                                             frame->header.payload_length)) {
+      if (frame->data.get() &&
+          !inflater_.AddBytes(frame->data->data(),
+                              frame->header.payload_length)) {
         DVLOG(1) << "WebSocket protocol error. "
                  << "inflater_.AddBytes() returns an error.";
         return ERR_WS_PROTOCOL_ERROR;
@@ -334,7 +336,7 @@ int WebSocketDeflateStream::Inflate(ScopedVector<WebSocketFrame>* frames) {
             new WebSocketFrame(WebSocketFrameHeader::kOpCodeText));
         scoped_refptr<IOBufferWithSize> data = inflater_.GetOutput(size);
         bool is_final = !inflater_.CurrentOutputSize() && frame->header.final;
-        if (!data) {
+        if (!data.get()) {
           DVLOG(1) << "WebSocket protocol error. "
                    << "inflater_.GetOutput() returns an error.";
           return ERR_WS_PROTOCOL_ERROR;

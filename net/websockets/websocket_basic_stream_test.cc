@@ -639,7 +639,7 @@ TEST_F(WebSocketBasicStreamSocketTest, HttpReadBufferIsUsed) {
 
   EXPECT_EQ(OK, stream_->ReadFrames(&frames_, cb_.callback()));
   ASSERT_EQ(1U, frames_.size());
-  ASSERT_TRUE(frames_[0]->data);
+  ASSERT_TRUE(frames_[0]->data.get());
   EXPECT_EQ(GG_UINT64_C(6), frames_[0]->header.payload_length);
 }
 
@@ -653,7 +653,7 @@ TEST_F(WebSocketBasicStreamSocketSingleReadTest,
   ASSERT_EQ(ERR_IO_PENDING, stream_->ReadFrames(&frames_, cb_.callback()));
   EXPECT_EQ(OK, cb_.WaitForResult());
   ASSERT_EQ(1U, frames_.size());
-  ASSERT_TRUE(frames_[0]->data);
+  ASSERT_TRUE(frames_[0]->data.get());
   EXPECT_EQ(GG_UINT64_C(6), frames_[0]->header.payload_length);
   EXPECT_EQ(WebSocketFrameHeader::kOpCodeText, frames_[0]->header.opcode);
 }

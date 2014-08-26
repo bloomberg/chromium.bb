@@ -37,14 +37,14 @@ TEST(WebSocketInflaterTest, InflateHelloTakeOverContext) {
   ASSERT_TRUE(inflater.AddBytes("\xf2\x48\xcd\xc9\xc9\x07\x00", 7));
   ASSERT_TRUE(inflater.Finish());
   actual1 = inflater.GetOutput(inflater.CurrentOutputSize());
-  ASSERT_TRUE(actual1);
+  ASSERT_TRUE(actual1.get());
   EXPECT_EQ("Hello", ToString(actual1.get()));
   EXPECT_EQ(0u, inflater.CurrentOutputSize());
 
   ASSERT_TRUE(inflater.AddBytes("\xf2\x00\x11\x00\x00", 5));
   ASSERT_TRUE(inflater.Finish());
   actual2 = inflater.GetOutput(inflater.CurrentOutputSize());
-  ASSERT_TRUE(actual2);
+  ASSERT_TRUE(actual2.get());
   EXPECT_EQ("Hello", ToString(actual2.get()));
   EXPECT_EQ(0u, inflater.CurrentOutputSize());
 }
@@ -59,7 +59,7 @@ TEST(WebSocketInflaterTest, InflateHelloSmallCapacity) {
   for (size_t i = 0; i < 5; ++i) {
     ASSERT_EQ(1u, inflater.CurrentOutputSize());
     scoped_refptr<IOBufferWithSize> buffer = inflater.GetOutput(1);
-    ASSERT_TRUE(buffer);
+    ASSERT_TRUE(buffer.get());
     ASSERT_EQ(1, buffer->size());
     actual += ToString(buffer.get());
   }
@@ -76,7 +76,7 @@ TEST(WebSocketInflaterTest, InflateHelloSmallCapacityGetTotalOutput) {
   ASSERT_TRUE(inflater.Finish());
   ASSERT_EQ(1u, inflater.CurrentOutputSize());
   actual = inflater.GetOutput(1024);
-  EXPECT_EQ("Hello", ToString(actual));
+  EXPECT_EQ("Hello", ToString(actual.get()));
   EXPECT_EQ(0u, inflater.CurrentOutputSize());
 }
 
@@ -107,7 +107,7 @@ TEST(WebSocketInflaterTest, MultipleAddBytesCalls) {
   }
   ASSERT_TRUE(inflater.Finish());
   actual = inflater.GetOutput(5);
-  ASSERT_TRUE(actual);
+  ASSERT_TRUE(actual.get());
   EXPECT_EQ("Hello", ToString(actual.get()));
 }
 
@@ -119,7 +119,7 @@ TEST(WebSocketInflaterTest, Reset) {
   ASSERT_TRUE(inflater.AddBytes("\xf2\x48\xcd\xc9\xc9\x07\x00", 7));
   ASSERT_TRUE(inflater.Finish());
   actual1 = inflater.GetOutput(inflater.CurrentOutputSize());
-  ASSERT_TRUE(actual1);
+  ASSERT_TRUE(actual1.get());
   EXPECT_EQ("Hello", ToString(actual1.get()));
   EXPECT_EQ(0u, inflater.CurrentOutputSize());
 
@@ -131,7 +131,7 @@ TEST(WebSocketInflaterTest, Reset) {
   ASSERT_TRUE(inflater.AddBytes("\xf2\x48\xcd\xc9\xc9\x07\x00", 7));
   ASSERT_TRUE(inflater.Finish());
   actual2 = inflater.GetOutput(inflater.CurrentOutputSize());
-  ASSERT_TRUE(actual2);
+  ASSERT_TRUE(actual2.get());
   EXPECT_EQ("Hello", ToString(actual2.get()));
   EXPECT_EQ(0u, inflater.CurrentOutputSize());
 }
@@ -144,7 +144,7 @@ TEST(WebSocketInflaterTest, ResetAndLostContext) {
   ASSERT_TRUE(inflater.AddBytes("\xf2\x48\xcd\xc9\xc9\x07\x00", 7));
   ASSERT_TRUE(inflater.Finish());
   actual1 = inflater.GetOutput(inflater.CurrentOutputSize());
-  ASSERT_TRUE(actual1);
+  ASSERT_TRUE(actual1.get());
   EXPECT_EQ("Hello", ToString(actual1.get()));
   EXPECT_EQ(0u, inflater.CurrentOutputSize());
 
@@ -201,7 +201,7 @@ TEST(WebSocketInflaterTest, LargeRandomDeflateInflate) {
 
   compressed = deflater.GetOutput(deflater.CurrentOutputSize());
 
-  ASSERT_TRUE(compressed);
+  ASSERT_TRUE(compressed.get());
   ASSERT_EQ(0u, deflater.CurrentOutputSize());
 
   ASSERT_TRUE(inflater.AddBytes(compressed->data(), compressed->size()));
@@ -210,7 +210,7 @@ TEST(WebSocketInflaterTest, LargeRandomDeflateInflate) {
   while (inflater.CurrentOutputSize() > 0) {
     scoped_refptr<IOBufferWithSize> uncompressed =
         inflater.GetOutput(inflater.CurrentOutputSize());
-    ASSERT_TRUE(uncompressed);
+    ASSERT_TRUE(uncompressed.get());
     output.insert(output.end(),
                   uncompressed->data(),
                   uncompressed->data() + uncompressed->size());

@@ -59,7 +59,7 @@ std::ostream& operator<<(std::ostream& os, const WebSocketFrameHeader& header) {
 
 std::ostream& operator<<(std::ostream& os, const WebSocketFrame& frame) {
   os << "{" << frame.header << ", ";
-  if (frame.data) {
+  if (frame.data.get()) {
     return os << "\"" << base::StringPiece(frame.data->data(),
                                            frame.header.payload_length)
               << "\"}";
@@ -2862,7 +2862,7 @@ TEST_F(WebSocketChannelStreamTest, WrittenBinaryFramesAre8BitClean) {
   ASSERT_EQ(1U, frames->size());
   const WebSocketFrame* out_frame = (*frames)[0];
   EXPECT_EQ(kBinaryBlobSize, out_frame->header.payload_length);
-  ASSERT_TRUE(out_frame->data);
+  ASSERT_TRUE(out_frame->data.get());
   EXPECT_EQ(0, memcmp(kBinaryBlob, out_frame->data->data(), kBinaryBlobSize));
 }
 

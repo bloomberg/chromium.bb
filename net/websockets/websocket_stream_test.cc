@@ -469,7 +469,7 @@ TEST_F(WebSocketStreamCreateTest, HandshakeInfo) {
             request_headers[11]);
 
   std::vector<HeaderKeyValuePair> response_headers =
-      ToVector(*response_info_->headers);
+      ToVector(*response_info_->headers.get());
   ASSERT_EQ(6u, response_headers.size());
   // Sort the headers for ease of verification.
   std::sort(response_headers.begin(), response_headers.end());
@@ -1203,7 +1203,7 @@ TEST_F(WebSocketStreamCreateTest, SelfSignedCertificateFailure) {
       new SSLSocketDataProvider(ASYNC, ERR_CERT_AUTHORITY_INVALID));
   ssl_data_[0]->cert =
       ImportCertFromFile(GetTestCertsDirectory(), "unittest.selfsigned.der");
-  ASSERT_TRUE(ssl_data_[0]->cert);
+  ASSERT_TRUE(ssl_data_[0]->cert.get());
   scoped_ptr<DeterministicSocketData> raw_socket_data(BuildNullSocketData());
   CreateAndConnectRawExpectations("wss://localhost/",
                                   NoSubProtocols(),
@@ -1223,7 +1223,7 @@ TEST_F(WebSocketStreamCreateTest, SelfSignedCertificateSuccess) {
       new SSLSocketDataProvider(ASYNC, ERR_CERT_AUTHORITY_INVALID));
   ssl_data->cert =
       ImportCertFromFile(GetTestCertsDirectory(), "unittest.selfsigned.der");
-  ASSERT_TRUE(ssl_data->cert);
+  ASSERT_TRUE(ssl_data->cert.get());
   ssl_data_.push_back(ssl_data.release());
   ssl_data.reset(new SSLSocketDataProvider(ASYNC, OK));
   ssl_data_.push_back(ssl_data.release());

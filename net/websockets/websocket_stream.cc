@@ -314,7 +314,7 @@ void WebSocketDispatchOnFinishOpeningHandshake(
     const scoped_refptr<HttpResponseHeaders>& headers,
     base::Time response_time) {
   DCHECK(connect_delegate);
-  if (headers) {
+  if (headers.get()) {
     connect_delegate->OnFinishOpeningHandshake(make_scoped_ptr(
         new WebSocketHandshakeResponseInfo(url,
                                            headers->response_code(),

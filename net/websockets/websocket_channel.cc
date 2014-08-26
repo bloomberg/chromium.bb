@@ -430,8 +430,8 @@ void WebSocketChannel::SendFlowControl(int64 quota) {
     const size_t bytes_to_send =
         std::min(base::checked_cast<size_t>(quota), data_size);
     const bool final = front.final() && data_size == bytes_to_send;
-    const char* data = front.data() ?
-        front.data()->data() + front.offset() : NULL;
+    const char* data =
+        front.data().get() ? front.data()->data() + front.offset() : NULL;
     DCHECK(!bytes_to_send || data) << "Non empty data should not be null.";
     const std::vector<char> data_vector(data, data + bytes_to_send);
     DVLOG(3) << "Sending frame previously split due to quota to the "
