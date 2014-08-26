@@ -260,6 +260,8 @@
     ],
     'web_unittest_files': [
       'ExternalPopupMenuTest.cpp',
+      'PopupContainerTest.cpp',
+      'PopupMenuTest.cpp',
       'WebNodeTest.cpp',
       # FIXME: Move the tests from web/tests/ to appropriate places.
       # crbug.com/353585
@@ -282,8 +284,6 @@
       'tests/PageSerializerTest.cpp',
       'tests/PaintAggregatorTest.cpp',
       'tests/PinchViewportTest.cpp',
-      'tests/PopupContainerTest.cpp',
-      'tests/PopupMenuTest.cpp',
       'tests/PrerenderingTest.cpp',
       'tests/ProgrammaticScrollTest.cpp',
       'tests/RenderGeometryMapTest.cpp',

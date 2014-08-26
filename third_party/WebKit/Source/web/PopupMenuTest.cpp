@@ -29,6 +29,7 @@
  */
 
 #include "config.h"
+#include "platform/PopupMenu.h"
 
 #include "core/dom/Element.h"
 #include "core/frame/FrameView.h"
@@ -39,7 +40,6 @@
 #include "core/testing/URLTestHelpers.h"
 #include "platform/KeyboardCodes.h"
 #include "platform/PlatformMouseEvent.h"
-#include "platform/PopupMenu.h"
 #include "platform/PopupMenuClient.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/Color.h"
@@ -79,7 +79,7 @@ class TestPopupMenuClient : public PopupMenuClient {
 public:
     // Item at index 0 is selected by default.
     TestPopupMenuClient() : m_selectIndex(0), m_node(0), m_listSize(10) { }
-    virtual ~TestPopupMenuClient() {}
+    virtual ~TestPopupMenuClient() { }
     virtual void valueChanged(unsigned listIndex, bool fireEvents = true)
     {
         m_selectIndex = listIndex;
@@ -88,8 +88,8 @@ public:
             select->optionSelectedByUser(select->listToOptionIndex(listIndex), fireEvents);
         }
     }
-    virtual void selectionChanged(unsigned, bool) {}
-    virtual void selectionCleared() {}
+    virtual void selectionChanged(unsigned, bool) { }
+    virtual void selectionCleared() { }
 
     virtual String itemText(unsigned listIndex) const
     {
@@ -241,13 +241,13 @@ protected:
     void simulateLeftMouseDownEvent(const IntPoint& point)
     {
         PlatformMouseEvent mouseEvent(point, point, LeftButton, PlatformEvent::MousePressed,
-                                      1, false, false, false, false, 0);
+            1, false, false, false, false, 0);
         webView()->selectPopup()->handleMouseDownEvent(mouseEvent);
     }
     void simulateLeftMouseUpEvent(const IntPoint& point)
     {
         PlatformMouseEvent mouseEvent(point, point, LeftButton, PlatformEvent::MouseReleased,
-                                      1, false, false, false, false, 0);
+            1, false, false, false, false, 0);
         webView()->selectPopup()->handleMouseReleaseEvent(mouseEvent);
     }
 
@@ -274,7 +274,7 @@ private:
     FrameTestHelpers::WebViewHelper m_helper;
 };
 
-// Tests that show/hide and repeats.  Select popups are reused in web pages when
+// Tests that show/hide and repeats. Select popups are reused in web pages when
 // they are reopened, that what this is testing.
 TEST_F(SelectPopupMenuTest, ShowThenHide)
 {
@@ -369,7 +369,7 @@ TEST_F(SelectPopupMenuTest, MouseOverItemClickOutside)
     IntPoint row1Point(2, menuItemHeight * 1.5);
     // Simulate the mouse moving over the first item.
     PlatformMouseEvent mouseEvent(row1Point, row1Point, NoButton, PlatformEvent::MouseMoved,
-                                  1, false, false, false, false, 0);
+        1, false, false, false, false, 0);
     webView()->selectPopup()->handleMouseMoveEvent(mouseEvent);
 
     // Click outside the popup.
