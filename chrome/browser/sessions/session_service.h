@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/scoped_vector.h"
+#include "base/memory/weak_ptr.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/time/time.h"
 #include "chrome/browser/defaults.h"
@@ -492,6 +493,8 @@ class SessionService : public BaseSessionService,
   // For browser_tests, since we want to simulate the browser shutting down
   // without quitting.
   bool force_browser_not_alive_with_no_windows_;
+
+  base::WeakPtrFactory<SessionService> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionService);
 };

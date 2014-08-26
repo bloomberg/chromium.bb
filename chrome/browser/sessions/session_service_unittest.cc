@@ -9,9 +9,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/path_service.h"
+#include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -163,8 +165,6 @@ class SessionServiceTest : public BrowserWithTestWindowTest,
   }
 
   SessionService* service() { return helper_.service(); }
-
-  SessionBackend* backend() { return helper_.backend(); }
 
   const gfx::Rect window_bounds;
 
@@ -998,4 +998,53 @@ TEST_F(SessionServiceTest, IgnoreBlacklistedUrls) {
   SessionTab* tab = windows[0]->tabs[0];
   helper_.AssertTabEquals(window_id, tab_id, 0, 0, 1, *tab);
   helper_.AssertNavigationEquals(nav1, tab->navigations[0]);
+}
+
+// Functions used by GetSessionsAndDestroy.
+namespace {
+
+void OnGotPreviousSession(ScopedVector<SessionWindow> windows,
+                          SessionID::id_type ignored_active_window) {
+  FAIL() << "SessionService was destroyed, this shouldn't be reached.";
+}
+
+void PostBackToThread(base::MessageLoop* message_loop,
+                      base::RunLoop* run_loop) {
+  message_loop->PostTask(FROM_HERE,
+                         base::Bind(&base::RunLoop::Quit,
+                                    base::Unretained(run_loop)));
+}
+
+}  // namespace
+
+// Verifies that SessionService::GetLastSession() works correctly if the
+// SessionService is deleted during processing. To verify the problematic case
+// does the following:
+// 1. Sends a task to the background thread that blocks.
+// 2. Asks SessionService for the last session commands. This is blocked by 1.
+// 3. Posts another task to the background thread, this too is blocked by 1.
+// 4. Deletes SessionService.
+// 5. Signals the semaphore that 2 and 3 are waiting on, allowing
+//    GetLastSession() to continue.
+// 6. runs the message loop, this is quit when the task scheduled in 3 posts
+//    back to the ui thread to quit the run loop.
+// The call to get the previous session should never be invoked because the
+// SessionService was destroyed before SessionService could process the results.
+TEST_F(SessionServiceTest, GetSessionsAndDestroy) {
+  base::CancelableTaskTracker cancelable_task_tracker;
+  base::RunLoop run_loop;
+  base::WaitableEvent event(true, false);
+  helper_.RunTaskOnBackendThread(FROM_HERE,
+                                 base::Bind(&base::WaitableEvent::Wait,
+                                            base::Unretained(&event)));
+  service()->GetLastSession(base::Bind(&OnGotPreviousSession),
+                            &cancelable_task_tracker);
+  helper_.RunTaskOnBackendThread(
+      FROM_HERE,
+      base::Bind(&PostBackToThread,
+                 base::Unretained(base::MessageLoop::current()),
+                 base::Unretained(&run_loop)));
+  delete helper_.ReleaseService();
+  event.Signal();
+  run_loop.Run();
 }

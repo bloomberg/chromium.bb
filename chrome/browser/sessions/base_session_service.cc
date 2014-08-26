@@ -294,20 +294,17 @@ BaseSessionService::ScheduleGetLastSessionCommands(
   return id;
 }
 
-bool BaseSessionService::RunTaskOnBackendThread(
+void BaseSessionService::RunTaskOnBackendThread(
     const tracked_objects::Location& from_here,
     const base::Closure& task) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   base::SequencedWorkerPool* pool = content::BrowserThread::GetBlockingPool();
   if (!pool->IsShutdownInProgress()) {
-    return pool->PostSequencedWorkerTask(sequence_token_,
-                                         from_here,
-                                         task);
+    pool->PostSequencedWorkerTask(sequence_token_, from_here, task);
   } else {
     // Fall back to executing on the main thread if the sequence
     // worker pool has been requested to shutdown (around shutdown
     // time).
     task.Run();
-    return true;
   }
 }

@@ -5,6 +5,7 @@
 #include "chrome/browser/sessions/session_service_test_helper.h"
 
 #include "base/memory/scoped_vector.h"
+#include "base/message_loop/message_loop.h"
 #include "chrome/browser/sessions/session_backend.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_types.h"
@@ -111,3 +112,8 @@ void SessionServiceTestHelper::SetService(SessionService* service) {
   content::BrowserThread::GetBlockingPool()->FlushForTesting();
 }
 
+void SessionServiceTestHelper::RunTaskOnBackendThread(
+    const tracked_objects::Location& from_here,
+    const base::Closure& task) {
+  service_->RunTaskOnBackendThread(from_here, task);
+}

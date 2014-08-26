@@ -156,7 +156,7 @@ class BaseSessionService {
 
   // This posts the task to the SequencedWorkerPool, or run immediately
   // if the SequencedWorkerPool has been shutdown.
-  bool RunTaskOnBackendThread(const tracked_objects::Location& from_here,
+  void RunTaskOnBackendThread(const tracked_objects::Location& from_here,
                               const base::Closure& task);
 
   // Max number of navigation entries in each direction we'll persist.
