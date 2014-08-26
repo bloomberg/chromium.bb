@@ -30,7 +30,6 @@ from third_party.rietveld import upload
 
 from utils import oauth
 from utils import tools
-from utils import zip_package
 
 # Hack out upload logging.info()
 upload.logging = logging.getLogger('upload')
@@ -104,10 +103,6 @@ _http_services_lock = threading.Lock()
 # CookieJar reused by all services + lock that protects its instantiation.
 _cookie_jar = None
 _cookie_jar_lock = threading.Lock()
-
-# Path to cacert.pem bundle file reused by all services.
-_ca_certs = None
-_ca_certs_lock = threading.Lock()
 
 # This lock ensures that user won't be confused with multiple concurrent
 # login prompts.
@@ -252,7 +247,7 @@ def get_http_service(urlhost, allow_cached=True, use_count_key=None):
   def new_service():
     return HttpService(
         urlhost,
-        engine=RequestsLibEngine(get_cacerts_bundle()),
+        engine=RequestsLibEngine(tools.get_cacerts_bundle()),
         authenticator=create_authenticator(urlhost),
         use_count_key=use_count_key)
 
@@ -283,16 +278,6 @@ def get_cookie_jar():
     jar.load()
     _cookie_jar = jar
     return jar
-
-
-def get_cacerts_bundle():
-  """Returns path to a file with CA root certificates bundle."""
-  global _ca_certs
-  with _ca_certs_lock:
-    if _ca_certs is not None and os.path.exists(_ca_certs):
-      return _ca_certs
-    _ca_certs = zip_package.extract_resource(requests, 'cacert.pem')
-    return _ca_certs
 
 
 def get_default_auth_config():

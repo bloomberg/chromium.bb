@@ -12,7 +12,17 @@ import optparse
 import os
 import re
 import sys
+import threading
 import time
+
+from third_party import requests
+from utils import zip_package
+
+
+# Path to (possibly extracted from zip) cacert.pem bundle file.
+# See get_cacerts_bundle().
+_ca_certs = None
+_ca_certs_lock = threading.Lock()
 
 
 class OptionParserWithLogging(optparse.OptionParser):
@@ -179,3 +189,20 @@ def is_headless():
     'SWARMING_HEADLESS',
   )
   return any(get_bool_env_var(key) for key in headless_env_keys)
+
+
+def get_cacerts_bundle():
+  """Returns path to a file with CA root certificates bundle.
+
+  Python's ssl module needs a real file on disk, so if code is running from
+  a zip archive, we need to extract the file first.
+  """
+  global _ca_certs
+  with _ca_certs_lock:
+    if _ca_certs is not None and os.path.exists(_ca_certs):
+      return _ca_certs
+    # Some rogue process clears /tmp and causes cacert.pem to disappear. Extract
+    # to current directory instead. We use requests' copy of cacert.pem.
+    _ca_certs = zip_package.extract_resource(
+        requests, 'cacert.pem', temp_dir='.')
+    return _ca_certs

@@ -169,7 +169,7 @@ def create_access_token(urlhost, config, allow_user_interaction):
 
   # refresh_token is ok, use it.
   try:
-    credentials.refresh(httplib2.Http())
+    credentials.refresh(httplib2.Http(ca_certs=tools.get_cacerts_bundle()))
   except client.Error as err:
     logging.error('OAuth error: %s', err)
     if allow_user_interaction:
@@ -233,7 +233,8 @@ def _fetch_service_config(urlhost):
     # complete the flow and grab access_token. When you have malicious code
     # running on your machine you're screwed anyway.
     response = requests.get(
-        '%s/auth/api/v1/server/oauth_config' % urlhost.rstrip('/'))
+        '%s/auth/api/v1/server/oauth_config' % urlhost.rstrip('/'),
+        verify=tools.get_cacerts_bundle())
     if response.status_code == 200:
       try:
         config = response.json()

@@ -240,7 +240,7 @@ def get_main_script_path():
   return get_module_zip_archive(main) or getattr(main, '__file__', None)
 
 
-def extract_resource(package, resource):
+def extract_resource(package, resource, temp_dir=None):
   """Returns real file system path to a |resource| file from a |package|.
 
   If it's inside a zip package, will extract it first into temp file created
@@ -265,7 +265,9 @@ def extract_resource(package, resource):
   data = pkgutil.get_data(package.__name__, resource)
   if data is None:
     raise ValueError('No such resource in zipped %s: %s' % (package, resource))
-  fd, path = tempfile.mkstemp(prefix='zip_package')
+  fd, path = tempfile.mkstemp(
+      suffix='-' + os.path.basename(resource), prefix='.zip_pkg-', dir=temp_dir)
+  path = os.path.abspath(path)
   with os.fdopen(fd, 'w') as stream:
     stream.write(data)
 
