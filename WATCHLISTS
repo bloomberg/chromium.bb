@@ -806,7 +806,6 @@
              'mikhal+watch@chromium.org',
              'miu+watch@chromium.org',
              'pwestin+watch@google.com'],
-    'chromecast': ['ozone-reviews@chromium.org'],
     'cc': ['cc-bugs@chromium.org'],
     'chrome_elf': ['caitkp+watch@chromium.org',],
     'chrome_views': ['tfarina@chromium.org'],
