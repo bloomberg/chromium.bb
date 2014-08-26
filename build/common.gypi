@@ -5046,13 +5046,13 @@
             # This need to include the "arm" architectures but also the "x86"
             # ones (they are used when building for the simulator).
             ['target_subarch=="arm32"', {
-              'VALID_ARCHS': ['armv7', 'i386'],
+              'VALID_ARCHS': ['armv7', 'armv7s', 'i386'],
             }],
             ['target_subarch=="arm64"', {
               'VALID_ARCHS': ['arm64', 'x86_64'],
             }],
             ['target_subarch=="both"', {
-              'VALID_ARCHS': ['arm64', 'armv7', 'x86_64', 'i386'],
+              'VALID_ARCHS': ['arm64', 'armv7', 'armv7s', 'x86_64', 'i386'],
             }],
             ['use_system_libcxx==1', {
               'target_conditions': [
