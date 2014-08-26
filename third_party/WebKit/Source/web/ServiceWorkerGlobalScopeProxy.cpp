@@ -66,7 +66,7 @@ ServiceWorkerGlobalScopeProxy::~ServiceWorkerGlobalScopeProxy()
 void ServiceWorkerGlobalScopeProxy::dispatchInstallEvent(int eventID)
 {
     ASSERT(m_workerGlobalScope);
-    RefPtr<WaitUntilObserver> observer = WaitUntilObserver::create(m_workerGlobalScope, WaitUntilObserver::Install, eventID);
+    RefPtrWillBeRawPtr<WaitUntilObserver> observer = WaitUntilObserver::create(m_workerGlobalScope, WaitUntilObserver::Install, eventID);
     observer->willDispatchEvent();
     m_workerGlobalScope->dispatchEvent(InstallEvent::create(EventTypeNames::install, EventInit(), observer));
     observer->didDispatchEvent();
@@ -75,7 +75,7 @@ void ServiceWorkerGlobalScopeProxy::dispatchInstallEvent(int eventID)
 void ServiceWorkerGlobalScopeProxy::dispatchActivateEvent(int eventID)
 {
     ASSERT(m_workerGlobalScope);
-    RefPtr<WaitUntilObserver> observer = WaitUntilObserver::create(m_workerGlobalScope, WaitUntilObserver::Activate, eventID);
+    RefPtrWillBeRawPtr<WaitUntilObserver> observer = WaitUntilObserver::create(m_workerGlobalScope, WaitUntilObserver::Activate, eventID);
     observer->willDispatchEvent();
     m_workerGlobalScope->dispatchEvent(InstallPhaseEvent::create(EventTypeNames::activate, EventInit(), observer));
     observer->didDispatchEvent();
@@ -84,7 +84,7 @@ void ServiceWorkerGlobalScopeProxy::dispatchActivateEvent(int eventID)
 void ServiceWorkerGlobalScopeProxy::dispatchFetchEvent(int eventID, const WebServiceWorkerRequest& webRequest)
 {
     ASSERT(m_workerGlobalScope);
-    RefPtr<RespondWithObserver> observer = RespondWithObserver::create(m_workerGlobalScope, eventID);
+    RefPtrWillBeRawPtr<RespondWithObserver> observer = RespondWithObserver::create(m_workerGlobalScope, eventID);
     RefPtrWillBeRawPtr<Request> request = Request::create(webRequest);
     RefPtrWillBeRawPtr<FetchEvent> fetchEvent(FetchEvent::create(observer, request));
     fetchEvent->setIsReload(webRequest.isReload());

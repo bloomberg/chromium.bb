@@ -21,7 +21,7 @@ class RespondWithObserver;
 class FetchEvent FINAL : public Event {
 public:
     static PassRefPtrWillBeRawPtr<FetchEvent> create();
-    static PassRefPtrWillBeRawPtr<FetchEvent> create(PassRefPtr<RespondWithObserver>, PassRefPtrWillBeRawPtr<Request>);
+    static PassRefPtrWillBeRawPtr<FetchEvent> create(PassRefPtrWillBeRawPtr<RespondWithObserver>, PassRefPtrWillBeRawPtr<Request>);
 
     PassRefPtrWillBeRawPtr<Request> request() const;
     bool isReload() const;
@@ -36,10 +36,10 @@ public:
 
 protected:
     FetchEvent();
-    FetchEvent(PassRefPtr<RespondWithObserver>, PassRefPtrWillBeRawPtr<Request>);
+    FetchEvent(PassRefPtrWillBeRawPtr<RespondWithObserver>, PassRefPtrWillBeRawPtr<Request>);
 
 private:
-    RefPtr<RespondWithObserver> m_observer;
+    RefPtrWillBeMember<RespondWithObserver> m_observer;
     RefPtrWillBeMember<Request> m_request;
     bool m_isReload;
 };

@@ -16,7 +16,7 @@ PassRefPtrWillBeRawPtr<FetchEvent> FetchEvent::create()
     return adoptRefWillBeNoop(new FetchEvent());
 }
 
-PassRefPtrWillBeRawPtr<FetchEvent> FetchEvent::create(PassRefPtr<RespondWithObserver> observer, PassRefPtrWillBeRawPtr<Request> request)
+PassRefPtrWillBeRawPtr<FetchEvent> FetchEvent::create(PassRefPtrWillBeRawPtr<RespondWithObserver> observer, PassRefPtrWillBeRawPtr<Request> request)
 {
     return adoptRefWillBeNoop(new FetchEvent(observer, request));
 }
@@ -52,7 +52,7 @@ FetchEvent::FetchEvent()
     ScriptWrappable::init(this);
 }
 
-FetchEvent::FetchEvent(PassRefPtr<RespondWithObserver> observer, PassRefPtrWillBeRawPtr<Request> request)
+FetchEvent::FetchEvent(PassRefPtrWillBeRawPtr<RespondWithObserver> observer, PassRefPtrWillBeRawPtr<Request> request)
     : Event(EventTypeNames::fetch, /*canBubble=*/false, /*cancelable=*/true)
     , m_observer(observer)
     , m_request(request)
@@ -64,6 +64,7 @@ FetchEvent::FetchEvent(PassRefPtr<RespondWithObserver> observer, PassRefPtrWillB
 void FetchEvent::trace(Visitor* visitor)
 {
     visitor->trace(m_request);
+    visitor->trace(m_observer);
     Event::trace(visitor);
 }
 
