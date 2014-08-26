@@ -124,7 +124,9 @@ class GcdPrivateAPIImpl : public EventRouter::Observer,
                         int port,
                         ConfirmationCodeCallback callback);
 
-  void ConfirmCode(int session_id, SessionEstablishedCallback callback);
+  void ConfirmCode(int session_id,
+                   const std::string& code,
+                   SessionEstablishedCallback callback);
 
   void SendMessage(int session_id,
                    const std::string& api,
@@ -229,6 +231,7 @@ class GcdPrivateSessionHolder
   void Start(const ConfirmationCodeCallback& callback);
 
   void ConfirmCode(
+      const std::string& code,
       const GcdPrivateAPIImpl::SessionEstablishedCallback& callback);
 
   void SendMessage(const std::string& api,
@@ -240,9 +243,9 @@ class GcdPrivateSessionHolder
  private:
   // local_discovery::PrivetV3Session::Delegate implementation.
   virtual void OnSetupConfirmationNeeded(
-      const std::string& confirmation_code) OVERRIDE;
-  virtual void OnSessionEstablished() OVERRIDE;
-  virtual void OnCannotEstablishSession() OVERRIDE;
+      const std::string& confirmation_code,
+      api::gcd_private::ConfirmationType confirmation_type) OVERRIDE;
+  virtual void OnSessionStatus(api::gcd_private::Status status) OVERRIDE;
 
   scoped_ptr<local_discovery::PrivetHTTPClient> http_client_;
   scoped_ptr<local_discovery::PrivetV3Session> privet_session_;
@@ -371,6 +374,7 @@ void GcdPrivateAPIImpl::EstablishSession(const std::string& ip_address,
 }
 
 void GcdPrivateAPIImpl::ConfirmCode(int session_id,
+                                    const std::string& code,
                                     SessionEstablishedCallback callback) {
   GCDSessionMap::iterator found = sessions_.find(session_id);
 
@@ -379,7 +383,7 @@ void GcdPrivateAPIImpl::ConfirmCode(int session_id,
     return;
   }
 
-  found->second->ConfirmCode(callback);
+  found->second->ConfirmCode(code, callback);
 }
 
 void GcdPrivateAPIImpl::SendMessage(int session_id,
@@ -551,9 +555,10 @@ void GcdPrivateSessionHolder::Start(const ConfirmationCodeCallback& callback) {
 }
 
 void GcdPrivateSessionHolder::ConfirmCode(
+    const std::string& code,
     const GcdPrivateAPIImpl::SessionEstablishedCallback& callback) {
   session_established_callback_ = callback;
-  privet_session_->ConfirmCode();
+  privet_session_->ConfirmCode(code);
 }
 
 void GcdPrivateSessionHolder::SendMessage(
@@ -578,22 +583,16 @@ void GcdPrivateSessionHolder::DeleteRequest(GcdPrivateRequest* request) {
 }
 
 void GcdPrivateSessionHolder::OnSetupConfirmationNeeded(
-    const std::string& confirmation_code) {
-  confirm_callback_.Run(gcd_private::STATUS_SUCCESS,
-                        confirmation_code,
-                        gcd_private::CONFIRMATION_TYPE_DISPLAYCODE);
+    const std::string& confirmation_code,
+    gcd_private::ConfirmationType confirmation_type) {
+  confirm_callback_.Run(
+      gcd_private::STATUS_SUCCESS, confirmation_code, confirmation_type);
 
   confirm_callback_.Reset();
 }
 
-void GcdPrivateSessionHolder::OnSessionEstablished() {
-  session_established_callback_.Run(gcd_private::STATUS_SUCCESS);
-
-  session_established_callback_.Reset();
-}
-
-void GcdPrivateSessionHolder::OnCannotEstablishSession() {
-  session_established_callback_.Run(gcd_private::STATUS_SESSIONERROR);
+void GcdPrivateSessionHolder::OnSessionStatus(gcd_private::Status status) {
+  session_established_callback_.Run(status);
 
   session_established_callback_.Reset();
 }
@@ -774,8 +773,15 @@ void GcdPrivateEstablishSessionFunction::OnConfirmCodeCallback(
     gcd_private::Status status,
     const std::string& confirm_code,
     gcd_private::ConfirmationType confirmation_type) {
-  results_ = gcd_private::EstablishSession::Results::Create(
-      session_id, status, confirm_code, confirmation_type);
+  gcd_private::ConfirmationInfo info;
+
+  info.type = confirmation_type;
+  if (!confirm_code.empty()) {
+    info.code.reset(new std::string(confirm_code));
+  }
+
+  results_ =
+      gcd_private::EstablishSession::Results::Create(session_id, status, info);
   SendResponse(true);
 }
 
@@ -796,6 +802,7 @@ bool GcdPrivateConfirmCodeFunction::RunAsync() {
 
   gcd_api->ConfirmCode(
       params->session_id,
+      params->code,
       base::Bind(&GcdPrivateConfirmCodeFunction::OnSessionEstablishedCallback,
                  this));
 

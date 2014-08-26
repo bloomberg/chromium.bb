@@ -21,9 +21,10 @@ using testing::_;
 
 class MockDelegate : public PrivetV3Session::Delegate {
  public:
-  MOCK_METHOD1(OnSetupConfirmationNeeded, void(const std::string&));
-  MOCK_METHOD0(OnSessionEstablished, void());
-  MOCK_METHOD0(OnCannotEstablishSession, void());
+  MOCK_METHOD2(OnSetupConfirmationNeeded,
+               void(const std::string&,
+                    extensions::api::gcd_private::ConfirmationType));
+  MOCK_METHOD1(OnSessionStatus, void(extensions::api::gcd_private::Status));
 };
 
 class PrivetV3SessionTest : public testing::Test {
@@ -37,12 +38,16 @@ class PrivetV3SessionTest : public testing::Test {
     base::MessageLoop::current()->PostTask(FROM_HERE, quit_closure_);
   }
 
+  void ConfirmCode(const std::string& code,
+                   extensions::api::gcd_private::ConfirmationType type) {
+    session_.ConfirmCode(code);
+  }
+
  protected:
   virtual void SetUp() OVERRIDE {
     quit_closure_ = run_loop_.QuitClosure();
-    EXPECT_CALL(delegate_, OnSetupConfirmationNeeded(_)).Times(0);
-    EXPECT_CALL(delegate_, OnSessionEstablished()).Times(0);
-    EXPECT_CALL(delegate_, OnCannotEstablishSession()).Times(0);
+    EXPECT_CALL(delegate_, OnSetupConfirmationNeeded(_, _)).Times(0);
+    EXPECT_CALL(delegate_, OnSessionStatus(_)).Times(0);
   }
 
   StrictMock<MockDelegate> delegate_;
@@ -53,17 +58,19 @@ class PrivetV3SessionTest : public testing::Test {
 };
 
 TEST_F(PrivetV3SessionTest, NotConfirmed) {
-  EXPECT_CALL(delegate_, OnSetupConfirmationNeeded(_)).Times(1).WillOnce(
+  EXPECT_CALL(delegate_, OnSetupConfirmationNeeded(_, _)).Times(1).WillOnce(
       InvokeWithoutArgs(this, &PrivetV3SessionTest::QuitLoop));
   session_.Start();
   run_loop_.Run();
 }
 
 TEST_F(PrivetV3SessionTest, Confirmed) {
-  EXPECT_CALL(delegate_, OnSessionEstablished()).Times(1).WillOnce(
-      InvokeWithoutArgs(this, &PrivetV3SessionTest::QuitLoop));
-  EXPECT_CALL(delegate_, OnSetupConfirmationNeeded(_)).Times(1).WillOnce(
-      InvokeWithoutArgs(&session_, &PrivetV3Session::ConfirmCode));
+  EXPECT_CALL(delegate_,
+              OnSessionStatus(extensions::api::gcd_private::STATUS_SUCCESS))
+      .Times(1)
+      .WillOnce(InvokeWithoutArgs(this, &PrivetV3SessionTest::QuitLoop));
+  EXPECT_CALL(delegate_, OnSetupConfirmationNeeded(_, _)).Times(1).WillOnce(
+      Invoke(this, &PrivetV3SessionTest::ConfirmCode));
   session_.Start();
   run_loop_.Run();
 }

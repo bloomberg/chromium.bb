@@ -46,13 +46,25 @@ namespace gcdPrivate {
     // Unknown session.
     unknownSessionError,
 
+    // Bad confirmation code. Ask user to retype.
+    badConfirmationCodeError,
+
     // Success.
     success
   };
 
   enum ConfirmationType {
     displayCode,
-    audio
+    stickerCode
+  };
+
+  // Information regarding the confirmation of a device.
+  dictionary ConfirmationInfo {
+    // Type of confirmation.
+    ConfirmationType type;
+
+    // Code if available.
+    DOMString? code;
   };
 
   callback CloudDeviceListCallback = void(GCDDevice[] devices);
@@ -75,12 +87,10 @@ namespace gcdPrivate {
   // Called when the confirmation code is available or on error.
   // |sessionId| is the session ID (identifies the session for future calls)
   // |status| is the status (success or type of error)
-  // |code| is the confirmation code or empty on error
-  // |confirmationType| is the type of confirmation required
+  // |confirmation| is the information about the confirmation.
   callback ConfirmationCodeCallback = void(long sessionId,
                                            Status status,
-                                           DOMString code,
-                                           ConfirmationType type);
+                                           ConfirmationInfo confirmation);
 
   // Called to indicated the session is established.
   // |status| is the status (success or type of error)
@@ -124,8 +134,11 @@ namespace gcdPrivate {
                                  long port,
                                  ConfirmationCodeCallback callback);
 
-    // Confirm that the code is correct. Device will still need to confirm.
+    // Send confirmation code. Device will still need to confirm. |code| must be
+    // present and must match the code from the device, even when the code is
+    // supplied in the |ConfirmationInfo| object.
     static void confirmCode(long sessionId,
+                            DOMString code,
                             SessionEstablishedCallback callback);
 
     // Send an encrypted message to the device. |api| is the API path and

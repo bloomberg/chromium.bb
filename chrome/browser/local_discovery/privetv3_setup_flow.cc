@@ -109,19 +109,22 @@ void PrivetV3SetupFlow::SetupWifiAndRegister(const std::string& device_ssid) {
 #endif  // ENABLE_WIFI_BOOTSTRAPPING
 
 void PrivetV3SetupFlow::OnSetupConfirmationNeeded(
-    const std::string& confirmation_code) {
+    const std::string& confirmation_code,
+    extensions::api::gcd_private::ConfirmationType confirmation_type) {
   delegate_->ConfirmSecurityCode(confirmation_code,
                                  base::Bind(&PrivetV3SetupFlow::OnCodeConfirmed,
-                                            weak_ptr_factory_.GetWeakPtr()));
+                                            weak_ptr_factory_.GetWeakPtr(),
+                                            confirmation_code));
 }
 
-void PrivetV3SetupFlow::OnSessionEstablished() {
-  DCHECK(setup_request_);
-  session_->StartRequest(setup_request_.get());
-}
-
-void PrivetV3SetupFlow::OnCannotEstablishSession() {
-  OnSetupError();
+void PrivetV3SetupFlow::OnSessionStatus(
+    extensions::api::gcd_private::Status status) {
+  if (status == extensions::api::gcd_private::STATUS_SUCCESS) {
+    DCHECK(setup_request_);
+    session_->StartRequest(setup_request_.get());
+  } else {
+    OnSetupError();
+  }
 }
 
 void PrivetV3SetupFlow::OnSetupError() {
@@ -159,10 +162,10 @@ void PrivetV3SetupFlow::OnPrivetClientCreated(
   session_->Start();
 }
 
-void PrivetV3SetupFlow::OnCodeConfirmed(bool success) {
+void PrivetV3SetupFlow::OnCodeConfirmed(const std::string& code, bool success) {
   if (!success)
     return OnSetupError();
-  session_->ConfirmCode();
+  session_->ConfirmCode(code);
 }
 
 }  // namespace local_discovery

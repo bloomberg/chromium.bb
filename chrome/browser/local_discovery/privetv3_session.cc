@@ -16,6 +16,8 @@ namespace {
 
 const char kUrlPlaceHolder[] = "http://host/";
 
+const char kStubPrivetCode[] = "01234";
+
 GURL CreatePrivetURL(const std::string& path) {
   GURL url(kUrlPlaceHolder);
   GURL::Replacements replacements;
@@ -105,9 +107,14 @@ void PrivetV3Session::Start() {
       base::TimeDelta::FromSeconds(1));
 }
 
-void PrivetV3Session::ConfirmCode() {
-  code_confirmed_ = true;
-  delegate_->OnSessionEstablished();
+void PrivetV3Session::ConfirmCode(const std::string& code) {
+  if (code == kStubPrivetCode) {
+    code_confirmed_ = true;
+    delegate_->OnSessionStatus(extensions::api::gcd_private::STATUS_SUCCESS);
+  } else {
+    delegate_->OnSessionStatus(
+        extensions::api::gcd_private::STATUS_BADCONFIRMATIONCODEERROR);
+  }
 }
 
 void PrivetV3Session::StartRequest(Request* request) {
@@ -130,7 +137,9 @@ void PrivetV3Session::StartRequest(Request* request) {
 }
 
 void PrivetV3Session::ConfirmFakeCode() {
-  delegate_->OnSetupConfirmationNeeded("01234");
+  delegate_->OnSetupConfirmationNeeded(
+      kStubPrivetCode,
+      extensions::api::gcd_private::CONFIRMATION_TYPE_DISPLAYCODE);
 }
 
 }  // namespace local_discovery

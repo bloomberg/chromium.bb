@@ -6,10 +6,11 @@ onload = function() {
   chrome.test.runTests([
     function wifiMessage() {
       var messages_needed = 3;
-      function onConfirmCode(sessionId, status, code, method) {
+      function onConfirmCode(sessionId, status, confirmation) {
         chrome.test.assertEq("success", status);
-        chrome.test.assertEq("01234", code);
+        chrome.test.assertEq("01234", confirmation.code);
         chrome.gcdPrivate.confirmCode(sessionId,
+                                      confirmation.code,
                                       onSessionEstablished.bind(null,
                                                                 sessionId));
       }

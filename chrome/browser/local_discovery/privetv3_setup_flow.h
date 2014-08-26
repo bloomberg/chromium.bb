@@ -73,9 +73,11 @@ class PrivetV3SetupFlow : public PrivetV3Session::Delegate {
 
   // PrivetV3Session::Delegate implementation.
   virtual void OnSetupConfirmationNeeded(
-      const std::string& confirmation_code) OVERRIDE;
-  virtual void OnSessionEstablished() OVERRIDE;
-  virtual void OnCannotEstablishSession() OVERRIDE;
+      const std::string& confirmation_code,
+      extensions::api::gcd_private::ConfirmationType confirmation_type)
+      OVERRIDE;
+  virtual void OnSessionStatus(
+      extensions::api::gcd_private::Status status) OVERRIDE;
 
   void OnSetupError();
   void OnDeviceRegistered();
@@ -86,7 +88,7 @@ class PrivetV3SetupFlow : public PrivetV3Session::Delegate {
   void OnTicketCreated(const std::string& ticket_id,
                        const std::string& device_id);
   void OnPrivetClientCreated(scoped_ptr<PrivetHTTPClient> privet_http_client);
-  void OnCodeConfirmed(bool success);
+  void OnCodeConfirmed(const std::string& code, bool success);
 
   Delegate* delegate_;
   std::string service_name_;

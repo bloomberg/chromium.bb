@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/local_discovery/privet_url_fetcher.h"
+#include "chrome/common/extensions/api/gcd_private.h"
 
 namespace base {
 class DictionaryValue;
@@ -32,14 +33,11 @@ class PrivetV3Session {
 
     // Called when client code should prompt user to check |confirmation_code|.
     virtual void OnSetupConfirmationNeeded(
-        const std::string& confirmation_code) = 0;
+        const std::string& confirmation_code,
+        extensions::api::gcd_private::ConfirmationType confirmation_type) = 0;
 
-    // Called when session successfully establish and client code my call
-    // |CreateRequest| method.
-    virtual void OnSessionEstablished() = 0;
-
-    // Called when session setup fails.
-    virtual void OnCannotEstablishSession() = 0;
+    virtual void OnSessionStatus(
+        extensions::api::gcd_private::Status status) = 0;
   };
 
   // Represents request in progress using secure session.
@@ -66,7 +64,7 @@ class PrivetV3Session {
   // |OnSessionEstablished|.
   void Start();
 
-  void ConfirmCode();
+  void ConfirmCode(const std::string& code);
 
   // Create a single /privet/v3/session/call request.
   void StartRequest(Request* request);
