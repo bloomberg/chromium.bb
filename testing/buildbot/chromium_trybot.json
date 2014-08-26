@@ -208,7 +208,9 @@
   ],
 
   "filter_compile_builders": [
+    "win_chromium_compile_dbg",
     "win_chromium_rel_swarming",
-    "win_chromium_x64_rel_swarming"
+    "win_chromium_x64_rel_swarming",
+    "win8_chromium_rel"
   ]
 }
