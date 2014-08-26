@@ -78,7 +78,7 @@ class MailboxManagerTest : public GpuServiceTest {
   }
 
   GLenum SetParameter(Texture* texture, GLenum pname, GLint param) {
-    return texture->SetParameteri(feature_info_, pname, param);
+    return texture->SetParameteri(feature_info_.get(), pname, param);
   }
 
   void DestroyTexture(Texture* texture) {
@@ -205,7 +205,7 @@ class MailboxManagerSyncTest : public MailboxManagerTest {
     manager2_ = new MailboxManager;
     context_ = new gfx::GLContextStub();
     surface_ = new gfx::GLSurfaceStub();
-    context_->MakeCurrent(surface_);
+    context_->MakeCurrent(surface_.get());
   }
 
   Texture* DefineTexture() {

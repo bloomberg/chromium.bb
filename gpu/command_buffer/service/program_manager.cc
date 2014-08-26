@@ -1100,9 +1100,9 @@ bool Program::DetectUniformsMismatch(std::string* conflicting_name) const {
 }
 
 bool Program::DetectVaryingsMismatch(std::string* conflicting_name) const {
-  DCHECK(attached_shaders_[0] &&
+  DCHECK(attached_shaders_[0].get() &&
          attached_shaders_[0]->shader_type() == GL_VERTEX_SHADER &&
-         attached_shaders_[1] &&
+         attached_shaders_[1].get() &&
          attached_shaders_[1]->shader_type() == GL_FRAGMENT_SHADER);
   const ShaderTranslator::VariableMap* vertex_varyings =
       &(attached_shaders_[0]->varying_map());
@@ -1137,9 +1137,9 @@ bool Program::DetectVaryingsMismatch(std::string* conflicting_name) const {
 }
 
 bool Program::DetectGlobalNameConflicts(std::string* conflicting_name) const {
-  DCHECK(attached_shaders_[0] &&
+  DCHECK(attached_shaders_[0].get() &&
          attached_shaders_[0]->shader_type() == GL_VERTEX_SHADER &&
-         attached_shaders_[1] &&
+         attached_shaders_[1].get() &&
          attached_shaders_[1]->shader_type() == GL_FRAGMENT_SHADER);
   const ShaderTranslator::VariableMap* uniforms[2];
   uniforms[0] = &(attached_shaders_[0]->uniform_map());
@@ -1161,9 +1161,9 @@ bool Program::DetectGlobalNameConflicts(std::string* conflicting_name) const {
 
 bool Program::CheckVaryingsPacking(
     Program::VaryingsPackingOption option) const {
-  DCHECK(attached_shaders_[0] &&
+  DCHECK(attached_shaders_[0].get() &&
          attached_shaders_[0]->shader_type() == GL_VERTEX_SHADER &&
-         attached_shaders_[1] &&
+         attached_shaders_[1].get() &&
          attached_shaders_[1]->shader_type() == GL_FRAGMENT_SHADER);
   const ShaderTranslator::VariableMap* vertex_varyings =
       &(attached_shaders_[0]->varying_map());

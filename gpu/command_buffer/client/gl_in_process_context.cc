@@ -160,7 +160,7 @@ bool GLInProcessContextImpl::Initialize(
       if (!context->context_lost_) {
         share_group = context->gles2_implementation_->share_group();
         share_command_buffer = context->command_buffer_.get();
-        DCHECK(share_group);
+        DCHECK(share_group.get());
         DCHECK(share_command_buffer);
         break;
       }
@@ -170,7 +170,7 @@ bool GLInProcessContextImpl::Initialize(
         static_cast<GLInProcessContextImpl*>(share_context);
     share_group = impl->gles2_implementation_->share_group();
     share_command_buffer = impl->command_buffer_.get();
-    DCHECK(share_group);
+    DCHECK(share_group.get());
     DCHECK(share_command_buffer);
   }
 
@@ -202,13 +202,13 @@ bool GLInProcessContextImpl::Initialize(
   bool bind_generates_resource = false;
 
   // Create the object exposing the OpenGL API.
-  gles2_implementation_.reset(new gles2::GLES2Implementation(
-      gles2_helper_.get(),
-      share_group,
-      transfer_buffer_.get(),
-      bind_generates_resource,
-      attribs.lose_context_when_out_of_memory,
-      command_buffer_.get()));
+  gles2_implementation_.reset(
+      new gles2::GLES2Implementation(gles2_helper_.get(),
+                                     share_group.get(),
+                                     transfer_buffer_.get(),
+                                     bind_generates_resource,
+                                     attribs.lose_context_when_out_of_memory,
+                                     command_buffer_.get()));
 
   if (use_global_share_group) {
     g_all_shared_contexts.Get().insert(this);

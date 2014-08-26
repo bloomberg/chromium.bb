@@ -10,7 +10,7 @@ AsyncMemoryParams::AsyncMemoryParams(scoped_refptr<Buffer> buffer,
                     uint32 data_offset,
                     uint32 data_size)
     : buffer_(buffer), data_offset_(data_offset), data_size_(data_size) {
-  DCHECK(buffer_);
+  DCHECK(buffer_.get());
   DCHECK(buffer_->memory());
 }
 

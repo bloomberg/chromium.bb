@@ -187,7 +187,7 @@ void GLES2DecoderTestBase::InitDecoderWithCommandLine(
   context_->SetGLVersionString(normalized_init.gl_version.c_str());
 
   context_->MakeCurrent(surface_.get());
-  gfx::GLSurface::InitializeDynamicMockBindingsForTests(context_);
+  gfx::GLSurface::InitializeDynamicMockBindingsForTests(context_.get());
 
   TestHelper::SetupContextGroupInitExpectations(
       gl_.get(),

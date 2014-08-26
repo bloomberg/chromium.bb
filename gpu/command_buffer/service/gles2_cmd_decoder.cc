@@ -3592,8 +3592,10 @@ bool GLES2DecoderImpl::ResizeOffscreenFrameBuffer(const gfx::Size& size) {
   DCHECK(offscreen_target_color_format_);
   if (IsOffscreenBufferMultisampled()) {
     if (!offscreen_target_color_render_buffer_->AllocateStorage(
-        feature_info_, offscreen_size_, offscreen_target_color_format_,
-        offscreen_target_samples_)) {
+            feature_info_.get(),
+            offscreen_size_,
+            offscreen_target_color_format_,
+            offscreen_target_samples_)) {
       LOG(ERROR) << "GLES2DecoderImpl::ResizeOffscreenFrameBuffer failed "
                  << "to allocate storage for offscreen target color buffer.";
       return false;
@@ -3608,16 +3610,20 @@ bool GLES2DecoderImpl::ResizeOffscreenFrameBuffer(const gfx::Size& size) {
   }
   if (offscreen_target_depth_format_ &&
       !offscreen_target_depth_render_buffer_->AllocateStorage(
-      feature_info_, offscreen_size_, offscreen_target_depth_format_,
-      offscreen_target_samples_)) {
+          feature_info_.get(),
+          offscreen_size_,
+          offscreen_target_depth_format_,
+          offscreen_target_samples_)) {
     LOG(ERROR) << "GLES2DecoderImpl::ResizeOffscreenFrameBuffer failed "
                << "to allocate storage for offscreen target depth buffer.";
     return false;
   }
   if (offscreen_target_stencil_format_ &&
       !offscreen_target_stencil_render_buffer_->AllocateStorage(
-      feature_info_, offscreen_size_, offscreen_target_stencil_format_,
-      offscreen_target_samples_)) {
+          feature_info_.get(),
+          offscreen_size_,
+          offscreen_target_stencil_format_,
+          offscreen_target_samples_)) {
     LOG(ERROR) << "GLES2DecoderImpl::ResizeOffscreenFrameBuffer failed "
                << "to allocate storage for offscreen target stencil buffer.";
     return false;
@@ -5428,7 +5434,7 @@ void GLES2DecoderImpl::DoRenderbufferStorageMultisampleCHROMIUM(
   LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER(
       "glRenderbufferStorageMultisampleCHROMIUM");
   RenderbufferStorageMultisampleHelper(
-      feature_info_, target, samples, impl_format, width, height);
+      feature_info_.get(), target, samples, impl_format, width, height);
   GLenum error =
       LOCAL_PEEK_GL_ERROR("glRenderbufferStorageMultisampleCHROMIUM");
   if (error == GL_NO_ERROR) {
@@ -10689,8 +10695,8 @@ base::Closure GLES2DecoderImpl::AsyncUploadTokenCompletionClosure(
     uint32 sync_data_shm_id,
     uint32 sync_data_shm_offset) {
   scoped_refptr<gpu::Buffer> buffer = GetSharedMemoryBuffer(sync_data_shm_id);
-  if (!buffer || !buffer->GetDataAddress(sync_data_shm_offset,
-                                         sizeof(AsyncUploadSync)))
+  if (!buffer.get() ||
+      !buffer->GetDataAddress(sync_data_shm_offset, sizeof(AsyncUploadSync)))
     return base::Closure();
 
   AsyncMemoryParams mem_params(buffer,

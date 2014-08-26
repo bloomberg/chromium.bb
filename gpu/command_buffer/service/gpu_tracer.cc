@@ -196,7 +196,7 @@ bool GPUTracer::EndDecoding() {
   if (IsTracing()) {
     for (int n = 0; n < NUM_TRACER_SOURCES; n++) {
       for (size_t i = 0; i < markers_[n].size(); i++) {
-        if (markers_[n][i].trace_) {
+        if (markers_[n][i].trace_.get()) {
           markers_[n][i].trace_->End();
           if (markers_[n][i].trace_->IsEnabled())
             traces_.push_back(markers_[n][i].trace_);
@@ -244,7 +244,7 @@ bool GPUTracer::End(GpuTracerSource source) {
   if (!markers_[source].empty()) {
     if (IsTracing()) {
       scoped_refptr<GPUTrace> trace = markers_[source].back().trace_;
-      if (trace) {
+      if (trace.get()) {
         trace->End();
         if (trace->IsEnabled())
           traces_.push_back(trace);

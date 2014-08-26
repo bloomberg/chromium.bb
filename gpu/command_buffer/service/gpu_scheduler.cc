@@ -192,7 +192,7 @@ void GpuScheduler::set_token(int32 token) {
 bool GpuScheduler::SetGetBuffer(int32 transfer_buffer_id) {
   scoped_refptr<Buffer> ring_buffer =
       command_buffer_->GetTransferBuffer(transfer_buffer_id);
-  if (!ring_buffer) {
+  if (!ring_buffer.get()) {
     return false;
   }
 

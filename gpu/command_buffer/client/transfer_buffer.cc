@@ -65,7 +65,7 @@ void TransferBuffer::Free() {
 }
 
 bool TransferBuffer::HaveBuffer() const {
-  DCHECK(buffer_id_ == -1 || buffer_);
+  DCHECK(buffer_id_ == -1 || buffer_.get());
   return buffer_id_ != -1;
 }
 
@@ -87,7 +87,7 @@ void TransferBuffer::AllocateRingBuffer(unsigned int size) {
     scoped_refptr<gpu::Buffer> buffer =
         helper_->command_buffer()->CreateTransferBuffer(size, &id);
     if (id != -1) {
-      DCHECK(buffer);
+      DCHECK(buffer.get());
       buffer_ = buffer;
       ring_buffer_.reset(new RingBuffer(
           alignment_,

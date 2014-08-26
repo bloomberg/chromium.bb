@@ -91,7 +91,7 @@ void* MappedMemoryManager::Alloc(
       cmd_buf->CreateTransferBuffer(chunk_size, &id);
   if (id  < 0)
     return NULL;
-  DCHECK(shm);
+  DCHECK(shm.get());
   MemoryChunk* mc = new MemoryChunk(id, shm, helper_, poll_callback_);
   allocated_memory_ += mc->GetSize();
   chunks_.push_back(mc);

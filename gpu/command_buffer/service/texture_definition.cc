@@ -58,12 +58,12 @@ class GLImageSync : public gfx::GLImage {
 GLImageSync::GLImageSync(const scoped_refptr<NativeImageBuffer>& buffer,
                          const gfx::Size& size)
     : buffer_(buffer), size_(size) {
-  if (buffer)
+  if (buffer.get())
     buffer->AddClient(this);
 }
 
 GLImageSync::~GLImageSync() {
-  if (buffer_)
+  if (buffer_.get())
     buffer_->RemoveClient(this);
 }
 
@@ -84,22 +84,22 @@ void GLImageSync::ReleaseTexImage(unsigned target) {
 }
 
 void GLImageSync::WillUseTexImage() {
-  if (buffer_)
+  if (buffer_.get())
     buffer_->WillRead(this);
 }
 
 void GLImageSync::DidUseTexImage() {
-  if (buffer_)
+  if (buffer_.get())
     buffer_->DidRead(this);
 }
 
 void GLImageSync::WillModifyTexImage() {
-  if (buffer_)
+  if (buffer_.get())
     buffer_->WillWrite(this);
 }
 
 void GLImageSync::DidModifyTexImage() {
-  if (buffer_)
+  if (buffer_.get())
     buffer_->DidWrite(this);
 }
 
@@ -364,15 +364,15 @@ TextureDefinition::TextureDefinition(
     const scoped_refptr<NativeImageBuffer>& image_buffer)
     : version_(version),
       target_(target),
-      image_buffer_(image_buffer ? image_buffer : NativeImageBuffer::Create(
-                                                      texture->service_id())),
+      image_buffer_(image_buffer.get()
+                        ? image_buffer
+                        : NativeImageBuffer::Create(texture->service_id())),
       min_filter_(texture->min_filter()),
       mag_filter_(texture->mag_filter()),
       wrap_s_(texture->wrap_s()),
       wrap_t_(texture->wrap_t()),
       usage_(texture->usage()),
       immutable_(texture->IsImmutable()) {
-
   // TODO
   DCHECK(!texture->level_infos_.empty());
   DCHECK(!texture->level_infos_[0].empty());
@@ -384,7 +384,7 @@ TextureDefinition::TextureDefinition(
       new GLImageSync(image_buffer_,
                       gfx::Size(texture->level_infos_[0][0].width,
                                 texture->level_infos_[0][0].height)));
-  texture->SetLevelImage(NULL, target, 0, gl_image);
+  texture->SetLevelImage(NULL, target, 0, gl_image.get());
 
   // TODO: all levels
   level_infos_.clear();
@@ -407,7 +407,7 @@ TextureDefinition::~TextureDefinition() {
 }
 
 Texture* TextureDefinition::CreateTexture() const {
-  if (!image_buffer_)
+  if (!image_buffer_.get())
     return NULL;
 
   GLuint texture_id;
@@ -425,7 +425,7 @@ void TextureDefinition::UpdateTexture(Texture* texture) const {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag_filter_);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrap_s_);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrap_t_);
-  if (image_buffer_)
+  if (image_buffer_.get())
     image_buffer_->BindToTexture(target_);
   // We have to make sure the changes are visible to other clients in this share
   // group. As far as the clients are concerned, the mailbox semantics only
@@ -457,7 +457,7 @@ void TextureDefinition::UpdateTexture(Texture* texture) const {
                             info.cleared);
     }
   }
-  if (image_buffer_) {
+  if (image_buffer_.get()) {
     texture->SetLevelImage(
         NULL,
         target_,
@@ -486,7 +486,7 @@ bool TextureDefinition::Matches(const Texture* texture) const {
   }
 
   // All structural changes should have orphaned the texture.
-  if (image_buffer_ && !texture->GetLevelImage(texture->target(), 0))
+  if (image_buffer_.get() && !texture->GetLevelImage(texture->target(), 0))
     return false;
 
   return true;

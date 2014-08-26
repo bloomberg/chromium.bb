@@ -2101,7 +2101,7 @@ TEST_P(ProduceConsumeTextureTest, ProduceConsumeTextureWithImage) {
                          GL_RGBA,
                          GL_UNSIGNED_BYTE,
                          true);
-  manager_->SetLevelImage(texture_ref_.get(), target, 0, image);
+  manager_->SetLevelImage(texture_ref_.get(), target, 0, image.get());
   GLuint service_id = texture->service_id();
   Texture* produced_texture = Produce(texture_ref_.get());
 

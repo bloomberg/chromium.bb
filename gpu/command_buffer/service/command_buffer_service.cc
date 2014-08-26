@@ -88,7 +88,7 @@ void CommandBufferService::SetGetBuffer(int32 transfer_buffer_id) {
   // This means ring_buffer_ can be NULL.
   ring_buffer_ = GetTransferBuffer(transfer_buffer_id);
   ring_buffer_id_ = transfer_buffer_id;
-  int32 size = ring_buffer_ ? ring_buffer_->size() : 0;
+  int32 size = ring_buffer_.get() ? ring_buffer_->size() : 0;
   num_entries_ = size / sizeof(CommandBufferEntry);
   put_offset_ = 0;
   SetGetOffset(0);
