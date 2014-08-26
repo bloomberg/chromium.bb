@@ -1948,5 +1948,88 @@ TEST(PictureLayerTilingTest, ResetClearsPriorities) {
   tiles.clear();
 }
 
+TEST(PictureLayerTilingTest, RecycledTilesCleared) {
+  // This test performs the following:
+  // Setup:
+  // - Two tilings, one active one recycled with all tiles shared.
+  // Procedure:
+  // - Viewport moves somewhere far away and active tiling clears tiles.
+  // - Viewport moves back and a new active tiling tile is created.
+  // Result:
+  // - Recycle tiling does _not_ have the tile in the same location (thus it
+  //   will be shared next time a pending tiling is created).
+
+  FakePictureLayerTilingClient client;
+  scoped_ptr<TestablePictureLayerTiling> tiling;
+
+  client.SetTileSize(gfx::Size(100, 100));
+  client.set_tree(ACTIVE_TREE);
+  client.set_max_tiles_for_interest_area(10);
+  tiling = TestablePictureLayerTiling::Create(1.0f,  // contents_scale
+                                              gfx::Size(10000, 10000),
+                                              &client);
+  // Create all tiles on this tiling.
+  tiling->UpdateTilePriorities(ACTIVE_TREE,
+                               gfx::Rect(0, 0, 100, 100),
+                               1.0f,
+                               1.0f,
+                               NULL,               // occlusion tracker
+                               NULL,               // render target
+                               gfx::Transform());  // draw transform
+
+  FakePictureLayerTilingClient second_client;
+  second_client.SetTileSize(gfx::Size(100, 100));
+  second_client.set_tree(PENDING_TREE);
+  second_client.set_twin_tiling(tiling.get());
+  second_client.set_max_tiles_for_interest_area(10);
+
+  scoped_ptr<TestablePictureLayerTiling> second_tiling;
+  second_tiling = TestablePictureLayerTiling::Create(1.0f,  // contents_scale
+                                                     gfx::Size(10000, 10000),
+                                                     &second_client);
+
+  // Create all tiles on the second tiling. All tiles should be shared.
+  second_tiling->UpdateTilePriorities(ACTIVE_TREE,
+                                      gfx::Rect(0, 0, 100, 100),
+                                      1.0f,
+                                      1.0f,
+                                      NULL,               // occlusion tracker
+                                      NULL,               // render target
+                                      gfx::Transform());  // draw transform
+
+  // Verify that tiles exist and are shared.
+  ASSERT_TRUE(tiling->TileAt(0, 0));
+  ASSERT_EQ(tiling->TileAt(0, 0), second_tiling->TileAt(0, 0));
+
+  // Set the second tiling as recycled.
+  client.set_twin_tiling(NULL);
+  client.set_recycled_twin_tiling(second_tiling.get());
+  second_client.set_twin_tiling(NULL);
+
+  // Move the viewport far away from the (0, 0) tile.
+  tiling->UpdateTilePriorities(ACTIVE_TREE,
+                               gfx::Rect(9000, 9000, 100, 100),
+                               1.0f,
+                               2.0,
+                               NULL,               // occlusion tracker
+                               NULL,               // render target
+                               gfx::Transform());  // draw transform
+  // Ensure the tile was deleted.
+  EXPECT_FALSE(tiling->TileAt(0, 0));
+
+  // Move the viewport back to (0, 0) tile.
+  tiling->UpdateTilePriorities(ACTIVE_TREE,
+                               gfx::Rect(0, 0, 100, 100),
+                               1.0f,
+                               3.0,
+                               NULL,               // occlusion tracker
+                               NULL,               // render target
+                               gfx::Transform());  // draw transform
+
+  // Ensure that we now have a tile here, but the recycle tiling does not.
+  EXPECT_TRUE(tiling->TileAt(0, 0));
+  EXPECT_FALSE(second_tiling->TileAt(0, 0));
+}
+
 }  // namespace
 }  // namespace cc

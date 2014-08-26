@@ -109,7 +109,7 @@ void PictureLayerImpl::PushPropertiesTo(LayerImpl* base_layer) {
   LayerImpl::PushPropertiesTo(base_layer);
 
   // When the pending tree pushes to the active tree, the pending twin
-  // disappears.
+  // becomes recycled.
   layer_impl->twin_layer_ = NULL;
   twin_layer_ = NULL;
 
@@ -541,6 +541,12 @@ gfx::Rect PictureLayerImpl::GetViewportForTilePriorityInContentSpace() const {
   return visible_rect_in_content_space;
 }
 
+PictureLayerImpl* PictureLayerImpl::GetRecycledTwinLayer() {
+  // TODO(vmpstr): Maintain recycled twin as a member. crbug.com/407418
+  return static_cast<PictureLayerImpl*>(
+      layer_tree_impl()->FindRecycleTreeLayerById(id()));
+}
+
 void PictureLayerImpl::NotifyTileStateChanged(const Tile* tile) {
   if (layer_tree_impl()->IsActiveTree()) {
     gfx::RectF layer_damage_rect =
@@ -611,6 +617,14 @@ const PictureLayerTiling* PictureLayerImpl::GetTwinTiling(
   if (!twin_layer_)
     return NULL;
   return twin_layer_->tilings_->TilingAtScale(tiling->contents_scale());
+}
+
+PictureLayerTiling* PictureLayerImpl::GetRecycledTwinTiling(
+    const PictureLayerTiling* tiling) {
+  PictureLayerImpl* recycled_twin = GetRecycledTwinLayer();
+  if (!recycled_twin || !recycled_twin->tilings_)
+    return NULL;
+  return recycled_twin->tilings_->TilingAtScale(tiling->contents_scale());
 }
 
 size_t PictureLayerImpl::GetMaxTilesForInterestArea() const {
@@ -1253,8 +1267,7 @@ void PictureLayerImpl::CleanUpTilingsOnActiveLayer(
   if (to_remove.empty())
     return;
 
-  PictureLayerImpl* recycled_twin = static_cast<PictureLayerImpl*>(
-      layer_tree_impl()->FindRecycleTreeLayerById(id()));
+  PictureLayerImpl* recycled_twin = GetRecycledTwinLayer();
   // Remove tilings on this tree and the twin tree.
   for (size_t i = 0; i < to_remove.size(); ++i) {
     const PictureLayerTiling* twin_tiling = GetTwinTiling(to_remove[i]);

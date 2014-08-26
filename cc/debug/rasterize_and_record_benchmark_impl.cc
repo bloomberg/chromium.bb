@@ -118,6 +118,11 @@ class FixedInvalidationPictureLayerTilingClient
     return base_client_->GetTwinTiling(tiling);
   }
 
+  virtual PictureLayerTiling* GetRecycledTwinTiling(
+      const PictureLayerTiling* tiling) OVERRIDE {
+    return base_client_->GetRecycledTwinTiling(tiling);
+  }
+
   virtual size_t GetMaxTilesForInterestArea() const OVERRIDE {
     return base_client_->GetMaxTilesForInterestArea();
   }

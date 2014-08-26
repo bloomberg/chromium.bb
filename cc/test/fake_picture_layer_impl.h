@@ -60,6 +60,7 @@ class FakePictureLayerImpl : public PictureLayerImpl {
   using PictureLayerImpl::MinimumContentsScale;
   using PictureLayerImpl::GetViewportForTilePriorityInContentSpace;
   using PictureLayerImpl::SanityCheckTilingState;
+  using PictureLayerImpl::GetRecycledTwinLayer;
 
   using PictureLayerImpl::UpdateIdealScales;
   using PictureLayerImpl::MaximumTilingContentsScale;

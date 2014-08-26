@@ -15,10 +15,12 @@ FakePictureLayerTilingClient::FakePictureLayerTilingClient()
     : tile_manager_(new FakeTileManager(&tile_manager_client_)),
       pile_(FakePicturePileImpl::CreateInfiniteFilledPile()),
       twin_tiling_(NULL),
+      recycled_twin_tiling_(NULL),
       allow_create_tile_(true),
       max_tiles_for_interest_area_(10000),
       skewport_target_time_in_seconds_(1.0f),
-      skewport_extrapolation_limit_in_content_pixels_(2000) {}
+      skewport_extrapolation_limit_in_content_pixels_(2000) {
+}
 
 FakePictureLayerTilingClient::FakePictureLayerTilingClient(
     ResourceProvider* resource_provider)
@@ -28,9 +30,11 @@ FakePictureLayerTilingClient::FakePictureLayerTilingClient(
           new FakeTileManager(&tile_manager_client_, resource_pool_.get())),
       pile_(FakePicturePileImpl::CreateInfiniteFilledPile()),
       twin_tiling_(NULL),
+      recycled_twin_tiling_(NULL),
       allow_create_tile_(true),
       max_tiles_for_interest_area_(10000),
-      skewport_target_time_in_seconds_(1.0f) {}
+      skewport_target_time_in_seconds_(1.0f) {
+}
 
 FakePictureLayerTilingClient::~FakePictureLayerTilingClient() {
 }
@@ -77,6 +81,11 @@ const Region* FakePictureLayerTilingClient::GetInvalidation() {
 const PictureLayerTiling* FakePictureLayerTilingClient::GetTwinTiling(
       const PictureLayerTiling* tiling) const {
   return twin_tiling_;
+}
+
+PictureLayerTiling* FakePictureLayerTilingClient::GetRecycledTwinTiling(
+    const PictureLayerTiling* tiling) {
+  return recycled_twin_tiling_;
 }
 
 WhichTree FakePictureLayerTilingClient::GetTree() const {

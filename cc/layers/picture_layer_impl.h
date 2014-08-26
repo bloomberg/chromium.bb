@@ -124,6 +124,8 @@ class CC_EXPORT PictureLayerImpl
   virtual const Region* GetInvalidation() OVERRIDE;
   virtual const PictureLayerTiling* GetTwinTiling(
       const PictureLayerTiling* tiling) const OVERRIDE;
+  virtual PictureLayerTiling* GetRecycledTwinTiling(
+      const PictureLayerTiling* tiling) OVERRIDE;
   virtual size_t GetMaxTilesForInterestArea() const OVERRIDE;
   virtual float GetSkewportTargetTimeInSeconds() const OVERRIDE;
   virtual int GetSkewportExtrapolationLimitInContentPixels() const OVERRIDE;
@@ -173,6 +175,7 @@ class CC_EXPORT PictureLayerImpl
       const gfx::Rect& rect,
       const Region& missing_region) const;
   gfx::Rect GetViewportForTilePriorityInContentSpace() const;
+  PictureLayerImpl* GetRecycledTwinLayer();
 
   void DoPostCommitInitializationIfNeeded() {
     if (needs_post_commit_initialization_)

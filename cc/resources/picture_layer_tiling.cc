@@ -607,6 +607,15 @@ void PictureLayerTiling::UpdateTilePriorities(
   current_eventually_rect_ = eventually_rect;
 }
 
+void PictureLayerTiling::RemoveTileAt(int i, int j) {
+  TileMapKey key(i, j);
+  TileMap::iterator found = tiles_.find(key);
+  if (found == tiles_.end())
+    return;
+  ReleaseTile(found->second.get(), client_->GetTree());
+  tiles_.erase(found);
+}
+
 void PictureLayerTiling::SetLiveTilesRect(
     const gfx::Rect& new_live_tiles_rect) {
   DCHECK(new_live_tiles_rect.IsEmpty() ||
@@ -617,6 +626,7 @@ void PictureLayerTiling::SetLiveTilesRect(
     return;
 
   // Iterate to delete all tiles outside of our new live_tiles rect.
+  PictureLayerTiling* recycled_twin = client_->GetRecycledTwinTiling(this);
   for (TilingData::DifferenceIterator iter(&tiling_data_,
                                            live_tiles_rect_,
                                            new_live_tiles_rect);
@@ -629,6 +639,8 @@ void PictureLayerTiling::SetLiveTilesRect(
     if (found != tiles_.end()) {
       ReleaseTile(found->second.get(), client_->GetTree());
       tiles_.erase(found);
+      if (recycled_twin)
+        recycled_twin->RemoveTileAt(iter.index_x(), iter.index_y());
     }
   }
 

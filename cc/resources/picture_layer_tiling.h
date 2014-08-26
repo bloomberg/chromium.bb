@@ -44,6 +44,8 @@ class CC_EXPORT PictureLayerTilingClient {
   virtual const Region* GetInvalidation() = 0;
   virtual const PictureLayerTiling* GetTwinTiling(
       const PictureLayerTiling* tiling) const = 0;
+  virtual PictureLayerTiling* GetRecycledTwinTiling(
+      const PictureLayerTiling* tiling) = 0;
   virtual size_t GetMaxTilesForInterestArea() const = 0;
   virtual float GetSkewportTargetTimeInSeconds() const = 0;
   virtual int GetSkewportExtrapolationLimitInContentPixels() const = 0;
@@ -295,6 +297,7 @@ class CC_EXPORT PictureLayerTiling {
                      PictureLayerTilingClient* client);
   void SetLiveTilesRect(const gfx::Rect& live_tiles_rect);
   Tile* CreateTile(int i, int j, const PictureLayerTiling* twin_tiling);
+  void RemoveTileAt(int i, int j);
 
   // Computes a skewport. The calculation extrapolates the last visible
   // rect and the current visible rect to expand the skewport to where it
