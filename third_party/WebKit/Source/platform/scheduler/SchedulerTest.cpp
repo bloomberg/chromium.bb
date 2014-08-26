@@ -54,6 +54,11 @@ public:
             m_pendingTasks.takeFirst()->run();
     }
 
+    size_t numPendingMainThreadTasks() const
+    {
+        return m_pendingTasks.size();
+    }
+
 private:
     WTF::Deque<OwnPtr<Task> > m_pendingTasks;
 };
@@ -108,6 +113,11 @@ public:
     void triggerSharedTimer()
     {
         m_sharedTimerFunction();
+    }
+
+    size_t numPendingMainThreadTasks() const
+    {
+        return m_mainThread.numPendingMainThreadTasks();
     }
 
 private:
@@ -326,6 +336,39 @@ TEST_F(SchedulerTest, TestRentrantCompositorTaskDoesNotStarveOutLowPriorityTask)
 
     // If starvation occurs then this will never exit.
     runPendingTasks();
+}
+
+void dummyTask()
+{
+}
+
+TEST_F(SchedulerTest, TestMultipleCallsToPostInputOrCompositorTaskResultsInOnlyOneMainThreadTask)
+{
+    EXPECT_EQ(0U, m_platformSupport.numPendingMainThreadTasks());
+
+    for (int i = 0; i < 10; i++) {
+        m_scheduler->postInputTask(FROM_HERE, WTF::bind(&dummyTask));
+        m_scheduler->postCompositorTask(FROM_HERE, WTF::bind(&dummyTask));
+    }
+
+    EXPECT_EQ(1U, m_platformSupport.numPendingMainThreadTasks());
+}
+
+TEST_F(SchedulerTest, TestMainThreadTaskLifeCycle)
+{
+    EXPECT_EQ(0U, m_platformSupport.numPendingMainThreadTasks());
+
+    m_scheduler->postInputTask(FROM_HERE, WTF::bind(&dummyTask));
+    EXPECT_EQ(1U, m_platformSupport.numPendingMainThreadTasks());
+
+    runPendingTasks();
+    EXPECT_EQ(0U, m_platformSupport.numPendingMainThreadTasks());
+
+    m_scheduler->postCompositorTask(FROM_HERE, WTF::bind(&dummyTask));
+    EXPECT_EQ(1U, m_platformSupport.numPendingMainThreadTasks());
+
+    runPendingTasks();
+    EXPECT_EQ(0U, m_platformSupport.numPendingMainThreadTasks());
 }
 
 } // namespace

@@ -63,7 +63,7 @@ public:
         ASSERT(scheduler);
         if (!scheduler)
             return;
-        scheduler->runHighPriorityTasks();
+        scheduler->swapQueuesRunPendingTasksAndAllowHighPriorityTaskRunnerPosting();
     }
 };
 
@@ -86,7 +86,7 @@ public:
         // FIXME: This check should't be necessary, tasks should not outlive blink.
         ASSERT(scheduler);
         if (scheduler)
-            Scheduler::shared()->runHighPriorityTasks();
+            Scheduler::shared()->swapQueuesAndRunPendingTasks();
         m_task.run();
     }
 
@@ -115,13 +115,14 @@ Scheduler::Scheduler()
     : m_sharedTimerFunction(nullptr)
     , m_mainThread(blink::Platform::current()->currentThread())
     , m_highPriorityTaskCount(0)
+    , m_highPriorityTaskRunnerPosted(false)
 {
 }
 
 Scheduler::~Scheduler()
 {
     while (hasPendingHighPriorityWork()) {
-        runHighPriorityTasks();
+        swapQueuesAndRunPendingTasks();
     }
 }
 
@@ -141,7 +142,7 @@ void Scheduler::postInputTask(const TraceLocation& location, const Task& task)
     Locker<Mutex> lock(m_pendingTasksMutex);
     m_pendingHighPriorityTasks.append(TracedTask(task, location));
     atomicIncrement(&m_highPriorityTaskCount);
-    m_mainThread->postTask(new MainThreadPendingHighPriorityTaskRunner());
+    maybePostMainThreadPendingHighPriorityTaskRunner();
 }
 
 void Scheduler::postCompositorTask(const TraceLocation& location, const Task& task)
@@ -149,7 +150,16 @@ void Scheduler::postCompositorTask(const TraceLocation& location, const Task& ta
     Locker<Mutex> lock(m_pendingTasksMutex);
     m_pendingHighPriorityTasks.append(TracedTask(task, location));
     atomicIncrement(&m_highPriorityTaskCount);
+    maybePostMainThreadPendingHighPriorityTaskRunner();
+}
+
+void Scheduler::maybePostMainThreadPendingHighPriorityTaskRunner()
+{
+    ASSERT(m_pendingTasksMutex.locked());
+    if (m_highPriorityTaskRunnerPosted)
+        return;
     m_mainThread->postTask(new MainThreadPendingHighPriorityTaskRunner());
+    m_highPriorityTaskRunnerPosted = true;
 }
 
 void Scheduler::postIdleTask(const TraceLocation& location, const IdleTask& idleTask)
@@ -162,25 +172,42 @@ void Scheduler::tickSharedTimer()
     TRACE_EVENT0("blink", "Scheduler::tickSharedTimer");
 
     // Run any high priority tasks that are queued up, otherwise the blink timers will yield immediately.
-    runHighPriorityTasks();
+    swapQueuesAndRunPendingTasks();
     m_sharedTimerFunction();
 
     // The blink timers may have just yielded, so run any high priority tasks that where queued up
     // while the blink timers were executing.
-    runHighPriorityTasks();
+    swapQueuesAndRunPendingTasks();
 }
 
-void Scheduler::runHighPriorityTasks()
+void Scheduler::swapQueuesAndRunPendingTasks()
 {
     ASSERT(isMainThread());
-    TRACE_EVENT0("blink", "Scheduler::runHighPriorityTasks");
 
     // These locks guard against another thread posting input or compositor tasks while we swap the buffers.
     // One the buffers have been swapped we can safely access the returned deque without having to lock.
     m_pendingTasksMutex.lock();
     Deque<TracedTask>& highPriorityTasks = m_pendingHighPriorityTasks.swapBuffers();
     m_pendingTasksMutex.unlock();
+    executeHighPriorityTasks(highPriorityTasks);
+}
 
+void Scheduler::swapQueuesRunPendingTasksAndAllowHighPriorityTaskRunnerPosting()
+{
+    ASSERT(isMainThread());
+
+    // These locks guard against another thread posting input or compositor tasks while we swap the buffers.
+    // One the buffers have been swapped we can safely access the returned deque without having to lock.
+    m_pendingTasksMutex.lock();
+    Deque<TracedTask>& highPriorityTasks = m_pendingHighPriorityTasks.swapBuffers();
+    m_highPriorityTaskRunnerPosted = false;
+    m_pendingTasksMutex.unlock();
+    executeHighPriorityTasks(highPriorityTasks);
+}
+
+void Scheduler::executeHighPriorityTasks(Deque<TracedTask>& highPriorityTasks)
+{
+    TRACE_EVENT0("blink", "Scheduler::executeHighPriorityTasks");
     int highPriorityTasksExecuted = 0;
     while (!highPriorityTasks.isEmpty()) {
         highPriorityTasks.takeFirst().run();

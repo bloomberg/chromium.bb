@@ -56,19 +56,6 @@ private:
     friend class MainThreadPendingTaskRunner;
     friend class MainThreadPendingHighPriorityTaskRunner;
 
-    Scheduler();
-    ~Scheduler();
-
-    void scheduleIdleTask(const TraceLocation&, const IdleTask&);
-
-    static void sharedTimerAdapter();
-    void tickSharedTimer();
-
-    bool hasPendingHighPriorityWork() const;
-    void runHighPriorityTasks();
-
-    static Scheduler* s_sharedScheduler;
-
     class TracedTask {
     public:
         TracedTask(const Task& task, const TraceLocation& location)
@@ -82,17 +69,36 @@ private:
         TraceLocation m_location;
     };
 
+    Scheduler();
+    ~Scheduler();
+
+    void scheduleIdleTask(const TraceLocation&, const IdleTask&);
+
+    static void sharedTimerAdapter();
+    void tickSharedTimer();
+
+    bool hasPendingHighPriorityWork() const;
+    void swapQueuesAndRunPendingTasks();
+    void swapQueuesRunPendingTasksAndAllowHighPriorityTaskRunnerPosting();
+    void executeHighPriorityTasks(Deque<TracedTask>&);
+
+    // Must be called while m_pendingTasksMutex is locked.
+    void maybePostMainThreadPendingHighPriorityTaskRunner();
+
+    static Scheduler* s_sharedScheduler;
+
     // Should only be accessed from the main thread.
     void (*m_sharedTimerFunction)();
 
     // These members can be accessed from any thread.
     WebThread* m_mainThread;
 
-    // This mutex protects calls to the pending task queue.
+    // This mutex protects calls to the pending task queue and m_highPriorityTaskRunnerPosted.
     Mutex m_pendingTasksMutex;
     DoubleBufferedDeque<TracedTask> m_pendingHighPriorityTasks;
 
     volatile int m_highPriorityTaskCount;
+    bool m_highPriorityTaskRunnerPosted;
 };
 
 } // namespace blink
