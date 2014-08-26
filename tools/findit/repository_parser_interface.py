@@ -43,7 +43,7 @@ class ParserInterface(object):
     raise NotImplementedError()
 
   def ParseBlameInfo(self, component, file_path, line, revision):
-    """Parses blame imformation of the given file/line in revision.
+    """Parses blame information of the given file/line in revision.
 
     Args:
       component: The component this line is from.
