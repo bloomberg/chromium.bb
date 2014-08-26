@@ -380,6 +380,11 @@ void HostContentSettingsMap::UpdateLastUsageByPattern(
 
   GetPrefProvider()->UpdateLastUsage(
       primary_pattern, secondary_pattern, content_type);
+
+  FOR_EACH_OBSERVER(
+      content_settings::Observer,
+      observers_,
+      OnContentSettingUsed(primary_pattern, secondary_pattern, content_type));
 }
 
 base::Time HostContentSettingsMap::GetLastUsage(

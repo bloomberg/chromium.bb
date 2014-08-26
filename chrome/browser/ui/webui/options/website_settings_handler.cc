@@ -128,6 +128,13 @@ void WebsiteSettingsHandler::OnContentSettingChanged(
   Update();
 }
 
+void WebsiteSettingsHandler::OnContentSettingUsed(
+    const ContentSettingsPattern& primary_pattern,
+    const ContentSettingsPattern& secondary_pattern,
+    ContentSettingsType content_type) {
+  Update();
+}
+
 void WebsiteSettingsHandler::HandleUpdateOrigins(const base::ListValue* args) {
   std::string content_setting_name;
   bool rv = args->GetString(0, &content_setting_name);

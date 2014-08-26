@@ -39,6 +39,10 @@ class WebsiteSettingsHandler : public content_settings::Observer,
       const ContentSettingsPattern& secondary_pattern,
       ContentSettingsType content_type,
       std::string resource_identifier) OVERRIDE;
+  virtual void OnContentSettingUsed(
+      const ContentSettingsPattern& primary_pattern,
+      const ContentSettingsPattern& secondary_pattern,
+      ContentSettingsType content_type) OVERRIDE;
 
  private:
   // Update the page with all origins for a given content setting.

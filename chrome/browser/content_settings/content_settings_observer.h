@@ -20,6 +20,11 @@ class Observer {
       ContentSettingsType content_type,
       std::string resource_identifier) = 0;
 
+  virtual void OnContentSettingUsed(
+      const ContentSettingsPattern& primary_pattern,
+      const ContentSettingsPattern& secondary_pattern,
+      ContentSettingsType content_type) {}
+
  protected:
   virtual ~Observer() {}
 };
