@@ -89,14 +89,14 @@ bool ThreadSafeCaptureOracle::ObserveEventAndDecideCapture(
        "paint"));
 
   // Consider the various reasons not to initiate a capture.
-  if (should_capture && !output_buffer) {
+  if (should_capture && !output_buffer.get()) {
     TRACE_EVENT_INSTANT1("mirroring",
                          "PipelineLimited",
                          TRACE_EVENT_SCOPE_THREAD,
                          "trigger",
                          event_name);
     return false;
-  } else if (!should_capture && output_buffer) {
+  } else if (!should_capture && output_buffer.get()) {
     if (content_is_dirty) {
       // This is a normal and acceptable way to drop a frame. We've hit our
       // capture rate limit: for example, the content is animating at 60fps but
@@ -106,7 +106,7 @@ bool ThreadSafeCaptureOracle::ObserveEventAndDecideCapture(
                            "trigger", event_name);
     }
     return false;
-  } else if (!should_capture && !output_buffer) {
+  } else if (!should_capture && !output_buffer.get()) {
     // We decided not to capture, but we wouldn't have been able to if we wanted
     // to because no output buffer was available.
     TRACE_EVENT_INSTANT1("mirroring", "NearlyPipelineLimited",
@@ -334,7 +334,7 @@ void ContentVideoCaptureDeviceCore::Error(const std::string& reason) {
   if (state_ == kIdle)
     return;
 
-  if (oracle_proxy_)
+  if (oracle_proxy_.get())
     oracle_proxy_->ReportError(reason);
 
   StopAndDeAllocate();

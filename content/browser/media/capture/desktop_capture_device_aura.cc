@@ -47,7 +47,7 @@ void RenderCursorOnVideoFrame(
     const scoped_refptr<media::VideoFrame>& target,
     const SkBitmap& cursor_bitmap,
     const gfx::Point& cursor_position) {
-  DCHECK(target);
+  DCHECK(target.get());
   DCHECK(!cursor_bitmap.isNull());
 
   gfx::Rect rect = gfx::IntersectRects(
@@ -253,7 +253,7 @@ void DesktopVideoCaptureMachine::Stop(const base::Closure& callback) {
 
 void DesktopVideoCaptureMachine::UpdateCaptureSize() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (oracle_proxy_ && desktop_window_) {
+  if (oracle_proxy_.get() && desktop_window_) {
     ui::Layer* layer = desktop_window_->layer();
     gfx::Size capture_size =
         ui::ConvertSizeToPixel(layer, layer->bounds().size());
@@ -354,7 +354,7 @@ bool DesktopVideoCaptureMachine::ProcessCopyOutputResponse(
 
   if (capture_params_.requested_format.pixel_format ==
       media::PIXEL_FORMAT_TEXTURE) {
-    DCHECK(!video_frame);
+    DCHECK(!video_frame.get());
     cc::TextureMailbox texture_mailbox;
     scoped_ptr<cc::SingleReleaseCallback> release_callback;
     result->TakeTexture(&texture_mailbox, &release_callback);
