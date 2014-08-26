@@ -355,9 +355,15 @@ message ClientIncidentReport {
       optional string file_basename = 1;
       optional ClientDownloadRequest.SignatureInfo signature = 2;
     }
+    message BlacklistLoadIncident {
+      optional string path = 1;
+      optional ClientDownloadRequest.Digests digest = 2;
+      optional string version = 3;
+    }
     optional int64 incident_time_msec = 1;
     optional TrackedPreferenceIncident tracked_preference = 2;
     optional BinaryIntegrityIncident binary_integrity = 3;
+    optional BlacklistLoadIncident blacklist_load = 4;
   }
 
   repeated IncidentData incident = 1;

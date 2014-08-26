@@ -1210,6 +1210,8 @@
         'browser/safe_browsing/download_protection_service_unittest.cc',
         'browser/safe_browsing/incident_reporting/binary_integrity_analyzer_win_unittest.cc',
         'browser/safe_browsing/incident_reporting/binary_integrity_incident_handlers_unittest.cc',
+        'browser/safe_browsing/incident_reporting/blacklist_load_analyzer_win_unittest.cc',
+        'browser/safe_browsing/incident_reporting/blacklist_load_incident_handlers_unittest.cc',
         'browser/safe_browsing/incident_reporting/delayed_callback_runner_unittest.cc',
         'browser/safe_browsing/incident_reporting/environment_data_collection_win_unittest.cc',
         'browser/safe_browsing/incident_reporting/incident_report_uploader_impl_unittest.cc',

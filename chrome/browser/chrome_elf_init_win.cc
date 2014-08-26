@@ -3,16 +3,12 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
-#include "base/files/file_path.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
-#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/registry.h"
 #include "chrome/browser/chrome_elf_init_win.h"
-#include "chrome/browser/install_verification/win/module_info.h"
-#include "chrome/browser/install_verification/win/module_verification_common.h"
 #include "chrome_elf/blacklist/blacklist.h"
 #include "chrome_elf/chrome_elf_constants.h"
 #include "chrome_elf/dll_hash/dll_hash.h"
@@ -207,23 +203,4 @@ void BrowserBlacklistBeaconSetup() {
     if (set_version == ERROR_SUCCESS && set_state == ERROR_SUCCESS)
       RecordBlacklistSetupEvent(BLACKLIST_SETUP_ENABLED);
   }
-}
-
-bool GetLoadedBlacklistedModules(std::vector<base::string16>* module_names) {
-  DCHECK(module_names);
-
-  std::set<ModuleInfo> module_info_set;
-  if (!GetLoadedModules(&module_info_set))
-    return false;
-
-  std::set<ModuleInfo>::const_iterator module_iter(module_info_set.begin());
-  for (; module_iter != module_info_set.end(); ++module_iter) {
-    base::string16 module_file_name(base::StringToLowerASCII(
-        base::FilePath(module_iter->name).BaseName().value()));
-    if (blacklist::GetBlacklistIndex(module_file_name.c_str()) != -1) {
-      module_names->push_back(module_iter->name);
-    }
-  }
-
-  return true;
 }

@@ -25,6 +25,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/database_manager.h"
 #include "chrome/browser/safe_browsing/incident_reporting/binary_integrity_incident_handlers.h"
+#include "chrome/browser/safe_browsing/incident_reporting/blacklist_load_incident_handlers.h"
 #include "chrome/browser/safe_browsing/incident_reporting/environment_data_collection.h"
 #include "chrome/browser/safe_browsing/incident_reporting/incident_report_uploader_impl.h"
 #include "chrome/browser/safe_browsing/incident_reporting/preference_validation_delegate.h"
@@ -47,8 +48,9 @@ enum IncidentType {
   // the histogram.
   TRACKED_PREFERENCE = 1,
   BINARY_INTEGRITY = 2,
+  BLACKLIST_LOAD = 3,
   // Values for new incident types go here.
-  NUM_INCIDENT_TYPES
+  NUM_INCIDENT_TYPES = 4
 };
 
 // The action taken for an incident; used for user metrics (see
@@ -85,6 +87,8 @@ size_t CountIncidents(const ClientIncidentReport_IncidentData& incident) {
     ++result;
   if (incident.has_binary_integrity())
     ++result;
+  if (incident.has_blacklist_load())
+    ++result;
   // Add detection for new incident types here.
   return result;
 }
@@ -96,9 +100,11 @@ IncidentType GetIncidentType(
     return TRACKED_PREFERENCE;
   if (incident_data.has_binary_integrity())
     return BINARY_INTEGRITY;
+  if (incident_data.has_blacklist_load())
+    return BLACKLIST_LOAD;
 
   // Add detection for new incident types here.
-  COMPILE_ASSERT(BINARY_INTEGRITY + 1 == NUM_INCIDENT_TYPES,
+  COMPILE_ASSERT(BLACKLIST_LOAD + 1 == NUM_INCIDENT_TYPES,
                  add_support_for_new_types);
   NOTREACHED();
   return NUM_INCIDENT_TYPES;
@@ -131,9 +137,13 @@ PersistentIncidentState ComputeIncidentState(
       state.key = GetBinaryIntegrityIncidentKey(incident);
       state.digest = GetBinaryIntegrityIncidentDigest(incident);
       break;
+    case BLACKLIST_LOAD:
+      state.key = GetBlacklistLoadIncidentKey(incident);
+      state.digest = GetBlacklistLoadIncidentDigest(incident);
+      break;
     // Add handling for new incident types here.
     default:
-      COMPILE_ASSERT(BINARY_INTEGRITY + 1 == NUM_INCIDENT_TYPES,
+      COMPILE_ASSERT(BLACKLIST_LOAD + 1 == NUM_INCIDENT_TYPES,
                      add_support_for_new_types);
       NOTREACHED();
       break;

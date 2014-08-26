@@ -28,6 +28,7 @@
 #include "chrome/browser/safe_browsing/database_manager.h"
 #include "chrome/browser/safe_browsing/download_protection_service.h"
 #include "chrome/browser/safe_browsing/incident_reporting/binary_integrity_analyzer.h"
+#include "chrome/browser/safe_browsing/incident_reporting/blacklist_load_analyzer.h"
 #include "chrome/browser/safe_browsing/incident_reporting/incident_reporting_service.h"
 #include "chrome/browser/safe_browsing/malware_details.h"
 #include "chrome/browser/safe_browsing/ping_manager.h"
@@ -360,6 +361,7 @@ SafeBrowsingDatabaseManager* SafeBrowsingService::CreateDatabaseManager() {
 
 void SafeBrowsingService::RegisterAllDelayedAnalysis() {
   safe_browsing::RegisterBinaryIntegrityAnalysis();
+  safe_browsing::RegisterBlacklistLoadAnalysis();
 }
 
 void SafeBrowsingService::InitURLRequestContextOnIOThread(
