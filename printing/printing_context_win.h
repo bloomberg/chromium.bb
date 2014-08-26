@@ -19,12 +19,11 @@ namespace printing {
 
 class PRINTING_EXPORT PrintingContextWin : public PrintingContext {
  public:
-  explicit PrintingContextWin(const std::string& app_locale);
-  ~PrintingContextWin();
+  explicit PrintingContextWin(Delegate* delegate);
+  virtual ~PrintingContextWin();
 
   // PrintingContext implementation.
   virtual void AskUserForSettings(
-      gfx::NativeView parent_view,
       int max_pages,
       bool has_selection,
       const PrintSettingsCallback& callback) OVERRIDE;

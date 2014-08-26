@@ -64,6 +64,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
@@ -261,10 +262,19 @@ std::string GetDefaultPrinterOnFileThread() {
   return default_printer;
 }
 
+class PrintingContextDelegate : public printing::PrintingContext::Delegate {
+ public:
+  // PrintingContext::Delegate methods.
+  virtual gfx::NativeView GetParentView() OVERRIDE { return NULL; }
+  virtual std::string GetAppLocale() OVERRIDE {
+    return g_browser_process->GetApplicationLocale();
+  }
+};
+
 gfx::Size GetDefaultPdfMediaSizeMicrons() {
+  PrintingContextDelegate delegate;
   scoped_ptr<printing::PrintingContext> printing_context(
-      printing::PrintingContext::Create(
-          g_browser_process->GetApplicationLocale()));
+      printing::PrintingContext::Create(&delegate));
   if (printing::PrintingContext::OK != printing_context->UsePdfSettings() ||
       printing_context->settings().device_units_per_inch() <= 0) {
     return gfx::Size();
@@ -835,6 +845,15 @@ void PrintPreviewHandler::HandlePrint(const base::ListValue* args) {
     // Do this so the initiator can open a new print preview dialog, while the
     // current print preview dialog is still handling its print job.
     WebContents* initiator = GetInitiator();
+    if (initiator) {
+      // Save initiator IDs. |PrintingMessageFilter::OnUpdatePrintSettings|
+      // would be called when initiator info is cleared.
+      settings->SetInteger(printing::kPreviewInitiatorHostId,
+                           initiator->GetRenderProcessHost()->GetID());
+      settings->SetInteger(printing::kPreviewInitiatorRoutingId,
+                           initiator->GetRoutingID());
+    }
+
     ClearInitiatorDetails();
 
     // The PDF being printed contains only the pages that the user selected,
@@ -1020,8 +1039,8 @@ void PrintPreviewHandler::HandleShowSystemDialog(
   print_view_manager->PrintForSystemDialogNow();
 
   // Cancel the pending preview request if exists.
-  PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(
-      web_ui()->GetController());
+  PrintPreviewUI* print_preview_ui =
+      static_cast<PrintPreviewUI*>(web_ui()->GetController());
   print_preview_ui->OnCancelPendingPreviewRequest();
 }
 

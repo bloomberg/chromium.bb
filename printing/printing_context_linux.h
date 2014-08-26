@@ -21,7 +21,7 @@ class PrintDialogGtkInterface;
 // PrintingContext with optional native UI for print dialog and pdf_paper_size.
 class PRINTING_EXPORT PrintingContextLinux : public PrintingContext {
  public:
-  explicit PrintingContextLinux(const std::string& app_locale);
+  explicit PrintingContextLinux(Delegate* delegate);
   virtual ~PrintingContextLinux();
 
   // Sets the function that creates the print dialog.
@@ -38,7 +38,6 @@ class PRINTING_EXPORT PrintingContextLinux : public PrintingContext {
 
   // PrintingContext implementation.
   virtual void AskUserForSettings(
-      gfx::NativeView parent_view,
       int max_pages,
       bool has_selection,
       const PrintSettingsCallback& callback) OVERRIDE;

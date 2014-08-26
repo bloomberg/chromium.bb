@@ -45,24 +45,26 @@ HWND GetRootWindow(gfx::NativeView view) {
 namespace printing {
 
 // static
-PrintingContext* PrintingContext::Create(const std::string& app_locale) {
-  return static_cast<PrintingContext*>(new PrintingContextWin(app_locale));
+scoped_ptr<PrintingContext> PrintingContext::Create(Delegate* delegate) {
+  return make_scoped_ptr<PrintingContext>(new PrintingContextWin(delegate));
 }
 
-PrintingContextWin::PrintingContextWin(const std::string& app_locale)
-    : PrintingContext(app_locale), context_(NULL), dialog_box_(NULL) {}
+PrintingContextWin::PrintingContextWin(Delegate* delegate)
+    : PrintingContext(delegate), context_(NULL), dialog_box_(NULL) {
+}
 
 PrintingContextWin::~PrintingContextWin() {
   ReleaseContext();
 }
 
 void PrintingContextWin::AskUserForSettings(
-    gfx::NativeView view, int max_pages, bool has_selection,
+    int max_pages,
+    bool has_selection,
     const PrintSettingsCallback& callback) {
   DCHECK(!in_print_job_);
   dialog_box_dismissed_ = false;
 
-  HWND window = GetRootWindow(view);
+  HWND window = GetRootWindow(delegate_->GetParentView());
   DCHECK(window);
 
   // Show the OS-dependent dialog box.

@@ -2,13 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/printing/print_job.h"
+
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/printing/print_job.h"
 #include "chrome/browser/printing/print_job_worker.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/common/child_process_host.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "printing/printed_pages_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -24,8 +27,9 @@ class TestSource : public printing::PrintedPagesSource {
 class TestPrintJobWorker : public printing::PrintJobWorker {
  public:
   explicit TestPrintJobWorker(printing::PrintJobWorkerOwner* owner)
-      : printing::PrintJobWorker(owner) {
-  }
+      : printing::PrintJobWorker(content::ChildProcessHost::kInvalidUniqueID,
+                                 content::ChildProcessHost::kInvalidUniqueID,
+                                 owner) {}
   friend class TestOwner;
 };
 
@@ -82,18 +86,15 @@ class TestPrintNotifObserv : public content::NotificationObserver {
 
 }  // namespace
 
-typedef testing::Test PrintJobTest;
-
-TEST_F(PrintJobTest, SimplePrint) {
+TEST(PrintJobTest, SimplePrint) {
   // Test the multi-threaded nature of PrintJob to make sure we can use it with
   // known lifetime.
 
-  // This message loop is actually never run.
-  base::MessageLoop current;
-
+  content::TestBrowserThreadBundle thread_bundle_;
   content::NotificationRegistrar registrar_;
   TestPrintNotifObserv observ;
-  registrar_.Add(&observ, content::NOTIFICATION_ALL,
+  registrar_.Add(&observ,
+                 content::NOTIFICATION_ALL,
                  content::NotificationService::AllSources());
   volatile bool check = false;
   scoped_refptr<printing::PrintJob> job(new TestPrintJob(&check));
@@ -103,17 +104,17 @@ TEST_F(PrintJobTest, SimplePrint) {
   job->Initialize(owner.get(), &source, 1);
   job->Stop();
   while (job->document()) {
-    current.RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
   }
   EXPECT_FALSE(job->document());
   job = NULL;
   while (!check) {
-    current.RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
   }
   EXPECT_TRUE(check);
 }
 
-TEST_F(PrintJobTest, SimplePrintLateInit) {
+TEST(PrintJobTest, SimplePrintLateInit) {
   volatile bool check = false;
   base::MessageLoop current;
   scoped_refptr<printing::PrintJob> job(new TestPrintJob(&check));

@@ -21,12 +21,11 @@ namespace printing {
 
 class PRINTING_EXPORT PrintingContextMac : public PrintingContext {
  public:
-  explicit PrintingContextMac(const std::string& app_locale);
+  explicit PrintingContextMac(Delegate* delegate);
   virtual ~PrintingContextMac();
 
   // PrintingContext implementation.
   virtual void AskUserForSettings(
-      gfx::NativeView parent_view,
       int max_pages,
       bool has_selection,
       const PrintSettingsCallback& callback) OVERRIDE;

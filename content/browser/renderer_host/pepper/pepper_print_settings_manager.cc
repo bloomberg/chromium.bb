@@ -5,6 +5,8 @@
 #include "content/browser/renderer_host/pepper/pepper_print_settings_manager.h"
 
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/content_browser_client.h"
+#include "content/public/common/content_client.h"
 #include "ppapi/c/pp_errors.h"
 #include "printing/printing_context.h"
 #include "printing/units.h"
@@ -42,12 +44,23 @@ PP_Rect PrintAreaToPPPrintArea(const gfx::Rect& print_area,
   return result;
 }
 
+class PrintingContextDelegate : public printing::PrintingContext::Delegate {
+ public:
+  // PrintingContext::Delegate methods.
+  virtual gfx::NativeView GetParentView() OVERRIDE { return NULL; }
+  virtual std::string GetAppLocale() OVERRIDE {
+    return GetContentClient()->browser()->GetApplicationLocale();
+  }
+};
+
 PepperPrintSettingsManager::Result ComputeDefaultPrintSettings() {
   // This function should run on the UI thread because |PrintingContext| methods
   // call into platform APIs.
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  PrintingContextDelegate delegate;
   scoped_ptr<printing::PrintingContext> context(
-      printing::PrintingContext::Create(std::string()));
+      printing::PrintingContext::Create(&delegate));
   if (!context.get() ||
       context->UseDefaultSettings() != printing::PrintingContext::OK) {
     return PepperPrintSettingsManager::Result(PP_PrintSettings_Dev(),

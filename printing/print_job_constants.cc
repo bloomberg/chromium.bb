@@ -12,6 +12,12 @@ const char kIsFirstRequest[] = "isFirstRequest";
 // Unique ID sent along every preview request.
 const char kPreviewRequestID[] = "requestID";
 
+// Unique ID of Print Preview initiator host.
+const char kPreviewInitiatorHostId[] = "previewInitiatorHostId";
+
+// Routing ID of Print Preview initiator.
+const char kPreviewInitiatorRoutingId[] = "previewInitiatorRoutingId";
+
 // Unique ID to identify a print preview UI.
 const char kPreviewUIID[] = "previewUIID";
 

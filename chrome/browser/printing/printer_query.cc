@@ -14,8 +14,8 @@
 
 namespace printing {
 
-PrinterQuery::PrinterQuery()
-    : worker_(new PrintJobWorker(this)),
+PrinterQuery::PrinterQuery(int render_process_id, int render_view_id)
+    : worker_(new PrintJobWorker(render_process_id, render_view_id, this)),
       is_print_dialog_box_shown_(false),
       cookie_(PrintSettings::NewCookie()),
       last_status_(PrintingContext::FAILED) {
@@ -66,7 +66,6 @@ int PrinterQuery::cookie() const {
 
 void PrinterQuery::GetSettings(
     GetSettingsAskParam ask_user_for_settings,
-    scoped_ptr<PrintingUIWebContentsObserver> web_contents_observer,
     int expected_page_count,
     bool has_selection,
     MarginType margin_type,
@@ -82,7 +81,6 @@ void PrinterQuery::GetSettings(
                     base::Bind(&PrintJobWorker::GetSettings,
                                base::Unretained(worker_.get()),
                                is_print_dialog_box_shown_,
-                               base::Passed(&web_contents_observer),
                                expected_page_count,
                                has_selection,
                                margin_type));
