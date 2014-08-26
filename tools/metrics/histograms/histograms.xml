@@ -12444,7 +12444,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="MPArch.ChildProcessLaunchFirst">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ppi@chromium.org</owner>
   <summary>
     The time it takes to spawn the first child subprocess (including sandbox
     init).
@@ -12452,7 +12452,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="MPArch.ChildProcessLaunchSubsequent">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ppi@chromium.org</owner>
   <summary>
     The time it takes to spawn child sub processes not counting the first one.
   </summary>
@@ -12481,7 +12481,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="MPArch.RPHCountPerLoad">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>ppi@chromium.org</owner>
   <summary>
     The number of RenderProcessHosts (i.e. renderer processes) present when each
     load completes. This is basically the average number of sub-processes over
