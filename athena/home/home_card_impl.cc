@@ -595,6 +595,7 @@ void HomeCardImpl::OnGestureEnded(State final_state) {
   home_card_view_->ClearGesture();
   if (state_ != final_state &&
       (state_ == VISIBLE_MINIMIZED || final_state == VISIBLE_MINIMIZED)) {
+    SetState(final_state);
     WindowManager::GetInstance()->ToggleOverview();
   } else {
     HomeCard::State old_state = state_;
@@ -620,7 +621,8 @@ void HomeCardImpl::OnGestureProgressed(
 }
 
 void HomeCardImpl::OnOverviewModeEnter() {
-  SetState(VISIBLE_BOTTOM);
+  if (state_ == VISIBLE_MINIMIZED)
+    SetState(VISIBLE_BOTTOM);
 }
 
 void HomeCardImpl::OnOverviewModeExit() {

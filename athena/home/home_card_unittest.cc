@@ -182,4 +182,20 @@ TEST_F(HomeCardTest, Gestures) {
 
 }
 
+TEST_F(HomeCardTest, GesturesToFullDirectly) {
+  ASSERT_EQ(HomeCard::VISIBLE_MINIMIZED, HomeCard::Get()->GetState());
+  ui::test::EventGenerator generator(root_window());
+  gfx::Rect screen_rect(root_window()->bounds());
+
+  const int bottom = screen_rect.bottom();
+  const int x = screen_rect.x() + 1;
+
+  generator.GestureScrollSequence(gfx::Point(x, bottom - 1),
+                                  gfx::Point(x, 20),
+                                  base::TimeDelta::FromSeconds(1),
+                                  10);
+  EXPECT_EQ(HomeCard::VISIBLE_CENTERED, HomeCard::Get()->GetState());
+  EXPECT_TRUE(WindowManager::GetInstance()->IsOverviewModeActive());
+}
+
 }  // namespace athena
