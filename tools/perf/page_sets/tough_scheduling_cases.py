@@ -249,7 +249,8 @@ class Page16(ToughSchedulingCasesPage):
       url='file://tough_scheduling_cases/raf.html?heavy_first_frame',
       page_set=page_set)
 
-    self.synthetic_delays = {'cc.BeginMainFrame': {'target_duration': 0.15}}
+    self.synthetic_delays = {'cc.BeginMainFrame': {'target_duration': 0.15,
+                                                   'mode': 'oneshot'}}
 
 
 class Page17(ToughSchedulingCasesPage):
