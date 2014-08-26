@@ -51,4 +51,25 @@ CTFailure.prototype.reasonGroupName = function() {
     return this.testName.substr(0, this.testName.lastIndexOf('/'));
   return this.testName.substr(0, this.testName.lastIndexOf('.'));
 };
+
+CTFailure.prototype.keys = function() {
+  return Object.values(this.resultNodesByBuilder).map('key');
+};
+
+CTFailure.prototype.annotations = function() {
+  var annotations = [];
+  Object.values(this.resultNodesByBuilder, function(result) {
+    annotations.push(result.annotation ? result.annotation : {});
+  });
+  return annotations;
+};
+
+// FIXME: This should just be provided as part of the alerts feed.
+CTFailure.createKey = function(alert) {
+  function normalize(str) {
+    str = str == null ? '' : String(str);
+    return str.replace(/:/g, '_');
+  }
+  return [alert.master_url, alert.builder_name, alert.failing_build, alert.step_name, alert.reason].map(normalize).join('::');
+}
 </script>

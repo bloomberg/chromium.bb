@@ -118,7 +118,9 @@ found in the LICENSE file.
             failureType = 'UNKNOWN';
           }
 
-          var failureKey = JSON.stringify({
+          var failureKey = CTFailure.createKey(failure);
+
+          var reasonKey = JSON.stringify({
             step: failure.step_name,
             reason: reason,
           });
@@ -126,23 +128,25 @@ found in the LICENSE file.
           var tree = masterToTree[failure.master_url];
 
           // FIXME: Use a model class instead of a dumb object.
-          if (!failuresByReason[failureKey])
-            failuresByReason[failureKey] = {};
-          if (!failuresByReason[failureKey][tree])
-            failuresByReason[failureKey][tree] = {};
-          failuresByReason[failureKey][tree][failure.builder_name] = {
+          if (!failuresByReason[reasonKey])
+            failuresByReason[reasonKey] = {};
+          if (!failuresByReason[reasonKey][tree])
+            failuresByReason[reasonKey][tree] = {};
+          failuresByReason[reasonKey][tree][failure.builder_name] = {
+            key: failureKey,
             // FIXME: Rename to failureType.
             actual: failureType,
             lastFailingBuild: failure.last_failing_build,
             earliestFailingBuild: failure.failing_build,
             masterUrl: failure.master_url,
             failingBuildCount: failure.failing_build_count,
+            annotation: annotations[failureKey],
           };
         }.bind(this));
 
         var groupedFailures = {};
-        Object.keys(failuresByReason, function(failureKey, resultsByTree) {
-          var failure = JSON.parse(failureKey);
+        Object.keys(failuresByReason, function(reasonKey, resultsByTree) {
+          var failure = JSON.parse(reasonKey);
           Object.keys(resultsByTree, function(tree, resultsByBuilder) {
             if (!groupedFailures[tree])
               groupedFailures[tree] = [];
@@ -155,9 +159,7 @@ found in the LICENSE file.
 
           if (!this.failures[tree])
             this.failures[tree] = [];
-          // FIXME: Need a better identifier for a failure group;
-          var key = group.sort_key;
-          this.failures[tree].push(new CTFailureGroup(key, failures, annotations[key]));
+          this.failures[tree].push(new CTFailureGroup(failures));
         }.bind(this));
       },
     });

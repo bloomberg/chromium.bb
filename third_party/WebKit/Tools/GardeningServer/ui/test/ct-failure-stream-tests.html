@@ -26,13 +26,11 @@ describe('ct-failure-stream', function() {
       // ct-failure-stream will give these values to ct-commit-data,
       // which will hit the network unless we figure out how to mock
       // out ct-commit-data in a better way.
-      stream.groups = [new CTFailureGroup('a', []), new CTFailureGroup('b', [])];
+      stream.groups = [new CTFailureGroup([]), new CTFailureGroup([])];
       stream.category = 'default';
       setTimeout(function() {
         var cards = stream.shadowRoot.querySelectorAll('ct-failure-card');
         assert.equal(cards.length, 2);
-        assert.equal(cards[0].group.key, 'a');
-        assert.equal(cards[1].group.key, 'b');
         done();
       });
     });
@@ -40,12 +38,14 @@ describe('ct-failure-stream', function() {
 
   describe('category', function() {
     it('should only show failure groups for the specified category', function(done) {
-      stream.groups = [new CTFailureGroup('a', []), new CTFailureGroup('b', [], {snoozeTime: Date.now() + 1000 * 1000})];
+      var failures = [new CTFailure('step', 'reason', [{key: 'a', annotation: {snoozeTime: Date.now() + 1000 * 1000}}])];
+      var snoozed = new CTFailureGroup(failures);
+      stream.groups = [new CTFailureGroup([]), snoozed];
       stream.category = 'snoozed';
       setTimeout(function() {
         var cards = stream.shadowRoot.querySelectorAll('ct-failure-card');
         assert.equal(cards.length, 1);
-        assert.equal(cards[0].group.key, 'b');
+        assert.equal(cards[0].group, snoozed);
         done();
       });
     });

@@ -7,10 +7,11 @@ found in the LICENSE file.
 <link rel="import" href="ct-commit-list.html">
 
 <script>
-function CTFailureGroup(key, failures, annotation) {
-  this.key = key;
+function CTFailureGroup(failures) {
   this.failures = failures;
-  this._annotation = annotation || {};
+  this._annotation = CTFailureGroup._mergeAnnotations(failures.map(function(failure) {
+    return failure.annotations();
+  }).flatten());
   this._computeProperties();
 }
 
@@ -54,34 +55,63 @@ CTFailureGroup.prototype._computeProperties = function() {
   }
 
   this.bug = this._annotation.bug;
-  if (this.bug !== undefined)
+  // FIXME: Bug labels would be simpler to implement as a filter in the UI.
+  if (this.bug != null)
     this.bugLabel = 'Bug ' + /([0-9]{3,})/.exec(this.bug)[0];
   else
     this.bugLabel = undefined;
 };
 
+CTFailureGroup.prototype.failureKeys = function() {
+  return this.failures.map(function(failure) {
+    return failure.keys();
+  }).flatten();
+};
+
+CTFailureGroup._mergeAnnotations = function(failureAnnotations) {
+  // FIXME: This should be a union of all bugs.
+  var bug = failureAnnotations.map('bug').compact().first();
+
+  // The group is only snoozed if all the failures specify a snooze-time, and only
+  // until the first has elapsed.
+  var snoozeTimes = failureAnnotations.map('snoozeTime').compact();
+  var snoozeTime = snoozeTimes.length < failureAnnotations.length ? undefined : snoozeTimes.min();
+
+  var annotation = {};
+  if (bug != null) {
+    annotation.bug = bug;
+  }
+  if (snoozeTime != null) {
+    annotation.snoozeTime = snoozeTime;
+  }
+  return annotation;
+};
+
 CTFailureGroup.prototype._annotate = function(newAnnotation) {
+  var failureAnnotations = [];
   // FIXME: Post the new annotation to frontend rather than storing locally.
   return CTFailureGroup.fetchAnnotations().then(function(annotations) {
-    var annotation = annotations[this.key] || {};
+    this.failureKeys().forEach(function(failureKey) {
+      var annotation = annotations[failureKey] || {};
 
-    Object.keys(newAnnotation, function(key, value) {
-      if (value === 'undefined') {
-        delete annotation[key];
+      Object.keys(newAnnotation, function(key, value) {
+        if (value === undefined) {
+          delete annotation[key];
+        } else {
+          annotation[key] = value;
+        }
+      });
+
+      if (Object.size(annotation) == 0) {
+        delete annotations[failureKey];
       } else {
-        annotation[key] = value;
+        annotations[failureKey] = annotation;
+        failureAnnotations.push(annotation);
       }
     });
 
-    if (Object.size(annotation) == 0) {
-      delete annotations[this.key];
-    } else {
-      annotations[this.key] = annotation;
-    }
-
     localStorage.CTFailureGroupAnnotations = JSON.stringify(annotations);
-
-    this._annotation = annotation;
+    this._annotation = CTFailureGroup._mergeAnnotations(failureAnnotations);
     this._computeProperties();
   }.bind(this));
 };
