@@ -5,7 +5,7 @@
 
 """Client tool to trigger tasks or retrieve results from a Swarming server."""
 
-__version__ = '0.4.13'
+__version__ = '0.4.14'
 
 import getpass
 import hashlib
@@ -186,6 +186,12 @@ class TaskOutputCollector(object):
           shard_index, self.shard_count - 1)
       return
 
+    result = result.copy()
+
+    isolated_files_location = extract_output_files_location(result['output'])
+    if isolated_files_location:
+      result['isolated_out'] = isolated_files_location
+
     # Store result dict of that shard, ignore results we've already seen.
     with self._lock:
       if shard_index in self._per_shard_results:
@@ -195,16 +201,16 @@ class TaskOutputCollector(object):
 
     # Fetch output files if necessary.
     if self.task_output_dir:
-      isolated_files_location = extract_output_files_location(result['output'])
       if isolated_files_location:
-        isolate_server, namespace, isolated_hash = isolated_files_location
-        storage = self._get_storage(isolate_server, namespace)
+        storage = self._get_storage(
+            isolated_files_location['server'],
+            isolated_files_location['namespace'])
         if storage:
           # Output files are supposed to be small and they are not reused across
           # tasks. So use MemoryCache for them instead of on-disk cache. Make
           # files writable, so that calling script can delete them.
           isolateserver.fetch_isolated(
-              isolated_hash,
+              isolated_files_location['hash'],
               storage,
               isolateserver.MemoryCache(file_mode_mask=0700),
               os.path.join(self.task_output_dir, str(shard_index)),
@@ -312,7 +318,14 @@ def extract_output_files_location(task_log):
     isolate_server = to_ascii(data['storage'])
     if not file_path.is_url(isolate_server):
       raise ValueError()
-    return (isolate_server, namespace, isolated_hash)
+    data = {
+        'hash': isolated_hash,
+        'namespace': namespace,
+        'server': isolate_server,
+        'view_url': '%s/browse?%s' % (isolate_server, urllib.urlencode(
+            [('namespace', namespace), ('hash', isolated_hash)])),
+    }
+    return data
   except (KeyError, ValueError):
     logging.warning(
         'Unexpected value of run_isolated_out_hack: %s', match.group(1))

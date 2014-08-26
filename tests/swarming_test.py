@@ -126,6 +126,7 @@ def gen_data(shard_output, exit_codes):
     u'machine_id': u'host',
     u'machine_tag': u'localhost',
     u'output': unicode(shard_output),
+    u'isolated_out': swarming.extract_output_files_location(shard_output),
   }
 
 
@@ -1321,7 +1322,10 @@ class ExtractOutputFilesLocationTest(auto_stub.TestCase):
       'more log',
     ))
     self.assertEqual(
-        ('https://fake', 'default', '12345'),
+        {'hash': '12345',
+         'namespace': 'default',
+         'server': 'https://fake',
+         'view_url': 'https://fake/browse?namespace=default&hash=12345'},
         swarming.extract_output_files_location(task_log))
 
   def test_empty(self):
