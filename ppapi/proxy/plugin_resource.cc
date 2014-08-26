@@ -34,7 +34,7 @@ PluginResource::~PluginResource() {
         new PpapiHostMsg_ResourceDestroyed(pp_resource()));
   }
 
-  if (resource_reply_thread_registrar_)
+  if (resource_reply_thread_registrar_.get())
     resource_reply_thread_registrar_->Unregister(pp_resource());
 }
 

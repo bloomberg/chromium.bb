@@ -290,7 +290,7 @@ void PPB_Graphics3D_Proxy::OnMsgCreateTransferBuffer(
   if (enter.succeeded()) {
     scoped_refptr<gpu::Buffer> buffer =
         enter.object()->CreateTransferBuffer(size, id);
-    if (!buffer)
+    if (!buffer.get())
       return;
     gpu::SharedMemoryBufferBacking* backing =
         static_cast<gpu::SharedMemoryBufferBacking*>(buffer->backing());

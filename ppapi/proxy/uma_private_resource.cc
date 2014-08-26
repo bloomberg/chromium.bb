@@ -87,7 +87,7 @@ void UMAPrivateResource::HistogramEnumeration(
 int32_t UMAPrivateResource::IsCrashReportingEnabled(
     PP_Instance instance,
     scoped_refptr<TrackedCallback> callback) {
-  if (pending_callback_ != NULL)
+  if (pending_callback_.get() != NULL)
     return PP_ERROR_INPROGRESS;
   pending_callback_ = callback;
   Call<PpapiPluginMsg_UMA_IsCrashReportingEnabledReply>(

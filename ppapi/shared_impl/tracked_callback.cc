@@ -167,7 +167,7 @@ void TrackedCallback::PostRun(int32_t result) {
   } else {
     base::Closure callback_closure(
         RunWhileLocked(base::Bind(&TrackedCallback::Run, this, result)));
-    if (target_loop_) {
+    if (target_loop_.get()) {
       target_loop_->PostClosure(FROM_HERE, callback_closure, 0);
     } else {
       // We must be running in-process and on the main thread (the Enter

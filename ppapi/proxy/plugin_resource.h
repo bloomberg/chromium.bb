@@ -207,7 +207,7 @@ int32_t PluginResource::Call(
   callbacks_.insert(std::make_pair(params.sequence(), plugin_callback));
   params.set_has_callback();
 
-  if (resource_reply_thread_registrar_) {
+  if (resource_reply_thread_registrar_.get()) {
     resource_reply_thread_registrar_->Register(
         pp_resource(), params.sequence(), reply_thread_hint);
   }

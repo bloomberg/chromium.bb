@@ -322,7 +322,7 @@ void PluginProxyMultiThreadTest::RunTest() {
   main_thread_message_loop_proxy_ =
       PpapiGlobals::Get()->GetMainThreadMessageLoop();
   ASSERT_EQ(main_thread_message_loop_proxy_.get(),
-            base::MessageLoopProxy::current());
+            base::MessageLoopProxy::current().get());
   nested_main_thread_message_loop_.reset(new base::RunLoop());
 
   secondary_thread_.reset(new base::DelegateSimpleThread(

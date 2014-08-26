@@ -52,7 +52,7 @@ int32_t PlatformVerificationPrivateResource::ChallengePlatform(
 
   scoped_refptr<ArrayBufferVar> challenge_buffer =
       ArrayBufferVar::FromPPVar(challenge);
-  if (!challenge_buffer)
+  if (!challenge_buffer.get())
     return PP_ERROR_BADARGUMENT;
 
   uint8_t* challenge_data = static_cast<uint8_t*>(challenge_buffer->Map());

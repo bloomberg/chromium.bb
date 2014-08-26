@@ -27,7 +27,7 @@ void ResourceReplyThreadRegistrar::Register(
   ProxyLock::AssertAcquiredDebugOnly();
 
   // Use the default thread if |reply_thread_hint| is NULL or blocking.
-  if (!reply_thread_hint || reply_thread_hint->is_blocking())
+  if (!reply_thread_hint.get() || reply_thread_hint->is_blocking())
     return;
 
   DCHECK(reply_thread_hint->target_loop());
@@ -36,7 +36,7 @@ void ResourceReplyThreadRegistrar::Register(
   {
     base::AutoLock auto_lock(lock_);
 
-    if (reply_thread == default_thread_)
+    if (reply_thread.get() == default_thread_.get())
       return;
 
     map_[resource][sequence_number] = reply_thread;

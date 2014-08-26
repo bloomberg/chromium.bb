@@ -68,7 +68,7 @@ ManifestService::ManifestService(
   channel_ = IPC::ChannelProxy::Create(handle,
                                        IPC::Channel::MODE_SERVER,
                                        NULL,  // Listener
-                                       io_message_loop);
+                                       io_message_loop.get());
   channel_->AddFilter(filter_.get());
 }
 

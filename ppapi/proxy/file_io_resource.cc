@@ -49,7 +49,7 @@ namespace proxy {
 
 FileIOResource::QueryOp::QueryOp(scoped_refptr<FileHolder> file_holder)
     : file_holder_(file_holder) {
-  DCHECK(file_holder_);
+  DCHECK(file_holder_.get());
 }
 
 FileIOResource::QueryOp::~QueryOp() {
@@ -65,7 +65,7 @@ FileIOResource::ReadOp::ReadOp(scoped_refptr<FileHolder> file_holder,
   : file_holder_(file_holder),
     offset_(offset),
     bytes_to_read_(bytes_to_read) {
-  DCHECK(file_holder_);
+  DCHECK(file_holder_.get());
 }
 
 FileIOResource::ReadOp::~ReadOp() {
@@ -397,7 +397,7 @@ void FileIOResource::Close() {
         pp_resource());
   }
 
-  if (file_holder_)
+  if (file_holder_.get())
     file_holder_ = NULL;
 
   Post(BROWSER, PpapiHostMsg_FileIO_Close(
@@ -428,7 +428,7 @@ FileIOResource::FileHolder::FileHolder(PP_FileHandle file_handle)
 // static
 bool FileIOResource::FileHolder::IsValid(
     const scoped_refptr<FileIOResource::FileHolder>& handle) {
-  return handle && handle->file_.IsValid();
+  return handle.get() && handle->file_.IsValid();
 }
 
 FileIOResource::FileHolder::~FileHolder() {

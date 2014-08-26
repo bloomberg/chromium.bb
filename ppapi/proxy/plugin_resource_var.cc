@@ -10,7 +10,7 @@ PluginResourceVar::PluginResourceVar(ppapi::Resource* resource)
     : resource_(resource) {}
 
 PP_Resource PluginResourceVar::GetPPResource() const {
-  return resource_ ? resource_->pp_resource() : 0;
+  return resource_.get() ? resource_->pp_resource() : 0;
 }
 
 bool PluginResourceVar::IsPending() const {

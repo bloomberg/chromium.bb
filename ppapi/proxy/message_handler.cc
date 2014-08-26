@@ -85,7 +85,7 @@ scoped_ptr<MessageHandler> MessageHandler::Create(
 MessageHandler::~MessageHandler() {
   // It's possible the message_loop_proxy is NULL if that loop has been quit.
   // In that case, we unfortunately just can't call Destroy.
-  if (message_loop_->message_loop_proxy()) {
+  if (message_loop_->message_loop_proxy().get()) {
     // The posted task won't have the proxy lock, but that's OK, it doesn't
     // touch any internal state; it's a direct call on the plugin's function.
     message_loop_->message_loop_proxy()->PostTask(FROM_HERE,
@@ -96,7 +96,7 @@ MessageHandler::~MessageHandler() {
 }
 
 bool MessageHandler::LoopIsValid() const {
-  return !!message_loop_->message_loop_proxy();
+  return !!message_loop_->message_loop_proxy().get();
 }
 
 void MessageHandler::HandleMessage(ScopedPPVar var) {

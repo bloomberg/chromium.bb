@@ -45,7 +45,7 @@ PPB_TrueTypeFont_API* TrueTypeFontResource::AsPPB_TrueTypeFont_API() {
 int32_t TrueTypeFontResource::Describe(
     PP_TrueTypeFontDesc_Dev* desc,
     scoped_refptr<TrackedCallback> callback) {
-  if (describe_callback_)
+  if (describe_callback_.get())
     return PP_ERROR_INPROGRESS;
 
   if (create_result_ == PP_OK) {
