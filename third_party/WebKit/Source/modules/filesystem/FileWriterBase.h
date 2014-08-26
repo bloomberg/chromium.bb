@@ -76,8 +76,6 @@ protected:
     void seekInternal(long long position);
 
 private:
-    friend class WTF::RefCounted<FileWriterBase>;
-
     OwnPtr<WebFileWriter> m_writer;
     long long m_position;
     long long m_length;

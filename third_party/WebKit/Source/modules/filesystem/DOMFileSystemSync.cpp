@@ -79,11 +79,11 @@ namespace {
 
 class CreateFileHelper FINAL : public AsyncFileSystemCallbacks {
 public:
-    class CreateFileResult : public RefCountedWillBeGarbageCollected<CreateFileResult> {
+    class CreateFileResult : public GarbageCollectedFinalized<CreateFileResult> {
       public:
-        static PassRefPtrWillBeRawPtr<CreateFileResult> create()
+        static CreateFileResult* create()
         {
-            return adoptRefWillBeNoop(new CreateFileResult());
+            return new CreateFileResult();
         }
 
         bool m_failed;
@@ -101,17 +101,9 @@ public:
             , m_code(0)
         {
         }
-
-#if !ENABLE(OILPAN)
-        ~CreateFileResult()
-        {
-        }
-#endif
-
-        friend class RefCountedWillBeGarbageCollected<CreateFileResult>;
     };
 
-    static PassOwnPtr<AsyncFileSystemCallbacks> create(PassRefPtrWillBeRawPtr<CreateFileResult> result, const String& name, const KURL& url, FileSystemType type)
+    static PassOwnPtr<AsyncFileSystemCallbacks> create(CreateFileResult* result, const String& name, const KURL& url, FileSystemType type)
     {
         return adoptPtr(static_cast<AsyncFileSystemCallbacks*>(new CreateFileHelper(result, name, url, type)));
     }
@@ -155,7 +147,7 @@ public:
     }
 
 private:
-    CreateFileHelper(PassRefPtrWillBeRawPtr<CreateFileResult> result, const String& name, const KURL& url, FileSystemType type)
+    CreateFileHelper(CreateFileResult* result, const String& name, const KURL& url, FileSystemType type)
         : m_result(result)
         , m_name(name)
         , m_url(url)
@@ -163,7 +155,7 @@ private:
     {
     }
 
-    RefPtrWillBePersistent<CreateFileResult> m_result;
+    Persistent<CreateFileResult> m_result;
     String m_name;
     KURL m_url;
     FileSystemType m_type;
@@ -174,7 +166,7 @@ private:
 PassRefPtrWillBeRawPtr<File> DOMFileSystemSync::createFile(const FileEntrySync* fileEntry, ExceptionState& exceptionState)
 {
     KURL fileSystemURL = createFileSystemURL(fileEntry);
-    RefPtrWillBeRawPtr<CreateFileHelper::CreateFileResult> result(CreateFileHelper::CreateFileResult::create());
+    CreateFileHelper::CreateFileResult* result(CreateFileHelper::CreateFileResult::create());
     fileSystem()->createSnapshotFileAndReadMetadata(fileSystemURL, CreateFileHelper::create(result, fileEntry->name(), fileSystemURL, type()));
     if (result->m_failed) {
         exceptionState.throwDOMException(result->m_code, "Could not create '" + fileEntry->name() + "'.");

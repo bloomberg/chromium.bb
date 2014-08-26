@@ -45,7 +45,6 @@
 #include "modules/filesystem/MetadataCallback.h"
 #include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
 
 namespace blink {
 
@@ -54,7 +53,7 @@ struct HelperResultType {
     DISALLOW_ALLOCATION();
 public:
     typedef ResultType* ReturnType;
-    typedef Persistent<ResultType> StorageType;
+    typedef Member<ResultType> StorageType;
 
     static ReturnType createFromCallbackArg(CallbackArg argument)
     {
@@ -64,16 +63,16 @@ public:
 
 // A helper template for FileSystemSync implementation.
 template <typename SuccessCallback, typename CallbackArg, typename ResultType>
-class SyncCallbackHelper FINAL : public RefCounted<SyncCallbackHelper<SuccessCallback, CallbackArg, ResultType> > {
+class SyncCallbackHelper FINAL : public GarbageCollected<SyncCallbackHelper<SuccessCallback, CallbackArg, ResultType> > {
 public:
     typedef SyncCallbackHelper<SuccessCallback, CallbackArg, ResultType> HelperType;
     typedef HelperResultType<ResultType, CallbackArg> ResultTypeTrait;
     typedef typename ResultTypeTrait::StorageType ResultStorageType;
     typedef typename ResultTypeTrait::ReturnType ResultReturnType;
 
-    static PassRefPtr<HelperType> create()
+    static HelperType* create()
     {
-        return adoptRef(new SyncCallbackHelper());
+        return new SyncCallbackHelper();
     }
 
     ResultReturnType getResult(ExceptionState& exceptionState)
@@ -87,6 +86,11 @@ public:
     PassOwnPtr<SuccessCallback> successCallback() { return SuccessCallbackImpl::create(this); }
     PassOwnPtr<ErrorCallback> errorCallback() { return ErrorCallbackImpl::create(this); }
 
+    void trace(Visitor* visitor)
+    {
+        visitor->trace(m_result);
+    }
+
 private:
     SyncCallbackHelper()
         : m_errorCode(FileError::OK)
@@ -96,7 +100,7 @@ private:
 
     class SuccessCallbackImpl FINAL : public SuccessCallback {
     public:
-        static PassOwnPtr<SuccessCallbackImpl> create(PassRefPtr<HelperType> helper)
+        static PassOwnPtr<SuccessCallbackImpl> create(HelperType* helper)
         {
             return adoptPtr(new SuccessCallbackImpl(helper));
         }
@@ -112,16 +116,16 @@ private:
         }
 
     private:
-        explicit SuccessCallbackImpl(PassRefPtr<HelperType> helper)
+        explicit SuccessCallbackImpl(HelperType* helper)
             : m_helper(helper)
         {
         }
-        RefPtr<HelperType> m_helper;
+        Persistent<HelperType> m_helper;
     };
 
     class ErrorCallbackImpl FINAL : public ErrorCallback {
     public:
-        static PassOwnPtr<ErrorCallbackImpl> create(PassRefPtr<HelperType> helper)
+        static PassOwnPtr<ErrorCallbackImpl> create(HelperType* helper)
         {
             return adoptPtr(new ErrorCallbackImpl(helper));
         }
@@ -133,11 +137,11 @@ private:
         }
 
     private:
-        explicit ErrorCallbackImpl(PassRefPtr<HelperType> helper)
+        explicit ErrorCallbackImpl(HelperType* helper)
             : m_helper(helper)
         {
         }
-        RefPtr<HelperType> m_helper;
+        Persistent<HelperType> m_helper;
     };
 
     void setError(FileError::ErrorCode code)

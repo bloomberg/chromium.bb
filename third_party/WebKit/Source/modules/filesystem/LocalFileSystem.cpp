@@ -57,7 +57,7 @@ void reportFailure(ExecutionContext*, PassOwnPtr<AsyncFileSystemCallbacks> callb
 
 } // namespace
 
-class CallbackWrapper : public RefCounted<CallbackWrapper> {
+class CallbackWrapper FINAL : public GarbageCollectedFinalized<CallbackWrapper> {
 public:
     CallbackWrapper(PassOwnPtr<AsyncFileSystemCallbacks> c)
         : m_callbacks(c)
@@ -68,6 +68,8 @@ public:
     {
         return m_callbacks.release();
     }
+
+    void trace(Visitor*) { }
 
 private:
     OwnPtr<AsyncFileSystemCallbacks> m_callbacks;
@@ -85,7 +87,7 @@ LocalFileSystem::~LocalFileSystem()
 void LocalFileSystem::resolveURL(ExecutionContext* context, const KURL& fileSystemURL, PassOwnPtr<AsyncFileSystemCallbacks> callbacks)
 {
     RefPtrWillBeRawPtr<ExecutionContext> contextPtr(context);
-    RefPtr<CallbackWrapper> wrapper = adoptRef(new CallbackWrapper(callbacks));
+    CallbackWrapper* wrapper = new CallbackWrapper(callbacks);
     requestFileSystemAccessInternal(context,
         bind(&LocalFileSystem::resolveURLInternal, this, contextPtr, fileSystemURL, wrapper),
         bind(&LocalFileSystem::fileSystemNotAllowedInternal, this, contextPtr, wrapper));
@@ -94,7 +96,7 @@ void LocalFileSystem::resolveURL(ExecutionContext* context, const KURL& fileSyst
 void LocalFileSystem::requestFileSystem(ExecutionContext* context, FileSystemType type, long long size, PassOwnPtr<AsyncFileSystemCallbacks> callbacks)
 {
     RefPtrWillBeRawPtr<ExecutionContext> contextPtr(context);
-    RefPtr<CallbackWrapper> wrapper = adoptRef(new CallbackWrapper(callbacks));
+    CallbackWrapper* wrapper = new CallbackWrapper(callbacks);
     requestFileSystemAccessInternal(context,
         bind(&LocalFileSystem::fileSystemAllowedInternal, this, contextPtr, type, wrapper),
         bind(&LocalFileSystem::fileSystemNotAllowedInternal, this, contextPtr, wrapper));
@@ -106,7 +108,7 @@ void LocalFileSystem::deleteFileSystem(ExecutionContext* context, FileSystemType
     ASSERT(context);
     ASSERT_WITH_SECURITY_IMPLICATION(context->isDocument());
 
-    RefPtr<CallbackWrapper> wrapper = adoptRef(new CallbackWrapper(callbacks));
+    CallbackWrapper* wrapper = new CallbackWrapper(callbacks);
     requestFileSystemAccessInternal(context,
         bind(&LocalFileSystem::deleteFileSystemInternal, this, contextPtr, type, wrapper),
         bind(&LocalFileSystem::fileSystemNotAllowedInternal, this, contextPtr, wrapper));
@@ -139,14 +141,14 @@ void LocalFileSystem::requestFileSystemAccessInternal(ExecutionContext* context,
 
 void LocalFileSystem::fileSystemNotAvailable(
     PassRefPtrWillBeRawPtr<ExecutionContext> context,
-    PassRefPtr<CallbackWrapper> callbacks)
+    CallbackWrapper* callbacks)
 {
     context->postTask(createCrossThreadTask(&reportFailure, callbacks->release(), FileError::ABORT_ERR));
 }
 
 void LocalFileSystem::fileSystemNotAllowedInternal(
     PassRefPtrWillBeRawPtr<ExecutionContext> context,
-    PassRefPtr<CallbackWrapper> callbacks)
+    CallbackWrapper* callbacks)
 {
     context->postTask(createCrossThreadTask(&reportFailure, callbacks->release(), FileError::ABORT_ERR));
 }
@@ -154,7 +156,7 @@ void LocalFileSystem::fileSystemNotAllowedInternal(
 void LocalFileSystem::fileSystemAllowedInternal(
     PassRefPtrWillBeRawPtr<ExecutionContext> context,
     FileSystemType type,
-    PassRefPtr<CallbackWrapper> callbacks)
+    CallbackWrapper* callbacks)
 {
     if (!fileSystem()) {
         fileSystemNotAvailable(context, callbacks);
@@ -168,7 +170,7 @@ void LocalFileSystem::fileSystemAllowedInternal(
 void LocalFileSystem::resolveURLInternal(
     PassRefPtrWillBeRawPtr<ExecutionContext> context,
     const KURL& fileSystemURL,
-    PassRefPtr<CallbackWrapper> callbacks)
+    CallbackWrapper* callbacks)
 {
     if (!fileSystem()) {
         fileSystemNotAvailable(context, callbacks);
@@ -180,7 +182,7 @@ void LocalFileSystem::resolveURLInternal(
 void LocalFileSystem::deleteFileSystemInternal(
     PassRefPtrWillBeRawPtr<ExecutionContext> context,
     FileSystemType type,
-    PassRefPtr<CallbackWrapper> callbacks)
+    CallbackWrapper* callbacks)
 {
     if (!fileSystem()) {
         fileSystemNotAvailable(context, callbacks);
