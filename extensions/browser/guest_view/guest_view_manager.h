@@ -94,7 +94,8 @@ class GuestViewManager : public content::BrowserPluginGuestManager,
   virtual void AddGuest(int guest_instance_id,
                         content::WebContents* guest_web_contents);
 
-  void RemoveGuest(int guest_instance_id);
+  // Can be overriden in tests.
+  virtual void RemoveGuest(int guest_instance_id);
 
   content::WebContents* GetGuestByInstanceID(int guest_instance_id);
 

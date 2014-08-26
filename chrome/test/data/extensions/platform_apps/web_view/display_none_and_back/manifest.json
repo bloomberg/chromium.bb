@@ -1,0 +1,12 @@
+{
+  "name": "<webview> check display: none toggling.",
+  "version": "1",
+  "permissions": [
+    "webview"
+  ],
+  "app": {
+    "background": {
+      "scripts": ["test.js"]
+    }
+  }
+}

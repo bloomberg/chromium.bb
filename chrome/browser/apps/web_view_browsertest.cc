@@ -98,15 +98,24 @@ class TestGuestViewManager : public extensions::GuestViewManager {
  public:
   explicit TestGuestViewManager(content::BrowserContext* context) :
       GuestViewManager(context),
+      seen_guest_removed_(false),
       web_contents_(NULL) {}
 
   content::WebContents* WaitForGuestCreated() {
     if (web_contents_)
       return web_contents_;
 
-    message_loop_runner_ = new content::MessageLoopRunner;
-    message_loop_runner_->Run();
+    created_message_loop_runner_ = new content::MessageLoopRunner;
+    created_message_loop_runner_->Run();
     return web_contents_;
+  }
+
+  void WaitForGuestDeleted() {
+    if (seen_guest_removed_)
+      return;
+
+    deleted_message_loop_runner_ = new content::MessageLoopRunner;
+    deleted_message_loop_runner_->Run();
   }
 
  private:
@@ -116,13 +125,25 @@ class TestGuestViewManager : public extensions::GuestViewManager {
     extensions::GuestViewManager::AddGuest(
         guest_instance_id, guest_web_contents);
     web_contents_ = guest_web_contents;
+    seen_guest_removed_ = false;
 
-    if (message_loop_runner_.get())
-      message_loop_runner_->Quit();
+    if (created_message_loop_runner_.get())
+      created_message_loop_runner_->Quit();
   }
 
+  virtual void RemoveGuest(int guest_instance_id) OVERRIDE {
+    extensions::GuestViewManager::RemoveGuest(guest_instance_id);
+    web_contents_ = NULL;
+    seen_guest_removed_ = true;
+
+    if (deleted_message_loop_runner_.get())
+      deleted_message_loop_runner_->Quit();
+  }
+
+  bool seen_guest_removed_;
   content::WebContents* web_contents_;
-  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
+  scoped_refptr<content::MessageLoopRunner> created_message_loop_runner_;
+  scoped_refptr<content::MessageLoopRunner> deleted_message_loop_runner_;
 };
 
 // Test factory for creating test instances of GuestViewManager.
@@ -679,7 +700,6 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
   }
 
   void LoadAppWithGuest(const std::string& app_path) {
-
     ExtensionTestMessageListener launched_listener("WebViewTest.LAUNCHED",
                                                    false);
     launched_listener.set_failure_message("WebViewTest.FAILURE");
@@ -840,6 +860,33 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, AutoSize) {
 
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/web_view/autosize"))
       << message_;
+}
+
+// Tests that a <webview> that is set to "display: none" after load and then
+// setting "display: block" re-renders the plugin properly.
+//
+// Initially after loading the <webview> and the test sets <webview> to
+// "display: none".
+// This causes the browser plugin to be destroyed, we then set the
+// style.display of the <webview> to block again and check that loadstop
+// fires properly.
+IN_PROC_BROWSER_TEST_F(WebViewTest, DisplayNoneAndBack) {
+  LoadAppWithGuest("web_view/display_none_and_back");
+
+  scoped_refptr<content::MessageLoopRunner> loop_runner(
+      new content::MessageLoopRunner);
+  WebContentsHiddenObserver observer(GetGuestWebContents(),
+                                     loop_runner->QuitClosure());
+
+  // Handled in platform_apps/web_view/display_none_and_back/main.js
+  SendMessageToEmbedder("hide-guest");
+  GetGuestViewManager()->WaitForGuestDeleted();
+  ExtensionTestMessageListener test_passed_listener("WebViewTest.PASSED",
+                                                    false);
+
+  SendMessageToEmbedder("show-guest");
+  GetGuestViewManager()->WaitForGuestCreated();
+  EXPECT_TRUE(test_passed_listener.WaitUntilSatisfied());
 }
 
 // http://crbug.com/326332

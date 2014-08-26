@@ -20,6 +20,7 @@ var CreateEvent = function(name) {
 };
 
 var FrameNameChangedEvent = CreateEvent('webViewInternal.onFrameNameChanged');
+var PluginDestroyedEvent = CreateEvent('webViewInternal.onPluginDestroyed');
 var WebRequestMessageEvent = CreateEvent('webViewInternal.onMessage');
 
 // WEB_VIEW_EVENTS is a map of stable <webview> DOM event names to their
@@ -192,6 +193,7 @@ function WebViewEvents(webViewInternal, viewInstanceId) {
 // Sets up events.
 WebViewEvents.prototype.setup = function() {
   this.setupFrameNameChangedEvent();
+  this.setupPluginDestroyedEvent();
   this.setupWebRequestEvents();
   this.webViewInternal.setupExperimentalContextMenus();
 
@@ -202,10 +204,15 @@ WebViewEvents.prototype.setup = function() {
 };
 
 WebViewEvents.prototype.setupFrameNameChangedEvent = function() {
-  var self = this;
   FrameNameChangedEvent.addListener(function(e) {
-    self.webViewInternal.onFrameNameChanged(e.name);
-  }, {instanceId: self.viewInstanceId});
+    this.webViewInternal.onFrameNameChanged(e.name);
+  }.bind(this), {instanceId: this.viewInstanceId});
+};
+
+WebViewEvents.prototype.setupPluginDestroyedEvent = function() {
+  PluginDestroyedEvent.addListener(function(e) {
+    this.webViewInternal.onPluginDestroyed();
+  }.bind(this), {instanceId: this.viewInstanceId});
 };
 
 WebViewEvents.prototype.setupWebRequestEvents = function() {

@@ -106,7 +106,7 @@ function WebViewInternal(webviewNode) {
 
   this.browserPluginNode = this.createBrowserPluginNode();
   var shadowRoot = this.webviewNode.createShadowRoot();
-  shadowRoot.appendChild(this.browserPluginNode);
+  this.partition = new Partition();
 
   this.setupWebviewNodeAttributes();
   this.setupFocusPropagation();
@@ -114,10 +114,9 @@ function WebViewInternal(webviewNode) {
 
   this.viewInstanceId = IdGenerator.GetNextId();
 
-  this.partition = new Partition();
-  this.parseAttributes();
-
   new WebViewEvents(this, this.viewInstanceId);
+
+  shadowRoot.appendChild(this.browserPluginNode);
 }
 
 /**
@@ -563,8 +562,13 @@ WebViewInternal.prototype.handleBrowserPluginAttributeMutation =
   if (name == 'internalinstanceid' && !oldValue && !!newValue) {
     this.browserPluginNode.removeAttribute('internalinstanceid');
     this.internalInstanceId = parseInt(newValue);
-    if (this.deferredAttachState && !!this.guestInstanceId &&
-            this.guestInstanceId != 0) {
+
+    if (!this.deferredAttachState) {
+      this.parseAttributes();
+      return;
+    }
+
+    if (!!this.guestInstanceId && this.guestInstanceId != 0) {
       window.setTimeout(function() {
         var isNewWindow = this.deferredAttachState ?
             this.deferredAttachState.isNewWindow : false;
@@ -575,6 +579,7 @@ WebViewInternal.prototype.handleBrowserPluginAttributeMutation =
             params);
       }.bind(this), 0);
     }
+
     return;
   }
 
@@ -735,6 +740,10 @@ WebViewInternal.prototype.onFrameNameChanged = function(name) {
   } else {
     this.webviewNode.setAttribute('name', this.name);
   }
+};
+
+WebViewInternal.prototype.onPluginDestroyed = function() {
+  this.reset();
 };
 
 WebViewInternal.prototype.dispatchEvent = function(webViewEvent) {

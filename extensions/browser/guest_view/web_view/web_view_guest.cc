@@ -351,6 +351,10 @@ void WebViewGuest::WillDestroy() {
   if (!attached() && GetOpener())
     GetOpener()->pending_new_windows_.erase(this);
   DestroyUnattachedWindows();
+
+  scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
+  DispatchEventToEmbedder(
+      new GuestViewBase::Event(webview::kEventPluginDestroyed, args.Pass()));
 }
 
 bool WebViewGuest::AddMessageToConsole(WebContents* source,
