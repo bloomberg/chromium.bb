@@ -103,6 +103,10 @@ class MockRenderProcessHost : public RenderProcessHost {
     is_isolated_guest_ = is_isolated_guest;
   }
 
+  void SetProcessHandle(scoped_ptr<base::ProcessHandle> new_handle) {
+    process_handle = new_handle.Pass();
+  }
+
  private:
   // Stores IPC messages that would have been sent to the renderer.
   IPC::TestSink sink_;
@@ -118,6 +122,7 @@ class MockRenderProcessHost : public RenderProcessHost {
   bool fast_shutdown_started_;
   bool deletion_callback_called_;
   bool is_isolated_guest_;
+  scoped_ptr<base::ProcessHandle> process_handle;
 
   DISALLOW_COPY_AND_ASSIGN(MockRenderProcessHost);
 };

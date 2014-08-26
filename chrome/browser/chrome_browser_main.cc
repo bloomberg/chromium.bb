@@ -69,6 +69,7 @@
 #include "chrome/browser/performance_monitor/performance_monitor.h"
 #include "chrome/browser/performance_monitor/startup_timer.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
+#include "chrome/browser/power/process_power_collector.h"
 #include "chrome/browser/pref_service_flags_storage.h"
 #include "chrome/browser/prefs/chrome_pref_service_factory.h"
 #include "chrome/browser/prefs/command_line_pref_store.h"
@@ -1551,6 +1552,11 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 
   performance_monitor::PerformanceMonitor::GetInstance()->Initialize();
 
+#if !defined(OS_ANDROID)
+  process_power_collector_.reset(new ProcessPowerCollector);
+  process_power_collector_->Initialize();
+#endif
+
   PostBrowserStart();
 
   if (parameters().ui_task) {
@@ -1624,6 +1630,10 @@ void ChromeBrowserMainParts::PostMainMessageLoopRun() {
 
   // Disarm the startup hang detector time bomb if it is still Arm'ed.
   startup_watcher_->Disarm();
+
+  // Remove observers attached to D-Bus clients before DbusThreadManager is
+  // shut down.
+  process_power_collector_.reset();
 
   for (size_t i = 0; i < chrome_extra_parts_.size(); ++i)
     chrome_extra_parts_[i]->PostMainMessageLoopRun();

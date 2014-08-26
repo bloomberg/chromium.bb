@@ -347,6 +347,10 @@ class AppWindow : public content::NotificationObserver,
   // Whether the app window wants to be alpha enabled.
   bool requested_alpha_enabled() const { return requested_alpha_enabled_; }
 
+  void SetAppWindowContentsForTesting(scoped_ptr<AppWindowContents> contents) {
+    app_window_contents_ = contents.Pass();
+  }
+
  protected:
   virtual ~AppWindow();
 

@@ -122,6 +122,8 @@ void MockRenderProcessHost::DumpHandles() {
 base::ProcessHandle MockRenderProcessHost::GetHandle() const {
   // Return the current-process handle for the IPC::GetFileHandleForProcess
   // function.
+  if (process_handle)
+    return *process_handle;
   return base::Process::Current().handle();
 }
 

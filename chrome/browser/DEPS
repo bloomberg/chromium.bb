@@ -48,6 +48,7 @@ include_rules = [
   "+components/os_crypt",
   "+components/password_manager",
   "+components/policy",
+  "+components/power",
   "+components/precache",
   "+components/pref_registry",
   "+components/query_parser",

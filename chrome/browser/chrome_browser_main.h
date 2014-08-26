@@ -23,6 +23,7 @@ class ChromeBrowserMainExtraParts;
 class FieldTrialSynchronizer;
 class MetricsService;
 class PrefService;
+class ProcessPowerCollector;
 class Profile;
 class StartupBrowserCreator;
 class StartupTimeBomb;
@@ -149,6 +150,11 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   scoped_ptr<base::FieldTrialList> field_trial_list_;
 
   ChromeBrowserFieldTrials browser_field_trials_;
+
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+  // A monitor for attributing power consumption to origins.
+  scoped_ptr<ProcessPowerCollector> process_power_collector_;
+#endif
 
   // Vector of additional ChromeBrowserMainExtraParts.
   // Parts are deleted in the inverse order they are added.
