@@ -1,0 +1,126 @@
+<script src="../../resources/testharness.js"></script>
+<script src="test-helpers.js?pipe=sub"></script>
+<script>
+function get_boundary(headers) {
+  var reg = new RegExp('multipart\/form-data; boundary=(.*)');
+  for (var i = 0; i < headers.length; ++i) {
+    if (headers[i][0] != 'content-type') {
+      continue;
+    }
+    var regResult = reg.exec(headers[i][1]);
+    if (!regResult) {
+      continue;
+    }
+    return regResult[1];
+  }
+  return '';
+}
+
+function create_file_system_file(file_name, data) {
+  return new Promise(function(resolve, reject) {
+      webkitRequestFileSystem(TEMPORARY, 1024, function(fs) {
+          fs.root.getFile(
+            file_name, {create: true, exclusive: true},
+            function(fileEntry) {
+              fileEntry.createWriter(function(fileWriter) {
+                  fileWriter.onwriteend = function(e) {
+                    fileEntry.file(function(file) { resolve(file); });
+                  };
+                  var blob = new Blob([data], {type: 'text/plain'});
+                  fileWriter.write(blob);
+                });
+            }, function(e) { reject(e); });
+        }, function(e) { reject(e); });
+    });
+}
+
+function xhr_send(method, data) {
+  return new Promise(function(resolve, reject) {
+      var xhr = new XMLHttpRequest();
+      xhr.onload = function() {
+        resolve(JSON.parse(xhr.response));
+      };
+      xhr.onerror = function() {
+        reject('XHR should succeed.');
+      };
+      xhr.responseType = 'text';
+      xhr.open(method, './dummy?test', true);
+      xhr.send(data);
+    });
+}
+
+function string_test() {
+  return xhr_send('POST', 'test string')
+    .then(function(response) {
+        assert_equals(response.method, 'POST');
+        assert_equals(response.body, 'test string');
+      });
+}
+
+function blob_test() {
+  return xhr_send('POST', new Blob(['test blob']))
+    .then(function(response) {
+        assert_equals(response.method, 'POST');
+        assert_equals(response.body, 'test blob');
+      });
+}
+
+function custom_method_test() {
+  return xhr_send('XXX', 'test string xxx')
+    .then(function(response){
+        assert_equals(response.method, 'XXX');
+        assert_equals(response.body, 'test string xxx');
+      });
+}
+
+function form_data_test() {
+  return create_file_system_file('fsfile.txt', 'fs file content')
+    .then(function(file_system_file) {
+        var formData = new FormData();
+        formData.append('sample string', '1234567890');
+        formData.append('sample blob', new Blob(['blob content']));
+        formData.append('sample file', new File(['file content'], 'file.dat'));
+        formData.append('sample fs file', file_system_file);
+        return xhr_send('POST', formData);
+      })
+    .then(function(response) {
+        assert_equals(response.method, 'POST');
+        var boundary = get_boundary(response.headers);
+        var expected_body =
+          '--' + boundary + '\r\n' +
+          'Content-Disposition: form-data; name="sample string"\r\n' +
+          '\r\n' +
+          '1234567890\r\n' +
+          '--' + boundary + '\r\n' +
+          'Content-Disposition: form-data; name="sample blob"; ' +
+          'filename="blob"\r\n' +
+          'Content-Type: application/octet-stream\r\n' +
+          '\r\n' +
+          'blob content\r\n' +
+          '--' + boundary + '\r\n' +
+          'Content-Disposition: form-data; name="sample file"; ' +
+          'filename="file.dat"\r\n' +
+          'Content-Type: application/octet-stream\r\n' +
+          '\r\n' +
+          'file content\r\n' +
+          '--' + boundary + '\r\n' +
+          'Content-Disposition: form-data; name="sample fs file"; ' +
+          'filename="fsfile.txt"\r\n' +
+          'Content-Type: text/plain\r\n' +
+          '\r\n' +
+          'fs file content\r\n' +
+          '--' + boundary + '--\r\n';
+        assert_equals(response.body, expected_body);
+      });
+}
+
+window.addEventListener('message', function(evt) {
+    var port = evt.ports[0];
+    string_test()
+      .then(blob_test)
+      .then(custom_method_test)
+      .then(form_data_test)
+      .then(function() { port.postMessage({results: 'finish'}); })
+      .catch(function(e) { port.postMessage({results: 'failure:' + e}); });
+  });
+</script>
