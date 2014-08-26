@@ -4,6 +4,8 @@
 
 #include "gpu/command_buffer/service/context_state.h"
 
+#include <cmath>
+
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/service/buffer_manager.h"
 #include "gpu/command_buffer/service/error_state.h"

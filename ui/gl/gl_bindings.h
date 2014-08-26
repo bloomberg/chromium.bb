@@ -213,6 +213,15 @@
 #define GL_TEXTURE_SAMPLES_IMG                           0x9136
 #endif
 
+#ifndef GL_CHROMIUM_path_rendering
+// These match the corresponding values in NV_path_rendering
+// extension, eg tokens with CHROMIUM replaced with NV.
+#define GL_PATH_MODELVIEW_MATRIX_CHROMIUM 0x0BA6
+#define GL_PATH_PROJECTION_MATRIX_CHROMIUM 0x0BA7
+#define GL_PATH_MODELVIEW_CHROMIUM 0x1700
+#define GL_PATH_PROJECTION_CHROMIUM 0x1701
+#endif
+
 #define GL_GLEXT_PROTOTYPES 1
 
 #if defined(OS_WIN)

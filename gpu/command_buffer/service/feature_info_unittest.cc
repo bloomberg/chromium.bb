@@ -1072,5 +1072,33 @@ TEST_F(FeatureInfoTest, ARBSyncDisabled) {
   EXPECT_FALSE(gfx::GLFence::IsSupported());
 }
 
+TEST_F(FeatureInfoTest, InitializeCHROMIUM_path_rendering) {
+  SetupInitExpectationsWithGLVersion(
+      "GL_NV_path_rendering GL_EXT_direct_state_access", "", "4.3");
+  EXPECT_TRUE(info_->feature_flags().chromium_path_rendering);
+  EXPECT_THAT(info_->extensions(), HasSubstr("GL_CHROMIUM_path_rendering"));
+}
+
+TEST_F(FeatureInfoTest, InitializeCHROMIUM_path_rendering2) {
+  SetupInitExpectationsWithGLVersion(
+      "GL_NV_path_rendering", "", "OpenGL ES 3.1");
+  EXPECT_TRUE(info_->feature_flags().chromium_path_rendering);
+  EXPECT_THAT(info_->extensions(), HasSubstr("GL_CHROMIUM_path_rendering"));
+}
+
+TEST_F(FeatureInfoTest, InitializeNoCHROMIUM_path_rendering) {
+  SetupInitExpectationsWithGLVersion("", "", "4.3");
+  EXPECT_FALSE(info_->feature_flags().chromium_path_rendering);
+  EXPECT_THAT(info_->extensions(),
+              Not(HasSubstr("GL_CHROMIUM_path_rendering")));
+}
+
+TEST_F(FeatureInfoTest, InitializeNoCHROMIUM_path_rendering2) {
+  SetupInitExpectationsWithGLVersion("GL_NV_path_rendering", "", "4.3");
+  EXPECT_FALSE(info_->feature_flags().chromium_path_rendering);
+  EXPECT_THAT(info_->extensions(),
+              Not(HasSubstr("GL_CHROMIUM_path_rendering")));
+}
+
 }  // namespace gles2
 }  // namespace gpu

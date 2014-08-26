@@ -1899,4 +1899,31 @@ TEST_F(GLES2ImplementationTest, DiscardBackbufferCHROMIUM) {
   gl_->DiscardBackbufferCHROMIUM();
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
+
+TEST_F(GLES2ImplementationTest, MatrixLoadfCHROMIUM) {
+  GLfloat data[16] = {0};
+  struct Cmds {
+    cmds::MatrixLoadfCHROMIUMImmediate cmd;
+    GLfloat data[16];
+  };
+
+  for (int jj = 0; jj < 16; ++jj) {
+    data[jj] = static_cast<GLfloat>(jj);
+  }
+  Cmds expected;
+  expected.cmd.Init(GL_PATH_PROJECTION_CHROMIUM, &data[0]);
+  gl_->MatrixLoadfCHROMIUM(GL_PATH_PROJECTION_CHROMIUM, &data[0]);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+
+TEST_F(GLES2ImplementationTest, MatrixLoadIdentityCHROMIUM) {
+  struct Cmds {
+    cmds::MatrixLoadIdentityCHROMIUM cmd;
+  };
+  Cmds expected;
+  expected.cmd.Init(GL_PATH_PROJECTION_CHROMIUM);
+
+  gl_->MatrixLoadIdentityCHROMIUM(GL_PATH_PROJECTION_CHROMIUM);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_IMPLEMENTATION_UNITTEST_AUTOGEN_H_

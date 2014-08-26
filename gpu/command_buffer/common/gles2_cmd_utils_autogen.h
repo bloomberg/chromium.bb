@@ -33,6 +33,7 @@ static std::string GetStringGetTexParamTarget(uint32_t value);
 static std::string GetStringHintMode(uint32_t value);
 static std::string GetStringHintTarget(uint32_t value);
 static std::string GetStringIndexType(uint32_t value);
+static std::string GetStringMatrixMode(uint32_t value);
 static std::string GetStringPixelStore(uint32_t value);
 static std::string GetStringPixelType(uint32_t value);
 static std::string GetStringProgramParameter(uint32_t value);

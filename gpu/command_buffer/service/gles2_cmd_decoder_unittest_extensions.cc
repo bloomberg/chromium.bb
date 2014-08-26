@@ -6,7 +6,7 @@
 
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
-#include "gpu/command_buffer/service/gles2_cmd_decoder_unittest_base.h"
+#include "gpu/command_buffer/service/gles2_cmd_decoder_unittest.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_mock.h"
 
@@ -16,6 +16,25 @@ using ::testing::_;
 namespace gpu {
 namespace gles2 {
 
+class GLES2DecoderTestWithCHROMIUMPathRendering : public GLES2DecoderTest {
+ public:
+  GLES2DecoderTestWithCHROMIUMPathRendering() {}
+  virtual void SetUp() OVERRIDE {
+    InitState init;
+    init.gl_version = "opengl es 3.1";
+    init.has_alpha = true;
+    init.has_depth = true;
+    init.request_alpha = true;
+    init.request_depth = true;
+    init.bind_generates_resource = true;
+    init.extensions = "GL_NV_path_rendering";
+    InitDecoder(init);
+  }
+};
+
+INSTANTIATE_TEST_CASE_P(Service,
+                        GLES2DecoderTestWithCHROMIUMPathRendering,
+                        ::testing::Bool());
 #include "gpu/command_buffer/service/gles2_cmd_decoder_unittest_extensions_autogen.h"
 
 }  // namespace gles2

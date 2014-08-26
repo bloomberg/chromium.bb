@@ -861,4 +861,9 @@ void GLES2InterfaceStub::ScheduleOverlayPlaneCHROMIUM(
     GLfloat /* uv_width */,
     GLfloat /* uv_height */) {
 }
+void GLES2InterfaceStub::MatrixLoadfCHROMIUM(GLenum /* matrixMode */,
+                                             const GLfloat* /* m */) {
+}
+void GLES2InterfaceStub::MatrixLoadIdentityCHROMIUM(GLenum /* matrixMode */) {
+}
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_INTERFACE_STUB_IMPL_AUTOGEN_H_

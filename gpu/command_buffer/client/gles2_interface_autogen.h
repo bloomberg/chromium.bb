@@ -504,4 +504,6 @@ virtual void ScheduleOverlayPlaneCHROMIUM(GLint plane_z_order,
                                           GLfloat uv_y,
                                           GLfloat uv_width,
                                           GLfloat uv_height) = 0;
+virtual void MatrixLoadfCHROMIUM(GLenum matrixMode, const GLfloat* m) = 0;
+virtual void MatrixLoadIdentityCHROMIUM(GLenum matrixMode) = 0;
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_INTERFACE_AUTOGEN_H_

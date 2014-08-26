@@ -972,6 +972,12 @@ void GLES2ScheduleOverlayPlaneCHROMIUM(GLint plane_z_order,
                                                       uv_width,
                                                       uv_height);
 }
+void GLES2MatrixLoadfCHROMIUM(GLenum matrixMode, const GLfloat* m) {
+  gles2::GetGLContext()->MatrixLoadfCHROMIUM(matrixMode, m);
+}
+void GLES2MatrixLoadIdentityCHROMIUM(GLenum matrixMode) {
+  gles2::GetGLContext()->MatrixLoadIdentityCHROMIUM(matrixMode);
+}
 
 namespace gles2 {
 
@@ -1751,6 +1757,14 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
      "glScheduleOverlayPlaneCHROMIUM",
      reinterpret_cast<GLES2FunctionPointer>(glScheduleOverlayPlaneCHROMIUM),
+    },
+    {
+     "glMatrixLoadfCHROMIUM",
+     reinterpret_cast<GLES2FunctionPointer>(glMatrixLoadfCHROMIUM),
+    },
+    {
+     "glMatrixLoadIdentityCHROMIUM",
+     reinterpret_cast<GLES2FunctionPointer>(glMatrixLoadIdentityCHROMIUM),
     },
     {
      NULL, NULL,

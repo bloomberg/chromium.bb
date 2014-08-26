@@ -68,6 +68,8 @@ GLenum front_face;
 GLenum hint_generate_mipmap;
 GLenum hint_fragment_shader_derivative;
 GLfloat line_width;
+GLfloat modelview_matrix[16];
+GLfloat projection_matrix[16];
 GLint pack_alignment;
 GLint unpack_alignment;
 GLfloat polygon_offset_factor;

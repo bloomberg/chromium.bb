@@ -57,6 +57,16 @@ void GLES2DecoderTestBase::SetupInitStateExpectations() {
         .RetiresOnSaturation();
   }
   EXPECT_CALL(*gl_, LineWidth(1.0f)).Times(1).RetiresOnSaturation();
+  if (group_->feature_info()->feature_flags().chromium_path_rendering) {
+    EXPECT_CALL(*gl_, MatrixLoadfEXT(GL_PATH_MODELVIEW_CHROMIUM, _))
+        .Times(1)
+        .RetiresOnSaturation();
+  }
+  if (group_->feature_info()->feature_flags().chromium_path_rendering) {
+    EXPECT_CALL(*gl_, MatrixLoadfEXT(GL_PATH_PROJECTION_CHROMIUM, _))
+        .Times(1)
+        .RetiresOnSaturation();
+  }
   EXPECT_CALL(*gl_, PixelStorei(GL_PACK_ALIGNMENT, 4))
       .Times(1)
       .RetiresOnSaturation();

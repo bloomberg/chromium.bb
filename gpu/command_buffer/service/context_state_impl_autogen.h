@@ -68,6 +68,38 @@ void ContextState::Initialize() {
   hint_generate_mipmap = GL_DONT_CARE;
   hint_fragment_shader_derivative = GL_DONT_CARE;
   line_width = 1.0f;
+  modelview_matrix[0] = 1.0f;
+  modelview_matrix[1] = 0.0f;
+  modelview_matrix[2] = 0.0f;
+  modelview_matrix[3] = 0.0f;
+  modelview_matrix[4] = 0.0f;
+  modelview_matrix[5] = 1.0f;
+  modelview_matrix[6] = 0.0f;
+  modelview_matrix[7] = 0.0f;
+  modelview_matrix[8] = 0.0f;
+  modelview_matrix[9] = 0.0f;
+  modelview_matrix[10] = 1.0f;
+  modelview_matrix[11] = 0.0f;
+  modelview_matrix[12] = 0.0f;
+  modelview_matrix[13] = 0.0f;
+  modelview_matrix[14] = 0.0f;
+  modelview_matrix[15] = 1.0f;
+  projection_matrix[0] = 1.0f;
+  projection_matrix[1] = 0.0f;
+  projection_matrix[2] = 0.0f;
+  projection_matrix[3] = 0.0f;
+  projection_matrix[4] = 0.0f;
+  projection_matrix[5] = 1.0f;
+  projection_matrix[6] = 0.0f;
+  projection_matrix[7] = 0.0f;
+  projection_matrix[8] = 0.0f;
+  projection_matrix[9] = 0.0f;
+  projection_matrix[10] = 1.0f;
+  projection_matrix[11] = 0.0f;
+  projection_matrix[12] = 0.0f;
+  projection_matrix[13] = 0.0f;
+  projection_matrix[14] = 0.0f;
+  projection_matrix[15] = 1.0f;
   pack_alignment = 4;
   unpack_alignment = 4;
   polygon_offset_factor = 0.0f;
@@ -195,19 +227,38 @@ void ContextState::InitState(const ContextState* prev_state) const {
       glDepthRange(z_near, z_far);
     if ((front_face != prev_state->front_face))
       glFrontFace(front_face);
-    if (prev_state->hint_generate_mipmap != hint_generate_mipmap)
+    if (prev_state->hint_generate_mipmap != hint_generate_mipmap) {
       glHint(GL_GENERATE_MIPMAP_HINT, hint_generate_mipmap);
-    if (feature_info_->feature_flags().oes_standard_derivatives)
+    }
+    if (feature_info_->feature_flags().oes_standard_derivatives) {
       if (prev_state->hint_fragment_shader_derivative !=
-          hint_fragment_shader_derivative)
+          hint_fragment_shader_derivative) {
         glHint(GL_FRAGMENT_SHADER_DERIVATIVE_HINT_OES,
                hint_fragment_shader_derivative);
+      }
+    }
     if ((line_width != prev_state->line_width))
       glLineWidth(line_width);
-    if (prev_state->pack_alignment != pack_alignment)
+    if (feature_info_->feature_flags().chromium_path_rendering) {
+      if (memcmp(prev_state->modelview_matrix,
+                 modelview_matrix,
+                 sizeof(GLfloat) * 16)) {
+        glMatrixLoadfEXT(GL_PATH_MODELVIEW_CHROMIUM, modelview_matrix);
+      }
+    }
+    if (feature_info_->feature_flags().chromium_path_rendering) {
+      if (memcmp(prev_state->projection_matrix,
+                 projection_matrix,
+                 sizeof(GLfloat) * 16)) {
+        glMatrixLoadfEXT(GL_PATH_PROJECTION_CHROMIUM, projection_matrix);
+      }
+    }
+    if (prev_state->pack_alignment != pack_alignment) {
       glPixelStorei(GL_PACK_ALIGNMENT, pack_alignment);
-    if (prev_state->unpack_alignment != unpack_alignment)
+    }
+    if (prev_state->unpack_alignment != unpack_alignment) {
       glPixelStorei(GL_UNPACK_ALIGNMENT, unpack_alignment);
+    }
     if ((polygon_offset_factor != prev_state->polygon_offset_factor) ||
         (polygon_offset_units != prev_state->polygon_offset_units))
       glPolygonOffset(polygon_offset_factor, polygon_offset_units);
@@ -278,10 +329,17 @@ void ContextState::InitState(const ContextState* prev_state) const {
     glDepthRange(z_near, z_far);
     glFrontFace(front_face);
     glHint(GL_GENERATE_MIPMAP_HINT, hint_generate_mipmap);
-    if (feature_info_->feature_flags().oes_standard_derivatives)
+    if (feature_info_->feature_flags().oes_standard_derivatives) {
       glHint(GL_FRAGMENT_SHADER_DERIVATIVE_HINT_OES,
              hint_fragment_shader_derivative);
+    }
     glLineWidth(line_width);
+    if (feature_info_->feature_flags().chromium_path_rendering) {
+      glMatrixLoadfEXT(GL_PATH_MODELVIEW_CHROMIUM, modelview_matrix);
+    }
+    if (feature_info_->feature_flags().chromium_path_rendering) {
+      glMatrixLoadfEXT(GL_PATH_PROJECTION_CHROMIUM, projection_matrix);
+    }
     glPixelStorei(GL_PACK_ALIGNMENT, pack_alignment);
     glPixelStorei(GL_UNPACK_ALIGNMENT, unpack_alignment);
     glPolygonOffset(polygon_offset_factor, polygon_offset_units);
@@ -458,6 +516,22 @@ bool ContextState::GetStateAsGLint(GLenum pname,
         params[0] = static_cast<GLint>(line_width);
       }
       return true;
+    case GL_PATH_MODELVIEW_MATRIX_CHROMIUM:
+      *num_written = 16;
+      if (params) {
+        for (size_t i = 0; i < 16; ++i) {
+          params[i] = static_cast<GLint>(round(modelview_matrix[i]));
+        }
+      }
+      return true;
+    case GL_PATH_PROJECTION_MATRIX_CHROMIUM:
+      *num_written = 16;
+      if (params) {
+        for (size_t i = 0; i < 16; ++i) {
+          params[i] = static_cast<GLint>(round(projection_matrix[i]));
+        }
+      }
+      return true;
     case GL_PACK_ALIGNMENT:
       *num_written = 1;
       if (params) {
@@ -473,13 +547,13 @@ bool ContextState::GetStateAsGLint(GLenum pname,
     case GL_POLYGON_OFFSET_FACTOR:
       *num_written = 1;
       if (params) {
-        params[0] = static_cast<GLint>(polygon_offset_factor);
+        params[0] = static_cast<GLint>(round(polygon_offset_factor));
       }
       return true;
     case GL_POLYGON_OFFSET_UNITS:
       *num_written = 1;
       if (params) {
-        params[0] = static_cast<GLint>(polygon_offset_units);
+        params[0] = static_cast<GLint>(round(polygon_offset_units));
       }
       return true;
     case GL_SAMPLE_COVERAGE_VALUE:
@@ -781,6 +855,18 @@ bool ContextState::GetStateAsGLfloat(GLenum pname,
       *num_written = 1;
       if (params) {
         params[0] = static_cast<GLfloat>(line_width);
+      }
+      return true;
+    case GL_PATH_MODELVIEW_MATRIX_CHROMIUM:
+      *num_written = 16;
+      if (params) {
+        memcpy(params, modelview_matrix, sizeof(GLfloat) * 16);
+      }
+      return true;
+    case GL_PATH_PROJECTION_MATRIX_CHROMIUM:
+      *num_written = 16;
+      if (params) {
+        memcpy(params, projection_matrix, sizeof(GLfloat) * 16);
       }
       return true;
     case GL_PACK_ALIGNMENT:

@@ -198,6 +198,10 @@ static const GLenum valid_index_type_table[] = {
     GL_UNSIGNED_BYTE, GL_UNSIGNED_SHORT,
 };
 
+static const GLenum valid_matrix_mode_table[] = {
+    GL_PATH_PROJECTION_CHROMIUM, GL_PATH_MODELVIEW_CHROMIUM,
+};
+
 static const GLenum valid_pixel_store_table[] = {
     GL_PACK_ALIGNMENT,
     GL_UNPACK_ALIGNMENT,
@@ -410,6 +414,7 @@ Validators::Validators()
       hint_mode(valid_hint_mode_table, arraysize(valid_hint_mode_table)),
       hint_target(valid_hint_target_table, arraysize(valid_hint_target_table)),
       index_type(valid_index_type_table, arraysize(valid_index_type_table)),
+      matrix_mode(valid_matrix_mode_table, arraysize(valid_matrix_mode_table)),
       pixel_store(valid_pixel_store_table, arraysize(valid_pixel_store_table)),
       pixel_store_alignment(valid_pixel_store_alignment_table,
                             arraysize(valid_pixel_store_alignment_table)),

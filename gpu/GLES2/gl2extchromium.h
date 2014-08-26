@@ -717,6 +717,22 @@ typedef void(GL_APIENTRYP PFNGLSCHEDULEOVERLAYPLANECHROMIUMPROC)(
 #endif
 #endif  /* GL_CHROMIUM_sync_query */
 
+#ifndef GL_CHROMIUM_path_rendering
+#define GL_CHROMIUM_path_rendering 1
+
+#ifdef GL_GLEXT_PROTOTYPES
+GL_APICALL void GL_APIENTRY
+    glMatrixLoadfCHROMIUM(GLenum mode, const GLfloat* m);
+GL_APICALL void GL_APIENTRY glMatrixLoadIdentityCHROMIUM(GLenum mode);
+#endif
+
+typedef void(GL_APIENTRYP PFNGLMATRIXLOADFCHROMIUMPROC)(GLenum matrixMode,
+                                                        const GLfloat* m);
+typedef void(GL_APIENTRYP PFNGLMATRIXLOADIDENTITYCHROMIUMPROC)(
+    GLenum matrixMode);
+
+#endif /* GL_CHROMIUM_path_rendering */
+
 #ifdef __cplusplus
 }
 #endif

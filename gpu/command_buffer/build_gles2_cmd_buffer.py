@@ -506,6 +506,36 @@ _STATES = {
       },
     ],
   },
+  'MatrixValuesCHROMIUM': {
+    'type': 'NamedParameter',
+    'func': 'MatrixLoadfEXT',
+    'states': [
+      { 'enum': 'GL_PATH_MODELVIEW_MATRIX_CHROMIUM',
+        'enum_set': 'GL_PATH_MODELVIEW_CHROMIUM',
+        'name': 'modelview_matrix',
+        'type': 'GLfloat',
+        'default': [
+          '1.0f', '0.0f','0.0f','0.0f',
+          '0.0f', '1.0f','0.0f','0.0f',
+          '0.0f', '0.0f','1.0f','0.0f',
+          '0.0f', '0.0f','0.0f','1.0f',
+        ],
+        'extension_flag': 'chromium_path_rendering',
+      },
+      { 'enum': 'GL_PATH_PROJECTION_MATRIX_CHROMIUM',
+        'enum_set': 'GL_PATH_PROJECTION_CHROMIUM',
+        'name': 'projection_matrix',
+        'type': 'GLfloat',
+        'default': [
+          '1.0f', '0.0f','0.0f','0.0f',
+          '0.0f', '1.0f','0.0f','0.0f',
+          '0.0f', '0.0f','1.0f','0.0f',
+          '0.0f', '0.0f','0.0f','1.0f',
+        ],
+        'extension_flag': 'chromium_path_rendering',
+      },
+    ],
+  },
 }
 
 # Named type info object represents a named type that is used in OpenGL call
@@ -837,6 +867,13 @@ _NAMED_TYPE_INFO = {
       'GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME',
       'GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_LEVEL',
       'GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_CUBE_MAP_FACE',
+    ],
+  },
+  'MatrixMode': {
+    'type': 'GLenum',
+    'valid': [
+      'GL_PATH_PROJECTION_CHROMIUM',
+      'GL_PATH_MODELVIEW_CHROMIUM',
     ],
   },
   'ProgramParameter': {
@@ -2584,6 +2621,23 @@ _FUNCTION_INFO = {
       'extension': True,
       'chromium': True,
   },
+  'MatrixLoadfCHROMIUM': {
+    'type': 'PUT',
+    'count': 16,
+    'data_type': 'GLfloat',
+    'decoder_func': 'DoMatrixLoadfCHROMIUM',
+    'gl_test_func': 'glMatrixLoadfEXT',
+    'chromium': True,
+    'extension': True,
+    'extension_flag': 'chromium_path_rendering',
+  },
+  'MatrixLoadIdentityCHROMIUM': {
+    'decoder_func': 'DoMatrixLoadIdentityCHROMIUM',
+    'gl_test_func': 'glMatrixLoadIdentityEXT',
+    'chromium': True,
+    'extension': True,
+    'extension_flag': 'chromium_path_rendering',
+  },
 }
 
 
@@ -2652,6 +2706,29 @@ def ToGLExtensionString(extension_flag):
 def ToCamelCase(input_string):
   """converts ABC_underscore_case to ABCUnderscoreCase."""
   return ''.join(w[0].upper() + w[1:] for w in input_string.split('_'))
+
+def GetGLGetTypeConversion(result_type, value_type, value):
+  """Makes a gl compatible type conversion string for accessing state variables.
+
+   Useful when accessing state variables through glGetXXX calls.
+   glGet documetation (for example, the manual pages):
+   [...] If glGetIntegerv is called, [...] most floating-point values are
+   rounded to the nearest integer value. [...]
+
+  Args:
+   result_type: the gl type to be obtained
+   value_type: the GL type of the state variable
+   value: the name of the state variable
+
+  Returns:
+   String that converts the state variable to desired GL type according to GL
+   rules.
+  """
+
+  if result_type == 'GLint':
+    if value_type == 'GLfloat':
+      return 'static_cast<GLint>(round(%s))' % value
+  return 'static_cast<%s>(%s)' % (result_type, value)
 
 class CWriter(object):
   """Writes to a file formatting it for Google's style guidelines."""
@@ -7468,9 +7545,19 @@ class GLGenerator(object):
     for state_name in sorted(_STATES.keys()):
       state = _STATES[state_name]
       for item in state['states']:
-        file.Write("%s %s;\n" % (item['type'], item['name']))
+        if isinstance(item['default'], list):
+          file.Write("%s %s[%d];\n" % (item['type'], item['name'],
+                                       len(item['default'])))
+        else:
+          file.Write("%s %s;\n" % (item['type'], item['name']))
+
         if item.get('cached', False):
-          file.Write("%s cached_%s;\n" % (item['type'], item['name']))
+          if isinstance(item['default'], list):
+            file.Write("%s cached_%s[%d];\n" % (item['type'], item['name'],
+                                                len(item['default'])))
+          else:
+            file.Write("%s cached_%s;\n" % (item['type'], item['name']))
+
     file.Write("\n")
 
     file.Write("""
@@ -7538,10 +7625,26 @@ bool %s::GetStateAs%s(
         else:
           for item in state['states']:
             file.Write("    case %s:\n" % item['enum'])
-            file.Write("      *num_written = 1;\n")
-            file.Write("      if (params) {\n")
-            file.Write("        params[0] = static_cast<%s>(%s);\n" %
-                       (gl_type, item['name']))
+            if isinstance(item['default'], list):
+              item_len = len(item['default'])
+              file.Write("      *num_written = %d;\n" % item_len)
+              file.Write("      if (params) {\n")
+              if item['type'] == gl_type:
+                file.Write("        memcpy(params, %s, sizeof(%s) * %d);\n" %
+                           (item['name'], item['type'], item_len))
+              else:
+                file.Write("        for (size_t i = 0; i < %s; ++i) {\n" %
+                           item_len)
+                file.Write("          params[i] = %s;\n" %
+                           (GetGLGetTypeConversion(gl_type, item['type'],
+                                                   "%s[i]" % item['name'])))
+                file.Write("        }\n");
+            else:
+              file.Write("      *num_written = 1;\n")
+              file.Write("      if (params) {\n")
+              file.Write("        params[0] = %s;\n" %
+                         (GetGLGetTypeConversion(gl_type, item['type'],
+                                                 item['name'])))
             file.Write("      }\n")
             file.Write("      return true;\n")
       for capability in _CAPABILITY_FLAGS:
@@ -7580,9 +7683,17 @@ bool %s::GetStateAs%s(
     for state_name in sorted(_STATES.keys()):
       state = _STATES[state_name]
       for item in state['states']:
-        file.Write("  %s = %s;\n" % (item['name'], item['default']))
+        if isinstance(item['default'], list):
+          for ndx, value in enumerate(item['default']):
+            file.Write("  %s[%d] = %s;\n" % (item['name'], ndx, value))
+        else:
+          file.Write("  %s = %s;\n" % (item['name'], item['default']))
         if item.get('cached', False):
-          file.Write("  cached_%s = %s;\n" % (item['name'], item['default']))
+          if isinstance(item['default'], list):
+            for ndx, value in enumerate(item['default']):
+              file.Write("  cached_%s[%d] = %s;\n" % (item['name'], ndx, value))
+          else:
+            file.Write("  cached_%s = %s;\n" % (item['name'], item['default']))
     file.Write("}\n")
 
     file.Write("""
@@ -7636,13 +7747,28 @@ void ContextState::InitState(const ContextState *prev_state) const {
             item_name = CachedStateName(item)
 
             if 'extension_flag' in item:
-              file.Write("  if (feature_info_->feature_flags().%s)\n  " %
+              file.Write("  if (feature_info_->feature_flags().%s) {\n  " %
                          item['extension_flag'])
             if test_prev:
-              file.Write("  if (prev_state->%s != %s)\n" %
-                         (item_name, item_name))
+              if isinstance(item['default'], list):
+                file.Write("  if (memcmp(prev_state->%s, %s, "
+                           "sizeof(%s) * %d)) {\n" %
+                           (item_name, item_name, item['type'],
+                            len(item['default'])))
+              else:
+                file.Write("  if (prev_state->%s != %s) {\n  " %
+                           (item_name, item_name))
             file.Write("  gl%s(%s, %s);\n" %
-                       (state['func'], item['enum'], item_name))
+                       (state['func'],
+                        (item['enum_set']
+                           if 'enum_set' in item else item['enum']),
+                        item['name']))
+            if test_prev:
+              if 'extension_flag' in item:
+                file.Write("  ")
+              file.Write("  }")
+            if 'extension_flag' in item:
+              file.Write("  }")
         else:
           if 'extension_flag' in state:
             file.Write("  if (feature_info_->feature_flags().%s)\n  " %
@@ -7667,7 +7793,6 @@ void ContextState::InitState(const ContextState *prev_state) const {
     file.Write("  } else {")
     WriteStates(False)
     file.Write("  }")
-
     file.Write("}\n")
 
     file.Write("""bool ContextState::GetEnabled(GLenum cap) const {
@@ -7854,10 +7979,17 @@ void GLES2DecoderTestBase::SetupInitStateExpectations() {
             file.Write("  if (group_->feature_info()->feature_flags().%s) {\n" %
                        item['extension_flag'])
             file.Write("  ")
+          expect_value = item['default']
+          if isinstance(expect_value, list):
+            # TODO: Currently we do not check array values.
+            expect_value = "_"
 
           file.Write(
               "  EXPECT_CALL(*gl_, %s(%s, %s))\n" %
-              (state['func'], item['enum'], item['default']))
+              (state['func'],
+               (item['enum_set']
+                           if 'enum_set' in item else item['enum']),
+               expect_value))
           file.Write("      .Times(1)\n")
           file.Write("      .RetiresOnSaturation();\n")
           if 'extension_flag' in item:
@@ -7873,6 +8005,8 @@ void GLES2DecoderTestBase::SetupInitStateExpectations() {
             args.append(item['expected'])
           else:
             args.append(item['default'])
+        # TODO: Currently we do not check array values.
+        args = ["_" if isinstance(arg, list) else arg for arg in args]
         file.Write("  EXPECT_CALL(*gl_, %s(%s))\n" %
                    (state['func'], ", ".join(args)))
         file.Write("      .Times(1)\n")
@@ -8352,6 +8486,8 @@ def main(argv):
   gl_state_valid = _NAMED_TYPE_INFO['GLState']['valid']
   for state_name in sorted(_STATES.keys()):
     state = _STATES[state_name]
+    if 'extension_flag' in state:
+      continue
     if 'enum' in state:
       if not state['enum'] in gl_state_valid:
         gl_state_valid.append(state['enum'])

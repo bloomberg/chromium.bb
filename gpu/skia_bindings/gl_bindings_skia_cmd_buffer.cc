@@ -140,6 +140,8 @@ GrGLInterface* CreateCommandBufferSkiaGLBinding() {
   functions->fBindUniformLocation = glBindUniformLocationCHROMIUM;
   functions->fBlitFramebuffer = glBlitFramebufferCHROMIUM;
   functions->fGenerateMipmap = glGenerateMipmap;
+  functions->fMatrixLoadf = glMatrixLoadfCHROMIUM;
+  functions->fMatrixLoadIdentity = glMatrixLoadIdentityCHROMIUM;
 
   return interface;
 }

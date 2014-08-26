@@ -1944,4 +1944,23 @@ void ScheduleOverlayPlaneCHROMIUM(GLint plane_z_order,
   }
 }
 
+void MatrixLoadfCHROMIUMImmediate(GLenum matrixMode, const GLfloat* m) {
+  const uint32_t size =
+      gles2::cmds::MatrixLoadfCHROMIUMImmediate::ComputeSize();
+  gles2::cmds::MatrixLoadfCHROMIUMImmediate* c =
+      GetImmediateCmdSpaceTotalSize<gles2::cmds::MatrixLoadfCHROMIUMImmediate>(
+          size);
+  if (c) {
+    c->Init(matrixMode, m);
+  }
+}
+
+void MatrixLoadIdentityCHROMIUM(GLenum matrixMode) {
+  gles2::cmds::MatrixLoadIdentityCHROMIUM* c =
+      GetCmdSpace<gles2::cmds::MatrixLoadIdentityCHROMIUM>();
+  if (c) {
+    c->Init(matrixMode);
+  }
+}
+
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_CMD_HELPER_AUTOGEN_H_

@@ -987,6 +987,9 @@ class GLES2DecoderImpl : public GLES2Decoder,
 
   void DoLoseContextCHROMIUM(GLenum current, GLenum other);
 
+  void DoMatrixLoadfCHROMIUM(GLenum matrix_mode, const GLfloat* matrix);
+  void DoMatrixLoadIdentityCHROMIUM(GLenum matrix_mode);
+
   // Creates a Program for the given program.
   Program* CreateProgram(
       GLuint client_id, GLuint service_id) {
@@ -10658,6 +10661,50 @@ void GLES2DecoderImpl::DoLoseContextCHROMIUM(GLenum current, GLenum other) {
   group_->LoseContexts(other);
   reset_status_ = current;
   current_decoder_error_ = error::kLostContext;
+}
+
+void GLES2DecoderImpl::DoMatrixLoadfCHROMIUM(GLenum matrix_mode,
+                                             const GLfloat* matrix) {
+  DCHECK(matrix_mode == GL_PATH_PROJECTION_CHROMIUM ||
+         matrix_mode == GL_PATH_MODELVIEW_CHROMIUM);
+  if (!features().chromium_path_rendering) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION,
+                       "glMatrixLoadfCHROMIUM",
+                       "function not available");
+    return;
+  }
+
+  GLfloat* target_matrix = matrix_mode == GL_PATH_PROJECTION_CHROMIUM
+                               ? state_.projection_matrix
+                               : state_.modelview_matrix;
+  memcpy(target_matrix, matrix, sizeof(GLfloat) * 16);
+  // The matrix_mode is either GL_PATH_MODELVIEW_NV or GL_PATH_PROJECTION_NV
+  // since the values of the _NV and _CHROMIUM tokens match.
+  glMatrixLoadfEXT(matrix_mode, matrix);
+}
+
+void GLES2DecoderImpl::DoMatrixLoadIdentityCHROMIUM(GLenum matrix_mode) {
+  DCHECK(matrix_mode == GL_PATH_PROJECTION_CHROMIUM ||
+         matrix_mode == GL_PATH_MODELVIEW_CHROMIUM);
+
+  if (!features().chromium_path_rendering) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION,
+                       "glMatrixLoadIdentityCHROMIUM",
+                       "function not available");
+    return;
+  }
+
+  static GLfloat kIdentityMatrix[16] = {1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f,
+                                        0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f,
+                                        0.0f, 0.0f, 0.0f, 1.0f};
+
+  GLfloat* target_matrix = matrix_mode == GL_PATH_PROJECTION_CHROMIUM
+                               ? state_.projection_matrix
+                               : state_.modelview_matrix;
+  memcpy(target_matrix, kIdentityMatrix, sizeof(kIdentityMatrix));
+  // The matrix_mode is either GL_PATH_MODELVIEW_NV or GL_PATH_PROJECTION_NV
+  // since the values of the _NV and _CHROMIUM tokens match.
+  glMatrixLoadIdentityEXT(matrix_mode);
 }
 
 bool GLES2DecoderImpl::ValidateAsyncTransfer(

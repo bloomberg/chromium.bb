@@ -69,6 +69,7 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
     bool is_swiftshader;
     bool angle_texture_usage;
     bool ext_texture_storage;
+    bool chromium_path_rendering;
   };
 
   struct Workarounds {

@@ -741,4 +741,8 @@ virtual void ScheduleOverlayPlaneCHROMIUM(GLint plane_z_order,
                                           GLfloat uv_width,
                                           GLfloat uv_height) OVERRIDE;
 
+virtual void MatrixLoadfCHROMIUM(GLenum matrixMode, const GLfloat* m) OVERRIDE;
+
+virtual void MatrixLoadIdentityCHROMIUM(GLenum matrixMode) OVERRIDE;
+
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_IMPLEMENTATION_AUTOGEN_H_

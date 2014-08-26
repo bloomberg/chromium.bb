@@ -1526,4 +1526,16 @@ void GLES2TraceImplementation::ScheduleOverlayPlaneCHROMIUM(
                                     uv_height);
 }
 
+void GLES2TraceImplementation::MatrixLoadfCHROMIUM(GLenum matrixMode,
+                                                   const GLfloat* m) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::MatrixLoadfCHROMIUM");
+  gl_->MatrixLoadfCHROMIUM(matrixMode, m);
+}
+
+void GLES2TraceImplementation::MatrixLoadIdentityCHROMIUM(GLenum matrixMode) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu",
+                                "GLES2Trace::MatrixLoadIdentityCHROMIUM");
+  gl_->MatrixLoadIdentityCHROMIUM(matrixMode);
+}
+
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_TRACE_IMPLEMENTATION_IMPL_AUTOGEN_H_

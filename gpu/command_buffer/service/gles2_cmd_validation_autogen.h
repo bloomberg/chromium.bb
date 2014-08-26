@@ -33,6 +33,7 @@ ValueValidator<GLenum> get_tex_param_target;
 ValueValidator<GLenum> hint_mode;
 ValueValidator<GLenum> hint_target;
 ValueValidator<GLenum> index_type;
+ValueValidator<GLenum> matrix_mode;
 ValueValidator<GLenum> pixel_store;
 ValueValidator<GLint> pixel_store_alignment;
 ValueValidator<GLenum> pixel_type;

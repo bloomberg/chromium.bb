@@ -748,6 +748,9 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
      0x882D, "GL_DRAW_BUFFER8_EXT",
     },
     {
+     0x0BA6, "GL_PATH_MODELVIEW_MATRIX_CHROMIUM",
+    },
+    {
      0x8F37, "GL_COPY_WRITE_BUFFER_NV",
     },
     {
@@ -983,6 +986,9 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
     },
     {
      0x92A6, "GL_VIVIDLIGHT_NV",
+    },
+    {
+     0x78F1, "GL_IMAGE_MAP_CHROMIUM",
     },
     {
      0x00080000, "GL_STENCIL_BUFFER_BIT3_QCOM",
@@ -1273,7 +1279,7 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
      0x84CA, "GL_TEXTURE10",
     },
     {
-     0x78F1, "GL_IMAGE_MAP_CHROMIUM",
+     0x0BA7, "GL_PATH_PROJECTION_MATRIX_CHROMIUM",
     },
     {
      0x84CF, "GL_TEXTURE15",
@@ -1738,6 +1744,9 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
      0x8D68, "GL_REQUIRED_TEXTURE_IMAGE_UNITS_OES",
     },
     {
+     0x1700, "GL_PATH_MODELVIEW_CHROMIUM",
+    },
+    {
      0x85BB, "GL_UNSIGNED_SHORT_8_8_REV_APPLE",
     },
     {
@@ -1763,6 +1772,9 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
     },
     {
      0x8CEE, "GL_COLOR_ATTACHMENT14_EXT",
+    },
+    {
+     0x1701, "GL_PATH_PROJECTION_CHROMIUM",
     },
     {
      0x2800, "GL_TEXTURE_MAG_FILTER",
@@ -2676,6 +2688,15 @@ std::string GLES2Util::GetStringIndexType(uint32_t value) {
   static const EnumToString string_table[] = {
       {GL_UNSIGNED_BYTE, "GL_UNSIGNED_BYTE"},
       {GL_UNSIGNED_SHORT, "GL_UNSIGNED_SHORT"},
+  };
+  return GLES2Util::GetQualifiedEnumString(
+      string_table, arraysize(string_table), value);
+}
+
+std::string GLES2Util::GetStringMatrixMode(uint32_t value) {
+  static const EnumToString string_table[] = {
+      {GL_PATH_PROJECTION_CHROMIUM, "GL_PATH_PROJECTION_CHROMIUM"},
+      {GL_PATH_MODELVIEW_CHROMIUM, "GL_PATH_MODELVIEW_CHROMIUM"},
   };
   return GLES2Util::GetQualifiedEnumString(
       string_table, arraysize(string_table), value);

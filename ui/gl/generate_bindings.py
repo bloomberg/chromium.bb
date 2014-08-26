@@ -840,6 +840,24 @@ GL_FUNCTIONS = [
                  'gl_versions': ['es1', 'es2'] }],
   'arguments': 'GLenum target, GLsizei numAttachments, '
       'const GLenum* attachments' },
+{ 'return_type': 'void',
+  'known_as': 'glMatrixLoadfEXT',
+  'versions': [{ 'name': 'glMatrixLoadfEXT',
+                 'gl_versions': ['gl4'],
+                 'extensions': ['GL_EXT_direct_state_access'] },
+               { 'name': 'glMatrixLoadfEXT',
+                 'gl_versions': ['es3'],
+                 'extensions': ['GL_NV_path_rendering'] }],
+  'arguments': 'GLenum matrixMode, const GLfloat* m' },
+{ 'return_type': 'void',
+  'known_as': 'glMatrixLoadIdentityEXT',
+  'versions': [{ 'name': 'glMatrixLoadIdentityEXT',
+                 'gl_versions': ['gl4'],
+                 'extensions': ['GL_EXT_direct_state_access'] },
+               { 'name': 'glMatrixLoadIdentityEXT',
+                 'gl_versions': ['es3'],
+                 'extensions': ['GL_NV_path_rendering'] }],
+  'arguments': 'GLenum matrixMode' },
 ]
 
 OSMESA_FUNCTIONS = [

@@ -210,7 +210,9 @@
   OP(WaitSyncPointCHROMIUM)                    /* 451 */ \
   OP(DrawBuffersEXTImmediate)                  /* 452 */ \
   OP(DiscardBackbufferCHROMIUM)                /* 453 */ \
-  OP(ScheduleOverlayPlaneCHROMIUM)             /* 454 */
+  OP(ScheduleOverlayPlaneCHROMIUM)             /* 454 */ \
+  OP(MatrixLoadfCHROMIUMImmediate)             /* 455 */ \
+  OP(MatrixLoadIdentityCHROMIUM)               /* 456 */
 
 enum CommandId {
   kStartPoint = cmd::kLastCommonId,  // All GLES2 commands start after this.

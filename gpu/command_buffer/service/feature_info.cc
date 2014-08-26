@@ -141,7 +141,8 @@ FeatureInfo::FeatureFlags::FeatureFlags()
       is_angle(false),
       is_swiftshader(false),
       angle_texture_usage(false),
-      ext_texture_storage(false) {
+      ext_texture_storage(false),
+      chromium_path_rendering(false) {
 }
 
 FeatureInfo::Workarounds::Workarounds() :
@@ -830,6 +831,15 @@ void FeatureInfo::InitializeFeatures() {
   if (ui_gl_fence_works) {
     AddExtensionString("GL_CHROMIUM_sync_query");
     feature_flags_.chromium_sync_query = true;
+  }
+
+  if (extensions.Contains("GL_NV_path_rendering")) {
+    if (extensions.Contains("GL_EXT_direct_state_access") || is_es3) {
+      AddExtensionString("GL_CHROMIUM_path_rendering");
+      feature_flags_.chromium_path_rendering = true;
+      validators_.g_l_state.AddValue(GL_PATH_MODELVIEW_MATRIX_CHROMIUM);
+      validators_.g_l_state.AddValue(GL_PATH_PROJECTION_MATRIX_CHROMIUM);
+    }
   }
 }
 
