@@ -91,7 +91,11 @@ CastVideoElement.prototype = {
     }
   },
   set currentTime(currentTime) {
-    // TODO(yoshiki): Support seek.
+    var seekRequest = new chrome.cast.media.SeekRequest();
+    seekRequest.currentTime = currentTime;
+    this.castMedia_.seek(seekRequest,
+        function() {},
+        this.onCastCommandError_.wrap(this));
   },
 
   /**
@@ -119,12 +123,16 @@ CastVideoElement.prototype = {
   },
 
   /**
-   * If this video is seekable or not.
-   * @type {boolean}
+   * TimeRange object that represents the seekable ranges of the media
+   * resource.
+   * @type {TimeRanges}
    */
   get seekable() {
-    // TODO(yoshiki): Support seek.
-    return false;
+    return {
+      length: 1,
+      start: function(index) { return 0; },
+      end: function(index) { return this.currentMediaDuration_; },
+    };
   },
 
   /**
