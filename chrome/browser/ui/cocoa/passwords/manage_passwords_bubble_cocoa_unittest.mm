@@ -37,7 +37,10 @@ class ManagePasswordsBubbleCocoaTest : public CocoaProfileTest {
 
     // Create the test UIController here so that it's bound to
     // |test_web_contents_| and therefore accessible to the model.
-    new ManagePasswordsUIControllerMock(webContents_);
+    ManagePasswordsUIControllerMock* ui_controller =
+        new ManagePasswordsUIControllerMock(webContents_);
+    // Set the initial state.
+    ui_controller->SetState(password_manager::ui::PENDING_PASSWORD_STATE);
   }
 
   content::WebContents* webContents() { return webContents_; }

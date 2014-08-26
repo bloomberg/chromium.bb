@@ -15,6 +15,7 @@
 #import "chrome/browser/ui/cocoa/passwords/manage_passwords_bubble_manage_view_controller.h"
 #import "chrome/browser/ui/cocoa/passwords/manage_passwords_bubble_pending_view_controller.h"
 #include "chrome/browser/ui/cocoa/passwords/manage_passwords_controller_test.h"
+#import "chrome/browser/ui/cocoa/passwords/manage_passwords_bubble_blacklist_view_controller.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
@@ -86,6 +87,13 @@ TEST_F(ManagePasswordsBubbleControllerTest,
             [[controller() currentController] class]);
   [controller() neverSavePasswordCancelled];
   EXPECT_EQ([ManagePasswordsBubblePendingViewController class],
+            [[controller() currentController] class]);
+}
+
+TEST_F(ManagePasswordsBubbleControllerTest,
+       BlacklistStateShouldHaveBlacklistView) {
+  model()->set_state(password_manager::ui::BLACKLIST_STATE);
+  EXPECT_EQ([ManagePasswordsBubbleBlacklistViewController class],
             [[controller() currentController] class]);
 }
 
