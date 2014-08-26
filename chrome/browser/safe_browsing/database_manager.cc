@@ -810,7 +810,7 @@ void SafeBrowsingDatabaseManager::DatabaseLoadComplete() {
   if (!enabled_)
     return;
 
-  HISTOGRAM_COUNTS("SB.QueueDepth", queued_checks_.size());
+  LOCAL_HISTOGRAM_COUNTS("SB.QueueDepth", queued_checks_.size());
   if (queued_checks_.empty())
     return;
 
@@ -820,7 +820,8 @@ void SafeBrowsingDatabaseManager::DatabaseLoadComplete() {
   while (!queued_checks_.empty()) {
     QueuedCheck check = queued_checks_.front();
     DCHECK(!check.start.is_null());
-    HISTOGRAM_TIMES("SB.QueueDelay", base::TimeTicks::Now() - check.start);
+    LOCAL_HISTOGRAM_TIMES("SB.QueueDelay",
+                          base::TimeTicks::Now() - check.start);
     // If CheckUrl() determines the URL is safe immediately, it doesn't call the
     // client's handler function (because normally it's being directly called by
     // the client).  Since we're not the client, we have to convey this result.

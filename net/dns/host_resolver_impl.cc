@@ -767,7 +767,7 @@ class HostResolverImpl::ProcTask
                                    const int error,
                                    const int os_error) const {
     DCHECK(origin_loop_->BelongsToCurrentThread());
-    enum Category {  // Used in HISTOGRAM_ENUMERATION.
+    enum Category {  // Used in UMA_HISTOGRAM_ENUMERATION.
       RESOLVE_SUCCESS,
       RESOLVE_FAIL,
       RESOLVE_SPECULATIVE_SUCCESS,

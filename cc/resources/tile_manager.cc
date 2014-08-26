@@ -152,7 +152,7 @@ class RasterTaskImpl : public RasterTask {
     if (rendering_stats_->record_rendering_stats()) {
       base::TimeDelta current_rasterize_time =
           rendering_stats_->impl_thread_rendering_stats().rasterize_time;
-      HISTOGRAM_CUSTOM_COUNTS(
+      LOCAL_HISTOGRAM_CUSTOM_COUNTS(
           "Renderer4.PictureRasterTimeUS",
           (current_rasterize_time - prev_rasterize_time).InMicroseconds(),
           0,

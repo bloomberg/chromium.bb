@@ -24,7 +24,7 @@
 // the impact of some pruning algorithm.
 // We assume that we already have a histogram of memory usage, such as:
 
-//   HISTOGRAM_COUNTS("Memory.RendererTotal", count);
+//   UMA_HISTOGRAM_COUNTS("Memory.RendererTotal", count);
 
 // Somewhere in main thread initialization code, we'd probably define an
 // instance of a FieldTrial, with code such as:

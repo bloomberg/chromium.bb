@@ -58,7 +58,7 @@ namespace chromeos {
 namespace {
 
 // Record a size in megabytes, over a potential interval up to 32 GB.
-#define HISTOGRAM_MEGABYTES(name, sample)                     \
+#define UMA_HISTOGRAM_MEGABYTES(name, sample)                     \
     UMA_HISTOGRAM_CUSTOM_COUNTS(name, sample, 1, 32768, 50)
 
 // The default interval in seconds after which to adjust the oom_score_adj
@@ -356,7 +356,7 @@ void OomPriorityManager::RecordDiscardStatistics() {
     // not have sufficient resolution in the 2-4 GB range and does not properly
     // account for graphics memory on ARM. Replace with MemAllocatedMB below.
     int mem_anonymous_mb = (memory.active_anon + memory.inactive_anon) / 1024;
-    HISTOGRAM_MEGABYTES("Tabs.Discard.MemAnonymousMB", mem_anonymous_mb);
+    UMA_HISTOGRAM_MEGABYTES("Tabs.Discard.MemAnonymousMB", mem_anonymous_mb);
 
     // Record graphics GEM object size in a histogram with 50 MB buckets.
     int mem_graphics_gem_mb = 0;
@@ -380,7 +380,7 @@ void OomPriorityManager::RecordDiscardStatistics() {
 
     int mem_available_mb =
         (memory.active_file + memory.inactive_file + memory.free) / 1024;
-    HISTOGRAM_MEGABYTES("Tabs.Discard.MemAvailableMB", mem_available_mb);
+    UMA_HISTOGRAM_MEGABYTES("Tabs.Discard.MemAvailableMB", mem_available_mb);
   }
   // Set up to record the next interval.
   last_discard_time_ = TimeTicks::Now();

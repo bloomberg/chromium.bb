@@ -169,9 +169,11 @@ void UrlInfo::SetNoSuchNameState() {
   DCHECK(ASSIGNED == state_);
   state_ = NO_SUCH_NAME;
   resolve_duration_ = GetDuration();
+#ifndef NDEBUG
   if (MaxNonNetworkDnsLookupDuration() <= resolve_duration_) {
-    DHISTOGRAM_TIMES("DNS.PrefetchNotFoundName", resolve_duration_);
+    LOCAL_HISTOGRAM_TIMES("DNS.PrefetchNotFoundName", resolve_duration_);
   }
+#endif
   sequence_number_ = sequence_counter++;
   DLogResultsStats("DNS PrefetchNotFound");
 }

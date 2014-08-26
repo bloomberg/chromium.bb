@@ -35,8 +35,8 @@ NewTabPageHandler::NewTabPageHandler() : page_switch_count_(0) {
 }
 
 NewTabPageHandler::~NewTabPageHandler() {
-  HISTOGRAM_COUNTS_100("NewTabPage.SingleSessionPageSwitches",
-                       page_switch_count_);
+  LOCAL_HISTOGRAM_COUNTS_100("NewTabPage.SingleSessionPageSwitches",
+                             page_switch_count_);
 }
 
 void NewTabPageHandler::RegisterMessages() {

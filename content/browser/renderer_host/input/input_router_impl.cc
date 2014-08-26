@@ -150,8 +150,8 @@ void InputRouterImpl::SendWheelEvent(const QueuedWheelEvent& wheel_event) {
   mouse_wheel_pending_ = true;
   current_wheel_event_ = wheel_event;
 
-  HISTOGRAM_COUNTS_100("Renderer.WheelQueueSize",
-                       coalesced_mouse_wheel_events_.size());
+  LOCAL_HISTOGRAM_COUNTS_100("Renderer.WheelQueueSize",
+                             coalesced_mouse_wheel_events_.size());
 
   FilterAndSendWebInputEvent(
       wheel_event.event.event, wheel_event.event.latency, false);
@@ -164,7 +164,7 @@ void InputRouterImpl::SendKeyboardEvent(const NativeWebKeyboardEvent& key_event,
   // renderer and we need to give something to the HandleKeyboardEvent
   // handler.
   key_queue_.push_back(key_event);
-  HISTOGRAM_COUNTS_100("Renderer.KeyboardQueueSize", key_queue_.size());
+  LOCAL_HISTOGRAM_COUNTS_100("Renderer.KeyboardQueueSize", key_queue_.size());
 
   gesture_event_queue_.FlingHasBeenHalted();
 

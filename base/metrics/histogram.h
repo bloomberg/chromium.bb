@@ -98,7 +98,7 @@ class Lock;
 // The following code is generally what a thread-safe static pointer
 // initialization looks like for a histogram (after a macro is expanded).  This
 // sample is an expansion (with comments) of the code for
-// HISTOGRAM_CUSTOM_COUNTS().
+// LOCAL_HISTOGRAM_CUSTOM_COUNTS().
 
 /*
   do {
@@ -165,27 +165,27 @@ class Lock;
 // Provide easy general purpose histogram in a macro, just like stats counters.
 // The first four macros use 50 buckets.
 
-#define HISTOGRAM_TIMES(name, sample) HISTOGRAM_CUSTOM_TIMES( \
+#define LOCAL_HISTOGRAM_TIMES(name, sample) LOCAL_HISTOGRAM_CUSTOM_TIMES( \
     name, sample, base::TimeDelta::FromMilliseconds(1), \
     base::TimeDelta::FromSeconds(10), 50)
 
 // For folks that need real specific times, use this to select a precise range
 // of times you want plotted, and the number of buckets you want used.
-#define HISTOGRAM_CUSTOM_TIMES(name, sample, min, max, bucket_count) \
+#define LOCAL_HISTOGRAM_CUSTOM_TIMES(name, sample, min, max, bucket_count) \
     STATIC_HISTOGRAM_POINTER_BLOCK(name, AddTime(sample), \
         base::Histogram::FactoryTimeGet(name, min, max, bucket_count, \
                                         base::HistogramBase::kNoFlags))
 
-#define HISTOGRAM_COUNTS(name, sample) HISTOGRAM_CUSTOM_COUNTS( \
+#define LOCAL_HISTOGRAM_COUNTS(name, sample) LOCAL_HISTOGRAM_CUSTOM_COUNTS( \
     name, sample, 1, 1000000, 50)
 
-#define HISTOGRAM_COUNTS_100(name, sample) HISTOGRAM_CUSTOM_COUNTS( \
-    name, sample, 1, 100, 50)
+#define LOCAL_HISTOGRAM_COUNTS_100(name, sample) \
+    LOCAL_HISTOGRAM_CUSTOM_COUNTS(name, sample, 1, 100, 50)
 
-#define HISTOGRAM_COUNTS_10000(name, sample) HISTOGRAM_CUSTOM_COUNTS( \
-    name, sample, 1, 10000, 50)
+#define LOCAL_HISTOGRAM_COUNTS_10000(name, sample) \
+    LOCAL_HISTOGRAM_CUSTOM_COUNTS(name, sample, 1, 10000, 50)
 
-#define HISTOGRAM_CUSTOM_COUNTS(name, sample, min, max, bucket_count) \
+#define LOCAL_HISTOGRAM_CUSTOM_COUNTS(name, sample, min, max, bucket_count) \
     STATIC_HISTOGRAM_POINTER_BLOCK(name, Add(sample), \
         base::Histogram::FactoryGet(name, min, max, bucket_count, \
                                     base::HistogramBase::kNoFlags))
@@ -196,10 +196,10 @@ class Lock;
         base::LinearHistogram::FactoryGet(name, 1, boundary, boundary + 1, \
             flag))
 
-#define HISTOGRAM_PERCENTAGE(name, under_one_hundred) \
-    HISTOGRAM_ENUMERATION(name, under_one_hundred, 101)
+#define LOCAL_HISTOGRAM_PERCENTAGE(name, under_one_hundred) \
+    LOCAL_HISTOGRAM_ENUMERATION(name, under_one_hundred, 101)
 
-#define HISTOGRAM_BOOLEAN(name, sample) \
+#define LOCAL_HISTOGRAM_BOOLEAN(name, sample) \
     STATIC_HISTOGRAM_POINTER_BLOCK(name, AddBoolean(sample), \
         base::BooleanHistogram::FactoryGet(name, base::Histogram::kNoFlags))
 
@@ -209,7 +209,7 @@ class Lock;
 // also that, despite explicitly setting the minimum bucket value to |1| below,
 // it is fine for enumerated histograms to be 0-indexed -- this is because
 // enumerated histograms should never have underflow.
-#define HISTOGRAM_ENUMERATION(name, sample, boundary_value) \
+#define LOCAL_HISTOGRAM_ENUMERATION(name, sample, boundary_value) \
     STATIC_HISTOGRAM_POINTER_BLOCK(name, Add(sample), \
         base::LinearHistogram::FactoryGet(name, 1, boundary_value, \
             boundary_value + 1, base::HistogramBase::kNoFlags))
@@ -219,80 +219,13 @@ class Lock;
 // CustomRanges::FactoryGet about the requirement of |custom_ranges|.
 // You can use the helper function CustomHistogram::ArrayToCustomRanges to
 // transform a C-style array of valid sample values to a std::vector<int>.
-#define HISTOGRAM_CUSTOM_ENUMERATION(name, sample, custom_ranges) \
+#define LOCAL_HISTOGRAM_CUSTOM_ENUMERATION(name, sample, custom_ranges) \
     STATIC_HISTOGRAM_POINTER_BLOCK(name, Add(sample), \
         base::CustomHistogram::FactoryGet(name, custom_ranges, \
                                           base::HistogramBase::kNoFlags))
 
-#define HISTOGRAM_MEMORY_KB(name, sample) HISTOGRAM_CUSTOM_COUNTS( \
+#define LOCAL_HISTOGRAM_MEMORY_KB(name, sample) LOCAL_HISTOGRAM_CUSTOM_COUNTS( \
     name, sample, 1000, 500000, 50)
-
-//------------------------------------------------------------------------------
-// Define Debug vs non-debug flavors of macros.
-#ifndef NDEBUG
-
-#define DHISTOGRAM_TIMES(name, sample) HISTOGRAM_TIMES(name, sample)
-#define DHISTOGRAM_COUNTS(name, sample) HISTOGRAM_COUNTS(name, sample)
-#define DHISTOGRAM_PERCENTAGE(name, under_one_hundred) HISTOGRAM_PERCENTAGE(\
-    name, under_one_hundred)
-#define DHISTOGRAM_CUSTOM_TIMES(name, sample, min, max, bucket_count) \
-    HISTOGRAM_CUSTOM_TIMES(name, sample, min, max, bucket_count)
-#define DHISTOGRAM_CLIPPED_TIMES(name, sample, min, max, bucket_count) \
-    HISTOGRAM_CLIPPED_TIMES(name, sample, min, max, bucket_count)
-#define DHISTOGRAM_CUSTOM_COUNTS(name, sample, min, max, bucket_count) \
-    HISTOGRAM_CUSTOM_COUNTS(name, sample, min, max, bucket_count)
-#define DHISTOGRAM_ENUMERATION(name, sample, boundary_value) \
-    HISTOGRAM_ENUMERATION(name, sample, boundary_value)
-#define DHISTOGRAM_CUSTOM_ENUMERATION(name, sample, custom_ranges) \
-    HISTOGRAM_CUSTOM_ENUMERATION(name, sample, custom_ranges)
-
-#else  // NDEBUG
-// Keep a mention of passed variables to avoid unused variable warnings in
-// release build if these variables are only used in macros.
-#define DISCARD_2_ARGUMENTS(a, b) \
-  while (0) { \
-    static_cast<void>(a); \
-    static_cast<void>(b); \
- }
-#define DISCARD_3_ARGUMENTS(a, b, c) \
-  while (0) { \
-    static_cast<void>(a); \
-    static_cast<void>(b); \
-    static_cast<void>(c); \
- }
-#define DISCARD_5_ARGUMENTS(a, b, c, d ,e) \
-  while (0) { \
-    static_cast<void>(a); \
-    static_cast<void>(b); \
-    static_cast<void>(c); \
-    static_cast<void>(d); \
-    static_cast<void>(e); \
- }
-#define DHISTOGRAM_TIMES(name, sample) \
-    DISCARD_2_ARGUMENTS(name, sample)
-
-#define DHISTOGRAM_COUNTS(name, sample) \
-    DISCARD_2_ARGUMENTS(name, sample)
-
-#define DHISTOGRAM_PERCENTAGE(name, under_one_hundred) \
-    DISCARD_2_ARGUMENTS(name, under_one_hundred)
-
-#define DHISTOGRAM_CUSTOM_TIMES(name, sample, min, max, bucket_count) \
-    DISCARD_5_ARGUMENTS(name, sample, min, max, bucket_count)
-
-#define DHISTOGRAM_CLIPPED_TIMES(name, sample, min, max, bucket_count) \
-    DISCARD_5_ARGUMENTS(name, sample, min, max, bucket_count)
-
-#define DHISTOGRAM_CUSTOM_COUNTS(name, sample, min, max, bucket_count) \
-    DISCARD_5_ARGUMENTS(name, sample, min, max, bucket_count)
-
-#define DHISTOGRAM_ENUMERATION(name, sample, boundary_value) \
-    DISCARD_3_ARGUMENTS(name, sample, boundary_value)
-
-#define DHISTOGRAM_CUSTOM_ENUMERATION(name, sample, custom_ranges) \
-    DISCARD_3_ARGUMENTS(name, sample, custom_ranges)
-
-#endif  // NDEBUG
 
 //------------------------------------------------------------------------------
 // The following macros provide typical usage scenarios for callers that wish
@@ -407,10 +340,6 @@ class BASE_EXPORT Histogram : public HistogramBase {
                                        base::TimeDelta maximum,
                                        size_t bucket_count,
                                        int32 flags);
-
-  // Time call for use with DHISTOGRAM*.
-  // Returns TimeTicks::Now() in debug and TimeTicks() in release build.
-  static TimeTicks DebugNow();
 
   static void InitializeBucketRanges(Sample minimum,
                                      Sample maximum,
@@ -660,7 +589,7 @@ class BASE_EXPORT CustomHistogram : public Histogram {
   virtual HistogramType GetHistogramType() const OVERRIDE;
 
   // Helper method for transforming an array of valid enumeration values
-  // to the std::vector<int> expected by HISTOGRAM_CUSTOM_ENUMERATION.
+  // to the std::vector<int> expected by UMA_HISTOGRAM_CUSTOM_ENUMERATION.
   // This function ensures that a guard bucket exists right after any
   // valid sample value (unless the next higher sample is also a valid value),
   // so that invalid samples never fall into the same bucket as valid samples.

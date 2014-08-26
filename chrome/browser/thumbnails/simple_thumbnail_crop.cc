@@ -238,8 +238,8 @@ SkBitmap SimpleThumbnailCrop::CreateThumbnail(const SkBitmap& bitmap,
     clipped_bitmap.copyTo(&result, kN32_SkColorType);
 #endif
 
-  HISTOGRAM_TIMES(kThumbnailHistogramName,
-                  base::TimeTicks::Now() - begin_compute_thumbnail);
+  LOCAL_HISTOGRAM_TIMES(kThumbnailHistogramName,
+                        base::TimeTicks::Now() - begin_compute_thumbnail);
   return result;
 }
 

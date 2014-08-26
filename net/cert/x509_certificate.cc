@@ -158,7 +158,9 @@ void X509CertificateCache::InsertOrUpdate(
   // be guarded by the lock.
   if (old_handle) {
     X509Certificate::FreeOSCertHandle(old_handle);
-    DHISTOGRAM_COUNTS("X509CertificateReuseCount", 1);
+#ifndef NDEBUG
+    LOCAL_HISTOGRAM_BOOLEAN("X509CertificateReuseCount", true);
+#endif
   }
 }
 

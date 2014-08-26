@@ -13,13 +13,13 @@ namespace {
 class DataTypeHistogramTest : public testing::Test {
 };
 
-// Create a histogram of type HISTOGRAM_COUNTS for each model type. Nothing
-// should break.
+// Create a histogram of type LOCAL_HISTOGRAM_COUNTS for each model type.
+// Nothing should break.
 TEST(DataTypeHistogramTest, BasicCount) {
   for (int i = FIRST_REAL_MODEL_TYPE; i <= LAST_REAL_MODEL_TYPE; ++i) {
     ModelType type = ModelTypeFromInt(i);
 #define PER_DATA_TYPE_MACRO(type_str) \
-    HISTOGRAM_COUNTS("Prefix" type_str "Suffix", 1);
+    LOCAL_HISTOGRAM_COUNTS("Prefix" type_str "Suffix", 1);
     SYNC_DATA_TYPE_HISTOGRAM(type);
 #undef PER_DATA_TYPE_MACRO
   }

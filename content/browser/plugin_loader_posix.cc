@@ -110,9 +110,9 @@ void PluginLoaderPosix::GetPluginsToLoad() {
       base::Bind(&PluginLoaderPosix::LoadPluginsInternal,
                  make_scoped_refptr(this)));
 
-  HISTOGRAM_TIMES("PluginLoaderPosix.GetPluginList",
-                  (base::TimeTicks::Now() - start_time) *
-                      base::Time::kMicrosecondsPerMillisecond);
+  LOCAL_HISTOGRAM_TIMES("PluginLoaderPosix.GetPluginList",
+                        (base::TimeTicks::Now() - start_time) *
+                            base::Time::kMicrosecondsPerMillisecond);
 }
 
 void PluginLoaderPosix::LoadPluginsInternal() {
@@ -209,9 +209,9 @@ bool PluginLoaderPosix::MaybeRunPendingCallbacks() {
   }
   callbacks_.clear();
 
-  HISTOGRAM_TIMES("PluginLoaderPosix.LoadDone",
-                  (base::TimeTicks::Now() - load_start_time_)
-                      * base::Time::kMicrosecondsPerMillisecond);
+  LOCAL_HISTOGRAM_TIMES("PluginLoaderPosix.LoadDone",
+                        (base::TimeTicks::Now() - load_start_time_) *
+                            base::Time::kMicrosecondsPerMillisecond);
   load_start_time_ = base::TimeTicks();
 
   return true;

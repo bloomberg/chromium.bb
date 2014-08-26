@@ -750,12 +750,12 @@ class NSSInitSingleton {
                            0, NSS_USE_ALG_IN_CERT_SIGNATURE);
 
     // The UMA bit is conditionally set for this histogram in
-    // chrome/common/startup_metric_utils.cc .
-    HISTOGRAM_CUSTOM_TIMES("Startup.SlowStartupNSSInit",
-                           base::TimeTicks::Now() - start_time,
-                           base::TimeDelta::FromMilliseconds(10),
-                           base::TimeDelta::FromHours(1),
-                           50);
+    // components/startup_metric_utils.cc .
+    LOCAL_HISTOGRAM_CUSTOM_TIMES("Startup.SlowStartupNSSInit",
+                                 base::TimeTicks::Now() - start_time,
+                                 base::TimeDelta::FromMilliseconds(10),
+                                 base::TimeDelta::FromHours(1),
+                                 50);
   }
 
   // NOTE(willchan): We don't actually execute this code since we leak NSS to

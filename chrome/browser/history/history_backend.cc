@@ -702,8 +702,7 @@ void HistoryBackend::InitImpl(const std::string& languages) {
   }
 #endif
 
-  HISTOGRAM_TIMES("History.InitTime",
-                  TimeTicks::Now() - beginning_time);
+  LOCAL_HISTOGRAM_TIMES("History.InitTime", TimeTicks::Now() - beginning_time);
 }
 
 void HistoryBackend::OnMemoryPressure(
@@ -1596,8 +1595,8 @@ void HistoryBackend::GetLargestFaviconForURL(
   if (bitmap_result.is_valid())
     *favicon_bitmap_result = bitmap_result;
 
-  HISTOGRAM_TIMES("History.GetLargestFaviconForURL",
-                  TimeTicks::Now() - beginning_time);
+  LOCAL_HISTOGRAM_TIMES("History.GetLargestFaviconForURL",
+                        TimeTicks::Now() - beginning_time);
 }
 
 void HistoryBackend::GetFaviconsForURL(

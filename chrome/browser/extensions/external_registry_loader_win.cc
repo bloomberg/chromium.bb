@@ -181,8 +181,8 @@ void ExternalRegistryLoader::LoadOnFileThread() {
   }
 
   prefs_.reset(prefs.release());
-  HISTOGRAM_TIMES("Extensions.ExternalRegistryLoaderWin",
-                  base::TimeTicks::Now() - start_time);
+  LOCAL_HISTOGRAM_TIMES("Extensions.ExternalRegistryLoaderWin",
+                        base::TimeTicks::Now() - start_time);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&ExternalRegistryLoader::LoadFinished, this));

@@ -137,9 +137,9 @@ CatSixtyFour CatSixtyFourValue() {
 void RecordCatSixtyFour() {
   CatSixtyFour cat_sixty_four = CatSixtyFourValue();
 
-  // Set this higher than the highest value in the CatSixtyFour enum to
-  // provide some headroom and then leave it alone. See HISTOGRAM_ENUMERATION
-  // in base/metrics/histogram.h.
+  // Set this higher than the highest value in the CatSixtyFour enum to provide
+  // some headroom and then leave it alone. See UMA_HISTOGRAM_ENUMERATION in
+  // base/metrics/histogram.h.
   const int kMaxCatsAndSixtyFours = 32;
   COMPILE_ASSERT(kMaxCatsAndSixtyFours >= CAT_SIXTY_FOUR_MAX,
                  CatSixtyFour_enum_grew_too_large);

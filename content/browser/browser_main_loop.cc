@@ -329,7 +329,7 @@ class BrowserMainLoop::MemoryObserver : public base::MessageLoop::TaskObserver {
 #endif
     size_t private_bytes;
     process_metrics->GetMemoryBytes(&private_bytes, NULL);
-    HISTOGRAM_MEMORY_KB("Memory.BrowserUsed", private_bytes >> 10);
+    LOCAL_HISTOGRAM_MEMORY_KB("Memory.BrowserUsed", private_bytes >> 10);
 #endif
   }
  private:

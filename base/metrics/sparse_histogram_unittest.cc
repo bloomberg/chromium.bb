@@ -64,9 +64,9 @@ TEST_F(SparseHistogramTest, BasicTest) {
 }
 
 TEST_F(SparseHistogramTest, MacroBasicTest) {
-  HISTOGRAM_SPARSE_SLOWLY("Sparse", 100);
-  HISTOGRAM_SPARSE_SLOWLY("Sparse", 200);
-  HISTOGRAM_SPARSE_SLOWLY("Sparse", 100);
+  UMA_HISTOGRAM_SPARSE_SLOWLY("Sparse", 100);
+  UMA_HISTOGRAM_SPARSE_SLOWLY("Sparse", 200);
+  UMA_HISTOGRAM_SPARSE_SLOWLY("Sparse", 100);
 
   StatisticsRecorder::Histograms histograms;
   StatisticsRecorder::GetHistograms(&histograms);
@@ -76,26 +76,13 @@ TEST_F(SparseHistogramTest, MacroBasicTest) {
 
   EXPECT_EQ(SPARSE_HISTOGRAM, sparse_histogram->GetHistogramType());
   EXPECT_EQ("Sparse", sparse_histogram->histogram_name());
-  EXPECT_EQ(HistogramBase::kNoFlags, sparse_histogram->flags());
+  EXPECT_EQ(HistogramBase::kUmaTargetedHistogramFlag,
+            sparse_histogram->flags());
 
   scoped_ptr<HistogramSamples> samples = sparse_histogram->SnapshotSamples();
   EXPECT_EQ(3, samples->TotalCount());
   EXPECT_EQ(2, samples->GetCount(100));
   EXPECT_EQ(1, samples->GetCount(200));
-}
-
-TEST_F(SparseHistogramTest, MacroUmaTest) {
-  UMA_HISTOGRAM_SPARSE_SLOWLY("Uma", 100);
-
-  StatisticsRecorder::Histograms histograms;
-  StatisticsRecorder::GetHistograms(&histograms);
-
-  ASSERT_EQ(1U, histograms.size());
-  HistogramBase* sparse_histogram = histograms[0];
-
-  EXPECT_EQ("Uma", sparse_histogram->histogram_name());
-  EXPECT_EQ(HistogramBase::kUmaTargetedHistogramFlag,
-            sparse_histogram->flags());
 }
 
 TEST_F(SparseHistogramTest, MacroInLoopTest) {

@@ -19,38 +19,12 @@
 
 namespace base {
 
-// The common code for different SparseHistogram macros.
-#define HISTOGRAM_SPARSE_COMMON(name, sample, flag) \
+#define UMA_HISTOGRAM_SPARSE_SLOWLY(name, sample) \
     do { \
-      base::HistogramBase* histogram( \
-          base::SparseHistogram::FactoryGet(name, flag)); \
-      DCHECK_EQ(histogram->histogram_name(), name); \
+      base::HistogramBase* histogram = base::SparseHistogram::FactoryGet( \
+          name, base::HistogramBase::kUmaTargetedHistogramFlag); \
       histogram->Add(sample); \
     } while (0)
-
-#define HISTOGRAM_SPARSE_SLOWLY(name, sample) \
-    HISTOGRAM_SPARSE_COMMON(name, sample, base::HistogramBase::kNoFlags)
-
-#define UMA_HISTOGRAM_SPARSE_SLOWLY(name, sample) \
-    HISTOGRAM_SPARSE_COMMON(name, sample, \
-                            base::HistogramBase::kUmaTargetedHistogramFlag)
-
-//------------------------------------------------------------------------------
-// Define debug only version of macros.
-#ifndef NDEBUG
-
-#define DHISTOGRAM_SPARSE_SLOWLY(name, sample) \
-    HISTOGRAM_SPARSE_SLOWLY(name, sample)
-
-#else  // NDEBUG
-
-#define DHISTOGRAM_SPARSE_SLOWLY(name, sample) \
-    while (0) { \
-      static_cast<void>(name); \
-      static_cast<void>(sample); \
-    }
-
-#endif  // NDEBUG
 
 class HistogramSamples;
 

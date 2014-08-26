@@ -41,7 +41,7 @@ void DelegateImpl::Report(
     const Time& reinstatement_time) {
   TimeDelta reinstatement_delay(
       reinstatement_time - evicted_cookie.eviction_time);
-  // Need to duplicate HISTOGRAM_CUSTOM_TIMES(), since it is a macro that
+  // Need to duplicate UMA_HISTOGRAM_CUSTOM_TIMES(), since it is a macro that
   // defines a static variable.
   if (evicted_cookie.is_google) {
     UMA_HISTOGRAM_CUSTOM_TIMES("Cookie.ReinstatedCookiesGoogle",

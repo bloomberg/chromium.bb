@@ -132,14 +132,6 @@ HistogramBase* Histogram::FactoryTimeGet(const string& name,
                     bucket_count, flags);
 }
 
-TimeTicks Histogram::DebugNow() {
-#ifndef NDEBUG
-  return TimeTicks::Now();
-#else
-  return TimeTicks();
-#endif
-}
-
 // Calculate what range of values are held in each bucket.
 // We have to be careful that we don't pick a ratio between starting points in
 // consecutive buckets that is sooo small, that the integer bounds are the same

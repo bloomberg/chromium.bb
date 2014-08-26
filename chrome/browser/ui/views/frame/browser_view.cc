@@ -918,7 +918,7 @@ bool BrowserView::IsFullscreenBubbleVisible() const {
 
 #if defined(OS_WIN)
 void BrowserView::SetMetroSnapMode(bool enable) {
-  HISTOGRAM_COUNTS("Metro.SnapModeToggle", enable);
+  LOCAL_HISTOGRAM_COUNTS("Metro.SnapModeToggle", enable);
   ProcessFullscreen(enable, METRO_SNAP_FULLSCREEN, GURL(), FEB_TYPE_NONE);
 }
 

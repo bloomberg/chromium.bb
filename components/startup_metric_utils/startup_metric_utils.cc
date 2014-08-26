@@ -62,9 +62,9 @@ void RecordMainEntryTimeHistogram() {
           (browser_main_entry_time_raw_ms >> 1) & kLower31BitsMask);
 
   // A timestamp is a 64 bit value, yet histograms can only store 32 bits.
-  HISTOGRAM_TIMES("Startup.BrowserMainEntryTimeAbsoluteHighWord",
+  LOCAL_HISTOGRAM_TIMES("Startup.BrowserMainEntryTimeAbsoluteHighWord",
       browser_main_entry_time_raw_ms_high_word);
-  HISTOGRAM_TIMES("Startup.BrowserMainEntryTimeAbsoluteLowWord",
+  LOCAL_HISTOGRAM_TIMES("Startup.BrowserMainEntryTimeAbsoluteLowWord",
       browser_main_entry_time_raw_ms_low_word);
 }
 

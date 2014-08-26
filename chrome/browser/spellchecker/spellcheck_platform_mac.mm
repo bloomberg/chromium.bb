@@ -13,7 +13,6 @@
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsexception_enabler.h"
-#include "base/metrics/histogram.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/common/spellcheck_common.h"
@@ -197,12 +196,8 @@ bool CheckSpelling(const base::string16& word_to_check, int tag) {
 void FillSuggestionList(const base::string16& wrong_word,
                         std::vector<base::string16>* optional_suggestions) {
   NSString* NS_wrong_word = base::SysUTF16ToNSString(wrong_word);
-  TimeTicks debug_begin_time = base::Histogram::DebugNow();
   // The suggested words for |wrong_word|.
   NSArray* guesses = [SharedSpellChecker() guessesForWord:NS_wrong_word];
-  DHISTOGRAM_TIMES("Spellcheck.SuggestTime",
-                   base::Histogram::DebugNow() - debug_begin_time);
-
   for (int i = 0; i < static_cast<int>([guesses count]); ++i) {
     if (i < chrome::spellcheck_common::kMaxSuggestions) {
       optional_suggestions->push_back(base::SysNSStringToUTF16(

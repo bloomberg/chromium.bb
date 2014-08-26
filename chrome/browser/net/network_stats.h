@@ -55,7 +55,7 @@ namespace chrome_browser_net {
 
 class NetworkStats {
  public:
-  enum Status {            // Used in HISTOGRAM_ENUMERATION.
+  enum Status {            // Used in UMA_HISTOGRAM_ENUMERATION.
     SUCCESS,               // Successfully received bytes from the server.
     SOCKET_CREATE_FAILED,  // Socket creation failed.
     RESOLVE_FAILED,        // Host resolution failed.

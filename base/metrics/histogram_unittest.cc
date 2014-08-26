@@ -65,20 +65,17 @@ TEST_F(HistogramTest, BasicTest) {
   EXPECT_TRUE(custom_histogram);
 
   // Use standard macros (but with fixed samples)
-  HISTOGRAM_TIMES("Test2Histogram", TimeDelta::FromDays(1));
-  HISTOGRAM_COUNTS("Test3Histogram", 30);
+  LOCAL_HISTOGRAM_TIMES("Test2Histogram", TimeDelta::FromDays(1));
+  LOCAL_HISTOGRAM_COUNTS("Test3Histogram", 30);
 
-  DHISTOGRAM_TIMES("Test4Histogram", TimeDelta::FromDays(1));
-  DHISTOGRAM_COUNTS("Test5Histogram", 30);
-
-  HISTOGRAM_ENUMERATION("Test6Histogram", 129, 130);
+  LOCAL_HISTOGRAM_ENUMERATION("Test6Histogram", 129, 130);
 }
 
 // Check that the macro correctly matches histograms by name and records their
 // data together.
 TEST_F(HistogramTest, NameMatchTest) {
-  HISTOGRAM_PERCENTAGE("DuplicatedHistogram", 10);
-  HISTOGRAM_PERCENTAGE("DuplicatedHistogram", 10);
+  LOCAL_HISTOGRAM_PERCENTAGE("DuplicatedHistogram", 10);
+  LOCAL_HISTOGRAM_PERCENTAGE("DuplicatedHistogram", 10);
   HistogramBase* histogram = LinearHistogram::FactoryGet(
       "DuplicatedHistogram", 1, 101, 102, HistogramBase::kNoFlags);
 

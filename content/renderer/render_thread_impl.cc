@@ -329,7 +329,7 @@ class MemoryObserver : public base::MessageLoop::TaskObserver {
   }
 
   virtual void DidProcessTask(const base::PendingTask& pending_task) OVERRIDE {
-    HISTOGRAM_MEMORY_KB("Memory.RendererUsed", GetMemoryUsageKB());
+    LOCAL_HISTOGRAM_MEMORY_KB("Memory.RendererUsed", GetMemoryUsageKB());
   }
 
  private:

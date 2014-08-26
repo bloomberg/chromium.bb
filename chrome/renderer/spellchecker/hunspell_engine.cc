@@ -8,14 +8,12 @@
 #include <iterator>
 
 #include "base/files/memory_mapped_file.h"
-#include "base/metrics/histogram.h"
 #include "base/time/time.h"
 #include "chrome/common/spellcheck_common.h"
 #include "chrome/common/spellcheck_messages.h"
 #include "content/public/renderer/render_thread.h"
 #include "third_party/hunspell/src/hunspell/hunspell.hxx"
 
-using base::TimeTicks;
 using content::RenderThread;
 
 namespace {
@@ -63,12 +61,7 @@ void HunspellEngine::InitializeHunspell() {
   bdict_file_.reset(new base::MemoryMappedFile);
 
   if (bdict_file_->Initialize(file_.Pass())) {
-    TimeTicks debug_start_time = base::Histogram::DebugNow();
-
     hunspell_.reset(new Hunspell(bdict_file_->data(), bdict_file_->length()));
-
-    DHISTOGRAM_TIMES("Spellcheck.InitTime",
-                     base::Histogram::DebugNow() - debug_start_time);
   } else {
     NOTREACHED() << "Could not mmap spellchecker dictionary.";
   }

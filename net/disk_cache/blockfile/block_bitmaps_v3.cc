@@ -148,7 +148,8 @@ int BlockBitmaps::HeaderNumberForNewBlock(FileType block_type,
       header_num = -1;
   }
 
-  HISTOGRAM_TIMES("DiskCache.GetFileForNewBlock", TimeTicks::Now() - start);
+  LOCAL_HISTOGRAM_TIMES("DiskCache.GetFileForNewBlock",
+                        TimeTicks::Now() - start);
   return header_num;
 }
 

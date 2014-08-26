@@ -222,29 +222,18 @@ TEST_F(StatisticsRecorderTest, RegisterHistogramWithMacros) {
       "TestHistogramCounts", 1, 1000000, 50, HistogramBase::kNoFlags);
 
   // The histogram we got from macro is the same as from FactoryGet.
-  HISTOGRAM_COUNTS("TestHistogramCounts", 30);
+  LOCAL_HISTOGRAM_COUNTS("TestHistogramCounts", 30);
   registered_histograms.clear();
   StatisticsRecorder::GetHistograms(&registered_histograms);
   ASSERT_EQ(1u, registered_histograms.size());
   EXPECT_EQ(histogram, registered_histograms[0]);
 
-  HISTOGRAM_TIMES("TestHistogramTimes", TimeDelta::FromDays(1));
-  HISTOGRAM_ENUMERATION("TestHistogramEnumeration", 20, 200);
+  LOCAL_HISTOGRAM_TIMES("TestHistogramTimes", TimeDelta::FromDays(1));
+  LOCAL_HISTOGRAM_ENUMERATION("TestHistogramEnumeration", 20, 200);
 
   registered_histograms.clear();
   StatisticsRecorder::GetHistograms(&registered_histograms);
   EXPECT_EQ(3u, registered_histograms.size());
-
-  // Debugging only macros.
-  DHISTOGRAM_TIMES("TestHistogramDebugTimes", TimeDelta::FromDays(1));
-  DHISTOGRAM_COUNTS("TestHistogramDebugCounts", 30);
-  registered_histograms.clear();
-  StatisticsRecorder::GetHistograms(&registered_histograms);
-#ifndef NDEBUG
-  EXPECT_EQ(5u, registered_histograms.size());
-#else
-  EXPECT_EQ(3u, registered_histograms.size());
-#endif
 }
 
 TEST_F(StatisticsRecorderTest, BucketRangesSharing) {
@@ -266,10 +255,10 @@ TEST_F(StatisticsRecorderTest, BucketRangesSharing) {
 }
 
 TEST_F(StatisticsRecorderTest, ToJSON) {
-  HISTOGRAM_COUNTS("TestHistogram1", 30);
-  HISTOGRAM_COUNTS("TestHistogram1", 40);
-  HISTOGRAM_COUNTS("TestHistogram2", 30);
-  HISTOGRAM_COUNTS("TestHistogram2", 40);
+  LOCAL_HISTOGRAM_COUNTS("TestHistogram1", 30);
+  LOCAL_HISTOGRAM_COUNTS("TestHistogram1", 40);
+  LOCAL_HISTOGRAM_COUNTS("TestHistogram2", 30);
+  LOCAL_HISTOGRAM_COUNTS("TestHistogram2", 40);
 
   std::string json(StatisticsRecorder::ToJSON(std::string()));
 

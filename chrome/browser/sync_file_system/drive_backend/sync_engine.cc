@@ -161,7 +161,7 @@ void DidRegisterOrigin(const base::TimeTicks& start_time,
                        const SyncStatusCallback& callback,
                        SyncStatusCode status) {
   base::TimeDelta delta(base::TimeTicks::Now() - start_time);
-  HISTOGRAM_TIMES("SyncFileSystem.RegisterOriginTime", delta);
+  LOCAL_HISTOGRAM_TIMES("SyncFileSystem.RegisterOriginTime", delta);
   callback.Run(status);
 }
 

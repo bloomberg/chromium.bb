@@ -63,9 +63,11 @@ void ChildHistogramMessageFilter::UploadAllHistograms(int sequence_number) {
   sender_->Send(
       new ChildProcessHostMsg_ChildHistogramData(sequence_number, deltas));
 
+#ifndef NDEBUG
   static int count = 0;
   count++;
-  DHISTOGRAM_COUNTS("Histogram.ChildProcessHistogramSentCount", count);
+  LOCAL_HISTOGRAM_COUNTS("Histogram.ChildProcessHistogramSentCount", count);
+#endif
 }
 
 }  // namespace content

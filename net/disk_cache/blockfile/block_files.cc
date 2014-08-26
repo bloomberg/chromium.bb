@@ -101,7 +101,7 @@ bool BlockHeader::CreateMapBlock(int size, int* index) {
       if (target != size) {
         header_->empty[target - size - 1]++;
       }
-      HISTOGRAM_TIMES("DiskCache.CreateBlock", TimeTicks::Now() - start);
+      LOCAL_HISTOGRAM_TIMES("DiskCache.CreateBlock", TimeTicks::Now() - start);
       return true;
     }
   }
@@ -148,7 +148,7 @@ void BlockHeader::DeleteMapBlock(int index, int size) {
   base::subtle::MemoryBarrier();
   header_->num_entries--;
   STRESS_DCHECK(header_->num_entries >= 0);
-  HISTOGRAM_TIMES("DiskCache.DeleteBlock", TimeTicks::Now() - start);
+  LOCAL_HISTOGRAM_TIMES("DiskCache.DeleteBlock", TimeTicks::Now() - start);
 }
 
 // Note that this is a simplified version of DeleteMapBlock().
@@ -566,7 +566,8 @@ MappedFile* BlockFiles::FileForNewBlock(FileType block_type, int block_count) {
       return NULL;
     break;
   }
-  HISTOGRAM_TIMES("DiskCache.GetFileForNewBlock", TimeTicks::Now() - start);
+  LOCAL_HISTOGRAM_TIMES("DiskCache.GetFileForNewBlock",
+                        TimeTicks::Now() - start);
   return file;
 }
 

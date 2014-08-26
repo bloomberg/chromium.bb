@@ -783,7 +783,7 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
       chrome::NOTIFICATION_OMNIBOX_OPENED_URL,
       content::Source<Profile>(profile_),
       content::Details<OmniboxLog>(&log));
-  HISTOGRAM_ENUMERATION("Omnibox.EventCount", 1, 2);
+  LOCAL_HISTOGRAM_BOOLEAN("Omnibox.EventCount", true);
   DCHECK(!last_omnibox_focus_.is_null())
       << "An omnibox focus should have occurred before opening a match.";
   UMA_HISTOGRAM_TIMES(kFocusToOpenTimeHistogram, now - last_omnibox_focus_);
