@@ -604,7 +604,7 @@ void UserSessionManager::PrepareProfile() {
   // TODO(nkostylev): Figure out whether demo session is using the right profile
   // path or not. See https://codereview.chromium.org/171423009
   g_browser_process->profile_manager()->CreateProfileAsync(
-      ProfileHelper::GetUserProfileDirByUserId(user_context_.GetUserID()),
+      ProfileHelper::GetProfilePathByUserIdHash(user_context_.GetUserIDHash()),
       base::Bind(&UserSessionManager::OnProfileCreated,
                  AsWeakPtr(),
                  user_context_,

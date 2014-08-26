@@ -80,9 +80,6 @@ const char* gmail_url = "https://mail.google.com/mail/u";
 const char* kGmailLaunchURL = "https://mail.google.com/mail/ca";
 
 #if defined(OS_CHROMEOS)
-// As defined in /chromeos/dbus/cryptohome_client.cc.
-const char kUserIdHashSuffix[] = "-hash";
-
 // An extension prefix.
 const char kCrxAppPrefix[] = "_crx_";
 #endif
@@ -827,22 +824,14 @@ class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest
     session_delegate()->AddUser(email_string);
     GetFakeUserManager()->AddUser(email_string);
 
-    GetFakeUserManager()->UserLoggedIn(
-        email_string,
-        email_string + kUserIdHashSuffix,
-        false);
+    GetFakeUserManager()->LoginUser(email_string);
 
-    std::string profile_name =
-        chrome::kProfileDirPrefix + email_string + kUserIdHashSuffix;
-    TestingProfile* profile = profile_manager()->CreateTestingProfile(
-        profile_name,
-        scoped_ptr<PrefServiceSyncable>(),
-        ASCIIToUTF16(email_string), 0, std::string(),
-        TestingProfile::TestingFactories());
-    profile->set_profile_name(email_string);
+    TestingProfile* profile =
+        profile_manager()->CreateTestingProfile(email_string);
     EXPECT_TRUE(profile);
+
     // Remember the profile name so that we can destroy it upon destruction.
-    created_profiles_[profile] = profile_name;
+    created_profiles_[profile] = email_string;
     if (chrome::MultiUserWindowManager::GetInstance())
       chrome::MultiUserWindowManager::GetInstance()->AddUser(profile);
     if (launcher_controller_)

@@ -8,6 +8,9 @@
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/chromeos/input_method/mock_input_method_manager.h"
 #include "chrome/browser/chromeos/language_preferences.h"
+#include "chrome/browser/chromeos/login/users/fake_user_manager.h"
+#include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
@@ -31,17 +34,24 @@ const char kInputId2[] = "xkb:us:colemak:eng";
 class InputMethodPersistenceTest : public testing::Test {
  protected:
   InputMethodPersistenceTest()
-      : mock_profile_manager_(TestingBrowserProcess::GetGlobal()) {}
+      : mock_profile_manager_(TestingBrowserProcess::GetGlobal()),
+        fake_user_manager_(new chromeos::FakeUserManager()),
+        user_manager_enabler_(fake_user_manager_) {}
 
   virtual void SetUp() OVERRIDE {
-    // Set up a valid profile for our test.
     ASSERT_TRUE(mock_profile_manager_.SetUp());
+
+    // Add a user.
+    const char kTestUserName[] = "test-user@example.com";
+    fake_user_manager_->AddUser(kTestUserName);
+    fake_user_manager_->LoginUser(kTestUserName);
+
+    // Create a valid profile for the user.
     TestingProfile* mock_profile =
-        mock_profile_manager_.CreateTestingProfile(chrome::kTestUserProfileDir);
-    CommandLine *cl = CommandLine::ForCurrentProcess();
-    cl->AppendSwitchASCII(switches::kLoginProfile, chrome::kTestUserProfileDir);
+        mock_profile_manager_.CreateTestingProfile(kTestUserName);
     mock_profile_manager_.SetLoggedIn(true);
-    EXPECT_TRUE(ProfileManager::GetActiveUserProfile() != NULL);
+    EXPECT_TRUE(ProfileManager::GetActiveUserProfile() == mock_profile);
+
     mock_user_prefs_ = mock_profile->GetTestingPrefService();
   }
 
@@ -61,6 +71,8 @@ class InputMethodPersistenceTest : public testing::Test {
   TestingPrefServiceSyncable* mock_user_prefs_;
   MockInputMethodManager mock_manager_;
   TestingProfileManager mock_profile_manager_;
+  chromeos::FakeUserManager* fake_user_manager_;
+  chromeos::ScopedUserManagerEnabler user_manager_enabler_;
 };
 
 TEST_F(InputMethodPersistenceTest, TestLifetime) {

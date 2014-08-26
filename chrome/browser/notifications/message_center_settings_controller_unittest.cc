@@ -60,8 +60,6 @@ class MessageCenterSettingsControllerTest : public testing::Test {
 };
 
 #if defined(OS_CHROMEOS)
-// This value should be same as the one in fake_user_manager.cc
-static const char kUserIdHashSuffix[] = "-hash";
 
 class MessageCenterSettingsControllerChromeOSTest
     : public MessageCenterSettingsControllerTest {
@@ -86,7 +84,7 @@ class MessageCenterSettingsControllerChromeOSTest
     MessageCenterSettingsControllerTest::CreateProfile(name);
 
     GetFakeUserManager()->AddUser(name);
-    GetFakeUserManager()->UserLoggedIn(name, name + kUserIdHashSuffix, false);
+    GetFakeUserManager()->LoginUser(name);
   }
 
   void SwitchActiveUser(const std::string& name) {

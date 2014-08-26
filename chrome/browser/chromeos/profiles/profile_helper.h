@@ -55,9 +55,6 @@ class ProfileHelper
   // Returns Profile instance that corresponds to |user_id_hash|.
   static Profile* GetProfileByUserIdHash(const std::string& user_id_hash);
 
-  // Returns profile dir that corresponds to a --login-profile cmd line switch.
-  static base::FilePath GetProfileDirByLegacyLoginProfileSwitch();
-
   // Returns profile path that corresponds to a given |user_id_hash|.
   static base::FilePath GetProfilePathByUserIdHash(
       const std::string& user_id_hash);
@@ -71,9 +68,6 @@ class ProfileHelper
   // Returns user_id hash for |profile| instance or empty string if hash
   // could not be extracted from |profile|.
   static std::string GetUserIdHashFromProfile(Profile* profile);
-
-  // Returns profile dir for the user identified by |user_id|.
-  static base::FilePath GetUserProfileDirByUserId(const std::string& user_id);
 
   // Returns user profile dir in a format [u-user_id_hash].
   static base::FilePath GetUserProfileDir(const std::string& user_id_hash);
@@ -124,6 +118,9 @@ class ProfileHelper
 
   // Returns NULL if User is not created.
   user_manager::User* GetUserByProfile(Profile* profile);
+
+  static std::string GetUserIdHashByUserIdForTesting(
+      const std::string& user_id);
 
  private:
   friend class CryptohomeAuthenticatorTest;

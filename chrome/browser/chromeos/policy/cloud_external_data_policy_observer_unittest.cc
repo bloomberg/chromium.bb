@@ -23,11 +23,14 @@
 #include "chrome/browser/chromeos/policy/device_local_account_policy_provider.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
 #include "chrome/browser/chromeos/policy/proto/chrome_device_policy.pb.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/chromeos/settings/device_settings_test_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/base/testing_profile_manager.h"
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
 #include "components/policy/core/common/cloud/mock_cloud_external_data_manager.h"
@@ -155,6 +158,8 @@ class CloudExternalDataPolicyObserverTest
 
   ExternalDataFetcher::FetchCallback fetch_callback_;
 
+  TestingProfileManager profile_manager_;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(CloudExternalDataPolicyObserverTest);
 };
@@ -163,7 +168,8 @@ CloudExternalDataPolicyObserverTest::CloudExternalDataPolicyObserverTest()
     : device_local_account_user_id_(GenerateDeviceLocalAccountUserId(
           kDeviceLocalAccount,
           DeviceLocalAccount::TYPE_PUBLIC_SESSION)),
-      cros_settings_(&device_settings_service_) {
+      cros_settings_(&device_settings_service_),
+      profile_manager_(TestingBrowserProcess::GetGlobal()) {
 }
 
 CloudExternalDataPolicyObserverTest::~CloudExternalDataPolicyObserverTest() {
@@ -171,6 +177,7 @@ CloudExternalDataPolicyObserverTest::~CloudExternalDataPolicyObserverTest() {
 
 void CloudExternalDataPolicyObserverTest::SetUp() {
   chromeos::DeviceSettingsTestBase::SetUp();
+  ASSERT_TRUE(profile_manager_.SetUp());
   device_local_account_policy_service_.reset(
       new DeviceLocalAccountPolicyService(&device_settings_test_helper_,
                                           &device_settings_service_,
@@ -312,6 +319,8 @@ void CloudExternalDataPolicyObserverTest::RefreshDeviceLocalAccountPolicy(
 
 void CloudExternalDataPolicyObserverTest::LogInAsDeviceLocalAccount(
     const std::string& user_id) {
+  user_manager_->AddUser(user_id);
+
   device_local_account_policy_provider_.reset(
       new DeviceLocalAccountPolicyProvider(
           user_id,
@@ -323,11 +332,12 @@ void CloudExternalDataPolicyObserverTest::LogInAsDeviceLocalAccount(
   TestingProfile::Builder builder;
   builder.SetPolicyService(
       scoped_ptr<PolicyService>(new PolicyServiceImpl(providers)));
+  builder.SetPath(chromeos::ProfileHelper::Get()->GetProfilePathByUserIdHash(
+      chromeos::ProfileHelper::GetUserIdHashByUserIdForTesting(user_id)));
 
   profile_ = builder.Build();
   profile_->set_profile_name(user_id);
 
-  user_manager_->AddUser(user_id);
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED,
       content::NotificationService::AllSources(),
@@ -350,16 +360,20 @@ void CloudExternalDataPolicyObserverTest::SetRegularUserAvatarPolicy(
 }
 
 void CloudExternalDataPolicyObserverTest::LogInAsRegularUser() {
+  user_manager_->AddUser(kRegularUserID);
+
   PolicyServiceImpl::Providers providers;
   providers.push_back(&user_policy_provider_);
   TestingProfile::Builder builder;
   builder.SetPolicyService(
       scoped_ptr<PolicyService>(new PolicyServiceImpl(providers)));
+  builder.SetPath(chromeos::ProfileHelper::Get()->GetProfilePathByUserIdHash(
+      chromeos::ProfileHelper::GetUserIdHashByUserIdForTesting(
+          kRegularUserID)));
 
   profile_ = builder.Build();
   profile_->set_profile_name(kRegularUserID);
 
-  user_manager_->AddUser(kRegularUserID);
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED,
       content::NotificationService::AllSources(),

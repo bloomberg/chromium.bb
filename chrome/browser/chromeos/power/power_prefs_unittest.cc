@@ -11,6 +11,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chromeos/login/users/fake_user_manager.h"
+#include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
@@ -209,10 +212,16 @@ TEST_F(PowerPrefsTest, LoginScreen) {
 }
 
 TEST_F(PowerPrefsTest, UserSession) {
+  FakeUserManager* user_manager = new FakeUserManager();
+  ScopedUserManagerEnabler user_manager_enabler(user_manager);
+
   // Set up user profile.
-  TestingProfile* user_profile = profile_manager_.CreateTestingProfile("user");
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(switches::kLoginProfile,
-                                                      "user");
+  const char test_user1[] = "test-user1@example.com";
+  user_manager->AddUser(test_user1);
+  user_manager->LoginUser(test_user1);
+  TestingProfile* user_profile =
+      profile_manager_.CreateTestingProfile(test_user1);
+
   profile_manager_.SetLoggedIn(true);
 
   // Inform power_prefs_ that a session has started.
@@ -226,8 +235,11 @@ TEST_F(PowerPrefsTest, UserSession) {
   EXPECT_EQ(GetExpectedAllowScreenWakeLocksForProfile(user_profile),
             GetCurrentAllowScreenWakeLocks());
 
+  const char test_user2[] = "test-user2@example.com";
+  user_manager->AddUser(test_user2);
+  user_manager->LoginUser(test_user2);
   TestingProfile* other_profile =
-      profile_manager_.CreateTestingProfile("other");
+      profile_manager_.CreateTestingProfile(test_user2);
 
   // Inform power_prefs_ that an unrelated profile has been destroyed.
   power_prefs_->Observe(chrome::NOTIFICATION_PROFILE_DESTROYED,

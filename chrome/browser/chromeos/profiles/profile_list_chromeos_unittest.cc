@@ -27,9 +27,6 @@ using base::ASCIIToUTF16;
 
 namespace {
 
-// As defined in /chromeos/dbus/cryptohome_client.cc.
-static const char kUserIdHashSuffix[] = "-hash";
-
 class MockObserver : public AvatarMenuObserver {
  public:
   MockObserver() : count_(0) {}
@@ -78,19 +75,11 @@ class ProfileListChromeOSTest : public testing::Test {
 
     // Add a user to the fake user manager.
     GetFakeUserManager()->AddUser(email_string);
-    if (log_in) {
-      GetFakeUserManager()->UserLoggedIn(
-          email_string,
-          email_string + kUserIdHashSuffix,
-          false);
-    }
+    if (log_in)
+      GetFakeUserManager()->LoginUser(email_string);
 
     // Create a profile for the user.
-    manager()->CreateTestingProfile(
-        chrome::kProfileDirPrefix + email_string + kUserIdHashSuffix,
-        scoped_ptr<PrefServiceSyncable>(),
-        ASCIIToUTF16(email_string), 0, std::string(),
-        TestingProfile::TestingFactories());
+    manager()->CreateTestingProfile(email_string);
   }
 
   AvatarMenu* GetAvatarMenu() {
@@ -108,9 +97,9 @@ class ProfileListChromeOSTest : public testing::Test {
     return avatar_menu_.get();
   }
 
-  void ActiveUserChanged(ProfileHelper* profile_helper,
-                         const std::string& hash) {
-    profile_helper->ActiveUserHashChanged(hash);
+  void ActiveUserChanged(const base::string16& name) {
+    std::string email_string = base::UTF16ToASCII(name) + "@example.com";
+    GetFakeUserManager()->SwitchActiveUser(email_string);
   }
 
   TestingProfileManager* manager() { return &manager_; }
@@ -220,10 +209,7 @@ TEST_F(ProfileListChromeOSTest, ActiveItem) {
   AddProfile(name1, true);
   AddProfile(name2, true);
 
-  // Initialize ProfileHelper, it will be accessed from GetActiveProfileIndex.
-  std::string email_string = base::UTF16ToASCII(name1) + "@example.com";
-  std::string hash = email_string + kUserIdHashSuffix;
-  ActiveUserChanged(ProfileHelper::Get(), hash);
+  ActiveUserChanged(name1);
 
   AvatarMenu* menu = GetAvatarMenu();
 

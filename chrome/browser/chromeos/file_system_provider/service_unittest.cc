@@ -18,8 +18,10 @@
 #include "chrome/browser/chromeos/login/users/fake_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/base/testing_profile_manager.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/extension_registry.h"
@@ -124,24 +126,28 @@ void RememberFakeFileSystem(TestingProfile* profile,
 
 class FileSystemProviderServiceTest : public testing::Test {
  protected:
-  FileSystemProviderServiceTest() {}
+  FileSystemProviderServiceTest() : profile_(NULL) {}
+
   virtual ~FileSystemProviderServiceTest() {}
 
   virtual void SetUp() OVERRIDE {
-    profile_.reset(new TestingProfile);
+    profile_manager_.reset(
+        new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
+    ASSERT_TRUE(profile_manager_->SetUp());
+    profile_ = profile_manager_->CreateTestingProfile("test-user@example.com");
     user_manager_ = new FakeUserManager();
     user_manager_->AddUser(profile_->GetProfileName());
     user_manager_enabler_.reset(new ScopedUserManagerEnabler(user_manager_));
-    extension_registry_.reset(
-        new extensions::ExtensionRegistry(profile_.get()));
-    service_.reset(new Service(profile_.get(), extension_registry_.get()));
+    extension_registry_.reset(new extensions::ExtensionRegistry(profile_));
+    service_.reset(new Service(profile_, extension_registry_.get()));
     service_->SetFileSystemFactoryForTesting(
         base::Bind(&FakeProvidedFileSystem::Create));
     extension_ = createFakeExtension(kExtensionId);
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
-  scoped_ptr<TestingProfile> profile_;
+  scoped_ptr<TestingProfileManager> profile_manager_;
+  TestingProfile* profile_;
   FakeUserManager* user_manager_;
   scoped_ptr<ScopedUserManagerEnabler> user_manager_enabler_;
   scoped_ptr<extensions::ExtensionRegistry> extension_registry_;
@@ -161,7 +167,7 @@ TEST_F(FileSystemProviderServiceTest, MountFileSystem) {
   EXPECT_EQ(kFileSystemId,
             observer.mounts[0].file_system_info().file_system_id());
   base::FilePath expected_mount_path =
-      util::GetMountPath(profile_.get(), kExtensionId, kFileSystemId);
+      util::GetMountPath(profile_, kExtensionId, kFileSystemId);
   EXPECT_EQ(expected_mount_path.AsUTF8Unsafe(),
             observer.mounts[0].file_system_info().mount_path().AsUTF8Unsafe());
   EXPECT_EQ(kDisplayName, observer.mounts[0].file_system_info().display_name());
@@ -276,7 +282,7 @@ TEST_F(FileSystemProviderServiceTest, UnmountFileSystem_OnExtensionUnload) {
 
   // Directly call the observer's method.
   service_->OnExtensionUnloaded(
-      profile_.get(),
+      profile_,
       extension_.get(),
       extensions::UnloadedExtensionInfo::REASON_DISABLE);
 
@@ -321,16 +327,13 @@ TEST_F(FileSystemProviderServiceTest, UnmountFileSystem_WrongExtensionId) {
 
 TEST_F(FileSystemProviderServiceTest, RestoreFileSystem_OnExtensionLoad) {
   // Create a fake entry in the preferences.
-  RememberFakeFileSystem(profile_.get(),
-                         kExtensionId,
-                         kFileSystemId,
-                         kDisplayName,
-                         true /* writable */);
+  RememberFakeFileSystem(
+      profile_, kExtensionId, kFileSystemId, kDisplayName, true /* writable */);
 
   // Create a new service instance in order to load remembered file systems
   // from preferences.
   scoped_ptr<Service> new_service(
-      new Service(profile_.get(), extension_registry_.get()));
+      new Service(profile_, extension_registry_.get()));
   LoggingObserver observer;
   new_service->AddObserver(&observer);
 
@@ -340,7 +343,7 @@ TEST_F(FileSystemProviderServiceTest, RestoreFileSystem_OnExtensionLoad) {
   EXPECT_EQ(0u, observer.mounts.size());
 
   // Directly call the observer's method.
-  new_service->OnExtensionLoaded(profile_.get(), extension_.get());
+  new_service->OnExtensionLoaded(profile_, extension_.get());
 
   ASSERT_EQ(1u, observer.mounts.size());
   EXPECT_EQ(base::File::FILE_OK, observer.mounts[0].error());

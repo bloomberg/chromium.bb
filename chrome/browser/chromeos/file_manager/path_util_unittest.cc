@@ -6,7 +6,7 @@
 
 #include "base/files/file_path.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
-#include "chrome/common/chrome_constants.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
@@ -27,8 +27,7 @@ class ProfileRelatedTest : public testing::Test {
   }
 
   Profile* CreateProfileWithName(const std::string& name) {
-    return testing_profile_manager_.CreateTestingProfile(
-        chrome::kProfileDirPrefix + name);
+    return testing_profile_manager_.CreateTestingProfile(name);
   }
 
  private:
@@ -70,10 +69,13 @@ TEST(FileManagerPathUtilTest, MultiProfileDownloadsFolderMigration) {
 }
 
 TEST_F(ProfileRelatedTest, MultiProfileDriveFolderMigration) {
-  Profile* profile = CreateProfileWithName("hash");
+  Profile* profile = CreateProfileWithName("user1");
 
   const base::FilePath kDrive = drive::util::GetDriveMountPointPath(profile);
-  ASSERT_EQ(base::FilePath::FromUTF8Unsafe("/special/drive-hash"), kDrive);
+  const std::string user_id_hash =
+      chromeos::ProfileHelper::GetUserIdHashByUserIdForTesting("user1");
+  ASSERT_EQ(base::FilePath::FromUTF8Unsafe("/special/drive-" + user_id_hash),
+            kDrive);
 
   base::FilePath path;
 

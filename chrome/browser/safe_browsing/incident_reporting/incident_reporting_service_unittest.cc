@@ -362,21 +362,13 @@ class IncidentReportingServiceTest : public testing::Test {
     OnProfileAdditionAction on_addition_action;
   };
 
-  // Returns the name of a profile as provided to CreateProfile.
-  static std::string GetProfileName(Profile* profile) {
-    // Cannot reliably use profile->GetProfileName() since the test needs the
-    // name before the profile manager sets it (which happens after profile
-    // addition).
-    return profile->GetPath().BaseName().AsUTF8Unsafe();
-  }
-
   // Posts a task to delete the profile.
   void DelayedDeleteProfile(Profile* profile) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&TestingProfileManager::DeleteTestingProfile,
                    base::Unretained(&profile_manager_),
-                   GetProfileName(profile)));
+                   profile->GetProfileName()));
   }
 
   // A callback run by the test fixture when a profile is added. An incident
@@ -385,7 +377,7 @@ class IncidentReportingServiceTest : public testing::Test {
     // The instance must have already been created.
     ASSERT_TRUE(instance_);
     // Add a test incident to the service if requested.
-    switch (profile_properties_[GetProfileName(profile)].on_addition_action) {
+    switch (profile_properties_[profile->GetProfileName()].on_addition_action) {
       case ON_PROFILE_ADDITION_ADD_INCIDENT:
         AddTestIncident(profile);
         break;
@@ -396,7 +388,7 @@ class IncidentReportingServiceTest : public testing::Test {
       default:
         ASSERT_EQ(
             ON_PROFILE_ADDITION_NO_ACTION,
-            profile_properties_[GetProfileName(profile)].on_addition_action);
+            profile_properties_[profile->GetProfileName()].on_addition_action);
         break;
     }
   }

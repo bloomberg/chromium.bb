@@ -462,35 +462,14 @@ bool ProfileManager::IsValidProfile(Profile* profile) {
 }
 
 base::FilePath ProfileManager::GetInitialProfileDir() {
-  base::FilePath relative_profile_dir;
 #if defined(OS_CHROMEOS)
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (logged_in_) {
-    base::FilePath profile_dir;
-    // If the user has logged in, pick up the new profile.
-    if (command_line.HasSwitch(chromeos::switches::kLoginProfile)) {
-      // TODO(nkostylev): Remove this code completely once we eliminate
-      // legacy --login-profile=user switch and enable multi-profiles on CrOS
-      // by default. http://crbug.com/294628
-      profile_dir = chromeos::ProfileHelper::
-          GetProfileDirByLegacyLoginProfileSwitch();
-    }
-    // In case of multi-profiles ignore --login-profile switch.
-    // TODO(nkostylev): Some cases like Guest mode will have empty username_hash
-    // so default kLoginProfile dir will be used.
-    std::string user_id_hash =
-        chromeos::ProfileHelper::Get()->active_user_id_hash();
-    if (!user_id_hash.empty())
-      profile_dir = chromeos::ProfileHelper::Get()->GetActiveUserProfileDir();
-
-    relative_profile_dir = relative_profile_dir.Append(profile_dir);
-    return relative_profile_dir;
+    return chromeos::ProfileHelper::Get()->GetActiveUserProfileDir();
   }
 #endif
+  base::FilePath relative_profile_dir;
   // TODO(mirandac): should not automatically be default profile.
-  relative_profile_dir =
-      relative_profile_dir.AppendASCII(chrome::kInitialProfile);
-  return relative_profile_dir;
+  return relative_profile_dir.AppendASCII(chrome::kInitialProfile);
 }
 
 Profile* ProfileManager::GetLastUsedProfile(
@@ -1207,10 +1186,7 @@ void ProfileManager::SetGuestProfilePrefs(Profile* profile) {
 
 bool ProfileManager::ShouldGoOffTheRecord(Profile* profile) {
 #if defined(OS_CHROMEOS)
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (profile->GetPath().BaseName().value() == chrome::kInitialProfile &&
-      (!command_line.HasSwitch(switches::kTestType) ||
-       command_line.HasSwitch(chromeos::switches::kLoginProfile))) {
+  if (profile->GetPath().BaseName().value() == chrome::kInitialProfile) {
     return true;
   }
 #endif

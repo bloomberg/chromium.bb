@@ -9,7 +9,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/common/chrome_constants.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
@@ -41,9 +41,8 @@ class ProfileRelatedFileSystemUtilTest : public testing::Test {
     ASSERT_TRUE(testing_profile_manager_.SetUp());
   }
 
-  Profile* CreateProfileWithName(const std::string& name) {
-    return testing_profile_manager_.CreateTestingProfile(
-        chrome::kProfileDirPrefix + name);
+  TestingProfileManager& testing_profile_manager() {
+    return testing_profile_manager_;
   }
 
  private:
@@ -79,18 +78,26 @@ TEST(FileSystemUtilTest, FilePathToDriveURL) {
 }
 
 TEST_F(ProfileRelatedFileSystemUtilTest, GetDriveMountPointPath) {
-  Profile* profile = CreateProfileWithName("hash1");
-  EXPECT_EQ(base::FilePath::FromUTF8Unsafe("/special/drive-hash1"),
+  Profile* profile = testing_profile_manager().CreateTestingProfile("user1");
+  const std::string user_id_hash =
+      chromeos::ProfileHelper::GetUserIdHashByUserIdForTesting("user1");
+  EXPECT_EQ(base::FilePath::FromUTF8Unsafe("/special/drive-" + user_id_hash),
             GetDriveMountPointPath(profile));
 }
 
 TEST_F(ProfileRelatedFileSystemUtilTest, ExtractProfileFromPath) {
-  Profile* profile1 = CreateProfileWithName("hash1");
-  Profile* profile2 = CreateProfileWithName("hash2");
-  EXPECT_EQ(profile1, ExtractProfileFromPath(
-      base::FilePath::FromUTF8Unsafe("/special/drive-hash1")));
-  EXPECT_EQ(profile2, ExtractProfileFromPath(
-      base::FilePath::FromUTF8Unsafe("/special/drive-hash2/root/xxx")));
+  Profile* profile1 = testing_profile_manager().CreateTestingProfile("user1");
+  Profile* profile2 = testing_profile_manager().CreateTestingProfile("user2");
+  const std::string user1_id_hash =
+      chromeos::ProfileHelper::GetUserIdHashByUserIdForTesting("user1");
+  const std::string user2_id_hash =
+      chromeos::ProfileHelper::GetUserIdHashByUserIdForTesting("user2");
+  EXPECT_EQ(profile1,
+            ExtractProfileFromPath(base::FilePath::FromUTF8Unsafe(
+                "/special/drive-" + user1_id_hash)));
+  EXPECT_EQ(profile2,
+            ExtractProfileFromPath(base::FilePath::FromUTF8Unsafe(
+                "/special/drive-" + user2_id_hash + "/root/xxx")));
   EXPECT_EQ(NULL, ExtractProfileFromPath(
       base::FilePath::FromUTF8Unsafe("/special/non-drive-path")));
 }
