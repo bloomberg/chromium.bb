@@ -15,6 +15,7 @@
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/profiles/profiles_state.h"
+#include "chrome/browser/signin/local_auth.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_header_helper.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -1242,7 +1243,7 @@ views::View* ProfileChooserView::CreateOtherProfilesView(
   return view;
 }
 
-views::View* ProfileChooserView::CreateOptionsView(bool enable_lock) {
+views::View* ProfileChooserView::CreateOptionsView(bool display_lock) {
   views::View* view = new views::View();
   views::GridLayout* layout = CreateSingleColumnLayout(view, kFixedMenuWidth);
 
@@ -1269,7 +1270,7 @@ views::View* ProfileChooserView::CreateOptionsView(bool enable_lock) {
     layout->AddView(go_incognito_button_);
   }
 
-  if (enable_lock) {
+  if (display_lock) {
     layout->StartRow(1, 0);
     layout->AddView(new views::Separator(views::Separator::HORIZONTAL));
 
@@ -1277,6 +1278,8 @@ views::View* ProfileChooserView::CreateOptionsView(bool enable_lock) {
         this,
         l10n_util::GetStringUTF16(IDS_PROFILES_PROFILE_SIGNOUT_BUTTON),
         *rb->GetImageSkiaNamed(IDR_ICON_PROFILES_MENU_LOCK));
+    if (!chrome::LocalAuthCredentialsExist(browser_->profile()))
+      lock_button_->SetState(views::Button::STATE_DISABLED);
     layout->StartRow(1, 0);
     layout->AddView(lock_button_);
   }

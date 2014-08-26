@@ -22,6 +22,7 @@
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/profiles/profiles_state.h"
+#include "chrome/browser/signin/local_auth.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_header_helper.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -826,7 +827,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 
 // Creates the "Not you" and Lock option buttons.
 - (NSView*)createOptionsViewWithRect:(NSRect)rect
-                          enableLock:(BOOL)enableLock;
+                         displayLock:(BOOL)displayLock;
 
 // Creates the account management view for the active profile.
 - (NSView*)createCurrentProfileAccountsView:(NSRect)rect;
@@ -1140,7 +1141,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   base::scoped_nsobject<NSMutableArray> otherProfiles(
       [[NSMutableArray alloc] init]);
   // Local and guest profiles cannot lock their profile.
-  bool enableLock = false;
+  bool displayLock = false;
 
   // Loop over the profiles in reverse, so that they are sorted by their
   // y-coordinate, and separate them into active and "other" profiles.
@@ -1162,7 +1163,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
         }
       }
       currentProfileView = [self createCurrentProfileView:item];
-      enableLock = switches::IsNewProfileManagement() && item.signed_in;
+      displayLock = switches::IsNewProfileManagement() && item.signed_in;
     } else {
       [otherProfiles addObject:[self createOtherProfileView:i]];
     }
@@ -1178,7 +1179,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   // Option buttons.
   NSRect rect = NSMakeRect(0, yOffset, kFixedMenuWidth, 0);
   NSView* optionsView = [self createOptionsViewWithRect:rect
-                                             enableLock:enableLock];
+                                            displayLock:displayLock];
   [container addSubview:optionsView];
   rect.origin.y = NSMaxY([optionsView frame]);
 
@@ -1690,19 +1691,21 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 }
 
 - (NSView*)createOptionsViewWithRect:(NSRect)rect
-                          enableLock:(BOOL)enableLock {
+                         displayLock:(BOOL)displayLock {
   NSRect viewRect = NSMakeRect(0, 0,
                                rect.size.width,
                                kBlueButtonHeight + kSmallVerticalSpacing);
   base::scoped_nsobject<NSView> container([[NSView alloc] initWithFrame:rect]);
 
-  if (enableLock) {
+  if (displayLock) {
     NSButton* lockButton =
         [self hoverButtonWithRect:viewRect
                              text:l10n_util::GetNSString(
                                   IDS_PROFILES_PROFILE_SIGNOUT_BUTTON)
                   imageResourceId:IDR_ICON_PROFILES_MENU_LOCK
                            action:@selector(lockProfile:)];
+    if (!chrome::LocalAuthCredentialsExist(browser_->profile()))
+      [lockButton setEnabled:NO];
     [container addSubview:lockButton];
     viewRect.origin.y = NSMaxY([lockButton frame]);
 
