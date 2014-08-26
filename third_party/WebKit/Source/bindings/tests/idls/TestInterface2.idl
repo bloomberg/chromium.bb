@@ -40,6 +40,9 @@
     SetWrapperReferenceFrom=ownerNode, // Conflicts with [SetWrapperReferenceTo]
     SpecialWrapFor=(TestInterface,TestInterfaceEmpty), // Conflicts with [Custom=ToV8]
 ] interface TestInterface2 {
+    // This interface has only runtime enabled constants.
+    [RuntimeEnabled=FeatureName] const unsigned short CONST_VALUE_1 = 1;
+
     // Indexed property operations with an identifier
     [RaisesException] getter TestInterfaceEmpty item(unsigned long index);
     [RaisesException] setter DOMString setItem(unsigned long index, DOMString value);

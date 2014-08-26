@@ -1079,6 +1079,7 @@ V8DOMConfiguration::installMethod({{method.function_template}}, {{method.signatu
 
 {######################################}
 {% macro install_constants() %}
+{% if has_constant_configuration %}
 {# Normal (always enabled) constants #}
 static const V8DOMConfiguration::ConstantConfiguration {{v8_class}}Constants[] = {
     {% for constant in constants if not constant.runtime_enabled_function %}
@@ -1094,6 +1095,7 @@ static const V8DOMConfiguration::ConstantConfiguration {{v8_class}}Constants[] =
     {% endfor %}
 };
 V8DOMConfiguration::installConstants(functionTemplate, prototypeTemplate, {{v8_class}}Constants, WTF_ARRAY_LENGTH({{v8_class}}Constants), isolate);
+{% endif %}
 {# Runtime-enabled constants #}
 {% for constant in constants if constant.runtime_enabled_function %}
 if ({{constant.runtime_enabled_function}}()) {

@@ -227,11 +227,15 @@ def interface_context(interface):
         'named_constructor': named_constructor,
     })
 
+    constants = [constant_context(constant) for constant in interface.constants]
+
     # Constants
     context.update({
-        'constants': [constant_context(constant)
-                      for constant in interface.constants],
+        'constants': constants,
         'do_not_check_constants': 'DoNotCheckConstants' in extended_attributes,
+        'has_constant_configuration': any(
+            not constant['runtime_enabled_function']
+            for constant in constants),
     })
 
     # Attributes
