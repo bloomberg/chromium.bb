@@ -2088,37 +2088,60 @@ def PushToGitPending(remote, pending_ref, upstream_ref):
   cherry = RunGit(['rev-parse', 'HEAD']).strip()
   code = 0
   out = ''
-  attempt = 0
-  while attempt < 5:
-    attempt += 1
+  max_attempts = 3
+  attempts_left = max_attempts
+  while attempts_left:
+    if attempts_left != max_attempts:
+      print 'Retrying, %d attempts left...' % (attempts_left - 1,)
+    attempts_left -= 1
 
     # Fetch. Retry fetch errors.
+    print 'Fetching pending ref %s...' % pending_ref
     code, out = RunGitWithCode(
-        ['retry', 'fetch', remote, '+%s:%s' % (pending_ref, local_pending_ref)],
-        suppress_stderr=True)
+        ['retry', 'fetch', remote, '+%s:%s' % (pending_ref, local_pending_ref)])
     if code:
+      print 'Fetch failed with exit code %d.' % code
+      if out.strip():
+        print out.strip()
       continue
 
     # Try to cherry pick. Abort on merge conflicts.
+    print 'Cherry-picking commit on top of pending ref...'
     RunGitWithCode(['checkout', local_pending_ref], suppress_stderr=True)
-    code, out = RunGitWithCode(['cherry-pick', cherry], suppress_stderr=True)
+    code, out = RunGitWithCode(['cherry-pick', cherry])
     if code:
       print (
-          'Your patch doesn\'t apply cleanly to upstream ref \'%s\', '
-          'the following files have merge conflicts:' % upstream_ref)
+          'Your patch doesn\'t apply cleanly to ref \'%s\', '
+          'the following files have merge conflicts:' % pending_ref)
       print RunGit(['diff', '--name-status', '--diff-filter=U']).strip()
       print 'Please rebase your patch and try again.'
-      RunGitWithCode(['cherry-pick', '--abort'], suppress_stderr=True)
+      RunGitWithCode(['cherry-pick', '--abort'])
       return code, out
 
     # Applied cleanly, try to push now. Retry on error (flake or non-ff push).
+    print 'Pushing commit to %s... It can take a while.' % pending_ref
     code, out = RunGitWithCode(
         ['retry', 'push', '--porcelain', remote, 'HEAD:%s' % pending_ref])
     if code == 0:
       # Success.
       return code, out
 
+    print 'Push failed with exit code %d.' % code
+    if out.strip():
+      print out.strip()
+    if IsFatalPushFailure(out):
+      print (
+          'Fatal push error. Make sure your .netrc credentials and git '
+          'user.email are correct and you have push access to the repo.')
+      return code, out
+
+  print 'All attempts to push to pending ref failed.'
   return code, out
+
+
+def IsFatalPushFailure(push_stdout):
+  """True if retrying push won't help."""
+  return '(prohibited by Gerrit)' in push_stdout
 
 
 @subcommand.usage('[upstream branch to apply against]')
