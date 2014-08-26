@@ -40,7 +40,7 @@ void webCoreInitializeScriptWrappableForInterface(blink::TestInterfaceConstructo
 }
 
 namespace blink {
-const WrapperTypeInfo V8TestInterfaceConstructor::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceConstructor::domTemplate, V8TestInterfaceConstructor::refObject, V8TestInterfaceConstructor::derefObject, 0, 0, 0, V8TestInterfaceConstructor::installConditionallyEnabledMethods, V8TestInterfaceConstructor::installConditionallyEnabledProperties, 0, WrapperTypeObjectPrototype, RefCountedObject };
+const WrapperTypeInfo V8TestInterfaceConstructor::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceConstructor::domTemplate, V8TestInterfaceConstructor::refObject, V8TestInterfaceConstructor::derefObject, V8TestInterfaceConstructor::createPersistentHandle, 0, 0, 0, V8TestInterfaceConstructor::installConditionallyEnabledMethods, V8TestInterfaceConstructor::installConditionallyEnabledProperties, 0, WrapperTypeObjectPrototype, RefCountedObject };
 
 namespace TestInterfaceConstructorV8Internal {
 
@@ -224,7 +224,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 
 } // namespace TestInterfaceConstructorV8Internal
 
-const WrapperTypeInfo V8TestInterfaceConstructorConstructor::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceConstructorConstructor::domTemplate, V8TestInterfaceConstructor::refObject, V8TestInterfaceConstructor::derefObject, 0, 0, 0, V8TestInterfaceConstructor::installConditionallyEnabledMethods, V8TestInterfaceConstructor::installConditionallyEnabledProperties, 0, WrapperTypeObjectPrototype, RefCountedObject };
+const WrapperTypeInfo V8TestInterfaceConstructorConstructor::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceConstructorConstructor::domTemplate, V8TestInterfaceConstructor::refObject, V8TestInterfaceConstructor::derefObject, V8TestInterfaceConstructor::createPersistentHandle, 0, 0, 0, V8TestInterfaceConstructor::installConditionallyEnabledMethods, V8TestInterfaceConstructor::installConditionallyEnabledProperties, 0, WrapperTypeObjectPrototype, RefCountedObject };
 
 static void V8TestInterfaceConstructorConstructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
@@ -384,6 +384,12 @@ void V8TestInterfaceConstructor::refObject(ScriptWrappableBase* internalPointer)
 void V8TestInterfaceConstructor::derefObject(ScriptWrappableBase* internalPointer)
 {
     fromInternalPointer(internalPointer)->deref();
+}
+
+PersistentNode* V8TestInterfaceConstructor::createPersistentHandle(ScriptWrappableBase* internalPointer)
+{
+    ASSERT_NOT_REACHED();
+    return 0;
 }
 
 template<>

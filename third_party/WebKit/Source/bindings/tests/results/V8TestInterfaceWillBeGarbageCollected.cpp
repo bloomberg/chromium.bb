@@ -38,7 +38,7 @@ void webCoreInitializeScriptWrappableForInterface(blink::TestInterfaceWillBeGarb
 }
 
 namespace blink {
-const WrapperTypeInfo V8TestInterfaceWillBeGarbageCollected::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceWillBeGarbageCollected::domTemplate, V8TestInterfaceWillBeGarbageCollected::refObject, V8TestInterfaceWillBeGarbageCollected::derefObject, 0, V8TestInterfaceWillBeGarbageCollected::toEventTarget, 0, V8TestInterfaceWillBeGarbageCollected::installConditionallyEnabledMethods, V8TestInterfaceWillBeGarbageCollected::installConditionallyEnabledProperties, &V8EventTarget::wrapperTypeInfo, WrapperTypeObjectPrototype, WillBeGarbageCollectedObject };
+const WrapperTypeInfo V8TestInterfaceWillBeGarbageCollected::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceWillBeGarbageCollected::domTemplate, V8TestInterfaceWillBeGarbageCollected::refObject, V8TestInterfaceWillBeGarbageCollected::derefObject, V8TestInterfaceWillBeGarbageCollected::createPersistentHandle, 0, V8TestInterfaceWillBeGarbageCollected::toEventTarget, 0, V8TestInterfaceWillBeGarbageCollected::installConditionallyEnabledMethods, V8TestInterfaceWillBeGarbageCollected::installConditionallyEnabledProperties, &V8EventTarget::wrapperTypeInfo, WrapperTypeObjectPrototype, WillBeGarbageCollectedObject };
 
 namespace TestInterfaceWillBeGarbageCollectedV8Internal {
 
@@ -122,7 +122,7 @@ static const V8DOMConfiguration::MethodConfiguration V8TestInterfaceWillBeGarbag
     {"func", TestInterfaceWillBeGarbageCollectedV8Internal::funcMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},
 };
 
-const WrapperTypeInfo V8TestInterfaceWillBeGarbageCollectedConstructor::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceWillBeGarbageCollectedConstructor::domTemplate, V8TestInterfaceWillBeGarbageCollected::refObject, V8TestInterfaceWillBeGarbageCollected::derefObject, 0, V8TestInterfaceWillBeGarbageCollected::toEventTarget, 0, V8TestInterfaceWillBeGarbageCollected::installConditionallyEnabledMethods, V8TestInterfaceWillBeGarbageCollected::installConditionallyEnabledProperties, 0, WrapperTypeObjectPrototype, WillBeGarbageCollectedObject };
+const WrapperTypeInfo V8TestInterfaceWillBeGarbageCollectedConstructor::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceWillBeGarbageCollectedConstructor::domTemplate, V8TestInterfaceWillBeGarbageCollected::refObject, V8TestInterfaceWillBeGarbageCollected::derefObject, V8TestInterfaceWillBeGarbageCollected::createPersistentHandle, 0, V8TestInterfaceWillBeGarbageCollected::toEventTarget, 0, V8TestInterfaceWillBeGarbageCollected::installConditionallyEnabledMethods, V8TestInterfaceWillBeGarbageCollected::installConditionallyEnabledProperties, 0, WrapperTypeObjectPrototype, WillBeGarbageCollectedObject };
 
 static void V8TestInterfaceWillBeGarbageCollectedConstructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
@@ -259,14 +259,24 @@ void V8TestInterfaceWillBeGarbageCollected::refObject(ScriptWrappableBase* inter
 {
 #if !ENABLE(OILPAN)
     fromInternalPointer(internalPointer)->ref();
-#endif // !ENABLE(OILPAN)
+#endif
 }
 
 void V8TestInterfaceWillBeGarbageCollected::derefObject(ScriptWrappableBase* internalPointer)
 {
 #if !ENABLE(OILPAN)
     fromInternalPointer(internalPointer)->deref();
-#endif // !ENABLE(OILPAN)
+#endif
+}
+
+PersistentNode* V8TestInterfaceWillBeGarbageCollected::createPersistentHandle(ScriptWrappableBase* internalPointer)
+{
+#if ENABLE(OILPAN)
+    return new Persistent<TestInterfaceWillBeGarbageCollected>(fromInternalPointer(internalPointer));
+#else
+    ASSERT_NOT_REACHED();
+    return 0;
+#endif
 }
 
 template<>

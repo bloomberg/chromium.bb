@@ -30,6 +30,7 @@ public:
     static const WrapperTypeInfo wrapperTypeInfo;
     static void refObject(ScriptWrappableBase* internalPointer);
     static void derefObject(ScriptWrappableBase* internalPointer);
+    static PersistentNode* createPersistentHandle(ScriptWrappableBase* internalPointer);
     static EventTarget* toEventTarget(v8::Handle<v8::Object>);
     static void constructorCallback(const v8::FunctionCallbackInfo<v8::Value>&);
     static const int eventListenerCacheIndex = v8DefaultWrapperInternalFieldCount + 0;

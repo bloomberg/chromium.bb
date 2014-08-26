@@ -30,6 +30,7 @@ public:
     static const WrapperTypeInfo wrapperTypeInfo;
     static void refObject(ScriptWrappableBase* internalPointer);
     static void derefObject(ScriptWrappableBase* internalPointer);
+    static PersistentNode* createPersistentHandle(ScriptWrappableBase* internalPointer);
     static EventTarget* toEventTarget(v8::Handle<v8::Object>);
 #if ENABLE(OILPAN)
     static const int persistentHandleIndex = v8DefaultWrapperInternalFieldCount + 0;

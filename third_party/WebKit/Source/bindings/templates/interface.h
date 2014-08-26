@@ -53,6 +53,7 @@ public:
     static const WrapperTypeInfo wrapperTypeInfo;
     static void refObject(ScriptWrappableBase* internalPointer);
     static void derefObject(ScriptWrappableBase* internalPointer);
+    static PersistentNode* createPersistentHandle(ScriptWrappableBase* internalPointer);
     {% if has_visit_dom_wrapper %}
     static void visitDOMWrapper(ScriptWrappableBase* internalPointer, const v8::Persistent<v8::Object>&, v8::Isolate*);
     {% endif %}
@@ -143,7 +144,7 @@ public:
 #else
     static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + {{custom_internal_field_counter}};
 #endif
-    {% else %}
+    {% elif gc_type == 'RefCountedObject' %}
     static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + {{custom_internal_field_counter}};
     {% endif %}
     {# End custom internal fields #}

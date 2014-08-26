@@ -48,6 +48,7 @@ V8ArrayBufferDeallocationObserver* V8ArrayBufferDeallocationObserver::instanceTe
 const WrapperTypeInfo V8ArrayBuffer::wrapperTypeInfo = {
     gin::kEmbedderBlink,
     0, V8ArrayBuffer::refObject, V8ArrayBuffer::derefObject,
+    V8ArrayBuffer::createPersistentHandle,
     0, 0, 0, 0, 0, 0, WrapperTypeObjectPrototype, RefCountedObject
 };
 
@@ -64,6 +65,12 @@ void V8ArrayBuffer::refObject(ScriptWrappableBase* internalPointer)
 void V8ArrayBuffer::derefObject(ScriptWrappableBase* internalPointer)
 {
     fromInternalPointer(internalPointer)->deref();
+}
+
+PersistentNode* V8ArrayBuffer::createPersistentHandle(ScriptWrappableBase* internalPointer)
+{
+    ASSERT_NOT_REACHED();
+    return 0;
 }
 
 v8::Handle<v8::Object> V8ArrayBuffer::createWrapper(PassRefPtr<ArrayBuffer> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)

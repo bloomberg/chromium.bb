@@ -36,7 +36,7 @@ void webCoreInitializeScriptWrappableForInterface(blink::TestInterfaceEmpty* obj
 }
 
 namespace blink {
-const WrapperTypeInfo V8TestInterfaceEmpty::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceEmpty::domTemplate, V8TestInterfaceEmpty::refObject, V8TestInterfaceEmpty::derefObject, 0, 0, 0, V8TestInterfaceEmpty::installConditionallyEnabledMethods, V8TestInterfaceEmpty::installConditionallyEnabledProperties, 0, WrapperTypeObjectPrototype, RefCountedObject };
+const WrapperTypeInfo V8TestInterfaceEmpty::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceEmpty::domTemplate, V8TestInterfaceEmpty::refObject, V8TestInterfaceEmpty::derefObject, V8TestInterfaceEmpty::createPersistentHandle, 0, 0, 0, V8TestInterfaceEmpty::installConditionallyEnabledMethods, V8TestInterfaceEmpty::installConditionallyEnabledProperties, 0, WrapperTypeObjectPrototype, RefCountedObject };
 
 namespace TestInterfaceEmptyV8Internal {
 
@@ -117,6 +117,12 @@ void V8TestInterfaceEmpty::refObject(ScriptWrappableBase* internalPointer)
 void V8TestInterfaceEmpty::derefObject(ScriptWrappableBase* internalPointer)
 {
     fromInternalPointer(internalPointer)->deref();
+}
+
+PersistentNode* V8TestInterfaceEmpty::createPersistentHandle(ScriptWrappableBase* internalPointer)
+{
+    ASSERT_NOT_REACHED();
+    return 0;
 }
 
 template<>

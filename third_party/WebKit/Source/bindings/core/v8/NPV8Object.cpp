@@ -48,11 +48,21 @@
 
 using namespace blink;
 
+namespace {
+
+PersistentNode* createPersistentHandle(ScriptWrappableBase* internalPointer)
+{
+    ASSERT_NOT_REACHED();
+    return 0;
+}
+
+} // namespace
+
 namespace blink {
 
 const WrapperTypeInfo* npObjectTypeInfo()
 {
-    static const WrapperTypeInfo typeInfo = { gin::kEmbedderBlink, 0, 0, 0, 0, 0, 0, 0, 0, 0, WrapperTypeObjectPrototype, RefCountedObject };
+    static const WrapperTypeInfo typeInfo = { gin::kEmbedderBlink, 0, 0, 0, createPersistentHandle, 0, 0, 0, 0, 0, 0, WrapperTypeObjectPrototype, RefCountedObject };
     return &typeInfo;
 }
 

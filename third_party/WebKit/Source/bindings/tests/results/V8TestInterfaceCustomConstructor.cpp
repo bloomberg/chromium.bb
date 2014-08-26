@@ -37,7 +37,7 @@ void webCoreInitializeScriptWrappableForInterface(blink::TestInterfaceCustomCons
 }
 
 namespace blink {
-const WrapperTypeInfo V8TestInterfaceCustomConstructor::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceCustomConstructor::domTemplate, V8TestInterfaceCustomConstructor::refObject, V8TestInterfaceCustomConstructor::derefObject, 0, 0, 0, V8TestInterfaceCustomConstructor::installConditionallyEnabledMethods, V8TestInterfaceCustomConstructor::installConditionallyEnabledProperties, 0, WrapperTypeObjectPrototype, RefCountedObject };
+const WrapperTypeInfo V8TestInterfaceCustomConstructor::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceCustomConstructor::domTemplate, V8TestInterfaceCustomConstructor::refObject, V8TestInterfaceCustomConstructor::derefObject, V8TestInterfaceCustomConstructor::createPersistentHandle, 0, 0, 0, V8TestInterfaceCustomConstructor::installConditionallyEnabledMethods, V8TestInterfaceCustomConstructor::installConditionallyEnabledProperties, 0, WrapperTypeObjectPrototype, RefCountedObject };
 
 namespace TestInterfaceCustomConstructorV8Internal {
 
@@ -136,6 +136,12 @@ void V8TestInterfaceCustomConstructor::refObject(ScriptWrappableBase* internalPo
 void V8TestInterfaceCustomConstructor::derefObject(ScriptWrappableBase* internalPointer)
 {
     fromInternalPointer(internalPointer)->deref();
+}
+
+PersistentNode* V8TestInterfaceCustomConstructor::createPersistentHandle(ScriptWrappableBase* internalPointer)
+{
+    ASSERT_NOT_REACHED();
+    return 0;
 }
 
 template<>

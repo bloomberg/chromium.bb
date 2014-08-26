@@ -56,6 +56,7 @@ public:
     static ArrayBuffer* toNativeWithTypeCheck(v8::Isolate*, v8::Handle<v8::Value>);
     static void refObject(ScriptWrappableBase* internalPointer);
     static void derefObject(ScriptWrappableBase* internalPointer);
+    static PersistentNode* createPersistentHandle(ScriptWrappableBase* internalPointer);
     static const WrapperTypeInfo wrapperTypeInfo;
     static const int internalFieldCount = v8DefaultWrapperInternalFieldCount;
 

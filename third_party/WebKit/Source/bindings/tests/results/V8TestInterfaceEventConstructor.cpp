@@ -43,7 +43,7 @@ void webCoreInitializeScriptWrappableForInterface(blink::TestInterfaceEventConst
 }
 
 namespace blink {
-const WrapperTypeInfo V8TestInterfaceEventConstructor::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceEventConstructor::domTemplate, V8TestInterfaceEventConstructor::refObject, V8TestInterfaceEventConstructor::derefObject, 0, 0, 0, V8TestInterfaceEventConstructor::installConditionallyEnabledMethods, V8TestInterfaceEventConstructor::installConditionallyEnabledProperties, &V8Event::wrapperTypeInfo, WrapperTypeObjectPrototype, WillBeGarbageCollectedObject };
+const WrapperTypeInfo V8TestInterfaceEventConstructor::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceEventConstructor::domTemplate, V8TestInterfaceEventConstructor::refObject, V8TestInterfaceEventConstructor::derefObject, V8TestInterfaceEventConstructor::createPersistentHandle, 0, 0, 0, V8TestInterfaceEventConstructor::installConditionallyEnabledMethods, V8TestInterfaceEventConstructor::installConditionallyEnabledProperties, &V8Event::wrapperTypeInfo, WrapperTypeObjectPrototype, WillBeGarbageCollectedObject };
 
 namespace TestInterfaceEventConstructorV8Internal {
 
@@ -416,14 +416,24 @@ void V8TestInterfaceEventConstructor::refObject(ScriptWrappableBase* internalPoi
 {
 #if !ENABLE(OILPAN)
     fromInternalPointer(internalPointer)->ref();
-#endif // !ENABLE(OILPAN)
+#endif
 }
 
 void V8TestInterfaceEventConstructor::derefObject(ScriptWrappableBase* internalPointer)
 {
 #if !ENABLE(OILPAN)
     fromInternalPointer(internalPointer)->deref();
-#endif // !ENABLE(OILPAN)
+#endif
+}
+
+PersistentNode* V8TestInterfaceEventConstructor::createPersistentHandle(ScriptWrappableBase* internalPointer)
+{
+#if ENABLE(OILPAN)
+    return new Persistent<TestInterfaceEventConstructor>(fromInternalPointer(internalPointer));
+#else
+    ASSERT_NOT_REACHED();
+    return 0;
+#endif
 }
 
 template<>

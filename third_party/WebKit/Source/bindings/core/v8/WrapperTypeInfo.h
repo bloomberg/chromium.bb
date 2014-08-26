@@ -55,6 +55,7 @@ static const uint16_t v8DOMObjectClassId = 2;
 typedef v8::Handle<v8::FunctionTemplate> (*DomTemplateFunction)(v8::Isolate*);
 typedef void (*RefObjectFunction)(ScriptWrappableBase* internalPointer);
 typedef void (*DerefObjectFunction)(ScriptWrappableBase* internalPointer);
+typedef PersistentNode* (*CreatePersistentHandleFunction)(ScriptWrappableBase* internalPointer);
 typedef ActiveDOMObject* (*ToActiveDOMObjectFunction)(v8::Handle<v8::Object>);
 typedef EventTarget* (*ToEventTargetFunction)(v8::Handle<v8::Object>);
 typedef void (*ResolveWrapperReachabilityFunction)(ScriptWrappableBase* internalPointer, const v8::Persistent<v8::Object>&, v8::Isolate*);
@@ -110,8 +111,14 @@ struct WrapperTypeInfo {
 
     void refObject(ScriptWrappableBase* internalPointer) const
     {
-        if (refObjectFunction)
-            refObjectFunction(internalPointer);
+        ASSERT(refObjectFunction);
+        refObjectFunction(internalPointer);
+    }
+
+    PersistentNode* createPersistentHandle(ScriptWrappableBase* internalPointer) const
+    {
+        ASSERT(createPersistentHandleFunction);
+        return createPersistentHandleFunction(internalPointer);
     }
 
     void installConditionallyEnabledMethods(v8::Handle<v8::Object> prototypeTemplate, v8::Isolate* isolate) const
@@ -154,6 +161,7 @@ struct WrapperTypeInfo {
     const DomTemplateFunction domTemplateFunction;
     const RefObjectFunction refObjectFunction;
     const DerefObjectFunction derefObjectFunction;
+    const CreatePersistentHandleFunction createPersistentHandleFunction;
     const ToActiveDOMObjectFunction toActiveDOMObjectFunction;
     const ToEventTargetFunction toEventTargetFunction;
     const ResolveWrapperReachabilityFunction visitDOMWrapperFunction;
