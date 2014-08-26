@@ -15,6 +15,11 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 
+#if defined(OS_MACOSX)
+#include <CoreVideo/CVPixelBuffer.h>
+#include "base/mac/scoped_cftyperef.h"
+#endif
+
 class SkBitmap;
 
 namespace gpu {
@@ -148,6 +153,20 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
       const base::Closure& no_longer_needed_cb);
 #endif
 
+#if defined(OS_MACOSX)
+  // Wraps a provided CVPixelBuffer with a VideoFrame. The pixel buffer is
+  // retained for the lifetime of the VideoFrame and released upon destruction.
+  // The image data is only accessible via the pixel buffer, which could be
+  // backed by an IOSurface from another process. All the attributes of the
+  // VideoFrame are derived from the pixel buffer, with the exception of the
+  // timestamp. If information is missing or is incompatible (for example, a
+  // pixel format that has no VideoFrame match), NULL is returned.
+  // http://crbug.com/401308
+  static scoped_refptr<VideoFrame> WrapCVPixelBuffer(
+      CVPixelBufferRef cv_pixel_buffer,
+      base::TimeDelta timestamp);
+#endif
+
   // Wraps external YUV data of the given parameters with a VideoFrame.
   // The returned VideoFrame does not own the data passed in. When the frame
   // is destroyed |no_longer_needed_cb.Run()| will be called.
@@ -255,6 +274,11 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   int dmabuf_fd(size_t plane) const;
 #endif
 
+#if defined(OS_MACOSX)
+  // Returns the backing CVPixelBuffer, if present.
+  CVPixelBufferRef cv_pixel_buffer() const;
+#endif
+
   // Returns true if this VideoFrame represents the end of the stream.
   bool end_of_stream() const { return end_of_stream_; }
 
@@ -344,6 +368,11 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // Dmabufs for each plane, if this frame is wrapping memory
   // acquired via dmabuf.
   base::ScopedFD dmabuf_fds_[kMaxPlanes];
+#endif
+
+#if defined(OS_MACOSX)
+  // CVPixelBuffer, if this frame is wrapping one.
+  base::ScopedCFTypeRef<CVPixelBufferRef> cv_pixel_buffer_;
 #endif
 
   base::Closure no_longer_needed_cb_;

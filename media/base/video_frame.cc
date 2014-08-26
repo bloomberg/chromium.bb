@@ -278,6 +278,51 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalDmabufs(
 }
 #endif
 
+#if defined(OS_MACOSX)
+// static
+scoped_refptr<VideoFrame> VideoFrame::WrapCVPixelBuffer(
+    CVPixelBufferRef cv_pixel_buffer,
+    base::TimeDelta timestamp) {
+  DCHECK(cv_pixel_buffer);
+  DCHECK(CFGetTypeID(cv_pixel_buffer) == CVPixelBufferGetTypeID());
+
+  OSType cv_format = CVPixelBufferGetPixelFormatType(cv_pixel_buffer);
+  Format format;
+  // There are very few compatible CV pixel formats, so just check each.
+  if (cv_format == kCVPixelFormatType_420YpCbCr8Planar) {
+    format = Format::I420;
+  } else if (cv_format == kCVPixelFormatType_444YpCbCr8) {
+    format = Format::YV24;
+  } else if (cv_format == '420v') {
+    // TODO(jfroy): Use kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange when the
+    // minimum OS X and iOS SDKs permits it.
+    format = Format::NV12;
+  } else {
+    DLOG(ERROR) << "CVPixelBuffer format not supported: " << cv_format;
+    return NULL;
+  }
+
+  gfx::Size coded_size(CVImageBufferGetEncodedSize(cv_pixel_buffer));
+  gfx::Rect visible_rect(CVImageBufferGetCleanRect(cv_pixel_buffer));
+  gfx::Size natural_size(CVImageBufferGetDisplaySize(cv_pixel_buffer));
+
+  if (!IsValidConfig(format, coded_size, visible_rect, natural_size))
+    return NULL;
+
+  scoped_refptr<VideoFrame> frame(
+      new VideoFrame(format,
+                     coded_size,
+                     visible_rect,
+                     natural_size,
+                     scoped_ptr<gpu::MailboxHolder>(),
+                     timestamp,
+                     false));
+
+  frame->cv_pixel_buffer_.reset(cv_pixel_buffer, base::scoped_policy::RETAIN);
+  return frame;
+}
+#endif
+
 // static
 scoped_refptr<VideoFrame> VideoFrame::WrapExternalYuvData(
     Format format,
@@ -854,6 +899,12 @@ void VideoFrame::UpdateReleaseSyncPoint(SyncPointClient* client) {
 #if defined(OS_POSIX)
 int VideoFrame::dmabuf_fd(size_t plane) const {
   return dmabuf_fds_[plane].get();
+}
+#endif
+
+#if defined(OS_MACOSX)
+CVPixelBufferRef VideoFrame::cv_pixel_buffer() const {
+  return cv_pixel_buffer_.get();
 }
 #endif
 
