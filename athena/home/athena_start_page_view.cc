@@ -4,6 +4,7 @@
 
 #include "athena/home/athena_start_page_view.h"
 
+#include "athena/home/home_card_constants.h"
 #include "base/bind.h"
 #include "base/strings/string_util.h"
 #include "third_party/skia/include/core/SkPaint.h"
@@ -41,9 +42,6 @@ const int kSearchBoxBorderWidth = 1;
 const int kSearchBoxCornerRadius = 2;
 const int kSearchBoxWidth = 490;
 const int kSearchBoxHeight = 40;
-
-// The preferred height for VISIBLE_BOTTOM state.
-const int kPreferredHeightBottom = 100;
 
 class PlaceHolderButton : public views::ImageButton,
                           public views::ButtonListener {
@@ -214,7 +212,7 @@ void AthenaStartPageView::LayoutSearchResults(bool should_show_search_results) {
       search_results_view_->layer()->GetTargetVisibility()) {
     return;
   }
-  if (GetContentsBounds().height() <= kPreferredHeightBottom) {
+  if (GetContentsBounds().height() <= kHomeCardHeight) {
     search_results_view_->SetVisible(false);
     Layout();
     return;
@@ -281,7 +279,7 @@ void AthenaStartPageView::Layout() {
   gfx::Rect bounds = GetContentsBounds();
   search_results_view_->SetVisible(false);
 
-  if (bounds.height() <= kPreferredHeightBottom) {
+  if (bounds.height() <= kHomeCardHeight) {
     logo_->SetVisible(false);
     gfx::Rect icon_bounds(app_icon_container_->GetPreferredSize());
     icon_bounds.set_x(bounds.x() + kIconMargin);
@@ -296,7 +294,7 @@ void AthenaStartPageView::Layout() {
 
     search_box_container_->SetBounds(
         icon_bounds.right(), bounds.y(),
-        control_bounds.x() - icon_bounds.right(), kPreferredHeightBottom);
+        control_bounds.x() - icon_bounds.right(), kHomeCardHeight);
 
     set_background(views::Background::CreateSolidBackground(
         255, 255, 255, 255 * 0.9));

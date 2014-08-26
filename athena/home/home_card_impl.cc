@@ -11,6 +11,8 @@
 #include "athena/env/public/athena_env.h"
 #include "athena/home/app_list_view_delegate.h"
 #include "athena/home/athena_start_page_view.h"
+#include "athena/home/home_card_constants.h"
+#include "athena/home/home_card_gesture_manager.h"
 #include "athena/home/minimized_home.h"
 #include "athena/home/public/app_model_builder.h"
 #include "athena/input/public/accelerator_manager.h"
@@ -40,8 +42,6 @@ namespace athena {
 namespace {
 
 HomeCard* instance = NULL;
-const int kHomeCardHeight = 100;
-const int kHomeCardMinimizedHeight = 6;
 
 gfx::Rect GetBoundsForState(const gfx::Rect& screen_bounds,
                             HomeCard::State state) {
@@ -120,151 +120,6 @@ class HomeCardLayoutManager : public aura::LayoutManager {
   aura::Window* home_card_;
 
   DISALLOW_COPY_AND_ASSIGN(HomeCardLayoutManager);
-};
-
-class HomeCardGestureManager {
- public:
-  class Delegate {
-   public:
-    // Called when the gesture has ended. The state of the home card will
-    // end up with |final_state|.
-    virtual void OnGestureEnded(HomeCard::State final_state) = 0;
-
-    // Called when the gesture position is updated so that |delegate| should
-    // update the visual. The arguments represent the state of the current
-    // gesture position is switching from |from_state| to |to_state|, and
-    // the level of the progress is at |progress|, which is 0 to 1.
-    // |from_state| and |to_state| could be same. For example, if the user moves
-    // the finger down to the bottom of the screen, both states are MINIMIZED.
-    // In that case |progress| is 0.
-    virtual void OnGestureProgressed(
-        HomeCard::State from_state,
-        HomeCard::State to_state,
-        float progress) = 0;
-  };
-
-  HomeCardGestureManager(Delegate* delegate,
-                         const gfx::Rect& screen_bounds)
-      : delegate_(delegate),
-        last_state_(HomeCard::Get()->GetState()),
-        y_offset_(0),
-        last_estimated_top_(0),
-        screen_bounds_(screen_bounds) {}
-
-  void ProcessGestureEvent(ui::GestureEvent* event) {
-    switch (event->type()) {
-      case ui::ET_GESTURE_SCROLL_BEGIN:
-        y_offset_ = event->location().y();
-        event->SetHandled();
-        break;
-      case ui::ET_GESTURE_SCROLL_END:
-        event->SetHandled();
-        delegate_->OnGestureEnded(GetClosestState());
-        break;
-      case ui::ET_GESTURE_SCROLL_UPDATE:
-        UpdateScrollState(*event);
-        break;
-      case ui::ET_SCROLL_FLING_START: {
-        const ui::GestureEventDetails& details = event->details();
-        const float kFlingCompletionVelocity = 100.0f;
-        if (::fabs(details.velocity_y()) > kFlingCompletionVelocity) {
-          int step = (details.velocity_y() > 0) ? 1 : -1;
-          int new_state = static_cast<int>(last_state_) + step;
-          if (new_state >= HomeCard::VISIBLE_CENTERED &&
-              new_state <= HomeCard::VISIBLE_MINIMIZED) {
-            last_state_ = static_cast<HomeCard::State>(new_state);
-          }
-          delegate_->OnGestureEnded(last_state_);
-        }
-        break;
-      }
-      default:
-        // do nothing.
-        break;
-    }
-  }
-
- private:
-  HomeCard::State GetClosestState() {
-    // The top position of the bounds for one smaller state than the current
-    // one.
-    int smaller_top = -1;
-    for (int i = HomeCard::VISIBLE_MINIMIZED;
-         i >= HomeCard::VISIBLE_CENTERED; --i) {
-      HomeCard::State state = static_cast<HomeCard::State>(i);
-      int top = GetBoundsForState(screen_bounds_, state).y();
-      if (last_estimated_top_ == top) {
-        return state;
-      } else if (last_estimated_top_ > top) {
-        if (smaller_top < 0)
-          return state;
-
-        if (smaller_top - last_estimated_top_ > (smaller_top - top) / 5) {
-          return state;
-        } else {
-          return static_cast<HomeCard::State>(i + 1);
-        }
-      }
-      smaller_top = top;
-    }
-
-    return last_state_;
-  }
-
-  void UpdateScrollState(const ui::GestureEvent& event) {
-    last_estimated_top_ = event.root_location().y() - y_offset_;
-
-    // The bounds which is at one smaller state than the current one.
-    gfx::Rect smaller_bounds;
-
-    for (int i = HomeCard::VISIBLE_MINIMIZED;
-         i >= HomeCard::VISIBLE_CENTERED; --i) {
-      HomeCard::State state = static_cast<HomeCard::State>(i);
-      const gfx::Rect bounds = GetBoundsForState(screen_bounds_, state);
-      if (last_estimated_top_ == bounds.y()) {
-        delegate_->OnGestureProgressed(last_state_, state, 1.0f);
-        last_state_ = state;
-        return;
-      } else if (last_estimated_top_ > bounds.y()) {
-        if (smaller_bounds.IsEmpty()) {
-          // Smaller than minimized -- returning the minimized bounds.
-          delegate_->OnGestureProgressed(last_state_, state, 1.0f);
-        } else {
-          // The finger is between two states.
-          float progress =
-              static_cast<float>((smaller_bounds.y() - last_estimated_top_)) /
-              (smaller_bounds.y() - bounds.y());
-          if (last_state_ == state) {
-            if (event.details().scroll_y() > 0) {
-              state = static_cast<HomeCard::State>(state + 1);
-              progress = 1.0f - progress;
-            } else {
-              last_state_ = static_cast<HomeCard::State>(last_state_ + 1);
-            }
-          }
-          delegate_->OnGestureProgressed(last_state_, state, progress);
-        }
-        last_state_ = state;
-        return;
-      }
-      smaller_bounds = bounds;
-    }
-  }
-
-  Delegate* delegate_;
-  HomeCard::State last_state_;
-
-  // The offset from the top edge of the home card and the initial position of
-  // gesture.
-  int y_offset_;
-
-  // The estimated top edge of the home card after the last touch event.
-  int last_estimated_top_;
-
-  // The bounds of the screen to compute the home card bounds.
-  gfx::Rect screen_bounds_;
-
-  DISALLOW_COPY_AND_ASSIGN(HomeCardGestureManager);
 };
 
 // The container view of home card contents of each state.
