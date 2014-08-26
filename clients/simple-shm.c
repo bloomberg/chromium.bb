@@ -393,8 +393,6 @@ create_display(void)
 		exit(1);
 	}
 
-	wl_display_get_fd(display->display);
-	
 	return display;
 }
 
