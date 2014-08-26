@@ -16,6 +16,8 @@
 #include "chrome/browser/ui/settings_window_manager.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "grit/ash_resources.h"
+#include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 MultiProfileBrowserStatusMonitor::MultiProfileBrowserStatusMonitor(
     ChromeLauncherController* launcher_controller)
@@ -86,8 +88,9 @@ void MultiProfileBrowserStatusMonitor::ActiveUserChanged(
     }
     if (multi_user_util::IsProfileFromActiveUser(browser->profile())) {
       ash::SetShelfItemDetailsForDialogWindow(
-          browser->window()->GetNativeWindow(),
-          IDR_ASH_SHELF_ICON_SETTINGS);
+      browser->window()->GetNativeWindow(),
+        IDR_ASH_SHELF_ICON_SETTINGS,
+        l10n_util::GetStringUTF16(IDS_SETTINGS_TITLE));
     } else {
       ash::ClearShelfItemDetailsForWindow(browser->window()->GetNativeWindow());
     }

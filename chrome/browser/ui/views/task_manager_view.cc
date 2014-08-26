@@ -498,9 +498,9 @@ void TaskManagerView::Show(Browser* browser) {
     focus_manager->SetFocusedView(instance_->tab_table_);
 
 #if defined(USE_ASH)
+  gfx::NativeWindow native_window = instance_->GetWidget()->GetNativeWindow();
   ash::SetShelfItemDetailsForDialogWindow(
-      instance_->GetWidget()->GetNativeWindow(),
-      IDR_ASH_SHELF_ICON_TASK_MANAGER);
+      native_window, IDR_ASH_SHELF_ICON_TASK_MANAGER, native_window->title());
 #endif
 }
 

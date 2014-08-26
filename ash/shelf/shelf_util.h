@@ -7,6 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/shelf/shelf_item_types.h"
+#include "base/strings/string16.h"
 #include "ui/aura/window.h"
 
 namespace aura {
@@ -37,10 +38,11 @@ ASH_EXPORT ShelfID GetShelfIDForWindow(const aura::Window* window);
 ASH_EXPORT void SetShelfItemDetailsForWindow(aura::Window* window,
                                              const ShelfItemDetails& details);
 
-// Creates a new ShelfItemDetails instance with type DIALOG and image id
-// |image_resource_id| and sets it for |window|.
+// Creates a new ShelfItemDetails instance with type DIALOG, image id
+// |image_resource_id|, and title |title|, and sets it for |window|.
 ASH_EXPORT void SetShelfItemDetailsForDialogWindow(aura::Window* window,
-                                                   int image_resource_id);
+                                                   int image_resource_id,
+                                                   const base::string16& title);
 
 // Clears ShelfItemDetails for |window|.
 // If |window| has a ShelfItem by SetShelfItemDetailsForWindow(), it will

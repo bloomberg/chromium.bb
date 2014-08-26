@@ -21,8 +21,10 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "grit/ash_resources.h"
+#include "grit/generated_resources.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/screen.h"
 #include "ui/wm/public/activation_client.h"
 
@@ -84,7 +86,8 @@ class BrowserStatusMonitor::SettingsWindowObserver
   virtual void OnNewSettingsWindow(Browser* settings_browser) OVERRIDE {
     ash::SetShelfItemDetailsForDialogWindow(
         settings_browser->window()->GetNativeWindow(),
-        IDR_ASH_SHELF_ICON_SETTINGS);
+        IDR_ASH_SHELF_ICON_SETTINGS,
+        l10n_util::GetStringUTF16(IDS_SETTINGS_TITLE));
   }
 
  private:

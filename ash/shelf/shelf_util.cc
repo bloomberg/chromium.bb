@@ -40,12 +40,13 @@ void SetShelfItemDetailsForWindow(aura::Window* window,
 }
 
 void SetShelfItemDetailsForDialogWindow(aura::Window* window,
-                                        int image_resource_id) {
+                                        int image_resource_id,
+                                        const base::string16& title) {
   // |item_details| is owned by |window|.
   ShelfItemDetails* item_details = new ShelfItemDetails;
   item_details->type = TYPE_DIALOG;
   item_details->image_resource_id = image_resource_id;
-  item_details->title = window->title();
+  item_details->title = title;
   window->SetProperty(kShelfItemDetailsKey, item_details);
 }
 
