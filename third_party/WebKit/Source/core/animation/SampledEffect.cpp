@@ -15,7 +15,7 @@ SampledEffect::SampledEffect(Animation* animation, PassOwnPtrWillBeRawPtr<WillBe
     , m_player(animation->player())
 #endif
     , m_interpolations(interpolations)
-    , m_playerSortInfo(animation->player()->sortInfo())
+    , m_sequenceNumber(animation->player()->sequenceNumber())
     , m_priority(animation->priority())
 {
     ASSERT(m_interpolations && !m_interpolations->isEmpty());

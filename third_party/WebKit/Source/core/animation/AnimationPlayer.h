@@ -121,26 +121,11 @@ public:
     void schedulePendingAnimationOnCompositor();
     bool hasActiveAnimationsOnCompositor();
 
-    class SortInfo {
-    public:
-        friend class AnimationPlayer;
-        bool operator<(const SortInfo& other) const
-        {
-            return m_sequenceNumber < other.m_sequenceNumber;
-        }
-    private:
-        SortInfo(unsigned sequenceNumber)
-            : m_sequenceNumber(sequenceNumber)
-        {
-        }
-        unsigned m_sequenceNumber;
-    };
-
-    const SortInfo& sortInfo() const { return m_sortInfo; }
+    unsigned sequenceNumber() const { return m_sequenceNumber; }
 
     static bool hasLowerPriority(AnimationPlayer* player1, AnimationPlayer* player2)
     {
-        return player1->sortInfo() < player2->sortInfo();
+        return player1->sequenceNumber() < player2->sequenceNumber();
     }
 
 #if !ENABLE(OILPAN)
@@ -163,7 +148,7 @@ private:
     double m_startTime;
     double m_holdTime;
 
-    SortInfo m_sortInfo;
+    unsigned m_sequenceNumber;
 
     RefPtrWillBeMember<AnimationNode> m_content;
     RawPtrWillBeMember<AnimationTimeline> m_timeline;

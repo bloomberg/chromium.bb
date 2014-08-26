@@ -53,7 +53,7 @@ void copyToActiveInterpolationMap(const WillBeHeapVector<RefPtrWillBeMember<blin
 bool compareEffects(const OwnPtrWillBeMember<SampledEffect>& effect1, const OwnPtrWillBeMember<SampledEffect>& effect2)
 {
     ASSERT(effect1 && effect2);
-    return effect1->sortInfo() < effect2->sortInfo();
+    return effect1->sequenceNumber() < effect2->sequenceNumber();
 }
 
 void copyNewAnimationsToActiveInterpolationMap(const WillBeHeapVector<RawPtrWillBeMember<InertAnimation> >& newAnimations, WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation> >& result)

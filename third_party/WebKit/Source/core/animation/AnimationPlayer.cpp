@@ -61,7 +61,7 @@ AnimationPlayer::AnimationPlayer(ExecutionContext* executionContext, AnimationTi
     , m_playbackRate(1)
     , m_startTime(nullValue())
     , m_holdTime(nullValue())
-    , m_sortInfo(nextSequenceNumber())
+    , m_sequenceNumber(nextSequenceNumber())
     , m_content(content)
     , m_timeline(&timeline)
     , m_paused(false)
