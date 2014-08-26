@@ -240,7 +240,7 @@ void DomainReliabilityMonitor::ClearContexts() {
 void DomainReliabilityMonitor::OnRequestLegComplete(
     const RequestInfo& request) {
   int response_code;
-  if (request.response_info.headers)
+  if (request.response_info.headers.get())
     response_code = request.response_info.headers->response_code();
   else
     response_code = -1;

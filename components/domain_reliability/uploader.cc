@@ -68,7 +68,7 @@ class DomainReliabilityUploaderImpl
 
     net::URLFetcher* fetcher =
         net::URLFetcher::Create(0, upload_url, net::URLFetcher::POST, this);
-    fetcher->SetRequestContext(url_request_context_getter_);
+    fetcher->SetRequestContext(url_request_context_getter_.get());
     fetcher->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
                           net::LOAD_DO_NOT_SAVE_COOKIES);
     fetcher->SetUploadData(kJsonMimeType, report_json);

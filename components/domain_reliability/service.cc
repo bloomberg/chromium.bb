@@ -43,7 +43,7 @@ class DomainReliabilityServiceImpl : public DomainReliabilityService {
       scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
       PrefService* local_state_pref_service,
       const char* reporting_pref_name) OVERRIDE {
-    DCHECK(!network_task_runner_);
+    DCHECK(!network_task_runner_.get());
 
     scoped_ptr<DomainReliabilityMonitor> monitor(
         new DomainReliabilityMonitor(upload_reporter_string_,
@@ -60,7 +60,7 @@ class DomainReliabilityServiceImpl : public DomainReliabilityService {
 
   virtual void ClearBrowsingData(DomainReliabilityClearMode clear_mode,
                                  const base::Closure& callback) OVERRIDE {
-    DCHECK(network_task_runner_);
+    DCHECK(network_task_runner_.get());
 
     network_task_runner_->PostTaskAndReply(
         FROM_HERE,
@@ -73,10 +73,10 @@ class DomainReliabilityServiceImpl : public DomainReliabilityService {
   virtual void GetWebUIData(
       const base::Callback<void(scoped_ptr<base::Value>)>& callback)
       const OVERRIDE {
-    DCHECK(network_task_runner_);
+    DCHECK(network_task_runner_.get());
 
     PostTaskAndReplyWithResult(
-        network_task_runner_,
+        network_task_runner_.get(),
         FROM_HERE,
         base::Bind(&GetWebUIDataOnNetworkTaskRunner, monitor_),
         callback);
