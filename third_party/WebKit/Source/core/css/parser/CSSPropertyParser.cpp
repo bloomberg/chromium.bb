@@ -3056,10 +3056,7 @@ bool CSSPropertyParser::parseCubicBezierTimingFunctionValue(CSSParserValueList*&
     if (!v)
         // The last number in the function has no comma after it, so we're done.
         return true;
-    if (!isComma(v))
-        return false;
-    args->next();
-    return true;
+    return consumeComma(args);
 }
 
 PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseAnimationTimingFunction()
@@ -3091,14 +3088,12 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseAnimationTimingFunction
         numSteps = clampToInteger(v->fValue);
         if (numSteps < 1)
             return nullptr;
-        v = args->next();
 
-        if (v) {
+        if (args->next()) {
             // There is a comma so we need to parse the second value
-            if (!isComma(v))
+            if (!consumeComma(args))
                 return nullptr;
-            v = args->next();
-            switch (v->id) {
+            switch (args->current()->id) {
             case CSSValueMiddle:
                 if (!RuntimeEnabledFeatures::webAnimationsAPIEnabled())
                     return nullptr;
@@ -4329,11 +4324,11 @@ PassRefPtrWillBeRawPtr<CSSBasicShape> CSSPropertyParser::parseBasicShapePolygon(
     CSSParserValue* argument = args->current();
     if (argument->id == CSSValueEvenodd || argument->id == CSSValueNonzero) {
         shape->setWindRule(argument->id == CSSValueEvenodd ? RULE_EVENODD : RULE_NONZERO);
+        args->next();
 
-        if (!isComma(args->next()))
+        if (!consumeComma(args))
             return nullptr;
 
-        argument = args->next();
         size -= 2;
     }
 
@@ -4341,28 +4336,23 @@ PassRefPtrWillBeRawPtr<CSSBasicShape> CSSPropertyParser::parseBasicShapePolygon(
     if (!size || (size % 3) - 2)
         return nullptr;
 
-    CSSParserValue* argumentX = argument;
-    while (argumentX) {
-
-        if (!validUnit(argumentX, FLength | FPercent))
+    while (true) {
+        CSSParserValue* argumentX = args->current();
+        if (!argumentX || !validUnit(argumentX, FLength | FPercent))
             return nullptr;
         RefPtrWillBeRawPtr<CSSPrimitiveValue> xLength = createPrimitiveNumericValue(argumentX);
 
         CSSParserValue* argumentY = args->next();
         if (!argumentY || !validUnit(argumentY, FLength | FPercent))
             return nullptr;
-
         RefPtrWillBeRawPtr<CSSPrimitiveValue> yLength = createPrimitiveNumericValue(argumentY);
 
         shape->appendPoint(xLength.release(), yLength.release());
 
-        CSSParserValue* commaOrNull = args->next();
-        if (!commaOrNull)
-            argumentX = 0;
-        else if (!isComma(commaOrNull))
+        if (!args->next())
+            break;
+        if (!consumeComma(args))
             return nullptr;
-        else
-            argumentX = args->next();
     }
 
     return shape;
@@ -6432,16 +6422,15 @@ bool CSSPropertyParser::parseDeprecatedGradient(CSSParserValueList* valueList, R
         // The rest of the gradient types shouldn't appear here.
         ASSERT_NOT_REACHED();
     }
+    args->next();
 
-    // Comma.
-    a = args->next();
-    if (!isComma(a))
+    if (!consumeComma(args))
         return false;
 
     // Next comes the starting point for the gradient as an x y pair.  There is no
     // comma between the x and the y values.
     // First X.  It can be left, right, number or percent.
-    a = args->next();
+    a = args->current();
     if (!a)
         return false;
     RefPtrWillBeRawPtr<CSSPrimitiveValue> point = parseDeprecatedGradientPoint(a, true);
@@ -6459,26 +6448,26 @@ bool CSSPropertyParser::parseDeprecatedGradient(CSSParserValueList* valueList, R
     result->setFirstY(point.release());
 
     // Comma after the first point.
-    a = args->next();
-    if (!isComma(a))
+    args->next();
+    if (!consumeComma(args))
         return false;
 
     // For radial gradients only, we now expect a numeric radius.
     if (gradientType == CSSDeprecatedRadialGradient) {
-        a = args->next();
+        a = args->current();
         if (!a || a->unit != CSSPrimitiveValue::CSS_NUMBER)
             return false;
         toCSSRadialGradientValue(result.get())->setFirstRadius(createPrimitiveNumericValue(a));
 
         // Comma after the first radius.
-        a = args->next();
-        if (!isComma(a))
+        args->next();
+        if (!consumeComma(args))
             return false;
     }
 
     // Next is the ending point for the gradient as an x, y pair.
     // Second X.  It can be left, right, number or percent.
-    a = args->next();
+    a = args->current();
     if (!a)
         return false;
     point = parseDeprecatedGradientPoint(a, true);
@@ -6494,29 +6483,30 @@ bool CSSPropertyParser::parseDeprecatedGradient(CSSParserValueList* valueList, R
     if (!point)
         return false;
     result->setSecondY(point.release());
+    args->next();
 
     // For radial gradients only, we now expect the second radius.
     if (gradientType == CSSDeprecatedRadialGradient) {
         // Comma after the second point.
-        a = args->next();
-        if (!isComma(a))
+        if (!consumeComma(args))
             return false;
 
-        a = args->next();
+        a = args->current();
         if (!a || a->unit != CSSPrimitiveValue::CSS_NUMBER)
             return false;
         toCSSRadialGradientValue(result.get())->setSecondRadius(createPrimitiveNumericValue(a));
+        args->next();
     }
 
     // We now will accept any number of stops (0 or more).
-    a = args->next();
+    a = args->current();
     while (a) {
         // Look for the comma before the next stop.
-        if (!isComma(a))
+        if (!consumeComma(args))
             return false;
 
         // Now examine the stop itself.
-        a = args->next();
+        a = args->current();
         if (!a)
             return false;
 
@@ -6653,19 +6643,13 @@ bool CSSPropertyParser::parseDeprecatedRadialGradient(CSSParserValueList* valueL
     RefPtrWillBeRawPtr<CSSValue> centerY = nullptr;
     // parse2ValuesFillPosition advances the args next pointer.
     parse2ValuesFillPosition(args, centerX, centerY);
+
+    if ((centerX || centerY) && !consumeComma(args))
+        return false;
+
     a = args->current();
     if (!a)
         return false;
-
-    if (centerX || centerY) {
-        // Comma
-        if (!isComma(a))
-            return false;
-
-        a = args->next();
-        if (!a)
-            return false;
-    }
 
     result->setFirstX(toCSSPrimitiveValue(centerX.get()));
     result->setSecondX(toCSSPrimitiveValue(centerX.get()));
