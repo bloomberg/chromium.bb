@@ -430,8 +430,6 @@ const char kRoamingStateProperty[] = "Cellular.RoamingState";
 const char kOperatorNameProperty[] = "Cellular.OperatorName";
 const char kOperatorCodeProperty[] = "Cellular.OperatorCode";
 const char kServingOperatorProperty[] = "Cellular.ServingOperator";
-// DEPRECATED
-const char kPaymentURLProperty[] = "Cellular.OlpUrl";
 const char kPaymentPortalProperty[] = "Cellular.Olp";
 const char kUsageURLProperty[] = "Cellular.UsageUrl";
 const char kCellularApnProperty[] = "Cellular.APN";
