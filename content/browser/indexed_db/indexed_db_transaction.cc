@@ -238,6 +238,8 @@ void IndexedDBTransaction::BlobWriteComplete(bool success) {
 leveldb::Status IndexedDBTransaction::Commit() {
   IDB_TRACE1("IndexedDBTransaction::Commit", "txn.id", id());
 
+  timeout_timer_.Stop();
+
   // In multiprocess ports, front-end may have requested a commit but
   // an abort has already been initiated asynchronously by the
   // back-end.
@@ -284,8 +286,6 @@ leveldb::Status IndexedDBTransaction::CommitPhaseTwo() {
   // commit steps below. We therefore take a self reference to keep ourselves
   // alive while executing this method.
   scoped_refptr<IndexedDBTransaction> protect(this);
-
-  timeout_timer_.Stop();
 
   state_ = FINISHED;
 
