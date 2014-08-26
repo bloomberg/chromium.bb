@@ -438,6 +438,66 @@ class Page30(ToughVideoCasesPage):
   def RunMediaMetrics(self, action_runner):
     self.PlayAction(action_runner)
 
+class Page31(ToughVideoCasesPage):
+
+  def __init__(self, page_set):
+    super(Page31, self).__init__(
+      url='file://tough_video_cases/video.html?src=tulip2.vp9.webm',
+      page_set=page_set)
+
+    self.skip_basic_metrics = True
+
+  def RunMediaMetrics(self, action_runner):
+    self.SeekBeforeAndAfterPlayhead(action_runner)
+
+class Page32(ToughVideoCasesPage):
+
+  def __init__(self, page_set):
+    super(Page32, self).__init__(
+      url='file://tough_video_cases/video.html?src=crowd1080_vp9.webm',
+      page_set=page_set)
+
+    self.add_browser_metrics = True
+
+  def RunMediaMetrics(self, action_runner):
+    self.PlayAction(action_runner)
+
+class Page33(ToughVideoCasesPage):
+
+  def __init__(self, page_set):
+    super(Page33, self).__init__(
+      url='file://tough_video_cases/video.html?src=crowd1080_vp9.webm',
+      page_set=page_set)
+
+    self.skip_basic_metrics = True
+
+  def RunMediaMetrics(self, action_runner):
+    self.SeekBeforeAndAfterPlayhead(action_runner)
+
+class Page34(ToughVideoCasesPage):
+
+  def __init__(self, page_set):
+    super(Page34, self).__init__(
+      url='file://tough_video_cases/video.html?src=crowd720_vp9.webm',
+      page_set=page_set)
+
+    self.add_browser_metrics = True
+
+  def RunMediaMetrics(self, action_runner):
+    self.PlayAction(action_runner)
+
+class Page35(ToughVideoCasesPage):
+
+  def __init__(self, page_set):
+    super(Page35, self).__init__(
+      url='file://tough_video_cases/video.html?src=crowd720_vp9.webm',
+      page_set=page_set)
+
+    self.skip_basic_metrics = True
+
+  def RunMediaMetrics(self, action_runner):
+    self.SeekBeforeAndAfterPlayhead(action_runner)
+
 class ToughVideoCasesPageSet(page_set_module.PageSet):
 
   """
@@ -477,3 +537,8 @@ class ToughVideoCasesPageSet(page_set_module.PageSet):
     self.AddPage(Page28(self))
     self.AddPage(Page29(self))
     self.AddPage(Page30(self))
+    self.AddPage(Page31(self))
+    self.AddPage(Page32(self))
+    self.AddPage(Page33(self))
+    self.AddPage(Page34(self))
+    self.AddPage(Page35(self))
