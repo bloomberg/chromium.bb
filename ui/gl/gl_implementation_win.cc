@@ -33,10 +33,7 @@ namespace gfx {
 
 namespace {
 
-// Version 43 is the latest version of D3DCompiler_nn.dll that works prior to
-// Windows Vista.
-const wchar_t kPreVistaD3DCompiler[] = L"D3DCompiler_43.dll";
-const wchar_t kPostVistaD3DCompiler[] = L"D3DCompiler_46.dll";
+const wchar_t kD3DCompiler[] = L"D3DCompiler_46.dll";
 
 void GL_BINDING_CALL MarshalClearDepthToClearDepthf(GLclampd depth) {
   glClearDepthf(static_cast<GLclampf>(depth));
@@ -161,11 +158,8 @@ bool InitializeStaticGLBindings(GLImplementation implementation) {
       // Attempt to load the D3DX shader compiler using the default search path
       // and if that fails, using an absolute path. This is to ensure these DLLs
       // are loaded before ANGLE is loaded in case they are not in the default
-      // search path. Prefer the post vista version.
-      if (base::win::GetVersion() < base::win::VERSION_VISTA ||
-          !LoadD3DXLibrary(module_path, kPostVistaD3DCompiler)) {
-        LoadD3DXLibrary(module_path, kPreVistaD3DCompiler);
-      }
+      // search path.
+      LoadD3DXLibrary(module_path, kD3DCompiler);
 
       base::FilePath gles_path;
       const CommandLine* command_line = CommandLine::ForCurrentProcess();

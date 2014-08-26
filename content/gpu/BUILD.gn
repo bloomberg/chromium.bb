@@ -5,10 +5,6 @@
 import("//build/config/ui.gni")
 import("//content/content.gni")
 
-# We don't support x64 prior to Win7 and D3DCompiler_43.dll is not needed on
-# Vista+.
-need_d3dcompiler = (is_win && cpu_arch == "x86" && directxsdk_exists)
-
 source_set("gpu") {
   # TODO(brettw) it seems like this should be only visible to content like
   # the other non-public content directories are. But this is depended on by
@@ -48,34 +44,11 @@ source_set("gpu") {
     ]
   }
 
-  if (need_d3dcompiler) {
-    deps += [ ":extract_d3dcompiler" ]
-  }
-
   if (is_chromeos && cpu_arch != "arm") {
     configs += [ "//third_party/libva/libva_config" ]
   }
 
   if (use_x11) {
     deps += [ "//ui/events/platform/x11" ]
-  }
-}
-
-if (need_d3dcompiler) {
-  action("extract_d3dcompiler") {
-    visibility = ":*"
-    script = "//build/extract_from_cab.py"
-
-    cabfile = "//third_party/directxsdk/files/Redist/Jun2010_D3DCompiler_43_x86.cab"
-    dllfile = "D3DCompiler_43.dll"
-
-    inputs = [ cabfile ]
-    outputs = [ "$root_out_dir/$dllfile" ]
-
-    args = [
-      rebase_path(cabfile, root_build_dir),
-      dllfile,
-      rebase_path(root_out_dir, root_build_dir),
-    ]
   }
 }

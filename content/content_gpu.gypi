@@ -40,32 +40,6 @@
         ],
       },
     }],
-    ['OS=="win" and target_arch=="ia32" and directxsdk_exists=="True"', {
-      # We don't support x64 prior to Win7 and D3DCompiler_43.dll is
-      # not needed on Vista+.
-      'actions': [
-        {
-          'action_name': 'extract_d3dcompiler',
-          'variables': {
-            'input': 'Jun2010_D3DCompiler_43_x86.cab',
-            'output': 'D3DCompiler_43.dll',
-          },
-          'inputs': [
-            '../third_party/directxsdk/files/Redist/<(input)',
-          ],
-          'outputs': [
-            '<(PRODUCT_DIR)/<(output)',
-          ],
-          'action': [
-            'python',
-            '../build/extract_from_cab.py',
-            '..\\third_party\\directxsdk\\files\\Redist\\<(input)',
-            '<(output)',
-            '<(PRODUCT_DIR)',
-          ],
-        },
-      ],
-    }],
     ['target_arch!="arm" and chromeos == 1', {
       'include_dirs': [
         '<(DEPTH)/third_party/libva',
