@@ -285,7 +285,7 @@ bool RenderViewHostImpl::CreateRenderView(
   params.main_frame_routing_id = main_frame_routing_id_;
   params.surface_id = surface_id();
   params.session_storage_namespace_id =
-      delegate_->GetSessionStorageNamespace(instance_)->id();
+      delegate_->GetSessionStorageNamespace(instance_.get())->id();
   params.frame_name = frame_name;
   // Ensure the RenderView sets its opener correctly.
   params.opener_route_id = opener_route_id;
@@ -1363,7 +1363,7 @@ void RenderViewHostImpl::OnWebkitPreferencesChanged() {
 
 void RenderViewHostImpl::GetAudioOutputControllers(
     const GetAudioOutputControllersCallback& callback) const {
-  AudioRendererHost* audio_host =
+  scoped_refptr<AudioRendererHost> audio_host =
       static_cast<RenderProcessHostImpl*>(GetProcess())->audio_renderer_host();
   audio_host->GetOutputControllers(GetRoutingID(), callback);
 }

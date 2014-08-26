@@ -173,7 +173,7 @@ void WrappedTask::AddToTaskRunnerQueue(
 }
 
 void WrappedTask::RemoveFromTaskRunnerQueue() {
-  if (!pumpable_task_runner_)
+  if (!pumpable_task_runner_.get())
     return;
   // The scope of the task runner's lock must be limited because removing
   // this reference to the task runner may destroy it.

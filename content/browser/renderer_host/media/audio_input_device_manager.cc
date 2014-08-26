@@ -49,7 +49,7 @@ void AudioInputDeviceManager::Register(
     const scoped_refptr<base::SingleThreadTaskRunner>& device_task_runner) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!listener_);
-  DCHECK(!device_task_runner_);
+  DCHECK(!device_task_runner_.get());
   listener_ = listener;
   device_task_runner_ = device_task_runner;
 }

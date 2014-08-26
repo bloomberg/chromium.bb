@@ -396,7 +396,7 @@ MediaStreamManager::MediaStreamManager(media::AudioManager* audio_manager)
 MediaStreamManager::~MediaStreamManager() {
   DVLOG(1) << "~MediaStreamManager";
   DCHECK(requests_.empty());
-  DCHECK(!device_task_runner_);
+  DCHECK(!device_task_runner_.get());
 
   base::PowerMonitor* power_monitor = base::PowerMonitor::Get();
   // The PowerMonitor instance owned by BrowserMainLoops always outlives the
@@ -1529,7 +1529,7 @@ void MediaStreamManager::FinalizeMediaAccessRequest(
 
 void MediaStreamManager::InitializeDeviceManagersOnIOThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (device_task_runner_)
+  if (device_task_runner_.get())
     return;
 
   device_task_runner_ = audio_manager_->GetWorkerTaskRunner();
@@ -1926,7 +1926,7 @@ void MediaStreamManager::WillDestroyCurrentMessageLoop() {
   DVLOG(3) << "MediaStreamManager::WillDestroyCurrentMessageLoop()";
   DCHECK_EQ(base::MessageLoop::current(), io_loop_);
   DCHECK(requests_.empty());
-  if (device_task_runner_) {
+  if (device_task_runner_.get()) {
     StopMonitoring();
 
     video_capture_manager_->Unregister();

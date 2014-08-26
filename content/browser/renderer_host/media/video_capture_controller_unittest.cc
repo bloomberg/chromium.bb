@@ -332,7 +332,7 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
   scoped_refptr<media::VideoCaptureDevice::Client::Buffer> buffer;
   buffer =
       device_->ReserveOutputBuffer(media::VideoFrame::I420, capture_resolution);
-  ASSERT_TRUE(buffer);
+  ASSERT_TRUE(buffer.get());
   memset(buffer->data(), buffer_no++, buffer->size());
   {
     InSequence s;
@@ -367,7 +367,7 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
   // delay. This shouldn't affect anything.
   buffer =
       device_->ReserveOutputBuffer(media::VideoFrame::I420, capture_resolution);
-  ASSERT_TRUE(buffer);
+  ASSERT_TRUE(buffer.get());
   memset(buffer->data(), buffer_no++, buffer->size());
   device_->OnIncomingCapturedVideoFrame(
       buffer,
@@ -398,7 +398,7 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
   for (int i = 0; i < kPoolSize; i++) {
     buffer = device_->ReserveOutputBuffer(media::VideoFrame::I420,
                                           capture_resolution);
-    ASSERT_TRUE(buffer);
+    ASSERT_TRUE(buffer.get());
     memset(buffer->data(), buffer_no++, buffer->size());
     device_->OnIncomingCapturedVideoFrame(
         buffer,
@@ -438,7 +438,7 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
   // Queue up another buffer.
   buffer =
       device_->ReserveOutputBuffer(media::VideoFrame::I420, capture_resolution);
-  ASSERT_TRUE(buffer);
+  ASSERT_TRUE(buffer.get());
   memset(buffer->data(), buffer_no++, buffer->size());
   device_->OnIncomingCapturedVideoFrame(
       buffer,
@@ -456,7 +456,7 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
     EXPECT_CALL(*client_a_, DoEnded(client_a_route_2)).Times(1);
     controller_->StopSession(200);
   }
-  ASSERT_TRUE(buffer);
+  ASSERT_TRUE(buffer.get());
   memset(buffer->data(), buffer_no++, buffer->size());
   device_->OnIncomingCapturedVideoFrame(
       buffer,
@@ -485,7 +485,7 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
   for (int i = 0; i < shm_buffers; ++i) {
     buffer = device_->ReserveOutputBuffer(media::VideoFrame::I420,
                                           capture_resolution);
-    ASSERT_TRUE(buffer);
+    ASSERT_TRUE(buffer.get());
     device_->OnIncomingCapturedVideoFrame(
         buffer,
         media::VideoCaptureFormat(capture_resolution,
@@ -506,7 +506,7 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
   for (int i = 0; i < mailbox_buffers; ++i) {
     buffer = device_->ReserveOutputBuffer(media::VideoFrame::NATIVE_TEXTURE,
                                           gfx::Size(0, 0));
-    ASSERT_TRUE(buffer);
+    ASSERT_TRUE(buffer.get());
     mailbox_syncpoints[i] = gl_helper->InsertSyncPoint();
     device_->OnIncomingCapturedVideoFrame(
         buffer,
@@ -578,7 +578,7 @@ TEST_F(VideoCaptureControllerTest, ErrorBeforeDeviceCreation) {
 
   scoped_refptr<media::VideoCaptureDevice::Client::Buffer> buffer =
       device_->ReserveOutputBuffer(media::VideoFrame::I420, capture_resolution);
-  ASSERT_TRUE(buffer);
+  ASSERT_TRUE(buffer.get());
 
   device_->OnIncomingCapturedVideoFrame(
       buffer,
@@ -617,7 +617,7 @@ TEST_F(VideoCaptureControllerTest, ErrorAfterDeviceCreation) {
   const gfx::Size dims(320, 240);
   scoped_refptr<media::VideoCaptureDevice::Client::Buffer> buffer =
       device_->ReserveOutputBuffer(media::VideoFrame::I420, dims);
-  ASSERT_TRUE(buffer);
+  ASSERT_TRUE(buffer.get());
 
   device_->OnError("Test error");
   device_->OnIncomingCapturedVideoFrame(

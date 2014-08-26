@@ -156,7 +156,7 @@ class TouchInputBrowserTest : public ContentBrowserTest {
       GiveItSomeTime();
 
     filter_ = new InputEventMessageFilter();
-    host->GetProcess()->AddFilter(filter_);
+    host->GetProcess()->AddFilter(filter_.get());
   }
 
   virtual void SetUpCommandLine(CommandLine* cmd) OVERRIDE {

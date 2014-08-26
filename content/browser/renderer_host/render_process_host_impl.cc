@@ -765,7 +765,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
       BrowserMainLoop::GetInstance()->audio_mirroring_manager(),
       media_internals,
       media_stream_manager);
-  AddFilter(audio_renderer_host_);
+  AddFilter(audio_renderer_host_.get());
   AddFilter(
       new MidiHost(GetID(), BrowserMainLoop::GetInstance()->midi_manager()));
   AddFilter(new VideoCaptureHost(media_stream_manager));
@@ -847,13 +847,14 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   message_port_message_filter_ = new MessagePortMessageFilter(
       base::Bind(&RenderWidgetHelper::GetNextRoutingID,
                  base::Unretained(widget_helper_.get())));
-  AddFilter(message_port_message_filter_);
+  AddFilter(message_port_message_filter_.get());
 
   scoped_refptr<ServiceWorkerDispatcherHost> service_worker_filter =
-      new ServiceWorkerDispatcherHost(GetID(), message_port_message_filter_);
+      new ServiceWorkerDispatcherHost(GetID(),
+                                      message_port_message_filter_.get());
   service_worker_filter->Init(
       storage_partition_impl_->GetServiceWorkerContext());
-  AddFilter(service_worker_filter);
+  AddFilter(service_worker_filter.get());
 
   AddFilter(new SharedWorkerMessageFilter(
       GetID(),
@@ -867,13 +868,13 @@ void RenderProcessHostImpl::CreateMessageFilters() {
           storage_partition_impl_->GetDatabaseTracker(),
           storage_partition_impl_->GetIndexedDBContext(),
           storage_partition_impl_->GetServiceWorkerContext()),
-      message_port_message_filter_));
+      message_port_message_filter_.get()));
 
 #if defined(ENABLE_WEBRTC)
   p2p_socket_dispatcher_host_ = new P2PSocketDispatcherHost(
       resource_context,
       browser_context->GetRequestContextForRenderProcess(GetID()));
-  AddFilter(p2p_socket_dispatcher_host_);
+  AddFilter(p2p_socket_dispatcher_host_.get());
 #endif
 
   AddFilter(new TraceMessageFilter());
@@ -1573,7 +1574,7 @@ RenderProcessHostImpl::StartRtpDump(
     bool incoming,
     bool outgoing,
     const WebRtcRtpPacketCallback& packet_callback) {
-  if (!p2p_socket_dispatcher_host_)
+  if (!p2p_socket_dispatcher_host_.get())
     return WebRtcStopRtpDumpCallback();
 
   BrowserThread::PostTask(BrowserThread::IO,

@@ -258,7 +258,7 @@ ContentBrowserPepperHostFactory::CreateNewTCPSocket(
 
   scoped_refptr<ResourceMessageFilter> tcp_socket(
       new PepperTCPSocketMessageFilter(this, host_, instance, version));
-  if (!tcp_socket)
+  if (!tcp_socket.get())
     return scoped_ptr<ResourceHost>();
 
   return scoped_ptr<ResourceHost>(new MessageFilterHost(

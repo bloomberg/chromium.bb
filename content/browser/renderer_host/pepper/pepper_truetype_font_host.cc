@@ -37,7 +37,7 @@ PepperTrueTypeFontHost::PepperTrueTypeFontHost(
   SerializedTrueTypeFontDesc* actual_desc =
       new SerializedTrueTypeFontDesc(desc);
   base::PostTaskAndReplyWithResult(
-      task_runner_,
+      task_runner_.get(),
       FROM_HERE,
       base::Bind(&PepperTrueTypeFont::Initialize, font_, actual_desc),
       base::Bind(&PepperTrueTypeFontHost::OnInitializeComplete,
@@ -46,7 +46,7 @@ PepperTrueTypeFontHost::PepperTrueTypeFontHost(
 }
 
 PepperTrueTypeFontHost::~PepperTrueTypeFontHost() {
-  if (font_) {
+  if (font_.get()) {
     // Release the font on the task runner in case the implementation requires
     // long blocking operations.
     font_->AddRef();
@@ -73,13 +73,13 @@ int32_t PepperTrueTypeFontHost::OnResourceMessageReceived(
 
 int32_t PepperTrueTypeFontHost::OnHostMsgGetTableTags(
     HostMessageContext* context) {
-  if (!font_)
+  if (!font_.get())
     return PP_ERROR_FAILED;
 
   // Get font data on a thread that allows slow blocking operations.
   std::vector<uint32_t>* tags = new std::vector<uint32_t>();
   base::PostTaskAndReplyWithResult(
-      task_runner_,
+      task_runner_.get(),
       FROM_HERE,
       base::Bind(&PepperTrueTypeFont::GetTableTags, font_, tags),
       base::Bind(&PepperTrueTypeFontHost::OnGetTableTagsComplete,
@@ -94,7 +94,7 @@ int32_t PepperTrueTypeFontHost::OnHostMsgGetTable(HostMessageContext* context,
                                                   uint32_t table,
                                                   int32_t offset,
                                                   int32_t max_data_length) {
-  if (!font_)
+  if (!font_.get())
     return PP_ERROR_FAILED;
   if (offset < 0 || max_data_length < 0)
     return PP_ERROR_BADARGUMENT;
@@ -102,7 +102,7 @@ int32_t PepperTrueTypeFontHost::OnHostMsgGetTable(HostMessageContext* context,
   // Get font data on a thread that allows slow blocking operations.
   std::string* data = new std::string();
   base::PostTaskAndReplyWithResult(
-      task_runner_,
+      task_runner_.get(),
       FROM_HERE,
       base::Bind(&PepperTrueTypeFont::GetTable,
                  font_,
@@ -137,7 +137,7 @@ void PepperTrueTypeFontHost::OnGetTableTagsComplete(
   DCHECK(initialize_completed_);
   // It's possible that Initialize failed and that |font_| is NULL. Check that
   // the font implementation doesn't return PP_OK in that case.
-  DCHECK(font_ || result != PP_OK);
+  DCHECK(font_.get() || result != PP_OK);
   reply_context.params.set_result(result);
   host()->SendReply(reply_context,
                     PpapiPluginMsg_TrueTypeFont_GetTableTagsReply(*tags));
@@ -150,7 +150,7 @@ void PepperTrueTypeFontHost::OnGetTableComplete(
   DCHECK(initialize_completed_);
   // It's possible that Initialize failed and that |font_| is NULL. Check that
   // the font implementation doesn't return PP_OK in that case.
-  DCHECK(font_ || result != PP_OK);
+  DCHECK(font_.get() || result != PP_OK);
   reply_context.params.set_result(result);
   host()->SendReply(reply_context,
                     PpapiPluginMsg_TrueTypeFont_GetTableReply(*data));

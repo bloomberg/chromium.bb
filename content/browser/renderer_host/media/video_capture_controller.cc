@@ -48,7 +48,7 @@ class PoolBuffer : public media::VideoCaptureDevice::Client::Buffer {
              void* data,
              size_t size)
       : Buffer(buffer_id, data, size), pool_(pool) {
-    DCHECK(pool_);
+    DCHECK(pool_.get());
   }
 
  private:
@@ -365,7 +365,7 @@ void VideoCaptureController::VideoCaptureDeviceClient::OnIncomingCapturedData(
   scoped_refptr<Buffer> buffer =
       DoReserveOutputBuffer(media::VideoFrame::I420, dimensions);
 
-  if (!buffer)
+  if (!buffer.get())
     return;
   uint8* yplane = NULL;
   bool flip = false;
@@ -464,7 +464,7 @@ void VideoCaptureController::VideoCaptureDeviceClient::OnIncomingCapturedData(
           base::SharedMemory::NULLHandle(),
           base::TimeDelta(),
           base::Closure());
-  DCHECK(frame);
+  DCHECK(frame.get());
 
   VideoCaptureFormat format(
       dimensions, frame_format.frame_rate, media::PIXEL_FORMAT_I420);

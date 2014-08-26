@@ -234,7 +234,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
 #endif
 
   MessagePortMessageFilter* message_port_message_filter() const {
-    return message_port_message_filter_;
+    return message_port_message_filter_.get();
   }
 
   void set_is_isolated_guest_for_testing(bool is_isolated_guest) {

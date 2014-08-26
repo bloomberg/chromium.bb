@@ -64,7 +64,7 @@ class CONTENT_EXPORT PepperFileSystemBrowserHost
   storage::FileSystemOperationRunner* GetFileSystemOperationRunner() const {
     return file_system_operation_runner_.get();
   }
-  bool ChecksQuota() const { return quota_reservation_ != NULL; }
+  bool ChecksQuota() const { return quota_reservation_.get() != NULL; }
   // Opens a file for writing with quota checks. Returns the file size in the
   // callback.
   typedef base::Callback<void(int64_t)> OpenQuotaFileCallback;

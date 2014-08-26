@@ -51,7 +51,7 @@ QuotaReservation::~QuotaReservation() {
 int64_t QuotaReservation::OpenFile(int32_t id,
                                    const storage::FileSystemURL& url) {
   base::FilePath platform_file_path;
-  if (file_system_context_) {
+  if (file_system_context_.get()) {
     base::File::Error error =
         file_system_context_->operation_runner()->SyncGetPlatformPath(
             url, &platform_file_path);
@@ -117,7 +117,7 @@ void QuotaReservation::GotReservedQuota(const ReserveQuotaCallback& callback,
   for (FileMap::iterator it = files_.begin(); it != files_.end(); ++it)
     file_sizes[it->first] = it->second->GetMaxWrittenOffset();
 
-  if (file_system_context_) {
+  if (file_system_context_.get()) {
     BrowserThread::PostTask(
         BrowserThread::IO,
         FROM_HERE,
@@ -130,8 +130,9 @@ void QuotaReservation::GotReservedQuota(const ReserveQuotaCallback& callback,
 }
 
 void QuotaReservation::DeleteOnCorrectThread() const {
-  if (file_system_context_ && !file_system_context_->default_file_task_runner()
-                                   ->RunsTasksOnCurrentThread()) {
+  if (file_system_context_.get() &&
+      !file_system_context_->default_file_task_runner()
+           ->RunsTasksOnCurrentThread()) {
     file_system_context_->default_file_task_runner()->DeleteSoon(FROM_HERE,
                                                                  this);
   } else {
