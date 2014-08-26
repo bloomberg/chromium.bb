@@ -26,7 +26,8 @@ following changes which are not merged to upstream:
   all the global symbols in '.asm' files to prevent making them external ones.
 * Supported motion-JPEG frames that do not have DHT markers.
 * Removed .func / .endfunc lines from arm assembly
-  ( https://sourceforge.net/p/libjpeg-turbo/bugs/72/ ).
+  ( https://sourceforge.net/p/libjpeg-turbo/bugs/72/ , landed at
+  https://sourceforge.net/p/libjpeg-turbo/code/1375 ).
 
 The 'google.patch' file represents our changes from the original
 libjpeg-turbo-1.2.
