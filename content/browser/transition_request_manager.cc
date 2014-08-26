@@ -85,7 +85,7 @@ void TransitionRequestManager::ParseTransitionStylesheetsFromHeaders(
     const scoped_refptr<net::HttpResponseHeaders>& headers,
     std::vector<GURL>& entering_stylesheets,
     const GURL& resolve_address) {
-  if (headers == NULL)
+  if (headers.get() == NULL)
     return;
 
   std::string transition_stylesheet;

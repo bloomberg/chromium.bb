@@ -123,7 +123,7 @@ class BatteryStatusNotificationThread : public base::Thread {
   void StartListening() {
     DCHECK(OnWatcherThread());
 
-    if (system_bus_)
+    if (system_bus_.get())
       return;
 
     InitDBus();
@@ -201,7 +201,7 @@ class BatteryStatusNotificationThread : public base::Thread {
   void ShutdownDBusConnection() {
     DCHECK(OnWatcherThread());
 
-    if (!system_bus_)
+    if (!system_bus_.get())
       return;
 
     // Shutdown DBus connection later because there may be pending tasks on
@@ -223,7 +223,7 @@ class BatteryStatusNotificationThread : public base::Thread {
       return;
     }
 
-    if (!system_bus_)
+    if (!system_bus_.get())
       return;
 
     if (success) {
@@ -238,7 +238,7 @@ class BatteryStatusNotificationThread : public base::Thread {
   void BatteryChanged(dbus::Signal* signal /* unsused */) {
     DCHECK(OnWatcherThread());
 
-    if (!system_bus_)
+    if (!system_bus_.get())
       return;
 
     scoped_ptr<base::DictionaryValue> dictionary =

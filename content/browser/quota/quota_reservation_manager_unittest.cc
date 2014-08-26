@@ -294,12 +294,12 @@ TEST_F(QuotaReservationManagerTest, MultipleWriter) {
 TEST_F(QuotaReservationManagerTest, MultipleClient) {
   scoped_refptr<QuotaReservation> reservation1 =
       reservation_manager()->CreateReservation(GURL(kOrigin), kType);
-  RefreshReservation(reservation1, 10);
+  RefreshReservation(reservation1.get(), 10);
   int64 cached_reserved_quota1 = reservation1->remaining_quota();
 
   scoped_refptr<QuotaReservation> reservation2 =
       reservation_manager()->CreateReservation(GURL(kOrigin), kType);
-  RefreshReservation(reservation2, 20);
+  RefreshReservation(reservation2.get(), 20);
   int64 cached_reserved_quota2 = reservation2->remaining_quota();
 
   scoped_ptr<FakeWriter> writer1(

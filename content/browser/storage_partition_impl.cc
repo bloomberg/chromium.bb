@@ -531,10 +531,16 @@ void StoragePartitionImpl::ClearDataImpl(
                                                       callback);
   // |helper| deletes itself when done in
   // DataDeletionHelper::DecrementTaskCountOnUI().
-  helper->ClearDataOnUIThread(storage_origin, origin_matcher, GetPath(),
-                              rq_context, dom_storage_context_, quota_manager_,
+  helper->ClearDataOnUIThread(storage_origin,
+                              origin_matcher,
+                              GetPath(),
+                              rq_context,
+                              dom_storage_context_.get(),
+                              quota_manager_.get(),
                               special_storage_policy_.get(),
-                              webrtc_identity_store_, begin, end);
+                              webrtc_identity_store_.get(),
+                              begin,
+                              end);
 }
 
 void StoragePartitionImpl::

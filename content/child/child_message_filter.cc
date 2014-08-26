@@ -21,7 +21,7 @@ class ChildMessageFilter::Internal : public IPC::MessageFilter {
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE {
     scoped_refptr<base::TaskRunner> runner =
         filter_->OverrideTaskRunnerForMessage(msg);
-    if (runner && !runner->RunsTasksOnCurrentThread()) {
+    if (runner.get() && !runner->RunsTasksOnCurrentThread()) {
       if (!runner->PostTask(
               FROM_HERE,
               base::Bind(

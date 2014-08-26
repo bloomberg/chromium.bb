@@ -38,7 +38,7 @@ ScopedTextBlob::ScopedTextBlob(
   scoped_refptr<storage::BlobData> blob_data(new storage::BlobData(blob_id_));
   if (!data.empty())
     blob_data->AppendData(data);
-  handle_ = context_->AddFinishedBlob(blob_data);
+  handle_ = context_->AddFinishedBlob(blob_data.get());
 }
 
 ScopedTextBlob::~ScopedTextBlob() {

@@ -133,7 +133,7 @@ void TracingControllerImpl::ResultFile::CloseTask(
   size_t written = fwrite(trailevents, strlen(trailevents), 1, file_);
   DCHECK(written == 1);
 
-  if (system_trace_) {
+  if (system_trace_.get()) {
 #if defined(OS_WIN)
     // The Windows kernel events are kept into a JSon format stored as string
     // and must not be escaped.

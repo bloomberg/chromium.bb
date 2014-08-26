@@ -74,7 +74,7 @@ class BlobProtocolHandler : public net::URLRequestJobFactory::ProtocolHandler {
       // on the IO thread.
       blob_protocol_handler_.reset(new storage::BlobProtocolHandler(
           blob_storage_context_->context(),
-          file_system_context_,
+          file_system_context_.get(),
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)
               .get()));
     }

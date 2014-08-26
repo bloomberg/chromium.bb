@@ -268,7 +268,7 @@ bool UtilityProcessHostImpl::StartProcess() {
 }
 
 bool UtilityProcessHostImpl::OnMessageReceived(const IPC::Message& message) {
-  if (!client_)
+  if (!client_.get())
     return true;
 
   client_task_runner_->PostTask(
@@ -282,7 +282,7 @@ bool UtilityProcessHostImpl::OnMessageReceived(const IPC::Message& message) {
 }
 
 void UtilityProcessHostImpl::OnProcessLaunchFailed() {
-  if (!client_)
+  if (!client_.get())
     return;
 
   client_task_runner_->PostTask(
@@ -292,7 +292,7 @@ void UtilityProcessHostImpl::OnProcessLaunchFailed() {
 }
 
 void UtilityProcessHostImpl::OnProcessCrashed(int exit_code) {
-  if (!client_)
+  if (!client_.get())
     return;
 
   client_task_runner_->PostTask(

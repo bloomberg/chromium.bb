@@ -2591,12 +2591,12 @@ TEST_F(WebContentsImplTest, ActiveContentsCountBasic) {
   EXPECT_EQ(0u, instance2->GetRelatedActiveContentsCount());
 
   scoped_ptr<TestWebContents> contents1(
-      TestWebContents::Create(browser_context(), instance1));
+      TestWebContents::Create(browser_context(), instance1.get()));
   EXPECT_EQ(1u, instance1->GetRelatedActiveContentsCount());
   EXPECT_EQ(1u, instance2->GetRelatedActiveContentsCount());
 
   scoped_ptr<TestWebContents> contents2(
-      TestWebContents::Create(browser_context(), instance1));
+      TestWebContents::Create(browser_context(), instance1.get()));
   EXPECT_EQ(2u, instance1->GetRelatedActiveContentsCount());
   EXPECT_EQ(2u, instance2->GetRelatedActiveContentsCount());
 
@@ -2618,7 +2618,7 @@ TEST_F(WebContentsImplTest, ActiveContentsCountNavigate) {
   EXPECT_EQ(0u, instance->GetRelatedActiveContentsCount());
 
   scoped_ptr<TestWebContents> contents(
-      TestWebContents::Create(browser_context(), instance));
+      TestWebContents::Create(browser_context(), instance.get()));
   EXPECT_EQ(1u, instance->GetRelatedActiveContentsCount());
 
   // Navigate to a URL.
@@ -2656,7 +2656,7 @@ TEST_F(WebContentsImplTest, ActiveContentsCountChangeBrowsingInstance) {
   EXPECT_EQ(0u, instance->GetRelatedActiveContentsCount());
 
   scoped_ptr<TestWebContents> contents(
-      TestWebContents::Create(browser_context(), instance));
+      TestWebContents::Create(browser_context(), instance.get()));
   EXPECT_EQ(1u, instance->GetRelatedActiveContentsCount());
 
   // Navigate to a URL.

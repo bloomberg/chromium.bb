@@ -380,7 +380,7 @@ class WebContentsViewAuraTest : public ContentBrowserTest {
 
   void AddInputEventMessageFilter() {
     filter_ = new InputEventMessageFilterWaitsForAcks();
-    GetRenderWidgetHost()->GetProcess()->AddFilter(filter_);
+    GetRenderWidgetHost()->GetProcess()->AddFilter(filter_.get());
   }
 
  private:

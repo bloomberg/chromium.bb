@@ -25,7 +25,7 @@ void CreateVideoEncodeAccelerator(
   scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner =
       gpu_factories->GetTaskRunner();
   base::PostTaskAndReplyWithResult(
-      encode_task_runner,
+      encode_task_runner.get(),
       FROM_HERE,
       base::Bind(
           &media::GpuVideoAcceleratorFactories::CreateVideoEncodeAccelerator,

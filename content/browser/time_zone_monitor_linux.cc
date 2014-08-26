@@ -151,7 +151,7 @@ TimeZoneMonitorLinux::TimeZoneMonitorLinux()
 }
 
 TimeZoneMonitorLinux::~TimeZoneMonitorLinux() {
-  if (impl_) {
+  if (impl_.get()) {
     impl_->StopWatching();
   }
 }

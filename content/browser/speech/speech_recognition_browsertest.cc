@@ -148,7 +148,7 @@ class SpeechRecognitionBrowserTest :
     audio_bus->FromInterleaved(&audio_buffer.get()[0],
                                audio_bus->frames(),
                                audio_params.bits_per_sample() / 8);
-    controller->event_handler()->OnData(controller, audio_bus.get());
+    controller->event_handler()->OnData(controller.get(), audio_bus.get());
   }
 
   void FeedAudioController(int duration_ms, bool feed_with_noise) {

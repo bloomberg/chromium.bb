@@ -67,7 +67,7 @@ class BrowserMessageFilter::Internal : public IPC::MessageFilter {
     }
 
     if (thread == BrowserThread::UI &&
-        !BrowserMessageFilter::CheckCanDispatchOnUI(message, filter_)) {
+        !BrowserMessageFilter::CheckCanDispatchOnUI(message, filter_.get())) {
       return true;
     }
 

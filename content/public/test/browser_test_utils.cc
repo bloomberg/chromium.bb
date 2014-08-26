@@ -718,7 +718,7 @@ void DOMMessageQueue::Observe(int type,
                               const NotificationDetails& details) {
   Details<DomOperationNotificationDetails> dom_op_details(details);
   message_queue_.push(dom_op_details->json);
-  if (message_loop_runner_)
+  if (message_loop_runner_.get())
     message_loop_runner_->Quit();
 }
 

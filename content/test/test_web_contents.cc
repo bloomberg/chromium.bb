@@ -205,7 +205,8 @@ void TestWebContents::SetHistoryLengthAndPrune(
     int32 min_page_id) {
   EXPECT_TRUE(expect_set_history_length_and_prune_);
   expect_set_history_length_and_prune_ = false;
-  EXPECT_EQ(expect_set_history_length_and_prune_site_instance_, site_instance);
+  EXPECT_EQ(expect_set_history_length_and_prune_site_instance_.get(),
+            site_instance);
   EXPECT_EQ(expect_set_history_length_and_prune_history_length_,
             history_length);
   EXPECT_EQ(expect_set_history_length_and_prune_min_page_id_, min_page_id);

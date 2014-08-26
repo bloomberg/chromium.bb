@@ -22,7 +22,7 @@ void StartupTaskRunner::AddTask(StartupTask& callback) {
 }
 
 void StartupTaskRunner::StartRunningTasksAsync() {
-  DCHECK(proxy_);
+  DCHECK(proxy_.get());
   int result = 0;
   if (task_list_.empty()) {
     if (!startup_complete_callback_.is_null()) {

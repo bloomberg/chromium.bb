@@ -634,7 +634,7 @@ void PluginServiceImpl::GetPluginsOnIOThread(
   // If we switch back to loading plugins in process, then we need to make
   // sure g_thread_init() gets called since plugins may call glib at load.
 
-  if (!plugin_loader_)
+  if (!plugin_loader_.get())
     plugin_loader_ = new PluginLoaderPosix;
 
   plugin_loader_->GetPlugins(

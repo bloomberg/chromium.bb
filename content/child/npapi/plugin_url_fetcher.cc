@@ -284,7 +284,7 @@ void PluginURLFetcher::OnReceivedResponse(const ResourceResponseInfo& info) {
   base::Time temp;
   uint32 last_modified = 0;
   std::string headers;
-  if (info.headers) {  // NULL for data: urls.
+  if (info.headers.get()) {  // NULL for data: urls.
     if (info.headers->GetLastModifiedValue(&temp))
       last_modified = static_cast<uint32>(temp.ToDoubleT());
 

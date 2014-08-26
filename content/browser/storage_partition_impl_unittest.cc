@@ -672,7 +672,7 @@ TEST_F(StoragePartitionImplTest, RemoveQuotaManagedUnprotectedOrigins) {
       BrowserContext::GetDefaultStoragePartition(browser_context()));
   partition->OverrideQuotaManagerForTesting(
       GetMockManager());
-  partition->OverrideSpecialStoragePolicyForTesting(mock_policy);
+  partition->OverrideSpecialStoragePolicyForTesting(mock_policy.get());
 
   base::RunLoop run_loop;
   base::MessageLoop::current()->PostTask(
@@ -708,7 +708,7 @@ TEST_F(StoragePartitionImplTest, RemoveQuotaManagedProtectedSpecificOrigin) {
       BrowserContext::GetDefaultStoragePartition(browser_context()));
   partition->OverrideQuotaManagerForTesting(
       GetMockManager());
-  partition->OverrideSpecialStoragePolicyForTesting(mock_policy);
+  partition->OverrideSpecialStoragePolicyForTesting(mock_policy.get());
 
   // Try to remove kOrigin1. Expect failure.
   base::RunLoop run_loop;
@@ -747,7 +747,7 @@ TEST_F(StoragePartitionImplTest, RemoveQuotaManagedProtectedOrigins) {
       BrowserContext::GetDefaultStoragePartition(browser_context()));
   partition->OverrideQuotaManagerForTesting(
       GetMockManager());
-  partition->OverrideSpecialStoragePolicyForTesting(mock_policy);
+  partition->OverrideSpecialStoragePolicyForTesting(mock_policy.get());
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&ClearQuotaDataWithOriginMatcher,
@@ -848,7 +848,7 @@ TEST_F(StoragePartitionImplTest, RemoveUnprotectedLocalStorageForever) {
 
   StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
       BrowserContext::GetDefaultStoragePartition(browser_context()));
-  partition->OverrideSpecialStoragePolicyForTesting(mock_policy);
+  partition->OverrideSpecialStoragePolicyForTesting(mock_policy.get());
 
   base::RunLoop run_loop;
   base::MessageLoop::current()->PostTask(
@@ -880,7 +880,7 @@ TEST_F(StoragePartitionImplTest, RemoveProtectedLocalStorageForever) {
 
   StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
       BrowserContext::GetDefaultStoragePartition(browser_context()));
-  partition->OverrideSpecialStoragePolicyForTesting(mock_policy);
+  partition->OverrideSpecialStoragePolicyForTesting(mock_policy.get());
 
   base::RunLoop run_loop;
   base::MessageLoop::current()->PostTask(

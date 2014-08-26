@@ -148,13 +148,13 @@ ThreadedDataProvider::ThreadedDataProvider(
       main_thread_weak_factory_.GetWeakPtr(),
       request_id);
 
-  ChildThread::current()->channel()->AddFilter(filter_);
+  ChildThread::current()->channel()->AddFilter(filter_.get());
 }
 
 ThreadedDataProvider::~ThreadedDataProvider() {
   DCHECK(ChildThread::current());
 
-  ChildThread::current()->channel()->RemoveFilter(filter_);
+  ChildThread::current()->channel()->RemoveFilter(filter_.get());
 
   delete threaded_data_receiver_;
 }
