@@ -29,3 +29,40 @@ def IsGitHash(revision):
 def GetHttpClient():
   # TODO(stgao): return implementation for appengine when running on appengine.
   return HttpClientLocal
+
+
+def JoinLineNumbers(line_numbers, accepted_gap=1):
+  """Join line numbers into line blocks.
+
+  Args:
+    line_numbers: a list of line number.
+    accepted_gap: if two line numbers are within the give gap,
+                  they would be combined together into a block.
+                  Eg: for (1, 2, 3, 6, 7, 8, 12), if |accepted_gap| = 1, result
+                  would be 1-3, 6-8, 12; if |accepted_gap| = 3, result would be
+                  1-8, 12; if |accepted_gap| =4, result would be 1-12.
+  """
+  if not line_numbers:
+    return ''
+
+  line_numbers = map(int, line_numbers)
+  line_numbers.sort()
+
+  block = []
+  start_line_number = line_numbers[0]
+  last_line_number = start_line_number
+  for current_line_number in line_numbers[1:]:
+    if last_line_number + accepted_gap < current_line_number:
+      if start_line_number == last_line_number:
+        block.append('%d' % start_line_number)
+      else:
+        block.append('%d-%d' % (start_line_number, last_line_number))
+      start_line_number = current_line_number
+    last_line_number = current_line_number
+  else:
+    if start_line_number == last_line_number:
+      block.append('%d' % start_line_number)
+    else:
+      block.append('%d-%d' % (start_line_number, last_line_number))
+
+  return ', '.join(block)

@@ -108,7 +108,7 @@ def NormalizePath(path, parsed_deps):
     repository is not supported, i.e from googlecode.
   """
   # First normalize the path by retreiving the normalized path.
-  normalized_path = os.path.normpath(path.replace('\\', '/'))
+  normalized_path = os.path.normpath(path).replace('\\', '/')
 
   # Iterate through all component paths in the parsed DEPS, in the decreasing
   # order of the length of the file path.
@@ -230,14 +230,19 @@ def GetDataFromURL(url, retries=10, sleep_time=0.1, timeout=5):
     count += 1
     # Retrieves data from URL.
     try:
-      _, data = utils.GetHttpClient().Get(url, timeout=timeout)
-      return data
+      status_code, data = utils.GetHttpClient().Get(url, timeout=timeout)
     except IOError:
-      if count < retries:
-        # If retrieval fails, try after sleep_time second.
-        time.sleep(sleep_time)
-      else:
-        break
+      status_code = -1
+      data = None
+
+    if status_code == 200:
+      return data
+
+    if count < retries:
+      # If retrieval fails, try after sleep_time second.
+      time.sleep(sleep_time)
+    else:
+      break
 
   # Return None if it fails to read data from URL 'retries' times.
   return None
@@ -349,16 +354,24 @@ def AddHyperlink(text, link):
   return '<a href="%s">%s</a>' % (sanitized_link, sanitized_text)
 
 
-def PrettifyList(l):
+def PrettifyList(items):
   """Returns a string representation of a list.
 
   It adds comma in between the elements and removes the brackets.
   Args:
-    l: A list to prettify.
+    items: A list to prettify.
   Returns:
     A string representation of the list.
   """
-  return str(l)[1:-1]
+  return ', '.join(map(str, items))
+
+
+def PrettifyFrameInfo(frame_indices, functions):
+  """Return a string to represent the frames with functions."""
+  frames = []
+  for frame_index, function in zip(frame_indices, functions):
+    frames.append('frame #%s, function "%s"' % (frame_index, function))
+  return '; '.join(frames)
 
 
 def PrettifyFiles(file_list):

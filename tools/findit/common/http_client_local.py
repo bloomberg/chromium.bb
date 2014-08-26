@@ -205,11 +205,20 @@ def _SendRequest(url, timeout=None):
         urllib2.HTTPCookieProcessor(cookielib.MozillaCookieJar(cookie_file)))
 
   url_opener = urllib2.build_opener(*handlers)
-  if timeout is not None:
+
+  status_code = None
+  content = None
+
+  try:
     response = url_opener.open(url, timeout=timeout)
-  else:
-    response = url_opener.open(url)
-  return response.code, response.read()
+
+    status_code = response.code
+    content = response.read()
+  except urllib2.HTTPError as e:
+    status_code = e.code
+    content = None
+
+  return status_code, content
 
 
 class HttpClientLocal(http_client.HttpClient):

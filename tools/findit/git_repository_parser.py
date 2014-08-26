@@ -11,9 +11,16 @@ from repository_parser_interface import ParserInterface
 
 FILE_CHANGE_TYPE_MAP = {
     'add': 'A',
+    'copy': 'C',
     'delete': 'D',
-    'modify': 'M'
+    'modify': 'M',
+    'rename': 'R'
 }
+
+
+def _ConvertToFileChangeType(file_action):
+  # TODO(stgao): verify impact on code that checks the file change type.
+  return file_action[0].upper()
 
 
 class GitParser(ParserInterface):
@@ -103,7 +110,7 @@ class GitParser(ParserInterface):
             0].getAttribute('class')
 
         # Normalize file action so that it is same as SVN parser.
-        file_change_type = FILE_CHANGE_TYPE_MAP[file_change_type]
+        file_change_type = _ConvertToFileChangeType(file_change_type)
 
         # Add the changed file to the map.
         if file_path not in file_to_revision_map:
@@ -185,7 +192,7 @@ class GitParser(ParserInterface):
       file_change_type = diff['type']
 
       # Normalize file action so that it fits with svn_repository_parser.
-      file_change_type = FILE_CHANGE_TYPE_MAP[file_change_type]
+      file_change_type = _ConvertToFileChangeType(file_change_type)
 
       # Add the file to the map.
       if file_path not in file_to_revision_map:
@@ -204,7 +211,8 @@ class GitParser(ParserInterface):
     backup_url = (base_url + self.url_parts_map['revision_url']) % githash
 
     # If the file is added (not modified), treat it as if it is not changed.
-    if file_change_type == 'A':
+    if file_change_type in ('A', 'C', 'R'):
+      # TODO(stgao): Maybe return whole file change for Add, Rename, and Copy?
       return (backup_url, changed_line_numbers, changed_line_contents)
 
     # Retrieves the diff data from URL, and if it fails, return emptry lines.

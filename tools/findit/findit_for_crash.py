@@ -456,13 +456,11 @@ def GenerateReasonForMatches(matches):
                                 for lines in crashed_line_numbers
                                 for crashed_line_number in lines]
         reason.append(
-            'Line %s of file %s which potentially caused the crash '
-            'according to the stacktrace, is changed in this cl'
-            ' (From stack frame %s, function %s).' %
-            (crash_utils.PrettifyList(crashed_line_numbers),
+            'Lines %s of file %s which potentially caused crash '
+            'are changed in this cl (%s).\n' %
+            (utils.JoinLineNumbers(crashed_line_numbers, accepted_gap=4),
              file_name,
-             crash_utils.PrettifyList(stack_frame_indices),
-             crash_utils.PrettifyList(function_list)))
+             crash_utils.PrettifyFrameInfo(stack_frame_indices, function_list)))
 
       else:
         # Get all the files that are not line change.
@@ -479,9 +477,8 @@ def GenerateReasonForMatches(matches):
         pretty_file_names = crash_utils.PrettifyList(file_names)
 
         # Add the reason, break because we took care of the rest of the files.
-        file_string += ('(From stack frames %s, functions %s)' %
-                        (crash_utils.PrettifyList(stack_frame_indices),
-                         crash_utils.PrettifyList(function_list)))
+        file_string += '(%s)' % crash_utils.PrettifyFrameInfo(
+            stack_frame_indices, function_list)
         reason.append(file_string % pretty_file_names)
         break
 
@@ -525,8 +522,8 @@ def CombineMatches(matches):
     if match.min_distance_info:
       file_name, min_crashed_line, min_changed_line = match.min_distance_info
       match.reason += \
-          ('\nMininimum distance from crashed line to changed line: %d. '
-           '(File: %s, Crashed on: %d, Changed: %d).' %
+          ('Minimum distance from crashed line to changed line: %d. '
+           '(File: %s, Crashed on: %d, Changed: %d).\n' %
            (match.min_distance, file_name, min_crashed_line, min_changed_line))
 
   return combined_matches
