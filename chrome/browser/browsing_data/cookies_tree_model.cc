@@ -1038,7 +1038,7 @@ void CookiesTreeModel::UpdateSearchResults(const base::string16& filter) {
 #if defined(ENABLE_EXTENSIONS)
 const extensions::ExtensionSet* CookiesTreeModel::ExtensionsProtectingNode(
     const CookieTreeNode& cookie_node) {
-  if (!special_storage_policy_)
+  if (!special_storage_policy_.get())
     return NULL;
 
   CookieTreeNode::DetailedInfo info = cookie_node.GetDetailedInfo();

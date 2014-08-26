@@ -820,7 +820,7 @@ class BrowsingDataRemoverTest : public testing::Test,
   MockExtensionSpecialStoragePolicy* CreateMockPolicy() {
 #if defined(ENABLE_EXTENSIONS)
     mock_policy_ = new MockExtensionSpecialStoragePolicy;
-    return mock_policy_;
+    return mock_policy_.get();
 #else
     NOTREACHED();
     return NULL;
@@ -829,7 +829,7 @@ class BrowsingDataRemoverTest : public testing::Test,
 
   storage::SpecialStoragePolicy* mock_policy() {
 #if defined(ENABLE_EXTENSIONS)
-    return mock_policy_;
+    return mock_policy_.get();
 #else
     return NULL;
 #endif

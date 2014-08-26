@@ -115,7 +115,7 @@ CannedBrowsingDataIndexedDBHelper::~CannedBrowsingDataIndexedDBHelper() {}
 CannedBrowsingDataIndexedDBHelper* CannedBrowsingDataIndexedDBHelper::Clone() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   CannedBrowsingDataIndexedDBHelper* clone =
-      new CannedBrowsingDataIndexedDBHelper(indexed_db_context_);
+      new CannedBrowsingDataIndexedDBHelper(indexed_db_context_.get());
 
   clone->pending_indexed_db_info_ = pending_indexed_db_info_;
   clone->indexed_db_info_ = indexed_db_info_;
