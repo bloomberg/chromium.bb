@@ -19,6 +19,9 @@
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
 #include "skia/ext/image_operations.h"
+#include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkPaint.h"
+#include "third_party/skia/include/effects/SkLumaColorFilter.h"
 #include "ui/gfx/frame_time.h"
 
 namespace content {
@@ -136,7 +139,8 @@ void DelegatedFrameHost::CopyFromCompositingSurface(
     const base::Callback<void(bool, const SkBitmap&)>& callback,
     const SkColorType color_type) {
   // Only ARGB888 and RGB565 supported as of now.
-  bool format_support = ((color_type == kRGB_565_SkColorType) ||
+  bool format_support = ((color_type == kAlpha_8_SkColorType) ||
+                         (color_type == kRGB_565_SkColorType) ||
                          (color_type == kN32_SkColorType));
   DCHECK(format_support);
   if (!CanCopyToBitmap()) {
@@ -519,6 +523,7 @@ void DelegatedFrameHost::CopyFromCompositingSurfaceHasResult(
   }
 
   if (result->HasTexture()) {
+    // GPU-accelerated path
     PrepareTextureCopyOutputResult(dst_size_in_pixel, color_type,
                                    callback,
                                    result.Pass());
@@ -526,6 +531,7 @@ void DelegatedFrameHost::CopyFromCompositingSurfaceHasResult(
   }
 
   DCHECK(result->HasBitmap());
+  // Software path
   PrepareBitmapCopyOutputResult(dst_size_in_pixel, color_type, callback,
                                 result.Pass());
 }
@@ -604,7 +610,7 @@ void DelegatedFrameHost::PrepareBitmapCopyOutputResult(
     const SkColorType color_type,
     const base::Callback<void(bool, const SkBitmap&)>& callback,
     scoped_ptr<cc::CopyOutputResult> result) {
-  if (color_type != kN32_SkColorType) {
+  if (color_type != kN32_SkColorType && color_type != kAlpha_8_SkColorType) {
     NOTIMPLEMENTED();
     callback.Run(false, SkBitmap());
     return;
@@ -612,12 +618,41 @@ void DelegatedFrameHost::PrepareBitmapCopyOutputResult(
   DCHECK(result->HasBitmap());
   scoped_ptr<SkBitmap> source = result->TakeBitmap();
   DCHECK(source);
-  SkBitmap bitmap = skia::ImageOperations::Resize(
-      *source,
-      skia::ImageOperations::RESIZE_BEST,
-      dst_size_in_pixel.width(),
-      dst_size_in_pixel.height());
-  callback.Run(true, bitmap);
+  SkBitmap scaled_bitmap;
+  if (source->width() != dst_size_in_pixel.width() ||
+      source->height() != dst_size_in_pixel.height()) {
+    scaled_bitmap =
+        skia::ImageOperations::Resize(*source,
+                                      skia::ImageOperations::RESIZE_BEST,
+                                      dst_size_in_pixel.width(),
+                                      dst_size_in_pixel.height());
+  } else {
+    scaled_bitmap = *source;
+  }
+  if (color_type == kN32_SkColorType) {
+    DCHECK_EQ(scaled_bitmap.colorType(), kN32_SkColorType);
+    callback.Run(true, scaled_bitmap);
+    return;
+  }
+  DCHECK_EQ(color_type, kAlpha_8_SkColorType);
+  // The software path currently always returns N32 bitmap regardless of the
+  // |color_type| we ask for.
+  DCHECK_EQ(scaled_bitmap.colorType(), kN32_SkColorType);
+  // Paint |scaledBitmap| to alpha-only |grayscale_bitmap|.
+  SkBitmap grayscale_bitmap;
+  bool success = grayscale_bitmap.allocPixels(
+      SkImageInfo::MakeA8(scaled_bitmap.width(), scaled_bitmap.height()));
+  if (!success) {
+    callback.Run(false, SkBitmap());
+    return;
+  }
+  SkCanvas canvas(grayscale_bitmap);
+  SkPaint paint;
+  skia::RefPtr<SkColorFilter> filter =
+      skia::AdoptRef(SkLumaColorFilter::Create());
+  paint.setColorFilter(filter.get());
+  canvas.drawBitmap(scaled_bitmap, SkIntToScalar(0), SkIntToScalar(0), &paint);
+  callback.Run(true, grayscale_bitmap);
 }
 
 // static
@@ -636,6 +671,7 @@ void DelegatedFrameHost::ReturnSubscriberTexture(
     dfh->idle_frame_subscriber_textures_.push_back(subscriber_texture);
 }
 
+// static
 void DelegatedFrameHost::CopyFromCompositingSurfaceFinishedForVideo(
     base::WeakPtr<DelegatedFrameHost> dfh,
     const base::Callback<void(bool)>& callback,
