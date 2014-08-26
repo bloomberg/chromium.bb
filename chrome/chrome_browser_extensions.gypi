@@ -209,7 +209,6 @@
       'browser/extensions/api/declarative/declarative_api.cc',
       'browser/extensions/api/declarative/declarative_api.h',
       'browser/extensions/api/declarative/declarative_rule.h',
-      'browser/extensions/api/declarative/deduping_factory.h',
       'browser/extensions/api/declarative/rules_cache_delegate.cc',
       'browser/extensions/api/declarative/rules_cache_delegate.h',
       'browser/extensions/api/declarative/rules_registry.cc',

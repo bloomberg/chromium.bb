@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_DECLARATIVE_DEDUPING_FACTORY_H__
-#define CHROME_BROWSER_EXTENSIONS_API_DECLARATIVE_DEDUPING_FACTORY_H__
+#ifndef EXTENSIONS_BROWSER_API_DECLARATIVE_DEDUPING_FACTORY_H__
+#define EXTENSIONS_BROWSER_API_DECLARATIVE_DEDUPING_FACTORY_H__
 
 #include <list>
 #include <string>
@@ -176,4 +176,4 @@ void DedupingFactory<BaseClassT>::ClearPrototypes() {
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_DECLARATIVE_DEDUPING_FACTORY_H__
+#endif  // EXTENSIONS_BROWSER_API_DECLARATIVE_DEDUPING_FACTORY_H__

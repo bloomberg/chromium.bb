@@ -301,6 +301,7 @@
         'browser/api/cast_channel/logger.h',
         'browser/api/cast_channel/logger_util.cc',
         'browser/api/cast_channel/logger_util.h',
+        'browser/api/declarative/deduping_factory.h',
         'browser/api/dns/dns_api.cc',
         'browser/api/dns/dns_api.h',
         'browser/api/dns/host_resolver_wrapper.cc',
@@ -884,6 +885,7 @@
       'sources': [
         'browser/admin_policy_unittest.cc',
         'browser/api/api_resource_manager_unittest.cc',
+        'browser/api/declarative/deduping_factory_unittest.cc',
         'browser/computed_hashes_unittest.cc',
         'browser/content_hash_tree_unittest.cc',
         'browser/event_listener_map_unittest.cc',
