@@ -535,7 +535,7 @@ int ConnectionFactoryImpl::ReconsiderProxyAfterError(int error) {
 }
 
 void ConnectionFactoryImpl::ReportSuccessfulProxyConnection() {
-  if (gcm_network_session_ && gcm_network_session_->proxy_service())
+  if (gcm_network_session_.get() && gcm_network_session_->proxy_service())
     gcm_network_session_->proxy_service()->ReportSuccess(proxy_info_, NULL);
 }
 
@@ -551,7 +551,7 @@ void ConnectionFactoryImpl::CloseSocket() {
 }
 
 void ConnectionFactoryImpl::RebuildNetworkSessionAuthCache() {
-  if (!http_network_session_ || !http_network_session_->http_auth_cache())
+  if (!http_network_session_.get() || !http_network_session_->http_auth_cache())
     return;
 
   gcm_network_session_->http_auth_cache()->UpdateAllFrom(

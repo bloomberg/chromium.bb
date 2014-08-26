@@ -143,9 +143,9 @@ class OAuth2ApiCallFlowTest : public testing::Test {
         new net::TestURLRequestContextGetter(
             message_loop_.message_loop_proxy());
     flow_.reset(new MockApiCallFlow(
-        request_context_getter, refresh_token, access_token, scopes));
+        request_context_getter.get(), refresh_token, access_token, scopes));
     access_token_fetcher_.reset(new MockAccessTokenFetcher(
-        flow_.get(), request_context_getter, refresh_token));
+        flow_.get(), request_context_getter.get(), refresh_token));
   }
 
   TestURLFetcher* SetupApiCall(bool succeeds, net::HttpStatusCode status) {

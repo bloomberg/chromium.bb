@@ -76,7 +76,7 @@ class MergeSessionHelperTest : public testing::Test {
 
   OAuth2TokenService* token_service() { return &token_service_; }
   net::URLRequestContextGetter* request_context() {
-    return request_context_getter_;
+    return request_context_getter_.get();
   }
 
   void SimulateUbertokenFailure(UbertokenConsumer* consumer,

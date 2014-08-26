@@ -154,11 +154,11 @@ class GaiaAuthFetcherTest : public testing::Test {
 
  protected:
   net::TestURLRequestContextGetter* GetRequestContext() {
-    if (!request_context_getter_) {
+    if (!request_context_getter_.get()) {
       request_context_getter_ = new net::TestURLRequestContextGetter(
           message_loop_.message_loop_proxy());
     }
-    return request_context_getter_;
+    return request_context_getter_.get();
   }
 
   base::MessageLoop message_loop_;

@@ -149,7 +149,7 @@ void AuthService::StartAuthentication(const AuthStatusCallback& callback) {
     // We have refresh token, let's get an access token.
     new AuthRequest(oauth2_token_service_,
                     account_id_,
-                    url_request_context_getter_,
+                    url_request_context_getter_.get(),
                     base::Bind(&AuthService::OnAuthCompleted,
                                weak_ptr_factory_.GetWeakPtr(),
                                callback),

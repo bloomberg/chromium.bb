@@ -53,7 +53,7 @@ class RequestSender {
   AuthServiceInterface* auth_service() { return auth_service_.get(); }
 
   net::URLRequestContextGetter* url_request_context_getter() const {
-    return url_request_context_getter_;
+    return url_request_context_getter_.get();
   }
 
   base::SequencedTaskRunner* blocking_task_runner() const {

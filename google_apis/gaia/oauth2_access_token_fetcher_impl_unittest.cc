@@ -86,7 +86,7 @@ class OAuth2AccessTokenFetcherImplTest : public testing::Test {
   OAuth2AccessTokenFetcherImplTest()
       : request_context_getter_(new net::TestURLRequestContextGetter(
             base::MessageLoopProxy::current())),
-        fetcher_(&consumer_, request_context_getter_, "refresh_token") {
+        fetcher_(&consumer_, request_context_getter_.get(), "refresh_token") {
     base::RunLoop().RunUntilIdle();
   }
 

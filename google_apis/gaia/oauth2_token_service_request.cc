@@ -90,9 +90,9 @@ OAuth2TokenServiceRequest::Core::Core(
     const scoped_refptr<TokenServiceProvider>& provider)
     : owner_(owner), provider_(provider) {
   DCHECK(owner_);
-  DCHECK(provider_);
+  DCHECK(provider_.get());
   token_service_task_runner_ = provider_->GetTokenServiceTaskRunner();
-  DCHECK(token_service_task_runner_);
+  DCHECK(token_service_task_runner_.get());
 }
 
 OAuth2TokenServiceRequest::Core::~Core() {
@@ -132,7 +132,7 @@ bool OAuth2TokenServiceRequest::Core::IsStopped() const {
 
 base::SingleThreadTaskRunner*
 OAuth2TokenServiceRequest::Core::token_service_task_runner() {
-  return token_service_task_runner_;
+  return token_service_task_runner_.get();
 }
 
 OAuth2TokenService* OAuth2TokenServiceRequest::Core::token_service() {
@@ -365,7 +365,7 @@ OAuth2TokenServiceRequest::OAuth2TokenServiceRequest(
 }
 
 void OAuth2TokenServiceRequest::StartWithCore(const scoped_refptr<Core>& core) {
-  DCHECK(core);
+  DCHECK(core.get());
   core_ = core;
   core_->Start();
 }

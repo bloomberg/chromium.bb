@@ -101,12 +101,12 @@ net::Error SocketInputStream::Refresh(const base::Closure& callback,
   }
 
   DVLOG(1) << "Refreshing input stream, limit of " << byte_limit << " bytes.";
-  int result = socket_->Read(
-      read_buffer_,
-      byte_limit,
-      base::Bind(&SocketInputStream::RefreshCompletionCallback,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 callback));
+  int result =
+      socket_->Read(read_buffer_.get(),
+                    byte_limit,
+                    base::Bind(&SocketInputStream::RefreshCompletionCallback,
+                               weak_ptr_factory_.GetWeakPtr(),
+                               callback));
   DVLOG(1) << "Read returned " << result;
   if (result == net::ERR_IO_PENDING) {
     last_error_ = net::ERR_IO_PENDING;
@@ -256,12 +256,12 @@ net::Error SocketOutputStream::Flush(const base::Closure& callback) {
   }
 
   DVLOG(1) << "Flushing " << next_pos_ << " bytes into socket.";
-  int result = socket_->Write(
-      write_buffer_,
-      next_pos_,
-      base::Bind(&SocketOutputStream::FlushCompletionCallback,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 callback));
+  int result =
+      socket_->Write(write_buffer_.get(),
+                     next_pos_,
+                     base::Bind(&SocketOutputStream::FlushCompletionCallback,
+                                weak_ptr_factory_.GetWeakPtr(),
+                                callback));
   DVLOG(1) << "Write returned " << result;
   if (result == net::ERR_IO_PENDING) {
     last_error_ = net::ERR_IO_PENDING;

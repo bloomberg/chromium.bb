@@ -135,7 +135,7 @@ void UnregistrationRequest::Start() {
 
   url_fetcher_.reset(net::URLFetcher::Create(
       registration_url_, net::URLFetcher::POST, this));
-  url_fetcher_->SetRequestContext(request_context_getter_);
+  url_fetcher_->SetRequestContext(request_context_getter_.get());
 
   std::string android_id = base::Uint64ToString(request_info_.android_id);
   std::string auth_header =
