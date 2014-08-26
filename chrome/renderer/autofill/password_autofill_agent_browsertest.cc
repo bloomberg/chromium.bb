@@ -261,21 +261,25 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
     password_element_.setAutofilled(false);
   }
 
-  void SimulateUsernameChangeForElement(const std::string& username,
-                                        bool move_caret_to_end,
-                                        WebFrame* input_frame,
-                                        WebInputElement& username_input,
-                                        bool is_user_input) {
-    username_input.setValue(WebString::fromUTF8(username), is_user_input);
+  void SimulateDidEndEditing(WebFrame* input_frame, WebInputElement& input) {
+    autofill_agent_->textFieldDidEndEditing(input);
+  }
+
+  void SimulateInputChangeForElement(const std::string& new_value,
+                                     bool move_caret_to_end,
+                                     WebFrame* input_frame,
+                                     WebInputElement& input,
+                                     bool is_user_input) {
+    input.setValue(WebString::fromUTF8(new_value), is_user_input);
     // The field must have focus or AutofillAgent will think the
     // change should be ignored.
-    while (!username_input.focused())
+    while (!input.focused())
       input_frame->document().frame()->view()->advanceFocus(false);
     if (move_caret_to_end)
-      username_input.setSelectionRange(username.length(), username.length());
+      input.setSelectionRange(new_value.length(), new_value.length());
     if (is_user_input)
       password_autofill_agent()->FirstUserGestureObserved();
-    autofill_agent_->textFieldDidChange(username_input);
+    autofill_agent_->textFieldDidChange(input);
     // Processing is delayed because of a Blink bug:
     // https://bugs.webkit.org/show_bug.cgi?id=16976
     // See PasswordAutofillAgent::TextDidChangeInTextField() for details.
@@ -310,11 +314,11 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
   void SimulateUsernameChange(const std::string& username,
                               bool move_caret_to_end,
                               bool is_user_input = false) {
-    SimulateUsernameChangeForElement(username,
-                                     move_caret_to_end,
-                                     GetMainFrame(),
-                                     username_element_,
-                                     is_user_input);
+    SimulateInputChangeForElement(username,
+                                  move_caret_to_end,
+                                  GetMainFrame(),
+                                  username_element_,
+                                  is_user_input);
   }
 
   // Tests that no suggestion popup is generated when the username_element_ is
@@ -368,7 +372,8 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
     EXPECT_EQ(password,
               static_cast<std::string>(
                   checkSuggestedValue ? password_element.suggestedValue().utf8()
-                                      : password_element.value().utf8()));
+                                      : password_element.value().utf8()))
+        << "checkSuggestedValue == " << checkSuggestedValue;
     EXPECT_EQ(password_autofilled, password_element.isAutofilled());
   }
 
@@ -920,7 +925,7 @@ TEST_F(PasswordAutofillAgentTest, IframeNoFillTest) {
 
   // Simulate the user typing in the username in the iframe which should cause
   // an autofill.
-  SimulateUsernameChangeForElement(
+  SimulateInputChangeForElement(
       kAliceUsername, true, iframe, username_input, true);
 
   CheckTextFieldsStateForElements(username_input,
@@ -1495,9 +1500,9 @@ TEST_F(PasswordAutofillAgentTest, CredentialsOnClick) {
 // still remember the password typed by the user.
 TEST_F(PasswordAutofillAgentTest,
        RememberLastNonEmptyPasswordOnSubmit_ScriptCleared) {
-  SimulateUsernameChangeForElement(
+  SimulateInputChangeForElement(
       "temp", true, GetMainFrame(), username_element_, true);
-  SimulateUsernameChangeForElement(
+  SimulateInputChangeForElement(
       "random", true, GetMainFrame(), password_element_, true);
 
   // Simulate that the password value was cleared by the site's JavaScript
@@ -1516,13 +1521,13 @@ TEST_F(PasswordAutofillAgentTest,
 // the last non-empty password is not remembered.
 TEST_F(PasswordAutofillAgentTest,
        RememberLastNonEmptyPasswordOnSubmit_UserCleared) {
-  SimulateUsernameChangeForElement(
+  SimulateInputChangeForElement(
       "temp", true, GetMainFrame(), username_element_, true);
-  SimulateUsernameChangeForElement(
+  SimulateInputChangeForElement(
       "random", true, GetMainFrame(), password_element_, true);
 
   // Simulate that the user actually cleared the password again.
-  SimulateUsernameChangeForElement(
+  SimulateInputChangeForElement(
       "", true, GetMainFrame(), password_element_, true);
   static_cast<content::RenderViewObserver*>(password_autofill_agent())
       ->WillSubmitForm(GetMainFrame(), username_element_.form());
@@ -1545,9 +1550,9 @@ TEST_F(PasswordAutofillAgentTest,
   LoadHTML(kNewPasswordFormHTML);
   UpdateUsernameAndPasswordElements();
 
-  SimulateUsernameChangeForElement(
+  SimulateInputChangeForElement(
       "temp", true, GetMainFrame(), username_element_, true);
-  SimulateUsernameChangeForElement(
+  SimulateInputChangeForElement(
       "random", true, GetMainFrame(), password_element_, true);
 
   // Simulate that the password value was cleared by the site's JavaScript
@@ -1559,6 +1564,64 @@ TEST_F(PasswordAutofillAgentTest,
   // Observe that the PasswordAutofillAgent still remembered the last non-empty
   // password and sent that to the browser.
   ExpectFormSubmittedWithPasswords("", "random");
+}
+
+// The user first accepts a suggestion, but then overwrites the password. This
+// test checks that the overwritten password is not reverted back if the user
+// triggers autofill through focusing (but not changing) the username again.
+TEST_F(PasswordAutofillAgentTest,
+       NoopEditingDoesNotOverwriteManuallyEditedPassword) {
+  // Simulate having credentials which needed to wait until the user starts
+  // typing the username to be filled (e.g., PSL-matched credentials). Those are
+  // the ones which can be filled as a result of TextFieldDidEndEditing.
+  fill_data_.wait_for_username = true;
+  SimulateOnFillPasswordForm(fill_data_);
+  // Simulate that the user typed her name to make the autofill work.
+  SimulateInputChangeForElement(kAliceUsername,
+                                /*move_caret_to_end=*/true,
+                                GetMainFrame(),
+                                username_element_,
+                                /*is_user_input=*/true);
+  SimulateDidEndEditing(GetMainFrame(), username_element_);
+  const std::string old_username(username_element_.value().utf8());
+  const std::string old_password(password_element_.value().utf8());
+  const std::string new_password(old_password + "modify");
+
+  // The user changes the password.
+  SimulateInputChangeForElement(new_password,
+                                /*move_caret_to_end=*/true,
+                                GetMainFrame(),
+                                password_element_,
+                                /*is_user_input=*/true);
+
+  // The user switches back into the username field, but leaves that without
+  // changes.
+  SimulateDidEndEditing(GetMainFrame(), username_element_);
+
+  // The password should have stayed as the user changed it.
+  CheckTextFieldsDOMState(old_username, true, new_password, false);
+  // The password should not have a suggested value.
+  CheckTextFieldsState(old_username, true, std::string(), false);
+}
+
+TEST_F(PasswordAutofillAgentTest,
+       InlineAutocompleteOverwritesManuallyEditedPassword) {
+  // Simulate the browser sending back the login info.
+  SimulateOnFillPasswordForm(fill_data_);
+
+  ClearUsernameAndPasswordFields();
+
+  // The user enters a password
+  SimulateInputChangeForElement("someOtherPassword",
+                                /*move_caret_to_end=*/true,
+                                GetMainFrame(),
+                                password_element_,
+                                /*is_user_input=*/true);
+
+  // Simulate the user typing a stored username.
+  SimulateUsernameChange(kAliceUsername, true);
+  // The autofileld password should replace the typed one.
+  CheckTextFieldsDOMState(kAliceUsername, true, kAlicePassword, true);
 }
 
 }  // namespace autofill

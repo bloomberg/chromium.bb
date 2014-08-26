@@ -94,15 +94,19 @@ class PasswordAutofillAgent : public content::RenderViewObserver {
     blink::WebInputElement password_field;
     PasswordFormFillData fill_data;
     bool backspace_pressed_last;
-    PasswordInfo() : backspace_pressed_last(false) {}
+    // The user manually edited the password more recently than the username was
+    // changed.
+    bool password_was_edited_last;
+    PasswordInfo();
   };
   typedef std::map<blink::WebElement, PasswordInfo> LoginToPasswordInfoMap;
+  typedef std::map<blink::WebElement, blink::WebElement> PasswordToLoginMap;
   typedef std::map<blink::WebFrame*,
                    linked_ptr<PasswordForm> > FrameToPasswordFormMap;
 
-  // This class holds a vector of autofilled password input elements and makes
-  // sure the autofilled password value is not accessible to JavaScript code
-  // until the user interacts with the page.
+  // This class keeps track of autofilled password input elements and makes sure
+  // the autofilled password value is not accessible to JavaScript code until
+  // the user interacts with the page.
   class PasswordValueGatekeeper {
    public:
     PasswordValueGatekeeper();
@@ -190,7 +194,7 @@ class PasswordAutofillAgent : public content::RenderViewObserver {
   // Finds login information for a |node| that was previously filled.
   bool FindLoginInfo(const blink::WebNode& node,
                      blink::WebInputElement* found_input,
-                     PasswordInfo* found_password);
+                     PasswordInfo** found_password);
 
   // Clears the preview for the username and password fields, restoring both to
   // their previous filled state.
@@ -210,6 +214,8 @@ class PasswordAutofillAgent : public content::RenderViewObserver {
 
   // The logins we have filled so far with their associated info.
   LoginToPasswordInfoMap login_to_password_info_;
+  // A (sort-of) reverse map to |login_to_password_info_|.
+  PasswordToLoginMap password_to_username_;
 
   // Used for UMA stats.
   OtherPossibleUsernamesUsage usernames_usage_;
