@@ -28,7 +28,7 @@ SessionStorageNamespaceImpl::SessionStorageNamespaceImpl(
 SessionStorageNamespaceImpl::SessionStorageNamespaceImpl(
     SessionStorageNamespaceImpl* master_session_storage_namespace)
     : session_(new DOMStorageSession(
-          master_session_storage_namespace->session_)) {
+          master_session_storage_namespace->session_.get())) {
 }
 
 
@@ -81,7 +81,8 @@ void SessionStorageNamespaceImpl::Merge(
     const MergeResultCallback& callback) {
   SessionStorageNamespaceImpl* other_impl =
       static_cast<SessionStorageNamespaceImpl*>(other);
-  session_->Merge(actually_merge, process_id, other_impl->session_, callback);
+  session_->Merge(
+      actually_merge, process_id, other_impl->session_.get(), callback);
 }
 
 bool SessionStorageNamespaceImpl::IsAliasOf(SessionStorageNamespace* other) {

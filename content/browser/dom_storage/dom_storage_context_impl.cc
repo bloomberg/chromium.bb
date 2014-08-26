@@ -278,7 +278,7 @@ void DOMStorageContextImpl::DeleteSessionNamespace(
   } else {
     if (should_persist_data)
       it->second->set_must_persist_at_shutdown(true);
-    MaybeShutdownSessionNamespace(it->second);
+    MaybeShutdownSessionNamespace(it->second.get());
   }
 }
 
@@ -485,11 +485,11 @@ DOMStorageContextImpl::MergeSessionStorage(
   StorageNamespaceMap::const_iterator it = namespaces_.find(namespace1_id);
   if (it == namespaces_.end())
     return SessionStorageNamespace::MERGE_RESULT_NAMESPACE_NOT_FOUND;
-  DOMStorageNamespace* ns1 = it->second;
+  DOMStorageNamespace* ns1 = it->second.get();
   it = namespaces_.find(namespace2_id);
   if (it == namespaces_.end())
     return SessionStorageNamespace::MERGE_RESULT_NAMESPACE_NOT_FOUND;
-  DOMStorageNamespace* ns2 = it->second;
+  DOMStorageNamespace* ns2 = it->second.get();
   return ns1->Merge(actually_merge, process_id, ns2, this);
 }
 

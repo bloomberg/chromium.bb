@@ -63,7 +63,7 @@ DOMStorageNamespace::~DOMStorageNamespace() {
 }
 
 DOMStorageArea* DOMStorageNamespace::OpenStorageArea(const GURL& origin) {
-  if (alias_master_namespace_)
+  if (alias_master_namespace_.get())
     return alias_master_namespace_->OpenStorageArea(origin);
   if (AreaHolder* holder = GetAreaHolder(origin)) {
     ++(holder->open_count_);
@@ -83,7 +83,7 @@ DOMStorageArea* DOMStorageNamespace::OpenStorageArea(const GURL& origin) {
 
 void DOMStorageNamespace::CloseStorageArea(DOMStorageArea* area) {
   AreaHolder* holder = GetAreaHolder(area->origin());
-  if (alias_master_namespace_) {
+  if (alias_master_namespace_.get()) {
     DCHECK(!holder);
     if (old_master_for_close_area_)
       old_master_for_close_area_->CloseStorageArea(area);
@@ -99,7 +99,7 @@ void DOMStorageNamespace::CloseStorageArea(DOMStorageArea* area) {
 }
 
 DOMStorageArea* DOMStorageNamespace::GetOpenStorageArea(const GURL& origin) {
-  if (alias_master_namespace_)
+  if (alias_master_namespace_.get())
     return alias_master_namespace_->GetOpenStorageArea(origin);
   AreaHolder* holder = GetAreaHolder(origin);
   if (holder && holder->open_count_)
@@ -110,7 +110,7 @@ DOMStorageArea* DOMStorageNamespace::GetOpenStorageArea(const GURL& origin) {
 DOMStorageNamespace* DOMStorageNamespace::Clone(
     int64 clone_namespace_id,
     const std::string& clone_persistent_namespace_id) {
-  if (alias_master_namespace_) {
+  if (alias_master_namespace_.get()) {
     return alias_master_namespace_->Clone(clone_namespace_id,
                                           clone_persistent_namespace_id);
   }
@@ -153,8 +153,8 @@ DOMStorageNamespace* DOMStorageNamespace::CreateAlias(
   DOMStorageNamespace* alias = new DOMStorageNamespace(
       alias_namespace_id, persistent_namespace_id_,
       session_storage_database_.get(), task_runner_.get());
-  if (alias_master_namespace_ != NULL) {
-    DCHECK(alias_master_namespace_->alias_master_namespace_ == NULL);
+  if (alias_master_namespace_.get() != NULL) {
+    DCHECK(alias_master_namespace_->alias_master_namespace_.get() == NULL);
     alias->alias_master_namespace_ = alias_master_namespace_;
   } else {
     alias->alias_master_namespace_ = this;
@@ -179,7 +179,7 @@ void DOMStorageNamespace::DeleteLocalStorageOrigin(const GURL& origin) {
 }
 
 void DOMStorageNamespace::DeleteSessionStorageOrigin(const GURL& origin) {
-  if (alias_master_namespace_) {
+  if (alias_master_namespace_.get()) {
     alias_master_namespace_->DeleteSessionStorageOrigin(origin);
     return;
   }
@@ -189,7 +189,7 @@ void DOMStorageNamespace::DeleteSessionStorageOrigin(const GURL& origin) {
 }
 
 void DOMStorageNamespace::PurgeMemory(PurgeOption option) {
-  if (alias_master_namespace_) {
+  if (alias_master_namespace_.get()) {
     alias_master_namespace_->PurgeMemory(option);
     return;
   }
@@ -228,7 +228,7 @@ void DOMStorageNamespace::Shutdown() {
 }
 
 unsigned int DOMStorageNamespace::CountInMemoryAreas() const {
-  if (alias_master_namespace_)
+  if (alias_master_namespace_.get())
     return alias_master_namespace_->CountInMemoryAreas();
   unsigned int area_count = 0;
   for (AreaMap::const_iterator it = areas_.begin(); it != areas_.end(); ++it) {
@@ -375,7 +375,7 @@ void DOMStorageNamespace::AddTransaction(
 }
 
 bool DOMStorageNamespace::DecrementMasterAliasCount() {
-  if (!alias_master_namespace_ || master_alias_count_decremented_)
+  if (!alias_master_namespace_.get() || master_alias_count_decremented_)
     return false;
   DCHECK_GT(alias_master_namespace_->num_aliases_, 0);
   alias_master_namespace_->num_aliases_--;
@@ -391,8 +391,8 @@ void DOMStorageNamespace::SwitchToNewAliasMaster(
   if (new_master->alias_master_namespace())
     new_master = new_master->alias_master_namespace();
   DCHECK(!new_master->alias_master_namespace());
-  DCHECK(old_master != this);
-  DCHECK(old_master != new_master);
+  DCHECK(old_master.get() != this);
+  DCHECK(old_master.get() != new_master);
   DecrementMasterAliasCount();
   alias_master_namespace_ = new_master;
   alias_master_namespace_->num_aliases_++;
