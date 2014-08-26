@@ -2,9 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# TODO(jochen): make this a .gypi file and include it in content.gyp, once
-# content.gyp doesn't depend on gyp files from chrome/ anymore:
-# http://crbug.com/10394
 {
   'targets': [
     {

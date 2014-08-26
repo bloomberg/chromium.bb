@@ -588,7 +588,7 @@
       'dependencies': [
         'extensions_resources.gyp:extensions_resources',
         '../chrome/chrome_resources.gyp:chrome_resources',
-        '../content/content_resources.gyp:content_resources',
+        '../content/content.gyp:content_resources',
         '../gin/gin.gyp:gin',
         '../mojo/mojo_base.gyp:mojo_js_bindings',
         '../third_party/WebKit/public/blink.gyp:blink',
@@ -812,7 +812,7 @@
         # Need dev-tools related resources in shell_resources.pak and
         # devtools_resources.pak.
         '../content/browser/devtools/devtools_resources.gyp:devtools_resources',
-        '../content/content_resources.gyp:content_resources',
+        '../content/content.gyp:content_resources',
         '../content/content_shell_and_tests.gyp:content_shell_resources',
         '../ui/resources/ui_resources.gyp:ui_resources',
         '../ui/strings/ui_strings.gyp:ui_strings',
