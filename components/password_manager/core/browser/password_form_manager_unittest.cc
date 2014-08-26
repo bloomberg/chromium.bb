@@ -141,14 +141,14 @@ class PasswordFormManagerTest : public testing::Test {
   }
 
   virtual void TearDown() {
-    if (mock_store_)
+    if (mock_store_.get())
       mock_store_->Shutdown();
   }
 
   void InitializeMockStore() {
-    if (!mock_store_) {
+    if (!mock_store_.get()) {
       mock_store_ = new MockPasswordStore();
-      ASSERT_TRUE(mock_store_);
+      ASSERT_TRUE(mock_store_.get());
     }
   }
 

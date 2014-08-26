@@ -311,9 +311,7 @@ class PasswordSyncableServiceWrapper {
     password_store_->Shutdown();
   }
 
-  MockPasswordStore* password_store() {
-    return password_store_;
-  }
+  MockPasswordStore* password_store() { return password_store_.get(); }
 
   MockPasswordSyncableService* service() {
     return service_.get();
@@ -337,10 +335,10 @@ class PasswordSyncableServiceWrapper {
   void SetPasswordStoreData(
       const std::vector<autofill::PasswordForm*>& forms,
       const std::vector<autofill::PasswordForm*>& blacklist_forms) {
-    EXPECT_CALL(*password_store_, FillAutofillableLogins(_))
+    EXPECT_CALL(*password_store_.get(), FillAutofillableLogins(_))
         .WillOnce(Invoke(AppendVector(forms)))
         .RetiresOnSaturation();
-    EXPECT_CALL(*password_store_, FillBlacklistLogins(_))
+    EXPECT_CALL(*password_store_.get(), FillBlacklistLogins(_))
         .WillOnce(Invoke(AppendVector(blacklist_forms)))
         .RetiresOnSaturation();
   }
