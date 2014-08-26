@@ -163,7 +163,7 @@ void GradientPainter::Paint(gfx::Canvas* canvas, const gfx::Size& size) {
 // ImagePainter ---------------------------------------------------------------
 
 // ImagePainter stores and paints nine images as a scalable grid.
-class VIEWS_EXPORT ImagePainter : public Painter {
+class ImagePainter : public Painter {
  public:
   // Constructs an ImagePainter with the specified image resource ids.
   // See CreateImageGridPainter()'s comment regarding image ID count and order.
