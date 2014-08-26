@@ -252,6 +252,16 @@ void RootNodeManager::OnNodeBoundsChanged(const Node* node,
                                           const gfx::Rect& old_bounds,
                                           const gfx::Rect& new_bounds) {
   ProcessNodeBoundsChanged(node, old_bounds, new_bounds);
+  if (!node->parent())
+    return;
+
+  // TODO(sky): optimize this.
+  root_view_manager_.SchedulePaint(node->parent(), old_bounds);
+  root_view_manager_.SchedulePaint(node->parent(), new_bounds);
+}
+
+void RootNodeManager::OnNodeBitmapChanged(const Node* node) {
+  root_view_manager_.SchedulePaint(node, gfx::Rect(node->bounds().size()));
 }
 
 }  // namespace service

@@ -5,184 +5,128 @@
 #include "mojo/services/view_manager/node.h"
 
 #include "mojo/services/view_manager/node_delegate.h"
-#include "ui/aura/window_property.h"
-#include "ui/base/cursor/cursor.h"
-#include "ui/base/hit_test.h"
-#include "ui/compositor/layer.h"
-#include "ui/gfx/canvas.h"
-#include "ui/gfx/image/image_skia.h"
-#include "ui/gfx/native_widget_types.h"
-
-DECLARE_WINDOW_PROPERTY_TYPE(mojo::service::Node*);
 
 namespace mojo {
 namespace service {
 
-DEFINE_WINDOW_PROPERTY_KEY(Node*, kNodeKey, NULL);
-
 Node::Node(NodeDelegate* delegate, const NodeId& id)
     : delegate_(delegate),
       id_(id),
-      window_(this) {
+      parent_(NULL),
+      visible_(true) {
   DCHECK(delegate);  // Must provide a delegate.
-  window_.set_owned_by_parent(false);
-  window_.AddObserver(this);
-  window_.SetProperty(kNodeKey, this);
-  window_.Init(aura::WINDOW_LAYER_TEXTURED);
-
-  // TODO(sky): this likely needs to be false and add a visibility API.
-  window_.Show();
 }
 
 Node::~Node() {
-  // This is implicitly done during deletion of the window, but we do it here so
-  // that we're in a known state.
-  if (window_.parent())
-    window_.parent()->RemoveChild(&window_);
+  while (!children_.empty())
+    children_.front()->parent()->Remove(children_.front());
+
+  if (parent_)
+    parent_->Remove(this);
 
   delegate_->OnNodeDestroyed(this);
 }
 
-// static
-Node* Node::NodeForWindow(aura::Window* window) {
-  return window->GetProperty(kNodeKey);
-}
-
-const Node* Node::GetParent() const {
-  if (!window_.parent())
-    return NULL;
-  return window_.parent()->GetProperty(kNodeKey);
-}
-
 void Node::Add(Node* child) {
-  window_.AddChild(&child->window_);
+  // We assume validation checks happened already.
+  DCHECK(child);
+  DCHECK(child != this);
+  DCHECK(!child->Contains(this));
+  if (child->parent() == this) {
+    if (children_.size() == 1)
+      return;  // Already in the right position.
+    Reorder(child, children_.back(), ORDER_DIRECTION_ABOVE);
+    return;
+  }
+
+  const Node* old_parent = child->parent();
+  if (child->parent())
+    child->parent()->RemoveImpl(child);
+
+  child->parent_ = this;
+  children_.push_back(child);
+  child->delegate_->OnNodeHierarchyChanged(child, this, old_parent);
 }
 
 void Node::Remove(Node* child) {
-  window_.RemoveChild(&child->window_);
+  // We assume validation checks happened else where.
+  DCHECK(child);
+  DCHECK(child != this);
+  DCHECK(child->parent() == this);
+
+  RemoveImpl(child);
+  child->delegate_->OnNodeHierarchyChanged(child, NULL, this);
 }
 
 void Node::Reorder(Node* child, Node* relative, OrderDirection direction) {
-  if (direction == ORDER_DIRECTION_ABOVE)
-    window_.StackChildAbove(child->window(), relative->window());
-  else if (direction == ORDER_DIRECTION_BELOW)
-    window_.StackChildBelow(child->window(), relative->window());
+  // We assume validation checks happened else where.
+  DCHECK(child);
+  DCHECK(child->parent() == this);
+  DCHECK_GT(children_.size(), 1u);
+  children_.erase(std::find(children_.begin(), children_.end(), child));
+  Nodes::iterator i = std::find(children_.begin(), children_.end(), relative);
+  if (direction == ORDER_DIRECTION_ABOVE) {
+    DCHECK(i != children_.end());
+    children_.insert(++i, child);
+  } else if (direction == ORDER_DIRECTION_BELOW) {
+    DCHECK(i != children_.end());
+    children_.insert(i, child);
+  }
+}
+
+void Node::SetBounds(const gfx::Rect& bounds) {
+  if (bounds_ == bounds)
+    return;
+
+  const gfx::Rect old_bounds = bounds_;
+  bounds_ = bounds;
+  delegate_->OnNodeBoundsChanged(this, old_bounds, bounds);
 }
 
 const Node* Node::GetRoot() const {
-  const aura::Window* window = &window_;
-  while (window && window->parent())
-    window = window->parent();
-  return window->GetProperty(kNodeKey);
+  const Node* node = this;
+  while (node && node->parent())
+    node = node->parent();
+  return node;
 }
 
 std::vector<const Node*> Node::GetChildren() const {
   std::vector<const Node*> children;
-  children.reserve(window_.children().size());
-  for (size_t i = 0; i < window_.children().size(); ++i)
-    children.push_back(window_.children()[i]->GetProperty(kNodeKey));
+  children.reserve(children_.size());
+  for (size_t i = 0; i < children_.size(); ++i)
+    children.push_back(children_[i]);
   return children;
 }
 
 std::vector<Node*> Node::GetChildren() {
-  std::vector<Node*> children;
-  children.reserve(window_.children().size());
-  for (size_t i = 0; i < window_.children().size(); ++i)
-    children.push_back(window_.children()[i]->GetProperty(kNodeKey));
-  return children;
+  // TODO(sky): rename to children() and fix return type.
+  return children_;
 }
 
 bool Node::Contains(const Node* node) const {
-  return node && window_.Contains(&(node->window_));
-}
-
-bool Node::IsVisible() const {
-  return window_.TargetVisibility();
+  for (const Node* parent = node; parent; parent = parent->parent_) {
+    if (parent == this)
+      return true;
+  }
+  return false;
 }
 
 void Node::SetVisible(bool value) {
-  if (value)
-    window_.Show();
-  else
-    window_.Hide();
+  if (visible_ == value)
+    return;
+
+  visible_ = value;
+  // TODO(sky): notification, including repaint.
 }
 
 void Node::SetBitmap(const SkBitmap& bitmap) {
   bitmap_ = bitmap;
-  window_.SchedulePaintInRect(gfx::Rect(window_.bounds().size()));
+  delegate_->OnNodeBitmapChanged(this);
 }
 
-void Node::OnWindowHierarchyChanged(
-    const aura::WindowObserver::HierarchyChangeParams& params) {
-  if (params.target != &window_ || params.receiver != &window_)
-    return;
-  const Node* new_parent = params.new_parent ?
-      params.new_parent->GetProperty(kNodeKey) : NULL;
-  const Node* old_parent = params.old_parent ?
-      params.old_parent->GetProperty(kNodeKey) : NULL;
-  // This check is needed because even the root Node's aura::Window has a
-  // parent, but the Node itself has no parent (so it's possible for us to
-  // receive this notification from aura when no logical Node hierarchy change
-  // has actually ocurred).
-  if (new_parent != old_parent)
-    delegate_->OnNodeHierarchyChanged(this, new_parent, old_parent);
-}
-
-gfx::Size Node::GetMinimumSize() const {
-  return gfx::Size();
-}
-
-gfx::Size Node::GetMaximumSize() const {
-  return gfx::Size();
-}
-
-void Node::OnBoundsChanged(const gfx::Rect& old_bounds,
-                           const gfx::Rect& new_bounds) {
-  delegate_->OnNodeBoundsChanged(this, old_bounds, new_bounds);
-}
-
-gfx::NativeCursor Node::GetCursor(const gfx::Point& point) {
-  return gfx::kNullCursor;
-}
-
-int Node::GetNonClientComponent(const gfx::Point& point) const {
-  return HTCAPTION;
-}
-
-bool Node::ShouldDescendIntoChildForEventHandling(
-    aura::Window* child,
-    const gfx::Point& location) {
-  return true;
-}
-
-bool Node::CanFocus() {
-  return true;
-}
-
-void Node::OnCaptureLost() {
-}
-
-void Node::OnPaint(gfx::Canvas* canvas) {
-  canvas->DrawImageInt(gfx::ImageSkia::CreateFrom1xBitmap(bitmap_), 0, 0);
-}
-
-void Node::OnDeviceScaleFactorChanged(float device_scale_factor) {
-}
-
-void Node::OnWindowDestroying(aura::Window* window) {
-}
-
-void Node::OnWindowDestroyed(aura::Window* window) {
-}
-
-void Node::OnWindowTargetVisibilityChanged(bool visible) {
-}
-
-bool Node::HasHitTestMask() const {
-  return false;
-}
-
-void Node::GetHitTestMask(gfx::Path* mask) const {
+void Node::RemoveImpl(Node* node) {
+  node->parent_ = NULL;
+  children_.erase(std::find(children_.begin(), children_.end(), node));
 }
 
 }  // namespace service

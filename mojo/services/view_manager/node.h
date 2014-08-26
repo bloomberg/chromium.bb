@@ -12,9 +12,7 @@
 #include "mojo/services/view_manager/ids.h"
 #include "mojo/services/view_manager/view_manager_export.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/aura/window.h"
-#include "ui/aura/window_delegate.h"
-#include "ui/aura/window_observer.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace mojo {
 namespace service {
@@ -22,30 +20,26 @@ namespace service {
 class NodeDelegate;
 
 // Represents a node in the graph. Delegate is informed of interesting events.
-class MOJO_VIEW_MANAGER_EXPORT Node
-    : public aura::WindowObserver,
-      public aura::WindowDelegate {
+//
+// It is assumed that all functions that mutate the node tree have validated the
+// value. For example, Reorder() assumes the supplied node is a child and not
+// already in position.
+class MOJO_VIEW_MANAGER_EXPORT Node {
  public:
   Node(NodeDelegate* delegate, const NodeId& id);
   virtual ~Node();
-
-  static Node* NodeForWindow(aura::Window* window);
 
   const NodeId& id() const { return id_; }
 
   void Add(Node* child);
   void Remove(Node* child);
-
   void Reorder(Node* child, Node* relative, OrderDirection direction);
 
-  aura::Window* window() { return &window_; }
+  const gfx::Rect& bounds() const { return bounds_; }
+  void SetBounds(const gfx::Rect& bounds);
 
-  const gfx::Rect& bounds() const { return window_.bounds(); }
-
-  const Node* GetParent() const;
-  Node* GetParent() {
-    return const_cast<Node*>(const_cast<const Node*>(this)->GetParent());
-  }
+  const Node* parent() const { return parent_; }
+  Node* parent() { return parent_; }
 
   const Node* GetRoot() const;
   Node* GetRoot() {
@@ -59,41 +53,24 @@ class MOJO_VIEW_MANAGER_EXPORT Node
 
   // Returns true if the window is visible. This does not consider visibility
   // of any ancestors.
-  bool IsVisible() const;
+  bool visible() const { return visible_; }
   void SetVisible(bool value);
 
   void SetBitmap(const SkBitmap& contents);
   const SkBitmap& bitmap() const { return bitmap_; }
 
  private:
-  // WindowObserver overrides:
-  virtual void OnWindowHierarchyChanged(
-      const aura::WindowObserver::HierarchyChangeParams& params) OVERRIDE;
+  typedef std::vector<Node*> Nodes;
 
-  // WindowDelegate overrides:
-  virtual gfx::Size GetMinimumSize() const OVERRIDE;
-  virtual gfx::Size GetMaximumSize() const OVERRIDE;
-  virtual void OnBoundsChanged(const gfx::Rect& old_bounds,
-                               const gfx::Rect& new_bounds) OVERRIDE;
-  virtual gfx::NativeCursor GetCursor(const gfx::Point& point) OVERRIDE;
-  virtual int GetNonClientComponent(const gfx::Point& point) const OVERRIDE;
-  virtual bool ShouldDescendIntoChildForEventHandling(
-      aura::Window* child,
-      const gfx::Point& location) OVERRIDE;
-  virtual bool CanFocus() OVERRIDE;
-  virtual void OnCaptureLost() OVERRIDE;
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
-  virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE;
-  virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
-  virtual void OnWindowDestroyed(aura::Window* window) OVERRIDE;
-  virtual void OnWindowTargetVisibilityChanged(bool visible) OVERRIDE;
-  virtual bool HasHitTestMask() const OVERRIDE;
-  virtual void GetHitTestMask(gfx::Path* mask) const OVERRIDE;
+  // Implementation of removing a node. Doesn't send any notification.
+  void RemoveImpl(Node* node);
 
   NodeDelegate* delegate_;
   const NodeId id_;
-
-  aura::Window window_;
+  Node* parent_;
+  Nodes children_;
+  bool visible_;
+  gfx::Rect bounds_;
   SkBitmap bitmap_;
 
   DISALLOW_COPY_AND_ASSIGN(Node);

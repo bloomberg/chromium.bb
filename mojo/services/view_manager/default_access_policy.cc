@@ -23,8 +23,8 @@ bool DefaultAccessPolicy::CanRemoveNodeFromParent(const Node* node) const {
   if (!WasCreatedByThisConnection(node))
     return false;  // Can only unparent nodes we created.
 
-  const Node* parent = node->GetParent();
-  return IsNodeInRoots(parent) || WasCreatedByThisConnection(parent);
+  return IsNodeInRoots(node->parent()) ||
+      WasCreatedByThisConnection(node->parent());
 }
 
 bool DefaultAccessPolicy::CanAddNode(const Node* parent,

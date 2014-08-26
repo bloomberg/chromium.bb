@@ -157,14 +157,13 @@ bool ViewManagerServiceImpl::CanReorderNode(const Node* node,
   if (!node || !relative_node)
     return false;
 
-  const Node* parent = node->GetParent();
-  if (!parent || parent != relative_node->GetParent())
+  if (!node->parent() || node->parent() != relative_node->parent())
     return false;
 
   if (!access_policy_->CanReorderNode(node, relative_node, direction))
     return false;
 
-  std::vector<const Node*> children = parent->GetChildren();
+  std::vector<const Node*> children = node->parent()->GetChildren();
   const size_t child_i =
       std::find(children.begin(), children.end(), node) - children.begin();
   const size_t target_i =
@@ -256,7 +255,7 @@ void ViewManagerServiceImpl::RemoveRoot(const NodeId& node_id) {
   std::vector<Node*> local_nodes;
   RemoveFromKnown(GetNode(node_id), &local_nodes);
   for (size_t i = 0; i < local_nodes.size(); ++i)
-    local_nodes[i]->GetParent()->Remove(local_nodes[i]);
+    local_nodes[i]->parent()->Remove(local_nodes[i]);
 }
 
 void ViewManagerServiceImpl::RemoveChildrenAsPartOfEmbed(
@@ -279,7 +278,7 @@ Array<ViewDataPtr> ViewManagerServiceImpl::NodesToViewDatas(
 
 ViewDataPtr ViewManagerServiceImpl::NodeToViewData(const Node* node) {
   DCHECK(IsNodeKnown(node));
-  const Node* parent = node->GetParent();
+  const Node* parent = node->parent();
   // If the parent isn't known, it means the parent is not visible to us (not
   // in roots), and should not be sent over.
   if (parent && !IsNodeKnown(parent))
@@ -345,7 +344,7 @@ void ViewManagerServiceImpl::AddView(
   bool success = false;
   Node* parent = GetNode(NodeIdFromTransportId(parent_id));
   Node* child = GetNode(NodeIdFromTransportId(child_id));
-  if (parent && child && child->GetParent() != parent &&
+  if (parent && child && child->parent() != parent &&
       !child->Contains(parent) && access_policy_->CanAddNode(parent, child)) {
     success = true;
     RootNodeManager::ScopedChange change(this, root_node_manager_, false);
@@ -359,11 +358,11 @@ void ViewManagerServiceImpl::RemoveViewFromParent(
     const Callback<void(bool)>& callback) {
   bool success = false;
   Node* node = GetNode(NodeIdFromTransportId(view_id));
-  if (node && node->GetParent() &&
+  if (node && node->parent() &&
       access_policy_->CanRemoveNodeFromParent(node)) {
     success = true;
     RootNodeManager::ScopedChange change(this, root_node_manager_, false);
-    node->GetParent()->Remove(node);
+    node->parent()->Remove(node);
   }
   callback.Run(success);
 }
@@ -378,7 +377,7 @@ void ViewManagerServiceImpl::ReorderView(Id view_id,
   if (CanReorderNode(node, relative_node, direction)) {
     success = true;
     RootNodeManager::ScopedChange change(this, root_node_manager_, false);
-    node->GetParent()->Reorder(node, relative_node, direction);
+    node->parent()->Reorder(node, relative_node, direction);
     root_node_manager_->ProcessNodeReorder(node, relative_node, direction);
   }
   callback.Run(success);
@@ -429,8 +428,7 @@ void ViewManagerServiceImpl::SetViewBounds(
   const bool success = node && access_policy_->CanSetNodeBounds(node);
   if (success) {
     RootNodeManager::ScopedChange change(this, root_node_manager_, false);
-    gfx::Rect old_bounds = node->window()->bounds();
-    node->window()->SetBounds(bounds.To<gfx::Rect>());
+    node->SetBounds(bounds.To<gfx::Rect>());
   }
   callback.Run(success);
 }
@@ -440,7 +438,7 @@ void ViewManagerServiceImpl::SetViewVisibility(
     bool visible,
     const Callback<void(bool)>& callback) {
   Node* node = GetNode(NodeIdFromTransportId(transport_view_id));
-  const bool success = node && node->IsVisible() != visible &&
+  const bool success = node && node->visible() != visible &&
       access_policy_->CanChangeNodeVisibility(node);
   if (success) {
     DCHECK(node);

@@ -12,11 +12,16 @@
 #include "mojo/public/cpp/bindings/callback.h"
 #include "mojo/services/view_manager/view_manager_export.h"
 
+namespace gfx {
+class Rect;
+}
+
 namespace aura {
 namespace client {
 class FocusClient;
 class WindowTreeClient;
 }
+class Window;
 class WindowTreeHost;
 }
 
@@ -30,6 +35,7 @@ class ApplicationConnection;
 
 namespace service {
 
+class Node;
 class RootNodeManager;
 class RootViewManagerDelegate;
 
@@ -42,10 +48,15 @@ class MOJO_VIEW_MANAGER_EXPORT RootViewManager {
                   const Callback<void()>& native_viewport_closed_callback);
   virtual ~RootViewManager();
 
+  // Schedules a paint for the specified region of the specified node.
+  void SchedulePaint(const Node* node, const gfx::Rect& bounds);
+
   // See description above field for details.
   bool in_setup() const { return in_setup_; }
 
  private:
+  class RootWindowDelegateImpl;
+
   void OnCompositorCreated();
 
   RootViewManagerDelegate* delegate_;
@@ -54,6 +65,11 @@ class MOJO_VIEW_MANAGER_EXPORT RootViewManager {
 
   // Returns true if adding the root node's window to |window_tree_host_|.
   bool in_setup_;
+
+  scoped_ptr<RootWindowDelegateImpl> window_delegate_;
+
+  // Owned by its parent aura::Window.
+  aura::Window* root_window_;
 
   scoped_ptr<gfx::Screen> screen_;
   scoped_ptr<aura::WindowTreeHost> window_tree_host_;

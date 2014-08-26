@@ -31,6 +31,8 @@ class MOJO_VIEW_MANAGER_EXPORT NodeDelegate {
                                    const gfx::Rect& old_bounds,
                                    const gfx::Rect& new_bounds) = 0;
 
+  virtual void OnNodeBitmapChanged(const Node* node) = 0;
+
  protected:
   virtual ~NodeDelegate() {}
 };

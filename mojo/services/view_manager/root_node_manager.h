@@ -176,6 +176,7 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager : public NodeDelegate {
   virtual void OnNodeBoundsChanged(const Node* node,
                                    const gfx::Rect& old_bounds,
                                    const gfx::Rect& new_bounds) OVERRIDE;
+  virtual void OnNodeBitmapChanged(const Node* node) OVERRIDE;
 
   Context context_;
 

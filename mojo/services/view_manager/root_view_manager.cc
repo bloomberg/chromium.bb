@@ -16,10 +16,98 @@
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/client/window_tree_client.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_observer.h"
+#include "ui/aura/window_delegate.h"
+#include "ui/base/cursor/cursor.h"
+#include "ui/base/hit_test.h"
+#include "ui/compositor/layer.h"
+#include "ui/gfx/canvas.h"
+#include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/native_widget_types.h"
 
 namespace mojo {
 namespace service {
+namespace {
+
+gfx::Rect ConvertRectToRoot(const Node* node, const gfx::Rect& bounds) {
+  gfx::Point origin(bounds.origin());
+  while (node->parent()) {
+    origin += node->bounds().OffsetFromOrigin();
+    node = node->parent();
+  }
+  return gfx::Rect(origin, bounds.size());
+}
+
+void PaintNodeTree(gfx::Canvas* canvas,
+                   const Node* node,
+                   const gfx::Point& origin) {
+  if (!node->visible())
+    return;
+
+  canvas->DrawImageInt(gfx::ImageSkia::CreateFrom1xBitmap(node->bitmap()),
+                       origin.x(), origin.y());
+  std::vector<const Node*> children(node->GetChildren());
+  for (size_t i = 0; i < children.size(); ++i) {
+    PaintNodeTree(canvas, children[i],
+                  origin + children[i]->bounds().OffsetFromOrigin());
+  }
+}
+
+}  // namespace
+
+class RootViewManager::RootWindowDelegateImpl : public aura::WindowDelegate {
+ public:
+  explicit RootWindowDelegateImpl(const Node* root_node)
+      : root_node_(root_node) {}
+  virtual ~RootWindowDelegateImpl() {}
+
+  // aura::WindowDelegate:
+  virtual gfx::Size GetMinimumSize() const OVERRIDE {
+    return gfx::Size();
+  }
+  virtual gfx::Size GetMaximumSize() const OVERRIDE {
+    return gfx::Size();
+  }
+  virtual void OnBoundsChanged(const gfx::Rect& old_bounds,
+                               const gfx::Rect& new_bounds) OVERRIDE {
+  }
+  virtual gfx::NativeCursor GetCursor(const gfx::Point& point) OVERRIDE {
+    return gfx::kNullCursor;
+  }
+  virtual int GetNonClientComponent(const gfx::Point& point) const OVERRIDE {
+    return HTCAPTION;
+  }
+  virtual bool ShouldDescendIntoChildForEventHandling(
+      aura::Window* child,
+      const gfx::Point& location) OVERRIDE {
+    return true;
+  }
+  virtual bool CanFocus() OVERRIDE {
+    return true;
+  }
+  virtual void OnCaptureLost() OVERRIDE {
+  }
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
+    PaintNodeTree(canvas, root_node_, gfx::Point());
+  }
+  virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE {
+  }
+  virtual void OnWindowDestroying(aura::Window* window) OVERRIDE {
+  }
+  virtual void OnWindowDestroyed(aura::Window* window) OVERRIDE {
+  }
+  virtual void OnWindowTargetVisibilityChanged(bool visible) OVERRIDE {
+  }
+  virtual bool HasHitTestMask() const OVERRIDE {
+    return false;
+  }
+  virtual void GetHitTestMask(gfx::Path* mask) const OVERRIDE {
+  }
+
+ private:
+  const Node* root_node_;
+
+  DISALLOW_COPY_AND_ASSIGN(RootWindowDelegateImpl);
+};
 
 // TODO(sky): Remove once aura is removed from the service.
 class FocusClientImpl : public aura::client::FocusClient {
@@ -76,7 +164,8 @@ RootViewManager::RootViewManager(
     const Callback<void()>& native_viewport_closed_callback)
     : delegate_(delegate),
       root_node_manager_(root_node),
-      in_setup_(false) {
+      in_setup_(false),
+      root_window_(NULL) {
   screen_.reset(ScreenImpl::Create());
   gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, screen_.get());
   NativeViewportPtr viewport;
@@ -102,14 +191,26 @@ RootViewManager::~RootViewManager() {
   gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, NULL);
 }
 
+void RootViewManager::SchedulePaint(const Node* node, const gfx::Rect& bounds) {
+  if (root_window_)
+    root_window_->SchedulePaintInRect(ConvertRectToRoot(node, bounds));
+}
+
 void RootViewManager::OnCompositorCreated() {
   base::AutoReset<bool> resetter(&in_setup_, true);
   window_tree_host_->InitHost();
 
-  aura::Window* root = root_node_manager_->root()->window();
-  window_tree_host_->window()->AddChild(root);
-  root->SetBounds(gfx::Rect(window_tree_host_->window()->bounds().size()));
-  root_node_manager_->root()->window()->Show();
+  window_delegate_.reset(
+      new RootWindowDelegateImpl(root_node_manager_->root()));
+  root_window_ = new aura::Window(window_delegate_.get());
+  root_window_->Init(aura::WINDOW_LAYER_TEXTURED);
+  root_window_->Show();
+  root_window_->SetBounds(
+      gfx::Rect(window_tree_host_->window()->bounds().size()));
+  window_tree_host_->window()->AddChild(root_window_);
+
+  root_node_manager_->root()->SetBounds(
+      gfx::Rect(window_tree_host_->window()->bounds().size()));
 
   window_tree_client_.reset(
       new WindowTreeClientImpl(window_tree_host_->window()));
