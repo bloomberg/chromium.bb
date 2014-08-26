@@ -206,8 +206,7 @@ NSColor* HelpLinkColor() {
     const CGFloat keyY =
         std::ceil((controller_->kPopupPasswordSectionHeight / 2.0) -
                   (imageSize.height / 2.0));
-    [keyIcon_ setFrameOrigin:NSMakePoint(keyX, keyY)];
-    [keyIcon_ sizeToFit];
+    [keyIcon_ setFrame:{ NSMakePoint(keyX, keyY), imageSize }];
 
     // The title and password fall to the right of the key icon and are centered
     // vertically as a group with some padding in between.
