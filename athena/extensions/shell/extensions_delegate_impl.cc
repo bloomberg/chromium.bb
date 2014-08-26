@@ -10,8 +10,6 @@
 namespace athena {
 namespace {
 
-ExtensionsDelegate* instance = NULL;
-
 class ShellExtensionsDelegate : public ExtensionsDelegate {
  public:
   explicit ShellExtensionsDelegate(content::BrowserContext* context)
@@ -45,33 +43,10 @@ class ShellExtensionsDelegate : public ExtensionsDelegate {
 
 }  // namespace
 
-ExtensionsDelegate::ExtensionsDelegate() {
-  DCHECK(!instance);
-  instance = this;
-}
-
-ExtensionsDelegate::~ExtensionsDelegate() {
-  DCHECK(instance);
-  instance = NULL;
-}
-
-// static
-ExtensionsDelegate* ExtensionsDelegate::Get(content::BrowserContext* context) {
-  DCHECK(instance);
-  DCHECK_EQ(context, instance->GetBrowserContext());
-  return instance;
-}
-
 // static
 void ExtensionsDelegate::CreateExtensionsDelegateForShell(
     content::BrowserContext* context) {
   new ShellExtensionsDelegate(context);
-}
-
-// static
-void ExtensionsDelegate::Shutdown() {
-  DCHECK(instance);
-  delete instance;
 }
 
 }  // namespace athena

@@ -32,6 +32,7 @@
         'activity/activity.cc',
         'activity/activity_factory.cc',
         'activity/activity_manager_impl.cc',
+        'activity/activity_manager_impl.h',
         'activity/activity_view_manager_impl.cc',
         'activity/activity_frame_view.cc',
         'activity/activity_frame_view.h',
@@ -115,9 +116,6 @@
         '../ui/views/controls/webview/webview.gyp:webview',
         '../skia/skia.gyp:skia',
       ],
-      'defines': [
-        'ATHENA_IMPLEMENTATION',
-      ],
       'sources': [
         'content/app_activity.cc',
         'content/app_activity.h',
@@ -128,6 +126,8 @@
         'content/app_registry_impl.cc',
         'content/content_activity_factory.cc',
         'content/content_app_model_builder.cc',
+        'content/delegate/app_content_control_delegate_impl.cc',
+        'content/public/app_content_control_delegate.h',
         'content/public/app_registry.h',
         'content/public/content_activity_factory.h',
         'content/public/content_app_model_builder.h',
@@ -138,20 +138,19 @@
         'content/web_activity.h',
         'content/web_contents_view_delegate_factory_impl.cc',
         'extensions/public/extensions_delegate.h',
-        'extensions/extensions_delegate_impl.cc',
+        'extensions/extensions_delegate.cc',
         'virtual_keyboard/public/virtual_keyboard_manager.h',
         'virtual_keyboard/virtual_keyboard_manager_impl.cc',
       ],
     },
     {
-      'target_name': 'athena_content_support_lib',
+      'target_name': 'athena_app_shell_lib',
       'type': 'static_library',
       'dependencies': [
-        '../content/content.gyp:content_browser',
+        '../extensions/shell/app_shell.gyp:app_shell_lib',
       ],
       'sources': [
-        'content/delegate/app_content_control_delegate_impl.cc',        
-        'content/public/app_content_control_delegate.h',
+        'extensions/shell/extensions_delegate_impl.cc',
       ],
     },
     {

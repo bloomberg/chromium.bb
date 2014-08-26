@@ -27,6 +27,7 @@ class WebActivityController : public AcceleratorHandler {
     CMD_FORWARD,
     CMD_RELOAD,
     CMD_RELOAD_IGNORE_CACHE,
+    CMD_CLOSE,
   };
 
   explicit WebActivityController(views::WebView* web_view)
@@ -48,6 +49,7 @@ class WebActivityController : public AcceleratorHandler {
          AF_NONE},
         {TRIGGER_ON_PRESS, ui::VKEY_BROWSER_BACK, ui::EF_NONE, CMD_BACK,
          AF_NONE},
+        {TRIGGER_ON_PRESS, ui::VKEY_W, ui::EF_CONTROL_DOWN, CMD_CLOSE, AF_NONE},
     };
     accelerator_manager_->RegisterAccelerators(
         accelerator_data, arraysize(accelerator_data), this);
@@ -85,11 +87,15 @@ class WebActivityController : public AcceleratorHandler {
   virtual bool IsCommandEnabled(int command_id) const OVERRIDE {
     switch (command_id) {
       case CMD_RELOAD:
+      case CMD_RELOAD_IGNORE_CACHE:
         return true;
       case CMD_BACK:
         return web_view_->GetWebContents()->GetController().CanGoBack();
       case CMD_FORWARD:
         return web_view_->GetWebContents()->GetController().CanGoForward();
+      case CMD_CLOSE:
+        // TODO(oshima): check onbeforeunload handler.
+        return true;
     }
     return false;
   }
@@ -108,6 +114,9 @@ class WebActivityController : public AcceleratorHandler {
         return true;
       case CMD_FORWARD:
         web_view_->GetWebContents()->GetController().GoForward();
+        return true;
+      case CMD_CLOSE:
+        web_view_->GetWidget()->Close();
         return true;
     }
     return false;

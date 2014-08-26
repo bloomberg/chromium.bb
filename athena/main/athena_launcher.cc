@@ -89,6 +89,7 @@ class AthenaViewsDelegate : public views::ViewsDelegate {
   virtual void OnBeforeWidgetInit(
       views::Widget::InitParams* params,
       views::internal::NativeWidgetDelegate* delegate) OVERRIDE {
+    params->context = athena::ScreenManager::Get()->GetContext();
   }
 
   DISALLOW_COPY_AND_ASSIGN(AthenaViewsDelegate);
@@ -130,7 +131,6 @@ void StartAthenaEnv(scoped_refptr<base::TaskRunner> file_runner) {
 }
 
 void StartAthenaSessionWithContext(content::BrowserContext* context) {
-  athena::ExtensionsDelegate::CreateExtensionsDelegateForShell(context);
   StartAthenaSession(new athena::ContentActivityFactory(),
                      new athena::ContentAppModelBuilder(context));
   athena::VirtualKeyboardManager::Create(context);

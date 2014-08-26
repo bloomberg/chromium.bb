@@ -9,59 +9,40 @@
 
 #include "athena/activity/activity_widget_delegate.h"
 #include "athena/activity/public/activity.h"
+#include "athena/activity/public/activity_manager.h"
 #include "athena/activity/public/activity_view_model.h"
 #include "athena/screen/public/screen_manager.h"
 #include "ui/aura/window.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_observer.h"
 
 namespace athena {
 namespace {
 
-class ActivityWidget {
- public:
-  explicit ActivityWidget(Activity* activity)
-      : activity_(activity), widget_(NULL) {
-    ActivityViewModel* view_model = activity->GetActivityViewModel();
-    widget_ = new views::Widget;
-    views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
-    params.context = ScreenManager::Get()->GetContext();
-    params.delegate = new ActivityWidgetDelegate(view_model);
-    params.activatable = views::Widget::InitParams::ACTIVATABLE_YES;
-    widget_->Init(params);
-    activity_->GetActivityViewModel()->Init();
-  }
+typedef std::map<Activity*, views::Widget*> ActivityWidgetMap;
 
-  virtual ~ActivityWidget() {
-    widget_->Close();
-  }
-
-  void Show() {
-    Update();
-    widget_->Show();
-    widget_->Activate();
-  }
-
-  void Update() {
-    widget_->UpdateWindowTitle();
-  }
-
- private:
-
-  Activity* activity_;
-  views::Widget* widget_;
-
-  DISALLOW_COPY_AND_ASSIGN(ActivityWidget);
-};
+views::Widget* CreateWidget(Activity* activity) {
+  ActivityViewModel* view_model = activity->GetActivityViewModel();
+  views::Widget* widget = new views::Widget;
+  views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
+  params.delegate = new ActivityWidgetDelegate(view_model);
+  params.activatable = views::Widget::InitParams::ACTIVATABLE_YES;
+  widget->Init(params);
+  activity->GetActivityViewModel()->Init();
+  return widget;
+}
 
 ActivityViewManager* instance = NULL;
 
-class ActivityViewManagerImpl : public ActivityViewManager {
+class ActivityViewManagerImpl : public ActivityViewManager,
+                                public views::WidgetObserver {
  public:
   ActivityViewManagerImpl() {
     CHECK(!instance);
     instance = this;
   }
+
   virtual ~ActivityViewManagerImpl() {
     CHECK_EQ(this, instance);
     instance = NULL;
@@ -70,30 +51,44 @@ class ActivityViewManagerImpl : public ActivityViewManager {
   // ActivityViewManager:
   virtual void AddActivity(Activity* activity) OVERRIDE {
     CHECK(activity_widgets_.end() == activity_widgets_.find(activity));
-    ActivityWidget* container = new ActivityWidget(activity);
+    views::Widget* container = CreateWidget(activity);
+    container->AddObserver(this);
     activity_widgets_[activity] = container;
+    container->UpdateWindowTitle();
     container->Show();
+    container->Activate();
   }
 
   virtual void RemoveActivity(Activity* activity) OVERRIDE {
-    std::map<Activity*, ActivityWidget*>::iterator find =
-        activity_widgets_.find(activity);
+    ActivityWidgetMap::iterator find = activity_widgets_.find(activity);
     if (find != activity_widgets_.end()) {
-      ActivityWidget* widget = find->second;
+      views::Widget* widget = find->second;
+      widget->RemoveObserver(this);
+      widget->Close();
       activity_widgets_.erase(activity);
-      delete widget;
     }
   }
 
   virtual void UpdateActivity(Activity* activity) OVERRIDE {
-    std::map<Activity*, ActivityWidget*>::iterator find =
-        activity_widgets_.find(activity);
+    ActivityWidgetMap::iterator find = activity_widgets_.find(activity);
     if (find != activity_widgets_.end())
-      find->second->Update();
+      find->second->UpdateWindowTitle();
+  }
+
+  // views::WidgetObserver:
+  virtual void OnWidgetDestroying(views::Widget* widget) OVERRIDE {
+    for (ActivityWidgetMap::iterator iter = activity_widgets_.begin();
+         iter != activity_widgets_.end();
+         ++iter) {
+      if (iter->second == widget) {
+        delete iter->first;
+        break;
+      }
+    }
   }
 
  private:
-  std::map<Activity*, ActivityWidget*> activity_widgets_;
+  ActivityWidgetMap activity_widgets_;
 
   DISALLOW_COPY_AND_ASSIGN(ActivityViewManagerImpl);
 };

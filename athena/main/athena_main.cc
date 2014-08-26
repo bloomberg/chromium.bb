@@ -6,6 +6,8 @@
 #include "athena/activity/public/activity_manager.h"
 #include "athena/content/public/web_contents_view_delegate_creator.h"
 #include "athena/env/public/athena_env.h"
+#include "athena/extensions/public/extensions_delegate.h"
+#include "athena/main/athena_app_window_controller.h"
 #include "athena/main/athena_launcher.h"
 #include "athena/screen/public/screen_manager.h"
 #include "base/command_line.h"
@@ -87,6 +89,7 @@ class AthenaBrowserMainDelegate : public extensions::ShellBrowserMainDelegate {
 
     athena::StartAthenaEnv(content::BrowserThread::GetMessageLoopProxyForThread(
         content::BrowserThread::FILE));
+    athena::ExtensionsDelegate::CreateExtensionsDelegateForShell(context);
     athena::StartAthenaSessionWithContext(context);
   }
 

@@ -13,7 +13,6 @@
       'dependencies': [
         '../athena.gyp:athena_lib',
         '../athena.gyp:athena_content_lib',
-        '../athena.gyp:athena_content_support_lib',
         '../resources/athena_resources.gyp:athena_resources',
 	# debug_widow.cc depends on this. Remove this once debug_window
 	# is removed.
@@ -55,8 +54,8 @@
       'type': 'executable',
       'dependencies': [
         '../../ui/accessibility/accessibility.gyp:ax_gen',
+	'../athena.gyp:athena_app_shell_lib',
         '../resources/athena_resources.gyp:athena_pak',
-	'../../extensions/shell/app_shell.gyp:app_shell_lib',
         'athena_main_lib',
       ],
       'include_dirs': [

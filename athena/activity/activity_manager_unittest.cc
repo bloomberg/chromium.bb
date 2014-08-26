@@ -2,14 +2,36 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "athena/activity/public/activity_manager.h"
+#include "athena/activity/activity_manager_impl.h"
 
+#include "athena/activity/public/activity.h"
 #include "athena/activity/public/activity_factory.h"
 #include "athena/test/athena_test_base.h"
+#include "ui/aura/window.h"
 
-typedef athena::test::AthenaTestBase ActivityManagerTest;
+namespace athena {
+
+typedef test::AthenaTestBase ActivityManagerTest;
 
 TEST_F(ActivityManagerTest, Basic) {
-  athena::ActivityManager::Get()->AddActivity(
+  ActivityManagerImpl* activity_manager =
+      static_cast<ActivityManagerImpl*>(ActivityManager::Get());
+  scoped_ptr<Activity> activity1(
       athena::ActivityFactory::Get()->CreateWebActivity(NULL, GURL()));
+  activity_manager->AddActivity(activity1.get());
+  EXPECT_EQ(1, activity_manager->num_activities());
+
+  Activity* activity2 =
+      athena::ActivityFactory::Get()->CreateWebActivity(NULL, GURL());
+  activity_manager->AddActivity(activity2);
+  EXPECT_EQ(2, activity_manager->num_activities());
+
+  activity1.reset();
+  EXPECT_EQ(1, activity_manager->num_activities());
+
+  // Deleting the activity's window should delete the activity itself.
+  delete activity2->GetWindow();
+  EXPECT_EQ(0, activity_manager->num_activities());
 }
+
+}  // namespace athena
