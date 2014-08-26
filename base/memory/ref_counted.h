@@ -295,6 +295,11 @@ class scoped_refptr {
   // and comparison operations.
   operator T*() const { return ptr_; }
 
+  T& operator*() const {
+    assert(ptr_ != NULL);
+    return *ptr_;
+  }
+
   T* operator->() const {
     assert(ptr_ != NULL);
     return ptr_;
