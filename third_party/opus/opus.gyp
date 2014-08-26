@@ -59,6 +59,11 @@
             4334,  # Disable 32-bit shift warning in src/opus_encoder.c .
           ],
         }],
+        ['os_posix==1', {
+          'link_settings': {
+            'libraries': [ '-lm' ],
+          },
+        }],
         ['os_posix==1 and OS!="android"', {
           # Suppress a warning given by opus_decoder.c that tells us
           # optimizations are turned off.
@@ -134,6 +139,9 @@
               '-llog',
             ],
           },
+        }],
+        ['clang==1', {
+          'cflags': [ '-Wno-absolute-value' ],
         }]
       ],
       'sources': [

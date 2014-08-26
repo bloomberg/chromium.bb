@@ -46,23 +46,25 @@ config("icu_config") {
 
 # Config used only by ICU code.
 config("icu_code") {
+  cflags = []
   if (is_win) {
     # Disable some compiler warnings.
-    cflags = [
+    cflags += [
       "/wd4005",  # Macro redefinition.
       "/wd4068",  # Unknown pragmas.
       "/wd4267",  # Conversion from size_t on 64-bits.
       "/wd4996",  # Deprecated functions.
     ]
   } else if (is_linux) {
-    cflags = [
+    cflags += [
       # Since ICU wants to internally use its own deprecated APIs, don't
       # complain about it.
       "-Wno-deprecated-declarations",
       "-Wno-unused-function",
     ]
-  } else if (is_clang) {
-    cflags = [
+  }
+  if (is_clang) {
+    cflags += [
       "-Wno-deprecated-declarations",
       "-Wno-logical-op-parentheses",
       "-Wno-tautological-compare",
