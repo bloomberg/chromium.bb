@@ -487,11 +487,11 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
     case CSSPropertySize:                 // <length>{1,2} | auto | [ <page-size> || [ portrait | landscape] ]
         return parseSize(propId, important);
 
-    case CSSPropertyQuotes:               // [<string> <string>]+ | none | inherit
-        if (id)
+    case CSSPropertyQuotes: // [<string> <string>]+ | none
+        if (id == CSSValueNone)
             validPrimitive = true;
         else
-            return parseQuotes(propId, important);
+            parsedValue = parseQuotes();
         break;
 
     case CSSPropertyContent:              // [ <string> | <uri> | <counter> | attr(X) | open-quote |
@@ -2149,26 +2149,21 @@ CSSPropertyParser::SizeParameterType CSSPropertyParser::parseSizeParameter(CSSVa
     }
 }
 
-// [ <string> <string> ]+ | inherit | none
-// inherit and none are handled in parseValue.
-bool CSSPropertyParser::parseQuotes(CSSPropertyID propId, bool important)
+// [ <string> <string> ]+ | none, but none is handled in parseValue
+PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseQuotes()
 {
     RefPtrWillBeRawPtr<CSSValueList> values = CSSValueList::createCommaSeparated();
     while (CSSParserValue* val = m_valueList->current()) {
         RefPtrWillBeRawPtr<CSSValue> parsedValue = nullptr;
-        if (val->unit == CSSPrimitiveValue::CSS_STRING)
-            parsedValue = CSSPrimitiveValue::create(val->string, CSSPrimitiveValue::CSS_STRING);
-        else
-            break;
+        if (val->unit != CSSPrimitiveValue::CSS_STRING)
+            return nullptr;
+        parsedValue = CSSPrimitiveValue::create(val->string, CSSPrimitiveValue::CSS_STRING);
         values->append(parsedValue.release());
         m_valueList->next();
     }
-    if (values->length() && values->length() % 2 == 0) {
-        addProperty(propId, values.release(), important);
-        m_valueList->next();
-        return true;
-    }
-    return false;
+    if (values->length() && values->length() % 2 == 0)
+        return values.release();
+    return nullptr;
 }
 
 // [ <string> | <uri> | <counter> | attr(X) | open-quote | close-quote | no-open-quote | no-close-quote ]+ | inherit
