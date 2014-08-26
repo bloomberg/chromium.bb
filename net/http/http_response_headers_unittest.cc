@@ -61,7 +61,7 @@ class HttpResponseHeadersCacheControlTest : public HttpResponseHeadersTest {
   // Get the max-age value. This should only be used in tests where a valid
   // max-age parameter is expected to be present.
   TimeDelta GetMaxAgeValue() {
-    DCHECK(headers_) << "Call InitializeHeadersWithCacheControl() first";
+    DCHECK(headers_.get()) << "Call InitializeHeadersWithCacheControl() first";
     TimeDelta max_age_value;
     EXPECT_TRUE(headers()->GetMaxAgeValue(&max_age_value));
     return max_age_value;
@@ -70,7 +70,7 @@ class HttpResponseHeadersCacheControlTest : public HttpResponseHeadersTest {
   // Get the stale-while-revalidate value. This should only be used in tests
   // where a valid max-age parameter is expected to be present.
   TimeDelta GetStaleWhileRevalidateValue() {
-    DCHECK(headers_) << "Call InitializeHeadersWithCacheControl() first";
+    DCHECK(headers_.get()) << "Call InitializeHeadersWithCacheControl() first";
     TimeDelta stale_while_revalidate_value;
     EXPECT_TRUE(
         headers()->GetStaleWhileRevalidateValue(&stale_while_revalidate_value));

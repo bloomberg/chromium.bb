@@ -76,7 +76,7 @@ TEST_P(HttpStreamFactoryImplRequestTest, SetPriority) {
 
   HttpStreamFactoryImpl::Job* job =
       new HttpStreamFactoryImpl::Job(factory,
-                                     session,
+                                     session.get(),
                                      HttpRequestInfo(),
                                      DEFAULT_PRIORITY,
                                      SSLConfig(),

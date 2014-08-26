@@ -255,7 +255,7 @@ int DiskBasedCertCache::WriteWorker::DoWrite() {
 
   return entry_->WriteData(0 /* index */,
                            0 /* offset */,
-                           buffer_,
+                           buffer_.get(),
                            write_data.size(),
                            io_callback_,
                            true /* truncate */);
@@ -456,7 +456,7 @@ int DiskBasedCertCache::ReadWorker::DoRead() {
   io_buf_len_ = entry_->GetDataSize(0 /* index */);
   buffer_ = new IOBuffer(io_buf_len_);
   return entry_->ReadData(
-      0 /* index */, 0 /* offset */, buffer_, io_buf_len_, io_callback_);
+      0 /* index */, 0 /* offset */, buffer_.get(), io_buf_len_, io_callback_);
 }
 
 int DiskBasedCertCache::ReadWorker::DoReadComplete(int rv) {

@@ -1067,7 +1067,7 @@ int HttpNetworkTransaction::DoReadHeadersComplete(int result) {
         *request_,
         request_headers_,
         proxy_info_.proxy_server(),
-        *response_.headers);
+        *response_.headers.get());
   }
   return OK;
 }

@@ -144,7 +144,7 @@ void ImportCert(disk_cache::Backend* backend,
   memcpy(buffer->data(), write_data.data(), write_data.size());
   rv = entry->WriteData(0 /* index */,
                         0 /* offset */,
-                        buffer,
+                        buffer.get(),
                         write_data.size(),
                         callback.callback(),
                         true /* truncate */);
@@ -168,8 +168,11 @@ void CheckCertCached(disk_cache::Backend* backend,
   ASSERT_TRUE(encoded);
   int entry_size = entry->GetDataSize(0 /* index */);
   scoped_refptr<IOBuffer> buffer(new IOBuffer(entry_size));
-  rv = entry->ReadData(
-      0 /* index */, 0 /* offset */, buffer, entry_size, callback.callback());
+  rv = entry->ReadData(0 /* index */,
+                       0 /* offset */,
+                       buffer.get(),
+                       entry_size,
+                       callback.callback());
   EXPECT_EQ(entry_size, callback.GetResult(rv));
   entry->Close();
   X509Certificate::OSCertHandle cached_cert_handle =

@@ -555,7 +555,8 @@ class SimpleGetRunner {
     int rv;
     int i = 0;
     while (true) {
-      rv = parser_->ReadResponseBody(buffer, user_buf_len, callback.callback());
+      rv = parser_->ReadResponseBody(
+          buffer.get(), user_buf_len, callback.callback());
       EXPECT_EQ(read_lengths[i], rv);
       i++;
       if (rv <= 0)

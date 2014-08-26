@@ -247,7 +247,7 @@ int DiskCacheBasedQuicServerInfo::DoRead() {
   read_buffer_ = new IOBuffer(size);
   state_ = READ_COMPLETE;
   return entry_->ReadData(
-      0 /* index */, 0 /* offset */, read_buffer_, size, io_callback_);
+      0 /* index */, 0 /* offset */, read_buffer_.get(), size, io_callback_);
 }
 
 int DiskCacheBasedQuicServerInfo::DoWrite() {
@@ -255,9 +255,12 @@ int DiskCacheBasedQuicServerInfo::DoWrite() {
   memcpy(write_buffer_->data(), new_data_.data(), new_data_.size());
   state_ = WRITE_COMPLETE;
 
-  return entry_->WriteData(
-      0 /* index */, 0 /* offset */, write_buffer_, new_data_.size(),
-      io_callback_, true /* truncate */);
+  return entry_->WriteData(0 /* index */,
+                           0 /* offset */,
+                           write_buffer_.get(),
+                           new_data_.size(),
+                           io_callback_,
+                           true /* truncate */);
 }
 
 int DiskCacheBasedQuicServerInfo::DoCreateOrOpen() {

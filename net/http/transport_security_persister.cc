@@ -108,7 +108,7 @@ TransportSecurityPersister::TransportSecurityPersister(
   transport_security_state_->SetDelegate(this);
 
   base::PostTaskAndReplyWithResult(
-      background_runner_,
+      background_runner_.get(),
       FROM_HERE,
       base::Bind(&::LoadState, writer_.path()),
       base::Bind(&TransportSecurityPersister::CompleteLoad,

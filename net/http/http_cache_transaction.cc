@@ -347,7 +347,7 @@ HttpCache::Transaction::~Transaction() {
 
   if (cache_) {
     if (entry_) {
-      bool cancel_request = reading_ && response_.headers;
+      bool cancel_request = reading_ && response_.headers.get();
       if (cancel_request) {
         if (partial_) {
           entry_->disk_entry->CancelSparseIO();
