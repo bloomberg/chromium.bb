@@ -11,7 +11,15 @@
 #include "base/guid.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
+
+// TODO(ckehoe): time.h includes windows.h, which #defines DeviceCapabilities
+// to DeviceCapabilitiesW. This breaks the pb.h headers below. For now,
+// we fix this with an #undef.
 #include "base/time/time.h"
+#if defined(OS_WIN)
+#undef DeviceCapabilities
+#endif
+
 #include "components/copresence/copresence_switches.h"
 #include "components/copresence/handlers/directive_handler.h"
 #include "components/copresence/proto/codes.pb.h"
@@ -162,8 +170,6 @@ bool ExtractIsAudibleStrategy(const ReportRequest& request) {
 scoped_ptr<DeviceState> GetDeviceCapabilities(const ReportRequest& request) {
   scoped_ptr<DeviceState> state(new DeviceState);
 
-// TODO(ckehoe): Currently this code causes a linker error on Windows.
-#ifndef OS_WIN
   TokenTechnology* token_technology =
       state->mutable_capabilities()->add_token_technology();
   token_technology->set_medium(AUDIO_ULTRASOUND_PASSBAND);
@@ -176,7 +182,6 @@ scoped_ptr<DeviceState> GetDeviceCapabilities(const ReportRequest& request) {
     token_technology->add_instruction_type(TRANSMIT);
   if (config == SCAN_ONLY || config == BROADCAST_AND_SCAN)
     token_technology->add_instruction_type(RECEIVE);
-#endif
 
   return state.Pass();
 }

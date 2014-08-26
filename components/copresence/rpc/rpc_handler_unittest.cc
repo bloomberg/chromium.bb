@@ -108,13 +108,10 @@ class RpcHandlerTest : public testing::Test, public CopresenceDelegate {
     return static_cast<ReportRequest*>(request_proto_.get());
   }
 
-// TODO(ckehoe): Fix this on Windows. See rpc_handler.cc.
-#ifndef OS_WIN
   const TokenTechnology& GetTokenTechnologyFromReport() {
     return GetReportSent()->update_signals_request().state().capabilities()
         .token_technology(0);
   }
-#endif
 
   const RepeatedPtrField<PublishedMessage>& GetMessagesPublished() {
     return GetReportSent()->manage_messages_request().message_to_publish();
@@ -204,9 +201,6 @@ TEST_F(RpcHandlerTest, Initialize) {
   EXPECT_FALSE(identity.chrome_id().empty());
 }
 
-// TODO(ckehoe): Fix this on Windows. See rpc_handler.cc.
-#ifndef OS_WIN
-
 TEST_F(RpcHandlerTest, GetDeviceCapabilities) {
   // Empty request.
   rpc_handler_.SendReportRequest(make_scoped_ptr(new ReportRequest));
@@ -254,7 +248,6 @@ TEST_F(RpcHandlerTest, GetDeviceCapabilities) {
   EXPECT_EQ(TRANSMIT, token_technology->instruction_type(0));
   EXPECT_EQ(RECEIVE, token_technology->instruction_type(1));
 }
-#endif
 
 TEST_F(RpcHandlerTest, CreateRequestHeader) {
   SetDeviceId("CreateRequestHeader Device ID");
