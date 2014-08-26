@@ -57,6 +57,7 @@ namespace blink {
     class ArchiveResourceCollection;
     class ResourceFetcher;
     class ContentFilter;
+    class DocumentInit;
     class FormState;
     class LocalFrame;
     class FrameLoader;
@@ -80,7 +81,7 @@ namespace blink {
 
         unsigned long mainResourceIdentifier() const;
 
-        void replaceDocument(const String& source, Document*);
+        void replaceDocumentWhileExecutingJavaScriptURL(const DocumentInit&, const String& source, Document*);
 
         const AtomicString& mimeType() const;
 
@@ -141,7 +142,7 @@ namespace blink {
         Vector<KURL> m_redirectChain;
 
     private:
-        static PassRefPtrWillBeRawPtr<DocumentWriter> createWriterFor(LocalFrame*, const Document* ownerDocument, const KURL&, const AtomicString& mimeType, const AtomicString& encoding, bool dispatch);
+        static PassRefPtrWillBeRawPtr<DocumentWriter> createWriterFor(const Document* ownerDocument, const DocumentInit&, const AtomicString& mimeType, const AtomicString& encoding, bool dispatch);
 
         void ensureWriter(const AtomicString& mimeType, const KURL& overridingURL = KURL());
         void endWriting(DocumentWriter*);

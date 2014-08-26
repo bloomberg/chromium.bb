@@ -546,6 +546,11 @@ bool LocalFrame::isURLAllowed(const KURL& url) const
     return true;
 }
 
+bool LocalFrame::shouldReuseDefaultView(const KURL& url) const
+{
+    return loader().stateMachine()->isDisplayingInitialEmptyDocument() && document()->isSecureTransitionTo(url);
+}
+
 void LocalFrame::removeSpellingMarkersUnderWords(const Vector<String>& words)
 {
     spellChecker().removeSpellingMarkersUnderWords(words);

@@ -266,6 +266,36 @@ void FrameLoader::clear()
         m_stateMachine.advanceTo(FrameLoaderStateMachine::CommittedFirstRealLoad);
 }
 
+// This is only called by ScriptController::executeScriptIfJavaScriptURL
+// and always contains the result of evaluating a javascript: url.
+// This is the <iframe src="javascript:'html'"> case.
+void FrameLoader::replaceDocumentWhileExecutingJavaScriptURL(const String& source, Document* ownerDocument)
+{
+    if (!m_frame->document()->loader())
+        return;
+
+    // DocumentWriter::replaceDocumentWhileExecutingJavaScriptURL can cause the DocumentLoader to get deref'ed and possible destroyed,
+    // so protect it with a RefPtr.
+    RefPtr<DocumentLoader> documentLoader(m_frame->document()->loader());
+
+    UseCounter::count(*m_frame->document(), UseCounter::ReplaceDocumentViaJavaScriptURL);
+
+    // Prepare a DocumentInit before clearing the frame, because it may need to
+    // inherit an aliased security context.
+    DocumentInit init(m_frame->document()->url(), m_frame);
+    init.withNewRegistrationContext();
+
+    stopAllLoaders();
+    clear();
+
+    // clear() potentially detaches the frame from the document. The
+    // loading cannot continue in that case.
+    if (!m_frame->page())
+        return;
+
+    documentLoader->replaceDocumentWhileExecutingJavaScriptURL(init, source, ownerDocument);
+}
+
 void FrameLoader::setHistoryItemStateForCommit(HistoryCommitType historyCommitType, bool isPushOrReplaceState, PassRefPtr<SerializedScriptValue> stateObject)
 {
     if (m_provisionalItem)

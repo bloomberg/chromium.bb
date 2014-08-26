@@ -55,14 +55,14 @@ public:
 
     // This is only called by ScriptController::executeScriptIfJavaScriptURL
     // and always contains the result of evaluating a javascript: url.
-    void replaceDocument(const String&, Document* ownerDocument);
+    void replaceDocumentWhileExecutingJavaScriptURL(const String&, Document* ownerDocument);
 
     void addData(const char* bytes, size_t length);
 
     const AtomicString& mimeType() const { return m_decoderBuilder.mimeType(); }
     const AtomicString& encoding() const { return m_decoderBuilder.encoding(); }
 
-    // Exposed for DocumentLoader::replaceDocument.
+    // Exposed for DocumentLoader::replaceDocumentWhileExecutingJavaScriptURL.
     void appendReplacingData(const String&);
 
     void setUserChosenEncoding(const String& charset);

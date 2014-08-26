@@ -70,6 +70,7 @@ DocumentInit::DocumentInit(const KURL& url, LocalFrame* frame, WeakPtrWillBeRawP
     , m_contextDocument(contextDocument)
     , m_importsController(importsController)
     , m_createNewRegistrationContext(false)
+    , m_shouldReuseDefaultView(frame && frame->shouldReuseDefaultView(url))
 {
 }
 
@@ -82,6 +83,7 @@ DocumentInit::DocumentInit(const DocumentInit& other)
     , m_importsController(other.m_importsController)
     , m_registrationContext(other.m_registrationContext)
     , m_createNewRegistrationContext(other.m_createNewRegistrationContext)
+    , m_shouldReuseDefaultView(other.m_shouldReuseDefaultView)
 {
 }
 

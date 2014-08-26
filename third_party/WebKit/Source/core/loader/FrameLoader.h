@@ -102,6 +102,7 @@ public:
     bool closeURL();
     // FIXME: clear() is trying to do too many things. We should break it down into smaller functions.
     void clear();
+    void replaceDocumentWhileExecutingJavaScriptURL(const String& source, Document* ownerDocument);
 
     // Sets a timer to notify the client that the initial empty document has
     // been accessed, and thus it is no longer safe to show a provisional URL

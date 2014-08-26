@@ -149,7 +149,7 @@ namespace blink {
         PassRefPtrWillBeRawPtr<Range> rangeForPoint(const IntPoint& framePoint);
 
         bool isURLAllowed(const KURL&) const;
-
+        bool shouldReuseDefaultView(const KURL&) const;
         void removeSpellingMarkersUnderWords(const Vector<String>& words);
 
     // ========

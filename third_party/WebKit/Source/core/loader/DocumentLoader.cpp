@@ -503,7 +503,15 @@ void DocumentLoader::ensureWriter(const AtomicString& mimeType, const KURL& over
         return;
 
     const AtomicString& encoding = overrideEncoding().isNull() ? response().textEncodingName() : overrideEncoding();
-    m_writer = createWriterFor(m_frame, 0, url(), mimeType, encoding, false);
+
+    // Prepare a DocumentInit before clearing the frame, because it may need to
+    // inherit an aliased security context.
+    DocumentInit init(url(), m_frame);
+    init.withNewRegistrationContext();
+    m_frame->loader().clear();
+    ASSERT(m_frame->page());
+
+    m_writer = createWriterFor(0, init, mimeType, encoding, false);
     m_writer->setDocumentWasLoadedAsPartOfNavigation();
     // This should be set before receivedFirstData().
     if (!overridingURL.isEmpty())
@@ -776,28 +784,14 @@ void DocumentLoader::endWriting(DocumentWriter* writer)
     m_writer.clear();
 }
 
-PassRefPtrWillBeRawPtr<DocumentWriter> DocumentLoader::createWriterFor(LocalFrame* frame, const Document* ownerDocument, const KURL& url, const AtomicString& mimeType, const AtomicString& encoding, bool dispatch)
+PassRefPtrWillBeRawPtr<DocumentWriter> DocumentLoader::createWriterFor(const Document* ownerDocument, const DocumentInit& init, const AtomicString& mimeType, const AtomicString& encoding, bool dispatch)
 {
-    // Create a new document before clearing the frame, because it may need to
-    // inherit an aliased security context.
-    DocumentInit init(url, frame);
-    init.withNewRegistrationContext();
-
-    // In some rare cases, we'll re-used a LocalDOMWindow for a new Document. For example,
-    // when a script calls window.open("..."), the browser gives JavaScript a window
-    // synchronously but kicks off the load in the window asynchronously. Web sites
-    // expect that modifications that they make to the window object synchronously
-    // won't be blown away when the network load commits. To make that happen, we
-    // "securely transition" the existing LocalDOMWindow to the Document that results from
-    // the network load. See also SecurityContext::isSecureTransitionTo.
-    bool shouldReuseDefaultView = frame->loader().stateMachine()->isDisplayingInitialEmptyDocument() && frame->document()->isSecureTransitionTo(url);
-
-    frame->loader().clear();
+    LocalFrame* frame = init.frame();
 
     if (frame->document())
         frame->document()->prepareForDestruction();
 
-    if (!shouldReuseDefaultView)
+    if (!init.shouldReuseDefaultView())
         frame->setDOMWindow(LocalDOMWindow::create(*frame));
 
     RefPtrWillBeRawPtr<Document> document = frame->domWindow()->installNewDocument(mimeType, init);
@@ -826,13 +820,10 @@ void DocumentLoader::setUserChosenEncoding(const String& charset)
         m_writer->setUserChosenEncoding(charset);
 }
 
-// This is only called by ScriptController::executeScriptIfJavaScriptURL
-// and always contains the result of evaluating a javascript: url.
-// This is the <iframe src="javascript:'html'"> case.
-void DocumentLoader::replaceDocument(const String& source, Document* ownerDocument)
+// This is only called by FrameLoader::replaceDocumentWhileExecutingJavaScriptURL()
+void DocumentLoader::replaceDocumentWhileExecutingJavaScriptURL(const DocumentInit& init, const String& source, Document* ownerDocument)
 {
-    m_frame->loader().stopAllLoaders();
-    m_writer = createWriterFor(m_frame, ownerDocument, m_frame->document()->url(), mimeType(), m_writer ? m_writer->encoding() : emptyAtom, true);
+    m_writer = createWriterFor(ownerDocument, init, mimeType(), m_writer ? m_writer->encoding() : emptyAtom, true);
     if (!source.isNull())
         m_writer->appendReplacingData(source);
     endWriting(m_writer.get());
