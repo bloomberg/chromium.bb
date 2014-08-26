@@ -302,6 +302,9 @@ char kTSanDefaultSuppressions[] =
 "deadlock:"
 "base::debug::TraceEventTestFixture_ThreadOnceBlocking_Test::TestBody\n"
 
+// http://crbug.com/407452
+"deadlock:media::Pipeline::GetMediaTime\n"
+
 // End of suppressions.
 ;  // Please keep this semicolon.
 
