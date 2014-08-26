@@ -47,7 +47,7 @@ TEST(SSLErrorClassificationTest, TestNameMismatch) {
   scoped_refptr<net::X509Certificate> google_cert(
       net::X509Certificate::CreateFromBytes(
           reinterpret_cast<const char*>(google_der), sizeof(google_der)));
-  ASSERT_NE(static_cast<net::X509Certificate*>(NULL), google_cert);
+  ASSERT_NE(static_cast<net::X509Certificate*>(NULL), google_cert.get());
   base::Time time = base::Time::NowFromSystemTime();
   std::vector<std::string> dns_names_google;
   dns_names_google.push_back("www");
@@ -125,7 +125,7 @@ TEST(SSLErrorClassificationTest, TestNameMismatch) {
   scoped_refptr<net::X509Certificate> webkit_cert(
       net::X509Certificate::CreateFromBytes(
           reinterpret_cast<const char*>(webkit_der), sizeof(webkit_der)));
-  ASSERT_NE(static_cast<net::X509Certificate*>(NULL), webkit_cert);
+  ASSERT_NE(static_cast<net::X509Certificate*>(NULL), webkit_cert.get());
   std::vector<std::string> dns_names_webkit;
   dns_names_webkit.push_back("webkit");
   dns_names_webkit.push_back("org");

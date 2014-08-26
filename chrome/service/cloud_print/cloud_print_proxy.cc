@@ -199,7 +199,7 @@ void CloudPrintProxy::GetPrinters(std::vector<std::string>* printers) {
   settings.InitFrom(service_prefs_);
   scoped_refptr<PrintSystem> print_system =
       PrintSystem::CreateInstance(settings.print_system_settings());
-  if (!print_system)
+  if (!print_system.get())
     return;
   PrintSystem::PrintSystemResult result = print_system->Init();
   if (!result.succeeded())

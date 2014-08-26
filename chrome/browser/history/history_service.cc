@@ -241,7 +241,7 @@ void HistoryService::Cleanup() {
   weak_ptr_factory_.InvalidateWeakPtrs();
 
   // Unload the backend.
-  if (history_backend_) {
+  if (history_backend_.get()) {
     // Get rid of the in-memory backend.
     in_memory_backend_.reset();
 

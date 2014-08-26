@@ -74,7 +74,7 @@ SessionDataDeleter::SessionDataDeleter(
 
 void SessionDataDeleter::Run(content::StoragePartition* storage_partition,
                              ProfileIOData* profile_io_data) {
-  if (storage_policy_ && storage_policy_->HasSessionOnlyOrigins()) {
+  if (storage_policy_.get() && storage_policy_->HasSessionOnlyOrigins()) {
     storage_partition->GetDOMStorageContext()->GetLocalStorageUsage(
         base::Bind(&SessionDataDeleter::ClearSessionOnlyLocalStorage,
                    this,
@@ -93,7 +93,7 @@ SessionDataDeleter::~SessionDataDeleter() {}
 void SessionDataDeleter::ClearSessionOnlyLocalStorage(
     content::StoragePartition* storage_partition,
     const std::vector<content::LocalStorageUsageInfo>& usages) {
-  DCHECK(storage_policy_);
+  DCHECK(storage_policy_.get());
   DCHECK(storage_policy_->HasSessionOnlyOrigins());
   for (size_t i = 0; i < usages.size(); ++i) {
     const content::LocalStorageUsageInfo& usage = usages[i];
@@ -125,7 +125,7 @@ void SessionDataDeleter::DeleteSessionCookiesDone(int num_deleted) {
 
 void SessionDataDeleter::DeleteSessionOnlyOriginCookies(
     const net::CookieList& cookies) {
-  if (!storage_policy_ || !storage_policy_->HasSessionOnlyOrigins())
+  if (!storage_policy_.get() || !storage_policy_->HasSessionOnlyOrigins())
     return;
 
   for (net::CookieList::const_iterator it = cookies.begin();

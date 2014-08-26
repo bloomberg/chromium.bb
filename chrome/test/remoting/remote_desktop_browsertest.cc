@@ -152,7 +152,7 @@ void RemoteDesktopBrowserTest::VerifyChromotingLoaded(bool expected) {
 
   if (installed) {
     if (extension_)
-      EXPECT_EQ(extension, extension_);
+      EXPECT_EQ(extension.get(), extension_);
     else
       extension_ = extension.get();
 

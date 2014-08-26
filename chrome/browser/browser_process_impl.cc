@@ -489,7 +489,7 @@ void BrowserProcessImpl::EndSession() {
     local_state()->CommitPendingWrite();
 
     if (!use_broken_synchronization)
-      rundown_counter->Post(local_state_task_runner_);
+      rundown_counter->Post(local_state_task_runner_.get());
 #endif
   }
 

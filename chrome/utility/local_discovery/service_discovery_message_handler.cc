@@ -197,7 +197,7 @@ void ServiceDiscoveryMessageHandler::InitializeMdns() {
 }
 
 bool ServiceDiscoveryMessageHandler::InitializeThread() {
-  if (discovery_task_runner_)
+  if (discovery_task_runner_.get())
     return true;
   if (discovery_thread_)
     return false;
@@ -210,7 +210,7 @@ bool ServiceDiscoveryMessageHandler::InitializeThread() {
         base::Bind(&ServiceDiscoveryMessageHandler::InitializeMdns,
                     base::Unretained(this)));
   }
-  return discovery_task_runner_ != NULL;
+  return discovery_task_runner_.get() != NULL;
 }
 
 bool ServiceDiscoveryMessageHandler::OnMessageReceived(
@@ -405,7 +405,7 @@ void ServiceDiscoveryMessageHandler::DestroyLocalDomainResolver(uint64 id) {
 }
 
 void ServiceDiscoveryMessageHandler::ShutdownLocalDiscovery() {
-  if (!discovery_task_runner_)
+  if (!discovery_task_runner_.get())
     return;
 
   discovery_task_runner_->PostTask(

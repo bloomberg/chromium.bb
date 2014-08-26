@@ -1124,7 +1124,7 @@ void IOThread::InitSystemRequestContextOnIOThread() {
   globals_->system_request_context.reset(
       ConstructSystemRequestContext(globals_, net_log_));
   globals_->system_request_context->set_ssl_config_service(
-      globals_->ssl_config_service);
+      globals_->ssl_config_service.get());
   globals_->system_request_context->set_http_server_properties(
       globals_->http_server_properties->GetWeakPtr());
 }

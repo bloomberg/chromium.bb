@@ -228,7 +228,7 @@ scoped_refptr<extensions::InfoMap> NaClBrowserDelegateImpl::GetExtensionInfoMap(
   DCHECK(profile);
   scoped_refptr<extensions::InfoMap> extension_info_map =
       extensions::ExtensionSystem::Get(profile)->info_map();
-  DCHECK(extension_info_map);
+  DCHECK(extension_info_map.get());
   return extension_info_map;
 }
 #endif

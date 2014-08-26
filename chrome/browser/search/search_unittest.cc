@@ -253,7 +253,7 @@ TEST_F(SearchTest, ProcessIsolation) {
         << test.description;
 
     EXPECT_EQ(test.same_site_instance,
-              start_site_instance == contents->GetSiteInstance())
+              start_site_instance.get() == contents->GetSiteInstance())
         << test.description;
     EXPECT_EQ(test.same_site_instance,
               start_rvh == contents->GetRenderViewHost())
@@ -299,7 +299,7 @@ TEST_F(SearchTest, ProcessIsolation_RendererInitiated) {
         << test.description;
 
     EXPECT_EQ(test.same_site_instance,
-              start_site_instance == contents->GetSiteInstance())
+              start_site_instance.get() == contents->GetSiteInstance())
         << test.description;
     EXPECT_EQ(test.same_site_instance,
               start_rvh == contents->GetRenderViewHost())

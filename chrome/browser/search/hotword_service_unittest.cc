@@ -51,7 +51,7 @@ class MockHotwordService : public HotwordService {
         .SetLocation(extensions::Manifest::EXTERNAL_COMPONENT)
         .Build();
     ASSERT_TRUE(extension.get());
-    service_->OnExtensionInstalled(extension, syncer::StringOrdinal());
+    service_->OnExtensionInstalled(extension.get(), syncer::StringOrdinal());
   }
 
 

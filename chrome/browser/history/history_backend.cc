@@ -171,7 +171,7 @@ QueuedHistoryDBTask::QueuedHistoryDBTask(
     const base::CancelableTaskTracker::IsCanceledCallback& is_canceled)
     : task_(task.Pass()), origin_loop_(origin_loop), is_canceled_(is_canceled) {
   DCHECK(task_);
-  DCHECK(origin_loop_);
+  DCHECK(origin_loop_.get());
   DCHECK(!is_canceled_.is_null());
 }
 

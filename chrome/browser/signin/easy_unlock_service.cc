@@ -70,7 +70,7 @@ class EasyUnlockService::BluetoothDetector
   }
 
   virtual ~BluetoothDetector() {
-    if (adapter_)
+    if (adapter_.get())
       adapter_->RemoveObserver(this);
   }
 
@@ -83,9 +83,7 @@ class EasyUnlockService::BluetoothDetector
                    weak_ptr_factory_.GetWeakPtr()));
   }
 
-  bool IsPresent() const {
-    return adapter_ && adapter_->IsPresent();
-  }
+  bool IsPresent() const { return adapter_.get() && adapter_->IsPresent(); }
 
   // device::BluetoothAdapter::Observer:
   virtual void AdapterPresentChanged(device::BluetoothAdapter* adapter,

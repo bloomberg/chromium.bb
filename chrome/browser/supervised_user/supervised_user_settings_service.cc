@@ -71,7 +71,7 @@ void SupervisedUserSettingsService::Init(
 
 void SupervisedUserSettingsService::Init(
     scoped_refptr<PersistentPrefStore> store) {
-  DCHECK(!store_);
+  DCHECK(!store_.get());
   store_ = store;
   store_->AddObserver(this);
 }

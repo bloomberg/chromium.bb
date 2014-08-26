@@ -106,7 +106,7 @@ class UserPolicySigninServiceBase : public KeyedService,
 
  protected:
   net::URLRequestContextGetter* system_request_context() {
-    return system_request_context_;
+    return system_request_context_.get();
   }
 
   // Returns a CloudPolicyClient to perform a registration with the DM server,

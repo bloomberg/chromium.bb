@@ -842,7 +842,7 @@ void IncidentReportingService::UploadIfCollectionComplete() {
 
   scoped_ptr<UploadContext> context(new UploadContext(report.Pass()));
   context->profiles_to_state.swap(profiles_to_state);
-  if (!database_manager_) {
+  if (!database_manager_.get()) {
     // No database manager during testing. Take ownership of the context and
     // continue processing.
     UploadContext* temp_context = context.get();

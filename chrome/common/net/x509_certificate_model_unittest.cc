@@ -321,9 +321,9 @@ TEST(X509CertificateModelTest, GetCMSString) {
       EXPECT_TRUE(certs[i]->Equals(decoded_certs[i]));
 #else
     // NSS sorts the certs before writing the file.
-    EXPECT_TRUE(certs[0]->Equals(decoded_certs.back()));
+    EXPECT_TRUE(certs[0]->Equals(decoded_certs.back().get()));
     for (size_t i = 1; i < certs.size(); ++i)
-      EXPECT_TRUE(certs[i]->Equals(decoded_certs[i-1]));
+      EXPECT_TRUE(certs[i]->Equals(decoded_certs[i - 1].get()));
 #endif
   }
 
@@ -339,7 +339,7 @@ TEST(X509CertificateModelTest, GetCMSString) {
             net::X509Certificate::FORMAT_PKCS7);
 
     ASSERT_EQ(1U, decoded_certs.size());
-    EXPECT_TRUE(certs[0]->Equals(decoded_certs[0]));
+    EXPECT_TRUE(certs[0]->Equals(decoded_certs[0].get()));
   }
 }
 

@@ -90,7 +90,7 @@ ResettableSettingsSnapshot::ResettableSettingsSnapshot(
 
 ResettableSettingsSnapshot::~ResettableSettingsSnapshot() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  if (cancellation_flag_)
+  if (cancellation_flag_.get())
     cancellation_flag_->data.Set();
 }
 
@@ -134,7 +134,7 @@ int ResettableSettingsSnapshot::FindDifferentFields(
 void ResettableSettingsSnapshot::RequestShortcuts(
     const base::Closure& callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  DCHECK(!cancellation_flag_ && !shortcuts_determined());
+  DCHECK(!cancellation_flag_.get() && !shortcuts_determined());
 
   cancellation_flag_ = new SharedCancellationFlag;
   content::BrowserThread::PostTaskAndReplyWithResult(
