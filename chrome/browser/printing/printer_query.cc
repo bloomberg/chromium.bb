@@ -10,7 +10,6 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "chrome/browser/printing/print_job_worker.h"
-#include "chrome/browser/printing/printing_ui_web_contents_observer.h"
 
 namespace printing {
 

@@ -1874,8 +1874,6 @@
       'browser/printing/printer_query.h',
       'browser/printing/printing_message_filter.cc',
       'browser/printing/printing_message_filter.h',
-      'browser/printing/printing_ui_web_contents_observer.cc',
-      'browser/printing/printing_ui_web_contents_observer.h',
     ],
     # Used on top of the "basic" sources when enable_printing == 1 (full).
     'chrome_browser_full_printing_sources': [

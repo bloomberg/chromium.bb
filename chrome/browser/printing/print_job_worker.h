@@ -132,9 +132,7 @@ class PrintJobWorker {
   void UseDefaultSettings();
 
   // Printing context delegate.
-  scoped_ptr<PrintingContext::Delegate,
-             content::BrowserThread::DeleteOnUIThread>
-      printing_context_delegate_;
+  scoped_ptr<PrintingContext::Delegate> printing_context_delegate_;
 
   // Information about the printer setting.
   scoped_ptr<PrintingContext> printing_context_;

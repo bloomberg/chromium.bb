@@ -13,7 +13,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/printing/print_job.h"
-#include "chrome/browser/printing/printing_ui_web_contents_observer.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -46,56 +45,31 @@ class PrintingContextDelegate : public PrintingContext::Delegate {
   virtual std::string GetAppLocale() OVERRIDE;
 
  private:
-  void InitOnUiThread(int render_process_id, int render_view_id);
-
-  scoped_ptr<PrintingUIWebContentsObserver> web_contents_observer_;
-  base::WeakPtrFactory<PrintingContextDelegate> weak_ptr_factory_;
+  int render_process_id_;
+  int render_view_id_;
 };
 
 PrintingContextDelegate::PrintingContextDelegate(int render_process_id,
                                                  int render_view_id)
-    : weak_ptr_factory_(this) {
-  InitOnUiThread(render_process_id, render_view_id);
+    : render_process_id_(render_process_id),
+      render_view_id_(render_view_id) {
 }
 
 PrintingContextDelegate::~PrintingContextDelegate() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 gfx::NativeView PrintingContextDelegate::GetParentView() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!web_contents_observer_)
+  content::RenderViewHost* view =
+      content::RenderViewHost::FromID(render_process_id_, render_view_id_);
+  if (!view)
     return NULL;
-  return web_contents_observer_->GetParentView();
+  content::WebContents* wc = content::WebContents::FromRenderViewHost(view);
+  return wc ? wc->GetNativeView() : NULL;
 }
 
 std::string PrintingContextDelegate::GetAppLocale() {
   return g_browser_process->GetApplicationLocale();
-}
-
-void PrintingContextDelegate::InitOnUiThread(int render_process_id,
-                                             int render_view_id) {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    // All data initialized here should be accessed on UI thread. Because object
-    // is being constructed now, anything that is going to access
-    // PrintingContextDelegate on UI thread would be scheduled after the tasks
-    // below.
-    BrowserThread::PostTask(BrowserThread::UI,
-                            FROM_HERE,
-                            base::Bind(&PrintingContextDelegate::InitOnUiThread,
-                                       weak_ptr_factory_.GetWeakPtr(),
-                                       render_process_id,
-                                       render_view_id));
-    return;
-  }
-  content::RenderViewHost* view =
-      content::RenderViewHost::FromID(render_process_id, render_view_id);
-  if (!view)
-    return;
-  content::WebContents* wc = content::WebContents::FromRenderViewHost(view);
-  if (!wc)
-    return;
-  web_contents_observer_.reset(new PrintingUIWebContentsObserver(wc));
 }
 
 void NotificationCallback(PrintJobWorkerOwner* print_job,
