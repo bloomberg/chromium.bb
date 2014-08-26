@@ -68,7 +68,7 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
   void FinishTransaction(int64 host_transaction_id, bool committed);
 
   // A shortcut for accessing our context.
-  IndexedDBContextImpl* Context() { return indexed_db_context_; }
+  IndexedDBContextImpl* Context() { return indexed_db_context_.get(); }
   storage::BlobStorageContext* blob_storage_context() const {
     return blob_storage_context_->context();
   }

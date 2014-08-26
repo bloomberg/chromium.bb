@@ -144,7 +144,7 @@ class CONTENT_EXPORT IndexedDBBackingStore
                      std::vector<IndexedDBBlobInfo>*,
                      ScopedVector<storage::BlobDataHandle>* handles);
 
-    LevelDBTransaction* transaction() { return transaction_; }
+    LevelDBTransaction* transaction() { return transaction_.get(); }
 
     leveldb::Status GetBlobInfoForRecord(
         int64 database_id,

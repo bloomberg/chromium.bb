@@ -1070,7 +1070,7 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
              task_runner,
              status);
 
-  if (clean_journal && backing_store &&
+  if (clean_journal && backing_store.get() &&
       !backing_store->CleanUpBlobJournal(LiveBlobJournalKey::Encode()).ok()) {
     HistogramOpenStatus(
         INDEXED_DB_BACKING_STORE_OPEN_FAILED_CLEANUP_JOURNAL_ERROR, origin_url);
@@ -2253,7 +2253,7 @@ class IndexedDBBackingStore::Transaction::ChainedBlobWriterImpl
     DCHECK(!waiting_for_callback_);
     DCHECK(!aborted_);
     if (iter_ == blobs_.end()) {
-      DCHECK(!self_ref_);
+      DCHECK(!self_ref_.get());
       callback_->Run(true);
       return;
     } else {
@@ -2316,7 +2316,7 @@ class LocalWriteClosure : public FileWriterDelegate::DelegateWriteCallback,
     DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
     scoped_ptr<storage::FileStreamWriter> writer(
         storage::FileStreamWriter::CreateForLocalFile(
-            task_runner_,
+            task_runner_.get(),
             file_path,
             0,
             storage::FileStreamWriter::CREATE_NEW_FILE));
@@ -2396,7 +2396,7 @@ bool IndexedDBBackingStore::WriteBlobFile(
   } else {
     DCHECK(descriptor.url().is_valid());
     scoped_refptr<LocalWriteClosure> write_closure(
-        new LocalWriteClosure(chained_blob_writer, task_runner_));
+        new LocalWriteClosure(chained_blob_writer, task_runner_.get()));
     content::BrowserThread::PostTask(
         content::BrowserThread::IO,
         FROM_HERE,
@@ -3058,7 +3058,7 @@ IndexedDBBackingStore::Cursor::Cursor(
     IndexedDBBackingStore::Transaction* transaction,
     int64 database_id,
     const CursorOptions& cursor_options)
-    : backing_store_(backing_store),
+    : backing_store_(backing_store.get()),
       transaction_(transaction),
       database_id_(database_id),
       cursor_options_(cursor_options) {
@@ -4043,7 +4043,7 @@ leveldb::Status IndexedDBBackingStore::Transaction::SortBlobsToRemove() {
 leveldb::Status IndexedDBBackingStore::Transaction::CommitPhaseOne(
     scoped_refptr<BlobWriteCallback> callback) {
   IDB_TRACE("IndexedDBBackingStore::Transaction::CommitPhaseOne");
-  DCHECK(transaction_);
+  DCHECK(transaction_.get());
   DCHECK(backing_store_->task_runner()->RunsTasksOnCurrentThread());
 
   leveldb::Status s;
@@ -4176,7 +4176,7 @@ void IndexedDBBackingStore::Transaction::WriteNewBlobs(
 
 void IndexedDBBackingStore::Transaction::Rollback() {
   IDB_TRACE("IndexedDBBackingStore::Transaction::Rollback");
-  if (chained_blob_writer_) {
+  if (chained_blob_writer_.get()) {
     chained_blob_writer_->Abort();
     chained_blob_writer_ = NULL;
   }

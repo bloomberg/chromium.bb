@@ -43,8 +43,8 @@ class IndexedDBTransactionTest : public testing::Test {
     // https://code.google.com/p/googletest/wiki/FAQ#My_compiler_complains_that_a_constructor_(or_destructor)_cannot
     leveldb::Status s;
     db_ = IndexedDBDatabase::Create(base::ASCIIToUTF16("db"),
-                                    backing_store_,
-                                    factory_,
+                                    backing_store_.get(),
+                                    factory_.get(),
                                     IndexedDBDatabase::Identifier(),
                                     &s);
     ASSERT_TRUE(s.ok());
@@ -87,9 +87,9 @@ TEST_F(IndexedDBTransactionTest, Timeout) {
       new MockIndexedDBDatabaseCallbacks(),
       scope,
       blink::WebIDBTransactionModeReadWrite,
-      db_,
+      db_.get(),
       new IndexedDBFakeBackingStore::FakeTransaction(commit_success));
-  db_->TransactionCreated(transaction);
+  db_->TransactionCreated(transaction.get());
 
   // No conflicting transactions, so coordinator will start it immediately:
   EXPECT_EQ(IndexedDBTransaction::STARTED, transaction->state());
@@ -131,9 +131,9 @@ TEST_F(IndexedDBTransactionTest, NoTimeoutReadOnly) {
       new MockIndexedDBDatabaseCallbacks(),
       scope,
       blink::WebIDBTransactionModeReadOnly,
-      db_,
+      db_.get(),
       new IndexedDBFakeBackingStore::FakeTransaction(commit_success));
-  db_->TransactionCreated(transaction);
+  db_->TransactionCreated(transaction.get());
 
   // No conflicting transactions, so coordinator will start it immediately:
   EXPECT_EQ(IndexedDBTransaction::STARTED, transaction->state());
@@ -163,7 +163,7 @@ TEST_P(IndexedDBTransactionTestMode, ScheduleNormalTask) {
       new MockIndexedDBDatabaseCallbacks(),
       scope,
       GetParam(),
-      db_,
+      db_.get(),
       new IndexedDBFakeBackingStore::FakeTransaction(commit_success));
 
   EXPECT_FALSE(transaction->HasPendingTasks());
@@ -173,7 +173,7 @@ TEST_P(IndexedDBTransactionTestMode, ScheduleNormalTask) {
   EXPECT_EQ(0, transaction->diagnostics().tasks_scheduled);
   EXPECT_EQ(0, transaction->diagnostics().tasks_completed);
 
-  db_->TransactionCreated(transaction);
+  db_->TransactionCreated(transaction.get());
 
   EXPECT_FALSE(transaction->HasPendingTasks());
   EXPECT_TRUE(transaction->IsTaskQueueEmpty());
@@ -225,7 +225,7 @@ TEST_F(IndexedDBTransactionTest, SchedulePreemptiveTask) {
       new MockIndexedDBDatabaseCallbacks(),
       scope,
       blink::WebIDBTransactionModeVersionChange,
-      db_,
+      db_.get(),
       new IndexedDBFakeBackingStore::FakeTransaction(commit_failure));
 
   EXPECT_FALSE(transaction->HasPendingTasks());
@@ -235,7 +235,7 @@ TEST_F(IndexedDBTransactionTest, SchedulePreemptiveTask) {
   EXPECT_EQ(0, transaction->diagnostics().tasks_scheduled);
   EXPECT_EQ(0, transaction->diagnostics().tasks_completed);
 
-  db_->TransactionCreated(transaction);
+  db_->TransactionCreated(transaction.get());
 
   EXPECT_FALSE(transaction->HasPendingTasks());
   EXPECT_TRUE(transaction->IsTaskQueueEmpty());
@@ -286,9 +286,9 @@ TEST_P(IndexedDBTransactionTestMode, AbortTasks) {
       new MockIndexedDBDatabaseCallbacks(),
       scope,
       GetParam(),
-      db_,
+      db_.get(),
       new IndexedDBFakeBackingStore::FakeTransaction(commit_failure));
-  db_->TransactionCreated(transaction);
+  db_->TransactionCreated(transaction.get());
 
   AbortObserver observer;
   transaction->ScheduleTask(
@@ -316,9 +316,9 @@ TEST_P(IndexedDBTransactionTestMode, AbortPreemptive) {
       new MockIndexedDBDatabaseCallbacks(),
       scope,
       GetParam(),
-      db_,
+      db_.get(),
       new IndexedDBFakeBackingStore::FakeTransaction(commit_success));
-  db_->TransactionCreated(transaction);
+  db_->TransactionCreated(transaction.get());
 
   // No conflicting transactions, so coordinator will start it immediately:
   EXPECT_EQ(IndexedDBTransaction::STARTED, transaction->state());

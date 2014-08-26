@@ -101,7 +101,8 @@ class IndexedDBActiveBlobRegistryTest : public testing::Test {
   IndexedDBActiveBlobRegistryTest()
       : task_runner_(new base::TestSimpleTaskRunner),
         factory_(new RegistryTestMockFactory),
-        backing_store_(new MockIDBBackingStore(factory_, task_runner_)),
+        backing_store_(
+            new MockIDBBackingStore(factory_.get(), task_runner_.get())),
         registry_(new IndexedDBActiveBlobRegistry(backing_store_.get())) {}
 
   void RunUntilIdle() { task_runner_->RunUntilIdle(); }

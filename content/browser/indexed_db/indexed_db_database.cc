@@ -940,7 +940,7 @@ void IndexedDBDatabase::SetIndexKeys(int64 transaction_id,
   const IndexedDBObjectStoreMetadata& object_store_metadata =
       metadata_.object_stores[object_store_id];
   bool backing_store_success = MakeIndexWriters(transaction,
-                                                backing_store_,
+                                                backing_store_.get(),
                                                 id(),
                                                 object_store_metadata,
                                                 *primary_key,
@@ -964,7 +964,7 @@ void IndexedDBDatabase::SetIndexKeys(int64 transaction_id,
   for (size_t i = 0; i < index_writers.size(); ++i) {
     IndexWriter* index_writer = index_writers[i];
     index_writer->WriteIndexKeys(record_identifier,
-                                 backing_store_,
+                                 backing_store_.get(),
                                  transaction->BackingStoreTransaction(),
                                  id(),
                                  object_store_id);
@@ -1474,7 +1474,7 @@ void IndexedDBDatabase::CreateTransaction(
       std::set<int64>(object_store_ids.begin(), object_store_ids.end()),
       mode,
       this,
-      new IndexedDBBackingStore::Transaction(backing_store_)));
+      new IndexedDBBackingStore::Transaction(backing_store_.get())));
 }
 
 void IndexedDBDatabase::TransactionCreated(IndexedDBTransaction* transaction) {
@@ -1489,7 +1489,7 @@ bool IndexedDBDatabase::IsOpenConnectionBlocked() const {
 
 void IndexedDBDatabase::OpenConnection(
     const IndexedDBPendingConnection& connection) {
-  DCHECK(backing_store_);
+  DCHECK(backing_store_.get());
 
   // TODO(jsbell): Should have a priority queue so that higher version
   // requests are processed first. http://crbug.com/225850
@@ -1586,8 +1586,7 @@ void IndexedDBDatabase::RunVersionChangeTransaction(
     scoped_ptr<IndexedDBConnection> connection,
     int64 transaction_id,
     int64 requested_version) {
-
-  DCHECK(callbacks);
+  DCHECK(callbacks.get());
   DCHECK(connections_.count(connection.get()));
   if (ConnectionCount() > 1) {
     DCHECK_NE(blink::WebIDBDataLossTotal, callbacks->data_loss());
@@ -1662,7 +1661,7 @@ bool IndexedDBDatabase::IsDeleteDatabaseBlocked() const {
 void IndexedDBDatabase::DeleteDatabaseFinal(
     scoped_refptr<IndexedDBCallbacks> callbacks) {
   DCHECK(!IsDeleteDatabaseBlocked());
-  DCHECK(backing_store_);
+  DCHECK(backing_store_.get());
   leveldb::Status s = backing_store_->DeleteDatabase(metadata_.name);
   if (!s.ok()) {
     IndexedDBDatabaseError error(blink::WebIDBDatabaseExceptionUnknownError,

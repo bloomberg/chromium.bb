@@ -73,8 +73,8 @@ class CONTENT_EXPORT IndexedDBTransaction
   }
   int64 id() const { return id_; }
 
-  IndexedDBDatabase* database() const { return database_; }
-  IndexedDBDatabaseCallbacks* connection() const { return callbacks_; }
+  IndexedDBDatabase* database() const { return database_.get(); }
+  IndexedDBDatabaseCallbacks* connection() const { return callbacks_.get(); }
 
   State state() const { return state_; }
   bool IsTimeoutTimerRunning() const { return timeout_timer_.IsRunning(); }

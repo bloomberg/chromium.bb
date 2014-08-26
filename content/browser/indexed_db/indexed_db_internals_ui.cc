@@ -152,7 +152,7 @@ bool IndexedDBInternalsUI::GetOriginContext(
       base::Bind(&FindContext, path, &result_partition, context);
   BrowserContext::ForEachStoragePartition(browser_context, cb);
 
-  if (!result_partition || !(*context))
+  if (!result_partition || !(context->get()))
     return false;
 
   return true;
@@ -167,7 +167,7 @@ void IndexedDBInternalsUI::DownloadOriginData(const base::ListValue* args) {
   if (!GetOriginData(args, &partition_path, &origin_url, &context))
     return;
 
-  DCHECK(context);
+  DCHECK(context.get());
   context->TaskRunner()->PostTask(
       FROM_HERE,
       base::Bind(&IndexedDBInternalsUI::DownloadOriginDataOnIndexedDBThread,

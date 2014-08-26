@@ -54,7 +54,7 @@ class IndexedDBQuotaClientTest : public testing::Test {
         new IndexedDBContextImpl(browser_context_->GetPath(),
                                  browser_context_->GetSpecialStoragePolicy(),
                                  quota_manager->proxy(),
-                                 task_runner_);
+                                 task_runner_.get());
     base::MessageLoop::current()->RunUntilIdle();
     setup_temp_dir();
   }
@@ -130,7 +130,7 @@ class IndexedDBQuotaClientTest : public testing::Test {
     return delete_status_;
   }
 
-  IndexedDBContextImpl* idb_context() { return idb_context_; }
+  IndexedDBContextImpl* idb_context() { return idb_context_.get(); }
 
   void SetFileSizeTo(const base::FilePath& path, int size) {
     std::string junk(size, 'a');

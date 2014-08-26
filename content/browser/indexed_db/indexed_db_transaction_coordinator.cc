@@ -70,12 +70,12 @@ IndexedDBTransactionCoordinator::GetTransactions() const {
   for (TransactionSet::const_iterator it = started_transactions_.begin();
        it != started_transactions_.end();
        ++it) {
-    result.push_back(*it);
+    result.push_back(it->get());
   }
   for (TransactionSet::const_iterator it = queued_transactions_.begin();
        it != queued_transactions_.end();
        ++it) {
-    result.push_back(*it);
+    result.push_back(it->get());
   }
 
   return result;
@@ -97,7 +97,7 @@ void IndexedDBTransactionCoordinator::ProcessQueuedTransactions() {
   for (TransactionSet::const_iterator it = started_transactions_.begin();
        it != started_transactions_.end();
        ++it) {
-    IndexedDBTransaction* transaction = *it;
+    IndexedDBTransaction* transaction = it->get();
     if (transaction->mode() == blink::WebIDBTransactionModeReadWrite) {
       // Started read/write transactions have exclusive access to the object
       // stores within their scopes.
@@ -110,7 +110,7 @@ void IndexedDBTransactionCoordinator::ProcessQueuedTransactions() {
   while (it != queued_transactions_.end()) {
     scoped_refptr<IndexedDBTransaction> transaction = *it;
     ++it;
-    if (CanStartTransaction(transaction, locked_scope)) {
+    if (CanStartTransaction(transaction.get(), locked_scope)) {
       DCHECK_EQ(IndexedDBTransaction::CREATED, transaction->state());
       queued_transactions_.erase(transaction);
       started_transactions_.insert(transaction);

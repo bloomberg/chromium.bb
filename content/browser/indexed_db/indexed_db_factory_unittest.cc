@@ -110,8 +110,8 @@ TEST_F(IndexedDBFactoryTest, BackingStoreLifetime) {
   scoped_refptr<IndexedDBBackingStore> disk_store3 =
       factory()->TestOpenBackingStore(origin2, temp_directory.path());
 
-  factory()->TestCloseBackingStore(disk_store1);
-  factory()->TestCloseBackingStore(disk_store3);
+  factory()->TestCloseBackingStore(disk_store1.get());
+  factory()->TestCloseBackingStore(disk_store3.get());
 
   EXPECT_FALSE(disk_store1->HasOneRef());
   EXPECT_FALSE(disk_store2->HasOneRef());
@@ -163,8 +163,8 @@ TEST_F(IndexedDBFactoryTest, MemoryBackingStoreLifetime) {
   scoped_refptr<IndexedDBBackingStore> mem_store3 =
       factory()->TestOpenBackingStore(origin2, base::FilePath());
 
-  factory()->TestCloseBackingStore(mem_store1);
-  factory()->TestCloseBackingStore(mem_store3);
+  factory()->TestCloseBackingStore(mem_store1.get());
+  factory()->TestCloseBackingStore(mem_store3.get());
 
   EXPECT_FALSE(mem_store1->HasOneRef());
   EXPECT_FALSE(mem_store2->HasOneRef());
@@ -191,12 +191,12 @@ TEST_F(IndexedDBFactoryTest, RejectLongOrigins) {
   GURL too_long_origin("http://" + origin + ":81/");
   scoped_refptr<IndexedDBBackingStore> diskStore1 =
       factory()->TestOpenBackingStore(too_long_origin, base_path);
-  EXPECT_FALSE(diskStore1);
+  EXPECT_FALSE(diskStore1.get());
 
   GURL ok_origin("http://someorigin.com:82/");
   scoped_refptr<IndexedDBBackingStore> diskStore2 =
       factory()->TestOpenBackingStore(ok_origin, base_path);
-  EXPECT_TRUE(diskStore2);
+  EXPECT_TRUE(diskStore2.get());
 }
 
 class DiskFullFactory : public IndexedDBFactoryImpl {

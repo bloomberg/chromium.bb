@@ -193,7 +193,7 @@ void IndexedDBFactoryImpl::GetDatabaseNames(
                        &data_loss_message,
                        &disk_full,
                        &s);
-  if (!backing_store) {
+  if (!backing_store.get()) {
     callbacks->OnError(
         IndexedDBDatabaseError(blink::WebIDBDatabaseExceptionUnknownError,
                                "Internal error opening backing store for "
@@ -247,7 +247,7 @@ void IndexedDBFactoryImpl::DeleteDatabase(
                        &data_loss_message,
                        &disk_full,
                        &s);
-  if (!backing_store) {
+  if (!backing_store.get()) {
     IndexedDBDatabaseError error(blink::WebIDBDatabaseExceptionUnknownError,
                                  ASCIIToUTF16(
                                      "Internal error opening backing store "
@@ -260,8 +260,8 @@ void IndexedDBFactoryImpl::DeleteDatabase(
   }
 
   scoped_refptr<IndexedDBDatabase> database = IndexedDBDatabase::Create(
-      name, backing_store, this, unique_identifier, &s);
-  if (!database) {
+      name, backing_store.get(), this, unique_identifier, &s);
+  if (!database.get()) {
     IndexedDBDatabaseError error(
         blink::WebIDBDatabaseExceptionUnknownError,
         ASCIIToUTF16(
@@ -275,7 +275,7 @@ void IndexedDBFactoryImpl::DeleteDatabase(
     return;
   }
 
-  database_map_[unique_identifier] = database;
+  database_map_[unique_identifier] = database.get();
   origin_dbs_.insert(std::make_pair(origin_url, database));
   database->DeleteDatabase(callbacks);
   RemoveDatabaseFromMaps(unique_identifier);
@@ -435,7 +435,7 @@ void IndexedDBFactoryImpl::Open(const base::string16& name,
                          &data_loss_message,
                          &disk_full,
                          &s);
-    if (!backing_store) {
+    if (!backing_store.get()) {
       if (disk_full) {
         connection.callbacks->OnError(
             IndexedDBDatabaseError(blink::WebIDBDatabaseExceptionQuotaError,
@@ -456,8 +456,8 @@ void IndexedDBFactoryImpl::Open(const base::string16& name,
     }
 
     database = IndexedDBDatabase::Create(
-        name, backing_store, this, unique_identifier, &s);
-    if (!database) {
+        name, backing_store.get(), this, unique_identifier, &s);
+    if (!database.get()) {
       DLOG(ERROR) << "Unable to create the database";
       IndexedDBDatabaseError error(blink::WebIDBDatabaseExceptionUnknownError,
                                    ASCIIToUTF16(
@@ -481,7 +481,7 @@ void IndexedDBFactoryImpl::Open(const base::string16& name,
   database->OpenConnection(connection);
 
   if (!was_open && database->ConnectionCount() > 0) {
-    database_map_[unique_identifier] = database;
+    database_map_[unique_identifier] = database.get();
     origin_dbs_.insert(std::make_pair(origin_url, database));
   }
 }

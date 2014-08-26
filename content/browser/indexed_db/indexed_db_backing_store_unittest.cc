@@ -235,9 +235,11 @@ class IndexedDBBackingStoreTest : public testing::Test {
     special_storage_policy_ = new MockSpecialStoragePolicy();
     special_storage_policy_->SetAllUnlimited(true);
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    idb_context_ = new IndexedDBContextImpl(
-        temp_dir_.path(), special_storage_policy_, NULL, task_runner_);
-    idb_factory_ = new TestIDBFactory(idb_context_);
+    idb_context_ = new IndexedDBContextImpl(temp_dir_.path(),
+                                            special_storage_policy_.get(),
+                                            NULL,
+                                            task_runner_.get());
+    idb_factory_ = new TestIDBFactory(idb_context_.get());
     backing_store_ =
         idb_factory_->OpenBackingStoreForTest(origin, &url_request_context_);
 
@@ -373,7 +375,7 @@ class TestCallback : public IndexedDBBackingStore::BlobWriteCallback {
 
 TEST_F(IndexedDBBackingStoreTest, PutGetConsistency) {
   {
-    IndexedDBBackingStore::Transaction transaction1(backing_store_);
+    IndexedDBBackingStore::Transaction transaction1(backing_store_.get());
     transaction1.Begin();
     ScopedVector<storage::BlobDataHandle> handles;
     IndexedDBBackingStore::RecordIdentifier record;
@@ -388,7 +390,7 @@ TEST_F(IndexedDBBackingStoreTest, PutGetConsistency) {
   }
 
   {
-    IndexedDBBackingStore::Transaction transaction2(backing_store_);
+    IndexedDBBackingStore::Transaction transaction2(backing_store_.get());
     transaction2.Begin();
     IndexedDBValue result_value;
     EXPECT_TRUE(
@@ -405,7 +407,7 @@ TEST_F(IndexedDBBackingStoreTest, PutGetConsistency) {
 
 TEST_F(IndexedDBBackingStoreTest, PutGetConsistencyWithBlobs) {
   {
-    IndexedDBBackingStore::Transaction transaction1(backing_store_);
+    IndexedDBBackingStore::Transaction transaction1(backing_store_.get());
     transaction1.Begin();
     ScopedVector<storage::BlobDataHandle> handles;
     IndexedDBBackingStore::RecordIdentifier record;
@@ -426,7 +428,7 @@ TEST_F(IndexedDBBackingStoreTest, PutGetConsistencyWithBlobs) {
   }
 
   {
-    IndexedDBBackingStore::Transaction transaction2(backing_store_);
+    IndexedDBBackingStore::Transaction transaction2(backing_store_.get());
     transaction2.Begin();
     IndexedDBValue result_value;
     EXPECT_TRUE(
@@ -443,7 +445,7 @@ TEST_F(IndexedDBBackingStoreTest, PutGetConsistencyWithBlobs) {
   }
 
   {
-    IndexedDBBackingStore::Transaction transaction3(backing_store_);
+    IndexedDBBackingStore::Transaction transaction3(backing_store_.get());
     transaction3.Begin();
     IndexedDBValue result_value;
     EXPECT_TRUE(backing_store_->DeleteRange(&transaction3,
@@ -490,7 +492,7 @@ TEST_F(IndexedDBBackingStoreTest, DeleteRange) {
       IndexedDBValue value1 = IndexedDBValue("value1", blob_info1);
       IndexedDBValue value2 = IndexedDBValue("value2", blob_info2);
       IndexedDBValue value3 = IndexedDBValue("value3", blob_info3);
-      IndexedDBBackingStore::Transaction transaction1(backing_store_);
+      IndexedDBBackingStore::Transaction transaction1(backing_store_.get());
       transaction1.Begin();
       ScopedVector<storage::BlobDataHandle> handles;
       IndexedDBBackingStore::RecordIdentifier record;
@@ -531,7 +533,7 @@ TEST_F(IndexedDBBackingStoreTest, DeleteRange) {
     }
 
     {
-      IndexedDBBackingStore::Transaction transaction2(backing_store_);
+      IndexedDBBackingStore::Transaction transaction2(backing_store_.get());
       transaction2.Begin();
       IndexedDBValue result_value;
       EXPECT_TRUE(
@@ -580,7 +582,7 @@ TEST_F(IndexedDBBackingStoreTest, DeleteRangeEmptyRange) {
       IndexedDBValue value1 = IndexedDBValue("value1", blob_info1);
       IndexedDBValue value2 = IndexedDBValue("value2", blob_info2);
       IndexedDBValue value3 = IndexedDBValue("value3", blob_info3);
-      IndexedDBBackingStore::Transaction transaction1(backing_store_);
+      IndexedDBBackingStore::Transaction transaction1(backing_store_.get());
       transaction1.Begin();
       ScopedVector<storage::BlobDataHandle> handles;
       IndexedDBBackingStore::RecordIdentifier record;
@@ -621,7 +623,7 @@ TEST_F(IndexedDBBackingStoreTest, DeleteRangeEmptyRange) {
     }
 
     {
-      IndexedDBBackingStore::Transaction transaction2(backing_store_);
+      IndexedDBBackingStore::Transaction transaction2(backing_store_.get());
       transaction2.Begin();
       IndexedDBValue result_value;
       EXPECT_TRUE(
@@ -639,7 +641,7 @@ TEST_F(IndexedDBBackingStoreTest, DeleteRangeEmptyRange) {
 
 TEST_F(IndexedDBBackingStoreTest, LiveBlobJournal) {
   {
-    IndexedDBBackingStore::Transaction transaction1(backing_store_);
+    IndexedDBBackingStore::Transaction transaction1(backing_store_.get());
     transaction1.Begin();
     ScopedVector<storage::BlobDataHandle> handles;
     IndexedDBBackingStore::RecordIdentifier record;
@@ -661,7 +663,7 @@ TEST_F(IndexedDBBackingStoreTest, LiveBlobJournal) {
 
   IndexedDBValue read_result_value;
   {
-    IndexedDBBackingStore::Transaction transaction2(backing_store_);
+    IndexedDBBackingStore::Transaction transaction2(backing_store_.get());
     transaction2.Begin();
     EXPECT_TRUE(
         backing_store_->GetRecord(
@@ -681,7 +683,7 @@ TEST_F(IndexedDBBackingStoreTest, LiveBlobJournal) {
   }
 
   {
-    IndexedDBBackingStore::Transaction transaction3(backing_store_);
+    IndexedDBBackingStore::Transaction transaction3(backing_store_.get());
     transaction3.Begin();
     EXPECT_TRUE(backing_store_->DeleteRange(&transaction3,
                                             1,
@@ -718,7 +720,7 @@ TEST_F(IndexedDBBackingStoreTest, HighIds) {
   std::string index_key_raw;
   EncodeIDBKey(index_key, &index_key_raw);
   {
-    IndexedDBBackingStore::Transaction transaction1(backing_store_);
+    IndexedDBBackingStore::Transaction transaction1(backing_store_.get());
     transaction1.Begin();
     ScopedVector<storage::BlobDataHandle> handles;
     IndexedDBBackingStore::RecordIdentifier record;
@@ -757,7 +759,7 @@ TEST_F(IndexedDBBackingStoreTest, HighIds) {
   }
 
   {
-    IndexedDBBackingStore::Transaction transaction2(backing_store_);
+    IndexedDBBackingStore::Transaction transaction2(backing_store_.get());
     transaction2.Begin();
     IndexedDBValue result_value;
     leveldb::Status s = backing_store_->GetRecord(&transaction2,
@@ -806,7 +808,7 @@ TEST_F(IndexedDBBackingStoreTest, InvalidIds) {
 
   IndexedDBValue result_value;
 
-  IndexedDBBackingStore::Transaction transaction1(backing_store_);
+  IndexedDBBackingStore::Transaction transaction1(backing_store_.get());
   transaction1.Begin();
 
   ScopedVector<storage::BlobDataHandle> handles;
@@ -909,7 +911,7 @@ TEST_F(IndexedDBBackingStoreTest, CreateDatabase) {
     EXPECT_TRUE(s.ok());
     EXPECT_GT(database_id, 0);
 
-    IndexedDBBackingStore::Transaction transaction(backing_store_);
+    IndexedDBBackingStore::Transaction transaction(backing_store_.get());
     transaction.Begin();
 
     s = backing_store_->CreateObjectStore(&transaction,

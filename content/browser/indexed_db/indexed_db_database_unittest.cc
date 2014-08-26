@@ -41,8 +41,8 @@ TEST(IndexedDBDatabaseTest, BackingStoreRetention) {
   leveldb::Status s;
   scoped_refptr<IndexedDBDatabase> db =
       IndexedDBDatabase::Create(ASCIIToUTF16("db"),
-                                backing_store,
-                                factory,
+                                backing_store.get(),
+                                factory.get(),
                                 IndexedDBDatabase::Identifier(),
                                 &s);
   ASSERT_TRUE(s.ok());
@@ -60,8 +60,8 @@ TEST(IndexedDBDatabaseTest, ConnectionLifecycle) {
   leveldb::Status s;
   scoped_refptr<IndexedDBDatabase> db =
       IndexedDBDatabase::Create(ASCIIToUTF16("db"),
-                                backing_store,
-                                factory,
+                                backing_store.get(),
+                                factory.get(),
                                 IndexedDBDatabase::Identifier(),
                                 &s);
   ASSERT_TRUE(s.ok());
@@ -118,8 +118,8 @@ TEST(IndexedDBDatabaseTest, ForcedClose) {
   leveldb::Status s;
   scoped_refptr<IndexedDBDatabase> database =
       IndexedDBDatabase::Create(ASCIIToUTF16("db"),
-                                backing_store,
-                                factory,
+                                backing_store.get(),
+                                factory.get(),
                                 IndexedDBDatabase::Identifier(),
                                 &s);
   ASSERT_TRUE(s.ok());
@@ -136,7 +136,7 @@ TEST(IndexedDBDatabaseTest, ForcedClose) {
       upgrade_transaction_id,
       IndexedDBDatabaseMetadata::DEFAULT_INT_VERSION);
   database->OpenConnection(connection);
-  EXPECT_EQ(database, request->connection()->database());
+  EXPECT_EQ(database.get(), request->connection()->database());
 
   const int64 transaction_id = 123;
   const std::vector<int64> scope;
@@ -184,8 +184,8 @@ TEST(IndexedDBDatabaseTest, PendingDelete) {
   leveldb::Status s;
   scoped_refptr<IndexedDBDatabase> db =
       IndexedDBDatabase::Create(ASCIIToUTF16("db"),
-                                backing_store,
-                                factory,
+                                backing_store.get(),
+                                factory.get(),
                                 IndexedDBDatabase::Identifier(),
                                 &s);
   ASSERT_TRUE(s.ok());
@@ -234,8 +234,8 @@ class IndexedDBDatabaseOperationTest : public testing::Test {
     backing_store_ = new IndexedDBFakeBackingStore();
     leveldb::Status s;
     db_ = IndexedDBDatabase::Create(ASCIIToUTF16("db"),
-                                    backing_store_,
-                                    factory_,
+                                    backing_store_.get(),
+                                    factory_.get(),
                                     IndexedDBDatabase::Identifier(),
                                     &s);
     ASSERT_TRUE(s.ok());
@@ -257,9 +257,9 @@ class IndexedDBDatabaseOperationTest : public testing::Test {
         callbacks_,
         std::set<int64>() /*scope*/,
         blink::WebIDBTransactionModeVersionChange,
-        db_,
+        db_.get(),
         new IndexedDBFakeBackingStore::FakeTransaction(commit_success_));
-    db_->TransactionCreated(transaction_);
+    db_->TransactionCreated(transaction_.get());
 
     // Add a dummy task which takes the place of the VersionChangeOperation
     // which kicks off the upgrade. This ensures that the transaction has
