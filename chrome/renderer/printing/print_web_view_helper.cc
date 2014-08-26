@@ -1464,8 +1464,13 @@ bool PrintWebViewHelper::UpdatePrintSettings(
   int cookie = print_pages_params_ ?
       print_pages_params_->params.document_cookie : 0;
   PrintMsg_PrintPages_Params settings;
+  bool canceled = false;
   Send(new PrintHostMsg_UpdatePrintSettings(
-      routing_id(), cookie, *job_settings, &settings));
+      routing_id(), cookie, *job_settings, &settings, &canceled));
+  if (canceled) {
+    notify_browser_of_print_failure_ = false;
+    return false;
+  }
 
   if (!job_settings->GetInteger(kPreviewUIID, &settings.params.preview_ui_id)) {
     NOTREACHED();

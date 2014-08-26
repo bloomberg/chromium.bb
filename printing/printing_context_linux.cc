@@ -106,7 +106,9 @@ gfx::Size PrintingContextLinux::GetPdfPaperSizeDeviceUnits() {
 }
 
 PrintingContext::Result PrintingContextLinux::UpdatePrinterSettings(
-    bool external_preview) {
+    bool external_preview,
+    bool show_system_dialog) {
+  DCHECK(!show_system_dialog);
   DCHECK(!in_print_job_);
   DCHECK(!external_preview) << "Not implemented";
 

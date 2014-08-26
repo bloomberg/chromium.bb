@@ -424,7 +424,11 @@ void PrintingMessageFilter::OnUpdatePrintSettingsReply(
     params.params.document_cookie = printer_query->cookie();
     params.pages = PageRange::GetPages(printer_query->settings().ranges());
   }
-  PrintHostMsg_UpdatePrintSettings::WriteReplyParams(reply_msg, params);
+  PrintHostMsg_UpdatePrintSettings::WriteReplyParams(
+      reply_msg,
+      params,
+      printer_query &&
+          (printer_query->last_status() == printing::PrintingContext::CANCEL));
   Send(reply_msg);
   // If user hasn't cancelled.
   if (printer_query.get()) {

@@ -48,6 +48,9 @@ PrintViewManager::~PrintViewManager() {
 }
 
 bool PrintViewManager::PrintForSystemDialogNow() {
+#if defined(OS_WIN)
+  NOTREACHED();
+#endif
   return PrintNowInternal(new PrintMsg_PrintForSystemDialog(routing_id()));
 }
 

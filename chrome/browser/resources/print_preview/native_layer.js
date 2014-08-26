@@ -273,11 +273,17 @@ cr.define('print_preview', function() {
      * @param {!print_preview.DocumentInfo} documentInfo Document data model.
      * @param {boolean=} opt_isOpenPdfInPreview Whether to open the PDF in the
      *     system's preview application.
+     * @param {boolean=} opt_showSystemDialog Whether to open system dialog for
+     *     advanced settings.
      */
     startPrint: function(destination, printTicketStore, cloudPrintInterface,
-                         documentInfo, opt_isOpenPdfInPreview) {
+                         documentInfo, opt_isOpenPdfInPreview,
+                         opt_showSystemDialog) {
       assert(printTicketStore.isTicketValid(),
              'Trying to print when ticket is not valid');
+
+      assert(!opt_showSystemDialog || (cr.isWindows && destination.isLocal),
+             'Implemented for Windows only');
 
       var ticket = {
         'pageRange': printTicketStore.pageRange.getDocumentPageRanges(),
@@ -304,7 +310,8 @@ cr.define('print_preview', function() {
         'requestID': -1,
         'fitToPageEnabled': printTicketStore.fitToPage.getValue(),
         'pageWidth': documentInfo.pageSize.width,
-        'pageHeight': documentInfo.pageSize.height
+        'pageHeight': documentInfo.pageSize.height,
+        'showSystemDialog': opt_showSystemDialog
       };
 
       if (!destination.isLocal) {
@@ -347,6 +354,7 @@ cr.define('print_preview', function() {
 
     /** Shows the system's native printing dialog. */
     startShowSystemDialog: function() {
+      assert(!cr.isWindows);
       chrome.send('showSystemDialog');
     },
 

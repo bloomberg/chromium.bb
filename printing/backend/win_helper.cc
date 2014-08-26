@@ -488,4 +488,36 @@ scoped_ptr<DEVMODE, base::FreeDeleter> CreateDevMode(HANDLE printer,
   return out.Pass();
 }
 
+scoped_ptr<DEVMODE, base::FreeDeleter> PromptDevMode(
+    HANDLE printer,
+    const base::string16& printer_name,
+    DEVMODE* in,
+    HWND window,
+    bool* canceled) {
+  LONG buffer_size =
+      DocumentProperties(window,
+                         printer,
+                         const_cast<wchar_t*>(printer_name.c_str()),
+                         NULL,
+                         NULL,
+                         0);
+  if (buffer_size < static_cast<int>(sizeof(DEVMODE)))
+    return scoped_ptr<DEVMODE, base::FreeDeleter>();
+  scoped_ptr<DEVMODE, base::FreeDeleter> out(
+      reinterpret_cast<DEVMODE*>(malloc(buffer_size)));
+  DWORD flags = (in ? (DM_IN_BUFFER) : 0) | DM_OUT_BUFFER | DM_IN_PROMPT;
+  LONG result = DocumentProperties(window,
+                                   printer,
+                                   const_cast<wchar_t*>(printer_name.c_str()),
+                                   out.get(),
+                                   in,
+                                   flags);
+  if (canceled)
+    *canceled = (result == IDCANCEL);
+  if (result != IDOK)
+    return scoped_ptr<DEVMODE, base::FreeDeleter>();
+  CHECK_GE(buffer_size, out.get()->dmSize + out.get()->dmDriverExtra);
+  return out.Pass();
+}
+
 }  // namespace printing

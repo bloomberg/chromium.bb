@@ -832,8 +832,15 @@ void PrintPreviewHandler::HandlePrint(const base::ListValue* args) {
     ReportUserActionHistogram(PRINT_WITH_CLOUD_PRINT);
     SendCloudPrintJob(data.get());
   } else {
-    UMA_HISTOGRAM_COUNTS("PrintPreview.PageCount.PrintToPrinter", page_count);
-    ReportUserActionHistogram(PRINT_TO_PRINTER);
+    bool system_dialog = false;
+    settings->GetBoolean(printing::kSettingShowSystemDialog, &system_dialog);
+    if (system_dialog) {
+      UMA_HISTOGRAM_COUNTS("PrintPreview.PageCount.SystemDialog", page_count);
+      ReportUserActionHistogram(FALLBACK_TO_ADVANCED_SETTINGS_DIALOG);
+    } else {
+      UMA_HISTOGRAM_COUNTS("PrintPreview.PageCount.PrintToPrinter", page_count);
+      ReportUserActionHistogram(PRINT_TO_PRINTER);
+    }
     ReportPrintSettingsStats(*settings);
 
     // This tries to activate the initiator as well, so do not clear the

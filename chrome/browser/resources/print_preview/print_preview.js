@@ -231,6 +231,13 @@ cr.define('print_preview', function() {
     this.isInAppKioskMode_ = false;
 
     /**
+     * Whether Print with System Dialog option is available.
+     * @type {boolean}
+     * @private
+     */
+    this.isSystemDialogAvailable_ = false;
+
+    /**
      * State of the print preview UI.
      * @type {print_preview.PrintPreview.UiState_}
      * @private
@@ -243,6 +250,13 @@ cr.define('print_preview', function() {
      * @private
      */
     this.isPreviewGenerationInProgress_ = true;
+
+    /**
+     * Whether to show system dialog before next printing.
+     * @type {boolean}
+     * @private
+     */
+    this.showSystemDialogBeforeNextPrint_ = false;
   };
 
   /**
@@ -538,7 +552,9 @@ cr.define('print_preview', function() {
             this.printTicketStore_,
             this.cloudPrintInterface_,
             this.documentInfo_,
-            this.uiState_ == PrintPreview.UiState_.OPENING_PDF_PREVIEW);
+            this.uiState_ == PrintPreview.UiState_.OPENING_PDF_PREVIEW,
+            this.showSystemDialogBeforeNextPrint_);
+        this.showSystemDialogBeforeNextPrint_ = false;
       }
       return PrintPreview.PrintAttemptResult_.PRINTED;
     },
@@ -558,6 +574,13 @@ cr.define('print_preview', function() {
      * @private
      */
     openSystemPrintDialog_: function() {
+      if (!this.shouldShowSystemDialogLink_())
+        return;
+      if (cr.isWindows) {
+        this.showSystemDialogBeforeNextPrint_ = true;
+        this.printDocumentOrOpenPdfPreview_(false /*isPdfPreview*/);
+        return;
+      }
       setIsVisible($('system-dialog-throbber'), true);
       this.setIsEnabled_(false);
       this.uiState_ = PrintPreview.UiState_.OPENING_NATIVE_PRINT_DIALOG;
@@ -599,9 +622,9 @@ cr.define('print_preview', function() {
       this.appState_.setInitialized();
 
       $('document-title').innerText = settings.documentTitle;
-      setIsVisible($('system-dialog-link'),
-                   !settings.hidePrintWithSystemDialogLink &&
-                   !settings.isInAppKioskMode);
+      this.isSystemDialogAvailable_ = !settings.hidePrintWithSystemDialogLink &&
+                                      !settings.isInAppKioskMode;
+      setIsVisible($('system-dialog-link'), this.shouldShowSystemDialogLink_());
     },
 
     /**
@@ -1081,6 +1104,23 @@ cr.define('print_preview', function() {
     },
 
     /**
+     * Returns true if "Print using system dialog" link should be shown for
+     * current destination.
+     * @return {boolean} Returns true if link should be shown.
+     */
+    shouldShowSystemDialogLink_: function() {
+      if (!this.isSystemDialogAvailable_)
+        return false;
+      if (!cr.isWindows)
+        return true;
+      var selectedDest = this.destinationStore_.selectedDestination;
+      return selectedDest &&
+             selectedDest.origin == print_preview.Destination.Origin.LOCAL &&
+             selectedDest.id !=
+                 print_preview.Destination.GooglePromotedId.SAVE_AS_PDF;
+    },
+
+    /**
      * Called when the open-cloud-print-dialog link is clicked. Opens the Google
      * Cloud Print web dialog.
      * @private
@@ -1105,6 +1145,9 @@ cr.define('print_preview', function() {
       setIsVisible(
           $('cloud-print-dialog-link'),
           selectedDest && !cr.isChromeOS && !selectedDest.isLocal);
+      setIsVisible(
+          $('system-dialog-link'),
+          this.shouldShowSystemDialogLink_());
       if (selectedDest && this.isInKioskAutoPrintMode_) {
         this.onPrintButtonClick_();
       }

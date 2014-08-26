@@ -96,7 +96,8 @@ class ChromeMockRenderThread : public content::MockRenderThread {
   // For print preview, PrintWebViewHelper will update settings.
   void OnUpdatePrintSettings(int document_cookie,
                              const base::DictionaryValue& job_settings,
-                             PrintMsg_PrintPages_Params* params);
+                             PrintMsg_PrintPages_Params* params,
+                             bool* canceled);
 
   // A mock printer device used for printing tests.
   scoped_ptr<MockPrinter> printer_;

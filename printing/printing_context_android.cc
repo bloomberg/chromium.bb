@@ -170,7 +170,9 @@ gfx::Size PrintingContextAndroid::GetPdfPaperSizeDeviceUnits() {
 }
 
 PrintingContext::Result PrintingContextAndroid::UpdatePrinterSettings(
-    bool external_preview) {
+    bool external_preview,
+    bool show_system_dialog) {
+  DCHECK(!show_system_dialog);
   DCHECK(!in_print_job_);
 
   // Intentional No-op.

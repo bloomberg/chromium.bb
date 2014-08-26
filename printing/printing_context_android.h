@@ -37,7 +37,8 @@ class PRINTING_EXPORT PrintingContextAndroid : public PrintingContext {
       const PrintSettingsCallback& callback) OVERRIDE;
   virtual Result UseDefaultSettings() OVERRIDE;
   virtual gfx::Size GetPdfPaperSizeDeviceUnits() OVERRIDE;
-  virtual Result UpdatePrinterSettings(bool external_preview) OVERRIDE;
+  virtual Result UpdatePrinterSettings(bool external_preview,
+                                       bool show_system_dialog) OVERRIDE;
   virtual Result InitWithSettings(const PrintSettings& settings) OVERRIDE;
   virtual Result NewDocument(const base::string16& document_name) OVERRIDE;
   virtual Result NewPage() OVERRIDE;

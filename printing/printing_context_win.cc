@@ -50,7 +50,7 @@ scoped_ptr<PrintingContext> PrintingContext::Create(Delegate* delegate) {
 }
 
 PrintingContextWin::PrintingContextWin(Delegate* delegate)
-    : PrintingContext(delegate), context_(NULL), dialog_box_(NULL) {
+    : PrintingContext(delegate), context_(NULL) {
 }
 
 PrintingContextWin::~PrintingContextWin() {
@@ -61,63 +61,26 @@ void PrintingContextWin::AskUserForSettings(
     int max_pages,
     bool has_selection,
     const PrintSettingsCallback& callback) {
-  DCHECK(!in_print_job_);
-  dialog_box_dismissed_ = false;
-
-  HWND window = GetRootWindow(delegate_->GetParentView());
-  DCHECK(window);
-
-  // Show the OS-dependent dialog box.
-  // If the user press
-  // - OK, the settings are reset and reinitialized with the new settings. OK is
-  //   returned.
-  // - Apply then Cancel, the settings are reset and reinitialized with the new
-  //   settings. CANCEL is returned.
-  // - Cancel, the settings are not changed, the previous setting, if it was
-  //   initialized before, are kept. CANCEL is returned.
-  // On failure, the settings are reset and FAILED is returned.
-  PRINTDLGEX dialog_options = { sizeof(PRINTDLGEX) };
-  dialog_options.hwndOwner = window;
-  // Disable options we don't support currently.
-  // TODO(maruel):  Reuse the previously loaded settings!
-  dialog_options.Flags = PD_RETURNDC | PD_USEDEVMODECOPIESANDCOLLATE  |
-                         PD_NOCURRENTPAGE | PD_HIDEPRINTTOFILE;
-  if (!has_selection)
-    dialog_options.Flags |= PD_NOSELECTION;
-
-  PRINTPAGERANGE ranges[32];
-  dialog_options.nStartPage = START_PAGE_GENERAL;
-  if (max_pages) {
-    // Default initialize to print all the pages.
-    memset(ranges, 0, sizeof(ranges));
-    ranges[0].nFromPage = 1;
-    ranges[0].nToPage = max_pages;
-    dialog_options.nPageRanges = 1;
-    dialog_options.nMaxPageRanges = arraysize(ranges);
-    dialog_options.nMinPage = 1;
-    dialog_options.nMaxPage = max_pages;
-    dialog_options.lpPageRanges = ranges;
-  } else {
-    // No need to bother, we don't know how many pages are available.
-    dialog_options.Flags |= PD_NOPAGENUMS;
-  }
-
-  if (ShowPrintDialog(&dialog_options) != S_OK) {
-    ResetSettings();
-    callback.Run(FAILED);
-  }
-
-  // TODO(maruel):  Support PD_PRINTTOFILE.
-  callback.Run(ParseDialogResultEx(dialog_options));
+  NOTIMPLEMENTED();
 }
 
 PrintingContext::Result PrintingContextWin::UseDefaultSettings() {
   DCHECK(!in_print_job_);
 
-  PRINTDLG dialog_options = { sizeof(PRINTDLG) };
-  dialog_options.Flags = PD_RETURNDC | PD_RETURNDEFAULT;
-  if (PrintDlg(&dialog_options))
-    return ParseDialogResult(dialog_options);
+  scoped_refptr<PrintBackend> backend = PrintBackend::CreateInstance(NULL);
+  base::string16 default_printer =
+      base::UTF8ToWide(backend->GetDefaultPrinterName());
+  if (!default_printer.empty()) {
+    ScopedPrinterHandle printer;
+    if (printer.OpenPrinter(default_printer.c_str())) {
+      scoped_ptr<DEVMODE, base::FreeDeleter> dev_mode =
+          CreateDevMode(printer, NULL);
+      if (InitializeSettings(default_printer, dev_mode.get()) == OK)
+        return OK;
+    }
+  }
+
+  ReleaseContext();
 
   // No default printer configured, do we have any printers at all?
   DWORD bytes_needed = 0;
@@ -142,23 +105,15 @@ PrintingContext::Result PrintingContextWin::UseDefaultSettings() {
           continue;
         scoped_ptr<DEVMODE, base::FreeDeleter> dev_mode =
             CreateDevMode(printer, NULL);
-        if (!dev_mode || !AllocateContext(info_2->pPrinterName, dev_mode.get(),
-                                          &context_)) {
-          continue;
-        }
-        if (InitializeSettings(*dev_mode.get(), info_2->pPrinterName, NULL, 0,
-                               false)) {
+        if (InitializeSettings(info_2->pPrinterName, dev_mode.get()) == OK)
           return OK;
-        }
-        ReleaseContext();
       }
       if (context_)
         return OK;
     }
   }
 
-  ResetSettings();
-  return FAILED;
+  return OnError();
 }
 
 gfx::Size PrintingContextWin::GetPdfPaperSizeDeviceUnits() {
@@ -192,7 +147,8 @@ gfx::Size PrintingContextWin::GetPdfPaperSizeDeviceUnits() {
 }
 
 PrintingContext::Result PrintingContextWin::UpdatePrinterSettings(
-    bool external_preview) {
+    bool external_preview,
+    bool show_system_dialog) {
   DCHECK(!in_print_job_);
   DCHECK(!external_preview) << "Not implemented";
 
@@ -256,19 +212,14 @@ PrintingContext::Result PrintingContextWin::UpdatePrinterSettings(
   }
 
   // Update data using DocumentProperties.
-  scoped_dev_mode = CreateDevMode(printer, scoped_dev_mode.get());
-  if (!scoped_dev_mode)
-    return OnError();
-
-  // Set printer then refresh printer settings.
-  if (!AllocateContext(settings_.device_name(), scoped_dev_mode.get(),
-                       &context_)) {
-    return OnError();
+  if (show_system_dialog) {
+    scoped_dev_mode = ShowPrintDialog(
+        printer, delegate_->GetParentView(), scoped_dev_mode.get());
+  } else {
+    scoped_dev_mode = CreateDevMode(printer, scoped_dev_mode.get());
   }
-  PrintSettingsInitializerWin::InitPrintSettings(context_,
-                                                 *scoped_dev_mode.get(),
-                                                 &settings_);
-  return OK;
+  // Set printer then refresh printer settings.
+  return InitializeSettings(settings_.device_name(), scoped_dev_mode.get());
 }
 
 PrintingContext::Result PrintingContextWin::InitWithSettings(
@@ -279,18 +230,13 @@ PrintingContext::Result PrintingContextWin::InitWithSettings(
 
   // TODO(maruel): settings_.ToDEVMODE()
   ScopedPrinterHandle printer;
-  if (!printer.OpenPrinter(settings_.device_name().c_str())) {
+  if (!printer.OpenPrinter(settings_.device_name().c_str()))
     return FAILED;
-  }
 
-  Result status = OK;
+  scoped_ptr<DEVMODE, base::FreeDeleter> dev_mode =
+      CreateDevMode(printer, NULL);
 
-  if (!GetPrinterSettings(printer, settings_.device_name()))
-    status = FAILED;
-
-  if (status != OK)
-    ResetSettings();
-  return status;
+  return InitializeSettings(settings_.device_name(), dev_mode.get());
 }
 
 PrintingContext::Result PrintingContextWin::NewDocument(
@@ -374,10 +320,6 @@ void PrintingContextWin::Cancel() {
   in_print_job_ = false;
   if (context_)
     CancelDC(context_);
-  if (dialog_box_) {
-    DestroyWindow(dialog_box_);
-    dialog_box_dismissed_ = true;
-  }
 }
 
 void PrintingContextWin::ReleaseContext() {
@@ -401,154 +343,31 @@ BOOL PrintingContextWin::AbortProc(HDC hdc, int nCode) {
   return true;
 }
 
-bool PrintingContextWin::InitializeSettings(const DEVMODE& dev_mode,
-                                            const std::wstring& new_device_name,
-                                            const PRINTPAGERANGE* ranges,
-                                            int number_ranges,
-                                            bool selection_only) {
+PrintingContext::Result PrintingContextWin::InitializeSettings(
+    const std::wstring& device_name,
+    DEVMODE* dev_mode) {
+  if (!dev_mode)
+    return OnError();
+
+  ReleaseContext();
+  context_ = CreateDC(L"WINSPOOL", device_name.c_str(), NULL, dev_mode);
+  if (!context_)
+    return OnError();
+
   skia::InitializeDC(context_);
-  DCHECK(GetDeviceCaps(context_, CLIPCAPS));
-  DCHECK(GetDeviceCaps(context_, RASTERCAPS) & RC_STRETCHDIB);
-  DCHECK(GetDeviceCaps(context_, RASTERCAPS) & RC_BITMAP64);
-  // Some printers don't advertise these.
-  // DCHECK(GetDeviceCaps(context_, RASTERCAPS) & RC_SCALING);
-  // DCHECK(GetDeviceCaps(context_, SHADEBLENDCAPS) & SB_CONST_ALPHA);
-  // DCHECK(GetDeviceCaps(context_, SHADEBLENDCAPS) & SB_PIXEL_ALPHA);
-
-  // StretchDIBits() support is needed for printing.
-  if (!(GetDeviceCaps(context_, RASTERCAPS) & RC_STRETCHDIB) ||
-      !(GetDeviceCaps(context_, RASTERCAPS) & RC_BITMAP64)) {
-    NOTREACHED();
-    ResetSettings();
-    return false;
-  }
 
   DCHECK(!in_print_job_);
-  DCHECK(context_);
-  PageRanges ranges_vector;
-  if (!selection_only) {
-    // Convert the PRINTPAGERANGE array to a PrintSettings::PageRanges vector.
-    ranges_vector.reserve(number_ranges);
-    for (int i = 0; i < number_ranges; ++i) {
-      PageRange range;
-      // Transfer from 1-based to 0-based.
-      range.from = ranges[i].nFromPage - 1;
-      range.to = ranges[i].nToPage - 1;
-      ranges_vector.push_back(range);
-    }
-  }
+  settings_.set_device_name(device_name);
+  PrintSettingsInitializerWin::InitPrintSettings(
+      context_, *dev_mode, &settings_);
 
-  settings_.set_ranges(ranges_vector);
-  settings_.set_device_name(new_device_name);
-  settings_.set_selection_only(selection_only);
-  PrintSettingsInitializerWin::InitPrintSettings(context_, dev_mode,
-                                                 &settings_);
-
-  return true;
+  return OK;
 }
 
-bool PrintingContextWin::GetPrinterSettings(HANDLE printer,
-                                            const std::wstring& device_name) {
-  DCHECK(!in_print_job_);
-
-  scoped_ptr<DEVMODE, base::FreeDeleter> dev_mode =
-      CreateDevMode(printer, NULL);
-
-  if (!dev_mode || !AllocateContext(device_name, dev_mode.get(), &context_)) {
-    ResetSettings();
-    return false;
-  }
-
-  return InitializeSettings(*dev_mode.get(), device_name, NULL, 0, false);
-}
-
-// static
-bool PrintingContextWin::AllocateContext(const std::wstring& device_name,
-                                         const DEVMODE* dev_mode,
-                                         gfx::NativeDrawingContext* context) {
-  *context = CreateDC(L"WINSPOOL", device_name.c_str(), NULL, dev_mode);
-  DCHECK(*context);
-  return *context != NULL;
-}
-
-PrintingContext::Result PrintingContextWin::ParseDialogResultEx(
-    const PRINTDLGEX& dialog_options) {
-  // If the user clicked OK or Apply then Cancel, but not only Cancel.
-  if (dialog_options.dwResultAction != PD_RESULT_CANCEL) {
-    // Start fresh.
-    ResetSettings();
-
-    DEVMODE* dev_mode = NULL;
-    if (dialog_options.hDevMode) {
-      dev_mode =
-          reinterpret_cast<DEVMODE*>(GlobalLock(dialog_options.hDevMode));
-      DCHECK(dev_mode);
-    }
-
-    std::wstring device_name;
-    if (dialog_options.hDevNames) {
-      DEVNAMES* dev_names =
-          reinterpret_cast<DEVNAMES*>(GlobalLock(dialog_options.hDevNames));
-      DCHECK(dev_names);
-      if (dev_names) {
-        device_name = reinterpret_cast<const wchar_t*>(dev_names) +
-                      dev_names->wDeviceOffset;
-        GlobalUnlock(dialog_options.hDevNames);
-      }
-    }
-
-    bool success = false;
-    if (dev_mode && !device_name.empty()) {
-      context_ = dialog_options.hDC;
-      PRINTPAGERANGE* page_ranges = NULL;
-      DWORD num_page_ranges = 0;
-      bool print_selection_only = false;
-      if (dialog_options.Flags & PD_PAGENUMS) {
-        page_ranges = dialog_options.lpPageRanges;
-        num_page_ranges = dialog_options.nPageRanges;
-      }
-      if (dialog_options.Flags & PD_SELECTION) {
-        print_selection_only = true;
-      }
-      success = InitializeSettings(*dev_mode,
-                                   device_name,
-                                   page_ranges,
-                                   num_page_ranges,
-                                   print_selection_only);
-    }
-
-    if (!success && dialog_options.hDC) {
-      DeleteDC(dialog_options.hDC);
-      context_ = NULL;
-    }
-
-    if (dev_mode) {
-      GlobalUnlock(dialog_options.hDevMode);
-    }
-  } else {
-    if (dialog_options.hDC) {
-      DeleteDC(dialog_options.hDC);
-    }
-  }
-
-  if (dialog_options.hDevMode != NULL)
-    GlobalFree(dialog_options.hDevMode);
-  if (dialog_options.hDevNames != NULL)
-    GlobalFree(dialog_options.hDevNames);
-
-  switch (dialog_options.dwResultAction) {
-    case PD_RESULT_PRINT:
-      return context_ ? OK : FAILED;
-    case PD_RESULT_APPLY:
-      return context_ ? CANCEL : FAILED;
-    case PD_RESULT_CANCEL:
-      return CANCEL;
-    default:
-      return FAILED;
-  }
-}
-
-HRESULT PrintingContextWin::ShowPrintDialog(PRINTDLGEX* options) {
+scoped_ptr<DEVMODE, base::FreeDeleter> PrintingContextWin::ShowPrintDialog(
+    HANDLE printer,
+    gfx::NativeView parent_view,
+    DEVMODE* dev_mode) {
   // Note that this cannot use ui::BaseShellDialog as the print dialog is
   // system modal: opening it from a background thread can cause Windows to
   // get the wrong Z-order which will make the print dialog appear behind the
@@ -558,57 +377,20 @@ HRESULT PrintingContextWin::ShowPrintDialog(PRINTDLGEX* options) {
   base::MessageLoop::ScopedNestableTaskAllower allow(
       base::MessageLoop::current());
 
-  return PrintDlgEx(options);
-}
+  bool canceled = false;
+  scoped_ptr<DEVMODE, base::FreeDeleter> result =
+      PromptDevMode(printer,
+                    settings_.device_name(),
+                    dev_mode,
+                    GetRootWindow(parent_view),
+                    &canceled);
 
-PrintingContext::Result PrintingContextWin::ParseDialogResult(
-    const PRINTDLG& dialog_options) {
-  // If the user clicked OK or Apply then Cancel, but not only Cancel.
-  // Start fresh.
-  ResetSettings();
-
-  DEVMODE* dev_mode = NULL;
-  if (dialog_options.hDevMode) {
-    dev_mode =
-        reinterpret_cast<DEVMODE*>(GlobalLock(dialog_options.hDevMode));
-    DCHECK(dev_mode);
+  if (canceled) {
+    result.reset();
+    abort_printing_ = true;
   }
 
-  std::wstring device_name;
-  if (dialog_options.hDevNames) {
-    DEVNAMES* dev_names =
-        reinterpret_cast<DEVNAMES*>(GlobalLock(dialog_options.hDevNames));
-    DCHECK(dev_names);
-    if (dev_names) {
-      device_name =
-          reinterpret_cast<const wchar_t*>(
-              reinterpret_cast<const wchar_t*>(dev_names) +
-                  dev_names->wDeviceOffset);
-      GlobalUnlock(dialog_options.hDevNames);
-    }
-  }
-
-  bool success = false;
-  if (dev_mode && !device_name.empty()) {
-    context_ = dialog_options.hDC;
-    success = InitializeSettings(*dev_mode, device_name, NULL, 0, false);
-  }
-
-  if (!success && dialog_options.hDC) {
-    DeleteDC(dialog_options.hDC);
-    context_ = NULL;
-  }
-
-  if (dev_mode) {
-    GlobalUnlock(dialog_options.hDevMode);
-  }
-
-  if (dialog_options.hDevMode != NULL)
-    GlobalFree(dialog_options.hDevMode);
-  if (dialog_options.hDevNames != NULL)
-    GlobalFree(dialog_options.hDevNames);
-
-  return context_ ? OK : FAILED;
+  return result.Pass();
 }
 
 }  // namespace printing

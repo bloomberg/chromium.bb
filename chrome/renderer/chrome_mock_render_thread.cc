@@ -162,7 +162,10 @@ void ChromeMockRenderThread::OnCheckForCancel(int32 preview_ui_id,
 void ChromeMockRenderThread::OnUpdatePrintSettings(
     int document_cookie,
     const base::DictionaryValue& job_settings,
-    PrintMsg_PrintPages_Params* params) {
+    PrintMsg_PrintPages_Params* params,
+    bool* canceled) {
+  if (canceled)
+    *canceled = false;
   // Check and make sure the required settings are all there.
   // We don't actually care about the values.
   std::string dummy_string;

@@ -168,7 +168,9 @@ PrintingContext::Result PrintingContextMac::UseDefaultSettings() {
 }
 
 PrintingContext::Result PrintingContextMac::UpdatePrinterSettings(
-    bool external_preview) {
+    bool external_preview,
+    bool show_system_dialog) {
+  DCHECK(!show_system_dialog);
   DCHECK(!in_print_job_);
 
   // NOTE: Reset |print_info_| with a copy of |sharedPrintInfo| so as to start

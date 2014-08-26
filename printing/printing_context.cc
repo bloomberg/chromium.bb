@@ -114,7 +114,11 @@ PrintingContext::Result PrintingContext::UpdatePrintSettings(
     return OK;
   }
 
-  return UpdatePrinterSettings(open_in_external_preview);
+  bool show_system_dialog = false;
+  job_settings.GetBoolean(printing::kSettingShowSystemDialog,
+                          &show_system_dialog);
+
+  return UpdatePrinterSettings(open_in_external_preview, show_system_dialog);
 }
 
 }  // namespace printing

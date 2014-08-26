@@ -186,6 +186,14 @@ PRINTING_EXPORT scoped_ptr<DEVMODE, base::FreeDeleter> CreateDevMode(
     HANDLE printer,
     DEVMODE* in);
 
+// Prompts for new DEVMODE. If |in| is not NULL copy settings from there.
+PRINTING_EXPORT scoped_ptr<DEVMODE, base::FreeDeleter> PromptDevMode(
+    HANDLE printer,
+    const base::string16& printer_name,
+    DEVMODE* in,
+    HWND window,
+    bool* canceled);
+
 }  // namespace printing
 
 #endif  // PRINTING_BACKEND_WIN_HELPER_H_
