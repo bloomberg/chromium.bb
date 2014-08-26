@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/files/file_util.h"
+#include "components/component_updater/test/url_request_post_interceptor.h"
+
+#include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/browser/component_updater/test/url_request_post_interceptor.h"
+#include "components/component_updater/test/test_configurator.h"
 #include "content/public/test/test_browser_thread.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/url_request/url_request.h"
@@ -254,6 +256,23 @@ URLRequestPostInterceptor* URLRequestPostInterceptorFactory::CreateInterceptor(
   }
 
   return interceptor;
+}
+
+bool PartialMatch::Match(const std::string& actual) const {
+  return actual.find(expected_) != std::string::npos;
+}
+
+InterceptorFactory::InterceptorFactory()
+    : URLRequestPostInterceptorFactory(POST_INTERCEPT_SCHEME,
+                                       POST_INTERCEPT_HOSTNAME) {
+}
+
+InterceptorFactory::~InterceptorFactory() {
+}
+
+URLRequestPostInterceptor* InterceptorFactory::CreateInterceptor() {
+  return URLRequestPostInterceptorFactory::CreateInterceptor(
+      base::FilePath::FromUTF8Unsafe(POST_INTERCEPT_PATH));
 }
 
 }  // namespace component_updater

@@ -10,10 +10,9 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/version.h"
-#include "chrome/browser/component_updater/test/component_updater_service_unittest.h"
-#include "chrome/browser/component_updater/test/url_request_post_interceptor.h"
-#include "chrome/common/chrome_paths.h"
 #include "components/component_updater/crx_update_item.h"
+#include "components/component_updater/test/test_configurator.h"
+#include "components/component_updater/test/url_request_post_interceptor.h"
 #include "components/component_updater/update_checker.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -29,8 +28,9 @@ namespace {
 
 base::FilePath test_file(const char* file) {
   base::FilePath path;
-  PathService::Get(chrome::DIR_TEST_DATA, &path);
-  return path.AppendASCII("components").AppendASCII(file);
+  PathService::Get(base::DIR_SOURCE_ROOT, &path);
+  return path.AppendASCII("components").AppendASCII("test").AppendASCII("data")
+      .AppendASCII("component_updater").AppendASCII(file);
 }
 
 }  // namespace
@@ -68,7 +68,6 @@ class UpdateCheckerTest : public testing::Test {
 
  private:
   content::TestBrowserThreadBundle thread_bundle_;
-  base::FilePath test_data_dir_;
   base::Closure quit_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(UpdateCheckerTest);
@@ -78,10 +77,6 @@ UpdateCheckerTest::UpdateCheckerTest()
     : config_(new TestConfigurator),
       error_(0),
       thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {
-  // The test directory is chrome/test/data/components.
-  PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_);
-  test_data_dir_ = test_data_dir_.AppendASCII("components");
-
   net::URLFetcher::SetEnableInterceptionForTests(true);
 }
 

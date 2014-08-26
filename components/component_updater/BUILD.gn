@@ -45,8 +45,43 @@ source_set("component_updater") {
     "//courgette:courgette_lib",
     "//crypto",
     "//third_party/libxml",
-    "//third_party/zlib",
+    "//third_party/zlib:zip",
     "//net",
     "//ui/base",
+  ]
+}
+
+static_library("test_support") {
+  sources = [
+    "test/test_configurator.cc",
+    "test/test_configurator.h",
+    "test/test_installer.cc",
+    "test/test_installer.h",
+    "test/url_request_post_interceptor.cc",
+    "test/url_request_post_interceptor.h",
+  ]
+
+  deps = [
+    ":component_updater",
+    "//testing/gtest",
+    "//testing/gmock",
+  ]
+}
+
+source_set("unit_tests") {
+  sources = [
+    "test/component_patcher_unittest.cc",
+    "test/component_updater_ping_manager_unittest.cc",
+    "test/crx_downloader_unittest.cc",
+    "test/update_checker_unittest.cc",
+    "test/update_response_unittest.cc",
+  ]
+
+  deps = [
+    ":component_updater",
+    ":test_support",
+    "//testing/gtest",
+    "//testing/gmock",
+    "//third_party/libxml",
   ]
 }

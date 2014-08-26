@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/component_updater/test/test_installer.h"
+#include "components/component_updater/test/test_installer.h"
 
 #include <string>
 

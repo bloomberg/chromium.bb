@@ -76,6 +76,11 @@
             'captive_portal/captive_portal_detector_unittest.cc',
             'cloud_devices/common/cloud_devices_urls_unittest.cc',
             'cloud_devices/common/printer_description_unittest.cc',
+            'component_updater/test/component_patcher_unittest.cc',
+            'component_updater/test/component_updater_ping_manager_unittest.cc',
+            'component_updater/test/crx_downloader_unittest.cc',
+            'component_updater/test/update_checker_unittest.cc',
+            'component_updater/test/update_response_unittest.cc',
             'crx_file/id_util_unittest.cc',
             'data_reduction_proxy/browser/data_reduction_proxy_auth_request_handler_unittest.cc',
             'data_reduction_proxy/browser/data_reduction_proxy_config_service_unittest.cc',
@@ -424,6 +429,11 @@
                 'components.gyp:autofill_content_browser',
                 'components.gyp:autofill_content_renderer',
                 'components.gyp:autofill_content_test_support',
+                
+                # Dependencies of component_updater
+                'components.gyp:component_updater',
+                'components.gyp:component_updater_test_support',
+                '../third_party/libxml/libxml.gyp:libxml',
 
                 # Dependencies of dom_distiller
                 'components.gyp:dom_distiller_content',

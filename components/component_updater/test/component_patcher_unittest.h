@@ -8,7 +8,6 @@
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/common/chrome_paths.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "courgette/courgette.h"
 #include "courgette/third_party/bsdiff.h"

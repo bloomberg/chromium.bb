@@ -10,7 +10,6 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "chrome/common/chrome_paths.h"
 #include "components/component_updater/crx_downloader.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -33,8 +32,9 @@ const char kTestFileName[] = "jebgalgnebhfojomionfpkfelancnnkf.crx";
 
 base::FilePath MakeTestFilePath(const char* file) {
   base::FilePath path;
-  PathService::Get(chrome::DIR_TEST_DATA, &path);
-  return path.AppendASCII("components").AppendASCII(file);
+  PathService::Get(base::DIR_SOURCE_ROOT, &path);
+  return path.AppendASCII("components").AppendASCII("test").AppendASCII("data")
+      .AppendASCII("component_updater").AppendASCII(file);
 }
 
 }  // namespace

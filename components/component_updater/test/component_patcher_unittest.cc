@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/base_paths.h"
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
@@ -11,12 +12,11 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/values.h"
-#include "chrome/browser/component_updater/test/component_patcher_unittest.h"
-#include "chrome/browser/component_updater/test/test_installer.h"
-#include "chrome/common/chrome_paths.h"
 #include "components/component_updater/component_patcher.h"
 #include "components/component_updater/component_patcher_operation.h"
 #include "components/component_updater/component_updater_service.h"
+#include "components/component_updater/test/component_patcher_unittest.h"
+#include "components/component_updater/test/test_installer.h"
 #include "content/public/browser/browser_thread.h"
 #include "courgette/courgette.h"
 #include "courgette/third_party/bsdiff.h"
@@ -56,8 +56,9 @@ namespace {
 
 base::FilePath test_file(const char* file) {
   base::FilePath path;
-  PathService::Get(chrome::DIR_TEST_DATA, &path);
-  return path.AppendASCII("components").AppendASCII(file);
+  PathService::Get(base::DIR_SOURCE_ROOT, &path);
+  return path.AppendASCII("components").AppendASCII("test").AppendASCII("data")
+      .AppendASCII("component_updater").AppendASCII(file);
 }
 
 }  // namespace

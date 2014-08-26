@@ -14,10 +14,10 @@
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/component_updater/component_updater_resource_throttle.h"
-#include "chrome/browser/component_updater/test/test_configurator.h"
-#include "chrome/browser/component_updater/test/test_installer.h"
 #include "chrome/common/chrome_paths.h"
 #include "components/component_updater/component_updater_utils.h"
+#include "components/component_updater/test/test_configurator.h"
+#include "components/component_updater/test/test_installer.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_controller.h"
 #include "content/public/browser/resource_request_info.h"
@@ -43,33 +43,12 @@ MockServiceObserver::MockServiceObserver() {
 MockServiceObserver::~MockServiceObserver() {
 }
 
-bool PartialMatch::Match(const std::string& actual) const {
-  return actual.find(expected_) != std::string::npos;
-}
-
-InterceptorFactory::InterceptorFactory()
-    : URLRequestPostInterceptorFactory(POST_INTERCEPT_SCHEME,
-                                       POST_INTERCEPT_HOSTNAME) {
-}
-
-InterceptorFactory::~InterceptorFactory() {
-}
-
-URLRequestPostInterceptor* InterceptorFactory::CreateInterceptor() {
-  return URLRequestPostInterceptorFactory::CreateInterceptor(
-      base::FilePath::FromUTF8Unsafe(POST_INTERCEPT_PATH));
-}
-
 ComponentUpdaterTest::ComponentUpdaterTest()
     : test_config_(NULL),
       thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {
   // The component updater instance under test.
   test_config_ = new TestConfigurator;
   component_updater_.reset(ComponentUpdateServiceFactory(test_config_));
-
-  // The test directory is chrome/test/data/components.
-  PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_);
-  test_data_dir_ = test_data_dir_.AppendASCII("components");
 
   net::URLFetcher::SetEnableInterceptionForTests(true);
 }
@@ -97,7 +76,10 @@ ComponentUpdateService* ComponentUpdaterTest::component_updater() {
 
 // Makes the full path to a component updater test file.
 const base::FilePath ComponentUpdaterTest::test_file(const char* file) {
-  return test_data_dir_.AppendASCII(file);
+  base::FilePath path;
+  PathService::Get(base::DIR_SOURCE_ROOT, &path);
+  return path.AppendASCII("components").AppendASCII("test").AppendASCII("data")
+      .AppendASCII("component_updater").AppendASCII(file);
 }
 
 TestConfigurator* ComponentUpdaterTest::test_configurator() {
