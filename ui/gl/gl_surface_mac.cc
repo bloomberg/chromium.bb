@@ -116,6 +116,12 @@ scoped_refptr<GLSurface> GLSurface::CreateViewGLSurface(
       NOTIMPLEMENTED() << "No onscreen support on Mac.";
       return NULL;
     }
+    case kGLImplementationOSMesaGL: {
+      scoped_refptr<GLSurface> surface(new GLSurfaceOSMesaHeadless());
+      if (!surface->Initialize())
+        return NULL;
+      return surface;
+    }
     case kGLImplementationMockGL:
       return new GLSurfaceStub;
     default:
