@@ -29,6 +29,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_switches.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_message_filter.h"
 #include "extensions/browser/extension_registry.h"
@@ -526,8 +527,12 @@ void ChromeContentBrowserClientExtensionsPart::
   if (!process)
     return;
   DCHECK(profile);
-  if (ProcessMap::Get(profile)->Contains(process->GetID()))
+  if (ProcessMap::Get(profile)->Contains(process->GetID())) {
     command_line->AppendSwitch(switches::kExtensionProcess);
+#if defined(ENABLE_WEBRTC)
+    command_line->AppendSwitch(::switches::kEnableWebRtcHWH264Encoding);
+#endif
+  }
 }
 
 }  // namespace extensions

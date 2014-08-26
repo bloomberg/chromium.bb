@@ -855,6 +855,9 @@ const char kDisableWebRtcHWEncoding[]       = "disable-webrtc-hw-encoding";
 
 // Enables VP8 HW encode acceleration for WebRTC.
 const char kEnableWebRtcHWVp8Encoding[]     = "enable-webrtc-hw-vp8-encoding";
+
+// Enables H264 HW encode acceleration for WebRTC.
+const char kEnableWebRtcHWH264Encoding[]    = "enable-webrtc-hw-h264-encoding";
 #endif
 
 #if defined(OS_ANDROID)

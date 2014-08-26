@@ -151,6 +151,7 @@ std::string DeriveCommandLine(const GURL& start_url,
     ::switches::kDisableWebRtcHWDecoding,
     ::switches::kDisableWebRtcHWEncoding,
     ::switches::kEnableWebRtcHWVp8Encoding,
+    ::switches::kEnableWebRtcHWH264Encoding,
 #endif
     ::switches::kDisableVaapiAcceleratedVideoEncode,
 #if defined(USE_OZONE)
