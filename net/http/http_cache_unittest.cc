@@ -6790,3 +6790,35 @@ TEST(HttpCache, ResourceFreshnessHeaderNotSent) {
 
   EXPECT_EQ(2, cache.network_layer()->transaction_count());
 }
+
+// Tests that we allow multiple simultaneous, non-overlapping transactions to
+// take place on a sparse entry.
+TEST(HttpCache, RangeGET_MultipleRequests) {
+  MockHttpCache cache;
+
+  // Create a transaction for bytes 0-9.
+  MockHttpRequest request(kRangeGET_TransactionOK);
+  MockTransaction transaction(kRangeGET_TransactionOK);
+  transaction.request_headers = "Range: bytes = 0-9\r\n" EXTRA_HEADER;
+  transaction.data = "rg: 00-09 ";
+  AddMockTransaction(&transaction);
+
+  net::TestCompletionCallback callback;
+  scoped_ptr<net::HttpTransaction> trans;
+  int rv = cache.http_cache()->CreateTransaction(net::DEFAULT_PRIORITY, &trans);
+  EXPECT_EQ(net::OK, rv);
+  ASSERT_TRUE(trans.get());
+
+  // Start our transaction.
+  trans->Start(&request, callback.callback(), net::BoundNetLog());
+
+  // A second transaction on a different part of the file (the default
+  // kRangeGET_TransactionOK requests 40-49) should not be blocked by
+  // the already pending transaction.
+  RunTransactionTest(cache.http_cache(), kRangeGET_TransactionOK);
+
+  // Let the first transaction complete.
+  callback.WaitForResult();
+
+  RemoveMockTransaction(&transaction);
+}
