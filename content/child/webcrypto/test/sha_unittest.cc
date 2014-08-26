@@ -22,8 +22,7 @@ namespace {
 
 TEST(WebCryptoShaTest, DigestSampleSets) {
   scoped_ptr<base::ListValue> tests;
-  // TODO(eroman): rename to sha.json
-  ASSERT_TRUE(ReadJsonTestFileToList("digest.json", &tests));
+  ASSERT_TRUE(ReadJsonTestFileToList("sha.json", &tests));
 
   for (size_t test_index = 0; test_index < tests->GetSize(); ++test_index) {
     SCOPED_TRACE(test_index);
@@ -44,7 +43,7 @@ TEST(WebCryptoShaTest, DigestSampleSets) {
 
 TEST(WebCryptoShaTest, DigestSampleSetsInChunks) {
   scoped_ptr<base::ListValue> tests;
-  ASSERT_TRUE(ReadJsonTestFileToList("digest.json", &tests));
+  ASSERT_TRUE(ReadJsonTestFileToList("sha.json", &tests));
 
   for (size_t test_index = 0; test_index < tests->GetSize(); ++test_index) {
     SCOPED_TRACE(test_index);
