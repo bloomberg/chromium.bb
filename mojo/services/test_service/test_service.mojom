@@ -8,7 +8,7 @@ interface TestService {
   Ping() => ();
   // Connect to a TestTimeService at |app_url| and ferry the data back
   // in |response|.
-  ConnectToAppAndGetTime(string app_url) => (int64 time_usec);
+  ConnectToAppAndGetTime(string? app_url) => (int64 time_usec);
   StartTrackingRequests() => ();
 };
 

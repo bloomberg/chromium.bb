@@ -5,7 +5,7 @@
 module mojo.examples {
 
 interface EchoService {
-  EchoString(string value) => (string value);
+  EchoString(string? value) => (string? value);
 };
 
 }

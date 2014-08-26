@@ -21,28 +21,28 @@ enum Target {
 struct NavigationDetails {
   // TODO(mpcomplete): will we ever need more than the URLRequest? Can
   // we pass that around directly?
-  URLRequest request = default;
+  URLRequest? request = default;
 };
 
 struct ResponseDetails {
   // TODO(beng): consider providing access to URLRequest too. Currently it is
   //             not possible to obtain from the URLLoader.
 
-  URLResponse response;
+  URLResponse? response;
 
   // The URLLoader instance that generated the response. This must be kept
   // alive until the response body has been completely consumed.
-  URLLoader loader;
+  URLLoader? loader;
 };
 
 // Embedders that support navigation of implement this interface.
 interface NavigatorHost {
   RequestNavigate(uint32 source_node_id, Target target,
-                  NavigationDetails details);
+                  NavigationDetails? details);
 
   // Applications call this to inform hosts of navigations they performed
   // locally. For example, pushState() navigations in an HTML application.
-  DidNavigateLocally(uint32 source_node_id, string url);
+  DidNavigateLocally(uint32 source_node_id, string? url);
 };
 
 // Applications implement this interface to support navigation of their views
@@ -51,8 +51,8 @@ interface NavigatorHost {
 // network load.
 interface Navigator {
   Navigate(uint32 node_id,
-           NavigationDetails navigation_details,
-           ResponseDetails response_details);
+           NavigationDetails? navigation_details,
+           ResponseDetails? response_details);
 };
 
 }

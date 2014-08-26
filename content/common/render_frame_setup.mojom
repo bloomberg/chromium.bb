@@ -8,7 +8,7 @@ module content {
 
 interface RenderFrameSetup {
   GetServiceProviderForFrame(int32 frame_routing_id,
-                             mojo.ServiceProvider& service_provider);
+                             mojo.ServiceProvider&? service_provider);
 };
 
 }

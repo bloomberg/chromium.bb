@@ -10,7 +10,7 @@ module mojo {
 // implement Interfaces.
 [Client=Shell]
 interface Application {
-  AcceptConnection(string requestor_url, ServiceProvider provider);
+  AcceptConnection(string? requestor_url, ServiceProvider? provider);
 };
 
 }

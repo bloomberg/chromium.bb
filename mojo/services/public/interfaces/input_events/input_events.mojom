@@ -9,7 +9,7 @@ import "mojo/services/public/interfaces/input_events/input_key_codes.mojom"
 module mojo {
 
 struct LocationData {
-  Point in_view_location;
+  Point? in_view_location;
   Point? screen_location;
 };
 

@@ -8,8 +8,8 @@ import "mojo/services/public/interfaces/geometry/geometry.mojom"
 module mojo {
 
 interface Gpu {
-  CreateOnscreenGLES2Context(uint64 native_viewport_id, Size size, CommandBuffer& gles2_client);
-  CreateOffscreenGLES2Context(CommandBuffer& gles2_client);
+  CreateOnscreenGLES2Context(uint64 native_viewport_id, Size? size, CommandBuffer&? gles2_client);
+  CreateOffscreenGLES2Context(CommandBuffer&? gles2_client);
 };
 
 }

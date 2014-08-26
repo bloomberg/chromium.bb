@@ -12,7 +12,7 @@ module mojo {
 struct ViewData {
   uint32 parent_id;
   uint32 view_id;
-  mojo.Rect bounds;
+  mojo.Rect? bounds;
   // TODO(sky): add visible.
 };
 
@@ -34,7 +34,7 @@ interface ViewManagerInitService {
   // typically referred to as the "window manager", and will have a specific
   // definition of where within its View hierarchy to embed an unparented URL.
   // See ViewManagerService below for more details about |service_provider|.
-  Embed(string url, ServiceProvider? service_provider) => (bool success);
+  Embed(string? url, ServiceProvider? service_provider) => (bool success);
 };
 
 // Views are identified by a uint32. The upper 16 bits are the connection id,
@@ -59,7 +59,7 @@ interface ViewManagerService {
   DeleteView(uint32 view_id) => (bool success);
 
   // Sets the specified bounds of the specified view.
-  SetViewBounds(uint32 view_id, mojo.Rect bounds) => (bool success);
+  SetViewBounds(uint32 view_id, mojo.Rect? bounds) => (bool success);
 
   // Sets the visibility of the specified view to |visible|. Connections are
   // allowed to change the visibility of any view they have created, as well as
@@ -98,11 +98,11 @@ interface ViewManagerService {
   // the first result in the return value, unless |view_id| is invalid, in which
   // case an empty vector is returned. The views are visited using a depth first
   // search (pre-order).
-  GetViewTree(uint32 view_id) => (ViewData[] views);
+  GetViewTree(uint32 view_id) => (ViewData?[]? views);
 
   // Shows the specified image (png encoded) in the specified view.
   SetViewContents(uint32 view_id,
-                  handle<shared_buffer> buffer,
+                  handle<shared_buffer>? buffer,
                   uint32 buffer_size) => (bool success);
 
   // Embeds the app for |url| in the specified view. More specifically this
@@ -134,14 +134,14 @@ interface ViewManagerService {
   // app. Note that if a different app is subsequently embedded at |view_id|
   // the |service_provider|'s connection to its client in the embedded app and
   // any services it provided are not broken and continue to be valid.
-  Embed(string url,
+  Embed(string? url,
         uint32 view_id,
         ServiceProvider? service_provider) => (bool success);
 
   // TODO(sky): move these to a separate interface when FIFO works.
 
   // Sends OnViewInputEvent() to the owner of the specified view.
-  DispatchOnViewInputEvent(uint32 view_id, mojo.Event event);
+  DispatchOnViewInputEvent(uint32 view_id, mojo.Event? event);
 };
 
 // Changes to views are not sent to the connection that originated the
@@ -152,12 +152,14 @@ interface ViewManagerClient {
   // Invoked when the client application has been embedded at |root|.
   // See Embed() on ViewManagerService for more details.
   OnEmbed(uint16 connection_id,
-          string embedder_url,
-          ViewData root,
+          string? embedder_url,
+          ViewData? root,
           ServiceProvider&? service_provider);
 
   // Invoked when a view's bounds have changed.
-  OnViewBoundsChanged(uint32 view, mojo.Rect old_bounds, mojo.Rect new_bounds);
+  OnViewBoundsChanged(uint32 view,
+                      mojo.Rect? old_bounds,
+                      mojo.Rect? new_bounds);
 
   // Invoked when a change is done to the hierarchy. A value of 0 is used to
   // identify a null view. For example, if the old_parent is NULL, 0 is
@@ -168,7 +170,7 @@ interface ViewManagerClient {
   OnViewHierarchyChanged(uint32 view,
                          uint32 new_parent,
                          uint32 old_parent,
-                         ViewData[] views);
+                         ViewData?[]? views);
 
   // Invoked when the order of views within a parent changes.
   OnViewReordered(uint32 view_id,
@@ -179,7 +181,7 @@ interface ViewManagerClient {
   OnViewDeleted(uint32 view);
 
   // Invoked when an event is targeted at the specified view.
-  OnViewInputEvent(uint32 view, mojo.Event event) => ();
+  OnViewInputEvent(uint32 view, mojo.Event? event) => ();
 
   // TODO(sky): The following methods represent an interface between the view
   //            manager and the application embedded at the service root view
@@ -188,10 +190,10 @@ interface ViewManagerClient {
   //            once support for derived FIFOs is landed.
 
   // Requests the window manager create a "top level" view embedding |url|.
-  Embed(string url, ServiceProvider&? service_provider);
+  Embed(string? url, ServiceProvider&? service_provider);
 
   // Requests the view manager dispatch the event.
-  DispatchOnViewInputEvent(mojo.Event event);
+  DispatchOnViewInputEvent(mojo.Event? event);
 };
 
 }

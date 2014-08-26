@@ -10,18 +10,18 @@ module mojo {
 
 [Client=NativeViewportClient]
 interface NativeViewport {
-  Create(Rect bounds);
+  Create(Rect? bounds);
   Show();
   Hide();
   Close();
-  SetBounds(Rect bounds);
+  SetBounds(Rect? bounds);
 };
 
 interface NativeViewportClient {
   OnCreated(uint64 native_viewport_id);
-  OnBoundsChanged(Rect bounds);
+  OnBoundsChanged(Rect? bounds);
   OnDestroyed();
-  OnEvent(Event event) => ();
+  OnEvent(Event? event) => ();
 };
 
 }

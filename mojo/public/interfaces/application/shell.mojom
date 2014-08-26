@@ -12,7 +12,7 @@ module mojo {
 interface Shell {
   // Loads url. mojo:{service} will result in the user of the value of the
   // --origin flag to the shell being used.
-  ConnectToApplication(string application_url, ServiceProvider& provider);
+  ConnectToApplication(string? application_url, ServiceProvider&? provider);
 };
 
 }

@@ -8,17 +8,17 @@ module mojo {
 
 struct URLRequest {
   // The URL to load.
-  string url;
+  string? url;
 
   // The HTTP method if applicable.
-  string method = "GET";
+  string? method = "GET";
 
   // Additional HTTP request headers.
-  string[]? headers;
+  string?[]? headers;
 
   // The payload for the request body, represented as a concatenation of data
   // streams. For HTTP requests, the method must be set to "POST" or "PUT".
-  handle<data_pipe_consumer>[]? body;
+  handle<data_pipe_consumer>?[]? body;
 
   // The number of bytes to be read from |body|. A Content-Length header of
   // this value will be sent. Set to -1 if length is unknown, which will cause
@@ -47,25 +47,25 @@ struct URLResponse {
 
   // The response body stream. Read from this data pipe to receive the bytes of
   // response body.
-  handle<data_pipe_consumer> body;
+  handle<data_pipe_consumer>? body;
 
   // The final URL of the response, after redirects have been followed.
-  string url;
+  string? url;
 
   // The HTTP status code. 0 if not applicable.
   uint32 status_code;
 
   // The HTTP status line.
-  string status_line;
+  string? status_line;
 
   // The HTTP response headers.
-  string[] headers;
+  string?[]? headers;
 
   // The MIME type of the response body.
-  string mime_type;
+  string? mime_type;
 
   // The character set of the response body.
-  string charset;
+  string? charset;
 
   // These fields are set to non-NULL if this response corresponds to a
   // redirect.  Call the |FollowRedirect| method on the URLLoader instance to
@@ -92,15 +92,15 @@ interface URLLoader {
   // Loads the given |request|, asynchronously producing |response|. Consult
   // |response| to determine if the request resulted in an error, was
   // redirected, or has a response body to be consumed.
-  Start(URLRequest request) => (URLResponse response);
+  Start(URLRequest? request) => (URLResponse? response);
 
   // If the request passed to |Start| had |auto_follow_redirects| set to false,
   // then upon receiving an URLResponse with a non-NULL |redirect_url| field,
   // |FollowRedirect| may be called to load the URL indicated by the redirect.
-  FollowRedirect() => (URLResponse response);
+  FollowRedirect() => (URLResponse? response);
 
   // Query status about the URLLoader.
-  QueryStatus() => (URLLoaderStatus status);
+  QueryStatus() => (URLLoaderStatus? status);
 };
 
 }

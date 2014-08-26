@@ -12,7 +12,7 @@ interface IWindowManager {
   // Shows the keyboard for the specified view. |bounds| is the bounds of the
   // view that is showing focus. |bounds| is relative to the bounds of the node.
   // Events from the keyboard are routed to the view with id |view_id|.
-  ShowKeyboard(uint32 view_id, mojo.Rect bounds);
+  ShowKeyboard(uint32 view_id, mojo.Rect? bounds);
 
   // Hides the keyboard. This is ignored if |view_id| is not the view that was
   // last passed to ShowKeyboard().

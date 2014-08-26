@@ -30,12 +30,12 @@ enum ConnectionOptions {
 struct Message {
   uint32 id;
   uint32 time;
-  uint8[] data;
+  uint8[]? data;
 };
 
 [Client=SpyClient]
 interface SpyServer {
-  StartSession(Version version) => (Result result, string name);
+  StartSession(Version? version) => (Result result, string? name);
   StopSession() => (Result result);
   TrackConnection(uint32 id, ConnectionOptions options) => (Result result);
 };
@@ -43,8 +43,8 @@ interface SpyServer {
 interface SpyClient {
   OnFatalError(Result result);
   OnSessionEnd(Result result);
-  OnClientConnection(string name, uint32 id, ConnectionOptions options);
-  OnMessage(Message message);
+  OnClientConnection(string? name, uint32 id, ConnectionOptions options);
+  OnMessage(Message? message);
 };
 
 }

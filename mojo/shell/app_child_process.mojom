@@ -7,7 +7,7 @@ module mojo.shell {
 [Client=AppChildControllerClient]
 interface AppChildController {
   // TODO(vtl): |service| should be of a more specific type.
-  StartApp(string app_path, handle<message_pipe> service);
+  StartApp(string? app_path, handle<message_pipe>? service);
 };
 
 interface AppChildControllerClient {

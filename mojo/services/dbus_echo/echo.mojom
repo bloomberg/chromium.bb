@@ -5,7 +5,7 @@
 module mojo {
 
 interface EchoService {
-  Echo(string to_echo) => (string echoed);
+  Echo(string? to_echo) => (string? echoed);
 };
 
 }

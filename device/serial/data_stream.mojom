@@ -8,7 +8,7 @@ module device.serial {
 interface DataSource {
   // Initializes this DataSource with a data pipe handle to use for data
   // transmission.
-  Init(handle<data_pipe_producer> producer_handle);
+  Init(handle<data_pipe_producer>? producer_handle);
 
   // Resumes sending data after it has been stopped due to an error.
   Resume();
@@ -25,7 +25,7 @@ interface DataSourceClient {
 interface DataSink {
   // Initializes this DataSink with a data pipe handle to use for data
   // transmission.
-  Init(handle<data_pipe_consumer> consumer_handle);
+  Init(handle<data_pipe_consumer>? consumer_handle);
 
   // Requests the cancellation of any data that has been written to the pipe,
   // but has not yet been sent to the sink.

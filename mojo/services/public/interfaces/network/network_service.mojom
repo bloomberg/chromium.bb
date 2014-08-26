@@ -8,9 +8,9 @@ import "mojo/services/public/interfaces/network/url_loader.mojom"
 module mojo {
 
 interface NetworkService {
-  CreateURLLoader(URLLoader& loader);
+  CreateURLLoader(URLLoader&? loader);
 
-  GetCookieStore(CookieStore& cookie_store);
+  GetCookieStore(CookieStore&? cookie_store);
 
   // TODO(darin): Add other methods here.
 };

@@ -14,7 +14,7 @@ struct ServiceStats {
 // A per-service summary of all the ServiceStats the
 // TestTrackedRequestService has observed.
 struct ServiceReport {
-  string service_name;
+  string? service_name;
   uint64 total_requests;
   double mean_health;
 };
@@ -22,7 +22,7 @@ struct ServiceReport {
 // A simple interface to obtain a "report" from all services that have
 // opted to connect themselves to for request tracking.
 interface TestTrackedRequestService {
-  GetReport() => (ServiceReport[] report);
+  GetReport() => (ServiceReport?[]? report);
 };
 
 // TestRequestTracker records ServiceStats for an individual service
@@ -30,14 +30,14 @@ interface TestTrackedRequestService {
 [Client=TestRequestTrackerClient]
 interface TestRequestTracker {
   // Upload a ServiceStats for tracking.
-  RecordStats(uint64 client_id, ServiceStats stats);
+  RecordStats(uint64 client_id, ServiceStats? stats);
 };
 
 // The client-side contract for uploading ServiceStats to TestRequestTracker.
 interface TestRequestTrackerClient {
   const uint64 kInvalidId = 0;
   // Handshake to tell the client its global identifier and get the name.
-  SetIdAndReturnName(uint64 id) => (string service_name);
+  SetIdAndReturnName(uint64 id) => (string? service_name);
 };
 
 }  // module mojo.test
