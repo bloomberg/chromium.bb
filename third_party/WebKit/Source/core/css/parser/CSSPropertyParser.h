@@ -147,7 +147,7 @@ private:
     bool parseGridShorthand(bool important);
     bool parseGridAreaShorthand(bool important);
     bool parseSingleGridAreaLonghand(RefPtrWillBeRawPtr<CSSValue>&);
-    PassRefPtrWillBeRawPtr<CSSValue> parseGridTrackList(bool important);
+    PassRefPtrWillBeRawPtr<CSSValue> parseGridTrackList();
     bool parseGridTrackRepeatFunction(CSSValueList&);
     PassRefPtrWillBeRawPtr<CSSValue> parseGridTrackSize(CSSParserValueList& inputList);
     PassRefPtrWillBeRawPtr<CSSPrimitiveValue> parseGridBreadth(CSSParserValue*);
@@ -204,13 +204,13 @@ private:
     bool parseBorderImageOutset(RefPtrWillBeRawPtr<CSSPrimitiveValue>&);
     bool parseBorderRadius(CSSPropertyID, bool important);
 
-    bool parseAspectRatio(bool important);
+    PassRefPtrWillBeRawPtr<CSSValue> parseAspectRatio();
 
-    bool parseReflect(CSSPropertyID, bool important);
+    PassRefPtrWillBeRawPtr<CSSValue> parseReflect();
 
     bool parseFlex(CSSParserValueList* args, bool important);
 
-    bool parseObjectPosition(bool important);
+    PassRefPtrWillBeRawPtr<CSSValue> parseObjectPosition();
 
     // Image generators
     bool parseCanvas(CSSParserValueList*, RefPtrWillBeRawPtr<CSSValue>&);
@@ -226,7 +226,7 @@ private:
 
     PassRefPtrWillBeRawPtr<CSSValue> parseImageSet(CSSParserValueList*);
 
-    bool parseWillChange(bool important);
+    PassRefPtrWillBeRawPtr<CSSValue> parseWillChange();
 
     PassRefPtrWillBeRawPtr<CSSValueList> parseFilter();
     PassRefPtrWillBeRawPtr<CSSFilterValue> parseBuiltinFilterArguments(CSSParserValueList*, CSSFilterValue::FilterOperationType);
@@ -237,7 +237,7 @@ private:
 
     bool parseTextEmphasisStyle(bool important);
 
-    bool parseTouchAction(bool important);
+    PassRefPtrWillBeRawPtr<CSSValue> parseTouchAction();
 
     void addTextDecorationProperty(CSSPropertyID, PassRefPtrWillBeRawPtr<CSSValue>, bool important);
     bool parseTextDecoration(CSSPropertyID propId, bool important);
