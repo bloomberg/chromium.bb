@@ -22,7 +22,7 @@
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_sender.h"
-#include "ui/events/gestures/gesture_sequence.h"
+#include "ui/events/gesture_detection/motion_event.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/win/dpi.h"
 #include "ui/metro_viewer/metro_viewer_messages.h"
@@ -419,7 +419,7 @@ class ChromeAppViewAsh::PointerInfoHandler {
     pointer_point_->get_PointerId(&pointer_id_);
     // Map the OS touch event id to a range allowed by the gesture recognizer.
     if (IsTouch())
-      pointer_id_ %= ui::GestureSequence::kMaxGesturePoints;
+      pointer_id_ %= ui::MotionEvent::MAX_TOUCH_POINT_COUNT;
 
     boolean left_button_state;
     hr = properties->get_IsLeftButtonPressed(&left_button_state);

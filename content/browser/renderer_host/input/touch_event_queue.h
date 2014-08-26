@@ -62,11 +62,6 @@ class CONTENT_EXPORT TouchEventQueue {
     // Defaults to 0 (disabled).
     double touchmove_slop_suppression_length_dips;
 
-    // Whether the touchmove slop suppression region is boundary inclusive.
-    // Defaults to true.
-    // TODO(jdduke): Remove when unified GR enabled, crbug.com/332418.
-    bool touchmove_slop_suppression_region_includes_boundary;
-
     // Determines the type of touch scrolling.
     // Defaults to TouchEventQueue:::TOUCH_SCROLLING_MODE_DEFAULT.
     TouchEventQueue::TouchScrollingMode touch_scrolling_mode;

@@ -20,18 +20,6 @@ const char kTouchEventsEnabled[] = "enabled";
 //   disabled: touch events are disabled.
 const char kTouchEventsDisabled[] = "disabled";
 
-// Enable the unified gesture detector, instead of the aura gesture detector.
-const char kUnifiedGestureDetector[] = "unified-gesture-detector";
-
-// The values the kUnifiedGestureDetector switch may have, as in
-// --unified-gesture-detector=disabled.
-//   auto: Same as disabled.
-const char kUnifiedGestureDetectorAuto[] = "auto";
-//   enabled: Use the unified gesture detector.
-const char kUnifiedGestureDetectorEnabled[] = "enabled";
-//   disabled: Use the aura gesture detector.
-const char kUnifiedGestureDetectorDisabled[] = "disabled";
-
 // Enable compensation for unstable pinch zoom. Some touch screens display
 // significant amount of wobble when moving a finger in a straight line. This
 // makes two finger scroll trigger an oscillating pinch zoom. See

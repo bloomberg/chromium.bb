@@ -10,7 +10,6 @@
 
 #if defined(USE_AURA)
 #include "ui/events/gestures/gesture_configuration.h"
-#include "ui/events/gestures/unified_gesture_detector_enabled.h"
 #elif defined(OS_ANDROID)
 #include "ui/gfx/android/view_configuration.h"
 #include "ui/gfx/screen.h"
@@ -53,9 +52,6 @@ TouchEventQueue::Config GetTouchEventQueueConfig() {
 
   config.touchmove_slop_suppression_length_dips =
       ui::GestureConfiguration::max_touch_move_in_pixels_for_click();
-
-  config.touchmove_slop_suppression_region_includes_boundary =
-      ui::IsUnifiedGestureDetectorEnabled();
 
   return config;
 }

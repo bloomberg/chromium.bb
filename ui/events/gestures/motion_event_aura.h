@@ -5,15 +5,13 @@
 #ifndef UI_EVENTS_GESTURE_DETECTION_UI_MOTION_EVENT_H_
 #define UI_EVENTS_GESTURE_DETECTION_UI_MOTION_EVENT_H_
 
-#include "ui/events/gesture_detection/motion_event.h"
-
 #include <map>
 
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "ui/events/event.h"
 #include "ui/events/events_export.h"
-#include "ui/events/gestures/gesture_sequence.h"
+#include "ui/events/gesture_detection/motion_event.h"
 
 namespace ui {
 
@@ -71,7 +69,7 @@ class EVENTS_EXPORT MotionEventAura : public MotionEvent {
       const base::TimeTicks& last_touch_time,
       Action cached_action,
       int cached_action_index,
-      const PointData (&active_touches)[GestureSequence::kMaxGesturePoints]);
+      const PointData (&active_touches)[10/*TODO*/]);
 
   static PointData GetPointDataFromTouchEvent(const TouchEvent& touch);
   void AddTouch(const TouchEvent& touch);
@@ -87,8 +85,7 @@ class EVENTS_EXPORT MotionEventAura : public MotionEvent {
   int cached_action_index_;
 
   // We want constant time indexing by pointer_index, and fast indexing by id.
-  // TODO(tdresser): figure out which constant to use here.
-  PointData active_touches_[GestureSequence::kMaxGesturePoints];
+  PointData active_touches_[10/*TODO*/];
 
   DISALLOW_COPY_AND_ASSIGN(MotionEventAura);
 };

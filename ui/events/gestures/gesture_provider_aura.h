@@ -6,6 +6,7 @@
 #define UI_EVENTS_GESTURE_DETECTION_UI_GESTURE_PROVIDER_H_
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_vector.h"
 #include "ui/events/event.h"
 #include "ui/events/events_export.h"
 #include "ui/events/gesture_detection/filtered_gesture_provider.h"
