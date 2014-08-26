@@ -285,7 +285,7 @@ class SdchBrowserTest : public InProcessBrowserTest, net::URLFetcherDelegate {
   }
 
   void FetchUrl(GURL url) {
-    FetchUrlDetailed(url, url_request_context_getter_);
+    FetchUrlDetailed(url, url_request_context_getter_.get());
   }
 
   const net::URLRequestStatus& FetcherStatus() const {
@@ -341,8 +341,8 @@ class SdchBrowserTest : public InProcessBrowserTest, net::URLFetcherDelegate {
   }
 
   bool GetData(bool* sdch_encoding_used) {
-    return GetDataDetailed(
-        url_request_context_getter_, sdch_encoding_used);
+    return GetDataDetailed(url_request_context_getter_.get(),
+                           sdch_encoding_used);
   }
 
   // Client information and control.

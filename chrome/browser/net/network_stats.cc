@@ -333,7 +333,7 @@ int NetworkStats::ReadData() {
       break;
     if (ReadComplete(rv))
       return rv;
-  };
+  }
   if (rv == net::ERR_IO_PENDING)
     read_state_ = READ_STATE_READ_PENDING;
   return rv;
@@ -478,7 +478,7 @@ void NetworkStats::OnWriteComplete(int result) {
   DCHECK_NE(net::ERR_IO_PENDING, result);
   DCHECK_EQ(WRITE_STATE_WRITE_PENDING, write_state_);
   write_state_ = WRITE_STATE_IDLE;
-  if (result < 0 || !socket_.get() || write_buffer_ == NULL) {
+  if (result < 0 || !socket_.get() || write_buffer_.get() == NULL) {
     TestPhaseComplete(WRITE_FAILED, result);
     return;
   }
