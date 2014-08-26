@@ -5,7 +5,7 @@
 #include "chrome/utility/importer/bookmark_html_reader.h"
 
 #include "base/callback.h"
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/i18n/icu_string_conversions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"

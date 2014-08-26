@@ -5,7 +5,7 @@
 #include "chrome/browser/media_galleries/imported_media_gallery_registry.h"
 
 #include "base/bind.h"
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/logging.h"
 #include "chrome/browser/media_galleries/fileapi/iphoto_data_provider.h"
 #include "chrome/browser/media_galleries/fileapi/itunes_data_provider.h"

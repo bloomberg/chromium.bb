@@ -4,7 +4,7 @@
 
 #include "chrome/browser/extensions/test_extension_dir.h"
 
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/json/json_writer.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/test/values_test_util.h"

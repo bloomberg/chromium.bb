@@ -9,7 +9,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 
 // This class is based on Firefox code in:
 //   profile/dirserviceprovider/src/nsProfileLock.cpp

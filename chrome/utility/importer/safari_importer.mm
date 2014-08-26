@@ -9,7 +9,7 @@
 #include <map>
 #include <vector>
 
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/mac/mac_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/sys_string_conversions.h"
@@ -19,9 +19,9 @@
 #include "chrome/common/importer/imported_favicon_usage.h"
 #include "chrome/common/importer/importer_bridge.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/grit/generated_resources.h"
 #include "chrome/utility/importer/favicon_reencode.h"
 #include "components/strings/grit/components_strings.h"
-#include "chrome/grit/generated_resources.h"
 #include "net/base/data_url.h"
 #include "sql/statement.h"
 #include "url/gurl.h"

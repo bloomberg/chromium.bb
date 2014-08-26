@@ -17,7 +17,7 @@
 #if defined(OS_CHROMEOS)
 #include <fcntl.h>
 
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #endif
 
 #if defined(ENABLE_PRINTING)

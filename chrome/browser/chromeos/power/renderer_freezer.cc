@@ -6,7 +6,7 @@
 
 #include <cstring>  // needed for strlen()
 
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/logging.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 

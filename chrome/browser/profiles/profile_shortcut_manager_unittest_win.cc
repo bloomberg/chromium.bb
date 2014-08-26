@@ -5,7 +5,7 @@
 #include <objbase.h>  // For CoInitialize().
 
 #include "base/base_paths.h"
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"

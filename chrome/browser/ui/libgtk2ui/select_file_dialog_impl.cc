@@ -7,7 +7,7 @@
 #include "chrome/browser/ui/libgtk2ui/select_file_dialog_impl.h"
 
 #include "base/environment.h"
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/nix/xdg_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/public/browser/browser_thread.h"

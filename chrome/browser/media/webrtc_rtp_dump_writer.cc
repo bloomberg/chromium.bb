@@ -5,7 +5,7 @@
 #include "chrome/browser/media/webrtc_rtp_dump_writer.h"
 
 #include "base/big_endian.h"
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/logging.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/zlib/zlib.h"

@@ -6,8 +6,8 @@
 
 #include <limits>
 
-#include "base/file_util.h"
 #include "base/files/file.h"
+#include "base/files/file_util.h"
 #include "base/memory/scoped_vector.h"
 #include "base/metrics/histogram.h"
 #include "base/threading/thread_restrictions.h"

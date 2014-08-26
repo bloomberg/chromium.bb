@@ -4,7 +4,7 @@
 
 #include "chrome/browser/sync/glue/sync_backend_host_core.h"
 
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/metrics/histogram.h"
 #include "chrome/browser/sync/glue/device_info.h"
 #include "chrome/browser/sync/glue/invalidation_adapter.h"

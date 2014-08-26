@@ -4,9 +4,9 @@
 
 #include "chrome/browser/extensions/api/file_handlers/app_file_handler_util.h"
 
-#include "base/file_util.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/render_process_host.h"

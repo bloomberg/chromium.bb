@@ -5,8 +5,8 @@
 #include <algorithm>
 #include <vector>
 
-#include "base/file_util.h"
 #include "base/files/file.h"
+#include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "chrome/common/media_galleries/pmp_constants.h"
 #include "chrome/common/media_galleries/pmp_test_util.h"

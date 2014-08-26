@@ -5,8 +5,8 @@
 #include "chrome/browser/chromeos/drive/file_system/download_operation.h"
 
 #include "base/callback_helpers.h"
-#include "base/file_util.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/task_runner_util.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"

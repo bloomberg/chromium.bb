@@ -6,7 +6,7 @@
 
 #include <shlobj.h>
 
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/strings/string16.h"
 #include "base/win/registry.h"

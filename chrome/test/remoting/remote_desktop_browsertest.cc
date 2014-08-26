@@ -5,7 +5,7 @@
 #include "chrome/test/remoting/remote_desktop_browsertest.h"
 
 #include "base/command_line.h"
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/path_service.h"
 #include "chrome/browser/extensions/extension_service.h"

@@ -4,7 +4,7 @@
 
 #include "chrome/browser/media_galleries/fileapi/safe_picasa_albums_indexer.h"
 
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "chrome/browser/media_galleries/fileapi/media_file_system_backend.h"
 #include "chrome/common/extensions/chrome_utility_extensions_messages.h"
 #include "content/public/browser/browser_thread.h"

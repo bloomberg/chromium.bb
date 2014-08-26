@@ -5,7 +5,7 @@
 #include "chrome/browser/safe_browsing/safe_browsing_store_file.h"
 
 #include "base/bind.h"
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/md5.h"

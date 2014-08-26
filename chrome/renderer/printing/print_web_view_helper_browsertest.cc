@@ -19,7 +19,7 @@
 #include "third_party/WebKit/public/web/WebView.h"
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "printing/image.h"
 
 using blink::WebFrame;

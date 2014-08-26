@@ -5,7 +5,7 @@
 #include "chrome/browser/chromeos/drive/resource_metadata_storage.h"
 
 #include "base/bind.h"
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"

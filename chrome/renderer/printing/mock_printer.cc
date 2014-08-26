@@ -5,7 +5,7 @@
 #include "chrome/renderer/printing/mock_printer.h"
 
 #include "base/basictypes.h"
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/memory/shared_memory.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"

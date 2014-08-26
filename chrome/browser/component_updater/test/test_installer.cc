@@ -6,8 +6,8 @@
 
 #include <string>
 
-#include "base/file_util.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/values.h"
 
 namespace component_updater {

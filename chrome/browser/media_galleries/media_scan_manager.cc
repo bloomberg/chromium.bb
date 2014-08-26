@@ -4,8 +4,8 @@
 
 #include "chrome/browser/media_galleries/media_scan_manager.h"
 
-#include "base/file_util.h"
 #include "base/files/file_enumerator.h"
+#include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/time/time.h"

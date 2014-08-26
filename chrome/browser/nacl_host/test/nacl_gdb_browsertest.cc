@@ -4,7 +4,7 @@
 
 #include "base/command_line.h"
 #include "base/environment.h"
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/win/windows_version.h"
 #include "chrome/common/chrome_switches.h"

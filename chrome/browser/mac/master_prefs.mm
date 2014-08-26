@@ -4,7 +4,7 @@
 
 #include "chrome/browser/mac/master_prefs.h"
 
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/mac/foundation_util.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_version_info.h"

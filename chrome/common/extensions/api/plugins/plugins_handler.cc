@@ -4,7 +4,7 @@
 
 #include "chrome/common/extensions/api/plugins/plugins_handler.h"
 
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"

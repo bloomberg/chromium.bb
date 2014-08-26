@@ -9,7 +9,7 @@
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"

@@ -9,8 +9,8 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/file_util.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/memory/shared_memory.h"
 #include "base/version.h"
 #include "chrome/browser/chrome_notification_types.h"

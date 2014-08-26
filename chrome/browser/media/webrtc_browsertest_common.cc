@@ -4,7 +4,7 @@
 
 #include "chrome/browser/media/webrtc_browsertest_common.h"
 
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/test_timeouts.h"

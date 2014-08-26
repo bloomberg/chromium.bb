@@ -7,12 +7,12 @@
 #include <windows.h>
 #include <shlwapi.h>
 #include <shobjidl.h>
-#include <propkey.h>
+#include <propkey.h>  // Needs to come after shobjidl.h.
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/file_util.h"
 #include "base/files/file_enumerator.h"
+#include "base/files/file_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"

@@ -4,7 +4,7 @@
 
 #include "chrome/browser/sync_file_system/logger.h"
 
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/strings/stringprintf.h"

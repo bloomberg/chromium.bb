@@ -4,8 +4,8 @@
 
 #include "chrome/browser/extensions/api/file_handlers/mime_util.h"
 
-#include "base/file_util.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/filename_util.h"

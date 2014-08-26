@@ -4,8 +4,8 @@
 
 #include "chrome/browser/extensions/path_util.h"
 
-#include "base/file_util.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::FilePath;

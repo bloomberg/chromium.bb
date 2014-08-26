@@ -5,7 +5,7 @@
 #include "chrome/browser/chromeos/imageburner/burn_manager.h"
 
 #include "base/bind.h"
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/strings/string_util.h"
 #include "base/threading/worker_pool.h"
 #include "chrome/grit/generated_resources.h"

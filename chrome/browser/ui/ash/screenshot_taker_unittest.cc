@@ -8,7 +8,7 @@
 #include "ash/test/ash_test_base.h"
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/browser_process.h"

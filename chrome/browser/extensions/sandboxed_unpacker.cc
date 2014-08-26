@@ -9,7 +9,7 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/files/file_util_proxy.h"
 #include "base/files/scoped_file.h"
 #include "base/json/json_string_value_serializer.h"

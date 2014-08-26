@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/drive/search_metadata.h"
 
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/i18n/string_search.h"
 #include "base/message_loop/message_loop_proxy.h"

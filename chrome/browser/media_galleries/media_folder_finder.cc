@@ -7,8 +7,8 @@
 #include <algorithm>
 #include <set>
 
-#include "base/file_util.h"
 #include "base/files/file_enumerator.h"
+#include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/sequence_checker.h"
 #include "base/stl_util.h"

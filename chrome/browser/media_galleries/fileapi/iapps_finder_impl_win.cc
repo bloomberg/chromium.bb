@@ -7,8 +7,8 @@
 #include <string>
 
 #include "base/base_paths_win.h"
-#include "base/file_util.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "chrome/browser/media_galleries/fileapi/iapps_finder.h"

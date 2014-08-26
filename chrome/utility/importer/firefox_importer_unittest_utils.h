@@ -6,7 +6,7 @@
 #define CHROME_UTILITY_IMPORTER_FIREFOX_IMPORTER_UNITTEST_UTILS_H_
 
 #include "base/basictypes.h"
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/process/process_handle.h"
 #include "chrome/utility/importer/nss_decryptor.h"

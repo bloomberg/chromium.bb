@@ -4,7 +4,7 @@
 
 #include "chrome/common/extensions/manifest_handlers/theme_handler.h"
 
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"

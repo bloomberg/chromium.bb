@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/drive/fake_file_system.h"
 
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/drive/fake_drive_service.h"

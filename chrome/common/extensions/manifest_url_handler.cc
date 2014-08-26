@@ -4,7 +4,7 @@
 
 #include "chrome/common/extensions/manifest_url_handler.h"
 
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"

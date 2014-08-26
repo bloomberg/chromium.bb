@@ -4,8 +4,8 @@
 
 #include "chrome/browser/media/webrtc_log_util.h"
 
-#include "base/file_util.h"
 #include "base/files/file_enumerator.h"
+#include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"

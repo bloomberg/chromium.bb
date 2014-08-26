@@ -10,7 +10,7 @@
 
 #include "base/base_paths.h"
 #include "base/bind.h"
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/strings/string16.h"
 #include "chrome/common/media_galleries/picasa_types.h"

@@ -5,7 +5,7 @@
 #include "chrome/browser/chromeos/policy/user_policy_token_loader.h"
 
 #include "base/bind.h"
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/metrics/histogram.h"

@@ -5,7 +5,7 @@
 #include "chrome/browser/chromeos/extensions/wallpaper_api.h"
 
 #include "ash/desktop_background/desktop_background_controller.h"
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_service.h"

@@ -4,7 +4,7 @@
 
 #include "chrome/common/extensions/manifest_handlers/content_scripts_handler.h"
 
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"

@@ -5,7 +5,7 @@
 #include "chrome/browser/chromeos/drive/sync/entry_update_performer.h"
 
 #include "base/callback_helpers.h"
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/md5.h"
 #include "base/task_runner_util.h"
 #include "chrome/browser/chromeos/drive/file_cache.h"

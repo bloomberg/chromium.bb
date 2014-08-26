@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/webui/app_list/start_page_ui.h"
 
-#include "base/file_util.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/sys_info.h"

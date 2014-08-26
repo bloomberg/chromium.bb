@@ -5,7 +5,7 @@
 #include "chrome/browser/chromeos/drive/file_system.h"
 
 #include "base/bind.h"
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/chromeos/drive/change_list_loader.h"
 #include "chrome/browser/chromeos/drive/directory_loader.h"

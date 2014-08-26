@@ -5,7 +5,7 @@
 #include "chrome/browser/sync_file_system/local/local_file_sync_context.h"
 
 #include "base/bind.h"
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"

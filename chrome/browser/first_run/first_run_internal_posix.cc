@@ -4,8 +4,8 @@
 
 #include "chrome/browser/first_run/first_run_internal.h"
 
-#include "base/file_util.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_service.h"
 #include "build/build_config.h"

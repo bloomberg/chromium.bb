@@ -4,12 +4,12 @@
 
 #include "chrome/browser/ui/libgtk2ui/app_indicator_icon.h"
 
-#include <gtk/gtk.h>
 #include <dlfcn.h>
+#include <gtk/gtk.h>
 
 #include "base/bind.h"
 #include "base/environment.h"
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/md5.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/nix/xdg_util.h"

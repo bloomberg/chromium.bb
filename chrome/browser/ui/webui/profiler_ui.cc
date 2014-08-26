@@ -32,7 +32,7 @@
 
 #ifdef USE_SOURCE_FILES_DIRECTLY
 #include "base/base_paths.h"
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/path_service.h"
 #endif  //  USE_SOURCE_FILES_DIRECTLY

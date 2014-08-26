@@ -4,8 +4,8 @@
 
 #include "chrome/common/importer/safari_importer_utils.h"
 
-#include "base/file_util.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "chrome/common/importer/importer_data_types.h"
 
 bool SafariImporterCanImport(const base::FilePath& library_dir,

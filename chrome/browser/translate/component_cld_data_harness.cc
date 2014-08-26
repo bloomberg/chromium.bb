@@ -5,7 +5,7 @@
 #include "component_cld_data_harness.h"
 
 #include "base/base_paths.h"
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "chrome/browser/component_updater/cld_component_installer.h"

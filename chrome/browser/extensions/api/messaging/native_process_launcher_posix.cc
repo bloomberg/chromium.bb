@@ -5,7 +5,7 @@
 #include "chrome/browser/extensions/api/messaging/native_process_launcher.h"
 
 #include "base/command_line.h"
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "base/path_service.h"

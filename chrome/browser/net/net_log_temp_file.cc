@@ -4,7 +4,7 @@
 
 #include "chrome/browser/net/net_log_temp_file.h"
 
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/values.h"
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/ui/webui/net_internals/net_internals_ui.h"

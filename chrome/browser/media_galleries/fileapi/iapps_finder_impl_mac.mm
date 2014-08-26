@@ -5,7 +5,7 @@
 #include "chrome/browser/media_galleries/fileapi/iapps_finder_impl.h"
 
 #include "base/bind.h"
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/logging.h"
 #import "base/mac/foundation_util.h"
 #import "base/mac/scoped_nsobject.h"

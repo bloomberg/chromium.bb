@@ -2,23 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <windows.h>
 #include <atlstr.h>
 #include <wincrypt.h>
-#include <windows.h>
 #include <wintrust.h>
 
 #include "base/base_paths.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
-#include "crypto/sha2.h"
 #include "chrome/app/signature_validator_win.h"
+#include "crypto/sha2.h"
 #include "net/cert/test_root_certs.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -4,7 +4,7 @@
 
 #include "chrome/utility/printing_handler.h"
 
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/path_service.h"
 #include "base/scoped_native_library.h"

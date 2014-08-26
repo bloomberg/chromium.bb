@@ -5,7 +5,7 @@
 #include "chrome/browser/chromeos/drive/download_handler.h"
 
 #include "base/bind.h"
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/supports_user_data.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"

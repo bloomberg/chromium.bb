@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <set>
 
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/strings/string_util.h"
 #include "chrome/tools/convert_dict/aff_reader.h"
 #include "chrome/tools/convert_dict/hunspell_reader.h"

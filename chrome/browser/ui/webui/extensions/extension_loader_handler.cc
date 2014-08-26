@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/webui/extensions/extension_loader_handler.h"
 
 #include "base/bind.h"
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"

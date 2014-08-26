@@ -5,7 +5,7 @@
 #include "chrome/browser/chromeos/extensions/file_manager/event_router.h"
 
 #include "base/bind.h"
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "base/prefs/pref_service.h"

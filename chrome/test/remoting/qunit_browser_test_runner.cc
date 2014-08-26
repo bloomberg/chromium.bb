@@ -4,7 +4,7 @@
 
 #include "chrome/test/remoting/qunit_browser_test_runner.h"
 
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/values.h"
 #include "chrome/browser/ui/browser.h"

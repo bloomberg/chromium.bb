@@ -7,7 +7,7 @@
 
 #include "chrome/common/importer/firefox_importer_utils.h"
 
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/mac/foundation_util.h"
 #include "base/path_service.h"
 

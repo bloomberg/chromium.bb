@@ -4,7 +4,7 @@
 
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "base/format_macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"

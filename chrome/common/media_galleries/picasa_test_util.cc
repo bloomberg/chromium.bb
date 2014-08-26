@@ -4,8 +4,8 @@
 
 #include "chrome/common/media_galleries/picasa_test_util.h"
 
-#include "base/file_util.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "chrome/common/media_galleries/picasa_types.h"
 #include "chrome/common/media_galleries/pmp_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
