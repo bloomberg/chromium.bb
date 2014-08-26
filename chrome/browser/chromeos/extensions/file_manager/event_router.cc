@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,6 +18,7 @@
 #include "chrome/browser/chromeos/drive/file_change.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
+#include "chrome/browser/chromeos/extensions/file_manager/device_event_router.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_util.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
@@ -32,6 +33,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/login/login_state.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state_handler.h"
@@ -285,22 +287,14 @@ bool ShouldSendProgressEvent(bool always, base::Time* last_time) {
 // Obtains whether the Files.app should handle the volume or not.
 bool ShouldShowNotificationForVolume(
     Profile* profile,
-    file_browser_private::MountCompletedEventType event_type,
-    chromeos::MountError error,
-    const VolumeInfo& volume_info,
-    bool is_remounting) {
-  if (event_type != file_browser_private::MOUNT_COMPLETED_EVENT_TYPE_MOUNT)
-    return false;
-
+    const DeviceEventRouter& device_event_router,
+    const VolumeInfo& volume_info) {
   if (volume_info.type != VOLUME_TYPE_MTP &&
       volume_info.type != VOLUME_TYPE_REMOVABLE_DISK_PARTITION) {
     return false;
   }
 
-  if (error != chromeos::MOUNT_ERROR_NONE)
-    return false;
-
-  if (is_remounting)
+  if (device_event_router.is_resuming() || device_event_router.is_starting_up())
     return false;
 
   // Do not attempt to open File Manager while the login is in progress or
@@ -327,6 +321,37 @@ bool ShouldShowNotificationForVolume(
   return true;
 }
 
+// Sub-part of the event router for handling device events.
+class DeviceEventRouterImpl : public DeviceEventRouter {
+ public:
+  explicit DeviceEventRouterImpl(Profile* profile) : profile_(profile) {}
+
+  // DeviceEventRouter overrides.
+  virtual void OnDeviceEvent(file_browser_private::DeviceEventType type,
+                             const std::string& device_path) OVERRIDE {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+    file_browser_private::DeviceEvent event;
+    event.type = type;
+    event.device_path = device_path;
+
+    BroadcastEvent(profile_,
+                   file_browser_private::OnDeviceChanged::kEventName,
+                   file_browser_private::OnDeviceChanged::Create(event));
+  }
+
+  // DeviceEventRouter overrides.
+  virtual bool IsExternalStorageDisabled() OVERRIDE {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    return profile_->GetPrefs()->GetBoolean(prefs::kExternalStorageDisabled);
+  }
+
+ private:
+  Profile* const profile_;
+
+  DISALLOW_COPY_AND_ASSIGN(DeviceEventRouterImpl);
+};
+
 }  // namespace
 
 // Pass dummy value to JobInfo's constructor for make it default constructible.
@@ -343,6 +368,7 @@ EventRouter::EventRouter(Profile* profile)
     : pref_change_registrar_(new PrefChangeRegistrar),
       profile_(profile),
       multi_user_window_manager_observer_registered_(false),
+      device_event_router_(new DeviceEventRouterImpl(profile)),
       weak_factory_(this) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
@@ -369,7 +395,7 @@ void EventRouter::Shutdown() {
                                                                    FROM_HERE);
   }
 
-  DriveIntegrationService* integration_service =
+  DriveIntegrationService* const integration_service =
       DriveIntegrationServiceFactory::FindForProfile(profile_);
   if (integration_service) {
     integration_service->file_system()->RemoveObserver(this);
@@ -377,9 +403,15 @@ void EventRouter::Shutdown() {
     integration_service->job_list()->RemoveObserver(this);
   }
 
-  VolumeManager* volume_manager = VolumeManager::Get(profile_);
-  if (volume_manager)
+  VolumeManager* const volume_manager = VolumeManager::Get(profile_);
+  if (volume_manager) {
     volume_manager->RemoveObserver(this);
+    volume_manager->RemoveObserver(device_event_router_.get());
+  }
+
+  chromeos::PowerManagerClient* const power_manager_client =
+      chromeos::DBusThreadManager::Get()->GetPowerManagerClient();
+  power_manager_client->RemoveObserver(device_event_router_.get());
 
   chrome::MultiUserWindowManager* const multi_user_window_manager =
       chrome::MultiUserWindowManager::GetInstance();
@@ -402,14 +434,23 @@ void EventRouter::ObserveEvents() {
     return;
   }
 
+  // Ignore device events for the first few seconds.
+  device_event_router_->Startup();
+
   // VolumeManager's construction triggers DriveIntegrationService's
   // construction, so it is necessary to call VolumeManager's Get before
   // accessing DriveIntegrationService.
-  VolumeManager* volume_manager = VolumeManager::Get(profile_);
-  if (volume_manager)
+  VolumeManager* const volume_manager = VolumeManager::Get(profile_);
+  if (volume_manager) {
     volume_manager->AddObserver(this);
+    volume_manager->AddObserver(device_event_router_.get());
+  }
 
-  DriveIntegrationService* integration_service =
+  chromeos::PowerManagerClient* const power_manager_client =
+      chromeos::DBusThreadManager::Get()->GetPowerManagerClient();
+  power_manager_client->AddObserver(device_event_router_.get());
+
+  DriveIntegrationService* const integration_service =
       DriveIntegrationServiceFactory::FindForProfile(profile_);
   if (integration_service) {
     integration_service->drive_service()->AddObserver(this);
@@ -824,29 +865,10 @@ void EventRouter::DispatchDirectoryChangeEventWithEntryDefinition(
                  file_browser_private::OnDirectoryChanged::Create(event));
 }
 
-void EventRouter::DispatchDeviceEvent(
-    file_browser_private::DeviceEventType type,
-    const std::string& device_path) {
-  file_browser_private::DeviceEvent event;
-
-  event.type = type;
-  event.device_path = device_path;
-  BroadcastEvent(profile_,
-                 file_browser_private::OnDeviceChanged::kEventName,
-                 file_browser_private::OnDeviceChanged::Create(event));
-}
-
 void EventRouter::OnDiskAdded(
     const DiskMountManager::Disk& disk, bool mounting) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (!mounting) {
-    // If the disk is not being mounted, we don't want the Scanning
-    // notification to persist.
-    DispatchDeviceEvent(
-        file_browser_private::DEVICE_EVENT_TYPE_SCAN_CANCELED,
-        disk.system_path_prefix());
-  }
+  // Do nothing.
 }
 
 void EventRouter::OnDiskRemoved(const DiskMountManager::Disk& disk) {
@@ -856,26 +878,12 @@ void EventRouter::OnDiskRemoved(const DiskMountManager::Disk& disk) {
 
 void EventRouter::OnDeviceAdded(const std::string& device_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  // If the policy is set instead of showing the new device notification,
-  // we show a notification that the operation is not permitted.
-  if (profile_->GetPrefs()->GetBoolean(prefs::kExternalStorageDisabled)) {
-    DispatchDeviceEvent(
-        file_browser_private::DEVICE_EVENT_TYPE_DISABLED,
-        device_path);
-    return;
-  }
-
-  DispatchDeviceEvent(
-      file_browser_private::DEVICE_EVENT_TYPE_ADDED,
-      device_path);
+  // Do nothing.
 }
 
 void EventRouter::OnDeviceRemoved(const std::string& device_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DispatchDeviceEvent(
-      file_browser_private::DEVICE_EVENT_TYPE_REMOVED,
-      device_path);
+  // Do nothing.
 }
 
 void EventRouter::OnVolumeMounted(chromeos::MountError error_code,
@@ -888,11 +896,11 @@ void EventRouter::OnVolumeMounted(chromeos::MountError error_code,
   // the only path to come here after Shutdown is called).
   if (!profile_)
     return;
+
   DispatchMountCompletedEvent(
       file_browser_private::MOUNT_COMPLETED_EVENT_TYPE_MOUNT,
       error_code,
-      volume_info,
-      is_remounting);
+      volume_info);
 }
 
 void EventRouter::OnVolumeUnmounted(chromeos::MountError error_code,
@@ -901,30 +909,21 @@ void EventRouter::OnVolumeUnmounted(chromeos::MountError error_code,
   DispatchMountCompletedEvent(
       file_browser_private::MOUNT_COMPLETED_EVENT_TYPE_UNMOUNT,
       error_code,
-      volume_info,
-      false);
-}
-
-void EventRouter::OnHardUnplugged(const std::string& device_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DispatchDeviceEvent(file_browser_private::DEVICE_EVENT_TYPE_HARD_UNPLUGGED,
-                      device_path);
+      volume_info);
 }
 
 void EventRouter::DispatchMountCompletedEvent(
     file_browser_private::MountCompletedEventType event_type,
     chromeos::MountError error,
-    const VolumeInfo& volume_info,
-    bool is_remounting) {
+    const VolumeInfo& volume_info) {
   // Build an event object.
   file_browser_private::MountCompletedEvent event;
   event.event_type = event_type;
   event.status = MountErrorToMountCompletedStatus(error);
   util::VolumeInfoToVolumeMetadata(
       profile_, volume_info, &event.volume_metadata);
-  event.is_remounting = is_remounting;
   event.should_notify = ShouldShowNotificationForVolume(
-      profile_, event_type, error, volume_info, is_remounting);
+      profile_, *device_event_router_, volume_info);
   BroadcastEvent(profile_,
                  file_browser_private::OnMountCompleted::kEventName,
                  file_browser_private::OnMountCompleted::Create(event));
@@ -933,23 +932,13 @@ void EventRouter::DispatchMountCompletedEvent(
 void EventRouter::OnFormatStarted(const std::string& device_path,
                                   bool success) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (success) {
-    DispatchDeviceEvent(file_browser_private::DEVICE_EVENT_TYPE_FORMAT_START,
-                        device_path);
-  } else {
-    DispatchDeviceEvent(file_browser_private::DEVICE_EVENT_TYPE_FORMAT_FAIL,
-                        device_path);
-  }
+  // Do nothing.
 }
 
 void EventRouter::OnFormatCompleted(const std::string& device_path,
                                     bool success) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DispatchDeviceEvent(success ?
-                      file_browser_private::DEVICE_EVENT_TYPE_FORMAT_SUCCESS :
-                      file_browser_private::DEVICE_EVENT_TYPE_FORMAT_FAIL,
-                      device_path);
+  // Do nothing.
 }
 
 void EventRouter::Observe(int type,

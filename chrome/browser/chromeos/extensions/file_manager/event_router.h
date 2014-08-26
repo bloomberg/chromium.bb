@@ -47,6 +47,7 @@ class FileChange;
 }
 
 namespace file_manager {
+class DeviceEventRouter;
 
 // Monitors changes in disk mounts, network connection state and preferences
 // affecting File Manager. Dispatches appropriate File Browser events.
@@ -130,7 +131,6 @@ class EventRouter
                                bool is_remounting) OVERRIDE;
   virtual void OnVolumeUnmounted(chromeos::MountError error_code,
                                  const VolumeInfo& volume_info) OVERRIDE;
-  virtual void OnHardUnplugged(const std::string& device_path) OVERRIDE;
   virtual void OnFormatStarted(
       const std::string& device_path, bool success) OVERRIDE;
   virtual void OnFormatCompleted(
@@ -174,20 +174,13 @@ class EventRouter
   void DispatchMountCompletedEvent(
       extensions::api::file_browser_private::MountCompletedEventType event_type,
       chromeos::MountError error,
-      const VolumeInfo& volume_info,
-      bool is_remounting);
+      const VolumeInfo& volume_info);
 
   // If needed, opens a file manager window for the removable device mounted at
   // |mount_path|. Disk.mount_path() is empty, since it is being filled out
   // after calling notifying observers by DiskMountManager.
   void ShowRemovableDeviceInFileManager(VolumeType type,
                                         const base::FilePath& mount_path);
-
-  // Dispatches an onDeviceChanged event containing |type| and |path| to
-  // extensions.
-  void DispatchDeviceEvent(
-      extensions::api::file_browser_private::DeviceEventType type,
-      const std::string& path);
 
   // Sends onFileTranferUpdated to extensions if needed. If |always| is true,
   // it sends the event always. Otherwise, it sends the event if enough time has
@@ -212,6 +205,8 @@ class EventRouter
 
   content::NotificationRegistrar notification_registrar_;
   bool multi_user_window_manager_observer_registered_;
+
+  scoped_ptr<DeviceEventRouter> device_event_router_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate the weak pointers before any other members are destroyed.

@@ -140,7 +140,7 @@ TEST_F(DeviceEventRouterTest, DeviceScan) {
   device_event_router->OnDiskRemoved(disk_unmounted);
   device_event_router->OnDeviceRemoved("/device/test");
   ASSERT_EQ(2u, device_event_router->events.size());
-  EXPECT_EQ(file_browser_private::DEVICE_EVENT_TYPE_ADDED,
+  EXPECT_EQ(file_browser_private::DEVICE_EVENT_TYPE_SCAN_STARTED,
             device_event_router->events[0].type);
   EXPECT_EQ("/device/test", device_event_router->events[0].device_path);
   EXPECT_EQ(file_browser_private::DEVICE_EVENT_TYPE_REMOVED,
@@ -159,10 +159,10 @@ TEST_F(DeviceEventRouterTest, DeviceScanCancelled) {
   device_event_router->OnDiskRemoved(disk_unmounted);
   device_event_router->OnDeviceRemoved("/device/test");
   ASSERT_EQ(3u, device_event_router->events.size());
-  EXPECT_EQ(file_browser_private::DEVICE_EVENT_TYPE_ADDED,
+  EXPECT_EQ(file_browser_private::DEVICE_EVENT_TYPE_SCAN_STARTED,
             device_event_router->events[0].type);
   EXPECT_EQ("/device/test", device_event_router->events[0].device_path);
-  EXPECT_EQ(file_browser_private::DEVICE_EVENT_TYPE_SCAN_CANCELED,
+  EXPECT_EQ(file_browser_private::DEVICE_EVENT_TYPE_SCAN_CANCELLED,
             device_event_router->events[1].type);
   EXPECT_EQ("/device/test", device_event_router->events[1].device_path);
   EXPECT_EQ(file_browser_private::DEVICE_EVENT_TYPE_REMOVED,

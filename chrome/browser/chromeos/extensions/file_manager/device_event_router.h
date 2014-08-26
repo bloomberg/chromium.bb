@@ -57,12 +57,12 @@ class DeviceEventRouter : public VolumeManagerObserver,
   virtual void OnFormatCompleted(const std::string& device_path,
                                  bool success) OVERRIDE;
 
-  // TODO(hirono): Remove the method from VolumeManagerObserver.
-  virtual void OnHardUnplugged(const std::string& device_path) OVERRIDE;
-
   // PowerManagerClient::Observer overrides.
   virtual void SuspendImminent() OVERRIDE;
   virtual void SuspendDone(const base::TimeDelta& sleep_duration) OVERRIDE;
+
+  bool is_resuming() const { return is_resuming_; }
+  bool is_starting_up() const { return is_starting_up_; }
 
  protected:
   // Handles a device event containing |type| and |device_path|.

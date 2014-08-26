@@ -77,9 +77,8 @@ void DeviceEventRouter::OnDeviceAddedDelayed(const std::string& device_path) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (GetDeviceState(device_path) == DEVICE_SCANNED) {
-    // TODO(hirono): Rename DEVICE_EVENT_TYPE_ADDED with
-    // DEVICE_EVENT_TYPE_SCAN_STARTED.
-    OnDeviceEvent(file_browser_private::DEVICE_EVENT_TYPE_ADDED, device_path);
+    OnDeviceEvent(file_browser_private::DEVICE_EVENT_TYPE_SCAN_STARTED,
+                  device_path);
     SetDeviceState(device_path, DEVICE_SCANNED_AND_REPORTED);
   }
 }
@@ -99,7 +98,7 @@ void DeviceEventRouter::OnDiskAdded(
     // If the disk is not being mounted, mark the device scan cancelled.
     const std::string& device_path = disk.system_path_prefix();
     if (GetDeviceState(device_path) == DEVICE_SCANNED_AND_REPORTED) {
-      OnDeviceEvent(file_browser_private::DEVICE_EVENT_TYPE_SCAN_CANCELED,
+      OnDeviceEvent(file_browser_private::DEVICE_EVENT_TYPE_SCAN_CANCELLED,
                     device_path);
     }
     SetDeviceState(device_path, DEVICE_STATE_USUAL);
@@ -157,9 +156,6 @@ void DeviceEventRouter::OnFormatCompleted(const std::string& device_path,
   OnDeviceEvent(success ? file_browser_private::DEVICE_EVENT_TYPE_FORMAT_SUCCESS
                         : file_browser_private::DEVICE_EVENT_TYPE_FORMAT_FAIL,
                 device_path);
-}
-
-void DeviceEventRouter::OnHardUnplugged(const std::string& device_path) {
 }
 
 void DeviceEventRouter::SuspendImminent() {

@@ -27,22 +27,12 @@ function DeviceHandler() {
    */
   this.navigationVolumes_ = {};
 
-  /**
-   * Whether the device is just after starting up or not.
-   *
-   * @type {boolean}
-   * @private
-   */
-  this.isStartup_ = false;
-
   chrome.fileBrowserPrivate.onDeviceChanged.addListener(
       this.onDeviceChanged_.bind(this));
   chrome.fileBrowserPrivate.onMountCompleted.addListener(
       this.onMountCompleted_.bind(this));
   chrome.notifications.onButtonClicked.addListener(
       this.onNotificationButtonClicked_.bind(this));
-  chrome.runtime.onStartup.addListener(
-      this.onStartup_.bind(this));
 }
 
 DeviceHandler.prototype = {
@@ -96,13 +86,6 @@ DeviceHandler.Notification = function(prefix, title, message, opt_buttonLabel) {
    * @private
    */
   this.queue_ = new AsyncUtil.Queue();
-
-  /**
-   * Timeout ID.
-   * @type {number}
-   * @private
-   */
-  this.pendingShowTimerId_ = 0;
 
   Object.seal(this);
 };
@@ -199,7 +182,6 @@ DeviceHandler.Notification.FORMAT_FAIL = new DeviceHandler.Notification(
  * @return {string} Notification ID.
  */
 DeviceHandler.Notification.prototype.show = function(devicePath, opt_message) {
-  this.clearTimeout_();
   var notificationId = this.makeId_(devicePath);
   this.queue_.run(function(callback) {
     var buttons =
@@ -219,20 +201,10 @@ DeviceHandler.Notification.prototype.show = function(devicePath, opt_message) {
 };
 
 /**
- * Shows the notification after 5 seconds.
- * @param {string} devicePath Device path.
- */
-DeviceHandler.Notification.prototype.showLater = function(devicePath) {
-  this.clearTimeout_();
-  this.pendingShowTimerId_ = setTimeout(this.show.bind(this, devicePath), 5000);
-};
-
-/**
  * Hides the notification for the device path.
  * @param {string} devicePath Device path.
  */
 DeviceHandler.Notification.prototype.hide = function(devicePath) {
-  this.clearTimeout_();
   this.queue_.run(function(callback) {
     chrome.notifications.clear(this.makeId_(devicePath), callback);
   }.bind(this));
@@ -249,34 +221,21 @@ DeviceHandler.Notification.prototype.makeId_ = function(devicePath) {
 };
 
 /**
- * Cancels the timeout request.
- * @private
- */
-DeviceHandler.Notification.prototype.clearTimeout_ = function() {
-  if (this.pendingShowTimerId_) {
-    clearTimeout(this.pendingShowTimerId_);
-    this.pendingShowTimerId_ = 0;
-  }
-};
-
-/**
  * Handles notifications from C++ sides.
  * @param {DeviceEvent} event Device event.
  * @private
  */
 DeviceHandler.prototype.onDeviceChanged_ = function(event) {
   switch (event.type) {
-    case 'added':
-      if (!this.isStartup_)
-        DeviceHandler.Notification.DEVICE.showLater(event.devicePath);
-      this.mountStatus_[event.devicePath] = DeviceHandler.MountStatus.NO_RESULT;
+    case 'scan_started':
+      DeviceHandler.Notification.DEVICE.show(event.devicePath);
+      break;
+    case 'scan_cancelled':
+      DeviceHandler.Notification.DEVICE.hide(event.devicePath);
       break;
     case 'disabled':
       DeviceHandler.Notification.DEVICE_EXTERNAL_STORAGE_DISABLED.show(
           event.devicePath);
-      break;
-    case 'scan_canceled':
-      DeviceHandler.Notification.DEVICE.hide(event.devicePath);
       break;
     case 'removed':
       DeviceHandler.Notification.DEVICE.hide(event.devicePath);
@@ -286,10 +245,8 @@ DeviceHandler.prototype.onDeviceChanged_ = function(event) {
       delete this.mountStatus_[event.devicePath];
       break;
     case 'hard_unplugged':
-      if (!this.isStartup_) {
-        DeviceHandler.Notification.DEVICE_HARD_UNPLUGGED.show(
-            event.devicePath);
-      }
+      DeviceHandler.Notification.DEVICE_HARD_UNPLUGGED.show(
+          event.devicePath);
       break;
     case 'format_start':
       DeviceHandler.Notification.FORMAT_START.show(event.devicePath);
@@ -301,6 +258,9 @@ DeviceHandler.prototype.onDeviceChanged_ = function(event) {
     case 'format_fail':
       DeviceHandler.Notification.FORMAT_START.hide(event.devicePath);
       DeviceHandler.Notification.FORMAT_FAIL.show(event.devicePath);
+      break;
+    default:
+      console.error('Unknown event tyep: ' + event.type);
       break;
   }
 };
@@ -334,12 +294,13 @@ DeviceHandler.prototype.onMountCompleted_ = function(event) {
   // If this is remounting, which happens when resuming ChromeOS, the device has
   // already inserted to the computer. So we suppress the notification.
   var volume = event.volumeMetadata;
-  if (!volume.deviceType || event.isRemounting)
+  if (!volume.deviceType || !event.shouldNotify)
     return;
 
   // If the current volume status is succeed and it should be handled in
   // Files.app, show the notification to navigate the volume.
-  if (event.status === 'success' && event.shouldNotify) {
+  if (event.eventType === 'mount' &&
+      event.status === 'success') {
     if (this.navigationVolumes_[event.volumeMetadata.devicePath]) {
       // The notification has already shown for the device. It seems the device
       // has multiple volumes. The order of mount events of volumes are
@@ -352,12 +313,10 @@ DeviceHandler.prototype.onMountCompleted_ = function(event) {
             event.volumeMetadata.volumeId;
       }
     } else {
-      if (!this.isStartup_) {
-        this.navigationVolumes_[event.volumeMetadata.devicePath] =
-            event.volumeMetadata.volumeId;
-        DeviceHandler.Notification.DEVICE_NAVIGATION.show(
-            event.volumeMetadata.devicePath);
-      }
+      this.navigationVolumes_[event.volumeMetadata.devicePath] =
+          event.volumeMetadata.volumeId;
+      DeviceHandler.Notification.DEVICE_NAVIGATION.show(
+          event.volumeMetadata.devicePath);
     }
   } else if (event.status === 'error_unknown_filesystem') {
     // The volume id is necessary to navigate when users click start
@@ -381,10 +340,9 @@ DeviceHandler.prototype.onMountCompleted_ = function(event) {
   };
 
   // Update the current status.
+  if (!this.mountStatus_[volume.devicePath])
+    this.mountStatus_[volume.devicePath] = DeviceHandler.MountStatus.NO_RESULT;
   switch (this.mountStatus_[volume.devicePath]) {
-    // If there is no related device, do nothing.
-    case undefined:
-      return;
     // If the multipart error message has already shown, do nothing because the
     // message does not changed by the following mount results.
     case DeviceHandler.MountStatus.MULTIPART_ERROR:
@@ -468,11 +426,4 @@ DeviceHandler.prototype.onNotificationButtonClicked_ = function(id) {
     event.volumeId = this.navigationVolumes_[path];
     this.dispatchEvent(event);
   }
-};
-
-DeviceHandler.prototype.onStartup_ = function() {
-  this.isStartup_ = true;
-  setTimeout(function() {
-    this.isStartup_ = false;
-  }.bind(this), 5000);
 };

@@ -98,14 +98,12 @@ enum InspectionType {
 
 // Device event type.
 enum DeviceEventType {
-  // Device is added.
-  added,
-  // If the device is disabled by preference, the disabled event is published
-  // instead of the added event.
+  // Device scan is started.
+  scan_started,
+  // Device scan is cancelled.
+  scan_cancelled,
+  // If the device is disabled by preference.
   disabled,
-  // Device is added, but scan for the device is canceled. The event is
-  // published after the added event.
-  scan_canceled,
   // Device is removed.
   removed,
   // Device is hard unplugged.
@@ -299,10 +297,7 @@ dictionary MountCompletedEvent {
   // Metadata of the mounted volume.
   VolumeMetadata volumeMetadata;
 
-  // Whether it is remount or not.
-  boolean isRemounting;
-
-  // Whether the volume should be opend by Files.app or not.
+  // Whether the volume event should be notified or not.
   boolean shouldNotify;
 };
 

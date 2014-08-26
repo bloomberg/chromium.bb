@@ -509,8 +509,6 @@ void VolumeManager::OnDiskEvent(
       const std::string& device_path = disk->system_path_prefix();
       if (mounted_disk_monitor_->DeviceIsHardUnpluggedButNotReported(
               device_path)) {
-        FOR_EACH_OBSERVER(VolumeManagerObserver, observers_,
-                          OnHardUnplugged(device_path));
         mounted_disk_monitor_->MarkAsHardUnpluggedReported(device_path);
       }
       return;

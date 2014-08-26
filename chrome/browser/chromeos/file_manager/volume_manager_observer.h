@@ -42,9 +42,6 @@ class VolumeManagerObserver {
   virtual void OnVolumeUnmounted(chromeos::MountError error_code,
                                  const VolumeInfo& volume_info) = 0;
 
-  // Fired when a device is hard unplugged.
-  virtual void OnHardUnplugged(const std::string& device_path) = 0;
-
   // Fired when formatting a device is started (or failed to start).
   virtual void OnFormatStarted(
       const std::string& device_path, bool success) = 0;
