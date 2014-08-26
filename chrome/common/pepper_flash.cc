@@ -6,8 +6,8 @@
 
 #include "ppapi/shared_impl/ppapi_permissions.h"
 
-int32 kPepperFlashPermissions = ppapi::PERMISSION_DEV |
-                                ppapi::PERMISSION_PRIVATE |
-                                ppapi::PERMISSION_BYPASS_USER_GESTURE |
-                                ppapi::PERMISSION_FLASH;
+const int32 kPepperFlashPermissions = ppapi::PERMISSION_DEV |
+                                      ppapi::PERMISSION_PRIVATE |
+                                      ppapi::PERMISSION_BYPASS_USER_GESTURE |
+                                      ppapi::PERMISSION_FLASH;
 

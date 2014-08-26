@@ -8,6 +8,6 @@
 #include "base/basictypes.h"
 
 // Permission bits for Pepper Flash.
-extern int32 kPepperFlashPermissions;
+extern const int32 kPepperFlashPermissions;
 
 #endif  // CHROME_COMMON_PEPPER_FLASH_H_
