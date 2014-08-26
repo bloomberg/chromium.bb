@@ -38,7 +38,7 @@ int ReadaheadFileStreamReader::Read(
 
   scoped_refptr<net::DrainableIOBuffer> sink =
       new net::DrainableIOBuffer(buf, buf_len);
-  int result = FinishReadFromCacheOrStoredError(sink);
+  int result = FinishReadFromCacheOrStoredError(sink.get());
 
   // We are waiting for an source read to complete, so save the request.
   if (result == net::ERR_IO_PENDING) {
@@ -103,13 +103,14 @@ void ReadaheadFileStreamReader::ReadFromSourceIfNeeded() {
 
   scoped_refptr<net::IOBuffer> buf(new net::IOBuffer(kBufferSize));
   int result = source_->Read(
-      buf,
+      buf.get(),
       kBufferSize,
       base::Bind(&ReadaheadFileStreamReader::OnFinishReadFromSource,
-                 weak_factory_.GetWeakPtr(), buf));
+                 weak_factory_.GetWeakPtr(),
+                 buf));
 
   if (result != net::ERR_IO_PENDING)
-    OnFinishReadFromSource(buf, result);
+    OnFinishReadFromSource(buf.get(), result);
 }
 
 void ReadaheadFileStreamReader::OnFinishReadFromSource(net::IOBuffer* buf,
@@ -141,6 +142,6 @@ void ReadaheadFileStreamReader::OnFinishReadFromSource(net::IOBuffer* buf,
     net::CompletionCallback completion_callback = pending_read_callback_;
     pending_read_callback_.Reset();
 
-    completion_callback.Run(FinishReadFromCacheOrStoredError(sink));
+    completion_callback.Run(FinishReadFromCacheOrStoredError(sink.get()));
   }
 }

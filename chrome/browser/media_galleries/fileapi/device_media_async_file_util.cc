@@ -432,7 +432,7 @@ void DeviceMediaAsyncFileUtil::CreateSnapshotFile(
 
   scoped_refptr<base::SequencedTaskRunner> task_runner(context->task_runner());
   base::PostTaskAndReplyWithResult(
-      task_runner,
+      task_runner.get(),
       FROM_HERE,
       base::Bind(&CreateSnapshotFileOnBlockingPool, url.path(), profile_path_),
       base::Bind(&OnSnapshotFileCreatedRunTask,

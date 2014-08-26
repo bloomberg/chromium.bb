@@ -417,10 +417,10 @@ void MediaFolderFinder::ScanFolder() {
   base::FilePath folder_to_scan = folders_to_scan_.back();
   folders_to_scan_.pop_back();
   base::PostTaskAndReplyWithResult(
-      worker_task_runner_, FROM_HERE,
-      base::Bind(&Worker::ScanFolder,
-                 base::Unretained(worker_),
-                 folder_to_scan),
+      worker_task_runner_.get(),
+      FROM_HERE,
+      base::Bind(
+          &Worker::ScanFolder, base::Unretained(worker_), folder_to_scan),
       base::Bind(&MediaFolderFinder::GotScanResults,
                  weak_factory_.GetWeakPtr(),
                  folder_to_scan));

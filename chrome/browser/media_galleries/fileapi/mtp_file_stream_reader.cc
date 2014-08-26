@@ -104,10 +104,16 @@ int MTPFileStreamReader::Read(net::IOBuffer* buf, int buf_len,
       header_buf_len = net::kMaxBytesToSniff;
     }
 
-    ReadBytes(url_, header_buf, 0, header_buf_len,
+    ReadBytes(url_,
+              header_buf.get(),
+              0,
+              header_buf_len,
               base::Bind(&MTPFileStreamReader::FinishValidateMediaHeader,
-                         weak_factory_.GetWeakPtr(), header_buf,
-                         make_scoped_refptr(buf), buf_len, callback),
+                         weak_factory_.GetWeakPtr(),
+                         header_buf,
+                         make_scoped_refptr(buf),
+                         buf_len,
+                         callback),
               callback);
     return net::ERR_IO_PENDING;
   }

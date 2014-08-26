@@ -209,7 +209,7 @@ void MTPDeviceTaskHelper::OnGetFileInfoToReadBytes(
     const MtpFileEntry& file_entry,
     bool error) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(request.buf);
+  DCHECK(request.buf.get());
   DCHECK_GE(request.buf_len, 0);
   DCHECK_GE(request.offset, 0);
   if (error) {

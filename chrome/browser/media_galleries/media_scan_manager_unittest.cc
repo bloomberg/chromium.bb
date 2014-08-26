@@ -189,8 +189,8 @@ class MediaScanManagerTest : public MediaScanManagerObserver,
   }
 
   void StartScan() {
-    media_scan_manager_->StartScan(profile_.get(), extension_,
-                                   true /* user_gesture */);
+    media_scan_manager_->StartScan(
+        profile_.get(), extension_.get(), true /* user_gesture */);
   }
 
   MediaGalleriesPreferences* gallery_prefs() {
