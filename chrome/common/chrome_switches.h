@@ -158,6 +158,7 @@ extern const char kEnableQuic[];
 extern const char kEnableQuicPacing[];
 extern const char kEnableQuicPortSelection[];
 extern const char kEnableQuicTimeBasedLossDetection[];
+extern const char kEnableReaderModeToolbarIcon[];
 extern const char kEnableResourceContentSettings[];
 extern const char kEnableSavePasswordBubble[];
 extern const char kEnableSdchOverHttps[];

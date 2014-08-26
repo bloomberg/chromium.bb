@@ -47,11 +47,6 @@ void SetChromeSpecificCommandLineFlags() {
   if (base::SysInfo::IsLowEndDevice())
     SetCommandLineSwitchASCII(switches::kDisableSyncTypes, "Favicon Images");
 
-  // Enable DOM Distiller on local builds, canary and dev-channel.
-  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
-  if (channel == chrome::VersionInfo::CHANNEL_UNKNOWN ||
-      channel == chrome::VersionInfo::CHANNEL_CANARY ||
-      channel == chrome::VersionInfo::CHANNEL_DEV) {
-    SetCommandLineSwitch(switches::kEnableDomDistiller);
-  }
+  // Enable DOM Distiller backend.
+  SetCommandLineSwitch(switches::kEnableDomDistiller);
 }

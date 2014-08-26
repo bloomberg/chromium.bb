@@ -43969,6 +43969,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="2119964154" label="enable-download-resumption"/>
   <int value="2122876605" label="enable-bleeding-edge-rendering-fast-paths"/>
   <int value="2137347307" label="enable-drive-apps-in-app-list"/>
+  <int value="2157211516" label="enable-reader-mode-toolbar-icon"/>
   <int value="2162375654" label="enable-input-view"/>
   <int value="2177765570" label="disable-gpu-rasterization"/>
   <int value="2180136048" label="disable-new-ntp"/>

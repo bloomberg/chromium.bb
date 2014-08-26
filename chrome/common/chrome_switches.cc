@@ -549,6 +549,10 @@ const char kEnableQuicPortSelection[]       = "enable-quic-port-selection";
 const char kEnableQuicTimeBasedLossDetection[] =
     "enable-quic-time-based-loss-detection";
 
+// Enables context-sensitive reader mode button in the toolbar.
+const char kEnableReaderModeToolbarIcon[] =
+    "enable-reader-mode-toolbar-icon";
+
 // Enables save password prompt bubble.
 const char kEnableSavePasswordBubble[]      = "enable-save-password-bubble";
 

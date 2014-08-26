@@ -1621,6 +1621,13 @@ const Experiment kExperiments[] = {
     kOsAndroid,
     MULTI_VALUE_TYPE(kZeroSuggestExperimentsChoices)
   },
+  {
+    "enable-reader-mode-toolbar-icon",
+    IDS_FLAGS_READER_MODE_EXPERIMENT_NAME,
+    IDS_FLAGS_READER_MODE_EXPERIMENT_DESCRIPTION,
+    kOsAndroid,
+    SINGLE_VALUE_TYPE(switches::kEnableReaderModeToolbarIcon)
+  },
 #endif
   {
     "num-raster-threads",

@@ -14440,6 +14440,15 @@ Do you accept?
       Disable ignore autocomplete='off' for password forms in the password manager.
     </message>
 
+    <!-- Reader mode experiment flags -->
+    <if expr="is_android">
+      <message name="IDS_FLAGS_READER_MODE_EXPERIMENT_NAME" desc="An about:flags experiment for reading mode UI">
+        Enable Reader Mode Toolbar Icon
+      </message>
+      <message name="IDS_FLAGS_READER_MODE_EXPERIMENT_DESCRIPTION" desc="Describes about:flags experiment options for reading mode UI">
+        Adds a button to the toolbar for viewing a more readable version of the current page.
+      </message>
+    </if>
     <!-- Prefetch search results experiment flags -->
     <message name="IDS_FLAGS_PREFETCH_SEARCH_RESULTS_NAME" desc="An about::flags experiment title to prefetch search results">
       Prefetch search results
