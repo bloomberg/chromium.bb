@@ -1,0 +1,34 @@
+# -*- python -*-
+# Copyright (c) 2014 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+Import('env')
+
+# IRT extensions test
+
+# TODO(dyen): Currently IRT extensions only supports newlib.
+if env.Bit('bitcode') or env.Bit('nacl_glibc'):
+  Return()
+
+IRT_EXT_TEST_SRCS = [
+    'error_report.c',
+    'file_desc.c',
+    ]
+
+IRT_EXT_LIBC_TEST_SRCS = [
+    'libc/file_tests.c',
+    'libc/libc_test.c',
+    ]
+
+irt_ext_libc_test_nexe = env.ComponentProgram('irt_ext_libc_test',
+                                              (IRT_EXT_TEST_SRCS +
+                                               IRT_EXT_LIBC_TEST_SRCS),
+                                              EXTRA_LIBS=['${NONIRT_LIBS}'],
+                                              )
+
+node = env.CommandSelLdrTestNacl('irt_ext_libc_test.out',
+                                 irt_ext_libc_test_nexe)
+
+env.AddNodeToTestSuite(node, ['small_tests'],
+                       'run_irt_ext_libc_test')

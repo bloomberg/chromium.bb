@@ -3252,6 +3252,7 @@ irt_only_tests = [
     #### ALPHABETICALLY SORTED ####
     'tests/irt/nacl.scons',
     'tests/irt_compatibility/nacl.scons',
+    'tests/irt_ext/nacl.scons',
     'tests/sbrk/nacl.scons',
     'tests/translator_size_limits/nacl.scons',
     ]
