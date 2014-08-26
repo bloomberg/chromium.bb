@@ -615,8 +615,8 @@ ScopedJavaLocalRef<jobject> TabAndroid::GetFavicon(JNIEnv* env, jobject obj) {
 
   if (!favicon_tab_helper)
     return bitmap;
-  if (!favicon_tab_helper->FaviconIsValid())
-    return bitmap;
+
+  // If the favicon isn't valid, it will return a default bitmap.
 
   SkBitmap favicon =
       favicon_tab_helper->GetFavicon()
@@ -645,6 +645,11 @@ ScopedJavaLocalRef<jobject> TabAndroid::GetFavicon(JNIEnv* env, jobject obj) {
     bitmap = gfx::ConvertToJavaBitmap(&favicon);
   }
   return bitmap;
+}
+
+jboolean TabAndroid::IsFaviconValid(JNIEnv* env, jobject jobj) {
+  return web_contents() &&
+      FaviconTabHelper::FromWebContents(web_contents())->FaviconIsValid();
 }
 
 prerender::PrerenderManager* TabAndroid::GetPrerenderManager() const {
