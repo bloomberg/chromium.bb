@@ -94,7 +94,7 @@ void WebServiceWorkerProviderImpl::RemoveScriptClient() {
 
 ServiceWorkerDispatcher* WebServiceWorkerProviderImpl::GetDispatcher() {
   return ServiceWorkerDispatcher::GetOrCreateThreadSpecificInstance(
-      thread_safe_sender_);
+      thread_safe_sender_.get());
 }
 
 }  // namespace content

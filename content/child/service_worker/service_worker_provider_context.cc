@@ -24,7 +24,7 @@ ServiceWorkerProviderContext::ServiceWorkerProviderContext(int provider_id)
   thread_safe_sender_ = ChildThread::current()->thread_safe_sender();
   ServiceWorkerDispatcher* dispatcher =
       ServiceWorkerDispatcher::GetOrCreateThreadSpecificInstance(
-          thread_safe_sender_);
+          thread_safe_sender_.get());
   DCHECK(dispatcher);
   dispatcher->AddProviderContext(this);
 }
@@ -83,21 +83,24 @@ void ServiceWorkerProviderContext::OnSetInstallingServiceWorker(
     int provider_id,
     const ServiceWorkerObjectInfo& info) {
   DCHECK_EQ(provider_id_, provider_id);
-  installing_ = ServiceWorkerHandleReference::Adopt(info, thread_safe_sender_);
+  installing_ =
+      ServiceWorkerHandleReference::Adopt(info, thread_safe_sender_.get());
 }
 
 void ServiceWorkerProviderContext::OnSetWaitingServiceWorker(
     int provider_id,
     const ServiceWorkerObjectInfo& info) {
   DCHECK_EQ(provider_id_, provider_id);
-  waiting_ = ServiceWorkerHandleReference::Adopt(info, thread_safe_sender_);
+  waiting_ =
+      ServiceWorkerHandleReference::Adopt(info, thread_safe_sender_.get());
 }
 
 void ServiceWorkerProviderContext::OnSetActiveServiceWorker(
     int provider_id,
     const ServiceWorkerObjectInfo& info) {
   DCHECK_EQ(provider_id_, provider_id);
-  active_ = ServiceWorkerHandleReference::Adopt(info, thread_safe_sender_);
+  active_ =
+      ServiceWorkerHandleReference::Adopt(info, thread_safe_sender_.get());
 }
 
 void ServiceWorkerProviderContext::OnSetControllerServiceWorker(
@@ -107,7 +110,8 @@ void ServiceWorkerProviderContext::OnSetControllerServiceWorker(
 
   // This context is is the primary owner of this handle, keeps the
   // initial reference until it goes away.
-  controller_ = ServiceWorkerHandleReference::Adopt(info, thread_safe_sender_);
+  controller_ =
+      ServiceWorkerHandleReference::Adopt(info, thread_safe_sender_.get());
 
   // TODO(kinuko): We can forward the message to other threads here
   // when we support navigator.serviceWorker in dedicated workers.

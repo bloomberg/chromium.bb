@@ -131,7 +131,7 @@ class BlobReader : public net::URLRequest::Delegate {
 
     int rv = entry_->WriteData(INDEX_RESPONSE_BODY,
                                cache_entry_offset_,
-                               buffer_,
+                               buffer_.get(),
                                bytes_read,
                                cache_write_callback,
                                true /* truncate */);
@@ -280,7 +280,7 @@ void PutDidCreateEntry(ServiceWorkerFetchRequest* request,
 
   rv = tmp_entry_ptr->WriteData(INDEX_HEADERS,
                                 0 /* offset */,
-                                buffer,
+                                buffer.get(),
                                 buffer->size(),
                                 write_headers_callback,
                                 true /* truncate */);
@@ -491,7 +491,7 @@ void MatchDidReadResponseBodyData(
   int total_bytes_read = response_context->total_bytes_read;
 
   // Grab some pointers before passing them in bind.
-  net::IOBufferWithSize* buffer = response_context->buffer;
+  net::IOBufferWithSize* buffer = response_context->buffer.get();
   disk_cache::Entry* tmp_entry_ptr = entry.get();
 
   net::CompletionCallback read_callback =

@@ -33,7 +33,7 @@ ServiceWorkerRegistrationHandleReference(
     : info_(info),
       sender_(sender) {
   DCHECK_NE(kInvalidServiceWorkerRegistrationHandleId, info_.handle_id);
-  DCHECK(sender_);
+  DCHECK(sender_.get());
   if (increment_ref_in_ctor)
     return;
   sender_->Send(

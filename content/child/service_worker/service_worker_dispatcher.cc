@@ -190,17 +190,18 @@ WebServiceWorkerImpl* ServiceWorkerDispatcher::GetServiceWorker(
     if (adopt_handle) {
       // We are instructed to adopt a handle but we already have one, so
       // adopt and destroy a handle ref.
-      ServiceWorkerHandleReference::Adopt(info, thread_safe_sender_);
+      ServiceWorkerHandleReference::Adopt(info, thread_safe_sender_.get());
     }
     return existing_worker->second;
   }
 
   scoped_ptr<ServiceWorkerHandleReference> handle_ref =
       adopt_handle
-          ? ServiceWorkerHandleReference::Adopt(info, thread_safe_sender_)
-          : ServiceWorkerHandleReference::Create(info, thread_safe_sender_);
+          ? ServiceWorkerHandleReference::Adopt(info, thread_safe_sender_.get())
+          : ServiceWorkerHandleReference::Create(info,
+                                                 thread_safe_sender_.get());
   // WebServiceWorkerImpl constructor calls AddServiceWorker.
-  return new WebServiceWorkerImpl(handle_ref.Pass(), thread_safe_sender_);
+  return new WebServiceWorkerImpl(handle_ref.Pass(), thread_safe_sender_.get());
 }
 
 WebServiceWorkerRegistrationImpl*
@@ -218,17 +219,16 @@ ServiceWorkerDispatcher::GetServiceWorkerRegistration(
       // We are instructed to adopt a handle but we already have one, so
       // adopt and destroy a handle ref.
       ServiceWorkerRegistrationHandleReference::Adopt(
-          info, thread_safe_sender_);
+          info, thread_safe_sender_.get());
     }
     return existing_registration->second;
   }
 
   scoped_ptr<ServiceWorkerRegistrationHandleReference> handle_ref =
-      adopt_handle
-          ? ServiceWorkerRegistrationHandleReference::Adopt(
-              info, thread_safe_sender_)
-          : ServiceWorkerRegistrationHandleReference::Create(
-              info, thread_safe_sender_);
+      adopt_handle ? ServiceWorkerRegistrationHandleReference::Adopt(
+                         info, thread_safe_sender_.get())
+                   : ServiceWorkerRegistrationHandleReference::Create(
+                         info, thread_safe_sender_.get());
 
   // WebServiceWorkerRegistrationImpl constructor calls
   // AddServiceWorkerRegistration.
