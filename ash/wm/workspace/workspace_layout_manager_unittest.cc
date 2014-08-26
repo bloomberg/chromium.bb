@@ -1011,6 +1011,32 @@ class WorkspaceLayoutManagerKeyboardTest : public test::AshTestBase {
     keyboard_bounds_ = bounds;
   }
 
+  void Focus(ui::TextInputClient* text_input_client) {
+    if (switches::IsTextInputFocusManagerEnabled()) {
+      ui::TextInputFocusManager::GetInstance()->FocusTextInputClient(
+          text_input_client);
+    } else {
+      aura::Window* root_window =
+          ash::Shell::GetInstance()->GetPrimaryRootWindow();
+      ui::InputMethod* input_method =
+          root_window->GetProperty(aura::client::kRootWindowInputMethodKey);
+      input_method->SetFocusedTextInputClient(text_input_client);
+    }
+  }
+
+  void Blur(ui::TextInputClient* text_input_client) {
+    if (switches::IsTextInputFocusManagerEnabled()) {
+      ui::TextInputFocusManager::GetInstance()->BlurTextInputClient(
+          text_input_client);
+    } else {
+      aura::Window* root_window =
+          ash::Shell::GetInstance()->GetPrimaryRootWindow();
+      ui::InputMethod* input_method =
+          root_window->GetProperty(aura::client::kRootWindowInputMethodKey);
+      input_method->SetFocusedTextInputClient(NULL);
+    }
+  }
+
  private:
   gfx::Insets restore_work_area_insets_;
   gfx::Rect keyboard_bounds_;
@@ -1034,6 +1060,47 @@ class FakeTextInputClient : public ui::DummyTextInputClient {
   DISALLOW_COPY_AND_ASSIGN(FakeTextInputClient);
 };
 
+// Tests that when a child window gains focus the top level window containing it
+// is resized to fit the remaining workspace area.
+TEST_F(WorkspaceLayoutManagerKeyboardTest, ChildWindowFocused) {
+  gfx::Rect work_area(
+      Shell::GetScreen()->GetPrimaryDisplay().work_area());
+  gfx::Rect keyboard_bounds(work_area.x(),
+                            work_area.y() + work_area.height() / 2,
+                            work_area.width(),
+                            work_area.height() / 2);
+
+  SetKeyboardBounds(keyboard_bounds);
+
+  aura::test::TestWindowDelegate delegate1;
+  scoped_ptr<aura::Window> parent_window(CreateTestWindowInShellWithDelegate(
+      &delegate1, -1, work_area));
+  aura::test::TestWindowDelegate delegate2;
+  scoped_ptr<aura::Window> window(CreateTestWindowInShellWithDelegate(
+      &delegate2, -1, work_area));
+  parent_window->AddChild(window.get());
+
+  FakeTextInputClient text_input_client(window.get());
+  Focus(&text_input_client);
+
+  int available_height =
+      Shell::GetScreen()->GetPrimaryDisplay().bounds().height() -
+      keyboard_bounds.height();
+
+  gfx::Rect initial_window_bounds(50, 50, 100, 500);
+  parent_window->SetBounds(initial_window_bounds);
+  EXPECT_EQ(initial_window_bounds.ToString(),
+            parent_window->bounds().ToString());
+  ShowKeyboard();
+  EXPECT_EQ(gfx::Rect(50, 0, 100, available_height).ToString(),
+            parent_window->bounds().ToString());
+  HideKeyboard();
+  EXPECT_EQ(initial_window_bounds.ToString(),
+            parent_window->bounds().ToString());
+
+  Blur(&text_input_client);
+}
+
 TEST_F(WorkspaceLayoutManagerKeyboardTest, AdjustWindowForA11yKeyboard) {
   gfx::Rect work_area(
       Shell::GetScreen()->GetPrimaryDisplay().work_area());
@@ -1048,16 +1115,8 @@ TEST_F(WorkspaceLayoutManagerKeyboardTest, AdjustWindowForA11yKeyboard) {
   scoped_ptr<aura::Window> window(CreateTestWindowInShellWithDelegate(
       &delegate, -1, work_area));
 
-  aura::Window* root_window = ash::Shell::GetInstance()->GetPrimaryRootWindow();
   FakeTextInputClient text_input_client(window.get());
-  ui::InputMethod* input_method =
-      root_window->GetProperty(aura::client::kRootWindowInputMethodKey);
-  if (switches::IsTextInputFocusManagerEnabled()) {
-    ui::TextInputFocusManager::GetInstance()->FocusTextInputClient(
-        &text_input_client);
-  } else {
-    input_method->SetFocusedTextInputClient(&text_input_client);
-  }
+  Focus(&text_input_client);
 
   int available_height =
       Shell::GetScreen()->GetPrimaryDisplay().bounds().height() -
@@ -1080,12 +1139,7 @@ TEST_F(WorkspaceLayoutManagerKeyboardTest, AdjustWindowForA11yKeyboard) {
   HideKeyboard();
   EXPECT_EQ(small_window_bound.ToString(), window->bounds().ToString());
 
-  if (switches::IsTextInputFocusManagerEnabled()) {
-    ui::TextInputFocusManager::GetInstance()->BlurTextInputClient(
-        &text_input_client);
-  } else {
-    input_method->SetFocusedTextInputClient(NULL);
-  }
+  Blur(&text_input_client);
 }
 
 }  // namespace ash

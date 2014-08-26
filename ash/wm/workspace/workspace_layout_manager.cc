@@ -134,22 +134,21 @@ void WorkspaceLayoutManager::SetChildBounds(
 
 void WorkspaceLayoutManager::OnKeyboardBoundsChanging(
     const gfx::Rect& new_bounds) {
-  aura::Window* root_window = window_->GetRootWindow();
   ui::InputMethod* input_method =
-      root_window->GetProperty(aura::client::kRootWindowInputMethodKey);
+      root_window_->GetProperty(aura::client::kRootWindowInputMethodKey);
   ui::TextInputClient* text_input_client = input_method->GetTextInputClient();
   if (!text_input_client)
     return;
-  aura::Window *window = text_input_client->GetAttachedWindow();
+  aura::Window *window =
+      text_input_client->GetAttachedWindow()->GetToplevelWindow();
   if (!window || !window_->Contains(window))
     return;
-  aura::Window *toplevel_window = window->GetToplevelWindow();
-  wm::WindowState* toplevel_window_state = wm::GetWindowState(toplevel_window);
+  wm::WindowState* window_state = wm::GetWindowState(window);
   if (!new_bounds.IsEmpty()) {
     // Store existing bounds to be restored before resizing for keyboard if it
     // is not already stored.
-    if (!toplevel_window_state->HasRestoreBounds())
-      toplevel_window_state->SaveCurrentBoundsForRestore();
+    if (!window_state->HasRestoreBounds())
+      window_state->SaveCurrentBoundsForRestore();
 
     gfx::Rect window_bounds = ScreenUtil::ConvertRectToScreen(
         window_,
@@ -161,9 +160,9 @@ void WorkspaceLayoutManager::OnKeyboardBoundsChanging(
       gfx::Point origin(window->bounds().x(), window->bounds().y() - shift);
       SetChildBounds(window, gfx::Rect(origin, window->bounds().size()));
     }
-  } else if (toplevel_window_state->HasRestoreBounds()) {
+  } else if (window_state->HasRestoreBounds()) {
     // Keyboard hidden, restore original bounds if they exist.
-    toplevel_window_state->SetAndClearRestoreBounds();
+    window_state->SetAndClearRestoreBounds();
   }
 }
 
