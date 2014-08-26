@@ -103,6 +103,8 @@ test("mojo_system_unittests") {
     "local_data_pipe_unittest.cc",
     "memory_unittest.cc",
     "message_pipe_dispatcher_unittest.cc",
+    "message_pipe_test_utils.h",
+    "message_pipe_test_utils.cc",
     "message_pipe_unittest.cc",
     "multiprocess_message_pipe_unittest.cc",
     "options_validation_unittest.cc",
@@ -118,5 +120,25 @@ test("mojo_system_unittests") {
     "waiter_test_utils.cc",
     "waiter_test_utils.h",
     "waiter_unittest.cc",
+  ]
+}
+
+# GYP version: mojo/mojo_base.gyp:mojo_message_pipe_perftests
+test("mojo_message_pipe_perftests") {
+  deps = [
+    ":system",
+    "//base",
+    "//base/test:test_support",
+    "//base/test:test_support_perf",
+    "//mojo/common/test:test_support",
+    "//testing/gtest",
+  ]
+
+  sources = [
+    "message_pipe_perftest.cc",
+    "message_pipe_test_utils.h",
+    "message_pipe_test_utils.cc",
+    "test_utils.cc",
+    "test_utils.h",
   ]
 }

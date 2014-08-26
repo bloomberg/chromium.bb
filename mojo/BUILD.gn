@@ -34,6 +34,7 @@ group("tests") {
     "//mojo/public/js/bindings/tests:mojo_js_unittests",
     "//mojo/services/public/cpp/surfaces/tests:mojo_surfaces_lib_unittests",
     "//mojo/shell:mojo_shell_tests",
+    "//mojo/system:mojo_message_pipe_perftests",
     "//mojo/system:mojo_system_unittests",
   ]
 
