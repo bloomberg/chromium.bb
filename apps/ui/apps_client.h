@@ -8,9 +8,11 @@
 #include <vector>
 
 #include "apps/app_window.h"
+#include "base/callback_forward.h"
 
 namespace content {
 class BrowserContext;
+class WebContents;
 }
 
 namespace extensions {
@@ -42,6 +44,13 @@ class AppsClient {
   // keep running after all windows are closed. The count starts at zero.
   virtual void IncrementKeepAliveCount() = 0;
   virtual void DecrementKeepAliveCount() = 0;
+
+  // Opens DevTools window and runs the callback.
+  virtual void OpenDevToolsWindow(content::WebContents* web_contents,
+                                  const base::Closure& callback) = 0;
+
+  // Returns true if the current channel is older than dev.
+  virtual bool IsCurrentChannelOlderThanDev() = 0;
 
   // Return the apps client.
   static AppsClient* Get();

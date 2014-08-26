@@ -7,7 +7,9 @@
 #include "apps/app_window.h"
 #include "base/memory/singleton.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/common/extensions/features/feature_channel.h"
 #include "extensions/common/extension.h"
 
 // TODO(jamescook): We probably shouldn't compile this class at all on Android.
@@ -67,4 +69,15 @@ void ChromeAppsClient::DecrementKeepAliveCount() {
 #if !defined(OS_ANDROID)
   chrome::DecrementKeepAliveCount();
 #endif
+}
+
+void ChromeAppsClient::OpenDevToolsWindow(content::WebContents* web_contents,
+                                          const base::Closure& callback) {
+  DevToolsWindow* devtools_window = DevToolsWindow::OpenDevToolsWindow(
+      web_contents, DevToolsToggleAction::ShowConsole());
+  devtools_window->SetLoadCompletedCallback(callback);
+}
+
+bool ChromeAppsClient::IsCurrentChannelOlderThanDev() {
+  return extensions::GetCurrentChannel() > chrome::VersionInfo::CHANNEL_DEV;
 }

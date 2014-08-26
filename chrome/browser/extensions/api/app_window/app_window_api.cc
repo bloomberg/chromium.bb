@@ -13,10 +13,7 @@
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "chrome/browser/devtools/devtools_window.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/app_window.h"
-#include "chrome/common/extensions/features/feature_channel.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
@@ -69,34 +66,6 @@ const char kHtmlFrameOption[] = "experimental-html";
 
 namespace {
 
-// Opens an inspector window and delays the response to the
-// AppWindowCreateFunction until the DevToolsWindow has finished loading, and is
-// ready to stop on breakpoints in the callback.
-class DevToolsRestorer : public base::RefCounted<DevToolsRestorer> {
- public:
-  DevToolsRestorer(AppWindowCreateFunction* delayed_create_function,
-                   content::WebContents* web_contents)
-      : delayed_create_function_(delayed_create_function) {
-    AddRef();  // Balanced in LoadCompleted.
-    DevToolsWindow* devtools_window = DevToolsWindow::OpenDevToolsWindow(
-        web_contents,
-        DevToolsToggleAction::ShowConsole());
-    devtools_window->SetLoadCompletedCallback(
-        base::Bind(&DevToolsRestorer::LoadCompleted, this));
-  }
-
- private:
-  friend class base::RefCounted<DevToolsRestorer>;
-  ~DevToolsRestorer() {}
-
-  void LoadCompleted() {
-    delayed_create_function_->SendDelayedResponse();
-    Release();
-  }
-
-  scoped_refptr<AppWindowCreateFunction> delayed_create_function_;
-};
-
 // If the same property is specified for the inner and outer bounds, raise an
 // error.
 bool CheckBoundsConflict(const scoped_ptr<int>& inner_property,
@@ -144,10 +113,6 @@ void CopyBoundsSpec(
 
 AppWindowCreateFunction::AppWindowCreateFunction()
     : inject_html_titlebar_(false) {}
-
-void AppWindowCreateFunction::SendDelayedResponse() {
-  SendResponse(true);
-}
 
 bool AppWindowCreateFunction::RunAsync() {
   // Don't create app window if the system is shutting down.
@@ -230,7 +195,7 @@ bool AppWindowCreateFunction::RunAsync() {
     if (!GetBoundsSpec(*options, &create_params, &error_))
       return false;
 
-    if (GetCurrentChannel() <= chrome::VersionInfo::CHANNEL_DEV ||
+    if (!apps::AppsClient::Get()->IsCurrentChannelOlderThanDev() ||
         extension()->location() == extensions::Manifest::COMPONENT) {
       if (options->type == extensions::api::app_window::WINDOW_TYPE_PANEL) {
         create_params.window_type = AppWindow::WINDOW_TYPE_PANEL;
@@ -249,7 +214,7 @@ bool AppWindowCreateFunction::RunAsync() {
         "312745D9BF916161191143F6490085EEA0434997",
         "53041A2FA309EECED01FFC751E7399186E860B2C"
       };
-      if (GetCurrentChannel() > chrome::VersionInfo::CHANNEL_DEV &&
+      if (apps::AppsClient::Get()->IsCurrentChannelOlderThanDev() &&
           !extensions::SimpleFeature::IsIdInList(
               extension_id(),
               std::set<std::string>(whitelist,
@@ -339,7 +304,9 @@ bool AppWindowCreateFunction::RunAsync() {
 
   if (apps::AppWindowRegistry::Get(browser_context())
           ->HadDevToolsAttached(created_view)) {
-    new DevToolsRestorer(this, app_window->web_contents());
+    apps::AppsClient::Get()->OpenDevToolsWindow(
+        app_window->web_contents(),
+        base::Bind(&AppWindowCreateFunction::SendResponse, this, true));
     return true;
   }
 

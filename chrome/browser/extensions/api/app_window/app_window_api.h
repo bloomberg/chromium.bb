@@ -21,8 +21,6 @@ class AppWindowCreateFunction : public AsyncExtensionFunction {
   AppWindowCreateFunction();
   DECLARE_EXTENSION_FUNCTION("app.window.create", APP_WINDOW_CREATE)
 
-  void SendDelayedResponse();
-
  protected:
   virtual ~AppWindowCreateFunction() {}
   virtual bool RunAsync() OVERRIDE;
