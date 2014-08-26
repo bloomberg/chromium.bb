@@ -96,7 +96,7 @@ TEST_F(SchemaMapTest, HasComponents) {
 
 TEST_F(SchemaMapTest, Lookups) {
   scoped_refptr<SchemaMap> map = CreateTestMap();
-  ASSERT_TRUE(map);
+  ASSERT_TRUE(map.get());
   EXPECT_TRUE(map->HasComponents());
 
   EXPECT_FALSE(map->GetSchema(

@@ -469,7 +469,7 @@ void URLBlacklistManager::UpdateOnIO(scoped_ptr<base::ListValue> block,
   // The URLBlacklist is built on a worker thread. Once it's ready, it is passed
   // to the URLBlacklistManager on IO.
   base::PostTaskAndReplyWithResult(
-      background_task_runner_,
+      background_task_runner_.get(),
       FROM_HERE,
       base::Bind(&BuildBlacklist,
                  base::Passed(&block),

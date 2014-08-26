@@ -105,7 +105,7 @@ bool SchemaMap::HasComponents() const {
 void SchemaMap::GetChanges(const scoped_refptr<SchemaMap>& older,
                            PolicyNamespaceList* removed,
                            PolicyNamespaceList* added) const {
-  GetNamespacesNotInOther(older, added);
+  GetNamespacesNotInOther(older.get(), added);
   older->GetNamespacesNotInOther(this, removed);
 }
 

@@ -19,7 +19,7 @@ UserPolicyRequestContext::UserPolicyRequestContext(
     : user_context_getter_(user_context_getter),
       system_context_getter_(system_context_getter),
       http_user_agent_settings_("*", user_agent) {
-  DCHECK(user_context_getter_);
+  DCHECK(user_context_getter_.get());
 }
 
 UserPolicyRequestContext::~UserPolicyRequestContext() {

@@ -975,7 +975,7 @@ Schema Schema::Parse(const std::string& content, std::string* error) {
 
   scoped_refptr<const InternalStorage> storage =
       InternalStorage::ParseSchema(*dict, error);
-  if (!storage)
+  if (!storage.get())
     return Schema();
   return Schema(storage, storage->root_node());
 }

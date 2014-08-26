@@ -155,7 +155,7 @@ CloudPolicyClientRegistrationHelper::CloudPolicyClientRegistrationHelper(
     : context_(client->GetRequestContext()),
       client_(client),
       registration_type_(registration_type) {
-  DCHECK(context_);
+  DCHECK(context_.get());
   DCHECK(client_);
 }
 
@@ -197,7 +197,7 @@ void CloudPolicyClientRegistrationHelper::StartRegistrationWithLoginToken(
       new CloudPolicyClientRegistrationHelper::LoginTokenHelper());
   login_token_helper_->FetchAccessToken(
       login_refresh_token,
-      context_,
+      context_.get(),
       base::Bind(&CloudPolicyClientRegistrationHelper::OnTokenFetched,
                  base::Unretained(this)));
 }
@@ -240,7 +240,7 @@ void CloudPolicyClientRegistrationHelper::OnTokenFetched(
   DVLOG(1) << "Fetched new scoped OAuth token:" << oauth_access_token_;
   // Now we've gotten our access token - contact GAIA to see if this is a
   // hosted domain.
-  user_info_fetcher_.reset(new UserInfoFetcher(this, context_));
+  user_info_fetcher_.reset(new UserInfoFetcher(this, context_.get()));
   user_info_fetcher_->Start(oauth_access_token_);
 }
 

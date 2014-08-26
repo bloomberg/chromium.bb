@@ -17,7 +17,7 @@ SystemPolicyRequestContext::SystemPolicyRequestContext(
     const std::string& user_agent)
     : system_context_getter_(system_context_getter),
       http_user_agent_settings_("*", user_agent) {
-  DCHECK(system_context_getter);
+  DCHECK(system_context_getter.get());
 }
 
 SystemPolicyRequestContext::~SystemPolicyRequestContext() {

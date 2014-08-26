@@ -68,7 +68,7 @@ TEST(SchemaRegistryTest, Notifications) {
   SchemaRegistry registry;
   registry.AddObserver(&observer);
 
-  ASSERT_TRUE(registry.schema_map());
+  ASSERT_TRUE(registry.schema_map().get());
   EXPECT_FALSE(registry.schema_map()->GetSchema(
       PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, "abc")));
 
