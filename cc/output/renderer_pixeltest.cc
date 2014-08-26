@@ -1769,7 +1769,7 @@ TYPED_TEST(RendererPixelTest, PictureDrawQuadIdentityScale) {
                     texture_format,
                     viewport,
                     1.f,
-                    PicturePileImpl::CreateFromOther(blue_pile));
+                    PicturePileImpl::CreateFromOther(blue_pile.get()));
 
   // One viewport-filling green quad.
   scoped_refptr<FakePicturePileImpl> green_pile =
@@ -1794,7 +1794,7 @@ TYPED_TEST(RendererPixelTest, PictureDrawQuadIdentityScale) {
                      texture_format,
                      viewport,
                      1.f,
-                     PicturePileImpl::CreateFromOther(green_pile));
+                     PicturePileImpl::CreateFromOther(green_pile.get()));
 
   RenderPassList pass_list;
   pass_list.push_back(pass.Pass());
@@ -1840,7 +1840,7 @@ TYPED_TEST(RendererPixelTest, PictureDrawQuadOpacity) {
                      texture_format,
                      viewport,
                      1.f,
-                     PicturePileImpl::CreateFromOther(green_pile));
+                     PicturePileImpl::CreateFromOther(green_pile.get()));
 
   // One viewport-filling white quad.
   scoped_refptr<FakePicturePileImpl> white_pile =
@@ -1865,7 +1865,7 @@ TYPED_TEST(RendererPixelTest, PictureDrawQuadOpacity) {
                      texture_format,
                      viewport,
                      1.f,
-                     PicturePileImpl::CreateFromOther(white_pile));
+                     PicturePileImpl::CreateFromOther(white_pile.get()));
 
   RenderPassList pass_list;
   pass_list.push_back(pass.Pass());
@@ -1939,7 +1939,7 @@ TYPED_TEST(RendererPixelTest, PictureDrawQuadDisableImageFiltering) {
                texture_format,
                viewport,
                1.f,
-               PicturePileImpl::CreateFromOther(pile));
+               PicturePileImpl::CreateFromOther(pile.get()));
 
   RenderPassList pass_list;
   pass_list.push_back(pass.Pass());
@@ -1996,7 +1996,7 @@ TYPED_TEST(RendererPixelTest, PictureDrawQuadNonIdentityScale) {
                       texture_format,
                       green_rect1,
                       1.f,
-                      PicturePileImpl::CreateFromOther(green_pile));
+                      PicturePileImpl::CreateFromOther(green_pile.get()));
 
   PictureDrawQuad* green_quad2 =
       pass->CreateAndAppendDrawQuad<PictureDrawQuad>();
@@ -2009,7 +2009,7 @@ TYPED_TEST(RendererPixelTest, PictureDrawQuadNonIdentityScale) {
                       texture_format,
                       green_rect2,
                       1.f,
-                      PicturePileImpl::CreateFromOther(green_pile));
+                      PicturePileImpl::CreateFromOther(green_pile.get()));
 
   // Add a green clipped checkerboard in the bottom right to help test
   // interleaving picture quad content and solid color content.
@@ -2084,7 +2084,7 @@ TYPED_TEST(RendererPixelTest, PictureDrawQuadNonIdentityScale) {
                     texture_format,
                     content_union_rect,
                     contents_scale,
-                    PicturePileImpl::CreateFromOther(pile));
+                    PicturePileImpl::CreateFromOther(pile.get()));
 
   // Fill left half of viewport with green.
   gfx::Transform half_green_content_to_target_transform;
@@ -2140,7 +2140,7 @@ TEST_F(GLRendererPixelTest, PictureDrawQuadTexture4444) {
                     texture_format,
                     viewport,
                     1.f,
-                    PicturePileImpl::CreateFromOther(blue_pile));
+                    PicturePileImpl::CreateFromOther(blue_pile.get()));
 
   RenderPassList pass_list;
   pass_list.push_back(pass.Pass());

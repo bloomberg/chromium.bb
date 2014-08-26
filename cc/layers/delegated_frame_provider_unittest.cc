@@ -159,16 +159,16 @@ TEST_F(DelegatedFrameProviderTest, RefResources) {
   gfx::RectF damage;
 
   // Both observers get a full frame of damage on the first request.
-  frame_provider_->GetFrameDataAndRefResources(observer1, &damage);
+  frame_provider_->GetFrameDataAndRefResources(observer1.get(), &damage);
   EXPECT_EQ(gfx::RectF(5.f, 5.f).ToString(), damage.ToString());
-  frame_provider_->GetFrameDataAndRefResources(observer2, &damage);
+  frame_provider_->GetFrameDataAndRefResources(observer2.get(), &damage);
   EXPECT_EQ(gfx::RectF(5.f, 5.f).ToString(), damage.ToString());
 
   // And both get no damage on the 2nd request. This adds a second ref to the
   // resources.
-  frame_provider_->GetFrameDataAndRefResources(observer1, &damage);
+  frame_provider_->GetFrameDataAndRefResources(observer1.get(), &damage);
   EXPECT_EQ(gfx::RectF().ToString(), damage.ToString());
-  frame_provider_->GetFrameDataAndRefResources(observer2, &damage);
+  frame_provider_->GetFrameDataAndRefResources(observer2.get(), &damage);
   EXPECT_EQ(gfx::RectF().ToString(), damage.ToString());
 
   EXPECT_FALSE(ReturnAndResetResourcesAvailable());
@@ -217,8 +217,8 @@ TEST_F(DelegatedFrameProviderTest, RefResourcesInFrameProvider) {
   gfx::RectF damage;
 
   // Take a ref on each observer.
-  frame_provider_->GetFrameDataAndRefResources(observer1, &damage);
-  frame_provider_->GetFrameDataAndRefResources(observer2, &damage);
+  frame_provider_->GetFrameDataAndRefResources(observer1.get(), &damage);
+  frame_provider_->GetFrameDataAndRefResources(observer2.get(), &damage);
 
   EXPECT_FALSE(ReturnAndResetResourcesAvailable());
 
@@ -259,8 +259,8 @@ TEST_F(DelegatedFrameProviderTest, RefResourcesInFrameProviderUntilDestroy) {
   gfx::RectF damage;
 
   // Take a ref on each observer.
-  frame_provider_->GetFrameDataAndRefResources(observer1, &damage);
-  frame_provider_->GetFrameDataAndRefResources(observer2, &damage);
+  frame_provider_->GetFrameDataAndRefResources(observer1.get(), &damage);
+  frame_provider_->GetFrameDataAndRefResources(observer2.get(), &damage);
 
   EXPECT_FALSE(ReturnAndResetResourcesAvailable());
 
@@ -303,15 +303,15 @@ TEST_F(DelegatedFrameProviderTest, Damage) {
   gfx::RectF damage;
 
   // Both observers get a full frame of damage on the first request.
-  frame_provider_->GetFrameDataAndRefResources(observer1, &damage);
+  frame_provider_->GetFrameDataAndRefResources(observer1.get(), &damage);
   EXPECT_EQ(gfx::RectF(5.f, 5.f).ToString(), damage.ToString());
-  frame_provider_->GetFrameDataAndRefResources(observer2, &damage);
+  frame_provider_->GetFrameDataAndRefResources(observer2.get(), &damage);
   EXPECT_EQ(gfx::RectF(5.f, 5.f).ToString(), damage.ToString());
 
   // And both get no damage on the 2nd request.
-  frame_provider_->GetFrameDataAndRefResources(observer1, &damage);
+  frame_provider_->GetFrameDataAndRefResources(observer1.get(), &damage);
   EXPECT_EQ(gfx::RectF().ToString(), damage.ToString());
-  frame_provider_->GetFrameDataAndRefResources(observer2, &damage);
+  frame_provider_->GetFrameDataAndRefResources(observer2.get(), &damage);
   EXPECT_EQ(gfx::RectF().ToString(), damage.ToString());
 
   frame = CreateFrameData(gfx::Rect(5, 5), gfx::Rect(2, 2));
@@ -320,15 +320,15 @@ TEST_F(DelegatedFrameProviderTest, Damage) {
   frame_provider_->SetFrameData(frame.Pass());
 
   // Both observers get the damage for the new frame.
-  frame_provider_->GetFrameDataAndRefResources(observer1, &damage);
+  frame_provider_->GetFrameDataAndRefResources(observer1.get(), &damage);
   EXPECT_EQ(gfx::RectF(2.f, 2.f).ToString(), damage.ToString());
-  frame_provider_->GetFrameDataAndRefResources(observer2, &damage);
+  frame_provider_->GetFrameDataAndRefResources(observer2.get(), &damage);
   EXPECT_EQ(gfx::RectF(2.f, 2.f).ToString(), damage.ToString());
 
   // And both get no damage on the 2nd request.
-  frame_provider_->GetFrameDataAndRefResources(observer1, &damage);
+  frame_provider_->GetFrameDataAndRefResources(observer1.get(), &damage);
   EXPECT_EQ(gfx::RectF().ToString(), damage.ToString());
-  frame_provider_->GetFrameDataAndRefResources(observer2, &damage);
+  frame_provider_->GetFrameDataAndRefResources(observer2.get(), &damage);
   EXPECT_EQ(gfx::RectF().ToString(), damage.ToString());
 }
 

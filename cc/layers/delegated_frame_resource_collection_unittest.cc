@@ -25,13 +25,13 @@ class DelegatedFrameResourceCollectionTest
   virtual void TearDown() OVERRIDE { DestroyResourceCollection(); }
 
   void CreateResourceCollection() {
-    DCHECK(!resource_collection_);
+    DCHECK(!resource_collection_.get());
     resource_collection_ = new DelegatedFrameResourceCollection;
     resource_collection_->SetClient(this);
   }
 
   void DestroyResourceCollection() {
-    if (resource_collection_) {
+    if (resource_collection_.get()) {
       resource_collection_->SetClient(NULL);
       resource_collection_ = NULL;
     }

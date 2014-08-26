@@ -116,7 +116,7 @@ class FakeSchedulerClient : public SchedulerClient {
     return posted_begin_impl_frame_deadline_;
   }
 
-  OrderedSimpleTaskRunner& task_runner() { return *task_runner_; }
+  OrderedSimpleTaskRunner& task_runner() { return *task_runner_.get(); }
 
   int ActionIndex(const char* action) const {
     for (size_t i = 0; i < actions_.size(); i++)

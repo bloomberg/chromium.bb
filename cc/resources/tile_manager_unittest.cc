@@ -126,7 +126,7 @@ class TileManagerTest : public testing::TestWithParam<bool>,
 
   void ReleaseTiles(TileVector* tiles) {
     for (TileVector::iterator it = tiles->begin(); it != tiles->end(); it++) {
-      Tile* tile = *it;
+      Tile* tile = it->get();
       tile->SetPriority(ACTIVE_TREE, TilePriority());
       tile->SetPriority(PENDING_TREE, TilePriority());
     }
@@ -138,7 +138,7 @@ class TileManagerTest : public testing::TestWithParam<bool>,
     int has_memory_count = 0;
     for (TileVector::const_iterator it = tiles.begin(); it != tiles.end();
          ++it) {
-      if (tile_manager_->HasBeenAssignedMemory(*it))
+      if (tile_manager_->HasBeenAssignedMemory(it->get()))
         ++has_memory_count;
     }
     return has_memory_count;

@@ -29,7 +29,7 @@ scoped_refptr<base::debug::ConvertableToTraceFormat> TileDataAsValue(
     int source_frame_number,
     int layer_id) {
   scoped_refptr<base::debug::TracedValue> res(new base::debug::TracedValue());
-  TracedValue::SetIDRef(tile_id, res, internal::kTileId);
+  TracedValue::SetIDRef(tile_id, res.get(), internal::kTileId);
   res->SetString(internal::kTileResolution,
                  TileResolutionToString(tile_resolution));
   res->SetInteger(internal::kSourceFrameNumber, source_frame_number);

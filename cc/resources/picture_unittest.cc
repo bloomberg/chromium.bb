@@ -463,7 +463,7 @@ TEST(PictureTest, RecordingModes) {
   EXPECT_TRUE(content_layer_client.last_canvas() != NULL);
   EXPECT_EQ(ContentLayerClient::GRAPHICS_CONTEXT_ENABLED,
             content_layer_client.last_context_status());
-  EXPECT_TRUE(picture);
+  EXPECT_TRUE(picture.get());
 
   picture = Picture::Create(layer_rect,
                             &content_layer_client,
@@ -473,7 +473,7 @@ TEST(PictureTest, RecordingModes) {
   EXPECT_TRUE(content_layer_client.last_canvas() != NULL);
   EXPECT_EQ(ContentLayerClient::GRAPHICS_CONTEXT_ENABLED,
             content_layer_client.last_context_status());
-  EXPECT_TRUE(picture);
+  EXPECT_TRUE(picture.get());
 
   picture = Picture::Create(layer_rect,
                             &content_layer_client,
@@ -483,7 +483,7 @@ TEST(PictureTest, RecordingModes) {
   EXPECT_TRUE(content_layer_client.last_canvas() != NULL);
   EXPECT_EQ(ContentLayerClient::GRAPHICS_CONTEXT_DISABLED,
             content_layer_client.last_context_status());
-  EXPECT_TRUE(picture);
+  EXPECT_TRUE(picture.get());
 
   picture = Picture::Create(layer_rect,
                             &content_layer_client,
@@ -491,7 +491,7 @@ TEST(PictureTest, RecordingModes) {
                             false,
                             Picture::RECORD_WITH_SKRECORD);
   EXPECT_TRUE(content_layer_client.last_canvas() != NULL);
-  EXPECT_TRUE(picture);
+  EXPECT_TRUE(picture.get());
 
   EXPECT_EQ(4, Picture::RECORDING_MODE_COUNT);
 }

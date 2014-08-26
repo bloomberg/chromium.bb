@@ -83,7 +83,8 @@ typedef ::testing::Types<DelegatingRenderer, GLRenderer> RendererTypes;
 TYPED_TEST_CASE(RendererTest, RendererTypes);
 
 TYPED_TEST(RendererTest, ContextPurgedWhenRendererBecomesInvisible) {
-  EXPECT_CALL(*(this->context_provider_), DeleteCachedResources()).Times(1);
+  EXPECT_CALL(*(this->context_provider_.get()), DeleteCachedResources())
+      .Times(1);
 
   EXPECT_TRUE(this->renderer_->visible());
   this->renderer_->SetVisible(false);

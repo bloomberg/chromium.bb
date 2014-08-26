@@ -117,7 +117,7 @@ bool OutputSurface::BindToClient(OutputSurfaceClient* client) {
   client_ = client;
   bool success = true;
 
-  if (context_provider_) {
+  if (context_provider_.get()) {
     success = context_provider_->BindToCurrentThread();
     if (success)
       SetUpContext3d();
@@ -131,8 +131,8 @@ bool OutputSurface::BindToClient(OutputSurfaceClient* client) {
 
 bool OutputSurface::InitializeAndSetContext3d(
     scoped_refptr<ContextProvider> context_provider) {
-  DCHECK(!context_provider_);
-  DCHECK(context_provider);
+  DCHECK(!context_provider_.get());
+  DCHECK(context_provider.get());
   DCHECK(client_);
 
   bool success = false;
@@ -151,13 +151,13 @@ bool OutputSurface::InitializeAndSetContext3d(
 
 void OutputSurface::ReleaseGL() {
   DCHECK(client_);
-  DCHECK(context_provider_);
+  DCHECK(context_provider_.get());
   client_->ReleaseGL();
-  DCHECK(!context_provider_);
+  DCHECK(!context_provider_.get());
 }
 
 void OutputSurface::SetUpContext3d() {
-  DCHECK(context_provider_);
+  DCHECK(context_provider_.get());
   DCHECK(client_);
 
   context_provider_->SetLostContextCallback(
@@ -173,7 +173,7 @@ void OutputSurface::SetUpContext3d() {
 
 void OutputSurface::ReleaseContextProvider() {
   DCHECK(client_);
-  DCHECK(context_provider_);
+  DCHECK(context_provider_.get());
   ResetContext3d();
 }
 
@@ -195,7 +195,7 @@ void OutputSurface::EnsureBackbuffer() {
 }
 
 void OutputSurface::DiscardBackbuffer() {
-  if (context_provider_)
+  if (context_provider_.get())
     context_provider_->ContextGL()->DiscardBackbufferCHROMIUM();
   if (software_device_)
     software_device_->DiscardBackbuffer();
@@ -207,7 +207,7 @@ void OutputSurface::Reshape(const gfx::Size& size, float scale_factor) {
 
   surface_size_ = size;
   device_scale_factor_ = scale_factor;
-  if (context_provider_) {
+  if (context_provider_.get()) {
     context_provider_->ContextGL()->ResizeCHROMIUM(
         size.width(), size.height(), scale_factor);
   }
@@ -220,7 +220,7 @@ gfx::Size OutputSurface::SurfaceSize() const {
 }
 
 void OutputSurface::BindFramebuffer() {
-  DCHECK(context_provider_);
+  DCHECK(context_provider_.get());
   context_provider_->ContextGL()->BindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
@@ -231,7 +231,7 @@ void OutputSurface::SwapBuffers(CompositorFrame* frame) {
     return;
   }
 
-  DCHECK(context_provider_);
+  DCHECK(context_provider_.get());
   DCHECK(frame->gl_frame_data);
 
   if (frame->gl_frame_data->sub_buffer_rect ==

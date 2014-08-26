@@ -1060,7 +1060,7 @@ const ResourceProvider::Resource* ResourceProvider::LockForRead(ResourceId id) {
 
   resource->lock_for_read_count++;
   if (resource->read_lock_fences_enabled) {
-    if (current_read_lock_fence_)
+    if (current_read_lock_fence_.get())
       current_read_lock_fence_->Set();
     resource->read_lock_fence = current_read_lock_fence_;
   }
@@ -1524,7 +1524,7 @@ void ResourceProvider::ReceiveReturnsFromParent(
     // Need to wait for the current read lock fence to pass before we can
     // recycle this resource.
     if (resource->read_lock_fences_enabled) {
-      if (current_read_lock_fence_)
+      if (current_read_lock_fence_.get())
         current_read_lock_fence_->Set();
       resource->read_lock_fence = current_read_lock_fence_;
     }
@@ -2261,12 +2261,12 @@ GLint ResourceProvider::GetActiveTextureUnit(GLES2Interface* gl) {
 }
 
 GLES2Interface* ResourceProvider::ContextGL() const {
-  ContextProvider* context_provider = output_surface_->context_provider();
+  ContextProvider* context_provider = output_surface_->context_provider().get();
   return context_provider ? context_provider->ContextGL() : NULL;
 }
 
 class GrContext* ResourceProvider::GrContext() const {
-  ContextProvider* context_provider = output_surface_->context_provider();
+  ContextProvider* context_provider = output_surface_->context_provider().get();
   return context_provider ? context_provider->GrContext() : NULL;
 }
 

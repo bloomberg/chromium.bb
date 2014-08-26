@@ -118,7 +118,7 @@ RasterMode Tile::DetermineRasterModeForResolution(
 
 bool Tile::HasRasterTask() const {
   for (int mode = 0; mode < NUM_RASTER_MODES; ++mode) {
-    if (managed_state_.tile_versions[mode].raster_task_)
+    if (managed_state_.tile_versions[mode].raster_task_.get())
       return true;
   }
   return false;

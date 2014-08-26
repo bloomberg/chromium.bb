@@ -566,9 +566,9 @@ TEST_F(PictureLayerImplTest, ClonePartialInvalidation) {
       EXPECT_TRUE(*iter);
       EXPECT_FALSE(iter.geometry_rect().IsEmpty());
       if (iter.geometry_rect().Intersects(content_invalidation))
-        EXPECT_EQ(pending_pile, iter->picture_pile());
+        EXPECT_EQ(pending_pile.get(), iter->picture_pile());
       else
-        EXPECT_EQ(active_pile, iter->picture_pile());
+        EXPECT_EQ(active_pile.get(), iter->picture_pile());
     }
   }
 }
@@ -635,9 +635,9 @@ TEST_F(PictureLayerImplTest, NoInvalidationBoundsChange) {
           iter.geometry_rect().bottom() >= active_content_bounds.height() ||
           active_tiles[0]->content_rect().size() !=
               pending_tiles[0]->content_rect().size()) {
-        EXPECT_EQ(pending_pile, iter->picture_pile());
+        EXPECT_EQ(pending_pile.get(), iter->picture_pile());
       } else {
-        EXPECT_EQ(active_pile, iter->picture_pile());
+        EXPECT_EQ(active_pile.get(), iter->picture_pile());
       }
     }
   }
@@ -690,9 +690,9 @@ TEST_F(PictureLayerImplTest, AddTilesFromNewRecording) {
                                               iter.full_tile_geometry_rect());
 
       if (in_pending && !in_active)
-        EXPECT_EQ(pending_pile, iter->picture_pile());
+        EXPECT_EQ(pending_pile.get(), iter->picture_pile());
       else if (in_active)
-        EXPECT_EQ(active_pile, iter->picture_pile());
+        EXPECT_EQ(active_pile.get(), iter->picture_pile());
       else
         EXPECT_FALSE(*iter);
     }

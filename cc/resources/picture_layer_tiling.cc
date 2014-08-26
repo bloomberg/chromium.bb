@@ -854,7 +854,7 @@ void PictureLayerTiling::UpdateEvictionCacheIfNeeded(
   for (TileMap::iterator it = tiles_.begin(); it != tiles_.end(); ++it) {
     // TODO(vmpstr): This should update the priority if UpdateTilePriorities
     // changes not to do this.
-    Tile* tile = it->second;
+    Tile* tile = it->second.get();
     const TilePriority& priority =
         tile->priority_for_tree_priority(tree_priority);
     switch (priority.priority_bin) {

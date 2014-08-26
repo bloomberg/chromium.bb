@@ -229,7 +229,7 @@ void RasterizeAndRecordBenchmarkImpl::RunOnLayer(PictureLayerImpl* layer) {
     TaskGraph graph;
 
     graph.nodes.push_back(
-        TaskGraph::Node(benchmark_raster_task,
+        TaskGraph::Node(benchmark_raster_task.get(),
                         RasterWorkerPool::kBenchmarkRasterTaskPriority,
                         0u));
 

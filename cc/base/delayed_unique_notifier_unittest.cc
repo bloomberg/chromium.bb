@@ -58,7 +58,7 @@ class DelayedUniqueNotifierTest : public testing::Test {
 TEST_F(DelayedUniqueNotifierTest, ZeroDelay) {
   base::TimeDelta delay = base::TimeDelta::FromInternalValue(0);
   TestNotifier notifier(
-      task_runner_,
+      task_runner_.get(),
       base::Bind(&DelayedUniqueNotifierTest::Notify, base::Unretained(this)),
       delay);
 
@@ -93,7 +93,7 @@ TEST_F(DelayedUniqueNotifierTest, ZeroDelay) {
 TEST_F(DelayedUniqueNotifierTest, SmallDelay) {
   base::TimeDelta delay = base::TimeDelta::FromInternalValue(20);
   TestNotifier notifier(
-      task_runner_,
+      task_runner_.get(),
       base::Bind(&DelayedUniqueNotifierTest::Notify, base::Unretained(this)),
       delay);
 
@@ -153,7 +153,7 @@ TEST_F(DelayedUniqueNotifierTest, SmallDelay) {
 TEST_F(DelayedUniqueNotifierTest, RescheduleDelay) {
   base::TimeDelta delay = base::TimeDelta::FromInternalValue(20);
   TestNotifier notifier(
-      task_runner_,
+      task_runner_.get(),
       base::Bind(&DelayedUniqueNotifierTest::Notify, base::Unretained(this)),
       delay);
 
@@ -195,7 +195,7 @@ TEST_F(DelayedUniqueNotifierTest, RescheduleDelay) {
 TEST_F(DelayedUniqueNotifierTest, CancelAndHasPendingNotification) {
   base::TimeDelta delay = base::TimeDelta::FromInternalValue(20);
   TestNotifier notifier(
-      task_runner_,
+      task_runner_.get(),
       base::Bind(&DelayedUniqueNotifierTest::Notify, base::Unretained(this)),
       delay);
 

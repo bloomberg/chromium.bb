@@ -50,9 +50,8 @@ bool LayerTreesMatch(LayerImpl* const layer_impl,
                 layer->touch_event_handler_region()));
 
   for (size_t i = 0; i < layer_impl->children().size(); ++i) {
-    RETURN_IF_EXPECTATION_FAILS(
-        EXPECT_TRUE(LayerTreesMatch(layer_impl->children()[i],
-                                    layer->children()[i])));
+    RETURN_IF_EXPECTATION_FAILS(EXPECT_TRUE(LayerTreesMatch(
+        layer_impl->children()[i], layer->children()[i].get())));
   }
 
   return true;
@@ -89,7 +88,7 @@ TEST_F(LayerTreeJsonParserSanityCheck, Basic) {
 
   std::string json = host_impl.LayerTreeAsJson();
   scoped_refptr<Layer> root = ParseTreeFromJson(json, NULL);
-  ASSERT_TRUE(root);
+  ASSERT_TRUE(root.get());
   EXPECT_TRUE(LayerTreesMatch(host_impl.RootLayer(), root.get()));
 }
 
@@ -115,7 +114,7 @@ TEST_F(LayerTreeJsonParserSanityCheck, EventHandlerRegions) {
 
   std::string json = host_impl.LayerTreeAsJson();
   scoped_refptr<Layer> root = ParseTreeFromJson(json, NULL);
-  ASSERT_TRUE(root);
+  ASSERT_TRUE(root.get());
   EXPECT_TRUE(LayerTreesMatch(host_impl.RootLayer(), root.get()));
 }
 

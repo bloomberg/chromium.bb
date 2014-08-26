@@ -44,7 +44,8 @@ class DelegatedRendererLayerTestSimple : public DelegatedRendererLayerTest {
     provider_ = new DelegatedFrameProvider(resources_, frame_data.Pass());
     root_layer_ = SolidColorLayer::Create();
     layer_before_ = SolidColorLayer::Create();
-    delegated_renderer_layer_ = FakeDelegatedRendererLayer::Create(provider_);
+    delegated_renderer_layer_ =
+        FakeDelegatedRendererLayer::Create(provider_.get());
   }
 
  protected:

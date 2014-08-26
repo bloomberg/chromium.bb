@@ -120,7 +120,7 @@ TEST(SolidColorLayerImplTest, VerifyOpaqueRect) {
 
   RenderSurfaceLayerList render_surface_layer_list;
   LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
-      root, gfx::Size(500, 500), &render_surface_layer_list);
+      root.get(), gfx::Size(500, 500), &render_surface_layer_list);
   LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
   EXPECT_FALSE(layer->contents_opaque());

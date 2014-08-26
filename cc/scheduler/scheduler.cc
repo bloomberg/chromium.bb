@@ -274,7 +274,7 @@ base::TimeTicks Scheduler::LastBeginImplFrameTime() {
 }
 
 void Scheduler::SetupNextBeginFrameIfNeeded() {
-  if (!task_runner_)
+  if (!task_runner_.get())
     return;
 
   bool needs_begin_frame = state_machine_.BeginFrameNeeded();
@@ -690,11 +690,11 @@ scoped_refptr<base::debug::ConvertableToTraceFormat> Scheduler::AsValue()
   scoped_refptr<base::debug::TracedValue> state =
       new base::debug::TracedValue();
   state->BeginDictionary("state_machine");
-  state_machine_.AsValueInto(state);
+  state_machine_.AsValueInto(state.get());
   state->EndDictionary();
   if (synthetic_begin_frame_source_) {
     state->BeginDictionary("synthetic_begin_frame_source_");
-    synthetic_begin_frame_source_->AsValueInto(state);
+    synthetic_begin_frame_source_->AsValueInto(state.get());
     state->EndDictionary();
   }
 
@@ -717,7 +717,7 @@ scoped_refptr<base::debug::ConvertableToTraceFormat> Scheduler::AsValue()
   state->SetBoolean("advance_commit_state_task_",
                     !advance_commit_state_task_.IsCancelled());
   state->BeginDictionary("begin_impl_frame_args");
-  begin_impl_frame_args_.AsValueInto(state);
+  begin_impl_frame_args_.AsValueInto(state.get());
   state->EndDictionary();
 
   state->EndDictionary();

@@ -65,7 +65,7 @@ class RasterTaskImpl : public RasterTask {
   virtual void RunOnWorkerThread() OVERRIDE {
     TRACE_EVENT0("cc", "RasterizerTaskImpl::RunOnWorkerThread");
 
-    DCHECK(picture_pile_);
+    DCHECK(picture_pile_.get());
     if (!canvas_)
       return;
 
@@ -373,7 +373,7 @@ TileManager::TileManager(
       did_initialize_visible_tile_(false),
       did_check_for_completed_tasks_since_last_schedule_tasks_(true),
       ready_to_activate_check_notifier_(
-          task_runner_,
+          task_runner_.get(),
           base::Bind(&TileManager::CheckIfReadyToActivate,
                      base::Unretained(this))) {
   rasterizer_->SetClient(this);
@@ -556,7 +556,7 @@ void TileManager::GetTilesWithAssignedBins(PrioritizedTileSet* tiles) {
         tile->GetTileVersionForDrawing();
     bool tile_is_ready_to_draw = tile_version.IsReadyToDraw();
     bool tile_is_active = tile_is_ready_to_draw ||
-                          mts.tile_versions[mts.raster_mode].raster_task_;
+                          mts.tile_versions[mts.raster_mode].raster_task_.get();
 
     // Get the active priority and bin.
     TilePriority active_priority = tile->priority(ACTIVE_TREE);
@@ -642,7 +642,7 @@ void TileManager::GetTilesWithAssignedBins(PrioritizedTileSet* tiles) {
     // should keep it in the prioritized tile set to ensure that AssignGpuMemory
     // can visit it.
     if (mts.bin == NEVER_BIN &&
-        !mts.tile_versions[mts.raster_mode].raster_task_) {
+        !mts.tile_versions[mts.raster_mode].raster_task_.get()) {
       FreeResourcesForTileAndNotifyClientIfTileWasReadyToDraw(tile);
       continue;
     }
@@ -828,7 +828,7 @@ void TileManager::AssignGpuMemoryToTiles(
     if (!reached_scheduled_raster_tasks_limit) {
       // If we don't have the required version, and it's not in flight
       // then we'll have to pay to create a new task.
-      if (!tile_version.resource_ && !tile_version.raster_task_) {
+      if (!tile_version.resource_ && !tile_version.raster_task_.get()) {
         tile_bytes += bytes_if_allocated;
         tile_resources++;
       }
@@ -971,7 +971,7 @@ void TileManager::ScheduleTasks(
     DCHECK(tile_version.requires_resource());
     DCHECK(!tile_version.resource_);
 
-    if (!tile_version.raster_task_)
+    if (!tile_version.raster_task_.get())
       tile_version.raster_task_ = CreateRasterTask(tile);
 
     raster_queue_.items.push_back(RasterTaskQueue::Item(
@@ -1092,7 +1092,7 @@ void TileManager::OnRasterTaskCompleted(
   Tile* tile = tiles_[tile_id];
   ManagedTileState& mts = tile->managed_state();
   ManagedTileState::TileVersion& tile_version = mts.tile_versions[raster_mode];
-  DCHECK(tile_version.raster_task_);
+  DCHECK(tile_version.raster_task_.get());
   orphan_raster_tasks_.push_back(tile_version.raster_task_);
   tile_version.raster_task_ = NULL;
 
@@ -1141,7 +1141,7 @@ scoped_refptr<Tile> TileManager::CreateTile(PicturePileImpl* picture_pile,
                                                          flags));
   DCHECK(tiles_.find(tile->id()) == tiles_.end());
 
-  tiles_[tile->id()] = tile;
+  tiles_[tile->id()] = tile.get();
   used_layer_counts_[tile->layer_id()]++;
   prioritized_tiles_dirty_ = true;
   return tile;

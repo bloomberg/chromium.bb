@@ -218,7 +218,7 @@ bool PicturePileBase::PictureInfo::Invalidate(int frame_number) {
   AdvanceInvalidationHistory(frame_number);
   invalidation_history_.set(0);
 
-  bool did_invalidate = !!picture_;
+  bool did_invalidate = !!picture_.get();
   picture_ = NULL;
   return did_invalidate;
 }
@@ -231,7 +231,7 @@ bool PicturePileBase::PictureInfo::NeedsRecording(int frame_number,
   // need a recording if we're within frequent invalidation distance threshold
   // or the invalidation is not frequent enough (below invalidation frequency
   // threshold).
-  return !picture_ &&
+  return !picture_.get() &&
          ((distance_to_visible <= kFrequentInvalidationDistanceThreshold) ||
           (GetInvalidationFrequency() < kInvalidationFrequencyThreshold));
 }

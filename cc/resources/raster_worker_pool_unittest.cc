@@ -203,7 +203,7 @@ class RasterWorkerPoolTest
     for (RasterTaskVector::const_iterator it = tasks_.begin();
          it != tasks_.end();
          ++it)
-      queue.items.push_back(RasterTaskQueue::Item(*it, false));
+      queue.items.push_back(RasterTaskQueue::Item(it->get(), false));
 
     raster_worker_pool_->AsRasterizer()->ScheduleTasks(&queue);
   }

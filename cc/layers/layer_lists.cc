@@ -16,7 +16,7 @@ RenderSurfaceLayerList::~RenderSurfaceLayerList() {
 }
 
 Layer* RenderSurfaceLayerList::at(size_t i) const {
-  return list_.at(i);
+  return list_.at(i).get();
 }
 
 void RenderSurfaceLayerList::pop_back() {
@@ -28,7 +28,7 @@ void RenderSurfaceLayerList::push_back(const scoped_refptr<Layer>& layer) {
 }
 
 Layer* RenderSurfaceLayerList::back() {
-  return list_.back();
+  return list_.back().get();
 }
 
 size_t RenderSurfaceLayerList::size() const {
