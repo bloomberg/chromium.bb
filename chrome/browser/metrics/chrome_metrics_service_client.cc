@@ -156,7 +156,7 @@ void ChromeMetricsServiceClient::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterInt64Pref(prefs::kUninstallLastLaunchTimeSec, 0);
   registry->RegisterInt64Pref(prefs::kUninstallLastObservedRunTimeSec, 0);
 
-  MetricsService::RegisterPrefs(registry);
+  metrics::MetricsService::RegisterPrefs(registry);
   ChromeStabilityMetricsProvider::RegisterPrefs(registry);
 
 #if defined(OS_ANDROID)
@@ -280,7 +280,7 @@ void ChromeMetricsServiceClient::LogPluginLoadingError(
 }
 
 void ChromeMetricsServiceClient::Initialize() {
-  metrics_service_.reset(new MetricsService(
+  metrics_service_.reset(new metrics::MetricsService(
       metrics_state_manager_, this, g_browser_process->local_state()));
 
   // Register metrics providers.

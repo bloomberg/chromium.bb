@@ -86,13 +86,14 @@ void WriteProfilerData(const ProcessDataSnapshot& profiler_data,
     ProfilerEventProto::TrackedObject* tracked_object =
         performance_profile->add_tracked_object();
     tracked_object->set_birth_thread_name_hash(
-        MetricsLog::Hash(MapThreadName(it->birth.thread_name)));
+        metrics::MetricsLog::Hash(MapThreadName(it->birth.thread_name)));
     tracked_object->set_exec_thread_name_hash(
-        MetricsLog::Hash(MapThreadName(it->death_thread_name)));
+        metrics::MetricsLog::Hash(MapThreadName(it->death_thread_name)));
     tracked_object->set_source_file_name_hash(
-        MetricsLog::Hash(NormalizeFileName(it->birth.location.file_name)));
+        metrics::MetricsLog::Hash(NormalizeFileName(
+            it->birth.location.file_name)));
     tracked_object->set_source_function_name_hash(
-        MetricsLog::Hash(it->birth.location.function_name));
+        metrics::MetricsLog::Hash(it->birth.location.function_name));
     tracked_object->set_source_line_number(it->birth.location.line_number);
     tracked_object->set_exec_count(death_data.count);
     tracked_object->set_exec_time_total(death_data.run_duration_sum);

@@ -18,7 +18,6 @@
 class AcceleratedPresenter;
 class BrowserProcessImpl;
 class HistogramSynchronizer;
-class MetricsService;
 class NativeBackendKWallet;
 class ScopedAllowWaitForLegacyWebViewApi;
 class TestingAutomationProvider;
@@ -60,6 +59,9 @@ class InFlightIO;
 }
 namespace media {
 class AudioOutputController;
+}
+namespace metrics {
+class MetricsService;
 }
 namespace mojo {
 namespace common {
@@ -223,7 +225,7 @@ class BASE_EXPORT ThreadRestrictions {
   friend class net::internal::AddressTrackerLinux;  // http://crbug.com/125097
   friend class ::AcceleratedPresenter;            // http://crbug.com/125391
   friend class ::BrowserProcessImpl;              // http://crbug.com/125207
-  friend class ::MetricsService;                  // http://crbug.com/124954
+  friend class metrics::MetricsService;           // http://crbug.com/124954
   friend class ::NativeBackendKWallet;            // http://crbug.com/125331
   // END USAGE THAT NEEDS TO BE FIXED.
 

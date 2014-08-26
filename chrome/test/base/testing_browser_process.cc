@@ -104,7 +104,7 @@ MetricsServicesManager* TestingBrowserProcess::GetMetricsServicesManager() {
   return NULL;
 }
 
-MetricsService* TestingBrowserProcess::metrics_service() {
+metrics::MetricsService* TestingBrowserProcess::metrics_service() {
   return NULL;
 }
 

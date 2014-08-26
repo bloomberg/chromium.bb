@@ -7,6 +7,8 @@
 
 #include "base/macros.h"
 
+namespace metrics {
+
 // MetricsServiceObserver receives notifications from MetricsService.
 // An observer must be added, removed, and notified on the same thread.
 class MetricsServiceObserver {
@@ -21,5 +23,7 @@ class MetricsServiceObserver {
  private:
   DISALLOW_COPY_AND_ASSIGN(MetricsServiceObserver);
 };
+
+}  // namespace metrics
 
 #endif  // COMPONENTS_METRICS_METRICS_SERVICE_OBSERVER_H_

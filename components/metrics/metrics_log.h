@@ -27,11 +27,6 @@ namespace content {
 struct WebPluginInfo;
 }
 
-namespace metrics {
-class MetricsProvider;
-class MetricsServiceClient;
-}
-
 namespace tracked_objects {
 struct ProcessDataSnapshot;
 }
@@ -39,6 +34,11 @@ struct ProcessDataSnapshot;
 namespace variations {
 struct ActiveGroupId;
 }
+
+namespace metrics {
+
+class MetricsProvider;
+class MetricsServiceClient;
 
 class MetricsLog {
  public:
@@ -58,7 +58,7 @@ class MetricsLog {
   MetricsLog(const std::string& client_id,
              int session_id,
              LogType log_type,
-             metrics::MetricsServiceClient* client,
+             MetricsServiceClient* client,
              PrefService* local_state);
   virtual ~MetricsLog();
 
@@ -95,7 +95,7 @@ class MetricsLog {
   // example, a pref may be mapped to a synthetic trial such that the group
   // is determined by the pref value.
   void RecordEnvironment(
-      const std::vector<metrics::MetricsProvider*>& metrics_providers,
+      const std::vector<MetricsProvider*>& metrics_providers,
       const std::vector<variations::ActiveGroupId>& synthetic_trials,
       int64 install_date);
 
@@ -114,13 +114,13 @@ class MetricsLog {
   // as number of incomplete shutdowns as well as extra breakpad and debugger
   // stats.
   void RecordStabilityMetrics(
-      const std::vector<metrics::MetricsProvider*>& metrics_providers,
+      const std::vector<MetricsProvider*>& metrics_providers,
       base::TimeDelta incremental_uptime,
       base::TimeDelta uptime);
 
   // Records general metrics based on the specified |metrics_providers|.
   void RecordGeneralMetrics(
-      const std::vector<metrics::MetricsProvider*>& metrics_providers);
+      const std::vector<MetricsProvider*>& metrics_providers);
 
   // Stop writing to this record and generate the encoded representation.
   // None of the Record* methods can be called after this is called.
@@ -149,8 +149,8 @@ class MetricsLog {
   virtual void GetFieldTrialIds(
       std::vector<variations::ActiveGroupId>* field_trial_ids) const;
 
-  metrics::ChromeUserMetricsExtension* uma_proto() { return &uma_proto_; }
-  const metrics::ChromeUserMetricsExtension* uma_proto() const {
+  ChromeUserMetricsExtension* uma_proto() { return &uma_proto_; }
+  const ChromeUserMetricsExtension* uma_proto() const {
     return &uma_proto_;
   }
 
@@ -182,11 +182,11 @@ class MetricsLog {
   const LogType log_type_;
 
   // Stores the protocol buffer representation for this log.
-  metrics::ChromeUserMetricsExtension uma_proto_;
+  ChromeUserMetricsExtension uma_proto_;
 
   // Used to interact with the embedder. Weak pointer; must outlive |this|
   // instance.
-  metrics::MetricsServiceClient* const client_;
+  MetricsServiceClient* const client_;
 
   // The time when the current log was created.
   const base::TimeTicks creation_time_;
@@ -195,5 +195,7 @@ class MetricsLog {
 
   DISALLOW_COPY_AND_ASSIGN(MetricsLog);
 };
+
+}  // namespace metrics
 
 #endif  // COMPONENTS_METRICS_METRICS_LOG_H_

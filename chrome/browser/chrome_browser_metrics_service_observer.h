@@ -9,7 +9,8 @@
 
 // ChromeBrowserMetricsServiceObserver receives notifications when the metrics
 // service creates a new metrics log.
-class ChromeBrowserMetricsServiceObserver : public MetricsServiceObserver {
+class ChromeBrowserMetricsServiceObserver
+    : public metrics::MetricsServiceObserver {
  public:
   ChromeBrowserMetricsServiceObserver();
   virtual ~ChromeBrowserMetricsServiceObserver();

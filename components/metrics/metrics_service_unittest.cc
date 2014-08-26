@@ -21,21 +21,21 @@
 #include "components/variations/metrics_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace metrics {
+
 namespace {
 
-using metrics::MetricsLogManager;
-
-void StoreNoClientInfoBackup(const metrics::ClientInfo& /* client_info */) {
+void StoreNoClientInfoBackup(const ClientInfo& /* client_info */) {
 }
 
-scoped_ptr<metrics::ClientInfo> ReturnNoBackup() {
-  return scoped_ptr<metrics::ClientInfo>();
+scoped_ptr<ClientInfo> ReturnNoBackup() {
+  return scoped_ptr<ClientInfo>();
 }
 
 class TestMetricsService : public MetricsService {
  public:
-  TestMetricsService(metrics::MetricsStateManager* state_manager,
-                     metrics::MetricsServiceClient* client,
+  TestMetricsService(MetricsStateManager* state_manager,
+                     MetricsServiceClient* client,
                      PrefService* local_state)
       : MetricsService(state_manager, client, local_state) {}
   virtual ~TestMetricsService() {}
@@ -50,7 +50,7 @@ class TestMetricsLog : public MetricsLog {
  public:
   TestMetricsLog(const std::string& client_id,
                  int session_id,
-                 metrics::MetricsServiceClient* client,
+                 MetricsServiceClient* client,
                  PrefService* local_state)
       : MetricsLog(client_id,
                    session_id,
@@ -68,7 +68,7 @@ class MetricsServiceTest : public testing::Test {
  public:
   MetricsServiceTest() : is_metrics_reporting_enabled_(false) {
     MetricsService::RegisterPrefs(testing_local_state_.registry());
-    metrics_state_manager_ = metrics::MetricsStateManager::Create(
+    metrics_state_manager_ = MetricsStateManager::Create(
         GetLocalState(),
         base::Bind(&MetricsServiceTest::is_metrics_reporting_enabled,
                    base::Unretained(this)),
@@ -81,7 +81,7 @@ class MetricsServiceTest : public testing::Test {
                                       GetLocalState());
   }
 
-  metrics::MetricsStateManager* GetMetricsStateManager() {
+  MetricsStateManager* GetMetricsStateManager() {
     return metrics_state_manager_.get();
   }
 
@@ -106,8 +106,8 @@ class MetricsServiceTest : public testing::Test {
       const std::vector<variations::ActiveGroupId>& synthetic_trials,
       const std::string& trial_name,
       const std::string& trial_group) {
-    uint32 trial_name_hash = metrics::HashName(trial_name);
-    uint32 trial_group_hash = metrics::HashName(trial_group);
+    uint32 trial_name_hash = HashName(trial_name);
+    uint32 trial_group_hash = HashName(trial_group);
     for (std::vector<variations::ActiveGroupId>::const_iterator it =
              synthetic_trials.begin();
          it != synthetic_trials.end(); ++it) {
@@ -124,7 +124,7 @@ class MetricsServiceTest : public testing::Test {
 
   bool is_metrics_reporting_enabled_;
   TestingPrefServiceSimple testing_local_state_;
-  scoped_ptr<metrics::MetricsStateManager> metrics_state_manager_;
+  scoped_ptr<MetricsStateManager> metrics_state_manager_;
   base::MessageLoop message_loop;
 
   DISALLOW_COPY_AND_ASSIGN(MetricsServiceTest);
@@ -150,9 +150,9 @@ class TestMetricsServiceObserver : public MetricsServiceObserver {
 
 TEST_F(MetricsServiceTest, InitialStabilityLogAfterCleanShutDown) {
   EnableMetricsReporting();
-  GetLocalState()->SetBoolean(metrics::prefs::kStabilityExitedCleanly, true);
+  GetLocalState()->SetBoolean(prefs::kStabilityExitedCleanly, true);
 
-  metrics::TestMetricsServiceClient client;
+  TestMetricsServiceClient client;
   TestMetricsService service(
       GetMetricsStateManager(), &client, GetLocalState());
   service.InitializeMetricsRecordingState();
@@ -163,26 +163,26 @@ TEST_F(MetricsServiceTest, InitialStabilityLogAfterCleanShutDown) {
 
 TEST_F(MetricsServiceTest, InitialStabilityLogAfterCrash) {
   EnableMetricsReporting();
-  GetLocalState()->ClearPref(metrics::prefs::kStabilityExitedCleanly);
+  GetLocalState()->ClearPref(prefs::kStabilityExitedCleanly);
 
   // Set up prefs to simulate restarting after a crash.
 
   // Save an existing system profile to prefs, to correspond to what would be
   // saved from a previous session.
-  metrics::TestMetricsServiceClient client;
+  TestMetricsServiceClient client;
   TestMetricsLog log("client", 1, &client, GetLocalState());
-  log.RecordEnvironment(std::vector<metrics::MetricsProvider*>(),
+  log.RecordEnvironment(std::vector<MetricsProvider*>(),
                         std::vector<variations::ActiveGroupId>(),
                         0);
 
   // Record stability build time and version from previous session, so that
   // stability metrics (including exited cleanly flag) won't be cleared.
-  GetLocalState()->SetInt64(metrics::prefs::kStabilityStatsBuildTime,
-                        MetricsLog::GetBuildTime());
-  GetLocalState()->SetString(metrics::prefs::kStabilityStatsVersion,
-                         client.GetVersionString());
+  GetLocalState()->SetInt64(prefs::kStabilityStatsBuildTime,
+                            MetricsLog::GetBuildTime());
+  GetLocalState()->SetString(prefs::kStabilityStatsVersion,
+                             client.GetVersionString());
 
-  GetLocalState()->SetBoolean(metrics::prefs::kStabilityExitedCleanly, false);
+  GetLocalState()->SetBoolean(prefs::kStabilityExitedCleanly, false);
 
   TestMetricsService service(
       GetMetricsStateManager(), &client, GetLocalState());
@@ -314,3 +314,5 @@ TEST_F(MetricsServiceTest, MetricsServiceObserver) {
 
   service.RemoveObserver(&observer2);
 }
+
+}  // namespace metrics

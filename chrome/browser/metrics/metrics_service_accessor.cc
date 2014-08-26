@@ -8,6 +8,11 @@
 #include "components/metrics/metrics_service.h"
 #include "components/metrics/metrics_service_observer.h"
 
+// TODO(asvitkine): Remove when this class is moved to metrics namespace.
+using metrics::MetricsService;
+using metrics::MetricsServiceObserver;
+using metrics::SyntheticTrialGroup;
+
 // static
 void MetricsServiceAccessor::AddMetricsServiceObserver(
     MetricsServiceObserver* observer) {

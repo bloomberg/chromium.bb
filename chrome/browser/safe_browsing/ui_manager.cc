@@ -69,7 +69,7 @@ void SafeBrowsingUIManager::LogPauseDelay(base::TimeDelta time) {
 // Only report SafeBrowsing related stats when UMA is enabled. User must also
 // ensure that safe browsing is enabled from the calling profile.
 bool SafeBrowsingUIManager::CanReportStats() const {
-  const MetricsService* metrics = g_browser_process->metrics_service();
+  const metrics::MetricsService* metrics = g_browser_process->metrics_service();
   return metrics && metrics->reporting_active();
 }
 

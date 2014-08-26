@@ -24,7 +24,7 @@ bool ResolveMetricsReportingEnabled(bool enabled) {
   // succeeds.
   enabled = update_pref;
 
-  MetricsService* metrics = g_browser_process->metrics_service();
+  metrics::MetricsService* metrics = g_browser_process->metrics_service();
   if (metrics) {
     if (enabled)
       metrics->Start();

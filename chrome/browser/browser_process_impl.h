@@ -23,7 +23,6 @@
 
 class ChromeNetLog;
 class ChromeResourceDispatcherHostDelegate;
-class MetricsServicesManager;
 class RemoteDebuggingServer;
 class PrefRegistrySimple;
 class PromoResourceService;
@@ -78,7 +77,7 @@ class BrowserProcessImpl : public BrowserProcess,
   virtual void ResourceDispatcherHostCreated() OVERRIDE;
   virtual void EndSession() OVERRIDE;
   virtual MetricsServicesManager* GetMetricsServicesManager() OVERRIDE;
-  virtual MetricsService* metrics_service() OVERRIDE;
+  virtual metrics::MetricsService* metrics_service() OVERRIDE;
   virtual rappor::RapporService* rappor_service() OVERRIDE;
   virtual IOThread* io_thread() OVERRIDE;
   virtual WatchDogThread* watchdog_thread() OVERRIDE;

@@ -43,11 +43,9 @@ extern "C" IMAGE_DOS_HEADER __ImageBase;
 #endif
 
 using base::SampleCountIterator;
-using metrics::HistogramEventProto;
-using metrics::ProfilerEventProto;
-using metrics::SystemProfileProto;
-using metrics::UserActionEventProto;
 typedef variations::ActiveGroupId ActiveGroupId;
+
+namespace metrics {
 
 namespace {
 
@@ -435,3 +433,5 @@ void MetricsLog::GetEncodedLog(std::string* encoded_log) {
   DCHECK(closed_);
   uma_proto_.SerializeToString(encoded_log);
 }
+
+}  // namespace metrics

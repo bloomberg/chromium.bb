@@ -21,7 +21,6 @@
 
 class ChromeOSMetricsProvider;
 class GoogleUpdateMetricsProviderWin;
-class MetricsService;
 class PluginMetricsProvider;
 class PrefRegistrySimple;
 class ProfilerMetricsProvider;
@@ -35,6 +34,7 @@ class FilePath;
 }
 
 namespace metrics {
+class MetricsService;
 class MetricsStateManager;
 }
 
@@ -72,7 +72,7 @@ class ChromeMetricsServiceClient
       const std::string& mime_type,
       const base::Callback<void(int)>& on_upload_complete) OVERRIDE;
 
-  MetricsService* metrics_service() { return metrics_service_.get(); }
+  metrics::MetricsService* metrics_service() { return metrics_service_.get(); }
 
   void LogPluginLoadingError(const base::FilePath& plugin_path);
 
@@ -131,7 +131,7 @@ class ChromeMetricsServiceClient
   metrics::MetricsStateManager* metrics_state_manager_;
 
   // The MetricsService that |this| is a client of.
-  scoped_ptr<MetricsService> metrics_service_;
+  scoped_ptr<metrics::MetricsService> metrics_service_;
 
   content::NotificationRegistrar registrar_;
 

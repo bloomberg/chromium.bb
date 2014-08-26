@@ -103,7 +103,7 @@ TEST(ExtensionsMetricsProvider, HashExtension) {
 TEST(ExtensionsMetricsProvider, SystemProtoEncoding) {
   metrics::SystemProfileProto system_profile;
   TestingPrefServiceSimple local_state;
-  MetricsService::RegisterPrefs(local_state.registry());
+  metrics::MetricsService::RegisterPrefs(local_state.registry());
   scoped_ptr<metrics::MetricsStateManager> metrics_state_manager(
       metrics::MetricsStateManager::Create(
           &local_state,

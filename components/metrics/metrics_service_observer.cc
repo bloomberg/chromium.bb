@@ -4,8 +4,12 @@
 
 #include "components/metrics/metrics_service_observer.h"
 
+namespace metrics {
+
 MetricsServiceObserver::MetricsServiceObserver() {
 }
 
 MetricsServiceObserver::~MetricsServiceObserver() {
 }
+
+}  // namespace metrics

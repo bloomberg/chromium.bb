@@ -28,7 +28,6 @@ class IconManager;
 class IntranetRedirectDetector;
 class IOThread;
 class MediaFileSystemRegistry;
-class MetricsService;
 class MetricsServicesManager;
 class NotificationUIManager;
 class PrefRegistrySimple;
@@ -61,6 +60,10 @@ class GCMDriver;
 
 namespace message_center {
 class MessageCenter;
+}
+
+namespace metrics {
+class MetricsService;
 }
 
 namespace net {
@@ -115,7 +118,7 @@ class BrowserProcess {
   virtual MetricsServicesManager* GetMetricsServicesManager() = 0;
 
   // Services: any of these getters may return NULL
-  virtual MetricsService* metrics_service() = 0;
+  virtual metrics::MetricsService* metrics_service() = 0;
   virtual rappor::RapporService* rappor_service() = 0;
   virtual ProfileManager* profile_manager() = 0;
   virtual PrefService* local_state() = 0;

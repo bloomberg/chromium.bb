@@ -149,7 +149,7 @@ bool ShutdownPreThreadsStop() {
   // consider putting it in BrowserProcessImpl::EndSession.
   PrefService* prefs = g_browser_process->local_state();
 
-  MetricsService* metrics = g_browser_process->metrics_service();
+  metrics::MetricsService* metrics = g_browser_process->metrics_service();
   if (metrics)
     metrics->RecordCompletedSessionEnd();
 

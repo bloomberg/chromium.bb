@@ -31,7 +31,7 @@
 #include "components/metrics/metrics_service_observer.h"
 #include "components/variations/active_field_trials.h"
 
-class MetricsReportingScheduler;
+class MetricsServiceAccessor;
 class PrefService;
 class PrefRegistrySimple;
 
@@ -46,15 +46,16 @@ namespace variations {
 struct ActiveGroupId;
 }
 
-namespace metrics {
-class MetricsLogUploader;
-class MetricsServiceClient;
-class MetricsStateManager;
-}
-
 namespace net {
 class URLFetcher;
 }
+
+namespace metrics {
+
+class MetricsLogUploader;
+class MetricsReportingScheduler;
+class MetricsServiceClient;
+class MetricsStateManager;
 
 // A Field Trial and its selected group, which represent a particular
 // Chrome configuration state. For example, the trial name could map to
@@ -68,7 +69,7 @@ struct SyntheticTrialGroup {
 
  private:
   // Synthetic field trial users:
-  friend class MetricsServiceAccessor;
+  friend class ::MetricsServiceAccessor;
   friend class MetricsService;
   FRIEND_TEST_ALL_PREFIXES(MetricsServiceTest, RegisterSyntheticTrial);
 
@@ -97,8 +98,8 @@ class MetricsService : public base::HistogramFlattener {
   // |local_state|.  Does not take ownership of the paramaters; instead stores
   // a weak pointer to each. Caller should ensure that the parameters are valid
   // for the lifetime of this class.
-  MetricsService(metrics::MetricsStateManager* state_manager,
-                 metrics::MetricsServiceClient* client,
+  MetricsService(MetricsStateManager* state_manager,
+                 MetricsServiceClient* client,
                  PrefService* local_state);
   virtual ~MetricsService();
 
@@ -215,7 +216,7 @@ class MetricsService : public base::HistogramFlattener {
 
   // Register the specified |provider| to provide additional metrics into the
   // UMA log. Should be called during MetricsService initialization only.
-  void RegisterMetricsProvider(scoped_ptr<metrics::MetricsProvider> provider);
+  void RegisterMetricsProvider(scoped_ptr<MetricsProvider> provider);
 
   // Check if this install was cloned or imaged from another machine. If a
   // clone is detected, reset the client id and low entropy source. This
@@ -225,7 +226,7 @@ class MetricsService : public base::HistogramFlattener {
 
  protected:
   // Exposed for testing.
-  metrics::MetricsLogManager* log_manager() { return &log_manager_; }
+  MetricsLogManager* log_manager() { return &log_manager_; }
 
  private:
   // The MetricsService has a lifecycle that is stored as a state.
@@ -373,21 +374,21 @@ class MetricsService : public base::HistogramFlattener {
   void RecordCurrentStabilityHistograms();
 
   // Manager for the various in-flight logs.
-  metrics::MetricsLogManager log_manager_;
+  MetricsLogManager log_manager_;
 
   // |histogram_snapshot_manager_| prepares histogram deltas for transmission.
   base::HistogramSnapshotManager histogram_snapshot_manager_;
 
   // Used to manage various metrics reporting state prefs, such as client id,
   // low entropy source and whether metrics reporting is enabled. Weak pointer.
-  metrics::MetricsStateManager* const state_manager_;
+  MetricsStateManager* const state_manager_;
 
   // Used to interact with the embedder. Weak pointer; must outlive |this|
   // instance.
-  metrics::MetricsServiceClient* const client_;
+  MetricsServiceClient* const client_;
 
   // Registered metrics providers.
-  ScopedVector<metrics::MetricsProvider> metrics_providers_;
+  ScopedVector<MetricsProvider> metrics_providers_;
 
   PrefService* local_state_;
 
@@ -416,7 +417,7 @@ class MetricsService : public base::HistogramFlattener {
   scoped_ptr<MetricsLog> initial_metrics_log_;
 
   // Instance of the helper class for uploading logs.
-  scoped_ptr<metrics::MetricsLogUploader> log_uploader_;
+  scoped_ptr<MetricsLogUploader> log_uploader_;
 
   // Whether there is a current log upload in progress.
   bool log_upload_in_progress_;
@@ -460,7 +461,7 @@ class MetricsService : public base::HistogramFlattener {
   // Confirms single-threaded access to |observers_| in debug builds.
   base::ThreadChecker thread_checker_;
 
-  friend class MetricsServiceAccessor;
+  friend class ::MetricsServiceAccessor;
 
   FRIEND_TEST_ALL_PREFIXES(MetricsServiceTest, IsPluginProcess);
   FRIEND_TEST_ALL_PREFIXES(MetricsServiceTest, MetricsServiceObserver);
@@ -470,5 +471,7 @@ class MetricsService : public base::HistogramFlattener {
 
   DISALLOW_COPY_AND_ASSIGN(MetricsService);
 };
+
+}  // namespace metrics
 
 #endif  // COMPONENTS_METRICS_METRICS_SERVICE_H_

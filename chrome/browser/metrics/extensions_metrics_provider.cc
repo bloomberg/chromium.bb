@@ -4,7 +4,9 @@
 
 #include "chrome/browser/metrics/extensions_metrics_provider.h"
 
+#include <algorithm>
 #include <set>
+#include <vector>
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -167,7 +169,7 @@ uint64 ExtensionsMetricsProvider::GetClientID() {
   // TODO(blundell): Create a MetricsLog::ClientIDAsInt() API and call it
   // here as well as in MetricsLog's population of the client_id field of
   // the uma_proto.
-  return MetricsLog::Hash(metrics_state_manager_->client_id());
+  return metrics::MetricsLog::Hash(metrics_state_manager_->client_id());
 }
 
 void ExtensionsMetricsProvider::ProvideSystemProfileMetrics(

@@ -30,7 +30,7 @@ MetricsServicesManager::MetricsServicesManager(PrefService* local_state)
 MetricsServicesManager::~MetricsServicesManager() {
 }
 
-MetricsService* MetricsServicesManager::GetMetricsService() {
+metrics::MetricsService* MetricsServicesManager::GetMetricsService() {
   DCHECK(thread_checker_.CalledOnValidThread());
   return GetChromeMetricsServiceClient()->metrics_service();
 }

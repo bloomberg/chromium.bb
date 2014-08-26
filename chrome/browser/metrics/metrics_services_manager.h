@@ -10,7 +10,6 @@
 #include "base/threading/thread_checker.h"
 
 class ChromeMetricsServiceClient;
-class MetricsService;
 class PrefService;
 
 namespace base {
@@ -18,6 +17,7 @@ class FilePath;
 }
 
 namespace metrics {
+class MetricsService;
 class MetricsStateManager;
 }
 
@@ -40,7 +40,7 @@ class MetricsServicesManager {
 
   // Returns the MetricsService, creating it if it hasn't been created yet (and
   // additionally creating the ChromeMetricsServiceClient in that case).
-  MetricsService* GetMetricsService();
+  metrics::MetricsService* GetMetricsService();
 
   // Returns the GetRapporService, creating it if it hasn't been created yet.
   rappor::RapporService* GetRapporService();

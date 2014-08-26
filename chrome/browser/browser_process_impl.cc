@@ -479,7 +479,7 @@ void BrowserProcessImpl::EndSession() {
   }
 
   // Tell the metrics service it was cleanly shutdown.
-  MetricsService* metrics = g_browser_process->metrics_service();
+  metrics::MetricsService* metrics = g_browser_process->metrics_service();
   if (metrics && local_state()) {
     metrics->RecordStartOfSessionEnd();
 #if !defined(OS_CHROMEOS)
@@ -535,7 +535,7 @@ MetricsServicesManager* BrowserProcessImpl::GetMetricsServicesManager() {
   return metrics_services_manager_.get();
 }
 
-MetricsService* BrowserProcessImpl::metrics_service() {
+metrics::MetricsService* BrowserProcessImpl::metrics_service() {
   DCHECK(CalledOnValidThread());
   return GetMetricsServicesManager()->GetMetricsService();
 }

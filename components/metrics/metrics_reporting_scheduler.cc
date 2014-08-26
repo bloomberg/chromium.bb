@@ -9,6 +9,8 @@
 
 using base::TimeDelta;
 
+namespace metrics {
+
 namespace {
 
 // The delay, in seconds, after startup before sending the first log message.
@@ -158,3 +160,5 @@ void MetricsReportingScheduler::BackOffUploadInterval() {
     upload_interval_ = max_interval;
   }
 }
+
+}  // namespace metrics

@@ -11,6 +11,8 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 
+namespace metrics {
+
 // Scheduler task to drive a MetricsService object's uploading.
 class MetricsReportingScheduler {
  public:
@@ -74,5 +76,7 @@ class MetricsReportingScheduler {
 
   DISALLOW_COPY_AND_ASSIGN(MetricsReportingScheduler);
 };
+
+}  // namespace metrics
 
 #endif  // COMPONENTS_METRICS_METRICS_REPORTING_SCHEDULER_H_
