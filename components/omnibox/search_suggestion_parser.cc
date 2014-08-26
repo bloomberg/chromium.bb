@@ -17,6 +17,7 @@
 #include "net/base/net_util.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_fetcher.h"
+#include "url/url_constants.h"
 
 namespace {
 
@@ -483,22 +484,29 @@ void SearchSuggestionParser::GetAnswersImageURLs(
     const base::DictionaryValue* answer_json,
     std::vector<GURL>* urls) {
   DCHECK(answer_json);
+
   const base::ListValue* lines = NULL;
-  answer_json->GetList("l", &lines);
-  if (!lines || lines->GetSize() == 0)
+  if (!answer_json->GetList("l", &lines) || !lines || lines->GetSize() == 0)
     return;
 
-  for (size_t line = 0; line < lines->GetSize(); ++line) {
-    const base::DictionaryValue* imageLine = NULL;
-    lines->GetDictionary(line, &imageLine);
-    if (!imageLine)
+  for (base::ListValue::const_iterator iter = lines->begin();
+       iter != lines->end();
+       ++iter) {
+    const base::DictionaryValue* line = NULL;
+    if (!(*iter)->GetAsDictionary(&line) || !line)
       continue;
-    const base::DictionaryValue* imageData = NULL;
-    imageLine->GetDictionary("i", &imageData);
-    if (!imageData)
+
+    std::string image_host_and_path;
+    if (!line->GetString("il.i.d", &image_host_and_path) ||
+        image_host_and_path.empty())
       continue;
-    std::string imageUrl;
-    imageData->GetString("d", &imageUrl);
-    urls->push_back(GURL(imageUrl));
+    // Concatenate scheme and host/path using only ':' as separator. This is
+    // due to the results delivering strings of the form '//host/path', which
+    // is web-speak for "use the enclosing page's scheme", but not a valid path
+    // of an URL.
+    GURL image_url(
+        GURL(std::string(url::kHttpsScheme) + ":" + image_host_and_path));
+    if (image_url.is_valid())
+      urls->push_back(image_url);
   }
 }

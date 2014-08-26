@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/gtest_prod_util.h"
 #include "base/strings/string16.h"
 #include "components/omnibox/autocomplete_match.h"
 #include "components/omnibox/autocomplete_match_type.h"
@@ -281,6 +282,11 @@ class SearchSuggestionParser {
       Results* results);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(SearchSuggestionParser,
+                           GetAnswersImageURLsWithoutImagelines);
+  FRIEND_TEST_ALL_PREFIXES(SearchSuggestionParser,
+                           GetAnswersImageURLsWithValidImage);
+
   // Gets URLs of any images in Answers results.
   static void GetAnswersImageURLs(const base::DictionaryValue* answer_json,
                                   std::vector<GURL>* urls);
