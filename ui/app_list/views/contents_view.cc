@@ -215,23 +215,13 @@ void ContentsView::UpdatePageBounds() {
   gfx::Rect outgoing_target(rect);
   int dir = target_page > current_page ? -1 : 1;
 
-  if (app_list::switches::IsExperimentalAppListEnabled()) {
-    // The experimental app list transitions horizontally.
-    int page_width = rect.width();
-    int transition_offset = progress * page_width * dir;
+  // Pages transition vertically.
+  int page_height = rect.height();
+  int transition_offset = progress * page_height * dir;
 
-    outgoing_target.set_x(transition_offset);
-    incoming_target.set_x(dir < 0 ? transition_offset + page_width
-                                  : transition_offset - page_width);
-  } else {
-    // The normal app list transitions vertically.
-    int page_height = rect.height();
-    int transition_offset = progress * page_height * dir;
-
-    outgoing_target.set_y(transition_offset);
-    incoming_target.set_y(dir < 0 ? transition_offset + page_height
-                                  : transition_offset - page_height);
-  }
+  outgoing_target.set_y(transition_offset);
+  incoming_target.set_y(dir < 0 ? transition_offset + page_height
+                                : transition_offset - page_height);
 
   view_model_->view_at(current_page)->SetBoundsRect(outgoing_target);
   view_model_->view_at(target_page)->SetBoundsRect(incoming_target);
