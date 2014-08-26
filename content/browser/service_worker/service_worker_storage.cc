@@ -124,13 +124,9 @@ void ResponseComparer::Start() {
 
 void ResponseComparer::ReadInfos() {
   lhs_reader_->ReadInfo(
-      lhs_info_,
-      base::Bind(&ResponseComparer::OnReadInfoComplete,
-                 this));
+      lhs_info_.get(), base::Bind(&ResponseComparer::OnReadInfoComplete, this));
   rhs_reader_->ReadInfo(
-      rhs_info_,
-      base::Bind(&ResponseComparer::OnReadInfoComplete,
-                 this));
+      rhs_info_.get(), base::Bind(&ResponseComparer::OnReadInfoComplete, this));
 }
 
 void ResponseComparer::OnReadInfoComplete(int result) {
@@ -154,11 +150,11 @@ void ResponseComparer::OnReadInfoComplete(int result) {
 void ResponseComparer::ReadSomeData() {
   completion_count_ = 0;
   lhs_reader_->ReadData(
-      lhs_buffer_,
+      lhs_buffer_.get(),
       kBufferSize,
       base::Bind(&ResponseComparer::OnReadDataComplete, this));
   rhs_reader_->ReadData(
-      rhs_buffer_,
+      rhs_buffer_.get(),
       kBufferSize,
       base::Bind(&ResponseComparer::OnReadDataComplete, this));
 }
@@ -247,7 +243,7 @@ scoped_ptr<ServiceWorkerStorage> ServiceWorkerStorage::Create(
                                context,
                                old_storage->database_task_runner_,
                                old_storage->disk_cache_thread_,
-                               old_storage->quota_manager_proxy_));
+                               old_storage->quota_manager_proxy_.get()));
 }
 
 void ServiceWorkerStorage::FindRegistrationForDocument(
@@ -270,11 +266,11 @@ void ServiceWorkerStorage::FindRegistrationForDocument(
     // Look for something currently being installed.
     scoped_refptr<ServiceWorkerRegistration> installing_registration =
         FindInstallingRegistrationForDocument(document_url);
-    CompleteFindNow(
-        installing_registration,
-        installing_registration ?
-            SERVICE_WORKER_OK : SERVICE_WORKER_ERROR_NOT_FOUND,
-        callback);
+    CompleteFindNow(installing_registration,
+                    installing_registration.get()
+                        ? SERVICE_WORKER_OK
+                        : SERVICE_WORKER_ERROR_NOT_FOUND,
+                    callback);
     return;
   }
 
@@ -308,11 +304,12 @@ void ServiceWorkerStorage::FindRegistrationForPattern(
     // Look for something currently being installed.
     scoped_refptr<ServiceWorkerRegistration> installing_registration =
         FindInstallingRegistrationForPattern(scope);
-    CompleteFindSoon(
-        FROM_HERE, installing_registration,
-        installing_registration ?
-            SERVICE_WORKER_OK : SERVICE_WORKER_ERROR_NOT_FOUND,
-        callback);
+    CompleteFindSoon(FROM_HERE,
+                     installing_registration,
+                     installing_registration.get()
+                         ? SERVICE_WORKER_OK
+                         : SERVICE_WORKER_ERROR_NOT_FOUND,
+                     callback);
     return;
   }
 
@@ -337,7 +334,7 @@ ServiceWorkerRegistration* ServiceWorkerStorage::GetUninstallingRegistration(
        ++it) {
     if (it->second->pattern() == scope) {
       DCHECK(it->second->is_uninstalling());
-      return it->second;
+      return it->second.get();
     }
   }
   return NULL;
@@ -363,17 +360,17 @@ void ServiceWorkerStorage::FindRegistrationForId(
     // Look for something currently being installed.
     scoped_refptr<ServiceWorkerRegistration> installing_registration =
         FindInstallingRegistrationForId(registration_id);
-    CompleteFindNow(
-        installing_registration,
-        installing_registration ?
-            SERVICE_WORKER_OK : SERVICE_WORKER_ERROR_NOT_FOUND,
-        callback);
+    CompleteFindNow(installing_registration,
+                    installing_registration.get()
+                        ? SERVICE_WORKER_OK
+                        : SERVICE_WORKER_ERROR_NOT_FOUND,
+                    callback);
     return;
   }
 
   scoped_refptr<ServiceWorkerRegistration> registration =
       context_->GetLiveRegistration(registration_id);
-  if (registration) {
+  if (registration.get()) {
     CompleteFindNow(registration, SERVICE_WORKER_OK, callback);
     return;
   }
@@ -403,7 +400,7 @@ void ServiceWorkerStorage::GetAllRegistrations(
 
   RegistrationList* registrations = new RegistrationList;
   PostTaskAndReplyWithResult(
-      database_task_runner_,
+      database_task_runner_.get(),
       FROM_HERE,
       base::Bind(&ServiceWorkerDatabase::GetAllRegistrations,
                  base::Unretained(database_.get()),
@@ -467,7 +464,7 @@ void ServiceWorkerStorage::UpdateToActiveState(
   }
 
   PostTaskAndReplyWithResult(
-      database_task_runner_,
+      database_task_runner_.get(),
       FROM_HERE,
       base::Bind(&ServiceWorkerDatabase::UpdateVersionToActive,
                  base::Unretained(database_.get()),
@@ -586,12 +583,13 @@ void ServiceWorkerStorage::DeleteAndStartOver(const StatusCallback& callback) {
 
   // Delete the database on the database thread.
   PostTaskAndReplyWithResult(
-      database_task_runner_,
+      database_task_runner_.get(),
       FROM_HERE,
       base::Bind(&ServiceWorkerDatabase::DestroyDatabase,
                  base::Unretained(database_.get())),
       base::Bind(&ServiceWorkerStorage::DidDeleteDatabase,
-                 weak_factory_.GetWeakPtr(), callback));
+                 weak_factory_.GetWeakPtr(),
+                 callback));
 }
 
 int64 ServiceWorkerStorage::NewRegistrationId() {
@@ -776,9 +774,9 @@ void ServiceWorkerStorage::DidFindRegistrationForDocument(
     // Look for something currently being installed.
     scoped_refptr<ServiceWorkerRegistration> installing_registration =
         FindInstallingRegistrationForDocument(document_url);
-    callback.Run(installing_registration ?
-        SERVICE_WORKER_OK : SERVICE_WORKER_ERROR_NOT_FOUND,
-        installing_registration);
+    callback.Run(installing_registration.get() ? SERVICE_WORKER_OK
+                                               : SERVICE_WORKER_ERROR_NOT_FOUND,
+                 installing_registration);
     return;
   }
 
@@ -801,9 +799,9 @@ void ServiceWorkerStorage::DidFindRegistrationForPattern(
   if (status == ServiceWorkerDatabase::STATUS_ERROR_NOT_FOUND) {
     scoped_refptr<ServiceWorkerRegistration> installing_registration =
         FindInstallingRegistrationForPattern(scope);
-    callback.Run(installing_registration ?
-        SERVICE_WORKER_OK : SERVICE_WORKER_ERROR_NOT_FOUND,
-        installing_registration);
+    callback.Run(installing_registration.get() ? SERVICE_WORKER_OK
+                                               : SERVICE_WORKER_ERROR_NOT_FOUND,
+                 installing_registration);
     return;
   }
 
@@ -967,7 +965,7 @@ ServiceWorkerStorage::GetOrCreateRegistration(
     const ResourceList& resources) {
   scoped_refptr<ServiceWorkerRegistration> registration =
       context_->GetLiveRegistration(data.registration_id);
-  if (registration)
+  if (registration.get())
     return registration;
 
   registration = new ServiceWorkerRegistration(
@@ -979,17 +977,18 @@ ServiceWorkerStorage::GetOrCreateRegistration(
   }
   scoped_refptr<ServiceWorkerVersion> version =
       context_->GetLiveVersion(data.version_id);
-  if (!version) {
-    version = new ServiceWorkerVersion(registration, data.version_id, context_);
+  if (!version.get()) {
+    version =
+        new ServiceWorkerVersion(registration.get(), data.version_id, context_);
     version->SetStatus(data.is_active ?
         ServiceWorkerVersion::ACTIVATED : ServiceWorkerVersion::INSTALLED);
     version->script_cache_map()->SetResources(resources);
   }
 
   if (version->status() == ServiceWorkerVersion::ACTIVATED)
-    registration->SetActiveVersion(version);
+    registration->SetActiveVersion(version.get());
   else if (version->status() == ServiceWorkerVersion::INSTALLED)
-    registration->SetWaitingVersion(version);
+    registration->SetWaitingVersion(version.get());
   else
     NOTREACHED();
 
@@ -1010,7 +1009,7 @@ ServiceWorkerStorage::FindInstallingRegistrationForDocument(
            installing_registrations_.begin();
        it != installing_registrations_.end(); ++it) {
     if (matcher.MatchLongest(it->second->pattern()))
-      match = it->second;
+      match = it->second.get();
   }
   return match;
 }
@@ -1022,7 +1021,7 @@ ServiceWorkerStorage::FindInstallingRegistrationForPattern(
            installing_registrations_.begin();
        it != installing_registrations_.end(); ++it) {
     if (it->second->pattern() == scope)
-      return it->second;
+      return it->second.get();
   }
   return NULL;
 }
@@ -1034,7 +1033,7 @@ ServiceWorkerStorage::FindInstallingRegistrationForId(
       installing_registrations_.find(registration_id);
   if (found == installing_registrations_.end())
     return NULL;
-  return found->second;
+  return found->second.get();
 }
 
 ServiceWorkerDiskCache* ServiceWorkerStorage::disk_cache() {
@@ -1385,11 +1384,12 @@ void ServiceWorkerStorage::DidDeleteDatabase(
   // Deleting the directory could take a long time and restart could be delayed.
   // We should probably rename the directory and delete it later.
   PostTaskAndReplyWithResult(
-      database_task_runner_,
+      database_task_runner_.get(),
       FROM_HERE,
       base::Bind(&base::DeleteFile, GetDiskCachePath(), true),
       base::Bind(&ServiceWorkerStorage::DidDeleteDiskCache,
-                 weak_factory_.GetWeakPtr(), callback));
+                 weak_factory_.GetWeakPtr(),
+                 callback));
 }
 
 void ServiceWorkerStorage::DidDeleteDiskCache(

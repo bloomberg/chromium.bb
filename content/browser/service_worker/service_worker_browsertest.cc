@@ -498,7 +498,7 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
         wrapper()->context()->storage()->NewRegistrationId(),
         wrapper()->context()->AsWeakPtr());
     version_ = new ServiceWorkerVersion(
-        registration_,
+        registration_.get(),
         wrapper()->context()->storage()->NewVersionId(),
         wrapper()->context()->AsWeakPtr());
     AssociateRendererProcessToWorker(version_->embedded_worker());
@@ -536,13 +536,14 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
         false);
     version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
     version_->DispatchFetchEvent(
-        request, CreateResponseReceiver(BrowserThread::UI, done,
-                                        blob_context_, result));
+        request,
+        CreateResponseReceiver(
+            BrowserThread::UI, done, blob_context_.get(), result));
   }
 
   void StopOnIOThread(const base::Closure& done,
                       ServiceWorkerStatusCode* result) {
-    ASSERT_TRUE(version_);
+    ASSERT_TRUE(version_.get());
     version_->StopWorker(CreateReceiver(BrowserThread::UI, done, result));
   }
 
@@ -841,7 +842,7 @@ class ServiceWorkerBlackBoxBrowserTest : public ServiceWorkerBrowserTest {
       ServiceWorkerStatusCode status,
       const scoped_refptr<ServiceWorkerRegistration>& registration) {
     *out_status = status;
-    if (registration) {
+    if (registration.get()) {
       *script_url = registration->script_url();
     } else {
       EXPECT_NE(SERVICE_WORKER_OK, status);

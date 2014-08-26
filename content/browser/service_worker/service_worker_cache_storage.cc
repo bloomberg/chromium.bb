@@ -383,11 +383,11 @@ ServiceWorkerCacheStorage::ServiceWorkerCacheStorage(
       cache_task_runner_(cache_task_runner),
       weak_factory_(this) {
   if (memory_only)
-    cache_loader_ =
-        new MemoryLoader(cache_task_runner_, request_context, blob_context);
+    cache_loader_ = new MemoryLoader(
+        cache_task_runner_.get(), request_context, blob_context);
   else
     cache_loader_ = new SimpleCacheLoader(
-        origin_path_, cache_task_runner_, request_context, blob_context);
+        origin_path_, cache_task_runner_.get(), request_context, blob_context);
 }
 
 ServiceWorkerCacheStorage::~ServiceWorkerCacheStorage() {

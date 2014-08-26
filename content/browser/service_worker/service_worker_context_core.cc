@@ -98,7 +98,8 @@ ServiceWorkerContextCore::ServiceWorkerContextCore(
                                             disk_cache_thread,
                                             quota_manager_proxy)),
       cache_manager_(
-          ServiceWorkerCacheStorageManager::Create(path, cache_task_runner)),
+          ServiceWorkerCacheStorageManager::Create(path,
+                                                   cache_task_runner.get())),
       embedded_worker_registry_(EmbeddedWorkerRegistry::Create(AsWeakPtr())),
       job_coordinator_(new ServiceWorkerJobCoordinator(AsWeakPtr())),
       next_handle_id_(0),
@@ -242,7 +243,7 @@ void ServiceWorkerContextCore::RegistrationComplete(
   callback.Run(status,
                registration->id(),
                version->version_id());
-  if (observer_list_) {
+  if (observer_list_.get()) {
     observer_list_->Notify(&ServiceWorkerContextObserver::OnRegistrationStored,
                            pattern);
   }
@@ -253,7 +254,7 @@ void ServiceWorkerContextCore::UnregistrationComplete(
     const ServiceWorkerContextCore::UnregistrationCallback& callback,
     ServiceWorkerStatusCode status) {
   callback.Run(status);
-  if (observer_list_) {
+  if (observer_list_.get()) {
     observer_list_->Notify(&ServiceWorkerContextObserver::OnRegistrationDeleted,
                            pattern);
   }
@@ -346,7 +347,7 @@ void ServiceWorkerContextCore::SetBlobParametersForCache(
 }
 
 void ServiceWorkerContextCore::OnWorkerStarted(ServiceWorkerVersion* version) {
-  if (!observer_list_)
+  if (!observer_list_.get())
     return;
   observer_list_->Notify(&ServiceWorkerContextObserver::OnWorkerStarted,
                          version->version_id(),
@@ -355,7 +356,7 @@ void ServiceWorkerContextCore::OnWorkerStarted(ServiceWorkerVersion* version) {
 }
 
 void ServiceWorkerContextCore::OnWorkerStopped(ServiceWorkerVersion* version) {
-  if (!observer_list_)
+  if (!observer_list_.get())
     return;
   observer_list_->Notify(&ServiceWorkerContextObserver::OnWorkerStopped,
                          version->version_id(),
@@ -365,7 +366,7 @@ void ServiceWorkerContextCore::OnWorkerStopped(ServiceWorkerVersion* version) {
 
 void ServiceWorkerContextCore::OnVersionStateChanged(
     ServiceWorkerVersion* version) {
-  if (!observer_list_)
+  if (!observer_list_.get())
     return;
   observer_list_->Notify(&ServiceWorkerContextObserver::OnVersionStateChanged,
                          version->version_id());
@@ -377,7 +378,7 @@ void ServiceWorkerContextCore::OnErrorReported(
     int line_number,
     int column_number,
     const GURL& source_url) {
-  if (!observer_list_)
+  if (!observer_list_.get())
     return;
   observer_list_->Notify(
       &ServiceWorkerContextObserver::OnErrorReported,
@@ -395,7 +396,7 @@ void ServiceWorkerContextCore::OnReportConsoleMessage(
     const base::string16& message,
     int line_number,
     const GURL& source_url) {
-  if (!observer_list_)
+  if (!observer_list_.get())
     return;
   observer_list_->Notify(
       &ServiceWorkerContextObserver::OnReportConsoleMessage,

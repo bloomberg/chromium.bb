@@ -76,11 +76,11 @@ void CallServiceWorkerVersionMethodWithVersionID(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   scoped_refptr<ServiceWorkerVersion> version =
       context->context()->GetLiveVersion(version_id);
-  if (!version) {
+  if (!version.get()) {
     callback.Run(SERVICE_WORKER_ERROR_NOT_FOUND);
     return;
   }
-  (*version.*method)(callback);
+  (*version.get().*method)(callback);
 }
 
 void DispatchPushEventWithVersionID(
@@ -100,7 +100,7 @@ void DispatchPushEventWithVersionID(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   scoped_refptr<ServiceWorkerVersion> version =
       context->context()->GetLiveVersion(version_id);
-  if (!version) {
+  if (!version.get()) {
     callback.Run(SERVICE_WORKER_ERROR_NOT_FOUND);
     return;
   }
@@ -625,7 +625,7 @@ void ServiceWorkerInternalsUI::InspectWorker(const ListValue* args) {
   scoped_refptr<DevToolsAgentHostImpl> agent_host(
       EmbeddedWorkerDevToolsManager::GetInstance()
           ->GetDevToolsAgentHostForWorker(process_id, devtools_agent_route_id));
-  if (!agent_host) {
+  if (!agent_host.get()) {
     callback.Run(SERVICE_WORKER_ERROR_NOT_FOUND);
     return;
   }

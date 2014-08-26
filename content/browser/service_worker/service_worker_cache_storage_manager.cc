@@ -157,7 +157,7 @@ ServiceWorkerCacheStorageManager::FindOrCreateServiceWorkerCacheManager(
     ServiceWorkerCacheStorage* cache_storage =
         new ServiceWorkerCacheStorage(ConstructOriginPath(root_path_, origin),
                                       memory_only,
-                                      cache_task_runner_,
+                                      cache_task_runner_.get(),
                                       request_context_,
                                       blob_context_);
     // The map owns fetch_stores.

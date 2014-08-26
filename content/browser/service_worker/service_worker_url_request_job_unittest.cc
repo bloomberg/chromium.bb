@@ -105,12 +105,12 @@ class ServiceWorkerURLRequestJobTest : public testing::Test {
         1L,
         helper_->context()->AsWeakPtr());
     version_ = new ServiceWorkerVersion(
-        registration_, 1L, helper_->context()->AsWeakPtr());
+        registration_.get(), 1L, helper_->context()->AsWeakPtr());
 
     scoped_ptr<ServiceWorkerProviderHost> provider_host(
         new ServiceWorkerProviderHost(
             kProcessID, kProviderID, helper_->context()->AsWeakPtr(), NULL));
-    provider_host->AssociateRegistration(registration_);
+    provider_host->AssociateRegistration(registration_.get());
     registration_->SetActiveVersion(version_.get());
 
     ChromeBlobStorageContext* chrome_blob_storage_context =
@@ -219,7 +219,7 @@ TEST_F(ServiceWorkerURLRequestJobTest, BlobResponse) {
     expected_response += kTestData;
   }
   scoped_ptr<storage::BlobDataHandle> blob_handle =
-      blob_storage_context->context()->AddFinishedBlob(blob_data_);
+      blob_storage_context->context()->AddFinishedBlob(blob_data_.get());
   SetUpWithHelper(new BlobResponder(kProcessID, blob_handle->uuid()));
 
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);

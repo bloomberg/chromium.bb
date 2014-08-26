@@ -47,7 +47,7 @@ void ServiceWorkerReadFromCacheJob::Start() {
   reader_ = context_->storage()->CreateResponseReader(response_id_);
   http_info_io_buffer_ = new HttpResponseInfoIOBuffer;
   reader_->ReadInfo(
-      http_info_io_buffer_,
+      http_info_io_buffer_.get(),
       base::Bind(&ServiceWorkerReadFromCacheJob::OnReadInfoComplete,
                  weak_factory_.GetWeakPtr()));
   SetStatus(net::URLRequestStatus(net::URLRequestStatus::IO_PENDING, 0));

@@ -264,7 +264,7 @@ ServiceWorkerURLRequestJob::CreateFetchRequest() {
 
 bool ServiceWorkerURLRequestJob::CreateRequestBodyBlob(std::string* blob_uuid,
                                                        uint64* blob_size) {
-  if (!body_ || !blob_storage_context_)
+  if (!body_.get() || !blob_storage_context_)
     return false;
   const std::string uuid(base::GenerateGUID());
   uint64 size = 0;

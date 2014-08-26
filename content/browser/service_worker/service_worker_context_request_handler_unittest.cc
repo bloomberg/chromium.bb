@@ -43,8 +43,7 @@ class ServiceWorkerContextRequestHandlerTest : public testing::Test {
     registration_ = new ServiceWorkerRegistration(
         scope_, script_url_, 1L, context()->AsWeakPtr());
     version_ = new ServiceWorkerVersion(
-        registration_,
-        1L, context()->AsWeakPtr());
+        registration_.get(), 1L, context()->AsWeakPtr());
 
     // An empty host.
     scoped_ptr<ServiceWorkerProviderHost> host(new ServiceWorkerProviderHost(
@@ -99,7 +98,7 @@ TEST_F(ServiceWorkerContextRequestHandlerTest, UpdateBefore24Hours) {
           RESOURCE_TYPE_SERVICE_WORKER));
   scoped_refptr<net::URLRequestJob> job =
       handler->MaybeCreateJob(request.get(), NULL);
-  ASSERT_TRUE(job);
+  ASSERT_TRUE(job.get());
   ServiceWorkerWriteToCacheJob* sw_job =
       static_cast<ServiceWorkerWriteToCacheJob*>(job.get());
 
@@ -130,7 +129,7 @@ TEST_F(ServiceWorkerContextRequestHandlerTest, UpdateAfter24Hours) {
           RESOURCE_TYPE_SERVICE_WORKER));
   scoped_refptr<net::URLRequestJob> job =
       handler->MaybeCreateJob(request.get(), NULL);
-  ASSERT_TRUE(job);
+  ASSERT_TRUE(job.get());
   ServiceWorkerWriteToCacheJob* sw_job =
       static_cast<ServiceWorkerWriteToCacheJob*>(job.get());
 

@@ -66,9 +66,9 @@ ServiceWorkerRegistrationInfo ServiceWorkerRegistration::GetInfo() {
       script_url(),
       pattern(),
       registration_id_,
-      GetVersionInfo(active_version_),
-      GetVersionInfo(waiting_version_),
-      GetVersionInfo(installing_version_));
+      GetVersionInfo(active_version_.get()),
+      GetVersionInfo(waiting_version_.get()),
+      GetVersionInfo(installing_version_.get()));
 }
 
 void ServiceWorkerRegistration::SetActiveVersion(
@@ -114,7 +114,7 @@ void ServiceWorkerRegistration::SetVersionInternal(
   if (version)
     UnsetVersionInternal(version, &mask);
   *data_member = version;
-  if (active_version_ && active_version_ == version)
+  if (active_version_.get() && active_version_.get() == version)
     active_version_->AddListener(this);
   mask.add(change_flag);
   ServiceWorkerRegistrationInfo info = GetInfo();
@@ -126,13 +126,13 @@ void ServiceWorkerRegistration::UnsetVersionInternal(
     ServiceWorkerVersion* version,
     ChangedVersionAttributesMask* mask) {
   DCHECK(version);
-  if (installing_version_ == version) {
+  if (installing_version_.get() == version) {
     installing_version_ = NULL;
     mask->add(ChangedVersionAttributesMask::INSTALLING_VERSION);
-  } else if (waiting_version_  == version) {
+  } else if (waiting_version_.get() == version) {
     waiting_version_ = NULL;
     mask->add(ChangedVersionAttributesMask::WAITING_VERSION);
-  } else if (active_version_ == version) {
+  } else if (active_version_.get() == version) {
     active_version_->RemoveListener(this);
     active_version_ = NULL;
     mask->add(ChangedVersionAttributesMask::ACTIVE_VERSION);
@@ -171,11 +171,11 @@ void ServiceWorkerRegistration::AbortPendingClear() {
 
   scoped_refptr<ServiceWorkerVersion> most_recent_version =
       waiting_version() ? waiting_version() : active_version();
-  DCHECK(most_recent_version);
+  DCHECK(most_recent_version.get());
   context_->storage()->NotifyInstallingRegistration(this);
   context_->storage()->StoreRegistration(
       this,
-      most_recent_version,
+      most_recent_version.get(),
       base::Bind(&ServiceWorkerRegistration::OnStoreFinished,
                  this,
                  most_recent_version));
@@ -205,7 +205,7 @@ void ServiceWorkerRegistration::ActivateWaitingVersion() {
   }
 
   // "4. If exitingWorker is not null,
-  if (exiting_version) {
+  if (exiting_version.get()) {
     DCHECK(!exiting_version->HasControllee());
     // TODO(michaeln): should wait for events to be complete
     // "1. Wait for exitingWorker to finish handling any in-progress requests."
@@ -219,7 +219,7 @@ void ServiceWorkerRegistration::ActivateWaitingVersion() {
 
   // "5. Set serviceWorkerRegistration.activeWorker to activatingWorker."
   // "6. Set serviceWorkerRegistration.waitingWorker to null."
-  SetActiveVersion(activating_version);
+  SetActiveVersion(activating_version.get());
 
   // "7. Run the [[UpdateState]] algorithm passing registration.activeWorker and
   // "activating" as arguments."
@@ -276,17 +276,17 @@ void ServiceWorkerRegistration::Clear() {
   context_->storage()->NotifyDoneUninstallingRegistration(this);
 
   ChangedVersionAttributesMask mask;
-  if (installing_version_) {
+  if (installing_version_.get()) {
     installing_version_->Doom();
     installing_version_ = NULL;
     mask.add(ChangedVersionAttributesMask::INSTALLING_VERSION);
   }
-  if (waiting_version_) {
+  if (waiting_version_.get()) {
     waiting_version_->Doom();
     waiting_version_ = NULL;
     mask.add(ChangedVersionAttributesMask::WAITING_VERSION);
   }
-  if (active_version_) {
+  if (active_version_.get()) {
     active_version_->Doom();
     active_version_->RemoveListener(this);
     active_version_ = NULL;

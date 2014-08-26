@@ -164,7 +164,7 @@ void ServiceWorkerProcessManager::ReleaseWorkerProcess(int embedded_worker_id) {
       instance_info_.find(embedded_worker_id);
   DCHECK(info != instance_info_.end());
   RenderProcessHost* rph = NULL;
-  if (info->second.site_instance) {
+  if (info->second.site_instance.get()) {
     rph = info->second.site_instance->GetProcess();
     DCHECK_EQ(info->second.process_id, rph->GetID())
         << "A SiteInstance's process shouldn't get destroyed while we're "

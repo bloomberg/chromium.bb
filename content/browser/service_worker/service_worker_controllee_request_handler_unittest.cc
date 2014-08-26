@@ -44,8 +44,7 @@ class ServiceWorkerControlleeRequestHandlerTest : public testing::Test {
     registration_ = new ServiceWorkerRegistration(
         scope_, script_url_, 1L, context()->AsWeakPtr());
     version_ = new ServiceWorkerVersion(
-        registration_,
-        1L, context()->AsWeakPtr());
+        registration_.get(), 1L, context()->AsWeakPtr());
 
     // An empty host.
     scoped_ptr<ServiceWorkerProviderHost> host(new ServiceWorkerProviderHost(
@@ -81,9 +80,10 @@ class ServiceWorkerControlleeRequestHandlerTest : public testing::Test {
 TEST_F(ServiceWorkerControlleeRequestHandlerTest, ActivateWaitingVersion) {
   // Store a registration that is installed but not activated yet.
   version_->SetStatus(ServiceWorkerVersion::INSTALLED);
-  registration_->SetWaitingVersion(version_);
+  registration_->SetWaitingVersion(version_.get());
   context()->storage()->StoreRegistration(
-      registration_, version_,
+      registration_.get(),
+      version_.get(),
       base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
   base::RunLoop().RunUntilIdle();
 

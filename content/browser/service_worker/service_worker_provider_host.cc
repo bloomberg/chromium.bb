@@ -35,15 +35,15 @@ ServiceWorkerProviderHost::~ServiceWorkerProviderHost() {
   // Clear docurl so the deferred activation of a waiting worker
   // won't associate the new version with a provider being destroyed.
   document_url_ = GURL();
-  if (controlling_version_)
+  if (controlling_version_.get())
     controlling_version_->RemoveControllee(this);
-  if (active_version_)
+  if (active_version_.get())
     active_version_->RemovePotentialControllee(this);
-  if (waiting_version_)
+  if (waiting_version_.get())
     waiting_version_->RemovePotentialControllee(this);
-  if (installing_version_)
+  if (installing_version_.get())
     installing_version_->RemovePotentialControllee(this);
-  if (associated_registration_)
+  if (associated_registration_.get())
     associated_registration_->RemoveListener(this);
 }
 
@@ -51,7 +51,7 @@ void ServiceWorkerProviderHost::OnVersionAttributesChanged(
     ServiceWorkerRegistration* registration,
     ChangedVersionAttributesMask changed_mask,
     const ServiceWorkerRegistrationInfo& info) {
-  DCHECK_EQ(associated_registration_, registration);
+  DCHECK_EQ(associated_registration_.get(), registration);
   SetVersionAttributes(registration->installing_version(),
                        registration->waiting_version(),
                        registration->active_version());
@@ -59,7 +59,7 @@ void ServiceWorkerProviderHost::OnVersionAttributesChanged(
 
 void ServiceWorkerProviderHost::OnRegistrationFailed(
     ServiceWorkerRegistration* registration) {
-  DCHECK_EQ(associated_registration_, registration);
+  DCHECK_EQ(associated_registration_.get(), registration);
   UnassociateRegistration();
 }
 
@@ -74,15 +74,15 @@ void ServiceWorkerProviderHost::SetVersionAttributes(
     ServiceWorkerVersion* active_version) {
   ChangedVersionAttributesMask mask;
 
-  if (installing_version != installing_version_) {
+  if (installing_version != installing_version_.get()) {
     SetVersionAttributesInternal(installing_version, &installing_version_);
     mask.add(ChangedVersionAttributesMask::INSTALLING_VERSION);
   }
-  if (waiting_version != waiting_version_) {
+  if (waiting_version != waiting_version_.get()) {
     SetVersionAttributesInternal(waiting_version, &waiting_version_);
     mask.add(ChangedVersionAttributesMask::WAITING_VERSION);
   }
-  if (active_version != active_version_) {
+  if (active_version != active_version_.get()) {
     SetVersionAttributesInternal(active_version, &active_version_);
     mask.add(ChangedVersionAttributesMask::ACTIVE_VERSION);
   }
@@ -115,20 +115,20 @@ void ServiceWorkerProviderHost::SetVersionAttributesInternal(
   *data_member = version;
   if (version)
     version->AddPotentialControllee(this);
-  if (previous_version)
+  if (previous_version.get())
     previous_version->RemovePotentialControllee(this);
 }
 
 void ServiceWorkerProviderHost::SetControllerVersionAttribute(
     ServiceWorkerVersion* version) {
-  if (version == controlling_version_)
+  if (version == controlling_version_.get())
     return;
 
   scoped_refptr<ServiceWorkerVersion> previous_version = controlling_version_;
   controlling_version_ = version;
   if (version)
     version->AddControllee(this);
-  if (previous_version)
+  if (previous_version.get())
     previous_version->RemoveControllee(this);
 
   if (!dispatcher_host_)
@@ -146,7 +146,7 @@ void ServiceWorkerProviderHost::ClearVersionAttributes() {
 bool ServiceWorkerProviderHost::SetHostedVersionId(int64 version_id) {
   if (!context_)
     return true;  // System is shutting down.
-  if (active_version_)
+  if (active_version_.get())
     return false;  // Unexpected bad message.
 
   ServiceWorkerVersion* live_version = context_->GetLiveVersion(version_id);
@@ -177,7 +177,7 @@ void ServiceWorkerProviderHost::AssociateRegistration(
 }
 
 void ServiceWorkerProviderHost::UnassociateRegistration() {
-  if (!associated_registration_)
+  if (!associated_registration_.get())
     return;
   associated_registration_->RemoveListener(this);
   associated_registration_ = NULL;
@@ -207,9 +207,9 @@ bool ServiceWorkerProviderHost::CanAssociateRegistration(
     ServiceWorkerRegistration* registration) {
   if (!context_)
     return false;
-  if (running_hosted_version_)
+  if (running_hosted_version_.get())
     return false;
-  if (!registration || associated_registration_)
+  if (!registration || associated_registration_.get())
     return false;
   return true;
 }

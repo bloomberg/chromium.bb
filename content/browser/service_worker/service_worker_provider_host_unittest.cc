@@ -38,8 +38,7 @@ class ServiceWorkerProviderHostTest : public testing::Test {
     registration_ = new ServiceWorkerRegistration(
         scope_, script_url_, 1L, context_->AsWeakPtr());
     version_ = new ServiceWorkerVersion(
-        registration_,
-        1L, context_->AsWeakPtr());
+        registration_.get(), 1L, context_->AsWeakPtr());
 
     // Prepare provider hosts (for the same process).
     scoped_ptr<ServiceWorkerProviderHost> host1(new ServiceWorkerProviderHost(
@@ -65,10 +64,10 @@ class ServiceWorkerProviderHostTest : public testing::Test {
       ServiceWorkerVersion* installing,
       ServiceWorkerVersion* waiting,
       ServiceWorkerVersion* active) {
-    EXPECT_EQ(installing, provider_host->installing_version_);
-    EXPECT_EQ(waiting, provider_host->waiting_version_);
-    EXPECT_EQ(active, provider_host->active_version_);
-    EXPECT_FALSE(provider_host->controlling_version_);
+    EXPECT_EQ(installing, provider_host->installing_version_.get());
+    EXPECT_EQ(waiting, provider_host->waiting_version_.get());
+    EXPECT_EQ(active, provider_host->active_version_.get());
+    EXPECT_FALSE(provider_host->controlling_version_.get());
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
@@ -85,16 +84,16 @@ class ServiceWorkerProviderHostTest : public testing::Test {
 };
 
 TEST_F(ServiceWorkerProviderHostTest, SetActiveVersion_ProcessStatus) {
-  provider_host1_->AssociateRegistration(registration_);
+  provider_host1_->AssociateRegistration(registration_.get());
   ASSERT_FALSE(version_->HasProcessToRun());
 
   // Associating version_ to a provider_host's active version will internally
   // add the provider_host's process ref to the version.
-  registration_->SetActiveVersion(version_);
+  registration_->SetActiveVersion(version_.get());
   ASSERT_TRUE(version_->HasProcessToRun());
 
   // Re-associating the same version and provider_host should just work too.
-  registration_->SetActiveVersion(version_);
+  registration_->SetActiveVersion(version_.get());
   ASSERT_TRUE(version_->HasProcessToRun());
 
   // Resetting the provider_host's active version should remove process refs
@@ -105,12 +104,12 @@ TEST_F(ServiceWorkerProviderHostTest, SetActiveVersion_ProcessStatus) {
 
 TEST_F(ServiceWorkerProviderHostTest,
        SetActiveVersion_MultipleHostsForSameProcess) {
-  provider_host1_->AssociateRegistration(registration_);
-  provider_host2_->AssociateRegistration(registration_);
+  provider_host1_->AssociateRegistration(registration_.get());
+  provider_host2_->AssociateRegistration(registration_.get());
   ASSERT_FALSE(version_->HasProcessToRun());
 
   // Associating version_ to two providers as active version.
-  registration_->SetActiveVersion(version_);
+  registration_->SetActiveVersion(version_.get());
   ASSERT_TRUE(version_->HasProcessToRun());
 
   // Disassociating one provider_host shouldn't remove all process refs
@@ -124,16 +123,16 @@ TEST_F(ServiceWorkerProviderHostTest,
 }
 
 TEST_F(ServiceWorkerProviderHostTest, SetWaitingVersion_ProcessStatus) {
-  provider_host1_->AssociateRegistration(registration_);
+  provider_host1_->AssociateRegistration(registration_.get());
   ASSERT_FALSE(version_->HasProcessToRun());
 
   // Associating version_ to a provider_host's waiting version will internally
   // add the provider_host's process ref to the version.
-  registration_->SetWaitingVersion(version_);
+  registration_->SetWaitingVersion(version_.get());
   ASSERT_TRUE(version_->HasProcessToRun());
 
   // Re-associating the same version and provider_host should just work too.
-  registration_->SetWaitingVersion(version_);
+  registration_->SetWaitingVersion(version_.get());
   ASSERT_TRUE(version_->HasProcessToRun());
 
   // Resetting the provider_host's waiting version should remove process refs
@@ -144,12 +143,12 @@ TEST_F(ServiceWorkerProviderHostTest, SetWaitingVersion_ProcessStatus) {
 
 TEST_F(ServiceWorkerProviderHostTest,
        SetWaitingVersion_MultipleHostsForSameProcess) {
-  provider_host1_->AssociateRegistration(registration_);
-  provider_host2_->AssociateRegistration(registration_);
+  provider_host1_->AssociateRegistration(registration_.get());
+  provider_host2_->AssociateRegistration(registration_.get());
   ASSERT_FALSE(version_->HasProcessToRun());
 
   // Associating version_ to two providers as waiting version.
-  registration_->SetWaitingVersion(version_);
+  registration_->SetWaitingVersion(version_.get());
   ASSERT_TRUE(version_->HasProcessToRun());
 
   // Disassociating one provider_host shouldn't remove all process refs
@@ -164,66 +163,70 @@ TEST_F(ServiceWorkerProviderHostTest,
 
 TEST_F(ServiceWorkerProviderHostTest,
        ObserveVersionAttributesChanged_Basic) {
-  provider_host1_->AssociateRegistration(registration_);
-  provider_host2_->AssociateRegistration(registration_);
+  provider_host1_->AssociateRegistration(registration_.get());
+  provider_host2_->AssociateRegistration(registration_.get());
   VerifyVersionAttributes(provider_host1_, NULL, NULL, NULL);
   VerifyVersionAttributes(provider_host2_, NULL, NULL, NULL);
 
-  registration_->SetInstallingVersion(version_);
-  VerifyVersionAttributes(provider_host1_, version_, NULL, NULL);
-  VerifyVersionAttributes(provider_host2_, version_, NULL, NULL);
+  registration_->SetInstallingVersion(version_.get());
+  VerifyVersionAttributes(provider_host1_, version_.get(), NULL, NULL);
+  VerifyVersionAttributes(provider_host2_, version_.get(), NULL, NULL);
 
-  registration_->SetWaitingVersion(version_);
-  VerifyVersionAttributes(provider_host1_, NULL, version_, NULL);
-  VerifyVersionAttributes(provider_host2_, NULL, version_, NULL);
+  registration_->SetWaitingVersion(version_.get());
+  VerifyVersionAttributes(provider_host1_, NULL, version_.get(), NULL);
+  VerifyVersionAttributes(provider_host2_, NULL, version_.get(), NULL);
 
   // Disassociating the registration should clear all version attributes.
   provider_host2_->UnassociateRegistration();
-  VerifyVersionAttributes(provider_host1_, NULL, version_, NULL);
+  VerifyVersionAttributes(provider_host1_, NULL, version_.get(), NULL);
   VerifyVersionAttributes(provider_host2_, NULL, NULL, NULL);
 
   // Shouldn't notify the disassociated provider of the change.
-  registration_->SetActiveVersion(version_);
-  VerifyVersionAttributes(provider_host1_, NULL, NULL, version_);
+  registration_->SetActiveVersion(version_.get());
+  VerifyVersionAttributes(provider_host1_, NULL, NULL, version_.get());
   VerifyVersionAttributes(provider_host2_, NULL, NULL, NULL);
 }
 
 TEST_F(ServiceWorkerProviderHostTest,
        ObserveVersionAttributesChanged_MultipleVersions) {
-  provider_host1_->AssociateRegistration(registration_);
-  provider_host2_->AssociateRegistration(registration_);
+  provider_host1_->AssociateRegistration(registration_.get());
+  provider_host2_->AssociateRegistration(registration_.get());
   VerifyVersionAttributes(provider_host1_, NULL, NULL, NULL);
   VerifyVersionAttributes(provider_host2_, NULL, NULL, NULL);
 
   scoped_refptr<ServiceWorkerVersion> version1 =
-      new ServiceWorkerVersion(registration_, 10L, context_->AsWeakPtr());
+      new ServiceWorkerVersion(registration_.get(), 10L, context_->AsWeakPtr());
   scoped_refptr<ServiceWorkerVersion> version2 =
-      new ServiceWorkerVersion(registration_, 20L, context_->AsWeakPtr());
+      new ServiceWorkerVersion(registration_.get(), 20L, context_->AsWeakPtr());
 
-  registration_->SetInstallingVersion(version1);
-  VerifyVersionAttributes(provider_host1_, version1, NULL, NULL);
-  VerifyVersionAttributes(provider_host2_, version1, NULL, NULL);
+  registration_->SetInstallingVersion(version1.get());
+  VerifyVersionAttributes(provider_host1_, version1.get(), NULL, NULL);
+  VerifyVersionAttributes(provider_host2_, version1.get(), NULL, NULL);
 
-  registration_->SetWaitingVersion(version1);
-  VerifyVersionAttributes(provider_host1_, NULL, version1, NULL);
-  VerifyVersionAttributes(provider_host2_, NULL, version1, NULL);
+  registration_->SetWaitingVersion(version1.get());
+  VerifyVersionAttributes(provider_host1_, NULL, version1.get(), NULL);
+  VerifyVersionAttributes(provider_host2_, NULL, version1.get(), NULL);
 
-  registration_->SetInstallingVersion(version2);
-  VerifyVersionAttributes(provider_host1_, version2, version1, NULL);
-  VerifyVersionAttributes(provider_host2_, version2, version1, NULL);
+  registration_->SetInstallingVersion(version2.get());
+  VerifyVersionAttributes(
+      provider_host1_, version2.get(), version1.get(), NULL);
+  VerifyVersionAttributes(
+      provider_host2_, version2.get(), version1.get(), NULL);
 
   // Disassociating the registration should clear all version attributes.
   provider_host2_->UnassociateRegistration();
-  VerifyVersionAttributes(provider_host1_, version2, version1, NULL);
+  VerifyVersionAttributes(
+      provider_host1_, version2.get(), version1.get(), NULL);
   VerifyVersionAttributes(provider_host2_, NULL, NULL, NULL);
 
   // Shouldn't notify the disassociated provider of the change.
-  registration_->SetActiveVersion(version1);
-  VerifyVersionAttributes(provider_host1_, version2, NULL, version1);
+  registration_->SetActiveVersion(version1.get());
+  VerifyVersionAttributes(
+      provider_host1_, version2.get(), NULL, version1.get());
   VerifyVersionAttributes(provider_host2_, NULL, NULL, NULL);
 
-  registration_->SetActiveVersion(version2);
-  VerifyVersionAttributes(provider_host1_, NULL, NULL, version2);
+  registration_->SetActiveVersion(version2.get());
+  VerifyVersionAttributes(provider_host1_, NULL, NULL, version2.get());
   VerifyVersionAttributes(provider_host2_, NULL, NULL, NULL);
 }
 

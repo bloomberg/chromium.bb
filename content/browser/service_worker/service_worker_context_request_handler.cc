@@ -34,7 +34,7 @@ ServiceWorkerContextRequestHandler::~ServiceWorkerContextRequestHandler() {
 net::URLRequestJob* ServiceWorkerContextRequestHandler::MaybeCreateJob(
     net::URLRequest* request,
     net::NetworkDelegate* network_delegate) {
-  if (!provider_host_ || !version_ || !context_)
+  if (!provider_host_ || !version_.get() || !context_)
     return NULL;
 
   // We currently have no use case for hijacking a redirected request.
@@ -72,7 +72,7 @@ net::URLRequestJob* ServiceWorkerContextRequestHandler::MaybeCreateJob(
                                             network_delegate,
                                             resource_type_,
                                             context_,
-                                            version_,
+                                            version_.get(),
                                             extra_load_flags,
                                             response_id);
   }

@@ -102,7 +102,7 @@ net::URLRequestJob* ServiceWorkerControlleeRequestHandler::MaybeCreateJob(
 void ServiceWorkerControlleeRequestHandler::GetExtraResponseInfo(
     bool* was_fetched_via_service_worker,
     GURL* original_url_via_service_worker) const {
-  if (!job_) {
+  if (!job_.get()) {
     *was_fetched_via_service_worker = false;
     *original_url_via_service_worker = GURL();
     return;
@@ -136,7 +136,7 @@ ServiceWorkerControlleeRequestHandler::DidLookupRegistrationForMainResource(
     job_->FallbackToNetwork();
     return;
   }
-  DCHECK(registration);
+  DCHECK(registration.get());
 
   ServiceWorkerMetrics::CountControlledPageLoad();
 
@@ -151,7 +151,7 @@ ServiceWorkerControlleeRequestHandler::DidLookupRegistrationForMainResource(
       registration->active_version();
 
   // Wait until it's activated before firing fetch events.
-  if (active_version &&
+  if (active_version.get() &&
       active_version->status() == ServiceWorkerVersion::ACTIVATING) {
     registration->active_version()->RegisterStatusChangeCallback(
         base::Bind(&self::OnVersionStatusChanged,
@@ -161,13 +161,13 @@ ServiceWorkerControlleeRequestHandler::DidLookupRegistrationForMainResource(
     return;
   }
 
-  if (!active_version ||
+  if (!active_version.get() ||
       active_version->status() != ServiceWorkerVersion::ACTIVATED) {
     job_->FallbackToNetwork();
     return;
   }
 
-  provider_host_->AssociateRegistration(registration);
+  provider_host_->AssociateRegistration(registration.get());
   job_->ForwardToServiceWorker();
 }
 

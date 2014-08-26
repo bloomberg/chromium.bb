@@ -53,7 +53,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   int provider_id() const { return provider_id_; }
 
   bool IsHostToRunningServiceWorker() {
-    return running_hosted_version_ != NULL;
+    return running_hosted_version_.get() != NULL;
   }
 
   // Getters for the navigator.serviceWorker attribute values.

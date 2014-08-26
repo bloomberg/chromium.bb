@@ -33,7 +33,7 @@ EmbeddedWorkerTestHelper::EmbeddedWorkerTestHelper(int mock_render_process_id)
 }
 
 EmbeddedWorkerTestHelper::~EmbeddedWorkerTestHelper() {
-  if (wrapper_)
+  if (wrapper_.get())
     wrapper_->Shutdown();
 }
 

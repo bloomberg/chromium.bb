@@ -263,7 +263,7 @@ void ServiceWorkerContextWrapper::InitInternal(
                                                    database_task_runner,
                                                    disk_cache_thread,
                                                    quota_manager_proxy,
-                                                   observer_list_,
+                                                   observer_list_.get(),
                                                    this));
 }
 

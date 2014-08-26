@@ -57,7 +57,7 @@ void ServiceWorkerUnregisterJob::OnRegistrationFound(
     ServiceWorkerStatusCode status,
     const scoped_refptr<ServiceWorkerRegistration>& registration) {
   if (status == SERVICE_WORKER_ERROR_NOT_FOUND) {
-    DCHECK(!registration);
+    DCHECK(!registration.get());
     Complete(SERVICE_WORKER_OK);
     return;
   }

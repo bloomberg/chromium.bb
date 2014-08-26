@@ -194,7 +194,7 @@ void ServiceWorkerWriteToCacheJob::WriteHeadersToCache() {
   info_buffer_ = new HttpResponseInfoIOBuffer(
       new net::HttpResponseInfo(net_request_->response_info()));
   writer_->WriteInfo(
-      info_buffer_,
+      info_buffer_.get(),
       base::Bind(&ServiceWorkerWriteToCacheJob::OnWriteHeadersComplete,
                  weak_factory_.GetWeakPtr()));
   SetStatus(net::URLRequestStatus(net::URLRequestStatus::IO_PENDING, 0));
@@ -218,7 +218,8 @@ void ServiceWorkerWriteToCacheJob::WriteDataToCache(int amount_to_write) {
   DCHECK_NE(0, amount_to_write);
   SetStatus(net::URLRequestStatus(net::URLRequestStatus::IO_PENDING, 0));
   writer_->WriteData(
-      io_buffer_, amount_to_write,
+      io_buffer_.get(),
+      amount_to_write,
       base::Bind(&ServiceWorkerWriteToCacheJob::OnWriteDataComplete,
                  weak_factory_.GetWeakPtr()));
 }

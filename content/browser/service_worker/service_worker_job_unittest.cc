@@ -148,7 +148,7 @@ TEST_F(ServiceWorkerJobTest, SameDocumentSameRegistration) {
       SaveFoundRegistration(SERVICE_WORKER_OK, &called, &registration2));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(called);
-  ASSERT_TRUE(registration1);
+  ASSERT_TRUE(registration1.get());
   ASSERT_EQ(registration1, original_registration);
   ASSERT_EQ(registration1, registration2);
 }
@@ -373,7 +373,7 @@ TEST_F(ServiceWorkerJobTest, RegisterDuplicateScript) {
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(called);
 
-  ASSERT_TRUE(old_registration_by_pattern);
+  ASSERT_TRUE(old_registration_by_pattern.get());
 
   scoped_refptr<ServiceWorkerRegistration> new_registration;
   job_coordinator()->Register(
@@ -722,19 +722,19 @@ TEST_F(ServiceWorkerJobTest, UnregisterWaitingSetsRedundant) {
       SaveRegistration(SERVICE_WORKER_OK, &called, &registration));
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(called);
-  ASSERT_TRUE(registration);
+  ASSERT_TRUE(registration.get());
 
   // Manually create the waiting worker since there is no way to become a
   // waiting worker until Update is implemented.
   scoped_refptr<ServiceWorkerVersion> version = new ServiceWorkerVersion(
-      registration, 1L, helper_->context()->AsWeakPtr());
+      registration.get(), 1L, helper_->context()->AsWeakPtr());
   ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
   version->StartWorker(CreateReceiverOnCurrentThread(&status));
   base::RunLoop().RunUntilIdle();
   ASSERT_EQ(SERVICE_WORKER_OK, status);
 
   version->SetStatus(ServiceWorkerVersion::INSTALLED);
-  registration->SetWaitingVersion(version);
+  registration->SetWaitingVersion(version.get());
   EXPECT_EQ(ServiceWorkerVersion::RUNNING,
             version->running_status());
   EXPECT_EQ(ServiceWorkerVersion::INSTALLED, version->status());
@@ -763,7 +763,7 @@ TEST_F(ServiceWorkerJobTest, UnregisterActiveSetsRedundant) {
       SaveRegistration(SERVICE_WORKER_OK, &called, &registration));
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(called);
-  ASSERT_TRUE(registration);
+  ASSERT_TRUE(registration.get());
 
   scoped_refptr<ServiceWorkerVersion> version = registration->active_version();
   EXPECT_EQ(ServiceWorkerVersion::RUNNING, version->running_status());
@@ -794,7 +794,7 @@ TEST_F(ServiceWorkerJobTest,
       SaveRegistration(SERVICE_WORKER_OK, &called, &registration));
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(called);
-  ASSERT_TRUE(registration);
+  ASSERT_TRUE(registration.get());
 
   scoped_ptr<ServiceWorkerProviderHost> host(
       new ServiceWorkerProviderHost(33 /* dummy render process id */,
@@ -858,7 +858,7 @@ void WriteResponse(
       new HttpResponseInfoIOBuffer(info.release());
 
   int rv = -1234;
-  writer->WriteInfo(info_buffer, base::Bind(&OnIOComplete, &rv));
+  writer->WriteInfo(info_buffer.get(), base::Bind(&OnIOComplete, &rv));
   RunNestedUntilIdle();
   EXPECT_LT(0, rv);
 
@@ -875,7 +875,7 @@ void WriteStringResponse(
   scoped_refptr<IOBuffer> body_buffer(new WrappedIOBuffer(body.data()));
   const char kHttpHeaders[] = "HTTP/1.0 200 HONKYDORY\0\0";
   std::string headers(kHttpHeaders, arraysize(kHttpHeaders));
-  WriteResponse(storage, id, headers, body_buffer, body.length());
+  WriteResponse(storage, id, headers, body_buffer.get(), body.length());
 }
 
 class UpdateJobTestHelper
@@ -897,7 +897,7 @@ class UpdateJobTestHelper
   UpdateJobTestHelper(int mock_render_process_id)
       : EmbeddedWorkerTestHelper(mock_render_process_id) {}
   virtual ~UpdateJobTestHelper() {
-    if (registration_)
+    if (registration_.get())
       registration_->RemoveListener(this);
   }
 
@@ -917,7 +917,7 @@ class UpdateJobTestHelper
         SaveRegistration(SERVICE_WORKER_OK, &called, &registration));
     base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(called);
-    EXPECT_TRUE(registration);
+    EXPECT_TRUE(registration.get());
     EXPECT_TRUE(registration->active_version());
     EXPECT_FALSE(registration->installing_version());
     EXPECT_FALSE(registration->waiting_version());
@@ -995,7 +995,7 @@ TEST_F(ServiceWorkerJobTest, Update_NoChange) {
   helper_.reset(update_helper);
   scoped_refptr<ServiceWorkerRegistration> registration =
       update_helper->SetupInitialRegistration(kNoChangeOrigin);
-  ASSERT_TRUE(registration);
+  ASSERT_TRUE(registration.get());
   ASSERT_EQ(4u, update_helper->state_change_log_.size());
   EXPECT_EQ(ServiceWorkerVersion::INSTALLING,
             update_helper->state_change_log_[0].status);
@@ -1033,7 +1033,7 @@ TEST_F(ServiceWorkerJobTest, Update_NewVersion) {
   helper_.reset(update_helper);
   scoped_refptr<ServiceWorkerRegistration> registration =
       update_helper->SetupInitialRegistration(kNewVersionOrigin);
-  ASSERT_TRUE(registration);
+  ASSERT_TRUE(registration.get());
   update_helper->state_change_log_.clear();
 
   // Run the update job.

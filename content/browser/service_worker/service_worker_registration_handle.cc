@@ -25,7 +25,7 @@ ServiceWorkerRegistrationHandle::ServiceWorkerRegistrationHandle(
                          : kInvalidServiceWorkerRegistrationHandleId),
       ref_count_(1),
       registration_(registration) {
-  DCHECK(registration_);
+  DCHECK(registration_.get());
   SetVersionAttributes(registration->installing_version(),
                        registration->waiting_version(),
                        registration->active_version());
@@ -33,7 +33,7 @@ ServiceWorkerRegistrationHandle::ServiceWorkerRegistrationHandle(
 }
 
 ServiceWorkerRegistrationHandle::~ServiceWorkerRegistrationHandle() {
-  DCHECK(registration_);
+  DCHECK(registration_.get());
   registration_->RemoveListener(this);
 }
 
@@ -77,15 +77,15 @@ void ServiceWorkerRegistrationHandle::SetVersionAttributes(
     ServiceWorkerVersion* active_version) {
   ChangedVersionAttributesMask mask;
 
-  if (installing_version != installing_version_) {
+  if (installing_version != installing_version_.get()) {
     installing_version_ = installing_version;
     mask.add(ChangedVersionAttributesMask::INSTALLING_VERSION);
   }
-  if (waiting_version != waiting_version_) {
+  if (waiting_version != waiting_version_.get()) {
     waiting_version_ = waiting_version;
     mask.add(ChangedVersionAttributesMask::WAITING_VERSION);
   }
-  if (active_version != active_version_) {
+  if (active_version != active_version_.get()) {
     active_version_ = active_version;
     mask.add(ChangedVersionAttributesMask::ACTIVE_VERSION);
   }

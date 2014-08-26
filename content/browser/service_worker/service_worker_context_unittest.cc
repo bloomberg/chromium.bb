@@ -62,7 +62,7 @@ void ExpectRegisteredWorkers(
     const scoped_refptr<ServiceWorkerRegistration>& registration) {
   ASSERT_EQ(expect_status, status);
   if (status != SERVICE_WORKER_OK) {
-    EXPECT_FALSE(registration);
+    EXPECT_FALSE(registration.get());
     return;
   }
 

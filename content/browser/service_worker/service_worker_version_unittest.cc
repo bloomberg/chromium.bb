@@ -125,7 +125,7 @@ class ServiceWorkerVersionTest : public testing::Test {
         1L,
         helper_->context()->AsWeakPtr());
     version_ = new ServiceWorkerVersion(
-        registration_, 1L, helper_->context()->AsWeakPtr());
+        registration_.get(), 1L, helper_->context()->AsWeakPtr());
 
     // Simulate adding one process to the worker.
     int embedded_worker_id = version_->embedded_worker()->embedded_worker_id();

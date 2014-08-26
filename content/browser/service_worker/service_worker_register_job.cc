@@ -86,7 +86,7 @@ void ServiceWorkerRegisterJob::Start() {
 
   scoped_refptr<ServiceWorkerRegistration> registration =
       context_->storage()->GetUninstallingRegistration(pattern_);
-  if (registration)
+  if (registration.get())
     RunSoon(base::Bind(next_step, SERVICE_WORKER_OK, registration));
   else
     context_->storage()->FindRegistrationForPattern(pattern_, next_step);
@@ -119,25 +119,25 @@ ServiceWorkerRegisterJob::Internal::~Internal() {}
 void ServiceWorkerRegisterJob::set_registration(
     ServiceWorkerRegistration* registration) {
   DCHECK(phase_ == START || phase_ == REGISTER) << phase_;
-  DCHECK(!internal_.registration);
+  DCHECK(!internal_.registration.get());
   internal_.registration = registration;
 }
 
 ServiceWorkerRegistration* ServiceWorkerRegisterJob::registration() {
   DCHECK(phase_ >= REGISTER || job_type_ == UPDATE_JOB) << phase_;
-  return internal_.registration;
+  return internal_.registration.get();
 }
 
 void ServiceWorkerRegisterJob::set_new_version(
     ServiceWorkerVersion* version) {
   DCHECK(phase_ == UPDATE) << phase_;
-  DCHECK(!internal_.new_version);
+  DCHECK(!internal_.new_version.get());
   internal_.new_version = version;
 }
 
 ServiceWorkerVersion* ServiceWorkerRegisterJob::new_version() {
   DCHECK(phase_ >= UPDATE) << phase_;
-  return internal_.new_version;
+  return internal_.new_version.get();
 }
 
 void ServiceWorkerRegisterJob::SetPhase(Phase phase) {
@@ -181,7 +181,7 @@ void ServiceWorkerRegisterJob::ContinueWithRegistration(
     return;
   }
 
-  if (!existing_registration) {
+  if (!existing_registration.get()) {
     RegisterAndContinue(SERVICE_WORKER_OK);
     return;
   }
@@ -193,15 +193,16 @@ void ServiceWorkerRegisterJob::ContinueWithRegistration(
   if (existing_registration->script_url() == script_url_) {
     // Spec says to resolve with registration.[[GetNewestWorker]]. We come close
     // by resolving with the active version.
-    set_registration(existing_registration);
+    set_registration(existing_registration.get());
 
     if (!existing_registration->active_version()) {
       UpdateAndContinue();
       return;
     }
 
-    ResolvePromise(
-        status, existing_registration, existing_registration->active_version());
+    ResolvePromise(status,
+                   existing_registration.get(),
+                   existing_registration->active_version());
     Complete(SERVICE_WORKER_OK);
     return;
   }
@@ -227,7 +228,7 @@ void ServiceWorkerRegisterJob::ContinueWithUpdate(
     return;
   }
 
-  if (existing_registration != registration()) {
+  if (existing_registration.get() != registration()) {
     Complete(SERVICE_WORKER_ERROR_NOT_FOUND);
     return;
   }
@@ -425,7 +426,7 @@ void ServiceWorkerRegisterJob::OnPausedAfterDownload() {
       registration()->waiting_version() ?
           registration()->waiting_version() :
           registration()->active_version();
-  DCHECK(most_recent_version);
+  DCHECK(most_recent_version.get());
   int64 most_recent_script_id =
       most_recent_version->script_cache_map()->Lookup(script_url_);
   int64 new_script_id =
