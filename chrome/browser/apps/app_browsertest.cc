@@ -1051,8 +1051,9 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, ComponentAppBackgroundPage) {
   ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
 }
 
+// Flaky: http://crbug.com/407409
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
-                       ComponentExtensionRuntimeReload) {
+                       DISABLED_ComponentExtensionRuntimeReload) {
   // Ensure that we wait until the background page is run (to register the
   // OnLaunched listener) before trying to open the application. This is similar
   // to LoadAndLaunchPlatformApp, but we want to load as a component extension.
