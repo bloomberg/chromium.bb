@@ -103,8 +103,8 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
   // browser.
   void SimulatePausedAfterDownload(int embedded_worker_id);
   void SimulateWorkerReadyForInspection(int embedded_worker_id);
-  void SimulateWorkerScriptLoaded(int embedded_worker_id);
-  void SimulateWorkerStarted(int thread_id, int embedded_worker_id);
+  void SimulateWorkerScriptLoaded(int thread_id, int embedded_worker_id);
+  void SimulateWorkerStarted(int embedded_worker_id);
   void SimulateWorkerStopped(int embedded_worker_id);
   void SimulateSend(IPC::Message* message);
 

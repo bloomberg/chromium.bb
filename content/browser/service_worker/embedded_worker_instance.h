@@ -147,18 +147,17 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
   void OnReadyForInspection();
 
   // Called back from Registry when the worker instance has ack'ed that
-  // it finished loading the script.
-  void OnScriptLoaded();
+  // it finished loading the script and has started a worker thread.
+  void OnScriptLoaded(int thread_id);
 
   // Called back from Registry when the worker instance has ack'ed that
   // it failed to load the script.
   void OnScriptLoadFailed();
 
   // Called back from Registry when the worker instance has ack'ed that
-  // its WorkerGlobalScope is actually started and parsed on |thread_id| in the
-  // child process.
+  // its WorkerGlobalScope is actually started and parsed.
   // This will change the internal status from STARTING to RUNNING.
-  void OnStarted(int thread_id);
+  void OnStarted();
 
   void OnPausedAfterDownload();
 

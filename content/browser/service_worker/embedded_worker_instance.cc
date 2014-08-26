@@ -12,6 +12,7 @@
 #include "content/browser/service_worker/embedded_worker_registry.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/common/service_worker/embedded_worker_messages.h"
+#include "content/common/service_worker/service_worker_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "ipc/ipc_message.h"
@@ -171,7 +172,9 @@ void EmbeddedWorkerInstance::ResumeAfterDownload() {
 
 ServiceWorkerStatusCode EmbeddedWorkerInstance::SendMessage(
     const IPC::Message& message) {
-  DCHECK(status_ == RUNNING);
+  DCHECK_NE(kInvalidEmbeddedWorkerThreadId, thread_id_);
+  if (status_ != RUNNING && status_ != STARTING)
+    return SERVICE_WORKER_ERROR_IPC_FAILED;
   return registry_->Send(process_id_,
                          new EmbeddedWorkerContextMsg_MessageToWorker(
                              thread_id_, embedded_worker_id_, message));
@@ -202,7 +205,7 @@ EmbeddedWorkerInstance::EmbeddedWorkerInstance(
       embedded_worker_id_(embedded_worker_id),
       status_(STOPPED),
       process_id_(-1),
-      thread_id_(-1),
+      thread_id_(kInvalidEmbeddedWorkerThreadId),
       worker_devtools_agent_route_id_(MSG_ROUTING_NONE),
       weak_factory_(this) {
 }
@@ -274,7 +277,8 @@ void EmbeddedWorkerInstance::OnReadyForInspection() {
                                    worker_devtools_agent_route_id_);
 }
 
-void EmbeddedWorkerInstance::OnScriptLoaded() {
+void EmbeddedWorkerInstance::OnScriptLoaded(int thread_id) {
+  thread_id_ = thread_id;
   if (worker_devtools_agent_route_id_ != MSG_ROUTING_NONE)
     NotifyWorkerContextStarted(process_id_, worker_devtools_agent_route_id_);
 }
@@ -282,13 +286,12 @@ void EmbeddedWorkerInstance::OnScriptLoaded() {
 void EmbeddedWorkerInstance::OnScriptLoadFailed() {
 }
 
-void EmbeddedWorkerInstance::OnStarted(int thread_id) {
+void EmbeddedWorkerInstance::OnStarted() {
   // Stop is requested before OnStarted is sent back from the worker.
   if (status_ == STOPPING)
     return;
   DCHECK(status_ == STARTING);
   status_ = RUNNING;
-  thread_id_ = thread_id;
   FOR_EACH_OBSERVER(Listener, listener_list_, OnStarted());
 }
 

@@ -393,13 +393,16 @@ void ServiceWorkerDispatcherHost::OnWorkerReadyForInspection(
   registry->OnWorkerReadyForInspection(render_process_id_, embedded_worker_id);
 }
 
-void ServiceWorkerDispatcherHost::OnWorkerScriptLoaded(int embedded_worker_id) {
+void ServiceWorkerDispatcherHost::OnWorkerScriptLoaded(
+    int embedded_worker_id,
+    int thread_id) {
   if (!GetContext())
     return;
   EmbeddedWorkerRegistry* registry = GetContext()->embedded_worker_registry();
   if (!registry->CanHandle(embedded_worker_id))
     return;
-  registry->OnWorkerScriptLoaded(render_process_id_, embedded_worker_id);
+  registry->OnWorkerScriptLoaded(
+      render_process_id_, thread_id, embedded_worker_id);
 }
 
 void ServiceWorkerDispatcherHost::OnWorkerScriptLoadFailed(
@@ -412,14 +415,13 @@ void ServiceWorkerDispatcherHost::OnWorkerScriptLoadFailed(
   registry->OnWorkerScriptLoadFailed(render_process_id_, embedded_worker_id);
 }
 
-void ServiceWorkerDispatcherHost::OnWorkerStarted(
-    int thread_id, int embedded_worker_id) {
+void ServiceWorkerDispatcherHost::OnWorkerStarted(int embedded_worker_id) {
   if (!GetContext())
     return;
   EmbeddedWorkerRegistry* registry = GetContext()->embedded_worker_registry();
   if (!registry->CanHandle(embedded_worker_id))
     return;
-  registry->OnWorkerStarted(render_process_id_, thread_id, embedded_worker_id);
+  registry->OnWorkerStarted(render_process_id_, embedded_worker_id);
 }
 
 void ServiceWorkerDispatcherHost::OnWorkerStopped(int embedded_worker_id) {

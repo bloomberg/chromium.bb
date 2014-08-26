@@ -165,7 +165,9 @@ void EmbeddedWorkerContextClient::workerContextStarted(
   g_worker_client_tls.Pointer()->Set(this);
   script_context_.reset(new ServiceWorkerScriptContext(this, proxy));
 
-  Send(new EmbeddedWorkerHostMsg_WorkerScriptLoaded(embedded_worker_id_));
+  Send(new EmbeddedWorkerHostMsg_WorkerScriptLoaded(
+      embedded_worker_id_,
+      WorkerTaskRunner::Instance()->CurrentWorkerId()));
 
   // Schedule a task to send back WorkerStarted asynchronously,
   // so that at the time we send it we can be sure that the worker
@@ -328,9 +330,7 @@ void EmbeddedWorkerContextClient::OnMessageToWorker(
 
 void EmbeddedWorkerContextClient::SendWorkerStarted() {
   DCHECK(worker_task_runner_->RunsTasksOnCurrentThread());
-  Send(new EmbeddedWorkerHostMsg_WorkerStarted(
-      WorkerTaskRunner::Instance()->CurrentWorkerId(),
-      embedded_worker_id_));
+  Send(new EmbeddedWorkerHostMsg_WorkerStarted(embedded_worker_id_));
 }
 
 }  // namespace content
