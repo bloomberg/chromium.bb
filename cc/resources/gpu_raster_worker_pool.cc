@@ -148,12 +148,12 @@ void GpuRasterWorkerPool::CheckForCompletedTasks() {
   completed_tasks_.clear();
 }
 
-SkCanvas* GpuRasterWorkerPool::AcquireCanvasForRaster(RasterTask* task) {
-  return resource_provider_->MapGpuRasterBuffer(task->resource()->id());
+RasterBuffer* GpuRasterWorkerPool::AcquireBufferForRaster(RasterTask* task) {
+  return resource_provider_->AcquireGpuRasterBuffer(task->resource()->id());
 }
 
-void GpuRasterWorkerPool::ReleaseCanvasForRaster(RasterTask* task) {
-  resource_provider_->UnmapGpuRasterBuffer(task->resource()->id());
+void GpuRasterWorkerPool::ReleaseBufferForRaster(RasterTask* task) {
+  resource_provider_->ReleaseGpuRasterBuffer(task->resource()->id());
 }
 
 void GpuRasterWorkerPool::OnRasterFinished() {

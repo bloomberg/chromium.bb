@@ -20,6 +20,7 @@
 #include "cc/base/cc_export.h"
 #include "cc/output/context_provider.h"
 #include "cc/output/output_surface.h"
+#include "cc/resources/raster_buffer.h"
 #include "cc/resources/release_callback.h"
 #include "cc/resources/resource_format.h"
 #include "cc/resources/return_callback.h"
@@ -316,30 +317,28 @@ class CC_EXPORT ResourceProvider {
     DISALLOW_COPY_AND_ASSIGN(Fence);
   };
 
-  // Returns a canvas for gpu rasterization.
-  // Call Unmap before the resource can be read or used for compositing.
+  // Returns a RasterBuffer for gpu rasterization.
+  // Call Release before the resource can be read or used for compositing.
   // It is used for direct gpu rasterization.
-  SkCanvas* MapGpuRasterBuffer(ResourceId id);
-  void UnmapGpuRasterBuffer(ResourceId id);
+  RasterBuffer* AcquireGpuRasterBuffer(ResourceId id);
+  void ReleaseGpuRasterBuffer(ResourceId id);
 
-  // Returns a canvas backed by an image buffer. UnmapImageRasterBuffer
-  // returns true if canvas was written to while mapped.
-  // Rasterizing to the canvas writes the content into the image buffer,
+  // Returns a RasterBuffer backed by an image buffer. ReleaseImageRasterBuffer
+  // returns true if RasterBuffer was written to while acquired.
+  // Rasterizing to the RasterBuffer writes the content into the image buffer,
   // which is internally bound to the underlying resource when read.
-  // Call Unmap before the resource can be read or used for compositing.
+  // Call Release before the resource can be read or used for compositing.
   // It is used by ImageRasterWorkerPool.
-  SkCanvas* MapImageRasterBuffer(ResourceId id);
-  bool UnmapImageRasterBuffer(ResourceId id);
+  RasterBuffer* AcquireImageRasterBuffer(ResourceId id);
+  bool ReleaseImageRasterBuffer(ResourceId id);
 
-  // Returns a canvas backed by pixel buffer. UnmapPixelRasterBuffer
-  // returns true if canvas was written to while mapped.
+  // Returns a RasterBuffer backed by pixel buffer. ReleasePixelRasterBuffer
+  // returns true if RasterBuffer was written to while acquired.
   // The pixel buffer needs to be uploaded to the underlying resource
   // using BeginSetPixels before the resouce can be used for compositing.
   // It is used by PixelRasterWorkerPool.
-  void AcquirePixelRasterBuffer(ResourceId id);
-  void ReleasePixelRasterBuffer(ResourceId id);
-  SkCanvas* MapPixelRasterBuffer(ResourceId id);
-  bool UnmapPixelRasterBuffer(ResourceId id);
+  RasterBuffer* AcquirePixelRasterBuffer(ResourceId id);
+  bool ReleasePixelRasterBuffer(ResourceId id);
 
   // Asynchronously update pixels from acquired pixel buffer.
   void BeginSetPixels(ResourceId id);
@@ -450,29 +449,6 @@ class CC_EXPORT ResourceProvider {
   };
   typedef base::hash_map<ResourceId, Resource> ResourceMap;
 
-  class RasterBuffer {
-   public:
-    virtual ~RasterBuffer();
-
-    SkCanvas* LockForWrite();
-    // Returns true if canvas was written to while locked.
-    bool UnlockForWrite();
-
-   protected:
-    RasterBuffer(const Resource* resource, ResourceProvider* resource_provider);
-    const Resource* resource() const { return resource_; }
-    ResourceProvider* resource_provider() const { return resource_provider_; }
-
-    virtual SkCanvas* DoLockForWrite() = 0;
-    virtual bool DoUnlockForWrite() = 0;
-
-   private:
-    const Resource* resource_;
-    ResourceProvider* resource_provider_;
-    SkCanvas* locked_canvas_;
-    int canvas_save_count_;
-  };
-
   class GpuRasterBuffer : public RasterBuffer {
    public:
     GpuRasterBuffer(const Resource* resource,
@@ -480,65 +456,60 @@ class CC_EXPORT ResourceProvider {
                     bool use_distance_field_text);
     virtual ~GpuRasterBuffer();
 
-   protected:
-    virtual SkCanvas* DoLockForWrite() OVERRIDE;
-    virtual bool DoUnlockForWrite() OVERRIDE;
-    skia::RefPtr<SkSurface> CreateSurface();
+    virtual skia::RefPtr<SkCanvas> AcquireSkCanvas() OVERRIDE;
+    virtual void ReleaseSkCanvas(const skia::RefPtr<SkCanvas>& canvas) OVERRIDE;
 
    private:
+    const Resource* resource_;
+    ResourceProvider* resource_provider_;
     skia::RefPtr<SkSurface> surface_;
-    uint32_t surface_generation_id_;
-    const bool use_distance_field_text_;
 
     DISALLOW_COPY_AND_ASSIGN(GpuRasterBuffer);
   };
 
-  class BitmapRasterBuffer : public RasterBuffer {
-   public:
-    virtual ~BitmapRasterBuffer();
-
-   protected:
-    BitmapRasterBuffer(const Resource* resource,
-                       ResourceProvider* resource_provider);
-
-    virtual SkCanvas* DoLockForWrite() OVERRIDE;
-    virtual bool DoUnlockForWrite() OVERRIDE;
-
-    virtual uint8_t* MapBuffer(int* stride) = 0;
-    virtual void UnmapBuffer() = 0;
-
-   private:
-    uint8_t* mapped_buffer_;
-    SkBitmap raster_bitmap_;
-    uint32_t raster_bitmap_generation_id_;
-    skia::RefPtr<SkCanvas> raster_canvas_;
-  };
-
-  class ImageRasterBuffer : public BitmapRasterBuffer {
+  class ImageRasterBuffer : public RasterBuffer {
    public:
     ImageRasterBuffer(const Resource* resource,
                       ResourceProvider* resource_provider);
     virtual ~ImageRasterBuffer();
 
-   protected:
-    virtual uint8_t* MapBuffer(int* stride) OVERRIDE;
-    virtual void UnmapBuffer() OVERRIDE;
+    void MapBuffer();
+    bool UnmapBuffer();
+
+    virtual skia::RefPtr<SkCanvas> AcquireSkCanvas() OVERRIDE;
+    virtual void ReleaseSkCanvas(const skia::RefPtr<SkCanvas>& canvas) OVERRIDE;
 
    private:
+    const Resource* resource_;
+    ResourceProvider* resource_provider_;
+    uint8_t* mapped_buffer_;
+    SkBitmap raster_bitmap_;
+    bool raster_bitmap_changed_;
+    int stride_;
+
     DISALLOW_COPY_AND_ASSIGN(ImageRasterBuffer);
   };
 
-  class PixelRasterBuffer : public BitmapRasterBuffer {
+  class PixelRasterBuffer : public RasterBuffer {
    public:
     PixelRasterBuffer(const Resource* resource,
                       ResourceProvider* resource_provider);
     virtual ~PixelRasterBuffer();
 
-   protected:
-    virtual uint8_t* MapBuffer(int* stride) OVERRIDE;
-    virtual void UnmapBuffer() OVERRIDE;
+    void MapBuffer();
+    bool UnmapBuffer();
+
+    virtual skia::RefPtr<SkCanvas> AcquireSkCanvas() OVERRIDE;
+    virtual void ReleaseSkCanvas(const skia::RefPtr<SkCanvas>& canvas) OVERRIDE;
 
    private:
+    const Resource* resource_;
+    ResourceProvider* resource_provider_;
+    uint8_t* mapped_buffer_;
+    SkBitmap raster_bitmap_;
+    bool raster_bitmap_changed_;
+    int stride_;
+
     DISALLOW_COPY_AND_ASSIGN(PixelRasterBuffer);
   };
 

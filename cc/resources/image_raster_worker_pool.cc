@@ -141,16 +141,16 @@ void ImageRasterWorkerPool::CheckForCompletedTasks() {
   completed_tasks_.clear();
 }
 
-SkCanvas* ImageRasterWorkerPool::AcquireCanvasForRaster(RasterTask* task) {
-  return resource_provider_->MapImageRasterBuffer(task->resource()->id());
+RasterBuffer* ImageRasterWorkerPool::AcquireBufferForRaster(RasterTask* task) {
+  return resource_provider_->AcquireImageRasterBuffer(task->resource()->id());
 }
 
-void ImageRasterWorkerPool::ReleaseCanvasForRaster(RasterTask* task) {
-  resource_provider_->UnmapImageRasterBuffer(task->resource()->id());
+void ImageRasterWorkerPool::ReleaseBufferForRaster(RasterTask* task) {
+  resource_provider_->ReleaseImageRasterBuffer(task->resource()->id());
 
-  // Map/UnmapImageRasterBuffer provides direct access to the memory used by the
-  // GPU. Read lock fences are required to ensure that we're not trying to map a
-  // resource that is currently in-use by the GPU.
+  // Acquire/ReleaseImageRasterBuffer provides direct access to the memory used
+  // by the GPU. Read lock fences are required to ensure that we're not trying
+  // to map a resource that is currently in-use by the GPU.
   resource_provider_->EnableReadLockFences(task->resource()->id());
 }
 

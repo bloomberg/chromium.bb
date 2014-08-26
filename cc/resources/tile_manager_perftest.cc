@@ -68,10 +68,10 @@ class FakeRasterizerImpl : public Rasterizer, public RasterizerTaskClient {
   }
 
   // Overridden from RasterizerTaskClient:
-  virtual SkCanvas* AcquireCanvasForRaster(RasterTask* task) OVERRIDE {
+  virtual RasterBuffer* AcquireBufferForRaster(RasterTask* task) OVERRIDE {
     return NULL;
   }
-  virtual void ReleaseCanvasForRaster(RasterTask* task) OVERRIDE {}
+  virtual void ReleaseBufferForRaster(RasterTask* task) OVERRIDE {}
 
  private:
   RasterTask::Vector completed_tasks_;

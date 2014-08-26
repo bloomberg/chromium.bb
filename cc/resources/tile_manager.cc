@@ -59,15 +59,14 @@ class RasterTaskImpl : public RasterTask {
         analyze_picture_(analyze_picture),
         rendering_stats_(rendering_stats),
         reply_(reply),
-        canvas_(NULL) {}
+        raster_buffer_(NULL) {}
 
   // Overridden from Task:
   virtual void RunOnWorkerThread() OVERRIDE {
     TRACE_EVENT0("cc", "RasterizerTaskImpl::RunOnWorkerThread");
 
     DCHECK(picture_pile_.get());
-    if (!canvas_)
-      return;
+    DCHECK(raster_buffer_);
 
     if (analyze_picture_) {
       Analyze(picture_pile_.get());
@@ -80,20 +79,20 @@ class RasterTaskImpl : public RasterTask {
 
   // Overridden from RasterizerTask:
   virtual void ScheduleOnOriginThread(RasterizerTaskClient* client) OVERRIDE {
-    DCHECK(!canvas_);
-    canvas_ = client->AcquireCanvasForRaster(this);
+    DCHECK(!raster_buffer_);
+    raster_buffer_ = client->AcquireBufferForRaster(this);
   }
   virtual void CompleteOnOriginThread(RasterizerTaskClient* client) OVERRIDE {
-    canvas_ = NULL;
-    client->ReleaseCanvasForRaster(this);
+    raster_buffer_ = NULL;
+    client->ReleaseBufferForRaster(this);
   }
   virtual void RunReplyOnOriginThread() OVERRIDE {
-    DCHECK(!canvas_);
+    DCHECK(!raster_buffer_);
     reply_.Run(analysis_, !HasFinishedRunning());
   }
 
  protected:
-  virtual ~RasterTaskImpl() { DCHECK(!canvas_); }
+  virtual ~RasterTaskImpl() { DCHECK(!raster_buffer_); }
 
  private:
   void Analyze(const PicturePileImpl* picture_pile) {
@@ -123,6 +122,11 @@ class RasterTaskImpl : public RasterTask {
     devtools_instrumentation::ScopedLayerTask layer_task(
         devtools_instrumentation::kRasterTask, layer_id_);
 
+    skia::RefPtr<SkCanvas> canvas = raster_buffer_->AcquireSkCanvas();
+    if (!canvas)
+      return;
+    canvas->save();
+
     skia::RefPtr<SkDrawFilter> draw_filter;
     switch (raster_mode_) {
       case LOW_QUALITY_RASTER_MODE:
@@ -134,7 +138,7 @@ class RasterTaskImpl : public RasterTask {
       default:
         NOTREACHED();
     }
-    canvas_->setDrawFilter(draw_filter.get());
+    canvas->setDrawFilter(draw_filter.get());
 
     base::TimeDelta prev_rasterize_time =
         rendering_stats_->impl_thread_rendering_stats().rasterize_time;
@@ -147,7 +151,7 @@ class RasterTaskImpl : public RasterTask {
         tile_resolution_ == HIGH_RESOLUTION ? rendering_stats_ : NULL;
     DCHECK(picture_pile);
     picture_pile->RasterToBitmap(
-        canvas_, content_rect_, contents_scale_, stats);
+        canvas.get(), content_rect_, contents_scale_, stats);
 
     if (rendering_stats_->record_rendering_stats()) {
       base::TimeDelta current_rasterize_time =
@@ -159,6 +163,9 @@ class RasterTaskImpl : public RasterTask {
           100000,
           100);
     }
+
+    canvas->restore();
+    raster_buffer_->ReleaseSkCanvas(canvas);
   }
 
   PicturePileImpl::Analysis analysis_;
@@ -173,7 +180,7 @@ class RasterTaskImpl : public RasterTask {
   bool analyze_picture_;
   RenderingStatsInstrumentation* rendering_stats_;
   const base::Callback<void(const PicturePileImpl::Analysis&, bool)> reply_;
-  SkCanvas* canvas_;
+  RasterBuffer* raster_buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(RasterTaskImpl);
 };

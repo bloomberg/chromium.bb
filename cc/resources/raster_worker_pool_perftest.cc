@@ -122,10 +122,10 @@ class PerfRasterTaskImpl : public RasterTask {
 
   // Overridden from RasterizerTask:
   virtual void ScheduleOnOriginThread(RasterizerTaskClient* client) OVERRIDE {
-    client->AcquireCanvasForRaster(this);
+    client->AcquireBufferForRaster(this);
   }
   virtual void CompleteOnOriginThread(RasterizerTaskClient* client) OVERRIDE {
-    client->ReleaseCanvasForRaster(this);
+    client->ReleaseBufferForRaster(this);
   }
   virtual void RunReplyOnOriginThread() OVERRIDE { Reset(); }
 

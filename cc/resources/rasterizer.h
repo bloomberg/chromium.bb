@@ -11,17 +11,16 @@
 #include "cc/resources/resource_format.h"
 #include "cc/resources/task_graph_runner.h"
 
-class SkCanvas;
-
 namespace cc {
 class ImageDecodeTask;
 class RasterTask;
 class Resource;
+class RasterBuffer;
 
 class CC_EXPORT RasterizerTaskClient {
  public:
-  virtual SkCanvas* AcquireCanvasForRaster(RasterTask* task) = 0;
-  virtual void ReleaseCanvasForRaster(RasterTask* task) = 0;
+  virtual RasterBuffer* AcquireBufferForRaster(RasterTask* task) = 0;
+  virtual void ReleaseBufferForRaster(RasterTask* task) = 0;
 
  protected:
   virtual ~RasterizerTaskClient() {}

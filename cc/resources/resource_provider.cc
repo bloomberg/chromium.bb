@@ -111,6 +111,35 @@ GrPixelConfig ToGrPixelConfig(ResourceFormat format) {
   return kSkia8888_GrPixelConfig;
 }
 
+void MakeBitmap(SkBitmap* bitmap,
+                uint8_t* buffer,
+                ResourceFormat format,
+                const gfx::Size& size,
+                int stride) {
+  switch (format) {
+    case RGBA_4444:
+      // Use the default stride if we will eventually convert this
+      // bitmap to 4444.
+      bitmap->allocN32Pixels(size.width(), size.height());
+      break;
+    case RGBA_8888:
+    case BGRA_8888: {
+      SkImageInfo info =
+          SkImageInfo::MakeN32Premul(size.width(), size.height());
+      if (0 == stride)
+        stride = info.minRowBytes();
+      bitmap->installPixels(info, buffer, stride);
+      break;
+    }
+    case ALPHA_8:
+    case LUMINANCE_8:
+    case RGB_565:
+    case ETC1:
+      NOTREACHED();
+      break;
+  }
+}
+
 void CopyBitmap(const SkBitmap& src, uint8_t* dst, SkColorType dst_color_type) {
   SkImageInfo dst_info = src.info();
   dst_info.fColorType = dst_color_type;
@@ -389,188 +418,179 @@ ResourceProvider::Resource::Resource(const SharedBitmapId& bitmap_id,
   DCHECK(wrap_mode == GL_CLAMP_TO_EDGE || wrap_mode == GL_REPEAT);
 }
 
-ResourceProvider::RasterBuffer::RasterBuffer(
-    const Resource* resource,
-    ResourceProvider* resource_provider)
-    : resource_(resource),
-      resource_provider_(resource_provider),
-      locked_canvas_(NULL),
-      canvas_save_count_(0) {
-  DCHECK(resource_);
-  DCHECK(resource_provider_);
-}
-
-ResourceProvider::RasterBuffer::~RasterBuffer() {}
-
-SkCanvas* ResourceProvider::RasterBuffer::LockForWrite() {
-  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
-               "ResourceProvider::RasterBuffer::LockForWrite");
-
-  DCHECK(!locked_canvas_);
-
-  locked_canvas_ = DoLockForWrite();
-  canvas_save_count_ = locked_canvas_ ? locked_canvas_->save() : 0;
-  return locked_canvas_;
-}
-
-bool ResourceProvider::RasterBuffer::UnlockForWrite() {
-  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
-               "ResourceProvider::RasterBuffer::UnlockForWrite");
-
-  if (locked_canvas_) {
-    locked_canvas_->restoreToCount(canvas_save_count_);
-    locked_canvas_ = NULL;
-  }
-  return DoUnlockForWrite();
-}
-
 ResourceProvider::GpuRasterBuffer::GpuRasterBuffer(
     const Resource* resource,
     ResourceProvider* resource_provider,
     bool use_distance_field_text)
-    : RasterBuffer(resource, resource_provider),
-      surface_generation_id_(0u),
-      use_distance_field_text_(use_distance_field_text) {
+    : resource_(resource), resource_provider_(resource_provider) {
+  DCHECK_EQ(GLTexture, resource_->type);
+  DCHECK(resource_->gl_id);
+
+  class GrContext* gr_context = resource_provider_->GrContext();
+  // TODO(alokp): Implement TestContextProvider::GrContext().
+  if (gr_context) {
+    GrBackendTextureDesc desc;
+    desc.fFlags = kRenderTarget_GrBackendTextureFlag;
+    desc.fWidth = resource_->size.width();
+    desc.fHeight = resource_->size.height();
+    desc.fConfig = ToGrPixelConfig(resource_->format);
+    desc.fOrigin = kTopLeft_GrSurfaceOrigin;
+    desc.fTextureHandle = resource_->gl_id;
+    skia::RefPtr<GrTexture> gr_texture =
+        skia::AdoptRef(gr_context->wrapBackendTexture(desc));
+    SkSurface::TextRenderMode text_render_mode =
+        use_distance_field_text ? SkSurface::kDistanceField_TextRenderMode
+                                : SkSurface::kStandard_TextRenderMode;
+    surface_ = skia::AdoptRef(SkSurface::NewRenderTargetDirect(
+        gr_texture->asRenderTarget(), text_render_mode));
+  }
 }
 
 ResourceProvider::GpuRasterBuffer::~GpuRasterBuffer() {
 }
 
-SkCanvas* ResourceProvider::GpuRasterBuffer::DoLockForWrite() {
-  if (!surface_)
-    surface_ = CreateSurface();
-  surface_generation_id_ = surface_ ? surface_->generationID() : 0u;
-  return surface_ ? surface_->getCanvas() : NULL;
+skia::RefPtr<SkCanvas> ResourceProvider::GpuRasterBuffer::AcquireSkCanvas() {
+  // Note that this function is called from a worker thread.
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
+               "ResourceProvider::GpuRasterBuffer::AcquireSkCanvas");
+
+  return surface_ ? skia::SharePtr(surface_->getCanvas())
+                  : skia::RefPtr<SkCanvas>();
 }
 
-bool ResourceProvider::GpuRasterBuffer::DoUnlockForWrite() {
-  // generationID returns a non-zero, unique value corresponding to the content
-  // of surface. Hence, a change since DoLockForWrite was called means the
-  // surface has changed.
-  return surface_ ? surface_generation_id_ != surface_->generationID() : false;
-}
-
-skia::RefPtr<SkSurface> ResourceProvider::GpuRasterBuffer::CreateSurface() {
-  DCHECK_EQ(GLTexture, resource()->type);
-  DCHECK(resource()->gl_id);
-
-  class GrContext* gr_context = resource_provider()->GrContext();
-  // TODO(alokp): Implement TestContextProvider::GrContext().
-  if (!gr_context)
-    return skia::RefPtr<SkSurface>();
-
-  GrBackendTextureDesc desc;
-  desc.fFlags = kRenderTarget_GrBackendTextureFlag;
-  desc.fWidth = resource()->size.width();
-  desc.fHeight = resource()->size.height();
-  desc.fConfig = ToGrPixelConfig(resource()->format);
-  desc.fOrigin = kTopLeft_GrSurfaceOrigin;
-  desc.fTextureHandle = resource()->gl_id;
-  skia::RefPtr<GrTexture> gr_texture =
-      skia::AdoptRef(gr_context->wrapBackendTexture(desc));
-  SkSurface::TextRenderMode text_render_mode =
-      use_distance_field_text_ ? SkSurface::kDistanceField_TextRenderMode
-                               : SkSurface::kStandard_TextRenderMode;
-  return skia::AdoptRef(SkSurface::NewRenderTargetDirect(
-      gr_texture->asRenderTarget(), text_render_mode));
-}
-
-ResourceProvider::BitmapRasterBuffer::BitmapRasterBuffer(
-    const Resource* resource,
-    ResourceProvider* resource_provider)
-    : RasterBuffer(resource, resource_provider),
-      mapped_buffer_(NULL),
-      raster_bitmap_generation_id_(0u) {}
-
-ResourceProvider::BitmapRasterBuffer::~BitmapRasterBuffer() {}
-
-SkCanvas* ResourceProvider::BitmapRasterBuffer::DoLockForWrite() {
-  DCHECK(!mapped_buffer_);
-  DCHECK(!raster_canvas_);
-
-  int stride = 0;
-  mapped_buffer_ = MapBuffer(&stride);
-  if (!mapped_buffer_)
-    return NULL;
-
-  switch (resource()->format) {
-    case RGBA_4444:
-      // Use the default stride if we will eventually convert this
-      // bitmap to 4444.
-      raster_bitmap_.allocN32Pixels(resource()->size.width(),
-                                    resource()->size.height());
-      break;
-    case RGBA_8888:
-    case BGRA_8888: {
-      SkImageInfo info = SkImageInfo::MakeN32Premul(resource()->size.width(),
-                                                    resource()->size.height());
-      if (0 == stride)
-        stride = info.minRowBytes();
-      raster_bitmap_.installPixels(info, mapped_buffer_, stride);
-      break;
-    }
-    case ALPHA_8:
-    case LUMINANCE_8:
-    case RGB_565:
-    case ETC1:
-      NOTREACHED();
-      break;
-  }
-  raster_canvas_ = skia::AdoptRef(new SkCanvas(raster_bitmap_));
-  raster_bitmap_generation_id_ = raster_bitmap_.getGenerationID();
-  return raster_canvas_.get();
-}
-
-bool ResourceProvider::BitmapRasterBuffer::DoUnlockForWrite() {
-  raster_canvas_.clear();
-
-  // getGenerationID returns a non-zero, unique value corresponding to the
-  // pixels in bitmap. Hence, a change since DoLockForWrite was called means the
-  // bitmap has changed.
-  bool raster_bitmap_changed =
-      raster_bitmap_generation_id_ != raster_bitmap_.getGenerationID();
-
-  if (raster_bitmap_changed) {
-    SkColorType buffer_colorType =
-        ResourceFormatToSkColorType(resource()->format);
-    if (mapped_buffer_ && (buffer_colorType != raster_bitmap_.colorType()))
-      CopyBitmap(raster_bitmap_, mapped_buffer_, buffer_colorType);
-  }
-  raster_bitmap_.reset();
-
-  UnmapBuffer();
-  mapped_buffer_ = NULL;
-  return raster_bitmap_changed;
+void ResourceProvider::GpuRasterBuffer::ReleaseSkCanvas(
+    const skia::RefPtr<SkCanvas>& canvas) {
+  // Note that this function is called from a worker thread.
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
+               "ResourceProvider::GpuRasterBuffer::ReleaseSkCanvas");
 }
 
 ResourceProvider::ImageRasterBuffer::ImageRasterBuffer(
     const Resource* resource,
     ResourceProvider* resource_provider)
-    : BitmapRasterBuffer(resource, resource_provider) {}
-
-ResourceProvider::ImageRasterBuffer::~ImageRasterBuffer() {}
-
-uint8_t* ResourceProvider::ImageRasterBuffer::MapBuffer(int* stride) {
-  return resource_provider()->MapImage(resource(), stride);
+    : resource_(resource),
+      resource_provider_(resource_provider),
+      mapped_buffer_(NULL),
+      raster_bitmap_changed_(false),
+      stride_(0) {
 }
 
-void ResourceProvider::ImageRasterBuffer::UnmapBuffer() {
-  resource_provider()->UnmapImage(resource());
+ResourceProvider::ImageRasterBuffer::~ImageRasterBuffer() {
+}
+
+void ResourceProvider::ImageRasterBuffer::MapBuffer() {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
+               "ResourceProvider::ImageRasterBuffer::MapBuffer");
+
+  DCHECK(!mapped_buffer_);
+
+  stride_ = 0;
+  mapped_buffer_ = resource_provider_->MapImage(resource_, &stride_);
+  raster_bitmap_changed_ = false;
+}
+
+bool ResourceProvider::ImageRasterBuffer::UnmapBuffer() {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
+               "ResourceProvider::ImageRasterBuffer::UnmapBuffer");
+
+  if (mapped_buffer_) {
+    resource_provider_->UnmapImage(resource_);
+    mapped_buffer_ = NULL;
+  }
+  return raster_bitmap_changed_;
+}
+
+skia::RefPtr<SkCanvas> ResourceProvider::ImageRasterBuffer::AcquireSkCanvas() {
+  // Note that this function is called from a worker thread.
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
+               "ResourceProvider::ImageRasterBuffer::AcquireSkCanvas");
+
+  if (!mapped_buffer_)
+    return skia::RefPtr<SkCanvas>();
+
+  MakeBitmap(&raster_bitmap_,
+             mapped_buffer_,
+             resource_->format,
+             resource_->size,
+             stride_);
+  raster_bitmap_changed_ = true;
+  return skia::AdoptRef(new SkCanvas(raster_bitmap_));
+}
+
+void ResourceProvider::ImageRasterBuffer::ReleaseSkCanvas(
+    const skia::RefPtr<SkCanvas>& canvas) {
+  // Note that this function is called from a worker thread.
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
+               "ResourceProvider::ImageRasterBuffer::ReleaseSkCanvas");
+
+  SkColorType buffer_colorType = ResourceFormatToSkColorType(resource_->format);
+  if (mapped_buffer_ && (buffer_colorType != raster_bitmap_.colorType()))
+    CopyBitmap(raster_bitmap_, mapped_buffer_, buffer_colorType);
+  raster_bitmap_.reset();
 }
 
 ResourceProvider::PixelRasterBuffer::PixelRasterBuffer(
     const Resource* resource,
     ResourceProvider* resource_provider)
-    : BitmapRasterBuffer(resource, resource_provider) {}
-
-ResourceProvider::PixelRasterBuffer::~PixelRasterBuffer() {}
-
-uint8_t* ResourceProvider::PixelRasterBuffer::MapBuffer(int* stride) {
-  return resource_provider()->MapPixelBuffer(resource(), stride);
+    : resource_(resource),
+      resource_provider_(resource_provider),
+      mapped_buffer_(NULL),
+      raster_bitmap_changed_(false),
+      stride_(0) {
 }
 
-void ResourceProvider::PixelRasterBuffer::UnmapBuffer() {
-  resource_provider()->UnmapPixelBuffer(resource());
+ResourceProvider::PixelRasterBuffer::~PixelRasterBuffer() {
+}
+
+void ResourceProvider::PixelRasterBuffer::MapBuffer() {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
+               "ResourceProvider::PixelRasterBuffer::MapBuffer");
+
+  DCHECK(!mapped_buffer_);
+
+  stride_ = 0;
+  mapped_buffer_ = resource_provider_->MapPixelBuffer(resource_, &stride_);
+  raster_bitmap_changed_ = false;
+}
+
+bool ResourceProvider::PixelRasterBuffer::UnmapBuffer() {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
+               "ResourceProvider::PixelRasterBuffer::UnmapBuffer");
+
+  if (mapped_buffer_) {
+    resource_provider_->UnmapPixelBuffer(resource_);
+    mapped_buffer_ = NULL;
+  }
+  return raster_bitmap_changed_;
+}
+
+skia::RefPtr<SkCanvas> ResourceProvider::PixelRasterBuffer::AcquireSkCanvas() {
+  // Note that this function is called from a worker thread.
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
+               "ResourceProvider::PixelRasterBuffer::AcquireSkCanvas");
+
+  if (!mapped_buffer_)
+    return skia::RefPtr<SkCanvas>();
+
+  MakeBitmap(&raster_bitmap_,
+             mapped_buffer_,
+             resource_->format,
+             resource_->size,
+             stride_);
+  raster_bitmap_changed_ = true;
+  return skia::AdoptRef(new SkCanvas(raster_bitmap_));
+}
+
+void ResourceProvider::PixelRasterBuffer::ReleaseSkCanvas(
+    const skia::RefPtr<SkCanvas>& canvas) {
+  // Note that this function is called from a worker thread.
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
+               "ResourceProvider::PixelRasterBuffer::ReleaseSkCanvas");
+
+  SkColorType buffer_colorType = ResourceFormatToSkColorType(resource_->format);
+  if (mapped_buffer_ && (buffer_colorType != raster_bitmap_.colorType()))
+    CopyBitmap(raster_bitmap_, mapped_buffer_, buffer_colorType);
+  raster_bitmap_.reset();
 }
 
 ResourceProvider::Child::Child() : marked_for_deletion(false) {}
@@ -1722,7 +1742,7 @@ void ResourceProvider::DeleteAndReturnUnusedResourcesToChild(
   }
 }
 
-SkCanvas* ResourceProvider::MapGpuRasterBuffer(ResourceId id) {
+RasterBuffer* ResourceProvider::AcquireGpuRasterBuffer(ResourceId id) {
   // Resource needs to be locked for write since GpuRasterBuffer writes
   // directly to it.
   LockForWrite(id);
@@ -1731,52 +1751,45 @@ SkCanvas* ResourceProvider::MapGpuRasterBuffer(ResourceId id) {
     resource->gpu_raster_buffer.reset(
         new GpuRasterBuffer(resource, this, use_distance_field_text_));
   }
-  return resource->gpu_raster_buffer->LockForWrite();
+  return resource->gpu_raster_buffer.get();
 }
 
-void ResourceProvider::UnmapGpuRasterBuffer(ResourceId id) {
+void ResourceProvider::ReleaseGpuRasterBuffer(ResourceId id) {
   Resource* resource = GetResource(id);
   DCHECK(resource->gpu_raster_buffer.get());
-  resource->gpu_raster_buffer->UnlockForWrite();
   UnlockForWrite(id);
 }
 
-SkCanvas* ResourceProvider::MapImageRasterBuffer(ResourceId id) {
+RasterBuffer* ResourceProvider::AcquireImageRasterBuffer(ResourceId id) {
   Resource* resource = GetResource(id);
   AcquireImage(resource);
   if (!resource->image_raster_buffer.get())
     resource->image_raster_buffer.reset(new ImageRasterBuffer(resource, this));
-  return resource->image_raster_buffer->LockForWrite();
+  resource->image_raster_buffer->MapBuffer();
+  return resource->image_raster_buffer.get();
 }
 
-bool ResourceProvider::UnmapImageRasterBuffer(ResourceId id) {
+bool ResourceProvider::ReleaseImageRasterBuffer(ResourceId id) {
   Resource* resource = GetResource(id);
   resource->dirty_image = true;
-  return resource->image_raster_buffer->UnlockForWrite();
+  return resource->image_raster_buffer->UnmapBuffer();
 }
 
-void ResourceProvider::AcquirePixelRasterBuffer(ResourceId id) {
+RasterBuffer* ResourceProvider::AcquirePixelRasterBuffer(ResourceId id) {
   Resource* resource = GetResource(id);
   AcquirePixelBuffer(resource);
   resource->pixel_raster_buffer.reset(new PixelRasterBuffer(resource, this));
+  resource->pixel_raster_buffer->MapBuffer();
+  return resource->pixel_raster_buffer.get();
 }
 
-void ResourceProvider::ReleasePixelRasterBuffer(ResourceId id) {
+bool ResourceProvider::ReleasePixelRasterBuffer(ResourceId id) {
   Resource* resource = GetResource(id);
+  DCHECK(resource->pixel_raster_buffer.get());
+  bool raster_bitmap_changed = resource->pixel_raster_buffer->UnmapBuffer();
   resource->pixel_raster_buffer.reset();
   ReleasePixelBuffer(resource);
-}
-
-SkCanvas* ResourceProvider::MapPixelRasterBuffer(ResourceId id) {
-  Resource* resource = GetResource(id);
-  DCHECK(resource->pixel_raster_buffer.get());
-  return resource->pixel_raster_buffer->LockForWrite();
-}
-
-bool ResourceProvider::UnmapPixelRasterBuffer(ResourceId id) {
-  Resource* resource = GetResource(id);
-  DCHECK(resource->pixel_raster_buffer.get());
-  return resource->pixel_raster_buffer->UnlockForWrite();
+  return raster_bitmap_changed;
 }
 
 void ResourceProvider::AcquirePixelBuffer(Resource* resource) {
@@ -1912,6 +1925,11 @@ void ResourceProvider::BeginSetPixels(ResourceId id) {
   Resource* resource = GetResource(id);
   DCHECK(!resource->pending_set_pixels);
 
+  DCHECK(resource->pixel_raster_buffer.get());
+  bool raster_bitmap_changed = resource->pixel_raster_buffer->UnmapBuffer();
+  if (!raster_bitmap_changed)
+    return;
+
   LazyCreate(resource);
   DCHECK(resource->origin == Resource::Internal);
   DCHECK(resource->gl_id || resource->allocated);
@@ -1968,8 +1986,11 @@ void ResourceProvider::ForceSetPixelsToComplete(ResourceId id) {
                "ResourceProvider::ForceSetPixelsToComplete");
 
   Resource* resource = GetResource(id);
+
+  if (!resource->pending_set_pixels)
+    return;
+
   DCHECK(resource->locked_for_write);
-  DCHECK(resource->pending_set_pixels);
   DCHECK(!resource->set_pixels_completion_forced);
 
   if (resource->gl_id) {
@@ -1987,8 +2008,13 @@ bool ResourceProvider::DidSetPixelsComplete(ResourceId id) {
                "ResourceProvider::DidSetPixelsComplete");
 
   Resource* resource = GetResource(id);
+
+  // Upload can be avoided as a result of raster bitmap not being modified.
+  // Assume the upload was completed in that case.
+  if (!resource->pending_set_pixels)
+    return true;
+
   DCHECK(resource->locked_for_write);
-  DCHECK(resource->pending_set_pixels);
 
   if (resource->gl_id) {
     GLES2Interface* gl = ContextGL();

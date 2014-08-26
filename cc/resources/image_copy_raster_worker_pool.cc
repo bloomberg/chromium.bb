@@ -166,20 +166,22 @@ void ImageCopyRasterWorkerPool::CheckForCompletedTasks() {
   FlushCopies();
 }
 
-SkCanvas* ImageCopyRasterWorkerPool::AcquireCanvasForRaster(RasterTask* task) {
+RasterBuffer* ImageCopyRasterWorkerPool::AcquireBufferForRaster(
+    RasterTask* task) {
   DCHECK_EQ(task->resource()->format(), resource_pool_->resource_format());
   scoped_ptr<ScopedResource> resource(
       resource_pool_->AcquireResource(task->resource()->size()));
-  SkCanvas* canvas = resource_provider_->MapImageRasterBuffer(resource->id());
+  RasterBuffer* raster_buffer =
+      resource_provider_->AcquireImageRasterBuffer(resource->id());
   DCHECK(std::find_if(raster_task_states_.begin(),
                       raster_task_states_.end(),
                       RasterTaskState::TaskComparator(task)) ==
          raster_task_states_.end());
   raster_task_states_.push_back(RasterTaskState(task, resource.release()));
-  return canvas;
+  return raster_buffer;
 }
 
-void ImageCopyRasterWorkerPool::ReleaseCanvasForRaster(RasterTask* task) {
+void ImageCopyRasterWorkerPool::ReleaseBufferForRaster(RasterTask* task) {
   RasterTaskState::Vector::iterator it =
       std::find_if(raster_task_states_.begin(),
                    raster_task_states_.end(),
@@ -190,7 +192,7 @@ void ImageCopyRasterWorkerPool::ReleaseCanvasForRaster(RasterTask* task) {
   raster_task_states_.pop_back();
 
   bool content_has_changed =
-      resource_provider_->UnmapImageRasterBuffer(resource->id());
+      resource_provider_->ReleaseImageRasterBuffer(resource->id());
 
   // |content_has_changed| can be false as result of task being canceled or
   // task implementation deciding not to modify bitmap (ie. analysis of raster
