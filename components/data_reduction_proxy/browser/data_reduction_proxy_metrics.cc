@@ -314,8 +314,9 @@ DataReductionProxyRequestType GetDataReductionProxyRequestType(
     return SHORT_BYPASS;
   }
 #endif
-  if (request->response_info().headers &&
-      HasDataReductionProxyViaHeader(request->response_info().headers, NULL)) {
+  if (request->response_info().headers.get() &&
+      HasDataReductionProxyViaHeader(request->response_info().headers.get(),
+                                     NULL)) {
     return VIA_DATA_REDUCTION_PROXY;
   }
   return UNKNOWN_TYPE;

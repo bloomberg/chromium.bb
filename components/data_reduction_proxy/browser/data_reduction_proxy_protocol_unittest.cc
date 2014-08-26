@@ -351,9 +351,8 @@ TEST_F(DataReductionProxyProtocolTest, OverrideResponseAsRedirect) {
                            net::DEFAULT_PRIORITY,
                            NULL,
                            &context);
-    OverrideResponseAsRedirect(&request,
-                               original_response_headers,
-                               &override_response_headers);
+    OverrideResponseAsRedirect(
+        &request, original_response_headers.get(), &override_response_headers);
     int expected_flags = net::LOAD_DISABLE_CACHE | net::LOAD_BYPASS_PROXY;
     EXPECT_EQ(expected_flags, request.load_flags());
     std::string override_headers;

@@ -112,7 +112,7 @@ TEST_F(DataReductionProxyHeadersTest, GetDataReductionProxyActionValue) {
 
     std::string action_value;
     bool has_action_key = GetDataReductionProxyActionValue(
-        parsed, tests[i].action_key, &action_value);
+        parsed.get(), tests[i].action_key, &action_value);
     EXPECT_EQ(tests[i].expected_result, has_action_key);
     if (has_action_key) {
       EXPECT_EQ(tests[i].expected_action_value, action_value);
@@ -361,8 +361,9 @@ TEST_F(DataReductionProxyHeadersTest, GetProxyBypassInfo) {
         new net::HttpResponseHeaders(headers));
 
     DataReductionProxyInfo data_reduction_proxy_info;
-    EXPECT_EQ(tests[i].expected_result,
-              ParseHeadersAndSetProxyInfo(parsed, &data_reduction_proxy_info));
+    EXPECT_EQ(
+        tests[i].expected_result,
+        ParseHeadersAndSetProxyInfo(parsed.get(), &data_reduction_proxy_info));
     EXPECT_EQ(tests[i].expected_retry_delay,
               data_reduction_proxy_info.bypass_duration.InSeconds());
     EXPECT_EQ(tests[i].expected_bypass_all,
@@ -383,7 +384,8 @@ TEST_F(DataReductionProxyHeadersTest, ParseHeadersAndSetProxyInfo) {
       new net::HttpResponseHeaders(headers));
 
   DataReductionProxyInfo data_reduction_proxy_info;
-  EXPECT_TRUE(ParseHeadersAndSetProxyInfo(parsed, &data_reduction_proxy_info));
+  EXPECT_TRUE(
+      ParseHeadersAndSetProxyInfo(parsed.get(), &data_reduction_proxy_info));
   EXPECT_LE(60, data_reduction_proxy_info.bypass_duration.InSeconds());
   EXPECT_GE(5 * 60, data_reduction_proxy_info.bypass_duration.InSeconds());
   EXPECT_FALSE(data_reduction_proxy_info.bypass_all);
@@ -513,11 +515,11 @@ TEST_F(DataReductionProxyHeadersTest, HasDataReductionProxyViaHeader) {
     bool has_chrome_proxy_via_header, has_intermediary;
     if (tests[i].ignore_intermediary) {
       has_chrome_proxy_via_header =
-          HasDataReductionProxyViaHeader(parsed, NULL);
+          HasDataReductionProxyViaHeader(parsed.get(), NULL);
     }
     else {
       has_chrome_proxy_via_header =
-          HasDataReductionProxyViaHeader(parsed, &has_intermediary);
+          HasDataReductionProxyViaHeader(parsed.get(), &has_intermediary);
     }
     EXPECT_EQ(tests[i].expected_result, has_chrome_proxy_via_header);
     if (has_chrome_proxy_via_header && !tests[i].ignore_intermediary) {
@@ -633,8 +635,9 @@ TEST_F(DataReductionProxyHeadersTest, GetDataReductionProxyBypassEventType) {
     scoped_refptr<net::HttpResponseHeaders> parsed(
         new net::HttpResponseHeaders(headers));
     DataReductionProxyInfo chrome_proxy_info;
-    EXPECT_EQ(tests[i].expected_result,
-              GetDataReductionProxyBypassType(parsed, &chrome_proxy_info));
+    EXPECT_EQ(
+        tests[i].expected_result,
+        GetDataReductionProxyBypassType(parsed.get(), &chrome_proxy_info));
   }
 }
 
@@ -673,7 +676,7 @@ TEST_F(DataReductionProxyHeadersTest,
 
     std::string fingerprint;
     bool fingerprint_exist = GetDataReductionProxyActionFingerprintChromeProxy(
-        parsed, &fingerprint);
+        parsed.get(), &fingerprint);
     EXPECT_EQ(tests[i].expected_fingerprint_exist, fingerprint_exist)
         << tests[i].label;
 
@@ -717,7 +720,7 @@ TEST_F(DataReductionProxyHeadersTest,
 
     std::string fingerprint;
     bool fingerprint_exist =
-        GetDataReductionProxyActionFingerprintVia(parsed, &fingerprint);
+        GetDataReductionProxyActionFingerprintVia(parsed.get(), &fingerprint);
     EXPECT_EQ(tests[i].expected_fingerprint_exist, fingerprint_exist)
         << tests[i].label;
 
@@ -760,9 +763,8 @@ TEST_F(DataReductionProxyHeadersTest,
         new net::HttpResponseHeaders(headers));
 
     std::string fingerprint;
-    bool fingerprint_exist =
-        GetDataReductionProxyActionFingerprintOtherHeaders(
-        parsed, &fingerprint);
+    bool fingerprint_exist = GetDataReductionProxyActionFingerprintOtherHeaders(
+        parsed.get(), &fingerprint);
     EXPECT_EQ(tests[i].expected_fingerprint_exist, fingerprint_exist)
         << tests[i].label;
 
@@ -806,8 +808,8 @@ TEST_F(DataReductionProxyHeadersTest,
 
     std::string fingerprint;
     bool fingerprint_exist =
-        GetDataReductionProxyActionFingerprintContentLength(
-        parsed, &fingerprint);
+        GetDataReductionProxyActionFingerprintContentLength(parsed.get(),
+                                                            &fingerprint);
     EXPECT_EQ(tests[i].expected_fingerprint_exist, fingerprint_exist)
         << tests[i].label;
 
@@ -870,7 +872,8 @@ TEST_F(DataReductionProxyHeadersTest,
         new net::HttpResponseHeaders(headers));
 
     std::vector<std::string> output_values;
-    GetDataReductionProxyHeaderWithFingerprintRemoved(parsed, &output_values);
+    GetDataReductionProxyHeaderWithFingerprintRemoved(parsed.get(),
+                                                      &output_values);
 
     std::string output_values_string;
     for (size_t j = 0; j < output_values.size(); ++j)

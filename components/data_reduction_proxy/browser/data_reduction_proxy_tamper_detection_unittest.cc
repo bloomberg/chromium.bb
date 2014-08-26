@@ -250,7 +250,7 @@ TEST_F(DataReductionProxyTamperDetectionTest, ChromeProxy) {
     scoped_refptr<net::HttpResponseHeaders> headers(
         new net::HttpResponseHeaders(raw_headers));
 
-    DataReductionProxyTamperDetection tamper_detection(headers, true, 0);
+    DataReductionProxyTamperDetection tamper_detection(headers.get(), true, 0);
 
     bool tampered = tamper_detection.ValidateChromeProxyHeader(
         test[i].received_fingerprint);
@@ -374,7 +374,7 @@ TEST_F(DataReductionProxyTamperDetectionTest, Via) {
     scoped_refptr<net::HttpResponseHeaders> headers(
         new net::HttpResponseHeaders(raw_headers));
 
-    DataReductionProxyTamperDetection tamper_detection(headers, true, 0);
+    DataReductionProxyTamperDetection tamper_detection(headers.get(), true, 0);
 
     bool has_chrome_proxy_via_header;
     bool tampered = tamper_detection.ValidateViaHeader(
@@ -507,7 +507,7 @@ TEST_F(DataReductionProxyTamperDetectionTest, OtherHeaders) {
     scoped_refptr<net::HttpResponseHeaders> headers(
         new net::HttpResponseHeaders(raw_headers));
 
-    DataReductionProxyTamperDetection tamper_detection(headers, true, 0);
+    DataReductionProxyTamperDetection tamper_detection(headers.get(), true, 0);
 
     bool tampered = tamper_detection.ValidateOtherHeaders(
         test[i].received_fingerprint);
@@ -583,7 +583,7 @@ TEST_F(DataReductionProxyTamperDetectionTest, ContentLength) {
     scoped_refptr<net::HttpResponseHeaders> headers(
         new net::HttpResponseHeaders(raw_headers));
 
-    DataReductionProxyTamperDetection tamper_detection(headers, true, 0);
+    DataReductionProxyTamperDetection tamper_detection(headers.get(), true, 0);
 
     bool tampered = tamper_detection.ValidateContentLengthHeader(
         test[i].received_fingerprint);
@@ -674,8 +674,8 @@ TEST_F(DataReductionProxyTamperDetectionTest, GetHeaderValues) {
         StringsToVector(test[i].expected_output_values);
 
     std::vector<std::string> output_values =
-        DataReductionProxyTamperDetection::GetHeaderValues(
-        headers, test[i].header_name);
+        DataReductionProxyTamperDetection::GetHeaderValues(headers.get(),
+                                                           test[i].header_name);
     EXPECT_EQ(expected_output_values, output_values) << test[i].label;
   }
 }
@@ -747,8 +747,9 @@ TEST_F(DataReductionProxyTamperDetectionTest, DetectAndReport) {
     scoped_refptr<net::HttpResponseHeaders> headers(
         new net::HttpResponseHeaders(raw_headers));
 
-    EXPECT_EQ(test[i].expected_tampered_with,
-        DataReductionProxyTamperDetection::DetectAndReport(headers, true))
+    EXPECT_EQ(
+        test[i].expected_tampered_with,
+        DataReductionProxyTamperDetection::DetectAndReport(headers.get(), true))
         << test[i].label;
   }
 }
