@@ -134,20 +134,6 @@ FileTransferController.prototype = {
   },
 
   /**
-   * @this {FileTransferController}
-   * @param {NavigationList} tree Its sub items will could be drop target.
-   */
-  attachNavigationListDropTarget: function(list) {
-    list.addEventListener('dragover',
-        this.onDragOver_.bind(this, true /* onlyIntoDirectories */, list));
-    list.addEventListener('dragenter',
-        this.onDragEnterVolumesList_.bind(this, list));
-    list.addEventListener('dragleave', this.onDragLeave_.bind(this, list));
-    list.addEventListener('drop',
-        this.onDrop_.bind(this, true /* onlyIntoDirectories */));
-  },
-
-  /**
    * Attach handlers of copy, cut and paste operations to the document.
    *
    * @this {FileTransferController}
@@ -627,34 +613,6 @@ FileTransferController.prototype = {
     } else {
       this.clearDropTarget_();
     }
-  },
-
-  /**
-   * @this {FileTransferController}
-   * @param {NavigationList} list Drop target list.
-   * @param {Event} event A dragenter event of DOM.
-   */
-  onDragEnterVolumesList_: function(list, event) {
-    event.preventDefault();  // Required to prevent the cursor flicker.
-
-    this.lastEnteredTarget_ = event.target;
-    var item = list.getListItemAncestor(event.target);
-    item = item && list.isItem(item) ? item : null;
-    if (item === this.dropTarget_)
-      return;
-
-    var modelItem = item && list.dataModel.item(item.listIndex);
-    if (modelItem && modelItem.isShortcut) {
-      this.setDropTarget_(item, event.dataTransfer, modelItem.entry);
-      return;
-    }
-    if (modelItem && modelItem.isVolume && modelItem.volumeInfo.displayRoot) {
-      this.setDropTarget_(
-          item, event.dataTransfer, modelItem.volumeInfo.displayRoot);
-      return;
-    }
-
-    this.clearDropTarget_();
   },
 
   /**
