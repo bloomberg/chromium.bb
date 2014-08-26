@@ -166,17 +166,15 @@ void AppListItemList::DeleteItem(const std::string& id) {
   // |item| will be deleted on destruction.
 }
 
-scoped_ptr<AppListItem> AppListItemList::RemoveItem(
-    const std::string& id) {
+scoped_ptr<AppListItem> AppListItemList::RemoveItem(const std::string& id) {
   size_t index;
-  if (FindItemIndex(id, &index))
-    return RemoveItemAt(index);
-
-  return scoped_ptr<AppListItem>();
+  if (!FindItemIndex(id, &index))
+    LOG(FATAL) << "RemoveItem: Not found: " << id;
+  return RemoveItemAt(index);
 }
 
 scoped_ptr<AppListItem> AppListItemList::RemoveItemAt(size_t index) {
-  DCHECK_LT(index, item_count());
+  CHECK_LT(index, item_count());
   AppListItem* item = app_list_items_[index];
   app_list_items_.weak_erase(app_list_items_.begin() + index);
   FOR_EACH_OBSERVER(AppListItemListObserver,

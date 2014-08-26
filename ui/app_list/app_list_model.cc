@@ -74,8 +74,8 @@ AppListItem* AppListModel::AddItemToFolder(scoped_ptr<AppListItem> item,
   if (folder_id.empty())
     return AddItem(item.Pass());
   DVLOG(2) << "AddItemToFolder: " << item->id() << ": " << folder_id;
-  DCHECK(!item->IsInFolder() || item->folder_id() == folder_id);
-  DCHECK(item->GetItemType() != AppListFolderItem::kItemType);
+  CHECK_NE(folder_id, item->folder_id());
+  DCHECK_NE(AppListFolderItem::kItemType, item->GetItemType());
   AppListFolderItem* dest_folder = FindOrCreateFolderItem(folder_id);
   if (!dest_folder)
     return NULL;
@@ -159,10 +159,12 @@ void AppListModel::MoveItemToFolder(AppListItem* item,
     return;
   AppListFolderItem* dest_folder = FindOrCreateFolderItem(folder_id);
   scoped_ptr<AppListItem> item_ptr = RemoveItem(item);
-  if (dest_folder)
+  if (dest_folder) {
+    CHECK(!item->IsInFolder());
     AddItemToFolderItemAndNotify(dest_folder, item_ptr.Pass());
-  else
+  } else {
     AddItemToItemListAndNotifyUpdate(item_ptr.Pass());
+  }
 }
 
 bool AppListModel::MoveItemToFolderAt(AppListItem* item,
@@ -357,6 +359,7 @@ AppListItem* AppListModel::AddItemToItemListAndNotifyUpdate(
 AppListItem* AppListModel::AddItemToFolderItemAndNotify(
     AppListFolderItem* folder,
     scoped_ptr<AppListItem> item_ptr) {
+  CHECK_NE(folder->id(), item_ptr->folder_id());
   AppListItem* item = folder->item_list()->AddItem(item_ptr.Pass());
   item->set_folder_id(folder->id());
   FOR_EACH_OBSERVER(AppListModelObserver,
@@ -377,7 +380,7 @@ scoped_ptr<AppListItem> AppListModel::RemoveItemFromFolder(
     AppListFolderItem* folder,
     AppListItem* item) {
   std::string folder_id = folder->id();
-  DCHECK_EQ(item->folder_id(), folder_id);
+  CHECK_EQ(item->folder_id(), folder_id);
   scoped_ptr<AppListItem> result = folder->item_list()->RemoveItem(item->id());
   result->set_folder_id("");
   if (folder->item_list()->item_count() == 0) {

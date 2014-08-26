@@ -213,9 +213,6 @@ TEST_F(AppListItemListTest, RemoveItem) {
   EXPECT_EQ(item_list_.item_count(), 2u);
   EXPECT_EQ(observer_.items_removed(), 1u);
   EXPECT_TRUE(VerifyItemListOrdinals());
-
-  scoped_ptr<AppListItem> not_found_item = RemoveItem("Bogus");
-  EXPECT_FALSE(not_found_item.get());
 }
 
 TEST_F(AppListItemListTest, MoveItem) {
