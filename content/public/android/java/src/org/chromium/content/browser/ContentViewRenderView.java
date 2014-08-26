@@ -148,6 +148,15 @@ public class ContentViewRenderView extends FrameLayout {
     }
 
     /**
+     * Trigger a redraw of the compositor.  This is only needed if the UI changes something that
+     * does not trigger a redraw itself by updating the layer tree.
+     */
+    public void setNeedsComposite() {
+        if (mNativeContentViewRenderView == 0) return;
+        nativeSetNeedsComposite(mNativeContentViewRenderView);
+    }
+
+    /**
      * This method should be subclassed to provide actions to be performed once the view is ready to
      * render.
      */
@@ -216,4 +225,5 @@ public class ContentViewRenderView extends FrameLayout {
             int format, int width, int height, Surface surface);
     private native void nativeSetOverlayVideoMode(long nativeContentViewRenderView,
             boolean enabled);
+    private native void nativeSetNeedsComposite(long nativeContentViewRenderView);
 }

@@ -120,6 +120,12 @@ void ContentViewRenderView::SurfaceChanged(JNIEnv* env, jobject obj,
 void ContentViewRenderView::SetOverlayVideoMode(
     JNIEnv* env, jobject obj, bool enabled) {
   compositor_->SetHasTransparentBackground(enabled);
+  SetNeedsComposite(env, obj);
+}
+
+void ContentViewRenderView::SetNeedsComposite(JNIEnv* env, jobject obj) {
+  if (compositor_)
+    compositor_->SetNeedsComposite();
 }
 
 void ContentViewRenderView::Layout() {

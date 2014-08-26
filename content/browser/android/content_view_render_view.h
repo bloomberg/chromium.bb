@@ -41,6 +41,7 @@ class ContentViewRenderView : public CompositorClient {
                       jint format, jint width, jint height, jobject surface);
   jboolean Composite(JNIEnv* env, jobject obj);
   void SetOverlayVideoMode(JNIEnv* env, jobject obj, bool enabled);
+  void SetNeedsComposite(JNIEnv* env, jobject obj);
 
   // CompositorClient implementation
   virtual void Layout() OVERRIDE;
