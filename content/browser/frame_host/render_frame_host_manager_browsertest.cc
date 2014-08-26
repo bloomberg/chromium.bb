@@ -398,7 +398,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   // If it navigates away to another process, the original window should
   // still be able to close it (using a cross-process close message).
   NavigateToURL(new_shell, cross_site_url);
-  EXPECT_EQ(new_site_instance,
+  EXPECT_EQ(new_site_instance.get(),
             new_shell->web_contents()->GetSiteInstance());
   WebContentsDestroyedWatcher close_watcher(new_shell->web_contents());
   EXPECT_TRUE(ExecuteScriptAndExtractBool(
@@ -573,7 +573,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   WaitForLoadStop(new_contents);
   EXPECT_EQ("/files/title2.html", new_contents->GetLastCommittedURL().path());
   NavigateToURL(new_shell2, test_server()->GetURL("files/post_message.html"));
-  EXPECT_EQ(orig_site_instance, new_contents->GetSiteInstance());
+  EXPECT_EQ(orig_site_instance.get(), new_contents->GetSiteInstance());
   RenderFrameHostManager* new_manager =
       static_cast<WebContentsImpl*>(new_contents)->GetRenderManagerForTesting();
 
@@ -1272,7 +1272,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
             new_shell->web_contents()->GetLastCommittedURL().path());
 
   // Should have the same SiteInstance.
-  EXPECT_EQ(orig_site_instance, new_shell->web_contents()->GetSiteInstance());
+  EXPECT_EQ(orig_site_instance.get(),
+            new_shell->web_contents()->GetSiteInstance());
 
   // 2. Send the second tab to a different process.
   NavigateToURL(new_shell, GetCrossSiteURL("files/title1.html"));
@@ -1287,7 +1288,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   WaitForLoadStop(shell()->web_contents());
   EXPECT_EQ(GetCrossSiteURL("files/title1.html"),
             shell()->web_contents()->GetLastCommittedURL());
-  EXPECT_EQ(new_site_instance, shell()->web_contents()->GetSiteInstance());
+  EXPECT_EQ(new_site_instance.get(),
+            shell()->web_contents()->GetSiteInstance());
 }
 
 // Ensure that renderer-side debug URLs do not cause a process swap, since they

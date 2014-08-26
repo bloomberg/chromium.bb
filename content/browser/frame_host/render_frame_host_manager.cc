@@ -1439,7 +1439,7 @@ RenderFrameHostImpl* RenderFrameHostManager::UpdateStateForNavigate(
   const NavigationEntry* current_entry =
       delegate_->GetLastCommittedNavigationEntryForRenderManager();
 
-  if (new_instance != current_instance) {
+  if (new_instance.get() != current_instance) {
     // New SiteInstance: create a pending RFH to navigate.
     DCHECK(!cross_navigation_pending_);
 
@@ -1451,7 +1451,7 @@ RenderFrameHostImpl* RenderFrameHostManager::UpdateStateForNavigate(
     // not have its bindings set appropriately.
     SetPendingWebUI(entry);
     CreateRenderFrameHostForNewSiteInstance(
-        current_instance, new_instance, frame_tree_node_->IsMainFrame());
+        current_instance, new_instance.get(), frame_tree_node_->IsMainFrame());
     if (!pending_render_frame_host_.get()) {
       return NULL;
     }
@@ -1519,7 +1519,7 @@ RenderFrameHostImpl* RenderFrameHostManager::UpdateStateForNavigate(
   // original site).  In that case, we have a proxy for the current RFH but
   // haven't deleted it yet.  The new navigation will swap it back in, so we can
   // delete the proxy.
-  DeleteRenderFrameProxyHost(new_instance);
+  DeleteRenderFrameProxyHost(new_instance.get());
 
   if (ShouldReuseWebUI(current_entry, &entry)) {
     pending_web_ui_.reset();

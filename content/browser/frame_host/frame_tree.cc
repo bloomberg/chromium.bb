@@ -72,7 +72,7 @@ bool CreateProxyForSiteInstance(FrameTreeNode* source_node,
   if (source_node == node)
     return true;
 
-  node->render_manager()->CreateRenderFrameProxy(instance);
+  node->render_manager()->CreateRenderFrameProxy(instance.get());
   return true;
 }
 

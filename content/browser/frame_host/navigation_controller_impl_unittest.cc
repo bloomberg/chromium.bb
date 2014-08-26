@@ -501,8 +501,8 @@ void CheckNavigationEntryMatchLoadParams(
         load_params.override_user_agent);
     EXPECT_EQ(should_override, entry->GetIsOverridingUserAgent());
   }
-  EXPECT_EQ(load_params.browser_initiated_post_data,
-      entry->GetBrowserInitiatedPostData());
+  EXPECT_EQ(load_params.browser_initiated_post_data.get(),
+            entry->GetBrowserInitiatedPostData());
   EXPECT_EQ(load_params.transferred_global_request_id,
       entry->transferred_global_request_id());
 }
