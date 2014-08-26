@@ -276,8 +276,11 @@ class BrowserProcessImpl : public BrowserProcess,
   // but some users of component updater only install per-user.
   scoped_ptr<component_updater::ComponentUpdateService> component_updater_;
   scoped_refptr<CRLSetFetcher> crl_set_fetcher_;
+
+#if !defined(DISABLE_NACL)
   scoped_ptr<component_updater::PnaclComponentInstaller>
       pnacl_component_installer_;
+#endif
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
   scoped_refptr<PluginsResourceService> plugins_resource_service_;

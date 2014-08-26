@@ -149,10 +149,6 @@
       'common/omnibox_focus_state.h',
       'common/partial_circular_buffer.cc',
       'common/partial_circular_buffer.h',
-      'common/pepper_flash.cc',
-      'common/pepper_flash.h',
-      'common/pepper_permission_util.cc',
-      'common/pepper_permission_util.h',
       'common/pref_names_util.cc',
       'common/pref_names_util.h',
       'common/prerender_types.h',
@@ -376,7 +372,6 @@
             '<(DEPTH)/extensions/common/api/api.gyp:extensions_api',
             '<(DEPTH)/extensions/extensions.gyp:extensions_common',
             '<(DEPTH)/ipc/ipc.gyp:ipc',
-            '<(DEPTH)/third_party/adobe/flash/flash_player.gyp:flapper_version_h',
             '<(DEPTH)/third_party/re2/re2.gyp:re2',
             '<(DEPTH)/third_party/widevine/cdm/widevine_cdm.gyp:widevine_cdm_version_h',
           ],
@@ -395,7 +390,6 @@
             ['exclude', '^common/logging_chrome\\.'],
             ['exclude', '^common/media_galleries/'],
             ['exclude', '^common/multi_process_'],
-            ['exclude', '^common/pepper_flash\\.'],
             ['exclude', '^common/profiling\\.'],
             ['exclude', '^common/spellcheck_'],
             ['exclude', '^common/validation_message_'],
@@ -418,6 +412,17 @@
           'dependencies': [
             '<(DEPTH)/components/nacl.gyp:nacl_common',
             '<(DEPTH)/ppapi/native_client/src/trusted/plugin/plugin.gyp:nacl_trusted_plugin',
+          ],
+        }],
+        ['enable_plugins==1', {
+          'dependencies': [
+            '<(DEPTH)/third_party/adobe/flash/flash_player.gyp:flapper_version_h',
+          ],
+          'sources': [
+            'common/pepper_flash.cc',
+            'common/pepper_flash.h',
+            'common/pepper_permission_util.cc',
+            'common/pepper_permission_util.h',
           ],
         }],
         ['enable_printing==0', {

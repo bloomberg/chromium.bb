@@ -21,12 +21,10 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/crash_keys.h"
-#include "chrome/common/pepper_flash.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/common_resources.h"
 #include "components/dom_distiller/core/url_constants.h"
-#include "components/nacl/common/nacl_process_type.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/pepper_plugin_info.h"
@@ -35,12 +33,10 @@
 #include "extensions/common/constants.h"
 #include "gpu/config/gpu_info.h"
 #include "net/http/http_util.h"
-#include "ppapi/shared_impl/ppapi_permissions.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 
-#include "flapper_version.h"  // In SHARED_INTERMEDIATE_DIR.
 #include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
 
 #if defined(OS_WIN)
@@ -52,7 +48,14 @@
 
 #if !defined(DISABLE_NACL)
 #include "components/nacl/common/nacl_constants.h"
+#include "components/nacl/common/nacl_process_type.h"
 #include "ppapi/native_client/src/trusted/plugin/ppapi_entrypoints.h"
+#endif
+
+#if defined(ENABLE_PLUGINS)
+#include "chrome/common/pepper_flash.h"
+#include "flapper_version.h"  // In SHARED_INTERMEDIATE_DIR.
+#include "ppapi/shared_impl/ppapi_permissions.h"
 #endif
 
 #if defined(ENABLE_REMOTING)
@@ -66,6 +69,7 @@
 
 namespace {
 
+#if defined(ENABLE_PLUGINS)
 const char kPDFPluginMimeType[] = "application/pdf";
 const char kPDFPluginExtension[] = "pdf";
 const char kPDFPluginDescription[] = "Portable Document Format";
@@ -408,6 +412,7 @@ bool GetBundledPepperFlash(content::PepperPluginInfo* plugin) {
   return false;
 #endif  // FLAPPER_AVAILABLE
 }
+#endif  // defined(ENABLE_PLUGINS)
 
 std::string GetProduct() {
   chrome::VersionInfo version_info;
@@ -462,12 +467,14 @@ void ChromeContentClient::SetGpuInfo(const gpu::GPUInfo& gpu_info) {
 
 void ChromeContentClient::AddPepperPlugins(
     std::vector<content::PepperPluginInfo>* plugins) {
+#if defined(ENABLE_PLUGINS)
   ComputeBuiltInPlugins(plugins);
   AddPepperFlashFromCommandLine(plugins);
 
   content::PepperPluginInfo plugin;
   if (GetBundledPepperFlash(&plugin))
     plugins->push_back(plugin);
+#endif
 }
 
 void ChromeContentClient::AddAdditionalSchemes(
@@ -516,14 +523,16 @@ gfx::Image& ChromeContentClient::GetNativeImageNamed(int resource_id) const {
 }
 
 std::string ChromeContentClient::GetProcessTypeNameInEnglish(int type) {
+#if !defined(DISABLE_NACL)
   switch (type) {
     case PROCESS_TYPE_NACL_LOADER:
       return "Native Client module";
     case PROCESS_TYPE_NACL_BROKER:
       return "Native Client broker";
   }
+#endif
 
-  DCHECK(false) << "Unknown child process type!";
+  NOTREACHED() << "Unknown child process type!";
   return "Unknown";
 }
 

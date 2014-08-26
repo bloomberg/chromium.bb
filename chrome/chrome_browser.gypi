@@ -209,8 +209,6 @@
       'browser/browsing_data/browsing_data_database_helper.h',
       'browser/browsing_data/browsing_data_file_system_helper.cc',
       'browser/browsing_data/browsing_data_file_system_helper.h',
-      'browser/browsing_data/browsing_data_flash_lso_helper.cc',
-      'browser/browsing_data/browsing_data_flash_lso_helper.h',
       'browser/browsing_data/browsing_data_helper.cc',
       'browser/browsing_data/browsing_data_helper.h',
       'browser/browsing_data/browsing_data_indexed_db_helper.cc',
@@ -280,12 +278,6 @@
       'browser/component_updater/component_updater_resource_throttle.h',
       'browser/component_updater/ev_whitelist_component_installer.cc',
       'browser/component_updater/ev_whitelist_component_installer.h',
-      'browser/component_updater/flash_component_installer.h',
-      'browser/component_updater/pepper_flash_component_installer.cc',
-      'browser/component_updater/pnacl/pnacl_component_installer.cc',
-      'browser/component_updater/pnacl/pnacl_component_installer.h',
-      'browser/component_updater/ppapi_utils.cc',
-      'browser/component_updater/ppapi_utils.h',
       'browser/component_updater/recovery_component_installer.cc',
       'browser/component_updater/recovery_component_installer.h',
       'browser/component_updater/sw_reporter_installer_win.cc',
@@ -1723,6 +1715,8 @@
       'browser/spellchecker/word_trimmer.h',
     ],
     'chrome_browser_nacl_sources': [
+      'browser/component_updater/pnacl/pnacl_component_installer.cc',
+      'browser/component_updater/pnacl/pnacl_component_installer.h',
       'browser/nacl_host/nacl_browser_delegate_impl.cc',
       'browser/nacl_host/nacl_browser_delegate_impl.h',
       'browser/nacl_host/nacl_infobar_delegate.cc',
@@ -1730,6 +1724,12 @@
     ],
     # See also the plugin_installation_sources list below.
     'chrome_browser_plugins_sources': [
+      'browser/browsing_data/browsing_data_flash_lso_helper.cc',
+      'browser/browsing_data/browsing_data_flash_lso_helper.h',
+      'browser/component_updater/flash_component_installer.h',
+      'browser/component_updater/pepper_flash_component_installer.cc',
+      'browser/component_updater/ppapi_utils.cc',
+      'browser/component_updater/ppapi_utils.h',
       'browser/metrics/plugin_metrics_provider.cc',
       'browser/metrics/plugin_metrics_provider.h',
       'browser/pepper_broker_infobar_delegate.cc',
@@ -2948,7 +2948,6 @@
             '../net/net.gyp:net_with_v8',
             # TODO(tonyg): Remove this dependency (crbug.com/280157).
             '../testing/perf/perf_test.gyp:*',
-            '../third_party/adobe/flash/flash_player.gyp:flapper_version_h',
             '../third_party/expat/expat.gyp:expat',
             '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
             '../third_party/libaddressinput/libaddressinput.gyp:libaddressinput',
@@ -3099,6 +3098,7 @@
         ['enable_plugins==1', {
           'dependencies': [
             '../ppapi/ppapi_internal.gyp:ppapi_ipc',
+            '../third_party/adobe/flash/flash_player.gyp:flapper_version_h',
           ],
           'sources': [ '<@(chrome_browser_plugins_sources)' ],
         }],

@@ -45,7 +45,6 @@
 #include "chrome/browser/component_updater/cld_component_installer.h"
 #include "chrome/browser/component_updater/ev_whitelist_component_installer.h"
 #include "chrome/browser/component_updater/flash_component_installer.h"
-#include "chrome/browser/component_updater/pnacl/pnacl_component_installer.h"
 #include "chrome/browser/component_updater/recovery_component_installer.h"
 #include "chrome/browser/component_updater/swiftshader_component_installer.h"
 #include "chrome/browser/component_updater/widevine_cdm_component_installer.h"
@@ -186,6 +185,7 @@
 #endif
 
 #if !defined(DISABLE_NACL)
+#include "chrome/browser/component_updater/pnacl/pnacl_component_installer.h"
 #include "components/nacl/browser/nacl_process_host.h"
 #endif
 
@@ -394,7 +394,9 @@ void RegisterComponentsForUpdate() {
   RegisterPepperFlashComponent(cus);
   RegisterSwiftShaderComponent(cus);
   RegisterWidevineCdmComponent(cus);
+#if !defined(DISABLE_NACL)
   g_browser_process->pnacl_component_installer()->RegisterPnaclComponent(cus);
+#endif
 #endif
 
   if (translate::CldDataSource::ShouldRegisterForComponentUpdates()) {

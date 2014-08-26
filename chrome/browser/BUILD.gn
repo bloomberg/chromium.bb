@@ -168,7 +168,6 @@ static_library("browser") {
       "//mojo/system",
       "//net:net_with_v8",
       "//third_party/WebKit/public:resources",
-      "//third_party/adobe/flash:flapper_version_h",
       "//third_party/expat",
       "//third_party/leveldatabase",
       "//third_party/libaddressinput",
@@ -306,6 +305,7 @@ static_library("browser") {
                            ".", "//chrome")
     deps += [
       "//ppapi:ppapi_ipc",
+      "//third_party/adobe/flash:flapper_version_h",
     ]
   }
   if (safe_browsing_mode != 0) {
