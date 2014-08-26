@@ -48,6 +48,9 @@ public:
     // document in a frame.
     static bool isSupportedImageResourceMIMEType(const String& mimeType);
 
+    // Check to see if a mime type is suitable for being displayed as an image.
+    static bool isSupportedImagePrefixedMIMEType(const String& mimeType);
+
     // Check to see if a mime type is suitable for being encoded.
     static bool isSupportedImageMIMETypeForEncoding(const String& mimeType);
 

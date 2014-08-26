@@ -265,7 +265,7 @@ const AtomicString& HTMLImageElement::altText() const
 
 static bool supportedImageType(const String& type)
 {
-    return MIMETypeRegistry::isSupportedImageResourceMIMEType(type);
+    return MIMETypeRegistry::isSupportedImagePrefixedMIMEType(type);
 }
 
 // http://picture.responsiveimages.org/#update-source-set

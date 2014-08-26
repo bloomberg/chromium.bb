@@ -78,6 +78,12 @@ bool MIMETypeRegistry::isSupportedImageResourceMIMEType(const String& mimeType)
     return isSupportedImageMIMEType(mimeType);
 }
 
+bool MIMETypeRegistry::isSupportedImagePrefixedMIMEType(const String& mimeType)
+{
+    return blink::Platform::current()->mimeRegistry()->supportsImagePrefixedMIMEType(mimeType.lower())
+        != blink::WebMimeRegistry::IsNotSupported;
+}
+
 bool MIMETypeRegistry::isSupportedImageMIMETypeForEncoding(const String& mimeType)
 {
     if (equalIgnoringCase(mimeType, "image/jpeg") || equalIgnoringCase(mimeType, "image/png"))

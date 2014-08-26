@@ -43,6 +43,7 @@ public:
 
     virtual SupportsType supportsMIMEType(const WebString& mimeType) = 0;
     virtual SupportsType supportsImageMIMEType(const WebString& mimeType) = 0;
+    virtual SupportsType supportsImagePrefixedMIMEType(const WebString& mimeType) = 0;
     virtual SupportsType supportsJavaScriptMIMEType(const WebString& mimeType) = 0;
     virtual SupportsType supportsMediaMIMEType(const WebString& mimeType, const WebString& codecs, const WebString& keySystem) = 0;
 
