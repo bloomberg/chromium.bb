@@ -565,10 +565,6 @@ void RenderLayer::mapRectToPaintBackingCoordinates(const RenderLayerModelObject*
 
 void RenderLayer::mapRectToPaintInvalidationBacking(const RenderObject* renderObject, const RenderLayerModelObject* paintInvalidationContainer, LayoutRect& rect, const PaintInvalidationState* paintInvalidationState)
 {
-    // FIXME: Passing paintInvalidationState directly to mapRectToPaintInvalidationBacking causes incorrect invalidations.
-    // Should avoid slowRectMapping by correctly adjusting paintInvalidationState. crbug.com/402983.
-    ForceHorriblySlowRectMapping slowRectMapping(paintInvalidationState);
-
     if (!paintInvalidationContainer->layer()->groupedMapping()) {
         renderObject->mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, paintInvalidationState);
         return;
@@ -580,15 +576,16 @@ void RenderLayer::mapRectToPaintInvalidationBacking(const RenderObject* renderOb
     // FIXME: remove this special-case code that works around the paint invalidation code structure.
     renderObject->mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, paintInvalidationState);
 
-    RenderLayer::mapRectToPaintBackingCoordinates(paintInvalidationContainer, rect);
+    mapRectToPaintBackingCoordinates(paintInvalidationContainer, rect);
 }
 
 LayoutRect RenderLayer::computePaintInvalidationRect(const RenderObject* renderObject, const RenderLayer* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState)
 {
     if (!paintInvalidationContainer->groupedMapping())
         return renderObject->computePaintInvalidationRect(paintInvalidationContainer->renderer(), paintInvalidationState);
-    LayoutRect rect = renderObject->clippedOverflowRectForPaintInvalidation(paintInvalidationContainer->renderer());
-    mapRectToPaintInvalidationBacking(paintInvalidationContainer->renderer(), paintInvalidationContainer->renderer(), rect, paintInvalidationState);
+
+    LayoutRect rect = renderObject->clippedOverflowRectForPaintInvalidation(paintInvalidationContainer->renderer(), paintInvalidationState);
+    mapRectToPaintBackingCoordinates(paintInvalidationContainer->renderer(), rect);
     return rect;
 }
 
