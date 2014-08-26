@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "ui/app_list/app_list_model.h"
+#include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/app_list_view_delegate.h"
 #include "ui/app_list/search_box_model.h"
 #include "ui/app_list/speech_ui_model.h"
@@ -14,6 +15,7 @@
 #include "ui/app_list/views/search_box_view_delegate.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/events/event.h"
+#include "ui/gfx/canvas.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
@@ -39,6 +41,40 @@ const SkColor kHintTextColor = SkColorSetRGB(0xA0, 0xA0, 0xA0);
 const int kMenuYOffsetFromButton = -4;
 const int kMenuXOffsetFromButton = -7;
 
+// Experimental app list constants.
+const int kExperimentalSearchBoxHeight = 37;
+
+const int kBackgroundBorderWidth = 1;
+const int kBackgroundBorderBottomWidth = 2;
+const int kBackgroundBorderCornerRadius = 2;
+const SkColor kBackgroundBorderColor = SkColorSetRGB(0xEE, 0xEE, 0xEE);
+
+// A background that paints a solid white rounded rect with a thin grey border.
+class SearchBoxBackground : public views::Background {
+ public:
+  SearchBoxBackground() {}
+  virtual ~SearchBoxBackground() {}
+
+ private:
+  // views::Background overrides:
+  virtual void Paint(gfx::Canvas* canvas, views::View* view) const OVERRIDE {
+    gfx::Rect bounds = view->GetContentsBounds();
+
+    SkPaint paint;
+    paint.setFlags(SkPaint::kAntiAlias_Flag);
+    paint.setColor(kBackgroundBorderColor);
+    canvas->DrawRoundRect(bounds, kBackgroundBorderCornerRadius, paint);
+    bounds.Inset(kBackgroundBorderWidth,
+                 kBackgroundBorderWidth,
+                 kBackgroundBorderWidth,
+                 kBackgroundBorderBottomWidth);
+    paint.setColor(SK_ColorWHITE);
+    canvas->DrawRoundRect(bounds, kBackgroundBorderCornerRadius, paint);
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(SearchBoxBackground);
+};
+
 }  // namespace
 
 SearchBoxView::SearchBoxView(SearchBoxViewDelegate* delegate,
@@ -51,6 +87,8 @@ SearchBoxView::SearchBoxView(SearchBoxViewDelegate* delegate,
       search_box_(new views::Textfield),
       contents_view_(NULL) {
   AddChildView(icon_view_);
+  if (switches::IsExperimentalAppListEnabled())
+    set_background(new SearchBoxBackground());
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
@@ -111,7 +149,10 @@ void SearchBoxView::InvalidateMenu() {
 }
 
 gfx::Size SearchBoxView::GetPreferredSize() const {
-  return gfx::Size(kPreferredWidth, kPreferredHeight);
+  return gfx::Size(kPreferredWidth,
+                   switches::IsExperimentalAppListEnabled()
+                       ? kExperimentalSearchBoxHeight
+                       : kPreferredHeight);
 }
 
 void SearchBoxView::Layout() {

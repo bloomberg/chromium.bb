@@ -54,7 +54,8 @@ void AppListBackground::Paint(gfx::Canvas* canvas,
 
   int contents_top = bounds.y();
   views::View* search_box_view = main_view_->search_box_view();
-  if (main_view_->visible() && search_box_view->visible()) {
+  if (main_view_->visible() && search_box_view->visible() &&
+      !app_list::switches::IsExperimentalAppListEnabled()) {
     const gfx::Rect search_box_view_bounds =
         search_box_view->ConvertRectToWidget(search_box_view->GetLocalBounds());
     gfx::Rect search_box_rect(bounds.x(),

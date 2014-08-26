@@ -26,6 +26,7 @@
 #include "ui/app_list/views/contents_switcher_view.h"
 #include "ui/app_list/views/contents_view.h"
 #include "ui/app_list/views/search_box_view.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
@@ -40,6 +41,10 @@ const int kInnerPadding = 1;
 
 // The maximum allowed time to wait for icon loading in milliseconds.
 const int kMaxIconLoadingWaitTimeInMs = 50;
+
+// The padding around the search box in the experimental app list.
+const int kSearchBoxViewPadding = 24;
+const int kSearchBoxViewPaddingBottom = 12;
 
 // A view that holds another view and takes its preferred size. This is used for
 // wrapping the search box view so it still gets laid out while hidden. This is
@@ -120,7 +125,15 @@ AppListMainView::AppListMainView(AppListViewDelegate* delegate,
                                         kInnerPadding));
 
   search_box_view_ = new SearchBoxView(this, delegate);
-  AddChildView(new SearchBoxContainerView(this, search_box_view_));
+  views::View* container = new SearchBoxContainerView(this, search_box_view_);
+  if (switches::IsExperimentalAppListEnabled()) {
+    container->SetBorder(
+        views::Border::CreateEmptyBorder(kSearchBoxViewPadding,
+                                         kSearchBoxViewPadding,
+                                         kSearchBoxViewPaddingBottom,
+                                         kSearchBoxViewPadding));
+  }
+  AddChildView(container);
   AddContentsViews();
 
   // Switch the apps grid view to the specified page.

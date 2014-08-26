@@ -36,40 +36,10 @@ const int kWebViewHeight = 105;
 
 // DummySearchBoxView constants.
 const int kDummySearchBoxWidth = 490;
-const int kDummySearchBoxHeight = 40;
-const int kDummySearchBoxBorderWidth = 1;
-const int kDummySearchBoxBorderBottomWidth = 2;
-const int kDummySearchBoxBorderCornerRadius = 2;
 
 // Tile container constants.
 const size_t kNumStartPageTiles = 5;
 const int kTileSpacing = 10;
-
-// A background that paints a solid white rounded rect with a thin grey border.
-class DummySearchBoxBackground : public views::Background {
- public:
-  DummySearchBoxBackground() {}
-  virtual ~DummySearchBoxBackground() {}
-
- private:
-  // views::Background overrides:
-  virtual void Paint(gfx::Canvas* canvas, views::View* view) const OVERRIDE {
-    gfx::Rect bounds = view->GetContentsBounds();
-
-    SkPaint paint;
-    paint.setFlags(SkPaint::kAntiAlias_Flag);
-    paint.setColor(kStartPageBorderColor);
-    canvas->DrawRoundRect(bounds, kDummySearchBoxBorderCornerRadius, paint);
-    bounds.Inset(kDummySearchBoxBorderWidth,
-                 kDummySearchBoxBorderWidth,
-                 kDummySearchBoxBorderWidth,
-                 kDummySearchBoxBorderBottomWidth);
-    paint.setColor(SK_ColorWHITE);
-    canvas->DrawRoundRect(bounds, kDummySearchBoxBorderCornerRadius, paint);
-  }
-
-  DISALLOW_COPY_AND_ASSIGN(DummySearchBoxBackground);
-};
 
 // A placeholder search box which is sized to fit within the start page view.
 class DummySearchBoxView : public SearchBoxView {
@@ -77,14 +47,15 @@ class DummySearchBoxView : public SearchBoxView {
   DummySearchBoxView(SearchBoxViewDelegate* delegate,
                      AppListViewDelegate* view_delegate)
       : SearchBoxView(delegate, view_delegate) {
-    set_background(new DummySearchBoxBackground());
   }
 
   virtual ~DummySearchBoxView() {}
 
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize() const OVERRIDE {
-    return gfx::Size(kDummySearchBoxWidth, kDummySearchBoxHeight);
+    gfx::Size size(SearchBoxView::GetPreferredSize());
+    size.set_width(kDummySearchBoxWidth);
+    return size;
   }
 
  private:
