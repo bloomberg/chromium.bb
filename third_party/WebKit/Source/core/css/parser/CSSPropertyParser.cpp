@@ -87,16 +87,6 @@ namespace blink {
 static const double MAX_SCALE = 1000000;
 
 template <unsigned N>
-static bool equal(const CSSParserString& a, const char (&b)[N])
-{
-    unsigned length = N - 1; // Ignore the trailing null character
-    if (a.length() != length)
-        return false;
-
-    return a.is8Bit() ? WTF::equal(a.characters8(), reinterpret_cast<const LChar*>(b), length) : WTF::equal(a.characters16(), reinterpret_cast<const LChar*>(b), length);
-}
-
-template <unsigned N>
 static bool equalIgnoringCase(const CSSParserString& a, const char (&b)[N])
 {
     unsigned length = N - 1; // Ignore the trailing null character

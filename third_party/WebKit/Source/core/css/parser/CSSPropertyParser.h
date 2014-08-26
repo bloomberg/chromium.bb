@@ -84,7 +84,6 @@ private:
     void addPropertyWithPrefixingVariant(CSSPropertyID, PassRefPtrWillBeRawPtr<CSSValue>, bool important, bool implicit = false);
     void addProperty(CSSPropertyID, PassRefPtrWillBeRawPtr<CSSValue>, bool important, bool implicit = false);
     void rollbackLastProperties(int num);
-    bool hasProperties() const { return !m_parsedProperties.isEmpty(); }
     void addExpandedPropertyForValue(CSSPropertyID propId, PassRefPtrWillBeRawPtr<CSSValue>, bool);
 
     PassRefPtrWillBeRawPtr<CSSPrimitiveValue> parseValidPrimitive(CSSValueID ident, CSSParserValue*);
@@ -118,8 +117,6 @@ private:
     bool parseFillShorthand(CSSPropertyID, const CSSPropertyID* properties, int numProperties, bool important);
 
     void addFillValue(RefPtrWillBeRawPtr<CSSValue>& lval, PassRefPtrWillBeRawPtr<CSSValue> rval);
-
-    void addAnimationValue(RefPtrWillBeRawPtr<CSSValue>& lval, PassRefPtrWillBeRawPtr<CSSValue> rval);
 
     PassRefPtrWillBeRawPtr<CSSValue> parseAnimationDelay();
     PassRefPtrWillBeRawPtr<CSSValue> parseAnimationDirection();
@@ -189,7 +186,6 @@ private:
     bool parseFontSize(bool important);
     bool parseFontVariant(bool important);
     bool parseFontWeight(bool important);
-    bool parseFontStretch(bool important);
     bool parseFontFaceSrc();
     bool parseFontFaceUnicodeRange();
 
