@@ -2264,6 +2264,8 @@ void RenderObject::propagateStyleToAnonymousChildren(bool blockChildrenOnly)
         if (child->isRelPositioned() && toRenderBlock(child)->isAnonymousBlockContinuation())
             newStyle->setPosition(child->style()->position());
 
+        updateAnonymousChildStyle(child, newStyle.get());
+
         child->setStyle(newStyle.release());
     }
 }

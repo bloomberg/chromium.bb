@@ -4704,6 +4704,7 @@ RenderBlock* RenderBlock::createAnonymousWithParentRendererAndDisplay(const Rend
     }
 
     RefPtr<RenderStyle> newStyle = RenderStyle::createAnonymousStyleWithDisplay(parent->style(), newDisplay);
+    parent->updateAnonymousChildStyle(newBox, newStyle.get());
     newBox->setStyle(newStyle.release());
     return newBox;
 }
@@ -4714,6 +4715,7 @@ RenderBlockFlow* RenderBlock::createAnonymousColumnsWithParentRenderer(const Ren
     newStyle->inheritColumnPropertiesFrom(parent->style());
 
     RenderBlockFlow* newBox = RenderBlockFlow::createAnonymous(&parent->document());
+    parent->updateAnonymousChildStyle(newBox, newStyle.get());
     newBox->setStyle(newStyle.release());
     return newBox;
 }
@@ -4724,6 +4726,7 @@ RenderBlockFlow* RenderBlock::createAnonymousColumnSpanWithParentRenderer(const 
     newStyle->setColumnSpan(ColumnSpanAll);
 
     RenderBlockFlow* newBox = RenderBlockFlow::createAnonymous(&parent->document());
+    parent->updateAnonymousChildStyle(newBox, newStyle.get());
     newBox->setStyle(newStyle.release());
     return newBox;
 }

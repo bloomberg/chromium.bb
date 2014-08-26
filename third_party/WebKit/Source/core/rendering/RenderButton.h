@@ -45,8 +45,6 @@ public:
     virtual void removeLeftoverAnonymousBlock(RenderBlock*) OVERRIDE { }
     virtual bool createsAnonymousWrapper() const OVERRIDE { return true; }
 
-    void setupInnerStyle(RenderStyle*);
-
     // <button> should allow whitespace even though RenderFlexibleBox doesn't.
     virtual bool canHaveWhitespaceChildren() const OVERRIDE { return true; }
 
@@ -57,8 +55,7 @@ public:
     virtual int baselinePosition(FontBaseline, bool firstLine, LineDirectionMode, LinePositionMode) const OVERRIDE;
 
 private:
-    virtual void styleWillChange(StyleDifference, const RenderStyle& newStyle) OVERRIDE;
-    virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) OVERRIDE;
+    virtual void updateAnonymousChildStyle(const RenderObject* child, RenderStyle* childStyle) const OVERRIDE;
 
     virtual bool hasLineIfEmpty() const OVERRIDE { return isHTMLInputElement(node()); }
 
