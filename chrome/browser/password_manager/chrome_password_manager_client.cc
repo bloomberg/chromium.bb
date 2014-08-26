@@ -92,9 +92,6 @@ bool ChromePasswordManagerClient::IsAutomaticPasswordSavingEnabled() const {
 
 bool ChromePasswordManagerClient::IsPasswordManagerEnabledForCurrentPage()
     const {
-  if (EnabledForSyncSignin())
-    return true;
-
   DCHECK(web_contents());
   content::NavigationEntry* entry =
       web_contents()->GetController().GetLastCommittedEntry();
@@ -102,6 +99,14 @@ bool ChromePasswordManagerClient::IsPasswordManagerEnabledForCurrentPage()
     // TODO(gcasto): Determine if fix for crbug.com/388246 is relevant here.
     return true;
   }
+
+  // Disable the password manager for online password management.
+  if (IsURLPasswordWebsiteReauth(entry->GetURL()))
+    return false;
+
+  if (EnabledForSyncSignin())
+    return true;
+
   // Do not fill nor save password when a user is signing in for sync. This
   // is because users need to remember their password if they are syncing as
   // this is effectively their master password.
@@ -401,6 +406,26 @@ bool ChromePasswordManagerClient::LastLoadWasTransactionalReauthPage() const {
   return net::GetValueForKeyInQuery(entry->GetURL(),
                                     "rart",
                                     &ignored_value);
+}
+
+bool ChromePasswordManagerClient::IsURLPasswordWebsiteReauth(
+    const GURL& url) const {
+  if (url.GetOrigin() != GaiaUrls::GetInstance()->gaia_url().GetOrigin())
+    return false;
+
+  // "rart" param signals this page is for transactional reauth.
+  std::string param_value;
+  if (!net::GetValueForKeyInQuery(url, "rart", &param_value))
+    return false;
+
+  // Check the "continue" param to see if this reauth page is for the passwords
+  // website.
+  param_value.clear();
+  if (!net::GetValueForKeyInQuery(url, "continue", &param_value))
+    return false;
+
+  return GURL(param_value).host() ==
+      GURL(chrome::kPasswordManagerAccountDashboardURL).host();
 }
 
 bool ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled() {

@@ -266,3 +266,58 @@ TEST_F(ChromePasswordManagerClientTest, ShouldFilterAutofillResult) {
   NavigateAndCommit(GURL("https://accounts.google.com/Login"));
   EXPECT_TRUE(client->ShouldFilterAutofillResult(form));
 }
+
+TEST_F(ChromePasswordManagerClientTest,
+       IsPasswordManagerEnabledForCurrentPage) {
+  ChromePasswordManagerClient* client = GetClient();
+  NavigateAndCommit(
+      GURL("https://accounts.google.com/ServiceLogin?continue="
+           "https://passwords.google.com/settings&rart=123"));
+  EXPECT_FALSE(client->IsPasswordManagerEnabledForCurrentPage());
+
+  // Password site is inaccesible via HTTP, but because of HSTS the following
+  // link should still continue to https://passwords.google.com.
+  NavigateAndCommit(
+      GURL("https://accounts.google.com/ServiceLogin?continue="
+           "http://passwords.google.com/settings&rart=123"));
+  EXPECT_FALSE(client->IsPasswordManagerEnabledForCurrentPage());
+
+  // Specifying default port still passes.
+  NavigateAndCommit(
+      GURL("https://accounts.google.com/ServiceLogin?continue="
+           "https://passwords.google.com:443/settings&rart=123"));
+  EXPECT_FALSE(client->IsPasswordManagerEnabledForCurrentPage());
+
+  // Encoded URL is considered the same.
+  NavigateAndCommit(
+      GURL("https://accounts.google.com/ServiceLogin?continue="
+           "https://passwords.%67oogle.com/settings&rart=123"));
+  EXPECT_FALSE(client->IsPasswordManagerEnabledForCurrentPage());
+
+  // Fully qualified domain name is considered a different hostname by GURL.
+  // Ideally this would not be the case, but this quirk can be avoided by
+  // verification on the server. This test is simply documentation of this
+  // behavior.
+  NavigateAndCommit(
+      GURL("https://accounts.google.com/ServiceLogin?continue="
+           "https://passwords.google.com./settings&rart=123"));
+  EXPECT_TRUE(client->IsPasswordManagerEnabledForCurrentPage());
+
+  // Not a transactional reauth page.
+  NavigateAndCommit(
+      GURL("https://accounts.google.com/ServiceLogin?continue="
+           "https://passwords.google.com/settings"));
+  EXPECT_TRUE(client->IsPasswordManagerEnabledForCurrentPage());
+
+  // Should be enabled for other transactional reauth pages.
+  NavigateAndCommit(
+      GURL("https://accounts.google.com/ServiceLogin?continue="
+           "https://mail.google.com&rart=234"));
+  EXPECT_TRUE(client->IsPasswordManagerEnabledForCurrentPage());
+
+  // Reauth pages are only on accounts.google.com
+  NavigateAndCommit(
+      GURL("https://other.site.com/ServiceLogin?continue="
+           "https://passwords.google.com&rart=234"));
+  EXPECT_TRUE(client->IsPasswordManagerEnabledForCurrentPage());
+}

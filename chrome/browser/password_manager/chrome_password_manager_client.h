@@ -138,6 +138,10 @@ class ChromePasswordManagerClient
   // Google property.
   bool LastLoadWasTransactionalReauthPage() const;
 
+  // Returns true if |url| is the reauth page for accessing the password
+  // website.
+  bool IsURLPasswordWebsiteReauth(const GURL& url) const;
+
   // Sets |autofill_state_| based on experiment and flag values.
   void SetUpAutofillSyncState();
 
