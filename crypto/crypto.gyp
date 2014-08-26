@@ -21,9 +21,6 @@
       'defines': [
         'CRYPTO_IMPLEMENTATION',
       ],
-      'msvs_disabled_warnings': [
-        4018,
-      ],
       'conditions': [
         [ 'os_posix == 1 and OS != "mac" and OS != "ios" and OS != "android"', {
           'dependencies': [
@@ -95,8 +92,10 @@
           ],
         }],
         [ 'OS == "win"', {
-          # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-          'msvs_disabled_warnings': [4267, ],
+          'msvs_disabled_warnings': [
+            4267,  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+            4018,
+          ],
         }],
         [ 'use_openssl==1', {
             'dependencies': [
