@@ -515,10 +515,8 @@ def TestAuZip(buildroot, image_dir, extra_env=None):
                  extra_env=extra_env)
 
 
-def BuildVMImageForTesting(buildroot, board, extra_env=None, disk_layout=None):
+def BuildVMImageForTesting(buildroot, board, extra_env=None):
   cmd = ['./image_to_vm.sh', '--board=%s' % board, '--test_image']
-  if disk_layout:
-    cmd += ['--disk_layout=%s' % disk_layout]
   RunBuildScript(buildroot, cmd, extra_env=extra_env, enter_chroot=True)
 
 

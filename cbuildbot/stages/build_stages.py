@@ -316,7 +316,6 @@ class BuildImageStage(BuildPackagesStage):
       commands.BuildVMImageForTesting(
           self._build_root,
           self._current_board,
-          disk_layout=self._run.config.disk_vm_layout,
           extra_env=self._portage_extra_env)
 
   def _GenerateAuZip(self, image_dir):

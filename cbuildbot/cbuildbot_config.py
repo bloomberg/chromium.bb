@@ -589,10 +589,6 @@ _settings = dict(
 #                overlay-<board>/scripts/disk_layout.json for possible values.
   disk_layout=None,
 
-# disk_vm_layout -- layout of image_to_vm.sh resulting image. See
-#                   disk_layout for more info.
-  disk_vm_layout='2gb-rootfs-updatable',
-
 # postsync_patch -- If enabled, run the PatchChanges stage.  Enabled by default.
 #                   Can be overridden by the --nopatch flag.
   postsync_patch=True,
@@ -1103,7 +1099,6 @@ asan = _config(
   chroot_replace=True,
   profile='asan',
   disk_layout='2gb-rootfs',
-  disk_vm_layout='2gb-rootfs-updatable',
   vm_tests=[constants.SMOKE_SUITE_TEST_TYPE],
 )
 
@@ -1277,7 +1272,6 @@ chrome_try = _config(
   use_lkgm=True,
   important=False,
   manifest_version=False,
-  disk_vm_layout='usb',
 )
 
 chromium_info = chromium_pfq.derive(
@@ -1289,7 +1283,6 @@ chromium_info = chromium_pfq.derive(
 
 telemetry_info = telemetry.derive(
   chrome_try,
-  disk_vm_layout='2gb-rootfs-updatable',
 )
 
 chrome_info = chromium_info.derive(
@@ -2093,7 +2086,6 @@ _release = full.derive(official, internal,
   git_sync=False,
   vm_tests=[constants.SMOKE_SUITE_TEST_TYPE, constants.DEV_MODE_TEST_TYPE,
             constants.CROS_VM_TEST_TYPE],
-  disk_vm_layout='usb',
   hw_tests=HWTestConfig.DefaultListCanary(),
   paygen=True,
   signer_tests=True,
