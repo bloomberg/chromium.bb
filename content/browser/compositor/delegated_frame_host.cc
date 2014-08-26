@@ -130,7 +130,12 @@ bool DelegatedFrameHost::ShouldCreateResizeLock() {
 
 void DelegatedFrameHost::RequestCopyOfOutput(
     scoped_ptr<cc::CopyOutputRequest> request) {
-  client_->GetLayer()->RequestCopyOfOutput(request.Pass());
+  if (use_surfaces_) {
+    // TODO(jbauman): Make this work with surfaces.
+    request->SendEmptyResult();
+  } else {
+    client_->GetLayer()->RequestCopyOfOutput(request.Pass());
+  }
 }
 
 void DelegatedFrameHost::CopyFromCompositingSurface(
