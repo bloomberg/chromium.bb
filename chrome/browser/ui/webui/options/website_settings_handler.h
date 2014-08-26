@@ -102,6 +102,9 @@ class WebsiteSettingsHandler : public content_settings::Observer,
   // Updates the page with the last settings used.
   void Update();
 
+  // Returns the base URL for websites, or the app name for Chrome App URLs.
+  const std::string& GetReadableName(const GURL& site_url);
+
   std::string last_setting_;
   std::string last_filter_;
   GURL last_site_;

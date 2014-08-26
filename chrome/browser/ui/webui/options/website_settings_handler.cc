@@ -7,6 +7,7 @@
 #include "apps/app_window_registry.h"
 #include "chrome/browser/content_settings/content_settings_utils.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_iterator.h"
@@ -16,6 +17,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "grit/generated_resources.h"
@@ -268,6 +270,8 @@ void WebsiteSettingsHandler::UpdateOrigins() {
                                             base::Time::Now() - last_usage);
     }
     origin_entry->SetStringWithoutPathExpansion("usageString", usage_string);
+    origin_entry->SetStringWithoutPathExpansion("readableName",
+                                                GetReadableName(origin_url));
 
     origins.SetWithoutPathExpansion(origin, origin_entry);
   }
@@ -458,6 +462,8 @@ void WebsiteSettingsHandler::UpdateLocalStorage() {
         "usage", new base::FundamentalValue(static_cast<double>(it->size)));
     origin_entry->SetWithoutPathExpansion(
         "usageString", new base::StringValue(ui::FormatBytes(it->size)));
+    origin_entry->SetStringWithoutPathExpansion(
+        "readableName", GetReadableName(it->origin_url));
     local_storage_map.SetWithoutPathExpansion(origin, origin_entry);
   }
   web_ui()->CallJavascriptFunction("WebsiteSettingsManager.populateOrigins",
@@ -510,6 +516,24 @@ void WebsiteSettingsHandler::DeleteLocalStorage(const GURL& site_url) {
   local_storage_->StartFetching(
       base::Bind(&WebsiteSettingsHandler::OnLocalStorageFetched,
                  weak_ptr_factory_.GetWeakPtr()));
+}
+
+const std::string& WebsiteSettingsHandler::GetReadableName(
+    const GURL& site_url) {
+  if (site_url.SchemeIs(extensions::kExtensionScheme)) {
+    Profile* profile = Profile::FromWebUI(web_ui());
+    ExtensionService* extension_service =
+        extensions::ExtensionSystem::Get(profile)->extension_service();
+
+    const extensions::Extension* extension =
+        extension_service->extensions()->GetExtensionOrAppByURL(site_url);
+    // If extension is NULL, it was removed and we cannot look up its name.
+    if (!extension)
+      return site_url.spec();
+
+    return extension->name();
+  }
+  return site_url.spec();
 }
 
 }  // namespace options

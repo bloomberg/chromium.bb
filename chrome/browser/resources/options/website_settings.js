@@ -86,7 +86,8 @@ cr.define('options', function() {
         return {
           origin: origin,
           usage: originDict[origin].usage,
-          usageString: originDict[origin].usageString
+          usageString: originDict[origin].usageString,
+          readableName: originDict[origin].readableName,
         };
       });
       origins.sort(function(first, second) {

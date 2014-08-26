@@ -15,6 +15,7 @@ cr.define('options', function() {
     el.origin_ = origin.origin;
     el.usage_ = origin.usage;
     el.usageString_ = origin.usageString;
+    el.readableName_ = origin.readableName;
     el.__proto__ = OriginListItem.prototype;
     el.decorate();
     return el;
@@ -33,7 +34,7 @@ cr.define('options', function() {
 
       var titleEl = this.ownerDocument.createElement('div');
       titleEl.className = 'title favicon-cell weaktrl';
-      titleEl.textContent = this.origin_;
+      titleEl.textContent = this.readableName_;
       titleEl.originPattern = this.origin_;
       titleEl.style.backgroundImage = getFaviconImageSet(this.origin_);
       this.contentElement_.appendChild(titleEl);
