@@ -809,9 +809,9 @@
         # linux_use_bundled_gold: whether to use the gold linker binary checked
         # into third_party/binutils.  Force this off via GYP_DEFINES when you
         # are using a custom toolchain and need to control -B in ldflags.
-        # 32-bit hosts have to be 32-bit userland with a 64-bit kernel, so that
-        # 64-bit gold gets used. 32-bit gold will run out of address space.
-        ['OS=="linux"', {
+        # Do not use 32-bit gold on 32-bit hosts as it runs out address space
+        # for component=static_library builds.
+        ['OS=="linux" and (target_arch=="x64" or target_arch=="arm")', {
           'linux_use_bundled_gold%': 1,
         }, {
           'linux_use_bundled_gold%': 0,
@@ -820,7 +820,7 @@
         # linux_use_bundled_binutils: whether to use the binary binutils
         # checked into third_party/binutils.  These are not multi-arch so cannot
         # be used except on x86 and x86-64 (the only two architectures which
-        # are currently checked in).  Force this off via GYP_DEFINES when you
+        # are currently checke in).  Force this off via GYP_DEFINES when you
         # are using a custom toolchain and need to control -B in cflags.
         ['OS=="linux" and (target_arch=="x64")', {
           'linux_use_bundled_binutils%': 1,
@@ -1488,9 +1488,6 @@
       }],
       # Get binutils version so we can enable debug fission if we can.
       ['os_posix==1 and OS!="mac" and OS!="ios"', {
-        # 32-bit hosts have to be 32-bit userland with a 64-bit kernel, so that
-        # 64-bit gold gets used. 32-bit gold will run out of address space.
-        'binutils_dir%': 'third_party/binutils/Linux_x64/Release/bin',
         'conditions': [
           # compiler_version doesn't work with clang
           # TODO(mithro): Land https://codereview.chromium.org/199793014/ so
@@ -1503,6 +1500,12 @@
           # On Android we know the binutils version in the toolchain.
           ['OS=="android"', {
             'binutils_version%': 222,
+          }],
+          ['host_arch=="x64"', {
+            'binutils_dir%': 'third_party/binutils/Linux_x64/Release/bin',
+          }],
+          ['host_arch=="ia32"', {
+            'binutils_dir%': 'third_party/binutils/Linux_ia32/Release/bin',
           }],
           # Our version of binutils in third_party/binutils
           ['linux_use_bundled_binutils==1', {
@@ -1576,6 +1579,16 @@
             # Omit unwind support in official release builds to save space. We
             # can use breakpad for these builds.
             'release_unwind_tables%': 0,
+
+            'conditions': [
+              # For official builds, use a 64-bit linker to avoid running out
+              # of address space. The buildbots should have a 64-bit kernel
+              # and a 64-bit libc installed.
+              ['host_arch=="ia32" and target_arch=="ia32"', {
+                'linux_use_bundled_gold%': '1',
+                'binutils_dir%': 'third_party/binutils/Linux_x64/Release/bin',
+              }],
+            ],
           }],
         ],
       }],  # os_posix==1 and OS!="mac" and OS!="ios"
@@ -4191,6 +4204,20 @@
           }],
           ['linux_dump_symbols==1', {
             'cflags': [ '-g' ],
+            'conditions': [
+              ['OS=="linux" and host_arch=="ia32" and linux_use_bundled_gold==0', {
+                'target_conditions': [
+                  ['_toolset=="target"', {
+                    'ldflags': [
+                      # Attempt to use less memory to prevent the linker from
+                      # running out of address space. Considering installing a
+                      # 64-bit kernel and switching to a 64-bit linker.
+                      '-Wl,--no-keep-memory',
+                    ],
+                  }],
+                ],
+              }],
+            ],
           }],
           ['use_allocator!="tcmalloc"', {
             'defines': ['NO_TCMALLOC'],
