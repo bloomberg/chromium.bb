@@ -35,6 +35,8 @@ def _ComputeChromeCategories(options):
     categories.append('disabled-by-default-toplevel.flow')
   if options.trace_memory:
     categories.append('disabled-by-default-memory')
+  if options.trace_scheduler:
+    categories.append('disabled-by-default-cc.debug.scheduler')
   if options.chrome_categories:
     categories += options.chrome_categories.split(',')
   return categories
@@ -109,6 +111,9 @@ def _CreateOptionParser():
                          'for IPC message flows.', action='store_true')
   chrome_opts.add_option('--trace-memory', help='Enable extra trace categories '
                          'for memory profile. (tcmalloc required)',
+                         action='store_true')
+  chrome_opts.add_option('--trace-scheduler', help='Enable extra trace '
+                         'categories for scheduler state',
                          action='store_true')
   parser.add_option_group(chrome_opts)
 
