@@ -45,7 +45,7 @@ PassRefPtrWillBeRawPtr<Keyframe> StringKeyframe::clone() const
 }
 PassOwnPtrWillBeRawPtr<Keyframe::PropertySpecificKeyframe> StringKeyframe::createPropertySpecificKeyframe(CSSPropertyID property) const
 {
-    return adoptPtrWillBeNoop(new PropertySpecificKeyframe(offset(), easing(), propertyValue(property), composite()));
+    return adoptPtrWillBeNoop(new PropertySpecificKeyframe(offset(), &easing(), propertyValue(property), composite()));
 }
 
 void StringKeyframe::trace(Visitor* visitor)

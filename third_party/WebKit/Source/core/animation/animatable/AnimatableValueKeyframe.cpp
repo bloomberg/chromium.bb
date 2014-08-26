@@ -33,7 +33,7 @@ PassRefPtrWillBeRawPtr<Keyframe> AnimatableValueKeyframe::clone() const
 
 PassOwnPtrWillBeRawPtr<Keyframe::PropertySpecificKeyframe> AnimatableValueKeyframe::createPropertySpecificKeyframe(CSSPropertyID property) const
 {
-    return adoptPtrWillBeNoop(new PropertySpecificKeyframe(offset(), easing(), propertyValue(property), composite()));
+    return adoptPtrWillBeNoop(new PropertySpecificKeyframe(offset(), &easing(), propertyValue(property), composite()));
 }
 
 void AnimatableValueKeyframe::trace(Visitor* visitor)

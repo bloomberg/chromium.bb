@@ -83,38 +83,38 @@ void getKeyframeValuesForProperty(const KeyframeEffectModelBase* effect, CSSProp
 // TimingFunctionReverser methods
 // -----------------------------------------------------------------------
 
-PassRefPtr<TimingFunction> CompositorAnimationsTimingFunctionReverser::reverse(const LinearTimingFunction* timefunc)
+PassRefPtr<TimingFunction> CompositorAnimationsTimingFunctionReverser::reverse(const LinearTimingFunction& timefunc)
 {
-    return const_cast<LinearTimingFunction*>(timefunc);
+    return const_cast<LinearTimingFunction*>(&timefunc);
 }
 
-PassRefPtr<TimingFunction> CompositorAnimationsTimingFunctionReverser::reverse(const CubicBezierTimingFunction* timefunc)
+PassRefPtr<TimingFunction> CompositorAnimationsTimingFunctionReverser::reverse(const CubicBezierTimingFunction& timefunc)
 {
-    switch (timefunc->subType()) {
+    switch (timefunc.subType()) {
     case CubicBezierTimingFunction::EaseIn:
         return CubicBezierTimingFunction::preset(CubicBezierTimingFunction::EaseOut);
     case CubicBezierTimingFunction::EaseOut:
         return CubicBezierTimingFunction::preset(CubicBezierTimingFunction::EaseIn);
     case CubicBezierTimingFunction::EaseInOut:
-        return const_cast<CubicBezierTimingFunction*>(timefunc);
+        return const_cast<CubicBezierTimingFunction*>(&timefunc);
     case CubicBezierTimingFunction::Ease: // Ease is not symmetrical
     case CubicBezierTimingFunction::Custom:
-        return CubicBezierTimingFunction::create(1 - timefunc->x2(), 1 - timefunc->y2(), 1 - timefunc->x1(), 1 - timefunc->y1());
+        return CubicBezierTimingFunction::create(1 - timefunc.x2(), 1 - timefunc.y2(), 1 - timefunc.x1(), 1 - timefunc.y1());
     default:
         ASSERT_NOT_REACHED();
         return PassRefPtr<TimingFunction>();
     }
 }
 
-PassRefPtr<TimingFunction> CompositorAnimationsTimingFunctionReverser::reverse(const TimingFunction* timefunc)
+PassRefPtr<TimingFunction> CompositorAnimationsTimingFunctionReverser::reverse(const TimingFunction& timefunc)
 {
-    switch (timefunc->type()) {
+    switch (timefunc.type()) {
     case TimingFunction::LinearFunction: {
-        const LinearTimingFunction* linear = toLinearTimingFunction(timefunc);
+        const LinearTimingFunction& linear = toLinearTimingFunction(timefunc);
         return reverse(linear);
     }
     case TimingFunction::CubicBezierFunction: {
-        const CubicBezierTimingFunction* cubic = toCubicBezierTimingFunction(timefunc);
+        const CubicBezierTimingFunction& cubic = toCubicBezierTimingFunction(timefunc);
         return reverse(cubic);
     }
 
@@ -156,7 +156,7 @@ bool CompositorAnimations::getAnimatedBoundingBox(FloatBox& box, const Animation
             if (frames[j]->composite() != AnimationEffect::CompositeReplace)
                 return false;
 
-            const TimingFunction* timing = frames[j]->easing();
+            const TimingFunction& timing = frames[j]->easing();
             double min = 0;
             double max = 1;
             if (j == 0) {
@@ -174,8 +174,7 @@ bool CompositorAnimations::getAnimatedBoundingBox(FloatBox& box, const Animation
             }
 
             FloatBox bounds;
-            if (timing)
-                timing->range(&min, &max);
+            timing.range(&min, &max);
             if (!endTransform->transformOperations().blendedBoundsForBox(originalBox, startTransform->transformOperations(), min, max, &bounds))
                 return false;
             box.expandTo(bounds);
@@ -224,7 +223,7 @@ bool CompositorAnimations::isCandidateForAnimationOnCompositor(const Timing& tim
             }
 
             // FIXME: Remove this check when crbug.com/229405 is resolved
-            if (i < frames.size() - 1 && frame->easing()->type() == TimingFunction::StepsFunction)
+            if (i < frames.size() - 1 && frame->easing().type() == TimingFunction::StepsFunction)
                 return false;
         }
     }
@@ -236,8 +235,7 @@ bool CompositorAnimations::isCandidateForAnimationOnCompositor(const Timing& tim
     if (timing.timingFunction->type() != TimingFunction::LinearFunction) {
         // Checks the of size of KeyframeVector instead of PropertySpecificKeyframeVector.
         const KeyframeVector& keyframes = keyframeEffect.getFrames();
-        ASSERT(keyframes[0]->easing());
-        if (keyframes.size() == 2 && keyframes[0]->easing()->type() == TimingFunction::LinearFunction && timing.timingFunction->type() != TimingFunction::StepsFunction)
+        if (keyframes.size() == 2 && keyframes[0]->easing().type() == TimingFunction::LinearFunction && timing.timingFunction->type() != TimingFunction::StepsFunction)
             return true;
 
         // FIXME: Support non-linear timing functions in the compositor for
@@ -423,9 +421,9 @@ void CompositorAnimationsImpl::addKeyframesToCurve(WebCompositorAnimationCurve& 
         RefPtr<TimingFunction> reversedTimingFunction;
         const TimingFunction* keyframeTimingFunction = 0;
         if (i < keyframes.size() - 1) { // Ignore timing function of last frame.
-            if (keyframes.size() == 2 && keyframes[0]->easing()->type() == TimingFunction::LinearFunction) {
+            if (keyframes.size() == 2 && keyframes[0]->easing().type() == TimingFunction::LinearFunction) {
                 if (reverse) {
-                    reversedTimingFunction = CompositorAnimationsTimingFunctionReverser::reverse(timing.timingFunction.get());
+                    reversedTimingFunction = CompositorAnimationsTimingFunctionReverser::reverse(*timing.timingFunction.get());
                     keyframeTimingFunction = reversedTimingFunction.get();
                 } else {
                     keyframeTimingFunction = timing.timingFunction.get();
@@ -435,7 +433,7 @@ void CompositorAnimationsImpl::addKeyframesToCurve(WebCompositorAnimationCurve& 
                     reversedTimingFunction = CompositorAnimationsTimingFunctionReverser::reverse(keyframes[i + 1]->easing());
                     keyframeTimingFunction = reversedTimingFunction.get();
                 } else {
-                    keyframeTimingFunction = keyframes[i]->easing();
+                    keyframeTimingFunction = &keyframes[i]->easing();
                 }
             }
         }

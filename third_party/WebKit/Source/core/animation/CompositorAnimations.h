@@ -48,9 +48,9 @@ class FloatBox;
 // FIXME: Remove once the Compositor natively understands reversing time.
 class CompositorAnimationsTimingFunctionReverser {
 public:
-    static PassRefPtr<TimingFunction> reverse(const LinearTimingFunction* timefunc);
-    static PassRefPtr<TimingFunction> reverse(const CubicBezierTimingFunction* timefunc);
-    static PassRefPtr<TimingFunction> reverse(const TimingFunction* timefunc);
+    static PassRefPtr<TimingFunction> reverse(const LinearTimingFunction& timefunc);
+    static PassRefPtr<TimingFunction> reverse(const CubicBezierTimingFunction& timefunc);
+    static PassRefPtr<TimingFunction> reverse(const TimingFunction& timefunc);
 };
 
 class CompositorAnimations {

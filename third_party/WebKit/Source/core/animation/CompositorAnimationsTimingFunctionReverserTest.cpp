@@ -52,7 +52,7 @@ protected:
 public:
     PassRefPtr<TimingFunction> reverse(const RefPtr<TimingFunction>& timefunc)
     {
-        return CompositorAnimationsTimingFunctionReverser::reverse(timefunc.get());
+        return CompositorAnimationsTimingFunctionReverser::reverse(*timefunc);
     }
 };
 

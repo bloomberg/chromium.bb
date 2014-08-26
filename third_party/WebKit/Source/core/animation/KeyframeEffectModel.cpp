@@ -156,7 +156,7 @@ void KeyframeEffectModelBase::ensureInterpolationEffect(Element* element) const
                 applyTo = std::numeric_limits<double>::infinity();
 
             m_interpolationEffect->addInterpolation(keyframes[i]->createInterpolation(iter->key, keyframes[i + 1].get(), element),
-                keyframes[i]->easing(), keyframes[i]->offset(), keyframes[i + 1]->offset(), applyFrom, applyTo);
+                &keyframes[i]->easing(), keyframes[i]->offset(), keyframes[i + 1]->offset(), applyFrom, applyTo);
         }
     }
 }
