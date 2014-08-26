@@ -25,16 +25,46 @@ from telemetry.value import list_of_scalar_values
 
 
 class SpeedometerMeasurement(page_test.PageTest):
+  enabled_suites = [
+    'VanillaJS-TodoMVC',
+    'EmberJS-TodoMVC',
+    'BackboneJS-TodoMVC',
+    'jQuery-TodoMVC',
+    'AngularJS-TodoMVC',
+    'React-TodoMVC',
+    'FlightJS-TodoMVC'
+  ]
 
   def ValidateAndMeasurePage(self, page, tab, results):
     tab.WaitForDocumentReadyStateToBeComplete()
-    tab.ExecuteJavaScript('benchmarkClient.iterationCount = 10; startTest();')
+    tab.ExecuteJavaScript("""
+        // Store all the results in the benchmarkClient
+        benchmarkClient._measuredValues = []
+        benchmarkClient.didRunSuites = function(measuredValues) {
+          benchmarkClient._measuredValues.push(measuredValues);
+          benchmarkClient._timeValues.push(measuredValues.total);
+        };
+        benchmarkClient.iterationCount = 10;
+        startTest();
+        """)
     tab.WaitForJavaScriptExpression(
         'benchmarkClient._finishedTestCount == benchmarkClient.testsCount', 600)
     results.AddValue(list_of_scalar_values.ListOfScalarValues(
         page, 'Total', 'ms',
-        tab.EvaluateJavaScript('benchmarkClient._timeValues')))
+        tab.EvaluateJavaScript('benchmarkClient._timeValues'), important=True))
 
+    # Extract the timings for each suite
+    for suite_name in self.enabled_suites:
+      results.AddValue(list_of_scalar_values.ListOfScalarValues(
+          page, suite_name, 'ms',
+          tab.EvaluateJavaScript("""
+              var suite_times = [];
+              for(var i = 0; i < benchmarkClient.iterationCount; i++) {
+                suite_times.push(
+                    benchmarkClient._measuredValues[i].tests['%s'].total);
+              };
+              suite_times;
+              """ % suite_name), important=False))
 
 @benchmark.Disabled('android')  # Times out
 class Speedometer(benchmark.Benchmark):
