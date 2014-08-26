@@ -49,6 +49,7 @@ static_library("apps") {
     "//chrome/app/theme:theme_resources",
     "//chrome/browser/extensions",
     "//chrome/common/extensions/api:api",
+    "//components/web_modal",
     "//skia",
   ]
 

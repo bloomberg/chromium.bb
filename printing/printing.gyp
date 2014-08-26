@@ -254,6 +254,7 @@
       'msvs_disabled_warnings': [ 4267, ],
     },
     {
+      # GN version: //printing:cups (config, not a target).
       'target_name': 'cups',
       'type': 'none',
       'conditions': [

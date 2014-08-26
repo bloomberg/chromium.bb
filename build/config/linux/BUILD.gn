@@ -39,6 +39,10 @@ pkg_config("gtk") {
   packages = [ "gmodule-2.0", "gtk+-2.0", "gthread-2.0" ]
 }
 
+pkg_config("gtkprint") {
+  packages = [ "gtk+-unix-print-2.0" ]
+}
+
 pkg_config("pangocairo") {
   packages = [ "pangocairo" ]
 }

@@ -290,9 +290,15 @@ component("base") {
     "//third_party/icu",
     "//ui/events/platform",
     "//ui/events:events_base",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
     "//ui/resources",
     "//ui/strings",
     "//url",
+  ]
+  # We expose these things in our headers:
+  forward_dependent_configs_from = [
+    "//ui/gfx",
   ]
 
   if (is_ios) {

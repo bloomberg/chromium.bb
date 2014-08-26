@@ -36,6 +36,7 @@ static_library("libusb") {
     "src/libusb/os/windows_common.h",
     "src/libusb/os/windows_usb.c",
     "src/libusb/os/windows_usb.h",
+    "src/libusb/strerror.c",
     "src/libusb/sync.c",
     "src/libusb/version.h",
     "src/libusb/version_nano.h",

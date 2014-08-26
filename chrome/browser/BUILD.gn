@@ -291,7 +291,7 @@ static_library("browser") {
                              ".", "//chrome")
     } else {  # Non-mobile
       deps += [
-        #"policy_path_parser",  TODO(GYP)
+        "//chrome/browser/policy:path_parser",
       ]
     }
   } else {

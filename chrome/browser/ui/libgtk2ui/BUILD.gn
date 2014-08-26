@@ -1,0 +1,94 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+assert(is_linux, "This file should only be referenced on Linux")
+
+import("//build/config/features.gni")
+
+component("libgtk2ui") {
+  sources = [
+    "app_indicator_icon.cc",
+    "app_indicator_icon.h",
+    "app_indicator_icon_menu.cc",
+    "app_indicator_icon_menu.h",
+    "chrome_gtk_frame.cc",
+    "chrome_gtk_frame.h",
+    "chrome_gtk_menu_subclasses.cc",
+    "chrome_gtk_menu_subclasses.h",
+    "g_object_destructor_filo.cc",
+    "g_object_destructor_filo.h",
+    "gtk2_border.cc",
+    "gtk2_border.h",
+    "gtk2_event_loop.cc",
+    "gtk2_event_loop.h",
+    "gtk2_key_bindings_handler.cc",
+    "gtk2_key_bindings_handler.h",
+    "gtk2_signal_registrar.cc",
+    "gtk2_signal_registrar.h",
+    "gtk2_status_icon.cc",
+    "gtk2_status_icon.h",
+    "gtk2_ui.cc",
+    "gtk2_ui.h",
+    "gtk2_util.cc",
+    "gtk2_util.h",
+    "libgtk2ui_export.h",
+    "menu_util.cc",
+    "menu_util.h",
+    "native_theme_gtk2.cc",
+    "native_theme_gtk2.h",
+    "owned_widget_gtk2.cc",
+    "owned_widget_gtk2.h",
+    "print_dialog_gtk2.cc",
+    "print_dialog_gtk2.h",
+    "printing_gtk2_util.cc",
+    "printing_gtk2_util.h",
+    "select_file_dialog_impl.cc",
+    "select_file_dialog_impl.h",
+    "select_file_dialog_impl_gtk2.cc",
+    "select_file_dialog_impl_kde.cc",
+    "skia_utils_gtk2.cc",
+    "skia_utils_gtk2.h",
+    "unity_service.cc",
+    "unity_service.h",
+    "x11_input_method_context_impl_gtk2.cc",
+    "x11_input_method_context_impl_gtk2.h",
+  ]
+
+  if (use_gconf) {
+    sources += [
+      "gconf_listener.cc",
+      "gconf_listener.h",
+    ]
+  }
+  if (is_clang) {
+    # G_DEFINE_TYPE automatically generates a *get_instance_private inline
+    # function after glib 2.37. That's unused. Prevent to complain about it.
+    cflags = [ "-Wno-unused-function" ]
+  }
+
+  defines = [ "LIBGTK2UI_IMPLEMENTATION" ]
+
+  configs += [
+    "//build/config/linux:gconf",
+    "//build/config/linux:gtk",
+    "//build/config/linux:gtkprint",
+    "//printing:cups",
+  ]
+
+  deps = [
+    "//base",
+    "//base:i18n",
+    "//base/third_party/dynamic_annotations",
+    "//chrome/app/theme:theme_resources",
+    "//chrome:extra_resources",
+    "//chrome:resources",
+    "//chrome:strings",
+    "//components/resources",
+    "//skia",
+    "//ui/base",
+    "//ui/resources",
+    "//ui/strings",
+    "//ui/views",
+  ]
+}

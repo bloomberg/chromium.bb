@@ -19,6 +19,7 @@
         '..',
       ],
       'sources': [
+        # Note: sources list duplicated in GN build.
         'copresence/copresence_constants.cc',
         'copresence/copresence_manager.cc',
         'copresence/copresence_manager_impl.cc',

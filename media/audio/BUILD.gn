@@ -88,6 +88,12 @@ source_set("audio") {
     "scoped_task_runner_observer.h",
     "simple_sources.cc",
     "simple_sources.h",
+    "sounds/audio_stream_handler.cc",
+    "sounds/audio_stream_handler.h",
+    "sounds/sounds_manager.cc",
+    "sounds/sounds_manager.h",
+    "sounds/wav_audio_handler.cc",
+    "sounds/wav_audio_handler.h",
     "virtual_audio_input_stream.cc",
     "virtual_audio_input_stream.h",
     "virtual_audio_output_stream.cc",
@@ -96,17 +102,6 @@ source_set("audio") {
   deps = []
   libs = []
   configs += [ "//media:media_config" ]
-
-  if (is_chromeos) {
-    sources += [
-      "sounds/audio_stream_handler.cc",
-      "sounds/audio_stream_handler.h",
-      "sounds/sounds_manager.cc",
-      "sounds/sounds_manager.h",
-      "sounds/wav_audio_handler.cc",
-      "sounds/wav_audio_handler.h",
-    ]
-  }
 
   if (is_mac) {
     sources += [

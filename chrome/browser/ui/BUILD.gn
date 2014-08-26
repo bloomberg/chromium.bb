@@ -216,10 +216,10 @@ static_library("ui") {
   }
   if (use_aura && !use_ozone && is_desktop_linux) {
     deps += [
+      "//build/config/linux:gio",
       # gtk2 is the only component that can interact with gtk2 in our new
       # world.
-      #'browser/ui/libgtk2ui/libgtk2ui.gyp:gtk2ui',  TODO(GYP)
-      "//build/config/linux:gio",
+      "//chrome/browser/ui/libgtk2ui",
     ]
   }
   if (is_win || is_mac || is_desktop_linux) {

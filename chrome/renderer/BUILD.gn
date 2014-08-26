@@ -41,6 +41,7 @@ static_library("renderer") {
     "//components/password_manager/content/renderer",
     "//components/plugins/renderer",
     "//components/startup_metric_utils",
+    "//components/translate/content/renderer",
     "//components/translate/core/common",
     "//components/translate/core/language_detection",
     "//components/visitedlink/renderer",

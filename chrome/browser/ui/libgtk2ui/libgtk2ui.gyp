@@ -8,6 +8,7 @@
   },
   'targets': [
     {
+      # GN version: //chrome/browser/ui/libgtk2ui
       'target_name': 'gtk2ui',
       'type': '<(component)',
       'dependencies': [
@@ -38,6 +39,7 @@
       # the normal, global gtk exclusion rules, as we are otherwise using gtk
       # in a non-gtk build.
       'sources': [
+        # Note: sources list duplicated in GN build.
         'app_indicator_icon.cc',
         'app_indicator_icon.h',
         'app_indicator_icon_menu.cc',

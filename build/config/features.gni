@@ -164,3 +164,8 @@ enable_chromevox_next = false
 
 # Use brlapi from brltty for braille display support.
 use_brlapi = is_chromeos
+
+# Option controlling the use of GConf (the classic GNOME configuration
+# system).
+# TODO(GYP) also require !embedded to enable.
+use_gconf = is_linux && !is_chromeos

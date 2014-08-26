@@ -208,7 +208,7 @@ static_library("common") {
   }
 
   if (enable_remoting) {
-    #deps += [ '../remoting/remoting.gyp:remoting_client_plugin' ]  TODO(GYP)
+    deps += [ "//remoting/client/plugin" ]
   }
   if (enable_plugins) {
     deps += [

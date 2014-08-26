@@ -10,6 +10,8 @@ static_library("browser") {
     "account_reconcilor.h",
     "account_service_flag_fetcher.cc",
     "account_service_flag_fetcher.h",
+    "account_tracker_service.cc",
+    "account_tracker_service.h",
     "mutable_profile_oauth2_token_service.cc",
     "mutable_profile_oauth2_token_service.h",
     "profile_oauth2_token_service.cc",

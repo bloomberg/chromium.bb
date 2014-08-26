@@ -7,6 +7,8 @@ static_library("copresence") {
     "copresence_constants.cc",
     "copresence_manager.cc",
     "copresence_manager_impl.cc",
+    "copresence_switches.cc",
+    "copresence_switches.h",
     "handlers/audio/audio_directive_handler.cc",
     "handlers/audio/audio_directive_handler.h",
     "handlers/audio/audio_directive_list.cc",

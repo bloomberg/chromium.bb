@@ -36,6 +36,7 @@
         '<(INTERMEDIATE_DIR)',
       ],
       'sources': [
+        # Note: sources list duplicated in GN build.
         'common/api/messaging/message.h',
         'common/api/sockets/sockets_manifest_data.cc',
         'common/api/sockets/sockets_manifest_data.h',
@@ -196,12 +197,12 @@
         'common/stack_frame.h',
         'common/switches.cc',
         'common/switches.h',
+        'common/update_manifest.cc',
+        'common/update_manifest.h',
         'common/url_pattern.cc',
         'common/url_pattern.h',
         'common/url_pattern_set.cc',
         'common/url_pattern_set.h',
-        'common/update_manifest.cc',
-        'common/update_manifest.h',
         'common/user_script.cc',
         'common/user_script.h',
         'common/value_counter.cc',
@@ -609,6 +610,7 @@
         '..',
       ],
       'sources': [
+        # Note: sources list duplicated in GN build.
         'renderer/activity_log_converter_strategy.cc',
         'renderer/activity_log_converter_strategy.h',
         'renderer/api_activity_logger.cc',
