@@ -10,6 +10,10 @@
 #include "media/cast/logging/logging_defines.h"
 #include "media/cast/logging/receiver_time_offset_estimator.h"
 
+namespace base {
+class TickClock;
+}
+
 namespace media {
 namespace cast {
 
@@ -24,7 +28,7 @@ namespace cast {
 // The bound will become better as the latency between the events decreases.
 class ReceiverTimeOffsetEstimatorImpl : public ReceiverTimeOffsetEstimator {
  public:
-  ReceiverTimeOffsetEstimatorImpl();
+  ReceiverTimeOffsetEstimatorImpl(base::TickClock* clock);
 
   virtual ~ReceiverTimeOffsetEstimatorImpl();
 
@@ -51,8 +55,14 @@ class ReceiverTimeOffsetEstimatorImpl : public ReceiverTimeOffsetEstimator {
   EventTimesMap event_times_map_;
 
   bool bounded_;
+  base::TickClock* clock_;  // Not owned by this class.
+
+  bool offset_bounds_valid_;
   base::TimeDelta offset_lower_bound_;
   base::TimeDelta offset_upper_bound_;
+  base::TimeDelta prev_offset_lower_bound_;
+  base::TimeDelta prev_offset_upper_bound_;
+  base::TimeTicks last_reset_time_;
 
   base::ThreadChecker thread_checker_;
   DISALLOW_COPY_AND_ASSIGN(ReceiverTimeOffsetEstimatorImpl);

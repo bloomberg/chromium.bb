@@ -6,6 +6,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/time/tick_clock.h"
 #include "media/cast/logging/receiver_time_offset_estimator_impl.h"
 
 namespace media {
@@ -15,8 +16,13 @@ namespace cast {
 // the entry gets removed from the map.
 const size_t kMaxEventTimesMapSize = 100;
 
-ReceiverTimeOffsetEstimatorImpl::ReceiverTimeOffsetEstimatorImpl()
-    : bounded_(false) {}
+ReceiverTimeOffsetEstimatorImpl::ReceiverTimeOffsetEstimatorImpl(
+    base::TickClock* clock)
+    : bounded_(false),
+      clock_(clock),
+      offset_bounds_valid_(false),
+      last_reset_time_(clock_->NowTicks()) {
+}
 
 ReceiverTimeOffsetEstimatorImpl::~ReceiverTimeOffsetEstimatorImpl() {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -93,8 +99,8 @@ bool ReceiverTimeOffsetEstimatorImpl::GetReceiverOffsetBounds(
   if (!bounded_)
     return false;
 
-  *lower_bound = offset_lower_bound_;
-  *upper_bound = offset_upper_bound_;
+  *lower_bound = prev_offset_lower_bound_;
+  *upper_bound = prev_offset_upper_bound_;
   return true;
 }
 
@@ -109,7 +115,7 @@ void ReceiverTimeOffsetEstimatorImpl::UpdateOffsetBounds(
   base::TimeDelta lower_bound = event.event_b_time - event.event_c_time;
   base::TimeDelta upper_bound = event.event_b_time - event.event_a_time;
 
-  if (bounded_) {
+  if (offset_bounds_valid_) {
     lower_bound = std::max(lower_bound, offset_lower_bound_);
     upper_bound = std::min(upper_bound, offset_upper_bound_);
   }
@@ -122,6 +128,22 @@ void ReceiverTimeOffsetEstimatorImpl::UpdateOffsetBounds(
 
   offset_lower_bound_ = lower_bound;
   offset_upper_bound_ = upper_bound;
+  offset_bounds_valid_ = true;
+  if (!bounded_ ||
+      offset_upper_bound_ - offset_lower_bound_ <
+          base::TimeDelta::FromMilliseconds(20)) {
+    prev_offset_lower_bound_ = offset_lower_bound_;
+    prev_offset_upper_bound_ = offset_upper_bound_;
+  }
+
+  base::TimeTicks now = clock_->NowTicks();
+  if (now - last_reset_time_ > base::TimeDelta::FromSeconds(20)) {
+    last_reset_time_ = now;
+    offset_lower_bound_ = base::TimeDelta();
+    offset_upper_bound_ = base::TimeDelta();
+    offset_bounds_valid_ = false;
+  }
+
   bounded_ = true;
 }
 

@@ -140,6 +140,9 @@ TEST_F(StatsEventSubscriberTest, Encode) {
   uint32 frame_id = 0;
   int num_frames = 10;
   base::TimeTicks start_time = sender_clock_->NowTicks();
+  AdvanceClocks(base::TimeDelta::FromMicroseconds(35678));
+  base::TimeTicks first_event_time = sender_clock_->NowTicks();
+  base::TimeTicks last_event_time;
   int total_size = 0;
   for (int i = 0; i < num_frames; i++) {
     int size = 1000 + base::RandInt(-100, 100);
@@ -152,6 +155,7 @@ TEST_F(StatsEventSubscriberTest, Encode) {
         size,
         true,
         5678);
+    last_event_time = sender_clock_->NowTicks();
 
     AdvanceClocks(base::TimeDelta::FromMicroseconds(35678));
     rtp_timestamp += 90;
@@ -177,6 +181,20 @@ TEST_F(StatsEventSubscriberTest, Encode) {
 
   EXPECT_DOUBLE_EQ(it->second,
               static_cast<double>(total_size) / duration.InMillisecondsF() * 8);
+
+  it = stats_map.find(StatsEventSubscriber::FIRST_EVENT_TIME_MS);
+  ASSERT_TRUE(it != stats_map.end());
+
+  EXPECT_DOUBLE_EQ(
+      it->second,
+      (first_event_time - base::TimeTicks::UnixEpoch()).InMillisecondsF());
+
+  it = stats_map.find(StatsEventSubscriber::LAST_EVENT_TIME_MS);
+  ASSERT_TRUE(it != stats_map.end());
+
+  EXPECT_DOUBLE_EQ(
+      it->second,
+      (last_event_time - base::TimeTicks::UnixEpoch()).InMillisecondsF());
 }
 
 TEST_F(StatsEventSubscriberTest, Decode) {

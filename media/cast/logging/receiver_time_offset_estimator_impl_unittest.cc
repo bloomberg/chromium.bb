@@ -24,7 +24,8 @@ class ReceiverTimeOffsetEstimatorImplTest : public ::testing::Test {
             scoped_ptr<base::TickClock>(sender_clock_).Pass(),
             task_runner_,
             task_runner_,
-            task_runner_)) {
+            task_runner_)),
+        estimator_(cast_environment_->Clock()) {
     cast_environment_->Logging()->AddRawEventSubscriber(&estimator_);
   }
 
