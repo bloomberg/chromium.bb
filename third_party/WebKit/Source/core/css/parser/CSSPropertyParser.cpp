@@ -665,9 +665,9 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
             if (image)
                 list->append(CSSCursorImageValue::create(image, hasHotSpot, hotSpot));
 
-            if (!value || !(value->unit == CSSParserValue::Operator && value->iValue == ','))
+            if (!consumeComma(m_valueList.get()))
                 return false;
-            value = m_valueList->next(); // comma
+            value = m_valueList->current();
         }
         if (value && m_context.useCounter()) {
             if (value->id == CSSValueWebkitZoomIn)
@@ -1771,10 +1771,8 @@ bool CSSPropertyParser::parseAnimationShorthand(CSSPropertyID propId, bool impor
         values[i] = CSSValueList::createCommaSeparated();
 
     while (m_valueList->current()) {
-        CSSParserValue* val = m_valueList->current();
-        if (val->unit == CSSParserValue::Operator && val->iValue == ',') {
+        if (consumeComma(m_valueList.get())) {
             // We hit the end. Fill in all remaining values with the initial value.
-            m_valueList->next();
             for (size_t i = 0; i < numProperties; ++i) {
                 if (!parsedProperty[i])
                     values[i]->append(cssValuePool().createImplicitInitialValue());
@@ -1829,10 +1827,8 @@ bool CSSPropertyParser::parseTransitionShorthand(CSSPropertyID propId, bool impo
         values[i] = CSSValueList::createCommaSeparated();
 
     while (m_valueList->current()) {
-        CSSParserValue* val = m_valueList->current();
-        if (val->unit == CSSParserValue::Operator && val->iValue == ',') {
+        if (consumeComma(m_valueList.get())) {
             // We hit the end. Fill in all remaining values with the initial value.
-            m_valueList->next();
             for (size_t i = 0; i < numProperties; ++i) {
                 if (!parsedProperty[i])
                     values[i]->append(cssValuePool().createImplicitInitialValue());
@@ -3890,11 +3886,11 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseCounterContent(CSSParse
     if (!counters)
         separator = cssValuePool().createValue(String(), CSSPrimitiveValue::CSS_STRING);
     else {
-        i = args->next();
-        if (i->unit != CSSParserValue::Operator || i->iValue != ',')
+        args->next();
+        if (!consumeComma(args))
             return nullptr;
 
-        i = args->next();
+        i = args->current();
         if (i->unit != CSSPrimitiveValue::CSS_STRING)
             return nullptr;
 
@@ -3906,10 +3902,10 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseCounterContent(CSSParse
     if (!i) // Make the list style default decimal
         listStyle = cssValuePool().createIdentifierValue(CSSValueDecimal);
     else {
-        if (i->unit != CSSParserValue::Operator || i->iValue != ',')
+        if (!consumeComma(args))
             return nullptr;
 
-        i = args->next();
+        i = args->current();
         if (i->unit != CSSPrimitiveValue::CSS_IDENT)
             return nullptr;
 
@@ -3937,13 +3933,11 @@ bool CSSPropertyParser::parseClipShape(CSSPropertyID propId, bool important)
     if (args->size() != 4 && args->size() != 7)
         return false;
     RefPtrWillBeRawPtr<Rect> rect = Rect::create();
-    bool valid = true;
     int i = 0;
     CSSParserValue* a = args->current();
     while (a) {
-        valid = a->id == CSSValueAuto || validUnit(a, FLength);
-        if (!valid)
-            break;
+        if (a->id != CSSValueAuto && !validUnit(a, FLength))
+            return false;
         RefPtrWillBeRawPtr<CSSPrimitiveValue> length = a->id == CSSValueAuto ?
             cssValuePool().createIdentifierValue(CSSValueAuto) :
             createPrimitiveNumericValue(a);
@@ -3957,21 +3951,15 @@ bool CSSPropertyParser::parseClipShape(CSSPropertyID propId, bool important)
             rect->setLeft(length);
         a = args->next();
         if (a && args->size() == 7) {
-            if (a->unit == CSSParserValue::Operator && a->iValue == ',') {
-                a = args->next();
-            } else {
-                valid = false;
-                break;
-            }
+            if (!consumeComma(args))
+                return false;
+            a = args->current();
         }
         i++;
     }
-    if (valid) {
-        addProperty(propId, cssValuePool().createValue(rect.release()), important);
-        m_valueList->next();
-        return true;
-    }
-    return false;
+    addProperty(propId, cssValuePool().createValue(rect.release()), important);
+    m_valueList->next();
+    return true;
 }
 
 static void completeBorderRadii(RefPtrWillBeRawPtr<CSSPrimitiveValue> radii[4])
@@ -4685,9 +4673,8 @@ bool CSSPropertyParser::parseFontVariant(bool important)
                 values = CSSValueList::createCommaSeparated();
                 parsedValue = cssValuePool().createIdentifierValue(val->id);
             }
-        } else if (val->unit == CSSParserValue::Operator && val->iValue == ',') {
+        } else if (consumeComma(m_valueList.get())) {
             expectComma = false;
-            m_valueList->next();
             continue;
         }
 
@@ -5267,19 +5254,19 @@ bool CSSPropertyParser::parseColorParameters(CSSParserValue* value, int* colorAr
 
     colorArray[0] = colorIntFromValue(v);
     for (int i = 1; i < 3; i++) {
-        v = args->next();
-        if (v->unit != CSSParserValue::Operator && v->iValue != ',')
+        args->next();
+        if (!consumeComma(args))
             return false;
-        v = args->next();
+        v = args->current();
         if (!validUnit(v, unitType, HTMLStandardMode))
             return false;
         colorArray[i] = colorIntFromValue(v);
     }
     if (parseAlpha) {
-        v = args->next();
-        if (v->unit != CSSParserValue::Operator && v->iValue != ',')
+        args->next();
+        if (!consumeComma(args))
             return false;
-        v = args->next();
+        v = args->current();
         if (!validUnit(v, FNumber, HTMLStandardMode))
             return false;
         // Convert the floating pointer number of alpha to an integer in the range [0, 256),
@@ -5304,20 +5291,20 @@ bool CSSPropertyParser::parseHSLParameters(CSSParserValue* value, double* colorA
     // normalize the Hue value and change it to be between 0 and 1.0
     colorArray[0] = (((static_cast<int>(v->fValue) % 360) + 360) % 360) / 360.0;
     for (int i = 1; i < 3; i++) {
-        v = args->next();
-        if (v->unit != CSSParserValue::Operator && v->iValue != ',')
+        args->next();
+        if (!consumeComma(args))
             return false;
-        v = args->next();
+        v = args->current();
         if (!validUnit(v, FPercent, HTMLStandardMode))
             return false;
         double percentValue = m_parsedCalculation ? m_parsedCalculation.release()->doubleValue() : v->fValue;
         colorArray[i] = std::max(0.0, std::min(100.0, percentValue)) / 100.0; // needs to be value between 0 and 1.0
     }
     if (parseAlpha) {
-        v = args->next();
-        if (v->unit != CSSParserValue::Operator && v->iValue != ',')
+        args->next();
+        if (!consumeComma(args))
             return false;
-        v = args->next();
+        v = args->current();
         if (!validUnit(v, FNumber, HTMLStandardMode))
             return false;
         colorArray[3] = std::max(0.0, std::min(1.0, v->fValue));
@@ -6364,11 +6351,11 @@ bool parseDeprecatedGradientColorStop(CSSPropertyParser* p, CSSParserValue* a, C
         else
             return false;
 
-        stopArg = args->next();
-        if (stopArg->unit != CSSParserValue::Operator || stopArg->iValue != ',')
+        args->next();
+        if (!consumeComma(args))
             return false;
 
-        stopArg = args->next();
+        stopArg = args->current();
         CSSValueID id = stopArg->id;
         if (id == CSSValueWebkitText || (id >= CSSValueAqua && id <= CSSValueWindowtext) || id == CSSValueMenu)
             stop.m_color = cssValuePool().createIdentifierValue(id);
