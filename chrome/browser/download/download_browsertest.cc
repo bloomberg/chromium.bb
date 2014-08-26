@@ -3192,8 +3192,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, Resumption_NoPrompt) {
   EnableFileChooser(true);
 
   DownloadItem* download = StartMockDownloadAndInjectError(
-      error_injector,
-      content::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED);
+      error_injector.get(), content::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED);
   ASSERT_TRUE(download);
 
   download->Resume();
@@ -3218,8 +3217,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, Resumption_WithPrompt) {
   EnableFileChooser(true);
 
   DownloadItem* download = StartMockDownloadAndInjectError(
-      error_injector,
-      content::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE);
+      error_injector.get(), content::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE);
   ASSERT_TRUE(download);
 
   download->Resume();
@@ -3245,8 +3243,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, Resumption_WithPromptAlways) {
   EnableFileChooser(true);
 
   DownloadItem* download = StartMockDownloadAndInjectError(
-      error_injector,
-      content::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED);
+      error_injector.get(), content::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED);
   ASSERT_TRUE(download);
 
   // Prompts the user initially because of the kPromptForDownload preference.
@@ -3271,7 +3268,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, Resumption_Automatic) {
           DownloadManagerForBrowser(browser())));
 
   DownloadItem* download = StartMockDownloadAndInjectError(
-      error_injector,
+      error_injector.get(),
       content::DOWNLOAD_INTERRUPT_REASON_FILE_TRANSIENT_ERROR);
   ASSERT_TRUE(download);
 
@@ -3299,8 +3296,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, Resumption_MultipleAttempts) {
 
   EnableFileChooser(true);
   DownloadItem* download = StartMockDownloadAndInjectError(
-      error_injector,
-      content::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED);
+      error_injector.get(), content::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED);
   ASSERT_TRUE(download);
 
   content::TestFileErrorInjector::FileErrorInfo error_info;
