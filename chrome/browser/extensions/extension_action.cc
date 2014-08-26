@@ -58,7 +58,8 @@ bool HasValue(const std::map<int, T>& map, int tab_id) {
 }  // namespace
 
 const int ExtensionAction::kDefaultTabId = -1;
-const int ExtensionAction::kPageActionIconMaxSize = 19;
+const int ExtensionAction::kPageActionIconMaxSize =
+    extension_misc::EXTENSION_ICON_ACTION;
 
 ExtensionAction::ExtensionAction(const std::string& extension_id,
                                  extensions::ActionInfo::Type action_type,

@@ -662,6 +662,8 @@
       'browser/extensions/extension_action_icon_factory.h',
       'browser/extensions/extension_action_manager.cc',
       'browser/extensions/extension_action_manager.h',
+      'browser/extensions/extension_action_storage_manager.cc',
+      'browser/extensions/extension_action_storage_manager.h',
       'browser/extensions/extension_assets_manager.cc',
       'browser/extensions/extension_assets_manager.h',
       'browser/extensions/extension_assets_manager_chromeos.cc',

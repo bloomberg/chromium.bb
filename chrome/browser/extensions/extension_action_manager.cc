@@ -89,9 +89,6 @@ namespace {
 // key of |extension|'s manifest.
 void PopulateMissingValues(const Extension& extension,
                            ExtensionAction* action) {
-  const int* kIconSizes = extension_misc::kExtensionActionIconSizes;
-  const size_t kNumIconSizes = extension_misc::kNumExtensionActionIconSizes;
-
   // If the title is missing from |action|, set it to |extension|'s name.
   if (action->GetTitle(ExtensionAction::kDefaultTabId).empty())
     action->SetTitle(ExtensionAction::kDefaultTabId, extension.name());
@@ -111,8 +108,9 @@ void PopulateMissingValues(const Extension& extension,
     // Replace any missing extension action icons with the largest icon
     // retrieved from |extension|'s manifest so long as the largest icon is
     // larger than the current key.
-    for (int i = kNumIconSizes - 1; i >= 0; --i) {
-      int size = kIconSizes[i];
+    for (int i = extension_misc::kNumExtensionActionIconSizes - 1;
+         i >= 0; --i) {
+      int size = extension_misc::kExtensionActionIconSizes[i].size;
       if (default_icon->Get(size, ExtensionIconSet::MATCH_BIGGER).empty()
           && largest_icon_size > size) {
         default_icon->Add(size, largest_icon);
