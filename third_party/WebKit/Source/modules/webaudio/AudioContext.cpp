@@ -748,15 +748,12 @@ AudioContext::AudioSummingJunctionDisposer::~AudioSummingJunctionDisposer()
     m_junction.dispose();
 }
 
-void AudioContext::unmarkDirtyNode(AudioNode& node)
+void AudioContext::disposeOutputs(AudioNode& node)
 {
     ASSERT(isGraphOwner());
-
-    // Before deleting the node, clear out any AudioNodeOutputs from
-    // m_dirtyAudioNodeOutputs.
-    unsigned numberOfOutputs = node.numberOfOutputs();
-    for (unsigned i = 0; i < numberOfOutputs; ++i)
-        m_dirtyAudioNodeOutputs.remove(node.output(i));
+    ASSERT(isMainThread());
+    for (unsigned i = 0; i < node.numberOfOutputs(); ++i)
+        node.output(i)->dispose();
 }
 
 void AudioContext::markSummingJunctionDirty(AudioSummingJunction* summingJunction)
@@ -777,6 +774,13 @@ void AudioContext::markAudioNodeOutputDirty(AudioNodeOutput* output)
     ASSERT(isGraphOwner());
     ASSERT(isMainThread());
     m_dirtyAudioNodeOutputs.add(output);
+}
+
+void AudioContext::removeMarkedAudioNodeOutput(AudioNodeOutput* output)
+{
+    ASSERT(isGraphOwner());
+    ASSERT(isMainThread());
+    m_dirtyAudioNodeOutputs.remove(output);
 }
 
 void AudioContext::handleDirtyAudioSummingJunctions()

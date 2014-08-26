@@ -58,7 +58,6 @@ public:
     AudioNodeOutput* renderingOutput(unsigned i) { return m_renderingOutputs[i]; }
     bool isConnected() const { return numberOfRenderingConnections() > 0; }
 
-    virtual bool canUpdateState() = 0;
     virtual void didUpdate() = 0;
 
 protected:

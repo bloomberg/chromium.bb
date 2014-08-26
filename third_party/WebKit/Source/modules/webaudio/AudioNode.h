@@ -149,8 +149,6 @@ public:
     static void printNodeCounts();
 #endif
 
-    bool isDisposeCalled() const { return m_isDisposeCalled; }
-
     // tailTime() is the length of time (not counting latency time) where non-zero output may occur after continuous silent input.
     virtual double tailTime() const = 0;
     // latencyTime() is the length of time it takes for non-zero output to appear after non-zero input is provided. This only applies to
@@ -213,7 +211,6 @@ private:
     volatile int m_connectionRefCount;
 
     bool m_isDisabled;
-    bool m_isDisposeCalled;
 
 #if DEBUG_AUDIONODE_REFERENCES
     static bool s_isNodeCountInitialized;

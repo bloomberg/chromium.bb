@@ -211,11 +211,11 @@ public:
 
     // Only accessed when the graph lock is held.
     void markSummingJunctionDirty(AudioSummingJunction*);
-    void markAudioNodeOutputDirty(AudioNodeOutput*);
-    void unmarkDirtyNode(AudioNode&);
-
-    // Must be called on main thread.
+    // Only accessed when the graph lock is held. Must be called on the main thread.
     void removeMarkedSummingJunction(AudioSummingJunction*);
+    void markAudioNodeOutputDirty(AudioNodeOutput*);
+    void removeMarkedAudioNodeOutput(AudioNodeOutput*);
+    void disposeOutputs(AudioNode&);
 
     // EventTarget
     virtual const AtomicString& interfaceName() const OVERRIDE FINAL;

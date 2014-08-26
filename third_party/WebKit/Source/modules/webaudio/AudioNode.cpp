@@ -54,7 +54,6 @@ AudioNode::AudioNode(AudioContext* context, float sampleRate)
     , m_lastNonSilentTime(-1)
     , m_connectionRefCount(0)
     , m_isDisabled(false)
-    , m_isDisposeCalled(false)
     , m_channelCount(2)
     , m_channelCountMode(Max)
     , m_channelInterpretation(AudioBus::Speakers)
@@ -72,7 +71,6 @@ AudioNode::AudioNode(AudioContext* context, float sampleRate)
 
 AudioNode::~AudioNode()
 {
-    ASSERT(m_isDisposeCalled);
     --s_instanceCount;
 #if DEBUG_AUDIONODE_REFERENCES
     --s_nodeCount[nodeType()];
@@ -95,17 +93,10 @@ void AudioNode::dispose()
     ASSERT(isMainThread());
     ASSERT(context()->isGraphOwner());
 
-    // This flag prevents:
-    //   - the following disconnectAll() from re-registering this AudioNode into
-    //     the m_outputs.
-    //   - this AudioNode from getting marked as dirty after calling
-    //     unmarkDirtyNode.
-    m_isDisposeCalled = true;
-
     context()->removeAutomaticPullNode(this);
+    context()->disposeOutputs(*this);
     for (unsigned i = 0; i < m_outputs.size(); ++i)
         output(i)->disconnectAll();
-    context()->unmarkDirtyNode(*this);
 }
 
 String AudioNode::nodeTypeName() const

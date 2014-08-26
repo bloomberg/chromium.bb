@@ -44,6 +44,7 @@ public:
     // setNumberOfChannels() must be called later on.
     static AudioNodeOutput* create(AudioNode*, unsigned numberOfChannels);
     void trace(Visitor*);
+    void dispose();
 
     // Can be called from any thread.
     AudioNode* node() const { return m_node; }
@@ -139,6 +140,10 @@ private:
     HeapHashMap<Member<AudioNodeInput>, Member<AudioNode> > m_inputs;
     typedef HeapHashMap<Member<AudioNodeInput>, Member<AudioNode> >::iterator InputsIterator;
     bool m_isEnabled;
+
+#if ENABLE_ASSERT
+    bool m_didCallDispose;
+#endif
 
     // For the purposes of rendering, keeps track of the number of inputs and AudioParams we're connected to.
     // These value should only be changed at the very start or end of the rendering quantum.

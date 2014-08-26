@@ -40,6 +40,9 @@ inline AudioNodeOutput::AudioNodeOutput(AudioNode* node, unsigned numberOfChanne
     , m_desiredNumberOfChannels(numberOfChannels)
     , m_isInPlace(false)
     , m_isEnabled(true)
+#if ENABLE_ASSERT
+    , m_didCallDispose(false)
+#endif
     , m_renderingFanOutCount(0)
     , m_renderingParamFanOutCount(0)
 {
@@ -60,6 +63,14 @@ void AudioNodeOutput::trace(Visitor* visitor)
     visitor->trace(m_params);
 }
 
+void AudioNodeOutput::dispose()
+{
+#if ENABLE_ASSERT
+    m_didCallDispose = true;
+#endif
+    context()->removeMarkedAudioNodeOutput(this);
+}
+
 void AudioNodeOutput::setNumberOfChannels(unsigned numberOfChannels)
 {
     ASSERT(numberOfChannels <= AudioContext::maxNumberOfChannels());
@@ -71,6 +82,7 @@ void AudioNodeOutput::setNumberOfChannels(unsigned numberOfChannels)
         // If we're in the audio thread then we can take care of it right away (we should be at the very start or end of a rendering quantum).
         updateNumberOfChannels();
     } else {
+        ASSERT(!m_didCallDispose);
         // Let the context take care of it in the audio thread in the pre and post render tasks.
         context()->markAudioNodeOutputDirty(this);
     }
