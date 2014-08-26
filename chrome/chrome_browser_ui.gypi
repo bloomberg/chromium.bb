@@ -639,6 +639,8 @@
       'browser/ui/cocoa/passwords/manage_passwords_bubble_controller.mm',
       'browser/ui/cocoa/passwords/manage_passwords_bubble_manage_view_controller.h',
       'browser/ui/cocoa/passwords/manage_passwords_bubble_manage_view_controller.mm',
+      'browser/ui/cocoa/passwords/manage_passwords_bubble_never_save_view_controller.h',
+      'browser/ui/cocoa/passwords/manage_passwords_bubble_never_save_view_controller.mm',
       'browser/ui/cocoa/passwords/manage_passwords_bubble_pending_view_controller.h',
       'browser/ui/cocoa/passwords/manage_passwords_bubble_pending_view_controller.mm',
       'browser/ui/cocoa/pdf_password_dialog.mm',

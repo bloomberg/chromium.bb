@@ -101,8 +101,16 @@
 #pragma mark ManagePasswordsBubblePendingViewDelegate
 
 - (void)passwordShouldNeverBeSavedOnSiteWithExistingPasswords {
-  // TODO(dconnelly): Set the NeverSaveViewController once it's implemented.
+  currentController_.reset([[ManagePasswordsBubbleNeverSaveViewController alloc]
+      initWithModel:model_
+           delegate:self]);
   [self performLayout];
+}
+
+#pragma mark ManagePasswordsBubbleNeverSaveViewDelegate
+
+- (void)neverSavePasswordCancelled {
+  [self updateState];
 }
 
 @end

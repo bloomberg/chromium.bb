@@ -10,6 +10,7 @@
 #include "base/mac/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/base_bubble_controller.h"
 #import "chrome/browser/ui/cocoa/passwords/manage_passwords_bubble_content_view_controller.h"
+#import "chrome/browser/ui/cocoa/passwords/manage_passwords_bubble_never_save_view_controller.h"
 #import "chrome/browser/ui/cocoa/passwords/manage_passwords_bubble_pending_view_controller.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 
@@ -18,6 +19,7 @@
 // accordingly.
 @interface ManagePasswordsBubbleController
     : BaseBubbleController<ManagePasswordsBubbleContentViewDelegate,
+                           ManagePasswordsBubbleNeverSaveViewDelegate,
                            ManagePasswordsBubblePendingViewDelegate> {
  @private
   ManagePasswordsBubbleModel* model_;

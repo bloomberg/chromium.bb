@@ -70,4 +70,23 @@ TEST_F(ManagePasswordsBubbleControllerTest, ManageStateShouldHaveManageView) {
             [[controller() currentController] class]);
 }
 
+TEST_F(ManagePasswordsBubbleControllerTest,
+       ChoosingNeverSaveShouldHaveNeverSaveView) {
+  EXPECT_NE([ManagePasswordsBubbleNeverSaveViewController class],
+            [[controller() currentController] class]);
+  [controller() passwordShouldNeverBeSavedOnSiteWithExistingPasswords];
+  EXPECT_EQ([ManagePasswordsBubbleNeverSaveViewController class],
+            [[controller() currentController] class]);
+}
+
+TEST_F(ManagePasswordsBubbleControllerTest,
+       CancellingNeverSaveShouldHavePendingView) {
+  [controller() passwordShouldNeverBeSavedOnSiteWithExistingPasswords];
+  EXPECT_NE([ManagePasswordsBubblePendingViewController class],
+            [[controller() currentController] class]);
+  [controller() neverSavePasswordCancelled];
+  EXPECT_EQ([ManagePasswordsBubblePendingViewController class],
+            [[controller() currentController] class]);
+}
+
 }  // namespace
