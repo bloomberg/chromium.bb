@@ -36,8 +36,8 @@ GpuScheduler::GpuScheduler(CommandBufferServiceBase* command_buffer,
       decoder_(decoder),
       unscheduled_count_(0),
       rescheduled_count_(0),
-      reschedule_task_factory_(this),
-      was_preempted_(false) {}
+      was_preempted_(false),
+      reschedule_task_factory_(this) {}
 
 GpuScheduler::~GpuScheduler() {
 }
