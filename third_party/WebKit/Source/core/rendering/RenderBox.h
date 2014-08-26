@@ -693,7 +693,7 @@ private:
     bool autoWidthShouldFitContent() const;
     void shrinkToFitWidth(const LayoutUnit availableSpace, const LayoutUnit logicalLeftValue, const LayoutUnit bordersPlusPadding, LogicalExtentComputedValues&) const;
 
-    // Returns true if we did a full paint invalidation
+    // Returns true if we queued up a paint invalidation.
     bool paintInvalidationLayerRectsForImage(WrappedImagePtr, const FillLayer&, bool drawingBackground);
 
     bool skipContainingBlockForPercentHeightCalculation(const RenderBox* containingBlock) const;

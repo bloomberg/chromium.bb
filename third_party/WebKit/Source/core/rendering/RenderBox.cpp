@@ -1487,49 +1487,16 @@ void RenderBox::imageChanged(WrappedImagePtr image, const IntRect*)
 
 bool RenderBox::paintInvalidationLayerRectsForImage(WrappedImagePtr image, const FillLayer& layers, bool drawingBackground)
 {
-    LayoutRect rendererRect;
     RenderBox* layerRenderer = 0;
+    if (drawingBackground && (isDocumentElement() || (isBody() && !document().documentElement()->renderer()->hasBackground())))
+        layerRenderer = view();
+    else
+        layerRenderer = this;
 
     for (const FillLayer* curLayer = &layers; curLayer; curLayer = curLayer->next()) {
         if (curLayer->image() && image == curLayer->image()->data() && curLayer->image()->canRender(*this, style()->effectiveZoom())) {
-            // Now that we know this image is being used, compute the renderer and the rect if we haven't already.
-            if (!layerRenderer) {
-                bool drawingRootBackground = drawingBackground && (isDocumentElement() || (isBody() && !document().documentElement()->renderer()->hasBackground()));
-                if (drawingRootBackground) {
-                    layerRenderer = view();
-
-                    LayoutUnit rw;
-                    LayoutUnit rh;
-
-                    if (FrameView* frameView = toRenderView(layerRenderer)->frameView()) {
-                        rw = frameView->contentsWidth();
-                        rh = frameView->contentsHeight();
-                    } else {
-                        rw = layerRenderer->width();
-                        rh = layerRenderer->height();
-                    }
-                    rendererRect = LayoutRect(-layerRenderer->marginLeft(),
-                        -layerRenderer->marginTop(),
-                        std::max(layerRenderer->width() + layerRenderer->marginWidth() + layerRenderer->borderLeft() + layerRenderer->borderRight(), rw),
-                        std::max(layerRenderer->height() + layerRenderer->marginHeight() + layerRenderer->borderTop() + layerRenderer->borderBottom(), rh));
-                } else {
-                    layerRenderer = this;
-                    rendererRect = borderBoxRect();
-                }
-            }
-
-            BackgroundImageGeometry geometry;
-            layerRenderer->calculateBackgroundImageGeometry(0, *curLayer, rendererRect, geometry);
-            if (geometry.hasNonLocalGeometry()) {
-                // Rather than incur the costs of computing the paintContainer for renderers with fixed backgrounds
-                // in order to get the right destRect, just issue paint invalidations for the entire renderer.
-                layerRenderer->setShouldDoFullPaintInvalidation(true);
-                return true;
-            }
-
-            layerRenderer->invalidatePaintRectangle(geometry.destRect());
-            if (geometry.destRect() == rendererRect)
-                return true;
+            layerRenderer->setShouldDoFullPaintInvalidation(true);
+            return true;
         }
     }
     return false;
