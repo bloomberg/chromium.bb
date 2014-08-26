@@ -32,7 +32,7 @@ const scoped_refptr<base::RefCountedMemory>& Attachment::GetData() const {
 Attachment::Attachment(const AttachmentId& id,
                        const scoped_refptr<base::RefCountedMemory>& data)
     : id_(id), data_(data) {
-  DCHECK(data);
+  DCHECK(data.get());
 }
 
 }  // namespace syncer

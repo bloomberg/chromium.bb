@@ -82,9 +82,8 @@ void HttpBridgeFactory::Init(const std::string& user_agent) {
     return;
   }
 
-  request_context_getter_ =
-      new HttpBridge::RequestContextGetter(
-          baseline_request_context_getter_, user_agent);
+  request_context_getter_ = new HttpBridge::RequestContextGetter(
+      baseline_request_context_getter_.get(), user_agent);
 }
 
 HttpPostProviderInterface* HttpBridgeFactory::Create() {

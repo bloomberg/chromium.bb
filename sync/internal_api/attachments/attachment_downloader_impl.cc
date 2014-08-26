@@ -51,8 +51,8 @@ AttachmentDownloaderImpl::AttachmentDownloaderImpl(
       token_service_provider_(token_service_provider) {
   DCHECK(!account_id.empty());
   DCHECK(!scopes.empty());
-  DCHECK(token_service_provider_);
-  DCHECK(url_request_context_getter_);
+  DCHECK(token_service_provider_.get());
+  DCHECK(url_request_context_getter_.get());
 }
 
 AttachmentDownloaderImpl::~AttachmentDownloaderImpl() {

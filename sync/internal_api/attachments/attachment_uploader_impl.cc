@@ -108,7 +108,7 @@ AttachmentUploaderImpl::UploadState::UploadState(
       token_service_provider_(token_service_provider),
       owner_(owner) {
   DCHECK(upload_url_.is_valid());
-  DCHECK(url_request_context_getter_);
+  DCHECK(url_request_context_getter_.get());
   DCHECK(!account_id_.empty());
   DCHECK(!scopes_.empty());
   DCHECK(token_service_provider_);
@@ -222,7 +222,7 @@ AttachmentUploaderImpl::AttachmentUploaderImpl(
   DCHECK(CalledOnValidThread());
   DCHECK(!account_id.empty());
   DCHECK(!scopes.empty());
-  DCHECK(token_service_provider_);
+  DCHECK(token_service_provider_.get());
 }
 
 AttachmentUploaderImpl::~AttachmentUploaderImpl() {

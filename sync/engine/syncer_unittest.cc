@@ -306,15 +306,16 @@ class SyncerTest : public testing::Test,
     model_type_registry_->RegisterDirectoryTypeDebugInfoObserver(
         &debug_info_cache_);
 
-    context_.reset(
-        new SyncSessionContext(
-            mock_server_.get(), directory(),
-            extensions_activity_,
-            listeners, debug_info_getter_.get(),
-            model_type_registry_.get(),
-            true,  // enable keystore encryption
-            false,  // force enable pre-commit GU avoidance experiment
-            "fake_invalidator_client_id"));
+    context_.reset(new SyncSessionContext(
+        mock_server_.get(),
+        directory(),
+        extensions_activity_.get(),
+        listeners,
+        debug_info_getter_.get(),
+        model_type_registry_.get(),
+        true,   // enable keystore encryption
+        false,  // force enable pre-commit GU avoidance experiment
+        "fake_invalidator_client_id"));
     context_->SetRoutingInfo(routing_info);
     syncer_ = new Syncer(&cancelation_signal_);
 

@@ -53,15 +53,15 @@ AttachmentServiceProxy::AttachmentServiceProxy(
     const scoped_refptr<base::SequencedTaskRunner>& wrapped_task_runner,
     const base::WeakPtr<syncer::AttachmentService>& wrapped)
     : wrapped_task_runner_(wrapped_task_runner), core_(new Core(wrapped)) {
-  DCHECK(wrapped_task_runner_);
+  DCHECK(wrapped_task_runner_.get());
 }
 
 AttachmentServiceProxy::AttachmentServiceProxy(
     const scoped_refptr<base::SequencedTaskRunner>& wrapped_task_runner,
     const scoped_refptr<Core>& core)
     : wrapped_task_runner_(wrapped_task_runner), core_(core) {
-  DCHECK(wrapped_task_runner_);
-  DCHECK(core_);
+  DCHECK(wrapped_task_runner_.get());
+  DCHECK(core_.get());
 }
 
 AttachmentServiceProxy::~AttachmentServiceProxy() {
@@ -70,7 +70,7 @@ AttachmentServiceProxy::~AttachmentServiceProxy() {
 void AttachmentServiceProxy::GetOrDownloadAttachments(
     const AttachmentIdList& attachment_ids,
     const GetOrDownloadCallback& callback) {
-  DCHECK(wrapped_task_runner_);
+  DCHECK(wrapped_task_runner_.get());
   GetOrDownloadCallback proxy_callback =
       base::Bind(&ProxyGetOrDownloadCallback,
                  base::ThreadTaskRunnerHandle::Get(),
@@ -86,7 +86,7 @@ void AttachmentServiceProxy::GetOrDownloadAttachments(
 void AttachmentServiceProxy::DropAttachments(
     const AttachmentIdList& attachment_ids,
     const DropCallback& callback) {
-  DCHECK(wrapped_task_runner_);
+  DCHECK(wrapped_task_runner_.get());
   DropCallback proxy_callback = base::Bind(
       &ProxyDropCallback, base::ThreadTaskRunnerHandle::Get(), callback);
   wrapped_task_runner_->PostTask(FROM_HERE,
@@ -98,7 +98,7 @@ void AttachmentServiceProxy::DropAttachments(
 
 void AttachmentServiceProxy::StoreAttachments(const AttachmentList& attachments,
                                               const StoreCallback& callback) {
-  DCHECK(wrapped_task_runner_);
+  DCHECK(wrapped_task_runner_.get());
   StoreCallback proxy_callback = base::Bind(
       &ProxyStoreCallback, base::ThreadTaskRunnerHandle::Get(), callback);
   wrapped_task_runner_->PostTask(

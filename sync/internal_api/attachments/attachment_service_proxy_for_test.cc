@@ -40,7 +40,7 @@ AttachmentServiceProxy AttachmentServiceProxyForTest::Create() {
 
   scoped_refptr<base::SequencedTaskRunner> runner(
       base::ThreadTaskRunnerHandle::Get());
-  if (!runner) {
+  if (!runner.get()) {
     // Dummy runner for tests that don't care about AttachmentServiceProxy.
     DVLOG(1) << "Creating dummy MessageLoop for AttachmentServiceProxy.";
     base::MessageLoop loop;
