@@ -403,7 +403,7 @@ PPB_ImageData_Impl* PepperGraphics2DHost::ImageData() {
 }
 
 gfx::Size PepperGraphics2DHost::Size() const {
-  if (!image_data_)
+  if (!image_data_.get())
     return gfx::Size();
   return gfx::Size(image_data_->width(), image_data_->height());
 }

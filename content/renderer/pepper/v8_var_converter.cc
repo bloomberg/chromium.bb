@@ -157,7 +157,7 @@ bool GetOrCreateV8Value(v8::Handle<v8::Context> context,
     case PP_VARTYPE_OBJECT: {
       DCHECK(object_vars_allowed);
       scoped_refptr<V8ObjectVar> v8_object_var = V8ObjectVar::FromPPVar(var);
-      if (!v8_object_var) {
+      if (!v8_object_var.get()) {
         NOTREACHED();
         result->Clear();
         return false;

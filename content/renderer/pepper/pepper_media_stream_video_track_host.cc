@@ -385,7 +385,7 @@ void PepperMediaStreamVideoTrackHost::OnVideoFrame(
     const scoped_refptr<VideoFrame>& frame,
     const media::VideoCaptureFormat& format,
     const base::TimeTicks& estimated_capture_time) {
-  DCHECK(frame);
+  DCHECK(frame.get());
   // TODO(penghuang): Check |frame->end_of_stream()| and close the track.
   PP_VideoFrame_Format ppformat = ToPpapiFormat(frame->format());
   if (ppformat == PP_VIDEOFRAME_FORMAT_UNKNOWN)

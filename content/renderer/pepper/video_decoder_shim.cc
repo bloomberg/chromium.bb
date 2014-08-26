@@ -302,8 +302,8 @@ VideoDecoderShim::VideoDecoderShim(PepperVideoDecoderHost* host)
       num_pending_decodes_(0),
       weak_ptr_factory_(this) {
   DCHECK(host_);
-  DCHECK(media_message_loop_);
-  DCHECK(context_provider_);
+  DCHECK(media_message_loop_.get());
+  DCHECK(context_provider_.get());
   decoder_impl_.reset(new DecoderImpl(weak_ptr_factory_.GetWeakPtr()));
 }
 

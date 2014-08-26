@@ -57,7 +57,7 @@ class PPB_Graphics3D_Impl : public ppapi::PPB_Graphics3D_Shared {
 
   int GetCommandBufferRouteId();
 
-  GpuChannelHost* channel() { return channel_; }
+  GpuChannelHost* channel() { return channel_.get(); }
 
  protected:
   virtual ~PPB_Graphics3D_Impl();

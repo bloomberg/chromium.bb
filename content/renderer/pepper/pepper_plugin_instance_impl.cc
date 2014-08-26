@@ -747,7 +747,7 @@ void PepperPluginInstanceImpl::InvalidateRect(const gfx::Rect& rect) {
   }
 
   cc::Layer* layer =
-      texture_layer_ ? texture_layer_.get() : compositor_layer_.get();
+      texture_layer_.get() ? texture_layer_.get() : compositor_layer_.get();
   if (layer) {
     if (rect.IsEmpty()) {
       layer->SetNeedsDisplay();
@@ -761,7 +761,7 @@ void PepperPluginInstanceImpl::ScrollRect(int dx,
                                           int dy,
                                           const gfx::Rect& rect) {
   cc::Layer* layer =
-      texture_layer_ ? texture_layer_.get() : compositor_layer_.get();
+      texture_layer_.get() ? texture_layer_.get() : compositor_layer_.get();
   if (layer) {
     InvalidateRect(rect);
   } else if (fullscreen_container_) {
@@ -1529,7 +1529,7 @@ bool PepperPluginInstanceImpl::LoadPrivateInterface() {
   // If this is *not* a NaCl plugin, original_module_ will never be set; we talk
   // to the "real" module.
   scoped_refptr<PluginModule> module =
-      original_module_ ? original_module_ : module_;
+      original_module_.get() ? original_module_ : module_;
   // Only check for the interface if the plugin has private permission.
   if (!module->permissions().HasPermission(ppapi::PERMISSION_PRIVATE))
     return false;
@@ -1568,7 +1568,7 @@ bool PepperPluginInstanceImpl::LoadZoomInterface() {
 }
 
 void PepperPluginInstanceImpl::UpdateLayerTransform() {
-  if (!bound_graphics_2d_platform_ || !texture_layer_) {
+  if (!bound_graphics_2d_platform_ || !texture_layer_.get()) {
     // Currently the transform is only applied for Graphics2D.
     return;
   }
@@ -2043,16 +2043,15 @@ void PepperPluginInstanceImpl::UpdateLayer(bool device_changed) {
   bool want_texture_layer = want_3d_layer || want_2d_layer;
   bool want_compositor_layer = !!bound_compositor_;
 
-  if (!device_changed &&
-      (want_texture_layer == !!texture_layer_.get()) &&
+  if (!device_changed && (want_texture_layer == !!texture_layer_.get()) &&
       (want_3d_layer == layer_is_hardware_) &&
-      (want_compositor_layer == !!compositor_layer_) &&
+      (want_compositor_layer == !!compositor_layer_.get()) &&
       layer_bound_to_fullscreen_ == !!fullscreen_container_) {
     UpdateLayerTransform();
     return;
   }
 
-  if (texture_layer_ || compositor_layer_) {
+  if (texture_layer_.get() || compositor_layer_.get()) {
     if (!layer_bound_to_fullscreen_)
       container_->setWebLayer(NULL);
     else if (fullscreen_container_)
@@ -2633,7 +2632,7 @@ ppapi::Resource* PepperPluginInstanceImpl::GetSingletonResource(
     case ppapi::GAMEPAD_SINGLETON_ID:
       return gamepad_impl_.get();
     case ppapi::UMA_SINGLETON_ID: {
-      if (!uma_private_impl_) {
+      if (!uma_private_impl_.get()) {
         RendererPpapiHostImpl* host_impl = module_->renderer_ppapi_host();
         if (host_impl->in_process_router()) {
           uma_private_impl_ = new ppapi::proxy::UMAPrivateResource(

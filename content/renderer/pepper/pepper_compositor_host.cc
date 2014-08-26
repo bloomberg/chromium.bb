@@ -219,19 +219,19 @@ void PepperCompositorHost::UpdateLayer(
       new_layer->common.clip_rect.size.width != 0 ||
       new_layer->common.clip_rect.size.height != 0) {
     scoped_refptr<cc::Layer> clip_parent = layer->parent();
-    if (clip_parent == layer_) {
+    if (clip_parent.get() == layer_.get()) {
       // Create a clip parent layer, if it does not exist.
       clip_parent = cc::Layer::Create();
       clip_parent->SetMasksToBounds(true);
       clip_parent->SetIsDrawable(true);
-      layer_->ReplaceChild(layer, clip_parent);
+      layer_->ReplaceChild(layer.get(), clip_parent);
       clip_parent->AddChild(layer);
     }
     gfx::Point position = PP_ToGfxPoint(new_layer->common.clip_rect.point);
     clip_parent->SetPosition(position);
     clip_parent->SetBounds(PP_ToGfxSize(new_layer->common.clip_rect.size));
     layer->SetPosition(gfx::Point(-position.x(), -position.y()));
-  } else if (layer->parent() != layer_) {
+  } else if (layer->parent() != layer_.get()) {
     // Remove the clip parent layer.
     layer_->ReplaceChild(layer->parent(), layer);
     layer->SetPosition(gfx::Point());
@@ -348,11 +348,11 @@ int32_t PepperCompositorHost::OnHostMsgCommitLayers(
   for (size_t i = 0; i < layers.size(); ++i) {
     const ppapi::CompositorLayerData* pp_layer = &layers[i];
     LayerData* data = i >= layers_.size() ? NULL : &layers_[i];
-    DCHECK(!data || data->cc_layer);
+    DCHECK(!data || data->cc_layer.get());
     scoped_refptr<cc::Layer> cc_layer = data ? data->cc_layer : NULL;
     ppapi::CompositorLayerData* old_layer = data ? &data->pp_layer : NULL;
 
-    if (!cc_layer) {
+    if (!cc_layer.get()) {
       if (pp_layer->color)
         cc_layer = cc::SolidColorLayer::Create();
       else if (pp_layer->texture || pp_layer->image)
