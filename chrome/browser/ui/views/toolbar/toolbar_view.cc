@@ -155,8 +155,6 @@ ToolbarView::ToolbarView(Browser* browser)
       (browser->is_app() && IsStreamlinedHostedAppsEnabled()))
     display_mode_ = DISPLAYMODE_NORMAL;
 
-  registrar_.Add(this, chrome::NOTIFICATION_UPGRADE_RECOMMENDED,
-                 content::NotificationService::AllSources());
   if (OutdatedUpgradeBubbleView::IsAvailable()) {
     registrar_.Add(this, chrome::NOTIFICATION_OUTDATED_INSTALL,
                    content::NotificationService::AllSources());
