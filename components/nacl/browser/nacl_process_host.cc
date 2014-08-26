@@ -772,9 +772,9 @@ void NaClProcessHost::SendErrorToRenderer(const std::string& error_message) {
 void NaClProcessHost::SendMessageToRenderer(
     const NaClLaunchResult& result,
     const std::string& error_message) {
-  DCHECK(nacl_host_message_filter_);
+  DCHECK(nacl_host_message_filter_.get());
   DCHECK(reply_msg_);
-  if (nacl_host_message_filter_ != NULL && reply_msg_ != NULL) {
+  if (nacl_host_message_filter_.get() != NULL && reply_msg_ != NULL) {
     NaClHostMsg_LaunchNaCl::WriteReplyParams(
         reply_msg_, result, error_message);
     nacl_host_message_filter_->Send(reply_msg_);

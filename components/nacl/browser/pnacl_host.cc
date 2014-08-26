@@ -510,7 +510,7 @@ void PnaclHost::StoreTranslatedNexe(
   }
   pending_backend_operations_++;
   disk_cache_->StoreNexe(it->second.cache_key,
-                         buffer,
+                         buffer.get(),
                          base::Bind(&PnaclHost::OnTranslatedNexeStored,
                                     weak_factory_.GetWeakPtr(),
                                     it->first));

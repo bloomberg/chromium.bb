@@ -80,10 +80,10 @@ bool InitializePnaclResourceHost() {
   content::RenderThread* render_thread = content::RenderThread::Get();
   if (!render_thread)
     return false;
-  if (!g_pnacl_resource_host.Get()) {
+  if (!g_pnacl_resource_host.Get().get()) {
     g_pnacl_resource_host.Get() = new PnaclTranslationResourceHost(
         render_thread->GetIOMessageLoopProxy());
-    render_thread->AddFilter(g_pnacl_resource_host.Get());
+    render_thread->AddFilter(g_pnacl_resource_host.Get().get());
   }
   return true;
 }
@@ -662,7 +662,7 @@ void ReportTranslationFinished(PP_Instance instance,
 
   // If the resource host isn't initialized, don't try to do that here.
   // Just return because something is already very wrong.
-  if (g_pnacl_resource_host.Get() == NULL)
+  if (g_pnacl_resource_host.Get().get() == NULL)
     return;
   g_pnacl_resource_host.Get()->ReportTranslationFinished(instance, success);
 }
