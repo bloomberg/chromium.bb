@@ -36,7 +36,6 @@ vars = {
   'boringssl_git': 'https://boringssl.googlesource.com',
   # After changing nacl_revision, run 'glient sync' and check native_client/DEPS
   # to update other nacl_*_revision's.
-  'libaddressinput_revision': 'b52a2aeb63a28914850f3ed81cd7fd26ecdd4cdc', # from svn revision 333
   'libvpx_revision': '563c46bb2d0e5d5c8b7d2c6c0c50f0283e9087de', # r291625
   'sfntly_revision': '1bdaae8fc788a5ac8936d68bf24f37d977a13dac',
   'skia_revision': '76db31a2ca11da4dd45016e964b2e49f39f3dd49',
@@ -261,7 +260,7 @@ deps = {
     Var('chromium_git') + '/external/smhasher.git' + '@' + 'e87738e57558e0ec472b2fc3a643b838e5b6e88f',
 
   'src/third_party/libaddressinput/src':
-    Var('chromium_git') + '/external/libaddressinput.git' + '@' +  Var('libaddressinput_revision'),
+    Var('chromium_git') + '/external/libaddressinput.git' + '@' + '945d96387a716d0d82b195fa69a5e9a701249517', # from svn revision 334
 
   'src/third_party/libphonenumber/src/phonenumbers':
     Var('chromium_git') + '/external/libphonenumber/cpp/src/phonenumbers.git' + '@' + '8d8b5b3b2035197795d27573d4cf566b5d9ad689',
