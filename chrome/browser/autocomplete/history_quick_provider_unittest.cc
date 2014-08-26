@@ -163,7 +163,7 @@ class HistoryQuickProviderTest : public testing::Test {
                          base::string16 autocompletion);
 
   history::HistoryBackend* history_backend() {
-    return history_service_->history_backend_;
+    return history_service_->history_backend_.get();
   }
 
   base::MessageLoopForUI message_loop_;

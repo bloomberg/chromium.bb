@@ -3067,8 +3067,8 @@ TEST_F(SearchProviderTest, CanSendURL) {
 }
 
 TEST_F(SearchProviderTest, TestDeleteMatch) {
-  AutocompleteMatch match(provider_, 0, true,
-                          AutocompleteMatchType::SEARCH_SUGGEST);
+  AutocompleteMatch match(
+      provider_.get(), 0, true, AutocompleteMatchType::SEARCH_SUGGEST);
   match.RecordAdditionalInfo(
       SearchProvider::kDeletionUrlKey,
       "https://www.google.com/complete/deleteitem?q=foo");

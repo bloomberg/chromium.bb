@@ -265,7 +265,7 @@ void AutocompleteController::Start(const AutocompleteInput& input) {
 
     // Call Start() on ZeroSuggestProvider with an INVALID AutocompleteInput
     // to clear out zero-suggest |matches_|.
-    if (*i == zero_suggest_provider_)
+    if (i->get() == zero_suggest_provider_)
       (*i)->Start(AutocompleteInput(), minimal_changes);
     else
       (*i)->Start(input_, minimal_changes);
@@ -337,7 +337,7 @@ void AutocompleteController::StartZeroSuggest(const AutocompleteInput& input) {
   // AutocompleteInput to clear out cached |matches_|, which ensures that
   // they aren't used with zero suggest.
   for (Providers::iterator i(providers_.begin()); i != providers_.end(); ++i) {
-    if (*i == zero_suggest_provider_)
+    if (i->get() == zero_suggest_provider_)
       (*i)->Start(input, false);
     else
       (*i)->Start(AutocompleteInput(), false);
