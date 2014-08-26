@@ -220,10 +220,7 @@ class DependencySettings(GClientKeywords):
     # These are not mutable:
     self._parent = parent
     self._safesync_url = safesync_url
-    if url == CHROMIUM_SRC_URL:
-      self._deps_file = 'DEPS'
-    else:
-      self._deps_file = deps_file
+    self._deps_file = deps_file
     self._url = url
     # 'managed' determines whether or not this dependency is synced/updated by
     # gclient after gclient checks it out initially.  The difference between
