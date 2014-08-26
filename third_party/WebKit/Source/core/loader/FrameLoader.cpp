@@ -123,7 +123,6 @@ FrameLoader::FrameLoader(LocalFrame* frame)
     , m_didAccessInitialDocument(false)
     , m_didAccessInitialDocumentTimer(this, &FrameLoader::didAccessInitialDocumentTimerFired)
     , m_forcedSandboxFlags(SandboxNone)
-    , m_willDetachClient(false)
 {
 }
 
@@ -1119,8 +1118,6 @@ String FrameLoader::userAgent(const KURL& url) const
 
 void FrameLoader::detachFromParent()
 {
-    // Temporary explosions. We should never re-enter this code when this condition is true.
-    RELEASE_ASSERT(!m_willDetachClient);
     // The caller must protect a reference to m_frame.
     ASSERT(m_frame->refCount() > 1);
 
@@ -1132,8 +1129,6 @@ void FrameLoader::detachFromParent()
 
     if (!client())
         return;
-
-    TemporaryChange<bool> willDetachClient(m_willDetachClient, true);
 
     // FIXME: All this code belongs up in Page.
     Frame* parent = m_frame->tree().parent();

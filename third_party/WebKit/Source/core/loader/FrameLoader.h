@@ -273,8 +273,6 @@ private:
     Timer<FrameLoader> m_didAccessInitialDocumentTimer;
 
     SandboxFlags m_forcedSandboxFlags;
-
-    bool m_willDetachClient;
 };
 
 } // namespace blink
