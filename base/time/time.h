@@ -639,14 +639,6 @@ class BASE_EXPORT TimeTicks {
   // This is only for testing.
   static bool IsHighResClockWorking();
 
-  // Enable high resolution time for TimeTicks::Now(). This function will
-  // test for the availability of a working implementation of
-  // QueryPerformanceCounter(). If one is not available, this function does
-  // nothing and the resolution of Now() remains 1ms. Otherwise, all future
-  // calls to TimeTicks::Now() will have the higher resolution provided by QPC.
-  // Returns true if high resolution time was successfully enabled.
-  static bool SetNowIsHighResNowIfSupported();
-
   // Returns a time value that is NOT rollover protected.
   static TimeTicks UnprotectedNow();
 #endif
