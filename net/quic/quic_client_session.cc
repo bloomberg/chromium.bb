@@ -137,16 +137,12 @@ QuicClientSession::QuicClientSession(
     QuicConnection* connection,
     scoped_ptr<DatagramClientSocket> socket,
     QuicStreamFactory* stream_factory,
-    QuicCryptoClientStreamFactory* crypto_client_stream_factory,
     TransportSecurityState* transport_security_state,
     scoped_ptr<QuicServerInfo> server_info,
-    const QuicServerId& server_id,
     const QuicConfig& config,
-    QuicCryptoClientConfig* crypto_config,
     base::TaskRunner* task_runner,
     NetLog* net_log)
     : QuicClientSessionBase(connection, config),
-      server_host_port_(server_id.host_port_pair()),
       require_confirmation_(false),
       stream_factory_(stream_factory),
       socket_(socket.Pass()),
@@ -161,6 +157,14 @@ QuicClientSession::QuicClientSession(
       num_packets_read_(0),
       going_away_(false),
       weak_factory_(this) {
+  connection->set_debug_visitor(logger_);
+}
+
+void QuicClientSession::InitializeSession(
+    const QuicServerId& server_id,
+    QuicCryptoClientConfig* crypto_config,
+    QuicCryptoClientStreamFactory* crypto_client_stream_factory) {
+  server_host_port_.reset(new HostPortPair(server_id.host_port_pair()));
   crypto_stream_.reset(
       crypto_client_stream_factory ?
           crypto_client_stream_factory->CreateQuicCryptoClientStream(
@@ -168,8 +172,7 @@ QuicClientSession::QuicClientSession(
           new QuicCryptoClientStream(server_id, this,
                                      new ProofVerifyContextChromium(net_log_),
                                      crypto_config));
-
-  connection->set_debug_visitor(logger_);
+  QuicClientSessionBase::InitializeSession();
   // TODO(rch): pass in full host port proxy pair
   net_log_.BeginEvent(
       NetLog::TYPE_QUIC_SESSION,
@@ -491,7 +494,7 @@ bool QuicClientSession::CanPool(const std::string& hostname) const {
   }
 
   return SpdySession::CanPool(transport_security_state_, ssl_info,
-                              server_host_port_.host(), hostname);
+                              server_host_port_->host(), hostname);
 }
 
 QuicDataStream* QuicClientSession::CreateIncomingDataStream(

@@ -87,21 +87,24 @@ class NET_EXPORT_PRIVATE QuicClientSession : public QuicClientSessionBase {
     DISALLOW_COPY_AND_ASSIGN(StreamRequest);
   };
 
-  // Constructs a new session connected to |server_id| which will own
-  // |connection|, but not |stream_factory|, which must outlive this session.
+  // Constructs a new session which will own |connection|, but not
+  // |stream_factory|, which must outlive this session.
   // TODO(rch): decouple the factory from the session via a Delegate interface.
   QuicClientSession(QuicConnection* connection,
                     scoped_ptr<DatagramClientSocket> socket,
                     QuicStreamFactory* stream_factory,
-                    QuicCryptoClientStreamFactory* crypto_client_stream_factory,
                     TransportSecurityState* transport_security_state,
                     scoped_ptr<QuicServerInfo> server_info,
-                    const QuicServerId& server_id,
                     const QuicConfig& config,
-                    QuicCryptoClientConfig* crypto_config,
                     base::TaskRunner* task_runner,
                     NetLog* net_log);
   virtual ~QuicClientSession();
+
+  // Initialize session's connection to |server_id|.
+  void InitializeSession(
+      const QuicServerId& server_id,
+      QuicCryptoClientConfig* config,
+      QuicCryptoClientStreamFactory* crypto_client_stream_factory);
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -219,7 +222,7 @@ class NET_EXPORT_PRIVATE QuicClientSession : public QuicClientSessionBase {
 
   void OnConnectTimeout();
 
-  const HostPortPair server_host_port_;
+  scoped_ptr<HostPortPair> server_host_port_;
   bool require_confirmation_;
   scoped_ptr<QuicCryptoClientStream> crypto_stream_;
   QuicStreamFactory* stream_factory_;
