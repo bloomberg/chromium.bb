@@ -359,6 +359,7 @@ cr.define('uber', function() {
 
     // Trigger a layout after making it visible and before setting
     // the class to 'selected', so that it animates in.
+    /** @suppress {uselessCode} */
     container.offsetTop;
     container.classList.add('selected');
 

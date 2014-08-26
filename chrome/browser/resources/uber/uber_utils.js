@@ -114,7 +114,7 @@ cr.define('uber', function() {
    * Invokes a method on the parent window (UberPage). This is a convenience
    * method for API calls into the uber page.
    * @param {string} method The name of the method to invoke.
-   * @param {(Object|number)=} opt_params Optional property bag of parameters
+   * @param {?=} opt_params Optional property bag of parameters
    *     to pass to the invoked method.
    * @private
    */
@@ -128,8 +128,8 @@ cr.define('uber', function() {
   /**
    * Invokes a method on the target window.
    * @param {string} method The name of the method to invoke.
-   * @param {(Object|number)=} opt_params Optional property bag of parameters
-   *     to pass to the invoked method.
+   * @param {?=} opt_params Optional property bag of
+   *     parameters to pass to the invoked method.
    * @param {string=} opt_url The origin of the target window.
    * @private
    */
