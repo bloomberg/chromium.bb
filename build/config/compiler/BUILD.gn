@@ -16,7 +16,7 @@ declare_args() {
   android_full_debug = false
 }
 
-use_gold = is_linux && cpu_arch == "x64"
+use_gold = is_linux
 
 # linux_use_debug_fission: whether to use split DWARF debug info
 # files. This can reduce link time significantly, but is incompatible
@@ -200,8 +200,8 @@ config("compiler") {
     ]
   }
   if (use_gold) {
-    # Use gold for linking on 64-bit Linux only (on 32-bit it runs out of
-    # address space, and it doesn't support cross-compiling).
+    # 32-bit hosts have to be 32-bit userland with a 64-bit kernel, so that
+    # 64-bit gold gets used. 32-bit gold will run out of address space.
     gold_path = rebase_path("//third_party/binutils/Linux_x64/Release/bin",
                             root_build_dir)
     ldflags += [
