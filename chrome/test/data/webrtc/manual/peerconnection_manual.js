@@ -968,6 +968,12 @@ function onDataChannelReadyStateChange_() {
   var readyState = global.dataChannel.readyState;
   print_('DataChannel state:' + readyState);
   global.dataStatusCallback(readyState);
+  // Display dataChannel.id only when dataChannel is active/open.
+  if (global.dataChannel.readyState == 'open') {
+    $('data-channel-id').value = global.dataChannel.id;
+  } else if (global.dataChannel.readyState == 'closed') {
+    $('data-channel-id').value = '';
+  }
 }
 
 /**
