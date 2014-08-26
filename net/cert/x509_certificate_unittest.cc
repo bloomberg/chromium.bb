@@ -91,7 +91,7 @@ const double kGoogleParseValidTo = 1324252799;
 void CheckGoogleCert(const scoped_refptr<X509Certificate>& google_cert,
                      uint8* expected_fingerprint,
                      double valid_from, double valid_to) {
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), google_cert);
+  ASSERT_NE(static_cast<X509Certificate*>(NULL), google_cert.get());
 
   const CertPrincipal& subject = google_cert->subject();
   EXPECT_EQ("www.google.com", subject.common_name);
@@ -146,7 +146,7 @@ TEST(X509CertificateTest, WebkitCertParsing) {
   scoped_refptr<X509Certificate> webkit_cert(X509Certificate::CreateFromBytes(
       reinterpret_cast<const char*>(webkit_der), sizeof(webkit_der)));
 
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), webkit_cert);
+  ASSERT_NE(static_cast<X509Certificate*>(NULL), webkit_cert.get());
 
   const CertPrincipal& subject = webkit_cert->subject();
   EXPECT_EQ("Cupertino", subject.locality_name);
@@ -202,7 +202,7 @@ TEST(X509CertificateTest, ThawteCertParsing) {
   scoped_refptr<X509Certificate> thawte_cert(X509Certificate::CreateFromBytes(
       reinterpret_cast<const char*>(thawte_der), sizeof(thawte_der)));
 
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), thawte_cert);
+  ASSERT_NE(static_cast<X509Certificate*>(NULL), thawte_cert.get());
 
   const CertPrincipal& subject = thawte_cert->subject();
   EXPECT_EQ("www.thawte.com", subject.common_name);
@@ -254,7 +254,7 @@ TEST(X509CertificateTest, MultivalueRDN) {
 
   scoped_refptr<X509Certificate> multivalue_rdn_cert =
       ImportCertFromFile(certs_dir, "multivalue_rdn.pem");
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), multivalue_rdn_cert);
+  ASSERT_NE(static_cast<X509Certificate*>(NULL), multivalue_rdn_cert.get());
 
   const CertPrincipal& subject = multivalue_rdn_cert->subject();
   EXPECT_EQ("Multivalue RDN Test", subject.common_name);
@@ -278,7 +278,7 @@ TEST(X509CertificateTest, UnescapedSpecialCharacters) {
 
   scoped_refptr<X509Certificate> unescaped_cert =
       ImportCertFromFile(certs_dir, "unescaped.pem");
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), unescaped_cert);
+  ASSERT_NE(static_cast<X509Certificate*>(NULL), unescaped_cert.get());
 
   const CertPrincipal& subject = unescaped_cert->subject();
   EXPECT_EQ("127.0.0.1", subject.common_name);
@@ -328,15 +328,15 @@ TEST(X509CertificateTest, CAFingerprints) {
 
   scoped_refptr<X509Certificate> server_cert =
       ImportCertFromFile(certs_dir, "salesforce_com_test.pem");
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), server_cert);
+  ASSERT_NE(static_cast<X509Certificate*>(NULL), server_cert.get());
 
   scoped_refptr<X509Certificate> intermediate_cert1 =
       ImportCertFromFile(certs_dir, "verisign_intermediate_ca_2011.pem");
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), intermediate_cert1);
+  ASSERT_NE(static_cast<X509Certificate*>(NULL), intermediate_cert1.get());
 
   scoped_refptr<X509Certificate> intermediate_cert2 =
       ImportCertFromFile(certs_dir, "verisign_intermediate_ca_2016.pem");
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), intermediate_cert2);
+  ASSERT_NE(static_cast<X509Certificate*>(NULL), intermediate_cert2.get());
 
   X509Certificate::OSCertHandles intermediates;
   intermediates.push_back(intermediate_cert1->os_cert_handle());
@@ -456,7 +456,7 @@ TEST(X509CertificateTest, ParseSubjectAltNames) {
 
   scoped_refptr<X509Certificate> san_cert =
       ImportCertFromFile(certs_dir, "subjectAltName_sanity_check.pem");
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), san_cert);
+  ASSERT_NE(static_cast<X509Certificate*>(NULL), san_cert.get());
 
   std::vector<std::string> dns_names;
   std::vector<std::string> ip_addresses;
@@ -493,7 +493,7 @@ TEST(X509CertificateTest, ExtractSPKIFromDERCert) {
   base::FilePath certs_dir = GetTestCertsDirectory();
   scoped_refptr<X509Certificate> cert =
       ImportCertFromFile(certs_dir, "nist.der");
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), cert);
+  ASSERT_NE(static_cast<X509Certificate*>(NULL), cert.get());
 
   std::string derBytes;
   EXPECT_TRUE(X509Certificate::GetDEREncoded(cert->os_cert_handle(),
@@ -513,7 +513,7 @@ TEST(X509CertificateTest, ExtractCRLURLsFromDERCert) {
   base::FilePath certs_dir = GetTestCertsDirectory();
   scoped_refptr<X509Certificate> cert =
       ImportCertFromFile(certs_dir, "nist.der");
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), cert);
+  ASSERT_NE(static_cast<X509Certificate*>(NULL), cert.get());
 
   std::string derBytes;
   EXPECT_TRUE(X509Certificate::GetDEREncoded(cert->os_cert_handle(),
@@ -603,7 +603,7 @@ TEST(X509CertificateTest, Pickle) {
   scoped_refptr<X509Certificate> cert_from_pickle =
       X509Certificate::CreateFromPickle(
           pickle, &iter, X509Certificate::PICKLETYPE_CERTIFICATE_CHAIN_V3);
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), cert_from_pickle);
+  ASSERT_NE(static_cast<X509Certificate*>(NULL), cert_from_pickle.get());
   EXPECT_TRUE(X509Certificate::IsSameOSCert(
       cert->os_cert_handle(), cert_from_pickle->os_cert_handle()));
   const X509Certificate::OSCertHandles& cert_intermediates =
@@ -766,7 +766,7 @@ TEST(X509CertificateTest, IsIssuedByEncoded) {
   // Test a client certificate from MIT.
   scoped_refptr<X509Certificate> mit_davidben_cert(
       ImportCertFromFile(certs_dir, "mit.davidben.der"));
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), mit_davidben_cert);
+  ASSERT_NE(static_cast<X509Certificate*>(NULL), mit_davidben_cert.get());
 
   std::string mit_issuer(reinterpret_cast<const char*>(MITDN),
                          sizeof(MITDN));
@@ -774,7 +774,7 @@ TEST(X509CertificateTest, IsIssuedByEncoded) {
   // Test a certificate from Google, issued by Thawte
   scoped_refptr<X509Certificate> google_cert(
       ImportCertFromFile(certs_dir, "google.single.der"));
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), google_cert);
+  ASSERT_NE(static_cast<X509Certificate*>(NULL), google_cert.get());
 
   std::string thawte_issuer(reinterpret_cast<const char*>(ThawteDN),
                             sizeof(ThawteDN));
@@ -876,7 +876,7 @@ TEST(X509CertificateTest, GetDefaultNickname) {
 
   scoped_refptr<X509Certificate> test_cert(
       ImportCertFromFile(certs_dir, "no_subject_common_name_cert.pem"));
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), test_cert);
+  ASSERT_NE(static_cast<X509Certificate*>(NULL), test_cert.get());
 
   std::string nickname = test_cert->GetDefaultNickname(USER_CERT);
   EXPECT_EQ("wtc@google.com's COMODO Client Authentication and "

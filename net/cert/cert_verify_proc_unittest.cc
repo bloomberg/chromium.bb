@@ -199,7 +199,7 @@ TEST_F(CertVerifyProcTest, PaypalNullCertParsing) {
           reinterpret_cast<const char*>(paypal_null_der),
           sizeof(paypal_null_der)));
 
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), paypal_null_cert);
+  ASSERT_NE(static_cast<X509Certificate*>(NULL), paypal_null_cert.get());
 
   const SHA1HashValue& fingerprint =
       paypal_null_cert->fingerprint();
@@ -284,11 +284,11 @@ TEST_F(CertVerifyProcTest, DISABLED_GlobalSignR3EVTest) {
 
   scoped_refptr<X509Certificate> server_cert =
       ImportCertFromFile(certs_dir, "2029_globalsign_com_cert.pem");
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), server_cert);
+  ASSERT_NE(static_cast<X509Certificate*>(NULL), server_cert.get());
 
   scoped_refptr<X509Certificate> intermediate_cert =
       ImportCertFromFile(certs_dir, "globalsign_ev_sha256_ca_cert.pem");
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), intermediate_cert);
+  ASSERT_NE(static_cast<X509Certificate*>(NULL), intermediate_cert.get());
 
   X509Certificate::OSCertHandles intermediates;
   intermediates.push_back(intermediate_cert->os_cert_handle());
@@ -368,7 +368,7 @@ TEST_F(CertVerifyProcTest, RejectWeakKeys) {
   // Add the root that signed the intermediates for this test.
   scoped_refptr<X509Certificate> root_cert =
       ImportCertFromFile(certs_dir, "2048-rsa-root.pem");
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), root_cert);
+  ASSERT_NE(static_cast<X509Certificate*>(NULL), root_cert.get());
   ScopedTestRoot scoped_root(root_cert.get());
 
   // Now test each chain.
@@ -381,12 +381,12 @@ TEST_F(CertVerifyProcTest, RejectWeakKeys) {
       SCOPED_TRACE(basename);
       scoped_refptr<X509Certificate> ee_cert =
           ImportCertFromFile(certs_dir, basename);
-      ASSERT_NE(static_cast<X509Certificate*>(NULL), ee_cert);
+      ASSERT_NE(static_cast<X509Certificate*>(NULL), ee_cert.get());
 
       basename = *signer_type + "-intermediate.pem";
       scoped_refptr<X509Certificate> intermediate =
           ImportCertFromFile(certs_dir, basename);
-      ASSERT_NE(static_cast<X509Certificate*>(NULL), intermediate);
+      ASSERT_NE(static_cast<X509Certificate*>(NULL), intermediate.get());
 
       X509Certificate::OSCertHandles intermediates;
       intermediates.push_back(intermediate->os_cert_handle());
@@ -480,11 +480,11 @@ TEST_F(CertVerifyProcTest, GoogleDigiNotarTest) {
 
   scoped_refptr<X509Certificate> server_cert =
       ImportCertFromFile(certs_dir, "google_diginotar.pem");
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), server_cert);
+  ASSERT_NE(static_cast<X509Certificate*>(NULL), server_cert.get());
 
   scoped_refptr<X509Certificate> intermediate_cert =
       ImportCertFromFile(certs_dir, "diginotar_public_ca_2025.pem");
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), intermediate_cert);
+  ASSERT_NE(static_cast<X509Certificate*>(NULL), intermediate_cert.get());
 
   X509Certificate::OSCertHandles intermediates;
   intermediates.push_back(intermediate_cert->os_cert_handle());
@@ -555,7 +555,7 @@ TEST_F(CertVerifyProcTest, NameConstraintsOk) {
                                     "root_ca_cert.pem",
                                     X509Certificate::FORMAT_AUTO);
   ASSERT_EQ(1U, ca_cert_list.size());
-  ScopedTestRoot test_root(ca_cert_list[0]);
+  ScopedTestRoot test_root(ca_cert_list[0].get());
 
   CertificateList cert_list = CreateCertificateListFromFile(
       GetTestCertsDirectory(), "name_constraint_ok.crt",
@@ -590,7 +590,7 @@ TEST_F(CertVerifyProcTest, NameConstraintsFailure) {
                                     "root_ca_cert.pem",
                                     X509Certificate::FORMAT_AUTO);
   ASSERT_EQ(1U, ca_cert_list.size());
-  ScopedTestRoot test_root(ca_cert_list[0]);
+  ScopedTestRoot test_root(ca_cert_list[0].get());
 
   CertificateList cert_list = CreateCertificateListFromFile(
       GetTestCertsDirectory(), "name_constraint_bad.crt",
@@ -716,7 +716,7 @@ TEST_F(CertVerifyProcTest, InvalidKeyUsage) {
 
   scoped_refptr<X509Certificate> server_cert =
       ImportCertFromFile(certs_dir, "invalid_key_usage_cert.der");
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), server_cert);
+  ASSERT_NE(static_cast<X509Certificate*>(NULL), server_cert.get());
 
   int flags = 0;
   CertVerifyResult verify_result;
@@ -770,11 +770,12 @@ TEST_F(CertVerifyProcTest, VerifyReturnChainBasic) {
   scoped_refptr<X509Certificate> google_full_chain =
       X509Certificate::CreateFromHandle(certs[0]->os_cert_handle(),
                                         intermediates);
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), google_full_chain);
+  ASSERT_NE(static_cast<X509Certificate*>(NULL), google_full_chain.get());
   ASSERT_EQ(2U, google_full_chain->GetIntermediateCertificates().size());
 
   CertVerifyResult verify_result;
-  EXPECT_EQ(static_cast<X509Certificate*>(NULL), verify_result.verified_cert);
+  EXPECT_EQ(static_cast<X509Certificate*>(NULL),
+            verify_result.verified_cert.get());
   int error = Verify(google_full_chain.get(),
                      "127.0.0.1",
                      0,
@@ -782,7 +783,8 @@ TEST_F(CertVerifyProcTest, VerifyReturnChainBasic) {
                      empty_cert_list_,
                      &verify_result);
   EXPECT_EQ(OK, error);
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), verify_result.verified_cert);
+  ASSERT_NE(static_cast<X509Certificate*>(NULL),
+            verify_result.verified_cert.get());
 
   EXPECT_NE(google_full_chain, verify_result.verified_cert);
   EXPECT_TRUE(X509Certificate::IsSameOSCert(
@@ -858,11 +860,12 @@ TEST_F(CertVerifyProcTest, VerifyReturnChainProperlyOrdered) {
   scoped_refptr<X509Certificate> google_full_chain =
       X509Certificate::CreateFromHandle(certs[0]->os_cert_handle(),
                                         intermediates);
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), google_full_chain);
+  ASSERT_NE(static_cast<X509Certificate*>(NULL), google_full_chain.get());
   ASSERT_EQ(2U, google_full_chain->GetIntermediateCertificates().size());
 
   CertVerifyResult verify_result;
-  EXPECT_EQ(static_cast<X509Certificate*>(NULL), verify_result.verified_cert);
+  EXPECT_EQ(static_cast<X509Certificate*>(NULL),
+            verify_result.verified_cert.get());
   int error = Verify(google_full_chain.get(),
                      "127.0.0.1",
                      0,
@@ -870,7 +873,8 @@ TEST_F(CertVerifyProcTest, VerifyReturnChainProperlyOrdered) {
                      empty_cert_list_,
                      &verify_result);
   EXPECT_EQ(OK, error);
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), verify_result.verified_cert);
+  ASSERT_NE(static_cast<X509Certificate*>(NULL),
+            verify_result.verified_cert.get());
 
   EXPECT_NE(google_full_chain, verify_result.verified_cert);
   EXPECT_TRUE(X509Certificate::IsSameOSCert(
@@ -904,8 +908,8 @@ TEST_F(CertVerifyProcTest, VerifyReturnChainFiltersUnrelatedCerts) {
       ImportCertFromFile(certs_dir, "duplicate_cn_1.pem");
   scoped_refptr<X509Certificate> unrelated_certificate2 =
       ImportCertFromFile(certs_dir, "aia-cert.pem");
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), unrelated_certificate);
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), unrelated_certificate2);
+  ASSERT_NE(static_cast<X509Certificate*>(NULL), unrelated_certificate.get());
+  ASSERT_NE(static_cast<X509Certificate*>(NULL), unrelated_certificate2.get());
 
   // Interject unrelated certificates into the list of intermediates.
   X509Certificate::OSCertHandles intermediates;
@@ -917,11 +921,12 @@ TEST_F(CertVerifyProcTest, VerifyReturnChainFiltersUnrelatedCerts) {
   scoped_refptr<X509Certificate> google_full_chain =
       X509Certificate::CreateFromHandle(certs[0]->os_cert_handle(),
                                         intermediates);
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), google_full_chain);
+  ASSERT_NE(static_cast<X509Certificate*>(NULL), google_full_chain.get());
   ASSERT_EQ(4U, google_full_chain->GetIntermediateCertificates().size());
 
   CertVerifyResult verify_result;
-  EXPECT_EQ(static_cast<X509Certificate*>(NULL), verify_result.verified_cert);
+  EXPECT_EQ(static_cast<X509Certificate*>(NULL),
+            verify_result.verified_cert.get());
   int error = Verify(google_full_chain.get(),
                      "127.0.0.1",
                      0,
@@ -929,7 +934,8 @@ TEST_F(CertVerifyProcTest, VerifyReturnChainFiltersUnrelatedCerts) {
                      empty_cert_list_,
                      &verify_result);
   EXPECT_EQ(OK, error);
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), verify_result.verified_cert);
+  ASSERT_NE(static_cast<X509Certificate*>(NULL),
+            verify_result.verified_cert.get());
 
   EXPECT_NE(google_full_chain, verify_result.verified_cert);
   EXPECT_TRUE(X509Certificate::IsSameOSCert(
@@ -1199,7 +1205,7 @@ TEST_F(CertVerifyProcTest, CRLSet) {
                                     "root_ca_cert.pem",
                                     X509Certificate::FORMAT_AUTO);
   ASSERT_EQ(1U, ca_cert_list.size());
-  ScopedTestRoot test_root(ca_cert_list[0]);
+  ScopedTestRoot test_root(ca_cert_list[0].get());
 
   CertificateList cert_list = CreateCertificateListFromFile(
       GetTestCertsDirectory(), "ok_cert.pem", X509Certificate::FORMAT_AUTO);
@@ -1250,7 +1256,7 @@ TEST_F(CertVerifyProcTest, CRLSetLeafSerial) {
                                     "quic_root.crt",
                                     X509Certificate::FORMAT_AUTO);
   ASSERT_EQ(1U, ca_cert_list.size());
-  ScopedTestRoot test_root(ca_cert_list[0]);
+  ScopedTestRoot test_root(ca_cert_list[0].get());
 
   CertificateList intermediate_cert_list =
       CreateCertificateListFromFile(GetTestCertsDirectory(),
@@ -1333,16 +1339,16 @@ TEST_P(CertVerifyProcWeakDigestTest, Verify) {
   if (data.root_cert_filename) {
      scoped_refptr<X509Certificate> root_cert =
          ImportCertFromFile(certs_dir, data.root_cert_filename);
-     ASSERT_NE(static_cast<X509Certificate*>(NULL), root_cert);
+     ASSERT_NE(static_cast<X509Certificate*>(NULL), root_cert.get());
      test_root.Reset(root_cert.get());
   }
 
   scoped_refptr<X509Certificate> intermediate_cert =
       ImportCertFromFile(certs_dir, data.intermediate_cert_filename);
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), intermediate_cert);
+  ASSERT_NE(static_cast<X509Certificate*>(NULL), intermediate_cert.get());
   scoped_refptr<X509Certificate> ee_cert =
       ImportCertFromFile(certs_dir, data.ee_cert_filename);
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), ee_cert);
+  ASSERT_NE(static_cast<X509Certificate*>(NULL), ee_cert.get());
 
   X509Certificate::OSCertHandles intermediates;
   intermediates.push_back(intermediate_cert->os_cert_handle());
@@ -1350,7 +1356,7 @@ TEST_P(CertVerifyProcWeakDigestTest, Verify) {
   scoped_refptr<X509Certificate> ee_chain =
       X509Certificate::CreateFromHandle(ee_cert->os_cert_handle(),
                                         intermediates);
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), ee_chain);
+  ASSERT_NE(static_cast<X509Certificate*>(NULL), ee_chain.get());
 
   int flags = 0;
   CertVerifyResult verify_result;

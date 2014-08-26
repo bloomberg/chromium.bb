@@ -213,7 +213,7 @@ bool MultiLogCTVerifier::VerifySingleSCT(
 
   sct->log_description = it->second->description();
 
-  if (!it->second->Verify(expected_entry, *sct)) {
+  if (!it->second->Verify(expected_entry, *sct.get())) {
     DVLOG(1) << "Unable to verify SCT signature.";
     result->invalid_scts.push_back(sct);
     LogSCTStatusToUMA(ct::SCT_STATUS_INVALID);

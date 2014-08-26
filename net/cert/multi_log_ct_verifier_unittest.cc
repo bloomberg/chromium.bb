@@ -48,13 +48,13 @@ class MultiLogCTVerifierTest : public ::testing::Test {
     chain_ = X509Certificate::CreateFromBytes(
         der_test_cert.data(),
         der_test_cert.length());
-    ASSERT_TRUE(chain_);
+    ASSERT_TRUE(chain_.get());
 
     embedded_sct_chain_ =
         CreateCertificateChainFromFile(GetTestCertsDirectory(),
                                        "ct-test-embedded-cert.pem",
                                        X509Certificate::FORMAT_AUTO);
-    ASSERT_TRUE(embedded_sct_chain_);
+    ASSERT_TRUE(embedded_sct_chain_.get());
   }
 
   bool CheckForSingleVerifiedSCTInResult(const ct::CTVerifyResult& result) {
@@ -130,9 +130,11 @@ class MultiLogCTVerifierTest : public ::testing::Test {
   bool VerifySinglePrecertificateChain(scoped_refptr<X509Certificate> chain,
                                        const BoundNetLog& bound_net_log,
                                        ct::CTVerifyResult* result) {
-    return verifier_->Verify(
-               chain, std::string(), std::string(), result, bound_net_log) ==
-           OK;
+    return verifier_->Verify(chain.get(),
+                             std::string(),
+                             std::string(),
+                             result,
+                             bound_net_log) == OK;
   }
 
   bool VerifySinglePrecertificateChain(scoped_refptr<X509Certificate> chain) {
@@ -141,9 +143,11 @@ class MultiLogCTVerifierTest : public ::testing::Test {
     BoundNetLog bound_net_log =
         BoundNetLog::Make(&net_log, NetLog::SOURCE_CONNECT_JOB);
 
-    return verifier_->Verify(
-               chain, std::string(), std::string(), &result, bound_net_log) ==
-           OK;
+    return verifier_->Verify(chain.get(),
+                             std::string(),
+                             std::string(),
+                             &result,
+                             bound_net_log) == OK;
   }
 
   bool CheckPrecertificateVerification(scoped_refptr<X509Certificate> chain) {
@@ -199,7 +203,7 @@ TEST_F(MultiLogCTVerifierTest, VerifiesEmbeddedSCTWithPreCA) {
       CreateCertificateChainFromFile(GetTestCertsDirectory(),
                                      "ct-test-embedded-with-preca-chain.pem",
                                      X509Certificate::FORMAT_AUTO));
-  ASSERT_TRUE(chain);
+  ASSERT_TRUE(chain.get());
   ASSERT_TRUE(CheckPrecertificateVerification(chain));
 }
 
@@ -208,7 +212,7 @@ TEST_F(MultiLogCTVerifierTest, VerifiesEmbeddedSCTWithIntermediate) {
       GetTestCertsDirectory(),
       "ct-test-embedded-with-intermediate-chain.pem",
       X509Certificate::FORMAT_AUTO));
-  ASSERT_TRUE(chain);
+  ASSERT_TRUE(chain.get());
   ASSERT_TRUE(CheckPrecertificateVerification(chain));
 }
 
@@ -218,7 +222,7 @@ TEST_F(MultiLogCTVerifierTest,
       GetTestCertsDirectory(),
       "ct-test-embedded-with-intermediate-preca-chain.pem",
       X509Certificate::FORMAT_AUTO));
-  ASSERT_TRUE(chain);
+  ASSERT_TRUE(chain.get());
   ASSERT_TRUE(CheckPrecertificateVerification(chain));
 }
 
@@ -231,8 +235,8 @@ TEST_F(MultiLogCTVerifierTest,
 
   ct::CTVerifyResult result;
   EXPECT_EQ(OK,
-            verifier_->Verify(chain_, std::string(), sct_list, &result,
-                              BoundNetLog()));
+            verifier_->Verify(
+                chain_.get(), std::string(), sct_list, &result, BoundNetLog()));
   ASSERT_TRUE(CheckForSingleVerifiedSCTInResult(result));
   ASSERT_TRUE(CheckForSCTOrigin(
       result, ct::SignedCertificateTimestamp::SCT_FROM_TLS_EXTENSION));
@@ -245,7 +249,7 @@ TEST_F(MultiLogCTVerifierTest,
 
   EXPECT_NE(OK,
             verifier_->Verify(
-                chain_, std::string(), sct_list, &result, BoundNetLog()));
+                chain_.get(), std::string(), sct_list, &result, BoundNetLog()));
   EXPECT_EQ(1U, result.unknown_logs_scts.size());
   EXPECT_EQ("", result.unknown_logs_scts[0]->log_description);
 }
@@ -266,8 +270,8 @@ TEST_F(MultiLogCTVerifierTest, CountsInvalidSCTsInStatusHistogram) {
       "Net.CertificateTransparency.SCTStatus", ct::SCT_STATUS_LOG_UNKNOWN);
 
   EXPECT_NE(OK,
-            verifier_->Verify(chain_, std::string(), sct_list, &result,
-                              BoundNetLog()));
+            verifier_->Verify(
+                chain_.get(), std::string(), sct_list, &result, BoundNetLog()));
 
   ASSERT_EQ(num_valid_scts, NumValidSCTsInStatusHistogram());
   ASSERT_EQ(num_invalid_scts + 1,

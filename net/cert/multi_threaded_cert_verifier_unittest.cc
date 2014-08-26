@@ -79,7 +79,7 @@ TEST_F(MultiThreadedCertVerifierTest, CacheHit) {
   base::FilePath certs_dir = GetTestCertsDirectory();
   scoped_refptr<X509Certificate> test_cert(
       ImportCertFromFile(certs_dir, "ok_cert.pem"));
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), test_cert);
+  ASSERT_NE(static_cast<X509Certificate*>(NULL), test_cert.get());
 
   int error;
   CertVerifyResult verify_result;
@@ -129,15 +129,15 @@ TEST_F(MultiThreadedCertVerifierTest, DifferentCACerts) {
 
   scoped_refptr<X509Certificate> server_cert =
       ImportCertFromFile(certs_dir, "salesforce_com_test.pem");
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), server_cert);
+  ASSERT_NE(static_cast<X509Certificate*>(NULL), server_cert.get());
 
   scoped_refptr<X509Certificate> intermediate_cert1 =
       ImportCertFromFile(certs_dir, "verisign_intermediate_ca_2011.pem");
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), intermediate_cert1);
+  ASSERT_NE(static_cast<X509Certificate*>(NULL), intermediate_cert1.get());
 
   scoped_refptr<X509Certificate> intermediate_cert2 =
       ImportCertFromFile(certs_dir, "verisign_intermediate_ca_2016.pem");
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), intermediate_cert2);
+  ASSERT_NE(static_cast<X509Certificate*>(NULL), intermediate_cert2.get());
 
   X509Certificate::OSCertHandles intermediates;
   intermediates.push_back(intermediate_cert1->os_cert_handle());
@@ -196,7 +196,7 @@ TEST_F(MultiThreadedCertVerifierTest, InflightJoin) {
   base::FilePath certs_dir = GetTestCertsDirectory();
   scoped_refptr<X509Certificate> test_cert(
       ImportCertFromFile(certs_dir, "ok_cert.pem"));
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), test_cert);
+  ASSERT_NE(static_cast<X509Certificate*>(NULL), test_cert.get());
 
   int error;
   CertVerifyResult verify_result;
@@ -240,7 +240,7 @@ TEST_F(MultiThreadedCertVerifierTest, CancelRequest) {
   base::FilePath certs_dir = GetTestCertsDirectory();
   scoped_refptr<X509Certificate> test_cert(
       ImportCertFromFile(certs_dir, "ok_cert.pem"));
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), test_cert);
+  ASSERT_NE(static_cast<X509Certificate*>(NULL), test_cert.get());
 
   int error;
   CertVerifyResult verify_result;
@@ -289,7 +289,7 @@ TEST_F(MultiThreadedCertVerifierTest, MAYBE_CancelRequestThenQuit) {
   base::FilePath certs_dir = GetTestCertsDirectory();
   scoped_refptr<X509Certificate> test_cert(
       ImportCertFromFile(certs_dir, "ok_cert.pem"));
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), test_cert);
+  ASSERT_NE(static_cast<X509Certificate*>(NULL), test_cert.get());
 
   int error;
   CertVerifyResult verify_result;

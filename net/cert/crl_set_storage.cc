@@ -350,7 +350,7 @@ bool CRLSetStorage::Parse(base::StringPiece data,
     crl_set->crls_index_by_issuer_[back_pair->first] = crl_index;
   }
 
-  if (!CopyBlockedSPKIsFromHeader(crl_set, header_dict.get()))
+  if (!CopyBlockedSPKIsFromHeader(crl_set.get(), header_dict.get()))
     return false;
 
   *out_crl_set = crl_set;
@@ -398,7 +398,7 @@ bool CRLSetStorage::ApplyDelta(const CRLSet* in_crl_set,
   crl_set->sequence_ = static_cast<uint32>(sequence);
   crl_set->not_after_ = static_cast<uint64>(not_after);
 
-  if (!CopyBlockedSPKIsFromHeader(crl_set, header_dict.get()))
+  if (!CopyBlockedSPKIsFromHeader(crl_set.get(), header_dict.get()))
     return false;
 
   std::vector<uint8> crl_changes;

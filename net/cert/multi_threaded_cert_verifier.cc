@@ -93,9 +93,9 @@ base::Value* CertVerifyResultCallback(const CertVerifyResult& verify_result,
   results->SetBoolean("common_name_fallback_used",
                       verify_result.common_name_fallback_used);
   results->SetInteger("cert_status", verify_result.cert_status);
-  results->Set(
-      "verified_cert",
-      NetLogX509CertificateCallback(verify_result.verified_cert, log_level));
+  results->Set("verified_cert",
+               NetLogX509CertificateCallback(verify_result.verified_cert.get(),
+                                             log_level));
 
   base::ListValue* hashes = new base::ListValue();
   for (std::vector<HashValue>::const_iterator it =

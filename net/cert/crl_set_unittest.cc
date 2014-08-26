@@ -223,10 +223,10 @@ TEST(CRLSetTest, NoOpDeltaUpdate) {
   scoped_refptr<net::CRLSet> delta_set;
   base::StringPiece delta(reinterpret_cast<const char*>(kNoopDeltaCRL),
                           sizeof(kNoopDeltaCRL));
-  EXPECT_TRUE(net::CRLSetStorage::ApplyDelta(set, delta, &delta_set));
+  EXPECT_TRUE(net::CRLSetStorage::ApplyDelta(set.get(), delta, &delta_set));
   ASSERT_TRUE(delta_set.get() != NULL);
 
-  std::string out = net::CRLSetStorage::Serialize(delta_set);
+  std::string out = net::CRLSetStorage::Serialize(delta_set.get());
   EXPECT_EQ(s.as_string(), out);
 }
 
@@ -240,7 +240,7 @@ TEST(CRLSetTest, AddCRLDelta) {
   scoped_refptr<net::CRLSet> delta_set;
   base::StringPiece delta(reinterpret_cast<const char*>(kAddCRLDelta),
                           sizeof(kAddCRLDelta));
-  EXPECT_TRUE(net::CRLSetStorage::ApplyDelta(set, delta, &delta_set));
+  EXPECT_TRUE(net::CRLSetStorage::ApplyDelta(set.get(), delta, &delta_set));
   ASSERT_TRUE(delta_set.get() != NULL);
 
   const net::CRLSet::CRLList& crls = delta_set->crls();
@@ -262,13 +262,14 @@ TEST(CRLSetTest, AddRemoveCRLDelta) {
   scoped_refptr<net::CRLSet> delta_set;
   base::StringPiece delta(reinterpret_cast<const char*>(kAddCRLDelta),
                           sizeof(kAddCRLDelta));
-  EXPECT_TRUE(net::CRLSetStorage::ApplyDelta(set, delta, &delta_set));
+  EXPECT_TRUE(net::CRLSetStorage::ApplyDelta(set.get(), delta, &delta_set));
   ASSERT_TRUE(delta_set.get() != NULL);
 
   scoped_refptr<net::CRLSet> delta2_set;
   base::StringPiece delta2(reinterpret_cast<const char*>(kRemoveCRLDelta),
                            sizeof(kRemoveCRLDelta));
-  EXPECT_TRUE(net::CRLSetStorage::ApplyDelta(delta_set, delta2, &delta2_set));
+  EXPECT_TRUE(
+      net::CRLSetStorage::ApplyDelta(delta_set.get(), delta2, &delta2_set));
   ASSERT_TRUE(delta2_set.get() != NULL);
 
   const net::CRLSet::CRLList& crls = delta2_set->crls();
@@ -287,7 +288,7 @@ TEST(CRLSetTest, UpdateSerialsDelta) {
   scoped_refptr<net::CRLSet> delta_set;
   base::StringPiece delta(reinterpret_cast<const char*>(kUpdateSerialsDelta),
                           sizeof(kUpdateSerialsDelta));
-  EXPECT_TRUE(net::CRLSetStorage::ApplyDelta(set, delta, &delta_set));
+  EXPECT_TRUE(net::CRLSetStorage::ApplyDelta(set.get(), delta, &delta_set));
   ASSERT_TRUE(delta_set.get() != NULL);
 
   const net::CRLSet::CRLList& crls = delta_set->crls();
