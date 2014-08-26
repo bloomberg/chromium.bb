@@ -57,7 +57,7 @@ class TestGuestViewManager : public extensions::GuestViewManager {
     GuestViewManager::AddGuest(guest_instance_id, guest_web_contents);
     web_contents_ = guest_web_contents;
 
-    if (message_loop_runner_)
+    if (message_loop_runner_.get())
       message_loop_runner_->Quit();
   }
 
@@ -362,11 +362,11 @@ class WebViewInteractiveTest
         ScheduleWait();
       } else {
         // We are done.
-        if (message_loop_)
+        if (message_loop_.get())
           message_loop_->Quit();
       }
 
-      if (!message_loop_) {
+      if (!message_loop_.get()) {
         message_loop_ = new content::MessageLoopRunner;
         message_loop_->Run();
       }

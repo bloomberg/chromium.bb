@@ -57,7 +57,7 @@ bool LaunchAppWithUrl(
 
   // These are guaranteed by CreateThrottleFor below.
   DCHECK(!params.is_post());
-  DCHECK(UrlHandlers::CanExtensionHandleUrl(app, params.url()));
+  DCHECK(UrlHandlers::CanExtensionHandleUrl(app.get(), params.url()));
 
   Profile* profile =
       Profile::FromBrowserContext(source->GetBrowserContext());
@@ -66,7 +66,7 @@ bool LaunchAppWithUrl(
            << params.url().spec() << " -> "
            << app->name() << "(" << app->id() << "):" << handler_id;
   apps::LaunchPlatformAppWithUrl(
-      profile, app, handler_id, params.url(), params.referrer().url);
+      profile, app.get(), handler_id, params.url(), params.referrer().url);
 
   return true;
 }
@@ -112,7 +112,7 @@ AppUrlRedirector::MaybeCreateThrottleFor(net::URLRequest* request,
        iter != extensions.end();
        ++iter) {
     const UrlHandlerInfo* handler =
-        UrlHandlers::FindMatchingUrlHandler(*iter, request->url());
+        UrlHandlers::FindMatchingUrlHandler(iter->get(), request->url());
     if (handler) {
       DVLOG(1) << "Found matching app handler for redirection: "
                << (*iter)->name() << "(" << (*iter)->id() << "):"

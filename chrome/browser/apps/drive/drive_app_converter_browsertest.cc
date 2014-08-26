@@ -95,7 +95,7 @@ class DriveAppConverterTest : public ExtensionBrowserTest {
 
  private:
   void ConverterFinished(const DriveAppConverter* converter, bool success) {
-    if (runner_)
+    if (runner_.get())
       runner_->Quit();
   }
 

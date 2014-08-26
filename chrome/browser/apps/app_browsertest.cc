@@ -146,13 +146,13 @@ class ScopedPreviewTestingDelegate : PrintPreviewUI::TestingDelegate {
     dialog_size_ = preview_dialog->GetContainerBounds().size();
     ++rendered_page_count_;
     CHECK(rendered_page_count_ <= total_page_count_);
-    if (waiting_runner_ && rendered_page_count_ == total_page_count_) {
+    if (waiting_runner_.get() && rendered_page_count_ == total_page_count_) {
       waiting_runner_->Quit();
     }
   }
 
   void WaitUntilPreviewIsReady() {
-    CHECK(!waiting_runner_);
+    CHECK(!waiting_runner_.get());
     if (rendered_page_count_ < total_page_count_) {
       waiting_runner_ = new content::MessageLoopRunner;
       waiting_runner_->Run();

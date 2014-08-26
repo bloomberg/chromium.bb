@@ -319,7 +319,7 @@ void EphemeralAppLauncher::CheckEphemeralInstallPermitted() {
   install_checker_ = CreateInstallChecker();
   DCHECK(install_checker_.get());
 
-  install_checker_->set_extension(extension);
+  install_checker_->set_extension(extension.get());
   install_checker_->Start(ExtensionInstallChecker::CHECK_BLACKLIST |
                               ExtensionInstallChecker::CHECK_REQUIREMENTS,
                           true,
@@ -404,15 +404,15 @@ bool EphemeralAppLauncher::CheckRequestorPermitted(
 }
 
 void EphemeralAppLauncher::OnManifestParsed() {
-  const Extension* extension = GetLocalizedExtensionForDisplay();
-  if (!extension) {
+  scoped_refptr<const Extension> extension = GetLocalizedExtensionForDisplay();
+  if (!extension.get()) {
     AbortLaunch(webstore_install::INVALID_MANIFEST, kInvalidManifestError);
     return;
   }
 
   webstore_install::Result result = webstore_install::OTHER_ERROR;
   std::string error;
-  if (!CheckCommonLaunchCriteria(profile(), extension, &result, &error)) {
+  if (!CheckCommonLaunchCriteria(profile(), extension.get(), &result, &error)) {
     AbortLaunch(result, error);
     return;
   }
@@ -426,7 +426,7 @@ void EphemeralAppLauncher::OnManifestParsed() {
   if (extension->is_hosted_app()) {
     // Hosted apps do not need to be installed ephemerally. Just navigate to
     // their launch url.
-    if (LaunchHostedApp(extension))
+    if (LaunchHostedApp(extension.get()))
       AbortLaunch(webstore_install::SUCCESS, std::string());
     else
       AbortLaunch(webstore_install::INVALID_MANIFEST, kInvalidManifestError);

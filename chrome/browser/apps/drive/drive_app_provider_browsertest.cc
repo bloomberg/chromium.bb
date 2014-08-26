@@ -104,7 +104,7 @@ class DriveAppProviderTest : public ExtensionBrowserTest,
   }
 
   void WaitForPendingDriveAppConverters() {
-    DCHECK(!runner_);
+    DCHECK(!runner_.get());
 
     if (provider_->pending_converters_.empty())
       return;
@@ -124,7 +124,7 @@ class DriveAppProviderTest : public ExtensionBrowserTest,
   }
 
   void InstallUserUrlApp(const std::string& url) {
-    DCHECK(!runner_);
+    DCHECK(!runner_.get());
     runner_ = new content::MessageLoopRunner;
 
     WebApplicationInfo web_app;

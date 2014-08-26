@@ -150,11 +150,11 @@ void DriveAppConverter::Start() {
 }
 
 bool DriveAppConverter::IsStarted() const {
-  return !fetchers_.empty() || crx_installer_;
+  return !fetchers_.empty() || crx_installer_.get();
 }
 
 bool DriveAppConverter::IsInstalling(const std::string& app_id) const {
-  return crx_installer_ && crx_installer_->extension() &&
+  return crx_installer_.get() && crx_installer_->extension() &&
          crx_installer_->extension()->id() == app_id;
 }
 
@@ -176,7 +176,7 @@ void DriveAppConverter::OnIconFetchComplete(const IconFetcher* fetcher) {
 }
 
 void DriveAppConverter::StartInstall() {
-  DCHECK(!crx_installer_);
+  DCHECK(!crx_installer_.get());
   crx_installer_ = extensions::CrxInstaller::CreateSilent(
       extensions::ExtensionSystem::Get(profile_)->extension_service());
   // The converted url app should not be syncable. Drive apps go with the user's
@@ -190,7 +190,7 @@ void DriveAppConverter::StartInstall() {
 }
 
 void DriveAppConverter::PostInstallCleanUp() {
-  if (!crx_installer_)
+  if (!crx_installer_.get())
     return;
 
   extensions::InstallTracker::Get(profile_)->RemoveObserver(this);

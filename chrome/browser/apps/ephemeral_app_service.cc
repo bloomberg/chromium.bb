@@ -212,7 +212,7 @@ void EphemeralAppService::InitEphemeralAppCount() {
   ephemeral_app_count_ = 0;
   for (ExtensionSet::const_iterator it = extensions->begin();
        it != extensions->end(); ++it) {
-    const Extension* extension = *it;
+    const Extension* extension = it->get();
     if (prefs->IsEphemeralApp(extension->id()))
       ++ephemeral_app_count_;
   }
@@ -247,7 +247,7 @@ void EphemeralAppService::DisableEphemeralAppsOnStartup() {
   for (ExtensionSet::const_iterator it = extensions->begin();
        it != extensions->end();
        ++it) {
-    const Extension* extension = *it;
+    const Extension* extension = it->get();
     if (!prefs->IsEphemeralApp(extension->id()))
       continue;
 
@@ -314,7 +314,7 @@ void EphemeralAppService::GarbageCollectApps() {
   // Populate a list of ephemeral apps, ordered by their last launch time.
   for (ExtensionSet::const_iterator it = extensions->begin();
        it != extensions->end(); ++it) {
-    const Extension* extension = *it;
+    const Extension* extension = it->get();
     if (!prefs->IsEphemeralApp(extension->id()))
       continue;
 

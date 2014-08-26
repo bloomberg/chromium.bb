@@ -42,7 +42,7 @@ class TestGuestViewManager : public extensions::GuestViewManager {
         guest_instance_id, guest_web_contents);
     web_contents_ = guest_web_contents;
 
-    if (message_loop_runner_)
+    if (message_loop_runner_.get())
       message_loop_runner_->Quit();
   }
 
