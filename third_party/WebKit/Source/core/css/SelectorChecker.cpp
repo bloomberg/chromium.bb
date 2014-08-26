@@ -507,10 +507,11 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
 
     bool elementIsHostInItsShadowTree = isHostInItsShadowTree(element, context.scope);
 
-    // Only :host and :ancestor should match the host: http://drafts.csswg.org/css-scoping/#host-element
-    if (elementIsHostInItsShadowTree && !selector.isHostPseudoClass()
-        && !(context.contextFlags & TreatShadowHostAsNormalScope))
-        return false;
+    // Only :host and :host-context() should match the host: http://drafts.csswg.org/css-scoping/#host-element
+    if (elementIsHostInItsShadowTree && (!selector.isHostPseudoClass()
+        && !(context.contextFlags & TreatShadowHostAsNormalScope)
+        && selector.match() != CSSSelector::PseudoElement))
+            return false;
 
     if (selector.match() == CSSSelector::Tag)
         return SelectorChecker::tagMatches(element, selector.tagQName());
