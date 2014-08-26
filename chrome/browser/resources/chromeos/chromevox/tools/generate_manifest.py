@@ -48,6 +48,12 @@ def main():
   parser.add_option(
       '--use_chromevox_next', action='store', metavar='CHROMEVOX2',
       help='Generate a ChromeVox next manifest')
+  parser.add_option(
+      '--set_version', action='store', metavar='SET_VERSION',
+      help='Set the extension version')
+  parser.add_option(
+      '--key', action='store', metavar='KEY',
+      help='Set the extension key')
 
   options, args = parser.parse_args()
   if len(args) != 1:

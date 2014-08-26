@@ -1,8 +1,10 @@
 {
-  "key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDltVl1k15pjRzuZfMc3B69inxwm2bZeZ2O8/zFO+NluHnBm3GJ3fzdOoFGJd+M16I8p7zxxQyHeDMfWYASyCeB8XnUEDKjqNLQfCnncsANzHsYoEbYj2nEUML2P13b9q+AAvpCBpAJ4cZp81e9n1y/vbSXHE4385cgkKueItzikQIDAQAB",
+{%if key is defined %}
+  "key": "{{key}}",
+{% endif %}
   "manifest_version": 2,
   "name": "ChromeVox",
-  "version": "1.0",
+  "version": "{{set_version}}",
   "description": "ChromeVox - Giving Voice to Chrome.",
 {% if is_guest_manifest == '1' %}
   "incognito": "split",
