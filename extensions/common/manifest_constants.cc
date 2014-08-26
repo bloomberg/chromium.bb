@@ -465,6 +465,9 @@ const char kInvalidKioskOnly[] =
     "Invalid value for 'kiosk_only'.";
 const char kInvalidKioskOnlyButNotEnabled[] =
     "The 'kiosk_only' key is set, but 'kiosk_enabled' is not set.";
+const char kInvalidLauncherPage[] = "Invalid value for 'launcher_page'.";
+const char kInvalidLauncherPagePage[] =
+    "Invalid value for 'launcher_page.page'.";
 const char kInvalidLaunchContainer[] =
     "Invalid value for 'app.launch.container'.";
 const char kInvalidLaunchValue[] =
@@ -666,6 +669,8 @@ const char kInsecureContentSecurityPolicy[] =
     " see http://developer.chrome.com/extensions/contentSecurityPolicy.html";
 const char kKeyIsDeprecatedWithReplacement[] =
     "Key \"*\" is deprecated.  Key \"*\" should be used instead.";
+const char kLauncherPagePageRequired[] =
+    "The 'launcher_page.page' key is required.";
 const char kLaunchPathAndExtentAreExclusive[] =
     "The 'app.launch.local_path' and 'app.urls' keys cannot both be set.";
 const char kLaunchPathAndURLAreExclusive[] =

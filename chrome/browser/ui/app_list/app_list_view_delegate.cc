@@ -41,8 +41,8 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_set.h"
-#include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
+#include "extensions/common/manifest_handlers/launcher_page_info.h"
 #include "grit/theme_resources.h"
 #include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/app_list_view_delegate_observer.h"
@@ -135,20 +135,12 @@ void GetCustomLauncherPageUrls(content::BrowserContext* browser_context,
        it != enabled_extensions.end();
        ++it) {
     const extensions::Extension* extension = it->get();
-    const extensions::Manifest* manifest = extension->manifest();
-    if (!manifest->HasKey(extensions::manifest_keys::kLauncherPage))
+    extensions::LauncherPageInfo* info =
+        extensions::LauncherPageHandler::GetInfo(extension);
+    if (!info)
       continue;
-    std::string launcher_page_page;
-    if (!manifest->GetString(extensions::manifest_keys::kLauncherPagePage,
-                             &launcher_page_page)) {
-      // TODO(mgiuca): Add a proper manifest parser to catch this error properly
-      // and display it on the extensions page.
-      LOG(ERROR) << "Extension " << extension->id() << ": "
-                 << extensions::manifest_keys::kLauncherPage
-                 << " has no 'page' attribute; will be ignored.";
-      continue;
-    }
-    urls->push_back(extension->GetResourceURL(launcher_page_page));
+
+    urls->push_back(extension->GetResourceURL(info->page));
   }
 }
 

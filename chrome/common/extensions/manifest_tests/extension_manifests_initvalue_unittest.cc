@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/command_line.h"
 #include "base/i18n/rtl.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
@@ -11,10 +12,18 @@
 #include "components/crx_file/id_util.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_constants.h"
+#include "extensions/common/switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace extensions {
+
+namespace {
+
+// The ID of test manifests requiring whitelisting.
+const char kWhitelistID[] = "lmadimbbgapmngbiclpjjngmdickadpl";
+
+}  // namespace
 
 namespace errors = manifest_errors;
 namespace keys = manifest_keys;
@@ -23,6 +32,8 @@ class InitValueManifestTest : public ExtensionManifestTest {
 };
 
 TEST_F(InitValueManifestTest, InitFromValueInvalid) {
+  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      extensions::switches::kWhitelistedExtensionID, kWhitelistID);
   Testcase testcases[] = {
     Testcase("init_invalid_version_missing.json", errors::kInvalidVersion),
     Testcase("init_invalid_version_invalid.json", errors::kInvalidVersion),
@@ -32,6 +43,12 @@ TEST_F(InitValueManifestTest, InitFromValueInvalid) {
              errors::kInvalidDescription),
     Testcase("init_invalid_icons_invalid.json", errors::kInvalidIcons),
     Testcase("init_invalid_icons_path_invalid.json", errors::kInvalidIconPath),
+    Testcase("init_invalid_launcher_page_invalid.json",
+             errors::kInvalidLauncherPage),
+    Testcase("init_invalid_launcher_page_page_missing.json",
+             errors::kLauncherPagePageRequired),
+    Testcase("init_invalid_launcher_page_page_invalid.json",
+             errors::kInvalidLauncherPagePage),
     Testcase("init_invalid_script_invalid.json",
              errors::kInvalidContentScriptsList),
     Testcase("init_invalid_script_item_invalid.json",

@@ -131,6 +131,8 @@
         'common/manifest_handlers/incognito_info.h',
         'common/manifest_handlers/kiosk_mode_info.cc',
         'common/manifest_handlers/kiosk_mode_info.h',
+        'common/manifest_handlers/launcher_page_info.cc',
+        'common/manifest_handlers/launcher_page_info.h',
         'common/manifest_handlers/offline_enabled_info.cc',
         'common/manifest_handlers/offline_enabled_info.h',
         'common/manifest_handlers/permissions_parser.cc',

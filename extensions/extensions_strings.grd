@@ -187,6 +187,9 @@
       <message name="IDS_EXTENSION_LOAD_ICON_FAILED" desc="">
         Could not load extension icon '<ph name="ICON">$1<ex>icon.png</ex></ph>'.
       </message>
+      <message name="IDS_EXTENSION_LOAD_LAUNCHER_PAGE_FAILED" desc="">
+        Could not load launcher page '<ph name="PAGE">$1<ex>index.html</ex></ph>'.
+      </message>
       <message name="IDS_EXTENSION_LOCALES_NO_DEFAULT_LOCALE_SPECIFIED" desc="">
         Localization used, but default_locale wasn't specified in the manifest.
       </message>
