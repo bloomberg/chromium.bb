@@ -778,4 +778,15 @@ hooks = [
         '--running-as-hook',
     ],
   },
+  {
+    # Ensure that we don't accidentally reference any .pyc files whose
+    # corresponding .py files have already been deleted.
+    'name': 'remove_stale_pyc_files',
+    'pattern': 'src/tools/.*\\.py',
+    'action': [
+        'python',
+        'src/tools/remove_stale_pyc_files.py',
+        'src/tools',
+    ],
+  },
 ]
