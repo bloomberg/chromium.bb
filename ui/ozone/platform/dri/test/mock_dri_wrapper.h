@@ -57,6 +57,7 @@ class MockDriWrapper : public ui::DriWrapper {
                        drmModeModeInfo* mode) OVERRIDE;
   virtual bool SetCrtc(drmModeCrtc* crtc,
                        std::vector<uint32_t> connectors) OVERRIDE;
+  virtual ScopedDrmConnectorPtr GetConnector(uint32_t connector_id) OVERRIDE;
   virtual bool AddFramebuffer(uint32_t width,
                               uint32_t height,
                               uint8_t depth,

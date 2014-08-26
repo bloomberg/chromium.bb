@@ -121,6 +121,12 @@ bool DriWrapper::DisableCrtc(uint32_t crtc_id) {
   return !drmModeSetCrtc(fd_, crtc_id, 0, 0, 0, NULL, 0, NULL);
 }
 
+ScopedDrmConnectorPtr DriWrapper::GetConnector(uint32_t connector_id) {
+  DCHECK(fd_ >= 0);
+  TRACE_EVENT1("dri", "DriWrapper::GetConnector", "connector", connector_id);
+  return ScopedDrmConnectorPtr(drmModeGetConnector(fd_, connector_id));
+}
+
 bool DriWrapper::AddFramebuffer(uint32_t width,
                                 uint32_t height,
                                 uint8_t depth,

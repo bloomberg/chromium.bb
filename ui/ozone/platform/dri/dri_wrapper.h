@@ -51,6 +51,9 @@ class DriWrapper {
 
   virtual bool DisableCrtc(uint32_t crtc_id);
 
+  // Returns the connector properties for |connector_id|.
+  virtual ScopedDrmConnectorPtr GetConnector(uint32_t connector_id);
+
   // Register a buffer with the CRTC. On successful registration, the CRTC will
   // assign a framebuffer ID to |framebuffer|.
   virtual bool AddFramebuffer(uint32_t width,

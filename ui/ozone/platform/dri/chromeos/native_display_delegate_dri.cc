@@ -19,7 +19,39 @@
 namespace ui {
 
 namespace {
+
 const size_t kMaxDisplayCount = 2;
+
+const char kContentProtection[] = "Content Protection";
+
+struct ContentProtectionMapping {
+  const char* name;
+  HDCPState state;
+};
+
+const ContentProtectionMapping kContentProtectionStates[] = {
+    {"Undesired", HDCP_STATE_UNDESIRED},
+    {"Desired", HDCP_STATE_DESIRED},
+    {"Enabled", HDCP_STATE_ENABLED}};
+
+uint32_t GetContentProtectionValue(drmModePropertyRes* property,
+                                   HDCPState state) {
+  std::string name;
+  for (size_t i = 0; i < arraysize(kContentProtectionStates); ++i) {
+    if (kContentProtectionStates[i].state == state) {
+      name = kContentProtectionStates[i].name;
+      break;
+    }
+  }
+
+  for (int i = 0; i < property->count_enums; ++i)
+    if (name == property->enums[i].name)
+      return i;
+
+  NOTREACHED();
+  return 0;
+}
+
 }  // namespace
 
 NativeDisplayDelegateDri::NativeDisplayDelegateDri(
@@ -162,14 +194,61 @@ void NativeDisplayDelegateDri::CreateFrameBuffer(const gfx::Size& size) {}
 
 bool NativeDisplayDelegateDri::GetHDCPState(const DisplaySnapshot& output,
                                             HDCPState* state) {
-  NOTIMPLEMENTED();
+  const DisplaySnapshotDri& dri_output =
+      static_cast<const DisplaySnapshotDri&>(output);
+
+  ScopedDrmConnectorPtr connector(dri_->GetConnector(dri_output.connector()));
+  if (!connector) {
+    LOG(ERROR) << "Failed to get connector " << dri_output.connector();
+    return false;
+  }
+
+  ScopedDrmPropertyPtr hdcp_property(
+      dri_->GetProperty(connector.get(), kContentProtection));
+  if (!hdcp_property) {
+    LOG(ERROR) << "'" << kContentProtection << "' property doesn't exist.";
+    return false;
+  }
+
+  DCHECK_LT(static_cast<int>(hdcp_property->prop_id), connector->count_props);
+  int hdcp_state_idx = connector->prop_values[hdcp_property->prop_id];
+  DCHECK_LT(hdcp_state_idx, hdcp_property->count_enums);
+
+  std::string name(hdcp_property->enums[hdcp_state_idx].name);
+  for (size_t i = 0; i < arraysize(kContentProtectionStates); ++i) {
+    if (name == kContentProtectionStates[i].name) {
+      *state = kContentProtectionStates[i].state;
+      VLOG(3) << "HDCP state: " << *state << " (" << name << ")";
+      return true;
+    }
+  }
+
+  LOG(ERROR) << "Unknown content protection value '" << name << "'";
   return false;
 }
 
 bool NativeDisplayDelegateDri::SetHDCPState(const DisplaySnapshot& output,
                                             HDCPState state) {
-  NOTIMPLEMENTED();
-  return false;
+  const DisplaySnapshotDri& dri_output =
+      static_cast<const DisplaySnapshotDri&>(output);
+
+  ScopedDrmConnectorPtr connector(dri_->GetConnector(dri_output.connector()));
+  if (!connector) {
+    LOG(ERROR) << "Failed to get connector " << dri_output.connector();
+    return false;
+  }
+
+  ScopedDrmPropertyPtr hdcp_property(
+      dri_->GetProperty(connector.get(), kContentProtection));
+  if (!hdcp_property) {
+    LOG(ERROR) << "'" << kContentProtection << "' property doesn't exist.";
+    return false;
+  }
+
+  return dri_->SetProperty(
+      dri_output.connector(),
+      hdcp_property->prop_id,
+      GetContentProtectionValue(hdcp_property.get(), state));
 }
 
 std::vector<ui::ColorCalibrationProfile>
