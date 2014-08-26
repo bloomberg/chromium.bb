@@ -252,7 +252,7 @@ TEST_F(DrawingBufferTest, verifyResizingProperlyAffectsMailboxes)
 
     // Resize to 100x50.
     m_drawingBuffer->reset(IntSize(initialWidth, alternateHeight));
-    m_drawingBuffer->mailboxReleased(mailbox);
+    m_drawingBuffer->mailboxReleased(mailbox, false);
 
     // Produce a mailbox at this size.
     m_drawingBuffer->markContentsChanged();
@@ -261,7 +261,7 @@ TEST_F(DrawingBufferTest, verifyResizingProperlyAffectsMailboxes)
 
     // Reset to initial size.
     m_drawingBuffer->reset(IntSize(initialWidth, initialHeight));
-    m_drawingBuffer->mailboxReleased(mailbox);
+    m_drawingBuffer->mailboxReleased(mailbox, false);
 
     // Prepare another mailbox and verify that it's the correct size.
     m_drawingBuffer->markContentsChanged();
@@ -269,7 +269,7 @@ TEST_F(DrawingBufferTest, verifyResizingProperlyAffectsMailboxes)
     EXPECT_EQ(initialSize, webContext()->mostRecentlyProducedSize());
 
     // Prepare one final mailbox and verify that it's the correct size.
-    m_drawingBuffer->mailboxReleased(mailbox);
+    m_drawingBuffer->mailboxReleased(mailbox, false);
     m_drawingBuffer->markContentsChanged();
     EXPECT_TRUE(m_drawingBuffer->prepareMailbox(&mailbox, 0));
     EXPECT_EQ(initialSize, webContext()->mostRecentlyProducedSize());
@@ -296,7 +296,7 @@ TEST_F(DrawingBufferTest, verifyDestructionCompleteAfterAllMailboxesReleased)
     EXPECT_TRUE(m_drawingBuffer->prepareMailbox(&mailbox3, 0));
 
     m_drawingBuffer->markContentsChanged();
-    m_drawingBuffer->mailboxReleased(mailbox1);
+    m_drawingBuffer->mailboxReleased(mailbox1, false);
 
     m_drawingBuffer->beginDestruction();
     EXPECT_EQ(live, true);
@@ -306,11 +306,11 @@ TEST_F(DrawingBufferTest, verifyDestructionCompleteAfterAllMailboxesReleased)
     EXPECT_EQ(live, true);
 
     weakPointer->markContentsChanged();
-    weakPointer->mailboxReleased(mailbox2);
+    weakPointer->mailboxReleased(mailbox2, false);
     EXPECT_EQ(live, true);
 
     weakPointer->markContentsChanged();
-    weakPointer->mailboxReleased(mailbox3);
+    weakPointer->mailboxReleased(mailbox3, false);
     EXPECT_EQ(live, false);
 }
 
@@ -385,11 +385,11 @@ TEST_F(DrawingBufferTest, verifyOnlyOneRecycledMailboxMustBeKept)
 
     // Release mailboxes by specific order; 1, 3, 2.
     m_drawingBuffer->markContentsChanged();
-    m_drawingBuffer->mailboxReleased(mailbox1);
+    m_drawingBuffer->mailboxReleased(mailbox1, false);
     m_drawingBuffer->markContentsChanged();
-    m_drawingBuffer->mailboxReleased(mailbox3);
+    m_drawingBuffer->mailboxReleased(mailbox3, false);
     m_drawingBuffer->markContentsChanged();
-    m_drawingBuffer->mailboxReleased(mailbox2);
+    m_drawingBuffer->mailboxReleased(mailbox2, false);
 
     // The first recycled mailbox must be 2. 1 and 3 were deleted by FIFO order because
     // DrawingBuffer never keeps more than one mailbox.
@@ -406,8 +406,8 @@ TEST_F(DrawingBufferTest, verifyOnlyOneRecycledMailboxMustBeKept)
     EXPECT_NE(TextureMailboxWrapper(mailbox2), TextureMailboxWrapper(recycledMailbox2));
     EXPECT_NE(TextureMailboxWrapper(mailbox3), TextureMailboxWrapper(recycledMailbox2));
 
-    m_drawingBuffer->mailboxReleased(recycledMailbox1);
-    m_drawingBuffer->mailboxReleased(recycledMailbox2);
+    m_drawingBuffer->mailboxReleased(recycledMailbox1, false);
+    m_drawingBuffer->mailboxReleased(recycledMailbox2, false);
     m_drawingBuffer->beginDestruction();
 }
 
@@ -424,7 +424,7 @@ TEST_F(DrawingBufferTest, verifyInsertAndWaitSyncPointCorrectly)
 
     unsigned waitSyncPoint = webContext()->insertSyncPoint();
     mailbox.syncPoint = waitSyncPoint;
-    m_drawingBuffer->mailboxReleased(mailbox);
+    m_drawingBuffer->mailboxReleased(mailbox, false);
     // m_drawingBuffer will wait for the sync point when recycling.
     EXPECT_EQ(0u, webContext()->mostRecentlyWaitedSyncPoint());
 
@@ -436,7 +436,7 @@ TEST_F(DrawingBufferTest, verifyInsertAndWaitSyncPointCorrectly)
     m_drawingBuffer->beginDestruction();
     waitSyncPoint = webContext()->insertSyncPoint();
     mailbox.syncPoint = waitSyncPoint;
-    m_drawingBuffer->mailboxReleased(mailbox);
+    m_drawingBuffer->mailboxReleased(mailbox, false);
     // m_drawingBuffer waits for the sync point because the destruction is in progress.
     EXPECT_EQ(waitSyncPoint, webContext()->mostRecentlyWaitedSyncPoint());
 }
@@ -485,7 +485,7 @@ TEST_F(DrawingBufferImageChromiumTest, verifyResizingReallocatesImages)
     EXPECT_CALL(*webContext(), releaseTexImage2DMock(m_imageId0)).Times(1);
     // Resize to 100x50.
     m_drawingBuffer->reset(IntSize(initialWidth, alternateHeight));
-    m_drawingBuffer->mailboxReleased(mailbox);
+    m_drawingBuffer->mailboxReleased(mailbox, false);
     testing::Mock::VerifyAndClearExpectations(webContext());
 
     WGC3Duint m_imageId3 = webContext()->nextImageIdToBeCreated();
@@ -505,7 +505,7 @@ TEST_F(DrawingBufferImageChromiumTest, verifyResizingReallocatesImages)
     EXPECT_CALL(*webContext(), releaseTexImage2DMock(m_imageId2)).Times(1);
     // Reset to initial size.
     m_drawingBuffer->reset(IntSize(initialWidth, initialHeight));
-    m_drawingBuffer->mailboxReleased(mailbox);
+    m_drawingBuffer->mailboxReleased(mailbox, false);
     testing::Mock::VerifyAndClearExpectations(webContext());
 
     WGC3Duint m_imageId5 = webContext()->nextImageIdToBeCreated();
@@ -520,12 +520,12 @@ TEST_F(DrawingBufferImageChromiumTest, verifyResizingReallocatesImages)
     testing::Mock::VerifyAndClearExpectations(webContext());
 
     // Prepare one final mailbox and verify that it's the correct size.
-    m_drawingBuffer->mailboxReleased(mailbox);
+    m_drawingBuffer->mailboxReleased(mailbox, false);
     m_drawingBuffer->markContentsChanged();
     EXPECT_TRUE(m_drawingBuffer->prepareMailbox(&mailbox, 0));
     EXPECT_EQ(initialSize, webContext()->mostRecentlyProducedSize());
     EXPECT_TRUE(mailbox.allowOverlay);
-    m_drawingBuffer->mailboxReleased(mailbox);
+    m_drawingBuffer->mailboxReleased(mailbox, false);
 
     EXPECT_CALL(*webContext(), destroyImageMock(m_imageId5)).Times(1);
     EXPECT_CALL(*webContext(), releaseTexImage2DMock(m_imageId5)).Times(1);
