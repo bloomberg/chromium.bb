@@ -46,6 +46,8 @@
 #include "chrome/common/chrome_version_info.h"
 #include "components/data_reduction_proxy/common/data_reduction_proxy_switches.h"
 #include "components/omnibox/omnibox_switches.h"
+#else
+#include "ui/message_center/message_center_switches.h"
 #endif
 
 #if defined(USE_ASH)
@@ -1907,6 +1909,16 @@ const Experiment kExperiments[] = {
     kOsAll,
     MULTI_VALUE_TYPE(kAutofillSyncCredentialChoices)
   },
+#if !defined(OS_ANDROID)
+  {
+    "enable-message-center-always-scroll-up-upon-notification-removal",
+    IDS_FLAGS_ENABLE_MESSAGE_CENTER_ALWAYS_SCROLL_UP_UPON_REMOVAL_NAME,
+    IDS_FLAGS_ENABLE_MESSAGE_CENTER_ALWAYS_SCROLL_UP_UPON_REMOVAL_DESCRIPTION,
+    kOsDesktop,
+    SINGLE_VALUE_TYPE(
+        switches::kEnableMessageCenterAlwaysScrollUpUponNotificationRemoval)
+  },
+#endif
   // NOTE: Adding new command-line switches requires adding corresponding
   // entries to enum "LoginCustomFlags" in histograms.xml. See note in
   // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.

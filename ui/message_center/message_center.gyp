@@ -57,6 +57,8 @@
         'message_center_observer.h',
         'message_center_style.cc',
         'message_center_style.h',
+        'message_center_switches.cc',
+        'message_center_switches.h',
         'message_center_tray.cc',
         'message_center_tray.h',
         'message_center_tray_delegate.h',

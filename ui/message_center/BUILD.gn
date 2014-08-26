@@ -54,6 +54,8 @@ component("message_center") {
       "message_center_tray.h",
       "message_center_tray_delegate.h",
       "message_center_types.h",
+      "message_center_switches.h",
+      "message_center_switches.cc",
       "notification.cc",
       "notification.h",
       "notification_blocker.cc",

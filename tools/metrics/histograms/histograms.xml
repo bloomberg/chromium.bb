@@ -43954,6 +43954,8 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1821723343" label="disable-saml-signin"/>
   <int value="1844110073" label="enable-app-view"/>
   <int value="1855524566" label="allow-insecure-websocket-from-https-origin"/>
+  <int value="1861251313"
+      label="enable-message-center-always-scroll-up-upon-notification-removal"/>
   <int value="1900529524" label="disable-touch-drag-drop"/>
   <int value="1906942630" label="enable-easy-unlock"/>
   <int value="1930901873" label="disable-sync-app-list"/>

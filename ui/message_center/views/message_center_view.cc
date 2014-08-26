@@ -7,6 +7,7 @@
 #include <list>
 #include <map>
 
+#include "base/command_line.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
@@ -19,6 +20,7 @@
 #include "ui/gfx/size.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_style.h"
+#include "ui/message_center/message_center_switches.h"
 #include "ui/message_center/message_center_tray.h"
 #include "ui/message_center/message_center_types.h"
 #include "ui/message_center/views/message_center_button_bar.h"
@@ -418,7 +420,9 @@ void MessageListView::DoUpdateIfPossible() {
     return;
   }
 
-  if (top_down_)
+  if (top_down_ ||
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableMessageCenterAlwaysScrollUpUponNotificationRemoval))
     AnimateNotificationsBelowTarget();
   else
     AnimateNotificationsAboveTarget();

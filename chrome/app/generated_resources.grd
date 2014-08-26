@@ -14697,6 +14697,14 @@ Do you accept?
     <message name="IDS_FLAGS_ENABLE_EXPERIMENTAL_HOTWORDING_DESCRIPTION" desc="Description of about:flags option for hotword detection.">
       Enables experimental 'Ok Google' hotword detection features, such as using the built-in extension. The hotword extension from the Chrome Web Store will no longer be used.
     </message>
+
+    <!-- Message center strings -->
+    <message name="IDS_FLAGS_ENABLE_MESSAGE_CENTER_ALWAYS_SCROLL_UP_UPON_REMOVAL_NAME" desc="Name of about:flags option for message center always scroll up experiment.">
+      Enable experiments that message center always scroll up upon notification removal.
+    </message>
+    <message name="IDS_FLAGS_ENABLE_MESSAGE_CENTER_ALWAYS_SCROLL_UP_UPON_REMOVAL_DESCRIPTION" desc="Description of about:flags option for message center always scroll up experiment.">
+      Enables experiment that message center always scroll up when a notification is removed.
+    </message>
   </messages>
   </release>
 </grit>
