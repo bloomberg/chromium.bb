@@ -56,7 +56,7 @@ class WalletSigninHelperTest : public testing::Test {
 
   virtual void SetUp() OVERRIDE {
     signin_helper_.reset(
-        new WalletSigninHelper(&mock_delegate_, request_context_));
+        new WalletSigninHelper(&mock_delegate_, request_context_.get()));
   }
 
   virtual void TearDown() OVERRIDE {

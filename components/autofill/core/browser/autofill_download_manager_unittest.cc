@@ -70,7 +70,7 @@ class AutofillDownloadTest : public AutofillDownloadManager::Observer,
         request_context_(new net::TestURLRequestContextGetter(
             base::MessageLoopProxy::current())),
         download_manager_(&driver_, prefs_.get(), this) {
-    driver_.SetURLRequestContext(request_context_);
+    driver_.SetURLRequestContext(request_context_.get());
   }
 
   void LimitCache(size_t cache_size) {

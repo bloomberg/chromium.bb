@@ -729,10 +729,8 @@ class WalletClientTest : public testing::Test {
   virtual ~WalletClientTest() {}
 
   virtual void SetUp() OVERRIDE {
-    wallet_client_.reset(
-        new WalletClient(request_context_,
-                         &delegate_,
-                         GURL(kMerchantUrl)));
+    wallet_client_.reset(new WalletClient(
+        request_context_.get(), &delegate_, GURL(kMerchantUrl)));
   }
 
   virtual void TearDown() OVERRIDE {
