@@ -218,13 +218,7 @@ user_manager::UserList ChromeUserManagerImpl::GetUsersAdmittedForMultiProfile()
       // Users with a policy that prevents them being added to a session will be
       // shown in login UI but will be grayed out.
       // Same applies to owner account (see http://crbug.com/385034).
-      if (check == MultiProfileUserController::ALLOWED ||
-          check == MultiProfileUserController::NOT_ALLOWED_POLICY_FORBIDS ||
-          check == MultiProfileUserController::NOT_ALLOWED_OWNER_AS_SECONDARY ||
-          check ==
-              MultiProfileUserController::NOT_ALLOWED_POLICY_CERT_TAINTED) {
-        result.push_back(*it);
-      }
+      result.push_back(*it);
     }
   }
 
