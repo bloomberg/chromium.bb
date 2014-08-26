@@ -704,21 +704,6 @@ TEST_F(DataReductionProxyParamsTest, AreProxiesBypassed) {
       { // proxy flags
         false,
         false,
-        false,
-        // is https request
-        true,
-        // proxies in retry map
-        false,
-        false,
-        false,
-        false,
-        true,
-        // expected result
-        false,
-      },
-      { // proxy flags
-        false,
-        false,
         true,
         // is https request
         true,
@@ -757,6 +742,36 @@ TEST_F(DataReductionProxyParamsTest, AreProxiesBypassed) {
         false,
         false,
         false,
+        false,
+        // expected result
+        true,
+      },
+      { // proxy flags
+        true,
+        true,
+        false,
+        // is https request
+        false,
+        // proxies in retry map
+        false,
+        true,
+        false,
+        false,
+        false,
+        // expected result
+        true,
+      },
+      { // proxy flags
+        false,
+        true,
+        true,
+        // is https request
+        false,
+        // proxies in retry map
+        false,
+        false,
+        false,
+        true,
         false,
         // expected result
         true,
