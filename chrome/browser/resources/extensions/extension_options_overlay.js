@@ -55,6 +55,9 @@ cr.define('extensions', function() {
         $('extension-options-overlay-guest').removeChild(extensionoptions);
 
       $('extension-options-overlay-icon').removeAttribute('src');
+
+      // Remove the options query string.
+      uber.replaceState({}, '');
     },
 
     /**
@@ -94,7 +97,7 @@ cr.define('extensions', function() {
       extensionoptions.setDeferAutoSize(true);
 
       extensionoptions.onclose = function() {
-        this.handleDismiss_();
+        cr.dispatchSimpleEvent($('overlay'), 'cancelOverlay');
       }.bind(this);
 
       // Resize the overlay if the <extensionoptions> changes size.

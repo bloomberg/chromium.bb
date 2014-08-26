@@ -7,6 +7,7 @@
 #include "apps/app_window.h"
 #include "apps/app_window_registry.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/extensions/tab_helper.h"
@@ -19,6 +20,7 @@
 #include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
+#include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/extensions/api/tabs.h"
@@ -31,6 +33,7 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/feature_switch.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/incognito_info.h"
 #include "extensions/common/permissions/api_permission.h"
@@ -566,16 +569,33 @@ void ExtensionTabUtil::OpenOptionsPage(const Extension* extension,
     browser = displayer->browser();
   }
 
-  content::OpenURLParams params(ManifestURL::GetOptionsPage(extension),
-                                content::Referrer(),
-                                SINGLETON_TAB,
-                                content::PAGE_TRANSITION_LINK,
-                                false);
-  browser->OpenURL(params);
-  browser->window()->Show();
-  WebContents* web_contents =
-      browser->tab_strip_model()->GetActiveWebContents();
-  web_contents->GetDelegate()->ActivateContents(web_contents);
+  if (FeatureSwitch::embedded_extension_options()->IsEnabled()) {
+    // If embedded extension options are enabled, open chrome://extensions
+    // in a new tab and show the extension options in an embedded popup.
+    chrome::NavigateParams params(chrome::GetSingletonTabNavigateParams(
+        browser, GURL(chrome::kChromeUIExtensionsURL)));
+    params.path_behavior = chrome::NavigateParams::IGNORE_AND_NAVIGATE;
+
+    GURL::Replacements replacements;
+    std::string query =
+        base::StringPrintf("options=%s", extension->id().c_str());
+    replacements.SetQueryStr(query);
+    params.url = params.url.ReplaceComponents(replacements);
+
+    chrome::ShowSingletonTabOverwritingNTP(browser, params);
+  } else {
+    // Otherwise open a new tab with the extension's options page
+    content::OpenURLParams params(ManifestURL::GetOptionsPage(extension),
+                                  content::Referrer(),
+                                  SINGLETON_TAB,
+                                  content::PAGE_TRANSITION_LINK,
+                                  false);
+    browser->OpenURL(params);
+    browser->window()->Show();
+    WebContents* web_contents =
+        browser->tab_strip_model()->GetActiveWebContents();
+    web_contents->GetDelegate()->ActivateContents(web_contents);
+  }
 }
 
 }  // namespace extensions
