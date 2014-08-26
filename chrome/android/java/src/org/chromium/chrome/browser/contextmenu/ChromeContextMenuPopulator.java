@@ -58,14 +58,14 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
             menu.findItem(R.id.contextmenu_copy_link_text).setVisible(false);
         }
 
-        menu.findItem(R.id.contextmenu_save_link_as).setEnabled(
+        menu.findItem(R.id.contextmenu_save_link_as).setVisible(
                 UrlUtilities.isDownloadableScheme(params.getLinkUrl()));
 
         if (params.isVideo()) {
-            menu.findItem(R.id.contextmenu_save_video).setEnabled(
+            menu.findItem(R.id.contextmenu_save_video).setVisible(
                     UrlUtilities.isDownloadableScheme(params.getSrcUrl()));
         } else if (params.isImage()) {
-            menu.findItem(R.id.contextmenu_save_image).setEnabled(
+            menu.findItem(R.id.contextmenu_save_image).setVisible(
                     UrlUtilities.isDownloadableScheme(params.getSrcUrl()));
 
             if (mDelegate.canLoadOriginalImage()) {
