@@ -29,7 +29,6 @@
 #include "ui/views/drag_controller.h"
 
 class ActionBoxButtonView;
-class AddToAppLauncherView;
 class CommandUpdater;
 class ContentSettingBubbleModelDelegate;
 class ContentSettingImageView;
@@ -486,9 +485,6 @@ class LocationBarView : public LocationBar,
 
   // The icon for Translate.
   TranslateIconView* translate_icon_view_;
-
-  // The view to add pages to the app launcher.
-  AddToAppLauncherView* add_to_app_launcher_view_;
 
   // The star.
   StarView* star_view_;

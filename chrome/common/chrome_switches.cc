@@ -530,9 +530,6 @@ const char kEnablePrivetStorage[]           = "enable-privet-storage";
 // during chrome_browser_main.
 const char kEnableProfiling[]               = "enable-profiling";
 
-// Enables showing a prominent UI for initiating the URL app creation flow.
-const char kEnableProminentURLAppFlow[]     = "enable-prominent-url-app-flow";
-
 // Enables query in the omnibox.
 const char kEnableQueryExtraction[]         = "enable-query-extraction";
 

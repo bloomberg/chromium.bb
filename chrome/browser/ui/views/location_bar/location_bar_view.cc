@@ -39,7 +39,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/browser_dialogs.h"
-#include "chrome/browser/ui/views/location_bar/add_to_app_launcher_view.h"
 #include "chrome/browser/ui/views/location_bar/content_setting_image_view.h"
 #include "chrome/browser/ui/views/location_bar/ev_bubble_view.h"
 #include "chrome/browser/ui/views/location_bar/generated_credit_card_view.h"
@@ -222,7 +221,6 @@ LocationBarView::LocationBarView(Browser* browser,
       open_pdf_in_reader_view_(NULL),
       manage_passwords_icon_view_(NULL),
       translate_icon_view_(NULL),
-      add_to_app_launcher_view_(NULL),
       star_view_(NULL),
       search_button_(NULL),
       is_popup_mode_(is_popup_mode),
@@ -389,11 +387,6 @@ void LocationBarView::Init() {
   translate_icon_view_ = new TranslateIconView(command_updater());
   translate_icon_view_->SetVisible(false);
   AddChildView(translate_icon_view_);
-
-  add_to_app_launcher_view_ = new AddToAppLauncherView(
-      this, bubble_font_list, text_color, background_color);
-  add_to_app_launcher_view_->SetVisible(false);
-  AddChildView(add_to_app_launcher_view_);
 
   star_view_ = new StarView(command_updater());
   star_view_->SetVisible(false);
@@ -676,8 +669,7 @@ gfx::Size LocationBarView::GetPreferredSize() const {
       IncrementalMinimumWidth(manage_passwords_icon_view_) +
       IncrementalMinimumWidth(zoom_view_) +
       IncrementalMinimumWidth(generated_credit_card_view_) +
-      IncrementalMinimumWidth(mic_search_view_) +
-      IncrementalMinimumWidth(add_to_app_launcher_view_) + kItemPadding;
+      IncrementalMinimumWidth(mic_search_view_) + kItemPadding;
   for (PageActionViews::const_iterator i(page_action_views_.begin());
        i != page_action_views_.end(); ++i)
     trailing_width += IncrementalMinimumWidth((*i));
@@ -761,10 +753,6 @@ void LocationBarView::Layout() {
   if (star_view_->visible()) {
     trailing_decorations.AddDecoration(
         vertical_edge_thickness(), location_height, star_view_);
-  }
-  if (add_to_app_launcher_view_->visible()) {
-    trailing_decorations.AddDecoration(
-        vertical_edge_thickness(), location_height, add_to_app_launcher_view_);
   }
   if (translate_icon_view_->visible()) {
     trailing_decorations.AddDecoration(
@@ -1049,7 +1037,6 @@ void LocationBarView::Update(const WebContents* contents) {
   content::WebContents* web_contents_for_sub_views =
       GetToolbarModel()->input_in_progress() ? NULL : GetWebContents();
   open_pdf_in_reader_view_->Update(web_contents_for_sub_views);
-  add_to_app_launcher_view_->Update(web_contents_for_sub_views);
 
   if (star_view_) {
     star_view_->SetVisible(

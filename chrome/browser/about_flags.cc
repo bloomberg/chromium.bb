@@ -1535,13 +1535,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableStreamlinedHostedApps)
   },
   {
-    "enable-prominent-url-app-flow",
-    IDS_FLAGS_ENABLE_PROMINENT_URL_APP_FLOW_NAME,
-    IDS_FLAGS_ENABLE_PROMINENT_URL_APP_FLOW_DESCRIPTION,
-    kOsWin | kOsCrOS | kOsLinux,
-    SINGLE_VALUE_TYPE(switches::kEnableProminentURLAppFlow)
-  },
-  {
     "enable-ephemeral-apps",
     IDS_FLAGS_ENABLE_EPHEMERAL_APPS_NAME,
     IDS_FLAGS_ENABLE_EPHEMERAL_APPS_DESCRIPTION,

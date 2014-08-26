@@ -6384,12 +6384,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
           If enabled, transitions during first-run tutorial are animated.
         </message>
       </if>
-      <message name="IDS_FLAGS_ENABLE_PROMINENT_URL_APP_FLOW_NAME" desc="Name of the flag to enable the prominent URL app creation flow.">
-        Enable the prominent URL app creation flow.
-      </message>
-      <message name="IDS_FLAGS_ENABLE_PROMINENT_URL_APP_FLOW_DESCRIPTION" desc="Description for the flag to enable the prominent URL app creation flow.">
-        Enables a more prominent way to create URL apps. Does nothing if Streamlined Hosted Apps is not enabled.
-      </message>
       <message name="IDS_FLAGS_ENABLE_STREAMLINED_HOSTED_APPS_NAME" desc="Name of the flag to enable streamlined hosted apps.">
         Enable experimental streamlined hosted apps.
       </message>
