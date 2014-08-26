@@ -34,12 +34,18 @@ class UIResourceProviderImpl : public UIResourceProvider {
 
   ui::SystemUIResourceManager& GetSystemUIResourceManager();
 
+  void SetSupportsETC1NonPowerOfTwo(bool supports_etc1_npot) {
+    supports_etc1_npot_ = supports_etc1_npot;
+  }
+  virtual bool SupportsETC1NonPowerOfTwo() const OVERRIDE;
+
  private:
   typedef base::hash_map<cc::UIResourceId, UIResourceClientAndroid*>
       UIResourceClientMap;
   UIResourceClientMap ui_resource_client_map_;
   SystemUIResourceManagerImpl system_ui_resource_manager_;
   cc::LayerTreeHost* host_;
+  bool supports_etc1_npot_;
 
   DISALLOW_COPY_AND_ASSIGN(UIResourceProviderImpl);
 };

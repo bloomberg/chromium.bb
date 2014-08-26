@@ -14,6 +14,7 @@ struct GPU_EXPORT Capabilities {
   bool egl_image_external;
   bool texture_format_bgra8888;
   bool texture_format_etc1;
+  bool texture_format_etc1_npot;
   bool texture_rectangle;
   bool iosurface;
   bool texture_usage;

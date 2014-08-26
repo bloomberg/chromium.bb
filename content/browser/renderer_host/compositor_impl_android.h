@@ -15,7 +15,9 @@
 #include "content/browser/android/ui_resource_provider_impl.h"
 #include "content/browser/renderer_host/image_transport_factory_android.h"
 #include "content/common/content_export.h"
+#include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/public/browser/android/compositor.h"
+#include "gpu/command_buffer/common/capabilities.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "ui/base/android/system_ui_resource_manager.h"
 #include "ui/base/android/window_android_compositor.h"
@@ -53,6 +55,8 @@ class CONTENT_EXPORT CompositorImpl
 
   // Destroy all surface textures associated with |child_process_id|.
   static void DestroyAllSurfaceTextures(int child_process_id);
+
+  void PopulateGpuCapabilities(gpu::Capabilities gpu_capabilities);
 
  private:
   // Compositor implementation.

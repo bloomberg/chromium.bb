@@ -14,6 +14,7 @@
 #include "base/containers/hash_tables.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
@@ -56,9 +57,12 @@ const unsigned int kMaxSwapBuffers = 2U;
 class OutputSurfaceWithoutParent : public cc::OutputSurface {
  public:
   OutputSurfaceWithoutParent(const scoped_refptr<
-      content::ContextProviderCommandBuffer>& context_provider)
+      content::ContextProviderCommandBuffer>& context_provider,
+      base::WeakPtr<content::CompositorImpl> compositor_impl)
       : cc::OutputSurface(context_provider) {
     capabilities_.adjust_deadline_for_parent = false;
+    compositor_impl_ = compositor_impl;
+    main_thread_ = base::MessageLoopProxy::current();
   }
 
   virtual void SwapBuffers(cc::CompositorFrame* frame) OVERRIDE {
@@ -72,6 +76,22 @@ class OutputSurfaceWithoutParent : public cc::OutputSurface {
 
     OutputSurface::SwapBuffers(frame);
   }
+
+  virtual bool BindToClient(cc::OutputSurfaceClient* client) OVERRIDE {
+    if (!OutputSurface::BindToClient(client))
+      return false;
+
+    main_thread_->PostTask(
+        FROM_HERE,
+        base::Bind(&content::CompositorImpl::PopulateGpuCapabilities,
+                   compositor_impl_,
+                   context_provider_->ContextCapabilities().gpu));
+
+    return true;
+  }
+
+  scoped_refptr<base::MessageLoopProxy> main_thread_;
+  base::WeakPtr<content::CompositorImpl> compositor_impl_;
 };
 
 class SurfaceTextureTrackerImpl : public gfx::SurfaceTextureTracker {
@@ -552,8 +572,14 @@ scoped_ptr<cc::OutputSurface> CompositorImpl::CreateOutputSurface(
     return scoped_ptr<cc::OutputSurface>();
   }
 
-  return scoped_ptr<cc::OutputSurface>(
-      new OutputSurfaceWithoutParent(context_provider));
+  return scoped_ptr<cc::OutputSurface>(new OutputSurfaceWithoutParent(
+      context_provider, weak_factory_.GetWeakPtr()));
+}
+
+void CompositorImpl::PopulateGpuCapabilities(
+    gpu::Capabilities gpu_capabilities) {
+  ui_resource_provider_.SetSupportsETC1NonPowerOfTwo(
+      gpu_capabilities.texture_format_etc1_npot);
 }
 
 void CompositorImpl::OnLostResources() {

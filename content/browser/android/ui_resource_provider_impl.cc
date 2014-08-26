@@ -11,7 +11,9 @@
 namespace content {
 
 UIResourceProviderImpl::UIResourceProviderImpl()
-    : system_ui_resource_manager_(this), host_(NULL) {
+    : system_ui_resource_manager_(this), host_(NULL),
+      supports_etc1_npot_(false) {
+
 }
 
 UIResourceProviderImpl::~UIResourceProviderImpl() {
@@ -61,6 +63,10 @@ void UIResourceProviderImpl::DeleteUIResource(cc::UIResourceId ui_resource_id) {
 ui::SystemUIResourceManager&
 UIResourceProviderImpl::GetSystemUIResourceManager() {
   return system_ui_resource_manager_;
+}
+
+bool UIResourceProviderImpl::SupportsETC1NonPowerOfTwo() const {
+  return supports_etc1_npot_;
 }
 
 }  // namespace content

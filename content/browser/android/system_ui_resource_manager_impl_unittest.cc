@@ -63,6 +63,8 @@ class MockUIResourceProvider : public content::UIResourceProvider {
     ui_resource_client_map_.erase(id);
   }
 
+  virtual bool SupportsETC1NonPowerOfTwo() const OVERRIDE { return true; }
+
   void LayerTreeHostCleared() {
     has_layer_tree_host_ = false;
     UIResourceClientMap client_map = ui_resource_client_map_;

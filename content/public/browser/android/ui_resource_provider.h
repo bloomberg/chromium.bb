@@ -20,6 +20,8 @@ class CONTENT_EXPORT UIResourceProvider {
       UIResourceClientAndroid* client) = 0;
 
   virtual void DeleteUIResource(cc::UIResourceId resource_id) = 0;
+
+  virtual bool SupportsETC1NonPowerOfTwo() const = 0;
 };
 
 }  // namespace content
