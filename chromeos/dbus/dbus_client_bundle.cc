@@ -246,12 +246,12 @@ DBusClientBundle::DBusClientBundle() {
     permission_broker_client_.reset(new FakePermissionBrokerClient);
 
   power_manager_client_.reset(PowerManagerClient::Create(
-      DBusThreadManager::IsUsingStub(CROS_DISKS) ?
+      DBusThreadManager::IsUsingStub(POWER_MANAGER) ?
           STUB_DBUS_CLIENT_IMPLEMENTATION :
           REAL_DBUS_CLIENT_IMPLEMENTATION));
 
   session_manager_client_.reset(SessionManagerClient::Create(
-      DBusThreadManager::IsUsingStub(CROS_DISKS) ?
+      DBusThreadManager::IsUsingStub(SESSION_MANAGER) ?
           STUB_DBUS_CLIENT_IMPLEMENTATION :
           REAL_DBUS_CLIENT_IMPLEMENTATION));
 
@@ -266,7 +266,7 @@ DBusClientBundle::DBusClientBundle() {
     system_clock_client_.reset(new FakeSystemClockClient);
 
   update_engine_client_.reset(UpdateEngineClient::Create(
-      DBusThreadManager::IsUsingStub(CROS_DISKS) ?
+      DBusThreadManager::IsUsingStub(UPDATE_ENGINE) ?
           STUB_DBUS_CLIENT_IMPLEMENTATION :
           REAL_DBUS_CLIENT_IMPLEMENTATION));
 }
