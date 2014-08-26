@@ -154,52 +154,121 @@ class FullStreamUIPolicyTest : public testing::Test {
 
   static void Arguments_Present(scoped_ptr<Action::ActionVector> i) {
     scoped_refptr<Action> last = i->front();
-    CheckAction(*last, "odlameecjipmbmbejkplpemijjgpljce",
-                Action::ACTION_API_CALL, "extension.connect",
-                "[\"hello\",\"world\"]", "", "", "");
+    CheckAction(*last.get(),
+                "odlameecjipmbmbejkplpemijjgpljce",
+                Action::ACTION_API_CALL,
+                "extension.connect",
+                "[\"hello\",\"world\"]",
+                "",
+                "",
+                "");
   }
 
   static void Arguments_GetTodaysActions(
       scoped_ptr<Action::ActionVector> actions) {
     ASSERT_EQ(2, static_cast<int>(actions->size()));
-    CheckAction(*actions->at(0), "punky", Action::ACTION_DOM_ACCESS, "lets",
-                "[\"vamoose\"]", "http://www.google.com/", "Page Title",
+    CheckAction(*actions->at(0).get(),
+                "punky",
+                Action::ACTION_DOM_ACCESS,
+                "lets",
+                "[\"vamoose\"]",
+                "http://www.google.com/",
+                "Page Title",
                 "http://www.arg-url.com/");
-    CheckAction(*actions->at(1), "punky", Action::ACTION_API_CALL, "brewster",
-                "[\"woof\"]", "", "Page Title", "http://www.arg-url.com/");
+    CheckAction(*actions->at(1).get(),
+                "punky",
+                Action::ACTION_API_CALL,
+                "brewster",
+                "[\"woof\"]",
+                "",
+                "Page Title",
+                "http://www.arg-url.com/");
   }
 
   static void Arguments_GetOlderActions(
       scoped_ptr<Action::ActionVector> actions) {
     ASSERT_EQ(2, static_cast<int>(actions->size()));
-    CheckAction(*actions->at(0), "punky", Action::ACTION_DOM_ACCESS, "lets",
-                "[\"vamoose\"]", "http://www.google.com/", "", "");
-    CheckAction(*actions->at(1), "punky", Action::ACTION_API_CALL, "brewster",
-                "[\"woof\"]", "", "", "");
+    CheckAction(*actions->at(0).get(),
+                "punky",
+                Action::ACTION_DOM_ACCESS,
+                "lets",
+                "[\"vamoose\"]",
+                "http://www.google.com/",
+                "",
+                "");
+    CheckAction(*actions->at(1).get(),
+                "punky",
+                Action::ACTION_API_CALL,
+                "brewster",
+                "[\"woof\"]",
+                "",
+                "",
+                "");
   }
 
   static void AllURLsRemoved(scoped_ptr<Action::ActionVector> actions) {
     ASSERT_EQ(2, static_cast<int>(actions->size()));
-    CheckAction(*actions->at(0), "punky", Action::ACTION_API_CALL, "lets",
-                "[\"vamoose\"]", "", "", "");
-    CheckAction(*actions->at(1), "punky", Action::ACTION_DOM_ACCESS, "lets",
-                "[\"vamoose\"]", "", "", "");
+    CheckAction(*actions->at(0).get(),
+                "punky",
+                Action::ACTION_API_CALL,
+                "lets",
+                "[\"vamoose\"]",
+                "",
+                "",
+                "");
+    CheckAction(*actions->at(1).get(),
+                "punky",
+                Action::ACTION_DOM_ACCESS,
+                "lets",
+                "[\"vamoose\"]",
+                "",
+                "",
+                "");
   }
 
   static void SomeURLsRemoved(scoped_ptr<Action::ActionVector> actions) {
     // These will be in the vector in reverse time order.
     ASSERT_EQ(5, static_cast<int>(actions->size()));
-    CheckAction(*actions->at(0), "punky", Action::ACTION_DOM_ACCESS, "lets",
-                "[\"vamoose\"]", "http://www.google.com/", "Google",
+    CheckAction(*actions->at(0).get(),
+                "punky",
+                Action::ACTION_DOM_ACCESS,
+                "lets",
+                "[\"vamoose\"]",
+                "http://www.google.com/",
+                "Google",
                 "http://www.args-url.com/");
-    CheckAction(*actions->at(1), "punky", Action::ACTION_DOM_ACCESS, "lets",
-                "[\"vamoose\"]", "http://www.google.com/", "Google", "");
-    CheckAction(*actions->at(2), "punky", Action::ACTION_DOM_ACCESS, "lets",
-                "[\"vamoose\"]", "", "", "");
-    CheckAction(*actions->at(3), "punky", Action::ACTION_DOM_ACCESS, "lets",
-                "[\"vamoose\"]", "", "", "http://www.google.com/");
-    CheckAction(*actions->at(4), "punky", Action::ACTION_DOM_ACCESS, "lets",
-                "[\"vamoose\"]", "", "", "");
+    CheckAction(*actions->at(1).get(),
+                "punky",
+                Action::ACTION_DOM_ACCESS,
+                "lets",
+                "[\"vamoose\"]",
+                "http://www.google.com/",
+                "Google",
+                "");
+    CheckAction(*actions->at(2).get(),
+                "punky",
+                Action::ACTION_DOM_ACCESS,
+                "lets",
+                "[\"vamoose\"]",
+                "",
+                "",
+                "");
+    CheckAction(*actions->at(3).get(),
+                "punky",
+                Action::ACTION_DOM_ACCESS,
+                "lets",
+                "[\"vamoose\"]",
+                "",
+                "",
+                "http://www.google.com/");
+    CheckAction(*actions->at(4).get(),
+                "punky",
+                Action::ACTION_DOM_ACCESS,
+                "lets",
+                "[\"vamoose\"]",
+                "",
+                "",
+                "");
   }
 
   static void CheckAction(const Action& action,
@@ -282,7 +351,7 @@ class FullStreamUIPolicyTest : public testing::Test {
   static void NoActionsDeleted(scoped_ptr<Action::ActionVector> actions) {
     // These will be in the vector in reverse time order.
     ASSERT_EQ(4, static_cast<int>(actions->size()));
-    CheckAction(*actions->at(0),
+    CheckAction(*actions->at(0).get(),
                 "punky2",
                 Action::ACTION_API_CALL,
                 "lets2",
@@ -291,7 +360,7 @@ class FullStreamUIPolicyTest : public testing::Test {
                 "Google2",
                 "http://www.args-url2.com/");
     ASSERT_EQ(3, actions->at(0)->action_id());
-    CheckAction(*actions->at(1),
+    CheckAction(*actions->at(1).get(),
                 "punky2",
                 Action::ACTION_API_CALL,
                 "lets2",
@@ -300,7 +369,7 @@ class FullStreamUIPolicyTest : public testing::Test {
                 "Google2",
                 "http://www.args-url2.com/");
     ASSERT_EQ(4, actions->at(1)->action_id());
-    CheckAction(*actions->at(2),
+    CheckAction(*actions->at(2).get(),
                 "punky1",
                 Action::ACTION_DOM_ACCESS,
                 "lets1",
@@ -309,7 +378,7 @@ class FullStreamUIPolicyTest : public testing::Test {
                 "Google1",
                 "http://www.args-url1.com/");
     ASSERT_EQ(1, actions->at(2)->action_id());
-    CheckAction(*actions->at(3),
+    CheckAction(*actions->at(3).get(),
                 "punky1",
                 Action::ACTION_DOM_ACCESS,
                 "lets1",
@@ -323,7 +392,7 @@ class FullStreamUIPolicyTest : public testing::Test {
   static void Action1Deleted(scoped_ptr<Action::ActionVector> actions) {
     // These will be in the vector in reverse time order.
     ASSERT_EQ(2, static_cast<int>(actions->size()));
-    CheckAction(*actions->at(0),
+    CheckAction(*actions->at(0).get(),
                 "punky2",
                 Action::ACTION_API_CALL,
                 "lets2",
@@ -332,7 +401,7 @@ class FullStreamUIPolicyTest : public testing::Test {
                 "Google2",
                 "http://www.args-url2.com/");
     ASSERT_EQ(3, actions->at(0)->action_id());
-    CheckAction(*actions->at(1),
+    CheckAction(*actions->at(1).get(),
                 "punky2",
                 Action::ACTION_API_CALL,
                 "lets2",
@@ -346,7 +415,7 @@ class FullStreamUIPolicyTest : public testing::Test {
   static void Action2Deleted(scoped_ptr<Action::ActionVector> actions) {
     // These will be in the vector in reverse time order.
     ASSERT_EQ(2, static_cast<int>(actions->size()));
-    CheckAction(*actions->at(0),
+    CheckAction(*actions->at(0).get(),
                 "punky1",
                 Action::ACTION_DOM_ACCESS,
                 "lets1",
@@ -355,7 +424,7 @@ class FullStreamUIPolicyTest : public testing::Test {
                 "Google1",
                 "http://www.args-url1.com/");
     ASSERT_EQ(1, actions->at(0)->action_id());
-    CheckAction(*actions->at(1),
+    CheckAction(*actions->at(1).get(),
                 "punky1",
                 Action::ACTION_DOM_ACCESS,
                 "lets1",

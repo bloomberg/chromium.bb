@@ -81,7 +81,7 @@ bool FullStreamUIPolicy::FlushDatabase(sql::Connection* db) {
 
   Action::ActionVector::size_type i;
   for (i = 0; i != queued_actions_.size(); ++i) {
-    const Action& action = *queued_actions_[i];
+    const Action& action = *queued_actions_[i].get();
     statement.Reset(true);
     statement.BindString(0, action.extension_id());
     statement.BindInt64(1, action.time().ToInternalValue());

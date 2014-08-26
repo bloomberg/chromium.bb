@@ -183,37 +183,84 @@ class CountingPolicyTest : public testing::Test {
 
   static void Arguments_Stripped(scoped_ptr<Action::ActionVector> i) {
     scoped_refptr<Action> last = i->front();
-    CheckAction(*last, "odlameecjipmbmbejkplpemijjgpljce",
-                Action::ACTION_API_CALL, "extension.connect",
-                "[\"hello\",\"world\"]", "", "", "", 1);
+    CheckAction(*last.get(),
+                "odlameecjipmbmbejkplpemijjgpljce",
+                Action::ACTION_API_CALL,
+                "extension.connect",
+                "[\"hello\",\"world\"]",
+                "",
+                "",
+                "",
+                1);
   }
 
   static void Arguments_GetSinglesAction(
       scoped_ptr<Action::ActionVector> actions) {
     ASSERT_EQ(1, static_cast<int>(actions->size()));
-    CheckAction(*actions->at(0), "punky", Action::ACTION_DOM_ACCESS, "lets",
-                "", "http://www.google.com/", "", "", 1);
+    CheckAction(*actions->at(0).get(),
+                "punky",
+                Action::ACTION_DOM_ACCESS,
+                "lets",
+                "",
+                "http://www.google.com/",
+                "",
+                "",
+                1);
   }
 
   static void Arguments_GetTodaysActions(
       scoped_ptr<Action::ActionVector> actions) {
     ASSERT_EQ(3, static_cast<int>(actions->size()));
-    CheckAction(*actions->at(0), "punky", Action::ACTION_API_CALL, "brewster",
-                "", "", "", "", 2);
-    CheckAction(*actions->at(1), "punky", Action::ACTION_DOM_ACCESS, "lets",
-                "", "http://www.google.com/", "", "", 1);
-    CheckAction(*actions->at(2), "punky", Action::ACTION_API_CALL,
-                "extension.sendMessage", "[\"not\",\"stripped\"]", "", "", "",
+    CheckAction(*actions->at(0).get(),
+                "punky",
+                Action::ACTION_API_CALL,
+                "brewster",
+                "",
+                "",
+                "",
+                "",
+                2);
+    CheckAction(*actions->at(1).get(),
+                "punky",
+                Action::ACTION_DOM_ACCESS,
+                "lets",
+                "",
+                "http://www.google.com/",
+                "",
+                "",
+                1);
+    CheckAction(*actions->at(2).get(),
+                "punky",
+                Action::ACTION_API_CALL,
+                "extension.sendMessage",
+                "[\"not\",\"stripped\"]",
+                "",
+                "",
+                "",
                 1);
   }
 
   static void Arguments_GetOlderActions(
       scoped_ptr<Action::ActionVector> actions) {
     ASSERT_EQ(2, static_cast<int>(actions->size()));
-    CheckAction(*actions->at(0), "punky", Action::ACTION_DOM_ACCESS, "lets",
-                "", "http://www.google.com/", "", "", 1);
-    CheckAction(*actions->at(1), "punky", Action::ACTION_API_CALL, "brewster",
-                "", "", "", "", 1);
+    CheckAction(*actions->at(0).get(),
+                "punky",
+                Action::ACTION_DOM_ACCESS,
+                "lets",
+                "",
+                "http://www.google.com/",
+                "",
+                "",
+                1);
+    CheckAction(*actions->at(1).get(),
+                "punky",
+                Action::ACTION_API_CALL,
+                "brewster",
+                "",
+                "",
+                "",
+                "",
+                1);
   }
 
   static void Arguments_CheckMergeCount(
@@ -221,8 +268,15 @@ class CountingPolicyTest : public testing::Test {
       scoped_ptr<Action::ActionVector> actions) {
     if (count > 0) {
       ASSERT_EQ(1u, actions->size());
-      CheckAction(*actions->at(0), "punky", Action::ACTION_API_CALL, "brewster",
-                  "", "", "", "", count);
+      CheckAction(*actions->at(0).get(),
+                  "punky",
+                  Action::ACTION_API_CALL,
+                  "brewster",
+                  "",
+                  "",
+                  "",
+                  "",
+                  count);
     } else {
       ASSERT_EQ(0u, actions->size());
     }
@@ -234,8 +288,15 @@ class CountingPolicyTest : public testing::Test {
       scoped_ptr<Action::ActionVector> actions) {
     if (count > 0) {
       ASSERT_EQ(1u, actions->size());
-      CheckAction(*actions->at(0), "punky", Action::ACTION_API_CALL, "brewster",
-                  "", "", "", "", count);
+      CheckAction(*actions->at(0).get(),
+                  "punky",
+                  Action::ACTION_API_CALL,
+                  "brewster",
+                  "",
+                  "",
+                  "",
+                  "",
+                  count);
       ASSERT_EQ(time, actions->at(0)->time());
     } else {
       ASSERT_EQ(0u, actions->size());
@@ -244,26 +305,74 @@ class CountingPolicyTest : public testing::Test {
 
   static void AllURLsRemoved(scoped_ptr<Action::ActionVector> actions) {
     ASSERT_EQ(2, static_cast<int>(actions->size()));
-    CheckAction(*actions->at(0), "punky", Action::ACTION_DOM_ACCESS, "lets",
-                "", "", "", "", 1);
-    CheckAction(*actions->at(1), "punky", Action::ACTION_DOM_ACCESS, "lets",
-                "", "", "", "", 1);
+    CheckAction(*actions->at(0).get(),
+                "punky",
+                Action::ACTION_DOM_ACCESS,
+                "lets",
+                "",
+                "",
+                "",
+                "",
+                1);
+    CheckAction(*actions->at(1).get(),
+                "punky",
+                Action::ACTION_DOM_ACCESS,
+                "lets",
+                "",
+                "",
+                "",
+                "",
+                1);
   }
 
   static void SomeURLsRemoved(scoped_ptr<Action::ActionVector> actions) {
     // These will be in the vector in reverse time order.
     ASSERT_EQ(5, static_cast<int>(actions->size()));
-    CheckAction(*actions->at(0), "punky", Action::ACTION_DOM_ACCESS, "lets",
-                "", "http://www.google.com/", "Google",
-                "http://www.args-url.com/", 1);
-    CheckAction(*actions->at(1), "punky", Action::ACTION_DOM_ACCESS, "lets",
-                "", "http://www.google.com/", "Google", "", 1);
-    CheckAction(*actions->at(2), "punky", Action::ACTION_DOM_ACCESS, "lets",
-                "", "", "", "", 1);
-    CheckAction(*actions->at(3), "punky", Action::ACTION_DOM_ACCESS, "lets",
-                "", "", "", "http://www.google.com/", 1);
-    CheckAction(*actions->at(4), "punky", Action::ACTION_DOM_ACCESS, "lets",
-                "", "", "", "", 1);
+    CheckAction(*actions->at(0).get(),
+                "punky",
+                Action::ACTION_DOM_ACCESS,
+                "lets",
+                "",
+                "http://www.google.com/",
+                "Google",
+                "http://www.args-url.com/",
+                1);
+    CheckAction(*actions->at(1).get(),
+                "punky",
+                Action::ACTION_DOM_ACCESS,
+                "lets",
+                "",
+                "http://www.google.com/",
+                "Google",
+                "",
+                1);
+    CheckAction(*actions->at(2).get(),
+                "punky",
+                Action::ACTION_DOM_ACCESS,
+                "lets",
+                "",
+                "",
+                "",
+                "",
+                1);
+    CheckAction(*actions->at(3).get(),
+                "punky",
+                Action::ACTION_DOM_ACCESS,
+                "lets",
+                "",
+                "",
+                "",
+                "http://www.google.com/",
+                1);
+    CheckAction(*actions->at(4).get(),
+                "punky",
+                Action::ACTION_DOM_ACCESS,
+                "lets",
+                "",
+                "",
+                "",
+                "",
+                1);
   }
 
   static void CheckDuplicates(scoped_ptr<Action::ActionVector> actions) {
@@ -357,7 +466,7 @@ class CountingPolicyTest : public testing::Test {
   static void NoActionsDeleted(scoped_ptr<Action::ActionVector> actions) {
     // These will be in the vector in reverse time order.
     ASSERT_EQ(2, static_cast<int>(actions->size()));
-    CheckAction(*actions->at(0),
+    CheckAction(*actions->at(0).get(),
                 "punky2",
                 Action::ACTION_API_CALL,
                 "lets2",
@@ -367,7 +476,7 @@ class CountingPolicyTest : public testing::Test {
                 "http://www.args-url2.com/",
                 2);
     ASSERT_EQ(2, actions->at(0)->action_id());
-    CheckAction(*actions->at(1),
+    CheckAction(*actions->at(1).get(),
                 "punky1",
                 Action::ACTION_DOM_ACCESS,
                 "lets1",
@@ -382,7 +491,7 @@ class CountingPolicyTest : public testing::Test {
   static void Action1Deleted(scoped_ptr<Action::ActionVector> actions) {
     // These will be in the vector in reverse time order.
     ASSERT_EQ(1, static_cast<int>(actions->size()));
-    CheckAction(*actions->at(0),
+    CheckAction(*actions->at(0).get(),
                 "punky2",
                 Action::ACTION_API_CALL,
                 "lets2",
@@ -397,7 +506,7 @@ class CountingPolicyTest : public testing::Test {
   static void Action2Deleted(scoped_ptr<Action::ActionVector> actions) {
     // These will be in the vector in reverse time order.
     ASSERT_EQ(1, static_cast<int>(actions->size()));
-    CheckAction(*actions->at(0),
+    CheckAction(*actions->at(0).get(),
                 "punky1",
                 Action::ACTION_DOM_ACCESS,
                 "lets1",
