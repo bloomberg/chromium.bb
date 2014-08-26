@@ -712,7 +712,12 @@ class CIDBConnectionFactory(object):
     else:
       if cls._CachedCIDB:
         return cls._CachedCIDB
-      cls._CachedCIDB = CIDBConnection(cls._ConnectionCredsPath)
+      try:
+        cls._CachedCIDB = CIDBConnection(cls._ConnectionCredsPath)
+      except sqlalchemy.exc.OperationalError as e:
+        logging.debug('Retrying to create a database connection, due to '
+                      'exception %s.', e)
+        cls._CachedCIDB = CIDBConnection(cls._ConnectionCredsPath)
       return cls._CachedCIDB
 
   @classmethod
