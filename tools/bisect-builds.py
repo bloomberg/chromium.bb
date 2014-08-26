@@ -35,8 +35,8 @@ CHANGELOG_URL = ('http://build.chromium.org'
                  '?url=/trunk/src&range=%d%%3A%d')
 
 # URL template for viewing changelogs between official versions.
-OFFICIAL_CHANGELOG_URL = ('http://omahaproxy.appspot.com/changelog'
-                          '?old_version=%s&new_version=%s')
+OFFICIAL_CHANGELOG_URL = ('https://chromium.googlesource.com/chromium/'
+                          'src/+log/%s..%s?pretty=full')
 
 # DEPS file URL.
 DEPS_FILE = 'http://src.chromium.org/viewvc/chrome/trunk/src/DEPS?revision=%d'
