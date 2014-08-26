@@ -114,20 +114,28 @@ bool MediaValues::calculateThreeDEnabled(LocalFrame* frame) const
     return threeDEnabled;
 }
 
-MediaValues::PointerDeviceType MediaValues::calculateLeastCapablePrimaryPointerDeviceType(LocalFrame* frame) const
+PointerType MediaValues::calculatePrimaryPointerType(LocalFrame* frame) const
 {
     ASSERT(frame && frame->settings());
-    if (frame->settings()->deviceSupportsTouch())
-        return MediaValues::TouchPointer;
+    return frame->settings()->primaryPointerType();
+}
 
-    // FIXME: We should also try to determine if we know we have a mouse.
-    // When we do this, we'll also need to differentiate between known not to
-    // have mouse or touch screen (NoPointer) and unknown (UnknownPointer).
-    // We could also take into account other preferences like accessibility
-    // settings to decide which of the available pointers should be considered
-    // "primary".
+int MediaValues::calculateAvailablePointerTypes(LocalFrame* frame) const
+{
+    ASSERT(frame && frame->settings());
+    return frame->settings()->availablePointerTypes();
+}
 
-    return MediaValues::UnknownPointer;
+HoverType MediaValues::calculatePrimaryHoverType(LocalFrame* frame) const
+{
+    ASSERT(frame && frame->settings());
+    return frame->settings()->primaryHoverType();
+}
+
+int MediaValues::calculateAvailableHoverTypes(LocalFrame* frame) const
+{
+    ASSERT(frame && frame->settings());
+    return frame->settings()->availableHoverTypes();
 }
 
 bool MediaValues::computeLengthImpl(double value, CSSPrimitiveValue::UnitType type, unsigned defaultFontSize, unsigned viewportWidth, unsigned viewportHeight, double& result)

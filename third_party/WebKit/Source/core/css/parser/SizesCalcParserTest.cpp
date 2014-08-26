@@ -110,7 +110,7 @@ TEST(SizesCalcParserTest, Basic)
     data.devicePixelRatio = 2.0;
     data.colorBitsPerComponent = 24;
     data.monochromeBitsPerComponent = 0;
-    data.pointer = MediaValues::MousePointer;
+    data.primaryPointerType = PointerTypeFine;
     data.defaultFontSize = 16;
     data.threeDEnabled = true;
     data.mediaType = MediaTypeNames::screen;

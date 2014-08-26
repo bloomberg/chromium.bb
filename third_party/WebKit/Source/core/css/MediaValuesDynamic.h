@@ -27,7 +27,10 @@ public:
     virtual float devicePixelRatio() const OVERRIDE;
     virtual int colorBitsPerComponent() const OVERRIDE;
     virtual int monochromeBitsPerComponent() const OVERRIDE;
-    virtual PointerDeviceType pointer() const OVERRIDE;
+    virtual PointerType primaryPointerType() const OVERRIDE;
+    virtual int availablePointerTypes() const OVERRIDE;
+    virtual HoverType primaryHoverType() const OVERRIDE;
+    virtual int availableHoverTypes() const OVERRIDE;
     virtual bool threeDEnabled() const OVERRIDE;
     virtual bool strictMode() const OVERRIDE;
     virtual const String mediaType() const OVERRIDE;

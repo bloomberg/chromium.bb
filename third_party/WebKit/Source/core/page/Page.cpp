@@ -535,6 +535,13 @@ void Page::settingsChanged(SettingsDelegate::ChangeType changeType)
     case SettingsDelegate::AcceleratedCompositingChange:
         updateAcceleratedCompositingSettings();
         break;
+    case SettingsDelegate::MediaQueryChange:
+        for (Frame* frame = mainFrame(); frame; frame = frame->tree().traverseNext()) {
+            if (frame->isLocalFrame())
+                toLocalFrame(frame)->document()->mediaQueryAffectingValueChanged();
+        }
+        setNeedsRecalcStyleInAllFrames();
+        break;
     }
 }
 

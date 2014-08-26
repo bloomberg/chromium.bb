@@ -45,6 +45,10 @@
     [RaisesException] void setImagesEnabled(boolean enabled);
     [RaisesException] void setDefaultVideoPosterURL(DOMString poster);
     [RaisesException] void setViewportEnabled(boolean enabled);
+    [RaisesException] void setAvailablePointerTypes(DOMString pointers);
+    [RaisesException] void setPrimaryPointerType(DOMString pointer);
+    [RaisesException] void setAvailableHoverTypes(DOMString types);
+    [RaisesException] void setPrimaryHoverType(DOMString type);
 
     // FIXME: This is a temporary flag and should be removed once squashing is
     // ready (crbug.com/261605).

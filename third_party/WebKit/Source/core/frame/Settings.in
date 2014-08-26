@@ -283,3 +283,13 @@ disallowFullscreenForNonMediaElements initial=false
 # V8 supports different types of caching. Used by V8 bindings.
 v8CacheOptions type=V8CacheOptions, initial=V8CacheOptionsOff
 
+# These values are bit fields for the properties of available pointing devices
+# and may take on multiple values (e.g. laptop with touchpad and touchscreen
+# has pointerType coarse *and* fine).
+availablePointerTypes type=int, initial=PointerTypeNone, invalidate=MediaQuery
+availableHoverTypes type=int, initial=HoverTypeNone, invalidate=MediaQuery
+
+# These values specify properties of the user's primary pointing device only.
+primaryPointerType type=PointerType, initial=PointerTypeNone, invalidate=MediaQuery
+primaryHoverType type=HoverType, initial=HoverTypeNone, invalidate=MediaQuery
+

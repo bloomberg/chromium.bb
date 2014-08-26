@@ -1,6 +1,8 @@
 namespace="MediaFeature"
 export=""
 
+any-hover
+any-pointer
 color
 color-index
 grid

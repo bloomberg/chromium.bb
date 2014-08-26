@@ -54,7 +54,10 @@ MediaValuesCached::MediaValuesCached(LocalFrame* frame)
     m_data.devicePixelRatio = calculateDevicePixelRatio(frame);
     m_data.colorBitsPerComponent = calculateColorBitsPerComponent(frame);
     m_data.monochromeBitsPerComponent = calculateMonochromeBitsPerComponent(frame);
-    m_data.pointer = calculateLeastCapablePrimaryPointerDeviceType(frame);
+    m_data.primaryPointerType = calculatePrimaryPointerType(frame);
+    m_data.availablePointerTypes = calculateAvailablePointerTypes(frame);
+    m_data.primaryHoverType = calculatePrimaryHoverType(frame);
+    m_data.availableHoverTypes = calculateAvailableHoverTypes(frame);
     m_data.defaultFontSize = calculateDefaultFontSize(frame);
     m_data.threeDEnabled = calculateThreeDEnabled(frame);
     m_data.strictMode = calculateStrictMode(frame);
@@ -123,9 +126,24 @@ int MediaValuesCached::monochromeBitsPerComponent() const
     return m_data.monochromeBitsPerComponent;
 }
 
-MediaValues::PointerDeviceType MediaValuesCached::pointer() const
+PointerType MediaValuesCached::primaryPointerType() const
 {
-    return m_data.pointer;
+    return m_data.primaryPointerType;
+}
+
+int MediaValuesCached::availablePointerTypes() const
+{
+    return m_data.availablePointerTypes;
+}
+
+HoverType MediaValuesCached::primaryHoverType() const
+{
+    return m_data.primaryHoverType;
+}
+
+int MediaValuesCached::availableHoverTypes() const
+{
+    return m_data.availableHoverTypes;
 }
 
 bool MediaValuesCached::threeDEnabled() const

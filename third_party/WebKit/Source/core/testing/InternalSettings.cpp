@@ -28,6 +28,7 @@
 #include "core/testing/InternalSettings.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "core/css/PointerProperties.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/frame/Settings.h"
 #include "core/inspector/InspectorController.h"
@@ -350,6 +351,94 @@ void InternalSettings::trace(Visitor* visitor)
 #if ENABLE(OILPAN)
     HeapSupplement<Page>::trace(visitor);
 #endif
+}
+
+void InternalSettings::setAvailablePointerTypes(const String& pointers, ExceptionState& exceptionState)
+{
+    InternalSettingsGuardForSettings();
+
+    // Allow setting multiple pointer types by passing comma seperated list
+    // ("coarse,fine").
+    Vector<String> tokens;
+    pointers.split(",", false, tokens);
+
+    int pointerTypes = 0;
+    for (size_t i = 0; i < tokens.size(); ++i) {
+        String token = tokens[i].stripWhiteSpace();
+
+        if (token == "coarse")
+            pointerTypes |= PointerTypeCoarse;
+        else if (token == "fine")
+            pointerTypes |= PointerTypeFine;
+        else if (token == "none")
+            pointerTypes |= PointerTypeNone;
+        else
+            exceptionState.throwDOMException(SyntaxError, "The pointer type token ('" + token + ")' is invalid.");
+    }
+
+    settings()->setAvailablePointerTypes(pointerTypes);
+}
+
+void InternalSettings::setPrimaryPointerType(const String& pointer, ExceptionState& exceptionState)
+{
+    InternalSettingsGuardForSettings();
+    String token = pointer.stripWhiteSpace();
+
+    PointerType type = PointerTypeNone;
+    if (token == "coarse")
+        type = PointerTypeCoarse;
+    else if (token == "fine")
+        type = PointerTypeFine;
+    else if (token == "none")
+        type = PointerTypeNone;
+    else
+        exceptionState.throwDOMException(SyntaxError, "The pointer type token ('" + token + ")' is invalid.");
+
+    settings()->setPrimaryPointerType(type);
+}
+
+void InternalSettings::setAvailableHoverTypes(const String& types, ExceptionState& exceptionState)
+{
+    InternalSettingsGuardForSettings();
+
+    // Allow setting multiple hover types by passing comma seperated list
+    // ("on-demand,none").
+    Vector<String> tokens;
+    types.split(",", false, tokens);
+
+    int hoverTypes = 0;
+    for (size_t i = 0; i < tokens.size(); ++i) {
+        String token = tokens[i].stripWhiteSpace();
+
+        if (token == "none")
+            hoverTypes |= HoverTypeNone;
+        else if (token == "on-demand")
+            hoverTypes |= HoverTypeOnDemand;
+        else if (token == "hover")
+            hoverTypes |= HoverTypeHover;
+        else
+            exceptionState.throwDOMException(SyntaxError, "The hover type token ('" + token + ")' is invalid.");
+    }
+
+    settings()->setAvailableHoverTypes(hoverTypes);
+}
+
+void InternalSettings::setPrimaryHoverType(const String& type, ExceptionState& exceptionState)
+{
+    InternalSettingsGuardForSettings();
+    String token = type.stripWhiteSpace();
+
+    HoverType hoverType = HoverTypeNone;
+    if (token == "none")
+        hoverType = HoverTypeNone;
+    else if (token == "on-demand")
+        hoverType = HoverTypeOnDemand;
+    else if (token == "hover")
+        hoverType = HoverTypeHover;
+    else
+        exceptionState.throwDOMException(SyntaxError, "The hover type token ('" + token + ")' is invalid.");
+
+    settings()->setPrimaryHoverType(hoverType);
 }
 
 }

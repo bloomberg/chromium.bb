@@ -59,6 +59,7 @@ public:
         ScriptEnableChange,
         FontFamilyChange,
         AcceleratedCompositingChange,
+        MediaQueryChange,
     };
 
     virtual void settingsChanged(ChangeType) = 0;

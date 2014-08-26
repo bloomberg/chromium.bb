@@ -6,6 +6,7 @@
 #define MediaValues_h
 
 #include "core/css/CSSPrimitiveValue.h"
+#include "core/css/PointerProperties.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 
@@ -21,13 +22,6 @@ public:
     enum MediaValuesMode {
         CachingMode,
         DynamicMode
-    };
-
-    enum PointerDeviceType {
-        TouchPointer,
-        MousePointer,
-        NoPointer,
-        UnknownPointer
     };
 
     virtual ~MediaValues() { }
@@ -56,7 +50,10 @@ public:
     virtual float devicePixelRatio() const = 0;
     virtual int colorBitsPerComponent() const = 0;
     virtual int monochromeBitsPerComponent() const = 0;
-    virtual PointerDeviceType pointer() const = 0;
+    virtual PointerType primaryPointerType() const = 0;
+    virtual int availablePointerTypes() const = 0;
+    virtual HoverType primaryHoverType() const = 0;
+    virtual int availableHoverTypes() const = 0;
     virtual bool threeDEnabled() const = 0;
     virtual const String mediaType() const = 0;
     virtual bool strictMode() const = 0;
@@ -75,7 +72,10 @@ protected:
     int calculateDefaultFontSize(LocalFrame*) const;
     const String calculateMediaType(LocalFrame*) const;
     bool calculateThreeDEnabled(LocalFrame*) const;
-    MediaValues::PointerDeviceType calculateLeastCapablePrimaryPointerDeviceType(LocalFrame*) const;
+    PointerType calculatePrimaryPointerType(LocalFrame*) const;
+    int calculateAvailablePointerTypes(LocalFrame*) const;
+    HoverType calculatePrimaryHoverType(LocalFrame*) const;
+    int calculateAvailableHoverTypes(LocalFrame*) const;
     static LocalFrame* frameFrom(Document&);
 
 };

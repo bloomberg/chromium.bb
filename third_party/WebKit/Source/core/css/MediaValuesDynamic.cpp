@@ -97,9 +97,24 @@ int MediaValuesDynamic::monochromeBitsPerComponent() const
     return calculateMonochromeBitsPerComponent(m_frame);
 }
 
-MediaValues::PointerDeviceType MediaValuesDynamic::pointer() const
+PointerType MediaValuesDynamic::primaryPointerType() const
 {
-    return calculateLeastCapablePrimaryPointerDeviceType(m_frame);
+    return calculatePrimaryPointerType(m_frame);
+}
+
+int MediaValuesDynamic::availablePointerTypes() const
+{
+    return calculateAvailablePointerTypes(m_frame);
+}
+
+HoverType MediaValuesDynamic::primaryHoverType() const
+{
+    return calculatePrimaryHoverType(m_frame);
+}
+
+int MediaValuesDynamic::availableHoverTypes() const
+{
+    return calculateAvailableHoverTypes(m_frame);
 }
 
 bool MediaValuesDynamic::threeDEnabled() const

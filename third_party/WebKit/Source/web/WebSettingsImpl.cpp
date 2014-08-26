@@ -139,6 +139,16 @@ void WebSettingsImpl::setMinimumLogicalFontSize(int size)
 void WebSettingsImpl::setDeviceSupportsTouch(bool deviceSupportsTouch)
 {
     m_settings->setDeviceSupportsTouch(deviceSupportsTouch);
+
+    // FIXME: Until the embedder is converted to using the new APIs, set them
+    // here to keep the media queries working unchanged.
+    if (deviceSupportsTouch) {
+        m_settings->setPrimaryPointerType(blink::PointerTypeCoarse);
+        m_settings->setPrimaryHoverType(blink::HoverTypeOnDemand);
+    } else {
+        m_settings->setPrimaryPointerType(blink::PointerTypeNone);
+        m_settings->setPrimaryHoverType(blink::HoverTypeNone);
+    }
 }
 
 void WebSettingsImpl::setDeviceSupportsMouse(bool deviceSupportsMouse)
@@ -249,6 +259,26 @@ void WebSettingsImpl::setLoadWithOverviewMode(bool enabled)
 void WebSettingsImpl::setPluginsEnabled(bool enabled)
 {
     m_settings->setPluginsEnabled(enabled);
+}
+
+void WebSettingsImpl::setAvailablePointerTypes(int pointers)
+{
+    m_settings->setAvailablePointerTypes(pointers);
+}
+
+void WebSettingsImpl::setPrimaryPointerType(PointerType pointer)
+{
+    m_settings->setPrimaryPointerType(static_cast<blink::PointerType>(pointer));
+}
+
+void WebSettingsImpl::setAvailableHoverTypes(int types)
+{
+    m_settings->setAvailableHoverTypes(types);
+}
+
+void WebSettingsImpl::setPrimaryHoverType(HoverType type)
+{
+    m_settings->setPrimaryHoverType(static_cast<blink::HoverType>(type));
 }
 
 void WebSettingsImpl::setDOMPasteAllowed(bool enabled)
@@ -555,6 +585,26 @@ void WebSettingsImpl::setEnableScrollAnimator(bool enabled)
 void WebSettingsImpl::setEnableTouchAdjustment(bool enabled)
 {
     m_settings->setTouchAdjustmentEnabled(enabled);
+}
+
+int WebSettingsImpl::availablePointerTypes() const
+{
+    return m_settings->availablePointerTypes();
+}
+
+WebSettings::PointerType WebSettingsImpl::primaryPointerType() const
+{
+    return static_cast<PointerType>(m_settings->primaryPointerType());
+}
+
+int WebSettingsImpl::availableHoverTypes() const
+{
+    return m_settings->availableHoverTypes();
+}
+
+WebSettings::HoverType WebSettingsImpl::primaryHoverType() const
+{
+    return static_cast<HoverType>(m_settings->primaryHoverType());
 }
 
 bool WebSettingsImpl::viewportEnabled() const

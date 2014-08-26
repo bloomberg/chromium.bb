@@ -93,7 +93,8 @@ TEST(MediaQueryEvaluatorTest, Cached)
     data.devicePixelRatio = 2.0;
     data.colorBitsPerComponent = 24;
     data.monochromeBitsPerComponent = 0;
-    data.pointer = MediaValues::MousePointer;
+    data.primaryPointerType = PointerTypeFine;
+    data.primaryHoverType = HoverTypeHover;
     data.defaultFontSize = 16;
     data.threeDEnabled = true;
     data.mediaType = MediaTypeNames::screen;

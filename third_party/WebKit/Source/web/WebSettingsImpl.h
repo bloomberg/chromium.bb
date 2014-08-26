@@ -45,6 +45,10 @@ public:
 
     virtual bool mainFrameResizesAreOrientationChanges() const OVERRIDE;
     virtual bool shrinksViewportContentToFit() const OVERRIDE;
+    virtual int availablePointerTypes() const OVERRIDE;
+    virtual PointerType primaryPointerType() const OVERRIDE;
+    virtual int availableHoverTypes() const OVERRIDE;
+    virtual HoverType primaryHoverType() const OVERRIDE;
     virtual bool viewportEnabled() const OVERRIDE;
     virtual void setAccelerated2dCanvasEnabled(bool) OVERRIDE;
     virtual void setAccelerated2dCanvasMSAASampleCount(int) OVERRIDE;
@@ -76,7 +80,11 @@ public:
     virtual void setDeferredImageDecodingEnabled(bool) OVERRIDE;
     virtual void setDeviceScaleAdjustment(float) OVERRIDE;
     virtual void setDeviceSupportsMouse(bool) OVERRIDE;
+
+    // FIXME: Remove once the pointer/hover features are converted to use the
+    // new APIs (e.g. setPrimaryPointerType) on the chromium side
     virtual void setDeviceSupportsTouch(bool) OVERRIDE;
+
     virtual void setDisallowFullscreenForNonMediaElements(bool) OVERRIDE;
     virtual void setDoubleTapToZoomEnabled(bool) OVERRIDE;
     virtual void setDownloadableBinaryFontsEnabled(bool) OVERRIDE;
@@ -118,6 +126,10 @@ public:
     virtual void setPinchOverlayScrollbarThickness(int) OVERRIDE;
     virtual void setPinchVirtualViewportEnabled(bool) OVERRIDE;
     virtual void setPluginsEnabled(bool) OVERRIDE;
+    virtual void setAvailablePointerTypes(int) OVERRIDE;
+    virtual void setPrimaryPointerType(PointerType) OVERRIDE;
+    virtual void setAvailableHoverTypes(int) OVERRIDE;
+    virtual void setPrimaryHoverType(HoverType) OVERRIDE;
     virtual void setRenderVSyncNotificationEnabled(bool) OVERRIDE;
     virtual void setReportScreenSizeInPhysicalPixelsQuirk(bool) OVERRIDE;
     virtual void setSansSerifFontFamily(const WebString&, UScriptCode = USCRIPT_COMMON) OVERRIDE;

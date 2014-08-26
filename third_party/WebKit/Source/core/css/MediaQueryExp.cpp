@@ -50,7 +50,9 @@ static inline bool featureWithCSSValueID(const String& mediaFeature, const CSSPa
 
     return mediaFeature == orientationMediaFeature
         || mediaFeature == pointerMediaFeature
+        || mediaFeature == anyPointerMediaFeature
         || (mediaFeature == hoverMediaFeature && RuntimeEnabledFeatures::hoverMediaQueryKeywordsEnabled())
+        || mediaFeature == anyHoverMediaFeature
         || mediaFeature == scanMediaFeature;
 }
 
@@ -59,10 +61,11 @@ static inline bool featureWithValidIdent(const String& mediaFeature, CSSValueID 
     if (mediaFeature == orientationMediaFeature)
         return ident == CSSValuePortrait || ident == CSSValueLandscape;
 
-    if (mediaFeature == pointerMediaFeature)
+    if (mediaFeature == pointerMediaFeature || mediaFeature == anyPointerMediaFeature)
         return ident == CSSValueNone || ident == CSSValueCoarse || ident == CSSValueFine;
 
-    if (mediaFeature == hoverMediaFeature && RuntimeEnabledFeatures::hoverMediaQueryKeywordsEnabled())
+    if ((mediaFeature == hoverMediaFeature && RuntimeEnabledFeatures::hoverMediaQueryKeywordsEnabled())
+        || mediaFeature == anyHoverMediaFeature)
         return ident == CSSValueNone || ident == CSSValueOnDemand || ident == CSSValueHover;
 
     if (mediaFeature == scanMediaFeature)
@@ -181,8 +184,10 @@ static inline bool featureWithoutValue(const String& mediaFeature)
         || mediaFeature == aspectRatioMediaFeature
         || mediaFeature == deviceAspectRatioMediaFeature
         || mediaFeature == hoverMediaFeature
+        || mediaFeature == anyHoverMediaFeature
         || mediaFeature == transform3dMediaFeature
         || mediaFeature == pointerMediaFeature
+        || mediaFeature == anyPointerMediaFeature
         || mediaFeature == devicePixelRatioMediaFeature
         || mediaFeature == resolutionMediaFeature
         || mediaFeature == scanMediaFeature;
