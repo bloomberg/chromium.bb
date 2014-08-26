@@ -1163,17 +1163,37 @@ LayoutUnit RenderGrid::centeredColumnPositionForChild(const RenderBox* child) co
     return columnPosition + std::max<LayoutUnit>(0, endOfColumn - startOfColumn - child->logicalWidth()) / 2;
 }
 
+static ItemPosition resolveJustification(const RenderStyle* parentStyle, const RenderStyle* childStyle)
+{
+    ItemPosition justify = childStyle->justifySelf();
+    if (justify == ItemPositionAuto)
+        justify = (parentStyle->justifyItems() == ItemPositionAuto) ? ItemPositionStretch : parentStyle->justifyItems();
+
+    return justify;
+}
+
 LayoutUnit RenderGrid::columnPositionForChild(const RenderBox* child) const
 {
-    ItemPosition childJustifySelf = child->style()->justifySelf();
-    switch (childJustifySelf) {
+    bool hasOrthogonalWritingMode = child->isHorizontalWritingMode() != isHorizontalWritingMode();
+
+    switch (resolveJustification(style(), child->style())) {
     case ItemPositionSelfStart:
+        // For orthogonal writing-modes, this computes to 'start'
+        // FIXME: grid track sizing and positioning do not support orthogonal modes yet.
+        if (hasOrthogonalWritingMode)
+            return columnPositionAlignedWithGridContainerStart(child);
+
         // self-start is based on the child's direction. That's why we need to check against the grid container's direction.
         if (child->style()->direction() != style()->direction())
             return columnPositionAlignedWithGridContainerEnd(child);
 
         return columnPositionAlignedWithGridContainerStart(child);
     case ItemPositionSelfEnd:
+        // For orthogonal writing-modes, this computes to 'start'
+        // FIXME: grid track sizing and positioning do not support orthogonal modes yet.
+        if (hasOrthogonalWritingMode)
+            return columnPositionAlignedWithGridContainerEnd(child);
+
         // self-end is based on the child's direction. That's why we need to check against the grid container's direction.
         if (child->style()->direction() != style()->direction())
             return columnPositionAlignedWithGridContainerStart(child);
@@ -1181,9 +1201,11 @@ LayoutUnit RenderGrid::columnPositionForChild(const RenderBox* child) const
         return columnPositionAlignedWithGridContainerEnd(child);
 
     case ItemPositionFlexStart:
-    case ItemPositionFlexEnd:
         // Only used in flex layout, for other layout, it's equivalent to 'start'.
         return columnPositionAlignedWithGridContainerStart(child);
+    case ItemPositionFlexEnd:
+        // Only used in flex layout, for other layout, it's equivalent to 'start'.
+        return columnPositionAlignedWithGridContainerEnd(child);
 
     case ItemPositionLeft:
         // If the property's axis is not parallel with the inline axis, this is equivalent to ‘start’.
@@ -1212,6 +1234,7 @@ LayoutUnit RenderGrid::columnPositionForChild(const RenderBox* child) const
         return columnPositionAlignedWithGridContainerEnd(child);
 
     case ItemPositionAuto:
+        break;
     case ItemPositionStretch:
     case ItemPositionBaseline:
     case ItemPositionLastBaseline:
