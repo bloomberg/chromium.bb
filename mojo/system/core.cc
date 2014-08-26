@@ -208,7 +208,7 @@ MojoResult Core::CreateMessagePipe(
     return MOJO_RESULT_RESOURCE_EXHAUSTED;
   }
 
-  scoped_refptr<MessagePipe> message_pipe(new MessagePipe());
+  scoped_refptr<MessagePipe> message_pipe(MessagePipe::CreateLocalLocal());
   dispatcher0->Init(message_pipe, 0);
   dispatcher1->Init(message_pipe, 1);
 

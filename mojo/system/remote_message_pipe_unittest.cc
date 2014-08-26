@@ -25,11 +25,9 @@
 #include "mojo/embedder/scoped_platform_handle.h"
 #include "mojo/embedder/simple_platform_support.h"
 #include "mojo/system/channel.h"
-#include "mojo/system/local_message_pipe_endpoint.h"
 #include "mojo/system/message_pipe.h"
 #include "mojo/system/message_pipe_dispatcher.h"
 #include "mojo/system/platform_handle_dispatcher.h"
-#include "mojo/system/proxy_message_pipe_endpoint.h"
 #include "mojo/system/raw_channel.h"
 #include "mojo/system/shared_buffer_dispatcher.h"
 #include "mojo/system/test_utils.h"
@@ -193,12 +191,8 @@ TEST_F(RemoteMessagePipeTest, Basic) {
   // connected to MP 1, port 0, which will be attached to channel 1. This leaves
   // MP 0, port 0 and MP 1, port 1 as the "user-facing" endpoints.
 
-  scoped_refptr<MessagePipe> mp0(new MessagePipe(
-      scoped_ptr<MessagePipeEndpoint>(new LocalMessagePipeEndpoint()),
-      scoped_ptr<MessagePipeEndpoint>(new ProxyMessagePipeEndpoint())));
-  scoped_refptr<MessagePipe> mp1(new MessagePipe(
-      scoped_ptr<MessagePipeEndpoint>(new ProxyMessagePipeEndpoint()),
-      scoped_ptr<MessagePipeEndpoint>(new LocalMessagePipeEndpoint())));
+  scoped_refptr<MessagePipe> mp0(MessagePipe::CreateLocalProxy());
+  scoped_refptr<MessagePipe> mp1(MessagePipe::CreateProxyLocal());
   ConnectMessagePipes(mp0, mp1);
 
   // Write in one direction: MP 0, port 0 -> ... -> MP 1, port 1.
@@ -306,22 +300,14 @@ TEST_F(RemoteMessagePipeTest, Multiplex) {
 
   // Connect message pipes as in the |Basic| test.
 
-  scoped_refptr<MessagePipe> mp0(new MessagePipe(
-      scoped_ptr<MessagePipeEndpoint>(new LocalMessagePipeEndpoint()),
-      scoped_ptr<MessagePipeEndpoint>(new ProxyMessagePipeEndpoint())));
-  scoped_refptr<MessagePipe> mp1(new MessagePipe(
-      scoped_ptr<MessagePipeEndpoint>(new ProxyMessagePipeEndpoint()),
-      scoped_ptr<MessagePipeEndpoint>(new LocalMessagePipeEndpoint())));
+  scoped_refptr<MessagePipe> mp0(MessagePipe::CreateLocalProxy());
+  scoped_refptr<MessagePipe> mp1(MessagePipe::CreateProxyLocal());
   ConnectMessagePipes(mp0, mp1);
 
   // Now put another message pipe on the channel.
 
-  scoped_refptr<MessagePipe> mp2(new MessagePipe(
-      scoped_ptr<MessagePipeEndpoint>(new LocalMessagePipeEndpoint()),
-      scoped_ptr<MessagePipeEndpoint>(new ProxyMessagePipeEndpoint())));
-  scoped_refptr<MessagePipe> mp3(new MessagePipe(
-      scoped_ptr<MessagePipeEndpoint>(new ProxyMessagePipeEndpoint()),
-      scoped_ptr<MessagePipeEndpoint>(new LocalMessagePipeEndpoint())));
+  scoped_refptr<MessagePipe> mp2(MessagePipe::CreateLocalProxy());
+  scoped_refptr<MessagePipe> mp3(MessagePipe::CreateProxyLocal());
   ConnectMessagePipes(mp2, mp3);
 
   // Write: MP 2, port 0 -> MP 3, port 1.
@@ -461,9 +447,7 @@ TEST_F(RemoteMessagePipeTest, CloseBeforeConnect) {
   // connected to MP 1, port 0, which will be attached to channel 1. This leaves
   // MP 0, port 0 and MP 1, port 1 as the "user-facing" endpoints.
 
-  scoped_refptr<MessagePipe> mp0(new MessagePipe(
-      scoped_ptr<MessagePipeEndpoint>(new LocalMessagePipeEndpoint()),
-      scoped_ptr<MessagePipeEndpoint>(new ProxyMessagePipeEndpoint())));
+  scoped_refptr<MessagePipe> mp0(MessagePipe::CreateLocalProxy());
 
   // Write to MP 0, port 0.
   EXPECT_EQ(MOJO_RESULT_OK,
@@ -478,9 +462,7 @@ TEST_F(RemoteMessagePipeTest, CloseBeforeConnect) {
   // Close MP 0, port 0 before channel 1 is even connected.
   mp0->Close(0);
 
-  scoped_refptr<MessagePipe> mp1(new MessagePipe(
-      scoped_ptr<MessagePipeEndpoint>(new ProxyMessagePipeEndpoint()),
-      scoped_ptr<MessagePipeEndpoint>(new LocalMessagePipeEndpoint())));
+  scoped_refptr<MessagePipe> mp1(MessagePipe::CreateProxyLocal());
 
   // Prepare to wait on MP 1, port 1. (Add the waiter now. Otherwise, if we do
   // it later, it might already be readable.)
@@ -523,18 +505,14 @@ TEST_F(RemoteMessagePipeTest, HandlePassing) {
   HandleSignalsState hss;
   uint32_t context = 0;
 
-  scoped_refptr<MessagePipe> mp0(new MessagePipe(
-      scoped_ptr<MessagePipeEndpoint>(new LocalMessagePipeEndpoint()),
-      scoped_ptr<MessagePipeEndpoint>(new ProxyMessagePipeEndpoint())));
-  scoped_refptr<MessagePipe> mp1(new MessagePipe(
-      scoped_ptr<MessagePipeEndpoint>(new ProxyMessagePipeEndpoint()),
-      scoped_ptr<MessagePipeEndpoint>(new LocalMessagePipeEndpoint())));
+  scoped_refptr<MessagePipe> mp0(MessagePipe::CreateLocalProxy());
+  scoped_refptr<MessagePipe> mp1(MessagePipe::CreateProxyLocal());
   ConnectMessagePipes(mp0, mp1);
 
   // We'll try to pass this dispatcher.
   scoped_refptr<MessagePipeDispatcher> dispatcher(
       new MessagePipeDispatcher(MessagePipeDispatcher::kDefaultCreateOptions));
-  scoped_refptr<MessagePipe> local_mp(new MessagePipe());
+  scoped_refptr<MessagePipe> local_mp(MessagePipe::CreateLocalLocal());
   dispatcher->Init(local_mp, 0);
 
   // Prepare to wait on MP 1, port 1. (Add the waiter now. Otherwise, if we do
@@ -695,12 +673,8 @@ TEST_F(RemoteMessagePipeTest, MAYBE_SharedBufferPassing) {
   HandleSignalsState hss;
   uint32_t context = 0;
 
-  scoped_refptr<MessagePipe> mp0(new MessagePipe(
-      scoped_ptr<MessagePipeEndpoint>(new LocalMessagePipeEndpoint()),
-      scoped_ptr<MessagePipeEndpoint>(new ProxyMessagePipeEndpoint())));
-  scoped_refptr<MessagePipe> mp1(new MessagePipe(
-      scoped_ptr<MessagePipeEndpoint>(new ProxyMessagePipeEndpoint()),
-      scoped_ptr<MessagePipeEndpoint>(new LocalMessagePipeEndpoint())));
+  scoped_refptr<MessagePipe> mp0(MessagePipe::CreateLocalProxy());
+  scoped_refptr<MessagePipe> mp1(MessagePipe::CreateProxyLocal());
   ConnectMessagePipes(mp0, mp1);
 
   // We'll try to pass this dispatcher.
@@ -833,12 +807,8 @@ TEST_F(RemoteMessagePipeTest, MAYBE_PlatformHandlePassing) {
   uint32_t context = 0;
   HandleSignalsState hss;
 
-  scoped_refptr<MessagePipe> mp0(new MessagePipe(
-      scoped_ptr<MessagePipeEndpoint>(new LocalMessagePipeEndpoint()),
-      scoped_ptr<MessagePipeEndpoint>(new ProxyMessagePipeEndpoint())));
-  scoped_refptr<MessagePipe> mp1(new MessagePipe(
-      scoped_ptr<MessagePipeEndpoint>(new ProxyMessagePipeEndpoint()),
-      scoped_ptr<MessagePipeEndpoint>(new LocalMessagePipeEndpoint())));
+  scoped_refptr<MessagePipe> mp0(MessagePipe::CreateLocalProxy());
+  scoped_refptr<MessagePipe> mp1(MessagePipe::CreateProxyLocal());
   ConnectMessagePipes(mp0, mp1);
 
   base::FilePath unused;
@@ -940,14 +910,10 @@ TEST_F(RemoteMessagePipeTest, RacingClosesStress) {
 
   for (unsigned i = 0; i < 256; i++) {
     DVLOG(2) << "---------------------------------------- " << i;
-    scoped_refptr<MessagePipe> mp0(new MessagePipe(
-        scoped_ptr<MessagePipeEndpoint>(new LocalMessagePipeEndpoint()),
-        scoped_ptr<MessagePipeEndpoint>(new ProxyMessagePipeEndpoint())));
+    scoped_refptr<MessagePipe> mp0(MessagePipe::CreateLocalProxy());
     BootstrapMessagePipeNoWait(0, mp0);
 
-    scoped_refptr<MessagePipe> mp1(new MessagePipe(
-        scoped_ptr<MessagePipeEndpoint>(new ProxyMessagePipeEndpoint()),
-        scoped_ptr<MessagePipeEndpoint>(new LocalMessagePipeEndpoint())));
+    scoped_refptr<MessagePipe> mp1(MessagePipe::CreateProxyLocal());
     BootstrapMessagePipeNoWait(1, mp1);
 
     if (i & 1u) {

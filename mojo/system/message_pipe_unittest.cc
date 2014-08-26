@@ -28,7 +28,7 @@ namespace {
 //  - writing a message to a port, closing the other (would be the source) port,
 //    and reading it
 TEST(MessagePipeTest, Basic) {
-  scoped_refptr<MessagePipe> mp(new MessagePipe());
+  scoped_refptr<MessagePipe> mp(MessagePipe::CreateLocalLocal());
 
   int32_t buffer[2];
   const uint32_t kBufferSize = static_cast<uint32_t>(sizeof(buffer));
@@ -234,7 +234,7 @@ TEST(MessagePipeTest, Basic) {
 }
 
 TEST(MessagePipeTest, CloseWithQueuedIncomingMessages) {
-  scoped_refptr<MessagePipe> mp(new MessagePipe());
+  scoped_refptr<MessagePipe> mp(MessagePipe::CreateLocalLocal());
 
   int32_t buffer[1];
   const uint32_t kBufferSize = static_cast<uint32_t>(sizeof(buffer));
@@ -268,7 +268,7 @@ TEST(MessagePipeTest, CloseWithQueuedIncomingMessages) {
 }
 
 TEST(MessagePipeTest, DiscardMode) {
-  scoped_refptr<MessagePipe> mp(new MessagePipe());
+  scoped_refptr<MessagePipe> mp(MessagePipe::CreateLocalLocal());
 
   int32_t buffer[2];
   const uint32_t kBufferSize = static_cast<uint32_t>(sizeof(buffer));
@@ -406,7 +406,7 @@ TEST(MessagePipeTest, DiscardMode) {
 }
 
 TEST(MessagePipeTest, BasicWaiting) {
-  scoped_refptr<MessagePipe> mp(new MessagePipe());
+  scoped_refptr<MessagePipe> mp(MessagePipe::CreateLocalLocal());
   Waiter waiter;
   HandleSignalsState hss;
 
@@ -538,7 +538,7 @@ TEST(MessagePipeTest, ThreadedWaiting) {
 
   // Write to wake up waiter waiting for read.
   {
-    scoped_refptr<MessagePipe> mp(new MessagePipe());
+    scoped_refptr<MessagePipe> mp(MessagePipe::CreateLocalLocal());
     test::SimpleWaiterThread thread(&result, &context);
 
     thread.waiter()->Init();
@@ -572,7 +572,7 @@ TEST(MessagePipeTest, ThreadedWaiting) {
 
   // Close to cancel waiter.
   {
-    scoped_refptr<MessagePipe> mp(new MessagePipe());
+    scoped_refptr<MessagePipe> mp(MessagePipe::CreateLocalLocal());
     test::SimpleWaiterThread thread(&result, &context);
 
     thread.waiter()->Init();
@@ -595,7 +595,7 @@ TEST(MessagePipeTest, ThreadedWaiting) {
 
   // Close to make waiter un-wake-up-able.
   {
-    scoped_refptr<MessagePipe> mp(new MessagePipe());
+    scoped_refptr<MessagePipe> mp(MessagePipe::CreateLocalLocal());
     test::SimpleWaiterThread thread(&result, &context);
 
     thread.waiter()->Init();

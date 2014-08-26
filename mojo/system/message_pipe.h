@@ -37,9 +37,19 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipe
   MessagePipe(scoped_ptr<MessagePipeEndpoint> endpoint0,
               scoped_ptr<MessagePipeEndpoint> endpoint1);
 
-  // Convenience constructor that constructs a |MessagePipe| with two new
-  // |LocalMessagePipeEndpoint|s.
-  MessagePipe();
+  // Creates a |MessagePipe| with two new |LocalMessagePipeEndpoint|s.
+  static MessagePipe* CreateLocalLocal();
+
+  // Creates a |MessagePipe| with a |LocalMessagePipeEndpoint| on port 0 and a
+  // |ProxyMessagePipeEndpoint| on port 1.
+  static MessagePipe* CreateLocalProxy();
+
+  // Creates a |MessagePipe| with a |ProxyMessagePipeEndpoint| on port 0 and a
+  // |LocalMessagePipeEndpoint| on port 1.
+  // Note: This is really only needed in tests (outside of tests, this
+  // configuration arises from a local message pipe having its port 0
+  // "converted" using |ConvertLocalToProxy()|).
+  static MessagePipe* CreateProxyLocal();
 
   // Gets the other port number (i.e., 0 -> 1, 1 -> 0).
   static unsigned GetPeerPort(unsigned port);

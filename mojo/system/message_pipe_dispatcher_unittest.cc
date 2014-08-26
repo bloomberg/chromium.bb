@@ -43,7 +43,7 @@ TEST(MessagePipeDispatcherTest, Basic) {
     scoped_refptr<MessagePipeDispatcher> d1(new MessagePipeDispatcher(
         MessagePipeDispatcher::kDefaultCreateOptions));
     {
-      scoped_refptr<MessagePipe> mp(new MessagePipe());
+      scoped_refptr<MessagePipe> mp(MessagePipe::CreateLocalLocal());
       d0->Init(mp, i);      // 0, 1.
       d1->Init(mp, i ^ 1);  // 1, 0.
     }
@@ -148,7 +148,7 @@ TEST(MessagePipeDispatcherTest, InvalidParams) {
   scoped_refptr<MessagePipeDispatcher> d1(
       new MessagePipeDispatcher(MessagePipeDispatcher::kDefaultCreateOptions));
   {
-    scoped_refptr<MessagePipe> mp(new MessagePipe());
+    scoped_refptr<MessagePipe> mp(MessagePipe::CreateLocalLocal());
     d0->Init(mp, 0);
     d1->Init(mp, 1);
   }
@@ -179,7 +179,7 @@ TEST(MessagePipeDispatcherTest, InvalidParamsDeath) {
   scoped_refptr<MessagePipeDispatcher> d1(
       new MessagePipeDispatcher(MessagePipeDispatcher::kDefaultCreateOptions));
   {
-    scoped_refptr<MessagePipe> mp(new MessagePipe());
+    scoped_refptr<MessagePipe> mp(MessagePipe::CreateLocalLocal());
     d0->Init(mp, 0);
     d1->Init(mp, 1);
   }
@@ -223,7 +223,7 @@ TEST(MessagePipeDispatcherTest, BasicClosed) {
     scoped_refptr<MessagePipeDispatcher> d1(new MessagePipeDispatcher(
         MessagePipeDispatcher::kDefaultCreateOptions));
     {
-      scoped_refptr<MessagePipe> mp(new MessagePipe());
+      scoped_refptr<MessagePipe> mp(MessagePipe::CreateLocalLocal());
       d0->Init(mp, i);      // 0, 1.
       d1->Init(mp, i ^ 1);  // 1, 0.
     }
@@ -370,7 +370,7 @@ TEST(MessagePipeDispatcherTest, MAYBE_BasicThreaded) {
     scoped_refptr<MessagePipeDispatcher> d1(new MessagePipeDispatcher(
         MessagePipeDispatcher::kDefaultCreateOptions));
     {
-      scoped_refptr<MessagePipe> mp(new MessagePipe());
+      scoped_refptr<MessagePipe> mp(MessagePipe::CreateLocalLocal());
       d0->Init(mp, i);      // 0, 1.
       d1->Init(mp, i ^ 1);  // 1, 0.
     }
@@ -474,7 +474,7 @@ TEST(MessagePipeDispatcherTest, MAYBE_BasicThreaded) {
     scoped_refptr<MessagePipeDispatcher> d1(new MessagePipeDispatcher(
         MessagePipeDispatcher::kDefaultCreateOptions));
     {
-      scoped_refptr<MessagePipe> mp(new MessagePipe());
+      scoped_refptr<MessagePipe> mp(MessagePipe::CreateLocalLocal());
       d0->Init(mp, i);      // 0, 1.
       d1->Init(mp, i ^ 1);  // 1, 0.
     }
@@ -664,7 +664,7 @@ TEST(MessagePipeDispatcherTest, Stress) {
   scoped_refptr<MessagePipeDispatcher> d_read(
       new MessagePipeDispatcher(MessagePipeDispatcher::kDefaultCreateOptions));
   {
-    scoped_refptr<MessagePipe> mp(new MessagePipe());
+    scoped_refptr<MessagePipe> mp(MessagePipe::CreateLocalLocal());
     d_write->Init(mp, 0);
     d_read->Init(mp, 1);
   }

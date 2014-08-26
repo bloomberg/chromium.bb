@@ -9,10 +9,8 @@
 #include "base/message_loop/message_loop.h"
 #include "mojo/embedder/platform_channel_pair.h"
 #include "mojo/embedder/simple_platform_support.h"
-#include "mojo/system/local_message_pipe_endpoint.h"
 #include "mojo/system/message_in_transit.h"
 #include "mojo/system/message_pipe.h"
-#include "mojo/system/proxy_message_pipe_endpoint.h"
 #include "mojo/system/raw_channel.h"
 #include "mojo/system/test_utils.h"
 #include "mojo/system/waiter.h"
@@ -194,9 +192,7 @@ TEST_F(ChannelTest, CloseBeforeRun) {
       base::Bind(&ChannelTest::InitChannelOnIOThread, base::Unretained(this)));
   EXPECT_EQ(TRISTATE_TRUE, init_result());
 
-  scoped_refptr<MessagePipe> mp(new MessagePipe(
-      scoped_ptr<MessagePipeEndpoint>(new LocalMessagePipeEndpoint()),
-      scoped_ptr<MessagePipeEndpoint>(new ProxyMessagePipeEndpoint())));
+  scoped_refptr<MessagePipe> mp(MessagePipe::CreateLocalProxy());
 
   MessageInTransit::EndpointId local_id =
       channel()->AttachMessagePipeEndpoint(mp, 1);
@@ -234,9 +230,7 @@ TEST_F(ChannelTest, ShutdownAfterAttach) {
       base::Bind(&ChannelTest::InitChannelOnIOThread, base::Unretained(this)));
   EXPECT_EQ(TRISTATE_TRUE, init_result());
 
-  scoped_refptr<MessagePipe> mp(new MessagePipe(
-      scoped_ptr<MessagePipeEndpoint>(new LocalMessagePipeEndpoint()),
-      scoped_ptr<MessagePipeEndpoint>(new ProxyMessagePipeEndpoint())));
+  scoped_refptr<MessagePipe> mp(MessagePipe::CreateLocalProxy());
 
   MessageInTransit::EndpointId local_id =
       channel()->AttachMessagePipeEndpoint(mp, 1);
@@ -286,9 +280,7 @@ TEST_F(ChannelTest, WaitAfterAttachRunAndShutdown) {
       base::Bind(&ChannelTest::InitChannelOnIOThread, base::Unretained(this)));
   EXPECT_EQ(TRISTATE_TRUE, init_result());
 
-  scoped_refptr<MessagePipe> mp(new MessagePipe(
-      scoped_ptr<MessagePipeEndpoint>(new LocalMessagePipeEndpoint()),
-      scoped_ptr<MessagePipeEndpoint>(new ProxyMessagePipeEndpoint())));
+  scoped_refptr<MessagePipe> mp(MessagePipe::CreateLocalProxy());
 
   MessageInTransit::EndpointId local_id =
       channel()->AttachMessagePipeEndpoint(mp, 1);

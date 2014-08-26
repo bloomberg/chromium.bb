@@ -26,10 +26,8 @@
 #include "mojo/embedder/simple_platform_support.h"
 #include "mojo/system/channel.h"
 #include "mojo/system/dispatcher.h"
-#include "mojo/system/local_message_pipe_endpoint.h"
 #include "mojo/system/message_pipe.h"
 #include "mojo/system/platform_handle_dispatcher.h"
-#include "mojo/system/proxy_message_pipe_endpoint.h"
 #include "mojo/system/raw_channel.h"
 #include "mojo/system/shared_buffer_dispatcher.h"
 #include "mojo/system/test_utils.h"
@@ -158,9 +156,7 @@ MOJO_MULTIPROCESS_TEST_CHILD_MAIN(EchoEcho) {
   embedder::ScopedPlatformHandle client_platform_handle =
       mojo::test::MultiprocessTestHelper::client_platform_handle.Pass();
   CHECK(client_platform_handle.is_valid());
-  scoped_refptr<MessagePipe> mp(new MessagePipe(
-      scoped_ptr<MessagePipeEndpoint>(new LocalMessagePipeEndpoint()),
-      scoped_ptr<MessagePipeEndpoint>(new ProxyMessagePipeEndpoint())));
+  scoped_refptr<MessagePipe> mp(MessagePipe::CreateLocalProxy());
   channel_thread.Start(client_platform_handle.Pass(), mp);
 
   const std::string quitquitquit("quitquitquit");
@@ -214,9 +210,7 @@ MOJO_MULTIPROCESS_TEST_CHILD_MAIN(EchoEcho) {
 TEST_F(MultiprocessMessagePipeTest, Basic) {
   helper()->StartChild("EchoEcho");
 
-  scoped_refptr<MessagePipe> mp(new MessagePipe(
-      scoped_ptr<MessagePipeEndpoint>(new LocalMessagePipeEndpoint()),
-      scoped_ptr<MessagePipeEndpoint>(new ProxyMessagePipeEndpoint())));
+  scoped_refptr<MessagePipe> mp(MessagePipe::CreateLocalProxy());
   Init(mp);
 
   std::string hello("hello");
@@ -260,9 +254,7 @@ TEST_F(MultiprocessMessagePipeTest, Basic) {
 TEST_F(MultiprocessMessagePipeTest, QueueMessages) {
   helper()->StartChild("EchoEcho");
 
-  scoped_refptr<MessagePipe> mp(new MessagePipe(
-      scoped_ptr<MessagePipeEndpoint>(new LocalMessagePipeEndpoint()),
-      scoped_ptr<MessagePipeEndpoint>(new ProxyMessagePipeEndpoint())));
+  scoped_refptr<MessagePipe> mp(MessagePipe::CreateLocalProxy());
   Init(mp);
 
   static const size_t kNumMessages = 1001;
@@ -328,9 +320,7 @@ MOJO_MULTIPROCESS_TEST_CHILD_MAIN(CheckSharedBuffer) {
   embedder::ScopedPlatformHandle client_platform_handle =
       mojo::test::MultiprocessTestHelper::client_platform_handle.Pass();
   CHECK(client_platform_handle.is_valid());
-  scoped_refptr<MessagePipe> mp(new MessagePipe(
-      scoped_ptr<MessagePipeEndpoint>(new LocalMessagePipeEndpoint()),
-      scoped_ptr<MessagePipeEndpoint>(new ProxyMessagePipeEndpoint())));
+  scoped_refptr<MessagePipe> mp(MessagePipe::CreateLocalProxy());
   channel_thread.Start(client_platform_handle.Pass(), mp);
 
   // Wait for the first message from our parent.
@@ -429,9 +419,7 @@ MOJO_MULTIPROCESS_TEST_CHILD_MAIN(CheckSharedBuffer) {
 TEST_F(MultiprocessMessagePipeTest, MAYBE_SharedBufferPassing) {
   helper()->StartChild("CheckSharedBuffer");
 
-  scoped_refptr<MessagePipe> mp(new MessagePipe(
-      scoped_ptr<MessagePipeEndpoint>(new LocalMessagePipeEndpoint()),
-      scoped_ptr<MessagePipeEndpoint>(new ProxyMessagePipeEndpoint())));
+  scoped_refptr<MessagePipe> mp(MessagePipe::CreateLocalProxy());
   Init(mp);
 
   // Make a shared buffer.
@@ -526,9 +514,7 @@ MOJO_MULTIPROCESS_TEST_CHILD_MAIN(CheckPlatformHandleFile) {
   embedder::ScopedPlatformHandle client_platform_handle =
       mojo::test::MultiprocessTestHelper::client_platform_handle.Pass();
   CHECK(client_platform_handle.is_valid());
-  scoped_refptr<MessagePipe> mp(new MessagePipe(
-      scoped_ptr<MessagePipeEndpoint>(new LocalMessagePipeEndpoint()),
-      scoped_ptr<MessagePipeEndpoint>(new ProxyMessagePipeEndpoint())));
+  scoped_refptr<MessagePipe> mp(MessagePipe::CreateLocalProxy());
   channel_thread.Start(client_platform_handle.Pass(), mp);
 
   HandleSignalsState hss;
@@ -586,9 +572,7 @@ TEST_F(MultiprocessMessagePipeTest, MAYBE_PlatformHandlePassing) {
 
   helper()->StartChild("CheckPlatformHandleFile");
 
-  scoped_refptr<MessagePipe> mp(new MessagePipe(
-      scoped_ptr<MessagePipeEndpoint>(new LocalMessagePipeEndpoint()),
-      scoped_ptr<MessagePipeEndpoint>(new ProxyMessagePipeEndpoint())));
+  scoped_refptr<MessagePipe> mp(MessagePipe::CreateLocalProxy());
   Init(mp);
 
   base::FilePath unused;
