@@ -16,6 +16,19 @@ declare_args() {
   android_full_debug = false
 }
 
+use_gold = is_linux && cpu_arch == "x64"
+
+# linux_use_debug_fission: whether to use split DWARF debug info
+# files. This can reduce link time significantly, but is incompatible
+# with some utilities such as icecc and ccache. Requires gold and
+# gcc >= 4.8 or clang.
+# http://gcc.gnu.org/wiki/DebugFission
+#
+# TODO(GYP) enable this. Currently this gives errors from objcopy, presumably
+# because some other symbol or toolchain setting isn't correct.
+#use_debug_fission = use_gold
+use_debug_fission = false
+
 # default_include_dirs ---------------------------------------------------------
 #
 # This is a separate config so that third_party code (which would not use the
@@ -182,36 +195,39 @@ config("compiler") {
   # ------------------------------------
   if (is_linux) {
     cflags += [ "-pthread" ]
-
-    if (cpu_arch == "x64") {
-      # Use gold for linking on 64-bit Linux only (on 32-bit it runs out of
-      # address space, and it doesn't support cross-compiling).
-      gold_path = rebase_path("//third_party/binutils/Linux_x64/Release/bin",
-                              root_build_dir)
-      ldflags += [
-        "-B$gold_path",
-
-        # There seems to be a conflict of --icf and -pie in gold which can
-        # generate crashy binaries. As a security measure, -pie takes
-        # precedence for now.
-        # TODO(brettw) common.gypi has this only for target toolset.
-        #"-Wl,--icf=safe",
-        "-Wl,--icf=none",
-
-        # Experimentation found that using four linking threads
-        # saved ~20% of link time.
-        # https://groups.google.com/a/chromium.org/group/chromium-dev/browse_thread/thread/281527606915bb36
-        # Only apply this to the target linker, since the host
-        # linker might not be gold, but isn't used much anyway.
-        # TODO(raymes): Disable threading because gold is frequently
-        # crashing on the bots: crbug.com/161942.
-        #"-Wl,--threads",
-        #"-Wl,--thread-count=4",
-      ]
-    }
-
     ldflags += [
       "-pthread",
+    ]
+  }
+  if (use_gold) {
+    # Use gold for linking on 64-bit Linux only (on 32-bit it runs out of
+    # address space, and it doesn't support cross-compiling).
+    gold_path = rebase_path("//third_party/binutils/Linux_x64/Release/bin",
+                            root_build_dir)
+    ldflags += [
+      "-B$gold_path",
+
+      # Newer gccs and clangs support -fuse-ld, use the flag to force gold
+      # selection.
+      # gcc -- http://gcc.gnu.org/onlinedocs/gcc-4.8.0/gcc/Optimize-Options.html
+      "-fuse-ld=gold",
+
+      # There seems to be a conflict of --icf and -pie in gold which can
+      # generate crashy binaries. As a security measure, -pie takes
+      # precedence for now.
+      # TODO(brettw) common.gypi has this only for target toolset.
+      #"-Wl,--icf=safe",
+      "-Wl,--icf=none",
+
+      # Experimentation found that using four linking threads
+      # saved ~20% of link time.
+      # https://groups.google.com/a/chromium.org/group/chromium-dev/browse_thread/thread/281527606915bb36
+      # Only apply this to the target linker, since the host
+      # linker might not be gold, but isn't used much anyway.
+      # TODO(raymes): Disable threading because gold is frequently
+      # crashing on the bots: crbug.com/161942.
+      #"-Wl,--threads",
+      #"-Wl,--thread-count=4",
     ]
   }
 
@@ -876,6 +892,9 @@ config("symbols") {
     ldflags = [ "/DEBUG" ]
   } else {
     cflags = [ "-g2" ]
+    if (use_debug_fission) {
+      cflags += [ "-gsplit-dwarf" ]
+    }
   }
 }
 
@@ -885,6 +904,9 @@ config("minimal_symbols") {
     ldflags = [ "/DEBUG" ]
   } else {
     cflags = [ "-g1" ]
+    if (use_debug_fission) {
+      cflags += [ "-gsplit-dwarf" ]
+    }
   }
 }
 

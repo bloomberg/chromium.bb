@@ -360,13 +360,7 @@ if (is_debug) {
 _native_compiler_configs += [ _default_optimization_config ]
 
 # Symbol setup.
-if (is_clang && (is_linux || is_android)) {
-  # Clang creates chubby debug information, which makes linking very slow.
-  # For now, don't create debug information with clang.
-  # See http://crbug.com/70000
-  # TODO(brettw) This just copies GYP. Why not do this on Mac as well?
-  _default_symbols_config = "//build/config/compiler:no_symbols"
-} else if (symbol_level == 2) {
+if (symbol_level == 2) {
   _default_symbols_config = "//build/config/compiler:symbols"
 } else if (symbol_level == 1) {
   _default_symbols_config = "//build/config/compiler:minimal_symbols"
