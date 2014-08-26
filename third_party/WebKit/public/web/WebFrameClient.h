@@ -32,6 +32,7 @@
 #define WebFrameClient_h
 
 #include "../platform/WebColor.h"
+#include "WebAXObject.h"
 #include "WebDOMMessageEvent.h"
 #include "WebDataSource.h"
 #include "WebFrame.h"
@@ -559,6 +560,11 @@ public:
 
     // Access the embedder API for (client-based) screen orientation client .
     virtual WebScreenOrientationClient* webScreenOrientationClient() { return 0; }
+
+    // Accessibility -------------------------------------------------------
+
+    // Notifies embedder about an accessibility event.
+    virtual void postAccessibilityEvent(const WebAXObject&, WebAXEvent) { }
 
 protected:
     virtual ~WebFrameClient() { }

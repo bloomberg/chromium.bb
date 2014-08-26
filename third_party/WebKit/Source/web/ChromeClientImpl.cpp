@@ -651,8 +651,14 @@ void ChromeClientImpl::setCursorForPlugin(const WebCursorInfo& cursor)
 void ChromeClientImpl::postAccessibilityNotification(AXObject* obj, AXObjectCache::AXNotification notification)
 {
     // Alert assistive technology about the accessibility object notification.
-    if (!obj)
+    if (!obj || !obj->documentFrameView())
         return;
+
+    WebLocalFrameImpl* webframe = WebLocalFrameImpl::fromFrame(obj->documentFrameView()->frame());
+    if (webframe && webframe->client())
+        webframe->client()->postAccessibilityEvent(WebAXObject(obj), toWebAXEvent(notification));
+
+    // FIXME: delete these lines once Chrome only uses the frame client interface, above.
     if (m_webView->client())
         m_webView->client()->postAccessibilityEvent(WebAXObject(obj), toWebAXEvent(notification));
 }
