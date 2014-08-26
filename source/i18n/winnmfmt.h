@@ -143,7 +143,7 @@ public:
     virtual UClassID getDynamicClassID(void) const;
 
 private:
-    UnicodeString &format(int32_t numDigits, UnicodeString &appendTo, wchar_t *format, ...) const;
+    UnicodeString &format(int32_t numDigits, UnicodeString &appendTo, const wchar_t *format, ...) const;
 
     UBool fCurrency;
     Locale fLocale;

@@ -1,0 +1,26 @@
+Index: source/i18n/winnmfmt.cpp
+===================================================================
+--- source/i18n/winnmfmt.cpp	(revision 287122)
++++ source/i18n/winnmfmt.cpp	(working copy)
+@@ -242,7 +242,7 @@
+     NumberFormat::setMinimumFractionDigits(newValue);
+ }
+ 
+-UnicodeString &Win32NumberFormat::format(int32_t numDigits, UnicodeString &appendTo, wchar_t *fmt, ...) const
++UnicodeString &Win32NumberFormat::format(int32_t numDigits, UnicodeString &appendTo, const wchar_t *fmt, ...) const
+ {
+     wchar_t nStackBuffer[STACK_BUFFER_SIZE];
+     wchar_t *nBuffer = nStackBuffer;
+Index: source/i18n/winnmfmt.h
+===================================================================
+--- source/i18n/winnmfmt.h	(revision 287122)
++++ source/i18n/winnmfmt.h	(working copy)
+@@ -143,7 +143,7 @@
+     virtual UClassID getDynamicClassID(void) const;
+ 
+ private:
+-    UnicodeString &format(int32_t numDigits, UnicodeString &appendTo, wchar_t *format, ...) const;
++    UnicodeString &format(int32_t numDigits, UnicodeString &appendTo, const wchar_t *format, ...) const;
+ 
+     UBool fCurrency;
+     Locale fLocale;

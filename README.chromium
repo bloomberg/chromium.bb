@@ -163,6 +163,10 @@ This directory contains the source code of ICU 52.1 for C/C++
   - patches/data.build.win.patch :
       Windows-only data build patch.
 
+  - patches/clang_win.patch :
+    Take care of 3 warnings from clang and MSVC 2013. 
+    upstream bug : http://bugs.icu-project.org/trac/ticket/11102
+
 9. Pre-built data files are checked in with the following steps on Linux:
 
     a. Make a icu data build directory outside the Chromium source tree 
