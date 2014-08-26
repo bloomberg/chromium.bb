@@ -23,8 +23,8 @@ class UIApplicationLoader::UILoader {
     loader_->Load(manager, url, callbacks);
   }
 
-  void OnServiceError(ApplicationManager* manager, const GURL& url) {
-    loader_->OnServiceError(manager, url);
+  void OnApplicationError(ApplicationManager* manager, const GURL& url) {
+    loader_->OnApplicationError(manager, url);
   }
 
  private:
@@ -62,11 +62,11 @@ void UIApplicationLoader::Load(ApplicationManager* manager,
           base::Owned(new ScopedMessagePipeHandle(shell_handle.Pass()))));
 }
 
-void UIApplicationLoader::OnServiceError(ApplicationManager* manager,
-                                         const GURL& url) {
+void UIApplicationLoader::OnApplicationError(ApplicationManager* manager,
+                                             const GURL& url) {
   context_->ui_loop()->PostTask(
       FROM_HERE,
-      base::Bind(&UIApplicationLoader::OnServiceErrorOnUIThread,
+      base::Bind(&UIApplicationLoader::OnApplicationErrorOnUIThread,
                  base::Unretained(this),
                  manager,
                  url));
@@ -81,11 +81,12 @@ void UIApplicationLoader::LoadOnUIThread(
   ui_loader_->Load(manager, url, shell_handle->Pass());
 }
 
-void UIApplicationLoader::OnServiceErrorOnUIThread(ApplicationManager* manager,
-                                                   const GURL& url) {
+void UIApplicationLoader::OnApplicationErrorOnUIThread(
+    ApplicationManager* manager,
+    const GURL& url) {
   if (!ui_loader_)
     ui_loader_ = new UILoader(loader_.get());
-  ui_loader_->OnServiceError(manager, url);
+  ui_loader_->OnApplicationError(manager, url);
 }
 
 void UIApplicationLoader::ShutdownOnUIThread() {

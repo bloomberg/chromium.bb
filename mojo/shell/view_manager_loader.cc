@@ -34,8 +34,8 @@ void ViewManagerLoader::Load(ApplicationManager* manager,
   apps_.push_back(app.release());
 }
 
-void ViewManagerLoader::OnServiceError(ApplicationManager* manager,
-                                       const GURL& url) {
+void ViewManagerLoader::OnApplicationError(ApplicationManager* manager,
+                                           const GURL& url) {
 }
 
 bool ViewManagerLoader::ConfigureIncomingConnection(

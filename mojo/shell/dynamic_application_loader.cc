@@ -167,8 +167,8 @@ void DynamicApplicationLoader::OnRunLibraryComplete(
   }
 }
 
-void DynamicApplicationLoader::OnServiceError(ApplicationManager* manager,
-                                              const GURL& url) {
+void DynamicApplicationLoader::OnApplicationError(ApplicationManager* manager,
+                                                  const GURL& url) {
   // TODO(darin): What should we do about service errors? This implies that
   // the app closed its handle to the service manager. Maybe we don't care?
 }

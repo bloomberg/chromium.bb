@@ -64,8 +64,8 @@ class DBusApplicationLoader : public ApplicationLoader {
                     const GURL& url,
                     scoped_refptr<LoadCallbacks> callbacks) OVERRIDE;
 
-  virtual void OnServiceError(ApplicationManager* manager,
-                              const GURL& url) OVERRIDE;
+  virtual void OnApplicationError(ApplicationManager* manager,
+                                  const GURL& url) OVERRIDE;
 
  private:
   class LoadContext;

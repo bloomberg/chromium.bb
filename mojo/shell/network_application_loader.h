@@ -34,8 +34,8 @@ class NetworkApplicationLoader : public ApplicationLoader,
   virtual void Load(ApplicationManager* manager,
                     const GURL& url,
                     scoped_refptr<LoadCallbacks> callbacks) OVERRIDE;
-  virtual void OnServiceError(ApplicationManager* manager,
-                              const GURL& url) OVERRIDE;
+  virtual void OnApplicationError(ApplicationManager* manager,
+                                  const GURL& url) OVERRIDE;
 
   // ApplicationDelegate overrides.
   virtual void Initialize(ApplicationImpl* app) OVERRIDE;

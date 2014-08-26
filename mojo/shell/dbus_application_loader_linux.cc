@@ -162,8 +162,8 @@ void DBusApplicationLoader::Load(ApplicationManager* manager,
       new LoadContext(this, bus_, url, shell_handle.Pass());
 }
 
-void DBusApplicationLoader::OnServiceError(ApplicationManager* manager,
-                                           const GURL& url) {
+void DBusApplicationLoader::OnApplicationError(ApplicationManager* manager,
+                                               const GURL& url) {
   // TODO(cmasone): Anything at all in this method here.
 }
 

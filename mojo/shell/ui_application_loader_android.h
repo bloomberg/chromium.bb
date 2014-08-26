@@ -29,8 +29,8 @@ class UIApplicationLoader : public ApplicationLoader {
   virtual void Load(ApplicationManager* manager,
                     const GURL& url,
                     scoped_refptr<LoadCallbacks> callbacks) OVERRIDE;
-  virtual void OnServiceError(ApplicationManager* manager,
-                              const GURL& url) OVERRIDE;
+  virtual void OnApplicationError(ApplicationManager* manager,
+                                  const GURL& url) OVERRIDE;
 
  private:
   class UILoader;
@@ -42,7 +42,8 @@ class UIApplicationLoader : public ApplicationLoader {
   void LoadOnUIThread(ApplicationManager* manager,
                       const GURL& url,
                       ScopedMessagePipeHandle* shell_handle);
-  void OnServiceErrorOnUIThread(ApplicationManager* manager, const GURL& url);
+  void OnApplicationErrorOnUIThread(ApplicationManager* manager,
+                                    const GURL& url);
   void ShutdownOnUIThread();
 
   scoped_ptr<ApplicationLoader> loader_;

@@ -75,8 +75,9 @@ class MOJO_APPLICATION_MANAGER_EXPORT ApplicationLoader {
                     const GURL& url,
                     scoped_refptr<LoadCallbacks> callbacks) = 0;
 
-  // TODO(davemoore): Change name to OnApplicationError.
-  virtual void OnServiceError(ApplicationManager* manager, const GURL& url) = 0;
+  // Called when the Application exits.
+  virtual void OnApplicationError(ApplicationManager* manager,
+                                  const GURL& url) = 0;
 
  protected:
   ApplicationLoader() {}

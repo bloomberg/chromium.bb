@@ -360,8 +360,8 @@ class EmbedApplicationLoader : public ApplicationLoader,
                                                         shell_handle.Pass()));
     apps_.push_back(app.release());
   }
-  virtual void OnServiceError(ApplicationManager* manager,
-                              const GURL& url) OVERRIDE {}
+  virtual void OnApplicationError(ApplicationManager* manager,
+                                  const GURL& url) OVERRIDE {}
 
   // ApplicationDelegate implementation:
   virtual bool ConfigureIncomingConnection(ApplicationConnection* connection)

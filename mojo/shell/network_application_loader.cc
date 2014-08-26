@@ -44,8 +44,8 @@ void NetworkApplicationLoader::Load(ApplicationManager* manager,
   }
 }
 
-void NetworkApplicationLoader::OnServiceError(ApplicationManager* manager,
-                                              const GURL& url) {
+void NetworkApplicationLoader::OnApplicationError(ApplicationManager* manager,
+                                                  const GURL& url) {
   apps_.erase(reinterpret_cast<uintptr_t>(manager));
 }
 

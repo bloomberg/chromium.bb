@@ -29,8 +29,8 @@ class MOJO_APPLICATION_MANAGER_EXPORT BackgroundShellApplicationLoader
   virtual void Load(ApplicationManager* manager,
                     const GURL& url,
                     scoped_refptr<LoadCallbacks> callbacks) OVERRIDE;
-  virtual void OnServiceError(ApplicationManager* manager,
-                              const GURL& url) OVERRIDE;
+  virtual void OnApplicationError(ApplicationManager* manager,
+                                  const GURL& url) OVERRIDE;
 
  private:
   class BackgroundLoader;
@@ -45,8 +45,8 @@ class MOJO_APPLICATION_MANAGER_EXPORT BackgroundShellApplicationLoader
   void LoadOnBackgroundThread(ApplicationManager* manager,
                               const GURL& url,
                               ScopedMessagePipeHandle* shell_handle);
-  void OnServiceErrorOnBackgroundThread(ApplicationManager* manager,
-                                        const GURL& url);
+  void OnApplicationErrorOnBackgroundThread(ApplicationManager* manager,
+                                            const GURL& url);
   bool quit_on_shutdown_;
   scoped_ptr<ApplicationLoader> loader_;
 

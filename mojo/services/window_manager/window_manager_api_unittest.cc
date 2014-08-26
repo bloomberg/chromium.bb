@@ -115,8 +115,8 @@ class TestApplicationLoader : public ApplicationLoader,
         new ApplicationImpl(this, shell_handle.Pass()));
     apps_.push_back(app.release());
   }
-  virtual void OnServiceError(ApplicationManager* application_manager,
-                              const GURL& url) MOJO_OVERRIDE {}
+  virtual void OnApplicationError(ApplicationManager* application_manager,
+                                  const GURL& url) MOJO_OVERRIDE {}
 
   // Overridden from ApplicationDelegate:
   virtual bool ConfigureIncomingConnection(

@@ -64,8 +64,8 @@ class ConnectApplicationLoader : public ApplicationLoader,
     apps_.push_back(app.release());
   }
 
-  virtual void OnServiceError(ApplicationManager* manager,
-                              const GURL& url) OVERRIDE {}
+  virtual void OnApplicationError(ApplicationManager* manager,
+                                  const GURL& url) OVERRIDE {}
 
   virtual bool ConfigureIncomingConnection(ApplicationConnection* connection)
       OVERRIDE {

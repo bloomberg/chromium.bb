@@ -23,8 +23,8 @@ class BackgroundShellApplicationLoader::BackgroundLoader {
     loader_->Load(manager, url, callbacks);
   }
 
-  void OnServiceError(ApplicationManager* manager, const GURL& url) {
-    loader_->OnServiceError(manager, url);
+  void OnApplicationError(ApplicationManager* manager, const GURL& url) {
+    loader_->OnApplicationError(manager, url);
   }
 
  private:
@@ -80,16 +80,15 @@ void BackgroundShellApplicationLoader::Load(
           base::Owned(new ScopedMessagePipeHandle(shell_handle.Pass()))));
 }
 
-void BackgroundShellApplicationLoader::OnServiceError(
+void BackgroundShellApplicationLoader::OnApplicationError(
     ApplicationManager* manager,
     const GURL& url) {
-  task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(
-          &BackgroundShellApplicationLoader::OnServiceErrorOnBackgroundThread,
-          base::Unretained(this),
-          manager,
-          url));
+  task_runner_->PostTask(FROM_HERE,
+                         base::Bind(&BackgroundShellApplicationLoader::
+                                        OnApplicationErrorOnBackgroundThread,
+                                    base::Unretained(this),
+                                    manager,
+                                    url));
 }
 
 void BackgroundShellApplicationLoader::Run() {
@@ -116,13 +115,13 @@ void BackgroundShellApplicationLoader::LoadOnBackgroundThread(
   background_loader_->Load(manager, url, shell_handle->Pass());
 }
 
-void BackgroundShellApplicationLoader::OnServiceErrorOnBackgroundThread(
+void BackgroundShellApplicationLoader::OnApplicationErrorOnBackgroundThread(
     ApplicationManager* manager,
     const GURL& url) {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
   if (!background_loader_)
     background_loader_ = new BackgroundLoader(loader_.get());
-  background_loader_->OnServiceError(manager, url);
+  background_loader_->OnApplicationError(manager, url);
 }
 
 }  // namespace mojo

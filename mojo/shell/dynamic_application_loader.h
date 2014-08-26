@@ -40,8 +40,8 @@ class DynamicApplicationLoader : public ApplicationLoader {
   virtual void Load(ApplicationManager* manager,
                     const GURL& url,
                     scoped_refptr<LoadCallbacks> callbacks) OVERRIDE;
-  virtual void OnServiceError(ApplicationManager* manager,
-                              const GURL& url) OVERRIDE;
+  virtual void OnApplicationError(ApplicationManager* manager,
+                                  const GURL& url) OVERRIDE;
 
  private:
   typedef std::map<std::string, GURL> MimeTypeToURLMap;

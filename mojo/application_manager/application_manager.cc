@@ -288,7 +288,7 @@ void ApplicationManager::OnShellImplError(ShellImpl* shell_impl) {
   url_to_shell_impl_.erase(it);
   ApplicationLoader* loader = GetLoaderForURL(url);
   if (loader)
-    loader->OnServiceError(this, url);
+    loader->OnApplicationError(this, url);
   if (delegate_)
     delegate_->OnApplicationError(url);
 }

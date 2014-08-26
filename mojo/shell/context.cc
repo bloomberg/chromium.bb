@@ -127,8 +127,8 @@ class Context::NativeViewportApplicationLoader
       app_.reset(new ApplicationImpl(this, shell_handle.Pass()));
   }
 
-  virtual void OnServiceError(ApplicationManager* manager,
-                              const GURL& url) OVERRIDE {}
+  virtual void OnApplicationError(ApplicationManager* manager,
+                                  const GURL& url) OVERRIDE {}
 
   // ApplicationDelegate implementation.
   virtual bool ConfigureIncomingConnection(

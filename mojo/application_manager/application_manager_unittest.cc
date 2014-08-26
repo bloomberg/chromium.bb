@@ -118,8 +118,8 @@ class TestApplicationLoader : public ApplicationLoader,
         new ApplicationImpl(this, callbacks->RegisterApplication().Pass()));
   }
 
-  virtual void OnServiceError(ApplicationManager* manager,
-                              const GURL& url) OVERRIDE {}
+  virtual void OnApplicationError(ApplicationManager* manager,
+                                  const GURL& url) OVERRIDE {}
 
   // ApplicationDelegate implementation.
   virtual bool ConfigureIncomingConnection(
@@ -329,8 +329,8 @@ class Tester : public ApplicationDelegate,
         new ApplicationImpl(this, callbacks->RegisterApplication().Pass()));
   }
 
-  virtual void OnServiceError(ApplicationManager* manager,
-                              const GURL& url) OVERRIDE {}
+  virtual void OnApplicationError(ApplicationManager* manager,
+                                  const GURL& url) OVERRIDE {}
 
   virtual bool ConfigureIncomingConnection(
       ApplicationConnection* connection) OVERRIDE {
