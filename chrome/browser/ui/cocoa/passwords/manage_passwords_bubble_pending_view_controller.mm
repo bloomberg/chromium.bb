@@ -78,11 +78,10 @@ using namespace password_manager::mac::ui;
 
   // Password item.
   // It should be at least as wide as the box without the padding.
-  const CGFloat itemMinWidth = kDesiredBubbleWidth - 2 * kFramePadding;
   passwordItem_.reset([[ManagePasswordItemViewController alloc]
       initWithModel:model_
-           position:password_manager::ui::FIRST_ITEM
-           minWidth:itemMinWidth]);
+       passwordForm:model_->pending_credentials()
+           position:password_manager::ui::FIRST_ITEM]);
   NSView* password = [passwordItem_ view];
   [self.view addSubview:password];
 
