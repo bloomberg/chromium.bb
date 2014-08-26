@@ -697,6 +697,16 @@
             }],
           ],
         },
+    ]}, {
+      # Used by bots so they can always depend on chrome_run target.
+      'targets': [
+        {
+          'target_name': 'chrome_run',
+          'type': 'none',
+          'dependencies': [
+            'chrome',
+          ],
+        },
       ],
     }],
   ],
