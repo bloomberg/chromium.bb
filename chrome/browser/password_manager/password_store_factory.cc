@@ -62,7 +62,7 @@ scoped_refptr<PasswordStore> PasswordStoreService::GetPasswordStore() {
 }
 
 void PasswordStoreService::Shutdown() {
-  if (password_store_)
+  if (password_store_.get())
     password_store_->Shutdown();
 }
 
@@ -229,9 +229,9 @@ KeyedService* PasswordStoreFactory::BuildServiceInstanceFor(
 #endif
   std::string sync_username =
       password_manager_sync_metrics::GetSyncUsername(profile);
-  if (!ps || !ps->Init(
-          sync_start_util::GetFlareForSyncableService(profile->GetPath()),
-          sync_username)) {
+  if (!ps.get() ||
+      !ps->Init(sync_start_util::GetFlareForSyncableService(profile->GetPath()),
+                sync_username)) {
     NOTREACHED() << "Could not initialize password manager.";
     return NULL;
   }
