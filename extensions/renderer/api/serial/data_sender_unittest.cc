@@ -97,9 +97,9 @@ TEST_F(DataSenderTest, Send) {
 }
 
 TEST_F(DataSenderTest, LargeSend) {
-  std::string pattern = "1234567890";
+  std::string pattern = "123";
   std::string expected_data;
-  for (int i = 0; i < 110; i++)
+  for (int i = 0; i < 11; i++)
     expected_data += pattern;
   expected_data_.push(expected_data);
   RunTest("data_sender_unittest.js", "testLargeSend");

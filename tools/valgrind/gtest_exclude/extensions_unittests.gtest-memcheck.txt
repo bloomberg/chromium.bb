@@ -2,6 +2,3 @@
 # http://crbug.com/402257
 ApiTestBaseTest.*
 SerialApiTest.*
-
-# Times out under Valgrind on CrOS, see http://crbug.com/405531
-DataSenderTest.*

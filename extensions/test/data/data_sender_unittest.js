@@ -57,9 +57,9 @@ unittestBindings.exportTests([
 
   function testLargeSend() {
     createSender().then(test.callbackPass(function(sender) {
-      sender.send(generateData(BUFFER_SIZE * 100, '1234567890')).then(
+      sender.send(generateData(BUFFER_SIZE * 3, '123')).then(
           test.callbackPass(function(bytesSent) {
-        test.assertEq(BUFFER_SIZE * 100, bytesSent);
+        test.assertEq(BUFFER_SIZE * 3, bytesSent);
         sender.close();
       }));
     }));
@@ -67,7 +67,7 @@ unittestBindings.exportTests([
 
   function testSendError() {
     createSender().then(test.callbackPass(function(sender) {
-      sender.send(generateData(BUFFER_SIZE * 100, 'b')).catch(test.callbackPass(
+      sender.send(generateData(BUFFER_SIZE * 3, 'b')).catch(test.callbackPass(
           function(e) {
         test.assertEq(1, e.error);
         test.assertEq(0, e.bytesSent);
@@ -82,7 +82,7 @@ unittestBindings.exportTests([
 
   function testSendErrorPartialSuccess() {
     createSender().then(test.callbackPass(function(sender) {
-      sender.send(generateData(BUFFER_SIZE * 100, 'b')).catch(test.callbackPass(
+      sender.send(generateData(BUFFER_SIZE * 3, 'b')).catch(test.callbackPass(
           function(e) {
         test.assertEq(1, e.error);
         test.assertEq(5, e.bytesSent);
@@ -134,7 +134,7 @@ unittestBindings.exportTests([
 
   function testSendErrorInLargeSend() {
     createSender().then(test.callbackPass(function(sender) {
-      sender.send(generateData(BUFFER_SIZE * 100, '1234567890')).catch(
+      sender.send(generateData(BUFFER_SIZE * 3, '1234567890')).catch(
           test.callbackPass(function(e) {
         test.assertEq(1, e.error);
         test.assertEq(12, e.bytesSent);
@@ -153,7 +153,7 @@ unittestBindings.exportTests([
         test.assertEq(1, e.error);
         test.assertEq(2, e.bytesSent);
       }));
-      sender.send(generateData(BUFFER_SIZE * 100, '1234567890')).catch(
+      sender.send(generateData(BUFFER_SIZE * 3, '1234567890')).catch(
           test.callbackPass(function(e) {
         test.assertEq(1, e.error);
         test.assertEq(0, e.bytesSent);
