@@ -16,6 +16,7 @@
 #include "chrome/browser/autocomplete/autocomplete_controller_delegate.h"
 #include "chrome/browser/autocomplete/bookmark_provider.h"
 #include "chrome/browser/autocomplete/builtin_provider.h"
+#include "chrome/browser/autocomplete/chrome_autocomplete_provider_delegate.h"
 #include "chrome/browser/autocomplete/history_quick_provider.h"
 #include "chrome/browser/autocomplete/history_url_provider.h"
 #include "chrome/browser/autocomplete/search_provider.h"
@@ -208,7 +209,9 @@ AutocompleteController::AutocompleteController(
   }
 #endif
   if (provider_types & AutocompleteProvider::TYPE_SEARCH) {
-    search_provider_ = new SearchProvider(this, template_url_service, profile);
+    search_provider_ = new SearchProvider(
+        this, template_url_service, scoped_ptr<AutocompleteProviderDelegate>(
+            new ChromeAutocompleteProviderDelegate(profile)));
     providers_.push_back(search_provider_);
   }
   if (provider_types & AutocompleteProvider::TYPE_SHORTCUTS)

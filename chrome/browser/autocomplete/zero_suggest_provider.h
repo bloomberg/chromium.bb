@@ -19,6 +19,7 @@
 #include "net/url_request/url_fetcher_delegate.h"
 
 class AutocompleteProviderListener;
+class Profile;
 class TemplateURLService;
 
 namespace base {
@@ -129,6 +130,7 @@ class ZeroSuggestProvider : public BaseSearchProvider,
   void MaybeUseCachedSuggestions();
 
   AutocompleteProviderListener* listener_;
+  Profile* profile_;
 
   // The URL for which a suggestion fetch is pending.
   std::string current_query_;

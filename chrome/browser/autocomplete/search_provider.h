@@ -22,9 +22,9 @@
 #include "components/search_engines/template_url.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
+class AutocompleteProviderDelegate;
 class AutocompleteProviderListener;
 class AutocompleteResult;
-class Profile;
 class SearchProviderTest;
 class TemplateURLService;
 
@@ -51,7 +51,7 @@ class SearchProvider : public BaseSearchProvider,
  public:
   SearchProvider(AutocompleteProviderListener* listener,
                  TemplateURLService* template_url_service,
-                 Profile* profile);
+                 scoped_ptr<AutocompleteProviderDelegate> delegate);
 
   // Extracts the suggest response metadata which SearchProvider previously
   // stored for |match|.

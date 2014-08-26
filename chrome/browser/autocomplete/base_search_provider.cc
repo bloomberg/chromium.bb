@@ -5,28 +5,16 @@
 #include "chrome/browser/autocomplete/base_search_provider.h"
 
 #include "base/i18n/case_conversion.h"
-#include "base/prefs/pref_registry_simple.h"
-#include "base/prefs/pref_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
-#include "chrome/browser/bitmap_fetcher/bitmap_fetcher_service.h"
-#include "chrome/browser/bitmap_fetcher/bitmap_fetcher_service_factory.h"
-#include "chrome/browser/history/history_service.h"
-#include "chrome/browser/history/history_service_factory.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/profile_sync_service.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/common/pref_names.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
 #include "components/metrics/proto/omnibox_input_type.pb.h"
+#include "components/omnibox/autocomplete_provider_delegate.h"
 #include "components/omnibox/autocomplete_provider_listener.h"
 #include "components/omnibox/omnibox_field_trial.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_prepopulate_data.h"
 #include "components/search_engines/template_url_service.h"
-#include "components/sync_driver/sync_prefs.h"
-#include "net/base/escape.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -45,7 +33,7 @@ class SuggestionDeletionHandler : public net::URLFetcherDelegate {
 
   SuggestionDeletionHandler(
       const std::string& deletion_url,
-      Profile* profile,
+      net::URLRequestContextGetter* request_context,
       const DeletionCompletedCallback& callback);
 
   virtual ~SuggestionDeletionHandler();
@@ -62,7 +50,7 @@ class SuggestionDeletionHandler : public net::URLFetcherDelegate {
 
 SuggestionDeletionHandler::SuggestionDeletionHandler(
     const std::string& deletion_url,
-    Profile* profile,
+    net::URLRequestContextGetter* request_context,
     const DeletionCompletedCallback& callback) : callback_(callback) {
   GURL url(deletion_url);
   DCHECK(url.is_valid());
@@ -72,7 +60,7 @@ SuggestionDeletionHandler::SuggestionDeletionHandler(
       url,
       net::URLFetcher::GET,
       this));
-  deletion_fetcher_->SetRequestContext(profile->GetRequestContext());
+  deletion_fetcher_->SetRequestContext(request_context);
   deletion_fetcher_->Start();
 }
 
@@ -94,12 +82,13 @@ const int BaseSearchProvider::kDefaultProviderURLFetcherID = 1;
 const int BaseSearchProvider::kKeywordProviderURLFetcherID = 2;
 const int BaseSearchProvider::kDeletionURLFetcherID = 3;
 
-BaseSearchProvider::BaseSearchProvider(TemplateURLService* template_url_service,
-                                       Profile* profile,
-                                       AutocompleteProvider::Type type)
+BaseSearchProvider::BaseSearchProvider(
+    TemplateURLService* template_url_service,
+    scoped_ptr<AutocompleteProviderDelegate> delegate,
+    AutocompleteProvider::Type type)
     : AutocompleteProvider(type),
       template_url_service_(template_url_service),
-      profile_(profile),
+      delegate_(delegate.Pass()),
       field_trial_triggered_(false),
       field_trial_triggered_in_session_(false) {
 }
@@ -132,20 +121,18 @@ void BaseSearchProvider::DeleteMatch(const AutocompleteMatch& match) {
   if (!match.GetAdditionalInfo(BaseSearchProvider::kDeletionUrlKey).empty()) {
     deletion_handlers_.push_back(new SuggestionDeletionHandler(
         match.GetAdditionalInfo(BaseSearchProvider::kDeletionUrlKey),
-        profile_,
+        delegate_->RequestContext(),
         base::Bind(&BaseSearchProvider::OnDeletionComplete,
                    base::Unretained(this))));
   }
 
-  HistoryService* const history_service =
-      HistoryServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
   TemplateURL* template_url =
       match.GetTemplateURL(template_url_service_, false);
   // This may be NULL if the template corresponding to the keyword has been
   // deleted or there is no keyword set.
   if (template_url != NULL) {
-    history_service->DeleteMatchingURLsForKeyword(template_url->id(),
-                                                  match.contents);
+    delegate_->DeleteMatchingURLsForKeywordFromHistory(template_url->id(),
+                                                       match.contents);
   }
 
   // Immediately update the list of matches to show the match was deleted,
@@ -286,7 +273,7 @@ bool BaseSearchProvider::ZeroSuggestEnabled(
     const TemplateURL* template_url,
     OmniboxEventProto::PageClassification page_classification,
     const SearchTermsData& search_terms_data,
-    Profile* profile) {
+    AutocompleteProviderDelegate* delegate) {
   if (!OmniboxFieldTrial::InZeroSuggestFieldTrial())
     return false;
 
@@ -304,13 +291,12 @@ bool BaseSearchProvider::ZeroSuggestEnabled(
        OmniboxEventProto::INSTANT_NTP_WITH_OMNIBOX_AS_STARTING_FOCUS))
     return false;
 
-  // Don't run if there's no profile or in incognito mode.
-  if (profile == NULL || profile->IsOffTheRecord())
+  // Don't run if in incognito mode.
+  if (delegate->IsOffTheRecord())
     return false;
 
   // Don't run if we can't get preferences or search suggest is not enabled.
-  PrefService* prefs = profile->GetPrefs();
-  if (!prefs->GetBoolean(prefs::kSearchSuggestEnabled))
+  if (!delegate->SearchSuggestEnabled())
     return false;
 
   // Only make the request if we know that the provider supports zero suggest
@@ -331,9 +317,9 @@ bool BaseSearchProvider::CanSendURL(
     const TemplateURL* template_url,
     OmniboxEventProto::PageClassification page_classification,
     const SearchTermsData& search_terms_data,
-    Profile* profile) {
+    AutocompleteProviderDelegate* delegate) {
   if (!ZeroSuggestEnabled(suggest_url, template_url, page_classification,
-                          search_terms_data, profile))
+                          search_terms_data, delegate))
     return false;
 
   if (!current_page_url.is_valid())
@@ -348,15 +334,7 @@ bool BaseSearchProvider::CanSendURL(
            net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES)))
     return false;
 
-  // Check field trials and settings allow sending the URL on suggest requests.
-  ProfileSyncService* service =
-      ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
-  sync_driver::SyncPrefs sync_prefs(profile->GetPrefs());
-  if (service == NULL ||
-      !service->IsSyncEnabledAndLoggedIn() ||
-      !sync_prefs.GetPreferredDataTypes(syncer::UserTypes()).Has(
-          syncer::PROXY_TABS) ||
-      service->GetEncryptedDataTypes().Has(syncer::SESSIONS))
+  if (!delegate->TabSyncEnabledAndUnencrypted())
     return false;
 
   return true;
@@ -376,8 +354,7 @@ void BaseSearchProvider::AddMatchToMap(
       ShouldAppendExtraParams(result));
   if (!match.destination_url.is_valid())
     return;
-  match.search_terms_args->bookmark_bar_pinned =
-      profile_->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar);
+  match.search_terms_args->bookmark_bar_pinned = delegate_->ShowBookmarkBar();
   match.RecordAdditionalInfo(kRelevanceFromServerKey,
                              result.relevance_from_server() ? kTrue : kFalse);
   match.RecordAdditionalInfo(kShouldPrefetchKey,
@@ -447,18 +424,14 @@ bool BaseSearchProvider::ParseSuggestResults(
     SearchSuggestionParser::Results* results) {
   if (!SearchSuggestionParser::ParseSuggestResults(
       root_val, GetInput(is_keyword_result),
-      ChromeAutocompleteSchemeClassifier(profile_), default_result_relevance,
-      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages),
-      is_keyword_result, results))
+      delegate_->SchemeClassifier(), default_result_relevance,
+      delegate_->AcceptLanguages(), is_keyword_result, results))
     return false;
 
-  BitmapFetcherService* image_service =
-      BitmapFetcherServiceFactory::GetForBrowserContext(profile_);
-  DCHECK(image_service);
   for (std::vector<GURL>::const_iterator it =
            results->answers_image_urls.begin();
        it != results->answers_image_urls.end(); ++it)
-    image_service->Prefetch(*it);
+    delegate_->PrefetchImage(*it);
 
   field_trial_triggered_ |= results->field_trial_triggered;
   field_trial_triggered_in_session_ |= results->field_trial_triggered;

@@ -141,6 +141,8 @@
       'browser/autocomplete/bookmark_provider.h',
       'browser/autocomplete/builtin_provider.cc',
       'browser/autocomplete/builtin_provider.h',
+      'browser/autocomplete/chrome_autocomplete_provider_delegate.cc',
+      'browser/autocomplete/chrome_autocomplete_provider_delegate.h',
       'browser/autocomplete/chrome_autocomplete_scheme_classifier.cc',
       'browser/autocomplete/chrome_autocomplete_scheme_classifier.h',
       'browser/autocomplete/history_provider.cc',

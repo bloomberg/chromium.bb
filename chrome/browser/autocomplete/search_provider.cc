@@ -9,28 +9,18 @@
 
 #include "base/base64.h"
 #include "base/callback.h"
-#include "base/command_line.h"
 #include "base/i18n/break_iterator.h"
 #include "base/i18n/case_conversion.h"
 #include "base/json/json_string_value_serializer.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/user_metrics.h"
-#include "base/prefs/pref_service.h"
 #include "base/rand_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/autocomplete/autocomplete_classifier.h"
-#include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
-#include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
-#include "chrome/browser/history/history_service.h"
-#include "chrome/browser/history/history_service_factory.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/common/pref_names.h"
-#include "components/google/core/browser/google_util.h"
 #include "components/history/core/browser/in_memory_database.h"
 #include "components/history/core/browser/keyword_search_term.h"
 #include "components/metrics/proto/omnibox_input_type.pb.h"
+#include "components/omnibox/autocomplete_provider_delegate.h"
 #include "components/omnibox/autocomplete_provider_listener.h"
 #include "components/omnibox/autocomplete_result.h"
 #include "components/omnibox/keyword_provider.h"
@@ -129,10 +119,11 @@ class SearchProvider::CompareScoredResults {
 // static
 int SearchProvider::kMinimumTimeBetweenSuggestQueriesMs = 100;
 
-SearchProvider::SearchProvider(AutocompleteProviderListener* listener,
-                               TemplateURLService* template_url_service,
-                               Profile* profile)
-    : BaseSearchProvider(template_url_service, profile,
+SearchProvider::SearchProvider(
+    AutocompleteProviderListener* listener,
+    TemplateURLService* template_url_service,
+    scoped_ptr<AutocompleteProviderDelegate> delegate)
+    : BaseSearchProvider(template_url_service, delegate.Pass(),
                          AutocompleteProvider::TYPE_SEARCH),
       listener_(listener),
       suggest_results_pending_(0),
@@ -182,8 +173,8 @@ void SearchProvider::Start(const AutocompleteInput& input,
   matches_.clear();
   field_trial_triggered_ = false;
 
-  // Can't return search/suggest results for bogus input or without a profile.
-  if (!profile_ || (input.type() == metrics::OmniboxInputType::INVALID)) {
+  // Can't return search/suggest results for bogus input.
+  if (input.type() == metrics::OmniboxInputType::INVALID) {
     Stop(true);
     return;
   }
@@ -341,8 +332,7 @@ void SearchProvider::UpdateMatchContentsClass(
        sug_it != results->suggest_results.end(); ++sug_it) {
     sug_it->ClassifyMatchContents(false, input_text);
   }
-  const std::string languages(
-      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages));
+  const std::string languages(delegate_->AcceptLanguages());
   for (SearchSuggestionParser::NavigationResults::iterator nav_it =
            results->navigation_results.begin();
        nav_it != results->navigation_results.end(); ++nav_it) {
@@ -483,10 +473,7 @@ void SearchProvider::DoHistoryQuery(bool minimal_changes) {
       input_.current_page_classification()))
     return;
 
-  HistoryService* const history_service =
-      HistoryServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
-  history::URLDatabase* url_db = history_service ?
-      history_service->InMemoryDatabase() : NULL;
+  history::URLDatabase* url_db = delegate_->InMemoryDatabase();
   if (!url_db)
     return;
 
@@ -567,10 +554,10 @@ bool SearchProvider::IsQuerySuitableForSuggest() const {
   // if the user has disabled it.
   const TemplateURL* default_url = providers_.GetDefaultProviderURL();
   const TemplateURL* keyword_url = providers_.GetKeywordProviderURL();
-  if (profile_->IsOffTheRecord() ||
+  if (delegate_->IsOffTheRecord() ||
       ((!default_url || default_url->suggestions_url().empty()) &&
        (!keyword_url || keyword_url->suggestions_url().empty())) ||
-      !profile_->GetPrefs()->GetBoolean(prefs::kSearchSuggestEnabled))
+      !delegate_->SearchSuggestEnabled())
     return false;
 
   // If the input type might be a URL, we take extra care so that private data
@@ -691,7 +678,7 @@ net::URLFetcher* SearchProvider::CreateSuggestFetcher(
   // the user is in the field trial.
   if (CanSendURL(current_page_url_, suggest_url, template_url,
                  input.current_page_classification(),
-                 template_url_service_->search_terms_data(), profile_) &&
+                 template_url_service_->search_terms_data(), delegate_.get()) &&
       OmniboxFieldTrial::InZeroSuggestAfterTypingFieldTrial()) {
     search_term_args.current_page_url = current_page_url_.spec();
     // Create the suggest URL again with the current page URL.
@@ -705,12 +692,12 @@ net::URLFetcher* SearchProvider::CreateSuggestFetcher(
 
   net::URLFetcher* fetcher =
       net::URLFetcher::Create(id, suggest_url, net::URLFetcher::GET, this);
-  fetcher->SetRequestContext(profile_->GetRequestContext());
+  fetcher->SetRequestContext(delegate_->RequestContext());
   fetcher->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES);
   // Add Chrome experiment state to the request headers.
   net::HttpRequestHeaders headers;
   variations::VariationsHttpHeaderProvider::GetInstance()->AppendHeaders(
-      fetcher->GetOriginalURL(), profile_->IsOffTheRecord(), false, &headers);
+      fetcher->GetOriginalURL(), delegate_->IsOffTheRecord(), false, &headers);
   fetcher->SetExtraRequestHeaders(headers.ToString());
   fetcher->Start();
   return fetcher;
@@ -993,14 +980,12 @@ SearchSuggestionParser::SuggestResults SearchProvider::ScoreHistoryResults(
   //    likely the user has no expectation that term should be interpreted as
   //    as a URL, so we need not do anything special to preserve user
   //    expectation.
-  AutocompleteClassifier* classifier =
-      AutocompleteClassifierFactory::GetForProfile(profile_);
   int last_relevance = 0;
   if (!base_prevent_inline_autocomplete && !found_what_you_typed_match &&
-      classifier && (scored_results.front().relevance() >= 1200)) {
+      scored_results.front().relevance() >= 1200) {
     AutocompleteMatch match;
-    classifier->Classify(scored_results.front().suggestion(), false, false,
-                         input_.current_page_classification(), &match, NULL);
+    delegate_->Classify(scored_results.front().suggestion(), false, false,
+                        input_.current_page_classification(), &match, NULL);
     // Demote this match that would normally be interpreted as a URL to have
     // the highest score a previously-issued search query could have when
     // scoring with the non-aggressive method.  A consequence of demoting
@@ -1170,8 +1155,7 @@ AutocompleteMatch SearchProvider::NavigationToMatch(
   const net::FormatUrlTypes format_types =
       net::kFormatUrlOmitAll & ~(trim_http ? 0 : net::kFormatUrlOmitHTTP);
 
-  const std::string languages(
-      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages));
+  const std::string languages(delegate_->AcceptLanguages());
   size_t inline_autocomplete_offset = (prefix == NULL) ?
       base::string16::npos : (match_start + input.length());
   match.fill_into_edit +=
@@ -1180,7 +1164,7 @@ AutocompleteMatch SearchProvider::NavigationToMatch(
           net::FormatUrl(navigation.url(), languages, format_types,
                          net::UnescapeRule::SPACES, NULL, NULL,
                          &inline_autocomplete_offset),
-          ChromeAutocompleteSchemeClassifier(profile_));
+          delegate_->SchemeClassifier());
   // Preserve the forced query '?' prefix in |match.fill_into_edit|.
   // Otherwise, user edits to a suggestion would show non-Search results.
   if (input_.type() == metrics::OmniboxInputType::FORCED_QUERY) {
