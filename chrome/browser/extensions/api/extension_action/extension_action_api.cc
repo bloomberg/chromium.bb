@@ -19,6 +19,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "chrome/common/render_messages.h"
@@ -232,6 +235,26 @@ scoped_ptr<base::DictionaryValue> DefaultsToValue(ExtensionAction* action) {
 }  // namespace
 
 //
+// ExtensionActionAPI::Observer
+//
+
+void ExtensionActionAPI::Observer::OnExtensionActionUpdated(
+    ExtensionAction* extension_action,
+    content::WebContents* web_contents,
+    content::BrowserContext* browser_context) {
+}
+
+void ExtensionActionAPI::Observer::OnPageActionsUpdated(
+    content::WebContents* web_contents) {
+}
+
+void ExtensionActionAPI::Observer::OnExtensionActionAPIShuttingDown() {
+}
+
+ExtensionActionAPI::Observer::~Observer() {
+}
+
+//
 // ExtensionActionAPI
 //
 
@@ -371,6 +394,9 @@ void ExtensionActionAPI::NotifyChange(ExtensionAction* extension_action,
       Observer,
       observers_,
       OnExtensionActionUpdated(extension_action, web_contents, context));
+
+  if (extension_action->action_type() == ActionInfo::TYPE_PAGE)
+    NotifyPageActionsChanged(web_contents);
 }
 
 void ExtensionActionAPI::ClearAllValuesForTab(
@@ -439,6 +465,20 @@ void ExtensionActionAPI::ExtensionActionExecuted(
         event_name,
         args.Pass());
   }
+}
+
+void ExtensionActionAPI::NotifyPageActionsChanged(
+    content::WebContents* web_contents) {
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
+  if (!browser)
+    return;
+  LocationBar* location_bar =
+      browser->window() ? browser->window()->GetLocationBar() : NULL;
+  if (!location_bar)
+    return;
+  location_bar->UpdatePageActions();
+
+  FOR_EACH_OBSERVER(Observer, observers_, OnPageActionsUpdated(web_contents));
 }
 
 void ExtensionActionAPI::Shutdown() {

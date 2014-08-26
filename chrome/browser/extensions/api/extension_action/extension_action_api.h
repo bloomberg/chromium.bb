@@ -44,14 +44,18 @@ class ExtensionActionAPI : public BrowserContextKeyedAPI {
     virtual void OnExtensionActionUpdated(
         ExtensionAction* extension_action,
         content::WebContents* web_contents,
-        content::BrowserContext* browser_context) = 0;
+        content::BrowserContext* browser_context);
+
+    // Called when the page actions have been refreshed do to a possible change
+    // in count or visibility.
+    virtual void OnPageActionsUpdated(content::WebContents* web_contents);
 
     // Called when the ExtensionActionAPI is shutting down, giving observers a
     // chance to unregister themselves if there is not a definitive lifecycle.
-    virtual void OnExtensionActionAPIShuttingDown() {}
+    virtual void OnExtensionActionAPIShuttingDown();
 
    protected:
-    virtual ~Observer() {}
+    virtual ~Observer();
   };
 
   explicit ExtensionActionAPI(content::BrowserContext* context);
@@ -83,13 +87,18 @@ class ExtensionActionAPI : public BrowserContextKeyedAPI {
       Browser* browser,
       bool grant_active_tab_permissions);
 
+  // Notifies that there has been a change in the given |extension_action|.
   void NotifyChange(ExtensionAction* extension_action,
                     content::WebContents* web_contents,
                     content::BrowserContext* browser_context);
 
   // Clears the values for all ExtensionActions for the tab associated with the
-  // given |web_contents|.
+  // given |web_contents| (and signals that page actions changed).
   void ClearAllValuesForTab(content::WebContents* web_contents);
+
+  // Notifies that the current set of page actions for |web_contents| has
+  // changed, and signals the browser to update.
+  void NotifyPageActionsChanged(content::WebContents* web_contents);
 
  private:
   friend class BrowserContextKeyedAPIFactory<ExtensionActionAPI>;

@@ -44,8 +44,8 @@ class LocationBarController : public content::WebContentsObserver,
 
     // A notification that the given |extension| has been unloaded, and any
     // actions associated with it should be removed.
-    // The location bar controller will update itself after this if needed, so
-    // Providers should not call NotifyChange().
+    // The LocationBarController will handle notifying of page action changes,
+    // if any.
     virtual void OnExtensionUnloaded(const Extension* extension) {}
   };
 
@@ -54,9 +54,6 @@ class LocationBarController : public content::WebContentsObserver,
 
   // Returns the actions which should be displayed in the location bar.
   std::vector<ExtensionAction*> GetCurrentActions();
-
-  // Notifies the window that the actions have changed.
-  static void NotifyChange(content::WebContents* web_contents);
 
   ActiveScriptController* active_script_controller() {
     return active_script_controller_.get();

@@ -10,6 +10,7 @@
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "chrome/browser/extensions/active_tab_permission_granter.h"
+#include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_util.h"
@@ -218,8 +219,10 @@ void ActiveScriptController::RequestScriptInjection(
 
   // If this was the first entry, notify the location bar that there's a new
   // icon.
-  if (list.size() == 1u)
-    LocationBarController::NotifyChange(web_contents());
+  if (list.size() == 1u) {
+    ExtensionActionAPI::Get(web_contents()->GetBrowserContext())->
+        NotifyPageActionsChanged(web_contents());
+  }
 }
 
 void ActiveScriptController::RunPendingForExtension(
@@ -261,7 +264,8 @@ void ActiveScriptController::RunPendingForExtension(
   }
 
   // Inform the location bar that the action is now gone.
-  LocationBarController::NotifyChange(web_contents());
+  ExtensionActionAPI::Get(web_contents()->GetBrowserContext())->
+      NotifyPageActionsChanged(web_contents());
 }
 
 void ActiveScriptController::OnRequestScriptInjectionPermission(

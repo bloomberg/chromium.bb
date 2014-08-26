@@ -126,10 +126,6 @@ enum NotificationType {
   // extension's ID.
   NOTIFICATION_EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED,
 
-  // Sent when the page actions have been updated. The source is a WebContents*,
-  // and there are no details.
-  NOTIFICATION_EXTENSION_PAGE_ACTIONS_UPDATED,
-
   // Sent when an extension command has been removed. The source is the
   // BrowserContext* and the details is a std::pair of two std::string objects
   // (an extension ID and the name of the command being removed).

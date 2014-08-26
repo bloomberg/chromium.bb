@@ -143,10 +143,6 @@ LocationBarViewMac::LocationBarViewMac(AutocompleteTextField* field,
         new ContentSettingDecoration(type, this, profile));
   }
 
-  registrar_.Add(
-      this,
-      extensions::NOTIFICATION_EXTENSION_PAGE_ACTIONS_UPDATED,
-      content::NotificationService::AllSources());
   content::Source<Profile> profile_source = content::Source<Profile>(profile);
   registrar_.Add(this,
                  extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
@@ -227,6 +223,9 @@ void LocationBarViewMac::UpdateManagePasswordsIconAndBubble() {
 void LocationBarViewMac::UpdatePageActions() {
   RefreshPageActionDecorations();
   Layout();
+
+  [field_ updateMouseTracking];
+  [field_ setNeedsDisplay:YES];
 }
 
 void LocationBarViewMac::InvalidatePageActions() {
@@ -624,25 +623,10 @@ NSImage* LocationBarViewMac::GetKeywordImage(const base::string16& keyword) {
 void LocationBarViewMac::Observe(int type,
                                  const content::NotificationSource& source,
                                  const content::NotificationDetails& details) {
-  switch (type) {
-    case extensions::NOTIFICATION_EXTENSION_PAGE_ACTIONS_UPDATED: {
-      if (content::Source<WebContents>(source).ptr() != GetWebContents())
-        return;
+  DCHECK(type == extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED ||
+         type == extensions::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED);
 
-      [field_ updateMouseTracking];
-      [field_ setNeedsDisplay:YES];
-      break;
-    }
-
-    case extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED:
-    case extensions::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED:
-      Update(NULL);
-      break;
-
-    default:
-      NOTREACHED() << "Unexpected notification";
-      break;
-  }
+  Update(NULL);
 }
 
 void LocationBarViewMac::ModelChanged(const SearchModel::State& old_state,

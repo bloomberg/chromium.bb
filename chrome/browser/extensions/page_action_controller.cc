@@ -4,32 +4,14 @@
 
 #include "chrome/browser/extensions/page_action_controller.h"
 
-#include <set>
-
-#include "base/lazy_instance.h"
-#include "base/metrics/histogram.h"
-#include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
-#include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
-#include "chrome/browser/extensions/tab_helper.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sessions/session_tab_helper.h"
-#include "content/public/browser/navigation_details.h"
 #include "content/public/browser/web_contents.h"
-#include "extensions/browser/extension_registry.h"
-#include "extensions/common/extension_set.h"
 
 namespace extensions {
 
-// Keeps track of the profiles for which we've sent UMA statistics.
-base::LazyInstance<std::set<Profile*> > g_reported_for_profiles =
-    LAZY_INSTANCE_INITIALIZER;
-
 PageActionController::PageActionController(content::WebContents* web_contents)
     : web_contents_(web_contents),
-      extension_action_observer_(this) {
-  extension_action_observer_.Add(
-      ExtensionActionAPI::Get(web_contents_->GetBrowserContext()));
+      browser_context_(web_contents_->GetBrowserContext()) {
 }
 
 PageActionController::~PageActionController() {
@@ -37,25 +19,13 @@ PageActionController::~PageActionController() {
 
 ExtensionAction* PageActionController::GetActionForExtension(
     const Extension* extension) {
-  return ExtensionActionManager::Get(GetProfile())->GetPageAction(*extension);
+  return ExtensionActionManager::Get(browser_context_)->GetPageAction(
+      *extension);
 }
 
 void PageActionController::OnNavigated() {
   // Clearing extension action values is handled in TabHelper, so nothing to
   // do here.
-}
-
-void PageActionController::OnExtensionActionUpdated(
-    ExtensionAction* extension_action,
-    content::WebContents* web_contents,
-    content::BrowserContext* browser_context) {
-  if (web_contents == web_contents_ &&
-      extension_action->action_type() == ActionInfo::TYPE_PAGE)
-    LocationBarController::NotifyChange(web_contents_);
-}
-
-Profile* PageActionController::GetProfile() {
-  return Profile::FromBrowserContext(web_contents_->GetBrowserContext());
 }
 
 }  // namespace extensions

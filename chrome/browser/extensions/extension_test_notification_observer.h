@@ -7,8 +7,10 @@
 
 #include <string>
 
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "content/public/browser/notification_details.h"
@@ -20,13 +22,12 @@ class WindowedNotificationObserver;
 }
 
 // Test helper class for observing extension-related events.
-class ExtensionTestNotificationObserver : public content::NotificationObserver {
+class ExtensionTestNotificationObserver
+    : public content::NotificationObserver,
+      public extensions::ExtensionActionAPI::Observer {
  public:
   explicit ExtensionTestNotificationObserver(Browser* browser);
   virtual ~ExtensionTestNotificationObserver();
-
-  // Wait for the total number of page actions to change to |count|.
-  bool WaitForPageActionCountChangeTo(int count);
 
   // Wait for the number of visible page actions to change to |count|.
   bool WaitForPageActionVisibilityChangeTo(int count);
@@ -82,9 +83,24 @@ class ExtensionTestNotificationObserver : public content::NotificationObserver {
                        const content::NotificationDetails& details) OVERRIDE;
 
  private:
+  class NotificationSet;
+
   Profile* GetProfile();
 
   void WaitForNotification(int notification_type);
+
+  // Wait for |condition_| to be met. |notification_set| is the set of
+  // notifications to wait for and to check |condition| when observing. This
+  // can be NULL if we are instead waiting for a different observer method, like
+  // OnPageActionsUpdated().
+  void WaitForCondition(const base::Callback<bool(void)>& condition,
+                        NotificationSet* notification_set);
+
+  // Quits the message loop if |condition_| is met.
+  void MaybeQuit();
+
+  // extensions::ExtensionActionAPI::Observer:
+  virtual void OnPageActionsUpdated(content::WebContents* contents) OVERRIDE;
 
   Browser* browser_;
   Profile* profile_;
@@ -96,6 +112,13 @@ class ExtensionTestNotificationObserver : public content::NotificationObserver {
   int extension_installs_observed_;
   int extension_load_errors_observed_;
   int crx_installers_done_observed_;
+
+  // The condition for which we are waiting. This should be checked in any
+  // observing methods that could trigger it.
+  base::Callback<bool(void)> condition_;
+
+  // The closure to quit the currently-running message loop.
+  base::Closure quit_closure_;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_TEST_NOTIFICATION_OBSERVER_H_

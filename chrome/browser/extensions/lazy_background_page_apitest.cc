@@ -7,7 +7,6 @@
 #include "base/scoped_observer.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/browser_action_test_util.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -24,7 +23,6 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/extension_host.h"
@@ -172,9 +170,6 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, BroadcastEvent) {
 
   // Open a tab to a URL that will trigger the page action to show.
   LazyBackgroundObserver page_complete;
-  content::WindowedNotificationObserver page_action_changed(
-      extensions::NOTIFICATION_EXTENSION_PAGE_ACTIONS_UPDATED,
-      content::NotificationService::AllSources());
   ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL("/extensions/test_file.html"));
   page_complete.Wait();
@@ -182,7 +177,7 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, BroadcastEvent) {
   EXPECT_FALSE(IsBackgroundPageAlive(last_loaded_extension_id()));
 
   // Page action is shown.
-  page_action_changed.Wait();
+  WaitForPageActionVisibilityChangeTo(num_page_actions + 1);
   EXPECT_EQ(num_page_actions + 1,
             browser()->window()->GetLocationBar()->
                 GetLocationBarForTesting()->PageActionVisibleCount());
