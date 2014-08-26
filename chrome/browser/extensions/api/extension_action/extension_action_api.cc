@@ -799,7 +799,7 @@ bool BrowserActionOpenPopupFunction::RunAsync() {
     return false;
   }
 
-  if (!model->ShowBrowserActionPopup(extension_)) {
+  if (!model->ShowBrowserActionPopup(extension_.get())) {
     error_ = kOpenPopupError;
     return false;
   }

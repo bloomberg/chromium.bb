@@ -117,7 +117,7 @@ double StorageInfoProvider::GetStorageFreeSpaceFromTransientIdOnFileThread(
 StorageInfoProvider* StorageInfoProvider::Get() {
   if (provider_.Get().get() == NULL)
     provider_.Get() = new StorageInfoProvider();
-  return provider_.Get();
+  return provider_.Get().get();
 }
 
 }  // namespace extensions

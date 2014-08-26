@@ -59,7 +59,7 @@ void SystemInfoProvider::StartQueryInfoPostInitialization() {
   // Post the custom query info task to blocking pool for information querying
   // and reply with OnQueryCompleted.
   base::PostTaskAndReplyWithResult(
-      worker_pool_,
+      worker_pool_.get(),
       FROM_HERE,
       base::Bind(&SystemInfoProvider::QueryInfo, this),
       base::Bind(&SystemInfoProvider::OnQueryCompleted, this));

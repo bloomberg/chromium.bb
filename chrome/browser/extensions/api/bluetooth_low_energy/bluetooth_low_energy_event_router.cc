@@ -211,7 +211,7 @@ void BluetoothLowEnergyEventRouter::Connect(
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (!adapter_) {
+  if (!adapter_.get()) {
     VLOG(1) << "BluetoothAdapter not ready.";
     error_callback.Run(kStatusErrorFailed);
     return;
@@ -266,7 +266,7 @@ void BluetoothLowEnergyEventRouter::Disconnect(
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (!adapter_) {
+  if (!adapter_.get()) {
     VLOG(1) << "BluetoothAdapter not ready.";
     error_callback.Run(kStatusErrorFailed);
     return;
@@ -302,7 +302,7 @@ bool BluetoothLowEnergyEventRouter::GetServices(
     ServiceList* out_services) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(out_services);
-  if (!adapter_) {
+  if (!adapter_.get()) {
     VLOG(1) << "BluetoothAdapter not ready.";
     return false;
   }
@@ -337,7 +337,7 @@ BluetoothLowEnergyEventRouter::Status BluetoothLowEnergyEventRouter::GetService(
     apibtle::Service* out_service) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(out_service);
-  if (!adapter_) {
+  if (!adapter_.get()) {
     VLOG(1) << "BluetoothAdapter not ready.";
     return kStatusErrorFailed;
   }
@@ -358,7 +358,7 @@ BluetoothLowEnergyEventRouter::GetIncludedServices(
     ServiceList* out_services) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(out_services);
-  if (!adapter_) {
+  if (!adapter_.get()) {
     VLOG(1) << "BluetoothAdapter not ready.";
     return kStatusErrorFailed;
   }
@@ -396,7 +396,7 @@ BluetoothLowEnergyEventRouter::GetCharacteristics(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(extension);
   DCHECK(out_characteristics);
-  if (!adapter_) {
+  if (!adapter_.get()) {
     VLOG(1) << "BlutoothAdapter not ready.";
     return kStatusErrorFailed;
   }
@@ -442,7 +442,7 @@ BluetoothLowEnergyEventRouter::GetCharacteristic(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(extension);
   DCHECK(out_characteristic);
-  if (!adapter_) {
+  if (!adapter_.get()) {
     VLOG(1) << "BluetoothAdapter not ready.";
     return kStatusErrorFailed;
   }
@@ -474,7 +474,7 @@ BluetoothLowEnergyEventRouter::GetDescriptors(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(extension);
   DCHECK(out_descriptors);
-  if (!adapter_) {
+  if (!adapter_.get()) {
     VLOG(1) << "BlutoothAdapter not ready.";
     return kStatusErrorFailed;
   }
@@ -521,7 +521,7 @@ BluetoothLowEnergyEventRouter::GetDescriptor(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(extension);
   DCHECK(out_descriptor);
-  if (!adapter_) {
+  if (!adapter_.get()) {
     VLOG(1) << "BluetoothAdapter not ready.";
     return kStatusErrorFailed;
   }
@@ -551,7 +551,7 @@ void BluetoothLowEnergyEventRouter::ReadCharacteristicValue(
     const ErrorCallback& error_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(extension);
-  if (!adapter_) {
+  if (!adapter_.get()) {
     VLOG(1) << "BluetoothAdapter not ready.";
     error_callback.Run(kStatusErrorFailed);
     return;
@@ -591,7 +591,7 @@ void BluetoothLowEnergyEventRouter::WriteCharacteristicValue(
     const ErrorCallback& error_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(extension);
-  if (!adapter_) {
+  if (!adapter_.get()) {
     VLOG(1) << "BluetoothAdapter not ready.";
     error_callback.Run(kStatusErrorFailed);
     return;
@@ -629,7 +629,7 @@ void BluetoothLowEnergyEventRouter::StartCharacteristicNotifications(
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (!adapter_) {
+  if (!adapter_.get()) {
     VLOG(1) << "BluetoothAdapter not ready.";
     error_callback.Run(kStatusErrorFailed);
     return;
@@ -694,7 +694,7 @@ void BluetoothLowEnergyEventRouter::StopCharacteristicNotifications(
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (!adapter_) {
+  if (!adapter_.get()) {
     VLOG(1) << "BluetoothAdapter not ready.";
     error_callback.Run(kStatusErrorFailed);
     return;
@@ -726,7 +726,7 @@ void BluetoothLowEnergyEventRouter::ReadDescriptorValue(
     const ErrorCallback& error_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(extension);
-  if (!adapter_) {
+  if (!adapter_.get()) {
     VLOG(1) << "BluetoothAdapter not ready.";
     error_callback.Run(kStatusErrorFailed);
     return;
@@ -765,7 +765,7 @@ void BluetoothLowEnergyEventRouter::WriteDescriptorValue(
     const ErrorCallback& error_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(extension);
-  if (!adapter_) {
+  if (!adapter_.get()) {
     VLOG(1) << "BluetoothAdapter not ready.";
     error_callback.Run(kStatusErrorFailed);
     return;
@@ -806,7 +806,7 @@ void BluetoothLowEnergyEventRouter::GattServiceAdded(
     BluetoothDevice* device,
     BluetoothGattService* service) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK_EQ(adapter, adapter_);
+  DCHECK_EQ(adapter, adapter_.get());
   VLOG(2) << "GATT service added: " << service->GetIdentifier();
 
   DCHECK(service_id_to_device_address_.find(service->GetIdentifier()) ==
@@ -821,7 +821,7 @@ void BluetoothLowEnergyEventRouter::GattServiceRemoved(
     BluetoothDevice* device,
     BluetoothGattService* service) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK_EQ(adapter, adapter_);
+  DCHECK_EQ(adapter, adapter_.get());
   VLOG(2) << "GATT service removed: " << service->GetIdentifier();
 
   DCHECK(service_id_to_device_address_.find(service->GetIdentifier()) !=
@@ -846,7 +846,7 @@ void BluetoothLowEnergyEventRouter::GattDiscoveryCompleteForService(
     BluetoothAdapter* adapter,
     BluetoothGattService* service) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK_EQ(adapter, adapter_);
+  DCHECK_EQ(adapter, adapter_.get());
   VLOG(2) << "GATT service discovery complete: " << service->GetIdentifier();
 
   DCHECK(service_id_to_device_address_.find(service->GetIdentifier()) !=
@@ -867,7 +867,7 @@ void BluetoothLowEnergyEventRouter::GattServiceChanged(
     BluetoothAdapter* adapter,
     BluetoothGattService* service) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK_EQ(adapter, adapter_);
+  DCHECK_EQ(adapter, adapter_.get());
   VLOG(2) << "GATT service changed: " << service->GetIdentifier();
   DCHECK(service_id_to_device_address_.find(service->GetIdentifier()) !=
          service_id_to_device_address_.end());
@@ -887,7 +887,7 @@ void BluetoothLowEnergyEventRouter::GattCharacteristicAdded(
     BluetoothAdapter* adapter,
     BluetoothGattCharacteristic* characteristic) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK_EQ(adapter, adapter_);
+  DCHECK_EQ(adapter, adapter_.get());
   VLOG(2) << "GATT characteristic added: " << characteristic->GetIdentifier();
 
   BluetoothGattService* service = characteristic->GetService();
@@ -906,7 +906,7 @@ void BluetoothLowEnergyEventRouter::GattCharacteristicRemoved(
     BluetoothAdapter* adapter,
     BluetoothGattCharacteristic* characteristic) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK_EQ(adapter, adapter_);
+  DCHECK_EQ(adapter, adapter_.get());
   VLOG(2) << "GATT characteristic removed: " << characteristic->GetIdentifier();
 
   BluetoothGattService* service = characteristic->GetService();
@@ -924,7 +924,7 @@ void BluetoothLowEnergyEventRouter::GattDescriptorAdded(
     BluetoothAdapter* adapter,
     BluetoothGattDescriptor* descriptor) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK_EQ(adapter, adapter_);
+  DCHECK_EQ(adapter, adapter_.get());
   VLOG(2) << "GATT descriptor added: " << descriptor->GetIdentifier();
 
   BluetoothGattCharacteristic* characteristic = descriptor->GetCharacteristic();
@@ -943,7 +943,7 @@ void BluetoothLowEnergyEventRouter::GattDescriptorRemoved(
     BluetoothAdapter* adapter,
     BluetoothGattDescriptor* descriptor) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK_EQ(adapter, adapter_);
+  DCHECK_EQ(adapter, adapter_.get());
   VLOG(2) << "GATT descriptor removed: " << descriptor->GetIdentifier();
 
   BluetoothGattCharacteristic* characteristic = descriptor->GetCharacteristic();
@@ -962,7 +962,7 @@ void BluetoothLowEnergyEventRouter::GattCharacteristicValueChanged(
     BluetoothGattCharacteristic* characteristic,
     const std::vector<uint8>& value) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK_EQ(adapter, adapter_);
+  DCHECK_EQ(adapter, adapter_.get());
   VLOG(2) << "GATT characteristic value changed: "
           << characteristic->GetIdentifier();
 
@@ -996,7 +996,7 @@ void BluetoothLowEnergyEventRouter::GattDescriptorValueChanged(
     BluetoothGattDescriptor* descriptor,
     const std::vector<uint8>& value) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK_EQ(adapter, adapter_);
+  DCHECK_EQ(adapter, adapter_.get());
   VLOG(2) << "GATT descriptor value changed: " << descriptor->GetIdentifier();
 
   BluetoothGattCharacteristic* characteristic = descriptor->GetCharacteristic();

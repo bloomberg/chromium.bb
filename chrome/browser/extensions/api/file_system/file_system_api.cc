@@ -298,7 +298,7 @@ bool FileSystemGetWritableEntryFunction::RunAsync() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &filesystem_name));
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(1, &filesystem_path));
 
-  if (!app_file_handler_util::HasFileSystemWritePermission(extension_)) {
+  if (!app_file_handler_util::HasFileSystemWritePermission(extension_.get())) {
     error_ = kRequiresFileSystemWriteError;
     return false;
   }
@@ -687,7 +687,8 @@ void FileSystemChooseEntryFunction::ConfirmDirectoryAccessOnFileThread(
           FROM_HERE,
           base::Bind(
               CreateDirectoryAccessConfirmationDialog,
-              app_file_handler_util::HasFileSystemWritePermission(extension_),
+              app_file_handler_util::HasFileSystemWritePermission(
+                  extension_.get()),
               base::UTF8ToUTF16(extension_->name()),
               web_contents,
               base::Bind(
@@ -709,7 +710,7 @@ void FileSystemChooseEntryFunction::ConfirmDirectoryAccessOnFileThread(
 
 void FileSystemChooseEntryFunction::OnDirectoryAccessConfirmed(
     const std::vector<base::FilePath>& paths) {
-  if (app_file_handler_util::HasFileSystemWritePermission(extension_)) {
+  if (app_file_handler_util::HasFileSystemWritePermission(extension_.get())) {
     PrepareFilesForWritableApp(paths);
     return;
   }
@@ -794,11 +795,13 @@ bool FileSystemChooseEntryFunction::RunAsync() {
       picker_type = ui::SelectFileDialog::SELECT_OPEN_MULTI_FILE;
 
     if (options->type == file_system::CHOOSE_ENTRY_TYPE_OPENWRITABLEFILE &&
-        !app_file_handler_util::HasFileSystemWritePermission(extension_)) {
+        !app_file_handler_util::HasFileSystemWritePermission(
+            extension_.get())) {
       error_ = kRequiresFileSystemWriteError;
       return false;
     } else if (options->type == file_system::CHOOSE_ENTRY_TYPE_SAVEFILE) {
-      if (!app_file_handler_util::HasFileSystemWritePermission(extension_)) {
+      if (!app_file_handler_util::HasFileSystemWritePermission(
+              extension_.get())) {
         error_ = kRequiresFileSystemWriteError;
         return false;
       }

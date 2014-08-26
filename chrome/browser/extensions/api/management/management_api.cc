@@ -686,7 +686,7 @@ ManagementUninstallFunction::~ManagementUninstallFunction() {
 bool ManagementUninstallFunction::RunAsync() {
   scoped_ptr<management::Uninstall::Params> params(
       management::Uninstall::Params::Create(*args_));
-  EXTENSION_FUNCTION_VALIDATE(extension_);
+  EXTENSION_FUNCTION_VALIDATE(extension_.get());
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   bool show_confirm_dialog = true;

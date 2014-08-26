@@ -341,7 +341,7 @@ IN_PROC_BROWSER_TEST_F(GcdPrivateAPITest, SendQuery) {
 // always return true without actually running the test. Remove when fixed.
 // See http://crbug.com/177163 for details.
 #if !defined(OS_WIN) || defined(NDEBUG)
-  EXPECT_CALL(*test_service_discovery_client_,
+  EXPECT_CALL(*test_service_discovery_client_.get(),
               OnSendTo(std::string(reinterpret_cast<const char*>(kQueryPacket),
                                    sizeof(kQueryPacket)))).Times(2);
 #endif

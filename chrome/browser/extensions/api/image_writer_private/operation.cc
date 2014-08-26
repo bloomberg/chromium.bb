@@ -249,11 +249,11 @@ void Operation::CompleteAndContinue(const base::Closure& continuation) {
 #if !defined(OS_CHROMEOS)
 void Operation::StartUtilityClient() {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-  if (g_utility_client.Get()) {
+  if (g_utility_client.Get().get()) {
     image_writer_client_ = g_utility_client.Get();
     return;
   }
-  if (!image_writer_client_) {
+  if (!image_writer_client_.get()) {
     image_writer_client_ = new ImageWriterUtilityClient();
     AddCleanUpFunction(base::Bind(&Operation::StopUtilityClient, this));
   }

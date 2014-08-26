@@ -39,7 +39,7 @@ bool MemoryInfoProvider::QueryInfo() {
 MemoryInfoProvider* MemoryInfoProvider::Get() {
   if (provider_.Get().get() == NULL)
     provider_.Get() = new MemoryInfoProvider();
-  return provider_.Get();
+  return provider_.Get().get();
 }
 
 }  // namespace extensions

@@ -16,7 +16,7 @@ static base::LazyInstance<scoped_refptr<StorageDeviceList> > g_test_device_list;
 // https://code.google.com/p/chromium/issues/detail?id=284898
 
 void RemovableStorageProvider::GetAllDevices(DeviceListReadyCallback callback) {
-  if (g_test_device_list.Get() != NULL) {
+  if (g_test_device_list.Get().get() != NULL) {
     content::BrowserThread::PostTask(
         content::BrowserThread::FILE,
         FROM_HERE,

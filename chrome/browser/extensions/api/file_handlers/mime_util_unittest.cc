@@ -106,12 +106,12 @@ TEST_F(FileHandlersMimeUtilTest, MimeTypeCollector_ForURLs) {
 
   std::vector<storage::FileSystemURL> urls;
   urls.push_back(CreateNativeLocalFileSystemURL(
-      file_system_context_,
+      file_system_context_.get(),
       base::FilePath::FromUTF8Unsafe(kJPEGExtensionFilePath)));
   urls.push_back(CreateNativeLocalFileSystemURL(
-      file_system_context_,
+      file_system_context_.get(),
       base::FilePath::FromUTF8Unsafe(kJPEGExtensionUpperCaseFilePath)));
-  urls.push_back(CreateNativeLocalFileSystemURL(file_system_context_,
+  urls.push_back(CreateNativeLocalFileSystemURL(file_system_context_.get(),
                                                 html_mime_file_path_));
 
   std::vector<std::string> result;

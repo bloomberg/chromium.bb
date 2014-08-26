@@ -38,7 +38,7 @@ class DebuggerApiTest : public ExtensionApiTest {
   testing::AssertionResult RunAttachFunction(const GURL& url,
                                              const std::string& expected_error);
 
-  const Extension* extension() const { return extension_; }
+  const Extension* extension() const { return extension_.get(); }
   base::CommandLine* command_line() const { return command_line_; }
 
  private:
@@ -75,19 +75,19 @@ testing::AssertionResult DebuggerApiTest::RunAttachFunction(
   int tab_id = SessionTabHelper::IdForTab(web_contents);
   scoped_refptr<DebuggerAttachFunction> attach_function =
       new DebuggerAttachFunction();
-  attach_function->set_extension(extension_);
+  attach_function->set_extension(extension_.get());
   std::string args = base::StringPrintf("[{\"tabId\": %d}, \"1.1\"]", tab_id);
 
   if (!expected_error.empty()) {
     std::string actual_error =
         extension_function_test_utils::RunFunctionAndReturnError(
-            attach_function, args, browser());
+            attach_function.get(), args, browser());
     if (actual_error != expected_error) {
       return testing::AssertionFailure() << "Did not get correct error: "
           << "expected: " << expected_error << ", found: " << actual_error;
     }
   } else {
-    if (!RunFunction(attach_function,
+    if (!RunFunction(attach_function.get(),
                      args,
                      browser(),
                      extension_function_test_utils::NONE)) {
@@ -98,8 +98,8 @@ testing::AssertionResult DebuggerApiTest::RunAttachFunction(
     // Clean up and detach.
     scoped_refptr<DebuggerDetachFunction> detach_function =
         new DebuggerDetachFunction();
-    detach_function->set_extension(extension_);
-    if (!RunFunction(detach_function,
+    detach_function->set_extension(extension_.get());
+    if (!RunFunction(detach_function.get(),
                      base::StringPrintf("[{\"tabId\": %d}]", tab_id),
                      browser(),
                      extension_function_test_utils::NONE)) {

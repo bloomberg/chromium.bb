@@ -87,7 +87,7 @@ bool ContentSettingsContentSettingClearFunction::RunSync() {
     }
   }
 
-  ContentSettingsStore* store =
+  scoped_refptr<ContentSettingsStore> store =
       ContentSettingsService::Get(GetProfile())->content_settings_store();
   store->ClearContentSettingsForExtension(extension_id(), scope);
 
@@ -238,7 +238,7 @@ bool ContentSettingsContentSettingSetFunction::RunSync() {
     return false;
   }
 
-  ContentSettingsStore* store =
+  scoped_refptr<ContentSettingsStore> store =
       ContentSettingsService::Get(GetProfile())->content_settings_store();
   store->SetExtensionContentSetting(extension_id(), primary_pattern,
                                     secondary_pattern, content_type,

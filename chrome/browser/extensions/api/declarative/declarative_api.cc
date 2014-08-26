@@ -69,7 +69,9 @@ bool RulesFunction::HasPermission() {
     return true;
   Feature::Availability availability =
       ExtensionAPI::GetSharedInstance()->IsAvailable(
-          event_name, extension_, Feature::BLESSED_EXTENSION_CONTEXT,
+          event_name,
+          extension_.get(),
+          Feature::BLESSED_EXTENSION_CONTEXT,
           source_url());
   return availability.is_available();
 }

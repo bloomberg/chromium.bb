@@ -102,7 +102,7 @@ bool IsEnhancedBookmarksExtensionActive(Profile* profile) {
       ExtensionRegistry::Get(profile)->enabled_extensions();
   for (ExtensionSet::const_iterator it = extensions.begin();
        it != extensions.end(); ++it) {
-    const Extension* extension = *it;
+    const Extension* extension = it->get();
     if (extension->permissions_data()->HasAPIPermission(
             APIPermission::kBookmarkManagerPrivate)) {
       std::string hash = base::SHA1HashString(extension->id());

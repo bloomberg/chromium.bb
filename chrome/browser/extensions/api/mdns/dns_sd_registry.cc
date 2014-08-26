@@ -140,7 +140,7 @@ void DnsSdRegistry::RegisterDnsSdListener(std::string service_type) {
   }
 
   scoped_ptr<DnsSdDeviceLister> dns_sd_device_lister(CreateDnsSdDeviceLister(
-      this, service_type, service_discovery_client_));
+      this, service_type, service_discovery_client_.get()));
   dns_sd_device_lister->Discover(false);
   linked_ptr<ServiceTypeData> service_type_data(
       new ServiceTypeData(dns_sd_device_lister.Pass()));

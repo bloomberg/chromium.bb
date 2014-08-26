@@ -188,7 +188,7 @@ void RulesRegistryService::NotifyRegistriesHelper(
   for (i = rule_registries_.begin(); i != rule_registries_.end(); ++i) {
     scoped_refptr<RulesRegistry> registry = i->second;
     if (content::BrowserThread::CurrentlyOn(registry->owner_thread())) {
-      (registry->*notification_callback)(extension_id);
+      (registry.get()->*notification_callback)(extension_id);
     } else {
       content::BrowserThread::PostTask(
           registry->owner_thread(),

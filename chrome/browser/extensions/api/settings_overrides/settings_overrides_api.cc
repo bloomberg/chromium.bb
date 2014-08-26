@@ -252,7 +252,7 @@ void SettingsOverridesAPI::OnTemplateURLsLoaded() {
   template_url_sub_.reset();
   for (PendingExtensions::const_iterator i(pending_extensions_.begin());
        i != pending_extensions_.end(); ++i) {
-    RegisterSearchProvider(*i);
+    RegisterSearchProvider(i->get());
   }
   pending_extensions_.clear();
 }

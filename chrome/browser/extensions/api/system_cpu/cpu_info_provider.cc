@@ -64,7 +64,7 @@ std::vector<std::string> CpuInfoProvider::GetFeatures() const {
 CpuInfoProvider* CpuInfoProvider::Get() {
   if (provider_.Get().get() == NULL)
     provider_.Get() = new CpuInfoProvider();
-  return provider_.Get();
+  return provider_.Get().get();
 }
 
 }  // namespace extensions

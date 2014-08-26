@@ -161,7 +161,7 @@ void ManagedValueStoreCache::ExtensionTracker::LoadSchemas(
   ExtensionSet::const_iterator it = added->begin();
   while (it != added->end()) {
     std::string to_remove;
-    if (!UsesManagedStorage(*it))
+    if (!UsesManagedStorage(it->get()))
       to_remove = (*it)->id();
     ++it;
     if (!to_remove.empty())

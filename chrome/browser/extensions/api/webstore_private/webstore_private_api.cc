@@ -548,10 +548,10 @@ bool WebstorePrivateCompleteInstallFunction::RunAsync() {
   // downloading from the Web Store is not necessary.
   const Extension* extension = ExtensionRegistry::Get(GetProfile())->
       GetExtensionById(params->expected_id, ExtensionRegistry::EVERYTHING);
-  if (extension && approval_->dummy_extension &&
+  if (extension && approval_->dummy_extension.get() &&
       util::IsEphemeralApp(extension->id(), GetProfile()) &&
-      extension->version()->CompareTo(
-          *approval_->dummy_extension->version()) >= 0) {
+      extension->version()->CompareTo(*approval_->dummy_extension->version()) >=
+          0) {
     install_ui::ShowPostInstallUIForApproval(
         GetProfile(), *approval_, extension);
 

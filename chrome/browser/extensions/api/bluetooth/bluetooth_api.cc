@@ -172,7 +172,7 @@ void BluetoothStartDiscoveryFunction::OnErrorCallback() {
 bool BluetoothStartDiscoveryFunction::DoWork(
     scoped_refptr<BluetoothAdapter> adapter) {
   GetEventRouter(browser_context())->StartDiscoverySession(
-      adapter,
+      adapter.get(),
       extension_id(),
       base::Bind(&BluetoothStartDiscoveryFunction::OnSuccessCallback, this),
       base::Bind(&BluetoothStartDiscoveryFunction::OnErrorCallback, this));
@@ -192,7 +192,7 @@ void BluetoothStopDiscoveryFunction::OnErrorCallback() {
 bool BluetoothStopDiscoveryFunction::DoWork(
     scoped_refptr<BluetoothAdapter> adapter) {
   GetEventRouter(browser_context())->StopDiscoverySession(
-      adapter,
+      adapter.get(),
       extension_id(),
       base::Bind(&BluetoothStopDiscoveryFunction::OnSuccessCallback, this),
       base::Bind(&BluetoothStopDiscoveryFunction::OnErrorCallback, this));

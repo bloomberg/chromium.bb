@@ -636,7 +636,7 @@ void ExtensionTabsZoomTest::SetUpOnMainThread() {
 bool ExtensionTabsZoomTest::RunSetZoom(int tab_id, double zoom_factor) {
   scoped_refptr<TabsSetZoomFunction> set_zoom_function(
       new TabsSetZoomFunction());
-  set_zoom_function->set_extension(extension_);
+  set_zoom_function->set_extension(extension_.get());
   set_zoom_function->set_has_callback(true);
 
   return utils::RunFunction(
@@ -651,7 +651,7 @@ testing::AssertionResult ExtensionTabsZoomTest::RunGetZoom(
     double* zoom_factor) {
   scoped_refptr<TabsGetZoomFunction> get_zoom_function(
       new TabsGetZoomFunction());
-  get_zoom_function->set_extension(extension_);
+  get_zoom_function->set_extension(extension_.get());
   get_zoom_function->set_has_callback(true);
 
   scoped_ptr<base::Value> get_zoom_result(
@@ -673,7 +673,7 @@ bool ExtensionTabsZoomTest::RunSetZoomSettings(int tab_id,
                                                const char* scope) {
   scoped_refptr<TabsSetZoomSettingsFunction> set_zoom_settings_function(
       new TabsSetZoomSettingsFunction());
-  set_zoom_settings_function->set_extension(extension_);
+  set_zoom_settings_function->set_extension(extension_.get());
 
   std::string args;
   if (scope) {
@@ -697,7 +697,7 @@ testing::AssertionResult ExtensionTabsZoomTest::RunGetZoomSettings(
   DCHECK(scope);
   scoped_refptr<TabsGetZoomSettingsFunction> get_zoom_settings_function(
       new TabsGetZoomSettingsFunction());
-  get_zoom_settings_function->set_extension(extension_);
+  get_zoom_settings_function->set_extension(extension_.get());
   get_zoom_settings_function->set_has_callback(true);
 
   scoped_ptr<base::DictionaryValue> get_zoom_settings_result(
@@ -719,7 +719,7 @@ std::string ExtensionTabsZoomTest::RunSetZoomExpectError(int tab_id,
                                                          double zoom_factor) {
   scoped_refptr<TabsSetZoomFunction> set_zoom_function(
       new TabsSetZoomFunction());
-  set_zoom_function->set_extension(extension_);
+  set_zoom_function->set_extension(extension_.get());
   set_zoom_function->set_has_callback(true);
 
   return utils::RunFunctionAndReturnError(
@@ -734,7 +734,7 @@ std::string ExtensionTabsZoomTest::RunSetZoomSettingsExpectError(
     const char* scope) {
   scoped_refptr<TabsSetZoomSettingsFunction> set_zoom_settings_function(
       new TabsSetZoomSettingsFunction());
-  set_zoom_settings_function->set_extension(extension_);
+  set_zoom_settings_function->set_extension(extension_.get());
 
   return utils::RunFunctionAndReturnError(set_zoom_settings_function.get(),
                                           base::StringPrintf(

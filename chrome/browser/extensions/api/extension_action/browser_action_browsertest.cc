@@ -83,7 +83,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, BrowserActionDefaultPersistence) {
        iter != extension_set.end();
        ++iter) {
     if ((*iter)->name() == kExtensionName) {
-      extension = *iter;
+      extension = iter->get();
       break;
     }
   }
