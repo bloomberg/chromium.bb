@@ -929,10 +929,6 @@ public:
     ~DummyBase() { }
 };
 
-// Export this instance to support WillBeGarbageCollectedMixin
-// uses by code residing in non-webcore components.
-template class PLATFORM_EXPORT DummyBase<void>;
-
 #define PassRefPtrWillBeRawPtr WTF::PassRefPtr
 #define RefCountedWillBeGarbageCollected WTF::RefCounted
 #define RefCountedWillBeGarbageCollectedFinalized WTF::RefCounted

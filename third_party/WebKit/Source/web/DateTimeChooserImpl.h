@@ -43,9 +43,8 @@ class PagePopup;
 
 class DateTimeChooserImpl FINAL : public DateTimeChooser, public PagePopupClient {
 public:
-    static PassRefPtrWillBeRawPtr<DateTimeChooserImpl> create(ChromeClientImpl*, DateTimeChooserClient*, const DateTimeChooserParameters&);
+    static PassRefPtr<DateTimeChooserImpl> create(ChromeClientImpl*, DateTimeChooserClient*, const DateTimeChooserParameters&);
     virtual ~DateTimeChooserImpl();
-    virtual void trace(Visitor*) OVERRIDE;
 
     // DateTimeChooser functions:
     virtual void endChooser() OVERRIDE;
@@ -62,7 +61,7 @@ private:
     virtual void didClosePopup() OVERRIDE;
 
     ChromeClientImpl* m_chromeClient;
-    RawPtrWillBeMember<DateTimeChooserClient> m_client;
+    DateTimeChooserClient* m_client;
     PagePopup* m_popup;
     DateTimeChooserParameters m_parameters;
     OwnPtr<Locale> m_locale;

@@ -33,7 +33,6 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/geometry/IntRect.h"
-#include "platform/heap/Handle.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
@@ -64,12 +63,12 @@ struct DateTimeChooserParameters {
     bool isAnchorElementRTL;
 };
 
-class PLATFORM_EXPORT DateTimeChooser : public RefCountedWillBeGarbageCollectedFinalized<DateTimeChooser> {
+// For pickers like color pickers and date pickers.
+class PLATFORM_EXPORT DateTimeChooser : public RefCounted<DateTimeChooser> {
 public:
     virtual ~DateTimeChooser();
 
     virtual void endChooser() = 0;
-    virtual void trace(Visitor*) { }
 };
 
 } // namespace blink

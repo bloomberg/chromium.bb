@@ -86,9 +86,9 @@ PassOwnPtr<ColorChooser> EmptyChromeClient::createColorChooser(LocalFrame*, Colo
     return nullptr;
 }
 
-PassRefPtrWillBeRawPtr<DateTimeChooser> EmptyChromeClient::openDateTimeChooser(DateTimeChooserClient*, const DateTimeChooserParameters&)
+PassRefPtr<DateTimeChooser> EmptyChromeClient::openDateTimeChooser(DateTimeChooserClient*, const DateTimeChooserParameters&)
 {
-    return nullptr;
+    return PassRefPtr<DateTimeChooser>();
 }
 
 void EmptyChromeClient::openTextDataListChooser(HTMLInputElement&)

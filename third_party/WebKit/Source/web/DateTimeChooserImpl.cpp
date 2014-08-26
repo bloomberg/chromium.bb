@@ -57,9 +57,9 @@ DateTimeChooserImpl::DateTimeChooserImpl(ChromeClientImpl* chromeClient, DateTim
     m_popup = m_chromeClient->openPagePopup(this, m_parameters.anchorRectInRootView);
 }
 
-PassRefPtrWillBeRawPtr<DateTimeChooserImpl> DateTimeChooserImpl::create(ChromeClientImpl* chromeClient, DateTimeChooserClient* client, const DateTimeChooserParameters& parameters)
+PassRefPtr<DateTimeChooserImpl> DateTimeChooserImpl::create(ChromeClientImpl* chromeClient, DateTimeChooserClient* client, const DateTimeChooserParameters& parameters)
 {
-    return adoptRefWillBeNoop(new DateTimeChooserImpl(chromeClient, client, parameters));
+    return adoptRef(new DateTimeChooserImpl(chromeClient, client, parameters));
 }
 
 DateTimeChooserImpl::~DateTimeChooserImpl()
@@ -171,7 +171,7 @@ Locale& DateTimeChooserImpl::locale()
 
 void DateTimeChooserImpl::setValueAndClosePopup(int numValue, const String& stringValue)
 {
-    RefPtrWillBeRawPtr<DateTimeChooserImpl> protector(this);
+    RefPtr<DateTimeChooserImpl> protector(this);
     if (numValue >= 0)
         setValue(stringValue);
     endChooser();
@@ -192,12 +192,6 @@ void DateTimeChooserImpl::didClosePopup()
     ASSERT(m_client);
     m_popup = 0;
     m_client->didEndChooser();
-}
-
-void DateTimeChooserImpl::trace(Visitor* visitor)
-{
-    visitor->trace(m_client);
-    DateTimeChooser::trace(visitor);
 }
 
 } // namespace blink

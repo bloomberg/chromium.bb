@@ -36,11 +36,8 @@ namespace blink {
 
 class BaseChooserOnlyDateAndTimeInputType : public BaseDateAndTimeInputType, public DateTimeChooserClient {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(BaseChooserOnlyDateAndTimeInputType);
-public:
-    virtual void trace(Visitor*) OVERRIDE;
-
 protected:
-    explicit BaseChooserOnlyDateAndTimeInputType(HTMLInputElement& element) : BaseDateAndTimeInputType(element) { }
+    BaseChooserOnlyDateAndTimeInputType(HTMLInputElement& element) : BaseDateAndTimeInputType(element) { }
     virtual ~BaseChooserOnlyDateAndTimeInputType();
 
 private:
@@ -62,7 +59,7 @@ private:
     virtual void didChooseValue(double) OVERRIDE;
     virtual void didEndChooser() OVERRIDE;
 
-    RefPtrWillBeMember<DateTimeChooser> m_dateTimeChooser;
+    RefPtr<DateTimeChooser> m_dateTimeChooser;
 };
 
 }
