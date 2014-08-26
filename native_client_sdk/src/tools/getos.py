@@ -80,7 +80,6 @@ def GetSDKVersion():
     raise Error("error parsing SDK README: %s" % readme)
 
   try:
-    revision = int(revision)
     version = int(version)
   except ValueError:
     raise Error("error parsing SDK README: %s" % readme)
@@ -233,10 +232,14 @@ def main(args):
   elif options.check_version:
     required_version = ParseVersion(options.check_version)
     version = GetSDKVersion()
-    if version < required_version:
-      raise Error("SDK version too old (current: %s.%s, required: %s.%s)"
-             % (version[0], version[1],
-                required_version[0], required_version[1]))
+    # We currently ignore the revision and just check the major version number.
+    # Currently, version[1] is just a Git hash, which cannot be compared.
+    # TODO(mgiuca): Compare the minor revision numbers (which should be
+    # Cr-Commit-Position values), when http://crbug.com/406783 is fixed.
+    # Then Cr-Commit-Position should be available: see http://crbug.com/406993.
+    if version[0] < required_version[0]:
+      raise Error("SDK version too old (current: %s, required: %s)"
+             % (version[0], required_version[0]))
     out = None
 
   if out:
