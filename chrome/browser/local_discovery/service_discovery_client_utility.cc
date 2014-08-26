@@ -96,7 +96,7 @@ void ServiceDiscoveryClientUtility::StartNewClient() {
   }
   // Run when host_client_ is created. Callbacks created by InvalidateWatchers
   // may create new watchers.
-  if (old_client)
+  if (old_client.get())
     old_client->InvalidateWatchers();
 }
 

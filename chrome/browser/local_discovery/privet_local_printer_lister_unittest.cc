@@ -141,7 +141,8 @@ class PrivetLocalPrinterListerTest : public testing::Test {
   }
 
   void ExpectAnyPacket() {
-    EXPECT_CALL(*test_service_discovery_client_, OnSendTo(_)).Times(AtLeast(2));
+    EXPECT_CALL(*test_service_discovery_client_.get(), OnSendTo(_))
+        .Times(AtLeast(2));
   }
 
  protected:

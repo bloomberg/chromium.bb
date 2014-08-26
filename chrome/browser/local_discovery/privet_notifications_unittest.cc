@@ -52,11 +52,8 @@ class MockPrivetHttpFactory : public PrivetHTTPAsynchronousFactory {
     }
 
     virtual void Start() OVERRIDE {
-      callback_.Run(scoped_ptr<PrivetHTTPClient>(
-          new PrivetHTTPClientImpl(
-              name_,
-              net::HostPortPair("1.2.3.4", 8080),
-              request_context_)));
+      callback_.Run(scoped_ptr<PrivetHTTPClient>(new PrivetHTTPClientImpl(
+          name_, net::HostPortPair("1.2.3.4", 8080), request_context_.get())));
     }
 
     virtual const std::string& GetName() OVERRIDE {
@@ -78,7 +75,7 @@ class MockPrivetHttpFactory : public PrivetHTTPAsynchronousFactory {
       const net::HostPortPair& address,
       const ResultCallback& callback) OVERRIDE {
     return scoped_ptr<PrivetHTTPResolution>(
-        new MockResolution(name, request_context_, callback));
+        new MockResolution(name, request_context_.get(), callback));
   }
 
  private:

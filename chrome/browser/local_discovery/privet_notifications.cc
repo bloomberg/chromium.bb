@@ -343,8 +343,8 @@ void PrivetNotificationService::StartLister() {
   traffic_detector_ = NULL;
 #endif  // ENABLE_MDNS
   service_discovery_client_ = ServiceDiscoverySharedClient::GetInstance();
-  device_lister_.reset(new PrivetDeviceListerImpl(service_discovery_client_,
-                                                  this));
+  device_lister_.reset(
+      new PrivetDeviceListerImpl(service_discovery_client_.get(), this));
   device_lister_->Start();
   device_lister_->DiscoverNewDevices(false);
 

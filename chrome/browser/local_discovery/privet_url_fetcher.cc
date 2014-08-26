@@ -148,7 +148,7 @@ void PrivetURLFetcher::Try() {
 
 
     url_fetcher_.reset(net::URLFetcher::Create(url_, request_type_, this));
-    url_fetcher_->SetRequestContext(request_context_);
+    url_fetcher_->SetRequestContext(request_context_.get());
 
     if (v3_mode_) {
       std::string auth_token = delegate_->GetAuthToken();

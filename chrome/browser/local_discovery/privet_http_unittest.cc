@@ -242,11 +242,11 @@ class PrivetHTTPTest : public ::testing::Test {
 
     request_context_= new net::TestURLRequestContextGetter(
         base::MessageLoopProxy::current());
-    privet_client_ = PrivetV1HTTPClient::CreateDefault(
-        make_scoped_ptr<PrivetHTTPClient>(
+    privet_client_ =
+        PrivetV1HTTPClient::CreateDefault(make_scoped_ptr<PrivetHTTPClient>(
             new PrivetHTTPClientImpl("sampleDevice._privet._tcp.local",
                                      net::HostPortPair("10.0.0.8", 6006),
-                                     request_context_)));
+                                     request_context_.get())));
     fetcher_factory_.SetDelegateForTests(&fetcher_delegate_);
   }
 

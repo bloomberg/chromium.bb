@@ -178,7 +178,7 @@ int PrivetTrafficDetector::DoLoop(int rv) {
     }
 
     rv = socket_->RecvFrom(
-        io_buffer_,
+        io_buffer_.get(),
         io_buffer_->size(),
         &recv_addr_,
         base::Bind(base::IgnoreResult(&PrivetTrafficDetector::DoLoop),

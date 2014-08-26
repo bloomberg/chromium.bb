@@ -69,8 +69,8 @@ PrivetVolumeLister::~PrivetVolumeLister() {
 void PrivetVolumeLister::Start() {
 #if defined(ENABLE_SERVICE_DISCOVERY)
   service_discovery_client_ = ServiceDiscoverySharedClient::GetInstance();
-  privet_lister_.reset(new PrivetDeviceListerImpl(service_discovery_client_,
-                                                  this));
+  privet_lister_.reset(
+      new PrivetDeviceListerImpl(service_discovery_client_.get(), this));
   privet_lister_->Start();
   privet_lister_->DiscoverNewDevices(false);
   base::MessageLoop::current()->PostDelayedTask(

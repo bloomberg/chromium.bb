@@ -60,8 +60,8 @@ class MockPrivetHTTPClient : public PrivetHTTPClient {
       const GURL& url,
       net::URLFetcher::RequestType request_type,
       PrivetURLFetcher::Delegate* delegate) OVERRIDE {
-    return make_scoped_ptr(
-        new PrivetURLFetcher(url, request_type, request_context_, delegate));
+    return make_scoped_ptr(new PrivetURLFetcher(
+        url, request_type, request_context_.get(), delegate));
   }
 
   scoped_refptr<net::TestURLRequestContextGetter> request_context_;

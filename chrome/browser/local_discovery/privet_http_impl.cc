@@ -680,7 +680,7 @@ void PrivetLocalPrintOperationImpl::StartConvertToPWG() {
   gfx::Rect area(std::min(page_size_.width(), page_size_.height()) * scale,
                  std::max(page_size_.width(), page_size_.height()) * scale);
   pwg_raster_converter_->Start(
-      data_,
+      data_.get(),
       printing::PdfRenderSettings(area, dpi_, true),
       transform_settings,
       base::Bind(&PrivetLocalPrintOperationImpl::OnPWGRasterConverted,
