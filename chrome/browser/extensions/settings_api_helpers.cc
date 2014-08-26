@@ -27,7 +27,7 @@ const Extension* FindOverridingExtension(
   for (ExtensionSet::const_iterator it = extensions.begin();
        it != extensions.end();
        ++it) {
-    const SettingsOverrides* settings = SettingsOverrides::Get(*it);
+    const SettingsOverrides* settings = SettingsOverrides::Get(it->get());
     if (settings) {
       if (type == BUBBLE_TYPE_HOME_PAGE && !settings->homepage)
         continue;
@@ -56,7 +56,7 @@ const Extension* FindOverridingExtension(
         continue;  // Not primary.
 
       // Found the primary extension.
-      return *it;
+      return it->get();
     }
   }
 

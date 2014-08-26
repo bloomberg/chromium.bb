@@ -307,7 +307,7 @@ CrxInstallerError CrxInstaller::AllowInstall(const Extension* extension) {
           scoped_refptr<const PermissionSet> expected_permissions =
               dummy_extension->permissions_data()->active_permissions();
           valid = !(PermissionMessageProvider::Get()->IsPrivilegeIncrease(
-              expected_permissions,
+              expected_permissions.get(),
               extension->permissions_data()->active_permissions(),
               extension->GetType()));
         }

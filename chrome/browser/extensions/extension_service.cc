@@ -937,7 +937,7 @@ void ExtensionService::DisableUserExtensions(
       extension != to_disable.end(); ++extension) {
     if ((*extension)->was_installed_by_default() &&
         extension_urls::IsWebstoreUpdateUrl(
-            extensions::ManifestURL::GetUpdateURL(*extension)))
+            extensions::ManifestURL::GetUpdateURL(extension->get())))
       continue;
     const std::string& id = (*extension)->id();
     if (except_ids.end() == std::find(except_ids.begin(), except_ids.end(), id))
@@ -1522,7 +1522,7 @@ void ExtensionService::CheckPermissionsIncrease(const Extension* extension,
     // to a version that requires additional privileges.
     is_privilege_increase =
         extensions::PermissionMessageProvider::Get()->IsPrivilegeIncrease(
-            granted_permissions,
+            granted_permissions.get(),
             extension->permissions_data()->active_permissions().get(),
             extension->GetType());
   }

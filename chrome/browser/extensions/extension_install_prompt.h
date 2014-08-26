@@ -167,7 +167,7 @@ class ExtensionInstallPrompt
     bool has_webstore_data() const { return has_webstore_data_; }
 
     const ExtensionInstallPromptExperiment* experiment() const {
-      return experiment_;
+      return experiment_.get();
     }
     void set_experiment(ExtensionInstallPromptExperiment* experiment) {
       experiment_ = experiment;

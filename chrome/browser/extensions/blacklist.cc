@@ -160,7 +160,7 @@ Blacklist::ScopedDatabaseManagerForTest::~ScopedDatabaseManagerForTest() {
 Blacklist::Blacklist(ExtensionPrefs* prefs) {
   scoped_refptr<SafeBrowsingDatabaseManager> database_manager =
       g_database_manager.Get().get();
-  if (database_manager) {
+  if (database_manager.get()) {
     registrar_.Add(
         this,
         chrome::NOTIFICATION_SAFE_BROWSING_UPDATE_COMPLETE,

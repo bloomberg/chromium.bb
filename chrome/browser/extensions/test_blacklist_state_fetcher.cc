@@ -37,7 +37,7 @@ TestBlacklistStateFetcher::TestBlacklistStateFetcher(
   scoped_refptr<net::TestURLRequestContextGetter> context =
         new net::TestURLRequestContextGetter(
             base::MessageLoopProxy::current());
-  fetcher_->SetURLRequestContextForTest(context);
+  fetcher_->SetURLRequestContextForTest(context.get());
 }
 
 TestBlacklistStateFetcher::~TestBlacklistStateFetcher() {

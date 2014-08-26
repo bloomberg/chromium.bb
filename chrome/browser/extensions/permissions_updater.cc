@@ -64,7 +64,7 @@ scoped_refptr<const PermissionSet> GetBoundedActivePermissions(
   // If the extension has used the optional permissions API, it will have a
   // custom set of active permissions defined in the extension prefs. Here,
   // we update the extension's active permissions based on the prefs.
-  if (!active_permissions)
+  if (!active_permissions.get())
     return extension->permissions_data()->active_permissions();
 
   scoped_refptr<const PermissionSet> required_permissions =
@@ -75,16 +75,17 @@ scoped_refptr<const PermissionSet> GetBoundedActivePermissions(
   //  a) active permissions must be a subset of optional + default permissions
   //  b) active permissions must contains all default permissions
   scoped_refptr<PermissionSet> total_permissions = PermissionSet::CreateUnion(
-      required_permissions,
+      required_permissions.get(),
       PermissionsParser::GetOptionalPermissions(extension));
 
   // Make sure the active permissions contain no more than optional + default.
   scoped_refptr<PermissionSet> adjusted_active =
-      PermissionSet::CreateIntersection(total_permissions, active_permissions);
+      PermissionSet::CreateIntersection(total_permissions.get(),
+                                        active_permissions.get());
 
   // Make sure the active permissions contain the default permissions.
-  adjusted_active =
-      PermissionSet::CreateUnion(required_permissions, adjusted_active);
+  adjusted_active = PermissionSet::CreateUnion(required_permissions.get(),
+                                               adjusted_active.get());
 
   return adjusted_active;
 }
@@ -194,7 +195,7 @@ void PermissionsUpdater::InitializePermissions(const Extension* extension) {
   // For example, the union of <all_urls> and "example.com" is <all_urls>, so
   // we may lose "example.com". However, "example.com" is important once
   // <all_urls> is stripped during withholding.
-  if (active_permissions) {
+  if (active_permissions.get()) {
     granted_explicit_hosts.AddPatterns(
         FilterSingleOriginPermissions(active_permissions->explicit_hosts(),
                                       bounded_active->explicit_hosts()));

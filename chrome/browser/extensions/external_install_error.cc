@@ -369,7 +369,7 @@ void ExternalInstallError::OnDialogReady(
   prompt_ = prompt;
 
   if (alert_type_ == BUBBLE_ALERT) {
-    global_error_.reset(new ExternalInstallBubbleAlert(this, prompt_));
+    global_error_.reset(new ExternalInstallBubbleAlert(this, prompt_.get()));
     error_service_->AddGlobalError(global_error_.get());
 
     Browser* browser =

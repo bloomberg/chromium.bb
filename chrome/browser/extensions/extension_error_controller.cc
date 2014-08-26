@@ -119,7 +119,7 @@ void ExtensionErrorController::IdentifyAlertableExtensions() {
   for (ExtensionSet::const_iterator iter = enabled_set.begin();
        iter != enabled_set.end();
        ++iter) {
-    const Extension* extension = *iter;
+    const Extension* extension = iter->get();
 
     // Skip for extensions that have pending updates. They will be checked again
     // once the pending update is finished.

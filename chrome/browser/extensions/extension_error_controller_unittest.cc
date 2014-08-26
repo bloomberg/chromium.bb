@@ -152,7 +152,7 @@ ExtensionPrefs* ExtensionErrorControllerUnitTest::GetPrefs() {
 TEST_F(ExtensionErrorControllerUnitTest, ClosingAcknowledgesBlacklisted) {
   // Add a blacklisted extension.
   scoped_refptr<const Extension> extension = BuildExtension();
-  ASSERT_TRUE(AddBlacklistedExtension(extension));
+  ASSERT_TRUE(AddBlacklistedExtension(extension.get()));
 
   service_->Init();
 
@@ -181,7 +181,7 @@ TEST_F(ExtensionErrorControllerUnitTest, ClosingAcknowledgesBlacklisted) {
 TEST_F(ExtensionErrorControllerUnitTest, AcceptingAcknowledgesBlacklisted) {
   // Add a blacklisted extension.
   scoped_refptr<const Extension> extension = BuildExtension();
-  ASSERT_TRUE(AddBlacklistedExtension(extension));
+  ASSERT_TRUE(AddBlacklistedExtension(extension.get()));
 
   service_->Init();
 
@@ -200,7 +200,7 @@ TEST_F(ExtensionErrorControllerUnitTest, AcceptingAcknowledgesBlacklisted) {
 // already been acknowledged.
 TEST_F(ExtensionErrorControllerUnitTest, DontWarnForAcknowledgedBlacklisted) {
   scoped_refptr<const Extension> extension = BuildExtension();
-  ASSERT_TRUE(AddBlacklistedExtension(extension));
+  ASSERT_TRUE(AddBlacklistedExtension(extension.get()));
 
   GetPrefs()->AcknowledgeBlacklistedExtension(extension->id());
 

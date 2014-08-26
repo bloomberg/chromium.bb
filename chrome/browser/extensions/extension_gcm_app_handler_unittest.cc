@@ -411,29 +411,29 @@ TEST_F(ExtensionGCMAppHandlerTest, AddAndRemoveAppHandler) {
   scoped_refptr<Extension> extension(CreateExtension());
 
   // App handler is added when extension is loaded.
-  LoadExtension(extension);
+  LoadExtension(extension.get());
   waiter()->PumpUILoop();
   EXPECT_TRUE(HasAppHandlers(extension->id()));
 
   // App handler is removed when extension is unloaded.
-  DisableExtension(extension);
+  DisableExtension(extension.get());
   waiter()->PumpUILoop();
   EXPECT_FALSE(HasAppHandlers(extension->id()));
 
   // App handler is added when extension is reloaded.
-  EnableExtension(extension);
+  EnableExtension(extension.get());
   waiter()->PumpUILoop();
   EXPECT_TRUE(HasAppHandlers(extension->id()));
 
   // App handler is removed when extension is uninstalled.
-  UninstallExtension(extension);
+  UninstallExtension(extension.get());
   waiter()->PumpUILoop();
   EXPECT_FALSE(HasAppHandlers(extension->id()));
 }
 
 TEST_F(ExtensionGCMAppHandlerTest, UnregisterOnExtensionUninstall) {
   scoped_refptr<Extension> extension(CreateExtension());
-  LoadExtension(extension);
+  LoadExtension(extension.get());
 
   // Sign-in is needed for registration.
   SignIn(kTestingUsername);
@@ -451,7 +451,7 @@ TEST_F(ExtensionGCMAppHandlerTest, UnregisterOnExtensionUninstall) {
   GetGCMDriver()->AddAppHandler("Foo", gcm_app_handler());
 
   // Unregistration should be triggered when the extension is uninstalled.
-  UninstallExtension(extension);
+  UninstallExtension(extension.get());
   waiter()->WaitUntilCompleted();
   EXPECT_EQ(gcm::GCMClient::SUCCESS,
             gcm_app_handler()->unregistration_result());
@@ -464,12 +464,12 @@ TEST_F(ExtensionGCMAppHandlerTest, UpdateExtensionWithGcmPermissionKept) {
   scoped_refptr<Extension> extension(CreateExtension());
 
   // App handler is added when the extension is loaded.
-  LoadExtension(extension);
+  LoadExtension(extension.get());
   waiter()->PumpUILoop();
   EXPECT_TRUE(HasAppHandlers(extension->id()));
 
   // App handler count should not drop to zero when the extension is updated.
-  UpdateExtension(extension, "gcm2.crx");
+  UpdateExtension(extension.get(), "gcm2.crx");
   waiter()->PumpUILoop();
   EXPECT_FALSE(gcm_app_handler()->app_handler_count_drop_to_zero());
   EXPECT_TRUE(HasAppHandlers(extension->id()));
@@ -479,13 +479,13 @@ TEST_F(ExtensionGCMAppHandlerTest, UpdateExtensionWithGcmPermissionRemoved) {
   scoped_refptr<Extension> extension(CreateExtension());
 
   // App handler is added when the extension is loaded.
-  LoadExtension(extension);
+  LoadExtension(extension.get());
   waiter()->PumpUILoop();
   EXPECT_TRUE(HasAppHandlers(extension->id()));
 
   // App handler is removed when the extension is updated to the version that
   // has GCM permission removed.
-  UpdateExtension(extension, "good2.crx");
+  UpdateExtension(extension.get(), "good2.crx");
   waiter()->PumpUILoop();
   EXPECT_TRUE(gcm_app_handler()->app_handler_count_drop_to_zero());
   EXPECT_FALSE(HasAppHandlers(extension->id()));

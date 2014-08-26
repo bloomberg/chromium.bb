@@ -172,41 +172,41 @@ TEST_F(ExtensionContextMenuModelTest, ExtensionItemTest) {
       new ExtensionContextMenuModel(extension.get(), browser.get()));
 
   // There should be no extension items yet.
-  EXPECT_EQ(0, CountExtensionItems(menu));
+  EXPECT_EQ(0, CountExtensionItems(menu.get()));
 
   // Add a browser action menu item for |extension| to |manager|.
   AddContextItemAndRefreshModel(
-      manager, extension.get(), MenuItem::BROWSER_ACTION, menu);
+      manager, extension.get(), MenuItem::BROWSER_ACTION, menu.get());
 
   // Since |extension| has a page action, the browser action menu item should
   // not be present.
-  EXPECT_EQ(0, CountExtensionItems(menu));
+  EXPECT_EQ(0, CountExtensionItems(menu.get()));
 
   // Add a page action menu item and reset the context menu.
   AddContextItemAndRefreshModel(
-      manager, extension.get(), MenuItem::PAGE_ACTION, menu);
+      manager, extension.get(), MenuItem::PAGE_ACTION, menu.get());
 
   // The page action item should be present because |extension| has a page
   // action.
-  EXPECT_EQ(1, CountExtensionItems(menu));
+  EXPECT_EQ(1, CountExtensionItems(menu.get()));
 
   // Create more page action items to test top level menu item limitations.
   for (int i = 0; i < api::context_menus::ACTION_MENU_TOP_LEVEL_LIMIT; ++i)
     AddContextItemAndRefreshModel(
-        manager, extension.get(), MenuItem::PAGE_ACTION, menu);
+        manager, extension.get(), MenuItem::PAGE_ACTION, menu.get());
 
   // The menu should only have a limited number of extension items, since they
   // are all top level items, and we limit the number of top level extension
   // items.
   EXPECT_EQ(api::context_menus::ACTION_MENU_TOP_LEVEL_LIMIT,
-            CountExtensionItems(menu));
+            CountExtensionItems(menu.get()));
 
   AddContextItemAndRefreshModel(
-      manager, extension.get(), MenuItem::PAGE_ACTION, menu);
+      manager, extension.get(), MenuItem::PAGE_ACTION, menu.get());
 
   // Adding another top level item should not increase the count.
   EXPECT_EQ(api::context_menus::ACTION_MENU_TOP_LEVEL_LIMIT,
-            CountExtensionItems(menu));
+            CountExtensionItems(menu.get()));
 }
 
 // Test that the "show" and "hide" menu items appear correctly in the extension

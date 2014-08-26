@@ -446,7 +446,7 @@ ExtensionIdSet InstallVerifier::GetExtensionsToVerify() const {
   for (ExtensionSet::const_iterator iter = extensions->begin();
        iter != extensions->end();
        ++iter) {
-    if (NeedsVerification(**iter))
+    if (NeedsVerification(*iter->get()))
       result.insert((*iter)->id());
   }
   return result;
@@ -494,7 +494,7 @@ void InstallVerifier::OnVerificationComplete(bool success, OperationType type) {
              ++iter) {
           int disable_reasons = prefs_->GetDisableReasons((*iter)->id());
           if (disable_reasons & Extension::DISABLE_NOT_VERIFIED &&
-              !MustRemainDisabled(*iter, NULL, NULL)) {
+              !MustRemainDisabled(iter->get(), NULL, NULL)) {
             prefs_->RemoveDisableReason((*iter)->id(),
                                         Extension::DISABLE_NOT_VERIFIED);
           }

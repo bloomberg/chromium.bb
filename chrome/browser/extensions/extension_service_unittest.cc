@@ -1124,7 +1124,7 @@ class ExtensionServiceTest : public extensions::ExtensionServiceTestBase,
 
     content::WindowedNotificationObserver observer(
         extensions::NOTIFICATION_CRX_INSTALLER_DONE,
-        content::Source<extensions::CrxInstaller>(installer));
+        content::Source<extensions::CrxInstaller>(installer.get()));
 
     installer->InstallCrx(crx_path);
 

@@ -110,8 +110,8 @@ const Extension* ActiveScriptControllerUnitTest::AddExtension() {
                    .Build();
 
   ExtensionRegistry::Get(profile())->AddEnabled(extension_);
-  PermissionsUpdater(profile()).InitializePermissions(extension_);
-  return extension_;
+  PermissionsUpdater(profile()).InitializePermissions(extension_.get());
+  return extension_.get();
 }
 
 const Extension* ActiveScriptControllerUnitTest::ReloadExtension() {

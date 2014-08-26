@@ -409,7 +409,7 @@ void ExtensionToolbarModel::Populate(const ExtensionIdList& positions,
 
   size_t items_count = toolbar_items_.size();
   for (size_t i = 0; i < items_count; i++) {
-    const Extension* extension = toolbar_items_.back();
+    const Extension* extension = toolbar_items_.back().get();
     // By popping the extension here (before calling BrowserActionRemoved),
     // we will not shrink visible count by one after BrowserActionRemoved
     // calls SetVisibleCount.
@@ -433,8 +433,9 @@ void ExtensionToolbarModel::Populate(const ExtensionIdList& positions,
     if (iter->get() != NULL) {
       toolbar_items_.push_back(*iter);
       FOR_EACH_OBSERVER(
-          Observer, observers_, ToolbarExtensionAdded(
-              *iter, toolbar_items_.size() - 1));
+          Observer,
+          observers_,
+          ToolbarExtensionAdded(iter->get(), toolbar_items_.size() - 1));
     }
   }
   for (ExtensionList::const_iterator iter = unsorted.begin();
@@ -442,8 +443,9 @@ void ExtensionToolbarModel::Populate(const ExtensionIdList& positions,
     if (iter->get() != NULL) {
       toolbar_items_.push_back(*iter);
       FOR_EACH_OBSERVER(
-          Observer, observers_, ToolbarExtensionAdded(
-              *iter, toolbar_items_.size() - 1));
+          Observer,
+          observers_,
+          ToolbarExtensionAdded(iter->get(), toolbar_items_.size() - 1));
     }
   }
 
@@ -506,7 +508,7 @@ void ExtensionToolbarModel::MaybeUpdateVisibilityPref(
 
 void ExtensionToolbarModel::MaybeUpdateVisibilityPrefs() {
   for (size_t i = 0u; i < toolbar_items_.size(); ++i)
-    MaybeUpdateVisibilityPref(toolbar_items_[i], i);
+    MaybeUpdateVisibilityPref(toolbar_items_[i].get(), i);
 }
 
 int ExtensionToolbarModel::IncognitoIndexToOriginal(int incognito_index) {
@@ -602,7 +604,7 @@ void ExtensionToolbarModel::EnsureVisibility(
          extension != toolbar_items_.end(); ++extension) {
       if ((*extension)->id() == (*it)) {
         if (extension - toolbar_items_.begin() >= visible_icon_count_)
-          MoveExtensionIcon(*extension, 0);
+          MoveExtensionIcon(extension->get(), 0);
         break;
       }
     }

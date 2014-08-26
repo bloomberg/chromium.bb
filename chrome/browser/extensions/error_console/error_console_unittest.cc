@@ -111,14 +111,14 @@ TEST_F(ErrorConsoleUnitTest, EnableAndDisableErrorConsole) {
           .Build();
   ExtensionRegistry* registry = ExtensionRegistry::Get(profile_.get());
   registry->AddEnabled(adt);
-  registry->TriggerOnLoaded(adt);
+  registry->TriggerOnLoaded(adt.get());
   EXPECT_TRUE(error_console_->enabled());
   EXPECT_FALSE(error_console_->IsEnabledForChromeExtensionsPage());
   EXPECT_TRUE(error_console_->IsEnabledForAppsDeveloperTools());
 
   // Unloading the Apps Developer Tools should disable error console.
   registry->RemoveEnabled(adt->id());
-  registry->TriggerOnUnloaded(adt, UnloadedExtensionInfo::REASON_DISABLE);
+  registry->TriggerOnUnloaded(adt.get(), UnloadedExtensionInfo::REASON_DISABLE);
   EXPECT_FALSE(error_console_->enabled());
   EXPECT_FALSE(error_console_->IsEnabledForChromeExtensionsPage());
   EXPECT_FALSE(error_console_->IsEnabledForAppsDeveloperTools());

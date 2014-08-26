@@ -308,10 +308,10 @@ void WebstoreInstaller::Start() {
 
   ExtensionService* extension_service =
     ExtensionSystem::Get(profile_)->extension_service();
-  if (approval_.get() && approval_->dummy_extension) {
+  if (approval_.get() && approval_->dummy_extension.get()) {
     SharedModuleService::ImportStatus status =
         extension_service->shared_module_service()->CheckImports(
-            approval_->dummy_extension,
+            approval_->dummy_extension.get(),
             &pending_modules_,
             &pending_modules_);
     // For this case, it is because some imports are not shared modules.

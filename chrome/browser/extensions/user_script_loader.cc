@@ -84,7 +84,7 @@ bool LoadScriptContent(const ExtensionId& extension_id,
       LOG(WARNING) << "Failed to load user script file: " << path.value();
       return false;
     }
-    if (verifier) {
+    if (verifier.get()) {
       content::BrowserThread::PostTask(content::BrowserThread::IO,
                                        FROM_HERE,
                                        base::Bind(&VerifyContent,
@@ -207,7 +207,7 @@ void LoadScriptsOnFileThread(scoped_ptr<UserScriptList> user_scripts,
                              LoadScriptsCallback callback) {
   DCHECK(user_scripts.get());
   LoadUserScripts(
-      user_scripts.get(), extensions_info, added_script_ids, verifier);
+      user_scripts.get(), extensions_info, added_script_ids, verifier.get());
   scoped_ptr<base::SharedMemory> memory = Serialize(*user_scripts);
   BrowserThread::PostTask(
       BrowserThread::UI,

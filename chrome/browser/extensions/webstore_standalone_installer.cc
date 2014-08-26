@@ -132,7 +132,7 @@ void WebstoreStandaloneInstaller::CompleteInstall(
 
 void WebstoreStandaloneInstaller::ProceedWithInstallPrompt() {
   install_prompt_ = CreateInstallPrompt();
-  if (install_prompt_) {
+  if (install_prompt_.get()) {
     ShowInstallUI();
     // Control flow finishes up in InstallUIProceed or InstallUIAbort.
   } else {
@@ -349,7 +349,8 @@ void WebstoreStandaloneInstaller::InstallUIProceed() {
       // If the target extension has already been installed ephemerally and is
       // up to date, it can be promoted to a regular installed extension and
       // downloading from the Web Store is not necessary.
-      const Extension* extension_to_install = GetLocalizedExtensionForDisplay();
+      scoped_refptr<const Extension> extension_to_install =
+          GetLocalizedExtensionForDisplay();
       if (!extension_to_install) {
         CompleteInstall(webstore_install::INVALID_MANIFEST,
                         kInvalidManifestError);
@@ -421,7 +422,8 @@ void WebstoreStandaloneInstaller::OnExtensionInstallFailure(
 }
 
 void WebstoreStandaloneInstaller::ShowInstallUI() {
-  const Extension* localized_extension = GetLocalizedExtensionForDisplay();
+  scoped_refptr<const Extension> localized_extension =
+      GetLocalizedExtensionForDisplay();
   if (!localized_extension) {
     CompleteInstall(webstore_install::INVALID_MANIFEST, kInvalidManifestError);
     return;

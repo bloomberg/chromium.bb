@@ -114,7 +114,7 @@ TEST_F(SharedModuleServiceUnitTest, AddDependentSharedModules) {
 
   // Try to satisfy imports for the extension. This should queue the imported
   // module's installation.
-  service()->shared_module_service()->SatisfyImports(extension);
+  service()->shared_module_service()->SatisfyImports(extension.get());
   EXPECT_TRUE(pending_extension_manager->IsIdPending(import_id));
 }
 
@@ -135,13 +135,13 @@ TEST_F(SharedModuleServiceUnitTest, PruneSharedModulesOnUninstall) {
           .SetID(crx_file::id_util::GenerateId("shared_module"))
           .Build();
 
-  EXPECT_TRUE(InstallExtension(shared_module, false));
+  EXPECT_TRUE(InstallExtension(shared_module.get(), false));
 
   std::string extension_id = crx_file::id_util::GenerateId("extension_id");
   // Create and install an extension that imports our new module.
   scoped_refptr<Extension> importing_extension =
       CreateExtensionImportingModule(shared_module->id(), extension_id, "1.0");
-  EXPECT_TRUE(InstallExtension(importing_extension, false));
+  EXPECT_TRUE(InstallExtension(importing_extension.get(), false));
 
   // Uninstall the extension that imports our module.
   base::string16 error;
@@ -174,7 +174,7 @@ TEST_F(SharedModuleServiceUnitTest, PruneSharedModulesOnUpdate) {
           .AddFlags(Extension::FROM_WEBSTORE)
           .SetID(crx_file::id_util::GenerateId("shared_module_1"))
           .Build();
-  EXPECT_TRUE(InstallExtension(shared_module_1, false));
+  EXPECT_TRUE(InstallExtension(shared_module_1.get(), false));
 
   scoped_ptr<base::DictionaryValue> manifest_2 =
       DictionaryBuilder()
@@ -190,7 +190,7 @@ TEST_F(SharedModuleServiceUnitTest, PruneSharedModulesOnUpdate) {
           .AddFlags(Extension::FROM_WEBSTORE)
           .SetID(crx_file::id_util::GenerateId("shared_module_2"))
           .Build();
-  EXPECT_TRUE(InstallExtension(shared_module_2, false));
+  EXPECT_TRUE(InstallExtension(shared_module_2.get(), false));
 
   std::string extension_id = crx_file::id_util::GenerateId("extension_id");
 
@@ -199,7 +199,7 @@ TEST_F(SharedModuleServiceUnitTest, PruneSharedModulesOnUpdate) {
       CreateExtensionImportingModule(shared_module_1->id(),
                                      extension_id,
                                      "1.0");
-  EXPECT_TRUE(InstallExtension(importing_extension_1, false));
+  EXPECT_TRUE(InstallExtension(importing_extension_1.get(), false));
 
   // Create and install a new version of the extension that imports our new
   // module 2.
@@ -207,7 +207,7 @@ TEST_F(SharedModuleServiceUnitTest, PruneSharedModulesOnUpdate) {
       CreateExtensionImportingModule(shared_module_2->id(),
                                      extension_id,
                                      "1.1");
-  EXPECT_TRUE(InstallExtension(importing_extension_2, true));
+  EXPECT_TRUE(InstallExtension(importing_extension_2.get(), true));
 
   // Since the extension v1.1 depends the module 2 insteand module 1.
   // So the module 1 should be uninstalled.
@@ -220,7 +220,7 @@ TEST_F(SharedModuleServiceUnitTest, PruneSharedModulesOnUpdate) {
   // module.
   scoped_refptr<Extension> importing_extension_3 =
       CreateExtensionImportingModule("", extension_id, "1.2");
-  EXPECT_TRUE(InstallExtension(importing_extension_3, true));
+  EXPECT_TRUE(InstallExtension(importing_extension_3.get(), true));
 
   // Since the extension v1.2 does not depend any module, so the all models
   // should have been uninstalled.
@@ -254,21 +254,21 @@ TEST_F(SharedModuleServiceUnitTest, WhitelistedImports) {
           .SetID(crx_file::id_util::GenerateId("shared_module"))
           .Build();
 
-  EXPECT_TRUE(InstallExtension(shared_module, false));
+  EXPECT_TRUE(InstallExtension(shared_module.get(), false));
 
   // Create and install an extension with the whitelisted ID.
   scoped_refptr<Extension> whitelisted_extension =
       CreateExtensionImportingModule(shared_module->id(),
                                      whitelisted_id,
                                      "1.0");
-  EXPECT_TRUE(InstallExtension(whitelisted_extension, false));
+  EXPECT_TRUE(InstallExtension(whitelisted_extension.get(), false));
 
   // Try to install an extension with an ID that is not whitelisted.
   scoped_refptr<Extension> nonwhitelisted_extension =
       CreateExtensionImportingModule(shared_module->id(),
                                      nonwhitelisted_id,
                                      "1.0");
-  EXPECT_FALSE(InstallExtension(nonwhitelisted_extension, false));
+  EXPECT_FALSE(InstallExtension(nonwhitelisted_extension.get(), false));
 }
 
 }  // namespace extensions

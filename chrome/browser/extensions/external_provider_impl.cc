@@ -394,7 +394,7 @@ void ExternalProviderImpl::CreateExternalProviders(
 #endif
 
   // Policies are mandatory so they can't be skipped with command line flag.
-  if (external_loader) {
+  if (external_loader.get()) {
     provider_list->push_back(
         linked_ptr<ExternalProviderInterface>(
             new ExternalProviderImpl(

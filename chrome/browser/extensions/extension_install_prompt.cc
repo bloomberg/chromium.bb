@@ -311,8 +311,8 @@ int ExtensionInstallPrompt::Prompt::GetDialogButtons() const {
 }
 
 bool ExtensionInstallPrompt::Prompt::ShouldShowExplanationText() const {
-   return type_ == INSTALL_PROMPT &&
-       extension_->is_extension() && experiment_ && experiment_->text_only();
+  return type_ == INSTALL_PROMPT && extension_->is_extension() &&
+         experiment_.get() && experiment_->text_only();
 }
 
 bool ExtensionInstallPrompt::Prompt::HasAcceptButtonLabel() const {
@@ -748,9 +748,9 @@ void ExtensionInstallPrompt::ShowConfirmation() {
     const extensions::PermissionMessageProvider* message_provider =
         extensions::PermissionMessageProvider::Get();
     prompt_->SetPermissions(
-        message_provider->GetWarningMessages(permissions_, type));
+        message_provider->GetWarningMessages(permissions_.get(), type));
     prompt_->SetPermissionsDetails(
-        message_provider->GetWarningMessagesDetails(permissions_, type));
+        message_provider->GetWarningMessagesDetails(permissions_.get(), type));
   }
 
   switch (prompt_->type()) {

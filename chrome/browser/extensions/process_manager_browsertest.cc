@@ -76,7 +76,7 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
       LoadExtension(test_data_dir_.AppendASCII("api_test")
                         .AppendASCII("browser_action")
                         .AppendASCII("popup"));
-  ASSERT_TRUE(popup);
+  ASSERT_TRUE(popup.get());
 
   // No background host was added.
   EXPECT_EQ(0u, pm->background_hosts().size());

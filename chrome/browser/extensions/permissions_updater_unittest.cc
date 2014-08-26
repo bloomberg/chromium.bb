@@ -218,7 +218,7 @@ TEST_F(PermissionsUpdaterTest, AddAndRemovePermissions) {
 
   // Verify that the permission notification was sent correctly.
   ASSERT_TRUE(listener.received_notification());
-  ASSERT_EQ(extension, listener.extension());
+  ASSERT_EQ(extension.get(), listener.extension());
   ASSERT_EQ(UpdatedExtensionPermissionsInfo::ADDED, listener.reason());
   ASSERT_EQ(*delta.get(), *listener.permissions());
 
@@ -254,7 +254,7 @@ TEST_F(PermissionsUpdaterTest, AddAndRemovePermissions) {
 
   // Verify that the notification was correct.
   ASSERT_TRUE(listener.received_notification());
-  ASSERT_EQ(extension, listener.extension());
+  ASSERT_EQ(extension.get(), listener.extension());
   ASSERT_EQ(UpdatedExtensionPermissionsInfo::REMOVED, listener.reason());
   ASSERT_EQ(*delta.get(), *listener.permissions());
 
@@ -304,7 +304,7 @@ TEST_F(PermissionsUpdaterTest, WithholdAllHosts) {
       all_patterns, all_patterns, Manifest::INTERNAL);
   const PermissionsData* permissions_data = extension->permissions_data();
   PermissionsUpdater updater(profile_.get());
-  updater.InitializePermissions(extension);
+  updater.InitializePermissions(extension.get());
 
   // At first, the active permissions should have only the safe patterns and
   // the withheld permissions should have only the all host patterns.
@@ -322,7 +322,7 @@ TEST_F(PermissionsUpdaterTest, WithholdAllHosts) {
       all_host_patterns));
 
   // Then, we grant the withheld all-hosts permissions.
-  updater.GrantWithheldImpliedAllHosts(extension);
+  updater.GrantWithheldImpliedAllHosts(extension.get());
   // Now, active permissions should have all patterns, and withheld permissions
   // should have none.
   EXPECT_TRUE(SetsAreEqual(
@@ -341,7 +341,7 @@ TEST_F(PermissionsUpdaterTest, WithholdAllHosts) {
                   .empty());
 
   // Finally, we revoke the all hosts permissions.
-  updater.WithholdImpliedAllHosts(extension);
+  updater.WithholdImpliedAllHosts(extension.get());
 
   // We should be back to our initial state - all_hosts should be withheld, and
   // the safe patterns should be granted.
@@ -362,7 +362,7 @@ TEST_F(PermissionsUpdaterTest, WithholdAllHosts) {
   extension = CreateExtensionWithPermissions(
       all_patterns, all_patterns, Manifest::COMPONENT);
   permissions_data = extension->permissions_data();
-  updater.InitializePermissions(extension);
+  updater.InitializePermissions(extension.get());
   EXPECT_TRUE(SetsAreEqual(
       permissions_data->active_permissions()->scriptable_hosts().patterns(),
       all_patterns));
@@ -383,7 +383,7 @@ TEST_F(PermissionsUpdaterTest, WithholdAllHosts) {
   extension = CreateExtensionWithPermissions(
       all_patterns, all_patterns, Manifest::INTERNAL);
   permissions_data = extension->permissions_data();
-  updater.InitializePermissions(extension);
+  updater.InitializePermissions(extension.get());
   EXPECT_TRUE(SetsAreEqual(
       permissions_data->active_permissions()->scriptable_hosts().patterns(),
       all_patterns));

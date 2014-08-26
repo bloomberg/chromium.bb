@@ -76,8 +76,9 @@ class ExtensionUITest : public testing::Test {
     return static_cast<base::DictionaryValue*>(value);
   }
 
-  const Extension* CreateExtension(const std::string& name,
-                                   ListBuilder& permissions) {
+  const scoped_refptr<const Extension> CreateExtension(
+      const std::string& name,
+      ListBuilder& permissions) {
     const std::string kId = crx_file::id_util::GenerateId(name);
     scoped_refptr<const Extension> extension =
         ExtensionBuilder().SetManifest(
@@ -92,7 +93,7 @@ class ExtensionUITest : public testing::Test {
                           .Build();
 
     ExtensionRegistry::Get(profile())->AddEnabled(extension);
-    PermissionsUpdater(profile()).InitializePermissions(extension);
+    PermissionsUpdater(profile()).InitializePermissions(extension.get());
     return extension;
   }
 
@@ -320,15 +321,13 @@ TEST_F(ExtensionUITest, ExtensionUIAllUrlsCheckbox) {
       new FeatureSwitch::ScopedOverride(
           FeatureSwitch::scripts_require_action(), true));
   // Two extensions - one with all urls, one without.
-  const Extension* all_urls_extension =
-      CreateExtension("all_urls",
-                      ListBuilder().Append(kAllHostsPermission).Pass());
-  const Extension* no_urls_extension =
+  scoped_refptr<const Extension> all_urls_extension = CreateExtension(
+      "all_urls", ListBuilder().Append(kAllHostsPermission).Pass());
+  scoped_refptr<const Extension> no_urls_extension =
       CreateExtension("no urls", ListBuilder().Pass());
 
-  scoped_ptr<base::DictionaryValue> value(
-      handler()->CreateExtensionDetailValue(
-          all_urls_extension, std::vector<ExtensionPage>(), NULL));
+  scoped_ptr<base::DictionaryValue> value(handler()->CreateExtensionDetailValue(
+      all_urls_extension.get(), std::vector<ExtensionPage>(), NULL));
   bool result = false;
   const std::string kWantsAllUrls = "wantsAllUrls";
   const std::string kAllowAllUrls = "allowAllUrls";
@@ -345,7 +344,7 @@ TEST_F(ExtensionUITest, ExtensionUIAllUrlsCheckbox) {
 
   // Now the extension should both want and have all urls.
   value.reset(handler()->CreateExtensionDetailValue(
-      all_urls_extension, std::vector<ExtensionPage>(), NULL));
+      all_urls_extension.get(), std::vector<ExtensionPage>(), NULL));
   EXPECT_TRUE(value->GetBoolean(kWantsAllUrls, &result));
   EXPECT_TRUE(result);
   EXPECT_TRUE(value->GetBoolean(kAllowAllUrls, &result));
@@ -353,7 +352,7 @@ TEST_F(ExtensionUITest, ExtensionUIAllUrlsCheckbox) {
 
   // The other extension should neither want nor have all urls.
   value.reset(handler()->CreateExtensionDetailValue(
-      no_urls_extension, std::vector<ExtensionPage>(), NULL));
+      no_urls_extension.get(), std::vector<ExtensionPage>(), NULL));
   EXPECT_TRUE(value->GetBoolean(kWantsAllUrls, &result));
   EXPECT_FALSE(result);
   EXPECT_TRUE(value->GetBoolean(kAllowAllUrls, &result));
@@ -366,7 +365,7 @@ TEST_F(ExtensionUITest, ExtensionUIAllUrlsCheckbox) {
   // Even though the extension has the all urls preference, the checkbox
   // shouldn't show up with the switch off.
   value.reset(handler()->CreateExtensionDetailValue(
-      all_urls_extension, std::vector<ExtensionPage>(), NULL));
+      all_urls_extension.get(), std::vector<ExtensionPage>(), NULL));
   EXPECT_TRUE(value->GetBoolean(kWantsAllUrls, &result));
   EXPECT_FALSE(result);
   EXPECT_TRUE(value->GetBoolean(kAllowAllUrls, &result));
@@ -379,7 +378,7 @@ TEST_F(ExtensionUITest, ExtensionUIAllUrlsCheckbox) {
   // Even though the extension has all_urls permission, the checkbox shouldn't
   // show up without the switch.
   value.reset(handler()->CreateExtensionDetailValue(
-      all_urls_extension, std::vector<ExtensionPage>(), NULL));
+      all_urls_extension.get(), std::vector<ExtensionPage>(), NULL));
   EXPECT_TRUE(value->GetBoolean(kWantsAllUrls, &result));
   EXPECT_FALSE(result);
   EXPECT_TRUE(value->GetBoolean(kAllowAllUrls, &result));

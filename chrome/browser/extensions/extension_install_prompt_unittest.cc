@@ -49,8 +49,8 @@ TEST(ExtensionInstallPromptUnittest, PromptShowsPermissionWarnings) {
   prompt.set_callback_for_test(base::Bind(&VerifyPromptPermissionsCallback,
                                           run_loop.QuitClosure()));
   prompt.ConfirmPermissions(NULL,  // no delegate
-                            extension,
-                            permission_set);
+                            extension.get(),
+                            permission_set.get());
   run_loop.Run();
 }
 

@@ -40,7 +40,7 @@ class BlacklistRequestContextGetter : public net::URLRequestContextGetter {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
     scoped_refptr<net::URLRequestContextGetter> context_getter =
-        new BlacklistRequestContextGetter(parent_context_getter);
+        new BlacklistRequestContextGetter(parent_context_getter.get());
     BrowserThread::PostTask(BrowserThread::UI,
                             FROM_HERE,
                             base::Bind(callback, context_getter));
@@ -99,8 +99,8 @@ void BlacklistStateFetcher::Request(const std::string& id,
   if (request_already_sent)
     return;
 
-  if (url_request_context_getter_ ||
-      !g_browser_process || !g_browser_process->safe_browsing_service()) {
+  if (url_request_context_getter_.get() || !g_browser_process ||
+      !g_browser_process->safe_browsing_service()) {
     SendRequest(id);
   } else {
     scoped_refptr<net::URLRequestContextGetter> parent_request_context;
@@ -125,7 +125,7 @@ void BlacklistStateFetcher::SaveRequestContext(
     const std::string& id,
     scoped_refptr<net::URLRequestContextGetter> request_context_getter) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!url_request_context_getter_)
+  if (!url_request_context_getter_.get())
     url_request_context_getter_ = request_context_getter;
   SendRequest(id);
 }
@@ -145,7 +145,7 @@ void BlacklistStateFetcher::SendRequest(const std::string& id) {
                                                      this);
   requests_[fetcher] = id;
   fetcher->SetAutomaticallyRetryOn5xx(false);  // Don't retry on error.
-  fetcher->SetRequestContext(url_request_context_getter_);
+  fetcher->SetRequestContext(url_request_context_getter_.get());
   fetcher->SetUploadData("application/octet-stream", request_str);
   fetcher->Start();
 }

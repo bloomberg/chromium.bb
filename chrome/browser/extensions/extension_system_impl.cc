@@ -415,7 +415,7 @@ void ExtensionSystemImpl::Shared::Shutdown() {
     extension_warning_service_->RemoveObserver(
         extension_warning_badge_service_.get());
   }
-  if (content_verifier_)
+  if (content_verifier_.get())
     content_verifier_->Shutdown();
   if (extension_service_)
     extension_service_->Shutdown();
