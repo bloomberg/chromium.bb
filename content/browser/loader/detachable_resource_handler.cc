@@ -146,7 +146,7 @@ bool DetachableResourceHandler::OnWillRead(scoped_refptr<net::IOBuffer>* buf,
                                            int min_size) {
   if (!next_handler_) {
     DCHECK_EQ(-1, min_size);
-    if (!read_buffer_)
+    if (!read_buffer_.get())
       read_buffer_ = new net::IOBuffer(kReadBufSize);
     *buf = read_buffer_;
     *buf_size = kReadBufSize;

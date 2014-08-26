@@ -150,7 +150,7 @@ bool CrossSiteResourceHandler::OnResponseStarted(
           &transition_data);
 
   if (is_navigation_transition) {
-    if (response_)
+    if (response_.get())
       transition_data.response_headers = response_->head.headers;
     transition_data.request_url = request()->url();
 
@@ -249,7 +249,7 @@ bool CrossSiteResourceHandler::OnNavigationTransitionResponseStarted(
 
 void CrossSiteResourceHandler::ResumeResponseDeferredAtStart(int request_id) {
   bool defer = false;
-  if (!OnNormalResponseStarted(response_, &defer)) {
+  if (!OnNormalResponseStarted(response_.get(), &defer)) {
     controller()->Cancel();
   } else if (!defer) {
     ResumeIfDeferred();
@@ -258,7 +258,7 @@ void CrossSiteResourceHandler::ResumeResponseDeferredAtStart(int request_id) {
 
 void CrossSiteResourceHandler::ResumeOrTransfer(bool is_transfer) {
   if (is_transfer) {
-    StartCrossSiteTransition(response_);
+    StartCrossSiteTransition(response_.get());
   } else {
     ResumeResponse();
   }
@@ -299,7 +299,7 @@ void CrossSiteResourceHandler::ResumeResponse() {
 
   if (has_started_response_) {
     // Send OnResponseStarted to the new renderer.
-    DCHECK(response_);
+    DCHECK(response_.get());
     bool defer = false;
     if (!next_handler_->OnResponseStarted(response_.get(), &defer)) {
       controller()->Cancel();

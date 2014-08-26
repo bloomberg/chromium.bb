@@ -105,7 +105,7 @@ TEST(UploadDataStreamBuilderTest, ResolveBlobAndCreateUploadDataStream) {
     const std::string blob_id0("id-0");
     scoped_refptr<BlobData> blob_data(new BlobData(blob_id0));
     scoped_ptr<BlobDataHandle> handle1 =
-        blob_storage_context.AddFinishedBlob(blob_data);
+        blob_storage_context.AddFinishedBlob(blob_data.get());
 
     const std::string blob_id1("id-1");
     blob_data = new BlobData(blob_id1);
@@ -113,7 +113,7 @@ TEST(UploadDataStreamBuilderTest, ResolveBlobAndCreateUploadDataStream) {
     blob_data->AppendFile(
         base::FilePath(FILE_PATH_LITERAL("BlobFile.txt")), 0, 20, time1);
     scoped_ptr<BlobDataHandle> handle2 =
-        blob_storage_context.AddFinishedBlob(blob_data);
+        blob_storage_context.AddFinishedBlob(blob_data.get());
 
     // Setup upload data elements for comparison.
     ResourceRequestBody::Element blob_element1, blob_element2;

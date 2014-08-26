@@ -141,7 +141,7 @@ class ResourceHandlerStub : public ResourceHandler {
 
   virtual bool OnResponseStarted(ResourceResponse* response,
                                  bool* defer) OVERRIDE {
-    EXPECT_FALSE(response_);
+    EXPECT_FALSE(response_.get());
     response_ = response;
     return true;
   }

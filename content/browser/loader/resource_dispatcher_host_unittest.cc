@@ -1169,9 +1169,9 @@ TEST_F(ResourceDispatcherHostTest, DeletedFilterDetached) {
       "GET", RESOURCE_TYPE_PING, net::URLRequestTestJob::test_url_3());
 
   ResourceHostMsg_RequestResource msg_prefetch(0, 1, request_prefetch);
-  host_.OnMessageReceived(msg_prefetch, filter_);
+  host_.OnMessageReceived(msg_prefetch, filter_.get());
   ResourceHostMsg_RequestResource msg_ping(0, 2, request_ping);
-  host_.OnMessageReceived(msg_ping, filter_);
+  host_.OnMessageReceived(msg_ping, filter_.get());
 
   // Remove the filter before processing the requests by simulating channel
   // closure.
@@ -1219,7 +1219,7 @@ TEST_F(ResourceDispatcherHostTest, DeletedFilterDetachedRedirect) {
       net::URLRequestTestJob::test_url_redirect_to_url_2());
 
   ResourceHostMsg_RequestResource msg(0, 1, request);
-  host_.OnMessageReceived(msg, filter_);
+  host_.OnMessageReceived(msg, filter_.get());
 
   // Remove the filter before processing the request by simulating channel
   // closure.
@@ -2521,7 +2521,7 @@ TEST_F(ResourceDispatcherHostTest, TransferNavigationWithTwoRedirects) {
   EXPECT_EQ(second_filter->child_id(), info->GetChildID());
   EXPECT_EQ(new_render_view_id, info->GetRouteID());
   EXPECT_EQ(new_request_id, info->GetRequestID());
-  EXPECT_EQ(second_filter, info->filter());
+  EXPECT_EQ(second_filter.get(), info->filter());
 
   // Let request complete.
   base::MessageLoop::current()->RunUntilIdle();
@@ -2762,7 +2762,7 @@ TEST_F(ResourceDispatcherHostTest, RegisterDownloadedTempFile) {
 
   // The child releases from the request.
   ResourceHostMsg_ReleaseDownloadedFile release_msg(kRequestID);
-  host_.OnMessageReceived(release_msg, filter_);
+  host_.OnMessageReceived(release_msg, filter_.get());
 
   // Still readable because there is another reference to the file. (The child
   // may take additional blob references.)
@@ -2820,7 +2820,7 @@ TEST_F(ResourceDispatcherHostTest, DownloadToFile) {
       "GET", RESOURCE_TYPE_SUB_RESOURCE, net::URLRequestTestJob::test_url_1());
   request.download_to_file = true;
   ResourceHostMsg_RequestResource request_msg(0, 1, request);
-  host_.OnMessageReceived(request_msg, filter_);
+  host_.OnMessageReceived(request_msg, filter_.get());
 
   // Running the message loop until idle does not work because
   // RedirectToFileResourceHandler posts things to base::WorkerPool. Instead,
@@ -2875,7 +2875,7 @@ TEST_F(ResourceDispatcherHostTest, DownloadToFile) {
   // RunUntilIdle doesn't work because base::WorkerPool is involved.
   ShareableFileReleaseWaiter waiter(response_head.download_file_path);
   ResourceHostMsg_ReleaseDownloadedFile release_msg(1);
-  host_.OnMessageReceived(release_msg, filter_);
+  host_.OnMessageReceived(release_msg, filter_.get());
   waiter.Wait();
   // The release callback runs before the delete is scheduled, so pump the
   // message loop for the delete itself. (This relies on the delete happening on

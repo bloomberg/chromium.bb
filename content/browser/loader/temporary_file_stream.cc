@@ -43,7 +43,7 @@ void DidCreateTemporaryFile(
   scoped_ptr<net::FileStream> file_stream(
       new net::FileStream(file_proxy->TakeFile(), task_runner));
 
-  callback.Run(error_code, file_stream.Pass(), deletable_file);
+  callback.Run(error_code, file_stream.Pass(), deletable_file.get());
 }
 
 }  // namespace

@@ -518,7 +518,7 @@ void ResourceLoader::StoreSignedCertificateTimestamps(
 
   for (net::SignedCertificateTimestampAndStatusList::const_iterator iter =
        sct_list.begin(); iter != sct_list.end(); ++iter) {
-    const int sct_id(sct_store->Store(iter->sct, process_id));
+    const int sct_id(sct_store->Store(iter->sct.get(), process_id));
     sct_ids->push_back(
         SignedCertificateTimestampIDAndStatus(sct_id, iter->status));
   }
@@ -614,7 +614,7 @@ void ResourceLoader::ReadMore(int* bytes_read) {
     return;
   }
 
-  DCHECK(buf);
+  DCHECK(buf.get());
   DCHECK(buf_size > 0);
 
   request_->Read(buf.get(), buf_size, bytes_read);
