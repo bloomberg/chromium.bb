@@ -209,6 +209,10 @@ MostVisitedSites::MostVisitedSites(Profile* profile)
 }
 
 MostVisitedSites::~MostVisitedSites() {
+  ProfileSyncService* profile_sync_service =
+      ProfileSyncServiceFactory::GetForProfile(profile_);
+  if (profile_sync_service && profile_sync_service->HasObserver(this))
+    profile_sync_service->RemoveObserver(this);
 }
 
 void MostVisitedSites::Destroy(JNIEnv* env, jobject obj) {
