@@ -22,6 +22,7 @@ using blink::WebURLResponse;
 namespace content {
 
 static const int kHttpOK = 200;
+static const int kHttpPartialContentOK = 206;
 
 MediaInfoLoader::MediaInfoLoader(
     const GURL& url,
@@ -49,6 +50,12 @@ void MediaInfoLoader::Start(blink::WebFrame* frame) {
   // TODO(mkwst): Split this into video/audio.
   request.setRequestContext(WebURLRequest::RequestContextVideo);
   frame->setReferrerForRequest(request, blink::WebURL());
+
+  // Since we don't actually care about the media data at this time, use a two
+  // byte range request to avoid unnecessarily downloading resources.  Not all
+  // servers support HEAD unfortunately, so use a range request; which is no
+  // worse than the previous request+cancel code.  See http://crbug.com/400788
+  request.addHTTPHeaderField("Range", "bytes=0-1");
 
   scoped_ptr<WebURLLoader> loader;
   if (test_loader_) {
@@ -123,7 +130,8 @@ void MediaInfoLoader::didReceiveResponse(
       DidBecomeReady(kOk);
       return;
   }
-  if (response.httpStatusCode() == kHttpOK) {
+  if (response.httpStatusCode() == kHttpOK ||
+      response.httpStatusCode() == kHttpPartialContentOK) {
     DidBecomeReady(kOk);
     return;
   }
