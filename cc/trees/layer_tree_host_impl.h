@@ -582,7 +582,6 @@ class CC_EXPORT LayerTreeHostImpl
   std::set<UIResourceId> evicted_ui_resources_;
 
   scoped_ptr<OutputSurface> output_surface_;
-  scoped_refptr<ContextProvider> offscreen_context_provider_;
 
   // |resource_provider_| and |tile_manager_| can be NULL, e.g. when using tile-
   // free rendering - see OutputSurface::ForcedDrawToSoftwareDevice().
