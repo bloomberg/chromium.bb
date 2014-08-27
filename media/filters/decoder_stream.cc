@@ -52,6 +52,7 @@ DecoderStream<StreamType>::DecoderStream(
                                           decoders.Pass(),
                                           set_decryptor_ready_cb)),
       active_splice_(false),
+      decoding_eos_(false),
       pending_decode_requests_(0),
       weak_factory_(this) {}
 
@@ -207,7 +208,7 @@ bool DecoderStream<StreamType>::CanDecodeMore() const {
   // empty.
   int num_decodes =
       static_cast<int>(ready_outputs_.size()) + pending_decode_requests_;
-  return num_decodes < GetMaxDecodeRequests();
+  return !decoding_eos_ && num_decodes < GetMaxDecodeRequests();
 }
 
 template <DemuxerStream::Type StreamType>
@@ -260,6 +261,10 @@ void DecoderStream<StreamType>::Decode(
   int buffer_size = buffer->end_of_stream() ? 0 : buffer->data_size();
 
   TRACE_EVENT_ASYNC_BEGIN0("media", GetTraceString<StreamType>(), this);
+
+  if (buffer->end_of_stream())
+    decoding_eos_ = true;
+
   ++pending_decode_requests_;
   decoder_->Decode(buffer,
                    base::Bind(&DecoderStream<StreamType>::OnDecodeDone,
@@ -286,6 +291,9 @@ void DecoderStream<StreamType>::OnDecodeDone(int buffer_size,
   --pending_decode_requests_;
 
   TRACE_EVENT_ASYNC_END0("media", GetTraceString<StreamType>(), this);
+
+  if (end_of_stream)
+    decoding_eos_ = false;
 
   if (state_ == STATE_ERROR) {
     DCHECK(read_cb_.is_null());
@@ -449,7 +457,7 @@ void DecoderStream<StreamType>::OnBufferReady(
   Decode(buffer);
 
   // Read more data if the decoder supports multiple parallel decoding requests.
-  if (CanDecodeMore() && !buffer->end_of_stream())
+  if (CanDecodeMore())
     ReadFromDemuxerStream();
 }
 

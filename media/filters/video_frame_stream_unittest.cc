@@ -372,6 +372,7 @@ INSTANTIATE_TEST_CASE_P(
         VideoFrameStreamTestParams(false, 0, 1),
         VideoFrameStreamTestParams(false, 3, 1),
         VideoFrameStreamTestParams(false, 7, 1)));
+
 INSTANTIATE_TEST_CASE_P(
     Encrypted,
     VideoFrameStreamTest,
@@ -488,8 +489,44 @@ TEST_P(VideoFrameStreamTest, Read_BlockedDemuxerAndDecoder) {
   EXPECT_FALSE(pending_read_);
 }
 
-// No Reset() before initialization is successfully completed.
+TEST_P(VideoFrameStreamTest, Read_DuringEndOfStreamDecode) {
+  // Test applies only when the decoder allows multiple parallel requests, and
+  // they are not satisfied in a single batch.
+  if (GetParam().parallel_decoding == 1 || GetParam().decoding_delay != 0)
+    return;
 
+  Initialize();
+  decoder_->HoldDecode();
+
+  // Read all of the frames up to end of stream. Since parallel decoding is
+  // enabled, the end of stream buffer will be sent to the decoder immediately,
+  // but we don't satisfy it yet.
+  for (int configuration = 0; configuration < kNumConfigs; configuration++) {
+    for (int frame = 0; frame < kNumBuffersInOneConfig; frame++) {
+      ReadOneFrame();
+      while (pending_read_) {
+        decoder_->SatisfySingleDecode();
+        message_loop_.RunUntilIdle();
+      }
+    }
+  }
+
+  // Read() again. The callback must be delayed until the decode completes.
+  ReadOneFrame();
+  ASSERT_TRUE(pending_read_);
+
+  // Satisfy decoding of the end of stream buffer. The read should complete.
+  decoder_->SatisfySingleDecode();
+  message_loop_.RunUntilIdle();
+  ASSERT_FALSE(pending_read_);
+  EXPECT_EQ(last_read_status_, VideoFrameStream::OK);
+
+  // The read output should indicate end of stream.
+  ASSERT_TRUE(frame_read_.get());
+  EXPECT_TRUE(frame_read_->end_of_stream());
+}
+
+// No Reset() before initialization is successfully completed.
 TEST_P(VideoFrameStreamTest, Reset_AfterInitialization) {
   Initialize();
   Reset();

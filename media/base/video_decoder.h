@@ -69,7 +69,7 @@ class MEDIA_EXPORT VideoDecoder {
   //
   // Implementations guarantee that the callback will not be called from within
   // this method and that |decode_cb| will not be blocked on the following
-  // Decode() calls (i.e. |decode_cb| will be called even Decode() is never
+  // Decode() calls (i.e. |decode_cb| will be called even if Decode() is never
   // called again).
   //
   // After decoding is finished the decoder calls |output_cb| specified in
@@ -78,7 +78,8 @@ class MEDIA_EXPORT VideoDecoder {
   //
   // If |buffer| is an EOS buffer then the decoder must be flushed, i.e.
   // |output_cb| must be called for each frame pending in the queue and
-  // |decode_cb| must be called after that.
+  // |decode_cb| must be called after that. Callers will not call Decode()
+  // again until after the flush completes.
   virtual void Decode(const scoped_refptr<DecoderBuffer>& buffer,
                       const DecodeCB& decode_cb) = 0;
 

@@ -74,6 +74,7 @@ void FakeVideoDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
             decoding_delay_ + held_decode_callbacks_.size());
   DCHECK_LT(static_cast<int>(held_decode_callbacks_.size()),
             max_parallel_decoding_requests_);
+  DCHECK_NE(state_, STATE_END_OF_STREAM);
 
   int buffer_size = buffer->end_of_stream() ? 0 : buffer->data_size();
   DecodeCB wrapped_decode_cb = base::Bind(&FakeVideoDecoder::OnFrameDecoded,
@@ -223,6 +224,7 @@ void FakeVideoDecoder::RunDecodeCallback(const DecodeCB& decode_cb) {
         output_cb_.Run(decoded_frames_.front());
         decoded_frames_.pop_front();
       }
+      state_ = STATE_NORMAL;
     } else if (!decoded_frames_.empty()) {
       output_cb_.Run(decoded_frames_.front());
       decoded_frames_.pop_front();

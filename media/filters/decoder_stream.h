@@ -183,6 +183,11 @@ class MEDIA_EXPORT DecoderStream {
   // splice_timestamp() of kNoTimestamp() is encountered.
   bool active_splice_;
 
+  // An end-of-stream buffer has been sent for decoding, no more buffers should
+  // be sent for decoding until it completes.
+  // TODO(sandersd): Turn this into a State. http://crbug.com/408316
+  bool decoding_eos_;
+
   // Decoded buffers that haven't been read yet. Used when the decoder supports
   // parallel decoding.
   std::list<scoped_refptr<Output> > ready_outputs_;
