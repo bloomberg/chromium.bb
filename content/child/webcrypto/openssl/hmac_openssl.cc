@@ -5,6 +5,7 @@
 #include <openssl/hmac.h>
 
 #include "base/logging.h"
+#include "base/numerics/safe_math.h"
 #include "base/stl_util.h"
 #include "content/child/webcrypto/algorithm_implementation.h"
 #include "content/child/webcrypto/crypto_data.h"
@@ -114,15 +115,18 @@ class HmacImplementation : public AlgorithmImplementation {
     const blink::WebCryptoAlgorithm& hash =
         algorithm.hmacImportParams()->hash();
 
-    // TODO(eroman): check for overflow.
-    unsigned int keylen_bits = key_data.byte_length() * 8;
+    base::CheckedNumeric<unsigned int> keylen_bits(key_data.byte_length());
+    keylen_bits *= 8;
 
-    return ImportKeyRawOpenSsl(
-        key_data,
-        blink::WebCryptoKeyAlgorithm::createHmac(hash.id(), keylen_bits),
-        extractable,
-        usage_mask,
-        key);
+    if (!keylen_bits.IsValid())
+      return Status::ErrorDataTooLarge();
+
+    return ImportKeyRawOpenSsl(key_data,
+                               blink::WebCryptoKeyAlgorithm::createHmac(
+                                   hash.id(), keylen_bits.ValueOrDie()),
+                               extractable,
+                               usage_mask,
+                               key);
   }
 
   virtual Status ImportKeyJwk(const CryptoData& key_data,

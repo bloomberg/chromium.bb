@@ -523,6 +523,22 @@ TEST(WebCryptoHmacTest, ExportJwkEmptyKey) {
   EXPECT_EQ(0u, exported_key_data.size());
 }
 
+// Import a huge hmac key (UINT_MAX bytes). This will fail before actually
+// reading the bytes, as the key is too large.
+TEST(WebCryptoHmacTest, ImportRawKeyTooLarge) {
+  CryptoData big_data(NULL, UINT_MAX);  // Invalid data of big length.
+
+  blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
+  EXPECT_EQ(
+      Status::ErrorDataTooLarge(),
+      ImportKey(blink::WebCryptoKeyFormatRaw,
+                CryptoData(big_data),
+                CreateHmacImportAlgorithm(blink::WebCryptoAlgorithmIdSha1),
+                true,
+                blink::WebCryptoKeyUsageSign,
+                &key));
+}
+
 }  // namespace
 
 }  // namespace webcrypto

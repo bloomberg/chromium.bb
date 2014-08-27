@@ -8,6 +8,7 @@
 #include <sechash.h>
 
 #include "base/logging.h"
+#include "base/numerics/safe_math.h"
 #include "base/stl_util.h"
 #include "content/child/webcrypto/algorithm_implementation.h"
 #include "content/child/webcrypto/crypto_data.h"
@@ -109,16 +110,20 @@ class HmacImplementation : public AlgorithmImplementation {
     if (!WebCryptoHashToHMACMechanism(hash, &mechanism))
       return Status::ErrorUnsupported();
 
-    // TODO(eroman): check for overflow.
-    unsigned int keylen_bits = key_data.byte_length() * 8;
-    return ImportKeyRawNss(
-        key_data,
-        blink::WebCryptoKeyAlgorithm::createHmac(hash.id(), keylen_bits),
-        extractable,
-        usage_mask,
-        mechanism,
-        CKF_SIGN | CKF_VERIFY,
-        key);
+    base::CheckedNumeric<unsigned int> keylen_bits(key_data.byte_length());
+    keylen_bits *= 8;
+
+    if (!keylen_bits.IsValid())
+      return Status::ErrorDataTooLarge();
+
+    return ImportKeyRawNss(key_data,
+                           blink::WebCryptoKeyAlgorithm::createHmac(
+                               hash.id(), keylen_bits.ValueOrDie()),
+                           extractable,
+                           usage_mask,
+                           mechanism,
+                           CKF_SIGN | CKF_VERIFY,
+                           key);
   }
 
   virtual Status ImportKeyJwk(const CryptoData& key_data,
