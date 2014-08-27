@@ -212,15 +212,6 @@ Status Verify(const blink::WebCryptoAlgorithm& algorithm,
   if (algorithm.id() != key.algorithm().id())
     return Status::ErrorUnexpected();
 
-  // TODO(eroman): Move this into implementation which need it instead.
-  if (!signature.byte_length()) {
-    // None of the algorithms generate valid zero-length signatures so this
-    // will necessarily fail verification. Early return to protect
-    // implementations from dealing with a NULL signature pointer.
-    *signature_match = false;
-    return Status::Success();
-  }
-
   const AlgorithmImplementation* impl = NULL;
   Status status = GetAlgorithmImplementation(algorithm.id(), &impl);
   if (status.IsError())
