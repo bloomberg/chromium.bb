@@ -13,7 +13,7 @@
 #include "base/path_service.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
-#include "components/breakpad/tools/crash_service.h"
+#include "components/crash/tools/crash_service.h"
 
 namespace {
 

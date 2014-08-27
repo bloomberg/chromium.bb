@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "components/breakpad/app/breakpad_client.h"
+#include "components/crash/app/breakpad_client.h"
 
 namespace chrome {
 

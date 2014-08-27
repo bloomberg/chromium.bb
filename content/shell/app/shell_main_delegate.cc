@@ -48,7 +48,7 @@
 
 #if defined(OS_MACOSX)
 #include "base/mac/os_crash_dumps.h"
-#include "components/breakpad/app/breakpad_mac.h"
+#include "components/crash/app/breakpad_mac.h"
 #include "content/shell/app/paths_mac.h"
 #include "content/shell/app/shell_main_delegate_mac.h"
 #endif  // OS_MACOSX
@@ -57,11 +57,11 @@
 #include <initguid.h>
 #include <windows.h>
 #include "base/logging_win.h"
-#include "components/breakpad/app/breakpad_win.h"
+#include "components/crash/app/breakpad_win.h"
 #endif
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
-#include "components/breakpad/app/breakpad_linux.h"
+#include "components/crash/app/breakpad_linux.h"
 #endif
 
 namespace {

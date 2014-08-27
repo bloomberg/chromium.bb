@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_BREAKPAD_APP_HARD_ERROR_HANDLER_WIN_H_
-#define COMPONENTS_BREAKPAD_APP_HARD_ERROR_HANDLER_WIN_H_
+#ifndef COMPONENTS_CRASH_APP_HARD_ERROR_HANDLER_WIN_H_
+#define COMPONENTS_CRASH_APP_HARD_ERROR_HANDLER_WIN_H_
 
 #include <windows.h>
 
@@ -31,4 +31,4 @@ bool HardErrorHandler(EXCEPTION_POINTERS* ex_info);
 
 }  // namespace breakpad
 
-#endif  // COMPONENTS_BREAKPAD_APP_HARD_ERROR_HANDLER_WIN_H_
+#endif  // COMPONENTS_CRASH_APP_HARD_ERROR_HANDLER_WIN_H_

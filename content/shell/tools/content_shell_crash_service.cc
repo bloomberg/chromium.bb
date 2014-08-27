@@ -10,7 +10,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "components/breakpad/tools/crash_service.h"
+#include "components/crash/tools/crash_service.h"
 
 int __stdcall wWinMain(HINSTANCE instance, HINSTANCE, wchar_t* cmd_line,
                        int show_mode) {

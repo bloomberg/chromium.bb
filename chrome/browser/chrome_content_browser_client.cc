@@ -145,7 +145,7 @@
 #elif defined(OS_MACOSX)
 #include "chrome/browser/chrome_browser_main_mac.h"
 #include "chrome/browser/spellchecker/spellcheck_message_filter_mac.h"
-#include "components/breakpad/app/breakpad_mac.h"
+#include "components/crash/app/breakpad_mac.h"
 #elif defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/chrome_browser_main_chromeos.h"
 #include "chrome/browser/chromeos/drive/fileapi/file_system_backend_delegate.h"
@@ -166,15 +166,15 @@
 #include "chrome/browser/media/protected_media_identifier_permission_context.h"
 #include "chrome/browser/media/protected_media_identifier_permission_context_factory.h"
 #include "chrome/common/descriptors_android.h"
-#include "components/breakpad/browser/crash_dump_manager_android.h"
+#include "components/crash/browser/crash_dump_manager_android.h"
 #elif defined(OS_POSIX)
 #include "chrome/browser/chrome_browser_main_posix.h"
 #endif
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 #include "base/debug/leak_annotations.h"
-#include "components/breakpad/app/breakpad_linux.h"
-#include "components/breakpad/browser/crash_handler_host_linux.h"
+#include "components/crash/app/breakpad_linux.h"
+#include "components/crash/browser/crash_handler_host_linux.h"
 #endif
 
 #if defined(OS_ANDROID)

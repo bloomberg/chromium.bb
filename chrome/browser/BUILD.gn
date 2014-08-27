@@ -389,8 +389,8 @@ static_library("browser") {
       "//chrome/app/chrome_breakpad_client.h",
     ]
     deps += [
-      "//components/breakpad/app",
-      "//components/breakpad/browser",
+      "//components/crash/app",
+      "//components/crash/browser",
     ]
   }
   if (use_nss_certs) {

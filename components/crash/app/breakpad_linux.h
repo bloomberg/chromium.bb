@@ -4,8 +4,8 @@
 
 // Public interface for enabling Breakpad on Linux systems.
 
-#ifndef COMPONENTS_BREAKPAD_APP_BREAKPAD_LINUX_H_
-#define COMPONENTS_BREAKPAD_APP_BREAKPAD_LINUX_H_
+#ifndef COMPONENTS_CRASH_APP_BREAKPAD_LINUX_H_
+#define COMPONENTS_CRASH_APP_BREAKPAD_LINUX_H_
 
 #include <string>
 
@@ -29,4 +29,4 @@ bool IsCrashReporterEnabled();
 
 }  // namespace breakpad
 
-#endif  // COMPONENTS_BREAKPAD_APP_BREAKPAD_LINUX_H_
+#endif  // COMPONENTS_CRASH_APP_BREAKPAD_LINUX_H_

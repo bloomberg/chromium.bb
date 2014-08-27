@@ -23,7 +23,7 @@ source_set("lib") {
 # content.gyp:content_common, or add content/public/common/content_switches.cc
 # to your sources.
 #
-# GYP version: components/breakpad.gyp:breakpad_component
+# GYP version: components/crash.gypi:crash_component
 source_set("app") {
   sources = [
     "breakpad_linux_impl.h",
@@ -43,7 +43,7 @@ source_set("app") {
     ]
   }
 
-  defines = [ "BREAKPAD_IMPLEMENTATION" ]
+  defines = [ "CRASH_IMPLEMENTATION" ]
 
   deps = [
     "//base",

@@ -20,7 +20,7 @@ include_rules = [
   "+ui/aura",
   "+ui/views",
 
-  "+components/breakpad",
+  "+components/crash",
 ]
 
 specific_include_rules = {

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "components/breakpad/app/breakpad_mac.h"
+#import "components/crash/app/breakpad_mac.h"
 
 #include <CoreFoundation/CoreFoundation.h>
 #import <Foundation/Foundation.h>
@@ -24,7 +24,7 @@
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_restrictions.h"
 #import "breakpad/src/client/mac/Framework/Breakpad.h"
-#include "components/breakpad/app/breakpad_client.h"
+#include "components/crash/app/breakpad_client.h"
 
 namespace breakpad {
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_BREAKPAD_BROWSER_CRASH_DUMP_MANAGER_ANDROID_H_
-#define COMPONENTS_BREAKPAD_BROWSER_CRASH_DUMP_MANAGER_ANDROID_H_
+#ifndef COMPONENTS_CRASH_BROWSER_CRASH_DUMP_MANAGER_ANDROID_H_
+#define COMPONENTS_CRASH_BROWSER_CRASH_DUMP_MANAGER_ANDROID_H_
 
 #include <map>
 
@@ -81,4 +81,4 @@ class CrashDumpManager : public content::BrowserChildProcessObserver,
 
 }  // namespace breakpad
 
-#endif  // COMPONENTS_BREAKPAD_BROWSER_CRASH_DUMP_MANAGER_ANDROID_H_
+#endif  // COMPONENTS_CRASH_BROWSER_CRASH_DUMP_MANAGER_ANDROID_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/breakpad/browser/crash_handler_host_linux.h"
+#include "components/crash/browser/crash_handler_host_linux.h"
 
 #include <stdint.h>
 #include <stdlib.h>
@@ -28,7 +28,7 @@
 #include "breakpad/src/client/linux/handler/exception_handler.h"
 #include "breakpad/src/client/linux/minidump_writer/linux_dumper.h"
 #include "breakpad/src/client/linux/minidump_writer/minidump_writer.h"
-#include "components/breakpad/app/breakpad_linux_impl.h"
+#include "components/crash/app/breakpad_linux_impl.h"
 #include "content/public/browser/browser_thread.h"
 
 #if defined(OS_ANDROID) && !defined(__LP64__)
@@ -141,7 +141,7 @@ void CrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
   // for writing the minidump as well as a file descriptor and a credentials
   // block so that they can't lie about their pid.
   //
-  // The message sender is in components/breakpad/app/breakpad_linux.cc.
+  // The message sender is in components/crash/app/breakpad_linux.cc.
 
   struct msghdr msg = {0};
   struct iovec iov[kCrashIovSize];

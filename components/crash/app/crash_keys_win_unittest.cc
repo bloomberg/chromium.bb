@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/breakpad/app/crash_keys_win.h"
+#include "components/crash/app/crash_keys_win.h"
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/strings/stringprintf.h"
-#include "components/breakpad/app/breakpad_client.h"
+#include "components/crash/app/breakpad_client.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

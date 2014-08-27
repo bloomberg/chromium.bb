@@ -72,7 +72,7 @@
             'bookmarks/browser/bookmark_index_unittest.cc',
             'bookmarks/browser/bookmark_model_unittest.cc',
             'bookmarks/browser/bookmark_utils_unittest.cc',
-            'breakpad/app/crash_keys_win_unittest.cc',
+            'crash/app/crash_keys_win_unittest.cc',
             'captive_portal/captive_portal_detector_unittest.cc',
             'cloud_devices/common/cloud_devices_urls_unittest.cc',
             'cloud_devices/common/printer_description_unittest.cc',
@@ -274,9 +274,6 @@
             '../third_party/libphonenumber/libphonenumber.gyp:libphonenumber',
             '../third_party/libaddressinput/libaddressinput.gyp:libaddressinput_util',
 
-            # Dependencies of breakpad
-            'components.gyp:breakpad_test_support',
-
             # Dependencies of bookmarks
             'components.gyp:bookmarks_browser',
             'components.gyp:bookmarks_test_support',
@@ -287,6 +284,9 @@
 
             # Dependencies of cloud_devices
             'components.gyp:cloud_devices_common',
+
+            # Dependencies of crash
+            'components.gyp:crash_test_support',
 
             # Dependencies of crx_file
             'components.gyp:crx_file',
@@ -494,6 +494,7 @@
                 ['include', '^auto_login_parser/'],
                 ['include', '^autofill/core/'],
                 ['include', '^bookmarks/'],
+                ['include', '^crash/'],
                 ['include', '^data_reduction_proxy/'],
                 ['include', '^dom_distiller/'],
                 ['include', '^enhanced_bookmarks/'],

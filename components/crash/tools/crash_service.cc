@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/breakpad/tools/crash_service.h"
+#include "components/crash/tools/crash_service.h"
 
 #include <windows.h>
 

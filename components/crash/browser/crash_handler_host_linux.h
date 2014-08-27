@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_BREAKPAD_BROWSER_CRASH_HANDLER_HOST_LINUX_H_
-#define COMPONENTS_BREAKPAD_BROWSER_CRASH_HANDLER_HOST_LINUX_H_
+#ifndef COMPONENTS_CRASH_BROWSER_CRASH_HANDLER_HOST_LINUX_H_
+#define COMPONENTS_CRASH_BROWSER_CRASH_HANDLER_HOST_LINUX_H_
 
 #include <sys/types.h>
 
@@ -90,4 +90,4 @@ class CrashHandlerHostLinux : public base::MessageLoopForIO::Watcher,
 
 }  // namespace breakpad
 
-#endif  // COMPONENTS_BREAKPAD_BROWSER_CRASH_HANDLER_HOST_LINUX_H_
+#endif  // COMPONENTS_CRASH_BROWSER_CRASH_HANDLER_HOST_LINUX_H_

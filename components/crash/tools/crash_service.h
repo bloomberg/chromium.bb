@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_BREAKPAD_TOOLS_CRASH_SERVICE_H_
-#define COMPONENTS_BREAKPAD_TOOLS_CRASH_SERVICE_H_
+#ifndef COMPONENTS_CRASH_TOOLS_CRASH_SERVICE_H_
+#define COMPONENTS_CRASH_TOOLS_CRASH_SERVICE_H_
 
 #include <string>
 
@@ -122,4 +122,4 @@ class CrashService {
 
 }  // namespace breakpad
 
-#endif  // COMPONENTS_BREAKPAD_TOOLS_CRASH_SERVICE_H_
+#endif  // COMPONENTS_CRASH_TOOLS_CRASH_SERVICE_H_

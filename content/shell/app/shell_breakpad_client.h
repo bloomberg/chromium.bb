@@ -6,7 +6,7 @@
 #define CONTENT_SHELL_APP_SHELL_BREAKPAD_CLIENT_H_
 
 #include "base/compiler_specific.h"
-#include "components/breakpad/app/breakpad_client.h"
+#include "components/crash/app/breakpad_client.h"
 
 namespace content {
 

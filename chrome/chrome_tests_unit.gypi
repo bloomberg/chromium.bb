@@ -396,7 +396,7 @@
         ['OS=="mac"', {
           'dependencies': [
             '../breakpad/breakpad.gyp:breakpad',
-            '../components/components.gyp:breakpad_component',
+            '../components/components.gyp:crash_component',
           ],
           'sources': [
             'app/chrome_breakpad_client.cc',
@@ -2800,7 +2800,7 @@
           'dependencies': [
             # breakpad is currently only tested on Windows.
             '../breakpad/breakpad.gyp:*',
-            '../components/components.gyp:breakpad_component',
+            '../components/components.gyp:crash_component',
           ],
           'conditions': [
             ['win_use_allocator_shim==1', {

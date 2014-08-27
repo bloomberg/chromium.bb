@@ -497,7 +497,7 @@
             '../breakpad/breakpad.gyp:breakpad_handler',
             '../breakpad/breakpad.gyp:breakpad_sender',
             '../chrome_elf/chrome_elf.gyp:chrome_elf',
-            '../components/components.gyp:breakpad_component',
+            '../components/components.gyp:crash_component',
             '../sandbox/sandbox.gyp:sandbox',
           ],
           'sources': [

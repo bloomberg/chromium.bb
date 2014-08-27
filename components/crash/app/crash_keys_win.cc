@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/breakpad/app/crash_keys_win.h"
+#include "components/crash/app/crash_keys_win.h"
 
 #include <algorithm>
 
@@ -12,7 +12,7 @@
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/breakpad/app/breakpad_client.h"
+#include "components/crash/app/breakpad_client.h"
 
 
 namespace breakpad {

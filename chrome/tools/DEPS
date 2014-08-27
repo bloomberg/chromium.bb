@@ -1,5 +1,5 @@
 include_rules = [
   "+chrome/browser",
-  "+components/breakpad",
+  "+components/crash",
   "+third_party/re2",
 ]

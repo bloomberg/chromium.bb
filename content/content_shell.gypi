@@ -46,7 +46,7 @@
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../cc/blink/cc_blink.gyp:cc_blink',
         '../cc/cc.gyp:cc',
-        '../components/components.gyp:breakpad_component',
+        '../components/components.gyp:crash_component',
         '../gin/gin.gyp:gin',
         '../gpu/gpu.gyp:gpu',
         '../ipc/ipc.gyp:ipc',

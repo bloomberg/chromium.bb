@@ -3192,8 +3192,8 @@
             'app/chrome_breakpad_client.h',
           ],
           'dependencies': [
-            '../components/components.gyp:breakpad_component',
             '../components/components.gyp:breakpad_host',
+            '../components/components.gyp:crash_component',
           ],
         }],
         ['use_nss==1', {

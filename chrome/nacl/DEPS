@@ -1,6 +1,6 @@
 include_rules = [
   "+chrome/app/chrome_breakpad_client.h",
-  "+components/breakpad",
+  "+components/crash",
   "+components/nacl",
   "+content/public/app/startup_helper_win.h",
   "+content/public/common/content_switches.h",

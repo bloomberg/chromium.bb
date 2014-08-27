@@ -6,14 +6,14 @@
 // shared between crash_handler_host_linux.cc and breakpad_linux.cc. It should
 // only be used in files compiled with linux_breakpad=1.
 
-#ifndef COMPONENTS_BREAKPAD_APP_BREAKPAD_LINUX_IMPL_H_
-#define COMPONENTS_BREAKPAD_APP_BREAKPAD_LINUX_IMPL_H_
+#ifndef COMPONENTS_CRASH_APP_BREAKPAD_LINUX_IMPL_H_
+#define COMPONENTS_CRASH_APP_BREAKPAD_LINUX_IMPL_H_
 
 #include <sys/types.h>
 
 #include "base/basictypes.h"
 #include "breakpad/src/common/simple_string_dictionary.h"
-#include "components/breakpad/app/breakpad_linux.h"
+#include "components/crash/app/breakpad_linux.h"
 
 namespace breakpad {
 
@@ -62,4 +62,4 @@ extern void HandleCrashDump(const BreakpadInfo& info);
 
 }  // namespace breakpad
 
-#endif  // COMPONENTS_BREAKPAD_APP_BREAKPAD_LINUX_IMPL_H_
+#endif  // COMPONENTS_CRASH_APP_BREAKPAD_LINUX_IMPL_H_

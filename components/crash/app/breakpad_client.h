@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_BREAKPAD_APP_BREAKPAD_CLIENT_H_
-#define COMPONENTS_BREAKPAD_APP_BREAKPAD_CLIENT_H_
+#ifndef COMPONENTS_CRASH_APP_BREAKPAD_CLIENT_H_
+#define COMPONENTS_CRASH_APP_BREAKPAD_CLIENT_H_
 
 #include <string>
 
@@ -33,7 +33,7 @@ class BreakpadClient;
 // breakpad code is called, and should stay alive throughout the entire runtime.
 void SetBreakpadClient(BreakpadClient* client);
 
-#if defined(BREAKPAD_IMPLEMENTATION)
+#if defined(CRASH_IMPLEMENTATION)
 // Breakpad's embedder API should only be used by breakpad.
 BreakpadClient* GetBreakpadClient();
 #endif
@@ -140,4 +140,4 @@ class BreakpadClient {
 
 }  // namespace breakpad
 
-#endif  // COMPONENTS_BREAKPAD_APP_BREAKPAD_CLIENT_H_
+#endif  // COMPONENTS_CRASH_APP_BREAKPAD_CLIENT_H_

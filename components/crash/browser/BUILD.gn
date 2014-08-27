@@ -19,7 +19,7 @@ source_set("browser") {
 
   deps = [
     "//base",
-    "//components/breakpad/app",
+    "//components/crash/app",
     "//content/public/browser",
     "//content/public/common",
   ]

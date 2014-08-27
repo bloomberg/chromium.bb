@@ -307,7 +307,7 @@
                 ['mac_breakpad_compiled_in==1', {
                   'dependencies': [
                     '../breakpad/breakpad.gyp:breakpad',
-                    '../components/components.gyp:breakpad_component',
+                    '../components/components.gyp:crash_component',
                     '../components/components.gyp:policy',
                   ],
                   'sources': [

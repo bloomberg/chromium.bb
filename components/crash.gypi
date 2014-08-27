@@ -5,13 +5,13 @@
 {
   'targets': [
     {
-      'target_name': 'breakpad_component_lib',
+      'target_name': 'crash_component_lib',
       'type': 'static_library',
       'sources': [
-        'breakpad/app/breakpad_client.cc',
-        'breakpad/app/breakpad_client.h',
-        'breakpad/app/crash_keys_win.cc',
-        'breakpad/app/crash_keys_win.h',
+        'crash/app/breakpad_client.cc',
+        'crash/app/breakpad_client.h',
+        'crash/app/crash_keys_win.cc',
+        'crash/app/crash_keys_win.h',
       ],
       'include_dirs': [
         '..',
@@ -24,9 +24,9 @@
           ['OS == "ios" ', {
             # On IOS there are no files compiled into the library, and we
             # can't have libraries with zero objects.
-            'breakpad_component_target_type%': 'none',
+            'crash_component_target_type%': 'none',
           }, {
-            'breakpad_component_target_type%': 'static_library',
+            'crash_component_target_type%': 'static_library',
           }],
         ],
       },
@@ -34,25 +34,25 @@
       # content.gyp:content_common, or add
       # content/public/common/content_switches.cc to your sources.
       #
-      # GN version: //components/breakpad/app
-      'target_name': 'breakpad_component',
-      'type': '<(breakpad_component_target_type)',
+      # GN version: //components/crash/app
+      'target_name': 'crash_component',
+      'type': '<(crash_component_target_type)',
       'sources': [
-        'breakpad/app/breakpad_linux.cc',
-        'breakpad/app/breakpad_linux.h',
-        'breakpad/app/breakpad_linux_impl.h',
-        'breakpad/app/breakpad_mac.h',
-        'breakpad/app/breakpad_mac.mm',
-        'breakpad/app/breakpad_win.cc',
-        'breakpad/app/breakpad_win.h',
-        'breakpad/app/hard_error_handler_win.cc',
-        'breakpad/app/hard_error_handler_win.h',
+        'crash/app/breakpad_linux.cc',
+        'crash/app/breakpad_linux.h',
+        'crash/app/breakpad_linux_impl.h',
+        'crash/app/breakpad_mac.h',
+        'crash/app/breakpad_mac.mm',
+        'crash/app/breakpad_win.cc',
+        'crash/app/breakpad_win.h',
+        'crash/app/hard_error_handler_win.cc',
+        'crash/app/hard_error_handler_win.h',
       ],
       'dependencies': [
-        'breakpad_component_lib',
+        'crash_component_lib',
         '../base/base.gyp:base',
       ],
-      'defines': ['BREAKPAD_IMPLEMENTATION'],
+      'defines': ['CRASH_IMPLEMENTATION'],
       'conditions': [
         ['OS=="mac"', {
           'dependencies': [
@@ -80,17 +80,17 @@
         # the files on Android.
         ['OS=="android"', {
           'sources/': [
-            ['include', '^breakpad/app/breakpad_linux\\.cc$'],
+            ['include', '^crash/app/breakpad_linux\\.cc$'],
           ],
         }],
       ],
     },
     {
-      # GN version: //components/breakpad/app:test_support
-      'target_name': 'breakpad_test_support',
+      # GN version: //components/crash/app:test_support
+      'target_name': 'crash_test_support',
       'type': 'none',
       'dependencies': [
-        'breakpad_component_lib',
+        'crash_component_lib',
       ],
       'direct_dependent_settings': {
         'include_dirs' : [
@@ -103,7 +103,7 @@
     ['OS=="win"', {
       'targets': [
         {
-          # GN version: //components/breakpad/tools:crash_service
+          # GN version: //components/crash/tools:crash_service
           'target_name': 'breakpad_crash_service',
           'type': 'static_library',
           'dependencies': [
@@ -112,8 +112,8 @@
             '../breakpad/breakpad.gyp:breakpad_sender',
           ],
           'sources': [
-            'breakpad/tools/crash_service.cc',
-            'breakpad/tools/crash_service.h',
+            'crash/tools/crash_service.cc',
+            'crash/tools/crash_service.h',
           ],
         },
       ],
@@ -127,24 +127,24 @@
           'target_name': 'breakpad_win64',
           'type': 'static_library',
           'sources': [
-            'breakpad/app/breakpad_client.cc',
-            'breakpad/app/breakpad_client.h',
-            'breakpad/app/breakpad_linux.cc',
-            'breakpad/app/breakpad_linux.h',
-            'breakpad/app/breakpad_linux_impl.h',
-            'breakpad/app/breakpad_mac.h',
-            'breakpad/app/breakpad_mac.mm',
-            'breakpad/app/breakpad_win.cc',
-            'breakpad/app/breakpad_win.h',
+            'crash/app/breakpad_client.cc',
+            'crash/app/breakpad_client.h',
+            'crash/app/breakpad_linux.cc',
+            'crash/app/breakpad_linux.h',
+            'crash/app/breakpad_linux_impl.h',
+            'crash/app/breakpad_mac.h',
+            'crash/app/breakpad_mac.mm',
+            'crash/app/breakpad_win.cc',
+            'crash/app/breakpad_win.h',
             # TODO(siggi): test the x64 version too.
-            'breakpad/app/crash_keys_win.cc',
-            'breakpad/app/crash_keys_win.h',
-            'breakpad/app/hard_error_handler_win.cc',
-            'breakpad/app/hard_error_handler_win.h',
+            'crash/app/crash_keys_win.cc',
+            'crash/app/crash_keys_win.h',
+            'crash/app/hard_error_handler_win.cc',
+            'crash/app/hard_error_handler_win.h',
           ],
           'defines': [
             'COMPILE_CONTENT_STATICALLY',
-            'BREAKPAD_IMPLEMENTATION',
+            'CRASH_IMPLEMENTATION',
           ],
           'dependencies': [
             '../base/base.gyp:base_win64',
@@ -167,8 +167,8 @@
             '../breakpad/breakpad.gyp:breakpad_sender_win64',
           ],
           'sources': [
-            'breakpad/tools/crash_service.cc',
-            'breakpad/tools/crash_service.h',
+            'crash/tools/crash_service.cc',
+            'crash/tools/crash_service.h',
           ],
           'configurations': {
             'Common_Base': {
@@ -187,10 +187,10 @@
             '../base/base.gyp:base',
           ],
           'sources': [
-            'breakpad/app/breakpad_client.cc',
-            'breakpad/app/breakpad_client.h',
-            'breakpad/app/breakpad_mac.h',
-            'breakpad/app/breakpad_mac_stubs.mm',
+            'crash/app/breakpad_client.cc',
+            'crash/app/breakpad_client.h',
+            'crash/app/breakpad_mac.h',
+            'crash/app/breakpad_mac_stubs.mm',
           ],
         },
       ],
@@ -198,21 +198,21 @@
     ['os_posix == 1 and OS != "mac" and OS != "ios" and android_webview_build != 1', {
       'targets': [
         {
-          # GN version: //components/breakpad/browser
+          # GN version: //components/crash/browser
           'target_name': 'breakpad_host',
           'type': 'static_library',
           'dependencies': [
-            'breakpad_component',
+            'crash_component',
             '../base/base.gyp:base',
             '../breakpad/breakpad.gyp:breakpad_client',
             '../content/content.gyp:content_browser',
             '../content/content.gyp:content_common',
           ],
           'sources': [
-            'breakpad/browser/crash_dump_manager_android.cc',
-            'breakpad/browser/crash_dump_manager_android.h',
-            'breakpad/browser/crash_handler_host_linux.cc',
-            'breakpad/browser/crash_handler_host_linux.h',
+            'crash/browser/crash_dump_manager_android.cc',
+            'crash/browser/crash_dump_manager_android.h',
+            'crash/browser/crash_handler_host_linux.cc',
+            'crash/browser/crash_handler_host_linux.h',
           ],
           'include_dirs': [
             '../breakpad/src',
@@ -222,7 +222,7 @@
             # the files on Android.
             ['OS=="android"', {
               'sources/': [
-                ['include', '^breakpad/browser/crash_handler_host_linux\\.cc$'],
+                ['include', '^crash/browser/crash_handler_host_linux\\.cc$'],
               ],
             }],
           ],

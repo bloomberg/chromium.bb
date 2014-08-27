@@ -7,10 +7,6 @@ per-file autofill*=dhollowa@chromium.org
 per-file autofill*=isherman@chromium.org
 per-file autofill*=kaiwang@chromium.org
 
-per-file breakpad.gypi=jochen@chromium.org
-per-file breakpad.gypi=rsesek@chromium.org
-per-file breakpad.gypi=thestig@chromium.org
-
 per-file bookmarks.gypi=brettw@chromium.org
 per-file bookmarks.gypi=sky@chromium.org
 
@@ -22,6 +18,10 @@ per-file copresence.gypi=rkc@chromium.org
 per-file copresence.gypi=ckehoe@chromium.org
 per-file copresence.gypi=xiyuan@chromium.org
 per-file copresence.gypi=derat@chromium.org
+
+per-file crash.gypi=jochen@chromium.org
+per-file crash.gypi=rsesek@chromium.org
+per-file crash.gypi=thestig@chromium.org
 
 per-file cronet*=mef@chromium.org
 per-file cronet*=mmenke@chromium.org

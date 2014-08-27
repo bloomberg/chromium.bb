@@ -207,7 +207,7 @@ static_library("content_shell_lib") {
     "//base/allocator",
     "//base/third_party/dynamic_annotations",
     "//cc",
-    "//components/breakpad/app",
+    "//components/crash/app",
     "//content:resources",
     "//content/app:both",
     "//content/app/resources",
@@ -266,7 +266,7 @@ static_library("content_shell_lib") {
   }
 
   if (is_posix && !is_mac && (!is_android || !is_android_webview_build)) {
-    deps += [ "//components/breakpad/browser" ]
+    deps += [ "//components/crash/browser" ]
   }
 
   if (use_aura) {

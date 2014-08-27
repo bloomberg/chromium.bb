@@ -24,7 +24,7 @@
 #include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#include "components/breakpad/app/breakpad_mac.h"
+#include "components/crash/app/breakpad_mac.h"
 #include "components/metrics/metrics_service.h"
 #include "content/public/common/main_function_params.h"
 #include "content/public/common/result_codes.h"

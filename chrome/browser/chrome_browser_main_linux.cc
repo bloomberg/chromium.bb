@@ -7,7 +7,7 @@
 #include <fontconfig/fontconfig.h>
 
 #include "chrome/browser/browser_process.h"
-#include "components/breakpad/app/breakpad_linux.h"
+#include "components/crash/app/breakpad_linux.h"
 #include "components/metrics/metrics_service.h"
 
 #if !defined(OS_CHROMEOS)

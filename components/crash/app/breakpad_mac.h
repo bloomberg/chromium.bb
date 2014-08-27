@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_BREAKPAD_APP_BREAKPAD_MAC_H_
-#define COMPONENTS_BREAKPAD_APP_BREAKPAD_MAC_H_
+#ifndef COMPONENTS_CRASH_APP_BREAKPAD_MAC_H_
+#define COMPONENTS_CRASH_APP_BREAKPAD_MAC_H_
 
 #include <string>
 
@@ -24,4 +24,4 @@ bool IsCrashReporterEnabled();
 
 }  // namespace breakpad
 
-#endif  // COMPONENTS_BREAKPAD_APP_BREAKPAD_MAC_H_
+#endif  // COMPONENTS_CRASH_APP_BREAKPAD_MAC_H_
