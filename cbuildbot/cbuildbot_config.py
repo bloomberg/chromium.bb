@@ -2457,6 +2457,7 @@ _release.add_config('stumpy_moblab-release',
   # TODO: re-enable paygen testing when crbug.com/386473 is fixed.
   paygen_skip_testing=True,
   important=True,
+  hw_tests=HWTestConfig.DefaultList(warn_only=True)
 )
 
 _release.add_config('rush-release',
