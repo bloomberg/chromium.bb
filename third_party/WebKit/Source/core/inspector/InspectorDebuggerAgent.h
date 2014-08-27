@@ -121,6 +121,7 @@ public:
     virtual void restartFrame(ErrorString*, const String& callFrameId, RefPtr<TypeBuilder::Array<TypeBuilder::Debugger::CallFrame> >& newCallFrames, RefPtr<JSONObject>& result, RefPtr<TypeBuilder::Debugger::StackTrace>& asyncStackTrace) OVERRIDE FINAL;
     virtual void getScriptSource(ErrorString*, const String& scriptId, String* scriptSource) OVERRIDE FINAL;
     virtual void getFunctionDetails(ErrorString*, const String& functionId, RefPtr<TypeBuilder::Debugger::FunctionDetails>&) OVERRIDE FINAL;
+    virtual void getCollectionEntries(ErrorString*, const String& objectId, RefPtr<TypeBuilder::Array<TypeBuilder::Debugger::CollectionEntry> >&) OVERRIDE FINAL;
     virtual void pause(ErrorString*) OVERRIDE FINAL;
     virtual void resume(ErrorString*) OVERRIDE FINAL;
     virtual void stepOver(ErrorString*) OVERRIDE FINAL;

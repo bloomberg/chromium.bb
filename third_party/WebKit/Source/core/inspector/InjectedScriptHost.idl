@@ -40,8 +40,9 @@
     [NotEnumerable, Unforgeable, Custom] any inspectedObject(long num);
     [NotEnumerable, Unforgeable, Custom] any internalConstructorName(any obj);
     [NotEnumerable, Unforgeable, Custom] boolean isHTMLAllCollection(any obj);
-    [NotEnumerable, Unforgeable, Custom] DOMString type(any obj);
+    [NotEnumerable, Unforgeable, Custom] DOMString subtype(any obj);
     [NotEnumerable, Unforgeable, Custom] any functionDetails(any obj);
+    [NotEnumerable, Unforgeable, Custom] any[] collectionEntries(any obj);
     [NotEnumerable, Unforgeable, Custom] any[] getInternalProperties(any obj);
     [NotEnumerable, Unforgeable, Custom] EventListener[] getEventListeners(EventTarget target);
     [NotEnumerable, Unforgeable, Custom] any eval(DOMString text);

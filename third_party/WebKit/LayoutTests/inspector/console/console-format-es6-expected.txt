@@ -6,22 +6,78 @@ CONSOLE MESSAGE: line 11: Symbol(a)
 CONSOLE MESSAGE: line 12: Symbol(a)
 CONSOLE MESSAGE: line 11: [object Object]
 CONSOLE MESSAGE: line 12: [object Object]
+CONSOLE MESSAGE: line 11: [object Map]
+CONSOLE MESSAGE: line 12: [object Map]
+CONSOLE MESSAGE: line 11: [object WeakMap]
+CONSOLE MESSAGE: line 12: [object WeakMap]
+CONSOLE MESSAGE: line 11: [object Set]
+CONSOLE MESSAGE: line 12: [object Set]
+CONSOLE MESSAGE: line 11: [object WeakSet]
+CONSOLE MESSAGE: line 12: [object WeakSet]
 Tests that console properly displays information about ES6 features.
 
 console-format-es6.html:11 Promise {[[PromiseStatus]]: "rejected", [[PromiseValue]]: -0}
-console-format-es6.html:12 [Promise]0: Promiselength: 1__proto__: Array[0]
+console-format-es6.html:12 [Promise]
+    0: Promise
+    length: 1
+    __proto__: Array[0]
 globals[0]
 Promise {[[PromiseStatus]]: "rejected", [[PromiseValue]]: -0}
 console-format-es6.html:11 Symbol()
-console-format-es6.html:12 [Symbol()]0: Symbol()length: 1__proto__: Array[0]
+console-format-es6.html:12 [Symbol()]
+    0: Symbol()
+    length: 1
+    __proto__: Array[0]
 globals[1]
 Symbol()
 console-format-es6.html:11 Symbol(a)
-console-format-es6.html:12 [Symbol(a)]0: Symbol(a)length: 1__proto__: Array[0]
+console-format-es6.html:12 [Symbol(a)]
+    0: Symbol(a)
+    length: 1
+    __proto__: Array[0]
 globals[2]
 Symbol(a)
-console-format-es6.html:11 Object {a: Symbol(), Symbol(): 1, Symbol(a): 2}a: Symbol()Symbol(): 1Symbol(a): 2__proto__: Object
-console-format-es6.html:12 [Object]0: Objectlength: 1__proto__: Array[0]
+console-format-es6.html:11 Object {a: Symbol(), Symbol(): 1, Symbol(a): 2}
+    a: Symbol()
+    Symbol(): 1
+    Symbol(a): 2
+    __proto__: Object
+console-format-es6.html:12 [Object]
+    0: Object
+    length: 1
+    __proto__: Array[0]
 globals[3]
-Object {a: Symbol(), Symbol(): 1, Symbol(a): 2}a: Symbol()Symbol(): 1Symbol(a): 2__proto__: Object
+Object {a: Symbol(), Symbol(): 1, Symbol(a): 2}
+    a: Symbol()
+    Symbol(): 1
+    Symbol(a): 2
+    __proto__: Object
+console-format-es6.html:11 Map
+console-format-es6.html:12 [Map]
+    0: Map
+    length: 1
+    __proto__: Array[0]
+globals[4]
+Map
+console-format-es6.html:11 WeakMap
+console-format-es6.html:12 [WeakMap]
+    0: WeakMap
+    length: 1
+    __proto__: Array[0]
+globals[5]
+WeakMap
+console-format-es6.html:11 Set
+console-format-es6.html:12 [Set]
+    0: Set
+    length: 1
+    __proto__: Array[0]
+globals[6]
+Set
+console-format-es6.html:11 WeakSet
+console-format-es6.html:12 [WeakSet]
+    0: WeakSet
+    length: 1
+    __proto__: Array[0]
+globals[7]
+WeakSet
 

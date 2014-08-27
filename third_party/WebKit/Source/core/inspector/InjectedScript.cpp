@@ -40,9 +40,10 @@
 
 using blink::TypeBuilder::Array;
 using blink::TypeBuilder::Debugger::CallFrame;
+using blink::TypeBuilder::Debugger::CollectionEntry;
+using blink::TypeBuilder::Debugger::FunctionDetails;
 using blink::TypeBuilder::Runtime::PropertyDescriptor;
 using blink::TypeBuilder::Runtime::InternalPropertyDescriptor;
-using blink::TypeBuilder::Debugger::FunctionDetails;
 using blink::TypeBuilder::Runtime::RemoteObject;
 
 namespace blink {
@@ -175,6 +176,20 @@ void InjectedScript::getFunctionDetails(ErrorString* errorString, const String& 
         return;
     }
     *result = FunctionDetails::runtimeCast(resultValue);
+}
+
+void InjectedScript::getCollectionEntries(ErrorString* errorString, const String& objectId, RefPtr<Array<CollectionEntry> >* result)
+{
+    ScriptFunctionCall function(injectedScriptObject(), "getCollectionEntries");
+    function.appendArgument(objectId);
+    RefPtr<JSONValue> resultValue;
+    makeCall(function, &resultValue);
+    if (!resultValue || resultValue->type() != JSONValue::TypeArray) {
+        if (!resultValue->asString(errorString))
+            *errorString = "Internal error";
+        return;
+    }
+    *result = Array<CollectionEntry>::runtimeCast(resultValue);
 }
 
 void InjectedScript::getProperties(ErrorString* errorString, const String& objectId, bool ownProperties, bool accessorPropertiesOnly, RefPtr<Array<PropertyDescriptor> >* properties)

@@ -55,6 +55,7 @@
 using blink::TypeBuilder::Array;
 using blink::TypeBuilder::Debugger::BreakpointId;
 using blink::TypeBuilder::Debugger::CallFrame;
+using blink::TypeBuilder::Debugger::CollectionEntry;
 using blink::TypeBuilder::Debugger::ExceptionDetails;
 using blink::TypeBuilder::Debugger::FunctionDetails;
 using blink::TypeBuilder::Debugger::ScriptId;
@@ -698,6 +699,16 @@ void InspectorDebuggerAgent::getFunctionDetails(ErrorString* errorString, const 
         return;
     }
     injectedScript.getFunctionDetails(errorString, functionId, &details);
+}
+
+void InspectorDebuggerAgent::getCollectionEntries(ErrorString* errorString, const String& objectId, RefPtr<TypeBuilder::Array<CollectionEntry> >& entries)
+{
+    InjectedScript injectedScript = m_injectedScriptManager->injectedScriptForObjectId(objectId);
+    if (injectedScript.isEmpty()) {
+        *errorString = "Inspected frame has gone";
+        return;
+    }
+    injectedScript.getCollectionEntries(errorString, objectId, &entries);
 }
 
 void InspectorDebuggerAgent::schedulePauseOnNextStatement(InspectorFrontend::Debugger::Reason::Enum breakReason, PassRefPtr<JSONObject> data)

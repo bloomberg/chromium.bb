@@ -48,7 +48,7 @@ TYPE_NAME_FIX_MAP = {
 
 
 TYPES_WITH_RUNTIME_CAST_SET = frozenset(["Runtime.RemoteObject", "Runtime.PropertyDescriptor", "Runtime.InternalPropertyDescriptor",
-                                         "Debugger.FunctionDetails", "Debugger.CallFrame", "Debugger.Location",
+                                         "Debugger.FunctionDetails", "Debugger.CollectionEntry", "Debugger.CallFrame", "Debugger.Location",
                                          "Canvas.TraceLog", "Canvas.ResourceState"])
 
 TYPES_WITH_OPEN_FIELD_LIST_SET = frozenset([

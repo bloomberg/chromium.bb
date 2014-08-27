@@ -21,8 +21,22 @@ function onload()
     obj[smb2] = 2;
     obj["a"] = smb1;
 
+    var map = new Map();
+    var weakMap = new WeakMap();
+    map.set(obj, {foo: 1});
+    weakMap.set(obj, {foo: 1});
+    weakMap.set(smb1, {foo: 2});
+    weakMap.set(smb2, {foo: 3});
+
+    var set = new Set();
+    var weakSet = new WeakSet();
+    set.add(obj);
+    weakSet.add(obj);
+    weakSet.add(smb1);
+    weakSet.add(smb2);
+
     globals = [
-        Promise.reject(-0), smb1, smb2, obj
+        Promise.reject(-0), smb1, smb2, obj, map, weakMap, set, weakSet
     ];
 
     runTest();
@@ -47,7 +61,12 @@ function test()
 
         function finish()
         {
-            InspectorTest.dumpConsoleMessages();
+            InspectorTest.expandConsoleMessages(dumpConsoleMessages);
+        }
+
+        function dumpConsoleMessages()
+        {
+            InspectorTest.dumpConsoleMessages(false, false, InspectorTest.textContentWithLineBreaks);
             InspectorTest.completeTest();
         }
 

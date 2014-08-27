@@ -98,6 +98,7 @@ public:
     bool runningNestedMessageLoop() { return m_runningNestedMessageLoop; }
 
     v8::Local<v8::Value> functionScopes(v8::Handle<v8::Function>);
+    v8::Local<v8::Value> collectionEntries(v8::Handle<v8::Object>&);
     v8::Local<v8::Value> getInternalProperties(v8::Handle<v8::Object>&);
     v8::Handle<v8::Value> setFunctionVariableValue(v8::Handle<v8::Value> functionValue, int scopeNumber, const String& variableName, v8::Handle<v8::Value> newValue);
     v8::Local<v8::Value> callDebuggerMethod(const char* functionName, int argc, v8::Handle<v8::Value> argv[]);

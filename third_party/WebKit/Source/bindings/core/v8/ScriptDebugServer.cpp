@@ -585,6 +585,14 @@ v8::Local<v8::Value> ScriptDebugServer::functionScopes(v8::Handle<v8::Function> 
     return callDebuggerMethod("getFunctionScopes", 1, argv);
 }
 
+v8::Local<v8::Value> ScriptDebugServer::collectionEntries(v8::Handle<v8::Object>& object)
+{
+    ensureDebuggerScriptCompiled();
+
+    v8::Handle<v8::Value> argv[] = { object };
+    return callDebuggerMethod("getCollectionEntries", 1, argv);
+}
+
 v8::Local<v8::Value> ScriptDebugServer::getInternalProperties(v8::Handle<v8::Object>& object)
 {
     if (m_debuggerScript.isEmpty())

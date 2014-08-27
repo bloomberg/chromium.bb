@@ -268,7 +268,7 @@ InjectedScript.prototype = {
         var columnNames = null;
         if (typeof columns === "string")
             columns = [columns];
-        if (InjectedScriptHost.type(columns) == "array") {
+        if (InjectedScriptHost.subtype(columns) === "array") {
             columnNames = [];
             for (var i = 0; i < columns.length; ++i)
                 columnNames[i] = toString(columns[i]);
@@ -472,6 +472,30 @@ InjectedScript.prototype = {
             details.scopeChain = scopes;
         }
         return details;
+    },
+
+    /**
+     * @param {string} objectId
+     * @return {!Array.<!Object>|string}
+     */
+    getCollectionEntries: function(objectId)
+    {
+        var parsedObjectId = this._parseObjectId(objectId);
+        var object = this._objectForId(parsedObjectId);
+        if (!object || typeof object !== "object")
+            return "Could not find object with given id";
+        var entries = InjectedScriptHost.collectionEntries(object);
+        if (!entries)
+            return "Object with given id is not a collection";
+        var objectGroupName = this._idToObjectGroupName[parsedObjectId.id];
+        for (var i = 0; i < entries.length; ++i) {
+            var entry = nullifyObjectProto(entries[i]);
+            if ("key" in entry)
+                entry.key = this._wrapObject(entry.key, objectGroupName);
+            entry.value = this._wrapObject(entry.value, objectGroupName);
+            entries[i] = entry;
+        }
+        return entries;
     },
 
     /**
@@ -984,9 +1008,9 @@ InjectedScript.prototype = {
         if (this.isPrimitiveValue(obj))
             return null;
 
-        var preciseType = InjectedScriptHost.type(obj);
-        if (preciseType)
-            return preciseType;
+        var subtype = InjectedScriptHost.subtype(obj);
+        if (subtype)
+            return subtype;
 
         if (isArrayLike(obj))
             return "array";
@@ -1470,7 +1494,7 @@ CommandLineAPIImpl.prototype = {
      */
     _canQuerySelectorOnNode: function(node)
     {
-        return !!node && InjectedScriptHost.type(node) === "node" && (node.nodeType === Node.ELEMENT_NODE || node.nodeType === Node.DOCUMENT_NODE || node.nodeType === Node.DOCUMENT_FRAGMENT_NODE);
+        return !!node && InjectedScriptHost.subtype(node) === "node" && (node.nodeType === Node.ELEMENT_NODE || node.nodeType === Node.DOCUMENT_NODE || node.nodeType === Node.DOCUMENT_FRAGMENT_NODE);
     },
 
     /**

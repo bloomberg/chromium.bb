@@ -116,10 +116,7 @@ static v8::Handle<v8::String> functionDisplayName(v8::Handle<v8::Function> funct
 
 void V8InjectedScriptHost::internalConstructorNameMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    if (info.Length() < 1)
-        return;
-
-    if (!info[0]->IsObject())
+    if (info.Length() < 1 || !info[0]->IsObject())
         return;
 
     v8::Local<v8::Object> object = info[0]->ToObject();
@@ -154,27 +151,15 @@ void V8InjectedScriptHost::isHTMLAllCollectionMethodCustom(const v8::FunctionCal
     v8SetReturnValue(info, V8HTMLAllCollection::hasInstance(info[0], info.GetIsolate()));
 }
 
-void V8InjectedScriptHost::typeMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
+void V8InjectedScriptHost::subtypeMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (info.Length() < 1)
         return;
     v8::Isolate* isolate = info.GetIsolate();
 
     v8::Handle<v8::Value> value = info[0];
-    if (value->IsString()) {
-        v8SetReturnValue(info, v8AtomicString(isolate, "string"));
-        return;
-    }
     if (value->IsArray() || value->IsTypedArray() || value->IsArgumentsObject()) {
         v8SetReturnValue(info, v8AtomicString(isolate, "array"));
-        return;
-    }
-    if (value->IsBoolean()) {
-        v8SetReturnValue(info, v8AtomicString(isolate, "boolean"));
-        return;
-    }
-    if (value->IsNumber()) {
-        v8SetReturnValue(info, v8AtomicString(isolate, "number"));
         return;
     }
     if (value->IsDate()) {
@@ -183,6 +168,14 @@ void V8InjectedScriptHost::typeMethodCustom(const v8::FunctionCallbackInfo<v8::V
     }
     if (value->IsRegExp()) {
         v8SetReturnValue(info, v8AtomicString(isolate, "regexp"));
+        return;
+    }
+    if (value->IsMap() || value->IsWeakMap()) {
+        v8SetReturnValue(info, v8AtomicString(isolate, "map"));
+        return;
+    }
+    if (value->IsSet() || value->IsWeakSet()) {
+        v8SetReturnValue(info, v8AtomicString(isolate, "set"));
         return;
     }
     if (V8Node::hasInstance(value, isolate)) {
@@ -200,18 +193,14 @@ void V8InjectedScriptHost::typeMethodCustom(const v8::FunctionCallbackInfo<v8::V
 
 void V8InjectedScriptHost::functionDetailsMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    if (info.Length() < 1)
+    if (info.Length() < 1 || !info[0]->IsFunction())
         return;
 
-    v8::Isolate* isolate = info.GetIsolate();
-
-    v8::Handle<v8::Value> value = info[0];
-    if (!value->IsFunction())
-        return;
-    v8::Handle<v8::Function> function = v8::Handle<v8::Function>::Cast(value);
+    v8::Handle<v8::Function> function = v8::Handle<v8::Function>::Cast(info[0]);
     int lineNumber = function->GetScriptLineNumber();
     int columnNumber = function->GetScriptColumnNumber();
 
+    v8::Isolate* isolate = info.GetIsolate();
     v8::Local<v8::Object> location = v8::Object::New(isolate);
     location->Set(v8AtomicString(isolate, "lineNumber"), v8::Integer::New(isolate, lineNumber));
     location->Set(v8AtomicString(isolate, "columnNumber"), v8::Integer::New(isolate, columnNumber));
@@ -232,9 +221,21 @@ void V8InjectedScriptHost::functionDetailsMethodCustom(const v8::FunctionCallbac
     v8SetReturnValue(info, result);
 }
 
+void V8InjectedScriptHost::collectionEntriesMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    if (info.Length() < 1 || !info[0]->IsObject())
+        return;
+
+    v8::Handle<v8::Object> object = v8::Handle<v8::Object>::Cast(info[0]);
+
+    InjectedScriptHost* host = V8InjectedScriptHost::toNative(info.Holder());
+    ScriptDebugServer& debugServer = host->scriptDebugServer();
+    v8SetReturnValue(info, debugServer.collectionEntries(object));
+}
+
 void V8InjectedScriptHost::getInternalPropertiesMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    if (info.Length() < 1)
+    if (info.Length() < 1 || !info[0]->IsObject())
         return;
 
     v8::Handle<v8::Object> object = v8::Handle<v8::Object>::Cast(info[0]);

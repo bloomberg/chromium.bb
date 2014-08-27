@@ -17,12 +17,26 @@ function onload()
     // This used to crash in debug build.
     console.dir(Symbol());
 
+    [new Map(), new WeakMap()].forEach(function(m) {
+        m.set(obj, {foo: 1});
+        console.dir(m);
+    });
+    [new Set(), new WeakSet()].forEach(function(s) {
+        s.add(obj);
+        console.dir(s);
+    });
+
     runTest();
 }
 
 function test()
 {
-    InspectorTest.expandConsoleMessages(dumpConsoleMessages);
+    InspectorTest.expandConsoleMessages(step1);
+
+    function step1()
+    {
+        InspectorTest.expandConsoleTreeElements(WebInspector.CollectionEntriesMainTreeElement, dumpConsoleMessages);
+    }
 
     function dumpConsoleMessages()
     {

@@ -152,6 +152,28 @@ InspectorTest.expandConsoleMessages = function(callback)
         InspectorTest.runAfterPendingDispatches(callback);
 }
 
+InspectorTest.expandConsoleTreeElements = function(constructorClass, callback)
+{
+    WebInspector.inspectorView.panel("console");
+    var messageViews = WebInspector.ConsolePanel._view()._visibleViewMessages;
+    for (var i = 0; i < messageViews.length; ++i) {
+        var element = messageViews[i].contentElement();
+        for (var node = element; node; node = node.traverseNextNode(element)) {
+            if (!node._section)
+                continue;
+            var treeElements = node._section.propertiesTreeOutline.children;
+            for (var j = 0; j < treeElements.length; ++j) {
+                for (var treeElement = treeElements[j]; treeElement; treeElement = treeElement.traverseNextTreeElement(false, null, false)) {
+                    if (treeElement instanceof constructorClass)
+                        treeElement.expand();
+                }
+            }
+        }
+    }
+    if (callback)
+        InspectorTest.runAfterPendingDispatches(callback);
+}
+
 InspectorTest.waitForRemoteObjectsConsoleMessages = function(callback)
 {
     var messages = WebInspector.ConsolePanel._view()._visibleViewMessages;

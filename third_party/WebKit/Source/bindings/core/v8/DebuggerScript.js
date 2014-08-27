@@ -85,6 +85,20 @@ DebuggerScript.getFunctionScopes = function(fun)
     return result;
 }
 
+DebuggerScript.getCollectionEntries = function(object)
+{
+    var mirror = MakeMirror(object, true /* transient */);
+    if (mirror.isMap())
+        return mirror.entries();
+    if (mirror.isSet()) {
+        var result = [];
+        var values = mirror.values();
+        for (var i = 0; i < values.length; ++i)
+            result.push({ value: values[i] });
+        return result;
+    }
+}
+
 DebuggerScript.getInternalProperties = function(value)
 {
     var properties = ObjectMirror.GetInternalProperties(value);
