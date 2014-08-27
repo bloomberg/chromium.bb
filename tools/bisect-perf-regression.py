@@ -235,6 +235,15 @@ committed locally to run-perf-test.cfg.
 For more details please visit
 https://sites.google.com/a/chromium.org/dev/developers/performance-try-bots"""
 
+REPRO_STEPS_TRYJOB_TELEMETRY = """
+To reproduce on a performance try bot:
+%(command)s
+(Where <bot-name> comes from tools/perf/run_benchmark --browser=list)
+
+For more details please visit
+https://sites.google.com/a/chromium.org/dev/developers/performance-try-bots
+"""
+
 RESULTS_THANKYOU = """
 ===== THANK YOU FOR CHOOSING BISECT AIRLINES =====
 Visit http://www.chromium.org/developers/core-principles for Chrome's policy
@@ -2721,7 +2730,13 @@ class BisectPerformanceMetrics(object):
       command += ('\nAlso consider passing --profiler=list to see available '
                   'profilers.')
     print REPRO_STEPS_LOCAL % {'command': command}
-    print REPRO_STEPS_TRYJOB % {'command': command}
+    if bisect_utils.IsTelemetryCommand(self.opts.command):
+      telemetry_command = re.sub(r'--browser=[^\s]+',
+                                 '--browser=<bot-name>',
+                                 command)
+      print REPRO_STEPS_TRYJOB_TELEMETRY % {'command': telemetry_command}
+    else:
+      print REPRO_STEPS_TRYJOB % {'command': command}
 
   def _PrintOtherRegressions(self, other_regressions, revision_data):
     """Prints a section of the results about other potential regressions."""
