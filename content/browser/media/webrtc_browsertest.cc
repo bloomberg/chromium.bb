@@ -166,6 +166,21 @@ IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest,
   MakeTypicalPeerConnectionCall(javascript);
 }
 
+// Flaky on TSAN v2. http://crbug.com/408006
+#if defined(THREAD_SANITIZER)
+#define MAYBE_CanSetupVideoCallAndDisableLocalVideo \
+  DISABLED_CanSetupVideoCallAndDisableLocalVideo
+#else
+#define MAYBE_CanSetupVideoCallAndDisableLocalVideo \
+  CanSetupVideoCallAndDisableLocalVideo
+#endif
+IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest,
+                       MAYBE_CanSetupVideoCallAndDisableLocalVideo) {
+  const std::string javascript =
+      "callAndDisableLocalVideo({video: true});";
+  MakeTypicalPeerConnectionCall(javascript);
+}
+
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
 // Timing out on ARM linux, see http://crbug.com/240376
 #define MAYBE_CanSetupAudioAndVideoCall DISABLED_CanSetupAudioAndVideoCall
