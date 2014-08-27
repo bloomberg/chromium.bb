@@ -192,14 +192,14 @@ void RendererOverridesHandler::OnSwapCompositorFrame(
   last_compositor_frame_metadata_ = frame_metadata;
   has_last_compositor_frame_metadata_ = true;
 
-  if (screencast_command_)
+  if (screencast_command_.get())
     InnerSwapCompositorFrame();
   if (color_picker_enabled_)
     UpdateColorPickerFrame();
 }
 
 void RendererOverridesHandler::OnVisibilityChanged(bool visible) {
-  if (!screencast_command_)
+  if (!screencast_command_.get())
     return;
   NotifyScreencastVisibility(visible);
 }
@@ -1170,7 +1170,7 @@ void RendererOverridesHandler::UpdateColorPickerCursor() {
 scoped_refptr<DevToolsProtocol::Response>
 RendererOverridesHandler::InputEmulateTouchFromMouseEvent(
     scoped_refptr<DevToolsProtocol::Command> command) {
-  if (!screencast_command_)
+  if (!screencast_command_.get())
     return command->InternalErrorResponse("Screencast should be turned on");
 
   base::DictionaryValue* params = command->params();
@@ -1299,7 +1299,7 @@ RendererOverridesHandler::InputEmulateTouchFromMouseEvent(
 void RendererOverridesHandler::UpdateTouchEventEmulationState() {
   if (!host_)
     return;
-  bool enabled = touch_emulation_enabled_ || screencast_command_;
+  bool enabled = touch_emulation_enabled_ || screencast_command_.get();
   host_->SetTouchEventEmulationEnabled(enabled);
   WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
       WebContents::FromRenderViewHost(host_));

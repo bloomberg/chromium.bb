@@ -175,7 +175,7 @@ TEST_F(DevToolsManagerTest, ReattachOnCancelPendingNavigation) {
       url2, Referrer(), PAGE_TRANSITION_TYPED, std::string());
   EXPECT_TRUE(contents()->cross_navigation_pending());
   EXPECT_EQ(client_host.agent_host(),
-      DevToolsAgentHost::GetOrCreateFor(web_contents()));
+            DevToolsAgentHost::GetOrCreateFor(web_contents()).get());
 
   // Interrupt pending navigation and navigate back to the original site.
   controller().LoadURL(
@@ -184,7 +184,7 @@ TEST_F(DevToolsManagerTest, ReattachOnCancelPendingNavigation) {
       contents()->GetMainFrame(), 1, url, PAGE_TRANSITION_TYPED);
   EXPECT_FALSE(contents()->cross_navigation_pending());
   EXPECT_EQ(client_host.agent_host(),
-            DevToolsAgentHost::GetOrCreateFor(web_contents()));
+            DevToolsAgentHost::GetOrCreateFor(web_contents()).get());
   client_host.Close();
 }
 

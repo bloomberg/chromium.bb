@@ -138,7 +138,7 @@ void RenderViewDevToolsAgentHost::DispatchProtocolMessage(
   scoped_refptr<DevToolsProtocol::Command> command =
       DevToolsProtocol::ParseCommand(message_dict.get(), &error_message);
 
-  if (command) {
+  if (command.get()) {
     scoped_refptr<DevToolsProtocol::Response> overridden_response;
 
     DevToolsManagerDelegate* delegate =
@@ -150,13 +150,13 @@ void RenderViewDevToolsAgentHost::DispatchProtocolMessage(
         overridden_response = DevToolsProtocol::ParseResponse(
             overridden_response_value.get());
     }
-    if (!overridden_response)
+    if (!overridden_response.get())
       overridden_response = overrides_handler_->HandleCommand(command);
-    if (!overridden_response)
+    if (!overridden_response.get())
       overridden_response = tracing_handler_->HandleCommand(command);
-    if (!overridden_response)
+    if (!overridden_response.get())
       overridden_response = power_handler_->HandleCommand(command);
-    if (overridden_response) {
+    if (overridden_response.get()) {
       if (!overridden_response->is_async_promise())
         OnDispatchOnInspectorFrontend(overridden_response->Serialize());
       return;
@@ -478,7 +478,7 @@ void RenderViewDevToolsAgentHost::OnDispatchOnInspectorFrontend(
   scoped_refptr<DevToolsProtocol::Notification> notification =
       DevToolsProtocol::ParseNotification(message);
 
-  if (notification) {
+  if (notification.get()) {
     tracing_handler_->HandleNotification(notification);
   }
   SendMessageToClient(message);

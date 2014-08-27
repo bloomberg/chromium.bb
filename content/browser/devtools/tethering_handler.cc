@@ -150,7 +150,7 @@ class SocketPump : public net::StreamListenSocket::Delegate {
   }
 
   void SelfDestruct() {
-    if (wire_buffer_ && wire_buffer_->offset() != wire_buffer_size_) {
+    if (wire_buffer_.get() && wire_buffer_->offset() != wire_buffer_size_) {
       pending_destruction_ = true;
       return;
     }

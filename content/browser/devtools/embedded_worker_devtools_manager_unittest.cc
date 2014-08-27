@@ -28,10 +28,10 @@ class TestDevToolsClientHost : public DevToolsAgentHostClient {
       DevToolsAgentHost* agent_host, bool replaced) OVERRIDE {}
 
   void InspectAgentHost(DevToolsAgentHost* agent_host) {
-    if (agent_host_)
+    if (agent_host_.get())
       agent_host_->DetachClient();
     agent_host_ = agent_host;
-    if (agent_host_)
+    if (agent_host_.get())
       agent_host_->AttachClient(this);
   }
  private:
@@ -232,7 +232,7 @@ TEST_F(EmbeddedWorkerDevToolsManagerTest, AttachTest) {
   EXPECT_NE(agent_host1.get(), agent_host2.get());
   EXPECT_EQ(agent_host2.get(), manager_->GetDevToolsAgentHostForWorker(2, 2));
   CheckWorkerState(2, 2, WorkerState::WORKER_UNINSPECTED);
-  client_host2->InspectAgentHost(agent_host2);
+  client_host2->InspectAgentHost(agent_host2.get());
   CheckWorkerState(2, 2, WorkerState::WORKER_INSPECTED);
   manager_->WorkerDestroyed(2, 2);
   CheckWorkerState(2, 2, WorkerState::WORKER_TERMINATED);

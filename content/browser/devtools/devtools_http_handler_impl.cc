@@ -87,7 +87,7 @@ class DevToolsAgentHostClientImpl : public DevToolsAgentHostClient {
   }
 
   virtual ~DevToolsAgentHostClientImpl() {
-    if (agent_host_)
+    if (agent_host_.get())
       agent_host_->DetachClient();
   }
 
@@ -131,7 +131,7 @@ class DevToolsAgentHostClientImpl : public DevToolsAgentHostClient {
   }
 
   void OnMessage(const std::string& message) {
-    if (agent_host_)
+    if (agent_host_.get())
       agent_host_->DispatchProtocolMessage(message);
   }
 
@@ -639,7 +639,7 @@ void DevToolsHttpHandlerImpl::OnWebSocketRequestUI(
   DevToolsTarget* target = GetTarget(page_id);
   scoped_refptr<DevToolsAgentHost> agent =
       target ? target->GetAgentHost() : NULL;
-  if (!agent) {
+  if (!agent.get()) {
     Send500(connection_id, "No such target id: " + page_id);
     return;
   }
@@ -650,8 +650,8 @@ void DevToolsHttpHandlerImpl::OnWebSocketRequestUI(
     return;
   }
 
-  DevToolsAgentHostClientImpl * client_host = new DevToolsAgentHostClientImpl(
-      thread_->message_loop(), server_.get(), connection_id, agent);
+  DevToolsAgentHostClientImpl* client_host = new DevToolsAgentHostClientImpl(
+      thread_->message_loop(), server_.get(), connection_id, agent.get());
   connection_to_client_ui_[connection_id] = client_host;
 
   AcceptWebSocket(connection_id, request);
