@@ -173,11 +173,11 @@ AppListController::~AppListController() {
   Shell::GetInstance()->RemoveShellObserver(this);
 }
 
-void AppListController::SetVisible(bool visible, aura::Window* window) {
-  if (visible == is_visible_)
+void AppListController::Show(aura::Window* window) {
+  if (is_visible_)
     return;
 
-  is_visible_ = visible;
+  is_visible_ = true;
 
   // App list needs to know the new shelf layout in order to calculate its
   // UI layout when AppListView visibility changes.
@@ -185,15 +185,8 @@ void AppListController::SetVisible(bool visible, aura::Window* window) {
       UpdateAutoHideState();
 
   if (view_) {
-    // Our widget is currently active. When the animation completes we'll hide
-    // the widget, changing activation. If a menu is shown before the animation
-    // completes then the activation change triggers the menu to close. By
-    // deactivating now we ensure there is no activation change when the
-    // animation completes and any menus stay open.
-    if (!visible)
-      view_->GetWidget()->Deactivate();
     ScheduleAnimation();
-  } else if (is_visible_) {
+  } else {
     // AppListModel and AppListViewDelegate are owned by AppListView. They
     // will be released with AppListView on close.
     app_list::AppListView* view = new app_list::AppListView(
@@ -242,6 +235,35 @@ void AppListController::SetVisible(bool visible, aura::Window* window) {
   }
   // Update applist button status when app list visibility is changed.
   Shelf::ForWindow(window)->GetAppListButtonView()->SchedulePaint();
+}
+
+void AppListController::Dismiss() {
+  if (!is_visible_)
+    return;
+
+  // If the app list is currently visible, there should be an existing view.
+  DCHECK(view_);
+
+  is_visible_ = false;
+
+  // App list needs to know the new shelf layout in order to calculate its
+  // UI layout when AppListView visibility changes.
+  Shell::GetPrimaryRootWindowController()
+      ->GetShelfLayoutManager()
+      ->UpdateAutoHideState();
+
+  // Our widget is currently active. When the animation completes we'll hide
+  // the widget, changing activation. If a menu is shown before the animation
+  // completes then the activation change triggers the menu to close. By
+  // deactivating now we ensure there is no activation change when the
+  // animation completes and any menus stay open.
+  view_->GetWidget()->Deactivate();
+  ScheduleAnimation();
+
+  // Update applist button status when app list visibility is changed.
+  Shelf::ForWindow(view_->GetWidget()->GetNativeView())
+      ->GetAppListButtonView()
+      ->SchedulePaint();
 }
 
 bool AppListController::IsVisible() const {
@@ -354,7 +376,7 @@ void AppListController::ProcessLocatedEvent(ui::LocatedEvent* event) {
 
   aura::Window* window = view_->GetWidget()->GetNativeView()->parent();
   if (!window->Contains(target))
-    SetVisible(false, window);
+    Dismiss();
 }
 
 void AppListController::UpdateBounds() {
@@ -392,7 +414,7 @@ void AppListController::OnWindowFocused(aura::Window* gained_focus,
 
     if (applist_container->Contains(lost_focus) &&
         (!gained_focus || !applist_container->Contains(gained_focus))) {
-      SetVisible(false, applist_window);
+      Dismiss();
     }
   }
 }
@@ -421,7 +443,7 @@ void AppListController::OnImplicitAnimationsCompleted() {
 void AppListController::OnWidgetDestroying(views::Widget* widget) {
   DCHECK(view_->GetWidget() == widget);
   if (is_visible_)
-    SetVisible(false, widget->GetNativeView());
+    Dismiss();
   ResetView();
 }
 

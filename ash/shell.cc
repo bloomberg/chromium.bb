@@ -298,13 +298,13 @@ void Shell::ShowAppList(aura::Window* window) {
     window = GetTargetRootWindow();
   if (!app_list_controller_)
     app_list_controller_.reset(new AppListController);
-  app_list_controller_->SetVisible(true, window);
+  app_list_controller_->Show(window);
 }
 
 void Shell::DismissAppList() {
   if (!app_list_controller_)
     return;
-  app_list_controller_->SetVisible(false, GetTargetRootWindow());
+  app_list_controller_->Dismiss();
 }
 
 void Shell::ToggleAppList(aura::Window* window) {
