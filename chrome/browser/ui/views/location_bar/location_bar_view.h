@@ -20,8 +20,6 @@
 #include "chrome/browser/ui/views/extensions/extension_popup.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
 #include "components/search_engines/template_url_service_observer.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/rect.h"
@@ -85,7 +83,6 @@ class LocationBarView : public LocationBar,
                         public DropdownBarHostDelegate,
                         public gfx::AnimationDelegate,
                         public TemplateURLServiceObserver,
-                        public content::NotificationObserver,
                         public SearchModelObserver {
  public:
   // The location bar view's class name.
@@ -406,11 +403,6 @@ class LocationBarView : public LocationBar,
   // TemplateURLServiceObserver:
   virtual void OnTemplateURLServiceChanged() OVERRIDE;
 
-  // content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
-
   // SearchModelObserver:
   virtual void ModelChanged(const SearchModel::State& old_state,
                             const SearchModel::State& new_state) OVERRIDE;
@@ -552,9 +544,6 @@ class LocationBarView : public LocationBar,
   // from the width of the hostname to the ending value.
   int current_omnibox_width_;
   int ending_omnibox_width_;
-
-  // Used to register for notifications received by NotificationObserver.
-  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(LocationBarView);
 };

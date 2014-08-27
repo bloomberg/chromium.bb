@@ -23,6 +23,7 @@ namespace extensions {
 
 class ActiveScriptController;
 class Extension;
+class ExtensionActionManager;
 class ExtensionRegistry;
 
 // Provides the UI with the current page actions for extensions. The execution
@@ -41,6 +42,9 @@ class LocationBarController : public ExtensionRegistryObserver {
 
  private:
   // ExtensionRegistryObserver implementation.
+  virtual void OnExtensionLoaded(
+      content::BrowserContext* browser_context,
+      const Extension* extnesion) OVERRIDE;
   virtual void OnExtensionUnloaded(
       content::BrowserContext* browser_context,
       const Extension* extension,
@@ -51,6 +55,9 @@ class LocationBarController : public ExtensionRegistryObserver {
 
   // The associated BrowserContext.
   content::BrowserContext* browser_context_;
+
+  // The ExtensionActionManager to provide page actions.
+  ExtensionActionManager* action_manager_;
 
   // The ActiveScriptController, which could also add actions for extensions if
   // they have a pending script.

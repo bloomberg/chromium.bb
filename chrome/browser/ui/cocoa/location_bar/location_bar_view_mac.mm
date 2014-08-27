@@ -14,7 +14,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #import "chrome/browser/app_controller_mac.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/api/omnibox/omnibox_api.h"
@@ -64,7 +63,6 @@
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/translate/core/browser/language_state.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
@@ -142,14 +140,6 @@ LocationBarViewMac::LocationBarViewMac(AutocompleteTextField* field,
     content_setting_decorations_.push_back(
         new ContentSettingDecoration(type, this, profile));
   }
-
-  content::Source<Profile> profile_source = content::Source<Profile>(profile);
-  registrar_.Add(this,
-                 extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
-                 profile_source);
-  registrar_.Add(this,
-                 extensions::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
-                 profile_source);
 
   edit_bookmarks_enabled_.Init(
       prefs::kEditBookmarksEnabled, profile->GetPrefs(),
@@ -618,15 +608,6 @@ NSImage* LocationBarViewMac::GetKeywordImage(const base::string16& keyword) {
   }
 
   return OmniboxViewMac::ImageForResource(IDR_OMNIBOX_SEARCH);
-}
-
-void LocationBarViewMac::Observe(int type,
-                                 const content::NotificationSource& source,
-                                 const content::NotificationDetails& details) {
-  DCHECK(type == extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED ||
-         type == extensions::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED);
-
-  Update(NULL);
 }
 
 void LocationBarViewMac::ModelChanged(const SearchModel::State& old_state,

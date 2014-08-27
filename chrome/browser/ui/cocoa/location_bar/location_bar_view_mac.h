@@ -47,7 +47,6 @@ class ZoomDecorationTest;
 class LocationBarViewMac : public LocationBar,
                            public LocationBarTesting,
                            public OmniboxEditController,
-                           public content::NotificationObserver,
                            public SearchModelObserver {
  public:
   LocationBarViewMac(AutocompleteTextField* field,
@@ -166,12 +165,6 @@ class LocationBarViewMac : public LocationBar,
 
   AutocompleteTextField* GetAutocompleteTextField() { return field_; }
 
-
-  // content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
-
   // SearchModelObserver:
   virtual void ModelChanged(const SearchModel::State& old_state,
                             const SearchModel::State& new_state) OVERRIDE;
@@ -276,9 +269,6 @@ class LocationBarViewMac : public LocationBar,
   scoped_ptr<ManagePasswordsDecoration> manage_passwords_decoration_;
 
   Browser* browser_;
-
-  // Used to register for notifications received by NotificationObserver.
-  content::NotificationRegistrar registrar_;
 
   // Used to schedule a task for the first run info bubble.
   base::WeakPtrFactory<LocationBarViewMac> weak_ptr_factory_;
