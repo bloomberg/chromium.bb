@@ -16,8 +16,11 @@ generated_extensions_api("api_registration") {
   impl_dir = "//extensions/browser/api"
   bundle_registration = true
 
-  deps = [
-    "//device/serial",
-    "//skia",
-  ]
+  deps = [ ":api" ]
+  if (!is_android) {
+    deps += [
+      "//device/serial",
+      "//skia",
+    ]
+  }
 }
