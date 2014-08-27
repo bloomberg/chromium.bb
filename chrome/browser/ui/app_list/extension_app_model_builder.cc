@@ -9,8 +9,8 @@
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/command_line.h"
 #include "chrome/browser/extensions/extension_ui_util.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/install_tracker.h"
 #include "chrome/browser/extensions/install_tracker_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -18,7 +18,6 @@
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
 #include "chrome/browser/ui/app_list/extension_app_item.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
@@ -81,8 +80,7 @@ void ExtensionAppModelBuilder::InitializePrefChangeRegistrars() {
       base::Bind(&ExtensionAppModelBuilder::OnProfilePreferenceChanged,
                  base::Unretained(this)));
 
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableStreamlinedHostedApps))
+  if (!extensions::util::IsStreamlinedHostedAppsEnabled())
     return;
 
   // TODO(calamity): analyze the performance impact of doing this every

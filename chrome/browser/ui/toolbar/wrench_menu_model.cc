@@ -16,6 +16,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/extension_toolbar_model.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search/search.h"
@@ -241,8 +242,7 @@ void ToolsMenuModel::Build(Browser* browser) {
     show_create_shortcuts = false;
 #endif
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableStreamlinedHostedApps)) {
+  if (extensions::util::IsStreamlinedHostedAppsEnabled()) {
     AddItemWithStringId(IDC_CREATE_HOSTED_APP, IDS_CREATE_HOSTED_APP);
     AddSeparator(ui::NORMAL_SEPARATOR);
   } else if (show_create_shortcuts) {

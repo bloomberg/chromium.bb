@@ -13,15 +13,14 @@
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/extensions/context_menu_matcher.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/fullscreen.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/chrome_shell_delegate.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/common/context_menu_params.h"
@@ -106,8 +105,7 @@ void LauncherContextMenu::Init() {
       if (!controller_->IsPlatformApp(item_.id) &&
           item_.type != ash::TYPE_WINDOWED_APP) {
         AddSeparator(ui::NORMAL_SEPARATOR);
-        if (CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableStreamlinedHostedApps)) {
+        if (extensions::util::IsStreamlinedHostedAppsEnabled()) {
           // Streamlined hosted apps launch in a window by default. This menu
           // item is re-interpreted as a single, toggle-able option to launch
           // the hosted app as a tab.
@@ -313,8 +311,7 @@ void LauncherContextMenu::ExecuteCommand(int command_id, int event_flags) {
           extensions::LAUNCH_TYPE_REGULAR;
       // Streamlined hosted apps can only toggle between LAUNCH_WINDOW and
       // LAUNCH_REGULAR.
-      if (CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kEnableStreamlinedHostedApps)) {
+      if (extensions::util::IsStreamlinedHostedAppsEnabled()) {
         launch_type = controller_->GetLaunchType(item_.id) ==
                     extensions::LAUNCH_TYPE_REGULAR
                 ? extensions::LAUNCH_TYPE_WINDOW

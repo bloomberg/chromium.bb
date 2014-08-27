@@ -7,16 +7,15 @@
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/i18n/time_formatting.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_runner_util.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_thread.h"
@@ -58,8 +57,7 @@ class LaunchOptionsComboboxModel : public ui::ComboboxModel {
 };
 
 LaunchOptionsComboboxModel::LaunchOptionsComboboxModel() {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableStreamlinedHostedApps)) {
+  if (extensions::util::IsStreamlinedHostedAppsEnabled()) {
     // Streamlined hosted apps can only toggle between LAUNCH_TYPE_WINDOW and
     // LAUNCH_TYPE_REGULAR.
     // TODO(sashab): Use a checkbox for this choice instead of combobox.

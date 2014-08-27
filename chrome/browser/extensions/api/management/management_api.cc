@@ -22,6 +22,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_ui_util.h"
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/extensions/window_controller.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
@@ -32,7 +33,6 @@
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/browser/ui/webui/ntp/core_app_launcher_handler.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/management.h"
 #include "chrome/common/extensions/chrome_utility_extensions_messages.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -106,8 +106,7 @@ std::vector<management::LaunchType> GetAvailableLaunchTypes(
   launch_type_list.push_back(management::LAUNCH_TYPE_OPEN_AS_WINDOW);
 #endif
 
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableStreamlinedHostedApps)) {
+  if (!util::IsStreamlinedHostedAppsEnabled()) {
     launch_type_list.push_back(management::LAUNCH_TYPE_OPEN_AS_PINNED_TAB);
     launch_type_list.push_back(management::LAUNCH_TYPE_OPEN_FULL_SCREEN);
   }

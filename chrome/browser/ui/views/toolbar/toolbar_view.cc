@@ -16,6 +16,7 @@
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/browser.h"
@@ -103,11 +104,6 @@ const int kContentShadowHeightAsh = 2;
 // Non-ash uses a rounded content area with no shadow in the assets.
 const int kContentShadowHeight = 0;
 
-bool IsStreamlinedHostedAppsEnabled() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableStreamlinedHostedApps);
-}
-
 #if !defined(OS_CHROMEOS)
 bool HasAshShell() {
 #if defined(USE_ASH)
@@ -152,7 +148,7 @@ ToolbarView::ToolbarView(Browser* browser)
 
   display_mode_ = DISPLAYMODE_LOCATION;
   if (browser->SupportsWindowFeature(Browser::FEATURE_TABSTRIP) ||
-      (browser->is_app() && IsStreamlinedHostedAppsEnabled()))
+      (browser->is_app() && extensions::util::IsStreamlinedHostedAppsEnabled()))
     display_mode_ = DISPLAYMODE_NORMAL;
 
   if (OutdatedUpgradeBubbleView::IsAvailable()) {
@@ -575,7 +571,8 @@ void ToolbarView::Layout() {
   next_element_x = reload_->bounds().right();
 
   if (show_home_button_.GetValue() ||
-      (browser_->is_app() && IsStreamlinedHostedAppsEnabled())) {
+      (browser_->is_app() &&
+       extensions::util::IsStreamlinedHostedAppsEnabled())) {
     home_->SetVisible(true);
     home_->SetBounds(next_element_x, child_y,
                      home_->GetPreferredSize().width(), child_height);

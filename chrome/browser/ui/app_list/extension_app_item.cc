@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/app_list/extension_app_item.h"
 
-#include "base/command_line.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
@@ -16,7 +15,6 @@
 #include "chrome/browser/ui/extensions/extension_enable_flow.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/webui/ntp/core_app_launcher_handler.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "content/public/browser/user_metrics.h"
@@ -148,8 +146,8 @@ ExtensionAppItem::~ExtensionAppItem() {
 bool ExtensionAppItem::NeedsOverlay() const {
   // The overlay icon is disabled for hosted apps in windowed mode with
   // streamlined hosted apps.
-  bool streamlined_hosted_apps = CommandLine::ForCurrentProcess()->
-      HasSwitch(switches::kEnableStreamlinedHostedApps);
+  bool streamlined_hosted_apps =
+      extensions::util::IsStreamlinedHostedAppsEnabled();
 #if defined(OS_CHROMEOS)
   if (!streamlined_hosted_apps)
     return false;

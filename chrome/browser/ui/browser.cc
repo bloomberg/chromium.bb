@@ -54,6 +54,7 @@
 #include "chrome/browser/extensions/api/tabs/tabs_windows_api.h"
 #include "chrome/browser/extensions/browser_extension_window_controller.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/file_select_helper.h"
@@ -577,10 +578,8 @@ base::string16 Browser::GetWindowTitleForCurrentTab() const {
   // window during the window's creation (before tabs have been added).
   if (contents) {
     // Streamlined hosted apps use the host instead of the title.
-    if (is_app() && CommandLine::ForCurrentProcess()->HasSwitch(
-                        switches::kEnableStreamlinedHostedApps)) {
+    if (is_app() && extensions::util::IsStreamlinedHostedAppsEnabled())
       return base::UTF8ToUTF16(contents->GetURL().host());
-    }
 
     title = contents->GetTitle();
     FormatTitleForDisplay(&title);
@@ -2305,10 +2304,9 @@ bool Browser::ShouldShowLocationBar() const {
     return true;
 
   if (is_app()) {
-    if (CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableStreamlinedHostedApps) &&
+    if (extensions::util::IsStreamlinedHostedAppsEnabled() &&
         host_desktop_type() != chrome::HOST_DESKTOP_TYPE_ASH) {
-      // If kEnableStreamlinedHostedApps is true, show the location bar for
+      // If streamlined hosted apps are enabled, show the location bar for
       // bookmark apps, except on ash which has the toolbar merged into the
       // frame.
       ExtensionService* service =

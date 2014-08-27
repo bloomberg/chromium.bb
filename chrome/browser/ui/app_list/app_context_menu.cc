@@ -5,14 +5,13 @@
 #include "chrome/browser/ui/app_list/app_context_menu.h"
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "chrome/browser/extensions/context_menu_matcher.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/menu_manager.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_context_menu_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
@@ -118,8 +117,7 @@ ui::MenuModel* AppContextMenu::GetMenuModel() {
     if (!is_platform_app_) {
       // Streamlined hosted apps can only toggle between USE_LAUNCH_TYPE_WINDOW
       // and USE_LAUNCH_TYPE_REGULAR.
-      if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableStreamlinedHostedApps)) {
+      if (extensions::util::IsStreamlinedHostedAppsEnabled()) {
         menu_model_->AddCheckItemWithStringId(
             USE_LAUNCH_TYPE_REGULAR,
             IDS_APP_CONTEXT_MENU_OPEN_TAB);
@@ -264,8 +262,7 @@ void AppContextMenu::ExecuteCommand(int command_id, int event_flags) {
         command_id - USE_LAUNCH_TYPE_COMMAND_START);
     // Streamlined hosted apps can only toggle between LAUNCH_TYPE_WINDOW and
     // LAUNCH_TYPE_REGULAR.
-    if (CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kEnableStreamlinedHostedApps)) {
+    if (extensions::util::IsStreamlinedHostedAppsEnabled()) {
       launch_type = (controller_->GetExtensionLaunchType(profile_, app_id_) ==
                      extensions::LAUNCH_TYPE_REGULAR) ?
                     extensions::LAUNCH_TYPE_WINDOW :

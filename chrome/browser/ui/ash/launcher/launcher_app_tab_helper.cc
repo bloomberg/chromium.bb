@@ -6,14 +6,13 @@
 
 #include <vector>
 
-#include "base/command_line.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/web_applications/web_app.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
@@ -54,8 +53,7 @@ const extensions::Extension* GetExtensionForTab(Profile* profile,
 
   // Bookmark app windows should match their launch url extension despite
   // their web extents.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableStreamlinedHostedApps)) {
+  if (extensions::util::IsStreamlinedHostedAppsEnabled()) {
     for (extensions::ExtensionSet::const_iterator it = extensions.begin();
          it != extensions.end(); ++it) {
       if (it->get()->from_bookmark() &&

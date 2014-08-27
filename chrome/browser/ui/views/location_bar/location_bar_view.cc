@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <map>
 
-#include "base/command_line.h"
 #include "base/i18n/rtl.h"
 #include "base/prefs/pref_service.h"
 #include "base/stl_util.h"
@@ -18,6 +17,7 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/api/omnibox/omnibox_api.h"
 #include "chrome/browser/extensions/extension_action.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/location_bar_controller.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
@@ -59,7 +59,6 @@
 #include "chrome/browser/ui/views/passwords/manage_passwords_icon_view.h"
 #include "chrome/browser/ui/views/translate/translate_bubble_view.h"
 #include "chrome/browser/ui/zoom/zoom_controller.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/search_engines/template_url.h"
@@ -302,8 +301,8 @@ void LocationBarView::Init() {
   omnibox_view_ = new OmniboxViewViews(
       this, profile(), command_updater(),
       is_popup_mode_ ||
-          (browser_->is_app() && CommandLine::ForCurrentProcess()->
-              HasSwitch(switches::kEnableStreamlinedHostedApps)),
+          (browser_->is_app() &&
+           extensions::util::IsStreamlinedHostedAppsEnabled()),
       this, font_list);
   omnibox_view_->Init();
   omnibox_view_->SetFocusable(true);

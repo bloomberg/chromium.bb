@@ -19,6 +19,7 @@
 #include "chrome/browser/bookmarks/bookmark_stats.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/native_window_notification_source.h"
@@ -1545,8 +1546,7 @@ bool BrowserView::ShouldShowWindowTitle() const {
   if (browser_->host_desktop_type() == chrome::HOST_DESKTOP_TYPE_ASH &&
       browser_->is_trusted_source() &&
       !(browser_->is_app() &&
-        CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableStreamlinedHostedApps)))
+        extensions::util::IsStreamlinedHostedAppsEnabled()))
     return false;
 
   return browser_->SupportsWindowFeature(Browser::FEATURE_TITLEBAR);
@@ -1577,8 +1577,7 @@ bool BrowserView::ShouldShowWindowIcon() const {
   if (browser_->host_desktop_type() == chrome::HOST_DESKTOP_TYPE_ASH &&
       browser_->is_trusted_source() &&
       !(browser_->is_app() &&
-        CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableStreamlinedHostedApps)))
+        extensions::util::IsStreamlinedHostedAppsEnabled()))
     return false;
 
   return browser_->SupportsWindowFeature(Browser::FEATURE_TITLEBAR);

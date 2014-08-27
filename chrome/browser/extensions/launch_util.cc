@@ -4,13 +4,12 @@
 
 #include "chrome/browser/extensions/launch_util.h"
 
-#include "base/command_line.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_sync_service.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/host_desktop.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -48,8 +47,7 @@ LaunchType GetLaunchType(const ExtensionPrefs* prefs,
   LaunchType result = LAUNCH_TYPE_DEFAULT;
 
   // Launch hosted apps as windows by default for streamlined hosted apps.
-  if (CommandLine::ForCurrentProcess()->
-          HasSwitch(switches::kEnableStreamlinedHostedApps) &&
+  if (util::IsStreamlinedHostedAppsEnabled() &&
       extension->id() != extension_misc::kChromeAppId) {
     result = LAUNCH_TYPE_WINDOW;
   }

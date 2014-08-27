@@ -4,7 +4,6 @@
 
 #include "chrome/browser/extensions/tab_helper.h"
 
-#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -18,6 +17,7 @@
 #include "chrome/browser/extensions/bookmark_app_helper.h"
 #include "chrome/browser/extensions/error_console/error_console.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/location_bar_controller.h"
 #include "chrome/browser/extensions/webstore_inline_installer.h"
 #include "chrome/browser/extensions/webstore_inline_installer_factory.h"
@@ -30,7 +30,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/web_applications/web_app.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/chrome_extension_messages.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
@@ -228,8 +227,7 @@ void TabHelper::DidNavigateMainFrame(
   ExtensionRegistry* registry = ExtensionRegistry::Get(context);
   const ExtensionSet& enabled_extensions = registry->enabled_extensions();
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableStreamlinedHostedApps)) {
+  if (util::IsStreamlinedHostedAppsEnabled()) {
     Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
     if (browser && browser->is_app()) {
       SetExtensionApp(registry->GetExtensionById(

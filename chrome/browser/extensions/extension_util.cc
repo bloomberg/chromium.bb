@@ -323,5 +323,10 @@ const gfx::ImageSkia& GetDefaultExtensionIcon() {
       IDR_EXTENSION_DEFAULT_ICON);
 }
 
+bool IsStreamlinedHostedAppsEnabled() {
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableStreamlinedHostedApps);
+}
+
 }  // namespace util
 }  // namespace extensions

@@ -17,6 +17,7 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
@@ -490,8 +491,8 @@ void NTPResourceCache::CreateNewTabHTML() {
   load_time_data.SetBoolean("showWebStoreIcon",
                             !prefs->GetBoolean(prefs::kHideWebStoreIcon));
 
-  bool streamlined_hosted_apps = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableStreamlinedHostedApps);
+  bool streamlined_hosted_apps =
+      extensions::util::IsStreamlinedHostedAppsEnabled();
   load_time_data.SetBoolean("enableStreamlinedHostedApps",
                             streamlined_hosted_apps);
   // Use a different string for launching as a regular tab for streamlined

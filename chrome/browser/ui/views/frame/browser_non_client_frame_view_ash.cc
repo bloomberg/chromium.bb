@@ -6,15 +6,14 @@
 
 #include <algorithm>
 
-#include "ash/ash_switches.h"
 #include "ash/frame/caption_buttons/frame_caption_button.h"
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/frame/default_header_painter.h"
 #include "ash/frame/frame_border_hit_test_controller.h"
 #include "ash/frame/header_painter_util.h"
 #include "ash/shell.h"
-#include "base/command_line.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -26,7 +25,6 @@
 #include "chrome/browser/ui/views/profiles/avatar_menu_button.h"
 #include "chrome/browser/ui/views/tab_icon_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
-#include "chrome/common/chrome_switches.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/ash_resources.h"
 #include "grit/theme_resources.h"
@@ -498,8 +496,7 @@ bool BrowserNonClientFrameViewAsh::UseWebAppHeaderStyle() const {
   // Use of the experimental WebApp header style is guarded with the
   // streamlined hosted app style.
   return browser_view()->browser()->is_app() &&
-         CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kEnableStreamlinedHostedApps);
+         extensions::util::IsStreamlinedHostedAppsEnabled();
 }
 
 void BrowserNonClientFrameViewAsh::LayoutAvatar() {

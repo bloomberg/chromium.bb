@@ -33,6 +33,7 @@
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/extension_creator.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/extensions/pack_extension_job.h"
 #include "chrome/browser/first_run/first_run.h"
@@ -201,8 +202,7 @@ bool GetAppLaunchContainer(
   extensions::LaunchContainer launch_container = extensions::GetLaunchContainer(
       extensions::ExtensionPrefs::Get(profile), extension);
 
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-           switches::kEnableStreamlinedHostedApps) &&
+  if (!extensions::util::IsStreamlinedHostedAppsEnabled() &&
       !extensions::HasPreferredLaunchContainer(
            extensions::ExtensionPrefs::Get(profile), extension)) {
     launch_container = extensions::LAUNCH_CONTAINER_WINDOW;

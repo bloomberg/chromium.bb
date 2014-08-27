@@ -123,6 +123,9 @@ bool SiteHasIsolatedStorage(const GURL& extension_site_url,
 const gfx::ImageSkia& GetDefaultExtensionIcon();
 const gfx::ImageSkia& GetDefaultAppIcon();
 
+// Returns true if the experimental streamlined hosted apps feature is enabled.
+bool IsStreamlinedHostedAppsEnabled();
+
 }  // namespace util
 }  // namespace extensions
 
