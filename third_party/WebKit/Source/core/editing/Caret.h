@@ -68,7 +68,7 @@ protected:
 
 protected:
     static RenderBlock* caretRenderer(Node*);
-    static void repaintCaretForLocalRect(Node*, const LayoutRect&);
+    static void invalidateLocalCaretRect(Node*, const LayoutRect&);
 
 private:
     LayoutRect m_caretLocalRect; // caret rect in coords local to the renderer responsible for painting the caret

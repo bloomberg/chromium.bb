@@ -192,7 +192,7 @@ IntRect CaretBase::absoluteBoundsForLocalRect(Node* node, const LayoutRect& rect
     return caretPainter->localToAbsoluteQuad(FloatRect(localRect)).enclosingBoundingBox();
 }
 
-void CaretBase::repaintCaretForLocalRect(Node* node, const LayoutRect& rect)
+void CaretBase::invalidateLocalCaretRect(Node* node, const LayoutRect& rect)
 {
     RenderBlock* caretPainter = caretRenderer(node);
     if (!caretPainter)
@@ -237,7 +237,7 @@ void CaretBase::invalidateCaretRect(Node* node, bool caretRectChanged)
 
     if (RenderView* view = node->document().renderView()) {
         if (shouldRepaintCaret(view, node->isContentEditable(Node::UserSelectAllIsAlwaysNonEditable)))
-            repaintCaretForLocalRect(node, localCaretRectWithoutUpdate());
+            invalidateLocalCaretRect(node, localCaretRectWithoutUpdate());
     }
 }
 

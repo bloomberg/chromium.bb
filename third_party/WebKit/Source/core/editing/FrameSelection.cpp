@@ -1252,15 +1252,6 @@ static LayoutRect localCaretRect(const VisibleSelection& m_selection, const Posi
     return localCaretRectOfPosition(caretPosition, renderer);
 }
 
-static void invalidateLocalCaretRect(RenderObject* renderer, const LayoutRect& caretRect)
-{
-    // FIXME: Need to over-paint 1 pixel to workaround some rounding problems.
-    // https://bugs.webkit.org/show_bug.cgi?id=108283
-    LayoutRect inflatedRect = caretRect;
-    inflatedRect.inflate(1);
-    renderer->invalidatePaintRectangle(inflatedRect);
-}
-
 void FrameSelection::invalidateCaretRect()
 {
     if (!m_caretRectDirty)
@@ -1276,9 +1267,9 @@ void FrameSelection::invalidateCaretRect()
 
     RenderView* view = m_frame->document()->renderView();
     if (m_previousCaretNode && shouldRepaintCaret(view, m_previousCaretNode->isContentEditable()))
-        invalidateLocalCaretRect(m_previousCaretNode->renderer(), m_previousCaretRect);
+        invalidateLocalCaretRect(m_previousCaretNode.get(), m_previousCaretRect);
     if (newNode && shouldRepaintCaret(view, newNode->isContentEditable()))
-        invalidateLocalCaretRect(newNode->renderer(), newRect);
+        invalidateLocalCaretRect(newNode, newRect);
 
     m_previousCaretNode = newNode;
     m_previousCaretRect = newRect;
