@@ -67,7 +67,7 @@ KeyedService* BuildBookmarkModelWithoutLoading(
   Profile* profile = static_cast<Profile*>(context);
   ChromeBookmarkClient* bookmark_client =
       ChromeBookmarkClientFactory::GetForProfile(profile);
-  BookmarkModel* bookmark_model = new BookmarkModel(bookmark_client, false);
+  BookmarkModel* bookmark_model = new BookmarkModel(bookmark_client);
   bookmark_client->Init(bookmark_model);
   return bookmark_model;
 }

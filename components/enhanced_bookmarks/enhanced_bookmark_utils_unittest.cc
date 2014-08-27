@@ -34,7 +34,7 @@ class EnhancedBookmarkUtilsTest : public testing::Test {
 
 TEST_F(EnhancedBookmarkUtilsTest, TestBookmarkSearch) {
   test::TestBookmarkClient bookmark_client;
-  scoped_ptr<BookmarkModel> bookmark_model(bookmark_client.CreateModel(false));
+  scoped_ptr<BookmarkModel> bookmark_model(bookmark_client.CreateModel());
   const BookmarkNode* node1 = AddBookmark(bookmark_model.get(), "john hopkins");
   const BookmarkNode* node2 = AddBookmark(bookmark_model.get(), "JohN hopkins");
   const BookmarkNode* node3 = AddBookmark(bookmark_model.get(), "katy perry");

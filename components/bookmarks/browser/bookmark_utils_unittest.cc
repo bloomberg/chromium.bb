@@ -75,7 +75,7 @@ class BookmarkUtilsTest : public testing::Test,
 
 TEST_F(BookmarkUtilsTest, GetBookmarksMatchingPropertiesWordPhraseQuery) {
   test::TestBookmarkClient client;
-  scoped_ptr<BookmarkModel> model(client.CreateModel(false));
+  scoped_ptr<BookmarkModel> model(client.CreateModel());
   const BookmarkNode* node1 = model->AddURL(model->other_node(),
                                             0,
                                             ASCIIToUTF16("foo bar"),
@@ -133,7 +133,7 @@ TEST_F(BookmarkUtilsTest, GetBookmarksMatchingPropertiesWordPhraseQuery) {
 // Check exact matching against a URL query.
 TEST_F(BookmarkUtilsTest, GetBookmarksMatchingPropertiesUrl) {
   test::TestBookmarkClient client;
-  scoped_ptr<BookmarkModel> model(client.CreateModel(false));
+  scoped_ptr<BookmarkModel> model(client.CreateModel());
   const BookmarkNode* node1 = model->AddURL(model->other_node(),
                                             0,
                                             ASCIIToUTF16("Google"),
@@ -169,7 +169,7 @@ TEST_F(BookmarkUtilsTest, GetBookmarksMatchingPropertiesUrl) {
 // Check exact matching against a title query.
 TEST_F(BookmarkUtilsTest, GetBookmarksMatchingPropertiesTitle) {
   test::TestBookmarkClient client;
-  scoped_ptr<BookmarkModel> model(client.CreateModel(false));
+  scoped_ptr<BookmarkModel> model(client.CreateModel());
   const BookmarkNode* node1 = model->AddURL(model->other_node(),
                                             0,
                                             ASCIIToUTF16("Google"),
@@ -207,7 +207,7 @@ TEST_F(BookmarkUtilsTest, GetBookmarksMatchingPropertiesTitle) {
 // Check matching against a query with multiple predicates.
 TEST_F(BookmarkUtilsTest, GetBookmarksMatchingPropertiesConjunction) {
   test::TestBookmarkClient client;
-  scoped_ptr<BookmarkModel> model(client.CreateModel(false));
+  scoped_ptr<BookmarkModel> model(client.CreateModel());
   const BookmarkNode* node1 = model->AddURL(model->other_node(),
                                             0,
                                             ASCIIToUTF16("Google"),
@@ -259,7 +259,7 @@ TEST_F(BookmarkUtilsTest, GetBookmarksMatchingPropertiesConjunction) {
 #if !defined(OS_IOS)
 TEST_F(BookmarkUtilsTest, CopyPaste) {
   test::TestBookmarkClient client;
-  scoped_ptr<BookmarkModel> model(client.CreateModel(false));
+  scoped_ptr<BookmarkModel> model(client.CreateModel());
   const BookmarkNode* node = model->AddURL(model->other_node(),
                                            0,
                                            ASCIIToUTF16("foo bar"),
@@ -287,7 +287,7 @@ TEST_F(BookmarkUtilsTest, CopyPaste) {
 
 TEST_F(BookmarkUtilsTest, CopyPasteMetaInfo) {
   test::TestBookmarkClient client;
-  scoped_ptr<BookmarkModel> model(client.CreateModel(false));
+  scoped_ptr<BookmarkModel> model(client.CreateModel());
   const BookmarkNode* node = model->AddURL(model->other_node(),
                                            0,
                                            ASCIIToUTF16("foo bar"),
@@ -330,7 +330,7 @@ TEST_F(BookmarkUtilsTest, CopyPasteMetaInfo) {
 #endif
 TEST_F(BookmarkUtilsTest, MAYBE_CutToClipboard) {
   test::TestBookmarkClient client;
-  scoped_ptr<BookmarkModel> model(client.CreateModel(false));
+  scoped_ptr<BookmarkModel> model(client.CreateModel());
   model->AddObserver(this);
 
   base::string16 title(ASCIIToUTF16("foo"));
@@ -362,7 +362,7 @@ TEST_F(BookmarkUtilsTest, PasteNonEditableNodes) {
   extra_nodes.push_back(extra_node);
   client.SetExtraNodesToLoad(extra_nodes.Pass());
 
-  scoped_ptr<BookmarkModel> model(client.CreateModel(false));
+  scoped_ptr<BookmarkModel> model(client.CreateModel());
   const BookmarkNode* node = model->AddURL(model->other_node(),
                                            0,
                                            ASCIIToUTF16("foo bar"),
@@ -385,7 +385,7 @@ TEST_F(BookmarkUtilsTest, PasteNonEditableNodes) {
 
 TEST_F(BookmarkUtilsTest, GetParentForNewNodes) {
   test::TestBookmarkClient client;
-  scoped_ptr<BookmarkModel> model(client.CreateModel(false));
+  scoped_ptr<BookmarkModel> model(client.CreateModel());
   // This tests the case where selection contains one item and that item is a
   // folder.
   std::vector<const BookmarkNode*> nodes;
@@ -427,7 +427,7 @@ TEST_F(BookmarkUtilsTest, GetParentForNewNodes) {
 // Verifies that meta info is copied when nodes are cloned.
 TEST_F(BookmarkUtilsTest, CloneMetaInfo) {
   test::TestBookmarkClient client;
-  scoped_ptr<BookmarkModel> model(client.CreateModel(false));
+  scoped_ptr<BookmarkModel> model(client.CreateModel());
   // Add a node containing meta info.
   const BookmarkNode* node = model->AddURL(model->other_node(),
                                            0,
@@ -465,7 +465,7 @@ TEST_F(BookmarkUtilsTest, RemoveAllBookmarks) {
   extra_nodes.push_back(extra_node);
   client.SetExtraNodesToLoad(extra_nodes.Pass());
 
-  scoped_ptr<BookmarkModel> model(client.CreateModel(false));
+  scoped_ptr<BookmarkModel> model(client.CreateModel());
   EXPECT_TRUE(model->bookmark_bar_node()->empty());
   EXPECT_TRUE(model->other_node()->empty());
   EXPECT_TRUE(model->mobile_node()->empty());

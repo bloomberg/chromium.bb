@@ -203,7 +203,7 @@ TEST_F(MetadataAccessorTest, TestOriginalImageBadUrl) {
 
 TEST_F(MetadataAccessorTest, TestEncodeDecode) {
   test::TestBookmarkClient bookmark_client;
-  scoped_ptr<BookmarkModel> bookmark_model(bookmark_client.CreateModel(false));
+  scoped_ptr<BookmarkModel> bookmark_model(bookmark_client.CreateModel());
   const BookmarkNode* node =
       bookmark_model->AddURL(bookmark_model->other_node(),
                              0,  // index.
@@ -227,7 +227,7 @@ TEST_F(MetadataAccessorTest, TestEncodeDecode) {
 
 TEST_F(MetadataAccessorTest, TestDoubleEncodeDecode) {
   test::TestBookmarkClient bookmark_client;
-  scoped_ptr<BookmarkModel> bookmark_model(bookmark_client.CreateModel(false));
+  scoped_ptr<BookmarkModel> bookmark_model(bookmark_client.CreateModel());
   const BookmarkNode* node =
       bookmark_model->AddURL(bookmark_model->other_node(),
                              0,  // index.
@@ -256,7 +256,7 @@ TEST_F(MetadataAccessorTest, TestDoubleEncodeDecode) {
 
 TEST_F(MetadataAccessorTest, TestThumbnail) {
   test::TestBookmarkClient bookmark_client;
-  scoped_ptr<BookmarkModel> bookmark_model(bookmark_client.CreateModel(false));
+  scoped_ptr<BookmarkModel> bookmark_model(bookmark_client.CreateModel());
   const BookmarkNode* node =
       bookmark_model->AddURL(bookmark_model->other_node(),
                              0,  // index.
@@ -286,7 +286,7 @@ TEST_F(MetadataAccessorTest, TestThumbnail) {
 
 TEST_F(MetadataAccessorTest, TestRemoteId) {
   test::TestBookmarkClient bookmark_client;
-  scoped_ptr<BookmarkModel> bookmark_model(bookmark_client.CreateModel(false));
+  scoped_ptr<BookmarkModel> bookmark_model(bookmark_client.CreateModel());
   const BookmarkNode* node = AddBookmark(bookmark_model.get(), "Aga Khan");
 
   // First call creates the UUID, second call should return the same.
@@ -305,7 +305,7 @@ TEST_F(MetadataAccessorTest, TestEmptyDescription) {
 
 TEST_F(MetadataAccessorTest, TestDescription) {
   test::TestBookmarkClient bookmark_client;
-  scoped_ptr<BookmarkModel> bookmark_model(bookmark_client.CreateModel(false));
+  scoped_ptr<BookmarkModel> bookmark_model(bookmark_client.CreateModel());
   scoped_ptr<BookmarkNode> node(new BookmarkNode(GURL(BOOKMARK_URL)));
   const std::string description("This is the most useful description of all.");
 
@@ -321,7 +321,7 @@ TEST_F(MetadataAccessorTest, TestDescription) {
 // If there is no notes field, the description should fall back on the snippet.
 TEST_F(MetadataAccessorTest, TestDescriptionFallback) {
   test::TestBookmarkClient bookmark_client;
-  scoped_ptr<BookmarkModel> bookmark_model(bookmark_client.CreateModel(false));
+  scoped_ptr<BookmarkModel> bookmark_model(bookmark_client.CreateModel());
   scoped_ptr<BookmarkNode> node(new BookmarkNode(GURL(BOOKMARK_URL)));
 
   // Binary serialize the protobuf.
