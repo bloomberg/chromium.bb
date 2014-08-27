@@ -14,13 +14,17 @@
 namespace extensions {
 namespace {
 
+const char kKernelLogEntry[] =
+    "2014-08-18T14:04:58.606132-07:00 kernel: [269374.012690] "
+    "cfg80211: World regulatory domain updated:";
+
 const char kShillLogEntry[] =
-    "2013-07-08T11:28:12.440308+02:00 localhost shill:"
-    "[0708/112812:ERROR:manager.cc(480)] Skipping unload of service";
+    "2014-08-15T11:20:24.575058-07:00 shill[1018]: "
+    "[INFO:service.cc(290)] Disconnecting from service 32: Unload";
 
 const char kWpaSupplicantLogEntry[] =
-    "2013-07-18T12:39:07.443100-07:00 localhost wpa_supplicant[894]:"
-    "dbus: Failed to construct signal";
+    "2014-08-15T12:36:06.137021-07:00 wpa_supplicant[818]: "
+    "nl80211: Received scan results (0 BSSes)";
 
 }  // namespace
 
@@ -32,23 +36,33 @@ TEST_F(ExtensionSyslogParserTest, ParseLog) {
   api::log_private::Filter filter;
   FilterHandler filter_handler(filter);
   SyslogParser p;
+
+  // Test kernel log
+  p.Parse(kKernelLogEntry, &output, &filter_handler);
+  ASSERT_EQ(1u, output.size());
+  EXPECT_EQ("unknown", output[0]->level);
+  EXPECT_EQ("kernel", output[0]->process);
+  EXPECT_EQ("unknown", output[0]->process_id);
+  EXPECT_EQ(kKernelLogEntry, output[0]->full_entry);
+  EXPECT_DOUBLE_EQ(1408395898606.132, output[0]->timestamp);
+
   // Test shill log
   p.Parse(kShillLogEntry, &output, &filter_handler);
-  ASSERT_EQ(1u, output.size());
-  EXPECT_STREQ("error", output[0]->level.c_str());
-  EXPECT_STREQ("shill:", output[0]->process.c_str());
-  EXPECT_STREQ("unknown", output[0]->process_id.c_str());
-  EXPECT_STREQ(kShillLogEntry, output[0]->full_entry.c_str());
-  EXPECT_DOUBLE_EQ(1373275692440.308, output[0]->timestamp);
+  ASSERT_EQ(2u, output.size());
+  EXPECT_EQ("info", output[1]->level);
+  EXPECT_EQ("shill", output[1]->process);
+  EXPECT_EQ("1018", output[1]->process_id);
+  EXPECT_EQ(kShillLogEntry, output[1]->full_entry);
+  EXPECT_DOUBLE_EQ(1408126824575.058, output[1]->timestamp);
 
   // Test WpaSupplicant log
   p.Parse(kWpaSupplicantLogEntry, &output, &filter_handler);
-  ASSERT_EQ(2u, output.size());
-  EXPECT_STREQ("unknown", output[1]->level.c_str());
-  EXPECT_STREQ("wpa_supplicant", output[1]->process.c_str());
-  EXPECT_STREQ("894", output[1]->process_id.c_str());
-  EXPECT_STREQ(kWpaSupplicantLogEntry, output[1]->full_entry.c_str());
-  EXPECT_DOUBLE_EQ(1374176347443.1, output[1]->timestamp);
+  ASSERT_EQ(3u, output.size());
+  EXPECT_EQ("unknown", output[2]->level);
+  EXPECT_EQ("wpa_supplicant", output[2]->process);
+  EXPECT_EQ("818", output[2]->process_id);
+  EXPECT_EQ(kWpaSupplicantLogEntry, output[2]->full_entry);
+  EXPECT_DOUBLE_EQ(1408131366137.021, output[2]->timestamp);
 }
 
 }  // namespace extensions

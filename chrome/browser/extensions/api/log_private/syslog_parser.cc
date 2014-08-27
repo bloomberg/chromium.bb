@@ -23,7 +23,7 @@ namespace extensions {
 
 namespace {
 
-const char kProcessInfoDelimiters[] = "[]";
+const char kProcessInfoDelimiters[] = "[]:";
 
 }  // namespace
 
@@ -40,22 +40,16 @@ SyslogParser::Error SyslogParser::ParseEntry(
   base::StringTokenizer tokenizer(input, " ");
   if (!tokenizer.GetNext()) {
     LOG(ERROR)
-        << "Error when parsing data. Expect: At least 3 tokens. Actual: 0";
+        << "Error when parsing data. Expect: At least 2 tokens. Actual: 0";
     return TOKENIZE_ERROR;
   }
   std::string time = tokenizer.token();
   if (ParseTime(time, &(entry->timestamp)) != SyslogParser::SUCCESS) {
     return SyslogParser::PARSE_ERROR;
   }
-  // Skips "localhost" field.
   if (!tokenizer.GetNext()) {
     LOG(ERROR)
-        << "Error when parsing data. Expect: At least 3 tokens. Actual: 1";
-    return TOKENIZE_ERROR;
-  }
-  if (!tokenizer.GetNext()) {
-    LOG(ERROR)
-        << "Error when parsing data. Expect: At least 3 tokens. Actual: 2";
+        << "Error when parsing data. Expect: At least 2 tokens. Actual: 1";
     return TOKENIZE_ERROR;
   }
   ParseProcess(tokenizer.token(), entry.get());
