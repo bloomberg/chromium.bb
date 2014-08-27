@@ -26,10 +26,16 @@ public:
         Rejected,
     };
 
-    static PassOwnPtr<ScriptFunction> create(PassRefPtrWillBeRawPtr<WaitUntilObserver> observer, ResolveType type)
+    static PassOwnPtrWillBeRawPtr<ScriptFunction> create(PassRefPtrWillBeRawPtr<WaitUntilObserver> observer, ResolveType type)
     {
         ExecutionContext* executionContext = observer->executionContext();
-        return adoptPtr(new ThenFunction(toIsolate(executionContext), observer, type));
+        return adoptPtrWillBeNoop(new ThenFunction(toIsolate(executionContext), observer, type));
+    }
+
+    virtual void trace(Visitor* visitor) OVERRIDE
+    {
+        visitor->trace(m_observer);
+        ScriptFunction::trace(visitor);
     }
 
 private:
@@ -51,7 +57,7 @@ private:
         return value;
     }
 
-    RefPtrWillBePersistent<WaitUntilObserver> m_observer;
+    RefPtrWillBeMember<WaitUntilObserver> m_observer;
     ResolveType m_resolveType;
 };
 

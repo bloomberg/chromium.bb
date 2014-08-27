@@ -60,7 +60,7 @@ public:
     // If |promise| is not a Promise object, throws a v8 TypeError.
     ScriptPromise(ScriptState*, v8::Handle<v8::Value> promise);
 
-    ScriptPromise then(PassOwnPtr<ScriptFunction> onFulfilled, PassOwnPtr<ScriptFunction> onRejected = PassOwnPtr<ScriptFunction>());
+    ScriptPromise then(PassOwnPtrWillBeRawPtr<ScriptFunction> onFulfilled, PassOwnPtrWillBeRawPtr<ScriptFunction> onRejected = PassOwnPtrWillBeRawPtr<ScriptFunction>());
 
     bool isObject() const
     {

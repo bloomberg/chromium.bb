@@ -100,7 +100,7 @@ ScriptPromise::ScriptPromise(ScriptState* scriptState, v8::Handle<v8::Value> val
     m_promise = ScriptValue(scriptState, value);
 }
 
-ScriptPromise ScriptPromise::then(PassOwnPtr<ScriptFunction> onFulfilled, PassOwnPtr<ScriptFunction> onRejected)
+ScriptPromise ScriptPromise::then(PassOwnPtrWillBeRawPtr<ScriptFunction> onFulfilled, PassOwnPtrWillBeRawPtr<ScriptFunction> onRejected)
 {
     if (m_promise.isEmpty())
         return ScriptPromise();

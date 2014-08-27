@@ -40,9 +40,9 @@ public:
 
     // The returned ScriptFunction can outlive the StubScriptFunction,
     // but it should not be called after the StubScriptFunction dies.
-    PassOwnPtr<ScriptFunction> function(v8::Isolate* isolate)
+    PassOwnPtrWillBeRawPtr<ScriptFunction> function(v8::Isolate* isolate)
     {
-        return adoptPtr(new ScriptFunctionImpl(isolate, *this));
+        return adoptPtrWillBeNoop(new ScriptFunctionImpl(isolate, *this));
     }
 
     size_t callCount() { return m_callCount; }
@@ -52,7 +52,7 @@ private:
     size_t m_callCount;
     ScriptValue m_arg;
 
-    class ScriptFunctionImpl : public ScriptFunction {
+    class ScriptFunctionImpl FINAL : public ScriptFunction {
     public:
         ScriptFunctionImpl(v8::Isolate* isolate, StubScriptFunction& owner)
             : ScriptFunction(isolate)

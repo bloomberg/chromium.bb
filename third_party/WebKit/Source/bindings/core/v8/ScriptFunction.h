@@ -33,15 +33,17 @@
 
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8GarbageCollected.h"
-#include "wtf/RefCounted.h"
+#include "platform/heap/Handle.h"
 #include <v8.h>
 
 namespace blink {
 
-class ScriptFunction : public V8GarbageCollected<ScriptFunction> {
+class ScriptFunction : public NoBaseWillBeGarbageCollectedFinalized<ScriptFunction>, public V8GarbageCollected<ScriptFunction> {
 public:
     virtual ~ScriptFunction() { }
-    static v8::Handle<v8::Function> adoptByGarbageCollector(PassOwnPtr<ScriptFunction>);
+    static v8::Handle<v8::Function> adoptByGarbageCollector(PassOwnPtrWillBeRawPtr<ScriptFunction>);
+
+    virtual void trace(Visitor*) { }
 
 protected:
     ScriptFunction(v8::Isolate* isolate) : V8GarbageCollected<ScriptFunction>(isolate) { }
