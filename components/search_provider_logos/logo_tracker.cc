@@ -107,7 +107,7 @@ void LogoTracker::GetLogo(LogoObserver* observer) {
   if (is_idle_) {
     is_idle_ = false;
     base::PostTaskAndReplyWithResult(
-        file_task_runner_,
+        file_task_runner_.get(),
         FROM_HERE,
         base::Bind(&GetLogoFromCacheOnFileThread,
                    logo_cache_,
@@ -208,7 +208,7 @@ void LogoTracker::FetchLogo() {
   }
 
   fetcher_.reset(net::URLFetcher::Create(url, net::URLFetcher::GET, this));
-  fetcher_->SetRequestContext(request_context_getter_);
+  fetcher_->SetRequestContext(request_context_getter_.get());
   fetcher_->Start();
 }
 
@@ -218,7 +218,7 @@ void LogoTracker::OnFreshLogoParsed(scoped_ptr<EncodedLogo> logo) {
   if (logo)
     logo->metadata.source_url = logo_url_.spec();
 
-  if (!logo || !logo->encoded_image) {
+  if (!logo || !logo->encoded_image.get()) {
     OnFreshLogoAvailable(logo.Pass(), SkBitmap());
   } else {
     // Store the value of logo->encoded_image for use below. This ensures that
@@ -237,7 +237,7 @@ void LogoTracker::OnFreshLogoAvailable(scoped_ptr<EncodedLogo> encoded_logo,
                                        const SkBitmap& image) {
   DCHECK(!is_idle_);
 
-  if (encoded_logo && !encoded_logo->encoded_image && cached_logo_ &&
+  if (encoded_logo && !encoded_logo->encoded_image.get() && cached_logo_ &&
       !encoded_logo->metadata.fingerprint.empty() &&
       encoded_logo->metadata.fingerprint ==
           cached_logo_->metadata.fingerprint) {
@@ -282,11 +282,10 @@ void LogoTracker::OnURLFetchComplete(const net::URLFetcher* source) {
   base::Time response_time = clock_->Now();
 
   base::PostTaskAndReplyWithResult(
-      background_task_runner_,
+      background_task_runner_.get(),
       FROM_HERE,
-      base::Bind(parse_logo_response_func_,
-                 base::Passed(&response),
-                 response_time),
+      base::Bind(
+          parse_logo_response_func_, base::Passed(&response), response_time),
       base::Bind(&LogoTracker::OnFreshLogoParsed,
                  weak_ptr_factory_.GetWeakPtr()));
 }
