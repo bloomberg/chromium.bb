@@ -191,7 +191,7 @@ SandboxFileSystemBackendDelegate::SandboxFileSystemBackendDelegate(
                                                usage_cache())),
       quota_reservation_manager_(new QuotaReservationManager(
           scoped_ptr<QuotaReservationManager::QuotaBackend>(
-              new QuotaBackendImpl(file_task_runner_,
+              new QuotaBackendImpl(file_task_runner_.get(),
                                    obfuscated_file_util(),
                                    usage_cache(),
                                    quota_manager_proxy)))),

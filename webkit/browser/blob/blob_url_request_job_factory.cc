@@ -64,8 +64,8 @@ net::URLRequestJob* BlobProtocolHandler::MaybeCreateJob(
   return new storage::BlobURLRequestJob(request,
                                         network_delegate,
                                         LookupBlobData(request),
-                                        file_system_context_,
-                                        file_loop_proxy_);
+                                        file_system_context_.get(),
+                                        file_loop_proxy_.get());
 }
 
 scoped_refptr<storage::BlobData> BlobProtocolHandler::LookupBlobData(

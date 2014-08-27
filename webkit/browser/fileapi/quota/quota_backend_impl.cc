@@ -43,12 +43,15 @@ void QuotaBackendImpl::ReserveQuota(const GURL& origin,
     callback.Run(base::File::FILE_OK, 0);
     return;
   }
-  DCHECK(quota_manager_proxy_);
+  DCHECK(quota_manager_proxy_.get());
   quota_manager_proxy_->GetUsageAndQuota(
-      file_task_runner_, origin, FileSystemTypeToQuotaStorageType(type),
+      file_task_runner_.get(),
+      origin,
+      FileSystemTypeToQuotaStorageType(type),
       base::Bind(&QuotaBackendImpl::DidGetUsageAndQuotaForReserveQuota,
                  weak_ptr_factory_.GetWeakPtr(),
-                 QuotaReservationInfo(origin, type, delta), callback));
+                 QuotaReservationInfo(origin, type, delta),
+                 callback));
 }
 
 void QuotaBackendImpl::ReleaseReservedQuota(const GURL& origin,
@@ -136,7 +139,7 @@ void QuotaBackendImpl::DidGetUsageAndQuotaForReserveQuota(
 void QuotaBackendImpl::ReserveQuotaInternal(const QuotaReservationInfo& info) {
   DCHECK(file_task_runner_->RunsTasksOnCurrentThread());
   DCHECK(info.origin.is_valid());
-  DCHECK(quota_manager_proxy_);
+  DCHECK(quota_manager_proxy_.get());
   quota_manager_proxy_->NotifyStorageModified(
       storage::QuotaClient::kFileSystem,
       info.origin,

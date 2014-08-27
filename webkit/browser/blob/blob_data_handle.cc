@@ -23,7 +23,7 @@ BlobDataHandle::BlobDataHandleShared::BlobDataHandleShared(
 }
 
 BlobData* BlobDataHandle::BlobDataHandleShared::data() const {
-  return blob_data_;
+  return blob_data_.get();
 }
 
 const std::string& BlobDataHandle::BlobDataHandleShared::uuid() const {
@@ -40,7 +40,7 @@ BlobDataHandle::BlobDataHandle(BlobData* blob_data,
                                base::SequencedTaskRunner* task_runner)
     : io_task_runner_(task_runner),
       shared_(new BlobDataHandleShared(blob_data, context, task_runner)) {
-  DCHECK(io_task_runner_);
+  DCHECK(io_task_runner_.get());
   DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
 }
 
