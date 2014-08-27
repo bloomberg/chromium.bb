@@ -80,6 +80,9 @@ import v8_types
 from v8_utilities import capitalize, cpp_name, conditional_string, v8_class_name
 
 
+KNOWN_COMPONENTS = frozenset(['core', 'modules'])
+
+
 def render_template(interface_info, header_template, cpp_template,
                     template_context):
     template_context['code_generator'] = module_pyname
@@ -95,7 +98,9 @@ def render_template(interface_info, header_template, cpp_template,
     return header_text, cpp_text
 
 
-class CodeGeneratorV8(object):
+class CodeGeneratorBase(object):
+    """Base class for v8 bindings generator and IDL dictionary impl generator"""
+
     def __init__(self, interfaces_info, cache_dir, output_dir):
         interfaces_info = interfaces_info or {}
         self.interfaces_info = interfaces_info
@@ -131,24 +136,30 @@ class CodeGeneratorV8(object):
             (interface_name, interface_info['component_dir'])
             for interface_name, interface_info in interfaces_info.iteritems()))
 
-    def output_paths_for_bindings(self, definition_name):
+    def generate_code(self, definitions, definition_name):
+        """Returns .h/.cpp code as ((path, content)...)."""
+        # Set local type info
+        IdlType.set_callback_functions(definitions.callback_functions.keys())
+        IdlType.set_enums((enum.name, enum.values)
+                          for enum in definitions.enumerations.values())
+        return self.generate_code_internal(definitions, definition_name)
+
+    def generate_code_internal(self, definitions, definition_name):
+        # This should be implemented in subclasses.
+        raise NotImplementedError()
+
+
+class CodeGeneratorV8(CodeGeneratorBase):
+    def __init__(self, interfaces_info, cache_dir, output_dir):
+        CodeGeneratorBase.__init__(self, interfaces_info, cache_dir, output_dir)
+
+    def output_paths(self, definition_name):
         header_path = posixpath.join(self.output_dir,
                                      'V8%s.h' % definition_name)
         cpp_path = posixpath.join(self.output_dir, 'V8%s.cpp' % definition_name)
         return header_path, cpp_path
 
-    def output_paths_for_impl(self, definition_name):
-        header_path = posixpath.join(self.output_dir, '%s.h' % definition_name)
-        cpp_path = posixpath.join(self.output_dir, '%s.cpp' % definition_name)
-        return header_path, cpp_path
-
-    def generate_code(self, definitions, definition_name):
-        """Returns .h/.cpp code as (header_text, cpp_text)."""
-        # Set local type info
-        IdlType.set_callback_functions(definitions.callback_functions.keys())
-        IdlType.set_enums((enum.name, enum.values)
-                          for enum in definitions.enumerations.values())
-
+    def generate_code_internal(self, definitions, definition_name):
         if definition_name in definitions.interfaces:
             return self.generate_interface_code(
                 definitions, definition_name,
@@ -182,7 +193,7 @@ class CodeGeneratorV8(object):
         template_context['header_includes'].add(interface_info['include_path'])
         header_text, cpp_text = render_template(
             interface_info, header_template, cpp_template, template_context)
-        header_path, cpp_path = self.output_paths_for_bindings(interface_name)
+        header_path, cpp_path = self.output_paths(interface_name)
         return (
             (header_path, header_text),
             (cpp_path, cpp_text),
@@ -190,37 +201,48 @@ class CodeGeneratorV8(object):
 
     def generate_dictionary_code(self, definitions, dictionary_name,
                                  dictionary):
-        interface_info = self.interfaces_info[dictionary_name]
-        bindings_results = self.generate_dictionary_bindings(
-            dictionary_name, interface_info, dictionary)
-        impl_results = self.generate_dictionary_impl(
-            dictionary_name, interface_info, dictionary)
-        return bindings_results + impl_results
-
-    def generate_dictionary_bindings(self, dictionary_name,
-                                     interface_info, dictionary):
         header_template = self.jinja_env.get_template('dictionary_v8.h')
         cpp_template = self.jinja_env.get_template('dictionary_v8.cpp')
         template_context = v8_dictionary.dictionary_context(dictionary)
+        interface_info = self.interfaces_info[dictionary_name]
         # Add the include for interface itself
         template_context['header_includes'].add(interface_info['include_path'])
         header_text, cpp_text = render_template(
             interface_info, header_template, cpp_template, template_context)
-        header_path, cpp_path = self.output_paths_for_bindings(dictionary_name)
+        header_path, cpp_path = self.output_paths(dictionary_name)
         return (
             (header_path, header_text),
             (cpp_path, cpp_text),
         )
 
-    def generate_dictionary_impl(self, dictionary_name,
-                                 interface_info, dictionary):
+
+class CodeGeneratorDictionaryImpl(CodeGeneratorBase):
+    def __init__(self, interfaces_info, cache_dir, output_dir):
+        CodeGeneratorBase.__init__(self, interfaces_info, cache_dir, output_dir)
+
+    def output_paths(self, definition_name, interface_info):
+        if interface_info['component_dir'] in KNOWN_COMPONENTS:
+            output_dir = posixpath.join(self.output_dir,
+                                        interface_info['relative_dir'])
+        else:
+            output_dir = self.output_dir
+        header_path = posixpath.join(output_dir, '%s.h' % definition_name)
+        cpp_path = posixpath.join(output_dir, '%s.cpp' % definition_name)
+        return header_path, cpp_path
+
+    def generate_code_internal(self, definitions, definition_name):
+        if not definition_name in definitions.dictionaries:
+            raise ValueError('%s is not an IDL dictionary')
+        dictionary = definitions.dictionaries[definition_name]
+        interface_info = self.interfaces_info[definition_name]
         header_template = self.jinja_env.get_template('dictionary_impl.h')
         cpp_template = self.jinja_env.get_template('dictionary_impl.cpp')
         template_context = v8_dictionary.dictionary_impl_context(
             dictionary, self.interfaces_info)
         header_text, cpp_text = render_template(
             interface_info, header_template, cpp_template, template_context)
-        header_path, cpp_path = self.output_paths_for_impl(dictionary_name)
+        header_path, cpp_path = self.output_paths(
+            definition_name, interface_info)
         return (
             (header_path, header_text),
             (cpp_path, cpp_text),

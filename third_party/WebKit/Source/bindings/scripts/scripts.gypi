@@ -42,6 +42,11 @@
       'v8_types.py',
       'v8_utilities.py',
     ],
+    'idl_cache_files': [
+      '<(bindings_scripts_output_dir)/lextab.py',
+      '<(bindings_scripts_output_dir)/parsetab.pickle',
+      '<(bindings_scripts_output_dir)/cached_jinja_templates.stamp',
+    ],
 
     'conditions': [
         # These scripts can skip writing generated files if they are identical

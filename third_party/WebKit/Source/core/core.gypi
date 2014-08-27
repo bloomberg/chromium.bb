@@ -3332,7 +3332,23 @@
             'svg/properties/SVGAnimatedProperty.cpp',
             'svg/properties/SVGPropertyTearOff.cpp',
         ],
+        # FIXME: http://crbug.com/403150
+        # Add 'core_dictionary_idl_files' and
+        # 'generated_core_dictionary_files' variables.
+        # The variables should contain IDL dictionary files and generated files
+        # They would look like below:
+        # 'core_dictionary_idl_files': [
+        #   'css/FontFaceDescriptors.idl',
+        # ],
+        # 'generated_core_dictionary_files': [
+        #   '<(blink_core_output_dir)/css/FontFaceDescriptors.cpp',
+        #   '<(blink_core_output_dir)/css/FontFaceDescriptors.h',
+        # ],
+        'core_testing_dictionary_idl_files': [
+          'testing/InternalDictionary.idl',
+        ],
         'webcore_testing_idl_files': [
+          'testing/DictionaryTest.idl',
           'testing/GarbageCollectedScriptWrappable.idl',
           'testing/GCObservation.idl',
           'testing/InternalProfilers.idl',
@@ -3351,9 +3367,15 @@
           '<(blink_core_output_dir)/InternalRuntimeFlags.idl',
           '<(blink_core_output_dir)/InternalSettingsGenerated.idl',
         ],
+        'generated_core_testing_dictionary_files': [
+          '<(blink_core_output_dir)/testing/InternalDictionary.cpp',
+          '<(blink_core_output_dir)/testing/InternalDictionary.h',
+        ],
         'webcore_testing_files': [
             '<(blink_core_output_dir)/InternalSettingsGenerated.cpp',
             '<(blink_core_output_dir)/InternalSettingsGenerated.h',
+            'testing/DictionaryTest.cpp',
+            'testing/DictionaryTest.h',
             'testing/DummyPageHolder.cpp',
             'testing/DummyPageHolder.h',
             'testing/GarbageCollectedScriptWrappable.cpp',

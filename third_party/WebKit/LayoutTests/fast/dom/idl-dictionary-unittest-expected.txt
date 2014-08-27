@@ -1,0 +1,33 @@
+IDL dictionary unittest
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+Test for setting an empty dictionary
+PASS dict.longMember is undefined.
+PASS dict.stringMember is "defaultStringValue"
+PASS dict.booleanOrNullMember is null
+PASS dict.doubleOrNullMember is undefined.
+PASS dict.stringSequenceMember is undefined.
+
+Test for setting undefined
+PASS dict.longMember is undefined.
+PASS dict.stringMember is "defaultStringValue"
+PASS dict.booleanOrNullMember is null
+PASS dict.doubleOrNullMember is undefined.
+PASS dict.stringSequenceMember is undefined.
+
+Test for setting valid values
+PASS dict.longMember is 3
+PASS dict.stringMember is "modifiedString"
+PASS dict.booleanOrNullMember is true
+PASS dict.doubleOrNullMember is 2.0
+PASS dict.stringSequenceMember is ["foo", "bar", "baz"]
+
+Test for setting invalid member
+PASS dict.invalidMember is undefined.
+
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

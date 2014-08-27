@@ -109,6 +109,7 @@
 #include "core/rendering/RenderView.h"
 #include "core/rendering/compositing/CompositedLayerMapping.h"
 #include "core/rendering/compositing/RenderLayerCompositor.h"
+#include "core/testing/DictionaryTest.h"
 #include "core/testing/GCObservation.h"
 #include "core/testing/InternalProfilers.h"
 #include "core/testing/InternalSettings.h"
@@ -1744,6 +1745,11 @@ PassRefPtrWillBeRawPtr<TypeConversions> Internals::typeConversions() const
 PrivateScriptTest* Internals::privateScriptTest() const
 {
     return PrivateScriptTest::create(frame());
+}
+
+DictionaryTest* Internals::dictionaryTest() const
+{
+    return DictionaryTest::create();
 }
 
 Vector<String> Internals::getReferencedFilePaths() const

@@ -223,17 +223,18 @@ def argument_context(interface, method, argument, index):
         not idl_type.is_basic_type):
         raise Exception('Private scripts supports only primitive types and DOM wrappers.')
 
+    default_cpp_value = argument.default_cpp_value
     return {
         'cpp_type': idl_type.cpp_type_args(extended_attributes=extended_attributes,
                                            raw_type=True,
                                            used_as_variadic_argument=argument.is_variadic),
         'cpp_value': this_cpp_value,
         # FIXME: check that the default value's type is compatible with the argument's
-        'default_value': argument.default_cpp_value,
+        'default_value': default_cpp_value,
         'enum_validation_expression': idl_type.enum_validation_expression,
         'handle': '%sHandle' % argument.name,
         # FIXME: remove once [Default] removed and just use argument.default_value
-        'has_default': 'Default' in extended_attributes or argument.default_value,
+        'has_default': 'Default' in extended_attributes or default_cpp_value,
         'has_type_checking_interface':
             (has_extended_attribute_value(interface, 'TypeChecking', 'Interface') or
              has_extended_attribute_value(method, 'TypeChecking', 'Interface')) and
@@ -446,6 +447,9 @@ def union_arguments(idl_type):
 
 
 def argument_default_cpp_value(argument):
+    if argument.idl_type.is_dictionary:
+        # We always create impl objects for IDL dictionaries.
+        return '%s::create()' % argument.idl_type.base_type
     if not argument.default_value:
         return None
     return argument.idl_type.literal_cpp_value(argument.default_value)

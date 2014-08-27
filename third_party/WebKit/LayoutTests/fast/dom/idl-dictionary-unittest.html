@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<script src="../../resources/js-test.js"></script>
+<script>
+description('IDL dictionary unittest');
+
+if (window.internals && internals.dictionaryTest) {
+    var dictionaryTest = window.internals.dictionaryTest();
+
+    debug('Test for setting an empty dictionary');
+    dictionaryTest.set({});
+    dict = dictionaryTest.get();
+    shouldBeUndefined('dict.longMember');
+    shouldBeEqualToString('dict.stringMember', 'defaultStringValue');
+    shouldBeNull('dict.booleanOrNullMember');
+    shouldBeUndefined('dict.doubleOrNullMember');
+    shouldBeUndefined('dict.stringSequenceMember');
+    debug('');
+
+    debug('Test for setting undefined');
+    dictionaryTest.set(undefined);
+    dict = dictionaryTest.get();
+    shouldBeUndefined('dict.longMember');
+    shouldBeEqualToString('dict.stringMember', 'defaultStringValue');
+    shouldBeNull('dict.booleanOrNullMember');
+    shouldBeUndefined('dict.doubleOrNullMember');
+    shouldBeUndefined('dict.stringSequenceMember');
+    debug('');
+
+    debug('Test for setting valid values');
+    dictionaryTest.set({longMember: 3, stringMember: 'modifiedString',
+              booleanOrNullMember: true, doubleOrNullMember: 2.0,
+              stringSequenceMember: ['foo', 'bar', 'baz']});
+    dict = dictionaryTest.get();
+    shouldBe('dict.longMember', '3');
+    shouldBeEqualToString('dict.stringMember', 'modifiedString');
+    shouldBeTrue('dict.booleanOrNullMember');
+    shouldBe('dict.doubleOrNullMember', '2.0');
+    shouldBe('dict.stringSequenceMember', '["foo", "bar", "baz"]');
+    debug('');
+
+    // FIXME: Following test doesn't pass. Make it pass.
+/*
+    debug('Test for explicit undefined or null, and missing members');
+    dictionaryTest.reset();
+    dictionaryTest.set({longMember: undefined, stringMember: undefined,
+                        booleanOrNullMember: null});
+    dict = dictionaryTest.get();
+    shouldBeUndefined('dict.longMember');
+    shouldBeEqualToString('dict.stringMember', 'defaultStringValue');
+    shouldBeNull('dict.booleanOrNullMember');
+    shouldBeUndefined('dict.doubleOrNullMember');
+    shouldBeUndefined('dict.stringSequenceMember');
+    debug('');
+*/
+
+    debug('Test for setting invalid member');
+    dictionaryTest.set({invalidMember: 'shouldNotBeSet'});
+    dict = dictionaryTest.get();
+    shouldBeUndefined('dict.invalidMember');
+    debug('');
+}
+</script>

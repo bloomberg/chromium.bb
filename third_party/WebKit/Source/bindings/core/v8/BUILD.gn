@@ -13,6 +13,7 @@ visibility = "//third_party/WebKit/Source/*"
 # bindings_core_v8_generated in core/v8/generated.gyp
 group("bindings_core_v8_generated") {
   deps = [
+    ":bindings_core_dictionary_impl_generated",
     ":bindings_core_v8_generated_aggregate",
     ":bindings_core_v8_generated_individual",
   ]
@@ -29,4 +30,14 @@ aggregate_generated_bindings("bindings_core_v8_generated_aggregate") {
 idl_compiler("bindings_core_v8_generated_individual") {
   sources = core_interface_idl_files
   output_dir = bindings_core_v8_output_dir
+}
+
+# bindings_core_dictionary_impl_generated in Source/bindings/core/v8/generated.gyp
+idl_dictionary("bindings_core_dictionary_impl_generated") {
+  # FIXME: Add 'core_dictionary_idl_files' to sources
+  # See comment on core/core.gypi
+  sources = core_testing_dictionary_idl_files
+  # FIXME: Add 'generated_core_dictionary_files' to outputs
+  # See comment on core/core.gypi
+  outputs = generated_core_testing_dictionary_files
 }

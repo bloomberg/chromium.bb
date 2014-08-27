@@ -8190,7 +8190,11 @@ static void overloadedMethodJ2Method(const v8::FunctionCallbackInfo<v8::Value>& 
     {
         v8::TryCatch block;
         V8RethrowTryCatchScope rethrow(block);
-        TONATIVE_VOID_INTERNAL(testDictionaryArg, V8TestDictionary::toNative(info.GetIsolate(), info[0]));
+        if (!info[0]->IsUndefined()) {
+            TONATIVE_VOID_INTERNAL(testDictionaryArg, V8TestDictionary::toNative(info.GetIsolate(), info[0]));
+        } else {
+            testDictionaryArg = TestDictionary::create();
+        }
     }
     impl->overloadedMethodJ(testDictionaryArg);
 }

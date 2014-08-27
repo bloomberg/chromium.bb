@@ -41,10 +41,8 @@
       'msvs_external_rule': 1,
       'inputs': [
         '<@(idl_lexer_parser_files)',  # to be explicit (covered by parsetab)
+        '<@(idl_cache_files)',
         '<@(idl_compiler_files)',
-        '<(bindings_scripts_output_dir)/lextab.py',
-        '<(bindings_scripts_output_dir)/parsetab.pickle',
-        '<(bindings_scripts_output_dir)/cached_jinja_templates.stamp',
         '<(bindings_dir)/IDLExtendedAttributes.txt',
         # If the dependency structure or public interface info (e.g.,
         # [ImplementedAs]) changes, we rebuild all files, since we're not

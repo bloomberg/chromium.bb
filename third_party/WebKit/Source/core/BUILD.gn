@@ -299,10 +299,13 @@ source_set("testing") {
 
   deps = [
     ":core",
+    ":core_generated",
   ]
 
-  sources = webcore_testing_files
+  sources = generated_core_testing_dictionary_files + webcore_testing_files
   sources += [
+    "$bindings_core_v8_output_dir/V8DictionaryTest.cpp",
+    "$bindings_core_v8_output_dir/V8DictionaryTest.h",
     "$bindings_core_v8_output_dir/V8GarbageCollectedScriptWrappable.cpp",
     "$bindings_core_v8_output_dir/V8GarbageCollectedScriptWrappable.h",
     "$bindings_core_v8_output_dir/V8GCObservation.cpp",
@@ -327,6 +330,8 @@ source_set("testing") {
     "$bindings_core_v8_output_dir/V8LayerRectList.h",
     "$bindings_core_v8_output_dir/V8RefCountedScriptWrappable.cpp",
     "$bindings_core_v8_output_dir/V8RefCountedScriptWrappable.h",
+    "$bindings_core_v8_output_dir/V8InternalDictionary.cpp",
+    "$bindings_core_v8_output_dir/V8InternalDictionary.h",
   ]
 }
 

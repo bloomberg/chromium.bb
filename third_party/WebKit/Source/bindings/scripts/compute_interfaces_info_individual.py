@@ -85,21 +85,26 @@ def parse_options():
 # Computations
 ################################################################################
 
+def relative_dir_posix(idl_filename):
+    """Returns relative path to the directory of idl_file in POSIX format."""
+    relative_path_local = os.path.relpath(idl_filename, source_path)
+    relative_dir_local = os.path.dirname(relative_path_local)
+    return relative_dir_local.replace(os.path.sep, posixpath.sep)
+
+
 def include_path(idl_filename, implemented_as=None):
     """Returns relative path to header file in POSIX format; used in includes.
 
     POSIX format is used for consistency of output, so reference tests are
     platform-independent.
     """
-    relative_path_local = os.path.relpath(idl_filename, source_path)
-    relative_dir_local = os.path.dirname(relative_path_local)
-    relative_dir_posix = relative_dir_local.replace(os.path.sep, posixpath.sep)
+    relative_dir = relative_dir_posix(idl_filename)
 
     # IDL file basename is used even if only a partial interface file
     idl_file_basename, _ = os.path.splitext(os.path.basename(idl_filename))
     cpp_class_name = implemented_as or idl_file_basename
 
-    return posixpath.join(relative_dir_posix, cpp_class_name + '.h')
+    return posixpath.join(relative_dir, cpp_class_name + '.h')
 
 
 def add_paths_to_partials_dict(partial_interface_name, full_path, this_include_path=None):
@@ -116,6 +121,7 @@ def compute_info_individual(idl_filename, component_dir):
     extended_attributes = get_interface_extended_attributes_from_idl(idl_file_contents)
     implemented_as = extended_attributes.get('ImplementedAs')
     this_include_path = include_path(idl_filename, implemented_as)
+    relative_dir = relative_dir_posix(idl_filename)
 
     # Handle partial interfaces
     partial_interface_name = get_partial_interface_name_from_idl(idl_file_contents)
@@ -153,6 +159,7 @@ def compute_info_individual(idl_filename, component_dir):
         # These cause rebuilds of referrers, due to the dependency, so these
         # should be minimized; currently only targets of [PutForwards].
         'referenced_interfaces': get_put_forward_interfaces_from_idl(idl_file_contents),
+        'relative_dir': relative_dir,
     }
 
 

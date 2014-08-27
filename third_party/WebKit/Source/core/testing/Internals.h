@@ -48,6 +48,7 @@ class ClientRectList;
 class WebKitPoint;
 class DOMStringList;
 class LocalDOMWindow;
+class DictionaryTest;
 class Document;
 class DocumentMarker;
 class Element;
@@ -251,6 +252,7 @@ public:
 
     PassRefPtrWillBeRawPtr<TypeConversions> typeConversions() const;
     PrivateScriptTest* privateScriptTest() const;
+    DictionaryTest* dictionaryTest() const;
 
     Vector<String> getReferencedFilePaths() const;
 

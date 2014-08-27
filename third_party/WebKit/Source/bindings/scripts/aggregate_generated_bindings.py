@@ -51,10 +51,9 @@ Design doc: http://www.chromium.org/developers/design-documents/idl-build
 import errno
 import os
 import re
-import subprocess
 import sys
 
-from utilities import idl_filename_to_interface_name
+from utilities import idl_filename_to_interface_name, read_idl_files_list_from_file
 
 # A regexp for finding Conditional attributes in interface definitions.
 CONDITIONAL_PATTERN = re.compile(
@@ -171,21 +170,6 @@ def write_content(content, output_file_name):
         f.write(content)
 
 
-def resolve_cygpath(cygdrive_names):
-    if not cygdrive_names:
-        return []
-    cmd = ['cygpath', '-f', '-', '-wa']
-    process = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    idl_file_names = []
-    for file_name in cygdrive_names:
-        process.stdin.write('%s\n' % file_name)
-        process.stdin.flush()
-        idl_file_names.append(process.stdout.readline().rstrip())
-    process.stdin.close()
-    process.wait()
-    return idl_file_names
-
-
 def main(args):
     if len(args) <= 4:
         raise Exception('Expected at least 5 arguments.')
@@ -194,15 +178,7 @@ def main(args):
     in_out_break_index = args.index('--')
     output_file_names = args[in_out_break_index + 1:]
 
-    with open(input_file_name) as input_file:
-        file_names = sorted([os.path.realpath(line.rstrip('\n'))
-                             for line in input_file])
-        idl_file_names = [file_name for file_name in file_names
-                          if not file_name.startswith('/cygdrive')]
-        cygdrive_names = [file_name for file_name in file_names
-                          if file_name.startswith('/cygdrive')]
-        idl_file_names.extend(resolve_cygpath(cygdrive_names))
-
+    idl_file_names = read_idl_files_list_from_file(input_file_name)
     files_meta_data = extract_meta_data(idl_file_names)
     total_partitions = len(output_file_names)
     for partition, file_name in enumerate(output_file_names):
