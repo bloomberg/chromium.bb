@@ -507,7 +507,7 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
             worker_data->worker_process_id,
             worker_data->worker_route_id));
     window_ = DevToolsWindowTesting::OpenDevToolsWindowForWorkerSync(
-        profile, agent_host);
+        profile, agent_host.get());
   }
 
   void CloseDevToolsWindow() {
@@ -881,8 +881,8 @@ IN_PROC_BROWSER_TEST_F(DevToolsAgentHostTest, TestAgentHostReleased) {
   DevToolsAgentHost* agent_raw =
       DevToolsAgentHost::GetOrCreateFor(web_contents).get();
   const std::string agent_id = agent_raw->GetId();
-  ASSERT_EQ(agent_raw, DevToolsAgentHost::GetForId(agent_id)) <<
-      "DevToolsAgentHost cannot be found by id";
+  ASSERT_EQ(agent_raw, DevToolsAgentHost::GetForId(agent_id).get())
+      << "DevToolsAgentHost cannot be found by id";
   browser()->tab_strip_model()->
       CloseWebContentsAt(0, TabStripModel::CLOSE_NONE);
   ASSERT_FALSE(DevToolsAgentHost::GetForId(agent_id).get())

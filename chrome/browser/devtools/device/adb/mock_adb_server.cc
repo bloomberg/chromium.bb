@@ -301,7 +301,7 @@ void SimpleHttpServer::Connection::WriteData() {
            output_buffer_->offset() + bytes_to_write_) << "Overflow";
 
   int write_result = socket_->Write(
-      output_buffer_,
+      output_buffer_.get(),
       bytes_to_write_,
       base::Bind(&Connection::OnDataWritten, base::Unretained(this)));
 

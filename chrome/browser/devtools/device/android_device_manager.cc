@@ -487,8 +487,8 @@ void AndroidDeviceManager::UpdateDevices(
        ++it) {
     DeviceWeakMap::iterator found = devices_.find(it->serial);
     scoped_refptr<Device> device;
-    if (found == devices_.end() || !found->second
-        || found->second->provider_ != it->provider) {
+    if (found == devices_.end() || !found->second ||
+        found->second->provider_.get() != it->provider.get()) {
       device = new Device(handler_thread_->message_loop(),
           it->provider, it->serial);
     } else {

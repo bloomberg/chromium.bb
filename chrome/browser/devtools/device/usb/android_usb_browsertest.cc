@@ -300,7 +300,7 @@ class MockUsbDeviceHandle : public UsbDeviceHandle {
           return;
         }
       } else {
-        DCHECK(current_message_);
+        DCHECK(current_message_.get());
         current_message_->body += std::string(buffer->data(), length);
         remaining_body_length_ -= length;
       }
@@ -340,7 +340,7 @@ class MockUsbDeviceHandle : public UsbDeviceHandle {
   }
 
   void ProcessIncoming() {
-    DCHECK(current_message_);
+    DCHECK(current_message_.get());
     switch (current_message_->command) {
       case AdbMessage::kCommandCNXN:
         WriteResponse(new AdbMessage(AdbMessage::kCommandCNXN,
@@ -585,7 +585,7 @@ class AndroidUsbDiscoveryTest : public InProcessBrowserTest {
 
     adb_bridge_ =
         DevToolsAndroidBridge::Factory::GetForProfile(browser()->profile());
-    DCHECK(adb_bridge_);
+    DCHECK(adb_bridge_.get());
     adb_bridge_->set_task_scheduler_for_test(base::Bind(
         &AndroidUsbDiscoveryTest::ScheduleDeviceCountRequest, this));
 

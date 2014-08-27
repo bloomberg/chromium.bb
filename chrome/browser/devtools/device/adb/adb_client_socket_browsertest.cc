@@ -71,23 +71,23 @@ class AdbClientSocketTest : public InProcessBrowserTest,
 
     scoped_refptr<DevToolsAndroidBridge::RemoteBrowser> chrome =
         FindBrowserByDisplayName(browsers, "Chrome");
-    ASSERT_TRUE(chrome);
+    ASSERT_TRUE(chrome.get());
 
     scoped_refptr<DevToolsAndroidBridge::RemoteBrowser> chrome_beta =
         FindBrowserByDisplayName(browsers, "Chrome Beta");
-    ASSERT_TRUE(chrome_beta);
+    ASSERT_TRUE(chrome_beta.get());
 
     scoped_refptr<DevToolsAndroidBridge::RemoteBrowser> chromium =
         FindBrowserByDisplayName(browsers, "Chromium");
-    ASSERT_FALSE(chromium);
+    ASSERT_FALSE(chromium.get());
 
     scoped_refptr<DevToolsAndroidBridge::RemoteBrowser> webview =
         FindBrowserByDisplayName(browsers, "WebView in com.sample.feed");
-    ASSERT_TRUE(webview);
+    ASSERT_TRUE(webview.get());
 
     scoped_refptr<DevToolsAndroidBridge::RemoteBrowser> noprocess =
         FindBrowserByDisplayName(browsers, "Noprocess");
-    ASSERT_TRUE(noprocess);
+    ASSERT_TRUE(noprocess.get());
 
     ASSERT_EQ("32.0.1679.0", chrome->version());
     ASSERT_EQ("31.0.1599.0", chrome_beta->version());

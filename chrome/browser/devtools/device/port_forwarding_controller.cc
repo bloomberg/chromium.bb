@@ -574,7 +574,7 @@ void PortForwardingController::DeviceListChanged(
     if (rit == registry_.end()) {
       scoped_refptr<DevToolsAndroidBridge::RemoteBrowser> browser =
           FindBestBrowserForTethering(device->browsers());
-      if (browser) {
+      if (browser.get()) {
         new Connection(&registry_, device, browser, forwarding_map_);
       }
     } else {

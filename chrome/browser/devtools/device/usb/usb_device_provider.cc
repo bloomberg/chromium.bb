@@ -37,7 +37,7 @@ void OnRead(net::StreamSocket* socket,
 
   std::string new_data = data + std::string(buffer->data(), result);
   result =
-      socket->Read(buffer,
+      socket->Read(buffer.get(),
                    kBufferSize,
                    base::Bind(&OnRead, socket, buffer, new_data, callback));
   if (result != net::ERR_IO_PENDING)
@@ -53,7 +53,7 @@ void OpenedForCommand(const UsbDeviceProvider::CommandCallback& callback,
   }
   scoped_refptr<net::IOBuffer> buffer = new net::IOBuffer(kBufferSize);
   result = socket->Read(
-      buffer,
+      buffer.get(),
       kBufferSize,
       base::Bind(&OnRead, socket, buffer, std::string(), callback));
   if (result != net::ERR_IO_PENDING)
