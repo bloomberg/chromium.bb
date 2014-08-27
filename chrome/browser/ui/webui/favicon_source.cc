@@ -18,7 +18,7 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/favicon/favicon_url_parser.h"
 #include "chrome/common/url_constants.h"
-#include "grit/locale_settings.h"
+#include "chrome/grit/locale_settings.h"
 #include "net/url_request/url_request.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"

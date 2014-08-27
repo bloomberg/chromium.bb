@@ -6,7 +6,7 @@
 
 #include "base/android/jni_string.h"
 #include "chrome/common/chrome_version_info.h"
-#include "grit/locale_settings.h"
+#include "chrome/grit/locale_settings.h"
 #include "jni/BrowserVersion_jni.h"
 #include "ui/base/l10n/l10n_util.h"
 

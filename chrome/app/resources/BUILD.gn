@@ -9,6 +9,7 @@ import("//tools/grit/grit_rule.gni")
 grit("locale_settings") {
   source = "locale_settings.grd"
   output_dir = "$root_gen_dir/chrome"
+  use_qualified_include = true
   outputs = [
     "grit/locale_settings.h",
     "locale_settings_am.pak",

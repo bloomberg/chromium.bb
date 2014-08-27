@@ -9,6 +9,7 @@ import("//tools/grit/grit_rule.gni")
 grit("generated_resources") {
   source = "generated_resources.grd"
   output_dir = "$root_gen_dir/chrome"
+  use_qualified_include = true
   outputs = [
     "grit/generated_resources.h",
     "generated_resources_am.pak",
@@ -96,6 +97,7 @@ source_set("generated_resources_map") {
 grit("google_chrome_strings") {
   source = "google_chrome_strings.grd"
   output_dir = "$root_gen_dir/chrome"
+  use_qualified_include = true
   outputs = [
     "grit/google_chrome_strings.h",
     "google_chrome_strings_am.pak",
@@ -160,6 +162,7 @@ grit("google_chrome_strings") {
 grit("chromium_strings") {
   source = "chromium_strings.grd"
   output_dir = "$root_gen_dir/chrome"
+  use_qualified_include = true
   outputs = [
     "grit/chromium_strings.h",
     "chromium_strings_am.pak",

@@ -16,10 +16,10 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
+#include "chrome/grit/locale_settings.h"
 #include "components/google/core/browser/google_util.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/web_ui.h"
-#include "grit/locale_settings.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/l10n/l10n_util.h"
 

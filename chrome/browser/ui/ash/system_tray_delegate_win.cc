@@ -20,10 +20,9 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/upgrade_detector.h"
+#include "chrome/grit/locale_settings.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_service.h"
-
-#include "grit/locale_settings.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {

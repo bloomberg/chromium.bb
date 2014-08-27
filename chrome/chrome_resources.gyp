@@ -283,7 +283,6 @@
           'includes': [ '../build/grit_action.gypi' ],
         },
       ],
-      'includes': [ '../build/grit_target.gypi' ],
     },
     {
       # GN version: //chrome/app:make_generated_resources_map
