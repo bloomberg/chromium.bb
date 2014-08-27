@@ -145,18 +145,6 @@ void InspectorClientImpl::showContextMenu(float x, float y, PassRefPtr<ContextMe
     m_inspectedWebView->showContextMenuAtPoint(x, y, menuProvider);
 }
 
-void InspectorClientImpl::getAllocatedObjects(HashSet<const void*>& set)
-{
-    if (WebDevToolsAgentImpl* agent = devToolsAgent())
-        agent->getAllocatedObjects(set);
-}
-
-void InspectorClientImpl::dumpUncountedAllocatedObjects(const HashMap<const void*, size_t>& map)
-{
-    if (WebDevToolsAgentImpl* agent = devToolsAgent())
-        agent->dumpUncountedAllocatedObjects(map);
-}
-
 void InspectorClientImpl::dispatchKeyEvent(const PlatformKeyboardEvent& event)
 {
     if (WebDevToolsAgentImpl* agent = devToolsAgent())

@@ -69,9 +69,6 @@ public:
     virtual void resetScrollAndPageScaleFactor() OVERRIDE;
     virtual void showContextMenu(float x, float y, PassRefPtr<ContextMenuProvider>) OVERRIDE;
 
-    virtual void getAllocatedObjects(HashSet<const void*>&) OVERRIDE;
-    virtual void dumpUncountedAllocatedObjects(const HashMap<const void*, size_t>&) OVERRIDE;
-
     virtual void dispatchKeyEvent(const PlatformKeyboardEvent&) OVERRIDE;
     virtual void dispatchMouseEvent(const PlatformMouseEvent&) OVERRIDE;
 

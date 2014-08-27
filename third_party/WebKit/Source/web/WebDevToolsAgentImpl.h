@@ -107,8 +107,6 @@ public:
     virtual void clearDeviceMetricsOverride() OVERRIDE;
     virtual void setTouchEventEmulationEnabled(bool) OVERRIDE;
 
-    virtual void getAllocatedObjects(HashSet<const void*>&) OVERRIDE;
-    virtual void dumpUncountedAllocatedObjects(const HashMap<const void*, size_t>&) OVERRIDE;
     virtual void setTraceEventCallback(const WTF::String& categoryFilter, TraceEventCallback) OVERRIDE;
     virtual void resetTraceEventCallback() OVERRIDE;
     virtual void enableTracing(const WTF::String& categoryFilter) OVERRIDE;
