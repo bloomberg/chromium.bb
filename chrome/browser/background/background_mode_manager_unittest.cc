@@ -607,10 +607,10 @@ TEST_F(BackgroundModeManagerWithExtensionsTest, BackgroundMenuGeneration) {
       extensions::ExtensionSystem::Get(profile_)->extension_service();
   service->Init();
 
-  service->AddComponentExtension(component_extension);
-  service->AddComponentExtension(component_extension_with_options);
-  service->AddExtension(regular_extension);
-  service->AddExtension(regular_extension_with_options);
+  service->AddComponentExtension(component_extension.get());
+  service->AddComponentExtension(component_extension_with_options.get());
+  service->AddExtension(regular_extension.get());
+  service->AddExtension(regular_extension_with_options.get());
 
   scoped_ptr<StatusIconMenuModel> menu(new StatusIconMenuModel(NULL));
   scoped_ptr<StatusIconMenuModel> submenu(new StatusIconMenuModel(NULL));
@@ -685,10 +685,10 @@ TEST_F(BackgroundModeManagerWithExtensionsTest,
       extensions::ExtensionSystem::Get(profile_)->extension_service();
   service1->Init();
 
-  service1->AddComponentExtension(component_extension);
-  service1->AddComponentExtension(component_extension_with_options);
-  service1->AddExtension(regular_extension);
-  service1->AddExtension(regular_extension_with_options);
+  service1->AddComponentExtension(component_extension.get());
+  service1->AddComponentExtension(component_extension_with_options.get());
+  service1->AddExtension(regular_extension.get());
+  service1->AddExtension(regular_extension_with_options.get());
 
   static_cast<extensions::TestExtensionSystem*>(
       extensions::ExtensionSystem::Get(profile2))->CreateExtensionService(
@@ -699,9 +699,9 @@ TEST_F(BackgroundModeManagerWithExtensionsTest,
       extensions::ExtensionSystem::Get(profile2)->extension_service();
   service2->Init();
 
-  service2->AddComponentExtension(component_extension);
-  service2->AddExtension(regular_extension);
-  service2->AddExtension(regular_extension_with_options);
+  service2->AddComponentExtension(component_extension.get());
+  service2->AddExtension(regular_extension.get());
+  service2->AddExtension(regular_extension_with_options.get());
 
   manager_->RegisterProfile(profile2);
 
@@ -858,21 +858,21 @@ TEST_F(BackgroundModeManagerWithExtensionsTest, BalloonDisplay) {
 
   // Adding a background extension should show the balloon.
   EXPECT_FALSE(manager_->HasShownBalloon());
-  service->AddExtension(bg_ext);
+  service->AddExtension(bg_ext.get());
   EXPECT_TRUE(manager_->HasShownBalloon());
 
   // Adding an extension without background should not show the balloon.
   manager_->SetHasShownBalloon(false);
-  service->AddExtension(no_bg_ext);
+  service->AddExtension(no_bg_ext.get());
   EXPECT_FALSE(manager_->HasShownBalloon());
 
   // Upgrading an extension that has background should not reshow the balloon.
-  service->AddExtension(upgraded_bg_ext);
+  service->AddExtension(upgraded_bg_ext.get());
   EXPECT_FALSE(manager_->HasShownBalloon());
 
   // Upgrading an extension that didn't have background to one that does should
   // show the balloon.
-  service->AddExtension(upgraded_no_bg_ext_has_bg);
+  service->AddExtension(upgraded_no_bg_ext_has_bg.get());
   EXPECT_TRUE(manager_->HasShownBalloon());
 
   // Installing an ephemeral app should not show the balloon.

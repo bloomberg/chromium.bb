@@ -137,7 +137,8 @@ void BackgroundModeManager::BackgroundModeData::BuildProfileMenu(
       // The compromise is to disable the item, avoiding the non-actionable
       // navigate to the extensions page and preserving the user model.
       if ((*cursor)->location() == extensions::Manifest::COMPONENT) {
-        GURL options_page = extensions::ManifestURL::GetOptionsPage(*cursor);
+        GURL options_page =
+            extensions::ManifestURL::GetOptionsPage(cursor->get());
         if (!options_page.is_valid())
           menu->SetCommandIdEnabled(command_id, false);
       }
