@@ -16,6 +16,7 @@ import datetime
 import logging
 import os
 import random
+import re
 import socket
 
 from chromite.lib.paygen import gslib
@@ -78,25 +79,8 @@ class Lock(object):
     self._timeout = datetime.timedelta(minutes=lock_timeout_mins)
     self._contents = repr((socket.gethostname(), os.getpid(), id(self),
                            random.random()))
-    self._headers = None
+    self._generation = 0
     self._dry_run = dry_run
-
-  @property
-  def _generation(self):
-    """Get the current x-goog-generation, if any."""
-    return 0 if self._headers is None else self._headers.get('generation', 0)
-
-  @staticmethod
-  def _LastModifiedFromHeaders(headers):
-    """Returns the latest modification time given a dictionary of lock headers.
-
-    Returns:
-      The UTC time when a lock was last modified (datetime.datetime). None if
-      headers are empty or corresponding attribute is missing.
-    """
-    modified = headers.get('Last-Modified') if headers else None
-    if modified is not None:
-      return datetime.datetime.strptime(modified, '%a, %d %b %Y %H:%M:%S %Z')
 
   def _LockExpired(self):
     """Check to see if an existing lock has timed out.
@@ -104,7 +88,13 @@ class Lock(object):
     Returns:
       True if the lock is expired. False otherwise.
     """
-    modified = self._LastModifiedFromHeaders(self._headers)
+    try:
+      modified = self.LastModified()
+    except LockProbeError:
+      # If we couldn't figure out when the file was last modified, it might
+      # have already been released. In any case, it's probably not safe to try
+      # to clear the lock, so we'll return False here.
+      return False
     return modified and datetime.datetime.utcnow() > modified + self._timeout
 
   def _AcquireLock(self, filename, retries):
@@ -117,31 +107,50 @@ class Lock(object):
     Returns:
       Whether or not the lock was acquired.
     """
-    generation = self._generation
     try:
-      gslib.Copy(filename, self._gs_path, generation=generation)
-      error = None
-    except gslib.CopyFail as ex:
+      res = gslib.RunGsutilCommand(['cp', '-v', filename, self._gs_path],
+                                   generation=self._generation,
+                                   redirect_stdout=True, redirect_stderr=True)
+      m = re.search(r'%s#(\d+)' % self._gs_path, res.error)
+      if m:
+        error = None
+        self._generation = int(m.group(1))
+      else:
+        error = 'No generation found.'
+        self._generation = 0
+    except gslib.GSLibError as ex:
       error = str(ex)
 
-    headers = {}
     try:
-      result = gslib.Cat(self._gs_path, headers=headers)
+      result = gslib.Cat(self._gs_path, generation=self._generation)
     except gslib.CatFail as ex:
+      self._generation = 0
       if error:
         raise LockNotAcquired(error)
       raise LockNotAcquired(ex)
-    self._headers = headers
 
-    if result == self._contents and self._generation != generation:
+    if result == self._contents:
       if error is not None:
         logging.warning('Lock at %s acquired despite copy error.',
                         self._gs_path)
     elif self._LockExpired() and retries >= 0:
       logging.warning('Timing out lock at %s.', self._gs_path)
+      try:
+        # Attempt to set our generation to whatever the current generation is.
+        res = gslib.RunGsutilCommand(['stat', self._gs_path],
+                                     redirect_stdout=True)
+        m = re.search(r'Generation:\s*(\d+)', res.output)
+        # Make sure the lock is still expired and hasn't been stolen by
+        # someone else.
+        if self._LockExpired():
+          self._generation = int(m.group(1))
+      except gslib.GSLibError as ex:
+        logging.warning('Exception while stat-ing %s: %s', self._gs_path, ex)
+        logging.warning('Lock may have been cleared by someone else')
+
       self._AcquireLock(filename, retries - 1)
     else:
-      self._headers = None
+      self._generation = 0
       raise LockNotAcquired(result)
 
   def LastModified(self):
@@ -157,15 +166,17 @@ class Lock(object):
     Raises:
       LockProbeError: if a (non-acquired) lock is not present.
     """
-    headers = self._headers
-    if headers is None:
-      headers = {}
-      try:
-        gslib.Stat(self._gs_path, headers=headers)
-      except gslib.StatFail as ex:
-        raise LockProbeError(ex)
+    try:
+      res = gslib.RunGsutilCommand(['stat', self._gs_path],
+                                   redirect_stdout=True)
+      m = re.search(r'Creation time:\s*(.*)', res.output)
+      if not m:
+        raise LockProbeError('Failed to extract creation time.')
+      return datetime.datetime.strptime(m.group(1), '%a, %d %b %Y %H:%M:%S %Z')
+    except gslib.GSLibError as ex:
+      raise LockProbeError(ex)
 
-    return self._LastModifiedFromHeaders(headers)
+    return None
 
   def Acquire(self):
     """Attempt to acquire the lock.
@@ -193,7 +204,7 @@ class Lock(object):
       if not self._LockExpired():
         raise
       logging.warning('Lock at %s expired and was stolen.', self._gs_path)
-    self._headers = None
+    self._generation = 0
 
   def Renew(self):
     """Resets the timeout on a lock you are holding.
