@@ -45,10 +45,10 @@
 #include "media/audio/agc_audio_stream.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_parameters.h"
+#include "media/base/audio_block_fifo.h"
 
 namespace media {
 
-class AudioBlockFifo;
 class AudioBus;
 class AudioManagerMac;
 class DataBuffer;
@@ -78,7 +78,7 @@ class AUAudioInputStream : public AgcAudioStream<AudioInputStream> {
 
   bool started() const { return started_; }
   AudioUnit audio_unit() { return audio_unit_; }
-  AudioBufferList* audio_buffer_list() { return audio_buffer_list_.get(); }
+  AudioBufferList* audio_buffer_list() { return &audio_buffer_list_; }
 
  private:
   // AudioOutputUnit callback.
@@ -90,8 +90,7 @@ class AUAudioInputStream : public AgcAudioStream<AudioInputStream> {
                             AudioBufferList* io_data);
 
   // Pushes recorded data to consumer of the input audio stream.
-  OSStatus Provide(UInt32 number_of_frames,
-                   AudioBufferList* io_data,
+  OSStatus Provide(UInt32 number_of_frames, AudioBufferList* io_data,
                    const AudioTimeStamp* time_stamp);
 
   // Gets the fixed capture hardware latency and store it during initialization.
@@ -133,7 +132,11 @@ class AUAudioInputStream : public AgcAudioStream<AudioInputStream> {
   AudioDeviceID input_device_id_;
 
   // Provides a mechanism for encapsulating one or more buffers of audio data.
-  scoped_ptr<AudioBufferList, base::FreeDeleter> audio_buffer_list_;
+  AudioBufferList audio_buffer_list_;
+
+  // Temporary storage for recorded data. The InputProc() renders into this
+  // array as soon as a frame of the desired buffer size has been recorded.
+  scoped_ptr<uint8[]> audio_data_buffer_;
 
   // True after successfull Start(), false after successful Stop().
   bool started_;
@@ -145,12 +148,8 @@ class AUAudioInputStream : public AgcAudioStream<AudioInputStream> {
   // when querying the volume of each channel.
   int number_of_channels_in_frame_;
 
-  // Dynamically allocated FIFO used when CoreAudio asks for unexpected frame
-  // sizes.
-  scoped_ptr<AudioBlockFifo> fifo_;
-
-  // AudioBus for delievering data via AudioSourceCallback::OnData().
-  scoped_ptr<AudioBus> output_bus_;
+  // FIFO used to accumulates recorded data.
+  media::AudioBlockFifo fifo_;
 
   // Used to defer Start() to workaround http://crbug.com/160920.
   base::CancelableClosure deferred_start_cb_;
