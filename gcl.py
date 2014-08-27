@@ -1075,7 +1075,8 @@ def CMDcommit(change_info, args):
       props = change_info.RpcServer().get_issue_properties(
           change_info.issue, False)
       patch_num = len(props['patchsets'])
-      comment = "Committed patchset #%d manually as r%s" % (patch_num, revision)
+      comment = "Committed patchset #%d (id:%d) manually as r%s" % (
+          patch_num, props['patchsets'][-1], revision)
       if bypassed:
         comment += ' (tree was closed).' if GetTreeStatus() == 'closed' else '.'
       else:

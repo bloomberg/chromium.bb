@@ -2053,8 +2053,8 @@ def SendUpstream(parser, args, cmd):
     cl.CloseIssue()
     props = cl.GetIssueProperties()
     patch_num = len(props['patchsets'])
-    comment = "Committed patchset #%d%s manually as %s" % (
-        patch_num, to_pending, revision)
+    comment = "Committed patchset #%d (id:%d)%s manually as %s" % (
+        patch_num, props['patchsets'][-1], to_pending, revision)
     if options.bypass_hooks:
       comment += ' (tree was closed).' if GetTreeStatus() == 'closed' else '.'
     else:

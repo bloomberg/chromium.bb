@@ -613,7 +613,8 @@ class CMDCommitUnittest(GclTestsBase):
     self.assertTrue(change_info._closed)
     self.assertEqual(
         change_info._comments_added,
-        ["Committed patchset #1 manually as r12345 (presubmit successful)."])
+        ["Committed patchset #1 (id:1337) manually as r12345 (presubmit "
+         "successful)."])
 
 
 if __name__ == '__main__':
