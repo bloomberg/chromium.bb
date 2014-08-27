@@ -437,7 +437,7 @@ void SyncBackendHostCore::DoInitialize(
   args.service_url = options->service_url;
   args.post_factory = options->http_bridge_factory.Pass();
   args.workers = options->workers;
-  args.extensions_activity = options->extensions_activity;
+  args.extensions_activity = options->extensions_activity.get();
   args.change_delegate = options->registrar;  // as SyncManager::ChangeDelegate
   args.credentials = options->credentials;
   args.invalidator_client_id = options->invalidator_client_id;

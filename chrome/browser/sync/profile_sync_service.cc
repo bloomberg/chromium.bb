@@ -182,7 +182,7 @@ void ClearBrowsingData(BrowsingDataRemover::Observer* observer,
   remover->Remove(BrowsingDataRemover::REMOVE_ALL,
                   BrowsingDataHelper::ALL);
 
-  password_manager::PasswordStore* password =
+  scoped_refptr<password_manager::PasswordStore> password =
       PasswordStoreFactory::GetForProfile(profile, Profile::EXPLICIT_ACCESS);
   password->RemoveLoginsSyncedBetween(start, end);
 }

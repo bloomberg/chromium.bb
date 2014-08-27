@@ -133,7 +133,7 @@ class HistoryServiceMock : public HistoryService {
 
   void set_task_runner(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-    DCHECK(task_runner);
+    DCHECK(task_runner.get());
     task_runner_ = task_runner;
   }
 
@@ -145,7 +145,7 @@ class HistoryServiceMock : public HistoryService {
   virtual ~HistoryServiceMock() {}
 
   void RunTaskOnDBThread(history::HistoryDBTask* task) {
-    EXPECT_TRUE(task->RunOnDBThread(backend_, NULL));
+    EXPECT_TRUE(task->RunOnDBThread(backend_.get(), NULL));
   }
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;

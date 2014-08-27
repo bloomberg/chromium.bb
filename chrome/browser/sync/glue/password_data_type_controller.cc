@@ -42,7 +42,7 @@ bool PasswordDataTypeController::PostTaskOnBackendThread(
       const tracked_objects::Location& from_here,
       const base::Closure& task) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (!password_store_)
+  if (!password_store_.get())
     return false;
   return password_store_->ScheduleTask(task);
 }
@@ -52,7 +52,7 @@ bool PasswordDataTypeController::StartModels() {
   DCHECK_EQ(MODEL_STARTING, state());
   password_store_ = PasswordStoreFactory::GetForProfile(
       profile_, Profile::EXPLICIT_ACCESS);
-  return !!password_store_;
+  return !!password_store_.get();
 }
 
 }  // namespace browser_sync
