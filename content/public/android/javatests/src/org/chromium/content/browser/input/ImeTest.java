@@ -207,6 +207,29 @@ public class ImeTest extends ContentShellTestBase {
 
     @SmallTest
     @Feature({"TextInput"})
+    public void testSelectActionBarClearedOnTappingInput() throws Exception {
+        commitText(mConnection, "Sample Text", 1);
+        DOMUtils.longPressNode(this, mContentViewCore, "input_text");
+        assertWaitForKeyboardStatus(true);
+        assertWaitForSelectActionBarStatus(true);
+        DOMUtils.clickNode(this, mContentViewCore, "input_text");
+        assertWaitForSelectActionBarStatus(false);
+    }
+
+    @SmallTest
+    @Feature({"TextInput"})
+    public void testSelectActionBarClearedOnTappingOutsideInput() throws Exception {
+        commitText(mConnection, "Sample Text", 1);
+        DOMUtils.longPressNode(this, mContentViewCore, "input_text");
+        assertWaitForKeyboardStatus(true);
+        assertWaitForSelectActionBarStatus(true);
+        DOMUtils.clickNode(this, mContentViewCore, "input_radio");
+        assertWaitForKeyboardStatus(false);
+        assertWaitForSelectActionBarStatus(false);
+    }
+
+    @SmallTest
+    @Feature({"TextInput"})
     public void testImeCut() throws Exception {
         commitText(mConnection, "snarful", 1);
         waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 1, "snarful", 7, 7, -1, -1);
