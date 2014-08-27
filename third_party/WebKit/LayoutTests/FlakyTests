@@ -1142,8 +1142,6 @@ Bug(gardener) [ Release Win7 ] inspector/timeline/timeline-decode-resize.html [ 
 webkit.org/b/90488 [ Debug Win7 ] inspector/timeline/timeline-dfs.html [ Crash Pass ]
 webkit.org/b/90488 [ Debug Win7 ] inspector/timeline/timeline-recalculate-styles.html [ Crash Pass ]
 webkit.org/b/90488 [ Debug Win7 ] inspector/tracing/buffer-usage.html [ Crash Pass ]
-Bug(gardener) [ Release Lion ] inspector/tracing/decode-resize.html [ Pass Timeout ]
-Bug(gardener) [ Release Win7 ] inspector/tracing/decode-resize.html [ Failure Pass ]
 crbug.com/399507 webkit.org/b/90488 [ Debug Linux ] inspector/tracing/update-layer-tree.html [ Failure Pass ]
 crbug.com/399507 webkit.org/b/90488 [ Debug SnowLeopard ] inspector/tracing/update-layer-tree.html [ Failure Pass ]
 Bug(gardener) crbug.com/399507 [ Release MountainLion ] inspector/tracing/update-layer-tree.html [ Failure Pass ]
