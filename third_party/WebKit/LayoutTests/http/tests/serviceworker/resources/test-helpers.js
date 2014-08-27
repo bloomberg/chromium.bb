@@ -66,28 +66,18 @@ function normalizeURL(url) {
 }
 
 function wait_for_update(test, registration) {
-  if (!registration || registration.unregister == undefined) {
-    return Promise.reject(new Error(
-      'wait_for_update must be passed a ServiceWorkerRegistration'));
-  }
-
-  return new Promise(test.step_func(function(resolve) {
-      registration.addEventListener('updatefound', test.step_func(function() {
-          resolve(registration.installing);
-      }));
+    return new Promise(test.step_func(function(resolve) {
+        registration.addEventListener('updatefound', test.step_func(function() {
+            resolve(registration.installing);
+        }));
     }));
 }
 
 function wait_for_state(test, worker, state) {
-  if (!worker || worker.state == undefined) {
-    return Promise.reject(new Error(
-      'wait_for_state must be passed a ServiceWorker'));
-  }
-
-  return new Promise(test.step_func(function(resolve) {
-      worker.addEventListener('statechange', test.step_func(function() {
-          if (worker.state === state)
-            resolve(state);
+    return new Promise(test.step_func(function(resolve) {
+        worker.addEventListener('statechange', test.step_func(function() {
+            if (worker.state === state)
+                resolve(state);
         }));
     }));
 }
