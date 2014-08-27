@@ -1401,14 +1401,16 @@ std::set<int> GpuControlList::MakeDecision(
 
   for (size_t i = 0; i < entries_.size(); ++i) {
     if (entries_[i]->Contains(os, os_version, gpu_info)) {
+      bool needs_more_info = entries_[i]->NeedsMoreInfo(gpu_info);
       if (!entries_[i]->disabled()) {
         if (control_list_logging_enabled_)
           entries_[i]->LogControlListMatch(control_list_logging_name_);
         MergeFeatureSets(&possible_features, entries_[i]->features());
-        if (!entries_[i]->NeedsMoreInfo(gpu_info))
+        if (!needs_more_info)
           MergeFeatureSets(&features, entries_[i]->features());
       }
-      active_entries_.push_back(entries_[i]);
+      if (!needs_more_info)
+        active_entries_.push_back(entries_[i]);
     }
   }
 
