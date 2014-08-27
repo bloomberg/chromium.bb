@@ -218,6 +218,11 @@ void InputTypeView::updatePlaceholderText()
 {
 }
 
+AXObject* InputTypeView::popupRootAXObject()
+{
+    return 0;
+}
+
 void ClickHandlingState::trace(Visitor* visitor)
 {
     visitor->trace(checkedRadioButton);

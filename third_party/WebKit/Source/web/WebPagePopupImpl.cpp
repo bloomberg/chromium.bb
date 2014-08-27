@@ -234,6 +234,12 @@ void WebPagePopupImpl::destroyPage()
     m_page.clear();
 }
 
+AXObject* WebPagePopupImpl::rootAXObject()
+{
+    // FIXME: Implement this.
+    return 0;
+}
+
 void WebPagePopupImpl::setRootGraphicsLayer(GraphicsLayer* layer)
 {
     m_rootGraphicsLayer = layer;

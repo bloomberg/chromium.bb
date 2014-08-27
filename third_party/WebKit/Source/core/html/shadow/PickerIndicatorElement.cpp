@@ -146,6 +146,11 @@ void PickerIndicatorElement::detach(const AttachContext& context)
     HTMLDivElement::detach(context);
 }
 
+AXObject* PickerIndicatorElement::popupRootAXObject() const
+{
+    return m_chooser ? m_chooser->rootAXObject() : 0;
+}
+
 bool PickerIndicatorElement::isPickerIndicatorElement() const
 {
     return true;

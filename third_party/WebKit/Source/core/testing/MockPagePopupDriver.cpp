@@ -49,6 +49,7 @@ public:
 private:
     MockPagePopup(PagePopupClient*, const IntRect& originBoundsInRootView, LocalFrame*);
     void close(Timer<MockPagePopup>*);
+    virtual AXObject* rootAXObject() OVERRIDE { return 0; }
 
     PagePopupClient* m_popupClient;
     RefPtrWillBePersistent<HTMLIFrameElement> m_iframe;

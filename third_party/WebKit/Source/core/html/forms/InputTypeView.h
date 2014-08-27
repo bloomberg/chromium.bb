@@ -43,6 +43,7 @@
 
 namespace blink {
 
+class AXObject;
 class BeforeTextInsertedEvent;
 class Element;
 class Event;
@@ -116,6 +117,7 @@ public:
     virtual void listAttributeTargetChanged();
     virtual void updateClearButtonVisibility();
     virtual void updatePlaceholderText();
+    virtual AXObject* popupRootAXObject();
 
 protected:
     InputTypeView(HTMLInputElement& element) : m_element(&element) { }

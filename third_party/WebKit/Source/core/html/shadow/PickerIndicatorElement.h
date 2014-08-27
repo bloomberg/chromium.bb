@@ -63,6 +63,7 @@ public:
     void closePopup();
     virtual bool willRespondToMouseClickEvents() OVERRIDE;
     void removePickerIndicatorOwner() { m_pickerIndicatorOwner = nullptr; }
+    AXObject* popupRootAXObject() const;
 
     // DateTimeChooserClient implementation.
     virtual void didChooseValue(const String&) OVERRIDE;

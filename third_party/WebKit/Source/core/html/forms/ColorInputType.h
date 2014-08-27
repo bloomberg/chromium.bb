@@ -66,6 +66,7 @@ private:
     virtual bool shouldRespectListAttribute() OVERRIDE;
     virtual bool typeMismatchFor(const String&) const OVERRIDE;
     virtual void updateView() OVERRIDE;
+    virtual AXObject* popupRootAXObject() OVERRIDE;
 
     Color valueAsColor() const;
     void endColorChooser();

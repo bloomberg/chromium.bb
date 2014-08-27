@@ -64,6 +64,11 @@ void ColorChooserUIController::endChooser()
         m_chooser->endChooser();
 }
 
+AXObject* ColorChooserUIController::rootAXObject()
+{
+    return 0;
+}
+
 void ColorChooserUIController::didChooseColor(const WebColor& color)
 {
     ASSERT(m_client);

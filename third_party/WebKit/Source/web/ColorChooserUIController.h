@@ -47,6 +47,7 @@ public:
     // ColorChooser functions:
     virtual void setSelectedColor(const Color&) OVERRIDE FINAL;
     virtual void endChooser() OVERRIDE;
+    virtual AXObject* rootAXObject() OVERRIDE;
 
     // WebColorChooserClient functions:
     virtual void didChooseColor(const WebColor&) OVERRIDE FINAL;

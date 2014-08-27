@@ -35,6 +35,7 @@
 #include "core/InputTypeNames.h"
 #include "core/frame/FrameView.h"
 #include "core/html/forms/DateTimeChooserClient.h"
+#include "core/page/PagePopup.h"
 #include "core/rendering/RenderTheme.h"
 #include "platform/DateComponents.h"
 #include "platform/Language.h"
@@ -71,6 +72,11 @@ void DateTimeChooserImpl::endChooser()
     if (!m_popup)
         return;
     m_chromeClient->closePagePopup(m_popup);
+}
+
+AXObject* DateTimeChooserImpl::rootAXObject()
+{
+    return m_popup ? m_popup->rootAXObject() : 0;
 }
 
 IntSize DateTimeChooserImpl::contentSize()

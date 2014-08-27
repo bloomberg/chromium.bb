@@ -116,6 +116,7 @@ private:
     virtual void listAttributeTargetChanged() OVERRIDE FINAL;
     virtual void updateClearButtonVisibility() OVERRIDE FINAL;
     virtual TextDirection computedTextDirection() OVERRIDE FINAL;
+    virtual AXObject* popupRootAXObject() OVERRIDE FINAL;
 
     DateTimeEditElement* dateTimeEditElement() const;
     SpinButtonElement* spinButtonElement() const;

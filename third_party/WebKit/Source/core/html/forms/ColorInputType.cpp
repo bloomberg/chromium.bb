@@ -253,4 +253,9 @@ Vector<ColorSuggestion> ColorInputType::suggestions() const
     return suggestions;
 }
 
+AXObject* ColorInputType::popupRootAXObject()
+{
+    return m_chooser ? m_chooser->rootAXObject() : 0;
+}
+
 } // namespace blink

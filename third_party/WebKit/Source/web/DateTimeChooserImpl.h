@@ -48,6 +48,7 @@ public:
 
     // DateTimeChooser functions:
     virtual void endChooser() OVERRIDE;
+    virtual AXObject* rootAXObject() OVERRIDE;
 
 private:
     DateTimeChooserImpl(ChromeClientImpl*, DateTimeChooserClient*, const DateTimeChooserParameters&);

@@ -620,6 +620,13 @@ TextDirection BaseMultipleFieldsDateAndTimeInputType::computedTextDirection()
     return element().locale().isRTL() ? RTL : LTR;
 }
 
+AXObject* BaseMultipleFieldsDateAndTimeInputType::popupRootAXObject()
+{
+    if (PickerIndicatorElement* picker = pickerIndicatorElement())
+        return picker->popupRootAXObject();
+    return 0;
+}
+
 } // namespace blink
 
 #endif

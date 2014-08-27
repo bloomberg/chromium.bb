@@ -166,6 +166,11 @@ void ExternalDateTimeChooser::endChooser()
     client->didEndChooser();
 }
 
+AXObject* ExternalDateTimeChooser::rootAXObject()
+{
+    return 0;
+}
+
 } // namespace blink
 
 #endif

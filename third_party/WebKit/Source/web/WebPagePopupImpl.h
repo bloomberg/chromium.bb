@@ -83,6 +83,9 @@ private:
     virtual bool handleCharEvent(const WebKeyboardEvent&) OVERRIDE;
     virtual bool handleGestureEvent(const WebGestureEvent&) OVERRIDE;
 
+    // PagePopup function
+    virtual AXObject* rootAXObject() OVERRIDE;
+
     explicit WebPagePopupImpl(WebWidgetClient*);
     bool initializePage();
     void destroyPage();

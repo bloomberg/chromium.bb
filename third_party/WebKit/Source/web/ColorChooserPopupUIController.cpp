@@ -28,6 +28,7 @@
 
 #include "core/frame/FrameView.h"
 #include "core/html/forms/ColorChooserClient.h"
+#include "core/page/PagePopup.h"
 #include "platform/geometry/IntRect.h"
 #include "public/platform/Platform.h"
 #include "public/web/WebColorChooser.h"
@@ -70,6 +71,11 @@ void ColorChooserPopupUIController::endChooser()
         m_chooser->endChooser();
     if (m_popup)
         closePopup();
+}
+
+AXObject* ColorChooserPopupUIController::rootAXObject()
+{
+    return m_popup ? m_popup->rootAXObject() : 0;
 }
 
 IntSize ColorChooserPopupUIController::contentSize()

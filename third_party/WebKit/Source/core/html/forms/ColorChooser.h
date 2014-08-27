@@ -32,6 +32,7 @@
 
 namespace blink {
 
+class AXObject;
 class Color;
 
 class ColorChooser {
@@ -41,6 +42,8 @@ public:
 
     virtual void setSelectedColor(const Color&) { }
     virtual void endChooser() { }
+    // Returns a root AXObject in the ColorChooser if it's available.
+    virtual AXObject* rootAXObject() = 0;
 };
 
 } // namespace blink

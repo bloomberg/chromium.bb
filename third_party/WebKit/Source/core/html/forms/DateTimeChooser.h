@@ -37,6 +37,8 @@
 
 namespace blink {
 
+class AXObject;
+
 struct DateTimeSuggestion {
     double value;
     String localizedValue;
@@ -68,6 +70,8 @@ public:
     virtual ~DateTimeChooser();
 
     virtual void endChooser() = 0;
+    // Returns a root AXObject in the DateTimeChooser if it's available.
+    virtual AXObject* rootAXObject() = 0;
 };
 
 } // namespace blink

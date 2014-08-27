@@ -31,6 +31,7 @@
 
 namespace blink {
 
+class AXObject;
 class DragData;
 class ExceptionState;
 class FileList;
@@ -266,7 +267,7 @@ public:
 
     void setShouldRevealPassword(bool value);
     bool shouldRevealPassword() const { return m_shouldRevealPassword; }
-
+    AXObject* popupRootAXObject();
     virtual void didNotifySubtreeInsertionsToDocument() OVERRIDE;
 
 protected:

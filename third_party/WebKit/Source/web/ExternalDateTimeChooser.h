@@ -52,6 +52,7 @@ private:
 
     // DateTimeChooser function:
     virtual void endChooser() OVERRIDE;
+    virtual AXObject* rootAXObject() OVERRIDE;
 
     DateTimeChooserClient* m_client;
 };
