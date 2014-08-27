@@ -36,7 +36,7 @@ URLRequestRedirectJob::URLRequestRedirectJob(URLRequest* request,
 void URLRequestRedirectJob::GetResponseInfo(HttpResponseInfo* info) {
   // Should only be called after the URLRequest has been notified there's header
   // information.
-  DCHECK(fake_headers_);
+  DCHECK(fake_headers_.get());
 
   // This assumes |info| is a freshly constructed HttpResponseInfo.
   info->headers = fake_headers_;
@@ -72,7 +72,7 @@ bool URLRequestRedirectJob::CopyFragmentOnRedirect(const GURL& location) const {
 int URLRequestRedirectJob::GetResponseCode() const {
   // Should only be called after the URLRequest has been notified there's header
   // information.
-  DCHECK(fake_headers_);
+  DCHECK(fake_headers_.get());
   return response_code_;
 }
 

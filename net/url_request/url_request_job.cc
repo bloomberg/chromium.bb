@@ -531,10 +531,10 @@ void URLRequestJob::FilteredDataRead(int bytes_read) {
 
 bool URLRequestJob::ReadFilteredData(int* bytes_read) {
   DCHECK(filter_);
-  DCHECK(filtered_read_buffer_);
+  DCHECK(filtered_read_buffer_.get());
   DCHECK_GT(filtered_read_buffer_len_, 0);
   DCHECK_LT(filtered_read_buffer_len_, 1000000);  // Sanity check.
-  DCHECK(!raw_read_buffer_);
+  DCHECK(!raw_read_buffer_.get());
 
   *bytes_read = 0;
   bool rv = false;

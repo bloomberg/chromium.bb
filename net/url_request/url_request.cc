@@ -512,7 +512,7 @@ int URLRequest::GetResponseCode() const {
 
 void URLRequest::SetLoadFlags(int flags) {
   if ((load_flags_ & LOAD_IGNORE_LIMITS) != (flags & LOAD_IGNORE_LIMITS)) {
-    DCHECK(!job_);
+    DCHECK(!job_.get());
     DCHECK(flags & LOAD_IGNORE_LIMITS);
     DCHECK_EQ(priority_, MAXIMUM_PRIORITY);
   }
@@ -839,7 +839,7 @@ void URLRequest::NotifyBeforeNetworkStart(bool* defer) {
 }
 
 void URLRequest::ResumeNetworkStart() {
-  DCHECK(job_);
+  DCHECK(job_.get());
   DCHECK(notified_before_network_start_);
 
   OnCallToDelegateComplete();

@@ -71,7 +71,7 @@ TEST(URLRequestFilter, BasicMatching) {
   {
     scoped_refptr<URLRequestJob> found =
         filter->MaybeInterceptRequest(&request_1, NULL);
-    EXPECT_EQ(job_a, found);
+    EXPECT_EQ(job_a, found.get());
     EXPECT_TRUE(job_a != NULL);
     job_a = NULL;
   }
@@ -93,7 +93,7 @@ TEST(URLRequestFilter, BasicMatching) {
   {
     scoped_refptr<URLRequestJob> found =
         filter->MaybeInterceptRequest(&request_1, NULL);
-    EXPECT_EQ(job_b, found);
+    EXPECT_EQ(job_b, found.get());
     EXPECT_TRUE(job_b != NULL);
     job_b = NULL;
   }
@@ -117,7 +117,7 @@ TEST(URLRequestFilter, BasicMatching) {
   {
     scoped_refptr<URLRequestJob> found =
         filter->MaybeInterceptRequest(&request_1, NULL);
-    EXPECT_EQ(job_c, found);
+    EXPECT_EQ(job_c, found.get());
     EXPECT_TRUE(job_c != NULL);
     job_c = NULL;
   }
@@ -132,7 +132,7 @@ TEST(URLRequestFilter, BasicMatching) {
   {
     scoped_refptr<URLRequestJob> found =
         filter->MaybeInterceptRequest(&request_2, NULL);
-    EXPECT_EQ(job_c, found);
+    EXPECT_EQ(job_c, found.get());
     EXPECT_TRUE(job_c != NULL);
     job_c = NULL;
   }

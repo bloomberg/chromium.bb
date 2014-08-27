@@ -694,7 +694,7 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
   // Allow the URLRequestJob class to set our status too
   void set_status(const URLRequestStatus& value) { status_ = value; }
 
-  CookieStore* cookie_store() const { return cookie_store_; }
+  CookieStore* cookie_store() const { return cookie_store_.get(); }
 
   // Allow the URLRequestJob to redirect this request.  Returns OK if
   // successful, otherwise an error code is returned.

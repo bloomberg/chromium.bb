@@ -446,9 +446,9 @@ void URLRequestHttpJob::StartTransactionInternal() {
           base::Bind(&URLRequestHttpJob::NotifyBeforeSendProxyHeadersCallback,
                      base::Unretained(this)));
 
-      if (!throttling_entry_ ||
-          !throttling_entry_->ShouldRejectRequest(
-              *request_, network_delegate())) {
+      if (!throttling_entry_.get() ||
+          !throttling_entry_->ShouldRejectRequest(*request_,
+                                                  network_delegate())) {
         rv = transaction_->Start(
             &request_info_, start_callback_, request_->net_log());
         start_time_ = base::TimeTicks::Now();
@@ -1306,7 +1306,7 @@ void URLRequestHttpJob::DoneReadingRedirectResponse() {
     } else {
       // Otherwise, |override_response_headers_| must be non-NULL and contain
       // bogus headers indicating a redirect.
-      DCHECK(override_response_headers_);
+      DCHECK(override_response_headers_.get());
       DCHECK(override_response_headers_->IsRedirect(NULL));
       transaction_->StopCaching();
     }
