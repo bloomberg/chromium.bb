@@ -57,7 +57,6 @@ class DevToolsAgent : public RenderViewObserver,
       createClientMessageLoop() OVERRIDE;
   virtual void willEnterDebugLoop() OVERRIDE;
   virtual void didExitDebugLoop() OVERRIDE;
-  virtual void visitAllocatedObjects(AllocatedObjectVisitor* visitor) OVERRIDE;
 
   typedef void (*TraceEventCallback)(
       char phase, const unsigned char*, const char* name, unsigned long long id,

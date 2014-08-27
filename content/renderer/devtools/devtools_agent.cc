@@ -254,20 +254,6 @@ void DevToolsAgent::disableDeviceEmulation() {
   impl->DisableScreenMetricsEmulation();
 }
 
-#if defined(USE_TCMALLOC) && !defined(OS_WIN)
-static void AllocationVisitor(void* data, const void* ptr) {
-    typedef blink::WebDevToolsAgentClient::AllocatedObjectVisitor Visitor;
-    Visitor* visitor = reinterpret_cast<Visitor*>(data);
-    visitor->visitObject(ptr);
-}
-#endif
-
-void DevToolsAgent::visitAllocatedObjects(AllocatedObjectVisitor* visitor) {
-#if defined(USE_TCMALLOC) && !defined(OS_WIN)
-  IterateAllocatedObjects(&AllocationVisitor, visitor);
-#endif
-}
-
 // static
 DevToolsAgent* DevToolsAgent::FromRoutingId(int routing_id) {
   IdToAgentMap::iterator it = g_agent_for_routing_id.Get().find(routing_id);
