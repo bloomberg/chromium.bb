@@ -478,10 +478,12 @@ class Builder(object):
 
     # Start goma support from os/arch/toolname that have been tested.
     # Set NO_NACL_GOMA=true to force to avoid using goma.
-    default_no_nacl_goma = True if pynacl.platform.IsWindows() else False
     if (arch not in ['x86-32', 'x86-64', 'pnacl']
+        # We disable Goma+PNaCl+Windows because of the problem in
+        # https://crbug.com/390764
+        or (self.is_pnacl_toolchain and pynacl.platform.IsWindows())
         or toolname not in ['newlib', 'glibc']
-        or IsEnvFlagTrue('NO_NACL_GOMA', default=default_no_nacl_goma)):
+        or IsEnvFlagTrue('NO_NACL_GOMA')):
       return {}
 
     goma_config = {}
