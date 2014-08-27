@@ -53,10 +53,7 @@ conformance_harness_script = r"""
   window.parent.webglTestHarness = testHarness;
   window.console.log = testHarness.log;
   window.onerror = function(message, url, line) {
-    testHarness._failures++;
-    if (message) {
-      testHarness.log(message);
-    }
+    testHarness.reportResults(null, false, message);
     testHarness.notifyFinished(null);
   };
 """
