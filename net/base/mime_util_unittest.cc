@@ -231,6 +231,12 @@ TEST(MimeUtilTest, CommonMediaMimeType) {
   EXPECT_TRUE(IsSupportedMediaMimeType("audio/mp3"));
   EXPECT_TRUE(IsSupportedMediaMimeType("audio/x-mp3"));
   EXPECT_TRUE(IsSupportedMediaMimeType("audio/mpeg"));
+
+#if defined(ENABLE_MPEG2TS_STREAM_PARSER)
+  EXPECT_TRUE(IsSupportedMediaMimeType("video/mp2t"));
+#else
+  EXPECT_FALSE(IsSupportedMediaMimeType("video/mp2t"));
+#endif
 #else
   EXPECT_FALSE(IsSupportedMediaMimeType("audio/mp4"));
   EXPECT_FALSE(IsSupportedMediaMimeType("audio/x-m4a"));

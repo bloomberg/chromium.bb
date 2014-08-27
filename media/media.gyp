@@ -973,13 +973,6 @@
             'formats/mpeg/mpeg_audio_stream_parser_base.cc',
             'formats/mpeg/mpeg_audio_stream_parser_base.h',
           ],
-          'conditions': [
-            ['enable_mpeg2ts_stream_parser==1', {
-              'defines': [
-                'ENABLE_MPEG2TS_STREAM_PARSER',
-              ],
-            }],
-          ],
         }],
         ['target_arch=="ia32" or target_arch=="x64"', {
           'dependencies': [
@@ -1269,11 +1262,6 @@
             'formats/mp4/track_run_iterator_unittest.cc',
             'formats/mpeg/adts_stream_parser_unittest.cc',
             'formats/mpeg/mp3_stream_parser_unittest.cc',
-          ],
-        }],
-        ['enable_mpeg2ts_stream_parser==1', {
-          'defines': [
-            'ENABLE_MPEG2TS_STREAM_PARSER',
           ],
         }],
         # TODO(wolenetz): Fix size_t to int truncations in win64. See

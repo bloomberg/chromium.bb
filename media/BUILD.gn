@@ -24,9 +24,6 @@ config("media_config") {
   if (use_cras) {
     defines += [ "USE_CRAS" ]
   }
-  if (enable_mpeg2ts_stream_parser) {
-    defines += [ "ENABLE_MPEG2TS_STREAM_PARSER" ]
-  }
 }
 
 config("media_dependent_config") {

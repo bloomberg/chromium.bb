@@ -2590,6 +2590,11 @@
       }],
       ['proprietary_codecs==1', {
         'defines': ['USE_PROPRIETARY_CODECS'],
+        'conditions': [
+          ['enable_mpeg2ts_stream_parser==1', {
+            'defines': ['ENABLE_MPEG2TS_STREAM_PARSER'],
+          }],
+        ],
       }],
       ['enable_viewport==1', {
         'defines': ['ENABLE_VIEWPORT'],
