@@ -73,7 +73,7 @@ protected:
     virtual void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const OVERRIDE FINAL;
 
     LayoutRect overflowRectForFlowThreadPortion(const LayoutRect& flowThreadPortionRect, bool isFirstPortion, bool isLastPortion) const;
-    void paintInvalidaitonOfFlowThreadContentRectangle(const LayoutRect& paintInvalidationRect, const LayoutRect& flowThreadPortionRect,
+    void paintInvalidationOfFlowThreadContentRectangle(const LayoutRect& paintInvalidationRect, const LayoutRect& flowThreadPortionRect,
         const LayoutRect& flowThreadPortionOverflowRect, const LayoutPoint& regionLocation) const;
 
 private:

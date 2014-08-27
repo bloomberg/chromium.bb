@@ -523,7 +523,7 @@ void RenderMultiColumnSet::paintInvalidationForFlowThreadContent(const LayoutRec
         LayoutRect flowThreadOverflowPortion = flowThreadPortionOverflowRect(flowThreadPortion, i, colCount, colGap);
 
         // Do a paint invalidation for this specific column.
-        paintInvalidaitonOfFlowThreadContentRectangle(paintInvalidationRect, flowThreadPortion, flowThreadOverflowPortion, colRect.location());
+        paintInvalidationOfFlowThreadContentRectangle(paintInvalidationRect, flowThreadPortion, flowThreadOverflowPortion, colRect.location());
     }
 }
 

@@ -119,7 +119,7 @@ void RenderRegion::layoutBlock(bool relayoutChildren)
     // RenderFlowThread itself).
 }
 
-void RenderRegion::paintInvalidaitonOfFlowThreadContentRectangle(const LayoutRect& paintInvalidationRect, const LayoutRect& flowThreadPortionRect, const LayoutRect& flowThreadPortionOverflowRect, const LayoutPoint& regionLocation) const
+void RenderRegion::paintInvalidationOfFlowThreadContentRectangle(const LayoutRect& paintInvalidationRect, const LayoutRect& flowThreadPortionRect, const LayoutRect& flowThreadPortionOverflowRect, const LayoutPoint& regionLocation) const
 {
     ASSERT(isValid());
 
