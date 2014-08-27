@@ -29,8 +29,12 @@ namespace {
 #if defined(OS_WIN)
 
 bool g_is_firewall_ready = false;
+bool g_is_firewall_state_reported = false;
 
 void ReportFirewallStats() {
+  if (g_is_firewall_state_reported)
+    return;
+  g_is_firewall_state_reported = true;
   base::FilePath exe_path;
   if (!PathService::Get(base::FILE_EXE, &exe_path))
     return;
@@ -80,18 +84,41 @@ scoped_refptr<ServiceDiscoverySharedClient>
   return ServiceDiscoveryClientMacFactory::CreateInstance();
 #else  // OS_MACOSX
 
-#if defined(OS_WIN)
-  static bool reported =
-      BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-                              base::Bind(&ReportFirewallStats));
+  return new ServiceDiscoveryClientMdns();
+#endif  // OS_MACOSX
+}
+
+// static
+void ServiceDiscoverySharedClient::GetInstanceWithoutAlert(
+    const GetInstanceCallback& callback) {
+#if !defined(OS_WIN)
+
+  scoped_refptr<ServiceDiscoverySharedClient> result = GetInstance();
+  return callback.Run(result);
+
+#else   // OS_WIN
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // TODO(vitalybuka): Switch to |ServiceDiscoveryClientMdns| after we find what
   // to do with firewall for user-level installs. crbug.com/366408
-  if (!g_is_firewall_ready)
-    return new ServiceDiscoveryClientUtility();
-#endif  // OS_WIN
+  scoped_refptr<ServiceDiscoverySharedClient> result =
+      g_service_discovery_client;
+  if (result)
+    return callback.Run(result);
 
-  return new ServiceDiscoveryClientMdns();
-#endif // OS_MACOSX
+  if (!g_is_firewall_state_reported) {
+    BrowserThread::PostTaskAndReply(
+        BrowserThread::FILE,
+        FROM_HERE,
+        base::Bind(&ReportFirewallStats),
+        base::Bind(&ServiceDiscoverySharedClient::GetInstanceWithoutAlert,
+                   callback));
+    return;
+  }
+
+  result =
+      g_is_firewall_ready ? GetInstance() : new ServiceDiscoveryClientUtility();
+  callback.Run(result);
+#endif  // OS_WIN
 }
 
 #else

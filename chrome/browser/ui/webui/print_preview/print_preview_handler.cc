@@ -638,28 +638,19 @@ void PrintPreviewHandler::HandleGetPrinters(const base::ListValue* /*args*/) {
 }
 
 void PrintPreviewHandler::HandleGetPrivetPrinters(const base::ListValue* args) {
+  if (!PrivetPrintingEnabled())
+    return web_ui()->CallJavascriptFunction("onPrivetPrinterSearchDone");
 #if defined(ENABLE_SERVICE_DISCOVERY)
-  if (PrivetPrintingEnabled()) {
-    Profile* profile = Profile::FromWebUI(web_ui());
-    service_discovery_client_ =
-        local_discovery::ServiceDiscoverySharedClient::GetInstance();
-    printer_lister_.reset(new local_discovery::PrivetLocalPrinterLister(
-        service_discovery_client_.get(),
-        profile->GetRequestContext(),
-        this));
-    printer_lister_->Start();
-  }
-#endif
-
-  if (!PrivetPrintingEnabled()) {
-    web_ui()->CallJavascriptFunction("onPrivetPrinterSearchDone");
-  }
+  local_discovery::ServiceDiscoverySharedClient::GetInstanceWithoutAlert(
+      base::Bind(&PrintPreviewHandler::StartPrivetLister,
+                 weak_factory_.GetWeakPtr()));
+#endif  // ENABLE_SERVICE_DISCOVERY
 }
 
 void PrintPreviewHandler::HandleStopGetPrivetPrinters(
     const base::ListValue* args) {
 #if defined(ENABLE_SERVICE_DISCOVERY)
-  if (PrivetPrintingEnabled()) {
+  if (PrivetPrintingEnabled() && printer_lister_) {
     printer_lister_->Stop();
   }
 #endif
@@ -1371,6 +1362,20 @@ bool PrintPreviewHandler::GetPreviewDataAndTitle(
 }
 
 #if defined(ENABLE_SERVICE_DISCOVERY)
+
+void PrintPreviewHandler::StartPrivetLister(
+    scoped_refptr<local_discovery::ServiceDiscoverySharedClient> client) {
+  if (!PrivetPrintingEnabled())
+    return web_ui()->CallJavascriptFunction("onPrivetPrinterSearchDone");
+
+  Profile* profile = Profile::FromWebUI(web_ui());
+  DCHECK(!service_discovery_client_ || service_discovery_client_ == client);
+  service_discovery_client_ = client;
+  printer_lister_.reset(new local_discovery::PrivetLocalPrinterLister(
+      service_discovery_client_.get(), profile->GetRequestContext(), this));
+  printer_lister_->Start();
+}
+
 void PrintPreviewHandler::LocalPrinterChanged(
     bool added,
     const std::string& name,
@@ -1471,7 +1476,8 @@ void PrintPreviewHandler::OnPrivetCapabilities(
     const base::DictionaryValue* capabilities) {
   std::string name = privet_capabilities_operation_->GetHTTPClient()->GetName();
 
-  if (!capabilities || capabilities->HasKey(local_discovery::kPrivetKeyError)) {
+  if (!capabilities || capabilities->HasKey(local_discovery::kPrivetKeyError) ||
+      !printer_lister_) {
     SendPrivetCapabilitiesError(name);
     return;
   }
@@ -1521,7 +1527,7 @@ bool PrintPreviewHandler::CreatePrivetHTTP(
     const local_discovery::PrivetHTTPAsynchronousFactory::ResultCallback&
         callback) {
   const local_discovery::DeviceDescription* device_description =
-      printer_lister_->GetDeviceDescription(name);
+      printer_lister_ ? printer_lister_->GetDeviceDescription(name) : NULL;
 
   if (!device_description) {
     SendPrivetCapabilitiesError(name);
