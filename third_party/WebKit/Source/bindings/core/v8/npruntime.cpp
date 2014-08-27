@@ -124,7 +124,7 @@ using npruntime::StringKeyHash;
 
 // Implement HashTraits<StringKey>
 struct StringKeyHashTraits : WTF::GenericHashTraits<StringKey> {
-    static void constructDeletedValue(StringKey& slot)
+    static void constructDeletedValue(StringKey& slot, bool)
     {
         new (&slot) StringKey(WTF::HashTableDeletedValue);
     }

@@ -124,7 +124,7 @@ template<> struct DefaultHash<blink::SMILTime> {
 
 template<> struct HashTraits<blink::SMILTime> : GenericHashTraits<blink::SMILTime> {
     static blink::SMILTime emptyValue() { return blink::SMILTime::unresolved(); }
-    static void constructDeletedValue(blink::SMILTime& slot) { slot = -std::numeric_limits<double>::infinity(); }
+    static void constructDeletedValue(blink::SMILTime& slot, bool) { slot = -std::numeric_limits<double>::infinity(); }
     static bool isDeletedValue(blink::SMILTime value) { return value == -std::numeric_limits<double>::infinity(); }
 };
 

@@ -55,7 +55,7 @@ template<> struct DefaultHash<blink::CSSPropertyID> { typedef IntHash<unsigned> 
 template<> struct HashTraits<blink::CSSPropertyID> : GenericHashTraits<blink::CSSPropertyID> {
     static const bool emptyValueIsZero = true;
     static const bool needsDestruction = false;
-    static void constructDeletedValue(blink::CSSPropertyID& slot) { slot = static_cast<blink::CSSPropertyID>(blink::lastCSSProperty + 1); }
+    static void constructDeletedValue(blink::CSSPropertyID& slot, bool) { slot = static_cast<blink::CSSPropertyID>(blink::lastCSSProperty + 1); }
     static bool isDeletedValue(blink::CSSPropertyID value) { return value == (blink::lastCSSProperty + 1); }
 };
 }

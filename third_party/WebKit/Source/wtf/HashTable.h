@@ -257,9 +257,28 @@ namespace WTF {
         swap(a.value, b.value);
     }
 
-    template<typename T, bool useSwap> struct Mover;
-    template<typename T> struct Mover<T, true> { static void move(T& from, T& to) { hashTableSwap(from, to); } };
-    template<typename T> struct Mover<T, false> { static void move(T& from, T& to) { to = from; } };
+    template<typename T, typename Allocator, bool useSwap> struct Mover;
+    template<typename T, typename Allocator> struct Mover<T, Allocator, true> {
+        static void move(T& from, T& to)
+        {
+            // A swap operation should not normally allocate, but it may do so
+            // if it is falling back on some sort of triple assignment in the
+            // style of t = a; a = b; b = t because there is no overloaded swap
+            // operation. We can't allow allocation both because it is slower
+            // than a true swap operation, but also because allocation implies
+            // allowing GC: We cannot allow a GC after swapping only the key.
+            // The value is only traced if the key is present and therefore the
+            // GC will not see the value in the old backing if the key has been
+            // moved to the new backing. Therefore, we cannot allow GC until
+            // after both key and value have been moved.
+            Allocator::enterNoAllocationScope();
+            hashTableSwap(from, to);
+            Allocator::leaveNoAllocationScope();
+        }
+    };
+    template<typename T, typename Allocator> struct Mover<T, Allocator, false> {
+        static void move(T& from, T& to) { to = from; }
+    };
 
     template<typename HashFunctions> class IdentityHashTranslator {
     public:
@@ -506,7 +525,7 @@ namespace WTF {
         ValueType* reinsert(ValueType&);
 
         static void initializeBucket(ValueType& bucket);
-        static void deleteBucket(ValueType& bucket) { bucket.~ValueType(); Traits::constructDeletedValue(bucket); }
+        static void deleteBucket(ValueType& bucket) { bucket.~ValueType(); Traits::constructDeletedValue(bucket, Allocator::isGarbageCollected); }
 
         FullLookupType makeLookupResult(ValueType* position, bool found, unsigned hash)
             { return FullLookupType(LookupType(position, found), hash); }
@@ -764,7 +783,14 @@ namespace WTF {
     template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
     inline void HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::initializeBucket(ValueType& bucket)
     {
+        // For hash maps the key and value cannot be initialied simultaneously,
+        // and it would be wrong to have a GC when only one was initialized and
+        // the other still contained garbage (eg. from a previous use of the
+        // same slot). Therefore we forbid allocation (and thus GC) while the
+        // slot is initalized to an empty value.
+        Allocator::enterNoAllocationScope();
         HashTableBucketInitializer<Traits::emptyValueIsZero>::template initialize<Traits>(bucket);
+        Allocator::leaveNoAllocationScope();
     }
 
     template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
@@ -814,6 +840,8 @@ namespace WTF {
         registerModification();
 
         if (deletedEntry) {
+            // Overwrite any data left over from last use, using placement new
+            // or memset.
             initializeBucket(*deletedEntry);
             entry = deletedEntry;
             --m_deletedCount;
@@ -878,7 +906,7 @@ namespace WTF {
         ++m_stats->numReinserts;
 #endif
         Value* newEntry = lookupForWriting(Extractor::extract(entry)).first;
-        Mover<ValueType, Traits::needsDestruction>::move(entry, *newEntry);
+        Mover<ValueType, Allocator, Traits::needsDestruction>::move(entry, *newEntry);
 
         return newEntry;
     }
@@ -962,7 +990,12 @@ namespace WTF {
 
         size_t allocSize = size * sizeof(ValueType);
         ValueType* result;
-        COMPILE_ASSERT(!Traits::emptyValueIsZero || !IsPolymorphic<ValueType>::value, EmptyValueCannotBeZeroForThingsWithAVtable);
+        // Assert that we will not use memset on things with a vtable entry.
+        // The compiler will also check this on some platforms. We would
+        // like to check this on the whole value (key-value pair), but
+        // IsPolymorphic will return false for a pair of two types, even if
+        // one of the components is polymorphic.
+        COMPILE_ASSERT(!Traits::emptyValueIsZero || !IsPolymorphic<KeyType>::value, EmptyValueCannotBeZeroForThingsWithAVtable);
         if (Traits::emptyValueIsZero) {
             result = Allocator::template zeroedBackingMalloc<ValueType*, HashTableBacking>(allocSize);
         } else {

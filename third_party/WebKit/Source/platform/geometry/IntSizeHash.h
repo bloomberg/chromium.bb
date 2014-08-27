@@ -39,7 +39,7 @@ template<> struct DefaultHash<blink::IntSize> {
 template<> struct HashTraits<blink::IntSize> : GenericHashTraits<blink::IntSize> {
     static const bool emptyValueIsZero = true;
     static const bool needsDestruction = false;
-    static void constructDeletedValue(blink::IntSize& slot) { new (NotNull, &slot) blink::IntSize(-1, -1); }
+    static void constructDeletedValue(blink::IntSize& slot, bool) { new (NotNull, &slot) blink::IntSize(-1, -1); }
     static bool isDeletedValue(const blink::IntSize& value) { return value.width() == -1 && value.height() == -1; }
 };
 

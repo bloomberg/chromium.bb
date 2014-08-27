@@ -140,12 +140,23 @@ TEST(HashMapTest, OwnPtrAsValue)
 class DummyRefCounted: public WTF::RefCounted<DummyRefCounted> {
 public:
     DummyRefCounted(bool& isDeleted) : m_isDeleted(isDeleted) { m_isDeleted = false; }
-    ~DummyRefCounted() { m_isDeleted = true; }
+    ~DummyRefCounted()
+    {
+        ASSERT(!m_isDeleted);
+        m_isDeleted = true;
+    }
 
     void ref()
     {
+        ASSERT(!m_isDeleted);
         WTF::RefCounted<DummyRefCounted>::ref();
         ++m_refInvokesCount;
+    }
+
+    void deref()
+    {
+        ASSERT(!m_isDeleted);
+        WTF::RefCounted<DummyRefCounted>::deref();
     }
 
     static int m_refInvokesCount;
@@ -159,6 +170,7 @@ int DummyRefCounted::m_refInvokesCount = 0;
 TEST(HashMapTest, RefPtrAsKey)
 {
     bool isDeleted = false;
+    DummyRefCounted::m_refInvokesCount = 0;
     RefPtr<DummyRefCounted> ptr = adoptRef(new DummyRefCounted(isDeleted));
     EXPECT_EQ(0, DummyRefCounted::m_refInvokesCount);
     HashMap<RefPtr<DummyRefCounted>, int> map;
@@ -182,6 +194,43 @@ TEST(HashMapTest, RefPtrAsKey)
     EXPECT_EQ(1, DummyRefCounted::m_refInvokesCount);
     EXPECT_TRUE(isDeleted);
     EXPECT_TRUE(map.isEmpty());
+}
+
+TEST(HashMaptest, RemoveAdd)
+{
+    DummyRefCounted::m_refInvokesCount = 0;
+    bool isDeleted = false;
+
+    typedef HashMap<int, RefPtr<DummyRefCounted>> Map;
+    Map map;
+
+    RefPtr<DummyRefCounted> ptr = adoptRef(new DummyRefCounted(isDeleted));
+    EXPECT_EQ(0, DummyRefCounted::m_refInvokesCount);
+
+    map.add(1, ptr);
+    // Referenced only once (to store a copy in the container).
+    EXPECT_EQ(1, DummyRefCounted::m_refInvokesCount);
+    EXPECT_EQ(ptr, map.get(1));
+
+    ptr.clear();
+    EXPECT_FALSE(isDeleted);
+
+    map.remove(1);
+    EXPECT_EQ(1, DummyRefCounted::m_refInvokesCount);
+    EXPECT_TRUE(isDeleted);
+    EXPECT_TRUE(map.isEmpty());
+
+    // Add and remove until the deleted slot is reused.
+    for (int i = 1; i < 100; i++) {
+        bool isDeleted2 = false;
+        RefPtr<DummyRefCounted> ptr2 = adoptRef(new DummyRefCounted(isDeleted2));
+        map.add(i, ptr2);
+        EXPECT_FALSE(isDeleted2);
+        ptr2.clear();
+        EXPECT_FALSE(isDeleted2);
+        map.remove(i);
+        EXPECT_TRUE(isDeleted2);
+    }
 }
 
 class SimpleClass {

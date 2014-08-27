@@ -1669,6 +1669,20 @@ public:
         return *other;
     }
 
+    static void enterNoAllocationScope()
+    {
+#if ENABLE(ASSERT)
+        ThreadStateFor<AnyThread>::state()->enterNoAllocationScope();
+#endif
+    }
+
+    static void leaveNoAllocationScope()
+    {
+#if ENABLE(ASSERT)
+        ThreadStateFor<AnyThread>::state()->leaveNoAllocationScope();
+#endif
+    }
+
 private:
     template<typename T, size_t u, typename V> friend class WTF::Vector;
     template<typename T, typename U, typename V, typename W> friend class WTF::HashSet;
@@ -1840,6 +1854,21 @@ public:
         Deque<T, inlineCapacity, HeapAllocator>::append(other);
     }
 };
+
+template<typename T, size_t i>
+inline void swap(HeapVector<T, i>& a, HeapVector<T, i>& b) { a.swap(b); }
+template<typename T, size_t i>
+inline void swap(HeapDeque<T, i>& a, HeapDeque<T, i>& b) { a.swap(b); }
+template<typename T, typename U, typename V>
+inline void swap(HeapHashSet<T, U, V>& a, HeapHashSet<T, U, V>& b) { a.swap(b); }
+template<typename T, typename U, typename V, typename W, typename X>
+inline void swap(HeapHashMap<T, U, V, W, X>& a, HeapHashMap<T, U, V, W, X>& b) { a.swap(b); }
+template<typename T, size_t i, typename U>
+inline void swap(HeapListHashSet<T, i, U>& a, HeapListHashSet<T, i, U>& b) { a.swap(b); }
+template<typename T, typename U, typename V>
+inline void swap(HeapLinkedHashSet<T, U, V>& a, HeapLinkedHashSet<T, U, V>& b) { a.swap(b); }
+template<typename T, typename U, typename V>
+inline void swap(HeapHashCountedSet<T, U, V>& a, HeapHashCountedSet<T, U, V>& b) { a.swap(b); }
 
 template<typename T>
 struct ThreadingTrait<Member<T> > {
@@ -2301,9 +2330,9 @@ struct TraceInCollectionTrait<WeakHandlingInCollections, strongify, KeyValuePair
 
 // Nodes used by LinkedHashSet. Again we need two versions to disambiguate the
 // template.
-template<ShouldWeakPointersBeMarkedStrongly strongify, typename Value, typename Traits>
-struct TraceInCollectionTrait<NoWeakHandlingInCollections, strongify, LinkedHashSetNode<Value>, Traits> {
-    static bool trace(blink::Visitor* visitor, LinkedHashSetNode<Value>& self)
+template<ShouldWeakPointersBeMarkedStrongly strongify, typename Value, typename Allocator, typename Traits>
+struct TraceInCollectionTrait<NoWeakHandlingInCollections, strongify, LinkedHashSetNode<Value, Allocator>, Traits> {
+    static bool trace(blink::Visitor* visitor, LinkedHashSetNode<Value, Allocator>& self)
     {
         ASSERT(ShouldBeTraced<Traits>::value);
         blink::TraceTrait<Value>::trace(visitor, &self.m_value);
@@ -2311,9 +2340,9 @@ struct TraceInCollectionTrait<NoWeakHandlingInCollections, strongify, LinkedHash
     }
 };
 
-template<ShouldWeakPointersBeMarkedStrongly strongify, typename Value, typename Traits>
-struct TraceInCollectionTrait<WeakHandlingInCollections, strongify, LinkedHashSetNode<Value>, Traits> {
-    static bool trace(blink::Visitor* visitor, LinkedHashSetNode<Value>& self)
+template<ShouldWeakPointersBeMarkedStrongly strongify, typename Value, typename Allocator, typename Traits>
+struct TraceInCollectionTrait<WeakHandlingInCollections, strongify, LinkedHashSetNode<Value, Allocator>, Traits> {
+    static bool trace(blink::Visitor* visitor, LinkedHashSetNode<Value, Allocator>& self)
     {
         return TraceInCollectionTrait<WeakHandlingInCollections, strongify, Value, typename Traits::ValueTraits>::trace(visitor, self.m_value);
     }

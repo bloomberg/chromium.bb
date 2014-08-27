@@ -82,7 +82,7 @@ private:
     struct UScriptCodeHashTraits : WTF::GenericHashTraits<int> {
         static const bool emptyValueIsZero = false;
         static int emptyValue() { return -2; }
-        static void constructDeletedValue(int& slot) { slot = -3; }
+        static void constructDeletedValue(int& slot, bool) { slot = -3; }
         static bool isDeletedValue(int value) { return value == -3; }
     };
 

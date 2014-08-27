@@ -240,7 +240,7 @@ bool DrawingBuffer::prepareMailbox(WebExternalTextureMailbox* outMailbox, WebExt
     }
 
     if (m_preserveDrawingBuffer == Discard) {
-        swap(frontColorBufferMailbox->textureInfo, m_colorBuffer);
+        std::swap(frontColorBufferMailbox->textureInfo, m_colorBuffer);
         // It appears safe to overwrite the context's framebuffer binding in the Discard case since there will always be a
         // WebGLRenderingContext::clearIfComposited() call made before the next draw call which restores the framebuffer binding.
         // If this stops being true at some point, we should track the current framebuffer binding in the DrawingBuffer and restore

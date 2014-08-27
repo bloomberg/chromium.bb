@@ -522,6 +522,12 @@ namespace WTF {
             Allocator::markNoTracing(visitor, m_buffer.buffer());
     }
 
+    template<typename T, size_t inlineCapacity, typename Allocator>
+    inline void swap(Deque<T, inlineCapacity, Allocator>& a, Deque<T, inlineCapacity, Allocator>& b)
+    {
+        a.swap(b);
+    }
+
 #if !ENABLE(OILPAN)
     template<typename T, size_t N>
     struct NeedsTracing<Deque<T, N> > {

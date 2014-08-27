@@ -62,7 +62,7 @@ struct FontDataCacheKeyTraits : WTF::GenericHashTraits<FontPlatformData> {
         DEFINE_STATIC_LOCAL(FontPlatformData, key, (0.f, false, false));
         return key;
     }
-    static void constructDeletedValue(FontPlatformData& slot)
+    static void constructDeletedValue(FontPlatformData& slot, bool)
     {
         new (NotNull, &slot) FontPlatformData(WTF::HashTableDeletedValue);
     }

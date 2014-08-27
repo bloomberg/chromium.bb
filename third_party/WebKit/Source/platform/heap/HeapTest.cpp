@@ -65,7 +65,6 @@ public:
 
     unsigned hash() { return IntHash<int>::hash(m_x); }
 
-protected:
     IntWrapper(int x) : m_x(x) { }
 
 private:
@@ -159,7 +158,7 @@ template<> struct DefaultHash<blink::ThreadMarker> {
 // ThreadMarkerHash is the default hash for ThreadMarker
 template<> struct HashTraits<blink::ThreadMarker> : GenericHashTraits<blink::ThreadMarker> {
     static const bool emptyValueIsZero = true;
-    static void constructDeletedValue(blink::ThreadMarker& slot) { new (NotNull, &slot) blink::ThreadMarker(HashTableDeletedValue); }
+    static void constructDeletedValue(blink::ThreadMarker& slot, bool) { new (NotNull, &slot) blink::ThreadMarker(HashTableDeletedValue); }
     static bool isDeletedValue(const blink::ThreadMarker& slot) { return slot.isHashTableDeletedValue(); }
 };
 
@@ -182,7 +181,7 @@ template<> struct HashTraits<blink::PairWithWeakHandling> : blink::WeakHandlingH
     static const bool needsDestruction = false;
     static const bool hasIsEmptyValueFunction = true;
     static bool isEmptyValue(const blink::PairWithWeakHandling& value) { return !value.first; }
-    static void constructDeletedValue(blink::PairWithWeakHandling& slot) { new (NotNull, &slot) blink::PairWithWeakHandling(HashTableDeletedValue); }
+    static void constructDeletedValue(blink::PairWithWeakHandling& slot, bool) { new (NotNull, &slot) blink::PairWithWeakHandling(HashTableDeletedValue); }
     static bool isDeletedValue(const blink::PairWithWeakHandling& value) { return value.isHashTableDeletedValue(); }
 };
 
@@ -5047,6 +5046,108 @@ TEST(HeapTest, TraceIfNeeded)
         m_vec->trace(&visitor);
         EXPECT_EQ(2u, visitor.count());
     }
+}
+
+class AllocatesOnAssignment {
+public:
+    AllocatesOnAssignment(std::nullptr_t)
+        : m_value(nullptr)
+    { }
+    AllocatesOnAssignment(int x)
+        : m_value(new IntWrapper(x))
+    { }
+    AllocatesOnAssignment(IntWrapper* x)
+        : m_value(x)
+    { }
+
+    AllocatesOnAssignment& operator=(const AllocatesOnAssignment x)
+    {
+        m_value = x.m_value;
+        return *this;
+    }
+
+    enum DeletedMarker {
+        DeletedValue
+    };
+
+    AllocatesOnAssignment(const AllocatesOnAssignment& other)
+    {
+        Heap::collectGarbage(ThreadState::HeapPointersOnStack);
+        m_value = new IntWrapper(other.m_value->value());
+    }
+
+    AllocatesOnAssignment(DeletedMarker)
+        : m_value(reinterpret_cast<IntWrapper*>(-1)) { }
+
+    inline bool isDeleted() const { return m_value == reinterpret_cast<IntWrapper*>(-1); }
+
+    virtual void trace(Visitor* visitor)
+    {
+        visitor->trace(m_value);
+    }
+
+    int value() { return m_value->value(); }
+
+private:
+    Member<IntWrapper> m_value;
+
+    friend bool operator==(const AllocatesOnAssignment&, const AllocatesOnAssignment&);
+    friend void swap(AllocatesOnAssignment&, AllocatesOnAssignment&);
+};
+
+bool operator==(const AllocatesOnAssignment& a, const AllocatesOnAssignment& b)
+{
+    if (a.m_value)
+        return b.m_value && a.m_value->value() == b.m_value->value();
+    return !b.m_value;
+}
+
+void swap(AllocatesOnAssignment& a, AllocatesOnAssignment& b)
+{
+    std::swap(a.m_value, b.m_value);
+}
+
+struct DegenerateHash {
+    static unsigned hash(const AllocatesOnAssignment&) { return 0; }
+    static bool equal(const AllocatesOnAssignment& a, const AllocatesOnAssignment& b) { return !a.isDeleted() && a == b; }
+    static const bool safeToCompareToEmptyOrDeleted = true;
+};
+
+struct AllocatesOnAssignmentHashTraits : WTF::GenericHashTraits<AllocatesOnAssignment> {
+    typedef AllocatesOnAssignment T;
+    typedef std::nullptr_t EmptyValueType;
+    static EmptyValueType emptyValue() { return nullptr; }
+    static const bool emptyValueIsZero = false; // Can't be zero if it has a vtable.
+    static const bool needsDestruction = false;
+    static void constructDeletedValue(T& slot, bool) { slot = T(AllocatesOnAssignment::DeletedValue); }
+    static bool isDeletedValue(const T& value) { return value.isDeleted(); }
+};
+
+} // namespace blink
+
+namespace WTF {
+
+template<> struct DefaultHash<blink::AllocatesOnAssignment> {
+    typedef blink::DegenerateHash Hash;
+};
+
+template <> struct HashTraits<blink::AllocatesOnAssignment> : blink::AllocatesOnAssignmentHashTraits { };
+
+} // namespace WTF
+
+namespace blink {
+
+TEST(HeapTest, GCInHashMapOperations)
+{
+    typedef HeapHashMap<AllocatesOnAssignment, AllocatesOnAssignment> Map;
+    Map* map = new Map();
+    IntWrapper* key = new IntWrapper(42);
+    map->add(key, AllocatesOnAssignment(103));
+    map->remove(key);
+    for (int i = 0; i < 10; i++)
+        map->add(AllocatesOnAssignment(i), AllocatesOnAssignment(i));
+    for (Map::iterator it = map->begin(); it != map->end(); ++it)
+        EXPECT_EQ(it->key.value(), it->value.value());
 }
 
 class PartObjectWithVirtualMethod {

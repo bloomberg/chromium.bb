@@ -369,7 +369,7 @@ public:
     bool isInGC() const { return m_inGC; }
 
     // Is any of the threads registered with the blink garbage collection
-    // infrastructure currently perform GC?
+    // infrastructure currently performing GC?
     static bool isAnyThreadInGC() { return s_inGC; }
 
     void enterGC()

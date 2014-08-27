@@ -25,8 +25,9 @@
 #include "wtf/HashTableDeletedValueType.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/TypeTraits.h"
-#include <utility>
 #include <limits>
+#include <string.h> // For memset.
+#include <utility>
 
 namespace WTF {
 
@@ -75,7 +76,7 @@ namespace WTF {
     template<typename T> struct GenericHashTraitsBase<true, T> : GenericHashTraitsBase<false, T> {
         static const bool emptyValueIsZero = true;
         static const bool needsDestruction = false;
-        static void constructDeletedValue(T& slot) { slot = static_cast<T>(-1); }
+        static void constructDeletedValue(T& slot, bool) { slot = static_cast<T>(-1); }
         static bool isDeletedValue(T value) { return value == static_cast<T>(-1); }
     };
 
@@ -115,7 +116,7 @@ namespace WTF {
     template<typename T> struct FloatHashTraits : GenericHashTraits<T> {
         static const bool needsDestruction = false;
         static T emptyValue() { return std::numeric_limits<T>::infinity(); }
-        static void constructDeletedValue(T& slot) { slot = -std::numeric_limits<T>::infinity(); }
+        static void constructDeletedValue(T& slot, bool) { slot = -std::numeric_limits<T>::infinity(); }
         static bool isDeletedValue(T value) { return value == -std::numeric_limits<T>::infinity(); }
     };
 
@@ -127,20 +128,20 @@ namespace WTF {
         static const bool emptyValueIsZero = false;
         static const bool needsDestruction = false;
         static T emptyValue() { return std::numeric_limits<T>::max(); }
-        static void constructDeletedValue(T& slot) { slot = std::numeric_limits<T>::max() - 1; }
+        static void constructDeletedValue(T& slot, bool) { slot = std::numeric_limits<T>::max() - 1; }
         static bool isDeletedValue(T value) { return value == std::numeric_limits<T>::max() - 1; }
     };
 
     template<typename P> struct HashTraits<P*> : GenericHashTraits<P*> {
         static const bool emptyValueIsZero = true;
         static const bool needsDestruction = false;
-        static void constructDeletedValue(P*& slot) { slot = reinterpret_cast<P*>(-1); }
+        static void constructDeletedValue(P*& slot, bool) { slot = reinterpret_cast<P*>(-1); }
         static bool isDeletedValue(P* value) { return value == reinterpret_cast<P*>(-1); }
     };
 
     template<typename T> struct SimpleClassHashTraits : GenericHashTraits<T> {
         static const bool emptyValueIsZero = true;
-        static void constructDeletedValue(T& slot) { new (NotNull, &slot) T(HashTableDeletedValue); }
+        static void constructDeletedValue(T& slot, bool) { new (NotNull, &slot) T(HashTableDeletedValue); }
         static bool isDeletedValue(const T& value) { return value.isHashTableDeletedValue(); }
     };
 
@@ -228,7 +229,20 @@ namespace WTF {
 
         static const unsigned minimumTableSize = FirstTraits::minimumTableSize;
 
-        static void constructDeletedValue(TraitType& slot) { FirstTraits::constructDeletedValue(slot.first); }
+        static void constructDeletedValue(TraitType& slot, bool zeroValue)
+        {
+            FirstTraits::constructDeletedValue(slot.first, zeroValue);
+            // For GC collections the memory for the backing is zeroed when it
+            // is allocated, and the constructors may take advantage of that,
+            // especially if a GC occurs during insertion of an entry into the
+            // table. This slot is being marked deleted, but If the slot is
+            // reused at a later point, the same assumptions around memory
+            // zeroing must hold as they did at the initial allocation.
+            // Therefore we zero the value part of the slot here for GC
+            // collections.
+            if (zeroValue)
+                memset(reinterpret_cast<void*>(&slot.second), 0, sizeof(slot.second));
+        }
         static bool isDeletedValue(const TraitType& value) { return FirstTraits::isDeletedValue(value.first); }
     };
 
@@ -279,7 +293,13 @@ namespace WTF {
 
         static const unsigned minimumTableSize = KeyTraits::minimumTableSize;
 
-        static void constructDeletedValue(TraitType& slot) { KeyTraits::constructDeletedValue(slot.key); }
+        static void constructDeletedValue(TraitType& slot, bool zeroValue)
+        {
+            KeyTraits::constructDeletedValue(slot.key, zeroValue);
+            // See similar code in this file for why we need to do this.
+            if (zeroValue)
+                memset(reinterpret_cast<void*>(&slot.value), 0, sizeof(slot.value));
+        }
         static bool isDeletedValue(const TraitType& value) { return KeyTraits::isDeletedValue(value.key); }
     };
 
