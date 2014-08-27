@@ -2,10 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string>
+
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/strings/string_piece.h"
+#include "device/serial/data_receiver.h"
+#include "device/serial/data_sender.h"
+#include "device/serial/data_stream.mojom.h"
 #include "device/serial/serial.mojom.h"
+#include "device/serial/serial_connection.h"
 #include "device/serial/serial_service_impl.h"
 #include "device/serial/test_serial_io_handler.h"
 #include "mojo/public/cpp/bindings/error_handler.h"
@@ -29,7 +36,31 @@ class FakeSerialDeviceEnumerator : public SerialDeviceEnumerator {
 
 class SerialConnectionTest : public testing::Test, public mojo::ErrorHandler {
  public:
-  SerialConnectionTest() : connected_(false), success_(false) {}
+  enum Event {
+    EVENT_NONE,
+    EVENT_GOT_INFO,
+    EVENT_SET_OPTIONS,
+    EVENT_GOT_CONTROL_SIGNALS,
+    EVENT_SET_CONTROL_SIGNALS,
+    EVENT_FLUSHED,
+    EVENT_DATA_AT_IO_HANDLER,
+    EVENT_DATA_SENT,
+    EVENT_SEND_ERROR,
+    EVENT_DATA_RECEIVED,
+    EVENT_RECEIVE_ERROR,
+    EVENT_CANCEL_COMPLETE,
+    EVENT_ERROR,
+  };
+
+  static const uint32_t kBufferSize;
+
+  SerialConnectionTest()
+      : connected_(false),
+        success_(false),
+        bytes_sent_(0),
+        send_error_(serial::SEND_ERROR_NONE),
+        receive_error_(serial::RECEIVE_ERROR_NONE),
+        expected_event_(EVENT_NONE) {}
 
   virtual void SetUp() OVERRIDE {
     message_loop_.reset(new base::MessageLoop);
@@ -43,39 +74,69 @@ class SerialConnectionTest : public testing::Test, public mojo::ErrorHandler {
             scoped_ptr<SerialDeviceEnumerator>(new FakeSerialDeviceEnumerator)),
         &service);
     service.set_error_handler(this);
-    service->Connect(
-        "device", serial::ConnectionOptions::New(), mojo::Get(&connection_));
+    mojo::InterfacePtr<serial::DataSink> consumer;
+    mojo::InterfacePtr<serial::DataSource> producer;
+    service->Connect("device",
+                     serial::ConnectionOptions::New(),
+                     mojo::Get(&connection_),
+                     mojo::Get(&consumer),
+                     mojo::Get(&producer));
+    sender_.reset(new DataSender(
+        consumer.Pass(), kBufferSize, serial::SEND_ERROR_DISCONNECTED));
+    receiver_ = new DataReceiver(
+        producer.Pass(), kBufferSize, serial::RECEIVE_ERROR_DISCONNECTED);
     connection_.set_error_handler(this);
     connection_->GetInfo(
         base::Bind(&SerialConnectionTest::StoreInfo, base::Unretained(this)));
-    RunMessageLoop();
+    WaitForEvent(EVENT_GOT_INFO);
     ASSERT_TRUE(io_handler_);
   }
 
   void StoreInfo(serial::ConnectionInfoPtr options) {
     info_ = options.Pass();
-    StopMessageLoop();
+    EventReceived(EVENT_GOT_INFO);
   }
 
   void StoreControlSignals(serial::DeviceControlSignalsPtr signals) {
     signals_ = signals.Pass();
-    StopMessageLoop();
+    EventReceived(EVENT_GOT_CONTROL_SIGNALS);
   }
 
-  void StoreSuccess(bool success) {
+  void StoreSuccess(Event event_to_report, bool success) {
     success_ = success;
-    StopMessageLoop();
+    EventReceived(event_to_report);
   }
 
-  void RunMessageLoop() {
-    run_loop_.reset(new base::RunLoop);
-    run_loop_->Run();
+  void Send(const base::StringPiece& data) {
+    ASSERT_TRUE(sender_->Send(
+        data,
+        base::Bind(&SerialConnectionTest::OnDataSent, base::Unretained(this)),
+        base::Bind(&SerialConnectionTest::OnSendError,
+                   base::Unretained(this))));
   }
 
-  void StopMessageLoop() {
+  void Receive() {
+    ASSERT_TRUE(
+        receiver_->Receive(base::Bind(&SerialConnectionTest::OnDataReceived,
+                                      base::Unretained(this)),
+                           base::Bind(&SerialConnectionTest::OnReceiveError,
+                                      base::Unretained(this))));
+  }
+
+  void WaitForEvent(Event event) {
+    expected_event_ = event;
+    base::RunLoop run_loop;
+    stop_run_loop_ = run_loop.QuitClosure();
+    run_loop.Run();
+  }
+
+  void EventReceived(Event event) {
+    if (event != expected_event_)
+      return;
+    expected_event_ = EVENT_NONE;
     ASSERT_TRUE(message_loop_);
-    ASSERT_TRUE(run_loop_);
-    message_loop_->PostTask(FROM_HERE, run_loop_->QuitClosure());
+    ASSERT_TRUE(!stop_run_loop_.is_null());
+    message_loop_->PostTask(FROM_HERE, stop_run_loop_);
   }
 
   scoped_refptr<SerialIoHandler> CreateIoHandler() {
@@ -83,8 +144,32 @@ class SerialConnectionTest : public testing::Test, public mojo::ErrorHandler {
     return io_handler_;
   }
 
+  void OnDataSent(uint32_t bytes_sent) {
+    bytes_sent_ += bytes_sent;
+    send_error_ = serial::SEND_ERROR_NONE;
+    EventReceived(EVENT_DATA_SENT);
+  }
+
+  void OnSendError(uint32_t bytes_sent, int32_t error) {
+    bytes_sent_ += bytes_sent;
+    send_error_ = static_cast<serial::SendError>(error);
+    EventReceived(EVENT_SEND_ERROR);
+  }
+
+  void OnDataReceived(scoped_ptr<ReadOnlyBuffer> buffer) {
+    data_received_ += std::string(buffer->GetData(), buffer->GetSize());
+    buffer->Done(buffer->GetSize());
+    receive_error_ = serial::RECEIVE_ERROR_NONE;
+    EventReceived(EVENT_DATA_RECEIVED);
+  }
+
+  void OnReceiveError(int32_t error) {
+    receive_error_ = static_cast<serial::ReceiveError>(error);
+    EventReceived(EVENT_RECEIVE_ERROR);
+  }
+
   virtual void OnConnectionError() OVERRIDE {
-    StopMessageLoop();
+    EventReceived(EVENT_ERROR);
     FAIL() << "Connection error";
   }
 
@@ -93,15 +178,24 @@ class SerialConnectionTest : public testing::Test, public mojo::ErrorHandler {
   serial::DeviceControlSignalsPtr signals_;
   bool connected_;
   bool success_;
+  int bytes_sent_;
+  serial::SendError send_error_;
+  serial::ReceiveError receive_error_;
+  std::string data_received_;
+  Event expected_event_;
 
   scoped_ptr<base::MessageLoop> message_loop_;
-  scoped_ptr<base::RunLoop> run_loop_;
+  base::Closure stop_run_loop_;
   mojo::InterfacePtr<serial::Connection> connection_;
+  scoped_ptr<DataSender> sender_;
+  scoped_refptr<DataReceiver> receiver_;
   scoped_refptr<TestSerialIoHandler> io_handler_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SerialConnectionTest);
 };
+
+const uint32_t SerialConnectionTest::kBufferSize = 10;
 
 TEST_F(SerialConnectionTest, GetInfo) {
   // |info_| is filled in during SetUp().
@@ -119,10 +213,11 @@ TEST_F(SerialConnectionTest, SetOptions) {
   options->data_bits = serial::DATA_BITS_SEVEN;
   options->has_cts_flow_control = true;
   options->cts_flow_control = true;
-  connection_->SetOptions(
-      options.Pass(),
-      base::Bind(&SerialConnectionTest::StoreSuccess, base::Unretained(this)));
-  RunMessageLoop();
+  connection_->SetOptions(options.Pass(),
+                          base::Bind(&SerialConnectionTest::StoreSuccess,
+                                     base::Unretained(this),
+                                     EVENT_SET_OPTIONS));
+  WaitForEvent(EVENT_SET_OPTIONS);
   ASSERT_TRUE(success_);
   serial::ConnectionInfo* info = io_handler_->connection_info();
   EXPECT_EQ(12345u, info->bitrate);
@@ -139,7 +234,7 @@ TEST_F(SerialConnectionTest, GetControlSignals) {
   signals->dcd = true;
   signals->dsr = true;
 
-  RunMessageLoop();
+  WaitForEvent(EVENT_GOT_CONTROL_SIGNALS);
   ASSERT_TRUE(signals_);
   EXPECT_TRUE(signals_->dcd);
   EXPECT_FALSE(signals_->cts);
@@ -154,10 +249,11 @@ TEST_F(SerialConnectionTest, SetControlSignals) {
   signals->has_rts = true;
   signals->rts = true;
 
-  connection_->SetControlSignals(
-      signals.Pass(),
-      base::Bind(&SerialConnectionTest::StoreSuccess, base::Unretained(this)));
-  RunMessageLoop();
+  connection_->SetControlSignals(signals.Pass(),
+                                 base::Bind(&SerialConnectionTest::StoreSuccess,
+                                            base::Unretained(this),
+                                            EVENT_SET_CONTROL_SIGNALS));
+  WaitForEvent(EVENT_SET_CONTROL_SIGNALS);
   ASSERT_TRUE(success_);
   EXPECT_TRUE(io_handler_->dtr());
   EXPECT_TRUE(io_handler_->rts());
@@ -165,17 +261,67 @@ TEST_F(SerialConnectionTest, SetControlSignals) {
 
 TEST_F(SerialConnectionTest, Flush) {
   ASSERT_EQ(0, io_handler_->flushes());
-  connection_->Flush(
-      base::Bind(&SerialConnectionTest::StoreSuccess, base::Unretained(this)));
-  RunMessageLoop();
+  connection_->Flush(base::Bind(&SerialConnectionTest::StoreSuccess,
+                                base::Unretained(this),
+                                EVENT_FLUSHED));
+  WaitForEvent(EVENT_FLUSHED);
   ASSERT_TRUE(success_);
   EXPECT_EQ(1, io_handler_->flushes());
 }
 
 TEST_F(SerialConnectionTest, Disconnect) {
   connection_.reset();
-  message_loop_.reset();
+  io_handler_->set_send_callback(base::Bind(base::DoNothing));
+  ASSERT_NO_FATAL_FAILURE(Send("data"));
+  WaitForEvent(EVENT_SEND_ERROR);
+  EXPECT_EQ(serial::SEND_ERROR_DISCONNECTED, send_error_);
+  EXPECT_EQ(0, bytes_sent_);
+  ASSERT_NO_FATAL_FAILURE(Receive());
+  WaitForEvent(EVENT_RECEIVE_ERROR);
+  EXPECT_EQ(serial::RECEIVE_ERROR_DISCONNECTED, receive_error_);
+  EXPECT_EQ("", data_received_);
   EXPECT_TRUE(io_handler_->HasOneRef());
+}
+
+TEST_F(SerialConnectionTest, Echo) {
+  ASSERT_NO_FATAL_FAILURE(Send("data"));
+  WaitForEvent(EVENT_DATA_SENT);
+  EXPECT_EQ(serial::SEND_ERROR_NONE, send_error_);
+  EXPECT_EQ(4, bytes_sent_);
+  ASSERT_NO_FATAL_FAILURE(Receive());
+  WaitForEvent(EVENT_DATA_RECEIVED);
+  EXPECT_EQ("data", data_received_);
+  EXPECT_EQ(serial::RECEIVE_ERROR_NONE, receive_error_);
+}
+
+TEST_F(SerialConnectionTest, Cancel) {
+  // To test that cancels are correctly passed to the IoHandler, we need a send
+  // to be in progress because otherwise, the DataSinkReceiver would handle the
+  // cancel internally.
+  io_handler_->set_send_callback(
+      base::Bind(&SerialConnectionTest::EventReceived,
+                 base::Unretained(this),
+                 EVENT_DATA_AT_IO_HANDLER));
+  ASSERT_NO_FATAL_FAILURE(Send("something else"));
+  WaitForEvent(EVENT_DATA_AT_IO_HANDLER);
+  EXPECT_EQ(0, bytes_sent_);
+
+  ASSERT_TRUE(sender_->Cancel(serial::SEND_ERROR_TIMEOUT,
+                              base::Bind(&SerialConnectionTest::EventReceived,
+                                         base::Unretained(this),
+                                         EVENT_CANCEL_COMPLETE)));
+
+  WaitForEvent(EVENT_CANCEL_COMPLETE);
+  EXPECT_EQ(serial::SEND_ERROR_TIMEOUT, send_error_);
+
+  ASSERT_NO_FATAL_FAILURE(Send("data"));
+  WaitForEvent(EVENT_DATA_SENT);
+  EXPECT_EQ(serial::SEND_ERROR_NONE, send_error_);
+  EXPECT_EQ(4, bytes_sent_);
+  ASSERT_NO_FATAL_FAILURE(Receive());
+  WaitForEvent(EVENT_DATA_RECEIVED);
+  EXPECT_EQ("data", data_received_);
+  EXPECT_EQ(serial::RECEIVE_ERROR_NONE, receive_error_);
 }
 
 }  // namespace device

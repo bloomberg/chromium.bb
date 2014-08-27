@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "device/serial/data_stream.mojom.h"
 #include "device/serial/serial.mojom.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 
@@ -29,7 +30,9 @@ class SerialConnectionFactory
   void CreateConnection(
       const std::string& path,
       serial::ConnectionOptionsPtr options,
-      mojo::InterfaceRequest<serial::Connection> connection_request);
+      mojo::InterfaceRequest<serial::Connection> connection_request,
+      mojo::InterfaceRequest<serial::DataSink> sink,
+      mojo::InterfaceRequest<serial::DataSource> source);
 
  private:
   friend class base::RefCountedThreadSafe<SerialConnectionFactory>;

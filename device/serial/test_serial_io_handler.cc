@@ -4,6 +4,8 @@
 
 #include "device/serial/test_serial_io_handler.h"
 
+#include <algorithm>
+
 #include "base/bind.h"
 #include "device/serial/serial.mojom.h"
 
@@ -44,24 +46,37 @@ bool TestSerialIoHandler::ConfigurePort(
 }
 
 void TestSerialIoHandler::ReadImpl() {
+  if (!pending_read_buffer())
+    return;
+  if (buffer_.empty())
+    return;
+
+  size_t num_bytes =
+      std::min(buffer_.size(), static_cast<size_t>(pending_read_buffer_len()));
+  memcpy(pending_read_buffer(), buffer_.c_str(), num_bytes);
+  buffer_ = buffer_.substr(num_bytes);
+  ReadCompleted(static_cast<uint32_t>(num_bytes), serial::RECEIVE_ERROR_NONE);
 }
 
 void TestSerialIoHandler::CancelReadImpl() {
-  QueueReadCompleted(0, read_cancel_reason());
+  ReadCompleted(0, read_cancel_reason());
 }
 
 void TestSerialIoHandler::WriteImpl() {
-  DCHECK(pending_read_buffer());
-  DCHECK_LE(pending_write_buffer_len(), pending_read_buffer_len());
-  memcpy(pending_read_buffer(),
-         pending_write_buffer(),
-         pending_write_buffer_len());
-  QueueReadCompleted(pending_write_buffer_len(), serial::RECEIVE_ERROR_NONE);
-  QueueWriteCompleted(pending_write_buffer_len(), serial::SEND_ERROR_NONE);
+  if (!send_callback_.is_null()) {
+    base::Closure callback = send_callback_;
+    send_callback_.Reset();
+    callback.Run();
+    return;
+  }
+  buffer_ += std::string(pending_write_buffer(), pending_write_buffer_len());
+  WriteCompleted(pending_write_buffer_len(), serial::SEND_ERROR_NONE);
+  if (pending_read_buffer())
+    ReadImpl();
 }
 
 void TestSerialIoHandler::CancelWriteImpl() {
-  QueueWriteCompleted(0, write_cancel_reason());
+  WriteCompleted(0, write_cancel_reason());
 }
 
 serial::DeviceControlSignalsPtr TestSerialIoHandler::GetControlSignals() const {

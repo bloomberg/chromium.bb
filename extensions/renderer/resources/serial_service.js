@@ -122,7 +122,19 @@ define('serial_service', [
     options = options || {};
     var serviceOptions = getServiceOptions(options);
     var pipe = core.createMessagePipe();
-    service.connect(path, serviceOptions, pipe.handle0);
+    // Note: These two are created and closed because the service implementation
+    // requires that we provide valid message pipes for the data source and
+    // sink. Currently the client handles are immediately closed; the real
+    // implementation will come later.
+    var sendPipe = core.createMessagePipe();
+    var receivePipe = core.createMessagePipe();
+    service.connect(path,
+                    serviceOptions,
+                    pipe.handle0,
+                    sendPipe.handle0,
+                    receivePipe.handle0);
+    core.close(sendPipe.handle1);
+    core.close(receivePipe.handle1);
     var router = new routerModule.Router(pipe.handle1);
     var connection = new serialMojom.ConnectionProxy(router);
     return connection.getInfo().then(convertServiceInfo).then(

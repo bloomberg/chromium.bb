@@ -35,7 +35,9 @@ class SerialConnectionFactory::ConnectTask
   ConnectTask(scoped_refptr<SerialConnectionFactory> factory,
               const std::string& path,
               serial::ConnectionOptionsPtr options,
-              mojo::InterfaceRequest<serial::Connection> connection_request);
+              mojo::InterfaceRequest<serial::Connection> connection_request,
+              mojo::InterfaceRequest<serial::DataSink> sink,
+              mojo::InterfaceRequest<serial::DataSource> source);
   void Run();
 
  private:
@@ -48,6 +50,8 @@ class SerialConnectionFactory::ConnectTask
   const std::string path_;
   serial::ConnectionOptionsPtr options_;
   mojo::InterfaceRequest<serial::Connection> connection_request_;
+  mojo::InterfaceRequest<serial::DataSink> sink_;
+  mojo::InterfaceRequest<serial::DataSource> source_;
   scoped_refptr<SerialIoHandler> io_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(ConnectTask);
@@ -63,9 +67,15 @@ SerialConnectionFactory::SerialConnectionFactory(
 void SerialConnectionFactory::CreateConnection(
     const std::string& path,
     serial::ConnectionOptionsPtr options,
-    mojo::InterfaceRequest<serial::Connection> connection_request) {
-  scoped_refptr<ConnectTask> task(
-      new ConnectTask(this, path, options.Pass(), connection_request.Pass()));
+    mojo::InterfaceRequest<serial::Connection> connection_request,
+    mojo::InterfaceRequest<serial::DataSink> sink,
+    mojo::InterfaceRequest<serial::DataSource> source) {
+  scoped_refptr<ConnectTask> task(new ConnectTask(this,
+                                                  path,
+                                                  options.Pass(),
+                                                  connection_request.Pass(),
+                                                  sink.Pass(),
+                                                  source.Pass()));
   task->Run();
 }
 
@@ -76,11 +86,15 @@ SerialConnectionFactory::ConnectTask::ConnectTask(
     scoped_refptr<SerialConnectionFactory> factory,
     const std::string& path,
     serial::ConnectionOptionsPtr options,
-    mojo::InterfaceRequest<serial::Connection> connection_request)
+    mojo::InterfaceRequest<serial::Connection> connection_request,
+    mojo::InterfaceRequest<serial::DataSink> sink,
+    mojo::InterfaceRequest<serial::DataSource> source)
     : factory_(factory),
       path_(path),
       options_(options.Pass()),
-      connection_request_(connection_request.Pass()) {
+      connection_request_(connection_request.Pass()),
+      sink_(sink.Pass()),
+      source_(source.Pass()) {
 }
 
 void SerialConnectionFactory::ConnectTask::Run() {
@@ -108,7 +122,9 @@ void SerialConnectionFactory::ConnectTask::OnConnected(bool success) {
   FillDefaultConnectionOptions(options_.get());
   if (!io_handler_->ConfigurePort(*options_))
     return;
-  mojo::BindToRequest(new SerialConnection(io_handler_), &connection_request_);
+  mojo::BindToRequest(
+      new SerialConnection(io_handler_, sink_.Pass(), source_.Pass()),
+      &connection_request_);
 }
 
 }  // namespace device

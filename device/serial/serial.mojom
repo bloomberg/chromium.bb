@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import "data_stream.mojom"
+
 module device.serial {
 
 struct DeviceInfo {
@@ -83,12 +85,16 @@ interface SerialService {
   GetDevices() => (DeviceInfo?[]? devices);
 
   // Creates a |Connection| to |path| with options specified by |options|,
-  // returning it via |connection|. This will fail and |connection| will not be
-  // usable if |path| does not specify a valid serial device or there is an
-  // error connecting to or configuring the connection.
+  // returning it via |connection|. Sending and receiving data over this
+  // connection is handled by |sink| and |source|, respectively. This will fail
+  // and |connection| will not be usable if |path| does not specify a valid
+  // serial device or there is an error connecting to or configuring the
+  // connection.
   Connect(string? path,
           ConnectionOptions? options,
-          Connection&? connection);
+          Connection&? connection,
+          DataSink&? sink,
+          DataSource&? source);
 };
 
 interface Connection {

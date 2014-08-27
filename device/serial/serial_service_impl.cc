@@ -55,11 +55,16 @@ void SerialServiceImpl::GetDevices(
 void SerialServiceImpl::Connect(
     const mojo::String& path,
     serial::ConnectionOptionsPtr options,
-    mojo::InterfaceRequest<serial::Connection> connection_request) {
+    mojo::InterfaceRequest<serial::Connection> connection_request,
+    mojo::InterfaceRequest<serial::DataSink> sink,
+    mojo::InterfaceRequest<serial::DataSource> source) {
   if (!IsValidPath(path))
     return;
-  connection_factory_->CreateConnection(
-      path, options.Pass(), connection_request.Pass());
+  connection_factory_->CreateConnection(path,
+                                        options.Pass(),
+                                        connection_request.Pass(),
+                                        sink.Pass(),
+                                        source.Pass());
 }
 
 SerialDeviceEnumerator* SerialServiceImpl::GetDeviceEnumerator() {
@@ -76,12 +81,6 @@ bool SerialServiceImpl::IsValidPath(const mojo::String& path) {
       return true;
   }
   return false;
-}
-
-void SerialServiceImpl::OnConnected(
-    const mojo::Callback<void(serial::ConnectionInfoPtr)>& callback,
-    serial::ConnectionInfoPtr result) {
-  callback.Run(result.Pass());
 }
 
 }  // namespace device

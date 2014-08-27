@@ -40,6 +40,11 @@ class TestSerialIoHandler : public SerialIoHandler {
   bool dtr() { return dtr_; }
   bool rts() { return rts_; }
   int flushes() { return flushes_; }
+  // This callback will be called when this IoHandler processes its next write,
+  // instead of the normal behavior of echoing the data to reads.
+  void set_send_callback(const base::Closure& callback) {
+    send_callback_ = callback;
+  }
 
  protected:
   virtual ~TestSerialIoHandler();
@@ -51,6 +56,8 @@ class TestSerialIoHandler : public SerialIoHandler {
   bool dtr_;
   bool rts_;
   mutable int flushes_;
+  std::string buffer_;
+  base::Closure send_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(TestSerialIoHandler);
 };
