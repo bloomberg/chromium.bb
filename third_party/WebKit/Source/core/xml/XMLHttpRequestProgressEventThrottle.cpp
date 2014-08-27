@@ -50,6 +50,12 @@ XMLHttpRequestProgressEventThrottle::~XMLHttpRequestProgressEventThrottle()
 
 void XMLHttpRequestProgressEventThrottle::dispatchProgressEvent(const AtomicString& type, bool lengthComputable, unsigned long long loaded, unsigned long long total)
 {
+    // Given that ResourceDispatcher doesn't deliver an event when suspended,
+    // we don't have to worry about event dispatching while suspended.
+    // Nevertheless, m_deferEvents can be true here when resume was called and
+    // m_dispatchDeferredEventsTimer was set but hasn't waken up yet. In such
+    // a case, we have to flush events to keep consistency with readyState.
+    dispatchDeferredEvents(0);
     RefPtrWillBeRawPtr<XMLHttpRequestProgressEvent> progressEvent = XMLHttpRequestProgressEvent::create(type, lengthComputable, loaded, total);
 
     if (type != EventTypeNames::progress) {
@@ -84,6 +90,8 @@ void XMLHttpRequestProgressEventThrottle::dispatchProgressEvent(const AtomicStri
 
 void XMLHttpRequestProgressEventThrottle::dispatchReadyStateChangeEvent(PassRefPtrWillBeRawPtr<Event> event, ProgressEventAction progressEventAction)
 {
+    // See the comment at the top of dispatchProgressEvent.
+    dispatchDeferredEvents(0);
     if (progressEventAction == FlushProgressEvent || progressEventAction == FlushDeferredProgressEvent) {
         // FIXME: If m_deferredProgressEvent is not null, we just queue it to
         // m_deferredEvents (since http://trac.webkit.org/changeset/114374).
@@ -140,9 +148,20 @@ void XMLHttpRequestProgressEventThrottle::deliverScheduledProgressEvent()
 
 void XMLHttpRequestProgressEventThrottle::dispatchDeferredEvents(Timer<XMLHttpRequestProgressEventThrottle>* timer)
 {
-    ASSERT_UNUSED(timer, timer == &m_dispatchDeferredEventsTimer);
-    ASSERT(m_deferEvents);
+    if (!m_deferEvents) {
+        // m_deferEvents is set false when ActiveDOMObjects are active and one
+        // of the following is met:
+        //  - There is no need to flush events.
+        //  - All events are flushed.
+        // Because we don't wake up the timer in the first case and we stop
+        // the timer in the second case, the following assertions must be valid.
+        ASSERT(!m_dispatchDeferredEventsTimer.isActive());
+        ASSERT(m_deferredEvents.isEmpty());
+        ASSERT(!m_deferredProgressEvent);
+        return;
+    }
     m_deferEvents = false;
+    m_dispatchDeferredEventsTimer.stop();
 
     // Take over the deferred events before dispatching them which can potentially add more.
     WillBeHeapVector<RefPtrWillBeMember<Event> > deferredEvents;
