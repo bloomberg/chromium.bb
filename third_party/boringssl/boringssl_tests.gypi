@@ -167,6 +167,16 @@
       ],
     },
     {
+      'target_name': 'boringssl_pkcs12_test',
+      'type': 'executable',
+      'dependencies': [
+        'boringssl.gyp:boringssl',
+      ],
+      'sources': [
+        'src/crypto/pkcs8/pkcs12_test.c',
+      ],
+    },
+    {
       'target_name': 'boringssl_rsa_test',
       'type': 'executable',
       'dependencies': [
@@ -215,6 +225,7 @@
       'boringssl_hmac_test',
       'boringssl_lhash_test',
       'boringssl_md5_test',
+      'boringssl_pkcs12_test',
       'boringssl_pkcs7_test',
       'boringssl_rsa_test',
       'boringssl_sha1_test',
