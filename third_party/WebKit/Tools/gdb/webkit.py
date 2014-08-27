@@ -171,14 +171,14 @@ class JSCJSStringPrinter(StringPrinter):
         return WTFStringImplPrinter(self.val['m_value']).to_string()
 
 
-class WebCoreKURLPrinter(StringPrinter):
-    "Print a WebCore::KURL"
+class blinkKURLPrinter(StringPrinter):
+    "Print a blink::KURL"
     def to_string(self):
         return WTFStringPrinter(self.val['m_string']).to_string()
 
 
-class WebCoreLayoutUnitPrinter:
-    "Print a WebCore::LayoutUnit"
+class blinkLayoutUnitPrinter:
+    "Print a blink::LayoutUnit"
     def __init__(self, val):
         self.val = val
 
@@ -186,29 +186,29 @@ class WebCoreLayoutUnitPrinter:
         return "%gpx" % (self.val['m_value'] / 64.0)
 
 
-class WebCoreLayoutSizePrinter:
-    "Print a WebCore::LayoutSize"
+class blinkLayoutSizePrinter:
+    "Print a blink::LayoutSize"
     def __init__(self, val):
         self.val = val
 
     def to_string(self):
-        return 'LayoutSize(%s, %s)' % (WebCoreLayoutUnitPrinter(self.val['m_width']).to_string(), WebCoreLayoutUnitPrinter(self.val['m_height']).to_string())
+        return 'LayoutSize(%s, %s)' % (blinkLayoutUnitPrinter(self.val['m_width']).to_string(), blinkLayoutUnitPrinter(self.val['m_height']).to_string())
 
 
-class WebCoreLayoutPointPrinter:
-    "Print a WebCore::LayoutPoint"
+class blinkLayoutPointPrinter:
+    "Print a blink::LayoutPoint"
     def __init__(self, val):
         self.val = val
 
     def to_string(self):
-        return 'LayoutPoint(%s, %s)' % (WebCoreLayoutUnitPrinter(self.val['m_x']).to_string(), WebCoreLayoutUnitPrinter(self.val['m_y']).to_string())
+        return 'LayoutPoint(%s, %s)' % (blinkLayoutUnitPrinter(self.val['m_x']).to_string(), blinkLayoutUnitPrinter(self.val['m_y']).to_string())
 
 
-class WebCoreQualifiedNamePrinter(StringPrinter):
-    "Print a WebCore::QualifiedName"
+class blinkQualifiedNamePrinter(StringPrinter):
+    "Print a blink::QualifiedName"
 
     def __init__(self, val):
-        super(WebCoreQualifiedNamePrinter, self).__init__(val)
+        super(blinkQualifiedNamePrinter, self).__init__(val)
         self.prefix_length = 0
         self.length = 0
         if self.val['m_impl']:
@@ -309,11 +309,11 @@ def add_pretty_printers():
         (re.compile("^WTF::CString$"), WTFCStringPrinter),
         (re.compile("^WTF::String$"), WTFStringPrinter),
         (re.compile("^WTF::StringImpl$"), WTFStringImplPrinter),
-        (re.compile("^WebCore::KURL$"), WebCoreKURLPrinter),
-        (re.compile("^WebCore::LayoutUnit$"), WebCoreLayoutUnitPrinter),
-        (re.compile("^WebCore::LayoutPoint$"), WebCoreLayoutPointPrinter),
-        (re.compile("^WebCore::LayoutSize$"), WebCoreLayoutSizePrinter),
-        (re.compile("^WebCore::QualifiedName$"), WebCoreQualifiedNamePrinter),
+        (re.compile("^blink::KURL$"), blinkKURLPrinter),
+        (re.compile("^blink::LayoutUnit$"), blinkLayoutUnitPrinter),
+        (re.compile("^blink::LayoutPoint$"), blinkLayoutPointPrinter),
+        (re.compile("^blink::LayoutSize$"), blinkLayoutSizePrinter),
+        (re.compile("^blink::QualifiedName$"), blinkQualifiedNamePrinter),
         (re.compile("^JSC::Identifier$"), JSCIdentifierPrinter),
         (re.compile("^JSC::JSString$"), JSCJSStringPrinter),
     )
@@ -355,8 +355,8 @@ class PrintPathToRootCommand(gdb.Command):
             gdb.COMPLETE_NONE)
 
     def invoke(self, arg, from_tty):
-        element_type = gdb.lookup_type('WebCore::Element')
-        node_type = gdb.lookup_type('WebCore::Node')
+        element_type = gdb.lookup_type('blink::Element')
+        node_type = gdb.lookup_type('blink::Node')
         frame = gdb.selected_frame()
         try:
             val = gdb.Frame.read_var(frame, arg)
