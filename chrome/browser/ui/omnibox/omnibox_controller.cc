@@ -6,7 +6,6 @@
 
 #include "base/metrics/histogram.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
-#include "chrome/browser/autocomplete/search_provider.h"
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor.h"
 #include "chrome/browser/prerender/prerender_field_trial.h"
@@ -21,6 +20,7 @@
 #include "chrome/browser/ui/omnibox/omnibox_popup_view.h"
 #include "chrome/common/instant_types.h"
 #include "components/omnibox/autocomplete_match.h"
+#include "components/omnibox/search_provider.h"
 #include "components/search/search.h"
 #include "extensions/common/constants.h"
 #include "ui/gfx/rect.h"

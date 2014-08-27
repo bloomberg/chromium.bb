@@ -4,6 +4,8 @@
 
 static_library("omnibox") {
   sources = [
+    "answers_cache.h",
+    "answers_cache.cc",
     "autocomplete_input.cc",
     "autocomplete_input.h",
     "autocomplete_match.cc",
@@ -15,6 +17,8 @@ static_library("omnibox") {
     "autocomplete_result.cc",
     "autocomplete_result.h",
     "autocomplete_scheme_classifier.h",
+    "base_search_provider.cc",
+    "base_search_provider.h",
     "keyword_extensions_delegate.cc",
     "keyword_extensions_delegate.h",
     "keyword_provider.cc",
@@ -23,6 +27,8 @@ static_library("omnibox") {
     "omnibox_field_trial.h",
     "omnibox_switches.cc",
     "omnibox_switches.h",
+    "search_provider.cc",
+    "search_provider.h",
     "search_suggestion_parser.cc",
     "search_suggestion_parser.h",
     "url_prefix.cc",
@@ -61,6 +67,7 @@ static_library("test_support") {
 
 source_set("unit_tests") {
   sources = [
+    "answers_cache_unittest.cc",
     "autocomplete_input_unittest.cc",
     "autocomplete_match_unittest.cc",
     "autocomplete_result_unittest.cc",

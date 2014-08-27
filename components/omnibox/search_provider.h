@@ -8,17 +8,17 @@
 // history, and search suggestions.  An instance of it gets created and
 // managed by the autocomplete controller.
 
-#ifndef CHROME_BROWSER_AUTOCOMPLETE_SEARCH_PROVIDER_H_
-#define CHROME_BROWSER_AUTOCOMPLETE_SEARCH_PROVIDER_H_
+#ifndef COMPONENTS_OMNIBOX_SEARCH_PROVIDER_H_
+#define COMPONENTS_OMNIBOX_SEARCH_PROVIDER_H_
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/autocomplete/answers_cache.h"
-#include "chrome/browser/autocomplete/base_search_provider.h"
 #include "components/metrics/proto/omnibox_input_type.pb.h"
+#include "components/omnibox/answers_cache.h"
+#include "components/omnibox/base_search_provider.h"
 #include "components/search_engines/template_url.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
@@ -364,4 +364,4 @@ class SearchProvider : public BaseSearchProvider,
   DISALLOW_COPY_AND_ASSIGN(SearchProvider);
 };
 
-#endif  // CHROME_BROWSER_AUTOCOMPLETE_SEARCH_PROVIDER_H_
+#endif  // COMPONENTS_OMNIBOX_SEARCH_PROVIDER_H_

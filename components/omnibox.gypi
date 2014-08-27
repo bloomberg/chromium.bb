@@ -26,6 +26,8 @@
       ],
       'sources': [
         # Note: sources list duplicated in GN build.
+        'omnibox/answers_cache.h',
+        'omnibox/answers_cache.cc',
         'omnibox/autocomplete_input.cc',
         'omnibox/autocomplete_input.h',
         'omnibox/autocomplete_match.cc',
@@ -39,6 +41,8 @@
         'omnibox/autocomplete_result.cc',
         'omnibox/autocomplete_result.h',
         'omnibox/autocomplete_scheme_classifier.h',
+        'omnibox/base_search_provider.cc',
+        'omnibox/base_search_provider.h',
         'omnibox/keyword_extensions_delegate.cc',
         'omnibox/keyword_extensions_delegate.h',
         'omnibox/keyword_provider.cc',
@@ -47,6 +51,8 @@
         'omnibox/omnibox_field_trial.h',
         'omnibox/omnibox_switches.cc',
         'omnibox/omnibox_switches.h',
+        'omnibox/search_provider.cc',
+        'omnibox/search_provider.h',
         'omnibox/search_suggestion_parser.cc',
         'omnibox/search_suggestion_parser.h',
         'omnibox/url_prefix.cc',

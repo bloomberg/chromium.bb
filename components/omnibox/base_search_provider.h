@@ -6,8 +6,8 @@
 // providers. Search provider and zero suggest provider both use it for common
 // functionality.
 
-#ifndef CHROME_BROWSER_AUTOCOMPLETE_BASE_SEARCH_PROVIDER_H_
-#define CHROME_BROWSER_AUTOCOMPLETE_BASE_SEARCH_PROVIDER_H_
+#ifndef COMPONENTS_OMNIBOX_BASE_SEARCH_PROVIDER_H_
+#define COMPONENTS_OMNIBOX_BASE_SEARCH_PROVIDER_H_
 
 #include <map>
 #include <string>
@@ -254,4 +254,4 @@ class BaseSearchProvider : public AutocompleteProvider {
   DISALLOW_COPY_AND_ASSIGN(BaseSearchProvider);
 };
 
-#endif  // CHROME_BROWSER_AUTOCOMPLETE_BASE_SEARCH_PROVIDER_H_
+#endif  // COMPONENTS_OMNIBOX_BASE_SEARCH_PROVIDER_H_

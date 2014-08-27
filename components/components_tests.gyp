@@ -144,6 +144,7 @@
             'navigation_interception/intercept_navigation_resource_throttle_unittest.cc',
             'network_time/network_time_tracker_unittest.cc',
             'omaha_query_params/omaha_query_params_unittest.cc',
+            'omnibox/answers_cache_unittest.cc',
             'omnibox/autocomplete_input_unittest.cc',
             'omnibox/autocomplete_match_unittest.cc',
             'omnibox/autocomplete_result_unittest.cc',

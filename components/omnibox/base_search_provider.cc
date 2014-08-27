@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/autocomplete/base_search_provider.h"
+#include "components/omnibox/base_search_provider.h"
 
 #include "base/i18n/case_conversion.h"
 #include "base/strings/string_util.h"

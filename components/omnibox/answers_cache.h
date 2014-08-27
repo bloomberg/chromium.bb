@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_AUTOCOMPLETE_ANSWERS_CACHE_H_
-#define CHROME_BROWSER_AUTOCOMPLETE_ANSWERS_CACHE_H_
+#ifndef COMPONENTS_OMNIBOX_ANSWERS_CACHE_H_
+#define COMPONENTS_OMNIBOX_ANSWERS_CACHE_H_
 
 #include <list>
 
@@ -43,4 +43,4 @@ class AnswersCache {
   DISALLOW_COPY_AND_ASSIGN(AnswersCache);
 };
 
-#endif  // CHROME_BROWSER_AUTOCOMPLETE_ANSWERS_CACHE_H_
+#endif  // COMPONENTS_OMNIBOX_ANSWERS_CACHE_H_

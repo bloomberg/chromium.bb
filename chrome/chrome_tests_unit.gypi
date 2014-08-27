@@ -568,7 +568,6 @@
         'browser/app_controller_mac_unittest.mm',
         'browser/apps/drive/drive_app_mapping_unittest.cc',
         'browser/apps/ephemeral_app_service_unittest.cc',
-        'browser/autocomplete/answers_cache_unittest.cc',
         'browser/autocomplete/autocomplete_provider_unittest.cc',
         'browser/autocomplete/bookmark_provider_unittest.cc',
         'browser/autocomplete/builtin_provider_unittest.cc',

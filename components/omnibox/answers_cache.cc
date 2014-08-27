@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/autocomplete/answers_cache.h"
+#include "components/omnibox/answers_cache.h"
 
 #include "base/strings/string_util.h"
 
