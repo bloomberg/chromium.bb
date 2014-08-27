@@ -421,7 +421,8 @@ NSSecureTextField* PasswordLabel(const base::string16& text) {
   [super updateTrackingAreas];
   if (trackingArea_.get())
     [self removeTrackingArea:trackingArea_.get()];
-  NSTrackingAreaOptions options = NSTrackingMouseEnteredAndExited;
+  NSTrackingAreaOptions options =
+      NSTrackingMouseEnteredAndExited | NSTrackingActiveInKeyWindow;
   trackingArea_.reset([[CrTrackingArea alloc] initWithRect:[self bounds]
                                                    options:options
                                                      owner:self
