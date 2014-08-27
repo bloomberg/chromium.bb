@@ -203,7 +203,6 @@ void TouchEventConverterEvdev::ProcessAbs(const input_event& input) {
       altered_slots_.set(current_slot_);
       events_[current_slot_].major_ = input.value;
       break;
-    case ABS_X:
     case ABS_MT_POSITION_X:
       altered_slots_.set(current_slot_);
       events_[current_slot_].x_ = TuxelsToPixels(input.value,
@@ -212,7 +211,6 @@ void TouchEventConverterEvdev::ProcessAbs(const input_event& input) {
                                                  x_min_pixels_,
                                                  x_num_pixels_);
       break;
-    case ABS_Y:
     case ABS_MT_POSITION_Y:
       altered_slots_.set(current_slot_);
       events_[current_slot_].y_ = TuxelsToPixels(input.value,
@@ -231,7 +229,6 @@ void TouchEventConverterEvdev::ProcessAbs(const input_event& input) {
       }
       break;
     case ABS_MT_PRESSURE:
-    case ABS_PRESSURE:
       altered_slots_.set(current_slot_);
       events_[current_slot_].pressure_ = input.value - pressure_min_;
       events_[current_slot_].pressure_ /= pressure_max_ - pressure_min_;
@@ -241,7 +238,7 @@ void TouchEventConverterEvdev::ProcessAbs(const input_event& input) {
       altered_slots_.set(current_slot_);
       break;
     default:
-      NOTIMPLEMENTED() << "invalid code for EV_ABS: " << input.code;
+      DVLOG(5) << "unhandled code for EV_ABS: " << input.code;
   }
 }
 

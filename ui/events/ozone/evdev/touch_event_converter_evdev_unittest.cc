@@ -479,3 +479,48 @@ TEST_F(TouchEventConverterEvdevTest, Unsync) {
   dev->ReadNow();
   EXPECT_EQ(2u, dev->size());
 }
+
+// crbug.com/407386
+TEST_F(TouchEventConverterEvdevTest,
+       DontChangeMultitouchPositionFromLegacyAxes) {
+  ui::MockTouchEventConverterEvdev* dev = device();
+
+  struct input_event mock_kernel_queue[] = {
+      {{0, 0}, EV_ABS, ABS_MT_SLOT, 0},
+      {{0, 0}, EV_ABS, ABS_MT_TRACKING_ID, 100},
+      {{0, 0}, EV_ABS, ABS_MT_POSITION_X, 999},
+      {{0, 0}, EV_ABS, ABS_MT_POSITION_Y, 888},
+      {{0, 0}, EV_ABS, ABS_MT_PRESSURE, 55},
+      {{0, 0}, EV_ABS, ABS_MT_SLOT, 1},
+      {{0, 0}, EV_ABS, ABS_MT_TRACKING_ID, 200},
+      {{0, 0}, EV_ABS, ABS_MT_PRESSURE, 44},
+      {{0, 0}, EV_ABS, ABS_MT_POSITION_X, 777},
+      {{0, 0}, EV_ABS, ABS_MT_POSITION_Y, 666},
+      {{0, 0}, EV_ABS, ABS_X, 999},
+      {{0, 0}, EV_ABS, ABS_Y, 888},
+      {{0, 0}, EV_ABS, ABS_PRESSURE, 55},
+      {{0, 0}, EV_SYN, SYN_REPORT, 0},
+  };
+
+  // Check that two events are generated.
+  dev->ConfigureReadMock(mock_kernel_queue, arraysize(mock_kernel_queue), 0);
+  dev->ReadNow();
+
+  const unsigned int kExpectedEventCount = 2;
+  EXPECT_EQ(kExpectedEventCount, dev->size());
+  if (kExpectedEventCount != dev->size())
+    return;
+
+  ui::TouchEvent* ev0 = dev->event(0);
+  ui::TouchEvent* ev1 = dev->event(1);
+
+  EXPECT_EQ(0, ev0->touch_id());
+  EXPECT_EQ(999, ev0->x());
+  EXPECT_EQ(888, ev0->y());
+  EXPECT_FLOAT_EQ(0.8333333f, ev0->force());
+
+  EXPECT_EQ(1, ev1->touch_id());
+  EXPECT_EQ(777, ev1->x());
+  EXPECT_EQ(666, ev1->y());
+  EXPECT_FLOAT_EQ(0.4666666f, ev1->force());
+}
