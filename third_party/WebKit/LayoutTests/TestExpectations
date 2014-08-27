@@ -595,12 +595,6 @@ crbug.com/310323 [ Debug ] http/tests/security/contentSecurityPolicy/report-mult
 
 crbug.com/234871 [ Win ] fast/scroll-behavior/listbox-scrollTop.html [ Failure Pass ]
 
-crbug.com/405791 fast/css/ignore-empty-focus-ring-rects.html [ NeedsRebaseline ]
-crbug.com/405791 editing/inserting/editable-inline-element.html [ NeedsRebaseline ]
-crbug.com/405791 fast/css/outline-auto-empty-rects.html [ NeedsRebaseline ]
-crbug.com/405791 fast/inline/continuation-outlines-with-layers.html [ NeedsRebaseline ]
-crbug.com/405791 fast/inline/continuation-outlines.html [ NeedsRebaseline ]
-
 crbug.com/311301 fast/history/history_reload.html [ Failure Pass Missing ]
 
 crbug.com/311429 [ Mac ] fast/images/png-suite/test.html [ ImageOnlyFailure Pass ]

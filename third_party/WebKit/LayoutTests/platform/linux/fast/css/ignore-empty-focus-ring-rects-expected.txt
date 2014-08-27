@@ -1,0 +1,18 @@
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x36
+  RenderBlock {HTML} at (0,0) size 800x36
+    RenderBody {BODY} at (8,8) size 784x20
+      RenderText {#text} at (0,0) size 706x19
+        text run at (0,0) width 706: "Should ignore empty rects when drawing focus ring. Passes if there is only a single focus ring around the green square."
+      RenderText {#text} at (0,0) size 0x0
+layer at (8,28) size 100x150
+  RenderBlock (positioned) {DIV} at (8,28) size 100x150
+    RenderBlock (anonymous) at (0,0) size 100x0
+      RenderInline {SPAN} at (0,0) size 0x0
+        RenderText {#text} at (0,0) size 0x0
+    RenderBlock (anonymous) at (0,50) size 100x100
+      RenderBlock {DIV} at (0,0) size 100x100 [bgcolor=#008000]
+    RenderBlock (anonymous) at (0,150) size 100x0
+      RenderInline {SPAN} at (0,0) size 0x0
+      RenderText {#text} at (0,0) size 0x0
