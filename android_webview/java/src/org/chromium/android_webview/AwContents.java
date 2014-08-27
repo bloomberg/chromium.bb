@@ -663,7 +663,11 @@ public class AwContents {
      * in the WebView.
      */
     void exitFullScreen() {
-        assert isFullScreen();
+        if (!isFullScreen())
+            // exitFullScreen() can be called without a prior call to enterFullScreen() if a
+            // "misbehave" app overrides onShowCustomView but does not add the custom view to
+            // the window. Exiting avoids a crash.
+            return;
 
         // Detach to tear down the GL functor if this is still associated with the old
         // container view. It will be recreated during the next call to onDraw attached to
