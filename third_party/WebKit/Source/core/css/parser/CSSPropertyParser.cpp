@@ -585,9 +585,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
     case CSSPropertyWebkitTextEmphasisColor:
     case CSSPropertyWebkitTextFillColor:
     case CSSPropertyWebkitTextStrokeColor:
-        if (propId == CSSPropertyTextDecorationColor
-            && !RuntimeEnabledFeatures::css3TextDecorationsEnabled())
-            return false;
+        ASSERT(propId != CSSPropertyTextDecorationColor || RuntimeEnabledFeatures::css3TextDecorationsEnabled());
 
         if ((id >= CSSValueAqua && id <= CSSValueWebkitText) || id == CSSValueMenu) {
             validPrimitive = isValueAllowedInMode(id, m_context.mode());
@@ -750,8 +748,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
         return result;
     }
     case CSSPropertyObjectPosition:
-        if (!RuntimeEnabledFeatures::objectFitPositionEnabled())
-            return false;
+        ASSERT(RuntimeEnabledFeatures::objectFitPositionEnabled());
         parsedValue = parseObjectPosition();
         break;
     case CSSPropertyListStyleImage:     // <uri> | none | inherit
@@ -918,18 +915,10 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
         // none | [ underline || overline || line-through || blink ] | inherit
         return parseTextDecoration(propId, important);
 
-    case CSSPropertyTextDecorationStyle:
-        // solid | double | dotted | dashed | wavy
-        if (RuntimeEnabledFeatures::css3TextDecorationsEnabled()
-            && (id == CSSValueSolid || id == CSSValueDouble || id == CSSValueDotted || id == CSSValueDashed || id == CSSValueWavy))
-            validPrimitive = true;
-        break;
-
     case CSSPropertyTextUnderlinePosition:
         // auto | under | inherit
-        if (RuntimeEnabledFeatures::css3TextDecorationsEnabled())
-            return parseTextUnderlinePosition(important);
-        return false;
+        ASSERT(RuntimeEnabledFeatures::css3TextDecorationsEnabled());
+        return parseTextUnderlinePosition(important);
 
     case CSSPropertyZoom:          // normal | reset | document | <number> | <percentage> | inherit
         if (id == CSSValueNormal || id == CSSValueReset || id == CSSValueDocument)
@@ -1198,8 +1187,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
     case CSSPropertyAnimationPlayState:
     case CSSPropertyAnimationIterationCount:
     case CSSPropertyAnimationTimingFunction:
-        if (!RuntimeEnabledFeatures::cssAnimationUnprefixedEnabled())
-            break;
+        ASSERT(RuntimeEnabledFeatures::cssAnimationUnprefixedEnabled());
     case CSSPropertyWebkitAnimationDelay:
     case CSSPropertyWebkitAnimationDirection:
     case CSSPropertyWebkitAnimationDuration:
@@ -1224,13 +1212,10 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
     }
 
     case CSSPropertyJustifySelf:
-        if (!RuntimeEnabledFeatures::cssGridLayoutEnabled())
-            return false;
-
+        ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
         return parseItemPositionOverflowPosition(propId, important);
     case CSSPropertyJustifyItems:
-        if (!RuntimeEnabledFeatures::cssGridLayoutEnabled())
-            return false;
+        ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
 
         if (parseLegacyPosition(propId, important))
             return true;
@@ -1238,21 +1223,18 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
         m_valueList->setCurrentIndex(0);
         return parseItemPositionOverflowPosition(propId, important);
     case CSSPropertyGridAutoFlow:
-        if (!RuntimeEnabledFeatures::cssGridLayoutEnabled())
-            return false;
+        ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
         parsedValue = parseGridAutoFlow(*m_valueList);
         break;
     case CSSPropertyGridAutoColumns:
     case CSSPropertyGridAutoRows:
-        if (!RuntimeEnabledFeatures::cssGridLayoutEnabled())
-            return false;
+        ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
         parsedValue = parseGridTrackSize(*m_valueList);
         break;
 
     case CSSPropertyGridTemplateColumns:
     case CSSPropertyGridTemplateRows:
-        if (!RuntimeEnabledFeatures::cssGridLayoutEnabled())
-            return false;
+        ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
         parsedValue = parseGridTrackList();
         break;
 
@@ -1260,36 +1242,30 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
     case CSSPropertyGridColumnStart:
     case CSSPropertyGridRowEnd:
     case CSSPropertyGridRowStart:
-        if (!RuntimeEnabledFeatures::cssGridLayoutEnabled())
-            return false;
+        ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
         parsedValue = parseGridPosition();
         break;
 
     case CSSPropertyGridColumn:
     case CSSPropertyGridRow:
-        if (!RuntimeEnabledFeatures::cssGridLayoutEnabled())
-            return false;
+        ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
         return parseGridItemPositionShorthand(propId, important);
 
     case CSSPropertyGridArea:
-        if (!RuntimeEnabledFeatures::cssGridLayoutEnabled())
-            return false;
+        ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
         return parseGridAreaShorthand(important);
 
     case CSSPropertyGridTemplateAreas:
-        if (!RuntimeEnabledFeatures::cssGridLayoutEnabled())
-            return false;
+        ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
         parsedValue = parseGridTemplateAreas();
         break;
 
     case CSSPropertyGridTemplate:
-        if (!RuntimeEnabledFeatures::cssGridLayoutEnabled())
-            return false;
+        ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
         return parseGridTemplateShorthand(important);
 
     case CSSPropertyGrid:
-        if (!RuntimeEnabledFeatures::cssGridLayoutEnabled())
-            return false;
+        ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
         return parseGridShorthand(important);
 
     case CSSPropertyWebkitMarginCollapse: {
@@ -1456,8 +1432,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
     case CSSPropertyWebkitTextStroke:
         return parseShorthand(propId, webkitTextStrokeShorthand(), important);
     case CSSPropertyAnimation:
-        if (!RuntimeEnabledFeatures::cssAnimationUnprefixedEnabled())
-            break;
+        ASSERT(RuntimeEnabledFeatures::cssAnimationUnprefixedEnabled());
     case CSSPropertyWebkitAnimation:
         return parseAnimationShorthand(propId, important);
     case CSSPropertyTransition:
@@ -2867,13 +2842,12 @@ bool CSSPropertyParser::parseFillProperty(CSSPropertyID propId, CSSPropertyID& p
                     break;
                 }
                 case CSSPropertyMaskSourceType: {
-                    if (RuntimeEnabledFeatures::cssMaskSourceTypeEnabled()) {
-                        if (val->id == CSSValueAuto || val->id == CSSValueAlpha || val->id == CSSValueLuminance) {
-                            currValue = cssValuePool().createIdentifierValue(val->id);
-                            m_valueList->next();
-                        } else {
-                            currValue = nullptr;
-                        }
+                    ASSERT(RuntimeEnabledFeatures::cssMaskSourceTypeEnabled());
+                    if (val->id == CSSValueAuto || val->id == CSSValueAlpha || val->id == CSSValueLuminance) {
+                        currValue = cssValuePool().createIdentifierValue(val->id);
+                        m_valueList->next();
+                    } else {
+                        currValue = nullptr;
                     }
                     break;
                 }
@@ -2998,9 +2972,11 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseAnimationProperty()
     // cssPropertyID check.
     if (equalIgnoringCase(value, "all"))
         return cssValuePool().createIdentifierValue(CSSValueAll);
-    CSSPropertyID result = cssPropertyID(value->string);
-    if (result && RuntimeCSSEnabled::isCSSPropertyEnabled(result))
-        return cssValuePool().createIdentifierValue(result);
+    CSSPropertyID property = cssPropertyID(value->string);
+    if (property) {
+        ASSERT(RuntimeCSSEnabled::isCSSPropertyEnabled(property));
+        return cssValuePool().createIdentifierValue(property);
+    }
     if (equalIgnoringCase(value, "none"))
         return cssValuePool().createIdentifierValue(CSSValueNone);
     if (equalIgnoringCase(value, "inherit") || equalIgnoringCase(value, "initial"))
@@ -7132,7 +7108,8 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseWillChange()
             return nullptr;
 
         CSSPropertyID property = cssPropertyID(currentValue->string);
-        if (property && RuntimeCSSEnabled::isCSSPropertyEnabled(property)) {
+        if (property) {
+            ASSERT(RuntimeCSSEnabled::isCSSPropertyEnabled(property));
             // Now "all" is used by both CSSValue and CSSPropertyValue.
             // Need to return nullptr when currentValue is CSSPropertyAll.
             if (property == CSSPropertyWillChange || property == CSSPropertyAll)
@@ -7429,9 +7406,7 @@ void CSSPropertyParser::addTextDecorationProperty(CSSPropertyID propId, PassRefP
 
 bool CSSPropertyParser::parseTextDecoration(CSSPropertyID propId, bool important)
 {
-    if (propId == CSSPropertyTextDecorationLine
-        && !RuntimeEnabledFeatures::css3TextDecorationsEnabled())
-        return false;
+    ASSERT(propId != CSSPropertyTextDecorationLine || RuntimeEnabledFeatures::css3TextDecorationsEnabled());
 
     CSSParserValue* value = m_valueList->current();
     if (value && value->id == CSSValueNone) {
@@ -7839,7 +7814,12 @@ static CSSPropertyID cssPropertyID(const CharacterType* propertyName, unsigned l
 
     const char* name = buffer;
     const Property* hashTableEntry = findProperty(name, length);
-    return hashTableEntry ? static_cast<CSSPropertyID>(hashTableEntry->id) : CSSPropertyInvalid;
+    if (!hashTableEntry)
+        return CSSPropertyInvalid;
+    CSSPropertyID property = static_cast<CSSPropertyID>(hashTableEntry->id);
+    if (!RuntimeCSSEnabled::isCSSPropertyEnabled(property))
+        return CSSPropertyInvalid;
+    return property;
 }
 
 CSSPropertyID cssPropertyID(const String& string)

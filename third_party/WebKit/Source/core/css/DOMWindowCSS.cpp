@@ -61,9 +61,7 @@ bool DOMWindowCSS::supports(const String& property, const String& value) const
     CSSPropertyID propertyID = cssPropertyID(property.stripWhiteSpace());
     if (propertyID == CSSPropertyInvalid)
         return false;
-
-    if (!RuntimeCSSEnabled::isCSSPropertyEnabled(propertyID))
-        return false;
+    ASSERT(RuntimeCSSEnabled::isCSSPropertyEnabled(propertyID));
 
     // BisonCSSParser::parseValue() won't work correctly if !important is present,
     // so just get rid of it. It doesn't matter to supports() if it's actually

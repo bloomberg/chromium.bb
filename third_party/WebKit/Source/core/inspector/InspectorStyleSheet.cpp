@@ -654,7 +654,10 @@ void InspectorStyle::populateAllProperties(WillBeHeapVector<InspectorStyleProper
         if (!sourcePropertyNames.add(name.lower()).isNewEntry)
             continue;
 
-        result.append(InspectorStyleProperty(CSSPropertySourceData(name, m_style->getPropertyValue(name), !m_style->getPropertyPriority(name).isEmpty(), false, true, SourceRange()), false));
+        String value = m_style->getPropertyValue(name);
+        if (value.isEmpty())
+            continue;
+        result.append(InspectorStyleProperty(CSSPropertySourceData(name, value, !m_style->getPropertyPriority(name).isEmpty(), false, true, SourceRange()), false));
     }
 }
 

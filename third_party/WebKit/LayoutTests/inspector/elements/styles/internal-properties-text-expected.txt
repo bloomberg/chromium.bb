@@ -7,9 +7,6 @@ element.style  { ()
 
 [expanded] 
 marquee[Attributes Style]  { ()
--internal-marquee-increment: 1px;
--internal-marquee-speed: 50;
--internal-marquee-direction: up;
 
 
 

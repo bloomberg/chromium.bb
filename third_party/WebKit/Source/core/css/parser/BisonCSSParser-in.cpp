@@ -217,9 +217,8 @@ static inline bool isColorPropertyID(CSSPropertyID propertyId)
     case CSSPropertyWebkitTextEmphasisColor:
     case CSSPropertyWebkitTextFillColor:
     case CSSPropertyWebkitTextStrokeColor:
-        return true;
     case CSSPropertyTextDecorationColor:
-        return RuntimeEnabledFeatures::css3TextDecorationsEnabled();
+        return true;
     default:
         return false;
     }
@@ -404,8 +403,8 @@ bool isValidKeywordPropertyAndValue(CSSPropertyID propertyId, CSSValueID valueID
     case CSSPropertyImageRendering: // auto | optimizeContrast | pixelated
         return valueID == CSSValueAuto || valueID == CSSValueWebkitOptimizeContrast || (RuntimeEnabledFeatures::imageRenderingPixelatedEnabled() && valueID == CSSValuePixelated);
     case CSSPropertyIsolation: // auto | isolate
-        return RuntimeEnabledFeatures::cssCompositingEnabled()
-            && (valueID == CSSValueAuto || valueID == CSSValueIsolate);
+        ASSERT(RuntimeEnabledFeatures::cssCompositingEnabled());
+        return valueID == CSSValueAuto || valueID == CSSValueIsolate;
     case CSSPropertyListStylePosition: // inside | outside
         return valueID == CSSValueInside || valueID == CSSValueOutside;
     case CSSPropertyListStyleType:
@@ -413,8 +412,8 @@ bool isValidKeywordPropertyAndValue(CSSPropertyID propertyId, CSSValueID valueID
         // for the list of supported list-style-types.
         return (valueID >= CSSValueDisc && valueID <= CSSValueKatakanaIroha) || valueID == CSSValueNone;
     case CSSPropertyObjectFit:
-        return RuntimeEnabledFeatures::objectFitPositionEnabled()
-            && (valueID == CSSValueFill || valueID == CSSValueContain || valueID == CSSValueCover || valueID == CSSValueNone || valueID == CSSValueScaleDown);
+        ASSERT(RuntimeEnabledFeatures::objectFitPositionEnabled());
+        return valueID == CSSValueFill || valueID == CSSValueContain || valueID == CSSValueCover || valueID == CSSValueNone || valueID == CSSValueScaleDown;
     case CSSPropertyOutlineStyle: // (<border-style> except hidden) | auto
         return valueID == CSSValueAuto || valueID == CSSValueNone || (valueID >= CSSValueInset && valueID <= CSSValueDouble);
     case CSSPropertyOverflowWrap: // normal | break-word
@@ -441,33 +440,37 @@ bool isValidKeywordPropertyAndValue(CSSPropertyID propertyId, CSSValueID valueID
     case CSSPropertyResize: // none | both | horizontal | vertical | auto
         return valueID == CSSValueNone || valueID == CSSValueBoth || valueID == CSSValueHorizontal || valueID == CSSValueVertical || valueID == CSSValueAuto;
     case CSSPropertyScrollBehavior: // instant | smooth
-        return RuntimeEnabledFeatures::cssomSmoothScrollEnabled()
-            && (valueID == CSSValueInstant || valueID == CSSValueSmooth);
+        ASSERT(RuntimeEnabledFeatures::cssomSmoothScrollEnabled());
+        return valueID == CSSValueInstant || valueID == CSSValueSmooth;
     case CSSPropertySpeak: // none | normal | spell-out | digits | literal-punctuation | no-punctuation
         return valueID == CSSValueNone || valueID == CSSValueNormal || valueID == CSSValueSpellOut || valueID == CSSValueDigits || valueID == CSSValueLiteralPunctuation || valueID == CSSValueNoPunctuation;
     case CSSPropertyTableLayout: // auto | fixed
         return valueID == CSSValueAuto || valueID == CSSValueFixed;
     case CSSPropertyTextAlignLast:
         // auto | start | end | left | right | center | justify
-        return RuntimeEnabledFeatures::css3TextEnabled()
-            && ((valueID >= CSSValueLeft && valueID <= CSSValueJustify) || valueID == CSSValueStart || valueID == CSSValueEnd || valueID == CSSValueAuto);
+        ASSERT(RuntimeEnabledFeatures::css3TextEnabled());
+        return (valueID >= CSSValueLeft && valueID <= CSSValueJustify) || valueID == CSSValueStart || valueID == CSSValueEnd || valueID == CSSValueAuto;
+    case CSSPropertyTextDecorationStyle:
+        // solid | double | dotted | dashed | wavy
+        ASSERT(RuntimeEnabledFeatures::css3TextDecorationsEnabled());
+        return valueID == CSSValueSolid || valueID == CSSValueDouble || valueID == CSSValueDotted || valueID == CSSValueDashed || valueID == CSSValueWavy;
     case CSSPropertyTextJustify:
         // auto | none | inter-word | distribute
-        return RuntimeEnabledFeatures::css3TextEnabled()
-            && (valueID == CSSValueInterWord || valueID == CSSValueDistribute || valueID == CSSValueAuto || valueID == CSSValueNone);
+        ASSERT(RuntimeEnabledFeatures::css3TextEnabled());
+        return valueID == CSSValueInterWord || valueID == CSSValueDistribute || valueID == CSSValueAuto || valueID == CSSValueNone;
     case CSSPropertyTextOverflow: // clip | ellipsis
         return valueID == CSSValueClip || valueID == CSSValueEllipsis;
     case CSSPropertyTextRendering: // auto | optimizeSpeed | optimizeLegibility | geometricPrecision
         return valueID == CSSValueAuto || valueID == CSSValueOptimizespeed || valueID == CSSValueOptimizelegibility || valueID == CSSValueGeometricprecision;
     case CSSPropertyTextTransform: // capitalize | uppercase | lowercase | none
         return (valueID >= CSSValueCapitalize && valueID <= CSSValueLowercase) || valueID == CSSValueNone;
-    case CSSPropertyTouchActionDelay: // none | script
-        return RuntimeEnabledFeatures::cssTouchActionDelayEnabled()
-            && (valueID == CSSValueScript || valueID == CSSValueNone);
     case CSSPropertyUnicodeBidi:
         return valueID == CSSValueNormal || valueID == CSSValueEmbed
             || valueID == CSSValueBidiOverride || valueID == CSSValueWebkitIsolate
             || valueID == CSSValueWebkitIsolateOverride || valueID == CSSValueWebkitPlaintext;
+    case CSSPropertyTouchActionDelay: // none | script
+        ASSERT(RuntimeEnabledFeatures::cssTouchActionDelayEnabled());
+        return valueID == CSSValueScript || valueID == CSSValueNone;
     case CSSPropertyVisibility: // visible | hidden | collapse
         return valueID == CSSValueVisible || valueID == CSSValueHidden || valueID == CSSValueCollapse;
     case CSSPropertyWebkitAppearance:
@@ -476,11 +479,11 @@ bool isValidKeywordPropertyAndValue(CSSPropertyID propertyId, CSSValueID valueID
     case CSSPropertyWebkitBackfaceVisibility:
         return valueID == CSSValueVisible || valueID == CSSValueHidden;
     case CSSPropertyMixBlendMode:
-        return RuntimeEnabledFeatures::cssCompositingEnabled()
-            && (valueID == CSSValueNormal || valueID == CSSValueMultiply || valueID == CSSValueScreen || valueID == CSSValueOverlay
+        ASSERT(RuntimeEnabledFeatures::cssCompositingEnabled());
+        return valueID == CSSValueNormal || valueID == CSSValueMultiply || valueID == CSSValueScreen || valueID == CSSValueOverlay
             || valueID == CSSValueDarken || valueID == CSSValueLighten || valueID == CSSValueColorDodge || valueID == CSSValueColorBurn
             || valueID == CSSValueHardLight || valueID == CSSValueSoftLight || valueID == CSSValueDifference || valueID == CSSValueExclusion
-            || valueID == CSSValueHue || valueID == CSSValueSaturation || valueID == CSSValueColor || valueID == CSSValueLuminosity);
+            || valueID == CSSValueHue || valueID == CSSValueSaturation || valueID == CSSValueColor || valueID == CSSValueLuminosity;
     case CSSPropertyWebkitBorderFit:
         return valueID == CSSValueBorder || valueID == CSSValueLines;
     case CSSPropertyWebkitBoxAlign:
@@ -496,8 +499,8 @@ bool isValidKeywordPropertyAndValue(CSSPropertyID propertyId, CSSValueID valueID
     case CSSPropertyWebkitBoxPack:
         return valueID == CSSValueStart || valueID == CSSValueEnd || valueID == CSSValueCenter || valueID == CSSValueJustify;
     case CSSPropertyColumnFill:
-        return RuntimeEnabledFeatures::regionBasedColumnsEnabled()
-            && (valueID == CSSValueAuto || valueID == CSSValueBalance);
+        ASSERT(RuntimeEnabledFeatures::regionBasedColumnsEnabled());
+        return valueID == CSSValueAuto || valueID == CSSValueBalance;
     case CSSPropertyAlignContent:
         // FIXME: Per CSS alignment, this property should accept an optional <overflow-position>. We should share this parsing code with 'justify-self'.
         return valueID == CSSValueFlexStart || valueID == CSSValueFlexEnd || valueID == CSSValueCenter || valueID == CSSValueSpaceBetween || valueID == CSSValueSpaceAround || valueID == CSSValueStretch;
@@ -604,6 +607,7 @@ bool isKeywordPropertyID(CSSPropertyID propertyId)
     case CSSPropertySpeak:
     case CSSPropertyTableLayout:
     case CSSPropertyTextAlignLast:
+    case CSSPropertyTextDecorationStyle:
     case CSSPropertyTextJustify:
     case CSSPropertyTextOverflow:
     case CSSPropertyTextRendering:
@@ -947,8 +951,6 @@ bool BisonCSSParser::parseValue(MutableStylePropertySet* declaration, CSSPropert
 
 bool BisonCSSParser::parseValue(MutableStylePropertySet* declaration, CSSPropertyID propertyID, const String& string, bool important, StyleSheetContents* contextStyleSheet)
 {
-    // FIXME: Check RuntimeCSSEnabled::isPropertyEnabled or isValueEnabledForProperty.
-
     if (m_context.useCounter())
         m_context.useCounter()->count(m_context, propertyID);
 

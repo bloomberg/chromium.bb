@@ -1777,9 +1777,8 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
                 return cssValuePool().createIdentifierValue(CSSValueAuto);
             return cssValuePool().createValue(style->columnCount(), CSSPrimitiveValue::CSS_NUMBER);
         case CSSPropertyColumnFill:
-            if (RuntimeEnabledFeatures::regionBasedColumnsEnabled())
-                return cssValuePool().createValue(style->columnFill());
-            return nullptr;
+            ASSERT(RuntimeEnabledFeatures::regionBasedColumnsEnabled());
+            return cssValuePool().createValue(style->columnFill());
         case CSSPropertyWebkitColumnGap:
             if (style->hasNormalColumnGap())
                 return cssValuePool().createIdentifierValue(CSSValueNormal);
@@ -2947,8 +2946,9 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
 String CSSComputedStyleDeclaration::getPropertyValue(const String& propertyName)
 {
     CSSPropertyID propertyID = cssPropertyID(propertyName);
-    if (!propertyID || !RuntimeCSSEnabled::isCSSPropertyEnabled(propertyID))
+    if (!propertyID)
         return String();
+    ASSERT(RuntimeCSSEnabled::isCSSPropertyEnabled(propertyID));
     return getPropertyValue(propertyID);
 }
 

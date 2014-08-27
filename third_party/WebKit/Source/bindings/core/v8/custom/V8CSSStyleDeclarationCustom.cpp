@@ -147,9 +147,10 @@ static CSSPropertyInfo* cssPropertyInfo(v8::Handle<v8::String> v8PropertyName)
         propInfo->propID = cssResolvedPropertyID(propertyName);
         map.add(propertyName, propInfo);
     }
-    if (propInfo->propID && RuntimeCSSEnabled::isCSSPropertyEnabled(propInfo->propID))
-        return propInfo;
-    return 0;
+    if (!propInfo->propID)
+        return 0;
+    ASSERT(RuntimeCSSEnabled::isCSSPropertyEnabled(propInfo->propID));
+    return propInfo;
 }
 
 void V8CSSStyleDeclaration::namedPropertyEnumeratorCustom(const v8::PropertyCallbackInfo<v8::Array>& info)
