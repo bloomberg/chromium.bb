@@ -38,7 +38,7 @@ vars = {
   # to update other nacl_*_revision's.
   'libvpx_revision': '563c46bb2d0e5d5c8b7d2c6c0c50f0283e9087de', # r291625
   'sfntly_revision': '1bdaae8fc788a5ac8936d68bf24f37d977a13dac',
-  'skia_revision': 'd3f6e893df53fb0cfeefd01a8a49a77c72d742bd',
+  'skia_revision': '5e8dbd31de0dff44aff83295bdfe518477a5a088',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and V8 without interference from each other.
