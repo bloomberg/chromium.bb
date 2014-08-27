@@ -13,11 +13,12 @@ MotionEventAura::MotionEventAura()
     : pointer_count_(0), cached_action_index_(-1) {
 }
 
-MotionEventAura::MotionEventAura(size_t pointer_count,
-                                 const base::TimeTicks& last_touch_time,
-                                 Action cached_action,
-                                 int cached_action_index,
-                                 const PointData (&active_touches)[10/*TODO*/])
+MotionEventAura::MotionEventAura(
+    size_t pointer_count,
+    const base::TimeTicks& last_touch_time,
+    Action cached_action,
+    int cached_action_index,
+    const PointData (&active_touches)[MotionEvent::MAX_TOUCH_POINT_COUNT])
     : pointer_count_(pointer_count),
       last_touch_time_(last_touch_time),
       cached_action_(cached_action),

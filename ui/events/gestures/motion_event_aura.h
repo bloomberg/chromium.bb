@@ -69,7 +69,7 @@ class EVENTS_EXPORT MotionEventAura : public MotionEvent {
       const base::TimeTicks& last_touch_time,
       Action cached_action,
       int cached_action_index,
-      const PointData (&active_touches)[10/*TODO*/]);
+      const PointData (&active_touches)[MotionEvent::MAX_TOUCH_POINT_COUNT]);
 
   static PointData GetPointDataFromTouchEvent(const TouchEvent& touch);
   void AddTouch(const TouchEvent& touch);
@@ -85,7 +85,7 @@ class EVENTS_EXPORT MotionEventAura : public MotionEvent {
   int cached_action_index_;
 
   // We want constant time indexing by pointer_index, and fast indexing by id.
-  PointData active_touches_[10/*TODO*/];
+  PointData active_touches_[MotionEvent::MAX_TOUCH_POINT_COUNT];
 
   DISALLOW_COPY_AND_ASSIGN(MotionEventAura);
 };
