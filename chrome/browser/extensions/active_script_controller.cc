@@ -22,6 +22,7 @@
 #include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "components/crx_file/id_util.h"
 #include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -166,12 +167,6 @@ ExtensionAction* ActiveScriptController::GetActionForExtension(
 
   active_script_actions_[extension->id()] = action;
   return action.get();
-}
-
-void ActiveScriptController::OnNavigated() {
-  LogUMA();
-  permitted_extensions_.clear();
-  pending_requests_.clear();
 }
 
 void ActiveScriptController::OnExtensionUnloaded(const Extension* extension) {
@@ -353,6 +348,17 @@ void ActiveScriptController::LogUMA() const {
         "Extensions.ActiveScriptController.DeniedExtensions",
         pending_requests_.size());
   }
+}
+
+void ActiveScriptController::DidNavigateMainFrame(
+    const content::LoadCommittedDetails& details,
+    const content::FrameNavigateParams& params) {
+  if (details.is_in_page)
+    return;
+
+  LogUMA();
+  permitted_extensions_.clear();
+  pending_requests_.clear();
 }
 
 }  // namespace extensions

@@ -34,9 +34,8 @@ class Extension;
 // The provider for ExtensionActions corresponding to scripts which are actively
 // running or need permission.
 // TODO(rdevlin.cronin): This isn't really a controller, but it has good parity
-// with PageAction"Controller".
-class ActiveScriptController : public LocationBarController::ActionProvider,
-                               public content::WebContentsObserver {
+// with LocationBar"Controller".
+class ActiveScriptController : public content::WebContentsObserver {
  public:
   explicit ActiveScriptController(content::WebContents* web_contents);
   virtual ~ActiveScriptController();
@@ -65,11 +64,13 @@ class ActiveScriptController : public LocationBarController::ActionProvider,
   // Returns true if there is an active script injection action for |extension|.
   bool HasActiveScriptAction(const Extension* extension);
 
-  // LocationBarControllerProvider implementation.
-  virtual ExtensionAction* GetActionForExtension(
-      const Extension* extension) OVERRIDE;
-  virtual void OnNavigated() OVERRIDE;
-  virtual void OnExtensionUnloaded(const Extension* extension) OVERRIDE;
+  // Returns the action to display for the given |extension|, or NULL if no
+  // action should be displayed.
+  ExtensionAction* GetActionForExtension(const Extension* extension);
+
+  // Notifies that the given |extension| has been unloaded; forwarded from the
+  // ExtensionRegistryObserver method.
+  void OnExtensionUnloaded(const Extension* extension);
 
 #if defined(UNIT_TEST)
   // Only used in tests.
@@ -114,6 +115,9 @@ class ActiveScriptController : public LocationBarController::ActionProvider,
 
   // content::WebContentsObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual void DidNavigateMainFrame(
+      const content::LoadCommittedDetails& details,
+      const content::FrameNavigateParams& params) OVERRIDE;
 
   // Log metrics.
   void LogUMA() const;

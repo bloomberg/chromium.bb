@@ -822,8 +822,6 @@
       'browser/extensions/ntp_overridden_bubble_controller.h',
       'browser/extensions/pack_extension_job.cc',
       'browser/extensions/pack_extension_job.h',
-      'browser/extensions/page_action_controller.cc',
-      'browser/extensions/page_action_controller.h',
       'browser/extensions/path_util.cc',
       'browser/extensions/path_util.h',
       'browser/extensions/pending_enables.cc',

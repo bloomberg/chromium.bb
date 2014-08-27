@@ -10,12 +10,13 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/scoped_observer.h"
-#include "chrome/browser/extensions/extension_action.h"
-#include "content/public/browser/web_contents_observer.h"
 #include "extensions/browser/extension_registry_observer.h"
+
+class ExtensionAction;
 
 namespace content {
 class WebContents;
+class BrowserContext;
 }
 
 namespace extensions {
@@ -23,32 +24,11 @@ namespace extensions {
 class ActiveScriptController;
 class Extension;
 class ExtensionRegistry;
-class PageActionController;
 
-// Interface for a class that controls the the extension icons that show up in
-// the location bar. Depending on switches, these icons can have differing
-// behavior.
-class LocationBarController : public content::WebContentsObserver,
-                              public ExtensionRegistryObserver {
+// Provides the UI with the current page actions for extensions. The execution
+// of these actions is handled in the ExtensionActionAPI.
+class LocationBarController : public ExtensionRegistryObserver {
  public:
-  class ActionProvider {
-   public:
-    // Returns the action for the given extension, or NULL if there isn't one.
-    virtual ExtensionAction* GetActionForExtension(
-        const Extension* extension) = 0;
-
-    // A notification that the WebContents has navigated in the main frame (and
-    // not in page), so any state relating to the current page should likely be
-    // reset.
-    virtual void OnNavigated() = 0;
-
-    // A notification that the given |extension| has been unloaded, and any
-    // actions associated with it should be removed.
-    // The LocationBarController will handle notifying of page action changes,
-    // if any.
-    virtual void OnExtensionUnloaded(const Extension* extension) {}
-  };
-
   explicit LocationBarController(content::WebContents* web_contents);
   virtual ~LocationBarController();
 
@@ -60,11 +40,6 @@ class LocationBarController : public content::WebContentsObserver,
   }
 
  private:
-  // content::WebContentsObserver implementation.
-  virtual void DidNavigateMainFrame(
-      const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) OVERRIDE;
-
   // ExtensionRegistryObserver implementation.
   virtual void OnExtensionUnloaded(
       content::BrowserContext* browser_context,
@@ -74,13 +49,12 @@ class LocationBarController : public content::WebContentsObserver,
   // The associated WebContents.
   content::WebContents* web_contents_;
 
-  // The controllers for different sources of actions in the location bar.
-  // Currently, this is only page actions and active script actions, so we
-  // explicitly own and create both. If there are ever more, it will be worth
-  // considering making this class own a list of LocationBarControllerProviders
-  // instead.
+  // The associated BrowserContext.
+  content::BrowserContext* browser_context_;
+
+  // The ActiveScriptController, which could also add actions for extensions if
+  // they have a pending script.
   scoped_ptr<ActiveScriptController> active_script_controller_;
-  scoped_ptr<PageActionController> page_action_controller_;
 
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
       extension_registry_observer_;

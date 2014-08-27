@@ -174,7 +174,7 @@ void ExtensionAction::ClearAllValuesForTab(int tab_id) {
   is_visible_.erase(tab_id);
   // TODO(jyasskin): Erase the element from declarative_show_count_
   // when the tab's closed.  There's a race between the
-  // PageActionController and the ContentRulesRegistry on navigation,
+  // LocationBarController and the ContentRulesRegistry on navigation,
   // which prevents me from cleaning everything up now.
 }
 

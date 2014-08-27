@@ -10,7 +10,6 @@
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/page_action_controller.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
@@ -29,7 +28,7 @@
 namespace extensions {
 namespace {
 
-class PageActionControllerTest : public ChromeRenderViewHostTestHarness {
+class LocationBarControllerUnitTest : public ChromeRenderViewHostTestHarness {
  protected:
   virtual void SetUp() OVERRIDE {
     ChromeRenderViewHostTestHarness::SetUp();
@@ -37,7 +36,7 @@ class PageActionControllerTest : public ChromeRenderViewHostTestHarness {
   test_user_manager_.reset(new chromeos::ScopedTestUserManager());
 #endif
     TabHelper::CreateForWebContents(web_contents());
-    // Create an ExtensionService so the PageActionController can find its
+    // Create an ExtensionService so the LocationBarController can find its
     // extensions.
     CommandLine command_line(CommandLine::NO_PROGRAM);
     Profile* profile =
@@ -68,7 +67,8 @@ class PageActionControllerTest : public ChromeRenderViewHostTestHarness {
 #endif
 };
 
-TEST_F(PageActionControllerTest, NavigationClearsState) {
+// Test that navigating clears all state in a page action.
+TEST_F(LocationBarControllerUnitTest, NavigationClearsState) {
   scoped_refptr<const Extension> extension =
       ExtensionBuilder()
       .SetManifest(DictionaryBuilder()
@@ -107,6 +107,11 @@ TEST_F(PageActionControllerTest, NavigationClearsState) {
   EXPECT_EQ("Hello", page_action.GetTitle(tab_id()));
   EXPECT_EQ(GURL(), page_action.GetPopupUrl(tab_id()));
 };
+
+// TODO(devlin): We should really have more tests for this.
+// NavigationClearsState doesn't test at all that the LocationBarController
+// actually *returns* the proper PageActions in GetCurrentActions. Do we do
+// this elsewhere?
 
 }  // namespace
 }  // namespace extensions
