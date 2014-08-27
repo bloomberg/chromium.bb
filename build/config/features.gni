@@ -19,7 +19,7 @@ declare_args() {
   # Multicast DNS.
   enable_mdns = is_win || is_linux
 
-  enable_plugins = !is_android || !is_ios
+  enable_plugins = !is_android && !is_ios
 
   # Enables Native Client support.
   # TODO(GYP) enable this when nacl works in GN.
