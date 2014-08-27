@@ -1612,9 +1612,10 @@ public:
         if (state->isSweepInProgress())
             return;
 
-        // Don't promptly free large objects because their page is never reused.
+        // Don't promptly free large objects because their page is never reused
+        // and don't free backings allocated on other threads.
         BaseHeapPage* page = pageHeaderFromObject(address);
-        if (page->isLargeObject())
+        if (page->isLargeObject() || page->threadState() != state)
             return;
 
         typedef HeapIndexTrait<CollectionBackingHeap> HeapTraits;
