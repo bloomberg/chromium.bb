@@ -292,6 +292,9 @@ void SearchProviderTest::SetUp() {
   // requests to ensure the InMemoryDatabase is the state we expect it.
   profile_.BlockUntilHistoryProcessesPendingRequests();
 
+  AutocompleteClassifierFactory::GetInstance()->SetTestingFactoryAndUse(
+      &profile_, &AutocompleteClassifierFactory::BuildInstanceFor);
+
   provider_ = new SearchProviderForTest(this, turl_model, &profile_);
   provider_->kMinimumTimeBetweenSuggestQueriesMs = 0;
 }
@@ -661,8 +664,6 @@ TEST_F(SearchProviderTest, SendNonPrivateDataToSuggest) {
 }
 
 TEST_F(SearchProviderTest, DontAutocompleteURLLikeTerms) {
-  AutocompleteClassifierFactory::GetInstance()->SetTestingFactoryAndUse(
-      &profile_, &AutocompleteClassifierFactory::BuildInstanceFor);
   GURL url = AddSearchToHistory(default_t_url_,
                                 ASCIIToUTF16("docs.google.com"), 1);
 

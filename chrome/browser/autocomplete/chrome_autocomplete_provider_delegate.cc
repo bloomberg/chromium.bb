@@ -58,9 +58,11 @@ void ChromeAutocompleteProviderDelegate::Classify(
     metrics::OmniboxEventProto::PageClassification page_classification,
     AutocompleteMatch* match,
     GURL* alternate_nav_url) {
-  AutocompleteClassifierFactory::GetForProfile(profile_)->Classify(
-      text, prefer_keyword, allow_exact_keyword_match, page_classification,
-      match, alternate_nav_url);
+  AutocompleteClassifier* classifier =
+      AutocompleteClassifierFactory::GetForProfile(profile_);
+  DCHECK(classifier);
+  classifier->Classify(text, prefer_keyword, allow_exact_keyword_match,
+                       page_classification, match, alternate_nav_url);
 }
 
 history::URLDatabase* ChromeAutocompleteProviderDelegate::InMemoryDatabase() {
