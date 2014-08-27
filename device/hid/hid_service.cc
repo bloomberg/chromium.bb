@@ -7,6 +7,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/scoped_vector.h"
+#include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_restrictions.h"
 
@@ -20,17 +21,55 @@
 
 namespace device {
 
-HidService* HidService::Create(
+namespace {
+
+// TODO(rockot/reillyg): This is pretty awful all around. There is a combination
+// of constraints here: HidService doesn't know about //content, it must be able
+// to talk to the PermissionBrokerClient on ChromeOS (UI thread), and it's
+// expected to live and die on the FILE thread (for now). Solution? Make it a
+// singleton whose instance getter takes a UI message loop proxy, and let the
+// lifetime of the HidService be managed by a MessageLoop::DestructionObserver.
+//
+// The right long-term solution is probably a mojo service.  A tolerable
+// medium-term solution is up for debate.
+class HidServiceDestroyer : public base::MessageLoop::DestructionObserver {
+ public:
+  explicit HidServiceDestroyer(HidService* hid_service)
+      : hid_service_(hid_service) {}
+  virtual ~HidServiceDestroyer() {}
+
+ private:
+  // base::MessageLoop::DestructionObserver implementation.
+  virtual void WillDestroyCurrentMessageLoop() OVERRIDE {
+    base::MessageLoop::current()->RemoveDestructionObserver(this);
+    delete hid_service_;
+    delete this;
+    hid_service_ = NULL;
+  }
+
+  HidService* hid_service_;
+};
+
+HidService* g_service = NULL;
+
+}  // namespace
+
+HidService* HidService::GetInstance(
     scoped_refptr<base::MessageLoopProxy> ui_message_loop) {
+  if (g_service == NULL) {
 #if defined(OS_LINUX) && defined(USE_UDEV)
-  return new HidServiceLinux(ui_message_loop);
+    g_service = new HidServiceLinux(ui_message_loop);
 #elif defined(OS_MACOSX)
-  return new HidServiceMac();
+    g_service = new HidServiceMac();
 #elif defined(OS_WIN)
-  return new HidServiceWin();
-#else
-  return NULL;
+    g_service = new HidServiceWin();
 #endif
+    if (g_service != NULL) {
+      HidServiceDestroyer* destroyer = new HidServiceDestroyer(g_service);
+      base::MessageLoop::current()->AddDestructionObserver(destroyer);
+    }
+  }
+  return g_service;
 }
 
 HidService::~HidService() {

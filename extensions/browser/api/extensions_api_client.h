@@ -19,10 +19,6 @@ namespace content {
 class BrowserContext;
 }
 
-namespace device {
-class HidService;
-}
-
 namespace extensions {
 
 class AppViewGuestDelegate;
@@ -75,9 +71,6 @@ class ExtensionsAPIClient {
 
   // Creates the AppViewGuestDelegate.
   virtual AppViewGuestDelegate* CreateAppViewGuestDelegate() const;
-
-  // Returns the HidService instance for this embedder.
-  virtual device::HidService* GetHidService();
 
   // Returns a delegate for some of WebViewGuest's behavior. The caller owns the
   // returned WebViewGuestDelegate.
