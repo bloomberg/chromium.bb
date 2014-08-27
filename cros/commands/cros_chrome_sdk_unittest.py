@@ -296,8 +296,7 @@ class RunThroughTest(cros_test_lib.MockTempDirTestCase,
 
   def testClang(self):
     """Verifies clang codepath."""
-    with cros_test_lib.LoggingCapturer() as logs:
-      cmd_cls = cros_chrome_sdk.ChromeSDKCommand
+    with cros_test_lib.LoggingCapturer():
       self.SetupCommandMock(extra_args=['--clang'])
       self.cmd_mock.inst.Run()
 
