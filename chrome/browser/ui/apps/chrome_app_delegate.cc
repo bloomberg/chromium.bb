@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
+#include "chrome/browser/ui/web_contents_sizer.h"
 #include "chrome/common/extensions/chrome_extension_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/notification_service.h"
@@ -174,6 +175,11 @@ void ChromeAppDelegate::InitWebContents(content::WebContents* web_contents) {
 #endif  // defined(ENABLE_PRINTING)
   extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
       web_contents);
+}
+
+void ChromeAppDelegate::ResizeWebContents(content::WebContents* web_contents,
+                                          const gfx::Size& size) {
+  ::ResizeWebContents(web_contents, size);
 }
 
 content::WebContents* ChromeAppDelegate::OpenURLFromTab(

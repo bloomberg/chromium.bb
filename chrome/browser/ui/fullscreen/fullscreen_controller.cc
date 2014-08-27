@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/fullscreen/fullscreen_controller.h"
 
-#include "apps/ui/web_contents_sizer.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
@@ -19,6 +18,7 @@
 #include "chrome/browser/ui/fullscreen/fullscreen_within_tab_helper.h"
 #include "chrome/browser/ui/status_bubble.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/web_contents_sizer.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
@@ -311,7 +311,7 @@ void FullscreenController::OnTabDetachedFromView(WebContents* old_contents) {
       old_contents->GetFullscreenRenderWidgetHostView();
   if (current_fs_view)
     current_fs_view->SetSize(old_contents->GetPreferredSize());
-  apps::ResizeWebContents(old_contents, old_contents->GetPreferredSize());
+  ResizeWebContents(old_contents, old_contents->GetPreferredSize());
 }
 
 void FullscreenController::OnTabClosing(WebContents* web_contents) {

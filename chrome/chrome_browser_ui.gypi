@@ -911,6 +911,7 @@
       'browser/ui/uninstall_browser_prompt.h',
       'browser/ui/validation_message_bubble.h',
       'browser/ui/view_ids.h',
+      'browser/ui/web_contents_sizer.h',
       'browser/ui/website_settings/permission_bubble_manager.cc',
       'browser/ui/website_settings/permission_bubble_manager.h',
       'browser/ui/website_settings/permission_bubble_request.h',
@@ -1327,8 +1328,10 @@
     'chrome_browser_ui_mac_sources': [
       'browser/ui/startup/session_crashed_bubble.cc',
       'browser/ui/startup/autolaunch_prompt.cc',
+      'browser/ui/web_contents_sizer.mm',
     ],
     'chrome_browser_ui_non_mac_sources': [
+      'browser/ui/web_contents_sizer.cc',
     ],
     # Files used only on desktop systems (not iOS, Android, ChromeOS).
     'chrome_browser_ui_desktop_sources': [

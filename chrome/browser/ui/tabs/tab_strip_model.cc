@@ -8,7 +8,6 @@
 #include <map>
 #include <string>
 
-#include "apps/ui/web_contents_sizer.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -20,6 +19,7 @@
 #include "chrome/browser/ui/tab_contents/core_tab_helper_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_order_controller.h"
+#include "chrome/browser/ui/web_contents_sizer.h"
 #include "chrome/common/url_constants.h"
 #include "components/web_modal/popup_manager.h"
 #include "content/public/browser/render_process_host.h"
@@ -839,8 +839,7 @@ void TabStripModel::AddWebContents(WebContents* contents,
   // new background tab.
   if (WebContents* old_contents = GetActiveWebContents()) {
     if ((add_types & ADD_ACTIVE) == 0) {
-      apps::ResizeWebContents(contents,
-                              old_contents->GetContainerBounds().size());
+      ResizeWebContents(contents, old_contents->GetContainerBounds().size());
     }
   }
 }

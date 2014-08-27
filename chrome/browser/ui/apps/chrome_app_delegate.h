@@ -31,6 +31,8 @@ class ChromeAppDelegate : public extensions::AppDelegate,
 
   // extensions::AppDelegate:
   virtual void InitWebContents(content::WebContents* web_contents) OVERRIDE;
+  virtual void ResizeWebContents(content::WebContents* web_contents,
+                                 const gfx::Size& size) OVERRIDE;
   virtual content::WebContents* OpenURLFromTab(
       content::BrowserContext* context,
       content::WebContents* source,

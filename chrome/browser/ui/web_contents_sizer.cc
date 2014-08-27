@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "apps/ui/web_contents_sizer.h"
+#include "chrome/browser/ui/web_contents_sizer.h"
 
 #include "content/public/browser/web_contents.h"
 
@@ -11,8 +11,6 @@
 #elif defined(OS_ANDROID)
 #include "content/public/browser/render_widget_host_view.h"
 #endif
-
-namespace apps {
 
 void ResizeWebContents(content::WebContents* web_contents,
                        const gfx::Size& new_size) {
@@ -25,5 +23,3 @@ void ResizeWebContents(content::WebContents* web_contents,
     view->SetSize(new_size);
 #endif
 }
-
-}  // namespace apps

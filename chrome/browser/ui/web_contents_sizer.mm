@@ -2,13 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "apps/ui/web_contents_sizer.h"
+#include "chrome/browser/ui/web_contents_sizer.h"
 
 #import <Cocoa/Cocoa.h>
 
 #include "content/public/browser/web_contents.h"
-
-namespace apps {
 
 void ResizeWebContents(content::WebContents* web_contents,
                        const gfx::Size& new_size) {
@@ -21,5 +19,3 @@ void ResizeWebContents(content::WebContents* web_contents,
       NSMakeRect(new_x, new_y, new_size.width(), new_size.height());
   [view setFrame:new_wcv_frame];
 }
-
-}  // namespace apps

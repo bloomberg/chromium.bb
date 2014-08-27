@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/browser_tabrestore.h"
 
-#include "apps/ui/web_contents_sizer.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_service.h"
@@ -13,6 +12,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/web_contents_sizer.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/session_storage_namespace.h"
@@ -127,7 +127,7 @@ content::WebContents* AddRestoredTab(
     // yet and the bounds may not be available on all platforms.
     if (size.IsEmpty())
       size = browser->window()->GetRestoredBounds().size();
-    apps::ResizeWebContents(web_contents, size);
+    ResizeWebContents(web_contents, size);
     web_contents->WasHidden();
   }
   SessionService* session_service =

@@ -10,7 +10,6 @@
 
 #include "apps/app_window_registry.h"
 #include "apps/ui/apps_client.h"
-#include "apps/ui/web_contents_sizer.h"
 #include "base/command_line.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -347,7 +346,7 @@ void AppWindow::Init(const GURL& url,
     gfx::Insets frame_insets = native_app_window_->GetFrameInsets();
     gfx::Rect initial_bounds = new_params.GetInitialWindowBounds(frame_insets);
     initial_bounds.Inset(frame_insets);
-    apps::ResizeWebContents(web_contents, initial_bounds.size());
+    app_delegate_->ResizeWebContents(web_contents, initial_bounds.size());
   }
 }
 

@@ -40,7 +40,6 @@ static_library("apps") {
     "switches.h",
     "ui/apps_client.cc",
     "ui/apps_client.h",
-    "ui/web_contents_sizer.h",
   ]
 
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
@@ -61,14 +60,6 @@ static_library("apps") {
     # When extensions are disabled, only the sizer file below is included.
     deps -= [ "//chrome/browser/extensions" ]
     sources = []
-  }
-
-  # This needs to run after the extensions check above since we always want
-  # this file in the project.
-  if (is_mac) {
-    sources += [ "ui/web_contents_sizer.mm" ]
-  } else {
-    sources += [ "ui/web_contents_sizer.cc" ]
   }
 
   if (toolkit_views) {

@@ -36,6 +36,10 @@ class AppDelegate {
   // General initialization.
   virtual void InitWebContents(content::WebContents* web_contents) = 0;
 
+  // Resizes WebContents.
+  virtual void ResizeWebContents(content::WebContents* web_contents,
+                                 const gfx::Size& size) = 0;
+
   // Link handling.
   virtual content::WebContents* OpenURLFromTab(
       content::BrowserContext* context,
