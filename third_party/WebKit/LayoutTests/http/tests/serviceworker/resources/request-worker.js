@@ -265,3 +265,20 @@ test(function() {
         });
     });
 }, 'Request headers test in ServiceWorkerGlobalScope');
+
+test(function() {
+  var url = 'http://example.com';
+  ['DELETE', 'GET', 'HEAD', 'OPTIONS', 'POST', 'PUT'].forEach(function(method) {
+    assert_equals(new Request(url, {method: method.toLowerCase()}).method,
+                  method,
+                  'method should be normalized to uppercase: ' + method);
+  });
+
+  ['PATCH', 'MKCOL', 'CUSTOM', 'X-FILES'].forEach(function(method) {
+    assert_equals(new Request(url, {method: method}).method, method,
+                  'method should not be changed when normalized: ' + method);
+    method = method.toLowerCase();
+    assert_equals(new Request(url, {method: method}).method, method,
+                  'method should not be changed when normalized: ' + method);
+  });
+}, 'Request method names are normalized');
