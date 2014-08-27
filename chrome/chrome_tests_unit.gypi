@@ -2182,15 +2182,6 @@
             ['exclude', '^browser/task_manager/'],
           ],
         }],
-        ['chromeos==0', {
-          'sources!': [
-            # TODO(zturner): Enable this on Windows.  See
-            # BrowserWithTestWindowTest::SetUp() for a comment explaining why
-            # this is broken.
-            'browser/ui/views/frame/immersive_mode_controller_ash_unittest.cc',
-            'browser/ui/views/select_file_dialog_extension_unittest.cc',
-          ],
-        }],
         ['enable_mdns==1', {
           'sources': [
             'browser/local_discovery/privet_device_lister_unittest.cc',
@@ -2282,6 +2273,9 @@
           'sources/': [
             ['exclude', '^browser/printing/'],
             ['exclude', '^browser/ui/webui/print_preview/'],
+            # No need for service process.
+            ['exclude', '^browser/service/'],
+            ['exclude', '^common/service_'],
             ['exclude', '^service/'],
           ],
           'sources!': [
@@ -2350,8 +2344,13 @@
           ],
           'sources!': [
             'browser/extensions/api/enterprise_platform_keys_private/enterprise_platform_keys_private_api_unittest.cc',
-            'browser/notifications/login_state_notification_blocker_chromeos_unittest.cc',
             'browser/extensions/api/log_private/syslog_parser_unittest.cc',
+            'browser/notifications/login_state_notification_blocker_chromeos_unittest.cc',
+            # TODO(zturner): Enable this on Windows.  See
+            # BrowserWithTestWindowTest::SetUp() for a comment explaining why
+            # this is broken.
+            'browser/ui/views/frame/immersive_mode_controller_ash_unittest.cc',
+            'browser/ui/views/select_file_dialog_extension_unittest.cc',
           ],
         }],
         ['use_x11==1', {
@@ -2408,6 +2407,10 @@
             '../third_party/ocmock/ocmock.gyp:ocmock',
             'chrome',
           ],
+          'sources': [
+            'browser/media_galleries/fileapi/iphoto_file_util_unittest.cc',
+            'utility/media_galleries/iphoto_library_parser_unittest.cc',
+          ],
           'sources!': [
             'browser/ui/tests/ui_gfx_image_unittest.cc',
             'tools/convert_dict/convert_dict_unittest.cc',
@@ -2440,12 +2443,6 @@
             'utility/media_galleries/picasa_album_table_reader_unittest.cc',
             'utility/media_galleries/picasa_albums_indexer_unittest.cc',
             'utility/media_galleries/pmp_column_reader_unittest.cc',
-          ],
-        }],
-        ['OS=="mac"', {
-          'sources': [
-            'browser/media_galleries/fileapi/iphoto_file_util_unittest.cc',
-            'utility/media_galleries/iphoto_library_parser_unittest.cc',
           ],
         }],
         ['enable_rlz!=0', {
@@ -2635,6 +2632,7 @@
             ['exclude', '^browser/captive_portal/'],
             ['exclude', '^browser/diagnostics/'],
             ['exclude', '^browser/first_run/'],
+            ['exclude', '^browser/importer/'],
             ['exclude', '^browser/lifetime/'],
             ['exclude', '^browser/media_galleries/'],
             ['exclude', '^browser/net/firefox_*'],
@@ -2677,14 +2675,6 @@
             'browser/download/download_dir_policy_handler_unittest.cc'
           ],
         }],
-        ['enable_printing!=1', {
-          'sources/': [
-            # No need for service process.
-            ['exclude', '^browser/service/'],
-            ['exclude', '^common/service_'],
-            ['exclude', '^service/'],
-          ],
-        }],
         ['enable_themes==0', {
           'sources!': [
             'browser/ui/webui/theme_source_unittest.cc',
@@ -2709,12 +2699,6 @@
         ['use_nss==0 and use_openssl_certs==0', {
           'sources!': [
             'common/net/x509_certificate_model_unittest.cc',
-          ],
-        }],
-        ['OS=="android"', {
-          'sources/': [
-            # Android doesn't build the importer.
-            ['exclude', '^browser/importer/'],
           ],
         }],
         ['enable_managed_users!=1', {
