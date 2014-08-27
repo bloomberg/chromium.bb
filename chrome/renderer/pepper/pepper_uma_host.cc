@@ -33,7 +33,8 @@ const char* const kWhitelistedHistogramPrefixes[] = {
 };
 
 const char* const kWhitelistedPluginBaseNames[] = {
-    "libwidevinecdmadapter.so"  // see http://crbug.com/368743
+    "libwidevinecdmadapter.so",  // see http://crbug.com/368743
+    "libpdf.so"                  // see http://crbug.com/405305
 };
 
 std::string HashPrefix(const std::string& histogram) {
