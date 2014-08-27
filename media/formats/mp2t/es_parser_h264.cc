@@ -28,7 +28,6 @@ EsParserH264::EsParserH264(
     const NewVideoConfigCB& new_video_config_cb,
     const EmitBufferCB& emit_buffer_cb)
     : es_adapter_(new_video_config_cb, emit_buffer_cb),
-      es_queue_(new media::OffsetByteQueue()),
       h264_parser_(new H264Parser()),
       current_access_unit_pos_(0),
       next_access_unit_pos_(0) {
@@ -37,37 +36,8 @@ EsParserH264::EsParserH264(
 EsParserH264::~EsParserH264() {
 }
 
-bool EsParserH264::Parse(const uint8* buf, int size,
-                         base::TimeDelta pts,
-                         DecodeTimestamp dts) {
-  // Note: Parse is invoked each time a PES packet has been reassembled.
-  // Unfortunately, a PES packet does not necessarily map
-  // to an h264 access unit, although the HLS recommendation is to use one PES
-  // for each access unit (but this is just a recommendation and some streams
-  // do not comply with this recommendation).
-
-  // HLS recommendation: "In AVC video, you should have both a DTS and a
-  // PTS in each PES header".
-  // However, some streams do not comply with this recommendation.
-  DVLOG_IF(1, pts == kNoTimestamp()) << "Each video PES should have a PTS";
-  if (pts != kNoTimestamp()) {
-    TimingDesc timing_desc;
-    timing_desc.pts = pts;
-    timing_desc.dts = (dts != kNoDecodeTimestamp()) ? dts :
-        DecodeTimestamp::FromPresentationTime(pts);
-
-    // Link the end of the byte queue with the incoming timing descriptor.
-    timing_desc_list_.push_back(
-        std::pair<int64, TimingDesc>(es_queue_->tail(), timing_desc));
-  }
-
-  // Add the incoming bytes to the ES queue.
-  es_queue_->Push(buf, size);
-  return ParseInternal();
-}
-
 void EsParserH264::Flush() {
-  DVLOG(1) << "EsParserH264::Flush";
+  DVLOG(1) << __FUNCTION__;
   if (!FindAUD(&current_access_unit_pos_))
     return;
 
@@ -75,18 +45,16 @@ void EsParserH264::Flush() {
   // which is assumed to be complete at this point.
   uint8 aud[] = { 0x00, 0x00, 0x01, 0x09 };
   es_queue_->Push(aud, sizeof(aud));
-  ParseInternal();
+  ParseFromEsQueue();
 
   es_adapter_.Flush();
 }
 
-void EsParserH264::Reset() {
-  DVLOG(1) << "EsParserH264::Reset";
-  es_queue_.reset(new media::OffsetByteQueue());
+void EsParserH264::ResetInternal() {
+  DVLOG(1) << __FUNCTION__;
   h264_parser_.reset(new H264Parser());
   current_access_unit_pos_ = 0;
   next_access_unit_pos_ = 0;
-  timing_desc_list_.clear();
   last_video_decoder_config_ = VideoDecoderConfig();
   es_adapter_.Reset();
 }
@@ -123,7 +91,7 @@ bool EsParserH264::FindAUD(int64* stream_pos) {
   return true;
 }
 
-bool EsParserH264::ParseInternal() {
+bool EsParserH264::ParseFromEsQueue() {
   DCHECK_LE(es_queue_->head(), current_access_unit_pos_);
   DCHECK_LE(current_access_unit_pos_, next_access_unit_pos_);
   DCHECK_LE(next_access_unit_pos_, es_queue_->tail());
@@ -232,14 +200,14 @@ bool EsParserH264::ParseInternal() {
 bool EsParserH264::EmitFrame(int64 access_unit_pos, int access_unit_size,
                              bool is_key_frame, int pps_id) {
   // Get the access unit timing info.
-  TimingDesc current_timing_desc = {kNoDecodeTimestamp(), kNoTimestamp()};
-  while (!timing_desc_list_.empty() &&
-         timing_desc_list_.front().first <= access_unit_pos) {
-    current_timing_desc = timing_desc_list_.front().second;
-    timing_desc_list_.pop_front();
-  }
+  TimingDesc current_timing_desc = GetTimingDescriptor(access_unit_pos);
   if (current_timing_desc.pts == kNoTimestamp())
     return false;
+
+  if (current_timing_desc.dts == kNoDecodeTimestamp()) {
+    current_timing_desc.dts =
+        DecodeTimestamp::FromPresentationTime(current_timing_desc.pts);
+  }
 
   // Update the video decoder configuration if needed.
   const H264PPS* pps = h264_parser_->GetPPS(pps_id);

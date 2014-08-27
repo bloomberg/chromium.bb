@@ -27,10 +27,14 @@ class OffsetByteQueue;
 namespace media {
 namespace mp2t {
 
-// Remark:
-// In this h264 parser, frame splitting is based on AUD nals.
+// A few remarks:
+// - In this h264 parser, frame splitting is based on AUD nals.
 // Mpeg2 TS spec: "2.14 Carriage of Rec. ITU-T H.264 | ISO/IEC 14496-10 video"
 // "Each AVC access unit shall contain an access unit delimiter NAL Unit;"
+// - PES packets do not necessarily map to an H264 access unit although the HLS
+// recommendation is to use one PES for each access unit. In this parser,
+// we handle the general case and do not make any assumption about the access
+// unit organization within PES packets.
 //
 class MEDIA_EXPORT EsParserH264 : public EsParser {
  public:
@@ -41,17 +45,12 @@ class MEDIA_EXPORT EsParserH264 : public EsParser {
   virtual ~EsParserH264();
 
   // EsParser implementation.
-  virtual bool Parse(const uint8* buf, int size,
-                     base::TimeDelta pts,
-                     DecodeTimestamp dts) OVERRIDE;
   virtual void Flush() OVERRIDE;
-  virtual void Reset() OVERRIDE;
 
  private:
-  struct TimingDesc {
-    DecodeTimestamp dts;
-    base::TimeDelta pts;
-  };
+  // EsParser implementation.
+  virtual bool ParseFromEsQueue() OVERRIDE;
+  virtual void ResetInternal() OVERRIDE;
 
   // Find the AUD located at or after |*stream_pos|.
   // Return true if an AUD is found.
@@ -59,10 +58,6 @@ class MEDIA_EXPORT EsParserH264 : public EsParser {
   // in the stream. Otherwise, |*stream_pos| corresponds to the last position
   // of the start code parser.
   bool FindAUD(int64* stream_pos);
-
-  // Resumes the H264 ES parsing.
-  // Return true if successful.
-  bool ParseInternal();
 
   // Emit a frame whose position in the ES queue starts at |access_unit_pos|.
   // Returns true if successful, false if no PTS is available for the frame.
@@ -74,10 +69,6 @@ class MEDIA_EXPORT EsParserH264 : public EsParser {
   bool UpdateVideoDecoderConfig(const H264SPS* sps);
 
   EsAdapterVideo es_adapter_;
-
-  // Bytes of the ES stream that have not been emitted yet.
-  scoped_ptr<media::OffsetByteQueue> es_queue_;
-  std::list<std::pair<int64, TimingDesc> > timing_desc_list_;
 
   // H264 parser state.
   // - |current_access_unit_pos_| is pointing to an annexB syncword

@@ -118,24 +118,13 @@ EsParserAdts::EsParserAdts(
     bool sbr_in_mimetype)
   : new_audio_config_cb_(new_audio_config_cb),
     emit_buffer_cb_(emit_buffer_cb),
-    sbr_in_mimetype_(sbr_in_mimetype),
-    es_queue_(new media::OffsetByteQueue()) {
+    sbr_in_mimetype_(sbr_in_mimetype) {
 }
 
 EsParserAdts::~EsParserAdts() {
 }
 
-bool EsParserAdts::Parse(const uint8* buf, int size,
-                         base::TimeDelta pts,
-                         DecodeTimestamp dts) {
-  // The incoming PTS applies to the access unit that comes just after
-  // the beginning of |buf|.
-  if (pts != kNoTimestamp())
-    pts_list_.push_back(EsPts(es_queue_->tail(), pts));
-
-  // Copy the input data to the ES buffer.
-  es_queue_->Push(buf, size);
-
+bool EsParserAdts::ParseFromEsQueue() {
   // Look for every ADTS frame in the ES buffer.
   AdtsFrame adts_frame;
   while (LookForAdtsFrame(&adts_frame)) {
@@ -145,11 +134,10 @@ bool EsParserAdts::Parse(const uint8* buf, int size,
       return false;
 
     // Get the PTS & the duration of this access unit.
-    while (!pts_list_.empty() &&
-           pts_list_.front().first <= adts_frame.queue_offset) {
-      audio_timestamp_helper_->SetBaseTimestamp(pts_list_.front().second);
-      pts_list_.pop_front();
-    }
+    TimingDesc current_timing_desc =
+        GetTimingDescriptor(adts_frame.queue_offset);
+    if (current_timing_desc.pts != kNoTimestamp())
+      audio_timestamp_helper_->SetBaseTimestamp(current_timing_desc.pts);
 
     if (audio_timestamp_helper_->base_timestamp() == kNoTimestamp()) {
       DVLOG(1) << "Audio frame with unknown timestamp";
@@ -187,9 +175,7 @@ bool EsParserAdts::Parse(const uint8* buf, int size,
 void EsParserAdts::Flush() {
 }
 
-void EsParserAdts::Reset() {
-  es_queue_.reset(new media::OffsetByteQueue());
-  pts_list_.clear();
+void EsParserAdts::ResetInternal() {
   last_audio_decoder_config_ = AudioDecoderConfig();
 }
 

@@ -36,18 +36,14 @@ class MEDIA_EXPORT EsParserAdts : public EsParser {
   virtual ~EsParserAdts();
 
   // EsParser implementation.
-  virtual bool Parse(const uint8* buf, int size,
-                     base::TimeDelta pts,
-                     DecodeTimestamp dts) OVERRIDE;
   virtual void Flush() OVERRIDE;
-  virtual void Reset() OVERRIDE;
 
  private:
-  // Used to link a PTS with a byte position in the ES stream.
-  typedef std::pair<int64, base::TimeDelta> EsPts;
-  typedef std::list<EsPts> EsPtsList;
-
   struct AdtsFrame;
+
+  // EsParser implementation.
+  virtual bool ParseFromEsQueue() OVERRIDE;
+  virtual void ResetInternal() OVERRIDE;
 
   // Synchronize the stream on an ADTS syncword (consuming bytes from
   // |es_queue_| if needed).
@@ -73,12 +69,6 @@ class MEDIA_EXPORT EsParserAdts : public EsParser {
   // True when AAC SBR extension is signalled in the mimetype
   // (mp4a.40.5 in the codecs parameter).
   bool sbr_in_mimetype_;
-
-  // Bytes of the ES stream that have not been emitted yet.
-  scoped_ptr<media::OffsetByteQueue> es_queue_;
-
-  // List of PTS associated with a position in the ES stream.
-  EsPtsList pts_list_;
 
   // Interpolated PTS for frames that don't have one.
   scoped_ptr<AudioTimestampHelper> audio_timestamp_helper_;

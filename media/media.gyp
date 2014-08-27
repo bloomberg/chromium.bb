@@ -927,6 +927,7 @@
             'filters/h264_to_annex_b_bitstream_converter.h',
             'formats/mp2t/es_adapter_video.cc',
             'formats/mp2t/es_adapter_video.h',
+            'formats/mp2t/es_parser.cc',
             'formats/mp2t/es_parser.h',
             'formats/mp2t/es_parser_adts.cc',
             'formats/mp2t/es_parser_adts.h',
