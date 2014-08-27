@@ -102,12 +102,12 @@
             ],
           },
           'dependencies': [
-            'android_support_v4_javalib_no_res',
             '../base/base.gyp:base_java',
             '../ui/android/ui_android.gyp:ui_java',
             'remoting_android_resources',
             '../third_party/android_tools/android_tools.gyp:android_support_v7_appcompat_javalib',
             '../third_party/android_tools/android_tools.gyp:android_support_v7_mediarouter_javalib',
+            '../third_party/android_tools/android_tools.gyp:android_support_v13_javalib',
           ],
           'includes': [ '../build/java.gypi' ],
           'conditions' : [
@@ -155,16 +155,6 @@
           },
           'includes': [ '../build/java_apk.gypi' ],
         },  # end of target 'remoting_test_apk'
-        {
-          # This jar contains the Android support v4 libary. It does not have
-          # any associated resources.
-          'target_name': 'android_support_v4_javalib_no_res',
-          'type': 'none',
-          'variables': {
-            'jar_path': '../third_party/android_tools/sdk/extras/android/support/v4/android-support-v4.jar',
-          },
-          'includes': ['../build/java_prebuilt.gypi'],
-        }, # end of target 'android_support_v4_javalib_no_res'
       ], # end of 'targets'
       'conditions': [
         ['enable_cast==1', {

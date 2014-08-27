@@ -20,9 +20,11 @@ import com.google.common.annotations.VisibleForTesting;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.BaseSwitches;
 import org.chromium.base.CommandLine;
+import org.chromium.base.ContentUriUtils;
 import org.chromium.base.MemoryPressureListener;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.chrome.browser.DevToolsServer;
+import org.chromium.chrome.browser.FileProviderHelper;
 import org.chromium.chrome.browser.appmenu.AppMenuHandler;
 import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.dom_distiller.DomDistillerTabUtils;
@@ -173,6 +175,7 @@ public class ChromeShellActivity extends Activity implements AppMenuPropertiesDe
         // In case this method is called after the first onStart(), we need to inform the
         // SyncController that we have started.
         mSyncController.onStart();
+        ContentUriUtils.setFileProviderUtil(new FileProviderHelper());
     }
 
     @Override

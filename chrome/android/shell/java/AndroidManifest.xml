@@ -217,6 +217,15 @@
                   android:authorities="org.chromium.chrome.shell"
                   android:exported="true" />
 
+        <!-- Provider for FileProvider. -->
+        <provider android:name="android.support.v4.content.FileProvider"
+            android:authorities="org.chromium.chrome.shell.FileProvider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+
         <!-- Sync adapter for browser sync. -->
         <service android:exported="false"
                  android:name="org.chromium.chrome.shell.sync.ChromeShellSyncAdapterService">
