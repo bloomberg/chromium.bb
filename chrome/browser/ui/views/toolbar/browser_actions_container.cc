@@ -174,7 +174,6 @@ BrowserActionsContainer::BrowserActionsContainer(
     // the Chrome menu.
     if (!overflow_experiment) {
       chevron_ = new ChevronMenuButton(NULL, base::string16(), this, false);
-      chevron_->SetBorder(views::Border::NullBorder());
       chevron_->EnableCanvasFlippingForRTLUI(true);
       chevron_->SetAccessibleName(
           l10n_util::GetStringUTF16(IDS_ACCNAME_EXTENSIONS_CHEVRON));
