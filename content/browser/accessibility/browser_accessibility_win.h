@@ -105,7 +105,7 @@ BrowserAccessibilityWin
   CONTENT_EXPORT virtual void NativeAddReference() OVERRIDE;
   CONTENT_EXPORT virtual void NativeReleaseReference() OVERRIDE;
   CONTENT_EXPORT virtual bool IsNative() const OVERRIDE;
-  CONTENT_EXPORT virtual void OnLocationChanged() const OVERRIDE;
+  CONTENT_EXPORT virtual void OnLocationChanged() OVERRIDE;
 
   //
   // IAccessible methods.

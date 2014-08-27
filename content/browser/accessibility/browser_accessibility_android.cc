@@ -55,6 +55,10 @@ bool BrowserAccessibilityAndroid::IsNative() const {
   return true;
 }
 
+void BrowserAccessibilityAndroid::OnLocationChanged() {
+  manager()->NotifyAccessibilityEvent(ui::AX_EVENT_LOCATION_CHANGED, this);
+}
+
 bool BrowserAccessibilityAndroid::PlatformIsLeaf() const {
   if (InternalChildCount() == 0)
     return true;

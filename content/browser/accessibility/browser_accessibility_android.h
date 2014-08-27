@@ -15,6 +15,7 @@ class BrowserAccessibilityAndroid : public BrowserAccessibility {
   // Overrides from BrowserAccessibility.
   virtual void OnDataChanged() OVERRIDE;
   virtual bool IsNative() const OVERRIDE;
+  virtual void OnLocationChanged() OVERRIDE;
 
   virtual bool PlatformIsLeaf() const OVERRIDE;
 

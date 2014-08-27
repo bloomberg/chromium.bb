@@ -65,7 +65,7 @@ class CONTENT_EXPORT BrowserAccessibility {
   virtual bool IsNative() const;
 
   // Called when the location changed.
-  virtual void OnLocationChanged() const {}
+  virtual void OnLocationChanged() {}
 
   // Return true if this object is equal to or a descendant of |ancestor|.
   bool IsDescendantOf(BrowserAccessibility* ancestor);

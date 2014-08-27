@@ -3176,7 +3176,7 @@ bool BrowserAccessibilityWin::IsNative() const {
   return true;
 }
 
-void BrowserAccessibilityWin::OnLocationChanged() const {
+void BrowserAccessibilityWin::OnLocationChanged() {
   manager()->ToBrowserAccessibilityManagerWin()->MaybeCallNotifyWinEvent(
       EVENT_OBJECT_LOCATIONCHANGE, unique_id_win());
 }
