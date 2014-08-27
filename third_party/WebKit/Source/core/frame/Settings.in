@@ -293,3 +293,5 @@ availableHoverTypes type=int, initial=HoverTypeNone, invalidate=MediaQuery
 primaryPointerType type=PointerType, initial=PointerTypeNone, invalidate=MediaQuery
 primaryHoverType type=HoverType, initial=HoverTypeNone, invalidate=MediaQuery
 
+accessibilityEnabled initial=false
+inlineTextBoxAccessibilityEnabled initial=false

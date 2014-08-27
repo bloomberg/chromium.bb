@@ -7,6 +7,7 @@
 
 #include "core/frame/FrameOwner.h"
 #include "core/frame/RemoteFrame.h"
+#include "core/frame/Settings.h"
 #include "core/page/Page.h"
 #include "public/platform/WebFloatRect.h"
 #include "public/platform/WebRect.h"

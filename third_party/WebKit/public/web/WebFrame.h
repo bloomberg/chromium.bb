@@ -153,7 +153,6 @@ public:
     virtual void setPermissionClient(WebPermissionClient*) = 0;
     virtual void setSharedWorkerRepositoryClient(WebSharedWorkerRepositoryClient*) = 0;
 
-
     // Geometry -----------------------------------------------------------
 
     // NOTE: These routines do not force page layout so their results may
@@ -181,7 +180,6 @@ public:
 
     virtual bool hasHorizontalScrollbar() const = 0;
     virtual bool hasVerticalScrollbar() const = 0;
-
 
     // Hierarchy ----------------------------------------------------------
 

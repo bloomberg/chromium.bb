@@ -91,11 +91,6 @@ void WebAXObject::enableAccessibility()
     AXObjectCache::enableAccessibility();
 }
 
-// static
-bool WebAXObject::accessibilityEnabled()
-{
-    return AXObjectCache::accessibilityEnabled();
-}
 
 // static
 void WebAXObject::enableInlineTextBoxAccessibility()

@@ -93,6 +93,7 @@ public:
     // contents at an insecure URL. Otherwise, disallows it. The
     // FrameLoaderClient set to the frame may override the value set by this
     // method.
+    virtual void setAccessibilityEnabled(bool) = 0;
     virtual void setAllowDisplayOfInsecureContent(bool) = 0;
     virtual void setAllowFileAccessFromFileURLs(bool) = 0;
     virtual void setAllowCustomScrollbarInMainFrame(bool) = 0;
@@ -145,6 +146,7 @@ public:
     virtual void setHyperlinkAuditingEnabled(bool) = 0;
     virtual void setIgnoreMainFrameOverflowHiddenQuirk(bool) = 0;
     virtual void setImagesEnabled(bool) = 0;
+    virtual void setInlineTextBoxAccessibilityEnabled(bool) = 0;
     virtual void setJavaEnabled(bool) = 0;
     virtual void setJavaScriptCanAccessClipboard(bool) = 0;
     virtual void setJavaScriptCanOpenWindowsAutomatically(bool) = 0;

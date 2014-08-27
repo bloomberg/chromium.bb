@@ -54,6 +54,7 @@ public:
     virtual void setAccelerated2dCanvasMSAASampleCount(int) OVERRIDE;
     virtual void setAcceleratedCompositingEnabled(bool) OVERRIDE;
     virtual void setPreferCompositingToLCDTextEnabled(bool) OVERRIDE;
+    virtual void setAccessibilityEnabled(bool) OVERRIDE;
     virtual void setAllowDisplayOfInsecureContent(bool) OVERRIDE;
     virtual void setAllowFileAccessFromFileURLs(bool) OVERRIDE;
     virtual void setAllowCustomScrollbarInMainFrame(bool) OVERRIDE;
@@ -100,6 +101,7 @@ public:
     virtual void setHyperlinkAuditingEnabled(bool) OVERRIDE;
     virtual void setIgnoreMainFrameOverflowHiddenQuirk(bool) OVERRIDE;
     virtual void setImagesEnabled(bool) OVERRIDE;
+    virtual void setInlineTextBoxAccessibilityEnabled(bool) OVERRIDE;
     virtual void setJavaEnabled(bool) OVERRIDE;
     virtual void setJavaScriptCanAccessClipboard(bool) OVERRIDE;
     virtual void setJavaScriptCanOpenWindowsAutomatically(bool) OVERRIDE;

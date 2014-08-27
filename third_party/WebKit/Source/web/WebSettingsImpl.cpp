@@ -171,6 +171,16 @@ void WebSettingsImpl::setAccessibilityFontScaleFactor(float fontScaleFactor)
     m_settings->setAccessibilityFontScaleFactor(fontScaleFactor);
 }
 
+void WebSettingsImpl::setAccessibilityEnabled(bool enabled)
+{
+    m_settings->setAccessibilityEnabled(enabled);
+}
+
+void WebSettingsImpl::setInlineTextBoxAccessibilityEnabled(bool enabled)
+{
+    m_settings->setInlineTextBoxAccessibilityEnabled(enabled);
+}
+
 void WebSettingsImpl::setDeviceScaleAdjustment(float deviceScaleAdjustment)
 {
     m_inspectorController->setDeviceScaleAdjustment(deviceScaleAdjustment);
