@@ -593,6 +593,7 @@ ThreadHeap<Header>::ThreadHeap(ThreadState* state, int index)
     , m_threadState(state)
     , m_index(index)
     , m_numberOfNormalPages(0)
+    , m_promptlyFreedCount(0)
 {
     clearFreeLists();
 }
@@ -664,11 +665,20 @@ void ThreadHeap<Header>::ensureCurrentAllocation(size_t minSize, const GCInfo* g
 
     if (remainingAllocationSize() > 0)
         addToFreeList(currentAllocationPoint(), remainingAllocationSize());
+    if (shouldCoalesce())
+        coalesce();
     if (allocateFromFreeList(minSize))
         return;
     addPageToHeap(gcInfo);
     bool success = allocateFromFreeList(minSize);
     RELEASE_ASSERT(success);
+}
+
+template<typename Header>
+bool ThreadHeap<Header>::shouldCoalesce()
+{
+    // Coalesce the heap if we have freed a lot of objects since the last sweep.
+    return m_promptlyFreedCount > 512;
 }
 
 template<typename Header>
@@ -771,6 +781,42 @@ void ThreadHeap<Header>::addToFreeList(Address address, size_t size)
         m_lastFreeListEntries[index] = entry;
     if (index > m_biggestFreeListIndex)
         m_biggestFreeListIndex = index;
+}
+
+template<typename Header>
+void ThreadHeap<Header>::coalesce()
+{
+    makeConsistentForSweeping();
+    for (HeapPage<Header>* page = m_firstPage; page; page = page->next()) {
+        page->clearObjectStartBitMap();
+        Address startOfGap = page->payload();
+        for (Address headerAddress = startOfGap; headerAddress < page->end(); ) {
+            BasicObjectHeader* basicHeader = reinterpret_cast<BasicObjectHeader*>(headerAddress);
+            ASSERT(basicHeader->size() > 0);
+            ASSERT(basicHeader->size() < blinkPagePayloadSize());
+            if (basicHeader->isFree()) {
+                size_t size = basicHeader->size();
+#if !ENABLE(ASSERT) && !defined(LEAK_SANITIZER) && !defined(ADDRESS_SANITIZER)
+                // Zero the memory in the free list header to maintain the
+                // invariant that memory on the free list is zero filled.
+                // The rest of the memory is already on the free list and is
+                // therefore already zero filled.
+                if (size < sizeof(FreeListEntry))
+                    memset(headerAddress, 0, size);
+                else
+                    memset(headerAddress, 0, sizeof(FreeListEntry));
+#endif
+                headerAddress += size;
+                continue;
+            }
+            if (startOfGap != headerAddress)
+                addToFreeList(startOfGap, headerAddress - startOfGap);
+            headerAddress += basicHeader->size();
+            startOfGap = headerAddress;
+        }
+        if (startOfGap != page->end())
+            addToFreeList(startOfGap, page->end() - startOfGap);
+    }
 }
 
 template<typename Header>
@@ -1238,6 +1284,7 @@ void ThreadHeap<Header>::clearLiveAndMarkDead()
 template<typename Header>
 void ThreadHeap<Header>::clearFreeLists()
 {
+    m_promptlyFreedCount = 0;
     for (size_t i = 0; i < blinkPageSizeLog2; i++) {
         m_freeLists[i] = 0;
         m_lastFreeListEntries[i] = 0;

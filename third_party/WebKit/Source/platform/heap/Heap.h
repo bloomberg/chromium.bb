@@ -957,6 +957,8 @@ public:
 
     void removePageFromHeap(HeapPage<Header>*);
 
+    void incrementPromptlyFreedCount() { m_promptlyFreedCount++; }
+
 private:
     void addPageToHeap(const GCInfo*);
     PLATFORM_EXPORT Address outOfLineAllocate(size_t, const GCInfo*);
@@ -986,6 +988,9 @@ private:
     void sweepNormalPages(HeapStats*);
     void sweepLargePages(HeapStats*);
 
+    void coalesce();
+    bool shouldCoalesce();
+
     Address m_currentAllocationPoint;
     size_t m_remainingAllocationSize;
 
@@ -1011,6 +1016,7 @@ private:
     int m_index;
 
     int m_numberOfNormalPages;
+    size_t m_promptlyFreedCount;
 };
 
 class PLATFORM_EXPORT Heap {
@@ -1619,6 +1625,7 @@ public:
         memset(header, 0, size);
 #endif
         heap->addToFreeList(reinterpret_cast<Address>(header), size);
+        heap->incrementPromptlyFreedCount();
     }
 
     static void free(void* address) { }
