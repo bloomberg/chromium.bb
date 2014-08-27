@@ -365,6 +365,102 @@ namespace dom_distiller {
         }
       };
 
+      class TimingInfo {
+       public:
+        static dom_distiller::proto::TimingInfo ReadFromValue(const base::Value* json) {
+          dom_distiller::proto::TimingInfo message;
+          const base::DictionaryValue* dict;
+          if (!json->GetAsDictionary(&dict)) goto error;
+          if (dict->HasKey("1")) {
+            double field_value;
+            if (!dict->GetDouble("1", &field_value)) {
+              goto error;
+            }
+            message.set_markup_parsing_time(field_value);
+          }
+          if (dict->HasKey("2")) {
+            double field_value;
+            if (!dict->GetDouble("2", &field_value)) {
+              goto error;
+            }
+            message.set_document_construction_time(field_value);
+          }
+          if (dict->HasKey("3")) {
+            double field_value;
+            if (!dict->GetDouble("3", &field_value)) {
+              goto error;
+            }
+            message.set_article_processing_time(field_value);
+          }
+          if (dict->HasKey("4")) {
+            double field_value;
+            if (!dict->GetDouble("4", &field_value)) {
+              goto error;
+            }
+            message.set_formatting_time(field_value);
+          }
+          if (dict->HasKey("5")) {
+            double field_value;
+            if (!dict->GetDouble("5", &field_value)) {
+              goto error;
+            }
+            message.set_total_time(field_value);
+          }
+          return message;
+
+        error:
+          return dom_distiller::proto::TimingInfo();
+        }
+
+        static scoped_ptr<base::Value> WriteToValue(const dom_distiller::proto::TimingInfo& message) {
+          scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+          if (message.has_markup_parsing_time()) {
+            dict->SetDouble("1", message.markup_parsing_time());
+          }
+          if (message.has_document_construction_time()) {
+            dict->SetDouble("2", message.document_construction_time());
+          }
+          if (message.has_article_processing_time()) {
+            dict->SetDouble("3", message.article_processing_time());
+          }
+          if (message.has_formatting_time()) {
+            dict->SetDouble("4", message.formatting_time());
+          }
+          if (message.has_total_time()) {
+            dict->SetDouble("5", message.total_time());
+          }
+          return dict.PassAs<base::Value>();
+        }
+      };
+
+      class DebugInfo {
+       public:
+        static dom_distiller::proto::DebugInfo ReadFromValue(const base::Value* json) {
+          dom_distiller::proto::DebugInfo message;
+          const base::DictionaryValue* dict;
+          if (!json->GetAsDictionary(&dict)) goto error;
+          if (dict->HasKey("1")) {
+            std::string field_value;
+            if (!dict->GetString("1", &field_value)) {
+              goto error;
+            }
+            message.set_log(field_value);
+          }
+          return message;
+
+        error:
+          return dom_distiller::proto::DebugInfo();
+        }
+
+        static scoped_ptr<base::Value> WriteToValue(const dom_distiller::proto::DebugInfo& message) {
+          scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+          if (message.has_log()) {
+            dict->SetString("1", message.log());
+          }
+          return dict.PassAs<base::Value>();
+        }
+      };
+
       class DomDistillerResult {
        public:
         static dom_distiller::proto::DomDistillerResult ReadFromValue(const base::Value* json) {
@@ -415,6 +511,22 @@ namespace dom_distiller {
             *message.mutable_markup_info() =
                 dom_distiller::proto::json::MarkupInfo::ReadFromValue(inner_message_value);
           }
+          if (dict->HasKey("6")) {
+            const base::Value* inner_message_value;
+            if (!dict->Get("6", &inner_message_value)) {
+              goto error;
+            }
+            *message.mutable_timing_info() =
+                dom_distiller::proto::json::TimingInfo::ReadFromValue(inner_message_value);
+          }
+          if (dict->HasKey("7")) {
+            const base::Value* inner_message_value;
+            if (!dict->Get("7", &inner_message_value)) {
+              goto error;
+            }
+            *message.mutable_debug_info() =
+                dom_distiller::proto::json::DebugInfo::ReadFromValue(inner_message_value);
+          }
           return message;
 
         error:
@@ -445,6 +557,16 @@ namespace dom_distiller {
             scoped_ptr<base::Value> inner_message_value =
                 dom_distiller::proto::json::MarkupInfo::WriteToValue(message.markup_info());
             dict->Set("5", inner_message_value.release());
+          }
+          if (message.has_timing_info()) {
+            scoped_ptr<base::Value> inner_message_value =
+                dom_distiller::proto::json::TimingInfo::WriteToValue(message.timing_info());
+            dict->Set("6", inner_message_value.release());
+          }
+          if (message.has_debug_info()) {
+            scoped_ptr<base::Value> inner_message_value =
+                dom_distiller::proto::json::DebugInfo::WriteToValue(message.debug_info());
+            dict->Set("7", inner_message_value.release());
           }
           return dict.PassAs<base::Value>();
         }
