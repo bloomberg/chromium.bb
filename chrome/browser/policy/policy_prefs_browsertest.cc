@@ -601,13 +601,7 @@ class PolicyPrefIndicatorTest
 
 // Verifies that controlled setting indicators correctly show whether a pref's
 // value is recommended or enforced by a corresponding policy.
-#if defined(OS_WIN) && !defined(NDEBUG)
-// TODO(zea): Fix failure on Windows.  See crbug.com/402233 for details.
-#define MAYBE_CheckPolicyIndicators DISABLED_CheckPolicyIndicators
-#else
-#define MAYBE_CheckPolicyIndicators CheckPolicyIndicators
-#endif
-IN_PROC_BROWSER_TEST_P(PolicyPrefIndicatorTest, MAYBE_CheckPolicyIndicators) {
+IN_PROC_BROWSER_TEST_P(PolicyPrefIndicatorTest, CheckPolicyIndicators) {
   const PolicyTestCases test_cases;
   PrefService* local_state = g_browser_process->local_state();
   PrefService* user_prefs = browser()->profile()->GetPrefs();
