@@ -168,7 +168,7 @@
 	wl_viewport for the description, and relation to the wl_buffer
 	size.
 
-	If width is -1.0 and height is -1.0, the destination size is unset
+	If width is -1.0 and height is -1.0, the source rectangle is unset
 	instead. Any other pair of values for width and height that
 	contains zero or negative values raises the bad_value protocol
 	error.
