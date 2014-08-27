@@ -25,9 +25,9 @@ class Scheduler {
   bool Run();
 
   base::MessageLoop* main_loop() { return &main_loop_; }
-  base::SequencedWorkerPool* pool() { return pool_; }
+  base::SequencedWorkerPool* pool() { return pool_.get(); }
 
-  InputFileManager* input_file_manager() { return input_file_manager_; }
+  InputFileManager* input_file_manager() { return input_file_manager_.get(); }
 
   bool verbose_logging() const { return verbose_logging_; }
   void set_verbose_logging(bool v) { verbose_logging_ = v; }
