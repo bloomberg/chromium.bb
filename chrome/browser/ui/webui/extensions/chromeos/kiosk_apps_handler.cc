@@ -42,6 +42,9 @@ void PopulateAppDict(const KioskAppManager::App& app_data,
   if (!app_data.icon.isNull())
     icon_url = webui::GetBitmapDataUrl(*app_data.icon.bitmap());
 
+  // The items which are to be written into app_dict are also described in
+  // chrome/browser/resources/extensions/chromeos/kiosk_app_list.js in @typedef
+  // for AppDict. Please update it whenever you add or remove any keys here.
   app_dict->SetString("id", app_data.app_id);
   app_dict->SetString("name", app_data.name);
   app_dict->SetString("iconURL", icon_url);

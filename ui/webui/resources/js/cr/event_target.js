@@ -62,7 +62,7 @@ cr.define('cr', function() {
     /**
      * Dispatches an event and calls all the listeners that are listening to
      * the type of the event.
-     * @param {!cr.event.Event} event The event to dispatch.
+     * @param {!Event} event The event to dispatch.
      * @return {boolean} Whether the default action was prevented. If someone
      *     calls preventDefault on the event object then this returns false.
      */

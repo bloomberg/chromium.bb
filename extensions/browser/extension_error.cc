@@ -158,6 +158,10 @@ RuntimeError::~RuntimeError() {
 }
 
 scoped_ptr<DictionaryValue> RuntimeError::ToValue() const {
+  // The items which are to be written into value are also described in
+  // chrome/browser/resources/extensions/extension_error_overlay.js in @typedef
+  // for RuntimeError and StackTrace. Please update them whenever you add or
+  // remove any keys here.
   scoped_ptr<DictionaryValue> value = ExtensionError::ToValue();
   value->SetString(kContextUrlKey, context_url_.spec());
   value->SetInteger(kRenderViewIdKey, render_view_id_);

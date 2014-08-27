@@ -16,6 +16,7 @@ cr.define('cr.ui', function() {
    *   doDragLeave
    *   doDragOver
    *   doDrop
+   * @constructor
    */
   function DragWrapper(target, handler) {
     this.initialize(target, handler);

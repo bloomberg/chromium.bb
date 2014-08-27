@@ -261,7 +261,7 @@ without changes to the corresponding grd file. -->
                  file="js/cr/ui/alert_overlay.js" type="chrome_html" />
       <structure name="IDR_WEBUI_JS_CR_UI_ARRAY_DATA_MODEL"
                  file="js/cr/ui/array_data_model.js"
-                 type="chrome_html" />
+                 type="chrome_html" flattenhtml="true" />
       <structure name="IDR_WEBUI_JS_CR_UI_AUTOCOMPLETE_LIST"
                  file="js/cr/ui/autocomplete_list.js"
                  type="chrome_html" />

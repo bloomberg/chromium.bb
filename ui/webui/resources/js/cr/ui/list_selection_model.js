@@ -11,7 +11,7 @@ cr.define('cr.ui', function() {
    * @param {number=} opt_length The number items in the selection.
    *
    * @constructor
-   * @extends {!cr.EventTarget}
+   * @extends {cr.EventTarget}
    */
   function ListSelectionModel(opt_length) {
     this.length_ = opt_length || 0;
@@ -100,7 +100,7 @@ cr.define('cr.ui', function() {
     /**
      * Returns the nearest selected index or -1 if no item selected.
      * @param {number} index The origin index.
-     * @type {number}
+     * @return {number}
      * @private
      */
     getNearestSelectedIndex_: function(index) {
@@ -163,7 +163,7 @@ cr.define('cr.ui', function() {
     unselectAll: function() {
       this.beginChange();
       for (var i in this.selectedIndexes_) {
-        this.setIndexSelected(i, false);
+        this.setIndexSelected(+i, false);
       }
       this.endChange();
     },

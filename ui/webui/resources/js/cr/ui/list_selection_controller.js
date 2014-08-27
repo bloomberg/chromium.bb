@@ -14,7 +14,7 @@ cr.define('cr.ui', function() {
    *     interact with.
    *
    * @constructor
-   * @extends {!cr.EventTarget}
+   * @extends {cr.EventTarget}
    */
   function ListSelectionController(selectionModel) {
     this.selectionModel_ = selectionModel;
