@@ -36,7 +36,7 @@ WebRtcLocalAudioSourceProvider::WebRtcLocalAudioSourceProvider(
     int sample_rate = hardware_config->GetOutputSampleRate();
     sink_params_.Reset(
         media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
-        media::CHANNEL_LAYOUT_STEREO, 2, 0, sample_rate, 16,
+        media::CHANNEL_LAYOUT_STEREO, 2, sample_rate, 16,
         kWebAudioRenderBufferSize);
   }
 

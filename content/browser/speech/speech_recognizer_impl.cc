@@ -556,7 +556,6 @@ SpeechRecognizerImpl::StartRecording(const FSMEventArgs&) {
     input_parameters.Reset(in_params.format(),
                            in_params.channel_layout(),
                            in_params.channels(),
-                           in_params.input_channels(),
                            in_params.sample_rate(),
                            in_params.bits_per_sample(),
                            frames_per_buffer);

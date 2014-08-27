@@ -305,7 +305,7 @@ AudioParameters AudioManagerWin::GetInputStreamParameters(
   if (!core_audio_supported()) {
     // Windows Wave implementation is being used.
     parameters = AudioParameters(
-        AudioParameters::AUDIO_PCM_LINEAR, CHANNEL_LAYOUT_STEREO, 0, 48000,
+        AudioParameters::AUDIO_PCM_LINEAR, CHANNEL_LAYOUT_STEREO, 48000,
         16, kFallbackBufferSize, AudioParameters::NO_EFFECTS);
   } else  {
     parameters = WASAPIAudioInputStream::GetInputStreamParameters(device_id);
@@ -314,9 +314,8 @@ AudioParameters AudioManagerWin::GetInputStreamParameters(
   int user_buffer_size = GetUserBufferSize();
   if (user_buffer_size) {
     parameters.Reset(parameters.format(), parameters.channel_layout(),
-                     parameters.channels(), parameters.input_channels(),
-                     parameters.sample_rate(), parameters.bits_per_sample(),
-                     user_buffer_size);
+                     parameters.channels(), parameters.sample_rate(),
+                     parameters.bits_per_sample(), user_buffer_size);
   }
 
   return parameters;
@@ -422,7 +421,6 @@ AudioParameters AudioManagerWin::GetPreferredOutputStreamParameters(
   int sample_rate = 48000;
   int buffer_size = kFallbackBufferSize;
   int bits_per_sample = 16;
-  int input_channels = 0;
   int effects = AudioParameters::NO_EFFECTS;
   bool use_input_params = !core_audio_supported();
   if (core_audio_supported()) {
@@ -487,7 +485,7 @@ AudioParameters AudioManagerWin::GetPreferredOutputStreamParameters(
         }
       }
     }
-    input_channels = input_params.input_channels();
+
     effects |= input_params.effects();
     if (use_input_params) {
       // If WASAPI isn't supported we'll fallback to WaveOut, which will take
@@ -507,7 +505,7 @@ AudioParameters AudioManagerWin::GetPreferredOutputStreamParameters(
     buffer_size = user_buffer_size;
 
   return AudioParameters(
-      AudioParameters::AUDIO_PCM_LOW_LATENCY, channel_layout, input_channels,
+      AudioParameters::AUDIO_PCM_LOW_LATENCY, channel_layout,
       sample_rate, bits_per_sample, buffer_size, effects);
 }
 

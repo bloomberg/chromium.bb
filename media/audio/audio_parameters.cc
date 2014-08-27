@@ -16,7 +16,6 @@ AudioParameters::AudioParameters()
       bits_per_sample_(0),
       frames_per_buffer_(0),
       channels_(0),
-      input_channels_(0),
       effects_(NO_EFFECTS) {
 }
 
@@ -29,12 +28,10 @@ AudioParameters::AudioParameters(Format format, ChannelLayout channel_layout,
       bits_per_sample_(bits_per_sample),
       frames_per_buffer_(frames_per_buffer),
       channels_(ChannelLayoutToChannelCount(channel_layout)),
-      input_channels_(0),
       effects_(NO_EFFECTS) {
 }
 
 AudioParameters::AudioParameters(Format format, ChannelLayout channel_layout,
-                                 int input_channels,
                                  int sample_rate, int bits_per_sample,
                                  int frames_per_buffer, int effects)
     : format_(format),
@@ -43,37 +40,33 @@ AudioParameters::AudioParameters(Format format, ChannelLayout channel_layout,
       bits_per_sample_(bits_per_sample),
       frames_per_buffer_(frames_per_buffer),
       channels_(ChannelLayoutToChannelCount(channel_layout)),
-      input_channels_(input_channels),
       effects_(effects) {
 }
 
 AudioParameters::AudioParameters(Format format, ChannelLayout channel_layout,
-                                 int channels, int input_channels,
-                                 int sample_rate, int bits_per_sample,
-                                 int frames_per_buffer, int effects)
+                                 int channels, int sample_rate,
+                                 int bits_per_sample, int frames_per_buffer,
+                                 int effects)
     : format_(format),
       channel_layout_(channel_layout),
       sample_rate_(sample_rate),
       bits_per_sample_(bits_per_sample),
       frames_per_buffer_(frames_per_buffer),
       channels_(channels),
-      input_channels_(input_channels),
       effects_(effects) {
   if (channel_layout != CHANNEL_LAYOUT_DISCRETE)
     DCHECK_EQ(channels, ChannelLayoutToChannelCount(channel_layout));
 }
 
 void AudioParameters::Reset(Format format, ChannelLayout channel_layout,
-                            int channels, int input_channels,
-                            int sample_rate, int bits_per_sample,
-                            int frames_per_buffer) {
+                            int channels, int sample_rate,
+                            int bits_per_sample, int frames_per_buffer) {
   if (channel_layout != CHANNEL_LAYOUT_DISCRETE)
     DCHECK_EQ(channels, ChannelLayoutToChannelCount(channel_layout));
 
   format_ = format;
   channel_layout_ = channel_layout;
   channels_ = channels;
-  input_channels_ = input_channels;
   sample_rate_ = sample_rate;
   bits_per_sample_ = bits_per_sample;
   frames_per_buffer_ = frames_per_buffer;
@@ -86,8 +79,6 @@ bool AudioParameters::IsValid() const {
          (channels_ <= media::limits::kMaxChannels) &&
          (channel_layout_ > CHANNEL_LAYOUT_UNSUPPORTED) &&
          (channel_layout_ <= CHANNEL_LAYOUT_MAX) &&
-         (input_channels_ >= 0) &&
-         (input_channels_ <= media::limits::kMaxChannels) &&
          (sample_rate_ >= media::limits::kMinSampleRate) &&
          (sample_rate_ <= media::limits::kMaxSampleRate) &&
          (bits_per_sample_ > 0) &&

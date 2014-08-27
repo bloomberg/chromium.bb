@@ -30,7 +30,6 @@ class MediaInternalsTest
                               base::Unretained(this))),
         test_params_(media::AudioParameters::AUDIO_PCM_LINEAR,
                      media::CHANNEL_LAYOUT_MONO,
-                     0,
                      48000,
                      16,
                      128,
@@ -97,7 +96,6 @@ TEST_P(MediaInternalsTest, AudioLogCreateStartStopErrorClose) {
   ExpectInt("sample_rate", test_params_.sample_rate());
   ExpectInt("frames_per_buffer", test_params_.frames_per_buffer());
   ExpectInt("channels", test_params_.channels());
-  ExpectInt("input_channels", test_params_.input_channels());
   ExpectString("effects", "ECHO_CANCELLER | DUCKING");
   ExpectString("device_id", kTestDeviceID);
   ExpectInt("component_id", kTestComponentID);

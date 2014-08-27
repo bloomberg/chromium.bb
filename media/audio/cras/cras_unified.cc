@@ -21,30 +21,6 @@ namespace media {
 // 5) Finally Close() is called. It cleans up and notifies the audio manager,
 // which likely will destroy this object.
 //
-// For output-only streams, a unified stream is created with 0 input channels.
-//
-// Simplified data flow for unified streams:
-//
-//   +-------------+                  +------------------+
-//   | CRAS Server |                  | Chrome Client    |
-//   +------+------+    Add Stream    +---------+--------+
-//          |<----------------------------------|
-//          |                                   |
-//          |  buffer_frames captured to shm    |
-//          |---------------------------------->|
-//          |                                   |  UnifiedCallback()
-//          |                                   |  ReadWriteAudio()
-//          |                                   |
-//          |  buffer_frames written to shm     |
-//          |<----------------------------------|
-//          |                                   |
-//         ...  Repeats for each block.        ...
-//          |                                   |
-//          |                                   |
-//          |  Remove stream                    |
-//          |<----------------------------------|
-//          |                                   |
-//
 // Simplified data flow for output only streams:
 //
 //   +-------------+                  +------------------+
@@ -85,18 +61,6 @@ CrasUnifiedStream::CrasUnifiedStream(const AudioParameters& params,
       stream_direction_(CRAS_STREAM_OUTPUT) {
   DCHECK(manager_);
   DCHECK(params_.channels()  > 0);
-
-  // Must have at least one input or output.  If there are both they must be the
-  // same.
-  int input_channels = params_.input_channels();
-
-  if (input_channels) {
-    // A unified stream for input and output.
-    DCHECK(params_.channels() == input_channels);
-    stream_direction_ = CRAS_STREAM_UNIFIED;
-    input_bus_ = AudioBus::Create(input_channels,
-                                  params_.frames_per_buffer());
-  }
 
   output_bus_ = AudioBus::Create(params);
 }
@@ -325,45 +289,11 @@ uint32 CrasUnifiedStream::DispatchCallback(size_t frames,
     case CRAS_STREAM_INPUT:
       NOTREACHED() << "CrasUnifiedStream doesn't support input streams.";
       return 0;
-    case CRAS_STREAM_UNIFIED:
-      return ReadWriteAudio(frames, input_samples, output_samples,
-                            input_ts, output_ts);
     default:
       break;
   }
 
   return 0;
-}
-
-// Note these are run from a real time thread, so don't waste cycles here.
-uint32 CrasUnifiedStream::ReadWriteAudio(size_t frames,
-                                         uint8* input_samples,
-                                         uint8* output_samples,
-                                         const timespec* input_ts,
-                                         const timespec* output_ts) {
-  DCHECK_EQ(frames, static_cast<size_t>(output_bus_->frames()));
-  DCHECK(source_callback_);
-
-  uint32 bytes_per_sample = bytes_per_frame_ / params_.channels();
-  input_bus_->FromInterleaved(input_samples, frames, bytes_per_sample);
-
-  // Determine latency and pass that on to the source.  We have the capture time
-  // of the first input sample and the playback time of the next audio sample
-  // passed from the audio server, add them together for total latency.
-  uint32 total_delay_bytes;
-  timespec latency_ts  = {0, 0};
-  cras_client_calc_capture_latency(input_ts, &latency_ts);
-  total_delay_bytes = GetBytesLatency(latency_ts);
-  cras_client_calc_playback_latency(output_ts, &latency_ts);
-  total_delay_bytes += GetBytesLatency(latency_ts);
-
-  int frames_filled = source_callback_->OnMoreData(
-      output_bus_.get(),
-      AudioBuffersState(0, total_delay_bytes));
-
-  output_bus_->ToInterleaved(frames_filled, bytes_per_sample, output_samples);
-
-  return frames_filled;
 }
 
 uint32 CrasUnifiedStream::WriteAudio(size_t frames,

@@ -698,8 +698,8 @@ HRESULT CoreAudioUtil::GetPreferredAudioParameters(
   if (role == eCommunications) {
     // Raise the 'DUCKING' flag for default communication devices.
     *params = AudioParameters(params->format(), params->channel_layout(),
-        params->channels(), params->input_channels(), params->sample_rate(),
-        params->bits_per_sample(), params->frames_per_buffer(),
+        params->channels(), params->sample_rate(), params->bits_per_sample(),
+        params->frames_per_buffer(),
         params->effects() | AudioParameters::DUCKING);
   }
 

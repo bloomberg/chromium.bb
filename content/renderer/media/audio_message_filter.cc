@@ -234,7 +234,6 @@ void AudioMessageFilter::OnOutputDeviceChanged(int stream_id,
       media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
       channel_layout,
       channels,
-      0,
       new_sample_rate,
       16,
       new_buffer_size);

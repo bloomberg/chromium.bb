@@ -218,7 +218,7 @@ WebRtcAudioRenderer::WebRtcAudioRenderer(
       audio_delay_milliseconds_(0),
       fifo_delay_milliseconds_(0),
       sink_params_(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
-                   media::CHANNEL_LAYOUT_STEREO, 0, sample_rate, 16,
+                   media::CHANNEL_LAYOUT_STEREO, sample_rate, 16,
                    frames_per_buffer,
                    GetCurrentDuckingFlag(source_render_frame_id)) {
   WebRtcLogMessage(base::StringPrintf(
@@ -285,7 +285,7 @@ bool WebRtcAudioRenderer::Initialize(WebRtcAudioRendererSource* source) {
   DVLOG(1) << "Using WebRTC output buffer size: " << frames_per_10ms;
 
   source_params.Reset(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
-                      sink_params_.channel_layout(), sink_params_.channels(), 0,
+                      sink_params_.channel_layout(), sink_params_.channels(),
                       sample_rate, 16, frames_per_10ms);
 
   // Update audio parameters for the sink, i.e., the native audio output stream.
@@ -312,7 +312,7 @@ bool WebRtcAudioRenderer::Initialize(WebRtcAudioRendererSource* source) {
   DVLOG(1) << "Using sink output buffer size: " << frames_per_buffer;
 
   sink_params_.Reset(sink_params_.format(), sink_params_.channel_layout(),
-                     sink_params_.channels(), 0, sample_rate, 16,
+                     sink_params_.channels(), sample_rate, 16,
                      frames_per_buffer);
 
   // Create a FIFO if re-buffering is required to match the source input with

@@ -357,8 +357,6 @@ void AudioRendererHost::OnCreateStream(
     output_device_id = info->device.matched_output_device_id;
 
   // Create the shared memory and share with the renderer process.
-  // For synchronized I/O (if input_channels > 0) then we allocate
-  // extra memory after the output data for the input data.
   uint32 shared_memory_size = AudioBus::CalculateMemorySize(params);
   scoped_ptr<base::SharedMemory> shared_memory(new base::SharedMemory());
   if (!shared_memory->CreateAndMapAnonymous(shared_memory_size)) {

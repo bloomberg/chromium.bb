@@ -327,7 +327,7 @@ void WebRtcAudioCapturer::SetCapturerSource(
   // bits_per_sample is always 16 for now.
   int buffer_size = GetBufferSize(sample_rate);
   media::AudioParameters params(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
-                                channel_layout, 0, sample_rate,
+                                channel_layout, sample_rate,
                                 16, buffer_size,
                                 device_info_.device.input.effects);
 

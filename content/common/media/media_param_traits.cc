@@ -24,7 +24,6 @@ void ParamTraits<AudioParameters>::Write(Message* m,
   m->WriteInt(p.bits_per_sample());
   m->WriteInt(p.frames_per_buffer());
   m->WriteInt(p.channels());
-  m->WriteInt(p.input_channels());
   m->WriteInt(p.effects());
 }
 
@@ -32,7 +31,7 @@ bool ParamTraits<AudioParameters>::Read(const Message* m,
                                         PickleIterator* iter,
                                         AudioParameters* r) {
   int format, channel_layout, sample_rate, bits_per_sample,
-      frames_per_buffer, channels, input_channels, effects;
+      frames_per_buffer, channels, effects;
 
   if (!m->ReadInt(iter, &format) ||
       !m->ReadInt(iter, &channel_layout) ||
@@ -40,13 +39,12 @@ bool ParamTraits<AudioParameters>::Read(const Message* m,
       !m->ReadInt(iter, &bits_per_sample) ||
       !m->ReadInt(iter, &frames_per_buffer) ||
       !m->ReadInt(iter, &channels) ||
-      !m->ReadInt(iter, &input_channels) ||
       !m->ReadInt(iter, &effects))
     return false;
+
   AudioParameters params(static_cast<AudioParameters::Format>(format),
          static_cast<ChannelLayout>(channel_layout), channels,
-         input_channels, sample_rate, bits_per_sample, frames_per_buffer,
-         effects);
+         sample_rate, bits_per_sample, frames_per_buffer, effects);
   *r = params;
   if (!r->IsValid())
     return false;

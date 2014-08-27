@@ -282,8 +282,7 @@ void WebRtcLocalAudioRenderer::ReconfigureSink(
   source_params_ = params;
 
   sink_params_ = media::AudioParameters(source_params_.format(),
-      source_params_.channel_layout(), source_params_.channels(),
-      source_params_.input_channels(), source_params_.sample_rate(),
+      source_params_.channel_layout(), source_params_.sample_rate(),
       source_params_.bits_per_sample(),
 #if defined(OS_ANDROID)
       // On Android, input and output use the same sample rate. In order to

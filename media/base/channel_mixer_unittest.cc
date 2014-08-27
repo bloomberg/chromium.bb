@@ -107,7 +107,6 @@ TEST_P(ChannelMixerTest, Mixing) {
                               input_layout == CHANNEL_LAYOUT_DISCRETE ?
                                   input_channels :
                                   ChannelLayoutToChannelCount(input_layout),
-                              0,
                               AudioParameters::kAudioCDSampleRate, 16,
                               kFrames,
                               AudioParameters::NO_EFFECTS);
@@ -118,9 +117,8 @@ TEST_P(ChannelMixerTest, Mixing) {
   AudioParameters output_audio(AudioParameters::AUDIO_PCM_LINEAR,
                                output_layout,
                                output_layout == CHANNEL_LAYOUT_DISCRETE ?
-                                  output_channels :
-                                  ChannelLayoutToChannelCount(output_layout),
-                               0,
+                                   output_channels :
+                                   ChannelLayoutToChannelCount(output_layout),
                                AudioParameters::kAudioCDSampleRate, 16,
                                kFrames,
                                AudioParameters::NO_EFFECTS);
