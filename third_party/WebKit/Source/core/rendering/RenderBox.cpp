@@ -4179,21 +4179,20 @@ LayoutBoxExtent RenderBox::computeVisualEffectOverflowExtent() const
         left = std::max(left, borderOutsets.left());
     }
 
-    RenderStyle* outlineStyle = this->outlineStyle();
-    if (outlineStyle->hasOutline()) {
-        if (outlineStyle->outlineStyleIsAuto()) {
+    if (style()->hasOutline()) {
+        if (style()->outlineStyleIsAuto()) {
             // The result focus ring rects are in coordinates of this object's border box.
             Vector<IntRect> focusRingRects;
             addFocusRingRects(focusRingRects, LayoutPoint(), this);
             IntRect rect = unionRect(focusRingRects);
 
-            int outlineSize = GraphicsContext::focusRingOutsetExtent(outlineStyle->outlineOffset(), outlineStyle->outlineWidth());
+            int outlineSize = GraphicsContext::focusRingOutsetExtent(style()->outlineOffset(), style()->outlineWidth());
             top = std::max<LayoutUnit>(top, -rect.y() + outlineSize);
             right = std::max<LayoutUnit>(right, rect.maxX() - width() + outlineSize);
             bottom = std::max<LayoutUnit>(bottom, rect.maxY() - height() + outlineSize);
             left = std::max<LayoutUnit>(left, -rect.x() + outlineSize);
         } else {
-            LayoutUnit outlineSize = outlineStyle->outlineSize();
+            LayoutUnit outlineSize = style()->outlineSize();
             top = std::max(top, outlineSize);
             right = std::max(right, outlineSize);
             bottom = std::max(bottom, outlineSize);

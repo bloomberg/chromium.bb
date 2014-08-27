@@ -4389,21 +4389,6 @@ void RenderBlock::updateDragState(bool dragOn)
         continuation()->updateDragState(dragOn);
 }
 
-RenderStyle* RenderBlock::outlineStyle() const
-{
-    if (!isAnonymousBlockContinuation())
-        return style();
-
-    RenderStyle* continuationStyle = continuation()->style();
-
-    // Don't propagate auto outline to continuations, because the renderer having
-    // auto outline will handle invalidation and painting of the whole outline.
-    if (continuationStyle->outlineStyleIsAuto() == AUTO_ON)
-        return style();
-
-    return continuationStyle;
-}
-
 void RenderBlock::childBecameNonInline(RenderObject*)
 {
     makeChildrenNonInline();

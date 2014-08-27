@@ -650,7 +650,7 @@ public:
     LocalFrame* frame() const { return document().frame(); }
 
     bool hasOutlineAnnotation() const;
-    bool hasOutline() const { return outlineStyle()->hasOutline() || hasOutlineAnnotation(); }
+    bool hasOutline() const { return style()->hasOutline() || hasOutlineAnnotation(); }
 
     // Returns the object containing this one. Can be different from parent for positioned elements.
     // If paintInvalidationContainer and paintInvalidationContainerSkipped are not null, on return *paintInvalidationContainerSkipped
@@ -829,9 +829,6 @@ public:
     // Used only by Element::pseudoStyleCacheIsInvalid to get a first line style based off of a
     // given new style, without accessing the cache.
     PassRefPtr<RenderStyle> uncachedFirstLineStyle(RenderStyle*) const;
-
-    // Anonymous blocks that are part of of a continuation chain will return their inline continuation's outline style instead.
-    virtual RenderStyle* outlineStyle() const { return style(); }
 
     virtual CursorDirective getCursor(const LayoutPoint&, Cursor&) const;
 
