@@ -19,9 +19,9 @@ class ScriptValue;
 
 // This class observes the service worker's handling of a FetchEvent and
 // notifies the client.
-class RespondWithObserver FINAL : public RefCountedWillBeGarbageCollectedFinalized<RespondWithObserver>, public ContextLifecycleObserver {
+class RespondWithObserver FINAL : public ContextLifecycleObserver, public RefCounted<RespondWithObserver> {
 public:
-    static PassRefPtrWillBeRawPtr<RespondWithObserver> create(ExecutionContext*, int eventID);
+    static PassRefPtr<RespondWithObserver> create(ExecutionContext*, int eventID);
     ~RespondWithObserver();
 
     virtual void contextDestroyed() OVERRIDE;
@@ -34,8 +34,6 @@ public:
 
     void responseWasRejected();
     void responseWasFulfilled(const ScriptValue&);
-
-    void trace(Visitor*) { }
 
 private:
     class ThenFunction;

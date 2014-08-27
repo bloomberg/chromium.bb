@@ -25,14 +25,14 @@ public:
         Rejected,
     };
 
-    static PassOwnPtr<ScriptFunction> create(RespondWithObserver* observer, ResolveType type)
+    static PassOwnPtr<ScriptFunction> create(PassRefPtr<RespondWithObserver> observer, ResolveType type)
     {
         ExecutionContext* executionContext = observer->executionContext();
         return adoptPtr(new ThenFunction(toIsolate(executionContext), observer, type));
     }
 
 private:
-    ThenFunction(v8::Isolate* isolate, RespondWithObserver* observer, ResolveType type)
+    ThenFunction(v8::Isolate* isolate, PassRefPtr<RespondWithObserver> observer, ResolveType type)
         : ScriptFunction(isolate)
         , m_observer(observer)
         , m_resolveType(type)
@@ -51,13 +51,13 @@ private:
         return value;
     }
 
-    RefPtrWillBePersistent<RespondWithObserver> m_observer;
+    RefPtr<RespondWithObserver> m_observer;
     ResolveType m_resolveType;
 };
 
-PassRefPtrWillBeRawPtr<RespondWithObserver> RespondWithObserver::create(ExecutionContext* context, int eventID)
+PassRefPtr<RespondWithObserver> RespondWithObserver::create(ExecutionContext* context, int eventID)
 {
-    return adoptRefWillBeNoop(new RespondWithObserver(context, eventID));
+    return adoptRef(new RespondWithObserver(context, eventID));
 }
 
 RespondWithObserver::~RespondWithObserver()

@@ -26,14 +26,14 @@ public:
         Rejected,
     };
 
-    static PassOwnPtr<ScriptFunction> create(PassRefPtrWillBeRawPtr<WaitUntilObserver> observer, ResolveType type)
+    static PassOwnPtr<ScriptFunction> create(PassRefPtr<WaitUntilObserver> observer, ResolveType type)
     {
         ExecutionContext* executionContext = observer->executionContext();
         return adoptPtr(new ThenFunction(toIsolate(executionContext), observer, type));
     }
 
 private:
-    ThenFunction(v8::Isolate* isolate, PassRefPtrWillBeRawPtr<WaitUntilObserver> observer, ResolveType type)
+    ThenFunction(v8::Isolate* isolate, PassRefPtr<WaitUntilObserver> observer, ResolveType type)
         : ScriptFunction(isolate)
         , m_observer(observer)
         , m_resolveType(type)
@@ -51,13 +51,13 @@ private:
         return value;
     }
 
-    RefPtrWillBePersistent<WaitUntilObserver> m_observer;
+    RefPtr<WaitUntilObserver> m_observer;
     ResolveType m_resolveType;
 };
 
-PassRefPtrWillBeRawPtr<WaitUntilObserver> WaitUntilObserver::create(ExecutionContext* context, EventType type, int eventID)
+PassRefPtr<WaitUntilObserver> WaitUntilObserver::create(ExecutionContext* context, EventType type, int eventID)
 {
-    return adoptRefWillBeNoop(new WaitUntilObserver(context, type, eventID));
+    return adoptRef(new WaitUntilObserver(context, type, eventID));
 }
 
 WaitUntilObserver::~WaitUntilObserver()

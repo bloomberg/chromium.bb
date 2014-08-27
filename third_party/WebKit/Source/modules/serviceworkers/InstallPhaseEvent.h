@@ -41,7 +41,7 @@ class WaitUntilObserver;
 class InstallPhaseEvent : public Event {
 public:
     static PassRefPtrWillBeRawPtr<InstallPhaseEvent> create();
-    static PassRefPtrWillBeRawPtr<InstallPhaseEvent> create(const AtomicString& type, const EventInit&, PassRefPtrWillBeRawPtr<WaitUntilObserver>);
+    static PassRefPtrWillBeRawPtr<InstallPhaseEvent> create(const AtomicString& type, const EventInit&, PassRefPtr<WaitUntilObserver>);
 
     virtual ~InstallPhaseEvent();
 
@@ -52,9 +52,9 @@ public:
 
 protected:
     InstallPhaseEvent();
-    InstallPhaseEvent(const AtomicString& type, const EventInit&, PassRefPtrWillBeRawPtr<WaitUntilObserver>);
+    InstallPhaseEvent(const AtomicString& type, const EventInit&, PassRefPtr<WaitUntilObserver>);
 
-    RefPtrWillBeMember<WaitUntilObserver> m_observer;
+    RefPtr<WaitUntilObserver> m_observer;
 };
 
 } // namespace blink

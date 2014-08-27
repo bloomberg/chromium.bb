@@ -17,14 +17,16 @@ class ScriptState;
 class ScriptValue;
 
 // Created for each InstallPhaseEvent instance.
-class WaitUntilObserver FINAL : public RefCountedWillBeGarbageCollectedFinalized<WaitUntilObserver>, public ContextLifecycleObserver {
+class WaitUntilObserver FINAL
+    : public ContextLifecycleObserver
+    , public RefCounted<WaitUntilObserver> {
 public:
     enum EventType {
         Activate,
         Install
     };
 
-    static PassRefPtrWillBeRawPtr<WaitUntilObserver> create(ExecutionContext*, EventType, int eventID);
+    static PassRefPtr<WaitUntilObserver> create(ExecutionContext*, EventType, int eventID);
 
     ~WaitUntilObserver();
 
@@ -35,8 +37,6 @@ public:
     // Observes the promise and delays calling the continuation until
     // the given promise is resolved or rejected.
     void waitUntil(ScriptState*, const ScriptValue&);
-
-    void trace(Visitor*) { }
 
 private:
     class ThenFunction;

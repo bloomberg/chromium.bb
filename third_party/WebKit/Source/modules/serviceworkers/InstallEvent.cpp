@@ -43,7 +43,7 @@ PassRefPtrWillBeRawPtr<InstallEvent> InstallEvent::create()
     return adoptRefWillBeNoop(new InstallEvent());
 }
 
-PassRefPtrWillBeRawPtr<InstallEvent> InstallEvent::create(const AtomicString& type, const EventInit& initializer, PassRefPtrWillBeRawPtr<WaitUntilObserver> observer)
+PassRefPtrWillBeRawPtr<InstallEvent> InstallEvent::create(const AtomicString& type, const EventInit& initializer, PassRefPtr<WaitUntilObserver> observer)
 {
     return adoptRefWillBeNoop(new InstallEvent(type, initializer, observer));
 }
@@ -73,7 +73,7 @@ InstallEvent::InstallEvent()
     ScriptWrappable::init(this);
 }
 
-InstallEvent::InstallEvent(const AtomicString& type, const EventInit& initializer, PassRefPtrWillBeRawPtr<WaitUntilObserver> observer)
+InstallEvent::InstallEvent(const AtomicString& type, const EventInit& initializer, PassRefPtr<WaitUntilObserver> observer)
     : InstallPhaseEvent(type, initializer, observer)
 {
     ScriptWrappable::init(this);
