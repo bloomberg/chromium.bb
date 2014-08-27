@@ -64,7 +64,7 @@ void WebRtcMediaStreamAdapter::TrackRemoved(
 
     for (ScopedVector<WebRtcVideoTrackAdapter>::iterator it =
              video_adapters_.begin(); it != video_adapters_.end(); ++it) {
-      if ((*it)->webrtc_video_track() == webrtc_track) {
+      if ((*it)->webrtc_video_track() == webrtc_track.get()) {
         video_adapters_.erase(it);
         break;
       }
@@ -93,7 +93,7 @@ void WebRtcMediaStreamAdapter::CreateAudioTrack(
   const blink::WebMediaStreamSource& source = track.source();
   MediaStreamAudioSource* audio_source =
       static_cast<MediaStreamAudioSource*>(source.extraData());
-  if (audio_source && audio_source->GetAudioCapturer())
+  if (audio_source && audio_source->GetAudioCapturer().get())
     audio_source->GetAudioCapturer()->EnablePeerConnectionMode();
 
   webrtc_media_stream_->AddTrack(native_track->GetAudioAdapter());

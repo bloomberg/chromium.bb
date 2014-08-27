@@ -135,9 +135,9 @@ TEST_F(MediaStreamTrackMetricsTest, MakeUniqueId) {
 TEST_F(MediaStreamTrackMetricsTest, BasicRemoteStreams) {
   scoped_refptr<MockAudioTrackInterface> audio(MakeAudioTrack("audio"));
   scoped_refptr<MockVideoTrackInterface> video(MakeVideoTrack("video"));
-  stream_->AddTrack(audio);
-  stream_->AddTrack(video);
-  metrics_->AddStream(MediaStreamTrackMetrics::RECEIVED_STREAM, stream_);
+  stream_->AddTrack(audio.get());
+  stream_->AddTrack(video.get());
+  metrics_->AddStream(MediaStreamTrackMetrics::RECEIVED_STREAM, stream_.get());
 
   EXPECT_CALL(*metrics_,
               SendLifetimeMessage("audio",
@@ -169,9 +169,9 @@ TEST_F(MediaStreamTrackMetricsTest, BasicRemoteStreams) {
 TEST_F(MediaStreamTrackMetricsTest, BasicLocalStreams) {
   scoped_refptr<MockAudioTrackInterface> audio(MakeAudioTrack("audio"));
   scoped_refptr<MockVideoTrackInterface> video(MakeVideoTrack("video"));
-  stream_->AddTrack(audio);
-  stream_->AddTrack(video);
-  metrics_->AddStream(MediaStreamTrackMetrics::SENT_STREAM, stream_);
+  stream_->AddTrack(audio.get());
+  stream_->AddTrack(video.get());
+  metrics_->AddStream(MediaStreamTrackMetrics::SENT_STREAM, stream_.get());
 
   EXPECT_CALL(*metrics_,
               SendLifetimeMessage("audio",
@@ -216,9 +216,9 @@ TEST_F(MediaStreamTrackMetricsTest, LocalStreamAddedAferIceConnect) {
 
   scoped_refptr<MockAudioTrackInterface> audio(MakeAudioTrack("audio"));
   scoped_refptr<MockVideoTrackInterface> video(MakeVideoTrack("video"));
-  stream_->AddTrack(audio);
-  stream_->AddTrack(video);
-  metrics_->AddStream(MediaStreamTrackMetrics::SENT_STREAM, stream_);
+  stream_->AddTrack(audio.get());
+  stream_->AddTrack(video.get());
+  metrics_->AddStream(MediaStreamTrackMetrics::SENT_STREAM, stream_.get());
 }
 
 TEST_F(MediaStreamTrackMetricsTest, RemoteStreamAddedAferIceConnect) {
@@ -238,16 +238,16 @@ TEST_F(MediaStreamTrackMetricsTest, RemoteStreamAddedAferIceConnect) {
 
   scoped_refptr<MockAudioTrackInterface> audio(MakeAudioTrack("audio"));
   scoped_refptr<MockVideoTrackInterface> video(MakeVideoTrack("video"));
-  stream_->AddTrack(audio);
-  stream_->AddTrack(video);
-  metrics_->AddStream(MediaStreamTrackMetrics::RECEIVED_STREAM, stream_);
+  stream_->AddTrack(audio.get());
+  stream_->AddTrack(video.get());
+  metrics_->AddStream(MediaStreamTrackMetrics::RECEIVED_STREAM, stream_.get());
 }
 
 TEST_F(MediaStreamTrackMetricsTest, RemoteStreamTrackAdded) {
   scoped_refptr<MockAudioTrackInterface> initial(MakeAudioTrack("initial"));
   scoped_refptr<MockAudioTrackInterface> added(MakeAudioTrack("added"));
-  stream_->AddTrack(initial);
-  metrics_->AddStream(MediaStreamTrackMetrics::RECEIVED_STREAM, stream_);
+  stream_->AddTrack(initial.get());
+  metrics_->AddStream(MediaStreamTrackMetrics::RECEIVED_STREAM, stream_.get());
 
   EXPECT_CALL(*metrics_,
               SendLifetimeMessage("initial",
@@ -262,7 +262,7 @@ TEST_F(MediaStreamTrackMetricsTest, RemoteStreamTrackAdded) {
                                   MediaStreamTrackMetrics::AUDIO_TRACK,
                                   MediaStreamTrackMetrics::CONNECTED,
                                   MediaStreamTrackMetrics::RECEIVED_STREAM));
-  stream_->AddTrack(added);
+  stream_->AddTrack(added.get());
 
   EXPECT_CALL(*metrics_,
               SendLifetimeMessage("initial",
@@ -280,9 +280,9 @@ TEST_F(MediaStreamTrackMetricsTest, RemoteStreamTrackAdded) {
 TEST_F(MediaStreamTrackMetricsTest, LocalStreamTrackRemoved) {
   scoped_refptr<MockAudioTrackInterface> first(MakeAudioTrack("first"));
   scoped_refptr<MockAudioTrackInterface> second(MakeAudioTrack("second"));
-  stream_->AddTrack(first);
-  stream_->AddTrack(second);
-  metrics_->AddStream(MediaStreamTrackMetrics::SENT_STREAM, stream_);
+  stream_->AddTrack(first.get());
+  stream_->AddTrack(second.get());
+  metrics_->AddStream(MediaStreamTrackMetrics::SENT_STREAM, stream_.get());
 
   EXPECT_CALL(*metrics_,
               SendLifetimeMessage("first",
@@ -302,7 +302,7 @@ TEST_F(MediaStreamTrackMetricsTest, LocalStreamTrackRemoved) {
                                   MediaStreamTrackMetrics::AUDIO_TRACK,
                                   MediaStreamTrackMetrics::DISCONNECTED,
                                   MediaStreamTrackMetrics::SENT_STREAM));
-  stream_->RemoveTrack(first);
+  stream_->RemoveTrack(first.get());
 
   EXPECT_CALL(*metrics_,
               SendLifetimeMessage("second",
@@ -315,13 +315,13 @@ TEST_F(MediaStreamTrackMetricsTest, LocalStreamTrackRemoved) {
 TEST_F(MediaStreamTrackMetricsTest, LocalStreamModificationsBeforeAndAfter) {
   scoped_refptr<MockAudioTrackInterface> first(MakeAudioTrack("first"));
   scoped_refptr<MockAudioTrackInterface> second(MakeAudioTrack("second"));
-  stream_->AddTrack(first);
-  metrics_->AddStream(MediaStreamTrackMetrics::SENT_STREAM, stream_);
+  stream_->AddTrack(first.get());
+  metrics_->AddStream(MediaStreamTrackMetrics::SENT_STREAM, stream_.get());
 
   // This gets added after we start observing, but no lifetime message
   // should be sent at this point since the call is not connected. It
   // should get sent only once it gets connected.
-  stream_->AddTrack(second);
+  stream_->AddTrack(second.get());
 
   EXPECT_CALL(*metrics_,
               SendLifetimeMessage("first",
@@ -350,13 +350,13 @@ TEST_F(MediaStreamTrackMetricsTest, LocalStreamModificationsBeforeAndAfter) {
 
   // This happens after the call is disconnected so no lifetime
   // message should be sent.
-  stream_->RemoveTrack(first);
+  stream_->RemoveTrack(first.get());
 }
 
 TEST_F(MediaStreamTrackMetricsTest, RemoteStreamMultipleDisconnects) {
   scoped_refptr<MockAudioTrackInterface> audio(MakeAudioTrack("audio"));
-  stream_->AddTrack(audio);
-  metrics_->AddStream(MediaStreamTrackMetrics::RECEIVED_STREAM, stream_);
+  stream_->AddTrack(audio.get());
+  metrics_->AddStream(MediaStreamTrackMetrics::RECEIVED_STREAM, stream_.get());
 
   EXPECT_CALL(*metrics_,
               SendLifetimeMessage("audio",
@@ -374,13 +374,13 @@ TEST_F(MediaStreamTrackMetricsTest, RemoteStreamMultipleDisconnects) {
   metrics_->IceConnectionChange(
       PeerConnectionInterface::kIceConnectionDisconnected);
   metrics_->IceConnectionChange(PeerConnectionInterface::kIceConnectionFailed);
-  stream_->RemoveTrack(audio);
+  stream_->RemoveTrack(audio.get());
 }
 
 TEST_F(MediaStreamTrackMetricsTest, RemoteStreamConnectDisconnectTwice) {
   scoped_refptr<MockAudioTrackInterface> audio(MakeAudioTrack("audio"));
-  stream_->AddTrack(audio);
-  metrics_->AddStream(MediaStreamTrackMetrics::RECEIVED_STREAM, stream_);
+  stream_->AddTrack(audio.get());
+  metrics_->AddStream(MediaStreamTrackMetrics::RECEIVED_STREAM, stream_.get());
 
   for (size_t i = 0; i < 2; ++i) {
     EXPECT_CALL(*metrics_,
@@ -400,15 +400,15 @@ TEST_F(MediaStreamTrackMetricsTest, RemoteStreamConnectDisconnectTwice) {
         PeerConnectionInterface::kIceConnectionDisconnected);
   }
 
-  stream_->RemoveTrack(audio);
+  stream_->RemoveTrack(audio.get());
 }
 
 TEST_F(MediaStreamTrackMetricsTest, LocalStreamRemovedNoDisconnect) {
   scoped_refptr<MockAudioTrackInterface> audio(MakeAudioTrack("audio"));
   scoped_refptr<MockVideoTrackInterface> video(MakeVideoTrack("video"));
-  stream_->AddTrack(audio);
-  stream_->AddTrack(video);
-  metrics_->AddStream(MediaStreamTrackMetrics::SENT_STREAM, stream_);
+  stream_->AddTrack(audio.get());
+  stream_->AddTrack(video.get());
+  metrics_->AddStream(MediaStreamTrackMetrics::SENT_STREAM, stream_.get());
 
   EXPECT_CALL(*metrics_,
               SendLifetimeMessage("audio",
@@ -433,7 +433,7 @@ TEST_F(MediaStreamTrackMetricsTest, LocalStreamRemovedNoDisconnect) {
                                   MediaStreamTrackMetrics::VIDEO_TRACK,
                                   MediaStreamTrackMetrics::DISCONNECTED,
                                   MediaStreamTrackMetrics::SENT_STREAM));
-  metrics_->RemoveStream(MediaStreamTrackMetrics::SENT_STREAM, stream_);
+  metrics_->RemoveStream(MediaStreamTrackMetrics::SENT_STREAM, stream_.get());
 }
 
 TEST_F(MediaStreamTrackMetricsTest, LocalStreamLargerTest) {
@@ -443,9 +443,9 @@ TEST_F(MediaStreamTrackMetricsTest, LocalStreamLargerTest) {
   scoped_refptr<MockVideoTrackInterface> video1(MakeVideoTrack("video1"));
   scoped_refptr<MockVideoTrackInterface> video2(MakeVideoTrack("video2"));
   scoped_refptr<MockVideoTrackInterface> video3(MakeVideoTrack("video3"));
-  stream_->AddTrack(audio1);
-  stream_->AddTrack(video1);
-  metrics_->AddStream(MediaStreamTrackMetrics::SENT_STREAM, stream_);
+  stream_->AddTrack(audio1.get());
+  stream_->AddTrack(video1.get());
+  metrics_->AddStream(MediaStreamTrackMetrics::SENT_STREAM, stream_.get());
 
   EXPECT_CALL(*metrics_,
               SendLifetimeMessage("audio1",
@@ -465,33 +465,33 @@ TEST_F(MediaStreamTrackMetricsTest, LocalStreamLargerTest) {
                                   MediaStreamTrackMetrics::AUDIO_TRACK,
                                   MediaStreamTrackMetrics::CONNECTED,
                                   MediaStreamTrackMetrics::SENT_STREAM));
-  stream_->AddTrack(audio2);
+  stream_->AddTrack(audio2.get());
   EXPECT_CALL(*metrics_,
               SendLifetimeMessage("video2",
                                   MediaStreamTrackMetrics::VIDEO_TRACK,
                                   MediaStreamTrackMetrics::CONNECTED,
                                   MediaStreamTrackMetrics::SENT_STREAM));
-  stream_->AddTrack(video2);
+  stream_->AddTrack(video2.get());
 
   EXPECT_CALL(*metrics_,
               SendLifetimeMessage("audio1",
                                   MediaStreamTrackMetrics::AUDIO_TRACK,
                                   MediaStreamTrackMetrics::DISCONNECTED,
                                   MediaStreamTrackMetrics::SENT_STREAM));
-  stream_->RemoveTrack(audio1);
+  stream_->RemoveTrack(audio1.get());
 
   EXPECT_CALL(*metrics_,
               SendLifetimeMessage("audio3",
                                   MediaStreamTrackMetrics::AUDIO_TRACK,
                                   MediaStreamTrackMetrics::CONNECTED,
                                   MediaStreamTrackMetrics::SENT_STREAM));
-  stream_->AddTrack(audio3);
+  stream_->AddTrack(audio3.get());
   EXPECT_CALL(*metrics_,
               SendLifetimeMessage("video3",
                                   MediaStreamTrackMetrics::VIDEO_TRACK,
                                   MediaStreamTrackMetrics::CONNECTED,
                                   MediaStreamTrackMetrics::SENT_STREAM));
-  stream_->AddTrack(video3);
+  stream_->AddTrack(video3.get());
 
   // Add back audio1
   EXPECT_CALL(*metrics_,
@@ -499,33 +499,33 @@ TEST_F(MediaStreamTrackMetricsTest, LocalStreamLargerTest) {
                                   MediaStreamTrackMetrics::AUDIO_TRACK,
                                   MediaStreamTrackMetrics::CONNECTED,
                                   MediaStreamTrackMetrics::SENT_STREAM));
-  stream_->AddTrack(audio1);
+  stream_->AddTrack(audio1.get());
 
   EXPECT_CALL(*metrics_,
               SendLifetimeMessage("audio2",
                                   MediaStreamTrackMetrics::AUDIO_TRACK,
                                   MediaStreamTrackMetrics::DISCONNECTED,
                                   MediaStreamTrackMetrics::SENT_STREAM));
-  stream_->RemoveTrack(audio2);
+  stream_->RemoveTrack(audio2.get());
   EXPECT_CALL(*metrics_,
               SendLifetimeMessage("video2",
                                   MediaStreamTrackMetrics::VIDEO_TRACK,
                                   MediaStreamTrackMetrics::DISCONNECTED,
                                   MediaStreamTrackMetrics::SENT_STREAM));
-  stream_->RemoveTrack(video2);
+  stream_->RemoveTrack(video2.get());
 
   EXPECT_CALL(*metrics_,
               SendLifetimeMessage("audio1",
                                   MediaStreamTrackMetrics::AUDIO_TRACK,
                                   MediaStreamTrackMetrics::DISCONNECTED,
                                   MediaStreamTrackMetrics::SENT_STREAM));
-  stream_->RemoveTrack(audio1);
+  stream_->RemoveTrack(audio1.get());
   EXPECT_CALL(*metrics_,
               SendLifetimeMessage("video1",
                                   MediaStreamTrackMetrics::VIDEO_TRACK,
                                   MediaStreamTrackMetrics::DISCONNECTED,
                                   MediaStreamTrackMetrics::SENT_STREAM));
-  stream_->RemoveTrack(video1);
+  stream_->RemoveTrack(video1.get());
 
   EXPECT_CALL(*metrics_,
               SendLifetimeMessage("audio3",
@@ -537,7 +537,7 @@ TEST_F(MediaStreamTrackMetricsTest, LocalStreamLargerTest) {
                                   MediaStreamTrackMetrics::VIDEO_TRACK,
                                   MediaStreamTrackMetrics::DISCONNECTED,
                                   MediaStreamTrackMetrics::SENT_STREAM));
-  metrics_->RemoveStream(MediaStreamTrackMetrics::SENT_STREAM, stream_);
+  metrics_->RemoveStream(MediaStreamTrackMetrics::SENT_STREAM, stream_.get());
 }
 
 }  // namespace content

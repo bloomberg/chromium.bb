@@ -94,7 +94,7 @@ TEST_F(VideoDestinationHandlerTest, PutFrame) {
 
     EXPECT_CALL(sink, OnVideoFrame()).WillOnce(
         RunClosure(quit_closure));
-    frame_writer->PutFrame(image, 10);
+    frame_writer->PutFrame(image.get(), 10);
     run_loop.Run();
   }
   // TODO(perkj): Verify that the track output I420 when

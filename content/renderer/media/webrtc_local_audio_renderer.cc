@@ -153,7 +153,7 @@ void WebRtcLocalAudioRenderer::Stop() {
   // Stop the output audio stream, i.e, stop asking for data to render.
   // It is safer to call Stop() on the |sink_| to clean up the resources even
   // when the |sink_| is never started.
-  if (sink_) {
+  if (sink_.get()) {
     sink_->Stop();
     sink_ = NULL;
   }
@@ -316,7 +316,7 @@ void WebRtcLocalAudioRenderer::ReconfigureSink(
     loopback_fifo_.reset(new_fifo);
   }
 
-  if (!sink_)
+  if (!sink_.get())
     return;  // WebRtcLocalAudioRenderer has not yet been started.
 
   // Stop |sink_| and re-create a new one to be initialized with different audio

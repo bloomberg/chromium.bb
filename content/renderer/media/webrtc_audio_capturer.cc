@@ -264,7 +264,7 @@ void WebRtcAudioCapturer::AddTrack(WebRtcLocalAudioTrack* track) {
     // Add with a tag, so we remember to call OnSetFormat() on the new
     // track.
     scoped_refptr<TrackOwner> track_owner(new TrackOwner(track));
-    tracks_.AddAndTag(track_owner);
+    tracks_.AddAndTag(track_owner.get());
   }
 }
 
@@ -387,7 +387,7 @@ void WebRtcAudioCapturer::Start() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DVLOG(1) << "WebRtcAudioCapturer::Start()";
   base::AutoLock auto_lock(lock_);
-  if (running_ || !source_)
+  if (running_ || !source_.get())
     return;
 
   // Start the data source, i.e., start capturing data from the current source.
@@ -554,8 +554,8 @@ void WebRtcAudioCapturer::OnCaptureError() {
 
 media::AudioParameters WebRtcAudioCapturer::source_audio_parameters() const {
   base::AutoLock auto_lock(lock_);
-  return audio_processor_ ?
-      audio_processor_->InputFormat() : media::AudioParameters();
+  return audio_processor_.get() ? audio_processor_->InputFormat()
+                                : media::AudioParameters();
 }
 
 bool WebRtcAudioCapturer::GetPairedOutputParameters(

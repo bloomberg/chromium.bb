@@ -91,7 +91,7 @@ class WebRtcAudioRendererTest : public testing::Test {
         renderer_(new WebRtcAudioRenderer(stream_, 1, 1, 1, 44100, 441)) {
     EXPECT_CALL(*factory_.get(), CreateOutputDevice(1))
         .WillOnce(Return(mock_output_device_));
-    EXPECT_CALL(*mock_output_device_, Start());
+    EXPECT_CALL(*mock_output_device_.get(), Start());
     EXPECT_TRUE(renderer_->Initialize(source_.get()));
     renderer_proxy_ = renderer_->CreateSharedAudioRendererProxy(stream_);
   }
@@ -114,7 +114,7 @@ TEST_F(WebRtcAudioRendererTest, StopRenderer) {
 
   // |renderer_| has only one proxy, stopping the proxy should stop the sink of
   // |renderer_|.
-  EXPECT_CALL(*mock_output_device_, Stop());
+  EXPECT_CALL(*mock_output_device_.get(), Stop());
   EXPECT_CALL(*source_.get(), RemoveAudioRenderer(renderer_.get()));
   renderer_proxy_->Stop();
 }
@@ -136,16 +136,16 @@ TEST_F(WebRtcAudioRendererTest, MultipleRenderers) {
 
   // Stop the |renderer_proxy_| should not stop the sink since it is used by
   // other proxies.
-  EXPECT_CALL(*mock_output_device_, Stop()).Times(0);
+  EXPECT_CALL(*mock_output_device_.get(), Stop()).Times(0);
   renderer_proxy_->Stop();
 
   for (int i = 0; i < kNumberOfRendererProxy; ++i) {
     if (i != kNumberOfRendererProxy -1) {
-      EXPECT_CALL(*mock_output_device_, Stop()).Times(0);
+      EXPECT_CALL(*mock_output_device_.get(), Stop()).Times(0);
     } else {
       // When the last proxy is stopped, the sink will stop.
       EXPECT_CALL(*source_.get(), RemoveAudioRenderer(renderer_.get()));
-      EXPECT_CALL(*mock_output_device_, Stop());
+      EXPECT_CALL(*mock_output_device_.get(), Stop());
     }
     renderer_proxies_[i]->Stop();
   }

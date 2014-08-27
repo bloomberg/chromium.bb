@@ -86,7 +86,7 @@ void WebRtcLocalAudioTrack::Capture(const int16* audio_data,
                                    volume,
                                    need_audio_processing,
                                    key_pressed);
-    if (new_volume != 0 && capturer.get() && !webaudio_source_) {
+    if (new_volume != 0 && capturer.get() && !webaudio_source_.get()) {
       // Feed the new volume to WebRtc while changing the volume on the
       // browser.
       capturer->SetVolume(new_volume);
@@ -135,7 +135,7 @@ void WebRtcLocalAudioTrack::AddSink(MediaStreamAudioSink* sink) {
   // we remember to call OnSetFormat() on the new sink.
   scoped_refptr<MediaStreamAudioTrackSink> sink_owner(
       new MediaStreamAudioSinkOwner(sink));
-  sinks_.AddAndTag(sink_owner);
+  sinks_.AddAndTag(sink_owner.get());
 }
 
 void WebRtcLocalAudioTrack::RemoveSink(MediaStreamAudioSink* sink) {
@@ -169,7 +169,7 @@ void WebRtcLocalAudioTrack::AddSink(PeerConnectionAudioSink* sink) {
   // we remember to call OnSetFormat() on the new sink.
   scoped_refptr<MediaStreamAudioTrackSink> sink_owner(
       new PeerConnectionAudioSinkOwner(sink));
-  sinks_.AddAndTag(sink_owner);
+  sinks_.AddAndTag(sink_owner.get());
 }
 
 void WebRtcLocalAudioTrack::RemoveSink(PeerConnectionAudioSink* sink) {

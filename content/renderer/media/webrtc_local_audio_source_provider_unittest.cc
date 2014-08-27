@@ -37,7 +37,7 @@ class WebRtcLocalAudioSourceProviderTest : public testing::Test {
     scoped_refptr<WebRtcLocalAudioTrackAdapter> adapter(
         WebRtcLocalAudioTrackAdapter::Create(std::string(), NULL));
     scoped_ptr<WebRtcLocalAudioTrack> native_track(
-        new WebRtcLocalAudioTrack(adapter, capturer, NULL));
+        new WebRtcLocalAudioTrack(adapter.get(), capturer, NULL));
     blink::WebMediaStreamSource audio_source;
     audio_source.initialize(base::UTF8ToUTF16("dummy_source_id"),
                             blink::WebMediaStreamSource::TypeAudio,

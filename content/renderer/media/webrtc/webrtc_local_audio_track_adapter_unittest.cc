@@ -41,7 +41,7 @@ class WebRtcLocalAudioTrackAdapterTest : public ::testing::Test {
     capturer_ = WebRtcAudioCapturer::CreateCapturer(
         -1, StreamDeviceInfo(MEDIA_DEVICE_AUDIO_CAPTURE, "", ""),
         constraint_factory.CreateWebMediaConstraints(), NULL, NULL);
-    track_.reset(new WebRtcLocalAudioTrack(adapter_, capturer_, NULL));
+    track_.reset(new WebRtcLocalAudioTrack(adapter_.get(), capturer_, NULL));
   }
 
  protected:

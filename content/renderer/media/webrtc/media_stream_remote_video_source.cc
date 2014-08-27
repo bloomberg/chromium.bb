@@ -151,21 +151,21 @@ void MediaStreamRemoteVideoSource::StartSourceImpl(
     const media::VideoCaptureParams& params,
     const VideoCaptureDeliverFrameCB& frame_callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!delegate_);
+  DCHECK(!delegate_.get());
   delegate_ = new RemoteVideoSourceDelegate(io_message_loop(), frame_callback);
-  remote_track_->AddRenderer(delegate_);
+  remote_track_->AddRenderer(delegate_.get());
   OnStartDone(MEDIA_DEVICE_OK);
 }
 
 void MediaStreamRemoteVideoSource::StopSourceImpl() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(state() != MediaStreamVideoSource::ENDED);
-  remote_track_->RemoveRenderer(delegate_);
+  remote_track_->RemoveRenderer(delegate_.get());
 }
 
 webrtc::VideoRendererInterface*
 MediaStreamRemoteVideoSource::RenderInterfaceForTest() {
-  return delegate_;
+  return delegate_.get();
 }
 
 void MediaStreamRemoteVideoSource::OnChanged() {

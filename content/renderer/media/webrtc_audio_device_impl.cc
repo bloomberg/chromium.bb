@@ -202,7 +202,7 @@ void WebRtcAudioDeviceImpl::RenderData(media::AudioBus* audio_bus,
 
 void WebRtcAudioDeviceImpl::RemoveAudioRenderer(WebRtcAudioRenderer* renderer) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK_EQ(renderer, renderer_);
+  DCHECK_EQ(renderer, renderer_.get());
   base::AutoLock auto_lock(lock_);
   // Notify the playout sink of the change.
   for (PlayoutDataSinkList::const_iterator it = playout_sinks_.begin();
@@ -401,7 +401,7 @@ int32_t WebRtcAudioDeviceImpl::MinMicrophoneVolume(uint32_t* min_volume) const {
 
 int32_t WebRtcAudioDeviceImpl::StereoPlayoutIsAvailable(bool* available) const {
   DCHECK(initialized_);
-  *available = renderer_ && renderer_->channels() == 2;
+  *available = renderer_.get() && renderer_->channels() == 2;
   return 0;
 }
 
@@ -444,7 +444,7 @@ int32_t WebRtcAudioDeviceImpl::RecordingSampleRate(
 
 int32_t WebRtcAudioDeviceImpl::PlayoutSampleRate(
     uint32_t* sample_rate) const {
-  *sample_rate = renderer_ ? renderer_->sample_rate() : 0;
+  *sample_rate = renderer_.get() ? renderer_->sample_rate() : 0;
   return 0;
 }
 
