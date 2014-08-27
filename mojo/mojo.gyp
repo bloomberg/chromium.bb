@@ -511,6 +511,8 @@
             'mojo_views_support_internal',
           ],
           'sources': [
+            'views/input_method_mojo_linux.cc',
+            'views/input_method_mojo_linux.h',
             'views/native_widget_view_manager.cc',
             'views/native_widget_view_manager.h',
             'views/views_init.cc',

@@ -69,6 +69,8 @@
       ],
       'sources': [
         'services/public/cpp/input_events/lib/input_events_type_converters.cc',
+        'services/public/cpp/input_events/lib/mojo_extended_key_event_data.cc',
+        'services/public/cpp/input_events/lib/mojo_extended_key_event_data.h',
         'services/public/cpp/input_events/input_events_type_converters.h',
         'services/public/cpp/input_events/mojo_input_events_export.h',
       ],

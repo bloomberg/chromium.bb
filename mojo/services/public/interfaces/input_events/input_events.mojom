@@ -25,7 +25,12 @@ struct KeyData {
   // not do this until we remove ui::Event usage from within mojo.
   int32 key_code;
 
+  // Whether this is a character event, and the character value if it is. Note
+  // that this is different than |text|, which holds a value even when there
+  // isn't actually a character to insert. (For example, |text| will be set and
+  // have a value on backspace, and |character| won't.)
   bool is_char;
+  uint16 character;
 
   // The Win32 key code. Because of the web, this is the closest thing that we
   // have to a cross platform key state.

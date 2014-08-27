@@ -11,12 +11,17 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/ime/input_method.h"
+#include "ui/base/ime/input_method_base.h"
 #include "ui/base/ime/input_method_delegate.h"
 #include "ui/base/ime/input_method_factory.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/wm/core/base_focus_rules.h"
 #include "ui/wm/core/capture_controller.h"
 #include "ui/wm/core/focus_controller.h"
+
+#if defined(OS_LINUX)
+#include "mojo/views/input_method_mojo_linux.h"
+#endif
 
 namespace mojo {
 namespace {
@@ -41,7 +46,11 @@ class MinimalInputEventFilter : public ui::internal::InputMethodDelegate,
   explicit MinimalInputEventFilter(aura::Window* root)
       : root_(root) {
     ui::InitializeInputMethodForTesting();
+#if defined(OS_LINUX)
+    input_method_.reset(new InputMethodMojoLinux(this));
+#else
     input_method_ = ui::CreateInputMethod(this, gfx::kNullAcceleratedWidget);
+#endif
     input_method_->Init(true);
     root_->AddPreTargetHandler(this);
     root_->SetProperty(aura::client::kRootWindowInputMethodKey,
