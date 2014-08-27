@@ -94,7 +94,7 @@ CastMetricsServiceClient::CastMetricsServiceClient(
                      base::Unretained(this)),
                      ::metrics::MetricsStateManager::StoreClientInfoCallback(),
                      ::metrics::MetricsStateManager::LoadClientInfoCallback())),
-      metrics_service_(new MetricsService(
+      metrics_service_(new ::metrics::MetricsService(
           metrics_state_manager_.get(),
           this,
           ChromecastConfig::GetInstance()->pref_service())),

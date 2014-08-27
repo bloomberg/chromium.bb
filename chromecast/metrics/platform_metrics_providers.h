@@ -7,13 +7,16 @@
 
 #include "components/metrics/proto/system_profile.pb.h"
 
+namespace metrics {
 class MetricsService;
+}
 
 namespace chromecast {
 namespace metrics {
 
 // Build-level hook for different platforms to provide data to MetricsService.
-void RegisterPlatformMetricsProviders(MetricsService* metrics_service);
+void RegisterPlatformMetricsProviders(
+    ::metrics::MetricsService* metrics_service);
 
 // Returns the current release channel.
 ::metrics::SystemProfileProto::Channel GetPlatformReleaseChannel();

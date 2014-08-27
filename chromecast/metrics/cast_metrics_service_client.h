@@ -12,10 +12,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "components/metrics/metrics_service_client.h"
 
-class MetricsService;
 class PrefService;
 
 namespace metrics {
+class MetricsService;
 class MetricsStateManager;
 }  // namespace metrics
 
@@ -62,7 +62,7 @@ class CastMetricsServiceClient : public ::metrics::MetricsServiceClient {
   bool IsReportingEnabled();
 
   scoped_ptr< ::metrics::MetricsStateManager> metrics_state_manager_;
-  scoped_ptr<MetricsService> metrics_service_;
+  scoped_ptr< ::metrics::MetricsService> metrics_service_;
   net::URLRequestContextGetter* request_context_;
 
   DISALLOW_COPY_AND_ASSIGN(CastMetricsServiceClient);

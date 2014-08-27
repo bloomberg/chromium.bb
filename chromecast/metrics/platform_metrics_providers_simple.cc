@@ -7,7 +7,8 @@
 namespace chromecast {
 namespace metrics {
 
-void RegisterPlatformMetricsProviders(MetricsService* metrics_service) {
+void RegisterPlatformMetricsProviders(
+    ::metrics::MetricsService* metrics_service) {
 }
 
 ::metrics::SystemProfileProto::Channel GetPlatformReleaseChannel() {

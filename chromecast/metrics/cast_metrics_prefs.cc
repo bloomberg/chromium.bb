@@ -10,7 +10,7 @@ namespace chromecast {
 namespace metrics {
 
 void RegisterPrefs(PrefRegistrySimple* registry) {
-  MetricsService::RegisterPrefs(registry);
+  ::metrics::MetricsService::RegisterPrefs(registry);
 }
 
 }  // namespace metrics
