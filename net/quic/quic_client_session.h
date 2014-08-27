@@ -222,7 +222,7 @@ class NET_EXPORT_PRIVATE QuicClientSession : public QuicClientSessionBase {
 
   void OnConnectTimeout();
 
-  scoped_ptr<HostPortPair> server_host_port_;
+  HostPortPair server_host_port_;
   bool require_confirmation_;
   scoped_ptr<QuicCryptoClientStream> crypto_stream_;
   QuicStreamFactory* stream_factory_;

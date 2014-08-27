@@ -164,7 +164,7 @@ void QuicClientSession::InitializeSession(
     const QuicServerId& server_id,
     QuicCryptoClientConfig* crypto_config,
     QuicCryptoClientStreamFactory* crypto_client_stream_factory) {
-  server_host_port_.reset(new HostPortPair(server_id.host_port_pair()));
+  server_host_port_ = server_id.host_port_pair();
   crypto_stream_.reset(
       crypto_client_stream_factory ?
           crypto_client_stream_factory->CreateQuicCryptoClientStream(
@@ -504,7 +504,7 @@ bool QuicClientSession::CanPool(const std::string& hostname) const {
   }
 
   return SpdySession::CanPool(transport_security_state_, ssl_info,
-                              server_host_port_->host(), hostname);
+                              server_host_port_.host(), hostname);
 }
 
 QuicDataStream* QuicClientSession::CreateIncomingDataStream(
