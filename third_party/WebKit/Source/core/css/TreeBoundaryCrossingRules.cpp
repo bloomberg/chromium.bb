@@ -114,4 +114,9 @@ void TreeBoundaryCrossingRules::trace(Visitor* visitor)
 #endif
 }
 
+void TreeBoundaryCrossingRules::RuleSubSet::trace(Visitor* visitor)
+{
+    visitor->trace(ruleSet);
+}
+
 } // namespace blink

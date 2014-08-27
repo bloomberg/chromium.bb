@@ -50,15 +50,18 @@ public:
 
 private:
     size_t size() const { return m_scopingNodes.size(); }
-    class RuleSubSet {
+    class RuleSubSet FINAL : public NoBaseWillBeGarbageCollected<RuleSubSet> {
     public:
         static PassOwnPtrWillBeRawPtr<RuleSubSet> create(CSSStyleSheet* sheet, unsigned index, PassOwnPtrWillBeRawPtr<RuleSet> rules)
         {
             return adoptPtrWillBeNoop(new RuleSubSet(sheet, index, rules));
         }
+
         CSSStyleSheet* parentStyleSheet;
         unsigned parentIndex;
-        OwnPtr<RuleSet> ruleSet;
+        OwnPtrWillBeMember<RuleSet> ruleSet;
+
+        void trace(Visitor*);
 
     private:
         RuleSubSet(CSSStyleSheet* sheet, unsigned index, PassOwnPtrWillBeRawPtr<RuleSet> rules)
