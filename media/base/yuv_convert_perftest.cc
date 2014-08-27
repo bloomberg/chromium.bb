@@ -64,31 +64,6 @@ class YUVConvertPerfTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(YUVConvertPerfTest);
 };
 
-TEST_F(YUVConvertPerfTest, ConvertYUVToRGB32Row_MMX) {
-  ASSERT_TRUE(base::CPU().has_mmx());
-
-  base::TimeTicks start = base::TimeTicks::HighResNow();
-  for (int i = 0; i < kPerfTestIterations; ++i) {
-    for (int row = 0; row < kSourceHeight; ++row) {
-      int chroma_row = row / 2;
-      ConvertYUVToRGB32Row_MMX(
-          yuv_bytes_.get() + row * kSourceWidth,
-          yuv_bytes_.get() + kSourceUOffset + (chroma_row * kSourceWidth / 2),
-          yuv_bytes_.get() + kSourceVOffset + (chroma_row * kSourceWidth / 2),
-          rgb_bytes_converted_.get(),
-          kWidth,
-          GetLookupTable(YV12));
-    }
-  }
-  double total_time_seconds =
-      (base::TimeTicks::HighResNow() - start).InSecondsF();
-  perf_test::PrintResult(
-      "yuv_convert_perftest", "", "ConvertYUVToRGB32Row_MMX",
-      kPerfTestIterations / total_time_seconds, "runs/s", true);
-
-  media::EmptyRegisterState();
-}
-
 TEST_F(YUVConvertPerfTest, ConvertYUVToRGB32Row_SSE) {
   ASSERT_TRUE(base::CPU().has_sse());
 
@@ -109,33 +84,6 @@ TEST_F(YUVConvertPerfTest, ConvertYUVToRGB32Row_SSE) {
       (base::TimeTicks::HighResNow() - start).InSecondsF();
   perf_test::PrintResult(
       "yuv_convert_perftest", "", "ConvertYUVToRGB32Row_SSE",
-      kPerfTestIterations / total_time_seconds, "runs/s", true);
-  media::EmptyRegisterState();
-}
-
-TEST_F(YUVConvertPerfTest, ScaleYUVToRGB32Row_MMX) {
-  ASSERT_TRUE(base::CPU().has_mmx());
-
-  const int kSourceDx = 80000;  // This value means a scale down.
-
-  base::TimeTicks start = base::TimeTicks::HighResNow();
-  for (int i = 0; i < kPerfTestIterations; ++i) {
-    for (int row = 0; row < kSourceHeight; ++row) {
-      int chroma_row = row / 2;
-      ScaleYUVToRGB32Row_MMX(
-          yuv_bytes_.get() + row * kSourceWidth,
-          yuv_bytes_.get() + kSourceUOffset + (chroma_row * kSourceWidth / 2),
-          yuv_bytes_.get() + kSourceVOffset + (chroma_row * kSourceWidth / 2),
-          rgb_bytes_converted_.get(),
-          kWidth,
-          kSourceDx,
-          GetLookupTable(YV12));
-    }
-  }
-  double total_time_seconds =
-      (base::TimeTicks::HighResNow() - start).InSecondsF();
-  perf_test::PrintResult(
-      "yuv_convert_perftest", "", "ScaleYUVToRGB32Row_MMX",
       kPerfTestIterations / total_time_seconds, "runs/s", true);
   media::EmptyRegisterState();
 }
@@ -163,33 +111,6 @@ TEST_F(YUVConvertPerfTest, ScaleYUVToRGB32Row_SSE) {
       (base::TimeTicks::HighResNow() - start).InSecondsF();
   perf_test::PrintResult(
       "yuv_convert_perftest", "", "ScaleYUVToRGB32Row_SSE",
-      kPerfTestIterations / total_time_seconds, "runs/s", true);
-  media::EmptyRegisterState();
-}
-
-TEST_F(YUVConvertPerfTest, LinearScaleYUVToRGB32Row_MMX) {
-  ASSERT_TRUE(base::CPU().has_mmx());
-
-  const int kSourceDx = 80000;  // This value means a scale down.
-
-  base::TimeTicks start = base::TimeTicks::HighResNow();
-  for (int i = 0; i < kPerfTestIterations; ++i) {
-    for (int row = 0; row < kSourceHeight; ++row) {
-      int chroma_row = row / 2;
-      LinearScaleYUVToRGB32Row_MMX(
-          yuv_bytes_.get() + row * kSourceWidth,
-          yuv_bytes_.get() + kSourceUOffset + (chroma_row * kSourceWidth / 2),
-          yuv_bytes_.get() + kSourceVOffset + (chroma_row * kSourceWidth / 2),
-          rgb_bytes_converted_.get(),
-          kWidth,
-          kSourceDx,
-          GetLookupTable(YV12));
-    }
-  }
-  double total_time_seconds =
-      (base::TimeTicks::HighResNow() - start).InSecondsF();
-  perf_test::PrintResult(
-      "yuv_convert_perftest", "", "LinearScaleYUVToRGB32Row_MMX",
       kPerfTestIterations / total_time_seconds, "runs/s", true);
   media::EmptyRegisterState();
 }

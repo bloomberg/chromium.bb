@@ -1413,7 +1413,6 @@
           'type': 'static_library',
           'sources': [
             'base/simd/convert_rgb_to_yuv_ssse3.asm',
-            'base/simd/convert_yuv_to_rgb_mmx.asm',
             'base/simd/convert_yuv_to_rgb_sse.asm',
             'base/simd/convert_yuva_to_argb_mmx.asm',
             'base/simd/empty_register_state_mmx.asm',

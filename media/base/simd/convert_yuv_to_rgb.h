@@ -63,17 +63,6 @@ MEDIA_EXPORT void ConvertYUVToRGB32_SSE(const uint8* yplane,
                                         int rgbstride,
                                         YUVType yuv_type);
 
-MEDIA_EXPORT void ConvertYUVToRGB32_MMX(const uint8* yplane,
-                                        const uint8* uplane,
-                                        const uint8* vplane,
-                                        uint8* rgbframe,
-                                        int width,
-                                        int height,
-                                        int ystride,
-                                        int uvstride,
-                                        int rgbstride,
-                                        YUVType yuv_type);
-
 MEDIA_EXPORT void ConvertYUVAToARGB_MMX(const uint8* yplane,
                                         const uint8* uplane,
                                         const uint8* vplane,
@@ -126,13 +115,6 @@ extern "C" {
 // issue on at least Win64.  The C-equivalent RowProc versions' prototypes
 // include the same change to ptrdiff_t to reuse the typedefs.
 
-MEDIA_EXPORT void ConvertYUVToRGB32Row_MMX(const uint8* yplane,
-                                           const uint8* uplane,
-                                           const uint8* vplane,
-                                           uint8* rgbframe,
-                                           ptrdiff_t width,
-                                           const int16 convert_table[1024][4]);
-
 MEDIA_EXPORT void ConvertYUVAToARGBRow_MMX(const uint8* yplane,
                                            const uint8* uplane,
                                            const uint8* vplane,
@@ -148,14 +130,6 @@ MEDIA_EXPORT void ConvertYUVToRGB32Row_SSE(const uint8* yplane,
                                            ptrdiff_t width,
                                            const int16 convert_table[1024][4]);
 
-MEDIA_EXPORT void ScaleYUVToRGB32Row_MMX(const uint8* y_buf,
-                                         const uint8* u_buf,
-                                         const uint8* v_buf,
-                                         uint8* rgb_buf,
-                                         ptrdiff_t width,
-                                         ptrdiff_t source_dx,
-                                         const int16 convert_table[1024][4]);
-
 MEDIA_EXPORT void ScaleYUVToRGB32Row_SSE(const uint8* y_buf,
                                          const uint8* u_buf,
                                          const uint8* v_buf,
@@ -165,15 +139,6 @@ MEDIA_EXPORT void ScaleYUVToRGB32Row_SSE(const uint8* y_buf,
                                          const int16 convert_table[1024][4]);
 
 MEDIA_EXPORT void ScaleYUVToRGB32Row_SSE2_X64(
-    const uint8* y_buf,
-    const uint8* u_buf,
-    const uint8* v_buf,
-    uint8* rgb_buf,
-    ptrdiff_t width,
-    ptrdiff_t source_dx,
-    const int16 convert_table[1024][4]);
-
-MEDIA_EXPORT void LinearScaleYUVToRGB32Row_MMX(
     const uint8* y_buf,
     const uint8* u_buf,
     const uint8* v_buf,
