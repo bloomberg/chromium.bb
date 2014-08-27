@@ -316,7 +316,8 @@ define("mojo/public/js/bindings/codec", [
   };
 
   Encoder.prototype.encodeStructPointer = function(cls, val) {
-    if (!val) {
+    if (val == null) {
+      // Also handles undefined, since undefined == null.
       this.encodePointer(val);
       return;
     }
@@ -325,7 +326,8 @@ define("mojo/public/js/bindings/codec", [
   };
 
   Encoder.prototype.encodeArrayPointer = function(cls, val) {
-    if (!val) {
+    if (val == null) {
+      // Also handles undefined, since undefined == null.
       this.encodePointer(val);
       return;
     }
@@ -337,7 +339,8 @@ define("mojo/public/js/bindings/codec", [
   };
 
   Encoder.prototype.encodeStringPointer = function(val) {
-    if (!val) {
+    if (val == null) {
+      // Also handles undefined, since undefined == null.
       this.encodePointer(val);
       return;
     }
