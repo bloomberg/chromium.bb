@@ -44,6 +44,8 @@ cr.define('options', function() {
         assert(target.tagName == 'SELECT');
         if (target.value == 'storage')
           chrome.send('updateLocalStorage');
+        else if (target.value == 'battery')
+          chrome.send('updateBatteryUsage');
         else
           chrome.send('updateOrigins', [target.value]);
       };

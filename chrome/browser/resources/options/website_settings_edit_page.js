@@ -34,6 +34,10 @@ cr.define('options.WebsiteSettings', function() {
         chrome.send('deleteLocalStorage');
       };
 
+      $('website-settings-battery-stop-button').onclick = function(event) {
+        chrome.send('stopOrigin');
+      };
+
       $('websiteSettingsEditorCancelButton').onclick =
           PageManager.closeOverlay.bind(PageManager);
 
@@ -61,13 +65,16 @@ cr.define('options.WebsiteSettings', function() {
     /**
      * Populates and displays the page with given origin information.
      * @param {string} localStorage A string describing the local storage use.
+     * @param {string} batteryUsage A string describing the battery use.
      * @param {Object} permissions A dictionary of permissions to their
      *     available and current settings, and if it is editable.
      * @param {boolean} showPage If the page should raised.
      * @private
      */
-    populateOrigin_: function(localStorage, permissions, showPage) {
+    populateOrigin_: function(localStorage, batteryUsage, permissions,
+        showPage) {
       $('local-storage-title').textContent = localStorage;
+      $('battery-title').textContent = batteryUsage;
       for (var key in permissions) {
         var selector = $(key + '-select-option');
 
@@ -98,9 +105,10 @@ cr.define('options.WebsiteSettings', function() {
     },
   };
 
-  WebsiteSettingsEditor.populateOrigin = function(localStorage, permissions,
-      showPage) {
+  WebsiteSettingsEditor.populateOrigin = function(localStorage, batteryUsage,
+      permissions, showPage) {
     WebsiteSettingsEditor.getInstance().populateOrigin_(localStorage,
+                                                        batteryUsage,
                                                         permissions,
                                                         showPage);
   };

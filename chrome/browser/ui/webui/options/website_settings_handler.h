@@ -70,6 +70,10 @@ class WebsiteSettingsHandler : public content_settings::Observer,
   // |args| is the URL.
   void HandleMaybeShowEditPage(const base::ListValue* args);
 
+  // Get all origins that have used power, filter them by |last_filter_|, and
+  // update the page.
+  void HandleUpdateBatteryUsage(const base::ListValue* args);
+
   // Deletes the local storage and repopulates the page.
   void HandleDeleteLocalStorage(const base::ListValue* args);
 

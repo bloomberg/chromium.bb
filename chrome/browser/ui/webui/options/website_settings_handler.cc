@@ -13,6 +13,8 @@
 #include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/power/origin_power_map.h"
+#include "components/power/origin_power_map_factory.h"
 #include "content/public/browser/dom_storage_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
@@ -24,6 +26,9 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/time_format.h"
 #include "ui/base/text/bytes_formatting.h"
+
+using power::OriginPowerMap;
+using power::OriginPowerMapFactory;
 
 namespace {
 
@@ -61,6 +66,7 @@ void WebsiteSettingsHandler::GetLocalizedValues(
       {"websitesLabelMediaStream", IDS_WEBSITE_SETTINGS_TYPE_MEDIASTREAM},
       {"websitesLabelNotifications", IDS_WEBSITE_SETTINGS_TYPE_NOTIFICATIONS},
       {"websitesLabelStorage", IDS_WEBSITE_SETTINGS_TYPE_STORAGE},
+      {"websitesLabelBattery", IDS_WEBSITE_SETTINGS_TYPE_BATTERY},
       {"websitesCookiesDescription", IDS_WEBSITE_SETTINGS_COOKIES_DESCRIPTION},
       {"websitesLocationDescription",
        IDS_WEBSITE_SETTINGS_LOCATION_DESCRIPTION},
@@ -69,6 +75,7 @@ void WebsiteSettingsHandler::GetLocalizedValues(
       {"websitesNotificationsDescription",
        IDS_WEBSITE_SETTINGS_NOTIFICATIONS_DESCRIPTION},
       {"websitesButtonClear", IDS_WEBSITE_SETTINGS_STORAGE_CLEAR_BUTTON},
+      {"websitesButtonStop", IDS_WEBSITE_SETTINGS_BATTERY_STOP_BUTTON},
   };
 
   RegisterStrings(localized_strings, resources, arraysize(resources));
@@ -96,6 +103,11 @@ void WebsiteSettingsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "updateLocalStorage",
       base::Bind(&WebsiteSettingsHandler::HandleUpdateLocalStorage,
+                 base::Unretained(this)));
+
+  web_ui()->RegisterMessageCallback(
+      "updateBatteryUsage",
+      base::Bind(&WebsiteSettingsHandler::HandleUpdateBatteryUsage,
                  base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback(
@@ -364,6 +376,34 @@ void WebsiteSettingsHandler::HandleSetOriginPermission(
                                   info);
 }
 
+void WebsiteSettingsHandler::HandleUpdateBatteryUsage(
+    const base::ListValue* args) {
+  base::DictionaryValue power_map;
+  OriginPowerMap* origins =
+      OriginPowerMapFactory::GetForBrowserContext(Profile::FromWebUI(web_ui()));
+  OriginPowerMap::PercentOriginMap percent_map = origins->GetPercentOriginMap();
+  for (std::map<GURL, int>::iterator it = percent_map.begin();
+       it != percent_map.end();
+       ++it) {
+    std::string origin = it->first.spec();
+
+    if (origin.find(last_filter_) == base::string16::npos)
+      continue;
+
+    base::DictionaryValue* origin_entry = new base::DictionaryValue();
+    origin_entry->SetInteger("usage", it->second);
+    origin_entry->SetString(
+        "usageString",
+        l10n_util::GetStringFUTF16Int(IDS_WEBSITE_SETTINGS_BATTERY_PERCENT,
+                                      it->second));
+    origin_entry->SetStringWithoutPathExpansion(
+        "readableName", GetReadableName(it->first));
+    power_map.SetWithoutPathExpansion(origin, origin_entry);
+  }
+  web_ui()->CallJavascriptFunction("WebsiteSettingsManager.populateOrigins",
+                                   power_map);
+}
+
 void WebsiteSettingsHandler::HandleDeleteLocalStorage(
     const base::ListValue* args) {
   DCHECK(!last_site_.is_empty());
@@ -389,6 +429,10 @@ void WebsiteSettingsHandler::GetInfoForOrigin(const GURL& site_url,
       break;
     }
   }
+
+  int battery = 0;
+  battery = OriginPowerMapFactory::GetForBrowserContext(
+      Profile::FromWebUI(web_ui()))->GetPowerForOrigin(site_url);
 
   base::DictionaryValue* permissions = new base::DictionaryValue;
   for (size_t i = 0; i < arraysize(kValidTypes); ++i) {
@@ -451,9 +495,13 @@ void WebsiteSettingsHandler::GetInfoForOrigin(const GURL& site_url,
 
   base::Value* storage_used = new base::StringValue(l10n_util::GetStringFUTF16(
       IDS_WEBSITE_SETTINGS_STORAGE_USED, ui::FormatBytes(storage)));
+  base::Value* battery_used =
+      new base::StringValue(l10n_util::GetStringFUTF16Int(
+          IDS_WEBSITE_SETTINGS_BATTERY_USED, battery));
 
   web_ui()->CallJavascriptFunction("WebsiteSettingsEditor.populateOrigin",
                                    *storage_used,
+                                   *battery_used,
                                    *permissions,
                                    base::FundamentalValue(show_page));
 }

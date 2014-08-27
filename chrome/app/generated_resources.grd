@@ -344,6 +344,9 @@ are declared in build/common.gypi.
       <message name="IDS_WEBSITE_SETTINGS_PERMISSION_ASK" desc="The label used in the permissions dropdowns for the option that makes the browser asks for permission. ">
         ask
       </message>
+      <message name="IDS_WEBSITE_SETTINGS_TYPE_BATTERY" desc="The label used for the battery consumption type in the Manage Sites settings.">
+        Battery
+      </message>
       <message name="IDS_WEBSITE_SETTINGS_TYPE_IMAGES" desc="The label used for images permission controls in the Website Settings popup.">
         Images
       </message>
@@ -7980,10 +7983,18 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_WEBSITE_SETTINGS_STORAGE_USED" desc="The status text for how much local storage a website origin is using.">
         <ph name="USAGE">$1<ex>2.0 KB</ex></ph> stored data
       </message>
+      <message name="IDS_WEBSITE_SETTINGS_BATTERY_USED" desc="The status text for how much power a website origin is using.">
+        <ph name="USAGE">$1<ex>16</ex></ph>% of battery
+      </message>
       <message name="IDS_WEBSITE_SETTINGS_STORAGE_CLEAR_BUTTON" desc="The 'Clear' button in the Website Settings single site view dialog.">
         Clear
       </message>
-
+      <message name="IDS_WEBSITE_SETTINGS_BATTERY_STOP_BUTTON" desc="The 'Stop' button in the Website Settings single site view dialog.">
+        Stop
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_BATTERY_PERCENT" desc="The percent from 0 to 100 of battery consumption from a given origin or app on the Website Settings dialog.">
+        <ph name="VALUE">$1<ex>100</ex></ph>%
+      </message>
 
       <!-- Automatic updates -->
       <if expr="is_macosx">

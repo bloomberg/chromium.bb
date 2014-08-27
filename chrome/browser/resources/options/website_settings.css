@@ -62,10 +62,11 @@
 .website-properties {
   -webkit-margin-after: 8px;
   -webkit-margin-start: 8px;
+  -webkit-padding-after: 4px;
 }
 
 .website-property-area {
-  -webkit-margin-after: 22px;
+  -webkit-margin-after: 8px;
   align-items: center;
   display: flex;
   justify-content: space-between;
@@ -100,6 +101,14 @@
 .origin-permission-list {
   -webkit-padding-before: 4px;
   border: 1px solid #d9d9d9;
+}
+
+#website-settings-edit-page .website-property-button {
+  min-width: 70px;
+}
+
+#website-settings-edit-page .website-property-controls {
+  min-width: 165px;
 }
 
 /* Styles for the origin list elements in the website settings page. */
