@@ -5301,14 +5301,9 @@ shell_surface_configure(struct weston_surface *es, int32_t sx, int32_t sy)
 static void launch_desktop_shell_process(void *data);
 
 static void
-desktop_shell_sigchld(struct weston_process *process, int status)
+respawn_desktop_shell_process(struct desktop_shell *shell)
 {
 	uint32_t time;
-	struct desktop_shell *shell =
-		container_of(process, struct desktop_shell, child.process);
-
-	shell->child.process.pid = 0;
-	shell->child.client = NULL; /* already destroyed by wayland */
 
 	/* if desktop-shell dies more than 5 times in 30 seconds, give up */
 	time = weston_compositor_get_time();
@@ -5319,13 +5314,12 @@ desktop_shell_sigchld(struct weston_process *process, int status)
 
 	shell->child.deathcount++;
 	if (shell->child.deathcount > 5) {
-		weston_log("%s died, giving up.\n", shell->client);
+		weston_log("%s disconnected, giving up.\n", shell->client);
 		return;
 	}
 
-	weston_log("%s died, respawning...\n", shell->client);
+	weston_log("%s disconnected, respawning...\n", shell->client);
 	launch_desktop_shell_process(shell);
-	shell_fade_startup(shell);
 }
 
 static void
@@ -5336,7 +5330,18 @@ desktop_shell_client_destroy(struct wl_listener *listener, void *data)
 	shell = container_of(listener, struct desktop_shell,
 			     child.client_destroy_listener);
 
+	wl_list_remove(&shell->child.client_destroy_listener.link);
 	shell->child.client = NULL;
+	/*
+	 * unbind_desktop_shell() will reset shell->child.desktop_shell
+	 * before the respawned process has a chance to create a new
+	 * desktop_shell object, because we are being called from the
+	 * wl_client destructor which destroys all wl_resources before
+	 * returning.
+	 */
+
+	respawn_desktop_shell_process(shell);
+	shell_fade_startup(shell);
 }
 
 static void
@@ -5344,10 +5349,8 @@ launch_desktop_shell_process(void *data)
 {
 	struct desktop_shell *shell = data;
 
-	shell->child.client = weston_client_launch(shell->compositor,
-						 &shell->child.process,
-						 shell->client,
-						 desktop_shell_sigchld);
+	shell->child.client = weston_client_start(shell->compositor,
+						  shell->client);
 
 	if (!shell->child.client) {
 		weston_log("not able to start %s\n", shell->client);
@@ -6161,8 +6164,12 @@ shell_destroy(struct wl_listener *listener, void *data)
 
 	/* Force state to unlocked so we don't try to fade */
 	shell->locked = false;
-	if (shell->child.client)
+
+	if (shell->child.client) {
+		/* disable respawn */
+		wl_list_remove(&shell->child.client_destroy_listener.link);
 		wl_client_destroy(shell->child.client);
+	}
 
 	wl_list_remove(&shell->idle_listener.link);
 	wl_list_remove(&shell->wake_listener.link);
