@@ -143,10 +143,6 @@ NON_EXECUTABLE_PATHS = (
   'build/android/tests/symbolize/libb.so',
   'chrome/installer/mac/sign_app.sh.in',
   'chrome/installer/mac/sign_versioned_dir.sh.in',
-  'chrome/test/data/components/ihfokbkgjpifnbbojhneepfflplebdkc/'
-      'ihfokbkgjpifnbbojhneepfflplebdkc_1/a_changing_binary_file',
-  'chrome/test/data/components/ihfokbkgjpifnbbojhneepfflplebdkc/'
-      'ihfokbkgjpifnbbojhneepfflplebdkc_2/a_changing_binary_file',
   'chrome/test/data/extensions/uitest/plugins/plugin32.so',
   'chrome/test/data/extensions/uitest/plugins/plugin64.so',
   'chrome/test/data/extensions/uitest/plugins_private/plugin32.so',
