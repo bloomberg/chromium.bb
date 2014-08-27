@@ -272,51 +272,21 @@ void ChromeExtensionsDispatcherDelegate::RequireAdditionalModules(
     module_system->Require("windowControls");
   }
 
-  const extensions::Extension* extension = context->extension();
-
-  // We used to limit WebView to |BLESSED_EXTENSION_CONTEXT| within platform
-  // apps. An ext/app runs in a blessed extension context, if it is the active
-  // extension in the current process, in other words, if it is loaded in a top
-  // frame. To support webview in a non-frame extension, we have to allow
-  // unblessed extension context as well.
   // Note: setting up the WebView class here, not the chrome.webview API.
   // The API will be automatically set up when first used.
-  if (context_type == extensions::Feature::BLESSED_EXTENSION_CONTEXT ||
-      context_type == extensions::Feature::UNBLESSED_EXTENSION_CONTEXT) {
-    // TODO(fsamuel): Use context->GetAvailability("webViewInternal").
-    if (extension->permissions_data()->HasAPIPermission(
-            extensions::APIPermission::kWebView)) {
-      module_system->Require("webView");
-      if (extensions::GetCurrentChannel() <= chrome::VersionInfo::CHANNEL_DEV) {
-        module_system->Require("webViewExperimental");
-      } else {
-        // TODO(asargent) We need a whitelist for webview experimental.
-        // crbug.com/264852
-        std::string id_hash = base::SHA1HashString(extension->id());
-        std::string hexencoded_id_hash =
-            base::HexEncode(id_hash.c_str(), id_hash.length());
-        if (hexencoded_id_hash == "8C3741E3AF0B93B6E8E0DDD499BB0B74839EA578" ||
-            hexencoded_id_hash == "E703483CEF33DEC18B4B6DD84B5C776FB9182BDB" ||
-            hexencoded_id_hash == "1A26E32DE447A17CBE5E9750CDBA78F58539B39C" ||
-            hexencoded_id_hash == "59048028102D7B4C681DBC7BC6CD980C3DC66DA3") {
-          module_system->Require("webViewExperimental");
-        }
-      }
-    } else {
-      module_system->Require("denyWebView");
-    }
+  if (context->GetAvailability("webViewInternal").is_available()) {
+    module_system->Require("webView");
+    if (context->GetAvailability("webViewExperimentalInternal").is_available())
+      module_system->Require("webViewExperimental");
+  } else if (context_type == extensions::Feature::BLESSED_EXTENSION_CONTEXT) {
+    module_system->Require("denyWebView");
   }
 
-  if (context_type == extensions::Feature::BLESSED_EXTENSION_CONTEXT) {
-    // TODO(fsamuel): Use context->GetAvailability("appViewInternal").
-    if (CommandLine::ForCurrentProcess()->HasSwitch(
-            extensions::switches::kEnableAppView) &&
-        extension->permissions_data()->HasAPIPermission(
-            extensions::APIPermission::kAppView)) {
-      module_system->Require("appView");
-    } else {
-      module_system->Require("denyAppView");
-    }
+  if (extensions::FeatureSwitch::app_view()->IsEnabled() &&
+      context->GetAvailability("appViewEmbedderInternal").is_available()) {
+    module_system->Require("appView");
+  } else if (context_type == extensions::Feature::BLESSED_EXTENSION_CONTEXT) {
+    module_system->Require("denyAppView");
   }
 
   if (extensions::FeatureSwitch::embedded_extension_options()->IsEnabled() &&

@@ -16,6 +16,9 @@ const char kAllowHTTPBackgroundPage[] = "allow-http-background-page";
 const char kAllowLegacyExtensionManifests[] =
     "allow-legacy-extension-manifests";
 
+// Enables the <appview> tag in platform apps.
+const char kAppView[] = "app-view";
+
 // Enables extension options to be embedded in chrome://extensions rather than
 // a new tab.
 const char kEmbeddedExtensionOptions[] = "embedded-extension-options";
@@ -25,7 +28,8 @@ const char kEmbeddedExtensionOptions[] = "embedded-extension-options";
 // insignificant for apps that load most of their resources asynchronously.
 const char kEnableAppsShowOnFirstPaint[]    = "enable-apps-show-on-first-paint";
 
-// Enables the <appview> tag in platform apps.
+// Hack so that feature switch can work with about_flags. See
+// kEnableScriptsRequireAction.
 const char kEnableAppView[] = "enable-app-view";
 
 // Hack so that feature switch can work with about_flags. See

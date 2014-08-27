@@ -1477,7 +1477,7 @@ const Experiment kExperiments[] = {
     "enable-app-view",
     IDS_FLAGS_ENABLE_APP_VIEW_NAME,
     IDS_FLAGS_ENABLE_APP_VIEW_DESCRIPTION,
-    kOsAll,
+    kOsDesktop,
     SINGLE_VALUE_TYPE(extensions::switches::kEnableAppView)
   },
   {
