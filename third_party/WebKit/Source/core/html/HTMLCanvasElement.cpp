@@ -43,6 +43,7 @@
 #include "core/html/canvas/WebGLContextEvent.h"
 #include "core/html/canvas/WebGLRenderingContext.h"
 #include "core/rendering/RenderHTMLCanvas.h"
+#include "core/rendering/RenderLayer.h"
 #include "platform/MIMETypeRegistry.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/Canvas2DImageBufferSurface.h"
@@ -212,6 +213,9 @@ void HTMLCanvasElement::didFinalizeFrame()
     m_dirtyRect.intersect(srcRect);
     if (RenderBox* ro = renderBox()) {
         FloatRect mappedDirtyRect = mapRect(m_dirtyRect, srcRect, ro->contentBoxRect());
+        // For querying RenderLayer::compositingState()
+        // FIXME: is this invalidation using the correct compositing state?
+        DisableCompositingQueryAsserts disabler;
         ro->invalidatePaintRectangle(enclosingIntRect(mappedDirtyRect));
     }
     notifyObserversCanvasChanged(m_dirtyRect);

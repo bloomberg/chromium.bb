@@ -474,6 +474,11 @@ void RenderLayerCompositor::paintInvalidationOnCompositingChange(RenderLayer* la
     if (layer->renderer() != &m_renderView && !layer->renderer()->parent())
         return;
 
+    // For querying RenderLayer::compositingState()
+    // Eager invalidation here is correct, since we are invalidating with respect to the previous frame's
+    // compositing state when changing the compositing backing of the layer.
+    DisableCompositingQueryAsserts disabler;
+
     layer->paintInvalidator().paintInvalidationIncludingNonCompositingDescendants();
 }
 
