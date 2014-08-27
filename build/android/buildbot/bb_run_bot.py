@@ -116,6 +116,7 @@ def GetCommands(options, bot_config):
 def GetBotStepMap():
   compile_step = ['compile']
   chrome_proxy_tests = ['chrome_proxy']
+  chrome_sync_shell_tests = ['sync']
   std_host_tests = ['check_webview_licenses', 'findbugs']
   std_build_steps = ['compile', 'zip_build']
   std_test_steps = ['extract_build']
@@ -165,7 +166,8 @@ def GetBotStepMap():
         H(compile_step + std_host_tests, target_arch='x86')),
       B('fyi-builder-rel', H(std_build_steps,  experimental)),
       B('fyi-tests', H(std_test_steps),
-        T(std_tests, ['--experimental', flakiness_server,
+        T(std_tests + chrome_sync_shell_tests,
+                      ['--experimental', flakiness_server,
                       '--coverage-bucket', CHROMIUM_COVERAGE_BUCKET,
                       '--cleanup'])),
       B('fyi-component-builder-tests-dbg',

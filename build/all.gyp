@@ -53,6 +53,7 @@
             '../android_webview/android_webview.gyp:android_webview_apk',
             '../android_webview/android_webview_telemetry_shell.gyp:android_webview_telemetry_shell_apk',
             '../chrome/chrome.gyp:chrome_shell_apk',
+            '../chrome/chrome.gyp:chrome_sync_shell_apk',
             '../remoting/remoting.gyp:remoting_apk',
             '../tools/telemetry/telemetry.gyp:*#host',
             # TODO(nyquist) This should instead by a target for sync when all of
@@ -778,6 +779,7 @@
             '../cc/blink/cc_blink_tests.gyp:cc_blink_unittests_apk',
             '../cc/cc_tests.gyp:cc_unittests_apk',
             '../chrome/chrome.gyp:chrome_shell_test_apk',
+            '../chrome/chrome.gyp:chrome_sync_shell_test_apk',
             '../chrome/chrome.gyp:chrome_shell_uiautomator_tests',
             '../chrome/chrome.gyp:unit_tests_apk',
             '../components/components_tests.gyp:components_unittests_apk',
