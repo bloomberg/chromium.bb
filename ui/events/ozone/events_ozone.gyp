@@ -46,6 +46,7 @@
       '../../../base/base.gyp:base',
       '../../gfx/gfx.gyp:gfx',
       '../../ozone/ozone.gyp:ozone_base',
+      '../events.gyp:dom4_keycode_converter',
       '../platform/events_platform.gyp:events_platform',
       'events_ozone',
     ],

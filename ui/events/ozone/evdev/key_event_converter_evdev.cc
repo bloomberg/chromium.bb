@@ -9,12 +9,15 @@
 
 #include "base/message_loop/message_loop.h"
 #include "ui/events/event.h"
+#include "ui/events/keycodes/dom4/keycode_converter.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/events/ozone/evdev/event_modifiers_evdev.h"
 
 namespace ui {
 
 namespace {
+
+const int kXkbKeycodeOffset = 8;
 
 ui::KeyboardCode KeyboardCodeFromButton(unsigned int code) {
   static const ui::KeyboardCode kLinuxBaseKeyMap[] = {
@@ -262,7 +265,11 @@ void KeyEventConverterEvdev::ConvertKeyEvent(int key, int value) {
 
   int flags = modifiers_->GetModifierFlags();
 
-  KeyEvent key_event(down ? ET_KEY_PRESSED : ET_KEY_RELEASED, code, flags);
+  KeyEvent key_event(
+      down ? ET_KEY_PRESSED : ET_KEY_RELEASED,
+      code,
+      KeycodeConverter::NativeKeycodeToCode(key + kXkbKeycodeOffset),
+      flags);
   DispatchEventToCallback(&key_event);
 }
 
