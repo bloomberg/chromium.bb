@@ -1,0 +1,13 @@
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x37
+  RenderBlock {HTML} at (0,0) size 800x37
+    RenderBody {BODY} at (8,8) size 784x21
+      RenderText {#text} at (0,1) size 324x17
+        text run at (0,1) width 324: "This tests if the caret position is aligned correctly. "
+      RenderTextControl {INPUT} at (323.47,0) size 205x21 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+      RenderText {#text} at (0,0) size 0x0
+      RenderText {#text} at (0,0) size 0x0
+layer at (334,11) size 200x15
+  RenderBlock {DIV} at (3,3) size 200x15
+caret: position 0 of child 0 {DIV} of {#document-fragment} of child 1 {INPUT} of body
