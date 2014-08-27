@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/startup/obsolete_system_infobar_delegate.h"
 
+#include "base/cpu.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
@@ -23,12 +24,17 @@ void ObsoleteSystemInfoBarDelegate::Create(InfoBarService* infobar_service) {
       !ObsoleteSystemMac::Has32BitOnlyCPU()) {
     return;
   }
-  infobar_service->AddInfoBar(ConfirmInfoBarDelegate::CreateInfoBar(
-      scoped_ptr<ConfirmInfoBarDelegate>(new ObsoleteSystemInfoBarDelegate())));
+#elif defined(OS_WIN)
+  // On Windows we no longer support non-SSE2 machines since Chrome 35.
+  if (base::CPU().has_sse2())
+    return;
 #else
   // No other platforms currently show this infobar.
   return;
 #endif
+
+  infobar_service->AddInfoBar(ConfirmInfoBarDelegate::CreateInfoBar(
+      scoped_ptr<ConfirmInfoBarDelegate>(new ObsoleteSystemInfoBarDelegate())));
 }
 
 ObsoleteSystemInfoBarDelegate::ObsoleteSystemInfoBarDelegate()
@@ -41,6 +47,8 @@ ObsoleteSystemInfoBarDelegate::~ObsoleteSystemInfoBarDelegate() {
 base::string16 ObsoleteSystemInfoBarDelegate::GetMessageText() const {
 #if defined(OS_MACOSX)
   return ObsoleteSystemMac::LocalizedObsoleteSystemString();
+#elif defined(OS_WIN)
+  return l10n_util::GetStringUTF16(IDS_WIN_SSE_OBSOLETE_NOW);
 #else
   return l10n_util::GetStringUTF16(IDS_SYSTEM_OBSOLETE_MESSAGE);
 #endif

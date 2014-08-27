@@ -375,6 +375,7 @@ if (cpu_arch == "x86" || cpu_arch == "x64") {
   yasm_assemble("media_yasm") {
     sources = [
       "simd/convert_rgb_to_yuv_ssse3.asm",
+      "simd/convert_yuv_to_rgb_mmx.asm",
       "simd/convert_yuv_to_rgb_sse.asm",
       "simd/convert_yuva_to_argb_mmx.asm",
       "simd/empty_register_state_mmx.asm",

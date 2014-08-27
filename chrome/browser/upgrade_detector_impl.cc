@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/build_time.h"
 #include "base/command_line.h"
+#include "base/cpu.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
@@ -402,6 +403,11 @@ bool UpgradeDetectorImpl::DetectOutdatedInstall() {
 #if defined(OS_WIN)
     // Don't show the update bubbles to enterprise users (i.e., on a domain).
     if (base::win::IsEnrolledToDomain())
+      return false;
+
+    // On Windows, we don't want to warn about outdated installs when the
+    // machine doesn't support SSE2, it's been deprecated starting with M35.
+    if (!base::CPU().has_sse2())
       return false;
 #endif
   }

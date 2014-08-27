@@ -5,6 +5,7 @@
 #include "chrome/common/chrome_content_client.h"
 
 #include "base/command_line.h"
+#include "base/cpu.h"
 #include "base/debug/crash_logging.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
@@ -73,9 +74,9 @@ const char kPDFPluginMimeType[] = "application/pdf";
 const char kPDFPluginExtension[] = "pdf";
 const char kPDFPluginDescription[] = "Portable Document Format";
 const char kPDFPluginPrintPreviewMimeType[] =
-    "application/x-google-chrome-print-preview-pdf";
+   "application/x-google-chrome-print-preview-pdf";
 const char kPDFPluginOutOfProcessMimeType[] =
-    "application/x-google-chrome-pdf";
+   "application/x-google-chrome-pdf";
 const uint32 kPDFPluginPermissions = ppapi::PERMISSION_PRIVATE |
                                      ppapi::PERMISSION_DEV;
 
@@ -394,6 +395,12 @@ bool GetBundledPepperFlash(content::PepperPluginInfo* plugin) {
       command_line->HasSwitch(switches::kDisableBundledPpapiFlash);
   if (force_disable)
     return false;
+
+// For Linux ia32, Flapper requires SSE2.
+#if defined(OS_LINUX) && defined(ARCH_CPU_X86)
+  if (!base::CPU().has_sse2())
+    return false;
+#endif  // ARCH_CPU_X86
 
   base::FilePath flash_path;
   if (!PathService::Get(chrome::FILE_PEPPER_FLASH_PLUGIN, &flash_path))

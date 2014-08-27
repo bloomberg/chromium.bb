@@ -252,6 +252,12 @@ Chrome supports. -->
           This computer will no longer receive Google Chrome updates because its hardware is no longer supported.
         </message>
       </if>
+      <if expr="is_win">
+        <!-- Windows non-SSE2 deprecation -->
+        <message name="IDS_WIN_SSE_OBSOLETE_NOW" desc="A message displayed on an at-launch infobar and About (Help) page warning the user that the computer they are using is no longer supported.">
+          This computer will no longer receive Google Chrome updates because its hardware is no longer supported.
+        </message>
+      </if>
       <message name="IDS_ACCNAME_APP" desc="The accessible name for the app menu.">
         Chrome
       </message>

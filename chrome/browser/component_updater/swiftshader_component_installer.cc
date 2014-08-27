@@ -10,6 +10,7 @@
 #include "base/base_paths.h"
 #include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/cpu.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -248,6 +249,10 @@ void RegisterSwiftShaderPath(ComponentUpdateService* cus) {
 
 void RegisterSwiftShaderComponent(ComponentUpdateService* cus) {
 #if defined(ENABLE_SWIFTSHADER)
+  base::CPU cpu;
+
+  if (!cpu.has_sse2())
+    return;
   BrowserThread::PostTask(BrowserThread::FILE,
                           FROM_HERE,
                           base::Bind(&RegisterSwiftShaderPath, cus));
