@@ -185,28 +185,30 @@ class CompiledFileSystem(object):
     return self._file_system.Read(add_prefix(path, first_layer_dirs)).Then(
         lambda results: first_layer_files + get_from_future_listing(results))
 
-  def GetFromFile(self, path):
-    '''Calls |compilation_function| on the contents of the file at |path|.  If
-    |binary| is True then the file will be read as binary - but this will only
-    apply for the first time the file is fetched; if already cached, |binary|
-    will be ignored.
+  def GetFromFile(self, path, skip_not_found=False):
+    '''Calls |compilation_function| on the contents of the file at |path|.
+    If |skip_not_found| is True, then None is passed to |compilation_function|.
     '''
     AssertIsFile(path)
 
     try:
       version = self._file_system.Stat(path).version
     except FileNotFoundError:
-      return Future(exc_info=sys.exc_info())
+      if skip_not_found:
+        version = None
+      else:
+        return Future(exc_info=sys.exc_info())
 
     cache_entry = self._file_object_store.Get(path).Get()
     if (cache_entry is not None) and (version == cache_entry.version):
       return Future(value=cache_entry._cache_data)
 
-    def next(files):
+    def compile_(files):
       cache_data = self._compilation_function(path, files)
       self._file_object_store.Set(path, _CacheEntry(cache_data, version))
       return cache_data
-    return self._file_system.ReadSingle(path).Then(next)
+    return self._file_system.ReadSingle(
+        path, skip_not_found=skip_not_found).Then(compile_)
 
   def GetFromFileListing(self, path):
     '''Calls |compilation_function| on the listing of the files at |path|.

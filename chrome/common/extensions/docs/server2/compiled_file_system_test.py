@@ -200,6 +200,24 @@ class CompiledFileSystemTest(unittest.TestCase):
     future.Get()
     self.assertTrue(*mock_fs.CheckAndReset(read_count=2, read_resolve_count=3))
 
+  def testSkipNotFound(self):
+    mock_fs = MockFileSystem(TestFileSystem(_TEST_DATA))
+    compiled_fs = CompiledFileSystem.Factory(
+        ObjectStoreCreator.ForTest()).Create(
+            mock_fs, lambda path, contents: contents, type(self))
+
+    future = compiled_fs.GetFromFile('no_file', skip_not_found=True)
+    # If the file doesn't exist, then the file system is not read.
+    self.assertTrue(*mock_fs.CheckAndReset(read_count=1, stat_count=1))
+    self.assertEqual(None, future.Get())
+    self.assertTrue(*mock_fs.CheckAndReset(read_resolve_count=1))
+    future = compiled_fs.GetFromFile('no_file', skip_not_found=True)
+    self.assertTrue(*mock_fs.CheckAndReset(stat_count=1))
+    self.assertEqual(None, future.Get())
+    # The result for a non-existent file should still be cached.
+    self.assertTrue(*mock_fs.CheckAndReset())
+    future = compiled_fs.GetFromFile('no_file')
+    self.assertRaises(FileNotFoundError, future.Get)
 
 
 if __name__ == '__main__':

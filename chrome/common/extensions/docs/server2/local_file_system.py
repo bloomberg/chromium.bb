@@ -88,7 +88,12 @@ class LocalFileSystem(FileSystem):
         if path == '' or path.endswith('/'):
           result[path] = _ListDir(full_path)
         else:
-          result[path] = _ReadFile(full_path)
+          try:
+            result[path] = _ReadFile(full_path)
+          except FileNotFoundError:
+            if skip_not_found:
+              continue
+            return Future(exc_info=sys.exc_info())
       return result
     return Future(callback=resolve)
 

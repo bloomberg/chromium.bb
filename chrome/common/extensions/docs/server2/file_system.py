@@ -84,13 +84,13 @@ class FileSystem(object):
     '''
     raise NotImplementedError(self.__class__)
 
-  def ReadSingle(self, path):
+  def ReadSingle(self, path, skip_not_found=False):
     '''Reads a single file from the FileSystem. Returns a Future with the same
     rules as Read(). If |path| is not found raise a FileNotFoundError on Get().
     '''
     AssertIsValid(path)
-    read_single = self.Read([path])
-    return Future(callback=lambda: read_single.Get()[path])
+    read_single = self.Read([path], skip_not_found=skip_not_found)
+    return Future(callback=lambda: read_single.Get().get(path, None))
 
   def Exists(self, path):
     '''Returns a Future to the existence of |path|; True if |path| exists,

@@ -46,11 +46,11 @@ class ChainedCompiledFileSystem(object):
     self._compiled_fs_chain = compiled_fs_chain
     self._identity = identity
 
-  def GetFromFile(self, path):
+  def GetFromFile(self, path, skip_not_found=False):
     return self._GetImpl(
         path,
-        lambda compiled_fs: compiled_fs.GetFromFile(path),
-        lambda compiled_fs: compiled_fs.GetFileVersion(path))
+        lambda cfs: cfs.GetFromFile(path, skip_not_found=skip_not_found),
+        lambda cfs: cfs.GetFileVersion(path))
 
   def GetFromFileListing(self, path):
     path = ToDirectory(path)

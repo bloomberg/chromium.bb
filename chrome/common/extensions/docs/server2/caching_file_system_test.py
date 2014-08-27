@@ -9,7 +9,7 @@ import unittest
 
 from caching_file_system import CachingFileSystem
 from extensions_paths import SERVER2
-from file_system import  StatInfo
+from file_system import FileNotFoundError, StatInfo
 from local_file_system import LocalFileSystem
 from mock_file_system import MockFileSystem
 from object_store_creator import ObjectStoreCreator
@@ -159,6 +159,23 @@ class CachingFileSystemTest(unittest.TestCase):
                      file_system.ReadSingle('bob/bob0').Get())
     self.assertTrue(*mock_fs.CheckAndReset())
 
+    # Test skip_not_found caching behavior.
+    file_system = create_empty_caching_fs()
+    future = file_system.ReadSingle('bob/no_file', skip_not_found=True)
+    self.assertTrue(*mock_fs.CheckAndReset(read_count=1))
+    self.assertEqual(None, future.Get())
+    self.assertTrue(*mock_fs.CheckAndReset(read_resolve_count=1, stat_count=1))
+    future = file_system.ReadSingle('bob/no_file', skip_not_found=True)
+    # There shouldn't be another read/stat from the file system;
+    # we know the file is not there.
+    self.assertTrue(*mock_fs.CheckAndReset())
+    future = file_system.ReadSingle('bob/no_file')
+    self.assertTrue(*mock_fs.CheckAndReset(read_count=1))
+    # Even though we cached information about non-existent files,
+    # trying to read one without specifiying skip_not_found should
+    # still raise an error.
+    self.assertRaises(FileNotFoundError, future.Get)
+
   def testCachedStat(self):
     test_fs = TestFileSystem({
       'bob': {
@@ -219,20 +236,20 @@ class CachingFileSystemTest(unittest.TestCase):
     test_fs.IncrementStat()
     run_expecting_stat('1')
 
-    def testSkipNotFound(self):
-      caching_fs = self._CreateCachingFileSystem(TestFileSystem({
-        'bob': {
-          'bob0': 'bob/bob0 contents',
-          'bob1': 'bob/bob1 contents'
-        }
-      }))
-      def read_skip_not_found(paths):
-        return caching_fs.Read(paths, skip_not_found=True).Get()
-      self.assertEqual({}, read_skip_not_found(('grub',)))
-      self.assertEqual({}, read_skip_not_found(('bob/bob2',)))
-      self.assertEqual({
-        'bob/bob0': 'bob/bob0 contents',
-      }, read_skip_not_found(('bob/bob0', 'bob/bob2')))
+  def testSkipNotFound(self):
+    caching_fs = self._CreateCachingFileSystem(TestFileSystem({
+      'bob': {
+        'bob0': 'bob/bob0 contents',
+        'bob1': 'bob/bob1 contents'
+      }
+    }))
+    def read_skip_not_found(paths):
+      return caching_fs.Read(paths, skip_not_found=True).Get()
+    self.assertEqual({}, read_skip_not_found(('grub',)))
+    self.assertEqual({}, read_skip_not_found(('bob/bob2',)))
+    self.assertEqual({
+      'bob/bob0': 'bob/bob0 contents',
+    }, read_skip_not_found(('bob/bob0', 'bob/bob2')))
 
 
 if __name__ == '__main__':

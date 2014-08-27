@@ -57,7 +57,7 @@ class CachingFileSystem(FileSystem):
 
     dir_stat = self._stat_object_store.Get(dir_path).Get()
     if dir_stat is not None:
-      return Future(value=make_stat_info(dir_stat))
+      return Future(callback=lambda: make_stat_info(dir_stat))
 
     def next(dir_stat):
       assert dir_stat is not None  # should have raised a FileNotFoundError
@@ -76,9 +76,12 @@ class CachingFileSystem(FileSystem):
     return self._file_system.StatAsync(dir_path)
 
   def Read(self, paths, skip_not_found=False):
-    '''Reads a list of files. If a file is in memcache and it is not out of
+    '''Reads a list of files. If a file is cached and it is not out of
     date, it is returned. Otherwise, the file is retrieved from the file system.
     '''
+    # Files which aren't found are cached in the read object store as
+    # (path, None, None). This is to prevent re-reads of files we know
+    # do not exist.
     cached_read_values = self._read_object_store.GetMulti(paths).Get()
     cached_stat_values = self._stat_object_store.GetMulti(paths).Get()
 
@@ -102,26 +105,39 @@ class CachingFileSystem(FileSystem):
         stat_future = Future(value=stat_value)
       stat_futures[path] = stat_future
 
-    # Filter only the cached data which is fresh by comparing to the latest
+    # Filter only the cached data which is up to date by comparing to the latest
     # stat. The cached read data includes the cached version. Remove it for
-    # the result returned to callers.
-    fresh_data = dict(
+    # the result returned to callers. |version| == None implies a non-existent
+    # file, so skip it.
+    up_to_date_data = dict(
         (path, data) for path, (data, version) in cached_read_values.iteritems()
-        if stat_futures[path].Get().version == version)
+        if version is not None and stat_futures[path].Get().version == version)
 
-    if len(fresh_data) == len(paths):
+    if skip_not_found:
+      # Filter out paths which we know do not exist, i.e. if |path| is in
+      # |cached_read_values| *and* has a None version, then it doesn't exist.
+      # See the above declaration of |cached_read_values| for more information.
+      paths = [path for path in paths
+               if cached_read_values.get(path, (None, True))[1]]
+
+    if len(up_to_date_data) == len(paths):
       # Everything was cached and up-to-date.
-      return Future(value=fresh_data)
+      return Future(value=up_to_date_data)
 
     def next(new_results):
       # Update the cache. This is a path -> (data, version) mapping.
       self._read_object_store.SetMulti(
           dict((path, (new_result, stat_futures[path].Get().version))
                for path, new_result in new_results.iteritems()))
-      new_results.update(fresh_data)
+      # Update the read cache to include files that weren't found, to prevent
+      # constantly trying to read a file we now know doesn't exist.
+      self._read_object_store.SetMulti(
+          dict((path, (None, None)) for path in paths
+               if stat_futures[path].Get() is None))
+      new_results.update(up_to_date_data)
       return new_results
     # Read in the values that were uncached or old.
-    return self._file_system.Read(set(paths) - set(fresh_data.iterkeys()),
+    return self._file_system.Read(set(paths) - set(up_to_date_data.iterkeys()),
                                   skip_not_found=skip_not_found).Then(next)
 
   def GetIdentity(self):
