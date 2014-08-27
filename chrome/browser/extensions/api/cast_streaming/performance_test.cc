@@ -660,7 +660,8 @@ class CastV2PerformanceTest
 
 }  // namespace
 
-IN_PROC_BROWSER_TEST_P(CastV2PerformanceTest, Performance) {
+// crbug.com/356842
+IN_PROC_BROWSER_TEST_P(CastV2PerformanceTest, DISABLED_Performance) {
   RunTest("CastV2Performance");
 }
 
