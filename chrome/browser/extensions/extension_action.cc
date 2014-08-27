@@ -27,7 +27,6 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 #include "ui/gfx/skbitmap_operations.h"
-#include "ui/resources/grit/ui_resources.h"
 #include "url/gurl.h"
 
 namespace {

@@ -36,7 +36,6 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/ssl_status.h"
-#include "grit/app_locale_settings.h"
 #include "grit/browser_resources.h"
 #include "net/base/hash_value.h"
 #include "net/base/net_errors.h"

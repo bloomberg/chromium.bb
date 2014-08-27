@@ -20,7 +20,6 @@
 #import "ui/message_center/cocoa/tray_view_controller.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_tray.h"
-#include "ui/strings/grit/ui_strings.h"
 
 namespace message_center {
 

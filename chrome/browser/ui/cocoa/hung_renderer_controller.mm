@@ -26,7 +26,6 @@
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
-#include "ui/resources/grit/ui_resources.h"
 
 using content::WebContents;
 

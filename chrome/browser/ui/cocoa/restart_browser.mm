@@ -10,7 +10,6 @@
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
-#include "ui/strings/grit/ui_strings.h"
 
 // Helper to clean up after the notification that the alert was dismissed.
 @interface RestartHelper : NSObject {

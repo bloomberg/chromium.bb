@@ -24,7 +24,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/table_model_observer.h"
 #include "ui/gfx/codec/png_codec.h"
-#include "ui/resources/grit/ui_resources.h"
 #include "url/gurl.h"
 
 namespace {

@@ -30,7 +30,6 @@
 #include "components/omnibox/omnibox_field_trial.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/common/constants.h"
-#include "grit/app_locale_settings.h"
 #include "net/base/escape.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_view_state.h"

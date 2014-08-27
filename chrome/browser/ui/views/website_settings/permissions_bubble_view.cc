@@ -15,7 +15,6 @@
 #include "ui/base/models/combobox_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/text_constants.h"
-#include "ui/resources/grit/ui_resources.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/button/label_button.h"
