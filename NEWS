@@ -1,8 +1,17 @@
 liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 
-* Noteworthy changes in release 2.6.0 (2014-??-??)
+* Noteworthy changes in release 2.6.0 (2014-9-1)
 ** New features
-- Added a callback system for logging purposes.
+*** New Braille tables
+- Tables for Afrikaans, Cherokee, Hawaiian, Maori, Sotho and Tswana
+  were donated by Greg Kearney. Afrikaans, Cherokee, Maori and Hawiian
+  all are grade 1 tables and with the exception of Cherokee were
+  derived from World Braille Usage 2013. The Cherokee was taken from
+  the specification published at www.cbtbc.org/cherokee/.
+*** Logging callback
+There is now a callback system in place to get error messages and
+warnings. This can be used from programs that use liblouis to log
+warnings for example.
 
 ** Bug fixes
 - fix back translation problems when word gets split in unusual places
