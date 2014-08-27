@@ -1293,7 +1293,7 @@ crbug.com/406283 [ Release Mac Win ] inspector/console/console-log-before-inspec
 crbug.com/406283 [ Release Mac Win Linux ] inspector/console/console-format.html [ Failure Pass ]
 crbug.com/406283 [ Release Mac Win ] inspector/console/console-filter-level-test.html [ Failure Pass ]
 crbug.com/406283 [ Release Mac Win ] inspector/console/console-clear.html [ Failure Pass ]
-crbug.com/406283 [ Release Win ] inspector/console/console-xml-document.html [ Failure Pass ]
+crbug.com/406283 [ Release Win Linux ] inspector/console/console-xml-document.html [ Failure Pass ]
 crbug.com/406283 [ Release Mac Win ] inspector/console/console-log-linkify-links.html [ Failure Pass ]
 crbug.com/406283 [ Release Win Linux ] inspector/console/console-nested-group.html [ Failure Pass ]
 crbug.com/406283 [ Release Win ] inspector/console/console-format-style-whitelist.html [ Failure Pass ]
