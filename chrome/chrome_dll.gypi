@@ -77,20 +77,6 @@
           'variables': {
             'enable_wexit_time_destructors': 1,
           },
-          'sources': [
-            'app/chrome_command_ids.h',
-            'app/chrome_dll_resource.h',
-            'app/chrome_main.cc',
-            'app/chrome_main_delegate.cc',
-            'app/chrome_main_delegate.h',
-            'app/chrome_main_mac.mm',
-            'app/chrome_main_mac.h',
-            'app/close_handle_hook_win.cc',
-            'app/close_handle_hook_win.h',
-            'app/delay_load_hook_win.cc',
-            'app/delay_load_hook_win.h',
-            '../base/win/dllmain.cc',
-          ],
           'dependencies': [
             '<@(chromium_browser_dependencies)',
             '../content/content.gyp:content_app_browser',
@@ -131,9 +117,17 @@
                 '../ui/views/views.gyp:views',
               ],
               'sources': [
+                'app/chrome_command_ids.h',
                 'app/chrome_dll.rc',
-                
+                'app/chrome_dll_resource.h',
+                'app/chrome_main.cc',
+                'app/chrome_main_delegate.cc',
+                'app/chrome_main_delegate.h',
+                'app/delay_load_hook_win.cc',
+                'app/delay_load_hook_win.h',
+
                 '<(SHARED_INTERMEDIATE_DIR)/chrome_version/chrome_dll_version.rc',
+                '../base/win/dllmain.cc',
 
                 # Cursors.
                 '<(SHARED_INTERMEDIATE_DIR)/ui/resources/ui_unscaled_resources.rc',
@@ -278,6 +272,15 @@
                 # sets -order_file.
                 'ORDER_FILE': 'app/framework.order',
               },
+              'sources': [
+                'app/chrome_command_ids.h',
+                'app/chrome_dll_resource.h',
+                'app/chrome_main.cc',
+                'app/chrome_main_delegate.cc',
+                'app/chrome_main_delegate.h',
+                'app/chrome_main_mac.mm',
+                'app/chrome_main_mac.h',
+              ],
               'dependencies': [
                 '../pdf/pdf.gyp:pdf',
               ],
@@ -347,8 +350,6 @@
             'app/chrome_main.cc',
             'app/chrome_main_delegate.cc',
             'app/chrome_main_delegate.h',
-            'app/close_handle_hook_win.cc',
-            'app/close_handle_hook_win.h',
           ],
           'conditions': [
             ['OS=="win"', {

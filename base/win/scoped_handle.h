@@ -101,7 +101,9 @@ class GenericScopedHandle {
       Verifier::StopTracking(handle_, this, BASE_WIN_GET_CALLER,
                              tracked_objects::GetProgramCounter());
 
-      Traits::CloseHandle(handle_);
+      if (!Traits::CloseHandle(handle_))
+        CHECK(false);
+
       handle_ = Traits::NullHandle();
     }
   }
@@ -118,7 +120,9 @@ class HandleTraits {
   typedef HANDLE Handle;
 
   // Closes the handle.
-  static bool BASE_EXPORT CloseHandle(HANDLE handle);
+  static bool CloseHandle(HANDLE handle) {
+    return ::CloseHandle(handle) != FALSE;
+  }
 
   // Returns true if the handle value is valid.
   static bool IsHandleValid(HANDLE handle) {
@@ -163,17 +167,6 @@ class BASE_EXPORT VerifierTraits {
 };
 
 typedef GenericScopedHandle<HandleTraits, VerifierTraits> ScopedHandle;
-
-// This function should be called by the embedder to enable the use of
-// VerifierTraits at runtime. It has no effect if DummyVerifierTraits is used
-// for ScopedHandle.
-void BASE_EXPORT EnableHandleVerifier();
-
-// This should be called whenever the OS is closing a handle, if extended
-// verification of improper handle closing is desired. If |handle| is being
-// tracked by the handle verifier and ScopedHandle is not the one closing it,
-// a CHECK is generated.
-void BASE_EXPORT OnHandleBeingClosed(HANDLE handle);
 
 }  // namespace win
 }  // namespace base
