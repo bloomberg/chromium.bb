@@ -71,6 +71,15 @@ TEST_F(UnixDomainServerSocketTest, ListenWithInvalidPathWithAbstractNamespace) {
 #endif
 }
 
+TEST_F(UnixDomainServerSocketTest, ListenAgainAfterFailureWithInvalidPath) {
+  const bool kUseAbstractNamespace = false;
+  UnixDomainServerSocket server_socket(CreateAuthCallback(true),
+                                       kUseAbstractNamespace);
+  EXPECT_EQ(ERR_FILE_NOT_FOUND,
+            server_socket.ListenWithAddressAndPort(kInvalidSocketPath, 0, 1));
+  EXPECT_EQ(OK, server_socket.ListenWithAddressAndPort(socket_path_, 0, 1));
+}
+
 TEST_F(UnixDomainServerSocketTest, AcceptWithForbiddenUser) {
   const bool kUseAbstractNamespace = false;
 

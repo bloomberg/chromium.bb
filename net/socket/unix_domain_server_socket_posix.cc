@@ -63,13 +63,13 @@ int UnixDomainServerSocket::ListenWithAddressAndPort(
     return ERR_ADDRESS_INVALID;
   }
 
-  listen_socket_.reset(new SocketLibevent);
-  int rv = listen_socket_->Open(AF_UNIX);
+  scoped_ptr<SocketLibevent> socket(new SocketLibevent);
+  int rv = socket->Open(AF_UNIX);
   DCHECK_NE(ERR_IO_PENDING, rv);
   if (rv != OK)
     return rv;
 
-  rv = listen_socket_->Bind(address);
+  rv = socket->Bind(address);
   DCHECK_NE(ERR_IO_PENDING, rv);
   if (rv != OK) {
     PLOG(ERROR)
@@ -78,7 +78,13 @@ int UnixDomainServerSocket::ListenWithAddressAndPort(
     return rv;
   }
 
-  return listen_socket_->Listen(backlog);
+  rv = socket->Listen(backlog);
+  DCHECK_NE(ERR_IO_PENDING, rv);
+  if (rv != OK)
+    return rv;
+
+  listen_socket_.swap(socket);
+  return rv;
 }
 
 int UnixDomainServerSocket::GetLocalAddress(IPEndPoint* address) const {
