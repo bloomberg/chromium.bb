@@ -1588,6 +1588,8 @@ void FrameSelection::updateAppearance(ResetCaretBlinkOption option)
         return;
     }
 
+    m_frame->document()->updateLayoutIgnorePendingStylesheets();
+
     // Use the rightmost candidate for the start of the selection, and the leftmost candidate for the end of the selection.
     // Example: foo <a>bar</a>.  Imagine that a line wrap occurs after 'foo', and that 'bar' is selected.   If we pass [foo, 3]
     // as the start of the selection, the selection painting code will think that content on the line containing 'foo' is selected
