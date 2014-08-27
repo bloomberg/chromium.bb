@@ -48,7 +48,7 @@ std::string GetHostFromProcessView(int render_process_id, int render_view_id) {
 
 }  // namespace
 
-HostZoomMap* HostZoomMap::GetForBrowserContext(BrowserContext* context) {
+HostZoomMap* HostZoomMap::GetDefaultForBrowserContext(BrowserContext* context) {
   HostZoomMapImpl* rv = static_cast<HostZoomMapImpl*>(
       context->GetUserData(kHostZoomMapKeyName));
   if (!rv) {
@@ -61,15 +61,17 @@ HostZoomMap* HostZoomMap::GetForBrowserContext(BrowserContext* context) {
 // Helper function for setting/getting zoom levels for WebContents without
 // having to import HostZoomMapImpl everywhere.
 double HostZoomMap::GetZoomLevel(const WebContents* web_contents) {
-  HostZoomMapImpl* host_zoom_map = static_cast<HostZoomMapImpl*>(
-      HostZoomMap::GetForBrowserContext(web_contents->GetBrowserContext()));
+  HostZoomMapImpl* host_zoom_map =
+      static_cast<HostZoomMapImpl*>(HostZoomMap::GetDefaultForBrowserContext(
+          web_contents->GetBrowserContext()));
   return host_zoom_map->GetZoomLevelForWebContents(
       *static_cast<const WebContentsImpl*>(web_contents));
 }
 
 void HostZoomMap::SetZoomLevel(const WebContents* web_contents, double level) {
-  HostZoomMapImpl* host_zoom_map = static_cast<HostZoomMapImpl*>(
-      HostZoomMap::GetForBrowserContext(web_contents->GetBrowserContext()));
+  HostZoomMapImpl* host_zoom_map =
+      static_cast<HostZoomMapImpl*>(HostZoomMap::GetDefaultForBrowserContext(
+          web_contents->GetBrowserContext()));
   host_zoom_map->SetZoomLevelForWebContents(
       *static_cast<const WebContentsImpl*>(web_contents), level);
 }
@@ -374,7 +376,7 @@ void HostZoomMapImpl::SendZoomLevelChange(const std::string& scheme,
   for (RenderProcessHost::iterator i(RenderProcessHost::AllHostsIterator());
        !i.IsAtEnd(); i.Advance()) {
     RenderProcessHost* render_process_host = i.GetCurrentValue();
-    if (HostZoomMap::GetForBrowserContext(
+    if (HostZoomMap::GetDefaultForBrowserContext(
             render_process_host->GetBrowserContext()) == this) {
       render_process_host->Send(
           new ViewMsg_SetZoomLevelForCurrentURL(scheme, host, level));

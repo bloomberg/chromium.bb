@@ -52,7 +52,7 @@ class HostZoomMap {
 
   typedef std::vector<ZoomLevelChange> ZoomLevelVector;
 
-  CONTENT_EXPORT static HostZoomMap* GetForBrowserContext(
+  CONTENT_EXPORT static HostZoomMap* GetDefaultForBrowserContext(
       BrowserContext* browser_context);
 
   // Returns the current zoom level for the specified WebContents. May be

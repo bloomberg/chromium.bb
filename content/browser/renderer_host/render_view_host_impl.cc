@@ -1105,8 +1105,9 @@ void RenderViewHostImpl::OnDocumentAvailableInMainFrame(
   if (!uses_temporary_zoom_level)
     return;
 
-  HostZoomMapImpl* host_zoom_map = static_cast<HostZoomMapImpl*>(
-      HostZoomMap::GetForBrowserContext(GetProcess()->GetBrowserContext()));
+  HostZoomMapImpl* host_zoom_map =
+      static_cast<HostZoomMapImpl*>(HostZoomMap::GetDefaultForBrowserContext(
+          GetProcess()->GetBrowserContext()));
   host_zoom_map->SetTemporaryZoomLevel(GetProcess()->GetID(),
                                        GetRoutingID(),
                                        host_zoom_map->GetDefaultZoomLevel());
@@ -1426,8 +1427,9 @@ void RenderViewHostImpl::NotifyMoveOrResizeStarted() {
 
 void RenderViewHostImpl::OnDidZoomURL(double zoom_level,
                                       const GURL& url) {
-  HostZoomMapImpl* host_zoom_map = static_cast<HostZoomMapImpl*>(
-      HostZoomMap::GetForBrowserContext(GetProcess()->GetBrowserContext()));
+  HostZoomMapImpl* host_zoom_map =
+      static_cast<HostZoomMapImpl*>(HostZoomMap::GetDefaultForBrowserContext(
+          GetProcess()->GetBrowserContext()));
 
   host_zoom_map->SetZoomLevelForView(GetProcess()->GetID(),
                                      GetRoutingID(),

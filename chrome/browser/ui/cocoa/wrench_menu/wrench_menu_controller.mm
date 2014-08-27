@@ -103,7 +103,8 @@ class ZoomLevelObserver {
   if ((self = [super init])) {
     browser_ = browser;
     observer_.reset(new WrenchMenuControllerInternal::ZoomLevelObserver(
-        self, content::HostZoomMap::GetForBrowserContext(browser->profile())));
+        self,
+        content::HostZoomMap::GetDefaultForBrowserContext(browser->profile())));
     acceleratorDelegate_.reset(
         new WrenchMenuControllerInternal::AcceleratorDelegate());
     [self createModel];

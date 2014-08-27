@@ -41,7 +41,7 @@ class ZoomLevelChangeObserver {
   explicit ZoomLevelChangeObserver(Profile* profile)
       : message_loop_runner_(new content::MessageLoopRunner) {
     content::HostZoomMap* host_zoom_map = static_cast<content::HostZoomMap*>(
-        content::HostZoomMap::GetForBrowserContext(profile));
+        content::HostZoomMap::GetDefaultForBrowserContext(profile));
     subscription_ = host_zoom_map->AddZoomLevelChangedCallback(base::Bind(
         &ZoomLevelChangeObserver::OnZoomLevelChanged, base::Unretained(this)));
   }
@@ -81,7 +81,8 @@ class HostZoomMapBrowserTest : public InProcessBrowserTest {
 
   double GetZoomLevel(const GURL& url) {
     content::HostZoomMap* host_zoom_map = static_cast<content::HostZoomMap*>(
-        content::HostZoomMap::GetForBrowserContext(browser()->profile()));
+        content::HostZoomMap::GetDefaultForBrowserContext(
+            browser()->profile()));
     return host_zoom_map->GetZoomLevelForHostAndScheme(url.scheme(),
                                                        url.host());
   }
@@ -89,7 +90,8 @@ class HostZoomMapBrowserTest : public InProcessBrowserTest {
   std::vector<std::string> GetHostsWithZoomLevels() {
     typedef content::HostZoomMap::ZoomLevelVector ZoomLevelVector;
     content::HostZoomMap* host_zoom_map = static_cast<content::HostZoomMap*>(
-        content::HostZoomMap::GetForBrowserContext(browser()->profile()));
+        content::HostZoomMap::GetDefaultForBrowserContext(
+            browser()->profile()));
     content::HostZoomMap::ZoomLevelVector zoom_levels =
         host_zoom_map->GetAllZoomLevels();
     std::vector<std::string> results;

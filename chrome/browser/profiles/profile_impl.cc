@@ -769,7 +769,7 @@ void ProfileImpl::DoFinalInit() {
 }
 
 void ProfileImpl::InitHostZoomMap() {
-  HostZoomMap* host_zoom_map = HostZoomMap::GetForBrowserContext(this);
+  HostZoomMap* host_zoom_map = HostZoomMap::GetDefaultForBrowserContext(this);
   host_zoom_map->SetDefaultZoomLevel(
       prefs_->GetDouble(prefs::kDefaultZoomLevel));
 
@@ -1185,7 +1185,7 @@ history::TopSites* ProfileImpl::GetTopSitesWithoutCreating() {
 }
 
 void ProfileImpl::OnDefaultZoomLevelChanged() {
-  HostZoomMap::GetForBrowserContext(this)->SetDefaultZoomLevel(
+  HostZoomMap::GetDefaultForBrowserContext(this)->SetDefaultZoomLevel(
       pref_change_registrar_.prefs()->GetDouble(prefs::kDefaultZoomLevel));
 }
 
@@ -1194,7 +1194,7 @@ void ProfileImpl::OnZoomLevelChanged(
 
   if (change.mode != HostZoomMap::ZOOM_CHANGED_FOR_HOST)
     return;
-  HostZoomMap* host_zoom_map = HostZoomMap::GetForBrowserContext(this);
+  HostZoomMap* host_zoom_map = HostZoomMap::GetDefaultForBrowserContext(this);
   double level = change.zoom_level;
   DictionaryPrefUpdate update(prefs_.get(), prefs::kPerHostZoomLevels);
   base::DictionaryValue* host_zoom_dictionary = update.Get();

@@ -40,7 +40,7 @@ ZoomController::ZoomController(content::WebContents* web_contents)
           &ZoomController::UpdateState, base::Unretained(this), std::string()));
   zoom_level_ = default_zoom_level_.GetValue();
 
-  zoom_subscription_ = content::HostZoomMap::GetForBrowserContext(
+  zoom_subscription_ = content::HostZoomMap::GetDefaultForBrowserContext(
       browser_context_)->AddZoomLevelChangedCallback(
           base::Bind(&ZoomController::OnZoomLevelChanged,
                      base::Unretained(this)));
@@ -126,7 +126,7 @@ bool ZoomController::SetZoomLevelByExtension(
   }
 
   content::HostZoomMap* zoom_map =
-      content::HostZoomMap::GetForBrowserContext(browser_context_);
+      content::HostZoomMap::GetDefaultForBrowserContext(browser_context_);
   DCHECK(zoom_map);
   DCHECK(!event_data_);
   event_data_.reset(new ZoomChangedEventData(web_contents(),
@@ -162,7 +162,7 @@ void ZoomController::SetZoomMode(ZoomMode new_mode) {
     return;
 
   content::HostZoomMap* zoom_map =
-      content::HostZoomMap::GetForBrowserContext(browser_context_);
+      content::HostZoomMap::GetDefaultForBrowserContext(browser_context_);
   DCHECK(zoom_map);
   int render_process_id = web_contents()->GetRenderProcessHost()->GetID();
   int render_view_id = web_contents()->GetRenderViewHost()->GetRoutingID();

@@ -28,9 +28,10 @@ class TestingProfileWithHostZoomMap : public TestingProfile {
  public:
   TestingProfileWithHostZoomMap() {
     zoom_subscription_ =
-        HostZoomMap::GetForBrowserContext(this)->AddZoomLevelChangedCallback(
-            base::Bind(&TestingProfileWithHostZoomMap::OnZoomLevelChanged,
-                        base::Unretained(this)));
+        HostZoomMap::GetDefaultForBrowserContext(this)
+            ->AddZoomLevelChangedCallback(
+                base::Bind(&TestingProfileWithHostZoomMap::OnZoomLevelChanged,
+                           base::Unretained(this)));
   }
 
   virtual ~TestingProfileWithHostZoomMap() {}
@@ -46,7 +47,7 @@ class TestingProfileWithHostZoomMap : public TestingProfile {
     if (change.mode != HostZoomMap::ZOOM_CHANGED_FOR_HOST)
       return;
 
-    HostZoomMap* host_zoom_map = HostZoomMap::GetForBrowserContext(this);
+    HostZoomMap* host_zoom_map = HostZoomMap::GetDefaultForBrowserContext(this);
 
     double level = change.zoom_level;
     DictionaryPrefUpdate update(prefs_.get(), prefs::kPerHostZoomLevels);
@@ -131,7 +132,7 @@ TEST_F(OffTheRecordProfileImplTest, GetHostZoomMap) {
 
   // Prepare parent host zoom map.
   HostZoomMap* parent_zoom_map =
-      HostZoomMap::GetForBrowserContext(parent_profile);
+      HostZoomMap::GetDefaultForBrowserContext(parent_profile);
   ASSERT_TRUE(parent_zoom_map);
 
   parent_zoom_map->SetZoomLevelForHost(host, zoom_level_25);
@@ -152,7 +153,7 @@ TEST_F(OffTheRecordProfileImplTest, GetHostZoomMap) {
 
   // Prepare child host zoom map.
   HostZoomMap* child_zoom_map =
-      HostZoomMap::GetForBrowserContext(child_profile);
+      HostZoomMap::GetDefaultForBrowserContext(child_profile);
   ASSERT_TRUE(child_zoom_map);
 
   // Verify.

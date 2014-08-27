@@ -79,7 +79,6 @@
 #endif
 
 using base::UserMetricsAction;
-using content::HostZoomMap;
 using content::WebContents;
 
 namespace {
@@ -285,10 +284,10 @@ WrenchMenuModel::WrenchMenuModel(ui::AcceleratorProvider* provider,
   Build();
   UpdateZoomControls();
 
-  content_zoom_subscription_ = content::HostZoomMap::GetForBrowserContext(
-      browser->profile())->AddZoomLevelChangedCallback(
-          base::Bind(&WrenchMenuModel::OnZoomLevelChanged,
-                     base::Unretained(this)));
+  content_zoom_subscription_ =
+      content::HostZoomMap::GetDefaultForBrowserContext(browser->profile())
+          ->AddZoomLevelChangedCallback(base::Bind(
+              &WrenchMenuModel::OnZoomLevelChanged, base::Unretained(this)));
 
   browser_zoom_subscription_ = ZoomEventManager::GetForBrowserContext(
       browser->profile())->AddZoomLevelChangedCallback(

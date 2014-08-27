@@ -194,9 +194,9 @@ void OffTheRecordProfileImpl::InitIoData() {
 }
 
 void OffTheRecordProfileImpl::InitHostZoomMap() {
-  HostZoomMap* host_zoom_map = HostZoomMap::GetForBrowserContext(this);
+  HostZoomMap* host_zoom_map = HostZoomMap::GetDefaultForBrowserContext(this);
   HostZoomMap* parent_host_zoom_map =
-      HostZoomMap::GetForBrowserContext(profile_);
+      HostZoomMap::GetDefaultForBrowserContext(profile_);
   host_zoom_map->CopyFrom(parent_host_zoom_map);
   // Observe parent's HZM change for propagating change of parent's
   // change to this HZM.
@@ -515,7 +515,7 @@ Profile* Profile::CreateOffTheRecordProfile() {
 
 void OffTheRecordProfileImpl::OnZoomLevelChanged(
     const HostZoomMap::ZoomLevelChange& change) {
-  HostZoomMap* host_zoom_map = HostZoomMap::GetForBrowserContext(this);
+  HostZoomMap* host_zoom_map = HostZoomMap::GetDefaultForBrowserContext(this);
   switch (change.mode) {
     case HostZoomMap::ZOOM_CHANGED_TEMPORARY_ZOOM:
        return;

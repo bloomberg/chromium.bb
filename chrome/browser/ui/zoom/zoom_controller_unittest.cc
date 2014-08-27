@@ -95,7 +95,7 @@ TEST_F(ZoomControllerTest, Observe) {
   EXPECT_CALL(zoom_observer_, OnZoomChanged(zoom_change_data)).Times(1);
 
   content::HostZoomMap* host_zoom_map =
-      content::HostZoomMap::GetForBrowserContext(
+      content::HostZoomMap::GetDefaultForBrowserContext(
           web_contents()->GetBrowserContext());
 
   host_zoom_map->SetZoomLevelForHost(std::string(), new_zoom_level);

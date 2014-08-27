@@ -495,7 +495,7 @@ class WrenchMenu::ZoomView : public WrenchMenuView {
         decrement_button_(NULL),
         fullscreen_button_(NULL),
         zoom_label_width_(0) {
-    content_zoom_subscription_ = HostZoomMap::GetForBrowserContext(
+    content_zoom_subscription_ = HostZoomMap::GetDefaultForBrowserContext(
         menu->browser_->profile())->AddZoomLevelChangedCallback(
             base::Bind(&WrenchMenu::ZoomView::OnZoomLevelChanged,
                        base::Unretained(this)));

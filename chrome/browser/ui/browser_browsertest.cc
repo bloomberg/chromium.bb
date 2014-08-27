@@ -1836,7 +1836,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_PageZoom) {
     content::HostZoomMap::ZoomLevelChangedCallback callback(
         base::Bind(&OnZoomLevelChanged, loop_runner->QuitClosure()));
     scoped_ptr<content::HostZoomMap::Subscription> sub =
-        content::HostZoomMap::GetForBrowserContext(
+        content::HostZoomMap::GetDefaultForBrowserContext(
             browser()->profile())->AddZoomLevelChangedCallback(callback);
     chrome::Zoom(browser(), content::PAGE_ZOOM_IN);
     loop_runner->Run();
@@ -1852,7 +1852,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_PageZoom) {
     content::HostZoomMap::ZoomLevelChangedCallback callback(
         base::Bind(&OnZoomLevelChanged, loop_runner->QuitClosure()));
     scoped_ptr<content::HostZoomMap::Subscription> sub =
-        content::HostZoomMap::GetForBrowserContext(
+        content::HostZoomMap::GetDefaultForBrowserContext(
             browser()->profile())->AddZoomLevelChangedCallback(callback);
     chrome::Zoom(browser(), content::PAGE_ZOOM_RESET);
     loop_runner->Run();
@@ -1868,7 +1868,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_PageZoom) {
     content::HostZoomMap::ZoomLevelChangedCallback callback(
         base::Bind(&OnZoomLevelChanged, loop_runner->QuitClosure()));
     scoped_ptr<content::HostZoomMap::Subscription> sub =
-        content::HostZoomMap::GetForBrowserContext(
+        content::HostZoomMap::GetDefaultForBrowserContext(
             browser()->profile())->AddZoomLevelChangedCallback(callback);
     chrome::Zoom(browser(), content::PAGE_ZOOM_OUT);
     loop_runner->Run();

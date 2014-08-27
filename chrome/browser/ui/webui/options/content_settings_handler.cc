@@ -482,7 +482,7 @@ void ContentSettingsHandler::InitializeHandler() {
           base::Unretained(this)));
 
   content::HostZoomMap* host_zoom_map =
-      content::HostZoomMap::GetForBrowserContext(context);
+      content::HostZoomMap::GetDefaultForBrowserContext(context);
   host_zoom_map_subscription_ =
       host_zoom_map->AddZoomLevelChangedCallback(
           base::Bind(&ContentSettingsHandler::OnZoomLevelChanged,
@@ -961,7 +961,8 @@ void ContentSettingsHandler::UpdateZoomLevelsExceptionsView() {
   base::ListValue zoom_levels_exceptions;
 
   content::HostZoomMap* host_zoom_map =
-      content::HostZoomMap::GetForBrowserContext(GetBrowserContext(web_ui()));
+      content::HostZoomMap::GetDefaultForBrowserContext(
+          GetBrowserContext(web_ui()));
   content::HostZoomMap::ZoomLevelVector zoom_levels(
       host_zoom_map->GetAllZoomLevels());
   std::sort(zoom_levels.begin(), zoom_levels.end(), HostZoomSort);
@@ -1214,7 +1215,8 @@ void ContentSettingsHandler::RemoveZoomLevelException(
   DCHECK(rv);
 
   content::HostZoomMap* host_zoom_map =
-      content::HostZoomMap::GetForBrowserContext(GetBrowserContext(web_ui()));
+      content::HostZoomMap::GetDefaultForBrowserContext(
+          GetBrowserContext(web_ui()));
   double default_level = host_zoom_map->GetDefaultZoomLevel();
   host_zoom_map->SetZoomLevelForHost(pattern, default_level);
 }

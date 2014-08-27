@@ -131,7 +131,7 @@ void InitializeResourceContext(BrowserContext* browser_context) {
   resource_context->SetUserData(
       kHostZoomMapKeyName,
       new NonOwningZoomData(
-          HostZoomMap::GetForBrowserContext(browser_context)));
+          HostZoomMap::GetDefaultForBrowserContext(browser_context)));
 
   resource_context->DetachUserDataThread();
 }
