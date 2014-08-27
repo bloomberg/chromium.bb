@@ -140,11 +140,9 @@ void UploadFileElementReader::OnSeekCompleted(
 
   base::File::Info* file_info = new base::File::Info;
   bool posted = base::PostTaskAndReplyWithResult(
-      task_runner_,
+      task_runner_.get(),
       FROM_HERE,
-      base::Bind(&base::GetFileInfo,
-                 path_,
-                 file_info),
+      base::Bind(&base::GetFileInfo, path_, file_info),
       base::Bind(&UploadFileElementReader::OnGetFileInfoCompleted,
                  weak_ptr_factory_.GetWeakPtr(),
                  callback,

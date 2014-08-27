@@ -338,7 +338,7 @@ Filter::FilterStatus SdchFilter::InitializeDictionary() {
   else
     next_stream_data_ = NULL;
 
-  DCHECK(!dictionary_);
+  DCHECK(!dictionary_.get());
   dictionary_hash_is_plausible_ = true;  // Assume plausible, but check.
 
   if ('\0' == dictionary_hash_[kServerIdLength - 1]) {
@@ -350,7 +350,7 @@ Filter::FilterStatus SdchFilter::InitializeDictionary() {
     dictionary_hash_is_plausible_ = false;
   }
 
-  if (!dictionary_) {
+  if (!dictionary_.get()) {
     DCHECK(dictionary_hash_.size() == kServerIdLength);
     // Since dictionary was not found, check to see if hash was even plausible.
     for (size_t i = 0; i < kServerIdLength - 1; ++i) {

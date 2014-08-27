@@ -2402,7 +2402,7 @@ TEST_P(SpdySessionTest, VerifyDomainAuthentication) {
   base::FilePath certs_dir = GetTestCertsDirectory();
   scoped_refptr<X509Certificate> test_cert(
       ImportCertFromFile(certs_dir, "spdy_pooling.pem"));
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), test_cert);
+  ASSERT_NE(static_cast<X509Certificate*>(NULL), test_cert.get());
 
   SSLSocketDataProvider ssl(SYNCHRONOUS, OK);
   ssl.cert = test_cert;
@@ -2444,7 +2444,7 @@ TEST_P(SpdySessionTest, ConnectionPooledWithTlsChannelId) {
   base::FilePath certs_dir = GetTestCertsDirectory();
   scoped_refptr<X509Certificate> test_cert(
       ImportCertFromFile(certs_dir, "spdy_pooling.pem"));
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), test_cert);
+  ASSERT_NE(static_cast<X509Certificate*>(NULL), test_cert.get());
 
   SSLSocketDataProvider ssl(SYNCHRONOUS, OK);
   ssl.channel_id_sent = true;

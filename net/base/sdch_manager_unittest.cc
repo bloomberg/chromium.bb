@@ -197,7 +197,7 @@ TEST_F(SdchManagerTest, CanUseHTTPSDictionaryOverHTTPSIfEnabled) {
   std::string server_hash;
   sdch_manager()->GenerateHash(dictionary_text, &client_hash, &server_hash);
   sdch_manager()->GetVcdiffDictionary(server_hash, target_url, &dictionary);
-  EXPECT_TRUE(dictionary != NULL);
+  EXPECT_TRUE(dictionary.get() != NULL);
 }
 
 TEST_F(SdchManagerTest, CanNotUseHTTPDictionaryOverHTTPS) {
@@ -220,7 +220,7 @@ TEST_F(SdchManagerTest, CanNotUseHTTPDictionaryOverHTTPS) {
   std::string server_hash;
   sdch_manager()->GenerateHash(dictionary_text, &client_hash, &server_hash);
   sdch_manager()->GetVcdiffDictionary(server_hash, target_url, &dictionary);
-  EXPECT_TRUE(dictionary == NULL);
+  EXPECT_TRUE(dictionary.get() == NULL);
 }
 
 TEST_F(SdchManagerTest, CanNotUseHTTPSDictionaryOverHTTP) {
@@ -243,7 +243,7 @@ TEST_F(SdchManagerTest, CanNotUseHTTPSDictionaryOverHTTP) {
   std::string server_hash;
   sdch_manager()->GenerateHash(dictionary_text, &client_hash, &server_hash);
   sdch_manager()->GetVcdiffDictionary(server_hash, target_url, &dictionary);
-  EXPECT_TRUE(dictionary == NULL);
+  EXPECT_TRUE(dictionary.get() == NULL);
 }
 
 TEST_F(SdchManagerTest, FailToSetDomainMismatchDictionary) {
@@ -429,7 +429,7 @@ TEST_F(SdchManagerTest, CanUseMultipleManagers) {
       server_hash_1,
       GURL("http://" + dictionary_domain_1 + "/random_url"),
       &dictionary);
-  EXPECT_TRUE(dictionary);
+  EXPECT_TRUE(dictionary.get());
 
   EXPECT_TRUE(second_manager.AddSdchDictionary(
       dictionary_text_2, GURL("http://" + dictionary_domain_2)));
@@ -437,19 +437,19 @@ TEST_F(SdchManagerTest, CanUseMultipleManagers) {
       server_hash_2,
       GURL("http://" + dictionary_domain_2 + "/random_url"),
       &dictionary);
-  EXPECT_TRUE(dictionary);
+  EXPECT_TRUE(dictionary.get());
 
   sdch_manager()->GetVcdiffDictionary(
       server_hash_2,
       GURL("http://" + dictionary_domain_2 + "/random_url"),
       &dictionary);
-  EXPECT_FALSE(dictionary);
+  EXPECT_FALSE(dictionary.get());
 
   second_manager.GetVcdiffDictionary(
       server_hash_1,
       GURL("http://" + dictionary_domain_1 + "/random_url"),
       &dictionary);
-  EXPECT_FALSE(dictionary);
+  EXPECT_FALSE(dictionary.get());
 }
 
 TEST_F(SdchManagerTest, HttpsCorrectlySupported) {
@@ -481,7 +481,7 @@ TEST_F(SdchManagerTest, ClearDictionaryData) {
       server_hash,
       GURL("http://" + dictionary_domain + "/random_url"),
       &dictionary);
-  EXPECT_TRUE(dictionary);
+  EXPECT_TRUE(dictionary.get());
 
   sdch_manager()->BlacklistDomain(GURL(blacklist_url),
                                   SdchManager::MIN_PROBLEM_CODE);
@@ -494,7 +494,7 @@ TEST_F(SdchManagerTest, ClearDictionaryData) {
       server_hash,
       GURL("http://" + dictionary_domain + "/random_url"),
       &dictionary);
-  EXPECT_FALSE(dictionary);
+  EXPECT_FALSE(dictionary.get());
   EXPECT_TRUE(sdch_manager()->IsInSupportedDomain(blacklist_url));
 }
 

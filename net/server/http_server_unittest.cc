@@ -147,9 +147,8 @@ class TestHttpClient {
 
   void ReadInternal(const net::CompletionCallback& callback) {
     read_buffer_ = new IOBufferWithSize(kMaxExpectedResponseLength);
-    int result = socket_->Read(read_buffer_,
-                               kMaxExpectedResponseLength,
-                               callback);
+    int result =
+        socket_->Read(read_buffer_.get(), kMaxExpectedResponseLength, callback);
     if (result != ERR_IO_PENDING)
       callback.Run(result);
   }
@@ -533,7 +532,7 @@ class MockStreamSocket : public StreamSocket {
   }
 
   void DidRead(const char* data, int data_len) {
-    if (!read_buf_) {
+    if (!read_buf_.get()) {
       pending_read_data_.append(data, data_len);
       return;
     }

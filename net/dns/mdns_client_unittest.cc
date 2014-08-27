@@ -1163,7 +1163,7 @@ TEST_F(MDnsConnectionTest, Send) {
   EXPECT_CALL(*socket_ipv6_,
               SendToInternal(sample_packet, "[ff02::fb]:5353", _));
 
-  connection_.Send(buf, buf->size());
+  connection_.Send(buf.get(), buf->size());
 }
 
 TEST_F(MDnsConnectionTest, Error) {

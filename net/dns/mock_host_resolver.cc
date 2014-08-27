@@ -440,7 +440,7 @@ ScopedDefaultHostResolverProc::~ScopedDefaultHostResolverProc() {
   HostResolverProc* old_proc =
       HostResolverProc::SetDefault(previous_proc_.get());
   // The lifetimes of multiple instances must be nested.
-  CHECK_EQ(old_proc, current_proc_);
+  CHECK_EQ(old_proc, current_proc_.get());
 }
 
 void ScopedDefaultHostResolverProc::Init(HostResolverProc* proc) {

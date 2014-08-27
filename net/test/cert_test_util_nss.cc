@@ -71,7 +71,7 @@ scoped_refptr<X509Certificate> ImportClientCertAndKeyFromFile(
 
   scoped_refptr<X509Certificate> cert(ImportCertFromFile(dir, cert_filename));
 
-  if (!cert) {
+  if (!cert.get()) {
     LOG(ERROR) << "Failed to parse cert from file " << cert_filename;
     return NULL;
   }

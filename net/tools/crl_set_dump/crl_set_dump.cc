@@ -53,7 +53,8 @@ int main(int argc, char** argv) {
   }
 
   if (!delta_bytes.empty()) {
-    if (!net::CRLSetStorage::ApplyDelta(crl_set, delta_bytes, &final_crl_set)) {
+    if (!net::CRLSetStorage::ApplyDelta(
+            crl_set.get(), delta_bytes, &final_crl_set)) {
       fprintf(stderr, "Failed to apply delta to CRLSet\n");
       return 1;
     }
@@ -62,7 +63,7 @@ int main(int argc, char** argv) {
   }
 
   if (!output_filename.empty()) {
-    const std::string out = net::CRLSetStorage::Serialize(final_crl_set);
+    const std::string out = net::CRLSetStorage::Serialize(final_crl_set.get());
     if (base::WriteFile(output_filename, out.data(), out.size()) == -1) {
       fprintf(stderr, "Failed to write resulting CRL set\n");
       return 1;

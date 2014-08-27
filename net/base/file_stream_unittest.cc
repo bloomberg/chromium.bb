@@ -172,7 +172,7 @@ TEST_F(FileStreamTest, UseClosedStream) {
 
   // Try reading...
   scoped_refptr<IOBufferWithSize> buf = new IOBufferWithSize(10);
-  rv = stream.Read(buf, buf->size(), callback.callback());
+  rv = stream.Read(buf.get(), buf->size(), callback.callback());
   EXPECT_EQ(ERR_UNEXPECTED, callback.GetResult(rv));
 }
 

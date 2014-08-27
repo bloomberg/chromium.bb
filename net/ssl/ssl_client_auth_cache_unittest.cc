@@ -43,7 +43,7 @@ TEST(SSLClientAuthCacheTest, LookupAddRemove) {
   cache.Add(server2, cert2.get());
   cached_cert = NULL;
   EXPECT_TRUE(cache.Lookup(server1, &cached_cert));
-  EXPECT_EQ(cert1, cached_cert.get());
+  EXPECT_EQ(cert1.get(), cached_cert.get());
   cached_cert = NULL;
   EXPECT_TRUE(cache.Lookup(server2, &cached_cert));
   EXPECT_EQ(cert2, cached_cert);
@@ -95,9 +95,9 @@ TEST(SSLClientAuthCacheTest, LookupWithPort) {
 
   scoped_refptr<X509Certificate> cached_cert;
   EXPECT_TRUE(cache.Lookup(server1, &cached_cert));
-  EXPECT_EQ(cert1.get(), cached_cert);
+  EXPECT_EQ(cert1.get(), cached_cert.get());
   EXPECT_TRUE(cache.Lookup(server2, &cached_cert));
-  EXPECT_EQ(cert2.get(), cached_cert);
+  EXPECT_EQ(cert2.get(), cached_cert.get());
 }
 
 // Check that the a NULL certificate, indicating the user has declined to send
