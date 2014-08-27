@@ -862,7 +862,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 // |reauthRequired| is true, the button also displays a warning icon. |tag|
 // indicates which account the button refers to.
 - (NSButton*)accountButtonWithRect:(NSRect)rect
-                             title:(const std::string&)title
+                         accountId:(const std::string&)accountId
                                tag:(int)tag
                     reauthRequired:(BOOL)reauthRequired;
 
@@ -927,7 +927,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 
 - (IBAction)navigateBackFromSigninPage:(id)sender {
   std::string primaryAccount = SigninManagerFactory::GetForProfile(
-      browser_->profile())->GetAuthenticatedUsername();
+      browser_->profile())->GetAuthenticatedAccountId();
   bool hasAccountManagement = !primaryAccount.empty() &&
       switches::IsEnableAccountConsistency();
   [self initMenuContentsWithView:hasAccountManagement ?
@@ -943,7 +943,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   int tag = [sender tag];
   if (tag == kPrimaryProfileTag) {
     accountIdToRemove_ = SigninManagerFactory::GetForProfile(
-        browser_->profile())->GetAuthenticatedUsername();
+        browser_->profile())->GetAuthenticatedAccountId();
   } else {
     DCHECK(ContainsKey(currentProfileAccounts_, tag));
     accountIdToRemove_ = currentProfileAccounts_[tag];
@@ -1792,7 +1792,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 
   Profile* profile = browser_->profile();
   std::string primaryAccount =
-      SigninManagerFactory::GetForProfile(profile)->GetAuthenticatedUsername();
+      SigninManagerFactory::GetForProfile(profile)->GetAuthenticatedAccountId();
   DCHECK(!primaryAccount.empty());
   std::vector<std::string>accounts =
       profiles::GetSecondaryAccountsForProfile(profile, primaryAccount);
@@ -1810,7 +1810,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
     currentProfileAccounts_[i] = accounts[i];
     NSButton* accountButton =
         [self accountButtonWithRect:rect
-                              title:accounts[i]
+                         accountId:accounts[i]
                                 tag:i
                      reauthRequired:errorAccountId == accounts[i]];
     [container addSubview:accountButton];
@@ -1820,7 +1820,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   // The primary account should always be listed first.
   NSButton* accountButton =
       [self accountButtonWithRect:rect
-                            title:primaryAccount
+                        accountId:primaryAccount
                               tag:kPrimaryProfileTag
                    reauthRequired:errorAccountId == primaryAccount];
   [container addSubview:accountButton];
@@ -1902,7 +1902,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   CGFloat yOffset = kVerticalSpacing;
 
   const std::string& primaryAccount = SigninManagerFactory::GetForProfile(
-      browser_->profile())->GetAuthenticatedUsername();
+      browser_->profile())->GetAuthenticatedAccountId();
   bool isPrimaryAccount = primaryAccount == accountIdToRemove_;
 
   // Adds "remove account" button at the bottom if needed.
@@ -1926,10 +1926,12 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   NSView* contentView;
   NSPoint contentFrameOrigin = NSMakePoint(kHorizontalSpacing, yOffset);
   if (isPrimaryAccount) {
+    std::string email = signin_ui_util::GetDisplayEmail(browser_->profile(),
+                                                        accountIdToRemove_);
     std::vector<size_t> offsets;
     NSString* contentStr = l10n_util::GetNSStringF(
         IDS_PROFILES_PRIMARY_ACCOUNT_REMOVAL_TEXT,
-        base::UTF8ToUTF16(accountIdToRemove_), base::string16(), &offsets);
+        base::UTF8ToUTF16(email), base::string16(), &offsets);
     NSString* linkStr = l10n_util::GetNSString(IDS_PROFILES_SETTINGS_LINK);
     contentView = BuildFixedWidthTextViewWithLink(self, contentStr, linkStr,
         offsets[1], contentFrameOrigin, availableWidth);
@@ -2092,9 +2094,13 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 }
 
 - (NSButton*)accountButtonWithRect:(NSRect)rect
-                             title:(const std::string&)title
+                         accountId:(const std::string&)accountId
                                tag:(int)tag
                     reauthRequired:(BOOL)reauthRequired {
+  // Get display email address for account.
+  std::string email = signin_ui_util::GetDisplayEmail(browser_->profile(),
+                                                      accountId);
+
   ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
   NSImage* deleteImage = rb->GetNativeImageNamed(IDR_CLOSE_1).ToNSImage();
   CGFloat deleteImageWidth = [deleteImage size].width;
@@ -2113,7 +2119,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
       [[BackgroundColorHoverButton alloc] initWithFrame:rect
                                       imageTitleSpacing:0
                                         backgroundColor:backgroundColor]);
-  [button setTitle:ElideEmail(title, availableTextWidth)];
+  [button setTitle:ElideEmail(email, availableTextWidth)];
   [button setAlignment:NSLeftTextAlignment];
   [button setBordered:NO];
   if (reauthRequired) {

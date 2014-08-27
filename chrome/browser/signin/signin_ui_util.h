@@ -42,6 +42,12 @@ void InitializePrefsForProfile(Profile* profile);
 // Shows a learn more page for signin errors.
 void ShowSigninErrorLearnMorePage(Profile* profile);
 
+// Returns the display email string for the given account.  If the profile
+// has not been migrated to use gaia ids, then its possible for the display
+// to not ne known yet.  In this case, use |account_id|, which is assumed to
+// be an email address.
+std::string GetDisplayEmail(Profile* profile, const std::string& account_id);
+
 }  // namespace signin_ui_util
 
 #endif  // CHROME_BROWSER_SIGNIN_SIGNIN_UI_UTIL_H_

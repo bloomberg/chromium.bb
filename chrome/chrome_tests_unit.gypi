@@ -107,6 +107,8 @@
         'browser/sessions/session_service_test_helper.h',
         'browser/signin/fake_account_reconcilor.cc',
         'browser/signin/fake_account_reconcilor.h',
+        'browser/signin/fake_account_tracker_service.cc',
+        'browser/signin/fake_account_tracker_service.h',
         'browser/signin/fake_profile_oauth2_token_service.cc',
         'browser/signin/fake_profile_oauth2_token_service.h',
         'browser/signin/fake_profile_oauth2_token_service_builder.cc',

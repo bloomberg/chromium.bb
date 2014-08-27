@@ -103,7 +103,9 @@ class AccountTrackerService : public KeyedService,
 
   void StartTrackingAccount(const std::string& account_id);
   void StopTrackingAccount(const std::string& account_id);
-  void StartFetchingUserInfo(const std::string& account_id);
+
+  // Virtual so that tests can override the network fetching behaviour.
+  virtual void StartFetchingUserInfo(const std::string& account_id);
   void DeleteFetcher(AccountInfoFetcher* fetcher);
 
   // Load the current state of the account info from the preferences file.

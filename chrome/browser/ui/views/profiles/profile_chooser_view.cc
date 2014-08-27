@@ -746,7 +746,7 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
   } else if (sender == gaia_signin_cancel_button_) {
     std::string primary_account =
         SigninManagerFactory::GetForProfile(browser_->profile())->
-        GetAuthenticatedUsername();
+            GetAuthenticatedAccountId();
     // The account management view is only available with the
     // --enable-account-consistency flag.
     bool account_management_available = !primary_account.empty() &&
@@ -1318,7 +1318,7 @@ views::View* ProfileChooserView::CreateCurrentProfileAccountsView(
 
   Profile* profile = browser_->profile();
   std::string primary_account =
-      SigninManagerFactory::GetForProfile(profile)->GetAuthenticatedUsername();
+      SigninManagerFactory::GetForProfile(profile)->GetAuthenticatedAccountId();
   DCHECK(!primary_account.empty());
   std::vector<std::string>accounts =
       profiles::GetSecondaryAccountsForProfile(profile, primary_account);
@@ -1352,10 +1352,12 @@ views::View* ProfileChooserView::CreateCurrentProfileAccountsView(
 }
 
 void ProfileChooserView::CreateAccountButton(views::GridLayout* layout,
-                                             const std::string& account,
+                                             const std::string& account_id,
                                              bool is_primary_account,
                                              bool reauth_required,
                                              int width) {
+  std::string email = signin_ui_util::GetDisplayEmail(browser_->profile(),
+                                                      account_id);
   ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
   const gfx::ImageSkia* delete_default_image =
       rb->GetImageNamed(IDR_CLOSE_1).ToImageSkia();
@@ -1369,7 +1371,7 @@ void ProfileChooserView::CreateAccountButton(views::GridLayout* layout,
       - kDeleteButtonWidth - kWarningButtonWidth;
   views::LabelButton* email_button = new BackgroundColorHoverButton(
       reauth_required ? this : NULL,
-      base::UTF8ToUTF16(account),
+      base::UTF8ToUTF16(email),
       warning_default_image);
   email_button->SetElideBehavior(gfx::ELIDE_EMAIL);
   email_button->SetMinSize(gfx::Size(0, kButtonHeight));
@@ -1378,7 +1380,7 @@ void ProfileChooserView::CreateAccountButton(views::GridLayout* layout,
   layout->AddView(email_button);
 
   if (reauth_required)
-    reauth_account_button_map_[email_button] = account;
+    reauth_account_button_map_[email_button] = account_id;
 
   // Delete button.
   if (!browser_->profile()->IsSupervised()) {
@@ -1399,7 +1401,7 @@ void ProfileChooserView::CreateAccountButton(views::GridLayout* layout,
     email_button->AddChildView(delete_button);
 
     // Save the original email address, as the button text could be elided.
-    delete_account_button_map_[delete_button] = account;
+    delete_account_button_map_[delete_button] = account_id;
   }
 }
 
@@ -1456,7 +1458,7 @@ views::View* ProfileChooserView::CreateAccountRemovalView() {
                     views::kButtonHEdgeMarginNew);
 
   const std::string& primary_account = SigninManagerFactory::GetForProfile(
-      browser_->profile())->GetAuthenticatedUsername();
+      browser_->profile())->GetAuthenticatedAccountId();
   bool is_primary_account = primary_account == account_id_to_remove_;
 
   // Adds main text.
@@ -1466,12 +1468,14 @@ views::View* ProfileChooserView::CreateAccountRemovalView() {
       rb->GetFontList(ui::ResourceBundle::SmallFont);
 
   if (is_primary_account) {
+    std::string email = signin_ui_util::GetDisplayEmail(browser_->profile(),
+                                                        account_id_to_remove_);
     std::vector<size_t> offsets;
     const base::string16 settings_text =
         l10n_util::GetStringUTF16(IDS_PROFILES_SETTINGS_LINK);
     const base::string16 primary_account_removal_text =
         l10n_util::GetStringFUTF16(IDS_PROFILES_PRIMARY_ACCOUNT_REMOVAL_TEXT,
-            base::UTF8ToUTF16(account_id_to_remove_), settings_text, &offsets);
+            base::UTF8ToUTF16(email), settings_text, &offsets);
     views::StyledLabel* primary_account_removal_label =
         new views::StyledLabel(primary_account_removal_text, this);
     primary_account_removal_label->AddStyleRange(

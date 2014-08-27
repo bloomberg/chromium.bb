@@ -8,6 +8,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_global_error.h"
 #include "chrome/browser/signin/signin_global_error_factory.h"
@@ -20,6 +21,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/common/profile_management_switches.h"
@@ -172,6 +174,18 @@ void ShowSigninErrorLearnMorePage(Profile* profile) {
       profile, GURL(kSigninErrorLearnMoreUrl), content::PAGE_TRANSITION_LINK);
   params.disposition = NEW_FOREGROUND_TAB;
   chrome::Navigate(&params);
+}
+
+std::string GetDisplayEmail(Profile* profile, const std::string& account_id) {
+  AccountTrackerService* account_tracker =
+      AccountTrackerServiceFactory::GetForProfile(profile);
+  std::string email = account_tracker->GetAccountInfo(account_id).email;
+  if (email.empty()) {
+    DCHECK_EQ(AccountTrackerService::MIGRATION_NOT_STARTED,
+              account_tracker->GetMigrationState());
+    return account_id;
+  }
+  return email;
 }
 
 }  // namespace signin_ui_util
