@@ -53,7 +53,8 @@ class AthenaDesktopController : public extensions::DesktopController {
     extensions::ShellAppWindow* app_window = new extensions::ShellAppWindow();
     app_window->Init(context, extension, gfx::Size(100, 100));
     athena::ActivityManager::Get()->AddActivity(
-        athena::ActivityFactory::Get()->CreateAppActivity(app_window));
+        athena::ActivityFactory::Get()->CreateAppActivity(app_window,
+                                                          extension->id()));
     return app_window;
   }
 

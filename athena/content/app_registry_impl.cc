@@ -5,7 +5,6 @@
 #include "athena/content/public/app_registry.h"
 
 #include "athena/content/app_activity_registry.h"
-#include "athena/content/public/app_content_control_delegate.h"
 #include "base/logging.h"
 
 namespace athena {
@@ -16,8 +15,6 @@ class AppRegistryImpl : public AppRegistry {
   virtual ~AppRegistryImpl();
 
   // AppRegistry:
-  virtual void SetDelegate(AppContentControlDelegate* delegate) OVERRIDE;
-  virtual AppContentControlDelegate* GetDelegate() OVERRIDE;
   virtual AppActivityRegistry* GetAppActivityRegistry(
       const std::string& app_id,
       content::BrowserContext* browser_context) OVERRIDE;
@@ -27,9 +24,7 @@ class AppRegistryImpl : public AppRegistry {
   virtual void RemoveAppActivityRegistry(
       AppActivityRegistry* registry) OVERRIDE;
 
- std::vector<AppActivityRegistry*> app_list_;
-
-  scoped_ptr<AppContentControlDelegate> delegate_;
+  std::vector<AppActivityRegistry*> app_list_;
 
   DISALLOW_COPY_AND_ASSIGN(AppRegistryImpl);
 };
@@ -40,20 +35,10 @@ AppRegistryImpl* instance = NULL;
 
 }  // namespace
 
-AppRegistryImpl::AppRegistryImpl() :
-    delegate_(AppContentControlDelegate::CreateAppContentControlDelegate()) {}
-
+AppRegistryImpl::AppRegistryImpl() {
+}
 AppRegistryImpl::~AppRegistryImpl() {
   DCHECK(app_list_.empty());
-}
-
-void AppRegistryImpl::SetDelegate(AppContentControlDelegate* delegate) {
-  DCHECK(delegate);
-  delegate_.reset(delegate);
-}
-
-AppContentControlDelegate* AppRegistryImpl::GetDelegate() {
-  return delegate_.get();
 }
 
 AppActivityRegistry* AppRegistryImpl::GetAppActivityRegistry(

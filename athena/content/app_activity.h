@@ -27,7 +27,7 @@ class AppActivity : public Activity,
                     public ActivityViewModel,
                     public content::WebContentsObserver {
  public:
-  AppActivity();
+  explicit AppActivity(const std::string& app_id);
   virtual ~AppActivity();
 
   // Activity:
@@ -53,9 +53,6 @@ class AppActivity : public Activity,
                            bool explicit_set) OVERRIDE;
   virtual void DidUpdateFaviconURL(
       const std::vector<content::FaviconURL>& candidates) OVERRIDE;
-  virtual void DidStartNavigationToPendingEntry(
-        const GURL& url,
-        content::NavigationController::ReloadType reload_type) OVERRIDE;
 
  protected:
   virtual content::WebContents* GetWebContents() = 0;
@@ -63,6 +60,8 @@ class AppActivity : public Activity,
  private:
   // Register this activity with its application.
   void RegisterActivity();
+
+  const std::string app_id_;
 
   views::WebView* web_view_;
 

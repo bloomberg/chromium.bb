@@ -8,11 +8,13 @@
 
 namespace athena {
 
-ShellAppActivity::ShellAppActivity(extensions::ShellAppWindow* app_window)
-    : shell_app_window_(app_window) {
+ShellAppActivity::ShellAppActivity(extensions::ShellAppWindow* app_window,
+                                   const std::string& app_id)
+    : AppActivity(app_id), shell_app_window_(app_window) {
 }
 
-ShellAppActivity::~ShellAppActivity() {}
+ShellAppActivity::~ShellAppActivity() {
+}
 
 content::WebContents* ShellAppActivity::GetWebContents() {
   return shell_app_window_->GetAssociatedWebContents();

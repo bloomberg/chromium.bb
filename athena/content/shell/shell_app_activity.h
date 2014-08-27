@@ -17,7 +17,8 @@ namespace athena {
 
 class ShellAppActivity : public AppActivity {
  public:
-  explicit ShellAppActivity(extensions::ShellAppWindow* app_window);
+  ShellAppActivity(extensions::ShellAppWindow* app_window,
+                   const std::string& app_id);
   virtual ~ShellAppActivity();
 
  private:

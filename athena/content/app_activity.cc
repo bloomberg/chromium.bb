@@ -6,7 +6,6 @@
 
 #include "athena/activity/public/activity_manager.h"
 #include "athena/content/app_activity_registry.h"
-#include "athena/content/public/app_content_control_delegate.h"
 #include "athena/content/public/app_registry.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/views/controls/webview/webview.h"
@@ -15,8 +14,9 @@
 namespace athena {
 
 // TODO(mukai): specifies the same accelerators of WebActivity.
-AppActivity::AppActivity()
-    : web_view_(NULL),
+AppActivity::AppActivity(const std::string& app_id)
+    : app_id_(app_id),
+      web_view_(NULL),
       current_state_(ACTIVITY_UNLOADED),
       app_activity_registry_(NULL) {
 }
@@ -120,6 +120,7 @@ views::View* AppActivity::GetContentsView() {
     SetCurrentState(ACTIVITY_INVISIBLE);
     Observe(web_contents);
     overview_mode_image_ = gfx::ImageSkia();
+    RegisterActivity();
   }
   return web_view_;
 }
@@ -142,13 +143,6 @@ void AppActivity::DidUpdateFaviconURL(
   ActivityManager::Get()->UpdateActivity(this);
 }
 
-void AppActivity::DidStartNavigationToPendingEntry(
-      const GURL& url,
-      content::NavigationController::ReloadType reload_type) {
-  if (!app_activity_registry_)
-    RegisterActivity();
-}
-
 // Register an |activity| with an application.
 // Note: This should only get called once for an |app_window| of the
 // |activity|.
@@ -157,8 +151,7 @@ void AppActivity::RegisterActivity() {
   AppRegistry* app_registry = AppRegistry::Get();
   // Get the application's registry.
   app_activity_registry_ = app_registry->GetAppActivityRegistry(
-          app_registry->GetDelegate()->GetApplicationID(web_contents),
-          web_contents->GetBrowserContext());
+      app_id_, web_contents->GetBrowserContext());
   DCHECK(app_activity_registry_);
   // Register the activity.
   app_activity_registry_->RegisterAppActivity(this);

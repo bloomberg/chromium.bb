@@ -6,9 +6,10 @@
 #include "athena/activity/public/activity_manager.h"
 #include "athena/content/app_activity.h"
 #include "athena/content/app_activity_registry.h"
-#include "athena/content/public/app_content_control_delegate.h"
 #include "athena/content/public/app_registry.h"
+#include "athena/extensions/public/extensions_delegate.h"
 #include "athena/test/athena_test_base.h"
+#include "extensions/common/extension_set.h"
 #include "ui/aura/window.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
@@ -29,11 +30,10 @@ const char kDummyApp2[] = "bbbbbbb";
 // A dummy test app activity which works without content / ShellAppWindow.
 class TestAppActivity : public AppActivity {
  public:
-  explicit TestAppActivity(const std::string& app_id) :
-      AppActivity(),
-      app_id_(app_id),
-      view_(new views::View()),
-      current_state_(ACTIVITY_VISIBLE) {
+  explicit TestAppActivity(const std::string& app_id)
+      : AppActivity(app_id),
+        view_(new views::View()),
+        current_state_(ACTIVITY_VISIBLE) {
     app_activity_registry_ =
         AppRegistry::Get()->GetAppActivityRegistry(app_id, NULL);
     app_activity_registry_->RegisterAppActivity(this);
@@ -67,9 +67,7 @@ class TestAppActivity : public AppActivity {
   }
 
   // AppActivity:
-  virtual content::WebContents* GetWebContents() OVERRIDE {
-    return NULL;
-  }
+  virtual content::WebContents* GetWebContents() OVERRIDE { return NULL; }
 
   // ActivityViewModel:
   virtual void Init() OVERRIDE {}
@@ -82,9 +80,6 @@ class TestAppActivity : public AppActivity {
  private:
   // If known the registry which holds all activities for the associated app.
   AppActivityRegistry* app_activity_registry_;
-
-  // The application ID.
-  const std::string& app_id_;
 
   // The title of the activity.
   base::string16 title_;
@@ -99,45 +94,40 @@ class TestAppActivity : public AppActivity {
 };
 
 // An AppContentDelegateClass which we can query for call stats.
-class TestAppContentControlDelegate : public AppContentControlDelegate {
+class TestExtensionsDelegate : public ExtensionsDelegate {
  public:
-  TestAppContentControlDelegate() : unload_called_(0),
-                                    restart_called_(0) {}
-  virtual ~TestAppContentControlDelegate() {}
+  TestExtensionsDelegate() : unload_called_(0), restart_called_(0) {}
+  virtual ~TestExtensionsDelegate() {}
 
-  int unload_called() { return unload_called_; }
-  int restart_called() { return restart_called_; }
-  void SetExtensionID(const std::string& extension_id) {
-    extension_id_to_return_ = extension_id;
+  int unload_called() const { return unload_called_; }
+  int restart_called() const { return restart_called_; }
+
+  // ExtensionsDelegate:
+  virtual content::BrowserContext* GetBrowserContext() const OVERRIDE {
+    return NULL;
   }
-
+  virtual const extensions::ExtensionSet& GetInstalledExtensions() OVERRIDE {
+    return extension_set_;
+  }
   // Unload an application. Returns true when unloaded.
-  virtual bool UnloadApplication(
-      const std::string& app_id,
-      content::BrowserContext* browser_context) OVERRIDE {
+  virtual bool UnloadApp(const std::string& app_id) OVERRIDE {
     unload_called_++;
     // Since we did not close anything we let the framework clean up.
     return false;
   }
   // Restarts an application. Returns true when the restart was initiated.
-  virtual bool RestartApplication(
-      const std::string& app_id,
-      content::BrowserContext* browser_context) OVERRIDE {
+  virtual bool LaunchApp(const std::string& app_id) OVERRIDE {
     restart_called_++;
     return true;
-  }
-  // Returns the application ID (or an empty string) for a given web content.
-  virtual std::string GetApplicationID(
-      content::WebContents* web_contents) OVERRIDE {
-    return extension_id_to_return_;
   }
 
  private:
   int unload_called_;
   int restart_called_;
-  std::string extension_id_to_return_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestAppContentControlDelegate);
+  extensions::ExtensionSet extension_set_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestExtensionsDelegate);
 };
 
 }  // namespace
@@ -145,15 +135,16 @@ class TestAppContentControlDelegate : public AppContentControlDelegate {
 // Our testing base.
 class AppActivityTest : public AthenaTestBase {
  public:
-  AppActivityTest() : test_app_content_control_delegate_(NULL) {}
+  AppActivityTest() : test_extensions_delegate_(NULL) {}
   virtual ~AppActivityTest() {}
 
   // AthenaTestBase:
   virtual void SetUp() OVERRIDE {
     AthenaTestBase::SetUp();
     // Create and install our TestAppContentDelegate with instrumentation.
-    test_app_content_control_delegate_ = new TestAppContentControlDelegate();
-    AppRegistry::Get()->SetDelegate(test_app_content_control_delegate_);
+    ExtensionsDelegate::Shutdown();
+    // The instance will be deleted by ExtensionsDelegate::Shutdown().
+    test_extensions_delegate_ = new TestExtensionsDelegate();
   }
 
   // A function to create an Activity.
@@ -181,12 +172,12 @@ class AppActivityTest : public AthenaTestBase {
   }
 
  protected:
-  TestAppContentControlDelegate* test_app_content_control_delegate() {
-    return test_app_content_control_delegate_;
+  TestExtensionsDelegate* test_extensions_delegate() {
+    return test_extensions_delegate_;
   }
 
  private:
-  TestAppContentControlDelegate* test_app_content_control_delegate_;
+  TestExtensionsDelegate* test_extensions_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(AppActivityTest);
 };
@@ -203,8 +194,8 @@ TEST_F(AppActivityTest, OneAppActivity) {
     CloseActivity(app_activity);
   }
   EXPECT_EQ(0, AppRegistry::Get()->NumberOfApplications());
-  EXPECT_EQ(0, test_app_content_control_delegate()->unload_called());
-  EXPECT_EQ(0, test_app_content_control_delegate()->restart_called());
+  EXPECT_EQ(0, test_extensions_delegate()->unload_called());
+  EXPECT_EQ(0, test_extensions_delegate()->restart_called());
 }
 
 // Test running of two applications.
@@ -222,8 +213,8 @@ TEST_F(AppActivityTest, TwoAppsWithOneActivityEach) {
     CloseActivity(app_activity2);
   }
   EXPECT_EQ(0, AppRegistry::Get()->NumberOfApplications());
-  EXPECT_EQ(0, test_app_content_control_delegate()->unload_called());
-  EXPECT_EQ(0, test_app_content_control_delegate()->restart_called());
+  EXPECT_EQ(0, test_extensions_delegate()->unload_called());
+  EXPECT_EQ(0, test_extensions_delegate()->restart_called());
 }
 
 // Create and destroy two activities for the same application.
@@ -255,8 +246,8 @@ TEST_F(AppActivityTest, TwoAppActivities) {
     CloseActivity(app_activity1);
   }
   EXPECT_EQ(0, AppRegistry::Get()->NumberOfApplications());
-  EXPECT_EQ(0, test_app_content_control_delegate()->unload_called());
-  EXPECT_EQ(0, test_app_content_control_delegate()->restart_called());
+  EXPECT_EQ(0, test_extensions_delegate()->unload_called());
+  EXPECT_EQ(0, test_extensions_delegate()->restart_called());
 }
 
 // Test unload and the creation of the proxy, then "closing the activity".
@@ -273,13 +264,13 @@ TEST_F(AppActivityTest, TestUnloadFollowedByClose) {
   // Calling Unload now should not do anything since at least one activity in
   // the registry is still visible.
   app_activity_registry->Unload();
-  EXPECT_EQ(0, test_app_content_control_delegate()->unload_called());
+  EXPECT_EQ(0, test_extensions_delegate()->unload_called());
 
   // After setting our activity to unloaded however the application should get
   // unloaded as requested.
   app_activity->SetCurrentState(Activity::ACTIVITY_UNLOADED);
   app_activity_registry->Unload();
-  EXPECT_EQ(1, test_app_content_control_delegate()->unload_called());
+  EXPECT_EQ(1, test_extensions_delegate()->unload_called());
 
   // Check that our created application is gone, and instead a proxy got
   // created.
@@ -297,8 +288,8 @@ TEST_F(AppActivityTest, TestUnloadFollowedByClose) {
   CloseActivity(activity_proxy);
 
   EXPECT_EQ(0, AppRegistry::Get()->NumberOfApplications());
-  EXPECT_EQ(1, test_app_content_control_delegate()->unload_called());
-  EXPECT_EQ(0, test_app_content_control_delegate()->restart_called());
+  EXPECT_EQ(1, test_extensions_delegate()->unload_called());
+  EXPECT_EQ(0, test_extensions_delegate()->restart_called());
 }
 
 // Test that when unloading an app while multiple apps / activities are present,
@@ -357,13 +348,13 @@ TEST_F(AppActivityTest, TestMultipleActivityUnloadLock) {
   // After setting all activities to UNLOADED the application should unload.
   app_activity1->SetCurrentState(Activity::ACTIVITY_UNLOADED);
   app_activity1->app_activity_registry()->Unload();
-  EXPECT_EQ(0, test_app_content_control_delegate()->unload_called());
+  EXPECT_EQ(0, test_extensions_delegate()->unload_called());
   app_activity2->SetCurrentState(Activity::ACTIVITY_UNLOADED);
   app_activity2->app_activity_registry()->Unload();
-  EXPECT_EQ(0, test_app_content_control_delegate()->unload_called());
+  EXPECT_EQ(0, test_extensions_delegate()->unload_called());
   app_activity3->SetCurrentState(Activity::ACTIVITY_UNLOADED);
   app_activity3->app_activity_registry()->Unload();
-  EXPECT_EQ(1, test_app_content_control_delegate()->unload_called());
+  EXPECT_EQ(1, test_extensions_delegate()->unload_called());
 
   // Now there should only be the proxy activity left.
   ASSERT_EQ(1, AppRegistry::Get()->NumberOfApplications());
@@ -382,8 +373,8 @@ TEST_F(AppActivityTest, TestMultipleActivityUnloadLock) {
   CloseActivity(activity_proxy);
 
   EXPECT_EQ(0, AppRegistry::Get()->NumberOfApplications());
-  EXPECT_EQ(1, test_app_content_control_delegate()->unload_called());
-  EXPECT_EQ(0, test_app_content_control_delegate()->restart_called());
+  EXPECT_EQ(1, test_extensions_delegate()->unload_called());
+  EXPECT_EQ(0, test_extensions_delegate()->restart_called());
 }
 
 // Test that activating the proxy will reload the application.
@@ -397,14 +388,14 @@ TEST_F(AppActivityTest, TestUnloadWithReload) {
   // Unload the activity.
   app_activity->SetCurrentState(Activity::ACTIVITY_UNLOADED);
   app_activity_registry->Unload();
-  EXPECT_EQ(1, test_app_content_control_delegate()->unload_called());
+  EXPECT_EQ(1, test_extensions_delegate()->unload_called());
 
   // Try to activate the activity again. This will force the application to
   // reload.
   Activity* activity_proxy =
       app_activity_registry->unloaded_activity_proxy_for_test();
   activity_proxy->SetCurrentState(Activity::ACTIVITY_VISIBLE);
-  EXPECT_EQ(1, test_app_content_control_delegate()->restart_called());
+  EXPECT_EQ(1, test_extensions_delegate()->restart_called());
 
   // However - the restart in this test framework does not really restart and
   // all objects should be gone now.

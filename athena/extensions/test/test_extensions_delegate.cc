@@ -23,7 +23,8 @@ class TestExtensionsDelegate : public ExtensionsDelegate {
   virtual const extensions::ExtensionSet& GetInstalledExtensions() OVERRIDE {
     return shell_extensions_;
   }
-  virtual void LaunchApp(const std::string& app_id) OVERRIDE {}
+  virtual bool LaunchApp(const std::string& app_id) OVERRIDE { return true; }
+  virtual bool UnloadApp(const std::string& app_id) OVERRIDE { return false; }
 
   extensions::ExtensionSet shell_extensions_;
 

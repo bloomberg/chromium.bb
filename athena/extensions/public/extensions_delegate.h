@@ -11,6 +11,7 @@
 
 namespace content {
 class BrowserContext;
+class WebContents;
 }
 
 namespace extensions {
@@ -43,8 +44,13 @@ class ATHENA_EXPORT ExtensionsDelegate {
   // Returns the set of extensions that are currently installed.
   virtual const extensions::ExtensionSet& GetInstalledExtensions() = 0;
 
-  // Launch an application specified by |app_id|.
-  virtual void LaunchApp(const std::string& app_id) = 0;
+  // Starts an application. Returns true if the application was
+  // successfully started.
+  virtual bool LaunchApp(const std::string& app_id) = 0;
+
+  // Unload an application. Returns true if the application was
+  // successfully unloaded.
+  virtual bool UnloadApp(const std::string& app_id) = 0;
 };
 
 }  // namespace athena

@@ -30,9 +30,12 @@ class ShellExtensionsDelegate : public ExtensionsDelegate {
       shell_extensions_.Insert(extension_system_->extension());
     return shell_extensions_;
   }
-  virtual void LaunchApp(const std::string& app_id) OVERRIDE {
+  virtual bool LaunchApp(const std::string& app_id) OVERRIDE {
     extension_system_->LaunchApp();
+    return true;
   }
+
+  virtual bool UnloadApp(const std::string& app_id) OVERRIDE { return false; }
 
   content::BrowserContext* context_;
   extensions::ShellExtensionSystem* extension_system_;

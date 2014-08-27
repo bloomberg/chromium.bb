@@ -7,8 +7,8 @@
 #include "athena/activity/public/activity_manager.h"
 #include "athena/content/app_activity.h"
 #include "athena/content/app_activity_proxy.h"
-#include "athena/content/public/app_content_control_delegate.h"
 #include "athena/content/public/app_registry.h"
+#include "athena/extensions/public/extensions_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
@@ -91,8 +91,7 @@ void AppActivityRegistry::Unload() {
   MoveBeforeMruApplicationWindow(unloaded_activity_proxy_->GetWindow());
 
   // Unload the application. This operation will be asynchronous.
-  if (!AppRegistry::Get()->GetDelegate()->UnloadApplication(app_id_,
-                                                            browser_context_)) {
+  if (!ExtensionsDelegate::Get(browser_context_)->UnloadApp(app_id_)) {
     while(!activity_list_.empty())
       delete activity_list_.back();
   }
@@ -110,8 +109,7 @@ void AppActivityRegistry::ProxyDestroyed(AppActivityProxy* proxy) {
 void AppActivityRegistry::RestartApplication(AppActivityProxy* proxy) {
   DCHECK_EQ(unloaded_activity_proxy_, proxy);
   // Restart the application.
-  AppRegistry::Get()->GetDelegate()->RestartApplication(app_id_,
-                                                        browser_context_);
+  ExtensionsDelegate::Get(browser_context_)->LaunchApp(app_id_);
   // Remove the activity from the Activity manager.
   ActivityManager::Get()->RemoveActivity(unloaded_activity_proxy_);
   delete unloaded_activity_proxy_;  // Will call ProxyDestroyed.

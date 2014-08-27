@@ -44,8 +44,8 @@ class ATHENA_EXPORT ActivityFactory {
   // The returned activity should own |app_window|.
   // TODO(oshima): Consolidate these two methods to create AppActivity
   // once crbug.com/403726 is finished.
-  virtual Activity* CreateAppActivity(
-      extensions::ShellAppWindow* app_window) = 0;
+  virtual Activity* CreateAppActivity(extensions::ShellAppWindow* app_window,
+                                      const std::string& id) = 0;
 
   // Create an activity of an app with |app_window| for chrome environment.
   virtual Activity* CreateAppActivity(apps::AppWindow* app_window) = 0;

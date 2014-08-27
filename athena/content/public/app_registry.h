@@ -19,7 +19,6 @@ class BrowserContext;
 namespace athena {
 
 class AppActivityRegistry;
-class AppContentControlDelegate;
 class AppRegistryImpl;
 
 // This class holds for each application, held by a user, a list of activities.
@@ -36,14 +35,6 @@ class ATHENA_EXPORT AppRegistry {
 
   // Shuts down the registry (all applications should be shut down by then).
   static void ShutDown();
-
-  // Overrides the used AppContentDelegate. This function will own it
-  // afterwards. A value of NULL is invalid.
-  virtual void SetDelegate(AppContentControlDelegate* delegate) = 0;
-
-  // Retrieves the application content delegate. The ownership remains with this
-  // class.
-  virtual AppContentControlDelegate* GetDelegate() = 0;
 
   // Returns an |AppActivityRegistry| for a given activity |app_id| and
   // |browser_context|.
