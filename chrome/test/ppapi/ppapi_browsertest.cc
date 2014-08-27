@@ -978,6 +978,7 @@ IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, Flash) {
       LIST_TEST(WebSocket_AbortSendMessageCall) \
       LIST_TEST(WebSocket_AbortCloseCall) \
       LIST_TEST(WebSocket_AbortReceiveMessageCall) \
+      LIST_TEST(WebSocket_ClosedFromServerWhileSending) \
       LIST_TEST(WebSocket_CcInterfaces) \
       LIST_TEST(WebSocket_UtilityInvalidConnect) \
       LIST_TEST(WebSocket_UtilityProtocols) \

@@ -194,8 +194,10 @@ void PepperWebSocketHost::didClose(unsigned long unhandled_buffered_amount,
   }
 
   // Disconnect.
-  if (websocket_)
+  if (websocket_) {
     websocket_->disconnect();
+    websocket_.reset();
+  }
 }
 
 int32_t PepperWebSocketHost::OnHostMsgConnect(

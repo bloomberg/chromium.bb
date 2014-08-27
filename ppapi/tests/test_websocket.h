@@ -55,6 +55,7 @@ class TestWebSocket : public TestCase {
   std::string TestAbortSendMessageCall();
   std::string TestAbortCloseCall();
   std::string TestAbortReceiveMessageCall();
+  std::string TestClosedFromServerWhileSending();
 
   std::string TestCcInterfaces();
 

@@ -224,6 +224,7 @@ void TestWebSocket::RunTests(const std::string& filter) {
   RUN_TEST_WITH_REFERENCE_CHECK(AbortSendMessageCall, filter);
   RUN_TEST_WITH_REFERENCE_CHECK(AbortCloseCall, filter);
   RUN_TEST_WITH_REFERENCE_CHECK(AbortReceiveMessageCall, filter);
+  RUN_TEST_WITH_REFERENCE_CHECK(ClosedFromServerWhileSending, filter);
 
   RUN_TEST_WITH_REFERENCE_CHECK(CcInterfaces, filter);
 
@@ -1154,6 +1155,33 @@ std::string TestWebSocket::TestAbortReceiveMessageCall() {
 
   ReleaseVar(large_var);
   ReleaseVar(text_var);
+
+  PASS();
+}
+
+std::string TestWebSocket::TestClosedFromServerWhileSending() {
+  // Connect to test echo server.
+  const pp::Var protocols[] = { pp::Var() };
+  TestWebSocketAPI websocket(instance_);
+  int32_t result =
+      websocket.Connect(pp::Var(GetFullURL(kEchoServerURL)), protocols, 0U);
+  ASSERT_EQ(PP_OK_COMPLETIONPENDING, result);
+  websocket.WaitForConnected();
+
+  result = websocket.Send(pp::Var("hello"));
+  ASSERT_EQ(PP_OK, result);
+  result = websocket.Send(pp::Var("Goodbye"));
+  // We send many messages so that PepperWebSocketHost::SendText is called
+  // after PepperWebSocketHost::didClose is called.
+  // Note: We must not wait for CLOSED event here because
+  // WebSocketResource::SendMessage doesn't call PepperWebSocketHost::SendText
+  // when its internal state is CLOSING or CLOSED. We want to test if the
+  // pepper WebSocket works well when WebSocketResource is OPEN and
+  // PepperWebSocketHost is CLOSED.
+  for (size_t i = 0; i < 10000; ++i) {
+    result = websocket.Send(pp::Var(""));
+    ASSERT_EQ(PP_OK, result);
+  }
 
   PASS();
 }
