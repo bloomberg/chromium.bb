@@ -35,29 +35,31 @@ function ExtensionOptionsInternal(extensionoptionsNode) {
   // the event is fired from here instead of through
   // extension_options_events.js.
   this.setupEventProperty('createfailed');
-
   new ExtensionOptionsEvents(this, this.viewInstanceId);
 
   this.setupNodeProperties();
 
-  if (this.parseExtensionAttribute())
-    this.init();
+  this.parseExtensionAttribute();
+
+  // Once the browser plugin has been created, the guest view will be created
+  // and attached. See handleBrowserPluginAttributeMutation().
+  this.browserPluginNode = this.createBrowserPluginNode();
+  var shadowRoot = this.extensionoptionsNode.createShadowRoot();
+  shadowRoot.appendChild(this.browserPluginNode);
 };
 
-ExtensionOptionsInternal.prototype.attachWindow = function(guestInstanceId) {
-  this.guestInstanceId = guestInstanceId;
-  var params = {
-    'autosize': this.autosize,
-    'instanceId': this.viewInstanceId,
-    'maxheight': parseInt(this.maxheight || 0),
-    'maxwidth': parseInt(this.maxwidth || 0),
-    'minheight': parseInt(this.minheight || 0),
-    'minwidth': parseInt(this.minwidth || 0)
-  };
+ExtensionOptionsInternal.prototype.attachWindow = function() {
   return guestViewInternalNatives.AttachGuest(
-      parseInt(this.browserPluginNode.getAttribute('internalinstanceid')),
-      guestInstanceId,
-      params);
+      this.internalInstanceId,
+      this.guestInstanceId,
+      {
+        'autosize': this.autosize,
+        'instanceId': this.viewInstanceId,
+        'maxheight': parseInt(this.maxheight || 0),
+        'maxwidth': parseInt(this.maxwidth || 0),
+        'minheight': parseInt(this.minheight || 0),
+        'minwidth': parseInt(this.minwidth || 0)
+      });
 };
 
 ExtensionOptionsInternal.prototype.createBrowserPluginNode = function() {
@@ -81,7 +83,8 @@ ExtensionOptionsInternal.prototype.createGuest = function() {
           var createFailedEvent = new Event('createfailed', { bubbles: true });
           this.dispatchEvent(createFailedEvent);
         } else {
-          this.attachWindow(guestInstanceId);
+          this.guestInstanceId = guestInstanceId;
+          this.attachWindow();
         }
       }.bind(this));
 };
@@ -101,11 +104,18 @@ ExtensionOptionsInternal.prototype.handleExtensionOptionsAttributeMutation =
   if (oldValue === newValue)
     return;
 
-  if (name == 'extension') {
+  if (name == 'extension' && !oldValue && newValue) {
     this.extensionId = newValue;
-    // Create new guest view if one hasn't been created for this element.
-    if (!this.guestInstanceId && this.parseExtensionAttribute())
-      this.init();
+    // If the browser plugin is not ready then don't create the guest until
+    // it is ready (in handleBrowserPluginAttributeMutation).
+    if (!this.internalInstanceId)
+      return;
+
+    // If a guest view does not exist then create one.
+    if (!this.guestInstanceId) {
+      this.createGuest();
+      return;
+    }
     // TODO(ericzeng): Implement navigation to another guest view if we want
     // that functionality.
   } else if (AUTO_SIZE_ATTRIBUTES.hasOwnProperty(name) > -1) {
@@ -129,15 +139,15 @@ ExtensionOptionsInternal.prototype.handleExtensionOptionsAttributeMutation =
   }
 };
 
-ExtensionOptionsInternal.prototype.init = function() {
-  if (this.initCalled)
-    return;
+ExtensionOptionsInternal.prototype.handleBrowserPluginAttributeMutation =
+    function(name, oldValue, newValue) {
+  if (name == 'internalinstanceid' && !oldValue && !!newValue) {
+    this.internalInstanceId = parseInt(newValue);
+    this.browserPluginNode.removeAttribute('internalinstanceid');
+    if (this.extensionId)
+      this.createGuest();
 
-  this.initCalled = true;
-  this.browserPluginNode = this.createBrowserPluginNode();
-  var shadowRoot = this.extensionoptionsNode.createShadowRoot();
-  shadowRoot.appendChild(this.browserPluginNode);
-  this.createGuest();
+  }
 };
 
 ExtensionOptionsInternal.prototype.onSizeChanged =
@@ -292,6 +302,14 @@ function registerBrowserPluginElement() {
     this.style.height = '100%';
   };
 
+  proto.attributeChangedCallback = function(name, oldValue, newValue) {
+    var internal = privates(this).internal;
+    if (!internal) {
+      return;
+    }
+    internal.handleBrowserPluginAttributeMutation(name, oldValue, newValue);
+  };
+
   proto.attachedCallback = function() {
     // Load the plugin immediately.
     var unused = this.nonExistentAttribute;
@@ -299,7 +317,7 @@ function registerBrowserPluginElement() {
 
   ExtensionOptionsInternal.BrowserPlugin =
       DocumentNatives.RegisterElement('extensionoptionsplugin',
-                                       {extends: 'object', prototype: proto});
+                                      {extends: 'object', prototype: proto});
   delete proto.createdCallback;
   delete proto.attachedCallback;
   delete proto.detachedCallback;
