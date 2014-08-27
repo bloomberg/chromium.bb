@@ -108,8 +108,15 @@ class Toolchain : public Item {
     return substitution_bits_;
   }
 
+  void set_concurrent_links(int cl) { concurrent_links_ = cl; }
+  int concurrent_links() const { return concurrent_links_; }
+
  private:
   scoped_ptr<Tool> tools_[TYPE_NUMTYPES];
+
+  // How many links to run in parallel. Only the default toolchain's version of
+  // this variable applies.
+  int concurrent_links_;
 
   bool setup_complete_;
 

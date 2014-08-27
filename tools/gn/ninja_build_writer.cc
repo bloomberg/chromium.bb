@@ -75,11 +75,13 @@ std::string GetSelfInvocationCommand(const BuildSettings* build_settings) {
 NinjaBuildWriter::NinjaBuildWriter(
     const BuildSettings* build_settings,
     const std::vector<const Settings*>& all_settings,
+    const Toolchain* default_toolchain,
     const std::vector<const Target*>& default_toolchain_targets,
     std::ostream& out,
     std::ostream& dep_out)
     : build_settings_(build_settings),
       all_settings_(all_settings),
+      default_toolchain_(default_toolchain),
       default_toolchain_targets_(default_toolchain_targets),
       out_(out),
       dep_out_(dep_out),
@@ -91,6 +93,7 @@ NinjaBuildWriter::~NinjaBuildWriter() {
 
 void NinjaBuildWriter::Run() {
   WriteNinjaRules();
+  WriteLinkPool();
   WriteSubninjas();
   WritePhonyAndAllRules();
 }
@@ -99,6 +102,7 @@ void NinjaBuildWriter::Run() {
 bool NinjaBuildWriter::RunAndWriteFile(
     const BuildSettings* build_settings,
     const std::vector<const Settings*>& all_settings,
+    const Toolchain* default_toolchain,
     const std::vector<const Target*>& default_toolchain_targets) {
   ScopedTrace trace(TraceItem::TRACE_FILE_WRITE, "build.ninja");
 
@@ -118,7 +122,7 @@ bool NinjaBuildWriter::RunAndWriteFile(
   if (depfile.fail())
     return false;
 
-  NinjaBuildWriter gen(build_settings, all_settings,
+  NinjaBuildWriter gen(build_settings, all_settings, default_toolchain,
                        default_toolchain_targets, file, depfile);
   gen.Run();
   return true;
@@ -150,6 +154,12 @@ void NinjaBuildWriter::WriteNinjaRules() {
     dep_out_ << " " << FilePathToUTF8(other_files[i]);
 
   out_ << std::endl;
+}
+
+void NinjaBuildWriter::WriteLinkPool() {
+  out_ << "pool link_pool\n"
+       << "  depth = " << default_toolchain_->concurrent_links() << std::endl
+       << std::endl;
 }
 
 void NinjaBuildWriter::WriteSubninjas() {

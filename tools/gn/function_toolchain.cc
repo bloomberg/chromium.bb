@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <algorithm>
+#include <limits>
 
 #include "tools/gn/err.h"
 #include "tools/gn/functions.h"
@@ -202,15 +203,43 @@ const char kToolchain_Help[] =
     "  source code. You can have more than one toolchain in use at once in\n"
     "  a build.\n"
     "\n"
-    "  A toolchain specifies the commands to run for various input file\n"
-    "  types via the \"tool\" call (see \"gn help tool\") and specifies\n"
-    "  arguments to be passed to the toolchain build via the\n"
-    "  \"toolchain_args\" call (see \"gn help toolchain_args\").\n"
+    "Functions and variables\n"
     "\n"
-    "  In addition, a toolchain can specify dependencies via the \"deps\"\n"
-    "  variable like a target. These dependencies will be resolved before any\n"
-    "  target in the toolchain is compiled. To avoid circular dependencies\n"
-    "  these must be targets defined in another toolchain.\n"
+    "  tool()\n"
+    "    The tool() function call specifies the commands commands to run for\n"
+    "    a given step. See \"gn help tool\".\n"
+    "\n"
+    "  toolchain_args()\n"
+    "    List of arguments to pass to the toolchain when invoking this\n"
+    "    toolchain. This applies only to non-default toolchains. See\n"
+    "    \"gn help toolchain_args\" for more.\n"
+    "\n"
+    "  deps\n"
+    "    Dependencies of this toolchain. These dependencies will be resolved\n"
+    "    before any target in the toolchain is compiled. To avoid circular\n"
+    "    dependencies these must be targets defined in another toolchain.\n"
+    "\n"
+    "    This is expressed as a list of targets, and generally these targets\n"
+    "    will always specify a toolchain:\n"
+    "      deps = [ \"//foo/bar:baz(//build/toolchain:bootstrap)\" ]\n"
+    "\n"
+    "    This concept is somewhat inefficient to express in Ninja (it\n"
+    "    requires a lot of duplicate of rules) so should only be used when\n"
+    "    absolutely necessary.\n"
+    "\n"
+    "  concurrent_links\n"
+    "    In integer expressing the number of links that Ninja will perform in\n"
+    "    parallel. GN will create a pool for shared library and executable\n"
+    "    link steps with this many processes. Since linking is memory- and\n"
+    "    I/O-intensive, projects with many large targets may want to limit\n"
+    "    the number of parallel steps to avoid overloading the computer.\n"
+    "    Since creating static libraries is generally not as intensive\n"
+    "    there is no limit to \"alink\" steps.\n"
+    "\n"
+    "    Defaults to 0 which Ninja interprets as \"no limit\".\n"
+    "\n"
+    "    The value used will be the one from the default toolchain of the\n"
+    "    current build.\n"
     "\n"
     "Invoking targets in toolchains:\n"
     "\n"
@@ -236,8 +265,11 @@ const char kToolchain_Help[] =
     "\n"
     "Example:\n"
     "  toolchain(\"plugin_toolchain\") {\n"
+    "    concurrent_links = 8\n"
+    "\n"
     "    tool(\"cc\") {\n"
     "      command = \"gcc $in\"\n"
+    "      ...\n"
     "    }\n"
     "\n"
     "    toolchain_args() {\n"
@@ -285,6 +317,21 @@ Value RunToolchain(Scope* scope,
         ToolchainLabelForScope(&block_scope), &toolchain->deps(), err);
     if (err->has_error())
       return Value();
+  }
+
+  // Read concurrent_links (if any).
+  const Value* concurrent_links_value =
+      block_scope.GetValue("concurrent_links", true);
+  if (concurrent_links_value) {
+    if (!concurrent_links_value->VerifyTypeIs(Value::INTEGER, err))
+      return Value();
+    if (concurrent_links_value->int_value() < 0 ||
+        concurrent_links_value->int_value() > std::numeric_limits<int>::max()) {
+      *err = Err(*concurrent_links_value, "Value out of range.");
+      return Value();
+    }
+    toolchain->set_concurrent_links(
+        static_cast<int>(concurrent_links_value->int_value()));
   }
 
   if (!block_scope.CheckForUnusedVars(err))
@@ -458,9 +505,6 @@ const char kTool_Help[] =
     "        Posix systems:\n"
     "          output_prefix = \"lib\"\n"
     "\n"
-    // TODO(brettw) document "pool" when it works.
-    //"    pool  [string, optional]\n"
-    //"\n"
     "    restat  [boolean]\n"
     "        Valid for: all tools (optional, defaults to false)\n"
     "\n"
@@ -742,7 +786,6 @@ Value RunTool(Scope* scope,
                    &Tool::set_depend_output, err) ||
       !ReadString(&block_scope, "output_prefix", tool.get(),
                   &Tool::set_output_prefix, err) ||
-      !ReadString(&block_scope, "pool", tool.get(), &Tool::set_pool, err) ||
       !ReadBool(&block_scope, "restat", tool.get(), &Tool::set_restat, err) ||
       !ReadPattern(&block_scope, "rspfile", subst_validator, tool.get(),
                    &Tool::set_rspfile, err) ||

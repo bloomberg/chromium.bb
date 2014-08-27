@@ -24,6 +24,7 @@ const char* Toolchain::kToolCopy = "copy";
 
 Toolchain::Toolchain(const Settings* settings, const Label& label)
     : Item(settings, label),
+      concurrent_links_(0),
       setup_complete_(false) {
 }
 

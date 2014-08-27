@@ -9,6 +9,7 @@
 #include "tools/gn/location.h"
 #include "tools/gn/ninja_build_writer.h"
 #include "tools/gn/ninja_toolchain_writer.h"
+#include "tools/gn/settings.h"
 
 NinjaWriter::NinjaWriter(const BuildSettings* build_settings,
                          Builder* builder)
@@ -88,9 +89,15 @@ bool NinjaWriter::WriteToolchains(std::vector<const Settings*>* all_settings,
 bool NinjaWriter::WriteRootBuildfiles(
     const std::vector<const Settings*>& all_settings,
     const std::vector<const Target*>& default_targets) {
+  // All Settings objects should have the same default toolchain, and there
+  // should always be at least one settings object in the build.
+  CHECK(!all_settings.empty());
+  const Toolchain* default_toolchain =
+      builder_->GetToolchain(all_settings[0]->default_toolchain_label());
+
   // Write the root buildfile.
   if (!NinjaBuildWriter::RunAndWriteFile(build_settings_, all_settings,
-                                         default_targets)) {
+                                         default_toolchain, default_targets)) {
     Err(Location(),
         "Couldn't open toolchain buildfile(s) for writing").PrintToStdout();
     return false;

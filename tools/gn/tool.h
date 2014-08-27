@@ -120,14 +120,6 @@ class Tool {
     output_prefix_ = s;
   }
 
-  const std::string& pool() const {
-    return pool_;
-  }
-  void set_pool(const std::string& s) {
-    DCHECK(!complete_);
-    pool_ = s;
-  }
-
   bool restat() const {
     return restat_;
   }
@@ -182,7 +174,6 @@ class Tool {
   SubstitutionPattern link_output_;
   SubstitutionPattern depend_output_;
   std::string output_prefix_;
-  std::string pool_;
   bool restat_;
   SubstitutionPattern rspfile_;
   SubstitutionPattern rspfile_content_;
