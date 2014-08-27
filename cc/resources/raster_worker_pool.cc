@@ -15,21 +15,12 @@
 namespace cc {
 namespace {
 
-// Synthetic delay for raster tasks that are required for activation. Global to
-// avoid static initializer on critical path.
-struct RasterRequiredForActivationSyntheticDelayInitializer {
-  RasterRequiredForActivationSyntheticDelayInitializer()
-      : delay(base::debug::TraceEventSyntheticDelay::Lookup(
-            "cc.RasterRequiredForActivation")) {}
-  base::debug::TraceEventSyntheticDelay* delay;
-};
-static base::LazyInstance<RasterRequiredForActivationSyntheticDelayInitializer>
-    g_raster_required_for_activation_delay = LAZY_INSTANCE_INITIALIZER;
-
 class RasterTaskGraphRunner : public TaskGraphRunner,
                               public base::DelegateSimpleThread::Delegate {
  public:
-  RasterTaskGraphRunner() {
+  RasterTaskGraphRunner()
+      : synthetic_delay_(base::debug::TraceEventSyntheticDelay::Lookup(
+            "cc.RasterRequiredForActivation")) {
     size_t num_threads = RasterWorkerPool::GetNumRasterThreads();
     while (workers_.size() < num_threads) {
       scoped_ptr<base::DelegateSimpleThread> worker =
@@ -48,6 +39,10 @@ class RasterTaskGraphRunner : public TaskGraphRunner,
 
   virtual ~RasterTaskGraphRunner() { NOTREACHED(); }
 
+  base::debug::TraceEventSyntheticDelay* synthetic_delay() {
+    return synthetic_delay_;
+  }
+
  private:
   // Overridden from base::DelegateSimpleThread::Delegate:
   virtual void Run() OVERRIDE {
@@ -55,6 +50,7 @@ class RasterTaskGraphRunner : public TaskGraphRunner,
   }
 
   ScopedPtrDeque<base::DelegateSimpleThread> workers_;
+  base::debug::TraceEventSyntheticDelay* synthetic_delay_;
 };
 
 base::LazyInstance<RasterTaskGraphRunner>::Leaky g_task_graph_runner =
@@ -108,7 +104,7 @@ class RasterRequiredForActivationFinishedTaskImpl
         tasks_required_for_activation_count_(
             tasks_required_for_activation_count) {
     if (tasks_required_for_activation_count_) {
-      g_raster_required_for_activation_delay.Get().delay->BeginParallel(
+      g_task_graph_runner.Get().synthetic_delay()->BeginParallel(
           &activation_delay_end_time_);
     }
   }
@@ -119,7 +115,7 @@ class RasterRequiredForActivationFinishedTaskImpl
         "cc", "RasterRequiredForActivationFinishedTaskImpl::RunOnWorkerThread");
 
     if (tasks_required_for_activation_count_) {
-      g_raster_required_for_activation_delay.Get().delay->EndParallel(
+      g_task_graph_runner.Get().synthetic_delay()->EndParallel(
           activation_delay_end_time_);
     }
     RasterFinished();
