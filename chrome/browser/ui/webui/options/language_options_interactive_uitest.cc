@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/prefs/pref_service.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -60,14 +61,26 @@ class LanguageOptionsWebUITest : public InProcessBrowserTest {
     return GetActiveWebContents()->GetFocusedFrame();
   }
 
+  content::RenderViewHost* GetRenderViewHost() {
+    return GetActiveWebContents()->GetRenderViewHost();
+  }
+
   content::WebContents* GetActiveWebContents() {
     return browser()->tab_strip_model()->GetActiveWebContents();
   }
 
-  // Press and release a key in a particular window. Returns false on error.
+  // Press and release a key in the browser. This will wait for the element on
+  // the page to change.
   bool PressKey(ui::KeyboardCode key_code) {
-    return ui_test_utils::SendKeyPressSync(browser(), key_code,
-                                           false, false, false, false);
+    return ui_test_utils::SendKeyPressAndWait(
+        browser(),
+        key_code,
+        false,
+        false,
+        false,
+        false,
+        content::NOTIFICATION_FOCUS_CHANGED_IN_PAGE,
+        content::Source<content::RenderViewHost>(GetRenderViewHost()));
   }
 
  private:
@@ -116,8 +129,7 @@ IN_PROC_BROWSER_TEST_F(LanguageOptionsWebUITest, TestAvailableLanguages) {
 // This test must be updated if the tab order of the elements on this page
 // is chagned.
 // flaky: http://crbug.com/405711
-IN_PROC_BROWSER_TEST_F(LanguageOptionsWebUITest,
-                       DISABLED_TestListTabAccessibility) {
+IN_PROC_BROWSER_TEST_F(LanguageOptionsWebUITest, TestListTabAccessibility) {
   // Verify that the language list is focused by default.
   std::string original_id = GetActiveElementId();
   EXPECT_EQ("language-options-list", original_id);
