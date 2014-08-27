@@ -166,13 +166,13 @@ table_files = \
 	lt.ctb \
 	Lv-Lv-g1.utb \
 	malayalam.cti \
+	mao-nz-g1.ctb \
 	marburg.ctb \
 	marburg_edit.ctb \
 	marburg_single_cell_defs.cti \
 	marburg_unicode_defs.cti \
 	ml.ctb \
 	mni.ctb \
-	mao-nz-g1.ctb \
 	mr.ctb \
 	mt.ctb \
 	mun.ctb \
