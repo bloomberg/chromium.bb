@@ -5,7 +5,7 @@ achuith@chromium.org
 satorux@chromium.org
 
 per-file choose_mobile_network_ui.*=armansito@chromium.org
-per-file network_ui.*=stevenjb@chromium.org
+per-file network*=stevenjb@chromium.org
 per-file sim_unlock_ui.*=armansito@chromium.org
 per-file sim_unlock_ui.*=stevenjb@chromium.org
 per-file drive_internals_ui.*=hashimoto@chromium.org
