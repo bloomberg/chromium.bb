@@ -96,7 +96,7 @@ PrintingMessageFilter::PrintingMessageFilter(int render_process_id,
           profile->GetResourceContext())),
       render_process_id_(render_process_id),
       queue_(g_browser_process->print_job_manager()->queue()) {
-  DCHECK(queue_);
+  DCHECK(queue_.get());
 }
 
 PrintingMessageFilter::~PrintingMessageFilter() {
@@ -272,7 +272,7 @@ void PrintingMessageFilter::OnGetDefaultPrintSettings(IPC::Message* reply_msg) {
     return;
   }
   printer_query = queue_->PopPrinterQuery(0);
-  if (!printer_query) {
+  if (!printer_query.get()) {
     printer_query =
         queue_->CreatePrinterQuery(render_process_id_, reply_msg->routing_id());
   }
@@ -319,7 +319,7 @@ void PrintingMessageFilter::OnScriptedPrint(
     IPC::Message* reply_msg) {
   scoped_refptr<PrinterQuery> printer_query =
       queue_->PopPrinterQuery(params.cookie);
-  if (!printer_query) {
+  if (!printer_query.get()) {
     printer_query =
         queue_->CreatePrinterQuery(render_process_id_, reply_msg->routing_id());
   }
@@ -394,7 +394,7 @@ void PrintingMessageFilter::OnUpdatePrintSettings(
     return;
   }
   printer_query = queue_->PopPrinterQuery(document_cookie);
-  if (!printer_query) {
+  if (!printer_query.get()) {
     int host_id = render_process_id_;
     int routing_id = reply_msg->routing_id();
     if (!new_settings->GetInteger(printing::kPreviewInitiatorHostId,

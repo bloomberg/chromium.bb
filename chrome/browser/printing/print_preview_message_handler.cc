@@ -38,7 +38,7 @@ void StopWorker(int document_cookie) {
       g_browser_process->print_job_manager()->queue();
   scoped_refptr<printing::PrinterQuery> printer_query =
       queue->PopPrinterQuery(document_cookie);
-  if (printer_query) {
+  if (printer_query.get()) {
     BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                             base::Bind(&printing::PrinterQuery::StopWorker,
                                        printer_query));

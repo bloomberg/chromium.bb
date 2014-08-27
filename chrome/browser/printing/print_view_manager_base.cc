@@ -61,7 +61,7 @@ PrintViewManagerBase::PrintViewManagerBase(content::WebContents* web_contents)
       inside_inner_message_loop_(false),
       cookie_(0),
       queue_(g_browser_process->print_job_manager()->queue()) {
-  DCHECK(queue_);
+  DCHECK(queue_.get());
 #if (defined(OS_POSIX) && !defined(OS_MACOSX)) || \
     defined(WIN_PDF_METAFILE_FOR_PRINTING)
   expecting_first_page_ = true;
@@ -549,12 +549,12 @@ bool PrintViewManagerBase::OpportunisticallyCreatePrintJob(int cookie) {
   // The job was initiated by a script. Time to get the corresponding worker
   // thread.
   scoped_refptr<PrinterQuery> queued_query = queue_->PopPrinterQuery(cookie);
-  if (!queued_query) {
+  if (!queued_query.get()) {
     NOTREACHED();
     return false;
   }
 
-  if (!CreateNewPrintJob(queued_query)) {
+  if (!CreateNewPrintJob(queued_query.get())) {
     // Don't kill anything.
     return false;
   }
@@ -591,7 +591,7 @@ void PrintViewManagerBase::ReleasePrinterQuery() {
 
   scoped_refptr<printing::PrinterQuery> printer_query;
   printer_query = queue_->PopPrinterQuery(cookie);
-  if (!printer_query)
+  if (!printer_query.get())
     return;
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,

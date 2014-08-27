@@ -219,7 +219,7 @@ void PrintJobWorker::UseDefaultSettings() {
 void PrintJobWorker::StartPrinting(PrintedDocument* new_document) {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
   DCHECK_EQ(page_number_, PageNumber::npos());
-  DCHECK_EQ(document_, new_document);
+  DCHECK_EQ(document_.get(), new_document);
   DCHECK(document_.get());
 
   if (!document_.get() || page_number_ != PageNumber::npos() ||
@@ -285,7 +285,7 @@ void PrintJobWorker::OnNewPage() {
   while (true) {
     // Is the page available?
     scoped_refptr<PrintedPage> page = document_->GetPage(page_number_.ToInt());
-    if (!page) {
+    if (!page.get()) {
       // We need to wait for the page to be available.
       base::MessageLoop::current()->PostDelayedTask(
           FROM_HERE,
@@ -317,7 +317,7 @@ bool PrintJobWorker::IsRunning() const {
 
 bool PrintJobWorker::PostTask(const tracked_objects::Location& from_here,
                               const base::Closure& task) {
-  if (task_runner_)
+  if (task_runner_.get())
     return task_runner_->PostTask(from_here, task);
   return false;
 }

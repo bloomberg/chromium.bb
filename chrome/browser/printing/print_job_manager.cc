@@ -55,7 +55,7 @@ scoped_refptr<PrinterQuery> PrintQueriesQueue::CreatePrinterQuery(
   scoped_refptr<PrinterQuery> job =
       new printing::PrinterQuery(render_process_id, render_view_id);
   base::AutoLock lock(lock_);
-  job->SetWorkerDestination(destination_);
+  job->SetWorkerDestination(destination_.get());
   return job;
 }
 
@@ -85,7 +85,7 @@ PrintJobManager::~PrintJobManager() {
 
 scoped_refptr<PrintQueriesQueue> PrintJobManager::queue() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  if (!queue_)
+  if (!queue_.get())
     queue_ = new PrintQueriesQueue();
   return queue_;
 }
@@ -96,7 +96,7 @@ void PrintJobManager::Shutdown() {
   is_shutdown_ = true;
   registrar_.RemoveAll();
   StopJobs(true);
-  if (queue_)
+  if (queue_.get())
     queue_->Shutdown();
   queue_ = NULL;
 }
