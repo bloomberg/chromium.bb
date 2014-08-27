@@ -365,7 +365,7 @@ void CanvasRenderingContext2D::State::trace(Visitor* visitor)
     CSSFontSelectorClient::trace(visitor);
 }
 
-void CanvasRenderingContext2D::realizeSaves()
+void CanvasRenderingContext2D::realizeSaves(GraphicsContext* context)
 {
     validateStateStack();
     if (state().m_unrealizedSaveCount) {
@@ -379,7 +379,8 @@ void CanvasRenderingContext2D::realizeSaves()
         // by the Vector operations copy the unrealized count from the previous state (in
         // turn necessary to support correct resizing and unwinding of the stack).
         m_stateStack.last()->m_unrealizedSaveCount = 0;
-        GraphicsContext* context = drawingContext();
+        if (!context)
+            context = drawingContext();
         if (context)
             context->save();
         validateStateStack();
@@ -430,9 +431,9 @@ void CanvasRenderingContext2D::setStrokeStyle(PassRefPtrWillBeRawPtr<CanvasStyle
         canvas()->setOriginTainted();
     }
 
-    realizeSaves();
-    modifiableState().m_strokeStyle = style.release();
     GraphicsContext* c = drawingContext();
+    realizeSaves(c);
+    modifiableState().m_strokeStyle = style.release();
     if (!c)
         return;
     state().m_strokeStyle->applyStrokeColor(c);
@@ -463,9 +464,9 @@ void CanvasRenderingContext2D::setFillStyle(PassRefPtrWillBeRawPtr<CanvasStyle> 
         canvas()->setOriginTainted();
     }
 
-    realizeSaves();
-    modifiableState().m_fillStyle = style.release();
     GraphicsContext* c = drawingContext();
+    realizeSaves(c);
+    modifiableState().m_fillStyle = style.release();
     if (!c)
         return;
     state().m_fillStyle->applyFillColor(c);
@@ -483,9 +484,9 @@ void CanvasRenderingContext2D::setLineWidth(float width)
         return;
     if (state().m_lineWidth == width)
         return;
-    realizeSaves();
-    modifiableState().m_lineWidth = width;
     GraphicsContext* c = drawingContext();
+    realizeSaves(c);
+    modifiableState().m_lineWidth = width;
     if (!c)
         return;
     c->setStrokeThickness(width);
@@ -503,9 +504,9 @@ void CanvasRenderingContext2D::setLineCap(const String& s)
         return;
     if (state().m_lineCap == cap)
         return;
-    realizeSaves();
-    modifiableState().m_lineCap = cap;
     GraphicsContext* c = drawingContext();
+    realizeSaves(c);
+    modifiableState().m_lineCap = cap;
     if (!c)
         return;
     c->setLineCap(cap);
@@ -523,9 +524,9 @@ void CanvasRenderingContext2D::setLineJoin(const String& s)
         return;
     if (state().m_lineJoin == join)
         return;
-    realizeSaves();
-    modifiableState().m_lineJoin = join;
     GraphicsContext* c = drawingContext();
+    realizeSaves(c);
+    modifiableState().m_lineJoin = join;
     if (!c)
         return;
     c->setLineJoin(join);
@@ -542,9 +543,9 @@ void CanvasRenderingContext2D::setMiterLimit(float limit)
         return;
     if (state().m_miterLimit == limit)
         return;
-    realizeSaves();
-    modifiableState().m_miterLimit = limit;
     GraphicsContext* c = drawingContext();
+    realizeSaves(c);
+    modifiableState().m_miterLimit = limit;
     if (!c)
         return;
     c->setMiterLimit(limit);
@@ -561,7 +562,7 @@ void CanvasRenderingContext2D::setShadowOffsetX(float x)
         return;
     if (state().m_shadowOffset.width() == x)
         return;
-    realizeSaves();
+    realizeSaves(0);
     modifiableState().m_shadowOffset.setWidth(x);
     applyShadow();
 }
@@ -577,7 +578,7 @@ void CanvasRenderingContext2D::setShadowOffsetY(float y)
         return;
     if (state().m_shadowOffset.height() == y)
         return;
-    realizeSaves();
+    realizeSaves(0);
     modifiableState().m_shadowOffset.setHeight(y);
     applyShadow();
 }
@@ -593,7 +594,7 @@ void CanvasRenderingContext2D::setShadowBlur(float blur)
         return;
     if (state().m_shadowBlur == blur)
         return;
-    realizeSaves();
+    realizeSaves(0);
     modifiableState().m_shadowBlur = blur;
     applyShadow();
 }
@@ -610,7 +611,7 @@ void CanvasRenderingContext2D::setShadowColor(const String& color)
         return;
     if (state().m_shadowColor == rgba)
         return;
-    realizeSaves();
+    realizeSaves(0);
     modifiableState().m_shadowColor = rgba;
     applyShadow();
 }
@@ -634,7 +635,7 @@ void CanvasRenderingContext2D::setLineDash(const Vector<float>& dash)
     if (!lineDashSequenceIsValid(dash))
         return;
 
-    realizeSaves();
+    realizeSaves(0);
     modifiableState().m_lineDash = dash;
     // Spec requires the concatenation of two copies the dash list when the
     // number of elements is odd
@@ -654,7 +655,7 @@ void CanvasRenderingContext2D::setLineDashOffset(float offset)
     if (!std::isfinite(offset) || state().m_lineDashOffset == offset)
         return;
 
-    realizeSaves();
+    realizeSaves(0);
     modifiableState().m_lineDashOffset = offset;
     applyLineDash();
 }
@@ -681,9 +682,9 @@ void CanvasRenderingContext2D::setGlobalAlpha(float alpha)
         return;
     if (state().m_globalAlpha == alpha)
         return;
-    realizeSaves();
-    modifiableState().m_globalAlpha = alpha;
     GraphicsContext* c = drawingContext();
+    realizeSaves(c);
+    modifiableState().m_globalAlpha = alpha;
     if (!c)
         return;
     c->setAlphaAsFloat(alpha);
@@ -702,10 +703,10 @@ void CanvasRenderingContext2D::setGlobalCompositeOperation(const String& operati
         return;
     if ((state().m_globalComposite == op) && (state().m_globalBlend == blendMode))
         return;
-    realizeSaves();
+    GraphicsContext* c = drawingContext();
+    realizeSaves(c);
     modifiableState().m_globalComposite = op;
     modifiableState().m_globalBlend = blendMode;
-    GraphicsContext* c = drawingContext();
     if (!c)
         return;
     c->setCompositeOperation(op, blendMode);
@@ -734,7 +735,7 @@ void CanvasRenderingContext2D::scale(float sx, float sy)
     if (state().m_transform == newTransform)
         return;
 
-    realizeSaves();
+    realizeSaves(c);
 
     if (!newTransform.isInvertible()) {
         modifiableState().m_invertibleCTM = false;
@@ -762,7 +763,7 @@ void CanvasRenderingContext2D::rotate(float angleInRadians)
     if (state().m_transform == newTransform)
         return;
 
-    realizeSaves();
+    realizeSaves(c);
 
     if (!newTransform.isInvertible()) {
         modifiableState().m_invertibleCTM = false;
@@ -790,7 +791,7 @@ void CanvasRenderingContext2D::translate(float tx, float ty)
     if (state().m_transform == newTransform)
         return;
 
-    realizeSaves();
+    realizeSaves(c);
 
     if (!newTransform.isInvertible()) {
         modifiableState().m_invertibleCTM = false;
@@ -818,7 +819,7 @@ void CanvasRenderingContext2D::transform(float m11, float m12, float m21, float 
     if (state().m_transform == newTransform)
         return;
 
-    realizeSaves();
+    realizeSaves(c);
 
     modifiableState().m_transform = newTransform;
     if (!newTransform.isInvertible()) {
@@ -843,7 +844,7 @@ void CanvasRenderingContext2D::resetTransform()
     if (ctm.isIdentity() && invertibleCTM)
         return;
 
-    realizeSaves();
+    realizeSaves(c);
     // resetTransform() resolves the non-invertible CTM state.
     modifiableState().m_transform.makeIdentity();
     modifiableState().m_invertibleCTM = true;
@@ -872,7 +873,7 @@ void CanvasRenderingContext2D::setStrokeColor(const String& color)
 {
     if (color == state().m_unparsedStrokeColor)
         return;
-    realizeSaves();
+    realizeSaves(0);
     setStrokeStyle(CanvasStyle::createFromString(color));
     modifiableState().m_unparsedStrokeColor = color;
 }
@@ -914,7 +915,7 @@ void CanvasRenderingContext2D::setFillColor(const String& color)
 {
     if (color == state().m_unparsedFillColor)
         return;
-    realizeSaves();
+    realizeSaves(0);
     setFillStyle(CanvasStyle::createFromString(color));
     modifiableState().m_unparsedFillColor = color;
 }
@@ -1111,7 +1112,7 @@ void CanvasRenderingContext2D::clipInternal(const Path& path, const String& wind
         return;
     }
 
-    realizeSaves();
+    realizeSaves(c);
     c->canvasClip(path, parseWinding(windingRuleString));
     modifiableState().m_hasClip = true;
 }
@@ -1401,7 +1402,7 @@ void CanvasRenderingContext2D::setShadow(const FloatSize& offset, float blur, RG
     if (state().m_shadowOffset == offset && state().m_shadowBlur == blur && state().m_shadowColor == color)
         return;
     bool wasDrawingShadows = shouldDrawShadows();
-    realizeSaves();
+    realizeSaves(0);
     modifiableState().m_shadowOffset = offset;
     modifiableState().m_shadowBlur = blur;
     modifiableState().m_shadowColor = color;
@@ -1943,7 +1944,7 @@ void CanvasRenderingContext2D::setFont(const String& newFont)
 
     // The parse succeeded.
     String newFontSafeCopy(newFont); // Create a string copy since newFont can be deleted inside realizeSaves.
-    realizeSaves();
+    realizeSaves(0);
     modifiableState().m_unparsedFont = newFontSafeCopy;
 
     // Map the <canvas> font into the text style. If the font uses keywords like larger/smaller, these will work
@@ -2003,7 +2004,7 @@ void CanvasRenderingContext2D::setTextAlign(const String& s)
         return;
     if (state().m_textAlign == align)
         return;
-    realizeSaves();
+    realizeSaves(0);
     modifiableState().m_textAlign = align;
 }
 
@@ -2019,7 +2020,7 @@ void CanvasRenderingContext2D::setTextBaseline(const String& s)
         return;
     if (state().m_textBaseline == baseline)
         return;
-    realizeSaves();
+    realizeSaves(0);
     modifiableState().m_textBaseline = baseline;
 }
 
@@ -2336,9 +2337,9 @@ void CanvasRenderingContext2D::setImageSmoothingEnabled(bool enabled)
     if (enabled == state().m_imageSmoothingEnabled)
         return;
 
-    realizeSaves();
-    modifiableState().m_imageSmoothingEnabled = enabled;
     GraphicsContext* c = drawingContext();
+    realizeSaves(c);
+    modifiableState().m_imageSmoothingEnabled = enabled;
     if (c)
         c->setImageInterpolationQuality(enabled ? CanvasDefaultInterpolationQuality : InterpolationNone);
 }
