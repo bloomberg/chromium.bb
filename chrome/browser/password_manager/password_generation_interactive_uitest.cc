@@ -136,14 +136,19 @@ class PasswordGenerationInteractiveTest : public InProcessBrowserTest {
 
 #if defined(USE_AURA)
 // Enabled on these platforms.
-#define MAYBE_PopupShownAndPasswordSelected PopupShownAndPasswordSelected
-#define MAYBE_PopupShownAndDismissed PopupShownAndDismissed
-#define MAYBE_PopupShownAndDismissedByScrolling PopupShownAndDismissedByScrolling
+// Disabled due to flakiness, see http://crbug.com/407998
+#define MAYBE_PopupShownAndPasswordSelected \
+  DISABLED_PopupShownAndPasswordSelected
+#define MAYBE_PopupShownAndDismissed DISABLED_PopupShownAndDismissed
+#define MAYBE_PopupShownAndDismissedByScrolling \
+  DISABLED_PopupShownAndDismissedByScrolling
 #else
 // Popup not enabled for these platforms yet.
-#define MAYBE_PopupShownAndPasswordSelected DISABLED_PopupShownAndPasswordSelected
+#define MAYBE_PopupShownAndPasswordSelected \
+  DISABLED_PopupShownAndPasswordSelected
 #define MAYBE_PopupShownAndDismissed DISABLED_PopupShownAndDismissed
-#define MAYBE_PopupShownAndDismissedByScrolling DISABLED_PopupShownAndDismissedByScrolling
+#define MAYBE_PopupShownAndDismissedByScrolling \
+  DISABLED_PopupShownAndDismissedByScrolling
 #endif
 
 IN_PROC_BROWSER_TEST_F(PasswordGenerationInteractiveTest,
