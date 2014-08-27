@@ -744,6 +744,7 @@ int SSLClientSocketOpenSSL::Init() {
   SslSetClearMask mode;
 
   mode.ConfigureFlag(SSL_MODE_RELEASE_BUFFERS, true);
+  mode.ConfigureFlag(SSL_MODE_CBC_RECORD_SPLITTING, true);
 
   mode.ConfigureFlag(SSL_MODE_HANDSHAKE_CUTTHROUGH,
                      ssl_config_.false_start_enabled);
