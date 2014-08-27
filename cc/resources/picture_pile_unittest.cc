@@ -39,13 +39,16 @@ class TestPicturePile : public PicturePile {
 class PicturePileTestBase {
  public:
   PicturePileTestBase()
-      : pile_(new TestPicturePile()),
-        background_color_(SK_ColorBLUE),
+      : background_color_(SK_ColorBLUE),
         min_scale_(0.125),
         frame_number_(0),
-        contents_opaque_(false) {
+        contents_opaque_(false) {}
+
+  void InitializeData() {
+    pile_ = make_scoped_refptr(new TestPicturePile());
     pile_->SetTileGridSize(gfx::Size(1000, 1000));
     pile_->SetMinContentsScale(min_scale_);
+    client_ = FakeContentLayerClient();
     SetTilingSize(pile_->tiling().max_texture_size());
   }
 
@@ -91,7 +94,10 @@ class PicturePileTestBase {
   bool contents_opaque_;
 };
 
-class PicturePileTest : public PicturePileTestBase, public testing::Test {};
+class PicturePileTest : public PicturePileTestBase, public testing::Test {
+ public:
+  virtual void SetUp() OVERRIDE { InitializeData(); }
+};
 
 TEST_F(PicturePileTest, SmallInvalidateInflated) {
   // Invalidate something inside a tile.
@@ -396,6 +402,8 @@ enum Corner {
 class PicturePileResizeCornerTest : public PicturePileTestBase,
                                     public testing::TestWithParam<Corner> {
  protected:
+  virtual void SetUp() OVERRIDE { InitializeData(); }
+
   static gfx::Rect CornerSinglePixelRect(Corner corner, const gfx::Size& s) {
     switch (corner) {
       case TOP_LEFT:
@@ -1189,6 +1197,52 @@ TEST_F(PicturePileTest, SmallResizePileInsideInterestRect) {
   // No invalidation when shrinking.
   EXPECT_EQ(Region().ToString(), invalidation.ToString());
   invalidation.Clear();
+}
+
+TEST_F(PicturePileTest, SolidRectangleIsSolid) {
+  // If the client has no contents, the solid state will be true.
+  Region invalidation1(tiling_rect());
+  UpdateAndExpandInvalidation(&invalidation1, tiling_size(), tiling_rect());
+  EXPECT_TRUE(pile_->IsSolidColor());
+  EXPECT_EQ(static_cast<SkColor>(SK_ColorTRANSPARENT), pile_->GetSolidColor());
+
+  // If there is a single rect that covers the view, the solid
+  // state will be true.
+  SkPaint paint;
+  paint.setColor(SK_ColorCYAN);
+  client_.add_draw_rect(tiling_rect(), paint);
+  Region invalidation2(tiling_rect());
+  UpdateAndExpandInvalidation(&invalidation2, tiling_size(), tiling_rect());
+  EXPECT_TRUE(pile_->IsSolidColor());
+  EXPECT_EQ(SK_ColorCYAN, pile_->GetSolidColor());
+
+  // If a second smaller rect is draw that doesn't cover the viewport
+  // completely, the solid state will be false.
+  gfx::Rect smallRect = tiling_rect();
+  smallRect.Inset(10, 10, 10, 10);
+  client_.add_draw_rect(smallRect, paint);
+  Region invalidation3(tiling_rect());
+  UpdateAndExpandInvalidation(&invalidation3, tiling_size(), tiling_rect());
+  EXPECT_FALSE(pile_->IsSolidColor());
+
+  // If a third rect is drawn over everything, we should be solid again.
+  paint.setColor(SK_ColorRED);
+  client_.add_draw_rect(tiling_rect(), paint);
+  Region invalidation4(tiling_rect());
+  UpdateAndExpandInvalidation(&invalidation4, tiling_size(), tiling_rect());
+  EXPECT_TRUE(pile_->IsSolidColor());
+  EXPECT_EQ(SK_ColorRED, pile_->GetSolidColor());
+
+  // If we draw too many, we don't bother doing the analysis and we should no
+  // longer be in a solid state.  There are 8 rects, two clips and a translate.
+  client_.add_draw_rect(tiling_rect(), paint);
+  client_.add_draw_rect(tiling_rect(), paint);
+  client_.add_draw_rect(tiling_rect(), paint);
+  client_.add_draw_rect(tiling_rect(), paint);
+  client_.add_draw_rect(tiling_rect(), paint);
+  Region invalidation5(tiling_rect());
+  UpdateAndExpandInvalidation(&invalidation5, tiling_size(), tiling_rect());
+  EXPECT_FALSE(pile_->IsSolidColor());
 }
 
 }  // namespace

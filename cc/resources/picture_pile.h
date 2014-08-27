@@ -51,13 +51,20 @@ class CC_EXPORT PicturePile : public PicturePileBase {
     is_suitable_for_gpu_rasterization_ = false;
   }
 
+  bool IsSolidColor() const { return is_solid_color_; }
+  SkColor GetSolidColor() const { return solid_color_; }
+
  protected:
   virtual ~PicturePile();
 
  private:
   friend class PicturePileImpl;
 
+  void DetermineIfSolidColor();
+
   bool is_suitable_for_gpu_rasterization_;
+  bool is_solid_color_;
+  SkColor solid_color_;
 
   DISALLOW_COPY_AND_ASSIGN(PicturePile);
 };

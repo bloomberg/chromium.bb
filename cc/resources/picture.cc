@@ -203,6 +203,11 @@ bool Picture::IsSuitableForGpuRasterization() const {
   return picture_->suitableForGpuRasterization(NULL);
 }
 
+int Picture::ApproximateOpCount() const {
+  DCHECK(picture_);
+  return picture_->approximateOpCount();
+}
+
 bool Picture::HasText() const {
   DCHECK(picture_);
   return picture_->hasText();

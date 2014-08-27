@@ -19,6 +19,9 @@ namespace {
 // picture that intersects the visible layer rect expanded by this distance
 // will be recorded.
 const int kPixelDistanceToRecord = 8000;
+// We don't perform solid color analysis on images that have more than 10 skia
+// operations.
+const int kOpCountThatIsOkToAnalyze = 10;
 
 // TODO(humper): The density threshold here is somewhat arbitrary; need a
 // way to set // this from the command line so we can write a benchmark
@@ -146,7 +149,11 @@ float ClusterTiles(const std::vector<gfx::Rect>& invalid_tiles,
 
 namespace cc {
 
-PicturePile::PicturePile() : is_suitable_for_gpu_rasterization_(true) {}
+PicturePile::PicturePile()
+    : is_suitable_for_gpu_rasterization_(true),
+      is_solid_color_(true),
+      solid_color_(SK_ColorTRANSPARENT) {
+}
 
 PicturePile::~PicturePile() {
 }
@@ -501,6 +508,7 @@ bool PicturePile::UpdateAndExpandInvalidation(
         found_tile_for_recorded_picture = true;
       }
     }
+    DetermineIfSolidColor();
     DCHECK(found_tile_for_recorded_picture);
   }
 
@@ -514,6 +522,37 @@ void PicturePile::SetEmptyBounds() {
   picture_map_.clear();
   has_any_recordings_ = false;
   recorded_viewport_ = gfx::Rect();
+}
+
+void PicturePile::DetermineIfSolidColor() {
+  is_solid_color_ = false;
+  solid_color_ = SK_ColorTRANSPARENT;
+
+  if (picture_map_.empty()) {
+    return;
+  }
+
+  PictureMap::const_iterator it = picture_map_.begin();
+  const Picture* picture = it->second.GetPicture();
+
+  // Missing recordings due to frequent invalidations or being too far away
+  // from the interest rect will cause the a null picture to exist.
+  if (!picture)
+    return;
+
+  // Don't bother doing more work if the first image is too complicated.
+  if (picture->ApproximateOpCount() > kOpCountThatIsOkToAnalyze)
+    return;
+
+  // Make sure all of the mapped images point to the same picture.
+  for (++it; it != picture_map_.end(); ++it) {
+    if (it->second.GetPicture() != picture)
+      return;
+  }
+  skia::AnalysisCanvas canvas(recorded_viewport_.width(),
+                              recorded_viewport_.height());
+  picture->Raster(&canvas, NULL, Region(), 1.0f);
+  is_solid_color_ = canvas.GetColorIfSolid(&solid_color_);
 }
 
 }  // namespace cc

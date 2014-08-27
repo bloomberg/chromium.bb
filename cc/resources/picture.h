@@ -69,6 +69,7 @@ class CC_EXPORT Picture
   bool HasRecording() const { return picture_.get() != NULL; }
 
   bool IsSuitableForGpuRasterization() const;
+  int ApproximateOpCount() const;
 
   bool HasText() const;
 
