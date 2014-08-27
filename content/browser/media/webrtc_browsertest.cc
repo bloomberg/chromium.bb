@@ -104,6 +104,9 @@ class WebRtcBrowserTest : public WebRtcContentBrowserTest {
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
 // Timing out on ARM linux bot: http://crbug.com/238490
 #define MAYBE_CanSetupDefaultVideoCall DISABLED_CanSetupDefaultVideoCall
+// Flaky on TSAN v2. http://crbug.com/408006
+#elif defined(THREAD_SANITIZER)
+#define MAYBE_CanSetupDefaultVideoCall DISABLED_CanSetupDefaultVideoCall
 #else
 #define MAYBE_CanSetupDefaultVideoCall CanSetupDefaultVideoCall
 #endif
@@ -115,24 +118,48 @@ IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest, MAYBE_CanSetupDefaultVideoCall) {
       "callAndExpectResolution({video: true}, 640, 480);");
 }
 
+// Flaky on TSAN v2. http://crbug.com/408006
+#if defined(THREAD_SANITIZER)
+#define MAYBE_CanSetupVideoCallWith1To1AspectRatio \
+  DISABLED_CanSetupVideoCallWith1To1AspectRatio
+#else
+#define MAYBE_CanSetupVideoCallWith1To1AspectRatio \
+  CanSetupVideoCallWith1To1AspectRatio
+#endif
 IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest,
-                       CanSetupVideoCallWith1To1AspectRatio) {
+                       MAYBE_CanSetupVideoCallWith1To1AspectRatio) {
   const std::string javascript =
       "callAndExpectResolution({video: {mandatory: {minWidth: 320,"
       " maxWidth: 320, minHeight: 320, maxHeight: 320}}}, 320, 320);";
   MakeTypicalPeerConnectionCall(javascript);
 }
 
+// Flaky on TSAN v2. http://crbug.com/408006
+#if defined(THREAD_SANITIZER)
+#define MAYBE_CanSetupVideoCallWith16To9AspectRatio \
+  DISABLED_CanSetupVideoCallWith16To9AspectRatio
+#else
+#define MAYBE_CanSetupVideoCallWith16To9AspectRatio \
+  CanSetupVideoCallWith16To9AspectRatio
+#endif
 IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest,
-                       CanSetupVideoCallWith16To9AspectRatio) {
+                       MAYBE_CanSetupVideoCallWith16To9AspectRatio) {
   const std::string javascript =
       "callAndExpectResolution({video: {mandatory: {minWidth: 640,"
       " maxWidth: 640, minAspectRatio: 1.777}}}, 640, 360);";
   MakeTypicalPeerConnectionCall(javascript);
 }
 
+// Flaky on TSAN v2. http://crbug.com/408006
+#if defined(THREAD_SANITIZER)
+#define MAYBE_CanSetupVideoCallWith4To3AspectRatio \
+  DISABLED_CanSetupVideoCallWith4To3AspectRatio
+#else
+#define MAYBE_CanSetupVideoCallWith4To3AspectRatio \
+  CanSetupVideoCallWith4To3AspectRatio
+#endif
 IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest,
-                       CanSetupVideoCallWith4To3AspectRatio) {
+                       MAYBE_CanSetupVideoCallWith4To3AspectRatio) {
   const std::string javascript =
       "callAndExpectResolution({video: {mandatory: {minWidth: 960,"
       "maxAspectRatio: 1.333}}}, 960, 720);";
