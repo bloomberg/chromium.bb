@@ -7,6 +7,7 @@
 #include "base/files/file_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/version.h"
@@ -14,13 +15,9 @@
 #include "components/component_updater/test/test_configurator.h"
 #include "components/component_updater/test/url_request_post_interceptor.h"
 #include "components/component_updater/update_checker.h"
-#include "content/public/browser/browser_thread.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-using content::BrowserThread;
 
 namespace component_updater {
 
@@ -67,16 +64,13 @@ class UpdateCheckerTest : public testing::Test {
   UpdateResponse::Results results_;
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  base::MessageLoopForIO loop_;
   base::Closure quit_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(UpdateCheckerTest);
 };
 
-UpdateCheckerTest::UpdateCheckerTest()
-    : config_(new TestConfigurator),
-      error_(0),
-      thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {
+UpdateCheckerTest::UpdateCheckerTest() : post_interceptor_(NULL), error_(0) {
   net::URLFetcher::SetEnableInterceptionForTests(true);
 }
 
@@ -85,7 +79,10 @@ UpdateCheckerTest::~UpdateCheckerTest() {
 }
 
 void UpdateCheckerTest::SetUp() {
-  interceptor_factory_.reset(new InterceptorFactory);
+  config_.reset(new TestConfigurator(base::MessageLoopProxy::current(),
+                                     base::MessageLoopProxy::current()));
+  interceptor_factory_.reset(
+      new InterceptorFactory(base::MessageLoopProxy::current()));
   post_interceptor_ = interceptor_factory_->CreateInterceptor();
   EXPECT_TRUE(post_interceptor_);
 
@@ -103,6 +100,10 @@ void UpdateCheckerTest::TearDown() {
   interceptor_factory_.reset();
 
   config_.reset();
+
+  // The PostInterceptor requires the message loop to run to destruct correctly.
+  // TODO: This is fragile and should be fixed.
+  RunThreadsUntilIdle();
 }
 
 void UpdateCheckerTest::RunThreads() {

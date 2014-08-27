@@ -8,15 +8,12 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "components/component_updater/test/test_configurator.h"
-#include "content/public/test/test_browser_thread.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_filter.h"
 #include "net/url_request/url_request_interceptor.h"
 #include "net/url_request/url_request_simple_job.h"
 #include "net/url_request/url_request_test_util.h"
-
-using content::BrowserThread;
 
 namespace component_updater {
 
@@ -49,12 +46,14 @@ class URLRequestMockJob : public net::URLRequestSimpleJob {
   DISALLOW_COPY_AND_ASSIGN(URLRequestMockJob);
 };
 
-URLRequestPostInterceptor::URLRequestPostInterceptor(const GURL& url)
-    : url_(url), hit_count_(0) {
+URLRequestPostInterceptor::URLRequestPostInterceptor(
+    const GURL& url,
+    const scoped_refptr<base::SequencedTaskRunner>& io_task_runner)
+    : url_(url), io_task_runner_(io_task_runner), hit_count_(0) {
 }
 
 URLRequestPostInterceptor::~URLRequestPostInterceptor() {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
   ClearExpectations();
 }
 
@@ -125,17 +124,19 @@ void URLRequestPostInterceptor::Reset() {
 
 class URLRequestPostInterceptor::Delegate : public net::URLRequestInterceptor {
  public:
-  Delegate(const std::string& scheme, const std::string& hostname)
-      : scheme_(scheme), hostname_(hostname) {}
+  Delegate(const std::string& scheme,
+           const std::string& hostname,
+           const scoped_refptr<base::SequencedTaskRunner>& io_task_runner)
+      : scheme_(scheme), hostname_(hostname), io_task_runner_(io_task_runner) {}
 
   void Register() {
-    CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
     net::URLRequestFilter::GetInstance()->AddHostnameInterceptor(
         scheme_, hostname_, scoped_ptr<net::URLRequestInterceptor>(this));
   }
 
   void Unregister() {
-    CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
     for (InterceptorMap::iterator it = interceptors_.begin();
          it != interceptors_.end();
          ++it)
@@ -145,7 +146,7 @@ class URLRequestPostInterceptor::Delegate : public net::URLRequestInterceptor {
   }
 
   void OnCreateInterceptor(URLRequestPostInterceptor* interceptor) {
-    CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
     CHECK(interceptors_.find(interceptor->GetUrl()) == interceptors_.end());
 
     interceptors_.insert(std::make_pair(interceptor->GetUrl(), interceptor));
@@ -157,7 +158,7 @@ class URLRequestPostInterceptor::Delegate : public net::URLRequestInterceptor {
   virtual net::URLRequestJob* MaybeInterceptRequest(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) const OVERRIDE {
-    CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
 
     // Only intercepts POST.
     if (!request->has_upload())
@@ -212,26 +213,29 @@ class URLRequestPostInterceptor::Delegate : public net::URLRequestInterceptor {
 
   const std::string scheme_;
   const std::string hostname_;
+  scoped_refptr<base::SequencedTaskRunner> io_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(Delegate);
 };
 
 URLRequestPostInterceptorFactory::URLRequestPostInterceptorFactory(
     const std::string& scheme,
-    const std::string& hostname)
+    const std::string& hostname,
+    const scoped_refptr<base::SequencedTaskRunner>& io_task_runner)
     : scheme_(scheme),
       hostname_(hostname),
-      delegate_(new URLRequestPostInterceptor::Delegate(scheme, hostname)) {
-  BrowserThread::PostTask(
-      BrowserThread::IO,
+      io_task_runner_(io_task_runner),
+      delegate_(new URLRequestPostInterceptor::Delegate(scheme,
+                                                        hostname,
+                                                        io_task_runner)) {
+  io_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&URLRequestPostInterceptor::Delegate::Register,
                  base::Unretained(delegate_)));
 }
 
 URLRequestPostInterceptorFactory::~URLRequestPostInterceptorFactory() {
-  BrowserThread::PostTask(
-      BrowserThread::IO,
+  io_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&URLRequestPostInterceptor::Delegate::Unregister,
                  base::Unretained(delegate_)));
@@ -243,9 +247,8 @@ URLRequestPostInterceptor* URLRequestPostInterceptorFactory::CreateInterceptor(
       base::StringPrintf("%s://%s", scheme_.c_str(), hostname_.c_str()));
   GURL absolute_url(base_url.Resolve(filepath.MaybeAsASCII()));
   URLRequestPostInterceptor* interceptor(
-      new URLRequestPostInterceptor(absolute_url));
-  bool res = BrowserThread::PostTask(
-      BrowserThread::IO,
+      new URLRequestPostInterceptor(absolute_url, io_task_runner_));
+  bool res = io_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&URLRequestPostInterceptor::Delegate::OnCreateInterceptor,
                  base::Unretained(delegate_),
@@ -262,9 +265,11 @@ bool PartialMatch::Match(const std::string& actual) const {
   return actual.find(expected_) != std::string::npos;
 }
 
-InterceptorFactory::InterceptorFactory()
+InterceptorFactory::InterceptorFactory(
+    const scoped_refptr<base::SequencedTaskRunner>& io_task_runner)
     : URLRequestPostInterceptorFactory(POST_INTERCEPT_SCHEME,
-                                       POST_INTERCEPT_HOSTNAME) {
+                                       POST_INTERCEPT_HOSTNAME,
+                                       io_task_runner) {
 }
 
 InterceptorFactory::~InterceptorFactory() {

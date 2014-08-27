@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_COMPONENT_UPDATER_TEST_URL_REQUEST_POST_INTERCEPTOR_H_
-#define CHROME_BROWSER_COMPONENT_UPDATER_TEST_URL_REQUEST_POST_INTERCEPTOR_H_
+#ifndef COMPONENTS_COMPONENT_UPDATER_TEST_URL_REQUEST_POST_INTERCEPTOR_H_
+#define COMPONENTS_COMPONENT_UPDATER_TEST_URL_REQUEST_POST_INTERCEPTOR_H_
 
 #include <map>
 #include <queue>
@@ -12,11 +12,13 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "url/gurl.h"
 
 namespace base {
 class FilePath;
+class SequencedTaskRunner;
 }
 
 namespace net {
@@ -92,11 +94,14 @@ class URLRequestPostInterceptor {
   friend class URLRequestPostInterceptorFactory;
   typedef std::pair<const RequestMatcher*, std::string> Expectation;
 
-  explicit URLRequestPostInterceptor(const GURL& url);
+  URLRequestPostInterceptor(
+      const GURL& url,
+      const scoped_refptr<base::SequencedTaskRunner>& io_task_runner);
   ~URLRequestPostInterceptor();
 
   void ClearExpectations();
   const GURL url_;
+  scoped_refptr<base::SequencedTaskRunner> io_task_runner_;
 
   mutable base::Lock interceptor_lock_;
   mutable int hit_count_;
@@ -108,8 +113,10 @@ class URLRequestPostInterceptor {
 
 class URLRequestPostInterceptorFactory {
  public:
-  URLRequestPostInterceptorFactory(const std::string& scheme,
-                                   const std::string& hostname);
+  URLRequestPostInterceptorFactory(
+      const std::string& scheme,
+      const std::string& hostname,
+      const scoped_refptr<base::SequencedTaskRunner>& io_task_runner);
   ~URLRequestPostInterceptorFactory();
 
   // Creates an interceptor object for the specified url path. Returns NULL
@@ -120,6 +127,7 @@ class URLRequestPostInterceptorFactory {
  private:
   const std::string scheme_;
   const std::string hostname_;
+  scoped_refptr<base::SequencedTaskRunner> io_task_runner_;
 
   // After creation, |delegate_| lives on the IO thread and it is owned by
   // a URLRequestFilter after registration. A task to unregister it and
@@ -132,7 +140,8 @@ class URLRequestPostInterceptorFactory {
 // Intercepts HTTP POST requests sent to "localhost2".
 class InterceptorFactory : public URLRequestPostInterceptorFactory {
  public:
-  InterceptorFactory();
+  explicit InterceptorFactory(
+      const scoped_refptr<base::SequencedTaskRunner>& io_task_runner);
   ~InterceptorFactory();
 
   URLRequestPostInterceptor* CreateInterceptor();
@@ -154,4 +163,4 @@ class PartialMatch : public URLRequestPostInterceptor::RequestMatcher {
 
 }  // namespace component_updater
 
-#endif  // CHROME_BROWSER_COMPONENT_UPDATER_TEST_URL_REQUEST_POST_INTERCEPTOR_H_
+#endif  // COMPONENTS_COMPONENT_UPDATER_TEST_URL_REQUEST_POST_INTERCEPTOR_H_

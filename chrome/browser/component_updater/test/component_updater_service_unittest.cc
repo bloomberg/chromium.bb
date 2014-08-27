@@ -44,10 +44,16 @@ MockServiceObserver::~MockServiceObserver() {
 }
 
 ComponentUpdaterTest::ComponentUpdaterTest()
-    : test_config_(NULL),
+    : post_interceptor_(NULL),
+      test_config_(NULL),
       thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {
   // The component updater instance under test.
-  test_config_ = new TestConfigurator;
+  test_config_ = new TestConfigurator(
+      BrowserThread::GetBlockingPool()
+          ->GetSequencedTaskRunnerWithShutdownBehavior(
+              BrowserThread::GetBlockingPool()->GetSequenceToken(),
+              base::SequencedWorkerPool::SKIP_ON_SHUTDOWN),
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
   component_updater_.reset(ComponentUpdateServiceFactory(test_config_));
 
   net::URLFetcher::SetEnableInterceptionForTests(true);
@@ -59,7 +65,8 @@ ComponentUpdaterTest::~ComponentUpdaterTest() {
 
 void ComponentUpdaterTest::SetUp() {
   get_interceptor_.reset(new GetInterceptor);
-  interceptor_factory_.reset(new InterceptorFactory);
+  interceptor_factory_.reset(new InterceptorFactory(
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)));
   post_interceptor_ = interceptor_factory_->CreateInterceptor();
   EXPECT_TRUE(post_interceptor_);
 }

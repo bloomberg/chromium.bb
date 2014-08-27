@@ -8,20 +8,19 @@
 #include "base/version.h"
 #include "components/component_updater/component_patcher_operation.h"
 #include "components/component_updater/test/test_configurator.h"
-#include "content/public/browser/browser_thread.h"
 #include "url/gurl.h"
-
-using content::BrowserThread;
 
 namespace component_updater {
 
-TestConfigurator::TestConfigurator()
-    : initial_time_(0),
+TestConfigurator::TestConfigurator(
+    const scoped_refptr<base::SequencedTaskRunner>& worker_task_runner,
+    const scoped_refptr<base::SingleThreadTaskRunner>& network_task_runner)
+    : worker_task_runner_(worker_task_runner),
+      initial_time_(0),
       times_(1),
       recheck_time_(0),
       ondemand_time_(0),
-      context_(new net::TestURLRequestContextGetter(
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO))) {
+      context_(new net::TestURLRequestContextGetter(network_task_runner)) {
 }
 
 TestConfigurator::~TestConfigurator() {
@@ -133,16 +132,14 @@ void TestConfigurator::SetInitialDelay(int seconds) {
 
 scoped_refptr<base::SequencedTaskRunner>
 TestConfigurator::GetSequencedTaskRunner() const {
-  return content::BrowserThread::GetBlockingPool()
-      ->GetSequencedTaskRunnerWithShutdownBehavior(
-          content::BrowserThread::GetBlockingPool()->GetSequenceToken(),
-          base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
+  DCHECK(worker_task_runner_.get());
+  return worker_task_runner_;
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
 TestConfigurator::GetSingleThreadTaskRunner() const {
-  return content::BrowserThread::GetMessageLoopProxyForThread(
-      content::BrowserThread::FILE);
+  // This is NULL because tests do not use the background downloader.
+  return NULL;
 }
 
 }  // namespace component_updater

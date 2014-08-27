@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_COMPONENT_UPDATER_TEST_COMPONENT_PATCHER_UNITTEST_H_
-#define CHROME_BROWSER_COMPONENT_UPDATER_TEST_COMPONENT_PATCHER_UNITTEST_H_
+#ifndef COMPONENTS_COMPONENT_UPDATER_TEST_COMPONENT_PATCHER_UNITTEST_H_
+#define COMPONENTS_COMPONENT_UPDATER_TEST_COMPONENT_PATCHER_UNITTEST_H_
 
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "base/message_loop/message_loop.h"
 #include "courgette/courgette.h"
 #include "courgette/third_party/bsdiff.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -34,9 +34,9 @@ class ComponentPatcherOperationTest : public testing::Test {
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  base::MessageLoopForIO loop_;
 };
 
 }  // namespace component_updater
 
-#endif  // CHROME_BROWSER_COMPONENT_UPDATER_TEST_COMPONENT_PATCHER_UNITTEST_H_
+#endif  // COMPONENTS_COMPONENT_UPDATER_TEST_COMPONENT_PATCHER_UNITTEST_H_

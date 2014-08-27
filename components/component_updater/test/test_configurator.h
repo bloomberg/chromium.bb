@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_COMPONENT_UPDATER_TEST_TEST_CONFIGURATOR_H_
-#define CHROME_BROWSER_COMPONENT_UPDATER_TEST_TEST_CONFIGURATOR_H_
+#ifndef COMPONENTS_COMPONENT_UPDATER_TEST_TEST_CONFIGURATOR_H_
+#define COMPONENTS_COMPONENT_UPDATER_TEST_TEST_CONFIGURATOR_H_
 
 #include <string>
 #include <utility>
@@ -25,7 +25,9 @@ struct CrxComponent;
 
 class TestConfigurator : public Configurator {
  public:
-  TestConfigurator();
+  TestConfigurator(
+      const scoped_refptr<base::SequencedTaskRunner>& worker_task_runner,
+      const scoped_refptr<base::SingleThreadTaskRunner>& network_task_runner);
   virtual ~TestConfigurator();
 
   // Overrrides for Configurator.
@@ -61,6 +63,9 @@ class TestConfigurator : public Configurator {
   void SetInitialDelay(int seconds);
 
  private:
+  scoped_refptr<base::SequencedTaskRunner> worker_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
+
   int initial_time_;
   int times_;
   int recheck_time_;
@@ -74,4 +79,4 @@ class TestConfigurator : public Configurator {
 
 }  // namespace component_updater
 
-#endif  // CHROME_BROWSER_COMPONENT_UPDATER_TEST_TEST_CONFIGURATOR_H_
+#endif  // COMPONENTS_COMPONENT_UPDATER_TEST_TEST_CONFIGURATOR_H_

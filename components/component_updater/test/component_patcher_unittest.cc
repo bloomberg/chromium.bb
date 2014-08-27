@@ -8,7 +8,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/values.h"
@@ -17,7 +16,6 @@
 #include "components/component_updater/component_updater_service.h"
 #include "components/component_updater/test/component_patcher_unittest.h"
 #include "components/component_updater/test/test_installer.h"
-#include "content/public/browser/browser_thread.h"
 #include "courgette/courgette.h"
 #include "courgette/third_party/bsdiff.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -68,8 +66,7 @@ ComponentPatcherOperationTest::ComponentPatcherOperationTest() {
   EXPECT_TRUE(input_dir_.CreateUniqueTempDir());
   EXPECT_TRUE(installed_dir_.CreateUniqueTempDir());
   installer_.reset(new ReadOnlyTestInstaller(installed_dir_.path()));
-  task_runner_ = content::BrowserThread::GetMessageLoopProxyForThread(
-      content::BrowserThread::FILE);
+  task_runner_ = base::MessageLoop::current()->task_runner();
 }
 
 ComponentPatcherOperationTest::~ComponentPatcherOperationTest() {

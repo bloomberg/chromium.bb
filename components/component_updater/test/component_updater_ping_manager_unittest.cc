@@ -3,18 +3,15 @@
 // found in the LICENSE file.
 
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/version.h"
 #include "components/component_updater/component_updater_ping_manager.h"
 #include "components/component_updater/crx_update_item.h"
 #include "components/component_updater/test/test_configurator.h"
 #include "components/component_updater/test/url_request_post_interceptor.h"
-#include "content/public/browser/browser_thread.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-using content::BrowserThread;
 
 namespace component_updater {
 
@@ -34,12 +31,12 @@ class ComponentUpdaterPingManagerTest : public testing::Test {
   scoped_ptr<PingManager> ping_manager_;
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  base::MessageLoopForIO loop_;
 };
 
 ComponentUpdaterPingManagerTest::ComponentUpdaterPingManagerTest()
-    : config_(new TestConfigurator),
-      thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {
+    : config_(new TestConfigurator(base::MessageLoopProxy::current(),
+                                   base::MessageLoopProxy::current())) {
 }
 
 void ComponentUpdaterPingManagerTest::SetUp() {
@@ -57,7 +54,8 @@ void ComponentUpdaterPingManagerTest::RunThreadsUntilIdle() {
 
 // Test is flaky: http://crbug.com/349547
 TEST_F(ComponentUpdaterPingManagerTest, DISABLED_PingManagerTest) {
-  scoped_ptr<InterceptorFactory> interceptor_factory(new InterceptorFactory);
+  scoped_ptr<InterceptorFactory> interceptor_factory(
+      new InterceptorFactory(base::MessageLoopProxy::current()));
   URLRequestPostInterceptor* interceptor =
       interceptor_factory->CreateInterceptor();
   EXPECT_TRUE(interceptor);
