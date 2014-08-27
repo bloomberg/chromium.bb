@@ -639,6 +639,8 @@ TEST_F(ProfileInfoCacheTest, MigrateLegacyProfileNamesWithNewAvatarMenu) {
 
 TEST_F(ProfileInfoCacheTest,
        DontMigrateLegacyProfileNamesWithoutNewAvatarMenu) {
+  switches::DisableNewAvatarMenuForTesting(CommandLine::ForCurrentProcess());
+
   EXPECT_EQ(0U, GetCache()->GetNumberOfProfiles());
 
   base::string16 name_1 = ASCIIToUTF16("Default Profile");
