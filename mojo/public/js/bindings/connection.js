@@ -11,6 +11,15 @@ define("mojo/public/js/bindings/connection", [
     this.remote = new remoteFactory(this.router_);
     this.local = new localFactory(this.remote);
     this.router_.setIncomingReceiver(this.local);
+
+    var validateRequest = localFactory.prototype.validator;
+    var validateResponse = remoteFactory.prototype.validator;
+    var payloadValidators = [];
+    if (validateRequest)
+      payloadValidators.push(validateRequest);
+    if (validateResponse)
+      payloadValidators.push(validateResponse);
+    this.router_.setPayloadValidators(payloadValidators);
   }
 
   Connection.prototype.close = function() {

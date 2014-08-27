@@ -227,19 +227,17 @@ define([
 
   function testConformanceMessageValidation() {
     testMessageValidation("conformance_", [
-      testInterface.validateConformanceTestInterfaceRequest,
-    ]);
+        testInterface.ConformanceTestInterfaceStub.prototype.validator]);
   }
 
   function testIntegrationMessageValidation() {
     testMessageValidation("integration_", [
-      testInterface.validateIntegrationTestInterface1Request,
-      testInterface.validateIntegrationTestInterface2Response
-    ]);
+        testInterface.IntegrationTestInterface1Stub.prototype.validator,
+        testInterface.IntegrationTestInterface2Proxy.prototype.validator]);
   }
 
+  expect(checkTestMessageParser()).toBeNull();
   testConformanceMessageValidation();
   testIntegrationMessageValidation();
-  expect(checkTestMessageParser()).toBeNull();
   this.result = "PASS";
 });

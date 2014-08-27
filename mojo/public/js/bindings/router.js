@@ -13,6 +13,7 @@ define("mojo/public/js/bindings/router", [
     this.incomingReceiver_ = null;
     this.nextRequestID_ = 0;
     this.responders_ = {};
+    this.payloadValidators_ = [];
 
     this.connector_.setIncomingReceiver({
         accept: this.handleIncomingMessage_.bind(this),
@@ -56,13 +57,21 @@ define("mojo/public/js/bindings/router", [
     this.incomingReceiver_ = receiver;
   };
 
+  Router.prototype.setPayloadValidators = function(payloadValidators) {
+    this.payloadValidators_ = payloadValidators;
+  };
+
   Router.prototype.encounteredError = function() {
     return this.connector_.encounteredError();
   };
 
   Router.prototype.handleIncomingMessage_ = function(message) {
-    var v = new validator.Validator(message);
-    if (v.validateMessageHeader() !== validator.validationError.NONE)
+    var noError = validator.validationError.NONE;
+    var messageValidator = new validator.Validator(message);
+    var err = messageValidator.validateMessageHeader();
+    for (var i = 0; err === noError && i < this.payloadValidators_.length; ++i)
+      err = this.payloadValidators_[i](messageValidator);
+    if (err !== noError)
       this.close();
 
     if (message.expectsResponse()) {

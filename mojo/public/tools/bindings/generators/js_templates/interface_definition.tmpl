@@ -157,6 +157,13 @@ params.{{parameter.name}}{% if not loop.last %}, {% endif -%}
 {%- endif %}
   }
 
+  {{interface.name}}Stub.prototype.validator = validate{{interface.name}}Request;
+{%- if interface|has_callbacks %}
+  {{interface.name}}Proxy.prototype.validator = validate{{interface.name}}Response;
+{%- else %}
+  {{interface.name}}Proxy.prototype.validator = null;
+{%- endif -%}
+
 {#--- Enums #}
 {%  from "enum_definition.tmpl" import enum_def -%}
 {%  for enum in interface.enums %}
@@ -168,4 +175,4 @@ params.{{parameter.name}}{% if not loop.last %}, {% endif -%}
 {%  for constant in interface.constants %}
   {{interface.name}}Proxy.{{constant.name}} = {{constant.value|expression_to_text}};
   {{interface.name}}Stub.{{constant.name}} = {{interface.name}}Proxy.{{constant.name}};
-{%  endfor %}
+{%-  endfor %}

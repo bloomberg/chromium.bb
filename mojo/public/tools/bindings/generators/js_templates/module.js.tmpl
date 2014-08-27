@@ -28,15 +28,15 @@ define("{{module.path}}", [
 {#--- Struct definitions #}
 {%  for struct in structs %}
 {%-   include "struct_definition.tmpl" %}
-{%- endfor %}
+{%- endfor -%}
 
 {#--- Interface definitions #}
-{%- for interface in interfaces %}
+{%- for interface in interfaces -%}
 {%-   include "interface_definition.tmpl" %}
 {%- endfor %}
 
   var exports = {};
-{%  for constant in module.constants %}
+{%-  for constant in module.constants %}
   exports.{{constant.name}} = {{constant.name}};
 {%- endfor %}
 {%- for enum in enums %}
@@ -48,8 +48,6 @@ define("{{module.path}}", [
 {%- for interface in interfaces %}
   exports.{{interface.name}}Proxy = {{interface.name}}Proxy;
   exports.{{interface.name}}Stub = {{interface.name}}Stub;
-  exports.validate{{interface.name}}Request = validate{{interface.name}}Request;
-  exports.validate{{interface.name}}Response = validate{{interface.name}}Response;
 {%- endfor %}
   return exports;
 });
