@@ -248,7 +248,7 @@ ResultExpr Elser::Else(ResultExpr else_result) const {
   // and end up with an appropriately chained tree.
 
   ResultExpr expr = else_result;
-  for (Cons<Clause>::List it = clause_list_; it; it = it->tail()) {
+  for (Cons<Clause>::List it = clause_list_; it.get(); it = it->tail()) {
     Clause clause = it->head();
     expr = ResultExpr(
         new const IfThenResultExprImpl(clause.first, clause.second, expr));

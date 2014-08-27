@@ -13,7 +13,7 @@ namespace {
 
 std::string Join(Cons<char>::List char_list) {
   std::string res;
-  for (Cons<char>::List it = char_list; it; it = it->tail()) {
+  for (Cons<char>::List it = char_list; it.get(); it = it->tail()) {
     res.push_back(it->head());
   }
   return res;
