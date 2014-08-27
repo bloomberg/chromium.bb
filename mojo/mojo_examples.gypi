@@ -825,14 +825,32 @@
             'mojo_base.gyp:mojo_application_standalone',
             'mojo_base.gyp:mojo_cpp_bindings',
             'mojo_base.gyp:mojo_utility',
-            'mojo_echo_bindings',
+            'mojo_echo_service_bindings',
             '<(mojo_system_for_loadable_module)',
           ],
           'sources': [
             'examples/dbus_echo/dbus_echo_app.cc',
           ],
         },
+        {
+          'target_name': 'mojo_dbus_echo_service',
+          'type': 'executable',
+          'dependencies': [
+            '../base/base.gyp:base',
+            '../build/linux/system.gyp:dbus',
+            '../dbus/dbus.gyp:dbus',
+            'mojo_base.gyp:mojo_common_lib',
+            'mojo_base.gyp:mojo_system_impl',
+            'mojo_base.gyp:mojo_application_chromium',
+            'mojo_dbus_service',
+            'mojo_echo_service_bindings',
+          ],
+          'sources': [
+            'examples/dbus_echo/dbus_echo_service.cc',
+          ],
+        },
       ],
+
     }],
   ],
 }

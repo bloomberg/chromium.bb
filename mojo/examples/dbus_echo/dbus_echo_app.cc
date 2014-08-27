@@ -7,6 +7,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "mojo/examples/echo/echo_service.mojom.h"
 #include "mojo/public/c/system/main.h"
 #include "mojo/public/cpp/application/application_delegate.h"
 #include "mojo/public/cpp/application/application_impl.h"
@@ -14,7 +15,6 @@
 #include "mojo/public/cpp/environment/environment.h"
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/public/cpp/system/macros.h"
-#include "mojo/services/dbus_echo/echo.mojom.h"
 
 namespace mojo {
 namespace examples {
@@ -28,7 +28,7 @@ class DBusEchoApp : public ApplicationDelegate {
     app->ConnectToService(
         "dbus:org.chromium.EchoService/org/chromium/MojoImpl", &echo_service_);
 
-    echo_service_->Echo(
+    echo_service_->EchoString(
         String::From("who"),
         base::Bind(&DBusEchoApp::OnEcho, base::Unretained(this)));
   }

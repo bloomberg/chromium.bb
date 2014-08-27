@@ -6,7 +6,6 @@ import("//build/config/ui.gni")
 
 group("services") {
   deps = [
-    "//mojo/services/dbus_echo:bindings",
     "//mojo/services/gles2:bindings",
     "//mojo/services/network",
     "//mojo/services/public/interfaces/content_handler",

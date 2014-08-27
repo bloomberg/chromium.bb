@@ -5,21 +5,6 @@
 {
   'targets': [
     {
-      # GN version: //mojo/services/dbus_echo:bindings
-      'target_name': 'mojo_echo_bindings',
-      'type': 'static_library',
-      'sources': [
-        'services/dbus_echo/echo.mojom',
-      ],
-      'includes': [ 'public/tools/bindings/mojom_bindings_generator.gypi' ],
-      'export_dependent_settings': [
-        'mojo_base.gyp:mojo_cpp_bindings',
-      ],
-      'dependencies': [
-        'mojo_base.gyp:mojo_cpp_bindings',
-      ],
-    },
-    {
       'target_name': 'mojo_html_viewer',
       'type': 'loadable_module',
       'dependencies': [
@@ -878,27 +863,6 @@
                 '../ui/gfx/x/gfx_x11.gyp:gfx_x11',
               ],
             }],
-          ],
-        },
-      ],
-    }],
-    ['OS=="linux"', {
-      'targets': [
-        {
-          'target_name': 'mojo_dbus_echo_service',
-          'type': 'executable',
-          'dependencies': [
-            '../base/base.gyp:base',
-            '../build/linux/system.gyp:dbus',
-            '../dbus/dbus.gyp:dbus',
-            'mojo_base.gyp:mojo_common_lib',
-            'mojo_base.gyp:mojo_system_impl',
-            'mojo_base.gyp:mojo_application_chromium',
-            'mojo_dbus_service',
-            'mojo_echo_bindings',
-          ],
-          'sources': [
-            'services/dbus_echo/dbus_echo_service.cc',
           ],
         },
       ],

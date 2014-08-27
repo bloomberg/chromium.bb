@@ -13,17 +13,18 @@
 #include "mojo/embedder/channel_init.h"
 #include "mojo/embedder/embedder.h"
 #include "mojo/embedder/simple_platform_support.h"
+#include "mojo/examples/echo/echo_service.mojom.h"
 #include "mojo/public/cpp/environment/environment.h"
-#include "mojo/services/dbus_echo/echo.mojom.h"
 
 namespace {
-class EchoServiceImpl : public mojo::InterfaceImpl<mojo::EchoService> {
+class EchoServiceImpl
+    : public mojo::InterfaceImpl<mojo::examples::EchoService> {
  public:
   EchoServiceImpl() {}
   virtual ~EchoServiceImpl() {}
 
  protected:
-  virtual void Echo(
+  virtual void EchoString(
       const mojo::String& in_to_echo,
       const mojo::Callback<void(mojo::String)>& callback) OVERRIDE {
     DVLOG(1) << "Asked to echo " << in_to_echo;
@@ -41,10 +42,10 @@ int main(int argc, char** argv) {
   logging::LoggingSettings settings;
   settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
   logging::InitLogging(settings);
-  logging::SetLogItems(false,    // Process ID
-                       false,    // Thread ID
-                       false,    // Timestamp
-                       false);   // Tick count
+  logging::SetLogItems(false,   // Process ID
+                       false,   // Thread ID
+                       false,   // Timestamp
+                       false);  // Tick count
 
   mojo::embedder::Init(scoped_ptr<mojo::embedder::PlatformSupport>(
       new mojo::embedder::SimplePlatformSupport()));
