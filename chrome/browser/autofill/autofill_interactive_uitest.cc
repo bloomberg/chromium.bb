@@ -294,6 +294,16 @@ class AutofillInteractiveTest : public InProcessBrowserTest {
     EXPECT_EQ(expected_value, value);
   }
 
+  void GetFieldBackgroundColor(const std::string& field_name,
+                               std::string* color) {
+    ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+        GetWebContents(),
+        "window.domAutomationController.send("
+        "    document.defaultView.getComputedStyle(document.getElementById('" +
+        field_name + "')).backgroundColor);",
+        color));
+  }
+
   void SimulateURLFetch(bool success) {
     net::TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(0);
     ASSERT_TRUE(fetcher);
@@ -420,6 +430,20 @@ class AutofillInteractiveTest : public InProcessBrowserTest {
     GetRenderViewHost()->AddKeyPressEventCallback(key_press_event_sink_);
     GetRenderViewHost()->ForwardKeyboardEvent(event);
     test_delegate_.Wait();
+    GetRenderViewHost()->RemoveKeyPressEventCallback(key_press_event_sink_);
+  }
+
+  // Datalist does not support autofill preview. There is no need to start
+  // message loop for Datalist.
+  void SendKeyToDataListPopup(ui::KeyboardCode key) {
+    // Route popup-targeted key presses via the render view host.
+    content::NativeWebKeyboardEvent event;
+    event.windowsKeyCode = key;
+    event.type = blink::WebKeyboardEvent::RawKeyDown;
+    // Install the key press event sink to ensure that any events that are not
+    // handled by the installed callbacks do not end up crashing the test.
+    GetRenderViewHost()->AddKeyPressEventCallback(key_press_event_sink_);
+    GetRenderViewHost()->ForwardKeyboardEvent(event);
     GetRenderViewHost()->RemoveKeyPressEventCallback(key_press_event_sink_);
   }
 
@@ -632,6 +656,35 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, OnDeleteValueAfterAutofill) {
   SendKeyToPopupAndWait(ui::VKEY_DOWN);
   SendKeyToPopupAndWait(ui::VKEY_RETURN);
   ExpectFieldValue("firstname", "Milton");
+}
+
+// Test that an input field is not rendered with the yellow autofilled
+// background color when choosing an option from the datalist suggestion list.
+IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, OnSelectOptionFromDatalist) {
+  // Load the test page.
+  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(
+      browser(),
+      GURL(std::string(kDataURIPrefix) +
+           "<form action=\"http://www.example.com/\" method=\"POST\">"
+           "  <input list=\"dl\" type=\"search\" id=\"firstname\""
+           "         onfocus=\"domAutomationController.send(true)\"><br>"
+           "  <datalist id=\"dl\">"
+           "  <option value=\"Adam\"></option>"
+           "  <option value=\"Bob\"></option>"
+           "  <option value=\"Carl\"></option>"
+           "  </datalist>"
+           "</form>")));
+  std::string orginalcolor;
+  GetFieldBackgroundColor("firstname", &orginalcolor);
+
+  FocusFirstNameField();
+  SendKeyToPageAndWait(ui::VKEY_DOWN);
+  SendKeyToDataListPopup(ui::VKEY_DOWN);
+  SendKeyToDataListPopup(ui::VKEY_RETURN);
+  ExpectFieldValue("firstname", "Adam");
+  std::string color;
+  GetFieldBackgroundColor("firstname", &color);
+  EXPECT_EQ(color, orginalcolor);
 }
 
 // Test that a JavaScript oninput event is fired after auto-filling a form.

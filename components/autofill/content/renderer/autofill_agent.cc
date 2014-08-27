@@ -492,8 +492,10 @@ void AutofillAgent::OnClearPreviewedForm() {
 
 void AutofillAgent::OnFillFieldWithValue(const base::string16& value) {
   WebInputElement* input_element = toWebInputElement(&element_);
-  if (input_element)
+  if (input_element) {
     FillFieldWithValue(value, input_element);
+    input_element->setAutofilled(true);
+  }
 }
 
 void AutofillAgent::OnPreviewFieldWithValue(const base::string16& value) {
@@ -678,7 +680,6 @@ void AutofillAgent::FillFieldWithValue(const base::string16& value,
                                        WebInputElement* node) {
   did_set_node_text_ = true;
   node->setEditingValue(value.substr(0, node->maxLength()));
-  node->setAutofilled(true);
 }
 
 void AutofillAgent::PreviewFieldWithValue(const base::string16& value,
