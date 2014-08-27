@@ -8,7 +8,6 @@
 #include <limits>
 
 #include "base/bind.h"
-#include "base/debug/dump_without_crashing.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
@@ -116,12 +115,6 @@ void BindAddStatement(const PasswordForm& form,
 void AddCallback(int err, sql::Statement* /*stmt*/) {
   if (err == 19 /*SQLITE_CONSTRAINT*/)
     DLOG(WARNING) << "LoginDatabase::AddLogin updated an existing form";
-}
-
-// http://crbug.com/404012. Let's see where the empty fields come from.
-void CheckForEmptyUsernameAndPassword(const PasswordForm& form) {
-  if (form.username_value.empty() && form.password_value.empty())
-    base::debug::DumpWithoutCrashing();
 }
 
 }  // namespace
@@ -359,7 +352,6 @@ void LoginDatabase::ReportMetrics(const std::string& sync_username) {
 }
 
 PasswordStoreChangeList LoginDatabase::AddLogin(const PasswordForm& form) {
-  CheckForEmptyUsernameAndPassword(form);
   PasswordStoreChangeList list;
   std::string encrypted_password;
   if (EncryptedString(form.password_value, &encrypted_password) !=
@@ -403,7 +395,6 @@ PasswordStoreChangeList LoginDatabase::AddLogin(const PasswordForm& form) {
 }
 
 PasswordStoreChangeList LoginDatabase::UpdateLogin(const PasswordForm& form) {
-  CheckForEmptyUsernameAndPassword(form);
   std::string encrypted_password;
   if (EncryptedString(form.password_value, &encrypted_password) !=
           ENCRYPTION_RESULT_SUCCESS)
