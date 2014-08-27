@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Google Inc. All rights reserved.
+ * Copyright (C) 2012 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,13 +28,47 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "platform/DateTimeChooserClient.h"
+#ifndef DateTimeChooser_h
+#define DateTimeChooser_h
+
+#include "platform/geometry/IntRect.h"
+#include "wtf/RefCounted.h"
+#include "wtf/text/WTFString.h"
 
 namespace blink {
 
-DateTimeChooserClient::~DateTimeChooserClient()
-{
-}
+struct DateTimeSuggestion {
+    double value;
+    String localizedValue;
+    String label;
+};
+
+struct DateTimeChooserParameters {
+    AtomicString type;
+    IntRect anchorRectInRootView;
+    // Locale name for which the chooser should be localized. This
+    // might be an invalid name because it comes from HTML lang
+    // attributes.
+    AtomicString locale;
+    // FIXME: Remove. Deprecated in favor of doubleValue.
+    String currentValue;
+    double doubleValue;
+    Vector<DateTimeSuggestion> suggestions;
+    double minimum;
+    double maximum;
+    double step;
+    double stepBase;
+    bool required;
+    bool isAnchorElementRTL;
+};
+
+// For pickers like color pickers and date pickers.
+class DateTimeChooser : public RefCounted<DateTimeChooser> {
+public:
+    virtual ~DateTimeChooser();
+
+    virtual void endChooser() = 0;
+};
 
 } // namespace blink
+#endif // DateTimeChooser_h

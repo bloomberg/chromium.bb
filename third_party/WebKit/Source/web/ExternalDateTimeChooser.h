@@ -27,7 +27,7 @@
 #define ExternalDateTimeChooser_h
 
 #if !ENABLE(INPUT_MULTIPLE_FIELDS_UI)
-#include "platform/DateTimeChooser.h"
+#include "core/html/forms/DateTimeChooser.h"
 
 namespace blink {
 

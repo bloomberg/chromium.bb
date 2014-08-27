@@ -28,13 +28,29 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "platform/DateTimeChooser.h"
+#ifndef ColorChooserClient_h
+#define ColorChooserClient_h
+
+#include "platform/ColorSuggestion.h"
+#include "platform/geometry/IntRect.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/Vector.h"
 
 namespace blink {
 
-DateTimeChooser::~DateTimeChooser()
-{
-}
+class ColorChooserClient {
+public:
+    virtual ~ColorChooserClient();
+
+    virtual void didChooseColor(const Color&) = 0;
+    virtual void didEndChooser() = 0;
+    virtual IntRect elementRectRelativeToRootView() const = 0;
+    virtual Color currentColor() = 0;
+    virtual bool shouldShowSuggestions() const = 0;
+    virtual Vector<ColorSuggestion> suggestions() const = 0;
+};
 
 } // namespace blink
+
+#endif // ColorChooserClient_h

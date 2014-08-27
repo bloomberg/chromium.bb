@@ -32,7 +32,7 @@
 #define ColorInputType_h
 
 #include "core/html/forms/BaseClickableWithKeyInputType.h"
-#include "platform/ColorChooserClient.h"
+#include "core/html/forms/ColorChooserClient.h"
 
 namespace blink {
 

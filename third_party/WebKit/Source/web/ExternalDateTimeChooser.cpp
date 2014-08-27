@@ -28,7 +28,7 @@
 #include "web/ExternalDateTimeChooser.h"
 
 #include "core/InputTypeNames.h"
-#include "platform/DateTimeChooserClient.h"
+#include "core/html/forms/DateTimeChooserClient.h"
 #include "public/web/WebDateTimeChooserCompletion.h"
 #include "public/web/WebDateTimeChooserParams.h"
 #include "public/web/WebViewClient.h"

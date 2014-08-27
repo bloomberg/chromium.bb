@@ -26,7 +26,7 @@
 #include "config.h"
 #include "web/ColorChooserUIController.h"
 
-#include "platform/ColorChooserClient.h"
+#include "core/html/forms/ColorChooserClient.h"
 #include "platform/graphics/Color.h"
 #include "public/platform/WebColor.h"
 #include "public/web/WebColorChooser.h"

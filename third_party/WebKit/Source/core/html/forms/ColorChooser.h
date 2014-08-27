@@ -30,13 +30,11 @@
 #ifndef ColorChooser_h
 #define ColorChooser_h
 
-#include "platform/PlatformExport.h"
-
 namespace blink {
 
 class Color;
 
-class PLATFORM_EXPORT ColorChooser {
+class ColorChooser {
 public:
     ColorChooser();
     virtual ~ColorChooser();

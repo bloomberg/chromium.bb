@@ -31,12 +31,11 @@
 #ifndef DateTimeChooserClient_h
 #define DateTimeChooserClient_h
 
-#include "platform/PlatformExport.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
-class PLATFORM_EXPORT DateTimeChooserClient {
+class DateTimeChooserClient {
 public:
     virtual ~DateTimeChooserClient();
 

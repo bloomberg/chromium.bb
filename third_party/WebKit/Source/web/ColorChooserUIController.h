@@ -26,7 +26,7 @@
 #ifndef ColorChooserUIController_h
 #define ColorChooserUIController_h
 
-#include "platform/ColorChooser.h"
+#include "core/html/forms/ColorChooser.h"
 #include "platform/text/PlatformLocale.h"
 #include "public/web/WebColorChooserClient.h"
 #include "wtf/OwnPtr.h"

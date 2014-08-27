@@ -28,8 +28,7 @@
  */
 
 #include "config.h"
-
-#include "platform/ColorChooser.h"
+#include "core/html/forms/ColorChooser.h"
 
 namespace blink {
 

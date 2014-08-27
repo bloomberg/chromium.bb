@@ -26,7 +26,7 @@
 #include "config.h"
 #include "public/web/WebDateTimeSuggestion.h"
 
-#include "platform/DateTimeChooser.h"
+#include "core/html/forms/DateTimeChooser.h"
 
 namespace blink {
 

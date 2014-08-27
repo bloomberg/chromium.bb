@@ -30,10 +30,10 @@
 
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLFormElement.h"
+#include "core/html/forms/ColorChooser.h"
+#include "core/html/forms/DateTimeChooser.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/storage/StorageNamespace.h"
-#include "platform/ColorChooser.h"
-#include "platform/DateTimeChooser.h"
 #include "platform/FileChooser.h"
 #include "public/platform/WebApplicationCacheHost.h"
 #include "public/platform/WebServiceWorkerProvider.h"
