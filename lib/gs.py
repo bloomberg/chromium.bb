@@ -478,11 +478,14 @@ class GSContext(object):
       # Temporary fix: remove the gsutil tracker files so that our retry
       # can hit a different backend. This should be removed after the
       # bug is fixed by the Google Storage team (see crbug.com/308300).
-      if (self.RESUMABLE_DOWNLOAD_ERROR in error or
-          self.RESUMABLE_UPLOAD_ERROR in error or
-          'ResumableUploadException' in error or
-          'ResumableDownloadException' in error):
-
+      RESUMABLE_ERROR_MESSAGE = (
+          self.RESUMABLE_DOWNLOAD_ERROR,
+          self.RESUMABLE_UPLOAD_ERROR,
+          'ResumableUploadException',
+          'ResumableDownloadException',
+          'ssl.SSLError: The read operation timed out',
+      )
+      if any(x in error for x in RESUMABLE_ERROR_MESSAGE):
         # Only remove the tracker files if we try to upload/download a file.
         if 'cp' in e.result.cmd[:-2]:
           # Assume a command: gsutil [options] cp [options] src_path dest_path
