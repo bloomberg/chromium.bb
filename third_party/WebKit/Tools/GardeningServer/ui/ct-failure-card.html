@@ -68,7 +68,7 @@ found in the LICENSE file.
     <ct-builder-grid failures="{{ group.failures }}"></ct-builder-grid>
     <div id="failure" class="{{ { snoozed: group.isSnoozed } | tokenList }}">
       <ct-test-list tests="{{ group.failures }}" tree="{{ tree }}"></ct-test-list>
-      <ct-commit-list commitList="{{ _commitList }}"></ct-commit-list>
+      <ct-commit-list commitList="{{ group.commitList }}"></ct-commit-list>
     </div>
     <div id="buttons">
       <paper-button id="examine" on-tap="{{ examine }}" label="Examine"></paper-button>
@@ -98,7 +98,6 @@ found in the LICENSE file.
       group: null,
       commitLog: null,
       tree: '',
-      _commitList: null,
 
       observe: {
         group: '_updateCommitList',
@@ -118,8 +117,8 @@ found in the LICENSE file.
       },
 
       _updateCommitList: function() {
-        this._commitList = this.group ?
-            this.group.commitList(this.commitLog) : undefined;
+        if (this.group && this.commitLog)
+          this.group.commitList.update(this.commitLog);
       },
 
       linkBug: function() {

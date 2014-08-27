@@ -6,6 +6,7 @@ found in the LICENSE file.
 
 <link rel="import" href="../ct-failure-card.html">
 
+<link rel="import" href="../../model/ct-commit-list-mock.html">
 <link rel="import" href="../../model/ct-commit-log-mock.html">
 <link rel="import" href="../../model/ct-failure-group.html">
 
@@ -21,9 +22,10 @@ describe('ct-failure-card', function() {
 
   beforeEach(function(done) {
     card = document.createElement('ct-failure-card');
+    var cl = new CTCommitListMock();
     group = new CTFailureGroup([
         new CTFailure('autobot', 'unknown', {someBuilder: {key: 'a'}}, {'blink':158547},
-                      {'blink':158544})]);
+                      {'blink':158544})], cl);
     card.group = group;
     card.commitLog = new CTCommitLogMock();
     setTimeout(done);
@@ -33,20 +35,20 @@ describe('ct-failure-card', function() {
 
     it('should have commit summaries', function(done) {
       // Expand the first repository so that the <ct-commit>'s are generated.
-      card._commitList.repositories[0].expanded = true;
+      card.group.commitList.repositories[0].expanded = true;
 
       setTimeout(function() {
         var list = card.shadowRoot.querySelector('ct-commit-list');
         var commits = list.shadowRoot.querySelectorAll('ct-commit');
-        assert(commits[0].data);
-        assert(commits[0].data.summary);
+        assert(commits[1].data);
+        assert(commits[1].data.summary);
         done();
       });
     });
 
     it('removing a commit summary', function(done) {
       card.commitLog.commits['blink']['158545'].summary = undefined;
-      card._commitList.repositories[0].expanded = true;
+      card.group.commitList.repositories[0].expanded = true;
 
       setTimeout(function() {
         var list = card.shadowRoot.querySelector('ct-commit-list');

@@ -30,45 +30,33 @@ describe('ct-failure-analyzer', function() {
   describe('_failureListComparator', function() {
     it('should compare failures correctly', function() {
       var analyzer = document.createElement('ct-failure-analyzer');
-      var revision1 = {
-        'chromium': 1,
-        'blink': 2
-      };
-      var revision2 = {
-        'chromium': 2,
-        'blink': 1
-      };
-      var revision3 = {
-        'chromium': 2,
-        'blink': 2
-      };
-      var resultsByBuilder = {};
-      var failure1 = new CTFailure("step", "reason", resultsByBuilder, revision1, revision1);
-      var failure2 = new CTFailure("step", "reason", resultsByBuilder, revision2, revision2);
-      var failure3 = new CTFailure("step", "reason", resultsByBuilder, revision3, revision3);
-      var failure4 = new CTFailure("step", "reason", resultsByBuilder, null, null);
-      var group1 = new CTFailureGroup([failure1], null);
-      var group2 = new CTFailureGroup([failure2], null);
-      var group3 = new CTFailureGroup([failure3], null);
-      var group4 = new CTFailureGroup([failure4], null);
+
+      var cl1 = new CTCommitList(undefined, ['chromium:1', 'blink:2']);
+      var cl2 = new CTCommitList(undefined, ['chromium:2', 'blink:1']);
+      var cl3 = new CTCommitList(undefined, ['chromium:2', 'blink:2']);
+      var cl4 = new CTCommitList(undefined, []);
+      var group1 = new CTFailureGroup([], cl1);
+      var group2 = new CTFailureGroup([], cl2);
+      var group3 = new CTFailureGroup([], cl3);
+      var group4 = new CTFailureGroup([], cl4);
 
       // Sort by last revision first.
-      assert(analyzer._failureListComparator('chromium', group1, group2) > 0);
-      assert(analyzer._failureListComparator('chromium', group2, group1) < 0);
-      assert(analyzer._failureListComparator('chromium', group1, group1) == 0);
+      assert(analyzer._failureByTreeListComparator('chromium', group1, group2) > 0);
+      assert(analyzer._failureByTreeListComparator('chromium', group2, group1) < 0);
+      assert(analyzer._failureByTreeListComparator('chromium', group1, group1) == 0);
 
       // If the tree revisions are equal, take others.
-      assert(analyzer._failureListComparator('chromium', group2, group3) > 0);
+      assert(analyzer._failureByTreeListComparator('chromium', group2, group3) > 0);
 
       // Prioritize the given tree.
-      assert(analyzer._failureListComparator('chromium', group1, group2) > 0);
-      assert(analyzer._failureListComparator('blink', group1, group2) < 0);
+      assert(analyzer._failureByTreeListComparator('chromium', group1, group2) > 0);
+      assert(analyzer._failureByTreeListComparator('blink', group1, group2) < 0);
 
       // Default to 'chromium'.
-      assert(analyzer._failureListComparator(undefined, group1, group2) > 0);
+      assert(analyzer._failureByTreeListComparator(undefined, group1, group2) > 0);
 
       // Failures without a revision go to the end.
-      assert(analyzer._failureListComparator('chromium', group4, group1) < 0);
+      assert(analyzer._failureByTreeListComparator('chromium', group4, group1) > 0);
     });
   });
 });

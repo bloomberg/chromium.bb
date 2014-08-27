@@ -53,18 +53,27 @@ describe('ct-commit-log model', function() {
     expectedCommits[repository][commit.revision] = commit;
     assert.deepEqual(log.commits, expectedCommits);
 
-    assert.deepEqual(log.range(repository, commit.revision, commit.revision), [commit]);
+    var revisions = [commit.revision];
+    assert.deepEqual(log.range(repository, revisions), [commit]);
 
-    // This url is different than the one obove because CTCommitLog gets the url
+    // This url is different than the one above because CTCommitLog gets the url
     // from CTRepositories.
     var incompleteRepositoryUrl = log._repositories.repositories[repository].repositoryUrl;
-    var incompleteCommitAfter = CTCommit.createIncomplete(incompleteRepositoryUrl, commit.revision + 1, repository);
+
+    var nextRev = String(commit.revision + 1);
+    var incompleteCommitAfter =
+        CTCommit.createIncomplete(incompleteRepositoryUrl, nextRev, repository);
+    revisions.push(nextRev);
     // Expect an incomplete commit for revision + 1.
-    assert.deepEqual(log.range(repository, commit.revision, commit.revision + 1), [commit, incompleteCommitAfter]);
+    assert.deepEqual(log.range(repository, revisions), [commit, incompleteCommitAfter]);
 
     // Expect two incomplete commits: one before and one after.
-    var incompleteCommitBefore = CTCommit.createIncomplete(incompleteRepositoryUrl, commit.revision - 1, repository);
-    assert.deepEqual(log.range(repository, commit.revision - 1, commit.revision + 1),
+    var prevRev = String(commit.revision - 1);
+    var incompleteCommitBefore =
+        CTCommit.createIncomplete(incompleteRepositoryUrl, prevRev, repository);
+    // Inserting at the beginning of the list.
+    revisions.splice(0, 0, prevRev);
+    assert.deepEqual(log.range(repository, revisions),
                      [incompleteCommitBefore, commit, incompleteCommitAfter]);
   });
 });

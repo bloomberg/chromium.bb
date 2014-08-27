@@ -14,56 +14,14 @@ var assert = chai.assert;
 describe('ct-commit-list', function() {
   describe('commit list Model', function() {
     it('returns commits', function() {
-      var group = {
-        failures: [
-          {
-            firstFailingRevisions: {
-              'blink': 158545
-            },
-            lastPassingRevisions: {
-              'blink': 158544
-            }
-          }
-        ]
-      };
-
-      var cl = new CTCommitList(group, new CTCommitLogMock());
-      assert.lengthOf(cl._commits('blink'), 1);
-    });
-
-    it('handles a backwards revision range', function() {
-      var group = {
-        failures: [
-          {
-            firstFailingRevisions: {
-              'blink': 158544
-            },
-            lastPassingRevisions: {
-              'blink': 158545
-            }
-          }
-        ]
-      };
-
-      var cl = new CTCommitList(group, new CTCommitLogMock());
-      assert.lengthOf(cl._commits('blink'), 0);
+      var revisions = ['blink:158545'];
+      var cl = new CTCommitList(new CTCommitLogMock(), revisions);
+      assert.lengthOf(cl.repositories, 1);
     });
 
     it ('returns repositories', function() {
-      var group = {
-        failures: [
-          {
-            firstFailingRevisions: {
-              'blink': 158545
-            },
-            lastPassingRevisions: {
-              'blink': 158544
-            }
-          }
-        ]
-      };
-
-      var cl = new CTCommitList(group, new CTCommitLogMock());
+      var revisions = ['blink:158545'];
+      var cl = new CTCommitList(new CTCommitLogMock(), revisions);
       var repos = cl.repositories;
       assert.lengthOf(repos, 1);
       assert.equal(repos[0].name, 'blink');

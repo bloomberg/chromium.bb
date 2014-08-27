@@ -12,19 +12,8 @@ found in the LICENSE file.
 (function () {
 
 window.CTCommitListMock = function() {
-  var group = {
-    failures: [
-      {
-        firstFailingRevisions: {
-          'blink': 158545
-        },
-        lastPassingRevisions: {
-          'blink': 158544
-        }
-      }
-    ]
-  };
-  return new CTCommitList(group, new CTCommitLogMock());
+  var revisions = ['blink:158544', 'blink:158545'];
+  return new CTCommitList(new CTCommitLogMock(), revisions);
 };
 
 })();

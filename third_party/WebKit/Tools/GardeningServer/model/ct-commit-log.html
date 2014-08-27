@@ -11,7 +11,6 @@ found in the LICENSE file.
 <script>
 function CTCommitLog() {
   this.commits = {};
-  this.firstRevision = {};
   this.lastRevision = {};
   this._repositories = new CTRepositories();
 
@@ -50,32 +49,27 @@ CTCommitLog.prototype._handleResponse = function(repositoryUrl, repository, json
     }
   }.bind(this));
 
-  this._findFirstAndLastRevisions(repository);
+  this._updateLastRevision(repository);
 }
 
-CTCommitLog.prototype._findFirstAndLastRevisions = function(repository) {
+CTCommitLog.prototype._updateLastRevision = function(repository) {
   var sortedCommits = Object.keys(this.commits[repository]).sort();
-  this.firstRevision[repository] = parseInt(sortedCommits.first());
-  this.lastRevision[repository] = parseInt(sortedCommits.last());
+  this.lastRevision[repository] = sortedCommits.last();
 }
 
-CTCommitLog.prototype.range = function(repository, first, last) {
+CTCommitLog.prototype.range = function(repository, revisions) {
   var commits = [];
-  for (var revision = first; revision <= last; revision++) {
-     var commit = this.commits[repository][revision];
-     if (!commit) {
-       // FIXME: This is wrong. If we iterate through revisions and then later
-       // in handleReponse we realize that this revision doesn't actually exist
-       // in the repo (e.g. because it corresponds to a branch commit), then we
-       // don't remove the incomplete commit.
-       var url = this._repositories.repositories[repository].repositoryUrl;
-       commit = CTCommit.createIncomplete(url, revision, repository);
-       this.commits[repository][revision] = commit;
-     }
+  revisions.forEach(function(revision) {
+    var commit = this.commits[repository][revision];
+    if (!commit) {
+      var url = this._repositories.repositories[repository].repositoryUrl;
+      var commit = CTCommit.createIncomplete(url, revision, repository);
+      this.commits[repository][revision] = commit;
+    }
 
-     if (commit)
-       commits.push(commit);
-  }
+    if (commit)
+      commits.push(commit);
+  }.bind(this));
   return commits;
 }
 </script>

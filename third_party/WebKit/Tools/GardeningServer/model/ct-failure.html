@@ -5,14 +5,11 @@ found in the LICENSE file.
 -->
 
 <script>
-function CTFailure(step, reason, resultsByBuilder, firstFailingRevisions, lastPassingRevisions) {
+function CTFailure(step, reason, resultsByBuilder) {
   this.step = step;
   // FIXME: Rename this to reason.
   this.testName = reason;
   this.resultNodesByBuilder = resultsByBuilder;
-  // FIXME: Move these up one layer to the groupedFailures object.
-  this.firstFailingRevisions = firstFailingRevisions;
-  this.lastPassingRevisions = lastPassingRevisions;
 }
 
 CTFailure.prototype.flakinessDashboardURL = function(tree) {

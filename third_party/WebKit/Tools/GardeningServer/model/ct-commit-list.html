@@ -7,57 +7,52 @@ found in the LICENSE file.
 <link rel="import" href="ct-commit-log.html">
 
 <script>
-function CTCommitList(group, commits) {
-  this.commitLog = commits;
-  if (group.failures && group.failures.first()) {
-    this.firstFailing = group.failures.first().firstFailingRevisions;
-    this.lastPassing = group.failures.first().lastPassingRevisions;
-  }
-  this._updateRepositories();
+function CTCommitList(commitLog, revisions) {
+  this._initRevisions(revisions);
+  this.update(commitLog);
 }
 
-CTCommitList.prototype._updateRepositories = function() {
+CTCommitList.prototype.update = function(commitLog) {
   this.repositories = [];
-  if (!this.commitLog || !this.lastPassing || !this.firstFailing)
+  if (!commitLog)
     return;
 
-  var allRepositories = this.commitLog._repositories.names;
+  var allRepositories = commitLog._repositories.names;
   for (var i = 0; i < allRepositories.length; i++) {
     var repository = allRepositories[i];
+    if (!this.revisions[repository])
+      continue;
 
-    var commits = this._commits(repository);
+    var commits = commitLog.range(repository, this.revisions[repository]);
     if (!commits.length)
       continue;
 
     this.repositories.push({
       name: repository,
-      range: this._range(commits),
+      range: this._displayRange(commits, repository),
       commits: commits,
       expanded: false
     });
   }
 };
 
-CTCommitList.prototype._commits = function(repository) {
-  var commits = [];
-
-  if (!this.firstFailing || !this.lastPassing)
-    return [];
-
-  var firstFailing = Number(this.firstFailing[repository]);
-  var lastPassing = Number(this.lastPassing[repository]);
-  if (firstFailing == lastPassing)
-    return commits;
-
-  if (lastPassing > firstFailing) {
-    console.warn('Revision range is backwards, which is invalid:', lastPassing, firstFailing);
-    return commits;
-  }
-
-  return this.commitLog.range(repository, lastPassing + 1, firstFailing);
+CTCommitList.prototype._initRevisions = function(repoRevisions) {
+  this.revisions = {};
+  repoRevisions.forEach(function(repoRevision) {
+    var split = repoRevision.split(':');
+    var repo = split[0];
+    var revision = parseInt(split[1], 10);
+    if (revision && repo) {
+      if (!this.revisions[repo]) {
+        this.revisions[repo] = [revision];
+      } else {
+        this.revisions[repo].push(revision);
+      }
+    }
+  }.bind(this));
 };
 
-CTCommitList.prototype._range = function(commits) {
+CTCommitList.prototype._displayRange = function(commits) {
   return commits.first().revision + " : " + commits.last().revision;
 };
 

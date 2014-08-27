@@ -33,9 +33,9 @@ describe('ct-revision-details', function() {
     before(function(done) {
       revisionDetails = document.createElement('ct-revision-details');
 
-      var builderRevisions = CTBuilderRevisionsMock();
-      var commitLog = CTCommitLogMock();
-      commitLog._findFirstAndLastRevisions('blink');
+      var builderRevisions = new CTBuilderRevisionsMock();
+      var commitLog = new CTCommitLogMock();
+      commitLog._updateLastRevision('blink');
 
       revisionDetails.builderLatestRevisions = builderRevisions;
       revisionDetails.tree = 'blink';
