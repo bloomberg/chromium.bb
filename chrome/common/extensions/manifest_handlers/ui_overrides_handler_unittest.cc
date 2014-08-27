@@ -62,7 +62,7 @@ TEST_F(UIOverrideTest, ParseManifest) {
       *static_cast<base::DictionaryValue*>(root.get()),
       Extension::NO_FLAGS,
       &error);
-  ASSERT_TRUE(extension) << error;
+  ASSERT_TRUE(extension.get()) << error;
   ASSERT_TRUE(extension->manifest()->HasPath(manifest_keys::kUIOverride));
 
   UIOverrides* ui_override = static_cast<UIOverrides*>(
@@ -91,7 +91,7 @@ TEST_F(UIOverrideTest, ParseBrokenManifest) {
       *static_cast<base::DictionaryValue*>(root.get()),
       Extension::NO_FLAGS,
       &error);
-  EXPECT_FALSE(extension);
+  EXPECT_FALSE(extension.get());
   EXPECT_EQ(
       extensions::ErrorUtils::FormatErrorMessage(
           extensions::manifest_errors::kInvalidEmptyDictionary,

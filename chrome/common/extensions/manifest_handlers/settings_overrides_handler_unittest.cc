@@ -85,7 +85,7 @@ TEST_F(OverrideSettingsTest, ParseManifest) {
       *static_cast<base::DictionaryValue*>(root.get()),
       Extension::NO_FLAGS,
       &error);
-  ASSERT_TRUE(extension);
+  ASSERT_TRUE(extension.get());
 #if defined(OS_WIN)
   ASSERT_TRUE(extension->manifest()->HasPath(manifest_keys::kSettingsOverride));
 
@@ -128,7 +128,7 @@ TEST_F(OverrideSettingsTest, ParsePrepopulatedId) {
                         *static_cast<base::DictionaryValue*>(root.get()),
                         Extension::NO_FLAGS,
                         &error);
-  ASSERT_TRUE(extension);
+  ASSERT_TRUE(extension.get());
 #if defined(OS_WIN)
   ASSERT_TRUE(extension->manifest()->HasPath(manifest_keys::kSettingsOverride));
 
@@ -169,7 +169,7 @@ TEST_F(OverrideSettingsTest, ParseBrokenManifest) {
           extensions::manifest_keys::kSettingsOverride),
       error);
 #else
-  EXPECT_TRUE(extension);
+  EXPECT_TRUE(extension.get());
   EXPECT_FALSE(
       extension->manifest()->HasPath(manifest_keys::kSettingsOverride));
 #endif

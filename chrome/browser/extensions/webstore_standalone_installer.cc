@@ -351,7 +351,7 @@ void WebstoreStandaloneInstaller::InstallUIProceed() {
       // downloading from the Web Store is not necessary.
       scoped_refptr<const Extension> extension_to_install =
           GetLocalizedExtensionForDisplay();
-      if (!extension_to_install) {
+      if (!extension_to_install.get()) {
         CompleteInstall(webstore_install::INVALID_MANIFEST,
                         kInvalidManifestError);
         return;
@@ -424,14 +424,14 @@ void WebstoreStandaloneInstaller::OnExtensionInstallFailure(
 void WebstoreStandaloneInstaller::ShowInstallUI() {
   scoped_refptr<const Extension> localized_extension =
       GetLocalizedExtensionForDisplay();
-  if (!localized_extension) {
+  if (!localized_extension.get()) {
     CompleteInstall(webstore_install::INVALID_MANIFEST, kInvalidManifestError);
     return;
   }
 
   install_ui_ = CreateInstallUI();
   install_ui_->ConfirmStandaloneInstall(
-      this, localized_extension, &icon_, install_prompt_);
+      this, localized_extension.get(), &icon_, install_prompt_);
 }
 
 void WebstoreStandaloneInstaller::OnWebStoreDataFetcherDone() {

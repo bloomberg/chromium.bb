@@ -35,7 +35,7 @@ TEST_F(ExtensionManifestTest, ChromeURLPermissionAllowedWithFlag) {
   EXPECT_EQ("", error);
   const GURL newtab_url(chrome::kChromeUINewTabURL);
   EXPECT_TRUE(extension->permissions_data()->CanAccessPage(
-      extension, newtab_url, newtab_url, 0, -1, &error))
+      extension.get(), newtab_url, newtab_url, 0, -1, &error))
       << error;
 }
 

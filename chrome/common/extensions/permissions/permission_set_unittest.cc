@@ -797,7 +797,7 @@ TEST(PermissionsTest, FileSystemPermissionMessages) {
                         URLPatternSet(), URLPatternSet()));
   PermissionMessages messages =
       PermissionMessageProvider::Get()->GetPermissionMessages(
-          permissions, Manifest::TYPE_PLATFORM_APP);
+          permissions.get(), Manifest::TYPE_PLATFORM_APP);
   ASSERT_EQ(1u, messages.size());
   std::sort(messages.begin(), messages.end());
   std::set<PermissionMessage::ID> ids;
@@ -818,7 +818,7 @@ TEST(PermissionsTest, HiddenFileSystemPermissionMessages) {
                         URLPatternSet(), URLPatternSet()));
   PermissionMessages messages =
       PermissionMessageProvider::Get()->GetPermissionMessages(
-          permissions, Manifest::TYPE_PLATFORM_APP);
+          permissions.get(), Manifest::TYPE_PLATFORM_APP);
   ASSERT_EQ(1u, messages.size());
   EXPECT_EQ(PermissionMessage::kFileSystemWriteDirectory, messages[0].id());
 }
@@ -835,7 +835,7 @@ TEST(PermissionsTest, SuppressedPermissionMessages) {
                           hosts, URLPatternSet()));
     PermissionMessages messages =
         PermissionMessageProvider::Get()->GetPermissionMessages(
-            permissions, Manifest::TYPE_EXTENSION);
+            permissions.get(), Manifest::TYPE_EXTENSION);
     EXPECT_EQ(1u, messages.size());
     EXPECT_EQ(PermissionMessage::kTabs, messages[0].id());
   }
@@ -850,7 +850,7 @@ TEST(PermissionsTest, SuppressedPermissionMessages) {
                           hosts, URLPatternSet()));
     PermissionMessages messages =
         PermissionMessageProvider::Get()->GetPermissionMessages(
-            permissions, Manifest::TYPE_EXTENSION);
+            permissions.get(), Manifest::TYPE_EXTENSION);
     EXPECT_EQ(1u, messages.size());
     EXPECT_EQ(PermissionMessage::kBrowsingHistory, messages[0].id());
   }
@@ -863,7 +863,7 @@ TEST(PermissionsTest, SuppressedPermissionMessages) {
         api_permissions, ManifestPermissionSet(), hosts, URLPatternSet()));
     PermissionMessages messages =
         PermissionMessageProvider::Get()->GetPermissionMessages(
-            permissions, Manifest::TYPE_EXTENSION);
+            permissions.get(), Manifest::TYPE_EXTENSION);
     EXPECT_EQ(1u, messages.size());
     EXPECT_EQ(PermissionMessage::kHostsAll, messages[0].id());
   }
@@ -876,7 +876,7 @@ TEST(PermissionsTest, SuppressedPermissionMessages) {
         api_permissions, ManifestPermissionSet(), hosts, URLPatternSet()));
     PermissionMessages messages =
         PermissionMessageProvider::Get()->GetPermissionMessages(
-            permissions, Manifest::TYPE_EXTENSION);
+            permissions.get(), Manifest::TYPE_EXTENSION);
     EXPECT_EQ(1u, messages.size());
     EXPECT_EQ(PermissionMessage::kHostsAll, messages[0].id());
   }
@@ -892,7 +892,7 @@ TEST(PermissionsTest, SuppressedPermissionMessages) {
                           URLPatternSet(), URLPatternSet()));
     PermissionMessages messages =
         PermissionMessageProvider::Get()->GetPermissionMessages(
-            permissions, Manifest::TYPE_EXTENSION);
+            permissions.get(), Manifest::TYPE_EXTENSION);
     EXPECT_EQ(1u, messages.size());
     EXPECT_EQ(PermissionMessage::kBrowsingHistory, messages[0].id());
   }
@@ -907,7 +907,7 @@ TEST(PermissionsTest, SuppressedPermissionMessages) {
                           URLPatternSet(), URLPatternSet()));
     PermissionMessages messages =
         PermissionMessageProvider::Get()->GetPermissionMessages(
-            permissions, Manifest::TYPE_EXTENSION);
+            permissions.get(), Manifest::TYPE_EXTENSION);
     EXPECT_EQ(1u, messages.size());
     EXPECT_EQ(PermissionMessage::kTabs, messages[0].id());
   }
@@ -924,7 +924,7 @@ TEST(PermissionsTest, AccessToDevicesMessages) {
                           URLPatternSet()));
     std::vector<base::string16> messages =
         PermissionMessageProvider::Get()->GetWarningMessages(
-            permissions, Manifest::TYPE_EXTENSION);
+            permissions.get(), Manifest::TYPE_EXTENSION);
     EXPECT_EQ(1u, messages.size());
     EXPECT_EQ(l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_USB),
               messages[0]);
@@ -941,7 +941,7 @@ TEST(PermissionsTest, AccessToDevicesMessages) {
                           URLPatternSet()));
     std::vector<base::string16> messages =
         PermissionMessageProvider::Get()->GetWarningMessages(
-            permissions, Manifest::TYPE_EXTENSION);
+            permissions.get(), Manifest::TYPE_EXTENSION);
     EXPECT_EQ(1u, messages.size());
     EXPECT_EQ(l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_USB),
               messages[0]);
@@ -956,7 +956,7 @@ TEST(PermissionsTest, AccessToDevicesMessages) {
                           URLPatternSet()));
     std::vector<base::string16> messages =
         PermissionMessageProvider::Get()->GetWarningMessages(
-            permissions, Manifest::TYPE_EXTENSION);
+            permissions.get(), Manifest::TYPE_EXTENSION);
     EXPECT_EQ(1u, messages.size());
     EXPECT_EQ(l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_SERIAL),
               messages[0]);
@@ -972,7 +972,7 @@ TEST(PermissionsTest, AccessToDevicesMessages) {
                           URLPatternSet()));
     std::vector<base::string16> messages =
         PermissionMessageProvider::Get()->GetWarningMessages(
-            permissions, Manifest::TYPE_EXTENSION);
+            permissions.get(), Manifest::TYPE_EXTENSION);
     EXPECT_EQ(1u, messages.size());
     EXPECT_EQ(
         l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_USB_SERIAL),
@@ -991,7 +991,7 @@ TEST(PermissionsTest, AccessToDevicesMessages) {
                           URLPatternSet()));
     std::vector<base::string16> messages =
         PermissionMessageProvider::Get()->GetWarningMessages(
-            permissions, Manifest::TYPE_EXTENSION);
+            permissions.get(), Manifest::TYPE_EXTENSION);
     EXPECT_EQ(1u, messages.size());
     EXPECT_EQ(
         l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_USB_SERIAL),
@@ -1060,23 +1060,23 @@ TEST(PermissionsTest, MergedFileSystemPermissionComparison) {
                         URLPatternSet()));
 
   const PermissionMessageProvider* provider = PermissionMessageProvider::Get();
-  EXPECT_FALSE(provider->IsPrivilegeIncrease(write_directory_permissions,
-                                             write_permissions,
+  EXPECT_FALSE(provider->IsPrivilegeIncrease(write_directory_permissions.get(),
+                                             write_permissions.get(),
                                              Manifest::TYPE_PLATFORM_APP));
-  EXPECT_FALSE(provider->IsPrivilegeIncrease(write_directory_permissions,
-                                             directory_permissions,
+  EXPECT_FALSE(provider->IsPrivilegeIncrease(write_directory_permissions.get(),
+                                             directory_permissions.get(),
                                              Manifest::TYPE_PLATFORM_APP));
-  EXPECT_TRUE(provider->IsPrivilegeIncrease(write_permissions,
-                                            directory_permissions,
+  EXPECT_TRUE(provider->IsPrivilegeIncrease(write_permissions.get(),
+                                            directory_permissions.get(),
                                             Manifest::TYPE_PLATFORM_APP));
-  EXPECT_TRUE(provider->IsPrivilegeIncrease(write_permissions,
-                                            write_directory_permissions,
+  EXPECT_TRUE(provider->IsPrivilegeIncrease(write_permissions.get(),
+                                            write_directory_permissions.get(),
                                             Manifest::TYPE_PLATFORM_APP));
-  EXPECT_FALSE(provider->IsPrivilegeIncrease(directory_permissions,
-                                             write_permissions,
+  EXPECT_FALSE(provider->IsPrivilegeIncrease(directory_permissions.get(),
+                                             write_permissions.get(),
                                              Manifest::TYPE_PLATFORM_APP));
-  EXPECT_TRUE(provider->IsPrivilegeIncrease(directory_permissions,
-                                            write_directory_permissions,
+  EXPECT_TRUE(provider->IsPrivilegeIncrease(directory_permissions.get(),
+                                            write_directory_permissions.get(),
                                             Manifest::TYPE_PLATFORM_APP));
 }
 
@@ -1159,7 +1159,7 @@ TEST(PermissionsTest, GetWarningMessages_CombinedSessions) {
                           URLPatternSet(), URLPatternSet()));
     std::vector<base::string16> messages =
         PermissionMessageProvider::Get()->GetWarningMessages(
-            permissions, Manifest::TYPE_EXTENSION);
+            permissions.get(), Manifest::TYPE_EXTENSION);
     EXPECT_EQ(1u, messages.size());
     EXPECT_EQ(l10n_util::GetStringUTF16(
                   IDS_EXTENSION_PROMPT_WARNING_HISTORY_READ_AND_SESSIONS),
@@ -1178,7 +1178,7 @@ TEST(PermissionsTest, GetWarningMessages_CombinedSessions) {
                           URLPatternSet(), URLPatternSet()));
     std::vector<base::string16> messages =
         PermissionMessageProvider::Get()->GetWarningMessages(
-            permissions, Manifest::TYPE_EXTENSION);
+            permissions.get(), Manifest::TYPE_EXTENSION);
     EXPECT_EQ(1u, messages.size());
     EXPECT_EQ(l10n_util::GetStringUTF16(
                   IDS_EXTENSION_PROMPT_WARNING_HISTORY_WRITE_AND_SESSIONS),
@@ -1631,8 +1631,8 @@ TEST(PermissionsTest, IsHostPrivilegeIncrease) {
   set2 = new PermissionSet(empty_perms, empty_manifest_permissions,
                            elist2, slist2);
 
-  EXPECT_FALSE(provider->IsPrivilegeIncrease(set1, set2, type));
-  EXPECT_FALSE(provider->IsPrivilegeIncrease(set2, set1, type));
+  EXPECT_FALSE(provider->IsPrivilegeIncrease(set1.get(), set2.get(), type));
+  EXPECT_FALSE(provider->IsPrivilegeIncrease(set2.get(), set1.get(), type));
 
   // Test that paths are ignored.
   elist2.ClearPatterns();
@@ -1640,8 +1640,8 @@ TEST(PermissionsTest, IsHostPrivilegeIncrease) {
       URLPattern(URLPattern::SCHEME_HTTP, "http://www.google.com/*"));
   set2 = new PermissionSet(empty_perms, empty_manifest_permissions,
                            elist2, slist2);
-  EXPECT_FALSE(provider->IsPrivilegeIncrease(set1, set2, type));
-  EXPECT_FALSE(provider->IsPrivilegeIncrease(set2, set1, type));
+  EXPECT_FALSE(provider->IsPrivilegeIncrease(set1.get(), set2.get(), type));
+  EXPECT_FALSE(provider->IsPrivilegeIncrease(set2.get(), set1.get(), type));
 
   // Test that RCDs are ignored.
   elist2.ClearPatterns();
@@ -1649,8 +1649,8 @@ TEST(PermissionsTest, IsHostPrivilegeIncrease) {
       URLPattern(URLPattern::SCHEME_HTTP, "http://www.google.com.hk/*"));
   set2 = new PermissionSet(empty_perms, empty_manifest_permissions,
                            elist2, slist2);
-  EXPECT_FALSE(provider->IsPrivilegeIncrease(set1, set2, type));
-  EXPECT_FALSE(provider->IsPrivilegeIncrease(set2, set1, type));
+  EXPECT_FALSE(provider->IsPrivilegeIncrease(set1.get(), set2.get(), type));
+  EXPECT_FALSE(provider->IsPrivilegeIncrease(set2.get(), set1.get(), type));
 
   // Test that subdomain wildcards are handled properly.
   elist2.ClearPatterns();
@@ -1658,7 +1658,7 @@ TEST(PermissionsTest, IsHostPrivilegeIncrease) {
       URLPattern(URLPattern::SCHEME_HTTP, "http://*.google.com.hk/*"));
   set2 = new PermissionSet(empty_perms, empty_manifest_permissions,
                            elist2, slist2);
-  EXPECT_TRUE(provider->IsPrivilegeIncrease(set1, set2, type));
+  EXPECT_TRUE(provider->IsPrivilegeIncrease(set1.get(), set2.get(), type));
   // TODO(jstritar): Does not match subdomains properly. http://crbug.com/65337
   // EXPECT_FALSE(provider->IsPrivilegeIncrease(set2, set1, type));
 
@@ -1670,8 +1670,8 @@ TEST(PermissionsTest, IsHostPrivilegeIncrease) {
       URLPattern(URLPattern::SCHEME_HTTP, "http://www.example.org/path"));
   set2 = new PermissionSet(empty_perms, empty_manifest_permissions,
                            elist2, slist2);
-  EXPECT_TRUE(provider->IsPrivilegeIncrease(set1, set2, type));
-  EXPECT_FALSE(provider->IsPrivilegeIncrease(set2, set1, type));
+  EXPECT_TRUE(provider->IsPrivilegeIncrease(set1.get(), set2.get(), type));
+  EXPECT_FALSE(provider->IsPrivilegeIncrease(set2.get(), set1.get(), type));
 
   // Test that different subdomains count as different hosts.
   elist2.ClearPatterns();
@@ -1679,13 +1679,13 @@ TEST(PermissionsTest, IsHostPrivilegeIncrease) {
       URLPattern(URLPattern::SCHEME_HTTP, "http://mail.google.com/*"));
   set2 = new PermissionSet(empty_perms, empty_manifest_permissions,
                            elist2, slist2);
-  EXPECT_TRUE(provider->IsPrivilegeIncrease(set1, set2, type));
-  EXPECT_TRUE(provider->IsPrivilegeIncrease(set2, set1, type));
+  EXPECT_TRUE(provider->IsPrivilegeIncrease(set1.get(), set2.get(), type));
+  EXPECT_TRUE(provider->IsPrivilegeIncrease(set2.get(), set1.get(), type));
 
   // Test that platform apps do not have host permissions increases.
   type = Manifest::TYPE_PLATFORM_APP;
-  EXPECT_FALSE(provider->IsPrivilegeIncrease(set1, set2, type));
-  EXPECT_FALSE(provider->IsPrivilegeIncrease(set2, set1, type));
+  EXPECT_FALSE(provider->IsPrivilegeIncrease(set1.get(), set2.get(), type));
+  EXPECT_FALSE(provider->IsPrivilegeIncrease(set2.get(), set1.get(), type));
 }
 
 TEST(PermissionsTest, GetAPIsAsStrings) {
@@ -1780,8 +1780,8 @@ TEST(PermissionsTest, ChromeURLs) {
   scoped_refptr<PermissionSet> permissions(
       new PermissionSet(APIPermissionSet(), ManifestPermissionSet(),
                         allowed_hosts, URLPatternSet()));
-  PermissionMessageProvider::Get()->
-      GetPermissionMessages(permissions, Manifest::TYPE_EXTENSION);
+  PermissionMessageProvider::Get()->GetPermissionMessages(
+      permissions.get(), Manifest::TYPE_EXTENSION);
 }
 
 TEST(PermissionsTest, IsPrivilegeIncrease_DeclarativeWebRequest) {
