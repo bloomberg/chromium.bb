@@ -1849,7 +1849,6 @@
         'common/extensions/manifest_tests/extension_manifests_portsinpermissions_unittest.cc',
         'common/extensions/manifest_tests/extension_manifests_requirements_unittest.cc',
         'common/extensions/manifest_tests/extension_manifests_sandboxed_unittest.cc',
-        'common/extensions/manifest_tests/extension_manifests_service_worker_unittest.cc',
         'common/extensions/manifest_tests/extension_manifests_storage_unittest.cc',
         'common/extensions/manifest_tests/extension_manifests_ui_unittest.cc',
         'common/extensions/manifest_tests/extension_manifests_update_unittest.cc',

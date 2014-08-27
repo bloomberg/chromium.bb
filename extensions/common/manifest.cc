@@ -120,8 +120,7 @@ Manifest::Manifest(Location location, scoped_ptr<base::DictionaryValue> value)
     if (value_->Get(keys::kWebURLs, NULL) ||
         value_->Get(keys::kLaunchWebURL, NULL)) {
       type_ = TYPE_HOSTED_APP;
-    } else if (value_->Get(keys::kPlatformAppBackground, NULL) ||
-               value_->Get(keys::kPlatformAppServiceWorker, NULL)) {
+    } else if (value_->Get(keys::kPlatformAppBackground, NULL)) {
       type_ = TYPE_PLATFORM_APP;
     } else {
       type_ = TYPE_LEGACY_PACKAGED_APP;

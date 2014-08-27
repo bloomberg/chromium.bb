@@ -159,12 +159,6 @@ TEST_F(ManifestTest, ExtensionTypes) {
   MutateManifest(
       &manifest, keys::kPlatformAppBackground, NULL);
 
-  // Platform app with service worker.
-  MutateManifest(
-      &manifest, keys::kPlatformAppServiceWorker, new base::DictionaryValue());
-  AssertType(manifest.get(), Manifest::TYPE_PLATFORM_APP);
-  MutateManifest(&manifest, keys::kPlatformAppServiceWorker, NULL);
-
   // Hosted app.
   MutateManifest(
       &manifest, keys::kWebURLs, new base::ListValue());

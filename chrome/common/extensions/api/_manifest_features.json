@@ -34,10 +34,6 @@
     "channel": "stable",
     "extension_types": ["legacy_packaged_app", "hosted_app"]
   },
-  "app.service_worker": {
-    "channel": "trunk",  // When changing update tests: http://crbug.com/353209
-    "extension_types": ["platform_app"]
-  },
   "author": {
     "channel": "stable",
     "extension_types": "all"
