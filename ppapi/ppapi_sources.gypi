@@ -290,6 +290,8 @@
       'cpp/dev/video_decoder_client_dev.h',
       'cpp/dev/video_decoder_dev.cc',
       'cpp/dev/video_decoder_dev.h',
+      'cpp/dev/view_dev.cc',
+      'cpp/dev/view_dev.h',
       'cpp/dev/widget_client_dev.cc',
       'cpp/dev/widget_client_dev.h',
       'cpp/dev/widget_dev.cc',

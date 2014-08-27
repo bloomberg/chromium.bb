@@ -28,6 +28,7 @@
 #include "ppapi/cpp/dev/text_input_dev.h"
 #include "ppapi/cpp/dev/url_util_dev.h"
 #include "ppapi/cpp/dev/video_decoder_dev.h"
+#include "ppapi/cpp/dev/view_dev.h"
 #include "ppapi/cpp/dev/widget_client_dev.h"
 #include "ppapi/cpp/dev/widget_dev.h"
 #include "ppapi/cpp/dev/zoom_dev.h"

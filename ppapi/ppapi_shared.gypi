@@ -285,6 +285,7 @@
           'thunk/ppb_video_source_private_api.h',
           'thunk/ppb_video_source_private_thunk.cc',
           'thunk/ppb_view_api.h',
+          'thunk/ppb_view_dev_thunk.cc',
           'thunk/ppb_view_thunk.cc',
           'thunk/ppb_websocket_api.h',
           'thunk/ppb_websocket_thunk.cc',
