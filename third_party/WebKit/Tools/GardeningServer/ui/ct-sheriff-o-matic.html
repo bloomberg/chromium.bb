@@ -57,7 +57,7 @@ found in the LICENSE file.
           <img src="../favicon.ico"> <span>Sheriff-o-matic</span>
         </template>
         <template if="{{ selected == 1 }}">
-          <a on-click="{{ onBack }}">
+          <a on-click="{{ onBack }}" href="{{ currentUrl }}">
             &lt;&lt; Go back
           </a>
         </template>
@@ -80,12 +80,16 @@ found in the LICENSE file.
       selected: 0,
       currentFailures: [],
 
-      onBack: function() {
-        this.selected = 0;
+      onBack: function(event) {
+        if (event.button == 0) {
+          this.selected = 0;
+          event.preventDefault();
+        }
       },
 
       onExamine: function(event) {
         this.currentFailures = event.detail.failures;
+        this.currentUrl = document.location.href;
         this.selected = 1;
       },
 
