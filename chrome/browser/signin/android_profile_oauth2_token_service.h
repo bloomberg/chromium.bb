@@ -47,6 +47,9 @@ class AndroidProfileOAuth2TokenService : public ProfileOAuth2TokenService {
   virtual void Initialize(SigninClient* client) OVERRIDE;
   virtual bool RefreshTokenIsAvailable(
       const std::string& account_id) const OVERRIDE;
+  virtual void UpdateAuthError(
+      const std::string& account_id,
+      const GoogleServiceAuthError& error) OVERRIDE;
   virtual std::vector<std::string> GetAccounts() OVERRIDE;
 
   // Lists account at the OS level.
@@ -88,18 +91,6 @@ class AndroidProfileOAuth2TokenService : public ProfileOAuth2TokenService {
   AndroidProfileOAuth2TokenService();
   virtual ~AndroidProfileOAuth2TokenService();
 
-  // Overridden from OAuth2TokenService to intercept token fetch requests and
-  // redirect them to the Account Manager.
-  virtual void FetchOAuth2Token(RequestImpl* request,
-                                const std::string& account_id,
-                                net::URLRequestContextGetter* getter,
-                                const std::string& client_id,
-                                const std::string& client_secret,
-                                const ScopeSet& scopes) OVERRIDE;
-
-  // Overriden from OAuth2TokenService to avoid compile errors. Has NOTREACHED()
-  // implementation as |AndroidProfileOAuth2TokenService| overrides
-  // |FetchOAuth2Token| and thus bypasses this method entirely.
   virtual OAuth2AccessTokenFetcher* CreateAccessTokenFetcher(
       const std::string& account_id,
       net::URLRequestContextGetter* getter,

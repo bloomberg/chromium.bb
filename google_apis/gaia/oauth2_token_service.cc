@@ -344,6 +344,8 @@ size_t OAuth2TokenService::Fetcher::GetWaitingRequestCount() const {
 }
 
 void OAuth2TokenService::Fetcher::Cancel() {
+  if (fetcher_)
+    fetcher_->CancelRequest();
   fetcher_.reset();
   retry_timer_.Stop();
   error_ = GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED);
