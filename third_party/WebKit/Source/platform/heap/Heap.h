@@ -942,7 +942,7 @@ public:
     }
 
     inline Address allocate(size_t, const GCInfo*);
-    void addToFreeList(Address, size_t);
+    PLATFORM_EXPORT void addToFreeList(Address, size_t);
     inline static size_t roundedAllocationSize(size_t size)
     {
         return allocationSizeFromSize(size) - sizeof(Header);
@@ -1585,7 +1585,42 @@ public:
     {
         return reinterpret_cast<Return>(Heap::allocate<Metadata>(size));
     }
-    static void backingFree(void* address) { }
+    static void backingFree(void* address)
+    {
+        if (!address || ThreadState::isAnyThreadInGC())
+            return;
+
+        ThreadState* state = ThreadState::current();
+        if (state->isSweepInProgress())
+            return;
+
+        // Don't promptly free large objects because their page is never reused.
+        BaseHeapPage* page = pageHeaderFromObject(address);
+        if (page->isLargeObject())
+            return;
+
+        typedef HeapIndexTrait<CollectionBackingHeap> HeapTraits;
+        typedef HeapTraits::HeapType HeapType;
+        typedef HeapTraits::HeaderType HeaderType;
+
+        HeaderType* header = HeaderType::fromPayload(address);
+        header->checkHeader();
+
+        const GCInfo* gcInfo = header->gcInfo();
+        int heapIndex = HeapTraits::index(gcInfo->hasFinalizer());
+        HeapType* heap = static_cast<HeapType*>(state->heap(heapIndex));
+        ASSERT(heap->heapPageFromAddress(reinterpret_cast<Address>(address)));
+
+        size_t size = header->size();
+        ASSERT(size > 0);
+        header->finalize();
+        heap->stats().decreaseObjectSpace(header->payloadSize());
+#if !ENABLE(ASSERT) && !defined(LEAK_SANITIZER) && !defined(ADDRESS_SANITIZER)
+        memset(header, 0, size);
+#endif
+        heap->addToFreeList(reinterpret_cast<Address>(header), size);
+    }
+
     static void free(void* address) { }
     template<typename T>
     static void* newArray(size_t bytes)

@@ -160,7 +160,8 @@ enum TypedHeaps {
 // Base implementation for HeapIndexTrait found below.
 template<int heapIndex>
 struct HeapIndexTraitBase {
-    typedef ThreadHeap<FinalizedHeapObjectHeader> HeapType;
+    typedef FinalizedHeapObjectHeader HeaderType;
+    typedef ThreadHeap<HeaderType> HeapType;
     static const int finalizedIndex = heapIndex;
     static const int nonFinalizedIndex = heapIndex + static_cast<int>(NonFinalizedHeapOffset);
     static int index(bool isFinalized)
@@ -186,7 +187,8 @@ struct HeapIndexTrait<CollectionBackingHeapNonFinalized> : public HeapIndexTrait
 #define DEFINE_TYPED_HEAP_INDEX_TRAIT(Type)                                     \
     template<>                                                                  \
     struct HeapIndexTrait<Type##Heap> : public HeapIndexTraitBase<Type##Heap> { \
-        typedef ThreadHeap<HeapObjectHeader> HeapType;                          \
+        typedef HeapObjectHeader HeaderType;                                    \
+        typedef ThreadHeap<HeaderType> HeapType;                                \
     };                                                                          \
     template<>                                                                  \
     struct HeapIndexTrait<Type##HeapNonFinalized> : public HeapIndexTrait<Type##Heap> { };
