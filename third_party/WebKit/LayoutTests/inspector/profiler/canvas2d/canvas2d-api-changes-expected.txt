@@ -4,6 +4,7 @@ New properties and functions that should be manually examined (should be empty t
 addHitRegion
 clearHitRegions
 currentTransform
+direction
 drawFocusIfNeeded
 ellipse
 isContextLost

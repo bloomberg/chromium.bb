@@ -211,6 +211,9 @@ public:
     String textBaseline() const;
     void setTextBaseline(const String&);
 
+    String direction() const;
+    void setDirection(const String&);
+
     void fillText(const String& text, float x, float y);
     void fillText(const String& text, float x, float y, float maxWidth);
     void strokeText(const String& text, float x, float y);
@@ -241,6 +244,12 @@ public:
     virtual void trace(Visitor*) OVERRIDE;
 
 private:
+    enum Direction {
+        DirectionInherit,
+        DirectionRTL,
+        DirectionLTR
+    };
+
     class State FINAL : public CSSFontSelectorClient {
     public:
         State();
@@ -279,6 +288,7 @@ private:
         // Text state.
         TextAlign m_textAlign;
         TextBaseline m_textBaseline;
+        Direction m_direction;
 
         String m_unparsedFont;
         Font m_font;
@@ -356,6 +366,7 @@ private:
     virtual bool isTransformInvertible() const OVERRIDE { return state().m_invertibleCTM; }
 
     virtual blink::WebLayer* platformLayer() const OVERRIDE;
+    TextDirection toTextDirection(Direction, RenderStyle** computedStyle = nullptr) const;
 
     WillBeHeapVector<OwnPtrWillBeMember<State> > m_stateStack;
     OwnPtrWillBeMember<HitRegionManager> m_hitRegionManager;
