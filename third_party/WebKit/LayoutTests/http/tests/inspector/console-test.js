@@ -11,8 +11,8 @@ InspectorTest.prepareConsoleMessageText = function(messageElement, consoleMessag
     var messageText = messageElement.textContent.replace(/\u200b/g, "");
     // Replace scriptIds with generic scriptId string to avoid flakiness.
     messageText = messageText.replace(/VM\d+/g, "VM");
-    // Strip out InjectedScript from stack traces to avoid rebaselining each time InjectedScriptSource is edited.
-    messageText = messageText.replace(/InjectedScript[\.a-zA-Z_]+ VM:\d+/g, "");
+    // Strip out InjectedScript line numbers from stack traces to avoid rebaselining each time InjectedScriptSource is edited.
+    messageText = messageText.replace(/VM:\d+ InjectedScript\./g, " InjectedScript.");
     // Strip out InjectedScript line numbers from console message anchor.
     var functionName = consoleMessage && consoleMessage.stackTrace && consoleMessage.stackTrace[0] && consoleMessage.stackTrace[0].functionName || "";
     if (functionName.indexOf("InjectedScript") !== -1)

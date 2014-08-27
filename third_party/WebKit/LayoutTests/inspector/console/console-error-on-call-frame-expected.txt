@@ -7,6 +7,6 @@ Script execution resumed.
 setTimeout(testFunction, 0)
 1
 console.error(42)
-(program):2 42(program):2 (anonymous function)(program):436 evaluateVM:741 InjectedScript._evaluateOnVM:674 InjectedScript._evaluateAndWrapVM:792 InjectedScript.evaluateOnCallFrameconsole-error-on-call-frame.html:10 testFunction
+(program):2 42(program):2 (anonymous function)(program):436 evaluate InjectedScript._evaluateOn InjectedScript._evaluateAndWrap InjectedScript.evaluateOnCallFrameconsole-error-on-call-frame.html:10 testFunction
 undefined
 
