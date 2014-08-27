@@ -370,7 +370,6 @@ crbug.com/397232 [ XP ] css2.1/20110323/c541-word-sp-000.htm [ ImageOnlyFailure 
 crbug.com/397232 [ XP ] css2.1/20110323/vertical-align-boxes-001.htm [ ImageOnlyFailure ]
 crbug.com/378610 [ Win7 ] css3/flexbox/auto-margins.html [ ImageOnlyFailure ]
 crbug.com/397255 [ Linux XP ] css3/masking/clip-path-reference-userSpaceOnUse.html [ ImageOnlyFailure ]
-crbug.com/397257 [ Linux Win ] fast/multicol/cell-shrinkback.html [ ImageOnlyFailure ]
 crbug.com/378610 [ Win7 ] fast/table/td-width-fifty-percent-regression.html [ ImageOnlyFailure ]
 crbug.com/232061 [ Linux ] fast/text/zero-font-size-2.html [ ImageOnlyFailure ]
 crbug.com/378610 [ Win7 ] fast/writing-mode/table-vertical-child-width.html [ ImageOnlyFailure ]
@@ -883,7 +882,6 @@ crbug.com/359877 virtual/regionbasedmulticol/fast/multicol/mixed-opacity-test.ht
 # Old multicol tests that currently have no baseline in the virtual test suite
 # for the new multicol implementation.
 crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/border-padding-pagination.html [ Skip ]
-crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/cell-shrinkback.html [ Skip ]
 crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/client-rects.html [ Skip ]
 crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/column-break-with-balancing.html [ Skip ]
 crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/column-count-with-rules.html [ Skip ]
