@@ -299,7 +299,8 @@ class CC_EXPORT PictureLayerTiling {
                      PictureLayerTilingClient* client);
   void SetLiveTilesRect(const gfx::Rect& live_tiles_rect);
   Tile* CreateTile(int i, int j, const PictureLayerTiling* twin_tiling);
-  void RemoveTileAt(int i, int j);
+  // Returns true if the Tile existed and was removed from the tiling.
+  bool RemoveTileAt(int i, int j, PictureLayerTiling* recycled_twin);
 
   // Computes a skewport. The calculation extrapolates the last visible
   // rect and the current visible rect to expand the skewport to where it

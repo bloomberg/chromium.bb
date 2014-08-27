@@ -224,15 +224,12 @@ void PictureLayerTiling::DoInvalidate(const Region& layer_region,
              &tiling_data_, content_rect, include_borders);
          iter;
          ++iter) {
-      TileMapKey key(iter.index());
-      TileMap::iterator find = tiles_.find(key);
-      if (find == tiles_.end())
-        continue;
-
-      ReleaseTile(find->second.get(), client_->GetTree());
-
-      tiles_.erase(find);
-      new_tile_keys.push_back(key);
+      // There is no recycled twin since this is run on the pending tiling.
+      PictureLayerTiling* recycled_twin = NULL;
+      DCHECK_EQ(recycled_twin, client_->GetRecycledTwinTiling(this));
+      DCHECK_EQ(PENDING_TREE, client_->GetTree());
+      if (RemoveTileAt(iter.index_x(), iter.index_y(), recycled_twin))
+        new_tile_keys.push_back(iter.index());
     }
   }
 
@@ -396,10 +393,29 @@ gfx::Size PictureLayerTiling::CoverageIterator::texture_size() const {
   return tiling_->tiling_data_.max_texture_size();
 }
 
+bool PictureLayerTiling::RemoveTileAt(int i,
+                                      int j,
+                                      PictureLayerTiling* recycled_twin) {
+  TileMap::iterator found = tiles_.find(TileMapKey(i, j));
+  if (found == tiles_.end())
+    return false;
+  ReleaseTile(found->second.get(), client_->GetTree());
+  tiles_.erase(found);
+  if (recycled_twin) {
+    // Recycled twin does not also have a recycled twin, so pass NULL.
+    recycled_twin->RemoveTileAt(i, j, NULL);
+  }
+  return true;
+}
+
 void PictureLayerTiling::Reset() {
   live_tiles_rect_ = gfx::Rect();
-  for (TileMap::const_iterator it = tiles_.begin(); it != tiles_.end(); ++it)
+  PictureLayerTiling* recycled_twin = client_->GetRecycledTwinTiling(this);
+  for (TileMap::const_iterator it = tiles_.begin(); it != tiles_.end(); ++it) {
     ReleaseTile(it->second.get(), client_->GetTree());
+    if (recycled_twin)
+      recycled_twin->RemoveTileAt(it->first.first, it->first.second, NULL);
+  }
   tiles_.clear();
 }
 
@@ -608,15 +624,6 @@ void PictureLayerTiling::UpdateTilePriorities(
   current_eventually_rect_ = eventually_rect;
 }
 
-void PictureLayerTiling::RemoveTileAt(int i, int j) {
-  TileMapKey key(i, j);
-  TileMap::iterator found = tiles_.find(key);
-  if (found == tiles_.end())
-    return;
-  ReleaseTile(found->second.get(), client_->GetTree());
-  tiles_.erase(found);
-}
-
 void PictureLayerTiling::SetLiveTilesRect(
     const gfx::Rect& new_live_tiles_rect) {
   DCHECK(new_live_tiles_rect.IsEmpty() ||
@@ -633,16 +640,7 @@ void PictureLayerTiling::SetLiveTilesRect(
                                            new_live_tiles_rect);
        iter;
        ++iter) {
-    TileMapKey key(iter.index());
-    TileMap::iterator found = tiles_.find(key);
-    // If the tile was outside of the recorded region, it won't exist even
-    // though it was in the live rect.
-    if (found != tiles_.end()) {
-      ReleaseTile(found->second.get(), client_->GetTree());
-      tiles_.erase(found);
-      if (recycled_twin)
-        recycled_twin->RemoveTileAt(iter.index_x(), iter.index_y());
-    }
+    RemoveTileAt(iter.index_x(), iter.index_y(), recycled_twin);
   }
 
   const PictureLayerTiling* twin_tiling = client_->GetTwinTiling(this);

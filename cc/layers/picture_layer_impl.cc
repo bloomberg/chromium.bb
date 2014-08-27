@@ -119,14 +119,13 @@ void PictureLayerImpl::PushPropertiesTo(LayerImpl* base_layer) {
 
   // Tilings would be expensive to push, so we swap.
   layer_impl->tilings_.swap(tilings_);
+  layer_impl->tilings_->SetClient(layer_impl);
+  if (tilings_)
+    tilings_->SetClient(this);
 
   // Remove invalidated tiles from what will become a recycle tree.
   if (tilings_)
     tilings_->RemoveTilesInRegion(invalidation_);
-
-  layer_impl->tilings_->SetClient(layer_impl);
-  if (tilings_)
-    tilings_->SetClient(this);
 
   layer_impl->raster_page_scale_ = raster_page_scale_;
   layer_impl->raster_device_scale_ = raster_device_scale_;

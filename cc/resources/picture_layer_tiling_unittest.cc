@@ -1959,37 +1959,17 @@ TEST(PictureLayerTilingTest, RecycledTilesCleared) {
   // - Recycle tiling does _not_ have the tile in the same location (thus it
   //   will be shared next time a pending tiling is created).
 
-  FakePictureLayerTilingClient client;
-  scoped_ptr<TestablePictureLayerTiling> tiling;
+  FakePictureLayerTilingClient active_client;
+  scoped_ptr<TestablePictureLayerTiling> active_tiling;
 
-  client.SetTileSize(gfx::Size(100, 100));
-  client.set_tree(ACTIVE_TREE);
-  client.set_max_tiles_for_interest_area(10);
-  tiling = TestablePictureLayerTiling::Create(1.0f,  // contents_scale
-                                              gfx::Size(10000, 10000),
-                                              &client);
-  // Create all tiles on this tiling.
-  tiling->UpdateTilePriorities(ACTIVE_TREE,
-                               gfx::Rect(0, 0, 100, 100),
-                               1.0f,
-                               1.0f,
-                               NULL,               // occlusion tracker
-                               NULL,               // render target
-                               gfx::Transform());  // draw transform
-
-  FakePictureLayerTilingClient second_client;
-  second_client.SetTileSize(gfx::Size(100, 100));
-  second_client.set_tree(PENDING_TREE);
-  second_client.set_twin_tiling(tiling.get());
-  second_client.set_max_tiles_for_interest_area(10);
-
-  scoped_ptr<TestablePictureLayerTiling> second_tiling;
-  second_tiling = TestablePictureLayerTiling::Create(1.0f,  // contents_scale
+  active_client.SetTileSize(gfx::Size(100, 100));
+  active_client.set_tree(ACTIVE_TREE);
+  active_client.set_max_tiles_for_interest_area(10);
+  active_tiling = TestablePictureLayerTiling::Create(1.0f,  // contents_scale
                                                      gfx::Size(10000, 10000),
-                                                     &second_client);
-
-  // Create all tiles on the second tiling. All tiles should be shared.
-  second_tiling->UpdateTilePriorities(ACTIVE_TREE,
+                                                     &active_client);
+  // Create all tiles on this tiling.
+  active_tiling->UpdateTilePriorities(ACTIVE_TREE,
                                       gfx::Rect(0, 0, 100, 100),
                                       1.0f,
                                       1.0f,
@@ -1997,38 +1977,114 @@ TEST(PictureLayerTilingTest, RecycledTilesCleared) {
                                       NULL,               // render target
                                       gfx::Transform());  // draw transform
 
-  // Verify that tiles exist and are shared.
-  ASSERT_TRUE(tiling->TileAt(0, 0));
-  ASSERT_EQ(tiling->TileAt(0, 0), second_tiling->TileAt(0, 0));
+  FakePictureLayerTilingClient recycle_client;
+  recycle_client.SetTileSize(gfx::Size(100, 100));
+  recycle_client.set_tree(PENDING_TREE);
+  recycle_client.set_twin_tiling(active_tiling.get());
+  recycle_client.set_max_tiles_for_interest_area(10);
+
+  scoped_ptr<TestablePictureLayerTiling> recycle_tiling;
+  recycle_tiling = TestablePictureLayerTiling::Create(1.0f,  // contents_scale
+                                                      gfx::Size(10000, 10000),
+                                                      &recycle_client);
+
+  // Create all tiles on the second tiling. All tiles should be shared.
+  recycle_tiling->UpdateTilePriorities(PENDING_TREE,
+                                       gfx::Rect(0, 0, 100, 100),
+                                       1.0f,
+                                       1.0f,
+                                       NULL,               // occlusion tracker
+                                       NULL,               // render target
+                                       gfx::Transform());  // draw transform
 
   // Set the second tiling as recycled.
-  client.set_twin_tiling(NULL);
-  client.set_recycled_twin_tiling(second_tiling.get());
-  second_client.set_twin_tiling(NULL);
+  active_client.set_twin_tiling(NULL);
+  active_client.set_recycled_twin_tiling(recycle_tiling.get());
+  recycle_client.set_twin_tiling(NULL);
+
+  // Verify that tiles exist and are shared.
+  EXPECT_TRUE(active_tiling->TileAt(0, 0));
+  EXPECT_TRUE(recycle_tiling->TileAt(0, 0));
+  EXPECT_EQ(active_tiling->TileAt(0, 0), recycle_tiling->TileAt(0, 0));
 
   // Move the viewport far away from the (0, 0) tile.
-  tiling->UpdateTilePriorities(ACTIVE_TREE,
-                               gfx::Rect(9000, 9000, 100, 100),
-                               1.0f,
-                               2.0,
-                               NULL,               // occlusion tracker
-                               NULL,               // render target
-                               gfx::Transform());  // draw transform
-  // Ensure the tile was deleted.
-  EXPECT_FALSE(tiling->TileAt(0, 0));
+  active_tiling->UpdateTilePriorities(ACTIVE_TREE,
+                                      gfx::Rect(9000, 9000, 100, 100),
+                                      1.0f,
+                                      2.0,
+                                      NULL,               // occlusion tracker
+                                      NULL,               // render target
+                                      gfx::Transform());  // draw transform
+  // Ensure the tile was deleted on both tilings.
+  EXPECT_FALSE(active_tiling->TileAt(0, 0));
+  EXPECT_FALSE(recycle_tiling->TileAt(0, 0));
 
   // Move the viewport back to (0, 0) tile.
-  tiling->UpdateTilePriorities(ACTIVE_TREE,
-                               gfx::Rect(0, 0, 100, 100),
-                               1.0f,
-                               3.0,
-                               NULL,               // occlusion tracker
-                               NULL,               // render target
-                               gfx::Transform());  // draw transform
+  active_tiling->UpdateTilePriorities(ACTIVE_TREE,
+                                      gfx::Rect(0, 0, 100, 100),
+                                      1.0f,
+                                      3.0,
+                                      NULL,               // occlusion tracker
+                                      NULL,               // render target
+                                      gfx::Transform());  // draw transform
 
   // Ensure that we now have a tile here, but the recycle tiling does not.
-  EXPECT_TRUE(tiling->TileAt(0, 0));
-  EXPECT_FALSE(second_tiling->TileAt(0, 0));
+  EXPECT_TRUE(active_tiling->TileAt(0, 0));
+  EXPECT_FALSE(recycle_tiling->TileAt(0, 0));
+}
+
+TEST(PictureLayerTilingTest, RecycledTilesClearedOnReset) {
+  FakePictureLayerTilingClient active_client;
+  scoped_ptr<TestablePictureLayerTiling> active_tiling;
+
+  active_client.SetTileSize(gfx::Size(100, 100));
+  active_client.set_tree(ACTIVE_TREE);
+  active_tiling = TestablePictureLayerTiling::Create(1.0f,  // contents_scale
+                                                     gfx::Size(100, 100),
+                                                     &active_client);
+  // Create all tiles on this tiling.
+  active_tiling->UpdateTilePriorities(ACTIVE_TREE,
+                                      gfx::Rect(0, 0, 100, 100),
+                                      1.0f,
+                                      1.0f,
+                                      NULL,               // occlusion tracker
+                                      NULL,               // render target
+                                      gfx::Transform());  // draw transform
+
+  FakePictureLayerTilingClient recycle_client;
+  recycle_client.SetTileSize(gfx::Size(100, 100));
+  recycle_client.set_tree(PENDING_TREE);
+  recycle_client.set_twin_tiling(active_tiling.get());
+  recycle_client.set_max_tiles_for_interest_area(10);
+
+  scoped_ptr<TestablePictureLayerTiling> recycle_tiling;
+  recycle_tiling = TestablePictureLayerTiling::Create(1.0f,  // contents_scale
+                                                      gfx::Size(100, 100),
+                                                      &recycle_client);
+
+  // Create all tiles on the recycle tiling. All tiles should be shared.
+  recycle_tiling->UpdateTilePriorities(PENDING_TREE,
+                                       gfx::Rect(0, 0, 100, 100),
+                                       1.0f,
+                                       1.0f,
+                                       NULL,               // occlusion tracker
+                                       NULL,               // render target
+                                       gfx::Transform());  // draw transform
+
+  // Set the second tiling as recycled.
+  active_client.set_twin_tiling(NULL);
+  active_client.set_recycled_twin_tiling(recycle_tiling.get());
+  recycle_client.set_twin_tiling(NULL);
+
+  // Verify that tiles exist and are shared.
+  EXPECT_TRUE(active_tiling->TileAt(0, 0));
+  EXPECT_TRUE(recycle_tiling->TileAt(0, 0));
+  EXPECT_EQ(active_tiling->TileAt(0, 0), recycle_tiling->TileAt(0, 0));
+
+  // Reset the active tiling. The recycle tiles should be released too.
+  active_tiling->Reset();
+  EXPECT_FALSE(active_tiling->TileAt(0, 0));
+  EXPECT_FALSE(recycle_tiling->TileAt(0, 0));
 }
 
 }  // namespace
