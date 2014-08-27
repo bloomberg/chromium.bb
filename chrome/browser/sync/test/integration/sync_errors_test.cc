@@ -4,6 +4,7 @@
 
 #include "base/prefs/pref_member.h"
 #include "base/prefs/pref_service.h"
+#include "base/run_loop.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/test/integration/bookmarks_helper.h"
 #include "chrome/browser/sync/test/integration/passwords_helper.h"
@@ -193,18 +194,21 @@ IN_PROC_BROWSER_TEST_F(LegacySyncErrorTest,
       protocol_error.error_description);
 }
 
-// TODO(lipalani): Fix the typed_url dtc so this test case can pass.
-IN_PROC_BROWSER_TEST_F(LegacySyncErrorTest,
-                       DISABLED_DisableDatatypeWhileRunning) {
+IN_PROC_BROWSER_TEST_F(LegacySyncErrorTest, DisableDatatypeWhileRunning) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   syncer::ModelTypeSet synced_datatypes =
-      GetSyncService((0))->GetPreferredDataTypes();
+      GetSyncService((0))->GetActiveDataTypes();
   ASSERT_TRUE(synced_datatypes.Has(syncer::TYPED_URLS));
+  ASSERT_TRUE(synced_datatypes.Has(syncer::SESSIONS));
   GetProfile(0)->GetPrefs()->SetBoolean(
       prefs::kSavingBrowserHistoryDisabled, true);
 
-  synced_datatypes = GetSyncService((0))->GetPreferredDataTypes();
+  // Flush any tasks posted by observers of the pref change.
+  base::RunLoop().RunUntilIdle();
+
+  synced_datatypes = GetSyncService((0))->GetActiveDataTypes();
   ASSERT_FALSE(synced_datatypes.Has(syncer::TYPED_URLS));
+  ASSERT_FALSE(synced_datatypes.Has(syncer::SESSIONS));
 
   const BookmarkNode* node1 = AddFolder(0, 0, "title1");
   SetTitle(0, node1, "new_title1");

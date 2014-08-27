@@ -36,6 +36,7 @@ class TypedUrlDataTypeController : public NonFrontendDataTypeController {
   virtual syncer::ModelSafeGroup model_safe_group() const OVERRIDE;
   virtual void LoadModels(const ModelLoadCallback& model_load_callback)
       OVERRIDE;
+  virtual bool ReadyForStart() const OVERRIDE;
 
   // Invoked on the history thread to set our history backend - must be called
   // before CreateSyncComponents() is invoked.

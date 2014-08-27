@@ -204,10 +204,11 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
         new BookmarkDataTypeController(this, profile_, pss));
   }
 
+  const bool history_disabled =
+      profile_->GetPrefs()->GetBoolean(prefs::kSavingBrowserHistoryDisabled);
   // TypedUrl sync is enabled by default.  Register unless explicitly disabled,
   // or if saving history is disabled.
-  if (!profile_->GetPrefs()->GetBoolean(prefs::kSavingBrowserHistoryDisabled) &&
-      !disabled_types.Has(syncer::TYPED_URLS)) {
+  if (!disabled_types.Has(syncer::TYPED_URLS) && !history_disabled) {
     pss->RegisterDataTypeController(
         new TypedUrlDataTypeController(this, profile_, pss));
   }
@@ -224,7 +225,9 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
   }
 
   // Session sync is enabled by default.  Register unless explicitly disabled.
-  if (!disabled_types.Has(syncer::PROXY_TABS)) {
+  // This is also disabled if the browser history is disabled, because the
+  // tab sync data is added to the web history on the server.
+  if (!disabled_types.Has(syncer::PROXY_TABS) && !history_disabled) {
     pss->RegisterDataTypeController(new ProxyDataTypeController(
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
         syncer::PROXY_TABS));

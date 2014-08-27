@@ -517,7 +517,7 @@
       'caption': '''Disable saving browser history''',
       'desc': '''Disables saving browser history in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing this setting.
 
-      If this setting is enabled, browsing history is not saved.
+      If this setting is enabled, browsing history is not saved. This setting also disables tab syncing.
 
       If this setting is disabled or not set, browsing history is saved.''',
     },

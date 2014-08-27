@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_SYNC_SESSIONS_SESSION_DATA_TYPE_CONTROLLER_H_
 #define CHROME_BROWSER_SYNC_SESSIONS_SESSION_DATA_TYPE_CONTROLLER_H_
 
+#include "base/prefs/pref_change_registrar.h"
 #include "chrome/browser/sync/glue/local_device_info_provider.h"
 #include "components/sync_driver/ui_data_type_controller.h"
 #include "content/public/browser/notification_observer.h"
@@ -32,15 +33,19 @@ class SessionDataTypeController : public sync_driver::UIDataTypeController,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
- protected:
-  virtual ~SessionDataTypeController();
+  // UIDataTypeController interface.
   virtual bool StartModels() OVERRIDE;
   virtual void StopModels() OVERRIDE;
+  virtual bool ReadyForStart() const OVERRIDE;
+
+ protected:
+  virtual ~SessionDataTypeController();
 
  private:
   bool IsWaiting();
   void MaybeCompleteLoading();
   void OnLocalDeviceInfoInitialized();
+  void OnSavingBrowserHistoryPrefChanged();
 
   Profile* const profile_;
 
@@ -54,10 +59,11 @@ class SessionDataTypeController : public sync_driver::UIDataTypeController,
   bool waiting_on_session_restore_;
   bool waiting_on_local_device_info_;
 
+  PrefChangeRegistrar pref_registrar_;
+
   DISALLOW_COPY_AND_ASSIGN(SessionDataTypeController);
 };
 
 }  // namespace browser_sync
 
 #endif  // CHROME_BROWSER_SYNC_SESSIONS_SESSION_DATA_TYPE_CONTROLLER_H_
-
