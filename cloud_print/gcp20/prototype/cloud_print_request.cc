@@ -64,7 +64,7 @@ void CloudPrintRequest::Run(
     fetcher_->AddExtraRequestHeader(base::StringPrintf(
         "Authorization: Bearer \"%s\"", access_token.c_str()));
 
-  fetcher_->SetRequestContext(context_getter);
+  fetcher_->SetRequestContext(context_getter.get());
   fetcher_->Start();
 
   MessageLoop::current()->PostDelayedTask(

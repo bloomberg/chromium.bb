@@ -10,7 +10,7 @@
 
 CloudPrintURLRequestContextGetter::CloudPrintURLRequestContextGetter(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  DCHECK(task_runner);
+  DCHECK(task_runner.get());
   network_task_runner_ = task_runner;
 }
 
