@@ -156,21 +156,6 @@ class WTFStringPrinter(StringPrinter):
 
 
 
-class JSCIdentifierPrinter(StringPrinter):
-    "Print a JSC::Identifier"
-    def to_string(self):
-        return WTFStringImplPrinter(self.val['m_string']).to_string()
-
-
-class JSCJSStringPrinter(StringPrinter):
-    "Print a JSC::JSString"
-    def to_string(self):
-        if self.val['m_length'] == 0:
-            return ''
-
-        return WTFStringImplPrinter(self.val['m_value']).to_string()
-
-
 class blinkKURLPrinter(StringPrinter):
     "Print a blink::KURL"
     def to_string(self):
@@ -314,8 +299,6 @@ def add_pretty_printers():
         (re.compile("^blink::LayoutPoint$"), blinkLayoutPointPrinter),
         (re.compile("^blink::LayoutSize$"), blinkLayoutSizePrinter),
         (re.compile("^blink::QualifiedName$"), blinkQualifiedNamePrinter),
-        (re.compile("^JSC::Identifier$"), JSCIdentifierPrinter),
-        (re.compile("^JSC::JSString$"), JSCJSStringPrinter),
     )
 
     def lookup_function(val):
