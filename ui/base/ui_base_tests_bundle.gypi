@@ -20,15 +20,15 @@
     'DYLIB_INSTALL_NAME_BASE': '@executable_path/../Versions/1.0.0.0',
     'LD_DYLIB_INSTALL_NAME':
         '$(DYLIB_INSTALL_NAME_BASE:standardizepath)/$(WRAPPER_NAME)/$(PRODUCT_NAME)',
-    'INFOPLIST_FILE': 'base/test/framework-Info.plist',
+    'INFOPLIST_FILE': 'test/framework-Info.plist',
   },
   'mac_bundle_resources': [
-    'base/test/framework-Info.plist',
+    'test/framework-Info.plist',
     '<(PRODUCT_DIR)/ui_test.pak',
     '<!@pymod_do_main(repack_locales -o -p <(OS) -g <(grit_out_dir) -s <(SHARED_INTERMEDIATE_DIR) -x <(SHARED_INTERMEDIATE_DIR) <(locales))',
   ],
   'mac_bundle_resources!': [
-    'base/test/framework-Info.plist',
+    'test/framework-Info.plist',
   ],
   'postbuilds': [
     {
