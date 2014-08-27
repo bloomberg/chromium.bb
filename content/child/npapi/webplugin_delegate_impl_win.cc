@@ -508,7 +508,8 @@ bool WebPluginDelegateImpl::WindowedCreatePlugin() {
       std::wstring plugin_name = plugin_lib->plugin_info().name;
       if (!plugin_name.empty()) {
         ATOM plugin_name_atom = GlobalAddAtomW(plugin_name.c_str());
-        DCHECK_NE(0, plugin_name_atom);
+        DCHECK_NE(0, plugin_name_atom) << " last error = " <<
+            GetLastError();
         result = SetProp(windowed_handle_,
             kPluginNameAtomProperty,
             reinterpret_cast<HANDLE>(plugin_name_atom));
