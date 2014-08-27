@@ -268,6 +268,7 @@
     ],
     'webcrypto_openssl_sources': [
       'child/webcrypto/openssl/aes_cbc_openssl.cc',
+      'child/webcrypto/openssl/aes_ctr_openssl.cc',
       'child/webcrypto/openssl/aes_gcm_openssl.cc',
       'child/webcrypto/openssl/aes_key_openssl.cc',
       'child/webcrypto/openssl/aes_key_openssl.h',

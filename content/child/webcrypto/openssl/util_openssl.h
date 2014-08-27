@@ -19,7 +19,9 @@ namespace webcrypto {
 class CryptoData;
 class Status;
 
-enum EncryptOrDecrypt { ENCRYPT, DECRYPT };
+// The values of these constants correspond with the "enc" parameter of
+// EVP_CipherInit_ex(), do not change.
+enum EncryptOrDecrypt { DECRYPT=0, ENCRYPT=1 };
 
 const EVP_MD* GetDigest(blink::WebCryptoAlgorithmId id);
 

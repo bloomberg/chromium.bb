@@ -25,6 +25,7 @@ scoped_ptr<blink::WebCryptoDigestor> CreatePlatformDigestor(
 
 AlgorithmImplementation* CreatePlatformShaImplementation();
 AlgorithmImplementation* CreatePlatformAesCbcImplementation();
+AlgorithmImplementation* CreatePlatformAesCtrImplementation();
 AlgorithmImplementation* CreatePlatformAesGcmImplementation();
 AlgorithmImplementation* CreatePlatformAesKwImplementation();
 AlgorithmImplementation* CreatePlatformHmacImplementation();

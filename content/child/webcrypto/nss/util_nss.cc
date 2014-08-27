@@ -6,6 +6,7 @@
 
 #include "base/lazy_instance.h"
 #include "content/child/webcrypto/crypto_data.h"
+#include "content/child/webcrypto/platform_crypto.h"
 #include "crypto/nss_util.h"
 #include "crypto/scoped_nss_types.h"
 
@@ -77,6 +78,11 @@ NssRuntimeSupport::NssRuntimeSupport() : internal_slot_does_oaep_(false) {
 
 void PlatformInit() {
   crypto::EnsureNSSInit();
+}
+
+AlgorithmImplementation* CreatePlatformAesCtrImplementation() {
+  // TODO(eroman): http://crbug.com/399084
+  return NULL;
 }
 
 }  // namespace webcrypto

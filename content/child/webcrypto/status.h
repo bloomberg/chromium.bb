@@ -144,6 +144,18 @@ class CONTENT_EXPORT Status {
   // bytes.
   static Status ErrorIncorrectSizeAesCbcIv();
 
+  // When doing AES-CTR encryption/decryption, the "counter" parameter was not
+  // 16 bytes.
+  static Status ErrorIncorrectSizeAesCtrCounter();
+
+  // When doing AES-CTR encryption/decryption, the "length" parameter for the
+  // counter was out of range.
+  static Status ErrorInvalidAesCtrCounterLength();
+
+  // The input to encrypt/decrypt was too large. Based on the counter size, it
+  // would cause the counter to wraparound and repeat earlier values.
+  static Status ErrorAesCtrInputTooLongCounterRepeated();
+
   // The data provided to an encrypt/decrypt/sign/verify operation was too
   // large. This can either represent an internal limitation (for instance
   // representing buffer lengths as uints).

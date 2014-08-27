@@ -11,6 +11,7 @@
 #include "content/child/webcrypto/crypto_data.h"
 #include "content/child/webcrypto/openssl/aes_key_openssl.h"
 #include "content/child/webcrypto/openssl/key_openssl.h"
+#include "content/child/webcrypto/openssl/util_openssl.h"
 #include "content/child/webcrypto/status.h"
 #include "content/child/webcrypto/webcrypto_util.h"
 #include "crypto/openssl_util.h"
@@ -35,10 +36,7 @@ const EVP_CIPHER* GetAESCipherByKeyLength(unsigned int key_length_bytes) {
   }
 }
 
-// OpenSSL constants for EVP_CipherInit_ex(), do not change
-enum CipherOperation { kDoDecrypt = 0, kDoEncrypt = 1 };
-
-Status AesCbcEncryptDecrypt(CipherOperation cipher_operation,
+Status AesCbcEncryptDecrypt(EncryptOrDecrypt cipher_operation,
                             const blink::WebCryptoAlgorithm& algorithm,
                             const blink::WebCryptoKey& key,
                             const CryptoData& data,
@@ -119,14 +117,14 @@ class AesCbcImplementation : public AesAlgorithm {
                          const blink::WebCryptoKey& key,
                          const CryptoData& data,
                          std::vector<uint8_t>* buffer) const OVERRIDE {
-    return AesCbcEncryptDecrypt(kDoEncrypt, algorithm, key, data, buffer);
+    return AesCbcEncryptDecrypt(ENCRYPT, algorithm, key, data, buffer);
   }
 
   virtual Status Decrypt(const blink::WebCryptoAlgorithm& algorithm,
                          const blink::WebCryptoKey& key,
                          const CryptoData& data,
                          std::vector<uint8_t>* buffer) const OVERRIDE {
-    return AesCbcEncryptDecrypt(kDoDecrypt, algorithm, key, data, buffer);
+    return AesCbcEncryptDecrypt(DECRYPT, algorithm, key, data, buffer);
   }
 };
 

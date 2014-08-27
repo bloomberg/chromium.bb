@@ -150,6 +150,21 @@ Status Status::ErrorIncorrectSizeAesCbcIv() {
                 "The \"iv\" has an unexpected length -- must be 16 bytes");
 }
 
+Status Status::ErrorIncorrectSizeAesCtrCounter() {
+  return Status(blink::WebCryptoErrorTypeData,
+                "The \"counter\" has an unexpected length -- must be 16 bytes");
+}
+
+Status Status::ErrorInvalidAesCtrCounterLength() {
+  return Status(blink::WebCryptoErrorTypeData,
+                "The \"length\" property must be >= 1 and <= 128");
+}
+
+Status Status::ErrorAesCtrInputTooLongCounterRepeated() {
+  return Status(blink::WebCryptoErrorTypeData,
+                "The input is too large for the counter length.");
+}
+
 Status Status::ErrorDataTooLarge() {
   return Status(blink::WebCryptoErrorTypeData,
                 "The provided data is too large");
