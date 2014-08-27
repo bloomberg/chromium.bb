@@ -140,6 +140,7 @@ void ServiceWorkerGlobalScopeProxy::workerGlobalScopeStarted(WorkerGlobalScope* 
     ASSERT(!m_workerGlobalScope);
     m_workerGlobalScope = workerGlobalScope;
     m_client.workerContextStarted(this);
+    m_client.workerReadyForInspection();
 }
 
 void ServiceWorkerGlobalScopeProxy::workerGlobalScopeClosed()

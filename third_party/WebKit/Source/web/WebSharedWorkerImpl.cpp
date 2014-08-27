@@ -390,8 +390,10 @@ void WebSharedWorkerImpl::onScriptLoaderFinished()
 
     workerThread()->start();
     m_workerInspectorProxy->workerThreadCreated(m_loadingDocument.get(), workerThread(), m_url);
-    if (client())
+    if (client()) {
         client()->workerScriptLoaded();
+        client()->workerReadyForInspection();
+    }
 }
 
 void WebSharedWorkerImpl::terminateWorkerContext()
