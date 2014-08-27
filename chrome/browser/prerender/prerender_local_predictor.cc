@@ -1373,17 +1373,21 @@ void PrerenderLocalPredictor::IssuePrerender(
     CandidatePrerenderInfo* info,
     LocalPredictorURLInfo* url_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  RecordEvent(EVENT_ISSUE_PRERENDER_CALLED);
   if (prefetch_list_->AddURL(url_info->url)) {
     RecordEvent(EVENT_PREFETCH_LIST_ADDED);
     // If we are prefetching rather than prerendering, now is the time to launch
     // the prefetch.
     if (IsLocalPredictorPrerenderPrefetchEnabled()) {
+      RecordEvent(EVENT_ISSUE_PRERENDER_PREFETCH_ENABLED);
       // Obtain the render frame host that caused this prefetch.
       RenderFrameHost* rfh = RenderFrameHost::FromID(info->render_process_id_,
                                                      info->render_frame_id_);
       // If it is still alive, launch the prefresh.
-      if (rfh)
+      if (rfh) {
         rfh->Send(new PrefetchMsg_Prefetch(rfh->GetRoutingID(), url_info->url));
+        RecordEvent(EVENT_ISSUE_PRERENDER_PREFETCH_ISSUED);
+      }
     }
   }
   PrerenderProperties* prerender_properties =

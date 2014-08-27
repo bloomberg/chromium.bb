@@ -47523,6 +47523,9 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="90" label="Prefetch List item added"/>
   <int value="91" label="Prefetch list seen tab contents"/>
   <int value="92" label="Prefetch list seen history"/>
+  <int value="93" label="Issue Prerender called"/>
+  <int value="94" label="Issue Prerender prefetch enabled"/>
+  <int value="95" label="Issue Prerender prefetch issued"/>
 </enum>
 
 <enum name="PrerenderLocalVisitCoreTransition" type="int">
