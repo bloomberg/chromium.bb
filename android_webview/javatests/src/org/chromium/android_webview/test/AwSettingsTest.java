@@ -2778,42 +2778,50 @@ public class AwSettingsTest extends AwTestBase {
 
         awSettings.setJavaScriptEnabled(true);
 
-        TestWebServer httpsServer = new TestWebServer(true);
-        TestWebServer httpServer = new TestWebServer(false);
+        TestWebServer httpsServer = null;
+        TestWebServer httpServer = null;
+        try {
+            httpsServer = new TestWebServer(true);
+            httpServer = new TestWebServer(false);
 
-        final String JS_URL = "/insecure.js";
-        final String IMG_URL = "/insecure.png";
-        final String SECURE_URL = "/secure.html";
-        httpServer.setResponse(JS_URL, "window.loaded_js = 42;", null);
-        httpServer.setResponseBase64(IMG_URL, CommonResources.FAVICON_DATA_BASE64, null);
+            final String JS_URL = "/insecure.js";
+            final String IMG_URL = "/insecure.png";
+            final String SECURE_URL = "/secure.html";
+            httpServer.setResponse(JS_URL, "window.loaded_js = 42;", null);
+            httpServer.setResponseBase64(IMG_URL, CommonResources.FAVICON_DATA_BASE64, null);
 
-        final String JS_HTML = "<script src=\"" + httpServer.getResponseUrl(JS_URL) +
+            final String JS_HTML = "<script src=\"" + httpServer.getResponseUrl(JS_URL) +
                 "\"></script>";
-        final String IMG_HTML = "<img src=\"" + httpServer.getResponseUrl(IMG_URL) + "\" />";
-        final String SECURE_HTML = "<body>" + IMG_HTML + " " + JS_HTML + "</body>";
+            final String IMG_HTML = "<img src=\"" + httpServer.getResponseUrl(IMG_URL) + "\" />";
+            final String SECURE_HTML = "<body>" + IMG_HTML + " " + JS_HTML + "</body>";
 
-        String secureUrl = httpsServer.setResponse(SECURE_URL, SECURE_HTML, null);
+            String secureUrl = httpsServer.setResponse(SECURE_URL, SECURE_HTML, null);
 
-        awSettings.setMixedContentMode(AwSettings.MIXED_CONTENT_NEVER_ALLOW);
-        loadUrlSync(awContents, contentClient.getOnPageFinishedHelper(), secureUrl);
-        assertEquals(1, httpsServer.getRequestCount(SECURE_URL));
-        assertEquals(0, httpServer.getRequestCount(JS_URL));
-        assertEquals(0, httpServer.getRequestCount(IMG_URL));
+            awSettings.setMixedContentMode(AwSettings.MIXED_CONTENT_NEVER_ALLOW);
+            loadUrlSync(awContents, contentClient.getOnPageFinishedHelper(), secureUrl);
+            assertEquals(1, httpsServer.getRequestCount(SECURE_URL));
+            assertEquals(0, httpServer.getRequestCount(JS_URL));
+            assertEquals(0, httpServer.getRequestCount(IMG_URL));
 
-        awSettings.setMixedContentMode(AwSettings.MIXED_CONTENT_ALWAYS_ALLOW);
-        loadUrlSync(awContents, contentClient.getOnPageFinishedHelper(), secureUrl);
-        assertEquals(2, httpsServer.getRequestCount(SECURE_URL));
-        assertEquals(1, httpServer.getRequestCount(JS_URL));
-        assertEquals(1, httpServer.getRequestCount(IMG_URL));
+            awSettings.setMixedContentMode(AwSettings.MIXED_CONTENT_ALWAYS_ALLOW);
+            loadUrlSync(awContents, contentClient.getOnPageFinishedHelper(), secureUrl);
+            assertEquals(2, httpsServer.getRequestCount(SECURE_URL));
+            assertEquals(1, httpServer.getRequestCount(JS_URL));
+            assertEquals(1, httpServer.getRequestCount(IMG_URL));
 
-        awSettings.setMixedContentMode(AwSettings.MIXED_CONTENT_COMPATIBILITY_MODE);
-        loadUrlSync(awContents, contentClient.getOnPageFinishedHelper(), secureUrl);
-        assertEquals(3, httpsServer.getRequestCount(SECURE_URL));
-        assertEquals(1, httpServer.getRequestCount(JS_URL));
-        assertEquals(2, httpServer.getRequestCount(IMG_URL));
-
-        httpServer.shutdown();
-        httpsServer.shutdown();
+            awSettings.setMixedContentMode(AwSettings.MIXED_CONTENT_COMPATIBILITY_MODE);
+            loadUrlSync(awContents, contentClient.getOnPageFinishedHelper(), secureUrl);
+            assertEquals(3, httpsServer.getRequestCount(SECURE_URL));
+            assertEquals(1, httpServer.getRequestCount(JS_URL));
+            assertEquals(2, httpServer.getRequestCount(IMG_URL));
+        } finally {
+            if (httpServer != null) {
+                httpServer.shutdown();
+            }
+            if (httpsServer != null) {
+                httpsServer.shutdown();
+            }
+        }
     }
 
 
