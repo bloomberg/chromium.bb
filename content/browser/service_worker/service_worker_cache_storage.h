@@ -160,7 +160,7 @@ class CONTENT_EXPORT ServiceWorkerCacheStorage {
   scoped_refptr<base::SequencedTaskRunner> cache_task_runner_;
 
   // Performs backend specific operations (memory vs disk).
-  scoped_refptr<CacheLoader> cache_loader_;
+  scoped_ptr<CacheLoader> cache_loader_;
 
   base::WeakPtrFactory<ServiceWorkerCacheStorage> weak_factory_;
 
