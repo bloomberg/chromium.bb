@@ -105,7 +105,11 @@ scoped_ptr<ActionInfo> ActionInfo::Load(const Extension* extension,
     } else if (dict->GetString(keys::kPageActionDefaultIcon, &default_icon) &&
                manifest_handler_helpers::NormalizeAndValidatePath(
                    &default_icon)) {
-      result->default_icon.Add(extension_misc::EXTENSION_ICON_ACTION,
+      // Choose the most optimistic (highest) icon density - e.g. 38 not 19 -
+      // regardless of the actual icon resolution, whatever that happens to be.
+      // Code elsewhere knows how to scale 38 down to 19.
+      result->default_icon.Add(extension_misc::EXTENSION_ICON_ACTION *
+                                   extension_misc::kNumExtensionActionIconSizes,
                                default_icon);
     } else {
       *error = base::ASCIIToUTF16(errors::kInvalidPageActionIconPath);

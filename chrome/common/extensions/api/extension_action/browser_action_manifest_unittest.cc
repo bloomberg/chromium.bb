@@ -60,7 +60,7 @@ TEST_F(BrowserActionManifestTest,
   const ExtensionIconSet& icons = browser_action_info->default_icon;
 
   EXPECT_EQ(1u, icons.map().size());
-  EXPECT_EQ("icon.png", icons.Get(19, ExtensionIconSet::MATCH_EXACTLY));
+  EXPECT_EQ("icon.png", icons.Get(38, ExtensionIconSet::MATCH_EXACTLY));
 }
 
 TEST_F(BrowserActionManifestTest,
