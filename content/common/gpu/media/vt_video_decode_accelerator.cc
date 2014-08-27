@@ -4,6 +4,7 @@
 
 #include <CoreVideo/CoreVideo.h>
 #include <OpenGL/CGLIOSurface.h>
+#include <OpenGL/gl.h>
 
 #include "base/bind.h"
 #include "base/command_line.h"
