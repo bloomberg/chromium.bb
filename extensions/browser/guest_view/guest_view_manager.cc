@@ -148,27 +148,18 @@ content::WebContents* GuestViewManager::CreateGuestWithWebContentsParams(
   return guest_web_contents;
 }
 
-void GuestViewManager::MaybeGetGuestByInstanceIDOrKill(
+content::WebContents* GuestViewManager::GetGuestByInstanceID(
     content::WebContents* embedder_web_contents,
-    int element_instance_id,
-    const GuestByInstanceIDCallback& callback) {
-  int guest_instance_id = GetGuestInstanceIDForPluginID(embedder_web_contents,
-                                                        element_instance_id);
+    int element_instance_id) {
+  int guest_instance_id = GetGuestInstanceIDForElementID(embedder_web_contents,
+                                                         element_instance_id);
   if (guest_instance_id == guestview::kInstanceIDNone)
-    return;
-  int embedder_render_process_id =
-      embedder_web_contents->GetRenderProcessHost()->GetID();
-  if (!CanEmbedderAccessInstanceIDMaybeKill(embedder_render_process_id,
-                                            guest_instance_id)) {
-    // If we kill the embedder, then don't bother calling back.
-    return;
-  }
-  content::WebContents* guest_web_contents =
-      GetGuestByInstanceID(guest_instance_id);
-  callback.Run(guest_web_contents);
+    return NULL;
+
+  return GetGuestByInstanceID(guest_instance_id);
 }
 
-int GuestViewManager::GetGuestInstanceIDForPluginID(
+int GuestViewManager::GetGuestInstanceIDForElementID(
     content::WebContents* embedder_web_contents,
     int element_instance_id) {
   GuestInstanceIDMap::iterator iter = instance_id_map_.find(

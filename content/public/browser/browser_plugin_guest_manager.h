@@ -29,15 +29,10 @@ class CONTENT_EXPORT BrowserPluginGuestManager {
 
   typedef base::Callback<void(WebContents*)> GuestByInstanceIDCallback;
   // Requests a guest WebContents associated with the provided
-  // |guest_instance_id|. If a guest associated with the provided ID
-  // does not exist, then the |callback| will be called with a NULL
-  // WebContents. If the provided |embedder_render_process_id| does
-  // not own the requested guest, then the embedder will be killed,
-  // and the |callback| will not be called.
-  virtual void MaybeGetGuestByInstanceIDOrKill(
-      WebContents* embedder_web_contents,
-      int browser_plugin_instance_id,
-      const GuestByInstanceIDCallback& callback) {}
+  // |browser_plugin_instance_id|.
+  // Returns the guest associated with the provided ID if one exists.
+  virtual WebContents* GetGuestByInstanceID(WebContents* embedder_web_contents,
+                                            int browser_plugin_instance_id);
 
   // Iterates over all WebContents belonging to a given |embedder_web_contents|,
   // calling |callback| for each. If one of the callbacks returns true, then

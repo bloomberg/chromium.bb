@@ -59,14 +59,6 @@ void BrowserPluginMessageFilter::OverrideThreadForMessage(
     *thread = BrowserThread::UI;
 }
 
-static void BrowserPluginGuestMessageCallback(const IPC::Message& message,
-                                              WebContents* guest_web_contents) {
-  if (!guest_web_contents)
-    return;
-  static_cast<WebContentsImpl*>(guest_web_contents)->GetBrowserPluginGuest()->
-      OnMessageReceivedFromEmbedder(message);
-}
-
 void BrowserPluginMessageFilter::ForwardMessageToGuest(
     const IPC::Message& message) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -82,12 +74,17 @@ void BrowserPluginMessageFilter::ForwardMessageToGuest(
   PickleIterator iter(message);
   bool success = iter.ReadInt(&browser_plugin_instance_id);
   DCHECK(success);
-  embedder_web_contents->GetBrowserContext()->GetGuestManager()->
-      MaybeGetGuestByInstanceIDOrKill(
-          embedder_web_contents,
-          browser_plugin_instance_id,
-          base::Bind(&BrowserPluginGuestMessageCallback,
-                     message));
+  WebContents* guest_web_contents =
+      embedder_web_contents->GetBrowserContext()
+          ->GetGuestManager()
+          ->GetGuestByInstanceID(embedder_web_contents,
+                                 browser_plugin_instance_id);
+  if (!guest_web_contents)
+    return;
+
+  static_cast<WebContentsImpl*>(guest_web_contents)
+      ->GetBrowserPluginGuest()
+      ->OnMessageReceivedFromEmbedder(message);
 }
 
 void BrowserPluginMessageFilter::OnSwapBuffersACK(

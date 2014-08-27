@@ -83,14 +83,7 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver {
 
   bool UnlockMouseIfNecessaryCallback(bool* mouse_unlocked, WebContents* guest);
 
-  // Called by the content embedder when a guest exists with the provided
-  // |instance_id|.
-  void OnGuestCallback(int instance_id,
-                       const BrowserPluginHostMsg_Attach_Params& params,
-                       WebContents* guest_web_contents);
-
   // Message handlers.
-
   void OnAttach(int instance_id,
                 const BrowserPluginHostMsg_Attach_Params& params);
   void OnPluginAtPositionResponse(int instance_id,
