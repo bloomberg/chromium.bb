@@ -24,12 +24,9 @@
 .serviceworker-scope {
     color: rgb(85, 102, 221);
     display: inline-block;
-    max-width: 500px;
-    overflow: hidden;
     padding-bottom: 1px;
     padding-top: 4px;
     text-decoration: none;
-    text-overflow: ellipsis;
     white-space: nowrap;
 }
 
