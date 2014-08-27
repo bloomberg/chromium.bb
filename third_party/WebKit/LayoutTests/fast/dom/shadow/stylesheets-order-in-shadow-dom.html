@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<script src="resources/shadow-dom.js"></script>
+<script src="../../../resources/js-test.js"></script>
+<style>
+.hello, div::shadow .hello {
+    color: yellowgreen;
+}
+.world, div::shadow .world {
+    color: red;
+}
+</style>
+<style>
+.world, div::shadow .world {
+    color: yellow;
+}
+</style>
+<body></body>
+<script>
+description('crbug.com/396585: ShadowDom CSS doesn\'t merge style');
+
+document.body.appendChild(
+    createDOM('div', {'id': 'host'},
+        createShadowRoot(
+            createDOM('span', {'class': 'hello' },
+                document.createTextNode("Hello, ")),
+            createDOM('span', {'id': 'world', 'class': 'hello world' },
+                document.createTextNode("World")))));
+
+shouldBe('window.getComputedStyle(getNodeInTreeOfTrees("host/world")).color', '"rgb(255, 255, 0)"');
+</script>

@@ -1,0 +1,10 @@
+crbug.com/396585: ShadowDom CSS doesn't merge style
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS window.getComputedStyle(getNodeInTreeOfTrees("host/world")).color is "rgb(255, 255, 0)"
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

@@ -44,7 +44,7 @@ static void addRules(RuleSet* ruleSet, const WillBeHeapVector<MinimalRuleData>& 
     }
 }
 
-void TreeBoundaryCrossingRules::addTreeBoundaryCrossingRules(const RuleSet& authorRules, ContainerNode& scopingNode, CSSStyleSheet* parentStyleSheet)
+void TreeBoundaryCrossingRules::addTreeBoundaryCrossingRules(const RuleSet& authorRules, CSSStyleSheet* parentStyleSheet, unsigned parentIndex, ContainerNode& scopingNode)
 {
     if (authorRules.treeBoundaryCrossingRules().isEmpty() && (scopingNode.isDocumentNode() || authorRules.shadowDistributedRules().isEmpty()))
         return;
@@ -58,7 +58,7 @@ void TreeBoundaryCrossingRules::addTreeBoundaryCrossingRules(const RuleSet& auth
         m_scopingNodes.add(&scopingNode);
     }
     CSSStyleSheetRuleSubSet* ruleSubSet = m_treeBoundaryCrossingRuleSetMap.get(&scopingNode);
-    ruleSubSet->append(std::make_pair(parentStyleSheet, ruleSetForScope.release()));
+    ruleSubSet->append(RuleSubSet::create(parentStyleSheet, parentIndex, ruleSetForScope.release()));
 }
 
 void TreeBoundaryCrossingRules::collectTreeBoundaryCrossingRules(Element* element, ElementRuleCollector& collector, bool includeEmptyRules)
@@ -80,9 +80,8 @@ void TreeBoundaryCrossingRules::collectTreeBoundaryCrossingRules(Element* elemen
 
         CascadeOrder cascadeOrder = isInnerTreeScope ? innerCascadeOrder : outerCascadeOrder;
         for (CSSStyleSheetRuleSubSet::iterator it = ruleSubSet->begin(); it != ruleSubSet->end(); ++it) {
-            CSSStyleSheet* parentStyleSheet = it->first;
-            RuleSet* ruleSet = it->second.get();
-            collector.collectMatchingRules(MatchRequest(ruleSet, includeEmptyRules, scopingNode, parentStyleSheet), ruleRange, SelectorChecker::ScopeContainsLastMatchedElement, ignoreCascadeScope, cascadeOrder);
+            MatchRequest request((*it)->ruleSet.get(), includeEmptyRules, scopingNode, (*it)->parentStyleSheet, true, (*it)->parentIndex);
+            collector.collectMatchingRules(request, ruleRange, SelectorChecker::ScopeContainsLastMatchedElement, ignoreCascadeScope, cascadeOrder);
         }
         ++innerCascadeOrder;
         --outerCascadeOrder;
@@ -98,7 +97,7 @@ void TreeBoundaryCrossingRules::reset(const ContainerNode* scopingNode)
 void TreeBoundaryCrossingRules::collectFeaturesFromRuleSubSet(CSSStyleSheetRuleSubSet* ruleSubSet, RuleFeatureSet& features)
 {
     for (CSSStyleSheetRuleSubSet::iterator it = ruleSubSet->begin(); it != ruleSubSet->end(); ++it)
-        features.add(it->second->features());
+        features.add((*it)->ruleSet->features());
 }
 
 void TreeBoundaryCrossingRules::collectFeaturesTo(RuleFeatureSet& features)
