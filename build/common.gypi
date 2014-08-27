@@ -176,6 +176,10 @@
         # The system libdir used for this ABI.
         'system_libdir%': 'lib',
 
+        # Default MIPS arch variant. This is set in the conditions block
+        # below for MIPS targets.
+        'mips_arch_variant%': '',
+
         'conditions': [
           # Ash needs Aura.
           ['use_aura==0', {
@@ -238,6 +242,21 @@
           ['OS=="ios"', {
             'target_subarch%': 'arm32',
           }],
+
+          # Set arch variants for MIPS platforms.
+          ['target_arch=="mips64el"', {
+            'conditions': [
+              ['OS=="android"', {
+                'mips_arch_variant%': 'r6',
+              }, {
+                'mips_arch_variant%': 'r2',
+              }],
+            ],
+          }],
+
+          ['target_arch=="mipsel"', {
+            'mips_arch_variant%': 'r1',
+          }],
         ],
       },
 
@@ -247,6 +266,7 @@
       'host_arch%': '<(host_arch)',
       'target_arch%': '<(target_arch)',
       'target_subarch%': '<(target_subarch)',
+      'mips_arch_variant%': '<(mips_arch_variant)',
       'toolkit_views%': '<(toolkit_views)',
       'desktop_linux%': '<(desktop_linux)',
       'use_aura%': '<(use_aura)',
@@ -1039,6 +1059,7 @@
     'buildtype%': '<(buildtype)',
     'target_arch%': '<(target_arch)',
     'target_subarch%': '<(target_subarch)',
+    'mips_arch_variant%': '<(mips_arch_variant)',
     'host_arch%': '<(host_arch)',
     'toolkit_views%': '<(toolkit_views)',
     'ui_compositor_image_transport%': '<(ui_compositor_image_transport)',
@@ -1319,9 +1340,6 @@
     # Set to 1 to link against gsettings APIs instead of using dlopen().
     'linux_link_gsettings%': 0,
 
-    # Default arch variant for MIPS.
-    'mips_arch_variant%': 'mips32r1',
-
     # Enable use of OpenMAX DL FFT routines.
     'use_openmax_dl_fft%': '<(use_openmax_dl_fft)',
 
@@ -1561,7 +1579,7 @@
       }],
       ['os_posix==1 and OS!="mac" and OS!="ios"', {
         'conditions': [
-          ['target_arch=="mipsel"', {
+          ['target_arch=="mipsel" or target_arch=="mips64el"', {
             'werror%': '',
             'disable_nacl%': 1,
             'nacl_untrusted_build%': 0,
@@ -1705,6 +1723,14 @@
               'android_ndk_sysroot%': '<(android_ndk_root)/platforms/android-14/arch-mips',
               'android_ndk_lib_dir%': 'usr/lib',
               'android_toolchain%': '<(android_ndk_root)/toolchains/mipsel-linux-android-4.8/prebuilt/<(host_os)-<(android_host_arch)/bin',
+            }],
+            ['target_arch == "mips64el"', {
+              'android_app_abi%': 'mips64',
+              'android_gdbserver%': '<(android_ndk_root)/prebuilt/android-mips64/gdbserver/gdbserver',
+              'android_ndk_sysroot%': '<(android_ndk_root)/platforms/android-L/arch-mips64',
+              'android_ndk_lib_dir%': 'usr/lib64',
+              'android_toolchain%': '<(android_ndk_root)/toolchains/mips64el-linux-android-4.9/prebuilt/<(host_os)-<(android_host_arch)/bin',
+              'gcc_version%': 49,
             }],
           ],
         },
@@ -1952,8 +1978,8 @@
       }],
 
       # Native Client glibc toolchain is enabled
-      # by default except on arm and mips.
-      ['target_arch=="arm" or target_arch=="mipsel"', {
+      # by default except on arm, mips and mips64.
+      ['target_arch=="arm" or target_arch=="mipsel" or target_arch=="mips64el"', {
         'disable_glibc%': 1,
       }, {
         'disable_glibc%': 0,
@@ -3917,20 +3943,42 @@
             'target_conditions': [
               ['_toolset=="target"', {
                 'conditions': [
-                  ['android_webview_build==0 and mips_arch_variant=="mips32r2"', {
+                  ['android_webview_build==0 and mips_arch_variant=="r6"', {
+                    'cflags': ['-mips32r6', '-Wa,-mips32r6'],
+                    'conditions': [
+                      ['OS=="android"', {
+                        'ldflags': ['-mips32r6', '-Wl,-melf32ltsmip',],
+                      }],
+                    ],
+                  }],
+                  ['android_webview_build==0 and mips_arch_variant=="r2"', {
                     'cflags': ['-mips32r2', '-Wa,-mips32r2'],
                   }],
-                  ['android_webview_build==0 and mips_arch_variant!="mips32r2"', {
+                  ['android_webview_build==0 and mips_arch_variant=="r1"', {
                     'cflags': ['-mips32', '-Wa,-mips32'],
                   }],
                 ],
-                'cflags': [
-                  '-EL',
-                  '-mhard-float',
-                ],
                 'ldflags': [
-                  '-EL',
                   '-Wl,--no-keep-memory'
+                ],
+                'cflags_cc': [
+                  '-Wno-uninitialized',
+                ],
+              }],
+            ],
+          }],
+          ['target_arch=="mips64el"', {
+            'target_conditions': [
+              ['_toolset=="target"', {
+                'conditions': [
+                  ['android_webview_build==0 and mips_arch_variant=="r6"', {
+                    'cflags': ['-mips64r6', '-Wa,-mips64r6'],
+                    'ldflags': [ '-mips64r6' ],
+                  }],
+                  ['android_webview_build==0 and mips_arch_variant=="r2"', {
+                    'cflags': ['-mips64r2', '-Wa,-mips64r2'],
+                    'ldflags': [ '-mips64r2' ],
+                  }],
                 ],
                 'cflags_cc': [
                   '-Wno-uninitialized',
