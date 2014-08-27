@@ -110,8 +110,14 @@ void AnalysisCanvas::drawPoints(SkCanvas::PointMode mode,
 }
 
 void AnalysisCanvas::drawRect(const SkRect& rect, const SkPaint& paint) {
-  // This recreates the early-exit logic in SkCanvas.cpp, which aborts early
-  // if the paint will "draw nothing".
+  // This recreates the early-exit logic in SkCanvas.cpp.
+  SkRect scratch;
+  if (paint.canComputeFastBounds() &&
+      quickReject(paint.computeFastBounds(rect, &scratch))) {
+    return;
+  }
+
+  // An extra no-op check SkCanvas.cpp doesn't do.
   if (paint.nothingToDraw())
     return;
 
