@@ -10,11 +10,13 @@ additional arguments, and use them to build.
 """
 
 import hashlib
+import json
 from optparse import OptionParser
 import os
 import re
 import Queue
 import shutil
+import StringIO
 import subprocess
 import sys
 import tempfile
@@ -225,6 +227,7 @@ class Builder(object):
     self.define_list = ArgToList(options.defines)
 
     self.name = options.name
+    self.cmd_file = options.cmd_file
     self.BuildCompileOptions(options.compile_flags, self.define_list)
     self.BuildLinkOptions(options.link_flags)
     self.BuildArchiveOptions()
@@ -531,6 +534,10 @@ class Builder(object):
       if rebuilt:
         raise Error('Could not find toolchain stamp file %s.' % self.toolstamp)
       return True
+    if not IsFile(self.cmd_file):
+      if rebuilt:
+        raise Error('Could not find cmd file %s.' % self.cmd_file)
+      return True
     if not IsFile(outd):
       if rebuilt:
         raise Error('Could not find dependency file %s.' % outd)
@@ -540,7 +547,7 @@ class Builder(object):
         raise Error('Could not find output file %s.' % out)
       return True
 
-    inputs = [__file__, self.toolstamp, src]
+    inputs = [__file__, self.toolstamp, src, self.cmd_file]
     outputs = [out, outd]
 
     # Find their timestamps if any.
@@ -883,6 +890,23 @@ class Builder(object):
       raise Error('FAILED: Unknown outtype: %s' % (self.outtype))
 
 
+def UpdateBuildArgs(args, filename):
+  new_cmd = json.dumps(args)
+
+  try:
+    with open(filename, 'r') as fileobj:
+      old_cmd = fileobj.read()
+  except:
+    old_cmd = None
+
+  if old_cmd == new_cmd:
+    return False
+
+  with open(filename, 'w') as fileobj:
+    fileobj.write(new_cmd)
+  return True
+
+
 def Main(argv):
   parser = OptionParser()
   parser.add_option('--empty', dest='empty', default=False,
@@ -955,6 +979,11 @@ def Main(argv):
   if not argv:
     parser.print_help()
     return 1
+
+  # Compare command-line options to last run, and force a rebuild if they
+  # have changed.
+  options.cmd_file = options.name + '.cmd'
+  UpdateBuildArgs(argv, options.cmd_file)
 
   try:
     if options.source_list:
