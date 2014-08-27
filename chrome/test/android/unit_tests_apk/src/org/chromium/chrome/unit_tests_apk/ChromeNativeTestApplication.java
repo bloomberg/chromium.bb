@@ -22,6 +22,10 @@ public class ChromeNativeTestApplication extends ChromiumApplication {
     }
 
     @Override
+    protected void showAutofillSettings() {
+    }
+
+    @Override
     protected void showTermsOfServiceDialog() {
     }
 

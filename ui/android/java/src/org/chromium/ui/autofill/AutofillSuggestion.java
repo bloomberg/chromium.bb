@@ -12,18 +12,18 @@ import org.chromium.ui.DropdownItem;
 public class AutofillSuggestion implements DropdownItem {
     private final String mLabel;
     private final String mSublabel;
-    private final int mUniqueId;
+    private final int mSuggestionId;
 
     /**
      * Constructs a Autofill suggestion container.
      * @param name The name of the Autofill suggestion.
      * @param label The describing label of the Autofill suggestion.
-     * @param uniqueId The unique id used to identify the Autofill suggestion.
+     * @param suggestionId The type of suggestion.
      */
-    public AutofillSuggestion(String name, String label, int uniqueId) {
+    public AutofillSuggestion(String name, String label, int suggestionId) {
         mLabel = name;
         mSublabel = label;
-        mUniqueId = uniqueId;
+        mSuggestionId = suggestionId;
     }
 
     @Override
@@ -46,7 +46,7 @@ public class AutofillSuggestion implements DropdownItem {
         return false;
     }
 
-    public int getUniqueId() {
-        return mUniqueId;
+    public int getSuggestionId() {
+        return mSuggestionId;
     }
 }

@@ -31,16 +31,10 @@ public class AutofillPopup extends DropdownPopupWindow implements AdapterView.On
         PopupWindow.OnDismissListener {
 
     /**
-     * Constants defining types of Autofill suggestion entries.
+     * The constant used to specify a separator in a list of Autofill suggestions.
      * Has to be kept in sync with enum in WebAutofillClient.h
-     *
-     * Not supported: MenuItemIDWarningMessage, MenuItemIDClearForm, and
-     * MenuItemIDAutofillOptions.
      */
-    private static final int ITEM_ID_AUTOCOMPLETE_ENTRY = 0;
-    private static final int ITEM_ID_PASSWORD_ENTRY = -2;
     private static final int ITEM_ID_SEPARATOR_ENTRY = -3;
-    private static final int ITEM_ID_DATA_LIST_ENTRY = -6;
 
     private final Context mContext;
     private final AutofillPopupDelegate mAutofillCallback;
@@ -90,14 +84,14 @@ public class AutofillPopup extends DropdownPopupWindow implements AdapterView.On
         ArrayList<DropdownItem> cleanedData = new ArrayList<DropdownItem>();
         HashSet<Integer> separators = new HashSet<Integer>();
         for (int i = 0; i < suggestions.length; i++) {
-            int itemId = suggestions[i].getUniqueId();
-            if (itemId > 0 || itemId == ITEM_ID_AUTOCOMPLETE_ENTRY ||
-                    itemId == ITEM_ID_PASSWORD_ENTRY || itemId == ITEM_ID_DATA_LIST_ENTRY) {
-                cleanedData.add(suggestions[i]);
-            } else if (itemId == ITEM_ID_SEPARATOR_ENTRY) {
+            int itemId = suggestions[i].getSuggestionId();
+            if (itemId == ITEM_ID_SEPARATOR_ENTRY) {
                 separators.add(cleanedData.size());
+            } else {
+                cleanedData.add(suggestions[i]);
             }
         }
+
         setAdapter(new DropdownAdapter(mContext, cleanedData, separators));
         show();
         ApiCompatibilityUtils.setLayoutDirection(getListView(),

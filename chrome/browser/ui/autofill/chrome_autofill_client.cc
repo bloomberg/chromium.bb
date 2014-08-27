@@ -28,6 +28,7 @@
 #include "ui/gfx/rect.h"
 
 #if defined(OS_ANDROID)
+#include "chrome/browser/android/chromium_application.h"
 #include "chrome/browser/ui/android/autofill/autofill_logger_android.h"
 #endif
 
@@ -90,7 +91,7 @@ PrefService* ChromeAutofillClient::GetPrefs() {
 
 void ChromeAutofillClient::ShowAutofillSettings() {
 #if defined(OS_ANDROID)
-  NOTIMPLEMENTED();
+  chrome::android::ChromiumApplication::ShowAutofillSettings();
 #else
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents_);
   if (browser)

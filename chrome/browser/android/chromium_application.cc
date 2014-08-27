@@ -29,6 +29,12 @@ void ChromiumApplication::ShowSyncSettings() {
       base::android::GetApplicationContext());
 }
 
+void ChromiumApplication::ShowAutofillSettings() {
+  Java_ChromiumApplication_showAutofillSettings(
+      base::android::AttachCurrentThread(),
+      base::android::GetApplicationContext());
+}
+
 void ChromiumApplication::ShowTermsOfServiceDialog() {
   Java_ChromiumApplication_showTermsOfServiceDialog(
       base::android::AttachCurrentThread(),

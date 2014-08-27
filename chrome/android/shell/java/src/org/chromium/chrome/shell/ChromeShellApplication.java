@@ -90,6 +90,10 @@ public class ChromeShellApplication extends ChromiumApplication {
     }
 
     @Override
+    protected void showAutofillSettings() {
+    }
+
+    @Override
     protected void showTermsOfServiceDialog() {
     }
 
