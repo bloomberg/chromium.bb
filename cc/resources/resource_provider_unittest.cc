@@ -2967,7 +2967,61 @@ TEST_P(ResourceProviderTest, TextureAllocationHint) {
       output_surface.get(), shared_bitmap_manager_.get(), 0, false, 1, false));
 
   gfx::Size size(2, 2);
-  ResourceFormat format = RGBA_8888;
+
+  const ResourceFormat formats[2] = {RGBA_8888, BGRA_8888};
+  const ResourceProvider::TextureHint hints[4] = {
+      ResourceProvider::TextureHintDefault,
+      ResourceProvider::TextureHintImmutable,
+      ResourceProvider::TextureHintFramebuffer,
+      ResourceProvider::TextureHintImmutableFramebuffer,
+  };
+  for (size_t i = 0; i < arraysize(formats); ++i) {
+    for (GLuint texture_id = 1; texture_id <= arraysize(hints); ++texture_id) {
+      // Lazy allocation. Don't allocate when creating the resource.
+      ResourceProvider::ResourceId id = resource_provider->CreateResource(
+          size, GL_CLAMP_TO_EDGE, hints[texture_id - 1], formats[i]);
+
+      EXPECT_CALL(*context, NextTextureId()).WillOnce(Return(texture_id));
+      EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, texture_id)).Times(2);
+      bool is_immutable_hint =
+          hints[texture_id - 1] & ResourceProvider::TextureHintImmutable;
+      bool support_immutable_texture =
+          is_immutable_hint && formats[i] == RGBA_8888;
+      EXPECT_CALL(*context, texStorage2DEXT(_, _, _, 2, 2))
+          .Times(support_immutable_texture ? 1 : 0);
+      EXPECT_CALL(*context, texImage2D(_, _, _, 2, 2, _, _, _, _))
+          .Times(support_immutable_texture ? 0 : 1);
+      resource_provider->AllocateForTesting(id);
+
+      EXPECT_CALL(*context, RetireTextureId(texture_id)).Times(1);
+      resource_provider->DeleteResource(id);
+
+      Mock::VerifyAndClearExpectations(context);
+    }
+  }
+}
+
+TEST_P(ResourceProviderTest, TextureAllocationHint_BGRA) {
+  // Only for GL textures.
+  if (GetParam() != ResourceProvider::GLTexture)
+    return;
+  scoped_ptr<AllocationTrackingContext3D> context_owned(
+      new StrictMock<AllocationTrackingContext3D>);
+  AllocationTrackingContext3D* context = context_owned.get();
+  context->set_support_texture_format_bgra8888(true);
+  context->set_support_texture_storage(true);
+  context->set_support_texture_usage(true);
+
+  FakeOutputSurfaceClient output_surface_client;
+  scoped_ptr<OutputSurface> output_surface(FakeOutputSurface::Create3d(
+      context_owned.PassAs<TestWebGraphicsContext3D>()));
+  CHECK(output_surface->BindToClient(&output_surface_client));
+
+  scoped_ptr<ResourceProvider> resource_provider(ResourceProvider::Create(
+      output_surface.get(), shared_bitmap_manager_.get(), 0, false, 1, false));
+
+  gfx::Size size(2, 2);
+  const ResourceFormat formats[2] = {RGBA_8888, BGRA_8888};
 
   const ResourceProvider::TextureHint hints[4] = {
       ResourceProvider::TextureHintDefault,
@@ -2975,25 +3029,27 @@ TEST_P(ResourceProviderTest, TextureAllocationHint) {
       ResourceProvider::TextureHintFramebuffer,
       ResourceProvider::TextureHintImmutableFramebuffer,
   };
-  for (GLuint texture_id = 1; texture_id <= arraysize(hints); ++texture_id) {
-    // Lazy allocation. Don't allocate when creating the resource.
-    ResourceProvider::ResourceId id = resource_provider->CreateResource(
-        size, GL_CLAMP_TO_EDGE, hints[texture_id - 1], format);
+  for (size_t i = 0; i < arraysize(formats); ++i) {
+    for (GLuint texture_id = 1; texture_id <= arraysize(hints); ++texture_id) {
+      // Lazy allocation. Don't allocate when creating the resource.
+      ResourceProvider::ResourceId id = resource_provider->CreateResource(
+          size, GL_CLAMP_TO_EDGE, hints[texture_id - 1], formats[i]);
 
-    EXPECT_CALL(*context, NextTextureId()).WillOnce(Return(texture_id));
-    EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, texture_id)).Times(2);
-    bool is_immutable_hint =
-        hints[texture_id - 1] & ResourceProvider::TextureHintImmutable;
-    EXPECT_CALL(*context, texStorage2DEXT(_, _, _, 2, 2))
-        .Times(is_immutable_hint ? 1 : 0);
-    EXPECT_CALL(*context, texImage2D(_, _, _, 2, 2, _, _, _, _))
-        .Times(is_immutable_hint ? 0 : 1);
-    resource_provider->AllocateForTesting(id);
+      EXPECT_CALL(*context, NextTextureId()).WillOnce(Return(texture_id));
+      EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, texture_id)).Times(2);
+      bool is_immutable_hint =
+          hints[texture_id - 1] & ResourceProvider::TextureHintImmutable;
+      EXPECT_CALL(*context, texStorage2DEXT(_, _, _, 2, 2))
+          .Times(is_immutable_hint ? 1 : 0);
+      EXPECT_CALL(*context, texImage2D(_, _, _, 2, 2, _, _, _, _))
+          .Times(is_immutable_hint ? 0 : 1);
+      resource_provider->AllocateForTesting(id);
 
-    EXPECT_CALL(*context, RetireTextureId(texture_id)).Times(1);
-    resource_provider->DeleteResource(id);
+      EXPECT_CALL(*context, RetireTextureId(texture_id)).Times(1);
+      resource_provider->DeleteResource(id);
 
-    Mock::VerifyAndClearExpectations(context);
+      Mock::VerifyAndClearExpectations(context);
+    }
   }
 }
 

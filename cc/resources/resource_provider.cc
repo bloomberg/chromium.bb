@@ -81,11 +81,12 @@ GLenum TextureToStorageFormat(ResourceFormat format) {
   return storage_format;
 }
 
-bool IsFormatSupportedForStorage(ResourceFormat format) {
+bool IsFormatSupportedForStorage(ResourceFormat format, bool use_bgra) {
   switch (format) {
     case RGBA_8888:
-    case BGRA_8888:
       return true;
+    case BGRA_8888:
+      return use_bgra;
     case RGBA_4444:
     case ALPHA_8:
     case LUMINANCE_8:
@@ -1239,6 +1240,7 @@ ResourceProvider::ResourceProvider(OutputSurface* output_surface,
       next_child_(1),
       default_resource_type_(InvalidType),
       use_texture_storage_ext_(false),
+      use_texture_format_bgra_(false),
       use_texture_usage_hint_(false),
       use_compressed_texture_etc1_(false),
       max_texture_size_(0),
@@ -1277,6 +1279,7 @@ void ResourceProvider::InitializeGL() {
 
   bool use_bgra = caps.gpu.texture_format_bgra8888;
   use_texture_storage_ext_ = caps.gpu.texture_storage;
+  use_texture_format_bgra_ = caps.gpu.texture_format_bgra8888;
   use_texture_usage_hint_ = caps.gpu.texture_usage;
   use_compressed_texture_etc1_ = caps.gpu.texture_format_etc1;
   use_sync_query_ = caps.gpu.sync_query;
@@ -2099,7 +2102,8 @@ void ResourceProvider::LazyAllocate(Resource* resource) {
   DCHECK_EQ(resource->target, static_cast<GLenum>(GL_TEXTURE_2D));
   ResourceFormat format = resource->format;
   GLC(gl, gl->BindTexture(GL_TEXTURE_2D, resource->gl_id));
-  if (use_texture_storage_ext_ && IsFormatSupportedForStorage(format) &&
+  if (use_texture_storage_ext_ &&
+      IsFormatSupportedForStorage(format, use_texture_format_bgra_) &&
       (resource->hint & TextureHintImmutable)) {
     GLenum storage_format = TextureToStorageFormat(format);
     GLC(gl,

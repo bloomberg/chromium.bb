@@ -396,10 +396,12 @@ void FeatureInfo::InitializeFeatures() {
   bool enable_texture_format_bgra8888 = false;
   bool enable_read_format_bgra = false;
   bool enable_render_buffer_bgra = false;
+  bool enable_immutable_texture_format_bgra_on_es3 =
+      extensions.Contains("GL_APPLE_texture_format_BGRA8888");
 
   // Check if we should allow GL_EXT_texture_format_BGRA8888
   if (extensions.Contains("GL_EXT_texture_format_BGRA8888") ||
-      extensions.Contains("GL_APPLE_texture_format_BGRA8888") ||
+      enable_immutable_texture_format_bgra_on_es3 ||
       extensions.Contains("GL_EXT_bgra")) {
     enable_texture_format_bgra8888 = true;
   }
@@ -692,7 +694,18 @@ void FeatureInfo::InitializeFeatures() {
     validators_.texture_parameter.AddValue(GL_TEXTURE_USAGE_ANGLE);
   }
 
-  if (extensions.Contains("GL_EXT_texture_storage")) {
+  // Note: Only APPLE_texture_format_BGRA8888 extension allows BGRA8_EXT in
+  // ES3's glTexStorage2D. We prefer support BGRA to texture storage.
+  // So we don't expose GL_EXT_texture_storage when ES3 +
+  // GL_EXT_texture_format_BGRA8888 because we fail the GL_BGRA8 requirement.
+  // However we expose GL_EXT_texture_storage when just ES3 because we don't
+  // claim to handle GL_BGRA8.
+  bool support_texture_storage_on_es3 =
+      (is_es3 && enable_immutable_texture_format_bgra_on_es3) ||
+      (is_es3 && !enable_texture_format_bgra8888);
+  if (extensions.Contains("GL_EXT_texture_storage") ||
+      extensions.Contains("GL_ARB_texture_storage") ||
+      support_texture_storage_on_es3) {
     feature_flags_.ext_texture_storage = true;
     AddExtensionString("GL_EXT_texture_storage");
     validators_.texture_parameter.AddValue(GL_TEXTURE_IMMUTABLE_FORMAT_EXT);
