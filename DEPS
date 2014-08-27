@@ -128,7 +128,7 @@ deps = {
    Var('chromium_git') + '/external/w3c/csswg-test.git' + '@' + '0b12ea22689ee2179f3e9bff389db22f4efd6ed5',
 
   'src/third_party/icu':
-   Var('chromium_git') + '/chromium/deps/icu52.git' + '@' + 'fdf0bb34eaddce23811770b987ecf95ee18572d6',
+   Var('chromium_git') + '/chromium/deps/icu52.git' + '@' + 'a4ce5bf56788dbb4835a5ef6143384266bbff5f5', # from svn revision 291660
 
   'src/third_party/libexif/sources':
    Var('chromium_git') + '/chromium/deps/libexif/sources.git' + '@' + 'ed98343daabd7b4497f97fda972e132e6877c48a',
