@@ -2,18 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/**
- * The type of the app data object. The definition is based on
- * chrome/browser/ui/webui/extensions/chromeos/kiosk_apps_handler.cc:
- *     PopulateAppDict()
- * @typedef {{id: string,
- *            name: string,
- *            iconURL: string,
- *            autoLaunch: boolean,
- *            isLoading: boolean}}
- */
-var AppDict;
-
 cr.define('extensions', function() {
   /** @const */ var List = cr.ui.List;
   /** @const */ var ListItem = cr.ui.ListItem;
@@ -61,7 +49,7 @@ cr.define('extensions', function() {
 
     /**
      * Updates the given app.
-     * @param {!AppDict} app An app info object.
+     * @param {!Object} app An app info object.
      */
     updateApp: function(app) {
       for (var i = 0; i < this.items.length; ++i) {
@@ -167,8 +155,9 @@ cr.define('extensions', function() {
     }
   };
 
-  /**
+  /*
    * True if the app represented by this item will auto launch.
+   * @type {boolean}
    */
   cr.defineProperty(KioskAppListItem, 'autoLaunch', cr.PropertyKind.BOOL_ATTR);
 

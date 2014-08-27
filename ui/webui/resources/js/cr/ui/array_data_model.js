@@ -6,14 +6,6 @@
  * @fileoverview This is a data model representin
  */
 
-// The include directives are put into Javascript-style comments to prevent
-// parsing errors in non-flattened mode. The flattener still sees them.
-// Note that this makes the flattener to comment out the first line of the
-// included file but that's all right since any javascript file should start
-// with a copyright comment anyway.
-
-//<include src="../../assert.js">
-
 cr.define('cr.ui', function() {
   /** @const */ var EventTarget = cr.EventTarget;
 
@@ -22,7 +14,7 @@ cr.define('cr.ui', function() {
    * initial indexes of elements for each position in sorted array.
    * @param {!Array} array The underlying array.
    * @constructor
-   * @extends {cr.EventTarget}
+   * @extends {EventTarget}
    */
   function ArrayDataModel(array) {
     this.array_ = array;
@@ -70,8 +62,7 @@ cr.define('cr.ui', function() {
     /**
      * Sets compare function for given field.
      * @param {string} field The field to set compare function.
-     * @param {function(*, *): number} compareFunction Compare function to set
-     *     for given field.
+     * @param {function(*, *): number} Compare function to set for given field.
      */
     setCompareFunction: function(field, compareFunction) {
       if (!this.compareFunctions_) {
@@ -136,7 +127,7 @@ cr.define('cr.ui', function() {
      * the whole change.
      * @param {number} index The index of the item to update.
      * @param {number} deleteCount The number of items to remove.
-     * @param {...*} var_args The items to add.
+     * @param {...*} The items to add.
      * @return {!Array} An array with the removed items.
      */
     splice: function(index, deleteCount, var_args) {
@@ -211,7 +202,7 @@ cr.define('cr.ui', function() {
      *
      * This dispatches a splice event.
      *
-     * @param {...*} var_args The items to append.
+     * @param {...*} The items to append.
      * @return {number} The new length of the model.
      */
     push: function(var_args) {
@@ -258,9 +249,11 @@ cr.define('cr.ui', function() {
      * @param {Array.<number>} indexes The index list of items to update.
      */
     updateIndexes: function(indexes) {
-      indexes.forEach(function(index) {
-        assert(index >= 0 && index < this.length, 'Invalid index');
+      var isIndexesValid = indexes.every(function(index) {
+        return 0 <= index && index < this.length;
       }, this);
+      if (!isIndexesValid)
+        throw Error('Invalid index, ' + indexes[i]);
 
       for (var i = 0; i < indexes.length; i++) {
         var e = new Event('change');
@@ -283,8 +276,8 @@ cr.define('cr.ui', function() {
 
     /**
      * Creates sort status with given field and direction.
-     * @param {?string} field Sort field.
-     * @param {?string} direction Sort direction.
+     * @param {string} field Sort field.
+     * @param {string} direction Sort direction.
      * @return {!Object} Created sort status.
      */
     createSortStatus: function(field, direction) {
@@ -389,7 +382,7 @@ cr.define('cr.ui', function() {
      * Returns the function set as sortFunction for given field
      * or default compare function
      * @param {string} field Sort field.
-     * @return {function(*, *): number} Compare function.
+     * @param {function(*, *): number} Compare function.
      * @private
      */
     createCompareFunction_: function(field) {
@@ -403,12 +396,14 @@ cr.define('cr.ui', function() {
           return defaultValuesCompareFunction.call(null, a[field], b[field]);
         }
       }
+      return compareFunction;
     },
 
     /**
      * Creates compare function for given field and direction.
      * @param {string} field Sort field.
      * @param {string} direction Sort direction.
+     * @param {function(*, *): number} Compare function.
      * @private
      */
     sortFunction_: function(field, direction) {

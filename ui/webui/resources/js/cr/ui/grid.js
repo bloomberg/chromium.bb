@@ -90,9 +90,6 @@ cr.define('cr.ui', function() {
       // Size comes here with margin already collapsed.
       var size = this.getDefaultItemSize_();
 
-      if (!size)
-        return 0;
-
       // We should uncollapse margin, since margin isn't collapsed for
       // inline-block elements according to css spec which are thumbnail items.
 

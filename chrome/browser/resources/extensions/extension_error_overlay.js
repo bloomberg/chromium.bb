@@ -2,35 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/**
- * The type of the stack trace object. The definition is based on
- * extensions/browser/extension_error.cc:RuntimeError::ToValue().
- * @typedef {{columnNumber: number,
- *            functionName: string,
- *            lineNumber: number,
- *            url: string}}
- */
-var StackTrace;
-
-/**
- * The type of the extension error trace object. The definition is based on
- * extensions/browser/extension_error.cc:RuntimeError::ToValue().
- * @typedef {{canInspect: (boolean|undefined),
- *            contextUrl: (string|undefined),
- *            extensionId: string,
- *            fromIncognito: boolean,
- *            level: number,
- *            manifestKey: string,
- *            manifestSpecific: string,
- *            message: string,
- *            renderProcessId: (number|undefined),
- *            renderViewId: (number|undefined),
- *            source: string,
- *            stackTrace: (Array.<StackTrace>|undefined),
- *            type: number}}
- */
-var RuntimeError;
-
 cr.define('extensions', function() {
   'use strict';
 
@@ -114,24 +85,24 @@ cr.define('extensions', function() {
 
     /**
      * The underlying error whose details are being displayed.
-     * @type {?RuntimeError}
+     * @type {Object}
      * @private
      */
-    error_: null,
+    error_: undefined,
 
     /**
      * The URL associated with this extension, i.e. chrome-extension://<id>/.
-     * @type {?string}
+     * @type {string}
      * @private
      */
-    extensionUrl_: null,
+    extensionUrl_: undefined,
 
     /**
      * The node of the stack trace which is currently active.
-     * @type {?HTMLElement}
+     * @type {HTMLElement}
      * @private
      */
-    currentFrameNode_: null,
+    currentFrameNode_: undefined,
 
     /**
      * Initialize the RuntimeErrorContent for the first time.
@@ -142,8 +113,8 @@ cr.define('extensions', function() {
        * @type {HTMLElement}
        * @private
        */
-      this.stackTrace_ = /** @type {HTMLElement} */(
-          this.querySelector('.extension-error-overlay-stack-trace-list'));
+      this.stackTrace_ =
+          this.querySelector('.extension-error-overlay-stack-trace-list');
       assert(this.stackTrace_);
 
       /**
@@ -151,15 +122,14 @@ cr.define('extensions', function() {
        * @type {HTMLElement}
        * @private
        */
-      this.contextUrl_ = /** @type {HTMLElement} */(
-          this.querySelector('.extension-error-overlay-context-url'));
+      this.contextUrl_ =
+          this.querySelector('.extension-error-overlay-context-url');
       assert(this.contextUrl_);
     },
 
     /**
      * Sets the error for the content.
-     * @param {RuntimeError} error The error whose content should
-     *     be displayed.
+     * @param {Object} error The error whose content should be displayed.
      * @param {string} extensionUrl The URL associated with this extension.
      */
     setError: function(error, extensionUrl) {
@@ -175,9 +145,9 @@ cr.define('extensions', function() {
      * Wipe content associated with a specific error.
      */
     clearError: function() {
-      this.error_ = null;
-      this.extensionUrl_ = null;
-      this.currentFrameNode_ = null;
+      this.error_ = undefined;
+      this.extensionUrl_ = undefined;
+      this.currentFrameNode_ = undefined;
       clearElement(this.stackTrace_);
       this.stackTrace_.hidden = true;
     },
@@ -185,7 +155,7 @@ cr.define('extensions', function() {
     /**
      * Makes |frame| active and deactivates the previously active frame (if
      * there was one).
-     * @param {HTMLElement} frameNode The frame to activate.
+     * @param {HTMLElement} frame The frame to activate.
      * @private
      */
     setActiveFrame_: function(frameNode) {
@@ -219,8 +189,8 @@ cr.define('extensions', function() {
         // The description is a human-readable summation of the frame, in the
         // form "<relative_url>:<line_number> (function)", e.g.
         // "myfile.js:25 (myFunction)".
-        var description = getRelativeUrl(frame.url,
-            assert(this.extensionUrl_)) + ':' + frame.lineNumber;
+        var description = getRelativeUrl(frame.url, this.extensionUrl_) +
+                          ':' + frame.lineNumber;
         if (frame.functionName) {
           var functionName = frame.functionName == '(anonymous function)' ?
               loadTimeData.getString('extensionErrorOverlayAnonymousFunction') :
@@ -234,6 +204,9 @@ cr.define('extensions', function() {
         // code with the line highlighted, and link the "Open DevTools" button
         // with that frame.
         frameNode.addEventListener('click', function(frame, frameNode, e) {
+          if (this.currStackFrame_ == frameNode)
+            return;
+
           this.setActiveFrame_(frameNode);
 
           // Request the file source with the section highlighted; this will
@@ -255,8 +228,7 @@ cr.define('extensions', function() {
       // internal frames.)
       if (this.stackTrace_.children.length > 0) {
         this.stackTrace_.hidden = false;
-        this.setActiveFrame_(assertInstanceof(this.stackTrace_.firstChild,
-            HTMLElement));
+        this.setActiveFrame_(this.stackTrace_.firstChild);
       }
     },
 
@@ -372,10 +344,10 @@ cr.define('extensions', function() {
   ExtensionErrorOverlay.prototype = {
     /**
      * The underlying error whose details are being displayed.
-     * @type {?RuntimeError}
+     * @type {Object}
      * @private
      */
-    error_: null,
+    error_: undefined,
 
     /**
      * Initialize the page.
@@ -398,13 +370,12 @@ cr.define('extensions', function() {
        * @type {HTMLDivElement}
        * @private
        */
-      this.overlayDiv_ = /** @type {HTMLDivElement} */(
-          $('extension-error-overlay'));
+      this.overlayDiv_ = $('extension-error-overlay');
 
       /**
        * The portion of the overlay which shows the code relating to the error
        * and the corresponding line numbers.
-       * @type {extensions.ExtensionCode}
+       * @type {ExtensionCode}
        * @private
        */
       this.codeDiv_ =
@@ -412,6 +383,7 @@ cr.define('extensions', function() {
 
       /**
        * The function to show or hide the ExtensionErrorOverlay.
+       * @type {function}
        * @param {boolean} isVisible Whether the overlay should be visible.
        */
       this.setVisible = function(isVisible) {
@@ -426,8 +398,7 @@ cr.define('extensions', function() {
        * @type {HTMLButtonElement}
        * @private
        */
-      this.openDevtoolsButton_ = /** @type {HTMLButtonElement} */(
-          $('extension-error-overlay-devtools-button'));
+      this.openDevtoolsButton_ = $('extension-error-overlay-devtools-button');
       this.openDevtoolsButton_.addEventListener('click', function() {
           this.runtimeErrorContent_.openDevtools();
       }.bind(this));
@@ -458,7 +429,7 @@ cr.define('extensions', function() {
         this.runtimeErrorContent_.clearError();
       }
 
-      this.error_ = null;
+      this.error_ = undefined;
     },
 
     /**
@@ -466,7 +437,7 @@ cr.define('extensions', function() {
      * overlay, and, if possible, will populate the code section of the overlay
      * with the relevant file, load the stack trace, and generate links for
      * opening devtools (the latter two only happen for runtime errors).
-     * @param {RuntimeError} error The error to show in the overlay.
+     * @param {Object} error The error to show in the overlay.
      * @param {string} extensionUrl The URL of the extension, in the form
      *     "chrome-extension://<extension_id>".
      */
@@ -504,12 +475,10 @@ cr.define('extensions', function() {
       }
     },
 
-
     /**
      * Set the code to be displayed in the code portion of the overlay.
      * @see ExtensionErrorOverlay.requestFileSourceResponse().
-     * @param {?ExtensionHighlight} code The code to be displayed. If |code| is
-     *     null, then
+     * @param {?Object} code The code to be displayed. If |code| is null, then
      *     a "Could not display code" message will be displayed instead.
      */
     setCode: function(code) {
@@ -526,10 +495,11 @@ cr.define('extensions', function() {
   /**
    * Called by the ExtensionErrorHandler responding to the request for a file's
    * source. Populate the content area of the overlay and display the overlay.
-   * @param {?ExtensionHighlight} result The three 'highlight' strings represent
-   *     three portions of the file's content to display - the portion which is
-   *     most relevant and should be emphasized (highlight), and the parts both
-   *     before and after this portion. These may be empty.
+   * @param {Object?} result An object with four strings - the title,
+   *     beforeHighlight, afterHighlight, and highlight. The three 'highlight'
+   *     strings represent three portions of the file's content to display - the
+   *     portion which is most relevant and should be emphasized (highlight),
+   *     and the parts both before and after this portion. These may be empty.
    */
   ExtensionErrorOverlay.requestFileSourceResponse = function(result) {
     var overlay = extensions.ExtensionErrorOverlay.getInstance();

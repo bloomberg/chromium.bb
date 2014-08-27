@@ -2,16 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/** @typedef {{active: boolean,
- *             command_name: string,
- *             description: string,
- *             extension_action: boolean,
- *             extension_id: string,
- *             global: boolean,
- *             keybinding: string}}
- */
-var ExtensionCommand;
-
 cr.define('options', function() {
   'use strict';
 
@@ -19,7 +9,7 @@ cr.define('options', function() {
    * Creates a new list of extension commands.
    * @param {Object=} opt_propertyBag Optional properties.
    * @constructor
-   * @extends {HTMLDivElement}
+   * @extends {cr.ui.div}
    */
   var ExtensionCommandList = cr.ui.define('div');
 
@@ -55,7 +45,7 @@ cr.define('options', function() {
    * Returns whether the passed in |keyCode| is a valid extension command
    * char or not. This is restricted to A-Z and 0-9 (ignoring modifiers) at
    * the moment.
-   * @param {number} keyCode The keycode to consider.
+   * @param {int} keyCode The keycode to consider.
    * @return {boolean} Returns whether the char is valid.
    */
   function validChar(keyCode) {
@@ -149,7 +139,7 @@ cr.define('options', function() {
    * Returns whether the passed in |keyCode| require modifiers. Currently only
    * "MediaNextTrack", "MediaPrevTrack", "MediaStop", "MediaPlayPause" are
    * required to be used without any modifier.
-   * @param {number} keyCode The keycode to consider.
+   * @param {int} keyCode The keycode to consider.
    * @return {Modifiers} Returns whether the keycode require modifiers.
    */
   function modifiers(keyCode) {
@@ -184,7 +174,7 @@ cr.define('options', function() {
      * While capturing, this records the current (last) keyboard event generated
      * by the user. Will be |null| after capture and during capture when no
      * keyboard event has been generated.
-     * @type {KeyboardEvent}.
+     * @type: {keyboard event}.
      * @private
      */
     currentKeyEvent_: null,
@@ -192,7 +182,7 @@ cr.define('options', function() {
     /**
      * While capturing, this keeps track of the previous selection so we can
      * revert back to if no valid assignment is made during capture.
-     * @type {string}.
+     * @type: {string}.
      * @private
      */
     oldValue_: '',
@@ -200,7 +190,7 @@ cr.define('options', function() {
     /**
      * While capturing, this keeps track of which element the user asked to
      * change.
-     * @type {HTMLElement}.
+     * @type: {HTMLElement}.
      * @private
      */
     capturingElement_: null,
@@ -237,8 +227,7 @@ cr.define('options', function() {
     /**
      * Synthesizes and initializes an HTML element for the extension command
      * metadata given in |command|.
-     * @param {ExtensionCommand} command A dictionary of extension command
-     *     metadata.
+     * @param {Object} command A dictionary of extension command metadata.
      * @private
      */
     createNodeForCommand_: function(command) {
@@ -256,7 +245,8 @@ cr.define('options', function() {
                                     this.startCapture_.bind(this));
       shortcutNode.addEventListener('focus', this.handleFocus_.bind(this));
       shortcutNode.addEventListener('blur', this.handleBlur_.bind(this));
-      shortcutNode.addEventListener('keydown', this.handleKeyDown_.bind(this));
+      shortcutNode.addEventListener('keydown',
+                                    this.handleKeyDown_.bind(this));
       shortcutNode.addEventListener('keyup', this.handleKeyUp_.bind(this));
       if (!command.active) {
         shortcutNode.textContent =
@@ -322,7 +312,7 @@ cr.define('options', function() {
           shortcutNode.parentElement.querySelector('.command-clear');
       commandClear.hidden = true;
 
-      this.capturingElement_ = /** @type {HTMLElement} */(event.target);
+      this.capturingElement_ = event.target;
     },
 
     /**
@@ -394,7 +384,6 @@ cr.define('options', function() {
      * @private
      */
     handleKeyDown_: function(event) {
-      event = /** @type {KeyboardEvent} */(event);
       if (event.keyCode == keyEscape) {
         // Escape cancels capturing.
         this.endCapture_(event);
@@ -423,7 +412,6 @@ cr.define('options', function() {
      * @private
      */
     handleKeyUp_: function(event) {
-      event = /** @type {KeyboardEvent} */(event);
       if (event.keyCode == keyTab) {
         // Allow tab propagation for keyboard navigation.
         return;
@@ -451,7 +439,7 @@ cr.define('options', function() {
 
     /**
      * A general key handler (used for both KeyDown and KeyUp).
-     * @param {KeyboardEvent} event The keyboard event to consider.
+     * @param {Event} event The keyboard event to consider.
      * @private
      */
     handleKey_: function(event) {
@@ -535,7 +523,8 @@ cr.define('options', function() {
      * extension id and a command name.
      * @param {string} namespace   The namespace to prepend the id with.
      * @param {string} id          The id to parse.
-     * @return {{extensionId: string, commandName: string}} The parsed id.
+     * @return {object} The parsed id, as an object with two members:
+     *                  extensionID and commandName.
      * @private
      */
     parseElementId_: function(namespace, id) {

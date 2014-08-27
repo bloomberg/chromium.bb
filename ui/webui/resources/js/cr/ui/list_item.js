@@ -6,6 +6,7 @@ cr.define('cr.ui', function() {
 
   /**
    * Creates a new list item element.
+   * @param {string} opt_label The text label for the item.
    * @constructor
    * @extends {HTMLLIElement}
    */
@@ -48,6 +49,7 @@ cr.define('cr.ui', function() {
   /**
    * Whether the item is selected. Setting this does not update the underlying
    * selection model. This is only used for display purpose.
+   * @type {boolean}
    */
   cr.defineProperty(ListItem, 'selected', cr.PropertyKind.BOOL_ATTR,
                     function() {
@@ -57,12 +59,13 @@ cr.define('cr.ui', function() {
   /**
    * Whether the item is the lead in a selection. Setting this does not update
    * the underlying selection model. This is only used for display purpose.
+   * @type {boolean}
    */
   cr.defineProperty(ListItem, 'lead', cr.PropertyKind.BOOL_ATTR);
 
   /**
    * This item's index in the containing list.
-   * type {number}
+   * @type {number}
    */
   cr.defineProperty(ListItem, 'listIndex');
 

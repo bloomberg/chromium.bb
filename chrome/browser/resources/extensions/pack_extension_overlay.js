@@ -60,9 +60,9 @@ cr.define('extensions', function() {
      * @private
      */
     showFileDialog_: function(selectType, operation, callback) {
-      window.handleFilePathSelected = function(filePath) {
+      handleFilePathSelected = function(filePath) {
         callback(filePath);
-        window.handleFilePathSelected = function() {};
+        handleFilePathSelected = function() {};
       };
 
       chrome.send('packExtensionSelectFilePath', [selectType, operation]);
@@ -104,14 +104,14 @@ cr.define('extensions', function() {
         '',
         function() {
           extensions.ExtensionSettings.showOverlay(null);
-        });
+        },
+        null);
     extensions.ExtensionSettings.showOverlay($('alertOverlay'));
   };
 
   /**
    * Post an alert overlay showing |message|, and upon acknowledgement, close
    * the alert overlay and return to showing the PackExtensionOverlay.
-   * @param {string} message The error message.
    */
   PackExtensionOverlay.showError = function(message) {
     alertOverlay.setValues(
@@ -121,7 +121,8 @@ cr.define('extensions', function() {
         '',
         function() {
           extensions.ExtensionSettings.showOverlay($('pack-extension-overlay'));
-        });
+        },
+        null);
     extensions.ExtensionSettings.showOverlay($('alertOverlay'));
   };
 

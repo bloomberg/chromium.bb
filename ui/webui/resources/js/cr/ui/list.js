@@ -21,7 +21,7 @@ cr.define('cr.ui', function() {
    * false if the mouseevent was generated over a border or a scrollbar.
    * @param {!HTMLElement} el The element to test the event with.
    * @param {!Event} e The mouse event.
-   * @return {boolean} Whether the mouse event was inside the viewport.
+   * @param {boolean} Whether the mouse event was inside the viewport.
    */
   function inViewport(el, e) {
     var rect = el.getBoundingClientRect();
@@ -53,11 +53,11 @@ cr.define('cr.ui', function() {
      * is needed. Note that lead item is allowed to have a different height, to
      * accommodate lists where a single item at a time can be expanded to show
      * more detail.
-     * @type {?{height: number, marginTop: number, marginBottom: number,
-     *     width: number, marginLeft: number, marginRight: number}}
+     * @type {{height: number, marginTop: number, marginBottom:number,
+     *     width: number, marginLeft: number, marginRight:number}}
      * @private
      */
-    measured_: null,
+    measured_: undefined,
 
     /**
      * Whether or not the list is autoexpanding. If true, the list resizes
@@ -85,14 +85,14 @@ cr.define('cr.ui', function() {
 
     /**
      * Function used to create grid items.
-     * @type {function(new:cr.ui.ListItem, Object)}
+     * @type {function(): !ListItem}
      * @private
      */
     itemConstructor_: cr.ui.ListItem,
 
     /**
      * Function used to create grid items.
-     * @return {function(new:cr.ui.ListItem, Object)}
+     * @type {function(): !ListItem}
      */
     get itemConstructor() {
       return this.itemConstructor_;
@@ -242,7 +242,7 @@ cr.define('cr.ui', function() {
 
     /**
      * Convenience alias for selectionModel.selectedItems
-     * @type {!Array.<*>}
+     * @type {!Array<*>}
      */
     get selectedItems() {
       var indexes = this.selectionModel.selectedIndexes;
@@ -397,18 +397,16 @@ cr.define('cr.ui', function() {
      * @param {ListItem=} opt_item The list item to use to do the measuring. If
      *     this is not provided an item will be created based on the first value
      *     in the model.
-     * @return {{height: number, marginTop: number, marginBottom: number,
-     *     width: number, marginLeft: number, marginRight: number}}
+     * @return {{height: number, marginTop: number, marginBottom:number,
+     *     width: number, marginLeft: number, marginRight:number}}
      *     The height and width of the item, taking
      *     margins into account, and the top, bottom, left and right margins
      *     themselves.
      */
     measureItem: function(opt_item) {
       var dataModel = this.dataModel;
-      if (!dataModel || !dataModel.length) {
-        return {height: 0, marginTop: 0, marginBottom: 0,
-                width: 0, marginLeft: 0, marginRight: 0};
-      }
+      if (!dataModel || !dataModel.length)
+        return 0;
       var item = opt_item || this.cachedMeasuredItem_ ||
           this.createItem(dataModel.item(0));
       if (!opt_item) {
@@ -464,11 +462,11 @@ cr.define('cr.ui', function() {
       if (this.disabled)
         return;
 
-      var target = /** @type {HTMLElement} */(e.target);
+      var target = e.target;
 
-      var ancestor = this.getListItemAncestor(target);
-      if (ancestor)
-        this.activateItemAtIndex(this.getIndexOfListItem(ancestor));
+      target = this.getListItemAncestor(target);
+      if (target)
+        this.activateItemAtIndex(this.getIndexOfListItem(target));
     },
 
     /**
@@ -480,7 +478,7 @@ cr.define('cr.ui', function() {
       if (this.disabled)
         return;
 
-      var target = /** @type {HTMLElement} */(e.target);
+      var target = e.target;
 
       // If the target was this element we need to make sure that the user did
       // not click on a border or a scrollbar.
@@ -523,23 +521,26 @@ cr.define('cr.ui', function() {
      * Returns the list item element containing the given element, or null if
      * it doesn't belong to any list item element.
      * @param {HTMLElement} element The element.
-     * @return {HTMLLIElement} The list item containing |element|, or null.
+     * @return {ListItem} The list item containing |element|, or null.
      */
     getListItemAncestor: function(element) {
       var container = element;
       while (container && container.parentNode != this) {
         container = container.parentNode;
       }
-      return container && assertInstanceof(container, HTMLLIElement);
+      return container;
     },
 
     /**
      * Handle a keydown event.
      * @param {Event} e The keydown event.
+     * @return {boolean} Whether the key event was handled.
      */
     handleKeyDown: function(e) {
-      if (!this.disabled)
-        this.selectionController_.handleKeyDown(e);
+      if (this.disabled)
+        return;
+
+      return this.selectionController_.handleKeyDown(e);
     },
 
     /**
@@ -553,7 +554,7 @@ cr.define('cr.ui', function() {
     /**
      * Callback from the selection model. We dispatch {@code change} events
      * when the selection changes.
-     * @param {!Event} ce Event with change info.
+     * @param {!Event} e Event with change info.
      * @private
      */
     handleOnChange_: function(ce) {
@@ -605,7 +606,7 @@ cr.define('cr.ui', function() {
           var self = this;
           window.setTimeout(function() {
             self.scrollIndexIntoView(pe.newValue);
-          }, 0);
+          });
         }
       }
     },
@@ -796,7 +797,7 @@ cr.define('cr.ui', function() {
 
     /**
      * Creates a new list item.
-     * @param {Object} value The value to use for the item.
+     * @param {*} value The value to use for the item.
      * @return {!ListItem} The newly created list item.
      */
     createItem: function(value) {
@@ -1061,7 +1062,7 @@ cr.define('cr.ui', function() {
         this.firstIndex_ = 0;
         this.lastIndex_ = 0;
         this.remainingSpace_ = this.clientHeight != 0;
-        this.mergeItems(0, 0);
+        this.mergeItems(0, 0, {}, {});
         return;
       }
 
@@ -1275,11 +1276,10 @@ cr.define('cr.ui', function() {
 
   /**
    * Mousedown event handler.
-   * @this {cr.ui.List}
-   * @param {Event} e The mouse event object.
+   * @this {List}
+   * @param {MouseEvent} e The mouse event object.
    */
   function handleMouseDown(e) {
-    e.target = /** @type {!HTMLElement} */(e.target);
     var listItem = this.getListItemAncestor(e.target);
     var wasSelected = listItem && listItem.selected;
     this.handlePointerDownUp_(e);
@@ -1307,11 +1307,10 @@ cr.define('cr.ui', function() {
    * Dragstart event handler.
    * If there is an item at starting position of drag operation and the item
    * is not selected, select it.
-   * @this {cr.ui.List}
-   * @param {Event} e The event object for 'dragstart'.
+   * @this {List}
+   * @param {MouseEvent} e The event object for 'dragstart'.
    */
   function handleDragStart(e) {
-    e = /** @type {MouseEvent} */(e);
     var element = e.target.ownerDocument.elementFromPoint(e.clientX, e.clientY);
     var listItem = this.getListItemAncestor(element);
     if (!listItem)

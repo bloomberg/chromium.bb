@@ -100,9 +100,9 @@ cr.define('extensions', function() {
 
   /**
    * Sets apps to be displayed in kiosk-app-list.
-   * @param {!Object.<{apps: !Array.<AppDict>, disableBailout: boolean,
-   *     hasAutoLaunchApp: boolean}>} settings An object containing an array of
-   *     app info objects and disable bailout shortcut flag.
+   * @param {!Object.<{apps: !Array.<Object>, disableBailout: boolean}>}
+   *     settings An object containing an array of app info objects and
+   *     disable bailout shortcut flag.
    */
   KioskAppsOverlay.setSettings = function(settings) {
     $('kiosk-app-list').setApps(settings.apps);
@@ -128,7 +128,7 @@ cr.define('extensions', function() {
 
   /**
    * Enables consumer kiosk.
-   * @param {!{kioskEnabled: boolean, autoLaunchEnabled: boolean}} params
+   * @param {!boolean} enable True if consumer kiosk feature is enabled.
    */
   KioskAppsOverlay.enableKiosk = function(params) {
     $('add-kiosk-app').hidden = !params.kioskEnabled;

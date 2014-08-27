@@ -4,60 +4,6 @@
 
 <include src="extension_error.js">
 
-/**
- * The type of the extension data object. The definition is based on
- * chrome/browser/ui/webui/extensions/extension_basic_info.cc
- * and
- * chrome/browser/ui/webui/extensions/extension_settings_handler.cc
- *     ExtensionSettingsHandler::CreateExtensionDetailValue()
- * @typedef {{allow_reload: boolean,
- *            allowAllUrls: boolean,
- *            allowFileAccess: boolean,
- *            blacklistText: string,
- *            corruptInstall: boolean,
- *            dependentExtensions: Array,
- *            description: string,
- *            detailsUrl: string,
- *            enable_show_button: boolean,
- *            enabled: boolean,
- *            enabledIncognito: boolean,
- *            errorCollectionEnabled: (boolean|undefined),
- *            hasPopupAction: boolean,
- *            homepageProvided: boolean,
- *            homepageUrl: string,
- *            icon: string,
- *            id: string,
- *            incognitoCanBeEnabled: boolean,
- *            installWarnings: (Array|undefined),
- *            is_hosted_app: boolean,
- *            is_platform_app: boolean,
- *            isUnpacked: boolean,
- *            kioskEnabled: boolean,
- *            kioskOnly: boolean,
- *            locationText: string,
- *            managedInstall: boolean,
- *            manifestErrors: (Array.<RuntimeError>|undefined),
- *            name: string,
- *            offlineEnabled: boolean,
- *            optionsUrl: string,
- *            order: number,
- *            packagedApp: boolean,
- *            path: (string|undefined),
- *            prettifiedPath: (string|undefined),
- *            runtimeErrors: (Array.<RuntimeError>|undefined),
- *            suspiciousInstall: boolean,
- *            terminated: boolean,
- *            version: string,
- *            views: Array.<{renderViewId: number, renderProcessId: number,
- *                path: string, incognito: boolean,
- *                generatedBackgroundPage: boolean}>,
- *            wantsAllUrls: boolean,
- *            wantsErrorCollection: boolean,
- *            wantsFileAccess: boolean,
- *            warnings: (Array|undefined)}}
- */
-var ExtensionData;
-
 cr.define('options', function() {
   'use strict';
 
@@ -65,7 +11,7 @@ cr.define('options', function() {
    * Creates a new list of extensions.
    * @param {Object=} opt_propertyBag Optional properties.
    * @constructor
-   * @extends {HTMLDivElement}
+   * @extends {cr.ui.div}
    */
   var ExtensionsList = cr.ui.define('div');
 
@@ -77,7 +23,7 @@ cr.define('options', function() {
   var butterBarVisibility = {};
 
   /**
-   * @type {Object.<string, number>} A map from extension id to last reloaded
+   * @type {Object.<string, string>} A map from extension id to last reloaded
    *     timestamp. The timestamp is recorded when the user click the 'Reload'
    *     link. It is used to refresh the icon of an unpacked extension.
    *     This persists between calls to decorate.
@@ -152,7 +98,7 @@ cr.define('options', function() {
     /**
      * Synthesizes and initializes an HTML element for the extension metadata
      * given in |extension|.
-     * @param {ExtensionData} extension A dictionary of extension metadata.
+     * @param {Object} extension A dictionary of extension metadata.
      * @private
      */
     createNode_: function(extension) {
@@ -487,7 +433,7 @@ cr.define('options', function() {
         // Scroll beneath the fixed header so that the extension is not
         // obscured.
         var topScroll = node.offsetTop - $('page-header').offsetHeight;
-        var pad = parseInt(window.getComputedStyle(node, null).marginTop, 10);
+        var pad = parseInt(getComputedStyle(node, null).marginTop, 10);
         if (!isNaN(pad))
           topScroll -= pad / 2;
         setScrollTopForDocument(document, topScroll);

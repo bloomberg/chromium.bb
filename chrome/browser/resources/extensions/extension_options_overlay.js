@@ -17,11 +17,11 @@ cr.define('extensions', function() {
   ExtensionOptionsOverlay.prototype = {
     /**
      * The function that shows the given element in the overlay.
-     * @type {?function(HTMLDivElement)} Function that receives the element to
-     *     show in the overlay.
+     * @type {Function}
+     * @param {HTMLElement} The element to show in the overlay.
      * @private
      */
-    showOverlay_: null,
+    showOverlay_: undefined,
 
     /**
      * Initialize the page.
@@ -42,7 +42,7 @@ cr.define('extensions', function() {
 
     /**
      * Handles a click on the close button.
-     * @param {Event} event The click event.
+     * @param {Event} e The click event.
      * @private
      */
     handleDismiss_: function(event) {
@@ -150,9 +150,7 @@ cr.define('extensions', function() {
      * @private
      */
     setVisible_: function(isVisible) {
-      this.showOverlay_(isVisible ?
-          /** @type {HTMLDivElement} */($('extension-options-overlay')) :
-          null);
+      this.showOverlay_(isVisible ? $('extension-options-overlay') : null);
     }
   };
 

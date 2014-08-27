@@ -5,29 +5,16 @@
 <include src="../uber/uber_utils.js">
 <include src="extension_code.js">
 <include src="extension_commands_overlay.js">
-<include src="extension_error_overlay.js">
 <include src="extension_focus_manager.js">
 <include src="extension_list.js">
 <include src="pack_extension_overlay.js">
+<include src="extension_error_overlay.js">
 <include src="extension_loader.js">
 <include src="extension_options_overlay.js">
 
 <if expr="chromeos">
 <include src="chromeos/kiosk_apps.js">
 </if>
-
-/**
- * The type of the extension data object. The definition is based on
- * chrome/browser/ui/webui/extensions/extension_settings_handler.cc:
- *     ExtensionSettingsHandler::HandleRequestExtensionsData()
- * @typedef {{developerMode: boolean,
- *            extensions: Array,
- *            incognitoAvailable: boolean,
- *            loadUnpackedDisabled: boolean,
- *            profileIsSupervised: boolean,
- *            promoteAppsDevTools: boolean}}
- */
-var ExtensionDataResponse;
 
 // Used for observing function of the backend datasource for this page by
 // tests.
@@ -272,7 +259,7 @@ cr.define('extensions', function() {
       } else {
         $('extension-settings').classList.remove('dev-mode');
       }
-      window.setTimeout(this.updatePromoVisibility_.bind(this), 0);
+      window.setTimeout(this.updatePromoVisibility_.bind(this));
 
       chrome.send('extensionSettingsToggleDeveloperMode');
     },
@@ -293,7 +280,6 @@ cr.define('extensions', function() {
   /**
    * Called by the dom_ui_ to re-populate the page with data representing
    * the current state of installed extensions.
-   * @param {ExtensionDataResponse} extensionsData
    */
   ExtensionSettings.returnExtensionsData = function(extensionsData) {
     // We can get called many times in short order, thus we need to
@@ -417,7 +403,7 @@ cr.define('extensions', function() {
       pages[i].setAttribute('aria-hidden', node ? 'true' : 'false');
     }
 
-    $('overlay').hidden = !node;
+    overlay.hidden = !node;
     uber.invokeMethodOnParent(node ? 'beginInterceptingEvents' :
                                      'stopInterceptingEvents');
   };
