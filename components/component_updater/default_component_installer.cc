@@ -120,7 +120,7 @@ bool DefaultComponentInstaller::GetInstalledFile(
 }
 
 void DefaultComponentInstaller::StartRegistration(ComponentUpdateService* cus) {
-  DCHECK(task_runner_);
+  DCHECK(task_runner_.get());
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
   base::FilePath base_dir = installer_traits_->GetBaseDirectory();
   if (!base::PathExists(base_dir) && !base::CreateDirectory(base_dir)) {

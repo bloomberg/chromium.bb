@@ -91,7 +91,7 @@ void ComponentPatcher::PatchNextFile() {
         CreateDeltaUpdateOp(operation, out_of_process_patcher_);
   }
 
-  if (!current_operation_) {
+  if (!current_operation_.get()) {
     DonePatching(ComponentUnpacker::kDeltaUnsupportedCommand, 0);
     return;
   }
