@@ -15,6 +15,7 @@
 #include "content/public/app/content_main.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/tracing_controller.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
 #include "content/public/test/test_launcher.h"
@@ -120,6 +121,12 @@ class LocalHostResolverProc : public net::HostResolverProc {
  private:
   virtual ~LocalHostResolverProc() {}
 };
+
+void TraceDisableRecordingComplete(const base::Closure& quit,
+                                   const base::FilePath& file_path) {
+  LOG(ERROR) << "Tracing written to: " << file_path.value();
+  quit.Run();
+}
 
 }  // namespace
 
@@ -269,7 +276,35 @@ void BrowserTestBase::ProxyRunTestOnMainThreadLoop() {
     signal(SIGTERM, DumpStackTraceSignalHandler);
   }
 #endif  // defined(OS_POSIX)
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableTracing)) {
+    base::debug::CategoryFilter category_filter(
+        CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+            switches::kEnableTracing));
+    TracingController::GetInstance()->EnableRecording(
+        category_filter,
+        base::debug::TraceOptions(base::debug::RECORD_CONTINUOUSLY),
+        TracingController::EnableRecordingDoneCallback());
+  }
+
   RunTestOnMainThreadLoop();
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableTracing)) {
+    base::FilePath trace_file =
+        CommandLine::ForCurrentProcess()->GetSwitchValuePath(
+            switches::kEnableTracingOutput);
+    // If there was no file specified, put a hardcoded one in the current
+    // working directory.
+    if (trace_file.empty())
+      trace_file = base::FilePath().AppendASCII("trace.json");
+
+    // Wait for tracing to collect results from the renderers.
+    base::RunLoop run_loop;
+    TracingController::GetInstance()->DisableRecording(
+        trace_file,
+        base::Bind(&TraceDisableRecordingComplete, run_loop.QuitClosure()));
+    run_loop.Run();
+  }
 }
 
 void BrowserTestBase::CreateTestServer(const base::FilePath& test_server_base) {

@@ -447,7 +447,13 @@ const char kEnableServiceWorkerSync[]       = "enable-service-worker-sync";
 const char kEnableTcpFastOpen[]             = "enable-tcp-fastopen";
 
 // Enabled threaded compositing for layout tests.
-const char kEnableThreadedCompositing[] = "enable-threaded-compositing";
+const char kEnableThreadedCompositing[]     = "enable-threaded-compositing";
+
+// Enable tracing during the execution of browser tests.
+const char kEnableTracing[]                 = "enable-tracing";
+
+// The filename to write the output of the test tracing to.
+const char kEnableTracingOutput[]           = "enable-tracing-output";
 
 // Enable screen capturing support for MediaStream API.
 const char kEnableUserMediaScreenCapturing[] =

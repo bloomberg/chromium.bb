@@ -132,6 +132,8 @@ CONTENT_EXPORT extern const char kEnableServiceWorkerSync[];
 CONTENT_EXPORT extern const char kEnableTargetedStyleRecalc[];
 CONTENT_EXPORT extern const char kEnableTcpFastOpen[];
 CONTENT_EXPORT extern const char kEnableThreadedCompositing[];
+CONTENT_EXPORT extern const char kEnableTracing[];
+CONTENT_EXPORT extern const char kEnableTracingOutput[];
 CONTENT_EXPORT extern const char kEnableUserMediaScreenCapturing[];
 CONTENT_EXPORT extern const char kEnableViewport[];
 CONTENT_EXPORT extern const char kEnableViewportMeta[];
