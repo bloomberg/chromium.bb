@@ -107,7 +107,7 @@ int ExDataDup(CRYPTO_EX_DATA* to,
               int idx,
               long argl,
               void* argp) {
-  CHECK(false);
+  CHECK_EQ((void*)NULL, *from_d);
   return 0;
 }
 
