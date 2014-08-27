@@ -288,8 +288,8 @@ TEST_F(ServiceWorkerJobTest, Unregister_NothingRegistered) {
   ASSERT_TRUE(called);
 }
 
-// Make sure that when a new registration replaces an existing
-// registration, that the old one is cleaned up.
+// Make sure registering a new script creates a new version and shares an
+// existing registration.
 TEST_F(ServiceWorkerJobTest, RegisterNewScript) {
   GURL pattern("http://www.example.com/");
 
@@ -329,9 +329,7 @@ TEST_F(ServiceWorkerJobTest, RegisterNewScript) {
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(called);
 
-  ASSERT_TRUE(old_registration->HasOneRef());
-
-  ASSERT_NE(old_registration, new_registration);
+  ASSERT_EQ(old_registration, new_registration);
 
   scoped_refptr<ServiceWorkerRegistration> new_registration_by_pattern;
   storage()->FindRegistrationForPattern(

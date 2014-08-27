@@ -20,10 +20,9 @@ namespace content {
 class ServiceWorkerRegistrationInfo;
 class ServiceWorkerVersion;
 
-// This class represents a service worker registration. The
-// scope is constant for the life of the persistent
-// registration. It's refcounted to facillitate multiple controllees
-// being associated with the same registration.
+// This class represents a Service Worker registration. The scope is constant
+// for the life of the persistent registration. It's refcounted to facilitate
+// multiple controllees being associated with the same registration.
 class CONTENT_EXPORT ServiceWorkerRegistration
     : NON_EXPORTED_BASE(public base::RefCounted<ServiceWorkerRegistration>),
       public ServiceWorkerVersion::Listener {
@@ -35,9 +34,11 @@ class CONTENT_EXPORT ServiceWorkerRegistration
     virtual void OnVersionAttributesChanged(
         ServiceWorkerRegistration* registration,
         ChangedVersionAttributesMask changed_mask,
-        const ServiceWorkerRegistrationInfo& info) = 0;
+        const ServiceWorkerRegistrationInfo& info) {}
     virtual void OnRegistrationFailed(
-        ServiceWorkerRegistration* registration) = 0;
+        ServiceWorkerRegistration* registration) {}
+    virtual void OnRegistrationFinishedUninstalling(
+        ServiceWorkerRegistration* registration) {}
   };
 
   ServiceWorkerRegistration(const GURL& pattern,
@@ -95,9 +96,8 @@ class CONTENT_EXPORT ServiceWorkerRegistration
   void ClearWhenReady();
 
   // Restores this registration in storage and cancels the pending
-  // [[ClearRegistration]] algorithm. If the algorithm was already triggered,
-  // does nothing.
-  void AbortPendingClear();
+  // [[ClearRegistration]] algorithm.
+  void AbortPendingClear(const StatusCallback& callback);
 
   // The time of the most recent update check.
   base::Time last_update_check() const { return last_update_check_; }
@@ -128,8 +128,10 @@ class CONTENT_EXPORT ServiceWorkerRegistration
 
   // This method corresponds to the [[ClearRegistration]] algorithm.
   void Clear();
-  void OnStoreFinished(scoped_refptr<ServiceWorkerVersion> version,
-                       ServiceWorkerStatusCode status);
+
+  void OnRestoreFinished(const StatusCallback& callback,
+                         scoped_refptr<ServiceWorkerVersion> version,
+                         ServiceWorkerStatusCode status);
 
   const GURL pattern_;
   const int64 registration_id_;

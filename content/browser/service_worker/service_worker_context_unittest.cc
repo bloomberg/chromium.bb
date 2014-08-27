@@ -300,8 +300,8 @@ TEST_F(ServiceWorkerContextTest, Unregister) {
   base::RunLoop().RunUntilIdle();
 }
 
-// Make sure that when a new registration replaces an existing
-// registration, that the old one is cleaned up.
+// Make sure registering a new script creates a new version and shares an
+// existing registration.
 TEST_F(ServiceWorkerContextTest, RegisterNewScript) {
   GURL pattern("http://www.example.com/");
 
@@ -335,11 +335,9 @@ TEST_F(ServiceWorkerContextTest, RegisterNewScript) {
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(called);
 
-  // Returned IDs should be valid, and should differ from the values
-  // returned for the previous registration.
   EXPECT_NE(kInvalidServiceWorkerRegistrationId, new_registration_id);
   EXPECT_NE(kInvalidServiceWorkerVersionId, new_version_id);
-  EXPECT_NE(old_registration_id, new_registration_id);
+  EXPECT_EQ(old_registration_id, new_registration_id);
   EXPECT_NE(old_version_id, new_version_id);
 }
 

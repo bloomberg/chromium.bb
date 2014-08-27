@@ -140,6 +140,18 @@ ServiceWorkerVersion* ServiceWorkerRegisterJob::new_version() {
   return internal_.new_version.get();
 }
 
+void ServiceWorkerRegisterJob::set_uninstalling_registration(
+    ServiceWorkerRegistration* registration) {
+  DCHECK_EQ(phase_, WAIT_FOR_UNINSTALL);
+  internal_.uninstalling_registration = registration;
+}
+
+ServiceWorkerRegistration*
+ServiceWorkerRegisterJob::uninstalling_registration() {
+  DCHECK_EQ(phase_, WAIT_FOR_UNINSTALL);
+  return internal_.uninstalling_registration;
+}
+
 void ServiceWorkerRegisterJob::SetPhase(Phase phase) {
   switch (phase) {
     case INITIAL:
@@ -148,8 +160,11 @@ void ServiceWorkerRegisterJob::SetPhase(Phase phase) {
     case START:
       DCHECK(phase_ == INITIAL) << phase_;
       break;
-    case REGISTER:
+    case WAIT_FOR_UNINSTALL:
       DCHECK(phase_ == START) << phase_;
+      break;
+    case REGISTER:
+      DCHECK(phase_ == START || phase_ == WAIT_FOR_UNINSTALL) << phase_;
       break;
     case UPDATE:
       DCHECK(phase_ == START || phase_ == REGISTER) << phase_;
@@ -186,37 +201,31 @@ void ServiceWorkerRegisterJob::ContinueWithRegistration(
     return;
   }
 
-  // "Set registration.[[Uninstalling]] to false."
-  existing_registration->AbortPendingClear();
-
   // "If scriptURL is equal to registration.[[ScriptURL]], then:"
   if (existing_registration->GetNewestVersion()->script_url() == script_url_) {
-    // Spec says to resolve with registration.[[GetNewestWorker]]. We come close
-    // by resolving with the active version.
-    set_registration(existing_registration.get());
-
-    if (!existing_registration->active_version()) {
-      UpdateAndContinue();
-      return;
-    }
-
-    ResolvePromise(status,
-                   existing_registration.get(),
-                   existing_registration->active_version());
-    Complete(SERVICE_WORKER_OK);
+    // "Set registration.[[Uninstalling]] to false."
+    existing_registration->AbortPendingClear(base::Bind(
+        &ServiceWorkerRegisterJob::ContinueWithRegistrationForSameScriptUrl,
+        weak_factory_.GetWeakPtr(),
+        existing_registration));
     return;
   }
 
-  // "Set registration.[[ScriptURL]] to scriptURL." We accomplish this by
-  // deleting the existing registration and registering a new one.
-  // TODO(michaeln): Deactivate the live existing_registration object and
-  // eventually call storage->DeleteVersionResources() when it no longer has any
-  // controllees.
-  context_->storage()->DeleteRegistration(
-      existing_registration->id(),
-      existing_registration->pattern().GetOrigin(),
-      base::Bind(&ServiceWorkerRegisterJob::RegisterAndContinue,
-                 weak_factory_.GetWeakPtr()));
+  if (existing_registration->is_uninstalling()) {
+    // "Wait until the Record {[[key]], [[value]]} entry of its
+    // [[ScopeToRegistrationMap]] where registation.scope matches entry.[[key]]
+    // is deleted."
+    WaitForUninstall(existing_registration);
+    return;
+  }
+
+  // "Set registration.[[Uninstalling]] to false."
+  DCHECK(!existing_registration->is_uninstalling());
+
+  // "Return the result of running the [[Update]] algorithm, or its equivalent,
+  // passing registration as the argument."
+  set_registration(existing_registration);
+  UpdateAndContinue();
 }
 
 void ServiceWorkerRegisterJob::ContinueWithUpdate(
@@ -262,6 +271,35 @@ void ServiceWorkerRegisterJob::RegisterAndContinue(
       pattern_, context_->storage()->NewRegistrationId(), context_));
   AssociateProviderHostsToRegistration(registration());
   UpdateAndContinue();
+}
+
+void ServiceWorkerRegisterJob::WaitForUninstall(
+    const scoped_refptr<ServiceWorkerRegistration>& existing_registration) {
+  SetPhase(WAIT_FOR_UNINSTALL);
+  set_uninstalling_registration(existing_registration);
+  uninstalling_registration()->AddListener(this);
+}
+
+void ServiceWorkerRegisterJob::ContinueWithRegistrationForSameScriptUrl(
+    const scoped_refptr<ServiceWorkerRegistration>& existing_registration,
+    ServiceWorkerStatusCode status) {
+  if (status != SERVICE_WORKER_OK) {
+    Complete(status);
+    return;
+  }
+  set_registration(existing_registration);
+
+  // TODO(falken): Follow the spec: resolve the promise
+  // with the newest version.
+
+  if (!existing_registration->active_version()) {
+    UpdateAndContinue();
+    return;
+  }
+
+  ResolvePromise(
+      status, existing_registration, existing_registration->active_version());
+  Complete(SERVICE_WORKER_OK);
 }
 
 // This function corresponds to the spec's [[Update]] algorithm.
@@ -453,6 +491,15 @@ void ServiceWorkerRegisterJob::OnPausedAfterDownload() {
 
 bool ServiceWorkerRegisterJob::OnMessageReceived(const IPC::Message& message) {
   return false;
+}
+
+void ServiceWorkerRegisterJob::OnRegistrationFinishedUninstalling(
+    ServiceWorkerRegistration* existing_registration) {
+  DCHECK_EQ(phase_, WAIT_FOR_UNINSTALL);
+  DCHECK_EQ(existing_registration, uninstalling_registration());
+  existing_registration->RemoveListener(this);
+  set_uninstalling_registration(NULL);
+  RegisterAndContinue(SERVICE_WORKER_OK);
 }
 
 void ServiceWorkerRegisterJob::OnCompareScriptResourcesComplete(

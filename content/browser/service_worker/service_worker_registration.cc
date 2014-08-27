@@ -167,10 +167,13 @@ void ServiceWorkerRegistration::ClearWhenReady() {
     Clear();
 }
 
-void ServiceWorkerRegistration::AbortPendingClear() {
+void ServiceWorkerRegistration::AbortPendingClear(
+    const StatusCallback& callback) {
   DCHECK(context_);
-  if (!is_uninstalling())
+  if (!is_uninstalling()) {
+    callback.Run(SERVICE_WORKER_OK);
     return;
+  }
   is_uninstalling_ = false;
   context_->storage()->NotifyDoneUninstallingRegistration(this);
 
@@ -181,8 +184,9 @@ void ServiceWorkerRegistration::AbortPendingClear() {
   context_->storage()->StoreRegistration(
       this,
       most_recent_version.get(),
-      base::Bind(&ServiceWorkerRegistration::OnStoreFinished,
+      base::Bind(&ServiceWorkerRegistration::OnRestoreFinished,
                  this,
+                 callback,
                  most_recent_version));
 }
 
@@ -278,7 +282,9 @@ void ServiceWorkerRegistration::OnDeleteFinished(
 }
 
 void ServiceWorkerRegistration::Clear() {
-  context_->storage()->NotifyDoneUninstallingRegistration(this);
+  is_uninstalling_ = false;
+  if (context_)
+    context_->storage()->NotifyDoneUninstallingRegistration(this);
 
   ChangedVersionAttributesMask mask;
   if (installing_version_.get()) {
@@ -302,15 +308,22 @@ void ServiceWorkerRegistration::Clear() {
     FOR_EACH_OBSERVER(Listener, listeners_,
                       OnVersionAttributesChanged(this, mask, info));
   }
+
+  FOR_EACH_OBSERVER(
+      Listener, listeners_, OnRegistrationFinishedUninstalling(this));
 }
 
-void ServiceWorkerRegistration::OnStoreFinished(
+void ServiceWorkerRegistration::OnRestoreFinished(
+    const StatusCallback& callback,
     scoped_refptr<ServiceWorkerVersion> version,
     ServiceWorkerStatusCode status) {
-  if (!context_)
+  if (!context_) {
+    callback.Run(ServiceWorkerStatusCode::SERVICE_WORKER_ERROR_ABORT);
     return;
+  }
   context_->storage()->NotifyDoneInstallingRegistration(
       this, version.get(), status);
+  callback.Run(status);
 }
 
 }  // namespace content
