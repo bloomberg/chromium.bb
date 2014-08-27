@@ -886,8 +886,6 @@
             'css/RuleFeature.h',
             'css/RuleSet.cpp',
             'css/RuleSet.h',
-            'css/RuntimeCSSEnabled.cpp',
-            'css/RuntimeCSSEnabled.h',
             'css/SVGCSSComputedStyleDeclaration.cpp',
             'css/SelectorChecker.cpp',
             'css/SelectorChecker.h',

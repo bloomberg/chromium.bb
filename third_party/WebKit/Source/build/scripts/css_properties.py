@@ -10,6 +10,7 @@ from name_utilities import lower_first
 class CSSProperties(in_generator.Writer):
     defaults = {
         'alias_for': None,
+        'runtime_flag': None,
         'longhands': '',
         'animatable': False,
         'inherited': False,

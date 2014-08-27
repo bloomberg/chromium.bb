@@ -41,6 +41,7 @@
 #include "core/css/parser/BisonCSSParser.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
+#include "core/css/CSSPropertyMetadata.h"
 #include "core/css/CSSReflectValue.h"
 #include "core/css/CSSSelector.h"
 #include "core/css/CSSShadowValue.h"
@@ -50,7 +51,6 @@
 #include "core/css/CSSValuePool.h"
 #include "core/css/Pair.h"
 #include "core/css/Rect.h"
-#include "core/css/RuntimeCSSEnabled.h"
 #include "core/css/StylePropertySet.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Document.h"
@@ -376,7 +376,7 @@ static const Vector<CSSPropertyID>& computableProperties()
 {
     DEFINE_STATIC_LOCAL(Vector<CSSPropertyID>, properties, ());
     if (properties.isEmpty())
-        RuntimeCSSEnabled::filterEnabledCSSPropertiesIntoVector(staticComputableProperties, WTF_ARRAY_LENGTH(staticComputableProperties), properties);
+        CSSPropertyMetadata::filterEnabledCSSPropertiesIntoVector(staticComputableProperties, WTF_ARRAY_LENGTH(staticComputableProperties), properties);
     return properties;
 }
 
@@ -2948,7 +2948,7 @@ String CSSComputedStyleDeclaration::getPropertyValue(const String& propertyName)
     CSSPropertyID propertyID = cssPropertyID(propertyName);
     if (!propertyID)
         return String();
-    ASSERT(RuntimeCSSEnabled::isCSSPropertyEnabled(propertyID));
+    ASSERT(CSSPropertyMetadata::isEnabledProperty(propertyID));
     return getPropertyValue(propertyID);
 }
 

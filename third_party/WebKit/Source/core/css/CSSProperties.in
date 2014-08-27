@@ -9,6 +9,10 @@
 // UseCounter will not pick up on these (crbug.com/304855)
 
 
+// - runtime_flag=CSSGridLayout
+// The flag on RuntimeEnabledFeatures conditionally enables the property
+
+
 // - longhands=property;other-property
 // The property is a shorthand for several other properties.
 
@@ -149,7 +153,7 @@ clip-rule inherited, svg, type_name=WindRule
 color-interpolation inherited, svg
 color-interpolation-filters inherited, svg, type_name=EColorInterpolation
 color-rendering inherited, svg
-column-fill type_name=ColumnFill
+column-fill runtime_flag=RegionBasedColumns, type_name=ColumnFill
 content custom_all
 counter-increment custom_all
 counter-reset custom_all
@@ -171,22 +175,22 @@ flood-color animatable, svg, converter=convertSVGColor
 flood-opacity animatable, svg, converter=convertNumberOrPercentage
 glyph-orientation-horizontal inherited, svg, converter=convertGlyphOrientation
 glyph-orientation-vertical inherited, svg, custom_value
-grid-auto-columns converter=convertGridTrackSize
-grid-auto-flow custom_value
-grid-auto-rows converter=convertGridTrackSize
-grid-column-end converter=convertGridPosition
-grid-column-start converter=convertGridPosition
-grid-row-end converter=convertGridPosition
-grid-row-start converter=convertGridPosition
-grid-template-areas custom_all
-grid-template-columns custom_all
-grid-template-rows custom_all
+grid-auto-columns runtime_flag=CSSGridLayout, converter=convertGridTrackSize
+grid-auto-flow runtime_flag=CSSGridLayout, custom_value
+grid-auto-rows runtime_flag=CSSGridLayout, converter=convertGridTrackSize
+grid-column-end runtime_flag=CSSGridLayout, converter=convertGridPosition
+grid-column-start runtime_flag=CSSGridLayout, converter=convertGridPosition
+grid-row-end runtime_flag=CSSGridLayout, converter=convertGridPosition
+grid-row-start runtime_flag=CSSGridLayout, converter=convertGridPosition
+grid-template-areas runtime_flag=CSSGridLayout, custom_all
+grid-template-columns runtime_flag=CSSGridLayout, custom_all
+grid-template-rows runtime_flag=CSSGridLayout, custom_all
 height animatable, initial=initialSize, converter=convertLengthSizing
 image-rendering inherited
-isolation
+isolation runtime_flag=CSSCompositing
 justify-content
-justify-items custom_all
-justify-self custom_all
+justify-items runtime_flag=CSSGridLayout, custom_all
+justify-self runtime_flag=CSSGridLayout, custom_all
 left animatable, initial=initialOffset, converter=convertLengthOrAuto
 letter-spacing animatable, inherited, initial=initialLetterWordSpacing, converter=convertSpacing
 lighting-color animatable, svg, converter=convertSVGColor
@@ -201,15 +205,15 @@ marker-end inherited, svg, name_for_methods=MarkerEndResource, converter=convert
 marker-mid inherited, svg, name_for_methods=MarkerMidResource, converter=convertFragmentIdentifier
 marker-start inherited, svg, name_for_methods=MarkerStartResource, converter=convertFragmentIdentifier
 mask svg, name_for_methods=MaskerResource, converter=convertFragmentIdentifier
-mask-source-type custom_all
+mask-source-type runtime_flag=CSSMaskSourceType, custom_all
 mask-type svg
 max-height animatable, initial=initialMaxSize, converter=convertLengthMaxSizing
 max-width animatable, initial=initialMaxSize, converter=convertLengthMaxSizing
 min-height animatable, initial=initialMinSize, converter=convertLengthSizing
 min-width animatable, initial=initialMinSize, converter=convertLengthSizing
-mix-blend-mode type_name=blink::WebBlendMode, name_for_methods=BlendMode
-object-fit type_name=ObjectFit
-object-position animatable, converter=convertLengthPoint
+mix-blend-mode runtime_flag=CSSCompositing, type_name=blink::WebBlendMode, name_for_methods=BlendMode
+object-fit runtime_flag=ObjectFitPosition, type_name=ObjectFit
+object-position runtime_flag=ObjectFitPosition, animatable, converter=convertLengthPoint
 opacity animatable, type_name=float
 order type_name=int
 orphans animatable, inherited, type_name=short, custom_all
@@ -236,7 +240,7 @@ quotes inherited, converter=convertQuotes
 // FIXME: This shouldn't be inherited, as per css-ui
 resize inherited, custom_value
 right animatable, initial=initialOffset, converter=convertLengthOrAuto
-scroll-behavior type_name=ScrollBehavior
+scroll-behavior runtime_flag=CSSOMSmoothScroll, type_name=ScrollBehavior
 shape-image-threshold animatable, type_name=float
 shape-margin animatable, converter=convertLength
 shape-outside animatable, custom_value
@@ -256,22 +260,22 @@ stroke-width animatable, inherited, svg, converter=convertSVGLength
 table-layout
 tab-size inherited, type_name=unsigned
 text-align inherited, custom_value
-text-align-last inherited, type_name=TextAlignLast
+text-align-last runtime_flag=CSS3Text, inherited, type_name=TextAlignLast
 text-anchor inherited, svg
 // FIXME: We shouldn't switch between shorthand/not shorthand based on a runtime flag
 text-decoration use_handlers_for=CSSPropertyTextDecorationLine, longhands=text-decoration-line;text-decoration-style;text-decoration-color
-text-decoration-color animatable, custom_all
-text-decoration-line name_for_methods=TextDecoration, converter=convertFlags<TextDecoration>
-text-decoration-style type_name=TextDecorationStyle
+text-decoration-color runtime_flag=CSS3TextDecorations, animatable, custom_all
+text-decoration-line runtime_flag=CSS3TextDecorations, name_for_methods=TextDecoration, converter=convertFlags<TextDecoration>
+text-decoration-style runtime_flag=CSS3TextDecorations, type_name=TextDecorationStyle
 text-indent animatable, inherited, custom_all
-text-justify inherited, type_name=TextJustify
+text-justify runtime_flag=CSS3Text, inherited, type_name=TextJustify
 text-overflow type_name=TextOverflow
 text-shadow animatable, inherited, converter=convertShadow
 text-transform inherited
-text-underline-position inherited, type_name=TextUnderlinePosition
+text-underline-position runtime_flag=CSS3TextDecorations, inherited, type_name=TextUnderlinePosition
 top animatable, initial=initialOffset, converter=convertLengthOrAuto
 touch-action converter=convertFlags<TouchAction>
-touch-action-delay inherited, type_name=TouchActionDelay
+touch-action-delay runtime_flag=CSSTouchActionDelay, inherited, type_name=TouchActionDelay
 transform animatable, custom_value
 transform-origin animatable, custom_all
 transform-style name_for_methods=TransformStyle3D
@@ -426,14 +430,14 @@ z-index animatable, type_name=int, custom_all
 // FIXME: We should see if any of these should actually be unreachable
 
 all builder_skip
-animation-delay builder_skip
-animation-direction builder_skip
-animation-duration builder_skip
-animation-fill-mode builder_skip
-animation-iteration-count builder_skip
-animation-name builder_skip
-animation-play-state builder_skip
-animation-timing-function builder_skip
+animation-delay runtime_flag=CSSAnimationUnprefixed, builder_skip
+animation-direction runtime_flag=CSSAnimationUnprefixed, builder_skip
+animation-duration runtime_flag=CSSAnimationUnprefixed, builder_skip
+animation-fill-mode runtime_flag=CSSAnimationUnprefixed, builder_skip
+animation-iteration-count runtime_flag=CSSAnimationUnprefixed, builder_skip
+animation-name runtime_flag=CSSAnimationUnprefixed, builder_skip
+animation-play-state runtime_flag=CSSAnimationUnprefixed, builder_skip
+animation-timing-function runtime_flag=CSSAnimationUnprefixed, builder_skip
 enable-background builder_skip
 max-zoom builder_skip
 min-zoom builder_skip
@@ -451,7 +455,7 @@ user-zoom builder_skip
 
 // Shorthands
 
-animation longhands=animation-name;animation-duration;animation-timing-function;animation-delay;animation-iteration-count;animation-direction;animation-fill-mode;animation-play-state
+animation runtime_flag=CSSAnimationUnprefixed, longhands=animation-name;animation-duration;animation-timing-function;animation-delay;animation-iteration-count;animation-direction;animation-fill-mode;animation-play-state
 background longhands=background-image;background-position-x;background-position-y;background-size;background-repeat-x;background-repeat-y;background-attachment;background-origin;background-clip;background-color
 background-position longhands=background-position-x;background-position-y
 background-repeat longhands=background-repeat-x;background-repeat-y
@@ -468,11 +472,11 @@ border-top longhands=border-top-width;border-top-style;border-top-color
 border-width longhands=border-top-width;border-right-width;border-bottom-width;border-left-width
 flex longhands=flex-grow;flex-shrink;flex-basis
 flex-flow longhands=flex-direction;flex-wrap
-grid longhands=grid-template;grid-auto-flow;grid-auto-columns;grid-auto-rows
-grid-area longhands=grid-row-start;grid-column-start;grid-row-end;grid-column-end
-grid-column longhands=grid-column-start;grid-column-end
-grid-row longhands=grid-row-start;grid-row-end
-grid-template longhands=grid-template-columns;grid-template-rows;grid-template-areas
+grid runtime_flag=CSSGridLayout, longhands=grid-template;grid-auto-flow;grid-auto-columns;grid-auto-rows
+grid-area runtime_flag=CSSGridLayout, longhands=grid-row-start;grid-column-start;grid-row-end;grid-column-end
+grid-column runtime_flag=CSSGridLayout, longhands=grid-column-start;grid-column-end
+grid-row runtime_flag=CSSGridLayout, longhands=grid-row-start;grid-row-end
+grid-template runtime_flag=CSSGridLayout, longhands=grid-template-columns;grid-template-rows;grid-template-areas
 list-style longhands=list-style-type;list-style-position;list-style-image
 margin longhands=margin-top;margin-right;margin-bottom;margin-left
 marker longhands=marker-start;marker-mid;marker-end

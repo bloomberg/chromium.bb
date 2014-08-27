@@ -24,11 +24,11 @@
 #include "core/css/StylePropertySet.h"
 
 #include "core/StylePropertyShorthand.h"
-#include "core/css/parser/BisonCSSParser.h"
+#include "core/css/CSSPropertyMetadata.h"
 #include "core/css/CSSValuePool.h"
-#include "core/css/RuntimeCSSEnabled.h"
 #include "core/css/StylePropertySerializer.h"
 #include "core/css/StyleSheetContents.h"
+#include "core/css/parser/BisonCSSParser.h"
 #include "core/frame/UseCounter.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "wtf/text/StringBuilder.h"
@@ -108,7 +108,7 @@ int ImmutableStylePropertySet::findPropertyIndex(CSSPropertyID propertyID) const
     for (int n = m_arraySize - 1 ; n >= 0; --n) {
         if (metadataArray()[n].m_propertyID == id) {
             // Only enabled or internal properties should be part of the style.
-            ASSERT(RuntimeCSSEnabled::isCSSPropertyEnabled(propertyID) || isInternalProperty(propertyID));
+            ASSERT(CSSPropertyMetadata::isEnabledProperty(propertyID) || isInternalProperty(propertyID));
             return n;
         }
     }
@@ -422,7 +422,7 @@ static const Vector<CSSPropertyID>& blockProperties()
 {
     DEFINE_STATIC_LOCAL(Vector<CSSPropertyID>, properties, ());
     if (properties.isEmpty())
-        RuntimeCSSEnabled::filterEnabledCSSPropertiesIntoVector(staticBlockProperties, WTF_ARRAY_LENGTH(staticBlockProperties), properties);
+        CSSPropertyMetadata::filterEnabledCSSPropertiesIntoVector(staticBlockProperties, WTF_ARRAY_LENGTH(staticBlockProperties), properties);
     return properties;
 }
 
@@ -555,7 +555,7 @@ int MutableStylePropertySet::findPropertyIndex(CSSPropertyID propertyID) const
     for (int n = m_propertyVector.size() - 1 ; n >= 0; --n) {
         if (properties[n].metadata().m_propertyID == id) {
             // Only enabled or internal properties should be part of the style.
-            ASSERT(RuntimeCSSEnabled::isCSSPropertyEnabled(propertyID) || isInternalProperty(propertyID));
+            ASSERT(CSSPropertyMetadata::isEnabledProperty(propertyID) || isInternalProperty(propertyID));
             return n;
         }
     }

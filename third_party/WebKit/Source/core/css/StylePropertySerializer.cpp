@@ -25,7 +25,7 @@
 
 #include "core/CSSValueKeywords.h"
 #include "core/StylePropertyShorthand.h"
-#include "core/css/RuntimeCSSEnabled.h"
+#include "core/css/CSSPropertyMetadata.h"
 #include "wtf/BitArray.h"
 #include "wtf/text/StringBuilder.h"
 
@@ -70,7 +70,7 @@ String StylePropertySerializer::asText() const
         StylePropertySet::PropertyReference property = m_propertySet.propertyAt(n);
         CSSPropertyID propertyID = property.id();
         // Only enabled or internal properties should be part of the style.
-        ASSERT(RuntimeCSSEnabled::isCSSPropertyEnabled(propertyID) || isInternalProperty(propertyID));
+        ASSERT(CSSPropertyMetadata::isEnabledProperty(propertyID) || isInternalProperty(propertyID));
         CSSPropertyID shorthandPropertyID = CSSPropertyInvalid;
         CSSPropertyID borderFallbackShorthandProperty = CSSPropertyInvalid;
         String value;

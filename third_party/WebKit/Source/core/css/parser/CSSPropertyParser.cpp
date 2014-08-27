@@ -50,6 +50,7 @@
 #include "core/css/CSSKeyframesRule.h"
 #include "core/css/CSSLineBoxContainValue.h"
 #include "core/css/CSSPrimitiveValue.h"
+#include "core/css/CSSPropertyMetadata.h"
 #include "core/css/CSSPropertySourceData.h"
 #include "core/css/CSSReflectValue.h"
 #include "core/css/CSSSVGDocumentValue.h"
@@ -64,7 +65,6 @@
 #include "core/css/HashTools.h"
 #include "core/css/Pair.h"
 #include "core/css/Rect.h"
-#include "core/css/RuntimeCSSEnabled.h"
 #include "core/css/parser/BisonCSSParser.h"
 #include "core/css/parser/CSSParserIdioms.h"
 #include "core/css/parser/CSSParserValues.h"
@@ -2974,7 +2974,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseAnimationProperty()
         return cssValuePool().createIdentifierValue(CSSValueAll);
     CSSPropertyID property = cssPropertyID(value->string);
     if (property) {
-        ASSERT(RuntimeCSSEnabled::isCSSPropertyEnabled(property));
+        ASSERT(CSSPropertyMetadata::isEnabledProperty(property));
         return cssValuePool().createIdentifierValue(property);
     }
     if (equalIgnoringCase(value, "none"))
@@ -7109,7 +7109,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseWillChange()
 
         CSSPropertyID property = cssPropertyID(currentValue->string);
         if (property) {
-            ASSERT(RuntimeCSSEnabled::isCSSPropertyEnabled(property));
+            ASSERT(CSSPropertyMetadata::isEnabledProperty(property));
             // Now "all" is used by both CSSValue and CSSPropertyValue.
             // Need to return nullptr when currentValue is CSSPropertyAll.
             if (property == CSSPropertyWillChange || property == CSSPropertyAll)
@@ -7817,7 +7817,7 @@ static CSSPropertyID cssPropertyID(const CharacterType* propertyName, unsigned l
     if (!hashTableEntry)
         return CSSPropertyInvalid;
     CSSPropertyID property = static_cast<CSSPropertyID>(hashTableEntry->id);
-    if (!RuntimeCSSEnabled::isCSSPropertyEnabled(property))
+    if (!CSSPropertyMetadata::isEnabledProperty(property))
         return CSSPropertyInvalid;
     return property;
 }

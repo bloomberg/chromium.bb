@@ -30,9 +30,9 @@
 #include "config.h"
 #include "core/css/DOMWindowCSS.h"
 
-#include "core/css/parser/BisonCSSParser.h"
-#include "core/css/RuntimeCSSEnabled.h"
+#include "core/css/CSSPropertyMetadata.h"
 #include "core/css/StylePropertySet.h"
+#include "core/css/parser/BisonCSSParser.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -61,7 +61,7 @@ bool DOMWindowCSS::supports(const String& property, const String& value) const
     CSSPropertyID propertyID = cssPropertyID(property.stripWhiteSpace());
     if (propertyID == CSSPropertyInvalid)
         return false;
-    ASSERT(RuntimeCSSEnabled::isCSSPropertyEnabled(propertyID));
+    ASSERT(CSSPropertyMetadata::isEnabledProperty(propertyID));
 
     // BisonCSSParser::parseValue() won't work correctly if !important is present,
     // so just get rid of it. It doesn't matter to supports() if it's actually
