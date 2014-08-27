@@ -7,8 +7,6 @@ package org.chromium.mojo.bindings;
 import org.chromium.mojo.bindings.Struct.DataHeader;
 import org.chromium.mojo.system.Core;
 import org.chromium.mojo.system.Handle;
-import org.chromium.mojo.system.MessagePipeHandle;
-import org.chromium.mojo.system.Pair;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -141,6 +139,7 @@ public class Encoder {
         Encoder result = new Encoder(mEncoderState);
         result.encode(dataHeader);
         return result;
+
     }
 
     /**
@@ -244,43 +243,25 @@ public class Encoder {
     /**
      * Encode an {@link Interface}.
      */
-    public <T extends Interface> void encode(T v, int offset, Interface.Manager<T, ?> manager) {
-        if (v == null) {
-            encode(-1, offset);
-            return;
-        }
+    public <T extends Interface> void encode(T v, int offset, Object builder) {
         if (mEncoderState.core == null) {
             throw new UnsupportedOperationException(
                     "The encoder has been created without a Core. It can't encode an interface.");
         }
-        // If the instance is a proxy, pass the proxy's handle instead of creating a new stub.
-        if (v instanceof Interface.AbstractProxy) {
-            Interface.AbstractProxy proxy = (Interface.AbstractProxy) v;
-            if (proxy.getMessageReceiver() instanceof HandleOwner) {
-                encode(((HandleOwner<?>) proxy.getMessageReceiver()).passHandle(), offset);
-                return;
-            }
-            // If the proxy is not over a message pipe, the default case applies.
-        }
-        Pair<MessagePipeHandle, MessagePipeHandle> handles =
-                mEncoderState.core.createMessagePipe(null);
-        manager.bind(v, handles.first);
-        encode(handles.second, offset);
+        // TODO(qsr): To be implemented when interfaces proxy and stubs are implemented.
+        throw new UnsupportedOperationException("Unimplemented operation");
     }
 
     /**
      * Encode an {@link InterfaceRequest}.
      */
-    public <I extends Interface> void encode(InterfaceRequest<I> v, int offset) {
-        if (v == null) {
-            encode(-1, offset);
-            return;
-        }
+    public <T extends Interface> void encode(InterfaceRequest<T> v, int offset) {
         if (mEncoderState.core == null) {
             throw new UnsupportedOperationException(
                     "The encoder has been created without a Core. It can't encode an interface.");
         }
-        encode(v.passHandle(), offset);
+        // TODO(qsr): To be implemented when interfaces proxy and stubs are implemented.
+        throw new UnsupportedOperationException("Unimplemented operation");
     }
 
     /**
@@ -393,8 +374,7 @@ public class Encoder {
     /**
      * Encodes an array of {@link Interface}.
      */
-    public <T extends Interface> void encode(T[] v, int offset,
-            Interface.Manager<T, ?> manager) {
+    public <T extends Interface> void encode(T[] v, int offset, Object builder) {
         if (v == null) {
             encodeNullPointer(offset);
             return;
@@ -402,14 +382,14 @@ public class Encoder {
         Encoder e = encoderForArray(BindingsHelper.SERIALIZED_HANDLE_SIZE, v.length, offset);
         for (int i = 0; i < v.length; ++i) {
             e.encode(v[i], DataHeader.HEADER_SIZE + BindingsHelper.SERIALIZED_HANDLE_SIZE * i,
-                    manager);
+                    builder);
         }
     }
 
     /**
-     * Encodes an array of {@link InterfaceRequest}.
+     * Encodes an array of {@link Interface}.
      */
-    public <I extends Interface> void encode(InterfaceRequest<I>[] v, int offset) {
+    public <T extends Interface> void encode(InterfaceRequest<T>[] v, int offset) {
         if (v == null) {
             encodeNullPointer(offset);
             return;

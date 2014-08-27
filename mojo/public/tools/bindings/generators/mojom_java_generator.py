@@ -153,9 +153,9 @@ def DecodeMethod(context, kind, offset, bit):
   if (kind == mojom.BOOL):
     additionalParams = ', %d' % bit
   if mojom.IsInterfaceKind(kind):
-    additionalParams = ', %s.MANAGER' % GetJavaType(context, kind)
+    additionalParams = ', %s.BUILDER' % GetJavaType(context, kind)
   if mojom.IsAnyArrayKind(kind) and mojom.IsInterfaceKind(kind.kind):
-    additionalParams = ', %s.MANAGER' % GetJavaType(context, kind.kind)
+    additionalParams = ', %s.BUILDER' % GetJavaType(context, kind.kind)
   return '%s(%s%s)' % (methodName, offset, additionalParams)
 
 @contextfilter
@@ -164,9 +164,9 @@ def EncodeMethod(context, kind, variable, offset, bit):
   if (kind == mojom.BOOL):
     additionalParams = ', %d' % bit
   if mojom.IsInterfaceKind(kind):
-    additionalParams = ', %s.MANAGER' % GetJavaType(context, kind)
+    additionalParams = ', %s.BUILDER' % GetJavaType(context, kind)
   if mojom.IsAnyArrayKind(kind) and mojom.IsInterfaceKind(kind.kind):
-    additionalParams = ', %s.MANAGER' % GetJavaType(context, kind.kind)
+    additionalParams = ', %s.BUILDER' % GetJavaType(context, kind.kind)
   return 'encode(%s, %s%s)' % (variable, offset, additionalParams)
 
 def GetPackage(module):
@@ -281,14 +281,6 @@ def IsPointerArrayKind(kind):
   sub_kind = kind.kind
   return mojom.IsObjectKind(sub_kind)
 
-def GetResponseStructFromMethod(method):
-  return generator.GetDataHeader(
-      False, generator.GetResponseStructFromMethod(method))
-
-def GetStructFromMethod(method):
-  return generator.GetDataHeader(
-      False, generator.GetStructFromMethod(method))
-
 def GetConstantsMainEntityName(module):
   if 'JavaConstantsClassName' in module.attributes:
     return ParseStringAttribute(module.attributes['JavaConstantsClassName'])
@@ -296,21 +288,6 @@ def GetConstantsMainEntityName(module):
   # by extracting the mojom's filename and prepending it to Constants.
   return (UpperCamelCase(module.path.split('/')[-1].rsplit('.', 1)[0]) +
           'Constants')
-
-def GetMethodOrdinalName(method):
-  return ConstantStyle(method.name) + "_ORDINAL"
-
-def HasMethodWithResponse(interface):
-  for method in interface.methods:
-    if method.response_parameters:
-      return True
-  return False
-
-def HasMethodWithoutResponse(interface):
-  for method in interface.methods:
-    if not method.response_parameters:
-      return True
-  return False
 
 class Generator(generator.Generator):
 
@@ -321,17 +298,12 @@ class Generator(generator.Generator):
     "decode_method": DecodeMethod,
     "expression_to_text": ExpressionToText,
     "encode_method": EncodeMethod,
-    "has_method_with_response": HasMethodWithResponse,
-    "has_method_without_response": HasMethodWithoutResponse,
     "is_handle": mojom.IsNonInterfaceHandleKind,
     "is_pointer_array_kind": IsPointerArrayKind,
     "is_struct_kind": mojom.IsStructKind,
     "java_type": GetJavaType,
-    "method_ordinal_name": GetMethodOrdinalName,
     "name": GetNameForElement,
     "new_array": NewArray,
-    "response_struct_from_method": GetResponseStructFromMethod,
-    "struct_from_method": GetStructFromMethod,
     "struct_size": lambda ps: ps.GetTotalSize() + _HEADER_SIZE,
   }
 
@@ -340,15 +312,6 @@ class Generator(generator.Generator):
       "module": self.module,
       "package": GetPackage(self.module),
     }
-
-  def GetJinjaExportsForInterface(self, interface):
-    exports = self.GetJinjaExports()
-    exports.update({"interface": interface})
-    if interface.client:
-      for client in self.module.interfaces:
-        if client.name == interface.client:
-          exports.update({"client": client})
-    return exports
 
   @UseJinja("java_templates/enum.java.tmpl", filters=java_filters)
   def GenerateEnumSource(self, enum):
@@ -364,11 +327,13 @@ class Generator(generator.Generator):
 
   @UseJinja("java_templates/interface.java.tmpl", filters=java_filters)
   def GenerateInterfaceSource(self, interface):
-    return self.GetJinjaExportsForInterface(interface)
-
-  @UseJinja("java_templates/interface_internal.java.tmpl", filters=java_filters)
-  def GenerateInterfaceInternalSource(self, interface):
-    return self.GetJinjaExportsForInterface(interface)
+    exports = self.GetJinjaExports()
+    exports.update({"interface": interface})
+    if interface.client:
+      for client in self.module.interfaces:
+        if client.name == interface.client:
+          exports.update({"client": client})
+    return exports
 
   @UseJinja("java_templates/constants.java.tmpl", filters=java_filters)
   def GenerateConstantsSource(self, module):
@@ -402,8 +367,6 @@ class Generator(generator.Generator):
     for interface in self.module.interfaces:
       self.Write(self.GenerateInterfaceSource(interface),
                  "%s.java" % GetNameForElement(interface))
-      self.Write(self.GenerateInterfaceInternalSource(interface),
-                 "%s_Internal.java" % GetNameForElement(interface))
 
     if self.module.constants:
       self.Write(self.GenerateConstantsSource(self.module),

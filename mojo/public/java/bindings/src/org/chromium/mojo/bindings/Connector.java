@@ -115,11 +115,7 @@ public class Connector implements MessageReceiver, HandleOwner<MessagePipeHandle
     @Override
     public MessagePipeHandle passHandle() {
         cancelIfActive();
-        MessagePipeHandle handle = mMessagePipeHandle.pass();
-        if (mIncomingMessageReceiver != null) {
-            mIncomingMessageReceiver.close();
-        }
-        return handle;
+        return mMessagePipeHandle.pass();
     }
 
     /**
@@ -129,9 +125,6 @@ public class Connector implements MessageReceiver, HandleOwner<MessagePipeHandle
     public void close() {
         cancelIfActive();
         mMessagePipeHandle.close();
-        if (mIncomingMessageReceiver != null) {
-            mIncomingMessageReceiver.close();
-        }
     }
 
     private class AsyncWaiterCallback implements AsyncWaiter.Callback {
