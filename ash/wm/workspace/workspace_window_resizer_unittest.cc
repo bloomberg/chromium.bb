@@ -1181,6 +1181,22 @@ TEST_F(WorkspaceWindowResizerTest, CtrlDragResizeToExactPosition) {
   EXPECT_EQ("96,112 330x172", window_->bounds().ToString());
 }
 
+// Verifies that a dragged, non-snapped window will clear restore bounds.
+TEST_F(WorkspaceWindowResizerTest, RestoreClearedOnResize) {
+  window_->SetBounds(gfx::Rect(10, 10, 100, 100));
+  wm::WindowState* window_state = wm::GetWindowState(window_.get());
+  window_state->SetRestoreBoundsInScreen(gfx::Rect(50, 50, 50, 50));
+  scoped_ptr<WindowResizer> resizer(CreateResizerForTest(
+      window_.get(), gfx::Point(), HTBOTTOMRIGHT));
+  ASSERT_TRUE(resizer.get());
+  // Drag the window to new position by adding (20, 30) to original point,
+  // the original restore bound should be cleared.
+  resizer->Drag(CalculateDragPoint(*resizer, 20, 30), 0);
+  resizer->CompleteDrag();
+  EXPECT_EQ("10,10 120x130", window_->bounds().ToString());
+  EXPECT_FALSE(window_state->HasRestoreBounds());
+}
+
 // Verifies that a dragged window will restore to its pre-maximized size.
 TEST_F(WorkspaceWindowResizerTest, RestoreToPreMaximizeCoordinates) {
   window_->SetBounds(gfx::Rect(0, 0, 1000, 1000));

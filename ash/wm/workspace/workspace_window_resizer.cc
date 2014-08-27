@@ -443,23 +443,31 @@ void WorkspaceWindowResizer::CompleteDrag() {
     }
   }
 
-  if (!snapped && window_state()->IsSnapped()) {
-    // Keep the window snapped if the user resizes the window such that the
-    // window has valid bounds for a snapped window. Always unsnap the window
-    // if the user dragged the window via the caption area because doing this is
-    // slightly less confusing.
-    if (details().window_component == HTCAPTION ||
-        !AreBoundsValidSnappedBounds(window_state()->GetStateType(),
-                                     GetTarget()->bounds())) {
-      // Set the window to WINDOW_STATE_TYPE_NORMAL but keep the
-      // window at the bounds that the user has moved/resized the
-      // window to. ClearRestoreBounds() is used instead of
-      // SaveCurrentBoundsForRestore() because most of the restore
-      // logic is skipped because we are still in the middle of a
-      // drag.  TODO(pkotwicz): Fix this and use
-      // SaveCurrentBoundsForRestore().
+  if (!snapped) {
+    if (window_state()->IsSnapped()) {
+      // Keep the window snapped if the user resizes the window such that the
+      // window has valid bounds for a snapped window. Always unsnap the window
+      // if the user dragged the window via the caption area because doing this
+      // is slightly less confusing.
+      if (details().window_component == HTCAPTION ||
+          !AreBoundsValidSnappedBounds(window_state()->GetStateType(),
+                                       GetTarget()->bounds())) {
+        // Set the window to WINDOW_STATE_TYPE_NORMAL but keep the
+        // window at the bounds that the user has moved/resized the
+        // window to. ClearRestoreBounds() is used instead of
+        // SaveCurrentBoundsForRestore() because most of the restore
+        // logic is skipped because we are still in the middle of a
+        // drag.  TODO(pkotwicz): Fix this and use
+        // SaveCurrentBoundsForRestore().
+        window_state()->ClearRestoreBounds();
+        window_state()->Restore();
+      }
+    } else if (!dock_layout_->is_dragged_window_docked()) {
+      // The window was not snapped and is not snapped. This is a user
+      // resize/drag and so the current bounds should be maintained, clearing
+      // any prior restore bounds. When the window is docked the restore bound
+      // must be kept so the docked state can be reverted properly.
       window_state()->ClearRestoreBounds();
-      window_state()->Restore();
     }
   }
 }

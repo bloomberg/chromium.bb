@@ -162,7 +162,10 @@ void WorkspaceLayoutManager::OnKeyboardBoundsChanging(
       SetChildBounds(window, gfx::Rect(origin, window_bounds.size()));
     }
   } else if (window_state->HasRestoreBounds()) {
-    // Keyboard hidden, restore original bounds if they exist.
+    // Keyboard hidden, restore original bounds if they exist. If the user has
+    // resized or dragged the window in the meantime, WorkspaceWindowResizer
+    // will have cleared the restore bounds and this code will not accidentally
+    // override user intent.
     window_state->SetAndClearRestoreBounds();
   }
 }
