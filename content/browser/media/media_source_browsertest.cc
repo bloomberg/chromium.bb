@@ -10,12 +10,14 @@
 #endif
 
 // Common media types.
+#if !defined(THREAD_SANITIZER)
 const char kWebMAudioOnly[] = "audio/webm; codecs=\"vorbis\"";
 #if !defined(OS_ANDROID)
 const char kWebMOpusAudioOnly[] = "audio/webm; codecs=\"opus\"";
 #endif
 const char kWebMVideoOnly[] = "video/webm; codecs=\"vp8\"";
 const char kWebMAudioVideo[] = "video/webm; codecs=\"vorbis, vp8\"";
+#endif  // !defined(THREAD_SANITIZER)
 
 namespace content {
 
@@ -55,6 +57,8 @@ class MediaSourceTest : public content::MediaBrowserTest {
 #endif
 };
 
+// http://crbug.com/407452
+#if !defined(THREAD_SANITIZER)
 IN_PROC_BROWSER_TEST_F(MediaSourceTest, Playback_VideoAudio_WebM) {
   TestSimplePlayback("bear-320x240.webm", kWebMAudioVideo, kEnded);
 }
@@ -90,5 +94,6 @@ IN_PROC_BROWSER_TEST_F(MediaSourceTest, ConfigChangeVideo) {
                    kEnded,
                    true);
 }
+#endif  // !defined(THREAD_SANITIZER)
 
 }  // namespace content

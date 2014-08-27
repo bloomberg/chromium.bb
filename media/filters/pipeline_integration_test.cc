@@ -1425,6 +1425,8 @@ TEST_F(PipelineIntegrationTest, ChunkDemuxerAbortRead_AudioOnly) {
                                  0x10CA, 19730));
 }
 
+// http://crbug.com/407452
+#if !defined(THREAD_SANITIZER)
 // Verify video decoder & renderer can handle aborted demuxer reads.
 TEST_F(PipelineIntegrationTest, ChunkDemuxerAbortRead_VideoOnly) {
   ASSERT_TRUE(TestSeekDuringRead("bear-320x240-video-only.webm", kVideoOnlyWebM,
@@ -1433,6 +1435,7 @@ TEST_F(PipelineIntegrationTest, ChunkDemuxerAbortRead_VideoOnly) {
                                  base::TimeDelta::FromMilliseconds(1668),
                                  0x1C896, 65536));
 }
+#endif  // !defined(THREAD_SANITIZER)
 
 // Verify that Opus audio in WebM containers can be played back.
 TEST_F(PipelineIntegrationTest, BasicPlayback_AudioOnly_Opus_WebM) {
