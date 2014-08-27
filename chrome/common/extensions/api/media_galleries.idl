@@ -173,6 +173,15 @@ namespace mediaGalleries {
 
   callback MediaMetadataCallback = void (MediaMetadata metadata);
 
+  // A dictionary that describes the add gallery watch request results.
+  dictionary AddGalleryWatchResult {
+    DOMString galleryId;
+    boolean success;
+  };
+
+  callback AddGalleryWatchCallback = void (AddGalleryWatchResult result);
+  callback GetAllGalleryWatchCallback = void (DOMString[] galleryIds);
+
   interface Functions {
     // Get the media galleries configured in this user agent. If none are
     // configured or available, the callback will receive an empty array.
@@ -220,6 +229,20 @@ namespace mediaGalleries {
     static void getMetadata([instanceOf=Blob] object mediaFile,
                             optional MediaMetadataOptions options,
                             MediaMetadataCallback callback);
+
+    // Adds a gallery watch for the gallery with the specified gallery ID.
+    // The given callback is then fired with a success or failure result.
+    static void addGalleryWatch(DOMString galleryId,
+                                AddGalleryWatchCallback callback);
+
+    // Removes a gallery watch for the gallery with the specified gallery ID.
+    static void removeGalleryWatch(DOMString galleryId);
+
+    // Notifies which galleries are being watched via the given callback.
+    static void getAllGalleryWatch(GetAllGalleryWatchCallback callback);
+
+    // Removes all gallery watches.
+    static void removeAllGalleryWatch();
   };
 
   interface Events {

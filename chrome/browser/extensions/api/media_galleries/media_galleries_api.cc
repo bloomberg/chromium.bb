@@ -68,6 +68,9 @@ namespace MediaGalleries = api::media_galleries;
 namespace DropPermissionForMediaFileSystem =
     MediaGalleries::DropPermissionForMediaFileSystem;
 namespace GetMediaFileSystems = MediaGalleries::GetMediaFileSystems;
+namespace AddGalleryWatch = MediaGalleries::AddGalleryWatch;
+namespace RemoveGalleryWatch = MediaGalleries::RemoveGalleryWatch;
+namespace GetAllGalleryWatch = MediaGalleries::GetAllGalleryWatch;
 
 namespace {
 
@@ -75,7 +78,7 @@ const char kDisallowedByPolicy[] =
     "Media Galleries API is disallowed by policy: ";
 const char kFailedToSetGalleryPermission[] =
     "Failed to set gallery permission.";
-const char kInvalidGalleryId[] = "Invalid gallery id.";
+const char kInvalidGalleryIdMsg[] = "Invalid gallery id.";
 const char kMissingEventListener[] = "Missing event listener registration.";
 const char kNonExistentGalleryId[] = "Non-existent gallery id.";
 const char kNoScanPermission[] = "No permission to scan.";
@@ -92,6 +95,8 @@ const char kAttachedImagesBlobInfoKey[] = "attachedImagesBlobInfo";
 const char kBlobUUIDKey[] = "blobUUID";
 const char kTypeKey[] = "type";
 const char kSizeKey[] = "size";
+
+const char kInvalidGalleryId[] = "-1";
 
 MediaFileSystemRegistry* media_file_system_registry() {
   return g_browser_process->media_file_system_registry();
@@ -118,6 +123,27 @@ bool Setup(Profile* profile, std::string* error, base::Closure callback) {
   MediaGalleriesPreferences* preferences =
       media_file_system_registry()->GetPreferences(profile);
   preferences->EnsureInitialized(callback);
+  return true;
+}
+
+// Returns true and sets |gallery_file_path| and |gallery_pref_id| if the
+// |gallery_id| is valid and returns false otherwise.
+bool GetGalleryFilePathAndId(const std::string& gallery_id,
+                             Profile* profile,
+                             const Extension* extension,
+                             base::FilePath* gallery_file_path,
+                             MediaGalleryPrefId* gallery_pref_id) {
+  MediaGalleryPrefId pref_id;
+  if (!base::StringToUint64(gallery_id, &pref_id))
+    return false;
+  MediaGalleriesPreferences* preferences =
+      g_browser_process->media_file_system_registry()->GetPreferences(profile);
+  base::FilePath file_path(
+      preferences->LookUpGalleryPathForExtension(pref_id, extension, false));
+  if (file_path.empty())
+    return false;
+  *gallery_pref_id = pref_id;
+  *gallery_file_path = file_path;
   return true;
 }
 
@@ -399,7 +425,7 @@ void MediaGalleriesEventRouter::OnGalleryChanged(
     const std::string& extension_id, MediaGalleryPrefId gallery_id) {
   MediaGalleries::GalleryChangeDetails details;
   details.type = MediaGalleries::GALLERY_CHANGE_TYPE_CONTENTS_CHANGED;
-  details.gallery_id = gallery_id;
+  details.gallery_id = base::Uint64ToString(gallery_id);
   DispatchEventToExtension(
       extension_id,
       MediaGalleries::OnGalleryChanged::kEventName,
@@ -425,6 +451,9 @@ void MediaGalleriesEventRouter::OnListenerRemoved(
   }
 }
 
+///////////////////////////////////////////////////////////////////////////////
+//               MediaGalleriesGetMediaFileSystemsFunction                   //
+///////////////////////////////////////////////////////////////////////////////
 MediaGalleriesGetMediaFileSystemsFunction::
     ~MediaGalleriesGetMediaFileSystemsFunction() {}
 
@@ -532,6 +561,10 @@ void MediaGalleriesGetMediaFileSystemsFunction::GetMediaFileSystemsForExtension(
       render_view_host(), extension(), cb);
 }
 
+
+///////////////////////////////////////////////////////////////////////////////
+//          MediaGalleriesGetAllMediaFileSystemMetadataFunction              //
+///////////////////////////////////////////////////////////////////////////////
 MediaGalleriesGetAllMediaFileSystemMetadataFunction::
     ~MediaGalleriesGetAllMediaFileSystemMetadataFunction() {}
 
@@ -594,6 +627,9 @@ void MediaGalleriesGetAllMediaFileSystemMetadataFunction::OnGetGalleries(
   SendResponse(true);
 }
 
+///////////////////////////////////////////////////////////////////////////////
+//               MediaGalleriesAddUserSelectedFolderFunction                 //
+///////////////////////////////////////////////////////////////////////////////
 MediaGalleriesAddUserSelectedFolderFunction::
     ~MediaGalleriesAddUserSelectedFolderFunction() {}
 
@@ -703,6 +739,9 @@ MediaGalleriesAddUserSelectedFolderFunction::GetMediaFileSystemsForExtension(
       render_view_host(), extension(), cb);
 }
 
+///////////////////////////////////////////////////////////////////////////////
+//         MediaGalleriesDropPermissionForMediaFileSystemFunction            //
+///////////////////////////////////////////////////////////////////////////////
 MediaGalleriesDropPermissionForMediaFileSystemFunction::
     ~MediaGalleriesDropPermissionForMediaFileSystemFunction() {}
 
@@ -715,7 +754,7 @@ bool MediaGalleriesDropPermissionForMediaFileSystemFunction::RunAsync() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
   MediaGalleryPrefId pref_id;
   if (!base::StringToUint64(params->gallery_id, &pref_id)) {
-    error_ = kInvalidGalleryId;
+    error_ = kInvalidGalleryIdMsg;
     return false;
   }
 
@@ -746,6 +785,9 @@ void MediaGalleriesDropPermissionForMediaFileSystemFunction::OnPreferencesInit(
   SendResponse(dropped);
 }
 
+///////////////////////////////////////////////////////////////////////////////
+//                 MediaGalleriesStartMediaScanFunction                      //
+///////////////////////////////////////////////////////////////////////////////
 MediaGalleriesStartMediaScanFunction::~MediaGalleriesStartMediaScanFunction() {}
 
 bool MediaGalleriesStartMediaScanFunction::RunAsync() {
@@ -772,6 +814,9 @@ void MediaGalleriesStartMediaScanFunction::OnPreferencesInit() {
   SendResponse(true);
 }
 
+///////////////////////////////////////////////////////////////////////////////
+//                MediaGalleriesCancelMediaScanFunction                      //
+///////////////////////////////////////////////////////////////////////////////
 MediaGalleriesCancelMediaScanFunction::
     ~MediaGalleriesCancelMediaScanFunction() {
 }
@@ -793,6 +838,9 @@ void MediaGalleriesCancelMediaScanFunction::OnPreferencesInit() {
   SendResponse(true);
 }
 
+///////////////////////////////////////////////////////////////////////////////
+//                MediaGalleriesAddScanResultsFunction                       //
+///////////////////////////////////////////////////////////////////////////////
 MediaGalleriesAddScanResultsFunction::~MediaGalleriesAddScanResultsFunction() {}
 
 bool MediaGalleriesAddScanResultsFunction::RunAsync() {
@@ -867,6 +915,9 @@ void MediaGalleriesAddScanResultsFunction::ReturnGalleries(
   SendResponse(true);
 }
 
+///////////////////////////////////////////////////////////////////////////////
+//                 MediaGalleriesGetMetadataFunction                         //
+///////////////////////////////////////////////////////////////////////////////
 MediaGalleriesGetMetadataFunction::~MediaGalleriesGetMetadataFunction() {}
 
 bool MediaGalleriesGetMetadataFunction::RunAsync() {
@@ -1031,6 +1082,196 @@ void MediaGalleriesGetMetadataFunction::ConstructNextBlob(
   // All Blobs have been constructed. The renderer will take ownership.
   SetResult(result_dictionary.release());
   SetTransferredBlobUUIDs(*blob_uuids);
+  SendResponse(true);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//              MediaGalleriesAddGalleryWatchFunction                        //
+///////////////////////////////////////////////////////////////////////////////
+MediaGalleriesAddGalleryWatchFunction::
+    ~MediaGalleriesAddGalleryWatchFunction() {
+}
+
+bool MediaGalleriesAddGalleryWatchFunction::RunAsync() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(GetProfile());
+  if (!render_view_host() || !render_view_host()->GetProcess())
+    return false;
+
+  scoped_ptr<AddGalleryWatch::Params> params(
+      AddGalleryWatch::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  MediaGalleriesPreferences* preferences =
+      g_browser_process->media_file_system_registry()->GetPreferences(
+          GetProfile());
+  preferences->EnsureInitialized(
+      base::Bind(&MediaGalleriesAddGalleryWatchFunction::OnPreferencesInit,
+                 this,
+                 params->gallery_id));
+
+  return true;
+}
+
+void MediaGalleriesAddGalleryWatchFunction::OnPreferencesInit(
+    const std::string& pref_id) {
+  base::FilePath gallery_file_path;
+  MediaGalleryPrefId gallery_pref_id = kInvalidMediaGalleryPrefId;
+  if (!GetGalleryFilePathAndId(pref_id,
+                               GetProfile(),
+                               extension(),
+                               &gallery_file_path,
+                               &gallery_pref_id)) {
+    api::media_galleries::AddGalleryWatchResult result;
+    error_ = kInvalidGalleryIdMsg;
+    result.gallery_id = kInvalidGalleryId;
+    result.success = false;
+    SetResult(result.ToValue().release());
+    SendResponse(false);
+    return;
+  }
+
+  gallery_watch_manager()->AddWatch(
+      GetProfile(),
+      extension(),
+      gallery_pref_id,
+      base::Bind(&MediaGalleriesAddGalleryWatchFunction::HandleResponse,
+                 this,
+                 gallery_pref_id));
+}
+
+void MediaGalleriesAddGalleryWatchFunction::HandleResponse(
+    MediaGalleryPrefId gallery_id,
+    const std::string& error) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  // If an app added a file watch without any event listeners on the
+  // onGalleryChanged event, that's an error.
+  MediaGalleriesEventRouter* api = MediaGalleriesEventRouter::Get(GetProfile());
+  api::media_galleries::AddGalleryWatchResult result;
+  result.gallery_id = base::Uint64ToString(gallery_id);
+
+  if (!api->ExtensionHasGalleryChangeListener(extension()->id())) {
+    result.success = false;
+    SetResult(result.ToValue().release());
+    error_ = kMissingEventListener;
+    SendResponse(false);
+    return;
+  }
+
+  result.success = error.empty();
+  SetResult(result.ToValue().release());
+  if (error.empty()) {
+    SendResponse(true);
+  } else {
+    error_ = error.c_str();
+    SendResponse(false);
+  }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//              MediaGalleriesRemoveGalleryWatchFunction                     //
+///////////////////////////////////////////////////////////////////////////////
+
+MediaGalleriesRemoveGalleryWatchFunction::
+    ~MediaGalleriesRemoveGalleryWatchFunction() {
+}
+
+bool MediaGalleriesRemoveGalleryWatchFunction::RunAsync() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (!render_view_host() || !render_view_host()->GetProcess())
+    return false;
+
+  scoped_ptr<RemoveGalleryWatch::Params> params(
+      RemoveGalleryWatch::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  MediaGalleriesPreferences* preferences =
+      g_browser_process->media_file_system_registry()->GetPreferences(
+          GetProfile());
+  preferences->EnsureInitialized(
+      base::Bind(&MediaGalleriesRemoveGalleryWatchFunction::OnPreferencesInit,
+                 this,
+                 params->gallery_id));
+  return true;
+}
+
+void MediaGalleriesRemoveGalleryWatchFunction::OnPreferencesInit(
+    const std::string& pref_id) {
+  base::FilePath gallery_file_path;
+  MediaGalleryPrefId gallery_pref_id = 0;
+  if (!GetGalleryFilePathAndId(pref_id,
+                               GetProfile(),
+                               extension(),
+                               &gallery_file_path,
+                               &gallery_pref_id)) {
+    error_ = kInvalidGalleryIdMsg;
+    SendResponse(false);
+    return;
+  }
+
+  gallery_watch_manager()->RemoveWatch(
+      GetProfile(), extension_id(), gallery_pref_id);
+  SendResponse(true);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//              MediaGalleriesGetAllGalleryWatchFunction                     //
+///////////////////////////////////////////////////////////////////////////////
+
+MediaGalleriesGetAllGalleryWatchFunction::
+    ~MediaGalleriesGetAllGalleryWatchFunction() {
+}
+
+bool MediaGalleriesGetAllGalleryWatchFunction::RunAsync() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (!render_view_host() || !render_view_host()->GetProcess())
+    return false;
+
+  MediaGalleriesPreferences* preferences =
+      g_browser_process->media_file_system_registry()->GetPreferences(
+          GetProfile());
+  preferences->EnsureInitialized(base::Bind(
+      &MediaGalleriesGetAllGalleryWatchFunction::OnPreferencesInit, this));
+  return true;
+}
+
+void MediaGalleriesGetAllGalleryWatchFunction::OnPreferencesInit() {
+  std::vector<std::string> result;
+  MediaGalleryPrefIdSet gallery_ids =
+      gallery_watch_manager()->GetWatchSet(GetProfile(), extension_id());
+  for (MediaGalleryPrefIdSet::const_iterator iter = gallery_ids.begin();
+       iter != gallery_ids.end();
+       ++iter) {
+    result.push_back(base::Uint64ToString(*iter));
+  }
+  results_ = GetAllGalleryWatch::Results::Create(result);
+  SendResponse(true);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//              MediaGalleriesRemoveAllGalleryWatchFunction                  //
+///////////////////////////////////////////////////////////////////////////////
+
+MediaGalleriesRemoveAllGalleryWatchFunction::
+    ~MediaGalleriesRemoveAllGalleryWatchFunction() {
+}
+
+bool MediaGalleriesRemoveAllGalleryWatchFunction::RunAsync() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (!render_view_host() || !render_view_host()->GetProcess())
+    return false;
+
+  MediaGalleriesPreferences* preferences =
+      g_browser_process->media_file_system_registry()->GetPreferences(
+          GetProfile());
+  preferences->EnsureInitialized(base::Bind(
+      &MediaGalleriesRemoveAllGalleryWatchFunction::OnPreferencesInit, this));
+  return true;
+}
+
+void MediaGalleriesRemoveAllGalleryWatchFunction::OnPreferencesInit() {
+  gallery_watch_manager()->RemoveAllWatches(GetProfile(), extension_id());
   SendResponse(true);
 }
 

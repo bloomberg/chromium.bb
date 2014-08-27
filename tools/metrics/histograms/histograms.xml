@@ -41020,6 +41020,10 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="883" label="FILESYSTEMPROVIDER_GETALL"/>
   <int value="884"
       label="EASYUNLOCKPRIVATE_CONNECTTOBLUETOOTHSERVICEINSECURELY"/>
+  <int value="885" label="MEDIAGALLERIES_ADDGALLERYWATCH"/>
+  <int value="886" label="MEDIAGALLERIES_REMOVEGALLERYWATCH"/>
+  <int value="887" label="MEDIAGALLERIES_GETALLGALLERYWATCH"/>
+  <int value="888" label="MEDIAGALLERIES_REMOVEALLGALLERYWATCH"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

@@ -298,6 +298,65 @@ class MediaGalleriesGetMetadataFunction : public ChromeAsyncExtensionFunction {
       scoped_ptr<content::BlobHandle> current_blob);
 };
 
+class MediaGalleriesAddGalleryWatchFunction
+    : public ChromeAsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("mediaGalleries.addGalleryWatch",
+                             MEDIAGALLERIES_ADDGALLERYWATCH);
+
+ protected:
+  virtual ~MediaGalleriesAddGalleryWatchFunction();
+  virtual bool RunAsync() OVERRIDE;
+
+ private:
+  void OnPreferencesInit(const std::string& pref_id);
+
+  // Gallery watch request handler.
+  void HandleResponse(MediaGalleryPrefId gallery_id, const std::string& error);
+};
+
+class MediaGalleriesRemoveGalleryWatchFunction
+    : public ChromeAsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("mediaGalleries.removeGalleryWatch",
+                             MEDIAGALLERIES_REMOVEGALLERYWATCH);
+
+ protected:
+  virtual ~MediaGalleriesRemoveGalleryWatchFunction();
+  virtual bool RunAsync() OVERRIDE;
+
+ private:
+  void OnPreferencesInit(const std::string& pref_id);
+};
+
+class MediaGalleriesGetAllGalleryWatchFunction
+    : public ChromeAsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("mediaGalleries.getAllGalleryWatch",
+                             MEDIAGALLERIES_GETALLGALLERYWATCH);
+
+ protected:
+  virtual ~MediaGalleriesGetAllGalleryWatchFunction();
+  virtual bool RunAsync() OVERRIDE;
+
+ private:
+  void OnPreferencesInit();
+};
+
+class MediaGalleriesRemoveAllGalleryWatchFunction
+    : public ChromeAsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("mediaGalleries.removeAllGalleryWatch",
+                             MEDIAGALLERIES_REMOVEALLGALLERYWATCH);
+
+ protected:
+  virtual ~MediaGalleriesRemoveAllGalleryWatchFunction();
+  virtual bool RunAsync() OVERRIDE;
+
+ private:
+  void OnPreferencesInit();
+};
+
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_MEDIA_GALLERIES_MEDIA_GALLERIES_API_H_

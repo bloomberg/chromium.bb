@@ -49,9 +49,8 @@ void HandleProfileShutdownOnFileThread(void* profile_id) {
   GalleryWatchManager::OnProfileShutdown(profile_id);
 }
 
-// Gets the |gallery_file_path| and |gallery_pref_id| of the gallery specified
-// by the |gallery_id|. Returns true and set |gallery_file_path| and
-// |gallery_pref_id| if the |gallery_id| is valid and returns false otherwise.
+// Returns true and sets |gallery_file_path| and |gallery_pref_id| if the
+// |gallery_id| is valid and returns false otherwise.
 bool GetGalleryFilePathAndId(const std::string& gallery_id,
                              Profile* profile,
                              const Extension* extension,
