@@ -421,7 +421,6 @@ crbug.com/245630 virtual/gpu/compositedscrolling/overflow/overflow-positioning.h
 
 crbug.com/248063 plugins/plugin-clip-subframe.html [ Pass Failure ]
 
-crbug.com/254332 [ SnowLeopard Debug ] fast/forms/checkbox/checkbox-focus-by-mouse-then-keydown.html [ ImageOnlyFailure Pass ]
 crbug.com/254332 [ XP ] fast/forms/submit/submit-focus-by-mouse.html [ ImageOnlyFailure Pass ]
 
 crbug.com/265650 compositing/repaint/transform-style-change.html [ Pass ImageOnlyFailure ]
@@ -1079,6 +1078,12 @@ crbug.com/371651 svg/custom/js-update-stop-linked-gradient.svg [ Pass Failure ]
 crbug.com/371651 svg/custom/use-disappears-after-style-update.svg [ Pass Failure ]
 
 crbug.com/371654 fast/html/imports/import-custom-element-dup-resolve.html [ Pass Failure ]
+
+crbug.com/407961 fast/forms/button/button-reset-focus-by-mouse-then-keydown.html [ NeedsRebaseline ]
+crbug.com/407961 fast/forms/checkbox/checkbox-focus-by-mouse-then-keydown.html [ NeedsRebaseline ]
+crbug.com/407961 fast/forms/radio/radio-focus-by-mouse-then-keydown.html [ NeedsRebaseline ]
+crbug.com/407961 fast/forms/range/range-focus-by-mouse-then-keydown.html [ NeedsRebaseline ]
+crbug.com/407961 fast/forms/submit/submit-focus-by-mouse-then-keydown.html [ NeedsRebaseline ]
 
 crbug.com/394221 [ Mac ] fast/text/emphasis-avoid-ruby.html [ Pass ImageOnlyFailure ]
 crbug.com/394221 [ Mac ] fast/text/emphasis-overlap.html [ Pass ImageOnlyFailure ]

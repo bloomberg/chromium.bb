@@ -1,11 +1,16 @@
 <!DOCTYPE html>
 <body>
 <script src="../resources/common.js"></script>
+<script src="../../repaint/resources/text-based-repaint.js"></script>
 <input type="range">
 <!-- A keydown event after mouse-focus should draw a focus ring. -->
 <script>
+window.onload = runRepaintTest;
+window.enablePixelTesting = true;
 eventSender.mouseMoveTo(800, 600);
 clickElement(document.querySelector('input'));
-eventSender.keyDown('leftShift');
+function repaintTest() {
+    eventSender.keyDown('leftShift');
+}
 </script>
 </body>
