@@ -15,6 +15,7 @@ namespace webcrypto {
 
 namespace {
 
+// This class is used as a singleton. All methods must be threadsafe.
 class AlgorithmRegistry {
  public:
   AlgorithmRegistry()
@@ -57,14 +58,14 @@ class AlgorithmRegistry {
   }
 
  private:
-  scoped_ptr<AlgorithmImplementation> sha_;
-  scoped_ptr<AlgorithmImplementation> aes_gcm_;
-  scoped_ptr<AlgorithmImplementation> aes_cbc_;
-  scoped_ptr<AlgorithmImplementation> aes_ctr_;
-  scoped_ptr<AlgorithmImplementation> aes_kw_;
-  scoped_ptr<AlgorithmImplementation> hmac_;
-  scoped_ptr<AlgorithmImplementation> rsa_ssa_;
-  scoped_ptr<AlgorithmImplementation> rsa_oaep_;
+  const scoped_ptr<AlgorithmImplementation> sha_;
+  const scoped_ptr<AlgorithmImplementation> aes_gcm_;
+  const scoped_ptr<AlgorithmImplementation> aes_cbc_;
+  const scoped_ptr<AlgorithmImplementation> aes_ctr_;
+  const scoped_ptr<AlgorithmImplementation> aes_kw_;
+  const scoped_ptr<AlgorithmImplementation> hmac_;
+  const scoped_ptr<AlgorithmImplementation> rsa_ssa_;
+  const scoped_ptr<AlgorithmImplementation> rsa_oaep_;
 };
 
 }  // namespace
