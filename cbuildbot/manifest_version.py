@@ -679,9 +679,11 @@ class BuildSpecsManager(object):
     try:
       status_dict = cPickle.loads(pickle_string)
     except (cPickle.UnpicklingError, AttributeError, EOFError,
-            ImportError, IndexError) as e:
+            ImportError, IndexError, TypeError) as e:
       # The above exceptions are listed as possible unpickling exceptions
-      # by http://docs.python.org/2/library/pickle.
+      # by http://docs.python.org/2/library/pickle
+      # In addition to the exceptions listed in the doc, we've also observed
+      # TypeError in the wild.
       logging.warning('Failed with %r to unpickle status file.', e)
       return BuilderStatus(BuilderStatus.STATUS_FAILED, message=None)
 
