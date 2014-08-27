@@ -18,9 +18,6 @@ if (is_android) {
   sources = gypi_values.main_schema_files
   if (is_chromeos) {
     sources += gypi_values.chromeos_schema_files
-    if (is_chrome_branded) {
-      sources += gypi_values.chromeos_branded_schema_files
-    }
   }
   if (enable_webrtc) {
     sources += gypi_values.webrtc_schema_files

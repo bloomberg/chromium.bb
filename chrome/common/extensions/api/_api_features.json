@@ -523,10 +523,6 @@
     "dependencies": ["permission:inputMethodPrivate"],
     "contexts": ["blessed_extension"]
   },
-  "ledger": {
-    "dependencies": ["permission:ledger"],
-    "contexts": ["blessed_extension"]
-  },
   "location": {
     "dependencies": ["permission:location"],
     "contexts": ["blessed_extension"]

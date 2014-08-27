@@ -115,7 +115,6 @@ class APIPermission {
     kInfobars,
     kInput,
     kInputMethodPrivate,
-    kLedger,
     kLocation,
     kLogPrivate,
     kManagement,

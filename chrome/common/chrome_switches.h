@@ -218,8 +218,6 @@ extern const char kIpcFuzzerTestcase[];
 extern const char kKeepAliveForTest[];
 extern const char kKioskMode[];
 extern const char kKioskModePrinting[];
-extern const char kLedgerServer[];
-extern const char kLedgerTracingToken[];
 extern const char kLimitedInstallFromWebstore[];
 extern const char kLoadComponentExtension[];
 extern const char kLoadExtension[];

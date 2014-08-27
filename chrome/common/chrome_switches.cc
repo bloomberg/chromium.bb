@@ -771,14 +771,6 @@ const char kKioskMode[]                     = "kiosk";
 // See http://crbug.com/31395.
 const char kKioskModePrinting[]             = "kiosk-printing";
 
-// Address for the ledger (Copresence) server.
-// Ledger is deprecated; use the chrome.copresence API instead.
-const char kLedgerServer[]                  = "ledger-server";
-
-// Tracing token for calls to the ledger (Copresence) server.
-// Ledger is deprecated; use the chrome.copresence API instead.
-const char kLedgerTracingToken[]            = "ledger-tracing-token";
-
 // Causes Chrome to attempt to get metadata from the webstore for the
 // given item, and then prompt the user to download and install it.
 const char kLimitedInstallFromWebstore[]    = "limited-install-from-webstore";

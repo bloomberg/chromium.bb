@@ -125,7 +125,6 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
       {APIPermission::kInfobars, "infobars"},
       {APIPermission::kInput, "input", APIPermissionInfo::kFlagNone,
        IDS_EXTENSION_PROMPT_WARNING_INPUT, PermissionMessage::kInput},
-      {APIPermission::kLedger, "ledger"},
       {APIPermission::kLocation, "location",
        APIPermissionInfo::kFlagCannotBeOptional,
        IDS_EXTENSION_PROMPT_WARNING_GEOLOCATION,

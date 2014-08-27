@@ -40890,7 +40890,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
       label="FILESYSTEMPROVIDERINTERNAL_READDIRECTORYREQUESTEDSUCCESS"/>
   <int value="761"
       label="DELETED_FILESYSTEMPROVIDERINTERNAL_READDIRECTORYREQUESTEDERROR"/>
-  <int value="762" label="LEDGER_BATCHEXECUTE"/>
+  <int value="762" label="DELETED_LEDGER_BATCHEXECUTE"/>
   <int value="763"
       label="DELETED_FILESYSTEMPROVIDERINTERNAL_OPENFILEREQUESTEDSUCCESS"/>
   <int value="764"

@@ -142,9 +142,6 @@
       'wallpaper_private.json',
       'webcam_private.idl',
     ],
-    'chromeos_branded_schema_files': [
-      'ledger/ledger.idl',
-    ],
 
     'webrtc_schema_files': [
       'cast_streaming_rtp_stream.idl',
@@ -179,11 +176,6 @@
       ['enable_extensions==1 and enable_webrtc==1', {
         'schema_files': [
           '<@(webrtc_schema_files)',
-        ],
-      }],
-      ['branding=="Chrome" and chromeos==1', {
-        'schema_files': [
-          '<@(chromeos_branded_schema_files)',
         ],
       }],
     ],

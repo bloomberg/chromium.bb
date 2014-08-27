@@ -1045,11 +1045,6 @@
             'browser/extensions/api/tabs/ash_panel_contents.h',
           ],
         }],
-        ['branding=="Chrome" and chromeos==1', {
-          'dependencies': [
-            'browser/extensions/api/ledger/ledger.gyp:ledger_api',
-          ],
-        }],
         ['use_aura==1', {
           'dependencies': [
             '../ui/keyboard/keyboard.gyp:keyboard',

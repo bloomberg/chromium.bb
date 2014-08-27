@@ -360,7 +360,6 @@
         <include name="IDR_GENIUS_APP_MANIFEST" file="resources\chromeos\genius_app\manifest.json" type="BINDATA" />
         <include name="IDR_HELP_MANIFEST" file="resources\help_app\manifest.json" type="BINDATA" />
         <include name="IDR_QUICKOFFICE_MANIFEST" file="resources\chromeos\quickoffice\manifest.json" type="BINDATA" />
-        <include name="IDR_LEDGER_PROXY_MANIFEST" file="extensions\api\ledger\ledger_proxy\manifest.json" type="BINDATA" />
       </if>
       <if expr="chromeos">
         <include name="IDR_SALSA_CSS" file="resources\chromeos\salsa.css" type="BINDATA" />

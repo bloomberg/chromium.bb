@@ -179,14 +179,6 @@
       <include name="IDR_CRYPTOTOKEN_GSTATICORIGINCHECK_JS" file="cryptotoken/gstaticorigincheck.js" type="BINDATA" />
       <include name="IDR_CRYPTOTOKEN_ORIGINCHECK_JS" file="cryptotoken/origincheck.js" type="BINDATA" />
       <include name="IDR_CRYPTOTOKEN_CRYPTOTOKENBACKGROUND_JS" file="cryptotoken/cryptotokenbackground.js" type="BINDATA" />
-      <if expr="chromeos and _google_chrome">
-        <include name="IDR_LEDGER_BACKGROUND_HTML" file="../extensions/api/ledger/ledger_proxy/background.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
-        <include name="IDR_LEDGER_INIT_JS" file="../extensions/api/ledger/ledger_proxy/js/init.js" type="BINDATA" />
-        <include name="IDR_LEDGER_NACL_JS" file="../extensions/api/ledger/ledger_proxy/js/nacl.js" type="BINDATA" />
-        <include name="IDR_LEDGER_WRAPPER_JS" file="../extensions/api/ledger/ledger_proxy/js/wrapper.js" type="BINDATA" />
-        <include name="IDR_LEDGER_LEDGER_PROXY_NMF" file="../extensions/api/ledger/ledger_proxy/ledger_proxy.nmf.js" type="BINDATA" />
-        <include name="IDR_LEDGER_LEDGER_PROXY_PEXE" file="../extensions/api/ledger/ledger_proxy/ledger_proxy_pnacl.pexe.js" type="BINDATA" />
-      </if>
       <include name="IDR_WHISPERNET_PROXY_BACKGROUND_HTML" file="whispernet_proxy/background.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_WHISPERNET_PROXY_INIT_JS" file="whispernet_proxy/js/init.js" type="BINDATA" />
       <include name="IDR_WHISPERNET_PROXY_NACL_JS" file="whispernet_proxy/js/nacl.js" type="BINDATA" />

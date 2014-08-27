@@ -657,7 +657,6 @@ TEST(PermissionsTest, PermissionMessages) {
   skip.insert(APIPermission::kGcm);
   skip.insert(APIPermission::kIdle);
   skip.insert(APIPermission::kIdltest);
-  skip.insert(APIPermission::kLedger);
   skip.insert(APIPermission::kLogPrivate);
   skip.insert(APIPermission::kNotifications);
   skip.insert(APIPermission::kNotificationProvider);
