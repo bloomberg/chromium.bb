@@ -64,7 +64,6 @@ class FileElementReader : public net::UploadFileElementReader {
 };
 
 void ResolveBlobReference(
-    ResourceRequestBody* body,
     storage::BlobStorageContext* blob_context,
     const ResourceRequestBody::Element& element,
     std::vector<const ResourceRequestBody::Element*>* resolved_elements) {
@@ -85,11 +84,6 @@ void ResolveBlobReference(
     DCHECK_NE(BlobData::Item::TYPE_BLOB, item.type());
     resolved_elements->push_back(&item);
   }
-
-  // Ensure the blob and any attached shareable files survive until
-  // upload completion. The |body| takes ownership of |handle|.
-  const void* key = handle.get();
-  body->SetUserData(key, handle.release());
 }
 
 }  // namespace
@@ -104,7 +98,7 @@ scoped_ptr<net::UploadDataStream> UploadDataStreamBuilder::Build(
   for (size_t i = 0; i < body->elements()->size(); ++i) {
     const ResourceRequestBody::Element& element = (*body->elements())[i];
     if (element.type() == ResourceRequestBody::Element::TYPE_BLOB)
-      ResolveBlobReference(body, blob_context, element, &resolved_elements);
+      ResolveBlobReference(blob_context, element, &resolved_elements);
     else
       resolved_elements.push_back(&element);
   }

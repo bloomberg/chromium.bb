@@ -306,6 +306,26 @@ storage::BlobStorageContext* GetBlobStorageContext(
   return filter->blob_storage_context()->context();
 }
 
+void AttachRequestBodyBlobDataHandles(
+    ResourceRequestBody* body,
+    storage::BlobStorageContext* blob_context) {
+  DCHECK(blob_context);
+  for (size_t i = 0; i < body->elements()->size(); ++i) {
+    const ResourceRequestBody::Element& element = (*body->elements())[i];
+    if (element.type() != ResourceRequestBody::Element::TYPE_BLOB)
+      continue;
+    scoped_ptr<storage::BlobDataHandle> handle =
+        blob_context->GetBlobDataFromUUID(element.blob_uuid());
+    DCHECK(handle);
+    if (!handle)
+      continue;
+    // Ensure the blob and any attached shareable files survive until
+    // upload completion. The |body| takes ownership of |handle|.
+    const void* key = handle.get();
+    body->SetUserData(key, handle.release());
+  }
+}
+
 }  // namespace
 
 // static
@@ -1057,11 +1077,19 @@ void ResourceDispatcherHostImpl::BeginRequest(
 
   new_request->SetLoadFlags(load_flags);
 
+  storage::BlobStorageContext* blob_context =
+      GetBlobStorageContext(filter_);
   // Resolve elements from request_body and prepare upload data.
   if (request_data.request_body.get()) {
+    // Attaches the BlobDataHandles to request_body not to free the blobs and
+    // any attached shareable files until upload completion. These data will be
+    // used in UploadDataStream and ServiceWorkerURLRequestJob.
+    AttachRequestBodyBlobDataHandles(
+        request_data.request_body.get(),
+        blob_context);
     new_request->set_upload(UploadDataStreamBuilder::Build(
         request_data.request_body.get(),
-        GetBlobStorageContext(filter_),
+        blob_context,
         filter_->file_system_context(),
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)
             .get()));
@@ -1111,7 +1139,7 @@ void ResourceDispatcherHostImpl::BeginRequest(
   ServiceWorkerRequestHandler::InitializeHandler(
       new_request.get(),
       filter_->service_worker_context(),
-      GetBlobStorageContext(filter_),
+      blob_context,
       child_id,
       request_data.service_worker_provider_id,
       request_data.resource_type,

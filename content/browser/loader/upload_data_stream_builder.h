@@ -32,10 +32,10 @@ class CONTENT_EXPORT UploadDataStreamBuilder {
  public:
   // Creates a new UploadDataStream from this request body.
   //
-  // This also resolves any blob references using the given |blob_context|
-  // and binds those blob references to the ResourceRequestBody ensuring that
-  // the blob data remains valid for the lifetime of the ResourceRequestBody
-  // object.
+  // If |body| contains any blob references, the caller is responsible for
+  // making sure them outlive the returned value of UploadDataStream. We do this
+  // by binding the BlobDataHandles of them to ResourceRequestBody in
+  // ResourceDispatcherHostImpl::BeginRequest().
   //
   // |file_system_context| is used to create a FileStreamReader for files with
   // filesystem URLs.  |file_task_runner| is used to perform file operations
