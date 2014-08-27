@@ -2250,6 +2250,8 @@ SANDBOX_DEATH_TEST(SandboxBPF, StartMultiThreadedAsSingleThreaded,
   BPF_ASSERT(!sandbox.StartSandbox(SandboxBPF::PROCESS_SINGLE_THREADED));
 }
 
+// http://crbug.com/407357
+#if !defined(THREAD_SANITIZER)
 SANDBOX_DEATH_TEST(SandboxBPF, StartSingleThreadedAsMultiThreaded,
     DEATH_MESSAGE("Cannot start sandbox; process may be single-threaded when "
                   "reported as not")) {
@@ -2257,6 +2259,7 @@ SANDBOX_DEATH_TEST(SandboxBPF, StartSingleThreadedAsMultiThreaded,
   sandbox.SetSandboxPolicy(new AllowAllPolicy());
   BPF_ASSERT(!sandbox.StartSandbox(SandboxBPF::PROCESS_MULTI_THREADED));
 }
+#endif  // !defined(THREAD_SANITIZER)
 
 }  // namespace
 
