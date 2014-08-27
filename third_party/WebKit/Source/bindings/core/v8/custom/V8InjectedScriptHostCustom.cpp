@@ -165,7 +165,7 @@ void V8InjectedScriptHost::typeMethodCustom(const v8::FunctionCallbackInfo<v8::V
         v8SetReturnValue(info, v8AtomicString(isolate, "string"));
         return;
     }
-    if (value->IsArray() || value->IsTypedArray()) {
+    if (value->IsArray() || value->IsTypedArray() || value->IsArgumentsObject()) {
         v8SetReturnValue(info, v8AtomicString(isolate, "array"));
         return;
     }

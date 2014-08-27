@@ -155,13 +155,10 @@ function isUInt32(obj)
  */
 function isArrayLike(obj)
 {
+    if (typeof obj !== "object")
+        return false;
     try {
-        if (typeof obj !== "object")
-            return false;
         if (typeof obj.splice === "function")
-            return isUInt32(obj.length);
-        var str = InjectedScriptHost.callFunction(Object.prototype.toString, obj);
-        if (str === "[object Arguments]")
             return isUInt32(obj.length);
     } catch (e) {
     }
