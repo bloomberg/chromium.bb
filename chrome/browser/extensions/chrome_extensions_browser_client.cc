@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/activity_log/activity_log.h"
 #include "chrome/browser/extensions/api/chrome_extensions_api_client.h"
 #include "chrome/browser/extensions/api/content_settings/content_settings_service.h"
+#include "chrome/browser/extensions/api/generated_api_registration.h"
 #include "chrome/browser/extensions/api/preference/chrome_direct_setting.h"
 #include "chrome/browser/extensions/api/preference/preference_api.h"
 #include "chrome/browser/extensions/api/runtime/chrome_runtime_api_delegate.h"
@@ -29,13 +30,12 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
-#include "chrome/common/extensions/api/generated_api.h"
 #include "chrome/common/extensions/features/feature_channel.h"
 #include "chrome/common/pref_names.h"
+#include "extensions/browser/api/generated_api_registration.h"
 #include "extensions/browser/extension_function_registry.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/pref_names.h"
-#include "extensions/common/api/generated_api.h"
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/chromeos_switches.h"

@@ -965,6 +965,7 @@
       # have the same dependencies. Once browser_extensions is untangled from
       # browser, then we can clean up these dependencies.
       'dependencies': [
+        'browser/extensions/api/api_registration.gyp:chrome_api_registration',
         'chrome_resources.gyp:chrome_extra_resources',
         'chrome_resources.gyp:chrome_resources',
         'chrome_resources.gyp:chrome_strings',
@@ -988,6 +989,7 @@
         '../crypto/crypto.gyp:crypto',
         '../device/bluetooth/bluetooth.gyp:device_bluetooth',
         '../device/hid/hid.gyp:device_hid',
+        '../extensions/browser/api/api_registration.gyp:extensions_api_registration',
         '../extensions/common/api/api.gyp:extensions_api',
         '../extensions/extensions.gyp:extensions_browser',
         '../extensions/extensions_strings.gyp:extensions_strings',
@@ -1015,6 +1017,7 @@
         '<(INTERMEDIATE_DIR)',
       ],
       'export_dependent_settings': [
+        'browser/extensions/api/api_registration.gyp:chrome_api_registration',
         'common/extensions/api/api.gyp:chrome_api',
         '../content/content.gyp:content_browser',
       ],

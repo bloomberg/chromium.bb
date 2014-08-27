@@ -15,11 +15,8 @@
     #     namespace, like "toplevel::%(namespace)s_api".
     #
     # Functions and namespaces can be excluded by setting "nocompile" to true.
-    # The default root path of API implementation sources is
-    # chrome/browser/extensions/api and can be overridden by setting "impl_dir".
     'api_gen_dir': '<(DEPTH)/tools/json_schema_compiler',
     'api_gen': '<(api_gen_dir)/compiler.py',
-    'impl_dir%': 'chrome/browser/extensions/api',
   },
   'rules': [
     {
@@ -57,7 +54,6 @@
         '--destdir=<(SHARED_INTERMEDIATE_DIR)',
         '--namespace=<(root_namespace)',
         '--generator=cpp',
-        '--impl-dir=<(impl_dir)'
       ],
       'message': 'Generating C++ code from <(RULE_INPUT_PATH) json files',
       'process_outputs_as_sources': 1,
@@ -96,7 +92,6 @@
         '--destdir=<(SHARED_INTERMEDIATE_DIR)',
         '--namespace=<(root_namespace)',
         '--generator=cpp',
-        '--impl-dir=<(impl_dir)'
       ],
       'message': 'Generating C++ code from <(RULE_INPUT_PATH) IDL files',
       'process_outputs_as_sources': 1,
