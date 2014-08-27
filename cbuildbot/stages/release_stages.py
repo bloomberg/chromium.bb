@@ -34,7 +34,7 @@ class SignerTestStage(artifact_stages.ArchivingStage):
 
   # If the signer tests take longer than 30 minutes, abort. They usually take
   # five minutes to run.
-  SIGNER_TEST_TIMEOUT = 1800
+  SIGNER_TEST_TIMEOUT = 30 * 60
 
   def PerformStage(self):
     if not self.archive_stage.WaitForRecoveryImage():
@@ -84,8 +84,8 @@ class PaygenStage(artifact_stages.ArchivingStage):
   # Poll for new results every 30 seconds.
   SIGNING_PERIOD = 30
 
-  # Timeout for PushImage to finish uploading images. 2 hours in seconds.
-  PUSHIMAGE_TIMEOUT = 2 * 60 * 60
+  # Timeout for PushImage to finish uploading images. 2.5 hours in seconds.
+  PUSHIMAGE_TIMEOUT = (2 * 60 + 30) * 60
 
   # Timeout for the signing process. 2 hours in seconds.
   SIGNING_TIMEOUT = 2 * 60 * 60
