@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Extensions/Apps API Owners</title>
+    <style>
+      .warning {
+        color: #f90101;
+      }
+      html, body {
+        width: 1400px;
+      }
+      table {
+        border-collapse: collapse;
+      }
+      table, th, td {
+        border: 1px solid #eee;
+        padding: 2px 6px;
+      }
+      tr:target {
+        font-weight: bold;
+        background-color: #dcdcdc;
+      }
+      #notes {
+        white-space: pre-line;
+      }
+    </style>
+  </head>
+  <body>
+    <h1><center>Extensions/Apps API Owners</center></h1>
+    <table>
+      <tr>
+        <th>API</th>
+        <th>Owners</th>
+        <th>Notes</th>
+      </tr>
+      {{#entry:owners.apis}}
+      <tr id={{entry.id}}>
+        <td>{{entry.apiName}}</td>
+        <td>
+          {{?entry.owners}}
+            {{#owner:entry.owners}}
+            <a href="https://codereview.chromium.org/user/{{owner.email}}">
+              {{owner.username}}</a>{{^owner.last}}, {{/owner.last}}
+            {{/entry.owners}}
+          {{:}}
+            <a href="#core"><span class="warning">No owners.</span></a>
+          {{/entry.owners}}
+        </td>
+        <td id="notes">
+          {{entry.notes}}
+        </td>
+      </tr>
+      {{/owners.apis}}
+    </table>
+  </body>
+</html>

@@ -207,6 +207,7 @@ class CompiledFileSystem(object):
       cache_data = self._compilation_function(path, files)
       self._file_object_store.Set(path, _CacheEntry(cache_data, version))
       return cache_data
+
     return self._file_system.ReadSingle(
         path, skip_not_found=skip_not_found).Then(compile_)
 

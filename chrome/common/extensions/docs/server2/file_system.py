@@ -86,7 +86,8 @@ class FileSystem(object):
 
   def ReadSingle(self, path, skip_not_found=False):
     '''Reads a single file from the FileSystem. Returns a Future with the same
-    rules as Read(). If |path| is not found raise a FileNotFoundError on Get().
+    rules as Read(). If |path| is not found raise a FileNotFoundError on Get(),
+    or if |skip_not_found| is True then return None.
     '''
     AssertIsValid(path)
     read_single = self.Read([path], skip_not_found=skip_not_found)
@@ -154,13 +155,14 @@ class FileSystem(object):
     '''
     raise NotImplementedError(self.__class__)
 
-  def Walk(self, root):
+  def Walk(self, root, depth=-1):
     '''Recursively walk the directories in a file system, starting with root.
 
     Behaviour is very similar to os.walk from the standard os module, yielding
     (base, dirs, files) recursively, where |base| is the base path of |files|,
     |dirs| relative to |root|, and |files| and |dirs| the list of files/dirs in
-    |base| respectively.
+    |base| respectively. If |depth| is specified and greater than 0, Walk will
+    only recurse |depth| times.
 
     Note that directories will always end with a '/', files never will.
 
@@ -170,7 +172,9 @@ class FileSystem(object):
     AssertIsDirectory(root)
     basepath = root
 
-    def walk(root):
+    def walk(root, depth):
+      if depth == 0:
+        return
       AssertIsDirectory(root)
       dirs, files = [], []
 
@@ -183,10 +187,10 @@ class FileSystem(object):
       yield root[len(basepath):].rstrip('/'), dirs, files
 
       for d in dirs:
-        for walkinfo in walk(root + d):
+        for walkinfo in walk(root + d, depth - 1):
           yield walkinfo
 
-    for walkinfo in walk(root):
+    for walkinfo in walk(root, depth):
       yield walkinfo
 
   def __eq__(self, other):

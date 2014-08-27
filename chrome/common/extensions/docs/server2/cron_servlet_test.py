@@ -13,6 +13,7 @@ from environment import GetAppVersion
 from extensions_paths import (
     APP_YAML, CONTENT_PROVIDERS, CHROME_EXTENSIONS, PUBLIC_TEMPLATES, SERVER2,
     STATIC_DOCS)
+from fake_fetchers import ConfigureFakeFetchers
 from gcs_file_system_provider import CloudStorageFileSystemProvider
 from github_file_system_provider import GithubFileSystemProvider
 from host_file_system_provider import HostFileSystemProvider
@@ -93,47 +94,64 @@ class CronServletTest(unittest.TestCase):
   @IgnoreMissingContentProviders
   def testSafeRevision(self):
     test_data = {
-      'api': {
-        '_api_features.json': '{}',
-        '_manifest_features.json': '{}',
-        '_permission_features.json': '{}',
+      'extensions': {
+        'browser': {
+          'api': {}
+        }
       },
-      'docs': {
-        'examples': {
-          'examples.txt': 'examples.txt contents'
+      'chrome': {
+        'browser': {
+          'extensions': {
+            'OWNERS': '',
+            'api': {}
+          }
         },
-        'server2': {
-          'app.yaml': AppYamlHelper.GenerateAppYaml('2-0-8')
-        },
-        'static': {
-          'static.txt': 'static.txt contents'
-        },
-        'templates': {
-          'articles': {
-            'activeTab.html': 'activeTab.html contents'
-          },
-          'intros': {
-            'browserAction.html': 'activeTab.html contents'
-          },
-          'private': {
-            'table_of_contents.html': 'table_of_contents.html contents',
-          },
-          'public': {
-            'apps': {
-              'storage.html': '<h1>storage.html</h1> contents'
+        'common': {
+          'extensions': {
+            'api': {
+              '_api_features.json': '{}',
+              '_manifest_features.json': '{}',
+              '_permission_features.json': '{}',
             },
-            'extensions': {
-              'storage.html': '<h1>storage.html</h1> contents'
-            },
-          },
-          'json': {
-            'chrome_sidenav.json': '{}',
-            'content_providers.json': ReadFile(CONTENT_PROVIDERS),
-            'manifest.json': '{}',
-            'permissions.json': '{}',
-            'strings.json': '{}',
-            'whats_new.json': '{}',
-          },
+            'docs': {
+              'examples': {
+                'examples.txt': 'examples.txt contents'
+              },
+              'server2': {
+                'app.yaml': AppYamlHelper.GenerateAppYaml('2-0-8')
+              },
+              'static': {
+                'static.txt': 'static.txt contents'
+              },
+              'templates': {
+                'articles': {
+                  'activeTab.html': 'activeTab.html contents'
+                },
+                'intros': {
+                  'browserAction.html': 'activeTab.html contents'
+                },
+                'private': {
+                  'table_of_contents.html': 'table_of_contents.html contents',
+                },
+                'public': {
+                  'apps': {
+                    'storage.html': '<h1>storage.html</h1> contents'
+                  },
+                  'extensions': {
+                    'storage.html': '<h1>storage.html</h1> contents'
+                  },
+                },
+                'json': {
+                  'chrome_sidenav.json': '{}',
+                  'content_providers.json': ReadFile(CONTENT_PROVIDERS),
+                  'manifest.json': '{}',
+                  'permissions.json': '{}',
+                  'strings.json': '{}',
+                  'whats_new.json': '{}',
+                },
+              }
+            }
+          }
         }
       }
     }
@@ -160,8 +178,7 @@ class CronServletTest(unittest.TestCase):
       '''Creates a MockFileSystem at |revision| by applying that many |updates|
       to it.
       '''
-      mock_file_system = MockFileSystem(
-          TestFileSystem(test_data, relative_to=CHROME_EXTENSIONS))
+      mock_file_system = MockFileSystem(TestFileSystem(test_data))
       updates_for_revision = (
           updates if revision is None else updates[:int(revision)])
       for update in updates_for_revision:

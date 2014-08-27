@@ -59,6 +59,31 @@ class FileSystemTest(unittest.TestCase):
     self.assertEqual(sorted(expected_files), sorted(all_files))
     self.assertEqual(sorted(expected_dirs), sorted(all_dirs))
 
+  def testWalkDepth(self):
+    all_dirs = []
+    all_files = []
+    for root, dirs, files in file_system.Walk('', depth=0):
+      all_dirs.extend(dirs)
+      all_files.extend(files)
+    self.assertEqual([], all_dirs)
+    self.assertEqual([], all_files)
+
+    for root, dirs, files in file_system.Walk('', depth=1):
+      all_dirs.extend(dirs)
+      all_files.extend(files)
+    self.assertEqual(['templates/'], all_dirs)
+    self.assertEqual(['file.txt'], all_files)
+
+    all_dirs = []
+    all_files = []
+    for root, dirs, files in file_system.Walk('', depth=2):
+      all_dirs.extend(dirs)
+      all_files.extend(files)
+    self.assertEqual(sorted(['templates/', 'public/', 'json/']),
+                     sorted(all_dirs))
+    self.assertEqual(sorted(['file.txt', 'README']), sorted(all_files))
+
+
   def testSubWalk(self):
     expected_files = set([
       '/redirects.json',

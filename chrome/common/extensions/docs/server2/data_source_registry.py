@@ -6,6 +6,7 @@ from api_data_source import APIDataSource
 from api_list_data_source import APIListDataSource
 from data_source import DataSource
 from manifest_data_source import ManifestDataSource
+from owners_data_source import OwnersDataSource
 from permissions_data_source import PermissionsDataSource
 from samples_data_source import SamplesDataSource
 from sidenav_data_source import SidenavDataSource
@@ -21,6 +22,7 @@ _all_data_sources = {
   'articles': ArticleDataSource,
   'intros': IntroDataSource,
   'manifest_source': ManifestDataSource,
+  'owners': OwnersDataSource,
   'partials': PartialDataSource,
   'permissions': PermissionsDataSource,
   'samples': SamplesDataSource,

@@ -10,13 +10,24 @@ from posixpath import join
 EXTENSIONS = 'extensions/common/'
 CHROME_EXTENSIONS = 'chrome/common/extensions/'
 
+BROWSER_EXTENSIONS = 'extensions/browser/'
+BROWSER_CHROME_EXTENSIONS = 'chrome/browser/extensions/'
+
 EXTENSIONS_API = join(EXTENSIONS, 'api/')
 CHROME_API = join(CHROME_EXTENSIONS, 'api/')
+
+BROWSER_EXTENSIONS_API = join(BROWSER_EXTENSIONS, 'api/')
+BROWSER_CHROME_API = join(BROWSER_CHROME_EXTENSIONS, 'api/')
 
 # Note: This determines search order when APIs are resolved in the filesystem.
 API_PATHS = (
   CHROME_API,
   EXTENSIONS_API,
+)
+
+BROWSER_API_PATHS = (
+  BROWSER_CHROME_API,
+  BROWSER_EXTENSIONS_API
 )
 
 DOCS = join(CHROME_EXTENSIONS, 'docs/')
