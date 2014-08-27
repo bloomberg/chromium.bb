@@ -1571,45 +1571,6 @@ name=bug_222883
 *!v8::internal::Heap::PerformGarbageCollection*
 
 UNINITIALIZED READ
-name=bug_227278a
-...
-*!content::CompositingIOSurfaceTransformerTest::RunResizeTest
-*!content::CompositingIOSurfaceTransformerTest_ResizesTexturesCorrectly_Test::TestBody
-
-UNINITIALIZED READ
-name=bug_227278b
-...
-*!content::CompositingIOSurfaceTransformerTest::RunTransformRGBToYV12Test
-*!content::CompositingIOSurfaceTransformerTest_TransformsRGBToYV12_Test::TestBody
-
-UNINITIALIZED READ
-name=bug_227278c
-*!BitSetNextSetBit
-*!RegistersReInterfere
-*!RegistersMerge
-*!glpPPShaderLinearizeStreamMgr
-*!glpPPShaderLinearize
-*!glePrepareShaderForEmulation
-*!gleSetVPTransformFuncAll
-*!gleVPRenderQuadsSmooth
-*!gleDrawArraysOrElements_ExecCore
-*!glDrawArrays_Exec
-*!glDrawArrays
-*!content::::DrawQuad
-*!content::CompositingIOSurfaceTransformer::ResizeBilinear
-*!content::CompositingIOSurfaceTransformerTest::RunResizeTest
-*!content::CompositingIOSurfaceTransformerTest_ResizesTexturesCorrectly_Test::TestBody
-
-UNINITIALIZED READ
-name=bug_227278d
-*!glViewport_Exec
-*!glViewport
-*!content::::SetTransformationsForOffScreenRendering
-*!content::CompositingIOSurfaceTransformer::TransformRGBToYV12
-*!content::CompositingIOSurfaceTransformerTest::RunTransformRGBToYV12Test
-*!content::CompositingIOSurfaceTransformerTest_TransformsRGBToYV12_Test::TestBody
-
-UNINITIALIZED READ
 name=bug_238170a
 *!blink::ElementRuleCollector::collectMatchingRules
 *!blink::ElementRuleCollector::hasAnyMatchingRules

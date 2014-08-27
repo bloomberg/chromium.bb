@@ -4565,67 +4565,6 @@
    fun:_ZN10extensions16UserScriptMaster7ObserveEiRKN7content18NotificationSourceERKNS1_19NotificationDetailsE
 }
 {
-   bug_227278a
-   Memcheck:Uninitialized
-   ...
-   fun:_ZN7content35CompositingIOSurfaceTransformerTest13RunResizeTestERK8SkBitmapRKN3gfx4RectERKNS4_4SizeE
-   fun:_ZN7content65CompositingIOSurfaceTransformerTest_ResizesTexturesCorrectly_Test8TestBodyEv
-}
-{
-   bug_227278b
-   Memcheck:Uninitialized
-   ...
-   fun:_ZN7content35CompositingIOSurfaceTransformerTest25RunTransformRGBToYV12TestERK8SkBitmapRKN3gfx4RectERKNS4_4SizeE
-   fun:_ZN7content60CompositingIOSurfaceTransformerTest_TransformsRGBToYV12_Test8TestBodyEv
-}
-{
-   bug_227278c
-   Memcheck:Uninitialized
-   fun:BitSetNextSetBit
-   fun:RegistersReInterfere
-   fun:RegistersMerge
-   fun:glpPPShaderLinearizeStreamMgr
-   fun:glpPPShaderLinearize
-   fun:glePrepareShaderForEmulation
-   fun:gleSetVPTransformFuncAll
-   fun:gleVPRenderQuadsSmooth
-   fun:gleDrawArraysOrElements_ExecCore
-   fun:glDrawArrays_Exec
-   fun:glDrawArrays
-   fun:_ZN7content12_GLOBAL__N_18DrawQuadEffffbff
-   fun:_ZN7content31CompositingIOSurfaceTransformer14ResizeBilinearEjRKN3gfx4RectERKNS1_4SizeEPj
-   fun:_ZN7content35CompositingIOSurfaceTransformerTest13RunResizeTestERK8SkBitmapRKN3gfx4RectERKNS4_4SizeE
-   fun:_ZN7content65CompositingIOSurfaceTransformerTest_ResizesTexturesCorrectly_Test8TestBodyEv
-}
-{
-   bug_227278d
-   Memcheck:Uninitialized
-   fun:glViewport_Exec
-   fun:glViewport
-   fun:_ZN7content12_GLOBAL__N_139SetTransformationsForOffScreenRenderingERKN3gfx4SizeE
-   fun:_ZN7content31CompositingIOSurfaceTransformer18TransformRGBToYV12EjRKN3gfx4RectERKNS1_4SizeEPjS8_S8_PS5_S9_
-   fun:_ZN7content35CompositingIOSurfaceTransformerTest25RunTransformRGBToYV12TestERK8SkBitmapRKN3gfx4RectERKNS4_4SizeE
-   fun:_ZN7content60CompositingIOSurfaceTransformerTest_TransformsRGBToYV12_Test8TestBodyEv
-}
-{
-   bug_227278e
-   Memcheck:Free
-   fun:_ZdlPv
-   fun:_ZN12BindingTableD2Ev
-   fun:_ZN14TGenericLinkerD0Ev
-   fun:ShDestruct
-   fun:gleFreeProgramObject
-   fun:gleUnbindDeleteHashNameAndObject
-   fun:glDeleteObjectARB_Exec
-   fun:glDeleteProgram
-   fun:_ZN7content34CompositingIOSurfaceShaderPrograms5ResetEv
-   fun:_ZN7content35CompositingIOSurfaceTransformerTestD2Ev
-   fun:_ZN7content69CompositingIOSurfaceTransformerTest_ShaderProgramsCompileAndLink_TestD2Ev
-   fun:_ZN7content69CompositingIOSurfaceTransformerTest_ShaderProgramsCompileAndLink_TestD1Ev
-   fun:_ZN7content69CompositingIOSurfaceTransformerTest_ShaderProgramsCompileAndLink_TestD0Ev
-   fun:_ZN7testing4Test11DeleteSelf_Ev
-}
-{
    bug_233541
    Memcheck:Leak
    fun:_Znw*

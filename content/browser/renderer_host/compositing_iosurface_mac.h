@@ -35,8 +35,6 @@ class Rect;
 namespace content {
 
 class CompositingIOSurfaceContext;
-class CompositingIOSurfaceShaderPrograms;
-class CompositingIOSurfaceTransformer;
 class RenderWidgetHostViewFrameSubscriber;
 class RenderWidgetHostViewMac;
 
