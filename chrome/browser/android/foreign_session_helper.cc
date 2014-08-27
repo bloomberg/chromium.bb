@@ -50,11 +50,7 @@ bool ShouldSkipTab(const SessionTab& session_tab) {
     if (session_tab.navigations.empty())
       return true;
 
-    int selected_index = session_tab.current_navigation_index;
-    if (selected_index < 0 ||
-        selected_index >= static_cast<int>(session_tab.navigations.size()))
-      return true;
-
+    int selected_index = session_tab.normalized_navigation_index();
     const ::sessions::SerializedNavigationEntry& current_navigation =
         session_tab.navigations.at(selected_index);
 
@@ -95,7 +91,7 @@ void CopyTabsToJava(
     if (ShouldSkipTab(session_tab))
       continue;
 
-    int selected_index = session_tab.current_navigation_index;
+    int selected_index = session_tab.normalized_navigation_index();
     DCHECK(selected_index >= 0);
     DCHECK(selected_index < static_cast<int>(session_tab.navigations.size()));
 
