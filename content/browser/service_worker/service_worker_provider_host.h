@@ -122,22 +122,16 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   virtual void OnRegistrationFailed(
       ServiceWorkerRegistration* registration) OVERRIDE;
 
-  // Sets the corresponding version field to the given version or if the given
-  // version is NULL, clears the field.
-  void SetVersionAttributes(
+  // Adds this provider host to the potential controllee list of the given
+  // versions and removes it from the previous versions.
+  void UpdatePotentialControllees(
       ServiceWorkerVersion* installing_version,
       ServiceWorkerVersion* waiting_version,
       ServiceWorkerVersion* active_version);
-  void SetVersionAttributesInternal(
-      ServiceWorkerVersion* version,
-      scoped_refptr<ServiceWorkerVersion>* data_member);
 
   // Sets the controller version field to |version| or if |version| is NULL,
   // clears the field.
   void SetControllerVersionAttribute(ServiceWorkerVersion* version);
-
-  // Clears all version fields.
-  void ClearVersionAttributes();
 
   // Creates a ServiceWorkerHandle to retain |version| and returns a
   // ServiceWorkerInfo with the handle ID to pass to the provider. The
