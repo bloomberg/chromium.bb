@@ -488,6 +488,7 @@ public:
 
     RenderView* renderView() const { return m_renderView; }
 
+    Document& axObjectCacheOwner() const;
     AXObjectCache* existingAXObjectCache() const;
     AXObjectCache* axObjectCache() const;
     void clearAXObjectCache();

@@ -676,4 +676,9 @@ LocalFrame* LocalFrame::localFrameRoot()
     return curFrame;
 }
 
+void LocalFrame::setPagePopupOwner(Element& owner)
+{
+    m_pagePopupOwner = &owner;
+}
+
 } // namespace blink

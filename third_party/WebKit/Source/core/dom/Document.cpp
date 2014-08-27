@@ -585,7 +585,7 @@ Document::~Document()
     detachParser();
 #endif
 
-    if (this == topDocument())
+    if (this == &axObjectCacheOwner())
         clearAXObjectCache();
 
 #if !ENABLE(OILPAN)
@@ -2149,7 +2149,7 @@ void Document::clearStyleResolver()
 void Document::attach(const AttachContext& context)
 {
     ASSERT(m_lifecycle.state() == DocumentLifecycle::Inactive);
-    ASSERT(!m_axObjectCache || this != topDocument());
+    ASSERT(!m_axObjectCache || this != &axObjectCacheOwner());
 
     m_renderView = new RenderView(this);
     setRenderer(m_renderView);
@@ -2179,7 +2179,7 @@ void Document::detach(const AttachContext& context)
     if (m_frame->loader().client()->sharedWorkerRepositoryClient())
         m_frame->loader().client()->sharedWorkerRepositoryClient()->documentDetached(this);
 
-    if (this == topDocument())
+    if (this == &axObjectCacheOwner())
         clearAXObjectCache();
 
     stopActiveDOMObjects();
@@ -2258,9 +2258,19 @@ void Document::removeAllEventListeners()
         domWindow->removeAllEventListeners();
 }
 
+Document& Document::axObjectCacheOwner() const
+{
+    Document& top = topDocument();
+    if (top.frame() && top.frame()->pagePopupOwner()) {
+        ASSERT(!top.m_axObjectCache);
+        return top.frame()->pagePopupOwner()->document().axObjectCacheOwner();
+    }
+    return top;
+}
+
 void Document::clearAXObjectCache()
 {
-    ASSERT(topDocument() == this);
+    ASSERT(&axObjectCacheOwner() == this);
     // Clear the cache member variable before calling delete because attempts
     // are made to access it during destruction.
     m_axObjectCache.clear();
@@ -2273,10 +2283,10 @@ AXObjectCache* Document::existingAXObjectCache() const
 
     // If the renderer is gone then we are in the process of destruction.
     // This method will be called before m_frame = 0.
-    if (!topDocument().renderView())
+    if (!axObjectCacheOwner().renderView())
         return 0;
 
-    return topDocument().m_axObjectCache.get();
+    return axObjectCacheOwner().m_axObjectCache.get();
 }
 
 AXObjectCache* Document::axObjectCache() const
@@ -2288,16 +2298,16 @@ AXObjectCache* Document::axObjectCache() const
     // document.  This is because we need to be able to get from any WebCoreAXObject
     // to any other WebCoreAXObject on the same page.  Using a single cache allows
     // lookups across nested webareas (i.e. multiple documents).
-    Document& topDocument = this->topDocument();
+    Document& cacheOwner = this->axObjectCacheOwner();
 
     // If the document has already been detached, do not make a new axObjectCache.
-    if (!topDocument.renderView())
+    if (!cacheOwner.renderView())
         return 0;
 
-    ASSERT(topDocument == this || !m_axObjectCache);
-    if (!topDocument.m_axObjectCache)
-        topDocument.m_axObjectCache = adoptPtr(new AXObjectCache(topDocument));
-    return topDocument.m_axObjectCache.get();
+    ASSERT(&cacheOwner == this || !m_axObjectCache);
+    if (!cacheOwner.m_axObjectCache)
+        cacheOwner.m_axObjectCache = adoptPtr(new AXObjectCache(cacheOwner));
+    return cacheOwner.m_axObjectCache.get();
 }
 
 PassRefPtrWillBeRawPtr<DocumentParser> Document::createParser()
@@ -2590,7 +2600,7 @@ void Document::implicitClose()
         // only safe to call when a layout is not in progress, so it can not be used in postNotification.
         if (AXObjectCache* cache = axObjectCache()) {
             cache->getOrCreate(renderView());
-            if (this == topDocument()) {
+            if (this == &axObjectCacheOwner()) {
                 cache->postNotification(renderView(), AXObjectCache::AXLoadComplete, true);
             } else {
                 // AXLoadComplete can only be posted on the top document, so if it's a document
