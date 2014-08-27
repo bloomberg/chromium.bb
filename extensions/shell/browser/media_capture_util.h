@@ -18,14 +18,15 @@ class Extension;
 
 namespace media_capture_util {
 
-// Grants access to the first available audio capture device (if requested) and
-// the first available video capture device (if requested). Usually used as a
-// helper for media capture ProcessMediaAccessRequest().
-void GrantMediaStreamRequestWithFirstDevice(
-    content::WebContents* web_contents,
-    const content::MediaStreamRequest& request,
-    const content::MediaResponseCallback& callback,
-    const Extension* extension);
+// Grants access to audio and video capture devices.
+// * If the caller requests specific device ids, grants access to those.
+// * If the caller does not request specific ids, grants access to the first
+//   available device.
+// Usually used as a helper for media capture ProcessMediaAccessRequest().
+void GrantMediaStreamRequest(content::WebContents* web_contents,
+                             const content::MediaStreamRequest& request,
+                             const content::MediaResponseCallback& callback,
+                             const Extension* extension);
 
 }  // namespace media_capture_util
 }  // namespace extensions

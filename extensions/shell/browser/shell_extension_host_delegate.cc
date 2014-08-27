@@ -47,8 +47,8 @@ void ShellExtensionHostDelegate::ProcessMediaAccessRequest(
     const content::MediaStreamRequest& request,
     const content::MediaResponseCallback& callback,
     const Extension* extension) {
-  // Allow access to the first microphone and/or camera.
-  media_capture_util::GrantMediaStreamRequestWithFirstDevice(
+  // Allow access to the microphone and/or camera.
+  media_capture_util::GrantMediaStreamRequest(
       web_contents, request, callback, extension);
 }
 

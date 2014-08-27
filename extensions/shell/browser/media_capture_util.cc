@@ -4,31 +4,42 @@
 
 #include "extensions/shell/browser/media_capture_util.h"
 
+#include <string>
+
 #include "base/callback.h"
 #include "base/logging.h"
 #include "content/public/browser/media_capture_devices.h"
 #include "extensions/common/permissions/permissions_data.h"
 
 using content::MediaCaptureDevices;
+using content::MediaStreamDevice;
 using content::MediaStreamDevices;
 using content::MediaStreamUI;
 
 namespace extensions {
+
+const MediaStreamDevice* GetRequestedDeviceOrDefault(
+    const MediaStreamDevices& devices,
+    const std::string& requested_device_id) {
+  if (!requested_device_id.empty())
+    return devices.FindById(requested_device_id);
+
+  if (!devices.empty())
+    return &devices[0];
+
+  return NULL;
+}
+
 namespace media_capture_util {
 
 // See also Chrome's MediaCaptureDevicesDispatcher.
-void GrantMediaStreamRequestWithFirstDevice(
-    content::WebContents* web_contents,
-    const content::MediaStreamRequest& request,
-    const content::MediaResponseCallback& callback,
-    const Extension* extension) {
+void GrantMediaStreamRequest(content::WebContents* web_contents,
+                             const content::MediaStreamRequest& request,
+                             const content::MediaResponseCallback& callback,
+                             const Extension* extension) {
   // app_shell only supports audio and video capture, not tab or screen capture.
   DCHECK(request.audio_type == content::MEDIA_DEVICE_AUDIO_CAPTURE ||
          request.video_type == content::MEDIA_DEVICE_VIDEO_CAPTURE);
-
-  // app_shell does not support requesting a specific device ID.
-  DCHECK(request.requested_audio_device_id.empty() &&
-         request.requested_video_device_id.empty());
 
   MediaStreamDevices devices;
   const PermissionsData* permissions_data = extension->permissions_data();
@@ -39,11 +50,11 @@ void GrantMediaStreamRequestWithFirstDevice(
     CHECK(permissions_data->HasAPIPermission(APIPermission::kAudioCapture))
         << "Audio capture request but no audioCapture permission in manifest.";
 
-    // Use first available audio capture device.
-    const MediaStreamDevices& audio_devices =
-        MediaCaptureDevices::GetInstance()->GetAudioCaptureDevices();
-    if (!audio_devices.empty())
-      devices.push_back(audio_devices[0]);
+    const MediaStreamDevice* device = GetRequestedDeviceOrDefault(
+        MediaCaptureDevices::GetInstance()->GetAudioCaptureDevices(),
+        request.requested_audio_device_id);
+    if (device)
+      devices.push_back(*device);
   }
 
   if (request.video_type == content::MEDIA_DEVICE_VIDEO_CAPTURE) {
@@ -51,11 +62,11 @@ void GrantMediaStreamRequestWithFirstDevice(
     CHECK(permissions_data->HasAPIPermission(APIPermission::kVideoCapture))
         << "Video capture request but no videoCapture permission in manifest.";
 
-    // Use first available video capture device.
-    const MediaStreamDevices& video_devices =
-        MediaCaptureDevices::GetInstance()->GetVideoCaptureDevices();
-    if (!video_devices.empty())
-      devices.push_back(video_devices[0]);
+    const MediaStreamDevice* device = GetRequestedDeviceOrDefault(
+        MediaCaptureDevices::GetInstance()->GetVideoCaptureDevices(),
+        request.requested_video_device_id);
+    if (device)
+      devices.push_back(*device);
   }
 
   // TODO(jamescook): Should we show a recording icon somewhere? If so, where?

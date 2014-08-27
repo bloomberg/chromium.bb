@@ -65,8 +65,8 @@ void ShellAppWindow::RequestMediaAccessPermission(
     content::WebContents* web_contents,
     const content::MediaStreamRequest& request,
     const content::MediaResponseCallback& callback) {
-  // Allow access to the first microphone and/or camera.
-  media_capture_util::GrantMediaStreamRequestWithFirstDevice(
+  // Allow access to the microphone and/or camera.
+  media_capture_util::GrantMediaStreamRequest(
       web_contents, request, callback, extension_);
 }
 
