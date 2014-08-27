@@ -19,6 +19,7 @@ class Layer;
 namespace content {
 class Compositor;
 class LayerTreeBuildHelper;
+class UIResourceProvider;
 
 class ContentViewRenderView : public CompositorClient {
  public:
@@ -42,6 +43,10 @@ class ContentViewRenderView : public CompositorClient {
   jboolean Composite(JNIEnv* env, jobject obj);
   void SetOverlayVideoMode(JNIEnv* env, jobject obj, bool enabled);
   void SetNeedsComposite(JNIEnv* env, jobject obj);
+
+  // TODO(yusufo): Remove this once the compositor code is
+  // refactored to use a unified system.
+  jlong GetUIResourceProvider(JNIEnv* env, jobject obj);
 
   // CompositorClient implementation
   virtual void Layout() OVERRIDE;

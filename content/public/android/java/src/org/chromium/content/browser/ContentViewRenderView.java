@@ -213,7 +213,15 @@ public class ContentViewRenderView extends FrameLayout {
         }
     }
 
+    /**
+     * @return Native pointer for the UI resource provider taken from the compositor.
+     */
+    public long getUIResourceProvider() {
+        return nativeGetUIResourceProvider(mNativeContentViewRenderView);
+    }
+
     private native long nativeInit(long rootWindowNativePointer);
+    private native long nativeGetUIResourceProvider(long nativeContentViewRenderView);
     private native void nativeDestroy(long nativeContentViewRenderView);
     private native void nativeSetCurrentContentViewCore(long nativeContentViewRenderView,
             long nativeContentViewCore);

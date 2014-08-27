@@ -16,6 +16,7 @@
 #include "content/public/browser/android/compositor.h"
 #include "content/public/browser/android/content_view_layer_renderer.h"
 #include "content/public/browser/android/layer_tree_build_helper.h"
+#include "content/public/browser/android/ui_resource_provider.h"
 #include "jni/ContentViewRenderView_jni.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/size.h"
@@ -70,6 +71,7 @@ void ContentViewRenderView::SetLayerTreeBuildHelper(JNIEnv* env,
   LayerTreeBuildHelper* build_helper =
       reinterpret_cast<LayerTreeBuildHelper*>(native_build_helper);
   layer_tree_build_helper_.reset(build_helper);
+  InitCompositor();
 }
 // static
 static jlong Init(JNIEnv* env,
@@ -141,5 +143,12 @@ void ContentViewRenderView::OnSwapBuffersCompleted(int pending_swap_buffers) {
 void ContentViewRenderView::InitCompositor() {
   if (!compositor_)
     compositor_.reset(Compositor::Create(this, root_window_));
+}
+
+jlong ContentViewRenderView::GetUIResourceProvider(JNIEnv* env,
+                                                   jobject obj) {
+  if (!compositor_)
+    return 0;
+  return reinterpret_cast<intptr_t>(&compositor_->GetUIResourceProvider());
 }
 }  // namespace content
