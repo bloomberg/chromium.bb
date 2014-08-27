@@ -21,7 +21,8 @@ public class BindingsTestUtils {
     /**
      * {@link MessageReceiver} that records any message it receives.
      */
-    public static class RecordingMessageReceiver implements MessageReceiver {
+    public static class RecordingMessageReceiver extends SideEffectFreeCloseable
+            implements MessageReceiver {
 
         public final List<MessageWithHeader> messages = new ArrayList<MessageWithHeader>();
 
@@ -60,15 +61,23 @@ public class BindingsTestUtils {
      */
     public static class CapturingErrorHandler implements ConnectionErrorHandler {
 
-        public MojoException exception = null;
+        private MojoException mLastMojoException = null;
 
         /**
          * @see ConnectionErrorHandler#onConnectionError(MojoException)
          */
         @Override
         public void onConnectionError(MojoException e) {
-            exception = e;
+            mLastMojoException = e;
         }
+
+        /**
+         * Returns the last recorded exception.
+         */
+        public MojoException getLastMojoException() {
+            return mLastMojoException;
+        }
+
     }
 
     /**

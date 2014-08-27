@@ -4,6 +4,7 @@
 
 package org.chromium.mojo.bindings;
 
+import org.chromium.mojo.bindings.Interface.Proxy;
 import org.chromium.mojo.bindings.Struct.DataHeader;
 import org.chromium.mojo.system.DataPipe;
 import org.chromium.mojo.system.Handle;
@@ -41,16 +42,25 @@ public class Decoder {
         private final long mMaxMemory;
 
         /**
+         * The number of handles in the message.
+         */
+        private final long mNumberOfHandles;
+
+        /**
          * Constructor.
          */
-        Validator(long maxMemory) {
+        Validator(long maxMemory, int numberOfHandles) {
             mMaxMemory = maxMemory;
+            mNumberOfHandles = numberOfHandles;
         }
 
         public void claimHandle(int handle) {
             if (handle < mMinNextClaimedHandle) {
                 throw new DeserializationException(
                         "Trying to access handle out of order.");
+            }
+            if (handle >= mNumberOfHandles) {
+                throw new DeserializationException("Trying to access non present handle.");
             }
             mMinNextClaimedHandle = handle + 1;
         }
@@ -93,7 +103,7 @@ public class Decoder {
      * @param message The message to decode.
      */
     public Decoder(Message message) {
-        this(message, new Validator(message.buffer.limit()), 0);
+        this(message, new Validator(message.buffer.limit(), message.handles.size()), 0);
     }
 
     private Decoder(Message message, Validator validator, int baseOffset) {
@@ -319,44 +329,53 @@ public class Decoder {
      * Deserializes a |ConsumerHandle| at the given offset.
      */
     public DataPipe.ConsumerHandle readConsumerHandle(int offset) {
-        return readHandle(offset).toUntypedHandle().toDataPipeConsumerHandle();
+        return readUntypedHandle(offset).toDataPipeConsumerHandle();
     }
 
     /**
      * Deserializes a |ProducerHandle| at the given offset.
      */
     public DataPipe.ProducerHandle readProducerHandle(int offset) {
-        return readHandle(offset).toUntypedHandle().toDataPipeProducerHandle();
+        return readUntypedHandle(offset).toDataPipeProducerHandle();
     }
 
     /**
      * Deserializes a |MessagePipeHandle| at the given offset.
      */
     public MessagePipeHandle readMessagePipeHandle(int offset) {
-        return readHandle(offset).toUntypedHandle().toMessagePipeHandle();
+        return readUntypedHandle(offset).toMessagePipeHandle();
     }
 
     /**
      * Deserializes a |SharedBufferHandle| at the given offset.
      */
     public SharedBufferHandle readSharedBufferHandle(int offset) {
-        return readHandle(offset).toUntypedHandle().toSharedBufferHandle();
+        return readUntypedHandle(offset).toSharedBufferHandle();
     }
 
     /**
-     * Deserializes a |ServiceHandle| at the given offset.
+     * Deserializes an interface at the given offset.
+     *
+     * @return a proxy to the service.
      */
-    public <S extends Interface> S readServiceInterface(int offset, Object builder) {
-        // TODO(qsr): To be implemented when interfaces proxy and stubs are implemented.
-        throw new UnsupportedOperationException("Unimplemented operation");
+    public <P extends Proxy> P readServiceInterface(int offset,
+            Interface.Manager<?, P> manager) {
+        MessagePipeHandle handle = readMessagePipeHandle(offset);
+        if (!handle.isValid()) {
+            return null;
+        }
+        return manager.attachProxy(handle);
     }
 
     /**
      * Deserializes a |InterfaceRequest| at the given offset.
      */
-    public <S extends Interface> InterfaceRequest<S> readInterfaceRequest(int offset) {
-        // TODO(qsr): To be implemented when interfaces proxy and stubs are implemented.
-        throw new UnsupportedOperationException("Unimplemented operation");
+    public <I extends Interface> InterfaceRequest<I> readInterfaceRequest(int offset) {
+        MessagePipeHandle handle = readMessagePipeHandle(offset);
+        if (handle == null) {
+            return null;
+        }
+        return new InterfaceRequest<I>(handle);
     }
 
     /**
@@ -382,6 +401,23 @@ public class Decoder {
         Handle[] result = new Handle[si.numFields];
         for (int i = 0; i < result.length; ++i) {
             result[i] = d.readHandle(
+                    DataHeader.HEADER_SIZE + BindingsHelper.SERIALIZED_HANDLE_SIZE * i);
+        }
+        return result;
+    }
+
+    /**
+     * Deserializes an array of |UntypedHandle| at the given offset.
+     */
+    public UntypedHandle[] readUntypedHandles(int offset) {
+        Decoder d = readPointer(offset);
+        if (d == null) {
+            return null;
+        }
+        DataHeader si = d.readDataHeader();
+        UntypedHandle[] result = new UntypedHandle[si.numFields];
+        for (int i = 0; i < result.length; ++i) {
+            result[i] = d.readUntypedHandle(
                     DataHeader.HEADER_SIZE + BindingsHelper.SERIALIZED_HANDLE_SIZE * i);
         }
         return result;
@@ -461,22 +497,36 @@ public class Decoder {
     /**
      * Deserializes an array of |ServiceHandle| at the given offset.
      */
-    public <S extends Interface> S[] readServiceInterfaces(int offset, Object builder) {
-        // TODO(qsr): To be implemented when interfaces proxy and stubs are implemented.
-        throw new UnsupportedOperationException("Unimplemented operation");
+    public <S extends Interface, P extends Proxy> S[] readServiceInterfaces(int offset,
+            Interface.Manager<S, P> manager) {
+        Decoder d = readPointer(offset);
+        if (d == null) {
+            return null;
+        }
+        DataHeader si = d.readDataHeader();
+        S[] result = manager.buildArray(si.numFields);
+        for (int i = 0; i < result.length; ++i) {
+            // This cast is necessary because java 6 doesn't handle wildcard correctly when using
+            // Manager<S, ? extends S>
+            @SuppressWarnings("unchecked")
+            S value = (S) d.readServiceInterface(
+                    DataHeader.HEADER_SIZE + BindingsHelper.SERIALIZED_HANDLE_SIZE * i, manager);
+            result[i] = value;
+        }
+        return result;
     }
 
     /**
      * Deserializes an array of |InterfaceRequest| at the given offset.
      */
-    public <S extends Interface> InterfaceRequest<S>[] readInterfaceRequests(int offset) {
+    public <I extends Interface> InterfaceRequest<I>[] readInterfaceRequests(int offset) {
         Decoder d = readPointer(offset);
         if (d == null) {
             return null;
         }
         DataHeader si = d.readDataHeader();
         @SuppressWarnings("unchecked")
-        InterfaceRequest<S>[] result = new InterfaceRequest[si.numFields];
+        InterfaceRequest<I>[] result = new InterfaceRequest[si.numFields];
         for (int i = 0; i < result.length; ++i) {
             result[i] = d.readInterfaceRequest(
                     DataHeader.HEADER_SIZE + BindingsHelper.SERIALIZED_HANDLE_SIZE * i);

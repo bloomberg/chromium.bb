@@ -28,6 +28,11 @@ public class MessageHeader {
     private static final int REQUEST_ID_OFFSET = 16;
 
     /**
+     * Flag for a header of a simple message.
+     */
+    public static final int NO_FLAG = 0;
+
+    /**
      * Flag for a header of a message that expected a response.
      */
     public static final int MESSAGE_EXPECTS_RESPONSE_FLAG = 1 << 0;

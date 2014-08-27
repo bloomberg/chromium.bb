@@ -4,26 +4,18 @@
 
 package org.chromium.mojo.bindings;
 
-import org.chromium.mojo.system.Handle;
-
 import java.io.Closeable;
 
 /**
- * Describes a class that owns a handle.
- *
- * @param <H> The type of the owned handle.
+ * An implementation of closeable that doesn't do anything.
  */
-public interface HandleOwner<H extends Handle> extends Closeable {
-
-    /**
-     * Pass the handle owned by this class.
-     */
-    public H passHandle();
+public class SideEffectFreeCloseable implements Closeable {
 
     /**
      * @see java.io.Closeable#close()
      */
     @Override
-    public void close();
+    public void close() {
+    }
 
 }

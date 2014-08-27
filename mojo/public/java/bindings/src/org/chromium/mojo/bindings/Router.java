@@ -28,10 +28,4 @@ public interface Router extends MessageReceiverWithResponder, HandleOwner<Messag
      * Set the handle that will be notified of errors on the message pipe.
      */
     public void setErrorHandler(ConnectionErrorHandler errorHandler);
-
-    /**
-     * @see java.io.Closeable#close()
-     */
-    @Override
-    public void close();
 }
