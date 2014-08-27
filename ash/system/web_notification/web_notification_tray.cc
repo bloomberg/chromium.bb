@@ -91,8 +91,8 @@ class WebNotificationBubbleWrapper {
     }
     views::TrayBubbleView* bubble_view = views::TrayBubbleView::Create(
         tray->GetBubbleWindowContainer(), anchor, tray, &init_params);
-    bubble_view->SetArrowPaintType(views::BubbleBorder::PAINT_NONE);
     bubble_wrapper_.reset(new TrayBubbleWrapper(tray, bubble_view));
+    bubble_view->SetArrowPaintType(views::BubbleBorder::PAINT_NONE);
     bubble->InitializeContents(bubble_view);
   }
 

@@ -7,10 +7,8 @@
 #include <algorithm>
 
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/resources/grit/ui_resources.h"
@@ -20,31 +18,6 @@
 namespace views {
 
 namespace internal {
-
-// A helper that combines each border image-set painter with arrows and metrics.
-struct BorderImages {
-  BorderImages(const int border_image_ids[],
-               const int arrow_image_ids[],
-               int border_interior_thickness,
-               int arrow_interior_thickness,
-               int corner_radius);
-
-  scoped_ptr<Painter> border_painter;
-  gfx::ImageSkia left_arrow;
-  gfx::ImageSkia top_arrow;
-  gfx::ImageSkia right_arrow;
-  gfx::ImageSkia bottom_arrow;
-
-  // The thickness of border and arrow images and their interior areas.
-  // Thickness is the width of left/right and the height of top/bottom images.
-  // The interior is measured without including stroke or shadow pixels.
-  int border_thickness;
-  int border_interior_thickness;
-  int arrow_thickness;
-  int arrow_interior_thickness;
-  // The corner radius of the bubble's rounded-rect interior area.
-  int corner_radius;
-};
 
 BorderImages::BorderImages(const int border_image_ids[],
                            const int arrow_image_ids[],
@@ -68,12 +41,11 @@ BorderImages::BorderImages(const int border_image_ids[],
   }
 }
 
+BorderImages::~BorderImages() {}
+
 }  // namespace internal
 
 namespace {
-
-// The border and arrow stroke size used in image assets, in pixels.
-const int kStroke = 1;
 
 // Bubble border and arrow image resource ids. They don't use the IMAGE_GRID
 // macro because there is no center image.
@@ -149,6 +121,8 @@ BorderImages* GetBorderImages(BubbleBorder::Shadow shadow) {
 }
 
 }  // namespace
+
+const int BubbleBorder::kStroke = 1;
 
 BubbleBorder::BubbleBorder(Arrow arrow, Shadow shadow, SkColor color)
     : arrow_(arrow),
@@ -278,7 +252,7 @@ gfx::Size BubbleBorder::GetSizeForContentsSize(
       std::max(images_->arrow_thickness + images_->border_interior_thickness,
                images_->border_thickness);
   // Only take arrow image sizes into account when the bubble tip is shown.
-  if (arrow_paint_type_ == PAINT_TRANSPARENT || !has_arrow(arrow_))
+  if (arrow_paint_type_ == PAINT_NONE || !has_arrow(arrow_))
     size.SetToMax(gfx::Size(min, min));
   else if (is_arrow_on_horizontal(arrow_))
     size.SetToMax(gfx::Size(min_with_arrow_width, min_with_arrow_thickness));
@@ -358,6 +332,10 @@ void BubbleBorder::DrawArrow(gfx::Canvas* canvas,
   paint.setColor(background_color_);
 
   canvas->DrawPath(path, paint);
+}
+
+internal::BorderImages* BubbleBorder::GetImagesForTest() const {
+  return images_;
 }
 
 void BubbleBackground::Paint(gfx::Canvas* canvas, views::View* view) const {

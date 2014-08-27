@@ -58,7 +58,6 @@ class MouseMoveDetectorHost : public MouseWatcherHost {
   virtual bool Contains(const gfx::Point& screen_point,
                         MouseEventType type) OVERRIDE;
  private:
-
   DISALLOW_COPY_AND_ASSIGN(MouseMoveDetectorHost);
 };
 
@@ -382,6 +381,7 @@ void TrayBubbleView::SetWidth(int width) {
 void TrayBubbleView::SetArrowPaintType(
     views::BubbleBorder::ArrowPaintType paint_type) {
   bubble_border_->set_paint_arrow(paint_type);
+  UpdateBubble();
 }
 
 gfx::Insets TrayBubbleView::GetBorderInsets() const {

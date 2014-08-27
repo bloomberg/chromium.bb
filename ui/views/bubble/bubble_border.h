@@ -7,19 +7,47 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 
 namespace gfx {
-class ImageSkia;
 class Rect;
 }
 
 namespace views {
+class Painter;
 
 namespace internal {
-struct BorderImages;
-}
+
+// A helper that combines each border image-set painter with arrows and metrics.
+struct BorderImages {
+  BorderImages(const int border_image_ids[],
+               const int arrow_image_ids[],
+               int border_interior_thickness,
+               int arrow_interior_thickness,
+               int corner_radius);
+  virtual ~BorderImages();
+
+  scoped_ptr<Painter> border_painter;
+  gfx::ImageSkia left_arrow;
+  gfx::ImageSkia top_arrow;
+  gfx::ImageSkia right_arrow;
+  gfx::ImageSkia bottom_arrow;
+
+  // The thickness of border and arrow images and their interior areas.
+  // Thickness is the width of left/right and the height of top/bottom images.
+  // The interior is measured without including stroke or shadow pixels.
+  int border_thickness;
+  int border_interior_thickness;
+  int arrow_thickness;
+  int arrow_interior_thickness;
+  // The corner radius of the bubble's rounded-rect interior area.
+  int corner_radius;
+};
+
+}  // namespace internal
 
 // Renders a border, with optional arrow, and a custom dropshadow.
 // This can be used to produce floating "bubble" objects with rounded corners.
@@ -173,10 +201,18 @@ class VIEWS_EXPORT BubbleBorder : public Border {
   virtual gfx::Size GetMinimumSize() const OVERRIDE;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(BubbleBorderTest, GetSizeForContentsSizeTest);
+  FRIEND_TEST_ALL_PREFIXES(BubbleBorderTest, GetBoundsOriginTest);
+
+  // The border and arrow stroke size used in image assets, in pixels.
+  static const int kStroke;
+
   gfx::Size GetSizeForContentsSize(const gfx::Size& contents_size) const;
   gfx::ImageSkia* GetArrowImage() const;
   gfx::Rect GetArrowRect(const gfx::Rect& bounds) const;
   void DrawArrow(gfx::Canvas* canvas, const gfx::Rect& arrow_bounds) const;
+
+  internal::BorderImages* GetImagesForTest() const;
 
   Arrow arrow_;
   int arrow_offset_;
