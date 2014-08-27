@@ -170,7 +170,7 @@ deps = {
     Var('chromium_git') + '/external/v8.git' + '@' +  Var('v8_revision'),
 
   'src/native_client':
-   Var('chromium_git') + '/native_client/src/native_client.git' + '@' + '3f998aa8b2fd6ea40b7bc9a403bea27e8798c805',
+   Var('chromium_git') + '/native_client/src/native_client.git' + '@' + 'cb44d524fdfeb47a4d5b5946efa439a4f857f080',
 
   'src/chrome/test/data/extensions/api_test/permissions/nacl_enabled/bin':
    Var('chromium_git') + '/native_client/src/native_client/tests/prebuilt.git' + '@' + '3e17365176c94624f46cace174f61834b7f3c35d',
