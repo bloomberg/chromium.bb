@@ -229,6 +229,8 @@ void ServiceWorkerURLRequestJob::StartRequest() {
       fetch_dispatcher_.reset(new ServiceWorkerFetchDispatcher(
           CreateFetchRequest(),
           provider_host_->active_version(),
+          base::Bind(&ServiceWorkerURLRequestJob::DidPrepareFetchEvent,
+                     weak_factory_.GetWeakPtr()),
           base::Bind(&ServiceWorkerURLRequestJob::DidDispatchFetchEvent,
                      weak_factory_.GetWeakPtr())));
       fetch_dispatcher_->Run();
@@ -319,6 +321,11 @@ bool ServiceWorkerURLRequestJob::CreateRequestBodyBlob(std::string* blob_uuid,
   *blob_uuid = uuid;
   *blob_size = size;
   return true;
+}
+
+void ServiceWorkerURLRequestJob::DidPrepareFetchEvent() {
+  // TODO(shimazu): Set the timestamp to measure the time to launch SW
+  // This is related to this (http://crbug.com/401389)
 }
 
 void ServiceWorkerURLRequestJob::DidDispatchFetchEvent(

@@ -112,6 +112,7 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob
   bool CreateRequestBodyBlob(std::string* blob_uuid, uint64* blob_size);
 
   // For FORWARD_TO_SERVICE_WORKER case.
+  void DidPrepareFetchEvent();
   void DidDispatchFetchEvent(ServiceWorkerStatusCode status,
                              ServiceWorkerFetchEventResult fetch_result,
                              const ServiceWorkerResponse& response);

@@ -289,27 +289,32 @@ void ServiceWorkerVersion::DispatchActivateEvent(
 
 void ServiceWorkerVersion::DispatchFetchEvent(
     const ServiceWorkerFetchRequest& request,
-    const FetchCallback& callback) {
+    const base::Closure& prepare_callback,
+    const FetchCallback& fetch_callback) {
   DCHECK_EQ(ACTIVATED, status()) << status();
 
   if (running_status() != RUNNING) {
     // Schedule calling this method after starting the worker.
     StartWorker(base::Bind(&RunTaskAfterStartWorker,
                            weak_factory_.GetWeakPtr(),
-                           base::Bind(&RunErrorFetchCallback, callback),
+                           base::Bind(&RunErrorFetchCallback, fetch_callback),
                            base::Bind(&self::DispatchFetchEvent,
                                       weak_factory_.GetWeakPtr(),
-                                      request, callback)));
+                                      request,
+                                      prepare_callback,
+                                      fetch_callback)));
     return;
   }
 
-  int request_id = fetch_callbacks_.Add(new FetchCallback(callback));
+  prepare_callback.Run();
+
+  int request_id = fetch_callbacks_.Add(new FetchCallback(fetch_callback));
   ServiceWorkerStatusCode status = embedded_worker_->SendMessage(
       ServiceWorkerMsg_FetchEvent(request_id, request));
   if (status != SERVICE_WORKER_OK) {
     fetch_callbacks_.Remove(request_id);
     RunSoon(base::Bind(&RunErrorFetchCallback,
-                       callback,
+                       fetch_callback,
                        SERVICE_WORKER_ERROR_FAILED));
   }
 }

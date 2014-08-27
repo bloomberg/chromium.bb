@@ -181,7 +181,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // This must be called when the status() is ACTIVATED. Calling this in other
   // statuses will result in an error SERVICE_WORKER_ERROR_FAILED.
   void DispatchFetchEvent(const ServiceWorkerFetchRequest& request,
-                          const FetchCallback& callback);
+                          const base::Closure& prepare_callback,
+                          const FetchCallback& fetch_callback);
 
   // Sends sync event to the associated embedded worker and asynchronously calls
   // |callback| when it errors out or it gets response from the worker to notify

@@ -12,9 +12,11 @@ namespace content {
 ServiceWorkerFetchDispatcher::ServiceWorkerFetchDispatcher(
     scoped_ptr<ServiceWorkerFetchRequest> request,
     ServiceWorkerVersion* version,
-    const FetchCallback& callback)
+    const base::Closure& prepare_callback,
+    const FetchCallback& fetch_callback)
     : version_(version),
-      callback_(callback),
+      prepare_callback_(prepare_callback),
+      fetch_callback_(fetch_callback),
       request_(request.Pass()),
       weak_factory_(this) {
 }
@@ -57,17 +59,25 @@ void ServiceWorkerFetchDispatcher::DidFailActivation() {
 void ServiceWorkerFetchDispatcher::DispatchFetchEvent() {
   version_->DispatchFetchEvent(
       *request_.get(),
+      base::Bind(&ServiceWorkerFetchDispatcher::DidPrepare,
+                 weak_factory_.GetWeakPtr()),
       base::Bind(&ServiceWorkerFetchDispatcher::DidFinish,
                  weak_factory_.GetWeakPtr()));
+}
+
+void ServiceWorkerFetchDispatcher::DidPrepare() {
+  DCHECK(!prepare_callback_.is_null());
+  base::Closure prepare_callback = prepare_callback_;
+  prepare_callback.Run();
 }
 
 void ServiceWorkerFetchDispatcher::DidFinish(
     ServiceWorkerStatusCode status,
     ServiceWorkerFetchEventResult fetch_result,
     const ServiceWorkerResponse& response) {
-  DCHECK(!callback_.is_null());
-  FetchCallback callback = callback_;
-  callback.Run(status, fetch_result, response);
+  DCHECK(!fetch_callback_.is_null());
+  FetchCallback fetch_callback = fetch_callback_;
+  fetch_callback.Run(status, fetch_result, response);
 }
 
 }  // namespace content

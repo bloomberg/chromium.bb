@@ -80,6 +80,14 @@ void RunOnIOThread(
   run_loop.Run();
 }
 
+void ReceivePrepareResult(bool* is_prepared) {
+  *is_prepared = true;
+}
+
+base::Closure CreatePrepareReceiver(bool* is_prepared) {
+  return base::Bind(&ReceivePrepareResult, is_prepared);
+}
+
 // Contrary to the style guide, the output parameter of this function comes
 // before input parameters so Bind can be used on it to create a FetchCallback
 // to pass to DispatchFetchEvent.
@@ -466,6 +474,7 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
       scoped_ptr<storage::BlobDataHandle>* blob_data_handle) {
     blob_context_ = ChromeBlobStorageContext::GetFor(
         shell()->web_contents()->GetBrowserContext());
+    bool prepare_result = false;
     FetchResult fetch_result;
     fetch_result.status = SERVICE_WORKER_ERROR_FAILED;
     base::RunLoop fetch_run_loop;
@@ -474,8 +483,10 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
                             base::Bind(&self::FetchOnIOThread,
                                        this,
                                        fetch_run_loop.QuitClosure(),
+                                       &prepare_result,
                                        &fetch_result));
     fetch_run_loop.Run();
+    ASSERT_TRUE(prepare_result);
     *result = fetch_result.result;
     *response = fetch_result.response;
     *blob_data_handle = fetch_result.blob_data_handle.Pass();
@@ -526,7 +537,9 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
         CreateReceiver(BrowserThread::UI, done, result));
   }
 
-  void FetchOnIOThread(const base::Closure& done, FetchResult* result) {
+  void FetchOnIOThread(const base::Closure& done,
+                       bool* prepare_result,
+                       FetchResult* result) {
     ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
     ServiceWorkerFetchRequest request(
         embedded_test_server()->GetURL("/service_worker/empty.html"),
@@ -537,6 +550,7 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
     version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
     version_->DispatchFetchEvent(
         request,
+        CreatePrepareReceiver(prepare_result),
         CreateResponseReceiver(
             BrowserThread::UI, done, blob_context_.get(), result));
   }
