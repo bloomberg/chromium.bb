@@ -78,6 +78,36 @@ dist_doc_DATA = \
 	NEWS \
 	README
 
+## Headers
+if LINUX_HOST
+includeclhdir = $(includedir)/$(PACKAGE)/client/linux/handler
+includeclh_HEADERS = $(top_srcdir)/src/client/linux/handler/*.h
+
+includeclmdir = $(includedir)/$(PACKAGE)/client/linux/minidump_writer
+includeclm_HEADERS = $(top_srcdir)/src/client/linux/minidump_writer/*.h
+
+includeclcdir = $(includedir)/$(PACKAGE)/client/linux/crash_generation
+includeclc_HEADERS = $(top_srcdir)/src/client/linux/crash_generation/*.h
+
+includelssdir = $(includedir)/$(PACKAGE)/third_party/lss
+includelss_HEADERS = $(top_srcdir)/src/third_party/lss/*.h
+
+includecldir = $(includedir)/$(PACKAGE)/common/linux
+includecl_HEADERS = $(top_srcdir)/src/common/linux/*.h
+endif
+
+includegbcdir = $(includedir)/$(PACKAGE)/google_breakpad/common
+includegbc_HEADERS = $(top_srcdir)/src/google_breakpad/common/*.h
+
+includecdir = $(includedir)/$(PACKAGE)/common
+includec_HEADERS = $(top_srcdir)/src/common/*.h
+
+includepdir = $(includedir)/$(PACKAGE)/processor
+includep_HEADERS = $(top_srcdir)/src/processor/*.h
+
+## pkgconfig files
+pkgconfigdir = $(libdir)/pkgconfig
+pkgconfig_DATA =
 
 ## Libraries
 noinst_LIBRARIES =
@@ -87,11 +117,13 @@ check_PROGRAMS =
 
 if !DISABLE_PROCESSOR
 lib_LIBRARIES += src/libbreakpad.a
+pkgconfig_DATA += breakpad.pc
 noinst_LIBRARIES += src/third_party/libdisasm/libdisasm.a
 endif
 
 if LINUX_HOST
 lib_LIBRARIES += src/client/linux/libbreakpad_client.a
+pkgconfig_DATA += breakpad-client.pc
 
 src_client_linux_libbreakpad_client_a_SOURCES = \
 	src/client/linux/crash_generation/crash_generation_client.cc \
