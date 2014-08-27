@@ -48,7 +48,7 @@ public:
     {
     }
 
-    blink::GeolocationController* controller() const { return m_private; }
+    GeolocationController* controller() const { return m_private; }
 #endif
 
 private:
@@ -56,6 +56,8 @@ private:
     // can be created by the consumers of Chromium WebKit.
     WebGeolocationController();
 
+    // This bare pointer is owned and kept alive by the frame of the
+    // WebLocalFrame which creates this controller object.
     GeolocationController* m_private;
 };
 

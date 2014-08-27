@@ -144,8 +144,6 @@ public:
         return host ? host->requireSupplement(key) : 0;
     }
 
-    virtual void willBeDestroyed() { }
-
     // FIXME: Oilpan: Remove this callback once PersistentHeapSupplementable is removed again.
     virtual void persistentHostHasBeenDestroyed() { }
 };
@@ -186,13 +184,6 @@ public:
     // m_supplements here, but in the partially specialized template subclasses
     // since we only want to trace it for garbage collected classes.
     virtual void trace(Visitor*) { }
-
-    void willBeDestroyed()
-    {
-        typedef typename SupplementableTraits<T, isGarbageCollected>::SupplementMap::iterator SupplementIterator;
-        for (SupplementIterator it = m_supplements.begin(); it != m_supplements.end(); ++it)
-            it->value->willBeDestroyed();
-    }
 
     // FIXME: Oilpan: Make private and remove this ignore once PersistentHeapSupplementable is removed again.
 protected:

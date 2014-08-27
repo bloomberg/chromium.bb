@@ -26,6 +26,8 @@
 #ifndef GeolocationClient_h
 #define GeolocationClient_h
 
+#include "platform/heap/Handle.h"
+
 namespace blink {
 
 class Geolocation;
@@ -33,9 +35,9 @@ class GeolocationController;
 class GeolocationPosition;
 class LocalFrame;
 
-class GeolocationClient {
+class GeolocationClient : public NoBaseWillBeGarbageCollectedFinalized<GeolocationClient> {
 public:
-    virtual void geolocationDestroyed() = 0;
+    virtual ~GeolocationClient() { }
 
     virtual void startUpdating() = 0;
     virtual void stopUpdating() = 0;
@@ -48,8 +50,7 @@ public:
     virtual void controllerForTestAdded(GeolocationController*) { }
     virtual void controllerForTestRemoved(GeolocationController*) { }
 
-protected:
-    virtual ~GeolocationClient() { }
+    virtual void trace(Visitor*) { }
 };
 
 void provideGeolocationTo(LocalFrame&, GeolocationClient*);

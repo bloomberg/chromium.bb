@@ -126,11 +126,6 @@ void GeolocationClientMock::permissionTimerFired(Timer<GeolocationClientMock>* t
     m_pendingPermissions.clear();
 }
 
-void GeolocationClientMock::geolocationDestroyed()
-{
-    ASSERT(!m_isActive);
-}
-
 void GeolocationClientMock::startUpdating()
 {
     ASSERT(!m_isActive);
@@ -182,6 +177,16 @@ void GeolocationClientMock::clearError()
 {
     m_hasError = false;
     m_errorMessage = String();
+}
+
+void GeolocationClientMock::trace(Visitor* visitor)
+{
+#if ENABLE(OILPAN)
+    visitor->trace(m_controllers);
+#endif
+    visitor->trace(m_lastPosition);
+    visitor->trace(m_pendingPermissions);
+    GeolocationClient::trace(visitor);
 }
 
 } // namespace blink

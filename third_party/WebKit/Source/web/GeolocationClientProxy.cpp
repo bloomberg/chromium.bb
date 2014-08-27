@@ -52,12 +52,6 @@ void GeolocationClientProxy::setController(GeolocationController* controller)
     }
 }
 
-void GeolocationClientProxy::geolocationDestroyed()
-{
-    if (m_client)
-        m_client->geolocationDestroyed();
-}
-
 void GeolocationClientProxy::startUpdating()
 {
     m_client->startUpdating();
@@ -92,6 +86,12 @@ void GeolocationClientProxy::requestPermission(Geolocation* geolocation)
 void GeolocationClientProxy::cancelPermissionRequest(Geolocation* geolocation)
 {
     m_client->cancelPermissionRequest(WebGeolocationPermissionRequest(geolocation));
+}
+
+void GeolocationClientProxy::trace(Visitor* visitor)
+{
+    visitor->trace(m_lastPosition);
+    GeolocationClient::trace(visitor);
 }
 
 } // namespace blink

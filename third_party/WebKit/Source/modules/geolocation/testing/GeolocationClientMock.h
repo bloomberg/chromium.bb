@@ -55,7 +55,6 @@ public:
     int numberOfPendingPermissionRequests() const;
 
     // GeolocationClient
-    virtual void geolocationDestroyed() OVERRIDE;
     virtual void startUpdating() OVERRIDE;
     virtual void stopUpdating() OVERRIDE;
     virtual void setEnableHighAccuracy(bool) OVERRIDE;
@@ -64,6 +63,8 @@ public:
     virtual void cancelPermissionRequest(Geolocation*) OVERRIDE;
     void controllerForTestAdded(GeolocationController*) OVERRIDE;
     void controllerForTestRemoved(GeolocationController*) OVERRIDE;
+
+    virtual void trace(Visitor*) OVERRIDE;
 
 private:
     void asyncUpdateController();
@@ -74,9 +75,10 @@ private:
 
     void clearError();
 
-    typedef WillBeHeapHashSet<RawPtrWillBeMember<GeolocationController> > GeolocationControllers;
-    WillBePersistentHeapHashSet<RawPtrWillBeMember<GeolocationController> > m_controllers;
-    Persistent<GeolocationPosition> m_lastPosition;
+    typedef WillBeHeapHashSet<RawPtrWillBeWeakMember<GeolocationController> > GeolocationControllers;
+    GeolocationControllers m_controllers;
+
+    PersistentWillBeMember<GeolocationPosition> m_lastPosition;
     bool m_hasError;
     String m_errorMessage;
     Timer<GeolocationClientMock> m_controllerTimer;
@@ -90,8 +92,9 @@ private:
     };
 
     PermissionState m_permissionState;
-    typedef HeapHashSet<Member<Geolocation> > GeolocationSet;
-    PersistentHeapHashSet<Member<Geolocation> > m_pendingPermissions;
+
+    typedef PersistentHeapHashSetWillBeHeapHashSet<Member<Geolocation> > GeolocationSet;
+    GeolocationSet m_pendingPermissions;
 };
 
 }

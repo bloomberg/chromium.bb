@@ -354,7 +354,7 @@ private:
 
     UserMediaClientImpl m_userMediaClientImpl;
 
-    OwnPtr<GeolocationClientProxy> m_geolocationClientProxy;
+    OwnPtrWillBePersistent<GeolocationClientProxy> m_geolocationClientProxy;
 };
 
 DEFINE_TYPE_CASTS(WebLocalFrameImpl, WebFrame, frame, frame->isWebLocalFrame(), frame.isWebLocalFrame());

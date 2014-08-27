@@ -71,7 +71,6 @@ public:
 
     // Inherited from Supplement.
     virtual void trace(Visitor*) OVERRIDE;
-    virtual void willBeDestroyed() OVERRIDE;
     virtual void persistentHostHasBeenDestroyed() OVERRIDE;
 
 private:
@@ -80,9 +79,7 @@ private:
     void startUpdatingIfNeeded();
     void stopUpdatingIfNeeded();
 
-    void detach();
-
-    GeolocationClient* m_client;
+    RawPtrWillBeMember<GeolocationClient> m_client;
     bool m_hasClientForTest;
 
     PersistentWillBeMember<GeolocationPosition> m_lastPosition;

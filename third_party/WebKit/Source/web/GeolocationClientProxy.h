@@ -37,10 +37,13 @@ class WebGeolocationClient;
 
 class GeolocationClientProxy FINAL : public GeolocationClient {
 public:
-    GeolocationClientProxy(WebGeolocationClient* client);
+    static PassOwnPtrWillBeRawPtr<GeolocationClientProxy> create(WebGeolocationClient* client)
+    {
+        return adoptPtrWillBeNoop(new GeolocationClientProxy(client));
+    }
+
     virtual ~GeolocationClientProxy();
     void setController(GeolocationController*);
-    virtual void geolocationDestroyed() OVERRIDE;
     virtual void startUpdating() OVERRIDE;
     virtual void stopUpdating() OVERRIDE;
     virtual void setEnableHighAccuracy(bool) OVERRIDE;
@@ -49,9 +52,13 @@ public:
     virtual void requestPermission(Geolocation*) OVERRIDE;
     virtual void cancelPermissionRequest(Geolocation*) OVERRIDE;
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 private:
+    explicit GeolocationClientProxy(WebGeolocationClient*);
+
     WebGeolocationClient* m_client;
-    Persistent<GeolocationPosition> m_lastPosition;
+    PersistentWillBeMember<GeolocationPosition> m_lastPosition;
 };
 
 } // namespace blink

@@ -86,33 +86,17 @@ void GeolocationController::stopUpdatingIfNeeded()
 GeolocationController::~GeolocationController()
 {
     ASSERT(m_observers.isEmpty());
-    detach();
-}
-
-void GeolocationController::detach()
-{
 #if !ENABLE(OILPAN)
     if (page() && m_inspectorAgent) {
         m_inspectorAgent->removeController(this);
         m_inspectorAgent = nullptr;
     }
-#endif
 
     if (m_hasClientForTest) {
         m_client->controllerForTestRemoved(this);
         m_hasClientForTest = false;
     }
-}
-
-// FIXME: Oilpan: Once GeolocationClient is on-heap m_client should be a strong
-// pointer and |willBeDestroyed| can potentially be removed from Supplement.
-void GeolocationController::willBeDestroyed()
-{
-    detach();
-    if (m_client) {
-        m_client->geolocationDestroyed();
-        m_client = 0;
-    }
+#endif
 }
 
 void GeolocationController::persistentHostHasBeenDestroyed()
@@ -231,6 +215,7 @@ const char* GeolocationController::supplementName()
 
 void GeolocationController::trace(Visitor* visitor)
 {
+    visitor->trace(m_client);
     visitor->trace(m_lastPosition);
     visitor->trace(m_observers);
     visitor->trace(m_highAccuracyObservers);

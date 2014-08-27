@@ -637,7 +637,6 @@ void Page::willBeDestroyed()
     m_mainFrame = 0;
     if (m_validationMessageClient)
         m_validationMessageClient->willBeDestroyed();
-    WillBeHeapSupplementable<Page>::willBeDestroyed();
 }
 
 Page::PageClients::PageClients()
