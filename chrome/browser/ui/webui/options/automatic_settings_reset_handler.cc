@@ -10,8 +10,8 @@
 #include "chrome/browser/prefs/chrome_pref_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/grit/generated_resources.h"
 #include "content/public/browser/web_ui.h"
-#include "grit/generated_resources.h"
 
 namespace {
 

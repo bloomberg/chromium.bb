@@ -7,10 +7,10 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/grit/generated_resources.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
-#include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace fullscreen_bubble {

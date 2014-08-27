@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/webui/uber/uber_ui.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/notification_service.h"
@@ -24,7 +25,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
-#include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(OS_CHROMEOS)

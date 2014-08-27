@@ -66,6 +66,8 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/grit/chromium_strings.h"
+#include "chrome/grit/generated_resources.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
@@ -86,8 +88,6 @@
 #include "extensions/browser/extension_registry.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/google_service_auth_error.h"
-#include "grit/chromium_strings.h"
-#include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -527,7 +527,6 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
         chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
     if (user && (user->GetType() != user_manager::USER_TYPE_GUEST))
       username = user->email();
-
   }
   if (!username.empty())
     username = gaia::SanitizeEmail(gaia::CanonicalizeEmail(username));

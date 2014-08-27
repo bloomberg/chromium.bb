@@ -20,6 +20,8 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/grit/chromium_strings.h"
+#include "chrome/grit/generated_resources.h"
 #include "chrome/installer/util/master_preferences.h"
 #include "chrome/installer/util/master_preferences_constants.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
@@ -27,8 +29,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/web_contents.h"
-#include "grit/chromium_strings.h"
-#include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -255,7 +255,6 @@ void ShowDefaultBrowserPrompt(Profile* profile, HostDesktopType desktop_type) {
   content::BrowserThread::PostTask(
       content::BrowserThread::FILE, FROM_HERE,
       base::Bind(&CheckDefaultBrowserCallback, desktop_type));
-
 }
 
 #if !defined(OS_WIN)

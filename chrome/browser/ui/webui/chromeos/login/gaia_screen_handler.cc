@@ -18,6 +18,7 @@
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/browser/ui/webui/signin/inline_login_ui.h"
+#include "chrome/grit/generated_resources.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/user_manager/user_manager.h"
@@ -26,7 +27,6 @@
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_switches.h"
 #include "google_apis/gaia/gaia_urls.h"
-#include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using content::BrowserThread;

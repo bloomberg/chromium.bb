@@ -12,12 +12,12 @@
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_control_utils.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_sheet.h"
 #import "chrome/browser/ui/cocoa/key_equivalent_constants.h"
+#include "chrome/grit/generated_resources.h"
 #include "content/public/browser/web_contents.h"
-#include "grit/generated_resources.h"
 #import "ui/base/cocoa/flipped_view.h"
 #import "ui/base/cocoa/menu_controller.h"
-#import "ui/base/models/menu_model.h"
 #include "ui/base/l10n/l10n_util.h"
+#import "ui/base/models/menu_model.h"
 
 // Controller for UI events on items in the media galleries dialog.
 @interface MediaGalleriesCocoaController : NSObject {

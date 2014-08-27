@@ -16,10 +16,10 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/startup/startup_types.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_manager_base.h"
 #include "content/public/browser/web_ui.h"
-#include "grit/generated_resources.h"
 
 namespace options {
 

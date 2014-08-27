@@ -8,7 +8,7 @@
 
 #include "base/logging.h"
 #include "base/mac/scoped_nsobject.h"
-#include "grit/generated_resources.h"
+#include "chrome/grit/generated_resources.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "ui/base/cocoa/menu_controller.h"
 #include "ui/base/l10n/l10n_util_mac.h"

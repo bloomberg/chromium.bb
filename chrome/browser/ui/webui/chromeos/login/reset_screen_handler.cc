@@ -16,6 +16,8 @@
 #include "chrome/browser/chromeos/reset/metrics.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/grit/chromium_strings.h"
+#include "chrome/grit/generated_resources.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
@@ -23,8 +25,6 @@
 #include "chromeos/dbus/update_engine_client.h"
 #include "content/public/browser/browser_thread.h"
 #include "grit/browser_resources.h"
-#include "grit/chromium_strings.h"
-#include "grit/generated_resources.h"
 
 namespace {
 

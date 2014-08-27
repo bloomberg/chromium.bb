@@ -9,8 +9,8 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #import "chrome/browser/mac/keystone_glue.h"
 #include "chrome/browser/mac/obsolete_system.h"
-#include "grit/chromium_strings.h"
-#include "grit/generated_resources.h"
+#include "chrome/grit/chromium_strings.h"
+#include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 // KeystoneObserver is a simple notification observer for Keystone status

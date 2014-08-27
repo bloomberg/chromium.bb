@@ -26,11 +26,11 @@
 #include "chrome/browser/ui/webui/options/chromeos/accounts_options_handler.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_ui.h"
-#include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace chromeos {

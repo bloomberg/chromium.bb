@@ -20,12 +20,12 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/grit/chromium_strings.h"
+#include "chrome/grit/generated_resources.h"
 #include "chromeos/ime/input_method_manager.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/web_ui.h"
-#include "grit/chromium_strings.h"
-#include "grit/generated_resources.h"
 
 namespace {
 

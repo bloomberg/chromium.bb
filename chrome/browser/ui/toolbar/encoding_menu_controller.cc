@@ -12,7 +12,7 @@
 #include "chrome/browser/character_encoding.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
-#include "grit/generated_resources.h"
+#include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 const int EncodingMenuController::kValidEncodingIds[] = {

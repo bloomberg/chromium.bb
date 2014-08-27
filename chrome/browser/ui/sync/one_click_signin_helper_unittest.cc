@@ -30,6 +30,8 @@
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/grit/chromium_strings.h"
+#include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_pref_service_syncable.h"
@@ -47,8 +49,6 @@
 #include "content/public/common/frame_navigate_params.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/mock_render_process_host.h"
-#include "grit/chromium_strings.h"
-#include "grit/generated_resources.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -63,9 +63,9 @@ namespace {
 // a pending navigation.
 class MockWebContentsDelegate : public content::WebContentsDelegate {
  public:
-   MOCK_METHOD2(OpenURLFromTab,
-                content::WebContents*(content::WebContents* source,
-                                      const content::OpenURLParams& params));
+  MOCK_METHOD2(OpenURLFromTab,
+               content::WebContents*(content::WebContents* source,
+                                     const content::OpenURLParams& params));
 };
 
 class SigninManagerMock : public FakeSigninManager {
@@ -166,7 +166,7 @@ class TestProfileIOData : public ProfileIOData {
 };
 
 class TestURLRequest : public base::SupportsUserData {
-public:
+ public:
   TestURLRequest() {}
   virtual ~TestURLRequest() {}
 };

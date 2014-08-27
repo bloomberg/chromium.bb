@@ -20,8 +20,8 @@
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_name_folder_controller.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_tree_browser_cell.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/bookmarks/browser/bookmark_model.h"
-#include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 

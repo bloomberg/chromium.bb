@@ -33,11 +33,11 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/grit/generated_resources.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/ime/input_method_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/user_metrics.h"
-#include "grit/generated_resources.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
 

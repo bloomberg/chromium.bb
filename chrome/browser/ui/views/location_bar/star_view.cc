@@ -10,7 +10,7 @@
 #include "chrome/browser/bookmarks/bookmark_stats.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bubble_view.h"
-#include "grit/generated_resources.h"
+#include "chrome/grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"

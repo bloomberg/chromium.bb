@@ -6,7 +6,7 @@
 
 #include "chrome/browser/chromeos/login/ui/webui_login_display.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_dropdown.h"
-#include "grit/generated_resources.h"
+#include "chrome/grit/generated_resources.h"
 
 namespace {
 

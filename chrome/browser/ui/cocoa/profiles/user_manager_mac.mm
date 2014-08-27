@@ -10,10 +10,10 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #import "chrome/browser/ui/cocoa/browser_window_utils.h"
 #include "chrome/browser/ui/cocoa/chrome_event_processing_window.h"
+#include "chrome/grit/chromium_strings.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
-#include "grit/chromium_strings.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
 // Default window size. Taken from the views implementation in

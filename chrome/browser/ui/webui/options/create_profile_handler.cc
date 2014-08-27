@@ -23,7 +23,7 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/webui/options/options_handlers_helper.h"
 #include "chrome/common/pref_names.h"
-#include "grit/generated_resources.h"
+#include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace options {

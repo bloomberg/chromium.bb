@@ -22,10 +22,10 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/grit/generated_resources.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/common/extension.h"
-#include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
 using extensions::Extension;

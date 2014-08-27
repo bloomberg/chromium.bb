@@ -5,8 +5,8 @@
 #include "chrome/browser/ui/views/passwords/manage_password_item_view.h"
 
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/password_manager/core/common/password_manager_ui.h"
-#include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/resources/grit/ui_resources.h"

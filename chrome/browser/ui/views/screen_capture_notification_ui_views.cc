@@ -7,7 +7,7 @@
 #include "ash/shell.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/ui/views/chrome_views_export.h"
-#include "grit/generated_resources.h"
+#include "chrome/grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/hit_test.h"

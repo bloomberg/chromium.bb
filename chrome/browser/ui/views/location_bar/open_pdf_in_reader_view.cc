@@ -6,7 +6,7 @@
 
 #include "chrome/browser/ui/pdf/pdf_tab_helper.h"
 #include "chrome/browser/ui/views/open_pdf_in_reader_bubble_view.h"
-#include "grit/generated_resources.h"
+#include "chrome/grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/base/l10n/l10n_util.h"

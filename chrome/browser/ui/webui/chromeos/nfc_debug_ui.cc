@@ -9,6 +9,7 @@
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/grit/generated_resources.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
@@ -17,7 +18,6 @@
 #include "device/nfc/nfc_peer.h"
 #include "device/nfc/nfc_tag.h"
 #include "grit/browser_resources.h"
-#include "grit/generated_resources.h"
 
 using device::NfcAdapter;
 using device::NfcAdapterFactory;

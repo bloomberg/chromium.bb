@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/ash/multi_user/multi_user_warning_dialog.h"
 
 #include "ash/shell.h"
-#include "grit/generated_resources.h"
+#include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/views/controls/button/checkbox.h"

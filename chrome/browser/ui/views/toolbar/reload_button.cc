@@ -9,7 +9,7 @@
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/ui/search/search_model.h"
-#include "grit/generated_resources.h"
+#include "chrome/grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/simple_menu_model.h"

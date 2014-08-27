@@ -15,7 +15,7 @@
 #import "chrome/browser/ui/cocoa/window_size_autosaver.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/common/pref_names.h"
-#include "grit/generated_resources.h"
+#include "chrome/grit/generated_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/gfx/image/image_skia.h"

@@ -21,8 +21,8 @@
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/launcher_context_menu.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/grit/chromium_strings.h"
 #include "components/signin/core/common/profile_management_switches.h"
-#include "grit/chromium_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)

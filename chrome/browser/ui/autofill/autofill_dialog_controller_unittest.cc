@@ -30,6 +30,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -54,7 +55,6 @@
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "grit/component_scaled_resources.h"
 #include "grit/components_strings.h"
-#include "grit/generated_resources.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libaddressinput/chromium/chrome_address_validator.h"
@@ -656,8 +656,8 @@ class AutofillDialogControllerTest : public ChromeRenderViewHostTestHarness {
   }
 
 #if defined(OS_WIN)
-   // http://crbug.com/227221
-   ui::ScopedOleInitializer ole_initializer_;
+  // http://crbug.com/227221
+  ui::ScopedOleInitializer ole_initializer_;
 #endif
 
   // The controller owns itself.

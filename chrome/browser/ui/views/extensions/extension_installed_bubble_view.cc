@@ -30,9 +30,9 @@
 #include "chrome/common/extensions/api/omnibox/omnibox_handler.h"
 #include "chrome/common/extensions/sync_helper.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/grit/chromium_strings.h"
+#include "chrome/grit/generated_resources.h"
 #include "extensions/common/extension.h"
-#include "grit/chromium_strings.h"
-#include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/render_text.h"
@@ -260,13 +260,13 @@ class InstalledBubbleContent : public views::View,
   }
 
  private:
-   enum Flavors {
-     NONE            = 0,
-     HOW_TO_USE      = 1 << 0,
-     HOW_TO_MANAGE   = 1 << 1,
-     SHOW_KEYBINDING = 1 << 2,
-     SIGN_IN_PROMO   = 1 << 3,
-   };
+  enum Flavors {
+    NONE            = 0,
+    HOW_TO_USE      = 1 << 0,
+    HOW_TO_MANAGE   = 1 << 1,
+    SHOW_KEYBINDING = 1 << 2,
+    SIGN_IN_PROMO   = 1 << 3,
+  };
 
   bool GetKeybinding(extensions::Command* command) {
     extensions::CommandService* command_service =
@@ -512,8 +512,8 @@ class InstalledBubbleContent : public views::View,
 };
 
 void ExtensionInstalledBubbleView::Show(const Extension* extension,
-                                    Browser *browser,
-                                    const SkBitmap& icon) {
+                                        Browser* browser,
+                                        const SkBitmap& icon) {
   new ExtensionInstalledBubbleView(extension, browser, icon);
 }
 

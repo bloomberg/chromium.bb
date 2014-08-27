@@ -7,7 +7,7 @@
 #include "base/command_line.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
-#include "grit/generated_resources.h"
+#include "chrome/grit/generated_resources.h"
 
 TabMenuModel::TabMenuModel(ui::SimpleMenuModel::Delegate* delegate,
                            TabStripModel* tab_strip,

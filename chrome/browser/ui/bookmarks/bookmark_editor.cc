@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/bookmarks/bookmark_editor.h"
 
 #include "base/logging.h"
-#include "grit/generated_resources.h"
+#include "chrome/grit/generated_resources.h"
 
 namespace {
 

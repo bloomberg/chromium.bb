@@ -22,12 +22,12 @@
 #include "chrome/browser/browsing_data/browsing_data_service_worker_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/cookies_tree_model_util.h"
+#include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_ui.h"
-#include "grit/generated_resources.h"
 
 namespace storage {
 class FileSystemContext;

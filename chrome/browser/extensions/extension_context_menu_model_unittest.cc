@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/common/extensions/api/context_menus.h"
+#include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/test_browser_window.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/crx_file/id_util.h"
@@ -22,7 +23,6 @@
 #include "extensions/common/feature_switch.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/value_builder.h"
-#include "grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 

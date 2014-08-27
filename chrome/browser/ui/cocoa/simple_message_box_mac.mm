@@ -7,8 +7,8 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/strings/sys_string_conversions.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/startup_metric_utils/startup_metric_utils.h"
-#include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
 namespace chrome {

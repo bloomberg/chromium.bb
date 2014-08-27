@@ -8,10 +8,10 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_creator.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
+#include "chrome/grit/generated_resources.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
-#include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace extensions {

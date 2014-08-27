@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/views/omnibox/omnibox_popup_contents_view.h"
 #include "chrome/browser/ui/views/settings_api_bubble_helper_views.h"
 #include "chrome/browser/ui/views/website_settings/website_settings_popup_view.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/bookmarks/browser/bookmark_node_data.h"
 #include "components/omnibox/autocomplete_input.h"
 #include "components/omnibox/autocomplete_match.h"
@@ -30,7 +31,6 @@
 #include "content/public/browser/web_contents.h"
 #include "extensions/common/constants.h"
 #include "grit/app_locale_settings.h"
-#include "grit/generated_resources.h"
 #include "net/base/escape.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_view_state.h"
@@ -820,7 +820,6 @@ void OmniboxViewViews::GetAccessibleState(ui::AXViewState* state) {
         base::Bind(&OmniboxViewViews::AccessibilitySetValue,
                    weak_ptr_factory_.GetWeakPtr());
   }
-
 }
 
 void OmniboxViewViews::OnFocus() {

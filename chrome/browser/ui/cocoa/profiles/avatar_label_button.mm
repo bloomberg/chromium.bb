@@ -6,7 +6,7 @@
 
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/cocoa/themed_window.h"
-#include "grit/generated_resources.h"
+#include "chrome/grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/cocoa/appkit_utils.h"
 #include "ui/base/l10n/l10n_util_mac.h"

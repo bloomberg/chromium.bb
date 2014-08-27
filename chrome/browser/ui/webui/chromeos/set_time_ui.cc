@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/system/timezone_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/grit/generated_resources.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/system_clock_client.h"
 #include "chromeos/settings/timezone_settings.h"
@@ -22,7 +23,6 @@
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "grit/browser_resources.h"
-#include "grit/generated_resources.h"
 
 namespace chromeos {
 
@@ -36,7 +36,7 @@ class SetTimeMessageHandler : public content::WebUIMessageHandler,
     system::TimezoneSettings::GetInstance()->AddObserver(this);
     chromeos::DBusThreadManager::Get()->GetSystemClockClient()->AddObserver(
         this);
-  };
+  }
 
   virtual ~SetTimeMessageHandler() {
     system::TimezoneSettings::GetInstance()->RemoveObserver(this);

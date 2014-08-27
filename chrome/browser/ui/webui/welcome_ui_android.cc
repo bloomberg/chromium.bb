@@ -15,12 +15,12 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/welcome_handler_android.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/grit/chromium_strings.h"
+#include "chrome/grit/generated_resources.h"
+#include "chrome/grit/google_chrome_strings.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "grit/browser_resources.h"
-#include "grit/chromium_strings.h"
-#include "grit/generated_resources.h"
-#include "grit/google_chrome_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
 const char kProductTourBaseURL[] =

@@ -27,12 +27,12 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/spellcheck_common.h"
+#include "chrome/grit/chromium_strings.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/browser/translate_prefs.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_ui.h"
-#include "grit/chromium_strings.h"
-#include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using base::UserMetricsAction;

@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/website_settings/permission_menu_model.h"
 
-#include "grit/generated_resources.h"
+#include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 PermissionMenuModel::PermissionMenuModel(

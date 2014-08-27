@@ -14,12 +14,12 @@
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/content_settings.h"
+#include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/infobars/core/infobar_delegate.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/web_contents_tester.h"
-#include "grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 

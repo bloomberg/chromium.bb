@@ -18,7 +18,7 @@
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #include "chrome/browser/ui/cocoa/confirm_quit.h"
 #include "chrome/common/pref_names.h"
-#include "grit/generated_resources.h"
+#include "chrome/grit/generated_resources.h"
 #import "ui/base/accelerators/platform_accelerator_cocoa.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 

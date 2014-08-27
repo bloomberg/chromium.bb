@@ -41,6 +41,8 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/profiling.h"
+#include "chrome/grit/chromium_strings.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "content/public/browser/host_zoom_map.h"
@@ -51,8 +53,6 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/common/feature_switch.h"
-#include "grit/chromium_strings.h"
-#include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
@@ -569,8 +569,8 @@ void WrenchMenuModel::Build() {
 #if defined(OS_WIN)
 
 #if defined(USE_AURA)
- if (base::win::GetVersion() >= base::win::VERSION_WIN8 &&
-     content::GpuDataManager::GetInstance()->CanUseGpuBrowserCompositor()) {
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8 &&
+      content::GpuDataManager::GetInstance()->CanUseGpuBrowserCompositor()) {
     if (browser_->host_desktop_type() == chrome::HOST_DESKTOP_TYPE_ASH) {
       // Metro mode, add the 'Relaunch Chrome in desktop mode'.
       AddSeparator(ui::NORMAL_SEPARATOR);

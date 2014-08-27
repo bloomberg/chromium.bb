@@ -15,6 +15,8 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/switch_utils.h"
+#include "chrome/grit/chromium_strings.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/invalidation/invalidation_switches.h"
 #include "components/nacl/common/nacl_switches.h"
 #include "components/startup_metric_utils/startup_metric_utils.h"
@@ -22,8 +24,6 @@
 #include "content/public/common/content_switches.h"
 #include "extensions/common/switches.h"
 #include "google_apis/gaia/gaia_switches.h"
-#include "grit/chromium_strings.h"
-#include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 

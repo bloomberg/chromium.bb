@@ -16,13 +16,13 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
 #include "components/omnibox/autocomplete_input.h"
 #include "components/omnibox/autocomplete_result.h"
 #include "components/url_fixer/url_fixer.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/web_ui.h"
-#include "grit/generated_resources.h"
 
 namespace options {
 

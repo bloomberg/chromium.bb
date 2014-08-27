@@ -7,8 +7,8 @@
 #include "base/values.h"
 #include "chrome/browser/ui/webui/help/help_handler.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/grit/generated_resources.h"
 #include "content/public/browser/web_ui.h"
-#include "grit/generated_resources.h"
 
 namespace options {
 

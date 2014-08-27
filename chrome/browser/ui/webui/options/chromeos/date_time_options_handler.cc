@@ -8,11 +8,11 @@
 #include "base/bind_helpers.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/set_time_dialog.h"
+#include "chrome/grit/generated_resources.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/system_clock_client.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
-#include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace chromeos {
@@ -36,7 +36,7 @@ void DateTimeOptionsHandler::GetLocalizedValues(
   localized_strings->SetString(
       "timeSyncedExplanation",
       l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_TIME_SYNCED_EXPLANATION));
-};
+}
 
 void DateTimeOptionsHandler::InitializeHandler() {
   SystemClockClient* system_clock_client =

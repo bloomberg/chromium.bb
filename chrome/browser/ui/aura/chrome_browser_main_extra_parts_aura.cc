@@ -11,8 +11,8 @@
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/simple_message_box.h"
 #include "chrome/common/chrome_switches.h"
-#include "grit/chromium_strings.h"
-#include "grit/generated_resources.h"
+#include "chrome/grit/chromium_strings.h"
+#include "chrome/grit/generated_resources.h"
 #include "ui/aura/env.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/screen.h"
@@ -31,10 +31,6 @@
 
 #if defined(USE_ASH)
 #include "chrome/browser/ui/ash/ash_init.h"
-#if defined(OS_WIN)
-#include "base/command_line.h"
-#include "chrome/common/chrome_switches.h"
-#endif  // defined(OS_WIN)
 #endif  // defined(USE_ASH)
 
 #if !defined(OS_CHROMEOS)

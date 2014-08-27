@@ -6,7 +6,7 @@
 
 #include "base/android/jni_string.h"
 #include "base/logging.h"
-#include "grit/generated_resources.h"
+#include "chrome/grit/generated_resources.h"
 #include "jni/CertificateViewer_jni.h"
 #include "net/cert/x509_certificate.h"
 #include "ui/base/l10n/l10n_util.h"

@@ -33,6 +33,7 @@
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/notification_service.h"
@@ -47,7 +48,6 @@
 #include "extensions/common/extension_set.h"
 #include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/permissions_data.h"
-#include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "ui/base/l10n/l10n_util.h"
 

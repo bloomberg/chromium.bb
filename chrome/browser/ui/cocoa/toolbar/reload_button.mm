@@ -6,7 +6,7 @@
 
 #include "chrome/app/chrome_command_ids.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
-#include "grit/generated_resources.h"
+#include "chrome/grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"

@@ -13,11 +13,11 @@
 #import "chrome/browser/ui/cocoa/website_settings/permission_bubble_cocoa.h"
 #import "chrome/browser/ui/cocoa/website_settings/split_block_button.h"
 #include "chrome/browser/ui/website_settings/mock_permission_bubble_request.h"
-#include "grit/generated_resources.h"
+#include "chrome/grit/generated_resources.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #import "ui/events/test/cocoa_test_event_utils.h"
-#include "testing/gmock/include/gmock/gmock.h"
 
 @class ConstrainedWindowButton;
 

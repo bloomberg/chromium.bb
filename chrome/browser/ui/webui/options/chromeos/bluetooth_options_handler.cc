@@ -11,11 +11,11 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/grit/generated_resources.h"
 #include "content/public/browser/web_ui.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_device.h"
-#include "grit/generated_resources.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace {

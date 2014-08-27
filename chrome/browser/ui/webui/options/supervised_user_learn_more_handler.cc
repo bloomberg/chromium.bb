@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/webui/options/supervised_user_learn_more_handler.h"
 
 #include "base/values.h"
-#include "grit/generated_resources.h"
+#include "chrome/grit/generated_resources.h"
 
 namespace options {
 

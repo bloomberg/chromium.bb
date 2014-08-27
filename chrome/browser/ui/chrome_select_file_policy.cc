@@ -12,7 +12,7 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/infobars/simple_alert_infobar_delegate.h"
 #include "chrome/common/pref_names.h"
-#include "grit/generated_resources.h"
+#include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 ChromeSelectFilePolicy::ChromeSelectFilePolicy(

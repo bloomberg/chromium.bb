@@ -8,11 +8,11 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/grit/chromium_strings.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "grit/browser_resources.h"
-#include "grit/chromium_strings.h"
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/webui/chromeos/login/inline_login_handler_chromeos.h"
 #else

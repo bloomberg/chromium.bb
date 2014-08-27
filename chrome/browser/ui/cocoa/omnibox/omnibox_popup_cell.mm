@@ -13,10 +13,10 @@
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/ui/cocoa/omnibox/omnibox_view_mac.h"
 #include "chrome/browser/ui/cocoa/omnibox/omnibox_popup_view_mac.h"
+#include "chrome/browser/ui/cocoa/omnibox/omnibox_view_mac.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
-#include "grit/generated_resources.h"
+#include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/font.h"
 

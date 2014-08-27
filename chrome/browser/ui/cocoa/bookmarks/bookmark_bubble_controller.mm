@@ -15,13 +15,13 @@
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #include "chrome/browser/ui/sync/sync_promo_ui.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/user_metrics.h"
-#include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
 using base::UserMetricsAction;

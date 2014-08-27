@@ -7,12 +7,12 @@
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/login/screens/error_screen_actor.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
+#include "chrome/grit/chromium_strings.h"
+#include "chrome/grit/generated_resources.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "grit/browser_resources.h"
 #include "grit/chrome_unscaled_resources.h"
-#include "grit/chromium_strings.h"
-#include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/webui/web_ui_util.h"
@@ -182,7 +182,7 @@ void AppLaunchSplashScreenHandler::ShowNetworkConfigureUI() {
           ErrorScreen::ERROR_STATE_OFFLINE, network_name);
       NOTREACHED();
       break;
-  };
+  }
 
   OobeUI::Screen screen = OobeUI::SCREEN_UNKNOWN;
   OobeUI* oobe_ui = static_cast<OobeUI*>(web_ui()->GetController());

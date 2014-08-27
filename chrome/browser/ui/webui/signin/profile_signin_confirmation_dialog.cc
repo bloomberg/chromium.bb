@@ -14,10 +14,10 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/webui/constrained_web_dialog_ui.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/grit/chromium_strings.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "grit/browser_resources.h"
-#include "grit/chromium_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
 // ProfileSigninConfirmationHandler --------------------------------------------

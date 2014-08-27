@@ -11,12 +11,12 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/variations/active_field_trials.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/content_constants.h"
-#include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 

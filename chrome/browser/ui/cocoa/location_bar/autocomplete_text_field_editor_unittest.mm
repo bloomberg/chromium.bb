@@ -10,7 +10,7 @@
 #include "chrome/app/chrome_command_ids.h"  // IDC_*
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field_unittest_helper.h"
-#include "grit/generated_resources.h"
+#include "chrome/grit/generated_resources.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"

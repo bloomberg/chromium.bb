@@ -9,9 +9,9 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/grit/generated_resources.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
-#include "grit/generated_resources.h"
 #import "ui/base/cocoa/menu_controller.h"
 #include "ui/base/l10n/l10n_util.h"
 

@@ -13,9 +13,9 @@
 #include "chrome/browser/chromeos/charger_replace/charger_link_dialog.h"
 #include "chrome/browser/chromeos/charger_replace/charger_replacement_dialog.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/grit/generated_resources.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_ui.h"
-#include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace chromeos {

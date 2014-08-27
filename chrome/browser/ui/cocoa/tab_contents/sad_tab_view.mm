@@ -9,7 +9,7 @@
 #import "chrome/browser/ui/cocoa/hyperlink_text_view.h"
 #include "chrome/browser/ui/cocoa/tab_contents/sad_tab_controller.h"
 #include "chrome/common/url_constants.h"
-#include "grit/generated_resources.h"
+#include "chrome/grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #include "ui/base/l10n/l10n_util.h"

@@ -11,15 +11,15 @@
 #import "chrome/browser/ui/cocoa/nsview_additions.h"
 #import "chrome/browser/ui/cocoa/panels/panel_window_controller_cocoa.h"
 #import "chrome/browser/ui/panels/panel_constants.h"
-#include "grit/generated_resources.h"
+#include "chrome/grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMNSBezierPath+RoundRect.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMNSColor+Luminance.h"
-#include "ui/base/l10n/l10n_util_mac.h"
 #import "ui/base/cocoa/hover_image_button.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
 // 'Glint' is a glowing light animation on the titlebar to attract user's
 // attention. Numbers are arbitrary, based on several tries.

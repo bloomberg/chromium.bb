@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/webui/performance_monitor/performance_monitor_l10n.h"
 
-#include "grit/chromium_strings.h"
-#include "grit/generated_resources.h"
+#include "chrome/grit/chromium_strings.h"
+#include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace performance_monitor {

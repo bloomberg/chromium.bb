@@ -8,7 +8,7 @@
 #include "chrome/browser/ui/views/website_settings/permission_selector_view.h"
 #include "chrome/browser/ui/views/website_settings/permission_selector_view_observer.h"
 #include "chrome/browser/ui/website_settings/permission_bubble_request.h"
-#include "grit/generated_resources.h"
+#include "chrome/grit/generated_resources.h"
 #include "net/base/net_util.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/base/l10n/l10n_util.h"

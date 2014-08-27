@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/wrong_hwid_screen_handler.h"
 
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
-#include "grit/generated_resources.h"
+#include "chrome/grit/generated_resources.h"
 
 namespace {
 

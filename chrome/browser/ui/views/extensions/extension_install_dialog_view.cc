@@ -22,11 +22,11 @@
 #include "chrome/browser/ui/views/constrained_window_views.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chrome/grit/generated_resources.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/common/extension.h"
-#include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -148,12 +148,12 @@ CheckboxedView::CheckboxedView(views::View* view,
                         views::GridLayout::USE_PREF,
                         0,  // No fixed width.
                         0);
-   column_set->AddColumn(views::GridLayout::LEADING,
-                         views::GridLayout::LEADING,
-                         0,
-                         views::GridLayout::USE_PREF,
-                         0,  // No fixed width.
-                         0);
+  column_set->AddColumn(views::GridLayout::LEADING,
+                        views::GridLayout::LEADING,
+                        0,
+                        views::GridLayout::USE_PREF,
+                        0,  // No fixed width.
+                        0);
   layout->StartRow(0, 0);
   views::Checkbox* checkbox = new views::Checkbox(base::string16());
   checkbox->set_listener(listener);

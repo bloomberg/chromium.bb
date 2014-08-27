@@ -14,7 +14,7 @@
 #import "chrome/browser/ui/cocoa/tabs/tab_window_controller.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
-#include "grit/generated_resources.h"
+#include "chrome/grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMFadeTruncatingTextFieldCell.h"
 #import "ui/base/cocoa/nsgraphics_context_additions.h"

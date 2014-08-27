@@ -18,8 +18,8 @@
 #include "chrome/browser/ui/webui/constrained_web_dialog_ui.h"
 #include "chrome/common/net/x509_certificate_model.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/grit/generated_resources.h"
 #include "content/public/browser/web_contents.h"
-#include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/size.h"
 

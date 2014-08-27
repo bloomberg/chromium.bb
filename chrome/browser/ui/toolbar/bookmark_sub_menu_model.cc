@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/toolbar/bookmark_sub_menu_model.h"
 
 #include "chrome/app/chrome_command_ids.h"
-#include "grit/generated_resources.h"
+#include "chrome/grit/generated_resources.h"
 
 // For views and cocoa, we have complex delegate systems to handle
 // injecting the bookmarks to the bookmark submenu. This is done to support

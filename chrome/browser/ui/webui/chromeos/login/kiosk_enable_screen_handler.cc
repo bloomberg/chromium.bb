@@ -9,10 +9,10 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/grit/generated_resources.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "grit/browser_resources.h"
-#include "grit/generated_resources.h"
 
 namespace {
 

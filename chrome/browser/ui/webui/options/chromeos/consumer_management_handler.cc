@@ -9,11 +9,11 @@
 #include "base/logging.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/policy/consumer_management_service.h"
+#include "chrome/grit/generated_resources.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/web_ui.h"
-#include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace chromeos {

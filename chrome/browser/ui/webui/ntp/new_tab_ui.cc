@@ -30,6 +30,7 @@
 #include "chrome/browser/ui/webui/ntp/suggestions_page_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -40,7 +41,6 @@
 #include "content/public/browser/web_ui.h"
 #include "extensions/browser/extension_system.h"
 #include "grit/browser_resources.h"
-#include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(ENABLE_THEMES)

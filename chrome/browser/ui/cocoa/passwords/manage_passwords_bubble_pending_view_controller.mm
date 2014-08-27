@@ -11,7 +11,7 @@
 #import "chrome/browser/ui/cocoa/passwords/manage_password_item_view_controller.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 #include "chrome/browser/ui/passwords/save_password_refusal_combobox_model.h"
-#include "grit/generated_resources.h"
+#include "chrome/grit/generated_resources.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/combobox_model.h"

@@ -4,7 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/hover_close_button.h"
 
-#include "grit/generated_resources.h"
+#include "chrome/grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMKeyValueAnimation.h"
 #include "ui/base/cocoa/animation_utils.h"

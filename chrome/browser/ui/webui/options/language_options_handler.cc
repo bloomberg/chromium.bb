@@ -20,10 +20,10 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/grit/chromium_strings.h"
+#include "chrome/grit/generated_resources.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_ui.h"
-#include "grit/chromium_strings.h"
-#include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using base::UserMetricsAction;

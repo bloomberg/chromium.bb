@@ -9,9 +9,9 @@
 #include "base/logging.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/grit/generated_resources.h"
 #include "chromeos/network/network_type_pattern.h"
 #include "chromeos/settings/cros_settings_names.h"
-#include "grit/generated_resources.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 

@@ -21,12 +21,12 @@
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/grit/generated_resources.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "grit/browser_resources.h"
-#include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 
 #if defined(OS_CHROMEOS)

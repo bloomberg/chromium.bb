@@ -9,7 +9,7 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/chrome_style.h"
 #import "chrome/browser/ui/cocoa/hyperlink_text_view.h"
-#include "grit/generated_resources.h"
+#include "chrome/grit/generated_resources.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"

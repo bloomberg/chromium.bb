@@ -18,11 +18,11 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/ui_account_tweaks.h"
+#include "chrome/grit/generated_resources.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/web_ui.h"
 #include "google_apis/gaia/gaia_auth_util.h"
-#include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace chromeos {

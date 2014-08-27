@@ -31,13 +31,13 @@
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/grit/chromium_strings.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/signin/core/browser/mutable_profile_oauth2_token_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_error_controller.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/common/profile_management_switches.h"
-#include "grit/chromium_strings.h"
-#include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -198,6 +198,7 @@ class RightAlignedIconLabelButton : public views::LabelButton {
     label()->SetHorizontalAlignment(gfx::ALIGN_CENTER);
   }
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(RightAlignedIconLabelButton);
 };
 
@@ -453,7 +454,7 @@ class TitleCard : public views::View {
   }
 
  private:
-  virtual void Layout() OVERRIDE{
+  virtual void Layout() OVERRIDE {
     int back_button_width = back_button_->GetPreferredSize().width();
     back_button_->SetBounds(0, 0, back_button_width, height());
     int label_padding = back_button_width + views::kButtonHEdgeMarginNew;
@@ -462,7 +463,7 @@ class TitleCard : public views::View {
     title_label_->SetBounds(label_padding, 0, label_width, height());
   }
 
-  virtual gfx::Size GetPreferredSize() const OVERRIDE{
+  virtual gfx::Size GetPreferredSize() const OVERRIDE {
     int height = std::max(title_label_->GetPreferredSize().height(),
         back_button_->GetPreferredSize().height());
     return gfx::Size(width(), height);
@@ -830,7 +831,7 @@ void ProfileChooserView::LinkClicked(views::Link* sender, int event_flags) {
     tutorial_mode_ = profiles::TUTORIAL_MODE_NONE;
     ProfileMetrics::LogProfileNewAvatarMenuSignin(
         ProfileMetrics::PROFILE_AVATAR_MENU_SIGNIN_SETTINGS);
-  } else if (sender == tutorial_not_you_link_){
+  } else if (sender == tutorial_not_you_link_) {
     ProfileMetrics::LogProfileNewAvatarMenuUpgrade(
         ProfileMetrics::PROFILE_AVATAR_MENU_UPGRADE_NOT_YOU);
     ShowView(profiles::BUBBLE_VIEW_MODE_SWITCH_USER, avatar_menu_.get());
@@ -1508,7 +1509,7 @@ views::View* ProfileChooserView::CreateAccountRemovalView() {
 }
 
 views::View* ProfileChooserView::CreateWelcomeUpgradeTutorialViewIfNeeded(
-    bool tutorial_shown, const AvatarMenu::Item& avatar_item){
+    bool tutorial_shown, const AvatarMenu::Item& avatar_item) {
   Profile* profile = browser_->profile();
 
   const int show_count = profile->GetPrefs()->GetInteger(

@@ -12,7 +12,7 @@
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field.h"
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field_cell.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
-#include "grit/generated_resources.h"
+#include "chrome/grit/generated_resources.h"
 #import "ui/base/cocoa/find_pasteboard.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 

@@ -20,7 +20,7 @@
 #include "chrome/browser/ui/views/theme_image_mapper.h"
 #include "chrome/browser/ui/views/touch_uma/touch_uma.h"
 #include "chrome/common/chrome_switches.h"
-#include "grit/generated_resources.h"
+#include "chrome/grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/accessibility/ax_view_state.h"

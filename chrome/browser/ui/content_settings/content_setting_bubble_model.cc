@@ -26,6 +26,7 @@
 #include "chrome/common/content_settings.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/grit/generated_resources.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -33,7 +34,6 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
-#include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -806,8 +806,8 @@ void ContentSettingMediaStreamBubbleModel::SetMediaMenus() {
       TabSpecificContentSettings::FromWebContents(web_contents());
   const std::string& requested_microphone =
        content_settings->media_stream_requested_audio_device();
-   const std::string& requested_camera =
-       content_settings->media_stream_requested_video_device();
+  const std::string& requested_camera =
+      content_settings->media_stream_requested_video_device();
 
   // Add microphone menu.
   PrefService* prefs = profile()->GetPrefs();
@@ -1029,7 +1029,6 @@ ContentSettingRPHBubbleModel::ContentSettingRPHBubbleModel(
       registry_(registry),
       pending_handler_(ProtocolHandler::EmptyProtocolHandler()),
       previous_handler_(ProtocolHandler::EmptyProtocolHandler()) {
-
   DCHECK_EQ(CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS, content_type);
 
   TabSpecificContentSettings* content_settings =

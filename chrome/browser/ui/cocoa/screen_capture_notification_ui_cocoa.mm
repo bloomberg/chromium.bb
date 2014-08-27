@@ -12,7 +12,7 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
-#include "grit/generated_resources.h"
+#include "chrome/grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "ui/base/cocoa/controls/blue_label_button.h"

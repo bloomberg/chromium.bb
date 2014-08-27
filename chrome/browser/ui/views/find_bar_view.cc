@@ -19,7 +19,7 @@
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/find_bar_host.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "grit/generated_resources.h"
+#include "chrome/grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "ui/base/l10n/l10n_util.h"

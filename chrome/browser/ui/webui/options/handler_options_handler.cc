@@ -14,9 +14,9 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/google/core/browser/google_util.h"
 #include "content/public/browser/web_ui.h"
-#include "grit/generated_resources.h"
 
 namespace options {
 

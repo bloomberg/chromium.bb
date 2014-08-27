@@ -15,10 +15,10 @@
 #include "chrome/browser/ui/app_modal_dialogs/javascript_app_modal_dialog.h"
 #include "chrome/browser/ui/app_modal_dialogs/native_app_modal_dialog.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/grit/generated_resources.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/javascript_message_type.h"
-#include "grit/generated_resources.h"
 #include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
 

@@ -16,6 +16,7 @@
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/grit/generated_resources.h"
 #include "chromeos/network/device_state.h"
 #include "chromeos/network/network_device_handler.h"
 #include "chromeos/network/network_event_log.h"
@@ -26,7 +27,6 @@
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "grit/browser_resources.h"
-#include "grit/generated_resources.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 using content::WebContents;

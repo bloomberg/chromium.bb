@@ -11,8 +11,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #import "chrome/browser/ui/cocoa/apps/native_app_window_cocoa.h"
+#include "chrome/grit/generated_resources.h"
 #include "extensions/common/extension.h"
-#include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 

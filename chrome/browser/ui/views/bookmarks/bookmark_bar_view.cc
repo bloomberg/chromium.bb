@@ -49,6 +49,7 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/metrics/metrics_service.h"
 #include "content/public/browser/notification_details.h"
@@ -62,7 +63,6 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
-#include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/base/dragdrop/drag_utils.h"
@@ -268,7 +268,6 @@ class ShortcutButton : public BookmarkButtonBase {
   }
 
  private:
-
   DISALLOW_COPY_AND_ASSIGN(ShortcutButton);
 };
 

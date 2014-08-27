@@ -10,8 +10,8 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
-#include "grit/chromium_strings.h"
-#include "grit/generated_resources.h"
+#include "chrome/grit/chromium_strings.h"
+#include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/gfx/text_elider.h"
 

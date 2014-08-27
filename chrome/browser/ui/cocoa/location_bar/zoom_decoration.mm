@@ -12,7 +12,7 @@
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #import "chrome/browser/ui/cocoa/omnibox/omnibox_view_mac.h"
 #include "chrome/browser/ui/zoom/zoom_controller.h"
-#include "grit/generated_resources.h"
+#include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
 ZoomDecoration::ZoomDecoration(LocationBarViewMac* owner)

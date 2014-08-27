@@ -12,7 +12,7 @@
 #include "base/strings/sys_string_conversions.h"
 #import "chrome/browser/chrome_browser_application_mac.h"
 #include "chrome/browser/ui/app_modal_dialogs/javascript_app_modal_dialog.h"
-#include "grit/generated_resources.h"
+#include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/text_elider.h"

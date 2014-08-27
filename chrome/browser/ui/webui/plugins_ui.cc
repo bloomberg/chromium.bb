@@ -34,6 +34,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/plugin_service.h"
@@ -43,7 +44,6 @@
 #include "content/public/browser/web_ui_message_handler.h"
 #include "content/public/common/content_constants.h"
 #include "grit/browser_resources.h"
-#include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -141,7 +141,7 @@ base::string16 PluginTypeToString(int type) {
 class PluginsDOMHandler : public WebUIMessageHandler,
                           public content::NotificationObserver {
  public:
-  explicit PluginsDOMHandler();
+  PluginsDOMHandler();
   virtual ~PluginsDOMHandler() {}
 
   // WebUIMessageHandler implementation.

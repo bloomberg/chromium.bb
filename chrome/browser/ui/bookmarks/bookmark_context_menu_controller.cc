@@ -22,12 +22,12 @@
 #include "chrome/browser/undo/bookmark_undo_service_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/bookmarks/browser/bookmark_client.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/user_metrics.h"
-#include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using base::UserMetricsAction;

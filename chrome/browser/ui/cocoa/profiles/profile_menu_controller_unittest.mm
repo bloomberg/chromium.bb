@@ -14,9 +14,9 @@
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #include "chrome/browser/ui/cocoa/run_loop_testing.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/test/base/testing_profile.h"
+#include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/test_browser_window.h"
-#include "grit/generated_resources.h"
+#include "chrome/test/base/testing_profile.h"
 #include "testing/gtest_mac.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
