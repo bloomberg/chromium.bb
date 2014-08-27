@@ -132,17 +132,29 @@ bool SurfaceAggregator::TakeResources(Surface* surface,
   return invalid_frame;
 }
 
+gfx::Rect SurfaceAggregator::DamageRectForSurface(const Surface* surface,
+                                                  const RenderPass& source) {
+  int previous_index = previous_contained_surfaces_[surface->surface_id()];
+  if (previous_index == surface->frame_index())
+    return gfx::Rect();
+  else if (previous_index == surface->frame_index() - 1)
+    return source.damage_rect;
+  return gfx::Rect(surface->size());
+}
+
 void SurfaceAggregator::HandleSurfaceQuad(const SurfaceDrawQuad* surface_quad,
                                           RenderPass* dest_pass) {
   SurfaceId surface_id = surface_quad->surface_id;
-  contained_surfaces_->insert(surface_id);
   // If this surface's id is already in our referenced set then it creates
   // a cycle in the graph and should be dropped.
   if (referenced_surfaces_.count(surface_id))
     return;
   Surface* surface = manager_->GetSurfaceForId(surface_id);
-  if (!surface)
+  if (!surface) {
+    contained_surfaces_[surface_id] = 0;
     return;
+  }
+  contained_surfaces_[surface_id] = surface->frame_index();
   const CompositorFrame* frame = surface->GetEligibleFrame();
   if (!frame)
     return;
@@ -198,6 +210,11 @@ void SurfaceAggregator::HandleSurfaceQuad(const SurfaceDrawQuad* surface_quad,
                   surface_quad->quadTransform(),
                   dest_pass,
                   surface_id);
+  dest_pass->damage_rect =
+      gfx::UnionRects(dest_pass->damage_rect,
+                      MathUtil::MapEnclosingClippedRect(
+                          surface_quad->quadTransform(),
+                          DamageRectForSurface(surface, last_pass)));
 
   referenced_surfaces_.erase(it);
 }
@@ -268,17 +285,18 @@ void SurfaceAggregator::CopyQuadsToPass(
 }
 
 void SurfaceAggregator::CopyPasses(const RenderPassList& source_pass_list,
-                                   SurfaceId surface_id) {
+                                   const Surface* surface) {
   for (size_t i = 0; i < source_pass_list.size(); ++i) {
     const RenderPass& source = *source_pass_list[i];
 
     scoped_ptr<RenderPass> copy_pass(RenderPass::Create());
 
-    RenderPassId remapped_pass_id = RemapPassId(source.id, surface_id);
+    RenderPassId remapped_pass_id =
+        RemapPassId(source.id, surface->surface_id());
 
     copy_pass->SetAll(remapped_pass_id,
                       source.output_rect,
-                      source.damage_rect,
+                      DamageRectForSurface(surface, source),
                       source.transform_to_root_target,
                       source.has_transparent_background);
 
@@ -286,19 +304,16 @@ void SurfaceAggregator::CopyPasses(const RenderPassList& source_pass_list,
                     source.shared_quad_state_list,
                     gfx::Transform(),
                     copy_pass.get(),
-                    surface_id);
+                    surface->surface_id());
 
     dest_pass_list_->push_back(copy_pass.Pass());
   }
 }
 
-scoped_ptr<CompositorFrame> SurfaceAggregator::Aggregate(
-    SurfaceId surface_id,
-    std::set<SurfaceId>* contained_surfaces) {
-  contained_surfaces_ = contained_surfaces;
-  contained_surfaces_->insert(surface_id);
+scoped_ptr<CompositorFrame> SurfaceAggregator::Aggregate(SurfaceId surface_id) {
   Surface* surface = manager_->GetSurfaceForId(surface_id);
   DCHECK(surface);
+  contained_surfaces_[surface_id] = surface->frame_index();
   const CompositorFrame* root_surface_frame = surface->GetEligibleFrame();
   if (!root_surface_frame)
     return scoped_ptr<CompositorFrame>();
@@ -322,12 +337,14 @@ scoped_ptr<CompositorFrame> SurfaceAggregator::Aggregate(
                     &source_pass_list);
   DCHECK(!invalid_frame);
 
-  CopyPasses(source_pass_list, surface_id);
+  CopyPasses(source_pass_list, surface);
 
   referenced_surfaces_.erase(it);
   DCHECK(referenced_surfaces_.empty());
 
   dest_pass_list_ = NULL;
+  contained_surfaces_.swap(previous_contained_surfaces_);
+  contained_surfaces_.clear();
 
   // TODO(jamesr): Aggregate all resource references into the returned frame's
   // resource list.

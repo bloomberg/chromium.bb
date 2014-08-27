@@ -89,10 +89,8 @@ bool Display::Draw() {
   if (!output_surface_)
     return false;
 
-  contained_surfaces_.clear();
-
   scoped_ptr<CompositorFrame> frame =
-      aggregator_->Aggregate(current_surface_id_, &contained_surfaces_);
+      aggregator_->Aggregate(current_surface_id_);
   if (!frame)
     return false;
 
@@ -116,10 +114,11 @@ bool Display::Draw() {
                        disable_picture_quad_image_filtering);
   CompositorFrameMetadata metadata;
   renderer_->SwapBuffers(metadata);
-  for (std::set<SurfaceId>::iterator it = contained_surfaces_.begin();
-       it != contained_surfaces_.end();
+  for (SurfaceAggregator::SurfaceIndexMap::iterator it =
+           aggregator_->previous_contained_surfaces().begin();
+       it != aggregator_->previous_contained_surfaces().end();
        ++it) {
-    Surface* surface = manager_->GetSurfaceForId(*it);
+    Surface* surface = manager_->GetSurfaceForId(it->first);
     if (surface)
       surface->RunDrawCallbacks();
   }
@@ -127,7 +126,7 @@ bool Display::Draw() {
 }
 
 void Display::OnSurfaceDamaged(SurfaceId surface) {
-  if (contained_surfaces_.find(surface) != contained_surfaces_.end())
+  if (aggregator_ && aggregator_->previous_contained_surfaces().count(surface))
     client_->DisplayDamaged();
 }
 

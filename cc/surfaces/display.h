@@ -89,8 +89,6 @@ class CC_SURFACES_EXPORT Display : public OutputSurfaceClient,
   scoped_ptr<SurfaceAggregator> aggregator_;
   scoped_ptr<DirectRenderer> renderer_;
 
-  std::set<SurfaceId> contained_surfaces_;
-
   DISALLOW_COPY_AND_ASSIGN(Display);
 };
 

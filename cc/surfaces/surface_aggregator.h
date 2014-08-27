@@ -26,12 +26,15 @@ class SurfaceManager;
 
 class CC_SURFACES_EXPORT SurfaceAggregator {
  public:
+  typedef base::hash_map<SurfaceId, int> SurfaceIndexMap;
+
   SurfaceAggregator(SurfaceManager* manager, ResourceProvider* provider);
   ~SurfaceAggregator();
 
-  scoped_ptr<CompositorFrame> Aggregate(
-      SurfaceId surface_id,
-      std::set<SurfaceId>* contained_surfaces);
+  scoped_ptr<CompositorFrame> Aggregate(SurfaceId surface_id);
+  SurfaceIndexMap& previous_contained_surfaces() {
+    return previous_contained_surfaces_;
+  }
 
  private:
   RenderPassId RemapPassId(RenderPassId surface_local_pass_id,
@@ -47,12 +50,15 @@ class CC_SURFACES_EXPORT SurfaceAggregator {
                        const gfx::Transform& content_to_target_transform,
                        RenderPass* dest_pass,
                        SurfaceId surface_id);
-  void CopyPasses(const RenderPassList& source_pass_list, SurfaceId surface_id);
+  void CopyPasses(const RenderPassList& source_pass_list,
+                  const Surface* surface);
 
   bool TakeResources(Surface* surface,
                      const DelegatedFrameData* frame_data,
                      RenderPassList* render_pass_list);
   int ChildIdForSurface(Surface* surface);
+  gfx::Rect DamageRectForSurface(const Surface* surface,
+                                 const RenderPass& source);
 
   SurfaceManager* manager_;
   ResourceProvider* provider_;
@@ -74,8 +80,10 @@ class CC_SURFACES_EXPORT SurfaceAggregator {
   typedef std::set<SurfaceId> SurfaceSet;
   SurfaceSet referenced_surfaces_;
 
-  // This is the set of surfaces that were used in the last draw.
-  SurfaceSet* contained_surfaces_;
+  // For each Surface used in the last aggregation, gives the frame_index at
+  // that time.
+  SurfaceIndexMap previous_contained_surfaces_;
+  SurfaceIndexMap contained_surfaces_;
 
   // This is the pass list for the aggregated frame.
   RenderPassList* dest_pass_list_;

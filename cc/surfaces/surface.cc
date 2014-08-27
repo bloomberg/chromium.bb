@@ -9,8 +9,15 @@
 
 namespace cc {
 
+// The frame index starts at 2 so that empty frames will be treated as
+// completely damaged the first time they're drawn from.
+static const int kFrameIndexStart = 2;
+
 Surface::Surface(SurfaceId id, const gfx::Size& size, SurfaceFactory* factory)
-    : surface_id_(id), size_(size), factory_(factory) {
+    : surface_id_(id),
+      size_(size),
+      factory_(factory),
+      frame_index_(kFrameIndexStart) {
 }
 
 Surface::~Surface() {
@@ -29,6 +36,7 @@ void Surface::QueueFrame(scoped_ptr<CompositorFrame> frame,
   current_frame_ = frame.Pass();
   factory_->ReceiveFromChild(
       current_frame_->delegated_frame_data->resource_list);
+  ++frame_index_;
 
   if (previous_frame) {
     ReturnedResourceArray previous_resources;

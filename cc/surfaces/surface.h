@@ -32,6 +32,9 @@ class CC_SURFACES_EXPORT Surface {
   // Returns the most recent frame that is eligible to be rendered.
   const CompositorFrame* GetEligibleFrame();
 
+  // Returns a number that increments by 1 every time a new frame is enqueued.
+  int frame_index() const { return frame_index_; }
+
   void RunDrawCallbacks();
 
   SurfaceFactory* factory() { return factory_; }
@@ -42,6 +45,7 @@ class CC_SURFACES_EXPORT Surface {
   SurfaceFactory* factory_;
   // TODO(jamesr): Support multiple frames in flight.
   scoped_ptr<CompositorFrame> current_frame_;
+  int frame_index_;
 
   base::Closure draw_callback_;
 
