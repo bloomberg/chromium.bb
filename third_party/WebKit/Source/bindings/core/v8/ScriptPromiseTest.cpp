@@ -46,11 +46,11 @@ namespace {
 
 void callback(const v8::FunctionCallbackInfo<v8::Value>& info) { }
 
-class Function FINAL : public ScriptFunction {
+class Function : public ScriptFunction {
 public:
-    static PassOwnPtrWillBeRawPtr<Function> create(v8::Isolate* isolate, String* value)
+    static PassOwnPtr<Function> create(v8::Isolate* isolate, String* value)
     {
-        return adoptPtrWillBeNoop(new Function(isolate, value));
+        return adoptPtr(new Function(isolate, value));
     }
 
     virtual ScriptValue call(ScriptValue value) OVERRIDE

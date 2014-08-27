@@ -29,7 +29,7 @@ using namespace blink;
 
 namespace {
 
-class NotReached FINAL : public ScriptFunction {
+class NotReached : public ScriptFunction {
 public:
     NotReached() : ScriptFunction(v8::Isolate::GetCurrent()) { }
 
@@ -43,7 +43,7 @@ ScriptValue NotReached::call(ScriptValue)
     return ScriptValue();
 }
 
-class StubFunction FINAL : public ScriptFunction {
+class StubFunction : public ScriptFunction {
 public:
     StubFunction(ScriptValue&, size_t& callCount);
 
@@ -141,8 +141,8 @@ public:
 
     void gc() { V8GCController::collectGarbage(v8::Isolate::GetCurrent()); }
 
-    PassOwnPtrWillBeRawPtr<ScriptFunction> notReached() { return adoptPtrWillBeNoop(new NotReached()); }
-    PassOwnPtrWillBeRawPtr<ScriptFunction> stub(ScriptValue& value, size_t& callCount) { return adoptPtrWillBeNoop(new StubFunction(value, callCount)); }
+    PassOwnPtr<ScriptFunction> notReached() { return adoptPtr(new NotReached()); }
+    PassOwnPtr<ScriptFunction> stub(ScriptValue& value, size_t& callCount) { return adoptPtr(new StubFunction(value, callCount)); }
 
     template <typename T>
     ScriptValue wrap(DOMWrapperWorld& world, const T& value)

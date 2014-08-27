@@ -47,18 +47,11 @@ namespace blink {
 
 class ServiceWorker::ThenFunction FINAL : public ScriptFunction {
 public:
-    static PassOwnPtrWillBeRawPtr<ScriptFunction> create(PassRefPtrWillBeRawPtr<ServiceWorker> observer)
+    static PassOwnPtr<ScriptFunction> create(PassRefPtrWillBeRawPtr<ServiceWorker> observer)
     {
         ExecutionContext* executionContext = observer->executionContext();
-        return adoptPtrWillBeNoop(new ThenFunction(toIsolate(executionContext), observer));
+        return adoptPtr(new ThenFunction(toIsolate(executionContext), observer));
     }
-
-    virtual void trace(Visitor* visitor) OVERRIDE
-    {
-        visitor->trace(m_observer);
-        ScriptFunction::trace(visitor);
-    }
-
 private:
     ThenFunction(v8::Isolate* isolate, PassRefPtrWillBeRawPtr<ServiceWorker> observer)
         : ScriptFunction(isolate)
@@ -72,7 +65,7 @@ private:
         return value;
     }
 
-    RefPtrWillBeMember<ServiceWorker> m_observer;
+    RefPtrWillBePersistent<ServiceWorker> m_observer;
 };
 
 const AtomicString& ServiceWorker::interfaceName() const

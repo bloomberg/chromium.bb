@@ -21,7 +21,7 @@ void ScriptFunction::callCallback(const v8::FunctionCallbackInfo<v8::Value>& arg
     v8SetReturnValue(args, result.v8Value());
 }
 
-v8::Handle<v8::Function> ScriptFunction::adoptByGarbageCollector(PassOwnPtrWillBeRawPtr<ScriptFunction> function)
+v8::Handle<v8::Function> ScriptFunction::adoptByGarbageCollector(PassOwnPtr<ScriptFunction> function)
 {
     if (!function)
         return v8::Handle<v8::Function>();

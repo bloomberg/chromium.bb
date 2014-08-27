@@ -2065,11 +2065,11 @@ void Internals::setShouldRevealPassword(Element* element, bool reveal, Exception
 
 namespace {
 
-class AddOneFunction FINAL : public ScriptFunction {
+class AddOneFunction : public ScriptFunction {
 public:
-    static PassOwnPtrWillBeRawPtr<ScriptFunction> create(ExecutionContext* context)
+    static PassOwnPtr<ScriptFunction> create(ExecutionContext* context)
     {
-        return adoptPtrWillBeNoop(new AddOneFunction(toIsolate(context)));
+        return adoptPtr(new AddOneFunction(toIsolate(context)));
     }
 
 private:

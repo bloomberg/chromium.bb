@@ -29,11 +29,11 @@ namespace {
 typedef ::testing::StrictMock<::testing::MockFunction<void(int)> > Checkpoint;
 typedef ReadableStreamImpl<ReadableStreamChunkTypeTraits<String> > StringStream;
 
-class StringCapturingFunction FINAL : public ScriptFunction {
+class StringCapturingFunction : public ScriptFunction {
 public:
-    static PassOwnPtrWillBeRawPtr<StringCapturingFunction> create(v8::Isolate* isolate, String* value)
+    static PassOwnPtr<StringCapturingFunction> create(v8::Isolate* isolate, String* value)
     {
-        return adoptPtrWillBeNoop(new StringCapturingFunction(isolate, value));
+        return adoptPtr(new StringCapturingFunction(isolate, value));
     }
 
     virtual ScriptValue call(ScriptValue value) OVERRIDE
@@ -91,7 +91,7 @@ public:
     ScriptState* scriptState() { return ScriptState::forMainWorld(m_page->document().frame()); }
     v8::Isolate* isolate() { return scriptState()->isolate(); }
 
-    PassOwnPtrWillBeRawPtr<StringCapturingFunction> createCaptor(String* value)
+    PassOwnPtr<StringCapturingFunction> createCaptor(String* value)
     {
         return StringCapturingFunction::create(isolate(), value);
     }

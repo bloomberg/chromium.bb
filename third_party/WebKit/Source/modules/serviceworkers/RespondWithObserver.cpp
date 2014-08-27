@@ -25,16 +25,10 @@ public:
         Rejected,
     };
 
-    static PassOwnPtrWillBeRawPtr<ScriptFunction> create(RespondWithObserver* observer, ResolveType type)
+    static PassOwnPtr<ScriptFunction> create(RespondWithObserver* observer, ResolveType type)
     {
         ExecutionContext* executionContext = observer->executionContext();
-        return adoptPtrWillBeNoop(new ThenFunction(toIsolate(executionContext), observer, type));
-    }
-
-    virtual void trace(Visitor* visitor) OVERRIDE
-    {
-        visitor->trace(m_observer);
-        ScriptFunction::trace(visitor);
+        return adoptPtr(new ThenFunction(toIsolate(executionContext), observer, type));
     }
 
 private:
@@ -57,7 +51,7 @@ private:
         return value;
     }
 
-    RefPtrWillBeMember<RespondWithObserver> m_observer;
+    RefPtrWillBePersistent<RespondWithObserver> m_observer;
     ResolveType m_resolveType;
 };
 
