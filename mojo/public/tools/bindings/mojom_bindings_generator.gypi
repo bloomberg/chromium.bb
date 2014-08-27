@@ -14,7 +14,7 @@
             '<(DEPTH)/mojo/public/tools/bindings/mojom_bindings_generator.py',
         'java_out_dir': '<(PRODUCT_DIR)/java_mojo/<(_target_name)/src',
         'mojom_import_args%': [
-	  '-I<(DEPTH)'
+         '-I<(DEPTH)'
         ],
       },
       'inputs': [
@@ -43,8 +43,9 @@
         '<(DEPTH)/mojo/public/tools/bindings/generators/java_templates/enum_definition.tmpl',
         '<(DEPTH)/mojo/public/tools/bindings/generators/java_templates/enum.java.tmpl',
         '<(DEPTH)/mojo/public/tools/bindings/generators/java_templates/header.java.tmpl',
-        '<(DEPTH)/mojo/public/tools/bindings/generators/java_templates/interface.java.tmpl',
         '<(DEPTH)/mojo/public/tools/bindings/generators/java_templates/interface_definition.tmpl',
+        '<(DEPTH)/mojo/public/tools/bindings/generators/java_templates/interface.java.tmpl',
+        '<(DEPTH)/mojo/public/tools/bindings/generators/java_templates/interface_internal.java.tmpl',
         '<(DEPTH)/mojo/public/tools/bindings/generators/java_templates/struct_definition.tmpl',
         '<(DEPTH)/mojo/public/tools/bindings/generators/java_templates/struct.java.tmpl',
         '<(DEPTH)/mojo/public/tools/bindings/generators/js_templates/enum_definition.tmpl',

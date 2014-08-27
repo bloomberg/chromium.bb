@@ -28,6 +28,14 @@ public class RouterImpl implements Router {
             return handleIncomingMessage(message);
         }
 
+        /**
+         * @see org.chromium.mojo.bindings.MessageReceiver#close()
+         */
+        @Override
+        public void close() {
+            handleConnectorClose();
+        }
+
     }
 
     /**
@@ -174,5 +182,11 @@ public class RouterImpl implements Router {
             // OK to drop the message.
         }
         return false;
+    }
+
+    private void handleConnectorClose() {
+        if (mIncomingMessageReceiver != null) {
+            mIncomingMessageReceiver.close();
+        }
     }
 }
