@@ -2,33 +2,53 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/features.gni")
 import("//extensions/generated_extensions_api.gni")
-import("schemas.gni")
 
+gypi_values = exec_script(
+    "//build/gypi_to_gn.py",
+    [ rebase_path("api.gyp") ],
+    "scope",
+    [ "api.gyp" ])
+
+# Common sources that are both bundled and compiled.
 # GYP version: chrome/common/extensions/api/api.gyp:chrome_api
 generated_extensions_api("api") {
-  schemas = true
-  bundle = true
-}
+  if (is_android) {
+    # Should be eliminated. See crbug.com/305852.
+    sources = gypi_values.android_schema_files
+  } else {
+    sources = gypi_values.main_schema_files
+    if (is_chromeos) {
+      sources += gypi_values.chromeos_schema_files
+      if (is_chrome_branded) {
+        sources += gypi_values.chromeos_branded_schema_files
+      }
+    }
+    if (enable_webrtc) {
+      sources += gypi_values.webrtc_schema_files
+    }
+  }
 
-# GYP version: chrome/browser/extensions/api/api.gyp:chrome_api_registration
-generated_extensions_api("api_registration") {
+  if (!is_android) {
+    uncompiled_sources = gypi_values.main_non_compiled_schema_files
+  }
+
   impl_dir = "//chrome/browser/extensions/api"
-  bundle_registration = true
+  root_namespace = "extensions::api::%(namespace)s"
+  bundle = true
 
   deps = [
     # Different APIs include some headers from chrome/common that in turn
     # include generated headers from these targets.
     # TODO(brettw) this should be made unnecessary if possible.
     "//components/metrics/proto",
+
+    "//content/public/browser",
     "//skia",
     "//sync",
-    "//ui/accessibility:ax_gen",
   ]
-  if (!is_ios && !is_android) {
-   deps += ["//components/copresence/proto"]
-  }
   if (is_chromeos) {
-    # deps += [ "<(DEPTH)/chrome/chrome.gyp:drive_proto" ]  TODO(GYP)
+    # deps += [ "<(DEPTH)/chrome/chrome.gyp:drive_proto" ]  TODO)GYP)
   }
 }

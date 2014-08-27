@@ -2614,7 +2614,6 @@
             '<(SHARED_INTERMEDIATE_DIR)/chrome/browser/ui/webui/omnibox/omnibox.mojom.cc',
           ],
           'dependencies': [
-            'browser/extensions/api/api_registration.gyp:chrome_api_registration',
             'browser/performance_monitor/performance_monitor.gyp:performance_monitor',
             'chrome_web_ui_mojo_bindings.gyp:web_ui_mojo_bindings',
             'common/extensions/api/api.gyp:chrome_api',

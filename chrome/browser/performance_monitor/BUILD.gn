@@ -7,5 +7,4 @@ import("//extensions/generated_extensions_api.gni")
 generated_extensions_api("performance_monitor") {
   sources = [ "events.json" ]
   root_namespace = "performance_monitor::%(namespace)s"
-  schemas = true
 }

@@ -9,16 +9,16 @@
 #include "base/prefs/testing_pref_store.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/user_prefs/user_prefs.h"
-#include "extensions/browser/api/generated_api_registration.h"
 #include "extensions/browser/app_sorting.h"
 #include "extensions/browser/extension_function_registry.h"
 #include "extensions/browser/extension_prefs.h"
-#include "extensions/shell/browser/api/generated_api_registration.h"
+#include "extensions/common/api/generated_api.h"
 #include "extensions/shell/browser/api/shell_extensions_api_client.h"
 #include "extensions/shell/browser/shell_app_sorting.h"
 #include "extensions/shell/browser/shell_extension_host_delegate.h"
 #include "extensions/shell/browser/shell_extension_system_factory.h"
 #include "extensions/shell/browser/shell_runtime_api_delegate.h"
+#include "extensions/shell/common/api/generated_api.h"
 
 using content::BrowserContext;
 

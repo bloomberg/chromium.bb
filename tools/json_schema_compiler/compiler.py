@@ -30,9 +30,9 @@ from schema_loader import SchemaLoader
 
 # Names of supported code generators, as specified on the command-line.
 # First is default.
-GENERATORS = ['cpp', 'cpp-bundle-registration', 'cpp-bundle-schema', 'dart']
+GENERATORS = ['cpp', 'cpp-bundle', 'dart']
 
-def GenerateSchema(generator_name,
+def GenerateSchema(generator,
                    file_paths,
                    root,
                    destdir,
@@ -49,7 +49,7 @@ def GenerateSchema(generator_name,
     api_def = schema_loader.LoadSchema(os.path.split(schema)[1])
 
     # If compiling the C++ model code, delete 'nocompile' nodes.
-    if generator_name == 'cpp':
+    if generator == 'cpp':
       api_def = json_schema.DeleteNodes(api_def, 'nocompile')
     api_defs.extend(api_def)
 
@@ -85,7 +85,7 @@ def GenerateSchema(generator_name,
   type_generator = CppTypeGenerator(api_model,
                                     schema_loader,
                                     default_namespace)
-  if generator_name in ('cpp-bundle-registration', 'cpp-bundle-schema'):
+  if generator == 'cpp-bundle':
     cpp_bundle_generator = CppBundleGenerator(root,
                                               api_model,
                                               api_defs,
@@ -93,24 +93,19 @@ def GenerateSchema(generator_name,
                                               cpp_namespace_pattern,
                                               src_path,
                                               impl_dir)
-    if generator_name == 'cpp-bundle-registration':
-      generators = [
-        ('generated_api_registration.cc',
-         cpp_bundle_generator.api_cc_generator),
-        ('generated_api_registration.h', cpp_bundle_generator.api_h_generator),
-      ]
-    elif generator_name == 'cpp-bundle-schema':
-      generators = [
-        ('generated_schemas.cc', cpp_bundle_generator.schemas_cc_generator),
-        ('generated_schemas.h', cpp_bundle_generator.schemas_h_generator)
-      ]
-  elif generator_name == 'cpp':
+    generators = [
+      ('generated_api.cc', cpp_bundle_generator.api_cc_generator),
+      ('generated_api.h', cpp_bundle_generator.api_h_generator),
+      ('generated_schemas.cc', cpp_bundle_generator.schemas_cc_generator),
+      ('generated_schemas.h', cpp_bundle_generator.schemas_h_generator)
+    ]
+  elif generator == 'cpp':
     cpp_generator = CppGenerator(type_generator, cpp_namespace_pattern)
     generators = [
       ('%s.h' % filename_base, cpp_generator.h_generator),
       ('%s.cc' % filename_base, cpp_generator.cc_generator)
     ]
-  elif generator_name == 'dart':
+  elif generator == 'dart':
     generators = [
       ('%s.dart' % namespace.unix_name, DartGenerator(
           dart_overrides_dir))
@@ -122,12 +117,7 @@ def GenerateSchema(generator_name,
   for filename, generator in generators:
     code = generator.Generate(namespace).Render()
     if destdir:
-      if generator_name == 'cpp-bundle-registration':
-        # Function registrations must be output to impl_dir, since they link in
-        # API implementations.
-        output_dir = os.path.join(destdir, impl_dir)
-      else:
-        output_dir = os.path.join(destdir, src_path)
+      output_dir = os.path.join(destdir, src_path)
       if not os.path.exists(output_dir):
         os.makedirs(output_dir)
       with open(os.path.join(output_dir, filename), 'w') as f:
@@ -163,8 +153,7 @@ if __name__ == '__main__':
     sys.exit(0) # This is OK as a no-op
 
   # Unless in bundle mode, only one file should be specified.
-  if (opts.generator not in ('cpp-bundle-registration', 'cpp-bundle-schema') and
-      len(file_paths) > 1):
+  if opts.generator != 'cpp-bundle' and len(file_paths) > 1:
     # TODO(sashab): Could also just use file_paths[0] here and not complain.
     raise Exception(
         "Unless in bundle mode, only one file can be specified at a time.")

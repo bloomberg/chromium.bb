@@ -18,7 +18,6 @@ source_set("browser") {
     "//content/public/browser",
     "//extensions/common",
     "//extensions/common/api",
-    "//extensions/common/api:api_registration",
     "//extensions/strings",
     "//skia",
     "//third_party/leveldatabase",
