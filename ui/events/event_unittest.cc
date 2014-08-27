@@ -329,11 +329,10 @@ TEST(EventTest, KeyEventCopy) {
 }
 
 TEST(EventTest, KeyEventCode) {
-  KeycodeConverter* conv = KeycodeConverter::GetInstance();
-
   const char kCodeForSpace[] = "Space";
-  const uint16 kNativeCodeSpace = conv->CodeToNativeKeycode(kCodeForSpace);
-  ASSERT_NE(conv->InvalidNativeKeycode(), kNativeCodeSpace);
+  const uint16 kNativeCodeSpace =
+      ui::KeycodeConverter::CodeToNativeKeycode(kCodeForSpace);
+  ASSERT_NE(ui::KeycodeConverter::InvalidNativeKeycode(), kNativeCodeSpace);
 
   {
     KeyEvent key(ET_KEY_PRESSED, VKEY_SPACE, kCodeForSpace, EF_NONE);
@@ -392,10 +391,8 @@ TEST(EventTest, KeyEventCode) {
 
 #if defined(USE_X11) || defined(OS_WIN)
 TEST(EventTest, AutoRepeat) {
-  KeycodeConverter* conv = KeycodeConverter::GetInstance();
-
-  const uint16 kNativeCodeA = conv->CodeToNativeKeycode("KeyA");
-  const uint16 kNativeCodeB = conv->CodeToNativeKeycode("KeyB");
+  const uint16 kNativeCodeA = ui::KeycodeConverter::CodeToNativeKeycode("KeyA");
+  const uint16 kNativeCodeB = ui::KeycodeConverter::CodeToNativeKeycode("KeyB");
 #if defined(USE_X11)
   ScopedXI2Event native_event_a_pressed;
   native_event_a_pressed.InitKeyEvent(ET_KEY_PRESSED, VKEY_A, kNativeCodeA);

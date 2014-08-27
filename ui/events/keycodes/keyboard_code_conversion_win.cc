@@ -16,8 +16,7 @@ KeyboardCode KeyboardCodeForWindowsKeyCode(WORD keycode) {
 }
 
 const char* CodeForWindowsScanCode(WORD scan_code) {
-  return KeycodeConverter::GetInstance()->NativeKeycodeToCode(
-      scan_code);
+  return ui::KeycodeConverter::NativeKeycodeToCode(scan_code);
 }
 
 }  // namespace ui

@@ -18,8 +18,7 @@ uint32_t UsbKeyCodeForKeyboardEvent(const WebKeyboardEvent& key_event) {
   if ((key_event.nativeKeyCode & (1 << 24)) != 0)
     scancode |= 0xe000;
 
-  ui::KeycodeConverter* key_converter = ui::KeycodeConverter::GetInstance();
-  return key_converter->NativeKeycodeToUsbKeycode(scancode);
+  return ui::KeycodeConverter::NativeKeycodeToUsbKeycode(scancode);
 }
 
 const char* CodeForKeyboardEvent(const WebKeyboardEvent& key_event) {
@@ -28,8 +27,7 @@ const char* CodeForKeyboardEvent(const WebKeyboardEvent& key_event) {
   if ((key_event.nativeKeyCode & (1 << 24)) != 0)
     scancode |= 0xe000;
 
-  ui::KeycodeConverter* key_converter = ui::KeycodeConverter::GetInstance();
-  return key_converter->NativeKeycodeToCode(scancode);
+  return ui::KeycodeConverter::NativeKeycodeToCode(scancode);
 }
 
 }  // namespace content

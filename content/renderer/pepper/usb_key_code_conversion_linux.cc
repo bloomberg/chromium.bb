@@ -17,13 +17,12 @@ uint32_t UsbKeyCodeForKeyboardEvent(const WebKeyboardEvent& key_event) {
   // the XKB driver.  We should detect between "XKB", "kbd" and "evdev" at
   // run-time and re-map accordingly, but that's not possible here, inside the
   // sandbox.
-  ui::KeycodeConverter* key_converter = ui::KeycodeConverter::GetInstance();
-  return key_converter->NativeKeycodeToUsbKeycode(key_event.nativeKeyCode);
+  return ui::KeycodeConverter::NativeKeycodeToUsbKeycode(
+      key_event.nativeKeyCode);
 }
 
 const char* CodeForKeyboardEvent(const WebKeyboardEvent& key_event) {
-  ui::KeycodeConverter* key_converter = ui::KeycodeConverter::GetInstance();
-  return key_converter->NativeKeycodeToCode(key_event.nativeKeyCode);
+  return ui::KeycodeConverter::NativeKeycodeToCode(key_event.nativeKeyCode);
 }
 
 }  // namespace content

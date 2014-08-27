@@ -39,8 +39,7 @@ uint32_t GetUsbKeyCode(pp::KeyboardInputEvent pp_key_event) {
   std::string codestr = pp_key_event.GetCode().AsString();
 
   // Convert the |code| string into a USB keycode.
-  ui::KeycodeConverter* key_converter = ui::KeycodeConverter::GetInstance();
-  return key_converter->CodeToUsbKeycode(codestr.c_str());
+  return ui::KeycodeConverter::CodeToUsbKeycode(codestr.c_str());
 }
 
 bool PepperInputHandler::HandleInputEvent(const pp::InputEvent& event) {

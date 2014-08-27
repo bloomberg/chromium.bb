@@ -137,8 +137,7 @@ void GetExtensionKeyboardEventFromKeyEvent(
   ext_event->type = (event.type() == ui::ET_KEY_RELEASED) ? "keyup" : "keydown";
 
   std::string dom_code = event.code();
-  if (dom_code ==
-      ui::KeycodeConverter::GetInstance()->InvalidKeyboardEventCode())
+  if (dom_code == ui::KeycodeConverter::InvalidKeyboardEventCode())
     dom_code = ui::KeyboardCodeToDomKeycode(event.key_code());
   ext_event->code = dom_code;
   ext_event->key_code = static_cast<int>(event.key_code());

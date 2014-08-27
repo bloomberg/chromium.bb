@@ -179,14 +179,14 @@ void InputInjectorMac::Core::InjectKeyEvent(const KeyEvent& event) {
   if (!event.has_pressed() || !event.has_usb_keycode())
     return;
 
-  ui::KeycodeConverter* key_converter = ui::KeycodeConverter::GetInstance();
-  int keycode = key_converter->UsbKeycodeToNativeKeycode(event.usb_keycode());
+  int keycode =
+      ui::KeycodeConverter::UsbKeycodeToNativeKeycode(event.usb_keycode());
 
   VLOG(3) << "Converting USB keycode: " << std::hex << event.usb_keycode()
           << " to keycode: " << keycode << std::dec;
 
   // If we couldn't determine the Mac virtual key code then ignore the event.
-  if (keycode == key_converter->InvalidNativeKeycode())
+  if (keycode == ui::KeycodeConverter::InvalidNativeKeycode())
     return;
 
   // If this is a modifier key, remember its new state so that it can be

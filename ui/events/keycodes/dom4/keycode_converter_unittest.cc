@@ -28,41 +28,44 @@ const uint32_t kUsbUsBackslash =        0x070031;
 const uint32_t kUsbNonUsHash =          0x070032;
 
 TEST(UsbKeycodeMap, Basic) {
-  ui::KeycodeConverter* key_converter = ui::KeycodeConverter::GetInstance();
   // Verify that the first element in the table is the "invalid" code.
   const ui::KeycodeMapEntry* keycode_map =
-      key_converter->GetKeycodeMapForTest();
-  EXPECT_EQ(key_converter->InvalidUsbKeycode(), keycode_map[0].usb_keycode);
-  EXPECT_EQ(key_converter->InvalidNativeKeycode(),
+      ui::KeycodeConverter::GetKeycodeMapForTest();
+  EXPECT_EQ(ui::KeycodeConverter::InvalidUsbKeycode(),
+            keycode_map[0].usb_keycode);
+  EXPECT_EQ(ui::KeycodeConverter::InvalidNativeKeycode(),
             keycode_map[0].native_keycode);
-  EXPECT_STREQ(key_converter->InvalidKeyboardEventCode(), "Unidentified");
-  EXPECT_EQ(key_converter->InvalidNativeKeycode(),
-            key_converter->CodeToNativeKeycode("Unidentified"));
+  EXPECT_STREQ(ui::KeycodeConverter::InvalidKeyboardEventCode(),
+               "Unidentified");
+  EXPECT_EQ(ui::KeycodeConverter::InvalidNativeKeycode(),
+            ui::KeycodeConverter::CodeToNativeKeycode("Unidentified"));
 
   // Verify that there are no duplicate entries in the mapping.
   std::map<uint32_t, uint16_t> usb_to_native;
   std::map<uint16_t, uint32_t> native_to_usb;
-  size_t numEntries = key_converter->NumKeycodeMapEntriesForTest();
+  size_t numEntries = ui::KeycodeConverter::NumKeycodeMapEntriesForTest();
   for (size_t i = 0; i < numEntries; ++i) {
     const ui::KeycodeMapEntry* entry = &keycode_map[i];
     // Don't test keys with no native keycode mapping on this platform.
-    if (entry->native_keycode == key_converter->InvalidNativeKeycode())
+    if (entry->native_keycode == ui::KeycodeConverter::InvalidNativeKeycode())
       continue;
 
     // Verify UsbKeycodeToNativeKeycode works for this key.
-    EXPECT_EQ(entry->native_keycode,
-              key_converter->UsbKeycodeToNativeKeycode(entry->usb_keycode));
+    EXPECT_EQ(
+        entry->native_keycode,
+        ui::KeycodeConverter::UsbKeycodeToNativeKeycode(entry->usb_keycode));
 
     // Verify CodeToNativeKeycode and NativeKeycodeToCode work correctly.
     if (entry->code) {
       EXPECT_EQ(entry->native_keycode,
-                key_converter->CodeToNativeKeycode(entry->code));
-      EXPECT_STREQ(entry->code,
-                   key_converter->NativeKeycodeToCode(entry->native_keycode));
+                ui::KeycodeConverter::CodeToNativeKeycode(entry->code));
+      EXPECT_STREQ(
+          entry->code,
+          ui::KeycodeConverter::NativeKeycodeToCode(entry->native_keycode));
     }
     else {
-      EXPECT_EQ(key_converter->InvalidNativeKeycode(),
-                key_converter->CodeToNativeKeycode(entry->code));
+      EXPECT_EQ(ui::KeycodeConverter::InvalidNativeKeycode(),
+                ui::KeycodeConverter::CodeToNativeKeycode(entry->code));
     }
 
     // Verify that the USB or native codes aren't duplicated.
@@ -94,17 +97,16 @@ TEST(UsbKeycodeMap, Basic) {
 
 TEST(UsbKeycodeMap, NonExistent) {
   // Verify that UsbKeycodeToNativeKeycode works for a non-existent USB keycode.
-  ui::KeycodeConverter* key_converter = ui::KeycodeConverter::GetInstance();
-  EXPECT_EQ(key_converter->InvalidNativeKeycode(),
-            key_converter->UsbKeycodeToNativeKeycode(kUsbNonExistentKeycode));
+  EXPECT_EQ(
+      ui::KeycodeConverter::InvalidNativeKeycode(),
+      ui::KeycodeConverter::UsbKeycodeToNativeKeycode(kUsbNonExistentKeycode));
 }
 
 TEST(UsbKeycodeMap, UsBackslashIsNonUsHash) {
   // Verify that UsbKeycodeToNativeKeycode treats the non-US "hash" key
   // as equivalent to the US "backslash" key.
-  ui::KeycodeConverter* key_converter = ui::KeycodeConverter::GetInstance();
-  EXPECT_EQ(key_converter->UsbKeycodeToNativeKeycode(kUsbUsBackslash),
-            key_converter->UsbKeycodeToNativeKeycode(kUsbNonUsHash));
+  EXPECT_EQ(ui::KeycodeConverter::UsbKeycodeToNativeKeycode(kUsbUsBackslash),
+            ui::KeycodeConverter::UsbKeycodeToNativeKeycode(kUsbNonUsHash));
 }
 
 }  // namespace

@@ -276,14 +276,14 @@ void InputInjectorLinux::Core::InjectKeyEvent(const KeyEvent& event) {
     return;
   }
 
-  ui::KeycodeConverter* key_converter = ui::KeycodeConverter::GetInstance();
-  int keycode = key_converter->UsbKeycodeToNativeKeycode(event.usb_keycode());
+  int keycode =
+      ui::KeycodeConverter::UsbKeycodeToNativeKeycode(event.usb_keycode());
 
   VLOG(3) << "Converting USB keycode: " << std::hex << event.usb_keycode()
           << " to keycode: " << keycode << std::dec;
 
   // Ignore events which can't be mapped.
-  if (keycode == key_converter->InvalidNativeKeycode())
+  if (keycode == ui::KeycodeConverter::InvalidNativeKeycode())
     return;
 
   if (event.pressed()) {

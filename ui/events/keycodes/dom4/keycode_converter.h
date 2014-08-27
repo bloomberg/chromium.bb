@@ -7,7 +7,6 @@
 
 #include <stdint.h>
 #include "base/basictypes.h"
-#include "base/memory/singleton.h"
 
 // For reference, the W3C UI Event spec is located at:
 // http://www.w3.org/TR/uievents/
@@ -38,50 +37,45 @@ typedef struct {
 // spec (http://www.w3.org/TR/uievents/).
 class KeycodeConverter {
  public:
-  static KeycodeConverter* GetInstance();
-
   // Return the value that identifies an invalid native keycode.
-  uint16_t InvalidNativeKeycode();
+  static uint16_t InvalidNativeKeycode();
 
   // Return the string that indentifies an invalid UI Event |code|.
   // The returned pointer references a static global string.
-  const char* InvalidKeyboardEventCode();
+  static const char* InvalidKeyboardEventCode();
 
   // Convert a native (Mac/Win/Linux) keycode into the |code| string.
   // The returned pointer references a static global string.
-  const char* NativeKeycodeToCode(uint16_t native_keycode);
+  static const char* NativeKeycodeToCode(uint16_t native_keycode);
 
   // Convert a UI Events |code| string value into a native keycode.
-  uint16_t CodeToNativeKeycode(const char* code);
+  static uint16_t CodeToNativeKeycode(const char* code);
 
   // The following methods relate to USB keycodes.
   // Note that USB keycodes are not part of any web standard.
   // Please don't use USB keycodes in new code.
 
   // Return the value that identifies an invalid USB keycode.
-  uint16_t InvalidUsbKeycode();
+  static uint16_t InvalidUsbKeycode();
 
   // Convert a USB keycode into an equivalent platform native keycode.
-  uint16_t UsbKeycodeToNativeKeycode(uint32_t usb_keycode);
+  static uint16_t UsbKeycodeToNativeKeycode(uint32_t usb_keycode);
 
   // Convert a platform native keycode into an equivalent USB keycode.
-  uint32_t NativeKeycodeToUsbKeycode(uint16_t native_keycode);
+  static uint32_t NativeKeycodeToUsbKeycode(uint16_t native_keycode);
 
   // Convert a USB keycode into the string with the DOM3 |code| value.
   // The returned pointer references a static global string.
-  const char* UsbKeycodeToCode(uint32_t usb_keycode);
+  static const char* UsbKeycodeToCode(uint32_t usb_keycode);
 
   // Convert a DOM3 Event |code| string into a USB keycode value.
-  uint32_t CodeToUsbKeycode(const char* code);
+  static uint32_t CodeToUsbKeycode(const char* code);
 
   // Static methods to support testing.
-  size_t NumKeycodeMapEntriesForTest();
-  const KeycodeMapEntry* GetKeycodeMapForTest();
+  static size_t NumKeycodeMapEntriesForTest();
+  static const KeycodeMapEntry* GetKeycodeMapForTest();
 
  private:
-  KeycodeConverter();
-  friend struct DefaultSingletonTraits<KeycodeConverter>;
-
   DISALLOW_COPY_AND_ASSIGN(KeycodeConverter);
 };
 

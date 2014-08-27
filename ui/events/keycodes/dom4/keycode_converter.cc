@@ -23,29 +23,27 @@ const size_t kKeycodeMapEntries = arraysize(usb_keycode_map);
 
 }  // namespace
 
-KeycodeConverter::KeycodeConverter() {
-}
-
-KeycodeConverter* KeycodeConverter::GetInstance() {
-  return Singleton<KeycodeConverter>::get();
-}
-
+// static
 size_t KeycodeConverter::NumKeycodeMapEntriesForTest() {
   return kKeycodeMapEntries;
 }
 
+// static
 const KeycodeMapEntry* KeycodeConverter::GetKeycodeMapForTest() {
   return &usb_keycode_map[0];
 }
 
+// static
 uint16_t KeycodeConverter::InvalidNativeKeycode() {
   return usb_keycode_map[0].native_keycode;
 }
 
+// static
 const char* KeycodeConverter::InvalidKeyboardEventCode() {
   return "Unidentified";
 }
 
+// static
 const char* KeycodeConverter::NativeKeycodeToCode(uint16_t native_keycode) {
   for (size_t i = 0; i < kKeycodeMapEntries; ++i) {
     if (usb_keycode_map[i].native_keycode == native_keycode) {
@@ -57,6 +55,7 @@ const char* KeycodeConverter::NativeKeycodeToCode(uint16_t native_keycode) {
   return InvalidKeyboardEventCode();
 }
 
+// static
 uint16_t KeycodeConverter::CodeToNativeKeycode(const char* code) {
   if (!code ||
       strcmp(code, InvalidKeyboardEventCode()) == 0) {
@@ -76,10 +75,12 @@ uint16_t KeycodeConverter::CodeToNativeKeycode(const char* code) {
 // Note that USB keycodes are not part of any web standard.
 // Please don't use USB keycodes in new code.
 
+// static
 uint16_t KeycodeConverter::InvalidUsbKeycode() {
   return usb_keycode_map[0].usb_keycode;
 }
 
+// static
 uint16_t KeycodeConverter::UsbKeycodeToNativeKeycode(uint32_t usb_keycode) {
   // Deal with some special-cases that don't fit the 1:1 mapping.
   if (usb_keycode == 0x070032) // non-US hash.
@@ -96,6 +97,7 @@ uint16_t KeycodeConverter::UsbKeycodeToNativeKeycode(uint32_t usb_keycode) {
   return InvalidNativeKeycode();
 }
 
+// static
 uint32_t KeycodeConverter::NativeKeycodeToUsbKeycode(uint16_t native_keycode) {
   for (size_t i = 0; i < kKeycodeMapEntries; ++i) {
     if (usb_keycode_map[i].native_keycode == native_keycode)
@@ -104,6 +106,7 @@ uint32_t KeycodeConverter::NativeKeycodeToUsbKeycode(uint16_t native_keycode) {
   return InvalidUsbKeycode();
 }
 
+// static
 const char* KeycodeConverter::UsbKeycodeToCode(uint32_t usb_keycode) {
   for (size_t i = 0; i < kKeycodeMapEntries; ++i) {
     if (usb_keycode_map[i].usb_keycode == usb_keycode)
@@ -112,6 +115,7 @@ const char* KeycodeConverter::UsbKeycodeToCode(uint32_t usb_keycode) {
   return InvalidKeyboardEventCode();
 }
 
+// static
 uint32_t KeycodeConverter::CodeToUsbKeycode(const char* code) {
   if (!code ||
       strcmp(code, InvalidKeyboardEventCode()) == 0) {

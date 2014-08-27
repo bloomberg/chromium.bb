@@ -221,13 +221,13 @@ void InputInjectorWin::Core::HandleKey(const KeyEvent& event) {
   // Reset the system idle suspend timeout.
   SetThreadExecutionState(ES_SYSTEM_REQUIRED);
 
-  ui::KeycodeConverter* key_converter = ui::KeycodeConverter::GetInstance();
-  int scancode = key_converter->UsbKeycodeToNativeKeycode(event.usb_keycode());
+  int scancode =
+      ui::KeycodeConverter::UsbKeycodeToNativeKeycode(event.usb_keycode());
   VLOG(3) << "Converting USB keycode: " << std::hex << event.usb_keycode()
           << " to scancode: " << scancode << std::dec;
 
   // Ignore events which can't be mapped.
-  if (scancode == key_converter->InvalidNativeKeycode())
+  if (scancode == ui::KeycodeConverter::InvalidNativeKeycode())
     return;
 
   uint32_t flags = KEYEVENTF_SCANCODE | (event.pressed() ? 0 : KEYEVENTF_KEYUP);

@@ -838,7 +838,7 @@ const char* CodeFromXEvent(const XEvent* xev) {
   int keycode = (xev->type == GenericEvent)
                     ? static_cast<XIDeviceEvent*>(xev->xcookie.data)->detail
                     : xev->xkey.keycode;
-  return KeycodeConverter::GetInstance()->NativeKeycodeToCode(keycode);
+  return ui::KeycodeConverter::NativeKeycodeToCode(keycode);
 }
 
 uint16 GetCharacterFromXEvent(const XEvent* xev) {
