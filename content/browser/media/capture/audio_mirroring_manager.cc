@@ -4,50 +4,33 @@
 
 #include "content/browser/media/capture/audio_mirroring_manager.h"
 
-#include "content/public/browser/browser_thread.h"
+#include "base/lazy_instance.h"
 
 namespace content {
 
 namespace {
 
-// Debug utility to make sure methods of AudioMirroringManager are not invoked
-// more than once in a single call stack.  In release builds, this compiles to
-// nothing and gets completely optimized out.
-class ReentrancyGuard {
- public:
-#ifdef NDEBUG
-  ReentrancyGuard() {}
-  ~ReentrancyGuard() {}
-#else
-  ReentrancyGuard() {
-    DCHECK(!inside_a_method_);
-    inside_a_method_ = true;
-  }
-  ~ReentrancyGuard() {
-    inside_a_method_ = false;
-  }
-
-  static bool inside_a_method_;  // Safe to be static, since AMM is a singleton.
-#endif
-};
-
-#ifndef NDEBUG
-bool ReentrancyGuard::inside_a_method_ = false;
-#endif
+base::LazyInstance<AudioMirroringManager>::Leaky g_audio_mirroring_manager =
+    LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
-AudioMirroringManager::AudioMirroringManager() {}
-
-AudioMirroringManager::~AudioMirroringManager() {
-  DCHECK(diverters_.empty());
-  DCHECK(sessions_.empty());
+// static
+AudioMirroringManager* AudioMirroringManager::GetInstance() {
+  return g_audio_mirroring_manager.Pointer();
 }
+
+AudioMirroringManager::AudioMirroringManager() {
+  // Only *after* construction, check that AudioMirroringManager is being
+  // invoked on the same single thread.
+  thread_checker_.DetachFromThread();
+}
+
+AudioMirroringManager::~AudioMirroringManager() {}
 
 void AudioMirroringManager::AddDiverter(
     int render_process_id, int render_view_id, Diverter* diverter) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  ReentrancyGuard guard;
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(diverter);
 
   // DCHECK(diverter not already in diverters_ under any key)
@@ -73,8 +56,7 @@ void AudioMirroringManager::AddDiverter(
 
 void AudioMirroringManager::RemoveDiverter(
     int render_process_id, int render_view_id, Diverter* diverter) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  ReentrancyGuard guard;
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   // Stop diverting the audio stream if a mirroring session is active.
   const Target target(render_process_id, render_view_id);
@@ -95,8 +77,7 @@ void AudioMirroringManager::RemoveDiverter(
 void AudioMirroringManager::StartMirroring(
     int render_process_id, int render_view_id,
     MirroringDestination* destination) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  ReentrancyGuard guard;
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(destination);
 
   // Insert an entry into the set of active mirroring sessions.  If a mirroring
@@ -137,8 +118,7 @@ void AudioMirroringManager::StartMirroring(
 void AudioMirroringManager::StopMirroring(
     int render_process_id, int render_view_id,
     MirroringDestination* destination) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  ReentrancyGuard guard;
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   // Stop mirroring if there is an active session *and* the destination
   // matches.

@@ -37,7 +37,6 @@ class NetworkChangeNotifier;
 }  // namespace net
 
 namespace content {
-class AudioMirroringManager;
 class BrowserMainParts;
 class BrowserOnlineStateObserver;
 class BrowserShutdownImpl;
@@ -92,9 +91,6 @@ class CONTENT_EXPORT BrowserMainLoop {
   int GetResultCode() const { return result_code_; }
 
   media::AudioManager* audio_manager() const { return audio_manager_.get(); }
-  AudioMirroringManager* audio_mirroring_manager() const {
-    return audio_mirroring_manager_.get();
-  }
   MediaStreamManager* media_stream_manager() const {
     return media_stream_manager_.get();
   }
@@ -160,7 +156,6 @@ class CONTENT_EXPORT BrowserMainLoop {
   scoped_ptr<media::UserInputMonitor> user_input_monitor_;
   scoped_ptr<media::AudioManager> audio_manager_;
   scoped_ptr<media::MidiManager> midi_manager_;
-  scoped_ptr<AudioMirroringManager> audio_mirroring_manager_;
   scoped_ptr<MediaStreamManager> media_stream_manager_;
   // Per-process listener for online state changes.
   scoped_ptr<BrowserOnlineStateObserver> online_state_observer_;

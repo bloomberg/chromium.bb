@@ -755,14 +755,14 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   AddFilter(new AudioInputRendererHost(
       audio_manager,
       media_stream_manager,
-      BrowserMainLoop::GetInstance()->audio_mirroring_manager(),
+      AudioMirroringManager::GetInstance(),
       BrowserMainLoop::GetInstance()->user_input_monitor()));
   // The AudioRendererHost needs to be available for lookup, so it's
   // stashed in a member variable.
   audio_renderer_host_ = new AudioRendererHost(
       GetID(),
       audio_manager,
-      BrowserMainLoop::GetInstance()->audio_mirroring_manager(),
+      AudioMirroringManager::GetInstance(),
       media_internals,
       media_stream_manager);
   AddFilter(audio_renderer_host_.get());

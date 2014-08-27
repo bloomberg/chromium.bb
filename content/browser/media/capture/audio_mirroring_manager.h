@@ -5,7 +5,7 @@
 // AudioMirroringManager is a singleton object that maintains a set of active
 // audio mirroring destinations and auto-connects/disconnects audio streams
 // to/from those destinations.  It is meant to be used exclusively on the IO
-// BrowserThread.
+// thread.
 //
 // How it works:
 //
@@ -31,6 +31,7 @@
 #include <utility>
 
 #include "base/basictypes.h"
+#include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
 #include "media/audio/audio_source_diverter.h"
 
@@ -60,9 +61,12 @@ class CONTENT_EXPORT AudioMirroringManager {
     virtual ~MirroringDestination() {}
   };
 
+  // Note: Use GetInstance() for non-test code.
   AudioMirroringManager();
-
   virtual ~AudioMirroringManager();
+
+  // Returns the global instance.
+  static AudioMirroringManager* GetInstance();
 
   // Add/Remove a diverter for an audio stream with a known RenderView target
   // (represented by |render_process_id| + |render_view_id|).  Multiple
@@ -99,6 +103,9 @@ class CONTENT_EXPORT AudioMirroringManager {
 
   // Currently-active mirroring sessions.
   SessionMap sessions_;
+
+  // Used to check that all AudioMirroringManager code runs on the same thread.
+  base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioMirroringManager);
 };
