@@ -104,6 +104,8 @@ void AudioRecorder::InitializeOnAudioThread() {
 
   const media::AudioParameters dest_params(params.format(),
                                            kDefaultChannelLayout,
+                                           kDefaultChannels,
+                                           params.input_channels(),
                                            kDefaultSampleRate,
                                            kDefaultBitsPerSample,
                                            params.frames_per_buffer(),

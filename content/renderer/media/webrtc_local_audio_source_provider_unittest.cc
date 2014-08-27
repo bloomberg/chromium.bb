@@ -20,10 +20,10 @@ class WebRtcLocalAudioSourceProviderTest : public testing::Test {
  protected:
   virtual void SetUp() OVERRIDE {
     source_params_.Reset(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
-                         media::CHANNEL_LAYOUT_MONO, 1, 48000, 16, 480);
+                         media::CHANNEL_LAYOUT_MONO, 1, 0, 48000, 16, 480);
     sink_params_.Reset(
         media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
-        media::CHANNEL_LAYOUT_STEREO, 2, 44100, 16,
+        media::CHANNEL_LAYOUT_STEREO, 2, 0, 44100, 16,
         WebRtcLocalAudioSourceProvider::kWebAudioRenderBufferSize);
     const int length =
         source_params_.frames_per_buffer() * source_params_.channels();

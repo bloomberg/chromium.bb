@@ -282,7 +282,7 @@ AudioParameters WASAPIAudioInputStream::GetInputStreamParameters(
   // Use 10ms frame size as default.
   int frames_per_buffer = sample_rate / 100;
   return AudioParameters(
-      AudioParameters::AUDIO_PCM_LOW_LATENCY, channel_layout, sample_rate,
+      AudioParameters::AUDIO_PCM_LOW_LATENCY, channel_layout, 0, sample_rate,
       16, frames_per_buffer, effects);
 }
 

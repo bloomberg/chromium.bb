@@ -210,6 +210,7 @@ TEST_F(AudioBufferConverterTest, DiscreteChannelLayout) {
   output_params_ = AudioParameters(AudioParameters::AUDIO_PCM_LOW_LATENCY,
                                    CHANNEL_LAYOUT_DISCRETE,
                                    2,
+                                   0,
                                    kOutSampleRate,
                                    16,
                                    512,

@@ -199,6 +199,7 @@ class AudioRendererHostTest : public testing::Test {
       params = media::AudioParameters(
           media::AudioParameters::AUDIO_FAKE,
           media::CHANNEL_LAYOUT_STEREO,
+          2,
           media::AudioParameters::kAudioCDSampleRate, 16,
           media::AudioParameters::kAudioCDSampleRate / 10,
           media::AudioParameters::NO_EFFECTS);

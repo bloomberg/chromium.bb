@@ -147,6 +147,7 @@ void FakeMediaSource::SetSourceFile(const base::FilePath& video_file,
           AudioParameters::AUDIO_PCM_LINEAR,
           layout,
           av_codec_context->channels,
+          av_codec_context->channels,
           av_codec_context->sample_rate,
           8 * av_get_bytes_per_sample(av_codec_context->sample_fmt),
           av_codec_context->sample_rate / kAudioPacketsPerSecond);
