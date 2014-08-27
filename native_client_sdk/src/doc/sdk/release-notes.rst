@@ -4,6 +4,16 @@
 Release Notes
 #############
 
+Chrome/Pepper 38 (15 August 2014)
+=================================
+
+PNaCl
+-----
+
+* Compilation speed improvements due to validation caching of the translator and
+  linker.
+* Performance improvement of SIMD vector shuffle.
+
 Chrome/Pepper 37 (20 June 2014)
 ===============================
 
