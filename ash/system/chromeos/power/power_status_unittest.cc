@@ -37,7 +37,7 @@ class PowerStatusTest : public testing::Test {
   virtual ~PowerStatusTest() {}
 
   virtual void SetUp() OVERRIDE {
-    chromeos::DBusThreadManager::InitializeWithStub();
+    chromeos::DBusThreadManager::Initialize();
     PowerStatus::Initialize();
     power_status_ = PowerStatus::Get();
     test_observer_.reset(new TestObserver);

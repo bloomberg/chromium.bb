@@ -142,7 +142,7 @@ class TestObserver : public NfcAdapter::Observer,
 class NfcChromeOSTest : public testing::Test {
  public:
   virtual void SetUp() {
-    DBusThreadManager::InitializeWithStub();
+    DBusThreadManager::Initialize();
     fake_nfc_adapter_client_ = static_cast<FakeNfcAdapterClient*>(
         DBusThreadManager::Get()->GetNfcAdapterClient());
     fake_nfc_device_client_ = static_cast<FakeNfcDeviceClient*>(

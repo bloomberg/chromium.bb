@@ -33,7 +33,7 @@
 #include "chromeos/chromeos_paths.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/cryptohome_client.h"
-#include "chromeos/dbus/fake_dbus_thread_manager.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
 #include "chromeos/dbus/power_manager/policy.pb.h"
@@ -177,11 +177,10 @@ PowerPolicyBrowserTestBase::PowerPolicyBrowserTestBase()
 }
 
 void PowerPolicyBrowserTestBase::SetUpInProcessBrowserTestFixture() {
-  power_manager_client_ = new chromeos::FakePowerManagerClient;
-  fake_dbus_thread_manager()->SetPowerManagerClient(
-      scoped_ptr<chromeos::PowerManagerClient>(power_manager_client_));
-
   DevicePolicyCrosBrowserTest::SetUpInProcessBrowserTestFixture();
+  power_manager_client_ = new chromeos::FakePowerManagerClient;
+  dbus_setter()->SetPowerManagerClient(
+      scoped_ptr<chromeos::PowerManagerClient>(power_manager_client_));
 
   // Initialize device policy.
   InstallOwnerKey();

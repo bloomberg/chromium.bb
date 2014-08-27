@@ -60,7 +60,7 @@ class NetworkSmsHandlerTest : public testing::Test {
     command_line->AppendSwitch(chromeos::switches::kSmsTestMessages);
 
     // Initialize DBusThreadManager with a stub implementation.
-    DBusThreadManager::InitializeWithStub();
+    DBusThreadManager::Initialize();
     ShillDeviceClient::TestInterface* device_test =
         DBusThreadManager::Get()->GetShillDeviceClient()->GetTestInterface();
     ASSERT_TRUE(device_test);

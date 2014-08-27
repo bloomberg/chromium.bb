@@ -5,7 +5,7 @@
 #include "ash/display/projecting_observer_chromeos.h"
 
 #include "base/memory/scoped_vector.h"
-#include "chromeos/dbus/fake_dbus_thread_manager.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/chromeos/test/test_display_snapshot.h"
@@ -40,15 +40,10 @@ ui::DisplayConfigurator::DisplayStateList CreateOutputs(
 class ProjectingObserverTest : public testing::Test {
  public:
   ProjectingObserverTest() : observer_(new ProjectingObserver()) {
-    chromeos::FakeDBusThreadManager* dbus_manager =
-        new chromeos::FakeDBusThreadManager();
     fake_power_client_ = new chromeos::FakePowerManagerClient();
 
-    dbus_manager->SetPowerManagerClient(
+    chromeos::DBusThreadManager::GetSetterForTesting()->SetPowerManagerClient(
         scoped_ptr<chromeos::PowerManagerClient>(fake_power_client_));
-
-    // Takes ownership of |dbus_manager|.
-    chromeos::DBusThreadManager::InitializeForTesting(dbus_manager);
   }
 
   virtual ~ProjectingObserverTest() {

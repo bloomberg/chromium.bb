@@ -41,7 +41,7 @@ class NetworkStateNotifierTest : public AshTestBase {
   virtual ~NetworkStateNotifierTest() {}
 
   virtual void SetUp() OVERRIDE {
-    DBusThreadManager::InitializeWithStub();
+    DBusThreadManager::Initialize();
     chromeos::LoginState::Initialize();
     SetupDefaultShillState();
     chromeos::NetworkHandler::Initialize();

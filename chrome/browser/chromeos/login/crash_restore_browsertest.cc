@@ -12,7 +12,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/cryptohome_client.h"
-#include "chromeos/dbus/fake_dbus_thread_manager.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "components/user_manager/user.h"
@@ -46,12 +46,9 @@ class CrashRestoreSimpleTest : public InProcessBrowserTest {
 
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     // Redirect session_manager DBus calls to FakeSessionManagerClient.
-    FakeDBusThreadManager* dbus_thread_manager = new FakeDBusThreadManager;
-    dbus_thread_manager->SetFakeClients();
     session_manager_client_ = new FakeSessionManagerClient;
-    dbus_thread_manager->SetSessionManagerClient(
+    chromeos::DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
         scoped_ptr<SessionManagerClient>(session_manager_client_));
-    DBusThreadManager::SetInstanceForTesting(dbus_thread_manager);
     session_manager_client_->StartSession(kUserId1);
   }
 

@@ -19,7 +19,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chromeos/chromeos_switches.h"
-#include "chromeos/dbus/fake_dbus_thread_manager.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
 #include "chromeos/login/auth/key.h"
 #include "chromeos/login/auth/mock_authenticator.h"
@@ -120,12 +120,9 @@ class ScreenLockerTest : public InProcessBrowserTest {
 
  private:
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
-    FakeDBusThreadManager* fake_dbus_thread_manager = new FakeDBusThreadManager;
-    fake_dbus_thread_manager->SetFakeClients();
     fake_session_manager_client_ = new FakeSessionManagerClient;
-    fake_dbus_thread_manager->SetSessionManagerClient(
+    DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
         scoped_ptr<SessionManagerClient>(fake_session_manager_client_));
-    DBusThreadManager::SetInstanceForTesting(fake_dbus_thread_manager);
 
     InProcessBrowserTest::SetUpInProcessBrowserTestFixture();
     zero_duration_mode_.reset(new ui::ScopedAnimationDurationScaleMode(

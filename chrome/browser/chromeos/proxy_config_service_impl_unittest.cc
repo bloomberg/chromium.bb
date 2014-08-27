@@ -215,7 +215,7 @@ class ProxyConfigServiceImplTest : public testing::Test {
         io_thread_(BrowserThread::IO, &loop_) {}
 
   virtual void SetUp() {
-    DBusThreadManager::InitializeWithStub();
+    DBusThreadManager::Initialize();
     NetworkHandler::Initialize();
 
     SetUpNetwork();

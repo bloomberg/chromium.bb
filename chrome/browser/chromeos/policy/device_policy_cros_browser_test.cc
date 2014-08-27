@@ -15,7 +15,7 @@
 #include "chrome/browser/chromeos/policy/enterprise_install_attributes.h"
 #include "chrome/common/chrome_paths.h"
 #include "chromeos/chromeos_paths.h"
-#include "chromeos/dbus/fake_dbus_thread_manager.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
 #include "crypto/rsa_private_key.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -73,18 +73,16 @@ void DevicePolicyCrosTestHelper::OverridePaths() {
 }
 
 DevicePolicyCrosBrowserTest::DevicePolicyCrosBrowserTest()
-    : fake_dbus_thread_manager_(new chromeos::FakeDBusThreadManager),
-      fake_session_manager_client_(new chromeos::FakeSessionManagerClient) {
-  fake_dbus_thread_manager_->SetFakeClients();
-  fake_dbus_thread_manager_->SetSessionManagerClient(
-      scoped_ptr<chromeos::SessionManagerClient>(fake_session_manager_client_));
+    : fake_session_manager_client_(new chromeos::FakeSessionManagerClient) {
 }
 
 DevicePolicyCrosBrowserTest::~DevicePolicyCrosBrowserTest() {
 }
 
 void DevicePolicyCrosBrowserTest::SetUpInProcessBrowserTestFixture() {
-  chromeos::DBusThreadManager::SetInstanceForTesting(fake_dbus_thread_manager_);
+  dbus_setter_ = chromeos::DBusThreadManager::GetSetterForTesting();
+  dbus_setter_->SetSessionManagerClient(
+      scoped_ptr<chromeos::SessionManagerClient>(fake_session_manager_client_));
   InProcessBrowserTest::SetUpInProcessBrowserTestFixture();
 }
 

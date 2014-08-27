@@ -709,7 +709,7 @@ class DeviceStatusCollectorNetworkInterfacesTest
     : public DeviceStatusCollectorTest {
  protected:
   virtual void SetUp() OVERRIDE {
-    chromeos::DBusThreadManager::InitializeWithStub();
+    chromeos::DBusThreadManager::Initialize();
     chromeos::NetworkHandler::Initialize();
     chromeos::ShillDeviceClient::TestInterface* test_device_client =
         chromeos::DBusThreadManager::Get()->GetShillDeviceClient()->

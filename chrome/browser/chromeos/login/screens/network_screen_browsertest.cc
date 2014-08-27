@@ -10,7 +10,7 @@
 #include "chrome/browser/chromeos/login/test/wizard_in_process_browser_test.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "chromeos/dbus/fake_dbus_thread_manager.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -53,12 +53,9 @@ class NetworkScreenTest : public WizardInProcessBrowserTest {
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     WizardInProcessBrowserTest::SetUpInProcessBrowserTestFixture();
 
-    FakeDBusThreadManager* fake_dbus_thread_manager = new FakeDBusThreadManager;
-    fake_dbus_thread_manager->SetFakeClients();
     fake_session_manager_client_ = new FakeSessionManagerClient;
-    fake_dbus_thread_manager->SetSessionManagerClient(
+    DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
         scoped_ptr<SessionManagerClient>(fake_session_manager_client_));
-    DBusThreadManager::SetInstanceForTesting(fake_dbus_thread_manager);
   }
 
   virtual void SetUpOnMainThread() OVERRIDE {

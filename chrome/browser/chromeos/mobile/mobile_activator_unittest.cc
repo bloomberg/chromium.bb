@@ -114,7 +114,7 @@ class MobileActivatorTest : public testing::Test {
 
  protected:
   virtual void SetUp() {
-    DBusThreadManager::InitializeWithStub();
+    DBusThreadManager::Initialize();
     NetworkHandler::Initialize();
   }
   virtual void TearDown() {

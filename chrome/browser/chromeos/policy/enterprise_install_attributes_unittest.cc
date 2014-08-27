@@ -47,7 +47,7 @@ class EnterpriseInstallAttributesTest : public testing::Test {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     ASSERT_TRUE(PathService::OverrideAndCreateIfNeeded(
         chromeos::FILE_INSTALL_ATTRIBUTES, GetTempPath(), true, false));
-    chromeos::DBusThreadManager::InitializeWithStub();
+    chromeos::DBusThreadManager::Initialize();
     install_attributes_.reset(new EnterpriseInstallAttributes(
         chromeos::DBusThreadManager::Get()->GetCryptohomeClient()));
   }

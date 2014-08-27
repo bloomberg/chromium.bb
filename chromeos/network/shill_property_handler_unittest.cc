@@ -177,7 +177,7 @@ class ShillPropertyHandlerTest : public testing::Test {
 
   virtual void SetUp() OVERRIDE {
     // Initialize DBusThreadManager with a stub implementation.
-    DBusThreadManager::InitializeWithStub();
+    DBusThreadManager::Initialize();
     // Get the test interface for manager / device / service and clear the
     // default stub properties.
     manager_test_ =

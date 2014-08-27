@@ -16,7 +16,6 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_dbus_thread_manager.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace chromeos {
@@ -206,8 +205,7 @@ ScopedDeviceSettingsTestHelper::~ScopedDeviceSettingsTestHelper() {
 DeviceSettingsTestBase::DeviceSettingsTestBase()
     : user_manager_(new FakeUserManager()),
       user_manager_enabler_(user_manager_),
-      owner_key_util_(new MockOwnerKeyUtil()),
-      fake_dbus_thread_manager_(new FakeDBusThreadManager()) {
+      owner_key_util_(new MockOwnerKeyUtil()) {
 }
 
 DeviceSettingsTestBase::~DeviceSettingsTestBase() {
@@ -216,7 +214,7 @@ DeviceSettingsTestBase::~DeviceSettingsTestBase() {
 
 void DeviceSettingsTestBase::SetUp() {
   // Initialize DBusThreadManager with a stub implementation.
-  chromeos::DBusThreadManager::InitializeForTesting(fake_dbus_thread_manager_);
+  dbus_setter_ = chromeos::DBusThreadManager::GetSetterForTesting();
 
   base::RunLoop().RunUntilIdle();
 

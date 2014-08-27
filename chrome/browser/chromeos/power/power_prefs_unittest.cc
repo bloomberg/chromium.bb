@@ -26,7 +26,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/chromeos_switches.h"
-#include "chromeos/dbus/fake_dbus_thread_manager.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
 #include "chromeos/dbus/power_manager/policy.pb.h"
 #include "chromeos/dbus/power_policy_controller.h"
@@ -54,7 +54,6 @@ class PowerPrefsTest : public testing::Test {
   bool GetCurrentAllowScreenWakeLocks() const;
 
   TestingProfileManager profile_manager_;
-  FakeDBusThreadManager fake_dbus_thread_manager_;
   PowerPolicyController* power_policy_controller_;     // Not owned.
   FakePowerManagerClient* fake_power_manager_client_;  // Not owned.
 
@@ -65,17 +64,21 @@ class PowerPrefsTest : public testing::Test {
 
 PowerPrefsTest::PowerPrefsTest()
     : profile_manager_(TestingBrowserProcess::GetGlobal()),
-      power_policy_controller_(new PowerPolicyController),
+      power_policy_controller_(NULL),
       fake_power_manager_client_(new FakePowerManagerClient) {
-  fake_dbus_thread_manager_.SetPowerManagerClient(
-      scoped_ptr<PowerManagerClient>(fake_power_manager_client_));
-  fake_dbus_thread_manager_.SetPowerPolicyController(
-      scoped_ptr<PowerPolicyController>(power_policy_controller_));
-  power_policy_controller_->Init(&fake_dbus_thread_manager_);
 }
 
 void PowerPrefsTest::SetUp() {
   testing::Test::SetUp();
+
+  scoped_ptr<DBusThreadManagerSetter> dbus_setter =
+      chromeos::DBusThreadManager::GetSetterForTesting();
+  dbus_setter->SetPowerManagerClient(
+      scoped_ptr<PowerManagerClient>(fake_power_manager_client_));
+  // Power policy controller is recreated with SetPowerManagerClient().
+  power_policy_controller_ =
+      chromeos::DBusThreadManager::Get()->GetPowerPolicyController();
+
   ASSERT_TRUE(profile_manager_.SetUp());
 
   power_prefs_.reset(new PowerPrefs(power_policy_controller_));

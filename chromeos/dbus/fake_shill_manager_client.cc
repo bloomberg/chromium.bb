@@ -565,6 +565,11 @@ void FakeShillManagerClient::SetBestServiceToConnect(
 }
 
 void FakeShillManagerClient::SetupDefaultEnvironment() {
+  // Bail out from setup if there is no message loop. This will be the common
+  // case for tests that are not testing Shill.
+  if (!base::MessageLoop::current())
+    return;
+
   DBusThreadManager* dbus_manager = DBusThreadManager::Get();
   ShillServiceClient::TestInterface* services =
       dbus_manager->GetShillServiceClient()->GetTestInterface();

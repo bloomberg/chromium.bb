@@ -48,7 +48,7 @@ void AthenaTestHelper::SetUp(ui::ContextFactory* context_factory) {
   base::Thread::Options options(base::MessageLoop::TYPE_IO, 0);
   file_thread_->StartWithOptions(options);
 
-  chromeos::DBusThreadManager::InitializeWithStub();
+  chromeos::DBusThreadManager::Initialize();
   ui::InitializeInputMethodForTesting();
   aura::Env::CreateInstance(true);
   aura::Env::GetInstance()->set_context_factory(context_factory);

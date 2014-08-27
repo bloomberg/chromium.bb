@@ -5,13 +5,13 @@
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_bluetooth_adapter_client.h"
 #include "chromeos/dbus/fake_bluetooth_agent_manager_client.h"
 #include "chromeos/dbus/fake_bluetooth_device_client.h"
 #include "chromeos/dbus/fake_bluetooth_gatt_service_client.h"
 #include "chromeos/dbus/fake_bluetooth_input_client.h"
 #include "chromeos/dbus/fake_bluetooth_profile_manager_client.h"
-#include "chromeos/dbus/fake_dbus_thread_manager.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_chromeos.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
@@ -50,26 +50,25 @@ class BluetoothSocketChromeOSTest : public testing::Test {
         last_reason_(BluetoothSocket::kSystemError) {}
 
   virtual void SetUp() OVERRIDE {
-    scoped_ptr<FakeDBusThreadManager> fake_dbus_thread_manager(
-        new FakeDBusThreadManager);
+    scoped_ptr<DBusThreadManagerSetter> dbus_setter =
+        DBusThreadManager::GetSetterForTesting();
 
-    fake_dbus_thread_manager->SetBluetoothAdapterClient(
+    dbus_setter->SetBluetoothAdapterClient(
         scoped_ptr<BluetoothAdapterClient>(new FakeBluetoothAdapterClient));
-    fake_dbus_thread_manager->SetBluetoothAgentManagerClient(
+    dbus_setter->SetBluetoothAgentManagerClient(
         scoped_ptr<BluetoothAgentManagerClient>(
             new FakeBluetoothAgentManagerClient));
-    fake_dbus_thread_manager->SetBluetoothDeviceClient(
+    dbus_setter->SetBluetoothDeviceClient(
         scoped_ptr<BluetoothDeviceClient>(new FakeBluetoothDeviceClient));
-    fake_dbus_thread_manager->SetBluetoothGattServiceClient(
+    dbus_setter->SetBluetoothGattServiceClient(
         scoped_ptr<BluetoothGattServiceClient>(
             new FakeBluetoothGattServiceClient));
-    fake_dbus_thread_manager->SetBluetoothInputClient(
+    dbus_setter->SetBluetoothInputClient(
         scoped_ptr<BluetoothInputClient>(new FakeBluetoothInputClient));
-    fake_dbus_thread_manager->SetBluetoothProfileManagerClient(
+    dbus_setter->SetBluetoothProfileManagerClient(
         scoped_ptr<BluetoothProfileManagerClient>(
             new FakeBluetoothProfileManagerClient));
 
-    DBusThreadManager::InitializeForTesting(fake_dbus_thread_manager.release());
     BluetoothSocketThread::Get();
 
     // Grab a pointer to the adapter.

@@ -30,7 +30,6 @@
 #include "chromeos/dbus/dbus_client_implementation_type.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_cryptohome_client.h"
-#include "chromeos/dbus/fake_dbus_thread_manager.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
 #include "chromeos/system/mock_statistics_provider.h"
 #include "chromeos/system/statistics_provider.h"
@@ -89,8 +88,6 @@ class DeviceCloudPolicyManagerChromeOSTest
     state_keys.push_back("2");
     state_keys.push_back("3");
     fake_session_manager_client_.set_server_backed_state_keys(state_keys);
-    fake_dbus_thread_manager_->SetCryptohomeClient(
-        scoped_ptr<chromeos::CryptohomeClient>(fake_cryptohome_client_));
   }
 
   virtual ~DeviceCloudPolicyManagerChromeOSTest() {
@@ -99,6 +96,8 @@ class DeviceCloudPolicyManagerChromeOSTest
 
   virtual void SetUp() OVERRIDE {
     DeviceSettingsTestBase::SetUp();
+    dbus_setter_->SetCryptohomeClient(
+        scoped_ptr<chromeos::CryptohomeClient>(fake_cryptohome_client_));
 
     install_attributes_.reset(
         new EnterpriseInstallAttributes(fake_cryptohome_client_));

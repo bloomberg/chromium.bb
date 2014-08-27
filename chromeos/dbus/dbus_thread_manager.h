@@ -36,6 +36,8 @@ class CrasAudioClient;
 class CrosDisksClient;
 class CryptohomeClient;
 class DBusClient;
+class DBusThreadManager;
+class DBusThreadManagerSetter;
 class DebugDaemonClient;
 class EasyUnlockClient;
 class GsmSMSClient;
@@ -86,24 +88,9 @@ class CHROMEOS_EXPORT DBusThreadManager {
   // making it a Singleton, to ensure clean startup and shutdown.
   static void Initialize();
 
-  // Sets an alternative DBusThreadManager such as MockDBusThreadManager
-  // to be used in |Initialize()| for testing. Tests that call
-  // DBusThreadManager::Initialize() (such as browser_tests and
-  // interactive_ui_tests) should use this instead of calling
-  // |InitiailzeForTesting|.  The injected object will be owned by the
-  // internal pointer and deleted by Shutdown().
-  static void SetInstanceForTesting(DBusThreadManager* dbus_thread_manager);
-
-  // Similar to Initialize(), but injects an alternative
-  // DBusThreadManager using SetInstanceForTest first.  The injected
-  // object will be owned by the internal pointer and deleted by
-  // Shutdown(). Does not create any Fake client implementations.
-  static void InitializeForTesting(DBusThreadManager* dbus_thread_manager);
-
-  // Initialize with stub implementations for tests, creating a complete set
-  // of fake/stub client implementations. Also initializes a default set of
-  // fake Shill devices and services, customizable with switches::kShillStub.
-  static void InitializeWithStub();
+  // Returns DBusThreadManagerSetter instance that allows tests to
+  // replace individual dbus clients with their own implementations.
+  static scoped_ptr<DBusThreadManagerSetter> GetSetterForTesting();
 
   // Returns true if DBusThreadManager has been initialized. Call this to
   // avoid initializing + shutting down DBusThreadManager more than once.
@@ -119,74 +106,140 @@ class CHROMEOS_EXPORT DBusThreadManager {
   static bool IsUsingStub(DBusClientBundle::DBusClientType client);
 
   // Returns various D-Bus bus instances, owned by DBusThreadManager.
-  virtual dbus::Bus* GetSystemBus() = 0;
+  dbus::Bus* GetSystemBus();
 
   // All returned objects are owned by DBusThreadManager.  Do not cache these
   // pointers and use them after DBusThreadManager has been shut down.
-  virtual BluetoothAdapterClient* GetBluetoothAdapterClient() = 0;
-  virtual BluetoothAgentManagerClient* GetBluetoothAgentManagerClient() = 0;
-  virtual BluetoothDeviceClient* GetBluetoothDeviceClient() = 0;
-  virtual BluetoothGattCharacteristicClient*
-      GetBluetoothGattCharacteristicClient() = 0;
-  virtual BluetoothGattDescriptorClient* GetBluetoothGattDescriptorClient() = 0;
-  virtual BluetoothGattManagerClient* GetBluetoothGattManagerClient() = 0;
-  virtual BluetoothGattServiceClient* GetBluetoothGattServiceClient() = 0;
-  virtual BluetoothInputClient* GetBluetoothInputClient() = 0;
-  virtual BluetoothProfileManagerClient* GetBluetoothProfileManagerClient() = 0;
-  virtual CrasAudioClient* GetCrasAudioClient() = 0;
-  virtual CrosDisksClient* GetCrosDisksClient() = 0;
-  virtual CryptohomeClient* GetCryptohomeClient() = 0;
-  virtual DebugDaemonClient* GetDebugDaemonClient() = 0;
-  virtual EasyUnlockClient* GetEasyUnlockClient() = 0;
-  virtual GsmSMSClient* GetGsmSMSClient() = 0;
-  virtual ImageBurnerClient* GetImageBurnerClient() = 0;
-  virtual IntrospectableClient* GetIntrospectableClient() = 0;
-  virtual LorgnetteManagerClient* GetLorgnetteManagerClient() = 0;
-  virtual ModemMessagingClient* GetModemMessagingClient() = 0;
-  virtual NfcAdapterClient* GetNfcAdapterClient() = 0;
-  virtual NfcDeviceClient* GetNfcDeviceClient() = 0;
-  virtual NfcManagerClient* GetNfcManagerClient() = 0;
-  virtual NfcRecordClient* GetNfcRecordClient() = 0;
-  virtual NfcTagClient* GetNfcTagClient() = 0;
-  virtual PermissionBrokerClient* GetPermissionBrokerClient() = 0;
-  virtual PowerManagerClient* GetPowerManagerClient() = 0;
-  virtual PowerPolicyController* GetPowerPolicyController() = 0;
-  virtual SessionManagerClient* GetSessionManagerClient() = 0;
-  virtual ShillDeviceClient* GetShillDeviceClient() = 0;
-  virtual ShillIPConfigClient* GetShillIPConfigClient() = 0;
-  virtual ShillManagerClient* GetShillManagerClient() = 0;
-  virtual ShillServiceClient* GetShillServiceClient() = 0;
-  virtual ShillProfileClient* GetShillProfileClient() = 0;
-  virtual SMSClient* GetSMSClient() = 0;
-  virtual SystemClockClient* GetSystemClockClient() = 0;
-  virtual UpdateEngineClient* GetUpdateEngineClient() = 0;
-
-  virtual ~DBusThreadManager();
-
- protected:
-  DBusThreadManager();
+  BluetoothAdapterClient* GetBluetoothAdapterClient();
+  BluetoothAgentManagerClient* GetBluetoothAgentManagerClient();
+  BluetoothDeviceClient* GetBluetoothDeviceClient();
+  BluetoothGattCharacteristicClient* GetBluetoothGattCharacteristicClient();
+  BluetoothGattDescriptorClient* GetBluetoothGattDescriptorClient();
+  BluetoothGattManagerClient* GetBluetoothGattManagerClient();
+  BluetoothGattServiceClient* GetBluetoothGattServiceClient();
+  BluetoothInputClient* GetBluetoothInputClient();
+  BluetoothProfileManagerClient* GetBluetoothProfileManagerClient();
+  CrasAudioClient* GetCrasAudioClient();
+  CrosDisksClient* GetCrosDisksClient();
+  CryptohomeClient* GetCryptohomeClient();
+  DebugDaemonClient* GetDebugDaemonClient();
+  EasyUnlockClient* GetEasyUnlockClient();
+  GsmSMSClient* GetGsmSMSClient();
+  ImageBurnerClient* GetImageBurnerClient();
+  IntrospectableClient* GetIntrospectableClient();
+  LorgnetteManagerClient* GetLorgnetteManagerClient();
+  ModemMessagingClient* GetModemMessagingClient();
+  NfcAdapterClient* GetNfcAdapterClient();
+  NfcDeviceClient* GetNfcDeviceClient();
+  NfcManagerClient* GetNfcManagerClient();
+  NfcRecordClient* GetNfcRecordClient();
+  NfcTagClient* GetNfcTagClient();
+  PermissionBrokerClient* GetPermissionBrokerClient();
+  PowerManagerClient* GetPowerManagerClient();
+  PowerPolicyController* GetPowerPolicyController();
+  SessionManagerClient* GetSessionManagerClient();
+  ShillDeviceClient* GetShillDeviceClient();
+  ShillIPConfigClient* GetShillIPConfigClient();
+  ShillManagerClient* GetShillManagerClient();
+  ShillServiceClient* GetShillServiceClient();
+  ShillProfileClient* GetShillProfileClient();
+  SMSClient* GetSMSClient();
+  SystemClockClient* GetSystemClockClient();
+  UpdateEngineClient* GetUpdateEngineClient();
 
  private:
+  friend class DBusThreadManagerSetter;
+
+  DBusThreadManager();
+  ~DBusThreadManager();
+
+  // Creates a global instance of DBusThreadManager. Can not be called more
+  // than once.
+  static void CreateGlobalInstance();
+
   // Initialize global thread manager instance.
   static void InitializeRegular();
+
+  // Initialize global thread manager instance with stubbed-out dbus clients
+  // implementation.
+  static void InitializeWithStubs();
 
   // Initialize with stub implementations for only certain clients that are
   // not included in comma-separated |unstub_clients| list.
   static void InitializeWithPartialStub(const std::string& unstub_clients);
 
-  // InitializeClients is called after g_dbus_thread_manager is set.
-  // NOTE: Clients that access other clients in their Init() must be
-  // initialized in the correct order.
-  static void InitializeClients();
+  // Constructs all clients and stores them in the respective *_client_ member
+  // variable.
+  void CreateDefaultClients();
 
-  // Initializes |client| with the |system_bus_|.
-  static void InitClient(DBusClient* client);
+  // Constructs all clients and stores them in the respective *_client_ member
+  // variable.
+  void InitializeClients();
 
   // Bitmask that defines which dbus clients are not stubbed out. Bitmap flags
   // are defined within DBusClientBundle::DBusClientType enum.
   static DBusClientBundle::DBusClientTypeMask unstub_client_mask_;
 
+  scoped_ptr<base::Thread> dbus_thread_;
+  scoped_refptr<dbus::Bus> system_bus_;
+  scoped_ptr<DBusClientBundle> client_bundle_;
+  scoped_ptr<PowerPolicyController> power_policy_controller_;
+
   DISALLOW_COPY_AND_ASSIGN(DBusThreadManager);
+};
+
+class CHROMEOS_EXPORT DBusThreadManagerSetter {
+ public:
+  ~DBusThreadManagerSetter();
+
+  void SetBluetoothAdapterClient(scoped_ptr<BluetoothAdapterClient> client);
+  void SetBluetoothAgentManagerClient(
+      scoped_ptr<BluetoothAgentManagerClient> client);
+  void SetBluetoothDeviceClient(scoped_ptr<BluetoothDeviceClient> client);
+  void SetBluetoothGattCharacteristicClient(
+      scoped_ptr<BluetoothGattCharacteristicClient> client);
+  void SetBluetoothGattDescriptorClient(
+      scoped_ptr<BluetoothGattDescriptorClient> client);
+  void SetBluetoothGattManagerClient(
+      scoped_ptr<BluetoothGattManagerClient> client);
+  void SetBluetoothGattServiceClient(
+      scoped_ptr<BluetoothGattServiceClient> client);
+  void SetBluetoothInputClient(scoped_ptr<BluetoothInputClient> client);
+  void SetBluetoothProfileManagerClient(
+      scoped_ptr<BluetoothProfileManagerClient> client);
+  void SetCrasAudioClient(scoped_ptr<CrasAudioClient> client);
+  void SetCrosDisksClient(scoped_ptr<CrosDisksClient> client);
+  void SetCryptohomeClient(scoped_ptr<CryptohomeClient> client);
+  void SetDebugDaemonClient(scoped_ptr<DebugDaemonClient> client);
+  void SetEasyUnlockClient(scoped_ptr<EasyUnlockClient> client);
+  void SetLorgnetteManagerClient(scoped_ptr<LorgnetteManagerClient> client);
+  void SetShillDeviceClient(scoped_ptr<ShillDeviceClient> client);
+  void SetShillIPConfigClient(scoped_ptr<ShillIPConfigClient> client);
+  void SetShillManagerClient(scoped_ptr<ShillManagerClient> client);
+  void SetShillServiceClient(scoped_ptr<ShillServiceClient> client);
+  void SetShillProfileClient(scoped_ptr<ShillProfileClient> client);
+  void SetGsmSMSClient(scoped_ptr<GsmSMSClient> client);
+  void SetImageBurnerClient(scoped_ptr<ImageBurnerClient> client);
+  void SetIntrospectableClient(scoped_ptr<IntrospectableClient> client);
+  void SetModemMessagingClient(scoped_ptr<ModemMessagingClient> client);
+  void SetNfcAdapterClient(scoped_ptr<NfcAdapterClient> client);
+  void SetNfcDeviceClient(scoped_ptr<NfcDeviceClient> client);
+  void SetNfcManagerClient(scoped_ptr<NfcManagerClient> client);
+  void SetNfcRecordClient(scoped_ptr<NfcRecordClient> client);
+  void SetNfcTagClient(scoped_ptr<NfcTagClient> client);
+  void SetPermissionBrokerClient(scoped_ptr<PermissionBrokerClient> client);
+  void SetPowerManagerClient(scoped_ptr<PowerManagerClient> client);
+  void SetSessionManagerClient(scoped_ptr<SessionManagerClient> client);
+  void SetSMSClient(scoped_ptr<SMSClient> client);
+  void SetSystemClockClient(scoped_ptr<SystemClockClient> client);
+  void SetUpdateEngineClient(scoped_ptr<UpdateEngineClient> client);
+
+ private:
+  friend class DBusThreadManager;
+
+  DBusThreadManagerSetter();
+
+  DISALLOW_COPY_AND_ASSIGN(DBusThreadManagerSetter);
 };
 
 }  // namespace chromeos

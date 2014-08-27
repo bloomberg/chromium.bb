@@ -6,7 +6,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_dbus_thread_manager.h"
 #include "chromeos/dbus/fake_image_burner_client.h"
 #endif
 
@@ -161,20 +160,11 @@ void ImageWriterTestUtils::SetUp(bool is_browser_test) {
 
 #if defined(OS_CHROMEOS)
   if (!chromeos::DBusThreadManager::IsInitialized()) {
-    chromeos::FakeDBusThreadManager* fake_dbus_thread_manager =
-        new chromeos::FakeDBusThreadManager;
-    fake_dbus_thread_manager->SetFakeClients();
+    scoped_ptr<chromeos::DBusThreadManagerSetter> dbus_setter =
+        chromeos::DBusThreadManager::GetSetterForTesting();
     scoped_ptr<chromeos::ImageBurnerClient>
         image_burner_fake(new ImageWriterFakeImageBurnerClient());
-    fake_dbus_thread_manager->SetImageBurnerClient(image_burner_fake.Pass());
-
-    if (is_browser_test) {
-      chromeos::DBusThreadManager::SetInstanceForTesting(
-          fake_dbus_thread_manager);
-    } else {
-      chromeos::DBusThreadManager::InitializeForTesting(
-          fake_dbus_thread_manager);
-    }
+    dbus_setter->SetImageBurnerClient(image_burner_fake.Pass());
   }
 
   FakeDiskMountManager* disk_manager = new FakeDiskMountManager();

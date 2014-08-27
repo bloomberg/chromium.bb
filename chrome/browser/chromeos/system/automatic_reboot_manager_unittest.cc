@@ -33,7 +33,6 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/chromeos_paths.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_dbus_thread_manager.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
 #include "chromeos/dbus/fake_update_engine_client.h"
 #include "content/public/browser/browser_thread.h"
@@ -357,14 +356,14 @@ void AutomaticRebootManagerBasicTest::SetUp() {
   TestingBrowserProcess::GetGlobal()->SetLocalState(&local_state_);
   AutomaticRebootManager::RegisterPrefs(local_state_.registry());
 
-  FakeDBusThreadManager* dbus_manager = new FakeDBusThreadManager;
+  scoped_ptr<DBusThreadManagerSetter> dbus_setter =
+      chromeos::DBusThreadManager::GetSetterForTesting();
   power_manager_client_ = new FakePowerManagerClient;
-  dbus_manager->SetPowerManagerClient(
+  dbus_setter->SetPowerManagerClient(
       scoped_ptr<PowerManagerClient>(power_manager_client_));
   update_engine_client_ = new FakeUpdateEngineClient;
-  dbus_manager->SetUpdateEngineClient(
+  dbus_setter->SetUpdateEngineClient(
       scoped_ptr<UpdateEngineClient>(update_engine_client_));
-  DBusThreadManager::InitializeForTesting(dbus_manager);
 
   EXPECT_CALL(*mock_user_manager_, IsUserLoggedIn())
      .WillRepeatedly(ReturnPointee(&is_user_logged_in_));

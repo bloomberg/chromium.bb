@@ -70,7 +70,7 @@ class NetworkPortalDetectorImplTest
     CommandLine* cl = CommandLine::ForCurrentProcess();
     cl->AppendSwitch(switches::kDisableNetworkPortalNotification);
 
-    DBusThreadManager::InitializeWithStub();
+    DBusThreadManager::Initialize();
     base::StatisticsRecorder::Initialize();
     SetupNetworkHandler();
 

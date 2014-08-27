@@ -28,8 +28,8 @@
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/cryptohome/mock_async_method_caller.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_cryptohome_client.h"
-#include "chromeos/dbus/fake_dbus_thread_manager.h"
 #include "chromeos/login/auth/key.h"
 #include "chromeos/login/auth/mock_auth_status_consumer.h"
 #include "chromeos/login/auth/mock_url_fetchers.h"
@@ -141,11 +141,9 @@ class CryptohomeAuthenticatorTest : public testing::Test {
     mock_caller_ = new cryptohome::MockAsyncMethodCaller;
     cryptohome::AsyncMethodCaller::InitializeForTesting(mock_caller_);
 
-    FakeDBusThreadManager* fake_dbus_thread_manager = new FakeDBusThreadManager;
     fake_cryptohome_client_ = new FakeCryptohomeClient;
-    fake_dbus_thread_manager->SetCryptohomeClient(
+    chromeos::DBusThreadManager::GetSetterForTesting()->SetCryptohomeClient(
         scoped_ptr<CryptohomeClient>(fake_cryptohome_client_));
-    DBusThreadManager::InitializeForTesting(fake_dbus_thread_manager);
 
     SystemSaltGetter::Initialize();
 

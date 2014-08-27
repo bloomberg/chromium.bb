@@ -155,8 +155,6 @@
         'dbus/fake_bluetooth_profile_service_provider.h',
         'dbus/fake_cryptohome_client.cc',
         'dbus/fake_cryptohome_client.h',
-        'dbus/fake_dbus_thread_manager.cc',
-        'dbus/fake_dbus_thread_manager.h',
         'dbus/fake_debug_daemon_client.cc',
         'dbus/fake_debug_daemon_client.h',
         'dbus/fake_easy_unlock_client.cc',

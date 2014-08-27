@@ -8,7 +8,7 @@
 #include "base/files/file_util.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/common/chrome_switches.h"
-#include "chromeos/dbus/fake_dbus_thread_manager.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_debug_daemon_client.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/common/extension_builder.h"
@@ -68,16 +68,11 @@ class LogPrivateApiTest : public ExtensionApiTest {
   virtual ~LogPrivateApiTest() {}
 
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
-    chromeos::FakeDBusThreadManager* fake_dbus_thread_manager =
-        new chromeos::FakeDBusThreadManager;
-    fake_dbus_thread_manager->SetFakeClients();
     base::FilePath tar_file_path =
         test_data_dir_.Append("log_private/dump_logs/system_logs.tar");
-    fake_dbus_thread_manager->SetDebugDaemonClient(
+    chromeos::DBusThreadManager::GetSetterForTesting()->SetDebugDaemonClient(
         scoped_ptr<chromeos::DebugDaemonClient>(
             new TestDebugDaemonClient(tar_file_path)));
-    chromeos::DBusThreadManager::SetInstanceForTesting(
-        fake_dbus_thread_manager);
     ExtensionApiTest::SetUpInProcessBrowserTestFixture();
   }
 

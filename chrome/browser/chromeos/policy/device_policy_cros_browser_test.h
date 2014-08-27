@@ -9,7 +9,7 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chromeos/dbus/fake_dbus_thread_manager.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 
 namespace chromeos {
 class FakeSessionManagerClient;
@@ -62,8 +62,8 @@ class DevicePolicyCrosBrowserTest : public InProcessBrowserTest {
   // recently changed).
   void RefreshDevicePolicy();
 
-  chromeos::FakeDBusThreadManager* fake_dbus_thread_manager() {
-    return fake_dbus_thread_manager_;
+  chromeos::DBusThreadManagerSetter* dbus_setter() {
+    return dbus_setter_.get();
   }
 
   chromeos::FakeSessionManagerClient* session_manager_client() {
@@ -76,7 +76,7 @@ class DevicePolicyCrosBrowserTest : public InProcessBrowserTest {
   DevicePolicyCrosTestHelper test_helper_;
 
   // FakeDBusThreadManager uses FakeSessionManagerClient.
-  chromeos::FakeDBusThreadManager* fake_dbus_thread_manager_;
+  scoped_ptr<chromeos::DBusThreadManagerSetter> dbus_setter_;
   chromeos::FakeSessionManagerClient* fake_session_manager_client_;
 
   DISALLOW_COPY_AND_ASSIGN(DevicePolicyCrosBrowserTest);

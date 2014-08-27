@@ -16,8 +16,8 @@
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_cryptohome_client.h"
-#include "chromeos/dbus/fake_dbus_thread_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
@@ -73,16 +73,12 @@ class DeviceOAuth2TokenServiceTest : public testing::Test {
   }
 
   virtual void SetUp() OVERRIDE {
-    scoped_ptr<FakeDBusThreadManager> fake_dbus_thread_manager(
-        new FakeDBusThreadManager);
     fake_cryptohome_client_ = new FakeCryptohomeClient;
     fake_cryptohome_client_->SetServiceIsAvailable(true);
     fake_cryptohome_client_->set_system_salt(
         FakeCryptohomeClient::GetStubSystemSalt());
-    fake_dbus_thread_manager->SetCryptohomeClient(
+    chromeos::DBusThreadManager::GetSetterForTesting()->SetCryptohomeClient(
         scoped_ptr<CryptohomeClient>(fake_cryptohome_client_));
-
-    DBusThreadManager::InitializeForTesting(fake_dbus_thread_manager.release());
 
     SystemSaltGetter::Initialize();
 

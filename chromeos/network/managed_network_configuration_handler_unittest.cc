@@ -12,7 +12,6 @@
 #include "base/stl_util.h"
 #include "base/values.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_dbus_thread_manager.h"
 #include "chromeos/dbus/mock_shill_manager_client.h"
 #include "chromeos/dbus/mock_shill_profile_client.h"
 #include "chromeos/dbus/shill_client_helper.h"
@@ -159,15 +158,14 @@ class ManagedNetworkConfigurationHandlerTest : public testing::Test {
   }
 
   virtual void SetUp() OVERRIDE {
-    FakeDBusThreadManager* dbus_thread_manager = new FakeDBusThreadManager;
+    scoped_ptr<DBusThreadManagerSetter> dbus_setter =
+        DBusThreadManager::GetSetterForTesting();
     mock_manager_client_ = new StrictMock<MockShillManagerClient>();
     mock_profile_client_ = new StrictMock<MockShillProfileClient>();
-    dbus_thread_manager->SetShillManagerClient(
+    dbus_setter->SetShillManagerClient(
         scoped_ptr<ShillManagerClient>(mock_manager_client_).Pass());
-    dbus_thread_manager->SetShillProfileClient(
+    dbus_setter->SetShillProfileClient(
         scoped_ptr<ShillProfileClient>(mock_profile_client_).Pass());
-
-    DBusThreadManager::InitializeForTesting(dbus_thread_manager);
 
     SetNetworkConfigurationHandlerExpectations();
 

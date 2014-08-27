@@ -120,7 +120,7 @@ DeviceCloudPolicyInvalidatorTest::~DeviceCloudPolicyInvalidatorTest() {
 
 void DeviceCloudPolicyInvalidatorTest::SetUp() {
   chromeos::SystemSaltGetter::Initialize();
-  chromeos::DBusThreadManager::InitializeWithStub();
+  chromeos::DBusThreadManager::Initialize();
   chromeos::DeviceOAuth2TokenServiceFactory::Initialize();
   TestingBrowserProcess::GetGlobal()->SetSystemRequestContext(
       system_request_context_.get());

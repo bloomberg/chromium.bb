@@ -10,6 +10,7 @@
 #include "chrome/browser/chromeos/login/users/fake_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/metrics/chromeos_metrics_provider.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_bluetooth_adapter_client.h"
 #include "chromeos/dbus/fake_bluetooth_agent_manager_client.h"
 #include "chromeos/dbus/fake_bluetooth_device_client.h"
@@ -17,7 +18,6 @@
 #include "chromeos/dbus/fake_bluetooth_gatt_descriptor_client.h"
 #include "chromeos/dbus/fake_bluetooth_gatt_service_client.h"
 #include "chromeos/dbus/fake_bluetooth_input_client.h"
-#include "chromeos/dbus/fake_dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/login/login_state.h"
 #include "components/metrics/proto/system_profile.pb.h"
@@ -31,6 +31,7 @@
 #endif
 
 using chromeos::DBusThreadManager;
+using chromeos::DBusThreadManagerSetter;
 using chromeos::BluetoothAdapterClient;
 using chromeos::BluetoothAgentManagerClient;
 using chromeos::BluetoothDeviceClient;
@@ -45,7 +46,6 @@ using chromeos::FakeBluetoothGattCharacteristicClient;
 using chromeos::FakeBluetoothGattDescriptorClient;
 using chromeos::FakeBluetoothGattServiceClient;
 using chromeos::FakeBluetoothInputClient;
-using chromeos::FakeDBusThreadManager;
 using chromeos::PowerManagerClient;
 using chromeos::STUB_DBUS_CLIENT_IMPLEMENTATION;
 
@@ -60,33 +60,31 @@ class ChromeOSMetricsProviderTest : public testing::Test {
 #endif
 
     // Set up the fake Bluetooth environment,
-    scoped_ptr<FakeDBusThreadManager> fake_dbus_thread_manager(
-        new FakeDBusThreadManager);
-    fake_dbus_thread_manager->SetBluetoothAdapterClient(
+    scoped_ptr<DBusThreadManagerSetter> dbus_setter =
+        DBusThreadManager::GetSetterForTesting();
+    dbus_setter->SetBluetoothAdapterClient(
         scoped_ptr<BluetoothAdapterClient>(new FakeBluetoothAdapterClient));
-    fake_dbus_thread_manager->SetBluetoothDeviceClient(
+    dbus_setter->SetBluetoothDeviceClient(
         scoped_ptr<BluetoothDeviceClient>(new FakeBluetoothDeviceClient));
-    fake_dbus_thread_manager->SetBluetoothGattCharacteristicClient(
+    dbus_setter->SetBluetoothGattCharacteristicClient(
         scoped_ptr<BluetoothGattCharacteristicClient>(
             new FakeBluetoothGattCharacteristicClient));
-    fake_dbus_thread_manager->SetBluetoothGattDescriptorClient(
+    dbus_setter->SetBluetoothGattDescriptorClient(
         scoped_ptr<BluetoothGattDescriptorClient>(
             new FakeBluetoothGattDescriptorClient));
-    fake_dbus_thread_manager->SetBluetoothGattServiceClient(
+    dbus_setter->SetBluetoothGattServiceClient(
         scoped_ptr<BluetoothGattServiceClient>(
             new FakeBluetoothGattServiceClient));
-    fake_dbus_thread_manager->SetBluetoothInputClient(
+    dbus_setter->SetBluetoothInputClient(
         scoped_ptr<BluetoothInputClient>(new FakeBluetoothInputClient));
-    fake_dbus_thread_manager->SetBluetoothAgentManagerClient(
+    dbus_setter->SetBluetoothAgentManagerClient(
         scoped_ptr<BluetoothAgentManagerClient>(
             new FakeBluetoothAgentManagerClient));
 
     // Set up a PowerManagerClient instance for PerfProvider.
-    fake_dbus_thread_manager->SetPowerManagerClient(
+    dbus_setter->SetPowerManagerClient(
         scoped_ptr<PowerManagerClient>(
             PowerManagerClient::Create(STUB_DBUS_CLIENT_IMPLEMENTATION)));
-
-    DBusThreadManager::InitializeForTesting(fake_dbus_thread_manager.release());
 
     // Grab pointers to members of the thread manager for easier testing.
     fake_bluetooth_adapter_client_ = static_cast<FakeBluetoothAdapterClient*>(

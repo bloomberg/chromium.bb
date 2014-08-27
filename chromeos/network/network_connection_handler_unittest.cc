@@ -13,7 +13,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "chromeos/cert_loader.h"
-#include "chromeos/dbus/fake_dbus_thread_manager.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_device_client.h"
 #include "chromeos/dbus/shill_manager_client.h"
 #include "chromeos/dbus/shill_profile_client.h"
@@ -77,9 +77,8 @@ class NetworkConnectionHandlerTest : public testing::Test {
     CertLoader* cert_loader = CertLoader::Get();
     cert_loader->force_hardware_backed_for_test();
 
-    FakeDBusThreadManager* dbus_manager = new FakeDBusThreadManager;
-    dbus_manager->SetFakeClients();
-    DBusThreadManager::InitializeForTesting(dbus_manager);
+    DBusThreadManager::Initialize();
+    DBusThreadManager* dbus_manager = DBusThreadManager::Get();
     test_manager_client_ =
         dbus_manager->GetShillManagerClient()->GetTestInterface();
     test_service_client_ =

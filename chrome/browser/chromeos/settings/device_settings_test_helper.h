@@ -29,7 +29,7 @@ class TestingProfile;
 
 namespace chromeos {
 
-class FakeDBusThreadManager;
+class DBusThreadManagerSetter;
 
 // A helper class for tests mocking out session_manager's device settings
 // interface. The pattern is to initialize DeviceSettingsService with the helper
@@ -194,7 +194,7 @@ class DeviceSettingsTestBase : public testing::Test {
   // with the global instance (DeviceSettingsService::Get()).
   DeviceSettingsService device_settings_service_;
 
-  chromeos::FakeDBusThreadManager* fake_dbus_thread_manager_;
+  scoped_ptr<DBusThreadManagerSetter> dbus_setter_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DeviceSettingsTestBase);

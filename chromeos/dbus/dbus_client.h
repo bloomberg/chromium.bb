@@ -18,8 +18,6 @@ namespace chromeos {
 // incorrect calls. Stub clients may lift that restriction however.
 class DBusClient {
  protected:
-  friend class DBusThreadManager;
-
   virtual ~DBusClient() {}
 
   // This function is called by DBusThreadManager. Only in unit tests, which
@@ -28,6 +26,8 @@ class DBusClient {
   virtual void Init(dbus::Bus* bus) = 0;
 
  private:
+  friend class DBusThreadManager;
+
   DISALLOW_ASSIGN(DBusClient);
 };
 

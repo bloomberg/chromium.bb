@@ -179,7 +179,7 @@ class NetworkStateHandlerTest : public testing::Test {
 
   virtual void SetUp() OVERRIDE {
     // Initialize DBusThreadManager with a stub implementation.
-    DBusThreadManager::InitializeWithStub();
+    DBusThreadManager::Initialize();
     SetupDefaultShillState();
     network_state_handler_.reset(new NetworkStateHandler);
     test_observer_.reset(new TestObserver(network_state_handler_.get()));

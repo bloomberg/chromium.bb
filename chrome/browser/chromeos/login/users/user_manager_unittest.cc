@@ -23,7 +23,6 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_dbus_thread_manager.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/settings/cros_settings_provider.h"
 #include "components/user_manager/user.h"
@@ -80,9 +79,7 @@ class UserManagerTest : public testing::Test {
     TestingBrowserProcess::GetGlobal()->SetProfileManager(
         new UnittestProfileManager(temp_dir_.path()));
 
-    chromeos::FakeDBusThreadManager* dbus_manager =
-        new chromeos::FakeDBusThreadManager();
-    chromeos::DBusThreadManager::InitializeForTesting(dbus_manager);
+    chromeos::DBusThreadManager::Initialize();
 
     ResetUserManager();
   }

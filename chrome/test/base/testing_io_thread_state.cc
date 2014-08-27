@@ -40,7 +40,7 @@ namespace chrome {
 TestingIOThreadState::TestingIOThreadState() {
 #if defined(OS_CHROMEOS)
   // Needed by IOThread constructor.
-  chromeos::DBusThreadManager::InitializeWithStub();
+  chromeos::DBusThreadManager::Initialize();
   chromeos::NetworkHandler::Initialize();
 #endif
 

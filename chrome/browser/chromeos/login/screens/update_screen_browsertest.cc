@@ -15,7 +15,7 @@
 #include "chrome/browser/chromeos/net/network_portal_detector_test_impl.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
-#include "chromeos/dbus/fake_dbus_thread_manager.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_update_engine_client.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -46,14 +46,10 @@ class UpdateScreenTest : public WizardInProcessBrowserTest {
 
  protected:
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
-    FakeDBusThreadManager* fake_dbus_thread_manager =
-        new FakeDBusThreadManager;
-    fake_dbus_thread_manager->SetFakeClients();
     fake_update_engine_client_ = new FakeUpdateEngineClient;
-    fake_dbus_thread_manager->SetUpdateEngineClient(
+    chromeos::DBusThreadManager::GetSetterForTesting()->SetUpdateEngineClient(
         scoped_ptr<UpdateEngineClient>(fake_update_engine_client_));
 
-    DBusThreadManager::SetInstanceForTesting(fake_dbus_thread_manager);
     WizardInProcessBrowserTest::SetUpInProcessBrowserTestFixture();
 
     // Setup network portal detector to return online state for both

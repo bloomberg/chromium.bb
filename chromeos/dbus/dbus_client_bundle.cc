@@ -220,7 +220,7 @@ DBusClientBundle::DBusClientBundle() {
   if (!DBusThreadManager::IsUsingStub(MODEM_MESSAGING))
     modem_messaging_client_.reset(ModemMessagingClient::Create());
   else
-    modem_messaging_client_.reset(ModemMessagingClient::Create());
+    modem_messaging_client_.reset(new FakeModemMessagingClient);
 
   // Create the NFC clients in the correct order based on their dependencies.
   if (!DBusThreadManager::IsUsingStub(NFC)) {

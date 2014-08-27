@@ -45,7 +45,6 @@
 #include "chromeos/chromeos_paths.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_dbus_thread_manager.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
@@ -601,16 +600,13 @@ class UserImageManagerPolicyTest : public UserImageManagerTest,
                                    public policy::CloudPolicyStore::Observer {
  protected:
   UserImageManagerPolicyTest()
-      : fake_dbus_thread_manager_(new chromeos::FakeDBusThreadManager),
-        fake_session_manager_client_(new chromeos::FakeSessionManagerClient) {
-    fake_dbus_thread_manager_->SetFakeClients();
-    fake_dbus_thread_manager_->SetSessionManagerClient(
-        scoped_ptr<SessionManagerClient>(fake_session_manager_client_));
+      : fake_session_manager_client_(new chromeos::FakeSessionManagerClient) {
   }
 
   // UserImageManagerTest overrides:
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
-    DBusThreadManager::SetInstanceForTesting(fake_dbus_thread_manager_);
+    DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
+        scoped_ptr<SessionManagerClient>(fake_session_manager_client_));
     UserImageManagerTest::SetUpInProcessBrowserTestFixture();
   }
 
@@ -668,7 +664,6 @@ class UserImageManagerPolicyTest : public UserImageManagerTest,
   }
 
   policy::UserPolicyBuilder user_policy_;
-  FakeDBusThreadManager* fake_dbus_thread_manager_;
   FakeSessionManagerClient* fake_session_manager_client_;
 
   scoped_ptr<gfx::ImageSkia> policy_image_;

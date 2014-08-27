@@ -226,7 +226,7 @@ class ServicesCustomizationDocumentTest : public testing::Test {
     chromeos::system::StatisticsProvider::SetTestProvider(
         &mock_statistics_provider_);
 
-    DBusThreadManager::InitializeWithStub();
+    DBusThreadManager::Initialize();
     NetworkHandler::Initialize();
     RunUntilIdle();
     const NetworkState* default_network =

@@ -69,7 +69,7 @@ class ClientCertResolverTest : public testing::Test {
             base::Callback<void(crypto::ScopedPK11Slot)>())));
     test_nssdb_->SetSlowTaskRunnerForTest(message_loop_.message_loop_proxy());
 
-    DBusThreadManager::InitializeWithStub();
+    DBusThreadManager::Initialize();
     service_test_ =
         DBusThreadManager::Get()->GetShillServiceClient()->GetTestInterface();
     profile_test_ =

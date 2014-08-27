@@ -80,7 +80,7 @@ class CHROMEOS_EXPORT DBusClientBundle {
   };
 
   DBusClientBundle();
-  virtual ~DBusClientBundle();
+  ~DBusClientBundle();
 
   // Initialize proper runtime environment for its dbus clients.
   void SetupDefaultEnvironment();
@@ -230,6 +230,8 @@ class CHROMEOS_EXPORT DBusClientBundle {
   }
 
  private:
+  friend class DBusThreadManagerSetter;
+
   scoped_ptr<BluetoothAdapterClient> bluetooth_adapter_client_;
   scoped_ptr<BluetoothAgentManagerClient> bluetooth_agent_manager_client_;
   scoped_ptr<BluetoothDeviceClient> bluetooth_device_client_;

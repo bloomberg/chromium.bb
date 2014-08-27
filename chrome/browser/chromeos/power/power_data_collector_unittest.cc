@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/power/power_data_collector.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -16,9 +15,7 @@ class PowerDataCollectorTest : public testing::Test {
   virtual ~PowerDataCollectorTest() {}
 
   virtual void SetUp() OVERRIDE {
-    FakeDBusThreadManager* fake_dbus_thread_manager = new FakeDBusThreadManager;
-    fake_dbus_thread_manager->SetFakeClients();
-    DBusThreadManager::InitializeForTesting(fake_dbus_thread_manager);
+    DBusThreadManager::Initialize();
     PowerDataCollector::InitializeForTesting();
     power_data_collector_ = PowerDataCollector::Get();
   }

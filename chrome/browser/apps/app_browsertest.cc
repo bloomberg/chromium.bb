@@ -52,7 +52,6 @@
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_dbus_thread_manager.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
 #endif
 
@@ -1231,13 +1230,9 @@ class RestartDeviceTest : public PlatformAppBrowserTest {
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     PlatformAppBrowserTest::SetUpInProcessBrowserTestFixture();
 
-    chromeos::FakeDBusThreadManager* dbus_manager =
-        new chromeos::FakeDBusThreadManager;
-    dbus_manager->SetFakeClients();
     power_manager_client_ = new chromeos::FakePowerManagerClient;
-    dbus_manager->SetPowerManagerClient(
+    chromeos::DBusThreadManager::GetSetterForTesting()->SetPowerManagerClient(
         scoped_ptr<chromeos::PowerManagerClient>(power_manager_client_));
-    chromeos::DBusThreadManager::SetInstanceForTesting(dbus_manager);
   }
 
   virtual void SetUpOnMainThread() OVERRIDE {

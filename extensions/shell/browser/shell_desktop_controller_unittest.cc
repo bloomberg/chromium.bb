@@ -11,7 +11,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_dbus_thread_manager.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
 #endif
 
@@ -29,12 +28,11 @@ class ShellDesktopControllerTest : public aura::test::AuraTestBase {
 
   virtual void SetUp() OVERRIDE {
 #if defined(OS_CHROMEOS)
-    chromeos::FakeDBusThreadManager* manager =
-        new chromeos::FakeDBusThreadManager();
+    scoped_ptr<chromeos::DBusThreadManagerSetter> dbus_setter =
+        chromeos::DBusThreadManager::GetSetterForTesting();
     power_manager_client_ = new chromeos::FakePowerManagerClient();
-    manager->SetPowerManagerClient(make_scoped_ptr(power_manager_client_).
+    dbus_setter->SetPowerManagerClient(make_scoped_ptr(power_manager_client_).
         PassAs<chromeos::PowerManagerClient>());
-    chromeos::DBusThreadManager::InitializeForTesting(manager);
 #endif
     aura::test::AuraTestBase::SetUp();
     controller_.reset(new ShellDesktopController());

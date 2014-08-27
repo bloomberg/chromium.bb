@@ -24,7 +24,7 @@ class GeolocationHandlerTest : public testing::Test {
 
   virtual void SetUp() OVERRIDE {
     // Initialize DBusThreadManager with a stub implementation.
-    DBusThreadManager::InitializeWithStub();
+    DBusThreadManager::Initialize();
     // Get the test interface for manager / device.
     manager_test_ =
         DBusThreadManager::Get()->GetShillManagerClient()->GetTestInterface();

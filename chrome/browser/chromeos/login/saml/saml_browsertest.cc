@@ -39,7 +39,6 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_dbus_thread_manager.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/settings/cros_settings_names.h"
@@ -692,7 +691,6 @@ class SAMLPolicyTest : public SamlTest {
   policy::DevicePolicyCrosTestHelper test_helper_;
 
   // FakeDBusThreadManager uses FakeSessionManagerClient.
-  FakeDBusThreadManager* fake_dbus_thread_manager_;
   FakeSessionManagerClient* fake_session_manager_client_;
   policy::DevicePolicyBuilder* device_policy_;
 
@@ -705,19 +703,17 @@ class SAMLPolicyTest : public SamlTest {
 };
 
 SAMLPolicyTest::SAMLPolicyTest()
-    : fake_dbus_thread_manager_(new FakeDBusThreadManager),
-      fake_session_manager_client_(new FakeSessionManagerClient),
+    : fake_session_manager_client_(new FakeSessionManagerClient),
       device_policy_(test_helper_.device_policy()) {
-  fake_dbus_thread_manager_->SetFakeClients();
-  fake_dbus_thread_manager_->SetSessionManagerClient(
-      scoped_ptr<SessionManagerClient>(fake_session_manager_client_));
 }
 
 SAMLPolicyTest::~SAMLPolicyTest() {
 }
 
 void SAMLPolicyTest::SetUpInProcessBrowserTestFixture() {
-  DBusThreadManager::SetInstanceForTesting(fake_dbus_thread_manager_);
+  DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
+      scoped_ptr<SessionManagerClient>(fake_session_manager_client_));
+
   SamlTest::SetUpInProcessBrowserTestFixture();
 
   // Initialize device policy.

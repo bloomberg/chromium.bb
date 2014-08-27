@@ -252,7 +252,7 @@ class CrasAudioHandlerTest : public testing::Test {
   }
 
   void SetUpCrasAudioHandler(const AudioNodeList& audio_nodes) {
-    DBusThreadManager::InitializeWithStub();
+    DBusThreadManager::Initialize();
     cras_audio_client_stub_ = static_cast<CrasAudioClientStubImpl*>(
         DBusThreadManager::Get()->GetCrasAudioClient());
     cras_audio_client_stub_->SetAudioDevices(audio_nodes);

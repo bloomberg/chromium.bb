@@ -81,7 +81,7 @@ void AshTestHelper::SetUp(bool start_session) {
 #if defined(OS_CHROMEOS)
   // Create DBusThreadManager for testing.
   if (!chromeos::DBusThreadManager::IsInitialized()) {
-    chromeos::DBusThreadManager::InitializeWithStub();
+    chromeos::DBusThreadManager::Initialize();
     dbus_thread_manager_initialized_ = true;
   }
   // Create CrasAudioHandler for testing since g_browser_process is not
