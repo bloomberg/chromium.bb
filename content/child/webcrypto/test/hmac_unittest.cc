@@ -36,7 +36,6 @@ blink::WebCryptoAlgorithm CreateHmacKeyGenAlgorithm(
 TEST(WebCryptoHmacTest, HMACSampleSets) {
   scoped_ptr<base::ListValue> tests;
   ASSERT_TRUE(ReadJsonTestFileToList("hmac.json", &tests));
-  // TODO(padolph): Missing known answer tests for HMAC SHA384, and SHA512.
   for (size_t test_index = 0; test_index < tests->GetSize(); ++test_index) {
     SCOPED_TRACE(test_index);
     base::DictionaryValue* test;
