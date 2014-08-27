@@ -2668,8 +2668,6 @@ static void Pnacl_M14_PPB_VideoDecoder_Dev_Destroy(PP_Resource video_decoder) {
 
 /* End wrapper methods for PPB_VideoDecoder_Dev_0_16 */
 
-/* Not generating wrapper methods for PPB_View_Dev_0_1 */
-
 /* Not generating wrapper methods for PPB_Widget_Dev_0_3 */
 
 /* Not generating wrapper methods for PPB_Widget_Dev_0_4 */
@@ -5166,8 +5164,6 @@ static const struct PPB_VideoDecoder_Dev_0_16 Pnacl_Wrappers_PPB_VideoDecoder_De
     .Reset = (int32_t (*)(PP_Resource video_decoder, struct PP_CompletionCallback callback))&Pnacl_M14_PPB_VideoDecoder_Dev_Reset,
     .Destroy = (void (*)(PP_Resource video_decoder))&Pnacl_M14_PPB_VideoDecoder_Dev_Destroy
 };
-
-/* Not generating wrapper interface for PPB_View_Dev_0_1 */
 
 /* Not generating wrapper interface for PPB_Widget_Dev_0_3 */
 

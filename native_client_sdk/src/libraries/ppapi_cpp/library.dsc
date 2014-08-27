@@ -71,8 +71,6 @@
         'scriptable_object_deprecated.cc',
         'selection_dev.cc',
         'truetype_font_dev.cc',
-        'view_dev.cc',
-        'zoom_dev.cc',
 
         # ppapi/utility/graphics
         'paint_aggregator.cc',
@@ -160,7 +158,6 @@
         'truetype_font_dev.h',
         'video_capture_client_dev.h',
         'video_decoder_client_dev.h',
-        'view_dev.h',
         'widget_client_dev.h',
         'zoom_dev.h',
       ],

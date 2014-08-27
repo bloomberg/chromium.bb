@@ -105,7 +105,6 @@
         'ppb_trace_event_dev.h',
         'ppb_truetype_font_dev.h',
         'ppb_var_deprecated.h',
-        'ppb_view_dev.h',
         'ppb_zoom_dev.h',
         'pp_cursor_type_dev.h',
         'ppp_class_deprecated.h',
