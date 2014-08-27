@@ -46,6 +46,7 @@
 #include <setjmp.h>
 #include <sys/time.h>
 #include <time.h>
+#include <errno.h>
 
 #ifdef HAVE_LIBUNWIND
 #define UNW_LOCAL_ONLY
@@ -68,22 +69,23 @@ sigchld_handler(int signal_number, void *data)
 	int status;
 	pid_t pid;
 
-	pid = waitpid(-1, &status, WNOHANG);
-	if (!pid)
-		return 1;
+	while ((pid = waitpid(-1, &status, WNOHANG)) > 0) {
+		wl_list_for_each(p, &child_process_list, link) {
+			if (p->pid == pid)
+				break;
+		}
 
-	wl_list_for_each(p, &child_process_list, link) {
-		if (p->pid == pid)
-			break;
+		if (&p->link == &child_process_list) {
+			weston_log("unknown child process exited\n");
+			continue;
+		}
+
+		wl_list_remove(&p->link);
+		p->cleanup(p, status);
 	}
 
-	if (&p->link == &child_process_list) {
-		weston_log("unknown child process exited\n");
-		return 1;
-	}
-
-	wl_list_remove(&p->link);
-	p->cleanup(p, status);
+	if (pid < 0 && errno != ECHILD)
+		weston_log("waitpid error %m\n");
 
 	return 1;
 }
