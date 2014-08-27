@@ -220,7 +220,7 @@ void RenderSVGInlineText::computeNewScaledFontForStyle(RenderObject* renderer, c
 
     // Alter font-size to the right on-screen value to avoid scaling the glyphs themselves, except when GeometricPrecision is specified.
     scalingFactor = SVGRenderingContext::calculateScreenFontSizeScalingFactor(renderer);
-    if (scalingFactor == 1 || !scalingFactor) {
+    if (style->effectiveZoom() == 1 && (scalingFactor == 1 || !scalingFactor)) {
         scalingFactor = 1;
         scaledFont = style->font();
         return;
