@@ -3759,7 +3759,7 @@ TEST_F(DiskCacheEntryTest, SimpleCacheOmittedThirdStream2) {
   // should still be omitted, since the entry ignores writes that don't modify
   // data or change the length.
   ASSERT_EQ(net::OK, CreateEntry(key, &entry));
-  EXPECT_EQ(0, WriteData(entry, 2, 0, buffer, 0, true));
+  EXPECT_EQ(0, WriteData(entry, 2, 0, buffer.get(), 0, true));
   entry->Close();
   EXPECT_FALSE(SimpleCacheThirdStreamFileExists(key));
 
@@ -3785,12 +3785,12 @@ TEST_F(DiskCacheEntryTest, SimpleCacheOmittedThirdStream3) {
   // not be omitted, since it contains data.  Re-open entry and ensure there
   // are that many bytes in the third stream.
   ASSERT_EQ(net::OK, CreateEntry(key, &entry));
-  EXPECT_EQ(kHalfSize, WriteData(entry, 2, 0, buffer1, kHalfSize, true));
+  EXPECT_EQ(kHalfSize, WriteData(entry, 2, 0, buffer1.get(), kHalfSize, true));
   entry->Close();
   EXPECT_TRUE(SimpleCacheThirdStreamFileExists(key));
 
   ASSERT_EQ(net::OK, OpenEntry(key, &entry));
-  EXPECT_EQ(kHalfSize, ReadData(entry, 2, 0, buffer2, kSize));
+  EXPECT_EQ(kHalfSize, ReadData(entry, 2, 0, buffer2.get(), kSize));
   EXPECT_EQ(0, memcmp(buffer1->data(), buffer2->data(), kHalfSize));
   entry->Close();
   EXPECT_TRUE(SimpleCacheThirdStreamFileExists(key));
@@ -3821,14 +3821,14 @@ TEST_F(DiskCacheEntryTest, SimpleCacheOmittedThirdStream4) {
   // removes it on open if it is empty.  Reopen, ensure that the file is
   // deleted, and that there's no data in the third stream.
   ASSERT_EQ(net::OK, CreateEntry(key, &entry));
-  EXPECT_EQ(kHalfSize, WriteData(entry, 2, 0, buffer1, kHalfSize, true));
-  EXPECT_EQ(0, WriteData(entry, 2, 0, buffer1, 0, true));
+  EXPECT_EQ(kHalfSize, WriteData(entry, 2, 0, buffer1.get(), kHalfSize, true));
+  EXPECT_EQ(0, WriteData(entry, 2, 0, buffer1.get(), 0, true));
   entry->Close();
   EXPECT_TRUE(SimpleCacheThirdStreamFileExists(key));
 
   ASSERT_EQ(net::OK, OpenEntry(key, &entry));
   EXPECT_FALSE(SimpleCacheThirdStreamFileExists(key));
-  EXPECT_EQ(0, ReadData(entry, 2, 0, buffer2, kSize));
+  EXPECT_EQ(0, ReadData(entry, 2, 0, buffer2.get(), kSize));
   entry->Close();
   EXPECT_FALSE(SimpleCacheThirdStreamFileExists(key));
 
@@ -3855,7 +3855,7 @@ TEST_F(DiskCacheEntryTest, SimpleCacheOmittedThirdStream5) {
   // that it doesn't cause the file to be created on disk.)
   ASSERT_EQ(net::OK, CreateEntry(key, &entry));
   entry->Doom();
-  WriteData(entry, 2, 0, buffer, kHalfSize, true);
+  WriteData(entry, 2, 0, buffer.get(), kHalfSize, true);
   entry->Close();
   EXPECT_FALSE(SimpleCacheThirdStreamFileExists(key));
 }
@@ -3973,28 +3973,28 @@ TEST_F(DiskCacheEntryTest, SimpleCacheTruncateLargeSparseFile) {
   int ret;
 
   // Verify initial conditions.
-  ret = entry->ReadSparseData(0, buffer, kSize, callback.callback());
+  ret = entry->ReadSparseData(0, buffer.get(), kSize, callback.callback());
   EXPECT_EQ(0, callback.GetResult(ret));
 
-  ret = entry->ReadSparseData(kSize, buffer, kSize, callback.callback());
+  ret = entry->ReadSparseData(kSize, buffer.get(), kSize, callback.callback());
   EXPECT_EQ(0, callback.GetResult(ret));
 
   // Write a range and make sure it reads back.
-  ret = entry->WriteSparseData(0, buffer, kSize, callback.callback());
+  ret = entry->WriteSparseData(0, buffer.get(), kSize, callback.callback());
   EXPECT_EQ(kSize, callback.GetResult(ret));
 
-  ret = entry->ReadSparseData(0, buffer, kSize, callback.callback());
+  ret = entry->ReadSparseData(0, buffer.get(), kSize, callback.callback());
   EXPECT_EQ(kSize, callback.GetResult(ret));
 
   // Write another range and make sure it reads back.
-  ret = entry->WriteSparseData(kSize, buffer, kSize, callback.callback());
+  ret = entry->WriteSparseData(kSize, buffer.get(), kSize, callback.callback());
   EXPECT_EQ(kSize, callback.GetResult(ret));
 
-  ret = entry->ReadSparseData(kSize, buffer, kSize, callback.callback());
+  ret = entry->ReadSparseData(kSize, buffer.get(), kSize, callback.callback());
   EXPECT_EQ(kSize, callback.GetResult(ret));
 
   // Make sure the first range was removed when the second was written.
-  ret = entry->ReadSparseData(0, buffer, kSize, callback.callback());
+  ret = entry->ReadSparseData(0, buffer.get(), kSize, callback.callback());
   EXPECT_EQ(0, callback.GetResult(ret));
 
   entry->Close();

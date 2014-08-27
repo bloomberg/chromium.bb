@@ -1079,10 +1079,11 @@ void SimpleEntryImpl::GetAvailableRangeInternal(
 
 void SimpleEntryImpl::DoomEntryInternal(const CompletionCallback& callback) {
   PostTaskAndReplyWithResult(
-      worker_pool_, FROM_HERE,
+      worker_pool_.get(),
+      FROM_HERE,
       base::Bind(&SimpleSynchronousEntry::DoomEntry, path_, entry_hash_),
-      base::Bind(&SimpleEntryImpl::DoomOperationComplete, this, callback,
-                 state_));
+      base::Bind(
+          &SimpleEntryImpl::DoomOperationComplete, this, callback, state_));
   state_ = STATE_IO_PENDING;
 }
 
@@ -1115,7 +1116,7 @@ void SimpleEntryImpl::CreationOperationComplete(
 
   state_ = STATE_READY;
   synchronous_entry_ = in_results->sync_entry;
-  if (in_results->stream_0_data) {
+  if (in_results->stream_0_data.get()) {
     stream_0_data_ = in_results->stream_0_data;
     // The crc was read in SimpleSynchronousEntry.
     crc_check_state_[0] = CRC_CHECK_DONE;

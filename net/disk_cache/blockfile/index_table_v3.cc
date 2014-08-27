@@ -786,7 +786,7 @@ void IndexTable::OnBackupTimer() {
   memcpy(buffer->data(), header_, sizeof(*header_));
   memcpy(buffer->data() + sizeof(*header_), backup_bitmap_storage_.get(),
          num_words * 4);
-  backend_->SaveIndex(buffer, num_bytes);
+  backend_->SaveIndex(buffer.get(), num_bytes);
   modified_ = false;
 }
 

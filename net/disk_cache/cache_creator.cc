@@ -178,7 +178,7 @@ int CreateCacheBackend(
     *backend = disk_cache::MemBackendImpl::CreateBackend(max_bytes, net_log);
     return *backend ? net::OK : net::ERR_FAILED;
   }
-  DCHECK(thread);
+  DCHECK(thread.get());
   CacheCreator* creator = new CacheCreator(path,
                                            force,
                                            max_bytes,

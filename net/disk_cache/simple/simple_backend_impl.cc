@@ -260,7 +260,7 @@ int SimpleBackendImpl::Init(const CompletionCallback& completion_callback) {
       base::Bind(&RecordIndexLoad, cache_type_, base::TimeTicks::Now()));
 
   PostTaskAndReplyWithResult(
-      cache_thread_,
+      cache_thread_.get(),
       FROM_HERE,
       base::Bind(
           &SimpleBackendImpl::InitCacheStructureOnDisk, path_, orig_max_size_),
@@ -353,13 +353,15 @@ void SimpleBackendImpl::DoomEntries(std::vector<uint64>* entry_hashes,
   // base::Passed before mass_doom_entry_hashes.get().
   std::vector<uint64>* mass_doom_entry_hashes_ptr =
       mass_doom_entry_hashes.get();
-  PostTaskAndReplyWithResult(
-      worker_pool_, FROM_HERE,
-      base::Bind(&SimpleSynchronousEntry::DoomEntrySet,
-                 mass_doom_entry_hashes_ptr, path_),
-      base::Bind(&SimpleBackendImpl::DoomEntriesComplete,
-                 AsWeakPtr(), base::Passed(&mass_doom_entry_hashes),
-                 barrier_callback));
+  PostTaskAndReplyWithResult(worker_pool_.get(),
+                             FROM_HERE,
+                             base::Bind(&SimpleSynchronousEntry::DoomEntrySet,
+                                        mass_doom_entry_hashes_ptr,
+                                        path_),
+                             base::Bind(&SimpleBackendImpl::DoomEntriesComplete,
+                                        AsWeakPtr(),
+                                        base::Passed(&mass_doom_entry_hashes),
+                                        barrier_callback));
 }
 
 net::CacheType SimpleBackendImpl::GetCacheType() const {
