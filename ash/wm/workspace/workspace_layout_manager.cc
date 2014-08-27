@@ -153,12 +153,13 @@ void WorkspaceLayoutManager::OnKeyboardBoundsChanging(
     gfx::Rect window_bounds = ScreenUtil::ConvertRectToScreen(
         window_,
         window->GetTargetBounds());
-    gfx::Rect intersect = gfx::IntersectRects(window_bounds, new_bounds);
-    int shift = std::min(intersect.height(),
-                         window->bounds().y() - work_area_in_parent_.y());
+    int vertical_displacement =
+        std::max(0, window_bounds.bottom() - new_bounds.y());
+    int shift = std::min(vertical_displacement,
+                         window_bounds.y() - work_area_in_parent_.y());
     if (shift > 0) {
-      gfx::Point origin(window->bounds().x(), window->bounds().y() - shift);
-      SetChildBounds(window, gfx::Rect(origin, window->bounds().size()));
+      gfx::Point origin(window_bounds.x(), window_bounds.y() - shift);
+      SetChildBounds(window, gfx::Rect(origin, window_bounds.size()));
     }
   } else if (window_state->HasRestoreBounds()) {
     // Keyboard hidden, restore original bounds if they exist.

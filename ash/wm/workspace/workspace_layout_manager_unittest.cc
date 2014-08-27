@@ -1139,6 +1139,21 @@ TEST_F(WorkspaceLayoutManagerKeyboardTest, AdjustWindowForA11yKeyboard) {
   HideKeyboard();
   EXPECT_EQ(small_window_bound.ToString(), window->bounds().ToString());
 
+  gfx::Rect occluded_window_bounds(50,
+      keyboard_bounds.y() + keyboard_bounds.height()/2, 50,
+      keyboard_bounds.height()/2);
+  window->SetBounds(occluded_window_bounds);
+  EXPECT_EQ(occluded_window_bounds.ToString(),
+      occluded_window_bounds.ToString());
+  ShowKeyboard();
+  EXPECT_EQ(gfx::Rect(50,
+                      keyboard_bounds.y() - keyboard_bounds.height()/2,
+                      occluded_window_bounds.width(),
+                      occluded_window_bounds.height()).ToString(),
+            window->bounds().ToString());
+  HideKeyboard();
+  EXPECT_EQ(occluded_window_bounds.ToString(), window->bounds().ToString());
+
   Blur(&text_input_client);
 }
 
