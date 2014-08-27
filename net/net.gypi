@@ -124,8 +124,6 @@
       'socket/ssl_client_socket_openssl.h',
       'socket/ssl_client_socket_pool.cc',
       'socket/ssl_client_socket_pool.h',
-      'socket/ssl_error_params.cc',
-      'socket/ssl_error_params.h',
       'socket/ssl_session_cache_openssl.cc',
       'socket/ssl_session_cache_openssl.h',
       'socket/ssl_socket.h',

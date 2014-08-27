@@ -5,6 +5,8 @@
 #ifndef NET_SSL_OPENSSL_SSL_UTIL_H_
 #define NET_SSL_OPENSSL_SSL_UTIL_H_
 
+#include "net/base/net_log.h"
+
 namespace crypto {
 class OpenSSLErrStackTracer;
 }
@@ -30,10 +32,39 @@ struct SslSetClearMask {
 };
 
 // Converts an OpenSSL error code into a net error code, walking the OpenSSL
-// error stack if needed. Note that |tracer| is not currently used in the
-// implementation, but is passed in anyway as this ensures the caller will clear
-// any residual codes left on the error stack.
+// error stack if needed.
+//
+// Note that |tracer| is not currently used in the implementation, but is passed
+// in anyway as this ensures the caller will clear any residual codes left on
+// the error stack.
 int MapOpenSSLError(int err, const crypto::OpenSSLErrStackTracer& tracer);
+
+// Helper struct to store information about an OpenSSL error stack entry.
+struct OpenSSLErrorInfo {
+  OpenSSLErrorInfo() : error_code(0), file(NULL), line(0) {}
+
+  uint32_t error_code;
+  const char* file;
+  int line;
+};
+
+// Converts an OpenSSL error code into a net error code, walking the OpenSSL
+// error stack if needed. If a value on the stack is used, the error code and
+// associated information are returned in |*out_error_info|. Otherwise its
+// fields are set to 0 and NULL.
+//
+// Note that |tracer| is not currently used in the implementation, but is passed
+// in anyway as this ensures the caller will clear any residual codes left on
+// the error stack.
+int MapOpenSSLErrorWithDetails(int err,
+                               const crypto::OpenSSLErrStackTracer& tracer,
+                               OpenSSLErrorInfo* out_error_info);
+
+// Creates NetLog callback for an OpenSSL error.
+NetLog::ParametersCallback CreateNetLogOpenSSLErrorCallback(
+    int net_error,
+    int ssl_error,
+    const OpenSSLErrorInfo& error_info);
 
 }  // namespace net
 

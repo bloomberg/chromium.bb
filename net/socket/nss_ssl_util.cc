@@ -29,6 +29,8 @@
 #include "base/win/windows_version.h"
 #endif
 
+namespace net {
+
 namespace {
 
 // CiphersRemove takes a zero-terminated array of cipher suite ids in
@@ -77,9 +79,15 @@ size_t CiphersCopy(const uint16* in, uint16* out) {
   }
 }
 
-}  // anonymous namespace
-
-namespace net {
+base::Value* NetLogSSLErrorCallback(int net_error,
+                                    int ssl_lib_error,
+                                    NetLog::LogLevel /* log_level */) {
+  base::DictionaryValue* dict = new base::DictionaryValue();
+  dict->SetInteger("net_error", net_error);
+  if (ssl_lib_error)
+    dict->SetInteger("ssl_lib_error", ssl_lib_error);
+  return dict;
+}
 
 class NSSSSLInitSingleton {
  public:
@@ -201,8 +209,10 @@ class NSSSSLInitSingleton {
   PRFileDesc* model_fd_;
 };
 
-static base::LazyInstance<NSSSSLInitSingleton>::Leaky g_nss_ssl_init_singleton =
+base::LazyInstance<NSSSSLInitSingleton>::Leaky g_nss_ssl_init_singleton =
     LAZY_INSTANCE_INITIALIZER;
+
+}  // anonymous namespace
 
 // Initialize the NSS SSL library if it isn't already initialized.  This must
 // be called before any other NSS SSL functions.  This function is
@@ -397,6 +407,11 @@ void LogFailedNSSFunction(const BoundNetLog& net_log,
       NetLog::TYPE_SSL_NSS_ERROR,
       base::Bind(&NetLogSSLFailedNSSFunctionCallback,
                  function, param, PR_GetError()));
+}
+
+NetLog::ParametersCallback CreateNetLogSSLErrorCallback(int net_error,
+                                                        int ssl_lib_error) {
+  return base::Bind(&NetLogSSLErrorCallback, net_error, ssl_lib_error);
 }
 
 }  // namespace net

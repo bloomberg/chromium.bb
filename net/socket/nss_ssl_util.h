@@ -12,6 +12,7 @@
 #include <prio.h>
 
 #include "net/base/net_export.h"
+#include "net/base/net_log.h"
 
 namespace net {
 
@@ -34,6 +35,11 @@ PRFileDesc* GetNSSModelSocket();
 
 // Map NSS error code to network error code.
 int MapNSSError(PRErrorCode err);
+
+// Creates a NetLog callback for an SSL error.
+NetLog::ParametersCallback CreateNetLogSSLErrorCallback(int net_error,
+                                                        int ssl_lib_error);
+
 
 }  // namespace net
 

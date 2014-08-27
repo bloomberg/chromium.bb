@@ -24,7 +24,6 @@
 #include "net/cert/single_request_cert_verifier.h"
 #include "net/cert/x509_certificate_net_log_param.h"
 #include "net/http/transport_security_state.h"
-#include "net/socket/ssl_error_params.h"
 #include "net/socket/ssl_session_cache_openssl.h"
 #include "net/ssl/openssl_ssl_util.h"
 #include "net/ssl/ssl_cert_request_info.h"
@@ -922,7 +921,8 @@ int SSLClientSocketOpenSSL::DoHandshake() {
       return OK;
     }
 
-    net_error = MapOpenSSLError(ssl_error, err_tracer);
+    OpenSSLErrorInfo error_info;
+    net_error = MapOpenSSLErrorWithDetails(ssl_error, err_tracer, &error_info);
 
     // If not done, stay in this state
     if (net_error == ERR_IO_PENDING) {
@@ -933,7 +933,7 @@ int SSLClientSocketOpenSSL::DoHandshake() {
                  << ", net_error " << net_error;
       net_log_.AddEvent(
           NetLog::TYPE_SSL_HANDSHAKE_ERROR,
-          CreateNetLogSSLErrorCallback(net_error, ssl_error));
+          CreateNetLogOpenSSLErrorCallback(net_error, ssl_error, error_info));
     }
   }
   return net_error;

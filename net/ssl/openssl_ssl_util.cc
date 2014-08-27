@@ -9,9 +9,11 @@
 #include <openssl/err.h>
 #include <openssl/ssl.h>
 
+#include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/values.h"
 #include "crypto/openssl_util.h"
 #include "net/base/net_errors.h"
 
@@ -54,7 +56,7 @@ unsigned OpenSSLNetErrorLib() {
   return g_openssl_net_error_lib.Get().net_error_lib();
 }
 
-int MapOpenSSLErrorSSL(unsigned long error_code) {
+int MapOpenSSLErrorSSL(uint32_t error_code) {
   DCHECK_EQ(ERR_LIB_SSL, ERR_GET_LIB(error_code));
 
   DVLOG(1) << "OpenSSL SSL error, reason: " << ERR_GET_REASON(error_code)
@@ -145,6 +147,24 @@ int MapOpenSSLErrorSSL(unsigned long error_code) {
   }
 }
 
+base::Value* NetLogOpenSSLErrorCallback(int net_error,
+                                        int ssl_error,
+                                        const OpenSSLErrorInfo& error_info,
+                                        NetLog::LogLevel /* log_level */) {
+  base::DictionaryValue* dict = new base::DictionaryValue();
+  dict->SetInteger("net_error", net_error);
+  dict->SetInteger("ssl_error", ssl_error);
+  if (error_info.error_code != 0) {
+    dict->SetInteger("error_lib", ERR_GET_LIB(error_info.error_code));
+    dict->SetInteger("error_reason", ERR_GET_REASON(error_info.error_code));
+  }
+  if (error_info.file != NULL)
+    dict->SetString("file", error_info.file);
+  if (error_info.line != 0)
+    dict->SetInteger("line", error_info.line);
+  return dict;
+}
+
 }  // namespace
 
 void OpenSSLPutNetError(const tracked_objects::Location& location, int err) {
@@ -160,6 +180,15 @@ void OpenSSLPutNetError(const tracked_objects::Location& location, int err) {
 }
 
 int MapOpenSSLError(int err, const crypto::OpenSSLErrStackTracer& tracer) {
+  OpenSSLErrorInfo error_info;
+  return MapOpenSSLErrorWithDetails(err, tracer, &error_info);
+}
+
+int MapOpenSSLErrorWithDetails(int err,
+                               const crypto::OpenSSLErrStackTracer& tracer,
+                               OpenSSLErrorInfo* out_error_info) {
+  *out_error_info = OpenSSLErrorInfo();
+
   switch (err) {
     case SSL_ERROR_WANT_READ:
     case SSL_ERROR_WANT_WRITE:
@@ -171,12 +200,20 @@ int MapOpenSSLError(int err, const crypto::OpenSSLErrStackTracer& tracer) {
       return ERR_SSL_PROTOCOL_ERROR;
     case SSL_ERROR_SSL:
       // Walk down the error stack to find an SSL or net error.
-      unsigned long error_code;
+      uint32_t error_code;
+      const char* file;
+      int line;
       do {
-        error_code = ERR_get_error();
+        error_code = ERR_get_error_line(&file, &line);
         if (ERR_GET_LIB(error_code) == ERR_LIB_SSL) {
+          out_error_info->error_code = error_code;
+          out_error_info->file = file;
+          out_error_info->line = line;
           return MapOpenSSLErrorSSL(error_code);
         } else if (ERR_GET_LIB(error_code) == OpenSSLNetErrorLib()) {
+          out_error_info->error_code = error_code;
+          out_error_info->file = file;
+          out_error_info->line = line;
           // Net error codes are negative but encoded in OpenSSL as positive
           // numbers.
           return -ERR_GET_REASON(error_code);
@@ -188,6 +225,14 @@ int MapOpenSSLError(int err, const crypto::OpenSSLErrStackTracer& tracer) {
       LOG(WARNING) << "Unknown OpenSSL error " << err;
       return ERR_SSL_PROTOCOL_ERROR;
   }
+}
+
+NetLog::ParametersCallback CreateNetLogOpenSSLErrorCallback(
+    int net_error,
+    int ssl_error,
+    const OpenSSLErrorInfo& error_info) {
+  return base::Bind(&NetLogOpenSSLErrorCallback,
+                    net_error, ssl_error, error_info);
 }
 
 }  // namespace net

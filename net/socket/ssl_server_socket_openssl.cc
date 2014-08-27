@@ -13,7 +13,6 @@
 #include "crypto/rsa_private_key.h"
 #include "crypto/scoped_openssl_types.h"
 #include "net/base/net_errors.h"
-#include "net/socket/ssl_error_params.h"
 #include "net/ssl/openssl_ssl_util.h"
 
 #define GotoState(s) next_handshake_state_ = s
@@ -457,10 +456,13 @@ int SSLServerSocketOpenSSL::DoPayloadRead() {
   if (rv >= 0)
     return rv;
   int ssl_error = SSL_get_error(ssl_, rv);
-  int net_error = MapOpenSSLError(ssl_error, err_tracer);
+  OpenSSLErrorInfo error_info;
+  int net_error = MapOpenSSLErrorWithDetails(ssl_error, err_tracer,
+                                             &error_info);
   if (net_error != ERR_IO_PENDING) {
-    net_log_.AddEvent(NetLog::TYPE_SSL_READ_ERROR,
-                      CreateNetLogSSLErrorCallback(net_error, ssl_error));
+    net_log_.AddEvent(
+        NetLog::TYPE_SSL_READ_ERROR,
+        CreateNetLogOpenSSLErrorCallback(net_error, ssl_error, error_info));
   }
   return net_error;
 }
@@ -472,10 +474,13 @@ int SSLServerSocketOpenSSL::DoPayloadWrite() {
   if (rv >= 0)
     return rv;
   int ssl_error = SSL_get_error(ssl_, rv);
-  int net_error = MapOpenSSLError(ssl_error, err_tracer);
+  OpenSSLErrorInfo error_info;
+  int net_error = MapOpenSSLErrorWithDetails(ssl_error, err_tracer,
+                                             &error_info);
   if (net_error != ERR_IO_PENDING) {
-    net_log_.AddEvent(NetLog::TYPE_SSL_WRITE_ERROR,
-                      CreateNetLogSSLErrorCallback(net_error, ssl_error));
+    net_log_.AddEvent(
+        NetLog::TYPE_SSL_WRITE_ERROR,
+        CreateNetLogOpenSSLErrorCallback(net_error, ssl_error, error_info));
   }
   return net_error;
 }
@@ -554,7 +559,8 @@ int SSLServerSocketOpenSSL::DoHandshake() {
     completed_handshake_ = true;
   } else {
     int ssl_error = SSL_get_error(ssl_, rv);
-    net_error = MapOpenSSLError(ssl_error, err_tracer);
+    OpenSSLErrorInfo error_info;
+    net_error = MapOpenSSLErrorWithDetails(ssl_error, err_tracer, &error_info);
 
     // If not done, stay in this state
     if (net_error == ERR_IO_PENDING) {
@@ -563,8 +569,9 @@ int SSLServerSocketOpenSSL::DoHandshake() {
       LOG(ERROR) << "handshake failed; returned " << rv
                  << ", SSL error code " << ssl_error
                  << ", net_error " << net_error;
-      net_log_.AddEvent(NetLog::TYPE_SSL_HANDSHAKE_ERROR,
-                        CreateNetLogSSLErrorCallback(net_error, ssl_error));
+      net_log_.AddEvent(
+          NetLog::TYPE_SSL_HANDSHAKE_ERROR,
+          CreateNetLogOpenSSLErrorCallback(net_error, ssl_error, error_info));
     }
   }
   return net_error;
