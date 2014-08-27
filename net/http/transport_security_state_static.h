@@ -1328,6 +1328,22 @@ static const struct HSTSPreload kPreloadedSTS[] = {
   {13, true, "\007" "toshnix" "\003" "com", true, kNoPins, DOMAIN_NOT_PINNED },
   {20, true, "\016" "warrencreative" "\003" "com", true, kNoPins, DOMAIN_NOT_PINNED },
   {11, true, "\006" "zeplin" "\002" "io", true, kNoPins, DOMAIN_NOT_PINNED },
+  {12, true, "\006" "17hats" "\003" "com", true, kNoPins, DOMAIN_NOT_PINNED },
+  {9, true, "\004" "cdnb" "\002" "co", true, kNoPins, DOMAIN_NOT_PINNED },
+  {12, true, "\006" "github" "\003" "com", true, kNoPins, DOMAIN_NOT_PINNED },
+  {10, true, "\005" "id-co" "\002" "in", true, kNoPins, DOMAIN_NOT_PINNED },
+  {12, true, "\007" "ideaweb" "\002" "de", true, kNoPins, DOMAIN_NOT_PINNED },
+  {10, true, "\005" "man3s" "\002" "jp", true, kNoPins, DOMAIN_NOT_PINNED },
+  {12, true, "\007" "meinebo" "\002" "it", true, kNoPins, DOMAIN_NOT_PINNED },
+  {13, true, "\007" "nmctest" "\003" "net", true, kNoPins, DOMAIN_NOT_PINNED },
+  {13, true, "\010" "partyvan" "\002" "eu", true, kNoPins, DOMAIN_NOT_PINNED },
+  {13, true, "\010" "partyvan" "\002" "it", true, kNoPins, DOMAIN_NOT_PINNED },
+  {13, true, "\010" "partyvan" "\002" "nl", true, kNoPins, DOMAIN_NOT_PINNED },
+  {13, true, "\010" "partyvan" "\002" "se", true, kNoPins, DOMAIN_NOT_PINNED },
+  {12, true, "\007" "regar42" "\002" "fr", true, kNoPins, DOMAIN_NOT_PINNED },
+  {18, true, "\012" "scotthelme" "\002" "co" "\002" "uk", true, kNoPins, DOMAIN_NOT_PINNED },
+  {13, true, "\007" "suite73" "\003" "org", true, kNoPins, DOMAIN_NOT_PINNED },
+  {18, true, "\015" "wubthecaptain" "\002" "eu", true, kNoPins, DOMAIN_NOT_PINNED },
 };
 static const size_t kNumPreloadedSTS = ARRAYSIZE_UNSAFE(kPreloadedSTS);
 
