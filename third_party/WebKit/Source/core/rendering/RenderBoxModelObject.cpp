@@ -2561,7 +2561,6 @@ LayoutRect RenderBoxModelObject::localCaretRectForEmptyElement(LayoutUnit width,
     // constructed and this kludge is not called any more. So only the caret size
     // of an empty :first-line'd block is wrong. I think we can live with that.
     RenderStyle* currentStyle = firstLineStyle();
-    LayoutUnit height = style()->fontMetrics().height();
 
     enum CaretAlignment { alignLeft, alignRight, alignCenter };
 
@@ -2613,8 +2612,9 @@ LayoutRect RenderBoxModelObject::localCaretRectForEmptyElement(LayoutUnit width,
     }
     x = std::min(x, std::max<LayoutUnit>(maxX - caretWidth, 0));
 
-    LayoutUnit y = paddingTop() + borderTop();
-
+    LayoutUnit height = style()->fontMetrics().height();
+    LayoutUnit verticalSpace = lineHeight(true, currentStyle->isHorizontalWritingMode() ? HorizontalLine : VerticalLine,  PositionOfInteriorLineBoxes) - height;
+    LayoutUnit y = paddingTop() + borderTop() + (verticalSpace / 2);
     return currentStyle->isHorizontalWritingMode() ? LayoutRect(x, y, caretWidth, height) : LayoutRect(y, x, height, caretWidth);
 }
 

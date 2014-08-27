@@ -78,6 +78,22 @@ crbug.com/338794 compositing/rtl/rtl-iframe-absolute-overflow-scrolled.html [ Fa
 crbug.com/338794 crbug.com/192172 compositing/rtl/rtl-iframe-fixed-overflow-scrolled.html [ Failure ImageOnlyFailure Pass ]
 crbug.com/338794 crbug.com/192172 compositing/rtl/rtl-iframe-fixed-overflow.html [ Failure ImageOnlyFailure Pass ]
 
+crbug.com/400522 editing/deleting/delete-block-contents-003.html [ NeedsRebaseline ]
+crbug.com/400522 editing/selection/contenteditable-click-inside.html [ NeedsRebaseline ]
+crbug.com/400522 editing/execCommand/create-list-with-hr.html [ NeedsRebaseline ]
+crbug.com/400522 editing/selection/4975120.html [ NeedsRebaseline ]
+crbug.com/400522 editing/deleting/delete-image-004.html [ NeedsRebaseline ]
+crbug.com/400522 fast/forms/input-placeholder-paint-order.html [ NeedsRebaseline ]
+crbug.com/400522 editing/deleting/delete-block-contents-002.html [ NeedsRebaseline ]
+crbug.com/400522 editing/deleting/delete-block-contents-001.html [ NeedsRebaseline ]
+crbug.com/400522 editing/deleting/delete-at-start-or-end.html [ NeedsRebaseline ]
+crbug.com/400522 editing/undo/undo-misspellings.html [ NeedsRebaseline ]
+crbug.com/400522 fast/forms/caret-rtl.html [ NeedsRebaseline ]
+crbug.com/400522 editing/deleting/transpose-empty.html [ NeedsRebaseline ]
+crbug.com/400522 editing/inserting/insert-paragraph-03.html [ NeedsRebaseline ]
+crbug.com/400522 editing/caret/caret-height.html [ NeedsRebaseline ]
+crbug.com/400522 editing/caret/caret-position.html [ NeedsRebaseline ]
+
 crbug.com/239811 crbug.com/229113 http/tests/history/redirect-js-location-assign-0-seconds.html [ Failure Pass ]
 
 crbug.com/231721 [ Win ] svg/custom/invisible-text-after-scrolling.xhtml [ Pass Timeout ]
