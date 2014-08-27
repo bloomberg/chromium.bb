@@ -16243,6 +16243,17 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>The IP Address family of this connection, as seen locally.</summary>
 </histogram>
 
+<histogram name="Net.QuicSession.ConnectRandomPortRequiringConfirmation"
+    units="RTTs">
+  <owner>jri@chromium.org</owner>
+  <summary>
+    Samples of the number of round-trips needed by a QUIC connection before a
+    request could be sent by the client, when handshake confirmation was
+    required. (The operating system randomly selected a source port for the
+    connection.)
+  </summary>
+</histogram>
+
 <histogram name="Net.QuicSession.CreationError" enum="QuicSessionErrorCodes">
   <owner>jar@chromium.org</owner>
   <owner>rch@chromium.org</owner>
@@ -54264,6 +54275,17 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="ShortcutsProvider.QueryIndexTime"/>
 </histogram_suffixes>
 
+<histogram_suffixes name="QuicConnectionType" separator="">
+  <owner>rch@chromium.org</owner>
+  <suffix name="ForHTTP" label="Only insecure HTTP connections are counted."/>
+  <suffix name="ForHTTPS" label="Only secure HTTPS connections are counted."/>
+  <affected-histogram name="Net.QuicSession.ConnectRandomPort"/>
+  <affected-histogram
+      name="Net.QuicSession.ConnectRandomPortRequiringConfirmation"/>
+  <affected-histogram name="Net.QuicSession.ConnectSelectPort"/>
+  <affected-histogram name="Net.QuicSession.HandshakeRoundTrips"/>
+</histogram_suffixes>
+
 <histogram_suffixes name="QuicPortSelection" separator="">
   <owner>rch@chromium.org</owner>
   <suffix name="SelectPort"
@@ -54273,15 +54295,6 @@ To add a new entry, add it with any value and run test to compute valid value.
       label="The operating system randomly selected a source port for the
              connection."/>
   <affected-histogram name="Net.QuicSession.Connect"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="QuicRttCount" separator="">
-  <owner>rch@chromium.org</owner>
-  <suffix name="ForHTTP" label="Only insecure HTTP connections are counted."/>
-  <suffix name="ForHTTPS" label="Only secure HTTPS connections are counted."/>
-  <affected-histogram name="Net.QuicSession.ConnectRandomPort"/>
-  <affected-histogram name="Net.QuicSession.ConnectSelectPort"/>
-  <affected-histogram name="Net.QuicSession.HandshakeRoundTrips"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="RemoteProcessWarmStartFast" separator="">

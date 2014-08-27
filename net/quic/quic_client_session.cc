@@ -242,6 +242,11 @@ QuicClientSession::~QuicClientSession() {
     } else {
       UMA_HISTOGRAM_CUSTOM_COUNTS("Net.QuicSession.ConnectRandomPortForHTTP",
                                   round_trip_handshakes, 0, 3, 4);
+      if (require_confirmation_) {
+        UMA_HISTOGRAM_CUSTOM_COUNTS(
+            "Net.QuicSession.ConnectRandomPortRequiringConfirmationForHTTP",
+            round_trip_handshakes, 0, 3, 4);
+      }
     }
   } else {
     if (port_selected) {
@@ -250,6 +255,11 @@ QuicClientSession::~QuicClientSession() {
     } else {
       UMA_HISTOGRAM_CUSTOM_COUNTS("Net.QuicSession.ConnectRandomPortForHTTPS",
                                   round_trip_handshakes, 0, 3, 4);
+      if (require_confirmation_) {
+        UMA_HISTOGRAM_CUSTOM_COUNTS(
+            "Net.QuicSession.ConnectRandomPortRequiringConfirmationForHTTPS",
+            round_trip_handshakes, 0, 3, 4);
+      }
     }
   }
   const QuicConnectionStats stats = connection()->GetStats();
