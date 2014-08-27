@@ -45,9 +45,10 @@ const int kMenuXOffsetFromButton = -7;
 const int kExperimentalSearchBoxHeight = 37;
 
 const int kBackgroundBorderWidth = 1;
-const int kBackgroundBorderBottomWidth = 2;
+const int kBackgroundBorderBottomWidth = 1;
 const int kBackgroundBorderCornerRadius = 2;
 const SkColor kBackgroundBorderColor = SkColorSetRGB(0xEE, 0xEE, 0xEE);
+const SkColor kBackgroundBorderBottomColor = SkColorSetRGB(0xCC, 0xCC, 0xCC);
 
 // A background that paints a solid white rounded rect with a thin grey border.
 class SearchBoxBackground : public views::Background {
@@ -67,7 +68,10 @@ class SearchBoxBackground : public views::Background {
     bounds.Inset(kBackgroundBorderWidth,
                  kBackgroundBorderWidth,
                  kBackgroundBorderWidth,
-                 kBackgroundBorderBottomWidth);
+                 0);
+    paint.setColor(kBackgroundBorderBottomColor);
+    canvas->DrawRoundRect(bounds, kBackgroundBorderCornerRadius, paint);
+    bounds.Inset(0, 0, 0, kBackgroundBorderBottomWidth);
     paint.setColor(SK_ColorWHITE);
     canvas->DrawRoundRect(bounds, kBackgroundBorderCornerRadius, paint);
   }
