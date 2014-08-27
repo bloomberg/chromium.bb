@@ -112,7 +112,6 @@ class DesktopMediaPickerDialogView : public views::DialogDelegateView {
  public:
   DesktopMediaPickerDialogView(content::WebContents* parent_web_contents,
                                gfx::NativeWindow context,
-                               gfx::NativeWindow parent_window,
                                DesktopMediaPickerViews* parent,
                                const base::string16& app_name,
                                const base::string16& target_name,

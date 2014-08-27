@@ -38,3 +38,9 @@ document.querySelector('#cancel').addEventListener('click', function(e) {
     chrome.desktopCapture.cancelChooseDesktopMedia(pending_request_id);
   }
 });
+
+document.querySelector('#startFromBackgroundPage')
+    .addEventListener('click', function(e) {
+      chrome.runtime.sendMessage(
+          {}, function(response) { console.log(response.farewell); });
+    });
