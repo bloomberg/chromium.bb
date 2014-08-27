@@ -48,9 +48,7 @@ google_apis::CancelCallback DriveUploaderOnWorker::UploadNewFile(
                  content_type,
                  options,
                  RelayCallbackToTaskRunner(
-                     worker_task_runner_,
-                     FROM_HERE,
-                     callback)));
+                     worker_task_runner_.get(), FROM_HERE, callback)));
 
   return google_apis::CancelCallback();
 }
@@ -73,9 +71,7 @@ google_apis::CancelCallback DriveUploaderOnWorker::UploadExistingFile(
                  content_type,
                  options,
                  RelayCallbackToTaskRunner(
-                     worker_task_runner_,
-                     FROM_HERE,
-                     callback)));
+                     worker_task_runner_.get(), FROM_HERE, callback)));
 
   return google_apis::CancelCallback();
 }

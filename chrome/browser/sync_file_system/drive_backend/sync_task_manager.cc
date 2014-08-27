@@ -72,7 +72,7 @@ void SyncTaskManager::Initialize(SyncStatusCode status) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
   DCHECK(!token_);
   NotifyTaskDone(
-      SyncTaskToken::CreateForForegroundTask(AsWeakPtr(), task_runner_),
+      SyncTaskToken::CreateForForegroundTask(AsWeakPtr(), task_runner_.get()),
       status);
 }
 
@@ -327,11 +327,10 @@ void SyncTaskManager::UpdateBlockingFactorBody(
     foreground_task_token->clear_callback();
 
     background_task_token =
-        SyncTaskToken::CreateForBackgroundTask(
-            AsWeakPtr(),
-            task_runner_,
-            task_token_seq_++,
-            blocking_factor.Pass());
+        SyncTaskToken::CreateForBackgroundTask(AsWeakPtr(),
+                                               task_runner_.get(),
+                                               task_token_seq_++,
+                                               blocking_factor.Pass());
     background_task_token->UpdateTask(from_here, callback);
     running_background_tasks_.set(background_task_token->token_id(),
                                   running_foreground_task_.Pass());

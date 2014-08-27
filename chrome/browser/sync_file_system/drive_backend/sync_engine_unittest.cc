@@ -45,8 +45,8 @@ class SyncEngineTest : public testing::Test,
             base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
 
     sync_engine_.reset(new drive_backend::SyncEngine(
-        ui_task_runner,
-        worker_task_runner_,
+        ui_task_runner.get(),
+        worker_task_runner_.get(),
         NULL /* drive_task_runner */,
         profile_dir_.path(),
         NULL /* task_logger */,
@@ -103,7 +103,7 @@ class SyncEngineTest : public testing::Test,
   }
 
   void WaitForWorkerTaskRunner() {
-    DCHECK(worker_task_runner_);
+    DCHECK(worker_task_runner_.get());
 
     base::RunLoop run_loop;
     worker_task_runner_->PostTask(

@@ -43,7 +43,7 @@ RootDeleteHelper::RootDeleteHelper(
       callback_(callback),
       sync_status_(sync_status),
       weak_factory_(this) {
-  DCHECK(file_system_context_);
+  DCHECK(file_system_context_.get());
   DCHECK(url_.is_valid());
   DCHECK(!callback_.is_null());
   DCHECK(sync_status_);

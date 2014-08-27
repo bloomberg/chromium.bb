@@ -230,7 +230,7 @@ void SyncFileSystemBackend::SetLocalFileChangeTracker(
 
 void SyncFileSystemBackend::set_sync_context(
     LocalFileSyncContext* sync_context) {
-  DCHECK(!sync_context_);
+  DCHECK(!sync_context_.get());
   sync_context_ = sync_context;
 }
 

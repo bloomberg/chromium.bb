@@ -41,9 +41,7 @@ void RemoteChangeProcessorOnWorker::PrepareForProcessRemoteChange(
                  wrapper_,
                  url,
                  RelayCallbackToTaskRunner(
-                     worker_task_runner_,
-                     FROM_HERE,
-                     callback)));
+                     worker_task_runner_.get(), FROM_HERE, callback)));
 }
 
 void RemoteChangeProcessorOnWorker::ApplyRemoteChange(
@@ -61,9 +59,7 @@ void RemoteChangeProcessorOnWorker::ApplyRemoteChange(
                  local_path,
                  url,
                  RelayCallbackToTaskRunner(
-                     worker_task_runner_,
-                     FROM_HERE,
-                     callback)));
+                     worker_task_runner_.get(), FROM_HERE, callback)));
 }
 
 void RemoteChangeProcessorOnWorker::FinalizeRemoteSync(
@@ -74,14 +70,13 @@ void RemoteChangeProcessorOnWorker::FinalizeRemoteSync(
 
   ui_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&RemoteChangeProcessorWrapper::FinalizeRemoteSync,
-                 wrapper_,
-                 url,
-                 clear_local_changes,
-                 RelayCallbackToTaskRunner(
-                     worker_task_runner_,
-                     FROM_HERE,
-                     completion_callback)));
+      base::Bind(
+          &RemoteChangeProcessorWrapper::FinalizeRemoteSync,
+          wrapper_,
+          url,
+          clear_local_changes,
+          RelayCallbackToTaskRunner(
+              worker_task_runner_.get(), FROM_HERE, completion_callback)));
 }
 
 void RemoteChangeProcessorOnWorker::RecordFakeLocalChange(
@@ -97,9 +92,7 @@ void RemoteChangeProcessorOnWorker::RecordFakeLocalChange(
                  url,
                  change,
                  RelayCallbackToTaskRunner(
-                     worker_task_runner_,
-                     FROM_HERE,
-                     callback)));
+                     worker_task_runner_.get(), FROM_HERE, callback)));
 }
 
 void RemoteChangeProcessorOnWorker::DetachFromSequence() {

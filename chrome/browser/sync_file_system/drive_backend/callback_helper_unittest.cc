@@ -75,14 +75,13 @@ TEST(DriveBackendCallbackHelperTest, RunOnOtherThreadTest) {
   worker_task_runner->PostTask(
       FROM_HERE,
       RelayCallbackToTaskRunner(
-          ui_task_runner, FROM_HERE,
-          base::Bind(&VerifyCalledOnTaskRunner,
-                     ui_task_runner, &called)));
+          ui_task_runner.get(),
+          FROM_HERE,
+          base::Bind(&VerifyCalledOnTaskRunner, ui_task_runner, &called)));
   worker_task_runner->PostTask(
       FROM_HERE,
       RelayCallbackToTaskRunner(
-          ui_task_runner, FROM_HERE,
-          run_loop.QuitClosure()));
+          ui_task_runner.get(), FROM_HERE, run_loop.QuitClosure()));
   run_loop.Run();
   EXPECT_TRUE(called);
 

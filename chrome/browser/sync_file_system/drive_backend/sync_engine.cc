@@ -216,18 +216,18 @@ scoped_ptr<SyncEngine> SyncEngine::CreateForBrowserContext(
       context->GetRequestContext();
 
   scoped_ptr<drive_backend::SyncEngine> sync_engine(
-      new SyncEngine(ui_task_runner,
-                     worker_task_runner,
-                     drive_task_runner,
+      new SyncEngine(ui_task_runner.get(),
+                     worker_task_runner.get(),
+                     drive_task_runner.get(),
                      GetSyncFileSystemDir(context->GetPath()),
                      task_logger,
                      notification_manager,
                      extension_service,
                      signin_manager,
                      token_service,
-                     request_context,
+                     request_context.get(),
                      make_scoped_ptr(new DriveServiceFactory()),
-                     NULL  /* env_override */));
+                     NULL /* env_override */));
 
   sync_engine->Initialize();
   return sync_engine.Pass();
@@ -257,9 +257,10 @@ void SyncEngine::Reset() {
   if (drive_service_)
     drive_service_->RemoveObserver(this);
 
-  DeleteSoon(FROM_HERE, worker_task_runner_, sync_worker_.Pass());
-  DeleteSoon(FROM_HERE, worker_task_runner_, worker_observer_.Pass());
-  DeleteSoon(FROM_HERE, worker_task_runner_,
+  DeleteSoon(FROM_HERE, worker_task_runner_.get(), sync_worker_.Pass());
+  DeleteSoon(FROM_HERE, worker_task_runner_.get(), worker_observer_.Pass());
+  DeleteSoon(FROM_HERE,
+             worker_task_runner_.get(),
              remote_change_processor_on_worker_.Pass());
 
   drive_service_wrapper_.reset();
@@ -280,9 +281,9 @@ void SyncEngine::Initialize() {
   DCHECK(drive_service_factory_);
   scoped_ptr<drive::DriveServiceInterface> drive_service =
       drive_service_factory_->CreateDriveService(
-          token_service_, request_context_, drive_task_runner_);
+          token_service_, request_context_.get(), drive_task_runner_.get());
   scoped_ptr<drive::DriveUploaderInterface> drive_uploader(
-      new drive::DriveUploader(drive_service.get(), drive_task_runner_));
+      new drive::DriveUploader(drive_service.get(), drive_task_runner_.get()));
 
   InitializeInternal(drive_service.Pass(), drive_uploader.Pass(),
                      scoped_ptr<SyncWorkerInterface>());
@@ -317,21 +318,21 @@ void SyncEngine::InitializeInternal(
   // between DriveService and syncers in SyncWorker.
   scoped_ptr<drive::DriveServiceInterface> drive_service_on_worker(
       new DriveServiceOnWorker(drive_service_wrapper_->AsWeakPtr(),
-                               ui_task_runner_,
-                               worker_task_runner_));
+                               ui_task_runner_.get(),
+                               worker_task_runner_.get()));
   scoped_ptr<drive::DriveUploaderInterface> drive_uploader_on_worker(
       new DriveUploaderOnWorker(drive_uploader_wrapper_->AsWeakPtr(),
-                                ui_task_runner_,
-                                worker_task_runner_));
+                                ui_task_runner_.get(),
+                                worker_task_runner_.get()));
   scoped_ptr<SyncEngineContext> sync_engine_context(
       new SyncEngineContext(drive_service_on_worker.Pass(),
                             drive_uploader_on_worker.Pass(),
                             task_logger_,
-                            ui_task_runner_,
-                            worker_task_runner_));
+                            ui_task_runner_.get(),
+                            worker_task_runner_.get()));
 
-  worker_observer_.reset(
-      new WorkerObserver(ui_task_runner_, weak_ptr_factory_.GetWeakPtr()));
+  worker_observer_.reset(new WorkerObserver(ui_task_runner_.get(),
+                                            weak_ptr_factory_.GetWeakPtr()));
 
   base::WeakPtr<ExtensionServiceInterface> extension_service_weak_ptr;
   if (extension_service_)
@@ -493,7 +494,8 @@ void SyncEngine::SetRemoteChangeProcessor(RemoteChangeProcessor* processor) {
 
   remote_change_processor_on_worker_.reset(new RemoteChangeProcessorOnWorker(
       remote_change_processor_wrapper_->AsWeakPtr(),
-      ui_task_runner_, worker_task_runner_));
+      ui_task_runner_.get(),
+      worker_task_runner_.get()));
 
   worker_task_runner_->PostTask(
       FROM_HERE,
@@ -548,13 +550,12 @@ void SyncEngine::DumpFiles(const GURL& origin,
   ListCallback tracked_callback =
       callback_tracker_.Register(abort_closure, callback);
 
-  PostTaskAndReplyWithResult(
-      worker_task_runner_,
-      FROM_HERE,
-      base::Bind(&SyncWorkerInterface::DumpFiles,
-                 base::Unretained(sync_worker_.get()),
-                 origin),
-      tracked_callback);
+  PostTaskAndReplyWithResult(worker_task_runner_.get(),
+                             FROM_HERE,
+                             base::Bind(&SyncWorkerInterface::DumpFiles,
+                                        base::Unretained(sync_worker_.get()),
+                                        origin),
+                             tracked_callback);
 }
 
 void SyncEngine::DumpDatabase(const ListCallback& callback) {
@@ -569,12 +570,11 @@ void SyncEngine::DumpDatabase(const ListCallback& callback) {
   ListCallback tracked_callback =
       callback_tracker_.Register(abort_closure, callback);
 
-  PostTaskAndReplyWithResult(
-      worker_task_runner_,
-      FROM_HERE,
-      base::Bind(&SyncWorkerInterface::DumpDatabase,
-                 base::Unretained(sync_worker_.get())),
-      tracked_callback);
+  PostTaskAndReplyWithResult(worker_task_runner_.get(),
+                             FROM_HERE,
+                             base::Bind(&SyncWorkerInterface::DumpDatabase,
+                                        base::Unretained(sync_worker_.get())),
+                             tracked_callback);
 }
 
 void SyncEngine::SetSyncEnabled(bool sync_enabled) {

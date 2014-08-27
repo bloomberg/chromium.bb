@@ -44,9 +44,7 @@ google_apis::CancelCallback DriveServiceOnWorker::AddNewDirectory(
                  directory_title,
                  options,
                  RelayCallbackToTaskRunner(
-                     worker_task_runner_,
-                     FROM_HERE,
-                     callback)));
+                     worker_task_runner_.get(), FROM_HERE, callback)));
 
   return google_apis::CancelCallback();
 }
@@ -64,9 +62,7 @@ google_apis::CancelCallback DriveServiceOnWorker::DeleteResource(
                  resource_id,
                  etag,
                  RelayCallbackToTaskRunner(
-                     worker_task_runner_,
-                     FROM_HERE,
-                     callback)));
+                     worker_task_runner_.get(), FROM_HERE, callback)));
 
   return google_apis::CancelCallback();
 }
@@ -81,22 +77,17 @@ google_apis::CancelCallback DriveServiceOnWorker::DownloadFile(
 
   ui_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&DriveServiceWrapper::DownloadFile,
-                 wrapper_,
-                 local_cache_path,
-                 resource_id,
-                 RelayCallbackToTaskRunner(
-                     worker_task_runner_,
-                     FROM_HERE,
-                     download_action_callback),
-                 RelayCallbackToTaskRunner(
-                     worker_task_runner_,
-                     FROM_HERE,
-                     get_content_callback),
-                 RelayCallbackToTaskRunner(
-                     worker_task_runner_,
-                     FROM_HERE,
-                     progress_callback)));
+      base::Bind(
+          &DriveServiceWrapper::DownloadFile,
+          wrapper_,
+          local_cache_path,
+          resource_id,
+          RelayCallbackToTaskRunner(
+              worker_task_runner_.get(), FROM_HERE, download_action_callback),
+          RelayCallbackToTaskRunner(
+              worker_task_runner_.get(), FROM_HERE, get_content_callback),
+          RelayCallbackToTaskRunner(
+              worker_task_runner_.get(), FROM_HERE, progress_callback)));
 
   return google_apis::CancelCallback();
 }
@@ -110,9 +101,7 @@ google_apis::CancelCallback DriveServiceOnWorker::GetAboutResource(
       base::Bind(&DriveServiceWrapper::GetAboutResource,
                  wrapper_,
                  RelayCallbackToTaskRunner(
-                     worker_task_runner_,
-                     FROM_HERE,
-                     callback)));
+                     worker_task_runner_.get(), FROM_HERE, callback)));
 
   return google_apis::CancelCallback();
 }
@@ -128,9 +117,7 @@ google_apis::CancelCallback DriveServiceOnWorker::GetChangeList(
                  wrapper_,
                  start_changestamp,
                  RelayCallbackToTaskRunner(
-                     worker_task_runner_,
-                     FROM_HERE,
-                     callback)));
+                     worker_task_runner_.get(), FROM_HERE, callback)));
 
   return google_apis::CancelCallback();
 }
@@ -146,9 +133,7 @@ google_apis::CancelCallback DriveServiceOnWorker::GetRemainingChangeList(
                  wrapper_,
                  next_link,
                  RelayCallbackToTaskRunner(
-                     worker_task_runner_,
-                     FROM_HERE,
-                     callback)));
+                     worker_task_runner_.get(), FROM_HERE, callback)));
 
   return google_apis::CancelCallback();
 }
@@ -170,9 +155,7 @@ google_apis::CancelCallback DriveServiceOnWorker::GetRemainingFileList(
                  wrapper_,
                  next_link,
                  RelayCallbackToTaskRunner(
-                     worker_task_runner_,
-                     FROM_HERE,
-                     callback)));
+                     worker_task_runner_.get(), FROM_HERE, callback)));
 
   return google_apis::CancelCallback();
 }
@@ -189,9 +172,7 @@ google_apis::CancelCallback DriveServiceOnWorker::GetFileResource(
                  wrapper_,
                  resource_id,
                  RelayCallbackToTaskRunner(
-                     worker_task_runner_,
-                     FROM_HERE,
-                     callback)));
+                     worker_task_runner_.get(), FROM_HERE, callback)));
 
   return google_apis::CancelCallback();
 }
@@ -207,9 +188,7 @@ google_apis::CancelCallback DriveServiceOnWorker::GetFileListInDirectory(
                  wrapper_,
                  directory_resource_id,
                  RelayCallbackToTaskRunner(
-                     worker_task_runner_,
-                     FROM_HERE,
-                     callback)));
+                     worker_task_runner_.get(), FROM_HERE, callback)));
 
   return google_apis::CancelCallback();
 }
@@ -227,9 +206,7 @@ google_apis::CancelCallback DriveServiceOnWorker::RemoveResourceFromDirectory(
                  parent_resource_id,
                  resource_id,
                  RelayCallbackToTaskRunner(
-                     worker_task_runner_,
-                     FROM_HERE,
-                     callback)));
+                     worker_task_runner_.get(), FROM_HERE, callback)));
 
   return google_apis::CancelCallback();
 }
@@ -247,9 +224,7 @@ google_apis::CancelCallback DriveServiceOnWorker::SearchByTitle(
                  title,
                  directory_resource_id,
                  RelayCallbackToTaskRunner(
-                     worker_task_runner_,
-                     FROM_HERE,
-                     callback)));
+                     worker_task_runner_.get(), FROM_HERE, callback)));
 
   return google_apis::CancelCallback();
 }

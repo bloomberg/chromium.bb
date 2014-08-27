@@ -48,7 +48,7 @@ class CallbackHolder {
       : task_runner_(task_runner),
         from_here_(from_here),
         callback_(new base::Callback<T>(callback)) {
-    DCHECK(task_runner_);
+    DCHECK(task_runner_.get());
   }
 
   ~CallbackHolder() {
@@ -57,7 +57,7 @@ class CallbackHolder {
       delete callback;
   }
 
-  base::SequencedTaskRunner* task_runner() const { return task_runner_; }
+  base::SequencedTaskRunner* task_runner() const { return task_runner_.get(); }
   const tracked_objects::Location& from_here() const { return from_here_; }
   const base::Callback<T>& callback() const { return *callback_; }
 
