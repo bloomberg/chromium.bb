@@ -152,11 +152,15 @@ bool ContentVerifyJob::FinishBlock() {
 
 void ContentVerifyJob::OnHashesReady(bool success) {
   if (!success && !g_test_delegate) {
-    if (hash_reader_->have_verified_contents() &&
-        hash_reader_->have_computed_hashes())
+    if (!hash_reader_->content_exists()) {
+      // Ignore verification of non-existent resources.
+      return;
+    } else if (hash_reader_->have_verified_contents() &&
+               hash_reader_->have_computed_hashes()) {
       DispatchFailureCallback(NO_HASHES_FOR_FILE);
-    else
+    } else {
       DispatchFailureCallback(MISSING_ALL_HASHES);
+    }
     return;
   }
 
