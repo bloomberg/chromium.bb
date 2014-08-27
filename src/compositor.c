@@ -319,6 +319,66 @@ weston_client_launch(struct weston_compositor *compositor,
 	return client;
 }
 
+struct process_info {
+	struct weston_process proc;
+	char *path;
+};
+
+static void
+process_handle_sigchld(struct weston_process *process, int status)
+{
+	struct process_info *pinfo =
+		container_of(process, struct process_info, proc);
+
+	/*
+	 * There are no guarantees whether this runs before or after
+	 * the wl_client destructor.
+	 */
+
+	if (WIFEXITED(status)) {
+		weston_log("%s exited with status %d\n", pinfo->path,
+			   WEXITSTATUS(status));
+	} else if (WIFSIGNALED(status)) {
+		weston_log("%s died on signal %d\n", pinfo->path,
+			   WTERMSIG(status));
+	} else {
+		weston_log("%s disappeared\n", pinfo->path);
+	}
+
+	free(pinfo->path);
+	free(pinfo);
+}
+
+WL_EXPORT struct wl_client *
+weston_client_start(struct weston_compositor *compositor, const char *path)
+{
+	struct process_info *pinfo;
+	struct wl_client *client;
+
+	pinfo = zalloc(sizeof *pinfo);
+	if (!pinfo)
+		return NULL;
+
+	pinfo->path = strdup(path);
+	if (!pinfo->path)
+		goto out_free;
+
+	client = weston_client_launch(compositor, &pinfo->proc, path,
+				      process_handle_sigchld);
+	if (!client)
+		goto out_str;
+
+	return client;
+
+out_str:
+	free(pinfo->path);
+
+out_free:
+	free(pinfo);
+
+	return NULL;
+}
+
 static void
 region_init_infinite(pixman_region32_t *region)
 {

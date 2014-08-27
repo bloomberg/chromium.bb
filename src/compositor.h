@@ -1345,6 +1345,9 @@ weston_client_launch(struct weston_compositor *compositor,
 		     const char *path,
 		     weston_process_cleanup_func_t cleanup);
 
+struct wl_client *
+weston_client_start(struct weston_compositor *compositor, const char *path);
+
 void
 weston_watch_process(struct weston_process *process);
 
