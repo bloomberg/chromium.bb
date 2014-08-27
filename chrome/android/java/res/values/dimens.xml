@@ -24,9 +24,6 @@
     
     <!-- Menu button dragging related dimensions -->
     <dimen name="auto_scroll_full_velocity">500dp</dimen>
-    <dimen name="edge_swipe_in_slop">25dp</dimen>
-    <dimen name="edge_swipe_in_additional_slop">50dp</dimen>
-    <dimen name="edge_swipe_out_slop">18dp</dimen>
     
     <!-- Infobar dimensions -->
     <!-- Text size of the infobar message. -->

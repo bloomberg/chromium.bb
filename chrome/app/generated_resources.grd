@@ -9631,10 +9631,10 @@ and incorrect credentials. Either an attacker is trying to pretend to be <ph nam
       <message name="IDS_SAD_TAB_MESSAGE" desc="The message displayed on the sad tab page." formatter_data="android_java">
         Something went wrong while displaying this webpage. To continue, reload or go to another page.
       </message>
-      <message name="IDS_SAD_TAB_HELP_MESSAGE" desc="The help message displayed on the sad tab page, with IDS_SAD_TAB_HELP_LINK embedded as a link to help." formatter_data="android_java">
+      <message name="IDS_SAD_TAB_HELP_MESSAGE" desc="The help message displayed on the sad tab page, with IDS_SAD_TAB_HELP_LINK embedded as a link to help.">
         If you're seeing this frequently, try these <ph name="HELP_LINK">$1<ex>suggestions</ex></ph>.
       </message>
-      <message name="IDS_SAD_TAB_HELP_LINK" desc="The link text displayed on the sad tab page pointing the users to a help article." formatter_data="android_java">
+      <message name="IDS_SAD_TAB_HELP_LINK" desc="The link text displayed on the sad tab page pointing the users to a help article.">
         suggestions
       </message>
       <message name="IDS_SAD_TAB_RELOAD_LABEL" desc="Button label in the sad tab page for reloading a page." formatter_data="android_java">

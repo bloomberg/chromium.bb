@@ -163,9 +163,6 @@ You are signing in with a managed account and giving its administrator control o
       <message name="IDS_ACCESSIBILITY_TAB_SWITCHER_INCOGNITO_STACK" desc="Content description for the incognito stack selection 'button'.">
         Incognito tabs
       </message>
-      <message name="IDS_ACCESSIBILITY_TAB_SWITCHER_TAB_CLOSED" desc="Content description for the tab closed message.">
-        Tab closed
-      </message>
       <message name="IDS_ACCESSIBILITY_TAB_SWITCHER_UNDO_TAB_CLOSED" desc="Content description for the undo tab closed 'button.">
         Reopen closed tab
       </message>
@@ -259,17 +256,11 @@ You are signing in with a managed account and giving its administrator control o
       <message name="IDS_ACCESSIBILITY_MENU_BOOKMARK" desc="Content description for the bookmark button when the page is not currently bookmarked.">
         Bookmark page
       </message>
-      <message name="IDS_ACCESSIBILITY_MENU_EDIT_BOOKMARK" desc="Content description for the bookmark button when the page is currently bookmarked.">
-        Edit bookmark page
-      </message>
       <message name="IDS_ACCESSIBILITY_MENU_FORWARD" desc="Content description for the forward navigation button.">
         Go forward
       </message>
       <message name="IDS_ACCESSIBILITY_MENU_BACK" desc="Content description for the backard navigation button.">
         Go back
-      </message>
-      <message name="IDS_ACCESSIBILITY_MENU_RELOAD" desc="Content description for the button that reloads the page.">
-        Reload
       </message>
       <!-- ContextMenu -->
       <message name="IDS_CONTEXTMENU_OPEN_IN_NEW_TAB" desc="Context sensitive menu item to open the selected link in a new tab. [CHAR-LIMIT=30]">
