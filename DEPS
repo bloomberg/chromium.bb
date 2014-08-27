@@ -52,10 +52,6 @@ vars = {
   # and whatever else without interference from each other.
   'swarming_revision': 'b8aeeaef087fa2571aaaf64a8a8dbec06a0e0e41',
   # Three lines of non-changing comments so that
-  # the commit queue can handle CLs rolling openssl
-  # and whatever else without interference from each other.
-  'openssl_revision': 'c9613e3123ff035683f45163af142817b38d03b6',
-  # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
   'angle_revision': 'ef9d63ec5a38ac6d41c0a3ba0ee9bde42090da54',
@@ -295,9 +291,6 @@ deps = {
 
   'src/third_party/libwebm/source':
    Var('chromium_git') + '/webm/libwebm.git' + '@' + '0d4cb404ea4195e5e21d04db2c955615535ce62e',
-
-  'src/third_party/openssl':
-   Var('chromium_git') + '/chromium/deps/openssl.git' + '@' +  Var('openssl_revision'),
 
   'src/third_party/pdfium':
    'https://pdfium.googlesource.com/pdfium.git' + '@' +  Var('pdfium_revision'),
