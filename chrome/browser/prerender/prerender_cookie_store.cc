@@ -21,7 +21,7 @@ PrerenderCookieStore::PrerenderCookieStore(
       cookie_conflict_cb_(cookie_conflict_cb),
       cookie_conflict_(false) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK(default_cookie_monster_ != NULL);
+  DCHECK(default_cookie_monster_.get() != NULL);
   DCHECK(default_cookie_monster_->loaded());
 }
 
@@ -119,36 +119,37 @@ net::CookieStore* PrerenderCookieStore::GetCookieStoreForCookieOpAndLog(
                        op.op == COOKIE_OP_GET_ALL_COOKIES_FOR_URL_ASYNC);
 
   if (in_forwarding_mode_)
-    return default_cookie_monster_;
+    return default_cookie_monster_.get();
 
-  DCHECK(changes_cookie_monster_ != NULL);
+  DCHECK(changes_cookie_monster_.get() != NULL);
 
   cookie_ops_.push_back(op);
 
   bool key_copied = ContainsKey(copied_keys_, key);
 
   if (key_copied)
-    return changes_cookie_monster_;
+    return changes_cookie_monster_.get();
 
   if (is_read_only) {
     // Insert this key into the set of read keys, if it doesn't exist yet.
     if (!ContainsKey(read_keys_, key))
       read_keys_.insert(key);
-    return default_cookie_monster_;
+    return default_cookie_monster_.get();
   }
 
   // If this method hasn't returned yet, the key has not been copied yet,
   // and we must copy it due to the requested write operation.
 
-  bool copy_success = default_cookie_monster_->
-      CopyCookiesForKeyToOtherCookieMonster(key, changes_cookie_monster_);
+  bool copy_success =
+      default_cookie_monster_->CopyCookiesForKeyToOtherCookieMonster(
+          key, changes_cookie_monster_.get());
 
   // The copy must succeed.
   DCHECK(copy_success);
 
   copied_keys_.insert(key);
 
-  return changes_cookie_monster_;
+  return changes_cookie_monster_.get();
 }
 
 void PrerenderCookieStore::ApplyChanges(std::vector<GURL>* cookie_change_urls) {
@@ -198,7 +199,7 @@ void PrerenderCookieStore::OnCookieChangedForURL(
 
   // If the cookie was changed in a different cookie monster than the one
   // being decorated, there is nothing to do).
-  if (cookie_monster != default_cookie_monster_)
+  if (cookie_monster != default_cookie_monster_.get())
     return;
 
   if (in_forwarding_mode_)

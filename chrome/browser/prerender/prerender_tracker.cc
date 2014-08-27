@@ -166,7 +166,7 @@ void PrerenderTracker::RemovePrerenderCookieStoreOnIOThread(int process_id,
   for (std::vector<GURL>::const_iterator url_it = cookie_change_urls.begin();
        url_it != cookie_change_urls.end();
        ++url_it) {
-    OnCookieChangedForURL(process_id, cookie_monster, *url_it);
+    OnCookieChangedForURL(process_id, cookie_monster.get(), *url_it);
   }
 }
 
@@ -175,7 +175,7 @@ void PrerenderTracker::AddPrerenderCookieStoreOnIOThread(
     scoped_refptr<net::URLRequestContextGetter> request_context,
     const base::Closure& cookie_conflict_cb) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK(request_context != NULL);
+  DCHECK(request_context.get() != NULL);
   net::CookieMonster* cookie_monster =
       request_context->GetURLRequestContext()->cookie_store()->
       GetCookieMonster();

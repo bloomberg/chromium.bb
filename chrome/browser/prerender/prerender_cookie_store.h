@@ -101,7 +101,7 @@ class PrerenderCookieStore : public net::CookieStore {
                              const GURL& url);
 
   net::CookieMonster* default_cookie_monster() {
-    return default_cookie_monster_;
+    return default_cookie_monster_.get();
   }
 
  private:
