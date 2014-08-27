@@ -1130,7 +1130,7 @@ Signing in anyway will merge Chrome information like bookmarks, history, and oth
 
       <!-- Contextual Search -->
       <message name="IDS_CONTEXTUAL_SEARCH_PROMO_DESCRIPTION" desc="Description of the Contextual Search feature.">
-        Enabling "Tap to Search" provides an easy way to search for terms on a web page by simply tapping on them.  The word tapped and surrounding page will be sent to Google.
+        “Touch to Search” provides an easy way to search for terms on a web page by simply touching on them.  The touched word and surrounding page will be sent to Google.
       </message>
       <message name="IDS_CONTEXTUAL_SEARCH_PROMO_OPTIN" desc="Text for the button the user clicks to opt in.">
         Yes, please
