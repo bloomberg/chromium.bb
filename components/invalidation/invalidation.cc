@@ -119,7 +119,7 @@ void Invalidation::SetAckHandler(
 }
 
 bool Invalidation::SupportsAcknowledgement() const {
-  return !!ack_handler_task_runner_;
+  return !!ack_handler_task_runner_.get();
 }
 
 void Invalidation::Acknowledge() const {

@@ -143,7 +143,7 @@ NonBlockingInvalidator::Core::Core(
     : delegate_observer_(delegate_observer),
       delegate_observer_task_runner_(delegate_observer_task_runner) {
   DCHECK(delegate_observer_);
-  DCHECK(delegate_observer_task_runner_);
+  DCHECK(delegate_observer_task_runner_.get());
 }
 
 NonBlockingInvalidator::Core::~Core() {

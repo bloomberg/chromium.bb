@@ -209,7 +209,7 @@ void GCMNetworkChannel::OnGetTokenComplete(
   DVLOG(2) << "Got access token, sending message";
   fetcher_.reset(net::URLFetcher::Create(
       BuildUrl(registration_id_), net::URLFetcher::POST, this));
-  fetcher_->SetRequestContext(request_context_getter_);
+  fetcher_->SetRequestContext(request_context_getter_.get());
   const std::string auth_header("Authorization: Bearer " + access_token_);
   fetcher_->AddExtraRequestHeader(auth_header);
   if (!echo_token_.empty()) {

@@ -73,7 +73,7 @@ void SyncInvalidationListener::Start(
   invalidation_state_tracker_ = invalidation_state_tracker;
   invalidation_state_tracker_task_runner_ =
       invalidation_state_tracker_task_runner;
-  DCHECK(invalidation_state_tracker_task_runner_);
+  DCHECK(invalidation_state_tracker_task_runner_.get());
 
   DCHECK(!delegate_);
   DCHECK(delegate);
