@@ -70,7 +70,6 @@
 #include <gtest/gtest.h>
 
 using namespace blink;
-using namespace blink;
 using blink::URLTestHelpers::toKURL;
 
 namespace {

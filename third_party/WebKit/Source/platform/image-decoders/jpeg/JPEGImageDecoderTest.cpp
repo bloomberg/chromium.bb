@@ -44,7 +44,6 @@
 #include <gtest/gtest.h>
 
 using namespace blink;
-using namespace blink;
 
 static const size_t LargeEnoughSize = 1000 * 1000;
 

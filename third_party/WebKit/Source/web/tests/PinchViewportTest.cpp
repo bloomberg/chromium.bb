@@ -68,7 +68,6 @@
 
 
 using namespace blink;
-using namespace blink;
 
 using ::testing::_;
 using ::testing::PrintToString;

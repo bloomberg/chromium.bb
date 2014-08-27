@@ -49,7 +49,6 @@
 #include <gtest/gtest.h>
 
 using namespace blink;
-using namespace blink;
 using blink::URLTestHelpers::toKURL;
 using blink::URLTestHelpers::registerMockedURLLoad;
 

@@ -29,7 +29,6 @@
 #include <gtest/gtest.h>
 
 using namespace blink;
-using namespace blink;
 
 class MockPopupContent : public PopupContent {
 public:

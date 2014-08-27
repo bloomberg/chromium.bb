@@ -45,7 +45,6 @@
 #include <gtest/gtest.h>
 
 using namespace blink;
-using namespace blink;
 
 class MockWebFrameClient : public WebFrameClient {
 };

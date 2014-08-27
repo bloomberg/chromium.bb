@@ -42,7 +42,6 @@
 #include "web/WebInputEventConversion.h"
 
 using namespace blink;
-using namespace blink;
 
 namespace {
 
