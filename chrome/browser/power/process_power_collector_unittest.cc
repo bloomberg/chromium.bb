@@ -6,6 +6,7 @@
 
 #include "apps/app_window_contents.h"
 #include "apps/app_window_registry.h"
+#include "apps/ui/apps_client.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/apps/chrome_app_delegate.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -285,18 +286,20 @@ TEST_F(BrowserProcessPowerTest, AppsRecordPowerUsage) {
                                     kTestAppId,
                                     &error));
   EXPECT_TRUE(extension.get()) << error;
+  // Increment the apps count to avoid a DCHECK later.
+  apps::AppsClient::Get()->IncrementKeepAliveCount();
 
   Profile* current_profile =
       profile_manager_->CreateTestingProfile("Test user");
   GURL url("chrome-extension://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
   apps::AppWindow* window =
       new apps::AppWindow(current_profile, new ChromeAppDelegate(), extension);
-  scoped_ptr<content::WebContents> web_contents(
+  content::WebContents* web_contents(
       content::WebContents::Create(content::WebContents::CreateParams(
           current_profile,
           content::SiteInstance::CreateForURL(current_profile, url))));
   window->SetAppWindowContentsForTesting(scoped_ptr<apps::AppWindowContents>(
-      new TestAppWindowContents(web_contents.get())));
+      new TestAppWindowContents(web_contents)));
   apps::AppWindowRegistry* app_registry =
       apps::AppWindowRegistry::Get(current_profile);
   app_registry->AddAppWindow(window);
@@ -308,7 +311,9 @@ TEST_F(BrowserProcessPowerTest, AppsRecordPowerUsage) {
   collector->UpdatePowerConsumptionForTesting();
   EXPECT_EQ(1u, collector->metrics_map_for_testing()->size());
 
-  app_registry->RemoveAppWindow(window);
+  // Clear the AppWindowContents before trying to close.
+  window->SetAppWindowContentsForTesting(scoped_ptr<apps::AppWindowContents>());
+  window->OnNativeClose();
   collector->UpdatePowerConsumptionForTesting();
   EXPECT_EQ(0u, collector->metrics_map_for_testing()->size());
 }
