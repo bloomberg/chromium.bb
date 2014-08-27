@@ -26,8 +26,12 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/cryptohome/cryptohome_parameters.h"
+#include "chromeos/cryptohome/homedir_methods.h"
 #include "chromeos/cryptohome/mock_async_method_caller.h"
+#include "chromeos/cryptohome/mock_homedir_methods.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
+#include "chromeos/dbus/cros_disks_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_cryptohome_client.h"
 #include "chromeos/login/auth/key.h"
@@ -118,6 +122,7 @@ class CryptohomeAuthenticatorTest : public testing::Test {
         user_manager_(new FakeUserManager()),
         user_manager_enabler_(user_manager_),
         mock_caller_(NULL),
+        mock_homedir_methods_(NULL),
         owner_key_util_(new MockOwnerKeyUtil) {
     user_context_.SetKey(Key("fakepass"));
     user_context_.SetUserIDHash("me_nowhere_com_hash");
@@ -140,6 +145,9 @@ class CryptohomeAuthenticatorTest : public testing::Test {
 
     mock_caller_ = new cryptohome::MockAsyncMethodCaller;
     cryptohome::AsyncMethodCaller::InitializeForTesting(mock_caller_);
+    mock_homedir_methods_ = new cryptohome::MockHomedirMethods;
+    mock_homedir_methods_->SetUp(true, cryptohome::MOUNT_ERROR_NONE);
+    cryptohome::HomedirMethods::InitializeForTesting(mock_homedir_methods_);
 
     fake_cryptohome_client_ = new FakeCryptohomeClient;
     chromeos::DBusThreadManager::GetSetterForTesting()->SetCryptohomeClient(
@@ -161,6 +169,8 @@ class CryptohomeAuthenticatorTest : public testing::Test {
 
     cryptohome::AsyncMethodCaller::Shutdown();
     mock_caller_ = NULL;
+    cryptohome::HomedirMethods::Shutdown();
+    mock_homedir_methods_ = NULL;
   }
 
   base::FilePath PopulateTempFile(const char* data, int data_len) {
@@ -264,6 +274,7 @@ class CryptohomeAuthenticatorTest : public testing::Test {
   ScopedUserManagerEnabler user_manager_enabler_;
 
   cryptohome::MockAsyncMethodCaller* mock_caller_;
+  cryptohome::MockHomedirMethods* mock_homedir_methods_;
 
   MockAuthStatusConsumer consumer_;
 
@@ -529,23 +540,28 @@ TEST_F(CryptohomeAuthenticatorTest, DriveDataResync) {
   FailOnLoginFailure();
 
   // Set up mock async method caller to respond successfully to a cryptohome
-  // remove attempt and a cryptohome create attempt (indicated by the
-  // |CREATE_IF_MISSING| flag to AsyncMount).
+  // remove attempt.
   mock_caller_->SetUp(true, cryptohome::MOUNT_ERROR_NONE);
   EXPECT_CALL(*mock_caller_, AsyncRemove(user_context_.GetUserID(), _))
       .Times(1)
       .RetiresOnSaturation();
-  EXPECT_CALL(*mock_caller_,
-              AsyncMount(user_context_.GetUserID(),
-                         transformed_key_.GetSecret(),
-                         cryptohome::CREATE_IF_MISSING,
-                         _))
-      .Times(1)
-      .RetiresOnSaturation();
-  EXPECT_CALL(*mock_caller_,
-              AsyncGetSanitizedUsername(user_context_.GetUserID(), _))
-      .Times(1)
-      .RetiresOnSaturation();
+
+  // Set up mock homedir methods to respond successfully to a cryptohome create
+  // attempt.
+  const cryptohome::KeyDefinition auth_key(transformed_key_.GetSecret(),
+                                           std::string(),
+                                           cryptohome::PRIV_DEFAULT);
+  cryptohome::MountParameters mount(false /* ephemeral */);
+  mount.create_keys.push_back(cryptohome::KeyDefinition(
+      transformed_key_.GetSecret(),
+      "gaia",
+      cryptohome::PRIV_DEFAULT));
+  EXPECT_CALL(*mock_homedir_methods_,
+              MountEx(cryptohome::Identification(user_context_.GetUserID()),
+                      cryptohome::Authorization(auth_key),
+                      mount,
+                      _))
+      .Times(1);
 
   state_->PresetOnlineLoginStatus(AuthFailure::AuthFailureNone());
   SetAttemptState(auth_.get(), state_.release());
@@ -596,17 +612,17 @@ TEST_F(CryptohomeAuthenticatorTest, DriveDataRecover) {
           user_context_.GetUserID(), _, transformed_key_.GetSecret(), _))
       .Times(1)
       .RetiresOnSaturation();
-  EXPECT_CALL(*mock_caller_,
-              AsyncMount(user_context_.GetUserID(),
-                         transformed_key_.GetSecret(),
-                         cryptohome::MOUNT_FLAGS_NONE,
-                         _))
-      .Times(1)
-      .RetiresOnSaturation();
-  EXPECT_CALL(*mock_caller_,
-              AsyncGetSanitizedUsername(user_context_.GetUserID(), _))
-      .Times(1)
-      .RetiresOnSaturation();
+
+  // Set up mock homedir methods to respond successfully to a cryptohome mount
+  // attempt.
+  const cryptohome::KeyDefinition auth_key(transformed_key_.GetSecret(),
+                                           std::string(),
+                                           cryptohome::PRIV_DEFAULT);
+  EXPECT_CALL(*mock_homedir_methods_,
+              MountEx(cryptohome::Identification(user_context_.GetUserID()),
+                      cryptohome::Authorization(auth_key),
+                      cryptohome::MountParameters(false /* ephemeral */),
+                      _));
 
   state_->PresetOnlineLoginStatus(AuthFailure::AuthFailureNone());
   SetAttemptState(auth_.get(), state_.release());
@@ -666,20 +682,21 @@ TEST_F(CryptohomeAuthenticatorTest, DriveCreateForNewUser) {
   ExpectLoginSuccess(expected_user_context);
   FailOnLoginFailure();
 
-  // Set up mock async method caller to respond successfully to a cryptohome
-  // create attempt (indicated by the |CREATE_IF_MISSING| flag to AsyncMount).
-  mock_caller_->SetUp(true, cryptohome::MOUNT_ERROR_NONE);
-  EXPECT_CALL(*mock_caller_,
-              AsyncMount(user_context_.GetUserID(),
-                         transformed_key_.GetSecret(),
-                         cryptohome::CREATE_IF_MISSING,
-                         _))
-      .Times(1)
-      .RetiresOnSaturation();
-  EXPECT_CALL(*mock_caller_,
-              AsyncGetSanitizedUsername(user_context_.GetUserID(), _))
-      .Times(1)
-      .RetiresOnSaturation();
+  // Set up mock homedir methods to respond successfully to a cryptohome create
+  // attempt.
+  const cryptohome::KeyDefinition auth_key(transformed_key_.GetSecret(),
+                                           std::string(),
+                                           cryptohome::PRIV_DEFAULT);
+  cryptohome::MountParameters mount(false /* ephemeral */);
+  mount.create_keys.push_back(cryptohome::KeyDefinition(
+      transformed_key_.GetSecret(),
+      "gaia",
+      cryptohome::PRIV_DEFAULT));
+  EXPECT_CALL(*mock_homedir_methods_,
+              MountEx(cryptohome::Identification(user_context_.GetUserID()),
+                      cryptohome::Authorization(auth_key),
+                      mount,
+                      _));
 
   // Set up state as though a cryptohome mount attempt has occurred
   // and been rejected because the user doesn't exist; additionally,

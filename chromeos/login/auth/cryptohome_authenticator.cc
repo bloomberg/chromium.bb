@@ -9,6 +9,8 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "chromeos/cryptohome/async_method_caller.h"
+#include "chromeos/cryptohome/cryptohome_parameters.h"
+#include "chromeos/cryptohome/homedir_methods.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -24,6 +26,9 @@
 namespace chromeos {
 
 namespace {
+
+// The label used for the key derived from the user's GAIA credentials.
+const char kCryptohomeGAIAKeyLabel[] = "gaia";
 
 // Hashes |key| with |system_salt| if it its type is KEY_TYPE_PASSWORD_PLAIN.
 // Returns the keys unmodified otherwise.
@@ -68,10 +73,27 @@ void TriggerResolveWithLoginTimeMarker(
   TriggerResolve(attempt, resolver, success, return_code);
 }
 
+void TriggerResolveWithHashAndLoginTimeMarker(
+    const std::string& marker_name,
+    AuthAttemptState* attempt,
+    scoped_refptr<CryptohomeAuthenticator> resolver,
+    bool success,
+    cryptohome::MountError return_code,
+    const std::string& mount_hash) {
+  chromeos::LoginEventRecorder::Get()->AddLoginTimeMarker(marker_name, false);
+  attempt->RecordCryptohomeStatus(success, return_code);
+  if (success)
+    attempt->RecordUsernameHash(mount_hash);
+  else
+    attempt->RecordUsernameHashFailed();
+  resolver->Resolve();
+}
+
 // Calls cryptohome's mount method.
 void Mount(AuthAttemptState* attempt,
            scoped_refptr<CryptohomeAuthenticator> resolver,
-           int flags,
+           bool ephemeral,
+           bool create_if_nonexistent,
            const std::string& system_salt) {
   chromeos::LoginEventRecorder::Get()->AddLoginTimeMarker(
       "CryptohomeMount-Start", false);
@@ -81,17 +103,30 @@ void Mount(AuthAttemptState* attempt,
 
   scoped_ptr<Key> key =
       TransformKeyIfNeeded(*attempt->user_context.GetKey(), system_salt);
-  cryptohome::AsyncMethodCaller::GetInstance()->AsyncMount(
-      attempt->user_context.GetUserID(),
-      key->GetSecret(),
-      flags,
-      base::Bind(&TriggerResolveWithLoginTimeMarker,
+  // Set the authentication's key label to an empty string, which is a wildcard
+  // allowing any key to match. This is necessary because cryptohomes created by
+  // Chrome OS M38 and older will have a legacy key with no label while those
+  // created by Chrome OS M39 and newer will have a key with the label
+  // kCryptohomeGAIAKeyLabel.
+  const cryptohome::KeyDefinition auth_key(key->GetSecret(),
+                                           std::string(),
+                                           cryptohome::PRIV_DEFAULT);
+  cryptohome::MountParameters mount(ephemeral);
+  if (create_if_nonexistent) {
+    mount.create_keys.push_back(cryptohome::KeyDefinition(
+        key->GetSecret(),
+        kCryptohomeGAIAKeyLabel,
+        cryptohome::PRIV_DEFAULT));
+  }
+
+  cryptohome::HomedirMethods::GetInstance()->MountEx(
+      cryptohome::Identification(attempt->user_context.GetUserID()),
+      cryptohome::Authorization(auth_key),
+      mount,
+      base::Bind(&TriggerResolveWithHashAndLoginTimeMarker,
                  "CryptohomeMount-End",
                  attempt,
                  resolver));
-  cryptohome::AsyncMethodCaller::GetInstance()->AsyncGetSanitizedUsername(
-      attempt->user_context.GetUserID(),
-      base::Bind(&TriggerResolveHash, attempt, resolver));
 }
 
 // Calls cryptohome's mount method for guest and also get the user hash from
@@ -221,7 +256,8 @@ void CryptohomeAuthenticator::AuthenticateToLogin(
       base::Bind(&Mount,
                  current_state_.get(),
                  scoped_refptr<CryptohomeAuthenticator>(this),
-                 cryptohome::MOUNT_FLAGS_NONE));
+                 false /* ephemeral */,
+                 false /* create_if_nonexistent */));
 }
 
 void CryptohomeAuthenticator::CompleteLogin(Profile* profile,
@@ -240,7 +276,8 @@ void CryptohomeAuthenticator::CompleteLogin(Profile* profile,
       base::Bind(&Mount,
                  current_state_.get(),
                  scoped_refptr<CryptohomeAuthenticator>(this),
-                 cryptohome::MOUNT_FLAGS_NONE));
+                 false /* ephemeral */,
+                 false /* create_if_nonexistent */));
 
   // For login completion from extension, we just need to resolve the current
   // auth attempt state, the rest of OAuth related tasks will be done in
@@ -279,7 +316,8 @@ void CryptohomeAuthenticator::LoginAsSupervisedUser(
       base::Bind(&Mount,
                  current_state_.get(),
                  scoped_refptr<CryptohomeAuthenticator>(this),
-                 cryptohome::MOUNT_FLAGS_NONE));
+                 false /* ephemeral */,
+                 false /* create_if_nonexistent */));
 }
 
 void CryptohomeAuthenticator::LoginRetailMode() {
@@ -327,7 +365,8 @@ void CryptohomeAuthenticator::LoginAsPublicSession(
       base::Bind(&Mount,
                  current_state_.get(),
                  scoped_refptr<CryptohomeAuthenticator>(this),
-                 cryptohome::CREATE_IF_MISSING | cryptohome::ENSURE_EPHEMERAL));
+                 true /* ephemeral */,
+                 true /* create_if_nonexistent */));
 }
 
 void CryptohomeAuthenticator::LoginAsKioskAccount(
@@ -463,7 +502,7 @@ void CryptohomeAuthenticator::OnOwnershipChecked(bool is_owner) {
 
 void CryptohomeAuthenticator::Resolve() {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
-  int mount_flags = cryptohome::MOUNT_FLAGS_NONE;
+  bool create_if_nonexistent = false;
   CryptohomeAuthenticator::AuthState state = ResolveState();
   VLOG(1) << "Resolved state to: " << state;
   switch (state) {
@@ -527,14 +566,15 @@ void CryptohomeAuthenticator::Resolve() {
                                         *delayed_login_failure_));
       break;
     case CREATE_NEW:
-      mount_flags |= cryptohome::CREATE_IF_MISSING;
+      create_if_nonexistent = true;
     case RECOVER_MOUNT:
       current_state_->ResetCryptohomeStatus();
       SystemSaltGetter::Get()->GetSystemSalt(
           base::Bind(&Mount,
                      current_state_.get(),
                      scoped_refptr<CryptohomeAuthenticator>(this),
-                     mount_flags));
+                     false /*ephemeral*/,
+                     create_if_nonexistent));
       break;
     case NEED_OLD_PW:
       task_runner_->PostTask(

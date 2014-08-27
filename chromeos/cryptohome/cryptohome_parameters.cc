@@ -6,21 +6,57 @@
 
 namespace cryptohome {
 
-Authorization::Authorization(const std::string& key, const std::string& label)
-    : key(key), label(label) {}
 
-Authorization::Authorization(const KeyDefinition& key_def)
-    : key(key_def.key), label(key_def.label) {}
+Identification::Identification(const std::string& user_id) : user_id(user_id) {
+}
 
-MountParameters::MountParameters(bool ephemeral) : ephemeral(ephemeral) {}
-
-MountParameters::~MountParameters() {}
+bool Identification::operator==(const Identification& other) const {
+  return user_id == other.user_id;
+}
 
 KeyDefinition::KeyDefinition(const std::string& key,
                              const std::string& label,
                              int /*AuthKeyPrivileges*/ privileges)
-    : label(label), revision(1), key(key), privileges(privileges) {}
+    : label(label),
+      revision(1),
+      key(key),
+      privileges(privileges) {
+}
 
-KeyDefinition::~KeyDefinition() {}
+KeyDefinition::~KeyDefinition() {
+}
+
+bool KeyDefinition::operator==(const KeyDefinition& other) const {
+  return label == other.label &&
+         revision == other.revision &&
+         key == other.key &&
+         encryption_key == other.encryption_key &&
+         signature_key == other.signature_key &&
+         privileges == other.privileges;
+}
+
+Authorization::Authorization(const std::string& key, const std::string& label)
+    : key(key),
+      label(label) {
+}
+
+Authorization::Authorization(const KeyDefinition& key_def)
+    : key(key_def.key),
+      label(key_def.label) {
+}
+
+bool Authorization::operator==(const Authorization& other) const {
+  return key == other.key && label == other.label;
+}
+
+MountParameters::MountParameters(bool ephemeral) : ephemeral(ephemeral) {
+}
+
+MountParameters::~MountParameters() {
+}
+
+bool MountParameters::operator==(const MountParameters& other) const {
+  return ephemeral == other.ephemeral && create_keys == other.create_keys;
+}
 
 }  // namespace cryptohome

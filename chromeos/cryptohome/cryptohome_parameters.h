@@ -24,7 +24,10 @@ enum AuthKeyPrivileges {
 
 // Identification of the user calling cryptohome method.
 struct CHROMEOS_EXPORT Identification {
-  explicit Identification(const std::string& user_id) : user_id(user_id) {}
+  explicit Identification(const std::string& user_id);
+
+  bool operator==(const Identification& other) const;
+
   std::string user_id;
 };
 
@@ -36,6 +39,9 @@ struct CHROMEOS_EXPORT KeyDefinition {
                 const std::string& label,
                 int /*AuthKeyPrivileges*/ privileges);
   ~KeyDefinition();
+
+  bool operator==(const KeyDefinition& other) const;
+
   std::string label;
 
   int revision;
@@ -51,6 +57,9 @@ struct CHROMEOS_EXPORT KeyDefinition {
 struct CHROMEOS_EXPORT Authorization {
   Authorization(const std::string& key, const std::string& label);
   explicit Authorization(const KeyDefinition& key);
+
+  bool operator==(const Authorization& other) const;
+
   std::string key;
   std::string label;
 };
@@ -60,6 +69,8 @@ class CHROMEOS_EXPORT MountParameters {
  public:
   explicit MountParameters(bool ephemeral);
   ~MountParameters();
+
+  bool operator==(const MountParameters& other) const;
 
   // If |true|, the mounted home dir will be backed by tmpfs. If |false|, the
   // ephemeral users policy decides whether tmpfs or an encrypted directory is
