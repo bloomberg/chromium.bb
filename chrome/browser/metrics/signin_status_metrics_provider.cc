@@ -92,7 +92,7 @@ void SigninStatusMetricsProvider::OnBrowserAdded(Browser* browser) {
   if (!manager)
     return;
 
-  const bool signed_in = !manager->GetAuthenticatedUsername().empty();
+  const bool signed_in = manager->IsAuthenticated();
   UpdateStatusWhenBrowserAdded(signed_in);
 }
 
@@ -108,7 +108,7 @@ void SigninStatusMetricsProvider::SigninManagerCreated(
   // profile.
   if (signin_status_ == UNKNOWN_SIGNIN_STATUS) {
     size_t signed_in_count =
-        manager->GetAuthenticatedUsername().empty() ? 0 : 1;
+        manager->IsAuthenticated() ? 1 : 0;
     UpdateInitialSigninStatus(1, signed_in_count);
   }
 }
@@ -210,7 +210,7 @@ void SigninStatusMetricsProvider::ComputeCurrentSigninStatus() {
     opened_profiles_count++;
     SigninManager* manager = SigninManagerFactory::GetForProfile(
         profile_list[i]->GetOriginalProfile());
-    if (manager && !manager->GetAuthenticatedUsername().empty())
+    if (manager && manager->IsAuthenticated())
       signed_in_profiles_count++;
   }
   UpdateInitialSigninStatus(opened_profiles_count, signed_in_profiles_count);

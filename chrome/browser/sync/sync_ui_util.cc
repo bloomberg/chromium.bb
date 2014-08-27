@@ -140,7 +140,7 @@ MessageType GetStatusInfo(ProfileSyncService* service,
 
   MessageType result_type(SYNCED);
 
-  if (signin.GetAuthenticatedUsername().empty())
+  if (!signin.IsAuthenticated())
     return PRE_SYNCED;
 
   if (!service || service->IsManaged() || service->HasSyncSetupCompleted() ||
@@ -265,7 +265,7 @@ MessageType GetStatusInfo(ProfileSyncService* service,
       } else if (status_label) {
         status_label->assign(l10n_util::GetStringUTF16(IDS_SYNC_SETUP_ERROR));
       }
-    } else if (!signin.GetAuthenticatedUsername().empty()) {
+    } else if (signin.IsAuthenticated()) {
       // The user is signed in, but sync has been stopped.
       if (status_label) {
         base::string16 label = l10n_util::GetStringFUTF16(

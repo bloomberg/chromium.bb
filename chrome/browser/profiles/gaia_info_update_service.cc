@@ -49,7 +49,7 @@ void GAIAInfoUpdateService::Update() {
   // The user must be logged in.
   SigninManagerBase* signin_manager =
       SigninManagerFactory::GetForProfile(profile_);
-  if (signin_manager->GetAuthenticatedAccountId().empty())
+  if (!signin_manager->IsAuthenticated())
     return;
 
   if (profile_image_downloader_)

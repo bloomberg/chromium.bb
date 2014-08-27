@@ -312,7 +312,7 @@ void AccountReconcilor::UnregisterWithTokenService() {
 }
 
 bool AccountReconcilor::IsProfileConnected() {
-  return !signin_manager_->GetAuthenticatedUsername().empty();
+  return signin_manager_->IsAuthenticated();
 }
 
 void AccountReconcilor::OnCookieChanged(const net::CanonicalCookie* cookie) {
@@ -531,7 +531,7 @@ void AccountReconcilor::ContinueReconcileActionAfterGetGaiaAccounts(
 }
 
 void AccountReconcilor::ValidateAccountsFromTokenService() {
-  primary_account_ = signin_manager_->GetAuthenticatedUsername();
+  primary_account_ = signin_manager_->GetAuthenticatedAccountId();
   DCHECK(!primary_account_.empty());
 
   chrome_accounts_ = token_service_->GetAccounts();

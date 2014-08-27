@@ -153,7 +153,7 @@ void OneClickSigninSyncStarter::ConfirmSignin(const std::string& oauth_token) {
   SigninManager* signin = SigninManagerFactory::GetForProfile(profile_);
   // If this is a new signin (no authenticated username yet) try loading
   // policy for this user now, before any signed in services are initialized.
-  if (signin->GetAuthenticatedUsername().empty()) {
+  if (!signin->IsAuthenticated()) {
 #if defined(ENABLE_CONFIGURATION_POLICY)
     policy::UserPolicySigninService* policy_service =
         policy::UserPolicySigninServiceFactory::GetForProfile(profile_);
@@ -302,8 +302,8 @@ void OneClickSigninSyncStarter::CompleteInitForNewProfile(
       SigninManager* new_signin_manager =
           SigninManagerFactory::GetForProfile(new_profile);
       DCHECK(!old_signin_manager->GetUsernameForAuthInProgress().empty());
-      DCHECK(old_signin_manager->GetAuthenticatedUsername().empty());
-      DCHECK(new_signin_manager->GetAuthenticatedUsername().empty());
+      DCHECK(!old_signin_manager->IsAuthenticated());
+      DCHECK(!new_signin_manager->IsAuthenticated());
       DCHECK(!dm_token_.empty());
       DCHECK(!client_id_.empty());
 

@@ -297,7 +297,7 @@ void PrivetNotificationService::Start() {
       SigninManagerFactory::GetForProfileIfExists(
           Profile::FromBrowserContext(profile_));
 
-  if (!signin_manager || signin_manager->GetAuthenticatedUsername().empty())
+  if (!signin_manager || !signin_manager->IsAuthenticated())
     return;
 #endif
 

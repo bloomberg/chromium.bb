@@ -124,11 +124,8 @@ std::vector<base::string16> SigninGlobalError::GetBubbleViewMessages() {
   // If the user isn't signed in, no need to display an error bubble.
   SigninManagerBase* signin_manager =
       SigninManagerFactory::GetForProfileIfExists(profile_);
-  if (signin_manager) {
-    std::string username = signin_manager->GetAuthenticatedUsername();
-    if (username.empty())
+  if (signin_manager && !signin_manager->IsAuthenticated())
       return messages;
-  }
 
   if (!error_controller_->HasError())
     return messages;

@@ -311,7 +311,7 @@ void ShowBrowserSignin(Browser* browser, signin::Source source) {
       SigninManagerFactory::GetForProfile(original_profile);
   DCHECK(manager->IsSigninAllowed());
   // If we're signed in, just show settings.
-  if (!manager->GetAuthenticatedUsername().empty()) {
+  if (manager->IsAuthenticated()) {
     ShowSettings(browser);
   } else {
     // If the browser's profile is an incognito profile, make sure to use

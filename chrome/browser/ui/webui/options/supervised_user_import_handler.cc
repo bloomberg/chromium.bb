@@ -220,7 +220,7 @@ bool SupervisedUserImportHandler::IsAccountConnected() const {
   Profile* profile = Profile::FromWebUI(web_ui());
   SigninManagerBase* signin_manager =
       SigninManagerFactory::GetForProfile(profile);
-  return signin_manager && !signin_manager->GetAuthenticatedUsername().empty();
+  return signin_manager && signin_manager->IsAuthenticated();
 }
 
 bool SupervisedUserImportHandler::HasAuthError() const {

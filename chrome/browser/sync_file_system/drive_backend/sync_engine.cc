@@ -274,8 +274,7 @@ void SyncEngine::Reset() {
 void SyncEngine::Initialize() {
   Reset();
 
-  if (!signin_manager_ ||
-      signin_manager_->GetAuthenticatedAccountId().empty())
+  if (!signin_manager_ || !signin_manager_->IsAuthenticated())
     return;
 
   DCHECK(drive_service_factory_);
@@ -380,8 +379,7 @@ void SyncEngine::RegisterOrigin(const GURL& origin,
   if (!sync_worker_) {
     // TODO(tzik): Record |origin| and retry the registration after late
     // sign-in.  Then, return SYNC_STATUS_OK.
-    if (!signin_manager_ ||
-        signin_manager_->GetAuthenticatedAccountId().empty())
+    if (!signin_manager_ || !signin_manager_->IsAuthenticated())
       callback.Run(SYNC_STATUS_AUTHENTICATION_FAILED);
     else
       callback.Run(SYNC_STATUS_ABORT);

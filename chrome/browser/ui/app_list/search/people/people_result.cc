@@ -152,7 +152,7 @@ void PeopleResult::OpenChat() {
   SigninManagerBase* signin_manager =
       SigninManagerFactory::GetInstance()->GetForProfile(profile_);
   DCHECK(signin_manager);
-  request.from = signin_manager->GetAuthenticatedAccountId();
+  request.from = signin_manager->GetAuthenticatedUsername();
 
   // to: list of users with whom to start this hangout is with.
   linked_ptr<User> target(new User());

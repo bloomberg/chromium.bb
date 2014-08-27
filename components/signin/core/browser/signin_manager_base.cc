@@ -96,6 +96,10 @@ void SigninManagerBase::clear_authenticated_username() {
   authenticated_username_.clear();
 }
 
+bool SigninManagerBase::IsAuthenticated() const {
+  return !GetAuthenticatedAccountId().empty();
+}
+
 bool SigninManagerBase::AuthInProgress() const {
   // SigninManagerBase never kicks off auth processes itself.
   return false;

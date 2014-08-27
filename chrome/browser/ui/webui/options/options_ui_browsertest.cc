@@ -285,7 +285,7 @@ IN_PROC_BROWSER_TEST_F(OptionsUIBrowserTest, VerifyUnmanagedSignout) {
   sign_out_waiter.Wait();
 
   EXPECT_TRUE(browser()->profile()->GetProfileName() != user);
-  EXPECT_TRUE(signin->GetAuthenticatedUsername().empty());
+  EXPECT_FALSE(signin->IsAuthenticated());
 }
 
 // Regression test for http://crbug.com/301436, excluded on Chrome OS because

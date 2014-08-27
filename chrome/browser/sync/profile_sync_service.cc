@@ -2541,10 +2541,7 @@ SigninManagerBase* ProfileSyncService::signin() const {
 void ProfileSyncService::UnsuppressAndStart() {
   DCHECK(profile_);
   sync_prefs_.SetStartSuppressed(false);
-  // Set username in SigninManager, as SigninManager::OnGetUserInfoSuccess
-  // is never called for some clients.
-  if (signin_.get() &&
-      signin_->GetOriginal()->GetAuthenticatedUsername().empty()) {
+  if (signin_.get() && !signin_->GetOriginal()->IsAuthenticated()) {
     signin_->GetOriginal()->SetAuthenticatedUsername(
         profile_->GetPrefs()->GetString(prefs::kGoogleServicesUsername));
   }

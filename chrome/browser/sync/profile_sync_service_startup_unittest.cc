@@ -215,7 +215,7 @@ class ProfileSyncServiceStartupCrosTest : public ProfileSyncServiceStartupTest {
     signin->SetAuthenticatedUsername("test_user@gmail.com");
     ProfileOAuth2TokenService* oauth2_token_service =
         ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
-    EXPECT_FALSE(signin->GetAuthenticatedUsername().empty());
+    EXPECT_TRUE(signin->IsAuthenticated());
     return new TestProfileSyncServiceNoBackup(
         scoped_ptr<ProfileSyncComponentsFactory>(
             new ProfileSyncComponentsFactoryMock()),

@@ -165,7 +165,7 @@ class SigninManagerTest : public testing::Test {
   }
 
   void ExpectSignInWithRefreshTokenSuccess() {
-    EXPECT_FALSE(manager_->GetAuthenticatedUsername().empty());
+    EXPECT_TRUE(manager_->IsAuthenticated());
 
     ProfileOAuth2TokenService* token_service =
         ProfileOAuth2TokenServiceFactory::GetForProfile(profile());
@@ -195,7 +195,7 @@ class SigninManagerTest : public testing::Test {
 
 TEST_F(SigninManagerTest, SignInWithRefreshToken) {
   SetUpSigninManagerAsService();
-  EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
+  EXPECT_FALSE(manager_->IsAuthenticated());
 
   manager_->StartSignInWithRefreshToken(
       "rt1",
@@ -214,7 +214,7 @@ TEST_F(SigninManagerTest, SignInWithRefreshToken) {
 
 TEST_F(SigninManagerTest, SignInWithRefreshTokenCallbackComplete) {
   SetUpSigninManagerAsService();
-  EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
+  EXPECT_FALSE(manager_->IsAuthenticated());
 
   // Since the password is empty, must verify the gaia cookies first.
   SigninManager::OAuthTokenFetchedCallback callback =
@@ -239,25 +239,25 @@ TEST_F(SigninManagerTest, SignOut) {
       "password",
       SigninManager::OAuthTokenFetchedCallback());
   manager_->SignOut(signin_metrics::SIGNOUT_TEST);
-  EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
+  EXPECT_FALSE(manager_->IsAuthenticated());
   // Should not be persisted anymore
   ShutDownManager();
   CreateNakedSigninManager();
   manager_->Initialize(NULL);
-  EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
+  EXPECT_FALSE(manager_->IsAuthenticated());
 }
 
 TEST_F(SigninManagerTest, SignOutWhileProhibited) {
   SetUpSigninManagerAsService();
-  EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
+  EXPECT_FALSE(manager_->IsAuthenticated());
 
   manager_->SetAuthenticatedUsername("user@gmail.com");
   manager_->ProhibitSignout(true);
   manager_->SignOut(signin_metrics::SIGNOUT_TEST);
-  EXPECT_FALSE(manager_->GetAuthenticatedUsername().empty());
+  EXPECT_TRUE(manager_->IsAuthenticated());
   manager_->ProhibitSignout(false);
   manager_->SignOut(signin_metrics::SIGNOUT_TEST);
-  EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
+  EXPECT_FALSE(manager_->IsAuthenticated());
 }
 
 TEST_F(SigninManagerTest, TestIsWebBasedSigninFlowURL) {

@@ -1389,8 +1389,7 @@ BrowserOptionsHandler::GetSyncStateDictionary() {
   sync_status->SetBoolean("hasError", status_has_error);
 
   sync_status->SetBoolean("managed", service && service->IsManaged());
-  sync_status->SetBoolean("signedIn",
-                          !signin->GetAuthenticatedUsername().empty());
+  sync_status->SetBoolean("signedIn", signin->IsAuthenticated());
   sync_status->SetBoolean("hasUnrecoverableError",
                           service && service->HasUnrecoverableError());
 

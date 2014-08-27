@@ -99,7 +99,7 @@ bool ShouldShowPromo(Profile* profile) {
   SigninManager* signin = SigninManagerFactory::GetForProfile(
       profile->GetOriginalProfile());
   return !signin->AuthInProgress() && signin->IsSigninAllowed() &&
-      signin->GetAuthenticatedUsername().empty();
+      !signin->IsAuthenticated();
 #endif
 }
 

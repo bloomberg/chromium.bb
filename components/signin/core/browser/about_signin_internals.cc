@@ -165,7 +165,7 @@ void AboutSigninInternals::RefreshSigninPrefs() {
   // (as seen in the AboutSigninInternalsFactory) the SigninManager can have
   // the AuthenticatedUsername set before AboutSigninInternals can observe it.
   // For that scenario, read the AuthenticatedUsername if it exists.
-  if (!signin_manager_->GetAuthenticatedUsername().empty()) {
+  if (signin_manager_->IsAuthenticated()) {
     signin_status_.untimed_signin_fields[USERNAME] =
         signin_manager_->GetAuthenticatedUsername();
   }

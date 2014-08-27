@@ -100,6 +100,9 @@ class SigninManagerBase : public KeyedService {
   // (by platform / depending on StartBehavior). Bug 88109.
   void SetAuthenticatedUsername(const std::string& username);
 
+  // Returns true if there is an authenticated user.
+  bool IsAuthenticated() const;
+
   // Returns true if there's a signin in progress.
   virtual bool AuthInProgress() const;
 

@@ -310,8 +310,8 @@ void SyncSetupHandler::GetStaticLocalizedValues(
 void SyncSetupHandler::DisplayConfigureSync(bool show_advanced,
                                             bool passphrase_failed) {
   // Should never call this when we are not signed in.
-  DCHECK(!SigninManagerFactory::GetForProfile(
-      GetProfile())->GetAuthenticatedUsername().empty());
+  DCHECK(SigninManagerFactory::GetForProfile(
+      GetProfile())->IsAuthenticated());
   ProfileSyncService* service = GetSyncService();
   DCHECK(service);
   if (!service->sync_initialized()) {
@@ -520,9 +520,8 @@ void SyncSetupHandler::DisplayGaiaLoginInNewTabOrWindow() {
   // re-auth scenario, and we need to ensure that the user signs in with the
   // same email address.
   GURL url;
-  std::string email = SigninManagerFactory::GetForProfile(
-      browser->profile())->GetAuthenticatedUsername();
-  if (!email.empty()) {
+  if (SigninManagerFactory::GetForProfile(
+      browser->profile())->IsAuthenticated()) {
     UMA_HISTOGRAM_ENUMERATION("Signin.Reauth",
                               signin::HISTOGRAM_SHOWN,
                               signin::HISTOGRAM_MAX);
@@ -768,7 +767,7 @@ void SyncSetupHandler::HandleShowSetupUI(const base::ListValue* args) {
 
   SigninManagerBase* signin =
       SigninManagerFactory::GetForProfile(GetProfile());
-  if (signin->GetAuthenticatedUsername().empty()) {
+  if (!signin->IsAuthenticated()) {
     // For web-based signin, the signin page is not displayed in an overlay
     // on the settings page. So if we get here, it must be due to the user
     // cancelling signin (by reloading the sync settings page during initial
@@ -806,8 +805,8 @@ void SyncSetupHandler::HandleDoSignOutOnAuthError(const base::ListValue* args) {
 #if !defined(OS_CHROMEOS)
 void SyncSetupHandler::HandleStartSignin(const base::ListValue* args) {
   // Should only be called if the user is not already signed in.
-  DCHECK(SigninManagerFactory::GetForProfile(GetProfile())->
-      GetAuthenticatedUsername().empty());
+  DCHECK(!SigninManagerFactory::GetForProfile(GetProfile())->
+      IsAuthenticated());
   OpenSyncSetup();
 }
 
@@ -886,8 +885,7 @@ void SyncSetupHandler::OpenSyncSetup() {
 
   // There are several different UI flows that can bring the user here:
   // 1) Signin promo.
-  // 2) Normal signin through settings page (GetAuthenticatedUsername() is
-  //    empty).
+  // 2) Normal signin through settings page (IsAuthenticated() is false).
   // 3) Previously working credentials have expired.
   // 4) User is signed in, but has stopped sync via the google dashboard, and
   //    signout is prohibited by policy so we need to force a re-auth.
@@ -900,7 +898,7 @@ void SyncSetupHandler::OpenSyncSetup() {
   SigninManagerBase* signin =
       SigninManagerFactory::GetForProfile(GetProfile());
 
-  if (signin->GetAuthenticatedUsername().empty() ||
+  if (!signin->IsAuthenticated() ||
       ProfileOAuth2TokenServiceFactory::GetForProfile(GetProfile())->
           signin_error_controller()->HasError()) {
     // User is not logged in (cases 1-2), or login has been specially requested

@@ -19,7 +19,7 @@ namespace {
 
 bool IsUserSignedin(Profile* profile) {
   SigninManagerBase* signin = SigninManagerFactory::GetForProfile(profile);
-  return signin && !signin->GetAuthenticatedUsername().empty();
+  return signin && signin->IsAuthenticated();
 }
 
 }  // namespace

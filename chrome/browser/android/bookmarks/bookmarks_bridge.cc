@@ -491,7 +491,7 @@ bool BookmarksBridge::IsFolderAvailable(
       profile_->GetOriginalProfile());
   return (folder->type() != BookmarkNode::BOOKMARK_BAR &&
       folder->type() != BookmarkNode::OTHER_NODE) ||
-      (signin && !signin->GetAuthenticatedUsername().empty());
+      (signin && signin->IsAuthenticated());
 }
 
 void BookmarksBridge::NotifyIfDoneLoading() {

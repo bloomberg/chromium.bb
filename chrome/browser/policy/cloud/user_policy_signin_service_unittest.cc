@@ -212,7 +212,7 @@ class UserPolicySigninServiceTest : public testing::Test {
 
   virtual void AddProfile() {
     // For this test, the user should not be signed in yet.
-    DCHECK(signin_manager_->GetAuthenticatedUsername().empty());
+    DCHECK(!signin_manager_->IsAuthenticated());
 
     // Initializing UserPolicySigninService while the user is not signed in
     // should result in the store being cleared to remove any lingering policy.
@@ -394,8 +394,8 @@ class UserPolicySigninServiceSignedInTest : public UserPolicySigninServiceTest {
 
 TEST_F(UserPolicySigninServiceTest, InitWhileSignedOut) {
   // Make sure user is not signed in.
-  ASSERT_TRUE(SigninManagerFactory::GetForProfile(profile_.get())->
-      GetAuthenticatedUsername().empty());
+  ASSERT_FALSE(SigninManagerFactory::GetForProfile(profile_.get())->
+      IsAuthenticated());
 
   // UserCloudPolicyManager should not be initialized.
   ASSERT_FALSE(manager_->core()->service());

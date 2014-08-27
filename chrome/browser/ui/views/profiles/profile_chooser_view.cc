@@ -744,12 +744,11 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
     account_id_to_remove_.clear();
     ShowView(profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT, avatar_menu_.get());
   } else if (sender == gaia_signin_cancel_button_) {
-    std::string primary_account =
-        SigninManagerFactory::GetForProfile(browser_->profile())->
-            GetAuthenticatedAccountId();
     // The account management view is only available with the
     // --enable-account-consistency flag.
-    bool account_management_available = !primary_account.empty() &&
+    bool account_management_available =
+        SigninManagerFactory::GetForProfile(browser_->profile())->
+            IsAuthenticated() &&
         switches::IsEnableAccountConsistency();
     ShowView(account_management_available ?
         profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT :

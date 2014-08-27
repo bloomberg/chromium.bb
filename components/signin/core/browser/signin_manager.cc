@@ -131,7 +131,7 @@ void SigninManager::StartSignInWithRefreshToken(
     const std::string& username,
     const std::string& password,
     const OAuthTokenFetchedCallback& callback) {
-  DCHECK(GetAuthenticatedUsername().empty() ||
+  DCHECK(!IsAuthenticated() ||
          gaia::AreEmailsSame(username, GetAuthenticatedUsername()));
 
   if (!PrepareForSignin(SIGNIN_TYPE_WITH_REFRESH_TOKEN, username, password))
@@ -178,7 +178,7 @@ void SigninManager::SignOut(
   DCHECK(IsInitialized());
 
   signin_metrics::LogSignout(signout_source_metric);
-  if (GetAuthenticatedUsername().empty()) {
+  if (!IsAuthenticated()) {
     if (AuthInProgress()) {
       // If the user is in the process of signing in, then treat a call to
       // SignOut as a cancellation request.
@@ -269,7 +269,7 @@ void SigninManager::Shutdown() {
 }
 
 void SigninManager::OnGoogleServicesUsernamePatternChanged() {
-  if (!GetAuthenticatedUsername().empty() &&
+  if (IsAuthenticated() &&
       !IsAllowedUsername(GetAuthenticatedUsername())) {
     // Signed in user is invalid according to the current policy so sign
     // the user out.
@@ -351,7 +351,7 @@ void SigninManager::CompletePendingSignin() {
   }
 
   DCHECK(!temp_refresh_token_.empty());
-  DCHECK(!GetAuthenticatedUsername().empty());
+  DCHECK(IsAuthenticated());
   token_service_->UpdateCredentials(GetAuthenticatedUsername(),
                                     temp_refresh_token_);
   temp_refresh_token_.clear();
