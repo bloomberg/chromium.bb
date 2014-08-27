@@ -2897,7 +2897,7 @@ public class ContentViewCore
     }
 
     /**
-     * Return whether or not we should set accessibility focus on page load.
+     * Sets whether or not we should set accessibility focus on page load.
      * This only applies if an accessibility service like TalkBack is running.
      * This is desirable behavior for a browser window, but not for an embedded
      * WebView.
