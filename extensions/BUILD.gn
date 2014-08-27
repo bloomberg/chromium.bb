@@ -14,7 +14,7 @@ group("extensions_resources") {
 }
 
 # GYP version: extensions/extensions_resources.gyp:extensions_resources
-#              (exntensions_resources action)
+#              (extensions_resources action)
 grit("extensions_resources_grd") {
   source = "extensions_resources.grd"
   outputs = [
@@ -75,6 +75,7 @@ source_set("test_support") {
     "//extensions/browser",
     "//extensions/common",
     "//extensions/common/api",
+    "//extensions/common/api:api_registration",
     "//net:test_support",
     "//testing/gmock",
     "//testing/gtest",

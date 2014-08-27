@@ -1,4 +1,4 @@
-# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -7,16 +7,16 @@
     # When including this gypi, the following variables must be set:
     #   schema_files:
     #     An array of json or idl files that comprise the api model.
-    #   cc_dir:
-    #     The directory to put the generated code in.
+    #   impl_dir_:
+    #     The root path of API implementations; also used for the
+    #     output location. (N.B. Named as such to prevent gyp from
+    #     expanding it as a relative path.)
     #   root_namespace:
     #     A Python string substituion pattern used to generate the C++
     #     namespace for each API. Use %(namespace)s to replace with the API
     #     namespace, like "toplevel::%(namespace)s_api".
     #
     # Functions and namespaces can be excluded by setting "nocompile" to true.
-    # The default root path of API implementation sources is
-    # chrome/browser/extensions/api and can be overridden by setting "impl_dir".
     'api_gen_dir': '<(DEPTH)/tools/json_schema_compiler',
     'api_gen': '<(api_gen_dir)/compiler.py',
     'generator_files': [
@@ -35,15 +35,16 @@
   },
   'actions': [
     {
-      'action_name': 'genapi_bundle_schema',
+      # GN version: //extensions/generated_extensions_api.gni
+      'action_name': 'genapi_bundle_registration',
       'inputs': [
         '<@(generator_files)',
         '<@(schema_files)',
         '<@(non_compiled_schema_files)',
       ],
       'outputs': [
-        '<(SHARED_INTERMEDIATE_DIR)/<(cc_dir)/generated_schemas.h',
-        '<(SHARED_INTERMEDIATE_DIR)/<(cc_dir)/generated_schemas.cc',
+        '<(SHARED_INTERMEDIATE_DIR)/<(impl_dir_)/generated_api_registration.h',
+        '<(SHARED_INTERMEDIATE_DIR)/<(impl_dir_)/generated_api_registration.cc',
       ],
       'action': [
         'python',
@@ -51,11 +52,12 @@
         '--root=<(DEPTH)',
         '--destdir=<(SHARED_INTERMEDIATE_DIR)',
         '--namespace=<(root_namespace)',
-        '--generator=cpp-bundle-schema',
+        '--generator=cpp-bundle-registration',
+        '--impl-dir=<(impl_dir_)',
         '<@(schema_files)',
         '<@(non_compiled_schema_files)',
       ],
-      'message': 'Generating C++ API bundle code for schemas',
+      'message': 'Generating C++ API bundle code for function registration',
       'process_outputs_as_sources': 1,
       # Avoid running MIDL compiler on IDL input files.
       'explicit_idl_action': 1,

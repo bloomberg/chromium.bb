@@ -5,14 +5,16 @@
 {
   'targets': [
     {
-      'target_name': 'shell_api',
+      'target_name': 'shell_api_registration',
       'type': 'static_library',
       # TODO(jschuh): http://crbug.com/167187 size_t -> int
       'msvs_disabled_warnings': [ 4267 ],
       'includes': [
-        '../../../../build/json_schema_bundle_compile.gypi',
-        '../../../../build/json_schema_compile.gypi',
-        'schemas.gypi',
+        '../../../../build/json_schema_bundle_registration_compile.gypi',
+        '../../common/api/schemas.gypi',
+      ],
+      'dependencies': [
+        '<(DEPTH)/skia/skia.gyp:skia',
       ],
     },
   ],

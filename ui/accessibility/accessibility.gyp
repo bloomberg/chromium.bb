@@ -97,7 +97,6 @@
       ],
       'msvs_disabled_warnings': [ 4267 ],
       'includes': [
-        '../../build/json_schema_bundle_compile.gypi',
         '../../build/json_schema_compile.gypi',
       ],
       'variables': {

@@ -183,8 +183,9 @@ class _APICCGenerator(object):
     c = code.Code()
     c.Append(cpp_util.CHROMIUM_LICENSE)
     c.Append()
-    c.Append('#include "%s"' % (os.path.join(self._bundle._source_file_dir,
-                                             'generated_api.h')))
+    c.Append('#include "%s"' % (
+        os.path.join(self._bundle._impl_dir,
+                     'generated_api_registration.h')))
     c.Append()
     for namespace in self._bundle._model.namespaces.values():
       namespace_name = namespace.unix_name.replace("experimental_", "")

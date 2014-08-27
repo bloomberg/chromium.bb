@@ -2914,6 +2914,7 @@
           'dependencies': [
             'apps',
             'browser/performance_monitor/performance_monitor.gyp:performance_monitor',
+            'browser/extensions/api/api_registration.gyp:chrome_api_registration',
             'common/extensions/api/api.gyp:chrome_api',
             'debugger',
             'installer_util',

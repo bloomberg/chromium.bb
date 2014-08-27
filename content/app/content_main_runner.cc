@@ -125,8 +125,11 @@ extern int UtilityMain(const MainFunctionParams&);
 
 namespace content {
 
+#if !defined(CHROME_MULTIPLE_DLL_CHILD)
 base::LazyInstance<ContentBrowserClient>
     g_empty_content_browser_client = LAZY_INSTANCE_INITIALIZER;
+#endif  //  !CHROME_MULTIPLE_DLL_CHILD
+
 #if !defined(OS_IOS) && !defined(CHROME_MULTIPLE_DLL_BROWSER)
 base::LazyInstance<ContentPluginClient>
     g_empty_content_plugin_client = LAZY_INSTANCE_INITIALIZER;
@@ -242,12 +245,14 @@ class ContentClientInitializer {
   static void Set(const std::string& process_type,
                   ContentMainDelegate* delegate) {
     ContentClient* content_client = GetContentClient();
+#if !defined(CHROME_MULTIPLE_DLL_CHILD)
     if (process_type.empty()) {
       if (delegate)
         content_client->browser_ = delegate->CreateContentBrowserClient();
       if (!content_client->browser_)
         content_client->browser_ = &g_empty_content_browser_client.Get();
     }
+#endif  // !CHROME_MULTIPLE_DLL_CHILD
 
 #if !defined(OS_IOS) && !defined(CHROME_MULTIPLE_DLL_BROWSER)
     if (process_type == switches::kPluginProcess ||
@@ -349,7 +354,7 @@ int RunZygote(const MainFunctionParams& main_function_params,
 
 #if !defined(OS_IOS)
 static void RegisterMainThreadFactories() {
-#if !defined(CHROME_MULTIPLE_DLL_BROWSER)
+#if !defined(CHROME_MULTIPLE_DLL_BROWSER) && !defined(CHROME_MULTIPLE_DLL_CHILD)
   UtilityProcessHostImpl::RegisterUtilityMainThreadFactory(
       CreateInProcessUtilityThread);
   RenderProcessHostImpl::RegisterRendererMainThreadFactory(
@@ -366,7 +371,7 @@ static void RegisterMainThreadFactories() {
     LOG(FATAL) <<
         "--in-process-gpu is not supported in chrome multiple dll browser.";
   }
-#endif
+#endif  // !CHROME_MULTIPLE_DLL_BROWSER && !CHROME_MULTIPLE_DLL_CHILD
 }
 
 // Run the FooMain() for a given process type.
