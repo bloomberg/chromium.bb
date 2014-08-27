@@ -21,39 +21,6 @@ namespace webcrypto {
 
 namespace {
 
-bool CreatePublicKeyAlgorithm(const blink::WebCryptoAlgorithm& algorithm,
-                              SECKEYPublicKey* key,
-                              blink::WebCryptoKeyAlgorithm* key_algorithm) {
-  // TODO(eroman): What about other key types rsaPss, rsaOaep.
-  if (!key || key->keyType != rsaKey)
-    return false;
-
-  unsigned int modulus_length_bits = SECKEY_PublicKeyStrength(key) * 8;
-  CryptoData public_exponent(key->u.rsa.publicExponent.data,
-                             key->u.rsa.publicExponent.len);
-
-  switch (algorithm.paramsType()) {
-    case blink::WebCryptoAlgorithmParamsTypeRsaHashedImportParams:
-    case blink::WebCryptoAlgorithmParamsTypeRsaHashedKeyGenParams:
-      *key_algorithm = blink::WebCryptoKeyAlgorithm::createRsaHashed(
-          algorithm.id(),
-          modulus_length_bits,
-          public_exponent.bytes(),
-          public_exponent.byte_length(),
-          GetInnerHashAlgorithm(algorithm).id());
-      return true;
-    default:
-      return false;
-  }
-}
-
-bool CreatePrivateKeyAlgorithm(const blink::WebCryptoAlgorithm& algorithm,
-                               SECKEYPrivateKey* key,
-                               blink::WebCryptoKeyAlgorithm* key_algorithm) {
-  crypto::ScopedSECKEYPublicKey public_key(SECKEY_ConvertToPublicKey(key));
-  return CreatePublicKeyAlgorithm(algorithm, public_key.get(), key_algorithm);
-}
-
 #if defined(USE_NSS) && !defined(OS_CHROMEOS)
 Status ErrorRsaPrivateKeyImportNotSupported() {
   return Status::ErrorUnsupported(
@@ -95,7 +62,8 @@ Status NssSupportsRsaPrivateKeyImport() {
 #endif
 
 bool CreateRsaHashedPublicKeyAlgorithm(
-    const blink::WebCryptoAlgorithm& algorithm,
+    blink::WebCryptoAlgorithmId rsa_algorithm,
+    blink::WebCryptoAlgorithmId hash_algorithm,
     SECKEYPublicKey* key,
     blink::WebCryptoKeyAlgorithm* key_algorithm) {
   // TODO(eroman): What about other key types rsaPss, rsaOaep.
@@ -106,30 +74,25 @@ bool CreateRsaHashedPublicKeyAlgorithm(
   CryptoData public_exponent(key->u.rsa.publicExponent.data,
                              key->u.rsa.publicExponent.len);
 
-  switch (algorithm.paramsType()) {
-    case blink::WebCryptoAlgorithmParamsTypeRsaHashedImportParams:
-    case blink::WebCryptoAlgorithmParamsTypeRsaHashedKeyGenParams:
-      *key_algorithm = blink::WebCryptoKeyAlgorithm::createRsaHashed(
-          algorithm.id(),
-          modulus_length_bits,
-          public_exponent.bytes(),
-          public_exponent.byte_length(),
-          GetInnerHashAlgorithm(algorithm).id());
-      return true;
-    default:
-      return false;
-  }
+  *key_algorithm = blink::WebCryptoKeyAlgorithm::createRsaHashed(
+      rsa_algorithm,
+      modulus_length_bits,
+      public_exponent.bytes(),
+      public_exponent.byte_length(),
+      hash_algorithm);
+  return true;
 }
 
 bool CreateRsaHashedPrivateKeyAlgorithm(
-    const blink::WebCryptoAlgorithm& algorithm,
+    blink::WebCryptoAlgorithmId rsa_algorithm,
+    blink::WebCryptoAlgorithmId hash_algorithm,
     SECKEYPrivateKey* key,
     blink::WebCryptoKeyAlgorithm* key_algorithm) {
   crypto::ScopedSECKEYPublicKey public_key(SECKEY_ConvertToPublicKey(key));
   if (!public_key)
     return false;
   return CreateRsaHashedPublicKeyAlgorithm(
-      algorithm, public_key.get(), key_algorithm);
+      rsa_algorithm, hash_algorithm, public_key.get(), key_algorithm);
 }
 
 // From PKCS#1 [http://tools.ietf.org/html/rfc3447]:
@@ -425,8 +388,13 @@ Status ImportRsaPrivateKey(const blink::WebCryptoAlgorithm& algorithm,
     return Status::OperationError();
 
   blink::WebCryptoKeyAlgorithm key_algorithm;
-  if (!CreatePrivateKeyAlgorithm(algorithm, private_key.get(), &key_algorithm))
+  if (!CreateRsaHashedPrivateKeyAlgorithm(
+          algorithm.id(),
+          algorithm.rsaHashedImportParams()->hash().id(),
+          private_key.get(),
+          &key_algorithm)) {
     return Status::ErrorUnexpected();
+  }
 
   std::vector<uint8_t> pkcs8_data;
   status = ExportKeyPkcs8Nss(private_key.get(), &pkcs8_data);
@@ -511,8 +479,13 @@ Status ImportRsaPublicKey(const blink::WebCryptoAlgorithm& algorithm,
     return Status::OperationError();
 
   blink::WebCryptoKeyAlgorithm key_algorithm;
-  if (!CreatePublicKeyAlgorithm(algorithm, pubkey.get(), &key_algorithm))
+  if (!CreateRsaHashedPublicKeyAlgorithm(
+          algorithm.id(),
+          algorithm.rsaHashedImportParams()->hash().id(),
+          pubkey.get(),
+          &key_algorithm)) {
     return Status::ErrorUnexpected();
+  }
 
   std::vector<uint8_t> spki_data;
   Status status = ExportKeySpkiNss(pubkey.get(), &spki_data);
@@ -594,8 +567,13 @@ Status RsaHashedAlgorithm::GenerateKeyPair(
     return Status::OperationError();
 
   blink::WebCryptoKeyAlgorithm key_algorithm;
-  if (!CreatePublicKeyAlgorithm(algorithm, sec_public_key, &key_algorithm))
+  if (!CreateRsaHashedPublicKeyAlgorithm(
+          algorithm.id(),
+          algorithm.rsaHashedKeyGenParams()->hash().id(),
+          sec_public_key,
+          &key_algorithm)) {
     return Status::ErrorUnexpected();
+  }
 
   std::vector<uint8_t> spki_data;
   status = ExportKeySpkiNss(sec_public_key, &spki_data);
@@ -682,8 +660,12 @@ Status RsaHashedAlgorithm::ImportKeyPkcs8(
 
   blink::WebCryptoKeyAlgorithm key_algorithm;
   if (!CreateRsaHashedPrivateKeyAlgorithm(
-          algorithm, private_key.get(), &key_algorithm))
+          algorithm.id(),
+          algorithm.rsaHashedImportParams()->hash().id(),
+          private_key.get(),
+          &key_algorithm)) {
     return Status::ErrorUnexpected();
+  }
 
   // TODO(eroman): This is probably going to be the same as the input.
   std::vector<uint8_t> pkcs8_data;
@@ -731,8 +713,12 @@ Status RsaHashedAlgorithm::ImportKeySpki(
 
   blink::WebCryptoKeyAlgorithm key_algorithm;
   if (!CreateRsaHashedPublicKeyAlgorithm(
-          algorithm, sec_public_key.get(), &key_algorithm))
+          algorithm.id(),
+          algorithm.rsaHashedImportParams()->hash().id(),
+          sec_public_key.get(),
+          &key_algorithm)) {
     return Status::ErrorUnexpected();
+  }
 
   // TODO(eroman): This is probably going to be the same as the input.
   std::vector<uint8_t> spki_data;

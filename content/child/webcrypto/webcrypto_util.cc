@@ -135,23 +135,6 @@ base::ListValue* CreateJwkKeyOpsFromWebCryptoUsages(
   return jwk_key_ops;
 }
 
-blink::WebCryptoAlgorithm GetInnerHashAlgorithm(
-    const blink::WebCryptoAlgorithm& algorithm) {
-  DCHECK(!algorithm.isNull());
-  switch (algorithm.paramsType()) {
-    case blink::WebCryptoAlgorithmParamsTypeHmacImportParams:
-      return algorithm.hmacImportParams()->hash();
-    case blink::WebCryptoAlgorithmParamsTypeHmacKeyGenParams:
-      return algorithm.hmacKeyGenParams()->hash();
-    case blink::WebCryptoAlgorithmParamsTypeRsaHashedImportParams:
-      return algorithm.rsaHashedImportParams()->hash();
-    case blink::WebCryptoAlgorithmParamsTypeRsaHashedKeyGenParams:
-      return algorithm.rsaHashedKeyGenParams()->hash();
-    default:
-      return blink::WebCryptoAlgorithm::createNull();
-  }
-}
-
 blink::WebCryptoAlgorithm CreateAlgorithm(blink::WebCryptoAlgorithmId id) {
   return blink::WebCryptoAlgorithm::adoptParamsAndCreate(id, NULL);
 }
