@@ -10,10 +10,10 @@
 
 #include "base/basictypes.h"
 #include "mojo/public/cpp/bindings/array.h"
+#include "mojo/services/view_manager/display_manager.h"
 #include "mojo/services/view_manager/ids.h"
 #include "mojo/services/view_manager/node.h"
 #include "mojo/services/view_manager/node_delegate.h"
-#include "mojo/services/view_manager/root_view_manager.h"
 #include "mojo/services/view_manager/view_manager_export.h"
 
 namespace ui {
@@ -26,7 +26,7 @@ class ApplicationConnection;
 
 namespace service {
 
-class RootViewManagerDelegate;
+class DisplayManagerDelegate;
 class ViewManagerServiceImpl;
 
 // RootNodeManager is responsible for managing the set of
@@ -67,7 +67,7 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager : public NodeDelegate {
   };
 
   RootNodeManager(ApplicationConnection* app_connection,
-                  RootViewManagerDelegate* view_manager_delegate,
+                  DisplayManagerDelegate* display_manager_delegate,
                   const Callback<void()>& native_viewport_closed_callback);
   virtual ~RootNodeManager();
 
@@ -188,7 +188,7 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager : public NodeDelegate {
   // Set of ViewManagerServiceImpls.
   ConnectionMap connection_map_;
 
-  RootViewManager root_view_manager_;
+  DisplayManager display_manager_;
 
   // Root node.
   scoped_ptr<Node> root_;

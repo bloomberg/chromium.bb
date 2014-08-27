@@ -11,7 +11,7 @@
 #include "base/memory/scoped_vector.h"
 #include "mojo/public/cpp/application/application_connection.h"
 #include "mojo/public/cpp/application/application_delegate.h"
-#include "mojo/services/view_manager/root_view_manager_delegate.h"
+#include "mojo/services/view_manager/display_manager_delegate.h"
 #include "mojo/services/view_manager/view_manager_export.h"
 
 namespace mojo {
@@ -22,7 +22,7 @@ class ViewManagerInitServiceImpl;
 
 // State shared between all ViewManagerInitService impls.
 class MOJO_VIEW_MANAGER_EXPORT ViewManagerInitServiceContext
-    : public RootViewManagerDelegate {
+    : public DisplayManagerDelegate {
  public:
   ViewManagerInitServiceContext();
   virtual ~ViewManagerInitServiceContext();
@@ -52,8 +52,8 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerInitServiceContext
     Callback<void(bool)> callback;
   };
 
-  // RootViewManagerDelegate overrides:
-  virtual void OnRootViewManagerWindowTreeHostCreated() OVERRIDE;
+  // DisplayManagerDelegate overrides:
+  virtual void OnDisplayManagerWindowTreeHostCreated() OVERRIDE;
 
   void OnNativeViewportDeleted();
 

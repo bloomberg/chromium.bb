@@ -39,14 +39,14 @@ RootNodeManager::Context::~Context() {
 
 RootNodeManager::RootNodeManager(
     ApplicationConnection* app_connection,
-    RootViewManagerDelegate* view_manager_delegate,
+    DisplayManagerDelegate* display_manager_delegate,
     const Callback<void()>& native_viewport_closed_callback)
     : app_connection_(app_connection),
       next_connection_id_(1),
-      root_view_manager_(app_connection,
-                         this,
-                         view_manager_delegate,
-                         native_viewport_closed_callback),
+      display_manager_(app_connection,
+                       this,
+                       display_manager_delegate,
+                       native_viewport_closed_callback),
       root_(new Node(this, RootNodeId())),
       current_change_(NULL) {
 }
@@ -244,7 +244,7 @@ void RootNodeManager::OnNodeDestroyed(const Node* node) {
 void RootNodeManager::OnNodeHierarchyChanged(const Node* node,
                                              const Node* new_parent,
                                              const Node* old_parent) {
-  if (!root_view_manager_.in_setup())
+  if (!display_manager_.in_setup())
     ProcessNodeHierarchyChanged(node, new_parent, old_parent);
 }
 
@@ -256,12 +256,12 @@ void RootNodeManager::OnNodeBoundsChanged(const Node* node,
     return;
 
   // TODO(sky): optimize this.
-  root_view_manager_.SchedulePaint(node->parent(), old_bounds);
-  root_view_manager_.SchedulePaint(node->parent(), new_bounds);
+  display_manager_.SchedulePaint(node->parent(), old_bounds);
+  display_manager_.SchedulePaint(node->parent(), new_bounds);
 }
 
 void RootNodeManager::OnNodeBitmapChanged(const Node* node) {
-  root_view_manager_.SchedulePaint(node, gfx::Rect(node->bounds().size()));
+  display_manager_.SchedulePaint(node, gfx::Rect(node->bounds().size()));
 }
 
 }  // namespace service

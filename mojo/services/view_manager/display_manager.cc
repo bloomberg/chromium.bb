@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/services/view_manager/root_view_manager.h"
+#include "mojo/services/view_manager/display_manager.h"
 
 #include "base/auto_reset.h"
 #include "base/scoped_observer.h"
 #include "mojo/public/cpp/application/application_connection.h"
 #include "mojo/services/public/interfaces/gpu/gpu.mojom.h"
+#include "mojo/services/view_manager/display_manager_delegate.h"
 #include "mojo/services/view_manager/root_node_manager.h"
-#include "mojo/services/view_manager/root_view_manager_delegate.h"
 #include "mojo/services/view_manager/screen_impl.h"
 #include "mojo/services/view_manager/window_tree_host_impl.h"
 #include "ui/aura/client/default_capture_client.h"
@@ -54,7 +54,7 @@ void PaintNodeTree(gfx::Canvas* canvas,
 
 }  // namespace
 
-class RootViewManager::RootWindowDelegateImpl : public aura::WindowDelegate {
+class DisplayManager::RootWindowDelegateImpl : public aura::WindowDelegate {
  public:
   explicit RootWindowDelegateImpl(const Node* root_node)
       : root_node_(root_node) {}
@@ -157,10 +157,10 @@ class WindowTreeClientImpl : public aura::client::WindowTreeClient {
   DISALLOW_COPY_AND_ASSIGN(WindowTreeClientImpl);
 };
 
-RootViewManager::RootViewManager(
+DisplayManager::DisplayManager(
     ApplicationConnection* app_connection,
     RootNodeManager* root_node,
-    RootViewManagerDelegate* delegate,
+    DisplayManagerDelegate* delegate,
     const Callback<void()>& native_viewport_closed_callback)
     : delegate_(delegate),
       root_node_manager_(root_node),
@@ -179,24 +179,24 @@ RootViewManager::RootViewManager(
       viewport.Pass(),
       gpu_service.Pass(),
       gfx::Rect(800, 600),
-      base::Bind(&RootViewManager::OnCompositorCreated, base::Unretained(this)),
+      base::Bind(&DisplayManager::OnCompositorCreated, base::Unretained(this)),
       native_viewport_closed_callback,
       base::Bind(&RootNodeManager::DispatchNodeInputEventToWindowManager,
                  base::Unretained(root_node_manager_))));
 }
 
-RootViewManager::~RootViewManager() {
+DisplayManager::~DisplayManager() {
   window_tree_client_.reset();
   window_tree_host_.reset();
   gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, NULL);
 }
 
-void RootViewManager::SchedulePaint(const Node* node, const gfx::Rect& bounds) {
+void DisplayManager::SchedulePaint(const Node* node, const gfx::Rect& bounds) {
   if (root_window_)
     root_window_->SchedulePaintInRect(ConvertRectToRoot(node, bounds));
 }
 
-void RootViewManager::OnCompositorCreated() {
+void DisplayManager::OnCompositorCreated() {
   base::AutoReset<bool> resetter(&in_setup_, true);
   window_tree_host_->InitHost();
 
@@ -221,7 +221,7 @@ void RootViewManager::OnCompositorCreated() {
 
   window_tree_host_->Show();
 
-  delegate_->OnRootViewManagerWindowTreeHostCreated();
+  delegate_->OnDisplayManagerWindowTreeHostCreated();
 }
 
 }  // namespace service

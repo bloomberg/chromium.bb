@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_SERVICES_VIEW_MANAGER_ROOT_VIEW_MANAGER_H_
-#define MOJO_SERVICES_VIEW_MANAGER_ROOT_VIEW_MANAGER_H_
+#ifndef MOJO_SERVICES_VIEW_MANAGER_DISPLAY_MANAGER_H_
+#define MOJO_SERVICES_VIEW_MANAGER_DISPLAY_MANAGER_H_
 
 #include <map>
 
@@ -37,16 +37,16 @@ namespace service {
 
 class Node;
 class RootNodeManager;
-class RootViewManagerDelegate;
+class DisplayManagerDelegate;
 
-// RootViewManager binds the root node to an actual display.
-class MOJO_VIEW_MANAGER_EXPORT RootViewManager {
+// DisplayManager binds the root node to an actual display.
+class MOJO_VIEW_MANAGER_EXPORT DisplayManager {
  public:
-  RootViewManager(ApplicationConnection* app_connection,
+  DisplayManager(ApplicationConnection* app_connection,
                   RootNodeManager* root_node,
-                  RootViewManagerDelegate* delegate,
+                  DisplayManagerDelegate* delegate,
                   const Callback<void()>& native_viewport_closed_callback);
-  virtual ~RootViewManager();
+  virtual ~DisplayManager();
 
   // Schedules a paint for the specified region of the specified node.
   void SchedulePaint(const Node* node, const gfx::Rect& bounds);
@@ -59,7 +59,7 @@ class MOJO_VIEW_MANAGER_EXPORT RootViewManager {
 
   void OnCompositorCreated();
 
-  RootViewManagerDelegate* delegate_;
+  DisplayManagerDelegate* delegate_;
 
   RootNodeManager* root_node_manager_;
 
@@ -76,10 +76,10 @@ class MOJO_VIEW_MANAGER_EXPORT RootViewManager {
   scoped_ptr<aura::client::WindowTreeClient> window_tree_client_;
   scoped_ptr<aura::client::FocusClient> focus_client_;
 
-  DISALLOW_COPY_AND_ASSIGN(RootViewManager);
+  DISALLOW_COPY_AND_ASSIGN(DisplayManager);
 };
 
 }  // namespace service
 }  // namespace mojo
 
-#endif  // MOJO_SERVICES_VIEW_MANAGER_ROOT_VIEW_MANAGER_H_
+#endif  // MOJO_SERVICES_VIEW_MANAGER_DISPLAY_MANAGER_H_

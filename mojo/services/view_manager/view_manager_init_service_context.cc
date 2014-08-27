@@ -67,7 +67,7 @@ void ViewManagerInitServiceContext::Embed(
   MaybeEmbed();
 }
 
-void ViewManagerInitServiceContext::OnRootViewManagerWindowTreeHostCreated() {
+void ViewManagerInitServiceContext::OnDisplayManagerWindowTreeHostCreated() {
   DCHECK(!is_tree_host_ready_);
   is_tree_host_ready_ = true;
   MaybeEmbed();
