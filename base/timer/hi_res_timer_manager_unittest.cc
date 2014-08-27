@@ -14,25 +14,22 @@
 namespace base {
 
 #if defined(OS_WIN)
-// http://crbug.com/114048
-TEST(HiResTimerManagerTest, DISABLED_ToggleOnOff) {
-  base::MessageLoop loop;
+TEST(HiResTimerManagerTest, ToggleOnOff) {
+  // The power monitor creates Window to receive power notifications from
+  // Windows, which makes this test flaky if you run while the machine
+  // goes in or out of AC power.
+  base::MessageLoop loop(base::MessageLoop::TYPE_UI);
   scoped_ptr<base::PowerMonitorSource> power_monitor_source(
       new base::PowerMonitorDeviceSource());
   scoped_ptr<base::PowerMonitor> power_monitor(
       new base::PowerMonitor(power_monitor_source.Pass()));
-  HighResolutionTimerManager manager;
 
-  // At this point, we don't know if the high resolution timers are on or off,
-  // it depends on what system the tests are running on (for example, if this
-  // test is running on a laptop/battery, then the PowerMonitor would have
-  // already set the PowerState to battery power; but if we're running on a
-  // desktop, then the PowerState will be non-battery power).  Simulate a power
-  // level change to get to a deterministic state.
-  manager.OnPowerStateChange(/* on_battery */ false);
+  HighResolutionTimerManager manager;
+  // Simulate a on-AC power event to get to a known initial state.
+  manager.OnPowerStateChange(false);
 
   // Loop a few times to test power toggling.
-  for (int loop = 2; loop >= 0; --loop) {
+  for (int times = 0; times != 3; ++times) {
     // The manager has the high resolution clock enabled now.
     EXPECT_TRUE(manager.hi_res_clock_available());
     // But the Time class has it off, because it hasn't been activated.
@@ -43,12 +40,12 @@ TEST(HiResTimerManagerTest, DISABLED_ToggleOnOff) {
     EXPECT_TRUE(base::Time::IsHighResolutionTimerInUse());
 
     // Simulate a on-battery power event.
-    manager.OnPowerStateChange(/* on_battery */ true);
+    manager.OnPowerStateChange(true);
     EXPECT_FALSE(manager.hi_res_clock_available());
     EXPECT_FALSE(base::Time::IsHighResolutionTimerInUse());
 
-    // Simulate a off-battery power event.
-    manager.OnPowerStateChange(/* on_battery */ false);
+    // Back to on-AC power.
+    manager.OnPowerStateChange(false);
     EXPECT_TRUE(manager.hi_res_clock_available());
     EXPECT_TRUE(base::Time::IsHighResolutionTimerInUse());
 
