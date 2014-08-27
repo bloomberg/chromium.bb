@@ -120,7 +120,8 @@ const FieldTranslationEntry wifi_fields[] = {
     {NULL}};
 
 const FieldTranslationEntry cellular_apn_fields[] = {
-    { ::onc::cellular_apn::kName, shill::kApnProperty},
+    { ::onc::cellular_apn::kAccessPointName, shill::kApnProperty},
+    { ::onc::cellular_apn::kName, shill::kApnNameProperty},
     { ::onc::cellular_apn::kUsername, shill::kApnUsernameProperty},
     { ::onc::cellular_apn::kPassword, shill::kApnPasswordProperty},
     { ::onc::cellular_apn::kLocalizedName, shill::kApnLocalizedNameProperty},

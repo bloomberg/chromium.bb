@@ -15,24 +15,25 @@
       "Name": "test-name"
     },
     "APN": {
-      "Name": "test-apn",
+      "AccessPointName": "test-apn",
+      "Name": "test-apn-name",
       "Username": "test-username",
       "Password": "test-password"
     },
     "APNList": [ {
-        "Name": "test-apn0",
+        "AccessPointName": "test-apn0",
         "Password": "test-password0",
         "Username": "test-username0"
       }, {
-        "Name": "test-apn1",
+        "AccessPointName": "test-apn1",
         "Password": "test-password1",
         "Username": "test-username1"
       }, {
-        "Name": "test-apn2",
+        "AccessPointName": "test-apn2",
         "Password": "test-password2",
         "Username": "test-username2"
       }, {
-        "Name": "test-apn3",
+        "AccessPointName": "test-apn3",
         "Password": "test-password3",
         "Username": "test-username3"
       }

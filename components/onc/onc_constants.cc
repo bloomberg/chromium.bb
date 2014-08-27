@@ -91,6 +91,7 @@ const char kHomeProvider[] = "HomeProvider";
 const char kICCID[] = "ICCID";
 const char kIMEI[] = "IMEI";
 const char kIMSI[] = "IMSI";
+const char kLastGoodAPN[] = "LastGoodAPN";
 const char kManufacturer[] = "Manufacturer";
 const char kMDN[] = "MDN";
 const char kMEID[] = "MEID";
@@ -115,6 +116,7 @@ const char kName[] = "Name";
 }  // namespace cellular_provider
 
 namespace cellular_apn {
+const char kAccessPointName[] = "AccessPointName";
 const char kName[] = "Name";
 const char kUsername[] = "Username";
 const char kPassword[] = "Password";

@@ -309,6 +309,10 @@ void ShillToONCTranslator::TranslateCellularWithState() {
         shill::kCellularApnProperty, &dictionary)) {
     TranslateAndAddNestedObject(::onc::cellular::kAPN, *dictionary);
   }
+  if (shill_dictionary_->GetDictionaryWithoutPathExpansion(
+        shill::kCellularLastGoodApnProperty, &dictionary)) {
+    TranslateAndAddNestedObject(::onc::cellular::kLastGoodAPN, *dictionary);
+  }
   // Merge the Device dictionary with this one (Cellular) using the
   // CellularDevice signature.
   const base::DictionaryValue* device_dictionary = NULL;

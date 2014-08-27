@@ -99,6 +99,12 @@ bool NetworkState::PropertyChanged(const std::string& key,
     return GetStringValue(key, value, &activation_state_);
   } else if (key == shill::kRoamingStateProperty) {
     return GetStringValue(key, value, &roaming_);
+  } else if (key == shill::kPaymentPortalProperty) {
+    const base::DictionaryValue* olp;
+    if (!value.GetAsDictionary(&olp))
+      return false;
+    return olp->GetStringWithoutPathExpansion(shill::kPaymentPortalURL,
+                                              &payment_url_);
   } else if (key == shill::kSecurityProperty) {
     return GetStringValue(key, value, &security_);
   } else if (key == shill::kEapMethodProperty) {

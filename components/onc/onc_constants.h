@@ -108,6 +108,7 @@ ONC_EXPORT extern const char kHomeProvider[];
 ONC_EXPORT extern const char kICCID[];
 ONC_EXPORT extern const char kIMEI[];
 ONC_EXPORT extern const char kIMSI[];
+ONC_EXPORT extern const char kLastGoodAPN[];
 ONC_EXPORT extern const char kManufacturer[];
 ONC_EXPORT extern const char kMDN[];
 ONC_EXPORT extern const char kMEID[];
@@ -132,6 +133,7 @@ ONC_EXPORT extern const char kName[];
 }  // namespace cellular_provider
 
 namespace cellular_apn {
+ONC_EXPORT extern const char kAccessPointName[];
 ONC_EXPORT extern const char kName[];
 ONC_EXPORT extern const char kUsername[];
 ONC_EXPORT extern const char kPassword[];

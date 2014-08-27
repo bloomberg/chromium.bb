@@ -38,10 +38,16 @@ class NetworkConfigMessageHandler : public content::WebUIMessageHandler {
   void GetNetworks(const base::ListValue* arg_list) const;
   void GetProperties(const base::ListValue* arg_list);
   void GetManagedProperties(const base::ListValue* arg_list);
-  void GetShillProperties(const base::ListValue* arg_list);
   void GetPropertiesSuccess(int callback_id,
                             const std::string& service_path,
                             const base::DictionaryValue& dictionary) const;
+
+  // Get Shill Properties for debugging purposes only.
+  void GetShillProperties(const base::ListValue* arg_list);
+  void GetShillPropertiesSuccess(int callback_id,
+                                 const std::string& service_path,
+                                 const base::DictionaryValue& dictionary) const;
+
   void InvokeCallback(const base::ListValue& arg_list) const;
   void ErrorCallback(int callback_id,
                      const std::string& error_name,

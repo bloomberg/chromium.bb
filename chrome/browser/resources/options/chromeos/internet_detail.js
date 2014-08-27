@@ -36,7 +36,7 @@ cr.define('options.internet', function() {
    */
   function getManagedValue(data, key, type) {
     var property = getManagedProperty(data, key);
-    if (typeof property != 'object')
+    if (Array.isArray(property) || typeof property != 'object')
       return property;
     if (type == GetManagedTypes.RECOMMENDED)
       return getRecommendedValue(property);
@@ -45,8 +45,12 @@ cr.define('options.internet', function() {
     // Otherwise get the Active value (defalt behavior).
     if ('Active' in property)
       return property['Active'];
-    // If no Active value is defined, return the effective value.
-    return getEffectiveValue(property);
+    // If no Active value is defined, return the effective value if present.
+    var effective = getEffectiveValue(property);
+    if (effective != undefined)
+      return effective;
+    // Otherwise this is an Object but not a Managed one.
+    return property;
   }
 
   /**
@@ -98,6 +102,40 @@ cr.define('options.internet', function() {
       key = key.substr(index + 1);
     }
     return data[key];
+  }
+
+  /**
+   * Set the value of a property in dictionary |data| that includes ONC
+   * managed properties, e.g. setManagedValue(data, 'Name', 'MyNetwork').
+   * See notes for getManagedProperty.
+   * @param {object} data The properties dictionary.
+   * @param {string} key The property key.
+   * @param {string} value The property value to set.
+   */
+  function setManagedProperty(data, key, value) {
+    while (true) {
+      var index = key.indexOf('.');
+      if (index < 0)
+        break;
+      var keyComponent = key.substr(0, index);
+      if (!(keyComponent in data))
+        data[keyComponent] = {};
+      data = data[keyComponent];
+      key = key.substr(index + 1);
+    }
+    if (!(key in data) ||
+        (typeof data[key] != 'object') ||
+        (!('Active' in data[key]) && !('Effective' in data[key]))) {
+      data[key] = value;
+    } else {
+      var effective = data[key]['Effective'];
+      assert(effective != 'UserPolicy' || data[key]['UserEditable']);
+      assert(effective != 'DevicePolicy' || data[key]['DeviceEditable']);
+      // For now, just uodare the active value. TODO(stevenjb): Eventually we
+      // should update the 'UserSetting' and 'Effective' properties correctly
+      // and send that back to Chrome.
+      data[key]['Active'] = value;
+    }
   }
 
   /**
@@ -272,25 +310,25 @@ cr.define('options.internet', function() {
           data.userApnIndex = -1;
         }
 
-        if (data.providerApnList.value.length > 0) {
-          var iApn = 0;
-          var defaultApn = data.providerApnList.value[iApn];
-          data.apn.apn = stringFromValue(defaultApn.apn);
-          data.apn.username = stringFromValue(defaultApn.username);
-          data.apn.password = stringFromValue(defaultApn.password);
+        var activeApn;
+        var iApn = -1;
+        var apnList = getManagedValue(data, 'Cellular.APNList');
+        if (apnList != undefined && apnList.length > 0) {
+          iApn = 0;
+          var defaultApn = apnList[iApn];
+          activeApn['AccessPointName'] =
+              stringFromValue(defaultApn['AccessPointName']);
+          activeApn['Username'] = stringFromValue(defaultApn['Username']);
+          activeApn['Password'] = stringFromValue(defaultApn['Password']);
           chrome.send('setApn', [data.servicePath,
-                                 data.apn.apn,
-                                 data.apn.username,
-                                 data.apn.password]);
-          apnSelector.selectedIndex = iApn;
-          data.selectedApn = iApn;
-        } else {
-          data.apn.apn = '';
-          data.apn.username = '';
-          data.apn.password = '';
-          apnSelector.selectedIndex = -1;
-          data.selectedApn = -1;
+                                 activeApn['AccessPointName'],
+                                 activeApn['Username'],
+                                 activeApn['Password']]);
         }
+        setManagedProperty(data, 'Cellular.APN', activeApn);
+        apnSelector.selectedIndex = iApn;
+        data.selectedApn = iApn;
+
         updateHidden('.apn-list-view', false);
         updateHidden('.apn-details-view', true);
       });
@@ -302,18 +340,19 @@ cr.define('options.internet', function() {
         var data = $('connection-state').data;
         var apnSelector = $('select-apn');
 
-        data.apn.apn = stringFromValue($('cellular-apn').value);
-        data.apn.username = stringFromValue($('cellular-apn-username').value);
-        data.apn.password = stringFromValue($('cellular-apn-password').value);
-        data.userApn = {
-          'apn': data.apn.apn,
-          'username': data.apn.username,
-          'password': data.apn.password
-        };
+        var activeApn = {};
+        activeApn['AccessPointName'] =
+            stringFromValue($('cellular-apn').value);
+        activeApn['Username'] =
+            stringFromValue($('cellular-apn-username').value);
+        activeApn['Password'] =
+            stringFromValue($('cellular-apn-password').value);
+        setManagedProperty(data, 'Cellular.APN', activeApn);
+        data.userApn = activeApn;
         chrome.send('setApn', [data.servicePath,
-                               data.apn.apn,
-                               data.apn.username,
-                               data.apn.password]);
+                               activeApn['AccessPointName'],
+                               activeApn['Username'],
+                               activeApn['Password']]);
 
         if (data.userApnIndex != -1) {
           apnSelector.remove(data.userApnIndex);
@@ -321,7 +360,7 @@ cr.define('options.internet', function() {
         }
 
         var option = document.createElement('option');
-        option.textContent = data.apn.apn;
+        option.textContent = activeApn['AccessPointName'];
         option.value = -1;
         option.selected = true;
         apnSelector.add(option, apnSelector[apnSelector.length - 1]);
@@ -341,24 +380,31 @@ cr.define('options.internet', function() {
       $('select-apn').addEventListener('change', function(event) {
         var data = $('connection-state').data;
         var apnSelector = $('select-apn');
+        var apnDict;
         if (apnSelector[apnSelector.selectedIndex].value != -1) {
-          var apnList = data.providerApnList.value;
+          var apnList = getManagedValue(data, 'Cellular.APNList');
+          var apnIndex = apnSelector.selectedIndex;
+          assert(apnIndex < apnList.length);
+          apnDict = apnList[apnIndex];
           chrome.send('setApn', [data.servicePath,
-              stringFromValue(apnList[apnSelector.selectedIndex].apn),
-              stringFromValue(apnList[apnSelector.selectedIndex].username),
-              stringFromValue(apnList[apnSelector.selectedIndex].password)]
-          );
-          data.selectedApn = apnSelector.selectedIndex;
+                                 stringFromValue(apnDict['AccessPointName']),
+                                 stringFromValue(apnDict['Username']),
+                                 stringFromValue(apnDict['Password'])]);
+          data.selectedApn = apnIndex;
         } else if (apnSelector.selectedIndex == data.userApnIndex) {
+          apnDict = data.userApn;
           chrome.send('setApn', [data.servicePath,
-                                 stringFromValue(data.userApn.apn),
-                                 stringFromValue(data.userApn.username),
-                                 stringFromValue(data.userApn.password)]);
+                                 stringFromValue(apnDict['AccessPointName']),
+                                 stringFromValue(apnDict['Username']),
+                                 stringFromValue(apnDict['Password'])]);
           data.selectedApn = apnSelector.selectedIndex;
         } else {
-          $('cellular-apn').value = stringFromValue(data.apn.apn);
-          $('cellular-apn-username').value = stringFromValue(data.apn.username);
-          $('cellular-apn-password').value = stringFromValue(data.apn.password);
+          apnDict = getManagedValue(data, 'Cellular.APN');
+          $('cellular-apn').value = stringFromValue(apnDict['AccessPointName']);
+          $('cellular-apn-username').value =
+              stringFromValue(apnDict['Username']);
+          $('cellular-apn-password').value =
+              stringFromValue(apnDict['Password']);
 
           updateHidden('.apn-list-view', true);
           updateHidden('.apn-details-view', false);
@@ -1017,8 +1063,8 @@ cr.define('options.internet', function() {
         $('details-internet-login').hidden = true;
 
       if (detailsPage.gsm) {
-        // TODO(stevenjb): Use managed properties for policy controlled values.
-        var lockEnabled = data.simCardLockEnabled.value;
+        var lockEnabled =
+            getManagedValue(data, 'Cellular.SIMLockStatus.LockEnabled');
         $('sim-card-lock-enabled').checked = lockEnabled;
         $('change-pin').hidden = !lockEnabled;
       }
@@ -1328,33 +1374,38 @@ cr.define('options.internet', function() {
         var otherOption = apnSelector[0];
         data.selectedApn = -1;
         data.userApnIndex = -1;
-        var apnList = data.providerApnList.value;
+        var activeApn = getManagedValue(data, 'Cellular.APN');
+        var lastGoodApn = getManagedValue(data, 'Cellular.LastGoodAPN');
+        var apnList = getManagedValue(data, 'Cellular.APNList');
         for (var i = 0; i < apnList.length; i++) {
+          var apnDict = apnList[i];
           var option = document.createElement('option');
-          var localizedName = apnList[i].localizedName;
-          var name = localizedName ? localizedName : apnList[i].name;
-          var apn = apnList[i].apn;
-          option.textContent = name ? (name + ' (' + apn + ')') : apn;
+          var localizedName = apnDict['LocalizedName'];
+          var name = localizedName ? localizedName : apnDict['Name'];
+          var accessPointName = apnDict['AccessPointName'];
+          option.textContent =
+              name ? (name + ' (' + accessPointName + ')') : accessPointName;
           option.value = i;
-          // data.apn and data.lastGoodApn will always be defined, however
-          // data.apn.apn and data.lastGoodApn.apn may not be. This is not a
-          // problem, as apnList[i].apn will always be defined and the
-          // comparisons below will work as expected.
-          if ((data.apn.apn == apn &&
-               data.apn.username == apnList[i].username &&
-               data.apn.password == apnList[i].password) ||
-              (!data.apn.apn &&
-               data.lastGoodApn.apn == apn &&
-               data.lastGoodApn.username == apnList[i].username &&
-               data.lastGoodApn.password == apnList[i].password)) {
+          // If this matches the active Apn, or LastGoodApn, set it as the
+          // selected Apn.
+          if ((activeApn != undefined &&
+               activeApn['AccessPointName'] == accessPointName &&
+               activeApn['Username'] == apnDict['Username'] &&
+               activeApn['Password'] == apnDict['Password']) ||
+              ((activeApn == undefined || !activeApn['AccessPointName']) &&
+                lastGoodApn != undefined &&
+                lastGoodApn['AccessPointName'] == accessPointName &&
+                lastGoodApn['Username'] == apnDict['Username'] &&
+                lastGoodApn['Password'] == apnDict['Password'])) {
             data.selectedApn = i;
           }
           // Insert new option before "other" option.
           apnSelector.add(option, otherOption);
         }
-        if (data.selectedApn == -1 && data.apn.apn) {
+        if (data.selectedApn == -1 &&
+            activeApn != undefined && activeApn['AccessPointName']) {
           var option = document.createElement('option');
-          option.textContent = data.apn.apn;
+          option.textContent = activeApn['AccessPointName'];
           option.value = -1;
           apnSelector.add(option, otherOption);
           data.selectedApn = apnSelector.length - 2;
@@ -1363,8 +1414,8 @@ cr.define('options.internet', function() {
         apnSelector.selectedIndex = data.selectedApn;
         updateHidden('.apn-list-view', false);
         updateHidden('.apn-details-view', true);
-        // TODO(stevenjb): Used managed properties for policy controlled value.
-        var lockEnabled = data.simCardLockEnabled.value;
+        var lockEnabled =
+            getManagedValue(data, 'Cellular.SIMLockStatus.LockEnabled');
         $('sim-card-lock-enabled').checked = lockEnabled;
         $('change-pin').hidden = !lockEnabled;
       }

@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/values.h"
 #include "chromeos/login/login_state.h"
+#include "chromeos/network/device_state.h"
 #include "chromeos/network/managed_network_configuration_handler.h"
 #include "chromeos/network/network_configuration_handler.h"
 #include "chromeos/network/network_state.h"
@@ -173,10 +174,30 @@ void NetworkConfigMessageHandler::GetShillProperties(
   }
   NetworkHandler::Get()->network_configuration_handler()->GetProperties(
       service_path,
-      base::Bind(&NetworkConfigMessageHandler::GetPropertiesSuccess,
+      base::Bind(&NetworkConfigMessageHandler::GetShillPropertiesSuccess,
                  weak_ptr_factory_.GetWeakPtr(), callback_id),
       base::Bind(&NetworkConfigMessageHandler::ErrorCallback,
                  weak_ptr_factory_.GetWeakPtr(), callback_id));
+}
+
+void NetworkConfigMessageHandler::GetShillPropertiesSuccess(
+    int callback_id,
+    const std::string& service_path,
+    const base::DictionaryValue& dictionary) const {
+  scoped_ptr<base::DictionaryValue> dictionary_copy(dictionary.DeepCopy());
+
+  // Get the device properties for debugging.
+  std::string device;
+  dictionary_copy->GetStringWithoutPathExpansion(
+      shill::kDeviceProperty, &device);
+  const DeviceState* device_state =
+      NetworkHandler::Get()->network_state_handler()->GetDeviceState(device);
+  if (device_state) {
+    base::DictionaryValue* device_dictionary =
+        device_state->properties().DeepCopy();
+    dictionary_copy->Set(shill::kDeviceProperty, device_dictionary);
+  }
+  GetPropertiesSuccess(callback_id, service_path, *dictionary_copy);
 }
 
 void NetworkConfigMessageHandler::InvokeCallback(

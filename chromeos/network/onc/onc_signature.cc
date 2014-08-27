@@ -223,6 +223,7 @@ const OncFieldSignature cellular_provider_fields[] = {
     {NULL}};
 
 const OncFieldSignature cellular_apn_fields[] = {
+    { ::onc::cellular_apn::kAccessPointName, &kStringSignature},
     { ::onc::cellular_apn::kName, &kStringSignature},
     { ::onc::cellular_apn::kUsername, &kStringSignature},
     { ::onc::cellular_apn::kPassword, &kStringSignature},
@@ -264,6 +265,7 @@ const OncFieldSignature cellular_with_state_fields[] = {
     { ::onc::cellular::kICCID, &kStringSignature},
     { ::onc::cellular::kIMEI, &kStringSignature},
     { ::onc::cellular::kIMSI, &kStringSignature},
+    { ::onc::cellular::kLastGoodAPN, &kCellularApnSignature },
     { ::onc::cellular::kManufacturer, &kStringSignature},
     { ::onc::cellular::kMDN, &kStringSignature},
     { ::onc::cellular::kMEID, &kStringSignature},
