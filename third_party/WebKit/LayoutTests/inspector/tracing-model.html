@@ -55,7 +55,7 @@ function test()
     ];
     
     var model = new WebInspector.TracingModel();
-    model.setEventsForTest("", testData);
+    model.setEventsForTest(testData);
     var events = model.sortedProcesses()[0].threadById(mainThread).events();
     for (var i = 0; i < events.length; ++i) {
         var event = events[i];

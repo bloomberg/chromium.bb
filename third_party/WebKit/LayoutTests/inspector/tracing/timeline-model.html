@@ -57,7 +57,7 @@ function test()
     }
     var tracingTimelineModel = InspectorTest.tracingTimelineModel;
     tracingTimelineModel.addEventListener(WebInspector.TimelineModel.Events.RecordAdded, onRecordAdded);
-    tracingTimelineModel.setEventsForTest(sessionId, commonMetadata.concat(traceEvents));
+    tracingTimelineModel.setEventsForTest(commonMetadata.concat(traceEvents));
     var records = tracingTimelineModel.records();
     InspectorTest.assertEquals(records.length, recordsFromEvent.length);
     for (var i = 0; i < records.length; ++i) {

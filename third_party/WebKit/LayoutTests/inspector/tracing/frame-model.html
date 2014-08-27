@@ -217,7 +217,7 @@ function test()
     function loadEvents(events)
     {
         var tracingTimelineModel = InspectorTest.tracingTimelineModel;
-        tracingTimelineModel.setEventsForTest(sessionId, events);
+        tracingTimelineModel.setEventsForTest(events);
         frameModel.reset();
         frameModel.addTraceEvents(tracingTimelineModel.inspectedTargetEvents());
     }

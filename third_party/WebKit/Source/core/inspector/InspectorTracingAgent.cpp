@@ -59,7 +59,7 @@ void InspectorTracingAgent::innerStart(const String& categoryFilter, bool fromCo
     m_state->setBoolean(TracingAgentState::tracingStarted, true);
     m_client->enableTracing(categoryFilter);
     emitMetadataEvents();
-    m_frontend->started(fromConsole, sessionId());
+    m_frontend->started();
 }
 
 String InspectorTracingAgent::sessionId()

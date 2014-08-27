@@ -189,7 +189,7 @@ function test()
     ];
 
     var tracingTimelineModel = InspectorTest.tracingTimelineModel;
-    tracingTimelineModel.setEventsForTest(sessionId, rawTraceEvents);
+    tracingTimelineModel.setEventsForTest(rawTraceEvents);
     var events = tracingTimelineModel.inspectedTargetEvents();
     InspectorTest.assertEquals(8, events.length);
     var eventTimes = events.map(function(e)
