@@ -282,7 +282,7 @@ void JsonPrefStore::ReadPrefsAsync(ReadErrorDelegate* error_delegate) {
 
   // Weakly binds the read task so that it doesn't kick in during shutdown.
   base::PostTaskAndReplyWithResult(
-      sequenced_task_runner_,
+      sequenced_task_runner_.get(),
       FROM_HERE,
       base::Bind(&ReadPrefsFromDisk, path_, alternate_path_),
       base::Bind(&JsonPrefStore::OnFileRead, AsWeakPtr()));

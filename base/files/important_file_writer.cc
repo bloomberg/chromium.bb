@@ -169,7 +169,7 @@ bool ImportantFileWriter::PostWriteTask(const std::string& data) {
   // using PostTask() in the typical scenario below.
   if (!on_next_successful_write_.is_null()) {
     return base::PostTaskAndReplyWithResult(
-        task_runner_,
+        task_runner_.get(),
         FROM_HERE,
         MakeCriticalClosure(
             Bind(&ImportantFileWriter::WriteFileAtomically, path_, data)),

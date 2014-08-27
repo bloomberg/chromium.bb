@@ -1786,7 +1786,7 @@ void TraceLog::FinishFlush(int generation) {
 void TraceLog::FlushCurrentThread(int generation) {
   {
     AutoLock lock(lock_);
-    if (!CheckGeneration(generation) || !flush_message_loop_proxy_) {
+    if (!CheckGeneration(generation) || !flush_message_loop_proxy_.get()) {
       // This is late. The corresponding flush has finished.
       return;
     }
@@ -1796,7 +1796,7 @@ void TraceLog::FlushCurrentThread(int generation) {
   delete thread_local_event_buffer_.Get();
 
   AutoLock lock(lock_);
-  if (!CheckGeneration(generation) || !flush_message_loop_proxy_ ||
+  if (!CheckGeneration(generation) || !flush_message_loop_proxy_.get() ||
       thread_message_loops_.size())
     return;
 
@@ -1808,7 +1808,7 @@ void TraceLog::FlushCurrentThread(int generation) {
 void TraceLog::OnFlushTimeout(int generation) {
   {
     AutoLock lock(lock_);
-    if (!CheckGeneration(generation) || !flush_message_loop_proxy_) {
+    if (!CheckGeneration(generation) || !flush_message_loop_proxy_.get()) {
       // Flush has finished before timeout.
       return;
     }
