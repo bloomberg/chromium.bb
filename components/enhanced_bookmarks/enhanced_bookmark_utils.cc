@@ -10,7 +10,7 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "ui/base/models/tree_node_iterator.h"
 
-namespace enhanced_bookmark_utils {
+namespace enhanced_bookmarks {
 
 std::vector<const BookmarkNode*> FindBookmarksWithQuery(
     BookmarkModel* bookmark_model,
@@ -124,4 +124,4 @@ const BookmarkNode* RootLevelFolderForNode(const BookmarkNode* node,
   return top;
 }
 
-}  // namespace enhanced_bookmark_utils
+}  // namespace enhanced_bookmarks

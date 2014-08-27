@@ -42,8 +42,7 @@ TEST_F(EnhancedBookmarkUtilsTest, TestBookmarkSearch) {
   const BookmarkNode* node5 = AddBookmark(bookmark_model.get(), "jo hn");
 
   std::vector<const BookmarkNode*> result =
-      enhanced_bookmark_utils::FindBookmarksWithQuery(bookmark_model.get(),
-                                                      "john");
+      enhanced_bookmarks::FindBookmarksWithQuery(bookmark_model.get(), "john");
   ASSERT_EQ(result.size(), 3u);
 
   CHECK(std::find(result.begin(), result.end(), node1) != result.end());

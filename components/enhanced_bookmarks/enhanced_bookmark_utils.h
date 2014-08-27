@@ -12,7 +12,7 @@
 class BookmarkModel;
 class BookmarkNode;
 
-namespace enhanced_bookmark_utils {
+namespace enhanced_bookmarks {
 
 // Returns an ordered vector of bookmarks that are urls that match |query|.
 // |query| must be UTF8 encoded.
@@ -44,6 +44,6 @@ bool IsPrimaryPermanentNode(const BookmarkNode* node, BookmarkModel* model);
 const BookmarkNode* RootLevelFolderForNode(const BookmarkNode* node,
                                            BookmarkModel* model);
 
-}  // namespace enhanced_bookmark_utils
+}  // namespace enhanced_bookmarks
 
 #endif  // COMPONENTS_ENHANCED_BOOKMARKS_ENHANCED_BOOKMARK_UTILS_H_
