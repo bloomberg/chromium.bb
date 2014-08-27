@@ -488,7 +488,7 @@ ChannelMojo::ChannelMojo(
       bootstrap_(bootstrap.Pass()),
       mode_(mode), listener_(listener),
       peer_pid_(base::kNullProcessId) {
-  if (base::MessageLoopProxy::current() == io_thread_task_runner) {
+  if (base::MessageLoopProxy::current() == io_thread_task_runner.get()) {
     InitOnIOThread();
   } else {
     io_thread_task_runner->PostTask(FROM_HERE,
