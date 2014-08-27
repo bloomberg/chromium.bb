@@ -8,6 +8,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/common/user_agent.h"
 #include "extensions/common/constants.h"
+#include "extensions/shell/common/version.h"  // Generated file.
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -83,9 +84,9 @@ void ShellContentClient::AddAdditionalSchemes(
 }
 
 std::string ShellContentClient::GetUserAgent() const {
-  // TODO(derat): Figure out what this should be for app_shell and determine
-  // whether we need to include a version number to placate browser sniffing.
-  return content::BuildUserAgentFromProduct("Chrome");
+  // Must contain a user agent string for version sniffing. For example,
+  // pluginless WebRTC Hangouts checks the Chrome version number.
+  return content::BuildUserAgentFromProduct("Chrome/" PRODUCT_VERSION);
 }
 
 base::string16 ShellContentClient::GetLocalizedString(int message_id) const {

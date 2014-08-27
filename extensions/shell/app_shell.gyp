@@ -204,6 +204,7 @@
         '../test/extensions_unittests_main.cc',
         'browser/shell_desktop_controller_unittest.cc',
         'browser/shell_nacl_browser_delegate_unittest.cc',
+        'common/shell_content_client_unittest.cc'
       ],
       'conditions': [
         ['disable_nacl==1', {
