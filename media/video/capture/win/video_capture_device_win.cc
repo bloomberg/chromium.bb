@@ -53,7 +53,8 @@ HRESULT VideoCaptureDeviceWin::GetDeviceFilter(
       continue;
     }
 
-    // Find the description or friendly name.
+    // Find the device via DevicePath, Description or FriendlyName, whichever is
+    // available first.
     static const wchar_t* kPropertyNames[] = {
       L"DevicePath", L"Description", L"FriendlyName"
     };
@@ -101,20 +102,20 @@ bool VideoCaptureDeviceWin::PinMatchesCategory(IPin* pin, REFGUID category) {
   return found;
 }
 
-// Finds a IPin on a IBaseFilter given the direction an category.
+// Finds an IPin on an IBaseFilter given the direction and category.
 // static
 ScopedComPtr<IPin> VideoCaptureDeviceWin::GetPin(IBaseFilter* filter,
                                                  PIN_DIRECTION pin_dir,
                                                  REFGUID category) {
   ScopedComPtr<IPin> pin;
-  ScopedComPtr<IEnumPins> pin_emum;
-  HRESULT hr = filter->EnumPins(pin_emum.Receive());
-  if (pin_emum == NULL)
+  ScopedComPtr<IEnumPins> pin_enum;
+  HRESULT hr = filter->EnumPins(pin_enum.Receive());
+  if (pin_enum == NULL)
     return pin;
 
   // Get first unconnected pin.
-  hr = pin_emum->Reset();  // set to first pin
-  while ((hr = pin_emum->Next(1, pin.Receive(), NULL)) == S_OK) {
+  hr = pin_enum->Reset();  // set to first pin
+  while ((hr = pin_enum->Next(1, pin.Receive(), NULL)) == S_OK) {
     PIN_DIRECTION this_pin_dir = static_cast<PIN_DIRECTION>(-1);
     hr = pin->QueryDirection(&this_pin_dir);
     if (pin_dir == this_pin_dir) {
