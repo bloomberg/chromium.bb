@@ -362,13 +362,10 @@ struct ConvolveProcs {
 
 void SetupSIMD(ConvolveProcs *procs) {
 #ifdef SIMD_SSE2
-  base::CPU cpu;
-  if (cpu.has_sse2()) {
-    procs->extra_horizontal_reads = 3;
-    procs->convolve_vertically = &ConvolveVertically_SSE2;
-    procs->convolve_4rows_horizontally = &Convolve4RowsHorizontally_SSE2;
-    procs->convolve_horizontally = &ConvolveHorizontally_SSE2;
-  }
+  procs->extra_horizontal_reads = 3;
+  procs->convolve_vertically = &ConvolveVertically_SSE2;
+  procs->convolve_4rows_horizontally = &Convolve4RowsHorizontally_SSE2;
+  procs->convolve_horizontally = &ConvolveHorizontally_SSE2;
 #elif defined SIMD_MIPS_DSPR2
   procs->extra_horizontal_reads = 3;
   procs->convolve_vertically = &ConvolveVertically_mips_dspr2;
