@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <cmath>
 #include <limits>
+#include <set>
 
 #include "base/debug/trace_event.h"
 #include "base/debug/trace_event_argument.h"
@@ -682,6 +683,12 @@ void PictureLayerTiling::DidBecomeActive() {
     // PictureLayerImpl and any in flight raster jobs go out of scope.
     it->second->set_picture_pile(active_pile);
   }
+}
+
+void PictureLayerTiling::GetAllTilesForTracing(
+    std::set<const Tile*>* tiles) const {
+  for (TileMap::const_iterator it = tiles_.begin(); it != tiles_.end(); ++it)
+    tiles->insert(it->second.get());
 }
 
 void PictureLayerTiling::AsValueInto(base::debug::TracedValue* state) const {

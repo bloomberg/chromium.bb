@@ -112,7 +112,6 @@ class CC_EXPORT TileManager : public RasterizerClient,
   scoped_refptr<base::debug::ConvertableToTraceFormat> BasicStateAsValue()
       const;
   void BasicStateAsValueInto(base::debug::TracedValue* dict) const;
-  void AllTilesAsValueInto(base::debug::TracedValue* array) const;
   const MemoryHistory::Entry& memory_stats_from_last_assign() const {
     return memory_stats_from_last_assign_;
   }

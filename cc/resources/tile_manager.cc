@@ -731,14 +731,6 @@ void TileManager::BasicStateAsValueInto(base::debug::TracedValue* state) const {
   state->EndDictionary();
 }
 
-void TileManager::AllTilesAsValueInto(base::debug::TracedValue* state) const {
-  for (TileMap::const_iterator it = tiles_.begin(); it != tiles_.end(); ++it) {
-    state->BeginDictionary();
-    it->second->AsValueInto(state);
-    state->EndDictionary();
-  }
-}
-
 void TileManager::AssignGpuMemoryToTiles(
     PrioritizedTileSet* tiles,
     TileVector* tiles_that_need_to_be_rasterized) {

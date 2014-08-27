@@ -1400,6 +1400,9 @@ void LayerImpl::RemoveDependentNeedsPushProperties() {
       parent_->RemoveDependentNeedsPushProperties();
 }
 
+void LayerImpl::GetAllTilesForTracing(std::set<const Tile*>* tiles) const {
+}
+
 void LayerImpl::AsValueInto(base::debug::TracedValue* state) const {
   TracedValue::MakeDictIntoImplicitSnapshotWithCategory(
       TRACE_DISABLED_BY_DEFAULT("cc.debug"),

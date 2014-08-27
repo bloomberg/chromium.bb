@@ -6,6 +6,7 @@
 #define CC_TREES_LAYER_TREE_IMPL_H_
 
 #include <list>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -112,6 +113,7 @@ class CC_EXPORT LayerTreeImpl {
   const LayerTreeDebugState& debug_state() const;
   float device_scale_factor() const;
   DebugRectHistory* debug_rect_history() const;
+  void GetAllTilesForTracing(std::set<const Tile*>* tiles) const;
   void AsValueInto(base::debug::TracedValue* dict) const;
 
   // Other public methods
