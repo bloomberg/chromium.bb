@@ -340,13 +340,21 @@ class SchemaVersionedMySQLConnection(object):
       return self._GetEngine().execute(query, *args, **kwargs)
     except sqlalchemy.exc.OperationalError as e:
       error_code = e.orig.args[0]
-      # Error coded 2006 'MySQL server has gone away' indicates that the
-      # connection used was closed or dropped.
-      if error_code == 2006:
+      retryable_codes = (
+          2006,   # Error code 2006 'MySQL server has gone away' indicates that
+                  # the connection used was closed or dropped.
+                  #
+          2013,   # 'Lost connection to MySQL server during query'
+                  # TODO(akeshet): consider only retrying UPDATE queries agsint
+                  # this error code, not INSERT queries, since we don't know
+                  # whether the query completed before or after the connection
+                  # lost.
+      )
+      if error_code in retryable_codes:
         e = self._GetEngine()
         logging.debug('Retrying a query on engine %s@%s for pid %s due to '
-                      'dropped connection.', e.url.username, e.url.host,
-                      self._engine_pid)
+                      'error code %s.', e.url.username, e.url.host,
+                      self._engine_pid, error_code)
         return self._GetEngine().execute(query, *args, **kwargs)
       else:
         raise
