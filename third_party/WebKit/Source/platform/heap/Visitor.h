@@ -337,6 +337,15 @@ public:
     virtual void mark(HeapObjectHeader*, TraceCallback) = 0;
     virtual void mark(FinalizedHeapObjectHeader*, TraceCallback) = 0;
 
+    // Used to delay the marking of objects until the usual marking
+    // including emphemeron iteration is done. This is used to delay
+    // the marking of collection backing stores until we know if they
+    // are reachable from locations other than the collection front
+    // object. If collection backings are reachable from other
+    // locations we strongify them to avoid issues with iterators and
+    // weak processing.
+    virtual void registerDelayedMarkNoTracing(const void*) = 0;
+
     // If the object calls this during the regular trace callback, then the
     // WeakPointerCallback argument may be called later, when the strong roots
     // have all been found. The WeakPointerCallback will normally use isAlive

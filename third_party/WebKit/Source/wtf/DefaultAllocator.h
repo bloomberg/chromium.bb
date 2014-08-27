@@ -110,6 +110,11 @@ public:
         ASSERT_NOT_REACHED();
     }
 
+    static void registerDelayedMarkNoTracing(...)
+    {
+        ASSERT_NOT_REACHED();
+    }
+
     static void registerWeakMembers(...)
     {
         ASSERT_NOT_REACHED();

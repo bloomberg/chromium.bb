@@ -263,6 +263,7 @@ public:
         m_count++;
     }
 
+    virtual void registerDelayedMarkNoTracing(const void*) OVERRIDE { }
     virtual void registerWeakMembers(const void*, const void*, WeakPointerCallback) OVERRIDE { }
     virtual void registerWeakTable(const void*, EphemeronCallback, EphemeronCallback) OVERRIDE { }
 #if ENABLE(ASSERT)
@@ -4839,6 +4840,114 @@ volatile uintptr_t DeadBitTester::s_workerObjectPointer = 0;
 TEST(HeapTest, ObjectDeadBit)
 {
     DeadBitTester::test();
+}
+
+class ThreadedStrongificationTester {
+public:
+    static void test()
+    {
+        IntWrapper::s_destructorCalls = 0;
+
+        MutexLocker locker(mainThreadMutex());
+        createThread(&workerThreadMain, 0, "Worker Thread");
+
+        // Wait for the worker thread initialization. The worker
+        // allocates a weak collection where both collection and
+        // contents are kept alive via persistent pointers.
+        parkMainThread();
+
+        // Perform two garbage collections where the worker thread does
+        // not wake up in between. This will cause us to remove marks
+        // and mark unmarked objects dead. The collection on the worker
+        // heap is found through the persistent and the backing should
+        // be marked.
+        Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+        Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+
+        // Wake up the worker thread so it can continue. It will sweep
+        // and perform another GC where the backing store of its
+        // collection should be strongified.
+        wakeWorkerThread();
+
+        // Wait for the worker thread to sweep its heaps before checking.
+        {
+            ThreadState::SafePointScope scope(ThreadState::NoHeapPointersOnStack);
+            parkMainThread();
+        }
+    }
+
+private:
+
+    static HeapHashSet<WeakMember<IntWrapper> >* allocateCollection()
+    {
+        // Create a weak collection that is kept alive by a persistent
+        // and keep the contents alive with a persistents as
+        // well.
+        Persistent<IntWrapper> wrapper1 = IntWrapper::create(32);
+        Persistent<IntWrapper> wrapper2 = IntWrapper::create(32);
+        Persistent<IntWrapper> wrapper3 = IntWrapper::create(32);
+        Persistent<IntWrapper> wrapper4 = IntWrapper::create(32);
+        Persistent<IntWrapper> wrapper5 = IntWrapper::create(32);
+        Persistent<IntWrapper> wrapper6 = IntWrapper::create(32);
+        Persistent<HeapHashSet<WeakMember<IntWrapper> > > weakCollection = new HeapHashSet<WeakMember<IntWrapper> >;
+        weakCollection->add(wrapper1);
+        weakCollection->add(wrapper2);
+        weakCollection->add(wrapper3);
+        weakCollection->add(wrapper4);
+        weakCollection->add(wrapper5);
+        weakCollection->add(wrapper6);
+
+        // Signal the main thread that the worker is done with its allocation.
+        wakeMainThread();
+
+        {
+            // Wait for the main thread to do two GCs without sweeping
+            // this thread heap. The worker waits within a safepoint,
+            // but there is no sweeping until leaving the safepoint
+            // scope. If the weak collection backing is marked dead
+            // because of this we will not get strongification in the
+            // GC we force when we continue.
+            ThreadState::SafePointScope scope(ThreadState::NoHeapPointersOnStack);
+            parkWorkerThread();
+        }
+
+        return weakCollection;
+    }
+
+    static void workerThreadMain(void* data)
+    {
+        MutexLocker locker(workerThreadMutex());
+
+        ThreadState::attach();
+
+        {
+            Persistent<HeapHashSet<WeakMember<IntWrapper> > > collection = allocateCollection();
+            {
+                // Prevent weak processing with an iterator and GC.
+                HeapHashSet<WeakMember<IntWrapper> >::iterator it = collection->begin();
+                Heap::collectGarbage(ThreadState::HeapPointersOnStack);
+
+                // The backing should be strongified because of the iterator.
+                EXPECT_EQ(6u, collection->size());
+                EXPECT_EQ(32, (*it)->value());
+            }
+
+            // Disregarding the iterator but keeping the collection alive
+            // with a persistent should lead to weak processing.
+            Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+            EXPECT_EQ(0u, collection->size());
+        }
+
+        wakeMainThread();
+        ThreadState::detach();
+    }
+
+    static volatile uintptr_t s_workerObjectPointer;
+};
+
+TEST(HeapTest, ThreadedStrongification)
+{
+    ThreadedStrongificationTester::test();
 }
 
 static bool allocateAndReturnBool()

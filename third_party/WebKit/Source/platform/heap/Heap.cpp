@@ -1873,6 +1873,11 @@ bool CallbackStack::hasCallbackForObject(const void* object)
 }
 #endif
 
+static void markNoTracingCallback(Visitor* visitor, void* object)
+{
+    visitor->markNoTracing(object);
+}
+
 class MarkingVisitor : public Visitor {
 public:
 #if ENABLE(GC_PROFILE_MARKING)
@@ -1927,6 +1932,11 @@ public:
             return;
         FinalizedHeapObjectHeader* header = FinalizedHeapObjectHeader::fromPayload(objectPointer);
         visitHeader(header, header->payload(), callback);
+    }
+
+    virtual void registerDelayedMarkNoTracing(const void* object) OVERRIDE
+    {
+        Heap::pushPostMarkingCallback(const_cast<void*>(object), markNoTracingCallback);
     }
 
     virtual void registerWeakMembers(const void* closure, const void* containingObject, WeakPointerCallback callback) OVERRIDE
@@ -2076,6 +2086,7 @@ void Heap::init()
 {
     ThreadState::init();
     CallbackStack::init(&s_markingStack);
+    CallbackStack::init(&s_postMarkingCallbackStack);
     CallbackStack::init(&s_weakCallbackStack);
     CallbackStack::init(&s_ephemeronStack);
     s_heapDoesNotContainCache = new HeapDoesNotContainCache();
@@ -2107,6 +2118,7 @@ void Heap::doShutdown()
     delete s_orphanedPagePool;
     s_orphanedPagePool = 0;
     CallbackStack::shutdown(&s_weakCallbackStack);
+    CallbackStack::shutdown(&s_postMarkingCallbackStack);
     CallbackStack::shutdown(&s_markingStack);
     CallbackStack::shutdown(&s_ephemeronStack);
     ThreadState::shutdown();
@@ -2222,6 +2234,18 @@ bool Heap::popAndInvokeTraceCallback(Visitor* visitor)
     return s_markingStack->popAndInvokeCallback<Mode>(&s_markingStack, visitor);
 }
 
+void Heap::pushPostMarkingCallback(void* object, TraceCallback callback)
+{
+    ASSERT(!Heap::orphanedPagePool()->contains(object));
+    CallbackStack::Item* slot = s_postMarkingCallbackStack->allocateEntry(&s_postMarkingCallbackStack);
+    *slot = CallbackStack::Item(object, callback);
+}
+
+bool Heap::popAndInvokePostMarkingCallback(Visitor* visitor)
+{
+    return s_postMarkingCallbackStack->popAndInvokeCallback<PostMarking>(&s_postMarkingCallbackStack, visitor);
+}
+
 void Heap::pushWeakCellPointerCallback(void** cell, WeakPointerCallback callback)
 {
     ASSERT(!Heap::orphanedPagePool()->contains(cell));
@@ -2253,10 +2277,9 @@ void Heap::registerWeakTable(void* table, EphemeronCallback iterationCallback, E
     CallbackStack::Item* slot = s_ephemeronStack->allocateEntry(&s_ephemeronStack);
     *slot = CallbackStack::Item(table, iterationCallback);
 
-    // We use the callback stack of weak cell pointers for the ephemeronIterationDone callbacks.
-    // These callbacks are called right after marking and before any thread commences execution
-    // so it suits our needs for telling the ephemerons that the iteration is done.
-    pushWeakCellPointerCallback(static_cast<void**>(table), iterationDoneCallback);
+    // Register a post-marking callback to tell the tables that
+    // ephemeron iteration is complete.
+    pushPostMarkingCallback(table, iterationDoneCallback);
 }
 
 #if ENABLE(ASSERT)
@@ -2322,7 +2345,8 @@ void Heap::collectGarbage(ThreadState::StackState stackState)
     if (lastGCWasConservative())
         processMarkingStack<GlobalMarking>();
 
-    globalWeakProcessingAndCleanup();
+    postMarkingProcessing();
+    globalWeakProcessing();
 
     // After a global marking we know that any orphaned page that was not reached
     // cannot be reached in a subsequent GC. This is due to a thread either having
@@ -2378,7 +2402,8 @@ void Heap::collectGarbageForTerminatingThread(ThreadState* state)
         // including ephemerons.
         processMarkingStack<ThreadLocalMarking>();
 
-        globalWeakProcessingAndCleanup();
+        postMarkingProcessing();
+        globalWeakProcessing();
 
         state->leaveGC();
     }
@@ -2404,15 +2429,28 @@ void Heap::processMarkingStack()
     } while (!s_markingStack->isEmpty());
 }
 
-void Heap::globalWeakProcessingAndCleanup()
+void Heap::postMarkingProcessing()
 {
-    // Call weak callbacks on objects that may now be pointing to dead
-    // objects and call ephemeronIterationDone callbacks on weak tables
-    // to do cleanup (specifically clear the queued bits for weak hash
-    // tables).
-    while (popAndInvokeWeakPointerCallback(s_markingVisitor)) { }
+    // Call post-marking callbacks including:
+    // 1. the ephemeronIterationDone callbacks on weak tables to do cleanup
+    //    (specifically to clear the queued bits for weak hash tables), and
+    // 2. the markNoTracing callbacks on collection backings to mark them
+    //    if they are only reachable from their front objects.
+    while (popAndInvokePostMarkingCallback(s_markingVisitor)) { }
 
     CallbackStack::clear(&s_ephemeronStack);
+
+    // Post-marking callbacks should not trace any objects and
+    // therefore the marking stack should be empty after the
+    // post-marking callbacks.
+    ASSERT(s_markingStack->isEmpty());
+}
+
+void Heap::globalWeakProcessing()
+{
+    // Call weak callbacks on objects that may now be pointing to dead
+    // objects.
+    while (popAndInvokeWeakPointerCallback(s_markingVisitor)) { }
 
     // It is not permitted to trace pointers of live objects in the weak
     // callback phase, so the marking stack should still be empty here.
@@ -2553,6 +2591,7 @@ template bool CallbackStack::popAndInvokeCallback<WeaknessProcessing>(CallbackSt
 
 Visitor* Heap::s_markingVisitor;
 CallbackStack* Heap::s_markingStack;
+CallbackStack* Heap::s_postMarkingCallbackStack;
 CallbackStack* Heap::s_weakCallbackStack;
 CallbackStack* Heap::s_ephemeronStack;
 HeapDoesNotContainCache* Heap::s_heapDoesNotContainCache;

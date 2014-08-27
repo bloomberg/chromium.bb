@@ -1169,9 +1169,10 @@ namespace WTF {
             typedef HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator> HashTableType;
             HashTableType* table = reinterpret_cast<HashTableType*>(closure);
             if (table->m_table) {
-                // This just marks it live and does not push anything onto the
-                // marking stack.
-                Allocator::markNoTracing(visitor, table->m_table);
+                // This is run as part of weak processing after full
+                // marking. The backing store is therefore marked if
+                // we get here.
+                ASSERT(visitor->isAlive(table->m_table));
                 // Now perform weak processing (this is a no-op if the backing
                 // was accessible through an iterator and was already marked
                 // strongly).
@@ -1241,13 +1242,16 @@ namespace WTF {
         // through its HashTable (ie from an iterator) then the mark bit will
         // be set and the pointers will be marked strongly, avoiding problems
         // with iterating over things that disappear due to weak processing
-        // while we are iterating over them. The weakProcessing callback will
-        // mark the backing as a void pointer, and will perform weak processing
-        // if needed.
-        if (Traits::weakHandlingFlag == NoWeakHandlingInCollections)
+        // while we are iterating over them. We register the backing store
+        // pointer for delayed marking which will take place after we know if
+        // the backing is reachable from elsewhere. We also register a
+        // weakProcessing callback which will perform weak processing if needed.
+        if (Traits::weakHandlingFlag == NoWeakHandlingInCollections) {
             Allocator::markNoTracing(visitor, m_table);
-        else
+        } else {
+            Allocator::registerDelayedMarkNoTracing(visitor, m_table);
             Allocator::registerWeakMembers(visitor, this, m_table, WeakProcessingHashTableHelper<Traits::weakHandlingFlag, Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::process);
+        }
         if (ShouldBeTraced<Traits>::value) {
             if (Traits::weakHandlingFlag == WeakHandlingInCollections) {
                 // If we have both strong and weak pointers in the collection

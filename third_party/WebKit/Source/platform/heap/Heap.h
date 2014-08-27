@@ -94,6 +94,7 @@ const uint8_t orphanedZapValue = 240;
 enum CallbackInvocationMode {
     GlobalMarking,
     ThreadLocalMarking,
+    PostMarking,
     WeaknessProcessing,
 };
 
@@ -840,7 +841,7 @@ public:
 private:
     void invokeOldestCallbacks(Visitor*);
 
-    static const size_t bufferSize = 8000;
+    static const size_t bufferSize = 4000;
     Item m_buffer[bufferSize];
     Item* m_limit;
     Item* m_current;
@@ -1035,6 +1036,10 @@ public:
     // Push a trace callback on the marking stack.
     static void pushTraceCallback(void* containerObject, TraceCallback);
 
+    // Push a trace callback on the post-marking callback stack. These callbacks
+    // are called after normal marking (including ephemeron iteration).
+    static void pushPostMarkingCallback(void*, TraceCallback);
+
     // Add a weak pointer callback to the weak callback work list. General
     // object pointer callbacks are added to a thread local weak callback work
     // list and the callback is called on the thread that owns the object, with
@@ -1054,6 +1059,11 @@ public:
     // and the object. Returns false when there is nothing more to do.
     template<CallbackInvocationMode Mode> static bool popAndInvokeTraceCallback(Visitor*);
 
+    // Remove an item from the post-marking callback stack and call
+    // the callback with the visitor and the object pointer. Returns
+    // false when there is nothing more to do.
+    static bool popAndInvokePostMarkingCallback(Visitor*);
+
     // Remove an item from the weak callback work list and call the callback
     // with the visitor and the closure pointer. Returns false when there is
     // nothing more to do.
@@ -1072,7 +1082,8 @@ public:
     static void collectGarbageForTerminatingThread(ThreadState*);
     static void collectAllGarbage();
     template<CallbackInvocationMode Mode> static void processMarkingStack();
-    static void globalWeakProcessingAndCleanup();
+    static void postMarkingProcessing();
+    static void globalWeakProcessing();
     static void setForcePreciseGCForTesting();
 
     static void prepareForGC();
@@ -1120,6 +1131,7 @@ private:
     static Visitor* s_markingVisitor;
 
     static CallbackStack* s_markingStack;
+    static CallbackStack* s_postMarkingCallbackStack;
     static CallbackStack* s_weakCallbackStack;
     static CallbackStack* s_ephemeronStack;
     static HeapDoesNotContainCache* s_heapDoesNotContainCache;
@@ -1657,6 +1669,11 @@ public:
     static void trace(Visitor* visitor, T& t)
     {
         CollectionBackingTraceTrait<WTF::ShouldBeTraced<Traits>::value, Traits::weakHandlingFlag, WTF::WeakPointersActWeak, T, Traits>::trace(visitor, t);
+    }
+
+    static void registerDelayedMarkNoTracing(Visitor* visitor, const void* object)
+    {
+        visitor->registerDelayedMarkNoTracing(object);
     }
 
     static void registerWeakMembers(Visitor* visitor, const void* closure, const void* object, WeakPointerCallback callback)
