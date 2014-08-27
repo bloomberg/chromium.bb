@@ -211,7 +211,7 @@ void CastReceiverImpl::EmitDecodedVideoFrame(
     const scoped_refptr<VideoFrame>& video_frame,
     bool is_continuous) {
   DCHECK(cast_environment->CurrentlyOn(CastEnvironment::MAIN));
-  if (video_frame) {
+  if (video_frame.get()) {
     const base::TimeTicks now = cast_environment->Clock()->NowTicks();
     cast_environment->Logging()->InsertFrameEvent(
         now, FRAME_DECODED, VIDEO_EVENT, rtp_timestamp, frame_id);

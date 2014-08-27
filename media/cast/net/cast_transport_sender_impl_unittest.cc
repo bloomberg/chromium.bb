@@ -47,7 +47,7 @@ class FakePacketSender : public PacketSender {
 
   void SetPaused(bool paused) {
     paused_ = paused;
-    if (!paused && stored_packet_) {
+    if (!paused && stored_packet_.get()) {
       SendPacket(stored_packet_, callback_);
       callback_.Run();
     }

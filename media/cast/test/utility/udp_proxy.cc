@@ -438,7 +438,7 @@ void InterruptedPoissonProcess::InitOnIOThread(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     base::TickClock* clock) {
   // Already initialized and started.
-  if (task_runner_ &&  clock_)
+  if (task_runner_.get() && clock_)
     return;
   task_runner_ = task_runner;
   clock_ = clock;
@@ -692,7 +692,7 @@ class UDPProxyImpl : public UDPProxy {
       result = net::ERR_INVALID_ARGUMENT;
     } else {
       VLOG(1) << "Destination:" << destination.ToString();
-      result = socket_->SendTo(buf,
+      result = socket_->SendTo(buf.get(),
                                static_cast<int>(buf_size),
                                destination,
                                base::Bind(&UDPProxyImpl::AllowWrite,
@@ -773,12 +773,11 @@ class UDPProxyImpl : public UDPProxy {
       scoped_refptr<net::IOBuffer> recv_buf =
           new net::WrappedIOBuffer(reinterpret_cast<char*>(&packet_->front()));
       int len = socket_->RecvFrom(
-          recv_buf,
+          recv_buf.get(),
           kMaxPacketSize,
           &recv_address_,
-          base::Bind(&UDPProxyImpl::ReadCallback,
-                     base::Unretained(this),
-                     recv_buf));
+          base::Bind(
+              &UDPProxyImpl::ReadCallback, base::Unretained(this), recv_buf));
       if (len == net::ERR_IO_PENDING)
         break;
       ProcessPacket(recv_buf, len);

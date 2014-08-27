@@ -220,7 +220,7 @@ AudioDecoder::AudioDecoder(
 AudioDecoder::~AudioDecoder() {}
 
 CastInitializationStatus AudioDecoder::InitializationResult() const {
-  if (impl_)
+  if (impl_.get())
     return impl_->InitializationResult();
   return STATUS_UNSUPPORTED_AUDIO_CODEC;
 }
@@ -230,7 +230,8 @@ void AudioDecoder::DecodeFrame(
     const DecodeFrameCallback& callback) {
   DCHECK(encoded_frame.get());
   DCHECK(!callback.is_null());
-  if (!impl_ || impl_->InitializationResult() != STATUS_AUDIO_INITIALIZED) {
+  if (!impl_.get() ||
+      impl_->InitializationResult() != STATUS_AUDIO_INITIALIZED) {
     callback.Run(make_scoped_ptr<AudioBus>(NULL), false);
     return;
   }

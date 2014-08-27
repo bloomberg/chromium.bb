@@ -233,7 +233,7 @@ void FakeMediaSource::SendNextFakeFrame() {
   gfx::Size size(video_config_.width, video_config_.height);
   scoped_refptr<VideoFrame> video_frame =
       VideoFrame::CreateBlackFrame(size);
-  PopulateVideoFrame(video_frame, synthetic_count_);
+  PopulateVideoFrame(video_frame.get(), synthetic_count_);
   ++synthetic_count_;
 
   base::TimeTicks now = clock_->NowTicks();
@@ -302,17 +302,17 @@ bool FakeMediaSource::SendNextTranscodedVideo(base::TimeDelta elapsed_time) {
                    decoded_frame->data(VideoFrame::kYPlane),
                    decoded_frame->stride(VideoFrame::kYPlane),
                    decoded_frame->rows(VideoFrame::kYPlane),
-                   video_frame);
+                   video_frame.get());
   media::CopyPlane(VideoFrame::kUPlane,
                    decoded_frame->data(VideoFrame::kUPlane),
                    decoded_frame->stride(VideoFrame::kUPlane),
                    decoded_frame->rows(VideoFrame::kUPlane),
-                   video_frame);
+                   video_frame.get());
   media::CopyPlane(VideoFrame::kVPlane,
                    decoded_frame->data(VideoFrame::kVPlane),
                    decoded_frame->stride(VideoFrame::kVPlane),
                    decoded_frame->rows(VideoFrame::kVPlane),
-                   video_frame);
+                   video_frame.get());
 
   base::TimeDelta video_time;
   // Use the timestamp from the file if we're transcoding.

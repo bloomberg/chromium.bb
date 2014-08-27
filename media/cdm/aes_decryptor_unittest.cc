@@ -379,7 +379,7 @@ class AesDecryptorTest : public testing::Test {
     decryptor_.Decrypt(Decryptor::kVideo, encrypted, decrypt_cb_);
 
     std::vector<uint8> decrypted_text;
-    if (decrypted && decrypted->data_size()) {
+    if (decrypted.get() && decrypted->data_size()) {
       decrypted_text.assign(
         decrypted->data(), decrypted->data() + decrypted->data_size());
     }

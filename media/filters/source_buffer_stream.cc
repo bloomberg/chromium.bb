@@ -1149,7 +1149,7 @@ void SourceBufferStream::OnSetDuration(base::TimeDelta duration) {
 
 SourceBufferStream::Status SourceBufferStream::GetNextBuffer(
     scoped_refptr<StreamParserBuffer>* out_buffer) {
-  if (!pending_buffer_) {
+  if (!pending_buffer_.get()) {
     const SourceBufferStream::Status status = GetNextBufferInternal(out_buffer);
     if (status != SourceBufferStream::kSuccess || !SetPendingBuffer(out_buffer))
       return status;
@@ -1158,7 +1158,7 @@ SourceBufferStream::Status SourceBufferStream::GetNextBuffer(
   if (!pending_buffer_->splice_buffers().empty())
     return HandleNextBufferWithSplice(out_buffer);
 
-  DCHECK(pending_buffer_->preroll_buffer());
+  DCHECK(pending_buffer_->preroll_buffer().get());
   return HandleNextBufferWithPreroll(out_buffer);
 }
 
@@ -1183,7 +1183,7 @@ SourceBufferStream::Status SourceBufferStream::HandleNextBufferWithSplice(
            splice_buffers[splice_buffers_index_]->splice_timestamp());
 
     // No pre splice buffers should have preroll.
-    DCHECK(!splice_buffers[splice_buffers_index_]->preroll_buffer());
+    DCHECK(!splice_buffers[splice_buffers_index_]->preroll_buffer().get());
 
     *out_buffer = splice_buffers[splice_buffers_index_++];
     return SourceBufferStream::kSuccess;
@@ -1241,7 +1241,7 @@ SourceBufferStream::Status SourceBufferStream::GetNextBufferInternal(
 
     // If the next buffer is an audio splice frame, the next effective config id
     // comes from the first splice buffer.
-    if (GetConfigId(next_buffer, 0) != current_config_index_) {
+    if (GetConfigId(next_buffer.get(), 0) != current_config_index_) {
       config_change_pending_ = true;
       DVLOG(1) << "Config change (track buffer config ID does not match).";
       return kConfigChange;
@@ -1461,14 +1461,14 @@ bool SourceBufferStream::UpdateVideoConfig(const VideoDecoderConfig& config) {
 void SourceBufferStream::CompleteConfigChange() {
   config_change_pending_ = false;
 
-  if (pending_buffer_) {
+  if (pending_buffer_.get()) {
     current_config_index_ =
-        GetConfigId(pending_buffer_, splice_buffers_index_);
+        GetConfigId(pending_buffer_.get(), splice_buffers_index_);
     return;
   }
 
   if (!track_buffer_.empty()) {
-    current_config_index_ = GetConfigId(track_buffer_.front(), 0);
+    current_config_index_ = GetConfigId(track_buffer_.front().get(), 0);
     return;
   }
 
@@ -1685,7 +1685,7 @@ void SourceBufferStream::GenerateSpliceFrame(const BufferQueue& new_buffers) {
       return;
     }
 
-    if (pre_splice_buffers[i]->preroll_buffer()) {
+    if (pre_splice_buffers[i]->preroll_buffer().get()) {
       DVLOG(1) << "Can't generate splice: overlapped buffers contain preroll.";
       return;
     }
@@ -2089,7 +2089,7 @@ int SourceBufferRange::GetNextConfigId() const {
   DCHECK(HasNextBuffer());
   // If the next buffer is an audio splice frame, the next effective config id
   // comes from the first fade out preroll buffer.
-  return GetConfigId(buffers_[next_buffer_index_], 0);
+  return GetConfigId(buffers_[next_buffer_index_].get(), 0);
 }
 
 DecodeTimestamp SourceBufferRange::GetNextTimestamp() const {
@@ -2269,11 +2269,11 @@ bool SourceBufferRange::GetBuffersInRange(DecodeTimestamp start,
 
 bool SourceBufferStream::SetPendingBuffer(
     scoped_refptr<StreamParserBuffer>* out_buffer) {
-  DCHECK(*out_buffer);
-  DCHECK(!pending_buffer_);
+  DCHECK(out_buffer->get());
+  DCHECK(!pending_buffer_.get());
 
   const bool have_splice_buffers = !(*out_buffer)->splice_buffers().empty();
-  const bool have_preroll_buffer = !!(*out_buffer)->preroll_buffer();
+  const bool have_preroll_buffer = !!(*out_buffer)->preroll_buffer().get();
 
   if (!have_splice_buffers && !have_preroll_buffer)
     return false;

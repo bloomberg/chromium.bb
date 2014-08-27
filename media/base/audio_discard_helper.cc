@@ -71,7 +71,7 @@ bool AudioDiscardHelper::ProcessBuffers(
   }
   DCHECK(initialized());
 
-  if (!decoded_buffer) {
+  if (!decoded_buffer.get()) {
     // If there's a one buffer delay for decoding, we need to save it so it can
     // be processed with the next decoder buffer.
     if (first_buffer) {

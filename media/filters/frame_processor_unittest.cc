@@ -249,7 +249,7 @@ class FrameProcessorTest : public testing::TestWithParam<bool> {
  private:
   void StoreStatusAndBuffer(DemuxerStream::Status status,
                             const scoped_refptr<DecoderBuffer>& buffer) {
-    if (status == DemuxerStream::kOk && buffer) {
+    if (status == DemuxerStream::kOk && buffer.get()) {
       DVLOG(3) << __FUNCTION__ << "status: " << status << " ts: "
                << buffer->timestamp().InSecondsF();
     } else {

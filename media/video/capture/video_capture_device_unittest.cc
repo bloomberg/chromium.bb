@@ -150,7 +150,7 @@ class VideoCaptureDeviceTest : public testing::Test {
 
   scoped_ptr<media::VideoCaptureDevice::Names> EnumerateDevices() {
     media::VideoCaptureDevice::Names* names;
-    EXPECT_CALL(*device_enumeration_listener_,
+    EXPECT_CALL(*device_enumeration_listener_.get(),
                 OnEnumeratedDevicesCallbackPtr(_)).WillOnce(SaveArg<0>(&names));
 
     video_capture_device_factory_->EnumerateDeviceNames(

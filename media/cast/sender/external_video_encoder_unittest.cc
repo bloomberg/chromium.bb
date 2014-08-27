@@ -117,7 +117,7 @@ class ExternalVideoEncoderTest : public ::testing::Test {
     gfx::Size size(video_config_.width, video_config_.height);
     video_frame_ = media::VideoFrame::CreateFrame(
         VideoFrame::I420, size, gfx::Rect(size), size, base::TimeDelta());
-    PopulateVideoFrame(video_frame_, 123);
+    PopulateVideoFrame(video_frame_.get(), 123);
 
     testing_clock_ = new base::SimpleTestTickClock();
     task_runner_ = new test::FakeSingleThreadTaskRunner(testing_clock_);

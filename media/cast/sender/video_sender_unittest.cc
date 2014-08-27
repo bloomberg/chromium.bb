@@ -90,7 +90,7 @@ class TestPacketSender : public PacketSender {
 
   void SetPause(bool paused) {
     paused_ = paused;
-    if (!paused && stored_packet_) {
+    if (!paused && stored_packet_.get()) {
       SendPacket(stored_packet_, callback_);
       callback_.Run();
     }
@@ -203,7 +203,7 @@ class VideoSenderTest : public ::testing::Test {
     scoped_refptr<media::VideoFrame> video_frame =
         media::VideoFrame::CreateFrame(
             VideoFrame::I420, size, gfx::Rect(size), size, base::TimeDelta());
-    PopulateVideoFrame(video_frame, last_pixel_value_++);
+    PopulateVideoFrame(video_frame.get(), last_pixel_value_++);
     return video_frame;
   }
 
@@ -212,7 +212,7 @@ class VideoSenderTest : public ::testing::Test {
     scoped_refptr<media::VideoFrame> video_frame =
         media::VideoFrame::CreateFrame(
             VideoFrame::I420, size, gfx::Rect(size), size, base::TimeDelta());
-    PopulateVideoFrameWithNoise(video_frame);
+    PopulateVideoFrameWithNoise(video_frame.get());
     return video_frame;
   }
 

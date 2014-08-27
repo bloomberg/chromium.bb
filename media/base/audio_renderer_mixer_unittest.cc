@@ -51,8 +51,8 @@ class AudioRendererMixerTest
         std::tr1::get<1>(GetParam()), 16, kLowLatencyBufferSize);
 
     sink_ = new MockAudioRendererSink();
-    EXPECT_CALL(*sink_, Start());
-    EXPECT_CALL(*sink_, Stop());
+    EXPECT_CALL(*sink_.get(), Start());
+    EXPECT_CALL(*sink_.get(), Stop());
 
     mixer_.reset(new AudioRendererMixer(
         input_parameters_, output_parameters_, sink_));

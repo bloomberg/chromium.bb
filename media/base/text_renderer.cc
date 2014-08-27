@@ -137,7 +137,7 @@ void TextRenderer::BufferReady(
   DCHECK_NE(status, DemuxerStream::kConfigChanged);
 
   if (status == DemuxerStream::kAborted) {
-    DCHECK(!input);
+    DCHECK(!input.get());
     DCHECK_GT(pending_read_count_, 0);
     DCHECK(pending_eos_set_.find(stream) != pending_eos_set_.end());
 
@@ -224,7 +224,7 @@ void TextRenderer::CueReady(
 
   switch (state_) {
     case kPlaying: {
-      if (text_cue)
+      if (text_cue.get())
         break;
 
       const size_t count = pending_eos_set_.erase(text_stream);
@@ -241,7 +241,7 @@ void TextRenderer::CueReady(
       return;
     }
     case kPausePending: {
-      if (text_cue)
+      if (text_cue.get())
         break;
 
       const size_t count = pending_eos_set_.erase(text_stream);

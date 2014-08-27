@@ -115,7 +115,7 @@ class AudioSplicerTest : public ::testing::Test {
       float cf_ratio = 0;
       const float cf_increment = 1.0f / frames;
       for (int i = 0; i < frames; ++i, cf_ratio += cf_increment) {
-        if (overlapped_buffer_2 && i >= second_overlap_index)
+        if (overlapped_buffer_2.get() && i >= second_overlap_index)
           overlapped_value = GetValue(overlapped_buffer_2);
         const float actual = bus->channel(ch)[i];
         const float expected =

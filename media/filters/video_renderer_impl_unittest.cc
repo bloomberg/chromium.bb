@@ -224,7 +224,7 @@ class VideoRendererImplTest : public ::testing::Test {
 
     // Post tasks for OutputCB and DecodeCB.
     scoped_refptr<VideoFrame> frame = decode_results_.front().second;
-    if (frame)
+    if (frame.get())
       message_loop_.PostTask(FROM_HERE, base::Bind(output_cb_, frame));
     message_loop_.PostTask(
         FROM_HERE, base::Bind(base::ResetAndReturn(&decode_cb_),

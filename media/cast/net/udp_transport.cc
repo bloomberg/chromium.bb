@@ -116,12 +116,12 @@ void UdpTransport::ReceiveNextPacket(int length_or_status) {
       next_packet_.reset(new Packet(kMaxPacketSize));
       recv_buf_ = new net::WrappedIOBuffer(
           reinterpret_cast<char*>(&next_packet_->front()));
-      length_or_status = udp_socket_->RecvFrom(
-          recv_buf_,
-          kMaxPacketSize,
-          &recv_addr_,
-          base::Bind(&UdpTransport::ReceiveNextPacket,
-                     weak_factory_.GetWeakPtr()));
+      length_or_status =
+          udp_socket_->RecvFrom(recv_buf_.get(),
+                                kMaxPacketSize,
+                                &recv_addr_,
+                                base::Bind(&UdpTransport::ReceiveNextPacket,
+                                           weak_factory_.GetWeakPtr()));
       if (length_or_status == net::ERR_IO_PENDING) {
         receive_pending_ = true;
         return;
@@ -196,11 +196,10 @@ bool UdpTransport::SendPacket(PacketRef packet, const base::Closure& cb) {
     // If we called Connect() before we must call Write() instead of
     // SendTo(). Otherwise on some platforms we might get
     // ERR_SOCKET_IS_CONNECTED.
-    result = udp_socket_->Write(buf,
-                                static_cast<int>(packet->data.size()),
-                                callback);
+    result = udp_socket_->Write(
+        buf.get(), static_cast<int>(packet->data.size()), callback);
   } else if (!IsEmpty(remote_addr_)) {
-    result = udp_socket_->SendTo(buf,
+    result = udp_socket_->SendTo(buf.get(),
                                  static_cast<int>(packet->data.size()),
                                  remote_addr_,
                                  callback);

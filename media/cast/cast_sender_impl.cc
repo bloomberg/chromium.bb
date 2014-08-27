@@ -77,7 +77,7 @@ class LocalAudioFrameInput : public AudioFrameInput {
 scoped_ptr<CastSender> CastSender::Create(
     scoped_refptr<CastEnvironment> cast_environment,
     CastTransportSender* const transport_sender) {
-  CHECK(cast_environment);
+  CHECK(cast_environment.get());
   return scoped_ptr<CastSender>(
       new CastSenderImpl(cast_environment, transport_sender));
 }
@@ -88,7 +88,7 @@ CastSenderImpl::CastSenderImpl(
     : cast_environment_(cast_environment),
       transport_sender_(transport_sender),
       weak_factory_(this) {
-  CHECK(cast_environment);
+  CHECK(cast_environment.get());
 }
 
 void CastSenderImpl::InitializeAudio(

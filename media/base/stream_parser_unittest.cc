@@ -129,7 +129,7 @@ class StreamParserTest : public testing::Test {
          ++itr) {
       if (itr != merged_buffers_.begin())
         results_stream << " ";
-      const StreamParserBuffer& buffer = *(*itr);
+      const StreamParserBuffer& buffer = *(itr->get());
       if (include_type_and_text_track) {
         switch (buffer.type()) {
           case DemuxerStream::AUDIO:

@@ -177,7 +177,7 @@ void FFmpegVideoDecoder::Initialize(const VideoDecoderConfig& config,
 void FFmpegVideoDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
                                 const DecodeCB& decode_cb) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK(buffer);
+  DCHECK(buffer.get());
   DCHECK(!decode_cb.is_null());
   CHECK_NE(state_, kUninitialized);
 

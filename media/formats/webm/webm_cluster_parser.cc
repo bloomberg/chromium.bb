@@ -441,7 +441,7 @@ WebMClusterParser::Track::~Track() {}
 
 DecodeTimestamp WebMClusterParser::Track::GetReadyUpperBound() {
   DCHECK(ready_buffers_.empty());
-  if (last_added_buffer_missing_duration_)
+  if (last_added_buffer_missing_duration_.get())
     return last_added_buffer_missing_duration_->GetDecodeTimestamp();
 
   return DecodeTimestamp::FromPresentationTime(base::TimeDelta::Max());
@@ -489,7 +489,7 @@ bool WebMClusterParser::Track::AddBuffer(
            << " kf " << buffer->IsKeyframe()
            << " size " << buffer->data_size();
 
-  if (last_added_buffer_missing_duration_) {
+  if (last_added_buffer_missing_duration_.get()) {
     base::TimeDelta derived_duration =
         buffer->timestamp() - last_added_buffer_missing_duration_->timestamp();
     last_added_buffer_missing_duration_->set_duration(derived_duration);
@@ -518,7 +518,7 @@ bool WebMClusterParser::Track::AddBuffer(
 }
 
 void WebMClusterParser::Track::ApplyDurationEstimateIfNeeded() {
-  if (!last_added_buffer_missing_duration_)
+  if (!last_added_buffer_missing_duration_.get())
     return;
 
   last_added_buffer_missing_duration_->set_duration(GetDurationEstimate());
@@ -574,7 +574,7 @@ bool WebMClusterParser::Track::IsKeyframe(const uint8* data, int size) const {
 
 bool WebMClusterParser::Track::QueueBuffer(
     const scoped_refptr<StreamParserBuffer>& buffer) {
-  DCHECK(!last_added_buffer_missing_duration_);
+  DCHECK(!last_added_buffer_missing_duration_.get());
 
   // WebMClusterParser::OnBlock() gives MEDIA_LOG and parse error on decreasing
   // block timecode detection within a cluster. Therefore, we should not see

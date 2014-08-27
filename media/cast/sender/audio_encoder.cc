@@ -359,7 +359,7 @@ AudioEncoder::~AudioEncoder() {}
 
 CastInitializationStatus AudioEncoder::InitializationResult() const {
   DCHECK(insert_thread_checker_.CalledOnValidThread());
-  if (impl_) {
+  if (impl_.get()) {
     return impl_->InitializationResult();
   }
   return STATUS_UNSUPPORTED_AUDIO_CODEC;
@@ -369,7 +369,7 @@ void AudioEncoder::InsertAudio(scoped_ptr<AudioBus> audio_bus,
                                const base::TimeTicks& recorded_time) {
   DCHECK(insert_thread_checker_.CalledOnValidThread());
   DCHECK(audio_bus.get());
-  if (!impl_) {
+  if (!impl_.get()) {
     NOTREACHED();
     return;
   }

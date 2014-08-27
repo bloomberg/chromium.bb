@@ -95,7 +95,7 @@ class AudioRendererImplTest : public ::testing::Test {
     decoders.push_back(decoder_);
     sink_ = new FakeAudioRendererSink();
     renderer_.reset(new AudioRendererImpl(message_loop_.message_loop_proxy(),
-                                          sink_,
+                                          sink_.get(),
                                           decoders.Pass(),
                                           SetDecryptorReadyCB(),
                                           &hardware_config_));
@@ -379,7 +379,7 @@ class AudioRendererImplTest : public ::testing::Test {
   void DeliverBuffer(AudioDecoder::Status status,
                      const scoped_refptr<AudioBuffer>& buffer) {
     CHECK(!decode_cb_.is_null());
-    if (buffer && !buffer->end_of_stream())
+    if (buffer.get() && !buffer->end_of_stream())
       output_cb_.Run(buffer);
     base::ResetAndReturn(&decode_cb_).Run(status);
 

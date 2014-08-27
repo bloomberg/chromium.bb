@@ -84,7 +84,7 @@ class LocalVideoEncodeAcceleratorClient
 
   // Initialize the real HW encoder.
   void Initialize(const VideoSenderConfig& video_config) {
-    DCHECK(encoder_task_runner_);
+    DCHECK(encoder_task_runner_.get());
     DCHECK(encoder_task_runner_->RunsTasksOnCurrentThread());
 
     VideoCodecProfile output_profile = media::VIDEO_CODEC_PROFILE_UNKNOWN;
@@ -124,7 +124,7 @@ class LocalVideoEncodeAcceleratorClient
 
   // Destroy the VEA on the correct thread.
   void Destroy() {
-    DCHECK(encoder_task_runner_);
+    DCHECK(encoder_task_runner_.get());
     if (!video_encode_accelerator_)
       return;
 
@@ -141,7 +141,7 @@ class LocalVideoEncodeAcceleratorClient
   }
 
   void SetBitRate(uint32 bit_rate) {
-    DCHECK(encoder_task_runner_);
+    DCHECK(encoder_task_runner_.get());
     DCHECK(encoder_task_runner_->RunsTasksOnCurrentThread());
 
     video_encode_accelerator_->RequestEncodingParametersChange(bit_rate,
@@ -153,7 +153,7 @@ class LocalVideoEncodeAcceleratorClient
       const base::TimeTicks& capture_time,
       bool key_frame_requested,
       const VideoEncoder::FrameEncodedCallback& frame_encoded_callback) {
-    DCHECK(encoder_task_runner_);
+    DCHECK(encoder_task_runner_.get());
     DCHECK(encoder_task_runner_->RunsTasksOnCurrentThread());
 
     encoded_frame_data_storage_.push_back(
@@ -165,7 +165,7 @@ class LocalVideoEncodeAcceleratorClient
 
  protected:
   virtual void NotifyError(VideoEncodeAccelerator::Error error) OVERRIDE {
-    DCHECK(encoder_task_runner_);
+    DCHECK(encoder_task_runner_.get());
     DCHECK(encoder_task_runner_->RunsTasksOnCurrentThread());
     VLOG(1) << "ExternalVideoEncoder NotifyError: " << error;
 
@@ -179,7 +179,7 @@ class LocalVideoEncodeAcceleratorClient
   virtual void RequireBitstreamBuffers(unsigned int input_count,
                                        const gfx::Size& input_coded_size,
                                        size_t output_buffer_size) OVERRIDE {
-    DCHECK(encoder_task_runner_);
+    DCHECK(encoder_task_runner_.get());
     DCHECK(encoder_task_runner_->RunsTasksOnCurrentThread());
     DCHECK(video_encode_accelerator_);
 
@@ -196,7 +196,7 @@ class LocalVideoEncodeAcceleratorClient
   virtual void BitstreamBufferReady(int32 bitstream_buffer_id,
                                     size_t payload_size,
                                     bool key_frame) OVERRIDE {
-    DCHECK(encoder_task_runner_);
+    DCHECK(encoder_task_runner_.get());
     DCHECK(encoder_task_runner_->RunsTasksOnCurrentThread());
     if (bitstream_buffer_id < 0 ||
         bitstream_buffer_id >= static_cast<int32>(output_buffers_.size())) {
@@ -322,7 +322,7 @@ class LocalVideoEncodeAcceleratorClient
   }
 
   void ReceivedSharedMemory(scoped_ptr<base::SharedMemory> memory) {
-    DCHECK(encoder_task_runner_);
+    DCHECK(encoder_task_runner_.get());
     DCHECK(encoder_task_runner_->RunsTasksOnCurrentThread());
 
     output_buffers_.push_back(memory.release());
@@ -393,7 +393,7 @@ ExternalVideoEncoder::ExternalVideoEncoder(
                                                 create_vea_cb,
                                                 create_video_encode_mem_cb,
                                                 weak_factory_.GetWeakPtr());
-  DCHECK(video_accelerator_client_);
+  DCHECK(video_accelerator_client_.get());
 }
 
 ExternalVideoEncoder::~ExternalVideoEncoder() {

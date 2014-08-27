@@ -34,7 +34,8 @@ CastEnvironment::CastEnvironment(
 
 CastEnvironment::~CastEnvironment() {
   // Logging must be deleted on the main thread.
-  if (main_thread_proxy_ && !main_thread_proxy_->RunsTasksOnCurrentThread()) {
+  if (main_thread_proxy_.get() &&
+      !main_thread_proxy_->RunsTasksOnCurrentThread()) {
     main_thread_proxy_->PostTask(
         FROM_HERE,
         base::Bind(&DeleteLoggingOnMainThread, base::Passed(&logging_)));
@@ -73,13 +74,13 @@ scoped_refptr<SingleThreadTaskRunner> CastEnvironment::GetTaskRunner(
 bool CastEnvironment::CurrentlyOn(ThreadId identifier) {
   switch (identifier) {
     case CastEnvironment::MAIN:
-      return main_thread_proxy_ &&
+      return main_thread_proxy_.get() &&
              main_thread_proxy_->RunsTasksOnCurrentThread();
     case CastEnvironment::AUDIO:
-      return audio_thread_proxy_ &&
+      return audio_thread_proxy_.get() &&
              audio_thread_proxy_->RunsTasksOnCurrentThread();
     case CastEnvironment::VIDEO:
-      return video_thread_proxy_ &&
+      return video_thread_proxy_.get() &&
              video_thread_proxy_->RunsTasksOnCurrentThread();
     default:
       NOTREACHED() << "Invalid thread identifier";

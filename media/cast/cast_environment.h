@@ -64,13 +64,9 @@ class CastEnvironment : public base::RefCountedThreadSafe<CastEnvironment> {
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(
       ThreadId identifier) const;
 
-  bool HasAudioThread() {
-    return audio_thread_proxy_ ? true : false;
-  }
+  bool HasAudioThread() { return audio_thread_proxy_.get() ? true : false; }
 
-  bool HasVideoThread() {
-    return video_thread_proxy_ ? true : false;
-  }
+  bool HasVideoThread() { return video_thread_proxy_.get() ? true : false; }
 
  protected:
   virtual ~CastEnvironment();

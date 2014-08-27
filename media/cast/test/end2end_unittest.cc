@@ -390,7 +390,7 @@ class TestReceiverVideoCallback
                        bool is_continuous) {
     ++num_called_;
 
-    ASSERT_TRUE(!!video_frame);
+    ASSERT_TRUE(!!video_frame.get());
     ASSERT_FALSE(expected_frame_.empty());
     ExpectedVideoFrame expected_video_frame = expected_frame_.front();
     expected_frame_.pop_front();
@@ -403,7 +403,8 @@ class TestReceiverVideoCallback
     scoped_refptr<media::VideoFrame> expected_I420_frame =
         media::VideoFrame::CreateFrame(
             VideoFrame::I420, size, gfx::Rect(size), size, base::TimeDelta());
-    PopulateVideoFrame(expected_I420_frame, expected_video_frame.start_value);
+    PopulateVideoFrame(expected_I420_frame.get(),
+                       expected_video_frame.start_value);
 
     EXPECT_GE(I420PSNR(expected_I420_frame, video_frame), kVideoAcceptedPSNR);
 
@@ -649,7 +650,7 @@ class End2EndTest : public ::testing::Test {
     scoped_refptr<media::VideoFrame> video_frame =
         media::VideoFrame::CreateFrame(
             VideoFrame::I420, size, gfx::Rect(size), size, time_diff);
-    PopulateVideoFrame(video_frame, start_value);
+    PopulateVideoFrame(video_frame.get(), start_value);
     video_frame_input_->InsertRawVideoFrame(video_frame, capture_time);
   }
 

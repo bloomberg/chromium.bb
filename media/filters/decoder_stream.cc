@@ -255,7 +255,7 @@ void DecoderStream<StreamType>::Decode(
   DCHECK(state_ == STATE_NORMAL || state_ == STATE_FLUSHING_DECODER) << state_;
   DCHECK_LT(pending_decode_requests_, GetMaxDecodeRequests());
   DCHECK(reset_cb_.is_null());
-  DCHECK(buffer);
+  DCHECK(buffer.get());
 
   int buffer_size = buffer->end_of_stream() ? 0 : buffer->data_size();
 
@@ -339,7 +339,7 @@ template <DemuxerStream::Type StreamType>
 void DecoderStream<StreamType>::OnDecodeOutputReady(
     const scoped_refptr<Output>& output) {
   FUNCTION_DVLOG(2) << ": " << output->timestamp().InMilliseconds() << " ms";
-  DCHECK(output);
+  DCHECK(output.get());
   DCHECK(!output->end_of_stream());
   DCHECK(state_ == STATE_NORMAL || state_ == STATE_FLUSHING_DECODER ||
          state_ == STATE_PENDING_DEMUXER_READ || state_ == STATE_ERROR)
@@ -386,7 +386,8 @@ void DecoderStream<StreamType>::OnBufferReady(
     DemuxerStream::Status status,
     const scoped_refptr<DecoderBuffer>& buffer) {
   FUNCTION_DVLOG(2) << ": " << status << ", "
-                    << (buffer ? buffer->AsHumanReadableString() : "NULL");
+                    << (buffer.get() ? buffer->AsHumanReadableString()
+                                     : "NULL");
 
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(state_ == STATE_PENDING_DEMUXER_READ || state_ == STATE_ERROR)

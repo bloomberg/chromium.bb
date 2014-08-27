@@ -440,7 +440,7 @@ scoped_ptr<AudioBus> AudioSplicer::ExtractCrossfadeFromPreSplice(
   // called if there is not enough data to crossfade.
   // TODO(dalecurtis): Convert to DCHECK() once http://crbug.com/356073 fixed.
   CHECK(output_bus);
-  CHECK(*crossfade_buffer);
+  CHECK(crossfade_buffer->get());
 
   // All necessary buffers have been processed, it's safe to reset.
   pre_splice_sanitizer_->Reset();
@@ -477,7 +477,7 @@ void AudioSplicer::CrossfadePostSplice(
     // If only part of the buffer was consumed, save it for after we've added
     // the crossfade buffer
     if (frames_to_read < postroll->frame_count()) {
-      DCHECK(!remainder);
+      DCHECK(!remainder.get());
       remainder.swap(postroll);
       frames_to_trim = frames_to_read;
     }
@@ -495,7 +495,7 @@ void AudioSplicer::CrossfadePostSplice(
   CHECK(output_sanitizer_->AddInput(crossfade_buffer));
   DCHECK_EQ(crossfade_buffer->frame_count(), output_bus->frames());
 
-  if (remainder) {
+  if (remainder.get()) {
     // Trim off consumed frames.
     AccurateTrimStart(frames_to_trim, remainder, output_ts_helper);
     CHECK(output_sanitizer_->AddInput(remainder));

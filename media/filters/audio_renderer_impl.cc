@@ -254,7 +254,7 @@ void AudioRendererImpl::Initialize(DemuxerStream* stream,
   DCHECK(!ended_cb.is_null());
   DCHECK(!error_cb.is_null());
   DCHECK_EQ(kUninitialized, state_);
-  DCHECK(sink_);
+  DCHECK(sink_.get());
 
   state_ = kInitializing;
 
@@ -356,7 +356,7 @@ void AudioRendererImpl::OnAudioBufferStreamInitialized(bool success) {
 
 void AudioRendererImpl::SetVolume(float volume) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK(sink_);
+  DCHECK(sink_.get());
   sink_->SetVolume(volume);
 }
 
@@ -510,7 +510,7 @@ void AudioRendererImpl::SetPlaybackRate(float playback_rate) {
   DVLOG(1) << __FUNCTION__ << "(" << playback_rate << ")";
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_GE(playback_rate, 0);
-  DCHECK(sink_);
+  DCHECK(sink_.get());
 
   base::AutoLock auto_lock(lock_);
 
@@ -537,7 +537,7 @@ void AudioRendererImpl::SetPlaybackRate(float playback_rate) {
 bool AudioRendererImpl::IsBeforeStartTime(
     const scoped_refptr<AudioBuffer>& buffer) {
   DCHECK_EQ(state_, kPlaying);
-  return buffer && !buffer->end_of_stream() &&
+  return buffer.get() && !buffer->end_of_stream() &&
          (buffer->timestamp() + buffer->duration()) < start_timestamp_;
 }
 

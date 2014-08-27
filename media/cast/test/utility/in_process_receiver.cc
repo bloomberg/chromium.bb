@@ -107,7 +107,7 @@ void InProcessReceiver::GotVideoFrame(
     const base::TimeTicks& playout_time,
     bool is_continuous) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
-  if (video_frame)
+  if (video_frame.get())
     OnVideoFrame(video_frame, playout_time, is_continuous);
   PullNextVideoFrame();
 }

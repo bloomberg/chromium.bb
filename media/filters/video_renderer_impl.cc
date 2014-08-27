@@ -322,7 +322,7 @@ void VideoRendererImpl::FrameReady(VideoFrameStream::Status status,
   DCHECK_EQ(state_, kPlaying);
 
   // Can happen when demuxers are preparing for a new Seek().
-  if (!frame) {
+  if (!frame.get()) {
     DCHECK_EQ(status, VideoFrameStream::DEMUXER_READ_ABORTED);
     return;
   }

@@ -66,7 +66,7 @@ scoped_refptr<VideoFrame> VideoFramePool::PoolImpl::CreateFrame(
 
   scoped_refptr<VideoFrame> frame;
 
-  while (!frame && !frames_.empty()) {
+  while (!frame.get() && !frames_.empty()) {
       scoped_refptr<VideoFrame> pool_frame = frames_.front();
       frames_.pop_front();
 
@@ -80,7 +80,7 @@ scoped_refptr<VideoFrame> VideoFramePool::PoolImpl::CreateFrame(
       }
   }
 
-  if (!frame) {
+  if (!frame.get()) {
     frame = VideoFrame::CreateFrame(
         format, coded_size, visible_rect, natural_size, timestamp);
   }
