@@ -197,7 +197,8 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
   // |gpu_factories_| requires that its entry points be called on its
   // |GetTaskRunner()|.  Since |pipeline_| will own decoders created from the
   // factories, require that their message loops are identical.
-  DCHECK(!gpu_factories_ || (gpu_factories_->GetTaskRunner() == media_loop_));
+  DCHECK(!gpu_factories_.get() ||
+         (gpu_factories_->GetTaskRunner() == media_loop_.get()));
 
   // Let V8 know we started new thread if we did not do it yet.
   // Made separate task to avoid deletion of player currently being created.
@@ -613,7 +614,7 @@ bool WebMediaPlayerImpl::copyVideoTextureToPlatformTexture(
   scoped_refptr<media::VideoFrame> video_frame =
       GetCurrentFrameFromCompositor();
 
-  if (!video_frame)
+  if (!video_frame.get())
     return false;
   if (video_frame->format() != media::VideoFrame::NATIVE_TEXTURE)
     return false;

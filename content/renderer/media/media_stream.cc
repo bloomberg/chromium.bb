@@ -40,7 +40,7 @@ MediaStream::~MediaStream() {
 
 webrtc::MediaStreamInterface* MediaStream::GetWebRtcAdapter(
     const blink::WebMediaStream& stream) {
-  DCHECK(webrtc_media_stream_);
+  DCHECK(webrtc_media_stream_.get());
   DCHECK(thread_checker_.CalledOnValidThread());
   return webrtc_media_stream_.get();
 }

@@ -39,7 +39,7 @@ scoped_ptr<PepperCdmWrapper> PepperCdmWrapperImpl::Create(
   PepperWebPluginImpl* ppapi_plugin = static_cast<PepperWebPluginImpl*>(plugin);
   scoped_refptr<PepperPluginInstanceImpl> plugin_instance =
       ppapi_plugin->instance();
-  if (!plugin_instance)
+  if (!plugin_instance.get())
     return scoped_ptr<PepperCdmWrapper>();
 
   GURL url(plugin_instance->container()->element().document().url());
@@ -59,7 +59,7 @@ PepperCdmWrapperImpl::PepperCdmWrapperImpl(
     : helper_plugin_(helper_plugin.Pass()),
       plugin_instance_(plugin_instance) {
   DCHECK(helper_plugin_);
-  DCHECK(plugin_instance_);
+  DCHECK(plugin_instance_.get());
   // Plugin must be a CDM.
   DCHECK(plugin_instance_->GetContentDecryptorDelegate());
 }

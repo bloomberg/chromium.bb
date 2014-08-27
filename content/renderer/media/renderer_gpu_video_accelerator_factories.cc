@@ -59,7 +59,7 @@ void RendererGpuVideoAcceleratorFactories::BindContext() {
 WebGraphicsContext3DCommandBufferImpl*
 RendererGpuVideoAcceleratorFactories::GetContext3d() {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  if (!context_provider_)
+  if (!context_provider_.get())
     return NULL;
   if (context_provider_->IsContextLost()) {
     context_provider_->VerifyContexts();

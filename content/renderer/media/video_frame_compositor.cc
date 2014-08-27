@@ -59,12 +59,12 @@ void VideoFrameCompositor::PutCurrentFrame(
 
 void VideoFrameCompositor::UpdateCurrentFrame(
     const scoped_refptr<media::VideoFrame>& frame) {
-  if (current_frame_ &&
+  if (current_frame_.get() &&
       current_frame_->natural_size() != frame->natural_size()) {
     natural_size_changed_cb_.Run(frame->natural_size());
   }
 
-  if (!current_frame_ || IsOpaque(current_frame_) != IsOpaque(frame)) {
+  if (!current_frame_.get() || IsOpaque(current_frame_) != IsOpaque(frame)) {
     opacity_changed_cb_.Run(IsOpaque(frame));
   }
 

@@ -482,7 +482,7 @@ void RTCVideoEncoder::Impl::EncodeOneFrame() {
           input_buffer->handle(),
           base::TimeDelta(),
           base::Bind(&RTCVideoEncoder::Impl::EncodeFrameFinished, this, index));
-  if (!frame) {
+  if (!frame.get()) {
     DLOG(ERROR) << "Impl::EncodeOneFrame(): failed to create frame";
     NOTIFY_ERROR(media::VideoEncodeAccelerator::kPlatformFailureError);
     return;
@@ -561,7 +561,7 @@ RTCVideoEncoder::~RTCVideoEncoder() {
   DVLOG(3) << "~RTCVideoEncoder";
   DCHECK(thread_checker_.CalledOnValidThread());
   Release();
-  DCHECK(!impl_);
+  DCHECK(!impl_.get());
 }
 
 int32_t RTCVideoEncoder::InitEncode(const webrtc::VideoCodec* codec_settings,
@@ -572,7 +572,7 @@ int32_t RTCVideoEncoder::InitEncode(const webrtc::VideoCodec* codec_settings,
            << ", height=" << codec_settings->height
            << ", startBitrate=" << codec_settings->startBitrate;
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!impl_);
+  DCHECK(!impl_.get());
 
   weak_factory_.InvalidateWeakPtrs();
   impl_ = new Impl(weak_factory_.GetWeakPtr(), gpu_factories_);
@@ -599,7 +599,7 @@ int32_t RTCVideoEncoder::Encode(
     const webrtc::CodecSpecificInfo* codec_specific_info,
     const std::vector<webrtc::VideoFrameType>* frame_types) {
   DVLOG(3) << "Encode()";
-  if (!impl_) {
+  if (!impl_.get()) {
     DVLOG(3) << "Encode(): returning impl_status_=" << impl_status_;
     return impl_status_;
   }
@@ -627,7 +627,7 @@ int32_t RTCVideoEncoder::RegisterEncodeCompleteCallback(
     webrtc::EncodedImageCallback* callback) {
   DVLOG(3) << "RegisterEncodeCompleteCallback()";
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (!impl_) {
+  if (!impl_.get()) {
     DVLOG(3) << "RegisterEncodeCompleteCallback(): returning " << impl_status_;
     return impl_status_;
   }
@@ -640,7 +640,7 @@ int32_t RTCVideoEncoder::Release() {
   DVLOG(3) << "Release()";
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (impl_) {
+  if (impl_.get()) {
     gpu_factories_->GetTaskRunner()->PostTask(
         FROM_HERE, base::Bind(&RTCVideoEncoder::Impl::Destroy, impl_));
     impl_ = NULL;
@@ -660,7 +660,7 @@ int32_t RTCVideoEncoder::SetChannelParameters(uint32_t packet_loss, int rtt) {
 int32_t RTCVideoEncoder::SetRates(uint32_t new_bit_rate, uint32_t frame_rate) {
   DVLOG(3) << "SetRates(): new_bit_rate=" << new_bit_rate
            << ", frame_rate=" << frame_rate;
-  if (!impl_) {
+  if (!impl_.get()) {
     DVLOG(3) << "SetRates(): returning " << impl_status_;
     return impl_status_;
   }

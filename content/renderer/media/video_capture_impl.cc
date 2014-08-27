@@ -199,7 +199,7 @@ void VideoCaptureImpl::OnBufferDestroyed(int buffer_id) {
   if (iter == client_buffers_.end())
     return;
 
-  DCHECK(!iter->second || iter->second->HasOneRef())
+  DCHECK(!iter->second.get() || iter->second->HasOneRef())
       << "Instructed to delete buffer we are still using.";
   client_buffers_.erase(iter);
 }

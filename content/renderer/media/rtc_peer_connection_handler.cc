@@ -714,15 +714,15 @@ void RTCPeerConnectionHandler::removeStream(
       break;
     }
   }
-  DCHECK(webrtc_stream);
-  native_peer_connection_->RemoveStream(webrtc_stream);
+  DCHECK(webrtc_stream.get());
+  native_peer_connection_->RemoveStream(webrtc_stream.get());
 
   if (peer_connection_tracker_)
     peer_connection_tracker_->TrackRemoveStream(
         this, stream, PeerConnectionTracker::SOURCE_LOCAL);
   PerSessionWebRTCAPIMetrics::GetInstance()->DecrementStreamCounter();
   track_metrics_.RemoveStream(MediaStreamTrackMetrics::SENT_STREAM,
-                              webrtc_stream);
+                              webrtc_stream.get());
 }
 
 void RTCPeerConnectionHandler::getStats(

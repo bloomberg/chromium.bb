@@ -199,7 +199,7 @@ MediaStreamAudioProcessor::MediaStreamAudioProcessor(
     // In unit tests not creating a message filter, |aec_dump_message_filter_|
     // will be NULL. We can just ignore that. Other unit tests and browser tests
     // ensure that we do get the filter when we should.
-    if (aec_dump_message_filter_)
+    if (aec_dump_message_filter_.get())
       aec_dump_message_filter_->AddDelegate(this);
   }
 }
@@ -271,7 +271,7 @@ void MediaStreamAudioProcessor::Stop() {
 
   stopped_ = true;
 
-  if (aec_dump_message_filter_) {
+  if (aec_dump_message_filter_.get()) {
     aec_dump_message_filter_->RemoveDelegate(this);
     aec_dump_message_filter_ = NULL;
   }

@@ -168,7 +168,7 @@ TEST_F(MediaStreamAudioProcessorTest, WithoutAudioProcessing) {
   EXPECT_FALSE(audio_processor->has_audio_processing());
   audio_processor->OnCaptureFormatChanged(params_);
 
-  ProcessDataAndVerifyFormat(audio_processor,
+  ProcessDataAndVerifyFormat(audio_processor.get(),
                              params_.sample_rate(),
                              params_.channels(),
                              params_.sample_rate() / 100);
@@ -187,9 +187,9 @@ TEST_F(MediaStreamAudioProcessorTest, WithAudioProcessing) {
           webrtc_audio_device.get()));
   EXPECT_TRUE(audio_processor->has_audio_processing());
   audio_processor->OnCaptureFormatChanged(params_);
-  VerifyDefaultComponents(audio_processor);
+  VerifyDefaultComponents(audio_processor.get());
 
-  ProcessDataAndVerifyFormat(audio_processor,
+  ProcessDataAndVerifyFormat(audio_processor.get(),
                              kAudioProcessingSampleRate,
                              kAudioProcessingNumberOfChannel,
                              kAudioProcessingSampleRate / 100);
@@ -213,7 +213,7 @@ TEST_F(MediaStreamAudioProcessorTest, VerifyTabCaptureWithoutAudioProcessing) {
   EXPECT_FALSE(audio_processor->has_audio_processing());
   audio_processor->OnCaptureFormatChanged(params_);
 
-  ProcessDataAndVerifyFormat(audio_processor,
+  ProcessDataAndVerifyFormat(audio_processor.get(),
                              params_.sample_rate(),
                              params_.channels(),
                              params_.sample_rate() / 100);
@@ -247,7 +247,7 @@ TEST_F(MediaStreamAudioProcessorTest, TurnOffDefaultConstraints) {
   EXPECT_FALSE(audio_processor->has_audio_processing());
   audio_processor->OnCaptureFormatChanged(params_);
 
-  ProcessDataAndVerifyFormat(audio_processor,
+  ProcessDataAndVerifyFormat(audio_processor.get(),
                              params_.sample_rate(),
                              params_.channels(),
                              params_.sample_rate() / 100);
@@ -372,9 +372,9 @@ TEST_F(MediaStreamAudioProcessorTest, TestAllSampleRates) {
         media::CHANNEL_LAYOUT_STEREO, kSupportedSampleRates[i], 16,
         buffer_size);
     audio_processor->OnCaptureFormatChanged(params);
-    VerifyDefaultComponents(audio_processor);
+    VerifyDefaultComponents(audio_processor.get());
 
-    ProcessDataAndVerifyFormat(audio_processor,
+    ProcessDataAndVerifyFormat(audio_processor.get(),
                                kAudioProcessingSampleRate,
                                kAudioProcessingNumberOfChannel,
                                kAudioProcessingSampleRate / 100);
@@ -402,7 +402,7 @@ TEST_F(MediaStreamAudioProcessorTest, GetAecDumpMessageFilter) {
           constraint_factory.CreateWebMediaConstraints(), 0,
           webrtc_audio_device.get()));
 
-  EXPECT_TRUE(audio_processor->aec_dump_message_filter_);
+  EXPECT_TRUE(audio_processor->aec_dump_message_filter_.get());
 
   audio_processor = NULL;
 }

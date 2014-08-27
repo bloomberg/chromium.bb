@@ -210,7 +210,7 @@ void WebMediaPlayerMS::pause() {
 
   media_log_->AddEvent(media_log_->CreateEvent(media::MediaLogEvent::PAUSE));
 
-  if (!current_frame_)
+  if (!current_frame_.get())
     return;
 
   // Copy the frame so that rendering can show the last received frame.
@@ -428,7 +428,7 @@ void WebMediaPlayerMS::OnFrameAvailable(
     SetReadyState(WebMediaPlayer::ReadyStateHaveEnoughData);
     GetClient()->sizeChanged();
 
-    if (video_frame_provider_) {
+    if (video_frame_provider_.get()) {
       video_weblayer_.reset(new cc_blink::WebLayerImpl(
           cc::VideoLayer::Create(this, media::VIDEO_ROTATION_0)));
       video_weblayer_->setOpaque(true);

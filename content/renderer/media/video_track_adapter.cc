@@ -124,7 +124,7 @@ VideoFrameResolutionAdapter::VideoFrameResolutionAdapter(
       frame_rate_(MediaStreamVideoSource::kDefaultFrameRate),
       max_frame_rate_(max_frame_rate),
       keep_frame_counter_(0.0f) {
-  DCHECK(renderer_task_runner_);
+  DCHECK(renderer_task_runner_.get());
   DCHECK(io_thread_checker_.CalledOnValidThread());
   DCHECK_GE(max_aspect_ratio_, min_aspect_ratio_);
   CHECK_NE(0, max_aspect_ratio_);
@@ -311,7 +311,7 @@ VideoTrackAdapter::VideoTrackAdapter(
       renderer_task_runner_(base::MessageLoopProxy::current()),
       frame_counter_(0),
       source_frame_rate_(0.0f) {
-  DCHECK(io_message_loop_);
+  DCHECK(io_message_loop_.get());
 }
 
 VideoTrackAdapter::~VideoTrackAdapter() {
@@ -361,7 +361,7 @@ void VideoTrackAdapter::AddTrackOnIO(
       break;
     }
   }
-  if (!adapter) {
+  if (!adapter.get()) {
     adapter = new VideoFrameResolutionAdapter(renderer_task_runner_,
                                               max_frame_size,
                                               min_aspect_ratio,

@@ -48,7 +48,7 @@ void MediaStreamAudioSource::AddTrack(
     const blink::WebMediaConstraints& constraints,
     const ConstraintsCallback& callback) {
   // TODO(xians): Properly implement for audio sources.
-  if (!local_audio_source_) {
+  if (!local_audio_source_.get()) {
     if (!factory_->InitializeMediaStreamAudioSource(render_view_id_,
                                                     constraints,
                                                     this)) {
