@@ -99,6 +99,7 @@ void HomeCardGestureManager::UpdateScrollState(const ui::GestureEvent& event) {
   // The finger is between two states.
   float progress = (last_estimated_height_ - smaller_height) /
       (bigger_height - smaller_height);
+  progress = std::min(1.0f, std::max(0.0f, progress));
 
   if (last_state_ == state) {
     if (event.details().scroll_y() > 0) {

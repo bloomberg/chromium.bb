@@ -5,13 +5,15 @@
 #ifndef ATHENA_HOME_MINIMIZED_HOME_H_
 #define ATHENA_HOME_MINIMIZED_HOME_H_
 
-namespace views {
-class View;
+#include "base/memory/scoped_ptr.h"
+
+namespace ui {
+class LayerOwner;
 }
 
 namespace athena {
 
-views::View* CreateMinimizedHome();
+scoped_ptr<ui::LayerOwner> CreateMinimizedHome();
 
 }  // namespace athena
 

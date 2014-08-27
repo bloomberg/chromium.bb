@@ -17,8 +17,6 @@ class SearchResultListView;
 
 namespace athena {
 
-// It will replace app_list::StartPageView in Athena UI in the future.
-// Right now it's simply used for VISIBLE_BOTTOM state.
 class AthenaStartPageView : public views::View,
                             public app_list::SearchBoxViewDelegate {
  public:
@@ -28,7 +26,33 @@ class AthenaStartPageView : public views::View,
   // Requests the focus on the search box in the start page view.
   void RequestFocusOnSearchBox();
 
+  // Updates the layout state. See the comment of |layout_state_| field.
+  void SetLayoutState(float layout_state);
+
+  // Updates the layout state and move the subviews to the target location with
+  // animation.
+  void SetLayoutStateWithAnimation(float layout_state);
+
  private:
+  static const char kViewClassName[];
+
+  // A struct which bundles the layout data of subviews.
+  struct LayoutData {
+    gfx::Rect search_box;
+    gfx::Rect icons;
+    gfx::Rect controls;
+    float logo_opacity;
+    float background_opacity;
+
+    LayoutData();
+  };
+
+  // Returns the bounds for |VISIBLE_BOTTOM|.
+  LayoutData CreateBottomBounds(int width);
+
+  // Returns the bounds for |VISIBLE_CENTERED|.
+  LayoutData CreateCenteredBounds(int width);
+
   // Schedules the animation for the layout the search box and the search
   // results.
   void LayoutSearchResults(bool should_show_search_results);
@@ -55,8 +79,16 @@ class AthenaStartPageView : public views::View,
   app_list::SearchBoxView* search_box_view_;
   app_list::SearchResultListView* search_results_view_;
 
+  // Do not use views::Background but a views::View with ui::Layer for gradient
+  // background opacity update and animation.
+  views::View* background_;
+
   // The expected height of |search_results_view_|
   int search_results_height_;
+
+  // The state to specify how each of the subviews should be laid out, in the
+  // range of [0, 1]. 0 means fully BOTTOM state, and 1 is fully CENTERED state.
+  float layout_state_;
 
   base::WeakPtrFactory<AthenaStartPageView> weak_factory_;
 
