@@ -29,7 +29,7 @@ def ChromeVersion():
     Chrome version string or trunk + svn rev.
   '''
   info = FetchVersionInfo()
-  if info.url.startswith('/trunk/'):
+  if info.url == 'refs/heads/master':
     return 'trunk.%s' % info.revision
   else:
     return ChromeVersionNoTrunk()
@@ -110,14 +110,11 @@ def FetchGitCommitPosition(directory=None):
   """
   proc = lastchange.RunGitCommand(directory,
                                   ['show', '-s', '--format=%B', 'HEAD'])
-  pos = ''
   if proc:
     output = proc.communicate()[0]
     if proc.returncode == 0 and output:
       for line in reversed(output.splitlines()):
-        match = re.search('Cr-Commit-Position: .*@{#(\d+)}', line)
+        match = re.search('Cr-Commit-Position: (.*)@{#(\d+)}', line)
         if match:
-          pos = match.group(1)
-  if not pos:
-    return lastchange.VersionInfo(None, None)
-  return lastchange.VersionInfo('git', pos)
+          return lastchange.VersionInfo(match.group(1), match.group(2))
+  return lastchange.VersionInfo(None, None)
