@@ -69,7 +69,7 @@ void RecommendedApps::Update() {
   for (extensions::ExtensionSet::const_iterator app = extensions.begin();
        app != extensions.end();
        ++app) {
-    if (!extensions::ui_util::ShouldDisplayInAppLauncher(*app, profile_))
+    if (!extensions::ui_util::ShouldDisplayInAppLauncher(app->get(), profile_))
       continue;
 
     sorted_apps.push_back(

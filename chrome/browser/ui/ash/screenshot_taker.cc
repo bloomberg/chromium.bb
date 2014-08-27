@@ -552,7 +552,7 @@ void ScreenshotTaker::GrabWindowSnapshotAsyncCallback(
     bool is_partial,
     int window_idx,
     scoped_refptr<base::RefCountedBytes> png_data) {
-  if (!png_data) {
+  if (!png_data.get()) {
     if (is_partial) {
       LOG(ERROR) << "Failed to grab the window screenshot";
       ShowNotification(

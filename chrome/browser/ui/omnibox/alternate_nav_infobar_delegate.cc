@@ -69,7 +69,7 @@ bool AlternateNavInfoBarDelegate::LinkClicked(
   // search and instead add one reflecting this navigation.
   scoped_refptr<ShortcutsBackend> shortcuts_backend(
       ShortcutsBackendFactory::GetForProfile(profile_));
-  if (shortcuts_backend) {  // May be NULL in incognito.
+  if (shortcuts_backend.get()) {  // May be NULL in incognito.
     shortcuts_backend->DeleteShortcutsWithURL(search_url_);
     shortcuts_backend->AddOrUpdateShortcut(text_, match_);
   }

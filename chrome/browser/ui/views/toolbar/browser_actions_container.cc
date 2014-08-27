@@ -1093,7 +1093,7 @@ size_t BrowserActionsContainer::GetIconCount() const {
   const extensions::ExtensionList& extensions = model_->toolbar_items();
   for (extensions::ExtensionList::const_iterator iter = extensions.begin();
        iter != extensions.end(); ++iter) {
-    displayable_icon_count += ShouldDisplayBrowserAction(*iter) ? 1u : 0u;
+    displayable_icon_count += ShouldDisplayBrowserAction(iter->get()) ? 1u : 0u;
   }
   // Find the absolute value for the model's visible count.
   int model_size = model_->GetVisibleIconCount();

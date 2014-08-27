@@ -79,7 +79,7 @@ int SCTListModel::GetItemCount() const { return sct_list_.size(); }
 base::string16 SCTListModel::GetItemAt(int index) {
   DCHECK_LT(static_cast<size_t>(index), sct_list_.size());
   std::string origin = l10n_util::GetStringUTF8(
-      chrome::ct::SCTOriginToResourceID(*(sct_list_[index].sct)));
+      chrome::ct::SCTOriginToResourceID(*(sct_list_[index].sct.get())));
 
   std::string status = l10n_util::GetStringUTF8(
       chrome::ct::StatusToResourceID(sct_list_[index].status));
@@ -152,7 +152,7 @@ void SignedCertificateTimestampsViews::Init() {
   sct_info_view_ = new SignedCertificateTimestampInfoView();
   layout->AddView(sct_info_view_);
 
-  sct_info_view_->SetSignedCertificateTimestamp(*(sct_list_[0].sct),
+  sct_info_view_->SetSignedCertificateTimestamp(*(sct_list_[0].sct.get()),
                                                 sct_list_[0].status);
 }
 
@@ -160,8 +160,8 @@ void SignedCertificateTimestampsViews::ShowSCTInfo(int sct_index) {
   if ((sct_index < 0) || (static_cast<size_t>(sct_index) > sct_list_.size()))
     return;
 
-  sct_info_view_->SetSignedCertificateTimestamp(*(sct_list_[sct_index].sct),
-                                                sct_list_[sct_index].status);
+  sct_info_view_->SetSignedCertificateTimestamp(
+      *(sct_list_[sct_index].sct.get()), sct_list_[sct_index].status);
 }
 
 void SignedCertificateTimestampsViews::Observe(

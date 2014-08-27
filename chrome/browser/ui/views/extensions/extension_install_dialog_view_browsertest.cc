@@ -104,7 +104,7 @@ void ScrollbarTest::SetUpOnMainThread() {
   web_contents_ = browser()->tab_strip_model()->GetWebContentsAt(0);
 
   install_prompt_ = new MockExtensionInstallPrompt(web_contents_);
-  install_prompt_->set_prompt(prompt_);
+  install_prompt_->set_prompt(prompt_.get());
   prompt_->set_experiment(ExtensionInstallPromptExperiment::ControlGroup());
   prompt_->set_extension(extension_);
 

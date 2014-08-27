@@ -124,7 +124,7 @@ SafeBrowsingBlockingPage* CreateSafeBrowsingBlockingPage(
   resource.threat_type =  threat_type;
   // Create a blocking page without showing the interstitial.
   return SafeBrowsingBlockingPage::CreateBlockingPage(
-      g_browser_process->safe_browsing_service()->ui_manager(),
+      g_browser_process->safe_browsing_service()->ui_manager().get(),
       web_contents,
       resource);
 }

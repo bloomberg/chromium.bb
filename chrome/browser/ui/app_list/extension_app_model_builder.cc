@@ -104,7 +104,7 @@ void ExtensionAppModelBuilder::OnProfilePreferenceChanged() {
   for (extensions::ExtensionSet::const_iterator app = extensions.begin();
        app != extensions.end(); ++app) {
     bool should_display =
-        extensions::ui_util::ShouldDisplayInAppLauncher(*app, profile_);
+        extensions::ui_util::ShouldDisplayInAppLauncher(app->get(), profile_);
     bool does_display = GetExtensionAppItem((*app)->id()) != NULL;
 
     if (should_display == does_display)
@@ -285,7 +285,7 @@ void ExtensionAppModelBuilder::PopulateApps() {
 
   for (extensions::ExtensionSet::const_iterator app = extensions.begin();
        app != extensions.end(); ++app) {
-    if (!extensions::ui_util::ShouldDisplayInAppLauncher(*app, profile_))
+    if (!extensions::ui_util::ShouldDisplayInAppLauncher(app->get(), profile_))
       continue;
     InsertApp(CreateAppItem((*app)->id(),
                             "",

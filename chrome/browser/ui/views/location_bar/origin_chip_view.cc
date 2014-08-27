@@ -150,7 +150,7 @@ OriginChipView::OriginChipView(LocationBarView* location_bar_view,
   scoped_refptr<SafeBrowsingService> sb_service =
       g_browser_process->safe_browsing_service();
   // |sb_service| may be NULL in tests.
-  if (sb_service && sb_service->ui_manager())
+  if (sb_service.get() && sb_service->ui_manager().get())
     sb_service->ui_manager()->AddObserver(this);
 
   SetFontList(font_list);
@@ -182,7 +182,7 @@ OriginChipView::OriginChipView(LocationBarView* location_bar_view,
 OriginChipView::~OriginChipView() {
   scoped_refptr<SafeBrowsingService> sb_service =
       g_browser_process->safe_browsing_service();
-  if (sb_service.get() && sb_service->ui_manager())
+  if (sb_service.get() && sb_service->ui_manager().get())
     sb_service->ui_manager()->RemoveObserver(this);
 }
 

@@ -77,7 +77,7 @@ OmniboxNavigationObserver::~OmniboxNavigationObserver() {
 }
 
 void OmniboxNavigationObserver::OnSuccessfulNavigation() {
-  if (shortcuts_backend_)
+  if (shortcuts_backend_.get())
     shortcuts_backend_->AddOrUpdateShortcut(text_, match_);
 }
 

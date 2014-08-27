@@ -63,7 +63,7 @@ TEST_F(AppInfoPermissionsPanelTest, NoPermissionsObtainedCorrectly) {
           .SetManifest(ValidAppManifest())
           .SetID(kTestExtensionId)
           .Build();
-  AppInfoPermissionsPanel panel(&profile_, app);
+  AppInfoPermissionsPanel panel(&profile_, app.get());
 
   EXPECT_TRUE(panel.GetActivePermissionMessages().empty());
   EXPECT_TRUE(panel.GetRetainedFilePaths().empty());
@@ -87,7 +87,7 @@ TEST_F(AppInfoPermissionsPanelTest, RequiredPermissionsObtainedCorrectly) {
                                              // a message
           .SetID(kTestExtensionId)
           .Build();
-  AppInfoPermissionsPanel panel(&profile_, app);
+  AppInfoPermissionsPanel panel(&profile_, app.get());
 
   const std::vector<base::string16> permission_messages =
       panel.GetActivePermissionMessages();
@@ -117,7 +117,7 @@ TEST_F(AppInfoPermissionsPanelTest, OptionalPermissionsObtainedCorrectly) {
                                             // a message
           .SetID(kTestExtensionId)
           .Build();
-  AppInfoPermissionsPanel panel(&profile_, app);
+  AppInfoPermissionsPanel panel(&profile_, app.get());
 
   // Optional permissions don't appear until they are 'activated' at runtime.
   // TODO(sashab): Activate the optional permissions and ensure they are
@@ -140,7 +140,7 @@ TEST_F(AppInfoPermissionsPanelTest, RetainedFilePermissionsObtainedCorrectly) {
                       extensions::ListBuilder().Append("retainEntries")))))
           .SetID(kTestExtensionId)
           .Build();
-  AppInfoPermissionsPanel panel(&profile_, app);
+  AppInfoPermissionsPanel panel(&profile_, app.get());
   apps::SavedFilesService* files_service =
       apps::SavedFilesService::Get(&profile_);
   files_service->RegisterFileEntry(

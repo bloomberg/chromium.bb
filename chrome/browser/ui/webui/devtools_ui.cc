@@ -250,7 +250,7 @@ void DevToolsDataSource::StartRemoteDataRequest(
     const content::URLDataSource::GotDataCallback& callback) {
   GURL url = GURL(kRemoteFrontendBase + path);
   CHECK_EQ(url.host(), kRemoteFrontendDomain);
-  new FetchRequest(request_context_, url, callback);
+  new FetchRequest(request_context_.get(), url, callback);
 }
 
 // OpenRemotePageRequest ------------------------------------------------------

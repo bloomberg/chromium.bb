@@ -134,7 +134,7 @@ void ExtensionIconSource::StartDataRequest(
 
   ExtensionIconRequest* request = GetData(next_id);
   ExtensionResource icon = IconsInfo::GetIconResource(
-      request->extension, request->size, request->match);
+      request->extension.get(), request->size, request->match);
 
   if (icon.relative_path().empty()) {
     LoadIconFailed(next_id);
@@ -203,7 +203,8 @@ void ExtensionIconSource::LoadExtensionImage(const ExtensionResource& icon,
                                              int request_id) {
   ExtensionIconRequest* request = GetData(request_id);
   ImageLoader::Get(profile_)->LoadImageAsync(
-      request->extension, icon,
+      request->extension.get(),
+      icon,
       gfx::Size(request->size, request->size),
       base::Bind(&ExtensionIconSource::OnImageLoaded, AsWeakPtr(), request_id));
 }
@@ -218,7 +219,7 @@ void ExtensionIconSource::LoadFaviconImage(int request_id) {
   }
 
   GURL favicon_url =
-      AppLaunchInfo::GetFullLaunchURL(GetData(request_id)->extension);
+      AppLaunchInfo::GetFullLaunchURL(GetData(request_id)->extension.get());
   favicon_service->GetRawFaviconForPageURL(
       favicon_url,
       favicon_base::FAVICON,
@@ -262,7 +263,7 @@ void ExtensionIconSource::OnImageLoaded(int request_id,
 void ExtensionIconSource::LoadIconFailed(int request_id) {
   ExtensionIconRequest* request = GetData(request_id);
   ExtensionResource icon = IconsInfo::GetIconResource(
-      request->extension, request->size, request->match);
+      request->extension.get(), request->size, request->match);
 
   if (request->size == extension_misc::EXTENSION_ICON_BITTY)
     LoadFaviconImage(request_id);

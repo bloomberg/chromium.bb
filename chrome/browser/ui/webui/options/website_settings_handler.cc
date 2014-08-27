@@ -166,7 +166,7 @@ void WebsiteSettingsHandler::HandleUpdateSearchResults(
 
 void WebsiteSettingsHandler::HandleUpdateLocalStorage(
     const base::ListValue* args) {
-  if (!local_storage_) {
+  if (!local_storage_.get()) {
     Profile* profile = Profile::FromWebUI(web_ui());
     local_storage_ = new BrowsingDataLocalStorageHelper(profile);
   }

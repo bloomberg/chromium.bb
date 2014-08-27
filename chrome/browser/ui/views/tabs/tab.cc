@@ -542,7 +542,7 @@ void Tab::UpdateLoadingAnimation(TabRendererData::NetworkState state) {
 void Tab::StartPulse() {
   pulse_animation_.reset(new gfx::ThrobAnimation(this));
   pulse_animation_->SetSlideDuration(kPulseDurationMs);
-  if (animation_container_)
+  if (animation_container_.get())
     pulse_animation_->SetContainer(animation_container_.get());
   pulse_animation_->StartThrobbing(std::numeric_limits<int>::max());
 }
@@ -572,7 +572,7 @@ void Tab::StartMiniTabTitleAnimation() {
     base::TimeDelta timeout =
         base::TimeDelta::FromMilliseconds(kMiniTitleChangeAnimationIntervalMS);
     mini_title_change_animation_.reset(new gfx::MultiAnimation(parts, timeout));
-    if (animation_container_)
+    if (animation_container_.get())
       mini_title_change_animation_->SetContainer(animation_container_.get());
     mini_title_change_animation_->set_delegate(this);
   }

@@ -45,7 +45,7 @@ ImportDataHandler::~ImportDataHandler() {
   if (importer_host_)
     importer_host_->set_observer(NULL);
 
-  if (select_file_dialog_)
+  if (select_file_dialog_.get())
     select_file_dialog_->ListenerDestroyed();
 }
 

@@ -350,9 +350,9 @@ class LocalDiscoveryUITest : public WebUIBrowserTest {
 
     test_service_discovery_client_ = new TestServiceDiscoveryClient();
     test_service_discovery_client_->Start();
-    EXPECT_CALL(*test_service_discovery_client_, OnSendTo(
-        std::string((const char*)kQueryData,
-                    sizeof(kQueryData))))
+    EXPECT_CALL(
+        *test_service_discovery_client_.get(),
+        OnSendTo(std::string((const char*)kQueryData, sizeof(kQueryData))))
         .Times(AtLeast(2))
         .WillOnce(InvokeWithoutArgs(&condition_devices_listed_,
                                     &TestMessageLoopCondition::Signal))

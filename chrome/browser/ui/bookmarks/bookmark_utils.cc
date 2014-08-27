@@ -172,11 +172,13 @@ BookmarkShortcutDisposition GetBookmarkShortcutDisposition(Profile* profile) {
        i != extension_set.end();
        ++i) {
     // Use the overridden disposition if any extension wants it.
-    if (command_service->OverridesBookmarkShortcut(*i))
+    if (command_service->OverridesBookmarkShortcut(i->get()))
       return BOOKMARK_SHORTCUT_DISPOSITION_OVERRIDDEN;
 
-    if (!removed && extensions::CommandService::RemovesBookmarkShortcut(*i))
+    if (!removed &&
+        extensions::CommandService::RemovesBookmarkShortcut(i->get())) {
       removed = true;
+    }
   }
 
   if (removed)
@@ -355,7 +357,7 @@ bool ShouldRemoveBookmarkOpenPagesUI(Profile* profile) {
   for (extensions::ExtensionSet::const_iterator i = extension_set.begin();
        i != extension_set.end();
        ++i) {
-    if (extensions::CommandService::RemovesBookmarkOpenPagesShortcut(*i))
+    if (extensions::CommandService::RemovesBookmarkOpenPagesShortcut(i->get()))
       return true;
   }
 

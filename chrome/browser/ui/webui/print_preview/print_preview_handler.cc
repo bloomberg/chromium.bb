@@ -1452,7 +1452,7 @@ void PrintPreviewHandler::StartPrivetLocalPrint(const std::string& print_ticket,
 
   privet_local_print_operation_->SetJobname(base::UTF16ToUTF8(title));
   privet_local_print_operation_->SetPageSize(page_size);
-  privet_local_print_operation_->SetData(data);
+  privet_local_print_operation_->SetData(data.get());
 
   Profile* profile = Profile::FromWebUI(web_ui());
   SigninManagerBase* signin_manager =
@@ -1530,7 +1530,7 @@ bool PrintPreviewHandler::CreatePrivetHTTP(
 
   privet_http_factory_ =
       local_discovery::PrivetHTTPAsynchronousFactory::CreateInstance(
-          service_discovery_client_,
+          service_discovery_client_.get(),
           Profile::FromWebUI(web_ui())->GetRequestContext());
   privet_http_resolution_ = privet_http_factory_->CreatePrivetHTTP(
       name, device_description->address, callback);

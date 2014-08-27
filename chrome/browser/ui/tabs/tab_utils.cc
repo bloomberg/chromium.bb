@@ -129,7 +129,7 @@ TabMediaState GetTabMediaStateForContents(content::WebContents* contents) {
   scoped_refptr<MediaStreamCaptureIndicator> indicator =
       MediaCaptureDevicesDispatcher::GetInstance()->
           GetMediaStreamCaptureIndicator();
-  if (indicator) {
+  if (indicator.get()) {
     if (indicator->IsBeingMirrored(contents))
       return TAB_MEDIA_STATE_CAPTURING;
     if (indicator->IsCapturingUserMedia(contents))
