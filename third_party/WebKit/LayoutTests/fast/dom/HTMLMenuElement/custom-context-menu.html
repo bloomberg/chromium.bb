@@ -35,8 +35,6 @@
                 <menuitem label="Item9"></menuitem>
                 <menuitem label="Item10"></menuitem>
             </menu>
-            <!-- Test collapsing two or more adjacent separators. -->
-            <hr>
             <menuitem label="Item11"></menuitem>
             <menuitem label="Item12"></menuitem>
         </menu>
@@ -138,21 +136,24 @@ eventSender.keyDown("escape");
 var button4 = document.getElementById("button_4");
 var items4 = contextClickAndGetMenuItems(button4);
 
-shouldBeEqualToNumber("itemsWithCustomContextMenu.length - items.length", 21);
+shouldBeEqualToNumber("itemsWithCustomContextMenu.length - items.length", 17);
 shouldBeEqualToString("itemsWithCustomContextMenu[0]", "Item1");
+shouldBeEqualToString("itemsWithCustomContextMenu[1]", "Item2");
+shouldBeEqualToString("itemsWithCustomContextMenu[2]", "---------");
+shouldBeEqualToString("itemsWithCustomContextMenu[3]", "Item3");
 shouldBeEqualToString("itemsWithCustomContextMenu[4]", "Submenu >");
 shouldBeEqualToString("itemsWithCustomContextMenu[5]", "_Item4");
 shouldBeEqualToString("itemsWithCustomContextMenu[6]", "_Deeper submenu >");
 shouldBeEqualToString("itemsWithCustomContextMenu[7]", "__Item5");
 shouldBeEqualToString("itemsWithCustomContextMenu[8]", "__---------");
+shouldBeEqualToString("itemsWithCustomContextMenu[9]", "__Item6");
 shouldBeEqualToString("itemsWithCustomContextMenu[10]", "Item7");
 shouldBeEqualToString("itemsWithCustomContextMenu[11]", "---------");
 shouldBeEqualToString("itemsWithCustomContextMenu[12]", "Item8");
-shouldBeEqualToString("itemsWithCustomContextMenu[13]", "---------");
-shouldBeEqualToString("itemsWithCustomContextMenu[14]", "Item9");
-shouldBeEqualToString("itemsWithCustomContextMenu[16]", "---------");
-shouldBeEqualToString("itemsWithCustomContextMenu[19]", "---------");
-shouldBeEqualToString("itemsWithCustomContextMenu[20]", "Item13");
+shouldBeEqualToString("itemsWithCustomContextMenu[13]", "Item11");
+shouldBeEqualToString("itemsWithCustomContextMenu[14]", "Item12");
+shouldBeEqualToString("itemsWithCustomContextMenu[15]", "---------");
+shouldBeEqualToString("itemsWithCustomContextMenu[16]", "Item13");
 shouldBeEqualToNumber("items1.length - items.length", 0);
 shouldBeEqualToNumber("items2.length - items.length", 0);
 shouldBeEqualToNumber("items3.length - items.length", 0);

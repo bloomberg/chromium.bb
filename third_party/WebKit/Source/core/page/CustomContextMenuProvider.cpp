@@ -85,11 +85,11 @@ void CustomContextMenuProvider::populateContextMenuItems(const HTMLMenuElement& 
         } else if (isHTMLMenuElement(*nextElement)) {
             ContextMenu subMenu;
             String labelString = nextElement->fastGetAttribute(labelAttr);
-            if (labelString.isEmpty()) {
+            if (labelString.isNull()) {
                 appendSeparator(contextMenu);
                 populateContextMenuItems(*toHTMLMenuElement(nextElement), contextMenu);
                 appendSeparator(contextMenu);
-            } else {
+            } else if (!labelString.isEmpty()) {
                 populateContextMenuItems(*toHTMLMenuElement(nextElement), subMenu);
                 contextMenu.appendItem(ContextMenuItem(SubmenuType, ContextMenuItemCustomTagNoAction, labelString, &subMenu));
             }
