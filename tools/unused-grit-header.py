@@ -78,12 +78,12 @@ def GetResourcesForGrdFile(tree, grd_file):
   release_node = FindNodeWithTag(root, 'release')
   assert release_node != None
 
-  messages_node = FindNodeWithTag(root, 'messages')
+  messages_node = FindNodeWithTag(release_node, 'messages')
   messages = set()
   if messages_node != None:
     messages = set(GetResourcesForNode(messages_node, grd_file, 'message'))
 
-  includes_node = FindNodeWithTag(root, 'includes')
+  includes_node = FindNodeWithTag(release_node, 'includes')
   includes = set()
   if includes_node != None:
     includes = set(GetResourcesForNode(includes_node, grd_file, 'include'))
@@ -180,6 +180,9 @@ def main(argv):
 
   tree = xml.etree.ElementTree.parse(grd_file)
   grit_header = GetOutputHeaderFile(tree)
+  if not grit_header:
+    print 'Error: %s does not generate any output headers.' % grit_header
+    return 1
   resources = GetResourcesForGrdFile(tree, grd_file)
 
   files_with_unneeded_grit_includes = []
