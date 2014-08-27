@@ -1307,7 +1307,7 @@ class BisectPerformanceMetrics(object):
         os.remove(downloaded_file)
     return False
 
-  def PostBuildRequestAndWait(self, revision, fetch_build, patch=None):
+  def PostBuildRequestAndWait(self, git_revision, fetch_build, patch=None):
     """POSTs the build request job to the try server instance.
 
     A try job build request is posted to tryserver.chromium.perf master,
@@ -1316,7 +1316,7 @@ class BisectPerformanceMetrics(object):
     into the output folder.
 
     Args:
-      revision: A Git hash revision.
+      git_revision: A Git hash revision.
       fetch_build: Function to check and download build from cloud storage.
       patch: A DEPS patch (used while bisecting 3rd party repositories).
 
@@ -1324,12 +1324,6 @@ class BisectPerformanceMetrics(object):
       Downloaded archive file path when requested build exists and download is
       successful, otherwise None.
     """
-    # Get SVN revision for the given SHA.
-    svn_revision = self.source_control.SVNFindRev(revision)
-    if not svn_revision:
-      raise RuntimeError(
-          'Failed to determine SVN revision for %s' % revision)
-
     def GetBuilderNameAndBuildTime(target_platform, target_arch='ia32'):
       """Gets builder bot name and build time in seconds based on platform."""
       # Bot names should match the one listed in tryserver.chromium's
@@ -1355,11 +1349,13 @@ class BisectPerformanceMetrics(object):
     # Create a unique ID for each build request posted to try server builders.
     # This ID is added to "Reason" property of the build.
     build_request_id = GetSHA1HexDigest(
-        '%s-%s-%s' % (svn_revision, patch, time.time()))
+        '%s-%s-%s' % (git_revision, patch, time.time()))
 
     # Creates a try job description.
+    # Always use Git hash to post build request since Commit positions are
+    # not supported by builders to build.
     job_args = {
-        'revision': 'src@%s' % svn_revision,
+        'revision': 'src@%s' % git_revision,
         'bot': bot_name,
         'name': build_request_id,
     }
@@ -1372,10 +1368,10 @@ class BisectPerformanceMetrics(object):
           fetch_build, bot_name, builder_host, builder_port, build_request_id,
           build_timeout)
       if not target_file:
-        print '%s [revision: %s]' % (error_msg, svn_revision)
+        print '%s [revision: %s]' % (error_msg, git_revision)
         return None
       return target_file
-    print 'Failed to post build request for revision: [%s]' % svn_revision
+    print 'Failed to post build request for revision: [%s]' % git_revision
     return None
 
   def IsDownloadable(self, depot):
