@@ -1335,6 +1335,7 @@ crbug.com/407915 [ Win Release ] virtual/deferred/inspector/tracing/timeline-lay
 crbug.com/407915 [ Win Release ] virtual/deferred/inspector/tracing/timeline-recalculate-styles.html [ Failure Pass ]
 crbug.com/407915 [ Win Release ] virtual/implsidepainting/inspector/tracing/timeline-layout.html [ Failure Pass ]
 crbug.com/407915 [ Win Release ] virtual/implsidepainting/inspector/tracing/timeline-recalculate-styles.html [ Failure Pass ]
+crbug.com/407915 [ Mac Release ] virtual/implsidepainting/inspector/tracing/timeline-timer.html [ Failure Pass ]
 crbug.com/407993 [ Win Release ] media/encrypted-media/encrypted-media-waiting-for-a-key.html [ Failure Pass ]
 crbug.com/407993 [ Win Release ] media/encrypted-media/encrypted-media-v2-events.html [ Failure Pass ]
 
