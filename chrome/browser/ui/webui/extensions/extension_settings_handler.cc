@@ -211,6 +211,9 @@ base::DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
     const Extension* extension,
     const std::vector<ExtensionPage>& pages,
     const ExtensionWarningService* warning_service) {
+  // The items which are to be written into app_dict are also described in
+  // chrome/browser/resources/extensions/extension_list.js in @typedef for
+  // ExtensionData. Please update it whenever you add or remove any keys here.
   base::DictionaryValue* extension_data = new base::DictionaryValue();
   bool enabled = extension_service_->IsExtensionEnabled(extension->id());
   GetExtensionBasicInfo(extension, enabled, extension_data);
@@ -815,6 +818,10 @@ void ExtensionSettingsHandler::ReloadUnpackedExtensions() {
 
 void ExtensionSettingsHandler::HandleRequestExtensionsData(
     const base::ListValue* args) {
+  // The items which are to be written into results are also described in
+  // chrome/browser/resources/extensions/extensions.js in @typedef for
+  // ExtensionDataResponse. Please update it whenever you add or remove any keys
+  // here.
   base::DictionaryValue results;
 
   Profile* profile = Profile::FromWebUI(web_ui());

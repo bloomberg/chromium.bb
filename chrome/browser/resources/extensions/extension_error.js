@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-<include src="extension_error_overlay.js">
-
 cr.define('extensions', function() {
   'use strict';
 
@@ -13,8 +11,8 @@ cr.define('extensions', function() {
    * @return {HTMLElement} The clone of the template.
    */
   function cloneTemplate(templateName) {
-    return $('template-collection-extension-error').
-        querySelector('.' + templateName).cloneNode(true);
+    return /** @type {HTMLElement} */($('template-collection-extension-error').
+        querySelector('.' + templateName).cloneNode(true));
   }
 
   /**
@@ -44,7 +42,10 @@ cr.define('extensions', function() {
   ExtensionError.prototype = {
     __proto__: HTMLDivElement.prototype,
 
-    /** @override */
+    /**
+     * @param {RuntimeError} error
+     * @override
+     */
     decorate: function(error) {
       // Add an additional class for the severity level.
       if (error.level == 0)

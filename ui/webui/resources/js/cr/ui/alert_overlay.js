@@ -42,18 +42,18 @@ cr.define('alertOverlay', function() {
    * callbacks.
    * @param {string} title The alert title to display to the user.
    * @param {string} message The alert message to display to the user.
-   * @param {string=} okTitle The title of the OK button. If undefined or empty,
-   *     no button is shown.
-   * @param {string=} cancelTitle The title of the cancel button. If undefined
-   *     or empty, no button is shown.
+   * @param {string=} opt_okTitle The title of the OK button. If undefined or
+   *     empty, no button is shown.
+   * @param {string=} opt_cancelTitle The title of the cancel button. If
+   *     undefined or empty, no button is shown.
    * @param {function()=} opt_okCallback A function to be called when the user
-   *     presses the ok button. Can be undefined if |okTitle| is falsey.
+   *     presses the ok button. Can be undefined if |opt_okTitle| is falsey.
    * @param {function()=} opt_cancelCallback A function to be called when the
-   *     user presses the cancel button. Can be undefined if |cancelTitle| is
-   *     falsey.
+   *     user presses the cancel button. Can be undefined if |opt_cancelTitle|
+   *     is falsey.
    */
-  function setValues(title, message, okTitle, cancelTitle, opt_okCallback,
-                     opt_cancelCallback) {
+  function setValues(title, message, opt_okTitle, opt_cancelTitle,
+                     opt_okCallback, opt_cancelCallback) {
     if (typeof title != 'undefined')
       $('alertOverlayTitle').textContent = title;
     $('alertOverlayTitle').hidden = typeof title == 'undefined';
@@ -62,14 +62,14 @@ cr.define('alertOverlay', function() {
       $('alertOverlayMessage').textContent = message;
     $('alertOverlayMessage').hidden = typeof message == 'undefined';
 
-    if (okTitle)
-      okButton.textContent = okTitle;
-    okButton.hidden = !okTitle;
+    if (opt_okTitle)
+      okButton.textContent = opt_okTitle;
+    okButton.hidden = !opt_okTitle;
     okButton.clickCallback = opt_okCallback;
 
-    if (cancelTitle)
-      cancelButton.textContent = cancelTitle;
-    cancelButton.hidden = !cancelTitle;
+    if (opt_cancelTitle)
+      cancelButton.textContent = opt_cancelTitle;
+    cancelButton.hidden = !opt_cancelTitle;
     cancelButton.clickCallback = opt_cancelCallback;
   };
 

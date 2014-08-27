@@ -2,12 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+/**
+ * @typedef {{afterHighlight: string,
+ *            beforeHighlight: string,
+ *            highlight: string,
+ *            title: string}}
+ */
+var ExtensionHighlight;
+
 cr.define('extensions', function() {
   'use strict';
 
   /**
    * ExtensionCode is an element which displays code in a styled div, and is
    * designed to highlight errors.
+   * @constructor
+   * @extends {HTMLDivElement}
    */
   function ExtensionCode(div) {
     div.__proto__ = ExtensionCode.prototype;
@@ -20,13 +30,12 @@ cr.define('extensions', function() {
     /**
      * Populate the content area of the code div with the given code. This will
      * highlight the erroneous section (if any).
-     * @param {Object} code An object with four strings: beforeHighlight,
-     *     afterHighlight, highlight, and the message. The 'highlight' strings
-     *     represent the three portions of the file's content to display - the
-     *     portion which is most relevant and should be emphasized (highlight),
-     *     and the parts both before and after this portion. The message is the
-     *     error message, which will be the mouseover hint for the highlighted
-     *     region. These may be empty.
+     * @param {ExtensionHighlight} code The 'highlight' strings represent the
+     *     three portions of the file's content to display - the portion which
+     *     is most relevant and should be emphasized (highlight), and the parts
+     *     both before and after this portion. The title is the error message,
+     *     which will be the mouseover hint for the highlighted region. These
+     *     may be empty.
      *  @param {string} emptyMessage The message to display if the code
      *     object is empty (e.g., 'could not load code').
      */
