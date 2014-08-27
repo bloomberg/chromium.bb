@@ -97,7 +97,7 @@ class Rietveld(object):
     url = '/api/%d' % issue
     if messages:
       url += '?messages=true'
-    data = json.loads(self.get(url))
+    data = json.loads(self.get(url, retry_on_404=True))
     data['description'] = '\n'.join(data['description'].strip().splitlines())
     return data
 
@@ -389,7 +389,7 @@ class Rietveld(object):
     ctype, body = upload.EncodeMultipartFormData(data, [])
     return self._send(request_path, payload=body, content_type=ctype, **kwargs)
 
-  def _send(self, request_path, **kwargs):
+  def _send(self, request_path, retry_on_404=False, **kwargs):
     """Sends a POST/GET to Rietveld.  Returns the response body."""
     # rpc_server.Send() assumes timeout=None by default; make sure it's set
     # to something reasonable.
@@ -420,7 +420,10 @@ class Rietveld(object):
         except urllib2.HTTPError, e:
           if retry >= (maxtries - 1):
             raise
-          if e.code not in (500, 502, 503):
+          flake_codes = [500, 502, 503]
+          if retry_on_404:
+            flake_codes.append(404)
+          if e.code not in flake_codes:
             raise
         except urllib2.URLError, e:
           if retry >= (maxtries - 1):
