@@ -89,6 +89,13 @@ class FrameReceiver : public RtpPayloadFeedback,
   // EmitAvailableEncodedFrames().
   void EmitAvailableEncodedFramesAfterWaiting();
 
+  // Helper that runs |callback|, passing ownership of |encoded_frame| to it.
+  // This method is used by EmitAvailableEncodedFrames() to return to the event
+  // loop, but make sure that FrameReceiver is still alive before the callback
+  // is run.
+  void EmitOneFrame(const ReceiveEncodedFrameCallback& callback,
+                    scoped_ptr<EncodedFrame> encoded_frame) const;
+
   // Computes the playout time for a frame with the given |rtp_timestamp|.
   // Because lip-sync info is refreshed regularly, calling this method with the
   // same argument may return different results.

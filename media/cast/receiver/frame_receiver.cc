@@ -256,7 +256,9 @@ void FrameReceiver::EmitAvailableEncodedFrames() {
     }
     cast_environment_->PostTask(CastEnvironment::MAIN,
                                 FROM_HERE,
-                                base::Bind(frame_request_queue_.front(),
+                                base::Bind(&FrameReceiver::EmitOneFrame,
+                                           weak_factory_.GetWeakPtr(),
+                                           frame_request_queue_.front(),
                                            base::Passed(&encoded_frame)));
     frame_request_queue_.pop_front();
   }
@@ -267,6 +269,13 @@ void FrameReceiver::EmitAvailableEncodedFramesAfterWaiting() {
   DCHECK(is_waiting_for_consecutive_frame_);
   is_waiting_for_consecutive_frame_ = false;
   EmitAvailableEncodedFrames();
+}
+
+void FrameReceiver::EmitOneFrame(const ReceiveEncodedFrameCallback& callback,
+                                 scoped_ptr<EncodedFrame> encoded_frame) const {
+  DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
+  if (!callback.is_null())
+    callback.Run(encoded_frame.Pass());
 }
 
 base::TimeTicks FrameReceiver::GetPlayoutTime(const EncodedFrame& frame) const {
