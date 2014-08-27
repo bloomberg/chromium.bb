@@ -658,4 +658,22 @@ TEST(DrawingBufferDepthStencilTest, packedDepthStencilSupported)
     }
 }
 
+TEST_F(DrawingBufferTest, verifySetIsHiddenProperlyAffectsMailboxes)
+{
+    blink::WebExternalTextureMailbox mailbox;
+
+    // Produce mailboxes.
+    m_drawingBuffer->markContentsChanged();
+    EXPECT_TRUE(m_drawingBuffer->prepareMailbox(&mailbox, 0));
+
+    unsigned waitSyncPoint = webContext()->insertSyncPoint();
+    mailbox.syncPoint = waitSyncPoint;
+    m_drawingBuffer->setIsHidden(true);
+    m_drawingBuffer->mailboxReleased(mailbox);
+    // m_drawingBuffer deletes mailbox immediately when hidden.
+    EXPECT_EQ(waitSyncPoint, webContext()->mostRecentlyWaitedSyncPoint());
+
+    m_drawingBuffer->beginDestruction();
+}
+
 } // namespace

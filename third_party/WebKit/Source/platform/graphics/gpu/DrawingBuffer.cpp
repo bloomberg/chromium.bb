@@ -148,6 +148,7 @@ DrawingBuffer::DrawingBuffer(PassOwnPtr<WebGraphicsContext3D> context,
     , m_sampleCount(0)
     , m_packAlignment(4)
     , m_destructionInProgress(false)
+    , m_isHidden(false)
     , m_contextEvictionManager(contextEvictionManager)
 {
     // Used by browser tests to detect the use of a DrawingBuffer.
@@ -190,8 +191,26 @@ WebGraphicsContext3D* DrawingBuffer::context()
     return m_context.get();
 }
 
+void DrawingBuffer::setIsHidden(bool hidden)
+{
+    if (m_isHidden == hidden)
+        return;
+    m_isHidden = hidden;
+    if (m_isHidden)
+        freeRecycledMailboxes();
+}
+
+void DrawingBuffer::freeRecycledMailboxes()
+{
+    if (m_recycledMailboxQueue.isEmpty())
+        return;
+    while (!m_recycledMailboxQueue.isEmpty())
+        deleteMailbox(m_recycledMailboxQueue.takeLast());
+}
+
 bool DrawingBuffer::prepareMailbox(WebExternalTextureMailbox* outMailbox, WebExternalBitmap* bitmap)
 {
+    ASSERT(!m_isHidden);
     if (!m_contentsChanged)
         return false;
 
@@ -277,8 +296,8 @@ bool DrawingBuffer::prepareMailbox(WebExternalTextureMailbox* outMailbox, WebExt
 
 void DrawingBuffer::mailboxReleased(const WebExternalTextureMailbox& mailbox, bool lostResource)
 {
-    if (m_destructionInProgress || m_context->isContextLost() || lostResource) {
-        mailboxReleasedWhileDestructionInProgress(mailbox);
+    if (m_destructionInProgress || m_context->isContextLost() || lostResource || m_isHidden) {
+        mailboxReleasedWithoutRecycling(mailbox);
         return;
     }
 
@@ -295,7 +314,7 @@ void DrawingBuffer::mailboxReleased(const WebExternalTextureMailbox& mailbox, bo
     ASSERT_NOT_REACHED();
 }
 
-void DrawingBuffer::mailboxReleasedWhileDestructionInProgress(const WebExternalTextureMailbox& mailbox)
+void DrawingBuffer::mailboxReleasedWithoutRecycling(const WebExternalTextureMailbox& mailbox)
 {
     ASSERT(m_textureMailboxes.size());
     m_context->makeContextCurrent();

@@ -879,6 +879,12 @@ void WebGLRenderingContextBase::markLayerComposited()
         drawingBuffer()->markLayerComposited();
 }
 
+void WebGLRenderingContextBase::setIsHidden(bool hidden)
+{
+    if (!isContextLost())
+        drawingBuffer()->setIsHidden(hidden);
+}
+
 void WebGLRenderingContextBase::paintRenderingResultsToCanvas()
 {
     if (isContextLost()) {

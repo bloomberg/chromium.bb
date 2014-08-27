@@ -2265,6 +2265,13 @@ int CanvasRenderingContext2D::getFontBaseline(const FontMetrics& fontMetrics) co
     return 0;
 }
 
+void CanvasRenderingContext2D::setIsHidden(bool hidden)
+{
+    ImageBuffer* buffer = canvas()->buffer();
+    if (buffer)
+        buffer->setIsHidden(hidden);
+}
+
 blink::WebLayer* CanvasRenderingContext2D::platformLayer() const
 {
     return canvas()->buffer() ? canvas()->buffer()->platformLayer() : 0;

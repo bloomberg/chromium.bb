@@ -689,16 +689,14 @@ AffineTransform HTMLCanvasElement::baseTransform() const
 
 void HTMLCanvasElement::didChangeVisibilityState(PageVisibilityState visibility)
 {
-    if (hasImageBuffer()) {
-        bool hidden = visibility != PageVisibilityStateVisible;
-        if (hidden) {
-            clearCopiedImage();
-            if (is3D()) {
-                discardImageBuffer();
-            }
-        }
-        if (hasImageBuffer()) {
-            m_imageBuffer->setIsHidden(hidden);
+    if (!m_context)
+        return;
+    bool hidden = visibility != PageVisibilityStateVisible;
+    m_context->setIsHidden(hidden);
+    if (hidden) {
+        clearCopiedImage();
+        if (is3D()) {
+            discardImageBuffer();
         }
     }
 }

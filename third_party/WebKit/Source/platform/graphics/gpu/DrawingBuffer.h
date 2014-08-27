@@ -140,6 +140,7 @@ public:
     void markContentsChanged();
     void markLayerComposited();
     bool layerComposited() const;
+    void setIsHidden(bool);
 
     WebLayer* platformLayer();
     void paintCompositedResultsToCanvas(ImageBuffer*);
@@ -176,7 +177,7 @@ protected: // For unittests
     bool initialize(const IntSize&);
 
 private:
-    void mailboxReleasedWhileDestructionInProgress(const WebExternalTextureMailbox&);
+    void mailboxReleasedWithoutRecycling(const WebExternalTextureMailbox&);
 
     unsigned createColorTexture();
     // Create the depth/stencil and multisample buffers, if needed.
@@ -193,6 +194,7 @@ private:
     PassRefPtr<MailboxInfo> recycledMailbox();
     PassRefPtr<MailboxInfo> createNewMailbox(const TextureInfo&);
     void deleteMailbox(const WebExternalTextureMailbox&);
+    void freeRecycledMailboxes();
 
     // Updates the current size of the buffer, ensuring that s_currentResourceUsePixels is updated.
     void setSize(const IntSize& size);
@@ -277,6 +279,7 @@ private:
     int m_sampleCount;
     int m_packAlignment;
     bool m_destructionInProgress;
+    bool m_isHidden;
 
     OwnPtr<WebExternalTextureLayer> m_layer;
 

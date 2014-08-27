@@ -351,6 +351,7 @@ private:
     virtual bool is2d() const OVERRIDE { return true; }
     virtual bool isAccelerated() const OVERRIDE;
     virtual bool hasAlpha() const OVERRIDE { return m_hasAlpha; }
+    virtual void setIsHidden(bool) OVERRIDE;
 
     virtual bool isTransformInvertible() const OVERRIDE { return state().m_invertibleCTM; }
 
