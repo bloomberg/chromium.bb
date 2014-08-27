@@ -1073,12 +1073,6 @@ crbug.com/371651 svg/custom/use-disappears-after-style-update.svg [ Pass Failure
 
 crbug.com/371654 fast/html/imports/import-custom-element-dup-resolve.html [ Pass Failure ]
 
-crbug.com/407961 fast/forms/button/button-reset-focus-by-mouse-then-keydown.html [ NeedsRebaseline ]
-crbug.com/407961 fast/forms/checkbox/checkbox-focus-by-mouse-then-keydown.html [ NeedsRebaseline ]
-crbug.com/407961 fast/forms/radio/radio-focus-by-mouse-then-keydown.html [ NeedsRebaseline ]
-crbug.com/407961 fast/forms/range/range-focus-by-mouse-then-keydown.html [ NeedsRebaseline ]
-crbug.com/407961 fast/forms/submit/submit-focus-by-mouse-then-keydown.html [ NeedsRebaseline ]
-
 crbug.com/394221 [ Mac ] fast/text/emphasis-avoid-ruby.html [ Pass ImageOnlyFailure ]
 crbug.com/394221 [ Mac ] fast/text/emphasis-overlap.html [ Pass ImageOnlyFailure ]
 crbug.com/394221 [ Win ] fast/text/emphasis-avoid-ruby.html [ Pass Failure ]
