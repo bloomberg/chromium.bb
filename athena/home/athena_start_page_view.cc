@@ -171,7 +171,8 @@ AthenaStartPageView::AthenaStartPageView(
   logo_ = view_delegate->CreateStartPageWebView(
       gfx::Size(kWebViewWidth, kWebViewHeight));
   logo_->SetPaintToLayer(true);
-  logo_->SetSize(logo_->GetPreferredSize());
+  logo_->SetFillsBoundsOpaquely(false);
+  logo_->SetSize(gfx::Size(kWebViewWidth, kWebViewHeight));
   AddChildView(logo_);
 
   search_results_view_ = new app_list::SearchResultListView(
