@@ -15,6 +15,7 @@
 #include "core/animation/KeyframeEffectModel.h"
 #include "core/animation/Timing.h"
 #include "core/dom/Document.h"
+#include "core/testing/DummyPageHolder.h"
 #include <gtest/gtest.h>
 #include <v8.h>
 
@@ -23,14 +24,16 @@ namespace blink {
 class AnimationAnimationTest : public ::testing::Test {
 protected:
     AnimationAnimationTest()
-        : document(Document::create())
-        , element(document->createElement("foo", ASSERT_NO_EXCEPTION))
+        : pageHolder(DummyPageHolder::create())
+        , document(pageHolder->document())
+        , element(document.createElement("foo", ASSERT_NO_EXCEPTION))
     {
-        document->animationClock().resetTimeForTesting();
-        EXPECT_EQ(0, document->timeline().currentTime());
+        document.animationClock().resetTimeForTesting();
+        EXPECT_EQ(0, document.timeline().currentTime());
     }
 
-    RefPtrWillBePersistent<Document> document;
+    OwnPtr<DummyPageHolder> pageHolder;
+    Document& document;
     RefPtrWillBePersistent<Element> element;
     TrackExceptionState exceptionState;
 };
@@ -348,7 +351,7 @@ TEST_F(AnimationAnimationTest, TimeToEffectChange)
     timing.endDelay = 100;
     timing.fillMode = Timing::FillModeNone;
     RefPtrWillBeRawPtr<Animation> animation = Animation::create(0, nullptr, timing);
-    RefPtrWillBeRawPtr<AnimationPlayer> player = document->timeline().play(animation.get());
+    RefPtrWillBeRawPtr<AnimationPlayer> player = document.timeline().play(animation.get());
     double inf = std::numeric_limits<double>::infinity();
 
     EXPECT_EQ(100, animation->timeToForwardsEffectChange());
@@ -381,7 +384,7 @@ TEST_F(AnimationAnimationTest, TimeToEffectChangeWithPlaybackRate)
     timing.playbackRate = 2;
     timing.fillMode = Timing::FillModeNone;
     RefPtrWillBeRawPtr<Animation> animation = Animation::create(0, nullptr, timing);
-    RefPtrWillBeRawPtr<AnimationPlayer> player = document->timeline().play(animation.get());
+    RefPtrWillBeRawPtr<AnimationPlayer> player = document.timeline().play(animation.get());
     double inf = std::numeric_limits<double>::infinity();
 
     EXPECT_EQ(100, animation->timeToForwardsEffectChange());
@@ -414,7 +417,7 @@ TEST_F(AnimationAnimationTest, TimeToEffectChangeWithNegativePlaybackRate)
     timing.playbackRate = -2;
     timing.fillMode = Timing::FillModeNone;
     RefPtrWillBeRawPtr<Animation> animation = Animation::create(0, nullptr, timing);
-    RefPtrWillBeRawPtr<AnimationPlayer> player = document->timeline().play(animation.get());
+    RefPtrWillBeRawPtr<AnimationPlayer> player = document.timeline().play(animation.get());
     double inf = std::numeric_limits<double>::infinity();
 
     EXPECT_EQ(100, animation->timeToForwardsEffectChange());
@@ -445,8 +448,8 @@ TEST_F(AnimationAnimationTest, ElementDestructorClearsAnimationTarget)
     timing.iterationDuration = 5;
     RefPtrWillBeRawPtr<Animation> animation = Animation::create(element.get(), nullptr, timing);
     EXPECT_EQ(element.get(), animation->target());
-    document->timeline().play(animation.get());
-    document.clear();
+    document.timeline().play(animation.get());
+    pageHolder.clear();
     element.clear();
 #if !ENABLE(OILPAN)
     EXPECT_EQ(0, animation->target());
