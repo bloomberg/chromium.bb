@@ -53,12 +53,13 @@ public class ResourceExtractor {
 
         @Override
         protected Void doInBackground(Void... unused) {
-            if (!mOutputDir.exists() && !mOutputDir.mkdirs()) {
+            final File outputDir = getOutputDir();
+            if (!outputDir.exists() && !outputDir.mkdirs()) {
                 Log.e(LOGTAG, "Unable to create pak resources directory!");
                 return null;
             }
 
-            String timestampFile = checkPakTimestamp();
+            String timestampFile = checkPakTimestamp(outputDir);
             if (timestampFile != null) {
                 deleteFiles();
             }
@@ -73,7 +74,7 @@ public class ResourceExtractor {
                     &&  filenames.size() >= sMandatoryPaks.length) {
                 boolean filesPresent = true;
                 for (String file : filenames) {
-                    if (!new File(mOutputDir, file).exists()) {
+                    if (!new File(outputDir, file).exists()) {
                         filesPresent = false;
                         break;
                     }
@@ -112,7 +113,7 @@ public class ResourceExtractor {
                         continue;
                     }
                     boolean isICUData = file.equals(ICU_DATA_FILENAME);
-                    File output = new File(isICUData ? mAppDataDir : mOutputDir, file);
+                    File output = new File(isICUData ? getAppDataDir() : outputDir, file);
                     if (output.exists()) {
                         continue;
                     }
@@ -170,7 +171,7 @@ public class ResourceExtractor {
 
             if (timestampFile != null) {
                 try {
-                    new File(mOutputDir, timestampFile).createNewFile();
+                    new File(outputDir, timestampFile).createNewFile();
                 } catch (IOException e) {
                     // Worst case we don't write a timestamp, so we'll re-extract the resource
                     // paks next start up.
@@ -190,7 +191,7 @@ public class ResourceExtractor {
         // Note that we do this to avoid adding a BroadcastReceiver on
         // android.content.Intent#ACTION_PACKAGE_CHANGED as that causes process churn
         // on (re)installation of *all* APK files.
-        private String checkPakTimestamp() {
+        private String checkPakTimestamp(File outputDir) {
             final String TIMESTAMP_PREFIX = "pak_timestamp-";
             PackageManager pm = mContext.getPackageManager();
             PackageInfo pi = null;
@@ -207,7 +208,7 @@ public class ResourceExtractor {
 
             String expectedTimestamp = TIMESTAMP_PREFIX + pi.versionCode + "-" + pi.lastUpdateTime;
 
-            String[] timestamps = mOutputDir.list(new FilenameFilter() {
+            String[] timestamps = outputDir.list(new FilenameFilter() {
                 @Override
                 public boolean accept(File dir, String name) {
                     return name.startsWith(TIMESTAMP_PREFIX);
@@ -231,8 +232,6 @@ public class ResourceExtractor {
 
     private final Context mContext;
     private ExtractTask mExtractTask;
-    private final File mAppDataDir;
-    private final File mOutputDir;
 
     private static ResourceExtractor sInstance;
 
@@ -272,8 +271,6 @@ public class ResourceExtractor {
 
     private ResourceExtractor(Context context) {
         mContext = context.getApplicationContext();
-        mAppDataDir = getAppDataDir();
-        mOutputDir = getOutputDir();
     }
 
     public void waitForCompletion() {

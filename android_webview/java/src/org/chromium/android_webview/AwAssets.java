@@ -24,15 +24,24 @@ public class AwAssets {
 
     @CalledByNative
     public static long[] openAsset(Context context, String fileName) {
+        AssetFileDescriptor afd = null;
         try {
             AssetManager manager = context.getAssets();
-            AssetFileDescriptor afd = manager.openFd(fileName);
+            afd = manager.openFd(fileName);
             return new long[] { afd.getParcelFileDescriptor().detachFd(),
                                 afd.getStartOffset(),
                                 afd.getLength() };
         } catch (IOException e) {
-            Log.e(LOGTAG, "Error while loading asset " + fileName + ": " + e.getMessage());
+            Log.e(LOGTAG, "Error while loading asset " + fileName + ": " + e);
             return new long[] {-1, -1, -1};
+        } finally {
+            try {
+                if (afd != null) {
+                    afd.close();
+                }
+            } catch (IOException e2) {
+                Log.e(LOGTAG, "Unable to close AssetFileDescriptor", e2);
+            }
         }
     }
 }
