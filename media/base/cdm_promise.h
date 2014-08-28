@@ -35,6 +35,12 @@ class MEDIA_EXPORT CdmPromise {
     NUM_RESULT_CODES
   };
 
+  enum ResolveParameterType {
+    VOID_TYPE,
+    STRING_TYPE,
+    KEY_IDS_VECTOR_TYPE
+  };
+
   typedef base::Callback<void(MediaKeys::Exception exception_code,
                               uint32 system_code,
                               const std::string& error_message)>
@@ -49,6 +55,8 @@ class MEDIA_EXPORT CdmPromise {
   virtual void reject(MediaKeys::Exception exception_code,
                       uint32 system_code,
                       const std::string& error_message);
+
+  virtual ResolveParameterType GetResolveParameterType() const = 0;
 
  protected:
   CdmPromise();
@@ -70,29 +78,6 @@ class MEDIA_EXPORT CdmPromise {
   DISALLOW_COPY_AND_ASSIGN(CdmPromise);
 };
 
-template <typename T>
-class MEDIA_EXPORT CdmPromiseTemplate : public CdmPromise {
- public:
-  CdmPromiseTemplate(base::Callback<void(const T&)> resolve_cb,
-                     PromiseRejectedCB rejected_cb);
-  CdmPromiseTemplate(base::Callback<void(const T&)> resolve_cb,
-                     PromiseRejectedCB rejected_cb,
-                     const std::string& uma_name);
-  virtual ~CdmPromiseTemplate();
-  virtual void resolve(const T& result);
-
- protected:
-  // Allow subclasses to completely override the implementation.
-  // TODO(jrummell): Remove when derived class SessionLoadedPromise
-  // (in ppapi_decryptor.cc) is no longer needed.
-  CdmPromiseTemplate();
-
- private:
-  base::Callback<void(const T&)> resolve_cb_;
-
-  DISALLOW_COPY_AND_ASSIGN(CdmPromiseTemplate);
-};
-
 // Specialization for no parameter to resolve().
 template <>
 class MEDIA_EXPORT CdmPromiseTemplate<void> : public CdmPromise {
@@ -104,6 +89,7 @@ class MEDIA_EXPORT CdmPromiseTemplate<void> : public CdmPromise {
                      const std::string& uma_name);
   virtual ~CdmPromiseTemplate();
   virtual void resolve();
+  virtual ResolveParameterType GetResolveParameterType() const OVERRIDE;
 
  protected:
   // Allow subclasses to completely override the implementation.
@@ -111,6 +97,48 @@ class MEDIA_EXPORT CdmPromiseTemplate<void> : public CdmPromise {
 
  private:
   base::Callback<void(void)> resolve_cb_;
+
+  DISALLOW_COPY_AND_ASSIGN(CdmPromiseTemplate);
+};
+
+template <>
+class MEDIA_EXPORT CdmPromiseTemplate<std::string> : public CdmPromise {
+ public:
+  CdmPromiseTemplate(base::Callback<void(const std::string&)> resolve_cb,
+                     PromiseRejectedCB rejected_cb);
+  CdmPromiseTemplate(base::Callback<void(const std::string&)> resolve_cb,
+                     PromiseRejectedCB rejected_cb,
+                     const std::string& uma_name);
+  virtual ~CdmPromiseTemplate();
+  virtual void resolve(const std::string& result);
+  virtual ResolveParameterType GetResolveParameterType() const OVERRIDE;
+
+ protected:
+  // Allow subclasses to completely override the implementation.
+  // TODO(jrummell): Remove when derived class SessionLoadedPromise
+  // (in ppapi_decryptor.cc) is no longer needed.
+  CdmPromiseTemplate();
+
+ private:
+  base::Callback<void(const std::string&)> resolve_cb_;
+
+  DISALLOW_COPY_AND_ASSIGN(CdmPromiseTemplate);
+};
+
+template <>
+class MEDIA_EXPORT CdmPromiseTemplate<KeyIdsVector> : public CdmPromise {
+ public:
+  CdmPromiseTemplate(base::Callback<void(const KeyIdsVector&)> resolve_cb,
+                     PromiseRejectedCB rejected_cb);
+  CdmPromiseTemplate(base::Callback<void(const KeyIdsVector&)> resolve_cb,
+                     PromiseRejectedCB rejected_cb,
+                     const std::string& uma_name);
+  virtual ~CdmPromiseTemplate();
+  virtual void resolve(const KeyIdsVector& result);
+  virtual ResolveParameterType GetResolveParameterType() const OVERRIDE;
+
+ private:
+  base::Callback<void(const KeyIdsVector&)> resolve_cb_;
 
   DISALLOW_COPY_AND_ASSIGN(CdmPromiseTemplate);
 };

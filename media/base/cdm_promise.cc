@@ -63,44 +63,6 @@ void CdmPromise::reject(MediaKeys::Exception exception_code,
   reject_cb_.Run(exception_code, system_code, error_message);
 }
 
-template <typename T>
-CdmPromiseTemplate<T>::CdmPromiseTemplate(
-    base::Callback<void(const T&)> resolve_cb,
-    PromiseRejectedCB reject_cb)
-    : CdmPromise(reject_cb), resolve_cb_(resolve_cb) {
-  DCHECK(!resolve_cb_.is_null());
-}
-
-template <typename T>
-CdmPromiseTemplate<T>::CdmPromiseTemplate(
-    base::Callback<void(const T&)> resolve_cb,
-    PromiseRejectedCB reject_cb,
-    const std::string& uma_name)
-    : CdmPromise(reject_cb, uma_name), resolve_cb_(resolve_cb) {
-  DCHECK(!resolve_cb_.is_null());
-}
-
-template <typename T>
-CdmPromiseTemplate<T>::CdmPromiseTemplate() {
-}
-
-template <typename T>
-CdmPromiseTemplate<T>::~CdmPromiseTemplate() {
-  DCHECK(!is_pending_);
-}
-
-template <typename T>
-void CdmPromiseTemplate<T>::resolve(const T& result) {
-  DCHECK(is_pending_);
-  is_pending_ = false;
-  if (!uma_name_.empty()) {
-    base::LinearHistogram::FactoryGet(
-        uma_name_, 1, NUM_RESULT_CODES, NUM_RESULT_CODES + 1,
-        base::HistogramBase::kUmaTargetedHistogramFlag)->Add(SUCCESS);
-  }
-  resolve_cb_.Run(result);
-}
-
 CdmPromiseTemplate<void>::CdmPromiseTemplate(base::Callback<void()> resolve_cb,
                                              PromiseRejectedCB reject_cb)
     : CdmPromise(reject_cb), resolve_cb_(resolve_cb) {
@@ -133,8 +95,82 @@ void CdmPromiseTemplate<void>::resolve() {
   resolve_cb_.Run();
 }
 
-// Explicit template instantiation for the Promises needed.
-template class MEDIA_EXPORT CdmPromiseTemplate<std::string>;
-template class MEDIA_EXPORT CdmPromiseTemplate<KeyIdsVector>;
+CdmPromise::ResolveParameterType
+CdmPromiseTemplate<void>::GetResolveParameterType() const {
+  return VOID_TYPE;
+}
+
+CdmPromiseTemplate<std::string>::CdmPromiseTemplate(
+    base::Callback<void(const std::string&)> resolve_cb,
+    PromiseRejectedCB reject_cb)
+    : CdmPromise(reject_cb), resolve_cb_(resolve_cb) {
+  DCHECK(!resolve_cb_.is_null());
+}
+
+CdmPromiseTemplate<std::string>::CdmPromiseTemplate(
+    base::Callback<void(const std::string&)> resolve_cb,
+    PromiseRejectedCB reject_cb,
+    const std::string& uma_name)
+    : CdmPromise(reject_cb, uma_name), resolve_cb_(resolve_cb) {
+  DCHECK(!resolve_cb_.is_null());
+}
+
+CdmPromiseTemplate<std::string>::CdmPromiseTemplate() {
+}
+
+CdmPromiseTemplate<std::string>::~CdmPromiseTemplate() {
+  DCHECK(!is_pending_);
+}
+
+void CdmPromiseTemplate<std::string>::resolve(const std::string& result) {
+  DCHECK(is_pending_);
+  is_pending_ = false;
+  if (!uma_name_.empty()) {
+    base::LinearHistogram::FactoryGet(
+        uma_name_, 1, NUM_RESULT_CODES, NUM_RESULT_CODES + 1,
+        base::HistogramBase::kUmaTargetedHistogramFlag)->Add(SUCCESS);
+  }
+  resolve_cb_.Run(result);
+}
+
+CdmPromise::ResolveParameterType
+CdmPromiseTemplate<std::string>::GetResolveParameterType() const {
+  return STRING_TYPE;
+}
+
+CdmPromiseTemplate<KeyIdsVector>::CdmPromiseTemplate(
+    base::Callback<void(const KeyIdsVector&)> resolve_cb,
+    PromiseRejectedCB reject_cb)
+    : CdmPromise(reject_cb), resolve_cb_(resolve_cb) {
+  DCHECK(!resolve_cb_.is_null());
+}
+
+CdmPromiseTemplate<KeyIdsVector>::CdmPromiseTemplate(
+    base::Callback<void(const KeyIdsVector&)> resolve_cb,
+    PromiseRejectedCB reject_cb,
+    const std::string& uma_name)
+    : CdmPromise(reject_cb, uma_name), resolve_cb_(resolve_cb) {
+  DCHECK(!resolve_cb_.is_null());
+}
+
+CdmPromiseTemplate<KeyIdsVector>::~CdmPromiseTemplate() {
+  DCHECK(!is_pending_);
+}
+
+void CdmPromiseTemplate<KeyIdsVector>::resolve(const KeyIdsVector& result) {
+  DCHECK(is_pending_);
+  is_pending_ = false;
+  if (!uma_name_.empty()) {
+    base::LinearHistogram::FactoryGet(
+        uma_name_, 1, NUM_RESULT_CODES, NUM_RESULT_CODES + 1,
+        base::HistogramBase::kUmaTargetedHistogramFlag)->Add(SUCCESS);
+  }
+  resolve_cb_.Run(result);
+}
+
+CdmPromise::ResolveParameterType
+CdmPromiseTemplate<KeyIdsVector>::GetResolveParameterType() const {
+  return KEY_IDS_VECTOR_TYPE;
+}
 
 }  // namespace media

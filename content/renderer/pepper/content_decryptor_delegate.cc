@@ -625,26 +625,33 @@ bool ContentDecryptorDelegate::DecryptAndDecodeVideo(
 
 void ContentDecryptorDelegate::OnPromiseResolved(uint32 promise_id) {
   scoped_ptr<CdmPromise> promise = TakePromise(promise_id);
-  if (promise) {
-    SimpleCdmPromise* simple_promise(
-        static_cast<SimpleCdmPromise*>(promise.get()));
-    simple_promise->resolve();
+  if (!promise ||
+      promise->GetResolveParameterType() != media::CdmPromise::VOID_TYPE) {
+    NOTREACHED();
+    return;
   }
+
+  SimpleCdmPromise* simple_promise(
+      static_cast<SimpleCdmPromise*>(promise.get()));
+  simple_promise->resolve();
 }
 
 void ContentDecryptorDelegate::OnPromiseResolvedWithSession(
     uint32 promise_id,
     PP_Var web_session_id) {
   scoped_ptr<CdmPromise> promise = TakePromise(promise_id);
+  if (!promise ||
+      promise->GetResolveParameterType() != media::CdmPromise::STRING_TYPE) {
+    NOTREACHED();
+    return;
+  }
 
   StringVar* web_session_id_string = StringVar::FromPPVar(web_session_id);
   DCHECK(web_session_id_string);
 
-  if (promise) {
-    NewSessionCdmPromise* session_promise(
-        static_cast<NewSessionCdmPromise*>(promise.get()));
-    session_promise->resolve(web_session_id_string->value());
-  }
+  NewSessionCdmPromise* session_promise(
+      static_cast<NewSessionCdmPromise*>(promise.get()));
+  session_promise->resolve(web_session_id_string->value());
 }
 
 void ContentDecryptorDelegate::OnPromiseRejected(
