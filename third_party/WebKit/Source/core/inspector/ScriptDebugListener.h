@@ -80,6 +80,7 @@ public:
     virtual SkipPauseRequest didPause(ScriptState*, const ScriptValue& callFrames, const ScriptValue& exception, const Vector<String>& hitBreakpoints) = 0;
     virtual void didContinue() = 0;
     virtual void didReceiveV8AsyncTaskEvent(ExecutionContext*, const String& eventType, const String& eventName, int id) = 0;
+    virtual void didReceiveV8PromiseEvent(ScriptState*, v8::Handle<v8::Object> promise, v8::Handle<v8::Value> parentPromise, int status) = 0;
 };
 
 } // namespace blink

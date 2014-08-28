@@ -915,6 +915,13 @@ void InspectorDebuggerAgent::didReceiveV8AsyncTaskEvent(ExecutionContext* contex
         ASSERT_NOT_REACHED();
 }
 
+void InspectorDebuggerAgent::didReceiveV8PromiseEvent(ScriptState* scriptState, v8::Handle<v8::Object> promise, v8::Handle<v8::Value> parentPromise, int status)
+{
+    if (!m_promiseTracker.isEnabled())
+        return;
+    m_promiseTracker.didReceiveV8PromiseEvent(scriptState, promise, parentPromise, status);
+}
+
 void InspectorDebuggerAgent::pause(ErrorString*)
 {
     if (m_javaScriptPauseScheduled || isPaused())
@@ -1418,6 +1425,7 @@ void InspectorDebuggerAgent::clear()
     m_scripts.clear();
     m_breakpointIdToDebugServerBreakpointIds.clear();
     asyncCallStackTracker().clear();
+    m_promiseTracker.clear();
     m_continueToLocationBreakpointId = String();
     clearBreakDetails();
     m_javaScriptPauseScheduled = false;
@@ -1460,6 +1468,7 @@ void InspectorDebuggerAgent::reset()
     m_scripts.clear();
     m_breakpointIdToDebugServerBreakpointIds.clear();
     asyncCallStackTracker().clear();
+    m_promiseTracker.clear();
     if (m_frontend)
         m_frontend->globalObjectCleared();
 }

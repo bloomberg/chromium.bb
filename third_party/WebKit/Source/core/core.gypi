@@ -1330,6 +1330,8 @@
             'inspector/PageDebuggerAgent.h',
             'inspector/PageRuntimeAgent.cpp',
             'inspector/PageRuntimeAgent.h',
+            'inspector/PromiseTracker.cpp',
+            'inspector/PromiseTracker.h',
             'inspector/ScriptArguments.cpp',
             'inspector/ScriptArguments.h',
             'inspector/ScriptAsyncCallStack.cpp',

@@ -37,6 +37,7 @@
 #include "core/inspector/ConsoleAPITypes.h"
 #include "core/inspector/InjectedScript.h"
 #include "core/inspector/InspectorBaseAgent.h"
+#include "core/inspector/PromiseTracker.h"
 #include "core/inspector/ScriptBreakpoint.h"
 #include "core/inspector/ScriptDebugListener.h"
 #include "wtf/Forward.h"
@@ -227,6 +228,7 @@ private:
 
     virtual void didParseSource(const String& scriptId, const Script&, CompileResult) OVERRIDE FINAL;
     virtual void didReceiveV8AsyncTaskEvent(ExecutionContext*, const String& eventType, const String& eventName, int id) OVERRIDE FINAL;
+    virtual void didReceiveV8PromiseEvent(ScriptState*, v8::Handle<v8::Object> promise, v8::Handle<v8::Value> parentPromise, int status) OVERRIDE FINAL;
 
     void setPauseOnExceptionsImpl(ErrorString*, int);
 
@@ -267,6 +269,7 @@ private:
     bool m_skipAllPauses;
     OwnPtr<ScriptRegexp> m_cachedSkipStackRegExp;
     OwnPtrWillBeMember<AsyncCallStackTracker> m_asyncCallStackTracker;
+    PromiseTracker m_promiseTracker;
 };
 
 } // namespace blink

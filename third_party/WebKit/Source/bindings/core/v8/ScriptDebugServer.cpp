@@ -487,7 +487,7 @@ void ScriptDebugServer::handleV8DebugEvent(const v8::Debug::EventDetails& eventD
         return;
     }
 
-    if (event != v8::AsyncTaskEvent && event != v8::Break && event != v8::Exception && event != v8::AfterCompile && event != v8::BeforeCompile && event != v8::CompileError)
+    if (event != v8::AsyncTaskEvent && event != v8::Break && event != v8::Exception && event != v8::AfterCompile && event != v8::BeforeCompile && event != v8::CompileError && event != v8::PromiseEvent)
         return;
 
     v8::Handle<v8::Context> eventContext = eventDetails.GetEventContext();
@@ -519,6 +519,8 @@ void ScriptDebugServer::handleV8DebugEvent(const v8::Debug::EventDetails& eventD
             handleProgramBreak(ScriptState::from(eventContext), eventDetails.GetExecutionState(), v8::Handle<v8::Value>(), hitBreakpoints.As<v8::Array>());
         } else if (event == v8::AsyncTaskEvent) {
             handleV8AsyncTaskEvent(listener, ScriptState::from(eventContext), eventDetails.GetExecutionState(), eventDetails.GetEventData());
+        } else if (event == v8::PromiseEvent) {
+            handleV8PromiseEvent(listener, ScriptState::from(eventContext), eventDetails.GetExecutionState(), eventDetails.GetEventData());
         }
     }
 }
@@ -532,6 +534,21 @@ void ScriptDebugServer::handleV8AsyncTaskEvent(ScriptDebugListener* listener, Sc
     m_pausedScriptState = pausedScriptState;
     m_executionState = executionState;
     listener->didReceiveV8AsyncTaskEvent(pausedScriptState->executionContext(), type, name, id);
+    m_pausedScriptState.clear();
+    m_executionState.Clear();
+}
+
+void ScriptDebugServer::handleV8PromiseEvent(ScriptDebugListener* listener, ScriptState* pausedScriptState, v8::Handle<v8::Object> executionState, v8::Handle<v8::Object> eventData)
+{
+    v8::Handle<v8::Value> argv[] = { eventData };
+    v8::Local<v8::Object> promiseDetails = callDebuggerMethod("getPromiseDetails", 1, argv)->ToObject();
+    v8::Handle<v8::Object> promise = promiseDetails->Get(v8AtomicString(m_isolate, "promise"))->ToObject();
+    int status = promiseDetails->Get(v8AtomicString(m_isolate, "status"))->ToInteger()->Value();
+    v8::Handle<v8::Value> parentPromise = promiseDetails->Get(v8AtomicString(m_isolate, "parentPromise"));
+
+    m_pausedScriptState = pausedScriptState;
+    m_executionState = executionState;
+    listener->didReceiveV8PromiseEvent(pausedScriptState, promise, parentPromise, status);
     m_pausedScriptState.clear();
     m_executionState.Clear();
 }

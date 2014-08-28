@@ -532,6 +532,15 @@ DebuggerScript._buildScopeObject = function(scopeType, scopeObject)
     return result;
 }
 
+DebuggerScript.getPromiseDetails = function(eventData)
+{
+    return {
+        "promise": eventData.promise().value(),
+        "parentPromise": eventData.parentPromise().value(),
+        "status": eventData.status()
+    };
+}
+
 // We never resolve Mirror by its handle so to avoid memory leaks caused by Mirrors in the cache we disable it.
 ToggleMirrorCache(false);
 

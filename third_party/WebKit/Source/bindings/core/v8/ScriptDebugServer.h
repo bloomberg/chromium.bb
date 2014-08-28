@@ -156,6 +156,8 @@ private:
 
     void handleV8AsyncTaskEvent(ScriptDebugListener*, ScriptState* pausedScriptState, v8::Handle<v8::Object> executionState, v8::Handle<v8::Object> eventData);
 
+    void handleV8PromiseEvent(ScriptDebugListener*, ScriptState* pausedScriptState, v8::Handle<v8::Object> executionState, v8::Handle<v8::Object> eventData);
+
     bool m_runningNestedMessageLoop;
 };
 
