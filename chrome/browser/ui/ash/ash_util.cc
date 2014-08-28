@@ -36,14 +36,4 @@ bool IsNativeWindowInAsh(gfx::NativeWindow native_window) {
   return IsNativeViewInAsh(native_window);
 }
 
-void ToggleAshDesktop() {
-  if (chrome::HOST_DESKTOP_TYPE_ASH == chrome::HOST_DESKTOP_TYPE_NATIVE)
-    return;
-
-  if (!ash::Shell::HasInstance())
-    OpenAsh(gfx::kNullAcceleratedWidget);
-  else
-    CloseAsh();
-}
-
 }  // namespace chrome

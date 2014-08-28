@@ -12,18 +12,28 @@
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-bool VerifyMetroSwitchForApps(gfx::NativeWindow parent_window,
-                              int win8_restart_command_id) {
-  DCHECK(win8_restart_command_id == IDC_WIN8_DESKTOP_RESTART ||
-      win8_restart_command_id == IDC_WIN8_METRO_RESTART);
+bool VerifyASHSwitchForApps(gfx::NativeWindow parent_window,
+                            int win_restart_command_id) {
+  DCHECK(win_restart_command_id == IDC_WIN_DESKTOP_RESTART ||
+      win_restart_command_id == IDC_WIN8_METRO_RESTART ||
+      win_restart_command_id == IDC_WIN_CHROMEOS_RESTART);
   if (!apps::AppWindowRegistry::IsAppWindowRegisteredInAnyProfile(
            apps::AppWindow::WINDOW_TYPE_DEFAULT)) {
     return true;
   }
 
-  int string_id = win8_restart_command_id == IDC_WIN8_METRO_RESTART ?
-      IDS_WIN8_PROMPT_TO_CLOSE_APPS_FOR_METRO :
-      IDS_WIN8_PROMPT_TO_CLOSE_APPS_FOR_DESKTOP;
+  int string_id = 0;
+  switch (win_restart_command_id) {
+    case IDC_WIN8_METRO_RESTART:
+      string_id = IDS_WIN8_PROMPT_TO_CLOSE_APPS_FOR_METRO;
+      break;
+    case IDC_WIN_CHROMEOS_RESTART:
+      string_id = IDS_WIN_PROMPT_TO_CLOSE_APPS_FOR_CHROMEOS;
+      break;
+    default:
+      string_id = IDS_WIN_PROMPT_TO_CLOSE_APPS_FOR_DESKTOP;
+      break;
+  }
   chrome::MessageBoxResult result = chrome::ShowMessageBox(
       parent_window,
       l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),

@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
+#include "base/win/windows_version.h"
 #include "chrome/common/chrome_switches.h"
 #include "win8/delegate_execute/delegate_execute_util.h"
 
@@ -20,13 +21,19 @@ DelegateExecuteOperation::~DelegateExecuteOperation() {
 }
 
 bool DelegateExecuteOperation::Init(const CommandLine* cmd_line) {
-  base::FilePath shortcut(
-      cmd_line->GetSwitchValuePath(switches::kRelaunchShortcut));
-  if (shortcut.empty()) {
-    operation_type_ = DELEGATE_EXECUTE;
-    return true;
+  if (base::win::GetVersion() >= base::win::VERSION_WIN7) {
+    base::FilePath shortcut(
+        cmd_line->GetSwitchValuePath(switches::kRelaunchShortcut));
+    // On Windows 7 the command line coming in may not have a path to the
+    // shortcut to launch Chrome. We ignore the shortcut and just do a regular
+    // ShellExecute of chrome.exe in this case.
+    if (shortcut.empty() &&
+        base::win::GetVersion() >= base::win::VERSION_WIN8) {
+      operation_type_ = DELEGATE_EXECUTE;
+      return true;
+    }
+    relaunch_shortcut_ = shortcut;
   }
-  relaunch_shortcut_ = shortcut;
   mutex_ = cmd_line->GetSwitchValueNative(switches::kWaitForMutex);
   if (mutex_.empty())
     return false;

@@ -81,8 +81,9 @@ class ATL_NO_VTABLE DECLSPEC_UUID("071BB5F2-85A4-424F-BFE7-5F1609BE4C2C")
   // IForegroundTransfer
   STDMETHOD(AllowForegroundTransfer)(void* reserved);
 
- private:
   static bool FindChromeExe(base::FilePath* chrome_exe);
+
+ private:
 
   static bool path_provider_initialized_;
 

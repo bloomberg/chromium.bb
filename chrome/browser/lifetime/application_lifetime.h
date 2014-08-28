@@ -41,11 +41,13 @@ enum AshExecutionStatus {
 // activating desktop.
 void ActivateDesktopHelper(AshExecutionStatus ash_execution_status);
 
-// Windows 8 specific: Like AttemptRestart but if chrome is running
+// Windows 7/8 specific: Like AttemptRestart but if chrome is running
 // in desktop mode it starts in metro mode and vice-versa. The switching like
 // the restarting is controlled by a preference.
 void AttemptRestartWithModeSwitch();
 void AttemptRestartToDesktopMode();
+// Launches Chrome into Windows 8 metro mode on Windows 8. On Windows 7 it
+// launches Chrome into Windows ASH.
 void AttemptRestartToMetroMode();
 #endif
 

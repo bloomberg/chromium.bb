@@ -13643,12 +13643,6 @@ Do you accept?
       <message name="IDS_GTALK_REMOTING_CONTINUE_DIALOG_MESSAGE" desc="Message of the dialog box asking user's permission to continue Hangouts Remote Desktop">
         You are being helped. Do you want to continue?
       </message>
-      <message name="IDS_OPEN_ASH_DESKTOP" desc="The text label of the Open Ash desktop menu item">
-        Open Ash desktop
-      </message>
-      <message name="IDS_CLOSE_ASH_DESKTOP" desc="The text label of the Close Ash desktop menu item">
-        Close Ash desktop
-      </message>
     </if>
 
     <!-- Panel windows -->
@@ -13836,11 +13830,11 @@ Do you accept?
               desc="Title for notification displayed when a download request is completed">
         Download complete notification
       </message>
-      <message name="IDS_WIN8_DESKTOP_OPEN"
+      <message name="IDS_WIN_DESKTOP_OPEN"
                desc="Text for the infobar button to open Chrome in desktop mode.">
         Open Chrome on the desktop
       </message>
-      <message name="IDS_WIN8_DESKTOP_RESTART"
+      <message name="IDS_WIN_DESKTOP_RESTART"
                desc="Text for the menu item to restart chrome in desktop mode. Aplies to Windows 8 only">
         Relaunch Chrome on the desktop
       </message>
@@ -13852,7 +13846,15 @@ Do you accept?
                desc="Modal message box prompt shown to the user after requesting to relaunch in Windows 8 mode while packaged apps are running, which will require all packaged apps to be closed and then restarted. Dialog is shown with choices: OK, Cancel.">
         Relaunching in Windows 8 mode will close and relaunch your Chrome apps.
       </message>
-      <message name="IDS_WIN8_PROMPT_TO_CLOSE_APPS_FOR_DESKTOP"
+      <message name="IDS_WIN_CHROMEOS_RESTART"
+               desc="Text for the menu item to restart chrome in chrome os. Aplies to Windows 7 only">
+        Relaunch Chrome in Chrome OS mode
+      </message>
+      <message name="IDS_WIN_PROMPT_TO_CLOSE_APPS_FOR_CHROMEOS"
+               desc="Modal message box prompt shown to the user after requesting to relaunch in Windows chrome os mode while packaged apps are running, which will require all packaged apps to be closed and then restarted. Dialog is shown with choices: OK, Cancel.">
+        Relaunching in Chrome OS mode will close and relaunch your Chrome apps.
+      </message>
+      <message name="IDS_WIN_PROMPT_TO_CLOSE_APPS_FOR_DESKTOP"
                desc="Modal message box prompt shown to the user after requesting to relaunch in Desktop mode while packaged apps are running, which will require all packaged apps to be closed and then restarted. Dialog is shown with choices: OK, Cancel.">
         Relaunching in Desktop mode will close and relaunch your Chrome apps.
       </message>

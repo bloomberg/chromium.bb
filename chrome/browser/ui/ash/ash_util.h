@@ -14,9 +14,6 @@ namespace chrome {
 bool IsNativeViewInAsh(gfx::NativeView native_view);
 bool IsNativeWindowInAsh(gfx::NativeWindow native_window);
 
-// Opens the Ash desktop if it's closed; otherwise, closes it.
-void ToggleAshDesktop();
-
 }  // namespace chrome
 
 #endif  // CHROME_BROWSER_UI_ASH_ASH_UTIL_H_

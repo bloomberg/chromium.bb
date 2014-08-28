@@ -461,12 +461,6 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
 #endif
       break;
 
-#if defined(USE_ASH)
-    case IDC_TOGGLE_ASH_DESKTOP:
-      chrome::ToggleAshDesktop();
-      break;
-#endif
-
 #if defined(OS_CHROMEOS)
     case IDC_VISIT_DESKTOP_OF_LRU_USER_2:
     case IDC_VISIT_DESKTOP_OF_LRU_USER_3:
@@ -491,20 +485,29 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
     case IDC_METRO_SNAP_DISABLE:
       browser_->SetMetroSnapMode(false);
       break;
-    case IDC_WIN8_DESKTOP_RESTART:
-      if (!VerifyMetroSwitchForApps(window()->GetNativeWindow(), id))
+    case IDC_WIN_DESKTOP_RESTART:
+      if (!VerifyASHSwitchForApps(window()->GetNativeWindow(), id))
         break;
 
       chrome::AttemptRestartToDesktopMode();
-      content::RecordAction(base::UserMetricsAction("Win8DesktopRestart"));
+      if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
+        content::RecordAction(base::UserMetricsAction("Win8DesktopRestart"));
+      } else {
+        content::RecordAction(base::UserMetricsAction("Win7DesktopRestart"));
+      }
       break;
     case IDC_WIN8_METRO_RESTART:
-      if (!VerifyMetroSwitchForApps(window()->GetNativeWindow(), id))
+    case IDC_WIN_CHROMEOS_RESTART:
+      if (!VerifyASHSwitchForApps(window()->GetNativeWindow(), id))
         break;
-
-      // SwitchToMetroUIHandler deletes itself.
-      new SwitchToMetroUIHandler;
-      content::RecordAction(base::UserMetricsAction("Win8MetroRestart"));
+      if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
+        // SwitchToMetroUIHandler deletes itself.
+        new SwitchToMetroUIHandler;
+        content::RecordAction(base::UserMetricsAction("Win8MetroRestart"));
+      } else {
+        content::RecordAction(base::UserMetricsAction("Win7ASHRestart"));
+        chrome::AttemptRestartToMetroMode();
+      }
       break;
 #endif
 
@@ -886,11 +889,6 @@ void BrowserCommandController::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_EXIT, true);
 #endif
   command_updater_.UpdateCommandEnabled(IDC_DEBUG_FRAME_TOGGLE, true);
-#if defined(OS_WIN) && defined(USE_ASH) && !defined(NDEBUG)
-  if (base::win::GetVersion() < base::win::VERSION_WIN8 &&
-      chrome::HOST_DESKTOP_TYPE_NATIVE != chrome::HOST_DESKTOP_TYPE_ASH)
-    command_updater_.UpdateCommandEnabled(IDC_TOGGLE_ASH_DESKTOP, true);
-#endif
 #if defined(USE_ASH)
   command_updater_.UpdateCommandEnabled(IDC_MINIMIZE_WINDOW, true);
 #endif
@@ -1002,7 +1000,9 @@ void BrowserCommandController::InitCommandState() {
   bool metro = browser_->host_desktop_type() == chrome::HOST_DESKTOP_TYPE_ASH;
   command_updater_.UpdateCommandEnabled(IDC_METRO_SNAP_ENABLE, metro);
   command_updater_.UpdateCommandEnabled(IDC_METRO_SNAP_DISABLE, metro);
-  int restart_mode = metro ? IDC_WIN8_DESKTOP_RESTART : IDC_WIN8_METRO_RESTART;
+  int restart_mode = metro ? IDC_WIN_DESKTOP_RESTART :
+      (base::win::GetVersion() >= base::win::VERSION_WIN8 ?
+          IDC_WIN8_METRO_RESTART : IDC_WIN_CHROMEOS_RESTART);
   command_updater_.UpdateCommandEnabled(restart_mode, normal_window);
 #endif
 

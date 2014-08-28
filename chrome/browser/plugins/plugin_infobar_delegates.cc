@@ -482,15 +482,9 @@ int PluginMetroModeInfoBarDelegate::GetButtons() const {
 
 base::string16 PluginMetroModeInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
-#if defined(USE_AURA) && defined(USE_ASH)
-  return l10n_util::GetStringUTF16(IDS_WIN8_DESKTOP_RESTART);
-#else
-  return l10n_util::GetStringUTF16((mode_ == MISSING_PLUGIN) ?
-      IDS_WIN8_DESKTOP_RESTART : IDS_WIN8_DESKTOP_OPEN);
-#endif
+  return l10n_util::GetStringUTF16(IDS_WIN_DESKTOP_RESTART);
 }
 
-#if defined(USE_AURA) && defined(USE_ASH)
 void LaunchDesktopInstanceHelper(const base::string16& url) {
   base::FilePath exe_path;
   if (!PathService::Get(base::FILE_EXE, &exe_path))
@@ -504,7 +498,6 @@ void LaunchDesktopInstanceHelper(const base::string16& url) {
   aura::RemoteWindowTreeHostWin::Instance()->HandleOpenURLOnDesktop(
       shortcut_path, url);
 }
-#endif
 
 bool PluginMetroModeInfoBarDelegate::Accept() {
   chrome::AttemptRestartToDesktopMode();

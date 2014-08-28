@@ -545,15 +545,6 @@ void WrenchMenuModel::Build() {
   if (ShouldShowNewIncognitoWindowMenuItem())
     AddItemWithStringId(IDC_NEW_INCOGNITO_WINDOW, IDS_NEW_INCOGNITO_WINDOW);
 
-#if defined(OS_WIN) && !defined(NDEBUG) && defined(USE_ASH)
-  if (base::win::GetVersion() < base::win::VERSION_WIN8 &&
-      chrome::HOST_DESKTOP_TYPE_NATIVE != chrome::HOST_DESKTOP_TYPE_ASH) {
-    AddItemWithStringId(IDC_TOGGLE_ASH_DESKTOP,
-                        ash::Shell::HasInstance() ? IDS_CLOSE_ASH_DESKTOP :
-                                                    IDS_OPEN_ASH_DESKTOP);
-  }
-#endif
-
   bookmark_sub_menu_model_.reset(new BookmarkSubMenuModel(this, browser_));
   AddSubMenuWithStringId(IDC_BOOKMARKS_MENU, IDS_BOOKMARKS_MENU,
                          bookmark_sub_menu_model_.get());
@@ -567,32 +558,23 @@ void WrenchMenuModel::Build() {
   }
 
 #if defined(OS_WIN)
-
-#if defined(USE_AURA)
-  if (base::win::GetVersion() >= base::win::VERSION_WIN8 &&
-      content::GpuDataManager::GetInstance()->CanUseGpuBrowserCompositor()) {
+ if (base::win::GetVersion() >= base::win::VERSION_WIN7 &&
+     content::GpuDataManager::GetInstance()->CanUseGpuBrowserCompositor()) {
     if (browser_->host_desktop_type() == chrome::HOST_DESKTOP_TYPE_ASH) {
-      // Metro mode, add the 'Relaunch Chrome in desktop mode'.
+      // ASH/Metro mode, add the 'Relaunch Chrome in desktop mode'.
       AddSeparator(ui::NORMAL_SEPARATOR);
-      AddItemWithStringId(IDC_WIN8_DESKTOP_RESTART, IDS_WIN8_DESKTOP_RESTART);
+      AddItemWithStringId(IDC_WIN_DESKTOP_RESTART, IDS_WIN_DESKTOP_RESTART);
     } else {
       // In Windows 8 desktop, add the 'Relaunch Chrome in Windows 8 mode'.
+      // In Windows 7 desktop, add the 'Relaunch Chrome in Windows ASH mode'
       AddSeparator(ui::NORMAL_SEPARATOR);
-      AddItemWithStringId(IDC_WIN8_METRO_RESTART, IDS_WIN8_METRO_RESTART);
+      if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
+        AddItemWithStringId(IDC_WIN8_METRO_RESTART, IDS_WIN8_METRO_RESTART);
+      } else {
+        AddItemWithStringId(IDC_WIN_CHROMEOS_RESTART, IDS_WIN_CHROMEOS_RESTART);
+      }
     }
   }
-#else
-  if (base::win::IsMetroProcess()) {
-    // Metro mode, add the 'Relaunch Chrome in desktop mode'.
-    AddSeparator(ui::NORMAL_SEPARATOR);
-    AddItemWithStringId(IDC_WIN8_DESKTOP_RESTART, IDS_WIN8_DESKTOP_RESTART);
-  } else {
-    // In Windows 8 desktop, add the 'Relaunch Chrome in Windows 8 mode'.
-    AddSeparator(ui::NORMAL_SEPARATOR);
-    AddItemWithStringId(IDC_WIN8_METRO_RESTART, IDS_WIN8_METRO_RESTART);
-  }
-#endif
-
 #endif
 
   // Append the full menu including separators. The final separator only gets

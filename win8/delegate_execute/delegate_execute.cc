@@ -17,6 +17,7 @@
 #include "base/win/scoped_com_initializer.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win/scoped_handle.h"
+#include "base/win/windows_version.h"
 #include "breakpad/src/client/windows/handler/exception_handler.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/installer/util/browser_distribution.h"
@@ -117,21 +118,58 @@ int RelaunchChrome(const DelegateExecuteOperation& operation) {
     AtlTrace("No relaunch mutex found\n");
   }
 
-  base::win::ScopedCOMInitializer com_initializer;
+  // On Windows 8+ to launch Chrome we rely on Windows to use the
+  // IExecuteCommand interface exposed by delegate_execute to launch Chrome
+  // into Windows 8 metro mode or desktop.
+  // On Windows 7 we don't use delegate_execute and instead use plain vanilla
+  // ShellExecute to launch Chrome into ASH or desktop.
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
+    base::win::ScopedCOMInitializer com_initializer;
 
-  base::string16 relaunch_flags(operation.relaunch_flags());
-  SHELLEXECUTEINFO sei = { sizeof(sei) };
-  sei.fMask = SEE_MASK_FLAG_LOG_USAGE;
-  sei.nShow = SW_SHOWNORMAL;
-  sei.lpFile = operation.shortcut().value().c_str();
-  sei.lpParameters = relaunch_flags.c_str();
+    base::string16 relaunch_flags(operation.relaunch_flags());
+    SHELLEXECUTEINFO sei = { sizeof(sei) };
+    sei.fMask = SEE_MASK_FLAG_LOG_USAGE;
+    sei.nShow = SW_SHOWNORMAL;
+    sei.lpFile = operation.shortcut().value().c_str();
+    sei.lpParameters = relaunch_flags.c_str();
 
-  AtlTrace(L"Relaunching Chrome via shortcut [%ls]\n", sei.lpFile);
+    AtlTrace(L"Relaunching Chrome via shortcut [%ls]\n", sei.lpFile);
 
-  if (!::ShellExecuteExW(&sei)) {
-    int error = HRESULT_FROM_WIN32(::GetLastError());
-    AtlTrace("ShellExecute returned 0x%08X\n", error);
-    return error;
+    if (!::ShellExecuteExW(&sei)) {
+      int error = HRESULT_FROM_WIN32(::GetLastError());
+      AtlTrace("ShellExecute returned 0x%08X\n", error);
+      return error;
+    }
+  } else {
+    base::FilePath chrome_exe_path;
+    bool found_exe = CommandExecuteImpl::FindChromeExe(&chrome_exe_path);
+    DCHECK(found_exe);
+    if (found_exe) {
+      bool launch_ash = CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kForceImmersive);
+      if (launch_ash) {
+        AtlTrace(L"Relaunching Chrome into Windows ASH on Windows 7\n");
+      } else {
+        AtlTrace(L"Relaunching Chrome into Desktop From ASH on Windows 7\n");
+      }
+      SHELLEXECUTEINFO sei = { sizeof(sei) };
+      sei.fMask = SEE_MASK_FLAG_LOG_USAGE;
+      sei.nShow = SW_SHOWNORMAL;
+      // No point in using the shortcut if we are launching into ASH as any
+      // additonal command line switches specified in the shortcut will be
+      // ignored. This is because we don't have a good way to send the command
+      // line switches from the viewer to the browser process.
+      sei.lpFile = (launch_ash || operation.shortcut().empty()) ?
+            chrome_exe_path.value().c_str() :
+                operation.shortcut().value().c_str();
+      sei.lpParameters =
+          launch_ash ? L"-ServerName:DefaultBrowserServer" : NULL;
+      if (!::ShellExecuteExW(&sei)) {
+        int error = HRESULT_FROM_WIN32(::GetLastError());
+        AtlTrace("ShellExecute returned 0x%08X\n", error);
+        return error;
+      }
+    }
   }
   return S_OK;
 }

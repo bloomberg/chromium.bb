@@ -65,9 +65,9 @@
 #define IDC_PRESENTATION_MODE           34039
 #define IDC_METRO_SNAP_ENABLE           34040
 #define IDC_METRO_SNAP_DISABLE          34041
-#define IDC_WIN8_DESKTOP_RESTART        34042
+#define IDC_WIN_DESKTOP_RESTART         34042
 #define IDC_WIN8_METRO_RESTART          34043
-#define IDC_TOGGLE_ASH_DESKTOP          34044
+#define IDC_WIN_CHROMEOS_RESTART        34044
 #define IDC_WINDOW_MENU                 34045
 #define IDC_MINIMIZE_WINDOW             34046
 #define IDC_MAXIMIZE_WINDOW             34047

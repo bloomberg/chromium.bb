@@ -11338,14 +11338,36 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="Win7ASHRestart">
+  <owner>cpu@chromium.org</owner>
+  <owner>ananta@chromium.org</owner>
+  <owner>shrikant@chromium.org</owner>
+  <description>Tracks when Chrome was restarted on Win7 in Ash.</description>
+</action>
+
+<action name="Win7DesktopRestart">
+  <owner>cpu@chromium.org</owner>
+  <owner>ananta@chromium.org</owner>
+  <owner>shrikant@chromium.org</owner>
+  <description>
+    Tracks when Chrome was restarted on Win7 in desktop.
+  </description>
+</action>
+
 <action name="Win8DesktopRestart">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>cpu@chromium.org</owner>
+  <owner>ananta@chromium.org</owner>
+  <owner>shrikant@chromium.org</owner>
+  <description>
+    Tracks when Chrome was restarted on Win8 in desktop.
+  </description>
 </action>
 
 <action name="Win8MetroRestart">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>cpu@chromium.org</owner>
+  <owner>ananta@chromium.org</owner>
+  <owner>shrikant@chromium.org</owner>
+  <description>Tracks when Chrome was restarted on Win8 in metro.</description>
 </action>
 
 <action name="WindowBorder_ClickTogglesSingleAxisMaximize">
