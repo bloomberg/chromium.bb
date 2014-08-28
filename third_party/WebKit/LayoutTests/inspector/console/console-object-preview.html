@@ -70,6 +70,8 @@ function logToConsole()
 
     console.log("Object with exactly 5 properties: expected to be lossless");
     console.log({a:1, b:2, c:3, d:4, e:5});
+
+    console.log({null:null, undef:undefined, regexp: /^[regexp]$/g, bool: false});
 }
 
 function test()

@@ -1228,17 +1228,17 @@ InjectedScript.RemoteObject.prototype = {
 
             var value = descriptor.value;
             if (value === null) {
-                this._appendPropertyPreview(preview, { name: name, type: "object", value: "null", __proto__: null }, propertiesThreshold);
+                this._appendPropertyPreview(preview, { name: name, type: "object", subtype: "null", value: "null", __proto__: null }, propertiesThreshold);
                 continue;
             }
 
-            const maxLength = 100;
             var type = typeof value;
             if (!descriptor.enumerable && type === "function")
                 continue;
             if (type === "undefined" && injectedScript._isHTMLAllCollection(value))
                 type = "object";
 
+            var maxLength = 100;
             if (InjectedScript.primitiveTypes[type]) {
                 if (type === "string" && value.length > maxLength) {
                     value = this._abbreviateString(value, maxLength, true);
@@ -1248,27 +1248,25 @@ InjectedScript.RemoteObject.prototype = {
                 continue;
             }
 
+            var property = { name: name, type: type, __proto__: null };
+            var subtype = injectedScript._subtype(value);
+            if (subtype)
+                property.subtype = subtype;
+
             if (secondLevelKeys === null || secondLevelKeys) {
                 var subPreview = this._generatePreview(value, secondLevelKeys || undefined, undefined, isTable);
-                var property = { name: name, type: type, valuePreview: subPreview, __proto__: null };
-                this._appendPropertyPreview(preview, property, propertiesThreshold);
+                property.valuePreview = subPreview;
                 if (!subPreview.lossless)
                     preview.lossless = false;
                 if (subPreview.overflow)
                     preview.overflow = true;
-                continue;
+            } else {
+                var description = "";
+                if (type !== "function")
+                    description = this._abbreviateString(/** @type {string} */ (injectedScript._describe(value)), maxLength, subtype === "regexp");
+                property.value = description;
+                preview.lossless = false;
             }
-
-            preview.lossless = false;
-
-            var subtype = injectedScript._subtype(value);
-            var description = "";
-            if (type !== "function")
-                description = this._abbreviateString(/** @type {string} */ (injectedScript._describe(value)), maxLength, subtype === "regexp");
-
-            var property = { name: name, type: type, value: description, __proto__: null };
-            if (subtype)
-                property.subtype = subtype;
             this._appendPropertyPreview(preview, property, propertiesThreshold);
         }
     },

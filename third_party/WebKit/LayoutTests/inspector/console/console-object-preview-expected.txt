@@ -24,6 +24,7 @@ CONSOLE MESSAGE: line 67: Object with special numbers
 CONSOLE MESSAGE: line 69: [object Object]
 CONSOLE MESSAGE: line 71: Object with exactly 5 properties: expected to be lossless
 CONSOLE MESSAGE: line 72: [object Object]
+CONSOLE MESSAGE: line 74: [object Object]
 Tests that console produces instant previews for arrays and objects.
 
 console-object-preview.html:9 Mutating object in a loop console-message-text source-code > console-message-url webkit-html-resource-link
@@ -47,9 +48,10 @@ console-object-preview.html:53 [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14
 console-object-preview.html:55 Object with properties containing whitespaces console-message-text source-code > console-message-url webkit-html-resource-link
 console-object-preview.html:62 Object {" a b ": " a b ", c d: "c d", "": "", "  ": "  ", "a↵↵b↵c": "a↵↵b↵c"} console-message-text source-code > console-message-url webkit-html-resource-link > console-formatted-object source-code > console-object-preview > name > console-formatted-string > name > console-formatted-string > name > console-formatted-string > name > console-formatted-string > name > console-formatted-string
 console-object-preview.html:64 Object with a document.all property console-message-text source-code > console-message-url webkit-html-resource-link
-console-object-preview.html:65 Object {all: HTMLAllCollection[7]} console-message-text source-code > console-message-url webkit-html-resource-link > console-formatted-object source-code > section > header monospace > subtitle > title > console-object-preview > name > console-formatted-object > object-info-state-note > properties properties-tree monospace
+console-object-preview.html:65 Object {all: HTMLAllCollection[7]} console-message-text source-code > console-message-url webkit-html-resource-link > console-formatted-object source-code > section > header monospace > subtitle > title > console-object-preview > name > console-formatted-array > object-info-state-note > properties properties-tree monospace
 console-object-preview.html:67 Object with special numbers console-message-text source-code > console-message-url webkit-html-resource-link
 console-object-preview.html:69 Object {nan: NaN, posInf: Infinity, negInf: -Infinity, negZero: -0} console-message-text source-code > console-message-url webkit-html-resource-link > console-formatted-object source-code > console-object-preview > name > console-formatted-number > name > console-formatted-number > name > console-formatted-number > name > console-formatted-number
 console-object-preview.html:71 Object with exactly 5 properties: expected to be lossless console-message-text source-code > console-message-url webkit-html-resource-link
 console-object-preview.html:72 Object {a: 1, b: 2, c: 3, d: 4, e: 5} console-message-text source-code > console-message-url webkit-html-resource-link > console-formatted-object source-code > console-object-preview > name > console-formatted-number > name > console-formatted-number > name > console-formatted-number > name > console-formatted-number > name > console-formatted-number
+console-object-preview.html:74 Object {null: null, undef: undefined, regexp: /^[regexp]$/g, bool: false} console-message-text source-code > console-message-url webkit-html-resource-link > console-formatted-object source-code > section > header monospace > subtitle > title > console-object-preview > name > console-formatted-null > name > console-formatted-undefined > name > console-formatted-regexp > name > console-formatted-boolean > object-info-state-note > properties properties-tree monospace
 
