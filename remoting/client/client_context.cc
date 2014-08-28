@@ -6,7 +6,8 @@
 
 namespace remoting {
 
-ClientContext::ClientContext(base::SingleThreadTaskRunner* main_task_runner)
+ClientContext::ClientContext(
+    const scoped_refptr<base::SingleThreadTaskRunner>& main_task_runner)
     : main_task_runner_(main_task_runner),
       decode_thread_("ChromotingClientDecodeThread"),
       audio_decode_thread_("ChromotingClientAudioDecodeThread") {
