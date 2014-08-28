@@ -51,7 +51,7 @@ DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(CustomElementScheduler)
 
 void CustomElementScheduler::scheduleCallback(PassRefPtr<CustomElementLifecycleCallbacks> callbacks, PassRefPtrWillBeRawPtr<Element> element, CustomElementLifecycleCallbacks::CallbackType type)
 {
-    ASSERT(type != CustomElementLifecycleCallbacks::AttributeChanged);
+    ASSERT(type != CustomElementLifecycleCallbacks::AttributeChangedCallback);
 
     if (!callbacks->hasCallback(type))
         return;
@@ -62,7 +62,7 @@ void CustomElementScheduler::scheduleCallback(PassRefPtr<CustomElementLifecycleC
 
 void CustomElementScheduler::scheduleAttributeChangedCallback(PassRefPtr<CustomElementLifecycleCallbacks> callbacks, PassRefPtrWillBeRawPtr<Element> element, const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue)
 {
-    if (!callbacks->hasCallback(CustomElementLifecycleCallbacks::AttributeChanged))
+    if (!callbacks->hasCallback(CustomElementLifecycleCallbacks::AttributeChangedCallback))
         return;
 
     CustomElementCallbackQueue& queue = instance().schedule(element);

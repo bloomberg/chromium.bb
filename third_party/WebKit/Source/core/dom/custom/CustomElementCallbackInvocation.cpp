@@ -51,16 +51,16 @@ AttachedDetachedInvocation::AttachedDetachedInvocation(PassRefPtr<CustomElementL
     : CustomElementCallbackInvocation(callbacks)
     , m_which(which)
 {
-    ASSERT(m_which == CustomElementLifecycleCallbacks::Attached || m_which == CustomElementLifecycleCallbacks::Detached);
+    ASSERT(m_which == CustomElementLifecycleCallbacks::AttachedCallback || m_which == CustomElementLifecycleCallbacks::DetachedCallback);
 }
 
 void AttachedDetachedInvocation::dispatch(Element* element)
 {
     switch (m_which) {
-    case CustomElementLifecycleCallbacks::Attached:
+    case CustomElementLifecycleCallbacks::AttachedCallback:
         callbacks()->attached(element);
         break;
-    case CustomElementLifecycleCallbacks::Detached:
+    case CustomElementLifecycleCallbacks::DetachedCallback:
         callbacks()->detached(element);
         break;
     default:
@@ -108,18 +108,18 @@ private:
 void CreatedInvocation::dispatch(Element* element)
 {
     if (element->inDocument() && element->document().domWindow())
-        CustomElementScheduler::scheduleCallback(callbacks(), element, CustomElementLifecycleCallbacks::Attached);
+        CustomElementScheduler::scheduleCallback(callbacks(), element, CustomElementLifecycleCallbacks::AttachedCallback);
     callbacks()->created(element);
 }
 
 PassOwnPtr<CustomElementCallbackInvocation> CustomElementCallbackInvocation::createInvocation(PassRefPtr<CustomElementLifecycleCallbacks> callbacks, CustomElementLifecycleCallbacks::CallbackType which)
 {
     switch (which) {
-    case CustomElementLifecycleCallbacks::Created:
+    case CustomElementLifecycleCallbacks::CreatedCallback:
         return adoptPtr(new CreatedInvocation(callbacks));
 
-    case CustomElementLifecycleCallbacks::Attached:
-    case CustomElementLifecycleCallbacks::Detached:
+    case CustomElementLifecycleCallbacks::AttachedCallback:
+    case CustomElementLifecycleCallbacks::DetachedCallback:
         return adoptPtr(new AttachedDetachedInvocation(callbacks, which));
     default:
         ASSERT_NOT_REACHED();

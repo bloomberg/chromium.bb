@@ -16,10 +16,10 @@ class ScriptWrappable;
 #define V8_HIDDEN_VALUES(V) \
     V(arrayBufferData) \
     V(privateScriptObjectIsInitialized) \
-    V(customElementAttached) \
-    V(customElementAttributeChanged) \
-    V(customElementCreated) \
-    V(customElementDetached) \
+    V(customElementAttachedCallback) \
+    V(customElementAttributeChangedCallback) \
+    V(customElementCreatedCallback) \
+    V(customElementDetachedCallback) \
     V(customElementDocument) \
     V(customElementIsInterfacePrototypeObject) \
     V(customElementNamespaceURI) \

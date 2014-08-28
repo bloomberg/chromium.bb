@@ -44,11 +44,11 @@
 
 namespace blink {
 
-#define CALLBACK_LIST(V)                  \
-    V(created, Created)                   \
-    V(attached, Attached)           \
-    V(detached, Detached)                 \
-    V(attributeChanged, AttributeChanged)
+#define CALLBACK_LIST(V)                    \
+    V(created, CreatedCallback)             \
+    V(attached, AttachedCallback)           \
+    V(detached, DetachedCallback)           \
+    V(attributeChanged, AttributeChangedCallback)
 
 PassRefPtr<V8CustomElementLifecycleCallbacks> V8CustomElementLifecycleCallbacks::create(ScriptState* scriptState, v8::Handle<v8::Object> prototype, v8::Handle<v8::Function> created, v8::Handle<v8::Function> attached, v8::Handle<v8::Function> detached, v8::Handle<v8::Function> attributeChanged)
 {
@@ -69,16 +69,16 @@ PassRefPtr<V8CustomElementLifecycleCallbacks> V8CustomElementLifecycleCallbacks:
 static CustomElementLifecycleCallbacks::CallbackType flagSet(v8::Handle<v8::Function> attached, v8::Handle<v8::Function> detached, v8::Handle<v8::Function> attributeChanged)
 {
     // V8 Custom Elements always run created to swizzle prototypes.
-    int flags = CustomElementLifecycleCallbacks::Created;
+    int flags = CustomElementLifecycleCallbacks::CreatedCallback;
 
     if (!attached.IsEmpty())
-        flags |= CustomElementLifecycleCallbacks::Attached;
+        flags |= CustomElementLifecycleCallbacks::AttachedCallback;
 
     if (!detached.IsEmpty())
-        flags |= CustomElementLifecycleCallbacks::Detached;
+        flags |= CustomElementLifecycleCallbacks::DetachedCallback;
 
     if (!attributeChanged.IsEmpty())
-        flags |= CustomElementLifecycleCallbacks::AttributeChanged;
+        flags |= CustomElementLifecycleCallbacks::AttributeChangedCallback;
 
     return CustomElementLifecycleCallbacks::CallbackType(flags);
 }

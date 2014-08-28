@@ -43,11 +43,11 @@ public:
     virtual ~CustomElementLifecycleCallbacks() { }
 
     enum CallbackType {
-        None             = 0,
-        Created          = 1 << 0,
-        Attached         = 1 << 1,
-        Detached         = 1 << 2,
-        AttributeChanged = 1 << 3
+        None                     = 0,
+        CreatedCallback          = 1 << 0,
+        AttachedCallback         = 1 << 1,
+        DetachedCallback         = 1 << 2,
+        AttributeChangedCallback = 1 << 3
     };
 
     bool hasCallback(CallbackType type) const { return m_which & type; }
