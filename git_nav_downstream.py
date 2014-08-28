@@ -12,7 +12,7 @@ which branch.
 import argparse
 import sys
 
-from git_common import current_branch, branches, upstream, run_stream, hash_one
+from git_common import current_branch, branches, upstream, run, hash_one
 
 
 def main(args):
@@ -36,7 +36,7 @@ def main(args):
   if not downstreams:
     return "No downstream branches"
   elif len(downstreams) == 1:
-    run_stream('checkout', downstreams[0], stdout=sys.stdout, stderr=sys.stderr)
+    run('checkout', downstreams[0], stdout=sys.stdout, stderr=sys.stderr)
   else:
     high = len(downstreams) - 1
     while True:
@@ -52,8 +52,8 @@ def main(args):
       if not r.isdigit() or (0 > int(r) > high):
         print "Invalid choice."
       else:
-        run_stream('checkout', downstreams[int(r)], stdout=sys.stdout,
-                   stderr=sys.stderr)
+        run('checkout', downstreams[int(r)], stdout=sys.stdout,
+            stderr=sys.stderr)
         break
 
 
