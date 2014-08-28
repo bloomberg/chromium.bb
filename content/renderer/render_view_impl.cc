@@ -1303,7 +1303,6 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
                         OnScrollFocusedEditableNodeIntoRect)
     IPC_MESSAGE_HANDLER(InputMsg_SetEditCommandsForNextKeyEvent,
                         OnSetEditCommandsForNextKeyEvent)
-    IPC_MESSAGE_HANDLER(ViewMsg_Stop, OnStop)
     IPC_MESSAGE_HANDLER(ViewMsg_CopyImageAt, OnCopyImageAt)
     IPC_MESSAGE_HANDLER(ViewMsg_SaveImageAt, OnSaveImageAt)
     IPC_MESSAGE_HANDLER(ViewMsg_Find, OnFind)
@@ -1434,14 +1433,6 @@ bool RenderViewImpl::IsBackForwardToStaleEntry(
   }
 
   return false;
-}
-
-// Stop loading the current page.
-void RenderViewImpl::OnStop() {
-  if (webview())
-    webview()->mainFrame()->stopLoading();
-  FOR_EACH_OBSERVER(RenderViewObserver, observers_, OnStop());
-  main_render_frame_->OnStop();
 }
 
 void RenderViewImpl::OnCopyImageAt(int x, int y) {

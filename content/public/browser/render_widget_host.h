@@ -229,9 +229,6 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Sender {
 
   virtual void SetIgnoreInputEvents(bool ignore_input_events) = 0;
 
-  // Stops loading the page.
-  virtual void Stop() = 0;
-
   // Called to notify the RenderWidget that it has been resized.
   virtual void WasResized() = 0;
 

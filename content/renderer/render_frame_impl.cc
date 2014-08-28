@@ -752,6 +752,7 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameMsg_Navigate, OnNavigate)
     IPC_MESSAGE_HANDLER(FrameMsg_BeforeUnload, OnBeforeUnload)
     IPC_MESSAGE_HANDLER(FrameMsg_SwapOut, OnSwapOut)
+    IPC_MESSAGE_HANDLER(FrameMsg_Stop, OnStop)
     IPC_MESSAGE_HANDLER(FrameMsg_ContextMenuClosed, OnContextMenuClosed)
     IPC_MESSAGE_HANDLER(FrameMsg_CustomContextMenuAction,
                         OnCustomContextMenuAction)
@@ -1016,6 +1017,7 @@ void RenderFrameImpl::OnSwapOut(int proxy_routing_id) {
   RenderFrameProxy* proxy = NULL;
   bool is_site_per_process =
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kSitePerProcess);
+  bool is_main_frame = !frame_->parent();
 
   // Only run unload if we're not swapped out yet, but send the ack either way.
   if (!is_swapped_out_ || !render_view_->is_swapped_out_) {
@@ -1034,12 +1036,12 @@ void RenderFrameImpl::OnSwapOut(int proxy_routing_id) {
     // Synchronously run the unload handler before sending the ACK.
     // TODO(creis): Call dispatchUnloadEvent unconditionally here to support
     // unload on subframes as well.
-    if (!frame_->parent())
+    if (is_main_frame)
       frame_->dispatchUnloadEvent();
 
     // Swap out and stop sending any IPC messages that are not ACKs.
     // TODO(nasko): Do we need RenderFrameImpl::is_swapped_out_ anymore?
-    if (!frame_->parent())
+    if (is_main_frame)
       render_view_->SetSwappedOut(true);
     is_swapped_out_ = true;
 
@@ -1049,27 +1051,24 @@ void RenderFrameImpl::OnSwapOut(int proxy_routing_id) {
     // TODO(creis): Should we be stopping all frames here and using
     // StopAltErrorPageFetcher with RenderView::OnStop, or just stopping this
     // frame?
-    if (!frame_->parent())
-      render_view_->OnStop();
-    else
-      frame_->stopLoading();
+    OnStop();
 
     // Let subframes know that the frame is now rendered remotely, for the
     // purposes of compositing and input events.
-    if (frame_->parent())
+    if (!is_main_frame)
       frame_->setIsRemote(true);
 
     // Replace the page with a blank dummy URL. The unload handler will not be
     // run a second time, thanks to a check in FrameLoader::stopLoading.
     // TODO(creis): Need to add a better way to do this that avoids running the
     // beforeunload handler. For now, we just run it a second time silently.
-    if (!is_site_per_process || frame_->parent() == NULL)
+    if (!is_site_per_process || is_main_frame)
       render_view_->NavigateToSwappedOutURL(frame_);
 
     // Let WebKit know that this view is hidden so it can drop resources and
     // stop compositing.
     // TODO(creis): Support this for subframes as well.
-    if (!frame_->parent()) {
+    if (is_main_frame) {
       render_view_->webview()->setVisibilityState(
           blink::WebPageVisibilityStateHidden, false);
     }
@@ -1077,7 +1076,7 @@ void RenderFrameImpl::OnSwapOut(int proxy_routing_id) {
 
   // It is now safe to show modal dialogs again.
   // TODO(creis): Deal with modal dialogs from subframes.
-  if (!frame_->parent())
+  if (is_main_frame)
     render_view_->suppress_dialogs_until_swap_out_ = false;
 
   Send(new FrameHostMsg_SwapOut_ACK(routing_id_));
@@ -1085,7 +1084,7 @@ void RenderFrameImpl::OnSwapOut(int proxy_routing_id) {
   // Now that all of the cleanup is complete and the browser side is notified,
   // start using the RenderFrameProxy, if one is created.
   if (proxy) {
-    if (frame_->parent()) {
+    if (!is_main_frame) {
       frame_->swap(proxy->web_frame());
       if (is_site_per_process) {
         // TODO(nasko): delete the frame here, since we've replaced it with a
@@ -1097,7 +1096,7 @@ void RenderFrameImpl::OnSwapOut(int proxy_routing_id) {
   }
 
   // Safe to exit if no one else is using the process.
-  if (!frame_->parent())
+  if (is_main_frame)
     render_view_->WasSwappedOut();
 }
 
@@ -3173,6 +3172,11 @@ void RenderFrameImpl::RemoveObserver(RenderFrameObserver* observer) {
 }
 
 void RenderFrameImpl::OnStop() {
+  DCHECK(frame_);
+  frame_->stopLoading();
+  if (!frame_->parent())
+    FOR_EACH_OBSERVER(RenderViewObserver, render_view_->observers_, OnStop());
+
   FOR_EACH_OBSERVER(RenderFrameObserver, observers_, OnStop());
 }
 

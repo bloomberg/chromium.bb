@@ -192,6 +192,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Load the specified URL; this is a shortcut for Navigate().
   void NavigateToURL(const GURL& url);
 
+  // Stop the load in progress.
+  void Stop();
+
   // Returns whether navigation messages are currently suspended for this
   // RenderFrameHost. Only true during a cross-site navigation, while waiting
   // for the onbeforeunload handler.
