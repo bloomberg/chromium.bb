@@ -9,8 +9,8 @@
 
 #include "base/mac/scoped_nsobject.h"
 #include "content/browser/compositor/browser_compositor_view_mac.h"
-#include "content/browser/renderer_host/compositing_iosurface_layer_mac.h"
-#include "content/browser/renderer_host/software_layer_mac.h"
+#include "content/browser/compositor/io_surface_layer_mac.h"
+#include "content/browser/compositor/software_layer_mac.h"
 #include "ui/base/cocoa/remote_layer_api.h"
 
 namespace content {
@@ -18,7 +18,7 @@ namespace content {
 // BrowserCompositorViewMacInternal owns a NSView and a ui::Compositor that
 // draws that view.
 class BrowserCompositorViewMacInternal
-    : public CompositingIOSurfaceLayerClient {
+    : public IOSurfaceLayerClient {
  public:
   BrowserCompositorViewMacInternal();
   virtual ~BrowserCompositorViewMacInternal();
@@ -50,10 +50,10 @@ class BrowserCompositorViewMacInternal
       cc::SoftwareFrameData* frame_data, float scale_factor, SkCanvas* canvas);
 
 private:
-  // CompositingIOSurfaceLayerClient implementation:
-  virtual bool AcceleratedLayerShouldAckImmediately() const OVERRIDE;
-  virtual void AcceleratedLayerDidDrawFrame() OVERRIDE;
-  virtual void AcceleratedLayerHitError() OVERRIDE;
+  // IOSurfaceLayerClient implementation:
+  virtual bool IOSurfaceLayerShouldAckImmediately() const OVERRIDE;
+  virtual void IOSurfaceLayerDidDrawFrame() OVERRIDE;
+  virtual void IOSurfaceLayerHitError() OVERRIDE;
 
   void GotAcceleratedCAContextFrame(
       CAContextID ca_context_id, gfx::Size pixel_size, float scale_factor);
@@ -68,7 +68,7 @@ private:
   void DestroyCAContextLayer(
       base::scoped_nsobject<CALayerHost> ca_context_layer);
   void DestroyIOSurfaceLayer(
-      base::scoped_nsobject<CompositingIOSurfaceLayer> io_surface_layer);
+      base::scoped_nsobject<IOSurfaceLayer> io_surface_layer);
   void DestroySoftwareLayer();
 
   // The client of the BrowserCompositorViewMac that is using this as its
@@ -94,7 +94,7 @@ private:
   base::scoped_nsobject<CALayerHost> ca_context_layer_;
 
   // The locally drawn accelerated CoreAnimation layer.
-  base::scoped_nsobject<CompositingIOSurfaceLayer> io_surface_layer_;
+  base::scoped_nsobject<IOSurfaceLayer> io_surface_layer_;
 
   // The locally drawn software layer.
   base::scoped_nsobject<SoftwareLayer> software_layer_;

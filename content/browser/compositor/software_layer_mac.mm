@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/software_layer_mac.h"
+#include "content/browser/compositor/software_layer_mac.h"
 
 #include "base/debug/trace_event.h"
 #include "base/mac/mac_util.h"

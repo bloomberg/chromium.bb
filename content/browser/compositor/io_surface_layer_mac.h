@@ -10,53 +10,54 @@
 #include "base/mac/scoped_cftyperef.h"
 #include "base/memory/ref_counted.h"
 #include "base/timer/timer.h"
+#include "ui/gfx/size.h"
 
-@class CompositingIOSurfaceLayer;
+@class IOSurfaceLayer;
 
 namespace content {
 class CompositingIOSurfaceMac;
 class CompositingIOSurfaceContext;
 
-// The interface through which the CompositingIOSurfaceLayer calls back into
+// The interface through which the IOSurfaceLayer calls back into
 // the structrue that created it (RenderWidgetHostViewMac or
 // BrowserCompositorViewMac).
-class CompositingIOSurfaceLayerClient {
+class IOSurfaceLayerClient {
  public:
   // Used to indicate that the layer should attempt to draw immediately and
   // should (even if the draw is elided by the system), ack the frame
   // immediately.
-  virtual bool AcceleratedLayerShouldAckImmediately() const = 0;
+  virtual bool IOSurfaceLayerShouldAckImmediately() const = 0;
 
   // Called when a frame is drawn or when, because the layer is not visible, it
   // is known that the frame will never drawn.
-  virtual void AcceleratedLayerDidDrawFrame() = 0;
+  virtual void IOSurfaceLayerDidDrawFrame() = 0;
 
   // Called when an error prevents the frame from being drawn.
-  virtual void AcceleratedLayerHitError() = 0;
+  virtual void IOSurfaceLayerHitError() = 0;
 };
 
-// CompositingIOSurfaceLayerHelper provides C++ functionality needed for the
-// CompositingIOSurfaceLayer class, and does most of the heavy lifting for the
+// IOSurfaceLayerHelper provides C++ functionality needed for the
+// IOSurfaceLayer class, and does most of the heavy lifting for the
 // class.
-// TODO(ccameron): This class should own CompositingIOSurfaceLayer, rather than
+// TODO(ccameron): This class should own IOSurfaceLayer, rather than
 // vice versa.
-class CompositingIOSurfaceLayerHelper {
+class IOSurfaceLayerHelper {
  public:
-  CompositingIOSurfaceLayerHelper(CompositingIOSurfaceLayerClient* client,
-                                  CompositingIOSurfaceLayer* layer);
-  ~CompositingIOSurfaceLayerHelper();
+  IOSurfaceLayerHelper(IOSurfaceLayerClient* client,
+                                  IOSurfaceLayer* layer);
+  ~IOSurfaceLayerHelper();
 
-  // Called when the CompositingIOSurfaceLayer gets a new frame.
+  // Called when the IOSurfaceLayer gets a new frame.
   void GotNewFrame();
 
-  // Called whenever -[CompositingIOSurfaceLayer setNeedsDisplay] is called.
+  // Called whenever -[IOSurfaceLayer setNeedsDisplay] is called.
   void SetNeedsDisplay();
 
-  // Called whenever -[CompositingIOSurfaceLayer canDrawInCGLContext] is called,
+  // Called whenever -[IOSurfaceLayer canDrawInCGLContext] is called,
   // to determine if a new frame should be drawn.
   bool CanDraw();
 
-  // Called whenever -[CompositingIOSurfaceLayer drawInCGLContext] draws a
+  // Called whenever -[IOSurfaceLayer drawInCGLContext] draws a
   // frame.
   void DidDraw(bool success);
 
@@ -83,10 +84,10 @@ class CompositingIOSurfaceLayerHelper {
   void TimerFired();
 
   // The client that the owning layer was created with.
-  content::CompositingIOSurfaceLayerClient* const client_;
+  content::IOSurfaceLayerClient* const client_;
 
   // The layer that owns this helper.
-  CompositingIOSurfaceLayer* const layer_;
+  IOSurfaceLayer* const layer_;
 
   // Used to track when canDrawInCGLContext should return YES. This can be
   // in response to receiving a new compositor frame, or from any of the events
@@ -107,27 +108,35 @@ class CompositingIOSurfaceLayerHelper {
   // calls until they appear on the screen. This can lead to hangs if the
   // view is moved offscreen (among other things). Prevent hangs by always
   // acknowledging the frame after timeout of 1/6th of a second  has passed.
-  base::DelayTimer<CompositingIOSurfaceLayerHelper> timer_;
+  base::DelayTimer<IOSurfaceLayerHelper> timer_;
 };
 
 }  // namespace content
 
 // The CoreAnimation layer for drawing accelerated content.
-@interface CompositingIOSurfaceLayer : CAOpenGLLayer {
+@interface IOSurfaceLayer : CAOpenGLLayer {
  @private
   scoped_refptr<content::CompositingIOSurfaceMac> iosurface_;
   scoped_refptr<content::CompositingIOSurfaceContext> context_;
 
-  scoped_ptr<content::CompositingIOSurfaceLayerHelper> helper_;
+  scoped_ptr<content::IOSurfaceLayerHelper> helper_;
 }
 
-- (content::CompositingIOSurfaceMac*)iosurface;
-- (content::CompositingIOSurfaceContext*)context;
+- (id)initWithClient:(content::IOSurfaceLayerClient*)client
+     withScaleFactor:(float)scale_factor;
 
-- (id)initWithIOSurface:(scoped_refptr<content::CompositingIOSurfaceMac>)
-                            iosurface
-        withScaleFactor:(float)scale_factor
-             withClient:(content::CompositingIOSurfaceLayerClient*)client;
+- (bool)gotFrameWithIOSurface:(IOSurfaceID)io_surface_id
+                withPixelSize:(gfx::Size)pixel_size
+              withScaleFactor:(float)scale_factor;
+
+// Context poison accessors.
+- (void)poisonContextAndSharegroup;
+- (bool)hasBeenPoisoned;
+
+- (float)scaleFactor;
+
+// The CGL renderer ID.
+- (int)rendererID;
 
 // Mark that the client is no longer valid and cannot be called back into. This
 // must be called before the layer is destroyed.

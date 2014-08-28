@@ -19,7 +19,7 @@
 #include "base/time/time.h"
 #include "content/browser/compositor/browser_compositor_view_mac.h"
 #include "content/browser/compositor/delegated_frame_host.h"
-#include "content/browser/renderer_host/compositing_iosurface_layer_mac.h"
+#include "content/browser/compositor/io_surface_layer_mac.h"
 #include "content/browser/renderer_host/display_link_mac.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/renderer_host/software_frame_manager.h"
@@ -207,7 +207,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
       public DelegatedFrameHostClient,
       public BrowserCompositorViewMacClient,
       public IPC::Sender,
-      public CompositingIOSurfaceLayerClient,
       public gfx::DisplayObserver {
  public:
   // The view will associate itself with the given widget. The native view must
@@ -328,11 +327,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   virtual bool Send(IPC::Message* message) OVERRIDE;
 
   virtual SkColorType PreferredReadbackFormat() OVERRIDE;
-
-  // CompositingIOSurfaceLayerClient implementation.
-  virtual bool AcceleratedLayerShouldAckImmediately() const OVERRIDE;
-  virtual void AcceleratedLayerDidDrawFrame() OVERRIDE;
-  virtual void AcceleratedLayerHitError() OVERRIDE;
 
   // gfx::DisplayObserver implementation.
   virtual void OnDisplayAdded(const gfx::Display& new_display) OVERRIDE;

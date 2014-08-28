@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/compositing_iosurface_layer_mac.h"
+#include "content/browser/compositor/io_surface_layer_mac.h"
 
 #include <CoreFoundation/CoreFoundation.h>
 #include <OpenGL/gl.h>
@@ -18,13 +18,13 @@
 #include "ui/gl/gpu_switching_manager.h"
 
 ////////////////////////////////////////////////////////////////////////////////
-// CompositingIOSurfaceLayerHelper
+// IOSurfaceLayerHelper
 
 namespace content {
 
-CompositingIOSurfaceLayerHelper::CompositingIOSurfaceLayerHelper(
-    CompositingIOSurfaceLayerClient* client,
-    CompositingIOSurfaceLayer* layer)
+IOSurfaceLayerHelper::IOSurfaceLayerHelper(
+    IOSurfaceLayerClient* client,
+    IOSurfaceLayer* layer)
         : client_(client),
           layer_(layer),
           needs_display_(false),
@@ -35,15 +35,15 @@ CompositingIOSurfaceLayerHelper::CompositingIOSurfaceLayerHelper(
               FROM_HERE,
               base::TimeDelta::FromSeconds(1) / 6,
               this,
-              &CompositingIOSurfaceLayerHelper::TimerFired) {}
+              &IOSurfaceLayerHelper::TimerFired) {}
 
-CompositingIOSurfaceLayerHelper::~CompositingIOSurfaceLayerHelper() {
+IOSurfaceLayerHelper::~IOSurfaceLayerHelper() {
   // Any acks that were waiting on this layer to draw will not occur, so ack
   // them now to prevent blocking the renderer.
   AckPendingFrame(true);
 }
 
-void CompositingIOSurfaceLayerHelper::GotNewFrame() {
+void IOSurfaceLayerHelper::GotNewFrame() {
   // A trace value of 2 indicates that there is a pending swap ack. See
   // canDrawInCGLContext for other value meanings.
   TRACE_COUNTER_ID1("browser", "PendingSwapAck", this, 2);
@@ -56,7 +56,7 @@ void CompositingIOSurfaceLayerHelper::GotNewFrame() {
   // isAsynchronous property to ensure smooth animation. If this is while
   // frames are being pumped then ack and display immediately to get a
   // correct-sized frame displayed as soon as possible.
-  if (is_pumping_frames_ || client_->AcceleratedLayerShouldAckImmediately()) {
+  if (is_pumping_frames_ || client_->IOSurfaceLayerShouldAckImmediately()) {
     SetNeedsDisplayAndDisplayAndAck();
   } else {
     if (![layer_ isAsynchronous])
@@ -64,11 +64,11 @@ void CompositingIOSurfaceLayerHelper::GotNewFrame() {
   }
 }
 
-void CompositingIOSurfaceLayerHelper::SetNeedsDisplay() {
+void IOSurfaceLayerHelper::SetNeedsDisplay() {
   needs_display_ = true;
 }
 
-bool CompositingIOSurfaceLayerHelper::CanDraw() {
+bool IOSurfaceLayerHelper::CanDraw() {
   // If we return NO 30 times in a row, switch to being synchronous to avoid
   // burning CPU cycles on this callback.
   if (needs_display_) {
@@ -93,24 +93,24 @@ bool CompositingIOSurfaceLayerHelper::CanDraw() {
   return needs_display_;
 }
 
-void CompositingIOSurfaceLayerHelper::DidDraw(bool success) {
+void IOSurfaceLayerHelper::DidDraw(bool success) {
   needs_display_ = false;
   AckPendingFrame(success);
 }
 
-void CompositingIOSurfaceLayerHelper::AckPendingFrame(bool success) {
+void IOSurfaceLayerHelper::AckPendingFrame(bool success) {
   if (!has_pending_frame_)
     return;
   has_pending_frame_ = false;
   if (success)
-    client_->AcceleratedLayerDidDrawFrame();
+    client_->IOSurfaceLayerDidDrawFrame();
   else
-    client_->AcceleratedLayerHitError();
+    client_->IOSurfaceLayerHitError();
   // A trace value of 0 indicates that there is no longer a pending swap ack.
   TRACE_COUNTER_ID1("browser", "PendingSwapAck", this, 0);
 }
 
-void CompositingIOSurfaceLayerHelper::SetNeedsDisplayAndDisplayAndAck() {
+void IOSurfaceLayerHelper::SetNeedsDisplayAndDisplayAndAck() {
   // Drawing using setNeedsDisplay and displayIfNeeded will result in
   // subsequent canDrawInCGLContext callbacks getting dropped, and jerky
   // animation. Disable asynchronous drawing before issuing these calls as a
@@ -123,7 +123,7 @@ void CompositingIOSurfaceLayerHelper::SetNeedsDisplayAndDisplayAndAck() {
   DisplayIfNeededAndAck();
 }
 
-void CompositingIOSurfaceLayerHelper::DisplayIfNeededAndAck() {
+void IOSurfaceLayerHelper::DisplayIfNeededAndAck() {
   if (!needs_display_)
     return;
 
@@ -145,15 +145,15 @@ void CompositingIOSurfaceLayerHelper::DisplayIfNeededAndAck() {
   AckPendingFrame(true);
 }
 
-void CompositingIOSurfaceLayerHelper::TimerFired() {
+void IOSurfaceLayerHelper::TimerFired() {
   SetNeedsDisplayAndDisplayAndAck();
 }
 
-void CompositingIOSurfaceLayerHelper::BeginPumpingFrames() {
+void IOSurfaceLayerHelper::BeginPumpingFrames() {
   is_pumping_frames_ = true;
 }
 
-void CompositingIOSurfaceLayerHelper::EndPumpingFrames() {
+void IOSurfaceLayerHelper::EndPumpingFrames() {
   is_pumping_frames_ = false;
   DisplayIfNeededAndAck();
 }
@@ -161,9 +161,9 @@ void CompositingIOSurfaceLayerHelper::EndPumpingFrames() {
 }  // namespace content
 
 ////////////////////////////////////////////////////////////////////////////////
-// CompositingIOSurfaceLayer
+// IOSurfaceLayer
 
-@implementation CompositingIOSurfaceLayer
+@implementation IOSurfaceLayer
 
 - (content::CompositingIOSurfaceMac*)iosurface {
   return iosurface_.get();
@@ -173,19 +173,16 @@ void CompositingIOSurfaceLayerHelper::EndPumpingFrames() {
   return context_.get();
 }
 
-- (id)initWithIOSurface:(scoped_refptr<content::CompositingIOSurfaceMac>)
-                            iosurface
-        withScaleFactor:(float)scale_factor
-             withClient:(content::CompositingIOSurfaceLayerClient*)client {
-  DCHECK(iosurface);
+- (id)initWithClient:(content::IOSurfaceLayerClient*)client
+     withScaleFactor:(float)scale_factor {
   if (self = [super init]) {
-    helper_.reset(new content::CompositingIOSurfaceLayerHelper(client, self));
+    helper_.reset(new content::IOSurfaceLayerHelper(client, self));
 
-    iosurface_ = iosurface;
+    iosurface_ = content::CompositingIOSurfaceMac::Create();
     context_ = content::CompositingIOSurfaceContext::Get(
         content::CompositingIOSurfaceContext::kCALayerContextWindowNumber);
-    if (!context_) {
-      LOG(ERROR) << "Failed create CompositingIOSurfaceContext";
+    if (!iosurface_ || !context_) {
+      LOG(ERROR) << "Failed create CompositingIOSurface or context";
       [self resetClient];
       [self release];
       return nil;
@@ -206,6 +203,33 @@ void CompositingIOSurfaceLayerHelper::EndPumpingFrames() {
 - (void)dealloc {
   DCHECK(!helper_);
   [super dealloc];
+}
+
+- (bool)gotFrameWithIOSurface:(IOSurfaceID)io_surface_id
+                withPixelSize:(gfx::Size)pixel_size
+              withScaleFactor:(float)scale_factor {
+  bool result = true;
+  gfx::ScopedCGLSetCurrentContext scoped_set_current_context(
+      context_->cgl_context());
+  result = iosurface_->SetIOSurfaceWithContextCurrent(
+      context_, io_surface_id, pixel_size, scale_factor);
+  return result;
+}
+
+- (void)poisonContextAndSharegroup {
+  context_->PoisonContextAndSharegroup();
+}
+
+- (bool)hasBeenPoisoned {
+  return context_->HasBeenPoisoned();
+}
+
+- (float)scaleFactor {
+  return iosurface_->scale_factor();
+}
+
+- (int)rendererID {
+  return iosurface_->GetRendererID();
 }
 
 - (void)resetClient {
@@ -265,7 +289,7 @@ void CompositingIOSurfaceLayerHelper::EndPumpingFrames() {
              pixelFormat:(CGLPixelFormatObj)pixelFormat
             forLayerTime:(CFTimeInterval)timeInterval
              displayTime:(const CVTimeStamp*)timeStamp {
-  TRACE_EVENT0("browser", "CompositingIOSurfaceLayer::drawInCGLContext");
+  TRACE_EVENT0("browser", "IOSurfaceLayer::drawInCGLContext");
 
   if (!iosurface_->HasIOSurface() || context_->cgl_context() != glContext) {
     glClearColor(1, 1, 1, 1);
