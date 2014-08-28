@@ -50,9 +50,6 @@ class LoggingObserver : public VolumeManagerObserver {
     // Available on VOLUME_MOUNTED and VOLUME_UNMOUNTED.
     chromeos::MountError mount_error;
 
-    // Available on VOLUME_MOUNTED.
-    bool is_remounting;
-
     // Available on FORMAT_STARTED and FORMAT_COMPLETED.
     bool success;
   };
@@ -95,13 +92,11 @@ class LoggingObserver : public VolumeManagerObserver {
   }
 
   virtual void OnVolumeMounted(chromeos::MountError error_code,
-                               const VolumeInfo& volume_info,
-                               bool is_remounting) OVERRIDE {
+                               const VolumeInfo& volume_info) OVERRIDE {
     Event event;
     event.type = Event::VOLUME_MOUNTED;
     event.device_path = volume_info.source_path.AsUTF8Unsafe();
     event.mount_error = error_code;
-    event.is_remounting = is_remounting;
     events_.push_back(event);
   }
 
@@ -205,7 +200,6 @@ TEST_F(VolumeManagerTest, OnDriveFileSystemMountAndUnmount) {
   EXPECT_EQ(drive::util::GetDriveMountPointPath(profile()).AsUTF8Unsafe(),
             event.device_path);
   EXPECT_EQ(chromeos::MOUNT_ERROR_NONE, event.mount_error);
-  EXPECT_FALSE(event.is_remounting);
 
   volume_manager()->OnFileSystemBeingUnmounted();
 
@@ -497,7 +491,6 @@ TEST_F(VolumeManagerTest, OnMountEvent_MountingAndUnmounting) {
   EXPECT_EQ(LoggingObserver::Event::VOLUME_MOUNTED, event.type);
   EXPECT_EQ("device1", event.device_path);
   EXPECT_EQ(chromeos::MOUNT_ERROR_NONE, event.mount_error);
-  EXPECT_FALSE(event.is_remounting);
 
   volume_manager()->OnMountEvent(chromeos::disks::DiskMountManager::UNMOUNTING,
                                 chromeos::MOUNT_ERROR_NONE,
@@ -560,7 +553,6 @@ TEST_F(VolumeManagerTest, OnMountEvent_Remounting) {
   EXPECT_EQ(LoggingObserver::Event::VOLUME_MOUNTED, event.type);
   EXPECT_EQ("device1", event.device_path);
   EXPECT_EQ(chromeos::MOUNT_ERROR_NONE, event.mount_error);
-  EXPECT_TRUE(event.is_remounting);
 
   volume_manager()->RemoveObserver(&observer);
 }

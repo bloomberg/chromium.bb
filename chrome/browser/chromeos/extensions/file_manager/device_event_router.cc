@@ -122,8 +122,7 @@ void DeviceEventRouter::OnDiskRemoved(
 }
 
 void DeviceEventRouter::OnVolumeMounted(chromeos::MountError error_code,
-                                        const VolumeInfo& volume_info,
-                                        bool is_remounting) {
+                                        const VolumeInfo& volume_info) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   const std::string& device_path =

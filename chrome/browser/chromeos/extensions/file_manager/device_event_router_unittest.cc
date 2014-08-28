@@ -113,8 +113,7 @@ TEST_F(DeviceEventRouterTest, AddAndRemoveDevice) {
       CreateTestVolumeInfo("/device/test", "/mount/path1");
   device_event_router->OnDeviceAdded("/device/test");
   device_event_router->OnDiskAdded(disk1, true);
-  device_event_router->OnVolumeMounted(
-      chromeos::MOUNT_ERROR_NONE, volumeInfo, false);
+  device_event_router->OnVolumeMounted(chromeos::MOUNT_ERROR_NONE, volumeInfo);
   device_event_router->OnVolumeUnmounted(chromeos::MOUNT_ERROR_NONE,
                                          volumeInfo);
   device_event_router->OnDiskRemoved(disk1_unmounted);
@@ -133,8 +132,7 @@ TEST_F(DeviceEventRouterTest, DeviceScan) {
   device_event_router->OnDeviceAdded("/device/test");
   base::RunLoop().RunUntilIdle();
   device_event_router->OnDiskAdded(disk, true);
-  device_event_router->OnVolumeMounted(
-      chromeos::MOUNT_ERROR_NONE, volumeInfo, false);
+  device_event_router->OnVolumeMounted(chromeos::MOUNT_ERROR_NONE, volumeInfo);
   device_event_router->OnVolumeUnmounted(chromeos::MOUNT_ERROR_NONE,
                                          volumeInfo);
   device_event_router->OnDiskRemoved(disk_unmounted);

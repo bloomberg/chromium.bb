@@ -887,8 +887,7 @@ void EventRouter::OnDeviceRemoved(const std::string& device_path) {
 }
 
 void EventRouter::OnVolumeMounted(chromeos::MountError error_code,
-                                  const VolumeInfo& volume_info,
-                                  bool is_remounting) {
+                                  const VolumeInfo& volume_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // profile_ is NULL if ShutdownOnUIThread() is called earlier. This can
   // happen at shutdown. This should be removed after removing Drive mounting

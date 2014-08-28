@@ -686,7 +686,6 @@
         'browser/chromeos/file_manager/fake_disk_mount_manager.h',
         'browser/chromeos/file_manager/file_tasks_unittest.cc',
         'browser/chromeos/file_manager/file_watcher_unittest.cc',
-        'browser/chromeos/file_manager/mounted_disk_monitor_unittest.cc',
         'browser/chromeos/file_manager/path_util_unittest.cc',
         'browser/chromeos/file_manager/url_util_unittest.cc',
         'browser/chromeos/file_manager/volume_manager_unittest.cc',

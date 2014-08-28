@@ -211,15 +211,13 @@ class VolumeManager : public KeyedService,
   void OnPrivetVolumesAvailable(
       const local_discovery::PrivetVolumeLister::VolumeList& volumes);
   void DoMountEvent(chromeos::MountError error_code,
-                    const VolumeInfo& volume_info,
-                    bool is_remounting);
+                    const VolumeInfo& volume_info);
   void DoUnmountEvent(chromeos::MountError error_code,
                       const VolumeInfo& volume_info);
 
   Profile* profile_;
   drive::DriveIntegrationService* drive_integration_service_;  // Not owned.
   chromeos::disks::DiskMountManager* disk_mount_manager_;      // Not owned.
-  scoped_ptr<MountedDiskMonitor> mounted_disk_monitor_;
   PrefChangeRegistrar pref_change_registrar_;
   ObserverList<VolumeManagerObserver> observers_;
   scoped_ptr<local_discovery::PrivetVolumeLister> privet_volume_lister_;

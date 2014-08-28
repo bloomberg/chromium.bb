@@ -127,8 +127,7 @@ class EventRouter
   virtual void OnDeviceAdded(const std::string& device_path) OVERRIDE;
   virtual void OnDeviceRemoved(const std::string& device_path) OVERRIDE;
   virtual void OnVolumeMounted(chromeos::MountError error_code,
-                               const VolumeInfo& volume_info,
-                               bool is_remounting) OVERRIDE;
+                               const VolumeInfo& volume_info) OVERRIDE;
   virtual void OnVolumeUnmounted(chromeos::MountError error_code,
                                  const VolumeInfo& volume_info) OVERRIDE;
   virtual void OnFormatStarted(
