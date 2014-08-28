@@ -265,6 +265,7 @@
             'content.gyp:content_child',
             'content.gyp:content_common',
             'content.gyp:content_gpu',
+            'content.gyp:content_plugin',
             'content.gyp:content_ppapi_plugin',
             'content.gyp:content_renderer',
             'content.gyp:content_utility',

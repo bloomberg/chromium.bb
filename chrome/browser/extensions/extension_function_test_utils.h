@@ -25,6 +25,8 @@ class Extension;
 
 // TODO(ckehoe): Accept args as scoped_ptr<base::Value>,
 // and migrate existing users to the new API.
+// This file is DEPRECATED. New tests should use the versions in
+// extensions/browser/api_test_utils.h.
 namespace extension_function_test_utils {
 
 // Parse JSON and return as the specified type, or NULL if the JSON is invalid

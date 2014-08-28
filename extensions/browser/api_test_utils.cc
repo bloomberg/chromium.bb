@@ -132,6 +132,27 @@ base::Value* RunFunctionAndReturnSingleResult(
       function, args, context, dispatcher.Pass(), flags);
 }
 
+std::string RunFunctionAndReturnError(UIThreadExtensionFunction* function,
+                                      const std::string& args,
+                                      content::BrowserContext* context) {
+  return RunFunctionAndReturnError(function, args, context, NONE);
+}
+
+std::string RunFunctionAndReturnError(UIThreadExtensionFunction* function,
+                                      const std::string& args,
+                                      content::BrowserContext* context,
+                                      RunFunctionFlags flags) {
+  TestFunctionDispatcherDelegate delegate;
+  scoped_ptr<ExtensionFunctionDispatcher> dispatcher(
+      new ExtensionFunctionDispatcher(context, &delegate));
+  scoped_refptr<ExtensionFunction> function_owner(function);
+  // Without a callback the function will not generate a result.
+  function->set_has_callback(true);
+  RunFunction(function, args, context, dispatcher.Pass(), flags);
+  EXPECT_FALSE(function->GetResultList()) << "Did not expect a result";
+  return function->GetError();
+}
+
 bool RunFunction(UIThreadExtensionFunction* function,
                  const std::string& args,
                  content::BrowserContext* context,

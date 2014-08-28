@@ -12,3 +12,9 @@ include_rules = [
   "+third_party/WebKit/public/web/WebInputEvent.h",
   "+webkit/browser/fileapi",
 ]
+
+specific_include_rules = {
+  ".*test\.cc$": [
+    "+components/user_prefs",
+  ]
+}

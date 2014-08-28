@@ -59,6 +59,17 @@ base::Value* RunFunctionAndReturnSingleResult(
     content::BrowserContext* context,
     RunFunctionFlags flags);
 
+// Run |function| with |args| and return the resulting error. Adds an error to
+// the current test if |function| returns a result. Takes ownership of
+// |function|.
+std::string RunFunctionAndReturnError(UIThreadExtensionFunction* function,
+                                      const std::string& args,
+                                      content::BrowserContext* context,
+                                      RunFunctionFlags flags);
+std::string RunFunctionAndReturnError(UIThreadExtensionFunction* function,
+                                      const std::string& args,
+                                      content::BrowserContext* context);
+
 // Create and run |function| with |args|. Works with both synchronous and async
 // functions. Ownership of |function| remains with the caller.
 //
