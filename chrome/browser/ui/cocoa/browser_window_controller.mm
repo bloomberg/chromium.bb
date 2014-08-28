@@ -2030,14 +2030,6 @@ willAnimateFromState:(BookmarkBar::State)oldState
                                                  command.accelerator());
 }
 
-- (void)activatePageAction:(const std::string&)extension_id {
-  [toolbarController_ activatePageAction:extension_id];
-}
-
-- (void)activateBrowserAction:(const std::string&)extension_id {
-  [toolbarController_ activateBrowserAction:extension_id];
-}
-
 @end  // @implementation BrowserWindowController
 
 

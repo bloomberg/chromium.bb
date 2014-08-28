@@ -756,13 +756,3 @@ void BrowserWindowCocoa::ExecuteExtensionCommand(
     const extensions::Command& command) {
   [cocoa_controller() executeExtensionCommand:extension->id() command:command];
 }
-
-void BrowserWindowCocoa::ShowPageActionPopup(
-    const extensions::Extension* extension) {
-  [cocoa_controller() activatePageAction:extension->id()];
-}
-
-void BrowserWindowCocoa::ShowBrowserActionPopup(
-    const extensions::Extension* extension) {
-  [cocoa_controller() activateBrowserAction:extension->id()];
-}

@@ -29,6 +29,7 @@
 #include "extensions/browser/image_util.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/common/error_utils.h"
+#include "extensions/common/feature_switch.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
 
@@ -48,7 +49,6 @@ const char kNoTabError[] = "No tab with id: *.";
 const char kOpenPopupError[] =
     "Failed to show popup either because there is an existing popup or another "
     "error occurred.";
-const char kInternalError[] = "Internal error.";
 
 }  // namespace
 
@@ -171,13 +171,9 @@ ExtensionAction::ShowAction ExtensionActionAPI::ExecuteExtensionAction(
 
   int tab_id = SessionTabHelper::IdForTab(web_contents);
 
-  ExtensionActionManager* action_manager =
-      ExtensionActionManager::Get(static_cast<Profile*>(browser_context_));
-  // TODO(devlin): Make a ExtensionActionManager::GetExtensionAction method.
   ExtensionAction* extension_action =
-      action_manager->GetBrowserAction(*extension);
-  if (!extension_action)
-    extension_action = action_manager->GetPageAction(*extension);
+      ExtensionActionManager::Get(browser_context_)->GetExtensionAction(
+          *extension);
 
   // Anything that calls this should have a page or browser action.
   DCHECK(extension_action);
@@ -203,6 +199,29 @@ ExtensionAction::ShowAction ExtensionActionAPI::ExecuteExtensionAction(
 
   ExtensionActionExecuted(*extension_action, web_contents);
   return ExtensionAction::ACTION_NONE;
+}
+
+bool ExtensionActionAPI::ShowExtensionActionPopup(
+    const Extension* extension,
+    Browser* browser,
+    bool grant_active_tab_permissions) {
+  ExtensionAction* extension_action =
+      ExtensionActionManager::Get(browser_context_)->GetExtensionAction(
+          *extension);
+  if (!extension_action)
+    return false;
+
+  if (extension_action->action_type() == ActionInfo::TYPE_PAGE &&
+      !FeatureSwitch::extension_action_redesign()->IsEnabled()) {
+    // We show page actions in the location bar unless the new toolbar is
+    // enabled.
+    return browser->window()->GetLocationBar()->ShowPageActionPopup(
+        extension, grant_active_tab_permissions);
+  } else {
+    return ExtensionToolbarModel::Get(browser->profile())->
+        ShowExtensionActionPopup(
+            extension, browser, grant_active_tab_permissions);
+  }
 }
 
 void ExtensionActionAPI::NotifyChange(ExtensionAction* extension_action,
@@ -563,13 +582,19 @@ BrowserActionOpenPopupFunction::BrowserActionOpenPopupFunction()
 }
 
 bool BrowserActionOpenPopupFunction::RunAsync() {
-  ExtensionToolbarModel* model = ExtensionToolbarModel::Get(GetProfile());
-  if (!model) {
-    error_ = kInternalError;
-    return false;
-  }
+  // We only allow the popup in the active window.
+  Browser* browser = chrome::FindLastActiveWithProfile(
+                         GetProfile(), chrome::GetActiveDesktop());
 
-  if (!model->ShowBrowserActionPopup(extension_.get())) {
+  // If there's no active browser, or the Toolbar isn't visible, abort.
+  // Otherwise, try to open a popup in the active browser.
+  // TODO(justinlin): Remove toolbar check when http://crbug.com/308645 is
+  // fixed.
+  if (!browser ||
+      !browser->window()->IsActive() ||
+      !browser->window()->IsToolbarVisible() ||
+      !ExtensionActionAPI::Get(GetProfile())->ShowExtensionActionPopup(
+          extension_.get(), browser, false)) {
     error_ = kOpenPopupError;
     return false;
   }

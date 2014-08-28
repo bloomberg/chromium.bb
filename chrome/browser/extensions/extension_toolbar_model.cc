@@ -569,13 +569,18 @@ void ExtensionToolbarModel::OnExtensionToolbarPrefChange() {
   }
 }
 
-bool ExtensionToolbarModel::ShowBrowserActionPopup(const Extension* extension) {
+bool ExtensionToolbarModel::ShowExtensionActionPopup(
+    const Extension* extension,
+    Browser* browser,
+    bool grant_active_tab) {
   ObserverListBase<Observer>::Iterator it(observers_);
   Observer* obs = NULL;
+  // Look for the Observer associated with the browser.
+  // This would be cleaner if we had an abstract class for the Toolbar UI
+  // (like we do for LocationBar), but sadly, we don't.
   while ((obs = it.GetNext()) != NULL) {
-    // Stop after first popup since it should only show in the active window.
-    if (obs->ShowExtensionActionPopup(extension))
-      return true;
+    if (obs->GetBrowser() == browser)
+      return obs->ShowExtensionActionPopup(extension, grant_active_tab);
   }
   return false;
 }

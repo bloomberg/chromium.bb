@@ -86,23 +86,26 @@ bool PageActionDecoration::AcceptsMousePress() {
 // Either notify listeners or show a popup depending on the Page
 // Action.
 bool PageActionDecoration::OnMousePressed(NSRect frame, NSPoint location) {
-  return ActivatePageAction(frame);
+  ActivatePageAction(frame, true);
+  // We don't want other code to try and handle this click. Returning true
+  // prevents this by indicating that we handled it.
+  return true;
 }
 
-void PageActionDecoration::ActivatePageAction() {
-  ActivatePageAction(owner_->GetPageActionFrame(page_action_));
+bool PageActionDecoration::ActivatePageAction(bool grant_active_tab) {
+  return ActivatePageAction(
+      owner_->GetPageActionFrame(page_action_), grant_active_tab);
 }
 
-bool PageActionDecoration::ActivatePageAction(NSRect frame) {
+bool PageActionDecoration::ActivatePageAction(
+    NSRect frame, bool grant_active_tab) {
   WebContents* web_contents = owner_->GetWebContents();
-  if (!web_contents) {
-    // We don't want other code to try and handle this click. Returning true
-    // prevents this by indicating that we handled it.
-    return true;
-  }
+  if (!web_contents)
+    return false;
 
   switch (extensions::ExtensionActionAPI::Get(browser_->profile())->
-              ExecuteExtensionAction(GetExtension(), browser_, true)) {
+              ExecuteExtensionAction(
+                  GetExtension(), browser_, grant_active_tab)) {
     case ExtensionAction::ACTION_NONE:
       break;
 
@@ -240,7 +243,7 @@ void PageActionDecoration::Observe(
       if (extension_id != page_action_->extension_id())
         break;
       if (IsVisible())
-        ActivatePageAction();
+        ActivatePageAction(true);
       break;
     }
 

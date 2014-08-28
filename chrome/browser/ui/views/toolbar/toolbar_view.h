@@ -94,12 +94,6 @@ class ToolbarView : public views::AccessiblePaneView,
   void ExecuteExtensionCommand(const extensions::Extension* extension,
                                const extensions::Command& command);
 
-  // Shows the extension's page action, if present.
-  void ShowPageActionPopup(const extensions::Extension* extension);
-
-  // Shows the extension's browser action, if present.
-  void ShowBrowserActionPopup(const extensions::Extension* extension);
-
   // Shows the app (wrench) menu. |for_drop| indicates whether the menu is
   // opened for a drag-and-drop operation.
   void ShowAppMenu(bool for_drop);

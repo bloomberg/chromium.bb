@@ -164,12 +164,6 @@ class NotificationBridge;
 // Returns the wrench button.
 - (NSView*)wrenchButton;
 
-// Activates the page action for the extension that has the given id.
-- (void)activatePageAction:(const std::string&)extension_id;
-
-// Activates the browser action for the extension that has the given id.
-- (void)activateBrowserAction:(const std::string&)extension_id;
-
 @end
 
 // A set of private methods used by subclasses. Do not call these directly

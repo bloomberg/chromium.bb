@@ -356,12 +356,6 @@ class Command;
 - (void)executeExtensionCommand:(const std::string&)extension_id
                         command:(const extensions::Command&)command;
 
-// Activates the page action for the extension that has the given id.
-- (void)activatePageAction:(const std::string&)extension_id;
-
-// Activates the browser action for the extension that has the given id.
-- (void)activateBrowserAction:(const std::string&)extension_id;
-
 @end  // @interface BrowserWindowController
 
 

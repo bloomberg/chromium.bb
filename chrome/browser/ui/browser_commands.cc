@@ -18,6 +18,7 @@
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/dom_distiller/tab_utils.h"
 #include "chrome/browser/extensions/api/commands/command_service.h"
+#include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -745,18 +746,16 @@ void BookmarkCurrentPage(Browser* browser) {
     switch (command_type) {
       case extensions::CommandService::NAMED:
         browser->window()->ExecuteExtensionCommand(extension, command);
-        return;
-
+        break;
       case extensions::CommandService::BROWSER_ACTION:
-        // BookmarkCurrentPage is called through a user gesture, so it is safe
-        // to call ShowBrowserActionPopup.
-        browser->window()->ShowBrowserActionPopup(extension);
-        return;
-
       case extensions::CommandService::PAGE_ACTION:
-        browser->window()->ShowPageActionPopup(extension);
-        return;
+        // BookmarkCurrentPage is called through a user gesture, so it is safe
+        // to grant the active tab permission.
+        extensions::ExtensionActionAPI::Get(browser->profile())->
+            ShowExtensionActionPopup(extension, browser, true);
+        break;
     }
+    return;
   }
 
   BookmarkCurrentPageInternal(browser);

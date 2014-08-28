@@ -242,7 +242,8 @@ class ExtensionServiceObserverBridge
       [button updateState];
   }
 
-  virtual bool ShowExtensionActionPopup(const Extension* extension) OVERRIDE {
+  virtual bool ShowExtensionActionPopup(const Extension* extension,
+                                        bool grant_active_tab) OVERRIDE {
     // Do not override other popups and only show in active window.
     ExtensionPopupController* popup = [ExtensionPopupController popup];
     if (popup || !browser_->window()->IsActive())
@@ -250,13 +251,17 @@ class ExtensionServiceObserverBridge
 
     BrowserActionButton* button = [owner_ buttonForExtension:extension];
     return button && [owner_ browserActionClicked:button
-                                      shouldGrant:NO];
+                                      shouldGrant:grant_active_tab];
   }
 
   virtual void ToolbarVisibleCountChanged() OVERRIDE {
   }
 
   virtual void ToolbarHighlightModeChanged(bool is_highlighting) OVERRIDE {
+  }
+
+  virtual Browser* GetBrowser() OVERRIDE {
+    return browser_;
   }
 
  private:

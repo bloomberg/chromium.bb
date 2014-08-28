@@ -157,10 +157,6 @@ class TestBrowserWindow : public BrowserWindow {
   virtual void ExecuteExtensionCommand(
       const extensions::Extension* extension,
       const extensions::Command& command) OVERRIDE;
-  virtual void ShowPageActionPopup(
-      const extensions::Extension* extension) OVERRIDE;
-  virtual void ShowBrowserActionPopup(
-      const extensions::Extension* extension) OVERRIDE;
 
  protected:
   virtual void DestroyBrowser() OVERRIDE {}
@@ -183,6 +179,8 @@ class TestBrowserWindow : public BrowserWindow {
     virtual void UpdateManagePasswordsIconAndBubble() OVERRIDE {}
     virtual void UpdatePageActions() OVERRIDE {}
     virtual void InvalidatePageActions() OVERRIDE {}
+    virtual bool ShowPageActionPopup(const extensions::Extension* extension,
+                                     bool grant_active_tab) OVERRIDE;
     virtual void UpdateOpenPDFInReaderPrompt() OVERRIDE {}
     virtual void UpdateGeneratedCreditCardView() OVERRIDE {}
     virtual void SaveStateToContents(content::WebContents* contents) OVERRIDE {}

@@ -67,6 +67,8 @@ class LocationBarViewMac : public LocationBar,
   virtual void UpdateManagePasswordsIconAndBubble() OVERRIDE;
   virtual void UpdatePageActions() OVERRIDE;
   virtual void InvalidatePageActions() OVERRIDE;
+  virtual bool ShowPageActionPopup(const extensions::Extension* extension,
+                                   bool grant_active_tab) OVERRIDE;
   virtual void UpdateOpenPDFInReaderPrompt() OVERRIDE;
   virtual void UpdateGeneratedCreditCardView() OVERRIDE;
   virtual void SaveStateToContents(content::WebContents* contents) OVERRIDE;
@@ -170,9 +172,6 @@ class LocationBarViewMac : public LocationBar,
                             const SearchModel::State& new_state) OVERRIDE;
 
   Browser* browser() const { return browser_; }
-
-  // Activates the page action for the extension that has the given id.
-  void ActivatePageAction(const std::string& extension_id);
 
  protected:
   // OmniboxEditController:

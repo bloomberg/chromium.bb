@@ -16,6 +16,7 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/api/omnibox/omnibox_api.h"
 #include "chrome/browser/extensions/extension_action.h"
+#include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/location_bar_controller.h"
 #include "chrome/browser/extensions/tab_helper.h"
@@ -1344,6 +1345,17 @@ void LocationBarView::UpdatePageActions() {
 
 void LocationBarView::InvalidatePageActions() {
   DeletePageActionViews();
+}
+
+bool LocationBarView::ShowPageActionPopup(
+    const extensions::Extension* extension,
+    bool grant_tab_permissions) {
+  ExtensionAction* extension_action =
+      extensions::ExtensionActionManager::Get(profile())->GetPageAction(
+          *extension);
+  DCHECK(extension_action);
+  return GetPageActionView(extension_action)->image_view()->view_controller()->
+      ExecuteAction(ExtensionPopup::SHOW, grant_tab_permissions);
 }
 
 void LocationBarView::UpdateOpenPDFInReaderPrompt() {

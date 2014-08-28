@@ -772,15 +772,6 @@ class NotificationBridge : public WrenchMenuBadgeController::Delegate {
   return wrenchButton_;
 }
 
-- (void)activatePageAction:(const std::string&)extension_id {
-  locationBarView_->ActivatePageAction(extension_id);
-}
-
-// Activates the browser action for the extension that has the given id.
-- (void)activateBrowserAction:(const std::string&)extension_id {
-  [browserActionsController_ activateBrowserAction:extension_id];
-}
-
 // (URLDropTargetController protocol)
 - (void)dropURLs:(NSArray*)urls inView:(NSView*)view at:(NSPoint)point {
   // TODO(viettrungluu): This code is more or less copied from the code in

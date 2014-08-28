@@ -66,6 +66,11 @@ content::PageTransition
   return content::PAGE_TRANSITION_LINK;
 }
 
+bool TestBrowserWindow::TestLocationBar::ShowPageActionPopup(
+    const extensions::Extension* extension, bool grant_active_tab) {
+  return false;
+}
+
 const OmniboxView* TestBrowserWindow::TestLocationBar::GetOmniboxView() const {
   return NULL;
 }
@@ -218,9 +223,3 @@ TestBrowserWindow::GetRenderViewHeightInsetWithDetachedBookmarkBar() {
 void TestBrowserWindow::ExecuteExtensionCommand(
     const extensions::Extension* extension,
     const extensions::Command& command) {}
-
-void TestBrowserWindow::ShowPageActionPopup(
-    const extensions::Extension* extension) {}
-
-void TestBrowserWindow::ShowBrowserActionPopup(
-    const extensions::Extension* extension) {}

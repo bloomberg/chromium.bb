@@ -75,7 +75,8 @@ class ExtensionToolbarModelTestObserver
   virtual void ToolbarExtensionUpdated(const Extension* extension) OVERRIDE {
   }
 
-  virtual bool ShowExtensionActionPopup(const Extension* extension) OVERRIDE {
+  virtual bool ShowExtensionActionPopup(const Extension* extension,
+                                        bool grant_active_tab) OVERRIDE {
     return false;
   }
 
@@ -85,6 +86,10 @@ class ExtensionToolbarModelTestObserver
   virtual void ToolbarHighlightModeChanged(bool is_highlighting) OVERRIDE {
     // Add one if highlighting, subtract one if not.
     highlight_mode_count_ += is_highlighting ? 1 : -1;
+  }
+
+  virtual Browser* GetBrowser() OVERRIDE {
+    return NULL;
   }
 
   ExtensionToolbarModel* model_;

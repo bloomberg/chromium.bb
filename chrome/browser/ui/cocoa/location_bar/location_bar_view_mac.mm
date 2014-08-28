@@ -223,6 +223,17 @@ void LocationBarViewMac::InvalidatePageActions() {
   Layout();
 }
 
+bool LocationBarViewMac::ShowPageActionPopup(
+    const extensions::Extension* extension, bool grant_active_tab) {
+  for (ScopedVector<PageActionDecoration>::iterator iter =
+           page_action_decorations_.begin();
+       iter != page_action_decorations_.end(); ++iter) {
+    if ((*iter)->page_action()->extension_id() == extension->id())
+      return (*iter)->ActivatePageAction(grant_active_tab);
+  }
+  return false;
+}
+
 void LocationBarViewMac::UpdateOpenPDFInReaderPrompt() {
   // Not implemented on Mac.
 }
@@ -614,16 +625,6 @@ void LocationBarViewMac::ModelChanged(const SearchModel::State& old_state,
                                       const SearchModel::State& new_state) {
   if (UpdateMicSearchDecorationVisibility())
     Layout();
-}
-
-void LocationBarViewMac::ActivatePageAction(const std::string& extension_id) {
-  for (size_t i = 0; i < page_action_decorations_.size(); ++i) {
-    if (page_action_decorations_[i]->page_action()->extension_id() ==
-        extension_id) {
-      page_action_decorations_[i]->ActivatePageAction();
-      return;
-    }
-  }
 }
 
 void LocationBarViewMac::PostNotification(NSString* notification) {

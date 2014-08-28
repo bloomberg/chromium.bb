@@ -66,15 +66,6 @@ const int kIconsPerMenuRow = 8;  // The menu on Linux is wider.
 const int kIconsPerMenuRow = 7;
 #endif
 
-// Returns the ExtensionAction for the given |extension|.
-ExtensionAction* GetExtensionAction(const Extension& extension,
-                                    Profile* profile) {
-  extensions::ExtensionActionManager* action_manager =
-      extensions::ExtensionActionManager::Get(profile);
-  ExtensionAction* action = action_manager->GetBrowserAction(extension);
-  return action ? action : action_manager->GetPageAction(extension);
-}
-
 // A version of MenuButton with almost empty insets to fit properly on the
 // toolbar.
 class ChevronMenuButton : public views::MenuButton {
@@ -226,6 +217,8 @@ void BrowserActionsContainer::CreateBrowserActionViews() {
   if (!model_)
     return;
 
+  extensions::ExtensionActionManager* action_manager =
+      extensions::ExtensionActionManager::Get(profile_);
   const extensions::ExtensionList& toolbar_items = model_->toolbar_items();
   for (extensions::ExtensionList::const_iterator i(toolbar_items.begin());
        i != toolbar_items.end(); ++i) {
@@ -234,7 +227,7 @@ void BrowserActionsContainer::CreateBrowserActionViews() {
 
     BrowserActionView* view =
         new BrowserActionView(i->get(),
-                              GetExtensionAction(*i->get(), profile_),
+                              action_manager->GetExtensionAction(**i),
                               browser_,
                               this);
     browser_action_views_.push_back(view);
@@ -812,7 +805,8 @@ void BrowserActionsContainer::ToolbarExtensionAdded(const Extension* extension,
     index = model_->OriginalIndexToIncognito(index);
   BrowserActionView* view =
       new BrowserActionView(extension,
-                            GetExtensionAction(*extension, profile_),
+                            extensions::ExtensionActionManager::Get(profile_)->
+                                GetExtensionAction(*extension),
                             browser_,
                             this);
   browser_action_views_.insert(browser_action_views_.begin() + index, view);
@@ -909,8 +903,15 @@ void BrowserActionsContainer::ToolbarExtensionUpdated(
 }
 
 bool BrowserActionsContainer::ShowExtensionActionPopup(
-    const Extension* extension) {
-  return ShowPopupForExtension(extension, false, false);
+    const Extension* extension,
+    bool grant_active_tab) {
+  // Don't override another popup, and only show in the active window.
+  if (popup_owner_ || !browser_->window()->IsActive())
+    return false;
+
+  BrowserActionView* view = GetViewForExtension(extension);
+  return view && view->view_controller()->ExecuteAction(ExtensionPopup::SHOW,
+                                                        grant_active_tab);
 }
 
 void BrowserActionsContainer::ToolbarVisibleCountChanged() {
@@ -929,6 +930,10 @@ void BrowserActionsContainer::ToolbarHighlightModeChanged(
   DeleteBrowserActionViews();
   CreateBrowserActionViews();
   Animate(gfx::Tween::LINEAR, browser_action_views_.size());
+}
+
+Browser* BrowserActionsContainer::GetBrowser() {
+  return browser_;
 }
 
 void BrowserActionsContainer::LoadImages() {
@@ -1051,26 +1056,6 @@ bool BrowserActionsContainer::ShouldDisplayBrowserAction(
   // Only display incognito-enabled extensions while in incognito mode.
   return !profile_->IsOffTheRecord() ||
       extensions::util::IsIncognitoEnabled(extension->id(), profile_);
-}
-
-bool BrowserActionsContainer::ShowPopupForExtension(
-    const extensions::Extension* extension,
-    bool grant_tab_permissions,
-    bool can_override) {
-  // If the popup cannot override other views, then no other popups can be
-  // showing, and it must be shown in the active widow with a visible toolbar.
-  // TODO(justinlin): Remove toolbar check when http://crbug.com/308645 is
-  // fixed.
-  if (!can_override &&
-      (popup_owner_ ||
-       !browser_->window()->IsActive() ||
-       !browser_->window()->IsToolbarVisible())) {
-    return false;
-  }
-
-  BrowserActionView* view = GetViewForExtension(extension);
-  return view ? view->view_controller()->ExecuteAction(
-                    ExtensionPopup::SHOW, grant_tab_permissions) : false;
 }
 
 BrowserActionView* BrowserActionsContainer::GetViewForExtension(

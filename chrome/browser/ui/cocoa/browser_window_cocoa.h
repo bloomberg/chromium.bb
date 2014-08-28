@@ -161,10 +161,6 @@ class BrowserWindowCocoa :
   virtual void ExecuteExtensionCommand(
       const extensions::Extension* extension,
       const extensions::Command& command) OVERRIDE;
-  virtual void ShowPageActionPopup(
-      const extensions::Extension* extension) OVERRIDE;
-  virtual void ShowBrowserActionPopup(
-      const extensions::Extension* extension) OVERRIDE;
 
   // Overridden from ExtensionKeybindingRegistry::Delegate:
   virtual extensions::ActiveTabPermissionGranter*

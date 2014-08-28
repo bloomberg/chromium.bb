@@ -14,8 +14,6 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/command_updater.h"
-#include "chrome/browser/extensions/extension_action.h"
-#include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -317,22 +315,6 @@ void ToolbarView::ExecuteExtensionCommand(
     const extensions::Extension* extension,
     const extensions::Command& command) {
   browser_actions_->ExecuteExtensionCommand(extension, command);
-}
-
-void ToolbarView::ShowPageActionPopup(const extensions::Extension* extension) {
-  extensions::ExtensionActionManager* extension_manager =
-      extensions::ExtensionActionManager::Get(browser_->profile());
-  ExtensionAction* extension_action =
-      extension_manager->GetPageAction(*extension);
-  if (extension_action) {
-    location_bar_->GetPageActionView(extension_action)->image_view()->
-        view_controller()->ExecuteAction(ExtensionPopup::SHOW, false);
-  }
-}
-
-void ToolbarView::ShowBrowserActionPopup(
-    const extensions::Extension* extension) {
-  browser_actions_->ShowPopupForExtension(extension, true, false);
 }
 
 void ToolbarView::ShowAppMenu(bool for_drop) {

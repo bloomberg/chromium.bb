@@ -18,6 +18,10 @@ namespace content {
 class WebContents;
 }
 
+namespace extensions {
+class Extension;
+}
+
 // The LocationBar class is a virtual interface, defining access to the
 // window's location bar component.  This class exists so that cross-platform
 // components like the browser command system can talk to the platform
@@ -57,6 +61,12 @@ class LocationBar {
   // Called when the page-action data needs to be refreshed, e.g. when an
   // extension is unloaded or crashes.
   virtual void InvalidatePageActions() = 0;
+
+  // Shows the popup for the given |extension| and, if |grant_active_tab| is
+  // true, grants the extension active tab permissions.
+  // Returns true if a popup was shown.
+  virtual bool ShowPageActionPopup(const extensions::Extension* extension,
+                                   bool grant_active_tab) = 0;
 
   // Updates the state of the button to open a PDF in Adobe Reader.
   virtual void UpdateOpenPDFInReaderPrompt() = 0;

@@ -83,6 +83,14 @@ class ExtensionActionAPI : public BrowserContextKeyedAPI {
       Browser* browser,
       bool grant_active_tab_permissions);
 
+  // Opens the popup for the given |extension| in the given |browser|'s window.
+  // If |grant_active_tab_permissions| is true, this grants the extension
+  // activeTab (so this should only be done if this is through a direct user
+  // action).
+  bool ShowExtensionActionPopup(const Extension* extension,
+                                Browser* browser,
+                                bool grant_active_tab_permissions);
+
   // Notifies that there has been a change in the given |extension_action|.
   void NotifyChange(ExtensionAction* extension_action,
                     content::WebContents* web_contents,

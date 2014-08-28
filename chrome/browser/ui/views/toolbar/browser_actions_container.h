@@ -244,16 +244,6 @@ class BrowserActionsContainer
   // Moves a browser action with |id| to |new_index|.
   void MoveBrowserAction(const std::string& extension_id, size_t new_index);
 
-  // Shows the popup for |extension| if possible. Returns true if a new popup
-  // was shown. Showing the popup will grant active tab permissions if
-  // |grant_tab_permissions| is true. Only pass true for this argument for
-  // popups triggered interactively, not popups triggered by an API.
-  // If |can_override| is true, this popup can override other popups (hiding
-  // them) and does not have to be in the active window.
-  bool ShowPopupForExtension(const extensions::Extension* extension,
-                             bool grant_tab_permissions,
-                             bool can_override);
-
   // Retrieve the current popup.  This should only be used by unit tests.
   ExtensionPopup* TestGetPopup();
 
@@ -298,9 +288,11 @@ class BrowserActionsContainer
   virtual void ToolbarExtensionUpdated(
       const extensions::Extension* extension) OVERRIDE;
   virtual bool ShowExtensionActionPopup(
-      const extensions::Extension* extension) OVERRIDE;
+      const extensions::Extension* extension,
+      bool grant_active_tab) OVERRIDE;
   virtual void ToolbarVisibleCountChanged() OVERRIDE;
   virtual void ToolbarHighlightModeChanged(bool is_highlighting) OVERRIDE;
+  virtual Browser* GetBrowser() OVERRIDE;
 
   void LoadImages();
 

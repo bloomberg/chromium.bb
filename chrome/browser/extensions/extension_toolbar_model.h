@@ -37,8 +37,8 @@ class ExtensionToolbarModel : public content::NotificationObserver,
 
   // A class which is informed of changes to the model; represents the view of
   // MVC. Also used for signaling view changes such as showing extension popups.
-  // TODO(devlin): Should this really be an observer? There should probably be
-  // only one (aka a Delegate)...
+  // TODO(devlin): Should this really be an observer? It acts more like a
+  // delegate.
   class Observer {
    public:
     // An extension has been added to the toolbar and should go at |index|.
@@ -59,8 +59,11 @@ class ExtensionToolbarModel : public content::NotificationObserver,
     virtual void ToolbarExtensionUpdated(const Extension* extension) = 0;
 
     // Signal the |extension| to show the popup now in the active window.
+    // If |grant_active_tab| is true, then active tab permissions should be
+    // given to the extension (only do this if this is through a user action).
     // Returns true if a popup was slated to be shown.
-    virtual bool ShowExtensionActionPopup(const Extension* extension) = 0;
+    virtual bool ShowExtensionActionPopup(const Extension* extension,
+                                          bool grant_active_tab) = 0;
 
     // Signal when the container needs to be redrawn because of a size change,
     // and when the model has finished loading.
@@ -74,6 +77,9 @@ class ExtensionToolbarModel : public content::NotificationObserver,
     //   highlight a new set of extensions, we do not compare the current set
     //   with the new set (and just assume the new set is different).
     virtual void ToolbarHighlightModeChanged(bool is_highlighting) = 0;
+
+    // Returns the browser associated with the Observer.
+    virtual Browser* GetBrowser() = 0;
 
    protected:
     virtual ~Observer() {}
@@ -112,9 +118,13 @@ class ExtensionToolbarModel : public content::NotificationObserver,
 
   void OnExtensionToolbarPrefChange();
 
-  // Tells observers to display a popup without granting tab permissions and
-  // returns whether the popup was slated to be shown.
-  bool ShowBrowserActionPopup(const Extension* extension);
+  // Finds the Observer associated with |browser| and tells it to display a
+  // popup for the given |extension|. If |grant_active_tab| is true, this
+  // grants active tab permissions to the |extension|; only do this because of
+  // a direct user action.
+  bool ShowExtensionActionPopup(const Extension* extension,
+                                Browser* browser,
+                                bool grant_active_tab);
 
   // Ensures that the extensions in the |extension_ids| list are visible on the
   // toolbar. This might mean they need to be moved to the front (if they are in

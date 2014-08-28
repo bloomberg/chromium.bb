@@ -61,12 +61,14 @@ class PageActionDecoration : public ImageDecoration,
   virtual NSMenu* GetMenu() OVERRIDE;
   virtual NSPoint GetBubblePointInFrame(NSRect frame) OVERRIDE;
 
-  // Activate the page action in its default frame.
-  void ActivatePageAction();
+  // Activates the page action in its default frame, and, if |grant_active_tab|
+  // is true, grants active tab permission to the extension. Returns true if
+  // a popup was shown.
+  bool ActivatePageAction(bool grant_active_tab);
 
  private:
   // Activate the page action in the given |frame|.
-  bool ActivatePageAction(NSRect frame);
+  bool ActivatePageAction(NSRect frame, bool grant_active_tab);
 
   // Show the popup in the frame, with the given URL.
   void ShowPopup(const NSRect& frame, const GURL& popup_url);

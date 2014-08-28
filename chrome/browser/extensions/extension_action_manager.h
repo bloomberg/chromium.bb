@@ -33,21 +33,26 @@ class ExtensionActionManager : public KeyedService,
   // shared between a profile and its incognito version.
   static ExtensionActionManager* Get(content::BrowserContext* browser_context);
 
-  // Retrieves the page action, or browser action for |extension|.
+  // Retrieves the page action, browser action, or system indicator for
+  // |extension|.
   // If the result is not NULL, it remains valid until the extension is
   // unloaded.
-  ExtensionAction* GetPageAction(const extensions::Extension& extension) const;
-  ExtensionAction* GetBrowserAction(
-      const extensions::Extension& extension) const;
-  ExtensionAction* GetSystemIndicator(
-      const extensions::Extension& extension) const;
+  ExtensionAction* GetPageAction(const Extension& extension) const;
+  ExtensionAction* GetBrowserAction(const Extension& extension) const;
+  ExtensionAction* GetSystemIndicator(const Extension& extension) const;
+
+  // Returns either the PageAction or BrowserAction for |extension|, or NULL if
+  // none exists. Since an extension can only declare one of Browser|PageAction,
+  // this is okay to use anywhere you need a generic "ExtensionAction".
+  // Since SystemIndicators are used differently and don't follow this
+  // rule of mutual exclusion, they are not checked or returned.
+  ExtensionAction* GetExtensionAction(const Extension& extension) const;
 
   // Gets the best fit ExtensionAction for the given |extension|. This takes
   // into account |extension|'s browser or page actions, if any, along with its
   // name and any declared icons.
   scoped_ptr<ExtensionAction> GetBestFitAction(
-      const extensions::Extension& extension,
-      extensions::ActionInfo::Type type) const;
+      const Extension& extension, ActionInfo::Type type) const;
 
  private:
   // Implement ExtensionRegistryObserver.

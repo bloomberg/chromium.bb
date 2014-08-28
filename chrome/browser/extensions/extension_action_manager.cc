@@ -97,8 +97,7 @@ void PopulateMissingValues(const Extension& extension,
   if (action->default_icon())
     *default_icon = *action->default_icon();
 
-  const ExtensionIconSet& extension_icons =
-      extensions::IconsInfo::GetIcons(&extension);
+  const ExtensionIconSet& extension_icons = IconsInfo::GetIcons(&extension);
   std::string largest_icon = extension_icons.Get(
       extension_misc::EXTENSION_ICON_GIGANTOR,
       ExtensionIconSet::MATCH_SMALLER);
@@ -193,13 +192,19 @@ ExtensionAction* ExtensionActionManager::GetSystemIndicator(
   // given profile.  This could return NULL if the system indicator area is
   // unavailable on the current system.  If so, return NULL to signal that
   // the system indicator area is unusable.
-  if (!extensions::SystemIndicatorManagerFactory::GetForProfile(profile_))
+  if (!SystemIndicatorManagerFactory::GetForProfile(profile_))
     return NULL;
 
   return GetOrCreateOrNull(&system_indicators_, extension,
                            ActionInfo::TYPE_SYSTEM_INDICATOR,
                            ActionInfo::GetSystemIndicatorInfo(&extension),
                            profile_);
+}
+
+ExtensionAction* ExtensionActionManager::GetExtensionAction(
+    const Extension& extension) const {
+  ExtensionAction* action = GetBrowserAction(extension);
+  return action ? action : GetPageAction(extension);
 }
 
 }  // namespace extensions
