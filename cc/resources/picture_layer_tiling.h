@@ -298,6 +298,7 @@ class CC_EXPORT PictureLayerTiling {
                      const gfx::Size& layer_bounds,
                      PictureLayerTilingClient* client);
   void SetLiveTilesRect(const gfx::Rect& live_tiles_rect);
+  void VerifyLiveTilesRect();
   Tile* CreateTile(int i, int j, const PictureLayerTiling* twin_tiling);
   // Returns true if the Tile existed and was removed from the tiling.
   bool RemoveTileAt(int i, int j, PictureLayerTiling* recycled_twin);

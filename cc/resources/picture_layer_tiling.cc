@@ -11,6 +11,7 @@
 
 #include "base/debug/trace_event.h"
 #include "base/debug/trace_event_argument.h"
+#include "base/logging.h"
 #include "cc/base/math_util.h"
 #include "cc/resources/tile.h"
 #include "cc/resources/tile_priority.h"
@@ -147,7 +148,7 @@ Tile* PictureLayerTiling::CreateTile(int i,
 
 void PictureLayerTiling::CreateMissingTilesInLiveTilesRect() {
   const PictureLayerTiling* twin_tiling = client_->GetTwinTiling(this);
-  bool include_borders = true;
+  bool include_borders = false;
   for (TilingData::Iterator iter(
            &tiling_data_, live_tiles_rect_, include_borders);
        iter;
@@ -158,6 +159,8 @@ void PictureLayerTiling::CreateMissingTilesInLiveTilesRect() {
       continue;
     CreateTile(key.first, key.second, twin_tiling);
   }
+
+  VerifyLiveTilesRect();
 }
 
 void PictureLayerTiling::UpdateTilesToCurrentPile(
@@ -173,10 +176,60 @@ void PictureLayerTiling::UpdateTilesToCurrentPile(
   gfx::Size tile_size = tiling_data_.max_texture_size();
 
   if (layer_bounds_ != old_layer_bounds) {
-    // Drop tiles outside the new layer bounds if the layer shrank.
-    SetLiveTilesRect(
-        gfx::IntersectRects(live_tiles_rect_, gfx::Rect(content_bounds)));
+    // The SetLiveTilesRect() method would drop tiles outside the new bounds,
+    // but may do so incorrectly if resizing the tiling causes the number of
+    // tiles in the tiling_data_ to change.
+    gfx::Rect content_rect(content_bounds);
+    int before_left = tiling_data_.TileXIndexFromSrcCoord(live_tiles_rect_.x());
+    int before_top = tiling_data_.TileYIndexFromSrcCoord(live_tiles_rect_.y());
+    int before_right =
+        tiling_data_.TileXIndexFromSrcCoord(live_tiles_rect_.right() - 1);
+    int before_bottom =
+        tiling_data_.TileYIndexFromSrcCoord(live_tiles_rect_.bottom() - 1);
+
+    // The live_tiles_rect_ is clamped to stay within the tiling size as we
+    // change it.
+    live_tiles_rect_.Intersect(content_rect);
     tiling_data_.SetTilingSize(content_bounds);
+
+    int after_right = -1;
+    int after_bottom = -1;
+    if (!live_tiles_rect_.IsEmpty()) {
+      after_right =
+          tiling_data_.TileXIndexFromSrcCoord(live_tiles_rect_.right() - 1);
+      after_bottom =
+          tiling_data_.TileYIndexFromSrcCoord(live_tiles_rect_.bottom() - 1);
+    }
+
+    // There is no recycled twin since this is run on the pending tiling.
+    PictureLayerTiling* recycled_twin = NULL;
+    DCHECK_EQ(recycled_twin, client_->GetRecycledTwinTiling(this));
+    DCHECK_EQ(PENDING_TREE, client_->GetTree());
+
+    // Drop tiles outside the new layer bounds if the layer shrank.
+    for (int i = after_right + 1; i <= before_right; ++i) {
+      for (int j = before_top; j <= before_bottom; ++j)
+        RemoveTileAt(i, j, recycled_twin);
+    }
+    for (int i = before_left; i <= after_right; ++i) {
+      for (int j = after_bottom + 1; j <= before_bottom; ++j)
+        RemoveTileAt(i, j, recycled_twin);
+    }
+
+    // If the layer grew, the live_tiles_rect_ is not changed, but a new row
+    // and/or column of tiles may now exist inside the same live_tiles_rect_.
+    const PictureLayerTiling* twin_tiling = client_->GetTwinTiling(this);
+    if (after_right > before_right) {
+      DCHECK_EQ(after_right, before_right + 1);
+      for (int j = before_top; j <= after_bottom; ++j)
+        CreateTile(after_right, j, twin_tiling);
+    }
+    if (after_bottom > before_bottom) {
+      DCHECK_EQ(after_bottom, before_bottom + 1);
+      for (int i = before_left; i <= before_right; ++i)
+        CreateTile(i, after_bottom, twin_tiling);
+    }
+
     tile_size = client_->CalculateTileSize(content_bounds);
   }
 
@@ -192,6 +245,7 @@ void PictureLayerTiling::UpdateTilesToCurrentPile(
   PicturePileImpl* pile = client_->GetPile();
   for (TileMap::const_iterator it = tiles_.begin(); it != tiles_.end(); ++it)
     it->second->set_picture_pile(pile);
+  VerifyLiveTilesRect();
 }
 
 void PictureLayerTiling::RemoveTilesInRegion(const Region& layer_region) {
@@ -208,18 +262,24 @@ void PictureLayerTiling::DoInvalidate(const Region& layer_region,
                                       bool recreate_invalidated_tiles) {
   std::vector<TileMapKey> new_tile_keys;
   gfx::Rect expanded_live_tiles_rect =
-      tiling_data_.ExpandRectIgnoringBordersToTileBoundsWithBorders(
-          live_tiles_rect_);
+      tiling_data_.ExpandRectIgnoringBordersToTileBounds(live_tiles_rect_);
   for (Region::Iterator iter(layer_region); iter.has_rect(); iter.next()) {
     gfx::Rect layer_rect = iter.rect();
     gfx::Rect content_rect =
         gfx::ScaleToEnclosingRect(layer_rect, contents_scale_);
+    // Consider tiles inside the live tiles rect even if only their border
+    // pixels intersect the invalidation. But don't consider tiles outside
+    // the live tiles rect with the same conditions, as they won't exist.
+    int border_pixels = tiling_data_.border_texels();
+    content_rect.Inset(-border_pixels, -border_pixels);
     // Avoid needless work by not bothering to invalidate where there aren't
     // tiles.
     content_rect.Intersect(expanded_live_tiles_rect);
     if (content_rect.IsEmpty())
       continue;
-    bool include_borders = true;
+    // Since the content_rect includes border pixels already, don't include
+    // borders when iterating to avoid double counting them.
+    bool include_borders = false;
     for (TilingData::Iterator iter(
              &tiling_data_, content_rect, include_borders);
          iter;
@@ -522,7 +582,7 @@ void PictureLayerTiling::UpdateTilePriorities(
   float content_to_screen_scale = ideal_contents_scale / contents_scale_;
 
   // Assign now priority to all visible tiles.
-  bool include_borders = true;
+  bool include_borders = false;
   has_visible_rect_tiles_ = false;
   for (TilingData::Iterator iter(
            &tiling_data_, visible_rect_in_content_space, include_borders);
@@ -656,6 +716,30 @@ void PictureLayerTiling::SetLiveTilesRect(
   }
 
   live_tiles_rect_ = new_live_tiles_rect;
+  VerifyLiveTilesRect();
+}
+
+void PictureLayerTiling::VerifyLiveTilesRect() {
+#if DCHECK_IS_ON
+  for (TileMap::iterator it = tiles_.begin(); it != tiles_.end(); ++it) {
+    if (!it->second.get())
+      continue;
+    DCHECK(it->first.first < tiling_data_.num_tiles_x())
+        << this << " " << it->first.first << "," << it->first.second
+        << " num_tiles_x " << tiling_data_.num_tiles_x() << " live_tiles_rect "
+        << live_tiles_rect_.ToString();
+    DCHECK(it->first.second < tiling_data_.num_tiles_y())
+        << this << " " << it->first.first << "," << it->first.second
+        << " num_tiles_y " << tiling_data_.num_tiles_y() << " live_tiles_rect "
+        << live_tiles_rect_.ToString();
+    DCHECK(tiling_data_.TileBounds(it->first.first, it->first.second)
+               .Intersects(live_tiles_rect_))
+        << this << " " << it->first.first << "," << it->first.second
+        << " tile bounds "
+        << tiling_data_.TileBounds(it->first.first, it->first.second).ToString()
+        << " live_tiles_rect " << live_tiles_rect_.ToString();
+  }
+#endif
 }
 
 void PictureLayerTiling::DidBecomeRecycled() {
@@ -956,7 +1040,7 @@ PictureLayerTiling::TilingRasterTileIterator::TilingRasterTileIterator(
 
   visible_iterator_ = TilingData::Iterator(&tiling_->tiling_data_,
                                            tiling_->current_visible_rect_,
-                                           true /* include_borders */);
+                                           false /* include_borders */);
   if (!visible_iterator_) {
     AdvancePhase();
     return;

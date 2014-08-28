@@ -52,8 +52,7 @@ class CC_EXPORT TilingData {
   int LastBorderTileXIndexFromSrcCoord(int src_position) const;
   int LastBorderTileYIndexFromSrcCoord(int src_position) const;
 
-  gfx::Rect ExpandRectIgnoringBordersToTileBoundsWithBorders(
-      const gfx::Rect& rect) const;
+  gfx::Rect ExpandRectIgnoringBordersToTileBounds(const gfx::Rect& rect) const;
   gfx::Rect ExpandRectToTileBounds(const gfx::Rect& rect) const;
 
   gfx::Rect TileBounds(int i, int j) const;
@@ -103,14 +102,13 @@ class CC_EXPORT TilingData {
     int bottom_;
   };
 
-  // Iterate through all indices whose bounds + border intersect with
-  // |consider| but which also do not intersect with |ignore|.
+  // Iterate through all indices whose bounds (not including borders) intersect
+  // with |consider| but which also do not intersect with |ignore|.
   class CC_EXPORT DifferenceIterator : public BaseIterator {
    public:
-    DifferenceIterator(
-      const TilingData* tiling_data,
-      const gfx::Rect& consider_rect,
-      const gfx::Rect& ignore_rect);
+    DifferenceIterator(const TilingData* tiling_data,
+                       const gfx::Rect& consider_rect,
+                       const gfx::Rect& ignore_rect);
     DifferenceIterator& operator++();
 
    private:

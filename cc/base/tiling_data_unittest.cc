@@ -773,92 +773,82 @@ TEST(TilingDataTest, SetMaxTextureSizeBorders) {
   EXPECT_EQ(10, data.num_tiles_y());
 }
 
-TEST(TilingDataTest, ExpandRectIgnoringBordersToTileBoundsWithBordersEmpty) {
+TEST(TilingDataTest, ExpandRectIgnoringBordersToTileBoundsEmpty) {
   TilingData empty_total_size(gfx::Size(0, 0), gfx::Size(8, 8), true);
   EXPECT_RECT_EQ(
       gfx::Rect(),
-      empty_total_size.ExpandRectIgnoringBordersToTileBoundsWithBorders(
-          gfx::Rect()));
-  EXPECT_RECT_EQ(
-      gfx::Rect(),
-      empty_total_size.ExpandRectIgnoringBordersToTileBoundsWithBorders(
-          gfx::Rect(100, 100, 100, 100)));
-  EXPECT_RECT_EQ(
-      gfx::Rect(),
-      empty_total_size.ExpandRectIgnoringBordersToTileBoundsWithBorders(
-          gfx::Rect(100, 100)));
+      empty_total_size.ExpandRectIgnoringBordersToTileBounds(gfx::Rect()));
+  EXPECT_RECT_EQ(gfx::Rect(),
+                 empty_total_size.ExpandRectIgnoringBordersToTileBounds(
+                     gfx::Rect(100, 100, 100, 100)));
+  EXPECT_RECT_EQ(gfx::Rect(),
+                 empty_total_size.ExpandRectIgnoringBordersToTileBounds(
+                     gfx::Rect(100, 100)));
 
   TilingData empty_max_texture_size(gfx::Size(8, 8), gfx::Size(0, 0), true);
-  EXPECT_RECT_EQ(
-      gfx::Rect(),
-      empty_max_texture_size.ExpandRectIgnoringBordersToTileBoundsWithBorders(
-          gfx::Rect()));
-  EXPECT_RECT_EQ(
-      gfx::Rect(),
-      empty_max_texture_size.ExpandRectIgnoringBordersToTileBoundsWithBorders(
-          gfx::Rect(100, 100, 100, 100)));
-  EXPECT_RECT_EQ(
-      gfx::Rect(),
-      empty_max_texture_size.ExpandRectIgnoringBordersToTileBoundsWithBorders(
-          gfx::Rect(100, 100)));
+  EXPECT_RECT_EQ(gfx::Rect(),
+                 empty_max_texture_size.ExpandRectIgnoringBordersToTileBounds(
+                     gfx::Rect()));
+  EXPECT_RECT_EQ(gfx::Rect(),
+                 empty_max_texture_size.ExpandRectIgnoringBordersToTileBounds(
+                     gfx::Rect(100, 100, 100, 100)));
+  EXPECT_RECT_EQ(gfx::Rect(),
+                 empty_max_texture_size.ExpandRectIgnoringBordersToTileBounds(
+                     gfx::Rect(100, 100)));
 }
 
-TEST(TilingDataTest, ExpandRectIgnoringBordersToTileBoundsWithBorders) {
+TEST(TilingDataTest, ExpandRectIgnoringBordersToTileBounds) {
   TilingData data(gfx::Size(4, 4), gfx::Size(16, 32), true);
 
   // Small rect at origin rounds up to tile 0, 0.
   gfx::Rect at_origin_src(1, 1);
-  gfx::Rect at_origin_result(data.TileBoundsWithBorder(0, 0));
+  gfx::Rect at_origin_result(data.TileBounds(0, 0));
   EXPECT_NE(at_origin_src, at_origin_result);
-  EXPECT_RECT_EQ(
-      at_origin_result,
-      data.ExpandRectIgnoringBordersToTileBoundsWithBorders(at_origin_src));
+  EXPECT_RECT_EQ(at_origin_result,
+                 data.ExpandRectIgnoringBordersToTileBounds(at_origin_src));
 
   // Arbitrary internal rect.
   gfx::Rect rect_src(6, 6, 1, 3);
   // Tile 2, 2 => gfx::Rect(4, 4, 4, 4)
   // Tile 2, 3 => gfx::Rect(4, 6, 4, 4)
-  gfx::Rect rect_result(gfx::UnionRects(data.TileBoundsWithBorder(2, 2),
-                                        data.TileBoundsWithBorder(2, 3)));
+  gfx::Rect rect_result(
+      gfx::UnionRects(data.TileBounds(2, 2), data.TileBounds(2, 3)));
   EXPECT_NE(rect_src, rect_result);
-  EXPECT_RECT_EQ(
-      rect_result,
-      data.ExpandRectIgnoringBordersToTileBoundsWithBorders(rect_src));
+  EXPECT_RECT_EQ(rect_result,
+                 data.ExpandRectIgnoringBordersToTileBounds(rect_src));
 
   // On tile bounds does not round up to next tile (ignores the border).
   gfx::Rect border_rect_src(
       gfx::UnionRects(data.TileBounds(1, 2), data.TileBounds(3, 4)));
-  gfx::Rect border_rect_result(gfx::UnionRects(
-      data.TileBoundsWithBorder(1, 2), data.TileBoundsWithBorder(3, 4)));
-  EXPECT_RECT_EQ(
-      border_rect_result,
-      data.ExpandRectIgnoringBordersToTileBoundsWithBorders(border_rect_src));
+  gfx::Rect border_rect_result(
+      gfx::UnionRects(data.TileBounds(1, 2), data.TileBounds(3, 4)));
+  EXPECT_RECT_EQ(border_rect_result,
+                 data.ExpandRectIgnoringBordersToTileBounds(border_rect_src));
 
   // Equal to tiling rect.
   EXPECT_RECT_EQ(gfx::Rect(data.tiling_size()),
-                 data.ExpandRectIgnoringBordersToTileBoundsWithBorders(
+                 data.ExpandRectIgnoringBordersToTileBounds(
                      gfx::Rect(data.tiling_size())));
 
   // Containing, but larger than tiling rect.
-  EXPECT_RECT_EQ(gfx::Rect(data.tiling_size()),
-                 data.ExpandRectIgnoringBordersToTileBoundsWithBorders(
-                     gfx::Rect(100, 100)));
+  EXPECT_RECT_EQ(
+      gfx::Rect(data.tiling_size()),
+      data.ExpandRectIgnoringBordersToTileBounds(gfx::Rect(100, 100)));
 
   // Non-intersecting with tiling rect.
   gfx::Rect non_intersect(200, 200, 100, 100);
   EXPECT_FALSE(non_intersect.Intersects(gfx::Rect(data.tiling_size())));
-  EXPECT_RECT_EQ(
-      gfx::Rect(),
-      data.ExpandRectIgnoringBordersToTileBoundsWithBorders(non_intersect));
+  EXPECT_RECT_EQ(gfx::Rect(),
+                 data.ExpandRectIgnoringBordersToTileBounds(non_intersect));
 
   TilingData data2(gfx::Size(8, 8), gfx::Size(32, 64), true);
 
   // Inside other tile border texels doesn't include other tiles.
   gfx::Rect inner_rect_src(data2.TileBounds(1, 1));
   inner_rect_src.Inset(data2.border_texels(), data.border_texels());
-  gfx::Rect inner_rect_result(data2.TileBoundsWithBorder(1, 1));
+  gfx::Rect inner_rect_result(data2.TileBounds(1, 1));
   gfx::Rect expanded =
-      data2.ExpandRectIgnoringBordersToTileBoundsWithBorders(inner_rect_src);
+      data2.ExpandRectIgnoringBordersToTileBounds(inner_rect_src);
   EXPECT_EQ(inner_rect_result.ToString(), expanded.ToString());
 }
 
@@ -1086,11 +1076,11 @@ void TestIterate(const TilingData& data,
   }
 
   // Make sure this also works with a difference iterator and an empty ignore.
-  // The difference iterator always includes borders, so ignore it otherwise.
-  if (include_borders) {
+  // The difference iterator never includes borders, so ignore it otherwise.
+  if (!include_borders) {
     std::vector<std::pair<int, int> > expected = original_expected;
-    for (TilingData::DifferenceIterator iter(&data, rect, gfx::Rect());
-         iter; ++iter) {
+    for (TilingData::DifferenceIterator iter(&data, rect, gfx::Rect()); iter;
+         ++iter) {
       bool found = false;
       for (size_t i = 0; i < expected.size(); ++i) {
         if (expected[i] == iter.index()) {
@@ -1250,16 +1240,14 @@ TEST(TilingDataTest, IteratorNoTiles) {
   TestIterateAll(data, gfx::Rect(100, 100), 0, 0, -1, -1);
 }
 
-void TestDiff(
-    const TilingData& data,
-    gfx::Rect consider,
-    gfx::Rect ignore,
-    size_t num_tiles) {
-
+void TestDiff(const TilingData& data,
+              gfx::Rect consider,
+              gfx::Rect ignore,
+              size_t num_tiles) {
   std::vector<std::pair<int, int> > expected;
   for (int y = 0; y < data.num_tiles_y(); ++y) {
     for (int x = 0; x < data.num_tiles_x(); ++x) {
-      gfx::Rect bounds = data.TileBoundsWithBorder(x, y);
+      gfx::Rect bounds = data.TileBounds(x, y);
       if (bounds.Intersects(consider) && !bounds.Intersects(ignore))
         expected.push_back(std::make_pair(x, y));
     }
@@ -1268,8 +1256,8 @@ void TestDiff(
   // Sanity check the test.
   EXPECT_EQ(num_tiles, expected.size());
 
-  for (TilingData::DifferenceIterator iter(&data, consider, ignore);
-       iter; ++iter) {
+  for (TilingData::DifferenceIterator iter(&data, consider, ignore); iter;
+       ++iter) {
     bool found = false;
     for (size_t i = 0; i < expected.size(); ++i) {
       if (expected[i] == iter.index()) {
@@ -1339,16 +1327,26 @@ TEST(TilingDataTest, DifferenceIteratorIgnoreGeometry) {
 TEST(TilingDataTest, DifferenceIteratorManyBorderTexels) {
   // X border index by src coord: [0-50), [10-60), [20-65)
   // Y border index by src coord: [0-60), [20-80), [40-100), [60-110)
+  // X tile bounds by src coord: [0-30), [30-40), [40-65)
+  // Y tile bounds by src coord: [0-40), [40-60), [60-80), [80-110)
   TilingData data(gfx::Size(50, 60), gfx::Size(65, 110), 20);
 
-  // Ignore one column, three rows
-  TestDiff(data, gfx::Rect(0, 30, 55, 80), gfx::Rect(5, 30, 5, 15), 9);
+  // Knock out two rows, but not the left column.
+  TestDiff(data, gfx::Rect(10, 30, 55, 80), gfx::Rect(30, 59, 20, 2), 8);
 
-  // Knock out three columns, leaving only one.
-  TestDiff(data, gfx::Rect(10, 30, 55, 80), gfx::Rect(30, 59, 20, 1), 3);
+  // Knock out one row.
+  TestDiff(data, gfx::Rect(10, 30, 55, 80), gfx::Rect(29, 59, 20, 1), 9);
 
   // Overlap all tiles with ignore rect.
-  TestDiff(data, gfx::Rect(65, 110), gfx::Rect(30, 59, 1, 2), 0);
+  TestDiff(data, gfx::Rect(65, 110), gfx::Rect(29, 39, 12, 42), 0);
+
+  gfx::Rect tile = data.TileBounds(1, 1);
+
+  // Ignore one tile.
+  TestDiff(data, gfx::Rect(20, 30, 45, 80), tile, 11);
+
+  // Include one tile.
+  TestDiff(data, tile, gfx::Rect(), 1);
 }
 
 TEST(TilingDataTest, DifferenceIteratorOneTile) {

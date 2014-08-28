@@ -126,7 +126,7 @@ int TilingData::LastBorderTileYIndexFromSrcCoord(int src_position) const {
   return std::min(std::max(y, 0), num_tiles_y_ - 1);
 }
 
-gfx::Rect TilingData::ExpandRectIgnoringBordersToTileBoundsWithBorders(
+gfx::Rect TilingData::ExpandRectIgnoringBordersToTileBounds(
     const gfx::Rect& rect) const {
   if (rect.IsEmpty() || has_empty_bounds())
     return gfx::Rect();
@@ -137,8 +137,8 @@ gfx::Rect TilingData::ExpandRectIgnoringBordersToTileBoundsWithBorders(
   int index_right = TileXIndexFromSrcCoord(rect.right() - 1);
   int index_bottom = TileYIndexFromSrcCoord(rect.bottom() - 1);
 
-  gfx::Rect rect_top_left(TileBoundsWithBorder(index_x, index_y));
-  gfx::Rect rect_bottom_right(TileBoundsWithBorder(index_right, index_bottom));
+  gfx::Rect rect_top_left(TileBounds(index_x, index_y));
+  gfx::Rect rect_bottom_right(TileBounds(index_right, index_bottom));
 
   return gfx::UnionRects(rect_top_left, rect_bottom_right);
 }
@@ -379,24 +379,17 @@ TilingData::DifferenceIterator::DifferenceIterator(
     return;
   }
 
-  consider_left_ =
-      tiling_data_->FirstBorderTileXIndexFromSrcCoord(consider.x());
-  consider_top_ =
-      tiling_data_->FirstBorderTileYIndexFromSrcCoord(consider.y());
-  consider_right_ =
-      tiling_data_->LastBorderTileXIndexFromSrcCoord(consider.right() - 1);
+  consider_left_ = tiling_data_->TileXIndexFromSrcCoord(consider.x());
+  consider_top_ = tiling_data_->TileYIndexFromSrcCoord(consider.y());
+  consider_right_ = tiling_data_->TileXIndexFromSrcCoord(consider.right() - 1);
   consider_bottom_ =
-      tiling_data_->LastBorderTileYIndexFromSrcCoord(consider.bottom() - 1);
+      tiling_data_->TileYIndexFromSrcCoord(consider.bottom() - 1);
 
   if (!ignore.IsEmpty()) {
-    ignore_left_ =
-        tiling_data_->FirstBorderTileXIndexFromSrcCoord(ignore.x());
-    ignore_top_ =
-        tiling_data_->FirstBorderTileYIndexFromSrcCoord(ignore.y());
-    ignore_right_ =
-        tiling_data_->LastBorderTileXIndexFromSrcCoord(ignore.right() - 1);
-    ignore_bottom_ =
-        tiling_data_->LastBorderTileYIndexFromSrcCoord(ignore.bottom() - 1);
+    ignore_left_ = tiling_data_->TileXIndexFromSrcCoord(ignore.x());
+    ignore_top_ = tiling_data_->TileYIndexFromSrcCoord(ignore.y());
+    ignore_right_ = tiling_data_->TileXIndexFromSrcCoord(ignore.right() - 1);
+    ignore_bottom_ = tiling_data_->TileYIndexFromSrcCoord(ignore.bottom() - 1);
 
     // Clamp ignore indices to consider indices.
     ignore_left_ = std::max(ignore_left_, consider_left_);
@@ -488,21 +481,17 @@ TilingData::SpiralDifferenceIterator::SpiralDifferenceIterator(
     return;
   }
 
-  consider_left_ =
-      tiling_data_->FirstBorderTileXIndexFromSrcCoord(consider.x());
-  consider_top_ = tiling_data_->FirstBorderTileYIndexFromSrcCoord(consider.y());
-  consider_right_ =
-      tiling_data_->LastBorderTileXIndexFromSrcCoord(consider.right() - 1);
+  consider_left_ = tiling_data_->TileXIndexFromSrcCoord(consider.x());
+  consider_top_ = tiling_data_->TileYIndexFromSrcCoord(consider.y());
+  consider_right_ = tiling_data_->TileXIndexFromSrcCoord(consider.right() - 1);
   consider_bottom_ =
-      tiling_data_->LastBorderTileYIndexFromSrcCoord(consider.bottom() - 1);
+      tiling_data_->TileYIndexFromSrcCoord(consider.bottom() - 1);
 
   if (!ignore.IsEmpty()) {
-    ignore_left_ = tiling_data_->FirstBorderTileXIndexFromSrcCoord(ignore.x());
-    ignore_top_ = tiling_data_->FirstBorderTileYIndexFromSrcCoord(ignore.y());
-    ignore_right_ =
-        tiling_data_->LastBorderTileXIndexFromSrcCoord(ignore.right() - 1);
-    ignore_bottom_ =
-        tiling_data_->LastBorderTileYIndexFromSrcCoord(ignore.bottom() - 1);
+    ignore_left_ = tiling_data_->TileXIndexFromSrcCoord(ignore.x());
+    ignore_top_ = tiling_data_->TileYIndexFromSrcCoord(ignore.y());
+    ignore_right_ = tiling_data_->TileXIndexFromSrcCoord(ignore.right() - 1);
+    ignore_bottom_ = tiling_data_->TileYIndexFromSrcCoord(ignore.bottom() - 1);
 
     // Clamp ignore indices to consider indices.
     ignore_left_ = std::max(ignore_left_, consider_left_);
@@ -524,7 +513,7 @@ TilingData::SpiralDifferenceIterator::SpiralDifferenceIterator(
   else if (center.x() > tiling_data->tiling_size().width())
     around_left = tiling_data->num_tiles_x();
   else
-    around_left = tiling_data->FirstBorderTileXIndexFromSrcCoord(center.x());
+    around_left = tiling_data->TileXIndexFromSrcCoord(center.x());
 
   // Determine around top, such that it is between -1 and num_tiles_y.
   int around_top = 0;
@@ -533,7 +522,7 @@ TilingData::SpiralDifferenceIterator::SpiralDifferenceIterator(
   else if (center.y() > tiling_data->tiling_size().height())
     around_top = tiling_data->num_tiles_y();
   else
-    around_top = tiling_data->FirstBorderTileYIndexFromSrcCoord(center.y());
+    around_top = tiling_data->TileYIndexFromSrcCoord(center.y());
 
   // Determine around right, such that it is between -1 and num_tiles_x.
   int right_src_coord = center.right() - 1;
@@ -543,8 +532,7 @@ TilingData::SpiralDifferenceIterator::SpiralDifferenceIterator(
   } else if (right_src_coord > tiling_data->tiling_size().width()) {
     around_right = tiling_data->num_tiles_x();
   } else {
-    around_right =
-        tiling_data->LastBorderTileXIndexFromSrcCoord(right_src_coord);
+    around_right = tiling_data->TileXIndexFromSrcCoord(right_src_coord);
   }
 
   // Determine around bottom, such that it is between -1 and num_tiles_y.
@@ -555,8 +543,7 @@ TilingData::SpiralDifferenceIterator::SpiralDifferenceIterator(
   } else if (bottom_src_coord > tiling_data->tiling_size().height()) {
     around_bottom = tiling_data->num_tiles_y();
   } else {
-    around_bottom =
-        tiling_data->LastBorderTileYIndexFromSrcCoord(bottom_src_coord);
+    around_bottom = tiling_data->TileYIndexFromSrcCoord(bottom_src_coord);
   }
 
   vertical_step_count_ = around_bottom - around_top + 1;

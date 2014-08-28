@@ -65,6 +65,8 @@ class TestablePictureLayerTiling : public PictureLayerTiling {
         client));
   }
 
+  gfx::Rect live_tiles_rect() const { return live_tiles_rect_; }
+
   using PictureLayerTiling::ComputeSkewport;
 
  protected:
@@ -208,6 +210,196 @@ TEST_F(PictureLayerTilingIteratorTest, ResizeDeletesTiles) {
       SubtractRegions(gfx::Rect(tile_size), gfx::Rect(original_layer_size));
   tiling_->UpdateTilesToCurrentPile(invalidation, gfx::Size(200, 200));
   EXPECT_FALSE(tiling_->TileAt(0, 0));
+}
+
+TEST_F(PictureLayerTilingIteratorTest, CreateMissingTilesStaysInsideLiveRect) {
+  // The tiling has three rows and columns.
+  Initialize(gfx::Size(100, 100), 1, gfx::Size(250, 250));
+  EXPECT_EQ(3, tiling_->TilingDataForTesting().num_tiles_x());
+  EXPECT_EQ(3, tiling_->TilingDataForTesting().num_tiles_y());
+
+  // The live tiles rect is at the very edge of the right-most and
+  // bottom-most tiles. Their border pixels would still be inside the live
+  // tiles rect, but the tiles should not exist just for that.
+  int right = tiling_->TilingDataForTesting().TileBounds(2, 2).x();
+  int bottom = tiling_->TilingDataForTesting().TileBounds(2, 2).y();
+
+  SetLiveRectAndVerifyTiles(gfx::Rect(right, bottom));
+  EXPECT_FALSE(tiling_->TileAt(2, 0));
+  EXPECT_FALSE(tiling_->TileAt(2, 1));
+  EXPECT_FALSE(tiling_->TileAt(2, 2));
+  EXPECT_FALSE(tiling_->TileAt(1, 2));
+  EXPECT_FALSE(tiling_->TileAt(0, 2));
+
+  // Verify CreateMissingTilesInLiveTilesRect respects this.
+  tiling_->CreateMissingTilesInLiveTilesRect();
+  EXPECT_FALSE(tiling_->TileAt(2, 0));
+  EXPECT_FALSE(tiling_->TileAt(2, 1));
+  EXPECT_FALSE(tiling_->TileAt(2, 2));
+  EXPECT_FALSE(tiling_->TileAt(1, 2));
+  EXPECT_FALSE(tiling_->TileAt(0, 2));
+}
+
+TEST_F(PictureLayerTilingIteratorTest, ResizeTilingOverTileBorders) {
+  // The tiling has four rows and three columns.
+  Initialize(gfx::Size(100, 100), 1, gfx::Size(250, 350));
+  EXPECT_EQ(3, tiling_->TilingDataForTesting().num_tiles_x());
+  EXPECT_EQ(4, tiling_->TilingDataForTesting().num_tiles_y());
+
+  // The live tiles rect covers the whole tiling.
+  SetLiveRectAndVerifyTiles(gfx::Rect(250, 350));
+
+  // Tiles in the bottom row and right column exist.
+  EXPECT_TRUE(tiling_->TileAt(2, 0));
+  EXPECT_TRUE(tiling_->TileAt(2, 1));
+  EXPECT_TRUE(tiling_->TileAt(2, 2));
+  EXPECT_TRUE(tiling_->TileAt(2, 3));
+  EXPECT_TRUE(tiling_->TileAt(1, 3));
+  EXPECT_TRUE(tiling_->TileAt(0, 3));
+
+  int right = tiling_->TilingDataForTesting().TileBounds(2, 2).x();
+  int bottom = tiling_->TilingDataForTesting().TileBounds(2, 3).y();
+
+  // Shrink the tiling so that the last tile row/column is entirely in the
+  // border pixels of the interior tiles. That row/column is removed.
+  Region invalidation;
+  tiling_->UpdateTilesToCurrentPile(invalidation,
+                                    gfx::Size(right + 1, bottom + 1));
+  EXPECT_EQ(2, tiling_->TilingDataForTesting().num_tiles_x());
+  EXPECT_EQ(3, tiling_->TilingDataForTesting().num_tiles_y());
+
+  // The live tiles rect was clamped to the pile size.
+  EXPECT_EQ(gfx::Rect(right + 1, bottom + 1), tiling_->live_tiles_rect());
+
+  // Since the row/column is gone, the tiles should be gone too.
+  EXPECT_FALSE(tiling_->TileAt(2, 0));
+  EXPECT_FALSE(tiling_->TileAt(2, 1));
+  EXPECT_FALSE(tiling_->TileAt(2, 2));
+  EXPECT_FALSE(tiling_->TileAt(2, 3));
+  EXPECT_FALSE(tiling_->TileAt(1, 3));
+  EXPECT_FALSE(tiling_->TileAt(0, 3));
+
+  // Growing outside the current right/bottom tiles border pixels should create
+  // the tiles again, even though the live rect has not changed size.
+  tiling_->UpdateTilesToCurrentPile(invalidation,
+                                    gfx::Size(right + 2, bottom + 2));
+  EXPECT_EQ(3, tiling_->TilingDataForTesting().num_tiles_x());
+  EXPECT_EQ(4, tiling_->TilingDataForTesting().num_tiles_y());
+
+  // Not changed.
+  EXPECT_EQ(gfx::Rect(right + 1, bottom + 1), tiling_->live_tiles_rect());
+
+  // The last row/column tiles are inside the live tiles rect.
+  EXPECT_TRUE(gfx::Rect(right + 1, bottom + 1).Intersects(
+      tiling_->TilingDataForTesting().TileBounds(2, 0)));
+  EXPECT_TRUE(gfx::Rect(right + 1, bottom + 1).Intersects(
+      tiling_->TilingDataForTesting().TileBounds(0, 3)));
+
+  EXPECT_TRUE(tiling_->TileAt(2, 0));
+  EXPECT_TRUE(tiling_->TileAt(2, 1));
+  EXPECT_TRUE(tiling_->TileAt(2, 2));
+  EXPECT_TRUE(tiling_->TileAt(2, 3));
+  EXPECT_TRUE(tiling_->TileAt(1, 3));
+  EXPECT_TRUE(tiling_->TileAt(0, 3));
+}
+
+TEST_F(PictureLayerTilingIteratorTest, ResizeLiveTileRectOverTileBorders) {
+  // The tiling has three rows and columns.
+  Initialize(gfx::Size(100, 100), 1, gfx::Size(250, 350));
+  EXPECT_EQ(3, tiling_->TilingDataForTesting().num_tiles_x());
+  EXPECT_EQ(4, tiling_->TilingDataForTesting().num_tiles_y());
+
+  // The live tiles rect covers the whole tiling.
+  SetLiveRectAndVerifyTiles(gfx::Rect(250, 350));
+
+  // Tiles in the bottom row and right column exist.
+  EXPECT_TRUE(tiling_->TileAt(2, 0));
+  EXPECT_TRUE(tiling_->TileAt(2, 1));
+  EXPECT_TRUE(tiling_->TileAt(2, 2));
+  EXPECT_TRUE(tiling_->TileAt(2, 3));
+  EXPECT_TRUE(tiling_->TileAt(1, 3));
+  EXPECT_TRUE(tiling_->TileAt(0, 3));
+
+  // Shrink the live tiles rect to the very edge of the right-most and
+  // bottom-most tiles. Their border pixels would still be inside the live
+  // tiles rect, but the tiles should not exist just for that.
+  int right = tiling_->TilingDataForTesting().TileBounds(2, 3).x();
+  int bottom = tiling_->TilingDataForTesting().TileBounds(2, 3).y();
+
+  SetLiveRectAndVerifyTiles(gfx::Rect(right, bottom));
+  EXPECT_FALSE(tiling_->TileAt(2, 0));
+  EXPECT_FALSE(tiling_->TileAt(2, 1));
+  EXPECT_FALSE(tiling_->TileAt(2, 2));
+  EXPECT_FALSE(tiling_->TileAt(2, 3));
+  EXPECT_FALSE(tiling_->TileAt(1, 3));
+  EXPECT_FALSE(tiling_->TileAt(0, 3));
+
+  // Including the bottom row and right column again, should create the tiles.
+  SetLiveRectAndVerifyTiles(gfx::Rect(right + 1, bottom + 1));
+  EXPECT_TRUE(tiling_->TileAt(2, 0));
+  EXPECT_TRUE(tiling_->TileAt(2, 1));
+  EXPECT_TRUE(tiling_->TileAt(2, 2));
+  EXPECT_TRUE(tiling_->TileAt(2, 3));
+  EXPECT_TRUE(tiling_->TileAt(1, 2));
+  EXPECT_TRUE(tiling_->TileAt(0, 2));
+
+  // Shrink the live tiles rect to the very edge of the left-most and
+  // top-most tiles. Their border pixels would still be inside the live
+  // tiles rect, but the tiles should not exist just for that.
+  int left = tiling_->TilingDataForTesting().TileBounds(0, 0).right();
+  int top = tiling_->TilingDataForTesting().TileBounds(0, 0).bottom();
+
+  SetLiveRectAndVerifyTiles(gfx::Rect(left, top, 250 - left, 350 - top));
+  EXPECT_FALSE(tiling_->TileAt(0, 3));
+  EXPECT_FALSE(tiling_->TileAt(0, 2));
+  EXPECT_FALSE(tiling_->TileAt(0, 1));
+  EXPECT_FALSE(tiling_->TileAt(0, 0));
+  EXPECT_FALSE(tiling_->TileAt(1, 0));
+  EXPECT_FALSE(tiling_->TileAt(2, 0));
+
+  // Including the top row and left column again, should create the tiles.
+  SetLiveRectAndVerifyTiles(
+      gfx::Rect(left - 1, top - 1, 250 - left, 350 - top));
+  EXPECT_TRUE(tiling_->TileAt(0, 3));
+  EXPECT_TRUE(tiling_->TileAt(0, 2));
+  EXPECT_TRUE(tiling_->TileAt(0, 1));
+  EXPECT_TRUE(tiling_->TileAt(0, 0));
+  EXPECT_TRUE(tiling_->TileAt(1, 0));
+  EXPECT_TRUE(tiling_->TileAt(2, 0));
+}
+
+TEST_F(PictureLayerTilingIteratorTest, ResizeLiveTileRectOverSameTiles) {
+  // The tiling has four rows and three columns.
+  Initialize(gfx::Size(100, 100), 1, gfx::Size(250, 350));
+  EXPECT_EQ(3, tiling_->TilingDataForTesting().num_tiles_x());
+  EXPECT_EQ(4, tiling_->TilingDataForTesting().num_tiles_y());
+
+  // The live tiles rect covers the whole tiling.
+  SetLiveRectAndVerifyTiles(gfx::Rect(250, 350));
+
+  // All tiles exist.
+  for (int i = 0; i < 3; ++i) {
+    for (int j = 0; j < 4; ++j)
+      EXPECT_TRUE(tiling_->TileAt(i, j)) << i << "," << j;
+  }
+
+  // Shrink the live tiles rect, but still cover all the tiles.
+  SetLiveRectAndVerifyTiles(gfx::Rect(1, 1, 249, 349));
+
+  // All tiles still exist.
+  for (int i = 0; i < 3; ++i) {
+    for (int j = 0; j < 4; ++j)
+      EXPECT_TRUE(tiling_->TileAt(i, j)) << i << "," << j;
+  }
+
+  // Grow the live tiles rect, but still cover all the same tiles.
+  SetLiveRectAndVerifyTiles(gfx::Rect(0, 0, 250, 350));
+
+  // All tiles still exist.
+  for (int i = 0; i < 3; ++i) {
+    for (int j = 0; j < 4; ++j)
+      EXPECT_TRUE(tiling_->TileAt(i, j)) << i << "," << j;
+  }
 }
 
 TEST_F(PictureLayerTilingIteratorTest, ResizeOverBorderPixelsDeletesTiles) {
@@ -513,11 +705,12 @@ TEST(PictureLayerTilingTest, ViewportDistanceWithScale) {
       Tile* tile = tiling->TileAt(i, j);
       TilePriority priority = tile->priority(ACTIVE_TREE);
 
-      if (viewport_in_content_space.Intersects(tile->content_rect())) {
+      gfx::Rect tile_rect = tiling->TilingDataForTesting().TileBounds(i, j);
+      if (viewport_in_content_space.Intersects(tile_rect)) {
         EXPECT_EQ(TilePriority::NOW, priority.priority_bin);
         EXPECT_FLOAT_EQ(0.f, priority.distance_to_visible);
         have_now = true;
-      } else if (soon_rect_in_content_space.Intersects(tile->content_rect())) {
+      } else if (soon_rect_in_content_space.Intersects(tile_rect)) {
         EXPECT_EQ(TilePriority::SOON, priority.priority_bin);
         have_soon = true;
       } else {
@@ -581,14 +774,15 @@ TEST(PictureLayerTilingTest, ViewportDistanceWithScale) {
       Tile* tile = tiling->TileAt(i, j);
       TilePriority priority = tile->priority(ACTIVE_TREE);
 
-      if (viewport_in_content_space.Intersects(tile->content_rect())) {
+      gfx::Rect tile_rect = tiling->TilingDataForTesting().TileBounds(i, j);
+      if (viewport_in_content_space.Intersects(tile_rect)) {
         EXPECT_EQ(TilePriority::NOW, priority.priority_bin) << "i: " << i
                                                             << " j: " << j;
         EXPECT_FLOAT_EQ(0.f, priority.distance_to_visible) << "i: " << i
                                                            << " j: " << j;
         have_now = true;
-      } else if (skewport.Intersects(tile->content_rect()) ||
-                 soon_rect_in_content_space.Intersects(tile->content_rect())) {
+      } else if (skewport.Intersects(tile_rect) ||
+                 soon_rect_in_content_space.Intersects(tile_rect)) {
         EXPECT_EQ(TilePriority::SOON, priority.priority_bin) << "i: " << i
                                                              << " j: " << j;
         EXPECT_GT(priority.distance_to_visible, 0.f) << "i: " << i
@@ -615,7 +809,7 @@ TEST(PictureLayerTilingTest, ViewportDistanceWithScale) {
   EXPECT_FLOAT_EQ(28.f, priority.distance_to_visible);
 
   priority = tiling->TileAt(3, 4)->priority(ACTIVE_TREE);
-  EXPECT_FLOAT_EQ(0.f, priority.distance_to_visible);
+  EXPECT_FLOAT_EQ(4.f, priority.distance_to_visible);
 
   // Change the underlying layer scale.
   tiling->UpdateTilePriorities(
@@ -628,7 +822,7 @@ TEST(PictureLayerTilingTest, ViewportDistanceWithScale) {
   EXPECT_FLOAT_EQ(56.f, priority.distance_to_visible);
 
   priority = tiling->TileAt(3, 4)->priority(ACTIVE_TREE);
-  EXPECT_FLOAT_EQ(0.f, priority.distance_to_visible);
+  EXPECT_FLOAT_EQ(8.f, priority.distance_to_visible);
 
   // Test additional scales.
   tiling = TestablePictureLayerTiling::Create(0.2f, layer_bounds, &client);
