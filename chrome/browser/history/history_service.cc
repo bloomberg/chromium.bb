@@ -684,9 +684,10 @@ void HistoryService::CreateDownload(
   DCHECK(thread_) << "History service being called after cleanup";
   DCHECK(thread_checker_.CalledOnValidThread());
   PostTaskAndReplyWithResult(
-      thread_->message_loop_proxy(), FROM_HERE,
-      base::Bind(&HistoryBackend::CreateDownload, history_backend_.get(),
-                 create_info),
+      thread_->message_loop_proxy().get(),
+      FROM_HERE,
+      base::Bind(
+          &HistoryBackend::CreateDownload, history_backend_.get(), create_info),
       callback);
 }
 
@@ -695,7 +696,8 @@ void HistoryService::GetNextDownloadId(
   DCHECK(thread_) << "History service being called after cleanup";
   DCHECK(thread_checker_.CalledOnValidThread());
   PostTaskAndReplyWithResult(
-      thread_->message_loop_proxy(), FROM_HERE,
+      thread_->message_loop_proxy().get(),
+      FROM_HERE,
       base::Bind(&HistoryBackend::GetNextDownloadId, history_backend_.get()),
       callback);
 }
