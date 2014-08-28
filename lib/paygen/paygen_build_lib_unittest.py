@@ -19,6 +19,7 @@ from chromite.cbuildbot import cbuildbot_config
 from chromite.cbuildbot import commands
 
 from chromite.lib import cros_build_lib
+from chromite.lib import osutils
 from chromite.lib import parallel
 
 from chromite.lib.paygen import download_cache
@@ -28,7 +29,6 @@ from chromite.lib.paygen import gspaths
 from chromite.lib.paygen import urilib
 from chromite.lib.paygen import paygen_build_lib
 from chromite.lib.paygen import paygen_payload_lib
-from chromite.lib.paygen import unittest_lib
 from chromite.lib.paygen import utils
 
 
@@ -816,7 +816,7 @@ fsi_images: 2913.331.0,2465.105.0
 
     self.assertItemsEqual(sorted(results), sorted(expected))
 
-  @unittest_lib.tempdir_decorator
+  @osutils.TempDirDecorator
   def DoGeneratePayloadsTest(self, run_parallel, test_dry_run):
     """Test paygen_build_lib._GeneratePayloads."""
     paygen = paygen_build_lib._PaygenBuild(self.foo_build, self.tempdir,
@@ -861,7 +861,7 @@ fsi_images: 2913.331.0,2465.105.0
       for test_dry_run in (True, False):
         self.DoGeneratePayloadsTest(run_parallel, test_dry_run)
 
-  @unittest_lib.tempdir_decorator
+  @osutils.TempDirDecorator
   def testGeneratePayloadInProcess(self):
     """Make sure the _GenerateSinglePayload calls into paygen_payload_lib."""
 
@@ -1094,7 +1094,7 @@ fsi_images: 2913.331.0,2465.105.0
 
     paygen.CreatePayloads()
 
-  @unittest_lib.tempdir_decorator
+  @osutils.TempDirDecorator
   def testFindControlFileDir(self):
     """Test that we find control files in the proper directory."""
     # Test default dir in /tmp.

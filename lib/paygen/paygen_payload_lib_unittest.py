@@ -16,12 +16,12 @@ fixup_path.FixupPath()
 
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
+from chromite.lib import osutils
 
 from chromite.lib.paygen import download_cache
 from chromite.lib.paygen import gspaths
 from chromite.lib.paygen import paygen_payload_lib
 from chromite.lib.paygen import signer_payloads_client
-from chromite.lib.paygen import unittest_lib
 from chromite.lib.paygen import urilib
 
 
@@ -134,7 +134,7 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
     self.assertEqual(gen._DeltaLogsUri('gs://foo/bar'),
                      'gs://foo/bar.log')
 
-  @unittest_lib.tempdir_decorator
+  @osutils.TempDirDecorator
   def testGeneratorUri(self):
     """Validate that we can correctly decide which au-generator.zip to use."""
 
@@ -200,7 +200,7 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
     self.assertEqual(gen._GeneratorUri(), override)
 
 
-  @unittest_lib.tempdir_decorator
+  @osutils.TempDirDecorator
   def testPrepareGenerator(self):
     """Validate that we can download an unzip a generator artifact."""
     gen = self._GetStdGenerator()
@@ -387,7 +387,7 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
     self.mox.ReplayAll()
     gen._GenerateUnsignedPayload()
 
-  @unittest_lib.tempdir_decorator
+  @osutils.TempDirDecorator
   def testGenPayloadHashes(self):
     """Test _GenPayloadHash via mox."""
     gen = self._GetStdGenerator()
@@ -407,7 +407,7 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
     self.mox.ReplayAll()
     self.assertEqual(gen._GenPayloadHash(), '')
 
-  @unittest_lib.tempdir_decorator
+  @osutils.TempDirDecorator
   def testGenMetadataHashes(self):
     """Test _GenPayloadHash via mox."""
     gen = self._GetStdGenerator()
@@ -448,7 +448,7 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
     self.assertEqual(gen._SignHashes(hashes),
                      signatures)
 
-  @unittest_lib.tempdir_decorator
+  @osutils.TempDirDecorator
   def testInsertPayloadSignatures(self):
     """Test inserting payload signatures."""
     gen = self._GetStdGenerator(payload=self.delta_payload)
@@ -469,7 +469,7 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
     self.mox.ReplayAll()
     gen._InsertPayloadSignatures(payload_signatures)
 
-  @unittest_lib.tempdir_decorator
+  @osutils.TempDirDecorator
   def testStoreMetadataSignatures(self):
     """Test how we store metadata signatures."""
     gen = self._GetStdGenerator(payload=self.delta_payload)
@@ -692,13 +692,13 @@ class PaygenPayloadLibEndToEndTest(PaygenPayloadLibTest):
     self.assertEqual(os.path.exists(output_metadata_uri), sign)
 
   @cros_test_lib.NetworkTest()
-  @unittest_lib.tempdir_decorator
+  @osutils.TempDirDecorator
   def testEndToEndIntegrationFull(self):
     """Integration test to generate a full payload for old_image."""
     self._EndToEndIntegrationTest(self.old_image, None, sign=True)
 
   @cros_test_lib.NetworkTest()
-  @unittest_lib.tempdir_decorator
+  @osutils.TempDirDecorator
   def testEndToEndIntegrationDelta(self):
     """Integration test to generate a delta payload for new_image -> NPO."""
     self._EndToEndIntegrationTest(self.new_nplusone_image,

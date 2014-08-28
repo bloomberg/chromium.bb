@@ -13,6 +13,7 @@ import unittest
 import fixup_path
 fixup_path.FixupPath()
 
+from chromite.lib import osutils
 from chromite.lib.paygen import filelib
 from chromite.lib.paygen import unittest_lib
 from chromite.lib.paygen import utils
@@ -265,7 +266,7 @@ class TestFileLib(unittest_lib.MoxTestCase):
       with open(path, 'w') as out:
         out.write(contents)
 
-  @unittest_lib.tempdir_decorator
+  @osutils.TempDirDecorator
   def testRemove(self):
     # pylint: disable-msg=E1101
     path1 = os.path.join(self.tempdir, 'file1')

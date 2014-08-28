@@ -12,6 +12,7 @@ import fixup_path
 fixup_path.FixupPath()
 
 from chromite.lib import cros_test_lib
+from chromite.lib import osutils
 
 from chromite.lib.paygen import filelib
 from chromite.lib.paygen import gslib
@@ -92,7 +93,7 @@ class TestFileManipulation(unittest_lib.TestCase):
                  ignore_no_match=True)
 
   @cros_test_lib.NetworkTest()
-  @unittest_lib.tempdir_decorator
+  @osutils.TempDirDecorator
   def testIntegration(self):
     # Succeed quickly if LOAS is not available.
     if not self.loas:
@@ -346,7 +347,7 @@ class TestUrilib(unittest_lib.MoxTestCase):
     self.mox.VerifyAll()
 
   @cros_test_lib.NetworkTest()
-  @unittest_lib.tempdir_decorator
+  @osutils.TempDirDecorator
   def testURLRetrieve(self):
     good_url = 'https://codereview.chromium.org/download/issue11731004_1_2.diff'
     bad_domain_url = 'http://notarealdomainireallyhope.com/some/path'

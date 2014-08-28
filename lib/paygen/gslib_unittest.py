@@ -16,6 +16,7 @@ import fixup_path
 fixup_path.FixupPath()
 
 from chromite.lib import cros_test_lib
+from chromite.lib import osutils
 
 from chromite.lib.paygen import gslib
 from chromite.lib.paygen import unittest_lib
@@ -724,7 +725,7 @@ class TestGsLibAccess(unittest_lib.MoxTestCase):
   small_gs_path = 'gs://chromeos-releases-public/small-test-file'
 
   @cros_test_lib.NetworkTest()
-  @unittest_lib.tempdir_decorator
+  @osutils.TempDirDecorator
   def testCopyAndMD5Sum(self):
     """Higher-level functional test.  Test MD5Sum OK:
 

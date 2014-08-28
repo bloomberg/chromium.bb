@@ -10,29 +10,8 @@ from __future__ import print_function
 import cStringIO
 import mox
 import os
-import shutil
 import sys
-import tempfile
 import unittest
-
-
-def tempdir_decorator(func):
-  """Populates self.tempdir with path to a temporary writeable directory."""
-  # pylint: disable-msg=W0622
-  def f(self, *args, **kwargs):
-    """Function wrapper."""
-    self.tempdir = tempfile.mkdtemp(prefix='crostools-unittest-tmp')
-    try:
-      os.chmod(self.tempdir, 0700)
-      return func(self, *args, **kwargs)
-    finally:
-      if self.tempdir and os.path.exists(self.tempdir):
-        shutil.rmtree(self.tempdir)
-
-  f.__name__ = func.__name__
-  f.__doc__ = func.__doc__
-  f.__module__ = func.__module__
-  return f
 
 
 class ContextManagerObj(object):

@@ -14,6 +14,7 @@ import __builtin__
 import fixup_path
 fixup_path.FixupPath()
 
+from chromite.lib import osutils
 from chromite.lib.paygen import unittest_lib
 from chromite.lib.paygen import utils
 
@@ -55,7 +56,7 @@ class TestUtils(unittest_lib.MoxTestCase):
     self.assertFalse(os.path.exists(temp_name))
 
   #pylint: disable-msg=E1101
-  @unittest_lib.tempdir_decorator
+  @osutils.TempDirDecorator
   def testListdirFullpath(self):
     file_a = os.path.join(self.tempdir, 'a')
     file_b = os.path.join(self.tempdir, 'b')

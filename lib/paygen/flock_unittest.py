@@ -15,8 +15,8 @@ import unittest
 import fixup_path
 fixup_path.FixupPath()
 
+from chromite.lib import osutils
 from chromite.lib.paygen import flock
-from chromite.lib.paygen import unittest_lib
 
 
 LOCK_ACQUIRED = 5
@@ -41,7 +41,7 @@ class FLockTest(mox.MoxTestBase):
     """Cleanup after each test."""
     self.mox.UnsetStubs()
 
-  @unittest_lib.tempdir_decorator
+  @osutils.TempDirDecorator
   def _HelperSingleLockTest(self, blocking, shared):
     """Helper method that runs a basic test with/without blocking/sharing."""
     lock = flock.Lock('SingleLock',
@@ -69,7 +69,7 @@ class FLockTest(mox.MoxTestBase):
     lock.Release()
     self.assertFalse(lock.IsLocked())
 
-  @unittest_lib.tempdir_decorator
+  @osutils.TempDirDecorator
   def _HelperDoubleLockTest(self, blocking1, shared1, blocking2, shared2):
     """Helper method that runs a two-lock test with/without blocking/sharing."""
     lock1 = flock.Lock('DoubleLock',
@@ -192,7 +192,7 @@ class FLockTest(mox.MoxTestBase):
 
     self._HelperWithProcess(name, expected=LOCK_ACQUIRED)
 
-  @unittest_lib.tempdir_decorator
+  @osutils.TempDirDecorator
   def testSingleProcessLock(self):
     """Test grabbing the same lock in processes with no conflicts."""
     self._HelperWithProcess('ProcessLock', expected=LOCK_ACQUIRED)
@@ -204,7 +204,7 @@ class FLockTest(mox.MoxTestBase):
     self._HelperWithProcess('ProcessLock', expected=LOCK_ACQUIRED,
                             blocking=True, shared=True)
 
-  @unittest_lib.tempdir_decorator
+  @osutils.TempDirDecorator
   def testNonBlockingConflicts(self):
     """Test that we get a lock conflict for non-blocking locks."""
     name = 'ProcessLock'
@@ -219,7 +219,7 @@ class FLockTest(mox.MoxTestBase):
     # Can grab it after it's released
     self._HelperWithProcess(name, expected=LOCK_ACQUIRED)
 
-  @unittest_lib.tempdir_decorator
+  @osutils.TempDirDecorator
   def testSharedLocks(self):
     """Test lock conflict for blocking locks."""
     name = 'ProcessLock'
@@ -233,7 +233,7 @@ class FLockTest(mox.MoxTestBase):
       self._HelperWithProcess(name, expected=LOCK_ACQUIRED, shared=True)
       self._HelperWithProcess(name, expected=LOCK_NOT_ACQUIRED, shared=False)
 
-  @unittest_lib.tempdir_decorator
+  @osutils.TempDirDecorator
   def testBlockingConflicts(self):
     """Test lock conflict for blocking locks."""
     name = 'ProcessLock'

@@ -16,6 +16,7 @@ import fixup_path
 fixup_path.FixupPath()
 
 from chromite.lib import cros_test_lib
+from chromite.lib import osutils
 from chromite.lib.paygen import download_cache
 from chromite.lib.paygen import gslib
 from chromite.lib.paygen import unittest_lib
@@ -60,7 +61,7 @@ def _inProcessGetFile(uri_tempdir):
 class DownloadCachePickleTest(unittest_lib.TestCase):
   """Test pickle/unpickle the download cache."""
 
-  @unittest_lib.tempdir_decorator
+  @osutils.TempDirDecorator
   def testPickleUnpickle(self):
     # pylint: disable-msg=E1101
     cache = download_cache.DownloadCache(self.tempdir)
@@ -137,7 +138,7 @@ class DownloadCacheTest(mox.MoxTestBase):
     # The lock directory should contain no files not in the file_dir.
     self.assertTrue(lock_dir_contents.issubset(file_dir_contents))
 
-  @unittest_lib.tempdir_decorator
+  @osutils.TempDirDecorator
   def testCacheFileNames(self):
     """Make sure that some of the files we create have the expected names."""
     cache = download_cache.DownloadCache(self.tempdir)
@@ -163,14 +164,14 @@ class DownloadCacheTest(mox.MoxTestBase):
     cache_file_lock = cache._CacheFileLock(expected_cache)
     self.assertEqual(cache_file_lock.lock_file, expected_lock)
 
-  @unittest_lib.tempdir_decorator
+  @osutils.TempDirDecorator
   def testSetupCacheClean(self):
     """Test _SetupCache with a clean directory."""
     # Create a cache, and see if it has expected contents.
     cache = download_cache.DownloadCache(self.tempdir)
     self._validateCacheContents(cache, ())
 
-  @unittest_lib.tempdir_decorator
+  @osutils.TempDirDecorator
   def testSetupCacheDirty(self):
     """Test _SetupCache with a dirty directory."""
     # Create some unexpected directories.
@@ -186,7 +187,7 @@ class DownloadCacheTest(mox.MoxTestBase):
     self._validateCacheContents(cache, ())
 
   @cros_test_lib.NetworkTest()
-  @unittest_lib.tempdir_decorator
+  @osutils.TempDirDecorator
   def testGetFileObject(self):
     """Just create a download cache, and GetFile on it."""
 
@@ -220,7 +221,7 @@ class DownloadCacheTest(mox.MoxTestBase):
                                 (self.hash_a, self.hash_b, self.hash_large))
 
   @cros_test_lib.NetworkTest()
-  @unittest_lib.tempdir_decorator
+  @osutils.TempDirDecorator
   def testGetFileCopy(self):
     """Just create a download cache, and GetFileCopy from it."""
 
@@ -255,7 +256,7 @@ class DownloadCacheTest(mox.MoxTestBase):
     self.assertEqual(contents_a, contents_b)
 
   @cros_test_lib.NetworkTest()
-  @unittest_lib.tempdir_decorator
+  @osutils.TempDirDecorator
   def testGetFileInTempFile(self):
     """Just create a download cache, and GetFileInTempFile on it."""
 
@@ -274,7 +275,7 @@ class DownloadCacheTest(mox.MoxTestBase):
     self.assertEqual(contents_t, gslib.Cat(self.uri_a))
 
   @cros_test_lib.NetworkTest()
-  @unittest_lib.tempdir_decorator
+  @osutils.TempDirDecorator
   def testPurgeLogic(self):
     cache = download_cache.DownloadCache(self.tempdir)
 
@@ -303,7 +304,7 @@ class DownloadCacheTest(mox.MoxTestBase):
     self._validateCacheContents(cache, (self.hash_b,))
 
   @cros_test_lib.NetworkTest()
-  @unittest_lib.tempdir_decorator
+  @osutils.TempDirDecorator
   def testContextMgr(self):
     """Make sure we behave properly with 'with'."""
 
@@ -323,7 +324,7 @@ class DownloadCacheTest(mox.MoxTestBase):
     self._validateCacheContents(cache, ())
 
   @cros_test_lib.NetworkTest()
-  @unittest_lib.tempdir_decorator
+  @osutils.TempDirDecorator
   def testThreadedDownloads(self):
     """Spin off multiple processes and fetch a file.
 
@@ -344,7 +345,7 @@ class DownloadCacheTest(mox.MoxTestBase):
     self.assertEqual(results, [False] * 19 + [True])
 
   @cros_test_lib.NetworkTest()
-  @unittest_lib.tempdir_decorator
+  @osutils.TempDirDecorator
   def testThreadedGetFile(self):
     """Spin off multiple processes and call GetFile.
 
@@ -369,7 +370,7 @@ class DownloadCacheTest(mox.MoxTestBase):
     self.assertEqual(results, expected)
 
   @cros_test_lib.NetworkTest()
-  @unittest_lib.tempdir_decorator
+  @osutils.TempDirDecorator
   def testThreadedGetFileMultiple(self):
     """Spin off multiple processes and call GetFile with multiple uris.
 
@@ -400,7 +401,7 @@ class DownloadCacheTest(mox.MoxTestBase):
     self.assertEqual(results, expected)
 
   @cros_test_lib.NetworkTest()
-  @unittest_lib.tempdir_decorator
+  @osutils.TempDirDecorator
   def testThreadedGetFileMultiplePurge(self):
     """Do fetches and purges in a multiprocess environment.
 
