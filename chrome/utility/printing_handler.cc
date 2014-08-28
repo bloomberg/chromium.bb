@@ -259,10 +259,10 @@ void PrintingHandler::PreSandboxStartup() {
 bool PrintingHandler::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PrintingHandler, message)
-#if defined(WIN_PDF_METAFILE_FOR_PRINTING)
+#if defined(OS_WIN)
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_RenderPDFPagesToMetafiles,
                         OnRenderPDFPagesToMetafile)
-#endif
+#endif  // OS_WIN
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_RenderPDFPagesToPWGRaster,
                         OnRenderPDFPagesToPWGRaster)
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_GetPrinterCapsAndDefaults,
@@ -274,7 +274,7 @@ bool PrintingHandler::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-#if defined(WIN_PDF_METAFILE_FOR_PRINTING)
+#if defined(OS_WIN)
 void PrintingHandler::OnRenderPDFPagesToMetafile(
     IPC::PlatformFileForTransit pdf_transit,
     const base::FilePath& metafile_path,
@@ -302,7 +302,7 @@ void PrintingHandler::OnRenderPDFPagesToMetafile(
   }
   ReleaseProcessIfNeeded();
 }
-#endif
+#endif  // OS_WIN
 
 void PrintingHandler::OnRenderPDFPagesToPWGRaster(
     IPC::PlatformFileForTransit pdf_transit,
@@ -320,7 +320,7 @@ void PrintingHandler::OnRenderPDFPagesToPWGRaster(
   ReleaseProcessIfNeeded();
 }
 
-#if defined(WIN_PDF_METAFILE_FOR_PRINTING)
+#if defined(OS_WIN)
 bool PrintingHandler::RenderPDFToWinMetafile(
     base::File pdf_file,
     const base::FilePath& metafile_path,
@@ -403,7 +403,7 @@ bool PrintingHandler::RenderPDFToWinMetafile(
   }
   return ret;
 }
-#endif  // defined(WIN_PDF_METAFILE_FOR_PRINTING)
+#endif  // OS_WIN
 
 bool PrintingHandler::RenderPDFPagesToPWGRaster(
     base::File pdf_file,

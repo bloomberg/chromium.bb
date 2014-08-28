@@ -33,20 +33,20 @@ class PrintingHandler : public UtilityMessageHandler {
 
  private:
   // IPC message handlers.
-#if defined(WIN_PDF_METAFILE_FOR_PRINTING)
+#if defined(OS_WIN)
   void OnRenderPDFPagesToMetafile(
       IPC::PlatformFileForTransit pdf_transit,
       const base::FilePath& metafile_path,
       const printing::PdfRenderSettings& settings,
       const std::vector<printing::PageRange>& page_ranges);
-#endif
+#endif  // OS_WIN
   void OnRenderPDFPagesToPWGRaster(
       IPC::PlatformFileForTransit pdf_transit,
       const printing::PdfRenderSettings& settings,
       const printing::PwgRasterSettings& bitmap_settings,
       IPC::PlatformFileForTransit bitmap_transit);
 
-#if defined(WIN_PDF_METAFILE_FOR_PRINTING)
+#if defined(OS_WIN)
   // Helper method for Windows.
   // |highest_rendered_page_number| is set to -1 on failure to render any page.
   // |page_ranges| is both input and output. If supplied as input, only the
@@ -59,7 +59,7 @@ class PrintingHandler : public UtilityMessageHandler {
       std::vector<printing::PageRange>* page_ranges,
       int* highest_rendered_page_number,
       double* scale_factor);
-#endif
+#endif  // OS_WIN
 
   bool RenderPDFPagesToPWGRaster(
       base::File pdf_file,

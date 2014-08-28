@@ -418,7 +418,7 @@ static_library("browser") {
     deps += [
       "//printing",
     ]
-    if (is_win && win_pdf_metafile_for_printing) {
+    if (is_win) {
       sources += rebase_path(gypi_values.chrome_browser_printing_emf_sources,
                              ".", "//chrome")
     }

@@ -256,6 +256,7 @@
       'renderer/printing/print_web_view_helper_android.cc',
       'renderer/printing/print_web_view_helper_linux.cc',
       'renderer/printing/print_web_view_helper_mac.mm',
+      'renderer/printing/print_web_view_helper_pdf_win.cc',
     ],
     'chrome_renderer_full_printing_sources': [
       'renderer/pepper/chrome_pdf_print_client.cc',
@@ -388,15 +389,6 @@
         ['enable_printing==1', {
           'sources': [
             '<@(chrome_renderer_full_printing_sources)',
-          ],
-        }],
-        ['win_pdf_metafile_for_printing==1', {
-          'sources': [
-            'renderer/printing/print_web_view_helper_pdf_win.cc',
-          ],
-        }, {
-          'sources': [
-            'renderer/printing/print_web_view_helper_win.cc',
           ],
         }],
         ['OS!="android"', {

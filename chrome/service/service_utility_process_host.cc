@@ -230,7 +230,7 @@ void ServiceUtilityProcessHost::OnChildDisconnected() {
 bool ServiceUtilityProcessHost::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ServiceUtilityProcessHost, message)
-#if defined(WIN_PDF_METAFILE_FOR_PRINTING)
+#if defined(OS_WIN)
     IPC_MESSAGE_HANDLER(
         ChromeUtilityHostMsg_RenderPDFPagesToMetafiles_Succeeded,
         OnRenderPDFPagesToMetafilesSucceeded)
@@ -257,7 +257,7 @@ base::ProcessHandle ServiceUtilityProcessHost::GetHandle() const {
   return handle_;
 }
 
-#if defined(WIN_PDF_METAFILE_FOR_PRINTING)
+#if defined(OS_WIN)
 void ServiceUtilityProcessHost::OnRenderPDFPagesToMetafilesSucceeded(
     const std::vector<printing::PageRange>& page_ranges,
     double scale_factor) {
@@ -301,7 +301,7 @@ void ServiceUtilityProcessHost::OnRenderPDFPagesToMetafileFailed() {
       FROM_HERE,
       base::Bind(&Client::OnRenderPDFPagesToMetafileFailed, client_.get()));
 }
-#endif  // defined(WIN_PDF_METAFILE_FOR_PRINTING)
+#endif  // defined(OS_WIN)
 
 void ServiceUtilityProcessHost::OnGetPrinterCapsAndDefaultsSucceeded(
     const std::string& printer_name,

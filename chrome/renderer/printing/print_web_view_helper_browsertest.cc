@@ -243,7 +243,7 @@ TEST_F(PrintWebViewHelperTest, OnPrintPages) {
   VerifyPagesPrinted(true);
 }
 
-#if (defined(OS_WIN) && !WIN_PDF_METAFILE_FOR_PRINTING) || defined(OS_MACOSX)
+#if defined(OS_MACOSX)
 // TODO(estade): I don't think this test is worth porting to Linux. We will have
 // to rip out and replace most of the IPC code if we ever plan to improve
 // printing, and the comment below by sverrir suggests that it doesn't do much
@@ -284,7 +284,7 @@ TEST_F(PrintWebViewHelperTest, PrintWithIframe) {
   EXPECT_NE(0, image1.size().width());
   EXPECT_NE(0, image1.size().height());
 }
-#endif
+#endif  // OS_MACOSX
 
 // Tests if we can print a page and verify its results.
 // This test prints HTML pages into a pseudo printer and check their outputs,
@@ -330,7 +330,7 @@ const TestPageData kTestPages[] = {
 // hooking up Cairo to read a pdf stream, or accessing the cairo surface in the
 // metafile directly.
 // Same for printing via PDF on Windows.
-#if (defined(OS_WIN) && !WIN_PDF_METAFILE_FOR_PRINTING) || defined(OS_MACOSX)
+#if defined(OS_MACOSX)
 TEST_F(PrintWebViewHelperTest, PrintLayoutTest) {
   bool baseline = false;
 
@@ -383,7 +383,7 @@ TEST_F(PrintWebViewHelperTest, PrintLayoutTest) {
     }
   }
 }
-#endif
+#endif  // OS_MACOSX
 
 // These print preview tests do not work on Chrome OS yet.
 #if !defined(OS_CHROMEOS)

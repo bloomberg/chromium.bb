@@ -85,8 +85,7 @@ IPC_MESSAGE_CONTROL1(ChromeUtilityMsg_GetPrinterCapsAndDefaults,
 IPC_MESSAGE_CONTROL1(ChromeUtilityMsg_GetPrinterSemanticCapsAndDefaults,
                      std::string /* printer name */)
 
-
-#if defined(WIN_PDF_METAFILE_FOR_PRINTING)
+#if defined(OS_WIN)
 // Tell the utility process to render the given PDF into a metafile.
 // The metafile path will have ".%d" inserted where the %d is the page number.
 // If no page range is specified, all pages will be converted.
@@ -95,7 +94,7 @@ IPC_MESSAGE_CONTROL4(ChromeUtilityMsg_RenderPDFPagesToMetafiles,
                      base::FilePath,  // Base location for output metafile
                      printing::PdfRenderSettings,  // PDF render settings
                      std::vector<printing::PageRange>)
-#endif
+#endif  // OS_WIN
 
 //------------------------------------------------------------------------------
 // Utility process host messages:
@@ -131,7 +130,7 @@ IPC_MESSAGE_CONTROL1(
   ChromeUtilityHostMsg_GetPrinterSemanticCapsAndDefaults_Failed,
   std::string /* printer name */)
 
-#if defined(WIN_PDF_METAFILE_FOR_PRINTING)
+#if defined(OS_WIN)
 // Reply when the utility process has succeeded in rendering the PDF.
 IPC_MESSAGE_CONTROL2(ChromeUtilityHostMsg_RenderPDFPagesToMetafiles_Succeeded,
                      std::vector<printing::PageRange>,  // Pages rendered
@@ -139,4 +138,4 @@ IPC_MESSAGE_CONTROL2(ChromeUtilityHostMsg_RenderPDFPagesToMetafiles_Succeeded,
 
 // Reply when an error occurred rendering the PDF.
 IPC_MESSAGE_CONTROL0(ChromeUtilityHostMsg_RenderPDFPagesToMetafile_Failed)
-#endif
+#endif  // OS_WIN

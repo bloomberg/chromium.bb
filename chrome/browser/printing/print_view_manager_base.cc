@@ -33,10 +33,11 @@
 #include "chrome/browser/printing/print_error_dialog.h"
 #endif
 
-#if defined(WIN_PDF_METAFILE_FOR_PRINTING)
+#if defined(OS_WIN)
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_memory.h"
 #include "chrome/browser/printing/pdf_to_emf_converter.h"
+#include "printing/emf_win.h"
 #include "printing/pdf_render_settings.h"
 #endif
 
@@ -46,11 +47,6 @@ using content::BrowserThread;
 namespace printing {
 
 namespace {
-
-#if defined(OS_WIN) && !defined(WIN_PDF_METAFILE_FOR_PRINTING)
-// Limits memory usage by raster to 64 MiB.
-const int kMaxRasterSizeInPixels = 16*1024*1024;
-#endif
 
 }  // namespace
 
@@ -62,10 +58,9 @@ PrintViewManagerBase::PrintViewManagerBase(content::WebContents* web_contents)
       cookie_(0),
       queue_(g_browser_process->print_job_manager()->queue()) {
   DCHECK(queue_.get());
-#if (defined(OS_POSIX) && !defined(OS_MACOSX)) || \
-    defined(WIN_PDF_METAFILE_FOR_PRINTING)
+#if !defined(OS_MACOSX)
   expecting_first_page_ = true;
-#endif
+#endif  // OS_MACOSX
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   printing_enabled_.Init(
@@ -129,7 +124,7 @@ void PrintViewManagerBase::OnDidGetDocumentCookie(int cookie) {
   cookie_ = cookie;
 }
 
-#if defined(WIN_PDF_METAFILE_FOR_PRINTING)
+#if defined(OS_WIN)
 void PrintViewManagerBase::OnPdfToEmfConverted(
     const PrintHostMsg_DidPrintPage_Params& params,
     double scale_factor,
@@ -158,7 +153,7 @@ void PrintViewManagerBase::OnPdfToEmfConverted(
 
   ShouldQuitFromInnerMessageLoop();
 }
-#endif  // WIN_PDF_METAFILE_FOR_PRINTING
+#endif  // OS_WIN
 
 void PrintViewManagerBase::OnDidPrintPage(
   const PrintHostMsg_DidPrintPage_Params& params) {
@@ -172,13 +167,12 @@ void PrintViewManagerBase::OnDidPrintPage(
     return;
   }
 
-#if (defined(OS_WIN) && !defined(WIN_PDF_METAFILE_FOR_PRINTING)) || \
-    defined(OS_MACOSX)
+#if defined(OS_MACOSX)
   const bool metafile_must_be_valid = true;
-#elif defined(OS_POSIX) || defined(WIN_PDF_METAFILE_FOR_PRINTING)
+#else
   const bool metafile_must_be_valid = expecting_first_page_;
   expecting_first_page_ = false;
-#endif
+#endif  // OS_MACOSX
 
   base::SharedMemory shared_buf(params.metafile_data_handle, true);
   if (metafile_must_be_valid) {
@@ -198,32 +192,10 @@ void PrintViewManagerBase::OnDidPrintPage(
     }
   }
 
-#if defined(OS_WIN) && !defined(WIN_PDF_METAFILE_FOR_PRINTING)
-  bool big_emf = (params.data_size && params.data_size >= kMetafileMaxSize);
-  int raster_size =
-      std::min(params.page_size.GetArea(), kMaxRasterSizeInPixels);
-  if (big_emf) {
-    scoped_ptr<NativeMetafile> raster_metafile(
-        metafile->RasterizeMetafile(raster_size));
-    if (raster_metafile.get()) {
-      metafile.swap(raster_metafile);
-    } else if (big_emf) {
-      // Don't fall back to emf here.
-      NOTREACHED() << "size:" << params.data_size;
-      TerminatePrintJob(true);
-      web_contents()->Stop();
-      return;
-    }
-  }
-#endif  // OS_WIN && !WIN_PDF_METAFILE_FOR_PRINTING
-
-#if !defined(WIN_PDF_METAFILE_FOR_PRINTING)
+#if !defined(OS_WIN)
   // Update the rendered document. It will send notifications to the listener.
   document->SetPage(params.page_number,
                     metafile.release(),
-#if defined(OS_WIN)
-                    params.actual_shrink,
-#endif  // OS_WIN
                     params.page_size,
                     params.content_area);
 
@@ -247,7 +219,7 @@ void PrintViewManagerBase::OnDidPrintPage(
                    base::Unretained(this),
                    params));
   }
-#endif  // !WIN_PDF_METAFILE_FOR_PRINTING
+#endif  // !OS_WIN
 }
 
 void PrintViewManagerBase::OnPrintingFailed(int cookie) {
@@ -454,10 +426,9 @@ void PrintViewManagerBase::DisconnectFromCurrentPrintJob() {
     // DO NOT wait for the job to finish.
     ReleasePrintJob();
   }
-#if (defined(OS_POSIX) && !defined(OS_MACOSX)) || \
-    defined(WIN_PDF_METAFILE_FOR_PRINTING)
+#if !defined(OS_MACOSX)
   expecting_first_page_ = true;
-#endif
+#endif  // OS_MACOSX
 }
 
 void PrintViewManagerBase::PrintingDone(bool success) {

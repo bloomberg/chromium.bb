@@ -287,11 +287,6 @@ IPC_STRUCT_BEGIN(PrintHostMsg_DidPrintPage_Params)
   // Page number.
   IPC_STRUCT_MEMBER(int, page_number)
 
-#if defined(OS_WIN) && !defined(WIN_PDF_METAFILE_FOR_PRINTING)
-  // Shrink factor used to render this page.
-  IPC_STRUCT_MEMBER(double, actual_shrink)
-#endif  // OS_WIN && !WIN_PDF_METAFILE_FOR_PRINTING
-
   // The size of the page the page author specified.
   IPC_STRUCT_MEMBER(gfx::Size, page_size)
 

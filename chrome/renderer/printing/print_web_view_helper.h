@@ -209,7 +209,7 @@ class PrintWebViewHelper
                          const gfx::Size& canvas_size,
                          blink::WebFrame* frame,
                          Metafile* metafile);
-#elif defined(WIN_PDF_METAFILE_FOR_PRINTING)
+#elif defined(OS_WIN)
   void PrintPageInternal(const PrintMsg_PrintPage_Params& params,
                          const gfx::Size& canvas_size,
                          blink::WebFrame* frame,
@@ -227,16 +227,7 @@ class PrintWebViewHelper
                            const blink::WebNode& node);
 
   // Platform specific helper function for rendering page(s) to |metafile|.
-#if defined(OS_WIN) && !defined(WIN_PDF_METAFILE_FOR_PRINTING)
-  void RenderPage(const PrintMsg_Print_Params& params,
-                  int page_number,
-                  blink::WebFrame* frame,
-                  bool is_preview,
-                  Metafile* metafile,
-                  double* scale_factor,
-                  gfx::Size* page_size_in_dpi,
-                  gfx::Rect* content_area_in_dpi);
-#elif defined(OS_MACOSX)
+#if defined(OS_MACOSX)
   void RenderPage(const PrintMsg_Print_Params& params,
                   int page_number,
                   blink::WebFrame* frame,
@@ -244,7 +235,7 @@ class PrintWebViewHelper
                   Metafile* metafile,
                   gfx::Size* page_size,
                   gfx::Rect* content_rect);
-#endif  // defined(OS_WIN)
+#endif  // defined(OS_MACOSX)
 
   // Renders page contents from |frame| to |content_area| of |canvas|.
   // |page_number| is zero-based.

@@ -3213,7 +3213,7 @@
           ],
           'sources': [ '<@(chrome_browser_basic_printing_sources)' ],
           'conditions': [
-            ['OS=="win" and win_pdf_metafile_for_printing==1', {
+            ['OS=="win"', {
               'sources': [ '<@(chrome_browser_printing_emf_sources)' ],
             }],
             # Full printing on top of the above.

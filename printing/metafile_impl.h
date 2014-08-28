@@ -7,19 +7,11 @@
 
 #include "printing/pdf_metafile_skia.h"
 
-#if defined(OS_WIN)
-#include "printing/emf_win.h"
-#endif
-
 namespace printing {
 
-#if defined(OS_WIN) && !defined(WIN_PDF_METAFILE_FOR_PRINTING)
-typedef Emf NativeMetafile;
-typedef PdfMetafileSkia PreviewMetafile;
-#else
+// TODO(vitalybuka) Remove following typedefs and replace with PdfMetafileSkia.
 typedef PdfMetafileSkia NativeMetafile;
 typedef PdfMetafileSkia PreviewMetafile;
-#endif
 
 }  // namespace printing
 

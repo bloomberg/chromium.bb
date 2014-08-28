@@ -1340,8 +1340,7 @@ void PrintWebViewHelper::FinishFramePrinting() {
   prep_frame_view_.reset();
 }
 
-#if defined(OS_MACOSX) || \
-    (defined(OS_WIN) && !defined(WIN_PDF_METAFILE_FOR_PRINTING))
+#if defined(OS_MACOSX)
 bool PrintWebViewHelper::PrintPagesNative(blink::WebFrame* frame,
                                           int page_count,
                                           const gfx::Size& canvas_size) {
@@ -1366,7 +1365,7 @@ bool PrintWebViewHelper::PrintPagesNative(blink::WebFrame* frame,
   return true;
 }
 
-#endif  // OS_MACOSX || !WIN_PDF_METAFILE_FOR_PRINTING
+#endif  // OS_MACOSX
 
 // static - Not anonymous so that platform implementations can use it.
 void PrintWebViewHelper::ComputePageLayoutInPointsForCss(
