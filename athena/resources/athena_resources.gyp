@@ -29,6 +29,8 @@
       'type': 'none',
       'dependencies': [
         '../../ash/ash_resources.gyp:ash_resources',
+        '../../components/components_resources.gyp:components_resources',
+        '../../components/components_strings.gyp:components_strings',
         '../../content/app/resources/content_resources.gyp:content_resources',
         '../../content/app/strings/content_strings.gyp:content_strings',
         '../../extensions/extensions.gyp:extensions_shell_and_test_pak',
@@ -43,6 +45,9 @@
             '<(PRODUCT_DIR)/extensions_shell_and_test.pak',
             '<(SHARED_INTERMEDIATE_DIR)/ash/resources/ash_resources_100_percent.pak',
             '<(SHARED_INTERMEDIATE_DIR)/athena/resources/athena_resources_100_percent.pak',
+            '<(SHARED_INTERMEDIATE_DIR)/components/component_resources_100_percent.pak',
+            '<(SHARED_INTERMEDIATE_DIR)/components/component_resources.pak',
+            '<(SHARED_INTERMEDIATE_DIR)/components/strings/components_strings_en-US.pak',
             '<(SHARED_INTERMEDIATE_DIR)/content/app/resources/content_resources_100_percent.pak',
             '<(SHARED_INTERMEDIATE_DIR)/content/app/strings/content_strings_en-US.pak',
             '<(SHARED_INTERMEDIATE_DIR)/ui/chromeos/resources/ui_chromeos_resources_100_percent.pak',
