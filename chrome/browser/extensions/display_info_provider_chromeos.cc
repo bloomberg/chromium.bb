@@ -380,6 +380,10 @@ void DisplayInfoProviderChromeOS::UpdateDisplayUnitInfoForPlatform(
   unit->overscan.bottom = overscan_insets.bottom();
 }
 
+gfx::Screen* DisplayInfoProviderChromeOS::GetActiveScreen() {
+  return ash::Shell::GetScreen();
+}
+
 // static
 DisplayInfoProvider* DisplayInfoProvider::Create() {
   return new DisplayInfoProviderChromeOS();

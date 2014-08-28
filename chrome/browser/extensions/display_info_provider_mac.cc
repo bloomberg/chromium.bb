@@ -26,6 +26,10 @@ void DisplayInfoProviderMac::UpdateDisplayUnitInfoForPlatform(
   NOTIMPLEMENTED();
 }
 
+gfx::Screen* DisplayInfoProviderMac::GetActiveScreen() {
+  return NULL;
+}
+
 // static
 DisplayInfoProvider* DisplayInfoProvider::Create() {
   return new DisplayInfoProviderMac();

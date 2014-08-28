@@ -13,6 +13,7 @@
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/extensions/api/system_display/display_info_provider.h"
 #include "chrome/browser/extensions/api/system_storage/storage_info_provider.h"
 #include "chrome/browser/extensions/event_router_forwarder.h"
 #include "chrome/common/extensions/api/system_display.h"
@@ -22,11 +23,7 @@
 #include "components/storage_monitor/storage_monitor.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/gfx/display_observer.h"
-
-#if defined(OS_CHROMEOS)
-#include "ash/shell.h"
 #include "ui/gfx/screen.h"
-#endif
 
 namespace extensions {
 
@@ -39,11 +36,9 @@ namespace system_storage = api::system_storage;
 
 namespace {
 
-#if defined(OS_CHROMEOS)
 bool IsDisplayChangedEvent(const std::string& event_name) {
   return event_name == system_display::OnDisplayChanged::kEventName;
 }
-#endif
 
 bool IsSystemStorageEvent(const std::string& event_name) {
   return (event_name == system_storage::OnAttached::kEventName ||
@@ -120,11 +115,11 @@ void SystemInfoEventRouter::AddEventListener(const std::string& event_name) {
   if (watching_event_set_.count(event_name) > 1)
     return;
 
-  // For system.display event.
-#if defined(OS_CHROMEOS)
-  if (IsDisplayChangedEvent(event_name))
-    ash::Shell::GetScreen()->AddObserver(this);
-#endif
+  if (IsDisplayChangedEvent(event_name)) {
+    gfx::Screen* screen = DisplayInfoProvider::Get()->GetActiveScreen();
+    if (screen)
+      screen->AddObserver(this);
+  }
 
   if (IsSystemStorageEvent(event_name)) {
     if (!has_storage_monitor_observer_) {
@@ -146,10 +141,11 @@ void SystemInfoEventRouter::RemoveEventListener(const std::string& event_name) {
       return;
   }
 
-#if defined(OS_CHROMEOS)
-  if (IsDisplayChangedEvent(event_name))
-    ash::Shell::GetScreen()->RemoveObserver(this);
-#endif
+  if (IsDisplayChangedEvent(event_name)) {
+    gfx::Screen* screen = DisplayInfoProvider::Get()->GetActiveScreen();
+    if (screen)
+      screen->RemoveObserver(this);
+  }
 
   if (IsSystemStorageEvent(event_name)) {
     const std::string& other_event_name =

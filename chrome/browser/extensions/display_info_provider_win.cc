@@ -80,6 +80,10 @@ void DisplayInfoProviderWin::UpdateDisplayUnitInfoForPlatform(
   }
 }
 
+gfx::Screen* DisplayInfoProviderWin::GetActiveScreen() {
+  return NULL;
+}
+
 // static
 DisplayInfoProvider* DisplayInfoProvider::Create() {
   return new DisplayInfoProviderWin();

@@ -26,6 +26,10 @@ void DisplayInfoProviderAura::UpdateDisplayUnitInfoForPlatform(
   NOTIMPLEMENTED();
 }
 
+gfx::Screen* DisplayInfoProviderAura::GetActiveScreen() {
+  return NULL;
+}
+
 // static
 DisplayInfoProvider* DisplayInfoProvider::Create() {
   return new DisplayInfoProviderAura();

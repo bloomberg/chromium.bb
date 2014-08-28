@@ -131,6 +131,8 @@ class MockDisplayInfoProvider : public DisplayInfoProvider {
     return true;
   }
 
+  virtual gfx::Screen* GetActiveScreen() OVERRIDE { return NULL; }
+
   scoped_ptr<base::DictionaryValue> GetSetInfoValue() {
     return set_info_value_.Pass();
   }

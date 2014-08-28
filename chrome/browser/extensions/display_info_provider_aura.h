@@ -21,6 +21,7 @@ class DisplayInfoProviderAura : public DisplayInfoProvider {
   virtual void UpdateDisplayUnitInfoForPlatform(
       const gfx::Display& display,
       extensions::api::system_display::DisplayUnitInfo* unit) OVERRIDE;
+  virtual gfx::Screen* GetActiveScreen() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DisplayInfoProviderAura);
