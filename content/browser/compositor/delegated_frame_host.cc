@@ -362,6 +362,7 @@ void DelegatedFrameHost::SwapDelegatedFrame(
     last_output_surface_id_ = output_surface_id;
   }
   bool modified_layers = false;
+  ui::Compositor* compositor = client_->GetCompositor();
   if (frame_size.IsEmpty()) {
     DCHECK(frame_data->resource_list.empty());
     EvictDelegatedFrame();
@@ -390,12 +391,14 @@ void DelegatedFrameHost::SwapDelegatedFrame(
       scoped_ptr<cc::CompositorFrame> compositor_frame =
           make_scoped_ptr(new cc::CompositorFrame());
       compositor_frame->delegated_frame_data = frame_data.Pass();
+      base::Closure ack_callback;
+      if (compositor) {
+        ack_callback = base::Bind(&DelegatedFrameHost::SendDelegatedFrameAck,
+                                  AsWeakPtr(),
+                                  output_surface_id);
+      }
       surface_factory_->SubmitFrame(
-          surface_id_,
-          compositor_frame.Pass(),
-          base::Bind(&DelegatedFrameHost::SendDelegatedFrameAck,
-                     AsWeakPtr(),
-                     output_surface_id));
+          surface_id_, compositor_frame.Pass(), ack_callback);
     } else {
       if (!resource_collection_.get()) {
         resource_collection_ = new cc::DelegatedFrameResourceCollection;
@@ -431,7 +434,6 @@ void DelegatedFrameHost::SwapDelegatedFrame(
 
   pending_delegated_ack_count_++;
 
-  ui::Compositor* compositor = client_->GetCompositor();
   if (!compositor) {
     SendDelegatedFrameAck(output_surface_id);
   } else if (!use_surfaces_) {
