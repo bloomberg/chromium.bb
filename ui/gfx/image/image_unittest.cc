@@ -20,11 +20,10 @@
 
 namespace {
 
-#if defined(TOOLKIT_VIEWS) || defined(OS_ANDROID) || \
-    (defined(OS_LINUX) && !defined(USE_CAIRO))
-const bool kUsesSkiaNatively = true;
-#else
+#if defined(OS_IOS) || defined(OS_MACOSX)
 const bool kUsesSkiaNatively = false;
+#else
+const bool kUsesSkiaNatively = true;
 #endif
 
 class ImageTest : public testing::Test {
