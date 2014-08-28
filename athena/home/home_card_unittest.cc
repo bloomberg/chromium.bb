@@ -112,7 +112,7 @@ TEST_F(HomeCardTest, Gestures) {
   const int x = screen_rect.x() + 1;
 
   generator.GestureScrollSequence(gfx::Point(x, bottom - 1),
-                                  gfx::Point(x, bottom - 40),
+                                  gfx::Point(x, bottom - 70),
                                   base::TimeDelta::FromSeconds(1),
                                   10);
   EXPECT_EQ(HomeCard::VISIBLE_BOTTOM, HomeCard::Get()->GetState());
@@ -159,7 +159,7 @@ TEST_F(HomeCardTest, Gestures) {
 
   // Swipe down to the bottom state.
   generator.GestureScrollSequence(gfx::Point(x, 10),
-                                  gfx::Point(x, bottom - 40),
+                                  gfx::Point(x, bottom - 90),
                                   base::TimeDelta::FromSeconds(1),
                                   10);
   EXPECT_EQ(HomeCard::VISIBLE_BOTTOM, HomeCard::Get()->GetState());

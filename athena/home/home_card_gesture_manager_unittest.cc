@@ -168,4 +168,16 @@ TEST_F(HomeCardGestureManagerTest, FlingDownAtEnd) {
   EXPECT_EQ(HomeCard::VISIBLE_BOTTOM, final_state_);
 }
 
+TEST_F(HomeCardGestureManagerTest, WeakFling) {
+  EXPECT_TRUE(ProcessGestureEvent(ui::ET_GESTURE_SCROLL_BEGIN, 1020));
+  EXPECT_EQ(0, GetEndCountAndReset());
+  EXPECT_EQ(0, GetProgressCountAndReset());
+
+  ProcessGestureEvent(ui::ET_GESTURE_SCROLL_UPDATE, 1010);
+  ProcessGestureEvent(ui::ET_GESTURE_SCROLL_UPDATE, 800);
+  ProcessFlingGesture(-30.0f);
+  EXPECT_EQ(1, GetEndCountAndReset());
+  EXPECT_EQ(HomeCard::VISIBLE_BOTTOM, final_state_);
+}
+
 }  // namespace athena

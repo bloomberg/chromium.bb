@@ -35,15 +35,17 @@ void HomeCardGestureManager::ProcessGestureEvent(ui::GestureEvent* event) {
     case ui::ET_SCROLL_FLING_START: {
       const ui::GestureEventDetails& details = event->details();
       const float kFlingCompletionVelocity = 100.0f;
+      HomeCard::State final_state = GetClosestState();
       if (::fabs(details.velocity_y()) > kFlingCompletionVelocity) {
-        int step = (details.velocity_y() > 0) ? 1 : -1;
-        int new_state = static_cast<int>(last_state_) + step;
-        if (new_state >= HomeCard::VISIBLE_CENTERED &&
-            new_state <= HomeCard::VISIBLE_MINIMIZED) {
-          last_state_ = static_cast<HomeCard::State>(new_state);
+        if (details.velocity_y() > 0) {
+          final_state = std::min(HomeCard::VISIBLE_MINIMIZED,
+                                 static_cast<HomeCard::State>(final_state + 1));
+        } else {
+          final_state = std::max(HomeCard::VISIBLE_CENTERED,
+                                 static_cast<HomeCard::State>(final_state - 1));
         }
-        delegate_->OnGestureEnded(last_state_);
       }
+      delegate_->OnGestureEnded(final_state);
       break;
     }
     default:
@@ -53,27 +55,18 @@ void HomeCardGestureManager::ProcessGestureEvent(ui::GestureEvent* event) {
 }
 
 HomeCard::State HomeCardGestureManager::GetClosestState() const {
-  // The top position of the bounds for one smaller state than the current
-  // one.
-
-  if (last_estimated_height_ <= kHomeCardMinimizedHeight)
+  const int kMinimizedHomeBufferSize = 50;
+  if (last_estimated_height_ <=
+      kHomeCardMinimizedHeight + kMinimizedHomeBufferSize) {
     return HomeCard::VISIBLE_MINIMIZED;
-
-  HomeCard::State smaller_state = HomeCard::VISIBLE_MINIMIZED;
-  int smaller_height = kHomeCardMinimizedHeight;
-  int bigger_height = kHomeCardHeight;
-  if (last_estimated_height_ > kHomeCardHeight) {
-    smaller_state = HomeCard::VISIBLE_BOTTOM;
-    smaller_height = kHomeCardHeight;
-    bigger_height = screen_bounds_.height();
   }
 
-  if (last_estimated_height_ - smaller_height <=
-      (bigger_height - smaller_height) / 5) {
-    return smaller_state;
+  int centered_height = screen_bounds_.height();
+  if (last_estimated_height_ - kHomeCardHeight <=
+      (centered_height - kHomeCardHeight) / 3) {
+    return HomeCard::VISIBLE_BOTTOM;
   }
-
-  return static_cast<HomeCard::State>(smaller_state - 1);
+  return HomeCard::VISIBLE_CENTERED;
 }
 
 void HomeCardGestureManager::UpdateScrollState(const ui::GestureEvent& event) {
