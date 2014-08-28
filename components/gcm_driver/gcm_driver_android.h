@@ -47,6 +47,9 @@ class GCMDriverAndroid : public GCMDriver {
   virtual void OnSignedIn() OVERRIDE;
   virtual void Purge() OVERRIDE;
   virtual void Enable() OVERRIDE;
+  virtual void AddConnectionObserver(GCMConnectionObserver* observer) OVERRIDE;
+  virtual void RemoveConnectionObserver(
+      GCMConnectionObserver* observer) OVERRIDE;
   virtual void Disable() OVERRIDE;
   virtual GCMClient* GetGCMClientForTesting() const OVERRIDE;
   virtual bool IsStarted() const OVERRIDE;

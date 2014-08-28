@@ -11,6 +11,7 @@
 #include "base/threading/non_thread_safe.h"
 #include "components/gcm_driver/gcm_app_handler.h"
 #include "components/gcm_driver/gcm_client.h"
+#include "components/gcm_driver/gcm_connection_observer.h"
 #include "components/invalidation/gcm_network_channel_delegate.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 
@@ -32,6 +33,7 @@ namespace invalidation {
 // all function calls to GCMInvalidationBridge which does actual work to perform
 // them.
 class GCMInvalidationBridge : public gcm::GCMAppHandler,
+                              public gcm::GCMConnectionObserver,
                               public OAuth2TokenService::Consumer,
                               public base::NonThreadSafe {
  public:
@@ -59,6 +61,8 @@ class GCMInvalidationBridge : public gcm::GCMAppHandler,
       const gcm::GCMClient::SendErrorDetails& send_error_details) OVERRIDE;
   virtual void OnSendAcknowledged(const std::string& app_id,
                                   const std::string& message_id) OVERRIDE;
+
+  // gcm::GCMConnectionObserver implementation.
   virtual void OnConnected(const net::IPEndPoint& ip_endpoint) OVERRIDE;
   virtual void OnDisconnected() OVERRIDE;
 

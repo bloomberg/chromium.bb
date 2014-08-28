@@ -20,6 +20,7 @@
 #include "components/gcm_driver/fake_gcm_client_factory.h"
 #include "components/gcm_driver/gcm_app_handler.h"
 #include "components/gcm_driver/gcm_client_factory.h"
+#include "components/gcm_driver/gcm_connection_observer.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -33,6 +34,36 @@ const char kTestAccountID2[] = "user2@example.com";
 const char kTestAppID1[] = "TestApp1";
 const char kTestAppID2[] = "TestApp2";
 const char kUserID1[] = "user1";
+
+class FakeGCMConnectionObserver : public GCMConnectionObserver {
+ public:
+  FakeGCMConnectionObserver();
+  virtual ~FakeGCMConnectionObserver();
+
+  // gcm::GCMConnectionObserver implementation:
+  virtual void OnConnected(const net::IPEndPoint& ip_endpoint) OVERRIDE;
+  virtual void OnDisconnected() OVERRIDE;
+
+  bool connected() const { return connected_; }
+
+ private:
+  bool connected_;
+};
+
+FakeGCMConnectionObserver::FakeGCMConnectionObserver() : connected_(false) {
+}
+
+FakeGCMConnectionObserver::~FakeGCMConnectionObserver() {
+}
+
+void FakeGCMConnectionObserver::OnConnected(
+    const net::IPEndPoint& ip_endpoint) {
+  connected_ = true;
+}
+
+void FakeGCMConnectionObserver::OnDisconnected() {
+  connected_ = false;
+}
 
 void PumpCurrentLoop() {
   base::MessageLoop::ScopedNestableTaskAllower
@@ -68,6 +99,9 @@ class GCMDriverTest : public testing::Test {
 
   GCMDriver* driver() { return driver_.get(); }
   FakeGCMAppHandler* gcm_app_handler() { return gcm_app_handler_.get(); }
+  FakeGCMConnectionObserver* gcm_connection_observer() {
+    return gcm_connection_observer_.get();
+  }
   const std::string& registration_id() const { return registration_id_; }
   GCMClient::Result registration_result() const { return registration_result_; }
   const std::string& send_message_id() const { return send_message_id_; }
@@ -114,6 +148,7 @@ class GCMDriverTest : public testing::Test {
   base::FieldTrialList field_trial_list_;
   scoped_ptr<GCMDriver> driver_;
   scoped_ptr<FakeGCMAppHandler> gcm_app_handler_;
+  scoped_ptr<FakeGCMConnectionObserver> gcm_connection_observer_;
 
   base::Closure async_operation_completed_callback_;
 
@@ -147,6 +182,8 @@ void GCMDriverTest::TearDown() {
   if (!driver_)
     return;
 
+  if (gcm_connection_observer_.get())
+    driver_->RemoveConnectionObserver(gcm_connection_observer_.get());
   driver_->Shutdown();
   driver_.reset();
   PumpIOLoop();
@@ -199,6 +236,9 @@ void GCMDriverTest::CreateDriver(
       task_runner_));
 
   gcm_app_handler_.reset(new FakeGCMAppHandler);
+  gcm_connection_observer_.reset(new FakeGCMConnectionObserver);
+
+  driver_->AddConnectionObserver(gcm_connection_observer_.get());
 }
 
 void GCMDriverTest::AddAppHandlers() {
@@ -299,14 +339,14 @@ TEST_F(GCMDriverTest, Create) {
   SignIn(kTestAccountID1);
   EXPECT_FALSE(driver()->IsStarted());
   EXPECT_FALSE(driver()->IsConnected());
-  EXPECT_FALSE(gcm_app_handler()->connected());
+  EXPECT_FALSE(gcm_connection_observer()->connected());
 
   // GCM will be started only after both sign-in and app handler being added.
   AddAppHandlers();
   EXPECT_TRUE(driver()->IsStarted());
   PumpIOLoop();
   EXPECT_TRUE(driver()->IsConnected());
-  EXPECT_TRUE(gcm_app_handler()->connected());
+  EXPECT_TRUE(gcm_connection_observer()->connected());
 }
 
 TEST_F(GCMDriverTest, CreateByFieldTrial) {
@@ -316,14 +356,14 @@ TEST_F(GCMDriverTest, CreateByFieldTrial) {
   CreateDriver(FakeGCMClient::NO_DELAY_START);
   EXPECT_FALSE(driver()->IsStarted());
   EXPECT_FALSE(driver()->IsConnected());
-  EXPECT_FALSE(gcm_app_handler()->connected());
+  EXPECT_FALSE(gcm_connection_observer()->connected());
 
   // GCM will be started after app handler is added.
   AddAppHandlers();
   EXPECT_TRUE(driver()->IsStarted());
   PumpIOLoop();
   EXPECT_TRUE(driver()->IsConnected());
-  EXPECT_TRUE(gcm_app_handler()->connected());
+  EXPECT_TRUE(gcm_connection_observer()->connected());
 }
 
 TEST_F(GCMDriverTest, Shutdown) {
@@ -336,7 +376,7 @@ TEST_F(GCMDriverTest, Shutdown) {
   driver()->Shutdown();
   EXPECT_FALSE(HasAppHandlers());
   EXPECT_FALSE(driver()->IsConnected());
-  EXPECT_FALSE(gcm_app_handler()->connected());
+  EXPECT_FALSE(gcm_connection_observer()->connected());
 }
 
 TEST_F(GCMDriverTest, SignInAndSignOutOnGCMEnabled) {

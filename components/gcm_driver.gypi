@@ -33,6 +33,8 @@
         'gcm_driver/gcm_client_factory.h',
         'gcm_driver/gcm_client_impl.cc',
         'gcm_driver/gcm_client_impl.h',
+        'gcm_driver/gcm_connection_observer.cc',
+        'gcm_driver/gcm_connection_observer.h',
         'gcm_driver/gcm_driver.cc',
         'gcm_driver/gcm_driver.h',
         'gcm_driver/gcm_driver_android.cc',

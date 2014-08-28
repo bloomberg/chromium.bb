@@ -28,6 +28,12 @@ void FakeGCMDriver::OnSignedIn() {
 void FakeGCMDriver::Purge() {
 }
 
+void FakeGCMDriver::AddConnectionObserver(GCMConnectionObserver* observer) {
+}
+
+void FakeGCMDriver::RemoveConnectionObserver(GCMConnectionObserver* observer) {
+}
+
 void FakeGCMDriver::Enable() {
 }
 

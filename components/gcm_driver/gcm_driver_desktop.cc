@@ -22,13 +22,6 @@
 
 namespace gcm {
 
-namespace {
-
-// Empty string is reserved for the default app handler.
-const char kDefaultAppHandler[] = "";
-
-}  // namespace
-
 // Helper class to save tasks to run until we're ready to execute them.
 class GCMDriverDesktop::DelayedTaskController {
  public:
@@ -463,6 +456,15 @@ void GCMDriverDesktop::RemoveAppHandler(const std::string& app_id) {
     Stop();
 }
 
+void GCMDriverDesktop::AddConnectionObserver(GCMConnectionObserver* observer) {
+  connection_observer_list_.AddObserver(observer);
+}
+
+void GCMDriverDesktop::RemoveConnectionObserver(
+    GCMConnectionObserver* observer) {
+  connection_observer_list_.RemoveObserver(observer);
+}
+
 void GCMDriverDesktop::Enable() {
   DCHECK(ui_thread_->RunsTasksOnCurrentThread());
 
@@ -759,13 +761,9 @@ void GCMDriverDesktop::OnConnected(const net::IPEndPoint& ip_endpoint) {
   if (!gcm_started_)
     return;
 
-  const GCMAppHandlerMap& app_handler_map = app_handlers();
-  for (GCMAppHandlerMap::const_iterator iter = app_handler_map.begin();
-       iter != app_handler_map.end(); ++iter) {
-    iter->second->OnConnected(ip_endpoint);
-  }
-
-  GetAppHandler(kDefaultAppHandler)->OnConnected(ip_endpoint);
+  FOR_EACH_OBSERVER(GCMConnectionObserver,
+                    connection_observer_list_,
+                    OnConnected(ip_endpoint));
 }
 
 void GCMDriverDesktop::OnDisconnected() {
@@ -777,13 +775,8 @@ void GCMDriverDesktop::OnDisconnected() {
   if (!gcm_started_)
     return;
 
-  const GCMAppHandlerMap& app_handler_map = app_handlers();
-  for (GCMAppHandlerMap::const_iterator iter = app_handler_map.begin();
-       iter != app_handler_map.end(); ++iter) {
-    iter->second->OnDisconnected();
-  }
-
-  GetAppHandler(kDefaultAppHandler)->OnDisconnected();
+  FOR_EACH_OBSERVER(
+      GCMConnectionObserver, connection_observer_list_, OnDisconnected());
 }
 
 void GCMDriverDesktop::GetGCMStatisticsFinished(

@@ -98,6 +98,13 @@ void GCMDriverAndroid::OnSignedIn() {
 void GCMDriverAndroid::Purge() {
 }
 
+void GCMDriverAndroid::AddConnectionObserver(GCMConnectionObserver* observer) {
+}
+
+void GCMDriverAndroid::RemoveConnectionObserver(
+    GCMConnectionObserver* observer) {
+}
+
 void GCMDriverAndroid::Enable() {
 }
 

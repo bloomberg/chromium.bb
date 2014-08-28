@@ -5,7 +5,6 @@
 #include "components/gcm_driver/default_gcm_app_handler.h"
 
 #include "base/logging.h"
-#include "net/base/ip_endpoint.h"
 
 namespace gcm {
 
@@ -40,16 +39,6 @@ void DefaultGCMAppHandler::OnSendAcknowledged(const std::string& app_id,
                                               const std::string& message_id) {
   DVLOG(1) << "No app handler is found to route send acknoledgement for "
            << app_id;
-}
-
-void DefaultGCMAppHandler::OnConnected(const net::IPEndPoint& ip_endpoint) {
-  // TODO(semenzato): update CrOS NIC state.
-  DVLOG(1) << "GCM connected to " << ip_endpoint.ToString();
-}
-
-void DefaultGCMAppHandler::OnDisconnected() {
-  // TODO(semenzato): update CrOS NIC state.
-  DVLOG(1) << "GCM disconnected";
 }
 
 }  // namespace gcm
