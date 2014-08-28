@@ -29,6 +29,9 @@ ExtensionWebRequestTest.*
 # Timing out all over the place. Disabling for now. http://crbug.com/149882
 NativeMessagingTest.*
 
+# Failing, see http://crbug.com/408443
+SyncFileSystemServiceTest.SimpleLocalSyncFlow
+
 # Timing out all over the place. Disabling for now. http://crbug.com/164589
 StorageInfoProviderTest.*
 
