@@ -29,10 +29,11 @@ def ChromeVersion():
     Chrome version string or trunk + svn rev.
   '''
   info = FetchVersionInfo()
-  if info.url == 'refs/heads/master':
-    return 'trunk.%s' % info.revision
-  else:
-    return ChromeVersionNoTrunk()
+  if info.url == 'git':
+    _, ref, revision = ParseCommitPosition(info)
+    if ref == 'refs/heads/master':
+      return 'trunk.%s' % revision
+  return ChromeVersionNoTrunk()
 
 
 def ChromeVersionNoTrunk():
@@ -60,13 +61,24 @@ def ChromeRevision():
   '''Extract chrome revision from svn.
 
      Now that the Chrome source-of-truth is git, this will return the
-     Cr-Commit-Position instead. fortunately, this value is equal to the SVN
+     Cr-Commit-Position instead. Fortunately, this value is equal to the SVN
      revision if one exists.
 
   Returns:
     The Chrome revision as a string. e.g. "12345"
   '''
-  return FetchVersionInfo().revision
+  version = FetchGitCommitPosition()
+  return ParseCommitPosition(version.revision)[2]
+
+
+def ChromeCommitPosition():
+  '''Return the full git sha and commit position.
+
+  Returns:
+    A value like:
+    0178d4831bd36b5fb9ff477f03dc43b11626a6dc-refs/heads/master@{#292238}
+  '''
+  return FetchGitCommitPosition().revision
 
 
 def NaClRevision():
@@ -81,13 +93,13 @@ def NaClRevision():
 
 def FetchVersionInfo(directory=None,
                      directory_regex_prior_to_src_url='chrome|blink|svn'):
-  """
+  '''
   Returns the last change (in the form of a branch, revision tuple),
   from some appropriate revision control system.
 
   TODO(binji): This is copied from lastchange.py. Remove this function and use
   lastchange.py directly when the dust settles. (see crbug.com/406783)
-  """
+  '''
   svn_url_regex = re.compile(
       r'.*/(' + directory_regex_prior_to_src_url + r')(/.*)')
 
@@ -100,21 +112,47 @@ def FetchVersionInfo(directory=None,
 
 
 def FetchGitCommitPosition(directory=None):
-  """
+  '''
   Return the "commit-position" of the Chromium git repo. This should be
   equivalent to the SVN revision if one eixsts.
 
   This is a copy of the (recently reverted) change in lastchange.py.
   TODO(binji): Move this logic to lastchange.py when the dust settles.
   (see crbug.com/406783)
-  """
+  '''
+  hsh = ''
+  proc = lastchange.RunGitCommand(directory, ['rev-parse', 'HEAD'])
+  if proc:
+    output = proc.communicate()[0].strip()
+    if proc.returncode == 0 and output:
+      hsh = output
+  if not hsh:
+    return None
+  pos = ''
   proc = lastchange.RunGitCommand(directory,
                                   ['show', '-s', '--format=%B', 'HEAD'])
   if proc:
     output = proc.communicate()[0]
     if proc.returncode == 0 and output:
       for line in reversed(output.splitlines()):
-        match = re.search('Cr-Commit-Position: (.*)@{#(\d+)}', line)
-        if match:
-          return lastchange.VersionInfo(match.group(1), match.group(2))
-  return lastchange.VersionInfo(None, None)
+        if line.startswith('Cr-Commit-Position:'):
+          pos = line.rsplit()[-1].strip()
+          break
+  if not pos:
+    return lastchange.VersionInfo('git', hsh)
+  return lastchange.VersionInfo('git', '%s-%s' % (hsh, pos))
+
+
+def ParseCommitPosition(commit_position):
+  '''
+  Parse a Chrome commit position into its components.
+
+  Given a commit position like:
+    0178d4831bd36b5fb9ff477f03dc43b11626a6dc-refs/heads/master@{#292238}
+  Returns:
+    ("0178d4831bd36b5fb9ff477f03dc43b11626a6dc", "refs/heads/master", "292238")
+  '''
+  m = re.match(r'([0-9a-fA-F]+)-([^@]+)@{#(\d+)}', commit_position)
+  if m:
+    return m.groups()
+  return None

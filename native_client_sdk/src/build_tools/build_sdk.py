@@ -182,6 +182,8 @@ def BuildStepCopyTextFiles(pepperdir, pepper_ver, chrome_revision,
   readme_text = open(os.path.join(SDK_SRC_DIR, 'README')).read()
   readme_text = readme_text.replace('${VERSION}', pepper_ver)
   readme_text = readme_text.replace('${CHROME_REVISION}', chrome_revision)
+  readme_text = readme_text.replace('${CHROME_COMMIT_POSITION}',
+                                    build_version.ChromeCommitPosition())
   readme_text = readme_text.replace('${NACL_REVISION}', nacl_revision)
 
   # Year/Month/Day Hour:Minute:Second

@@ -4,6 +4,7 @@ Welcome to the Native Client SDK
 Native Client Tools Bundle
 Version: ${VERSION}
 Chrome Revision: ${CHROME_REVISION}
+Chrome Commit Position: ${CHROME_COMMIT_POSITION}
 Native Client Revision: ${NACL_REVISION}
 Build Date: ${DATE}
 
