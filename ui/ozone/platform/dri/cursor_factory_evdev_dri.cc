@@ -58,6 +58,8 @@ gfx::AcceleratedWidget CursorFactoryEvdevDri::GetCursorWindow() {
   return cursor_window_;
 }
 
+bool CursorFactoryEvdevDri::IsCursorVisible() { return cursor_; }
+
 gfx::PointF CursorFactoryEvdevDri::location() { return cursor_location_; }
 
 gfx::Point CursorFactoryEvdevDri::bitmap_location() {

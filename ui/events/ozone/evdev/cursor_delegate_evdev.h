@@ -24,6 +24,9 @@ class EVENTS_OZONE_EVDEV_EXPORT CursorDelegateEvdev {
 
   // Location in window.
   virtual gfx::PointF location() = 0;
+
+  // Cursor visibility.
+  virtual bool IsCursorVisible() = 0;
 };
 
 }  // namespace ui

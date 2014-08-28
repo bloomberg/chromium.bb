@@ -254,6 +254,14 @@ void GestureInterpreterLibevdevCros::OnGestureButtonsChange(
   if (!cursor_)
     return;  // No cursor!
 
+  // HACK for disabling TTC (actually, all clicks) on hidden cursor.
+  // This is normally plumbed via properties and can be removed soon.
+  // TODO(spang): Remove this.
+  if (buttons->down == GESTURES_BUTTON_LEFT &&
+      buttons->up == GESTURES_BUTTON_LEFT &&
+      !cursor_->IsCursorVisible())
+    return;
+
   // TODO(spang): Use buttons->start_time, buttons->end_time
   if (buttons->down & GESTURES_BUTTON_LEFT)
     DispatchMouseButton(EVDEV_MODIFIER_LEFT_MOUSE_BUTTON, true);

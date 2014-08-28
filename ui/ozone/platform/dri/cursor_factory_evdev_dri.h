@@ -32,6 +32,7 @@ class CursorFactoryEvdevDri : public BitmapCursorFactoryOzone,
   virtual void MoveCursorTo(gfx::AcceleratedWidget widget,
                             const gfx::PointF& location) OVERRIDE;
   virtual void MoveCursor(const gfx::Vector2dF& delta) OVERRIDE;
+  virtual bool IsCursorVisible() OVERRIDE;
   virtual gfx::PointF location() OVERRIDE;
 
  private:
