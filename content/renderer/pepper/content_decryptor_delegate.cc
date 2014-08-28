@@ -625,14 +625,27 @@ bool ContentDecryptorDelegate::DecryptAndDecodeVideo(
 
 void ContentDecryptorDelegate::OnPromiseResolved(uint32 promise_id) {
   scoped_ptr<CdmPromise> promise = TakePromise(promise_id);
+
+  // Special case due to http://crbug.com/408330. CDM is resolving LoadSession()
+  // with this method when the session is not found. Instead it should call
+  // PromiseResolvedWithSession(""), so emulate that here until 408330 is fixed.
+  // TODO(jrummell): Remove this code when the CDM is updated.
+  if (promise &&
+      promise->GetResolveParameterType() == media::CdmPromise::STRING_TYPE) {
+    NewSessionCdmPromise* session_promise =
+        static_cast<NewSessionCdmPromise*>(promise.get());
+    session_promise->resolve(std::string());
+    return;
+  }
+
   if (!promise ||
       promise->GetResolveParameterType() != media::CdmPromise::VOID_TYPE) {
     NOTREACHED();
     return;
   }
 
-  SimpleCdmPromise* simple_promise(
-      static_cast<SimpleCdmPromise*>(promise.get()));
+  SimpleCdmPromise* simple_promise =
+      static_cast<SimpleCdmPromise*>(promise.get());
   simple_promise->resolve();
 }
 
@@ -649,8 +662,8 @@ void ContentDecryptorDelegate::OnPromiseResolvedWithSession(
   StringVar* web_session_id_string = StringVar::FromPPVar(web_session_id);
   DCHECK(web_session_id_string);
 
-  NewSessionCdmPromise* session_promise(
-      static_cast<NewSessionCdmPromise*>(promise.get()));
+  NewSessionCdmPromise* session_promise =
+      static_cast<NewSessionCdmPromise*>(promise.get());
   session_promise->resolve(web_session_id_string->value());
 }
 
