@@ -3509,10 +3509,6 @@ WebNavigationPolicy RenderFrameImpl::DecidePolicyForNavigation(
     }
 
     if (browser_handles_request) {
-      // Reset these counters as the RenderView could be reused for the next
-      // navigation.
-      render_view_->page_id_ = -1;
-      render_view_->last_page_id_sent_to_browser_ = -1;
       OpenURL(info.frame, url, referrer, info.defaultPolicy);
       return blink::WebNavigationPolicyIgnore;  // Suppress the load here.
     }
