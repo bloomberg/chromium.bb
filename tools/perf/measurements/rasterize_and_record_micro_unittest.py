@@ -28,7 +28,7 @@ class RasterizeAndRecordMicroUnitTest(page_test_test_case.PageTestTestCase):
     self._options.start_wait_time = 0.0
     self._options.report_detailed_results = True
 
-  @test.Disabled('win')
+  @test.Disabled('win', 'chromeos')
   def testRasterizeAndRecordMicro(self):
     ps = self.CreatePageSetFromFileInUnittestDataDir('blank.html')
     measurement = rasterize_and_record_micro.RasterizeAndRecordMicro()
