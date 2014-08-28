@@ -87,13 +87,14 @@ class TemplateURLService : public WebDataServiceConsumer,
     bool is_keyword_transition;
   };
 
-  TemplateURLService(PrefService* prefs,
-                     scoped_ptr<SearchTermsData> search_terms_data,
-                     KeywordWebDataService* web_data_service,
-                     scoped_ptr<TemplateURLServiceClient> client,
-                     GoogleURLTracker* google_url_tracker,
-                     rappor::RapporService* rappor_service,
-                     const base::Closure& dsp_change_callback);
+  TemplateURLService(
+      PrefService* prefs,
+      scoped_ptr<SearchTermsData> search_terms_data,
+      const scoped_refptr<KeywordWebDataService>& web_data_service,
+      scoped_ptr<TemplateURLServiceClient> client,
+      GoogleURLTracker* google_url_tracker,
+      rappor::RapporService* rappor_service,
+      const base::Closure& dsp_change_callback);
   // The following is for testing.
   TemplateURLService(const Initializer* initializers, const int count);
   virtual ~TemplateURLService();

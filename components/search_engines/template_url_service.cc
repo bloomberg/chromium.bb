@@ -180,7 +180,7 @@ class TemplateURLService::LessWithPrefix {
 TemplateURLService::TemplateURLService(
     PrefService* prefs,
     scoped_ptr<SearchTermsData> search_terms_data,
-    KeywordWebDataService* web_data_service,
+    const scoped_refptr<KeywordWebDataService>& web_data_service,
     scoped_ptr<TemplateURLServiceClient> client,
     GoogleURLTracker* google_url_tracker,
     rappor::RapporService* rappor_service,
