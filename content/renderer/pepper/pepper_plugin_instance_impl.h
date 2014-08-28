@@ -23,7 +23,6 @@
 #include "content/public/renderer/pepper_plugin_instance.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/renderer/mouse_lock_dispatcher.h"
-#include "gin/handle.h"
 #include "ppapi/c/dev/pp_cursor_type_dev.h"
 #include "ppapi/c/dev/ppp_printing_dev.h"
 #include "ppapi/c/dev/ppp_selection_dev.h"
@@ -132,6 +131,7 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
                                           const GURL& plugin_url);
   RenderFrameImpl* render_frame() const { return render_frame_; }
   PluginModule* module() const { return module_.get(); }
+  MessageChannel& message_channel() { return *message_channel_; }
 
   blink::WebPluginContainer* container() const { return container_; }
 
@@ -142,9 +142,6 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   ppapi::thunk::ResourceCreationAPI& resource_creation() {
     return *resource_creation_.get();
   }
-
-  MessageChannel* message_channel() { return message_channel_; }
-  v8::Local<v8::Object> GetMessageChannelObject();
 
   // Return the v8 context that the plugin is in.
   v8::Local<v8::Context> GetContext();
@@ -192,7 +189,7 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   bool HandleDocumentLoad(const blink::WebURLResponse& response);
   bool HandleInputEvent(const blink::WebInputEvent& event,
                         blink::WebCursorInfo* cursor_info);
-  PP_Var GetInstanceObject(v8::Isolate* isolate);
+  PP_Var GetInstanceObject();
   void ViewChanged(const gfx::Rect& position,
                    const gfx::Rect& clip,
                    const std::vector<gfx::Rect>& cut_outs_rects);
@@ -521,6 +518,10 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   // the given module.
   bool IsValidInstanceOf(PluginModule* module);
 
+  // Returns the plugin NPP identifier that this plugin will use to identify
+  // itself when making NPObject scripting calls to WebBindings.
+  struct _NPP* instanceNPP();
+
   // cc::TextureLayerClient implementation.
   virtual bool PrepareTextureMailbox(
       cc::TextureMailbox* mailbox,
@@ -829,11 +830,7 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
 
   // The MessageChannel used to implement bidirectional postMessage for the
   // instance.
-  v8::Persistent<v8::Object> message_channel_object_;
-
-  // A pointer to the MessageChannel underlying |message_channel_object_|. It is
-  // only valid as long as |message_channel_object_| is alive.
-  MessageChannel* message_channel_;
+  scoped_ptr<MessageChannel> message_channel_;
 
   // Bitmap for crashed plugin. Lazily initialized, non-owning pointer.
   SkBitmap* sad_plugin_;
@@ -882,6 +879,10 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
 
   // The link currently under the cursor.
   base::string16 link_under_cursor_;
+
+  // Dummy NPP value used when calling in to WebBindings, to allow the bindings
+  // to correctly track NPObjects belonging to this plugin instance.
+  scoped_ptr<struct _NPP> npp_;
 
   // We store the isolate at construction so that we can be sure to use the
   // Isolate in which this Instance was created when interacting with v8.

@@ -21,14 +21,14 @@
 
 namespace ppapi {
 
-// A fake version of V8ObjectVar for testing.
-class V8ObjectVar : public ppapi::Var {
+// A fake version of NPObjectVar for testing.
+class NPObjectVar : public ppapi::Var {
  public:
-  V8ObjectVar() {}
-  virtual ~V8ObjectVar() {}
+  NPObjectVar() {}
+  virtual ~NPObjectVar() {}
 
   // Var overrides.
-  virtual V8ObjectVar* AsV8ObjectVar() OVERRIDE { return this; }
+  virtual NPObjectVar* AsNPObjectVar() OVERRIDE { return this; }
   virtual PP_VarType GetType() const OVERRIDE { return PP_VARTYPE_OBJECT; }
 };
 
@@ -111,7 +111,7 @@ PPP_Instance_1_0 ppp_instance_mock = { &DidCreate, &DidDestroy };
 PP_Var CreateObject(PP_Instance /*instance*/,
                     const PPP_Class_Deprecated* /*ppp_class*/,
                     void* /*ppp_class_data*/) {
-  V8ObjectVar* obj_var = new V8ObjectVar;
+  NPObjectVar* obj_var = new NPObjectVar;
   return obj_var->GetPPVar();
 }
 

@@ -33,12 +33,12 @@
 #include "content/renderer/pepper/host_dispatcher_wrapper.h"
 #include "content/renderer/pepper/host_globals.h"
 #include "content/renderer/pepper/message_channel.h"
+#include "content/renderer/pepper/npapi_glue.h"
 #include "content/renderer/pepper/pepper_browser_connection.h"
 #include "content/renderer/pepper/pepper_compositor_host.h"
 #include "content/renderer/pepper/pepper_file_ref_renderer_host.h"
 #include "content/renderer/pepper/pepper_graphics_2d_host.h"
 #include "content/renderer/pepper/pepper_in_process_router.h"
-#include "content/renderer/pepper/pepper_try_catch.h"
 #include "content/renderer/pepper/pepper_url_loader_host.h"
 #include "content/renderer/pepper/plugin_module.h"
 #include "content/renderer/pepper/plugin_object.h"
@@ -115,7 +115,6 @@
 #include "third_party/WebKit/public/web/WebPrintParams.h"
 #include "third_party/WebKit/public/web/WebPrintScalingOption.h"
 #include "third_party/WebKit/public/web/WebScopedUserGesture.h"
-#include "third_party/WebKit/public/web/WebScriptSource.h"
 #include "third_party/WebKit/public/web/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
 #include "third_party/WebKit/public/web/WebView.h"
@@ -560,6 +559,7 @@ PepperPluginInstanceImpl::PepperPluginInstanceImpl(
       pending_user_gesture_(0.0),
       document_loader_(NULL),
       external_document_load_(false),
+      npp_(new NPP_t),
       isolate_(v8::Isolate::GetCurrent()),
       is_deleted_(false),
       last_input_number_(0),
@@ -620,8 +620,8 @@ PepperPluginInstanceImpl::PepperPluginInstanceImpl(
 PepperPluginInstanceImpl::~PepperPluginInstanceImpl() {
   DCHECK(!fullscreen_container_);
 
-  // Notify all the plugin objects of deletion. This will prevent blink from
-  // calling into the plugin any more.
+  // Free all the plugin objects. This will automatically clear the back-
+  // pointer from the NPObject so WebKit can't call into the plugin any more.
   //
   // Swap out the set so we can delete from it (the objects will try to
   // unregister themselves inside the delete call).
@@ -629,9 +629,8 @@ PepperPluginInstanceImpl::~PepperPluginInstanceImpl() {
   live_plugin_objects_.swap(plugin_object_copy);
   for (PluginObjectSet::iterator i = plugin_object_copy.begin();
        i != plugin_object_copy.end();
-       ++i) {
-    (*i)->InstanceDeleted();
-  }
+       ++i)
+    delete *i;
 
   if (TrackedCallback::IsPending(lock_mouse_callback_))
     lock_mouse_callback_->Abort();
@@ -654,9 +653,6 @@ PepperPluginInstanceImpl::~PepperPluginInstanceImpl() {
   // This should be last since some of the above "instance deleted" calls will
   // want to look up in the global map to get info off of our object.
   HostGlobals::Get()->InstanceDeleted(pp_instance_);
-
-  message_channel_object_.Reset();
-  message_channel_ = NULL;
 }
 
 // NOTE: Any of these methods that calls into the plugin needs to take into
@@ -664,10 +660,6 @@ PepperPluginInstanceImpl::~PepperPluginInstanceImpl() {
 // will make the PepperWebPluginImpl drop its reference, usually the last one.
 // If a method needs to access a member of the instance after the call has
 // returned, then it needs to keep its own reference on the stack.
-
-v8::Local<v8::Object> PepperPluginInstanceImpl::GetMessageChannelObject() {
-  return v8::Local<v8::Object>::New(isolate_, message_channel_object_);
-}
 
 v8::Local<v8::Context> PepperPluginInstanceImpl::GetContext() {
   if (!container_)
@@ -695,7 +687,7 @@ void PepperPluginInstanceImpl::Delete() {
   // release our last reference to the "InstanceObject" and will probably
   // destroy it. We want to do this prior to calling DidDestroy in case the
   // destructor of the instance object tries to use the instance.
-  message_channel_->SetPassthroughObject(v8::Handle<v8::Object>());
+  message_channel_->SetPassthroughObject(NULL);
   // If this is a NaCl plugin instance, shut down the NaCl plugin by calling
   // its DidDestroy. Don't call DidDestroy on the untrusted plugin instance,
   // since there is little that it can do at this point.
@@ -857,7 +849,7 @@ bool PepperPluginInstanceImpl::Initialize(
     bool full_frame) {
   if (!render_frame_)
     return false;
-  message_channel_ = MessageChannel::Create(this, &message_channel_object_);
+  message_channel_.reset(new MessageChannel(this));
 
   full_frame_ = full_frame;
 
@@ -1226,11 +1218,9 @@ bool PepperPluginInstanceImpl::HandleBlockingMessage(ScopedPPVar message,
   return was_handled;
 }
 
-PP_Var PepperPluginInstanceImpl::GetInstanceObject(v8::Isolate* isolate) {
+PP_Var PepperPluginInstanceImpl::GetInstanceObject() {
   // Keep a reference on the stack. See NOTE above.
   scoped_refptr<PepperPluginInstanceImpl> ref(this);
-
-  DCHECK_EQ(isolate, isolate_);
 
   // If the plugin supports the private instance interface, try to retrieve its
   // instance object.
@@ -2370,67 +2360,70 @@ PP_Var PepperPluginInstanceImpl::GetWindowObject(PP_Instance instance) {
   if (!container_)
     return PP_MakeUndefined();
 
-  PepperTryCatchVar try_catch(this, NULL);
   WebLocalFrame* frame = container_->element().document().frame();
-  if (!frame) {
-    try_catch.SetException("No frame exists for window object.");
+  if (!frame)
     return PP_MakeUndefined();
-  }
 
-  ScopedPPVar result =
-      try_catch.FromV8(frame->mainWorldScriptContext()->Global());
-  DCHECK(!try_catch.HasException());
-  return result.Release();
+  return NPObjectToPPVar(this, frame->windowObject());
 }
 
 PP_Var PepperPluginInstanceImpl::GetOwnerElementObject(PP_Instance instance) {
   if (!container_)
     return PP_MakeUndefined();
-  PepperTryCatchVar try_catch(this, NULL);
-  ScopedPPVar result = try_catch.FromV8(container_->v8ObjectForElement());
-  DCHECK(!try_catch.HasException());
-  return result.Release();
+  return NPObjectToPPVar(this, container_->scriptableObjectForElement());
 }
 
 PP_Var PepperPluginInstanceImpl::ExecuteScript(PP_Instance instance,
-                                               PP_Var script_var,
+                                               PP_Var script,
                                                PP_Var* exception) {
-  if (!container_)
-    return PP_MakeUndefined();
-
   // Executing the script may remove the plugin from the DOM, so we need to keep
   // a reference to ourselves so that we can still process the result after the
   // WebBindings::evaluate() below.
   scoped_refptr<PepperPluginInstanceImpl> ref(this);
-  PepperTryCatchVar try_catch(this, exception);
-  WebLocalFrame* frame = container_->element().document().frame();
-  if (!frame) {
-    try_catch.SetException("No frame to execute script in.");
+  TryCatch try_catch(exception);
+  if (try_catch.has_exception())
     return PP_MakeUndefined();
-  }
 
-  StringVar* script_string_var = StringVar::FromPPVar(script_var);
-  if (!script_string_var) {
+  // Convert the script into an inconvenient NPString object.
+  StringVar* script_string = StringVar::FromPPVar(script);
+  if (!script_string) {
     try_catch.SetException("Script param to ExecuteScript must be a string.");
     return PP_MakeUndefined();
   }
+  NPString np_script;
+  np_script.UTF8Characters = script_string->value().c_str();
+  np_script.UTF8Length = script_string->value().length();
 
-  std::string script_string = script_string_var->value();
-  blink::WebScriptSource script(
-      blink::WebString::fromUTF8(script_string.c_str()));
-  v8::Handle<v8::Value> result;
-  if (IsProcessingUserGesture()) {
-    blink::WebScopedUserGesture user_gesture(CurrentUserGestureToken());
-    result = frame->executeScriptAndReturnValue(script);
-  } else {
-    result = frame->executeScriptAndReturnValue(script);
+  // Get the current frame to pass to the evaluate function.
+  WebLocalFrame* frame = NULL;
+  if (container_)
+    frame = container_->element().document().frame();
+  if (!frame || !frame->windowObject()) {
+    try_catch.SetException("No context in which to execute script.");
+    return PP_MakeUndefined();
   }
 
-  ScopedPPVar var_result = try_catch.FromV8(result);
-  if (try_catch.HasException())
+  NPVariant result;
+  bool ok = false;
+  if (IsProcessingUserGesture()) {
+    blink::WebScopedUserGesture user_gesture(CurrentUserGestureToken());
+    ok =
+        WebBindings::evaluate(NULL, frame->windowObject(), &np_script, &result);
+  } else {
+    ok =
+        WebBindings::evaluate(NULL, frame->windowObject(), &np_script, &result);
+  }
+  if (!ok) {
+    // TryCatch doesn't catch the exceptions properly. Since this is only for
+    // a trusted API, just set to a general exception message.
+    try_catch.SetException("Exception caught");
+    WebBindings::releaseVariantValue(&result);
     return PP_MakeUndefined();
+  }
 
-  return var_result.Release();
+  PP_Var ret = NPVariantToPPVar(this, &result);
+  WebBindings::releaseVariantValue(&result);
+  return ret;
 }
 
 uint32_t PepperPluginInstanceImpl::GetAudioHardwareOutputSampleRate(
@@ -2987,6 +2980,8 @@ bool PepperPluginInstanceImpl::IsValidInstanceOf(PluginModule* module) {
   DCHECK(module);
   return module == module_.get() || module == original_module_.get();
 }
+
+NPP PepperPluginInstanceImpl::instanceNPP() { return npp_.get(); }
 
 PepperPluginInstance* PepperPluginInstance::Get(PP_Instance instance_id) {
   return HostGlobals::Get()->GetInstance(instance_id);

@@ -5,6 +5,7 @@
 #include "content/renderer/pepper/pepper_try_catch.h"
 
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
+#include "content/renderer/pepper/v8_var_converter.h"
 #include "gin/converter.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/var_tracker.h"
@@ -20,7 +21,7 @@ const char kInvalidException[] = "Error: An invalid exception was thrown.";
 }  // namespace
 
 PepperTryCatch::PepperTryCatch(PepperPluginInstanceImpl* instance,
-                               V8VarConverter::AllowObjectVars convert_objects)
+                               bool convert_objects)
     : instance_(instance),
       convert_objects_(convert_objects) {}
 
@@ -56,10 +57,9 @@ ppapi::ScopedPPVar PepperTryCatch::FromV8(v8::Handle<v8::Value> v8_value) {
   return result;
 }
 
-PepperTryCatchV8::PepperTryCatchV8(
-    PepperPluginInstanceImpl* instance,
-    V8VarConverter::AllowObjectVars convert_objects,
-    v8::Isolate* isolate)
+PepperTryCatchV8::PepperTryCatchV8(PepperPluginInstanceImpl* instance,
+                                   bool convert_objects,
+                                   v8::Isolate* isolate)
     : PepperTryCatch(instance, convert_objects),
       exception_(PP_MakeUndefined()) {
   // Typically when using PepperTryCatchV8 we are passed an isolate. We verify
@@ -107,8 +107,9 @@ void PepperTryCatchV8::SetException(const char* message) {
 }
 
 PepperTryCatchVar::PepperTryCatchVar(PepperPluginInstanceImpl* instance,
+                                     bool convert_objects,
                                      PP_Var* exception)
-    : PepperTryCatch(instance, V8VarConverter::kAllowObjectVars),
+    : PepperTryCatch(instance, convert_objects),
       handle_scope_(instance_->GetIsolate()),
       exception_(exception),
       exception_is_set_(false) {
