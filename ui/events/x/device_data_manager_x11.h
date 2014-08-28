@@ -23,9 +23,9 @@
 #include "base/event_types.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/events/device_data_manager.h"
-#include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/events_base_export.h"
+#include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/x/x11_atom_cache.h"
 
