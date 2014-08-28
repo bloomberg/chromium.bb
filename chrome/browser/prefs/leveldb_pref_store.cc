@@ -339,7 +339,7 @@ void LevelDBPrefStore::ReadPrefsAsync(ReadErrorDelegate* error_delegate) {
     OnStorageRead(reading_results.Pass());
     return;
   }
-  PostTaskAndReplyWithResult(sequenced_task_runner_,
+  PostTaskAndReplyWithResult(sequenced_task_runner_.get(),
                              FROM_HERE,
                              base::Bind(&LevelDBPrefStore::DoReading, path_),
                              base::Bind(&LevelDBPrefStore::OnStorageRead,

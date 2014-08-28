@@ -91,13 +91,13 @@ class ProfilePrefStoreManagerTest : public testing::Test {
       : configuration_(kConfiguration,
                        kConfiguration + arraysize(kConfiguration)),
         profile_pref_registry_(new user_prefs::PrefRegistrySyncable),
-        registry_verifier_(profile_pref_registry_),
+        registry_verifier_(profile_pref_registry_.get()),
         seed_("seed"),
         reset_recorded_(false) {}
 
   virtual void SetUp() OVERRIDE {
     ProfilePrefStoreManager::RegisterPrefs(local_state_.registry());
-    ProfilePrefStoreManager::RegisterProfilePrefs(profile_pref_registry_);
+    ProfilePrefStoreManager::RegisterProfilePrefs(profile_pref_registry_.get());
     for (const PrefHashFilter::TrackedPreferenceMetadata* it = kConfiguration;
          it != kConfiguration + arraysize(kConfiguration);
          ++it) {
@@ -152,7 +152,7 @@ class ProfilePrefStoreManagerTest : public testing::Test {
     pref_service_factory.set_user_prefs(pref_store_);
 
     scoped_ptr<PrefService> pref_service(
-        pref_service_factory.Create(profile_pref_registry_));
+        pref_service_factory.Create(profile_pref_registry_.get()));
 
     EXPECT_EQ(
         reset_expected,
@@ -166,7 +166,7 @@ class ProfilePrefStoreManagerTest : public testing::Test {
     pref_service_factory.set_user_prefs(pref_store_);
 
     scoped_ptr<PrefService> pref_service(
-        pref_service_factory.Create(profile_pref_registry_));
+        pref_service_factory.Create(profile_pref_registry_.get()));
 
     ProfilePrefStoreManager::ClearResetTime(pref_service.get());
   }
@@ -180,13 +180,13 @@ class ProfilePrefStoreManagerTest : public testing::Test {
             base::Bind(&ProfilePrefStoreManagerTest::RecordReset,
                        base::Unretained(this)),
             &mock_validation_delegate_);
-    InitializePrefStore(pref_store);
+    InitializePrefStore(pref_store.get());
     pref_store = NULL;
     base::RunLoop().RunUntilIdle();
   }
 
   void DestroyPrefStore() {
-    if (pref_store_) {
+    if (pref_store_.get()) {
       ClearResetRecorded();
       // Force everything to be written to disk, triggering the PrefHashFilter
       // while our RegistryVerifier is watching.
@@ -205,7 +205,7 @@ class ProfilePrefStoreManagerTest : public testing::Test {
     scoped_refptr<PersistentPrefStore> pref_store =
         manager_->CreateDeprecatedCombinedProfilePrefStore(
             main_message_loop_.message_loop_proxy());
-    InitializePrefStore(pref_store);
+    InitializePrefStore(pref_store.get());
     pref_store = NULL;
     base::RunLoop().RunUntilIdle();
   }
