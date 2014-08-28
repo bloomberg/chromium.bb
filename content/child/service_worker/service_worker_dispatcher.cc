@@ -340,7 +340,7 @@ void ServiceWorkerDispatcher::SetInstallingServiceWorker(
       registrations_.find(registration_handle_id);
   if (found != registrations_.end()) {
     // Populate the .installing field with the new worker object.
-    found->second->setInstalling(GetServiceWorker(info, false));
+    found->second->SetInstalling(GetServiceWorker(info, false));
     if (info.handle_id != kInvalidServiceWorkerHandleId)
       found->second->OnUpdateFound();
   }
@@ -370,7 +370,7 @@ void ServiceWorkerDispatcher::SetWaitingServiceWorker(
       registrations_.find(registration_handle_id);
   if (found != registrations_.end()) {
     // Populate the .waiting field with the new worker object.
-    found->second->setWaiting(GetServiceWorker(info, false));
+    found->second->SetWaiting(GetServiceWorker(info, false));
   }
 }
 
@@ -398,7 +398,7 @@ void ServiceWorkerDispatcher::SetActiveServiceWorker(
       registrations_.find(registration_handle_id);
   if (found != registrations_.end()) {
     // Populate the .active field with the new worker object.
-    found->second->setActive(GetServiceWorker(info, false));
+    found->second->SetActive(GetServiceWorker(info, false));
   }
 }
 

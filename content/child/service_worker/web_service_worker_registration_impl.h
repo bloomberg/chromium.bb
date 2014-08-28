@@ -26,14 +26,15 @@ class WebServiceWorkerRegistrationImpl
       scoped_ptr<ServiceWorkerRegistrationHandleReference> handle_ref);
   virtual ~WebServiceWorkerRegistrationImpl();
 
+  void SetInstalling(blink::WebServiceWorker* service_worker);
+  void SetWaiting(blink::WebServiceWorker* service_worker);
+  void SetActive(blink::WebServiceWorker* service_worker);
+
   void OnUpdateFound();
 
+  // blink::WebServiceWorkerRegistration overrides.
   virtual void setProxy(blink::WebServiceWorkerRegistrationProxy* proxy);
   virtual blink::WebServiceWorkerRegistrationProxy* proxy();
-  virtual void setInstalling(blink::WebServiceWorker* service_worker);
-  virtual void setWaiting(blink::WebServiceWorker* service_worker);
-  virtual void setActive(blink::WebServiceWorker* service_worker);
-
   virtual blink::WebURL scope() const;
 
  private:

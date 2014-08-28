@@ -31,6 +31,24 @@ WebServiceWorkerRegistrationImpl::~WebServiceWorkerRegistrationImpl() {
     dispatcher->RemoveServiceWorkerRegistration(handle_ref_->handle_id());
 }
 
+void WebServiceWorkerRegistrationImpl::SetInstalling(
+    blink::WebServiceWorker* service_worker) {
+  DCHECK(proxy_);
+  proxy_->setInstalling(service_worker);
+}
+
+void WebServiceWorkerRegistrationImpl::SetWaiting(
+    blink::WebServiceWorker* service_worker) {
+  DCHECK(proxy_);
+  proxy_->setWaiting(service_worker);
+}
+
+void WebServiceWorkerRegistrationImpl::SetActive(
+    blink::WebServiceWorker* service_worker) {
+  DCHECK(proxy_);
+  proxy_->setActive(service_worker);
+}
+
 void WebServiceWorkerRegistrationImpl::OnUpdateFound() {
   DCHECK(proxy_);
   proxy_->dispatchUpdateFoundEvent();
@@ -44,24 +62,6 @@ void WebServiceWorkerRegistrationImpl::setProxy(
 blink::WebServiceWorkerRegistrationProxy*
 WebServiceWorkerRegistrationImpl::proxy() {
   return proxy_;
-}
-
-void WebServiceWorkerRegistrationImpl::setInstalling(
-    blink::WebServiceWorker* service_worker) {
-  DCHECK(proxy_);
-  proxy_->setInstalling(service_worker);
-}
-
-void WebServiceWorkerRegistrationImpl::setWaiting(
-    blink::WebServiceWorker* service_worker) {
-  DCHECK(proxy_);
-  proxy_->setWaiting(service_worker);
-}
-
-void WebServiceWorkerRegistrationImpl::setActive(
-    blink::WebServiceWorker* service_worker) {
-  DCHECK(proxy_);
-  proxy_->setActive(service_worker);
 }
 
 blink::WebURL WebServiceWorkerRegistrationImpl::scope() const {
