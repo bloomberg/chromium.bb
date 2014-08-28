@@ -1,3 +1,5 @@
+
+Running: testWikiParser
 "{{A|B={{C|D=blablabla}}}}" is parsed
 {
     A : {
@@ -42,37 +44,652 @@
 "{{AbC|xyz 
  	 \r}}" is parsed
 {
-    AbC : "xyz"
+    AbC : "xyz 
+ 	 "
 }
+
+Running: testJS
 {
-    pageTitle : {
-    }
+    examples : [
+    ]
+    parameters : [
+    ]
     remarks : {
-        Remarks : "The optional number1, number2, ..., numberN arguments are numeric expressions to be evaluated.
-If no arguments are provided, the return value is equal to [[javascript/Number/constants|Number.NEGATIVE_INFINITY]]. If any argument is '''NaN''' , the return value is also '''NaN'''."
-    }
-    summary : "Returns the larger of a set of supplied numeric expressions."
-}
-{
-    cssProperties : {
-        Animatable : "Yes"
-        Applies to : "All elements"
-        CSS object model property : "color"
-        CSS percentages : "NA"
-        Computed value : "For a non-translucent color, an hexadecimal equivalent is used. Otherwise it is the RGBa equivalent"
-        Inherited : "Yes"
-        Initial value : "black, except in a few cases (see notes)"
-        Media : "visual"
-        Values : {
-            CSS Property Value : {
-                Data Type : "color"
-                Description : "[[css/color|CSS color value]]"
+        _children : [
+            {
+                _children : [
+                    {
+                        _isHighlighted : false
+                        _text : "The optional number1, number2, ..., numberN arguments are numeric expressions to be evaluated."
+                        _type : "PlainText"
+                    }
+                ]
+                _hasBullet : false
+                _type : "Block"
             }
+            {
+                _children : [
+                    {
+                        _isHighlighted : false
+                        _text : "If no arguments are provided, the return value is equal to "
+                        _type : "PlainText"
+                    }
+                    {
+                        _children : [
+                            {
+                                _children : [
+                                    {
+                                        _isHighlighted : false
+                                        _text : "Number.NEGATIVE_INFINITY"
+                                        _type : "PlainText"
+                                    }
+                                ]
+                                _type : "Inline"
+                            }
+                        ]
+                        _type : "Link"
+                        _url : "javascript/Number/constants"
+                    }
+                    {
+                        _isHighlighted : false
+                        _text : ". If any argument is "
+                        _type : "PlainText"
+                    }
+                    {
+                        _isHighlighted : true
+                        _text : "NaN"
+                        _type : "PlainText"
+                    }
+                    {
+                        _isHighlighted : false
+                        _text : " , the return value is also "
+                        _type : "PlainText"
+                    }
+                    {
+                        _isHighlighted : true
+                        _text : "NaN"
+                        _type : "PlainText"
+                    }
+                    {
+                        _isHighlighted : false
+                        _text : "."
+                        _type : "PlainText"
+                    }
+                ]
+                _hasBullet : false
+                _type : "Block"
+            }
+        ]
+        _hasBullet : false
+        _type : "Block"
+    }
+}
+
+Running: testSmall
+{
+    examples : [
+    ]
+    parameters : [
+    ]
+    summary : {
+        _children : [
+            {
+                _children : [
+                    {
+                        _isHighlighted : false
+                        _text : "blabla "
+                        _type : "PlainText"
+                    }
+                    {
+                        _isHighlighted : true
+                        _text : "oops"
+                        _type : "PlainText"
+                    }
+                ]
+                _hasBullet : false
+                _type : "Block"
+            }
+        ]
+        _hasBullet : false
+        _type : "Block"
+    }
+}
+
+Running: testHighlightAndLink
+{
+    examples : [
+    ]
+    parameters : [
+    ]
+    summary : {
+        _children : [
+            {
+                _children : [
+                    {
+                        _isHighlighted : false
+                        _text : "The "
+                        _type : "PlainText"
+                    }
+                    {
+                        _isHighlighted : true
+                        _text : "flex"
+                        _type : "PlainText"
+                    }
+                    {
+                        _isHighlighted : false
+                        _text : " CSS property specifies the ability of a flex item to alter its dimensions to fill the available space. "
+                        _type : "PlainText"
+                    }
+                    {
+                        _isHighlighted : true
+                        _text : "flex"
+                        _type : "PlainText"
+                    }
+                    {
+                        _isHighlighted : false
+                        _text : " is a shorthand property comprised of the "
+                        _type : "PlainText"
+                    }
+                    {
+                        _children : [
+                            {
+                                _children : [
+                                    {
+                                        _isHighlighted : false
+                                        _text : "flex-grow"
+                                        _type : "PlainText"
+                                    }
+                                ]
+                                _type : "Inline"
+                            }
+                        ]
+                        _type : "Link"
+                        _url : "css/properties/flex-grow"
+                    }
+                    {
+                        _isHighlighted : false
+                        _text : ", "
+                        _type : "PlainText"
+                    }
+                    {
+                        _children : [
+                            {
+                                _children : [
+                                    {
+                                        _isHighlighted : false
+                                        _text : "flex-shrink"
+                                        _type : "PlainText"
+                                    }
+                                ]
+                                _type : "Inline"
+                            }
+                        ]
+                        _type : "Link"
+                        _url : "css/properties/flex-shrink"
+                    }
+                    {
+                        _isHighlighted : false
+                        _text : ", and "
+                        _type : "PlainText"
+                    }
+                    {
+                        _children : [
+                            {
+                                _children : [
+                                    {
+                                        _isHighlighted : false
+                                        _text : "flex-basis"
+                                        _type : "PlainText"
+                                    }
+                                ]
+                                _type : "Inline"
+                            }
+                        ]
+                        _type : "Link"
+                        _url : "css/properties/flex-basis"
+                    }
+                    {
+                        _isHighlighted : false
+                        _text : " properties. A flex item can be stretched to use available space proportional to its flex grow factor, or reduced proportional to its flex shrink factor to prevent overflow."
+                        _type : "PlainText"
+                    }
+                ]
+                _hasBullet : false
+                _type : "Block"
+            }
+        ]
+        _hasBullet : false
+        _type : "Block"
+    }
+}
+
+Running: testNamedLink
+{
+    examples : [
+    ]
+    parameters : [
+    ]
+    summary : {
+        _children : [
+            {
+                _children : [
+                    {
+                        _children : [
+                            {
+                                _children : [
+                                    {
+                                        _isHighlighted : false
+                                        _text : "naaaame"
+                                        _type : "PlainText"
+                                    }
+                                ]
+                                _type : "Inline"
+                            }
+                        ]
+                        _type : "Link"
+                        _url : "url"
+                    }
+                ]
+                _hasBullet : false
+                _type : "Block"
+            }
+        ]
+        _hasBullet : false
+        _type : "Block"
+    }
+}
+
+Running: testBullet
+{
+    examples : [
+    ]
+    parameters : [
+    ]
+    summary : {
+        _children : [
+            {
+                _children : [
+                    {
+                        _isHighlighted : false
+                        _text : "blabla"
+                        _type : "PlainText"
+                    }
+                ]
+                _hasBullet : true
+                _type : "Block"
+            }
+            {
+                _children : [
+                    {
+                        _isHighlighted : false
+                        _text : "some_text"
+                        _type : "PlainText"
+                    }
+                ]
+                _hasBullet : true
+                _type : "Block"
+            }
+            {
+                _children : [
+                    {
+                        _isHighlighted : false
+                        _text : "bullet"
+                        _type : "PlainText"
+                    }
+                ]
+                _hasBullet : true
+                _type : "Block"
+            }
+        ]
+        _hasBullet : false
+        _type : "Block"
+    }
+}
+
+Running: testRemarks
+{
+    examples : [
+    ]
+    parameters : [
+    ]
+    remarks : {
+        _children : [
+            {
+                _children : [
+                    {
+                        _isHighlighted : false
+                        _text : "In JavaScript arrays are sparse, and the elements in an array do not have to be contiguous. The "
+                        _type : "PlainText"
+                    }
+                    {
+                        _isHighlighted : true
+                        _text : "length"
+                        _type : "PlainText"
+                    }
+                    {
+                        _isHighlighted : false
+                        _text : " property is not necessarily the number of elements in the array. For example, in the following array definition, "
+                        _type : "PlainText"
+                    }
+                    {
+                        _children : [
+                            {
+                                _isHighlighted : false
+                                _text : "my_array.length"
+                                _type : "PlainText"
+                            }
+                        ]
+                        _type : "Code"
+                    }
+                    {
+                        _isHighlighted : false
+                        _text : " contains 7, not 2:"
+                        _type : "PlainText"
+                    }
+                ]
+                _hasBullet : false
+                _type : "Block"
+            }
+            {
+                _code : "var my_array = new Array( );
+my_array[0] = "Test";
+my_array[6] = "Another Test";
+console.log(my_array.length);
+
+// Output
+// 7"
+                _type : "CodeBlock"
+            }
+            {
+                _children : [
+                    {
+                        _isHighlighted : false
+                        _text : "Even if you set length to a number greater than its previous value, the number of actual elements does not increase."
+                        _type : "PlainText"
+                    }
+                ]
+                _hasBullet : false
+                _type : "Block"
+            }
+            {
+                _code : "console.log(my_array.length); // 7
+my_array.length = 10;
+console.log(Object.keys(my_array));
+
+// Output
+// ["0", "6"]"
+                _type : "CodeBlock"
+            }
+            {
+                _children : [
+                    {
+                        _isHighlighted : false
+                        _text : "On the other hand, when decreasing length, the array is truncated."
+                        _type : "PlainText"
+                    }
+                ]
+                _hasBullet : false
+                _type : "Block"
+            }
+            {
+                _code : "console.log(my_array.length); // 10
+my_array.length = 1;
+console.log(Object.keys(my_array));
+
+// Output
+// ["0"]"
+                _type : "CodeBlock"
+            }
+        ]
+        _hasBullet : false
+        _type : "Block"
+    }
+}
+
+Running: testComplexLinkName
+{
+    examples : [
+    ]
+    parameters : [
+    ]
+    summary : {
+        _children : [
+            {
+                _children : [
+                    {
+                        _children : [
+                            {
+                                _children : [
+                                    {
+                                        _isHighlighted : false
+                                        _text : "text "
+                                        _type : "PlainText"
+                                    }
+                                    {
+                                        _children : [
+                                            {
+                                                _isHighlighted : false
+                                                _text : "blabla"
+                                                _type : "PlainText"
+                                            }
+                                        ]
+                                        _type : "Code"
+                                    }
+                                ]
+                                _type : "Inline"
+                            }
+                        ]
+                        _type : "Link"
+                        _url : "url"
+                    }
+                ]
+                _hasBullet : false
+                _type : "Block"
+            }
+        ]
+        _hasBullet : false
+        _type : "Block"
+    }
+}
+
+Running: testCodeInsideBullet
+{
+    examples : [
+    ]
+    parameters : [
+    ]
+    summary : {
+        _children : [
+            {
+                _children : [
+                    {
+                        _isHighlighted : false
+                        _text : "some text "
+                        _type : "PlainText"
+                    }
+                    {
+                        _children : [
+                            {
+                                _isHighlighted : false
+                                _text : "bullet & code "
+                                _type : "PlainText"
+                            }
+                        ]
+                        _type : "Code"
+                    }
+                ]
+                _hasBullet : true
+                _type : "Block"
+            }
+        ]
+        _hasBullet : false
+        _type : "Block"
+    }
+}
+
+Running: testInvalidInput
+error: Can't parse remarks
+[object Object]
+
+Running: testLinkInsideCode
+{
+    examples : [
+    ]
+    parameters : [
+    ]
+    summary : {
+        _children : [
+            {
+                _children : [
+                    {
+                        _children : [
+                            {
+                                _children : [
+                                    {
+                                        _children : [
+                                            {
+                                                _isHighlighted : false
+                                                _text : "GOOGLE!"
+                                                _type : "PlainText"
+                                            }
+                                        ]
+                                        _type : "Inline"
+                                    }
+                                ]
+                                _type : "Link"
+                                _url : "google.com"
+                            }
+                            {
+                                _isHighlighted : false
+                                _text : "  "
+                                _type : "PlainText"
+                            }
+                        ]
+                        _type : "Code"
+                    }
+                ]
+                _hasBullet : false
+                _type : "Block"
+            }
+        ]
+        _hasBullet : false
+        _type : "Block"
+    }
+}
+
+Running: testExamples
+{
+    examples : [
+        {
+            code : "<!doctype html>
+<html>
+<head>
+<script type="application/javascript">
+    function insertElement()
+    {
+        var nod=document.createElement("li");
+        document.getElementById("oUL1").insertBefore(nod, document.getElementById("oLIYellow"));
+        nod.textContet="Orange";
+    }
+</script>
+</head>
+<body>
+    <p onclick="insertElement()">Click <strong>HERE</strong> to add an item to the following list.</p>
+    <ul id="oUL1">
+        <li id="oLIRed">Red</li>
+        <li id="oLIYellow">Yellow</li>
+        <li id="oLIBlue">Blue</li>
+    </ul>
+</body>
+</html>"
+            description : {
+                _children : [
+                    {
+                        _children : [
+                            {
+                                _isHighlighted : false
+                                _text : "The following example shows how to use the "
+                                _type : "PlainText"
+                            }
+                            {
+                                _isHighlighted : true
+                                _text : "insertBefore"
+                                _type : "PlainText"
+                            }
+                            {
+                                _isHighlighted : false
+                                _text : " method to insert a new item into an existing list."
+                                _type : "PlainText"
+                            }
+                        ]
+                        _hasBullet : false
+                        _type : "Block"
+                    }
+                ]
+                _hasBullet : false
+                _type : "Block"
+            }
+            language : "HTML"
+            liveUrl : "http://samples.msdn.microsoft.com/workshop/samples/author/dhtml/refs/insertBefore.htm"
         }
+    ]
+    parameters : [
+    ]
+}
+
+Running: testJsMethod
+{
+    examples : [
+    ]
+    methods : {
+        dataType : "DOM Node"
+        returnValue : "insertedNode"
     }
-    pageTitle : {
-    }
-    standardizationStatus : "W3C Recommendation"
-    summary : "The color property sets the color of an element's foreground content (usually text), accepting any standard CSS color from keywords and hex values to RGB(a) and HSL(a)."
+    parameters : [
+        {
+            dataType : "DOM Node"
+            description : {
+                _children : [
+                    {
+                        _children : [
+                            {
+                                _isHighlighted : false
+                                _text : "The new node to be inserted."
+                                _type : "PlainText"
+                            }
+                        ]
+                        _hasBullet : false
+                        _type : "Block"
+                    }
+                ]
+                _hasBullet : false
+                _type : "Block"
+            }
+            name : "newNode"
+            optional : "No"
+        }
+        {
+            dataType : "DOM Node"
+            description : {
+                _children : [
+                    {
+                        _children : [
+                            {
+                                _isHighlighted : false
+                                _text : "Supplies the placement of the new node. If this parameter is specified, the new element will be inserted immediately before this existing child node. If not, it will be added after the last child node."
+                                _type : "PlainText"
+                            }
+                        ]
+                        _hasBullet : false
+                        _type : "Block"
+                    }
+                ]
+                _hasBullet : false
+                _type : "Block"
+            }
+            name : "refChild"
+            optional : "Yes"
+        }
+    ]
 }
 
