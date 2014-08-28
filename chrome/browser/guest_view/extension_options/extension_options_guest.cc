@@ -9,6 +9,7 @@
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/guest_view/extension_options/extension_options_constants.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/renderer_context_menu/render_view_context_menu.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -16,6 +17,7 @@
 #include "chrome/common/extensions/api/extension_options_internal.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "components/crx_file/id_util.h"
+#include "components/renderer_context_menu/context_menu_delegate.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
@@ -196,6 +198,18 @@ void ExtensionOptionsGuest::CloseContents(content::WebContents* source) {
   DispatchEventToEmbedder(new extensions::GuestViewBase::Event(
       extension_options_internal::OnClose::kEventName,
       make_scoped_ptr(new base::DictionaryValue())));
+}
+
+bool ExtensionOptionsGuest::HandleContextMenu(
+    const content::ContextMenuParams& params) {
+  ContextMenuDelegate* menu_delegate =
+      ContextMenuDelegate::FromWebContents(guest_web_contents());
+  DCHECK(menu_delegate);
+
+  scoped_ptr<RenderViewContextMenu> menu =
+      menu_delegate->BuildMenu(guest_web_contents(), params);
+  menu_delegate->ShowMenu(menu.Pass());
+  return true;
 }
 
 bool ExtensionOptionsGuest::ShouldCreateWebContents(

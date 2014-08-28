@@ -43,6 +43,8 @@ class ExtensionOptionsGuest
 
   // content::WebContentsDelegate implementation.
   virtual void CloseContents(content::WebContents* source) OVERRIDE;
+  virtual bool HandleContextMenu(
+      const content::ContextMenuParams& params) OVERRIDE;
   virtual bool ShouldCreateWebContents(
       content::WebContents* web_contents,
       int route_id,
