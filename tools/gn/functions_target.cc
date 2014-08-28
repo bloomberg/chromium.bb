@@ -231,72 +231,6 @@ Value RunActionForEach(Scope* scope,
                               block, err);
 }
 
-// component -------------------------------------------------------------------
-
-const char kComponent[] = "component";
-const char kComponent_HelpShort[] =
-    "component: Declare a component target.";
-const char kComponent_Help[] =
-    "component: Declare a component target.\n"
-    "\n"
-    "  A component is a shared library, static library, or source set\n"
-    "  depending on the component mode. This allows a project to separate\n"
-    "  out a build into shared libraries for faster development (link time is\n"
-    "  reduced) but to switch to a static build for releases (for better\n"
-    "  performance).\n"
-    "\n"
-    "  To use this function you must set the value of the \"component_mode\"\n"
-    "  variable to one of the following strings:\n"
-    "    - \"shared_library\"\n"
-    "    - \"static_library\"\n"
-    "    - \"source_set\"\n"
-    "  It is an error to call \"component\" without defining the mode\n"
-    "  (typically this is done in the master build configuration file).\n";
-
-Value RunComponent(Scope* scope,
-                   const FunctionCallNode* function,
-                   const std::vector<Value>& args,
-                   BlockNode* block,
-                   Err* err) {
-  // A component is either a shared or static library, depending on the value
-  // of |component_mode|.
-  const Value* component_mode_value =
-      scope->GetValue(variables::kComponentMode);
-
-  static const char helptext[] =
-      "You're declaring a component here but have not defined "
-      "\"component_mode\" to\neither \"shared_library\" or \"static_library\".";
-  if (!component_mode_value) {
-    *err = Err(function->function(), "No component mode set.", helptext);
-    return Value();
-  }
-  if (component_mode_value->type() != Value::STRING ||
-      (component_mode_value->string_value() != functions::kSharedLibrary &&
-       component_mode_value->string_value() != functions::kStaticLibrary &&
-       component_mode_value->string_value() != functions::kSourceSet)) {
-    *err = Err(function->function(), "Invalid component mode set.", helptext);
-    return Value();
-  }
-  const std::string& component_mode = component_mode_value->string_value();
-
-  if (!EnsureNotProcessingImport(function, scope, err))
-    return Value();
-  Scope block_scope(scope);
-  if (!FillTargetBlockScope(scope, function, component_mode.c_str(), block,
-                            args, &block_scope, err))
-    return Value();
-
-  block->ExecuteBlockInScope(&block_scope, err);
-  if (err->has_error())
-    return Value();
-
-  TargetGenerator::GenerateTarget(&block_scope, function, args,
-                                  component_mode, err);
-
-  block_scope.CheckForUnusedVars(err);
-  return Value();
-}
-
 // copy ------------------------------------------------------------------------
 
 const char kCopy[] = "copy";
@@ -519,30 +453,6 @@ Value RunStaticLibrary(Scope* scope,
                        BlockNode* block,
                        Err* err) {
   return ExecuteGenericTarget(functions::kStaticLibrary, scope, function, args,
-                              block, err);
-}
-
-// test ------------------------------------------------------------------------
-
-const char kTest[] = "test";
-const char kTest_HelpShort[] =
-    "test: Declares a test target.";
-const char kTest_Help[] =
-    "test: Declares a test target.\n"
-    "\n"
-    "  This is like an executable target, but is named differently to make\n"
-    "  the purpose of the target more obvious. It's possible in the future\n"
-    "  we can do some enhancements like \"list all of the tests in a given\n"
-    "  directory\".\n"
-    "\n"
-    "  See \"gn help executable\" for usage.\n";
-
-Value RunTest(Scope* scope,
-              const FunctionCallNode* function,
-              const std::vector<Value>& args,
-              BlockNode* block,
-              Err* err) {
-  return ExecuteGenericTarget(functions::kExecutable, scope, function, args,
                               block, err);
 }
 

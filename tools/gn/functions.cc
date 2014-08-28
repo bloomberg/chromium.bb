@@ -643,14 +643,12 @@ struct FunctionInfoInitializer {
 
     INSERT_FUNCTION(Action, true)
     INSERT_FUNCTION(ActionForEach, true)
-    INSERT_FUNCTION(Component, true)
     INSERT_FUNCTION(Copy, true)
     INSERT_FUNCTION(Executable, true)
     INSERT_FUNCTION(Group, true)
     INSERT_FUNCTION(SharedLibrary, true)
     INSERT_FUNCTION(SourceSet, true)
     INSERT_FUNCTION(StaticLibrary, true)
-    INSERT_FUNCTION(Test, true)
 
     INSERT_FUNCTION(Assert, false)
     INSERT_FUNCTION(Config, false)

@@ -80,15 +80,6 @@ Value RunAssert(Scope* scope,
                 const std::vector<Value>& args,
                 Err* err);
 
-extern const char kComponent[];
-extern const char kComponent_HelpShort[];
-extern const char kComponent_Help[];
-Value RunComponent(Scope* scope,
-                   const FunctionCallNode* function,
-                   const std::vector<Value>& args,
-                   BlockNode* block,
-                   Err* err);
-
 extern const char kConfig[];
 extern const char kConfig_HelpShort[];
 extern const char kConfig_Help[];
@@ -288,15 +279,6 @@ Value RunTemplate(Scope* scope,
                   const std::vector<Value>& args,
                   BlockNode* block,
                   Err* err);
-
-extern const char kTest[];
-extern const char kTest_HelpShort[];
-extern const char kTest_Help[];
-Value RunTest(Scope* scope,
-              const FunctionCallNode* function,
-              const std::vector<Value>& args,
-              BlockNode* block,
-              Err* err);
 
 extern const char kTool[];
 extern const char kTool_HelpShort[];

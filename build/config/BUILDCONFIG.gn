@@ -283,12 +283,6 @@ set_sources_assignment_filter(sources_assignment_filter)
 # BUILD OPTIONS
 # =============================================================================
 
-if (is_component_build) {
-  component_mode = "shared_library"
-} else {
-  component_mode = "source_set"
-}
-
 # These Sanitizers all imply using the Clang compiler. On Windows they either
 # don't work or work differently.
 if (!is_clang && (is_asan || is_lsan || is_tsan || is_msan)) {
@@ -390,38 +384,57 @@ if (is_win) {
   ]
 }
 
+# Executable defaults (applies to executables and tests).
+_executable_configs = _native_compiler_configs + [
+  "//build/config:default_libs",
+]
+if (is_win) {
+  _executable_configs += _windows_linker_configs
+} else if (is_mac) {
+  _executable_configs += [
+    "//build/config/mac:mac_dynamic_flags",
+    "//build/config/mac:mac_executable_flags" ]
+} else if (is_linux || is_android) {
+  _executable_configs += [ "//build/config/gcc:executable_ldconfig" ]
+}
 set_defaults("executable") {
-  configs = _native_compiler_configs + [
-    "//build/config:default_libs",
-  ]
-  if (is_win) {
-    configs += _windows_linker_configs
-  } else if (is_mac) {
-    configs += [
-      "//build/config/mac:mac_dynamic_flags",
-      "//build/config/mac:mac_executable_flags" ]
-  } else if (is_linux || is_android) {
-    configs += [ "//build/config/gcc:executable_ldconfig" ]
-  }
+  configs = _executable_configs
+}
+set_defaults("test") {
+  configs = _executable_configs
 }
 
+# Static library defaults.
 set_defaults("static_library") {
   configs = _native_compiler_configs
 }
 
+# Shared library defaults (also for components in component mode).
+_shared_library_configs = _native_compiler_configs + [
+  "//build/config:default_libs",
+]
+if (is_win) {
+  _shared_library_configs += _windows_linker_configs
+} else if (is_mac) {
+  _shared_library_configs += [ "//build/config/mac:mac_dynamic_flags" ]
+}
 set_defaults("shared_library") {
-  configs = _native_compiler_configs + [
-    "//build/config:default_libs",
-  ]
-  if (is_win) {
-    configs += _windows_linker_configs
-  } else if (is_mac) {
-    configs += [ "//build/config/mac:mac_dynamic_flags" ]
+  configs = _shared_library_configs
+}
+if (is_component_build) {
+  set_defaults("component") {
+    configs = _native_compiler_configs
   }
 }
 
+# Source set defaults (also for components in non-component mode).
 set_defaults("source_set") {
   configs = _native_compiler_configs
+}
+if (!is_component_build) {
+  set_defaults("component") {
+    configs = _native_compiler_configs
+  }
 }
 
 # ==============================================================================
@@ -469,4 +482,115 @@ if (is_win) {
 } else if (is_ios) {
   host_toolchain = "//build/toolchain/mac:host_clang"
   set_default_toolchain("//build/toolchain/mac:clang")
+}
+
+# ==============================================================================
+# COMPONENT SETUP
+# ==============================================================================
+
+# TODO(brettw) erase this once the built-in "component" function is removed.
+if (is_component_build) {
+  component_mode = "shared_library"
+} else {
+  component_mode = "source_set"
+}
+
+template("component") {
+  if (is_component_build) {
+    shared_library(target_name) {
+      # Configs will always be defined since we set_defaults for a component
+      # above. We want to use those rather than whatever came with the nested
+      # shared/static library inside the component.
+      configs = []  # Prevent list overwriting warning.
+      configs = invoker.configs
+
+      if (defined(invoker.all_dependent_configs)) { all_dependent_configs = invoker.all_dependent_configs }
+      if (defined(invoker.cflags)) { cflags = invoker.cflags }
+      if (defined(invoker.cflags_c)) { cflags_c = invoker.cflags_c }
+      if (defined(invoker.cflags_cc)) { cflags_cc = invoker.cflags_cc }
+      if (defined(invoker.cflags_objc)) { cflags_objc = invoker.cflags_objc }
+      if (defined(invoker.cflags_objcc)) { cflags_objcc = invoker.cflags_objcc }
+      if (defined(invoker.data)) { data = invoker.data }
+      if (defined(invoker.datadeps)) { datadeps = invoker.datadeps }
+      if (defined(invoker.defines)) { defines = invoker.defines }
+      if (defined(invoker.deps)) { deps = invoker.deps }
+      if (defined(invoker.direct_dependent_configs)) { direct_dependent_configs = invoker.direct_dependent_configs }
+      if (defined(invoker.forward_dependent_configs_from)) { forward_dependent_configs_from = invoker.forward_dependent_configs_from }
+      if (defined(invoker.include_dirs)) { include_dirs = invoker.include_dirs }
+      if (defined(invoker.ldflags)) { ldflags = invoker.ldflags }
+      if (defined(invoker.lib_dirs)) { lib_dirs = invoker.lib_dirs }
+      if (defined(invoker.libs)) { libs = invoker.libs }
+      if (defined(invoker.output_extension)) { output_extension = invoker.output_extension }
+      if (defined(invoker.output_name)) { output_name = invoker.output_name }
+      if (defined(invoker.public)) { public = invoker.public }
+      if (defined(invoker.sources)) { sources = invoker.sources }
+      if (defined(invoker.visibility)) { visibility = invoker.visibility }
+    }
+  } else {
+    source_set(target_name) {
+      # See above.
+      configs = []  # Prevent list overwriting warning.
+      configs = invoker.configs
+
+      if (defined(invoker.all_dependent_configs)) { all_dependent_configs = invoker.all_dependent_configs }
+      if (defined(invoker.cflags)) { cflags = invoker.cflags }
+      if (defined(invoker.cflags_c)) { cflags_c = invoker.cflags_c }
+      if (defined(invoker.cflags_cc)) { cflags_cc = invoker.cflags_cc }
+      if (defined(invoker.cflags_objc)) { cflags_objc = invoker.cflags_objc }
+      if (defined(invoker.cflags_objcc)) { cflags_objcc = invoker.cflags_objcc }
+      if (defined(invoker.data)) { data = invoker.data }
+      if (defined(invoker.datadeps)) { datadeps = invoker.datadeps }
+      if (defined(invoker.defines)) { defines = invoker.defines }
+      if (defined(invoker.deps)) { deps = invoker.deps }
+      if (defined(invoker.direct_dependent_configs)) { direct_dependent_configs = invoker.direct_dependent_configs }
+      if (defined(invoker.forward_dependent_configs_from)) { forward_dependent_configs_from = invoker.forward_dependent_configs_from }
+      if (defined(invoker.include_dirs)) { include_dirs = invoker.include_dirs }
+      if (defined(invoker.ldflags)) { ldflags = invoker.ldflags }
+      if (defined(invoker.lib_dirs)) { lib_dirs = invoker.lib_dirs }
+      if (defined(invoker.libs)) { libs = invoker.libs }
+      if (defined(invoker.output_extension)) { output_extension = invoker.output_extension }
+      if (defined(invoker.output_name)) { output_name = invoker.output_name }
+      if (defined(invoker.public)) { public = invoker.public }
+      if (defined(invoker.sources)) { sources = invoker.sources }
+      if (defined(invoker.visibility)) { visibility = invoker.visibility }
+    }
+  }
+}
+
+# ==============================================================================
+# TEST SETUP
+# ==============================================================================
+
+# Define a test as an executable. In the future, we'll set "test only" flags
+# on this (when such flags exist) and do something different for Android.
+template("test") {
+  executable(target_name) {
+    # Configs will always be defined since we set_defaults for a component
+    # above. We want to use those rather than whatever came with the nested
+    # shared/static library inside the component.
+    configs = []  # Prevent list overwriting warning.
+    configs = invoker.configs
+
+    if (defined(invoker.all_dependent_configs)) { all_dependent_configs = invoker.all_dependent_configs }
+    if (defined(invoker.cflags)) { cflags = invoker.cflags }
+    if (defined(invoker.cflags_c)) { cflags_c = invoker.cflags_c }
+    if (defined(invoker.cflags_cc)) { cflags_cc = invoker.cflags_cc }
+    if (defined(invoker.cflags_objc)) { cflags_objc = invoker.cflags_objc }
+    if (defined(invoker.cflags_objcc)) { cflags_objcc = invoker.cflags_objcc }
+    if (defined(invoker.data)) { data = invoker.data }
+    if (defined(invoker.datadeps)) { datadeps = invoker.datadeps }
+    if (defined(invoker.defines)) { defines = invoker.defines }
+    if (defined(invoker.deps)) { deps = invoker.deps }
+    if (defined(invoker.direct_dependent_configs)) { direct_dependent_configs = invoker.direct_dependent_configs }
+    if (defined(invoker.forward_dependent_configs_from)) { forward_dependent_configs_from = invoker.forward_dependent_configs_from }
+    if (defined(invoker.include_dirs)) { include_dirs = invoker.include_dirs }
+    if (defined(invoker.ldflags)) { ldflags = invoker.ldflags }
+    if (defined(invoker.lib_dirs)) { lib_dirs = invoker.lib_dirs }
+    if (defined(invoker.libs)) { libs = invoker.libs }
+    if (defined(invoker.output_extension)) { output_extension = invoker.output_extension }
+    if (defined(invoker.output_name)) { output_name = invoker.output_name }
+    if (defined(invoker.public)) { public = invoker.public }
+    if (defined(invoker.sources)) { sources = invoker.sources }
+    if (defined(invoker.visibility)) { visibility = invoker.visibility }
+  }
 }

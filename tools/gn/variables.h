@@ -21,10 +21,6 @@ extern const char kBuildOs[];
 extern const char kBuildOs_HelpShort[];
 extern const char kBuildOs_Help[];
 
-extern const char kComponentMode[];
-extern const char kComponentMode_HelpShort[];
-extern const char kComponentMode_Help[];
-
 extern const char kCpuArch[];
 extern const char kCpuArch_HelpShort[];
 extern const char kCpuArch_Help[];

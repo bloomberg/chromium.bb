@@ -8,25 +8,6 @@ namespace variables {
 
 // Built-in variables ----------------------------------------------------------
 
-const char kComponentMode[] = "component_mode";
-const char kComponentMode_HelpShort[] =
-    "component_mode: [string] Specifies the meaning of the component() call.";
-const char kComponentMode_Help[] =
-    "component_mode: Specifies the meaning of the component() call.\n"
-    "\n"
-    "  This value is looked up whenever a \"component\" target type is\n"
-    "  encountered. The value controls whether the given target is a shared\n"
-    "  or a static library.\n"
-    "\n"
-    "  The initial value will be empty, which will cause a call to\n"
-    "  component() to throw an error. Typically this value will be set in the\n"
-    "  build config script.\n"
-    "\n"
-    "Possible values:\n"
-    "  - \"shared_library\"\n"
-    "  - \"source_set\"\n"
-    "  - \"static_library\"\n";
-
 const char kCpuArch[] = "cpu_arch";
 const char kCpuArch_HelpShort[] =
     "cpu_arch: [string] Current processor architecture.";
@@ -845,7 +826,6 @@ const VariableInfoMap& GetBuiltinVariables() {
     INSERT_VARIABLE(BuildCpuArch)
     INSERT_VARIABLE(BuildOs)
     INSERT_VARIABLE(CpuArch)
-    INSERT_VARIABLE(ComponentMode)
     INSERT_VARIABLE(CurrentToolchain)
     INSERT_VARIABLE(DefaultToolchain)
     INSERT_VARIABLE(Os)
